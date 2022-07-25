@@ -1345,8 +1345,6 @@ config BLK_DEV_INITRD
 
 if BLK_DEV_INITRD
 
-source "usr/Kconfig"
-
 endif
 
 config BOOT_CONFIG

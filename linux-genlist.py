@@ -5,9 +5,16 @@ import os
 import pathlib
 
 subprocess.check_call(
-    'strace -fff -e trace=file -y -o strace.allnoconfig make allnoconfig', shell=True)
+    'strace -fff -e trace=file -y -o strace.allnoconfig '
+    'make allnoconfig', shell=True)
+with open('.config') as f:
+    s = f.read()
+s = s.replace('IO_URING=y', 'IO_URING=n')
+with open('.config', 'w') as f:
+    f.write(s)
 subprocess.check_call(
-    'strace -fff -e trace=file -y -o strace.make make', shell=True)
+    'strace -fff -e trace=file -y -o strace.make '
+    'make -j $(( $( nproc ) + 2 ))', shell=True)
 subprocess.check_call('make mrproper', shell=True)
 
 cwd = os.getcwd()

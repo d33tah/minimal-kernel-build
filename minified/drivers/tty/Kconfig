@@ -366,7 +366,6 @@ config VCC
 	help
 	  Support for Sun logical domain consoles.
 
-source "drivers/tty/hvc/Kconfig"
 
 config RPMSG_TTY
 	tristate "RPMSG tty driver"
@@ -382,4 +381,3 @@ config RPMSG_TTY
 
 endif # TTY
 
-source "drivers/tty/serdev/Kconfig"

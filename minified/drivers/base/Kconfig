@@ -195,8 +195,6 @@ config SOC_BUS
 	bool
 	select GLOB
 
-source "drivers/base/regmap/Kconfig"
-
 config DMA_SHARED_BUFFER
 	bool
 	default n

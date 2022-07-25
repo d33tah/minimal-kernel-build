@@ -2427,7 +2427,6 @@ config STRICT_SIGALTSTACK_SIZE
 
 	  Say 'N' unless you want to really enforce this check.
 
-source "kernel/livepatch/Kconfig"
 
 endmenu
 
@@ -2530,8 +2529,6 @@ config ARCH_HIBERNATION_HEADER
 	depends on HIBERNATION
 
 source "kernel/power/Kconfig"
-
-source "drivers/acpi/Kconfig"
 
 config X86_APM_BOOT
 	def_bool y
@@ -2659,11 +2656,8 @@ config APM_ALLOW_INTS
 
 endif # APM
 
-source "drivers/cpufreq/Kconfig"
 
-source "drivers/cpuidle/Kconfig"
 
-source "drivers/idle/Kconfig"
 
 endmenu
 

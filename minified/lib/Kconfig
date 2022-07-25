@@ -344,7 +344,6 @@ config ZSTD_DECOMPRESS
 	select XXHASH
 	tristate
 
-source "lib/xz/Kconfig"
 
 #
 # These all provide a common interface (hence the apparent duplication with
@@ -626,7 +625,6 @@ config UCS2_STRING
 #
 source "lib/vdso/Kconfig"
 
-source "lib/fonts/Kconfig"
 
 config SG_SPLIT
 	def_bool n

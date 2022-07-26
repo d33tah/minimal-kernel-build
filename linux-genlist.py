@@ -4,14 +4,20 @@ import subprocess
 import os
 import pathlib
 
+
+s = '''
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_EARLY_PRINTK=y
+CONFIG_PRINTK=y
+CONFIG_VGA_CONSOLE=y
+CONFIG_VT=y
+'''
+
+with open('kernel/configs/tiny.config', 'a') as f:
+    f.write(s)
 subprocess.check_call(
     'strace -fff -e trace=file -y -o strace.allnoconfig '
-    'make allnoconfig', shell=True)
-with open('.config') as f:
-    s = f.read()
-s = s.replace('IO_URING=y', 'IO_URING=n')
-with open('.config', 'w') as f:
-    f.write(s)
+    'make tinyconfig', shell=True)
 subprocess.check_call(
     'strace -fff -e trace=file -y -o strace.make '
     'make -j $(( $( nproc ) + 2 ))', shell=True)

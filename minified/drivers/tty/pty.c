@@ -32,17 +32,11 @@
 #include "tty.h"
 
 #undef TTY_DEBUG_HANGUP
-#ifdef TTY_DEBUG_HANGUP
-# define tty_debug_hangup(tty, f, args...)	tty_debug(tty, f, ##args)
-#else
-# define tty_debug_hangup(tty, f, args...)	do {} while (0)
-#endif
+#define tty_debug_hangup(tty,f,args...) do {} while (0)
 
-#ifdef CONFIG_UNIX98_PTYS
 static struct tty_driver *ptm_driver;
 static struct tty_driver *pts_driver;
 static DEFINE_MUTEX(devpts_mutex);
-#endif
 
 static void pty_close(struct tty_struct *tty, struct file *filp)
 {
@@ -68,14 +62,12 @@ static void pty_close(struct tty_struct *tty, struct file *filp)
 	wake_up_interruptible(&tty->link->write_wait);
 	if (tty->driver->subtype == PTY_TYPE_MASTER) {
 		set_bit(TTY_OTHER_CLOSED, &tty->flags);
-#ifdef CONFIG_UNIX98_PTYS
 		if (tty->driver == ptm_driver) {
 			mutex_lock(&devpts_mutex);
 			if (tty->link->driver_data)
 				devpts_pty_kill(tty->link->driver_data);
 			mutex_unlock(&devpts_mutex);
 		}
-#endif
 		tty_vhangup(tty->link);
 	}
 }
@@ -434,7 +426,6 @@ static void pty_cleanup(struct tty_struct *tty)
 }
 
 /* Traditional BSD devices */
-#ifdef CONFIG_LEGACY_PTYS
 
 static int pty_install(struct tty_driver *driver, struct tty_struct *tty)
 {
@@ -470,19 +461,7 @@ static int pty_bsd_ioctl(struct tty_struct *tty,
 	return -ENOIOCTLCMD;
 }
 
-#ifdef CONFIG_COMPAT
-static long pty_bsd_compat_ioctl(struct tty_struct *tty,
-				 unsigned int cmd, unsigned long arg)
-{
-	/*
-	 * PTY ioctls don't require any special translation between 32-bit and
-	 * 64-bit userspace, they are already compatible.
-	 */
-	return pty_bsd_ioctl(tty, cmd, (unsigned long)compat_ptr(arg));
-}
-#else
 #define pty_bsd_compat_ioctl NULL
-#endif
 
 static int legacy_count = CONFIG_LEGACY_PTY_COUNT;
 /*
@@ -581,12 +560,8 @@ static void __init legacy_pty_init(void)
 	if (tty_register_driver(pty_slave_driver))
 		panic("Couldn't register pty slave driver");
 }
-#else
-static inline void legacy_pty_init(void) { }
-#endif
 
 /* Unix98 devices */
-#ifdef CONFIG_UNIX98_PTYS
 static struct cdev ptmx_cdev;
 
 /**
@@ -660,20 +635,7 @@ static int pty_unix98_ioctl(struct tty_struct *tty,
 	return -ENOIOCTLCMD;
 }
 
-#ifdef CONFIG_COMPAT
-static long pty_unix98_compat_ioctl(struct tty_struct *tty,
-				 unsigned int cmd, unsigned long arg)
-{
-	/*
-	 * PTY ioctls don't require any special translation between 32-bit and
-	 * 64-bit userspace, they are already compatible.
-	 */
-	return pty_unix98_ioctl(tty, cmd,
-		cmd == TIOCSIG ? arg : (unsigned long)compat_ptr(arg));
-}
-#else
 #define pty_unix98_compat_ioctl NULL
-#endif
 
 /**
  *	ptm_unix98_lookup	-	find a pty master
@@ -934,9 +896,6 @@ static void __init unix98_pty_init(void)
 	device_create(tty_class, NULL, MKDEV(TTYAUX_MAJOR, 2), NULL, "ptmx");
 }
 
-#else
-static inline void unix98_pty_init(void) { }
-#endif
 
 static int __init pty_init(void)
 {

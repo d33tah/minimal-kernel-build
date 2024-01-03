@@ -64,14 +64,9 @@
 #include <asm/vdso.h>
 #include <asm/tdx.h>
 
-#ifdef CONFIG_X86_64
-#include <asm/x86_init.h>
-#include <asm/proto.h>
-#else
 #include <asm/processor-flags.h>
 #include <asm/setup.h>
 #include <asm/proto.h>
-#endif
 
 DECLARE_BITMAP(system_vectors, NR_VECTORS);
 
@@ -211,86 +206,8 @@ DEFINE_IDTENTRY(exc_overflow)
 	do_error_trap(regs, 0, "overflow", X86_TRAP_OF, SIGSEGV, 0, NULL);
 }
 
-#ifdef CONFIG_X86_KERNEL_IBT
 
-static __ro_after_init bool ibt_fatal = true;
-
-extern void ibt_selftest_ip(void); /* code label defined in asm below */
-
-enum cp_error_code {
-	CP_EC        = (1 << 15) - 1,
-
-	CP_RET       = 1,
-	CP_IRET      = 2,
-	CP_ENDBR     = 3,
-	CP_RSTRORSSP = 4,
-	CP_SETSSBSY  = 5,
-
-	CP_ENCL	     = 1 << 15,
-};
-
-DEFINE_IDTENTRY_ERRORCODE(exc_control_protection)
-{
-	if (!cpu_feature_enabled(X86_FEATURE_IBT)) {
-		pr_err("Unexpected #CP\n");
-		BUG();
-	}
-
-	if (WARN_ON_ONCE(user_mode(regs) || (error_code & CP_EC) != CP_ENDBR))
-		return;
-
-	if (unlikely(regs->ip == (unsigned long)&ibt_selftest_ip)) {
-		regs->ax = 0;
-		return;
-	}
-
-	pr_err("Missing ENDBR: %pS\n", (void *)instruction_pointer(regs));
-	if (!ibt_fatal) {
-		printk(KERN_DEFAULT CUT_HERE);
-		__warn(__FILE__, __LINE__, (void *)regs->ip, TAINT_WARN, regs, NULL);
-		return;
-	}
-	BUG();
-}
-
-/* Must be noinline to ensure uniqueness of ibt_selftest_ip. */
-noinline bool ibt_selftest(void)
-{
-	unsigned long ret;
-
-	asm ("	lea ibt_selftest_ip(%%rip), %%rax\n\t"
-	     ANNOTATE_RETPOLINE_SAFE
-	     "	jmp *%%rax\n\t"
-	     "ibt_selftest_ip:\n\t"
-	     UNWIND_HINT_FUNC
-	     ANNOTATE_NOENDBR
-	     "	nop\n\t"
-
-	     : "=a" (ret) : : "memory");
-
-	return !ret;
-}
-
-static int __init ibt_setup(char *str)
-{
-	if (!strcmp(str, "off"))
-		setup_clear_cpu_cap(X86_FEATURE_IBT);
-
-	if (!strcmp(str, "warn"))
-		ibt_fatal = false;
-
-	return 1;
-}
-
-__setup("ibt=", ibt_setup);
-
-#endif /* CONFIG_X86_KERNEL_IBT */
-
-#ifdef CONFIG_X86_F00F_BUG
-void handle_invalid_op(struct pt_regs *regs)
-#else
 static inline void handle_invalid_op(struct pt_regs *regs)
-#endif
 {
 	do_error_trap(regs, 0, "invalid opcode", X86_TRAP_UD, SIGILL,
 		      ILL_ILLOPN, error_get_trap_addr(regs));
@@ -389,22 +306,6 @@ out:
 	local_irq_disable();
 }
 
-#ifdef CONFIG_VMAP_STACK
-__visible void __noreturn handle_stack_overflow(struct pt_regs *regs,
-						unsigned long fault_address,
-						struct stack_info *info)
-{
-	const char *name = stack_type_name(info->type);
-
-	printk(KERN_EMERG "BUG: %s stack guard page was hit at %p (stack is %p..%p)\n",
-	       name, (void *)fault_address, info->begin, info->end);
-
-	die("stack guard page", regs, 0);
-
-	/* Be absolutely certain we don't return. */
-	panic("%s stack guard hit", name);
-}
-#endif
 
 /*
  * Runs on an IST stack for x86_64 and on a special task stack for x86_32.
@@ -430,65 +331,7 @@ DEFINE_IDTENTRY_DF(exc_double_fault)
 	static const char str[] = "double fault";
 	struct task_struct *tsk = current;
 
-#ifdef CONFIG_VMAP_STACK
-	unsigned long address = read_cr2();
-	struct stack_info info;
-#endif
 
-#ifdef CONFIG_X86_ESPFIX64
-	extern unsigned char native_irq_return_iret[];
-
-	/*
-	 * If IRET takes a non-IST fault on the espfix64 stack, then we
-	 * end up promoting it to a doublefault.  In that case, take
-	 * advantage of the fact that we're not using the normal (TSS.sp0)
-	 * stack right now.  We can write a fake #GP(0) frame at TSS.sp0
-	 * and then modify our own IRET frame so that, when we return,
-	 * we land directly at the #GP(0) vector with the stack already
-	 * set up according to its expectations.
-	 *
-	 * The net result is that our #GP handler will think that we
-	 * entered from usermode with the bad user context.
-	 *
-	 * No need for nmi_enter() here because we don't use RCU.
-	 */
-	if (((long)regs->sp >> P4D_SHIFT) == ESPFIX_PGD_ENTRY &&
-		regs->cs == __KERNEL_CS &&
-		regs->ip == (unsigned long)native_irq_return_iret)
-	{
-		struct pt_regs *gpregs = (struct pt_regs *)this_cpu_read(cpu_tss_rw.x86_tss.sp0) - 1;
-		unsigned long *p = (unsigned long *)regs->sp;
-
-		/*
-		 * regs->sp points to the failing IRET frame on the
-		 * ESPFIX64 stack.  Copy it to the entry stack.  This fills
-		 * in gpregs->ss through gpregs->ip.
-		 *
-		 */
-		gpregs->ip	= p[0];
-		gpregs->cs	= p[1];
-		gpregs->flags	= p[2];
-		gpregs->sp	= p[3];
-		gpregs->ss	= p[4];
-		gpregs->orig_ax = 0;  /* Missing (lost) #GP error code */
-
-		/*
-		 * Adjust our frame so that we return straight to the #GP
-		 * vector with the expected RSP value.  This is safe because
-		 * we won't enable interrupts or schedule before we invoke
-		 * general_protection, so nothing will clobber the stack
-		 * frame we just set up.
-		 *
-		 * We will enter general_protection with kernel GSBASE,
-		 * which is what the stub expects, given that the faulting
-		 * RIP will be the IRET instruction.
-		 */
-		regs->ip = (unsigned long)asm_exc_general_protection;
-		regs->sp = (unsigned long)&gpregs->orig_ax;
-
-		return;
-	}
-#endif
 
 	irqentry_nmi_enter(regs);
 	instrumentation_begin();
@@ -497,47 +340,6 @@ DEFINE_IDTENTRY_DF(exc_double_fault)
 	tsk->thread.error_code = error_code;
 	tsk->thread.trap_nr = X86_TRAP_DF;
 
-#ifdef CONFIG_VMAP_STACK
-	/*
-	 * If we overflow the stack into a guard page, the CPU will fail
-	 * to deliver #PF and will send #DF instead.  Similarly, if we
-	 * take any non-IST exception while too close to the bottom of
-	 * the stack, the processor will get a page fault while
-	 * delivering the exception and will generate a double fault.
-	 *
-	 * According to the SDM (footnote in 6.15 under "Interrupt 14 -
-	 * Page-Fault Exception (#PF):
-	 *
-	 *   Processors update CR2 whenever a page fault is detected. If a
-	 *   second page fault occurs while an earlier page fault is being
-	 *   delivered, the faulting linear address of the second fault will
-	 *   overwrite the contents of CR2 (replacing the previous
-	 *   address). These updates to CR2 occur even if the page fault
-	 *   results in a double fault or occurs during the delivery of a
-	 *   double fault.
-	 *
-	 * The logic below has a small possibility of incorrectly diagnosing
-	 * some errors as stack overflows.  For example, if the IDT or GDT
-	 * gets corrupted such that #GP delivery fails due to a bad descriptor
-	 * causing #GP and we hit this condition while CR2 coincidentally
-	 * points to the stack guard page, we'll think we overflowed the
-	 * stack.  Given that we're going to panic one way or another
-	 * if this happens, this isn't necessarily worth fixing.
-	 *
-	 * If necessary, we could improve the test by only diagnosing
-	 * a stack overflow if the saved RSP points within 47 bytes of
-	 * the bottom of the stack: if RSP == tsk_stack + 48 and we
-	 * take an exception, the stack is already aligned and there
-	 * will be enough room SS, RSP, RFLAGS, CS, RIP, and a
-	 * possible error code, so a stack overflow would *not* double
-	 * fault.  With any less space left, exception delivery could
-	 * fail, and, as a practical matter, we've overflowed the
-	 * stack even if the actual trigger for the double fault was
-	 * something else.
-	 */
-	if (get_stack_guard_info((void *)address, &info))
-		handle_stack_overflow(regs, address, &info);
-#endif
 
 	pr_emerg("PANIC: double fault, error_code: 0x%lx\n", error_code);
 	die("double fault", regs, error_code);
@@ -590,16 +392,6 @@ static enum kernel_gp_hint get_kernel_gp_address(struct pt_regs *regs,
 	if (*addr == -1UL)
 		return GP_NO_HINT;
 
-#ifdef CONFIG_X86_64
-	/*
-	 * Check that:
-	 *  - the operand is not in the kernel half
-	 *  - the last byte of the operand is not in the user canonical half
-	 */
-	if (*addr < ~__VIRTUAL_MASK &&
-	    *addr + insn.opnd_bytes - 1 > __VIRTUAL_MASK)
-		return GP_NON_CANONICAL;
-#endif
 
 	return GP_CANONICAL;
 }
@@ -643,48 +435,7 @@ static bool fixup_iopl_exception(struct pt_regs *regs)
  */
 static bool try_fixup_enqcmd_gp(void)
 {
-#ifdef CONFIG_IOMMU_SVA
-	u32 pasid;
-
-	/*
-	 * MSR_IA32_PASID is managed using XSAVE.  Directly
-	 * writing to the MSR is only possible when fpregs
-	 * are valid and the fpstate is not.  This is
-	 * guaranteed when handling a userspace exception
-	 * in *before* interrupts are re-enabled.
-	 */
-	lockdep_assert_irqs_disabled();
-
-	/*
-	 * Hardware without ENQCMD will not generate
-	 * #GPs that can be fixed up here.
-	 */
-	if (!cpu_feature_enabled(X86_FEATURE_ENQCMD))
-		return false;
-
-	pasid = current->mm->pasid;
-
-	/*
-	 * If the mm has not been allocated a
-	 * PASID, the #GP can not be fixed up.
-	 */
-	if (!pasid_valid(pasid))
-		return false;
-
-	/*
-	 * Did this thread already have its PASID activated?
-	 * If so, the #GP must be from something else.
-	 */
-	if (current->pasid_activated)
-		return false;
-
-	wrmsrl(MSR_IA32_PASID, pasid | MSR_IA32_PASID_VALID);
-	current->pasid_activated = 1;
-
-	return true;
-#else
 	return false;
-#endif
 }
 
 static bool gp_try_fixup_and_notify(struct pt_regs *regs, int trapnr,
@@ -781,16 +532,7 @@ static bool do_int3(struct pt_regs *regs)
 {
 	int res;
 
-#ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
-	if (kgdb_ll_trap(DIE_INT3, "int3", regs, 0, X86_TRAP_BP,
-			 SIGTRAP) == NOTIFY_STOP)
-		return true;
-#endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
 
-#ifdef CONFIG_KPROBES
-	if (kprobe_int3_handler(regs))
-		return true;
-#endif
 	res = notify_die(DIE_INT3, "int3", regs, 0, X86_TRAP_BP, SIGTRAP);
 
 	return res == NOTIFY_STOP;
@@ -841,90 +583,6 @@ DEFINE_IDTENTRY_RAW(exc_int3)
 	}
 }
 
-#ifdef CONFIG_X86_64
-/*
- * Help handler running on a per-cpu (IST or entry trampoline) stack
- * to switch to the normal thread stack if the interrupted code was in
- * user mode. The actual stack switch is done in entry_64.S
- */
-asmlinkage __visible noinstr struct pt_regs *sync_regs(struct pt_regs *eregs)
-{
-	struct pt_regs *regs = (struct pt_regs *)this_cpu_read(cpu_current_top_of_stack) - 1;
-	if (regs != eregs)
-		*regs = *eregs;
-	return regs;
-}
-
-#ifdef CONFIG_AMD_MEM_ENCRYPT
-asmlinkage __visible noinstr struct pt_regs *vc_switch_off_ist(struct pt_regs *regs)
-{
-	unsigned long sp, *stack;
-	struct stack_info info;
-	struct pt_regs *regs_ret;
-
-	/*
-	 * In the SYSCALL entry path the RSP value comes from user-space - don't
-	 * trust it and switch to the current kernel stack
-	 */
-	if (ip_within_syscall_gap(regs)) {
-		sp = this_cpu_read(cpu_current_top_of_stack);
-		goto sync;
-	}
-
-	/*
-	 * From here on the RSP value is trusted. Now check whether entry
-	 * happened from a safe stack. Not safe are the entry or unknown stacks,
-	 * use the fall-back stack instead in this case.
-	 */
-	sp    = regs->sp;
-	stack = (unsigned long *)sp;
-
-	if (!get_stack_info_noinstr(stack, current, &info) || info.type == STACK_TYPE_ENTRY ||
-	    info.type > STACK_TYPE_EXCEPTION_LAST)
-		sp = __this_cpu_ist_top_va(VC2);
-
-sync:
-	/*
-	 * Found a safe stack - switch to it as if the entry didn't happen via
-	 * IST stack. The code below only copies pt_regs, the real switch happens
-	 * in assembly code.
-	 */
-	sp = ALIGN_DOWN(sp, 8) - sizeof(*regs_ret);
-
-	regs_ret = (struct pt_regs *)sp;
-	*regs_ret = *regs;
-
-	return regs_ret;
-}
-#endif
-
-asmlinkage __visible noinstr struct pt_regs *fixup_bad_iret(struct pt_regs *bad_regs)
-{
-	struct pt_regs tmp, *new_stack;
-
-	/*
-	 * This is called from entry_64.S early in handling a fault
-	 * caused by a bad iret to user mode.  To handle the fault
-	 * correctly, we want to move our stack frame to where it would
-	 * be had we entered directly on the entry stack (rather than
-	 * just below the IRET frame) and we want to pretend that the
-	 * exception came from the IRET target.
-	 */
-	new_stack = (struct pt_regs *)__this_cpu_read(cpu_tss_rw.x86_tss.sp0) - 1;
-
-	/* Copy the IRET target to the temporary storage. */
-	__memcpy(&tmp.ip, (void *)bad_regs->sp, 5*8);
-
-	/* Copy the remainder of the stack from the current stack. */
-	__memcpy(&tmp, bad_regs, offsetof(struct pt_regs, ip));
-
-	/* Update the entry stack */
-	__memcpy(new_stack, &tmp, sizeof(tmp));
-
-	BUG_ON(!user_mode(new_stack));
-	return new_stack;
-}
-#endif
 
 static bool is_sysenter_singlestep(struct pt_regs *regs)
 {
@@ -936,17 +594,9 @@ static bool is_sysenter_singlestep(struct pt_regs *regs)
 	 * which instructions will be hit because BTF could plausibly
 	 * be set.)
 	 */
-#ifdef CONFIG_X86_32
 	return (regs->ip - (unsigned long)__begin_SYSENTER_singlestep_region) <
 		(unsigned long)__end_SYSENTER_singlestep_region -
 		(unsigned long)__begin_SYSENTER_singlestep_region;
-#elif defined(CONFIG_IA32_EMULATION)
-	return (regs->ip - (unsigned long)entry_SYSENTER_compat) <
-		(unsigned long)__end_entry_SYSENTER_compat -
-		(unsigned long)entry_SYSENTER_compat;
-#else
-	return false;
-#endif
 }
 
 static __always_inline unsigned long debug_read_clear_dr6(void)
@@ -1158,19 +808,6 @@ out:
 	irqentry_exit_to_user_mode(regs);
 }
 
-#ifdef CONFIG_X86_64
-/* IST stack entry */
-DEFINE_IDTENTRY_DEBUG(exc_debug)
-{
-	exc_debug_kernel(regs, debug_read_clear_dr6());
-}
-
-/* User entry, runs on regular task stack */
-DEFINE_IDTENTRY_DEBUG_USER(exc_debug)
-{
-	exc_debug_user(regs, debug_read_clear_dr6());
-}
-#else
 /* 32 bit does not have separate entry points. */
 DEFINE_IDTENTRY_RAW(exc_debug)
 {
@@ -1181,7 +818,6 @@ DEFINE_IDTENTRY_RAW(exc_debug)
 	else
 		exc_debug_kernel(regs, dr6);
 }
-#endif
 
 /*
  * Note that we play around with the 'TS' bit in an attempt to get
@@ -1316,19 +952,6 @@ DEFINE_IDTENTRY(exc_device_not_available)
 	if (handle_xfd_event(regs))
 		return;
 
-#ifdef CONFIG_MATH_EMULATION
-	if (!boot_cpu_has(X86_FEATURE_FPU) && (cr0 & X86_CR0_EM)) {
-		struct math_emu_info info = { };
-
-		cond_local_irq_enable(regs);
-
-		info.regs = regs;
-		math_emulate(&info);
-
-		cond_local_irq_disable(regs);
-		return;
-	}
-#endif
 
 	/* This should not happen. */
 	if (WARN(cr0 & X86_CR0_TS, "CR0.TS was set")) {
@@ -1344,92 +967,7 @@ DEFINE_IDTENTRY(exc_device_not_available)
 	}
 }
 
-#ifdef CONFIG_INTEL_TDX_GUEST
 
-#define VE_FAULT_STR "VE fault"
-
-static void ve_raise_fault(struct pt_regs *regs, long error_code)
-{
-	if (user_mode(regs)) {
-		gp_user_force_sig_segv(regs, X86_TRAP_VE, error_code, VE_FAULT_STR);
-		return;
-	}
-
-	if (gp_try_fixup_and_notify(regs, X86_TRAP_VE, error_code, VE_FAULT_STR))
-		return;
-
-	die_addr(VE_FAULT_STR, regs, error_code, 0);
-}
-
-/*
- * Virtualization Exceptions (#VE) are delivered to TDX guests due to
- * specific guest actions which may happen in either user space or the
- * kernel:
- *
- *  * Specific instructions (WBINVD, for example)
- *  * Specific MSR accesses
- *  * Specific CPUID leaf accesses
- *  * Access to specific guest physical addresses
- *
- * In the settings that Linux will run in, virtualization exceptions are
- * never generated on accesses to normal, TD-private memory that has been
- * accepted (by BIOS or with tdx_enc_status_changed()).
- *
- * Syscall entry code has a critical window where the kernel stack is not
- * yet set up. Any exception in this window leads to hard to debug issues
- * and can be exploited for privilege escalation. Exceptions in the NMI
- * entry code also cause issues. Returning from the exception handler with
- * IRET will re-enable NMIs and nested NMI will corrupt the NMI stack.
- *
- * For these reasons, the kernel avoids #VEs during the syscall gap and
- * the NMI entry code. Entry code paths do not access TD-shared memory,
- * MMIO regions, use #VE triggering MSRs, instructions, or CPUID leaves
- * that might generate #VE. VMM can remove memory from TD at any point,
- * but access to unaccepted (or missing) private memory leads to VM
- * termination, not to #VE.
- *
- * Similarly to page faults and breakpoints, #VEs are allowed in NMI
- * handlers once the kernel is ready to deal with nested NMIs.
- *
- * During #VE delivery, all interrupts, including NMIs, are blocked until
- * TDGETVEINFO is called. It prevents #VE nesting until the kernel reads
- * the VE info.
- *
- * If a guest kernel action which would normally cause a #VE occurs in
- * the interrupt-disabled region before TDGETVEINFO, a #DF (fault
- * exception) is delivered to the guest which will result in an oops.
- *
- * The entry code has been audited carefully for following these expectations.
- * Changes in the entry code have to be audited for correctness vs. this
- * aspect. Similarly to #PF, #VE in these places will expose kernel to
- * privilege escalation or may lead to random crashes.
- */
-DEFINE_IDTENTRY(exc_virtualization_exception)
-{
-	struct ve_info ve;
-
-	/*
-	 * NMIs/Machine-checks/Interrupts will be in a disabled state
-	 * till TDGETVEINFO TDCALL is executed. This ensures that VE
-	 * info cannot be overwritten by a nested #VE.
-	 */
-	tdx_get_ve_info(&ve);
-
-	cond_local_irq_enable(regs);
-
-	/*
-	 * If tdx_handle_virt_exception() could not process
-	 * it successfully, treat it as #GP(0) and handle it.
-	 */
-	if (!tdx_handle_virt_exception(regs, &ve))
-		ve_raise_fault(regs, 0);
-
-	cond_local_irq_disable(regs);
-}
-
-#endif
-
-#ifdef CONFIG_X86_32
 DEFINE_IDTENTRY_SW(iret_error)
 {
 	local_irq_enable();
@@ -1440,7 +978,6 @@ DEFINE_IDTENTRY_SW(iret_error)
 	}
 	local_irq_disable();
 }
-#endif
 
 void __init trap_init(void)
 {

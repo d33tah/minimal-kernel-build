@@ -47,7 +47,6 @@ bool __init pit_timer_init(void)
 	return true;
 }
 
-#ifndef CONFIG_X86_64
 static int __init init_pit_clocksource(void)
 {
 	 /*
@@ -64,4 +63,3 @@ static int __init init_pit_clocksource(void)
 	return clocksource_i8253_init();
 }
 arch_initcall(init_pit_clocksource);
-#endif /* !CONFIG_X86_64 */

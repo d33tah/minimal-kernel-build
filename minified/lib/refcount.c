@@ -8,7 +8,7 @@
 #include <linux/spinlock.h>
 #include <linux/bug.h>
 
-#define REFCOUNT_WARN(str)	WARN_ONCE(1, "refcount_t: " str ".\n")
+#define REFCOUNT_WARN(str) WARN_ONCE(1, "refcount_t: " str ".\n")
 
 void refcount_warn_saturate(refcount_t *r, enum refcount_saturation_type t)
 {

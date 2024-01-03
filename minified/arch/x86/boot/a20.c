@@ -13,8 +13,8 @@
 
 #include "boot.h"
 
-#define MAX_8042_LOOPS	100000
-#define MAX_8042_FF	32
+#define MAX_8042_LOOPS 100000
+#define MAX_8042_FF 32
 
 static int empty_8042(void)
 {
@@ -47,9 +47,9 @@ static int empty_8042(void)
 /* Returns nonzero if the A20 line is enabled.  The memory address
    used as a test is the int $0x80 vector, which should be safe. */
 
-#define A20_TEST_ADDR	(4*0x80)
-#define A20_TEST_SHORT  32
-#define A20_TEST_LONG	2097152	/* 2^21 */
+#define A20_TEST_ADDR (4*0x80)
+#define A20_TEST_SHORT 32
+#define A20_TEST_LONG 2097152
 
 static int a20_test(int loops)
 {
@@ -123,7 +123,7 @@ static void enable_a20_fast(void)
  * Actual routine to enable A20; return 0 on ok, -1 on failure
  */
 
-#define A20_ENABLE_LOOPS 255	/* Number of times to try */
+#define A20_ENABLE_LOOPS 255
 
 int enable_a20(void)
 {

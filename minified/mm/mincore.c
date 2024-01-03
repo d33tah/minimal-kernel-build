@@ -25,21 +25,7 @@
 static int mincore_hugetlb(pte_t *pte, unsigned long hmask, unsigned long addr,
 			unsigned long end, struct mm_walk *walk)
 {
-#ifdef CONFIG_HUGETLB_PAGE
-	unsigned char present;
-	unsigned char *vec = walk->private;
-
-	/*
-	 * Hugepages under user process are always in RAM and never
-	 * swapped out, but theoretically it needs to be checked.
-	 */
-	present = pte && !huge_pte_none(huge_ptep_get(pte));
-	for (; addr != end; vec++, addr += PAGE_SIZE)
-		*vec = present;
-	walk->private = vec;
-#else
 	BUG();
-#endif
 	return 0;
 }
 
@@ -138,13 +124,8 @@ static int mincore_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 				 */
 				*vec = 1;
 			} else {
-#ifdef CONFIG_SWAP
-				*vec = mincore_page(swap_address_space(entry),
-						    swp_offset(entry));
-#else
 				WARN_ON(1);
 				*vec = 1;
-#endif
 			}
 		}
 		vec++;

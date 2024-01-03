@@ -16,7 +16,6 @@
 #include <asm/intel-mid.h>
 #include <asm/setup.h>
 
-#ifdef CONFIG_X86_32
 /*
  * This is a special lock that is owned by the CPU and holds the index
  * register we are working with.  It is required for NMI access to the
@@ -24,7 +23,6 @@
  */
 volatile unsigned long cmos_lock;
 EXPORT_SYMBOL(cmos_lock);
-#endif /* CONFIG_X86_32 */
 
 /* For two digit years assume time is always after that */
 #define CMOS_YEARS_OFFS 2000
@@ -92,11 +90,6 @@ void mach_get_cmos_time(struct timespec64 *now)
 	mon = CMOS_READ(RTC_MONTH);
 	year = CMOS_READ(RTC_YEAR);
 
-#ifdef CONFIG_ACPI
-	if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
-	    acpi_gbl_FADT.century)
-		century = CMOS_READ(acpi_gbl_FADT.century);
-#endif
 
 	status = CMOS_READ(RTC_CONTROL);
 	WARN_ON_ONCE(RTC_ALWAYS_BCD && (status & RTC_DM_BINARY));
@@ -179,22 +172,6 @@ static struct platform_device rtc_device = {
 
 static __init int add_rtc_cmos(void)
 {
-#ifdef CONFIG_PNP
-	static const char * const ids[] __initconst =
-	    { "PNP0b00", "PNP0b01", "PNP0b02", };
-	struct pnp_dev *dev;
-	struct pnp_id *id;
-	int i;
-
-	pnp_for_each_dev(dev) {
-		for (id = dev->id; id; id = id->next) {
-			for (i = 0; i < ARRAY_SIZE(ids); i++) {
-				if (compare_pnp_id(id, ids[i]) != 0)
-					return 0;
-			}
-		}
-	}
-#endif
 	if (!x86_platform.legacy.rtc)
 		return -ENODEV;
 

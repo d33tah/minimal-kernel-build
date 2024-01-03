@@ -140,10 +140,7 @@ int wait_for_random_bytes(void)
 }
 EXPORT_SYMBOL(wait_for_random_bytes);
 
-#define warn_unseeded_randomness() \
-	if (IS_ENABLED(CONFIG_WARN_ALL_UNSEEDED_RANDOM) && !crng_ready()) \
-		printk_deferred(KERN_NOTICE "random: %s called from %pS with crng_init=%d\n", \
-				__func__, (void *)_RET_IP_, crng_init)
+#define warn_unseeded_randomness() if (IS_ENABLED(CONFIG_WARN_ALL_UNSEEDED_RANDOM) && !crng_ready()) printk_deferred(KERN_NOTICE "random: %s called from %pS with crng_init=%d\n", __func__, (void *)_RET_IP_, crng_init)
 
 
 /*********************************************************************
@@ -453,80 +450,11 @@ out_zero_chacha:
  * should be called and return 0 at least once at any point prior.
  */
 
-#define DEFINE_BATCHED_ENTROPY(type)						\
-struct batch_ ##type {								\
-	/*									\
-	 * We make this 1.5x a ChaCha block, so that we get the			\
-	 * remaining 32 bytes from fast key erasure, plus one full		\
-	 * block from the detached ChaCha state. We can increase		\
-	 * the size of this later if needed so long as we keep the		\
-	 * formula of (integer_blocks + 0.5) * CHACHA_BLOCK_SIZE.		\
-	 */									\
-	type entropy[CHACHA_BLOCK_SIZE * 3 / (2 * sizeof(type))];		\
-	local_lock_t lock;							\
-	unsigned long generation;						\
-	unsigned int position;							\
-};										\
-										\
-static DEFINE_PER_CPU(struct batch_ ##type, batched_entropy_ ##type) = {	\
-	.lock = INIT_LOCAL_LOCK(batched_entropy_ ##type.lock),			\
-	.position = UINT_MAX							\
-};										\
-										\
-type get_random_ ##type(void)							\
-{										\
-	type ret;								\
-	unsigned long flags;							\
-	struct batch_ ##type *batch;						\
-	unsigned long next_gen;							\
-										\
-	warn_unseeded_randomness();						\
-										\
-	if  (!crng_ready()) {							\
-		_get_random_bytes(&ret, sizeof(ret));				\
-		return ret;							\
-	}									\
-										\
-	local_lock_irqsave(&batched_entropy_ ##type.lock, flags);		\
-	batch = raw_cpu_ptr(&batched_entropy_##type);				\
-										\
-	next_gen = READ_ONCE(base_crng.generation);				\
-	if (batch->position >= ARRAY_SIZE(batch->entropy) ||			\
-	    next_gen != batch->generation) {					\
-		_get_random_bytes(batch->entropy, sizeof(batch->entropy));	\
-		batch->position = 0;						\
-		batch->generation = next_gen;					\
-	}									\
-										\
-	ret = batch->entropy[batch->position];					\
-	batch->entropy[batch->position] = 0;					\
-	++batch->position;							\
-	local_unlock_irqrestore(&batched_entropy_ ##type.lock, flags);		\
-	return ret;								\
-}										\
-EXPORT_SYMBOL(get_random_ ##type);
+#define DEFINE_BATCHED_ENTROPY(type) struct batch_ ##type { type entropy[CHACHA_BLOCK_SIZE * 3 / (2 * sizeof(type))]; local_lock_t lock; unsigned long generation; unsigned int position; }; static DEFINE_PER_CPU(struct batch_ ##type, batched_entropy_ ##type) = { .lock = INIT_LOCAL_LOCK(batched_entropy_ ##type.lock), .position = UINT_MAX }; type get_random_ ##type(void) { type ret; unsigned long flags; struct batch_ ##type *batch; unsigned long next_gen; warn_unseeded_randomness(); if (!crng_ready()) { _get_random_bytes(&ret, sizeof(ret)); return ret; } local_lock_irqsave(&batched_entropy_ ##type.lock, flags); batch = raw_cpu_ptr(&batched_entropy_ ##type); next_gen = READ_ONCE(base_crng.generation); if (batch->position >= ARRAY_SIZE(batch->entropy) || next_gen != batch->generation) { _get_random_bytes(batch->entropy, sizeof(batch->entropy)); batch->position = 0; batch->generation = next_gen; } ret = batch->entropy[batch->position]; batch->entropy[batch->position] = 0; ++batch->position; local_unlock_irqrestore(&batched_entropy_ ##type.lock, flags); return ret; } EXPORT_SYMBOL(get_random_ ##type);
 
 DEFINE_BATCHED_ENTROPY(u64)
 DEFINE_BATCHED_ENTROPY(u32)
 
-#ifdef CONFIG_SMP
-/*
- * This function is called when the CPU is coming up, with entry
- * CPUHP_RANDOM_PREPARE, which comes before CPUHP_WORKQUEUE_PREP.
- */
-int __cold random_prepare_cpu(unsigned int cpu)
-{
-	/*
-	 * When the cpu comes back online, immediately invalidate both
-	 * the per-cpu crng and all batches, so that we serve fresh
-	 * randomness.
-	 */
-	per_cpu_ptr(&crngs, cpu)->generation = ULONG_MAX;
-	per_cpu_ptr(&batched_entropy_u32, cpu)->position = UINT_MAX;
-	per_cpu_ptr(&batched_entropy_u64, cpu)->position = UINT_MAX;
-	return 0;
-}
-#endif
 
 
 /**********************************************************************
@@ -779,10 +707,6 @@ int __init random_init(const char *command_line)
 	unsigned int i, arch_bits;
 	unsigned long entropy;
 
-#if defined(LATENT_ENTROPY_PLUGIN)
-	static const u8 compiletime_seed[BLAKE2S_BLOCK_SIZE] __initconst __latent_entropy;
-	_mix_pool_bytes(compiletime_seed, sizeof(compiletime_seed));
-#endif
 
 	for (i = 0, arch_bits = BLAKE2S_BLOCK_SIZE * 8;
 	     i < BLAKE2S_BLOCK_SIZE; i += sizeof(entropy)) {
@@ -868,39 +792,6 @@ void __init add_bootloader_randomness(const void *buf, size_t len)
 		credit_init_bits(len * 8);
 }
 
-#if IS_ENABLED(CONFIG_VMGENID)
-static BLOCKING_NOTIFIER_HEAD(vmfork_chain);
-
-/*
- * Handle a new unique VM ID, which is unique, not secret, so we
- * don't credit it, but we do immediately force a reseed after so
- * that it's used by the crng posthaste.
- */
-void __cold add_vmfork_randomness(const void *unique_vm_id, size_t len)
-{
-	add_device_randomness(unique_vm_id, len);
-	if (crng_ready()) {
-		crng_reseed();
-		pr_notice("crng reseeded due to virtual machine fork\n");
-	}
-	blocking_notifier_call_chain(&vmfork_chain, 0, NULL);
-}
-#if IS_MODULE(CONFIG_VMGENID)
-EXPORT_SYMBOL_GPL(add_vmfork_randomness);
-#endif
-
-int __cold register_random_vmfork_notifier(struct notifier_block *nb)
-{
-	return blocking_notifier_chain_register(&vmfork_chain, nb);
-}
-EXPORT_SYMBOL_GPL(register_random_vmfork_notifier);
-
-int __cold unregister_random_vmfork_notifier(struct notifier_block *nb)
-{
-	return blocking_notifier_chain_unregister(&vmfork_chain, nb);
-}
-EXPORT_SYMBOL_GPL(unregister_random_vmfork_notifier);
-#endif
 
 struct fast_pool {
 	struct work_struct mix;
@@ -910,13 +801,8 @@ struct fast_pool {
 };
 
 static DEFINE_PER_CPU(struct fast_pool, irq_randomness) = {
-#ifdef CONFIG_64BIT
-#define FASTMIX_PERM SIPHASH_PERMUTATION
-	.pool = { SIPHASH_CONST_0, SIPHASH_CONST_1, SIPHASH_CONST_2, SIPHASH_CONST_3 }
-#else
 #define FASTMIX_PERM HSIPHASH_PERMUTATION
 	.pool = { HSIPHASH_CONST_0, HSIPHASH_CONST_1, HSIPHASH_CONST_2, HSIPHASH_CONST_3 }
-#endif
 };
 
 /*
@@ -935,28 +821,6 @@ static void fast_mix(unsigned long s[4], unsigned long v1, unsigned long v2)
 	s[0] ^= v2;
 }
 
-#ifdef CONFIG_SMP
-/*
- * This function is called when the CPU has just come online, with
- * entry CPUHP_AP_RANDOM_ONLINE, just after CPUHP_AP_WORKQUEUE_ONLINE.
- */
-int __cold random_online_cpu(unsigned int cpu)
-{
-	/*
-	 * During CPU shutdown and before CPU onlining, add_interrupt_
-	 * randomness() may schedule mix_interrupt_randomness(), and
-	 * set the MIX_INFLIGHT flag. However, because the worker can
-	 * be scheduled on a different CPU during this period, that
-	 * flag will never be cleared. For that reason, we zero out
-	 * the flag here, which runs just after workqueues are onlined
-	 * for the CPU again. This also has the effect of setting the
-	 * irq randomness count to zero so that new accumulated irqs
-	 * are fresh.
-	 */
-	per_cpu_ptr(&irq_randomness, cpu)->count = 0;
-	return 0;
-}
-#endif
 
 static void mix_interrupt_randomness(struct work_struct *work)
 {
@@ -1113,31 +977,6 @@ void add_input_randomness(unsigned int type, unsigned int code, unsigned int val
 }
 EXPORT_SYMBOL_GPL(add_input_randomness);
 
-#ifdef CONFIG_BLOCK
-void add_disk_randomness(struct gendisk *disk)
-{
-	if (!disk || !disk->random)
-		return;
-	/* First major is 1, so we get >= 0x200 here. */
-	add_timer_randomness(disk->random, 0x100 + disk_devt(disk));
-}
-EXPORT_SYMBOL_GPL(add_disk_randomness);
-
-void __cold rand_initialize_disk(struct gendisk *disk)
-{
-	struct timer_rand_state *state;
-
-	/*
-	 * If kzalloc returns null, we just won't use that entropy
-	 * source.
-	 */
-	state = kzalloc(sizeof(struct timer_rand_state), GFP_KERNEL);
-	if (state) {
-		state->last_time = INITIAL_JIFFIES;
-		disk->random = state;
-	}
-}
-#endif
 
 struct entropy_timer_state {
 	unsigned long entropy;
@@ -1459,108 +1298,3 @@ const struct file_operations urandom_fops = {
  *
  ********************************************************************/
 
-#ifdef CONFIG_SYSCTL
-
-#include <linux/sysctl.h>
-
-static int sysctl_random_min_urandom_seed = CRNG_RESEED_INTERVAL / HZ;
-static int sysctl_random_write_wakeup_bits = POOL_READY_BITS;
-static int sysctl_poolsize = POOL_BITS;
-static u8 sysctl_bootid[UUID_SIZE];
-
-/*
- * This function is used to return both the bootid UUID, and random
- * UUID. The difference is in whether table->data is NULL; if it is,
- * then a new UUID is generated and returned to the user.
- */
-static int proc_do_uuid(struct ctl_table *table, int write, void *buf,
-			size_t *lenp, loff_t *ppos)
-{
-	u8 tmp_uuid[UUID_SIZE], *uuid;
-	char uuid_string[UUID_STRING_LEN + 1];
-	struct ctl_table fake_table = {
-		.data = uuid_string,
-		.maxlen = UUID_STRING_LEN
-	};
-
-	if (write)
-		return -EPERM;
-
-	uuid = table->data;
-	if (!uuid) {
-		uuid = tmp_uuid;
-		generate_random_uuid(uuid);
-	} else {
-		static DEFINE_SPINLOCK(bootid_spinlock);
-
-		spin_lock(&bootid_spinlock);
-		if (!uuid[8])
-			generate_random_uuid(uuid);
-		spin_unlock(&bootid_spinlock);
-	}
-
-	snprintf(uuid_string, sizeof(uuid_string), "%pU", uuid);
-	return proc_dostring(&fake_table, 0, buf, lenp, ppos);
-}
-
-/* The same as proc_dointvec, but writes don't change anything. */
-static int proc_do_rointvec(struct ctl_table *table, int write, void *buf,
-			    size_t *lenp, loff_t *ppos)
-{
-	return write ? 0 : proc_dointvec(table, 0, buf, lenp, ppos);
-}
-
-static struct ctl_table random_table[] = {
-	{
-		.procname	= "poolsize",
-		.data		= &sysctl_poolsize,
-		.maxlen		= sizeof(int),
-		.mode		= 0444,
-		.proc_handler	= proc_dointvec,
-	},
-	{
-		.procname	= "entropy_avail",
-		.data		= &input_pool.init_bits,
-		.maxlen		= sizeof(int),
-		.mode		= 0444,
-		.proc_handler	= proc_dointvec,
-	},
-	{
-		.procname	= "write_wakeup_threshold",
-		.data		= &sysctl_random_write_wakeup_bits,
-		.maxlen		= sizeof(int),
-		.mode		= 0644,
-		.proc_handler	= proc_do_rointvec,
-	},
-	{
-		.procname	= "urandom_min_reseed_secs",
-		.data		= &sysctl_random_min_urandom_seed,
-		.maxlen		= sizeof(int),
-		.mode		= 0644,
-		.proc_handler	= proc_do_rointvec,
-	},
-	{
-		.procname	= "boot_id",
-		.data		= &sysctl_bootid,
-		.mode		= 0444,
-		.proc_handler	= proc_do_uuid,
-	},
-	{
-		.procname	= "uuid",
-		.mode		= 0444,
-		.proc_handler	= proc_do_uuid,
-	},
-	{ }
-};
-
-/*
- * random_init() is called before sysctl_init(),
- * so we cannot call register_sysctl_init() in random_init()
- */
-static int __init random_sysctls_init(void)
-{
-	register_sysctl_init("kernel/random", random_table);
-	return 0;
-}
-device_initcall(random_sysctls_init);
-#endif

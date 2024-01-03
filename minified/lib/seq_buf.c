@@ -93,42 +93,6 @@ int seq_buf_printf(struct seq_buf *s, const char *fmt, ...)
 }
 EXPORT_SYMBOL_GPL(seq_buf_printf);
 
-#ifdef CONFIG_BINARY_PRINTF
-/**
- * seq_buf_bprintf - Write the printf string from binary arguments
- * @s: seq_buf descriptor
- * @fmt: The format string for the @binary arguments
- * @binary: The binary arguments for @fmt.
- *
- * When recording in a fast path, a printf may be recorded with just
- * saving the format and the arguments as they were passed to the
- * function, instead of wasting cycles converting the arguments into
- * ASCII characters. Instead, the arguments are saved in a 32 bit
- * word array that is defined by the format string constraints.
- *
- * This function will take the format and the binary array and finish
- * the conversion into the ASCII string within the buffer.
- *
- * Returns zero on success, -1 on overflow.
- */
-int seq_buf_bprintf(struct seq_buf *s, const char *fmt, const u32 *binary)
-{
-	unsigned int len = seq_buf_buffer_left(s);
-	int ret;
-
-	WARN_ON(s->size == 0);
-
-	if (s->len < s->size) {
-		ret = bstr_printf(s->buffer + s->len, len, fmt, binary);
-		if (s->len + ret < s->size) {
-			s->len += ret;
-			return 0;
-		}
-	}
-	seq_buf_set_overflow(s);
-	return -1;
-}
-#endif /* CONFIG_BINARY_PRINTF */
 
 /**
  * seq_buf_puts - sequence printing of simple string
@@ -204,8 +168,8 @@ int seq_buf_putmem(struct seq_buf *s, const void *mem, unsigned int len)
 	return -1;
 }
 
-#define MAX_MEMHEX_BYTES	8U
-#define HEX_CHARS		(MAX_MEMHEX_BYTES*2 + 1)
+#define MAX_MEMHEX_BYTES 8U
+#define HEX_CHARS (MAX_MEMHEX_BYTES*2 + 1)
 
 /**
  * seq_buf_putmem_hex - write raw memory into the buffer in ASCII hex
@@ -233,11 +197,7 @@ int seq_buf_putmem_hex(struct seq_buf *s, const void *mem,
 
 	while (len) {
 		start_len = min(len, MAX_MEMHEX_BYTES);
-#ifdef __BIG_ENDIAN
-		for (i = 0, j = 0; i < start_len; i++) {
-#else
 		for (i = start_len-1, j = 0; i >= 0; i--) {
-#endif
 			hex[j++] = hex_asc_hi(data[i]);
 			hex[j++] = hex_asc_lo(data[i]);
 		}

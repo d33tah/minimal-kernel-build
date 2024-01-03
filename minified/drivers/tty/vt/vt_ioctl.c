@@ -79,9 +79,7 @@ static inline bool vt_busy(int i)
  * to the current console is done by the main ioctl code.
  */
 
-#ifdef CONFIG_X86
 #include <asm/syscalls.h>
-#endif
 
 static void complete_change_console(struct vc_data *vc);
 
@@ -333,7 +331,6 @@ static int vt_k_ioctl(struct tty_struct *tty, unsigned int cmd,
 		 *
 		 * XXX: you should never use these, just call ioperm directly..
 		 */
-#ifdef CONFIG_X86
 	case KDADDIO:
 	case KDDELIO:
 		/*
@@ -351,7 +348,6 @@ static int vt_k_ioctl(struct tty_struct *tty, unsigned int cmd,
 	case KDDISABIO:
 		return ksys_ioperm(GPFIRST, GPNUM,
 				  (cmd == KDENABIO)) ? -ENXIO : 0;
-#endif
 
 	/* Linux m68k/i386 interface for setting the keyboard delay/repeat rate */
 
@@ -998,128 +994,6 @@ void vc_SAK(struct work_struct *work)
 	console_unlock();
 }
 
-#ifdef CONFIG_COMPAT
-
-struct compat_console_font_op {
-	compat_uint_t op;        /* operation code KD_FONT_OP_* */
-	compat_uint_t flags;     /* KD_FONT_FLAG_* */
-	compat_uint_t width, height;     /* font size */
-	compat_uint_t charcount;
-	compat_caddr_t data;    /* font data with height fixed to 32 */
-};
-
-static inline int
-compat_kdfontop_ioctl(struct compat_console_font_op __user *fontop,
-			 int perm, struct console_font_op *op, struct vc_data *vc)
-{
-	int i;
-
-	if (copy_from_user(op, fontop, sizeof(struct compat_console_font_op)))
-		return -EFAULT;
-	if (!perm && op->op != KD_FONT_OP_GET)
-		return -EPERM;
-	op->data = compat_ptr(((struct compat_console_font_op *)op)->data);
-	i = con_font_op(vc, op);
-	if (i)
-		return i;
-	((struct compat_console_font_op *)op)->data = (unsigned long)op->data;
-	if (copy_to_user(fontop, op, sizeof(struct compat_console_font_op)))
-		return -EFAULT;
-	return 0;
-}
-
-struct compat_unimapdesc {
-	unsigned short entry_ct;
-	compat_caddr_t entries;
-};
-
-static inline int
-compat_unimap_ioctl(unsigned int cmd, struct compat_unimapdesc __user *user_ud,
-			 int perm, struct vc_data *vc)
-{
-	struct compat_unimapdesc tmp;
-	struct unipair __user *tmp_entries;
-
-	if (copy_from_user(&tmp, user_ud, sizeof tmp))
-		return -EFAULT;
-	tmp_entries = compat_ptr(tmp.entries);
-	switch (cmd) {
-	case PIO_UNIMAP:
-		if (!perm)
-			return -EPERM;
-		return con_set_unimap(vc, tmp.entry_ct, tmp_entries);
-	case GIO_UNIMAP:
-		if (!perm && fg_console != vc->vc_num)
-			return -EPERM;
-		return con_get_unimap(vc, tmp.entry_ct, &(user_ud->entry_ct), tmp_entries);
-	}
-	return 0;
-}
-
-long vt_compat_ioctl(struct tty_struct *tty,
-	     unsigned int cmd, unsigned long arg)
-{
-	struct vc_data *vc = tty->driver_data;
-	struct console_font_op op;	/* used in multiple places here */
-	void __user *up = compat_ptr(arg);
-	int perm;
-
-	/*
-	 * To have permissions to do most of the vt ioctls, we either have
-	 * to be the owner of the tty, or have CAP_SYS_TTY_CONFIG.
-	 */
-	perm = 0;
-	if (current->signal->tty == tty || capable(CAP_SYS_TTY_CONFIG))
-		perm = 1;
-
-	switch (cmd) {
-	/*
-	 * these need special handlers for incompatible data structures
-	 */
-
-	case KDFONTOP:
-		return compat_kdfontop_ioctl(up, perm, &op, vc);
-
-	case PIO_UNIMAP:
-	case GIO_UNIMAP:
-		return compat_unimap_ioctl(cmd, up, perm, vc);
-
-	/*
-	 * all these treat 'arg' as an integer
-	 */
-	case KIOCSOUND:
-	case KDMKTONE:
-#ifdef CONFIG_X86
-	case KDADDIO:
-	case KDDELIO:
-#endif
-	case KDSETMODE:
-	case KDMAPDISP:
-	case KDUNMAPDISP:
-	case KDSKBMODE:
-	case KDSKBMETA:
-	case KDSKBLED:
-	case KDSETLED:
-	case KDSIGACCEPT:
-	case VT_ACTIVATE:
-	case VT_WAITACTIVE:
-	case VT_RELDISP:
-	case VT_DISALLOCATE:
-	case VT_RESIZE:
-	case VT_RESIZEX:
-		return vt_ioctl(tty, cmd, arg);
-
-	/*
-	 * the rest has a compatible data structure behind arg,
-	 * but we have to convert it to a proper 64 bit pointer.
-	 */
-	default:
-		return vt_ioctl(tty, cmd, (unsigned long)up);
-	}
-}
-
-
-#endif /* CONFIG_COMPAT */
 
 
 /*

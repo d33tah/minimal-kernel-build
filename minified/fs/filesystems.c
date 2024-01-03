@@ -128,86 +128,6 @@ int unregister_filesystem(struct file_system_type * fs)
 
 EXPORT_SYMBOL(unregister_filesystem);
 
-#ifdef CONFIG_SYSFS_SYSCALL
-static int fs_index(const char __user * __name)
-{
-	struct file_system_type * tmp;
-	struct filename *name;
-	int err, index;
-
-	name = getname(__name);
-	err = PTR_ERR(name);
-	if (IS_ERR(name))
-		return err;
-
-	err = -EINVAL;
-	read_lock(&file_systems_lock);
-	for (tmp=file_systems, index=0 ; tmp ; tmp=tmp->next, index++) {
-		if (strcmp(tmp->name, name->name) == 0) {
-			err = index;
-			break;
-		}
-	}
-	read_unlock(&file_systems_lock);
-	putname(name);
-	return err;
-}
-
-static int fs_name(unsigned int index, char __user * buf)
-{
-	struct file_system_type * tmp;
-	int len, res;
-
-	read_lock(&file_systems_lock);
-	for (tmp = file_systems; tmp; tmp = tmp->next, index--)
-		if (index <= 0 && try_module_get(tmp->owner))
-			break;
-	read_unlock(&file_systems_lock);
-	if (!tmp)
-		return -EINVAL;
-
-	/* OK, we got the reference, so we can safely block */
-	len = strlen(tmp->name) + 1;
-	res = copy_to_user(buf, tmp->name, len) ? -EFAULT : 0;
-	put_filesystem(tmp);
-	return res;
-}
-
-static int fs_maxindex(void)
-{
-	struct file_system_type * tmp;
-	int index;
-
-	read_lock(&file_systems_lock);
-	for (tmp = file_systems, index = 0 ; tmp ; tmp = tmp->next, index++)
-		;
-	read_unlock(&file_systems_lock);
-	return index;
-}
-
-/*
- * Whee.. Weird sysv syscall. 
- */
-SYSCALL_DEFINE3(sysfs, int, option, unsigned long, arg1, unsigned long, arg2)
-{
-	int retval = -EINVAL;
-
-	switch (option) {
-		case 1:
-			retval = fs_index((const char __user *) arg1);
-			break;
-
-		case 2:
-			retval = fs_name(arg1, (char __user *) arg2);
-			break;
-
-		case 3:
-			retval = fs_maxindex();
-			break;
-	}
-	return retval;
-}
-#endif
 
 int __init list_bdev_fs_names(char *buf, size_t size)
 {
@@ -233,30 +153,6 @@ int __init list_bdev_fs_names(char *buf, size_t size)
 	return count;
 }
 
-#ifdef CONFIG_PROC_FS
-static int filesystems_proc_show(struct seq_file *m, void *v)
-{
-	struct file_system_type * tmp;
-
-	read_lock(&file_systems_lock);
-	tmp = file_systems;
-	while (tmp) {
-		seq_printf(m, "%s\t%s\n",
-			(tmp->fs_flags & FS_REQUIRES_DEV) ? "" : "nodev",
-			tmp->name);
-		tmp = tmp->next;
-	}
-	read_unlock(&file_systems_lock);
-	return 0;
-}
-
-static int __init proc_filesystems_init(void)
-{
-	proc_create_single("filesystems", 0, NULL, filesystems_proc_show);
-	return 0;
-}
-module_init(proc_filesystems_init);
-#endif
 
 static struct file_system_type *__get_fs_type(const char *name, int len)
 {

@@ -5,7 +5,7 @@
  *  Copyright (C) 2013  Linus Torvalds
  */
 
-#define pr_fmt(fmt)	"reboot: " fmt
+#define pr_fmt(fmt) "reboot: " fmt
 
 #include <linux/atomic.h>
 #include <linux/ctype.h>
@@ -27,11 +27,7 @@ static int C_A_D = 1;
 struct pid *cad_pid;
 EXPORT_SYMBOL(cad_pid);
 
-#if defined(CONFIG_ARM)
-#define DEFAULT_REBOOT_MODE		= REBOOT_HARD
-#else
-#define DEFAULT_REBOOT_MODE
-#endif
+#define DEFAULT_REBOOT_MODE 
 enum reboot_mode reboot_mode DEFAULT_REBOOT_MODE;
 EXPORT_SYMBOL_GPL(reboot_mode);
 enum reboot_mode panic_reboot_mode = REBOOT_UNDEFINED;
@@ -748,17 +744,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 		kernel_restart(buffer);
 		break;
 
-#ifdef CONFIG_KEXEC_CORE
-	case LINUX_REBOOT_CMD_KEXEC:
-		ret = kernel_kexec();
-		break;
-#endif
 
-#ifdef CONFIG_HIBERNATION
-	case LINUX_REBOOT_CMD_SW_SUSPEND:
-		ret = hibernate();
-		break;
-#endif
 
 	default:
 		ret = -EINVAL;
@@ -788,7 +774,7 @@ void ctrl_alt_del(void)
 		kill_cad_pid(SIGINT, 1);
 }
 
-#define POWEROFF_CMD_PATH_LEN  256
+#define POWEROFF_CMD_PATH_LEN 256
 static char poweroff_cmd[POWEROFF_CMD_PATH_LEN] = "/sbin/poweroff";
 static const char reboot_cmd[] = "/sbin/reboot";
 
@@ -1050,245 +1036,3 @@ static int __init reboot_setup(char *str)
 }
 __setup("reboot=", reboot_setup);
 
-#ifdef CONFIG_SYSFS
-
-#define REBOOT_COLD_STR		"cold"
-#define REBOOT_WARM_STR		"warm"
-#define REBOOT_HARD_STR		"hard"
-#define REBOOT_SOFT_STR		"soft"
-#define REBOOT_GPIO_STR		"gpio"
-#define REBOOT_UNDEFINED_STR	"undefined"
-
-#define BOOT_TRIPLE_STR		"triple"
-#define BOOT_KBD_STR		"kbd"
-#define BOOT_BIOS_STR		"bios"
-#define BOOT_ACPI_STR		"acpi"
-#define BOOT_EFI_STR		"efi"
-#define BOOT_PCI_STR		"pci"
-
-static ssize_t mode_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	const char *val;
-
-	switch (reboot_mode) {
-	case REBOOT_COLD:
-		val = REBOOT_COLD_STR;
-		break;
-	case REBOOT_WARM:
-		val = REBOOT_WARM_STR;
-		break;
-	case REBOOT_HARD:
-		val = REBOOT_HARD_STR;
-		break;
-	case REBOOT_SOFT:
-		val = REBOOT_SOFT_STR;
-		break;
-	case REBOOT_GPIO:
-		val = REBOOT_GPIO_STR;
-		break;
-	default:
-		val = REBOOT_UNDEFINED_STR;
-	}
-
-	return sprintf(buf, "%s\n", val);
-}
-static ssize_t mode_store(struct kobject *kobj, struct kobj_attribute *attr,
-			  const char *buf, size_t count)
-{
-	if (!capable(CAP_SYS_BOOT))
-		return -EPERM;
-
-	if (!strncmp(buf, REBOOT_COLD_STR, strlen(REBOOT_COLD_STR)))
-		reboot_mode = REBOOT_COLD;
-	else if (!strncmp(buf, REBOOT_WARM_STR, strlen(REBOOT_WARM_STR)))
-		reboot_mode = REBOOT_WARM;
-	else if (!strncmp(buf, REBOOT_HARD_STR, strlen(REBOOT_HARD_STR)))
-		reboot_mode = REBOOT_HARD;
-	else if (!strncmp(buf, REBOOT_SOFT_STR, strlen(REBOOT_SOFT_STR)))
-		reboot_mode = REBOOT_SOFT;
-	else if (!strncmp(buf, REBOOT_GPIO_STR, strlen(REBOOT_GPIO_STR)))
-		reboot_mode = REBOOT_GPIO;
-	else
-		return -EINVAL;
-
-	reboot_default = 0;
-
-	return count;
-}
-static struct kobj_attribute reboot_mode_attr = __ATTR_RW(mode);
-
-#ifdef CONFIG_X86
-static ssize_t force_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", reboot_force);
-}
-static ssize_t force_store(struct kobject *kobj, struct kobj_attribute *attr,
-			  const char *buf, size_t count)
-{
-	bool res;
-
-	if (!capable(CAP_SYS_BOOT))
-		return -EPERM;
-
-	if (kstrtobool(buf, &res))
-		return -EINVAL;
-
-	reboot_default = 0;
-	reboot_force = res;
-
-	return count;
-}
-static struct kobj_attribute reboot_force_attr = __ATTR_RW(force);
-
-static ssize_t type_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	const char *val;
-
-	switch (reboot_type) {
-	case BOOT_TRIPLE:
-		val = BOOT_TRIPLE_STR;
-		break;
-	case BOOT_KBD:
-		val = BOOT_KBD_STR;
-		break;
-	case BOOT_BIOS:
-		val = BOOT_BIOS_STR;
-		break;
-	case BOOT_ACPI:
-		val = BOOT_ACPI_STR;
-		break;
-	case BOOT_EFI:
-		val = BOOT_EFI_STR;
-		break;
-	case BOOT_CF9_FORCE:
-		val = BOOT_PCI_STR;
-		break;
-	default:
-		val = REBOOT_UNDEFINED_STR;
-	}
-
-	return sprintf(buf, "%s\n", val);
-}
-static ssize_t type_store(struct kobject *kobj, struct kobj_attribute *attr,
-			  const char *buf, size_t count)
-{
-	if (!capable(CAP_SYS_BOOT))
-		return -EPERM;
-
-	if (!strncmp(buf, BOOT_TRIPLE_STR, strlen(BOOT_TRIPLE_STR)))
-		reboot_type = BOOT_TRIPLE;
-	else if (!strncmp(buf, BOOT_KBD_STR, strlen(BOOT_KBD_STR)))
-		reboot_type = BOOT_KBD;
-	else if (!strncmp(buf, BOOT_BIOS_STR, strlen(BOOT_BIOS_STR)))
-		reboot_type = BOOT_BIOS;
-	else if (!strncmp(buf, BOOT_ACPI_STR, strlen(BOOT_ACPI_STR)))
-		reboot_type = BOOT_ACPI;
-	else if (!strncmp(buf, BOOT_EFI_STR, strlen(BOOT_EFI_STR)))
-		reboot_type = BOOT_EFI;
-	else if (!strncmp(buf, BOOT_PCI_STR, strlen(BOOT_PCI_STR)))
-		reboot_type = BOOT_CF9_FORCE;
-	else
-		return -EINVAL;
-
-	reboot_default = 0;
-
-	return count;
-}
-static struct kobj_attribute reboot_type_attr = __ATTR_RW(type);
-#endif
-
-#ifdef CONFIG_SMP
-static ssize_t cpu_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", reboot_cpu);
-}
-static ssize_t cpu_store(struct kobject *kobj, struct kobj_attribute *attr,
-			  const char *buf, size_t count)
-{
-	unsigned int cpunum;
-	int rc;
-
-	if (!capable(CAP_SYS_BOOT))
-		return -EPERM;
-
-	rc = kstrtouint(buf, 0, &cpunum);
-
-	if (rc)
-		return rc;
-
-	if (cpunum >= num_possible_cpus())
-		return -ERANGE;
-
-	reboot_default = 0;
-	reboot_cpu = cpunum;
-
-	return count;
-}
-static struct kobj_attribute reboot_cpu_attr = __ATTR_RW(cpu);
-#endif
-
-static struct attribute *reboot_attrs[] = {
-	&reboot_mode_attr.attr,
-#ifdef CONFIG_X86
-	&reboot_force_attr.attr,
-	&reboot_type_attr.attr,
-#endif
-#ifdef CONFIG_SMP
-	&reboot_cpu_attr.attr,
-#endif
-	NULL,
-};
-
-#ifdef CONFIG_SYSCTL
-static struct ctl_table kern_reboot_table[] = {
-	{
-		.procname       = "poweroff_cmd",
-		.data           = &poweroff_cmd,
-		.maxlen         = POWEROFF_CMD_PATH_LEN,
-		.mode           = 0644,
-		.proc_handler   = proc_dostring,
-	},
-	{
-		.procname       = "ctrl-alt-del",
-		.data           = &C_A_D,
-		.maxlen         = sizeof(int),
-		.mode           = 0644,
-		.proc_handler   = proc_dointvec,
-	},
-	{ }
-};
-
-static void __init kernel_reboot_sysctls_init(void)
-{
-	register_sysctl_init("kernel", kern_reboot_table);
-}
-#else
-#define kernel_reboot_sysctls_init() do { } while (0)
-#endif /* CONFIG_SYSCTL */
-
-static const struct attribute_group reboot_attr_group = {
-	.attrs = reboot_attrs,
-};
-
-static int __init reboot_ksysfs_init(void)
-{
-	struct kobject *reboot_kobj;
-	int ret;
-
-	reboot_kobj = kobject_create_and_add("reboot", kernel_kobj);
-	if (!reboot_kobj)
-		return -ENOMEM;
-
-	ret = sysfs_create_group(reboot_kobj, &reboot_attr_group);
-	if (ret) {
-		kobject_put(reboot_kobj);
-		return ret;
-	}
-
-	kernel_reboot_sysctls_init();
-
-	return 0;
-}
-late_initcall(reboot_ksysfs_init);
-
-#endif

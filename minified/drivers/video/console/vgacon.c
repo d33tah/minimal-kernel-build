@@ -60,7 +60,7 @@ static struct vgastate vgastate;
 
 #define BLANK 0x0020
 
-#define VGA_FONTWIDTH       8   /* VGA does not support fontwidths != 8 */
+#define VGA_FONTWIDTH 8
 /*
  *  Interface used by the world
  */
@@ -164,12 +164,8 @@ static const char *vgacon_startup(void)
 	if (screen_info.orig_video_isVGA == VIDEO_TYPE_VLFB ||
 	    screen_info.orig_video_isVGA == VIDEO_TYPE_EFI) {
 	      no_vga:
-#ifdef CONFIG_DUMMY_CONSOLE
 		conswitchp = &dummy_con;
 		return conswitchp->con_startup();
-#else
-		return NULL;
-#endif
 	}
 
 	/* boot_params.screen_info reasonably initialized? */

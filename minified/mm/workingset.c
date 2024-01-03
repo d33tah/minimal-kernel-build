@@ -169,10 +169,8 @@
  */
 
 #define WORKINGSET_SHIFT 1
-#define EVICTION_SHIFT	((BITS_PER_LONG - BITS_PER_XA_VALUE) +	\
-			 WORKINGSET_SHIFT + NODES_SHIFT + \
-			 MEM_CGROUP_ID_SHIFT)
-#define EVICTION_MASK	(~0UL >> EVICTION_SHIFT)
+#define EVICTION_SHIFT ((BITS_PER_LONG - BITS_PER_XA_VALUE) + WORKINGSET_SHIFT + NODES_SHIFT + MEM_CGROUP_ID_SHIFT)
+#define EVICTION_MASK (~0UL >> EVICTION_SHIFT)
 
 /*
  * Eviction timestamps need to be able to cover the full range of
@@ -493,21 +491,6 @@ static unsigned long count_shadow_nodes(struct shrinker *shrinker,
 	 *
 	 * PAGE_SIZE / xa_nodes / node_entries * 8 / PAGE_SIZE
 	 */
-#ifdef CONFIG_MEMCG
-	if (sc->memcg) {
-		struct lruvec *lruvec;
-		int i;
-
-		lruvec = mem_cgroup_lruvec(sc->memcg, NODE_DATA(sc->nid));
-		for (pages = 0, i = 0; i < NR_LRU_LISTS; i++)
-			pages += lruvec_page_state_local(lruvec,
-							 NR_LRU_BASE + i);
-		pages += lruvec_page_state_local(
-			lruvec, NR_SLAB_RECLAIMABLE_B) >> PAGE_SHIFT;
-		pages += lruvec_page_state_local(
-			lruvec, NR_SLAB_UNRECLAIMABLE_B) >> PAGE_SHIFT;
-	} else
-#endif
 		pages = node_present_pages(sc->nid);
 
 	max_nodes = pages >> (XA_CHUNK_SHIFT - 3);

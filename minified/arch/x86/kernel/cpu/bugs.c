@@ -163,7 +163,6 @@ void __init check_bugs(void)
 
 	arch_smt_update();
 
-#ifdef CONFIG_X86_32
 	/*
 	 * Check whether we are able to run this kernel safely on SMP.
 	 *
@@ -179,20 +178,6 @@ void __init check_bugs(void)
 	alternative_instructions();
 
 	fpu__init_check_bugs();
-#else /* CONFIG_X86_64 */
-	alternative_instructions();
-
-	/*
-	 * Make sure the first 2MB area is not mapped by huge pages
-	 * There are typically fixed size MTRRs in there and overlapping
-	 * MTRRs into large pages causes slow downs.
-	 *
-	 * Right now we don't do that with gbpages because there seems
-	 * very little benefit for that case.
-	 */
-	if (!direct_gbpages)
-		set_memory_4k((unsigned long)__va(0), 1);
-#endif
 }
 
 /*
@@ -255,7 +240,7 @@ static void x86_amd_ssb_disable(void)
 }
 
 #undef pr_fmt
-#define pr_fmt(fmt)	"MDS: " fmt
+#define pr_fmt(fmt) "MDS: " fmt
 
 /* Default mitigation for MDS-affected CPUs */
 static enum mds_mitigations mds_mitigation __ro_after_init = MDS_MITIGATION_FULL;
@@ -308,7 +293,7 @@ static int __init mds_cmdline(char *str)
 early_param("mds", mds_cmdline);
 
 #undef pr_fmt
-#define pr_fmt(fmt)	"TAA: " fmt
+#define pr_fmt(fmt) "TAA: " fmt
 
 enum taa_mitigations {
 	TAA_MITIGATION_OFF,
@@ -410,7 +395,7 @@ static int __init tsx_async_abort_parse_cmdline(char *str)
 early_param("tsx_async_abort", tsx_async_abort_parse_cmdline);
 
 #undef pr_fmt
-#define pr_fmt(fmt)	"MMIO Stale Data: " fmt
+#define pr_fmt(fmt) "MMIO Stale Data: " fmt
 
 enum mmio_mitigations {
 	MMIO_MITIGATION_OFF,
@@ -502,7 +487,7 @@ static int __init mmio_stale_data_parse_cmdline(char *str)
 early_param("mmio_stale_data", mmio_stale_data_parse_cmdline);
 
 #undef pr_fmt
-#define pr_fmt(fmt)     "" fmt
+#define pr_fmt(fmt) "" fmt
 
 static void __init md_clear_update_mitigation(void)
 {
@@ -555,7 +540,7 @@ static void __init md_clear_select_mitigation(void)
 }
 
 #undef pr_fmt
-#define pr_fmt(fmt)	"SRBDS: " fmt
+#define pr_fmt(fmt) "SRBDS: " fmt
 
 enum srbds_mitigations {
 	SRBDS_MITIGATION_OFF,
@@ -655,7 +640,7 @@ static int __init srbds_parse_cmdline(char *str)
 early_param("srbds", srbds_parse_cmdline);
 
 #undef pr_fmt
-#define pr_fmt(fmt)     "L1D Flush : " fmt
+#define pr_fmt(fmt) "L1D Flush : " fmt
 
 enum l1d_flush_mitigations {
 	L1D_FLUSH_OFF = 0,
@@ -683,7 +668,7 @@ static int __init l1d_flush_parse_cmdline(char *str)
 early_param("l1d_flush", l1d_flush_parse_cmdline);
 
 #undef pr_fmt
-#define pr_fmt(fmt)     "Spectre V1 : " fmt
+#define pr_fmt(fmt) "Spectre V1 : " fmt
 
 enum spectre_v1_mitigation {
 	SPECTRE_V1_MITIGATION_NONE,
@@ -776,7 +761,7 @@ static enum spectre_v2_mitigation spectre_v2_enabled __ro_after_init =
 	SPECTRE_V2_NONE;
 
 #undef pr_fmt
-#define pr_fmt(fmt)     "RETBleed: " fmt
+#define pr_fmt(fmt) "RETBleed: " fmt
 
 enum retbleed_mitigation {
 	RETBLEED_MITIGATION_NONE,
@@ -944,60 +929,20 @@ do_cmd_auto:
 }
 
 #undef pr_fmt
-#define pr_fmt(fmt)     "Spectre V2 : " fmt
+#define pr_fmt(fmt) "Spectre V2 : " fmt
 
 static enum spectre_v2_user_mitigation spectre_v2_user_stibp __ro_after_init =
 	SPECTRE_V2_USER_NONE;
 static enum spectre_v2_user_mitigation spectre_v2_user_ibpb __ro_after_init =
 	SPECTRE_V2_USER_NONE;
 
-#ifdef CONFIG_RETPOLINE
-static bool spectre_v2_bad_module;
-
-bool retpoline_module_ok(bool has_retpoline)
-{
-	if (spectre_v2_enabled == SPECTRE_V2_NONE || has_retpoline)
-		return true;
-
-	pr_err("System may be vulnerable to spectre v2\n");
-	spectre_v2_bad_module = true;
-	return false;
-}
-
-static inline const char *spectre_v2_module_string(void)
-{
-	return spectre_v2_bad_module ? " - vulnerable module loaded" : "";
-}
-#else
 static inline const char *spectre_v2_module_string(void) { return ""; }
-#endif
 
 #define SPECTRE_V2_LFENCE_MSG "WARNING: LFENCE mitigation is not recommended for this CPU, data leaks possible!\n"
 #define SPECTRE_V2_EIBRS_EBPF_MSG "WARNING: Unprivileged eBPF is enabled with eIBRS on, data leaks possible via Spectre v2 BHB attacks!\n"
 #define SPECTRE_V2_EIBRS_LFENCE_EBPF_SMT_MSG "WARNING: Unprivileged eBPF is enabled with eIBRS+LFENCE mitigation and SMT, data leaks possible via Spectre v2 BHB attacks!\n"
 #define SPECTRE_V2_IBRS_PERF_MSG "WARNING: IBRS mitigation selected on Enhanced IBRS CPU, this may cause unnecessary performance loss\n"
 
-#ifdef CONFIG_BPF_SYSCALL
-void unpriv_ebpf_notify(int new_state)
-{
-	if (new_state)
-		return;
-
-	/* Unprivileged eBPF is enabled */
-
-	switch (spectre_v2_enabled) {
-	case SPECTRE_V2_EIBRS:
-		pr_err(SPECTRE_V2_EIBRS_EBPF_MSG);
-		break;
-	case SPECTRE_V2_EIBRS_LFENCE:
-		if (sched_smt_active())
-			pr_err(SPECTRE_V2_EIBRS_LFENCE_EBPF_SMT_MSG);
-		break;
-	default:
-		break;
-	}
-}
-#endif
 
 static inline bool match_option(const char *arg, int arglen, const char *opt)
 {
@@ -1657,7 +1602,7 @@ void cpu_bugs_smt_update(void)
 }
 
 #undef pr_fmt
-#define pr_fmt(fmt)	"Speculative Store Bypass: " fmt
+#define pr_fmt(fmt) "Speculative Store Bypass: " fmt
 
 static enum ssb_mitigation ssb_mode __ro_after_init = SPEC_STORE_BYPASS_NONE;
 
@@ -1789,7 +1734,7 @@ static void ssb_select_mitigation(void)
 }
 
 #undef pr_fmt
-#define pr_fmt(fmt)     "Speculation prctl: " fmt
+#define pr_fmt(fmt) "Speculation prctl: " fmt
 
 static void task_update_spec_tif(struct task_struct *tsk)
 {
@@ -1942,16 +1887,6 @@ int arch_prctl_spec_ctrl_set(struct task_struct *task, unsigned long which,
 	}
 }
 
-#ifdef CONFIG_SECCOMP
-void arch_seccomp_spec_mitigate(struct task_struct *task)
-{
-	if (ssb_mode == SPEC_STORE_BYPASS_SECCOMP)
-		ssb_prctl_set(task, PR_SPEC_FORCE_DISABLE);
-	if (spectre_v2_user_ibpb == SPECTRE_V2_USER_SECCOMP ||
-	    spectre_v2_user_stibp == SPECTRE_V2_USER_SECCOMP)
-		ib_prctl_set(task, PR_SPEC_FORCE_DISABLE);
-}
-#endif
 
 static int l1d_flush_prctl_get(struct task_struct *task)
 {
@@ -2034,13 +1969,10 @@ bool itlb_multihit_kvm_mitigation;
 EXPORT_SYMBOL_GPL(itlb_multihit_kvm_mitigation);
 
 #undef pr_fmt
-#define pr_fmt(fmt)	"L1TF: " fmt
+#define pr_fmt(fmt) "L1TF: " fmt
 
 /* Default mitigation for L1TF-affected CPUs */
 enum l1tf_mitigations l1tf_mitigation __ro_after_init = L1TF_MITIGATION_FLUSH;
-#if IS_ENABLED(CONFIG_KVM_INTEL)
-EXPORT_SYMBOL_GPL(l1tf_mitigation);
-#endif
 enum vmx_l1d_flush_state l1tf_vmx_mitigation = VMENTER_L1D_FLUSH_AUTO;
 EXPORT_SYMBOL_GPL(l1tf_vmx_mitigation);
 
@@ -2111,10 +2043,8 @@ static void __init l1tf_select_mitigation(void)
 		break;
 	}
 
-#if CONFIG_PGTABLE_LEVELS == 2
 	pr_warn("Kernel not compiled for PAE. No mitigation for L1TF\n");
 	return;
-#endif
 
 	half_pa = (u64)l1tf_pfn_limit() << PAGE_SHIFT;
 	if (l1tf_mitigation != L1TF_MITIGATION_OFF &&
@@ -2158,290 +2088,3 @@ early_param("l1tf", l1tf_cmdline);
 #undef pr_fmt
 #define pr_fmt(fmt) fmt
 
-#ifdef CONFIG_SYSFS
-
-#define L1TF_DEFAULT_MSG "Mitigation: PTE Inversion"
-
-#if IS_ENABLED(CONFIG_KVM_INTEL)
-static const char * const l1tf_vmx_states[] = {
-	[VMENTER_L1D_FLUSH_AUTO]		= "auto",
-	[VMENTER_L1D_FLUSH_NEVER]		= "vulnerable",
-	[VMENTER_L1D_FLUSH_COND]		= "conditional cache flushes",
-	[VMENTER_L1D_FLUSH_ALWAYS]		= "cache flushes",
-	[VMENTER_L1D_FLUSH_EPT_DISABLED]	= "EPT disabled",
-	[VMENTER_L1D_FLUSH_NOT_REQUIRED]	= "flush not necessary"
-};
-
-static ssize_t l1tf_show_state(char *buf)
-{
-	if (l1tf_vmx_mitigation == VMENTER_L1D_FLUSH_AUTO)
-		return sprintf(buf, "%s\n", L1TF_DEFAULT_MSG);
-
-	if (l1tf_vmx_mitigation == VMENTER_L1D_FLUSH_EPT_DISABLED ||
-	    (l1tf_vmx_mitigation == VMENTER_L1D_FLUSH_NEVER &&
-	     sched_smt_active())) {
-		return sprintf(buf, "%s; VMX: %s\n", L1TF_DEFAULT_MSG,
-			       l1tf_vmx_states[l1tf_vmx_mitigation]);
-	}
-
-	return sprintf(buf, "%s; VMX: %s, SMT %s\n", L1TF_DEFAULT_MSG,
-		       l1tf_vmx_states[l1tf_vmx_mitigation],
-		       sched_smt_active() ? "vulnerable" : "disabled");
-}
-
-static ssize_t itlb_multihit_show_state(char *buf)
-{
-	if (!boot_cpu_has(X86_FEATURE_MSR_IA32_FEAT_CTL) ||
-	    !boot_cpu_has(X86_FEATURE_VMX))
-		return sprintf(buf, "KVM: Mitigation: VMX unsupported\n");
-	else if (!(cr4_read_shadow() & X86_CR4_VMXE))
-		return sprintf(buf, "KVM: Mitigation: VMX disabled\n");
-	else if (itlb_multihit_kvm_mitigation)
-		return sprintf(buf, "KVM: Mitigation: Split huge pages\n");
-	else
-		return sprintf(buf, "KVM: Vulnerable\n");
-}
-#else
-static ssize_t l1tf_show_state(char *buf)
-{
-	return sprintf(buf, "%s\n", L1TF_DEFAULT_MSG);
-}
-
-static ssize_t itlb_multihit_show_state(char *buf)
-{
-	return sprintf(buf, "Processor vulnerable\n");
-}
-#endif
-
-static ssize_t mds_show_state(char *buf)
-{
-	if (boot_cpu_has(X86_FEATURE_HYPERVISOR)) {
-		return sprintf(buf, "%s; SMT Host state unknown\n",
-			       mds_strings[mds_mitigation]);
-	}
-
-	if (boot_cpu_has(X86_BUG_MSBDS_ONLY)) {
-		return sprintf(buf, "%s; SMT %s\n", mds_strings[mds_mitigation],
-			       (mds_mitigation == MDS_MITIGATION_OFF ? "vulnerable" :
-			        sched_smt_active() ? "mitigated" : "disabled"));
-	}
-
-	return sprintf(buf, "%s; SMT %s\n", mds_strings[mds_mitigation],
-		       sched_smt_active() ? "vulnerable" : "disabled");
-}
-
-static ssize_t tsx_async_abort_show_state(char *buf)
-{
-	if ((taa_mitigation == TAA_MITIGATION_TSX_DISABLED) ||
-	    (taa_mitigation == TAA_MITIGATION_OFF))
-		return sprintf(buf, "%s\n", taa_strings[taa_mitigation]);
-
-	if (boot_cpu_has(X86_FEATURE_HYPERVISOR)) {
-		return sprintf(buf, "%s; SMT Host state unknown\n",
-			       taa_strings[taa_mitigation]);
-	}
-
-	return sprintf(buf, "%s; SMT %s\n", taa_strings[taa_mitigation],
-		       sched_smt_active() ? "vulnerable" : "disabled");
-}
-
-static ssize_t mmio_stale_data_show_state(char *buf)
-{
-	if (mmio_mitigation == MMIO_MITIGATION_OFF)
-		return sysfs_emit(buf, "%s\n", mmio_strings[mmio_mitigation]);
-
-	if (boot_cpu_has(X86_FEATURE_HYPERVISOR)) {
-		return sysfs_emit(buf, "%s; SMT Host state unknown\n",
-				  mmio_strings[mmio_mitigation]);
-	}
-
-	return sysfs_emit(buf, "%s; SMT %s\n", mmio_strings[mmio_mitigation],
-			  sched_smt_active() ? "vulnerable" : "disabled");
-}
-
-static char *stibp_state(void)
-{
-	if (spectre_v2_in_ibrs_mode(spectre_v2_enabled))
-		return "";
-
-	switch (spectre_v2_user_stibp) {
-	case SPECTRE_V2_USER_NONE:
-		return ", STIBP: disabled";
-	case SPECTRE_V2_USER_STRICT:
-		return ", STIBP: forced";
-	case SPECTRE_V2_USER_STRICT_PREFERRED:
-		return ", STIBP: always-on";
-	case SPECTRE_V2_USER_PRCTL:
-	case SPECTRE_V2_USER_SECCOMP:
-		if (static_key_enabled(&switch_to_cond_stibp))
-			return ", STIBP: conditional";
-	}
-	return "";
-}
-
-static char *ibpb_state(void)
-{
-	if (boot_cpu_has(X86_FEATURE_IBPB)) {
-		if (static_key_enabled(&switch_mm_always_ibpb))
-			return ", IBPB: always-on";
-		if (static_key_enabled(&switch_mm_cond_ibpb))
-			return ", IBPB: conditional";
-		return ", IBPB: disabled";
-	}
-	return "";
-}
-
-static ssize_t spectre_v2_show_state(char *buf)
-{
-	if (spectre_v2_enabled == SPECTRE_V2_LFENCE)
-		return sprintf(buf, "Vulnerable: LFENCE\n");
-
-	if (spectre_v2_enabled == SPECTRE_V2_EIBRS && unprivileged_ebpf_enabled())
-		return sprintf(buf, "Vulnerable: eIBRS with unprivileged eBPF\n");
-
-	if (sched_smt_active() && unprivileged_ebpf_enabled() &&
-	    spectre_v2_enabled == SPECTRE_V2_EIBRS_LFENCE)
-		return sprintf(buf, "Vulnerable: eIBRS+LFENCE with unprivileged eBPF and SMT\n");
-
-	return sprintf(buf, "%s%s%s%s%s%s\n",
-		       spectre_v2_strings[spectre_v2_enabled],
-		       ibpb_state(),
-		       boot_cpu_has(X86_FEATURE_USE_IBRS_FW) ? ", IBRS_FW" : "",
-		       stibp_state(),
-		       boot_cpu_has(X86_FEATURE_RSB_CTXSW) ? ", RSB filling" : "",
-		       spectre_v2_module_string());
-}
-
-static ssize_t srbds_show_state(char *buf)
-{
-	return sprintf(buf, "%s\n", srbds_strings[srbds_mitigation]);
-}
-
-static ssize_t retbleed_show_state(char *buf)
-{
-	if (retbleed_mitigation == RETBLEED_MITIGATION_UNRET) {
-	    if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD &&
-		boot_cpu_data.x86_vendor != X86_VENDOR_HYGON)
-		    return sprintf(buf, "Vulnerable: untrained return thunk on non-Zen uarch\n");
-
-	    return sprintf(buf, "%s; SMT %s\n",
-			   retbleed_strings[retbleed_mitigation],
-			   !sched_smt_active() ? "disabled" :
-			   spectre_v2_user_stibp == SPECTRE_V2_USER_STRICT ||
-			   spectre_v2_user_stibp == SPECTRE_V2_USER_STRICT_PREFERRED ?
-			   "enabled with STIBP protection" : "vulnerable");
-	}
-
-	return sprintf(buf, "%s\n", retbleed_strings[retbleed_mitigation]);
-}
-
-static ssize_t cpu_show_common(struct device *dev, struct device_attribute *attr,
-			       char *buf, unsigned int bug)
-{
-	if (!boot_cpu_has_bug(bug))
-		return sprintf(buf, "Not affected\n");
-
-	switch (bug) {
-	case X86_BUG_CPU_MELTDOWN:
-		if (boot_cpu_has(X86_FEATURE_PTI))
-			return sprintf(buf, "Mitigation: PTI\n");
-
-		if (hypervisor_is_type(X86_HYPER_XEN_PV))
-			return sprintf(buf, "Unknown (XEN PV detected, hypervisor mitigation required)\n");
-
-		break;
-
-	case X86_BUG_SPECTRE_V1:
-		return sprintf(buf, "%s\n", spectre_v1_strings[spectre_v1_mitigation]);
-
-	case X86_BUG_SPECTRE_V2:
-		return spectre_v2_show_state(buf);
-
-	case X86_BUG_SPEC_STORE_BYPASS:
-		return sprintf(buf, "%s\n", ssb_strings[ssb_mode]);
-
-	case X86_BUG_L1TF:
-		if (boot_cpu_has(X86_FEATURE_L1TF_PTEINV))
-			return l1tf_show_state(buf);
-		break;
-
-	case X86_BUG_MDS:
-		return mds_show_state(buf);
-
-	case X86_BUG_TAA:
-		return tsx_async_abort_show_state(buf);
-
-	case X86_BUG_ITLB_MULTIHIT:
-		return itlb_multihit_show_state(buf);
-
-	case X86_BUG_SRBDS:
-		return srbds_show_state(buf);
-
-	case X86_BUG_MMIO_STALE_DATA:
-		return mmio_stale_data_show_state(buf);
-
-	case X86_BUG_RETBLEED:
-		return retbleed_show_state(buf);
-
-	default:
-		break;
-	}
-
-	return sprintf(buf, "Vulnerable\n");
-}
-
-ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return cpu_show_common(dev, attr, buf, X86_BUG_CPU_MELTDOWN);
-}
-
-ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return cpu_show_common(dev, attr, buf, X86_BUG_SPECTRE_V1);
-}
-
-ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return cpu_show_common(dev, attr, buf, X86_BUG_SPECTRE_V2);
-}
-
-ssize_t cpu_show_spec_store_bypass(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return cpu_show_common(dev, attr, buf, X86_BUG_SPEC_STORE_BYPASS);
-}
-
-ssize_t cpu_show_l1tf(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return cpu_show_common(dev, attr, buf, X86_BUG_L1TF);
-}
-
-ssize_t cpu_show_mds(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return cpu_show_common(dev, attr, buf, X86_BUG_MDS);
-}
-
-ssize_t cpu_show_tsx_async_abort(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return cpu_show_common(dev, attr, buf, X86_BUG_TAA);
-}
-
-ssize_t cpu_show_itlb_multihit(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return cpu_show_common(dev, attr, buf, X86_BUG_ITLB_MULTIHIT);
-}
-
-ssize_t cpu_show_srbds(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return cpu_show_common(dev, attr, buf, X86_BUG_SRBDS);
-}
-
-ssize_t cpu_show_mmio_stale_data(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return cpu_show_common(dev, attr, buf, X86_BUG_MMIO_STALE_DATA);
-}
-
-ssize_t cpu_show_retbleed(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return cpu_show_common(dev, attr, buf, X86_BUG_RETBLEED);
-}
-#endif

@@ -57,9 +57,6 @@ struct kthread {
 	void *data;
 	struct completion parked;
 	struct completion exited;
-#ifdef CONFIG_BLK_CGROUP
-	struct cgroup_subsys_state *blkcg_css;
-#endif
 	/* To store the full name if task comm is truncated. */
 	char *full_name;
 };
@@ -137,9 +134,6 @@ void free_kthread_struct(struct task_struct *k)
 	if (!kthread)
 		return;
 
-#ifdef CONFIG_BLK_CGROUP
-	WARN_ON_ONCE(kthread->blkcg_css);
-#endif
 	k->worker_private = NULL;
 	kfree(kthread->full_name);
 	kfree(kthread);
@@ -381,10 +375,6 @@ static int kthread(void *_create)
 /* called from kernel_clone() to get node information for about to be created task */
 int tsk_fork_get_node(struct task_struct *tsk)
 {
-#ifdef CONFIG_NUMA
-	if (tsk == kthreadd_task)
-		return tsk->pref_node_fork;
-#endif
 	return NUMA_NO_NODE;
 }
 
@@ -392,9 +382,6 @@ static void create_kthread(struct kthread_create_info *create)
 {
 	int pid;
 
-#ifdef CONFIG_NUMA
-	current->pref_node_fork = create->node;
-#endif
 	/* We want our own signal handler (we take no signals by default). */
 	pid = kernel_thread(kthread, create, CLONE_FS | CLONE_FILES | SIGCHLD);
 	if (pid < 0) {
@@ -1423,9 +1410,6 @@ void kthread_use_mm(struct mm_struct *mm)
 	switch_mm_irqs_off(active_mm, mm, tsk);
 	local_irq_enable();
 	task_unlock(tsk);
-#ifdef finish_arch_post_lock_switch
-	finish_arch_post_lock_switch();
-#endif
 
 	/*
 	 * When a kthread starts operating on an address space, the loop
@@ -1474,52 +1458,3 @@ void kthread_unuse_mm(struct mm_struct *mm)
 }
 EXPORT_SYMBOL_GPL(kthread_unuse_mm);
 
-#ifdef CONFIG_BLK_CGROUP
-/**
- * kthread_associate_blkcg - associate blkcg to current kthread
- * @css: the cgroup info
- *
- * Current thread must be a kthread. The thread is running jobs on behalf of
- * other threads. In some cases, we expect the jobs attach cgroup info of
- * original threads instead of that of current thread. This function stores
- * original thread's cgroup info in current kthread context for later
- * retrieval.
- */
-void kthread_associate_blkcg(struct cgroup_subsys_state *css)
-{
-	struct kthread *kthread;
-
-	if (!(current->flags & PF_KTHREAD))
-		return;
-	kthread = to_kthread(current);
-	if (!kthread)
-		return;
-
-	if (kthread->blkcg_css) {
-		css_put(kthread->blkcg_css);
-		kthread->blkcg_css = NULL;
-	}
-	if (css) {
-		css_get(css);
-		kthread->blkcg_css = css;
-	}
-}
-EXPORT_SYMBOL(kthread_associate_blkcg);
-
-/**
- * kthread_blkcg - get associated blkcg css of current kthread
- *
- * Current thread must be a kthread.
- */
-struct cgroup_subsys_state *kthread_blkcg(void)
-{
-	struct kthread *kthread;
-
-	if (current->flags & PF_KTHREAD) {
-		kthread = to_kthread(current);
-		if (kthread)
-			return kthread->blkcg_css;
-	}
-	return NULL;
-}
-#endif

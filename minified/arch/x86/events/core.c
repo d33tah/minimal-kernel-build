@@ -186,66 +186,10 @@ static atomic_t active_events;
 static atomic_t pmc_refcount;
 static DEFINE_MUTEX(pmc_reserve_mutex);
 
-#ifdef CONFIG_X86_LOCAL_APIC
-
-static inline int get_possible_num_counters(void)
-{
-	int i, num_counters = x86_pmu.num_counters;
-
-	if (!is_hybrid())
-		return num_counters;
-
-	for (i = 0; i < x86_pmu.num_hybrid_pmus; i++)
-		num_counters = max_t(int, num_counters, x86_pmu.hybrid_pmu[i].num_counters);
-
-	return num_counters;
-}
-
-static bool reserve_pmc_hardware(void)
-{
-	int i, num_counters = get_possible_num_counters();
-
-	for (i = 0; i < num_counters; i++) {
-		if (!reserve_perfctr_nmi(x86_pmu_event_addr(i)))
-			goto perfctr_fail;
-	}
-
-	for (i = 0; i < num_counters; i++) {
-		if (!reserve_evntsel_nmi(x86_pmu_config_addr(i)))
-			goto eventsel_fail;
-	}
-
-	return true;
-
-eventsel_fail:
-	for (i--; i >= 0; i--)
-		release_evntsel_nmi(x86_pmu_config_addr(i));
-
-	i = num_counters;
-
-perfctr_fail:
-	for (i--; i >= 0; i--)
-		release_perfctr_nmi(x86_pmu_event_addr(i));
-
-	return false;
-}
-
-static void release_pmc_hardware(void)
-{
-	int i, num_counters = get_possible_num_counters();
-
-	for (i = 0; i < num_counters; i++) {
-		release_perfctr_nmi(x86_pmu_event_addr(i));
-		release_evntsel_nmi(x86_pmu_config_addr(i));
-	}
-}
-
-#else
 
 static bool reserve_pmc_hardware(void) { return true; }
 static void release_pmc_hardware(void) {}
 
-#endif
 
 bool check_hw_exists(struct pmu *pmu, int num_counters, int num_counters_fixed)
 {
@@ -789,7 +733,7 @@ struct sched_state {
 };
 
 /* Total max is X86_PMC_IDX_MAX, but we are O(n!) limited */
-#define	SCHED_STATES_MAX	2
+#define SCHED_STATES_MAX 2
 
 struct perf_sched {
 	int			max_weight;
@@ -2811,18 +2755,7 @@ static unsigned long get_segment_base(unsigned int segment)
 	unsigned int idx = segment >> 3;
 
 	if ((segment & SEGMENT_TI_MASK) == SEGMENT_LDT) {
-#ifdef CONFIG_MODIFY_LDT_SYSCALL
-		struct ldt_struct *ldt;
-
-		/* IRQs are off, so this synchronizes with smp_store_release */
-		ldt = READ_ONCE(current->active_mm->context.ldt);
-		if (!ldt || idx >= ldt->nr_entries)
-			return 0;
-
-		desc = &ldt->entries[idx];
-#else
 		return 0;
-#endif
 	} else {
 		if (idx >= GDT_ENTRIES)
 			return 0;
@@ -2833,48 +2766,11 @@ static unsigned long get_segment_base(unsigned int segment)
 	return get_desc_base(desc);
 }
 
-#ifdef CONFIG_IA32_EMULATION
-
-#include <linux/compat.h>
-
-static inline int
-perf_callchain_user32(struct pt_regs *regs, struct perf_callchain_entry_ctx *entry)
-{
-	/* 32-bit process in 64-bit kernel. */
-	unsigned long ss_base, cs_base;
-	struct stack_frame_ia32 frame;
-	const struct stack_frame_ia32 __user *fp;
-
-	if (user_64bit_mode(regs))
-		return 0;
-
-	cs_base = get_segment_base(regs->cs);
-	ss_base = get_segment_base(regs->ss);
-
-	fp = compat_ptr(ss_base + regs->bp);
-	pagefault_disable();
-	while (entry->nr < entry->max_stack) {
-		if (!valid_user_frame(fp, sizeof(frame)))
-			break;
-
-		if (__get_user(frame.next_frame, &fp->next_frame))
-			break;
-		if (__get_user(frame.return_address, &fp->return_address))
-			break;
-
-		perf_callchain_store(entry, cs_base + frame.return_address);
-		fp = compat_ptr(ss_base + frame.next_frame);
-	}
-	pagefault_enable();
-	return 1;
-}
-#else
 static inline int
 perf_callchain_user32(struct pt_regs *regs, struct perf_callchain_entry_ctx *entry)
 {
     return 0;
 }
-#endif
 
 void
 perf_callchain_user(struct perf_callchain_entry_ctx *entry, struct pt_regs *regs)
@@ -2939,7 +2835,6 @@ static unsigned long code_segment_base(struct pt_regs *regs)
 	 * effective IP to a linear address.
 	 */
 
-#ifdef CONFIG_X86_32
 	/*
 	 * If we are in VM86 mode, add the segment offset to convert to a
 	 * linear address.
@@ -2949,11 +2844,6 @@ static unsigned long code_segment_base(struct pt_regs *regs)
 
 	if (user_mode(regs) && regs->cs != __USER_CS)
 		return get_segment_base(regs->cs);
-#else
-	if (user_mode(regs) && !user_64bit_mode(regs) &&
-	    regs->cs != __USER32_CS)
-		return get_segment_base(regs->cs);
-#endif
 	return 0;
 }
 

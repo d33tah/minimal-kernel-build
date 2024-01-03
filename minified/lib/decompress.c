@@ -20,27 +20,13 @@
 #include <linux/init.h>
 #include <linux/printk.h>
 
-#ifndef CONFIG_DECOMPRESS_GZIP
-# define gunzip NULL
-#endif
-#ifndef CONFIG_DECOMPRESS_BZIP2
-# define bunzip2 NULL
-#endif
-#ifndef CONFIG_DECOMPRESS_LZMA
-# define unlzma NULL
-#endif
-#ifndef CONFIG_DECOMPRESS_XZ
-# define unxz NULL
-#endif
-#ifndef CONFIG_DECOMPRESS_LZO
-# define unlzo NULL
-#endif
-#ifndef CONFIG_DECOMPRESS_LZ4
-# define unlz4 NULL
-#endif
-#ifndef CONFIG_DECOMPRESS_ZSTD
-# define unzstd NULL
-#endif
+#define gunzip NULL
+#define bunzip2 NULL
+#define unlzma NULL
+#define unxz NULL
+#define unlzo NULL
+#define unlz4 NULL
+#define unzstd NULL
 
 struct compress_format {
 	unsigned char magic[2];

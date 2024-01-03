@@ -36,13 +36,8 @@ static int has_fpu(void)
  * compressed/ directory where it may be 64-bit code, and thus needs
  * to be 'pushfq' or 'popfq' in that case.
  */
-#ifdef __x86_64__
-#define PUSHF "pushfq"
-#define POPF "popfq"
-#else
 #define PUSHF "pushfl"
 #define POPF "popfl"
-#endif
 
 int has_eflag(unsigned long mask)
 {
@@ -65,11 +60,7 @@ int has_eflag(unsigned long mask)
 }
 
 /* Handle x86_32 PIC using ebx. */
-#if defined(__i386__) && defined(__PIC__)
-# define EBX_REG "=r"
-#else
-# define EBX_REG "=b"
-#endif
+#define EBX_REG "=b"
 
 void cpuid_count(u32 id, u32 count, u32 *a, u32 *b, u32 *c, u32 *d)
 {
@@ -81,7 +72,7 @@ void cpuid_count(u32 id, u32 count, u32 *a, u32 *b, u32 *c, u32 *d)
 	);
 }
 
-#define cpuid(id, a, b, c, d) cpuid_count(id, 0, a, b, c, d)
+#define cpuid(id,a,b,c,d) cpuid_count(id, 0, a, b, c, d)
 
 void get_cpuflags(void)
 {

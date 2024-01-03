@@ -33,11 +33,7 @@ struct p4_pebs_bind {
 };
 
 /* it sets P4_PEBS_ENABLE_UOP_TAG as well */
-#define P4_GEN_PEBS_BIND(name, pebs, vert)			\
-	[P4_PEBS_METRIC__##name] = {				\
-		.metric_pebs = pebs | P4_PEBS_ENABLE_UOP_TAG,	\
-		.metric_vert = vert,				\
-	}
+#define P4_GEN_PEBS_BIND(name,pebs,vert) [P4_PEBS_METRIC__ ##name] = { .metric_pebs = pebs | P4_PEBS_ENABLE_UOP_TAG, .metric_vert = vert, }
 
 /*
  * note we have P4_PEBS_ENABLE_UOP_TAG always set here
@@ -505,11 +501,7 @@ static struct p4_event_bind p4_event_bind_map[] = {
 	},
 };
 
-#define P4_GEN_CACHE_EVENT(event, bit, metric)				  \
-	p4_config_pack_escr(P4_ESCR_EVENT(event)			| \
-			    P4_ESCR_EMASK_BIT(event, bit))		| \
-	p4_config_pack_cccr(metric					| \
-			    P4_CCCR_ESEL(P4_OPCODE_ESEL(P4_OPCODE(event))))
+#define P4_GEN_CACHE_EVENT(event,bit,metric) p4_config_pack_escr(P4_ESCR_EVENT(event) | P4_ESCR_EMASK_BIT(event, bit)) | p4_config_pack_cccr(metric | P4_CCCR_ESEL(P4_OPCODE_ESEL(P4_OPCODE(event))))
 
 static __initconst const u64 p4_hw_cache_event_ids
 				[PERF_COUNT_HW_CACHE_MAX]
@@ -1131,11 +1123,11 @@ static void p4_pmu_swap_config_ts(struct hw_perf_event *hwc, int cpu)
  * so we make ~70% filled hashtable
  */
 
-#define P4_ESCR_MSR_BASE		0x000003a0
-#define P4_ESCR_MSR_MAX			0x000003e1
-#define P4_ESCR_MSR_TABLE_SIZE		(P4_ESCR_MSR_MAX - P4_ESCR_MSR_BASE + 1)
-#define P4_ESCR_MSR_IDX(msr)		(msr - P4_ESCR_MSR_BASE)
-#define P4_ESCR_MSR_TABLE_ENTRY(msr)	[P4_ESCR_MSR_IDX(msr)] = msr
+#define P4_ESCR_MSR_BASE 0x000003a0
+#define P4_ESCR_MSR_MAX 0x000003e1
+#define P4_ESCR_MSR_TABLE_SIZE (P4_ESCR_MSR_MAX - P4_ESCR_MSR_BASE + 1)
+#define P4_ESCR_MSR_IDX(msr) (msr - P4_ESCR_MSR_BASE)
+#define P4_ESCR_MSR_TABLE_ENTRY(msr) [P4_ESCR_MSR_IDX(msr)] = msr
 
 static const unsigned int p4_escr_table[P4_ESCR_MSR_TABLE_SIZE] = {
 	P4_ESCR_MSR_TABLE_ENTRY(MSR_P4_ALF_ESCR0),

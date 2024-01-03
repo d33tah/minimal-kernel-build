@@ -182,7 +182,7 @@ static unsigned short translations[][256] = {
 /* The standard kernel character-to-font mappings are not invertible
    -- this is just a best effort. */
 
-#define MAX_GLYPH 512		/* Max possible glyph value */
+#define MAX_GLYPH 512
 
 static int inv_translate[MAX_NR_CONSOLES];
 

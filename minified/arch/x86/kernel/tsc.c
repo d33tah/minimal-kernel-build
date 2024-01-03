@@ -36,7 +36,7 @@ EXPORT_SYMBOL(cpu_khz);
 unsigned int __read_mostly tsc_khz;
 EXPORT_SYMBOL(tsc_khz);
 
-#define KHZ	1000
+#define KHZ 1000
 
 /*
  * TSC can be unstable due to cpufreq or due to unsynced TSCs
@@ -247,22 +247,10 @@ u64 native_sched_clock_from_tsc(u64 tsc)
 
 /* We need to define a real function for sched_clock, to override the
    weak default version */
-#ifdef CONFIG_PARAVIRT
-unsigned long long sched_clock(void)
-{
-	return paravirt_sched_clock();
-}
-
-bool using_native_sched_clock(void)
-{
-	return static_call_query(pv_sched_clock) == native_sched_clock;
-}
-#else
 unsigned long long
 sched_clock(void) __attribute__((alias("native_sched_clock")));
 
 bool using_native_sched_clock(void) { return true; }
-#endif
 
 int check_tsc_unstable(void)
 {
@@ -270,23 +258,11 @@ int check_tsc_unstable(void)
 }
 EXPORT_SYMBOL_GPL(check_tsc_unstable);
 
-#ifdef CONFIG_X86_TSC
 int __init notsc_setup(char *str)
 {
 	mark_tsc_unstable("boot parameter notsc");
 	return 1;
 }
-#else
-/*
- * disable flag for tsc. Takes effect by clearing the TSC cpu flag
- * in cpu/common.c
- */
-int __init notsc_setup(char *str)
-{
-	setup_clear_cpu_cap(X86_FEATURE_TSC);
-	return 1;
-}
-#endif
 
 __setup("notsc", notsc_setup);
 
@@ -308,8 +284,8 @@ static int __init tsc_setup(char *str)
 
 __setup("tsc=", tsc_setup);
 
-#define MAX_RETRIES		5
-#define TSC_DEFAULT_THRESHOLD	0x20000
+#define MAX_RETRIES 5
+#define TSC_DEFAULT_THRESHOLD 0x20000
 
 /*
  * Read TSC and the reference counters. Take care of any disturbances
@@ -370,13 +346,13 @@ static unsigned long calc_pmtimer_ref(u64 deltatsc, u64 pm1, u64 pm2)
 	return (unsigned long) deltatsc;
 }
 
-#define CAL_MS		10
-#define CAL_LATCH	(PIT_TICK_RATE / (1000 / CAL_MS))
-#define CAL_PIT_LOOPS	1000
+#define CAL_MS 10
+#define CAL_LATCH (PIT_TICK_RATE / (1000 / CAL_MS))
+#define CAL_PIT_LOOPS 1000
 
-#define CAL2_MS		50
-#define CAL2_LATCH	(PIT_TICK_RATE / (1000 / CAL2_MS))
-#define CAL2_PIT_LOOPS	5000
+#define CAL2_MS 50
+#define CAL2_LATCH (PIT_TICK_RATE / (1000 / CAL2_MS))
+#define CAL2_PIT_LOOPS 5000
 
 
 /*
@@ -680,15 +656,6 @@ unsigned long native_calibrate_tsc(void)
 	if (boot_cpu_data.x86_model == INTEL_FAM6_ATOM_GOLDMONT)
 		setup_force_cpu_cap(X86_FEATURE_TSC_RELIABLE);
 
-#ifdef CONFIG_X86_LOCAL_APIC
-	/*
-	 * The local APIC appears to be fed by the core crystal clock
-	 * (which sounds entirely sensible). We can set the global
-	 * lapic_timer_period here to avoid having to calibrate the APIC
-	 * timer later.
-	 */
-	lapic_timer_period = crystal_khz * 1000 / HZ;
-#endif
 
 	return crystal_khz * ebx_numerator / eax_denominator;
 }
@@ -896,7 +863,6 @@ static unsigned long native_calibrate_cpu(void)
 
 void recalibrate_cpu_khz(void)
 {
-#ifndef CONFIG_SMP
 	unsigned long cpu_khz_old = cpu_khz;
 
 	if (!boot_cpu_has(X86_FEATURE_TSC))
@@ -910,7 +876,6 @@ void recalibrate_cpu_khz(void)
 		cpu_khz = tsc_khz;
 	cpu_data(0).loops_per_jiffy = cpufreq_scale(cpu_data(0).loops_per_jiffy,
 						    cpu_khz_old, cpu_khz);
-#endif
 }
 
 EXPORT_SYMBOL(recalibrate_cpu_khz);
@@ -964,71 +929,6 @@ void tsc_restore_sched_clock_state(void)
 	local_irq_restore(flags);
 }
 
-#ifdef CONFIG_CPU_FREQ
-/*
- * Frequency scaling support. Adjust the TSC based timer when the CPU frequency
- * changes.
- *
- * NOTE: On SMP the situation is not fixable in general, so simply mark the TSC
- * as unstable and give up in those cases.
- *
- * Should fix up last_tsc too. Currently gettimeofday in the
- * first tick after the change will be slightly wrong.
- */
-
-static unsigned int  ref_freq;
-static unsigned long loops_per_jiffy_ref;
-static unsigned long tsc_khz_ref;
-
-static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
-				void *data)
-{
-	struct cpufreq_freqs *freq = data;
-
-	if (num_online_cpus() > 1) {
-		mark_tsc_unstable("cpufreq changes on SMP");
-		return 0;
-	}
-
-	if (!ref_freq) {
-		ref_freq = freq->old;
-		loops_per_jiffy_ref = boot_cpu_data.loops_per_jiffy;
-		tsc_khz_ref = tsc_khz;
-	}
-
-	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
-	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
-		boot_cpu_data.loops_per_jiffy =
-			cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
-
-		tsc_khz = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
-		if (!(freq->flags & CPUFREQ_CONST_LOOPS))
-			mark_tsc_unstable("cpufreq changes");
-
-		set_cyc2ns_scale(tsc_khz, freq->policy->cpu, rdtsc());
-	}
-
-	return 0;
-}
-
-static struct notifier_block time_cpufreq_notifier_block = {
-	.notifier_call  = time_cpufreq_notifier
-};
-
-static int __init cpufreq_register_tsc_scaling(void)
-{
-	if (!boot_cpu_has(X86_FEATURE_TSC))
-		return 0;
-	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
-		return 0;
-	cpufreq_register_notifier(&time_cpufreq_notifier_block,
-				CPUFREQ_TRANSITION_NOTIFIER);
-	return 0;
-}
-
-core_initcall(cpufreq_register_tsc_scaling);
-
-#endif /* CONFIG_CPU_FREQ */
 
 #define ART_CPUID_LEAF (0x15)
 #define ART_MIN_DENOMINATOR (1)
@@ -1188,18 +1088,6 @@ static void __init tsc_disable_clocksource_watchdog(void)
 
 static void __init check_system_tsc_reliable(void)
 {
-#if defined(CONFIG_MGEODEGX1) || defined(CONFIG_MGEODE_LX) || defined(CONFIG_X86_GENERIC)
-	if (is_geode_lx()) {
-		/* RTSC counts during suspend */
-#define RTSC_SUSP 0x100
-		unsigned long res_low, res_high;
-
-		rdmsr_safe(MSR_GEODE_BUSCONT_CONF0, &res_low, &res_high);
-		/* Geode_LX - the OLPC CPU has a very reliable TSC */
-		if (res_low & RTSC_SUSP)
-			tsc_clocksource_reliable = 1;
-	}
-#endif
 	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE))
 		tsc_clocksource_reliable = 1;
 
@@ -1230,10 +1118,6 @@ int unsynchronized_tsc(void)
 	if (!boot_cpu_has(X86_FEATURE_TSC) || tsc_unstable)
 		return 1;
 
-#ifdef CONFIG_SMP
-	if (apic_is_clustered_box())
-		return 1;
-#endif
 
 	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
 		return 0;
@@ -1553,25 +1437,3 @@ void __init tsc_init(void)
 	detect_art();
 }
 
-#ifdef CONFIG_SMP
-/*
- * If we have a constant TSC and are using the TSC for the delay loop,
- * we can skip clock calibration if another cpu in the same socket has already
- * been calibrated. This assumes that CONSTANT_TSC applies to all
- * cpus in the socket - this should be a safe assumption.
- */
-unsigned long calibrate_delay_is_known(void)
-{
-	int sibling, cpu = smp_processor_id();
-	int constant_tsc = cpu_has(&cpu_data(cpu), X86_FEATURE_CONSTANT_TSC);
-	const struct cpumask *mask = topology_core_cpumask(cpu);
-
-	if (!constant_tsc || !mask)
-		return 0;
-
-	sibling = cpumask_any_but(mask, cpu);
-	if (sibling < nr_cpu_ids)
-		return cpu_data(sibling).loops_per_jiffy;
-	return 0;
-}
-#endif

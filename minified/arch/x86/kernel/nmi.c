@@ -35,7 +35,7 @@
 #include <asm/nospec-branch.h>
 #include <asm/sev.h>
 
-#define CREATE_TRACE_POINTS
+#define CREATE_TRACE_POINTS 
 #include <trace/events/nmi.h>
 
 struct nmi_desc {
@@ -370,13 +370,11 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 			pci_serr_error(reason, regs);
 		else if (reason & NMI_REASON_IOCHK)
 			io_check_error(reason, regs);
-#ifdef CONFIG_X86_32
 		/*
 		 * Reassert NMI in case it became active
 		 * meanwhile as it's edge-triggered:
 		 */
 		reassert_nmi();
-#endif
 		__this_cpu_add(nmi_stats.external, 1);
 		raw_spin_unlock(&nmi_reason_lock);
 		goto out;
@@ -527,15 +525,6 @@ nmi_restart:
 		mds_user_clear_cpu_buffers();
 }
 
-#if defined(CONFIG_X86_64) && IS_ENABLED(CONFIG_KVM_INTEL)
-DEFINE_IDTENTRY_RAW(exc_nmi_noist)
-{
-	exc_nmi(regs);
-}
-#endif
-#if IS_MODULE(CONFIG_KVM_INTEL)
-EXPORT_SYMBOL_GPL(asm_exc_nmi_noist);
-#endif
 
 void stop_nmi(void)
 {

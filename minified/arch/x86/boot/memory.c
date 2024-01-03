@@ -13,7 +13,7 @@
 
 #include "boot.h"
 
-#define SMAP	0x534d4150	/* ASCII "SMAP" */
+#define SMAP 0x534d4150
 
 static void detect_memory_e820(void)
 {

@@ -4,37 +4,37 @@
  *  Copyright (C) 2001, 2002 Andi Kleen, SuSE Labs.
  *  Copyright (C) 2008-2009, Red Hat Inc., Ingo Molnar
  */
-#include <linux/sched.h>		/* test_thread_flag(), ...	*/
-#include <linux/sched/task_stack.h>	/* task_stack_*(), ...		*/
-#include <linux/kdebug.h>		/* oops_begin/end, ...		*/
-#include <linux/extable.h>		/* search_exception_tables	*/
-#include <linux/memblock.h>		/* max_low_pfn			*/
-#include <linux/kfence.h>		/* kfence_handle_page_fault	*/
-#include <linux/kprobes.h>		/* NOKPROBE_SYMBOL, ...		*/
-#include <linux/mmiotrace.h>		/* kmmio_handler, ...		*/
-#include <linux/perf_event.h>		/* perf_sw_event		*/
-#include <linux/hugetlb.h>		/* hstate_index_to_shift	*/
-#include <linux/prefetch.h>		/* prefetchw			*/
-#include <linux/context_tracking.h>	/* exception_enter(), ...	*/
-#include <linux/uaccess.h>		/* faulthandler_disabled()	*/
-#include <linux/efi.h>			/* efi_crash_gracefully_on_page_fault()*/
+#include <linux/sched.h>
+#include <linux/sched/task_stack.h>
+#include <linux/kdebug.h>
+#include <linux/extable.h>
+#include <linux/memblock.h>
+#include <linux/kfence.h>
+#include <linux/kprobes.h>
+#include <linux/mmiotrace.h>
+#include <linux/perf_event.h>
+#include <linux/hugetlb.h>
+#include <linux/prefetch.h>
+#include <linux/context_tracking.h>
+#include <linux/uaccess.h>
+#include <linux/efi.h>
 #include <linux/mm_types.h>
 
-#include <asm/cpufeature.h>		/* boot_cpu_has, ...		*/
-#include <asm/traps.h>			/* dotraplinkage, ...		*/
-#include <asm/fixmap.h>			/* VSYSCALL_ADDR		*/
-#include <asm/vsyscall.h>		/* emulate_vsyscall		*/
-#include <asm/vm86.h>			/* struct vm86			*/
-#include <asm/mmu_context.h>		/* vma_pkey()			*/
-#include <asm/efi.h>			/* efi_crash_gracefully_on_page_fault()*/
-#include <asm/desc.h>			/* store_idt(), ...		*/
-#include <asm/cpu_entry_area.h>		/* exception stack		*/
-#include <asm/pgtable_areas.h>		/* VMALLOC_START, ...		*/
-#include <asm/kvm_para.h>		/* kvm_handle_async_pf		*/
-#include <asm/vdso.h>			/* fixup_vdso_exception()	*/
+#include <asm/cpufeature.h>
+#include <asm/traps.h>
+#include <asm/fixmap.h>
+#include <asm/vsyscall.h>
+#include <asm/vm86.h>
+#include <asm/mmu_context.h>
+#include <asm/efi.h>
+#include <asm/desc.h>
+#include <asm/cpu_entry_area.h>
+#include <asm/pgtable_areas.h>
+#include <asm/kvm_para.h>
+#include <asm/vdso.h>
 #include <asm/irq_stack.h>
 
-#define CREATE_TRACE_POINTS
+#define CREATE_TRACE_POINTS 
 #include <asm/trace/exceptions.h>
 
 /*
@@ -82,13 +82,6 @@ check_prefetch_opcode(struct pt_regs *regs, unsigned char *instr,
 		 * X86_64 will never get here anyway
 		 */
 		return ((instr_lo & 7) == 0x6);
-#ifdef CONFIG_X86_64
-	case 0x40:
-		/*
-		 * In 64-bit mode 0x40..0x4F are valid REX prefixes
-		 */
-		return (!user_mode(regs) || user_64bit_mode(regs));
-#endif
 	case 0x60:
 		/* 0x64 thru 0x67 are valid prefixes in all modes. */
 		return (instr_lo & 0xC) == 0x4;
@@ -169,7 +162,6 @@ is_prefetch(struct pt_regs *regs, unsigned long error_code, unsigned long addr)
 DEFINE_SPINLOCK(pgd_lock);
 LIST_HEAD(pgd_list);
 
-#ifdef CONFIG_X86_32
 static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
 {
 	unsigned index = pgd_index(address);
@@ -298,14 +290,7 @@ static void dump_pagetable(unsigned long address)
 	pmd_t *pmd;
 	pte_t *pte;
 
-#ifdef CONFIG_X86_PAE
-	pr_info("*pdpt = %016Lx ", pgd_val(*pgd));
-	if (!low_pfn(pgd_val(*pgd) >> PAGE_SHIFT) || !pgd_present(*pgd))
-		goto out;
-#define pr_pde pr_cont
-#else
 #define pr_pde pr_info
-#endif
 	p4d = p4d_offset(pgd, address);
 	pud = pud_offset(p4d, address);
 	pmd = pmd_offset(pud, address);
@@ -327,78 +312,6 @@ out:
 	pr_cont("\n");
 }
 
-#else /* CONFIG_X86_64: */
-
-#ifdef CONFIG_CPU_SUP_AMD
-static const char errata93_warning[] =
-KERN_ERR 
-"******* Your BIOS seems to not contain a fix for K8 errata #93\n"
-"******* Working around it, but it may cause SEGVs or burn power.\n"
-"******* Please consider a BIOS update.\n"
-"******* Disabling USB legacy in the BIOS may also help.\n";
-#endif
-
-static int bad_address(void *p)
-{
-	unsigned long dummy;
-
-	return get_kernel_nofault(dummy, (unsigned long *)p);
-}
-
-static void dump_pagetable(unsigned long address)
-{
-	pgd_t *base = __va(read_cr3_pa());
-	pgd_t *pgd = base + pgd_index(address);
-	p4d_t *p4d;
-	pud_t *pud;
-	pmd_t *pmd;
-	pte_t *pte;
-
-	if (bad_address(pgd))
-		goto bad;
-
-	pr_info("PGD %lx ", pgd_val(*pgd));
-
-	if (!pgd_present(*pgd))
-		goto out;
-
-	p4d = p4d_offset(pgd, address);
-	if (bad_address(p4d))
-		goto bad;
-
-	pr_cont("P4D %lx ", p4d_val(*p4d));
-	if (!p4d_present(*p4d) || p4d_large(*p4d))
-		goto out;
-
-	pud = pud_offset(p4d, address);
-	if (bad_address(pud))
-		goto bad;
-
-	pr_cont("PUD %lx ", pud_val(*pud));
-	if (!pud_present(*pud) || pud_large(*pud))
-		goto out;
-
-	pmd = pmd_offset(pud, address);
-	if (bad_address(pmd))
-		goto bad;
-
-	pr_cont("PMD %lx ", pmd_val(*pmd));
-	if (!pmd_present(*pmd) || pmd_large(*pmd))
-		goto out;
-
-	pte = pte_offset_kernel(pmd, address);
-	if (bad_address(pte))
-		goto bad;
-
-	pr_cont("PTE %lx", pte_val(*pte));
-out:
-	pr_cont("\n");
-	return;
-bad:
-	pr_info("BAD\n");
-}
-
-#endif /* CONFIG_X86_64 */
 
 /*
  * Workaround for K8 erratum #93 & buggy BIOS.
@@ -416,28 +329,6 @@ bad:
  */
 static int is_errata93(struct pt_regs *regs, unsigned long address)
 {
-#if defined(CONFIG_X86_64) && defined(CONFIG_CPU_SUP_AMD)
-	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD
-	    || boot_cpu_data.x86 != 0xf)
-		return 0;
-
-	if (user_mode(regs))
-		return 0;
-
-	if (address != regs->ip)
-		return 0;
-
-	if ((address >> 32) != 0)
-		return 0;
-
-	address |= 0xffffffffUL << 32;
-	if ((address >= (u64)_stext && address <= (u64)_etext) ||
-	    (address >= MODULES_VADDR && address <= MODULES_END)) {
-		printk_once(errata93_warning);
-		regs->ip = address;
-		return 1;
-	}
-#endif
 	return 0;
 }
 
@@ -451,10 +342,6 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
  */
 static int is_errata100(struct pt_regs *regs, unsigned long address)
 {
-#ifdef CONFIG_X86_64
-	if ((regs->cs == __USER32_CS || (regs->cs & (1<<2))) && (address >> 32))
-		return 1;
-#endif
 	return 0;
 }
 
@@ -462,13 +349,6 @@ static int is_errata100(struct pt_regs *regs, unsigned long address)
 static int is_f00f_bug(struct pt_regs *regs, unsigned long error_code,
 		       unsigned long address)
 {
-#ifdef CONFIG_X86_F00F_BUG
-	if (boot_cpu_has_bug(X86_BUG_F00F) && !(error_code & X86_PF_USER) &&
-	    idt_is_f00f_address(address)) {
-		handle_invalid_op(regs);
-		return 1;
-	}
-#endif
 	return 0;
 }
 
@@ -496,9 +376,6 @@ static void show_ldttss(const struct desc_ptr *gdt, const char *name, u16 index)
 	}
 
 	addr = desc.base0 | (desc.base1 << 16) | ((unsigned long)desc.base2 << 24);
-#ifdef CONFIG_X86_64
-	addr |= ((u64)desc.base3 << 32);
-#endif
 	pr_alert("%s: 0x%hx -- base=0x%lx limit=0x%x\n",
 		 name, index, addr, (desc.limit0 | (desc.limit1 << 16)));
 }
@@ -632,9 +509,6 @@ static noinline void
 page_fault_oops(struct pt_regs *regs, unsigned long error_code,
 		unsigned long address)
 {
-#ifdef CONFIG_VMAP_STACK
-	struct stack_info info;
-#endif
 	unsigned long flags;
 	int sig;
 
@@ -646,32 +520,6 @@ page_fault_oops(struct pt_regs *regs, unsigned long error_code,
 		goto oops;
 	}
 
-#ifdef CONFIG_VMAP_STACK
-	/*
-	 * Stack overflow?  During boot, we can fault near the initial
-	 * stack in the direct map, but that's not an overflow -- check
-	 * that we're in vmalloc space to avoid this.
-	 */
-	if (is_vmalloc_addr((void *)address) &&
-	    get_stack_guard_info((void *)address, &info)) {
-		/*
-		 * We're likely to be running with very little stack space
-		 * left.  It's plausible that we'd hit this condition but
-		 * double-fault even before we get this far, in which case
-		 * we're fine: the double-fault handler will deal with it.
-		 *
-		 * We don't want to make it all the way into the oops code
-		 * and then double-fault, though, because we're likely to
-		 * break the console driver and lose most of the stack dump.
-		 */
-		call_on_stack(__this_cpu_ist_top_va(DF) - sizeof(void*),
-			      handle_stack_overflow,
-			      ASM_CALL_ARG3,
-			      , [arg1] "r" (regs), [arg2] "r" (address), [arg3] "r" (&info));
-
-		unreachable();
-	}
-#endif
 
 	/*
 	 * Buggy firmware could access regions which might page fault.  If
@@ -952,22 +800,6 @@ do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address,
 
 	set_signal_archinfo(address, error_code);
 
-#ifdef CONFIG_MEMORY_FAILURE
-	if (fault & (VM_FAULT_HWPOISON|VM_FAULT_HWPOISON_LARGE)) {
-		struct task_struct *tsk = current;
-		unsigned lsb = 0;
-
-		pr_err(
-	"MCE: Killing %s:%d due to hardware memory corruption fault at %lx\n",
-			tsk->comm, tsk->pid, address);
-		if (fault & VM_FAULT_HWPOISON_LARGE)
-			lsb = hstate_index_to_shift(VM_FAULT_GET_HINDEX(fault));
-		if (fault & VM_FAULT_HWPOISON)
-			lsb = PAGE_SHIFT;
-		force_sig_mceerr(BUS_MCEERR_AR, (void __user *)address, lsb);
-		return;
-	}
-#endif
 	force_sig_fault(SIGBUS, BUS_ADRERR, (void __user *)address);
 }
 
@@ -1154,7 +986,6 @@ do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code,
 	 */
 	WARN_ON_ONCE(hw_error_code & X86_PF_PK);
 
-#ifdef CONFIG_X86_32
 	/*
 	 * We can fault-in kernel-space virtual memory on-demand. The
 	 * 'reference' page table is init_mm.pgd.
@@ -1183,7 +1014,6 @@ do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code,
 		if (vmalloc_fault(address) >= 0)
 			return;
 	}
-#endif
 
 	if (is_f00f_bug(regs, hw_error_code, address))
 		return;
@@ -1305,23 +1135,6 @@ void do_user_addr_fault(struct pt_regs *regs,
 	if (error_code & X86_PF_INSTR)
 		flags |= FAULT_FLAG_INSTRUCTION;
 
-#ifdef CONFIG_X86_64
-	/*
-	 * Faults in the vsyscall page might need emulation.  The
-	 * vsyscall page is at a high address (>PAGE_OFFSET), but is
-	 * considered to be part of the user address space.
-	 *
-	 * The vsyscall page does not have a "real" VMA, so do this
-	 * emulation before we go searching for VMAs.
-	 *
-	 * PKRU never rejects instruction fetches, so we don't need
-	 * to consider the PF_PK bit.
-	 */
-	if (is_vsyscall_vaddr(address)) {
-		if (emulate_vsyscall(error_code, regs, address))
-			return;
-	}
-#endif
 
 	/*
 	 * Kernel-mode access to the user address space should only occur

@@ -4,8 +4,8 @@
 #include <linux/gfp.h>
 #include <linux/kmemleak.h>
 
-#define GENRADIX_ARY		(PAGE_SIZE / sizeof(struct genradix_node *))
-#define GENRADIX_ARY_SHIFT	ilog2(GENRADIX_ARY)
+#define GENRADIX_ARY (PAGE_SIZE / sizeof(struct genradix_node *))
+#define GENRADIX_ARY_SHIFT ilog2(GENRADIX_ARY)
 
 struct genradix_node {
 	union {
@@ -31,11 +31,9 @@ static inline size_t genradix_depth_size(unsigned depth)
 }
 
 /* depth that's needed for a genradix that can address up to ULONG_MAX: */
-#define GENRADIX_MAX_DEPTH	\
-	DIV_ROUND_UP(BITS_PER_LONG - PAGE_SHIFT, GENRADIX_ARY_SHIFT)
+#define GENRADIX_MAX_DEPTH DIV_ROUND_UP(BITS_PER_LONG - PAGE_SHIFT, GENRADIX_ARY_SHIFT)
 
-#define GENRADIX_DEPTH_MASK				\
-	((unsigned long) (roundup_pow_of_two(GENRADIX_MAX_DEPTH + 1) - 1))
+#define GENRADIX_DEPTH_MASK ((unsigned long) (roundup_pow_of_two(GENRADIX_MAX_DEPTH + 1) - 1))
 
 static inline unsigned genradix_root_to_depth(struct genradix_root *r)
 {

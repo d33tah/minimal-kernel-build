@@ -46,7 +46,6 @@ static int set_bios_mode(u8 mode)
 	if (new_mode == mode)
 		return 0;	/* Mode change OK */
 
-#ifndef _WAKEUP
 	if (new_mode != boot_params.screen_info.orig_video_mode) {
 		/* Mode setting failed, but we didn't end up where we
 		   started.  That's bad.  Try to revert to the original
@@ -54,18 +53,13 @@ static int set_bios_mode(u8 mode)
 		ireg.ax = boot_params.screen_info.orig_video_mode;
 		intcall(0x10, &ireg, NULL);
 	}
-#endif
 	return -1;
 }
 
 static int bios_probe(void)
 {
 	u8 mode;
-#ifdef _WAKEUP
-	u8 saved_mode = 0x03;
-#else
 	u8 saved_mode = boot_params.screen_info.orig_video_mode;
-#endif
 	u16 crtc;
 	struct mode_info *mi;
 	int nmodes = 0;

@@ -13,10 +13,10 @@
 #include <linux/mc146818rtc.h>
 
 #define SBF_RESERVED (0x78)
-#define SBF_PNPOS    (1<<0)
-#define SBF_BOOTING  (1<<1)
-#define SBF_DIAG     (1<<2)
-#define SBF_PARITY   (1<<7)
+#define SBF_PNPOS (1<<0)
+#define SBF_BOOTING (1<<1)
+#define SBF_DIAG (1<<2)
+#define SBF_PARITY (1<<7)
 
 int sbf_port __initdata = -1;	/* set via acpi_boot_init() */
 
@@ -92,9 +92,6 @@ static int __init sbf_init(void)
 	v &= ~SBF_RESERVED;
 	v &= ~SBF_BOOTING;
 	v &= ~SBF_DIAG;
-#if defined(CONFIG_ISAPNP)
-	v |= SBF_PNPOS;
-#endif
 	sbf_write(v);
 
 	return 0;

@@ -825,12 +825,9 @@ static void handle_privileged_root(struct linux_binprm *bprm, bool has_fcap,
 		*effective = true;
 }
 
-#define __cap_gained(field, target, source) \
-	!cap_issubset(target->cap_##field, source->cap_##field)
-#define __cap_grew(target, source, cred) \
-	!cap_issubset(cred->cap_##target, cred->cap_##source)
-#define __cap_full(field, cred) \
-	cap_issubset(CAP_FULL_SET, cred->cap_##field)
+#define __cap_gained(field,target,source) !cap_issubset(target->cap_ ##field, source->cap_ ##field)
+#define __cap_grew(target,source,cred) !cap_issubset(cred->cap_ ##target, cred->cap_ ##source)
+#define __cap_full(field,cred) cap_issubset(CAP_FULL_SET, cred->cap_ ##field)
 
 static inline bool __is_setuid(struct cred *new, const struct cred *old)
 { return !uid_eq(new->euid, old->uid); }
@@ -1444,40 +1441,3 @@ int cap_mmap_file(struct file *file, unsigned long reqprot,
 	return 0;
 }
 
-#ifdef CONFIG_SECURITY
-
-static struct security_hook_list capability_hooks[] __lsm_ro_after_init = {
-	LSM_HOOK_INIT(capable, cap_capable),
-	LSM_HOOK_INIT(settime, cap_settime),
-	LSM_HOOK_INIT(ptrace_access_check, cap_ptrace_access_check),
-	LSM_HOOK_INIT(ptrace_traceme, cap_ptrace_traceme),
-	LSM_HOOK_INIT(capget, cap_capget),
-	LSM_HOOK_INIT(capset, cap_capset),
-	LSM_HOOK_INIT(bprm_creds_from_file, cap_bprm_creds_from_file),
-	LSM_HOOK_INIT(inode_need_killpriv, cap_inode_need_killpriv),
-	LSM_HOOK_INIT(inode_killpriv, cap_inode_killpriv),
-	LSM_HOOK_INIT(inode_getsecurity, cap_inode_getsecurity),
-	LSM_HOOK_INIT(mmap_addr, cap_mmap_addr),
-	LSM_HOOK_INIT(mmap_file, cap_mmap_file),
-	LSM_HOOK_INIT(task_fix_setuid, cap_task_fix_setuid),
-	LSM_HOOK_INIT(task_prctl, cap_task_prctl),
-	LSM_HOOK_INIT(task_setscheduler, cap_task_setscheduler),
-	LSM_HOOK_INIT(task_setioprio, cap_task_setioprio),
-	LSM_HOOK_INIT(task_setnice, cap_task_setnice),
-	LSM_HOOK_INIT(vm_enough_memory, cap_vm_enough_memory),
-};
-
-static int __init capability_init(void)
-{
-	security_add_hooks(capability_hooks, ARRAY_SIZE(capability_hooks),
-				"capability");
-	return 0;
-}
-
-DEFINE_LSM(capability) = {
-	.name = "capability",
-	.order = LSM_ORDER_FIRST,
-	.init = capability_init,
-};
-
-#endif /* CONFIG_SECURITY */

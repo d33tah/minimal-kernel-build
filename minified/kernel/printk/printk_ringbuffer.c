@@ -305,33 +305,30 @@
  *     set descriptor reusable (state), then push descriptor tail (id)
  */
 
-#define DATA_SIZE(data_ring)		_DATA_SIZE((data_ring)->size_bits)
-#define DATA_SIZE_MASK(data_ring)	(DATA_SIZE(data_ring) - 1)
+#define DATA_SIZE(data_ring) _DATA_SIZE((data_ring)->size_bits)
+#define DATA_SIZE_MASK(data_ring) (DATA_SIZE(data_ring) - 1)
 
-#define DESCS_COUNT(desc_ring)		_DESCS_COUNT((desc_ring)->count_bits)
-#define DESCS_COUNT_MASK(desc_ring)	(DESCS_COUNT(desc_ring) - 1)
+#define DESCS_COUNT(desc_ring) _DESCS_COUNT((desc_ring)->count_bits)
+#define DESCS_COUNT_MASK(desc_ring) (DESCS_COUNT(desc_ring) - 1)
 
 /* Determine the data array index from a logical position. */
-#define DATA_INDEX(data_ring, lpos)	((lpos) & DATA_SIZE_MASK(data_ring))
+#define DATA_INDEX(data_ring,lpos) ((lpos) & DATA_SIZE_MASK(data_ring))
 
 /* Determine the desc array index from an ID or sequence number. */
-#define DESC_INDEX(desc_ring, n)	((n) & DESCS_COUNT_MASK(desc_ring))
+#define DESC_INDEX(desc_ring,n) ((n) & DESCS_COUNT_MASK(desc_ring))
 
 /* Determine how many times the data array has wrapped. */
-#define DATA_WRAPS(data_ring, lpos)	((lpos) >> (data_ring)->size_bits)
+#define DATA_WRAPS(data_ring,lpos) ((lpos) >> (data_ring)->size_bits)
 
 /* Determine if a logical position refers to a data-less block. */
-#define LPOS_DATALESS(lpos)		((lpos) & 1UL)
-#define BLK_DATALESS(blk)		(LPOS_DATALESS((blk)->begin) && \
-					 LPOS_DATALESS((blk)->next))
+#define LPOS_DATALESS(lpos) ((lpos) & 1UL)
+#define BLK_DATALESS(blk) (LPOS_DATALESS((blk)->begin) && LPOS_DATALESS((blk)->next))
 
 /* Get the logical position at index 0 of the current wrap. */
-#define DATA_THIS_WRAP_START_LPOS(data_ring, lpos) \
-((lpos) & ~DATA_SIZE_MASK(data_ring))
+#define DATA_THIS_WRAP_START_LPOS(data_ring,lpos) ((lpos) & ~DATA_SIZE_MASK(data_ring))
 
 /* Get the ID for the same index of the previous wrap as the given ID. */
-#define DESC_ID_PREV_WRAP(desc_ring, id) \
-DESC_ID((id) - DESCS_COUNT(desc_ring))
+#define DESC_ID_PREV_WRAP(desc_ring,id) DESC_ID((id) - DESCS_COUNT(desc_ring))
 
 /*
  * A data block: mapped directly to the beginning of the data block area

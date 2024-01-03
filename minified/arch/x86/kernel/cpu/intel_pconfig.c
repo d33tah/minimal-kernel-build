@@ -11,9 +11,9 @@
 #include <asm/cpufeature.h>
 #include <asm/intel_pconfig.h>
 
-#define	PCONFIG_CPUID			0x1b
+#define PCONFIG_CPUID 0x1b
 
-#define PCONFIG_CPUID_SUBLEAF_MASK	((1 << 12) - 1)
+#define PCONFIG_CPUID_SUBLEAF_MASK ((1 << 12) - 1)
 
 /* Subleaf type (EAX) for PCONFIG CPUID leaf (0x1B) */
 enum {

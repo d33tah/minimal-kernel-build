@@ -31,8 +31,8 @@
 
 #include <trace/events/module.h>
 
-#define CAP_BSET	(void *)1
-#define CAP_PI		(void *)2
+#define CAP_BSET (void *)1
+#define CAP_PI (void *)2
 
 static kernel_cap_t usermodehelper_bset = CAP_FULL_SET;
 static kernel_cap_t usermodehelper_inheritable = CAP_FULL_SET;
@@ -207,7 +207,7 @@ static DECLARE_WAIT_QUEUE_HEAD(usermodehelper_disabled_waitq);
  * Time to wait for running_helpers to become zero before the setting of
  * usermodehelper_disabled in usermodehelper_disable() fails
  */
-#define RUNNING_HELPERS_TIMEOUT	(5 * HZ)
+#define RUNNING_HELPERS_TIMEOUT (5 * HZ)
 
 int usermodehelper_read_trylock(void)
 {
@@ -368,11 +368,7 @@ struct subprocess_info *call_usermodehelper_setup(const char *path, char **argv,
 
 	INIT_WORK(&sub_info->work, call_usermodehelper_exec_work);
 
-#ifdef CONFIG_STATIC_USERMODEHELPER
-	sub_info->path = CONFIG_STATIC_USERMODEHELPER_PATH;
-#else
 	sub_info->path = path;
-#endif
 	sub_info->argv = argv;
 	sub_info->envp = envp;
 

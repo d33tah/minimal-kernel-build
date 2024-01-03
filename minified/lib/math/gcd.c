@@ -11,7 +11,6 @@
  * has decent hardware division.
  */
 
-#if !defined(CONFIG_CPU_NO_EFFICIENT_FFS)
 
 /* If __ffs is available, the even/odd algorithm benchmarks slower. */
 
@@ -44,42 +43,5 @@ unsigned long gcd(unsigned long a, unsigned long b)
 	}
 }
 
-#else
-
-/* If normalization is done by loops, the even/odd algorithm is a win. */
-unsigned long gcd(unsigned long a, unsigned long b)
-{
-	unsigned long r = a | b;
-
-	if (!a || !b)
-		return r;
-
-	/* Isolate lsbit of r */
-	r &= -r;
-
-	while (!(b & r))
-		b >>= 1;
-	if (b == r)
-		return r;
-
-	for (;;) {
-		while (!(a & r))
-			a >>= 1;
-		if (a == r)
-			return r;
-		if (a == b)
-			return a;
-
-		if (a < b)
-			swap(a, b);
-		a -= b;
-		a >>= 1;
-		if (a & r)
-			a += b;
-		a >>= 1;
-	}
-}
-
-#endif
 
 EXPORT_SYMBOL_GPL(gcd);

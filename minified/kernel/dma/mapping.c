@@ -5,7 +5,7 @@
  * Copyright (c) 2006  SUSE Linux Products GmbH
  * Copyright (c) 2006  Tejun Heo <teheo@suse.de>
  */
-#include <linux/memblock.h> /* for max_pfn */
+#include <linux/memblock.h>
 #include <linux/acpi.h>
 #include <linux/dma-map-ops.h>
 #include <linux/export.h>
@@ -113,11 +113,6 @@ static bool dma_go_direct(struct device *dev, dma_addr_t mask,
 {
 	if (likely(!ops))
 		return true;
-#ifdef CONFIG_DMA_OPS_BYPASS
-	if (dev->dma_ops_bypass)
-		return min_not_zero(mask, dev->bus_dma_limit) >=
-			    dma_direct_get_required_mask(dev);
-#endif
 	return false;
 }
 
@@ -400,7 +395,6 @@ int dma_get_sgtable_attrs(struct device *dev, struct sg_table *sgt,
 }
 EXPORT_SYMBOL(dma_get_sgtable_attrs);
 
-#ifdef CONFIG_MMU
 /*
  * Return the page attributes used for mapping dma_alloc_* memory, either in
  * kernel space if remapping is needed, or to userspace through dma_mmap_*.
@@ -409,13 +403,8 @@ pgprot_t dma_pgprot(struct device *dev, pgprot_t prot, unsigned long attrs)
 {
 	if (dev_is_dma_coherent(dev))
 		return prot;
-#ifdef CONFIG_ARCH_HAS_DMA_WRITE_COMBINE
-	if (attrs & DMA_ATTR_WRITE_COMBINE)
-		return pgprot_writecombine(prot);
-#endif
 	return pgprot_dmacoherent(prot);
 }
-#endif /* CONFIG_MMU */
 
 /**
  * dma_can_mmap - check if a given device supports dma_mmap_*
@@ -720,11 +709,7 @@ int dma_supported(struct device *dev, u64 mask)
 }
 EXPORT_SYMBOL(dma_supported);
 
-#ifdef CONFIG_ARCH_HAS_DMA_SET_MASK
-void arch_dma_set_mask(struct device *dev, u64 mask);
-#else
-#define arch_dma_set_mask(dev, mask)	do { } while (0)
-#endif
+#define arch_dma_set_mask(dev,mask) do { } while (0)
 
 int dma_set_mask(struct device *dev, u64 mask)
 {

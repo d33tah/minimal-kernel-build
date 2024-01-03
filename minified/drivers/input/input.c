@@ -30,8 +30,8 @@ MODULE_AUTHOR("Vojtech Pavlik <vojtech@suse.cz>");
 MODULE_DESCRIPTION("Input core");
 MODULE_LICENSE("GPL");
 
-#define INPUT_MAX_CHAR_DEVICES		1024
-#define INPUT_FIRST_DYNAMIC_DEV		256
+#define INPUT_MAX_CHAR_DEVICES 1024
+#define INPUT_FIRST_DYNAMIC_DEV 256
 static DEFINE_IDA(input_ida);
 
 static LIST_HEAD(input_dev_list);
@@ -212,12 +212,12 @@ static void input_repeat_key(struct timer_list *t)
 	spin_unlock_irqrestore(&dev->event_lock, flags);
 }
 
-#define INPUT_IGNORE_EVENT	0
-#define INPUT_PASS_TO_HANDLERS	1
-#define INPUT_PASS_TO_DEVICE	2
-#define INPUT_SLOT		4
-#define INPUT_FLUSH		8
-#define INPUT_PASS_TO_ALL	(INPUT_PASS_TO_HANDLERS | INPUT_PASS_TO_DEVICE)
+#define INPUT_IGNORE_EVENT 0
+#define INPUT_PASS_TO_HANDLERS 1
+#define INPUT_PASS_TO_DEVICE 2
+#define INPUT_SLOT 4
+#define INPUT_FLUSH 8
+#define INPUT_PASS_TO_ALL (INPUT_PASS_TO_HANDLERS | INPUT_PASS_TO_DEVICE)
 
 static int input_handle_abs_event(struct input_dev *dev,
 				  unsigned int code, int *pval)
@@ -1087,31 +1087,6 @@ static int input_attach_handler(struct input_dev *dev, struct input_handler *han
 	return error;
 }
 
-#ifdef CONFIG_COMPAT
-
-static int input_bits_to_string(char *buf, int buf_size,
-				unsigned long bits, bool skip_empty)
-{
-	int len = 0;
-
-	if (in_compat_syscall()) {
-		u32 dword = bits >> 32;
-		if (dword || !skip_empty)
-			len += snprintf(buf, buf_size, "%x ", dword);
-
-		dword = bits & 0xffffffffUL;
-		if (dword || !skip_empty || len)
-			len += snprintf(buf + len, max(buf_size - len, 0),
-					"%x", dword);
-	} else {
-		if (bits || !skip_empty)
-			len += snprintf(buf, buf_size, "%lx", bits);
-	}
-
-	return len;
-}
-
-#else /* !CONFIG_COMPAT */
 
 static int input_bits_to_string(char *buf, int buf_size,
 				unsigned long bits, bool skip_empty)
@@ -1120,273 +1095,12 @@ static int input_bits_to_string(char *buf, int buf_size,
 		snprintf(buf, buf_size, "%lx", bits) : 0;
 }
 
-#endif
 
-#ifdef CONFIG_PROC_FS
-
-static struct proc_dir_entry *proc_bus_input_dir;
-static DECLARE_WAIT_QUEUE_HEAD(input_devices_poll_wait);
-static int input_devices_state;
-
-static inline void input_wakeup_procfs_readers(void)
-{
-	input_devices_state++;
-	wake_up(&input_devices_poll_wait);
-}
-
-static __poll_t input_proc_devices_poll(struct file *file, poll_table *wait)
-{
-	poll_wait(file, &input_devices_poll_wait, wait);
-	if (file->f_version != input_devices_state) {
-		file->f_version = input_devices_state;
-		return EPOLLIN | EPOLLRDNORM;
-	}
-
-	return 0;
-}
-
-union input_seq_state {
-	struct {
-		unsigned short pos;
-		bool mutex_acquired;
-	};
-	void *p;
-};
-
-static void *input_devices_seq_start(struct seq_file *seq, loff_t *pos)
-{
-	union input_seq_state *state = (union input_seq_state *)&seq->private;
-	int error;
-
-	/* We need to fit into seq->private pointer */
-	BUILD_BUG_ON(sizeof(union input_seq_state) != sizeof(seq->private));
-
-	error = mutex_lock_interruptible(&input_mutex);
-	if (error) {
-		state->mutex_acquired = false;
-		return ERR_PTR(error);
-	}
-
-	state->mutex_acquired = true;
-
-	return seq_list_start(&input_dev_list, *pos);
-}
-
-static void *input_devices_seq_next(struct seq_file *seq, void *v, loff_t *pos)
-{
-	return seq_list_next(v, &input_dev_list, pos);
-}
-
-static void input_seq_stop(struct seq_file *seq, void *v)
-{
-	union input_seq_state *state = (union input_seq_state *)&seq->private;
-
-	if (state->mutex_acquired)
-		mutex_unlock(&input_mutex);
-}
-
-static void input_seq_print_bitmap(struct seq_file *seq, const char *name,
-				   unsigned long *bitmap, int max)
-{
-	int i;
-	bool skip_empty = true;
-	char buf[18];
-
-	seq_printf(seq, "B: %s=", name);
-
-	for (i = BITS_TO_LONGS(max) - 1; i >= 0; i--) {
-		if (input_bits_to_string(buf, sizeof(buf),
-					 bitmap[i], skip_empty)) {
-			skip_empty = false;
-			seq_printf(seq, "%s%s", buf, i > 0 ? " " : "");
-		}
-	}
-
-	/*
-	 * If no output was produced print a single 0.
-	 */
-	if (skip_empty)
-		seq_putc(seq, '0');
-
-	seq_putc(seq, '\n');
-}
-
-static int input_devices_seq_show(struct seq_file *seq, void *v)
-{
-	struct input_dev *dev = container_of(v, struct input_dev, node);
-	const char *path = kobject_get_path(&dev->dev.kobj, GFP_KERNEL);
-	struct input_handle *handle;
-
-	seq_printf(seq, "I: Bus=%04x Vendor=%04x Product=%04x Version=%04x\n",
-		   dev->id.bustype, dev->id.vendor, dev->id.product, dev->id.version);
-
-	seq_printf(seq, "N: Name=\"%s\"\n", dev->name ? dev->name : "");
-	seq_printf(seq, "P: Phys=%s\n", dev->phys ? dev->phys : "");
-	seq_printf(seq, "S: Sysfs=%s\n", path ? path : "");
-	seq_printf(seq, "U: Uniq=%s\n", dev->uniq ? dev->uniq : "");
-	seq_puts(seq, "H: Handlers=");
-
-	list_for_each_entry(handle, &dev->h_list, d_node)
-		seq_printf(seq, "%s ", handle->name);
-	seq_putc(seq, '\n');
-
-	input_seq_print_bitmap(seq, "PROP", dev->propbit, INPUT_PROP_MAX);
-
-	input_seq_print_bitmap(seq, "EV", dev->evbit, EV_MAX);
-	if (test_bit(EV_KEY, dev->evbit))
-		input_seq_print_bitmap(seq, "KEY", dev->keybit, KEY_MAX);
-	if (test_bit(EV_REL, dev->evbit))
-		input_seq_print_bitmap(seq, "REL", dev->relbit, REL_MAX);
-	if (test_bit(EV_ABS, dev->evbit))
-		input_seq_print_bitmap(seq, "ABS", dev->absbit, ABS_MAX);
-	if (test_bit(EV_MSC, dev->evbit))
-		input_seq_print_bitmap(seq, "MSC", dev->mscbit, MSC_MAX);
-	if (test_bit(EV_LED, dev->evbit))
-		input_seq_print_bitmap(seq, "LED", dev->ledbit, LED_MAX);
-	if (test_bit(EV_SND, dev->evbit))
-		input_seq_print_bitmap(seq, "SND", dev->sndbit, SND_MAX);
-	if (test_bit(EV_FF, dev->evbit))
-		input_seq_print_bitmap(seq, "FF", dev->ffbit, FF_MAX);
-	if (test_bit(EV_SW, dev->evbit))
-		input_seq_print_bitmap(seq, "SW", dev->swbit, SW_MAX);
-
-	seq_putc(seq, '\n');
-
-	kfree(path);
-	return 0;
-}
-
-static const struct seq_operations input_devices_seq_ops = {
-	.start	= input_devices_seq_start,
-	.next	= input_devices_seq_next,
-	.stop	= input_seq_stop,
-	.show	= input_devices_seq_show,
-};
-
-static int input_proc_devices_open(struct inode *inode, struct file *file)
-{
-	return seq_open(file, &input_devices_seq_ops);
-}
-
-static const struct proc_ops input_devices_proc_ops = {
-	.proc_open	= input_proc_devices_open,
-	.proc_poll	= input_proc_devices_poll,
-	.proc_read	= seq_read,
-	.proc_lseek	= seq_lseek,
-	.proc_release	= seq_release,
-};
-
-static void *input_handlers_seq_start(struct seq_file *seq, loff_t *pos)
-{
-	union input_seq_state *state = (union input_seq_state *)&seq->private;
-	int error;
-
-	/* We need to fit into seq->private pointer */
-	BUILD_BUG_ON(sizeof(union input_seq_state) != sizeof(seq->private));
-
-	error = mutex_lock_interruptible(&input_mutex);
-	if (error) {
-		state->mutex_acquired = false;
-		return ERR_PTR(error);
-	}
-
-	state->mutex_acquired = true;
-	state->pos = *pos;
-
-	return seq_list_start(&input_handler_list, *pos);
-}
-
-static void *input_handlers_seq_next(struct seq_file *seq, void *v, loff_t *pos)
-{
-	union input_seq_state *state = (union input_seq_state *)&seq->private;
-
-	state->pos = *pos + 1;
-	return seq_list_next(v, &input_handler_list, pos);
-}
-
-static int input_handlers_seq_show(struct seq_file *seq, void *v)
-{
-	struct input_handler *handler = container_of(v, struct input_handler, node);
-	union input_seq_state *state = (union input_seq_state *)&seq->private;
-
-	seq_printf(seq, "N: Number=%u Name=%s", state->pos, handler->name);
-	if (handler->filter)
-		seq_puts(seq, " (filter)");
-	if (handler->legacy_minors)
-		seq_printf(seq, " Minor=%d", handler->minor);
-	seq_putc(seq, '\n');
-
-	return 0;
-}
-
-static const struct seq_operations input_handlers_seq_ops = {
-	.start	= input_handlers_seq_start,
-	.next	= input_handlers_seq_next,
-	.stop	= input_seq_stop,
-	.show	= input_handlers_seq_show,
-};
-
-static int input_proc_handlers_open(struct inode *inode, struct file *file)
-{
-	return seq_open(file, &input_handlers_seq_ops);
-}
-
-static const struct proc_ops input_handlers_proc_ops = {
-	.proc_open	= input_proc_handlers_open,
-	.proc_read	= seq_read,
-	.proc_lseek	= seq_lseek,
-	.proc_release	= seq_release,
-};
-
-static int __init input_proc_init(void)
-{
-	struct proc_dir_entry *entry;
-
-	proc_bus_input_dir = proc_mkdir("bus/input", NULL);
-	if (!proc_bus_input_dir)
-		return -ENOMEM;
-
-	entry = proc_create("devices", 0, proc_bus_input_dir,
-			    &input_devices_proc_ops);
-	if (!entry)
-		goto fail1;
-
-	entry = proc_create("handlers", 0, proc_bus_input_dir,
-			    &input_handlers_proc_ops);
-	if (!entry)
-		goto fail2;
-
-	return 0;
-
- fail2:	remove_proc_entry("devices", proc_bus_input_dir);
- fail1: remove_proc_entry("bus/input", NULL);
-	return -ENOMEM;
-}
-
-static void input_proc_exit(void)
-{
-	remove_proc_entry("devices", proc_bus_input_dir);
-	remove_proc_entry("handlers", proc_bus_input_dir);
-	remove_proc_entry("bus/input", NULL);
-}
-
-#else /* !CONFIG_PROC_FS */
 static inline void input_wakeup_procfs_readers(void) { }
 static inline int input_proc_init(void) { return 0; }
 static inline void input_proc_exit(void) { }
-#endif
 
-#define INPUT_DEV_STRING_ATTR_SHOW(name)				\
-static ssize_t input_dev_show_##name(struct device *dev,		\
-				     struct device_attribute *attr,	\
-				     char *buf)				\
-{									\
-	struct input_dev *input_dev = to_input_dev(dev);		\
-									\
-	return scnprintf(buf, PAGE_SIZE, "%s\n",			\
-			 input_dev->name ? input_dev->name : "");	\
-}									\
-static DEVICE_ATTR(name, S_IRUGO, input_dev_show_##name, NULL)
+#define INPUT_DEV_STRING_ATTR_SHOW(name) static ssize_t input_dev_show_ ##name(struct device *dev, struct device_attribute *attr, char *buf) { struct input_dev *input_dev = to_input_dev(dev); return scnprintf(buf, PAGE_SIZE, "%s\n", input_dev->name ? input_dev->name : ""); } static DEVICE_ATTR(name, S_IRUGO, input_dev_show_ ##name, NULL)
 
 INPUT_DEV_STRING_ATTR_SHOW(name);
 INPUT_DEV_STRING_ATTR_SHOW(phys);
@@ -1517,15 +1231,7 @@ static const struct attribute_group input_dev_attr_group = {
 	.attrs	= input_dev_attrs,
 };
 
-#define INPUT_DEV_ID_ATTR(name)						\
-static ssize_t input_dev_show_id_##name(struct device *dev,		\
-					struct device_attribute *attr,	\
-					char *buf)			\
-{									\
-	struct input_dev *input_dev = to_input_dev(dev);		\
-	return scnprintf(buf, PAGE_SIZE, "%04x\n", input_dev->id.name);	\
-}									\
-static DEVICE_ATTR(name, S_IRUGO, input_dev_show_id_##name, NULL)
+#define INPUT_DEV_ID_ATTR(name) static ssize_t input_dev_show_id_ ##name(struct device *dev, struct device_attribute *attr, char *buf) { struct input_dev *input_dev = to_input_dev(dev); return scnprintf(buf, PAGE_SIZE, "%04x\n", input_dev->id.name); } static DEVICE_ATTR(name, S_IRUGO, input_dev_show_id_ ##name, NULL)
 
 INPUT_DEV_ID_ATTR(bustype);
 INPUT_DEV_ID_ATTR(vendor);
@@ -1574,18 +1280,7 @@ static int input_print_bitmap(char *buf, int buf_size, unsigned long *bitmap,
 	return len;
 }
 
-#define INPUT_DEV_CAP_ATTR(ev, bm)					\
-static ssize_t input_dev_show_cap_##bm(struct device *dev,		\
-				       struct device_attribute *attr,	\
-				       char *buf)			\
-{									\
-	struct input_dev *input_dev = to_input_dev(dev);		\
-	int len = input_print_bitmap(buf, PAGE_SIZE,			\
-				     input_dev->bm##bit, ev##_MAX,	\
-				     true);				\
-	return min_t(int, len, PAGE_SIZE);				\
-}									\
-static DEVICE_ATTR(bm, S_IRUGO, input_dev_show_cap_##bm, NULL)
+#define INPUT_DEV_CAP_ATTR(ev,bm) static ssize_t input_dev_show_cap_ ##bm(struct device *dev, struct device_attribute *attr, char *buf) { struct input_dev *input_dev = to_input_dev(dev); int len = input_print_bitmap(buf, PAGE_SIZE, input_dev->bm ##bit, ev ##_MAX, true); return min_t(int, len, PAGE_SIZE); } static DEVICE_ATTR(bm, S_IRUGO, input_dev_show_cap_ ##bm, NULL)
 
 INPUT_DEV_CAP_ATTR(EV, ev);
 INPUT_DEV_CAP_ATTR(KEY, key);
@@ -1677,26 +1372,11 @@ static int input_add_uevent_modalias_var(struct kobj_uevent_env *env,
 	return 0;
 }
 
-#define INPUT_ADD_HOTPLUG_VAR(fmt, val...)				\
-	do {								\
-		int err = add_uevent_var(env, fmt, val);		\
-		if (err)						\
-			return err;					\
-	} while (0)
+#define INPUT_ADD_HOTPLUG_VAR(fmt,val...) do { int err = add_uevent_var(env, fmt, val); if (err) return err; } while (0)
 
-#define INPUT_ADD_HOTPLUG_BM_VAR(name, bm, max)				\
-	do {								\
-		int err = input_add_uevent_bm_var(env, name, bm, max);	\
-		if (err)						\
-			return err;					\
-	} while (0)
+#define INPUT_ADD_HOTPLUG_BM_VAR(name,bm,max) do { int err = input_add_uevent_bm_var(env, name, bm, max); if (err) return err; } while (0)
 
-#define INPUT_ADD_HOTPLUG_MODALIAS_VAR(dev)				\
-	do {								\
-		int err = input_add_uevent_modalias_var(env, dev);	\
-		if (err)						\
-			return err;					\
-	} while (0)
+#define INPUT_ADD_HOTPLUG_MODALIAS_VAR(dev) do { int err = input_add_uevent_modalias_var(env, dev); if (err) return err; } while (0)
 
 static int input_dev_uevent(struct device *device, struct kobj_uevent_env *env)
 {
@@ -1737,22 +1417,7 @@ static int input_dev_uevent(struct device *device, struct kobj_uevent_env *env)
 	return 0;
 }
 
-#define INPUT_DO_TOGGLE(dev, type, bits, on)				\
-	do {								\
-		int i;							\
-		bool active;						\
-									\
-		if (!test_bit(EV_##type, dev->evbit))			\
-			break;						\
-									\
-		for_each_set_bit(i, dev->bits##bit, type##_CNT) {	\
-			active = test_bit(i, dev->bits);		\
-			if (!active && !on)				\
-				continue;				\
-									\
-			dev->event(dev, EV_##type, i, on ? active : 0);	\
-		}							\
-	} while (0)
+#define INPUT_DO_TOGGLE(dev,type,bits,on) do { int i; bool active; if (!test_bit(EV_ ##type, dev->evbit)) break; for_each_set_bit(i, dev->bits ##bit, type ##_CNT) { active = test_bit(i, dev->bits); if (!active && !on) continue; dev->event(dev, EV_ ##type, i, on ? active : 0); } } while (0)
 
 static void input_dev_toggle(struct input_dev *dev, bool activate)
 {
@@ -1846,88 +1511,11 @@ out:
 	return ret;
 }
 
-#ifdef CONFIG_PM_SLEEP
-static int input_dev_suspend(struct device *dev)
-{
-	struct input_dev *input_dev = to_input_dev(dev);
-
-	spin_lock_irq(&input_dev->event_lock);
-
-	/*
-	 * Keys that are pressed now are unlikely to be
-	 * still pressed when we resume.
-	 */
-	input_dev_release_keys(input_dev);
-
-	/* Turn off LEDs and sounds, if any are active. */
-	input_dev_toggle(input_dev, false);
-
-	spin_unlock_irq(&input_dev->event_lock);
-
-	return 0;
-}
-
-static int input_dev_resume(struct device *dev)
-{
-	struct input_dev *input_dev = to_input_dev(dev);
-
-	spin_lock_irq(&input_dev->event_lock);
-
-	/* Restore state of LEDs and sounds, if any were active. */
-	input_dev_toggle(input_dev, true);
-
-	spin_unlock_irq(&input_dev->event_lock);
-
-	return 0;
-}
-
-static int input_dev_freeze(struct device *dev)
-{
-	struct input_dev *input_dev = to_input_dev(dev);
-
-	spin_lock_irq(&input_dev->event_lock);
-
-	/*
-	 * Keys that are pressed now are unlikely to be
-	 * still pressed when we resume.
-	 */
-	input_dev_release_keys(input_dev);
-
-	spin_unlock_irq(&input_dev->event_lock);
-
-	return 0;
-}
-
-static int input_dev_poweroff(struct device *dev)
-{
-	struct input_dev *input_dev = to_input_dev(dev);
-
-	spin_lock_irq(&input_dev->event_lock);
-
-	/* Turn off LEDs and sounds, if any are active. */
-	input_dev_toggle(input_dev, false);
-
-	spin_unlock_irq(&input_dev->event_lock);
-
-	return 0;
-}
-
-static const struct dev_pm_ops input_dev_pm_ops = {
-	.suspend	= input_dev_suspend,
-	.resume		= input_dev_resume,
-	.freeze		= input_dev_freeze,
-	.poweroff	= input_dev_poweroff,
-	.restore	= input_dev_resume,
-};
-#endif /* CONFIG_PM */
 
 static const struct device_type input_dev_type = {
 	.groups		= input_dev_attr_groups,
 	.release	= input_dev_release,
 	.uevent		= input_dev_uevent,
-#ifdef CONFIG_PM_SLEEP
-	.pm		= &input_dev_pm_ops,
-#endif
 };
 
 static char *input_devnode(struct device *dev, umode_t *mode)
@@ -2208,12 +1796,7 @@ static unsigned int input_estimate_events_per_packet(struct input_dev *dev)
 	return events;
 }
 
-#define INPUT_CLEANSE_BITMASK(dev, type, bits)				\
-	do {								\
-		if (!test_bit(EV_##type, dev->evbit))			\
-			memset(dev->bits##bit, 0,			\
-				sizeof(dev->bits##bit));		\
-	} while (0)
+#define INPUT_CLEANSE_BITMASK(dev,type,bits) do { if (!test_bit(EV_ ##type, dev->evbit)) memset(dev->bits ##bit, 0, sizeof(dev->bits ##bit)); } while (0)
 
 static void input_cleanse_bitmasks(struct input_dev *dev)
 {

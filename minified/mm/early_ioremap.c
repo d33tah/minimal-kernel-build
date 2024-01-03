@@ -19,7 +19,6 @@
 #include <asm/early_ioremap.h>
 #include "internal.h"
 
-#ifdef CONFIG_MMU
 static int early_ioremap_debug __initdata;
 
 static int __init early_ioremap_debug_setup(char *str)
@@ -49,20 +48,7 @@ void __init early_ioremap_reset(void)
  * Architectures wanting to allow early_ioremap after paging_init() can
  * define __late_set_fixmap and __late_clear_fixmap to do the right thing.
  */
-#ifndef __late_set_fixmap
-static inline void __init __late_set_fixmap(enum fixed_addresses idx,
-					    phys_addr_t phys, pgprot_t prot)
-{
-	BUG();
-}
-#endif
 
-#ifndef __late_clear_fixmap
-static inline void __init __late_clear_fixmap(enum fixed_addresses idx)
-{
-	BUG();
-}
-#endif
 
 static void __iomem *prev_map[FIX_BTMAPS_SLOTS] __initdata;
 static unsigned long prev_size[FIX_BTMAPS_SLOTS] __initdata;
@@ -224,7 +210,6 @@ early_memremap(resource_size_t phys_addr, unsigned long size)
 
 	return (__force void *)__early_ioremap(phys_addr, size, prot);
 }
-#ifdef FIXMAP_PAGE_RO
 void __init *
 early_memremap_ro(resource_size_t phys_addr, unsigned long size)
 {
@@ -233,19 +218,9 @@ early_memremap_ro(resource_size_t phys_addr, unsigned long size)
 
 	return (__force void *)__early_ioremap(phys_addr, size, prot);
 }
-#endif
 
-#ifdef CONFIG_ARCH_USE_MEMREMAP_PROT
-void __init *
-early_memremap_prot(resource_size_t phys_addr, unsigned long size,
-		    unsigned long prot_val)
-{
-	return (__force void *)__early_ioremap(phys_addr, size,
-					       __pgprot(prot_val));
-}
-#endif
 
-#define MAX_MAP_CHUNK	(NR_FIX_BTMAPS << PAGE_SHIFT)
+#define MAX_MAP_CHUNK (NR_FIX_BTMAPS << PAGE_SHIFT)
 
 void __init copy_from_early_mem(void *dest, phys_addr_t src, unsigned long size)
 {
@@ -266,31 +241,6 @@ void __init copy_from_early_mem(void *dest, phys_addr_t src, unsigned long size)
 	}
 }
 
-#else /* CONFIG_MMU */
-
-void __init __iomem *
-early_ioremap(resource_size_t phys_addr, unsigned long size)
-{
-	return (__force void __iomem *)phys_addr;
-}
-
-/* Remap memory */
-void __init *
-early_memremap(resource_size_t phys_addr, unsigned long size)
-{
-	return (void *)phys_addr;
-}
-void __init *
-early_memremap_ro(resource_size_t phys_addr, unsigned long size)
-{
-	return (void *)phys_addr;
-}
-
-void __init early_iounmap(void __iomem *addr, unsigned long size)
-{
-}
-
-#endif /* CONFIG_MMU */
 
 
 void __init early_memunmap(void *addr, unsigned long size)

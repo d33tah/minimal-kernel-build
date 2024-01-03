@@ -41,18 +41,7 @@ bool irq_wait_for_poll(struct irq_desc *desc)
 		      smp_processor_id(), desc->irq_data.irq))
 		return false;
 
-#ifdef CONFIG_SMP
-	do {
-		raw_spin_unlock(&desc->lock);
-		while (irqd_irq_inprogress(&desc->irq_data))
-			cpu_relax();
-		raw_spin_lock(&desc->lock);
-	} while (irqd_irq_inprogress(&desc->irq_data));
-	/* Might have been disabled in meantime */
-	return !irqd_irq_disabled(&desc->irq_data) && desc->action;
-#else
 	return false;
-#endif
 }
 
 
@@ -267,7 +256,7 @@ try_misrouted_irq(unsigned int irq, struct irq_desc *desc,
 	return action && (action->flags & IRQF_IRQPOLL);
 }
 
-#define SPURIOUS_DEFERRED	0x80000000
+#define SPURIOUS_DEFERRED 0x80000000
 
 void note_interrupt(struct irq_desc *desc, irqreturn_t action_ret)
 {

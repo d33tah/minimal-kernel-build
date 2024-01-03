@@ -15,9 +15,9 @@
 DEFINE_PER_CPU_PAGE_ALIGNED(struct debug_store, cpu_debug_store);
 
 /* The size of a BTS record in bytes: */
-#define BTS_RECORD_SIZE		24
+#define BTS_RECORD_SIZE 24
 
-#define PEBS_FIXUP_SIZE		PAGE_SIZE
+#define PEBS_FIXUP_SIZE PAGE_SIZE
 
 /*
  * pebs_record_32 for p4 and core not supported
@@ -60,7 +60,7 @@ union intel_x86_pebs_dse {
  * Map PEBS Load Latency Data Source encodings to generic
  * memory data source information
  */
-#define P(a, b) PERF_MEM_S(a, b)
+#define P(a,b) PERF_MEM_S(a, b)
 #define OP_LH (P(OP, LOAD) | P(LVL, HIT))
 #define LEVEL(x) P(LVLNUM, x)
 #define REM P(REMOTE, REMOTE)
@@ -311,7 +311,7 @@ union hsw_tsx_tuning {
 	u64	    value;
 };
 
-#define PEBS_HSW_TSX_FLAGS	0xff00000000ULL
+#define PEBS_HSW_TSX_FLAGS 0xff00000000ULL
 
 /* Same as HSW, plus TSC */
 
@@ -1057,11 +1057,7 @@ static void adaptive_pebs_record_size_update(void)
 	cpuc->pebs_record_size = sz;
 }
 
-#define PERF_PEBS_MEMINFO_TYPE	(PERF_SAMPLE_ADDR | PERF_SAMPLE_DATA_SRC |   \
-				PERF_SAMPLE_PHYS_ADDR |			     \
-				PERF_SAMPLE_WEIGHT_TYPE |		     \
-				PERF_SAMPLE_TRANSACTION |		     \
-				PERF_SAMPLE_DATA_PAGE_SIZE)
+#define PERF_PEBS_MEMINFO_TYPE (PERF_SAMPLE_ADDR | PERF_SAMPLE_DATA_SRC | PERF_SAMPLE_PHYS_ADDR | PERF_SAMPLE_WEIGHT_TYPE | PERF_SAMPLE_TRANSACTION | PERF_SAMPLE_DATA_PAGE_SIZE)
 
 static u64 pebs_update_adaptive_cfg(struct perf_event *event)
 {
@@ -1375,9 +1371,6 @@ static int intel_pmu_pebs_fixup_ip(struct pt_regs *regs)
 
 		old_to = to;
 
-#ifdef CONFIG_X86_64
-		is_64bit = kernel_ip(to) || any_64bit_mode(regs);
-#endif
 		insn_init(&insn, kaddr, size, is_64bit);
 
 		/*
@@ -1431,10 +1424,7 @@ static inline u64 get_pebs_status(void *n)
 	return ((struct pebs_basic *)n)->applicable_counters;
 }
 
-#define PERF_X86_EVENT_PEBS_HSW_PREC \
-		(PERF_X86_EVENT_PEBS_ST_HSW | \
-		 PERF_X86_EVENT_PEBS_LD_HSW | \
-		 PERF_X86_EVENT_PEBS_NA_HSW)
+#define PERF_X86_EVENT_PEBS_HSW_PREC (PERF_X86_EVENT_PEBS_ST_HSW | PERF_X86_EVENT_PEBS_LD_HSW | PERF_X86_EVENT_PEBS_NA_HSW)
 
 static u64 get_data_src(struct perf_event *event, u64 aux)
 {
@@ -1453,9 +1443,7 @@ static u64 get_data_src(struct perf_event *event, u64 aux)
 	return val;
 }
 
-#define PERF_SAMPLE_ADDR_TYPE	(PERF_SAMPLE_ADDR |		\
-				 PERF_SAMPLE_PHYS_ADDR |	\
-				 PERF_SAMPLE_DATA_PAGE_SIZE)
+#define PERF_SAMPLE_ADDR_TYPE (PERF_SAMPLE_ADDR | PERF_SAMPLE_PHYS_ADDR | PERF_SAMPLE_DATA_PAGE_SIZE)
 
 static void setup_pebs_fixed_sample_data(struct perf_event *event,
 				   struct pt_regs *iregs, void *__pebs,
@@ -1529,16 +1517,6 @@ static void setup_pebs_fixed_sample_data(struct perf_event *event,
 		regs->bp = pebs->bp;
 		regs->sp = pebs->sp;
 
-#ifndef CONFIG_X86_32
-		regs->r8 = pebs->r8;
-		regs->r9 = pebs->r9;
-		regs->r10 = pebs->r10;
-		regs->r11 = pebs->r11;
-		regs->r12 = pebs->r12;
-		regs->r13 = pebs->r13;
-		regs->r14 = pebs->r14;
-		regs->r15 = pebs->r15;
-#endif
 	}
 
 	if (event->attr.precise_ip > 1) {
@@ -1610,20 +1588,10 @@ static void adaptive_pebs_save_regs(struct pt_regs *regs,
 	regs->di = gprs->di;
 	regs->bp = gprs->bp;
 	regs->sp = gprs->sp;
-#ifndef CONFIG_X86_32
-	regs->r8 = gprs->r8;
-	regs->r9 = gprs->r9;
-	regs->r10 = gprs->r10;
-	regs->r11 = gprs->r11;
-	regs->r12 = gprs->r12;
-	regs->r13 = gprs->r13;
-	regs->r14 = gprs->r14;
-	regs->r15 = gprs->r15;
-#endif
 }
 
-#define PEBS_LATENCY_MASK			0xffff
-#define PEBS_CACHE_LATENCY_OFFSET		32
+#define PEBS_LATENCY_MASK 0xffff
+#define PEBS_CACHE_LATENCY_OFFSET 32
 
 /*
  * With adaptive PEBS the layout depends on what fields are configured.

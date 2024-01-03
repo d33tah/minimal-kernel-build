@@ -33,7 +33,7 @@
  * permissions.
  */
 #define DEVPTS_DEFAULT_PTMX_MODE 0000
-#define PTMX_MINOR	2
+#define PTMX_MINOR 2
 
 /*
  * sysctl support for setting limits on the number of Unix98 ptys allocated.
@@ -233,8 +233,8 @@ void devpts_release(struct pts_fs_info *fsi)
 	deactivate_super(fsi->sb);
 }
 
-#define PARSE_MOUNT	0
-#define PARSE_REMOUNT	1
+#define PARSE_MOUNT 0
+#define PARSE_REMOUNT 1
 
 /*
  * parse_mount_options():

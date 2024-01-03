@@ -61,7 +61,7 @@
 #include <linux/slab.h>
 
 #include <linux/mm.h>
-#include <linux/swap.h> /* struct reclaim_state */
+#include <linux/swap.h>
 #include <linux/cache.h>
 #include <linux/init.h>
 #include <linux/export.h>
@@ -82,11 +82,7 @@
  * Those with larger size contain their size in the first SLOB_UNIT of
  * memory, and the offset of the next free block in the second SLOB_UNIT.
  */
-#if PAGE_SIZE <= (32767 * 2)
 typedef s16 slobidx_t;
-#else
-typedef s32 slobidx_t;
-#endif
 
 struct slob_block {
 	slobidx_t units;
@@ -192,11 +188,6 @@ static void *slob_new_pages(gfp_t gfp, int order, int node)
 {
 	struct page *page;
 
-#ifdef CONFIG_NUMA
-	if (node != NUMA_NO_NODE)
-		page = __alloc_pages_node(node, gfp, order);
-	else
-#endif
 		page = alloc_pages(gfp, order);
 
 	if (!page)
@@ -319,14 +310,6 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node,
 	/* Iterate through each partially free page, try to find room */
 	list_for_each_entry(sp, slob_list, slab_list) {
 		bool page_removed_from_list = false;
-#ifdef CONFIG_NUMA
-		/*
-		 * If there's a node specification, search for a partial
-		 * page with a matching node id in the freelist.
-		 */
-		if (node != NUMA_NO_NODE && slab_nid(sp) != node)
-			continue;
-#endif
 		/* Enough room on this page? */
 		if (sp->units < SLOB_UNITS(size))
 			continue;
@@ -462,13 +445,11 @@ out:
 	spin_unlock_irqrestore(&slob_lock, flags);
 }
 
-#ifdef CONFIG_PRINTK
 void __kmem_obj_info(struct kmem_obj_info *kpp, void *object, struct slab *slab)
 {
 	kpp->kp_ptr = object;
 	kpp->kp_slab = slab;
 }
-#endif
 
 /*
  * End of slob allocator proper. Begin kmem_cache_alloc and kmalloc frontend.
@@ -536,14 +517,6 @@ void *__kmalloc_track_caller(size_t size, gfp_t gfp, unsigned long caller)
 }
 EXPORT_SYMBOL(__kmalloc_track_caller);
 
-#ifdef CONFIG_NUMA
-void *__kmalloc_node_track_caller(size_t size, gfp_t gfp,
-					int node, unsigned long caller)
-{
-	return __do_kmalloc_node(size, gfp, node, caller);
-}
-EXPORT_SYMBOL(__kmalloc_node_track_caller);
-#endif
 
 void kfree(const void *block)
 {
@@ -647,19 +620,6 @@ void *kmem_cache_alloc_lru(struct kmem_cache *cachep, struct list_lru *lru, gfp_
 	return slob_alloc_node(cachep, flags, NUMA_NO_NODE);
 }
 EXPORT_SYMBOL(kmem_cache_alloc_lru);
-#ifdef CONFIG_NUMA
-void *__kmalloc_node(size_t size, gfp_t gfp, int node)
-{
-	return __do_kmalloc_node(size, gfp, node, _RET_IP_);
-}
-EXPORT_SYMBOL(__kmalloc_node);
-
-void *kmem_cache_alloc_node(struct kmem_cache *cachep, gfp_t gfp, int node)
-{
-	return slob_alloc_node(cachep, gfp, node);
-}
-EXPORT_SYMBOL(kmem_cache_alloc_node);
-#endif
 
 static void __kmem_cache_free(void *b, int size)
 {

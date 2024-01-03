@@ -40,7 +40,6 @@ unsigned long int_sqrt(unsigned long x)
 }
 EXPORT_SYMBOL(int_sqrt);
 
-#if BITS_PER_LONG < 64
 /**
  * int_sqrt64 - strongly typed int_sqrt function when minimum 64 bit input
  * is expected.
@@ -68,4 +67,3 @@ u32 int_sqrt64(u64 x)
 	return y;
 }
 EXPORT_SYMBOL(int_sqrt64);
-#endif

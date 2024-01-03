@@ -50,7 +50,7 @@
 #include <asm/byteorder.h>
 #include <asm/unaligned.h>
 
-#define HEADER_SIZE	4u
+#define HEADER_SIZE 4u
 #define CON_BUF_SIZE (CONFIG_BASE_SMALL ? 256 : PAGE_SIZE)
 
 /*
@@ -64,13 +64,10 @@
  * This relies on MAX_NR_CONSOLES being  <= 63, meaning 63 actual consoles
  * with minors 0, 64, 128 and 192 being proxies for the foreground console.
  */
-#if MAX_NR_CONSOLES > 63
-#warning "/dev/vcs* devices may not accommodate more than 63 consoles"
-#endif
 
-#define console(inode)		(iminor(inode) & 63)
-#define use_unicode(inode)	(iminor(inode) & 64)
-#define use_attributes(inode)	(iminor(inode) & 128)
+#define console(inode) (iminor(inode) & 63)
+#define use_unicode(inode) (iminor(inode) & 64)
+#define use_attributes(inode) (iminor(inode) & 128)
 
 
 struct vcs_poll_data {
@@ -508,11 +505,7 @@ static u16 *vcs_write_buf_noattr(struct vc_data *vc, const char *con_buf,
  */
 static inline u16 vc_compile_le16(u8 hi, u8 lo)
 {
-#ifdef __BIG_ENDIAN
-	return (lo << 8u) | hi;
-#else
 	return (hi << 8u) | lo;
-#endif
 }
 
 static u16 *vcs_write_buf(struct vc_data *vc, const char *con_buf,

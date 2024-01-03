@@ -11,7 +11,7 @@
 #include <linux/clocksource.h>
 #include <linux/init.h>
 #include <linux/module.h>
-#include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
+#include <linux/sched.h>
 #include <linux/tick.h>
 #include <linux/kthread.h>
 #include <linux/prandom.h>
@@ -107,15 +107,10 @@ static u64 suspend_start;
  * This delay could be due to SMIs, NMIs, or to VCPU preemptions.  Used as
  * a lower bound for cs->uncertainty_margin values when registering clocks.
  */
-#ifdef CONFIG_CLOCKSOURCE_WATCHDOG_MAX_SKEW_US
-#define MAX_SKEW_USEC	CONFIG_CLOCKSOURCE_WATCHDOG_MAX_SKEW_US
-#else
-#define MAX_SKEW_USEC	100
-#endif
+#define MAX_SKEW_USEC CONFIG_CLOCKSOURCE_WATCHDOG_MAX_SKEW_US
 
 #define WATCHDOG_MAX_SKEW (MAX_SKEW_USEC * NSEC_PER_USEC)
 
-#ifdef CONFIG_CLOCKSOURCE_WATCHDOG
 static void clocksource_watchdog_work(struct work_struct *work);
 static void clocksource_select(void);
 
@@ -659,25 +654,6 @@ static bool clocksource_is_watchdog(struct clocksource *cs)
 	return cs == watchdog;
 }
 
-#else /* CONFIG_CLOCKSOURCE_WATCHDOG */
-
-static void clocksource_enqueue_watchdog(struct clocksource *cs)
-{
-	if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)
-		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
-}
-
-static void clocksource_select_watchdog(bool fallback) { }
-static inline void clocksource_dequeue_watchdog(struct clocksource *cs) { }
-static inline void clocksource_resume_watchdog(void) { }
-static inline int __clocksource_watchdog_kthread(void) { return 0; }
-static bool clocksource_is_watchdog(struct clocksource *cs) { return false; }
-void clocksource_mark_unstable(struct clocksource *cs) { }
-
-static inline void clocksource_watchdog_lock(unsigned long *flags) { }
-static inline void clocksource_watchdog_unlock(unsigned long *flags) { }
-
-#endif /* CONFIG_CLOCKSOURCE_WATCHDOG */
 
 static bool clocksource_is_suspend(struct clocksource *cs)
 {
@@ -1269,175 +1245,6 @@ int clocksource_unregister(struct clocksource *cs)
 }
 EXPORT_SYMBOL(clocksource_unregister);
 
-#ifdef CONFIG_SYSFS
-/**
- * current_clocksource_show - sysfs interface for current clocksource
- * @dev:	unused
- * @attr:	unused
- * @buf:	char buffer to be filled with clocksource list
- *
- * Provides sysfs interface for listing current clocksource.
- */
-static ssize_t current_clocksource_show(struct device *dev,
-					struct device_attribute *attr,
-					char *buf)
-{
-	ssize_t count = 0;
-
-	mutex_lock(&clocksource_mutex);
-	count = snprintf(buf, PAGE_SIZE, "%s\n", curr_clocksource->name);
-	mutex_unlock(&clocksource_mutex);
-
-	return count;
-}
-
-ssize_t sysfs_get_uname(const char *buf, char *dst, size_t cnt)
-{
-	size_t ret = cnt;
-
-	/* strings from sysfs write are not 0 terminated! */
-	if (!cnt || cnt >= CS_NAME_LEN)
-		return -EINVAL;
-
-	/* strip of \n: */
-	if (buf[cnt-1] == '\n')
-		cnt--;
-	if (cnt > 0)
-		memcpy(dst, buf, cnt);
-	dst[cnt] = 0;
-	return ret;
-}
-
-/**
- * current_clocksource_store - interface for manually overriding clocksource
- * @dev:	unused
- * @attr:	unused
- * @buf:	name of override clocksource
- * @count:	length of buffer
- *
- * Takes input from sysfs interface for manually overriding the default
- * clocksource selection.
- */
-static ssize_t current_clocksource_store(struct device *dev,
-					 struct device_attribute *attr,
-					 const char *buf, size_t count)
-{
-	ssize_t ret;
-
-	mutex_lock(&clocksource_mutex);
-
-	ret = sysfs_get_uname(buf, override_name, count);
-	if (ret >= 0)
-		clocksource_select();
-
-	mutex_unlock(&clocksource_mutex);
-
-	return ret;
-}
-static DEVICE_ATTR_RW(current_clocksource);
-
-/**
- * unbind_clocksource_store - interface for manually unbinding clocksource
- * @dev:	unused
- * @attr:	unused
- * @buf:	unused
- * @count:	length of buffer
- *
- * Takes input from sysfs interface for manually unbinding a clocksource.
- */
-static ssize_t unbind_clocksource_store(struct device *dev,
-					struct device_attribute *attr,
-					const char *buf, size_t count)
-{
-	struct clocksource *cs;
-	char name[CS_NAME_LEN];
-	ssize_t ret;
-
-	ret = sysfs_get_uname(buf, name, count);
-	if (ret < 0)
-		return ret;
-
-	ret = -ENODEV;
-	mutex_lock(&clocksource_mutex);
-	list_for_each_entry(cs, &clocksource_list, list) {
-		if (strcmp(cs->name, name))
-			continue;
-		ret = clocksource_unbind(cs);
-		break;
-	}
-	mutex_unlock(&clocksource_mutex);
-
-	return ret ? ret : count;
-}
-static DEVICE_ATTR_WO(unbind_clocksource);
-
-/**
- * available_clocksource_show - sysfs interface for listing clocksource
- * @dev:	unused
- * @attr:	unused
- * @buf:	char buffer to be filled with clocksource list
- *
- * Provides sysfs interface for listing registered clocksources
- */
-static ssize_t available_clocksource_show(struct device *dev,
-					  struct device_attribute *attr,
-					  char *buf)
-{
-	struct clocksource *src;
-	ssize_t count = 0;
-
-	mutex_lock(&clocksource_mutex);
-	list_for_each_entry(src, &clocksource_list, list) {
-		/*
-		 * Don't show non-HRES clocksource if the tick code is
-		 * in one shot mode (highres=on or nohz=on)
-		 */
-		if (!tick_oneshot_mode_active() ||
-		    (src->flags & CLOCK_SOURCE_VALID_FOR_HRES))
-			count += snprintf(buf + count,
-				  max((ssize_t)PAGE_SIZE - count, (ssize_t)0),
-				  "%s ", src->name);
-	}
-	mutex_unlock(&clocksource_mutex);
-
-	count += snprintf(buf + count,
-			  max((ssize_t)PAGE_SIZE - count, (ssize_t)0), "\n");
-
-	return count;
-}
-static DEVICE_ATTR_RO(available_clocksource);
-
-static struct attribute *clocksource_attrs[] = {
-	&dev_attr_current_clocksource.attr,
-	&dev_attr_unbind_clocksource.attr,
-	&dev_attr_available_clocksource.attr,
-	NULL
-};
-ATTRIBUTE_GROUPS(clocksource);
-
-static struct bus_type clocksource_subsys = {
-	.name = "clocksource",
-	.dev_name = "clocksource",
-};
-
-static struct device device_clocksource = {
-	.id	= 0,
-	.bus	= &clocksource_subsys,
-	.groups	= clocksource_groups,
-};
-
-static int __init init_clocksource_sysfs(void)
-{
-	int error = subsys_system_register(&clocksource_subsys, NULL);
-
-	if (!error)
-		error = device_register(&device_clocksource);
-
-	return error;
-}
-
-device_initcall(init_clocksource_sysfs);
-#endif /* CONFIG_SYSFS */
 
 /**
  * boot_override_clocksource - boot clock override

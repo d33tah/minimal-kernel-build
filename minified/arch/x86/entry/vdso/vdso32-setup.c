@@ -16,11 +16,7 @@
 #include <asm/processor.h>
 #include <asm/vdso.h>
 
-#ifdef CONFIG_COMPAT_VDSO
-#define VDSO_DEFAULT	0
-#else
-#define VDSO_DEFAULT	1
-#endif
+#define VDSO_DEFAULT 1
 
 /*
  * Should the kernel map a VDSO page into processes and pass its
@@ -47,9 +43,7 @@ static int __init vdso32_setup(char *s)
  */
 __setup("vdso32=", vdso32_setup);
 
-#ifdef CONFIG_X86_32
 __setup_param("vdso=", vdso_setup, vdso32_setup, 0);
-#endif
 
 int __init sysenter_setup(void)
 {
@@ -58,42 +52,3 @@ int __init sysenter_setup(void)
 	return 0;
 }
 
-#ifdef CONFIG_X86_64
-
-subsys_initcall(sysenter_setup);
-
-#ifdef CONFIG_SYSCTL
-/* Register vsyscall32 into the ABI table */
-#include <linux/sysctl.h>
-
-static struct ctl_table abi_table2[] = {
-	{
-		.procname	= "vsyscall32",
-		.data		= &vdso32_enabled,
-		.maxlen		= sizeof(int),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec_minmax,
-		.extra1		= SYSCTL_ZERO,
-		.extra2		= SYSCTL_ONE,
-	},
-	{}
-};
-
-static struct ctl_table abi_root_table2[] = {
-	{
-		.procname = "abi",
-		.mode = 0555,
-		.child = abi_table2
-	},
-	{}
-};
-
-static __init int ia32_binfmt_init(void)
-{
-	register_sysctl_table(abi_root_table2);
-	return 0;
-}
-__initcall(ia32_binfmt_init);
-#endif /* CONFIG_SYSCTL */
-
-#endif	/* CONFIG_X86_64 */

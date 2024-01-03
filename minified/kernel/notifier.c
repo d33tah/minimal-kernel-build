@@ -77,13 +77,6 @@ static int notifier_call_chain(struct notifier_block **nl,
 	while (nb && nr_to_call) {
 		next_nb = rcu_dereference_raw(nb->next);
 
-#ifdef CONFIG_DEBUG_NOTIFIERS
-		if (unlikely(!func_ptr_is_kernel_text(nb->notifier_call))) {
-			WARN(1, "Invalid notifier called!");
-			nb = next_nb;
-			continue;
-		}
-#endif
 		ret = nb->notifier_call(nb, val, v);
 
 		if (nr_calls)
@@ -456,7 +449,6 @@ int raw_notifier_call_chain(struct raw_notifier_head *nh,
 }
 EXPORT_SYMBOL_GPL(raw_notifier_call_chain);
 
-#ifdef CONFIG_SRCU
 /*
  *	SRCU notifier chain routines.    Registration and unregistration
  *	use a mutex, and call_chain is synchronized by SRCU (no locks).
@@ -573,7 +565,6 @@ void srcu_init_notifier_head(struct srcu_notifier_head *nh)
 }
 EXPORT_SYMBOL_GPL(srcu_init_notifier_head);
 
-#endif /* CONFIG_SRCU */
 
 static ATOMIC_NOTIFIER_HEAD(die_chain);
 

@@ -77,7 +77,7 @@
 
 #include <asm/tlbflush.h>
 
-#define CREATE_TRACE_POINTS
+#define CREATE_TRACE_POINTS 
 #include <trace/events/tlb.h>
 #include <trace/events/migrate.h>
 
@@ -604,7 +604,6 @@ void page_unlock_anon_vma_read(struct anon_vma *anon_vma)
 	anon_vma_unlock_read(anon_vma);
 }
 
-#ifdef CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
 /*
  * Flush TLB entries for recently unmapped pages from remote CPUs. It is
  * important if a PTE was dirty when it was unmapped that it's flushed
@@ -636,11 +635,9 @@ void try_to_unmap_flush_dirty(void)
  * Bits 0-14 of mm->tlb_flush_batched record pending generations.
  * Bits 16-30 of mm->tlb_flush_batched bit record flushed generations.
  */
-#define TLB_FLUSH_BATCH_FLUSHED_SHIFT	16
-#define TLB_FLUSH_BATCH_PENDING_MASK			\
-	((1 << (TLB_FLUSH_BATCH_FLUSHED_SHIFT - 1)) - 1)
-#define TLB_FLUSH_BATCH_PENDING_LARGE			\
-	(TLB_FLUSH_BATCH_PENDING_MASK / 2)
+#define TLB_FLUSH_BATCH_FLUSHED_SHIFT 16
+#define TLB_FLUSH_BATCH_PENDING_MASK ((1 << (TLB_FLUSH_BATCH_FLUSHED_SHIFT - 1)) - 1)
+#define TLB_FLUSH_BATCH_PENDING_LARGE (TLB_FLUSH_BATCH_PENDING_MASK / 2)
 
 static void set_tlb_ubc_flush_pending(struct mm_struct *mm, bool writable)
 {
@@ -731,16 +728,6 @@ void flush_tlb_batched_pending(struct mm_struct *mm)
 			       pending | (pending << TLB_FLUSH_BATCH_FLUSHED_SHIFT));
 	}
 }
-#else
-static void set_tlb_ubc_flush_pending(struct mm_struct *mm, bool writable)
-{
-}
-
-static bool should_defer_flush(struct mm_struct *mm, enum ttu_flags flags)
-{
-	return false;
-}
-#endif /* CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH */
 
 /*
  * At what user virtual address is page expected in vma?
@@ -974,24 +961,8 @@ static int page_vma_mkclean_one(struct page_vma_mapped_walk *pvmw)
 			set_pte_at(vma->vm_mm, address, pte, entry);
 			ret = 1;
 		} else {
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-			pmd_t *pmd = pvmw->pmd;
-			pmd_t entry;
-
-			if (!pmd_dirty(*pmd) && !pmd_write(*pmd))
-				continue;
-
-			flush_cache_range(vma, address,
-					  address + HPAGE_PMD_SIZE);
-			entry = pmdp_invalidate(vma, address, pmd);
-			entry = pmd_wrprotect(entry);
-			entry = pmd_mkclean(entry);
-			set_pmd_at(vma->vm_mm, address, pmd, entry);
-			ret = 1;
-#else
 			/* unexpected pmd-mapped folio? */
 			WARN_ON_ONCE(1);
-#endif
 		}
 
 		/*
@@ -1879,22 +1850,6 @@ static bool try_to_migrate_one(struct folio *folio, struct vm_area_struct *vma,
 	mmu_notifier_invalidate_range_start(&range);
 
 	while (page_vma_mapped_walk(&pvmw)) {
-#ifdef CONFIG_ARCH_ENABLE_THP_MIGRATION
-		/* PMD-mapped THP migration entry */
-		if (!pvmw.pte) {
-			subpage = folio_page(folio,
-				pmd_pfn(*pvmw.pmd) - folio_pfn(folio));
-			VM_BUG_ON_FOLIO(folio_test_hugetlb(folio) ||
-					!folio_test_pmd_mappable(folio), folio);
-
-			if (set_pmd_migration_entry(&pvmw, subpage)) {
-				ret = false;
-				page_vma_mapped_walk_done(&pvmw);
-				break;
-			}
-			continue;
-		}
-#endif
 
 		/* Unexpected PMD-mapped THP? */
 		VM_BUG_ON_FOLIO(!pvmw.pte, folio);
@@ -2158,190 +2113,6 @@ void try_to_migrate(struct folio *folio, enum ttu_flags flags)
 		rmap_walk(folio, &rwc);
 }
 
-#ifdef CONFIG_DEVICE_PRIVATE
-struct make_exclusive_args {
-	struct mm_struct *mm;
-	unsigned long address;
-	void *owner;
-	bool valid;
-};
-
-static bool page_make_device_exclusive_one(struct folio *folio,
-		struct vm_area_struct *vma, unsigned long address, void *priv)
-{
-	struct mm_struct *mm = vma->vm_mm;
-	DEFINE_FOLIO_VMA_WALK(pvmw, folio, vma, address, 0);
-	struct make_exclusive_args *args = priv;
-	pte_t pteval;
-	struct page *subpage;
-	bool ret = true;
-	struct mmu_notifier_range range;
-	swp_entry_t entry;
-	pte_t swp_pte;
-
-	mmu_notifier_range_init_owner(&range, MMU_NOTIFY_EXCLUSIVE, 0, vma,
-				      vma->vm_mm, address, min(vma->vm_end,
-				      address + folio_size(folio)),
-				      args->owner);
-	mmu_notifier_invalidate_range_start(&range);
-
-	while (page_vma_mapped_walk(&pvmw)) {
-		/* Unexpected PMD-mapped THP? */
-		VM_BUG_ON_FOLIO(!pvmw.pte, folio);
-
-		if (!pte_present(*pvmw.pte)) {
-			ret = false;
-			page_vma_mapped_walk_done(&pvmw);
-			break;
-		}
-
-		subpage = folio_page(folio,
-				pte_pfn(*pvmw.pte) - folio_pfn(folio));
-		address = pvmw.address;
-
-		/* Nuke the page table entry. */
-		flush_cache_page(vma, address, pte_pfn(*pvmw.pte));
-		pteval = ptep_clear_flush(vma, address, pvmw.pte);
-
-		/* Set the dirty flag on the folio now the pte is gone. */
-		if (pte_dirty(pteval))
-			folio_mark_dirty(folio);
-
-		/*
-		 * Check that our target page is still mapped at the expected
-		 * address.
-		 */
-		if (args->mm == mm && args->address == address &&
-		    pte_write(pteval))
-			args->valid = true;
-
-		/*
-		 * Store the pfn of the page in a special migration
-		 * pte. do_swap_page() will wait until the migration
-		 * pte is removed and then restart fault handling.
-		 */
-		if (pte_write(pteval))
-			entry = make_writable_device_exclusive_entry(
-							page_to_pfn(subpage));
-		else
-			entry = make_readable_device_exclusive_entry(
-							page_to_pfn(subpage));
-		swp_pte = swp_entry_to_pte(entry);
-		if (pte_soft_dirty(pteval))
-			swp_pte = pte_swp_mksoft_dirty(swp_pte);
-		if (pte_uffd_wp(pteval))
-			swp_pte = pte_swp_mkuffd_wp(swp_pte);
-
-		set_pte_at(mm, address, pvmw.pte, swp_pte);
-
-		/*
-		 * There is a reference on the page for the swap entry which has
-		 * been removed, so shouldn't take another.
-		 */
-		page_remove_rmap(subpage, vma, false);
-	}
-
-	mmu_notifier_invalidate_range_end(&range);
-
-	return ret;
-}
-
-/**
- * folio_make_device_exclusive - Mark the folio exclusively owned by a device.
- * @folio: The folio to replace page table entries for.
- * @mm: The mm_struct where the folio is expected to be mapped.
- * @address: Address where the folio is expected to be mapped.
- * @owner: passed to MMU_NOTIFY_EXCLUSIVE range notifier callbacks
- *
- * Tries to remove all the page table entries which are mapping this
- * folio and replace them with special device exclusive swap entries to
- * grant a device exclusive access to the folio.
- *
- * Context: Caller must hold the folio lock.
- * Return: false if the page is still mapped, or if it could not be unmapped
- * from the expected address. Otherwise returns true (success).
- */
-static bool folio_make_device_exclusive(struct folio *folio,
-		struct mm_struct *mm, unsigned long address, void *owner)
-{
-	struct make_exclusive_args args = {
-		.mm = mm,
-		.address = address,
-		.owner = owner,
-		.valid = false,
-	};
-	struct rmap_walk_control rwc = {
-		.rmap_one = page_make_device_exclusive_one,
-		.done = page_not_mapped,
-		.anon_lock = folio_lock_anon_vma_read,
-		.arg = &args,
-	};
-
-	/*
-	 * Restrict to anonymous folios for now to avoid potential writeback
-	 * issues.
-	 */
-	if (!folio_test_anon(folio))
-		return false;
-
-	rmap_walk(folio, &rwc);
-
-	return args.valid && !folio_mapcount(folio);
-}
-
-/**
- * make_device_exclusive_range() - Mark a range for exclusive use by a device
- * @mm: mm_struct of associated target process
- * @start: start of the region to mark for exclusive device access
- * @end: end address of region
- * @pages: returns the pages which were successfully marked for exclusive access
- * @owner: passed to MMU_NOTIFY_EXCLUSIVE range notifier to allow filtering
- *
- * Returns: number of pages found in the range by GUP. A page is marked for
- * exclusive access only if the page pointer is non-NULL.
- *
- * This function finds ptes mapping page(s) to the given address range, locks
- * them and replaces mappings with special swap entries preventing userspace CPU
- * access. On fault these entries are replaced with the original mapping after
- * calling MMU notifiers.
- *
- * A driver using this to program access from a device must use a mmu notifier
- * critical section to hold a device specific lock during programming. Once
- * programming is complete it should drop the page lock and reference after
- * which point CPU access to the page will revoke the exclusive access.
- */
-int make_device_exclusive_range(struct mm_struct *mm, unsigned long start,
-				unsigned long end, struct page **pages,
-				void *owner)
-{
-	long npages = (end - start) >> PAGE_SHIFT;
-	long i;
-
-	npages = get_user_pages_remote(mm, start, npages,
-				       FOLL_GET | FOLL_WRITE | FOLL_SPLIT_PMD,
-				       pages, NULL, NULL);
-	if (npages < 0)
-		return npages;
-
-	for (i = 0; i < npages; i++, start += PAGE_SIZE) {
-		struct folio *folio = page_folio(pages[i]);
-		if (PageTail(pages[i]) || !folio_trylock(folio)) {
-			folio_put(folio);
-			pages[i] = NULL;
-			continue;
-		}
-
-		if (!folio_make_device_exclusive(folio, mm, start, owner)) {
-			folio_unlock(folio);
-			folio_put(folio);
-			pages[i] = NULL;
-		}
-	}
-
-	return npages;
-}
-EXPORT_SYMBOL_GPL(make_device_exclusive_range);
-#endif
 
 void __put_anon_vma(struct anon_vma *anon_vma)
 {
@@ -2515,38 +2286,3 @@ void rmap_walk_locked(struct folio *folio, struct rmap_walk_control *rwc)
 		rmap_walk_file(folio, rwc, true);
 }
 
-#ifdef CONFIG_HUGETLB_PAGE
-/*
- * The following two functions are for anonymous (private mapped) hugepages.
- * Unlike common anonymous pages, anonymous hugepages have no accounting code
- * and no lru code, because we handle hugepages differently from common pages.
- *
- * RMAP_COMPOUND is ignored.
- */
-void hugepage_add_anon_rmap(struct page *page, struct vm_area_struct *vma,
-			    unsigned long address, rmap_t flags)
-{
-	struct anon_vma *anon_vma = vma->anon_vma;
-	int first;
-
-	BUG_ON(!PageLocked(page));
-	BUG_ON(!anon_vma);
-	/* address might be in next vma when migration races vma_adjust */
-	first = atomic_inc_and_test(compound_mapcount_ptr(page));
-	VM_BUG_ON_PAGE(!first && (flags & RMAP_EXCLUSIVE), page);
-	VM_BUG_ON_PAGE(!first && PageAnonExclusive(page), page);
-	if (first)
-		__page_set_anon_rmap(page, vma, address,
-				     !!(flags & RMAP_EXCLUSIVE));
-}
-
-void hugepage_add_new_anon_rmap(struct page *page,
-			struct vm_area_struct *vma, unsigned long address)
-{
-	BUG_ON(address < vma->vm_start || address >= vma->vm_end);
-	atomic_set(compound_mapcount_ptr(page), 0);
-	atomic_set(compound_pincount_ptr(page), 0);
-
-	__page_set_anon_rmap(page, vma, address, 1);
-}
-#endif /* CONFIG_HUGETLB_PAGE */

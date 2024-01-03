@@ -28,21 +28,17 @@
 
 #undef TTY_DEBUG_WAIT_UNTIL_SENT
 
-#ifdef TTY_DEBUG_WAIT_UNTIL_SENT
-# define tty_debug_wait_until_sent(tty, f, args...)    tty_debug(tty, f, ##args)
-#else
-# define tty_debug_wait_until_sent(tty, f, args...)    do {} while (0)
-#endif
+#define tty_debug_wait_until_sent(tty,f,args...) do {} while (0)
 
-#undef	DEBUG
+#undef DEBUG
 
 /*
  * Internal flag options for termios setting behavior
  */
-#define TERMIOS_FLUSH	1
-#define TERMIOS_WAIT	2
-#define TERMIOS_TERMIO	4
-#define TERMIOS_OLD	8
+#define TERMIOS_FLUSH 1
+#define TERMIOS_WAIT 2
+#define TERMIOS_TERMIO 4
+#define TERMIOS_OLD 8
 
 
 /**
@@ -225,7 +221,7 @@ static void unset_locked_termios(struct tty_struct *tty, struct ktermios *old)
 	struct ktermios *locked  = &tty->termios_locked;
 	int	i;
 
-#define NOSET_MASK(x, y, z) (x = ((x) & ~(z)) | ((y) & (z)))
+#define NOSET_MASK(x,y,z) (x = ((x) & ~(z)) | ((y) & (z)))
 
 	NOSET_MASK(termios->c_iflag, old->c_iflag, locked->c_iflag);
 	NOSET_MASK(termios->c_oflag, old->c_oflag, locked->c_oflag);
@@ -400,7 +396,6 @@ static int set_termios(struct tty_struct *tty, void __user *arg, int opt)
 		if (user_termio_to_kernel_termios(&tmp_termios,
 						(struct termio __user *)arg))
 			return -EFAULT;
-#ifdef TCGETS2
 	} else if (opt & TERMIOS_OLD) {
 		if (user_termios_to_kernel_termios_1(&tmp_termios,
 						(struct termios __user *)arg))
@@ -410,11 +405,6 @@ static int set_termios(struct tty_struct *tty, void __user *arg, int opt)
 						(struct termios2 __user *)arg))
 			return -EFAULT;
 	}
-#else
-	} else if (user_termios_to_kernel_termios(&tmp_termios,
-					(struct termios __user *)arg))
-		return -EFAULT;
-#endif
 
 	/* If old style Bfoo values are used then load c_ispeed/c_ospeed
 	 * with the real speed so its unconditionally usable */
@@ -467,181 +457,8 @@ static int get_termio(struct tty_struct *tty, struct termio __user *termio)
 	return 0;
 }
 
-#ifdef TIOCGETP
-/*
- * These are deprecated, but there is limited support..
- *
- * The "sg_flags" translation is a joke..
- */
-static int get_sgflags(struct tty_struct *tty)
-{
-	int flags = 0;
 
-	if (!L_ICANON(tty)) {
-		if (L_ISIG(tty))
-			flags |= 0x02;		/* cbreak */
-		else
-			flags |= 0x20;		/* raw */
-	}
-	if (L_ECHO(tty))
-		flags |= 0x08;			/* echo */
-	if (O_OPOST(tty))
-		if (O_ONLCR(tty))
-			flags |= 0x10;		/* crmod */
-	return flags;
-}
 
-static int get_sgttyb(struct tty_struct *tty, struct sgttyb __user *sgttyb)
-{
-	struct sgttyb tmp;
-
-	down_read(&tty->termios_rwsem);
-	tmp.sg_ispeed = tty->termios.c_ispeed;
-	tmp.sg_ospeed = tty->termios.c_ospeed;
-	tmp.sg_erase = tty->termios.c_cc[VERASE];
-	tmp.sg_kill = tty->termios.c_cc[VKILL];
-	tmp.sg_flags = get_sgflags(tty);
-	up_read(&tty->termios_rwsem);
-
-	return copy_to_user(sgttyb, &tmp, sizeof(tmp)) ? -EFAULT : 0;
-}
-
-static void set_sgflags(struct ktermios *termios, int flags)
-{
-	termios->c_iflag = ICRNL | IXON;
-	termios->c_oflag = 0;
-	termios->c_lflag = ISIG | ICANON;
-	if (flags & 0x02) {	/* cbreak */
-		termios->c_iflag = 0;
-		termios->c_lflag &= ~ICANON;
-	}
-	if (flags & 0x08) {		/* echo */
-		termios->c_lflag |= ECHO | ECHOE | ECHOK |
-				    ECHOCTL | ECHOKE | IEXTEN;
-	}
-	if (flags & 0x10) {		/* crmod */
-		termios->c_oflag |= OPOST | ONLCR;
-	}
-	if (flags & 0x20) {	/* raw */
-		termios->c_iflag = 0;
-		termios->c_lflag &= ~(ISIG | ICANON);
-	}
-	if (!(termios->c_lflag & ICANON)) {
-		termios->c_cc[VMIN] = 1;
-		termios->c_cc[VTIME] = 0;
-	}
-}
-
-/**
- *	set_sgttyb		-	set legacy terminal values
- *	@tty: tty structure
- *	@sgttyb: pointer to old style terminal structure
- *
- *	Updates a terminal from the legacy BSD style terminal information
- *	structure.
- *
- *	Locking: termios_rwsem
- */
-
-static int set_sgttyb(struct tty_struct *tty, struct sgttyb __user *sgttyb)
-{
-	int retval;
-	struct sgttyb tmp;
-	struct ktermios termios;
-
-	retval = tty_check_change(tty);
-	if (retval)
-		return retval;
-
-	if (copy_from_user(&tmp, sgttyb, sizeof(tmp)))
-		return -EFAULT;
-
-	down_write(&tty->termios_rwsem);
-	termios = tty->termios;
-	termios.c_cc[VERASE] = tmp.sg_erase;
-	termios.c_cc[VKILL] = tmp.sg_kill;
-	set_sgflags(&termios, tmp.sg_flags);
-	/* Try and encode into Bfoo format */
-	tty_termios_encode_baud_rate(&termios, termios.c_ispeed,
-						termios.c_ospeed);
-	up_write(&tty->termios_rwsem);
-	tty_set_termios(tty, &termios);
-	return 0;
-}
-#endif
-
-#ifdef TIOCGETC
-static int get_tchars(struct tty_struct *tty, struct tchars __user *tchars)
-{
-	struct tchars tmp;
-
-	down_read(&tty->termios_rwsem);
-	tmp.t_intrc = tty->termios.c_cc[VINTR];
-	tmp.t_quitc = tty->termios.c_cc[VQUIT];
-	tmp.t_startc = tty->termios.c_cc[VSTART];
-	tmp.t_stopc = tty->termios.c_cc[VSTOP];
-	tmp.t_eofc = tty->termios.c_cc[VEOF];
-	tmp.t_brkc = tty->termios.c_cc[VEOL2];	/* what is brkc anyway? */
-	up_read(&tty->termios_rwsem);
-	return copy_to_user(tchars, &tmp, sizeof(tmp)) ? -EFAULT : 0;
-}
-
-static int set_tchars(struct tty_struct *tty, struct tchars __user *tchars)
-{
-	struct tchars tmp;
-
-	if (copy_from_user(&tmp, tchars, sizeof(tmp)))
-		return -EFAULT;
-	down_write(&tty->termios_rwsem);
-	tty->termios.c_cc[VINTR] = tmp.t_intrc;
-	tty->termios.c_cc[VQUIT] = tmp.t_quitc;
-	tty->termios.c_cc[VSTART] = tmp.t_startc;
-	tty->termios.c_cc[VSTOP] = tmp.t_stopc;
-	tty->termios.c_cc[VEOF] = tmp.t_eofc;
-	tty->termios.c_cc[VEOL2] = tmp.t_brkc;	/* what is brkc anyway? */
-	up_write(&tty->termios_rwsem);
-	return 0;
-}
-#endif
-
-#ifdef TIOCGLTC
-static int get_ltchars(struct tty_struct *tty, struct ltchars __user *ltchars)
-{
-	struct ltchars tmp;
-
-	down_read(&tty->termios_rwsem);
-	tmp.t_suspc = tty->termios.c_cc[VSUSP];
-	/* what is dsuspc anyway? */
-	tmp.t_dsuspc = tty->termios.c_cc[VSUSP];
-	tmp.t_rprntc = tty->termios.c_cc[VREPRINT];
-	/* what is flushc anyway? */
-	tmp.t_flushc = tty->termios.c_cc[VEOL2];
-	tmp.t_werasc = tty->termios.c_cc[VWERASE];
-	tmp.t_lnextc = tty->termios.c_cc[VLNEXT];
-	up_read(&tty->termios_rwsem);
-	return copy_to_user(ltchars, &tmp, sizeof(tmp)) ? -EFAULT : 0;
-}
-
-static int set_ltchars(struct tty_struct *tty, struct ltchars __user *ltchars)
-{
-	struct ltchars tmp;
-
-	if (copy_from_user(&tmp, ltchars, sizeof(tmp)))
-		return -EFAULT;
-
-	down_write(&tty->termios_rwsem);
-	tty->termios.c_cc[VSUSP] = tmp.t_suspc;
-	/* what is dsuspc anyway? */
-	tty->termios.c_cc[VEOL2] = tmp.t_dsuspc;
-	tty->termios.c_cc[VREPRINT] = tmp.t_rprntc;
-	/* what is flushc anyway? */
-	tty->termios.c_cc[VEOL2] = tmp.t_flushc;
-	tty->termios.c_cc[VWERASE] = tmp.t_werasc;
-	tty->termios.c_cc[VLNEXT] = tmp.t_lnextc;
-	up_write(&tty->termios_rwsem);
-	return 0;
-}
-#endif
 
 /**
  *	tty_change_softcar	-	carrier change ioctl helper
@@ -695,38 +512,12 @@ int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 		real_tty = tty;
 
 	switch (cmd) {
-#ifdef TIOCGETP
-	case TIOCGETP:
-		return get_sgttyb(real_tty, (struct sgttyb __user *) arg);
-	case TIOCSETP:
-	case TIOCSETN:
-		return set_sgttyb(real_tty, (struct sgttyb __user *) arg);
-#endif
-#ifdef TIOCGETC
-	case TIOCGETC:
-		return get_tchars(real_tty, p);
-	case TIOCSETC:
-		return set_tchars(real_tty, p);
-#endif
-#ifdef TIOCGLTC
-	case TIOCGLTC:
-		return get_ltchars(real_tty, p);
-	case TIOCSLTC:
-		return set_ltchars(real_tty, p);
-#endif
 	case TCSETSF:
 		return set_termios(real_tty, p,  TERMIOS_FLUSH | TERMIOS_WAIT | TERMIOS_OLD);
 	case TCSETSW:
 		return set_termios(real_tty, p, TERMIOS_WAIT | TERMIOS_OLD);
 	case TCSETS:
 		return set_termios(real_tty, p, TERMIOS_OLD);
-#ifndef TCGETS2
-	case TCGETS:
-		copy_termios(real_tty, &kterm);
-		if (kernel_termios_to_user_termios((struct termios __user *)arg, &kterm))
-			ret = -EFAULT;
-		return ret;
-#else
 	case TCGETS:
 		copy_termios(real_tty, &kterm);
 		if (kernel_termios_to_user_termios_1((struct termios __user *)arg, &kterm))
@@ -743,7 +534,6 @@ int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 		return set_termios(real_tty, p, TERMIOS_WAIT);
 	case TCSETS2:
 		return set_termios(real_tty, p, 0);
-#endif
 	case TCGETA:
 		return get_termio(real_tty, p);
 	case TCSETAF:
@@ -752,24 +542,6 @@ int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 		return set_termios(real_tty, p, TERMIOS_WAIT | TERMIOS_TERMIO);
 	case TCSETA:
 		return set_termios(real_tty, p, TERMIOS_TERMIO);
-#ifndef TCGETS2
-	case TIOCGLCKTRMIOS:
-		copy_termios_locked(real_tty, &kterm);
-		if (kernel_termios_to_user_termios((struct termios __user *)arg, &kterm))
-			ret = -EFAULT;
-		return ret;
-	case TIOCSLCKTRMIOS:
-		if (!capable(CAP_SYS_ADMIN))
-			return -EPERM;
-		copy_termios_locked(real_tty, &kterm);
-		if (user_termios_to_kernel_termios(&kterm,
-					       (struct termios __user *) arg))
-			return -EFAULT;
-		down_write(&real_tty->termios_rwsem);
-		real_tty->termios_locked = kterm;
-		up_write(&real_tty->termios_rwsem);
-		return 0;
-#else
 	case TIOCGLCKTRMIOS:
 		copy_termios_locked(real_tty, &kterm);
 		if (kernel_termios_to_user_termios_1((struct termios __user *)arg, &kterm))
@@ -786,14 +558,11 @@ int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 		real_tty->termios_locked = kterm;
 		up_write(&real_tty->termios_rwsem);
 		return ret;
-#endif
-#ifdef TCGETX
 	case TCGETX:
 	case TCSETX:
 	case TCSETXW:
 	case TCSETXF:
 		return -ENOTTY;
-#endif
 	case TIOCGSOFTCAR:
 		copy_termios(real_tty, &kterm);
 		ret = put_user((kterm.c_cflag & CLOCAL) ? 1 : 0,

@@ -111,11 +111,7 @@
 #include "tty.h"
 
 #undef TTY_DEBUG_HANGUP
-#ifdef TTY_DEBUG_HANGUP
-# define tty_debug_hangup(tty, f, args...)	tty_debug(tty, f, ##args)
-#else
-# define tty_debug_hangup(tty, f, args...)	do { } while (0)
-#endif
+#define tty_debug_hangup(tty,f,args...) do { } while (0)
 
 #define TTY_PARANOIA_CHECK 1
 #define CHECK_TTY_COUNT 1
@@ -147,12 +143,7 @@ static ssize_t tty_read(struct kiocb *, struct iov_iter *);
 static ssize_t tty_write(struct kiocb *, struct iov_iter *);
 static __poll_t tty_poll(struct file *, poll_table *);
 static int tty_open(struct inode *, struct file *);
-#ifdef CONFIG_COMPAT
-static long tty_compat_ioctl(struct file *file, unsigned int cmd,
-				unsigned long arg);
-#else
 #define tty_compat_ioctl NULL
-#endif
 static int __tty_fasync(int fd, struct file *filp, int on);
 static int tty_fasync(int fd, struct file *filp, int on);
 static void release_tty(struct tty_struct *tty, int idx);
@@ -259,7 +250,6 @@ const char *tty_driver_name(const struct tty_struct *tty)
 static int tty_paranoia_check(struct tty_struct *tty, struct inode *inode,
 			      const char *routine)
 {
-#ifdef TTY_PARANOIA_CHECK
 	if (!tty) {
 		pr_warn("(%d:%d): %s: NULL tty\n",
 			imajor(inode), iminor(inode), routine);
@@ -270,14 +260,12 @@ static int tty_paranoia_check(struct tty_struct *tty, struct inode *inode,
 			imajor(inode), iminor(inode), routine);
 		return 1;
 	}
-#endif
 	return 0;
 }
 
 /* Caller must hold tty_lock */
 static int check_tty_count(struct tty_struct *tty, const char *routine)
 {
-#ifdef CHECK_TTY_COUNT
 	struct list_head *p;
 	int count = 0, kopen_count = 0;
 
@@ -297,7 +285,6 @@ static int check_tty_count(struct tty_struct *tty, const char *routine)
 			 routine, tty->count, count, kopen_count);
 		return (count + kopen_count);
 	}
-#endif
 	return 0;
 }
 
@@ -376,56 +363,6 @@ out:
 }
 EXPORT_SYMBOL_GPL(tty_dev_name_to_number);
 
-#ifdef CONFIG_CONSOLE_POLL
-
-/**
- * tty_find_polling_driver	-	find device of a polled tty
- * @name: name string to match
- * @line: pointer to resulting tty line nr
- *
- * This routine returns a tty driver structure, given a name and the condition
- * that the tty driver is capable of polled operation.
- */
-struct tty_driver *tty_find_polling_driver(char *name, int *line)
-{
-	struct tty_driver *p, *res = NULL;
-	int tty_line = 0;
-	int len;
-	char *str, *stp;
-
-	for (str = name; *str; str++)
-		if ((*str >= '0' && *str <= '9') || *str == ',')
-			break;
-	if (!*str)
-		return NULL;
-
-	len = str - name;
-	tty_line = simple_strtoul(str, &str, 10);
-
-	mutex_lock(&tty_mutex);
-	/* Search through the tty devices to look for a match */
-	list_for_each_entry(p, &tty_drivers, tty_drivers) {
-		if (!len || strncmp(name, p->name, len) != 0)
-			continue;
-		stp = str;
-		if (*stp == ',')
-			stp++;
-		if (*stp == '\0')
-			stp = NULL;
-
-		if (tty_line >= 0 && tty_line < p->num && p->ops &&
-		    p->ops->poll_init && !p->ops->poll_init(p, tty_line, stp)) {
-			res = tty_driver_kref_get(p);
-			*line = tty_line;
-			break;
-		}
-	}
-	mutex_unlock(&tty_mutex);
-
-	return res;
-}
-EXPORT_SYMBOL_GPL(tty_find_polling_driver);
-#endif
 
 static ssize_t hung_up_tty_read(struct kiocb *iocb, struct iov_iter *to)
 {
@@ -1616,7 +1553,6 @@ static void release_tty(struct tty_struct *tty, int idx)
  */
 static int tty_release_checks(struct tty_struct *tty, int idx)
 {
-#ifdef TTY_PARANOIA_CHECK
 	if (idx < 0 || idx >= tty->driver->num) {
 		tty_debug(tty, "bad idx %d\n", idx);
 		return -1;
@@ -1644,7 +1580,6 @@ static int tty_release_checks(struct tty_struct *tty, int idx)
 			return -1;
 		}
 	}
-#endif
 	return 0;
 }
 
@@ -1921,7 +1856,6 @@ static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,
 	struct tty_driver *driver = NULL;
 
 	switch (device) {
-#ifdef CONFIG_VT
 	case MKDEV(TTY_MAJOR, 0): {
 		extern struct tty_driver *console_driver;
 
@@ -1929,7 +1863,6 @@ static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,
 		*index = fg_console;
 		break;
 	}
-#endif
 	case MKDEV(TTYAUX_MAJOR, 1): {
 		struct tty_driver *console_driver = console_device(index);
 
@@ -2792,186 +2725,6 @@ long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	return retval;
 }
 
-#ifdef CONFIG_COMPAT
-
-struct serial_struct32 {
-	compat_int_t    type;
-	compat_int_t    line;
-	compat_uint_t   port;
-	compat_int_t    irq;
-	compat_int_t    flags;
-	compat_int_t    xmit_fifo_size;
-	compat_int_t    custom_divisor;
-	compat_int_t    baud_base;
-	unsigned short  close_delay;
-	char    io_type;
-	char    reserved_char;
-	compat_int_t    hub6;
-	unsigned short  closing_wait; /* time to wait before closing */
-	unsigned short  closing_wait2; /* no longer used... */
-	compat_uint_t   iomem_base;
-	unsigned short  iomem_reg_shift;
-	unsigned int    port_high;
-	/* compat_ulong_t  iomap_base FIXME */
-	compat_int_t    reserved;
-};
-
-static int compat_tty_tiocsserial(struct tty_struct *tty,
-		struct serial_struct32 __user *ss)
-{
-	struct serial_struct32 v32;
-	struct serial_struct v;
-
-	if (copy_from_user(&v32, ss, sizeof(*ss)))
-		return -EFAULT;
-
-	memcpy(&v, &v32, offsetof(struct serial_struct32, iomem_base));
-	v.iomem_base = compat_ptr(v32.iomem_base);
-	v.iomem_reg_shift = v32.iomem_reg_shift;
-	v.port_high = v32.port_high;
-	v.iomap_base = 0;
-
-	return tty_set_serial(tty, &v);
-}
-
-static int compat_tty_tiocgserial(struct tty_struct *tty,
-			struct serial_struct32 __user *ss)
-{
-	struct serial_struct32 v32;
-	struct serial_struct v;
-	int err;
-
-	memset(&v, 0, sizeof(v));
-	memset(&v32, 0, sizeof(v32));
-
-	if (!tty->ops->get_serial)
-		return -ENOTTY;
-	err = tty->ops->get_serial(tty, &v);
-	if (!err) {
-		memcpy(&v32, &v, offsetof(struct serial_struct32, iomem_base));
-		v32.iomem_base = (unsigned long)v.iomem_base >> 32 ?
-			0xfffffff : ptr_to_compat(v.iomem_base);
-		v32.iomem_reg_shift = v.iomem_reg_shift;
-		v32.port_high = v.port_high;
-		if (copy_to_user(ss, &v32, sizeof(v32)))
-			err = -EFAULT;
-	}
-	return err;
-}
-static long tty_compat_ioctl(struct file *file, unsigned int cmd,
-				unsigned long arg)
-{
-	struct tty_struct *tty = file_tty(file);
-	struct tty_ldisc *ld;
-	int retval = -ENOIOCTLCMD;
-
-	switch (cmd) {
-	case TIOCOUTQ:
-	case TIOCSTI:
-	case TIOCGWINSZ:
-	case TIOCSWINSZ:
-	case TIOCGEXCL:
-	case TIOCGETD:
-	case TIOCSETD:
-	case TIOCGDEV:
-	case TIOCMGET:
-	case TIOCMSET:
-	case TIOCMBIC:
-	case TIOCMBIS:
-	case TIOCGICOUNT:
-	case TIOCGPGRP:
-	case TIOCSPGRP:
-	case TIOCGSID:
-	case TIOCSERGETLSR:
-	case TIOCGRS485:
-	case TIOCSRS485:
-#ifdef TIOCGETP
-	case TIOCGETP:
-	case TIOCSETP:
-	case TIOCSETN:
-#endif
-#ifdef TIOCGETC
-	case TIOCGETC:
-	case TIOCSETC:
-#endif
-#ifdef TIOCGLTC
-	case TIOCGLTC:
-	case TIOCSLTC:
-#endif
-	case TCSETSF:
-	case TCSETSW:
-	case TCSETS:
-	case TCGETS:
-#ifdef TCGETS2
-	case TCGETS2:
-	case TCSETSF2:
-	case TCSETSW2:
-	case TCSETS2:
-#endif
-	case TCGETA:
-	case TCSETAF:
-	case TCSETAW:
-	case TCSETA:
-	case TIOCGLCKTRMIOS:
-	case TIOCSLCKTRMIOS:
-#ifdef TCGETX
-	case TCGETX:
-	case TCSETX:
-	case TCSETXW:
-	case TCSETXF:
-#endif
-	case TIOCGSOFTCAR:
-	case TIOCSSOFTCAR:
-
-	case PPPIOCGCHAN:
-	case PPPIOCGUNIT:
-		return tty_ioctl(file, cmd, (unsigned long)compat_ptr(arg));
-	case TIOCCONS:
-	case TIOCEXCL:
-	case TIOCNXCL:
-	case TIOCVHANGUP:
-	case TIOCSBRK:
-	case TIOCCBRK:
-	case TCSBRK:
-	case TCSBRKP:
-	case TCFLSH:
-	case TIOCGPTPEER:
-	case TIOCNOTTY:
-	case TIOCSCTTY:
-	case TCXONC:
-	case TIOCMIWAIT:
-	case TIOCSERCONFIG:
-		return tty_ioctl(file, cmd, arg);
-	}
-
-	if (tty_paranoia_check(tty, file_inode(file), "tty_ioctl"))
-		return -EINVAL;
-
-	switch (cmd) {
-	case TIOCSSERIAL:
-		return compat_tty_tiocsserial(tty, compat_ptr(arg));
-	case TIOCGSERIAL:
-		return compat_tty_tiocgserial(tty, compat_ptr(arg));
-	}
-	if (tty->ops->compat_ioctl) {
-		retval = tty->ops->compat_ioctl(tty, cmd, arg);
-		if (retval != -ENOIOCTLCMD)
-			return retval;
-	}
-
-	ld = tty_ldisc_ref_wait(tty);
-	if (!ld)
-		return hung_up_tty_compat_ioctl(file, cmd, arg);
-	if (ld->ops->compat_ioctl)
-		retval = ld->ops->compat_ioctl(tty, cmd, arg);
-	if (retval == -ENOIOCTLCMD && ld->ops->ioctl)
-		retval = ld->ops->ioctl(tty, (unsigned long)compat_ptr(cmd),
-				arg);
-	tty_ldisc_deref(ld);
-
-	return retval;
-}
-#endif
 
 static int this_tty(const void *t, struct file *file, unsigned fd)
 {
@@ -3604,9 +3357,7 @@ int __init tty_init(void)
 	if (IS_ERR(consdev))
 		consdev = NULL;
 
-#ifdef CONFIG_VT
 	vty_init(&console_fops);
-#endif
 	return 0;
 }
 

@@ -33,8 +33,8 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 
-#define SECS_PER_HOUR	(60 * 60)
-#define SECS_PER_DAY	(SECS_PER_HOUR * 24)
+#define SECS_PER_HOUR (60 * 60)
+#define SECS_PER_DAY (SECS_PER_HOUR * 24)
 
 /**
  * time64_to_tm - converts the calendar time to local broken-down time

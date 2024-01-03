@@ -152,31 +152,11 @@ int do_set_thread_area(struct task_struct *p, int idx,
 	modified_sel = (idx << 3) | 3;
 
 	if (p == current) {
-#ifdef CONFIG_X86_64
-		savesegment(ds, sel);
-		if (sel == modified_sel)
-			loadsegment(ds, sel);
-
-		savesegment(es, sel);
-		if (sel == modified_sel)
-			loadsegment(es, sel);
-
-		savesegment(fs, sel);
-		if (sel == modified_sel)
-			loadsegment(fs, sel);
-#endif
 
 		savesegment(gs, sel);
 		if (sel == modified_sel)
 			load_gs_index(sel);
 	} else {
-#ifdef CONFIG_X86_64
-		if (p->thread.fsindex == modified_sel)
-			p->thread.fsbase = info.base_addr;
-
-		if (p->thread.gsindex == modified_sel)
-			p->thread.gsbase = info.base_addr;
-#endif
 	}
 
 	return 0;
@@ -206,9 +186,6 @@ static void fill_user_desc(struct user_desc *info, int idx,
 	info->limit_in_pages = desc->g;
 	info->seg_not_present = !desc->p;
 	info->useable = desc->avl;
-#ifdef CONFIG_X86_64
-	info->lm = desc->l;
-#endif
 }
 
 int do_get_thread_area(struct task_struct *p, int idx,

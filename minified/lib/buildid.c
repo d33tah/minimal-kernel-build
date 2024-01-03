@@ -174,18 +174,3 @@ int build_id_parse_buf(const void *buf, unsigned char *build_id, u32 buf_size)
 	return parse_build_id_buf(build_id, NULL, buf, buf_size);
 }
 
-#if IS_ENABLED(CONFIG_STACKTRACE_BUILD_ID) || IS_ENABLED(CONFIG_CRASH_CORE)
-unsigned char vmlinux_build_id[BUILD_ID_SIZE_MAX] __ro_after_init;
-
-/**
- * init_vmlinux_build_id - Compute and stash the running kernel's build ID
- */
-void __init init_vmlinux_build_id(void)
-{
-	extern const void __start_notes __weak;
-	extern const void __stop_notes __weak;
-	unsigned int size = &__stop_notes - &__start_notes;
-
-	build_id_parse_buf(&__start_notes, vmlinux_build_id, size);
-}
-#endif

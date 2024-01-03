@@ -241,30 +241,10 @@ static int f_getown_ex(struct file *filp, unsigned long arg)
 	return ret;
 }
 
-#ifdef CONFIG_CHECKPOINT_RESTORE
-static int f_getowner_uids(struct file *filp, unsigned long arg)
-{
-	struct user_namespace *user_ns = current_user_ns();
-	uid_t __user *dst = (void __user *)arg;
-	uid_t src[2];
-	int err;
-
-	read_lock_irq(&filp->f_owner.lock);
-	src[0] = from_kuid(user_ns, filp->f_owner.uid);
-	src[1] = from_kuid(user_ns, filp->f_owner.euid);
-	read_unlock_irq(&filp->f_owner.lock);
-
-	err  = put_user(src[0], &dst[0]);
-	err |= put_user(src[1], &dst[1]);
-
-	return err;
-}
-#else
 static int f_getowner_uids(struct file *filp, unsigned long arg)
 {
 	return -EINVAL;
 }
-#endif
 
 static bool rw_hint_valid(enum rw_hint hint)
 {
@@ -338,10 +318,6 @@ static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
 	case F_SETFL:
 		err = setfl(fd, filp, arg);
 		break;
-#if BITS_PER_LONG != 32
-	/* 32-bit arches must use fcntl64() */
-	case F_OFD_GETLK:
-#endif
 	case F_GETLK:
 		if (copy_from_user(&flock, argp, sizeof(flock)))
 			return -EFAULT;
@@ -349,12 +325,6 @@ static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
 		if (!err && copy_to_user(argp, &flock, sizeof(flock)))
 			return -EFAULT;
 		break;
-#if BITS_PER_LONG != 32
-	/* 32-bit arches must use fcntl64() */
-	case F_OFD_SETLK:
-	case F_OFD_SETLKW:
-		fallthrough;
-#endif
 	case F_SETLK:
 	case F_SETLKW:
 		if (copy_from_user(&flock, argp, sizeof(flock)))
@@ -458,7 +428,6 @@ out:
 	return err;
 }
 
-#if BITS_PER_LONG == 32
 SYSCALL_DEFINE3(fcntl64, unsigned int, fd, unsigned int, cmd,
 		unsigned long, arg)
 {	
@@ -507,182 +476,7 @@ out1:
 out:
 	return err;
 }
-#endif
 
-#ifdef CONFIG_COMPAT
-/* careful - don't use anywhere else */
-#define copy_flock_fields(dst, src)		\
-	(dst)->l_type = (src)->l_type;		\
-	(dst)->l_whence = (src)->l_whence;	\
-	(dst)->l_start = (src)->l_start;	\
-	(dst)->l_len = (src)->l_len;		\
-	(dst)->l_pid = (src)->l_pid;
-
-static int get_compat_flock(struct flock *kfl, const struct compat_flock __user *ufl)
-{
-	struct compat_flock fl;
-
-	if (copy_from_user(&fl, ufl, sizeof(struct compat_flock)))
-		return -EFAULT;
-	copy_flock_fields(kfl, &fl);
-	return 0;
-}
-
-static int get_compat_flock64(struct flock *kfl, const struct compat_flock64 __user *ufl)
-{
-	struct compat_flock64 fl;
-
-	if (copy_from_user(&fl, ufl, sizeof(struct compat_flock64)))
-		return -EFAULT;
-	copy_flock_fields(kfl, &fl);
-	return 0;
-}
-
-static int put_compat_flock(const struct flock *kfl, struct compat_flock __user *ufl)
-{
-	struct compat_flock fl;
-
-	memset(&fl, 0, sizeof(struct compat_flock));
-	copy_flock_fields(&fl, kfl);
-	if (copy_to_user(ufl, &fl, sizeof(struct compat_flock)))
-		return -EFAULT;
-	return 0;
-}
-
-static int put_compat_flock64(const struct flock *kfl, struct compat_flock64 __user *ufl)
-{
-	struct compat_flock64 fl;
-
-	BUILD_BUG_ON(sizeof(kfl->l_start) > sizeof(ufl->l_start));
-	BUILD_BUG_ON(sizeof(kfl->l_len) > sizeof(ufl->l_len));
-
-	memset(&fl, 0, sizeof(struct compat_flock64));
-	copy_flock_fields(&fl, kfl);
-	if (copy_to_user(ufl, &fl, sizeof(struct compat_flock64)))
-		return -EFAULT;
-	return 0;
-}
-#undef copy_flock_fields
-
-static unsigned int
-convert_fcntl_cmd(unsigned int cmd)
-{
-	switch (cmd) {
-	case F_GETLK64:
-		return F_GETLK;
-	case F_SETLK64:
-		return F_SETLK;
-	case F_SETLKW64:
-		return F_SETLKW;
-	}
-
-	return cmd;
-}
-
-/*
- * GETLK was successful and we need to return the data, but it needs to fit in
- * the compat structure.
- * l_start shouldn't be too big, unless the original start + end is greater than
- * COMPAT_OFF_T_MAX, in which case the app was asking for trouble, so we return
- * -EOVERFLOW in that case.  l_len could be too big, in which case we just
- * truncate it, and only allow the app to see that part of the conflicting lock
- * that might make sense to it anyway
- */
-static int fixup_compat_flock(struct flock *flock)
-{
-	if (flock->l_start > COMPAT_OFF_T_MAX)
-		return -EOVERFLOW;
-	if (flock->l_len > COMPAT_OFF_T_MAX)
-		flock->l_len = COMPAT_OFF_T_MAX;
-	return 0;
-}
-
-static long do_compat_fcntl64(unsigned int fd, unsigned int cmd,
-			     compat_ulong_t arg)
-{
-	struct fd f = fdget_raw(fd);
-	struct flock flock;
-	long err = -EBADF;
-
-	if (!f.file)
-		return err;
-
-	if (unlikely(f.file->f_mode & FMODE_PATH)) {
-		if (!check_fcntl_cmd(cmd))
-			goto out_put;
-	}
-
-	err = security_file_fcntl(f.file, cmd, arg);
-	if (err)
-		goto out_put;
-
-	switch (cmd) {
-	case F_GETLK:
-		err = get_compat_flock(&flock, compat_ptr(arg));
-		if (err)
-			break;
-		err = fcntl_getlk(f.file, convert_fcntl_cmd(cmd), &flock);
-		if (err)
-			break;
-		err = fixup_compat_flock(&flock);
-		if (!err)
-			err = put_compat_flock(&flock, compat_ptr(arg));
-		break;
-	case F_GETLK64:
-	case F_OFD_GETLK:
-		err = get_compat_flock64(&flock, compat_ptr(arg));
-		if (err)
-			break;
-		err = fcntl_getlk(f.file, convert_fcntl_cmd(cmd), &flock);
-		if (!err)
-			err = put_compat_flock64(&flock, compat_ptr(arg));
-		break;
-	case F_SETLK:
-	case F_SETLKW:
-		err = get_compat_flock(&flock, compat_ptr(arg));
-		if (err)
-			break;
-		err = fcntl_setlk(fd, f.file, convert_fcntl_cmd(cmd), &flock);
-		break;
-	case F_SETLK64:
-	case F_SETLKW64:
-	case F_OFD_SETLK:
-	case F_OFD_SETLKW:
-		err = get_compat_flock64(&flock, compat_ptr(arg));
-		if (err)
-			break;
-		err = fcntl_setlk(fd, f.file, convert_fcntl_cmd(cmd), &flock);
-		break;
-	default:
-		err = do_fcntl(fd, cmd, arg, f.file);
-		break;
-	}
-out_put:
-	fdput(f);
-	return err;
-}
-
-COMPAT_SYSCALL_DEFINE3(fcntl64, unsigned int, fd, unsigned int, cmd,
-		       compat_ulong_t, arg)
-{
-	return do_compat_fcntl64(fd, cmd, arg);
-}
-
-COMPAT_SYSCALL_DEFINE3(fcntl, unsigned int, fd, unsigned int, cmd,
-		       compat_ulong_t, arg)
-{
-	switch (cmd) {
-	case F_GETLK64:
-	case F_SETLK64:
-	case F_SETLKW64:
-	case F_OFD_GETLK:
-	case F_OFD_SETLK:
-	case F_OFD_SETLKW:
-		return -EINVAL;
-	}
-	return do_compat_fcntl64(fd, cmd, arg);
-}
-#endif
 
 /* Table to convert sigio signal codes into poll band bitmaps */
 

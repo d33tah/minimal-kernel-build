@@ -62,8 +62,8 @@
  * unthrottling the TTY driver.  These watermarks are used for
  * controlling the space in the read buffer.
  */
-#define TTY_THRESHOLD_THROTTLE		128 /* now based on remaining room */
-#define TTY_THRESHOLD_UNTHROTTLE	128
+#define TTY_THRESHOLD_THROTTLE 128
+#define TTY_THRESHOLD_UNTHROTTLE 128
 
 /*
  * Special byte codes used in the echo buffer to represent operations
@@ -76,17 +76,13 @@
 #define ECHO_OP_SET_CANON_COL 0x81
 #define ECHO_OP_ERASE_TAB 0x82
 
-#define ECHO_COMMIT_WATERMARK	256
-#define ECHO_BLOCK		256
-#define ECHO_DISCARD_WATERMARK	N_TTY_BUF_SIZE - (ECHO_BLOCK + 32)
+#define ECHO_COMMIT_WATERMARK 256
+#define ECHO_BLOCK 256
+#define ECHO_DISCARD_WATERMARK N_TTY_BUF_SIZE - (ECHO_BLOCK + 32)
 
 
 #undef N_TTY_TRACE
-#ifdef N_TTY_TRACE
-# define n_tty_trace(f, args...)	trace_printk(f, ##args)
-#else
-# define n_tty_trace(f, args...)	no_printk(f, ##args)
-#endif
+#define n_tty_trace(f,args...) no_printk(f, ##args)
 
 struct n_tty_data {
 	/* producer-published */

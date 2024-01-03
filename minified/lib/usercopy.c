@@ -6,7 +6,6 @@
 
 /* out-of-line parts */
 
-#ifndef INLINE_COPY_FROM_USER
 unsigned long _copy_from_user(void *to, const void __user *from, unsigned long n)
 {
 	unsigned long res = n;
@@ -20,9 +19,7 @@ unsigned long _copy_from_user(void *to, const void __user *from, unsigned long n
 	return res;
 }
 EXPORT_SYMBOL(_copy_from_user);
-#endif
 
-#ifndef INLINE_COPY_TO_USER
 unsigned long _copy_to_user(void __user *to, const void *from, unsigned long n)
 {
 	might_fault();
@@ -35,7 +32,6 @@ unsigned long _copy_to_user(void __user *to, const void *from, unsigned long n)
 	return n;
 }
 EXPORT_SYMBOL(_copy_to_user);
-#endif
 
 /**
  * check_zeroed_user: check if a userspace buffer only contains zero bytes

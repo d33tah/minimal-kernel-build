@@ -194,8 +194,8 @@ static void display_menu(void)
 		putchar('\n');
 }
 
-#define H(x)	((x)-'a'+10)
-#define SCAN	((H('s')<<12)+(H('c')<<8)+(H('a')<<4)+H('n'))
+#define H(x) ((x)-'a'+10)
+#define SCAN ((H('s')<<12)+(H('c')<<8)+(H('a')<<4)+H('n'))
 
 static unsigned int mode_menu(void)
 {

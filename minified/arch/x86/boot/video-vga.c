@@ -252,9 +252,7 @@ static int vga_probe(void)
 	ireg.bl = 0x10;		/* Check EGA/VGA */
 	intcall(0x10, &ireg, &oreg);
 
-#ifndef _WAKEUP
 	boot_params.screen_info.orig_video_ega_bx = oreg.bx;
-#endif
 
 	/* If we have MDA/CGA/HGC then BL will be unchanged at 0x10 */
 	if (oreg.bl != 0x10) {
@@ -264,9 +262,7 @@ static int vga_probe(void)
 
 		if (oreg.al == 0x1a) {
 			adapter = ADAPTER_VGA;
-#ifndef _WAKEUP
 			boot_params.screen_info.orig_video_isVGA = 1;
-#endif
 		} else {
 			adapter = ADAPTER_EGA;
 		}

@@ -14,56 +14,49 @@
  *
  * Hardware branch filter (not available on all CPUs)
  */
-#define LBR_KERNEL_BIT		0 /* do not capture at ring0 */
-#define LBR_USER_BIT		1 /* do not capture at ring > 0 */
-#define LBR_JCC_BIT		2 /* do not capture conditional branches */
-#define LBR_REL_CALL_BIT	3 /* do not capture relative calls */
-#define LBR_IND_CALL_BIT	4 /* do not capture indirect calls */
-#define LBR_RETURN_BIT		5 /* do not capture near returns */
-#define LBR_IND_JMP_BIT		6 /* do not capture indirect jumps */
-#define LBR_REL_JMP_BIT		7 /* do not capture relative jumps */
-#define LBR_FAR_BIT		8 /* do not capture far branches */
-#define LBR_CALL_STACK_BIT	9 /* enable call stack */
+#define LBR_KERNEL_BIT 0
+#define LBR_USER_BIT 1
+#define LBR_JCC_BIT 2
+#define LBR_REL_CALL_BIT 3
+#define LBR_IND_CALL_BIT 4
+#define LBR_RETURN_BIT 5
+#define LBR_IND_JMP_BIT 6
+#define LBR_REL_JMP_BIT 7
+#define LBR_FAR_BIT 8
+#define LBR_CALL_STACK_BIT 9
 
 /*
  * Following bit only exists in Linux; we mask it out before writing it to
  * the actual MSR. But it helps the constraint perf code to understand
  * that this is a separate configuration.
  */
-#define LBR_NO_INFO_BIT	       63 /* don't read LBR_INFO. */
+#define LBR_NO_INFO_BIT 63
 
-#define LBR_KERNEL	(1 << LBR_KERNEL_BIT)
-#define LBR_USER	(1 << LBR_USER_BIT)
-#define LBR_JCC		(1 << LBR_JCC_BIT)
-#define LBR_REL_CALL	(1 << LBR_REL_CALL_BIT)
-#define LBR_IND_CALL	(1 << LBR_IND_CALL_BIT)
-#define LBR_RETURN	(1 << LBR_RETURN_BIT)
-#define LBR_REL_JMP	(1 << LBR_REL_JMP_BIT)
-#define LBR_IND_JMP	(1 << LBR_IND_JMP_BIT)
-#define LBR_FAR		(1 << LBR_FAR_BIT)
-#define LBR_CALL_STACK	(1 << LBR_CALL_STACK_BIT)
-#define LBR_NO_INFO	(1ULL << LBR_NO_INFO_BIT)
+#define LBR_KERNEL (1 << LBR_KERNEL_BIT)
+#define LBR_USER (1 << LBR_USER_BIT)
+#define LBR_JCC (1 << LBR_JCC_BIT)
+#define LBR_REL_CALL (1 << LBR_REL_CALL_BIT)
+#define LBR_IND_CALL (1 << LBR_IND_CALL_BIT)
+#define LBR_RETURN (1 << LBR_RETURN_BIT)
+#define LBR_REL_JMP (1 << LBR_REL_JMP_BIT)
+#define LBR_IND_JMP (1 << LBR_IND_JMP_BIT)
+#define LBR_FAR (1 << LBR_FAR_BIT)
+#define LBR_CALL_STACK (1 << LBR_CALL_STACK_BIT)
+#define LBR_NO_INFO (1ULL << LBR_NO_INFO_BIT)
 
 #define LBR_PLM (LBR_KERNEL | LBR_USER)
 
-#define LBR_SEL_MASK	0x3ff	/* valid bits in LBR_SELECT */
-#define LBR_NOT_SUPP	-1	/* LBR filter not supported */
-#define LBR_IGN		0	/* ignored */
+#define LBR_SEL_MASK 0x3ff
+#define LBR_NOT_SUPP -1
+#define LBR_IGN 0
 
-#define LBR_ANY		 \
-	(LBR_JCC	|\
-	 LBR_REL_CALL	|\
-	 LBR_IND_CALL	|\
-	 LBR_RETURN	|\
-	 LBR_REL_JMP	|\
-	 LBR_IND_JMP	|\
-	 LBR_FAR)
+#define LBR_ANY (LBR_JCC | LBR_REL_CALL | LBR_IND_CALL | LBR_RETURN | LBR_REL_JMP | LBR_IND_JMP | LBR_FAR)
 
-#define LBR_FROM_FLAG_MISPRED	BIT_ULL(63)
-#define LBR_FROM_FLAG_IN_TX	BIT_ULL(62)
-#define LBR_FROM_FLAG_ABORT	BIT_ULL(61)
+#define LBR_FROM_FLAG_MISPRED BIT_ULL(63)
+#define LBR_FROM_FLAG_IN_TX BIT_ULL(62)
+#define LBR_FROM_FLAG_ABORT BIT_ULL(61)
 
-#define LBR_FROM_SIGNEXT_2MSB	(BIT_ULL(60) | BIT_ULL(59))
+#define LBR_FROM_SIGNEXT_2MSB (BIT_ULL(60) | BIT_ULL(59))
 
 /*
  * x86control flow change classification
@@ -99,68 +92,42 @@ enum {
 #define X86_BR_PLM (X86_BR_USER | X86_BR_KERNEL)
 #define X86_BR_ANYTX (X86_BR_NO_TX | X86_BR_IN_TX)
 
-#define X86_BR_ANY       \
-	(X86_BR_CALL    |\
-	 X86_BR_RET     |\
-	 X86_BR_SYSCALL |\
-	 X86_BR_SYSRET  |\
-	 X86_BR_INT     |\
-	 X86_BR_IRET    |\
-	 X86_BR_JCC     |\
-	 X86_BR_JMP	 |\
-	 X86_BR_IRQ	 |\
-	 X86_BR_ABORT	 |\
-	 X86_BR_IND_CALL |\
-	 X86_BR_IND_JMP  |\
-	 X86_BR_ZERO_CALL)
+#define X86_BR_ANY (X86_BR_CALL | X86_BR_RET | X86_BR_SYSCALL | X86_BR_SYSRET | X86_BR_INT | X86_BR_IRET | X86_BR_JCC | X86_BR_JMP | X86_BR_IRQ | X86_BR_ABORT | X86_BR_IND_CALL | X86_BR_IND_JMP | X86_BR_ZERO_CALL)
 
 #define X86_BR_ALL (X86_BR_PLM | X86_BR_ANY)
 
-#define X86_BR_ANY_CALL		 \
-	(X86_BR_CALL		|\
-	 X86_BR_IND_CALL	|\
-	 X86_BR_ZERO_CALL	|\
-	 X86_BR_SYSCALL		|\
-	 X86_BR_IRQ		|\
-	 X86_BR_INT)
+#define X86_BR_ANY_CALL (X86_BR_CALL | X86_BR_IND_CALL | X86_BR_ZERO_CALL | X86_BR_SYSCALL | X86_BR_IRQ | X86_BR_INT)
 
 /*
  * Intel LBR_CTL bits
  *
  * Hardware branch filter for Arch LBR
  */
-#define ARCH_LBR_KERNEL_BIT		1  /* capture at ring0 */
-#define ARCH_LBR_USER_BIT		2  /* capture at ring > 0 */
-#define ARCH_LBR_CALL_STACK_BIT		3  /* enable call stack */
-#define ARCH_LBR_JCC_BIT		16 /* capture conditional branches */
-#define ARCH_LBR_REL_JMP_BIT		17 /* capture relative jumps */
-#define ARCH_LBR_IND_JMP_BIT		18 /* capture indirect jumps */
-#define ARCH_LBR_REL_CALL_BIT		19 /* capture relative calls */
-#define ARCH_LBR_IND_CALL_BIT		20 /* capture indirect calls */
-#define ARCH_LBR_RETURN_BIT		21 /* capture near returns */
-#define ARCH_LBR_OTHER_BRANCH_BIT	22 /* capture other branches */
+#define ARCH_LBR_KERNEL_BIT 1
+#define ARCH_LBR_USER_BIT 2
+#define ARCH_LBR_CALL_STACK_BIT 3
+#define ARCH_LBR_JCC_BIT 16
+#define ARCH_LBR_REL_JMP_BIT 17
+#define ARCH_LBR_IND_JMP_BIT 18
+#define ARCH_LBR_REL_CALL_BIT 19
+#define ARCH_LBR_IND_CALL_BIT 20
+#define ARCH_LBR_RETURN_BIT 21
+#define ARCH_LBR_OTHER_BRANCH_BIT 22
 
-#define ARCH_LBR_KERNEL			(1ULL << ARCH_LBR_KERNEL_BIT)
-#define ARCH_LBR_USER			(1ULL << ARCH_LBR_USER_BIT)
-#define ARCH_LBR_CALL_STACK		(1ULL << ARCH_LBR_CALL_STACK_BIT)
-#define ARCH_LBR_JCC			(1ULL << ARCH_LBR_JCC_BIT)
-#define ARCH_LBR_REL_JMP		(1ULL << ARCH_LBR_REL_JMP_BIT)
-#define ARCH_LBR_IND_JMP		(1ULL << ARCH_LBR_IND_JMP_BIT)
-#define ARCH_LBR_REL_CALL		(1ULL << ARCH_LBR_REL_CALL_BIT)
-#define ARCH_LBR_IND_CALL		(1ULL << ARCH_LBR_IND_CALL_BIT)
-#define ARCH_LBR_RETURN			(1ULL << ARCH_LBR_RETURN_BIT)
-#define ARCH_LBR_OTHER_BRANCH		(1ULL << ARCH_LBR_OTHER_BRANCH_BIT)
+#define ARCH_LBR_KERNEL (1ULL << ARCH_LBR_KERNEL_BIT)
+#define ARCH_LBR_USER (1ULL << ARCH_LBR_USER_BIT)
+#define ARCH_LBR_CALL_STACK (1ULL << ARCH_LBR_CALL_STACK_BIT)
+#define ARCH_LBR_JCC (1ULL << ARCH_LBR_JCC_BIT)
+#define ARCH_LBR_REL_JMP (1ULL << ARCH_LBR_REL_JMP_BIT)
+#define ARCH_LBR_IND_JMP (1ULL << ARCH_LBR_IND_JMP_BIT)
+#define ARCH_LBR_REL_CALL (1ULL << ARCH_LBR_REL_CALL_BIT)
+#define ARCH_LBR_IND_CALL (1ULL << ARCH_LBR_IND_CALL_BIT)
+#define ARCH_LBR_RETURN (1ULL << ARCH_LBR_RETURN_BIT)
+#define ARCH_LBR_OTHER_BRANCH (1ULL << ARCH_LBR_OTHER_BRANCH_BIT)
 
-#define ARCH_LBR_ANY			 \
-	(ARCH_LBR_JCC			|\
-	 ARCH_LBR_REL_JMP		|\
-	 ARCH_LBR_IND_JMP		|\
-	 ARCH_LBR_REL_CALL		|\
-	 ARCH_LBR_IND_CALL		|\
-	 ARCH_LBR_RETURN		|\
-	 ARCH_LBR_OTHER_BRANCH)
+#define ARCH_LBR_ANY (ARCH_LBR_JCC | ARCH_LBR_REL_JMP | ARCH_LBR_IND_JMP | ARCH_LBR_REL_CALL | ARCH_LBR_IND_CALL | ARCH_LBR_RETURN | ARCH_LBR_OTHER_BRANCH)
 
-#define ARCH_LBR_CTL_MASK			0x7f000e
+#define ARCH_LBR_CTL_MASK 0x7f000e
 
 static void intel_pmu_lbr_filter(struct cpu_hw_events *cpuc);
 
@@ -1219,9 +1186,6 @@ static int branch_type(unsigned long from, unsigned long to, int abort)
 	 * decoder needs to know the ABI especially
 	 * on 64-bit systems running 32-bit apps
 	 */
-#ifdef CONFIG_X86_64
-	is64 = kernel_ip((unsigned long)addr) || any_64bit_mode(current_pt_regs());
-#endif
 	insn_init(&insn, addr, bytes_read, is64);
 	if (insn_get_opcode(&insn))
 		return X86_BR_ABORT;
@@ -1319,7 +1283,7 @@ static int branch_type(unsigned long from, unsigned long to, int abort)
 	return ret;
 }
 
-#define X86_BR_TYPE_MAP_MAX	16
+#define X86_BR_TYPE_MAP_MAX 16
 
 static int branch_map[X86_BR_TYPE_MAP_MAX] = {
 	PERF_BR_CALL,		/* X86_BR_CALL */

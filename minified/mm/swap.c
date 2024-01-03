@@ -40,7 +40,7 @@
 
 #include "internal.h"
 
-#define CREATE_TRACE_POINTS
+#define CREATE_TRACE_POINTS 
 #include <trace/events/pagemap.h>
 
 /* How many pages do we try to swap or page in/out together? */
@@ -65,9 +65,6 @@ struct lru_pvecs {
 	struct pagevec lru_deactivate_file;
 	struct pagevec lru_deactivate;
 	struct pagevec lru_lazyfree;
-#ifdef CONFIG_SMP
-	struct pagevec activate_page;
-#endif
 };
 static DEFINE_PER_CPU(struct lru_pvecs, lru_pvecs) = {
 	.lock = INIT_LOCAL_LOCK(lock),
@@ -323,41 +320,6 @@ static void __folio_activate(struct folio *folio, struct lruvec *lruvec)
 	}
 }
 
-#ifdef CONFIG_SMP
-static void __activate_page(struct page *page, struct lruvec *lruvec)
-{
-	return __folio_activate(page_folio(page), lruvec);
-}
-
-static void activate_page_drain(int cpu)
-{
-	struct pagevec *pvec = &per_cpu(lru_pvecs.activate_page, cpu);
-
-	if (pagevec_count(pvec))
-		pagevec_lru_move_fn(pvec, __activate_page);
-}
-
-static bool need_activate_page_drain(int cpu)
-{
-	return pagevec_count(&per_cpu(lru_pvecs.activate_page, cpu)) != 0;
-}
-
-static void folio_activate(struct folio *folio)
-{
-	if (folio_test_lru(folio) && !folio_test_active(folio) &&
-	    !folio_test_unevictable(folio)) {
-		struct pagevec *pvec;
-
-		folio_get(folio);
-		local_lock(&lru_pvecs.lock);
-		pvec = this_cpu_ptr(&lru_pvecs.activate_page);
-		if (pagevec_add_and_need_flush(pvec, &folio->page))
-			pagevec_lru_move_fn(pvec, __activate_page);
-		local_unlock(&lru_pvecs.lock);
-	}
-}
-
-#else
 static inline void activate_page_drain(int cpu)
 {
 }
@@ -373,7 +335,6 @@ static void folio_activate(struct folio *folio)
 		folio_set_lru(folio);
 	}
 }
-#endif
 
 static void __lru_cache_activate_folio(struct folio *folio)
 {
@@ -732,128 +693,10 @@ void lru_add_drain_cpu_zone(struct zone *zone)
 	mlock_page_drain_local();
 }
 
-#ifdef CONFIG_SMP
-
-static DEFINE_PER_CPU(struct work_struct, lru_add_drain_work);
-
-static void lru_add_drain_per_cpu(struct work_struct *dummy)
-{
-	lru_add_and_bh_lrus_drain();
-}
-
-/*
- * Doesn't need any cpu hotplug locking because we do rely on per-cpu
- * kworkers being shut down before our page_alloc_cpu_dead callback is
- * executed on the offlined cpu.
- * Calling this function with cpu hotplug locks held can actually lead
- * to obscure indirect dependencies via WQ context.
- */
-static inline void __lru_add_drain_all(bool force_all_cpus)
-{
-	/*
-	 * lru_drain_gen - Global pages generation number
-	 *
-	 * (A) Definition: global lru_drain_gen = x implies that all generations
-	 *     0 < n <= x are already *scheduled* for draining.
-	 *
-	 * This is an optimization for the highly-contended use case where a
-	 * user space workload keeps constantly generating a flow of pages for
-	 * each CPU.
-	 */
-	static unsigned int lru_drain_gen;
-	static struct cpumask has_work;
-	static DEFINE_MUTEX(lock);
-	unsigned cpu, this_gen;
-
-	/*
-	 * Make sure nobody triggers this path before mm_percpu_wq is fully
-	 * initialized.
-	 */
-	if (WARN_ON(!mm_percpu_wq))
-		return;
-
-	/*
-	 * Guarantee pagevec counter stores visible by this CPU are visible to
-	 * other CPUs before loading the current drain generation.
-	 */
-	smp_mb();
-
-	/*
-	 * (B) Locally cache global LRU draining generation number
-	 *
-	 * The read barrier ensures that the counter is loaded before the mutex
-	 * is taken. It pairs with smp_mb() inside the mutex critical section
-	 * at (D).
-	 */
-	this_gen = smp_load_acquire(&lru_drain_gen);
-
-	mutex_lock(&lock);
-
-	/*
-	 * (C) Exit the draining operation if a newer generation, from another
-	 * lru_add_drain_all(), was already scheduled for draining. Check (A).
-	 */
-	if (unlikely(this_gen != lru_drain_gen && !force_all_cpus))
-		goto done;
-
-	/*
-	 * (D) Increment global generation number
-	 *
-	 * Pairs with smp_load_acquire() at (B), outside of the critical
-	 * section. Use a full memory barrier to guarantee that the new global
-	 * drain generation number is stored before loading pagevec counters.
-	 *
-	 * This pairing must be done here, before the for_each_online_cpu loop
-	 * below which drains the page vectors.
-	 *
-	 * Let x, y, and z represent some system CPU numbers, where x < y < z.
-	 * Assume CPU #z is in the middle of the for_each_online_cpu loop
-	 * below and has already reached CPU #y's per-cpu data. CPU #x comes
-	 * along, adds some pages to its per-cpu vectors, then calls
-	 * lru_add_drain_all().
-	 *
-	 * If the paired barrier is done at any later step, e.g. after the
-	 * loop, CPU #x will just exit at (C) and miss flushing out all of its
-	 * added pages.
-	 */
-	WRITE_ONCE(lru_drain_gen, lru_drain_gen + 1);
-	smp_mb();
-
-	cpumask_clear(&has_work);
-	for_each_online_cpu(cpu) {
-		struct work_struct *work = &per_cpu(lru_add_drain_work, cpu);
-
-		if (pagevec_count(&per_cpu(lru_pvecs.lru_add, cpu)) ||
-		    data_race(pagevec_count(&per_cpu(lru_rotate.pvec, cpu))) ||
-		    pagevec_count(&per_cpu(lru_pvecs.lru_deactivate_file, cpu)) ||
-		    pagevec_count(&per_cpu(lru_pvecs.lru_deactivate, cpu)) ||
-		    pagevec_count(&per_cpu(lru_pvecs.lru_lazyfree, cpu)) ||
-		    need_activate_page_drain(cpu) ||
-		    need_mlock_page_drain(cpu) ||
-		    has_bh_in_lru(cpu, NULL)) {
-			INIT_WORK(work, lru_add_drain_per_cpu);
-			queue_work_on(cpu, mm_percpu_wq, work);
-			__cpumask_set_cpu(cpu, &has_work);
-		}
-	}
-
-	for_each_cpu(cpu, &has_work)
-		flush_work(&per_cpu(lru_add_drain_work, cpu));
-
-done:
-	mutex_unlock(&lock);
-}
-
-void lru_add_drain_all(void)
-{
-	__lru_add_drain_all(false);
-}
-#else
 void lru_add_drain_all(void)
 {
 	lru_add_drain();
 }
-#endif /* CONFIG_SMP */
 
 atomic_t lru_disable_count = ATOMIC_INIT(0);
 
@@ -882,11 +725,7 @@ void lru_cache_disable(void)
 	 * section when synchronize_rcu() returns.
 	 */
 	synchronize_rcu_expedited();
-#ifdef CONFIG_SMP
-	__lru_add_drain_all(true);
-#else
 	lru_add_and_bh_lrus_drain();
-#endif
 }
 
 /**

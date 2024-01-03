@@ -18,71 +18,10 @@
  *  Dummy console driver
  */
 
-#if defined(__arm__)
-#define DUMMY_COLUMNS	screen_info.orig_video_cols
-#define DUMMY_ROWS	screen_info.orig_video_lines
-#else
 /* set by Kconfig. Use 80x25 for 640x480 and 160x64 for 1280x1024 */
-#define DUMMY_COLUMNS	CONFIG_DUMMY_CONSOLE_COLUMNS
-#define DUMMY_ROWS	CONFIG_DUMMY_CONSOLE_ROWS
-#endif
+#define DUMMY_COLUMNS CONFIG_DUMMY_CONSOLE_COLUMNS
+#define DUMMY_ROWS CONFIG_DUMMY_CONSOLE_ROWS
 
-#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
-/* These are both protected by the console_lock */
-static RAW_NOTIFIER_HEAD(dummycon_output_nh);
-static bool dummycon_putc_called;
-
-void dummycon_register_output_notifier(struct notifier_block *nb)
-{
-	WARN_CONSOLE_UNLOCKED();
-
-	raw_notifier_chain_register(&dummycon_output_nh, nb);
-
-	if (dummycon_putc_called)
-		nb->notifier_call(nb, 0, NULL);
-}
-
-void dummycon_unregister_output_notifier(struct notifier_block *nb)
-{
-	WARN_CONSOLE_UNLOCKED();
-
-	raw_notifier_chain_unregister(&dummycon_output_nh, nb);
-}
-
-static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos)
-{
-	WARN_CONSOLE_UNLOCKED();
-
-	dummycon_putc_called = true;
-	raw_notifier_call_chain(&dummycon_output_nh, 0, NULL);
-}
-
-static void dummycon_putcs(struct vc_data *vc, const unsigned short *s,
-			   int count, int ypos, int xpos)
-{
-	int i;
-
-	if (!dummycon_putc_called) {
-		/* Ignore erases */
-		for (i = 0 ; i < count; i++) {
-			if (s[i] != vc->vc_video_erase_char)
-				break;
-		}
-		if (i == count)
-			return;
-
-		dummycon_putc_called = true;
-	}
-
-	raw_notifier_call_chain(&dummycon_output_nh, 0, NULL);
-}
-
-static int dummycon_blank(struct vc_data *vc, int blank, int mode_switch)
-{
-	/* Redraw, so that we get putc(s) for output done while blanked */
-	return 1;
-}
-#else
 static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos) { }
 static void dummycon_putcs(struct vc_data *vc, const unsigned short *s,
 			   int count, int ypos, int xpos) { }
@@ -90,7 +29,6 @@ static int dummycon_blank(struct vc_data *vc, int blank, int mode_switch)
 {
 	return 0;
 }
-#endif
 
 static const char *dummycon_startup(void)
 {

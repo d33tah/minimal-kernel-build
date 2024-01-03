@@ -12,7 +12,7 @@
 
 enum { GP_IDLE = 0, GP_ENTER, GP_PASSED, GP_EXIT, GP_REPLAY };
 
-#define	rss_lock	gp_wait.lock
+#define rss_lock gp_wait.lock
 
 /**
  * rcu_sync_init() - Initialize an rcu_sync structure

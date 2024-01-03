@@ -20,7 +20,7 @@
 #include <linux/kernel.h>
 #include <linux/kmemleak.h>
 #include <linux/percpu.h>
-#include <linux/preempt.h>		/* in_interrupt() */
+#include <linux/preempt.h>
 #include <linux/radix-tree.h>
 #include <linux/rcupdate.h>
 #include <linux/slab.h>
@@ -49,10 +49,9 @@ struct kmem_cache *radix_tree_node_cachep;
  * The IDR does not have to be as high as the radix tree since it uses
  * signed integers, not unsigned longs.
  */
-#define IDR_INDEX_BITS		(8 /* CHAR_BIT */ * sizeof(int) - 1)
-#define IDR_MAX_PATH		(DIV_ROUND_UP(IDR_INDEX_BITS, \
-						RADIX_TREE_MAP_SHIFT))
-#define IDR_PRELOAD_SIZE	(IDR_MAX_PATH * 2 - 1)
+#define IDR_INDEX_BITS (8 * sizeof(int) - 1)
+#define IDR_MAX_PATH (DIV_ROUND_UP(IDR_INDEX_BITS, RADIX_TREE_MAP_SHIFT))
+#define IDR_PRELOAD_SIZE (IDR_MAX_PATH * 2 - 1)
 
 /*
  * Per-cpu pool of preloaded nodes
@@ -72,7 +71,7 @@ static inline void *node_to_entry(void *ptr)
 	return (void *)((unsigned long)ptr | RADIX_TREE_INTERNAL_NODE);
 }
 
-#define RADIX_TREE_RETRY	XA_RETRY_ENTRY
+#define RADIX_TREE_RETRY XA_RETRY_ENTRY
 
 static inline unsigned long
 get_slot_offset(const struct radix_tree_node *parent, void __rcu **slot)

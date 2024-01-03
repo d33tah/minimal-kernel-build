@@ -19,14 +19,14 @@
 #include <linux/ratelimit.h>
 #include "tty.h"
 
-#define MIN_TTYB_SIZE	256
-#define TTYB_ALIGN_MASK	255
+#define MIN_TTYB_SIZE 256
+#define TTYB_ALIGN_MASK 255
 
 /*
  * Byte threshold to limit memory consumption for flip buffers.
  * The actual memory limit is > 2x this amount.
  */
-#define TTYB_DEFAULT_MEM_LIMIT	(640 * 1024UL)
+#define TTYB_DEFAULT_MEM_LIMIT (640 * 1024UL)
 
 /*
  * We default to dicing tty buffer allocations to this many characters
@@ -36,7 +36,7 @@
  * logic this must match.
  */
 
-#define TTY_BUFFER_PAGE	(((PAGE_SIZE - sizeof(struct tty_buffer)) / 2) & ~0xFF)
+#define TTY_BUFFER_PAGE (((PAGE_SIZE - sizeof(struct tty_buffer)) / 2) & ~0xFF)
 
 /**
  * tty_buffer_lock_exclusive	-	gain exclusive access to buffer

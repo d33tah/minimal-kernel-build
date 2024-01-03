@@ -17,9 +17,9 @@
 #include <linux/security.h>
 #include <linux/cred.h>
 #include <linux/idr.h>
-#include <linux/init.h>		/* init_rootfs */
-#include <linux/fs_struct.h>	/* get_fs_root et.al. */
-#include <linux/fsnotify.h>	/* fsnotify_vfsmount_delete */
+#include <linux/init.h>
+#include <linux/fs_struct.h>
+#include <linux/fsnotify.h>
 #include <linux/file.h>
 #include <linux/uaccess.h>
 #include <linux/proc_ns.h>
@@ -165,13 +165,9 @@ void mnt_release_group_id(struct mount *mnt)
  */
 static inline void mnt_add_count(struct mount *mnt, int n)
 {
-#ifdef CONFIG_SMP
-	this_cpu_add(mnt->mnt_pcp->mnt_count, n);
-#else
 	preempt_disable();
 	mnt->mnt_count += n;
 	preempt_enable();
-#endif
 }
 
 /*
@@ -179,18 +175,7 @@ static inline void mnt_add_count(struct mount *mnt, int n)
  */
 int mnt_get_count(struct mount *mnt)
 {
-#ifdef CONFIG_SMP
-	int count = 0;
-	int cpu;
-
-	for_each_possible_cpu(cpu) {
-		count += per_cpu_ptr(mnt->mnt_pcp, cpu)->mnt_count;
-	}
-
-	return count;
-#else
 	return mnt->mnt_count;
-#endif
 }
 
 static struct mount *alloc_vfsmnt(const char *name)
@@ -210,16 +195,8 @@ static struct mount *alloc_vfsmnt(const char *name)
 				goto out_free_id;
 		}
 
-#ifdef CONFIG_SMP
-		mnt->mnt_pcp = alloc_percpu(struct mnt_pcp);
-		if (!mnt->mnt_pcp)
-			goto out_free_devname;
-
-		this_cpu_add(mnt->mnt_pcp->mnt_count, 1);
-#else
 		mnt->mnt_count = 1;
 		mnt->mnt_writers = 0;
-#endif
 
 		INIT_HLIST_NODE(&mnt->mnt_hash);
 		INIT_LIST_HEAD(&mnt->mnt_child);
@@ -236,10 +213,6 @@ static struct mount *alloc_vfsmnt(const char *name)
 	}
 	return mnt;
 
-#ifdef CONFIG_SMP
-out_free_devname:
-	kfree_const(mnt->mnt_devname);
-#endif
 out_free_id:
 	mnt_free_id(mnt);
 out_free_cache:
@@ -274,36 +247,17 @@ EXPORT_SYMBOL_GPL(__mnt_is_readonly);
 
 static inline void mnt_inc_writers(struct mount *mnt)
 {
-#ifdef CONFIG_SMP
-	this_cpu_inc(mnt->mnt_pcp->mnt_writers);
-#else
 	mnt->mnt_writers++;
-#endif
 }
 
 static inline void mnt_dec_writers(struct mount *mnt)
 {
-#ifdef CONFIG_SMP
-	this_cpu_dec(mnt->mnt_pcp->mnt_writers);
-#else
 	mnt->mnt_writers--;
-#endif
 }
 
 static unsigned int mnt_get_writers(struct mount *mnt)
 {
-#ifdef CONFIG_SMP
-	unsigned int count = 0;
-	int cpu;
-
-	for_each_possible_cpu(cpu) {
-		count += per_cpu_ptr(mnt->mnt_pcp, cpu)->mnt_writers;
-	}
-
-	return count;
-#else
 	return mnt->mnt_writers;
-#endif
 }
 
 static int mnt_is_readonly(struct vfsmount *mnt)
@@ -608,9 +562,6 @@ static void free_vfsmnt(struct mount *mnt)
 	if (!initial_idmapping(mnt_userns))
 		put_user_ns(mnt_userns);
 	kfree_const(mnt->mnt_devname);
-#ifdef CONFIG_SMP
-	free_percpu(mnt->mnt_pcp);
-#endif
 	kmem_cache_free(mnt_cache, mnt);
 }
 
@@ -1332,91 +1283,6 @@ struct vfsmount *mnt_clone_internal(const struct path *path)
 	return &p->mnt;
 }
 
-#ifdef CONFIG_PROC_FS
-static struct mount *mnt_list_next(struct mnt_namespace *ns,
-				   struct list_head *p)
-{
-	struct mount *mnt, *ret = NULL;
-
-	lock_ns_list(ns);
-	list_for_each_continue(p, &ns->list) {
-		mnt = list_entry(p, typeof(*mnt), mnt_list);
-		if (!mnt_is_cursor(mnt)) {
-			ret = mnt;
-			break;
-		}
-	}
-	unlock_ns_list(ns);
-
-	return ret;
-}
-
-/* iterator; we want it to have access to namespace_sem, thus here... */
-static void *m_start(struct seq_file *m, loff_t *pos)
-{
-	struct proc_mounts *p = m->private;
-	struct list_head *prev;
-
-	down_read(&namespace_sem);
-	if (!*pos) {
-		prev = &p->ns->list;
-	} else {
-		prev = &p->cursor.mnt_list;
-
-		/* Read after we'd reached the end? */
-		if (list_empty(prev))
-			return NULL;
-	}
-
-	return mnt_list_next(p->ns, prev);
-}
-
-static void *m_next(struct seq_file *m, void *v, loff_t *pos)
-{
-	struct proc_mounts *p = m->private;
-	struct mount *mnt = v;
-
-	++*pos;
-	return mnt_list_next(p->ns, &mnt->mnt_list);
-}
-
-static void m_stop(struct seq_file *m, void *v)
-{
-	struct proc_mounts *p = m->private;
-	struct mount *mnt = v;
-
-	lock_ns_list(p->ns);
-	if (mnt)
-		list_move_tail(&p->cursor.mnt_list, &mnt->mnt_list);
-	else
-		list_del_init(&p->cursor.mnt_list);
-	unlock_ns_list(p->ns);
-	up_read(&namespace_sem);
-}
-
-static int m_show(struct seq_file *m, void *v)
-{
-	struct proc_mounts *p = m->private;
-	struct mount *r = v;
-	return p->show(m, &r->mnt);
-}
-
-const struct seq_operations mounts_op = {
-	.start	= m_start,
-	.next	= m_next,
-	.stop	= m_stop,
-	.show	= m_show,
-};
-
-void mnt_cursor_del(struct mnt_namespace *ns, struct mount *cursor)
-{
-	down_read(&namespace_sem);
-	lock_ns_list(ns);
-	list_del(&cursor->mnt_list);
-	unlock_ns_list(ns);
-	up_read(&namespace_sem);
-}
-#endif  /* CONFIG_PROC_FS */
 
 /**
  * may_umount_tree - check if a mount tree is busy
@@ -1830,7 +1696,6 @@ SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
 	return ksys_umount(name, flags);
 }
 
-#ifdef __ARCH_WANT_SYS_OLDUMOUNT
 
 /*
  *	The 2.0 compatible umount. No flags.
@@ -1840,7 +1705,6 @@ SYSCALL_DEFINE1(oldumount, char __user *, name)
 	return ksys_umount(name, 0);
 }
 
-#endif
 
 static bool is_mnt_ns_file(struct dentry *dentry)
 {
@@ -3599,15 +3463,11 @@ out_type:
 	return ret;
 }
 
-#define FSMOUNT_VALID_FLAGS                                                    \
-	(MOUNT_ATTR_RDONLY | MOUNT_ATTR_NOSUID | MOUNT_ATTR_NODEV |            \
-	 MOUNT_ATTR_NOEXEC | MOUNT_ATTR__ATIME | MOUNT_ATTR_NODIRATIME |       \
-	 MOUNT_ATTR_NOSYMFOLLOW)
+#define FSMOUNT_VALID_FLAGS (MOUNT_ATTR_RDONLY | MOUNT_ATTR_NOSUID | MOUNT_ATTR_NODEV | MOUNT_ATTR_NOEXEC | MOUNT_ATTR__ATIME | MOUNT_ATTR_NODIRATIME | MOUNT_ATTR_NOSYMFOLLOW)
 
 #define MOUNT_SETATTR_VALID_FLAGS (FSMOUNT_VALID_FLAGS | MOUNT_ATTR_IDMAP)
 
-#define MOUNT_SETATTR_PROPAGATION_FLAGS \
-	(MS_UNBINDABLE | MS_PRIVATE | MS_SLAVE | MS_SHARED)
+#define MOUNT_SETATTR_PROPAGATION_FLAGS (MS_UNBINDABLE | MS_PRIVATE | MS_SLAVE | MS_SHARED)
 
 static unsigned int attr_flags_to_mnt_flags(u64 attr_flags)
 {
@@ -4691,24 +4551,3 @@ const struct proc_ns_operations mntns_operations = {
 	.owner		= mntns_owner,
 };
 
-#ifdef CONFIG_SYSCTL
-static struct ctl_table fs_namespace_sysctls[] = {
-	{
-		.procname	= "mount-max",
-		.data		= &sysctl_mount_max,
-		.maxlen		= sizeof(unsigned int),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec_minmax,
-		.extra1		= SYSCTL_ONE,
-	},
-	{ }
-};
-
-static int __init init_fs_namespace_sysctls(void)
-{
-	register_sysctl_init("fs", fs_namespace_sysctls);
-	return 0;
-}
-fs_initcall(init_fs_namespace_sysctls);
-
-#endif /* CONFIG_SYSCTL */

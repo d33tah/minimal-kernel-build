@@ -38,8 +38,8 @@ enum {
 
 static DEFINE_PER_CPU(struct bts_ctx, bts_ctx);
 
-#define BTS_RECORD_SIZE		24
-#define BTS_SAFETY_MARGIN	4080
+#define BTS_RECORD_SIZE 24
+#define BTS_SAFETY_MARGIN 4080
 
 struct bts_phys {
 	struct page	*page;

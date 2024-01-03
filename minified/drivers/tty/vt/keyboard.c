@@ -55,14 +55,7 @@
 
 #define KBD_DEFMODE (BIT(VC_REPEAT) | BIT(VC_META))
 
-#if defined(CONFIG_X86) || defined(CONFIG_PARISC)
 #include <asm/kbdleds.h>
-#else
-static inline int kbd_defleds(void)
-{
-	return 0;
-}
-#endif
 
 #define KBD_DEFLOCK 0
 
@@ -70,23 +63,14 @@ static inline int kbd_defleds(void)
  * Handler Tables.
  */
 
-#define K_HANDLERS\
-	k_self,		k_fn,		k_spec,		k_pad,\
-	k_dead,		k_cons,		k_cur,		k_shift,\
-	k_meta,		k_ascii,	k_lock,		k_lowercase,\
-	k_slock,	k_dead2,	k_brl,		k_ignore
+#define K_HANDLERS k_self, k_fn, k_spec, k_pad, k_dead, k_cons, k_cur, k_shift, k_meta, k_ascii, k_lock, k_lowercase, k_slock, k_dead2, k_brl, k_ignore
 
 typedef void (k_handler_fn)(struct vc_data *vc, unsigned char value,
 			    char up_flag);
 static k_handler_fn K_HANDLERS;
 static k_handler_fn *k_handler[16] = { K_HANDLERS };
 
-#define FN_HANDLERS\
-	fn_null,	fn_enter,	fn_show_ptregs,	fn_show_mem,\
-	fn_show_state,	fn_send_intr,	fn_lastcons,	fn_caps_toggle,\
-	fn_num,		fn_hold,	fn_scroll_forw,	fn_scroll_back,\
-	fn_boot_it,	fn_caps_on,	fn_compose,	fn_SAK,\
-	fn_dec_console, fn_inc_console, fn_spawn_con,	fn_bare_num
+#define FN_HANDLERS fn_null, fn_enter, fn_show_ptregs, fn_show_mem, fn_show_state, fn_send_intr, fn_lastcons, fn_caps_toggle, fn_num, fn_hold, fn_scroll_forw, fn_scroll_back, fn_boot_it, fn_caps_on, fn_compose, fn_SAK, fn_dec_console, fn_inc_console, fn_spawn_con, fn_bare_num
 
 typedef void (fn_handler_fn)(struct vc_data *vc);
 static fn_handler_fn FN_HANDLERS;
@@ -1019,96 +1003,6 @@ static void k_brl(struct vc_data *vc, unsigned char value, char up_flag)
 	}
 }
 
-#if IS_ENABLED(CONFIG_INPUT_LEDS) && IS_ENABLED(CONFIG_LEDS_TRIGGERS)
-
-struct kbd_led_trigger {
-	struct led_trigger trigger;
-	unsigned int mask;
-};
-
-static int kbd_led_trigger_activate(struct led_classdev *cdev)
-{
-	struct kbd_led_trigger *trigger =
-		container_of(cdev->trigger, struct kbd_led_trigger, trigger);
-
-	tasklet_disable(&keyboard_tasklet);
-	if (ledstate != -1U)
-		led_trigger_event(&trigger->trigger,
-				  ledstate & trigger->mask ?
-					LED_FULL : LED_OFF);
-	tasklet_enable(&keyboard_tasklet);
-
-	return 0;
-}
-
-#define KBD_LED_TRIGGER(_led_bit, _name) {			\
-		.trigger = {					\
-			.name = _name,				\
-			.activate = kbd_led_trigger_activate,	\
-		},						\
-		.mask	= BIT(_led_bit),			\
-	}
-
-#define KBD_LOCKSTATE_TRIGGER(_led_bit, _name)		\
-	KBD_LED_TRIGGER((_led_bit) + 8, _name)
-
-static struct kbd_led_trigger kbd_led_triggers[] = {
-	KBD_LED_TRIGGER(VC_SCROLLOCK, "kbd-scrolllock"),
-	KBD_LED_TRIGGER(VC_NUMLOCK,   "kbd-numlock"),
-	KBD_LED_TRIGGER(VC_CAPSLOCK,  "kbd-capslock"),
-	KBD_LED_TRIGGER(VC_KANALOCK,  "kbd-kanalock"),
-
-	KBD_LOCKSTATE_TRIGGER(VC_SHIFTLOCK,  "kbd-shiftlock"),
-	KBD_LOCKSTATE_TRIGGER(VC_ALTGRLOCK,  "kbd-altgrlock"),
-	KBD_LOCKSTATE_TRIGGER(VC_CTRLLOCK,   "kbd-ctrllock"),
-	KBD_LOCKSTATE_TRIGGER(VC_ALTLOCK,    "kbd-altlock"),
-	KBD_LOCKSTATE_TRIGGER(VC_SHIFTLLOCK, "kbd-shiftllock"),
-	KBD_LOCKSTATE_TRIGGER(VC_SHIFTRLOCK, "kbd-shiftrlock"),
-	KBD_LOCKSTATE_TRIGGER(VC_CTRLLLOCK,  "kbd-ctrlllock"),
-	KBD_LOCKSTATE_TRIGGER(VC_CTRLRLOCK,  "kbd-ctrlrlock"),
-};
-
-static void kbd_propagate_led_state(unsigned int old_state,
-				    unsigned int new_state)
-{
-	struct kbd_led_trigger *trigger;
-	unsigned int changed = old_state ^ new_state;
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(kbd_led_triggers); i++) {
-		trigger = &kbd_led_triggers[i];
-
-		if (changed & trigger->mask)
-			led_trigger_event(&trigger->trigger,
-					  new_state & trigger->mask ?
-						LED_FULL : LED_OFF);
-	}
-}
-
-static int kbd_update_leds_helper(struct input_handle *handle, void *data)
-{
-	unsigned int led_state = *(unsigned int *)data;
-
-	if (test_bit(EV_LED, handle->dev->evbit))
-		kbd_propagate_led_state(~led_state, led_state);
-
-	return 0;
-}
-
-static void kbd_init_leds(void)
-{
-	int error;
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(kbd_led_triggers); i++) {
-		error = led_trigger_register(&kbd_led_triggers[i].trigger);
-		if (error)
-			pr_err("error %d while registering trigger %s\n",
-			       error, kbd_led_triggers[i].trigger.name);
-	}
-}
-
-#else
 
 static int kbd_update_leds_helper(struct input_handle *handle, void *data)
 {
@@ -1135,7 +1029,6 @@ static void kbd_init_leds(void)
 {
 }
 
-#endif
 
 /*
  * The leds display either (i) the status of NumLock, CapsLock, ScrollLock,
@@ -1273,10 +1166,6 @@ static void kbd_bh(struct tasklet_struct *unused)
 	}
 }
 
-#if defined(CONFIG_X86) || defined(CONFIG_IA64) || defined(CONFIG_ALPHA) ||\
-    defined(CONFIG_MIPS) || defined(CONFIG_PPC) || defined(CONFIG_SPARC) ||\
-    defined(CONFIG_PARISC) || defined(CONFIG_SUPERH) ||\
-    (defined(CONFIG_ARM) && defined(CONFIG_KEYBOARD_ATKBD) && !defined(CONFIG_ARCH_RPC))
 
 static inline bool kbd_is_hw_raw(const struct input_dev *dev)
 {
@@ -1304,10 +1193,6 @@ static const unsigned short x86_keycodes[256] =
 	308,310,313,314,315,317,318,319,320,357,322,323,324,325,276,330,
 	332,340,365,342,343,344,345,346,356,270,341,368,369,370,371,372 };
 
-#ifdef CONFIG_SPARC
-static int sparc_l1_a_state;
-extern void sun_do_break(void);
-#endif
 
 static int emulate_raw(struct vc_data *vc, unsigned int keycode,
 		       unsigned char up_flag)
@@ -1368,22 +1253,6 @@ static int emulate_raw(struct vc_data *vc, unsigned int keycode,
 	return 0;
 }
 
-#else
-
-static inline bool kbd_is_hw_raw(const struct input_dev *dev)
-{
-	return false;
-}
-
-static int emulate_raw(struct vc_data *vc, unsigned int keycode, unsigned char up_flag)
-{
-	if (keycode > 127)
-		return -1;
-
-	put_queue(vc, keycode | up_flag);
-	return 0;
-}
-#endif
 
 static void kbd_rawcode(unsigned char data)
 {
@@ -1414,10 +1283,6 @@ static void kbd_keycode(unsigned int keycode, int down, bool hw_raw)
 
 	kbd = &kbd_table[vc->vc_num];
 
-#ifdef CONFIG_SPARC
-	if (keycode == KEY_STOP)
-		sparc_l1_a_state = down;
-#endif
 
 	rep = (down == 2);
 
@@ -1428,12 +1293,6 @@ static void kbd_keycode(unsigned int keycode, int down, bool hw_raw)
 				pr_warn("can't emulate rawmode for keycode %d\n",
 					keycode);
 
-#ifdef CONFIG_SPARC
-	if (keycode == KEY_A && sparc_l1_a_state) {
-		sparc_l1_a_state = false;
-		sun_do_break();
-	}
-#endif
 
 	if (kbd->kbdmode == VC_MEDIUMRAW) {
 		/*
@@ -1970,11 +1829,9 @@ static int vt_kdskbent(unsigned char kbdmode, unsigned char idx,
 		return -EINVAL;
 
 	/* ++Geert: non-PC keyboards may generate keycode zero */
-#if !defined(__mc68000__) && !defined(__powerpc__)
 	/* assignment to entry 0 only tests validity of args */
 	if (!idx)
 		return 0;
-#endif
 
 	new_map = kmalloc(sizeof(plain_map), GFP_KERNEL);
 	if (!new_map)

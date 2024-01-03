@@ -57,25 +57,10 @@
 
 #include "clock.c"
 
-#ifdef CONFIG_CGROUP_CPUACCT
-# include "cpuacct.c"
-#endif
 
-#ifdef CONFIG_CPU_FREQ
-# include "cpufreq.c"
-#endif
 
-#ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
-# include "cpufreq_schedutil.c"
-#endif
 
-#ifdef CONFIG_SCHED_DEBUG
-# include "debug.c"
-#endif
 
-#ifdef CONFIG_SCHEDSTATS
-# include "stats.c"
-#endif
 
 #include "loadavg.c"
 #include "completion.c"
@@ -83,28 +68,8 @@
 #include "wait_bit.c"
 #include "wait.c"
 
-#ifdef CONFIG_SMP
-# include "cpupri.c"
-# include "stop_task.c"
-# include "topology.c"
-#endif
 
-#ifdef CONFIG_SCHED_CORE
-# include "core_sched.c"
-#endif
 
-#ifdef CONFIG_PSI
-# include "psi.c"
-#endif
 
-#ifdef CONFIG_MEMBARRIER
-# include "membarrier.c"
-#endif
 
-#ifdef CONFIG_CPU_ISOLATION
-# include "isolation.c"
-#endif
 
-#ifdef CONFIG_SCHED_AUTOGROUP
-# include "autogroup.c"
-#endif

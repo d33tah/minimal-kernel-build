@@ -33,7 +33,7 @@
 #include <linux/sched/signal.h>
 
 /* Don't take this from <ctype.h>: 011-015 on the screen aren't spaces */
-#define is_space_on_vt(c)	((c) == ' ')
+#define is_space_on_vt(c) ((c) == ' ')
 
 /* FIXME: all this needs locking */
 static struct vc_selection {

@@ -28,9 +28,7 @@
 #include "legacy.h"
 #include "xstate.h"
 
-#define for_each_extended_xfeature(bit, mask)				\
-	(bit) = FIRST_EXTENDED_XFEATURE;				\
-	for_each_set_bit_from(bit, (unsigned long *)&(mask), 8 * sizeof(mask))
+#define for_each_extended_xfeature(bit,mask) (bit) = FIRST_EXTENDED_XFEATURE; for_each_set_bit_from(bit, (unsigned long *)&(mask), 8 * sizeof(mask))
 
 /*
  * Although we spell it out in here, the Processor Trace
@@ -83,8 +81,8 @@ static unsigned int xstate_sizes[XFEATURE_MAX] __ro_after_init =
 	{ [ 0 ... XFEATURE_MAX - 1] = -1};
 static unsigned int xstate_flags[XFEATURE_MAX] __ro_after_init;
 
-#define XSTATE_FLAG_SUPERVISOR	BIT(0)
-#define XSTATE_FLAG_ALIGNED64	BIT(1)
+#define XSTATE_FLAG_SUPERVISOR BIT(0)
+#define XSTATE_FLAG_ALIGNED64 BIT(1)
 
 /*
  * Return whether the system supports a given xfeature.
@@ -284,10 +282,7 @@ static void __init print_xstate_features(void)
  * This check is important because it is easy to get XSTATE_*
  * confused with XSTATE_BIT_*.
  */
-#define CHECK_XFEATURE(nr) do {		\
-	WARN_ON(nr < FIRST_EXTENDED_XFEATURE);	\
-	WARN_ON(nr >= XFEATURE_MAX);	\
-} while (0)
+#define CHECK_XFEATURE(nr) do { WARN_ON(nr < FIRST_EXTENDED_XFEATURE); WARN_ON(nr >= XFEATURE_MAX); } while (0)
 
 /*
  * Print out xstate component offsets and sizes
@@ -333,18 +328,7 @@ static __init void os_xrstor_booting(struct xregs_state *xstate)
  * newly added supported features at build time and make people
  * actually look at the init state for the new feature.
  */
-#define XFEATURES_INIT_FPSTATE_HANDLED		\
-	(XFEATURE_MASK_FP |			\
-	 XFEATURE_MASK_SSE |			\
-	 XFEATURE_MASK_YMM |			\
-	 XFEATURE_MASK_OPMASK |			\
-	 XFEATURE_MASK_ZMM_Hi256 |		\
-	 XFEATURE_MASK_Hi16_ZMM	 |		\
-	 XFEATURE_MASK_PKRU |			\
-	 XFEATURE_MASK_BNDREGS |		\
-	 XFEATURE_MASK_BNDCSR |			\
-	 XFEATURE_MASK_PASID |			\
-	 XFEATURE_MASK_XTILE)
+#define XFEATURES_INIT_FPSTATE_HANDLED (XFEATURE_MASK_FP | XFEATURE_MASK_SSE | XFEATURE_MASK_YMM | XFEATURE_MASK_OPMASK | XFEATURE_MASK_ZMM_Hi256 | XFEATURE_MASK_Hi16_ZMM | XFEATURE_MASK_PKRU | XFEATURE_MASK_BNDREGS | XFEATURE_MASK_BNDCSR | XFEATURE_MASK_PASID | XFEATURE_MASK_XTILE)
 
 /*
  * setup the xstate image representing the init state
@@ -440,20 +424,9 @@ static void __init __xstate_dump_leaves(void)
 	}
 }
 
-#define XSTATE_WARN_ON(x) do {							\
-	if (WARN_ONCE(x, "XSAVE consistency problem, dumping leaves")) {	\
-		__xstate_dump_leaves();						\
-	}									\
-} while (0)
+#define XSTATE_WARN_ON(x) do { if (WARN_ONCE(x, "XSAVE consistency problem, dumping leaves")) { __xstate_dump_leaves(); } } while (0)
 
-#define XCHECK_SZ(sz, nr, nr_macro, __struct) do {			\
-	if ((nr == nr_macro) &&						\
-	    WARN_ONCE(sz != sizeof(__struct),				\
-		"%s: struct is %zu bytes, cpu state %d bytes\n",	\
-		__stringify(nr_macro), sizeof(__struct), sz)) {		\
-		__xstate_dump_leaves();					\
-	}								\
-} while (0)
+#define XCHECK_SZ(sz,nr,nr_macro,__struct) do { if ((nr == nr_macro) && WARN_ONCE(sz != sizeof(__struct), "%s: struct is %zu bytes, cpu state %d bytes\n", __stringify(nr_macro), sizeof(__struct), sz)) { __xstate_dump_leaves(); } } while (0)
 
 /**
  * check_xtile_data_against_struct - Check tile data state size.
@@ -993,53 +966,6 @@ void *get_xsave_addr(struct xregs_state *xsave, int xfeature_nr)
 	return __raw_xsave_addr(xsave, xfeature_nr);
 }
 
-#ifdef CONFIG_ARCH_HAS_PKEYS
-
-/*
- * This will go out and modify PKRU register to set the access
- * rights for @pkey to @init_val.
- */
-int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
-			      unsigned long init_val)
-{
-	u32 old_pkru, new_pkru_bits = 0;
-	int pkey_shift;
-
-	/*
-	 * This check implies XSAVE support.  OSPKE only gets
-	 * set if we enable XSAVE and we enable PKU in XCR0.
-	 */
-	if (!cpu_feature_enabled(X86_FEATURE_OSPKE))
-		return -EINVAL;
-
-	/*
-	 * This code should only be called with valid 'pkey'
-	 * values originating from in-kernel users.  Complain
-	 * if a bad value is observed.
-	 */
-	if (WARN_ON_ONCE(pkey >= arch_max_pkey()))
-		return -EINVAL;
-
-	/* Set the bits we need in PKRU:  */
-	if (init_val & PKEY_DISABLE_ACCESS)
-		new_pkru_bits |= PKRU_AD_BIT;
-	if (init_val & PKEY_DISABLE_WRITE)
-		new_pkru_bits |= PKRU_WD_BIT;
-
-	/* Shift the bits in to the correct place in PKRU for pkey: */
-	pkey_shift = pkey * PKRU_BITS_PER_PKEY;
-	new_pkru_bits <<= pkey_shift;
-
-	/* Get old PKRU and mask off any old bits in place: */
-	old_pkru = read_pkru();
-	old_pkru &= ~((PKRU_AD_BIT|PKRU_WD_BIT) << pkey_shift);
-
-	/* Write old part along with new part: */
-	write_pkru(old_pkru | new_pkru_bits);
-
-	return 0;
-}
-#endif /* ! CONFIG_ARCH_HAS_PKEYS */
 
 static void copy_feature(bool from_xstate, struct membuf *to, void *xstate,
 			 void *init_xstate, unsigned int size)
@@ -1342,344 +1268,11 @@ void xrstors(struct xregs_state *xstate, u64 mask)
 	WARN_ON_ONCE(err);
 }
 
-#if IS_ENABLED(CONFIG_KVM)
-void fpstate_clear_xstate_component(struct fpstate *fps, unsigned int xfeature)
-{
-	void *addr = get_xsave_addr(&fps->regs.xsave, xfeature);
 
-	if (addr)
-		memset(addr, 0, xstate_sizes[xfeature]);
-}
-EXPORT_SYMBOL_GPL(fpstate_clear_xstate_component);
-#endif
-
-#ifdef CONFIG_X86_64
-
-#ifdef CONFIG_X86_DEBUG_FPU
-/*
- * Ensure that a subsequent XSAVE* or XRSTOR* instruction with RFBM=@mask
- * can safely operate on the @fpstate buffer.
- */
-static bool xstate_op_valid(struct fpstate *fpstate, u64 mask, bool rstor)
-{
-	u64 xfd = __this_cpu_read(xfd_state);
-
-	if (fpstate->xfd == xfd)
-		return true;
-
-	 /*
-	  * The XFD MSR does not match fpstate->xfd. That's invalid when
-	  * the passed in fpstate is current's fpstate.
-	  */
-	if (fpstate->xfd == current->thread.fpu.fpstate->xfd)
-		return false;
-
-	/*
-	 * XRSTOR(S) from init_fpstate are always correct as it will just
-	 * bring all components into init state and not read from the
-	 * buffer. XSAVE(S) raises #PF after init.
-	 */
-	if (fpstate == &init_fpstate)
-		return rstor;
-
-	/*
-	 * XSAVE(S): clone(), fpu_swap_kvm_fpu()
-	 * XRSTORS(S): fpu_swap_kvm_fpu()
-	 */
-
-	/*
-	 * No XSAVE/XRSTOR instructions (except XSAVE itself) touch
-	 * the buffer area for XFD-disabled state components.
-	 */
-	mask &= ~xfd;
-
-	/*
-	 * Remove features which are valid in fpstate. They
-	 * have space allocated in fpstate.
-	 */
-	mask &= ~fpstate->xfeatures;
-
-	/*
-	 * Any remaining state components in 'mask' might be written
-	 * by XSAVE/XRSTOR. Fail validation it found.
-	 */
-	return !mask;
-}
-
-void xfd_validate_state(struct fpstate *fpstate, u64 mask, bool rstor)
-{
-	WARN_ON_ONCE(!xstate_op_valid(fpstate, mask, rstor));
-}
-#endif /* CONFIG_X86_DEBUG_FPU */
-
-static int __init xfd_update_static_branch(void)
-{
-	/*
-	 * If init_fpstate.xfd has bits set then dynamic features are
-	 * available and the dynamic sizing must be enabled.
-	 */
-	if (init_fpstate.xfd)
-		static_branch_enable(&__fpu_state_size_dynamic);
-	return 0;
-}
-arch_initcall(xfd_update_static_branch)
-
-void fpstate_free(struct fpu *fpu)
-{
-	if (fpu->fpstate && fpu->fpstate != &fpu->__fpstate)
-		vfree(fpu->fpstate);
-}
-
-/**
- * fpstate_realloc - Reallocate struct fpstate for the requested new features
- *
- * @xfeatures:	A bitmap of xstate features which extend the enabled features
- *		of that task
- * @ksize:	The required size for the kernel buffer
- * @usize:	The required size for user space buffers
- * @guest_fpu:	Pointer to a guest FPU container. NULL for host allocations
- *
- * Note vs. vmalloc(): If the task with a vzalloc()-allocated buffer
- * terminates quickly, vfree()-induced IPIs may be a concern, but tasks
- * with large states are likely to live longer.
- *
- * Returns: 0 on success, -ENOMEM on allocation error.
- */
-static int fpstate_realloc(u64 xfeatures, unsigned int ksize,
-			   unsigned int usize, struct fpu_guest *guest_fpu)
-{
-	struct fpu *fpu = &current->thread.fpu;
-	struct fpstate *curfps, *newfps = NULL;
-	unsigned int fpsize;
-	bool in_use;
-
-	fpsize = ksize + ALIGN(offsetof(struct fpstate, regs), 64);
-
-	newfps = vzalloc(fpsize);
-	if (!newfps)
-		return -ENOMEM;
-	newfps->size = ksize;
-	newfps->user_size = usize;
-	newfps->is_valloc = true;
-
-	/*
-	 * When a guest FPU is supplied, use @guest_fpu->fpstate
-	 * as reference independent whether it is in use or not.
-	 */
-	curfps = guest_fpu ? guest_fpu->fpstate : fpu->fpstate;
-
-	/* Determine whether @curfps is the active fpstate */
-	in_use = fpu->fpstate == curfps;
-
-	if (guest_fpu) {
-		newfps->is_guest = true;
-		newfps->is_confidential = curfps->is_confidential;
-		newfps->in_use = curfps->in_use;
-		guest_fpu->xfeatures |= xfeatures;
-		guest_fpu->uabi_size = usize;
-	}
-
-	fpregs_lock();
-	/*
-	 * If @curfps is in use, ensure that the current state is in the
-	 * registers before swapping fpstate as that might invalidate it
-	 * due to layout changes.
-	 */
-	if (in_use && test_thread_flag(TIF_NEED_FPU_LOAD))
-		fpregs_restore_userregs();
-
-	newfps->xfeatures = curfps->xfeatures | xfeatures;
-
-	if (!guest_fpu)
-		newfps->user_xfeatures = curfps->user_xfeatures | xfeatures;
-
-	newfps->xfd = curfps->xfd & ~xfeatures;
-
-	/* Do the final updates within the locked region */
-	xstate_init_xcomp_bv(&newfps->regs.xsave, newfps->xfeatures);
-
-	if (guest_fpu) {
-		guest_fpu->fpstate = newfps;
-		/* If curfps is active, update the FPU fpstate pointer */
-		if (in_use)
-			fpu->fpstate = newfps;
-	} else {
-		fpu->fpstate = newfps;
-	}
-
-	if (in_use)
-		xfd_update_state(fpu->fpstate);
-	fpregs_unlock();
-
-	/* Only free valloc'ed state */
-	if (curfps && curfps->is_valloc)
-		vfree(curfps);
-
-	return 0;
-}
-
-static int validate_sigaltstack(unsigned int usize)
-{
-	struct task_struct *thread, *leader = current->group_leader;
-	unsigned long framesize = get_sigframe_size();
-
-	lockdep_assert_held(&current->sighand->siglock);
-
-	/* get_sigframe_size() is based on fpu_user_cfg.max_size */
-	framesize -= fpu_user_cfg.max_size;
-	framesize += usize;
-	for_each_thread(leader, thread) {
-		if (thread->sas_ss_size && thread->sas_ss_size < framesize)
-			return -ENOSPC;
-	}
-	return 0;
-}
-
-static int __xstate_request_perm(u64 permitted, u64 requested, bool guest)
-{
-	/*
-	 * This deliberately does not exclude !XSAVES as we still might
-	 * decide to optionally context switch XCR0 or talk the silicon
-	 * vendors into extending XFD for the pre AMX states, especially
-	 * AVX512.
-	 */
-	bool compacted = cpu_feature_enabled(X86_FEATURE_XCOMPACTED);
-	struct fpu *fpu = &current->group_leader->thread.fpu;
-	struct fpu_state_perm *perm;
-	unsigned int ksize, usize;
-	u64 mask;
-	int ret = 0;
-
-	/* Check whether fully enabled */
-	if ((permitted & requested) == requested)
-		return 0;
-
-	/* Calculate the resulting kernel state size */
-	mask = permitted | requested;
-	/* Take supervisor states into account on the host */
-	if (!guest)
-		mask |= xfeatures_mask_supervisor();
-	ksize = xstate_calculate_size(mask, compacted);
-
-	/* Calculate the resulting user state size */
-	mask &= XFEATURE_MASK_USER_SUPPORTED;
-	usize = xstate_calculate_size(mask, false);
-
-	if (!guest) {
-		ret = validate_sigaltstack(usize);
-		if (ret)
-			return ret;
-	}
-
-	perm = guest ? &fpu->guest_perm : &fpu->perm;
-	/* Pairs with the READ_ONCE() in xstate_get_group_perm() */
-	WRITE_ONCE(perm->__state_perm, mask);
-	/* Protected by sighand lock */
-	perm->__state_size = ksize;
-	perm->__user_state_size = usize;
-	return ret;
-}
-
-/*
- * Permissions array to map facilities with more than one component
- */
-static const u64 xstate_prctl_req[XFEATURE_MAX] = {
-	[XFEATURE_XTILE_DATA] = XFEATURE_MASK_XTILE_DATA,
-};
-
-static int xstate_request_perm(unsigned long idx, bool guest)
-{
-	u64 permitted, requested;
-	int ret;
-
-	if (idx >= XFEATURE_MAX)
-		return -EINVAL;
-
-	/*
-	 * Look up the facility mask which can require more than
-	 * one xstate component.
-	 */
-	idx = array_index_nospec(idx, ARRAY_SIZE(xstate_prctl_req));
-	requested = xstate_prctl_req[idx];
-	if (!requested)
-		return -EOPNOTSUPP;
-
-	if ((fpu_user_cfg.max_features & requested) != requested)
-		return -EOPNOTSUPP;
-
-	/* Lockless quick check */
-	permitted = xstate_get_group_perm(guest);
-	if ((permitted & requested) == requested)
-		return 0;
-
-	/* Protect against concurrent modifications */
-	spin_lock_irq(&current->sighand->siglock);
-	permitted = xstate_get_group_perm(guest);
-
-	/* First vCPU allocation locks the permissions. */
-	if (guest && (permitted & FPU_GUEST_PERM_LOCKED))
-		ret = -EBUSY;
-	else
-		ret = __xstate_request_perm(permitted, requested, guest);
-	spin_unlock_irq(&current->sighand->siglock);
-	return ret;
-}
-
-int __xfd_enable_feature(u64 xfd_err, struct fpu_guest *guest_fpu)
-{
-	u64 xfd_event = xfd_err & XFEATURE_MASK_USER_DYNAMIC;
-	struct fpu_state_perm *perm;
-	unsigned int ksize, usize;
-	struct fpu *fpu;
-
-	if (!xfd_event) {
-		if (!guest_fpu)
-			pr_err_once("XFD: Invalid xfd error: %016llx\n", xfd_err);
-		return 0;
-	}
-
-	/* Protect against concurrent modifications */
-	spin_lock_irq(&current->sighand->siglock);
-
-	/* If not permitted let it die */
-	if ((xstate_get_group_perm(!!guest_fpu) & xfd_event) != xfd_event) {
-		spin_unlock_irq(&current->sighand->siglock);
-		return -EPERM;
-	}
-
-	fpu = &current->group_leader->thread.fpu;
-	perm = guest_fpu ? &fpu->guest_perm : &fpu->perm;
-	ksize = perm->__state_size;
-	usize = perm->__user_state_size;
-
-	/*
-	 * The feature is permitted. State size is sufficient.  Dropping
-	 * the lock is safe here even if more features are added from
-	 * another task, the retrieved buffer sizes are valid for the
-	 * currently requested feature(s).
-	 */
-	spin_unlock_irq(&current->sighand->siglock);
-
-	/*
-	 * Try to allocate a new fpstate. If that fails there is no way
-	 * out.
-	 */
-	if (fpstate_realloc(xfd_event, ksize, usize, guest_fpu))
-		return -EFAULT;
-	return 0;
-}
-
-int xfd_enable_feature(u64 xfd_err)
-{
-	return __xfd_enable_feature(xfd_err, NULL);
-}
-
-#else /* CONFIG_X86_64 */
 static inline int xstate_request_perm(unsigned long idx, bool guest)
 {
 	return -EPERM;
 }
-#endif  /* !CONFIG_X86_64 */
 
 u64 xstate_get_guest_group_perm(void)
 {
@@ -1746,47 +1339,3 @@ long fpu_xstate_prctl(int option, unsigned long arg2)
 	}
 }
 
-#ifdef CONFIG_PROC_PID_ARCH_STATUS
-/*
- * Report the amount of time elapsed in millisecond since last AVX512
- * use in the task.
- */
-static void avx512_status(struct seq_file *m, struct task_struct *task)
-{
-	unsigned long timestamp = READ_ONCE(task->thread.fpu.avx512_timestamp);
-	long delta;
-
-	if (!timestamp) {
-		/*
-		 * Report -1 if no AVX512 usage
-		 */
-		delta = -1;
-	} else {
-		delta = (long)(jiffies - timestamp);
-		/*
-		 * Cap to LONG_MAX if time difference > LONG_MAX
-		 */
-		if (delta < 0)
-			delta = LONG_MAX;
-		delta = jiffies_to_msecs(delta);
-	}
-
-	seq_put_decimal_ll(m, "AVX512_elapsed_ms:\t", delta);
-	seq_putc(m, '\n');
-}
-
-/*
- * Report architecture specific information
- */
-int proc_pid_arch_status(struct seq_file *m, struct pid_namespace *ns,
-			struct pid *pid, struct task_struct *task)
-{
-	/*
-	 * Report AVX512 state if the processor and build option supported.
-	 */
-	if (cpu_feature_enabled(X86_FEATURE_AVX512F))
-		avx512_status(m, task);
-
-	return 0;
-}
-#endif /* CONFIG_PROC_PID_ARCH_STATUS */

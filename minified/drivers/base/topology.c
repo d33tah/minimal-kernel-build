@@ -14,46 +14,14 @@
 #include <linux/hardirq.h>
 #include <linux/topology.h>
 
-#define define_id_show_func(name, fmt)					\
-static ssize_t name##_show(struct device *dev,				\
-			   struct device_attribute *attr, char *buf)	\
-{									\
-	return sysfs_emit(buf, fmt "\n", topology_##name(dev->id));	\
-}
+#define define_id_show_func(name,fmt) static ssize_t name ##_show(struct device *dev, struct device_attribute *attr, char *buf) { return sysfs_emit(buf, fmt "\n", topology_ ##name(dev->id)); }
 
-#define define_siblings_read_func(name, mask)					\
-static ssize_t name##_read(struct file *file, struct kobject *kobj,		\
-			   struct bin_attribute *attr, char *buf,		\
-			   loff_t off, size_t count)				\
-{										\
-	struct device *dev = kobj_to_dev(kobj);                                 \
-										\
-	return cpumap_print_bitmask_to_buf(buf, topology_##mask(dev->id),	\
-					   off, count);                         \
-}										\
-										\
-static ssize_t name##_list_read(struct file *file, struct kobject *kobj,	\
-				struct bin_attribute *attr, char *buf,		\
-				loff_t off, size_t count)			\
-{										\
-	struct device *dev = kobj_to_dev(kobj);					\
-										\
-	return cpumap_print_list_to_buf(buf, topology_##mask(dev->id),		\
-					off, count);				\
-}
+#define define_siblings_read_func(name,mask) static ssize_t name ##_read(struct file *file, struct kobject *kobj, struct bin_attribute *attr, char *buf, loff_t off, size_t count) { struct device *dev = kobj_to_dev(kobj); return cpumap_print_bitmask_to_buf(buf, topology_ ##mask(dev->id), off, count); } static ssize_t name ##_list_read(struct file *file, struct kobject *kobj, struct bin_attribute *attr, char *buf, loff_t off, size_t count) { struct device *dev = kobj_to_dev(kobj); return cpumap_print_list_to_buf(buf, topology_ ##mask(dev->id), off, count); }
 
 define_id_show_func(physical_package_id, "%d");
 static DEVICE_ATTR_RO(physical_package_id);
 
-#ifdef TOPOLOGY_DIE_SYSFS
-define_id_show_func(die_id, "%d");
-static DEVICE_ATTR_RO(die_id);
-#endif
 
-#ifdef TOPOLOGY_CLUSTER_SYSFS
-define_id_show_func(cluster_id, "%d");
-static DEVICE_ATTR_RO(cluster_id);
-#endif
 
 define_id_show_func(core_id, "%d");
 static DEVICE_ATTR_RO(core_id);
@@ -73,37 +41,13 @@ define_siblings_read_func(core_siblings, core_cpumask);
 static BIN_ATTR_RO(core_siblings, 0);
 static BIN_ATTR_RO(core_siblings_list, 0);
 
-#ifdef TOPOLOGY_CLUSTER_SYSFS
-define_siblings_read_func(cluster_cpus, cluster_cpumask);
-static BIN_ATTR_RO(cluster_cpus, 0);
-static BIN_ATTR_RO(cluster_cpus_list, 0);
-#endif
 
-#ifdef TOPOLOGY_DIE_SYSFS
-define_siblings_read_func(die_cpus, die_cpumask);
-static BIN_ATTR_RO(die_cpus, 0);
-static BIN_ATTR_RO(die_cpus_list, 0);
-#endif
 
 define_siblings_read_func(package_cpus, core_cpumask);
 static BIN_ATTR_RO(package_cpus, 0);
 static BIN_ATTR_RO(package_cpus_list, 0);
 
-#ifdef TOPOLOGY_BOOK_SYSFS
-define_id_show_func(book_id, "%d");
-static DEVICE_ATTR_RO(book_id);
-define_siblings_read_func(book_siblings, book_cpumask);
-static BIN_ATTR_RO(book_siblings, 0);
-static BIN_ATTR_RO(book_siblings_list, 0);
-#endif
 
-#ifdef TOPOLOGY_DRAWER_SYSFS
-define_id_show_func(drawer_id, "%d");
-static DEVICE_ATTR_RO(drawer_id);
-define_siblings_read_func(drawer_siblings, drawer_cpumask);
-static BIN_ATTR_RO(drawer_siblings, 0);
-static BIN_ATTR_RO(drawer_siblings_list, 0);
-#endif
 
 static struct bin_attribute *bin_attrs[] = {
 	&bin_attr_core_cpus,
@@ -112,42 +56,14 @@ static struct bin_attribute *bin_attrs[] = {
 	&bin_attr_thread_siblings_list,
 	&bin_attr_core_siblings,
 	&bin_attr_core_siblings_list,
-#ifdef TOPOLOGY_CLUSTER_SYSFS
-	&bin_attr_cluster_cpus,
-	&bin_attr_cluster_cpus_list,
-#endif
-#ifdef TOPOLOGY_DIE_SYSFS
-	&bin_attr_die_cpus,
-	&bin_attr_die_cpus_list,
-#endif
 	&bin_attr_package_cpus,
 	&bin_attr_package_cpus_list,
-#ifdef TOPOLOGY_BOOK_SYSFS
-	&bin_attr_book_siblings,
-	&bin_attr_book_siblings_list,
-#endif
-#ifdef TOPOLOGY_DRAWER_SYSFS
-	&bin_attr_drawer_siblings,
-	&bin_attr_drawer_siblings_list,
-#endif
 	NULL
 };
 
 static struct attribute *default_attrs[] = {
 	&dev_attr_physical_package_id.attr,
-#ifdef TOPOLOGY_DIE_SYSFS
-	&dev_attr_die_id.attr,
-#endif
-#ifdef TOPOLOGY_CLUSTER_SYSFS
-	&dev_attr_cluster_id.attr,
-#endif
 	&dev_attr_core_id.attr,
-#ifdef TOPOLOGY_BOOK_SYSFS
-	&dev_attr_book_id.attr,
-#endif
-#ifdef TOPOLOGY_DRAWER_SYSFS
-	&dev_attr_drawer_id.attr,
-#endif
 	&dev_attr_ppin.attr,
 	NULL
 };

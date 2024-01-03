@@ -33,7 +33,7 @@
 #include <linux/sched/signal.h>
 #include <linux/minmax.h>
 
-#include <asm/syscall.h>	/* for syscall_get_* */
+#include <asm/syscall.h>
 
 /*
  * Access another process' address space via ptrace.
@@ -119,9 +119,7 @@ void __ptrace_unlink(struct task_struct *child)
 	BUG_ON(!child->ptrace);
 
 	clear_task_syscall_work(child, SYSCALL_TRACE);
-#if defined(CONFIG_GENERIC_ENTRY) || defined(TIF_SYSCALL_EMU)
 	clear_task_syscall_work(child, SYSCALL_EMU);
-#endif
 
 	child->parent = child->real_parent;
 	list_del_init(&child->ptrace_entry);
@@ -772,17 +770,6 @@ static int ptrace_peek_siginfo(struct task_struct *child,
 		if (!found) /* beyond the end of the list */
 			break;
 
-#ifdef CONFIG_COMPAT
-		if (unlikely(in_compat_syscall())) {
-			compat_siginfo_t __user *uinfo = compat_ptr(data);
-
-			if (copy_siginfo_to_user32(uinfo, &info)) {
-				ret = -EFAULT;
-				break;
-			}
-
-		} else
-#endif
 		{
 			siginfo_t __user *uinfo = (siginfo_t __user *) data;
 
@@ -807,37 +794,12 @@ static int ptrace_peek_siginfo(struct task_struct *child,
 	return ret;
 }
 
-#ifdef CONFIG_RSEQ
-static long ptrace_get_rseq_configuration(struct task_struct *task,
-					  unsigned long size, void __user *data)
-{
-	struct ptrace_rseq_configuration conf = {
-		.rseq_abi_pointer = (u64)(uintptr_t)task->rseq,
-		.rseq_abi_size = sizeof(*task->rseq),
-		.signature = task->rseq_sig,
-		.flags = 0,
-	};
 
-	size = min_t(unsigned long, size, sizeof(conf));
-	if (copy_to_user(data, &conf, size))
-		return -EFAULT;
-	return sizeof(conf);
-}
-#endif
+#define is_singlestep(request) ((request) == PTRACE_SINGLESTEP)
 
-#define is_singlestep(request)		((request) == PTRACE_SINGLESTEP)
+#define is_singleblock(request) ((request) == PTRACE_SINGLEBLOCK)
 
-#ifdef PTRACE_SINGLEBLOCK
-#define is_singleblock(request)		((request) == PTRACE_SINGLEBLOCK)
-#else
-#define is_singleblock(request)		0
-#endif
-
-#ifdef PTRACE_SYSEMU
-#define is_sysemu_singlestep(request)	((request) == PTRACE_SYSEMU_SINGLESTEP)
-#else
-#define is_sysemu_singlestep(request)	0
-#endif
+#define is_sysemu_singlestep(request) ((request) == PTRACE_SYSEMU_SINGLESTEP)
 
 static int ptrace_resume(struct task_struct *child, long request,
 			 unsigned long data)
@@ -850,12 +812,10 @@ static int ptrace_resume(struct task_struct *child, long request,
 	else
 		clear_task_syscall_work(child, SYSCALL_TRACE);
 
-#if defined(CONFIG_GENERIC_ENTRY) || defined(TIF_SYSCALL_EMU)
 	if (request == PTRACE_SYSEMU || request == PTRACE_SYSEMU_SINGLESTEP)
 		set_task_syscall_work(child, SYSCALL_EMU);
 	else
 		clear_task_syscall_work(child, SYSCALL_EMU);
-#endif
 
 	if (is_singleblock(request)) {
 		if (unlikely(!arch_has_block_step()))
@@ -887,7 +847,6 @@ static int ptrace_resume(struct task_struct *child, long request,
 	return 0;
 }
 
-#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
 
 static const struct user_regset *
 find_regset(const struct user_regset_view *view, unsigned int type)
@@ -1025,7 +984,6 @@ ptrace_get_syscall_info(struct task_struct *child, unsigned long user_size,
 	write_size = min(actual_size, user_size);
 	return copy_to_user(datavp, &info, write_size) ? -EFAULT : actual_size;
 }
-#endif /* CONFIG_HAVE_ARCH_TRACEHOOK */
 
 int ptrace_request(struct task_struct *child, long request,
 		   unsigned long addr, unsigned long data)
@@ -1045,9 +1003,7 @@ int ptrace_request(struct task_struct *child, long request,
 	case PTRACE_POKEDATA:
 		return generic_ptrace_pokedata(child, addr, data);
 
-#ifdef PTRACE_OLDSETOPTIONS
 	case PTRACE_OLDSETOPTIONS:
-#endif
 	case PTRACE_SETOPTIONS:
 		ret = ptrace_setoptions(child, data);
 		break;
@@ -1179,40 +1135,11 @@ int ptrace_request(struct task_struct *child, long request,
 		ret = ptrace_detach(child, data);
 		break;
 
-#ifdef CONFIG_BINFMT_ELF_FDPIC
-	case PTRACE_GETFDPIC: {
-		struct mm_struct *mm = get_task_mm(child);
-		unsigned long tmp = 0;
-
-		ret = -ESRCH;
-		if (!mm)
-			break;
-
-		switch (addr) {
-		case PTRACE_GETFDPIC_EXEC:
-			tmp = mm->context.exec_fdpic_loadmap;
-			break;
-		case PTRACE_GETFDPIC_INTERP:
-			tmp = mm->context.interp_fdpic_loadmap;
-			break;
-		default:
-			break;
-		}
-		mmput(mm);
-
-		ret = put_user(tmp, datalp);
-		break;
-	}
-#endif
 
 	case PTRACE_SINGLESTEP:
-#ifdef PTRACE_SINGLEBLOCK
 	case PTRACE_SINGLEBLOCK:
-#endif
-#ifdef PTRACE_SYSEMU
 	case PTRACE_SYSEMU:
 	case PTRACE_SYSEMU_SINGLESTEP:
-#endif
 	case PTRACE_SYSCALL:
 	case PTRACE_CONT:
 		return ptrace_resume(child, request, data);
@@ -1221,7 +1148,6 @@ int ptrace_request(struct task_struct *child, long request,
 		send_sig_info(SIGKILL, SEND_SIG_NOINFO, child);
 		return 0;
 
-#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
 	case PTRACE_GETREGSET:
 	case PTRACE_SETREGSET: {
 		struct iovec kiov;
@@ -1243,7 +1169,6 @@ int ptrace_request(struct task_struct *child, long request,
 	case PTRACE_GET_SYSCALL_INFO:
 		ret = ptrace_get_syscall_info(child, addr, datavp);
 		break;
-#endif
 
 	case PTRACE_SECCOMP_GET_FILTER:
 		ret = seccomp_get_filter(child, addr, datavp);
@@ -1253,11 +1178,6 @@ int ptrace_request(struct task_struct *child, long request,
 		ret = seccomp_get_metadata(child, addr, datavp);
 		break;
 
-#ifdef CONFIG_RSEQ
-	case PTRACE_GET_RSEQ_CONFIGURATION:
-		ret = ptrace_get_rseq_configuration(child, addr, datavp);
-		break;
-#endif
 
 	default:
 		break;
@@ -1325,119 +1245,3 @@ int generic_ptrace_pokedata(struct task_struct *tsk, unsigned long addr,
 	return (copied == sizeof(data)) ? 0 : -EIO;
 }
 
-#if defined CONFIG_COMPAT
-
-int compat_ptrace_request(struct task_struct *child, compat_long_t request,
-			  compat_ulong_t addr, compat_ulong_t data)
-{
-	compat_ulong_t __user *datap = compat_ptr(data);
-	compat_ulong_t word;
-	kernel_siginfo_t siginfo;
-	int ret;
-
-	switch (request) {
-	case PTRACE_PEEKTEXT:
-	case PTRACE_PEEKDATA:
-		ret = ptrace_access_vm(child, addr, &word, sizeof(word),
-				FOLL_FORCE);
-		if (ret != sizeof(word))
-			ret = -EIO;
-		else
-			ret = put_user(word, datap);
-		break;
-
-	case PTRACE_POKETEXT:
-	case PTRACE_POKEDATA:
-		ret = ptrace_access_vm(child, addr, &data, sizeof(data),
-				FOLL_FORCE | FOLL_WRITE);
-		ret = (ret != sizeof(data) ? -EIO : 0);
-		break;
-
-	case PTRACE_GETEVENTMSG:
-		ret = put_user((compat_ulong_t) child->ptrace_message, datap);
-		break;
-
-	case PTRACE_GETSIGINFO:
-		ret = ptrace_getsiginfo(child, &siginfo);
-		if (!ret)
-			ret = copy_siginfo_to_user32(
-				(struct compat_siginfo __user *) datap,
-				&siginfo);
-		break;
-
-	case PTRACE_SETSIGINFO:
-		ret = copy_siginfo_from_user32(
-			&siginfo, (struct compat_siginfo __user *) datap);
-		if (!ret)
-			ret = ptrace_setsiginfo(child, &siginfo);
-		break;
-#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
-	case PTRACE_GETREGSET:
-	case PTRACE_SETREGSET:
-	{
-		struct iovec kiov;
-		struct compat_iovec __user *uiov =
-			(struct compat_iovec __user *) datap;
-		compat_uptr_t ptr;
-		compat_size_t len;
-
-		if (!access_ok(uiov, sizeof(*uiov)))
-			return -EFAULT;
-
-		if (__get_user(ptr, &uiov->iov_base) ||
-		    __get_user(len, &uiov->iov_len))
-			return -EFAULT;
-
-		kiov.iov_base = compat_ptr(ptr);
-		kiov.iov_len = len;
-
-		ret = ptrace_regset(child, request, addr, &kiov);
-		if (!ret)
-			ret = __put_user(kiov.iov_len, &uiov->iov_len);
-		break;
-	}
-#endif
-
-	default:
-		ret = ptrace_request(child, request, addr, data);
-	}
-
-	return ret;
-}
-
-COMPAT_SYSCALL_DEFINE4(ptrace, compat_long_t, request, compat_long_t, pid,
-		       compat_long_t, addr, compat_long_t, data)
-{
-	struct task_struct *child;
-	long ret;
-
-	if (request == PTRACE_TRACEME) {
-		ret = ptrace_traceme();
-		goto out;
-	}
-
-	child = find_get_task_by_vpid(pid);
-	if (!child) {
-		ret = -ESRCH;
-		goto out;
-	}
-
-	if (request == PTRACE_ATTACH || request == PTRACE_SEIZE) {
-		ret = ptrace_attach(child, request, addr, data);
-		goto out_put_task_struct;
-	}
-
-	ret = ptrace_check_attach(child, request == PTRACE_KILL ||
-				  request == PTRACE_INTERRUPT);
-	if (!ret) {
-		ret = compat_arch_ptrace(child, request, addr, data);
-		if (ret || request != PTRACE_DETACH)
-			ptrace_unfreeze_traced(child);
-	}
-
- out_put_task_struct:
-	put_task_struct(child);
- out:
-	return ret;
-}
-#endif	/* CONFIG_COMPAT */

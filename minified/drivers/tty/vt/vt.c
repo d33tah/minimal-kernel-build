@@ -110,8 +110,8 @@
 #define MAX_NR_CON_DRIVER 16
 
 #define CON_DRIVER_FLAG_MODULE 1
-#define CON_DRIVER_FLAG_INIT   2
-#define CON_DRIVER_FLAG_ATTR   4
+#define CON_DRIVER_FLAG_INIT 2
+#define CON_DRIVER_FLAG_ATTR 4
 #define CON_DRIVER_FLAG_ZOMBIE 8
 
 struct con_driver {
@@ -130,15 +130,13 @@ const struct consw *conswitchp;
 /*
  * Here is the default bell parameters: 750HZ, 1/8th of a second
  */
-#define DEFAULT_BELL_PITCH	750
-#define DEFAULT_BELL_DURATION	(HZ/8)
-#define DEFAULT_CURSOR_BLINK_MS	200
+#define DEFAULT_BELL_PITCH 750
+#define DEFAULT_BELL_DURATION (HZ/8)
+#define DEFAULT_CURSOR_BLINK_MS 200
 
 struct vc vc_cons [MAX_NR_CONSOLES];
 
-#ifndef VT_SINGLE_DRIVER
 static const struct consw *con_driver_map[MAX_NR_CONSOLES];
-#endif
 
 static int con_open(struct tty_struct *, struct file *);
 static void vc_init(struct vc_data *vc, unsigned int rows,
@@ -316,12 +314,7 @@ void schedule_console_callback(void)
  * Code to manage unicode-based screen buffers
  */
 
-#ifdef NO_VC_UNI_SCREEN
-/* this disables and optimizes related code away at compile time */
-#define get_vc_uniscr(vc) NULL
-#else
 #define get_vc_uniscr(vc) vc->vc_uni_screen
-#endif
 
 #define VC_UNI_SCREEN_DEBUG 0
 
@@ -1056,10 +1049,8 @@ static void visual_init(struct vc_data *vc, int num, int init)
 	if (vc->vc_sw)
 		module_put(vc->vc_sw->owner);
 	vc->vc_sw = conswitchp;
-#ifndef VT_SINGLE_DRIVER
 	if (con_driver_map[num])
 		vc->vc_sw = con_driver_map[num];
-#endif
 	__module_get(vc->vc_sw->owner);
 	vc->vc_num = num;
 	vc->vc_display_fg = &master_display_fg;
@@ -1413,14 +1404,14 @@ struct vc_data *vc_deallocate(unsigned int currcons)
 
 enum { EPecma = 0, EPdec, EPeq, EPgt, EPlt};
 
-#define set_kbd(vc, x)	vt_set_kbd_mode_bit((vc)->vc_num, (x))
-#define clr_kbd(vc, x)	vt_clr_kbd_mode_bit((vc)->vc_num, (x))
-#define is_kbd(vc, x)	vt_get_kbd_mode_bit((vc)->vc_num, (x))
+#define set_kbd(vc,x) vt_set_kbd_mode_bit((vc)->vc_num, (x))
+#define clr_kbd(vc,x) vt_clr_kbd_mode_bit((vc)->vc_num, (x))
+#define is_kbd(vc,x) vt_get_kbd_mode_bit((vc)->vc_num, (x))
 
-#define decarm		VC_REPEAT
-#define decckm		VC_CKMODE
-#define kbdapplic	VC_APPLIC
-#define lnm		VC_CRLF
+#define decarm VC_REPEAT
+#define decckm VC_CKMODE
+#define kbdapplic VC_APPLIC
+#define lnm VC_CRLF
 
 const unsigned char color_table[] = { 0, 4, 2, 6, 1, 5, 3, 7,
 				       8,12,10,14, 9,13,11,15 };
@@ -1893,11 +1884,6 @@ static void set_mode(struct vc_data *vc, int on_off)
 					clr_kbd(vc, decckm);
 				break;
 			case 3:	/* 80/132 mode switch unimplemented */
-#if 0
-				vc_resize(deccolm ? 132 : 80, vc->vc_rows);
-				/* this alone does not suffice; some user mode
-				   utility has to change the hardware regs */
-#endif
 				break;
 			case 5:			/* Inverted screen on/off */
 				if (vc->vc_decscnm != on_off) {
@@ -3036,7 +3022,6 @@ int set_console(int nr)
 
 struct tty_driver *console_driver;
 
-#ifdef CONFIG_VT_CONSOLE
 
 /**
  * vt_kmsg_redirect() - Sets/gets the kernel message console
@@ -3164,7 +3149,6 @@ static struct console vt_console_driver = {
 	.flags		= CON_PRINTBUFFER,
 	.index		= -1,
 };
-#endif
 
 /*
  *	Handling of Linux-specific VC ioctls
@@ -3541,9 +3525,7 @@ static int __init con_init(void)
 
 	console_unlock();
 
-#ifdef CONFIG_VT_CONSOLE
 	register_console(&vt_console_driver);
-#endif
 	return 0;
 }
 console_initcall(con_init);
@@ -3557,9 +3539,6 @@ static const struct tty_operations con_ops = {
 	.put_char = con_put_char,
 	.flush_chars = con_flush_chars,
 	.ioctl = vt_ioctl,
-#ifdef CONFIG_COMPAT
-	.compat_ioctl = vt_compat_ioctl,
-#endif
 	.stop = con_stop,
 	.start = con_start,
 	.throttle = con_throttle,
@@ -3617,13 +3596,9 @@ int __init vty_init(const struct file_operations *console_fops)
 		panic("Couldn't register console driver\n");
 	kbd_init();
 	console_map_init();
-#ifdef CONFIG_MDA_CONSOLE
-	mda_console_init();
-#endif
 	return 0;
 }
 
-#ifndef VT_SINGLE_DRIVER
 
 static struct class *vtconsole_class;
 
@@ -3729,178 +3704,6 @@ err:
 };
 
 
-#ifdef CONFIG_VT_HW_CONSOLE_BINDING
-int do_unbind_con_driver(const struct consw *csw, int first, int last, int deflt)
-{
-	struct module *owner = csw->owner;
-	const struct consw *defcsw = NULL;
-	struct con_driver *con_driver = NULL, *con_back = NULL;
-	int i, retval = -ENODEV;
-
-	if (!try_module_get(owner))
-		return -ENODEV;
-
-	WARN_CONSOLE_UNLOCKED();
-
-	/* check if driver is registered and if it is unbindable */
-	for (i = 0; i < MAX_NR_CON_DRIVER; i++) {
-		con_driver = &registered_con_driver[i];
-
-		if (con_driver->con == csw &&
-		    con_driver->flag & CON_DRIVER_FLAG_MODULE) {
-			retval = 0;
-			break;
-		}
-	}
-
-	if (retval)
-		goto err;
-
-	retval = -ENODEV;
-
-	/* check if backup driver exists */
-	for (i = 0; i < MAX_NR_CON_DRIVER; i++) {
-		con_back = &registered_con_driver[i];
-
-		if (con_back->con && con_back->con != csw) {
-			defcsw = con_back->con;
-			retval = 0;
-			break;
-		}
-	}
-
-	if (retval)
-		goto err;
-
-	if (!con_is_bound(csw))
-		goto err;
-
-	first = max(first, con_driver->first);
-	last = min(last, con_driver->last);
-
-	for (i = first; i <= last; i++) {
-		if (con_driver_map[i] == csw) {
-			module_put(csw->owner);
-			con_driver_map[i] = NULL;
-		}
-	}
-
-	if (!con_is_bound(defcsw)) {
-		const struct consw *defconsw = conswitchp;
-
-		defcsw->con_startup();
-		con_back->flag |= CON_DRIVER_FLAG_INIT;
-		/*
-		 * vgacon may change the default driver to point
-		 * to dummycon, we restore it here...
-		 */
-		conswitchp = defconsw;
-	}
-
-	if (!con_is_bound(csw))
-		con_driver->flag &= ~CON_DRIVER_FLAG_INIT;
-
-	/* ignore return value, binding should not fail */
-	do_bind_con_driver(defcsw, first, last, deflt);
-err:
-	module_put(owner);
-	return retval;
-
-}
-EXPORT_SYMBOL_GPL(do_unbind_con_driver);
-
-static int vt_bind(struct con_driver *con)
-{
-	const struct consw *defcsw = NULL, *csw = NULL;
-	int i, more = 1, first = -1, last = -1, deflt = 0;
-
- 	if (!con->con || !(con->flag & CON_DRIVER_FLAG_MODULE))
-		goto err;
-
-	csw = con->con;
-
-	for (i = 0; i < MAX_NR_CON_DRIVER; i++) {
-		struct con_driver *con = &registered_con_driver[i];
-
-		if (con->con && !(con->flag & CON_DRIVER_FLAG_MODULE)) {
-			defcsw = con->con;
-			break;
-		}
-	}
-
-	if (!defcsw)
-		goto err;
-
-	while (more) {
-		more = 0;
-
-		for (i = con->first; i <= con->last; i++) {
-			if (con_driver_map[i] == defcsw) {
-				if (first == -1)
-					first = i;
-				last = i;
-				more = 1;
-			} else if (first != -1)
-				break;
-		}
-
-		if (first == 0 && last == MAX_NR_CONSOLES -1)
-			deflt = 1;
-
-		if (first != -1)
-			do_bind_con_driver(csw, first, last, deflt);
-
-		first = -1;
-		last = -1;
-		deflt = 0;
-	}
-
-err:
-	return 0;
-}
-
-static int vt_unbind(struct con_driver *con)
-{
-	const struct consw *csw = NULL;
-	int i, more = 1, first = -1, last = -1, deflt = 0;
-	int ret;
-
- 	if (!con->con || !(con->flag & CON_DRIVER_FLAG_MODULE))
-		goto err;
-
-	csw = con->con;
-
-	while (more) {
-		more = 0;
-
-		for (i = con->first; i <= con->last; i++) {
-			if (con_driver_map[i] == csw) {
-				if (first == -1)
-					first = i;
-				last = i;
-				more = 1;
-			} else if (first != -1)
-				break;
-		}
-
-		if (first == 0 && last == MAX_NR_CONSOLES -1)
-			deflt = 1;
-
-		if (first != -1) {
-			ret = do_unbind_con_driver(csw, first, last, deflt);
-			if (ret != 0)
-				return ret;
-		}
-
-		first = -1;
-		last = -1;
-		deflt = 0;
-	}
-
-err:
-	return 0;
-}
-#else
 static inline int vt_bind(struct con_driver *con)
 {
 	return 0;
@@ -3909,7 +3712,6 @@ static inline int vt_unbind(struct con_driver *con)
 {
 	return 0;
 }
-#endif /* CONFIG_VT_HW_CONSOLE_BINDING */
 
 static ssize_t store_bind(struct device *dev, struct device_attribute *attr,
 			  const char *buf, size_t count)
@@ -4040,35 +3842,6 @@ int con_debug_enter(struct vc_data *vc)
 	console_blanked = 0;
 	if (vc->vc_sw->con_debug_enter)
 		ret = vc->vc_sw->con_debug_enter(vc);
-#ifdef CONFIG_KGDB_KDB
-	/* Set the initial LINES variable if it is not already set */
-	if (vc->vc_rows < 999) {
-		int linecount;
-		char lns[4];
-		const char *setargs[3] = {
-			"set",
-			"LINES",
-			lns,
-		};
-		if (kdbgetintenv(setargs[0], &linecount)) {
-			snprintf(lns, 4, "%i", vc->vc_rows);
-			kdb_set(2, setargs);
-		}
-	}
-	if (vc->vc_cols < 999) {
-		int colcount;
-		char cols[4];
-		const char *setargs[3] = {
-			"set",
-			"COLUMNS",
-			cols,
-		};
-		if (kdbgetintenv(setargs[0], &colcount)) {
-			snprintf(cols, 4, "%i", vc->vc_cols);
-			kdb_set(2, setargs);
-		}
-	}
-#endif /* CONFIG_KGDB_KDB */
 	return ret;
 }
 EXPORT_SYMBOL_GPL(con_debug_enter);
@@ -4325,7 +4098,6 @@ static int __init vtconsole_class_init(void)
 }
 postcore_initcall(vtconsole_class_init);
 
-#endif
 
 /*
  *	Screen blanking
@@ -4843,6 +4615,4 @@ EXPORT_SYMBOL(console_blank_hook);
 EXPORT_SYMBOL(console_blanked);
 EXPORT_SYMBOL(vc_cons);
 EXPORT_SYMBOL(global_cursor_default);
-#ifndef VT_SINGLE_DRIVER
 EXPORT_SYMBOL(give_up_console);
-#endif

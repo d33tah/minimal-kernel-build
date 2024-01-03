@@ -9,7 +9,7 @@
 #include <linux/export.h>
 #include <linux/slab.h>
 
-#define TRKID_SGN	((TRKID_MAX + 1) >> 1)
+#define TRKID_SGN ((TRKID_MAX + 1) >> 1)
 
 static void copy_abs(struct input_dev *dev, unsigned int dst, unsigned int src)
 {

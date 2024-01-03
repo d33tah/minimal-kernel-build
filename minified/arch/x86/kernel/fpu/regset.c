@@ -174,7 +174,6 @@ out:
 	return ret;
 }
 
-#if defined CONFIG_X86_32 || defined CONFIG_IA32_EMULATION
 
 /*
  * FPU tag word conversions.
@@ -195,11 +194,11 @@ static inline unsigned short twd_i387_to_fxsr(unsigned short twd)
 	return tmp;
 }
 
-#define FPREG_ADDR(f, n)	((void *)&(f)->st_space + (n) * 16)
-#define FP_EXP_TAG_VALID	0
-#define FP_EXP_TAG_ZERO		1
-#define FP_EXP_TAG_SPECIAL	2
-#define FP_EXP_TAG_EMPTY	3
+#define FPREG_ADDR(f,n) ((void *)&(f)->st_space + (n) * 16)
+#define FP_EXP_TAG_VALID 0
+#define FP_EXP_TAG_ZERO 1
+#define FP_EXP_TAG_SPECIAL 2
+#define FP_EXP_TAG_EMPTY 3
 
 static inline u32 twd_fxsr_to_i387(struct fxregs_state *fxsave)
 {
@@ -258,26 +257,10 @@ static void __convert_from_fxsr(struct user_i387_ia32_struct *env,
 	env->swd = fxsave->swd | 0xffff0000u;
 	env->twd = twd_fxsr_to_i387(fxsave);
 
-#ifdef CONFIG_X86_64
-	env->fip = fxsave->rip;
-	env->foo = fxsave->rdp;
-	/*
-	 * should be actually ds/cs at fpu exception time, but
-	 * that information is not available in 64bit mode.
-	 */
-	env->fcs = task_pt_regs(tsk)->cs;
-	if (tsk == current) {
-		savesegment(ds, env->fos);
-	} else {
-		env->fos = tsk->thread.ds;
-	}
-	env->fos |= 0xffff0000;
-#else
 	env->fip = fxsave->fip;
 	env->fcs = (u16) fxsave->fcs | ((u32) fxsave->fop << 16);
 	env->foo = fxsave->foo;
 	env->fos = fxsave->fos;
-#endif
 
 	for (i = 0; i < 8; ++i)
 		memcpy(&to[i], &from[i], sizeof(to[0]));
@@ -301,16 +284,10 @@ void convert_to_fxsr(struct fxregs_state *fxsave,
 	fxsave->swd = env->swd;
 	fxsave->twd = twd_i387_to_fxsr(env->twd);
 	fxsave->fop = (u16) ((u32) env->fcs >> 16);
-#ifdef CONFIG_X86_64
-	fxsave->rip = env->fip;
-	fxsave->rdp = env->foo;
-	/* cs and ds ignored */
-#else
 	fxsave->fip = env->fip;
 	fxsave->fcs = (env->fcs & 0xffff);
 	fxsave->foo = env->foo;
 	fxsave->fos = env->fos;
-#endif
 
 	for (i = 0; i < 8; ++i)
 		memcpy(&to[i], &from[i], sizeof(from[0]));
@@ -383,4 +360,3 @@ int fpregs_set(struct task_struct *target, const struct user_regset *regset,
 	return 0;
 }
 
-#endif	/* CONFIG_X86_32 || CONFIG_IA32_EMULATION */

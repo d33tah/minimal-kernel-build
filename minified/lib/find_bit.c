@@ -19,9 +19,6 @@
 #include <linux/minmax.h>
 #include <linux/swab.h>
 
-#if !defined(find_next_bit) || !defined(find_next_zero_bit) ||			\
-	!defined(find_next_bit_le) || !defined(find_next_zero_bit_le) ||	\
-	!defined(find_next_and_bit)
 /*
  * This is a common helper function for find_next_bit, find_next_zero_bit, and
  * find_next_and_bit. The differences are:
@@ -69,9 +66,7 @@ unsigned long _find_next_bit(const unsigned long *addr1,
 	return min(start + __ffs(tmp), nbits);
 }
 EXPORT_SYMBOL(_find_next_bit);
-#endif
 
-#ifndef find_first_bit
 /*
  * Find the first set bit in a memory region.
  */
@@ -87,9 +82,7 @@ unsigned long _find_first_bit(const unsigned long *addr, unsigned long size)
 	return size;
 }
 EXPORT_SYMBOL(_find_first_bit);
-#endif
 
-#ifndef find_first_and_bit
 /*
  * Find the first set bit in two memory regions.
  */
@@ -108,9 +101,7 @@ unsigned long _find_first_and_bit(const unsigned long *addr1,
 	return size;
 }
 EXPORT_SYMBOL(_find_first_and_bit);
-#endif
 
-#ifndef find_first_zero_bit
 /*
  * Find the first cleared bit in a memory region.
  */
@@ -126,9 +117,7 @@ unsigned long _find_first_zero_bit(const unsigned long *addr, unsigned long size
 	return size;
 }
 EXPORT_SYMBOL(_find_first_zero_bit);
-#endif
 
-#ifndef find_last_bit
 unsigned long _find_last_bit(const unsigned long *addr, unsigned long size)
 {
 	if (size) {
@@ -146,7 +135,6 @@ unsigned long _find_last_bit(const unsigned long *addr, unsigned long size)
 	return size;
 }
 EXPORT_SYMBOL(_find_last_bit);
-#endif
 
 unsigned long find_next_clump8(unsigned long *clump, const unsigned long *addr,
 			       unsigned long size, unsigned long offset)

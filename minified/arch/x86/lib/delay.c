@@ -23,9 +23,6 @@
 #include <asm/timer.h>
 #include <asm/mwait.h>
 
-#ifdef CONFIG_SMP
-# include <asm/smp.h>
-#endif
 
 static void delay_loop(u64 __loops);
 

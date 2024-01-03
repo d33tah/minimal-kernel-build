@@ -30,16 +30,9 @@
 #include <asm/numa.h>
 #include <asm/thermal.h>
 
-#ifdef CONFIG_X86_64
-#include <linux/topology.h>
-#endif
 
 #include "cpu.h"
 
-#ifdef CONFIG_X86_LOCAL_APIC
-#include <asm/mpspec.h>
-#include <asm/apic.h>
-#endif
 
 enum split_lock_detect_state {
 	sld_off = 0,
@@ -266,13 +259,9 @@ static void early_init_intel(struct cpuinfo_x86 *c)
 		clear_cpu_cap(c, X86_FEATURE_PSE);
 	}
 
-#ifdef CONFIG_X86_64
-	set_cpu_cap(c, X86_FEATURE_SYSENTER32);
-#else
 	/* Netburst reports 64 bytes clflush size, but does IO in 128 bytes */
 	if (c->x86 == 15 && c->x86_cache_alignment == 64)
 		c->x86_cache_alignment = 128;
-#endif
 
 	/* CPUID workaround for 0F33/0F34 CPU */
 	if (c->x86 == 0xF && c->x86_model == 0x3
@@ -374,7 +363,6 @@ static void bsp_init_intel(struct cpuinfo_x86 *c)
 	resctrl_cpu_detect(c);
 }
 
-#ifdef CONFIG_X86_32
 /*
  *	Early probe support logic for ppro memory erratum #50
  *
@@ -424,24 +412,6 @@ __setup("forcepae", forcepae_setup);
 
 static void intel_workarounds(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_X86_F00F_BUG
-	/*
-	 * All models of Pentium and Pentium with MMX technology CPUs
-	 * have the F0 0F bug, which lets nonprivileged users lock up the
-	 * system. Announce that the fault handler will be checking for it.
-	 * The Quark is also family 5, but does not have the same bug.
-	 */
-	clear_cpu_bug(c, X86_BUG_F00F);
-	if (c->x86 == 5 && c->x86_model < 9) {
-		static int f00f_workaround_enabled;
-
-		set_cpu_bug(c, X86_BUG_F00F);
-		if (!f00f_workaround_enabled) {
-			pr_notice("Intel Pentium with F0 0F bug - workaround enabled.\n");
-			f00f_workaround_enabled = 1;
-		}
-	}
-#endif
 
 	/*
 	 * SEP CPUID bug: Pentium Pro reports SEP but doesn't have it until
@@ -484,67 +454,32 @@ static void intel_workarounds(struct cpuinfo_x86 *c)
 		set_cpu_bug(c, X86_BUG_11AP);
 
 
-#ifdef CONFIG_X86_INTEL_USERCOPY
-	/*
-	 * Set up the preferred alignment for movsl bulk memory moves
-	 */
-	switch (c->x86) {
-	case 4:		/* 486: untested */
-		break;
-	case 5:		/* Old Pentia: untested */
-		break;
-	case 6:		/* PII/PIII only like movsl with 8-byte alignment */
-		movsl_mask.mask = 7;
-		break;
-	case 15:	/* P4 is OK down to 8-byte alignment */
-		movsl_mask.mask = 7;
-		break;
-	}
-#endif
 
 	intel_smp_check(c);
 }
-#else
-static void intel_workarounds(struct cpuinfo_x86 *c)
-{
-}
-#endif
 
 static void srat_detect_node(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_NUMA
-	unsigned node;
-	int cpu = smp_processor_id();
-
-	/* Don't do the funky fallback heuristics the AMD version employs
-	   for now. */
-	node = numa_cpu_node(cpu);
-	if (node == NUMA_NO_NODE || !node_online(node)) {
-		/* reuse the value from init_cpu_to_node() */
-		node = cpu_to_node(cpu);
-	}
-	numa_set_node(cpu, node);
-#endif
 }
 
-#define MSR_IA32_TME_ACTIVATE		0x982
+#define MSR_IA32_TME_ACTIVATE 0x982
 
 /* Helpers to access TME_ACTIVATE MSR */
-#define TME_ACTIVATE_LOCKED(x)		(x & 0x1)
-#define TME_ACTIVATE_ENABLED(x)		(x & 0x2)
+#define TME_ACTIVATE_LOCKED(x) (x & 0x1)
+#define TME_ACTIVATE_ENABLED(x) (x & 0x2)
 
-#define TME_ACTIVATE_POLICY(x)		((x >> 4) & 0xf)	/* Bits 7:4 */
-#define TME_ACTIVATE_POLICY_AES_XTS_128	0
+#define TME_ACTIVATE_POLICY(x) ((x >> 4) & 0xf)
+#define TME_ACTIVATE_POLICY_AES_XTS_128 0
 
-#define TME_ACTIVATE_KEYID_BITS(x)	((x >> 32) & 0xf)	/* Bits 35:32 */
+#define TME_ACTIVATE_KEYID_BITS(x) ((x >> 32) & 0xf)
 
-#define TME_ACTIVATE_CRYPTO_ALGS(x)	((x >> 48) & 0xffff)	/* Bits 63:48 */
-#define TME_ACTIVATE_CRYPTO_AES_XTS_128	1
+#define TME_ACTIVATE_CRYPTO_ALGS(x) ((x >> 48) & 0xffff)
+#define TME_ACTIVATE_CRYPTO_AES_XTS_128 1
 
 /* Values for mktme_status (SW only construct) */
-#define MKTME_ENABLED			0
-#define MKTME_DISABLED			1
-#define MKTME_UNINITIALIZED		2
+#define MKTME_ENABLED 0
+#define MKTME_DISABLED 1
+#define MKTME_UNINITIALIZED 2
 static int mktme_status = MKTME_UNINITIALIZED;
 
 static void detect_tme(struct cpuinfo_x86 *c)
@@ -661,9 +596,7 @@ static void init_intel(struct cpuinfo_x86 *c)
 		 * detection.
 		 */
 		detect_num_cpu_cores(c);
-#ifdef CONFIG_X86_32
 		detect_ht(c);
-#endif
 	}
 
 	init_intel_cacheinfo(c);
@@ -696,12 +629,6 @@ static void init_intel(struct cpuinfo_x86 *c)
 		((c->x86_model == INTEL_FAM6_ATOM_GOLDMONT)))
 		set_cpu_bug(c, X86_BUG_MONITOR);
 
-#ifdef CONFIG_X86_64
-	if (c->x86 == 15)
-		c->x86_cache_alignment = c->x86_clflush_size * 2;
-	if (c->x86 == 6)
-		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
-#else
 	/*
 	 * Names for the Pentium II/Celeron processors
 	 * detectable only by also checking the cache size.
@@ -740,7 +667,6 @@ static void init_intel(struct cpuinfo_x86 *c)
 		set_cpu_cap(c, X86_FEATURE_P4);
 	if (c->x86 == 6)
 		set_cpu_cap(c, X86_FEATURE_P3);
-#endif
 
 	/* Work around errata */
 	srat_detect_node(c);
@@ -758,7 +684,6 @@ static void init_intel(struct cpuinfo_x86 *c)
 	intel_init_thermal(c);
 }
 
-#ifdef CONFIG_X86_32
 static unsigned int intel_size_cache(struct cpuinfo_x86 *c, unsigned int size)
 {
 	/*
@@ -778,28 +703,27 @@ static unsigned int intel_size_cache(struct cpuinfo_x86 *c, unsigned int size)
 		size = 16;
 	return size;
 }
-#endif
 
-#define TLB_INST_4K	0x01
-#define TLB_INST_4M	0x02
-#define TLB_INST_2M_4M	0x03
+#define TLB_INST_4K 0x01
+#define TLB_INST_4M 0x02
+#define TLB_INST_2M_4M 0x03
 
-#define TLB_INST_ALL	0x05
-#define TLB_INST_1G	0x06
+#define TLB_INST_ALL 0x05
+#define TLB_INST_1G 0x06
 
-#define TLB_DATA_4K	0x11
-#define TLB_DATA_4M	0x12
-#define TLB_DATA_2M_4M	0x13
-#define TLB_DATA_4K_4M	0x14
+#define TLB_DATA_4K 0x11
+#define TLB_DATA_4M 0x12
+#define TLB_DATA_2M_4M 0x13
+#define TLB_DATA_4K_4M 0x14
 
-#define TLB_DATA_1G	0x16
+#define TLB_DATA_1G 0x16
 
-#define TLB_DATA0_4K	0x21
-#define TLB_DATA0_4M	0x22
-#define TLB_DATA0_2M_4M	0x23
+#define TLB_DATA0_4K 0x21
+#define TLB_DATA0_4M 0x22
+#define TLB_DATA0_2M_4M 0x23
 
-#define STLB_4K		0x41
-#define STLB_4K_2M	0x42
+#define STLB_4K 0x41
+#define STLB_4K_2M 0x42
 
 static const struct _tlb_table intel_tlb_table[] = {
 	{ 0x01, TLB_INST_4K,		32,	" TLB_INST 4 KByte pages, 4-way set associative" },
@@ -957,7 +881,6 @@ static void intel_detect_tlb(struct cpuinfo_x86 *c)
 static const struct cpu_dev intel_cpu_dev = {
 	.c_vendor	= "Intel",
 	.c_ident	= { "GenuineIntel" },
-#ifdef CONFIG_X86_32
 	.legacy_models = {
 		{ .family = 4, .model_names =
 		  {
@@ -1009,7 +932,6 @@ static const struct cpu_dev intel_cpu_dev = {
 		},
 	},
 	.legacy_cache_size = intel_size_cache,
-#endif
 	.c_detect_tlb	= intel_detect_tlb,
 	.c_early_init   = early_init_intel,
 	.c_bsp_init	= bsp_init_intel,
@@ -1366,7 +1288,7 @@ void __init sld_setup(struct cpuinfo_x86 *c)
 	sld_state_show();
 }
 
-#define X86_HYBRID_CPU_TYPE_ID_SHIFT	24
+#define X86_HYBRID_CPU_TYPE_ID_SHIFT 24
 
 /**
  * get_this_hybrid_cpu_type() - Get the type of this hybrid CPU

@@ -179,12 +179,7 @@ attribute_container_add_device(struct device *dev,
 /* FIXME: can't break out of this unless klist_iter_exit is also
  * called before doing the break
  */
-#define klist_for_each_entry(pos, head, member, iter) \
-	for (klist_iter_init(head, iter); (pos = ({ \
-		struct klist_node *n = klist_next(iter); \
-		n ? container_of(n, typeof(*pos), member) : \
-			({ klist_iter_exit(iter) ; NULL; }); \
-	})) != NULL;)
+#define klist_for_each_entry(pos,head,member,iter) for (klist_iter_init(head, iter); (pos = ({ struct klist_node *n = klist_next(iter); n ? container_of(n, typeof(*pos), member) : ({ klist_iter_exit(iter) ; NULL; }); })) != NULL;)
 
 
 /**

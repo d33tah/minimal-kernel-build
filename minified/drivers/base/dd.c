@@ -58,7 +58,7 @@ static atomic_t deferred_trigger_count = ATOMIC_INIT(0);
 static bool initcalls_done;
 
 /* Save the async probe drivers' name from kernel cmdline */
-#define ASYNC_DRV_NAMES_MAX_LEN	256
+#define ASYNC_DRV_NAMES_MAX_LEN 256
 static char async_probe_drv_names[ASYNC_DRV_NAMES_MAX_LEN];
 static bool async_probe_default;
 

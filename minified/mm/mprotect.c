@@ -249,9 +249,6 @@ static inline int pmd_none_or_clear_bad_unless_trans_huge(pmd_t *pmd)
 	pmd_t pmdval = pmd_read_atomic(pmd);
 
 	/* See pmd_none_or_trans_huge_or_clear_bad for info on barrier */
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-	barrier();
-#endif
 
 	if (pmd_none(pmdval))
 		return 1;
@@ -277,26 +274,13 @@ uffd_wp_protect_file(struct vm_area_struct *vma, unsigned long cp_flags)
  * when pgtable is empty but page cache exists.  When {pte|pmd|...}_alloc()
  * failed it means no memory, we don't have a better option but stop.
  */
-#define  change_pmd_prepare(vma, pmd, cp_flags)				\
-	do {								\
-		if (unlikely(uffd_wp_protect_file(vma, cp_flags))) {	\
-			if (WARN_ON_ONCE(pte_alloc(vma->vm_mm, pmd)))	\
-				break;					\
-		}							\
-	} while (0)
+#define change_pmd_prepare(vma,pmd,cp_flags) do { if (unlikely(uffd_wp_protect_file(vma, cp_flags))) { if (WARN_ON_ONCE(pte_alloc(vma->vm_mm, pmd))) break; } } while (0)
 /*
  * This is the general pud/p4d/pgd version of change_pmd_prepare(). We need to
  * have separate change_pmd_prepare() because pte_alloc() returns 0 on success,
  * while {pmd|pud|p4d}_alloc() returns the valid pointer on success.
  */
-#define  change_prepare(vma, high, low, addr, cp_flags)			\
-	do {								\
-		if (unlikely(uffd_wp_protect_file(vma, cp_flags))) {	\
-			low##_t *p = low##_alloc(vma->vm_mm, high, addr); \
-			if (WARN_ON_ONCE(p == NULL))			\
-				break;					\
-		}							\
-	} while (0)
+#define change_prepare(vma,high,low,addr,cp_flags) do { if (unlikely(uffd_wp_protect_file(vma, cp_flags))) { low ##_t *p = low ##_alloc(vma->vm_mm, high, addr); if (WARN_ON_ONCE(p == NULL)) break; } } while (0)
 
 static inline unsigned long change_pmd_range(struct mmu_gather *tlb,
 		struct vm_area_struct *vma, pud_t *pud, unsigned long addr,
@@ -760,57 +744,3 @@ SYSCALL_DEFINE3(mprotect, unsigned long, start, size_t, len,
 	return do_mprotect_pkey(start, len, prot, -1);
 }
 
-#ifdef CONFIG_ARCH_HAS_PKEYS
-
-SYSCALL_DEFINE4(pkey_mprotect, unsigned long, start, size_t, len,
-		unsigned long, prot, int, pkey)
-{
-	return do_mprotect_pkey(start, len, prot, pkey);
-}
-
-SYSCALL_DEFINE2(pkey_alloc, unsigned long, flags, unsigned long, init_val)
-{
-	int pkey;
-	int ret;
-
-	/* No flags supported yet. */
-	if (flags)
-		return -EINVAL;
-	/* check for unsupported init values */
-	if (init_val & ~PKEY_ACCESS_MASK)
-		return -EINVAL;
-
-	mmap_write_lock(current->mm);
-	pkey = mm_pkey_alloc(current->mm);
-
-	ret = -ENOSPC;
-	if (pkey == -1)
-		goto out;
-
-	ret = arch_set_user_pkey_access(current, pkey, init_val);
-	if (ret) {
-		mm_pkey_free(current->mm, pkey);
-		goto out;
-	}
-	ret = pkey;
-out:
-	mmap_write_unlock(current->mm);
-	return ret;
-}
-
-SYSCALL_DEFINE1(pkey_free, int, pkey)
-{
-	int ret;
-
-	mmap_write_lock(current->mm);
-	ret = mm_pkey_free(current->mm, pkey);
-	mmap_write_unlock(current->mm);
-
-	/*
-	 * We could provide warnings or errors if any VMA still
-	 * has the pkey set here.
-	 */
-	return ret;
-}
-
-#endif /* CONFIG_ARCH_HAS_PKEYS */

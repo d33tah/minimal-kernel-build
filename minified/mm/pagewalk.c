@@ -58,44 +58,11 @@ static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 	return err;
 }
 
-#ifdef CONFIG_ARCH_HAS_HUGEPD
-static int walk_hugepd_range(hugepd_t *phpd, unsigned long addr,
-			     unsigned long end, struct mm_walk *walk, int pdshift)
-{
-	int err = 0;
-	const struct mm_walk_ops *ops = walk->ops;
-	int shift = hugepd_shift(*phpd);
-	int page_size = 1 << shift;
-
-	if (!ops->pte_entry)
-		return 0;
-
-	if (addr & (page_size - 1))
-		return 0;
-
-	for (;;) {
-		pte_t *pte;
-
-		spin_lock(&walk->mm->page_table_lock);
-		pte = hugepte_offset(*phpd, addr, pdshift);
-		err = ops->pte_entry(pte, addr, addr + page_size, walk);
-		spin_unlock(&walk->mm->page_table_lock);
-
-		if (err)
-			break;
-		if (addr >= end - page_size)
-			break;
-		addr += page_size;
-	}
-	return err;
-}
-#else
 static int walk_hugepd_range(hugepd_t *phpd, unsigned long addr,
 			     unsigned long end, struct mm_walk *walk, int pdshift)
 {
 	return 0;
 }
-#endif
 
 static int walk_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 			  struct mm_walk *walk)
@@ -282,50 +249,12 @@ static int walk_pgd_range(unsigned long addr, unsigned long end,
 	return err;
 }
 
-#ifdef CONFIG_HUGETLB_PAGE
-static unsigned long hugetlb_entry_end(struct hstate *h, unsigned long addr,
-				       unsigned long end)
-{
-	unsigned long boundary = (addr & huge_page_mask(h)) + huge_page_size(h);
-	return boundary < end ? boundary : end;
-}
-
-static int walk_hugetlb_range(unsigned long addr, unsigned long end,
-			      struct mm_walk *walk)
-{
-	struct vm_area_struct *vma = walk->vma;
-	struct hstate *h = hstate_vma(vma);
-	unsigned long next;
-	unsigned long hmask = huge_page_mask(h);
-	unsigned long sz = huge_page_size(h);
-	pte_t *pte;
-	const struct mm_walk_ops *ops = walk->ops;
-	int err = 0;
-
-	do {
-		next = hugetlb_entry_end(h, addr, end);
-		pte = huge_pte_offset(walk->mm, addr & hmask, sz);
-
-		if (pte)
-			err = ops->hugetlb_entry(pte, hmask, addr, next, walk);
-		else if (ops->pte_hole)
-			err = ops->pte_hole(addr, next, -1, walk);
-
-		if (err)
-			break;
-	} while (addr = next, addr != end);
-
-	return err;
-}
-
-#else /* CONFIG_HUGETLB_PAGE */
 static int walk_hugetlb_range(unsigned long addr, unsigned long end,
 			      struct mm_walk *walk)
 {
 	return 0;
 }
 
-#endif /* CONFIG_HUGETLB_PAGE */
 
 /*
  * Decide whether we really walk over the current vma on [@start, @end)

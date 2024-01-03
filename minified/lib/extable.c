@@ -12,18 +12,11 @@
 #include <linux/uaccess.h>
 #include <linux/extable.h>
 
-#ifndef ARCH_HAS_RELATIVE_EXTABLE
-#define ex_to_insn(x)	((x)->insn)
-#else
 static inline unsigned long ex_to_insn(const struct exception_table_entry *x)
 {
 	return (unsigned long)&x->insn + x->insn;
 }
-#endif
 
-#ifndef ARCH_HAS_RELATIVE_EXTABLE
-#define swap_ex		NULL
-#else
 static void swap_ex(void *a, void *b, int size)
 {
 	struct exception_table_entry *x = a, *y = b, tmp;
@@ -33,14 +26,8 @@ static void swap_ex(void *a, void *b, int size)
 	x->insn = y->insn + delta;
 	y->insn = tmp.insn - delta;
 
-#ifdef swap_ex_entry_fixup
 	swap_ex_entry_fixup(x, y, tmp, delta);
-#else
-	x->fixup = y->fixup + delta;
-	y->fixup = tmp.fixup - delta;
-#endif
 }
-#endif /* ARCH_HAS_RELATIVE_EXTABLE */
 
 /*
  * The exception table needs to be sorted so that the binary
@@ -67,26 +54,6 @@ void sort_extable(struct exception_table_entry *start,
 	     cmp_ex_sort, swap_ex);
 }
 
-#ifdef CONFIG_MODULES
-/*
- * If the exception table is sorted, any referring to the module init
- * will be at the beginning or the end.
- */
-void trim_init_extable(struct module *m)
-{
-	/*trim the beginning*/
-	while (m->num_exentries &&
-	       within_module_init(ex_to_insn(&m->extable[0]), m)) {
-		m->extable++;
-		m->num_exentries--;
-	}
-	/*trim the end*/
-	while (m->num_exentries &&
-	       within_module_init(ex_to_insn(&m->extable[m->num_exentries - 1]),
-				  m))
-		m->num_exentries--;
-}
-#endif /* CONFIG_MODULES */
 
 static int cmp_ex_search(const void *key, const void *elt)
 {

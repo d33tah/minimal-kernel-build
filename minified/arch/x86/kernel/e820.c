@@ -66,9 +66,6 @@ struct e820_table *e820_table_firmware __refdata	= &e820_table_firmware_init;
 
 /* For PCI or other memory-mapped resources */
 unsigned long pci_mem_start = 0xaeedbabe;
-#ifdef CONFIG_PCI
-EXPORT_SYMBOL(pci_mem_start);
-#endif
 
 /*
  * This function checks if any part of the range <start,end> is mapped
@@ -664,13 +661,7 @@ __init void e820__setup_pci_gap(void)
 	found  = e820_search_gap(&gapstart, &gapsize);
 
 	if (!found) {
-#ifdef CONFIG_X86_64
-		gapstart = (max_pfn << PAGE_SHIFT) + 1024*1024;
-		pr_err("Cannot find an available gap in the 32-bit address range\n");
-		pr_err("PCI devices with unassigned 32-bit BARs may not work!\n");
-#else
 		gapstart = 0x10000000;
-#endif
 	}
 
 	/*
@@ -771,26 +762,6 @@ void __init e820__register_nosave_regions(unsigned long limit_pfn)
 	}
 }
 
-#ifdef CONFIG_ACPI
-/*
- * Register ACPI NVS memory regions, so that we can save/restore them during
- * hibernation and the subsequent resume:
- */
-static int __init e820__register_nvs_regions(void)
-{
-	int i;
-
-	for (i = 0; i < e820_table->nr_entries; i++) {
-		struct e820_entry *entry = &e820_table->entries[i];
-
-		if (entry->type == E820_TYPE_NVS)
-			acpi_nvs_register(entry->addr, entry->size);
-	}
-
-	return 0;
-}
-core_initcall(e820__register_nvs_regions);
-#endif
 
 /*
  * Allocate the requested number of bytes with the requested alignment
@@ -814,15 +785,7 @@ u64 __init e820__memblock_alloc_reserved(u64 size, u64 align)
 	return addr;
 }
 
-#ifdef CONFIG_X86_32
-# ifdef CONFIG_X86_PAE
-#  define MAX_ARCH_PFN		(1ULL<<(36-PAGE_SHIFT))
-# else
-#  define MAX_ARCH_PFN		(1ULL<<(32-PAGE_SHIFT))
-# endif
-#else /* CONFIG_X86_32 */
-# define MAX_ARCH_PFN MAXMEM>>PAGE_SHIFT
-#endif
+#define MAX_ARCH_PFN (1ULL<<(32-PAGE_SHIFT))
 
 /*
  * Find the highest page frame number we have available
@@ -889,13 +852,8 @@ static int __init parse_memopt(char *p)
 		return -EINVAL;
 
 	if (!strcmp(p, "nopentium")) {
-#ifdef CONFIG_X86_32
 		setup_clear_cpu_cap(X86_FEATURE_PSE);
 		return 0;
-#else
-		pr_warn("mem=nopentium ignored! (only supported on x86_32)\n");
-		return -EINVAL;
-#endif
 	}
 
 	userdef = 1;
@@ -907,9 +865,6 @@ static int __init parse_memopt(char *p)
 
 	e820__range_remove(mem_size, ULLONG_MAX - mem_size, E820_TYPE_RAM, 1);
 
-#ifdef CONFIG_MEMORY_HOTPLUG
-	max_mem_size = mem_size;
-#endif
 
 	return 0;
 }

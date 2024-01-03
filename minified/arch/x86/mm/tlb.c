@@ -21,15 +21,11 @@
 
 #include "mm_internal.h"
 
-#ifdef CONFIG_PARAVIRT
-# define STATIC_NOPV
-#else
-# define STATIC_NOPV			static
-# define __flush_tlb_local		native_flush_tlb_local
-# define __flush_tlb_global		native_flush_tlb_global
-# define __flush_tlb_one_user(addr)	native_flush_tlb_one_user(addr)
-# define __flush_tlb_multi(msk, info)	native_flush_tlb_multi(msk, info)
-#endif
+#define STATIC_NOPV static
+#define __flush_tlb_local native_flush_tlb_local
+#define __flush_tlb_global native_flush_tlb_global
+#define __flush_tlb_one_user(addr) native_flush_tlb_one_user(addr)
+#define __flush_tlb_multi(msk,info) native_flush_tlb_multi(msk, info)
 
 /*
  *	TLB flushing, formerly SMP-only
@@ -49,12 +45,12 @@
  * Bits to mangle the TIF_SPEC_* state into the mm pointer which is
  * stored in cpu_tlb_state.last_user_mm_spec.
  */
-#define LAST_USER_MM_IBPB	0x1UL
-#define LAST_USER_MM_L1D_FLUSH	0x2UL
-#define LAST_USER_MM_SPEC_MASK	(LAST_USER_MM_IBPB | LAST_USER_MM_L1D_FLUSH)
+#define LAST_USER_MM_IBPB 0x1UL
+#define LAST_USER_MM_L1D_FLUSH 0x2UL
+#define LAST_USER_MM_SPEC_MASK (LAST_USER_MM_IBPB | LAST_USER_MM_L1D_FLUSH)
 
 /* Bits to set when tlbstate and flush is (re)initialized */
-#define LAST_USER_MM_INIT	LAST_USER_MM_IBPB
+#define LAST_USER_MM_INIT LAST_USER_MM_IBPB
 
 /*
  * The x86 feature is called PCID (Process Context IDentifier). It is similar
@@ -85,17 +81,13 @@
  */
 
 /* There are 12 bits of space for ASIDS in CR3 */
-#define CR3_HW_ASID_BITS		12
+#define CR3_HW_ASID_BITS 12
 
 /*
  * When enabled, PAGE_TABLE_ISOLATION consumes a single bit for
  * user/kernel switches
  */
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-# define PTI_CONSUMED_PCID_BITS	1
-#else
-# define PTI_CONSUMED_PCID_BITS	0
-#endif
+#define PTI_CONSUMED_PCID_BITS 0
 
 #define CR3_AVAIL_PCID_BITS (X86_CR3_PCID_BITS - PTI_CONSUMED_PCID_BITS)
 
@@ -113,19 +105,6 @@ static inline u16 kern_pcid(u16 asid)
 {
 	VM_WARN_ON_ONCE(asid > MAX_ASID_AVAILABLE);
 
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-	/*
-	 * Make sure that the dynamic ASID space does not conflict with the
-	 * bit we are using to switch between user and kernel ASIDs.
-	 */
-	BUILD_BUG_ON(TLB_NR_DYN_ASIDS >= (1 << X86_CR3_PTI_PCID_USER_BIT));
-
-	/*
-	 * The ASID being passed in here should have respected the
-	 * MAX_ASID_AVAILABLE and thus never have the switch bit set.
-	 */
-	VM_WARN_ON_ONCE(asid & (1 << X86_CR3_PTI_PCID_USER_BIT));
-#endif
 	/*
 	 * The dynamically-assigned ASIDs that get passed in are small
 	 * (<TLB_NR_DYN_ASIDS).  They never have the high switch bit set,
@@ -148,9 +127,6 @@ static inline u16 kern_pcid(u16 asid)
 static inline u16 user_pcid(u16 asid)
 {
 	u16 ret = kern_pcid(asid);
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-	ret |= 1 << X86_CR3_PTI_PCID_USER_BIT;
-#endif
 	return ret;
 }
 
@@ -461,7 +437,6 @@ static void cond_mitigation(struct task_struct *next)
 	this_cpu_write(cpu_tlbstate.last_user_mm_spec, next_mm);
 }
 
-#ifdef CONFIG_PERF_EVENTS
 static inline void cr4_update_pce_mm(struct mm_struct *mm)
 {
 	if (static_branch_unlikely(&rdpmc_always_available_key) ||
@@ -482,9 +457,6 @@ void cr4_update_pce(void *ignored)
 	cr4_update_pce_mm(this_cpu_read(cpu_tlbstate.loaded_mm));
 }
 
-#else
-static inline void cr4_update_pce_mm(struct mm_struct *mm) { }
-#endif
 
 void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 			struct task_struct *tsk)
@@ -519,23 +491,6 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 	 * Only do this check if CONFIG_DEBUG_VM=y because __read_cr3()
 	 * isn't free.
 	 */
-#ifdef CONFIG_DEBUG_VM
-	if (WARN_ON_ONCE(__read_cr3() != build_cr3(real_prev->pgd, prev_asid))) {
-		/*
-		 * If we were to BUG here, we'd be very likely to kill
-		 * the system so hard that we don't see the call trace.
-		 * Try to recover instead by ignoring the error and doing
-		 * a global flush to minimize the chance of corruption.
-		 *
-		 * (This is far from being a fully correct recovery.
-		 *  Architecturally, the CPU could prefetch something
-		 *  back into an incorrect ASID slot and leave it there
-		 *  to cause trouble down the road.  It's better than
-		 *  nothing, though.)
-		 */
-		__flush_tlb_all();
-	}
-#endif
 	if (was_lazy)
 		this_cpu_write(cpu_tlbstate_shared.is_lazy, false);
 
@@ -915,9 +870,6 @@ unsigned long tlb_single_page_flush_ceiling __read_mostly = 33;
 
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct flush_tlb_info, flush_tlb_info);
 
-#ifdef CONFIG_DEBUG_VM
-static DEFINE_PER_CPU(unsigned int, flush_tlb_info_idx);
-#endif
 
 static struct flush_tlb_info *get_flush_tlb_info(struct mm_struct *mm,
 			unsigned long start, unsigned long end,
@@ -926,14 +878,6 @@ static struct flush_tlb_info *get_flush_tlb_info(struct mm_struct *mm,
 {
 	struct flush_tlb_info *info = this_cpu_ptr(&flush_tlb_info);
 
-#ifdef CONFIG_DEBUG_VM
-	/*
-	 * Ensure that the following code is non-reentrant and flush_tlb_info
-	 * is not overwritten. This means no TLB flushing is initiated by
-	 * interrupt handlers and machine-check exception handlers.
-	 */
-	BUG_ON(this_cpu_inc_return(flush_tlb_info_idx) != 1);
-#endif
 
 	info->start		= start;
 	info->end		= end;
@@ -948,11 +892,6 @@ static struct flush_tlb_info *get_flush_tlb_info(struct mm_struct *mm,
 
 static void put_flush_tlb_info(void)
 {
-#ifdef CONFIG_DEBUG_VM
-	/* Complete reentrancy prevention checks */
-	barrier();
-	this_cpu_dec(flush_tlb_info_idx);
-#endif
 }
 
 void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,

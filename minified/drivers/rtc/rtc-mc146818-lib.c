@@ -4,9 +4,6 @@
 #include <linux/export.h>
 #include <linux/mc146818rtc.h>
 
-#ifdef CONFIG_ACPI
-#include <linux/acpi.h>
-#endif
 
 /*
  * Execute a function while the UIP (Update-in-progress) bit of the RTC is
@@ -91,12 +88,6 @@ EXPORT_SYMBOL_GPL(mc146818_does_rtc_work);
 struct mc146818_get_time_callback_param {
 	struct rtc_time *time;
 	unsigned char ctrl;
-#ifdef CONFIG_ACPI
-	unsigned char century;
-#endif
-#ifdef CONFIG_MACH_DECSTATION
-	unsigned int real_year;
-#endif
 };
 
 static void mc146818_get_time_callback(unsigned char seconds, void *param_in)
@@ -115,17 +106,6 @@ static void mc146818_get_time_callback(unsigned char seconds, void *param_in)
 	p->time->tm_mday = CMOS_READ(RTC_DAY_OF_MONTH);
 	p->time->tm_mon = CMOS_READ(RTC_MONTH);
 	p->time->tm_year = CMOS_READ(RTC_YEAR);
-#ifdef CONFIG_MACH_DECSTATION
-	p->real_year = CMOS_READ(RTC_DEC_YEAR);
-#endif
-#ifdef CONFIG_ACPI
-	if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
-	    acpi_gbl_FADT.century) {
-		p->century = CMOS_READ(acpi_gbl_FADT.century);
-	} else {
-		p->century = 0;
-	}
-#endif
 
 	p->ctrl = CMOS_READ(RTC_CONTROL);
 }
@@ -149,19 +129,9 @@ int mc146818_get_time(struct rtc_time *time)
 		time->tm_mday = bcd2bin(time->tm_mday);
 		time->tm_mon = bcd2bin(time->tm_mon);
 		time->tm_year = bcd2bin(time->tm_year);
-#ifdef CONFIG_ACPI
-		p.century = bcd2bin(p.century);
-#endif
 	}
 
-#ifdef CONFIG_MACH_DECSTATION
-	time->tm_year += p.real_year - 72;
-#endif
 
-#ifdef CONFIG_ACPI
-	if (p.century > 19)
-		time->tm_year += (p.century - 19) * 100;
-#endif
 
 	/*
 	 * Account for differences between how the RTC uses the values
@@ -179,11 +149,9 @@ EXPORT_SYMBOL_GPL(mc146818_get_time);
 /* AMD systems don't allow access to AltCentury with DV1 */
 static bool apply_amd_register_a_behavior(void)
 {
-#ifdef CONFIG_X86
 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD ||
 	    boot_cpu_data.x86_vendor == X86_VENDOR_HYGON)
 		return true;
-#endif
 	return false;
 }
 
@@ -194,9 +162,6 @@ int mc146818_set_time(struct rtc_time *time)
 	unsigned char mon, day, hrs, min, sec;
 	unsigned char save_control, save_freq_select;
 	unsigned int yrs;
-#ifdef CONFIG_MACH_DECSTATION
-	unsigned int real_yrs, leap_yr;
-#endif
 	unsigned char century = 0;
 
 	yrs = time->tm_year;
@@ -209,30 +174,7 @@ int mc146818_set_time(struct rtc_time *time)
 	if (yrs > 255)	/* They are unsigned */
 		return -EINVAL;
 
-#ifdef CONFIG_MACH_DECSTATION
-	real_yrs = yrs;
-	leap_yr = ((!((yrs + 1900) % 4) && ((yrs + 1900) % 100)) ||
-			!((yrs + 1900) % 400));
-	yrs = 72;
 
-	/*
-	 * We want to keep the year set to 73 until March
-	 * for non-leap years, so that Feb, 29th is handled
-	 * correctly.
-	 */
-	if (!leap_yr && mon < 3) {
-		real_yrs--;
-		yrs = 73;
-	}
-#endif
-
-#ifdef CONFIG_ACPI
-	if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
-	    acpi_gbl_FADT.century) {
-		century = (yrs + 1900) / 100;
-		yrs %= 100;
-	}
-#endif
 
 	/* These limits and adjustments are independent of
 	 * whether the chip is in binary mode or not.
@@ -265,20 +207,12 @@ int mc146818_set_time(struct rtc_time *time)
 	else
 		CMOS_WRITE((save_freq_select|RTC_DIV_RESET2), RTC_FREQ_SELECT);
 
-#ifdef CONFIG_MACH_DECSTATION
-	CMOS_WRITE(real_yrs, RTC_DEC_YEAR);
-#endif
 	CMOS_WRITE(yrs, RTC_YEAR);
 	CMOS_WRITE(mon, RTC_MONTH);
 	CMOS_WRITE(day, RTC_DAY_OF_MONTH);
 	CMOS_WRITE(hrs, RTC_HOURS);
 	CMOS_WRITE(min, RTC_MINUTES);
 	CMOS_WRITE(sec, RTC_SECONDS);
-#ifdef CONFIG_ACPI
-	if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
-	    acpi_gbl_FADT.century)
-		CMOS_WRITE(century, acpi_gbl_FADT.century);
-#endif
 
 	CMOS_WRITE(save_control, RTC_CONTROL);
 	CMOS_WRITE(save_freq_select, RTC_FREQ_SELECT);

@@ -10,7 +10,7 @@
 
 #include "base.h"
 
-#define CONTAINER_BUS_NAME	"container"
+#define CONTAINER_BUS_NAME "container"
 
 static int trivial_online(struct device *dev)
 {

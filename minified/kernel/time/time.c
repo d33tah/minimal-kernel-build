@@ -51,91 +51,7 @@ struct timezone sys_tz;
 
 EXPORT_SYMBOL(sys_tz);
 
-#ifdef __ARCH_WANT_SYS_TIME
 
-/*
- * sys_time() can be implemented in user-level using
- * sys_gettimeofday().  Is this for backwards compatibility?  If so,
- * why not move it into the appropriate arch directory (for those
- * architectures that need it).
- */
-SYSCALL_DEFINE1(time, __kernel_old_time_t __user *, tloc)
-{
-	__kernel_old_time_t i = (__kernel_old_time_t)ktime_get_real_seconds();
-
-	if (tloc) {
-		if (put_user(i,tloc))
-			return -EFAULT;
-	}
-	force_successful_syscall_return();
-	return i;
-}
-
-/*
- * sys_stime() can be implemented in user-level using
- * sys_settimeofday().  Is this for backwards compatibility?  If so,
- * why not move it into the appropriate arch directory (for those
- * architectures that need it).
- */
-
-SYSCALL_DEFINE1(stime, __kernel_old_time_t __user *, tptr)
-{
-	struct timespec64 tv;
-	int err;
-
-	if (get_user(tv.tv_sec, tptr))
-		return -EFAULT;
-
-	tv.tv_nsec = 0;
-
-	err = security_settime64(&tv, NULL);
-	if (err)
-		return err;
-
-	do_settimeofday64(&tv);
-	return 0;
-}
-
-#endif /* __ARCH_WANT_SYS_TIME */
-
-#ifdef CONFIG_COMPAT_32BIT_TIME
-#ifdef __ARCH_WANT_SYS_TIME32
-
-/* old_time32_t is a 32 bit "long" and needs to get converted. */
-SYSCALL_DEFINE1(time32, old_time32_t __user *, tloc)
-{
-	old_time32_t i;
-
-	i = (old_time32_t)ktime_get_real_seconds();
-
-	if (tloc) {
-		if (put_user(i,tloc))
-			return -EFAULT;
-	}
-	force_successful_syscall_return();
-	return i;
-}
-
-SYSCALL_DEFINE1(stime32, old_time32_t __user *, tptr)
-{
-	struct timespec64 tv;
-	int err;
-
-	if (get_user(tv.tv_sec, tptr))
-		return -EFAULT;
-
-	tv.tv_nsec = 0;
-
-	err = security_settime64(&tv, NULL);
-	if (err)
-		return err;
-
-	do_settimeofday64(&tv);
-	return 0;
-}
-
-#endif /* __ARCH_WANT_SYS_TIME32 */
-#endif
 
 SYSCALL_DEFINE2(gettimeofday, struct __kernel_old_timeval __user *, tv,
 		struct timezone __user *, tz)
@@ -220,150 +136,8 @@ SYSCALL_DEFINE2(settimeofday, struct __kernel_old_timeval __user *, tv,
 	return do_sys_settimeofday64(tv ? &new_ts : NULL, tz ? &new_tz : NULL);
 }
 
-#ifdef CONFIG_COMPAT
-COMPAT_SYSCALL_DEFINE2(gettimeofday, struct old_timeval32 __user *, tv,
-		       struct timezone __user *, tz)
-{
-	if (tv) {
-		struct timespec64 ts;
 
-		ktime_get_real_ts64(&ts);
-		if (put_user(ts.tv_sec, &tv->tv_sec) ||
-		    put_user(ts.tv_nsec / 1000, &tv->tv_usec))
-			return -EFAULT;
-	}
-	if (tz) {
-		if (copy_to_user(tz, &sys_tz, sizeof(sys_tz)))
-			return -EFAULT;
-	}
 
-	return 0;
-}
-
-COMPAT_SYSCALL_DEFINE2(settimeofday, struct old_timeval32 __user *, tv,
-		       struct timezone __user *, tz)
-{
-	struct timespec64 new_ts;
-	struct timezone new_tz;
-
-	if (tv) {
-		if (get_user(new_ts.tv_sec, &tv->tv_sec) ||
-		    get_user(new_ts.tv_nsec, &tv->tv_usec))
-			return -EFAULT;
-
-		if (new_ts.tv_nsec > USEC_PER_SEC || new_ts.tv_nsec < 0)
-			return -EINVAL;
-
-		new_ts.tv_nsec *= NSEC_PER_USEC;
-	}
-	if (tz) {
-		if (copy_from_user(&new_tz, tz, sizeof(*tz)))
-			return -EFAULT;
-	}
-
-	return do_sys_settimeofday64(tv ? &new_ts : NULL, tz ? &new_tz : NULL);
-}
-#endif
-
-#ifdef CONFIG_64BIT
-SYSCALL_DEFINE1(adjtimex, struct __kernel_timex __user *, txc_p)
-{
-	struct __kernel_timex txc;		/* Local copy of parameter */
-	int ret;
-
-	/* Copy the user data space into the kernel copy
-	 * structure. But bear in mind that the structures
-	 * may change
-	 */
-	if (copy_from_user(&txc, txc_p, sizeof(struct __kernel_timex)))
-		return -EFAULT;
-	ret = do_adjtimex(&txc);
-	return copy_to_user(txc_p, &txc, sizeof(struct __kernel_timex)) ? -EFAULT : ret;
-}
-#endif
-
-#ifdef CONFIG_COMPAT_32BIT_TIME
-int get_old_timex32(struct __kernel_timex *txc, const struct old_timex32 __user *utp)
-{
-	struct old_timex32 tx32;
-
-	memset(txc, 0, sizeof(struct __kernel_timex));
-	if (copy_from_user(&tx32, utp, sizeof(struct old_timex32)))
-		return -EFAULT;
-
-	txc->modes = tx32.modes;
-	txc->offset = tx32.offset;
-	txc->freq = tx32.freq;
-	txc->maxerror = tx32.maxerror;
-	txc->esterror = tx32.esterror;
-	txc->status = tx32.status;
-	txc->constant = tx32.constant;
-	txc->precision = tx32.precision;
-	txc->tolerance = tx32.tolerance;
-	txc->time.tv_sec = tx32.time.tv_sec;
-	txc->time.tv_usec = tx32.time.tv_usec;
-	txc->tick = tx32.tick;
-	txc->ppsfreq = tx32.ppsfreq;
-	txc->jitter = tx32.jitter;
-	txc->shift = tx32.shift;
-	txc->stabil = tx32.stabil;
-	txc->jitcnt = tx32.jitcnt;
-	txc->calcnt = tx32.calcnt;
-	txc->errcnt = tx32.errcnt;
-	txc->stbcnt = tx32.stbcnt;
-
-	return 0;
-}
-
-int put_old_timex32(struct old_timex32 __user *utp, const struct __kernel_timex *txc)
-{
-	struct old_timex32 tx32;
-
-	memset(&tx32, 0, sizeof(struct old_timex32));
-	tx32.modes = txc->modes;
-	tx32.offset = txc->offset;
-	tx32.freq = txc->freq;
-	tx32.maxerror = txc->maxerror;
-	tx32.esterror = txc->esterror;
-	tx32.status = txc->status;
-	tx32.constant = txc->constant;
-	tx32.precision = txc->precision;
-	tx32.tolerance = txc->tolerance;
-	tx32.time.tv_sec = txc->time.tv_sec;
-	tx32.time.tv_usec = txc->time.tv_usec;
-	tx32.tick = txc->tick;
-	tx32.ppsfreq = txc->ppsfreq;
-	tx32.jitter = txc->jitter;
-	tx32.shift = txc->shift;
-	tx32.stabil = txc->stabil;
-	tx32.jitcnt = txc->jitcnt;
-	tx32.calcnt = txc->calcnt;
-	tx32.errcnt = txc->errcnt;
-	tx32.stbcnt = txc->stbcnt;
-	tx32.tai = txc->tai;
-	if (copy_to_user(utp, &tx32, sizeof(struct old_timex32)))
-		return -EFAULT;
-	return 0;
-}
-
-SYSCALL_DEFINE1(adjtimex_time32, struct old_timex32 __user *, utp)
-{
-	struct __kernel_timex txc;
-	int err, ret;
-
-	err = get_old_timex32(&txc, utp);
-	if (err)
-		return err;
-
-	ret = do_adjtimex(&txc);
-
-	err = put_old_timex32(utp, &txc);
-	if (err)
-		return err;
-
-	return ret;
-}
-#endif
 
 /*
  * Convert jiffies to milliseconds and back.
@@ -373,18 +147,7 @@ SYSCALL_DEFINE1(adjtimex_time32, struct old_timex32 __user *, utp)
  */
 unsigned int jiffies_to_msecs(const unsigned long j)
 {
-#if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
 	return (MSEC_PER_SEC / HZ) * j;
-#elif HZ > MSEC_PER_SEC && !(HZ % MSEC_PER_SEC)
-	return (j + (HZ / MSEC_PER_SEC) - 1)/(HZ / MSEC_PER_SEC);
-#else
-# if BITS_PER_LONG == 32
-	return (HZ_TO_MSEC_MUL32 * j + (1ULL << HZ_TO_MSEC_SHR32) - 1) >>
-	       HZ_TO_MSEC_SHR32;
-# else
-	return DIV_ROUND_UP(j * HZ_TO_MSEC_NUM, HZ_TO_MSEC_DEN);
-# endif
-#endif
 }
 EXPORT_SYMBOL(jiffies_to_msecs);
 
@@ -396,15 +159,7 @@ unsigned int jiffies_to_usecs(const unsigned long j)
 	 */
 	BUILD_BUG_ON(HZ > USEC_PER_SEC);
 
-#if !(USEC_PER_SEC % HZ)
 	return (USEC_PER_SEC / HZ) * j;
-#else
-# if BITS_PER_LONG == 32
-	return (HZ_TO_USEC_MUL32 * j) >> HZ_TO_USEC_SHR32;
-# else
-	return (j * HZ_TO_USEC_NUM) / HZ_TO_USEC_DEN;
-# endif
-#endif
 }
 EXPORT_SYMBOL(jiffies_to_usecs);
 
@@ -620,90 +375,47 @@ EXPORT_SYMBOL(jiffies_to_timespec64);
  */
 clock_t jiffies_to_clock_t(unsigned long x)
 {
-#if (TICK_NSEC % (NSEC_PER_SEC / USER_HZ)) == 0
-# if HZ < USER_HZ
-	return x * (USER_HZ / HZ);
-# else
-	return x / (HZ / USER_HZ);
-# endif
-#else
 	return div_u64((u64)x * TICK_NSEC, NSEC_PER_SEC / USER_HZ);
-#endif
 }
 EXPORT_SYMBOL(jiffies_to_clock_t);
 
 unsigned long clock_t_to_jiffies(unsigned long x)
 {
-#if (HZ % USER_HZ)==0
-	if (x >= ~0UL / (HZ / USER_HZ))
-		return ~0UL;
-	return x * (HZ / USER_HZ);
-#else
 	/* Don't worry about loss of precision here .. */
 	if (x >= ~0UL / HZ * USER_HZ)
 		return ~0UL;
 
 	/* .. but do try to contain it here */
 	return div_u64((u64)x * HZ, USER_HZ);
-#endif
 }
 EXPORT_SYMBOL(clock_t_to_jiffies);
 
 u64 jiffies_64_to_clock_t(u64 x)
 {
-#if (TICK_NSEC % (NSEC_PER_SEC / USER_HZ)) == 0
-# if HZ < USER_HZ
-	x = div_u64(x * USER_HZ, HZ);
-# elif HZ > USER_HZ
-	x = div_u64(x, HZ / USER_HZ);
-# else
-	/* Nothing to do */
-# endif
-#else
 	/*
 	 * There are better ways that don't overflow early,
 	 * but even this doesn't overflow in hundreds of years
 	 * in 64 bits, so..
 	 */
 	x = div_u64(x * TICK_NSEC, (NSEC_PER_SEC / USER_HZ));
-#endif
 	return x;
 }
 EXPORT_SYMBOL(jiffies_64_to_clock_t);
 
 u64 nsec_to_clock_t(u64 x)
 {
-#if (NSEC_PER_SEC % USER_HZ) == 0
 	return div_u64(x, NSEC_PER_SEC / USER_HZ);
-#elif (USER_HZ % 512) == 0
-	return div_u64(x * USER_HZ / 512, NSEC_PER_SEC / 512);
-#else
-	/*
-         * max relative error 5.7e-8 (1.8s per year) for USER_HZ <= 1024,
-         * overflow after 64.99 years.
-         * exact for HZ=60, 72, 90, 120, 144, 180, 300, 600, 900, ...
-         */
-	return div_u64(x * 9, (9ull * NSEC_PER_SEC + (USER_HZ / 2)) / USER_HZ);
-#endif
 }
 
 u64 jiffies64_to_nsecs(u64 j)
 {
-#if !(NSEC_PER_SEC % HZ)
 	return (NSEC_PER_SEC / HZ) * j;
-# else
-	return div_u64(j * HZ_TO_NSEC_NUM, HZ_TO_NSEC_DEN);
-#endif
 }
 EXPORT_SYMBOL(jiffies64_to_nsecs);
 
 u64 jiffies64_to_msecs(const u64 j)
 {
-#if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
 	return (MSEC_PER_SEC / HZ) * j;
-#else
-	return div_u64(j * HZ_TO_MSEC_NUM, HZ_TO_MSEC_DEN);
-#endif
 }
 EXPORT_SYMBOL(jiffies64_to_msecs);
 
@@ -722,19 +434,8 @@ EXPORT_SYMBOL(jiffies64_to_msecs);
  */
 u64 nsecs_to_jiffies64(u64 n)
 {
-#if (NSEC_PER_SEC % HZ) == 0
 	/* Common case, HZ = 100, 128, 200, 250, 256, 500, 512, 1000 etc. */
 	return div_u64(n, NSEC_PER_SEC / HZ);
-#elif (HZ % 512) == 0
-	/* overflow after 292 years if HZ = 1024 */
-	return div_u64(n * HZ / 512, NSEC_PER_SEC / 512);
-#else
-	/*
-	 * Generic case - optimized for cases where HZ is a multiple of 3.
-	 * overflow after 64.99 years, exact for HZ = 60, 72, 90, 120 etc.
-	 */
-	return div_u64(n * 9, (9ull * NSEC_PER_SEC + HZ / 2) / HZ);
-#endif
 }
 EXPORT_SYMBOL(nsecs_to_jiffies64);
 

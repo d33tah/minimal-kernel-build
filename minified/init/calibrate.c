@@ -22,15 +22,14 @@ static int __init lpj_setup(char *str)
 
 __setup("lpj=", lpj_setup);
 
-#ifdef ARCH_HAS_READ_CURRENT_TIMER
 
 /* This routine uses the read_current_timer() routine and gets the
  * loops per jiffy directly, instead of guessing it using delay().
  * Also, this code tries to handle non-maskable asynchronous events
  * (like SMIs)
  */
-#define DELAY_CALIBRATION_TICKS			((HZ < 100) ? 1 : (HZ/100))
-#define MAX_DIRECT_CALIBRATION_RETRIES		5
+#define DELAY_CALIBRATION_TICKS ((HZ < 100) ? 1 : (HZ/100))
+#define MAX_DIRECT_CALIBRATION_RETRIES 5
 
 static unsigned long calibrate_delay_direct(void)
 {
@@ -166,12 +165,6 @@ static unsigned long calibrate_delay_direct(void)
 		"interrupts. Consider using \"lpj=\" boot option.\n");
 	return 0;
 }
-#else
-static unsigned long calibrate_delay_direct(void)
-{
-	return 0;
-}
-#endif
 
 /*
  * This is the number of bits of precision for the loops_per_jiffy.  Each

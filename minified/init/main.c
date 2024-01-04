@@ -953,25 +953,13 @@ static int __ref kernel_init(void *unused)
 	async_synchronize_full();
 
 	system_state = SYSTEM_FREEING_INITMEM;
-	kprobe_free_init_mem();
-	ftrace_free_init_mem();
-	kgdb_free_init_mem();
-	exit_boot_config();
 	free_initmem();
 	mark_readonly();
-
-	/*
-	 * Kernel mappings are now finalized - update the userspace page-table
-	 * to finalize PTI.
-	 */
-	pti_finalize();
 
 	system_state = SYSTEM_RUNNING;
 	numa_default_policy();
 
 	rcu_end_inkernel_boot();
-
-	do_sysctl_args();
 
 	if (ramdisk_execute_command) {
 		ret = run_init_process(ramdisk_execute_command);
@@ -981,52 +969,8 @@ static int __ref kernel_init(void *unused)
 		       ramdisk_execute_command, ret);
 	}
 
-	/*
-	 * We try each of these until one succeeds.
-	 *
-	 * The Bourne shell can be used instead of init if we are
-	 * trying to recover a really broken machine.
-	 */
-	if (execute_command) {
-		ret = run_init_process(execute_command);
-		if (!ret)
-			return 0;
-		panic("Requested init %s failed (error %d).",
-		      execute_command, ret);
-	}
+    return 0;
 
-	if (CONFIG_DEFAULT_INIT[0] != '\0') {
-		ret = run_init_process(CONFIG_DEFAULT_INIT);
-		if (ret)
-			pr_err("Default init %s failed (error %d)\n",
-			       CONFIG_DEFAULT_INIT, ret);
-		else
-			return 0;
-	}
-
-	if (!try_to_run_init_process("/sbin/init") ||
-	    !try_to_run_init_process("/etc/init") ||
-	    !try_to_run_init_process("/bin/init") ||
-	    !try_to_run_init_process("/bin/sh"))
-		return 0;
-
-	panic("No working init found.  Try passing init= option to kernel. "
-	      "See Linux Documentation/admin-guide/init.rst for guidance.");
-}
-
-/* Open /dev/console, for stdin/stdout/stderr, this should never fail */
-void __init console_on_rootfs(void)
-{
-	struct file *file = filp_open("/dev/console", O_RDWR, 0);
-
-	if (IS_ERR(file)) {
-		pr_err("Warning: unable to open an initial console.\n");
-		return;
-	}
-	init_dup(file);
-	init_dup(file);
-	init_dup(file);
-	fput(file);
 }
 
 static noinline void __init kernel_init_freeable(void)
@@ -1039,50 +983,12 @@ static noinline void __init kernel_init_freeable(void)
 	 */
 	set_mems_allowed(node_states[N_MEMORY]);
 
-	cad_pid = get_pid(task_pid(current));
-
-	smp_prepare_cpus(setup_max_cpus);
-
-	workqueue_init();
-
 	init_mm_internals();
-
-	rcu_init_tasks_generic();
-	do_pre_smp_initcalls();
-	lockup_detector_init();
-
-	smp_init();
-	sched_init_smp();
 
 	padata_init();
 	page_alloc_init_late();
 	/* Initialize page ext after all struct pages are initialized. */
 	page_ext_init();
 
-	do_basic_setup();
-
-	kunit_run_all_tests();
-
 	wait_for_initramfs();
-	console_on_rootfs();
-
-	/*
-	 * check if there is an early userspace init.  If yes, let it do all
-	 * the work
-	 */
-	if (init_eaccess(ramdisk_execute_command) != 0) {
-		ramdisk_execute_command = NULL;
-		prepare_namespace();
-	}
-
-	/*
-	 * Ok, we have completed the initial bootup, and
-	 * we're essentially up and running. Get rid of the
-	 * initmem segments and start the user-mode stuff..
-	 *
-	 * rootfs is available now, try loading the public keys
-	 * and default modules
-	 */
-
-	integrity_load_keys();
 }

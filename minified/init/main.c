@@ -990,5 +990,7 @@ static noinline void __init kernel_init_freeable(void)
 	/* Initialize page ext after all struct pages are initialized. */
 	page_ext_init();
 
+    do_basic_setup();
+
 	wait_for_initramfs();
 }

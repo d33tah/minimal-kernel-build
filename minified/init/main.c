@@ -265,12 +265,6 @@ static void * __init get_boot_config_from_initrd(size_t *_size)
 }
 
 
-static void __init setup_boot_config(void)
-{
-	/* Remove bootconfig data from initrd */
-	get_boot_config_from_initrd(NULL);
-}
-
 static int __init warn_bootconfig(char *str)
 {
 	pr_warn("WARNING: 'bootconfig' found on the kernel command line but CONFIG_BOOT_CONFIG is not set.\n");

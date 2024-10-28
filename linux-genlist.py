@@ -53,7 +53,9 @@ subprocess.check_call(
 subprocess.check_call(
     'strace -fff -e trace=file -y -o strace.make '
     'make -j $(( $( nproc ) + 2 ))', shell=True)
-subprocess.check_call('make mrproper', shell=True)
+subprocess.check_call(
+    'strace -fff -e trace=file -y -o strace.mrproper '
+    'make mrproper', shell=True)
 
 cwd = os.getcwd()
 

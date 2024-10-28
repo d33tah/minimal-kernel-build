@@ -127,10 +127,6 @@ endif
 obj-$(CONFIG_TEST_FPU) += test_fpu.o
 CFLAGS_test_fpu.o += $(FPU_CFLAGS)
 
-obj-$(CONFIG_TEST_LIVEPATCH) += livepatch/
-
-obj-$(CONFIG_KUNIT) += kunit/
-
 ifeq ($(CONFIG_DEBUG_KOBJECT),y)
 CFLAGS_kobject.o += -DDEBUG
 CFLAGS_kobject_uevent.o += -DDEBUG
@@ -177,23 +173,6 @@ obj-$(CONFIG_CRC8)	+= crc8.o
 obj-$(CONFIG_CRC64_ROCKSOFT) += crc64-rocksoft.o
 obj-$(CONFIG_XXHASH)	+= xxhash.o
 obj-$(CONFIG_GENERIC_ALLOCATOR) += genalloc.o
-
-obj-$(CONFIG_842_COMPRESS) += 842/
-obj-$(CONFIG_842_DECOMPRESS) += 842/
-obj-$(CONFIG_ZLIB_INFLATE) += zlib_inflate/
-obj-$(CONFIG_ZLIB_DEFLATE) += zlib_deflate/
-obj-$(CONFIG_ZLIB_DFLTCC) += zlib_dfltcc/
-obj-$(CONFIG_REED_SOLOMON) += reed_solomon/
-obj-$(CONFIG_BCH) += bch.o
-obj-$(CONFIG_LZO_COMPRESS) += lzo/
-obj-$(CONFIG_LZO_DECOMPRESS) += lzo/
-obj-$(CONFIG_LZ4_COMPRESS) += lz4/
-obj-$(CONFIG_LZ4HC_COMPRESS) += lz4/
-obj-$(CONFIG_LZ4_DECOMPRESS) += lz4/
-obj-$(CONFIG_ZSTD_COMPRESS) += zstd/
-obj-$(CONFIG_ZSTD_DECOMPRESS) += zstd/
-obj-$(CONFIG_XZ_DEC) += xz/
-obj-$(CONFIG_RAID6_PQ) += raid6/
 
 lib-$(CONFIG_DECOMPRESS_GZIP) += decompress_inflate.o
 lib-$(CONFIG_DECOMPRESS_BZIP2) += decompress_bunzip2.o
@@ -246,8 +225,6 @@ obj-$(CONFIG_DQL) += dynamic_queue_limits.o
 obj-$(CONFIG_GLOB) += glob.o
 obj-$(CONFIG_GLOB_SELFTEST) += globtest.o
 
-obj-$(CONFIG_MPILIB) += mpi/
-obj-$(CONFIG_DIMLIB) += dim/
 obj-$(CONFIG_SIGNATURE) += digsig.o
 
 lib-$(CONFIG_CLZ_TAB) += clz_tab.o
@@ -299,8 +276,6 @@ obj-$(CONFIG_PERCPU_TEST) += percpu_test.o
 
 obj-$(CONFIG_ASN1) += asn1_decoder.o
 obj-$(CONFIG_ASN1_ENCODER) += asn1_encoder.o
-
-obj-$(CONFIG_FONT_SUPPORT) += fonts/
 
 hostprogs	:= gen_crc32table
 hostprogs	+= gen_crc64table
@@ -361,9 +336,6 @@ obj-$(CONFIG_GENERIC_LIB_MULDI3) += muldi3.o
 obj-$(CONFIG_GENERIC_LIB_CMPDI2) += cmpdi2.o
 obj-$(CONFIG_GENERIC_LIB_UCMPDI2) += ucmpdi2.o
 obj-$(CONFIG_OBJAGG) += objagg.o
-
-# pldmfw library
-obj-$(CONFIG_PLDMFW) += pldmfw/
 
 # KUnit tests
 CFLAGS_bitfield_kunit.o := $(DISABLE_STRUCTLEAK_PLUGIN)

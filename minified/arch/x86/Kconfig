@@ -2531,8 +2531,6 @@ config ARCH_HIBERNATION_HEADER
 
 source "kernel/power/Kconfig"
 
-source "drivers/acpi/Kconfig"
-
 config X86_APM_BOOT
 	def_bool y
 	depends on APM
@@ -2658,12 +2656,6 @@ config APM_ALLOW_INTS
 	  suspend, try setting this to Y.  Otherwise, say N.
 
 endif # APM
-
-source "drivers/cpufreq/Kconfig"
-
-source "drivers/cpuidle/Kconfig"
-
-source "drivers/idle/Kconfig"
 
 endmenu
 

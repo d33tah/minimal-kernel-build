@@ -674,10 +674,7 @@ endif
 ifeq ($(KBUILD_EXTMOD),)
 # Objects we will link into vmlinux / subdirs we need to visit
 core-y		:= init/ usr/ arch/$(SRCARCH)/
-drivers-y	:= drivers/ sound/
-drivers-$(CONFIG_SAMPLES) += samples/
-drivers-$(CONFIG_NET) += net/
-drivers-y	+= virt/
+drivers-y	:= drivers/
 libs-y		:= lib/
 endif # KBUILD_EXTMOD
 
@@ -1095,8 +1092,7 @@ export MODORDER := $(extmod_prefix)modules.order
 export MODULES_NSDEPS := $(extmod_prefix)modules.nsdeps
 
 ifeq ($(KBUILD_EXTMOD),)
-core-y			+= kernel/ certs/ mm/ fs/ ipc/ security/ crypto/
-core-$(CONFIG_BLOCK)	+= block/
+core-y			+= kernel/ mm/ fs/ security/
 
 vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, \
 		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \

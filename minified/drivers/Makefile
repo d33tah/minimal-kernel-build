@@ -59,9 +59,6 @@ obj-y				+= char/
 # iommu/ comes before gpu as gpu are using iommu controllers
 obj-y				+= iommu/
 
-# gpu/ comes after char for AGP vs DRM startup and after iommu
-obj-y				+= gpu/
-
 obj-$(CONFIG_CONNECTOR)		+= connector/
 
 # i810fb and intelfb depend on char/agp/
@@ -85,7 +82,6 @@ obj-$(CONFIG_SPI)		+= spi/
 obj-$(CONFIG_SPMI)		+= spmi/
 obj-$(CONFIG_HSI)		+= hsi/
 obj-$(CONFIG_SLIMBUS)		+= slimbus/
-obj-y				+= net/
 obj-$(CONFIG_ATM)		+= atm/
 obj-$(CONFIG_FUSION)		+= message/
 obj-y				+= firewire/
@@ -110,7 +106,7 @@ obj-$(CONFIG_SERIO)		+= input/serio/
 obj-$(CONFIG_GAMEPORT)		+= input/gameport/
 obj-$(CONFIG_INPUT)		+= input/
 obj-$(CONFIG_RTC_LIB)		+= rtc/
-obj-y				+= i2c/ i3c/ media/
+obj-y				+= i2c/ i3c/
 obj-$(CONFIG_PPS)		+= pps/
 obj-y				+= ptp/
 obj-$(CONFIG_W1)		+= w1/
@@ -148,7 +144,6 @@ obj-$(CONFIG_VHOST)		+= vhost/
 obj-$(CONFIG_VLYNQ)		+= vlynq/
 obj-$(CONFIG_GREYBUS)		+= greybus/
 obj-$(CONFIG_COMEDI)		+= comedi/
-obj-$(CONFIG_STAGING)		+= staging/
 obj-y				+= platform/
 
 obj-$(CONFIG_MAILBOX)		+= mailbox/

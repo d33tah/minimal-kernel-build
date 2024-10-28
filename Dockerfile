@@ -1,5 +1,5 @@
 # sudo docker buildx build . --output minified
-FROM python:3.10 as source
+FROM python:3.10 AS source
 RUN apt-get update && apt-get install strace bc bison flex -y && \
     wget -nv https://git.kernel.org/torvalds/t/linux-5.19-rc8.tar.gz -O- | tar zxf -
 ADD linux-genlist.py .

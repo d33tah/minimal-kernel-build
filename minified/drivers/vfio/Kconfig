@@ -48,5 +48,3 @@ source "drivers/vfio/platform/Kconfig"
 source "drivers/vfio/mdev/Kconfig"
 source "drivers/vfio/fsl-mc/Kconfig"
 endif
-
-source "virt/lib/Kconfig"

@@ -35,4 +35,10 @@ void show_mem(unsigned int filter, nodemask_t *nodemask)
 	printk("%lu pages RAM\n", total);
 	printk("%lu pages HighMem/MovableOnly\n", highmem);
 	printk("%lu pages reserved\n", reserved);
+#ifdef CONFIG_CMA
+	printk("%lu pages cma reserved\n", totalcma_pages);
+#endif
+#ifdef CONFIG_MEMORY_FAILURE
+	printk("%lu pages hwpoisoned\n", atomic_long_read(&num_poisoned_pages));
+#endif
 }

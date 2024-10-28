@@ -62,6 +62,9 @@
 unsigned long max_low_pfn_mapped;
 unsigned long max_pfn_mapped;
 
+#ifdef CONFIG_DMI
+RESERVE_BRK(dmi_alloc, 65536);
+#endif
 
 
 unsigned long _brk_start = (unsigned long)__brk_base;
@@ -104,6 +107,7 @@ static struct resource bss_resource = {
 };
 
 
+#ifdef CONFIG_X86_32
 /* CPU data as detected by the assembly code in head_32.S */
 struct cpuinfo_x86 new_cpu_data;
 
@@ -116,11 +120,25 @@ unsigned int def_to_bigsmp;
 struct apm_info apm_info;
 EXPORT_SYMBOL(apm_info);
 
+#if defined(CONFIG_X86_SPEEDSTEP_SMI) || \
+	defined(CONFIG_X86_SPEEDSTEP_SMI_MODULE)
 struct ist_info ist_info;
+EXPORT_SYMBOL(ist_info);
+#else
+struct ist_info ist_info;
+#endif
+
+#else
+struct cpuinfo_x86 boot_cpu_data __read_mostly;
+EXPORT_SYMBOL(boot_cpu_data);
+#endif
 
 
-
+#if !defined(CONFIG_X86_PAE) || defined(CONFIG_X86_64)
 __visible unsigned long mmu_cr4_features __ro_after_init;
+#else
+__visible unsigned long mmu_cr4_features __ro_after_init = X86_CR4_PAE;
+#endif
 
 /* Boot loader ID and version as integers, for the benefit of proc_dointvec */
 int bootloader_type, bootloader_version;
@@ -137,15 +155,38 @@ extern int root_mountflags;
 
 unsigned long saved_video_mode;
 
-#define RAMDISK_IMAGE_START_MASK 0x07FF
-#define RAMDISK_PROMPT_FLAG 0x8000
-#define RAMDISK_LOAD_FLAG 0x4000
+#define RAMDISK_IMAGE_START_MASK	0x07FF
+#define RAMDISK_PROMPT_FLAG		0x8000
+#define RAMDISK_LOAD_FLAG		0x4000
 
 static char __initdata command_line[COMMAND_LINE_SIZE];
+#ifdef CONFIG_CMDLINE_BOOL
+static char __initdata builtin_cmdline[COMMAND_LINE_SIZE] = CONFIG_CMDLINE;
+#endif
 
+#if defined(CONFIG_EDD) || defined(CONFIG_EDD_MODULE)
+struct edd edd;
+#ifdef CONFIG_EDD_MODULE
+EXPORT_SYMBOL(edd);
+#endif
+/**
+ * copy_edd() - Copy the BIOS EDD information
+ *              from boot_params into a safe place.
+ *
+ */
+static inline void __init copy_edd(void)
+{
+     memcpy(edd.mbr_signature, boot_params.edd_mbr_sig_buffer,
+	    sizeof(edd.mbr_signature));
+     memcpy(edd.edd_info, boot_params.eddbuf, sizeof(edd.edd_info));
+     edd.mbr_signature_nr = boot_params.edd_mbr_sig_buf_entries;
+     edd.edd_info_nr = boot_params.eddbuf_entries;
+}
+#else
 static inline void __init copy_edd(void)
 {
 }
+#endif
 
 void * __init extend_brk(size_t size, size_t align)
 {
@@ -166,9 +207,11 @@ void * __init extend_brk(size_t size, size_t align)
 	return ret;
 }
 
+#ifdef CONFIG_X86_32
 static void __init cleanup_highmap(void)
 {
 }
+#endif
 
 static void __init reserve_brk(void)
 {
@@ -183,12 +226,109 @@ static void __init reserve_brk(void)
 
 u64 relocated_ramdisk;
 
+#ifdef CONFIG_BLK_DEV_INITRD
+
+static u64 __init get_ramdisk_image(void)
+{
+	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
+
+	ramdisk_image |= (u64)boot_params.ext_ramdisk_image << 32;
+
+	if (ramdisk_image == 0)
+		ramdisk_image = phys_initrd_start;
+
+	return ramdisk_image;
+}
+static u64 __init get_ramdisk_size(void)
+{
+	u64 ramdisk_size = boot_params.hdr.ramdisk_size;
+
+	ramdisk_size |= (u64)boot_params.ext_ramdisk_size << 32;
+
+	if (ramdisk_size == 0)
+		ramdisk_size = phys_initrd_size;
+
+	return ramdisk_size;
+}
+
+static void __init relocate_initrd(void)
+{
+	/* Assume only end is not page aligned */
+	u64 ramdisk_image = get_ramdisk_image();
+	u64 ramdisk_size  = get_ramdisk_size();
+	u64 area_size     = PAGE_ALIGN(ramdisk_size);
+
+	/* We need to move the initrd down into directly mapped mem */
+	relocated_ramdisk = memblock_phys_alloc_range(area_size, PAGE_SIZE, 0,
+						      PFN_PHYS(max_pfn_mapped));
+	if (!relocated_ramdisk)
+		panic("Cannot find place for new RAMDISK of size %lld\n",
+		      ramdisk_size);
+
+	initrd_start = relocated_ramdisk + PAGE_OFFSET;
+	initrd_end   = initrd_start + ramdisk_size;
+	printk(KERN_INFO "Allocated new RAMDISK: [mem %#010llx-%#010llx]\n",
+	       relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
+
+	copy_from_early_mem((void *)initrd_start, ramdisk_image, ramdisk_size);
+
+	printk(KERN_INFO "Move RAMDISK from [mem %#010llx-%#010llx] to"
+		" [mem %#010llx-%#010llx]\n",
+		ramdisk_image, ramdisk_image + ramdisk_size - 1,
+		relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
+}
+
+static void __init early_reserve_initrd(void)
+{
+	/* Assume only end is not page aligned */
+	u64 ramdisk_image = get_ramdisk_image();
+	u64 ramdisk_size  = get_ramdisk_size();
+	u64 ramdisk_end   = PAGE_ALIGN(ramdisk_image + ramdisk_size);
+
+	if (!boot_params.hdr.type_of_loader ||
+	    !ramdisk_image || !ramdisk_size)
+		return;		/* No initrd provided by bootloader */
+
+	memblock_reserve(ramdisk_image, ramdisk_end - ramdisk_image);
+}
+
+static void __init reserve_initrd(void)
+{
+	/* Assume only end is not page aligned */
+	u64 ramdisk_image = get_ramdisk_image();
+	u64 ramdisk_size  = get_ramdisk_size();
+	u64 ramdisk_end   = PAGE_ALIGN(ramdisk_image + ramdisk_size);
+
+	if (!boot_params.hdr.type_of_loader ||
+	    !ramdisk_image || !ramdisk_size)
+		return;		/* No initrd provided by bootloader */
+
+	initrd_start = 0;
+
+	printk(KERN_INFO "RAMDISK: [mem %#010llx-%#010llx]\n", ramdisk_image,
+			ramdisk_end - 1);
+
+	if (pfn_range_is_mapped(PFN_DOWN(ramdisk_image),
+				PFN_DOWN(ramdisk_end))) {
+		/* All are mapped, easy case */
+		initrd_start = ramdisk_image + PAGE_OFFSET;
+		initrd_end = initrd_start + ramdisk_size;
+		return;
+	}
+
+	relocate_initrd();
+
+	memblock_phys_free(ramdisk_image, ramdisk_end - ramdisk_image);
+}
+
+#else
 static void __init early_reserve_initrd(void)
 {
 }
 static void __init reserve_initrd(void)
 {
 }
+#endif /* CONFIG_BLK_DEV_INITRD */
 
 static void __init parse_setup_data(void)
 {
@@ -267,7 +407,7 @@ static void __init memblock_x86_reserve_range_setup_data(void)
  */
 
 /* 16M alignment for crash kernel regions */
-#define CRASH_ALIGN SZ_16M
+#define CRASH_ALIGN		SZ_16M
 
 /*
  * Keep the crash kernel below this limit.
@@ -282,11 +422,58 @@ static void __init memblock_x86_reserve_range_setup_data(void)
  * no good way to detect the paging mode of the target kernel which will be
  * loaded for dumping.
  */
-#define CRASH_ADDR_LOW_MAX SZ_512M
-#define CRASH_ADDR_HIGH_MAX SZ_512M
+#ifdef CONFIG_X86_32
+# define CRASH_ADDR_LOW_MAX	SZ_512M
+# define CRASH_ADDR_HIGH_MAX	SZ_512M
+#else
+# define CRASH_ADDR_LOW_MAX	SZ_4G
+# define CRASH_ADDR_HIGH_MAX	SZ_64T
+#endif
 
 static int __init reserve_crashkernel_low(void)
 {
+#ifdef CONFIG_X86_64
+	unsigned long long base, low_base = 0, low_size = 0;
+	unsigned long low_mem_limit;
+	int ret;
+
+	low_mem_limit = min(memblock_phys_mem_size(), CRASH_ADDR_LOW_MAX);
+
+	/* crashkernel=Y,low */
+	ret = parse_crashkernel_low(boot_command_line, low_mem_limit, &low_size, &base);
+	if (ret) {
+		/*
+		 * two parts from kernel/dma/swiotlb.c:
+		 * -swiotlb size: user-specified with swiotlb= or default.
+		 *
+		 * -swiotlb overflow buffer: now hardcoded to 32k. We round it
+		 * to 8M for other buffers that may need to stay low too. Also
+		 * make sure we allocate enough extra low memory so that we
+		 * don't run out of DMA buffers for 32-bit devices.
+		 */
+		low_size = max(swiotlb_size_or_default() + (8UL << 20), 256UL << 20);
+	} else {
+		/* passed with crashkernel=0,low ? */
+		if (!low_size)
+			return 0;
+	}
+
+	low_base = memblock_phys_alloc_range(low_size, CRASH_ALIGN, 0, CRASH_ADDR_LOW_MAX);
+	if (!low_base) {
+		pr_err("Cannot reserve %ldMB crashkernel low memory, please try smaller size.\n",
+		       (unsigned long)(low_size >> 20));
+		return -ENOMEM;
+	}
+
+	pr_info("Reserving %ldMB of low memory at %ldMB for crashkernel (low RAM limit: %ldMB)\n",
+		(unsigned long)(low_size >> 20),
+		(unsigned long)(low_base >> 20),
+		(unsigned long)(low_mem_limit >> 20));
+
+	crashk_low_res.start = low_base;
+	crashk_low_res.end   = low_base + low_size - 1;
+	insert_resource(&iomem_resource, &crashk_low_res);
+#endif
 	return 0;
 }
 
@@ -400,6 +587,32 @@ void __init reserve_standard_io_resources(void)
 
 static bool __init snb_gfx_workaround_needed(void)
 {
+#ifdef CONFIG_PCI
+	int i;
+	u16 vendor, devid;
+	static const __initconst u16 snb_ids[] = {
+		0x0102,
+		0x0112,
+		0x0122,
+		0x0106,
+		0x0116,
+		0x0126,
+		0x010a,
+	};
+
+	/* Assume no if something weird is going on with PCI */
+	if (!early_pci_allowed())
+		return false;
+
+	vendor = read_pci_config_16(0, 2, 0, PCI_VENDOR_ID);
+	if (vendor != 0x8086)
+		return false;
+
+	devid = read_pci_config_16(0, 2, 0, PCI_DEVICE_ID);
+	for (i = 0; i < ARRAY_SIZE(snb_ids); i++)
+		if (devid == snb_ids[i])
+			return true;
+#endif
 
 	return false;
 }
@@ -552,9 +765,13 @@ static void __init x86_report_nx(void)
 		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
 		       "missing in CPU!\n");
 	} else {
+#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
+		printk(KERN_INFO "NX (Execute Disable) protection: active\n");
+#else
 		/* 32bit non-PAE kernel, NX cannot be used */
 		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
 		       "cannot be enabled: non-PAE kernel!\n");
+#endif
 	}
 }
 
@@ -573,6 +790,7 @@ static void __init x86_report_nx(void)
 
 void __init setup_arch(char **cmdline_p)
 {
+#ifdef CONFIG_X86_32
 	memcpy(&boot_cpu_data, &new_cpu_data, sizeof(new_cpu_data));
 
 	/*
@@ -594,6 +812,10 @@ void __init setup_arch(char **cmdline_p)
 	 * so proper operation is guaranteed.
 	 */
 	__flush_tlb_all();
+#else
+	printk(KERN_INFO "Command line: %s\n", boot_command_line);
+	boot_cpu_data.x86_phys_bits = MAX_PHYSMEM_BITS;
+#endif
 
 	/*
 	 * If we have OLPC OFW, we might end up relocating the fixmap due to
@@ -612,8 +834,10 @@ void __init setup_arch(char **cmdline_p)
 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
 	screen_info = boot_params.screen_info;
 	edid_info = boot_params.edid_info;
+#ifdef CONFIG_X86_32
 	apm_info.bios = boot_params.apm_bios_info;
 	ist_info = boot_params.ist_info;
+#endif
 	saved_video_mode = boot_params.hdr.vid_mode;
 	bootloader_type = boot_params.hdr.type_of_loader;
 	if ((bootloader_type >> 4) == 0xe) {
@@ -623,6 +847,19 @@ void __init setup_arch(char **cmdline_p)
 	bootloader_version  = bootloader_type & 0xf;
 	bootloader_version |= boot_params.hdr.ext_loader_ver << 4;
 
+#ifdef CONFIG_BLK_DEV_RAM
+	rd_image_start = boot_params.hdr.ram_size & RAMDISK_IMAGE_START_MASK;
+#endif
+#ifdef CONFIG_EFI
+	if (!strncmp((char *)&boot_params.efi_info.efi_loader_signature,
+		     EFI32_LOADER_SIGNATURE, 4)) {
+		set_bit(EFI_BOOT, &efi.flags);
+	} else if (!strncmp((char *)&boot_params.efi_info.efi_loader_signature,
+		     EFI64_LOADER_SIGNATURE, 4)) {
+		set_bit(EFI_BOOT, &efi.flags);
+		set_bit(EFI_64BIT, &efi.flags);
+	}
+#endif
 
 	x86_init.oem.arch_setup();
 
@@ -659,6 +896,18 @@ void __init setup_arch(char **cmdline_p)
 	bss_resource.start = __pa_symbol(__bss_start);
 	bss_resource.end = __pa_symbol(__bss_stop)-1;
 
+#ifdef CONFIG_CMDLINE_BOOL
+#ifdef CONFIG_CMDLINE_OVERRIDE
+	strscpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
+#else
+	if (builtin_cmdline[0]) {
+		/* append boot loader cmdline to builtin */
+		strlcat(builtin_cmdline, " ", COMMAND_LINE_SIZE);
+		strlcat(builtin_cmdline, boot_command_line, COMMAND_LINE_SIZE);
+		strscpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
+	}
+#endif
+#endif
 
 	strscpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
 	*cmdline_p = command_line;
@@ -675,10 +924,36 @@ void __init setup_arch(char **cmdline_p)
 	if (efi_enabled(EFI_BOOT))
 		efi_memblock_x86_reserve_range();
 
+#ifdef CONFIG_MEMORY_HOTPLUG
+	/*
+	 * Memory used by the kernel cannot be hot-removed because Linux
+	 * cannot migrate the kernel pages. When memory hotplug is
+	 * enabled, we should prevent memblock from allocating memory
+	 * for the kernel.
+	 *
+	 * ACPI SRAT records all hotpluggable memory ranges. But before
+	 * SRAT is parsed, we don't know about it.
+	 *
+	 * The kernel image is loaded into memory at very early time. We
+	 * cannot prevent this anyway. So on NUMA system, we set any
+	 * node the kernel resides in as un-hotpluggable.
+	 *
+	 * Since on modern servers, one node could have double-digit
+	 * gigabytes memory, we can assume the memory around the kernel
+	 * image is also un-hotpluggable. So before SRAT is parsed, just
+	 * allocate memory near the kernel image to try the best to keep
+	 * the kernel away from hotpluggable memory.
+	 */
+	if (movable_node_is_enabled())
+		memblock_set_bottom_up(true);
+#endif
 
 	x86_report_nx();
 
 	if (acpi_mps_check()) {
+#ifdef CONFIG_X86_LOCAL_APIC
+		disable_apic = 1;
+#endif
 		setup_clear_cpu_cap(X86_FEATURE_APIC);
 	}
 
@@ -707,6 +982,7 @@ void __init setup_arch(char **cmdline_p)
 
 	e820_add_kernel_range();
 	trim_bios_range();
+#ifdef CONFIG_X86_32
 	if (ppro_with_ram_bug()) {
 		e820__range_update(0x70000000ULL, 0x40000ULL, E820_TYPE_RAM,
 				  E820_TYPE_RESERVED);
@@ -714,6 +990,9 @@ void __init setup_arch(char **cmdline_p)
 		printk(KERN_INFO "fixed physical RAM map:\n");
 		e820__print_table("bad_ppro");
 	}
+#else
+	early_gart_iommu_check();
+#endif
 
 	/*
 	 * partially used pages are not usable - thus
@@ -745,8 +1024,21 @@ void __init setup_arch(char **cmdline_p)
 	 */
 	kernel_randomize_memory();
 
+#ifdef CONFIG_X86_32
 	/* max_low_pfn get updated here */
 	find_low_pfn_range();
+#else
+	check_x2apic();
+
+	/* How many end-of-memory variables you have, grandma! */
+	/* need this before calling reserve_initrd */
+	if (max_pfn > (1UL<<(32 - PAGE_SHIFT)))
+		max_low_pfn = e820__end_of_low_ram_pfn();
+	else
+		max_low_pfn = max_pfn;
+
+	high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
+#endif
 
 	/*
 	 * Find and reserve possible boot-time SMP configuration:
@@ -787,9 +1079,14 @@ void __init setup_arch(char **cmdline_p)
 	/* preallocate 4k for mptable mpc */
 	e820__memblock_alloc_reserved_mpc_new();
 
+#ifdef CONFIG_X86_CHECK_BIOS_CORRUPTION
+	setup_bios_corruption_check();
+#endif
 
+#ifdef CONFIG_X86_32
 	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
 			(max_pfn_mapped<<PAGE_SHIFT) - 1);
+#endif
 
 	/*
 	 * Find free memory for the real mode trampoline and place it there. If
@@ -828,6 +1125,10 @@ void __init setup_arch(char **cmdline_p)
 	 * NOTE: On x86-32, only from this point on, fixmaps are ready for use.
 	 */
 
+#ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
+	if (init_ohci1394_dma_early)
+		init_ohci1394_dma_on_all_controllers();
+#endif
 	/* Allocate bigger log buffer */
 	setup_log_buf(1);
 
@@ -929,8 +1230,12 @@ void __init setup_arch(char **cmdline_p)
 
 	e820__setup_pci_gap();
 
+#ifdef CONFIG_VT
+#if defined(CONFIG_VGA_CONSOLE)
 	if (!efi_enabled(EFI_BOOT) || (efi_mem_type(0xa0000) != EFI_CONVENTIONAL_MEMORY))
 		conswitchp = &vga_con;
+#endif
+#endif
 	x86_init.oem.banner();
 
 	x86_init.timers.wallclock_init();
@@ -947,10 +1252,15 @@ void __init setup_arch(char **cmdline_p)
 
 	register_refined_jiffies(CLOCK_TICK_RATE);
 
+#ifdef CONFIG_EFI
+	if (efi_enabled(EFI_BOOT))
+		efi_apply_memmap_quirks();
+#endif
 
 	unwind_init();
 }
 
+#ifdef CONFIG_X86_32
 
 static struct resource video_ram_resource = {
 	.name	= "Video RAM area",
@@ -965,6 +1275,7 @@ void __init i386_reserve_resources(void)
 	reserve_standard_io_resources();
 }
 
+#endif /* CONFIG_X86_32 */
 
 static struct notifier_block kernel_offset_notifier = {
 	.notifier_call = dump_kernel_offset

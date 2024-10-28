@@ -30,6 +30,7 @@ EXPORT_SYMBOL(__clzsi2);
 
 int __weak __clzdi2(long val);
 int __weak __ctzdi2(long val);
+#if BITS_PER_LONG == 32
 
 int __weak __clzdi2(long val)
 {
@@ -43,3 +44,20 @@ int __weak __ctzdi2(long val)
 }
 EXPORT_SYMBOL(__ctzdi2);
 
+#elif BITS_PER_LONG == 64
+
+int __weak __clzdi2(long val)
+{
+	return 64 - fls64((u64)val);
+}
+EXPORT_SYMBOL(__clzdi2);
+
+int __weak __ctzdi2(long val)
+{
+	return __ffs64((u64)val);
+}
+EXPORT_SYMBOL(__ctzdi2);
+
+#else
+#error BITS_PER_LONG not 32 or 64
+#endif

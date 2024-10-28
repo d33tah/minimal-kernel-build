@@ -49,10 +49,15 @@ static unsigned long stack_maxrandom_size(unsigned long task_size)
 	return max;
 }
 
-#define mmap32_rnd_bits mmap_rnd_bits
-#define mmap64_rnd_bits mmap_rnd_bits
+#ifdef CONFIG_COMPAT
+# define mmap32_rnd_bits  mmap_rnd_compat_bits
+# define mmap64_rnd_bits  mmap_rnd_bits
+#else
+# define mmap32_rnd_bits  mmap_rnd_bits
+# define mmap64_rnd_bits  mmap_rnd_bits
+#endif
 
-#define SIZE_128M (128 * 1024 * 1024UL)
+#define SIZE_128M    (128 * 1024 * 1024UL)
 
 static int mmap_is_legacy(void)
 {
@@ -132,12 +137,29 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 			arch_rnd(mmap64_rnd_bits), task_size_64bit(0),
 			rlim_stack);
 
+#ifdef CONFIG_HAVE_ARCH_COMPAT_MMAP_BASES
+	/*
+	 * The mmap syscall mapping base decision depends solely on the
+	 * syscall type (64-bit or compat). This applies for 64bit
+	 * applications and 32bit applications. The 64bit syscall uses
+	 * mmap_base, the compat syscall uses mmap_compat_base.
+	 */
+	arch_pick_mmap_base(&mm->mmap_compat_base, &mm->mmap_compat_legacy_base,
+			arch_rnd(mmap32_rnd_bits), task_size_32bit(),
+			rlim_stack);
+#endif
 }
 
 unsigned long get_mmap_base(int is_legacy)
 {
 	struct mm_struct *mm = current->mm;
 
+#ifdef CONFIG_HAVE_ARCH_COMPAT_MMAP_BASES
+	if (in_32bit_syscall()) {
+		return is_legacy ? mm->mmap_compat_legacy_base
+				 : mm->mmap_compat_base;
+	}
+#endif
 	return is_legacy ? mm->mmap_legacy_base : mm->mmap_base;
 }
 

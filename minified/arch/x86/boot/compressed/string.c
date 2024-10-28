@@ -10,6 +10,7 @@
 
 #include "../string.c"
 
+#ifdef CONFIG_X86_32
 static void *____memcpy(void *dest, const void *src, size_t n)
 {
 	int d0, d1, d2;
@@ -23,6 +24,21 @@ static void *____memcpy(void *dest, const void *src, size_t n)
 
 	return dest;
 }
+#else
+static void *____memcpy(void *dest, const void *src, size_t n)
+{
+	long d0, d1, d2;
+	asm volatile(
+		"rep ; movsq\n\t"
+		"movq %4,%%rcx\n\t"
+		"rep ; movsb\n\t"
+		: "=&c" (d0), "=&D" (d1), "=&S" (d2)
+		: "0" (n >> 3), "g" (n & 7), "1" (dest), "2" (src)
+		: "memory");
+
+	return dest;
+}
+#endif
 
 void *memset(void *s, int c, size_t n)
 {
@@ -58,3 +74,8 @@ void *memcpy(void *dest, const void *src, size_t n)
 	return ____memcpy(dest, src, n);
 }
 
+#ifdef CONFIG_KASAN
+extern void *__memset(void *s, int c, size_t n) __alias(memset);
+extern void *__memmove(void *dest, const void *src, size_t n) __alias(memmove);
+extern void *__memcpy(void *dest, const void *src, size_t n) __alias(memcpy);
+#endif

@@ -27,7 +27,7 @@
 unsigned int sysctl_nr_open __read_mostly = 1024*1024;
 unsigned int sysctl_nr_open_min = BITS_PER_LONG;
 /* our min() is unusable in constant expressions ;-/ */
-#define __const_min(x,y) ((x) < (y) ? (x) : (y))
+#define __const_min(x, y) ((x) < (y) ? (x) : (y))
 unsigned int sysctl_nr_open_max =
 	__const_min(INT_MAX, ~(size_t)0/sizeof(void *)) & -BITS_PER_LONG;
 
@@ -43,8 +43,8 @@ static void free_fdtable_rcu(struct rcu_head *rcu)
 	__free_fdtable(container_of(rcu, struct fdtable, rcu));
 }
 
-#define BITBIT_NR(nr) BITS_TO_LONGS(BITS_TO_LONGS(nr))
-#define BITBIT_SIZE(nr) (BITBIT_NR(nr) * sizeof(long))
+#define BITBIT_NR(nr)	BITS_TO_LONGS(BITS_TO_LONGS(nr))
+#define BITBIT_SIZE(nr)	(BITBIT_NR(nr) * sizeof(long))
 
 /*
  * Copy 'count' fd bits from the old table to the new table and clear the extra
@@ -541,11 +541,13 @@ repeat:
 	else
 		__clear_close_on_exec(fd, fdt);
 	error = fd;
+#if 1
 	/* Sanity check */
 	if (rcu_access_pointer(fdt->fd[fd]) != NULL) {
 		printk(KERN_WARNING "alloc_fd: slot %d not NULL!\n", fd);
 		rcu_assign_pointer(fdt->fd[fd], NULL);
 	}
+#endif
 
 out:
 	spin_unlock(&files->file_lock);

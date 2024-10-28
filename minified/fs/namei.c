@@ -123,7 +123,7 @@
  * PATH_MAX includes the nul terminator --RR.
  */
 
-#define EMBEDDED_NAME_MAX (PATH_MAX - offsetof(struct filename, iname))
+#define EMBEDDED_NAME_MAX	(PATH_MAX - offsetof(struct filename, iname))
 
 struct filename *
 getname_flags(const char __user *filename, int flags, int *empty)
@@ -290,6 +290,28 @@ void putname(struct filename *name)
 static int check_acl(struct user_namespace *mnt_userns,
 		     struct inode *inode, int mask)
 {
+#ifdef CONFIG_FS_POSIX_ACL
+	struct posix_acl *acl;
+
+	if (mask & MAY_NOT_BLOCK) {
+		acl = get_cached_acl_rcu(inode, ACL_TYPE_ACCESS);
+	        if (!acl)
+	                return -EAGAIN;
+		/* no ->get_acl() calls in RCU mode... */
+		if (is_uncached_acl(acl))
+			return -ECHILD;
+	        return posix_acl_permission(mnt_userns, inode, acl, mask);
+	}
+
+	acl = get_acl(inode, ACL_TYPE_ACCESS);
+	if (IS_ERR(acl))
+		return PTR_ERR(acl);
+	if (acl) {
+	        int error = posix_acl_permission(mnt_userns, inode, acl, mask);
+	        posix_acl_release(acl);
+	        return error;
+	}
+#endif
 
 	return -EAGAIN;
 }
@@ -997,6 +1019,55 @@ static int sysctl_protected_hardlinks __read_mostly;
 static int sysctl_protected_fifos __read_mostly;
 static int sysctl_protected_regular __read_mostly;
 
+#ifdef CONFIG_SYSCTL
+static struct ctl_table namei_sysctls[] = {
+	{
+		.procname	= "protected_symlinks",
+		.data		= &sysctl_protected_symlinks,
+		.maxlen		= sizeof(int),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec_minmax,
+		.extra1		= SYSCTL_ZERO,
+		.extra2		= SYSCTL_ONE,
+	},
+	{
+		.procname	= "protected_hardlinks",
+		.data		= &sysctl_protected_hardlinks,
+		.maxlen		= sizeof(int),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec_minmax,
+		.extra1		= SYSCTL_ZERO,
+		.extra2		= SYSCTL_ONE,
+	},
+	{
+		.procname	= "protected_fifos",
+		.data		= &sysctl_protected_fifos,
+		.maxlen		= sizeof(int),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec_minmax,
+		.extra1		= SYSCTL_ZERO,
+		.extra2		= SYSCTL_TWO,
+	},
+	{
+		.procname	= "protected_regular",
+		.data		= &sysctl_protected_regular,
+		.maxlen		= sizeof(int),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec_minmax,
+		.extra1		= SYSCTL_ZERO,
+		.extra2		= SYSCTL_TWO,
+	},
+	{ }
+};
+
+static int __init init_fs_namei_sysctls(void)
+{
+	register_sysctl_init("fs", namei_sysctls);
+	return 0;
+}
+fs_initcall(init_fs_namei_sysctls);
+
+#endif /* CONFIG_SYSCTL */
 
 /**
  * may_follow_link - Check symlink following for unsafe situations
@@ -1966,9 +2037,63 @@ static const char *walk_component(struct nameidata *nd, int flags)
  *   the final mask". Again, that could be replaced with a
  *   efficient population count instruction or similar.
  */
+#ifdef CONFIG_DCACHE_WORD_ACCESS
 
 #include <asm/word-at-a-time.h>
 
+#ifdef HASH_MIX
+
+/* Architecture provides HASH_MIX and fold_hash() in <asm/hash.h> */
+
+#elif defined(CONFIG_64BIT)
+/*
+ * Register pressure in the mixing function is an issue, particularly
+ * on 32-bit x86, but almost any function requires one state value and
+ * one temporary.  Instead, use a function designed for two state values
+ * and no temporaries.
+ *
+ * This function cannot create a collision in only two iterations, so
+ * we have two iterations to achieve avalanche.  In those two iterations,
+ * we have six layers of mixing, which is enough to spread one bit's
+ * influence out to 2^6 = 64 state bits.
+ *
+ * Rotate constants are scored by considering either 64 one-bit input
+ * deltas or 64*63/2 = 2016 two-bit input deltas, and finding the
+ * probability of that delta causing a change to each of the 128 output
+ * bits, using a sample of random initial states.
+ *
+ * The Shannon entropy of the computed probabilities is then summed
+ * to produce a score.  Ideally, any input change has a 50% chance of
+ * toggling any given output bit.
+ *
+ * Mixing scores (in bits) for (12,45):
+ * Input delta: 1-bit      2-bit
+ * 1 round:     713.3    42542.6
+ * 2 rounds:   2753.7   140389.8
+ * 3 rounds:   5954.1   233458.2
+ * 4 rounds:   7862.6   256672.2
+ * Perfect:    8192     258048
+ *            (64*128) (64*63/2 * 128)
+ */
+#define HASH_MIX(x, y, a)	\
+	(	x ^= (a),	\
+	y ^= x,	x = rol64(x,12),\
+	x += y,	y = rol64(y,45),\
+	y *= 9			)
+
+/*
+ * Fold two longs into one 32-bit hash value.  This must be fast, but
+ * latency isn't quite as critical, as there is a fair bit of additional
+ * work done before the hash value is used.
+ */
+static inline unsigned int fold_hash(unsigned long x, unsigned long y)
+{
+	y ^= x * GOLDEN_RATIO_64;
+	y *= GOLDEN_RATIO_64;
+	return y >> 32;
+}
+
+#else	/* 32-bit case */
 
 /*
  * Mixing scores (in bits) for (7,20):
@@ -1980,7 +2105,11 @@ static const char *walk_component(struct nameidata *nd, int flags)
  * Perfect:    2048      31744
  *            (32*64)   (32*31/2 * 64)
  */
-#define HASH_MIX(x,y,a) ( x ^= (a), y ^= x, x = rol32(x, 7), x += y, y = rol32(y,20), y *= 9 )
+#define HASH_MIX(x, y, a)	\
+	(	x ^= (a),	\
+	y ^= x,	x = rol32(x, 7),\
+	x += y,	y = rol32(y,20),\
+	y *= 9			)
 
 static inline unsigned int fold_hash(unsigned long x, unsigned long y)
 {
@@ -1988,6 +2117,7 @@ static inline unsigned int fold_hash(unsigned long x, unsigned long y)
 	return __hash_32(y ^ __hash_32(x));
 }
 
+#endif
 
 /*
  * Return the hash of a string of known length.  This is carfully
@@ -2070,6 +2200,53 @@ inside:
 	return hashlen_create(fold_hash(x, y), len + find_zero(mask));
 }
 
+#else	/* !CONFIG_DCACHE_WORD_ACCESS: Slow, byte-at-a-time version */
+
+/* Return the hash of a string of known length */
+unsigned int full_name_hash(const void *salt, const char *name, unsigned int len)
+{
+	unsigned long hash = init_name_hash(salt);
+	while (len--)
+		hash = partial_name_hash((unsigned char)*name++, hash);
+	return end_name_hash(hash);
+}
+EXPORT_SYMBOL(full_name_hash);
+
+/* Return the "hash_len" (hash and length) of a null-terminated string */
+u64 hashlen_string(const void *salt, const char *name)
+{
+	unsigned long hash = init_name_hash(salt);
+	unsigned long len = 0, c;
+
+	c = (unsigned char)*name;
+	while (c) {
+		len++;
+		hash = partial_name_hash(c, hash);
+		c = (unsigned char)name[len];
+	}
+	return hashlen_create(end_name_hash(hash), len);
+}
+EXPORT_SYMBOL(hashlen_string);
+
+/*
+ * We know there's a real path component here of at least
+ * one character.
+ */
+static inline u64 hash_name(const void *salt, const char *name)
+{
+	unsigned long hash = init_name_hash(salt);
+	unsigned long len = 0, c;
+
+	c = (unsigned char)*name;
+	do {
+		len++;
+		hash = partial_name_hash(c, hash);
+		c = (unsigned char)name[len];
+	} while (c && c != '/');
+	return hashlen_create(end_name_hash(hash), len);
+}
+
+#endif
 
 /*
  * Name resolution.
@@ -2684,6 +2861,7 @@ struct dentry *lookup_positive_unlocked(const char *name,
 }
 EXPORT_SYMBOL(lookup_positive_unlocked);
 
+#ifdef CONFIG_UNIX98_PTYS
 int path_pts(struct path *path)
 {
 	/* Find something mounted on "pts" in the same directory as
@@ -2708,6 +2886,7 @@ int path_pts(struct path *path)
 	follow_down(path);
 	return 0;
 }
+#endif
 
 int user_path_at_empty(int dfd, const char __user *name, unsigned flags,
 		 struct path *path, int *empty)

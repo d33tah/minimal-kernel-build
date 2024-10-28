@@ -48,6 +48,14 @@ ktime_t tick_next_period;
  *    procedure also covers cpu hotplug.
  */
 int tick_do_timer_cpu __read_mostly = TICK_DO_TIMER_BOOT;
+#ifdef CONFIG_NO_HZ_FULL
+/*
+ * tick_do_timer_boot_cpu indicates the boot CPU temporarily owns
+ * tick_do_timer_cpu and it should be taken over by an eligible secondary
+ * when one comes online.
+ */
+static int tick_do_timer_boot_cpu __read_mostly = -1;
+#endif
 
 /*
  * Debugging: see timer_list.c
@@ -103,6 +111,15 @@ void tick_handle_periodic(struct clock_event_device *dev)
 
 	tick_periodic(cpu);
 
+#if defined(CONFIG_HIGH_RES_TIMERS) || defined(CONFIG_NO_HZ_COMMON)
+	/*
+	 * The cpu might have transitioned to HIGHRES or NOHZ mode via
+	 * update_process_times() -> run_local_timers() ->
+	 * hrtimer_run_queues().
+	 */
+	if (dev->event_handler != tick_handle_periodic)
+		return;
+#endif
 
 	if (!clockevent_state_oneshot(dev))
 		return;
@@ -162,6 +179,25 @@ void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 	}
 }
 
+#ifdef CONFIG_NO_HZ_FULL
+static void giveup_do_timer(void *info)
+{
+	int cpu = *(unsigned int *)info;
+
+	WARN_ON(tick_do_timer_cpu != smp_processor_id());
+
+	tick_do_timer_cpu = cpu;
+}
+
+static void tick_take_do_timer_from_boot(void)
+{
+	int cpu = smp_processor_id();
+	int from = tick_do_timer_boot_cpu;
+
+	if (from >= 0 && from != cpu)
+		smp_call_function_single(from, giveup_do_timer, &cpu, 1);
+}
+#endif
 
 /*
  * Setup the tick device
@@ -185,6 +221,22 @@ static void tick_setup_device(struct tick_device *td,
 			tick_do_timer_cpu = cpu;
 
 			tick_next_period = ktime_get();
+#ifdef CONFIG_NO_HZ_FULL
+			/*
+			 * The boot CPU may be nohz_full, in which case set
+			 * tick_do_timer_boot_cpu so the first housekeeping
+			 * secondary that comes up will take do_timer from
+			 * us.
+			 */
+			if (tick_nohz_full_cpu(cpu))
+				tick_do_timer_boot_cpu = cpu;
+
+		} else if (tick_do_timer_boot_cpu != -1 &&
+						!tick_nohz_full_cpu(cpu)) {
+			tick_take_do_timer_from_boot();
+			tick_do_timer_boot_cpu = -1;
+			WARN_ON(tick_do_timer_cpu != cpu);
+#endif
 		}
 
 		/*
@@ -346,6 +398,44 @@ int tick_broadcast_oneshot_control(enum tick_broadcast_state state)
 }
 EXPORT_SYMBOL_GPL(tick_broadcast_oneshot_control);
 
+#ifdef CONFIG_HOTPLUG_CPU
+/*
+ * Transfer the do_timer job away from a dying cpu.
+ *
+ * Called with interrupts disabled. No locking required. If
+ * tick_do_timer_cpu is owned by this cpu, nothing can change it.
+ */
+void tick_handover_do_timer(void)
+{
+	if (tick_do_timer_cpu == smp_processor_id())
+		tick_do_timer_cpu = cpumask_first(cpu_online_mask);
+}
+
+/*
+ * Shutdown an event device on a given cpu:
+ *
+ * This is called on a life CPU, when a CPU is dead. So we cannot
+ * access the hardware device itself.
+ * We just set the mode and remove it from the lists.
+ */
+void tick_shutdown(unsigned int cpu)
+{
+	struct tick_device *td = &per_cpu(tick_cpu_device, cpu);
+	struct clock_event_device *dev = td->evtdev;
+
+	td->mode = TICKDEV_MODE_PERIODIC;
+	if (dev) {
+		/*
+		 * Prevent that the clock events layer tries to call
+		 * the set mode function!
+		 */
+		clockevent_set_state(dev, CLOCK_EVT_STATE_DETACHED);
+		clockevents_exchange_device(dev, NULL);
+		dev->event_handler = clockevents_handle_noop;
+		td->evtdev = NULL;
+	}
+}
+#endif
 
 /**
  * tick_suspend_local - Suspend the local tick device
@@ -418,6 +508,66 @@ void tick_resume(void)
 	tick_resume_local();
 }
 
+#ifdef CONFIG_SUSPEND
+static DEFINE_RAW_SPINLOCK(tick_freeze_lock);
+static unsigned int tick_freeze_depth;
+
+/**
+ * tick_freeze - Suspend the local tick and (possibly) timekeeping.
+ *
+ * Check if this is the last online CPU executing the function and if so,
+ * suspend timekeeping.  Otherwise suspend the local tick.
+ *
+ * Call with interrupts disabled.  Must be balanced with %tick_unfreeze().
+ * Interrupts must not be enabled before the subsequent %tick_unfreeze().
+ */
+void tick_freeze(void)
+{
+	raw_spin_lock(&tick_freeze_lock);
+
+	tick_freeze_depth++;
+	if (tick_freeze_depth == num_online_cpus()) {
+		trace_suspend_resume(TPS("timekeeping_freeze"),
+				     smp_processor_id(), true);
+		system_state = SYSTEM_SUSPEND;
+		sched_clock_suspend();
+		timekeeping_suspend();
+	} else {
+		tick_suspend_local();
+	}
+
+	raw_spin_unlock(&tick_freeze_lock);
+}
+
+/**
+ * tick_unfreeze - Resume the local tick and (possibly) timekeeping.
+ *
+ * Check if this is the first CPU executing the function and if so, resume
+ * timekeeping.  Otherwise resume the local tick.
+ *
+ * Call with interrupts disabled.  Must be balanced with %tick_freeze().
+ * Interrupts must not be enabled after the preceding %tick_freeze().
+ */
+void tick_unfreeze(void)
+{
+	raw_spin_lock(&tick_freeze_lock);
+
+	if (tick_freeze_depth == num_online_cpus()) {
+		timekeeping_resume();
+		sched_clock_resume();
+		system_state = SYSTEM_RUNNING;
+		trace_suspend_resume(TPS("timekeeping_freeze"),
+				     smp_processor_id(), false);
+	} else {
+		touch_softlockup_watchdog();
+		tick_resume_local();
+	}
+
+	tick_freeze_depth--;
+
+	raw_spin_unlock(&tick_freeze_lock);
+}
+#endif /* CONFIG_SUSPEND */
 
 /**
  * tick_init - initialize the tick control

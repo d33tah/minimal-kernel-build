@@ -29,12 +29,24 @@
 #include <linux/sched/mm.h>
 #include <linux/swiotlb.h>
 #include <linux/sysfs.h>
-#include <linux/dma-map-ops.h>
+#include <linux/dma-map-ops.h> /* for dma_default_coherent */
 
 #include "base.h"
 #include "physical_location.h"
 #include "power/power.h"
 
+#ifdef CONFIG_SYSFS_DEPRECATED
+#ifdef CONFIG_SYSFS_DEPRECATED_V2
+long sysfs_deprecated = 1;
+#else
+long sysfs_deprecated = 0;
+#endif
+static int __init sysfs_deprecated_setup(char *arg)
+{
+	return kstrtol(arg, 10, &sysfs_deprecated);
+}
+early_param("sysfs.deprecated", sysfs_deprecated_setup);
+#endif
 
 /* Device links support. */
 static LIST_HEAD(deferred_sync);
@@ -167,6 +179,7 @@ void fw_devlink_purge_absent_suppliers(struct fwnode_handle *fwnode)
 }
 EXPORT_SYMBOL_GPL(fw_devlink_purge_absent_suppliers);
 
+#ifdef CONFIG_SRCU
 static DEFINE_MUTEX(device_links_lock);
 DEFINE_STATIC_SRCU(device_links_srcu);
 
@@ -205,6 +218,47 @@ static void device_link_remove_from_lists(struct device_link *link)
 	list_del_rcu(&link->s_node);
 	list_del_rcu(&link->c_node);
 }
+#else /* !CONFIG_SRCU */
+static DECLARE_RWSEM(device_links_lock);
+
+static inline void device_links_write_lock(void)
+{
+	down_write(&device_links_lock);
+}
+
+static inline void device_links_write_unlock(void)
+{
+	up_write(&device_links_lock);
+}
+
+int device_links_read_lock(void)
+{
+	down_read(&device_links_lock);
+	return 0;
+}
+
+void device_links_read_unlock(int not_used)
+{
+	up_read(&device_links_lock);
+}
+
+#ifdef CONFIG_DEBUG_LOCK_ALLOC
+int device_links_read_lock_held(void)
+{
+	return lockdep_is_held(&device_links_lock);
+}
+#endif
+
+static inline void device_link_synchronize_removal(void)
+{
+}
+
+static void device_link_remove_from_lists(struct device_link *link)
+{
+	list_del(&link->s_node);
+	list_del(&link->c_node);
+}
+#endif /* !CONFIG_SRCU */
 
 static bool device_is_ancestor(struct device *dev, struct device *target)
 {
@@ -345,7 +399,7 @@ void device_pm_move_to_tail(struct device *dev)
 	device_links_read_unlock(idx);
 }
 
-#define to_devlink(dev) container_of((dev), struct device_link, link_dev)
+#define to_devlink(dev)	container_of((dev), struct device_link, link_dev)
 
 static ssize_t status_show(struct device *dev,
 			   struct device_attribute *attr, char *buf)
@@ -574,9 +628,14 @@ static int __init devlink_class_init(void)
 }
 postcore_initcall(devlink_class_init);
 
-#define DL_MANAGED_LINK_FLAGS (DL_FLAG_AUTOREMOVE_CONSUMER | DL_FLAG_AUTOREMOVE_SUPPLIER | DL_FLAG_AUTOPROBE_CONSUMER | DL_FLAG_SYNC_STATE_ONLY | DL_FLAG_INFERRED)
+#define DL_MANAGED_LINK_FLAGS (DL_FLAG_AUTOREMOVE_CONSUMER | \
+			       DL_FLAG_AUTOREMOVE_SUPPLIER | \
+			       DL_FLAG_AUTOPROBE_CONSUMER  | \
+			       DL_FLAG_SYNC_STATE_ONLY | \
+			       DL_FLAG_INFERRED)
 
-#define DL_ADD_VALID_FLAGS (DL_MANAGED_LINK_FLAGS | DL_FLAG_STATELESS | DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE)
+#define DL_ADD_VALID_FLAGS (DL_MANAGED_LINK_FLAGS | DL_FLAG_STATELESS | \
+			    DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE)
 
 /**
  * device_link_add - Create a link between two devices.
@@ -1507,9 +1566,12 @@ static void device_links_purge(struct device *dev)
 	device_links_write_unlock();
 }
 
-#define FW_DEVLINK_FLAGS_PERMISSIVE (DL_FLAG_INFERRED | DL_FLAG_SYNC_STATE_ONLY)
-#define FW_DEVLINK_FLAGS_ON (DL_FLAG_INFERRED | DL_FLAG_AUTOPROBE_CONSUMER)
-#define FW_DEVLINK_FLAGS_RPM (FW_DEVLINK_FLAGS_ON | DL_FLAG_PM_RUNTIME)
+#define FW_DEVLINK_FLAGS_PERMISSIVE	(DL_FLAG_INFERRED | \
+					 DL_FLAG_SYNC_STATE_ONLY)
+#define FW_DEVLINK_FLAGS_ON		(DL_FLAG_INFERRED | \
+					 DL_FLAG_AUTOPROBE_CONSUMER)
+#define FW_DEVLINK_FLAGS_RPM		(FW_DEVLINK_FLAGS_ON | \
+					 DL_FLAG_PM_RUNTIME)
 
 static u32 fw_devlink_flags = FW_DEVLINK_FLAGS_ON;
 static int __init fw_devlink_setup(char *arg)
@@ -1977,10 +2039,17 @@ int lock_device_hotplug_sysfs(void)
 	return restart_syscall();
 }
 
+#ifdef CONFIG_BLOCK
+static inline int device_is_not_partition(struct device *dev)
+{
+	return !(dev->type == &part_type);
+}
+#else
 static inline int device_is_not_partition(struct device *dev)
 {
 	return 1;
 }
+#endif
 
 static void device_platform_notify(struct device *dev)
 {
@@ -2830,6 +2899,14 @@ void device_initialize(struct device *dev)
 	INIT_LIST_HEAD(&dev->links.suppliers);
 	INIT_LIST_HEAD(&dev->links.defer_sync);
 	dev->links.status = DL_DEV_NO_DRIVER;
+#if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
+    defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
+    defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
+	dev->dma_coherent = dma_default_coherent;
+#endif
+#ifdef CONFIG_SWIOTLB
+	dev->dma_io_tlb_mem = &io_tlb_default_mem;
+#endif
 }
 EXPORT_SYMBOL_GPL(device_initialize);
 
@@ -2903,6 +2980,14 @@ static struct kobject *get_device_parent(struct device *dev,
 		struct kobject *parent_kobj;
 		struct kobject *k;
 
+#ifdef CONFIG_BLOCK
+		/* block disks show up in /sys/block */
+		if (sysfs_deprecated && dev->class == &block_class) {
+			if (parent && parent->class == &block_class)
+				return &parent->kobj;
+			return &block_class.p->subsys.kobj;
+		}
+#endif
 
 		/*
 		 * If we have no parent, we live in "virtual".
@@ -3075,6 +3160,11 @@ static int device_add_class_symlinks(struct device *dev)
 			goto out_subsys;
 	}
 
+#ifdef CONFIG_BLOCK
+	/* /sys/block has directories and does not need symlinks */
+	if (sysfs_deprecated && dev->class == &block_class)
+		return 0;
+#endif
 
 	/* link in the class directory pointing to the device */
 	error = sysfs_create_link(&dev->class->p->subsys.kobj,
@@ -3105,6 +3195,10 @@ static void device_remove_class_symlinks(struct device *dev)
 	if (dev->parent && device_is_not_partition(dev))
 		sysfs_remove_link(&dev->kobj, "device");
 	sysfs_remove_link(&dev->kobj, "subsystem");
+#ifdef CONFIG_BLOCK
+	if (sysfs_deprecated && dev->class == &block_class)
+		return;
+#endif
 	sysfs_delete_link(&dev->class->p->subsys.kobj, &dev->kobj, dev_name(dev));
 }
 
@@ -3916,6 +4010,18 @@ struct device *__root_device_register(const char *name, struct module *owner)
 		return ERR_PTR(err);
 	}
 
+#ifdef CONFIG_MODULES	/* gotta find a "cleaner" way to do this */
+	if (owner) {
+		struct module_kobject *mk = &owner->mkobj;
+
+		err = sysfs_create_link(&root->dev.kobj, &mk->kobj, "module");
+		if (err) {
+			device_unregister(&root->dev);
+			return ERR_PTR(err);
+		}
+		root->owner = owner;
+	}
+#endif
 
 	return &root->dev;
 }
@@ -4368,6 +4474,10 @@ int device_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid)
 	if (error)
 		goto out;
 
+#ifdef CONFIG_BLOCK
+	if (sysfs_deprecated && dev->class == &block_class)
+		goto out;
+#endif
 
 	/*
 	 * Change the owner of the symlink located in the class directory of
@@ -4462,6 +4572,7 @@ void device_shutdown(void)
  * Device logging functions
  */
 
+#ifdef CONFIG_PRINTK
 static void
 set_dev_info(const struct device *dev, struct dev_printk_info *dev_info)
 {
@@ -4559,7 +4670,22 @@ void _dev_printk(const char *level, const struct device *dev,
 }
 EXPORT_SYMBOL(_dev_printk);
 
-#define define_dev_printk_level(func,kern_level) void func(const struct device *dev, const char *fmt, ...) { struct va_format vaf; va_list args; va_start(args, fmt); vaf.fmt = fmt; vaf.va = &args; __dev_printk(kern_level, dev, &vaf); va_end(args); } EXPORT_SYMBOL(func);
+#define define_dev_printk_level(func, kern_level)		\
+void func(const struct device *dev, const char *fmt, ...)	\
+{								\
+	struct va_format vaf;					\
+	va_list args;						\
+								\
+	va_start(args, fmt);					\
+								\
+	vaf.fmt = fmt;						\
+	vaf.va = &args;						\
+								\
+	__dev_printk(kern_level, dev, &vaf);			\
+								\
+	va_end(args);						\
+}								\
+EXPORT_SYMBOL(func);
 
 define_dev_printk_level(_dev_emerg, KERN_EMERG);
 define_dev_printk_level(_dev_alert, KERN_ALERT);
@@ -4569,6 +4695,7 @@ define_dev_printk_level(_dev_warn, KERN_WARNING);
 define_dev_printk_level(_dev_notice, KERN_NOTICE);
 define_dev_printk_level(_dev_info, KERN_INFO);
 
+#endif
 
 /**
  * dev_err_probe - probe error check and log helper

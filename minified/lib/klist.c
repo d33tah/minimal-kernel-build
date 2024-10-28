@@ -41,8 +41,8 @@
  * Use the lowest bit of n_klist to mark deleted nodes and exclude
  * dead ones from iteration.
  */
-#define KNODE_DEAD 1LU
-#define KNODE_KLIST_MASK ~KNODE_DEAD
+#define KNODE_DEAD		1LU
+#define KNODE_KLIST_MASK	~KNODE_DEAD
 
 static struct klist *knode_klist(struct klist_node *knode)
 {

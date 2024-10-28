@@ -48,10 +48,10 @@
  * obviously.
  */
 
-#define BIOS_RAM_SIZE_KB_PTR 0x413
+#define BIOS_RAM_SIZE_KB_PTR	0x413
 
-#define BIOS_START_MIN 0x20000U
-#define BIOS_START_MAX 0x9f000U
+#define BIOS_START_MIN		0x20000U	/* 128K, less than this is insane */
+#define BIOS_START_MAX		0x9f000U	/* 640K, absolute maximum */
 
 void __init reserve_bios_regions(void)
 {

@@ -21,6 +21,9 @@
 #include <asm/debugreg.h>
 #include <asm/resctrl.h>
 
+#ifdef CONFIG_X86_64
+# include <asm/mmconfig.h>
+#endif
 
 #include "cpu.h"
 
@@ -83,32 +86,37 @@ static inline int wrmsrl_amd_safe(unsigned msr, unsigned long long val)
  *	performance at the same time..
  */
 
+#ifdef CONFIG_X86_32
 extern __visible void vide(void);
 __asm__(".text\n"
 	".globl vide\n"
 	".type vide, @function\n"
 	".align 4\n"
 	"vide: ret\n");
+#endif
 
 static void init_amd_k5(struct cpuinfo_x86 *c)
 {
+#ifdef CONFIG_X86_32
 /*
  * General Systems BIOSen alias the cpu frequency registers
  * of the Elan at 0x000df000. Unfortunately, one of the Linux
  * drivers subsequently pokes it, and changes the CPU speed.
  * Workaround : Remove the unneeded alias.
  */
-#define CBAR (0xfffc)
-#define CBAR_ENB (0x80000000)
-#define CBAR_KEY (0X000000CB)
+#define CBAR		(0xfffc) /* Configuration Base Address  (32-bit) */
+#define CBAR_ENB	(0x80000000)
+#define CBAR_KEY	(0X000000CB)
 	if (c->x86_model == 9 || c->x86_model == 10) {
 		if (inl(CBAR) & CBAR_ENB)
 			outl(0 | CBAR_KEY, CBAR);
 	}
+#endif
 }
 
 static void init_amd_k6(struct cpuinfo_x86 *c)
 {
+#ifdef CONFIG_X86_32
 	u32 l, h;
 	int mbytes = get_num_physpages() >> (20-PAGE_SHIFT);
 
@@ -197,10 +205,12 @@ static void init_amd_k6(struct cpuinfo_x86 *c)
 		/* placeholder for any needed mods */
 		return;
 	}
+#endif
 }
 
 static void init_amd_k7(struct cpuinfo_x86 *c)
 {
+#ifdef CONFIG_X86_32
 	u32 l, h;
 
 	/*
@@ -269,8 +279,31 @@ static void init_amd_k7(struct cpuinfo_x86 *c)
 	WARN_ONCE(1, "WARNING: This combination of AMD"
 		" processors is not suitable for SMP.\n");
 	add_taint(TAINT_CPU_OUT_OF_SPEC, LOCKDEP_NOW_UNRELIABLE);
+#endif
 }
 
+#ifdef CONFIG_NUMA
+/*
+ * To workaround broken NUMA config.  Read the comment in
+ * srat_detect_node().
+ */
+static int nearby_node(int apicid)
+{
+	int i, node;
+
+	for (i = apicid - 1; i >= 0; i--) {
+		node = __apicid_to_node[i];
+		if (node != NUMA_NO_NODE && node_online(node))
+			return node;
+	}
+	for (i = apicid + 1; i < MAX_LOCAL_APIC; i++) {
+		node = __apicid_to_node[i];
+		if (node != NUMA_NO_NODE && node_online(node))
+			return node;
+	}
+	return first_node(node_online_map); /* Shouldn't happen */
+}
+#endif
 
 /*
  * Fix up cpu_core_id for pre-F17h systems to be in the
@@ -369,10 +402,79 @@ EXPORT_SYMBOL_GPL(amd_get_nodes_per_socket);
 
 static void srat_detect_node(struct cpuinfo_x86 *c)
 {
+#ifdef CONFIG_NUMA
+	int cpu = smp_processor_id();
+	int node;
+	unsigned apicid = c->apicid;
+
+	node = numa_cpu_node(cpu);
+	if (node == NUMA_NO_NODE)
+		node = get_llc_id(cpu);
+
+	/*
+	 * On multi-fabric platform (e.g. Numascale NumaChip) a
+	 * platform-specific handler needs to be called to fixup some
+	 * IDs of the CPU.
+	 */
+	if (x86_cpuinit.fixup_cpu_id)
+		x86_cpuinit.fixup_cpu_id(c, node);
+
+	if (!node_online(node)) {
+		/*
+		 * Two possibilities here:
+		 *
+		 * - The CPU is missing memory and no node was created.  In
+		 *   that case try picking one from a nearby CPU.
+		 *
+		 * - The APIC IDs differ from the HyperTransport node IDs
+		 *   which the K8 northbridge parsing fills in.  Assume
+		 *   they are all increased by a constant offset, but in
+		 *   the same order as the HT nodeids.  If that doesn't
+		 *   result in a usable node fall back to the path for the
+		 *   previous case.
+		 *
+		 * This workaround operates directly on the mapping between
+		 * APIC ID and NUMA node, assuming certain relationship
+		 * between APIC ID, HT node ID and NUMA topology.  As going
+		 * through CPU mapping may alter the outcome, directly
+		 * access __apicid_to_node[].
+		 */
+		int ht_nodeid = c->initial_apicid;
+
+		if (__apicid_to_node[ht_nodeid] != NUMA_NO_NODE)
+			node = __apicid_to_node[ht_nodeid];
+		/* Pick a nearby node */
+		if (!node_online(node))
+			node = nearby_node(apicid);
+	}
+	numa_set_node(cpu, node);
+#endif
 }
 
 static void early_init_amd_mc(struct cpuinfo_x86 *c)
 {
+#ifdef CONFIG_SMP
+	unsigned bits, ecx;
+
+	/* Multi core CPU? */
+	if (c->extended_cpuid_level < 0x80000008)
+		return;
+
+	ecx = cpuid_ecx(0x80000008);
+
+	c->x86_max_cores = (ecx & 0xff) + 1;
+
+	/* CPU telling us the core id bits shift? */
+	bits = (ecx >> 12) & 0xF;
+
+	/* Otherwise recompute */
+	if (bits == 0) {
+		while ((1 << bits) < c->x86_max_cores)
+			bits++;
+	}
+
+	c->x86_coreid_bits = bits;
+#endif
 }
 
 static void bsp_init_amd(struct cpuinfo_x86 *c)
@@ -524,11 +626,35 @@ static void early_init_amd(struct cpuinfo_x86 *c)
 	if (c->x86_power & BIT(14))
 		set_cpu_cap(c, X86_FEATURE_RAPL);
 
+#ifdef CONFIG_X86_64
+	set_cpu_cap(c, X86_FEATURE_SYSCALL32);
+#else
 	/*  Set MTRR capability flag if appropriate */
 	if (c->x86 == 5)
 		if (c->x86_model == 13 || c->x86_model == 9 ||
 		    (c->x86_model == 8 && c->x86_stepping >= 8))
 			set_cpu_cap(c, X86_FEATURE_K6_MTRR);
+#endif
+#if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_PCI)
+	/*
+	 * ApicID can always be treated as an 8-bit value for AMD APIC versions
+	 * >= 0x10, but even old K8s came out of reset with version 0x10. So, we
+	 * can safely set X86_FEATURE_EXTD_APICID unconditionally for families
+	 * after 16h.
+	 */
+	if (boot_cpu_has(X86_FEATURE_APIC)) {
+		if (c->x86 > 0x16)
+			set_cpu_cap(c, X86_FEATURE_EXTD_APICID);
+		else if (c->x86 >= 0xf) {
+			/* check CPU config space for extended APIC ID */
+			unsigned int val;
+
+			val = read_pci_config(0, 24, 0, 0x68);
+			if ((val >> 17 & 0x3) == 0x3)
+				set_cpu_cap(c, X86_FEATURE_EXTD_APICID);
+		}
+	}
+#endif
 
 	/*
 	 * This is only needed to tell the kernel whether to use VMCALL
@@ -596,11 +722,28 @@ static void init_amd_k8(struct cpuinfo_x86 *c)
 	if (!c->x86_model_id[0])
 		strcpy(c->x86_model_id, "Hammer");
 
+#ifdef CONFIG_SMP
+	/*
+	 * Disable TLB flush filter by setting HWCR.FFDIS on K8
+	 * bit 6 of msr C001_0015
+	 *
+	 * Errata 63 for SH-B3 steppings
+	 * Errata 122 for all steppings (F+ have it disabled by default)
+	 */
+	msr_set_bit(MSR_K7_HWCR, 6);
+#endif
 	set_cpu_bug(c, X86_BUG_SWAPGS_FENCE);
 }
 
 static void init_amd_gh(struct cpuinfo_x86 *c)
 {
+#ifdef CONFIG_MMCONF_FAM10H
+	/* do this for boot cpu */
+	if (c == &boot_cpu_data)
+		check_enable_amd_mmconf_dmi();
+
+	fam10h_check_enable_mmcfg();
+#endif
 
 	/*
 	 * Disable GART TLB Walk Errors on Fam10h. We do this here because this
@@ -627,7 +770,7 @@ static void init_amd_gh(struct cpuinfo_x86 *c)
 		set_cpu_bug(c, X86_BUG_AMD_TLB_MMATCH);
 }
 
-#define MSR_AMD64_DE_CFG 0xC0011029
+#define MSR_AMD64_DE_CFG	0xC0011029
 
 static void init_amd_ln(struct cpuinfo_x86 *c)
 {
@@ -721,12 +864,33 @@ static void init_amd_bd(struct cpuinfo_x86 *c)
 
 void init_spectral_chicken(struct cpuinfo_x86 *c)
 {
+#ifdef CONFIG_CPU_UNRET_ENTRY
+	u64 value;
+
+	/*
+	 * On Zen2 we offer this chicken (bit) on the altar of Speculation.
+	 *
+	 * This suppresses speculation from the middle of a basic block, i.e. it
+	 * suppresses non-branch predictions.
+	 *
+	 * We use STIBP as a heuristic to filter out Zen2 from the rest of F17H
+	 */
+	if (!cpu_has(c, X86_FEATURE_HYPERVISOR) && cpu_has(c, X86_FEATURE_AMD_STIBP)) {
+		if (!rdmsrl_safe(MSR_ZEN2_SPECTRAL_CHICKEN, &value)) {
+			value |= MSR_ZEN2_SPECTRAL_CHICKEN_BIT;
+			wrmsrl_safe(MSR_ZEN2_SPECTRAL_CHICKEN, value);
+		}
+	}
+#endif
 }
 
 static void init_amd_zn(struct cpuinfo_x86 *c)
 {
 	set_cpu_cap(c, X86_FEATURE_ZEN);
 
+#ifdef CONFIG_NUMA
+	node_reclaim_distance = 32;
+#endif
 
 	/* Fix up CPUID bits, but only if not virtualised. */
 	if (!cpu_has(c, X86_FEATURE_HYPERVISOR)) {
@@ -836,6 +1000,7 @@ static void init_amd(struct cpuinfo_x86 *c)
 	check_null_seg_clears_base(c);
 }
 
+#ifdef CONFIG_X86_32
 static unsigned int amd_size_cache(struct cpuinfo_x86 *c, unsigned int size)
 {
 	/* AMD errata T13 (order #21922) */
@@ -850,6 +1015,7 @@ static unsigned int amd_size_cache(struct cpuinfo_x86 *c, unsigned int size)
 	}
 	return size;
 }
+#endif
 
 static void cpu_detect_tlb_amd(struct cpuinfo_x86 *c)
 {
@@ -903,6 +1069,7 @@ static void cpu_detect_tlb_amd(struct cpuinfo_x86 *c)
 static const struct cpu_dev amd_cpu_dev = {
 	.c_vendor	= "AMD",
 	.c_ident	= { "AuthenticAMD" },
+#ifdef CONFIG_X86_32
 	.legacy_models = {
 		{ .family = 4, .model_names =
 		  {
@@ -916,6 +1083,7 @@ static const struct cpu_dev amd_cpu_dev = {
 		},
 	},
 	.legacy_cache_size = amd_size_cache,
+#endif
 	.c_early_init   = early_init_amd,
 	.c_detect_tlb	= cpu_detect_tlb_amd,
 	.c_bsp_init	= bsp_init_amd,
@@ -942,12 +1110,13 @@ cpu_dev_register(amd_cpu_dev);
  *			   AMD_MODEL_RANGE(0x10, 0x9, 0x0, 0x9, 0x0));
  */
 
-#define AMD_LEGACY_ERRATUM(...) { -1, __VA_ARGS__, 0 }
-#define AMD_OSVW_ERRATUM(osvw_id,...) { osvw_id, __VA_ARGS__, 0 }
-#define AMD_MODEL_RANGE(f,m_start,s_start,m_end,s_end) ((f << 24) | (m_start << 16) | (s_start << 12) | (m_end << 4) | (s_end))
-#define AMD_MODEL_RANGE_FAMILY(range) (((range) >> 24) & 0xff)
-#define AMD_MODEL_RANGE_START(range) (((range) >> 12) & 0xfff)
-#define AMD_MODEL_RANGE_END(range) ((range) & 0xfff)
+#define AMD_LEGACY_ERRATUM(...)		{ -1, __VA_ARGS__, 0 }
+#define AMD_OSVW_ERRATUM(osvw_id, ...)	{ osvw_id, __VA_ARGS__, 0 }
+#define AMD_MODEL_RANGE(f, m_start, s_start, m_end, s_end) \
+	((f << 24) | (m_start << 16) | (s_start << 12) | (m_end << 4) | (s_end))
+#define AMD_MODEL_RANGE_FAMILY(range)	(((range) >> 24) & 0xff)
+#define AMD_MODEL_RANGE_START(range)	(((range) >> 12) & 0xfff)
+#define AMD_MODEL_RANGE_END(range)	((range) & 0xfff)
 
 static const int amd_erratum_400[] =
 	AMD_OSVW_ERRATUM(1, AMD_MODEL_RANGE(0xf, 0x41, 0x2, 0xff, 0xf),

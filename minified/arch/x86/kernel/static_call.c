@@ -127,3 +127,30 @@ void arch_static_call_transform(void *site, void *tramp, void *func, bool tail)
 }
 EXPORT_SYMBOL_GPL(arch_static_call_transform);
 
+#ifdef CONFIG_RETHUNK
+/*
+ * This is called by apply_returns() to fix up static call trampolines,
+ * specifically ARCH_DEFINE_STATIC_CALL_NULL_TRAMP which is recorded as
+ * having a return trampoline.
+ *
+ * The problem is that static_call() is available before determining
+ * X86_FEATURE_RETHUNK and, by implication, running alternatives.
+ *
+ * This means that __static_call_transform() above can have overwritten the
+ * return trampoline and we now need to fix things up to be consistent.
+ */
+bool __static_call_fixup(void *tramp, u8 op, void *dest)
+{
+	if (memcmp(tramp+5, tramp_ud, 3)) {
+		/* Not a trampoline site, not our problem. */
+		return false;
+	}
+
+	mutex_lock(&text_mutex);
+	if (op == RET_INSN_OPCODE || dest == &__x86_return_thunk)
+		__static_call_transform(tramp, RET, NULL, true);
+	mutex_unlock(&text_mutex);
+
+	return true;
+}
+#endif

@@ -35,6 +35,9 @@ static bool is_aligned(const void *base, size_t size, unsigned char align)
 	unsigned char lsbits = (unsigned char)size;
 
 	(void)base;
+#ifndef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+	lsbits |= (unsigned char)(uintptr_t)base;
+#endif
 	return (lsbits & (align - 1)) == 0;
 }
 
@@ -80,6 +83,11 @@ static void swap_words_32(void *a, void *b, size_t n)
 static void swap_words_64(void *a, void *b, size_t n)
 {
 	do {
+#ifdef CONFIG_64BIT
+		u64 t = *(u64 *)(a + (n -= 8));
+		*(u64 *)(a + n) = *(u64 *)(b + n);
+		*(u64 *)(b + n) = t;
+#else
 		/* Use two 32-bit transfers to avoid base+index+4 addressing */
 		u32 t = *(u32 *)(a + (n -= 4));
 		*(u32 *)(a + n) = *(u32 *)(b + n);
@@ -88,6 +96,7 @@ static void swap_words_64(void *a, void *b, size_t n)
 		t = *(u32 *)(a + (n -= 4));
 		*(u32 *)(a + n) = *(u32 *)(b + n);
 		*(u32 *)(b + n) = t;
+#endif
 	} while (n);
 }
 
@@ -115,8 +124,8 @@ static void swap_bytes(void *a, void *b, size_t n)
  */
 #define SWAP_WORDS_64 (swap_r_func_t)0
 #define SWAP_WORDS_32 (swap_r_func_t)1
-#define SWAP_BYTES (swap_r_func_t)2
-#define SWAP_WRAPPER (swap_r_func_t)3
+#define SWAP_BYTES    (swap_r_func_t)2
+#define SWAP_WRAPPER  (swap_r_func_t)3
 
 struct wrapper {
 	cmp_func_t cmp;

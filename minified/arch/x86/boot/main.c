@@ -104,6 +104,14 @@ static void query_ist(void)
  */
 static void set_bios_mode(void)
 {
+#ifdef CONFIG_X86_64
+	struct biosregs ireg;
+
+	initregs(&ireg);
+	ireg.ax = 0xec00;
+	ireg.bx = 2;
+	intcall(0x15, &ireg, NULL);
+#endif
 }
 
 static void init_heap(void)
@@ -160,8 +168,14 @@ void main(void)
 	query_ist();
 
 	/* Query APM information */
+#if defined(CONFIG_APM) || defined(CONFIG_APM_MODULE)
+	query_apm_bios();
+#endif
 
 	/* Query EDD information */
+#if defined(CONFIG_EDD) || defined(CONFIG_EDD_MODULE)
+	query_edd();
+#endif
 
 	/* Set the video mode */
 	set_video();

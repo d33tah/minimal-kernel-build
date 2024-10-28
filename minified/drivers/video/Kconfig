@@ -12,12 +12,18 @@ config HAVE_FB_ATMEL
 
 source "drivers/char/agp/Kconfig"
 
+source "drivers/gpu/vga/Kconfig"
 
+source "drivers/gpu/host1x/Kconfig"
+source "drivers/gpu/ipu-v3/Kconfig"
 
+source "drivers/gpu/drm/Kconfig"
 
 menu "Frame buffer Devices"
+source "drivers/video/fbdev/Kconfig"
 endmenu
 
+source "drivers/video/backlight/Kconfig"
 
 config VGASTATE
        tristate
@@ -36,6 +42,7 @@ if VT
 endif
 
 if FB || SGI_NEWPORT_CONSOLE
+	source "drivers/video/logo/Kconfig"
 
 endif
 

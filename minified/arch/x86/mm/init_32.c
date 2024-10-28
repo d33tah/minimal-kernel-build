@@ -71,6 +71,18 @@ static pmd_t * __init one_md_table_init(pgd_t *pgd)
 	pud_t *pud;
 	pmd_t *pmd_table;
 
+#ifdef CONFIG_X86_PAE
+	if (!(pgd_val(*pgd) & _PAGE_PRESENT)) {
+		pmd_table = (pmd_t *)alloc_low_page();
+		paravirt_alloc_pmd(&init_mm, __pa(pmd_table) >> PAGE_SHIFT);
+		set_pgd(pgd, __pgd(__pa(pmd_table) | _PAGE_PRESENT));
+		p4d = p4d_offset(pgd, 0);
+		pud = pud_offset(p4d, 0);
+		BUG_ON(pmd_table != pmd_offset(pud, 0));
+
+		return pmd_table;
+	}
+#endif
 	p4d = p4d_offset(pgd, 0);
 	pud = pud_offset(p4d, 0);
 	pmd_table = pmd_offset(pud, 0);
@@ -116,6 +128,30 @@ static unsigned long __init
 page_table_range_init_count(unsigned long start, unsigned long end)
 {
 	unsigned long count = 0;
+#ifdef CONFIG_HIGHMEM
+	int pmd_idx_kmap_begin = fix_to_virt(FIX_KMAP_END) >> PMD_SHIFT;
+	int pmd_idx_kmap_end = fix_to_virt(FIX_KMAP_BEGIN) >> PMD_SHIFT;
+	int pgd_idx, pmd_idx;
+	unsigned long vaddr;
+
+	if (pmd_idx_kmap_begin == pmd_idx_kmap_end)
+		return 0;
+
+	vaddr = start;
+	pgd_idx = pgd_index(vaddr);
+	pmd_idx = pmd_index(vaddr);
+
+	for ( ; (pgd_idx < PTRS_PER_PGD) && (vaddr != end); pgd_idx++) {
+		for (; (pmd_idx < PTRS_PER_PMD) && (vaddr != end);
+							pmd_idx++) {
+			if ((vaddr >> PMD_SHIFT) >= pmd_idx_kmap_begin &&
+			    (vaddr >> PMD_SHIFT) <= pmd_idx_kmap_end)
+				count++;
+			vaddr += PMD_SIZE;
+		}
+		pmd_idx = 0;
+	}
+#endif
 	return count;
 }
 
@@ -123,6 +159,40 @@ static pte_t *__init page_table_kmap_check(pte_t *pte, pmd_t *pmd,
 					   unsigned long vaddr, pte_t *lastpte,
 					   void **adr)
 {
+#ifdef CONFIG_HIGHMEM
+	/*
+	 * Something (early fixmap) may already have put a pte
+	 * page here, which causes the page table allocation
+	 * to become nonlinear. Attempt to fix it, and if it
+	 * is still nonlinear then we have to bug.
+	 */
+	int pmd_idx_kmap_begin = fix_to_virt(FIX_KMAP_END) >> PMD_SHIFT;
+	int pmd_idx_kmap_end = fix_to_virt(FIX_KMAP_BEGIN) >> PMD_SHIFT;
+
+	if (pmd_idx_kmap_begin != pmd_idx_kmap_end
+	    && (vaddr >> PMD_SHIFT) >= pmd_idx_kmap_begin
+	    && (vaddr >> PMD_SHIFT) <= pmd_idx_kmap_end) {
+		pte_t *newpte;
+		int i;
+
+		BUG_ON(after_bootmem);
+		newpte = *adr;
+		for (i = 0; i < PTRS_PER_PTE; i++)
+			set_pte(newpte + i, pte[i]);
+		*adr = (void *)(((unsigned long)(*adr)) + PAGE_SIZE);
+
+		paravirt_alloc_pte(&init_mm, __pa(newpte) >> PAGE_SHIFT);
+		set_pmd(pmd, __pmd(__pa(newpte)|_PAGE_TABLE));
+		BUG_ON(newpte != pte_offset_kernel(pmd, 0));
+		__flush_tlb_all();
+
+		paravirt_release_pte(__pa(pte) >> PAGE_SHIFT);
+		pte = newpte;
+	}
+	BUG_ON(vaddr < fix_to_virt(FIX_KMAP_BEGIN - 1)
+	       && vaddr > fix_to_virt(FIX_KMAP_END)
+	       && lastpte && lastpte + PTRS_PER_PTE != pte);
+#endif
 	return pte;
 }
 
@@ -230,7 +300,12 @@ repeat:
 
 		if (pfn >= end_pfn)
 			continue;
+#ifdef CONFIG_X86_PAE
+		pmd_idx = pmd_index((pfn<<PAGE_SHIFT) + PAGE_OFFSET);
+		pmd += pmd_idx;
+#else
 		pmd_idx = 0;
+#endif
 		for (; pmd_idx < PTRS_PER_PMD && pfn < end_pfn;
 		     pmd++, pmd_idx++) {
 			unsigned int addr = pfn * PAGE_SIZE + PAGE_OFFSET;
@@ -315,9 +390,37 @@ repeat:
 	return last_map_addr;
 }
 
+#ifdef CONFIG_HIGHMEM
+static void __init permanent_kmaps_init(pgd_t *pgd_base)
+{
+	unsigned long vaddr = PKMAP_BASE;
+
+	page_table_range_init(vaddr, vaddr + PAGE_SIZE*LAST_PKMAP, pgd_base);
+
+	pkmap_page_table = virt_to_kpte(vaddr);
+}
+
+void __init add_highpages_with_active_regions(int nid,
+			 unsigned long start_pfn, unsigned long end_pfn)
+{
+	phys_addr_t start, end;
+	u64 i;
+
+	for_each_free_mem_range(i, nid, MEMBLOCK_NONE, &start, &end, NULL) {
+		unsigned long pfn = clamp_t(unsigned long, PFN_UP(start),
+					    start_pfn, end_pfn);
+		unsigned long e_pfn = clamp_t(unsigned long, PFN_DOWN(end),
+					      start_pfn, end_pfn);
+		for ( ; pfn < e_pfn; pfn++)
+			if (pfn_valid(pfn))
+				free_highmem_page(pfn_to_page(pfn));
+	}
+}
+#else
 static inline void permanent_kmaps_init(pgd_t *pgd_base)
 {
 }
+#endif /* CONFIG_HIGHMEM */
 
 void __init sync_initial_page_table(void)
 {
@@ -451,9 +554,11 @@ static int __init parse_highmem(char *arg)
 }
 early_param("highmem", parse_highmem);
 
-#define MSG_HIGHMEM_TOO_BIG "highmem size (%luMB) is bigger than pages available (%luMB)!\n"
+#define MSG_HIGHMEM_TOO_BIG \
+	"highmem size (%luMB) is bigger than pages available (%luMB)!\n"
 
-#define MSG_LOWMEM_TOO_SMALL "highmem size (%luMB) results in <64MB lowmem, ignoring it!\n"
+#define MSG_LOWMEM_TOO_SMALL \
+	"highmem size (%luMB) results in <64MB lowmem, ignoring it!\n"
 /*
  * All of RAM fits into lowmem - but if user wants highmem
  * artificially via the highmem=x boot parameter then create
@@ -466,13 +571,31 @@ static void __init lowmem_pfn_init(void)
 
 	if (highmem_pages == -1)
 		highmem_pages = 0;
+#ifdef CONFIG_HIGHMEM
+	if (highmem_pages >= max_pfn) {
+		printk(KERN_ERR MSG_HIGHMEM_TOO_BIG,
+			pages_to_mb(highmem_pages), pages_to_mb(max_pfn));
+		highmem_pages = 0;
+	}
+	if (highmem_pages) {
+		if (max_low_pfn - highmem_pages < 64*1024*1024/PAGE_SIZE) {
+			printk(KERN_ERR MSG_LOWMEM_TOO_SMALL,
+				pages_to_mb(highmem_pages));
+			highmem_pages = 0;
+		}
+		max_low_pfn -= highmem_pages;
+	}
+#else
 	if (highmem_pages)
 		printk(KERN_ERR "ignoring highmem size on non-highmem kernel!\n");
+#endif
 }
 
-#define MSG_HIGHMEM_TOO_SMALL "only %luMB highmem pages available, ignoring highmem size of %luMB!\n"
+#define MSG_HIGHMEM_TOO_SMALL \
+	"only %luMB highmem pages available, ignoring highmem size of %luMB!\n"
 
-#define MSG_HIGHMEM_TRIMMED "Warning: only 4GB will be used. Use a HIGHMEM64G enabled kernel!\n"
+#define MSG_HIGHMEM_TRIMMED \
+	"Warning: only 4GB will be used. Use a HIGHMEM64G enabled kernel!\n"
 /*
  * We have more RAM than fits into lowmem - we try to put it into
  * highmem, also taking the highmem=x boot parameter into account:
@@ -493,6 +616,7 @@ static void __init highmem_pfn_init(void)
 			pages_to_mb(highmem_pages));
 		highmem_pages = 0;
 	}
+#ifndef CONFIG_HIGHMEM
 	/* Maximum memory usable is what is directly addressable */
 	printk(KERN_WARNING "Warning only %ldMB will be used.\n", MAXMEM>>20);
 	if (max_pfn > MAX_NONPAE_PFN)
@@ -500,6 +624,14 @@ static void __init highmem_pfn_init(void)
 	else
 		printk(KERN_WARNING "Use a HIGHMEM enabled kernel.\n");
 	max_pfn = MAXMEM_PFN;
+#else /* !CONFIG_HIGHMEM */
+#ifndef CONFIG_HIGHMEM64G
+	if (max_pfn > MAX_NONPAE_PFN) {
+		max_pfn = MAX_NONPAE_PFN;
+		printk(KERN_WARNING MSG_HIGHMEM_TRIMMED);
+	}
+#endif /* !CONFIG_HIGHMEM64G */
+#endif /* !CONFIG_HIGHMEM */
 }
 
 /*
@@ -515,13 +647,25 @@ void __init find_low_pfn_range(void)
 		highmem_pfn_init();
 }
 
+#ifndef CONFIG_NUMA
 void __init initmem_init(void)
 {
+#ifdef CONFIG_HIGHMEM
+	highstart_pfn = highend_pfn = max_pfn;
+	if (max_pfn > max_low_pfn)
+		highstart_pfn = max_low_pfn;
+	printk(KERN_NOTICE "%ldMB HIGHMEM available.\n",
+		pages_to_mb(highend_pfn - highstart_pfn));
+	high_memory = (void *) __va(highstart_pfn * PAGE_SIZE - 1) + 1;
+#else
 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE - 1) + 1;
+#endif
 
 	memblock_set_node(0, PHYS_ADDR_MAX, &memblock.memory, 0);
 
+#ifdef CONFIG_FLATMEM
 	max_mapnr = IS_ENABLED(CONFIG_HIGHMEM) ? highend_pfn : max_low_pfn;
+#endif
 	__vmalloc_start_set = true;
 
 	printk(KERN_NOTICE "%ldMB LOWMEM available.\n",
@@ -529,6 +673,7 @@ void __init initmem_init(void)
 
 	setup_bootmem_allocator();
 }
+#endif /* !CONFIG_NUMA */
 
 void __init setup_bootmem_allocator(void)
 {
@@ -586,7 +731,9 @@ void __init mem_init(void)
 {
 	pci_iommu_alloc();
 
+#ifdef CONFIG_FLATMEM
 	BUG_ON(!mem_map);
+#endif
 	/*
 	 * With CONFIG_DEBUG_PAGEALLOC initialization of highmem pages has to
 	 * be done before memblock_free_all(). Memblock use free low memory for
@@ -609,11 +756,19 @@ void __init mem_init(void)
 	 * be detected at build time already.
 	 */
 #define __FIXADDR_TOP (-PAGE_SIZE)
+#ifdef CONFIG_HIGHMEM
+	BUILD_BUG_ON(PKMAP_BASE + LAST_PKMAP*PAGE_SIZE	> FIXADDR_START);
+	BUILD_BUG_ON(VMALLOC_END			> PKMAP_BASE);
+#endif
 #define high_memory (-128UL << 20)
 	BUILD_BUG_ON(VMALLOC_START			>= VMALLOC_END);
 #undef high_memory
 #undef __FIXADDR_TOP
 
+#ifdef CONFIG_HIGHMEM
+	BUG_ON(PKMAP_BASE + LAST_PKMAP*PAGE_SIZE	> FIXADDR_START);
+	BUG_ON(VMALLOC_END				> PKMAP_BASE);
+#endif
 	BUG_ON(VMALLOC_START				>= VMALLOC_END);
 	BUG_ON((unsigned long)high_memory		> VMALLOC_START);
 
@@ -650,6 +805,13 @@ void mark_rodata_ro(void)
 
 	kernel_set_to_readonly = 1;
 
+#ifdef CONFIG_CPA_DEBUG
+	pr_info("Testing CPA: Reverting %lx-%lx\n", start, start + size);
+	set_pages_rw(virt_to_page(start), size >> PAGE_SHIFT);
+
+	pr_info("Testing CPA: write protecting again\n");
+	set_pages_ro(virt_to_page(start), size >> PAGE_SHIFT);
+#endif
 	mark_nxdata_nx();
 	if (__supported_pte_mask & _PAGE_NX)
 		debug_checkwx();

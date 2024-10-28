@@ -15,10 +15,10 @@
 
 int early_serial_base;
 
-#define XMTRDY 0x20
+#define XMTRDY          0x20
 
-#define TXR 0
-#define LSR 5
+#define TXR             0       /*  Transmit register (WRITE) */
+#define LSR             5       /*  Line Status               */
 
 /*
  * These functions are in .inittext so they can be used to signal

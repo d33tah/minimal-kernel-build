@@ -405,7 +405,19 @@ int kstrtobool_from_user(const char __user *s, size_t count, bool *res)
 }
 EXPORT_SYMBOL(kstrtobool_from_user);
 
-#define kstrto_from_user(f,g,type) int f(const char __user *s, size_t count, unsigned int base, type *res) { char buf[1 + sizeof(type) * 8 + 1 + 1]; count = min(count, sizeof(buf) - 1); if (copy_from_user(buf, s, count)) return -EFAULT; buf[count] = '\0'; return g(buf, base, res); } EXPORT_SYMBOL(f)
+#define kstrto_from_user(f, g, type)					\
+int f(const char __user *s, size_t count, unsigned int base, type *res)	\
+{									\
+	/* sign, base 2 representation, newline, terminator */		\
+	char buf[1 + sizeof(type) * 8 + 1 + 1];				\
+									\
+	count = min(count, sizeof(buf) - 1);				\
+	if (copy_from_user(buf, s, count))				\
+		return -EFAULT;						\
+	buf[count] = '\0';						\
+	return g(buf, base, res);					\
+}									\
+EXPORT_SYMBOL(f)
 
 kstrto_from_user(kstrtoull_from_user,	kstrtoull,	unsigned long long);
 kstrto_from_user(kstrtoll_from_user,	kstrtoll,	long long);

@@ -44,6 +44,10 @@
 
 #include "rt.c"
 
+#ifdef CONFIG_SMP
+# include "cpudeadline.c"
+# include "pelt.c"
+#endif
 
 #include "cputime.c"
 #include "deadline.c"

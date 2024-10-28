@@ -49,7 +49,7 @@
 #include <asm/vgtod.h>
 #include <asm/ia32.h>
 
-#define AA(__x) ((unsigned long)(__x))
+#define AA(__x)		((unsigned long)(__x))
 
 SYSCALL_DEFINE3(ia32_truncate64, const char __user *, filename,
 		unsigned long, offset_low, unsigned long, offset_high)
@@ -124,3 +124,133 @@ SYSCALL_DEFINE6(ia32_fallocate, int, fd, int, mode,
 			      ((u64)len_hi << 32) | len_lo);
 }
 
+#ifdef CONFIG_IA32_EMULATION
+/*
+ * Another set for IA32/LFS -- x86_64 struct stat is different due to
+ * support for 64bit inode numbers.
+ */
+static int cp_stat64(struct stat64 __user *ubuf, struct kstat *stat)
+{
+	typeof(ubuf->st_uid) uid = 0;
+	typeof(ubuf->st_gid) gid = 0;
+	SET_UID(uid, from_kuid_munged(current_user_ns(), stat->uid));
+	SET_GID(gid, from_kgid_munged(current_user_ns(), stat->gid));
+	if (!user_write_access_begin(ubuf, sizeof(struct stat64)))
+		return -EFAULT;
+	unsafe_put_user(huge_encode_dev(stat->dev), &ubuf->st_dev, Efault);
+	unsafe_put_user(stat->ino, &ubuf->__st_ino, Efault);
+	unsafe_put_user(stat->ino, &ubuf->st_ino, Efault);
+	unsafe_put_user(stat->mode, &ubuf->st_mode, Efault);
+	unsafe_put_user(stat->nlink, &ubuf->st_nlink, Efault);
+	unsafe_put_user(uid, &ubuf->st_uid, Efault);
+	unsafe_put_user(gid, &ubuf->st_gid, Efault);
+	unsafe_put_user(huge_encode_dev(stat->rdev), &ubuf->st_rdev, Efault);
+	unsafe_put_user(stat->size, &ubuf->st_size, Efault);
+	unsafe_put_user(stat->atime.tv_sec, &ubuf->st_atime, Efault);
+	unsafe_put_user(stat->atime.tv_nsec, &ubuf->st_atime_nsec, Efault);
+	unsafe_put_user(stat->mtime.tv_sec, &ubuf->st_mtime, Efault);
+	unsafe_put_user(stat->mtime.tv_nsec, &ubuf->st_mtime_nsec, Efault);
+	unsafe_put_user(stat->ctime.tv_sec, &ubuf->st_ctime, Efault);
+	unsafe_put_user(stat->ctime.tv_nsec, &ubuf->st_ctime_nsec, Efault);
+	unsafe_put_user(stat->blksize, &ubuf->st_blksize, Efault);
+	unsafe_put_user(stat->blocks, &ubuf->st_blocks, Efault);
+	user_access_end();
+	return 0;
+Efault:
+	user_write_access_end();
+	return -EFAULT;
+}
+
+COMPAT_SYSCALL_DEFINE2(ia32_stat64, const char __user *, filename,
+		       struct stat64 __user *, statbuf)
+{
+	struct kstat stat;
+	int ret = vfs_stat(filename, &stat);
+
+	if (!ret)
+		ret = cp_stat64(statbuf, &stat);
+	return ret;
+}
+
+COMPAT_SYSCALL_DEFINE2(ia32_lstat64, const char __user *, filename,
+		       struct stat64 __user *, statbuf)
+{
+	struct kstat stat;
+	int ret = vfs_lstat(filename, &stat);
+	if (!ret)
+		ret = cp_stat64(statbuf, &stat);
+	return ret;
+}
+
+COMPAT_SYSCALL_DEFINE2(ia32_fstat64, unsigned int, fd,
+		       struct stat64 __user *, statbuf)
+{
+	struct kstat stat;
+	int ret = vfs_fstat(fd, &stat);
+	if (!ret)
+		ret = cp_stat64(statbuf, &stat);
+	return ret;
+}
+
+COMPAT_SYSCALL_DEFINE4(ia32_fstatat64, unsigned int, dfd,
+		       const char __user *, filename,
+		       struct stat64 __user *, statbuf, int, flag)
+{
+	struct kstat stat;
+	int error;
+
+	error = vfs_fstatat(dfd, filename, &stat, flag);
+	if (error)
+		return error;
+	return cp_stat64(statbuf, &stat);
+}
+
+/*
+ * Linux/i386 didn't use to be able to handle more than
+ * 4 system call parameters, so these system calls used a memory
+ * block for parameter passing..
+ */
+
+struct mmap_arg_struct32 {
+	unsigned int addr;
+	unsigned int len;
+	unsigned int prot;
+	unsigned int flags;
+	unsigned int fd;
+	unsigned int offset;
+};
+
+COMPAT_SYSCALL_DEFINE1(ia32_mmap, struct mmap_arg_struct32 __user *, arg)
+{
+	struct mmap_arg_struct32 a;
+
+	if (copy_from_user(&a, arg, sizeof(a)))
+		return -EFAULT;
+
+	if (a.offset & ~PAGE_MASK)
+		return -EINVAL;
+
+	return ksys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
+			       a.offset>>PAGE_SHIFT);
+}
+
+/*
+ * The 32-bit clone ABI is CONFIG_CLONE_BACKWARDS
+ */
+COMPAT_SYSCALL_DEFINE5(ia32_clone, unsigned long, clone_flags,
+		       unsigned long, newsp, int __user *, parent_tidptr,
+		       unsigned long, tls_val, int __user *, child_tidptr)
+{
+	struct kernel_clone_args args = {
+		.flags		= (clone_flags & ~CSIGNAL),
+		.pidfd		= parent_tidptr,
+		.child_tid	= child_tidptr,
+		.parent_tid	= parent_tidptr,
+		.exit_signal	= (clone_flags & CSIGNAL),
+		.stack		= newsp,
+		.tls		= tls_val,
+	};
+
+	return kernel_clone(&args);
+}
+#endif /* CONFIG_IA32_EMULATION */

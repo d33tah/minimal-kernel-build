@@ -163,4 +163,137 @@ SYSCALL_DEFINE4(utimensat, int, dfd, const char __user *, filename,
 	return do_utimes(dfd, filename, utimes ? tstimes : NULL, flags);
 }
 
+#ifdef __ARCH_WANT_SYS_UTIME
+/*
+ * futimesat(), utimes() and utime() are older versions of utimensat()
+ * that are provided for compatibility with traditional C libraries.
+ * On modern architectures, we always use libc wrappers around
+ * utimensat() instead.
+ */
+static long do_futimesat(int dfd, const char __user *filename,
+			 struct __kernel_old_timeval __user *utimes)
+{
+	struct __kernel_old_timeval times[2];
+	struct timespec64 tstimes[2];
 
+	if (utimes) {
+		if (copy_from_user(&times, utimes, sizeof(times)))
+			return -EFAULT;
+
+		/* This test is needed to catch all invalid values.  If we
+		   would test only in do_utimes we would miss those invalid
+		   values truncated by the multiplication with 1000.  Note
+		   that we also catch UTIME_{NOW,OMIT} here which are only
+		   valid for utimensat.  */
+		if (times[0].tv_usec >= 1000000 || times[0].tv_usec < 0 ||
+		    times[1].tv_usec >= 1000000 || times[1].tv_usec < 0)
+			return -EINVAL;
+
+		tstimes[0].tv_sec = times[0].tv_sec;
+		tstimes[0].tv_nsec = 1000 * times[0].tv_usec;
+		tstimes[1].tv_sec = times[1].tv_sec;
+		tstimes[1].tv_nsec = 1000 * times[1].tv_usec;
+	}
+
+	return do_utimes(dfd, filename, utimes ? tstimes : NULL, 0);
+}
+
+
+SYSCALL_DEFINE3(futimesat, int, dfd, const char __user *, filename,
+		struct __kernel_old_timeval __user *, utimes)
+{
+	return do_futimesat(dfd, filename, utimes);
+}
+
+SYSCALL_DEFINE2(utimes, char __user *, filename,
+		struct __kernel_old_timeval __user *, utimes)
+{
+	return do_futimesat(AT_FDCWD, filename, utimes);
+}
+
+SYSCALL_DEFINE2(utime, char __user *, filename, struct utimbuf __user *, times)
+{
+	struct timespec64 tv[2];
+
+	if (times) {
+		if (get_user(tv[0].tv_sec, &times->actime) ||
+		    get_user(tv[1].tv_sec, &times->modtime))
+			return -EFAULT;
+		tv[0].tv_nsec = 0;
+		tv[1].tv_nsec = 0;
+	}
+	return do_utimes(AT_FDCWD, filename, times ? tv : NULL, 0);
+}
+#endif
+
+#ifdef CONFIG_COMPAT_32BIT_TIME
+/*
+ * Not all architectures have sys_utime, so implement this in terms
+ * of sys_utimes.
+ */
+#ifdef __ARCH_WANT_SYS_UTIME32
+SYSCALL_DEFINE2(utime32, const char __user *, filename,
+		struct old_utimbuf32 __user *, t)
+{
+	struct timespec64 tv[2];
+
+	if (t) {
+		if (get_user(tv[0].tv_sec, &t->actime) ||
+		    get_user(tv[1].tv_sec, &t->modtime))
+			return -EFAULT;
+		tv[0].tv_nsec = 0;
+		tv[1].tv_nsec = 0;
+	}
+	return do_utimes(AT_FDCWD, filename, t ? tv : NULL, 0);
+}
+#endif
+
+SYSCALL_DEFINE4(utimensat_time32, unsigned int, dfd, const char __user *, filename, struct old_timespec32 __user *, t, int, flags)
+{
+	struct timespec64 tv[2];
+
+	if  (t) {
+		if (get_old_timespec32(&tv[0], &t[0]) ||
+		    get_old_timespec32(&tv[1], &t[1]))
+			return -EFAULT;
+
+		if (tv[0].tv_nsec == UTIME_OMIT && tv[1].tv_nsec == UTIME_OMIT)
+			return 0;
+	}
+	return do_utimes(dfd, filename, t ? tv : NULL, flags);
+}
+
+#ifdef __ARCH_WANT_SYS_UTIME32
+static long do_compat_futimesat(unsigned int dfd, const char __user *filename,
+				struct old_timeval32 __user *t)
+{
+	struct timespec64 tv[2];
+
+	if (t) {
+		if (get_user(tv[0].tv_sec, &t[0].tv_sec) ||
+		    get_user(tv[0].tv_nsec, &t[0].tv_usec) ||
+		    get_user(tv[1].tv_sec, &t[1].tv_sec) ||
+		    get_user(tv[1].tv_nsec, &t[1].tv_usec))
+			return -EFAULT;
+		if (tv[0].tv_nsec >= 1000000 || tv[0].tv_nsec < 0 ||
+		    tv[1].tv_nsec >= 1000000 || tv[1].tv_nsec < 0)
+			return -EINVAL;
+		tv[0].tv_nsec *= 1000;
+		tv[1].tv_nsec *= 1000;
+	}
+	return do_utimes(dfd, filename, t ? tv : NULL, 0);
+}
+
+SYSCALL_DEFINE3(futimesat_time32, unsigned int, dfd,
+		       const char __user *, filename,
+		       struct old_timeval32 __user *, t)
+{
+	return do_compat_futimesat(dfd, filename, t);
+}
+
+SYSCALL_DEFINE2(utimes_time32, const char __user *, filename, struct old_timeval32 __user *, t)
+{
+	return do_compat_futimesat(AT_FDCWD, filename, t);
+}
+#endif
+#endif

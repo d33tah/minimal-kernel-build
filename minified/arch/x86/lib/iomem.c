@@ -2,7 +2,8 @@
 #include <linux/module.h>
 #include <linux/io.h>
 
-#define movs(type,to,from) asm volatile("movs" type:"=&D" (to), "=&S" (from):"0" (to), "1" (from):"memory")
+#define movs(type,to,from) \
+	asm volatile("movs" type:"=&D" (to), "=&S" (from):"0" (to), "1" (from):"memory")
 
 /* Originally from i386/string.h */
 static __always_inline void rep_movs(void *to, const void *from, size_t n)

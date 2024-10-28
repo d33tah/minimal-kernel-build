@@ -72,20 +72,137 @@ static DEFINE_SPINLOCK(cpa_lock);
 #define CPA_FLUSHTLB 1
 #define CPA_ARRAY 2
 #define CPA_PAGES_ARRAY 4
-#define CPA_NO_CHECK_ALIAS 8
+#define CPA_NO_CHECK_ALIAS 8 /* Do not search for aliases */
 
 static inline pgprot_t cachemode2pgprot(enum page_cache_mode pcm)
 {
 	return __pgprot(cachemode2protval(pcm));
 }
 
-static inline void split_page_count(int level) { }
+#ifdef CONFIG_PROC_FS
+static unsigned long direct_pages_count[PG_LEVEL_NUM];
 
+void update_page_count(int level, unsigned long pages)
+{
+	/* Protect against CPA */
+	spin_lock(&pgd_lock);
+	direct_pages_count[level] += pages;
+	spin_unlock(&pgd_lock);
+}
+
+static void split_page_count(int level)
+{
+	if (direct_pages_count[level] == 0)
+		return;
+
+	direct_pages_count[level]--;
+	if (system_state == SYSTEM_RUNNING) {
+		if (level == PG_LEVEL_2M)
+			count_vm_event(DIRECT_MAP_LEVEL2_SPLIT);
+		else if (level == PG_LEVEL_1G)
+			count_vm_event(DIRECT_MAP_LEVEL3_SPLIT);
+	}
+	direct_pages_count[level - 1] += PTRS_PER_PTE;
+}
+
+void arch_report_meminfo(struct seq_file *m)
+{
+	seq_printf(m, "DirectMap4k:    %8lu kB\n",
+			direct_pages_count[PG_LEVEL_4K] << 2);
+#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
+	seq_printf(m, "DirectMap2M:    %8lu kB\n",
+			direct_pages_count[PG_LEVEL_2M] << 11);
+#else
+	seq_printf(m, "DirectMap4M:    %8lu kB\n",
+			direct_pages_count[PG_LEVEL_2M] << 12);
+#endif
+	if (direct_gbpages)
+		seq_printf(m, "DirectMap1G:    %8lu kB\n",
+			direct_pages_count[PG_LEVEL_1G] << 20);
+}
+#else
+static inline void split_page_count(int level) { }
+#endif
+
+#ifdef CONFIG_X86_CPA_STATISTICS
+
+static unsigned long cpa_1g_checked;
+static unsigned long cpa_1g_sameprot;
+static unsigned long cpa_1g_preserved;
+static unsigned long cpa_2m_checked;
+static unsigned long cpa_2m_sameprot;
+static unsigned long cpa_2m_preserved;
+static unsigned long cpa_4k_install;
+
+static inline void cpa_inc_1g_checked(void)
+{
+	cpa_1g_checked++;
+}
+
+static inline void cpa_inc_2m_checked(void)
+{
+	cpa_2m_checked++;
+}
+
+static inline void cpa_inc_4k_install(void)
+{
+	data_race(cpa_4k_install++);
+}
+
+static inline void cpa_inc_lp_sameprot(int level)
+{
+	if (level == PG_LEVEL_1G)
+		cpa_1g_sameprot++;
+	else
+		cpa_2m_sameprot++;
+}
+
+static inline void cpa_inc_lp_preserved(int level)
+{
+	if (level == PG_LEVEL_1G)
+		cpa_1g_preserved++;
+	else
+		cpa_2m_preserved++;
+}
+
+static int cpastats_show(struct seq_file *m, void *p)
+{
+	seq_printf(m, "1G pages checked:     %16lu\n", cpa_1g_checked);
+	seq_printf(m, "1G pages sameprot:    %16lu\n", cpa_1g_sameprot);
+	seq_printf(m, "1G pages preserved:   %16lu\n", cpa_1g_preserved);
+	seq_printf(m, "2M pages checked:     %16lu\n", cpa_2m_checked);
+	seq_printf(m, "2M pages sameprot:    %16lu\n", cpa_2m_sameprot);
+	seq_printf(m, "2M pages preserved:   %16lu\n", cpa_2m_preserved);
+	seq_printf(m, "4K pages set-checked: %16lu\n", cpa_4k_install);
+	return 0;
+}
+
+static int cpastats_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, cpastats_show, NULL);
+}
+
+static const struct file_operations cpastats_fops = {
+	.open		= cpastats_open,
+	.read		= seq_read,
+	.llseek		= seq_lseek,
+	.release	= single_release,
+};
+
+static int __init cpa_stats_init(void)
+{
+	debugfs_create_file("cpa_stats", S_IRUSR, arch_debugfs_dir, NULL,
+			    &cpastats_fops);
+	return 0;
+}
+late_initcall(cpa_stats_init);
+#else
 static inline void cpa_inc_1g_checked(void) { }
 static inline void cpa_inc_2m_checked(void) { }
 static inline void cpa_inc_4k_install(void) { }
 static inline void cpa_inc_lp_sameprot(int level) { }
 static inline void cpa_inc_lp_preserved(int level) { }
+#endif
 
 
 static inline int
@@ -100,6 +217,29 @@ within_inclusive(unsigned long addr, unsigned long start, unsigned long end)
 	return addr >= start && addr <= end;
 }
 
+#ifdef CONFIG_X86_64
+
+static inline unsigned long highmap_start_pfn(void)
+{
+	return __pa_symbol(_text) >> PAGE_SHIFT;
+}
+
+static inline unsigned long highmap_end_pfn(void)
+{
+	/* Do not reference physical address outside the kernel. */
+	return __pa_symbol(roundup(_brk_end, PMD_SIZE) - 1) >> PAGE_SHIFT;
+}
+
+static bool __cpa_pfn_in_highmap(unsigned long pfn)
+{
+	/*
+	 * Kernel text has an alias mapping at a high address, known
+	 * here as "highmap".
+	 */
+	return within_inclusive(pfn, highmap_start_pfn(), highmap_end_pfn());
+}
+
+#else
 
 static bool __cpa_pfn_in_highmap(unsigned long pfn)
 {
@@ -107,6 +247,7 @@ static bool __cpa_pfn_in_highmap(unsigned long pfn)
 	return false;
 }
 
+#endif
 
 /*
  * See set_mce_nospec().
@@ -124,7 +265,11 @@ static bool __cpa_pfn_in_highmap(unsigned long pfn)
  */
 static inline unsigned long fix_addr(unsigned long addr)
 {
+#ifdef CONFIG_X86_64
+	return (long)(addr << 1) >> 1;
+#else
 	return addr;
+#endif
 }
 
 static unsigned long __cpa_addr(struct cpa_data *cpa, unsigned long idx)
@@ -177,6 +322,13 @@ void clflush_cache_range(void *vaddr, unsigned int size)
 }
 EXPORT_SYMBOL_GPL(clflush_cache_range);
 
+#ifdef CONFIG_ARCH_HAS_PMEM_API
+void arch_invalidate_pmem(void *addr, size_t size)
+{
+	clflush_cache_range(addr, size);
+}
+EXPORT_SYMBOL_GPL(arch_invalidate_pmem);
+#endif
 
 static void __cpa_flush_all(void *arg)
 {
@@ -251,10 +403,26 @@ static bool overlaps(unsigned long r1_start, unsigned long r1_end,
 		(r2_start <= r1_end && r2_end >= r1_start);
 }
 
+#ifdef CONFIG_PCI_BIOS
+/*
+ * The BIOS area between 640k and 1Mb needs to be executable for PCI BIOS
+ * based config access (CONFIG_PCI_GOBIOS) support.
+ */
+#define BIOS_PFN	PFN_DOWN(BIOS_BEGIN)
+#define BIOS_PFN_END	PFN_DOWN(BIOS_END - 1)
+
+static pgprotval_t protect_pci_bios(unsigned long spfn, unsigned long epfn)
+{
+	if (pcibios_enabled && overlaps(spfn, epfn, BIOS_PFN, BIOS_PFN_END))
+		return _PAGE_NX;
+	return 0;
+}
+#else
 static pgprotval_t protect_pci_bios(unsigned long spfn, unsigned long epfn)
 {
 	return 0;
 }
+#endif
 
 /*
  * The .rodata section needs to be read-only. Using the pfn catches all
@@ -294,11 +462,48 @@ static pgprotval_t protect_kernel_text(unsigned long start, unsigned long end)
 	return 0;
 }
 
+#if defined(CONFIG_X86_64)
+/*
+ * Once the kernel maps the text as RO (kernel_set_to_readonly is set),
+ * kernel text mappings for the large page aligned text, rodata sections
+ * will be always read-only. For the kernel identity mappings covering the
+ * holes caused by this alignment can be anything that user asks.
+ *
+ * This will preserve the large page mappings for kernel text/data at no
+ * extra cost.
+ */
+static pgprotval_t protect_kernel_text_ro(unsigned long start,
+					  unsigned long end)
+{
+	unsigned long t_end = (unsigned long)__end_rodata_hpage_align - 1;
+	unsigned long t_start = (unsigned long)_text;
+	unsigned int level;
+
+	if (!kernel_set_to_readonly || !overlaps(start, end, t_start, t_end))
+		return 0;
+	/*
+	 * Don't enforce the !RW mapping for the kernel text mapping, if
+	 * the current mapping is already using small page mapping.  No
+	 * need to work hard to preserve large page mappings in this case.
+	 *
+	 * This also fixes the Linux Xen paravirt guest boot failure caused
+	 * by unexpected read-only mappings for kernel identity
+	 * mappings. In this paravirt guest case, the kernel text mapping
+	 * and the kernel identity mapping share the same page-table pages,
+	 * so the protections for kernel text and identity mappings have to
+	 * be the same.
+	 */
+	if (lookup_address(start, &level) && (level != PG_LEVEL_4K))
+		return _PAGE_RW;
+	return 0;
+}
+#else
 static pgprotval_t protect_kernel_text_ro(unsigned long start,
 					  unsigned long end)
 {
 	return 0;
 }
+#endif
 
 static inline bool conflicts(pgprot_t prot, pgprotval_t val)
 {
@@ -520,6 +725,7 @@ static void __set_pmd_pte(pte_t *kpte, unsigned long address, pte_t pte)
 {
 	/* change init_mm */
 	set_pte_atomic(kpte, pte);
+#ifdef CONFIG_X86_32
 	if (!SHARED_KERNEL_PMD) {
 		struct page *page;
 
@@ -536,6 +742,7 @@ static void __set_pmd_pte(pte_t *kpte, unsigned long address, pte_t pte)
 			set_pte_atomic((pte_t *)pmd, pte);
 		}
 	}
+#endif
 }
 
 static pgprot_t pgprot_clear_protnone_bits(pgprot_t prot)
@@ -1404,6 +1611,29 @@ static int cpa_process_alias(struct cpa_data *cpa)
 			return ret;
 	}
 
+#ifdef CONFIG_X86_64
+	/*
+	 * If the primary call didn't touch the high mapping already
+	 * and the physical address is inside the kernel map, we need
+	 * to touch the high mapped kernel as well:
+	 */
+	if (!within(vaddr, (unsigned long)_text, _brk_end) &&
+	    __cpa_pfn_in_highmap(cpa->pfn)) {
+		unsigned long temp_cpa_vaddr = (cpa->pfn << PAGE_SHIFT) +
+					       __START_KERNEL_map - phys_base;
+		alias_cpa = *cpa;
+		alias_cpa.vaddr = &temp_cpa_vaddr;
+		alias_cpa.flags &= ~(CPA_PAGES_ARRAY | CPA_ARRAY);
+		alias_cpa.curpage = 0;
+
+		cpa->force_flush_all = 1;
+		/*
+		 * The high mapping range is imprecise, so ignore the
+		 * return value.
+		 */
+		__change_page_attr_set_clr(&alias_cpa, 0);
+	}
+#endif
 
 	return 0;
 }
@@ -1685,6 +1915,49 @@ int set_memory_wb(unsigned long addr, int numpages)
 EXPORT_SYMBOL(set_memory_wb);
 
 /* Prevent speculative access to a page by marking it not-present */
+#ifdef CONFIG_X86_64
+int set_mce_nospec(unsigned long pfn)
+{
+	unsigned long decoy_addr;
+	int rc;
+
+	/* SGX pages are not in the 1:1 map */
+	if (arch_is_platform_page(pfn << PAGE_SHIFT))
+		return 0;
+	/*
+	 * We would like to just call:
+	 *      set_memory_XX((unsigned long)pfn_to_kaddr(pfn), 1);
+	 * but doing that would radically increase the odds of a
+	 * speculative access to the poison page because we'd have
+	 * the virtual address of the kernel 1:1 mapping sitting
+	 * around in registers.
+	 * Instead we get tricky.  We create a non-canonical address
+	 * that looks just like the one we want, but has bit 63 flipped.
+	 * This relies on set_memory_XX() properly sanitizing any __pa()
+	 * results with __PHYSICAL_MASK or PTE_PFN_MASK.
+	 */
+	decoy_addr = (pfn << PAGE_SHIFT) + (PAGE_OFFSET ^ BIT(63));
+
+	rc = set_memory_np(decoy_addr, 1);
+	if (rc)
+		pr_warn("Could not invalidate pfn=0x%lx from 1:1 map\n", pfn);
+	return rc;
+}
+
+static int set_memory_present(unsigned long *addr, int numpages)
+{
+	return change_page_attr_set(addr, numpages, __pgprot(_PAGE_PRESENT), 0);
+}
+
+/* Restore full speculative operation to the pfn. */
+int clear_mce_nospec(unsigned long pfn)
+{
+	unsigned long addr = (unsigned long) pfn_to_kaddr(pfn);
+
+	return set_memory_present(&addr, 1);
+}
+EXPORT_SYMBOL_GPL(clear_mce_nospec);
+#endif /* CONFIG_X86_64 */
 
 int set_memory_x(unsigned long addr, int numpages)
 {
@@ -1980,6 +2253,39 @@ int set_direct_map_default_noflush(struct page *page)
 	return __set_pages_p(page, 1);
 }
 
+#ifdef CONFIG_DEBUG_PAGEALLOC
+void __kernel_map_pages(struct page *page, int numpages, int enable)
+{
+	if (PageHighMem(page))
+		return;
+	if (!enable) {
+		debug_check_no_locks_freed(page_address(page),
+					   numpages * PAGE_SIZE);
+	}
+
+	/*
+	 * The return value is ignored as the calls cannot fail.
+	 * Large pages for identity mappings are not used at boot time
+	 * and hence no memory allocations during large page split.
+	 */
+	if (enable)
+		__set_pages_p(page, numpages);
+	else
+		__set_pages_np(page, numpages);
+
+	/*
+	 * We should perform an IPI and flush all tlbs,
+	 * but that can deadlock->flush only current cpu.
+	 * Preemption needs to be disabled around __flush_tlb_all() due to
+	 * CR3 reload in __native_flush_tlb().
+	 */
+	preempt_disable();
+	__flush_tlb_all();
+	preempt_enable();
+
+	arch_flush_lazy_mmu_mode();
+}
+#endif /* CONFIG_DEBUG_PAGEALLOC */
 
 bool kernel_page_present(struct page *page)
 {
@@ -2063,3 +2369,6 @@ int __init kernel_unmap_pages_in_pgd(pgd_t *pgd, unsigned long address,
  * The testcases use internal knowledge of the implementation that shouldn't
  * be exposed to the rest of the kernel. Include these directly here.
  */
+#ifdef CONFIG_CPA_DEBUG
+#include "cpa-test.c"
+#endif

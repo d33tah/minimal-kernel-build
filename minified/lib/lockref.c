@@ -2,9 +2,36 @@
 #include <linux/export.h>
 #include <linux/lockref.h>
 
+#if USE_CMPXCHG_LOCKREF
 
-#define CMPXCHG_LOOP(CODE,SUCCESS) do { } while (0)
+/*
+ * Note that the "cmpxchg()" reloads the "old" value for the
+ * failure case.
+ */
+#define CMPXCHG_LOOP(CODE, SUCCESS) do {					\
+	int retry = 100;							\
+	struct lockref old;							\
+	BUILD_BUG_ON(sizeof(old) != 8);						\
+	old.lock_count = READ_ONCE(lockref->lock_count);			\
+	while (likely(arch_spin_value_unlocked(old.lock.rlock.raw_lock))) {  	\
+		struct lockref new = old;					\
+		CODE								\
+		if (likely(try_cmpxchg64_relaxed(&lockref->lock_count,		\
+						 &old.lock_count,		\
+						 new.lock_count))) {		\
+			SUCCESS;						\
+		}								\
+		if (!--retry)							\
+			break;							\
+		cpu_relax();							\
+	}									\
+} while (0)
 
+#else
+
+#define CMPXCHG_LOOP(CODE, SUCCESS) do { } while (0)
+
+#endif
 
 /**
  * lockref_get - Increments reference count unconditionally

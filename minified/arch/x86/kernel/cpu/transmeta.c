@@ -91,6 +91,13 @@ static void init_transmeta(struct cpuinfo_x86 *c)
 	/* All Transmeta CPUs have a constant TSC */
 	set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
 
+#ifdef CONFIG_SYSCTL
+	/*
+	 * randomize_va_space slows us down enormously;
+	 * it probably triggers retranslation of x86->native bytecode
+	 */
+	randomize_va_space = 0;
+#endif
 }
 
 static const struct cpu_dev transmeta_cpu_dev = {

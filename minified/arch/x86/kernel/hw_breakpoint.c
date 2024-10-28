@@ -186,6 +186,10 @@ static int arch_bp_generic_len(int x86_len)
 		return HW_BREAKPOINT_LEN_2;
 	case X86_BREAKPOINT_LEN_4:
 		return HW_BREAKPOINT_LEN_4;
+#ifdef CONFIG_X86_64
+	case X86_BREAKPOINT_LEN_8:
+		return HW_BREAKPOINT_LEN_8;
+#endif
 	default:
 		return -EINVAL;
 	}
@@ -269,9 +273,15 @@ static inline bool within_cpu_entry(unsigned long addr, unsigned long end)
 	 * When FSGSBASE is enabled, paranoid_entry() fetches the per-CPU
 	 * GSBASE value via __per_cpu_offset or pcpu_unit_offsets.
 	 */
+#ifdef CONFIG_SMP
+	if (within_area(addr, end, (unsigned long)__per_cpu_offset,
+			sizeof(unsigned long) * nr_cpu_ids))
+		return true;
+#else
 	if (within_area(addr, end, (unsigned long)&pcpu_unit_offsets,
 			sizeof(pcpu_unit_offsets)))
 		return true;
+#endif
 
 	for_each_possible_cpu(cpu) {
 		/* The original rw GDT is being used after load_direct_gdt() */
@@ -377,6 +387,11 @@ static int arch_build_bp_info(struct perf_event *bp,
 	case HW_BREAKPOINT_LEN_4:
 		hw->len = X86_BREAKPOINT_LEN_4;
 		break;
+#ifdef CONFIG_X86_64
+	case HW_BREAKPOINT_LEN_8:
+		hw->len = X86_BREAKPOINT_LEN_8;
+		break;
+#endif
 	default:
 		/* AMD range breakpoint */
 		if (!is_power_of_2(attr->bp_len))
@@ -428,6 +443,11 @@ int hw_breakpoint_arch_parse(struct perf_event *bp,
 	case X86_BREAKPOINT_LEN_4:
 		align = 3;
 		break;
+#ifdef CONFIG_X86_64
+	case X86_BREAKPOINT_LEN_8:
+		align = 7;
+		break;
+#endif
 	default:
 		WARN_ON_ONCE(1);
 		return -EINVAL;

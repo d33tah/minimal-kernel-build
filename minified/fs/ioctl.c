@@ -28,7 +28,7 @@
 #include <asm/ioctls.h>
 
 /* So that the fiemap access checks can't overflow on 32 bit machines. */
-#define FIEMAP_MAX_EXTENTS (UINT_MAX / sizeof(struct fiemap_extent))
+#define FIEMAP_MAX_EXTENTS	(UINT_MAX / sizeof(struct fiemap_extent))
 
 /**
  * vfs_ioctl - call filesystem specific ioctl methods
@@ -109,9 +109,9 @@ static int ioctl_fibmap(struct file *filp, int __user *p)
  * Returns 0 on success, -errno on error, 1 if this was the last
  * extent that will fit in user array.
  */
-#define SET_UNKNOWN_FLAGS (FIEMAP_EXTENT_DELALLOC)
-#define SET_NO_UNMOUNTED_IO_FLAGS (FIEMAP_EXTENT_DATA_ENCRYPTED)
-#define SET_NOT_ALIGNED_FLAGS (FIEMAP_EXTENT_DATA_TAIL|FIEMAP_EXTENT_DATA_INLINE)
+#define SET_UNKNOWN_FLAGS	(FIEMAP_EXTENT_DELALLOC)
+#define SET_NO_UNMOUNTED_IO_FLAGS	(FIEMAP_EXTENT_DATA_ENCRYPTED)
+#define SET_NOT_ALIGNED_FLAGS	(FIEMAP_EXTENT_DATA_TAIL|FIEMAP_EXTENT_DATA_INLINE)
 int fiemap_fill_next_extent(struct fiemap_extent_info *fieinfo, u64 logical,
 			    u64 phys, u64 len, u32 flags)
 {
@@ -292,6 +292,33 @@ static int ioctl_preallocate(struct file *filp, int mode, void __user *argp)
 }
 
 /* on ia32 l_start is on a 32-bit boundary */
+#if defined CONFIG_COMPAT && defined(CONFIG_X86_64)
+/* just account for different alignment */
+static int compat_ioctl_preallocate(struct file *file, int mode,
+				    struct space_resv_32 __user *argp)
+{
+	struct inode *inode = file_inode(file);
+	struct space_resv_32 sr;
+
+	if (copy_from_user(&sr, argp, sizeof(sr)))
+		return -EFAULT;
+
+	switch (sr.l_whence) {
+	case SEEK_SET:
+		break;
+	case SEEK_CUR:
+		sr.l_start += file->f_pos;
+		break;
+	case SEEK_END:
+		sr.l_start += i_size_read(inode);
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	return vfs_fallocate(file, mode | FALLOC_FL_KEEP_SIZE, sr.l_start, sr.l_len);
+}
+#endif
 
 static int file_ioctl(struct file *filp, unsigned int cmd, int __user *p)
 {
@@ -320,6 +347,11 @@ static int ioctl_fionbio(struct file *filp, int __user *argp)
 	if (error)
 		return error;
 	flag = O_NONBLOCK;
+#ifdef __sparc__
+	/* SunOS compatibility item. */
+	if (O_NONBLOCK != O_NDELAY)
+		flag |= O_NDELAY;
+#endif
 	spin_lock(&filp->f_lock);
 	if (on)
 		filp->f_flags |= flag;
@@ -842,3 +874,106 @@ out:
 	return error;
 }
 
+#ifdef CONFIG_COMPAT
+/**
+ * compat_ptr_ioctl - generic implementation of .compat_ioctl file operation
+ *
+ * This is not normally called as a function, but instead set in struct
+ * file_operations as
+ *
+ *     .compat_ioctl = compat_ptr_ioctl,
+ *
+ * On most architectures, the compat_ptr_ioctl() just passes all arguments
+ * to the corresponding ->ioctl handler. The exception is arch/s390, where
+ * compat_ptr() clears the top bit of a 32-bit pointer value, so user space
+ * pointers to the second 2GB alias the first 2GB, as is the case for
+ * native 32-bit s390 user space.
+ *
+ * The compat_ptr_ioctl() function must therefore be used only with ioctl
+ * functions that either ignore the argument or pass a pointer to a
+ * compatible data type.
+ *
+ * If any ioctl command handled by fops->unlocked_ioctl passes a plain
+ * integer instead of a pointer, or any of the passed data types
+ * is incompatible between 32-bit and 64-bit architectures, a proper
+ * handler is required instead of compat_ptr_ioctl.
+ */
+long compat_ptr_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+{
+	if (!file->f_op->unlocked_ioctl)
+		return -ENOIOCTLCMD;
+
+	return file->f_op->unlocked_ioctl(file, cmd, (unsigned long)compat_ptr(arg));
+}
+EXPORT_SYMBOL(compat_ptr_ioctl);
+
+COMPAT_SYSCALL_DEFINE3(ioctl, unsigned int, fd, unsigned int, cmd,
+		       compat_ulong_t, arg)
+{
+	struct fd f = fdget(fd);
+	int error;
+
+	if (!f.file)
+		return -EBADF;
+
+	/* RED-PEN how should LSM module know it's handling 32bit? */
+	error = security_file_ioctl(f.file, cmd, arg);
+	if (error)
+		goto out;
+
+	switch (cmd) {
+	/* FICLONE takes an int argument, so don't use compat_ptr() */
+	case FICLONE:
+		error = ioctl_file_clone(f.file, arg, 0, 0, 0);
+		break;
+
+#if defined(CONFIG_X86_64)
+	/* these get messy on amd64 due to alignment differences */
+	case FS_IOC_RESVSP_32:
+	case FS_IOC_RESVSP64_32:
+		error = compat_ioctl_preallocate(f.file, 0, compat_ptr(arg));
+		break;
+	case FS_IOC_UNRESVSP_32:
+	case FS_IOC_UNRESVSP64_32:
+		error = compat_ioctl_preallocate(f.file, FALLOC_FL_PUNCH_HOLE,
+				compat_ptr(arg));
+		break;
+	case FS_IOC_ZERO_RANGE_32:
+		error = compat_ioctl_preallocate(f.file, FALLOC_FL_ZERO_RANGE,
+				compat_ptr(arg));
+		break;
+#endif
+
+	/*
+	 * These access 32-bit values anyway so no further handling is
+	 * necessary.
+	 */
+	case FS_IOC32_GETFLAGS:
+	case FS_IOC32_SETFLAGS:
+		cmd = (cmd == FS_IOC32_GETFLAGS) ?
+			FS_IOC_GETFLAGS : FS_IOC_SETFLAGS;
+		fallthrough;
+	/*
+	 * everything else in do_vfs_ioctl() takes either a compatible
+	 * pointer argument or no argument -- call it with a modified
+	 * argument.
+	 */
+	default:
+		error = do_vfs_ioctl(f.file, fd, cmd,
+				     (unsigned long)compat_ptr(arg));
+		if (error != -ENOIOCTLCMD)
+			break;
+
+		if (f.file->f_op->compat_ioctl)
+			error = f.file->f_op->compat_ioctl(f.file, cmd, arg);
+		if (error == -ENOIOCTLCMD)
+			error = -ENOTTY;
+		break;
+	}
+
+ out:
+	fdput(f);
+
+	return error;
+}
+#endif

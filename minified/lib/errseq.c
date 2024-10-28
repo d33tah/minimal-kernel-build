@@ -34,13 +34,13 @@
  */
 
 /* The low bits are designated for error code (max of MAX_ERRNO) */
-#define ERRSEQ_SHIFT ilog2(MAX_ERRNO + 1)
+#define ERRSEQ_SHIFT		ilog2(MAX_ERRNO + 1)
 
 /* This bit is used as a flag to indicate whether the value has been seen */
-#define ERRSEQ_SEEN (1 << ERRSEQ_SHIFT)
+#define ERRSEQ_SEEN		(1 << ERRSEQ_SHIFT)
 
 /* The lowest bit of the counter */
-#define ERRSEQ_CTR_INC (1 << (ERRSEQ_SHIFT + 1))
+#define ERRSEQ_CTR_INC		(1 << (ERRSEQ_SHIFT + 1))
 
 /**
  * errseq_set - set a errseq_t for later reporting

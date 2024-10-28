@@ -42,7 +42,9 @@ static struct pt_pmu pt_pmu;
  * width encoded in IP-related packets), and event configuration (bitmasks with
  * permitted values for certain bit fields).
  */
-#define PT_CAP(_n,_l,_r,_m) [PT_CAP_ ## _n] = { .name = __stringify(_n), .leaf = _l, .reg = _r, .mask = _m }
+#define PT_CAP(_n, _l, _r, _m)						\
+	[PT_CAP_ ## _n] = { .name = __stringify(_n), .leaf = _l,	\
+			    .reg = _r, .mask = _m }
 
 static struct pt_cap_desc {
 	const char	*name;
@@ -275,11 +277,15 @@ fail:
 	return ret;
 }
 
-#define RTIT_CTL_CYC_PSB (RTIT_CTL_CYCLEACC | RTIT_CTL_CYC_THRESH | RTIT_CTL_PSB_FREQ)
+#define RTIT_CTL_CYC_PSB (RTIT_CTL_CYCLEACC	| \
+			  RTIT_CTL_CYC_THRESH	| \
+			  RTIT_CTL_PSB_FREQ)
 
-#define RTIT_CTL_MTC (RTIT_CTL_MTC_EN | RTIT_CTL_MTC_RANGE)
+#define RTIT_CTL_MTC	(RTIT_CTL_MTC_EN	| \
+			 RTIT_CTL_MTC_RANGE)
 
-#define RTIT_CTL_PTW (RTIT_CTL_PTW_EN | RTIT_CTL_FUP_ON_PTW)
+#define RTIT_CTL_PTW	(RTIT_CTL_PTW_EN	| \
+			 RTIT_CTL_FUP_ON_PTW)
 
 /*
  * Bit 0 (TraceEn) in the attr.config is meaningless as the
@@ -291,7 +297,17 @@ fail:
  */
 #define RTIT_CTL_PASSTHROUGH RTIT_CTL_TRACEEN
 
-#define PT_CONFIG_MASK (RTIT_CTL_TRACEEN | RTIT_CTL_TSC_EN | RTIT_CTL_DISRETC | RTIT_CTL_BRANCH_EN | RTIT_CTL_CYC_PSB | RTIT_CTL_MTC | RTIT_CTL_PWR_EVT_EN | RTIT_CTL_EVENT_EN | RTIT_CTL_NOTNT | RTIT_CTL_FUP_ON_PTW | RTIT_CTL_PTW_EN)
+#define PT_CONFIG_MASK (RTIT_CTL_TRACEEN	| \
+			RTIT_CTL_TSC_EN		| \
+			RTIT_CTL_DISRETC	| \
+			RTIT_CTL_BRANCH_EN	| \
+			RTIT_CTL_CYC_PSB	| \
+			RTIT_CTL_MTC		| \
+			RTIT_CTL_PWR_EVT_EN	| \
+			RTIT_CTL_EVENT_EN	| \
+			RTIT_CTL_NOTNT		| \
+			RTIT_CTL_FUP_ON_PTW	| \
+			RTIT_CTL_PTW_EN)
 
 static bool pt_event_valid(struct perf_event *event)
 {
@@ -568,7 +584,8 @@ struct topa {
  * taking up a few words from the top
  */
 
-#define TENTS_PER_PAGE ((PAGE_SIZE - sizeof(struct topa)) / sizeof(struct topa_entry))
+#define TENTS_PER_PAGE	\
+	((PAGE_SIZE - sizeof(struct topa)) / sizeof(struct topa_entry))
 
 /**
  * struct topa_page - page-sized ToPA table with metadata at the top
@@ -596,9 +613,12 @@ static inline phys_addr_t topa_pfn(struct topa *topa)
 }
 
 /* make -1 stand for the last table entry */
-#define TOPA_ENTRY(t,i) ((i) == -1 ? &topa_to_page(t)->table[(t)->last] : &topa_to_page(t)->table[(i)])
-#define TOPA_ENTRY_SIZE(t,i) (sizes(TOPA_ENTRY((t), (i))->size))
-#define TOPA_ENTRY_PAGES(t,i) (1 << TOPA_ENTRY((t), (i))->size)
+#define TOPA_ENTRY(t, i)				\
+	((i) == -1					\
+		? &topa_to_page(t)->table[(t)->last]	\
+		: &topa_to_page(t)->table[(i)])
+#define TOPA_ENTRY_SIZE(t, i) (sizes(TOPA_ENTRY((t), (i))->size))
+#define TOPA_ENTRY_PAGES(t, i) (1 << TOPA_ENTRY((t), (i))->size)
 
 static void pt_config_buffer(struct pt_buffer *buf)
 {
@@ -1346,8 +1366,26 @@ static void pt_addr_filters_fini(struct perf_event *event)
 	event->hw.addr_filters = NULL;
 }
 
-#define clamp_to_ge_canonical_addr(x,y) (x)
-#define clamp_to_le_canonical_addr(x,y) (x)
+#ifdef CONFIG_X86_64
+/* Clamp to a canonical address greater-than-or-equal-to the address given */
+static u64 clamp_to_ge_canonical_addr(u64 vaddr, u8 vaddr_bits)
+{
+	return __is_canonical_address(vaddr, vaddr_bits) ?
+	       vaddr :
+	       -BIT_ULL(vaddr_bits - 1);
+}
+
+/* Clamp to a canonical address less-than-or-equal-to the address given */
+static u64 clamp_to_le_canonical_addr(u64 vaddr, u8 vaddr_bits)
+{
+	return __is_canonical_address(vaddr, vaddr_bits) ?
+	       vaddr :
+	       BIT_ULL(vaddr_bits - 1) - 1;
+}
+#else
+#define clamp_to_ge_canonical_addr(x, y) (x)
+#define clamp_to_le_canonical_addr(x, y) (x)
+#endif
 
 static int pt_event_addr_filters_validate(struct list_head *filters)
 {

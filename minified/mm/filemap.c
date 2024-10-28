@@ -46,13 +46,13 @@
 #include <asm/tlbflush.h>
 #include "internal.h"
 
-#define CREATE_TRACE_POINTS 
+#define CREATE_TRACE_POINTS
 #include <trace/events/filemap.h>
 
 /*
  * FIXME: remove all knowledge of the buffer layer from the core VM
  */
-#include <linux/buffer_head.h>
+#include <linux/buffer_head.h> /* for try_to_free_buffers */
 
 #include <asm/mman.h>
 
@@ -977,6 +977,26 @@ int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 }
 EXPORT_SYMBOL_GPL(filemap_add_folio);
 
+#ifdef CONFIG_NUMA
+struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
+{
+	int n;
+	struct folio *folio;
+
+	if (cpuset_do_page_mem_spread()) {
+		unsigned int cpuset_mems_cookie;
+		do {
+			cpuset_mems_cookie = read_mems_allowed_begin();
+			n = cpuset_mem_spread_node();
+			folio = __folio_alloc_node(gfp, order, n);
+		} while (!folio && read_mems_allowed_retry(cpuset_mems_cookie));
+
+		return folio;
+	}
+	return folio_alloc(gfp, order);
+}
+EXPORT_SYMBOL(filemap_alloc_folio);
+#endif
 
 /*
  * filemap_invalidate_lock_two - lock invalidate_lock for two mappings
@@ -1359,6 +1379,94 @@ repeat:
 	return wait->flags & WQ_FLAG_WOKEN ? 0 : -EINTR;
 }
 
+#ifdef CONFIG_MIGRATION
+/**
+ * migration_entry_wait_on_locked - Wait for a migration entry to be removed
+ * @entry: migration swap entry.
+ * @ptep: mapped pte pointer. Will return with the ptep unmapped. Only required
+ *        for pte entries, pass NULL for pmd entries.
+ * @ptl: already locked ptl. This function will drop the lock.
+ *
+ * Wait for a migration entry referencing the given page to be removed. This is
+ * equivalent to put_and_wait_on_page_locked(page, TASK_UNINTERRUPTIBLE) except
+ * this can be called without taking a reference on the page. Instead this
+ * should be called while holding the ptl for the migration entry referencing
+ * the page.
+ *
+ * Returns after unmapping and unlocking the pte/ptl with pte_unmap_unlock().
+ *
+ * This follows the same logic as folio_wait_bit_common() so see the comments
+ * there.
+ */
+void migration_entry_wait_on_locked(swp_entry_t entry, pte_t *ptep,
+				spinlock_t *ptl)
+{
+	struct wait_page_queue wait_page;
+	wait_queue_entry_t *wait = &wait_page.wait;
+	bool thrashing = false;
+	bool delayacct = false;
+	unsigned long pflags;
+	wait_queue_head_t *q;
+	struct folio *folio = page_folio(pfn_swap_entry_to_page(entry));
+
+	q = folio_waitqueue(folio);
+	if (!folio_test_uptodate(folio) && folio_test_workingset(folio)) {
+		if (!folio_test_swapbacked(folio)) {
+			delayacct_thrashing_start();
+			delayacct = true;
+		}
+		psi_memstall_enter(&pflags);
+		thrashing = true;
+	}
+
+	init_wait(wait);
+	wait->func = wake_page_function;
+	wait_page.folio = folio;
+	wait_page.bit_nr = PG_locked;
+	wait->flags = 0;
+
+	spin_lock_irq(&q->lock);
+	folio_set_waiters(folio);
+	if (!folio_trylock_flag(folio, PG_locked, wait))
+		__add_wait_queue_entry_tail(q, wait);
+	spin_unlock_irq(&q->lock);
+
+	/*
+	 * If a migration entry exists for the page the migration path must hold
+	 * a valid reference to the page, and it must take the ptl to remove the
+	 * migration entry. So the page is valid until the ptl is dropped.
+	 */
+	if (ptep)
+		pte_unmap_unlock(ptep, ptl);
+	else
+		spin_unlock(ptl);
+
+	for (;;) {
+		unsigned int flags;
+
+		set_current_state(TASK_UNINTERRUPTIBLE);
+
+		/* Loop until we've been woken or interrupted */
+		flags = smp_load_acquire(&wait->flags);
+		if (!(flags & WQ_FLAG_WOKEN)) {
+			if (signal_pending_state(TASK_UNINTERRUPTIBLE, current))
+				break;
+
+			io_schedule();
+			continue;
+		}
+		break;
+	}
+
+	finish_wait(q, wait);
+
+	if (thrashing) {
+		if (delayacct)
+			delayacct_thrashing_end();
+		psi_memstall_leave(&pflags);
+	}
+}
+#endif
 
 void folio_wait_bit(struct folio *folio, int bit_nr)
 {
@@ -1409,6 +1517,28 @@ void folio_add_wait_queue(struct folio *folio, wait_queue_entry_t *waiter)
 }
 EXPORT_SYMBOL_GPL(folio_add_wait_queue);
 
+#ifndef clear_bit_unlock_is_negative_byte
+
+/*
+ * PG_waiters is the high bit in the same byte as PG_lock.
+ *
+ * On x86 (and on many other architectures), we can clear PG_lock and
+ * test the sign bit at the same time. But if the architecture does
+ * not support that special operation, we just do this all by hand
+ * instead.
+ *
+ * The read of PG_waiters has to be after (or concurrently with) PG_locked
+ * being cleared, but a memory barrier should be unnecessary since it is
+ * in the same byte as PG_locked.
+ */
+static inline bool clear_bit_unlock_is_negative_byte(long nr, volatile void *mem)
+{
+	clear_bit_unlock(nr, mem);
+	/* smp_mb__after_atomic(); */
+	return test_bit(PG_waiters, mem);
+}
+
+#endif
 
 /**
  * folio_unlock - Unlock a locked folio.
@@ -2809,7 +2939,8 @@ unlock:
 	return start;
 }
 
-#define MMAP_LOTSAMISS (100)
+#ifdef CONFIG_MMU
+#define MMAP_LOTSAMISS  (100)
 /*
  * lock_folio_maybe_drop_mmap - lock the page, possibly dropping the mmap_lock
  * @vmf - the vm_fault for this fault.
@@ -2872,6 +3003,23 @@ static struct file *do_sync_mmap_readahead(struct vm_fault *vmf)
 	unsigned long vm_flags = vmf->vma->vm_flags;
 	unsigned int mmap_miss;
 
+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+	/* Use the readahead code, even if readahead is disabled */
+	if (vm_flags & VM_HUGEPAGE) {
+		fpin = maybe_unlock_mmap_for_io(vmf, fpin);
+		ractl._index &= ~((unsigned long)HPAGE_PMD_NR - 1);
+		ra->size = HPAGE_PMD_NR;
+		/*
+		 * Fetch two PMD folios, so we get the chance to actually
+		 * readahead, unless we've been told not to.
+		 */
+		if (!(vm_flags & VM_RAND_READ))
+			ra->size *= 2;
+		ra->async_size = HPAGE_PMD_NR;
+		page_cache_ra_order(&ractl, ra, HPAGE_PMD_ORDER);
+		return fpin;
+	}
+#endif
 
 	/* If we don't want any read-ahead, don't bother */
 	if (vm_flags & VM_RAND_READ)
@@ -3330,6 +3478,20 @@ int generic_file_readonly_mmap(struct file *file, struct vm_area_struct *vma)
 		return -EINVAL;
 	return generic_file_mmap(file, vma);
 }
+#else
+vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
+{
+	return VM_FAULT_SIGBUS;
+}
+int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
+{
+	return -ENOSYS;
+}
+int generic_file_readonly_mmap(struct file *file, struct vm_area_struct *vma)
+{
+	return -ENOSYS;
+}
+#endif /* CONFIG_MMU */
 
 EXPORT_SYMBOL(filemap_page_mkwrite);
 EXPORT_SYMBOL(generic_file_mmap);

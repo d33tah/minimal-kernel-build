@@ -18,7 +18,7 @@
 #include <asm/tlbflush.h>
 #include <asm/tlb.h>
 #include <asm/proto.h>
-#include <asm/dma.h>
+#include <asm/dma.h>		/* for MAX_DMA_PFN */
 #include <asm/microcode.h>
 #include <asm/kaslr.h>
 #include <asm/hypervisor.h>
@@ -171,11 +171,19 @@ __ref void *alloc_low_pages(unsigned int num)
  * randomization is enabled.
  */
 
-#define INIT_PGD_PAGE_TABLES 3
+#ifndef CONFIG_X86_5LEVEL
+#define INIT_PGD_PAGE_TABLES    3
+#else
+#define INIT_PGD_PAGE_TABLES    4
+#endif
 
-#define INIT_PGD_PAGE_COUNT (2 * INIT_PGD_PAGE_TABLES)
+#ifndef CONFIG_RANDOMIZE_MEMORY
+#define INIT_PGD_PAGE_COUNT      (2 * INIT_PGD_PAGE_TABLES)
+#else
+#define INIT_PGD_PAGE_COUNT      (4 * INIT_PGD_PAGE_TABLES)
+#endif
 
-#define INIT_PGT_BUF_SIZE (INIT_PGD_PAGE_COUNT * PAGE_SIZE)
+#define INIT_PGT_BUF_SIZE	(INIT_PGD_PAGE_COUNT * PAGE_SIZE)
 RESERVE_BRK(early_pgt_alloc, INIT_PGT_BUF_SIZE);
 void  __init early_alloc_pgt_buf(void)
 {
@@ -294,7 +302,11 @@ static void setup_pcid(void)
 	}
 }
 
+#ifdef CONFIG_X86_32
 #define NR_RANGE_MR 3
+#else /* CONFIG_X86_64 */
+#define NR_RANGE_MR 5
+#endif
 
 static int __meminit save_mr(struct map_range *mr, int nr_range,
 			     unsigned long start_pfn, unsigned long end_pfn,
@@ -327,8 +339,10 @@ static void __ref adjust_range_page_size_mask(struct map_range *mr,
 			unsigned long start = round_down(mr[i].start, PMD_SIZE);
 			unsigned long end = round_up(mr[i].end, PMD_SIZE);
 
+#ifdef CONFIG_X86_32
 			if ((end >> PAGE_SHIFT) > max_low_pfn)
 				continue;
+#endif
 
 			if (memblock_is_region_memory(start, end - start))
 				mr[i].page_size_mask |= 1<<PG_LEVEL_2M;
@@ -381,6 +395,7 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 
 	/* head if not big page alignment ? */
 	pfn = start_pfn = PFN_DOWN(start);
+#ifdef CONFIG_X86_32
 	/*
 	 * Don't use a large page for the first 2/4MB of memory
 	 * because there are often fixed size MTRRs in there
@@ -391,6 +406,9 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 		end_pfn = PFN_DOWN(PMD_SIZE);
 	else
 		end_pfn = round_up(pfn, PFN_DOWN(PMD_SIZE));
+#else /* CONFIG_X86_64 */
+	end_pfn = round_up(pfn, PFN_DOWN(PMD_SIZE));
+#endif
 	if (end_pfn > limit_pfn)
 		end_pfn = limit_pfn;
 	if (start_pfn < end_pfn) {
@@ -400,7 +418,13 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 
 	/* big page (2M) range */
 	start_pfn = round_up(pfn, PFN_DOWN(PMD_SIZE));
+#ifdef CONFIG_X86_32
 	end_pfn = round_down(limit_pfn, PFN_DOWN(PMD_SIZE));
+#else /* CONFIG_X86_64 */
+	end_pfn = round_up(pfn, PFN_DOWN(PUD_SIZE));
+	if (end_pfn > round_down(limit_pfn, PFN_DOWN(PMD_SIZE)))
+		end_pfn = round_down(limit_pfn, PFN_DOWN(PMD_SIZE));
+#endif
 
 	if (start_pfn < end_pfn) {
 		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn,
@@ -408,6 +432,26 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 		pfn = end_pfn;
 	}
 
+#ifdef CONFIG_X86_64
+	/* big page (1G) range */
+	start_pfn = round_up(pfn, PFN_DOWN(PUD_SIZE));
+	end_pfn = round_down(limit_pfn, PFN_DOWN(PUD_SIZE));
+	if (start_pfn < end_pfn) {
+		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn,
+				page_size_mask &
+				 ((1<<PG_LEVEL_2M)|(1<<PG_LEVEL_1G)));
+		pfn = end_pfn;
+	}
+
+	/* tail is not big page (1G) alignment */
+	start_pfn = round_up(pfn, PFN_DOWN(PMD_SIZE));
+	end_pfn = round_down(limit_pfn, PFN_DOWN(PMD_SIZE));
+	if (start_pfn < end_pfn) {
+		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn,
+				page_size_mask & (1<<PG_LEVEL_2M));
+		pfn = end_pfn;
+	}
+#endif
 
 	/* tail is not big page (2M) alignment */
 	start_pfn = pfn;
@@ -678,6 +722,17 @@ static void __init memory_map_bottom_up(unsigned long map_start,
  */
 static void __init init_trampoline(void)
 {
+#ifdef CONFIG_X86_64
+	/*
+	 * The code below will alias kernel page-tables in the user-range of the
+	 * address space, including the Global bit. So global TLB entries will
+	 * be created when using the trampoline page-table.
+	 */
+	if (!kaslr_memory_enabled())
+		trampoline_pgd_entry = init_top_pgt[pgd_index(__PAGE_OFFSET)];
+	else
+		init_trampoline_kaslr();
+#endif
 }
 
 void __init init_mem_mapping(void)
@@ -688,7 +743,11 @@ void __init init_mem_mapping(void)
 	probe_page_size_mask();
 	setup_pcid();
 
+#ifdef CONFIG_X86_64
+	end = max_pfn << PAGE_SHIFT;
+#else
 	end = max_low_pfn << PAGE_SHIFT;
+#endif
 
 	/* the ISA range is always mapped regardless of memory holes */
 	init_memory_mapping(0, ISA_END_ADDRESS, PAGE_KERNEL);
@@ -716,7 +775,14 @@ void __init init_mem_mapping(void)
 		memory_map_top_down(ISA_END_ADDRESS, end);
 	}
 
+#ifdef CONFIG_X86_64
+	if (max_pfn > max_low_pfn) {
+		/* can we preserve max_low_pfn ?*/
+		max_low_pfn = max_pfn;
+	}
+#else
 	early_ioremap_page_table_range_init();
+#endif
 
 	load_cr3(swapper_pg_dir);
 	__flush_tlb_all();
@@ -889,6 +955,21 @@ void __ref free_initmem(void)
 				&__init_begin, &__init_end);
 }
 
+#ifdef CONFIG_BLK_DEV_INITRD
+void __init free_initrd_mem(unsigned long start, unsigned long end)
+{
+	/*
+	 * end could be not aligned, and We can not align that,
+	 * decompressor could be confused by aligned initrd_end
+	 * We already reserve the end partial page before in
+	 *   - i386_start_kernel()
+	 *   - x86_64_start_kernel()
+	 *   - relocate_initrd()
+	 * So here We can do PAGE_ALIGN() safely to get partial page to be freed
+	 */
+	free_init_pages("initrd", start, PAGE_ALIGN(end));
+}
+#endif
 
 /*
  * Calculate the precise size of the DMA zone (first 16 MB of RAM),
@@ -900,6 +981,41 @@ void __ref free_initmem(void)
  */
 void __init memblock_find_dma_reserve(void)
 {
+#ifdef CONFIG_X86_64
+	u64 nr_pages = 0, nr_free_pages = 0;
+	unsigned long start_pfn, end_pfn;
+	phys_addr_t start_addr, end_addr;
+	int i;
+	u64 u;
+
+	/*
+	 * Iterate over all memory ranges (free and reserved ones alike),
+	 * to calculate the total number of pages in the first 16 MB of RAM:
+	 */
+	nr_pages = 0;
+	for_each_mem_pfn_range(i, MAX_NUMNODES, &start_pfn, &end_pfn, NULL) {
+		start_pfn = min(start_pfn, MAX_DMA_PFN);
+		end_pfn   = min(end_pfn,   MAX_DMA_PFN);
+
+		nr_pages += end_pfn - start_pfn;
+	}
+
+	/*
+	 * Iterate over free memory ranges to calculate the number of free
+	 * pages in the DMA zone, while not counting potential partial
+	 * pages at the beginning or the end of the range:
+	 */
+	nr_free_pages = 0;
+	for_each_free_mem_range(u, NUMA_NO_NODE, MEMBLOCK_NONE, &start_addr, &end_addr, NULL) {
+		start_pfn = min_t(unsigned long, PFN_UP(start_addr), MAX_DMA_PFN);
+		end_pfn   = min_t(unsigned long, PFN_DOWN(end_addr), MAX_DMA_PFN);
+
+		if (start_pfn < end_pfn)
+			nr_free_pages += end_pfn - start_pfn;
+	}
+
+	set_dma_reserve(nr_pages - nr_free_pages);
+#endif
 }
 
 void __init zone_sizes_init(void)
@@ -908,7 +1024,16 @@ void __init zone_sizes_init(void)
 
 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
 
+#ifdef CONFIG_ZONE_DMA
+	max_zone_pfns[ZONE_DMA]		= min(MAX_DMA_PFN, max_low_pfn);
+#endif
+#ifdef CONFIG_ZONE_DMA32
+	max_zone_pfns[ZONE_DMA32]	= min(MAX_DMA32_PFN, max_low_pfn);
+#endif
 	max_zone_pfns[ZONE_NORMAL]	= max_low_pfn;
+#ifdef CONFIG_HIGHMEM
+	max_zone_pfns[ZONE_HIGHMEM]	= max_pfn;
+#endif
 
 	free_area_init(max_zone_pfns);
 }
@@ -928,3 +1053,25 @@ void update_cache_mode_entry(unsigned entry, enum page_cache_mode cache)
 	__pte2cachemode_tbl[entry] = cache;
 }
 
+#ifdef CONFIG_SWAP
+unsigned long max_swapfile_size(void)
+{
+	unsigned long pages;
+
+	pages = generic_max_swapfile_size();
+
+	if (boot_cpu_has_bug(X86_BUG_L1TF) && l1tf_mitigation != L1TF_MITIGATION_OFF) {
+		/* Limit the swap file size to MAX_PA/2 for L1TF workaround */
+		unsigned long long l1tf_limit = l1tf_pfn_limit();
+		/*
+		 * We encode swap offsets also with 3 bits below those for pfn
+		 * which makes the usable limit higher.
+		 */
+#if CONFIG_PGTABLE_LEVELS > 2
+		l1tf_limit <<= PAGE_SHIFT - SWP_OFFSET_FIRST_BIT;
+#endif
+		pages = min_t(unsigned long long, l1tf_limit, pages);
+	}
+	return pages;
+}
+#endif

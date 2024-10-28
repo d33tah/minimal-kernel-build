@@ -46,7 +46,7 @@
 #include <linux/mutex.h>
 #include <linux/futex.h>
 #include <linux/pipe_fs_i.h>
-#include <linux/audit.h>
+#include <linux/audit.h> /* for audit_free() */
 #include <linux/resource.h>
 #include <linux/task_io_accounting_ops.h>
 #include <linux/blkdev.h>
@@ -103,6 +103,11 @@ static void __exit_signal(struct task_struct *tsk)
 					lockdep_tasklist_lock_is_held());
 	spin_lock(&sighand->siglock);
 
+#ifdef CONFIG_POSIX_TIMERS
+	posix_cpu_timers_exit(tsk);
+	if (group_dead)
+		posix_cpu_timers_exit_group(tsk);
+#endif
 
 	if (group_dead) {
 		tty = sig->tty;
@@ -378,6 +383,93 @@ static void coredump_task_exit(struct task_struct *tsk)
 	}
 }
 
+#ifdef CONFIG_MEMCG
+/*
+ * A task is exiting.   If it owned this mm, find a new owner for the mm.
+ */
+void mm_update_next_owner(struct mm_struct *mm)
+{
+	struct task_struct *c, *g, *p = current;
+
+retry:
+	/*
+	 * If the exiting or execing task is not the owner, it's
+	 * someone else's problem.
+	 */
+	if (mm->owner != p)
+		return;
+	/*
+	 * The current owner is exiting/execing and there are no other
+	 * candidates.  Do not leave the mm pointing to a possibly
+	 * freed task structure.
+	 */
+	if (atomic_read(&mm->mm_users) <= 1) {
+		WRITE_ONCE(mm->owner, NULL);
+		return;
+	}
+
+	read_lock(&tasklist_lock);
+	/*
+	 * Search in the children
+	 */
+	list_for_each_entry(c, &p->children, sibling) {
+		if (c->mm == mm)
+			goto assign_new_owner;
+	}
+
+	/*
+	 * Search in the siblings
+	 */
+	list_for_each_entry(c, &p->real_parent->children, sibling) {
+		if (c->mm == mm)
+			goto assign_new_owner;
+	}
+
+	/*
+	 * Search through everything else, we should not get here often.
+	 */
+	for_each_process(g) {
+		if (g->flags & PF_KTHREAD)
+			continue;
+		for_each_thread(g, c) {
+			if (c->mm == mm)
+				goto assign_new_owner;
+			if (c->mm)
+				break;
+		}
+	}
+	read_unlock(&tasklist_lock);
+	/*
+	 * We found no owner yet mm_users > 1: this implies that we are
+	 * most likely racing with swapoff (try_to_unuse()) or /proc or
+	 * ptrace or page migration (get_task_mm()).  Mark owner as NULL.
+	 */
+	WRITE_ONCE(mm->owner, NULL);
+	return;
+
+assign_new_owner:
+	BUG_ON(c == p);
+	get_task_struct(c);
+	/*
+	 * The task_lock protects c->mm from changing.
+	 * We always want mm->owner->mm == mm
+	 */
+	task_lock(c);
+	/*
+	 * Delay read_unlock() till we have the task_lock()
+	 * to ensure that c does not slip away underneath us
+	 */
+	read_unlock(&tasklist_lock);
+	if (c->mm != mm) {
+		task_unlock(c);
+		put_task_struct(c);
+		goto retry;
+	}
+	WRITE_ONCE(mm->owner, c);
+	task_unlock(c);
+	put_task_struct(c);
+}
+#endif /* CONFIG_MEMCG */
 
 /*
  * Turn us into a lazy TLB process if we
@@ -617,7 +709,29 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 	}
 }
 
+#ifdef CONFIG_DEBUG_STACK_USAGE
+static void check_stack_usage(void)
+{
+	static DEFINE_SPINLOCK(low_water_lock);
+	static int lowest_to_date = THREAD_SIZE;
+	unsigned long free;
+
+	free = stack_not_used(current);
+
+	if (free >= lowest_to_date)
+		return;
+
+	spin_lock(&low_water_lock);
+	if (free < lowest_to_date) {
+		pr_info("%s (%d) used greatest stack depth: %lu bytes left\n",
+			current->comm, task_pid_nr(current), free);
+		lowest_to_date = free;
+	}
+	spin_unlock(&low_water_lock);
+}
+#else
 static inline void check_stack_usage(void) {}
+#endif
 
 void __noreturn do_exit(long code)
 {
@@ -650,6 +764,10 @@ void __noreturn do_exit(long code)
 			panic("Attempted to kill init! exitcode=0x%08x\n",
 				tsk->signal->group_exit_code ?: (int)code);
 
+#ifdef CONFIG_POSIX_TIMERS
+		hrtimer_cancel(&tsk->signal->real_timer);
+		exit_itimers(tsk);
+#endif
 		if (tsk->mm)
 			setmax_mm_hiwater_rss(&tsk->signal->maxrss, tsk->mm);
 	}
@@ -697,6 +815,10 @@ void __noreturn do_exit(long code)
 	exit_notify(tsk, group_dead);
 	proc_exit_connector(tsk);
 	mpol_put_task_policy(tsk);
+#ifdef CONFIG_FUTEX
+	if (unlikely(current->pi_state_cache))
+		kfree(current->pi_state_cache);
+#endif
 	/*
 	 * Make sure we are holding no locks:
 	 */
@@ -1593,6 +1715,7 @@ SYSCALL_DEFINE4(wait4, pid_t, upid, int __user *, stat_addr,
 	return err;
 }
 
+#ifdef __ARCH_WANT_SYS_WAITPID
 
 /*
  * sys_waitpid() remains for compatibility. waitpid() should be
@@ -1603,7 +1726,66 @@ SYSCALL_DEFINE3(waitpid, pid_t, pid, int __user *, stat_addr, int, options)
 	return kernel_wait4(pid, stat_addr, options, NULL);
 }
 
+#endif
 
+#ifdef CONFIG_COMPAT
+COMPAT_SYSCALL_DEFINE4(wait4,
+	compat_pid_t, pid,
+	compat_uint_t __user *, stat_addr,
+	int, options,
+	struct compat_rusage __user *, ru)
+{
+	struct rusage r;
+	long err = kernel_wait4(pid, stat_addr, options, ru ? &r : NULL);
+	if (err > 0) {
+		if (ru && put_compat_rusage(&r, ru))
+			return -EFAULT;
+	}
+	return err;
+}
+
+COMPAT_SYSCALL_DEFINE5(waitid,
+		int, which, compat_pid_t, pid,
+		struct compat_siginfo __user *, infop, int, options,
+		struct compat_rusage __user *, uru)
+{
+	struct rusage ru;
+	struct waitid_info info = {.status = 0};
+	long err = kernel_waitid(which, pid, &info, options, uru ? &ru : NULL);
+	int signo = 0;
+	if (err > 0) {
+		signo = SIGCHLD;
+		err = 0;
+		if (uru) {
+			/* kernel_waitid() overwrites everything in ru */
+			if (COMPAT_USE_64BIT_TIME)
+				err = copy_to_user(uru, &ru, sizeof(ru));
+			else
+				err = put_compat_rusage(&ru, uru);
+			if (err)
+				return -EFAULT;
+		}
+	}
+
+	if (!infop)
+		return err;
+
+	if (!user_write_access_begin(infop, sizeof(*infop)))
+		return -EFAULT;
+
+	unsafe_put_user(signo, &infop->si_signo, Efault);
+	unsafe_put_user(0, &infop->si_errno, Efault);
+	unsafe_put_user(info.cause, &infop->si_code, Efault);
+	unsafe_put_user(info.pid, &infop->si_pid, Efault);
+	unsafe_put_user(info.uid, &infop->si_uid, Efault);
+	unsafe_put_user(info.status, &infop->si_status, Efault);
+	user_write_access_end();
+	return err;
+Efault:
+	user_write_access_end();
+	return -EFAULT;
+}
+#endif
 
 /**
  * thread_group_exited - check that a thread group has exited

@@ -34,6 +34,15 @@ static void wake_irq_workd(void)
 		wake_up_process(tsk);
 }
 
+#ifdef CONFIG_SMP
+static void irq_work_wake(struct irq_work *entry)
+{
+	wake_irq_workd();
+}
+
+static DEFINE_PER_CPU(struct irq_work, irq_work_wakeup) =
+	IRQ_WORK_INIT_HARD(irq_work_wake);
+#endif
 
 static int irq_workd_should_run(unsigned int cpu)
 {
@@ -117,8 +126,49 @@ EXPORT_SYMBOL_GPL(irq_work_queue);
  */
 bool irq_work_queue_on(struct irq_work *work, int cpu)
 {
+#ifndef CONFIG_SMP
 	return irq_work_queue(work);
 
+#else /* CONFIG_SMP: */
+	/* All work should have been flushed before going offline */
+	WARN_ON_ONCE(cpu_is_offline(cpu));
+
+	/* Only queue if not already pending */
+	if (!irq_work_claim(work))
+		return false;
+
+	kasan_record_aux_stack_noalloc(work);
+
+	preempt_disable();
+	if (cpu != smp_processor_id()) {
+		/* Arch remote IPI send/receive backend aren't NMI safe */
+		WARN_ON_ONCE(in_nmi());
+
+		/*
+		 * On PREEMPT_RT the items which are not marked as
+		 * IRQ_WORK_HARD_IRQ are added to the lazy list and a HARD work
+		 * item is used on the remote CPU to wake the thread.
+		 */
+		if (IS_ENABLED(CONFIG_PREEMPT_RT) &&
+		    !(atomic_read(&work->node.a_flags) & IRQ_WORK_HARD_IRQ)) {
+
+			if (!llist_add(&work->node.llist, &per_cpu(lazy_list, cpu)))
+				goto out;
+
+			work = &per_cpu(irq_work_wakeup, cpu);
+			if (!irq_work_claim(work))
+				goto out;
+		}
+
+		__smp_call_single_queue(cpu, &work->node.llist);
+	} else {
+		__irq_work_queue_local(work);
+	}
+out:
+	preempt_enable();
+
+	return true;
+#endif /* CONFIG_SMP */
 }
 
 bool irq_work_needs_cpu(void)

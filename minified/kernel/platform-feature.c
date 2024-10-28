@@ -5,7 +5,7 @@
 #include <linux/export.h>
 #include <linux/platform-feature.h>
 
-#define PLATFORM_FEAT_ARRAY_SZ BITS_TO_LONGS(PLATFORM_FEAT_N)
+#define PLATFORM_FEAT_ARRAY_SZ  BITS_TO_LONGS(PLATFORM_FEAT_N)
 static unsigned long __read_mostly platform_features[PLATFORM_FEAT_ARRAY_SZ];
 
 void platform_set(unsigned int feature)

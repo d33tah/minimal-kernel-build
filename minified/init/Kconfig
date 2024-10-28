@@ -455,6 +455,7 @@ config AUDITSYSCALL
 
 source "kernel/irq/Kconfig"
 source "kernel/time/Kconfig"
+source "kernel/bpf/Kconfig"
 source "kernel/Kconfig.preempt"
 
 menu "CPU/Task time and stats accounting"
@@ -1343,6 +1344,8 @@ config BLK_DEV_INITRD
 	  If unsure say Y.
 
 if BLK_DEV_INITRD
+
+source "usr/Kconfig"
 
 endif
 

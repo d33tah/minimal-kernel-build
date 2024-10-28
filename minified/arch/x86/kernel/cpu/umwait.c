@@ -6,9 +6,11 @@
 #include <asm/msr.h>
 #include <asm/mwait.h>
 
-#define UMWAIT_C02_ENABLE 0
+#define UMWAIT_C02_ENABLE	0
 
-#define UMWAIT_CTRL_VAL(max_time,c02_disable) (((max_time) & MSR_IA32_UMWAIT_CONTROL_TIME_MASK) | ((c02_disable) & MSR_IA32_UMWAIT_CONTROL_C02_DISABLE))
+#define UMWAIT_CTRL_VAL(max_time, c02_disable)				\
+	(((max_time) & MSR_IA32_UMWAIT_CONTROL_TIME_MASK) |		\
+	((c02_disable) & MSR_IA32_UMWAIT_CONTROL_C02_DISABLE))
 
 /*
  * Cache IA32_UMWAIT_CONTROL MSR. This is a systemwide control. By default,

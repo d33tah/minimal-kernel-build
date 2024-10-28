@@ -37,6 +37,89 @@ struct workqueue_struct *bdi_wq;
 
 #define K(x) ((x) << (PAGE_SHIFT - 10))
 
+#ifdef CONFIG_DEBUG_FS
+#include <linux/debugfs.h>
+#include <linux/seq_file.h>
+
+static struct dentry *bdi_debug_root;
+
+static void bdi_debug_init(void)
+{
+	bdi_debug_root = debugfs_create_dir("bdi", NULL);
+}
+
+static int bdi_debug_stats_show(struct seq_file *m, void *v)
+{
+	struct backing_dev_info *bdi = m->private;
+	struct bdi_writeback *wb = &bdi->wb;
+	unsigned long background_thresh;
+	unsigned long dirty_thresh;
+	unsigned long wb_thresh;
+	unsigned long nr_dirty, nr_io, nr_more_io, nr_dirty_time;
+	struct inode *inode;
+
+	nr_dirty = nr_io = nr_more_io = nr_dirty_time = 0;
+	spin_lock(&wb->list_lock);
+	list_for_each_entry(inode, &wb->b_dirty, i_io_list)
+		nr_dirty++;
+	list_for_each_entry(inode, &wb->b_io, i_io_list)
+		nr_io++;
+	list_for_each_entry(inode, &wb->b_more_io, i_io_list)
+		nr_more_io++;
+	list_for_each_entry(inode, &wb->b_dirty_time, i_io_list)
+		if (inode->i_state & I_DIRTY_TIME)
+			nr_dirty_time++;
+	spin_unlock(&wb->list_lock);
+
+	global_dirty_limits(&background_thresh, &dirty_thresh);
+	wb_thresh = wb_calc_thresh(wb, dirty_thresh);
+
+	seq_printf(m,
+		   "BdiWriteback:       %10lu kB\n"
+		   "BdiReclaimable:     %10lu kB\n"
+		   "BdiDirtyThresh:     %10lu kB\n"
+		   "DirtyThresh:        %10lu kB\n"
+		   "BackgroundThresh:   %10lu kB\n"
+		   "BdiDirtied:         %10lu kB\n"
+		   "BdiWritten:         %10lu kB\n"
+		   "BdiWriteBandwidth:  %10lu kBps\n"
+		   "b_dirty:            %10lu\n"
+		   "b_io:               %10lu\n"
+		   "b_more_io:          %10lu\n"
+		   "b_dirty_time:       %10lu\n"
+		   "bdi_list:           %10u\n"
+		   "state:              %10lx\n",
+		   (unsigned long) K(wb_stat(wb, WB_WRITEBACK)),
+		   (unsigned long) K(wb_stat(wb, WB_RECLAIMABLE)),
+		   K(wb_thresh),
+		   K(dirty_thresh),
+		   K(background_thresh),
+		   (unsigned long) K(wb_stat(wb, WB_DIRTIED)),
+		   (unsigned long) K(wb_stat(wb, WB_WRITTEN)),
+		   (unsigned long) K(wb->write_bandwidth),
+		   nr_dirty,
+		   nr_io,
+		   nr_more_io,
+		   nr_dirty_time,
+		   !list_empty(&bdi->bdi_list), bdi->wb.state);
+
+	return 0;
+}
+DEFINE_SHOW_ATTRIBUTE(bdi_debug_stats);
+
+static void bdi_debug_register(struct backing_dev_info *bdi, const char *name)
+{
+	bdi->debug_dir = debugfs_create_dir(name, bdi_debug_root);
+
+	debugfs_create_file("stats", 0444, bdi->debug_dir, bdi,
+			    &bdi_debug_stats_fops);
+}
+
+static void bdi_debug_unregister(struct backing_dev_info *bdi)
+{
+	debugfs_remove_recursive(bdi->debug_dir);
+}
+#else
 static inline void bdi_debug_init(void)
 {
 }
@@ -47,6 +130,7 @@ static inline void bdi_debug_register(struct backing_dev_info *bdi,
 static inline void bdi_debug_unregister(struct backing_dev_info *bdi)
 {
 }
+#endif
 
 static ssize_t read_ahead_kb_store(struct device *dev,
 				  struct device_attribute *attr,
@@ -65,7 +149,15 @@ static ssize_t read_ahead_kb_store(struct device *dev,
 	return count;
 }
 
-#define BDI_SHOW(name,expr) static ssize_t name ##_show(struct device *dev, struct device_attribute *attr, char *buf) { struct backing_dev_info *bdi = dev_get_drvdata(dev); return sysfs_emit(buf, "%lld\n", (long long)expr); } static DEVICE_ATTR_RW(name);
+#define BDI_SHOW(name, expr)						\
+static ssize_t name##_show(struct device *dev,				\
+			   struct device_attribute *attr, char *buf)	\
+{									\
+	struct backing_dev_info *bdi = dev_get_drvdata(dev);		\
+									\
+	return sysfs_emit(buf, "%lld\n", (long long)expr);		\
+}									\
+static DEVICE_ATTR_RW(name);
 
 BDI_SHOW(read_ahead_kb, K(bdi->ra_pages))
 
@@ -185,7 +277,7 @@ static void wb_update_bandwidth_workfn(struct work_struct *work)
 /*
  * Initial write bandwidth: 100 MB/s
  */
-#define INIT_BW (100 << (20 - PAGE_SHIFT))
+#define INIT_BW		(100 << (20 - PAGE_SHIFT))
 
 static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
 		   gfp_t gfp)
@@ -273,6 +365,395 @@ static void wb_exit(struct bdi_writeback *wb)
 	fprop_local_destroy_percpu(&wb->completions);
 }
 
+#ifdef CONFIG_CGROUP_WRITEBACK
+
+#include <linux/memcontrol.h>
+
+/*
+ * cgwb_lock protects bdi->cgwb_tree, blkcg->cgwb_list, offline_cgwbs and
+ * memcg->cgwb_list.  bdi->cgwb_tree is also RCU protected.
+ */
+static DEFINE_SPINLOCK(cgwb_lock);
+static struct workqueue_struct *cgwb_release_wq;
+
+static LIST_HEAD(offline_cgwbs);
+static void cleanup_offline_cgwbs_workfn(struct work_struct *work);
+static DECLARE_WORK(cleanup_offline_cgwbs_work, cleanup_offline_cgwbs_workfn);
+
+static void cgwb_release_workfn(struct work_struct *work)
+{
+	struct bdi_writeback *wb = container_of(work, struct bdi_writeback,
+						release_work);
+	struct backing_dev_info *bdi = wb->bdi;
+
+	mutex_lock(&wb->bdi->cgwb_release_mutex);
+	wb_shutdown(wb);
+
+	css_put(wb->memcg_css);
+	css_put(wb->blkcg_css);
+	mutex_unlock(&wb->bdi->cgwb_release_mutex);
+
+	/* triggers blkg destruction if no online users left */
+	blkcg_unpin_online(wb->blkcg_css);
+
+	fprop_local_destroy_percpu(&wb->memcg_completions);
+
+	spin_lock_irq(&cgwb_lock);
+	list_del(&wb->offline_node);
+	spin_unlock_irq(&cgwb_lock);
+
+	percpu_ref_exit(&wb->refcnt);
+	wb_exit(wb);
+	bdi_put(bdi);
+	WARN_ON_ONCE(!list_empty(&wb->b_attached));
+	kfree_rcu(wb, rcu);
+}
+
+static void cgwb_release(struct percpu_ref *refcnt)
+{
+	struct bdi_writeback *wb = container_of(refcnt, struct bdi_writeback,
+						refcnt);
+	queue_work(cgwb_release_wq, &wb->release_work);
+}
+
+static void cgwb_kill(struct bdi_writeback *wb)
+{
+	lockdep_assert_held(&cgwb_lock);
+
+	WARN_ON(!radix_tree_delete(&wb->bdi->cgwb_tree, wb->memcg_css->id));
+	list_del(&wb->memcg_node);
+	list_del(&wb->blkcg_node);
+	list_add(&wb->offline_node, &offline_cgwbs);
+	percpu_ref_kill(&wb->refcnt);
+}
+
+static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb)
+{
+	spin_lock_irq(&cgwb_lock);
+	list_del_rcu(&wb->bdi_node);
+	spin_unlock_irq(&cgwb_lock);
+}
+
+static int cgwb_create(struct backing_dev_info *bdi,
+		       struct cgroup_subsys_state *memcg_css, gfp_t gfp)
+{
+	struct mem_cgroup *memcg;
+	struct cgroup_subsys_state *blkcg_css;
+	struct list_head *memcg_cgwb_list, *blkcg_cgwb_list;
+	struct bdi_writeback *wb;
+	unsigned long flags;
+	int ret = 0;
+
+	memcg = mem_cgroup_from_css(memcg_css);
+	blkcg_css = cgroup_get_e_css(memcg_css->cgroup, &io_cgrp_subsys);
+	memcg_cgwb_list = &memcg->cgwb_list;
+	blkcg_cgwb_list = blkcg_get_cgwb_list(blkcg_css);
+
+	/* look up again under lock and discard on blkcg mismatch */
+	spin_lock_irqsave(&cgwb_lock, flags);
+	wb = radix_tree_lookup(&bdi->cgwb_tree, memcg_css->id);
+	if (wb && wb->blkcg_css != blkcg_css) {
+		cgwb_kill(wb);
+		wb = NULL;
+	}
+	spin_unlock_irqrestore(&cgwb_lock, flags);
+	if (wb)
+		goto out_put;
+
+	/* need to create a new one */
+	wb = kmalloc(sizeof(*wb), gfp);
+	if (!wb) {
+		ret = -ENOMEM;
+		goto out_put;
+	}
+
+	ret = wb_init(wb, bdi, gfp);
+	if (ret)
+		goto err_free;
+
+	ret = percpu_ref_init(&wb->refcnt, cgwb_release, 0, gfp);
+	if (ret)
+		goto err_wb_exit;
+
+	ret = fprop_local_init_percpu(&wb->memcg_completions, gfp);
+	if (ret)
+		goto err_ref_exit;
+
+	wb->memcg_css = memcg_css;
+	wb->blkcg_css = blkcg_css;
+	INIT_LIST_HEAD(&wb->b_attached);
+	INIT_WORK(&wb->release_work, cgwb_release_workfn);
+	set_bit(WB_registered, &wb->state);
+	bdi_get(bdi);
+
+	/*
+	 * The root wb determines the registered state of the whole bdi and
+	 * memcg_cgwb_list and blkcg_cgwb_list's next pointers indicate
+	 * whether they're still online.  Don't link @wb if any is dead.
+	 * See wb_memcg_offline() and wb_blkcg_offline().
+	 */
+	ret = -ENODEV;
+	spin_lock_irqsave(&cgwb_lock, flags);
+	if (test_bit(WB_registered, &bdi->wb.state) &&
+	    blkcg_cgwb_list->next && memcg_cgwb_list->next) {
+		/* we might have raced another instance of this function */
+		ret = radix_tree_insert(&bdi->cgwb_tree, memcg_css->id, wb);
+		if (!ret) {
+			list_add_tail_rcu(&wb->bdi_node, &bdi->wb_list);
+			list_add(&wb->memcg_node, memcg_cgwb_list);
+			list_add(&wb->blkcg_node, blkcg_cgwb_list);
+			blkcg_pin_online(blkcg_css);
+			css_get(memcg_css);
+			css_get(blkcg_css);
+		}
+	}
+	spin_unlock_irqrestore(&cgwb_lock, flags);
+	if (ret) {
+		if (ret == -EEXIST)
+			ret = 0;
+		goto err_fprop_exit;
+	}
+	goto out_put;
+
+err_fprop_exit:
+	bdi_put(bdi);
+	fprop_local_destroy_percpu(&wb->memcg_completions);
+err_ref_exit:
+	percpu_ref_exit(&wb->refcnt);
+err_wb_exit:
+	wb_exit(wb);
+err_free:
+	kfree(wb);
+out_put:
+	css_put(blkcg_css);
+	return ret;
+}
+
+/**
+ * wb_get_lookup - get wb for a given memcg
+ * @bdi: target bdi
+ * @memcg_css: cgroup_subsys_state of the target memcg (must have positive ref)
+ *
+ * Try to get the wb for @memcg_css on @bdi.  The returned wb has its
+ * refcount incremented.
+ *
+ * This function uses css_get() on @memcg_css and thus expects its refcnt
+ * to be positive on invocation.  IOW, rcu_read_lock() protection on
+ * @memcg_css isn't enough.  try_get it before calling this function.
+ *
+ * A wb is keyed by its associated memcg.  As blkcg implicitly enables
+ * memcg on the default hierarchy, memcg association is guaranteed to be
+ * more specific (equal or descendant to the associated blkcg) and thus can
+ * identify both the memcg and blkcg associations.
+ *
+ * Because the blkcg associated with a memcg may change as blkcg is enabled
+ * and disabled closer to root in the hierarchy, each wb keeps track of
+ * both the memcg and blkcg associated with it and verifies the blkcg on
+ * each lookup.  On mismatch, the existing wb is discarded and a new one is
+ * created.
+ */
+struct bdi_writeback *wb_get_lookup(struct backing_dev_info *bdi,
+				    struct cgroup_subsys_state *memcg_css)
+{
+	struct bdi_writeback *wb;
+
+	if (!memcg_css->parent)
+		return &bdi->wb;
+
+	rcu_read_lock();
+	wb = radix_tree_lookup(&bdi->cgwb_tree, memcg_css->id);
+	if (wb) {
+		struct cgroup_subsys_state *blkcg_css;
+
+		/* see whether the blkcg association has changed */
+		blkcg_css = cgroup_get_e_css(memcg_css->cgroup, &io_cgrp_subsys);
+		if (unlikely(wb->blkcg_css != blkcg_css || !wb_tryget(wb)))
+			wb = NULL;
+		css_put(blkcg_css);
+	}
+	rcu_read_unlock();
+
+	return wb;
+}
+
+/**
+ * wb_get_create - get wb for a given memcg, create if necessary
+ * @bdi: target bdi
+ * @memcg_css: cgroup_subsys_state of the target memcg (must have positive ref)
+ * @gfp: allocation mask to use
+ *
+ * Try to get the wb for @memcg_css on @bdi.  If it doesn't exist, try to
+ * create one.  See wb_get_lookup() for more details.
+ */
+struct bdi_writeback *wb_get_create(struct backing_dev_info *bdi,
+				    struct cgroup_subsys_state *memcg_css,
+				    gfp_t gfp)
+{
+	struct bdi_writeback *wb;
+
+	might_alloc(gfp);
+
+	if (!memcg_css->parent)
+		return &bdi->wb;
+
+	do {
+		wb = wb_get_lookup(bdi, memcg_css);
+	} while (!wb && !cgwb_create(bdi, memcg_css, gfp));
+
+	return wb;
+}
+
+static int cgwb_bdi_init(struct backing_dev_info *bdi)
+{
+	int ret;
+
+	INIT_RADIX_TREE(&bdi->cgwb_tree, GFP_ATOMIC);
+	mutex_init(&bdi->cgwb_release_mutex);
+	init_rwsem(&bdi->wb_switch_rwsem);
+
+	ret = wb_init(&bdi->wb, bdi, GFP_KERNEL);
+	if (!ret) {
+		bdi->wb.memcg_css = &root_mem_cgroup->css;
+		bdi->wb.blkcg_css = blkcg_root_css;
+	}
+	return ret;
+}
+
+static void cgwb_bdi_unregister(struct backing_dev_info *bdi)
+{
+	struct radix_tree_iter iter;
+	void **slot;
+	struct bdi_writeback *wb;
+
+	WARN_ON(test_bit(WB_registered, &bdi->wb.state));
+
+	spin_lock_irq(&cgwb_lock);
+	radix_tree_for_each_slot(slot, &bdi->cgwb_tree, &iter, 0)
+		cgwb_kill(*slot);
+	spin_unlock_irq(&cgwb_lock);
+
+	mutex_lock(&bdi->cgwb_release_mutex);
+	spin_lock_irq(&cgwb_lock);
+	while (!list_empty(&bdi->wb_list)) {
+		wb = list_first_entry(&bdi->wb_list, struct bdi_writeback,
+				      bdi_node);
+		spin_unlock_irq(&cgwb_lock);
+		wb_shutdown(wb);
+		spin_lock_irq(&cgwb_lock);
+	}
+	spin_unlock_irq(&cgwb_lock);
+	mutex_unlock(&bdi->cgwb_release_mutex);
+}
+
+/*
+ * cleanup_offline_cgwbs_workfn - try to release dying cgwbs
+ *
+ * Try to release dying cgwbs by switching attached inodes to the nearest
+ * living ancestor's writeback. Processed wbs are placed at the end
+ * of the list to guarantee the forward progress.
+ */
+static void cleanup_offline_cgwbs_workfn(struct work_struct *work)
+{
+	struct bdi_writeback *wb;
+	LIST_HEAD(processed);
+
+	spin_lock_irq(&cgwb_lock);
+
+	while (!list_empty(&offline_cgwbs)) {
+		wb = list_first_entry(&offline_cgwbs, struct bdi_writeback,
+				      offline_node);
+		list_move(&wb->offline_node, &processed);
+
+		/*
+		 * If wb is dirty, cleaning up the writeback by switching
+		 * attached inodes will result in an effective removal of any
+		 * bandwidth restrictions, which isn't the goal.  Instead,
+		 * it can be postponed until the next time, when all io
+		 * will be likely completed.  If in the meantime some inodes
+		 * will get re-dirtied, they should be eventually switched to
+		 * a new cgwb.
+		 */
+		if (wb_has_dirty_io(wb))
+			continue;
+
+		if (!wb_tryget(wb))
+			continue;
+
+		spin_unlock_irq(&cgwb_lock);
+		while (cleanup_offline_cgwb(wb))
+			cond_resched();
+		spin_lock_irq(&cgwb_lock);
+
+		wb_put(wb);
+	}
+
+	if (!list_empty(&processed))
+		list_splice_tail(&processed, &offline_cgwbs);
+
+	spin_unlock_irq(&cgwb_lock);
+}
+
+/**
+ * wb_memcg_offline - kill all wb's associated with a memcg being offlined
+ * @memcg: memcg being offlined
+ *
+ * Also prevents creation of any new wb's associated with @memcg.
+ */
+void wb_memcg_offline(struct mem_cgroup *memcg)
+{
+	struct list_head *memcg_cgwb_list = &memcg->cgwb_list;
+	struct bdi_writeback *wb, *next;
+
+	spin_lock_irq(&cgwb_lock);
+	list_for_each_entry_safe(wb, next, memcg_cgwb_list, memcg_node)
+		cgwb_kill(wb);
+	memcg_cgwb_list->next = NULL;	/* prevent new wb's */
+	spin_unlock_irq(&cgwb_lock);
+
+	queue_work(system_unbound_wq, &cleanup_offline_cgwbs_work);
+}
+
+/**
+ * wb_blkcg_offline - kill all wb's associated with a blkcg being offlined
+ * @css: blkcg being offlined
+ *
+ * Also prevents creation of any new wb's associated with @blkcg.
+ */
+void wb_blkcg_offline(struct cgroup_subsys_state *css)
+{
+	struct bdi_writeback *wb, *next;
+	struct list_head *list = blkcg_get_cgwb_list(css);
+
+	spin_lock_irq(&cgwb_lock);
+	list_for_each_entry_safe(wb, next, list, blkcg_node)
+		cgwb_kill(wb);
+	list->next = NULL;	/* prevent new wb's */
+	spin_unlock_irq(&cgwb_lock);
+}
+
+static void cgwb_bdi_register(struct backing_dev_info *bdi)
+{
+	spin_lock_irq(&cgwb_lock);
+	list_add_tail_rcu(&bdi->wb.bdi_node, &bdi->wb_list);
+	spin_unlock_irq(&cgwb_lock);
+}
+
+static int __init cgwb_init(void)
+{
+	/*
+	 * There can be many concurrent release work items overwhelming
+	 * system_wq.  Put them in a separate wq and limit concurrency.
+	 * There's no point in executing many of these in parallel.
+	 */
+	cgwb_release_wq = alloc_workqueue("cgwb_release", 0, 1);
+	if (!cgwb_release_wq)
+		return -ENOMEM;
+
+	return 0;
+}
+subsys_initcall(cgwb_init);
+
+#else	/* CONFIG_CGROUP_WRITEBACK */
 
 static int cgwb_bdi_init(struct backing_dev_info *bdi)
 {
@@ -291,6 +772,7 @@ static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb)
 	list_del_rcu(&wb->bdi_node);
 }
 
+#endif	/* CONFIG_CGROUP_WRITEBACK */
 
 int bdi_init(struct backing_dev_info *bdi)
 {
@@ -500,6 +982,10 @@ struct backing_dev_info *inode_to_bdi(struct inode *inode)
 		return &noop_backing_dev_info;
 
 	sb = inode->i_sb;
+#ifdef CONFIG_BLOCK
+	if (sb_is_blkdev_sb(sb))
+		return I_BDEV(inode)->bd_disk->bdi;
+#endif
 	return sb->s_bdi;
 }
 EXPORT_SYMBOL(inode_to_bdi);

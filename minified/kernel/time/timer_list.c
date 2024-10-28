@@ -104,6 +104,10 @@ print_base(struct seq_file *m, struct hrtimer_clock_base *base, u64 now)
 	SEQ_printf(m, "  .resolution: %u nsecs\n", hrtimer_resolution);
 
 	SEQ_printf(m,   "  .get_time:   %ps\n", base->get_time);
+#ifdef CONFIG_HIGH_RES_TIMERS
+	SEQ_printf(m, "  .offset:     %Lu nsecs\n",
+		   (unsigned long long) ktime_to_ns(base->offset));
+#endif
 	SEQ_printf(m,   "active timers:\n");
 	print_active_timers(m, base, now + ktime_to_ns(base->offset));
 }
@@ -118,18 +122,58 @@ static void print_cpu(struct seq_file *m, int cpu, u64 now)
 		SEQ_printf(m, " clock %d:\n", i);
 		print_base(m, cpu_base->clock_base + i, now);
 	}
-#define P(x) SEQ_printf(m, "  .%-15s: %Lu\n", #x, (unsigned long long)(cpu_base->x))
-#define P_ns(x) SEQ_printf(m, "  .%-15s: %Lu nsecs\n", #x, (unsigned long long)(ktime_to_ns(cpu_base->x)))
+#define P(x) \
+	SEQ_printf(m, "  .%-15s: %Lu\n", #x, \
+		   (unsigned long long)(cpu_base->x))
+#define P_ns(x) \
+	SEQ_printf(m, "  .%-15s: %Lu nsecs\n", #x, \
+		   (unsigned long long)(ktime_to_ns(cpu_base->x)))
 
+#ifdef CONFIG_HIGH_RES_TIMERS
+	P_ns(expires_next);
+	P(hres_active);
+	P(nr_events);
+	P(nr_retries);
+	P(nr_hangs);
+	P(max_hang_time);
+#endif
 #undef P
 #undef P_ns
 
+#ifdef CONFIG_TICK_ONESHOT
+# define P(x) \
+	SEQ_printf(m, "  .%-15s: %Lu\n", #x, \
+		   (unsigned long long)(ts->x))
+# define P_ns(x) \
+	SEQ_printf(m, "  .%-15s: %Lu nsecs\n", #x, \
+		   (unsigned long long)(ktime_to_ns(ts->x)))
+	{
+		struct tick_sched *ts = tick_get_tick_sched(cpu);
+		P(nohz_mode);
+		P_ns(last_tick);
+		P(tick_stopped);
+		P(idle_jiffies);
+		P(idle_calls);
+		P(idle_sleeps);
+		P_ns(idle_entrytime);
+		P_ns(idle_waketime);
+		P_ns(idle_exittime);
+		P_ns(idle_sleeptime);
+		P_ns(iowait_sleeptime);
+		P(last_jiffies);
+		P(next_timer);
+		P_ns(idle_expires);
+		SEQ_printf(m, "jiffies: %Lu\n",
+			   (unsigned long long)jiffies);
+	}
+#endif
 
 #undef P
 #undef P_ns
 	SEQ_printf(m, "\n");
 }
 
+#ifdef CONFIG_GENERIC_CLOCKEVENTS
 static void
 print_tickdevice(struct seq_file *m, struct tick_device *td, int cpu)
 {
@@ -185,12 +229,30 @@ print_tickdevice(struct seq_file *m, struct tick_device *td, int cpu)
 	SEQ_printf(m, "\n");
 	SEQ_printf(m, " retries:        %lu\n", dev->retries);
 
+#ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
+	if (cpu >= 0) {
+		const struct clock_event_device *wd = tick_get_wakeup_device(cpu);
+
+		SEQ_printf(m, "Wakeup Device: %s\n", wd ? wd->name : "<NULL>");
+	}
+#endif
 	SEQ_printf(m, "\n");
 }
 
 static void timer_list_show_tickdevices_header(struct seq_file *m)
 {
+#ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
+	print_tickdevice(m, tick_get_broadcast_device(), -1);
+	SEQ_printf(m, "tick_broadcast_mask: %*pb\n",
+		   cpumask_pr_args(tick_get_broadcast_mask()));
+#ifdef CONFIG_TICK_ONESHOT
+	SEQ_printf(m, "tick_broadcast_oneshot_mask: %*pb\n",
+		   cpumask_pr_args(tick_get_broadcast_oneshot_mask()));
+#endif
+	SEQ_printf(m, "\n");
+#endif
 }
+#endif
 
 static inline void timer_list_header(struct seq_file *m, u64 now)
 {
@@ -210,9 +272,89 @@ void sysrq_timer_list_show(void)
 	for_each_online_cpu(cpu)
 		print_cpu(NULL, cpu, now);
 
+#ifdef CONFIG_GENERIC_CLOCKEVENTS
 	timer_list_show_tickdevices_header(NULL);
 	for_each_online_cpu(cpu)
 		print_tickdevice(NULL, tick_get_device(cpu), cpu);
+#endif
 	return;
 }
 
+#ifdef CONFIG_PROC_FS
+static int timer_list_show(struct seq_file *m, void *v)
+{
+	struct timer_list_iter *iter = v;
+
+	if (iter->cpu == -1 && !iter->second_pass)
+		timer_list_header(m, iter->now);
+	else if (!iter->second_pass)
+		print_cpu(m, iter->cpu, iter->now);
+#ifdef CONFIG_GENERIC_CLOCKEVENTS
+	else if (iter->cpu == -1 && iter->second_pass)
+		timer_list_show_tickdevices_header(m);
+	else
+		print_tickdevice(m, tick_get_device(iter->cpu), iter->cpu);
+#endif
+	return 0;
+}
+
+static void *move_iter(struct timer_list_iter *iter, loff_t offset)
+{
+	for (; offset; offset--) {
+		iter->cpu = cpumask_next(iter->cpu, cpu_online_mask);
+		if (iter->cpu >= nr_cpu_ids) {
+#ifdef CONFIG_GENERIC_CLOCKEVENTS
+			if (!iter->second_pass) {
+				iter->cpu = -1;
+				iter->second_pass = true;
+			} else
+				return NULL;
+#else
+			return NULL;
+#endif
+		}
+	}
+	return iter;
+}
+
+static void *timer_list_start(struct seq_file *file, loff_t *offset)
+{
+	struct timer_list_iter *iter = file->private;
+
+	if (!*offset)
+		iter->now = ktime_to_ns(ktime_get());
+	iter->cpu = -1;
+	iter->second_pass = false;
+	return move_iter(iter, *offset);
+}
+
+static void *timer_list_next(struct seq_file *file, void *v, loff_t *offset)
+{
+	struct timer_list_iter *iter = file->private;
+	++*offset;
+	return move_iter(iter, 1);
+}
+
+static void timer_list_stop(struct seq_file *seq, void *v)
+{
+}
+
+static const struct seq_operations timer_list_sops = {
+	.start = timer_list_start,
+	.next = timer_list_next,
+	.stop = timer_list_stop,
+	.show = timer_list_show,
+};
+
+static int __init init_timer_list_procfs(void)
+{
+	struct proc_dir_entry *pe;
+
+	pe = proc_create_seq_private("timer_list", 0400, NULL, &timer_list_sops,
+			sizeof(struct timer_list_iter), NULL);
+	if (!pe)
+		return -ENOMEM;
+	return 0;
+}
+__initcall(init_timer_list_procfs);
+#endif

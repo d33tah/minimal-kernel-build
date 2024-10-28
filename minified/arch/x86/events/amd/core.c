@@ -330,7 +330,7 @@ static inline bool amd_is_pair_event_code(struct hw_perf_event *hwc)
 	}
 }
 
-#define AMD_FAM19H_BRS_EVENT 0xc4
+#define AMD_FAM19H_BRS_EVENT 0xc4 /* RETIRED_TAKEN_BRANCH_INSTRUCTIONS */
 static inline int amd_is_brs_event(struct perf_event *e)
 {
 	return (e->hw.config & AMD64_RAW_EVENT_MASK) == AMD_FAM19H_BRS_EVENT;
@@ -716,7 +716,7 @@ DEFINE_STATIC_CALL(amd_pmu_test_overflow, amd_pmu_test_overflow_topbit);
  * NMIs. This function is intended to wait for the NMI to run and reset
  * the counter to avoid possible unhandled NMI messages.
  */
-#define OVERFLOW_WAIT_COUNT 50
+#define OVERFLOW_WAIT_COUNT	50
 
 static void amd_pmu_wait_on_overflow(int idx)
 {
@@ -1027,16 +1027,16 @@ static struct attribute *amd_format_attr[] = {
 
 /* AMD Family 15h */
 
-#define AMD_EVENT_TYPE_MASK 0x000000F0ULL
+#define AMD_EVENT_TYPE_MASK	0x000000F0ULL
 
-#define AMD_EVENT_FP 0x00000000ULL ... 0x00000010ULL
-#define AMD_EVENT_LS 0x00000020ULL ... 0x00000030ULL
-#define AMD_EVENT_DC 0x00000040ULL ... 0x00000050ULL
-#define AMD_EVENT_CU 0x00000060ULL ... 0x00000070ULL
-#define AMD_EVENT_IC_DE 0x00000080ULL ... 0x00000090ULL
-#define AMD_EVENT_EX_LS 0x000000C0ULL
-#define AMD_EVENT_DE 0x000000D0ULL
-#define AMD_EVENT_NB 0x000000E0ULL ... 0x000000F0ULL
+#define AMD_EVENT_FP		0x00000000ULL ... 0x00000010ULL
+#define AMD_EVENT_LS		0x00000020ULL ... 0x00000030ULL
+#define AMD_EVENT_DC		0x00000040ULL ... 0x00000050ULL
+#define AMD_EVENT_CU		0x00000060ULL ... 0x00000070ULL
+#define AMD_EVENT_IC_DE		0x00000080ULL ... 0x00000090ULL
+#define AMD_EVENT_EX_LS		0x000000C0ULL
+#define AMD_EVENT_DE		0x000000D0ULL
+#define AMD_EVENT_NB		0x000000E0ULL ... 0x000000F0ULL
 
 /*
  * AMD family 15h event code/PMC mappings:

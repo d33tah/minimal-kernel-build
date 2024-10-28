@@ -1130,4 +1130,6 @@ config PTE_MARKER_UFFD_WP
 	  purposes.  It is required to enable userfaultfd write protection on
 	  file-backed memory types like shmem and hugetlbfs.
 
+source "mm/damon/Kconfig"
+
 endmenu

@@ -164,6 +164,8 @@ int set_mode(u16 mode)
 
 	/* Save the canonical mode number for the kernel, not
 	   an alias, size specification or menu position */
+#ifndef _WAKEUP
 	boot_params.hdr.vid_mode = real_mode;
+#endif
 	return 0;
 }

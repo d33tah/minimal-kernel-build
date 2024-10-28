@@ -24,15 +24,19 @@ static int skip_atoi(const char **s)
 	return i;
 }
 
-#define ZEROPAD 1
-#define SIGN 2
-#define PLUS 4
-#define SPACE 8
-#define LEFT 16
-#define SMALL 32
-#define SPECIAL 64
+#define ZEROPAD	1		/* pad with zero */
+#define SIGN	2		/* unsigned/signed long */
+#define PLUS	4		/* show plus */
+#define SPACE	8		/* space if plus */
+#define LEFT	16		/* left justified */
+#define SMALL	32		/* Must be 32 == 0x20 */
+#define SPECIAL	64		/* 0x */
 
-#define __do_div(n,base) ({ int __res; __res = ((unsigned long) n) % (unsigned) base; n = ((unsigned long) n) / (unsigned) base; __res; })
+#define __do_div(n, base) ({ \
+int __res; \
+__res = ((unsigned long) n) % (unsigned) base; \
+n = ((unsigned long) n) / (unsigned) base; \
+__res; })
 
 static char *number(char *str, long num, int base, int size, int precision,
 		    int type)

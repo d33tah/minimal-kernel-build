@@ -16,7 +16,7 @@
 #include <linux/mount.h>
 #include <linux/posix_acl.h>
 #include <linux/prefetch.h>
-#include <linux/buffer_head.h>
+#include <linux/buffer_head.h> /* for inode_has_buffers */
 #include <linux/ratelimit.h>
 #include <linux/list_lru.h>
 #include <linux/iversion.h>
@@ -100,6 +100,45 @@ long get_nr_dirty_inodes(void)
 /*
  * Handle nr_inode sysctl
  */
+#ifdef CONFIG_SYSCTL
+/*
+ * Statistics gathering..
+ */
+static struct inodes_stat_t inodes_stat;
+
+static int proc_nr_inodes(struct ctl_table *table, int write, void *buffer,
+			  size_t *lenp, loff_t *ppos)
+{
+	inodes_stat.nr_inodes = get_nr_inodes();
+	inodes_stat.nr_unused = get_nr_inodes_unused();
+	return proc_doulongvec_minmax(table, write, buffer, lenp, ppos);
+}
+
+static struct ctl_table inodes_sysctls[] = {
+	{
+		.procname	= "inode-nr",
+		.data		= &inodes_stat,
+		.maxlen		= 2*sizeof(long),
+		.mode		= 0444,
+		.proc_handler	= proc_nr_inodes,
+	},
+	{
+		.procname	= "inode-state",
+		.data		= &inodes_stat,
+		.maxlen		= 7*sizeof(long),
+		.mode		= 0444,
+		.proc_handler	= proc_nr_inodes,
+	},
+	{ }
+};
+
+static int __init init_fs_inode_sysctls(void)
+{
+	register_sysctl_init("fs", inodes_sysctls);
+	return 0;
+}
+early_initcall(init_fs_inode_sysctls);
+#endif
 
 static int no_open(struct inode *inode, struct file *file)
 {
@@ -147,6 +186,11 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	inode->i_rdev = 0;
 	inode->dirtied_when = 0;
 
+#ifdef CONFIG_CGROUP_WRITEBACK
+	inode->i_wb_frn_winner = 0;
+	inode->i_wb_frn_avg_time = 0;
+	inode->i_wb_frn_history = 0;
+#endif
 
 	if (security_inode_alloc(inode))
 		goto out;
@@ -163,6 +207,9 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	mapping->flags = 0;
 	mapping->wb_err = 0;
 	atomic_set(&mapping->i_mmap_writable, 0);
+#ifdef CONFIG_READ_ONLY_THP_FOR_FS
+	atomic_set(&mapping->nr_thps, 0);
+#endif
 	mapping_set_gfp_mask(mapping, GFP_HIGHUSER_MOVABLE);
 	mapping->private_data = NULL;
 	mapping->writeback_index = 0;
@@ -173,7 +220,13 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	inode->i_private = NULL;
 	inode->i_mapping = mapping;
 	INIT_HLIST_HEAD(&inode->i_dentry);	/* buggered by rcu freeing */
+#ifdef CONFIG_FS_POSIX_ACL
+	inode->i_acl = inode->i_default_acl = ACL_NOT_CACHED;
+#endif
 
+#ifdef CONFIG_FSNOTIFY
+	inode->i_fsnotify_mask = 0;
+#endif
 	inode->i_flctx = NULL;
 	this_cpu_inc(nr_inodes);
 
@@ -237,6 +290,12 @@ void __destroy_inode(struct inode *inode)
 		atomic_long_dec(&inode->i_sb->s_remove_count);
 	}
 
+#ifdef CONFIG_FS_POSIX_ACL
+	if (inode->i_acl && !is_uncached_acl(inode->i_acl))
+		posix_acl_release(inode->i_acl);
+	if (inode->i_default_acl && !is_uncached_acl(inode->i_default_acl))
+		posix_acl_release(inode->i_default_acl);
+#endif
 	this_cpu_dec(nr_inodes);
 }
 EXPORT_SYMBOL(__destroy_inode);
@@ -925,6 +984,14 @@ unsigned int get_next_ino(void)
 	unsigned int *p = &get_cpu_var(last_ino);
 	unsigned int res = *p;
 
+#ifdef CONFIG_SMP
+	if (unlikely((res & (LAST_INO_BATCH-1)) == 0)) {
+		static atomic_t shared_last_ino;
+		int next = atomic_add_return(LAST_INO_BATCH, &shared_last_ino);
+
+		res = next - LAST_INO_BATCH;
+	}
+#endif
 
 	res++;
 	/* get_next_ino should not provide a 0 inode number */
@@ -984,6 +1051,26 @@ struct inode *new_inode(struct super_block *sb)
 }
 EXPORT_SYMBOL(new_inode);
 
+#ifdef CONFIG_DEBUG_LOCK_ALLOC
+void lockdep_annotate_inode_mutex_key(struct inode *inode)
+{
+	if (S_ISDIR(inode->i_mode)) {
+		struct file_system_type *type = inode->i_sb->s_type;
+
+		/* Set new key only if filesystem hasn't already changed it */
+		if (lockdep_match_class(&inode->i_rwsem, &type->i_mutex_key)) {
+			/*
+			 * ensure nobody is actually holding i_mutex
+			 */
+			// mutex_destroy(&inode->i_mutex);
+			init_rwsem(&inode->i_rwsem);
+			lockdep_set_class(&inode->i_rwsem,
+					  &type->i_mutex_dir_key);
+		}
+	}
+}
+EXPORT_SYMBOL(lockdep_annotate_inode_mutex_key);
+#endif
 
 /**
  * unlock_new_inode - clear the I_NEW state and wake up any waiters
@@ -1685,6 +1772,31 @@ retry:
 }
 EXPORT_SYMBOL(iput);
 
+#ifdef CONFIG_BLOCK
+/**
+ *	bmap	- find a block number in a file
+ *	@inode:  inode owning the block number being requested
+ *	@block: pointer containing the block to find
+ *
+ *	Replaces the value in ``*block`` with the block number on the device holding
+ *	corresponding to the requested block number in the file.
+ *	That is, asked for block 4 of inode 1 the function will replace the
+ *	4 in ``*block``, with disk block relative to the disk start that holds that
+ *	block of the file.
+ *
+ *	Returns -EINVAL in case of error, 0 otherwise. If mapping falls into a
+ *	hole, returns 0 and ``*block`` is also set to 0.
+ */
+int bmap(struct inode *inode, sector_t *block)
+{
+	if (!inode->i_mapping->a_ops->bmap)
+		return -EINVAL;
+
+	*block = inode->i_mapping->a_ops->bmap(inode->i_mapping, *block);
+	return 0;
+}
+EXPORT_SYMBOL(bmap);
+#endif
 
 /*
  * With relative atime, only update atime if the previous atime is

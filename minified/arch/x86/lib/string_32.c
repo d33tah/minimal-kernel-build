@@ -11,10 +11,11 @@
  * strings.
  */
 
-#define __NO_FORTIFY 
+#define __NO_FORTIFY
 #include <linux/string.h>
 #include <linux/export.h>
 
+#ifdef __HAVE_ARCH_STRCPY
 char *strcpy(char *dest, const char *src)
 {
 	int d0, d1, d2;
@@ -27,7 +28,9 @@ char *strcpy(char *dest, const char *src)
 	return dest;
 }
 EXPORT_SYMBOL(strcpy);
+#endif
 
+#ifdef __HAVE_ARCH_STRNCPY
 char *strncpy(char *dest, const char *src, size_t count)
 {
 	int d0, d1, d2, d3;
@@ -45,7 +48,9 @@ char *strncpy(char *dest, const char *src, size_t count)
 	return dest;
 }
 EXPORT_SYMBOL(strncpy);
+#endif
 
+#ifdef __HAVE_ARCH_STRCAT
 char *strcat(char *dest, const char *src)
 {
 	int d0, d1, d2, d3;
@@ -61,7 +66,9 @@ char *strcat(char *dest, const char *src)
 	return dest;
 }
 EXPORT_SYMBOL(strcat);
+#endif
 
+#ifdef __HAVE_ARCH_STRNCAT
 char *strncat(char *dest, const char *src, size_t count)
 {
 	int d0, d1, d2, d3;
@@ -83,7 +90,9 @@ char *strncat(char *dest, const char *src, size_t count)
 	return dest;
 }
 EXPORT_SYMBOL(strncat);
+#endif
 
+#ifdef __HAVE_ARCH_STRCMP
 int strcmp(const char *cs, const char *ct)
 {
 	int d0, d1;
@@ -104,7 +113,9 @@ int strcmp(const char *cs, const char *ct)
 	return res;
 }
 EXPORT_SYMBOL(strcmp);
+#endif
 
+#ifdef __HAVE_ARCH_STRNCMP
 int strncmp(const char *cs, const char *ct, size_t count)
 {
 	int res;
@@ -127,7 +138,9 @@ int strncmp(const char *cs, const char *ct, size_t count)
 	return res;
 }
 EXPORT_SYMBOL(strncmp);
+#endif
 
+#ifdef __HAVE_ARCH_STRCHR
 char *strchr(const char *s, int c)
 {
 	int d0;
@@ -147,7 +160,9 @@ char *strchr(const char *s, int c)
 	return res;
 }
 EXPORT_SYMBOL(strchr);
+#endif
 
+#ifdef __HAVE_ARCH_STRLEN
 size_t strlen(const char *s)
 {
 	int d0;
@@ -160,7 +175,9 @@ size_t strlen(const char *s)
 	return ~res - 1;
 }
 EXPORT_SYMBOL(strlen);
+#endif
 
+#ifdef __HAVE_ARCH_MEMCHR
 void *memchr(const void *cs, int c, size_t count)
 {
 	int d0;
@@ -178,7 +195,9 @@ void *memchr(const void *cs, int c, size_t count)
 	return res;
 }
 EXPORT_SYMBOL(memchr);
+#endif
 
+#ifdef __HAVE_ARCH_MEMSCAN
 void *memscan(void *addr, int c, size_t size)
 {
 	if (!size)
@@ -193,7 +212,9 @@ void *memscan(void *addr, int c, size_t size)
 	return addr;
 }
 EXPORT_SYMBOL(memscan);
+#endif
 
+#ifdef __HAVE_ARCH_STRNLEN
 size_t strnlen(const char *s, size_t count)
 {
 	int d0;
@@ -213,3 +234,4 @@ size_t strnlen(const char *s, size_t count)
 	return res;
 }
 EXPORT_SYMBOL(strnlen);
+#endif

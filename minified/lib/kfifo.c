@@ -389,7 +389,8 @@ unsigned int __kfifo_max_r(unsigned int len, size_t recsize)
 }
 EXPORT_SYMBOL(__kfifo_max_r);
 
-#define __KFIFO_PEEK(data,out,mask) ((data)[(out) & (mask)])
+#define	__KFIFO_PEEK(data, out, mask) \
+	((data)[(out) & (mask)])
 /*
  * __kfifo_peek_n internal helper function for determinate the length of
  * the next record in the fifo
@@ -408,7 +409,10 @@ static unsigned int __kfifo_peek_n(struct __kfifo *fifo, size_t recsize)
 	return l;
 }
 
-#define __KFIFO_POKE(data,in,mask,val) ( (data)[(in) & (mask)] = (unsigned char)(val) )
+#define	__KFIFO_POKE(data, in, mask, val) \
+	( \
+	(data)[(in) & (mask)] = (unsigned char)(val) \
+	)
 
 /*
  * __kfifo_poke_n internal helper function for storing the length of

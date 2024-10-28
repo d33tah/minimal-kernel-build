@@ -6,30 +6,50 @@
  */
 
 #include <linux/kernel.h>
+#ifdef __KERNEL__
 #include <linux/string.h>
-#include <asm/inat.h>
-#include <asm/insn.h>
-#include <asm/unaligned.h>
+#else
+#include <string.h>
+#endif
+#include <asm/inat.h> /*__ignore_sync_check__ */
+#include <asm/insn.h> /* __ignore_sync_check__ */
+#include <asm/unaligned.h> /* __ignore_sync_check__ */
 
 #include <linux/errno.h>
 #include <linux/kconfig.h>
 
-#include <asm/emulate_prefix.h>
+#include <asm/emulate_prefix.h> /* __ignore_sync_check__ */
 
-#define leXX_to_cpu(t,r) ({ __typeof__(t) v; switch (sizeof(t)) { case 4: v = le32_to_cpu(r); break; case 2: v = le16_to_cpu(r); break; case 1: v = r; break; default: BUILD_BUG(); break; } v; })
+#define leXX_to_cpu(t, r)						\
+({									\
+	__typeof__(t) v;						\
+	switch (sizeof(t)) {						\
+	case 4: v = le32_to_cpu(r); break;				\
+	case 2: v = le16_to_cpu(r); break;				\
+	case 1:	v = r; break;						\
+	default:							\
+		BUILD_BUG(); break;					\
+	}								\
+	v;								\
+})
 
 /* Verify next sizeof(t) bytes can be on the same instruction */
-#define validate_next(t,insn,n) ((insn)->next_byte + sizeof(t) + n <= (insn)->end_kaddr)
+#define validate_next(t, insn, n)	\
+	((insn)->next_byte + sizeof(t) + n <= (insn)->end_kaddr)
 
-#define __get_next(t,insn) ({ t r = get_unaligned((t *)(insn)->next_byte); (insn)->next_byte += sizeof(t); leXX_to_cpu(t, r); })
+#define __get_next(t, insn)	\
+	({ t r = get_unaligned((t *)(insn)->next_byte); (insn)->next_byte += sizeof(t); leXX_to_cpu(t, r); })
 
-#define __peek_nbyte_next(t,insn,n) ({ t r = get_unaligned((t *)(insn)->next_byte + n); leXX_to_cpu(t, r); })
+#define __peek_nbyte_next(t, insn, n)	\
+	({ t r = get_unaligned((t *)(insn)->next_byte + n); leXX_to_cpu(t, r); })
 
-#define get_next(t,insn) ({ if (unlikely(!validate_next(t, insn, 0))) goto err_out; __get_next(t, insn); })
+#define get_next(t, insn)	\
+	({ if (unlikely(!validate_next(t, insn, 0))) goto err_out; __get_next(t, insn); })
 
-#define peek_nbyte_next(t,insn,n) ({ if (unlikely(!validate_next(t, insn, n))) goto err_out; __peek_nbyte_next(t, insn, n); })
+#define peek_nbyte_next(t, insn, n)	\
+	({ if (unlikely(!validate_next(t, insn, n))) goto err_out; __peek_nbyte_next(t, insn, n); })
 
-#define peek_next(t,insn) peek_nbyte_next(t, insn, 0)
+#define peek_next(t, insn)	peek_nbyte_next(t, insn, 0)
 
 /**
  * insn_init() - initialize struct insn

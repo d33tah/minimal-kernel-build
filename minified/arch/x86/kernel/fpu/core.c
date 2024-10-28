@@ -25,9 +25,13 @@
 #include "legacy.h"
 #include "xstate.h"
 
-#define CREATE_TRACE_POINTS 
+#define CREATE_TRACE_POINTS
 #include <asm/trace/fpu.h>
 
+#ifdef CONFIG_X86_64
+DEFINE_STATIC_KEY_FALSE(__fpu_state_size_dynamic);
+DEFINE_PER_CPU(u64, xfd_state);
+#endif
 
 /* The FPU state configuration data for kernel and user space */
 struct fpu_state_config	fpu_kernel_cfg __ro_after_init;
@@ -88,7 +92,7 @@ EXPORT_SYMBOL(irq_fpu_usable);
 static void update_avx_timestamp(struct fpu *fpu)
 {
 
-#define AVX512_TRACKING_MASK (XFEATURE_MASK_ZMM_Hi256 | XFEATURE_MASK_Hi16_ZMM)
+#define AVX512_TRACKING_MASK	(XFEATURE_MASK_ZMM_Hi256 | XFEATURE_MASK_Hi16_ZMM)
 
 	if (fpu->fpstate->regs.xsave.header.xfeatures & AVX512_TRACKING_MASK)
 		fpu->avx512_timestamp = jiffies;
@@ -188,6 +192,233 @@ void fpu_reset_from_exception_fixup(void)
 	restore_fpregs_from_fpstate(&init_fpstate, XFEATURE_MASK_FPSTATE);
 }
 
+#if IS_ENABLED(CONFIG_KVM)
+static void __fpstate_reset(struct fpstate *fpstate, u64 xfd);
+
+static void fpu_init_guest_permissions(struct fpu_guest *gfpu)
+{
+	struct fpu_state_perm *fpuperm;
+	u64 perm;
+
+	if (!IS_ENABLED(CONFIG_X86_64))
+		return;
+
+	spin_lock_irq(&current->sighand->siglock);
+	fpuperm = &current->group_leader->thread.fpu.guest_perm;
+	perm = fpuperm->__state_perm;
+
+	/* First fpstate allocation locks down permissions. */
+	WRITE_ONCE(fpuperm->__state_perm, perm | FPU_GUEST_PERM_LOCKED);
+
+	spin_unlock_irq(&current->sighand->siglock);
+
+	gfpu->perm = perm & ~FPU_GUEST_PERM_LOCKED;
+}
+
+bool fpu_alloc_guest_fpstate(struct fpu_guest *gfpu)
+{
+	struct fpstate *fpstate;
+	unsigned int size;
+
+	size = fpu_user_cfg.default_size + ALIGN(offsetof(struct fpstate, regs), 64);
+	fpstate = vzalloc(size);
+	if (!fpstate)
+		return false;
+
+	/* Leave xfd to 0 (the reset value defined by spec) */
+	__fpstate_reset(fpstate, 0);
+	fpstate_init_user(fpstate);
+	fpstate->is_valloc	= true;
+	fpstate->is_guest	= true;
+
+	gfpu->fpstate		= fpstate;
+	gfpu->xfeatures		= fpu_user_cfg.default_features;
+	gfpu->perm		= fpu_user_cfg.default_features;
+
+	/*
+	 * KVM sets the FP+SSE bits in the XSAVE header when copying FPU state
+	 * to userspace, even when XSAVE is unsupported, so that restoring FPU
+	 * state on a different CPU that does support XSAVE can cleanly load
+	 * the incoming state using its natural XSAVE.  In other words, KVM's
+	 * uABI size may be larger than this host's default size.  Conversely,
+	 * the default size should never be larger than KVM's base uABI size;
+	 * all features that can expand the uABI size must be opt-in.
+	 */
+	gfpu->uabi_size		= sizeof(struct kvm_xsave);
+	if (WARN_ON_ONCE(fpu_user_cfg.default_size > gfpu->uabi_size))
+		gfpu->uabi_size = fpu_user_cfg.default_size;
+
+	fpu_init_guest_permissions(gfpu);
+
+	return true;
+}
+EXPORT_SYMBOL_GPL(fpu_alloc_guest_fpstate);
+
+void fpu_free_guest_fpstate(struct fpu_guest *gfpu)
+{
+	struct fpstate *fps = gfpu->fpstate;
+
+	if (!fps)
+		return;
+
+	if (WARN_ON_ONCE(!fps->is_valloc || !fps->is_guest || fps->in_use))
+		return;
+
+	gfpu->fpstate = NULL;
+	vfree(fps);
+}
+EXPORT_SYMBOL_GPL(fpu_free_guest_fpstate);
+
+/*
+  * fpu_enable_guest_xfd_features - Check xfeatures against guest perm and enable
+  * @guest_fpu:         Pointer to the guest FPU container
+  * @xfeatures:         Features requested by guest CPUID
+  *
+  * Enable all dynamic xfeatures according to guest perm and requested CPUID.
+  *
+  * Return: 0 on success, error code otherwise
+  */
+int fpu_enable_guest_xfd_features(struct fpu_guest *guest_fpu, u64 xfeatures)
+{
+	lockdep_assert_preemption_enabled();
+
+	/* Nothing to do if all requested features are already enabled. */
+	xfeatures &= ~guest_fpu->xfeatures;
+	if (!xfeatures)
+		return 0;
+
+	return __xfd_enable_feature(xfeatures, guest_fpu);
+}
+EXPORT_SYMBOL_GPL(fpu_enable_guest_xfd_features);
+
+#ifdef CONFIG_X86_64
+void fpu_update_guest_xfd(struct fpu_guest *guest_fpu, u64 xfd)
+{
+	fpregs_lock();
+	guest_fpu->fpstate->xfd = xfd;
+	if (guest_fpu->fpstate->in_use)
+		xfd_update_state(guest_fpu->fpstate);
+	fpregs_unlock();
+}
+EXPORT_SYMBOL_GPL(fpu_update_guest_xfd);
+
+/**
+ * fpu_sync_guest_vmexit_xfd_state - Synchronize XFD MSR and software state
+ *
+ * Must be invoked from KVM after a VMEXIT before enabling interrupts when
+ * XFD write emulation is disabled. This is required because the guest can
+ * freely modify XFD and the state at VMEXIT is not guaranteed to be the
+ * same as the state on VMENTER. So software state has to be udpated before
+ * any operation which depends on it can take place.
+ *
+ * Note: It can be invoked unconditionally even when write emulation is
+ * enabled for the price of a then pointless MSR read.
+ */
+void fpu_sync_guest_vmexit_xfd_state(void)
+{
+	struct fpstate *fps = current->thread.fpu.fpstate;
+
+	lockdep_assert_irqs_disabled();
+	if (fpu_state_size_dynamic()) {
+		rdmsrl(MSR_IA32_XFD, fps->xfd);
+		__this_cpu_write(xfd_state, fps->xfd);
+	}
+}
+EXPORT_SYMBOL_GPL(fpu_sync_guest_vmexit_xfd_state);
+#endif /* CONFIG_X86_64 */
+
+int fpu_swap_kvm_fpstate(struct fpu_guest *guest_fpu, bool enter_guest)
+{
+	struct fpstate *guest_fps = guest_fpu->fpstate;
+	struct fpu *fpu = &current->thread.fpu;
+	struct fpstate *cur_fps = fpu->fpstate;
+
+	fpregs_lock();
+	if (!cur_fps->is_confidential && !test_thread_flag(TIF_NEED_FPU_LOAD))
+		save_fpregs_to_fpstate(fpu);
+
+	/* Swap fpstate */
+	if (enter_guest) {
+		fpu->__task_fpstate = cur_fps;
+		fpu->fpstate = guest_fps;
+		guest_fps->in_use = true;
+	} else {
+		guest_fps->in_use = false;
+		fpu->fpstate = fpu->__task_fpstate;
+		fpu->__task_fpstate = NULL;
+	}
+
+	cur_fps = fpu->fpstate;
+
+	if (!cur_fps->is_confidential) {
+		/* Includes XFD update */
+		restore_fpregs_from_fpstate(cur_fps, XFEATURE_MASK_FPSTATE);
+	} else {
+		/*
+		 * XSTATE is restored by firmware from encrypted
+		 * memory. Make sure XFD state is correct while
+		 * running with guest fpstate
+		 */
+		xfd_update_state(cur_fps);
+	}
+
+	fpregs_mark_activate();
+	fpregs_unlock();
+	return 0;
+}
+EXPORT_SYMBOL_GPL(fpu_swap_kvm_fpstate);
+
+void fpu_copy_guest_fpstate_to_uabi(struct fpu_guest *gfpu, void *buf,
+				    unsigned int size, u32 pkru)
+{
+	struct fpstate *kstate = gfpu->fpstate;
+	union fpregs_state *ustate = buf;
+	struct membuf mb = { .p = buf, .left = size };
+
+	if (cpu_feature_enabled(X86_FEATURE_XSAVE)) {
+		__copy_xstate_to_uabi_buf(mb, kstate, pkru, XSTATE_COPY_XSAVE);
+	} else {
+		memcpy(&ustate->fxsave, &kstate->regs.fxsave,
+		       sizeof(ustate->fxsave));
+		/* Make it restorable on a XSAVE enabled host */
+		ustate->xsave.header.xfeatures = XFEATURE_MASK_FPSSE;
+	}
+}
+EXPORT_SYMBOL_GPL(fpu_copy_guest_fpstate_to_uabi);
+
+int fpu_copy_uabi_to_guest_fpstate(struct fpu_guest *gfpu, const void *buf,
+				   u64 xcr0, u32 *vpkru)
+{
+	struct fpstate *kstate = gfpu->fpstate;
+	const union fpregs_state *ustate = buf;
+	struct pkru_state *xpkru;
+	int ret;
+
+	if (!cpu_feature_enabled(X86_FEATURE_XSAVE)) {
+		if (ustate->xsave.header.xfeatures & ~XFEATURE_MASK_FPSSE)
+			return -EINVAL;
+		if (ustate->fxsave.mxcsr & ~mxcsr_feature_mask)
+			return -EINVAL;
+		memcpy(&kstate->regs.fxsave, &ustate->fxsave, sizeof(ustate->fxsave));
+		return 0;
+	}
+
+	if (ustate->xsave.header.xfeatures & ~xcr0)
+		return -EINVAL;
+
+	ret = copy_uabi_from_kernel_to_xstate(kstate, ustate);
+	if (ret)
+		return ret;
+
+	/* Retrieve PKRU if not in init state */
+	if (kstate->regs.xsave.header.xfeatures & XFEATURE_MASK_PKRU) {
+		xpkru = get_xsave_addr(&kstate->regs.xsave, XFEATURE_PKRU);
+		*vpkru = xpkru->pkru;
+	}
+	return 0;
+}
+EXPORT_SYMBOL_GPL(fpu_copy_uabi_to_guest_fpstate);
+#endif /* CONFIG_KVM */
 
 void kernel_fpu_begin_mask(unsigned int kfpu_mask)
 {
@@ -525,6 +756,23 @@ void switch_fpu_return(void)
 }
 EXPORT_SYMBOL_GPL(switch_fpu_return);
 
+#ifdef CONFIG_X86_DEBUG_FPU
+/*
+ * If current FPU state according to its tracking (loaded FPU context on this
+ * CPU) is not valid then we must have TIF_NEED_FPU_LOAD set so the context is
+ * loaded on return to userland.
+ */
+void fpregs_assert_state_consistent(void)
+{
+	struct fpu *fpu = &current->thread.fpu;
+
+	if (test_thread_flag(TIF_NEED_FPU_LOAD))
+		return;
+
+	WARN_ON_FPU(!fpregs_state_valid(fpu, smp_processor_id()));
+}
+EXPORT_SYMBOL_GPL(fpregs_assert_state_consistent);
+#endif
 
 void fpregs_mark_activate(void)
 {

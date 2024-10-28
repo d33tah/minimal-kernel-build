@@ -42,7 +42,14 @@ bool is_software_node(const struct fwnode_handle *fwnode)
 }
 EXPORT_SYMBOL_GPL(is_software_node);
 
-#define to_swnode(__fwnode) ({ typeof(__fwnode) __to_swnode_fwnode = __fwnode; is_software_node(__to_swnode_fwnode) ? container_of(__to_swnode_fwnode, struct swnode, fwnode) : NULL; })
+#define to_swnode(__fwnode)						\
+	({								\
+		typeof(__fwnode) __to_swnode_fwnode = __fwnode;		\
+									\
+		is_software_node(__to_swnode_fwnode) ?			\
+			container_of(__to_swnode_fwnode,		\
+				     struct swnode, fwnode) : NULL;	\
+	})
 
 static inline struct swnode *dev_to_swnode(struct device *dev)
 {

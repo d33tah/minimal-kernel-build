@@ -49,7 +49,7 @@ struct ramfs_fs_info {
 	struct ramfs_mount_opts mount_opts;
 };
 
-#define RAMFS_DEFAULT_MODE 0755
+#define RAMFS_DEFAULT_MODE	0755
 
 static const struct super_operations ramfs_ops;
 static const struct inode_operations ramfs_dir_inode_operations;

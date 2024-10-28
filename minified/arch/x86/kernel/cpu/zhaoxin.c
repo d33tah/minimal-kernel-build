@@ -9,13 +9,13 @@
 
 #define MSR_ZHAOXIN_FCR57 0x00001257
 
-#define ACE_PRESENT (1 << 6)
-#define ACE_ENABLED (1 << 7)
-#define ACE_FCR (1 << 7)
+#define ACE_PRESENT	(1 << 6)
+#define ACE_ENABLED	(1 << 7)
+#define ACE_FCR		(1 << 7)	/* MSR_ZHAOXIN_FCR */
 
-#define RNG_PRESENT (1 << 2)
-#define RNG_ENABLED (1 << 3)
-#define RNG_ENABLE (1 << 8)
+#define RNG_PRESENT	(1 << 2)
+#define RNG_ENABLED	(1 << 3)
+#define RNG_ENABLE	(1 << 8)	/* MSR_ZHAOXIN_RNG */
 
 static void init_zhaoxin_cap(struct cpuinfo_x86 *c)
 {
@@ -58,6 +58,9 @@ static void early_init_zhaoxin(struct cpuinfo_x86 *c)
 {
 	if (c->x86 >= 0x6)
 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
+#ifdef CONFIG_X86_64
+	set_cpu_cap(c, X86_FEATURE_SYSENTER32);
+#endif
 	if (c->x86_power & (1 << 8)) {
 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
 		set_cpu_cap(c, X86_FEATURE_NONSTOP_TSC);
@@ -83,7 +86,9 @@ static void init_zhaoxin(struct cpuinfo_x86 *c)
 	early_init_zhaoxin(c);
 	init_intel_cacheinfo(c);
 	detect_num_cpu_cores(c);
+#ifdef CONFIG_X86_32
 	detect_ht(c);
+#endif
 
 	if (c->cpuid_level > 9) {
 		unsigned int eax = cpuid_eax(10);
@@ -99,22 +104,29 @@ static void init_zhaoxin(struct cpuinfo_x86 *c)
 
 	if (c->x86 >= 0x6)
 		init_zhaoxin_cap(c);
+#ifdef CONFIG_X86_64
+	set_cpu_cap(c, X86_FEATURE_LFENCE_RDTSC);
+#endif
 
 	init_ia32_feat_ctl(c);
 }
 
+#ifdef CONFIG_X86_32
 static unsigned int
 zhaoxin_size_cache(struct cpuinfo_x86 *c, unsigned int size)
 {
 	return size;
 }
+#endif
 
 static const struct cpu_dev zhaoxin_cpu_dev = {
 	.c_vendor	= "zhaoxin",
 	.c_ident	= { "  Shanghai  " },
 	.c_early_init	= early_init_zhaoxin,
 	.c_init		= init_zhaoxin,
+#ifdef CONFIG_X86_32
 	.legacy_cache_size = zhaoxin_size_cache,
+#endif
 	.c_x86_vendor	= X86_VENDOR_ZHAOXIN,
 };
 

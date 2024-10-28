@@ -20,6 +20,10 @@
 #include <linux/syscalls.h>
 #include <linux/uaccess.h>
 
+#ifdef CONFIG_XEN_PV
+#include <xen/xen-ops.h>
+#include <xen/events.h>
+#endif
 
 #include <asm/desc.h>
 #include <asm/traps.h>
@@ -31,7 +35,59 @@
 #include <asm/syscall.h>
 #include <asm/irq_stack.h>
 
+#ifdef CONFIG_X86_64
 
+static __always_inline bool do_syscall_x64(struct pt_regs *regs, int nr)
+{
+	/*
+	 * Convert negative numbers to very high and thus out of range
+	 * numbers for comparisons.
+	 */
+	unsigned int unr = nr;
+
+	if (likely(unr < NR_syscalls)) {
+		unr = array_index_nospec(unr, NR_syscalls);
+		regs->ax = sys_call_table[unr](regs);
+		return true;
+	}
+	return false;
+}
+
+static __always_inline bool do_syscall_x32(struct pt_regs *regs, int nr)
+{
+	/*
+	 * Adjust the starting offset of the table, and convert numbers
+	 * < __X32_SYSCALL_BIT to very high and thus out of range
+	 * numbers for comparisons.
+	 */
+	unsigned int xnr = nr - __X32_SYSCALL_BIT;
+
+	if (IS_ENABLED(CONFIG_X86_X32_ABI) && likely(xnr < X32_NR_syscalls)) {
+		xnr = array_index_nospec(xnr, X32_NR_syscalls);
+		regs->ax = x32_sys_call_table[xnr](regs);
+		return true;
+	}
+	return false;
+}
+
+__visible noinstr void do_syscall_64(struct pt_regs *regs, int nr)
+{
+	add_random_kstack_offset();
+	nr = syscall_enter_from_user_mode(regs, nr);
+
+	instrumentation_begin();
+
+	if (!do_syscall_x64(regs, nr) && !do_syscall_x32(regs, nr) && nr != -1) {
+		/* Invalid system call, but still a system call. */
+		regs->ax = __x64_sys_ni_syscall(regs);
+	}
+
+	instrumentation_end();
+	syscall_exit_to_user_mode(regs);
+}
+#endif
+
+#if defined(CONFIG_X86_32) || defined(CONFIG_IA32_EMULATION)
 static __always_inline int syscall_32_enter(struct pt_regs *regs)
 {
 	if (IS_ENABLED(CONFIG_IA32_EMULATION))
@@ -147,6 +203,20 @@ __visible noinstr long do_fast_syscall_32(struct pt_regs *regs)
 	if (!__do_fast_syscall_32(regs))
 		return 0;
 
+#ifdef CONFIG_X86_64
+	/*
+	 * Opportunistic SYSRETL: if possible, try to return using SYSRETL.
+	 * SYSRETL is available on all 64-bit CPUs, so we don't need to
+	 * bother with SYSEXIT.
+	 *
+	 * Unlike 64-bit opportunistic SYSRET, we can't check that CX == IP,
+	 * because the ECX fixup above will ensure that this is essentially
+	 * never the case.
+	 */
+	return regs->cs == __USER32_CS && regs->ss == __USER_DS &&
+		regs->ip == landing_pad &&
+		(regs->flags & (X86_EFLAGS_RF | X86_EFLAGS_TF)) == 0;
+#else
 	/*
 	 * Opportunistic SYSEXIT: if possible, try to return using SYSEXIT.
 	 *
@@ -161,6 +231,7 @@ __visible noinstr long do_fast_syscall_32(struct pt_regs *regs)
 		regs->cs == __USER_CS && regs->ss == __USER_DS &&
 		regs->ip == landing_pad &&
 		(regs->flags & (X86_EFLAGS_RF | X86_EFLAGS_TF | X86_EFLAGS_VM)) == 0;
+#endif
 }
 
 /* Returns 0 to return using IRET or 1 to return using SYSEXIT/SYSRETL. */
@@ -174,9 +245,76 @@ __visible noinstr long do_SYSENTER_32(struct pt_regs *regs)
 
 	return do_fast_syscall_32(regs);
 }
+#endif
 
 SYSCALL_DEFINE0(ni_syscall)
 {
 	return -ENOSYS;
 }
 
+#ifdef CONFIG_XEN_PV
+#ifndef CONFIG_PREEMPTION
+/*
+ * Some hypercalls issued by the toolstack can take many 10s of
+ * seconds. Allow tasks running hypercalls via the privcmd driver to
+ * be voluntarily preempted even if full kernel preemption is
+ * disabled.
+ *
+ * Such preemptible hypercalls are bracketed by
+ * xen_preemptible_hcall_begin() and xen_preemptible_hcall_end()
+ * calls.
+ */
+DEFINE_PER_CPU(bool, xen_in_preemptible_hcall);
+EXPORT_SYMBOL_GPL(xen_in_preemptible_hcall);
+
+/*
+ * In case of scheduling the flag must be cleared and restored after
+ * returning from schedule as the task might move to a different CPU.
+ */
+static __always_inline bool get_and_clear_inhcall(void)
+{
+	bool inhcall = __this_cpu_read(xen_in_preemptible_hcall);
+
+	__this_cpu_write(xen_in_preemptible_hcall, false);
+	return inhcall;
+}
+
+static __always_inline void restore_inhcall(bool inhcall)
+{
+	__this_cpu_write(xen_in_preemptible_hcall, inhcall);
+}
+#else
+static __always_inline bool get_and_clear_inhcall(void) { return false; }
+static __always_inline void restore_inhcall(bool inhcall) { }
+#endif
+
+static void __xen_pv_evtchn_do_upcall(struct pt_regs *regs)
+{
+	struct pt_regs *old_regs = set_irq_regs(regs);
+
+	inc_irq_stat(irq_hv_callback_count);
+
+	xen_hvm_evtchn_do_upcall();
+
+	set_irq_regs(old_regs);
+}
+
+__visible noinstr void xen_pv_evtchn_do_upcall(struct pt_regs *regs)
+{
+	irqentry_state_t state = irqentry_enter(regs);
+	bool inhcall;
+
+	instrumentation_begin();
+	run_sysvec_on_irqstack_cond(__xen_pv_evtchn_do_upcall, regs);
+
+	inhcall = get_and_clear_inhcall();
+	if (inhcall && !WARN_ON_ONCE(state.exit_rcu)) {
+		irqentry_exit_cond_resched();
+		instrumentation_end();
+		restore_inhcall(inhcall);
+	} else {
+		instrumentation_end();
+		irqentry_exit(regs, state);
+	}
+}
+#endif /* CONFIG_XEN_PV */

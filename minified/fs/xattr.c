@@ -43,7 +43,11 @@ strcmp_prefix(const char *a, const char *a_prefix)
  * xattr_handler (one for each prefix) and hang a pointer to it off of the
  * s_xattr field of the superblock.
  */
-#define for_each_xattr_handler(handlers,handler) if (handlers) for ((handler) = *(handlers)++; (handler) != NULL; (handler) = *(handlers)++)
+#define for_each_xattr_handler(handlers, handler)		\
+	if (handlers)						\
+		for ((handler) = *(handlers)++;			\
+			(handler) != NULL;			\
+			(handler) = *(handlers)++)
 
 /*
  * Find the xattr_handler with the matching prefix.
@@ -1137,6 +1141,22 @@ ssize_t simple_xattr_list(struct inode *inode, struct simple_xattrs *xattrs,
 	ssize_t remaining_size = size;
 	int err = 0;
 
+#ifdef CONFIG_FS_POSIX_ACL
+	if (IS_POSIXACL(inode)) {
+		if (inode->i_acl) {
+			err = xattr_list_one(&buffer, &remaining_size,
+					     XATTR_NAME_POSIX_ACL_ACCESS);
+			if (err)
+				return err;
+		}
+		if (inode->i_default_acl) {
+			err = xattr_list_one(&buffer, &remaining_size,
+					     XATTR_NAME_POSIX_ACL_DEFAULT);
+			if (err)
+				return err;
+		}
+	}
+#endif
 
 	spin_lock(&xattrs->lock);
 	list_for_each_entry(xattr, &xattrs->head, list) {

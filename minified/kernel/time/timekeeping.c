@@ -28,9 +28,9 @@
 #include "ntp_internal.h"
 #include "timekeeping_internal.h"
 
-#define TK_CLEAR_NTP (1 << 0)
-#define TK_MIRROR (1 << 1)
-#define TK_CLOCK_WAS_SET (1 << 2)
+#define TK_CLEAR_NTP		(1 << 0)
+#define TK_MIRROR		(1 << 1)
+#define TK_CLOCK_WAS_SET	(1 << 2)
 
 enum timekeeping_adv_mode {
 	/* Update timekeeper when a tick has passed */
@@ -93,7 +93,13 @@ static struct clocksource dummy_clock = {
  * and shift=0. When the first proper clocksource is installed then
  * the fast time keepers are updated with the correct values.
  */
-#define FAST_TK_INIT { .clock = &dummy_clock, .mask = CLOCKSOURCE_MASK(64), .mult = 1, .shift = 0, }
+#define FAST_TK_INIT						\
+	{							\
+		.clock		= &dummy_clock,			\
+		.mask		= CLOCKSOURCE_MASK(64),		\
+		.mult		= 1,				\
+		.shift		= 0,				\
+	}
 
 static struct tk_fast tk_fast_mono ____cacheline_aligned = {
 	.seq     = SEQCNT_LATCH_ZERO(tk_fast_mono.seq),
@@ -188,6 +194,89 @@ static inline u64 tk_clock_read(const struct tk_read_base *tkr)
 	return clock->read(clock);
 }
 
+#ifdef CONFIG_DEBUG_TIMEKEEPING
+#define WARNING_FREQ (HZ*300) /* 5 minute rate-limiting */
+
+static void timekeeping_check_update(struct timekeeper *tk, u64 offset)
+{
+
+	u64 max_cycles = tk->tkr_mono.clock->max_cycles;
+	const char *name = tk->tkr_mono.clock->name;
+
+	if (offset > max_cycles) {
+		printk_deferred("WARNING: timekeeping: Cycle offset (%lld) is larger than allowed by the '%s' clock's max_cycles value (%lld): time overflow danger\n",
+				offset, name, max_cycles);
+		printk_deferred("         timekeeping: Your kernel is sick, but tries to cope by capping time updates\n");
+	} else {
+		if (offset > (max_cycles >> 1)) {
+			printk_deferred("INFO: timekeeping: Cycle offset (%lld) is larger than the '%s' clock's 50%% safety margin (%lld)\n",
+					offset, name, max_cycles >> 1);
+			printk_deferred("      timekeeping: Your kernel is still fine, but is feeling a bit nervous\n");
+		}
+	}
+
+	if (tk->underflow_seen) {
+		if (jiffies - tk->last_warning > WARNING_FREQ) {
+			printk_deferred("WARNING: Underflow in clocksource '%s' observed, time update ignored.\n", name);
+			printk_deferred("         Please report this, consider using a different clocksource, if possible.\n");
+			printk_deferred("         Your kernel is probably still fine.\n");
+			tk->last_warning = jiffies;
+		}
+		tk->underflow_seen = 0;
+	}
+
+	if (tk->overflow_seen) {
+		if (jiffies - tk->last_warning > WARNING_FREQ) {
+			printk_deferred("WARNING: Overflow in clocksource '%s' observed, time update capped.\n", name);
+			printk_deferred("         Please report this, consider using a different clocksource, if possible.\n");
+			printk_deferred("         Your kernel is probably still fine.\n");
+			tk->last_warning = jiffies;
+		}
+		tk->overflow_seen = 0;
+	}
+}
+
+static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr)
+{
+	struct timekeeper *tk = &tk_core.timekeeper;
+	u64 now, last, mask, max, delta;
+	unsigned int seq;
+
+	/*
+	 * Since we're called holding a seqcount, the data may shift
+	 * under us while we're doing the calculation. This can cause
+	 * false positives, since we'd note a problem but throw the
+	 * results away. So nest another seqcount here to atomically
+	 * grab the points we are checking with.
+	 */
+	do {
+		seq = read_seqcount_begin(&tk_core.seq);
+		now = tk_clock_read(tkr);
+		last = tkr->cycle_last;
+		mask = tkr->mask;
+		max = tkr->clock->max_cycles;
+	} while (read_seqcount_retry(&tk_core.seq, seq));
+
+	delta = clocksource_delta(now, last, mask);
+
+	/*
+	 * Try to catch underflows by checking if we are seeing small
+	 * mask-relative negative values.
+	 */
+	if (unlikely((~delta & mask) < (mask >> 3))) {
+		tk->underflow_seen = 1;
+		delta = 0;
+	}
+
+	/* Cap delta value to the max_cycles values to avoid mult overflows */
+	if (unlikely(delta > max)) {
+		tk->overflow_seen = 1;
+		delta = tkr->clock->max_cycles;
+	}
+
+	return delta;
+}
+#else
 static inline void timekeeping_check_update(struct timekeeper *tk, u64 offset)
 {
 }
@@ -203,6 +292,7 @@ static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr)
 
 	return delta;
 }
+#endif
 
 /**
  * tk_setup_internals - Set up internals to use clocksource clock.
@@ -1607,6 +1697,76 @@ static void __timekeeping_inject_sleeptime(struct timekeeper *tk,
 	tk_debug_account_sleep_time(delta);
 }
 
+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_RTC_HCTOSYS_DEVICE)
+/**
+ * We have three kinds of time sources to use for sleep time
+ * injection, the preference order is:
+ * 1) non-stop clocksource
+ * 2) persistent clock (ie: RTC accessible when irqs are off)
+ * 3) RTC
+ *
+ * 1) and 2) are used by timekeeping, 3) by RTC subsystem.
+ * If system has neither 1) nor 2), 3) will be used finally.
+ *
+ *
+ * If timekeeping has injected sleeptime via either 1) or 2),
+ * 3) becomes needless, so in this case we don't need to call
+ * rtc_resume(), and this is what timekeeping_rtc_skipresume()
+ * means.
+ */
+bool timekeeping_rtc_skipresume(void)
+{
+	return !suspend_timing_needed;
+}
+
+/**
+ * 1) can be determined whether to use or not only when doing
+ * timekeeping_resume() which is invoked after rtc_suspend(),
+ * so we can't skip rtc_suspend() surely if system has 1).
+ *
+ * But if system has 2), 2) will definitely be used, so in this
+ * case we don't need to call rtc_suspend(), and this is what
+ * timekeeping_rtc_skipsuspend() means.
+ */
+bool timekeeping_rtc_skipsuspend(void)
+{
+	return persistent_clock_exists;
+}
+
+/**
+ * timekeeping_inject_sleeptime64 - Adds suspend interval to timeekeeping values
+ * @delta: pointer to a timespec64 delta value
+ *
+ * This hook is for architectures that cannot support read_persistent_clock64
+ * because their RTC/persistent clock is only accessible when irqs are enabled.
+ * and also don't have an effective nonstop clocksource.
+ *
+ * This function should only be called by rtc_resume(), and allows
+ * a suspend offset to be injected into the timekeeping values.
+ */
+void timekeeping_inject_sleeptime64(const struct timespec64 *delta)
+{
+	struct timekeeper *tk = &tk_core.timekeeper;
+	unsigned long flags;
+
+	raw_spin_lock_irqsave(&timekeeper_lock, flags);
+	write_seqcount_begin(&tk_core.seq);
+
+	suspend_timing_needed = false;
+
+	timekeeping_forward_now(tk);
+
+	__timekeeping_inject_sleeptime(tk, delta);
+
+	timekeeping_update(tk, TK_CLEAR_NTP | TK_MIRROR | TK_CLOCK_WAS_SET);
+
+	write_seqcount_end(&tk_core.seq);
+	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
+
+	/* Signal hrtimers about time change */
+	clock_was_set(CLOCK_SET_WALL | CLOCK_SET_BOOT);
+}
+#endif
 
 /**
  * timekeeping_resume - Resumes the generic timekeeping subsystem.
@@ -2318,3 +2478,21 @@ int do_adjtimex(struct __kernel_timex *txc)
 	return ret;
 }
 
+#ifdef CONFIG_NTP_PPS
+/**
+ * hardpps() - Accessor function to NTP __hardpps function
+ */
+void hardpps(const struct timespec64 *phase_ts, const struct timespec64 *raw_ts)
+{
+	unsigned long flags;
+
+	raw_spin_lock_irqsave(&timekeeper_lock, flags);
+	write_seqcount_begin(&tk_core.seq);
+
+	__hardpps(phase_ts, raw_ts);
+
+	write_seqcount_end(&tk_core.seq);
+	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
+}
+EXPORT_SYMBOL(hardpps);
+#endif /* CONFIG_NTP_PPS */

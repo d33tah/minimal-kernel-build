@@ -258,6 +258,7 @@ int vfs_fstatat(int dfd, const char __user *filename,
 	return ret;
 }
 
+#ifdef __ARCH_WANT_OLD_STAT
 
 /*
  * For backward compatibility?  Maybe this should be moved
@@ -289,8 +290,10 @@ static int cp_old_stat(struct kstat *stat, struct __old_kernel_stat __user * sta
 	SET_UID(tmp.st_uid, from_kuid_munged(current_user_ns(), stat->uid));
 	SET_GID(tmp.st_gid, from_kgid_munged(current_user_ns(), stat->gid));
 	tmp.st_rdev = old_encode_dev(stat->rdev);
+#if BITS_PER_LONG == 32
 	if (stat->size > MAX_NON_LFS)
 		return -EOVERFLOW;
+#endif
 	tmp.st_size = stat->size;
 	tmp.st_atime = stat->atime.tv_sec;
 	tmp.st_mtime = stat->mtime.tv_sec;
@@ -335,10 +338,19 @@ SYSCALL_DEFINE2(fstat, unsigned int, fd, struct __old_kernel_stat __user *, stat
 	return error;
 }
 
+#endif /* __ARCH_WANT_OLD_STAT */
 
+#ifdef __ARCH_WANT_NEW_STAT
 
-#define choose_32_64(a,b) a
+#if BITS_PER_LONG == 32
+#  define choose_32_64(a,b) a
+#else
+#  define choose_32_64(a,b) b
+#endif
 
+#ifndef INIT_STRUCT_STAT_PADDING
+#  define INIT_STRUCT_STAT_PADDING(st) memset(&st, 0, sizeof(st))
+#endif
 
 static int cp_new_stat(struct kstat *stat, struct stat __user *statbuf)
 {
@@ -348,8 +360,10 @@ static int cp_new_stat(struct kstat *stat, struct stat __user *statbuf)
 		return -EOVERFLOW;
 	if (sizeof(tmp.st_rdev) < 4 && !old_valid_dev(stat->rdev))
 		return -EOVERFLOW;
+#if BITS_PER_LONG == 32
 	if (stat->size > MAX_NON_LFS)
 		return -EOVERFLOW;
+#endif
 
 	INIT_STRUCT_STAT_PADDING(tmp);
 	tmp.st_dev = new_encode_dev(stat->dev);
@@ -367,9 +381,11 @@ static int cp_new_stat(struct kstat *stat, struct stat __user *statbuf)
 	tmp.st_atime = stat->atime.tv_sec;
 	tmp.st_mtime = stat->mtime.tv_sec;
 	tmp.st_ctime = stat->ctime.tv_sec;
+#ifdef STAT_HAVE_NSEC
 	tmp.st_atime_nsec = stat->atime.tv_nsec;
 	tmp.st_mtime_nsec = stat->mtime.tv_nsec;
 	tmp.st_ctime_nsec = stat->ctime.tv_nsec;
+#endif
 	tmp.st_blocks = stat->blocks;
 	tmp.st_blksize = stat->blksize;
 	return copy_to_user(statbuf,&tmp,sizeof(tmp)) ? -EFAULT : 0;
@@ -399,6 +415,19 @@ SYSCALL_DEFINE2(newlstat, const char __user *, filename,
 	return cp_new_stat(&stat, statbuf);
 }
 
+#if !defined(__ARCH_WANT_STAT64) || defined(__ARCH_WANT_SYS_NEWFSTATAT)
+SYSCALL_DEFINE4(newfstatat, int, dfd, const char __user *, filename,
+		struct stat __user *, statbuf, int, flag)
+{
+	struct kstat stat;
+	int error;
+
+	error = vfs_fstatat(dfd, filename, &stat, flag);
+	if (error)
+		return error;
+	return cp_new_stat(&stat, statbuf);
+}
+#endif
 
 SYSCALL_DEFINE2(newfstat, unsigned int, fd, struct stat __user *, statbuf)
 {
@@ -410,6 +439,7 @@ SYSCALL_DEFINE2(newfstat, unsigned int, fd, struct stat __user *, statbuf)
 
 	return error;
 }
+#endif
 
 static int do_readlinkat(int dfd, const char __user *pathname,
 			 char __user *buf, int bufsiz)
@@ -461,19 +491,31 @@ SYSCALL_DEFINE3(readlink, const char __user *, path, char __user *, buf,
 
 
 /* ---------- LFS-64 ----------- */
+#if defined(__ARCH_WANT_STAT64) || defined(__ARCH_WANT_COMPAT_STAT64)
 
+#ifndef INIT_STRUCT_STAT64_PADDING
+#  define INIT_STRUCT_STAT64_PADDING(st) memset(&st, 0, sizeof(st))
+#endif
 
 static long cp_new_stat64(struct kstat *stat, struct stat64 __user *statbuf)
 {
 	struct stat64 tmp;
 
 	INIT_STRUCT_STAT64_PADDING(tmp);
+#ifdef CONFIG_MIPS
+	/* mips has weird padding, so we don't get 64 bits there */
+	tmp.st_dev = new_encode_dev(stat->dev);
+	tmp.st_rdev = new_encode_dev(stat->rdev);
+#else
 	tmp.st_dev = huge_encode_dev(stat->dev);
 	tmp.st_rdev = huge_encode_dev(stat->rdev);
+#endif
 	tmp.st_ino = stat->ino;
 	if (sizeof(tmp.st_ino) < sizeof(stat->ino) && tmp.st_ino != stat->ino)
 		return -EOVERFLOW;
+#ifdef STAT64_HAS_BROKEN_ST_INO
 	tmp.__st_ino = stat->ino;
+#endif
 	tmp.st_mode = stat->mode;
 	tmp.st_nlink = stat->nlink;
 	tmp.st_uid = from_kuid_munged(current_user_ns(), stat->uid);
@@ -536,6 +578,7 @@ SYSCALL_DEFINE4(fstatat64, int, dfd, const char __user *, filename,
 		return error;
 	return cp_new_stat64(&stat, statbuf);
 }
+#endif /* __ARCH_WANT_STAT64 || __ARCH_WANT_COMPAT_STAT64 */
 
 static noinline_for_stack int
 cp_statx(const struct kstat *stat, struct statx __user *buffer)
@@ -616,6 +659,92 @@ SYSCALL_DEFINE5(statx,
 	return ret;
 }
 
+#if defined(CONFIG_COMPAT) && defined(__ARCH_WANT_COMPAT_STAT)
+static int cp_compat_stat(struct kstat *stat, struct compat_stat __user *ubuf)
+{
+	struct compat_stat tmp;
+
+	if (sizeof(tmp.st_dev) < 4 && !old_valid_dev(stat->dev))
+		return -EOVERFLOW;
+	if (sizeof(tmp.st_rdev) < 4 && !old_valid_dev(stat->rdev))
+		return -EOVERFLOW;
+
+	memset(&tmp, 0, sizeof(tmp));
+	tmp.st_dev = new_encode_dev(stat->dev);
+	tmp.st_ino = stat->ino;
+	if (sizeof(tmp.st_ino) < sizeof(stat->ino) && tmp.st_ino != stat->ino)
+		return -EOVERFLOW;
+	tmp.st_mode = stat->mode;
+	tmp.st_nlink = stat->nlink;
+	if (tmp.st_nlink != stat->nlink)
+		return -EOVERFLOW;
+	SET_UID(tmp.st_uid, from_kuid_munged(current_user_ns(), stat->uid));
+	SET_GID(tmp.st_gid, from_kgid_munged(current_user_ns(), stat->gid));
+	tmp.st_rdev = new_encode_dev(stat->rdev);
+	if ((u64) stat->size > MAX_NON_LFS)
+		return -EOVERFLOW;
+	tmp.st_size = stat->size;
+	tmp.st_atime = stat->atime.tv_sec;
+	tmp.st_atime_nsec = stat->atime.tv_nsec;
+	tmp.st_mtime = stat->mtime.tv_sec;
+	tmp.st_mtime_nsec = stat->mtime.tv_nsec;
+	tmp.st_ctime = stat->ctime.tv_sec;
+	tmp.st_ctime_nsec = stat->ctime.tv_nsec;
+	tmp.st_blocks = stat->blocks;
+	tmp.st_blksize = stat->blksize;
+	return copy_to_user(ubuf, &tmp, sizeof(tmp)) ? -EFAULT : 0;
+}
+
+COMPAT_SYSCALL_DEFINE2(newstat, const char __user *, filename,
+		       struct compat_stat __user *, statbuf)
+{
+	struct kstat stat;
+	int error;
+
+	error = vfs_stat(filename, &stat);
+	if (error)
+		return error;
+	return cp_compat_stat(&stat, statbuf);
+}
+
+COMPAT_SYSCALL_DEFINE2(newlstat, const char __user *, filename,
+		       struct compat_stat __user *, statbuf)
+{
+	struct kstat stat;
+	int error;
+
+	error = vfs_lstat(filename, &stat);
+	if (error)
+		return error;
+	return cp_compat_stat(&stat, statbuf);
+}
+
+#ifndef __ARCH_WANT_STAT64
+COMPAT_SYSCALL_DEFINE4(newfstatat, unsigned int, dfd,
+		       const char __user *, filename,
+		       struct compat_stat __user *, statbuf, int, flag)
+{
+	struct kstat stat;
+	int error;
+
+	error = vfs_fstatat(dfd, filename, &stat, flag);
+	if (error)
+		return error;
+	return cp_compat_stat(&stat, statbuf);
+}
+#endif
+
+COMPAT_SYSCALL_DEFINE2(newfstat, unsigned int, fd,
+		       struct compat_stat __user *, statbuf)
+{
+	struct kstat stat;
+	int error = vfs_fstat(fd, &stat);
+
+	if (!error)
+		error = cp_compat_stat(&stat, statbuf);
+	return error;
+}
+#endif
 
 /* Caller is here responsible for sufficient locking (ie. inode->i_lock) */
 void __inode_add_bytes(struct inode *inode, loff_t bytes)

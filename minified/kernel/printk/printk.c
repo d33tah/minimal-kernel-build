@@ -52,7 +52,7 @@
 #include <asm/sections.h>
 
 #include <trace/events/initcall.h>
-#define CREATE_TRACE_POINTS 
+#define CREATE_TRACE_POINTS
 #include <trace/events/printk.h>
 
 #include "printk_ringbuffer.h"
@@ -99,6 +99,11 @@ int __read_mostly suppress_printk;
  */
 static int __read_mostly suppress_panic_printk;
 
+#ifdef CONFIG_LOCKDEP
+static struct lockdep_map console_lock_dep_map = {
+	.name = "console_lock"
+};
+#endif
 
 enum devkmsg_log_bits {
 	__DEVKMSG_LOG_BIT_ON = 0,
@@ -113,7 +118,7 @@ enum devkmsg_log_masks {
 };
 
 /* Keep both the 'on' and 'off' bits clear, i.e. ratelimit by default: */
-#define DEVKMSG_LOG_MASK_DEFAULT 0
+#define DEVKMSG_LOG_MASK_DEFAULT	0
 
 static unsigned int __read_mostly devkmsg_log = DEVKMSG_LOG_MASK_DEFAULT;
 
@@ -174,6 +179,46 @@ static int __init control_devkmsg(char *str)
 __setup("printk.devkmsg=", control_devkmsg);
 
 char devkmsg_log_str[DEVKMSG_STR_MAX_SIZE] = "ratelimit";
+#if defined(CONFIG_PRINTK) && defined(CONFIG_SYSCTL)
+int devkmsg_sysctl_set_loglvl(struct ctl_table *table, int write,
+			      void *buffer, size_t *lenp, loff_t *ppos)
+{
+	char old_str[DEVKMSG_STR_MAX_SIZE];
+	unsigned int old;
+	int err;
+
+	if (write) {
+		if (devkmsg_log & DEVKMSG_LOG_MASK_LOCK)
+			return -EINVAL;
+
+		old = devkmsg_log;
+		strncpy(old_str, devkmsg_log_str, DEVKMSG_STR_MAX_SIZE);
+	}
+
+	err = proc_dostring(table, write, buffer, lenp, ppos);
+	if (err)
+		return err;
+
+	if (write) {
+		err = __control_devkmsg(devkmsg_log_str);
+
+		/*
+		 * Do not accept an unknown string OR a known string with
+		 * trailing crap...
+		 */
+		if (err < 0 || (err + 1 != *lenp)) {
+
+			/* ... and restore old setting. */
+			devkmsg_log = old;
+			strncpy(devkmsg_log_str, old_str, DEVKMSG_STR_MAX_SIZE);
+
+			return -EINVAL;
+		}
+	}
+
+	return 0;
+}
+#endif /* CONFIG_PRINTK && CONFIG_SYSCTL */
 
 /* Number of registered extended console drivers. */
 static int nr_ext_console_drivers;
@@ -182,7 +227,10 @@ static int nr_ext_console_drivers;
  * Helper macros to handle lockdep when locking/unlocking console_sem. We use
  * macros instead of functions so that _RET_IP_ contains useful information.
  */
-#define down_console_sem() do { down(&console_sem); mutex_acquire(&console_lock_dep_map, 0, 0, _RET_IP_);} while (0)
+#define down_console_sem() do { \
+	down(&console_sem);\
+	mutex_acquire(&console_lock_dep_map, 0, 0, _RET_IP_);\
+} while (0)
 
 static int __down_trylock_console_sem(unsigned long ip)
 {
@@ -313,6 +361,7 @@ static int console_msg_format = MSG_FORMAT_DEFAULT;
 /* syslog_lock protects syslog_* variables and write access to clear_seq. */
 static DEFINE_MUTEX(syslog_lock);
 
+#ifdef CONFIG_PRINTK
 DECLARE_WAIT_QUEUE_HEAD(log_wait);
 /* All 3 protected by @syslog_lock. */
 /* the next printk record to read by syslog(READ) or /proc/kmsg */
@@ -336,19 +385,23 @@ static struct latched_seq clear_seq = {
 	.val[1]		= 0,
 };
 
-#define PREFIX_MAX 32
+#ifdef CONFIG_PRINTK_CALLER
+#define PREFIX_MAX		48
+#else
+#define PREFIX_MAX		32
+#endif
 
 /* the maximum size of a formatted record (i.e. with prefix added per line) */
-#define CONSOLE_LOG_MAX 1024
+#define CONSOLE_LOG_MAX		1024
 
 /* the maximum size for a dropped text message */
-#define DROPPED_TEXT_MAX 64
+#define DROPPED_TEXT_MAX	64
 
 /* the maximum size allowed to be reserved for a record */
-#define LOG_LINE_MAX (CONSOLE_LOG_MAX - PREFIX_MAX)
+#define LOG_LINE_MAX		(CONSOLE_LOG_MAX - PREFIX_MAX)
 
-#define LOG_LEVEL(v) ((v) & 0x07)
-#define LOG_FACILITY(v) ((v) >> 3 & 0xff)
+#define LOG_LEVEL(v)		((v) & 0x07)
+#define LOG_FACILITY(v)		((v) >> 3 & 0xff)
 
 /* record buffer */
 #define LOG_ALIGN __alignof__(unsigned long)
@@ -363,8 +416,11 @@ static u32 log_buf_len = __LOG_BUF_LEN;
  * descriptors that will be available. Underestimating is better than
  * overestimating (too many available descriptors is better than not enough).
  */
-#define PRB_AVGBITS 5
+#define PRB_AVGBITS 5	/* 32 character average length */
 
+#if CONFIG_LOG_BUF_SHIFT <= PRB_AVGBITS
+#error CONFIG_LOG_BUF_SHIFT value too small.
+#endif
 _DEFINE_PRINTKRB(printk_rb_static, CONFIG_LOG_BUF_SHIFT - PRB_AVGBITS,
 		 PRB_AVGBITS, &__log_buf[0]);
 
@@ -502,7 +558,14 @@ static ssize_t info_print_ext_header(char *buf, size_t size,
 {
 	u64 ts_usec = info->ts_nsec;
 	char caller[20];
+#ifdef CONFIG_PRINTK_CALLER
+	u32 id = info->caller_id;
+
+	snprintf(caller, sizeof(caller), ",caller=%c%u",
+		 id & 0x80000000 ? 'C' : 'T', id & ~0x80000000);
+#else
 	caller[0] = '\0';
+#endif
 
 	do_div(ts_usec, 1000);
 
@@ -841,6 +904,74 @@ const struct file_operations kmsg_fops = {
 	.release = devkmsg_release,
 };
 
+#ifdef CONFIG_CRASH_CORE
+/*
+ * This appends the listed symbols to /proc/vmcore
+ *
+ * /proc/vmcore is used by various utilities, like crash and makedumpfile to
+ * obtain access to symbols that are otherwise very difficult to locate.  These
+ * symbols are specifically used so that utilities can access and extract the
+ * dmesg log from a vmcore file after a crash.
+ */
+void log_buf_vmcoreinfo_setup(void)
+{
+	struct dev_printk_info *dev_info = NULL;
+
+	VMCOREINFO_SYMBOL(prb);
+	VMCOREINFO_SYMBOL(printk_rb_static);
+	VMCOREINFO_SYMBOL(clear_seq);
+
+	/*
+	 * Export struct size and field offsets. User space tools can
+	 * parse it and detect any changes to structure down the line.
+	 */
+
+	VMCOREINFO_STRUCT_SIZE(printk_ringbuffer);
+	VMCOREINFO_OFFSET(printk_ringbuffer, desc_ring);
+	VMCOREINFO_OFFSET(printk_ringbuffer, text_data_ring);
+	VMCOREINFO_OFFSET(printk_ringbuffer, fail);
+
+	VMCOREINFO_STRUCT_SIZE(prb_desc_ring);
+	VMCOREINFO_OFFSET(prb_desc_ring, count_bits);
+	VMCOREINFO_OFFSET(prb_desc_ring, descs);
+	VMCOREINFO_OFFSET(prb_desc_ring, infos);
+	VMCOREINFO_OFFSET(prb_desc_ring, head_id);
+	VMCOREINFO_OFFSET(prb_desc_ring, tail_id);
+
+	VMCOREINFO_STRUCT_SIZE(prb_desc);
+	VMCOREINFO_OFFSET(prb_desc, state_var);
+	VMCOREINFO_OFFSET(prb_desc, text_blk_lpos);
+
+	VMCOREINFO_STRUCT_SIZE(prb_data_blk_lpos);
+	VMCOREINFO_OFFSET(prb_data_blk_lpos, begin);
+	VMCOREINFO_OFFSET(prb_data_blk_lpos, next);
+
+	VMCOREINFO_STRUCT_SIZE(printk_info);
+	VMCOREINFO_OFFSET(printk_info, seq);
+	VMCOREINFO_OFFSET(printk_info, ts_nsec);
+	VMCOREINFO_OFFSET(printk_info, text_len);
+	VMCOREINFO_OFFSET(printk_info, caller_id);
+	VMCOREINFO_OFFSET(printk_info, dev_info);
+
+	VMCOREINFO_STRUCT_SIZE(dev_printk_info);
+	VMCOREINFO_OFFSET(dev_printk_info, subsystem);
+	VMCOREINFO_LENGTH(printk_info_subsystem, sizeof(dev_info->subsystem));
+	VMCOREINFO_OFFSET(dev_printk_info, device);
+	VMCOREINFO_LENGTH(printk_info_device, sizeof(dev_info->device));
+
+	VMCOREINFO_STRUCT_SIZE(prb_data_ring);
+	VMCOREINFO_OFFSET(prb_data_ring, size_bits);
+	VMCOREINFO_OFFSET(prb_data_ring, data);
+	VMCOREINFO_OFFSET(prb_data_ring, head_lpos);
+	VMCOREINFO_OFFSET(prb_data_ring, tail_lpos);
+
+	VMCOREINFO_SIZE(atomic_long_t);
+	VMCOREINFO_TYPE_OFFSET(atomic_long_t, counter);
+
+	VMCOREINFO_STRUCT_SIZE(latched_seq);
+	VMCOREINFO_OFFSET(latched_seq, val);
+}
+#endif
 
 /* requested log_buf_len from kernel cmdline */
 static unsigned long __initdata new_log_buf_len;
@@ -875,7 +1006,38 @@ static int __init log_buf_len_setup(char *str)
 }
 early_param("log_buf_len", log_buf_len_setup);
 
+#ifdef CONFIG_SMP
+#define __LOG_CPU_MAX_BUF_LEN (1 << CONFIG_LOG_CPU_MAX_BUF_SHIFT)
+
+static void __init log_buf_add_cpu(void)
+{
+	unsigned int cpu_extra;
+
+	/*
+	 * archs should set up cpu_possible_bits properly with
+	 * set_cpu_possible() after setup_arch() but just in
+	 * case lets ensure this is valid.
+	 */
+	if (num_possible_cpus() == 1)
+		return;
+
+	cpu_extra = (num_possible_cpus() - 1) * __LOG_CPU_MAX_BUF_LEN;
+
+	/* by default this will only continue through for large > 64 CPUs */
+	if (cpu_extra <= __LOG_BUF_LEN / 2)
+		return;
+
+	pr_info("log_buf_len individual max cpu contribution: %d bytes\n",
+		__LOG_CPU_MAX_BUF_LEN);
+	pr_info("log_buf_len total cpu_extra contributions: %d bytes\n",
+		cpu_extra);
+	pr_info("log_buf_len min size: %d bytes\n", __LOG_BUF_LEN);
+
+	log_buf_len_update(cpu_extra + __LOG_BUF_LEN);
+}
+#else /* !CONFIG_SMP */
 static inline void log_buf_add_cpu(void) {}
+#endif /* CONFIG_SMP */
 
 static void __init set_percpu_data_ready(void)
 {
@@ -1045,9 +1207,60 @@ static bool suppress_message_printing(int level)
 	return (level >= console_loglevel && !ignore_loglevel);
 }
 
+#ifdef CONFIG_BOOT_PRINTK_DELAY
+
+static int boot_delay; /* msecs delay after each printk during bootup */
+static unsigned long long loops_per_msec;	/* based on boot_delay */
+
+static int __init boot_delay_setup(char *str)
+{
+	unsigned long lpj;
+
+	lpj = preset_lpj ? preset_lpj : 1000000;	/* some guess */
+	loops_per_msec = (unsigned long long)lpj / 1000 * HZ;
+
+	get_option(&str, &boot_delay);
+	if (boot_delay > 10 * 1000)
+		boot_delay = 0;
+
+	pr_debug("boot_delay: %u, preset_lpj: %ld, lpj: %lu, "
+		"HZ: %d, loops_per_msec: %llu\n",
+		boot_delay, preset_lpj, lpj, HZ, loops_per_msec);
+	return 0;
+}
+early_param("boot_delay", boot_delay_setup);
+
+static void boot_delay_msec(int level)
+{
+	unsigned long long k;
+	unsigned long timeout;
+
+	if ((boot_delay == 0 || system_state >= SYSTEM_RUNNING)
+		|| suppress_message_printing(level)) {
+		return;
+	}
+
+	k = (unsigned long long)loops_per_msec * boot_delay;
+
+	timeout = jiffies + msecs_to_jiffies(boot_delay);
+	while (k) {
+		k--;
+		cpu_relax();
+		/*
+		 * use (volatile) jiffies to prevent
+		 * compiler reduction; loop termination via jiffies
+		 * is secondary and may or may not happen.
+		 */
+		if (time_after(jiffies, timeout))
+			break;
+		touch_nmi_watchdog();
+	}
+}
+#else
 static inline void boot_delay_msec(int level)
 {
 }
+#endif
 
 static bool printk_time = IS_ENABLED(CONFIG_PRINTK_TIME);
 module_param_named(time, printk_time, bool, S_IRUGO | S_IWUSR);
@@ -1065,7 +1278,18 @@ static size_t print_time(u64 ts, char *buf)
 		       (unsigned long)ts, rem_nsec / 1000);
 }
 
-#define print_caller(id,buf) 0
+#ifdef CONFIG_PRINTK_CALLER
+static size_t print_caller(u32 id, char *buf)
+{
+	char caller[12];
+
+	snprintf(caller, sizeof(caller), "%c%u",
+		 id & 0x80000000 ? 'C' : 'T', id & ~0x80000000);
+	return sprintf(buf, "[%6s]", caller);
+}
+#else
+#define print_caller(id, buf) 0
+#endif
 
 static size_t info_print_prefix(const struct printk_info  *info, bool syslog,
 				bool time, char *buf)
@@ -1555,6 +1779,11 @@ SYSCALL_DEFINE3(syslog, int, type, char __user *, buf, int, len)
  * They allow to pass console_lock to another printk() call using a busy wait.
  */
 
+#ifdef CONFIG_LOCKDEP
+static struct lockdep_map console_owner_dep_map = {
+	.name = "console_owner"
+};
+#endif
 
 static DEFINE_RAW_SPINLOCK(console_owner_lock);
 static struct task_struct *console_owner;
@@ -1723,8 +1952,10 @@ static void call_console_driver(struct console *con, const char *text, size_t le
  */
 static DEFINE_PER_CPU(u8, printk_count);
 static u8 printk_count_early;
+#ifdef CONFIG_HAVE_NMI
 static DEFINE_PER_CPU(u8, printk_count_nmi);
 static u8 printk_count_nmi_early;
+#endif
 
 /*
  * Recursion is limited to keep the output sane. printk() should not require
@@ -1740,11 +1971,13 @@ static u8 printk_count_nmi_early;
  */
 static u8 *__printk_recursion_counter(void)
 {
+#ifdef CONFIG_HAVE_NMI
 	if (in_nmi()) {
 		if (printk_percpu_data_ready())
 			return this_cpu_ptr(&printk_count_nmi);
 		return &printk_count_nmi_early;
 	}
+#endif
 	if (printk_percpu_data_ready())
 		return this_cpu_ptr(&printk_count);
 	return &printk_count_early;
@@ -1758,10 +1991,29 @@ static u8 *__printk_recursion_counter(void)
  * @recursion_ptr must be a variable of type (u8 *) and is the same variable
  * that is passed to printk_exit_irqrestore().
  */
-#define printk_enter_irqsave(recursion_ptr,flags) ({ bool success = true; typecheck(u8 *, recursion_ptr); local_irq_save(flags); (recursion_ptr) = __printk_recursion_counter(); if (*(recursion_ptr) > PRINTK_MAX_RECURSION) { local_irq_restore(flags); success = false; } else { (*(recursion_ptr))++; } success; })
+#define printk_enter_irqsave(recursion_ptr, flags)	\
+({							\
+	bool success = true;				\
+							\
+	typecheck(u8 *, recursion_ptr);			\
+	local_irq_save(flags);				\
+	(recursion_ptr) = __printk_recursion_counter();	\
+	if (*(recursion_ptr) > PRINTK_MAX_RECURSION) {	\
+		local_irq_restore(flags);		\
+		success = false;			\
+	} else {					\
+		(*(recursion_ptr))++;			\
+	}						\
+	success;					\
+})
 
 /* Exit recursion tracking, restoring interrupts. */
-#define printk_exit_irqrestore(recursion_ptr,flags) do { typecheck(u8 *, recursion_ptr); (*(recursion_ptr))--; local_irq_restore(flags); } while (0)
+#define printk_exit_irqrestore(recursion_ptr, flags)	\
+	do {						\
+		typecheck(u8 *, recursion_ptr);		\
+		(*(recursion_ptr))--;			\
+		local_irq_restore(flags);		\
+	} while (0)
 
 int printk_delay_msec __read_mostly;
 
@@ -2046,7 +2298,43 @@ EXPORT_SYMBOL(_printk);
 
 static bool __pr_flush(struct console *con, int timeout_ms, bool reset_on_progress);
 
+#else /* CONFIG_PRINTK */
 
+#define CONSOLE_LOG_MAX		0
+#define DROPPED_TEXT_MAX	0
+#define printk_time		false
+
+#define prb_read_valid(rb, seq, r)	false
+#define prb_first_valid_seq(rb)		0
+#define prb_next_seq(rb)		0
+
+static u64 syslog_seq;
+
+static size_t record_print_text(const struct printk_record *r,
+				bool syslog, bool time)
+{
+	return 0;
+}
+static ssize_t info_print_ext_header(char *buf, size_t size,
+				     struct printk_info *info)
+{
+	return 0;
+}
+static ssize_t msg_print_ext_body(char *buf, size_t size,
+				  char *text, size_t text_len,
+				  struct dev_printk_info *dev_info) { return 0; }
+static void console_lock_spinning_enable(void) { }
+static int console_lock_spinning_disable_and_check(void) { return 0; }
+static void call_console_driver(struct console *con, const char *text, size_t len,
+				char *dropped_text)
+{
+}
+static bool suppress_message_printing(int level) { return false; }
+static bool __pr_flush(struct console *con, int timeout_ms, bool reset_on_progress) { return true; }
+
+#endif /* CONFIG_PRINTK */
+
+#ifdef CONFIG_EARLY_PRINTK
 struct console *early_console;
 
 asmlinkage __visible void early_printk(const char *fmt, ...)
@@ -2064,6 +2352,7 @@ asmlinkage __visible void early_printk(const char *fmt, ...)
 
 	early_console->write(early_console, buf, n);
 }
+#endif
 
 static void set_user_specified(struct console_cmdline *c, bool user_specified)
 {
@@ -2158,6 +2447,12 @@ static int __init console_setup(char *str)
 	options = strchr(str, ',');
 	if (options)
 		*(options++) = 0;
+#ifdef __sparc__
+	if (!strcmp(str, "ttya"))
+		strcpy(buf, "ttyS0");
+	if (!strcmp(str, "ttyb"))
+		strcpy(buf, "ttyS1");
+#endif
 	for (s = buf; *s; s++)
 		if (isdigit(*s) || *s == ',')
 			break;
@@ -2782,7 +3077,10 @@ static void try_enable_default_console(struct console *newcon)
 		newcon->flags |= CON_CONSDEV;
 }
 
-#define con_printk(lvl,con,fmt,...) printk(lvl pr_fmt("%sconsole [%s%d] " fmt), (con->flags & CON_BOOT) ? "boot" : "", con->name, con->index, ##__VA_ARGS__)
+#define con_printk(lvl, con, fmt, ...)			\
+	printk(lvl pr_fmt("%sconsole [%s%d] " fmt),	\
+	       (con->flags & CON_BOOT) ? "boot" : "",	\
+	       con->name, con->index, ##__VA_ARGS__)
 
 /*
  * The console driver calls this routine during kernel initialization
@@ -3063,6 +3361,7 @@ static int __init printk_late_init(void)
 }
 late_initcall(printk_late_init);
 
+#if defined CONFIG_PRINTK
 /* If @con is specified, only wait for that console. Otherwise wait for all. */
 static bool __pr_flush(struct console *con, int timeout_ms, bool reset_on_progress)
 {
@@ -3148,8 +3447,8 @@ EXPORT_SYMBOL(pr_flush);
 /*
  * Delayed printk version, for scheduler-internal messages:
  */
-#define PRINTK_PENDING_WAKEUP 0x01
-#define PRINTK_PENDING_OUTPUT 0x02
+#define PRINTK_PENDING_WAKEUP	0x01
+#define PRINTK_PENDING_OUTPUT	0x02
 
 static DEFINE_PER_CPU(int, printk_pending);
 
@@ -3539,4 +3838,121 @@ void kmsg_dump_rewind(struct kmsg_dump_iter *iter)
 }
 EXPORT_SYMBOL_GPL(kmsg_dump_rewind);
 
+#endif
 
+#ifdef CONFIG_SMP
+static atomic_t printk_cpu_sync_owner = ATOMIC_INIT(-1);
+static atomic_t printk_cpu_sync_nested = ATOMIC_INIT(0);
+
+/**
+ * __printk_cpu_sync_wait() - Busy wait until the printk cpu-reentrant
+ *                            spinning lock is not owned by any CPU.
+ *
+ * Context: Any context.
+ */
+void __printk_cpu_sync_wait(void)
+{
+	do {
+		cpu_relax();
+	} while (atomic_read(&printk_cpu_sync_owner) != -1);
+}
+EXPORT_SYMBOL(__printk_cpu_sync_wait);
+
+/**
+ * __printk_cpu_sync_try_get() - Try to acquire the printk cpu-reentrant
+ *                               spinning lock.
+ *
+ * If no processor has the lock, the calling processor takes the lock and
+ * becomes the owner. If the calling processor is already the owner of the
+ * lock, this function succeeds immediately.
+ *
+ * Context: Any context. Expects interrupts to be disabled.
+ * Return: 1 on success, otherwise 0.
+ */
+int __printk_cpu_sync_try_get(void)
+{
+	int cpu;
+	int old;
+
+	cpu = smp_processor_id();
+
+	/*
+	 * Guarantee loads and stores from this CPU when it is the lock owner
+	 * are _not_ visible to the previous lock owner. This pairs with
+	 * __printk_cpu_sync_put:B.
+	 *
+	 * Memory barrier involvement:
+	 *
+	 * If __printk_cpu_sync_try_get:A reads from __printk_cpu_sync_put:B,
+	 * then __printk_cpu_sync_put:A can never read from
+	 * __printk_cpu_sync_try_get:B.
+	 *
+	 * Relies on:
+	 *
+	 * RELEASE from __printk_cpu_sync_put:A to __printk_cpu_sync_put:B
+	 * of the previous CPU
+	 *    matching
+	 * ACQUIRE from __printk_cpu_sync_try_get:A to
+	 * __printk_cpu_sync_try_get:B of this CPU
+	 */
+	old = atomic_cmpxchg_acquire(&printk_cpu_sync_owner, -1,
+				     cpu); /* LMM(__printk_cpu_sync_try_get:A) */
+	if (old == -1) {
+		/*
+		 * This CPU is now the owner and begins loading/storing
+		 * data: LMM(__printk_cpu_sync_try_get:B)
+		 */
+		return 1;
+
+	} else if (old == cpu) {
+		/* This CPU is already the owner. */
+		atomic_inc(&printk_cpu_sync_nested);
+		return 1;
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(__printk_cpu_sync_try_get);
+
+/**
+ * __printk_cpu_sync_put() - Release the printk cpu-reentrant spinning lock.
+ *
+ * The calling processor must be the owner of the lock.
+ *
+ * Context: Any context. Expects interrupts to be disabled.
+ */
+void __printk_cpu_sync_put(void)
+{
+	if (atomic_read(&printk_cpu_sync_nested)) {
+		atomic_dec(&printk_cpu_sync_nested);
+		return;
+	}
+
+	/*
+	 * This CPU is finished loading/storing data:
+	 * LMM(__printk_cpu_sync_put:A)
+	 */
+
+	/*
+	 * Guarantee loads and stores from this CPU when it was the
+	 * lock owner are visible to the next lock owner. This pairs
+	 * with __printk_cpu_sync_try_get:A.
+	 *
+	 * Memory barrier involvement:
+	 *
+	 * If __printk_cpu_sync_try_get:A reads from __printk_cpu_sync_put:B,
+	 * then __printk_cpu_sync_try_get:B reads from __printk_cpu_sync_put:A.
+	 *
+	 * Relies on:
+	 *
+	 * RELEASE from __printk_cpu_sync_put:A to __printk_cpu_sync_put:B
+	 * of this CPU
+	 *    matching
+	 * ACQUIRE from __printk_cpu_sync_try_get:A to
+	 * __printk_cpu_sync_try_get:B of the next CPU
+	 */
+	atomic_set_release(&printk_cpu_sync_owner,
+			   -1); /* LMM(__printk_cpu_sync_put:B) */
+}
+EXPORT_SYMBOL(__printk_cpu_sync_put);
+#endif /* CONFIG_SMP */

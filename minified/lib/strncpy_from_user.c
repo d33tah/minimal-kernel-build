@@ -12,7 +12,12 @@
 #include <asm/byteorder.h>
 #include <asm/word-at-a-time.h>
 
-#define IS_UNALIGNED(src,dst) 0
+#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+#define IS_UNALIGNED(src, dst)	0
+#else
+#define IS_UNALIGNED(src, dst)	\
+	(((long) dst | (long) src) & (sizeof(long) - 1))
+#endif
 
 /*
  * Do a strncpy, return length of string without final '\0'.

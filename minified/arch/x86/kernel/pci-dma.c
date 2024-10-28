@@ -23,8 +23,13 @@ static bool disable_dac_quirk __read_mostly;
 const struct dma_map_ops *dma_ops;
 EXPORT_SYMBOL(dma_ops);
 
+#ifdef CONFIG_IOMMU_DEBUG
+int panic_on_overflow __read_mostly = 1;
+int force_iommu __read_mostly = 1;
+#else
 int panic_on_overflow __read_mostly = 0;
 int force_iommu __read_mostly = 0;
+#endif
 
 int iommu_merge __read_mostly = 0;
 
@@ -32,14 +37,78 @@ int no_iommu __read_mostly;
 /* Set this to 1 if there is a HW IOMMU in the system */
 int iommu_detected __read_mostly = 0;
 
+#ifdef CONFIG_SWIOTLB
+bool x86_swiotlb_enable;
+static unsigned int x86_swiotlb_flags;
+
+static void __init pci_swiotlb_detect(void)
+{
+	/* don't initialize swiotlb if iommu=off (no_iommu=1) */
+	if (!no_iommu && max_possible_pfn > MAX_DMA32_PFN)
+		x86_swiotlb_enable = true;
+
+	/*
+	 * Set swiotlb to 1 so that bounce buffers are allocated and used for
+	 * devices that can't support DMA to encrypted memory.
+	 */
+	if (cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT))
+		x86_swiotlb_enable = true;
+
+	/*
+	 * Guest with guest memory encryption currently perform all DMA through
+	 * bounce buffers as the hypervisor can't access arbitrary VM memory
+	 * that is not explicitly shared with it.
+	 */
+	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT)) {
+		x86_swiotlb_enable = true;
+		x86_swiotlb_flags |= SWIOTLB_FORCE;
+	}
+}
+#else
 static inline void __init pci_swiotlb_detect(void)
 {
 }
 #define x86_swiotlb_flags 0
+#endif /* CONFIG_SWIOTLB */
 
+#ifdef CONFIG_SWIOTLB_XEN
+static void __init pci_xen_swiotlb_init(void)
+{
+	if (!xen_initial_domain() && !x86_swiotlb_enable)
+		return;
+	x86_swiotlb_enable = true;
+	x86_swiotlb_flags |= SWIOTLB_ANY;
+	swiotlb_init_remap(true, x86_swiotlb_flags, xen_swiotlb_fixup);
+	dma_ops = &xen_swiotlb_dma_ops;
+	if (IS_ENABLED(CONFIG_PCI))
+		pci_request_acs();
+}
+
+int pci_xen_swiotlb_init_late(void)
+{
+	if (dma_ops == &xen_swiotlb_dma_ops)
+		return 0;
+
+	/* we can work with the default swiotlb */
+	if (!io_tlb_default_mem.nslabs) {
+		int rc = swiotlb_init_late(swiotlb_size_or_default(),
+					   GFP_KERNEL, xen_swiotlb_fixup);
+		if (rc < 0)
+			return rc;
+	}
+
+	/* XXX: this switches the dma ops under live devices! */
+	dma_ops = &xen_swiotlb_dma_ops;
+	if (IS_ENABLED(CONFIG_PCI))
+		pci_request_acs();
+	return 0;
+}
+EXPORT_SYMBOL_GPL(pci_xen_swiotlb_init_late);
+#else
 static inline void __init pci_xen_swiotlb_init(void)
 {
 }
+#endif /* CONFIG_SWIOTLB_XEN */
 
 void __init pci_iommu_alloc(void)
 {
@@ -100,6 +169,10 @@ static __init int iommu_setup(char *p)
 			disable_dac_quirk = true;
 			return 1;
 		}
+#ifdef CONFIG_SWIOTLB
+		if (!strncmp(p, "soft", 4))
+			x86_swiotlb_enable = true;
+#endif
 		if (!strncmp(p, "pt", 2))
 			iommu_set_default_passthrough(true);
 		if (!strncmp(p, "nopt", 4))
@@ -119,9 +192,37 @@ static int __init pci_iommu_init(void)
 {
 	x86_init.iommu.iommu_init();
 
+#ifdef CONFIG_SWIOTLB
+	/* An IOMMU turned us off. */
+	if (x86_swiotlb_enable) {
+		pr_info("PCI-DMA: Using software bounce buffering for IO (SWIOTLB)\n");
+		swiotlb_print_info();
+	} else {
+		swiotlb_exit();
+	}
+#endif
 
 	return 0;
 }
 /* Must execute after PCI subsystem */
 rootfs_initcall(pci_iommu_init);
 
+#ifdef CONFIG_PCI
+/* Many VIA bridges seem to corrupt data for DAC. Disable it here */
+
+static int via_no_dac_cb(struct pci_dev *pdev, void *data)
+{
+	pdev->dev.bus_dma_limit = DMA_BIT_MASK(32);
+	return 0;
+}
+
+static void via_no_dac(struct pci_dev *dev)
+{
+	if (!disable_dac_quirk) {
+		dev_info(&dev->dev, "disabling DAC on VIA PCI bridge\n");
+		pci_walk_bus(dev->subordinate, via_no_dac_cb, NULL);
+	}
+}
+DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_VENDOR_ID_VIA, PCI_ANY_ID,
+				PCI_CLASS_BRIDGE_PCI, 8, via_no_dac);
+#endif

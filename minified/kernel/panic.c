@@ -38,7 +38,15 @@
 #define PANIC_TIMER_STEP 100
 #define PANIC_BLINK_SPD 18
 
+#ifdef CONFIG_SMP
+/*
+ * Should we dump all CPUs backtraces in an oops event?
+ * Defaults to 0, can be changed via sysctl.
+ */
+static unsigned int __read_mostly sysctl_oops_all_cpu_backtrace;
+#else
 #define sysctl_oops_all_cpu_backtrace 0
+#endif /* CONFIG_SMP */
 
 int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
 static unsigned long tainted_mask =
@@ -54,19 +62,40 @@ bool panic_on_taint_nousertaint = false;
 int panic_timeout = CONFIG_PANIC_TIMEOUT;
 EXPORT_SYMBOL_GPL(panic_timeout);
 
-#define PANIC_PRINT_TASK_INFO 0x00000001
-#define PANIC_PRINT_MEM_INFO 0x00000002
-#define PANIC_PRINT_TIMER_INFO 0x00000004
-#define PANIC_PRINT_LOCK_INFO 0x00000008
-#define PANIC_PRINT_FTRACE_INFO 0x00000010
-#define PANIC_PRINT_ALL_PRINTK_MSG 0x00000020
-#define PANIC_PRINT_ALL_CPU_BT 0x00000040
+#define PANIC_PRINT_TASK_INFO		0x00000001
+#define PANIC_PRINT_MEM_INFO		0x00000002
+#define PANIC_PRINT_TIMER_INFO		0x00000004
+#define PANIC_PRINT_LOCK_INFO		0x00000008
+#define PANIC_PRINT_FTRACE_INFO		0x00000010
+#define PANIC_PRINT_ALL_PRINTK_MSG	0x00000020
+#define PANIC_PRINT_ALL_CPU_BT		0x00000040
 unsigned long panic_print;
 
 ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
 
 EXPORT_SYMBOL(panic_notifier_list);
 
+#if defined(CONFIG_SMP) && defined(CONFIG_SYSCTL)
+static struct ctl_table kern_panic_table[] = {
+	{
+		.procname       = "oops_all_cpu_backtrace",
+		.data           = &sysctl_oops_all_cpu_backtrace,
+		.maxlen         = sizeof(int),
+		.mode           = 0644,
+		.proc_handler   = proc_dointvec_minmax,
+		.extra1         = SYSCTL_ZERO,
+		.extra2         = SYSCTL_ONE,
+	},
+	{ }
+};
+
+static __init int kernel_panic_sysctls_init(void)
+{
+	register_sysctl_init("kernel", kern_panic_table);
+	return 0;
+}
+late_initcall(kernel_panic_sysctls_init);
+#endif
 
 static long no_blink(int state)
 {
@@ -237,6 +266,13 @@ void panic(const char *fmt, ...)
 		buf[len - 1] = '\0';
 
 	pr_emerg("Kernel panic - not syncing: %s\n", buf);
+#ifdef CONFIG_DEBUG_BUGVERBOSE
+	/*
+	 * Avoid nested stack-dumping if a panic occurs during oops processing
+	 */
+	if (!test_taint(TAINT_DIE) && oops_in_progress <= 1)
+		dump_stack();
+#endif
 
 	/*
 	 * If kgdb is enabled, give it a chance to run before we stop all
@@ -293,7 +329,9 @@ void panic(const char *fmt, ...)
 	if (_crash_kexec_post_notifiers)
 		__crash_kexec(NULL);
 
+#ifdef CONFIG_VT
 	unblank_screen();
+#endif
 	console_unblank();
 
 	/*
@@ -338,6 +376,18 @@ void panic(const char *fmt, ...)
 			reboot_mode = panic_reboot_mode;
 		emergency_restart();
 	}
+#ifdef __sparc__
+	{
+		extern int stop_a_enabled;
+		/* Make sure the user can actually press Stop-A (L1-A) */
+		stop_a_enabled = 1;
+		pr_emerg("Press Stop-A (L1-A) from sun keyboard or send break\n"
+			 "twice on console to return to the boot prom\n");
+	}
+#endif
+#if defined(CONFIG_S390)
+	disabled_wait();
+#endif
 	pr_emerg("---[ end Kernel panic - not syncing: %s ]---\n", buf);
 
 	/* Do not scroll important messages printed above */
@@ -584,6 +634,27 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
 	add_taint(taint, LOCKDEP_STILL_OK);
 }
 
+#ifndef __WARN_FLAGS
+void warn_slowpath_fmt(const char *file, int line, unsigned taint,
+		       const char *fmt, ...)
+{
+	struct warn_args args;
+
+	pr_warn(CUT_HERE);
+
+	if (!fmt) {
+		__warn(file, line, __builtin_return_address(0), taint,
+		       NULL, NULL);
+		return;
+	}
+
+	args.fmt = fmt;
+	va_start(args.args, fmt);
+	__warn(file, line, __builtin_return_address(0), taint, NULL, &args);
+	va_end(args.args);
+}
+EXPORT_SYMBOL(warn_slowpath_fmt);
+#else
 void __warn_printk(const char *fmt, ...)
 {
 	va_list args;
@@ -595,8 +666,49 @@ void __warn_printk(const char *fmt, ...)
 	va_end(args);
 }
 EXPORT_SYMBOL(__warn_printk);
+#endif
 
+#ifdef CONFIG_BUG
 
+/* Support resetting WARN*_ONCE state */
+
+static int clear_warn_once_set(void *data, u64 val)
+{
+	generic_bug_clear_once();
+	memset(__start_once, 0, __end_once - __start_once);
+	return 0;
+}
+
+DEFINE_DEBUGFS_ATTRIBUTE(clear_warn_once_fops, NULL, clear_warn_once_set,
+			 "%lld\n");
+
+static __init int register_warn_debugfs(void)
+{
+	/* Don't care about failure */
+	debugfs_create_file_unsafe("clear_warn_once", 0200, NULL, NULL,
+				   &clear_warn_once_fops);
+	return 0;
+}
+
+device_initcall(register_warn_debugfs);
+#endif
+
+#ifdef CONFIG_STACKPROTECTOR
+
+/*
+ * Called when gcc's -fstack-protector feature is used, and
+ * gcc detects corruption of the on-stack canary value
+ */
+__visible noinstr void __stack_chk_fail(void)
+{
+	instrumentation_begin();
+	panic("stack-protector: Kernel stack is corrupted in: %pB",
+		__builtin_return_address(0));
+	instrumentation_end();
+}
+EXPORT_SYMBOL(__stack_chk_fail);
+
+#endif
 
 core_param(panic, panic_timeout, int, 0644);
 core_param(panic_print, panic_print, ulong, 0644);

@@ -18,7 +18,9 @@
  * proper (after FPU initialization, in particular).
  */
 
-#include "boot.h"
+#ifdef _SETUP
+# include "boot.h"
+#endif
 #include <linux/types.h>
 #include <asm/intel-family.h>
 #include <asm/processor-flags.h>
@@ -52,7 +54,7 @@ static const u32 req_flags[NCAPINTS] =
 	REQUIRED_MASK16,
 };
 
-#define A32(a,b,c,d) (((d) << 24)+((c) << 16)+((b) << 8)+(a))
+#define A32(a, b, c, d) (((d) << 24)+((c) << 16)+((b) << 8)+(a))
 
 static int is_amd(void)
 {

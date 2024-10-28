@@ -25,7 +25,9 @@
 #include <linux/log2.h>
 
 /* Not needed on 64bit architectures */
+#if BITS_PER_LONG == 32
 
+#ifndef __div64_32
 uint32_t __attribute__((weak)) __div64_32(uint64_t *n, uint32_t base)
 {
 	uint64_t rem = *n;
@@ -59,6 +61,7 @@ uint32_t __attribute__((weak)) __div64_32(uint64_t *n, uint32_t base)
 	return rem;
 }
 EXPORT_SYMBOL(__div64_32);
+#endif
 
 /**
  * div_s64_rem - signed 64bit divide with 64bit divisor and remainder
@@ -66,6 +69,7 @@ EXPORT_SYMBOL(__div64_32);
  * @divisor:	64bit divisor
  * @remainder:  64bit remainder
  */
+#ifndef div_s64_rem
 s64 div_s64_rem(s64 dividend, s32 divisor, s32 *remainder)
 {
 	u64 quotient;
@@ -83,6 +87,7 @@ s64 div_s64_rem(s64 dividend, s32 divisor, s32 *remainder)
 	return quotient;
 }
 EXPORT_SYMBOL(div_s64_rem);
+#endif
 
 /**
  * div64_u64_rem - unsigned 64bit divide with 64bit divisor and remainder
@@ -95,6 +100,7 @@ EXPORT_SYMBOL(div_s64_rem);
  * is kept distinct to avoid slowing down the div64_u64 operation on 32bit
  * systems.
  */
+#ifndef div64_u64_rem
 u64 div64_u64_rem(u64 dividend, u64 divisor, u64 *remainder)
 {
 	u32 high = divisor >> 32;
@@ -121,6 +127,7 @@ u64 div64_u64_rem(u64 dividend, u64 divisor, u64 *remainder)
 	return quot;
 }
 EXPORT_SYMBOL(div64_u64_rem);
+#endif
 
 /**
  * div64_u64 - unsigned 64bit divide with 64bit divisor
@@ -133,6 +140,7 @@ EXPORT_SYMBOL(div64_u64_rem);
  *
  * 'http://www.hackersdelight.org/hdcodetxt/divDouble.c.txt'
  */
+#ifndef div64_u64
 u64 div64_u64(u64 dividend, u64 divisor)
 {
 	u32 high = divisor >> 32;
@@ -153,12 +161,14 @@ u64 div64_u64(u64 dividend, u64 divisor)
 	return quot;
 }
 EXPORT_SYMBOL(div64_u64);
+#endif
 
 /**
  * div64_s64 - signed 64bit divide with 64bit divisor
  * @dividend:	64bit dividend
  * @divisor:	64bit divisor
  */
+#ifndef div64_s64
 s64 div64_s64(s64 dividend, s64 divisor)
 {
 	s64 quot, t;
@@ -169,7 +179,9 @@ s64 div64_s64(s64 dividend, s64 divisor)
 	return (quot ^ t) - t;
 }
 EXPORT_SYMBOL(div64_s64);
+#endif
 
+#endif /* BITS_PER_LONG == 32 */
 
 /*
  * Iterative div/mod for use when dividend is not expected to be much
@@ -181,6 +193,7 @@ u32 iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
 }
 EXPORT_SYMBOL(iter_div_u64_rem);
 
+#ifndef mul_u64_u64_div_u64
 u64 mul_u64_u64_div_u64(u64 a, u64 b, u64 c)
 {
 	u64 res = 0, div, rem;
@@ -220,3 +233,4 @@ u64 mul_u64_u64_div_u64(u64 a, u64 b, u64 c)
 	return res + div64_u64(a * b, c);
 }
 EXPORT_SYMBOL(mul_u64_u64_div_u64);
+#endif

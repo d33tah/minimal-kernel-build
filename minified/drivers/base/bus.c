@@ -32,7 +32,9 @@ static struct kset *system_kset;
 
 #define to_drv_attr(_attr) container_of(_attr, struct driver_attribute, attr)
 
-#define DRIVER_ATTR_IGNORE_LOCKDEP(_name,_mode,_show,_store) struct driver_attribute driver_attr_ ##_name = __ATTR_IGNORE_LOCKDEP(_name, _mode, _show, _store)
+#define DRIVER_ATTR_IGNORE_LOCKDEP(_name, _mode, _show, _store) \
+	struct driver_attribute driver_attr_##_name =		\
+		__ATTR_IGNORE_LOCKDEP(_name, _mode, _show, _store)
 
 static int __must_check bus_rescan_devices_helper(struct device *dev,
 						void *data);

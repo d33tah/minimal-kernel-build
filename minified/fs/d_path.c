@@ -12,7 +12,8 @@ struct prepend_buffer {
 	char *buf;
 	int len;
 };
-#define DECLARE_BUFFER(__name,__buf,__len) struct prepend_buffer __name = {.buf = __buf + __len, .len = __len}
+#define DECLARE_BUFFER(__name, __buf, __len) \
+	struct prepend_buffer __name = {.buf = __buf + __len, .len = __len}
 
 static char *extract_string(struct prepend_buffer *p)
 {

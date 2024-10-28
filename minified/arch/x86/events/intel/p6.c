@@ -122,7 +122,7 @@ static u64 p6_pmu_event_map(int hw_event)
  *
  * L2_RQSTS with 0 MESI unit mask.
  */
-#define P6_NOP_EVENT 0x0000002EULL
+#define P6_NOP_EVENT			0x0000002EULL
 
 static struct event_constraint p6_event_constraints[] =
 {

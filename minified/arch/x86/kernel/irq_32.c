@@ -24,8 +24,33 @@
 #include <asm/nospec-branch.h>
 #include <asm/softirq_stack.h>
 
+#ifdef CONFIG_DEBUG_STACKOVERFLOW
+
+int sysctl_panic_on_stackoverflow __read_mostly;
+
+/* Debugging check for stack overflow: is there less than 1KB free? */
+static int check_stack_overflow(void)
+{
+	long sp;
+
+	__asm__ __volatile__("andl %%esp,%0" :
+			     "=r" (sp) : "0" (THREAD_SIZE - 1));
+
+	return sp < (sizeof(struct thread_info) + STACK_WARN);
+}
+
+static void print_stack_overflow(void)
+{
+	printk(KERN_WARNING "low stack detected by irq handler\n");
+	dump_stack();
+	if (sysctl_panic_on_stackoverflow)
+		panic("low stack detected by irq handler - check messages\n");
+}
+
+#else
 static inline int check_stack_overflow(void) { return 0; }
 static inline void print_stack_overflow(void) { }
+#endif
 
 DEFINE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
 DEFINE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
@@ -107,6 +132,7 @@ int irq_init_percpu_irqstack(unsigned int cpu)
 	return 0;
 }
 
+#ifndef CONFIG_PREEMPT_RT
 void do_softirq_own_stack(void)
 {
 	struct irq_stack *irqstk;
@@ -123,6 +149,7 @@ void do_softirq_own_stack(void)
 
 	call_on_stack(__do_softirq, isp);
 }
+#endif
 
 void __handle_irq(struct irq_desc *desc, struct pt_regs *regs)
 {

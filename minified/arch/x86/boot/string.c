@@ -18,7 +18,7 @@
 #include "ctype.h"
 #include "string.h"
 
-#define KSTRTOX_OVERFLOW (1U << 31)
+#define KSTRTOX_OVERFLOW       (1U << 31)
 
 /*
  * Undef these macros so that the functions that we provide

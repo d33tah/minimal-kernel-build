@@ -2427,8 +2427,6 @@ config STRICT_SIGALTSTACK_SIZE
 
 	  Say 'N' unless you want to really enforce this check.
 
-source "kernel/livepatch/Kconfig"
-
 endmenu
 
 config CC_HAS_SLS

@@ -50,11 +50,7 @@ do {						\
 /*
  * kern_addr_valid() is (1) for FLATMEM and (0) for SPARSEMEM
  */
-#ifdef CONFIG_FLATMEM
 #define kern_addr_valid(addr)	(1)
-#else
-#define kern_addr_valid(kaddr)	(0)
-#endif
 
 /*
  * This is used to calculate the .brk reservation for initial pagetables.

@@ -65,7 +65,6 @@ static inline void ksm_exit(struct mm_struct *mm)
 {
 }
 
-#ifdef CONFIG_MMU
 static inline int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
 		unsigned long end, int advice, unsigned long *vm_flags)
 {
@@ -86,7 +85,6 @@ static inline void rmap_walk_ksm(struct folio *folio,
 static inline void folio_migrate_ksm(struct folio *newfolio, struct folio *old)
 {
 }
-#endif /* CONFIG_MMU */
 #endif /* !CONFIG_KSM */
 
 #endif /* __LINUX_KSM_H */

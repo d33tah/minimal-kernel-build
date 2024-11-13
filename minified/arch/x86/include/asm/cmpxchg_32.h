@@ -35,7 +35,6 @@ static inline void set_64bit(volatile u64 *ptr, u64 value)
 		     : "memory");
 }
 
-#ifdef CONFIG_X86_CMPXCHG64
 #define arch_cmpxchg64(ptr, o, n)					\
 	((__typeof__(*(ptr)))__cmpxchg64((ptr), (unsigned long long)(o), \
 					 (unsigned long long)(n)))
@@ -45,7 +44,6 @@ static inline void set_64bit(volatile u64 *ptr, u64 value)
 #define arch_try_cmpxchg64(ptr, po, n)					\
 	__try_cmpxchg64((ptr), (unsigned long long *)(po), \
 			(unsigned long long)(n))
-#endif
 
 static inline u64 __cmpxchg64(volatile u64 *ptr, u64 old, u64 new)
 {
@@ -91,45 +89,6 @@ static inline bool __try_cmpxchg64(volatile u64 *ptr, u64 *pold, u64 new)
 	return success;
 }
 
-#ifndef CONFIG_X86_CMPXCHG64
-/*
- * Building a kernel capable running on 80386 and 80486. It may be necessary
- * to simulate the cmpxchg8b on the 80386 and 80486 CPU.
- */
-
-#define arch_cmpxchg64(ptr, o, n)				\
-({								\
-	__typeof__(*(ptr)) __ret;				\
-	__typeof__(*(ptr)) __old = (o);				\
-	__typeof__(*(ptr)) __new = (n);				\
-	alternative_io(LOCK_PREFIX_HERE				\
-			"call cmpxchg8b_emu",			\
-			"lock; cmpxchg8b (%%esi)" ,		\
-		       X86_FEATURE_CX8,				\
-		       "=A" (__ret),				\
-		       "S" ((ptr)), "0" (__old),		\
-		       "b" ((unsigned int)__new),		\
-		       "c" ((unsigned int)(__new>>32))		\
-		       : "memory");				\
-	__ret; })
-
-
-#define arch_cmpxchg64_local(ptr, o, n)				\
-({								\
-	__typeof__(*(ptr)) __ret;				\
-	__typeof__(*(ptr)) __old = (o);				\
-	__typeof__(*(ptr)) __new = (n);				\
-	alternative_io("call cmpxchg8b_emu",			\
-		       "cmpxchg8b (%%esi)" ,			\
-		       X86_FEATURE_CX8,				\
-		       "=A" (__ret),				\
-		       "S" ((ptr)), "0" (__old),		\
-		       "b" ((unsigned int)__new),		\
-		       "c" ((unsigned int)(__new>>32))		\
-		       : "memory");				\
-	__ret; })
-
-#endif
 
 #define system_has_cmpxchg_double() boot_cpu_has(X86_FEATURE_CX8)
 

@@ -261,7 +261,6 @@ void __iomem *devm_of_iomap(struct device *dev, struct device_node *node, int in
 }
 EXPORT_SYMBOL(devm_of_iomap);
 
-#ifdef CONFIG_HAS_IOPORT_MAP
 /*
  * Generic iomap devres
  */
@@ -322,7 +321,6 @@ void devm_ioport_unmap(struct device *dev, void __iomem *addr)
 			       devm_ioport_map_match, (__force void *)addr));
 }
 EXPORT_SYMBOL(devm_ioport_unmap);
-#endif /* CONFIG_HAS_IOPORT_MAP */
 
 #ifdef CONFIG_PCI
 /*

@@ -13,9 +13,7 @@ struct scatterlist {
 	unsigned int	offset;
 	unsigned int	length;
 	dma_addr_t	dma_address;
-#ifdef CONFIG_NEED_SG_DMA_LENGTH
 	unsigned int	dma_length;
-#endif
 };
 
 /*
@@ -27,11 +25,7 @@ struct scatterlist {
  */
 #define sg_dma_address(sg)	((sg)->dma_address)
 
-#ifdef CONFIG_NEED_SG_DMA_LENGTH
 #define sg_dma_len(sg)		((sg)->dma_length)
-#else
-#define sg_dma_len(sg)		((sg)->length)
-#endif
 
 struct sg_table {
 	struct scatterlist *sgl;	/* the list */

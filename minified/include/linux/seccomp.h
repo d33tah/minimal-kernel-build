@@ -39,7 +39,6 @@ struct seccomp {
 	struct seccomp_filter *filter;
 };
 
-#ifdef CONFIG_HAVE_ARCH_SECCOMP_FILTER
 extern int __secure_computing(const struct seccomp_data *sd);
 static inline int secure_computing(void)
 {
@@ -47,9 +46,6 @@ static inline int secure_computing(void)
 		return  __secure_computing(NULL);
 	return 0;
 }
-#else
-extern void secure_computing_strict(int this_syscall);
-#endif
 
 extern long prctl_get_seccomp(void);
 extern long prctl_set_seccomp(unsigned long, void __user *);
@@ -67,12 +63,8 @@ struct seccomp { };
 struct seccomp_filter { };
 struct seccomp_data;
 
-#ifdef CONFIG_HAVE_ARCH_SECCOMP_FILTER
 static inline int secure_computing(void) { return 0; }
 static inline int __secure_computing(const struct seccomp_data *sd) { return 0; }
-#else
-static inline void secure_computing_strict(int this_syscall) { return; }
-#endif
 
 static inline long prctl_get_seccomp(void)
 {

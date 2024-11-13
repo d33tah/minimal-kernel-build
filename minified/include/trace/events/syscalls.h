@@ -13,7 +13,6 @@
 #include <asm/syscall.h>
 
 
-#ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
 
 TRACE_EVENT_FN(sys_enter,
 
@@ -65,7 +64,6 @@ TRACE_EVENT_FN(sys_exit,
 
 TRACE_EVENT_FLAGS(sys_exit, TRACE_EVENT_FL_CAP_ANY)
 
-#endif /* CONFIG_HAVE_SYSCALL_TRACEPOINTS */
 
 #endif /* _TRACE_EVENTS_SYSCALLS_H */
 

@@ -99,7 +99,6 @@ enum ttu_flags {
 					 * caller holds it */
 };
 
-#ifdef CONFIG_MMU
 static inline void get_anon_vma(struct anon_vma *anon_vma)
 {
 	atomic_inc(&anon_vma->refcount);
@@ -410,29 +409,6 @@ struct anon_vma *folio_lock_anon_vma_read(struct folio *folio,
 					  struct rmap_walk_control *rwc);
 void page_unlock_anon_vma_read(struct anon_vma *anon_vma);
 
-#else	/* !CONFIG_MMU */
-
-#define anon_vma_init()		do {} while (0)
-#define anon_vma_prepare(vma)	(0)
-#define anon_vma_link(vma)	do {} while (0)
-
-static inline int folio_referenced(struct folio *folio, int is_locked,
-				  struct mem_cgroup *memcg,
-				  unsigned long *vm_flags)
-{
-	*vm_flags = 0;
-	return 0;
-}
-
-static inline void try_to_unmap(struct folio *folio, enum ttu_flags flags)
-{
-}
-
-static inline int folio_mkclean(struct folio *folio)
-{
-	return 0;
-}
-#endif	/* CONFIG_MMU */
 
 static inline int page_mkclean(struct page *page)
 {

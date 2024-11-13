@@ -29,7 +29,6 @@ extern struct module __this_module;
 #define THIS_MODULE ((struct module *)0)
 #endif
 
-#ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
 #include <linux/compiler.h>
 /*
  * Emit the ksymtab entry as a pair of relative references: this reduces
@@ -52,19 +51,6 @@ struct kernel_symbol {
 	int name_offset;
 	int namespace_offset;
 };
-#else
-#define __KSYMTAB_ENTRY(sym, sec)					\
-	static const struct kernel_symbol __ksymtab_##sym		\
-	__attribute__((section("___ksymtab" sec "+" #sym), used))	\
-	__aligned(sizeof(void *))					\
-	= { (unsigned long)&sym, __kstrtab_##sym, __kstrtabns_##sym }
-
-struct kernel_symbol {
-	unsigned long value;
-	const char *name;
-	const char *namespace;
-};
-#endif
 
 #ifdef __GENKSYMS__
 

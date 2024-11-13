@@ -23,7 +23,6 @@
  *  Linux's register image is defined by struct pt_regs in ptrace.h.
  *  Just why GDB uses a different order is a historical mystery.
  */
-#ifdef CONFIG_X86_32
 enum regnames {
 	GDB_AX,			/* 0 */
 	GDB_CX,			/* 1 */
@@ -45,38 +44,6 @@ enum regnames {
 #define GDB_ORIG_AX		41
 #define DBG_MAX_REG_NUM		16
 #define NUMREGBYTES		((GDB_GS+1)*4)
-#else /* ! CONFIG_X86_32 */
-enum regnames {
-	GDB_AX,			/* 0 */
-	GDB_BX,			/* 1 */
-	GDB_CX,			/* 2 */
-	GDB_DX,			/* 3 */
-	GDB_SI,			/* 4 */
-	GDB_DI,			/* 5 */
-	GDB_BP,			/* 6 */
-	GDB_SP,			/* 7 */
-	GDB_R8,			/* 8 */
-	GDB_R9,			/* 9 */
-	GDB_R10,		/* 10 */
-	GDB_R11,		/* 11 */
-	GDB_R12,		/* 12 */
-	GDB_R13,		/* 13 */
-	GDB_R14,		/* 14 */
-	GDB_R15,		/* 15 */
-	GDB_PC,			/* 16 */
-	GDB_PS,			/* 17 */
-	GDB_CS,			/* 18 */
-	GDB_SS,			/* 19 */
-	GDB_DS,			/* 20 */
-	GDB_ES,			/* 21 */
-	GDB_FS,			/* 22 */
-	GDB_GS,			/* 23 */
-};
-#define GDB_ORIG_AX		57
-#define DBG_MAX_REG_NUM		24
-/* 17 64 bit regs and 5 32 bit regs */
-#define NUMREGBYTES		((17 * 8) + (5 * 4))
-#endif /* ! CONFIG_X86_32 */
 
 static inline void arch_kgdb_breakpoint(void)
 {

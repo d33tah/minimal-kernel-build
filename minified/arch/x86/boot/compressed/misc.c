@@ -72,9 +72,7 @@ static int cols __section(".data");
 #include "../../../../lib/decompress_unlzma.c"
 #endif
 
-#ifdef CONFIG_KERNEL_XZ
 #include "../../../../lib/decompress_unxz.c"
-#endif
 
 #ifdef CONFIG_KERNEL_LZO
 #include "../../../../lib/decompress_unlzo.c"

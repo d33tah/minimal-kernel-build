@@ -12,11 +12,9 @@
 
 #ifndef __ASSEMBLY__
 
-#ifdef CONFIG_ARCH_HAS_MEM_ENCRYPT
 
 #include <asm/mem_encrypt.h>
 
-#endif	/* CONFIG_ARCH_HAS_MEM_ENCRYPT */
 
 #ifdef CONFIG_AMD_MEM_ENCRYPT
 /*

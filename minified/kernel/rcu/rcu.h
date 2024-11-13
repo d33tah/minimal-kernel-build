@@ -275,7 +275,6 @@ void rcu_test_sync_prims(void);
  */
 extern void resched_cpu(int cpu);
 
-#if defined(CONFIG_SRCU) || !defined(CONFIG_TINY_RCU)
 
 #include <linux/rcu_node_tree.h>
 
@@ -426,28 +425,13 @@ do {									\
 #define raw_lockdep_assert_held_rcu_node(p)				\
 	lockdep_assert_held(&ACCESS_PRIVATE(p, lock))
 
-#endif /* #if defined(CONFIG_SRCU) || !defined(CONFIG_TINY_RCU) */
 
-#ifdef CONFIG_TINY_RCU
 /* Tiny RCU doesn't expedite, as its purpose in life is instead to be tiny. */
 static inline bool rcu_gp_is_normal(void) { return true; }
 static inline bool rcu_gp_is_expedited(void) { return false; }
 static inline void rcu_expedite_gp(void) { }
 static inline void rcu_unexpedite_gp(void) { }
 static inline void rcu_request_urgent_qs_task(struct task_struct *t) { }
-#else /* #ifdef CONFIG_TINY_RCU */
-bool rcu_gp_is_normal(void);     /* Internal RCU use. */
-bool rcu_gp_is_expedited(void);  /* Internal RCU use. */
-void rcu_expedite_gp(void);
-void rcu_unexpedite_gp(void);
-void rcupdate_announce_bootup_oddness(void);
-#ifdef CONFIG_TASKS_RCU_GENERIC
-void show_rcu_tasks_gp_kthreads(void);
-#else /* #ifdef CONFIG_TASKS_RCU_GENERIC */
-static inline void show_rcu_tasks_gp_kthreads(void) {}
-#endif /* #else #ifdef CONFIG_TASKS_RCU_GENERIC */
-void rcu_request_urgent_qs_task(struct task_struct *t);
-#endif /* #else #ifdef CONFIG_TINY_RCU */
 
 #define RCU_SCHEDULER_INACTIVE	0
 #define RCU_SCHEDULER_INIT	1
@@ -496,7 +480,6 @@ static inline void rcu_gp_set_torture_wait(int duration) { }
 long rcutorture_sched_setaffinity(pid_t pid, const struct cpumask *in_mask);
 #endif
 
-#ifdef CONFIG_TINY_SRCU
 
 static inline void srcutorture_get_gp_data(enum rcutorture_type test_type,
 					   struct srcu_struct *sp, int *flags,
@@ -508,15 +491,7 @@ static inline void srcutorture_get_gp_data(enum rcutorture_type test_type,
 	*gp_seq = sp->srcu_idx;
 }
 
-#elif defined(CONFIG_TREE_SRCU)
 
-void srcutorture_get_gp_data(enum rcutorture_type test_type,
-			     struct srcu_struct *sp, int *flags,
-			     unsigned long *gp_seq);
-
-#endif
-
-#ifdef CONFIG_TINY_RCU
 static inline bool rcu_dynticks_zero_in_eqs(int cpu, int *vp) { return false; }
 static inline unsigned long rcu_get_gp_seq(void) { return 0; }
 static inline unsigned long rcu_exp_batches_completed(void) { return 0; }
@@ -529,26 +504,6 @@ static inline int rcu_get_gp_kthreads_prio(void) { return 0; }
 static inline void rcu_fwd_progress_check(unsigned long j) { }
 static inline void rcu_gp_slow_register(atomic_t *rgssp) { }
 static inline void rcu_gp_slow_unregister(atomic_t *rgssp) { }
-#else /* #ifdef CONFIG_TINY_RCU */
-bool rcu_dynticks_zero_in_eqs(int cpu, int *vp);
-unsigned long rcu_get_gp_seq(void);
-unsigned long rcu_exp_batches_completed(void);
-unsigned long srcu_batches_completed(struct srcu_struct *sp);
-bool rcu_check_boost_fail(unsigned long gp_state, int *cpup);
-void show_rcu_gp_kthreads(void);
-int rcu_get_gp_kthreads_prio(void);
-void rcu_fwd_progress_check(unsigned long j);
-void rcu_force_quiescent_state(void);
-extern struct workqueue_struct *rcu_gp_wq;
-#ifdef CONFIG_RCU_EXP_KTHREAD
-extern struct kthread_worker *rcu_exp_gp_kworker;
-extern struct kthread_worker *rcu_exp_par_gp_kworker;
-#else /* !CONFIG_RCU_EXP_KTHREAD */
-extern struct workqueue_struct *rcu_par_gp_wq;
-#endif /* CONFIG_RCU_EXP_KTHREAD */
-void rcu_gp_slow_register(atomic_t *rgssp);
-void rcu_gp_slow_unregister(atomic_t *rgssp);
-#endif /* #else #ifdef CONFIG_TINY_RCU */
 
 #ifdef CONFIG_RCU_NOCB_CPU
 void rcu_bind_current_to_nocb(void);
@@ -556,20 +511,8 @@ void rcu_bind_current_to_nocb(void);
 static inline void rcu_bind_current_to_nocb(void) { }
 #endif
 
-#if !defined(CONFIG_TINY_RCU) && defined(CONFIG_TASKS_RCU)
-void show_rcu_tasks_classic_gp_kthread(void);
-#else
 static inline void show_rcu_tasks_classic_gp_kthread(void) {}
-#endif
-#if !defined(CONFIG_TINY_RCU) && defined(CONFIG_TASKS_RUDE_RCU)
-void show_rcu_tasks_rude_gp_kthread(void);
-#else
 static inline void show_rcu_tasks_rude_gp_kthread(void) {}
-#endif
-#if !defined(CONFIG_TINY_RCU) && defined(CONFIG_TASKS_TRACE_RCU)
-void show_rcu_tasks_trace_gp_kthread(void);
-#else
 static inline void show_rcu_tasks_trace_gp_kthread(void) {}
-#endif
 
 #endif /* __LINUX_RCU_H */

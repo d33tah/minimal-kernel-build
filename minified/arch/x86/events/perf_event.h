@@ -1170,11 +1170,7 @@ extern struct event_constraint unconstrained;
 
 static inline bool kernel_ip(unsigned long ip)
 {
-#ifdef CONFIG_X86_32
 	return ip > PAGE_OFFSET;
-#else
-	return (long)ip < 0;
-#endif
 }
 
 /*
@@ -1215,7 +1211,6 @@ static inline bool fixed_counter_disabled(int i, struct pmu *pmu)
 	return !(intel_ctrl >> (i + INTEL_PMC_IDX_FIXED));
 }
 
-#ifdef CONFIG_CPU_SUP_AMD
 
 int amd_pmu_init(void);
 
@@ -1288,37 +1283,12 @@ static inline void amd_brs_enable_all(void)
 
 #endif
 
-#else /* CONFIG_CPU_SUP_AMD */
-
-static inline int amd_pmu_init(void)
-{
-	return 0;
-}
-
-static inline int amd_brs_init(void)
-{
-	return -EOPNOTSUPP;
-}
-
-static inline void amd_brs_drain(void)
-{
-}
-
-static inline void amd_brs_enable_all(void)
-{
-}
-
-static inline void amd_brs_disable_all(void)
-{
-}
-#endif /* CONFIG_CPU_SUP_AMD */
 
 static inline int is_pebs_pt(struct perf_event *event)
 {
 	return !!(event->hw.flags & PERF_X86_EVENT_PEBS_VIA_PT);
 }
 
-#ifdef CONFIG_CPU_SUP_INTEL
 
 static inline bool intel_pmu_has_bts_period(struct perf_event *event, u64 period)
 {
@@ -1520,49 +1490,5 @@ static inline int is_ht_workaround_enabled(void)
 	return !!(x86_pmu.flags & PMU_FL_EXCL_ENABLED);
 }
 
-#else /* CONFIG_CPU_SUP_INTEL */
 
-static inline void reserve_ds_buffers(void)
-{
-}
-
-static inline void release_ds_buffers(void)
-{
-}
-
-static inline void release_lbr_buffers(void)
-{
-}
-
-static inline void reserve_lbr_buffers(void)
-{
-}
-
-static inline int intel_pmu_init(void)
-{
-	return 0;
-}
-
-static inline int intel_cpuc_prepare(struct cpu_hw_events *cpuc, int cpu)
-{
-	return 0;
-}
-
-static inline void intel_cpuc_finish(struct cpu_hw_events *cpuc)
-{
-}
-
-static inline int is_ht_workaround_enabled(void)
-{
-	return 0;
-}
-#endif /* CONFIG_CPU_SUP_INTEL */
-
-#if ((defined CONFIG_CPU_SUP_CENTAUR) || (defined CONFIG_CPU_SUP_ZHAOXIN))
 int zhaoxin_pmu_init(void);
-#else
-static inline int zhaoxin_pmu_init(void)
-{
-	return 0;
-}
-#endif /*CONFIG_CPU_SUP_CENTAUR or CONFIG_CPU_SUP_ZHAOXIN*/

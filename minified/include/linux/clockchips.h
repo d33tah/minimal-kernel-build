@@ -9,7 +9,6 @@
 #ifndef _LINUX_CLOCKCHIPS_H
 #define _LINUX_CLOCKCHIPS_H
 
-#ifdef CONFIG_GENERIC_CLOCKEVENTS
 
 # include <linux/clocksource.h>
 # include <linux/cpumask.h>
@@ -215,13 +214,5 @@ static inline int tick_check_broadcast_expired(void) { return 0; }
 static inline void tick_setup_hrtimer_broadcast(void) { }
 # endif
 
-#else /* !CONFIG_GENERIC_CLOCKEVENTS: */
-
-static inline void clockevents_suspend(void) { }
-static inline void clockevents_resume(void) { }
-static inline int tick_check_broadcast_expired(void) { return 0; }
-static inline void tick_setup_hrtimer_broadcast(void) { }
-
-#endif /* !CONFIG_GENERIC_CLOCKEVENTS */
 
 #endif /* _LINUX_CLOCKCHIPS_H */

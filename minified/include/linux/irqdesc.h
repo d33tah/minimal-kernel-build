@@ -94,24 +94,16 @@ struct irq_desc {
 	struct dentry		*debugfs_file;
 	const char		*dev_name;
 #endif
-#ifdef CONFIG_SPARSE_IRQ
 	struct rcu_head		rcu;
 	struct kobject		kobj;
-#endif
 	struct mutex		request_mutex;
 	int			parent_irq;
 	struct module		*owner;
 	const char		*name;
 } ____cacheline_internodealigned_in_smp;
 
-#ifdef CONFIG_SPARSE_IRQ
 extern void irq_lock_sparse(void);
 extern void irq_unlock_sparse(void);
-#else
-static inline void irq_lock_sparse(void) { }
-static inline void irq_unlock_sparse(void) { }
-extern struct irq_desc irq_desc[NR_IRQS];
-#endif
 
 static inline unsigned int irq_desc_kstat_cpu(struct irq_desc *desc,
 					      unsigned int cpu)

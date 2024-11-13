@@ -22,11 +22,9 @@ static inline void paravirt_activate_mm(struct mm_struct *prev,
 }
 #endif	/* !CONFIG_PARAVIRT_XXL */
 
-#ifdef CONFIG_PERF_EVENTS
 DECLARE_STATIC_KEY_FALSE(rdpmc_never_available_key);
 DECLARE_STATIC_KEY_FALSE(rdpmc_always_available_key);
 void cr4_update_pce(void *ignored);
-#endif
 
 #ifdef CONFIG_MODIFY_LDT_SYSCALL
 /*
@@ -138,18 +136,10 @@ do {						\
 	switch_mm((prev), (next), NULL);	\
 } while (0);
 
-#ifdef CONFIG_X86_32
 #define deactivate_mm(tsk, mm)			\
 do {						\
 	loadsegment(gs, 0);			\
 } while (0)
-#else
-#define deactivate_mm(tsk, mm)			\
-do {						\
-	load_gs_index(0);			\
-	loadsegment(fs, 0);			\
-} while (0)
-#endif
 
 static inline void arch_dup_pkeys(struct mm_struct *oldmm,
 				  struct mm_struct *mm)

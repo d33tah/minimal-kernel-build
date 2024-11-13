@@ -53,14 +53,6 @@
 #endif
 #define MODULE_PARAM_PREFIX "rcupdate."
 
-#ifndef CONFIG_TINY_RCU
-module_param(rcu_expedited, int, 0444);
-module_param(rcu_normal, int, 0444);
-static int rcu_normal_after_boot = IS_ENABLED(CONFIG_PREEMPT_RT);
-#if !defined(CONFIG_PREEMPT_RT) || defined(CONFIG_NO_HZ_FULL)
-module_param(rcu_normal_after_boot, int, 0444);
-#endif
-#endif /* #ifndef CONFIG_TINY_RCU */
 
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
 /**
@@ -127,89 +119,6 @@ int rcu_read_lock_sched_held(void)
 EXPORT_SYMBOL(rcu_read_lock_sched_held);
 #endif
 
-#ifndef CONFIG_TINY_RCU
-
-/*
- * Should expedited grace-period primitives always fall back to their
- * non-expedited counterparts?  Intended for use within RCU.  Note
- * that if the user specifies both rcu_expedited and rcu_normal, then
- * rcu_normal wins.  (Except during the time period during boot from
- * when the first task is spawned until the rcu_set_runtime_mode()
- * core_initcall() is invoked, at which point everything is expedited.)
- */
-bool rcu_gp_is_normal(void)
-{
-	return READ_ONCE(rcu_normal) &&
-	       rcu_scheduler_active != RCU_SCHEDULER_INIT;
-}
-EXPORT_SYMBOL_GPL(rcu_gp_is_normal);
-
-static atomic_t rcu_expedited_nesting = ATOMIC_INIT(1);
-
-/*
- * Should normal grace-period primitives be expedited?  Intended for
- * use within RCU.  Note that this function takes the rcu_expedited
- * sysfs/boot variable and rcu_scheduler_active into account as well
- * as the rcu_expedite_gp() nesting.  So looping on rcu_unexpedite_gp()
- * until rcu_gp_is_expedited() returns false is a -really- bad idea.
- */
-bool rcu_gp_is_expedited(void)
-{
-	return rcu_expedited || atomic_read(&rcu_expedited_nesting);
-}
-EXPORT_SYMBOL_GPL(rcu_gp_is_expedited);
-
-/**
- * rcu_expedite_gp - Expedite future RCU grace periods
- *
- * After a call to this function, future calls to synchronize_rcu() and
- * friends act as the corresponding synchronize_rcu_expedited() function
- * had instead been called.
- */
-void rcu_expedite_gp(void)
-{
-	atomic_inc(&rcu_expedited_nesting);
-}
-EXPORT_SYMBOL_GPL(rcu_expedite_gp);
-
-/**
- * rcu_unexpedite_gp - Cancel prior rcu_expedite_gp() invocation
- *
- * Undo a prior call to rcu_expedite_gp().  If all prior calls to
- * rcu_expedite_gp() are undone by a subsequent call to rcu_unexpedite_gp(),
- * and if the rcu_expedited sysfs/boot parameter is not set, then all
- * subsequent calls to synchronize_rcu() and friends will return to
- * their normal non-expedited behavior.
- */
-void rcu_unexpedite_gp(void)
-{
-	atomic_dec(&rcu_expedited_nesting);
-}
-EXPORT_SYMBOL_GPL(rcu_unexpedite_gp);
-
-static bool rcu_boot_ended __read_mostly;
-
-/*
- * Inform RCU of the end of the in-kernel boot sequence.
- */
-void rcu_end_inkernel_boot(void)
-{
-	rcu_unexpedite_gp();
-	if (rcu_normal_after_boot)
-		WRITE_ONCE(rcu_normal, 1);
-	rcu_boot_ended = true;
-}
-
-/*
- * Let rcutorture know when it is OK to turn it up to eleven.
- */
-bool rcu_inkernel_boot_has_ended(void)
-{
-	return rcu_boot_ended;
-}
-EXPORT_SYMBOL_GPL(rcu_inkernel_boot_has_ended);
-
-#endif /* #ifndef CONFIG_TINY_RCU */
 
 /*
  * Test each non-SRCU synchronous grace-period wait API.  This is
@@ -224,7 +133,6 @@ void rcu_test_sync_prims(void)
 	synchronize_rcu_expedited();
 }
 
-#if !defined(CONFIG_TINY_RCU) || defined(CONFIG_SRCU)
 
 /*
  * Switch to run-time mode once RCU has fully initialized.
@@ -239,7 +147,6 @@ static int __init rcu_set_runtime_mode(void)
 }
 core_initcall(rcu_set_runtime_mode);
 
-#endif /* #if !defined(CONFIG_TINY_RCU) || defined(CONFIG_SRCU) */
 
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
 static struct lock_class_key rcu_lock_key;
@@ -592,24 +499,3 @@ void rcu_early_boot_tests(void) {}
 
 #include "tasks.h"
 
-#ifndef CONFIG_TINY_RCU
-
-/*
- * Print any significant non-default boot-time settings.
- */
-void __init rcupdate_announce_bootup_oddness(void)
-{
-	if (rcu_normal)
-		pr_info("\tNo expedited grace period (rcu_normal).\n");
-	else if (rcu_normal_after_boot)
-		pr_info("\tNo expedited grace period (rcu_normal_after_boot).\n");
-	else if (rcu_expedited)
-		pr_info("\tAll grace periods are expedited (rcu_expedited).\n");
-	if (rcu_cpu_stall_suppress)
-		pr_info("\tRCU CPU stall warnings suppressed (rcu_cpu_stall_suppress).\n");
-	if (rcu_cpu_stall_timeout != CONFIG_RCU_CPU_STALL_TIMEOUT)
-		pr_info("\tRCU CPU stall warnings timeout set to %d (rcu_cpu_stall_timeout).\n", rcu_cpu_stall_timeout);
-	rcu_tasks_bootup_oddness();
-}
-
-#endif /* #ifndef CONFIG_TINY_RCU */

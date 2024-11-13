@@ -42,39 +42,6 @@
 	SIPROUND; \
 	return (v0 ^ v1) ^ (v2 ^ v3);
 
-#ifndef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-u64 __siphash_aligned(const void *data, size_t len, const siphash_key_t *key)
-{
-	const u8 *end = data + len - (len % sizeof(u64));
-	const u8 left = len & (sizeof(u64) - 1);
-	u64 m;
-	PREAMBLE(len)
-	for (; data != end; data += sizeof(u64)) {
-		m = le64_to_cpup(data);
-		v3 ^= m;
-		SIPROUND;
-		SIPROUND;
-		v0 ^= m;
-	}
-#if defined(CONFIG_DCACHE_WORD_ACCESS) && BITS_PER_LONG == 64
-	if (left)
-		b |= le64_to_cpu((__force __le64)(load_unaligned_zeropad(data) &
-						  bytemask_from_count(left)));
-#else
-	switch (left) {
-	case 7: b |= ((u64)end[6]) << 48; fallthrough;
-	case 6: b |= ((u64)end[5]) << 40; fallthrough;
-	case 5: b |= ((u64)end[4]) << 32; fallthrough;
-	case 4: b |= le32_to_cpup(data); break;
-	case 3: b |= ((u64)end[2]) << 16; fallthrough;
-	case 2: b |= le16_to_cpup(data); break;
-	case 1: b |= end[0];
-	}
-#endif
-	POSTAMBLE
-}
-EXPORT_SYMBOL(__siphash_aligned);
-#endif
 
 u64 __siphash_unaligned(const void *data, size_t len, const siphash_key_t *key)
 {
@@ -243,38 +210,6 @@ EXPORT_SYMBOL(siphash_3u32);
 	HSIPROUND; \
 	return (v0 ^ v1) ^ (v2 ^ v3);
 
-#ifndef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-u32 __hsiphash_aligned(const void *data, size_t len, const hsiphash_key_t *key)
-{
-	const u8 *end = data + len - (len % sizeof(u64));
-	const u8 left = len & (sizeof(u64) - 1);
-	u64 m;
-	HPREAMBLE(len)
-	for (; data != end; data += sizeof(u64)) {
-		m = le64_to_cpup(data);
-		v3 ^= m;
-		HSIPROUND;
-		v0 ^= m;
-	}
-#if defined(CONFIG_DCACHE_WORD_ACCESS) && BITS_PER_LONG == 64
-	if (left)
-		b |= le64_to_cpu((__force __le64)(load_unaligned_zeropad(data) &
-						  bytemask_from_count(left)));
-#else
-	switch (left) {
-	case 7: b |= ((u64)end[6]) << 48; fallthrough;
-	case 6: b |= ((u64)end[5]) << 40; fallthrough;
-	case 5: b |= ((u64)end[4]) << 32; fallthrough;
-	case 4: b |= le32_to_cpup(data); break;
-	case 3: b |= ((u64)end[2]) << 16; fallthrough;
-	case 2: b |= le16_to_cpup(data); break;
-	case 1: b |= end[0];
-	}
-#endif
-	HPOSTAMBLE
-}
-EXPORT_SYMBOL(__hsiphash_aligned);
-#endif
 
 u32 __hsiphash_unaligned(const void *data, size_t len,
 			 const hsiphash_key_t *key)
@@ -405,28 +340,6 @@ EXPORT_SYMBOL(hsiphash_4u32);
 	HSIPROUND; \
 	return v1 ^ v3;
 
-#ifndef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-u32 __hsiphash_aligned(const void *data, size_t len, const hsiphash_key_t *key)
-{
-	const u8 *end = data + len - (len % sizeof(u32));
-	const u8 left = len & (sizeof(u32) - 1);
-	u32 m;
-	HPREAMBLE(len)
-	for (; data != end; data += sizeof(u32)) {
-		m = le32_to_cpup(data);
-		v3 ^= m;
-		HSIPROUND;
-		v0 ^= m;
-	}
-	switch (left) {
-	case 3: b |= ((u32)end[2]) << 16; fallthrough;
-	case 2: b |= le16_to_cpup(data); break;
-	case 1: b |= end[0];
-	}
-	HPOSTAMBLE
-}
-EXPORT_SYMBOL(__hsiphash_aligned);
-#endif
 
 u32 __hsiphash_unaligned(const void *data, size_t len,
 			 const hsiphash_key_t *key)

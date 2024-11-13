@@ -45,7 +45,6 @@ int focaltech_detect(struct psmouse *psmouse, bool set_properties)
 	return 0;
 }
 
-#ifdef CONFIG_MOUSE_PS2_FOCALTECH
 
 /*
  * Packet types - the numbers are not consecutive, so we might be missing
@@ -453,4 +452,3 @@ fail:
 	kfree(priv);
 	return error;
 }
-#endif /* CONFIG_MOUSE_PS2_FOCALTECH */

@@ -87,7 +87,6 @@ __visible noinstr void do_syscall_64(struct pt_regs *regs, int nr)
 }
 #endif
 
-#if defined(CONFIG_X86_32) || defined(CONFIG_IA32_EMULATION)
 static __always_inline int syscall_32_enter(struct pt_regs *regs)
 {
 	if (IS_ENABLED(CONFIG_IA32_EMULATION))
@@ -245,7 +244,6 @@ __visible noinstr long do_SYSENTER_32(struct pt_regs *regs)
 
 	return do_fast_syscall_32(regs);
 }
-#endif
 
 SYSCALL_DEFINE0(ni_syscall)
 {

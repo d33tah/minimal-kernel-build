@@ -63,12 +63,10 @@ static const __initconst struct idt_data early_idts[] = {
 	INTG(X86_TRAP_DB,		asm_exc_debug),
 	SYSG(X86_TRAP_BP,		asm_exc_int3),
 
-#ifdef CONFIG_X86_32
 	/*
 	 * Not possible on 64-bit. See idt_setup_early_pf() for details.
 	 */
 	INTG(X86_TRAP_PF,		asm_exc_page_fault),
-#endif
 #ifdef CONFIG_INTEL_TDX_GUEST
 	INTG(X86_TRAP_VE,		asm_exc_virtualization_exception),
 #endif
@@ -96,11 +94,7 @@ static const __initconst struct idt_data def_idts[] = {
 	INTG(X86_TRAP_AC,		asm_exc_alignment_check),
 	INTG(X86_TRAP_XF,		asm_exc_simd_coprocessor_error),
 
-#ifdef CONFIG_X86_32
 	TSKG(X86_TRAP_DF,		GDT_ENTRY_DOUBLEFAULT_TSS),
-#else
-	ISTG(X86_TRAP_DF,		asm_exc_double_fault, IST_INDEX_DF),
-#endif
 	ISTG(X86_TRAP_DB,		asm_exc_debug, IST_INDEX_DB),
 
 #ifdef CONFIG_X86_MCE
@@ -118,7 +112,7 @@ static const __initconst struct idt_data def_idts[] = {
 	SYSG(X86_TRAP_OF,		asm_exc_overflow),
 #if defined(CONFIG_IA32_EMULATION)
 	SYSG(IA32_SYSCALL_VECTOR,	entry_INT80_compat),
-#elif defined(CONFIG_X86_32)
+#else
 	SYSG(IA32_SYSCALL_VECTOR,	entry_INT80_32),
 #endif
 };
@@ -155,9 +149,7 @@ static const __initconst struct idt_data apic_idts[] = {
 	INTG(POSTED_INTR_WAKEUP_VECTOR,		asm_sysvec_kvm_posted_intr_wakeup_ipi),
 	INTG(POSTED_INTR_NESTED_VECTOR,		asm_sysvec_kvm_posted_intr_nested_ipi),
 # endif
-# ifdef CONFIG_IRQ_WORK
 	INTG(IRQ_WORK_VECTOR,			asm_sysvec_irq_work),
-# endif
 	INTG(SPURIOUS_APIC_VECTOR,		asm_sysvec_spurious_apic_interrupt),
 	INTG(ERROR_APIC_VECTOR,			asm_sysvec_error_interrupt),
 #endif
@@ -314,10 +306,8 @@ void __init idt_setup_early_handler(void)
 
 	for (i = 0; i < NUM_EXCEPTION_VECTORS; i++)
 		set_intr_gate(i, early_idt_handler_array[i]);
-#ifdef CONFIG_X86_32
 	for ( ; i < NR_VECTORS; i++)
 		set_intr_gate(i, early_ignore_irq);
-#endif
 	load_idt(&idt_descr);
 }
 

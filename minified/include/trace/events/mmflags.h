@@ -67,11 +67,7 @@
 	__def_gfpflag_names __def_gfpflag_names_kasan			\
 	) : "none"
 
-#ifdef CONFIG_MMU
 #define IF_HAVE_PG_MLOCK(flag,string) ,{1UL << flag, string}
-#else
-#define IF_HAVE_PG_MLOCK(flag,string)
-#endif
 
 #ifdef CONFIG_ARCH_USES_PG_UNCACHED
 #define IF_HAVE_PG_UNCACHED(flag,string) ,{1UL << flag, string}
@@ -138,17 +134,7 @@ IF_HAVE_PG_SKIP_KASAN_POISON(PG_skip_kasan_poison, "skip_kasan_poison")
 	__def_pageflag_names						\
 	) : "none"
 
-#if defined(CONFIG_X86)
 #define __VM_ARCH_SPECIFIC_1 {VM_PAT,     "pat"           }
-#elif defined(CONFIG_PPC)
-#define __VM_ARCH_SPECIFIC_1 {VM_SAO,     "sao"           }
-#elif defined(CONFIG_PARISC) || defined(CONFIG_IA64)
-#define __VM_ARCH_SPECIFIC_1 {VM_GROWSUP,	"growsup"	}
-#elif !defined(CONFIG_MMU)
-#define __VM_ARCH_SPECIFIC_1 {VM_MAPPED_COPY,"mappedcopy"	}
-#else
-#define __VM_ARCH_SPECIFIC_1 {VM_ARCH_1,	"arch_1"	}
-#endif
 
 #ifdef CONFIG_MEM_SOFT_DIRTY
 #define IF_HAVE_VM_SOFTDIRTY(flag,name) {flag, name },

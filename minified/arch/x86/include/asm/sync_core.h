@@ -7,7 +7,6 @@
 #include <asm/cpufeature.h>
 #include <asm/special_insns.h>
 
-#ifdef CONFIG_X86_32
 static inline void iret_to_self(void)
 {
 	asm volatile (
@@ -18,25 +17,6 @@ static inline void iret_to_self(void)
 		"1:"
 		: ASM_CALL_CONSTRAINT : : "memory");
 }
-#else
-static inline void iret_to_self(void)
-{
-	unsigned int tmp;
-
-	asm volatile (
-		"mov %%ss, %0\n\t"
-		"pushq %q0\n\t"
-		"pushq %%rsp\n\t"
-		"addq $8, (%%rsp)\n\t"
-		"pushfq\n\t"
-		"mov %%cs, %0\n\t"
-		"pushq %q0\n\t"
-		"pushq $1f\n\t"
-		"iretq\n\t"
-		"1:"
-		: "=&r" (tmp), ASM_CALL_CONSTRAINT : : "cc", "memory");
-}
-#endif /* CONFIG_X86_32 */
 
 /*
  * This function forces the icache and prefetched instruction stream to

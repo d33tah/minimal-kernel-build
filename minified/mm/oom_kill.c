@@ -499,7 +499,6 @@ bool process_shares_mm(struct task_struct *p, struct mm_struct *mm)
 	return false;
 }
 
-#ifdef CONFIG_MMU
 /*
  * OOM Reaper kernel thread which tries to reap the memory used by the OOM
  * victim (if that is possible) to help the OOM killer to move on.
@@ -738,11 +737,6 @@ static int __init oom_init(void)
 	return 0;
 }
 subsys_initcall(oom_init)
-#else
-static inline void queue_oom_reaper(struct task_struct *tsk)
-{
-}
-#endif /* CONFIG_MMU */
 
 /**
  * mark_oom_victim - mark the given task as OOM victim
@@ -1200,7 +1194,6 @@ void pagefault_out_of_memory(void)
 
 SYSCALL_DEFINE2(process_mrelease, int, pidfd, unsigned int, flags)
 {
-#ifdef CONFIG_MMU
 	struct mm_struct *mm = NULL;
 	struct task_struct *task;
 	struct task_struct *p;
@@ -1257,7 +1250,4 @@ drop_mm:
 put_task:
 	put_task_struct(task);
 	return ret;
-#else
-	return -ENOSYS;
-#endif /* CONFIG_MMU */
 }

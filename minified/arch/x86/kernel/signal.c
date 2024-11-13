@@ -92,12 +92,10 @@ static bool restore_sigcontext(struct pt_regs *regs,
 	if (copy_from_user(&sc, usc, CONTEXT_COPY_SIZE))
 		return false;
 
-#ifdef CONFIG_X86_32
 	loadsegment(gs, sc.gs);
 	regs->fs = sc.fs;
 	regs->es = sc.es;
 	regs->ds = sc.ds;
-#endif /* CONFIG_X86_32 */
 
 	regs->bx = sc.bx;
 	regs->cx = sc.cx;
@@ -145,7 +143,6 @@ static __always_inline int
 __unsafe_setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
 		     struct pt_regs *regs, unsigned long mask)
 {
-#ifdef CONFIG_X86_32
 	unsigned int gs;
 	savesegment(gs, gs);
 
@@ -153,7 +150,6 @@ __unsafe_setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
 	unsafe_put_user(regs->fs, (unsigned int __user *)&sc->fs, Efault);
 	unsafe_put_user(regs->es, (unsigned int __user *)&sc->es, Efault);
 	unsafe_put_user(regs->ds, (unsigned int __user *)&sc->ds, Efault);
-#endif /* CONFIG_X86_32 */
 
 	unsafe_put_user(regs->di, &sc->di, Efault);
 	unsafe_put_user(regs->si, &sc->si, Efault);
@@ -177,18 +173,10 @@ __unsafe_setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
 	unsafe_put_user(current->thread.trap_nr, &sc->trapno, Efault);
 	unsafe_put_user(current->thread.error_code, &sc->err, Efault);
 	unsafe_put_user(regs->ip, &sc->ip, Efault);
-#ifdef CONFIG_X86_32
 	unsafe_put_user(regs->cs, (unsigned int __user *)&sc->cs, Efault);
 	unsafe_put_user(regs->flags, &sc->flags, Efault);
 	unsafe_put_user(regs->sp, &sc->sp_at_signal, Efault);
 	unsafe_put_user(regs->ss, (unsigned int __user *)&sc->ss, Efault);
-#else /* !CONFIG_X86_32 */
-	unsafe_put_user(regs->flags, &sc->flags, Efault);
-	unsafe_put_user(regs->cs, &sc->cs, Efault);
-	unsafe_put_user(0, &sc->gs, Efault);
-	unsafe_put_user(0, &sc->fs, Efault);
-	unsafe_put_user(regs->ss, &sc->ss, Efault);
-#endif /* CONFIG_X86_32 */
 
 	unsafe_put_user(fpstate, (unsigned long __user *)&sc->fpstate, Efault);
 
@@ -225,15 +213,11 @@ do {									\
  */
 static unsigned long align_sigframe(unsigned long sp)
 {
-#ifdef CONFIG_X86_32
 	/*
 	 * Align the stack pointer according to the i386 ABI,
 	 * i.e. so that on function entry ((sp + 4) & 15) == 0.
 	 */
 	sp = ((sp + 4) & -FRAME_ALIGNMENT) - 4;
-#else /* !CONFIG_X86_32 */
-	sp = round_down(sp, FRAME_ALIGNMENT) - 8;
-#endif
 	return sp;
 }
 
@@ -300,7 +284,6 @@ get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size,
 	return (void __user *)sp;
 }
 
-#ifdef CONFIG_X86_32
 static const struct {
 	u16 poplmovl;
 	u32 val;
@@ -442,98 +425,6 @@ Efault:
 	user_access_end();
 	return -EFAULT;
 }
-#else /* !CONFIG_X86_32 */
-static unsigned long frame_uc_flags(struct pt_regs *regs)
-{
-	unsigned long flags;
-
-	if (boot_cpu_has(X86_FEATURE_XSAVE))
-		flags = UC_FP_XSTATE | UC_SIGCONTEXT_SS;
-	else
-		flags = UC_SIGCONTEXT_SS;
-
-	if (likely(user_64bit_mode(regs)))
-		flags |= UC_STRICT_RESTORE_SS;
-
-	return flags;
-}
-
-static int __setup_rt_frame(int sig, struct ksignal *ksig,
-			    sigset_t *set, struct pt_regs *regs)
-{
-	struct rt_sigframe __user *frame;
-	void __user *fp = NULL;
-	unsigned long uc_flags;
-
-	/* x86-64 should always use SA_RESTORER. */
-	if (!(ksig->ka.sa.sa_flags & SA_RESTORER))
-		return -EFAULT;
-
-	frame = get_sigframe(&ksig->ka, regs, sizeof(struct rt_sigframe), &fp);
-	uc_flags = frame_uc_flags(regs);
-
-	if (!user_access_begin(frame, sizeof(*frame)))
-		return -EFAULT;
-
-	/* Create the ucontext.  */
-	unsafe_put_user(uc_flags, &frame->uc.uc_flags, Efault);
-	unsafe_put_user(0, &frame->uc.uc_link, Efault);
-	unsafe_save_altstack(&frame->uc.uc_stack, regs->sp, Efault);
-
-	/* Set up to return from userspace.  If provided, use a stub
-	   already in userspace.  */
-	unsafe_put_user(ksig->ka.sa.sa_restorer, &frame->pretcode, Efault);
-	unsafe_put_sigcontext(&frame->uc.uc_mcontext, fp, regs, set, Efault);
-	unsafe_put_sigmask(set, frame, Efault);
-	user_access_end();
-
-	if (ksig->ka.sa.sa_flags & SA_SIGINFO) {
-		if (copy_siginfo_to_user(&frame->info, &ksig->info))
-			return -EFAULT;
-	}
-
-	/* Set up registers for signal handler */
-	regs->di = sig;
-	/* In case the signal handler was declared without prototypes */
-	regs->ax = 0;
-
-	/* This also works for non SA_SIGINFO handlers because they expect the
-	   next argument after the signal number on the stack. */
-	regs->si = (unsigned long)&frame->info;
-	regs->dx = (unsigned long)&frame->uc;
-	regs->ip = (unsigned long) ksig->ka.sa.sa_handler;
-
-	regs->sp = (unsigned long)frame;
-
-	/*
-	 * Set up the CS and SS registers to run signal handlers in
-	 * 64-bit mode, even if the handler happens to be interrupting
-	 * 32-bit or 16-bit code.
-	 *
-	 * SS is subtle.  In 64-bit mode, we don't need any particular
-	 * SS descriptor, but we do need SS to be valid.  It's possible
-	 * that the old SS is entirely bogus -- this can happen if the
-	 * signal we're trying to deliver is #GP or #SS caused by a bad
-	 * SS value.  We also have a compatibility issue here: DOSEMU
-	 * relies on the contents of the SS register indicating the
-	 * SS value at the time of the signal, even though that code in
-	 * DOSEMU predates sigreturn's ability to restore SS.  (DOSEMU
-	 * avoids relying on sigreturn to restore SS; instead it uses
-	 * a trampoline.)  So we do our best: if the old SS was valid,
-	 * we keep it.  Otherwise we replace it.
-	 */
-	regs->cs = __USER_CS;
-
-	if (unlikely(regs->ss != __USER_DS))
-		force_valid_ss(regs);
-
-	return 0;
-
-Efault:
-	user_access_end();
-	return -EFAULT;
-}
-#endif /* CONFIG_X86_32 */
 
 #ifdef CONFIG_X86_X32_ABI
 static int x32_copy_siginfo_to_user(struct compat_siginfo __user *to,
@@ -623,7 +514,6 @@ Efault:
 /*
  * Do a signal return; undo the signal stack.
  */
-#ifdef CONFIG_X86_32
 SYSCALL_DEFINE0(sigreturn)
 {
 	struct pt_regs *regs = current_pt_regs();
@@ -653,7 +543,6 @@ badframe:
 
 	return 0;
 }
-#endif /* CONFIG_X86_32 */
 
 SYSCALL_DEFINE0(rt_sigreturn)
 {
@@ -691,11 +580,7 @@ badframe:
  * -- the largest size. It means the size for 64-bit apps is a bit more
  * than needed, but this keeps the code simple.
  */
-#if defined(CONFIG_X86_32) || defined(CONFIG_IA32_EMULATION)
 # define MAX_FRAME_SIGINFO_UCTXT_SIZE	sizeof(struct sigframe_ia32)
-#else
-# define MAX_FRAME_SIGINFO_UCTXT_SIZE	sizeof(struct rt_sigframe)
-#endif
 
 /*
  * The FP state frame contains an XSAVE buffer which must be 64-byte aligned.
@@ -914,7 +799,6 @@ void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
 	force_sig(SIGSEGV);
 }
 
-#ifdef CONFIG_DYNAMIC_SIGFRAME
 #ifdef CONFIG_STRICT_SIGALTSTACK_SIZE
 static bool strict_sigaltstack_size __ro_after_init = true;
 #else
@@ -968,7 +852,6 @@ bool sigaltstack_size_valid(size_t ss_size)
 
 	return true;
 }
-#endif /* CONFIG_DYNAMIC_SIGFRAME */
 
 #ifdef CONFIG_X86_X32_ABI
 COMPAT_SYSCALL_DEFINE0(x32_rt_sigreturn)

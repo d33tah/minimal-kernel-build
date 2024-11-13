@@ -266,7 +266,6 @@ void *arch_dma_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 void arch_dma_free(struct device *dev, size_t size, void *cpu_addr,
 		dma_addr_t dma_addr, unsigned long attrs);
 
-#ifdef CONFIG_MMU
 /*
  * Page protection so that devices that can't snoop CPU caches can use the
  * memory coherently.  We default to pgprot_noncached which is usually used
@@ -278,13 +277,6 @@ void arch_dma_free(struct device *dev, size_t size, void *cpu_addr,
 #endif
 
 pgprot_t dma_pgprot(struct device *dev, pgprot_t prot, unsigned long attrs);
-#else
-static inline pgprot_t dma_pgprot(struct device *dev, pgprot_t prot,
-		unsigned long attrs)
-{
-	return prot;	/* no protection bits supported without page tables */
-}
-#endif /* CONFIG_MMU */
 
 #ifdef CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE
 void arch_sync_dma_for_device(phys_addr_t paddr, size_t size,

@@ -8,7 +8,6 @@
 struct task_struct;
 struct pt_regs;
 
-#ifdef CONFIG_ARCH_STACKWALK
 
 /**
  * stack_trace_consume_fn - Callback for arch_stack_walk()
@@ -60,7 +59,6 @@ int arch_stack_walk_reliable(stack_trace_consume_fn consume_entry, void *cookie,
 
 void arch_stack_walk_user(stack_trace_consume_fn consume_entry, void *cookie,
 			  const struct pt_regs *regs);
-#endif /* CONFIG_ARCH_STACKWALK */
 
 #ifdef CONFIG_STACKTRACE
 void stack_trace_print(const unsigned long *trace, unsigned int nr_entries,
@@ -77,23 +75,6 @@ unsigned int stack_trace_save_regs(struct pt_regs *regs, unsigned long *store,
 unsigned int stack_trace_save_user(unsigned long *store, unsigned int size);
 unsigned int filter_irq_stacks(unsigned long *entries, unsigned int nr_entries);
 
-#ifndef CONFIG_ARCH_STACKWALK
-/* Internal interfaces. Do not use in generic code */
-struct stack_trace {
-	unsigned int nr_entries, max_entries;
-	unsigned long *entries;
-	unsigned int skip;	/* input argument: How many entries to skip */
-};
-
-extern void save_stack_trace(struct stack_trace *trace);
-extern void save_stack_trace_regs(struct pt_regs *regs,
-				  struct stack_trace *trace);
-extern void save_stack_trace_tsk(struct task_struct *tsk,
-				struct stack_trace *trace);
-extern int save_stack_trace_tsk_reliable(struct task_struct *tsk,
-					 struct stack_trace *trace);
-extern void save_stack_trace_user(struct stack_trace *trace);
-#endif /* !CONFIG_ARCH_STACKWALK */
 #endif /* CONFIG_STACKTRACE */
 
 #if defined(CONFIG_STACKTRACE) && defined(CONFIG_HAVE_RELIABLE_STACKTRACE)

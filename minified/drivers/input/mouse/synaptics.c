@@ -453,7 +453,6 @@ static int synaptics_query_hardware(struct psmouse *psmouse,
 
 #endif /* CONFIG_MOUSE_PS2_SYNAPTICS || CONFIG_MOUSE_PS2_SYNAPTICS_SMBUS */
 
-#ifdef CONFIG_MOUSE_PS2_SYNAPTICS
 
 static bool cr48_profile_sensor;
 
@@ -1711,20 +1710,6 @@ static int synaptics_setup_ps2(struct psmouse *psmouse,
 	return absolute_mode ? PSMOUSE_SYNAPTICS : PSMOUSE_SYNAPTICS_RELATIVE;
 }
 
-#else /* CONFIG_MOUSE_PS2_SYNAPTICS */
-
-void __init synaptics_module_init(void)
-{
-}
-
-static int __maybe_unused
-synaptics_setup_ps2(struct psmouse *psmouse,
-		    struct synaptics_device_info *info)
-{
-	return -ENOSYS;
-}
-
-#endif /* CONFIG_MOUSE_PS2_SYNAPTICS */
 
 #ifdef CONFIG_MOUSE_PS2_SYNAPTICS_SMBUS
 

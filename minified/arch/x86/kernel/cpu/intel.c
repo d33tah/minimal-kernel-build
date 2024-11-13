@@ -374,7 +374,6 @@ static void bsp_init_intel(struct cpuinfo_x86 *c)
 	resctrl_cpu_detect(c);
 }
 
-#ifdef CONFIG_X86_32
 /*
  *	Early probe support logic for ppro memory erratum #50
  *
@@ -504,11 +503,6 @@ static void intel_workarounds(struct cpuinfo_x86 *c)
 
 	intel_smp_check(c);
 }
-#else
-static void intel_workarounds(struct cpuinfo_x86 *c)
-{
-}
-#endif
 
 static void srat_detect_node(struct cpuinfo_x86 *c)
 {
@@ -661,9 +655,7 @@ static void init_intel(struct cpuinfo_x86 *c)
 		 * detection.
 		 */
 		detect_num_cpu_cores(c);
-#ifdef CONFIG_X86_32
 		detect_ht(c);
-#endif
 	}
 
 	init_intel_cacheinfo(c);
@@ -758,7 +750,6 @@ static void init_intel(struct cpuinfo_x86 *c)
 	intel_init_thermal(c);
 }
 
-#ifdef CONFIG_X86_32
 static unsigned int intel_size_cache(struct cpuinfo_x86 *c, unsigned int size)
 {
 	/*
@@ -778,7 +769,6 @@ static unsigned int intel_size_cache(struct cpuinfo_x86 *c, unsigned int size)
 		size = 16;
 	return size;
 }
-#endif
 
 #define TLB_INST_4K	0x01
 #define TLB_INST_4M	0x02
@@ -957,7 +947,6 @@ static void intel_detect_tlb(struct cpuinfo_x86 *c)
 static const struct cpu_dev intel_cpu_dev = {
 	.c_vendor	= "Intel",
 	.c_ident	= { "GenuineIntel" },
-#ifdef CONFIG_X86_32
 	.legacy_models = {
 		{ .family = 4, .model_names =
 		  {
@@ -1009,7 +998,6 @@ static const struct cpu_dev intel_cpu_dev = {
 		},
 	},
 	.legacy_cache_size = intel_size_cache,
-#endif
 	.c_detect_tlb	= intel_detect_tlb,
 	.c_early_init   = early_init_intel,
 	.c_bsp_init	= bsp_init_intel,

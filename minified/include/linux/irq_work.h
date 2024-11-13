@@ -60,16 +60,10 @@ bool irq_work_queue_on(struct irq_work *work, int cpu);
 void irq_work_tick(void);
 void irq_work_sync(struct irq_work *work);
 
-#ifdef CONFIG_IRQ_WORK
 #include <asm/irq_work.h>
 
 void irq_work_run(void);
 bool irq_work_needs_cpu(void);
 void irq_work_single(void *arg);
-#else
-static inline bool irq_work_needs_cpu(void) { return false; }
-static inline void irq_work_run(void) { }
-static inline void irq_work_single(void *arg) { }
-#endif
 
 #endif /* _LINUX_IRQ_WORK_H */

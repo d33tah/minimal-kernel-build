@@ -2,7 +2,6 @@
 #ifndef __ASM_GENERIC_PGALLOC_H
 #define __ASM_GENERIC_PGALLOC_H
 
-#ifdef CONFIG_MMU
 
 #define GFP_PGTABLE_KERNEL	(GFP_KERNEL | __GFP_ZERO)
 #define GFP_PGTABLE_USER	(GFP_PGTABLE_KERNEL | __GFP_ACCOUNT)
@@ -194,6 +193,5 @@ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 }
 #endif
 
-#endif /* CONFIG_MMU */
 
 #endif /* __ASM_GENERIC_PGALLOC_H */

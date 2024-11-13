@@ -5,7 +5,6 @@
 #include <uapi/asm/unistd.h>
 
 
-# ifdef CONFIG_X86_32
 
 #  include <asm/unistd_32.h>
 #  define __ARCH_WANT_STAT64
@@ -15,22 +14,6 @@
 
 #  define IA32_NR_syscalls (__NR_syscalls)
 
-# else
-
-#  include <asm/unistd_64.h>
-#  include <asm/unistd_64_x32.h>
-#  include <asm/unistd_32_ia32.h>
-#  define __ARCH_WANT_SYS_TIME
-#  define __ARCH_WANT_SYS_UTIME
-#  define __ARCH_WANT_COMPAT_STAT
-#  define __ARCH_WANT_COMPAT_SYS_PREADV64
-#  define __ARCH_WANT_COMPAT_SYS_PWRITEV64
-#  define __ARCH_WANT_COMPAT_SYS_PREADV64V2
-#  define __ARCH_WANT_COMPAT_SYS_PWRITEV64V2
-#  define X32_NR_syscalls (__NR_x32_syscalls)
-#  define IA32_NR_syscalls (__NR_ia32_syscalls)
-
-# endif
 
 # define NR_syscalls (__NR_syscalls)
 

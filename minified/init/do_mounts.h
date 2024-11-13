@@ -32,12 +32,6 @@ static inline int rd_load_image(char *from) { return 0; }
 
 #endif
 
-#ifdef CONFIG_BLK_DEV_INITRD
 
 bool __init initrd_load(void);
 
-#else
-
-static inline bool initrd_load(void) { return false; }
-
-#endif

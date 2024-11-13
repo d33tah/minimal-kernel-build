@@ -6,7 +6,6 @@
 #ifndef __LINUX_CPUFEATURE_H
 #define __LINUX_CPUFEATURE_H
 
-#ifdef CONFIG_GENERIC_CPU_AUTOPROBE
 
 #include <linux/init.h>
 #include <linux/mod_devicetable.h>
@@ -54,5 +53,4 @@ static int __init cpu_feature_match_ ## x ## _init(void)	\
 }								\
 module_init(cpu_feature_match_ ## x ## _init)
 
-#endif
 #endif

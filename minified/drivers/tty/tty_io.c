@@ -1921,7 +1921,6 @@ static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,
 	struct tty_driver *driver = NULL;
 
 	switch (device) {
-#ifdef CONFIG_VT
 	case MKDEV(TTY_MAJOR, 0): {
 		extern struct tty_driver *console_driver;
 
@@ -1929,7 +1928,6 @@ static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,
 		*index = fg_console;
 		break;
 	}
-#endif
 	case MKDEV(TTYAUX_MAJOR, 1): {
 		struct tty_driver *console_driver = console_device(index);
 
@@ -3604,9 +3602,7 @@ int __init tty_init(void)
 	if (IS_ERR(consdev))
 		consdev = NULL;
 
-#ifdef CONFIG_VT
 	vty_init(&console_fops);
-#endif
 	return 0;
 }
 

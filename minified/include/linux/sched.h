@@ -717,20 +717,16 @@ struct wake_q_node {
 };
 
 struct kmap_ctrl {
-#ifdef CONFIG_KMAP_LOCAL
 	int				idx;
 	pte_t				pteval[KM_MAX_IDX];
-#endif
 };
 
 struct task_struct {
-#ifdef CONFIG_THREAD_INFO_IN_TASK
 	/*
 	 * For reasons of header soup (see current_thread_info()), this
 	 * must be the first element of task_struct.
 	 */
 	struct thread_info		thread_info;
-#endif
 	unsigned int			__state;
 
 #ifdef CONFIG_PREEMPT_RT
@@ -939,9 +935,7 @@ struct task_struct {
 #ifdef CONFIG_IOMMU_SVA
 	unsigned			pasid_activated:1;
 #endif
-#ifdef	CONFIG_CPU_SUP_INTEL
 	unsigned			reported_split_lock:1;
-#endif
 
 	unsigned long			atomic_flags; /* Flags requiring atomic access. */
 
@@ -1225,11 +1219,9 @@ struct task_struct {
 	struct mutex			futex_exit_mutex;
 	unsigned int			futex_state;
 #endif
-#ifdef CONFIG_PERF_EVENTS
 	struct perf_event_context	*perf_event_ctxp[perf_nr_task_contexts];
 	struct mutex			perf_event_mutex;
 	struct list_head		perf_event_list;
-#endif
 #ifdef CONFIG_DEBUG_PREEMPT
 	unsigned long			preempt_disable_ip;
 #endif
@@ -1442,17 +1434,13 @@ struct task_struct {
 # endif
 #endif
 	int				pagefault_disabled;
-#ifdef CONFIG_MMU
 	struct task_struct		*oom_reaper_list;
 	struct timer_list		oom_reaper_timer;
-#endif
 #ifdef CONFIG_VMAP_STACK
 	struct vm_struct		*stack_vm_area;
 #endif
-#ifdef CONFIG_THREAD_INFO_IN_TASK
 	/* A live task holds one reference: */
 	refcount_t			stack_refcount;
-#endif
 #ifdef CONFIG_LIVEPATCH
 	int patch_state;
 #endif
@@ -1490,7 +1478,6 @@ struct task_struct {
 	struct llist_head               rethooks;
 #endif
 
-#ifdef CONFIG_ARCH_HAS_PARANOID_L1D_FLUSH
 	/*
 	 * If L1D flush is supported on mm context switch
 	 * then we use this callback head to queue kill work
@@ -1498,7 +1485,6 @@ struct task_struct {
 	 * cores
 	 */
 	struct callback_head		l1d_flush_kill;
-#endif
 
 	/*
 	 * New fields for task_struct should be added above here, so that
@@ -1897,23 +1883,13 @@ union thread_union {
 #ifndef CONFIG_ARCH_TASK_STRUCT_ON_STACK
 	struct task_struct task;
 #endif
-#ifndef CONFIG_THREAD_INFO_IN_TASK
-	struct thread_info thread_info;
-#endif
 	unsigned long stack[THREAD_SIZE/sizeof(long)];
 };
 
-#ifndef CONFIG_THREAD_INFO_IN_TASK
-extern struct thread_info init_thread_info;
-#endif
 
 extern unsigned long init_stack[THREAD_SIZE / sizeof(unsigned long)];
 
-#ifdef CONFIG_THREAD_INFO_IN_TASK
 # define task_thread_info(task)	(&(task)->thread_info)
-#elif !defined(__HAVE_THREAD_FUNCTIONS)
-# define task_thread_info(task)	((struct thread_info *)(task)->stack)
-#endif
 
 /*
  * find a task by one of its numerical ids

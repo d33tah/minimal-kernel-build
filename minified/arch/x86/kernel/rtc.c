@@ -16,7 +16,6 @@
 #include <asm/intel-mid.h>
 #include <asm/setup.h>
 
-#ifdef CONFIG_X86_32
 /*
  * This is a special lock that is owned by the CPU and holds the index
  * register we are working with.  It is required for NMI access to the
@@ -24,7 +23,6 @@
  */
 volatile unsigned long cmos_lock;
 EXPORT_SYMBOL(cmos_lock);
-#endif /* CONFIG_X86_32 */
 
 /* For two digit years assume time is always after that */
 #define CMOS_YEARS_OFFS 2000

@@ -6,7 +6,6 @@
 #include <linux/bug.h>
 #include <linux/mm_types.h>
 
-#ifdef CONFIG_MMU
 
 /*
  * swapcache pages are stored in the swapper_space radix tree.  We want to
@@ -508,5 +507,4 @@ static inline int non_swap_entry(swp_entry_t entry)
 	return swp_type(entry) >= MAX_SWAPFILES;
 }
 
-#endif /* CONFIG_MMU */
 #endif /* _LINUX_SWAPOPS_H */

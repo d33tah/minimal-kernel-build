@@ -814,15 +814,11 @@ u64 __init e820__memblock_alloc_reserved(u64 size, u64 align)
 	return addr;
 }
 
-#ifdef CONFIG_X86_32
 # ifdef CONFIG_X86_PAE
 #  define MAX_ARCH_PFN		(1ULL<<(36-PAGE_SHIFT))
 # else
 #  define MAX_ARCH_PFN		(1ULL<<(32-PAGE_SHIFT))
 # endif
-#else /* CONFIG_X86_32 */
-# define MAX_ARCH_PFN MAXMEM>>PAGE_SHIFT
-#endif
 
 /*
  * Find the highest page frame number we have available
@@ -889,13 +885,8 @@ static int __init parse_memopt(char *p)
 		return -EINVAL;
 
 	if (!strcmp(p, "nopentium")) {
-#ifdef CONFIG_X86_32
 		setup_clear_cpu_cap(X86_FEATURE_PSE);
 		return 0;
-#else
-		pr_warn("mem=nopentium ignored! (only supported on x86_32)\n");
-		return -EINVAL;
-#endif
 	}
 
 	userdef = 1;

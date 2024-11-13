@@ -260,11 +260,7 @@ enum page_cache_mode {
 #define PGD_IDENT_ATTR	 0x001		/* PRESENT (no other attributes) */
 #endif
 
-#ifdef CONFIG_X86_32
 # include <asm/pgtable_32_types.h>
-#else
-# include <asm/pgtable_64_types.h>
-#endif
 
 #ifndef __ASSEMBLY__
 
@@ -528,11 +524,7 @@ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
 /* Install a pte for a particular vaddr in kernel space. */
 void set_pte_vaddr(unsigned long vaddr, pte_t pte);
 
-#ifdef CONFIG_X86_32
 extern void native_pagetable_init(void);
-#else
-#define native_pagetable_init        paging_init
-#endif
 
 struct seq_file;
 extern void arch_report_meminfo(struct seq_file *m);

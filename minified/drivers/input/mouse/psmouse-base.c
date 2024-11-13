@@ -732,21 +732,18 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.detect		= ps2bare_detect,
 		.try_passthru	= true,
 	},
-#ifdef CONFIG_MOUSE_PS2_LOGIPS2PP
 	{
 		.type		= PSMOUSE_PS2PP,
 		.name		= "PS2++",
 		.alias		= "logitech",
 		.detect		= ps2pp_detect,
 	},
-#endif
 	{
 		.type		= PSMOUSE_THINKPS,
 		.name		= "ThinkPS/2",
 		.alias		= "thinkps",
 		.detect		= thinking_detect,
 	},
-#ifdef CONFIG_MOUSE_PS2_CYPRESS
 	{
 		.type		= PSMOUSE_CYPRESS,
 		.name		= "CyPS/2",
@@ -754,7 +751,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.detect		= cypress_detect,
 		.init		= cypress_init,
 	},
-#endif
 	{
 		.type		= PSMOUSE_GENPS,
 		.name		= "GenPS/2",
@@ -779,7 +775,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.detect		= im_explorer_detect,
 		.try_passthru	= true,
 	},
-#ifdef CONFIG_MOUSE_PS2_SYNAPTICS
 	{
 		.type		= PSMOUSE_SYNAPTICS,
 		.name		= "SynPS/2",
@@ -794,7 +789,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.detect		= synaptics_detect,
 		.init		= synaptics_init_relative,
 	},
-#endif
 #ifdef CONFIG_MOUSE_PS2_SYNAPTICS_SMBUS
 	{
 		.type		= PSMOUSE_SYNAPTICS_SMBUS,
@@ -805,7 +799,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.smbus_companion = true,
 	},
 #endif
-#ifdef CONFIG_MOUSE_PS2_ALPS
 	{
 		.type		= PSMOUSE_ALPS,
 		.name		= "AlpsPS/2",
@@ -813,7 +806,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.detect		= alps_detect,
 		.init		= alps_init,
 	},
-#endif
 #ifdef CONFIG_MOUSE_PS2_LIFEBOOK
 	{
 		.type		= PSMOUSE_LIFEBOOK,
@@ -823,7 +815,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.init		= lifebook_init,
 	},
 #endif
-#ifdef CONFIG_MOUSE_PS2_TRACKPOINT
 	{
 		.type		= PSMOUSE_TRACKPOINT,
 		.name		= "TPPS/2",
@@ -831,7 +822,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.detect		= trackpoint_detect,
 		.try_passthru	= true,
 	},
-#endif
 #ifdef CONFIG_MOUSE_PS2_TOUCHKIT
 	{
 		.type		= PSMOUSE_TOUCHKIT_PS2,
@@ -882,7 +872,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.alias		= "cortps",
 		.detect		= cortron_detect,
 	},
-#ifdef CONFIG_MOUSE_PS2_FOCALTECH
 	{
 		.type		= PSMOUSE_FOCALTECH,
 		.name		= "FocalTechPS/2",
@@ -890,7 +879,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.detect		= focaltech_detect,
 		.init		= focaltech_init,
 	},
-#endif
 #ifdef CONFIG_MOUSE_PS2_VMMOUSE
 	{
 		.type		= PSMOUSE_VMMOUSE,
@@ -900,7 +888,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.init		= vmmouse_init,
 	},
 #endif
-#ifdef CONFIG_MOUSE_PS2_BYD
 	{
 		.type		= PSMOUSE_BYD,
 		.name		= "BYDPS/2",
@@ -908,7 +895,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.detect		= byd_detect,
 		.init		= byd_init,
 	},
-#endif
 	{
 		.type		= PSMOUSE_AUTO,
 		.name		= "auto",

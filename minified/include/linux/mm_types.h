@@ -63,11 +63,7 @@ struct mem_cgroup;
  * bits of struct page, we align all struct pages to double-word boundaries,
  * and ensure that 'freelist' is aligned within struct slab.
  */
-#ifdef CONFIG_HAVE_ALIGNED_STRUCT_PAGE
 #define _struct_page_alignment	__aligned(2 * sizeof(unsigned long))
-#else
-#define _struct_page_alignment
-#endif
 
 struct page {
 	unsigned long flags;		/* Atomic flags, some possibly
@@ -468,9 +464,6 @@ struct vm_area_struct {
 #ifdef CONFIG_SWAP
 	atomic_long_t swap_readahead_info;
 #endif
-#ifndef CONFIG_MMU
-	struct vm_region *vm_region;	/* NOMMU mapping region */
-#endif
 #ifdef CONFIG_NUMA
 	struct mempolicy *vm_policy;	/* NUMA policy for the VMA */
 #endif
@@ -483,11 +476,9 @@ struct mm_struct {
 		struct vm_area_struct *mmap;		/* list of VMAs */
 		struct rb_root mm_rb;
 		u64 vmacache_seqnum;                   /* per-thread vmacache */
-#ifdef CONFIG_MMU
 		unsigned long (*get_unmapped_area) (struct file *filp,
 				unsigned long addr, unsigned long len,
 				unsigned long pgoff, unsigned long flags);
-#endif
 		unsigned long mmap_base;	/* base of mmap area */
 		unsigned long mmap_legacy_base;	/* base of mmap area in bottom-up allocations */
 #ifdef CONFIG_HAVE_ARCH_COMPAT_MMAP_BASES
@@ -529,9 +520,7 @@ struct mm_struct {
 		 */
 		atomic_t mm_count;
 
-#ifdef CONFIG_MMU
 		atomic_long_t pgtables_bytes;	/* PTE page table pages */
-#endif
 		int map_count;			/* number of VMAs */
 
 		spinlock_t page_table_lock; /* Protects page tables and some
@@ -644,10 +633,8 @@ struct mm_struct {
 		 * moving a PROT_NONE or PROT_NUMA mapped page.
 		 */
 		atomic_t tlb_flush_pending;
-#ifdef CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
 		/* See flush_tlb_batched_pending() */
 		atomic_t tlb_flush_batched;
-#endif
 		struct uprobes_state uprobes_state;
 #ifdef CONFIG_PREEMPT_RT
 		struct rcu_head delayed_drop;

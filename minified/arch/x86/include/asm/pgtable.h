@@ -708,11 +708,7 @@ static inline pgd_t pti_set_user_pgtbl(pgd_t *pgdp, pgd_t pgd)
 #endif	/* __ASSEMBLY__ */
 
 
-#ifdef CONFIG_X86_32
 # include <asm/pgtable_32.h>
-#else
-# include <asm/pgtable_64.h>
-#endif
 
 #ifndef __ASSEMBLY__
 #include <linux/mm_types.h>

@@ -639,14 +639,7 @@ static inline void irq_force_complete_move(struct irq_desc *desc) { }
 
 extern int no_irq_affinity;
 
-#ifdef CONFIG_HARDIRQS_SW_RESEND
 int irq_set_parent(int irq, int parent_irq);
-#else
-static inline int irq_set_parent(int irq, int parent_irq)
-{
-	return 0;
-}
-#endif
 
 /*
  * Built-in IRQ handlers for various IRQ types,

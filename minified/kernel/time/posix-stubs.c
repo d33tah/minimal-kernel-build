@@ -17,10 +17,8 @@
 #include <linux/time_namespace.h>
 #include <linux/compat.h>
 
-#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
 /* Architectures may override SYS_NI and COMPAT_SYS_NI */
 #include <asm/syscall_wrapper.h>
-#endif
 
 asmlinkage long sys_ni_posix_timers(void)
 {

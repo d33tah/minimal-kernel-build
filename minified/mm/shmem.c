@@ -4050,14 +4050,12 @@ void shmem_unlock_mapping(struct address_space *mapping)
 {
 }
 
-#ifdef CONFIG_MMU
 unsigned long shmem_get_unmapped_area(struct file *file,
 				      unsigned long addr, unsigned long len,
 				      unsigned long pgoff, unsigned long flags)
 {
 	return current->mm->get_unmapped_area(file, addr, len, pgoff, flags);
 }
-#endif
 
 void shmem_truncate_range(struct inode *inode, loff_t lstart, loff_t lend)
 {

@@ -663,9 +663,7 @@ void __init initmem_init(void)
 
 	memblock_set_node(0, PHYS_ADDR_MAX, &memblock.memory, 0);
 
-#ifdef CONFIG_FLATMEM
 	max_mapnr = IS_ENABLED(CONFIG_HIGHMEM) ? highend_pfn : max_low_pfn;
-#endif
 	__vmalloc_start_set = true;
 
 	printk(KERN_NOTICE "%ldMB LOWMEM available.\n",
@@ -731,9 +729,7 @@ void __init mem_init(void)
 {
 	pci_iommu_alloc();
 
-#ifdef CONFIG_FLATMEM
 	BUG_ON(!mem_map);
-#endif
 	/*
 	 * With CONFIG_DEBUG_PAGEALLOC initialization of highmem pages has to
 	 * be done before memblock_free_all(). Memblock use free low memory for

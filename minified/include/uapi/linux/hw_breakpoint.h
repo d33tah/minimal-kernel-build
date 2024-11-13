@@ -24,11 +24,7 @@ enum {
 
 enum bp_type_idx {
 	TYPE_INST 	= 0,
-#ifdef CONFIG_HAVE_MIXED_BREAKPOINTS_REGS
 	TYPE_DATA	= 0,
-#else
-	TYPE_DATA	= 1,
-#endif
 	TYPE_MAX
 };
 

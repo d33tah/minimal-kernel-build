@@ -55,14 +55,7 @@
 
 #define KBD_DEFMODE (BIT(VC_REPEAT) | BIT(VC_META))
 
-#if defined(CONFIG_X86) || defined(CONFIG_PARISC)
 #include <asm/kbdleds.h>
-#else
-static inline int kbd_defleds(void)
-{
-	return 0;
-}
-#endif
 
 #define KBD_DEFLOCK 0
 

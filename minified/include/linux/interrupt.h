@@ -506,16 +506,12 @@ extern int irq_get_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
 extern int irq_set_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
 				 bool state);
 
-#ifdef CONFIG_IRQ_FORCED_THREADING
 # ifdef CONFIG_PREEMPT_RT
 #  define force_irqthreads()	(true)
 # else
 DECLARE_STATIC_KEY_FALSE(force_irqthreads_key);
 #  define force_irqthreads()	(static_branch_unlikely(&force_irqthreads_key))
 # endif
-#else
-#define force_irqthreads()	(false)
-#endif
 
 #ifndef local_softirq_pending
 
@@ -780,24 +776,9 @@ extern void tasklet_setup(struct tasklet_struct *t,
  * if more than one irq occurred.
  */
 
-#if !defined(CONFIG_GENERIC_IRQ_PROBE) 
-static inline unsigned long probe_irq_on(void)
-{
-	return 0;
-}
-static inline int probe_irq_off(unsigned long val)
-{
-	return 0;
-}
-static inline unsigned int probe_irq_mask(unsigned long val)
-{
-	return 0;
-}
-#else
 extern unsigned long probe_irq_on(void);	/* returns 0 on failure */
 extern int probe_irq_off(unsigned long);	/* returns 0 or negative on failure */
 extern unsigned int probe_irq_mask(unsigned long);	/* returns mask of ISA interrupts */
-#endif
 
 #ifdef CONFIG_PROC_FS
 /* Initialize /proc/irq/ */

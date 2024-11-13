@@ -1864,15 +1864,6 @@ nla_validate_nested_deprecated(const struct nlattr *start, int maxtype,
  */
 static inline bool nla_need_padding_for_64bit(struct sk_buff *skb)
 {
-#ifndef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-	/* The nlattr header is 4 bytes in size, that's why we test
-	 * if the skb->data _is_ aligned.  A NOP attribute, plus
-	 * nlattr header for next attribute, will make nla_data()
-	 * 8-byte aligned.
-	 */
-	if (IS_ALIGNED((unsigned long)skb_tail_pointer(skb), 8))
-		return true;
-#endif
 	return false;
 }
 
@@ -1904,9 +1895,6 @@ static inline int nla_align_64bit(struct sk_buff *skb, int padattr)
 static inline int nla_total_size_64bit(int payload)
 {
 	return NLA_ALIGN(nla_attr_size(payload))
-#ifndef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-		+ NLA_ALIGN(nla_attr_size(0))
-#endif
 		;
 }
 

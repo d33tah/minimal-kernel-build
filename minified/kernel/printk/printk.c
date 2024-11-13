@@ -1952,10 +1952,8 @@ static void call_console_driver(struct console *con, const char *text, size_t le
  */
 static DEFINE_PER_CPU(u8, printk_count);
 static u8 printk_count_early;
-#ifdef CONFIG_HAVE_NMI
 static DEFINE_PER_CPU(u8, printk_count_nmi);
 static u8 printk_count_nmi_early;
-#endif
 
 /*
  * Recursion is limited to keep the output sane. printk() should not require
@@ -1971,13 +1969,11 @@ static u8 printk_count_nmi_early;
  */
 static u8 *__printk_recursion_counter(void)
 {
-#ifdef CONFIG_HAVE_NMI
 	if (in_nmi()) {
 		if (printk_percpu_data_ready())
 			return this_cpu_ptr(&printk_count_nmi);
 		return &printk_count_nmi_early;
 	}
-#endif
 	if (printk_percpu_data_ready())
 		return this_cpu_ptr(&printk_count);
 	return &printk_count_early;

@@ -176,7 +176,6 @@ enum trace_flag_type {
 	TRACE_FLAG_BH_OFF		= 0x80,
 };
 
-#ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
 static inline unsigned int tracing_gen_ctx_flags(unsigned long irqflags)
 {
 	unsigned int irq_status = irqs_disabled_flags(irqflags) ?
@@ -190,17 +189,6 @@ static inline unsigned int tracing_gen_ctx(void)
 	local_save_flags(irqflags);
 	return tracing_gen_ctx_flags(irqflags);
 }
-#else
-
-static inline unsigned int tracing_gen_ctx_flags(unsigned long irqflags)
-{
-	return tracing_gen_ctx_irq_test(TRACE_FLAG_IRQS_NOSUPPORT);
-}
-static inline unsigned int tracing_gen_ctx(void)
-{
-	return tracing_gen_ctx_irq_test(TRACE_FLAG_IRQS_NOSUPPORT);
-}
-#endif
 
 static inline unsigned int tracing_gen_ctx_dec(void)
 {
@@ -241,7 +229,6 @@ struct event_filter;
 enum trace_reg {
 	TRACE_REG_REGISTER,
 	TRACE_REG_UNREGISTER,
-#ifdef CONFIG_PERF_EVENTS
 	TRACE_REG_PERF_REGISTER,
 	TRACE_REG_PERF_UNREGISTER,
 	TRACE_REG_PERF_OPEN,
@@ -253,7 +240,6 @@ enum trace_reg {
 	 */
 	TRACE_REG_PERF_ADD,
 	TRACE_REG_PERF_DEL,
-#endif
 };
 
 struct trace_event_call;
@@ -277,9 +263,7 @@ struct trace_event_fields {
 struct trace_event_class {
 	const char		*system;
 	void			*probe;
-#ifdef CONFIG_PERF_EVENTS
 	void			*perf_probe;
-#endif
 	int			(*reg)(struct trace_event_call *event,
 				       enum trace_reg type, void *data);
 	struct trace_event_fields *fields_array;
@@ -373,14 +357,12 @@ struct trace_event_call {
 	/* See the TRACE_EVENT_FL_* flags above */
 	int			flags; /* static flags of different events */
 
-#ifdef CONFIG_PERF_EVENTS
 	int				perf_refcount;
 	struct hlist_head __percpu	*perf_events;
 	struct bpf_prog_array __rcu	*prog_array;
 
 	int	(*perf_perm)(struct trace_event_call *,
 			     struct perf_event *);
-#endif
 };
 
 #ifdef CONFIG_DYNAMIC_EVENTS
@@ -419,7 +401,6 @@ static inline void trace_event_put_ref(struct trace_event_call *call)
 		module_put(call->module);
 }
 
-#ifdef CONFIG_PERF_EVENTS
 static inline bool bpf_prog_array_valid(struct trace_event_call *call)
 {
 	/*
@@ -441,7 +422,6 @@ static inline bool bpf_prog_array_valid(struct trace_event_call *call)
 	 */
 	return !!READ_ONCE(call->prog_array);
 }
-#endif
 
 static inline const char *
 trace_event_name(struct trace_event_call *call)
@@ -839,7 +819,6 @@ do {									\
 		__trace_printk(ip, fmt, ##args);			\
 } while (0)
 
-#ifdef CONFIG_PERF_EVENTS
 struct perf_event;
 
 DECLARE_PER_CPU(struct pt_regs, perf_trace_regs);
@@ -914,7 +893,6 @@ perf_trace_buf_submit(void *raw_data, int size, int rctx, u16 type,
 	perf_tp_event(type, count, raw_data, size, regs, head, rctx, task);
 }
 
-#endif
 
 #endif /* _LINUX_TRACE_EVENT_H */
 

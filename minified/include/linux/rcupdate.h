@@ -57,11 +57,7 @@ void __rcu_read_unlock(void);
 
 #else /* #ifdef CONFIG_PREEMPT_RCU */
 
-#ifdef CONFIG_TINY_RCU
 #define rcu_read_unlock_strict() do { } while (0)
-#else
-void rcu_read_unlock_strict(void);
-#endif
 
 static inline void __rcu_read_lock(void)
 {
@@ -225,10 +221,8 @@ do { \
 
 #if defined(CONFIG_TREE_RCU)
 #include <linux/rcutree.h>
-#elif defined(CONFIG_TINY_RCU)
-#include <linux/rcutiny.h>
 #else
-#error "Unknown RCU implementation specified to kernel configuration"
+#include <linux/rcutiny.h>
 #endif
 
 /*

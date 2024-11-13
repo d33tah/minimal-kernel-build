@@ -205,14 +205,7 @@ extern void identify_secondary_cpu(struct cpuinfo_x86 *);
 extern void print_cpu_info(struct cpuinfo_x86 *);
 void print_cpu_msr(struct cpuinfo_x86 *);
 
-#ifdef CONFIG_X86_32
 extern int have_cpuid_p(void);
-#else
-static inline int have_cpuid_p(void)
-{
-	return 1;
-}
-#endif
 static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
 				unsigned int *ecx, unsigned int *edx)
 {
@@ -267,7 +260,6 @@ static inline void load_cr3(pgd_t *pgdir)
  * on modern x86 CPUs the TSS also holds information important to 64-bit mode,
  * unrelated to the task-switch mechanism:
  */
-#ifdef CONFIG_X86_32
 /* This is the TSS defined by the hardware. */
 struct x86_hw_tss {
 	unsigned short		back_link, __blh;
@@ -315,28 +307,6 @@ struct x86_hw_tss {
 	unsigned short		io_bitmap_base;
 
 } __attribute__((packed));
-#else
-struct x86_hw_tss {
-	u32			reserved1;
-	u64			sp0;
-	u64			sp1;
-
-	/*
-	 * Since Linux does not use ring 2, the 'sp2' slot is unused by
-	 * hardware.  entry_SYSCALL_64 uses it as scratch space to stash
-	 * the user RSP value.
-	 */
-	u64			sp2;
-
-	u64			reserved2;
-	u64			ist[7];
-	u32			reserved3;
-	u32			reserved4;
-	u16			reserved5;
-	u16			io_bitmap_base;
-
-} __attribute__((packed));
-#endif
 
 /*
  * IO-bitmap sizes:
@@ -469,18 +439,9 @@ struct perf_event;
 struct thread_struct {
 	/* Cached TLS descriptors: */
 	struct desc_struct	tls_array[GDT_ENTRY_TLS_ENTRIES];
-#ifdef CONFIG_X86_32
 	unsigned long		sp0;
-#endif
 	unsigned long		sp;
-#ifdef CONFIG_X86_32
 	unsigned long		sysenter_cs;
-#else
-	unsigned short		es;
-	unsigned short		ds;
-	unsigned short		fsindex;
-	unsigned short		gsindex;
-#endif
 
 #ifdef CONFIG_X86_64
 	unsigned long		fsbase;
@@ -683,10 +644,6 @@ static inline unsigned long get_debugctlmsr(void)
 {
 	unsigned long debugctlmsr = 0;
 
-#ifndef CONFIG_X86_DEBUGCTLMSR
-	if (boot_cpu_data.x86 < 6)
-		return 0;
-#endif
 	rdmsrl(MSR_IA32_DEBUGCTLMSR, debugctlmsr);
 
 	return debugctlmsr;
@@ -694,10 +651,6 @@ static inline unsigned long get_debugctlmsr(void)
 
 static inline void update_debugctlmsr(unsigned long debugctlmsr)
 {
-#ifndef CONFIG_X86_DEBUGCTLMSR
-	if (boot_cpu_data.x86 < 6)
-		return;
-#endif
 	wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctlmsr);
 }
 
@@ -713,12 +666,8 @@ extern char			ignore_fpu_irq;
 #define ARCH_HAS_PREFETCHW
 #define ARCH_HAS_SPINLOCK_PREFETCH
 
-#ifdef CONFIG_X86_32
 # define BASE_PREFETCH		""
 # define ARCH_HAS_PREFETCH
-#else
-# define BASE_PREFETCH		"prefetcht0 %P1"
-#endif
 
 /*
  * Prefetch instructions for Pentium III (+) and AMD Athlon (+)
@@ -762,7 +711,6 @@ static inline void spin_lock_prefetch(const void *x)
 	((struct pt_regs *)__ptr) - 1;					\
 })
 
-#ifdef CONFIG_X86_32
 #define INIT_THREAD  {							  \
 	.sp0			= TOP_OF_INIT_STACK,			  \
 	.sysenter_cs		= __KERNEL_CS,				  \
@@ -770,12 +718,6 @@ static inline void spin_lock_prefetch(const void *x)
 
 #define KSTK_ESP(task)		(task_pt_regs(task)->sp)
 
-#else
-#define INIT_THREAD { }
-
-extern unsigned long KSTK_ESP(struct task_struct *task);
-
-#endif /* CONFIG_X86_64 */
 
 extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
 					       unsigned long new_sp);
@@ -800,13 +742,8 @@ DECLARE_PER_CPU(u64, msr_misc_features_shadow);
 
 extern u16 get_llc_id(unsigned int cpu);
 
-#ifdef CONFIG_CPU_SUP_AMD
 extern u32 amd_get_nodes_per_socket(void);
 extern u32 amd_get_highest_perf(void);
-#else
-static inline u32 amd_get_nodes_per_socket(void)	{ return 0; }
-static inline u32 amd_get_highest_perf(void)		{ return 0; }
-#endif
 
 #define for_each_possible_hypervisor_cpuid_base(function) \
 	for (function = 0x40000000; function < 0x40010000; function += 0x100)

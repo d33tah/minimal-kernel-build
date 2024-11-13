@@ -125,10 +125,6 @@ static __always_inline void local_db_restore(unsigned long dr7)
 		set_debugreg(dr7, 7);
 }
 
-#ifdef CONFIG_CPU_SUP_AMD
 extern void set_dr_addr_mask(unsigned long mask, int dr);
-#else
-static inline void set_dr_addr_mask(unsigned long mask, int dr) { }
-#endif
 
 #endif /* _ASM_X86_DEBUGREG_H */

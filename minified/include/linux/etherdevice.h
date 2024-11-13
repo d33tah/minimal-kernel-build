@@ -86,12 +86,8 @@ static inline bool is_link_local_ether_addr(const u8 *addr)
 	static const __be16 *b = (const __be16 *)eth_reserved_addr_base;
 	static const __be16 m = cpu_to_be16(0xfff0);
 
-#if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS)
 	return (((*(const u32 *)addr) ^ (*(const u32 *)b)) |
 		(__force int)((a[2] ^ b[2]) & m)) == 0;
-#else
-	return ((a[0] ^ b[0]) | (a[1] ^ b[1]) | ((a[2] ^ b[2]) & m)) == 0;
-#endif
 }
 
 /**
@@ -104,13 +100,7 @@ static inline bool is_link_local_ether_addr(const u8 *addr)
  */
 static inline bool is_zero_ether_addr(const u8 *addr)
 {
-#if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS)
 	return ((*(const u32 *)addr) | (*(const u16 *)(addr + 4))) == 0;
-#else
-	return (*(const u16 *)(addr + 0) |
-		*(const u16 *)(addr + 2) |
-		*(const u16 *)(addr + 4)) == 0;
-#endif
 }
 
 /**
@@ -122,11 +112,7 @@ static inline bool is_zero_ether_addr(const u8 *addr)
  */
 static inline bool is_multicast_ether_addr(const u8 *addr)
 {
-#if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS)
 	u32 a = *(const u32 *)addr;
-#else
-	u16 a = *(const u16 *)addr;
-#endif
 #ifdef __BIG_ENDIAN
 	return 0x01 & (a >> ((sizeof(a) * 8) - 8));
 #else
@@ -294,17 +280,8 @@ static inline u32 eth_hw_addr_crc(struct netdev_hw_addr *ha)
  */
 static inline void ether_addr_copy(u8 *dst, const u8 *src)
 {
-#if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS)
 	*(u32 *)dst = *(const u32 *)src;
 	*(u16 *)(dst + 4) = *(const u16 *)(src + 4);
-#else
-	u16 *a = (u16 *)dst;
-	const u16 *b = (const u16 *)src;
-
-	a[0] = b[0];
-	a[1] = b[1];
-	a[2] = b[2];
-#endif
 }
 
 /**
@@ -345,17 +322,10 @@ static inline void eth_hw_addr_inherit(struct net_device *dst,
  */
 static inline bool ether_addr_equal(const u8 *addr1, const u8 *addr2)
 {
-#if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS)
 	u32 fold = ((*(const u32 *)addr1) ^ (*(const u32 *)addr2)) |
 		   ((*(const u16 *)(addr1 + 4)) ^ (*(const u16 *)(addr2 + 4)));
 
 	return fold == 0;
-#else
-	const u16 *a = (const u16 *)addr1;
-	const u16 *b = (const u16 *)addr2;
-
-	return ((a[0] ^ b[0]) | (a[1] ^ b[1]) | (a[2] ^ b[2])) == 0;
-#endif
 }
 
 /**
@@ -398,11 +368,7 @@ static inline bool ether_addr_equal_64bits(const u8 *addr1, const u8 *addr2)
  */
 static inline bool ether_addr_equal_unaligned(const u8 *addr1, const u8 *addr2)
 {
-#if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS)
 	return ether_addr_equal(addr1, addr2);
-#else
-	return memcmp(addr1, addr2, ETH_ALEN) == 0;
-#endif
 }
 
 /**

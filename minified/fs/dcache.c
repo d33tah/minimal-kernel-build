@@ -206,7 +206,6 @@ fs_initcall(init_fs_dcache_sysctls);
  * Compare 2 name strings, return 0 if they match, otherwise non-zero.
  * The strings are both count bytes long, and count is non-zero.
  */
-#ifdef CONFIG_DCACHE_WORD_ACCESS
 
 #include <asm/word-at-a-time.h>
 /*
@@ -239,21 +238,6 @@ static inline int dentry_string_cmp(const unsigned char *cs, const unsigned char
 	return unlikely(!!((a ^ b) & mask));
 }
 
-#else
-
-static inline int dentry_string_cmp(const unsigned char *cs, const unsigned char *ct, unsigned tcount)
-{
-	do {
-		if (*cs != *ct)
-			return 1;
-		cs++;
-		ct++;
-		tcount--;
-	} while (tcount);
-	return 0;
-}
-
-#endif
 
 static inline int dentry_cmp(const struct dentry *dentry, const unsigned char *ct, unsigned tcount)
 {

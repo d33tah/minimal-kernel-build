@@ -171,22 +171,6 @@ module_param(rcu_task_collapse_lim, int, 0444);
 #define RTGS_WAIT_READERS	 9
 #define RTGS_INVOKE_CBS		10
 #define RTGS_WAIT_CBS		11
-#ifndef CONFIG_TINY_RCU
-static const char * const rcu_tasks_gp_state_names[] = {
-	"RTGS_INIT",
-	"RTGS_WAIT_WAIT_CBS",
-	"RTGS_WAIT_GP",
-	"RTGS_PRE_WAIT_GP",
-	"RTGS_SCAN_TASKLIST",
-	"RTGS_POST_SCAN_TASKLIST",
-	"RTGS_WAIT_SCAN_HOLDOUTS",
-	"RTGS_SCAN_HOLDOUTS",
-	"RTGS_POST_GP",
-	"RTGS_WAIT_READERS",
-	"RTGS_INVOKE_CBS",
-	"RTGS_WAIT_CBS",
-};
-#endif /* #ifndef CONFIG_TINY_RCU */
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -201,18 +185,6 @@ static void set_tasks_gp_state(struct rcu_tasks *rtp, int newstate)
 	rtp->gp_jiffies = jiffies;
 }
 
-#ifndef CONFIG_TINY_RCU
-/* Return state name. */
-static const char *tasks_gp_state_getname(struct rcu_tasks *rtp)
-{
-	int i = data_race(rtp->gp_state); // Let KCSAN detect update races
-	int j = READ_ONCE(i); // Prevent the compiler from reading twice
-
-	if (j >= ARRAY_SIZE(rcu_tasks_gp_state_names))
-		return "???";
-	return rcu_tasks_gp_state_names[j];
-}
-#endif /* #ifndef CONFIG_TINY_RCU */
 
 // Initialize per-CPU callback lists for the specified flavor of
 // Tasks RCU.
@@ -550,63 +522,7 @@ static void __init rcu_spawn_tasks_kthread_generic(struct rcu_tasks *rtp)
 	smp_mb(); /* Ensure others see full kthread. */
 }
 
-#ifndef CONFIG_TINY_RCU
 
-/*
- * Print any non-default Tasks RCU settings.
- */
-static void __init rcu_tasks_bootup_oddness(void)
-{
-#if defined(CONFIG_TASKS_RCU) || defined(CONFIG_TASKS_TRACE_RCU)
-	int rtsimc;
-
-	if (rcu_task_stall_timeout != RCU_TASK_STALL_TIMEOUT)
-		pr_info("\tTasks-RCU CPU stall warnings timeout set to %d (rcu_task_stall_timeout).\n", rcu_task_stall_timeout);
-	rtsimc = clamp(rcu_task_stall_info_mult, 1, 10);
-	if (rtsimc != rcu_task_stall_info_mult) {
-		pr_info("\tTasks-RCU CPU stall info multiplier clamped to %d (rcu_task_stall_info_mult).\n", rtsimc);
-		rcu_task_stall_info_mult = rtsimc;
-	}
-#endif /* #ifdef CONFIG_TASKS_RCU */
-#ifdef CONFIG_TASKS_RCU
-	pr_info("\tTrampoline variant of Tasks RCU enabled.\n");
-#endif /* #ifdef CONFIG_TASKS_RCU */
-#ifdef CONFIG_TASKS_RUDE_RCU
-	pr_info("\tRude variant of Tasks RCU enabled.\n");
-#endif /* #ifdef CONFIG_TASKS_RUDE_RCU */
-#ifdef CONFIG_TASKS_TRACE_RCU
-	pr_info("\tTracing variant of Tasks RCU enabled.\n");
-#endif /* #ifdef CONFIG_TASKS_TRACE_RCU */
-}
-
-#endif /* #ifndef CONFIG_TINY_RCU */
-
-#ifndef CONFIG_TINY_RCU
-/* Dump out rcutorture-relevant state common to all RCU-tasks flavors. */
-static void show_rcu_tasks_generic_gp_kthread(struct rcu_tasks *rtp, char *s)
-{
-	int cpu;
-	bool havecbs = false;
-
-	for_each_possible_cpu(cpu) {
-		struct rcu_tasks_percpu *rtpcp = per_cpu_ptr(rtp->rtpcpu, cpu);
-
-		if (!data_race(rcu_segcblist_empty(&rtpcp->cblist))) {
-			havecbs = true;
-			break;
-		}
-	}
-	pr_info("%s: %s(%d) since %lu g:%lu i:%lu/%lu %c%c %s\n",
-		rtp->kname,
-		tasks_gp_state_getname(rtp), data_race(rtp->gp_state),
-		jiffies - data_race(rtp->gp_jiffies),
-		data_race(rcu_seq_current(&rtp->tasks_gp_seq)),
-		data_race(rtp->n_ipis_fails), data_race(rtp->n_ipis),
-		".k"[!!data_race(rtp->kthread_ptr)],
-		".C"[havecbs],
-		s);
-}
-#endif // #ifndef CONFIG_TINY_RCU
 
 static void exit_tasks_rcu_finish_trace(struct task_struct *t);
 
@@ -946,13 +862,6 @@ static int __init rcu_spawn_tasks_kthread(void)
 	return 0;
 }
 
-#if !defined(CONFIG_TINY_RCU)
-void show_rcu_tasks_classic_gp_kthread(void)
-{
-	show_rcu_tasks_generic_gp_kthread(&rcu_tasks, "");
-}
-EXPORT_SYMBOL_GPL(show_rcu_tasks_classic_gp_kthread);
-#endif // !defined(CONFIG_TINY_RCU)
 
 /* Do the srcu_read_lock() for the above synchronize_srcu().  */
 void exit_tasks_rcu_start(void) __acquires(&tasks_rcu_exit_srcu)
@@ -1081,13 +990,6 @@ static int __init rcu_spawn_tasks_rude_kthread(void)
 	return 0;
 }
 
-#if !defined(CONFIG_TINY_RCU)
-void show_rcu_tasks_rude_gp_kthread(void)
-{
-	show_rcu_tasks_generic_gp_kthread(&rcu_tasks_rude, "");
-}
-EXPORT_SYMBOL_GPL(show_rcu_tasks_rude_gp_kthread);
-#endif // !defined(CONFIG_TINY_RCU)
 #endif /* #ifdef CONFIG_TASKS_RUDE_RCU */
 
 ////////////////////////////////////////////////////////////////////////
@@ -1654,32 +1556,11 @@ static int __init rcu_spawn_tasks_trace_kthread(void)
 	return 0;
 }
 
-#if !defined(CONFIG_TINY_RCU)
-void show_rcu_tasks_trace_gp_kthread(void)
-{
-	char buf[64];
-
-	sprintf(buf, "N%d h:%lu/%lu/%lu", atomic_read(&trc_n_readers_need_end),
-		data_race(n_heavy_reader_ofl_updates),
-		data_race(n_heavy_reader_updates),
-		data_race(n_heavy_reader_attempts));
-	show_rcu_tasks_generic_gp_kthread(&rcu_tasks_trace, buf);
-}
-EXPORT_SYMBOL_GPL(show_rcu_tasks_trace_gp_kthread);
-#endif // !defined(CONFIG_TINY_RCU)
 
 #else /* #ifdef CONFIG_TASKS_TRACE_RCU */
 static void exit_tasks_rcu_finish_trace(struct task_struct *t) { }
 #endif /* #else #ifdef CONFIG_TASKS_TRACE_RCU */
 
-#ifndef CONFIG_TINY_RCU
-void show_rcu_tasks_gp_kthreads(void)
-{
-	show_rcu_tasks_classic_gp_kthread();
-	show_rcu_tasks_rude_gp_kthread();
-	show_rcu_tasks_trace_gp_kthread();
-}
-#endif /* #ifndef CONFIG_TINY_RCU */
 
 #ifdef CONFIG_PROVE_RCU
 struct rcu_tasks_test_desc {

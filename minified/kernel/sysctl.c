@@ -70,11 +70,9 @@
 #include <linux/uaccess.h>
 #include <asm/processor.h>
 
-#ifdef CONFIG_X86
 #include <asm/nmi.h>
 #include <asm/stacktrace.h>
 #include <asm/io.h>
-#endif
 #ifdef CONFIG_SPARC
 #include <asm/setup.h>
 #endif
@@ -86,9 +84,7 @@
 
 /* Constants used for minimum and  maximum */
 
-#ifdef CONFIG_PERF_EVENTS
 static const int six_hundred_forty_kb = 640 * 1024;
-#endif
 
 
 static const int ngroups_max = NGROUPS_MAX;
@@ -1856,7 +1852,6 @@ static struct ctl_table kern_table[] = {
 		.proc_handler	= proc_dointvec,
 	},
 #endif
-#if defined(CONFIG_X86)
 	{
 		.procname	= "panic_on_unrecovered_nmi",
 		.data		= &panic_on_unrecovered_nmi,
@@ -1892,8 +1887,6 @@ static struct ctl_table kern_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
-#endif
-#if defined(CONFIG_MMU)
 	{
 		.procname	= "randomize_va_space",
 		.data		= &randomize_va_space,
@@ -1901,7 +1894,6 @@ static struct ctl_table kern_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
-#endif
 #if defined(CONFIG_S390) && defined(CONFIG_SMP)
 	{
 		.procname	= "spin_retry",
@@ -1954,7 +1946,6 @@ static struct ctl_table kern_table[] = {
 		.child		= key_sysctls,
 	},
 #endif
-#ifdef CONFIG_PERF_EVENTS
 	/*
 	 * User-space scripts rely on the existence of this file
 	 * as a feature check for perf_events being enabled.
@@ -2010,7 +2001,6 @@ static struct ctl_table kern_table[] = {
 		.extra1		= SYSCTL_ZERO,
 		.extra2		= SYSCTL_ONE_THOUSAND,
 	},
-#endif
 	{
 		.procname	= "panic_on_warn",
 		.data		= &panic_on_warn,
@@ -2231,7 +2221,6 @@ static struct ctl_table vm_table[] = {
 		.proc_handler	= proc_dointvec_minmax,
 		.extra1		= SYSCTL_ZERO,
 	},
-#ifdef CONFIG_MMU
 	{
 		.procname	= "max_map_count",
 		.data		= &sysctl_max_map_count,
@@ -2240,16 +2229,6 @@ static struct ctl_table vm_table[] = {
 		.proc_handler	= proc_dointvec_minmax,
 		.extra1		= SYSCTL_ZERO,
 	},
-#else
-	{
-		.procname	= "nr_trim_pages",
-		.data		= &sysctl_nr_trim_pages,
-		.maxlen		= sizeof(sysctl_nr_trim_pages),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec_minmax,
-		.extra1		= SYSCTL_ZERO,
-	},
-#endif
 	{
 		.procname	= "vfs_cache_pressure",
 		.data		= &sysctl_vfs_cache_pressure,
@@ -2313,7 +2292,6 @@ static struct ctl_table vm_table[] = {
 		.proc_handler	= vmstat_refresh,
 	},
 #endif
-#ifdef CONFIG_MMU
 	{
 		.procname	= "mmap_min_addr",
 		.data		= &dac_mmap_min_addr,
@@ -2321,7 +2299,6 @@ static struct ctl_table vm_table[] = {
 		.mode		= 0644,
 		.proc_handler	= mmap_min_addr_handler,
 	},
-#endif
 #ifdef CONFIG_NUMA
 	{
 		.procname	= "numa_zonelist_order",
@@ -2335,13 +2312,8 @@ static struct ctl_table vm_table[] = {
    (defined(CONFIG_SUPERH) && defined(CONFIG_VSYSCALL))
 	{
 		.procname	= "vdso_enabled",
-#ifdef CONFIG_X86_32
 		.data		= &vdso32_enabled,
 		.maxlen		= sizeof(vdso32_enabled),
-#else
-		.data		= &vdso_enabled,
-		.maxlen		= sizeof(vdso_enabled),
-#endif
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 		.extra1		= SYSCTL_ZERO,
@@ -2381,7 +2353,6 @@ static struct ctl_table vm_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_doulongvec_minmax,
 	},
-#ifdef CONFIG_HAVE_ARCH_MMAP_RND_BITS
 	{
 		.procname	= "mmap_rnd_bits",
 		.data		= &mmap_rnd_bits,
@@ -2391,7 +2362,6 @@ static struct ctl_table vm_table[] = {
 		.extra1		= (void *)&mmap_rnd_bits_min,
 		.extra2		= (void *)&mmap_rnd_bits_max,
 	},
-#endif
 #ifdef CONFIG_HAVE_ARCH_MMAP_RND_COMPAT_BITS
 	{
 		.procname	= "mmap_rnd_compat_bits",
@@ -2418,7 +2388,6 @@ static struct ctl_table vm_table[] = {
 };
 
 static struct ctl_table debug_table[] = {
-#ifdef CONFIG_SYSCTL_EXCEPTION_TRACE
 	{
 		.procname	= "exception-trace",
 		.data		= &show_unhandled_signals,
@@ -2426,7 +2395,6 @@ static struct ctl_table debug_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec
 	},
-#endif
 	{ }
 };
 

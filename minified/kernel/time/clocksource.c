@@ -115,7 +115,6 @@ static u64 suspend_start;
 
 #define WATCHDOG_MAX_SKEW (MAX_SKEW_USEC * NSEC_PER_USEC)
 
-#ifdef CONFIG_CLOCKSOURCE_WATCHDOG
 static void clocksource_watchdog_work(struct work_struct *work);
 static void clocksource_select(void);
 
@@ -659,25 +658,6 @@ static bool clocksource_is_watchdog(struct clocksource *cs)
 	return cs == watchdog;
 }
 
-#else /* CONFIG_CLOCKSOURCE_WATCHDOG */
-
-static void clocksource_enqueue_watchdog(struct clocksource *cs)
-{
-	if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)
-		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
-}
-
-static void clocksource_select_watchdog(bool fallback) { }
-static inline void clocksource_dequeue_watchdog(struct clocksource *cs) { }
-static inline void clocksource_resume_watchdog(void) { }
-static inline int __clocksource_watchdog_kthread(void) { return 0; }
-static bool clocksource_is_watchdog(struct clocksource *cs) { return false; }
-void clocksource_mark_unstable(struct clocksource *cs) { }
-
-static inline void clocksource_watchdog_lock(unsigned long *flags) { }
-static inline void clocksource_watchdog_unlock(unsigned long *flags) { }
-
-#endif /* CONFIG_CLOCKSOURCE_WATCHDOG */
 
 static bool clocksource_is_suspend(struct clocksource *cs)
 {

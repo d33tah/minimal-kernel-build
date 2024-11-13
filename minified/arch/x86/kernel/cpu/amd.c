@@ -86,18 +86,15 @@ static inline int wrmsrl_amd_safe(unsigned msr, unsigned long long val)
  *	performance at the same time..
  */
 
-#ifdef CONFIG_X86_32
 extern __visible void vide(void);
 __asm__(".text\n"
 	".globl vide\n"
 	".type vide, @function\n"
 	".align 4\n"
 	"vide: ret\n");
-#endif
 
 static void init_amd_k5(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_X86_32
 /*
  * General Systems BIOSen alias the cpu frequency registers
  * of the Elan at 0x000df000. Unfortunately, one of the Linux
@@ -111,12 +108,10 @@ static void init_amd_k5(struct cpuinfo_x86 *c)
 		if (inl(CBAR) & CBAR_ENB)
 			outl(0 | CBAR_KEY, CBAR);
 	}
-#endif
 }
 
 static void init_amd_k6(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_X86_32
 	u32 l, h;
 	int mbytes = get_num_physpages() >> (20-PAGE_SHIFT);
 
@@ -205,12 +200,10 @@ static void init_amd_k6(struct cpuinfo_x86 *c)
 		/* placeholder for any needed mods */
 		return;
 	}
-#endif
 }
 
 static void init_amd_k7(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_X86_32
 	u32 l, h;
 
 	/*
@@ -279,7 +272,6 @@ static void init_amd_k7(struct cpuinfo_x86 *c)
 	WARN_ONCE(1, "WARNING: This combination of AMD"
 		" processors is not suitable for SMP.\n");
 	add_taint(TAINT_CPU_OUT_OF_SPEC, LOCKDEP_NOW_UNRELIABLE);
-#endif
 }
 
 #ifdef CONFIG_NUMA
@@ -1000,7 +992,6 @@ static void init_amd(struct cpuinfo_x86 *c)
 	check_null_seg_clears_base(c);
 }
 
-#ifdef CONFIG_X86_32
 static unsigned int amd_size_cache(struct cpuinfo_x86 *c, unsigned int size)
 {
 	/* AMD errata T13 (order #21922) */
@@ -1015,7 +1006,6 @@ static unsigned int amd_size_cache(struct cpuinfo_x86 *c, unsigned int size)
 	}
 	return size;
 }
-#endif
 
 static void cpu_detect_tlb_amd(struct cpuinfo_x86 *c)
 {
@@ -1069,7 +1059,6 @@ static void cpu_detect_tlb_amd(struct cpuinfo_x86 *c)
 static const struct cpu_dev amd_cpu_dev = {
 	.c_vendor	= "AMD",
 	.c_ident	= { "AuthenticAMD" },
-#ifdef CONFIG_X86_32
 	.legacy_models = {
 		{ .family = 4, .model_names =
 		  {
@@ -1083,7 +1072,6 @@ static const struct cpu_dev amd_cpu_dev = {
 		},
 	},
 	.legacy_cache_size = amd_size_cache,
-#endif
 	.c_early_init   = early_init_amd,
 	.c_detect_tlb	= cpu_detect_tlb_amd,
 	.c_bsp_init	= bsp_init_amd,

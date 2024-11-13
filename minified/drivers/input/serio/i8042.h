@@ -19,10 +19,8 @@
 #include "i8042-snirm.h"
 #elif defined(CONFIG_SPARC)
 #include "i8042-sparcio.h"
-#elif defined(CONFIG_X86) || defined(CONFIG_IA64)
-#include "i8042-x86ia64io.h"
 #else
-#include "i8042-io.h"
+#include "i8042-x86ia64io.h"
 #endif
 
 /*

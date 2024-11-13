@@ -7182,7 +7182,6 @@ static u64 perf_get_pgtable_size(struct mm_struct *mm, unsigned long addr)
 {
 	u64 size = 0;
 
-#ifdef CONFIG_HAVE_FAST_GUP
 	pgd_t *pgdp, pgd;
 	p4d_t *p4dp, p4d;
 	pud_t *pudp, pud;
@@ -7226,7 +7225,6 @@ static u64 perf_get_pgtable_size(struct mm_struct *mm, unsigned long addr)
 	if (pte_present(pte))
 		size = pte_leaf_size(pte);
 	pte_unmap(ptep);
-#endif /* CONFIG_HAVE_FAST_GUP */
 
 	return size;
 }
@@ -10130,7 +10128,6 @@ void perf_event_free_bpf_prog(struct perf_event *event)
 }
 #endif /* CONFIG_EVENT_TRACING */
 
-#ifdef CONFIG_HAVE_HW_BREAKPOINT
 void perf_bp_event(struct perf_event *bp, void *data)
 {
 	struct perf_sample_data sample;
@@ -10141,7 +10138,6 @@ void perf_bp_event(struct perf_event *bp, void *data)
 	if (!bp->hw.state && !perf_exclude_event(bp, regs))
 		perf_swevent_event(bp, 1, &sample, regs);
 }
-#endif
 
 /*
  * Allocate a new address filter

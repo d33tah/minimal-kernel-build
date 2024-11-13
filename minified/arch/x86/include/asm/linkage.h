@@ -8,9 +8,7 @@
 #undef notrace
 #define notrace __attribute__((no_instrument_function))
 
-#ifdef CONFIG_X86_32
 #define asmlinkage CPP_ASMLINKAGE __attribute__((regparm(0)))
-#endif /* CONFIG_X86_32 */
 
 #ifdef __ASSEMBLY__
 

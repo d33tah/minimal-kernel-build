@@ -1006,7 +1006,6 @@ int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 	return ret;
 }
 
-#ifdef CONFIG_HARDIRQS_SW_RESEND
 int irq_set_parent(int irq, int parent_irq)
 {
 	unsigned long flags;
@@ -1021,7 +1020,6 @@ int irq_set_parent(int irq, int parent_irq)
 	return 0;
 }
 EXPORT_SYMBOL_GPL(irq_set_parent);
-#endif
 
 /*
  * Default primary interrupt handler for threaded interrupts. Is

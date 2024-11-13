@@ -312,7 +312,6 @@ static void cpu_device_release(struct device *dev)
 	 */
 }
 
-#ifdef CONFIG_GENERIC_CPU_AUTOPROBE
 static ssize_t print_cpu_modalias(struct device *dev,
 				  struct device_attribute *attr,
 				  char *buf)
@@ -346,7 +345,6 @@ static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
 	}
 	return 0;
 }
-#endif
 
 /*
  * register_cpu - Setup a sysfs device for a CPU.
@@ -368,9 +366,7 @@ int register_cpu(struct cpu *cpu, int num)
 	cpu->dev.offline_disabled = !cpu->hotpluggable;
 	cpu->dev.offline = !cpu_online(num);
 	cpu->dev.of_node = of_get_cpu_node(num, NULL);
-#ifdef CONFIG_GENERIC_CPU_AUTOPROBE
 	cpu->dev.bus->uevent = cpu_uevent;
-#endif
 	cpu->dev.groups = common_cpu_attr_groups;
 	if (cpu->hotpluggable)
 		cpu->dev.groups = hotplugable_cpu_attr_groups;
@@ -451,9 +447,7 @@ struct device *cpu_device_create(struct device *parent, void *drvdata,
 }
 EXPORT_SYMBOL_GPL(cpu_device_create);
 
-#ifdef CONFIG_GENERIC_CPU_AUTOPROBE
 static DEVICE_ATTR(modalias, 0444, print_cpu_modalias, NULL);
-#endif
 
 static struct attribute *cpu_root_attrs[] = {
 #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
@@ -469,9 +463,7 @@ static struct attribute *cpu_root_attrs[] = {
 #ifdef CONFIG_NO_HZ_FULL
 	&dev_attr_nohz_full.attr,
 #endif
-#ifdef CONFIG_GENERIC_CPU_AUTOPROBE
 	&dev_attr_modalias.attr,
-#endif
 	NULL
 };
 
@@ -507,7 +499,6 @@ static void __init cpu_dev_register_generic(void)
 #endif
 }
 
-#ifdef CONFIG_GENERIC_CPU_VULNERABILITIES
 
 ssize_t __weak cpu_show_meltdown(struct device *dev,
 				 struct device_attribute *attr, char *buf)
@@ -615,9 +606,6 @@ static void __init cpu_register_vulnerabilities(void)
 		pr_err("Unable to register CPU vulnerabilities\n");
 }
 
-#else
-static inline void cpu_register_vulnerabilities(void) { }
-#endif
 
 void __init cpu_dev_init(void)
 {

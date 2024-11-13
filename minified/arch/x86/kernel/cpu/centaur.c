@@ -48,7 +48,6 @@ static void init_c3(struct cpuinfo_x86 *c)
 		 */
 		c->x86_capability[CPUID_C000_0001_EDX] = cpuid_edx(0xC0000001);
 	}
-#ifdef CONFIG_X86_32
 	/* Cyrix III family needs CX8 & PGE explicitly enabled. */
 	if (c->x86_model >= 6 && c->x86_model <= 13) {
 		rdmsr(MSR_VIA_FCR, lo, hi);
@@ -60,7 +59,6 @@ static void init_c3(struct cpuinfo_x86 *c)
 	/* Before Nehemiah, the C3's had 3dNOW! */
 	if (c->x86_model >= 6 && c->x86_model < 9)
 		set_cpu_cap(c, X86_FEATURE_3DNOW);
-#endif
 	if (c->x86 == 0x6 && c->x86_model >= 0xf) {
 		c->x86_cache_alignment = c->x86_clflush_size * 2;
 		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
@@ -93,11 +91,9 @@ enum {
 
 static void early_init_centaur(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_X86_32
 	/* Emulate MTRRs using Centaur's MCR. */
 	if (c->x86 == 5)
 		set_cpu_cap(c, X86_FEATURE_CENTAUR_MCR);
-#endif
 	if ((c->x86 == 6 && c->x86_model >= 0xf) ||
 	    (c->x86 >= 7))
 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
@@ -113,7 +109,6 @@ static void early_init_centaur(struct cpuinfo_x86 *c)
 
 static void init_centaur(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_X86_32
 	char *name;
 	u32  fcr_set = 0;
 	u32  fcr_clr = 0;
@@ -125,13 +120,10 @@ static void init_centaur(struct cpuinfo_x86 *c)
 	 * 3DNow is IDd by bit 31 in extended CPUID (1*32+31) anyway
 	 */
 	clear_cpu_cap(c, 0*32+31);
-#endif
 	early_init_centaur(c);
 	init_intel_cacheinfo(c);
 	detect_num_cpu_cores(c);
-#ifdef CONFIG_X86_32
 	detect_ht(c);
-#endif
 
 	if (c->cpuid_level > 9) {
 		unsigned int eax = cpuid_eax(10);
@@ -145,7 +137,6 @@ static void init_centaur(struct cpuinfo_x86 *c)
 			set_cpu_cap(c, X86_FEATURE_ARCH_PERFMON);
 	}
 
-#ifdef CONFIG_X86_32
 	if (c->x86 == 5) {
 		switch (c->x86_model) {
 		case 4:
@@ -207,7 +198,6 @@ static void init_centaur(struct cpuinfo_x86 *c)
 		}
 		sprintf(c->x86_model_id, "WinChip %s", name);
 	}
-#endif
 	if (c->x86 == 6 || c->x86 >= 7)
 		init_c3(c);
 #ifdef CONFIG_X86_64
@@ -217,7 +207,6 @@ static void init_centaur(struct cpuinfo_x86 *c)
 	init_ia32_feat_ctl(c);
 }
 
-#ifdef CONFIG_X86_32
 static unsigned int
 centaur_size_cache(struct cpuinfo_x86 *c, unsigned int size)
 {
@@ -235,16 +224,13 @@ centaur_size_cache(struct cpuinfo_x86 *c, unsigned int size)
 		size -= 1;
 	return size;
 }
-#endif
 
 static const struct cpu_dev centaur_cpu_dev = {
 	.c_vendor	= "Centaur",
 	.c_ident	= { "CentaurHauls" },
 	.c_early_init	= early_init_centaur,
 	.c_init		= init_centaur,
-#ifdef CONFIG_X86_32
 	.legacy_cache_size = centaur_size_cache,
-#endif
 	.c_x86_vendor	= X86_VENDOR_CENTAUR,
 };
 

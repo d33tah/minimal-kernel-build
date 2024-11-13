@@ -297,15 +297,10 @@ static __always_inline int ffs(int x)
 	asm("bsfl %1,%0"
 	    : "=r" (r)
 	    : "rm" (x), "0" (-1));
-#elif defined(CONFIG_X86_CMOV)
+#else
 	asm("bsfl %1,%0\n\t"
 	    "cmovzl %2,%0"
 	    : "=&r" (r) : "rm" (x), "r" (-1));
-#else
-	asm("bsfl %1,%0\n\t"
-	    "jnz 1f\n\t"
-	    "movl $-1,%0\n"
-	    "1:" : "=r" (r) : "rm" (x));
 #endif
 	return r + 1;
 }
@@ -338,15 +333,10 @@ static __always_inline int fls(unsigned int x)
 	asm("bsrl %1,%0"
 	    : "=r" (r)
 	    : "rm" (x), "0" (-1));
-#elif defined(CONFIG_X86_CMOV)
+#else
 	asm("bsrl %1,%0\n\t"
 	    "cmovzl %2,%0"
 	    : "=&r" (r) : "rm" (x), "rm" (-1));
-#else
-	asm("bsrl %1,%0\n\t"
-	    "jnz 1f\n\t"
-	    "movl $-1,%0\n"
-	    "1:" : "=r" (r) : "rm" (x));
 #endif
 	return r + 1;
 }

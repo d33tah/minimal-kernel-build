@@ -107,12 +107,10 @@ static inline bool mmget_not_zero(struct mm_struct *mm)
 
 /* mmput gets rid of the mappings and all user-space */
 extern void mmput(struct mm_struct *);
-#ifdef CONFIG_MMU
 /* same as above but performs the slow path from the async context. Can
  * be called from the atomic context as well
  */
 void mmput_async(struct mm_struct *);
-#endif
 
 /* Grab a reference to a task's mm, if it is not already going away */
 extern struct mm_struct *get_task_mm(struct task_struct *task);
@@ -135,7 +133,6 @@ static inline void mm_update_next_owner(struct mm_struct *mm)
 }
 #endif /* CONFIG_MEMCG */
 
-#ifdef CONFIG_MMU
 #ifndef arch_get_mmap_end
 #define arch_get_mmap_end(addr, len, flags)	(TASK_SIZE)
 #endif
@@ -162,10 +159,6 @@ unsigned long
 generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
 				  unsigned long len, unsigned long pgoff,
 				  unsigned long flags);
-#else
-static inline void arch_pick_mmap_layout(struct mm_struct *mm,
-					 struct rlimit *rlim_stack) {}
-#endif
 
 static inline bool in_vfork(struct task_struct *tsk)
 {

@@ -116,21 +116,12 @@
 typedef int (*initcall_t)(void);
 typedef void (*exitcall_t)(void);
 
-#ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
 typedef int initcall_entry_t;
 
 static inline initcall_t initcall_from_entry(initcall_entry_t *entry)
 {
 	return offset_to_ptr(entry);
 }
-#else
-typedef initcall_t initcall_entry_t;
-
-static inline initcall_t initcall_from_entry(initcall_entry_t *entry)
-{
-	return *entry;
-}
-#endif
 
 extern initcall_entry_t __con_initcall_start[], __con_initcall_end[];
 
@@ -151,12 +142,8 @@ void prepare_namespace(void);
 void __init init_rootfs(void);
 extern struct file_system_type rootfs_fs_type;
 
-#if defined(CONFIG_STRICT_KERNEL_RWX) || defined(CONFIG_STRICT_MODULE_RWX)
 extern bool rodata_enabled;
-#endif
-#ifdef CONFIG_STRICT_KERNEL_RWX
 void mark_rodata_ro(void);
-#endif
 
 extern void (*late_time_init)(void);
 
@@ -236,7 +223,6 @@ extern bool initcall_debug;
 	__ADDRESSABLE(fn)
 #endif
 
-#ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
 #define ____define_initcall(fn, __stub, __name, __sec)		\
 	__define_initcall_stub(__stub, fn)			\
 	asm(".section	\"" __sec "\", \"a\"		\n"	\
@@ -244,11 +230,6 @@ extern bool initcall_debug;
 	    ".long	" __stringify(__stub) " - .	\n"	\
 	    ".previous					\n");	\
 	static_assert(__same_type(initcall_t, &fn));
-#else
-#define ____define_initcall(fn, __unused, __name, __sec)	\
-	static initcall_t __name __used 			\
-		__attribute__((__section__(__sec))) = fn;
-#endif
 
 #define __unique_initcall(fn, id, __sec, __iid)			\
 	____define_initcall(fn,					\

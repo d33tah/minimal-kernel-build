@@ -288,7 +288,6 @@ static int __init x86_noinvpcid_setup(char *s)
 }
 early_param("noinvpcid", x86_noinvpcid_setup);
 
-#ifdef CONFIG_X86_32
 static int cachesize_override = -1;
 static int disable_x86_serial_nr = 1;
 
@@ -360,15 +359,6 @@ static int __init x86_serial_nr_setup(char *s)
 	return 1;
 }
 __setup("serialnumber", x86_serial_nr_setup);
-#else
-static inline int flag_is_changeable_p(u32 flag)
-{
-	return 1;
-}
-static inline void squash_the_stupid_serial_number(struct cpuinfo_x86 *c)
-{
-}
-#endif
 
 static __always_inline void setup_smep(struct cpuinfo_x86 *c)
 {
@@ -677,7 +667,6 @@ static void filter_cpuid_features(struct cpuinfo_x86 *c, bool warn)
 /* Look up CPU names by table lookup. */
 static const char *table_lookup_model(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_X86_32
 	const struct legacy_cpu_model_info *info;
 
 	if (c->x86_model >= 16)
@@ -693,7 +682,6 @@ static const char *table_lookup_model(struct cpuinfo_x86 *c)
 			return info->model_names[c->x86_model];
 		info++;
 	}
-#endif
 	return NULL;		/* Not found */
 }
 
@@ -703,18 +691,11 @@ __u32 cpu_caps_set[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 
 void load_percpu_segment(int cpu)
 {
-#ifdef CONFIG_X86_32
 	loadsegment(fs, __KERNEL_PERCPU);
-#else
-	__loadsegment_simple(gs, 0);
-	wrmsrl(MSR_GS_BASE, cpu_kernelmode_gs_base(cpu));
-#endif
 }
 
-#ifdef CONFIG_X86_32
 /* The 32-bit entry code needs to find cpu_entry_area. */
 DEFINE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
-#endif
 
 /* Load the original GDT from the per-cpu structure */
 void load_direct_gdt(int cpu)
@@ -1093,16 +1074,13 @@ void get_cpu_address_sizes(struct cpuinfo_x86 *c)
 		c->x86_virt_bits = (eax >> 8) & 0xff;
 		c->x86_phys_bits = eax & 0xff;
 	}
-#ifdef CONFIG_X86_32
 	else if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
 		c->x86_phys_bits = 36;
-#endif
 	c->x86_cache_bits = c->x86_phys_bits;
 }
 
 static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_X86_32
 	int i;
 
 	/*
@@ -1123,7 +1101,6 @@ static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
 				break;
 			}
 		}
-#endif
 }
 
 #define NO_SPECULATION		BIT(0)
@@ -1391,11 +1368,7 @@ static void __init cpu_set_bug_bits(struct cpuinfo_x86 *c)
  */
 static void detect_nopl(void)
 {
-#ifdef CONFIG_X86_32
 	setup_clear_cpu_cap(X86_FEATURE_NOPL);
-#else
-	setup_force_cpu_cap(X86_FEATURE_NOPL);
-#endif
 }
 
 /*
@@ -1408,7 +1381,6 @@ static void __init cpu_parse_early_param(void)
 	char *argptr = arg, *opt;
 	int arglen, taint = 0;
 
-#ifdef CONFIG_X86_32
 	if (cmdline_find_option_bool(boot_command_line, "no387"))
 #ifdef CONFIG_MATH_EMULATION
 		setup_clear_cpu_cap(X86_FEATURE_FPU);
@@ -1418,7 +1390,6 @@ static void __init cpu_parse_early_param(void)
 
 	if (cmdline_find_option_bool(boot_command_line, "nofxsr"))
 		setup_clear_cpu_cap(X86_FEATURE_FXSR);
-#endif
 
 	if (cmdline_find_option_bool(boot_command_line, "noxsave"))
 		setup_clear_cpu_cap(X86_FEATURE_XSAVE);
@@ -1550,13 +1521,11 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 
 	init_sigframe_size();
 
-#ifdef CONFIG_X86_32
 	/*
 	 * Regardless of whether PCID is enumerated, the SDM says
 	 * that it can't be enabled in 32-bit mode.
 	 */
 	setup_clear_cpu_cap(X86_FEATURE_PCID);
-#endif
 
 	/*
 	 * Later in the boot process pgtable_l5_enabled() relies on
@@ -1691,13 +1660,11 @@ static void generic_identify(struct cpuinfo_x86 *c)
 
 	if (c->cpuid_level >= 0x00000001) {
 		c->initial_apicid = (cpuid_ebx(1) >> 24) & 0xFF;
-#ifdef CONFIG_X86_32
 # ifdef CONFIG_SMP
 		c->apicid = apic->phys_pkg_id(c->initial_apicid, 0);
 # else
 		c->apicid = c->initial_apicid;
 # endif
-#endif
 		c->phys_proc_id = c->initial_apicid;
 	}
 
@@ -1716,9 +1683,7 @@ static void generic_identify(struct cpuinfo_x86 *c)
 	 * non-paravirt system ever shows up that does *not* have the
 	 * ESPFIX issue, we can change this.
 	 */
-#ifdef CONFIG_X86_32
 	set_cpu_bug(c, X86_BUG_ESPFIX);
-#endif
 }
 
 /*
@@ -1880,7 +1845,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
  * Set up the CPU state needed to execute SYSENTER/SYSEXIT instructions
  * on 32-bit kernels:
  */
-#ifdef CONFIG_X86_32
 void enable_sep_cpu(void)
 {
 	struct tss_struct *tss;
@@ -1904,17 +1868,14 @@ void enable_sep_cpu(void)
 
 	put_cpu();
 }
-#endif
 
 void __init identify_boot_cpu(void)
 {
 	identify_cpu(&boot_cpu_data);
 	if (HAS_KERNEL_IBT && cpu_feature_enabled(X86_FEATURE_IBT))
 		pr_info("CET detected: Indirect Branch Tracking enabled\n");
-#ifdef CONFIG_X86_32
 	sysenter_setup();
 	enable_sep_cpu();
-#endif
 	cpu_detect_tlb(&boot_cpu_data);
 	setup_cr_pinning();
 
@@ -1925,9 +1886,7 @@ void identify_secondary_cpu(struct cpuinfo_x86 *c)
 {
 	BUG_ON(c == &boot_cpu_data);
 	identify_cpu(c);
-#ifdef CONFIG_X86_32
 	enable_sep_cpu();
-#endif
 	mtrr_ap_init();
 	validate_apic_and_package_id(c);
 	x86_spec_ctrl_setup_ap();

@@ -1,9 +1,7 @@
 #ifndef _ASM_X86_PGTABLE_AREAS_H
 #define _ASM_X86_PGTABLE_AREAS_H
 
-#ifdef CONFIG_X86_32
 # include <asm/pgtable_32_areas.h>
-#endif
 
 /* Single page reserved for the readonly IDT mapping: */
 #define CPU_ENTRY_AREA_RO_IDT		CPU_ENTRY_AREA_BASE

@@ -10,13 +10,7 @@
 #include <linux/freezer.h>
 #include <asm/errno.h>
 
-#ifdef CONFIG_VT
 extern void pm_set_vt_switch(int);
-#else
-static inline void pm_set_vt_switch(int do_switch)
-{
-}
-#endif
 
 #ifdef CONFIG_VT_CONSOLE_SLEEP
 extern void pm_prepare_console(void);

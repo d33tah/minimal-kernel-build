@@ -6884,7 +6884,6 @@ void __init *memmap_alloc(phys_addr_t size, phys_addr_t align,
 
 static int zone_batchsize(struct zone *zone)
 {
-#ifdef CONFIG_MMU
 	int batch;
 
 	/*
@@ -6912,27 +6911,10 @@ static int zone_batchsize(struct zone *zone)
 
 	return batch;
 
-#else
-	/* The deferral and batching of frees should be suppressed under NOMMU
-	 * conditions.
-	 *
-	 * The problem is that NOMMU needs to be able to allocate large chunks
-	 * of contiguous memory as there's no hardware page translation to
-	 * assemble apparent contiguous memory from discontiguous pages.
-	 *
-	 * Queueing large contiguous runs of pages for batching, however,
-	 * causes the pages to actually be freed in smaller chunks.  As there
-	 * can be a significant delay between the individual batches being
-	 * recycled, this leads to the once large chunks of space being
-	 * fragmented and becoming unavailable for high-order allocations.
-	 */
-	return 0;
-#endif
 }
 
 static int zone_highsize(struct zone *zone, int batch, int cpu_online)
 {
-#ifdef CONFIG_MMU
 	int high;
 	int nr_split_cpus;
 	unsigned long total_pages;
@@ -6973,9 +6955,6 @@ static int zone_highsize(struct zone *zone, int batch, int cpu_online)
 	high = max(high, batch << 2);
 
 	return high;
-#else
-	return 0;
-#endif
 }
 
 /*
@@ -7656,7 +7635,6 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 	}
 }
 
-#ifdef CONFIG_FLATMEM
 static void __init alloc_node_mem_map(struct pglist_data *pgdat)
 {
 	unsigned long __maybe_unused start = 0;
@@ -7702,9 +7680,6 @@ static void __init alloc_node_mem_map(struct pglist_data *pgdat)
 	}
 #endif
 }
-#else
-static inline void alloc_node_mem_map(struct pglist_data *pgdat) { }
-#endif /* CONFIG_FLATMEM */
 
 #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
 static inline void pgdat_set_deferred_range(pg_data_t *pgdat)

@@ -302,11 +302,7 @@ static void setup_pcid(void)
 	}
 }
 
-#ifdef CONFIG_X86_32
 #define NR_RANGE_MR 3
-#else /* CONFIG_X86_64 */
-#define NR_RANGE_MR 5
-#endif
 
 static int __meminit save_mr(struct map_range *mr, int nr_range,
 			     unsigned long start_pfn, unsigned long end_pfn,
@@ -339,10 +335,8 @@ static void __ref adjust_range_page_size_mask(struct map_range *mr,
 			unsigned long start = round_down(mr[i].start, PMD_SIZE);
 			unsigned long end = round_up(mr[i].end, PMD_SIZE);
 
-#ifdef CONFIG_X86_32
 			if ((end >> PAGE_SHIFT) > max_low_pfn)
 				continue;
-#endif
 
 			if (memblock_is_region_memory(start, end - start))
 				mr[i].page_size_mask |= 1<<PG_LEVEL_2M;
@@ -395,7 +389,6 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 
 	/* head if not big page alignment ? */
 	pfn = start_pfn = PFN_DOWN(start);
-#ifdef CONFIG_X86_32
 	/*
 	 * Don't use a large page for the first 2/4MB of memory
 	 * because there are often fixed size MTRRs in there
@@ -406,9 +399,6 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 		end_pfn = PFN_DOWN(PMD_SIZE);
 	else
 		end_pfn = round_up(pfn, PFN_DOWN(PMD_SIZE));
-#else /* CONFIG_X86_64 */
-	end_pfn = round_up(pfn, PFN_DOWN(PMD_SIZE));
-#endif
 	if (end_pfn > limit_pfn)
 		end_pfn = limit_pfn;
 	if (start_pfn < end_pfn) {
@@ -418,13 +408,7 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 
 	/* big page (2M) range */
 	start_pfn = round_up(pfn, PFN_DOWN(PMD_SIZE));
-#ifdef CONFIG_X86_32
 	end_pfn = round_down(limit_pfn, PFN_DOWN(PMD_SIZE));
-#else /* CONFIG_X86_64 */
-	end_pfn = round_up(pfn, PFN_DOWN(PUD_SIZE));
-	if (end_pfn > round_down(limit_pfn, PFN_DOWN(PMD_SIZE)))
-		end_pfn = round_down(limit_pfn, PFN_DOWN(PMD_SIZE));
-#endif
 
 	if (start_pfn < end_pfn) {
 		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn,
@@ -955,7 +939,6 @@ void __ref free_initmem(void)
 				&__init_begin, &__init_end);
 }
 
-#ifdef CONFIG_BLK_DEV_INITRD
 void __init free_initrd_mem(unsigned long start, unsigned long end)
 {
 	/*
@@ -969,7 +952,6 @@ void __init free_initrd_mem(unsigned long start, unsigned long end)
 	 */
 	free_init_pages("initrd", start, PAGE_ALIGN(end));
 }
-#endif
 
 /*
  * Calculate the precise size of the DMA zone (first 16 MB of RAM),

@@ -119,9 +119,7 @@ void __ptrace_unlink(struct task_struct *child)
 	BUG_ON(!child->ptrace);
 
 	clear_task_syscall_work(child, SYSCALL_TRACE);
-#if defined(CONFIG_GENERIC_ENTRY) || defined(TIF_SYSCALL_EMU)
 	clear_task_syscall_work(child, SYSCALL_EMU);
-#endif
 
 	child->parent = child->real_parent;
 	list_del_init(&child->ptrace_entry);
@@ -850,12 +848,10 @@ static int ptrace_resume(struct task_struct *child, long request,
 	else
 		clear_task_syscall_work(child, SYSCALL_TRACE);
 
-#if defined(CONFIG_GENERIC_ENTRY) || defined(TIF_SYSCALL_EMU)
 	if (request == PTRACE_SYSEMU || request == PTRACE_SYSEMU_SINGLESTEP)
 		set_task_syscall_work(child, SYSCALL_EMU);
 	else
 		clear_task_syscall_work(child, SYSCALL_EMU);
-#endif
 
 	if (is_singleblock(request)) {
 		if (unlikely(!arch_has_block_step()))
@@ -887,7 +883,6 @@ static int ptrace_resume(struct task_struct *child, long request,
 	return 0;
 }
 
-#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
 
 static const struct user_regset *
 find_regset(const struct user_regset_view *view, unsigned int type)
@@ -1025,7 +1020,6 @@ ptrace_get_syscall_info(struct task_struct *child, unsigned long user_size,
 	write_size = min(actual_size, user_size);
 	return copy_to_user(datavp, &info, write_size) ? -EFAULT : actual_size;
 }
-#endif /* CONFIG_HAVE_ARCH_TRACEHOOK */
 
 int ptrace_request(struct task_struct *child, long request,
 		   unsigned long addr, unsigned long data)
@@ -1221,7 +1215,6 @@ int ptrace_request(struct task_struct *child, long request,
 		send_sig_info(SIGKILL, SEND_SIG_NOINFO, child);
 		return 0;
 
-#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
 	case PTRACE_GETREGSET:
 	case PTRACE_SETREGSET: {
 		struct iovec kiov;
@@ -1243,7 +1236,6 @@ int ptrace_request(struct task_struct *child, long request,
 	case PTRACE_GET_SYSCALL_INFO:
 		ret = ptrace_get_syscall_info(child, addr, datavp);
 		break;
-#endif
 
 	case PTRACE_SECCOMP_GET_FILTER:
 		ret = seccomp_get_filter(child, addr, datavp);
@@ -1371,7 +1363,6 @@ int compat_ptrace_request(struct task_struct *child, compat_long_t request,
 		if (!ret)
 			ret = ptrace_setsiginfo(child, &siginfo);
 		break;
-#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
 	case PTRACE_GETREGSET:
 	case PTRACE_SETREGSET:
 	{
@@ -1396,7 +1387,6 @@ int compat_ptrace_request(struct task_struct *child, compat_long_t request,
 			ret = __put_user(kiov.iov_len, &uiov->iov_len);
 		break;
 	}
-#endif
 
 	default:
 		ret = ptrace_request(child, request, addr, data);

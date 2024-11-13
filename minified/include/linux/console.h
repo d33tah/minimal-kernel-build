@@ -102,19 +102,8 @@ int con_is_bound(const struct consw *csw);
 int do_unregister_con_driver(const struct consw *csw);
 int do_take_over_console(const struct consw *sw, int first, int last, int deflt);
 void give_up_console(const struct consw *sw);
-#ifdef CONFIG_HW_CONSOLE
 int con_debug_enter(struct vc_data *vc);
 int con_debug_leave(void);
-#else
-static inline int con_debug_enter(struct vc_data *vc)
-{
-	return 0;
-}
-static inline int con_debug_leave(void)
-{
-	return 0;
-}
-#endif
 
 /* cursor */
 #define CM_DRAW     (1)
@@ -188,12 +177,7 @@ extern int is_console_locked(void);
 extern int braille_register_console(struct console *, int index,
 		char *console_options, char *braille_options);
 extern int braille_unregister_console(struct console *);
-#ifdef CONFIG_TTY
 extern void console_sysfs_notify(void);
-#else
-static inline void console_sysfs_notify(void)
-{ }
-#endif
 extern bool console_suspend_enabled;
 
 /* Suspend and resume console messages over PM events */

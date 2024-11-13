@@ -2939,7 +2939,6 @@ static unsigned long code_segment_base(struct pt_regs *regs)
 	 * effective IP to a linear address.
 	 */
 
-#ifdef CONFIG_X86_32
 	/*
 	 * If we are in VM86 mode, add the segment offset to convert to a
 	 * linear address.
@@ -2949,11 +2948,6 @@ static unsigned long code_segment_base(struct pt_regs *regs)
 
 	if (user_mode(regs) && regs->cs != __USER_CS)
 		return get_segment_base(regs->cs);
-#else
-	if (user_mode(regs) && !user_64bit_mode(regs) &&
-	    regs->cs != __USER32_CS)
-		return get_segment_base(regs->cs);
-#endif
 	return 0;
 }
 

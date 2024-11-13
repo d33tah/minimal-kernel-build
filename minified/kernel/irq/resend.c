@@ -19,7 +19,6 @@
 
 #include "internals.h"
 
-#ifdef CONFIG_HARDIRQS_SW_RESEND
 
 /* Bitmap to handle software resend of interrupts: */
 static DECLARE_BITMAP(irqs_resend, IRQ_BITMAP_BITS);
@@ -79,12 +78,6 @@ static int irq_sw_resend(struct irq_desc *desc)
 	return 0;
 }
 
-#else
-static int irq_sw_resend(struct irq_desc *desc)
-{
-	return -EINVAL;
-}
-#endif
 
 static int try_retrigger(struct irq_desc *desc)
 {

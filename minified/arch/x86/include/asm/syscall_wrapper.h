@@ -109,7 +109,6 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 #define __X64_SYS_NI(name)
 #endif /* CONFIG_X86_64 */
 
-#if defined(CONFIG_X86_32) || defined(CONFIG_IA32_EMULATION)
 #define __IA32_SYS_STUB0(name)						\
 	__SYS_STUB0(ia32, sys_##name)
 
@@ -122,12 +121,6 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 
 #define __IA32_SYS_NI(name)						\
 	__SYS_NI(ia32, sys_##name)
-#else /* CONFIG_X86_32 || CONFIG_IA32_EMULATION */
-#define __IA32_SYS_STUB0(name)
-#define __IA32_SYS_STUBx(x, name, ...)
-#define __IA32_COND_SYSCALL(name)
-#define __IA32_SYS_NI(name)
-#endif /* CONFIG_X86_32 || CONFIG_IA32_EMULATION */
 
 #ifdef CONFIG_IA32_EMULATION
 /*

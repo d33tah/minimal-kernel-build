@@ -1585,11 +1585,7 @@ static void pcpu_destroy_chunk(struct pcpu_chunk *chunk);
 static struct page *pcpu_addr_to_page(void *addr);
 static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai);
 
-#ifdef CONFIG_NEED_PER_CPU_KM
 #include "percpu-km.c"
-#else
-#include "percpu-vm.c"
-#endif
 
 /**
  * pcpu_chunk_addr_search - determine chunk containing specified address
@@ -2796,14 +2792,10 @@ static int __init percpu_alloc_setup(char *str)
 
 	if (0)
 		/* nada */;
-#ifdef CONFIG_NEED_PER_CPU_EMBED_FIRST_CHUNK
 	else if (!strcmp(str, "embed"))
 		pcpu_chosen_fc = PCPU_FC_EMBED;
-#endif
-#ifdef CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK
 	else if (!strcmp(str, "page"))
 		pcpu_chosen_fc = PCPU_FC_PAGE;
-#endif
 	else
 		pr_warn("unknown allocator %s specified\n", str);
 
@@ -2822,9 +2814,7 @@ early_param("percpu_alloc", percpu_alloc_setup);
 #endif
 
 /* build pcpu_page_first_chunk() iff needed by the arch config */
-#if defined(CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK)
 #define BUILD_PAGE_FIRST_CHUNK
-#endif
 
 /* pcpu_build_alloc_info() is used by both embed and page first chunk */
 #if defined(BUILD_EMBED_FIRST_CHUNK) || defined(BUILD_PAGE_FIRST_CHUNK)
@@ -3118,11 +3108,9 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 	if (max_distance > VMALLOC_TOTAL * 3 / 4) {
 		pr_warn("max_distance=0x%lx too large for vmalloc space 0x%lx\n",
 				max_distance, VMALLOC_TOTAL);
-#ifdef CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK
 		/* and fail if we have fallback */
 		rc = -EINVAL;
 		goto out_free_areas;
-#endif
 	}
 
 	/*
@@ -3358,42 +3346,6 @@ out_free_ar:
 }
 #endif /* BUILD_PAGE_FIRST_CHUNK */
 
-#ifndef	CONFIG_HAVE_SETUP_PER_CPU_AREA
-/*
- * Generic SMP percpu area setup.
- *
- * The embedding helper is used because its behavior closely resembles
- * the original non-dynamic generic percpu area setup.  This is
- * important because many archs have addressing restrictions and might
- * fail if the percpu area is located far away from the previous
- * location.  As an added bonus, in non-NUMA cases, embedding is
- * generally a good idea TLB-wise because percpu area can piggy back
- * on the physical linear memory mapping which uses large page
- * mappings on applicable archs.
- */
-unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
-EXPORT_SYMBOL(__per_cpu_offset);
-
-void __init setup_per_cpu_areas(void)
-{
-	unsigned long delta;
-	unsigned int cpu;
-	int rc;
-
-	/*
-	 * Always reserve area for module percpu variables.  That's
-	 * what the legacy allocator did.
-	 */
-	rc = pcpu_embed_first_chunk(PERCPU_MODULE_RESERVE, PERCPU_DYNAMIC_RESERVE,
-				    PAGE_SIZE, NULL, NULL);
-	if (rc < 0)
-		panic("Failed to initialize percpu areas.");
-
-	delta = (unsigned long)pcpu_base_addr - (unsigned long)__per_cpu_start;
-	for_each_possible_cpu(cpu)
-		__per_cpu_offset[cpu] = delta + pcpu_unit_offsets[cpu];
-}
-#endif	/* CONFIG_HAVE_SETUP_PER_CPU_AREA */
 
 #else	/* CONFIG_SMP */
 

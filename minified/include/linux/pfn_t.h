@@ -76,12 +76,10 @@ static inline int pfn_t_valid(pfn_t pfn)
 	return pfn_valid(pfn_t_to_pfn(pfn));
 }
 
-#ifdef CONFIG_MMU
 static inline pte_t pfn_t_pte(pfn_t pfn, pgprot_t pgprot)
 {
 	return pfn_pte(pfn_t_to_pfn(pfn), pgprot);
 }
-#endif
 
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
 static inline pmd_t pfn_t_pmd(pfn_t pfn, pgprot_t pgprot)
@@ -117,15 +115,8 @@ pud_t pud_mkdevmap(pud_t pud);
 #endif
 #endif /* CONFIG_ARCH_HAS_PTE_DEVMAP */
 
-#ifdef CONFIG_ARCH_HAS_PTE_SPECIAL
 static inline bool pfn_t_special(pfn_t pfn)
 {
 	return (pfn.val & PFN_SPECIAL) == PFN_SPECIAL;
 }
-#else
-static inline bool pfn_t_special(pfn_t pfn)
-{
-	return false;
-}
-#endif /* CONFIG_ARCH_HAS_PTE_SPECIAL */
 #endif /* _LINUX_PFN_T_H_ */

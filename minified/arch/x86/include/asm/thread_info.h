@@ -33,15 +33,11 @@
  *
  * x86_64 has a fixed-length stack frame.
  */
-#ifdef CONFIG_X86_32
 # ifdef CONFIG_VM86
 #  define TOP_OF_KERNEL_STACK_PADDING 16
 # else
 #  define TOP_OF_KERNEL_STACK_PADDING 8
 # endif
-#else
-# define TOP_OF_KERNEL_STACK_PADDING 0
-#endif
 
 /*
  * low level task data that entry.S needs immediate access to
@@ -220,12 +216,7 @@ static inline int arch_within_stack_frames(const void * const stack,
 
 #endif
 
-#ifdef CONFIG_X86_32
 #define in_ia32_syscall() true
-#else
-#define in_ia32_syscall() (IS_ENABLED(CONFIG_IA32_EMULATION) && \
-			   current_thread_info()->status & TS_COMPAT)
-#endif
 
 extern void arch_task_cache_init(void);
 extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src);

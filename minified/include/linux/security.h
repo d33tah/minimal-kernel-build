@@ -183,13 +183,8 @@ struct xfrm_user_sec_ctx;
 struct seq_file;
 struct sctp_association;
 
-#ifdef CONFIG_MMU
 extern unsigned long mmap_min_addr;
 extern unsigned long dac_mmap_min_addr;
-#else
-#define mmap_min_addr		0UL
-#define dac_mmap_min_addr	0UL
-#endif
 
 /*
  * Values used in the task_security_ops calls
@@ -219,10 +214,8 @@ struct request_sock;
 #define LSM_UNSAFE_PTRACE	2
 #define LSM_UNSAFE_NO_NEW_PRIVS	4
 
-#ifdef CONFIG_MMU
 extern int mmap_min_addr_handler(struct ctl_table *table, int write,
 				 void *buffer, size_t *lenp, loff_t *ppos);
-#endif
 
 /* security_inode_init_security callback function to write xattrs */
 typedef int (*initxattrs) (struct inode *inode,
@@ -2009,7 +2002,6 @@ static inline void security_bpf_prog_free(struct bpf_prog_aux *aux)
 #endif /* CONFIG_SECURITY */
 #endif /* CONFIG_BPF_SYSCALL */
 
-#ifdef CONFIG_PERF_EVENTS
 struct perf_event_attr;
 struct perf_event;
 
@@ -2045,7 +2037,6 @@ static inline int security_perf_event_write(struct perf_event *event)
 	return 0;
 }
 #endif /* CONFIG_SECURITY */
-#endif /* CONFIG_PERF_EVENTS */
 
 #ifdef CONFIG_IO_URING
 #ifdef CONFIG_SECURITY

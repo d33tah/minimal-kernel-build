@@ -417,7 +417,6 @@ void zero_user_segments(struct page *page, unsigned start1, unsigned end1,
 EXPORT_SYMBOL(zero_user_segments);
 #endif /* CONFIG_HIGHMEM */
 
-#ifdef CONFIG_KMAP_LOCAL
 
 #include <asm/kmap_size.h>
 
@@ -682,7 +681,6 @@ void kmap_local_fork(struct task_struct *tsk)
 		memset(&tsk->kmap_ctrl, 0, sizeof(tsk->kmap_ctrl));
 }
 
-#endif
 
 #if defined(HASHED_PAGE_VIRTUAL)
 

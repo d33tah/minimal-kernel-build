@@ -169,7 +169,6 @@ is_prefetch(struct pt_regs *regs, unsigned long error_code, unsigned long addr)
 DEFINE_SPINLOCK(pgd_lock);
 LIST_HEAD(pgd_list);
 
-#ifdef CONFIG_X86_32
 static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
 {
 	unsigned index = pgd_index(address);
@@ -327,78 +326,6 @@ out:
 	pr_cont("\n");
 }
 
-#else /* CONFIG_X86_64: */
-
-#ifdef CONFIG_CPU_SUP_AMD
-static const char errata93_warning[] =
-KERN_ERR 
-"******* Your BIOS seems to not contain a fix for K8 errata #93\n"
-"******* Working around it, but it may cause SEGVs or burn power.\n"
-"******* Please consider a BIOS update.\n"
-"******* Disabling USB legacy in the BIOS may also help.\n";
-#endif
-
-static int bad_address(void *p)
-{
-	unsigned long dummy;
-
-	return get_kernel_nofault(dummy, (unsigned long *)p);
-}
-
-static void dump_pagetable(unsigned long address)
-{
-	pgd_t *base = __va(read_cr3_pa());
-	pgd_t *pgd = base + pgd_index(address);
-	p4d_t *p4d;
-	pud_t *pud;
-	pmd_t *pmd;
-	pte_t *pte;
-
-	if (bad_address(pgd))
-		goto bad;
-
-	pr_info("PGD %lx ", pgd_val(*pgd));
-
-	if (!pgd_present(*pgd))
-		goto out;
-
-	p4d = p4d_offset(pgd, address);
-	if (bad_address(p4d))
-		goto bad;
-
-	pr_cont("P4D %lx ", p4d_val(*p4d));
-	if (!p4d_present(*p4d) || p4d_large(*p4d))
-		goto out;
-
-	pud = pud_offset(p4d, address);
-	if (bad_address(pud))
-		goto bad;
-
-	pr_cont("PUD %lx ", pud_val(*pud));
-	if (!pud_present(*pud) || pud_large(*pud))
-		goto out;
-
-	pmd = pmd_offset(pud, address);
-	if (bad_address(pmd))
-		goto bad;
-
-	pr_cont("PMD %lx ", pmd_val(*pmd));
-	if (!pmd_present(*pmd) || pmd_large(*pmd))
-		goto out;
-
-	pte = pte_offset_kernel(pmd, address);
-	if (bad_address(pte))
-		goto bad;
-
-	pr_cont("PTE %lx", pte_val(*pte));
-out:
-	pr_cont("\n");
-	return;
-bad:
-	pr_info("BAD\n");
-}
-
-#endif /* CONFIG_X86_64 */
 
 /*
  * Workaround for K8 erratum #93 & buggy BIOS.
@@ -1154,7 +1081,6 @@ do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code,
 	 */
 	WARN_ON_ONCE(hw_error_code & X86_PF_PK);
 
-#ifdef CONFIG_X86_32
 	/*
 	 * We can fault-in kernel-space virtual memory on-demand. The
 	 * 'reference' page table is init_mm.pgd.
@@ -1183,7 +1109,6 @@ do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code,
 		if (vmalloc_fault(address) >= 0)
 			return;
 	}
-#endif
 
 	if (is_f00f_bug(regs, hw_error_code, address))
 		return;

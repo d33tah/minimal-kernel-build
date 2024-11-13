@@ -20,7 +20,7 @@ struct slab {
 	void *s_mem;	/* first object */
 	unsigned int active;
 
-#elif defined(CONFIG_SLUB)
+#else
 
 	union {
 		struct list_head slab_list;
@@ -45,16 +45,6 @@ struct slab {
 	};
 	unsigned int __unused;
 
-#elif defined(CONFIG_SLOB)
-
-	struct list_head slab_list;
-	void *__unused_1;
-	void *freelist;		/* first free block */
-	long units;
-	unsigned int __unused_2;
-
-#else
-#error "Unexpected slab allocator configured"
 #endif
 
 	atomic_t __page_refcount;
@@ -221,9 +211,7 @@ struct kmem_cache {
 #include <linux/slab_def.h>
 #endif
 
-#ifdef CONFIG_SLUB
 #include <linux/slub_def.h>
-#endif
 
 #include <linux/memcontrol.h>
 #include <linux/fault-inject.h>
@@ -329,11 +317,9 @@ static inline slab_flags_t kmem_cache_flags(unsigned int object_size,
 #define SLAB_CACHE_FLAGS (SLAB_MEM_SPREAD | SLAB_NOLEAKTRACE | \
 			  SLAB_RECLAIM_ACCOUNT | SLAB_TEMPORARY | \
 			  SLAB_ACCOUNT)
-#elif defined(CONFIG_SLUB)
+#else
 #define SLAB_CACHE_FLAGS (SLAB_NOLEAKTRACE | SLAB_RECLAIM_ACCOUNT | \
 			  SLAB_TEMPORARY | SLAB_ACCOUNT | SLAB_NO_USER_FLAGS)
-#else
-#define SLAB_CACHE_FLAGS (SLAB_NOLEAKTRACE)
 #endif
 
 /* Common flags available with current configuration */
@@ -685,10 +671,6 @@ static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 
 static inline size_t slab_ksize(const struct kmem_cache *s)
 {
-#ifndef CONFIG_SLUB
-	return s->object_size;
-
-#else /* CONFIG_SLUB */
 # ifdef CONFIG_SLUB_DEBUG
 	/*
 	 * Debugging requires use of the padding between object
@@ -710,7 +692,6 @@ static inline size_t slab_ksize(const struct kmem_cache *s)
 	 * Else we can use all the padding etc for the allocation
 	 */
 	return s->size;
-#endif
 }
 
 static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
@@ -779,14 +760,12 @@ struct kmem_cache_node {
 	int free_touched;		/* updated without locking */
 #endif
 
-#ifdef CONFIG_SLUB
 	unsigned long nr_partial;
 	struct list_head partial;
 #ifdef CONFIG_SLUB_DEBUG
 	atomic_long_t nr_slabs;
 	atomic_long_t total_objects;
 	struct list_head full;
-#endif
 #endif
 
 };
@@ -872,15 +851,7 @@ struct kmem_obj_info {
 void __kmem_obj_info(struct kmem_obj_info *kpp, void *object, struct slab *slab);
 #endif
 
-#ifdef CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR
 void __check_heap_object(const void *ptr, unsigned long n,
 			 const struct slab *slab, bool to_user);
-#else
-static inline
-void __check_heap_object(const void *ptr, unsigned long n,
-			 const struct slab *slab, bool to_user)
-{
-}
-#endif
 
 #endif /* MM_SLAB_H */

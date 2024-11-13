@@ -2037,7 +2037,6 @@ static const char *walk_component(struct nameidata *nd, int flags)
  *   the final mask". Again, that could be replaced with a
  *   efficient population count instruction or similar.
  */
-#ifdef CONFIG_DCACHE_WORD_ACCESS
 
 #include <asm/word-at-a-time.h>
 
@@ -2200,53 +2199,6 @@ inside:
 	return hashlen_create(fold_hash(x, y), len + find_zero(mask));
 }
 
-#else	/* !CONFIG_DCACHE_WORD_ACCESS: Slow, byte-at-a-time version */
-
-/* Return the hash of a string of known length */
-unsigned int full_name_hash(const void *salt, const char *name, unsigned int len)
-{
-	unsigned long hash = init_name_hash(salt);
-	while (len--)
-		hash = partial_name_hash((unsigned char)*name++, hash);
-	return end_name_hash(hash);
-}
-EXPORT_SYMBOL(full_name_hash);
-
-/* Return the "hash_len" (hash and length) of a null-terminated string */
-u64 hashlen_string(const void *salt, const char *name)
-{
-	unsigned long hash = init_name_hash(salt);
-	unsigned long len = 0, c;
-
-	c = (unsigned char)*name;
-	while (c) {
-		len++;
-		hash = partial_name_hash(c, hash);
-		c = (unsigned char)name[len];
-	}
-	return hashlen_create(end_name_hash(hash), len);
-}
-EXPORT_SYMBOL(hashlen_string);
-
-/*
- * We know there's a real path component here of at least
- * one character.
- */
-static inline u64 hash_name(const void *salt, const char *name)
-{
-	unsigned long hash = init_name_hash(salt);
-	unsigned long len = 0, c;
-
-	c = (unsigned char)*name;
-	do {
-		len++;
-		hash = partial_name_hash(c, hash);
-		c = (unsigned char)name[len];
-	} while (c && c != '/');
-	return hashlen_create(end_name_hash(hash), len);
-}
-
-#endif
 
 /*
  * Name resolution.

@@ -8,7 +8,6 @@
 #include "timekeeping.h"
 #include "tick-sched.h"
 
-#ifdef CONFIG_GENERIC_CLOCKEVENTS
 
 # define TICK_DO_TIMER_NONE	-1
 # define TICK_DO_TIMER_BOOT	-2
@@ -90,10 +89,6 @@ static inline void tick_set_periodic_handler(struct clock_event_device *dev, int
 }
 # endif /* !CONFIG_GENERIC_CLOCKEVENTS_BROADCAST */
 
-#else /* !GENERIC_CLOCKEVENTS: */
-static inline void tick_suspend(void) { }
-static inline void tick_resume(void) { }
-#endif /* !GENERIC_CLOCKEVENTS */
 
 /* Oneshot related functions */
 #ifdef CONFIG_TICK_ONESHOT

@@ -3036,7 +3036,6 @@ int set_console(int nr)
 
 struct tty_driver *console_driver;
 
-#ifdef CONFIG_VT_CONSOLE
 
 /**
  * vt_kmsg_redirect() - Sets/gets the kernel message console
@@ -3164,7 +3163,6 @@ static struct console vt_console_driver = {
 	.flags		= CON_PRINTBUFFER,
 	.index		= -1,
 };
-#endif
 
 /*
  *	Handling of Linux-specific VC ioctls
@@ -3541,9 +3539,7 @@ static int __init con_init(void)
 
 	console_unlock();
 
-#ifdef CONFIG_VT_CONSOLE
 	register_console(&vt_console_driver);
-#endif
 	return 0;
 }
 console_initcall(con_init);

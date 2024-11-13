@@ -107,7 +107,6 @@ static struct resource bss_resource = {
 };
 
 
-#ifdef CONFIG_X86_32
 /* CPU data as detected by the assembly code in head_32.S */
 struct cpuinfo_x86 new_cpu_data;
 
@@ -128,10 +127,6 @@ EXPORT_SYMBOL(ist_info);
 struct ist_info ist_info;
 #endif
 
-#else
-struct cpuinfo_x86 boot_cpu_data __read_mostly;
-EXPORT_SYMBOL(boot_cpu_data);
-#endif
 
 
 #if !defined(CONFIG_X86_PAE) || defined(CONFIG_X86_64)
@@ -207,11 +202,9 @@ void * __init extend_brk(size_t size, size_t align)
 	return ret;
 }
 
-#ifdef CONFIG_X86_32
 static void __init cleanup_highmap(void)
 {
 }
-#endif
 
 static void __init reserve_brk(void)
 {
@@ -226,7 +219,6 @@ static void __init reserve_brk(void)
 
 u64 relocated_ramdisk;
 
-#ifdef CONFIG_BLK_DEV_INITRD
 
 static u64 __init get_ramdisk_image(void)
 {
@@ -321,14 +313,6 @@ static void __init reserve_initrd(void)
 	memblock_phys_free(ramdisk_image, ramdisk_end - ramdisk_image);
 }
 
-#else
-static void __init early_reserve_initrd(void)
-{
-}
-static void __init reserve_initrd(void)
-{
-}
-#endif /* CONFIG_BLK_DEV_INITRD */
 
 static void __init parse_setup_data(void)
 {
@@ -422,13 +406,8 @@ static void __init memblock_x86_reserve_range_setup_data(void)
  * no good way to detect the paging mode of the target kernel which will be
  * loaded for dumping.
  */
-#ifdef CONFIG_X86_32
 # define CRASH_ADDR_LOW_MAX	SZ_512M
 # define CRASH_ADDR_HIGH_MAX	SZ_512M
-#else
-# define CRASH_ADDR_LOW_MAX	SZ_4G
-# define CRASH_ADDR_HIGH_MAX	SZ_64T
-#endif
 
 static int __init reserve_crashkernel_low(void)
 {
@@ -790,7 +769,6 @@ static void __init x86_report_nx(void)
 
 void __init setup_arch(char **cmdline_p)
 {
-#ifdef CONFIG_X86_32
 	memcpy(&boot_cpu_data, &new_cpu_data, sizeof(new_cpu_data));
 
 	/*
@@ -812,10 +790,6 @@ void __init setup_arch(char **cmdline_p)
 	 * so proper operation is guaranteed.
 	 */
 	__flush_tlb_all();
-#else
-	printk(KERN_INFO "Command line: %s\n", boot_command_line);
-	boot_cpu_data.x86_phys_bits = MAX_PHYSMEM_BITS;
-#endif
 
 	/*
 	 * If we have OLPC OFW, we might end up relocating the fixmap due to
@@ -834,10 +808,8 @@ void __init setup_arch(char **cmdline_p)
 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
 	screen_info = boot_params.screen_info;
 	edid_info = boot_params.edid_info;
-#ifdef CONFIG_X86_32
 	apm_info.bios = boot_params.apm_bios_info;
 	ist_info = boot_params.ist_info;
-#endif
 	saved_video_mode = boot_params.hdr.vid_mode;
 	bootloader_type = boot_params.hdr.type_of_loader;
 	if ((bootloader_type >> 4) == 0xe) {
@@ -982,7 +954,6 @@ void __init setup_arch(char **cmdline_p)
 
 	e820_add_kernel_range();
 	trim_bios_range();
-#ifdef CONFIG_X86_32
 	if (ppro_with_ram_bug()) {
 		e820__range_update(0x70000000ULL, 0x40000ULL, E820_TYPE_RAM,
 				  E820_TYPE_RESERVED);
@@ -990,9 +961,6 @@ void __init setup_arch(char **cmdline_p)
 		printk(KERN_INFO "fixed physical RAM map:\n");
 		e820__print_table("bad_ppro");
 	}
-#else
-	early_gart_iommu_check();
-#endif
 
 	/*
 	 * partially used pages are not usable - thus
@@ -1024,21 +992,8 @@ void __init setup_arch(char **cmdline_p)
 	 */
 	kernel_randomize_memory();
 
-#ifdef CONFIG_X86_32
 	/* max_low_pfn get updated here */
 	find_low_pfn_range();
-#else
-	check_x2apic();
-
-	/* How many end-of-memory variables you have, grandma! */
-	/* need this before calling reserve_initrd */
-	if (max_pfn > (1UL<<(32 - PAGE_SHIFT)))
-		max_low_pfn = e820__end_of_low_ram_pfn();
-	else
-		max_low_pfn = max_pfn;
-
-	high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
-#endif
 
 	/*
 	 * Find and reserve possible boot-time SMP configuration:
@@ -1083,10 +1038,8 @@ void __init setup_arch(char **cmdline_p)
 	setup_bios_corruption_check();
 #endif
 
-#ifdef CONFIG_X86_32
 	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
 			(max_pfn_mapped<<PAGE_SHIFT) - 1);
-#endif
 
 	/*
 	 * Find free memory for the real mode trampoline and place it there. If
@@ -1230,12 +1183,8 @@ void __init setup_arch(char **cmdline_p)
 
 	e820__setup_pci_gap();
 
-#ifdef CONFIG_VT
-#if defined(CONFIG_VGA_CONSOLE)
 	if (!efi_enabled(EFI_BOOT) || (efi_mem_type(0xa0000) != EFI_CONVENTIONAL_MEMORY))
 		conswitchp = &vga_con;
-#endif
-#endif
 	x86_init.oem.banner();
 
 	x86_init.timers.wallclock_init();
@@ -1260,7 +1209,6 @@ void __init setup_arch(char **cmdline_p)
 	unwind_init();
 }
 
-#ifdef CONFIG_X86_32
 
 static struct resource video_ram_resource = {
 	.name	= "Video RAM area",
@@ -1275,7 +1223,6 @@ void __init i386_reserve_resources(void)
 	reserve_standard_io_resources();
 }
 
-#endif /* CONFIG_X86_32 */
 
 static struct notifier_block kernel_offset_notifier = {
 	.notifier_call = dump_kernel_offset

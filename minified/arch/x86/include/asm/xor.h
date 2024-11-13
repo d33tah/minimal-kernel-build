@@ -27,12 +27,8 @@
 
 #include <asm/fpu/api.h>
 
-#ifdef CONFIG_X86_32
 /* reduce register pressure */
 # define XOR_CONSTANT_CONSTRAINT "i"
-#else
-# define XOR_CONSTANT_CONSTRAINT "re"
-#endif
 
 #define OFFS(x)		"16*("#x")"
 #define PF_OFFS(x)	"256+16*("#x")"
@@ -490,11 +486,7 @@ static struct xor_block_template xor_block_sse_pf64 = {
 
 #undef XOR_CONSTANT_CONSTRAINT
 
-#ifdef CONFIG_X86_32
 # include <asm/xor_32.h>
-#else
-# include <asm/xor_64.h>
-#endif
 
 #define XOR_SELECT_TEMPLATE(FASTEST) \
 	AVX_SELECT(FASTEST)

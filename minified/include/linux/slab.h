@@ -259,7 +259,6 @@ static inline unsigned int arch_slab_minalign(void)
 #endif
 #endif
 
-#ifdef CONFIG_SLUB
 /*
  * SLUB directly allocates requests fitting in to an order-1 page
  * (PAGE_SIZE*2).  Larger requests are passed to the page allocator.
@@ -268,7 +267,6 @@ static inline unsigned int arch_slab_minalign(void)
 #define KMALLOC_SHIFT_MAX	(MAX_ORDER + PAGE_SHIFT - 1)
 #ifndef KMALLOC_SHIFT_LOW
 #define KMALLOC_SHIFT_LOW	3
-#endif
 #endif
 
 #ifdef CONFIG_SLOB

@@ -86,9 +86,7 @@ static void init_zhaoxin(struct cpuinfo_x86 *c)
 	early_init_zhaoxin(c);
 	init_intel_cacheinfo(c);
 	detect_num_cpu_cores(c);
-#ifdef CONFIG_X86_32
 	detect_ht(c);
-#endif
 
 	if (c->cpuid_level > 9) {
 		unsigned int eax = cpuid_eax(10);
@@ -111,22 +109,18 @@ static void init_zhaoxin(struct cpuinfo_x86 *c)
 	init_ia32_feat_ctl(c);
 }
 
-#ifdef CONFIG_X86_32
 static unsigned int
 zhaoxin_size_cache(struct cpuinfo_x86 *c, unsigned int size)
 {
 	return size;
 }
-#endif
 
 static const struct cpu_dev zhaoxin_cpu_dev = {
 	.c_vendor	= "zhaoxin",
 	.c_ident	= { "  Shanghai  " },
 	.c_early_init	= early_init_zhaoxin,
 	.c_init		= init_zhaoxin,
-#ifdef CONFIG_X86_32
 	.legacy_cache_size = zhaoxin_size_cache,
-#endif
 	.c_x86_vendor	= X86_VENDOR_ZHAOXIN,
 };
 

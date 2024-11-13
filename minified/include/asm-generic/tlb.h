@@ -26,7 +26,6 @@
 # define nmi_uaccess_okay() true
 #endif
 
-#ifdef CONFIG_MMU
 
 /*
  * Generic MMU-gather implementation.
@@ -676,6 +675,5 @@ static inline bool huge_pmd_needs_flush(pmd_t oldpmd, pmd_t newpmd)
 }
 #endif
 
-#endif /* CONFIG_MMU */
 
 #endif /* _ASM_GENERIC__TLB_H */

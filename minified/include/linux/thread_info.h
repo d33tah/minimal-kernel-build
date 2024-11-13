@@ -14,7 +14,6 @@
 #include <linux/restart_block.h>
 #include <linux/errno.h>
 
-#ifdef CONFIG_THREAD_INFO_IN_TASK
 /*
  * For CONFIG_THREAD_INFO_IN_TASK kernels we need <asm/current.h> for the
  * definition of current, but for !CONFIG_THREAD_INFO_IN_TASK kernels,
@@ -22,7 +21,6 @@
  */
 #include <asm/current.h>
 #define current_thread_info() ((struct thread_info *)current)
-#endif
 
 #include <linux/bitops.h>
 
@@ -37,7 +35,6 @@ enum {
 	GOOD_STACK,
 };
 
-#ifdef CONFIG_GENERIC_ENTRY
 enum syscall_work_bit {
 	SYSCALL_WORK_BIT_SECCOMP,
 	SYSCALL_WORK_BIT_SYSCALL_TRACEPOINT,
@@ -55,7 +52,6 @@ enum syscall_work_bit {
 #define SYSCALL_WORK_SYSCALL_AUDIT	BIT(SYSCALL_WORK_BIT_SYSCALL_AUDIT)
 #define SYSCALL_WORK_SYSCALL_USER_DISPATCH BIT(SYSCALL_WORK_BIT_SYSCALL_USER_DISPATCH)
 #define SYSCALL_WORK_SYSCALL_EXIT_TRAP	BIT(SYSCALL_WORK_BIT_SYSCALL_EXIT_TRAP)
-#endif
 
 #include <asm/thread_info.h>
 
@@ -145,7 +141,6 @@ static __always_inline unsigned long read_ti_thread_flags(struct thread_info *ti
 #define read_task_thread_flags(t) \
 	read_ti_thread_flags(task_thread_info(t))
 
-#ifdef CONFIG_GENERIC_ENTRY
 #define set_syscall_work(fl) \
 	set_bit(SYSCALL_WORK_BIT_##fl, &current_thread_info()->syscall_work)
 #define test_syscall_work(fl) \
@@ -160,33 +155,9 @@ static __always_inline unsigned long read_ti_thread_flags(struct thread_info *ti
 #define clear_task_syscall_work(t, fl) \
 	clear_bit(SYSCALL_WORK_BIT_##fl, &task_thread_info(t)->syscall_work)
 
-#else /* CONFIG_GENERIC_ENTRY */
-
-#define set_syscall_work(fl)						\
-	set_ti_thread_flag(current_thread_info(), TIF_##fl)
-#define test_syscall_work(fl) \
-	test_ti_thread_flag(current_thread_info(), TIF_##fl)
-#define clear_syscall_work(fl) \
-	clear_ti_thread_flag(current_thread_info(), TIF_##fl)
-
-#define set_task_syscall_work(t, fl) \
-	set_ti_thread_flag(task_thread_info(t), TIF_##fl)
-#define test_task_syscall_work(t, fl) \
-	test_ti_thread_flag(task_thread_info(t), TIF_##fl)
-#define clear_task_syscall_work(t, fl) \
-	clear_ti_thread_flag(task_thread_info(t), TIF_##fl)
-#endif /* !CONFIG_GENERIC_ENTRY */
 
 #define tif_need_resched() test_thread_flag(TIF_NEED_RESCHED)
 
-#ifndef CONFIG_HAVE_ARCH_WITHIN_STACK_FRAMES
-static inline int arch_within_stack_frames(const void * const stack,
-					   const void * const stackend,
-					   const void *obj, unsigned long len)
-{
-	return 0;
-}
-#endif
 
 #ifdef CONFIG_HARDENED_USERCOPY
 extern void __check_object_size(const void *ptr, unsigned long n,

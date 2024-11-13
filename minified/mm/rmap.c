@@ -604,7 +604,6 @@ void page_unlock_anon_vma_read(struct anon_vma *anon_vma)
 	anon_vma_unlock_read(anon_vma);
 }
 
-#ifdef CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
 /*
  * Flush TLB entries for recently unmapped pages from remote CPUs. It is
  * important if a PTE was dirty when it was unmapped that it's flushed
@@ -731,16 +730,6 @@ void flush_tlb_batched_pending(struct mm_struct *mm)
 			       pending | (pending << TLB_FLUSH_BATCH_FLUSHED_SHIFT));
 	}
 }
-#else
-static void set_tlb_ubc_flush_pending(struct mm_struct *mm, bool writable)
-{
-}
-
-static bool should_defer_flush(struct mm_struct *mm, enum ttu_flags flags)
-{
-	return false;
-}
-#endif /* CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH */
 
 /*
  * At what user virtual address is page expected in vma?

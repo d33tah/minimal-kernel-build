@@ -67,12 +67,10 @@ __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
 		 */
 		.sp0 = (1UL << (BITS_PER_LONG-1)) + 1,
 
-#ifdef CONFIG_X86_32
 		.sp1 = TOP_OF_INIT_STACK,
 
 		.ss0 = __KERNEL_DS,
 		.ss1 = __KERNEL_CS,
-#endif
 		.io_bitmap_base	= IO_BITMAP_OFFSET_INVALID,
 	 },
 };

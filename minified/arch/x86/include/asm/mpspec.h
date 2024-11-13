@@ -9,7 +9,6 @@
 
 extern int pic_mode;
 
-#ifdef CONFIG_X86_32
 
 /*
  * Summit or generic (i.e. installer) kernels need lots of bus entries.
@@ -25,13 +24,6 @@ extern int pic_mode;
 
 extern unsigned int def_to_bigsmp;
 
-#else /* CONFIG_X86_64: */
-
-#define MAX_MP_BUSSES		256
-/* Each PCI slot may be a combo card with its own bus.  4 IRQ pins per slot. */
-#define MAX_IRQ_SOURCES		(MAX_MP_BUSSES * 4)
-
-#endif /* CONFIG_X86_64 */
 
 #ifdef CONFIG_EISA
 extern int mp_bus_id_to_type[MAX_MP_BUSSES];

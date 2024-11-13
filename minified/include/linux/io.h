@@ -20,36 +20,15 @@ __visible void __iowrite32_copy(void __iomem *to, const void *from, size_t count
 void __ioread32_copy(void *to, const void __iomem *from, size_t count);
 void __iowrite64_copy(void __iomem *to, const void *from, size_t count);
 
-#ifdef CONFIG_MMU
 int ioremap_page_range(unsigned long addr, unsigned long end,
 		       phys_addr_t phys_addr, pgprot_t prot);
-#else
-static inline int ioremap_page_range(unsigned long addr, unsigned long end,
-				     phys_addr_t phys_addr, pgprot_t prot)
-{
-	return 0;
-}
-#endif
 
 /*
  * Managed iomap interface
  */
-#ifdef CONFIG_HAS_IOPORT_MAP
 void __iomem * devm_ioport_map(struct device *dev, unsigned long port,
 			       unsigned int nr);
 void devm_ioport_unmap(struct device *dev, void __iomem *addr);
-#else
-static inline void __iomem *devm_ioport_map(struct device *dev,
-					     unsigned long port,
-					     unsigned int nr)
-{
-	return NULL;
-}
-
-static inline void devm_ioport_unmap(struct device *dev, void __iomem *addr)
-{
-}
-#endif
 
 #define IOMEM_ERR_PTR(err) (__force void __iomem *)ERR_PTR(err)
 

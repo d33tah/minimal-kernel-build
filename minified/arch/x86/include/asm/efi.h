@@ -87,7 +87,6 @@ static inline void efi_fpu_end(void)
 	kernel_fpu_end();
 }
 
-#ifdef CONFIG_X86_32
 #define arch_efi_call_virt_setup()					\
 ({									\
 	efi_fpu_begin();						\
@@ -102,52 +101,6 @@ static inline void efi_fpu_end(void)
 
 #define arch_efi_call_virt(p, f, args...)	p->f(args)
 
-#else /* !CONFIG_X86_32 */
-
-#define EFI_LOADER_SIGNATURE	"EL64"
-
-extern asmlinkage u64 __efi_call(void *fp, ...);
-
-#define efi_call(...) ({						\
-	__efi_nargs_check(efi_call, 7, __VA_ARGS__);			\
-	__efi_call(__VA_ARGS__);					\
-})
-
-#define arch_efi_call_virt_setup()					\
-({									\
-	efi_sync_low_kernel_mappings();					\
-	efi_fpu_begin();						\
-	firmware_restrict_branch_speculation_start();			\
-	efi_enter_mm();							\
-})
-
-#define arch_efi_call_virt(p, f, args...) ({				\
-	u64 ret, ibt = ibt_save();					\
-	ret = efi_call((void *)p->f, args);				\
-	ibt_restore(ibt);						\
-	ret;								\
-})
-
-#define arch_efi_call_virt_teardown()					\
-({									\
-	efi_leave_mm();							\
-	firmware_restrict_branch_speculation_end();			\
-	efi_fpu_end();							\
-})
-
-#ifdef CONFIG_KASAN
-/*
- * CONFIG_KASAN may redefine memset to __memset.  __memset function is present
- * only in kernel binary.  Since the EFI stub linked into a separate binary it
- * doesn't have __memset().  So we should use standard memset from
- * arch/x86/boot/compressed/string.c.  The same applies to memcpy and memmove.
- */
-#undef memcpy
-#undef memset
-#undef memmove
-#endif
-
-#endif /* CONFIG_X86_32 */
 
 extern int __init efi_memblock_x86_reserve_range(void);
 extern void __init efi_print_memmap(void);

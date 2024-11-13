@@ -834,11 +834,9 @@ typedef struct pglist_data {
 	struct zonelist node_zonelists[MAX_ZONELISTS];
 
 	int nr_zones; /* number of populated zones in this node */
-#ifdef CONFIG_FLATMEM	/* means !SPARSEMEM */
 	struct page *node_mem_map;
 #ifdef CONFIG_PAGE_EXTENSION
 	struct page_ext *node_page_ext;
-#endif
 #endif
 #if defined(CONFIG_MEMORY_HOTPLUG) || defined(CONFIG_DEFERRED_STRUCT_PAGE_INIT)
 	/*
@@ -1276,9 +1274,7 @@ static inline bool movable_only_nodes(nodemask_t *nodes)
 #include <asm/sparsemem.h>
 #endif
 
-#ifdef CONFIG_FLATMEM
 #define pfn_to_nid(pfn)		(0)
-#endif
 
 #ifdef CONFIG_SPARSEMEM
 

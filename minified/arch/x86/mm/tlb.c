@@ -461,7 +461,6 @@ static void cond_mitigation(struct task_struct *next)
 	this_cpu_write(cpu_tlbstate.last_user_mm_spec, next_mm);
 }
 
-#ifdef CONFIG_PERF_EVENTS
 static inline void cr4_update_pce_mm(struct mm_struct *mm)
 {
 	if (static_branch_unlikely(&rdpmc_always_available_key) ||
@@ -482,9 +481,6 @@ void cr4_update_pce(void *ignored)
 	cr4_update_pce_mm(this_cpu_read(cpu_tlbstate.loaded_mm));
 }
 
-#else
-static inline void cr4_update_pce_mm(struct mm_struct *mm) { }
-#endif
 
 void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 			struct task_struct *tsk)

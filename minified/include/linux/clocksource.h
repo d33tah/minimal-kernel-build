@@ -120,12 +120,10 @@ struct clocksource {
 	void			(*tick_stable)(struct clocksource *cs);
 
 	/* private: */
-#ifdef CONFIG_CLOCKSOURCE_WATCHDOG
 	/* Watchdog related data, used by the framework */
 	struct list_head	wd_list;
 	u64			cs_last;
 	u64			wd_last;
-#endif
 	struct module		*owner;
 };
 
@@ -261,11 +259,7 @@ static inline void __clocksource_update_freq_khz(struct clocksource *cs, u32 khz
 	__clocksource_update_freq_scale(cs, 1000, khz);
 }
 
-#ifdef CONFIG_ARCH_CLOCKSOURCE_INIT
 extern void clocksource_arch_init(struct clocksource *cs);
-#else
-static inline void clocksource_arch_init(struct clocksource *cs) { }
-#endif
 
 extern int timekeeping_notify(struct clocksource *clock);
 

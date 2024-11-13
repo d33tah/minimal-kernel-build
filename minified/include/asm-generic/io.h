@@ -11,9 +11,7 @@
 #include <linux/string.h> /* for memset() and memcpy() */
 #include <linux/types.h>
 
-#ifdef CONFIG_GENERIC_IOMAP
 #include <asm-generic/iomap.h>
-#endif
 
 #include <asm/mmiowb.h>
 #include <asm-generic/pci_iomap.h>
@@ -704,207 +702,6 @@ static inline void outsl_p(unsigned long addr, const void *buffer,
 }
 #endif
 
-#ifndef CONFIG_GENERIC_IOMAP
-#ifndef ioread8
-#define ioread8 ioread8
-static inline u8 ioread8(const volatile void __iomem *addr)
-{
-	return readb(addr);
-}
-#endif
-
-#ifndef ioread16
-#define ioread16 ioread16
-static inline u16 ioread16(const volatile void __iomem *addr)
-{
-	return readw(addr);
-}
-#endif
-
-#ifndef ioread32
-#define ioread32 ioread32
-static inline u32 ioread32(const volatile void __iomem *addr)
-{
-	return readl(addr);
-}
-#endif
-
-#ifdef CONFIG_64BIT
-#ifndef ioread64
-#define ioread64 ioread64
-static inline u64 ioread64(const volatile void __iomem *addr)
-{
-	return readq(addr);
-}
-#endif
-#endif /* CONFIG_64BIT */
-
-#ifndef iowrite8
-#define iowrite8 iowrite8
-static inline void iowrite8(u8 value, volatile void __iomem *addr)
-{
-	writeb(value, addr);
-}
-#endif
-
-#ifndef iowrite16
-#define iowrite16 iowrite16
-static inline void iowrite16(u16 value, volatile void __iomem *addr)
-{
-	writew(value, addr);
-}
-#endif
-
-#ifndef iowrite32
-#define iowrite32 iowrite32
-static inline void iowrite32(u32 value, volatile void __iomem *addr)
-{
-	writel(value, addr);
-}
-#endif
-
-#ifdef CONFIG_64BIT
-#ifndef iowrite64
-#define iowrite64 iowrite64
-static inline void iowrite64(u64 value, volatile void __iomem *addr)
-{
-	writeq(value, addr);
-}
-#endif
-#endif /* CONFIG_64BIT */
-
-#ifndef ioread16be
-#define ioread16be ioread16be
-static inline u16 ioread16be(const volatile void __iomem *addr)
-{
-	return swab16(readw(addr));
-}
-#endif
-
-#ifndef ioread32be
-#define ioread32be ioread32be
-static inline u32 ioread32be(const volatile void __iomem *addr)
-{
-	return swab32(readl(addr));
-}
-#endif
-
-#ifdef CONFIG_64BIT
-#ifndef ioread64be
-#define ioread64be ioread64be
-static inline u64 ioread64be(const volatile void __iomem *addr)
-{
-	return swab64(readq(addr));
-}
-#endif
-#endif /* CONFIG_64BIT */
-
-#ifndef iowrite16be
-#define iowrite16be iowrite16be
-static inline void iowrite16be(u16 value, void volatile __iomem *addr)
-{
-	writew(swab16(value), addr);
-}
-#endif
-
-#ifndef iowrite32be
-#define iowrite32be iowrite32be
-static inline void iowrite32be(u32 value, volatile void __iomem *addr)
-{
-	writel(swab32(value), addr);
-}
-#endif
-
-#ifdef CONFIG_64BIT
-#ifndef iowrite64be
-#define iowrite64be iowrite64be
-static inline void iowrite64be(u64 value, volatile void __iomem *addr)
-{
-	writeq(swab64(value), addr);
-}
-#endif
-#endif /* CONFIG_64BIT */
-
-#ifndef ioread8_rep
-#define ioread8_rep ioread8_rep
-static inline void ioread8_rep(const volatile void __iomem *addr, void *buffer,
-			       unsigned int count)
-{
-	readsb(addr, buffer, count);
-}
-#endif
-
-#ifndef ioread16_rep
-#define ioread16_rep ioread16_rep
-static inline void ioread16_rep(const volatile void __iomem *addr,
-				void *buffer, unsigned int count)
-{
-	readsw(addr, buffer, count);
-}
-#endif
-
-#ifndef ioread32_rep
-#define ioread32_rep ioread32_rep
-static inline void ioread32_rep(const volatile void __iomem *addr,
-				void *buffer, unsigned int count)
-{
-	readsl(addr, buffer, count);
-}
-#endif
-
-#ifdef CONFIG_64BIT
-#ifndef ioread64_rep
-#define ioread64_rep ioread64_rep
-static inline void ioread64_rep(const volatile void __iomem *addr,
-				void *buffer, unsigned int count)
-{
-	readsq(addr, buffer, count);
-}
-#endif
-#endif /* CONFIG_64BIT */
-
-#ifndef iowrite8_rep
-#define iowrite8_rep iowrite8_rep
-static inline void iowrite8_rep(volatile void __iomem *addr,
-				const void *buffer,
-				unsigned int count)
-{
-	writesb(addr, buffer, count);
-}
-#endif
-
-#ifndef iowrite16_rep
-#define iowrite16_rep iowrite16_rep
-static inline void iowrite16_rep(volatile void __iomem *addr,
-				 const void *buffer,
-				 unsigned int count)
-{
-	writesw(addr, buffer, count);
-}
-#endif
-
-#ifndef iowrite32_rep
-#define iowrite32_rep iowrite32_rep
-static inline void iowrite32_rep(volatile void __iomem *addr,
-				 const void *buffer,
-				 unsigned int count)
-{
-	writesl(addr, buffer, count);
-}
-#endif
-
-#ifdef CONFIG_64BIT
-#ifndef iowrite64_rep
-#define iowrite64_rep iowrite64_rep
-static inline void iowrite64_rep(volatile void __iomem *addr,
-				 const void *buffer,
-				 unsigned int count)
-{
-	writesq(addr, buffer, count);
-}
-#endif
-#endif /* CONFIG_64BIT */
-#endif /* CONFIG_GENERIC_IOMAP */
 
 #ifdef __KERNEL__
 
@@ -946,22 +743,7 @@ static inline void *phys_to_virt(unsigned long address)
  * can provide stricter non-posted write semantics if the architecture
  * implements them.
  */
-#ifndef CONFIG_MMU
-#ifndef ioremap
-#define ioremap ioremap
-static inline void __iomem *ioremap(phys_addr_t offset, size_t size)
-{
-	return (void __iomem *)(unsigned long)offset;
-}
-#endif
-
-#ifndef iounmap
-#define iounmap iounmap
-static inline void iounmap(volatile void __iomem *addr)
-{
-}
-#endif
-#elif defined(CONFIG_GENERIC_IOREMAP)
+#if   defined(CONFIG_GENERIC_IOREMAP)
 #include <linux/pgtable.h>
 
 void __iomem *ioremap_prot(phys_addr_t addr, size_t size, unsigned long prot);
@@ -1014,35 +796,9 @@ static inline void __iomem *ioremap_np(phys_addr_t offset, size_t size)
 }
 #endif
 
-#ifdef CONFIG_HAS_IOPORT_MAP
-#ifndef CONFIG_GENERIC_IOMAP
-#ifndef ioport_map
-#define ioport_map ioport_map
-static inline void __iomem *ioport_map(unsigned long port, unsigned int nr)
-{
-	port &= IO_SPACE_LIMIT;
-	return (port > MMIO_UPPER_LIMIT) ? NULL : PCI_IOBASE + port;
-}
-#define ARCH_HAS_GENERIC_IOPORT_MAP
-#endif
-
-#ifndef ioport_unmap
-#define ioport_unmap ioport_unmap
-static inline void ioport_unmap(void __iomem *p)
-{
-}
-#endif
-#else /* CONFIG_GENERIC_IOMAP */
 extern void __iomem *ioport_map(unsigned long port, unsigned int nr);
 extern void ioport_unmap(void __iomem *p);
-#endif /* CONFIG_GENERIC_IOMAP */
-#endif /* CONFIG_HAS_IOPORT_MAP */
 
-#ifndef CONFIG_GENERIC_IOMAP
-#ifndef pci_iounmap
-#define ARCH_WANTS_GENERIC_PCI_IOUNMAP
-#endif
-#endif
 
 #ifndef xlate_dev_mem_ptr
 #define xlate_dev_mem_ptr xlate_dev_mem_ptr
@@ -1059,7 +815,6 @@ static inline void unxlate_dev_mem_ptr(phys_addr_t phys, void *addr)
 }
 #endif
 
-#ifdef CONFIG_VIRT_TO_BUS
 #ifndef virt_to_bus
 static inline unsigned long virt_to_bus(void *address)
 {
@@ -1070,7 +825,6 @@ static inline void *bus_to_virt(unsigned long address)
 {
 	return (void *)address;
 }
-#endif
 #endif
 
 #ifndef memset_io

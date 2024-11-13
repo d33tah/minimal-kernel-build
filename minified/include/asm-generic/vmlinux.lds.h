@@ -954,16 +954,12 @@
 		KEEP(*(.kunit_test_suites))				\
 		__kunit_suites_end = .;
 
-#ifdef CONFIG_BLK_DEV_INITRD
 #define INIT_RAM_FS							\
 	. = ALIGN(4);							\
 	__initramfs_start = .;						\
 	KEEP(*(.init.ramfs))						\
 	. = ALIGN(8);							\
 	KEEP(*(.init.ramfs.info))
-#else
-#define INIT_RAM_FS
-#endif
 
 /*
  * Memory encryption operates on a page basis. Since we need to clear

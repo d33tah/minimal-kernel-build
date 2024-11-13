@@ -68,7 +68,6 @@ EXPORT_SYMBOL_GPL(sched_clock);
 
 static DEFINE_STATIC_KEY_FALSE(sched_clock_running);
 
-#ifdef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
 /*
  * We must start with !__sched_clock_stable because the unstable -> stable
  * transition is accurate, while the stable -> unstable transition is not.
@@ -446,25 +445,6 @@ notrace void sched_clock_idle_wakeup_event(void)
 }
 EXPORT_SYMBOL_GPL(sched_clock_idle_wakeup_event);
 
-#else /* CONFIG_HAVE_UNSTABLE_SCHED_CLOCK */
-
-void __init sched_clock_init(void)
-{
-	static_branch_inc(&sched_clock_running);
-	local_irq_disable();
-	generic_sched_clock_init();
-	local_irq_enable();
-}
-
-notrace u64 sched_clock_cpu(int cpu)
-{
-	if (!static_branch_likely(&sched_clock_running))
-		return 0;
-
-	return sched_clock();
-}
-
-#endif /* CONFIG_HAVE_UNSTABLE_SCHED_CLOCK */
 
 /*
  * Running clock - returns the time that has elapsed while a guest has been

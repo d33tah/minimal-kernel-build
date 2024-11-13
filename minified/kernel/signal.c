@@ -4148,7 +4148,6 @@ int do_sigaction(int sig, struct k_sigaction *act, struct k_sigaction *oact)
 	return 0;
 }
 
-#ifdef CONFIG_DYNAMIC_SIGFRAME
 static inline void sigaltstack_lock(void)
 	__acquires(&current->sighand->siglock)
 {
@@ -4160,10 +4159,6 @@ static inline void sigaltstack_unlock(void)
 {
 	spin_unlock_irq(&current->sighand->siglock);
 }
-#else
-static inline void sigaltstack_lock(void) { }
-static inline void sigaltstack_unlock(void) { }
-#endif
 
 static int
 do_sigaltstack (const stack_t *ss, stack_t *oss, unsigned long sp,
@@ -4477,7 +4472,6 @@ COMPAT_SYSCALL_DEFINE4(rt_sigaction, int, sig,
 #endif
 #endif /* !CONFIG_ODD_RT_SIGACTION */
 
-#ifdef CONFIG_OLD_SIGACTION
 SYSCALL_DEFINE3(sigaction, int, sig,
 		const struct old_sigaction __user *, act,
 	        struct old_sigaction __user *, oact)
@@ -4512,7 +4506,6 @@ SYSCALL_DEFINE3(sigaction, int, sig,
 
 	return ret;
 }
-#endif
 #ifdef CONFIG_COMPAT_OLD_SIGACTION
 COMPAT_SYSCALL_DEFINE3(sigaction, int, sig,
 		const struct compat_old_sigaction __user *, act,
@@ -4665,14 +4658,12 @@ SYSCALL_DEFINE1(sigsuspend, old_sigset_t, mask)
 	return sigsuspend(&blocked);
 }
 #endif
-#ifdef CONFIG_OLD_SIGSUSPEND3
 SYSCALL_DEFINE3(sigsuspend, int, unused1, int, unused2, old_sigset_t, mask)
 {
 	sigset_t blocked;
 	siginitset(&blocked, mask);
 	return sigsuspend(&blocked);
 }
-#endif
 
 __weak const char *arch_vma_name(struct vm_area_struct *vma)
 {

@@ -51,10 +51,8 @@ typedef void *efi_handle_t;
 
 #if defined(CONFIG_X86_64)
 #define __efiapi __attribute__((ms_abi))
-#elif defined(CONFIG_X86_32)
-#define __efiapi __attribute__((regparm(0)))
 #else
-#define __efiapi
+#define __efiapi __attribute__((regparm(0)))
 #endif
 
 /*
@@ -677,19 +675,9 @@ extern void efi_enter_virtual_mode (void);	/* switch EFI to virtual mode, if pos
 #else
 static inline void efi_enter_virtual_mode (void) {}
 #endif
-#ifdef CONFIG_X86
 extern efi_status_t efi_query_variable_store(u32 attributes,
 					     unsigned long size,
 					     bool nonblocking);
-#else
-
-static inline efi_status_t efi_query_variable_store(u32 attributes,
-						    unsigned long size,
-						    bool nonblocking)
-{
-	return EFI_SUCCESS;
-}
-#endif
 extern void __iomem *efi_lookup_mapped_addr(u64 phys_addr);
 
 extern int __init efi_memmap_alloc(unsigned int num_entries,

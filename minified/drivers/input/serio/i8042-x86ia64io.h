@@ -3,9 +3,7 @@
 #define _I8042_X86IA64IO_H
 
 
-#ifdef CONFIG_X86
 #include <asm/x86_init.h>
-#endif
 
 /*
  * Names.
@@ -63,7 +61,6 @@ static inline void i8042_write_command(int val)
 	outb(val, I8042_COMMAND_REG);
 }
 
-#ifdef CONFIG_X86
 
 #include <linux/dmi.h>
 
@@ -1013,7 +1010,6 @@ static const struct dmi_system_id i8042_dmi_probe_defer_table[] __initconst = {
 	{ }
 };
 
-#endif /* CONFIG_X86 */
 
 #ifdef CONFIG_PNP
 #include <linux/pnp.h>
@@ -1167,10 +1163,8 @@ static int __init i8042_pnp_init(void)
 	bool pnp_data_busted = false;
 	int err;
 
-#ifdef CONFIG_X86
 	if (dmi_check_system(i8042_dmi_nopnp_table))
 		i8042_nopnp = true;
-#endif
 
 	if (i8042_nopnp) {
 		pr_info("PNP detection disabled\n");
@@ -1262,10 +1256,8 @@ static int __init i8042_pnp_init(void)
 	i8042_kbd_irq = i8042_pnp_kbd_irq;
 	i8042_aux_irq = i8042_pnp_aux_irq;
 
-#ifdef CONFIG_X86
 	i8042_bypass_aux_irq_test = !pnp_data_busted &&
 				    dmi_check_system(i8042_dmi_laptop_table);
-#endif
 
 	return 0;
 }
@@ -1279,12 +1271,10 @@ static int __init i8042_platform_init(void)
 {
 	int retval;
 
-#ifdef CONFIG_X86
 	u8 a20_on = 0xdf;
 	/* Just return if platform does not have i8042 controller */
 	if (x86_platform.legacy.i8042 == X86_LEGACY_I8042_PLATFORM_ABSENT)
 		return -ENODEV;
-#endif
 
 /*
  * On ix86 platforms touching the i8042 data register region can do really
@@ -1305,7 +1295,6 @@ static int __init i8042_platform_init(void)
         i8042_reset = I8042_RESET_ALWAYS;
 #endif
 
-#ifdef CONFIG_X86
 	/* Honor module parameter when value is not default */
 	if (i8042_reset == I8042_RESET_DEFAULT) {
 		if (dmi_check_system(i8042_dmi_reset_table))
@@ -1343,7 +1332,6 @@ static int __init i8042_platform_init(void)
 	 */
 	i8042_command(&a20_on, 0x10d1);
 	i8042_command(NULL, 0x00ff);	/* Null command for SMM firmware */
-#endif /* CONFIG_X86 */
 
 	return retval;
 }

@@ -173,7 +173,6 @@ static void print_cpu(struct seq_file *m, int cpu, u64 now)
 	SEQ_printf(m, "\n");
 }
 
-#ifdef CONFIG_GENERIC_CLOCKEVENTS
 static void
 print_tickdevice(struct seq_file *m, struct tick_device *td, int cpu)
 {
@@ -252,7 +251,6 @@ static void timer_list_show_tickdevices_header(struct seq_file *m)
 	SEQ_printf(m, "\n");
 #endif
 }
-#endif
 
 static inline void timer_list_header(struct seq_file *m, u64 now)
 {
@@ -272,11 +270,9 @@ void sysrq_timer_list_show(void)
 	for_each_online_cpu(cpu)
 		print_cpu(NULL, cpu, now);
 
-#ifdef CONFIG_GENERIC_CLOCKEVENTS
 	timer_list_show_tickdevices_header(NULL);
 	for_each_online_cpu(cpu)
 		print_tickdevice(NULL, tick_get_device(cpu), cpu);
-#endif
 	return;
 }
 
@@ -289,12 +285,10 @@ static int timer_list_show(struct seq_file *m, void *v)
 		timer_list_header(m, iter->now);
 	else if (!iter->second_pass)
 		print_cpu(m, iter->cpu, iter->now);
-#ifdef CONFIG_GENERIC_CLOCKEVENTS
 	else if (iter->cpu == -1 && iter->second_pass)
 		timer_list_show_tickdevices_header(m);
 	else
 		print_tickdevice(m, tick_get_device(iter->cpu), iter->cpu);
-#endif
 	return 0;
 }
 
@@ -303,15 +297,11 @@ static void *move_iter(struct timer_list_iter *iter, loff_t offset)
 	for (; offset; offset--) {
 		iter->cpu = cpumask_next(iter->cpu, cpu_online_mask);
 		if (iter->cpu >= nr_cpu_ids) {
-#ifdef CONFIG_GENERIC_CLOCKEVENTS
 			if (!iter->second_pass) {
 				iter->cpu = -1;
 				iter->second_pass = true;
 			} else
 				return NULL;
-#else
-			return NULL;
-#endif
 		}
 	}
 	return iter;

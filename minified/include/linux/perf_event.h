@@ -21,10 +21,8 @@
  * Kernel-internal data types and definitions:
  */
 
-#ifdef CONFIG_PERF_EVENTS
 # include <asm/perf_event.h>
 # include <asm/local64.h>
-#endif
 
 #define PERF_GUEST_ACTIVE	0x01
 #define PERF_GUEST_USER	0x02
@@ -35,9 +33,7 @@ struct perf_guest_info_callbacks {
 	unsigned int			(*handle_intel_pt_intr)(void);
 };
 
-#ifdef CONFIG_HAVE_HW_BREAKPOINT
 #include <asm/hw_breakpoint.h>
-#endif
 
 #include <linux/list.h>
 #include <linux/mutex.h>
@@ -144,7 +140,6 @@ struct hw_perf_event_extra {
  * struct hw_perf_event - performance event hardware details:
  */
 struct hw_perf_event {
-#ifdef CONFIG_PERF_EVENTS
 	union {
 		struct { /* hardware */
 			u64		config;
@@ -170,7 +165,6 @@ struct hw_perf_event {
 			u64	pwr_acc;
 			u64	ptsc;
 		};
-#ifdef CONFIG_HAVE_HW_BREAKPOINT
 		struct { /* breakpoint */
 			/*
 			 * Crufty hack to avoid the chicken and egg
@@ -180,7 +174,6 @@ struct hw_perf_event {
 			struct arch_hw_breakpoint	info;
 			struct list_head		bp_list;
 		};
-#endif
 		struct { /* amd_iommu */
 			u8	iommu_bank;
 			u8	iommu_cntr;
@@ -258,7 +251,6 @@ struct hw_perf_event {
 	 */
 	u64				freq_time_stamp;
 	u64				freq_count_stamp;
-#endif
 };
 
 struct perf_event;
@@ -639,7 +631,6 @@ struct pmu_event_list {
  * struct perf_event - performance event kernel representation:
  */
 struct perf_event {
-#ifdef CONFIG_PERF_EVENTS
 	/*
 	 * entry onto perf_event_context::event_list;
 	 *   modifications require ctx->lock
@@ -784,7 +775,6 @@ struct perf_event {
 	void *security;
 #endif
 	struct list_head		sb_list;
-#endif /* CONFIG_PERF_EVENTS */
 };
 
 
@@ -947,7 +937,6 @@ perf_cgroup_from_task(struct task_struct *task, struct perf_event_context *ctx)
 }
 #endif /* CONFIG_CGROUP_PERF */
 
-#ifdef CONFIG_PERF_EVENTS
 
 extern void *perf_aux_output_begin(struct perf_output_handle *handle,
 				   struct perf_event *event);
@@ -1477,99 +1466,8 @@ extern void perf_event_task_tick(void);
 extern int perf_event_account_interrupt(struct perf_event *event);
 extern int perf_event_period(struct perf_event *event, u64 value);
 extern u64 perf_event_pause(struct perf_event *event, bool reset);
-#else /* !CONFIG_PERF_EVENTS: */
-static inline void *
-perf_aux_output_begin(struct perf_output_handle *handle,
-		      struct perf_event *event)				{ return NULL; }
-static inline void
-perf_aux_output_end(struct perf_output_handle *handle, unsigned long size)
-									{ }
-static inline int
-perf_aux_output_skip(struct perf_output_handle *handle,
-		     unsigned long size)				{ return -EINVAL; }
-static inline void *
-perf_get_aux(struct perf_output_handle *handle)				{ return NULL; }
-static inline void
-perf_event_task_migrate(struct task_struct *task)			{ }
-static inline void
-perf_event_task_sched_in(struct task_struct *prev,
-			 struct task_struct *task)			{ }
-static inline void
-perf_event_task_sched_out(struct task_struct *prev,
-			  struct task_struct *next)			{ }
-static inline int perf_event_init_task(struct task_struct *child,
-				       u64 clone_flags)			{ return 0; }
-static inline void perf_event_exit_task(struct task_struct *child)	{ }
-static inline void perf_event_free_task(struct task_struct *task)	{ }
-static inline void perf_event_delayed_put(struct task_struct *task)	{ }
-static inline struct file *perf_event_get(unsigned int fd)	{ return ERR_PTR(-EINVAL); }
-static inline const struct perf_event *perf_get_event(struct file *file)
-{
-	return ERR_PTR(-EINVAL);
-}
-static inline const struct perf_event_attr *perf_event_attrs(struct perf_event *event)
-{
-	return ERR_PTR(-EINVAL);
-}
-static inline int perf_event_read_local(struct perf_event *event, u64 *value,
-					u64 *enabled, u64 *running)
-{
-	return -EINVAL;
-}
-static inline void perf_event_print_debug(void)				{ }
-static inline int perf_event_task_disable(void)				{ return -EINVAL; }
-static inline int perf_event_task_enable(void)				{ return -EINVAL; }
-static inline int perf_event_refresh(struct perf_event *event, int refresh)
-{
-	return -EINVAL;
-}
 
-static inline void
-perf_sw_event(u32 event_id, u64 nr, struct pt_regs *regs, u64 addr)	{ }
-static inline void
-perf_bp_event(struct perf_event *event, void *data)			{ }
-
-static inline void perf_event_mmap(struct vm_area_struct *vma)		{ }
-
-typedef int (perf_ksymbol_get_name_f)(char *name, int name_len, void *data);
-static inline void perf_event_ksymbol(u16 ksym_type, u64 addr, u32 len,
-				      bool unregister, const char *sym)	{ }
-static inline void perf_event_bpf_event(struct bpf_prog *prog,
-					enum perf_bpf_event_type type,
-					u16 flags)			{ }
-static inline void perf_event_exec(void)				{ }
-static inline void perf_event_comm(struct task_struct *tsk, bool exec)	{ }
-static inline void perf_event_namespaces(struct task_struct *tsk)	{ }
-static inline void perf_event_fork(struct task_struct *tsk)		{ }
-static inline void perf_event_text_poke(const void *addr,
-					const void *old_bytes,
-					size_t old_len,
-					const void *new_bytes,
-					size_t new_len)			{ }
-static inline void perf_event_init(void)				{ }
-static inline int  perf_swevent_get_recursion_context(void)		{ return -1; }
-static inline void perf_swevent_put_recursion_context(int rctx)		{ }
-static inline u64 perf_swevent_set_period(struct perf_event *event)	{ return 0; }
-static inline void perf_event_enable(struct perf_event *event)		{ }
-static inline void perf_event_disable(struct perf_event *event)		{ }
-static inline int __perf_event_disable(void *info)			{ return -1; }
-static inline void perf_event_task_tick(void)				{ }
-static inline int perf_event_release_kernel(struct perf_event *event)	{ return 0; }
-static inline int perf_event_period(struct perf_event *event, u64 value)
-{
-	return -EINVAL;
-}
-static inline u64 perf_event_pause(struct perf_event *event, bool reset)
-{
-	return 0;
-}
-#endif
-
-#if defined(CONFIG_PERF_EVENTS) && defined(CONFIG_CPU_SUP_INTEL)
 extern void perf_restore_debug_store(void);
-#else
-static inline void perf_restore_debug_store(void)			{ }
-#endif
 
 static __always_inline bool perf_raw_frag_last(const struct perf_raw_frag *frag)
 {
@@ -1638,21 +1536,14 @@ _name##_show(struct device *dev,					\
 static struct device_attribute format_attr_##_name = __ATTR_RO(_name)
 
 /* Performance counter hotplug functions */
-#ifdef CONFIG_PERF_EVENTS
 int perf_event_init_cpu(unsigned int cpu);
 int perf_event_exit_cpu(unsigned int cpu);
-#else
-#define perf_event_init_cpu	NULL
-#define perf_event_exit_cpu	NULL
-#endif
 
 extern void __weak arch_perf_update_userpage(struct perf_event *event,
 					     struct perf_event_mmap_page *userpg,
 					     u64 now);
 
-#ifdef CONFIG_MMU
 extern __weak u64 arch_perf_get_page_size(struct mm_struct *mm, unsigned long addr);
-#endif
 
 /*
  * Snapshot branch stack on software events.

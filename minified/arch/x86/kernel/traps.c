@@ -936,17 +936,9 @@ static bool is_sysenter_singlestep(struct pt_regs *regs)
 	 * which instructions will be hit because BTF could plausibly
 	 * be set.)
 	 */
-#ifdef CONFIG_X86_32
 	return (regs->ip - (unsigned long)__begin_SYSENTER_singlestep_region) <
 		(unsigned long)__end_SYSENTER_singlestep_region -
 		(unsigned long)__begin_SYSENTER_singlestep_region;
-#elif defined(CONFIG_IA32_EMULATION)
-	return (regs->ip - (unsigned long)entry_SYSENTER_compat) <
-		(unsigned long)__end_entry_SYSENTER_compat -
-		(unsigned long)entry_SYSENTER_compat;
-#else
-	return false;
-#endif
 }
 
 static __always_inline unsigned long debug_read_clear_dr6(void)
@@ -1429,7 +1421,6 @@ DEFINE_IDTENTRY(exc_virtualization_exception)
 
 #endif
 
-#ifdef CONFIG_X86_32
 DEFINE_IDTENTRY_SW(iret_error)
 {
 	local_irq_enable();
@@ -1440,7 +1431,6 @@ DEFINE_IDTENTRY_SW(iret_error)
 	}
 	local_irq_disable();
 }
-#endif
 
 void __init trap_init(void)
 {

@@ -98,10 +98,8 @@ static inline void tracepoint_synchronize_unregister(void)
 { }
 #endif
 
-#ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
 extern int syscall_regfunc(void);
 extern void syscall_unregfunc(void);
-#endif /* CONFIG_HAVE_SYSCALL_TRACEPOINTS */
 
 #ifndef PARAMS
 #define PARAMS(args...) args
@@ -110,7 +108,6 @@ extern void syscall_unregfunc(void);
 #define TRACE_DEFINE_ENUM(x)
 #define TRACE_DEFINE_SIZEOF(x)
 
-#ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
 static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 {
 	return offset_to_ptr(p);
@@ -121,16 +118,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 	    "	.balign 4					\n"	\
 	    "	.long 	__tracepoint_" #name " - .		\n"	\
 	    "	.previous					\n")
-#else
-static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
-{
-	return *p;
-}
-
-#define __TRACEPOINT_ENTRY(name)					 \
-	static tracepoint_ptr_t __tracepoint_ptr_##name __used		 \
-	__section("__tracepoints_ptrs") = &__tracepoint_##name
-#endif
 
 #endif /* _LINUX_TRACEPOINT_H */
 
@@ -161,7 +148,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 
 #ifdef TRACEPOINTS_ENABLED
 
-#ifdef CONFIG_HAVE_STATIC_CALL
 #define __DO_TRACE_CALL(name, args)					\
 	do {								\
 		struct tracepoint_func *it_func_ptr;			\
@@ -173,9 +159,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 			static_call(tp_func_##name)(__data, args);	\
 		}							\
 	} while (0)
-#else
-#define __DO_TRACE_CALL(name, args)	__traceiter_##name(NULL, args)
-#endif /* CONFIG_HAVE_STATIC_CALL */
 
 /*
  * it_func[0] is never NULL because there is at least one element in the array

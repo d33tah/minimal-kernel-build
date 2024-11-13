@@ -56,7 +56,6 @@
 
 #define GDT_ENTRY_INVALID_SEG	0
 
-#ifdef CONFIG_X86_32
 /*
  * The layout of the per-CPU GDT under Linux:
  *
@@ -158,63 +157,6 @@
 # define __KERNEL_PERCPU		0
 #endif
 
-#else /* 64-bit: */
-
-#include <asm/cache.h>
-
-#define GDT_ENTRY_KERNEL32_CS		1
-#define GDT_ENTRY_KERNEL_CS		2
-#define GDT_ENTRY_KERNEL_DS		3
-
-/*
- * We cannot use the same code segment descriptor for user and kernel mode,
- * not even in long flat mode, because of different DPL.
- *
- * GDT layout to get 64-bit SYSCALL/SYSRET support right. SYSRET hardcodes
- * selectors:
- *
- *   if returning to 32-bit userspace: cs = STAR.SYSRET_CS,
- *   if returning to 64-bit userspace: cs = STAR.SYSRET_CS+16,
- *
- * ss = STAR.SYSRET_CS+8 (in either case)
- *
- * thus USER_DS should be between 32-bit and 64-bit code selectors:
- */
-#define GDT_ENTRY_DEFAULT_USER32_CS	4
-#define GDT_ENTRY_DEFAULT_USER_DS	5
-#define GDT_ENTRY_DEFAULT_USER_CS	6
-
-/* Needs two entries */
-#define GDT_ENTRY_TSS			8
-/* Needs two entries */
-#define GDT_ENTRY_LDT			10
-
-#define GDT_ENTRY_TLS_MIN		12
-#define GDT_ENTRY_TLS_MAX		14
-
-#define GDT_ENTRY_CPUNODE		15
-
-/*
- * Number of entries in the GDT table:
- */
-#define GDT_ENTRIES			16
-
-/*
- * Segment selector values corresponding to the above entries:
- *
- * Note, selectors also need to have a correct RPL,
- * expressed with the +3 value for user-space selectors:
- */
-#define __KERNEL32_CS			(GDT_ENTRY_KERNEL32_CS*8)
-#define __KERNEL_CS			(GDT_ENTRY_KERNEL_CS*8)
-#define __KERNEL_DS			(GDT_ENTRY_KERNEL_DS*8)
-#define __USER32_CS			(GDT_ENTRY_DEFAULT_USER32_CS*8 + 3)
-#define __USER_DS			(GDT_ENTRY_DEFAULT_USER_DS*8 + 3)
-#define __USER32_DS			__USER_DS
-#define __USER_CS			(GDT_ENTRY_DEFAULT_USER_CS*8 + 3)
-#define __CPUNODE_SEG			(GDT_ENTRY_CPUNODE*8 + 3)
-
-#endif
 
 #define IDT_ENTRIES			256
 #define NUM_EXCEPTION_VECTORS		32
@@ -316,7 +258,6 @@ do {									\
 #define __loadsegment_ds(value) __loadsegment_simple(ds, (value))
 #define __loadsegment_es(value) __loadsegment_simple(es, (value))
 
-#ifdef CONFIG_X86_32
 
 /*
  * On 32-bit systems, the hidden parts of FS and GS are unobservable if
@@ -325,22 +266,6 @@ do {									\
 #define __loadsegment_fs(value) __loadsegment_simple(fs, (value))
 #define __loadsegment_gs(value) __loadsegment_simple(gs, (value))
 
-#else
-
-static inline void __loadsegment_fs(unsigned short value)
-{
-	asm volatile("						\n"
-		     "1:	movw %0, %%fs			\n"
-		     "2:					\n"
-
-		     _ASM_EXTABLE_TYPE(1b, 2b, EX_TYPE_CLEAR_FS)
-
-		     : : "rm" (value) : "memory");
-}
-
-/* __loadsegment_gs is intentionally undefined.  Use load_gs_index instead. */
-
-#endif
 
 #define loadsegment(seg, value) __loadsegment_ ## seg (value)
 

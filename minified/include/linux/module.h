@@ -333,17 +333,11 @@ struct module_layout {
 	/* Size of RO after init section */
 	unsigned int ro_after_init_size;
 
-#ifdef CONFIG_MODULES_TREE_LOOKUP
 	struct mod_tree_node mtn;
-#endif
 };
 
-#ifdef CONFIG_MODULES_TREE_LOOKUP
 /* Only touch one cacheline for common rbtree-for-core-layout case. */
 #define __module_layout_align ____cacheline_aligned
-#else
-#define __module_layout_align
-#endif
 
 struct mod_kallsyms {
 	Elf_Sym *symtab;

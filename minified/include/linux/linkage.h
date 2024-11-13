@@ -105,45 +105,8 @@
 
 /* === DEPRECATED annotations === */
 
-#ifndef CONFIG_ARCH_USE_SYM_ANNOTATIONS
-#ifndef GLOBAL
-/* deprecated, use SYM_DATA*, SYM_ENTRY, or similar */
-#define GLOBAL(name) \
-	.globl name ASM_NL \
-	name:
-#endif
-
-#ifndef ENTRY
-/* deprecated, use SYM_FUNC_START */
-#define ENTRY(name) \
-	SYM_FUNC_START(name)
-#endif
-#endif /* CONFIG_ARCH_USE_SYM_ANNOTATIONS */
 #endif /* LINKER_SCRIPT */
 
-#ifndef CONFIG_ARCH_USE_SYM_ANNOTATIONS
-#ifndef WEAK
-/* deprecated, use SYM_FUNC_START_WEAK* */
-#define WEAK(name)	   \
-	SYM_FUNC_START_WEAK(name)
-#endif
-
-#ifndef END
-/* deprecated, use SYM_FUNC_END, SYM_DATA_END, or SYM_END */
-#define END(name) \
-	.size name, .-name
-#endif
-
-/* If symbol 'name' is treated as a subroutine (gets called, and returns)
- * then please use ENDPROC to mark 'name' as STT_FUNC for the benefit of
- * static analysis tools such as stack depth analyzer.
- */
-#ifndef ENDPROC
-/* deprecated, use SYM_FUNC_END */
-#define ENDPROC(name) \
-	SYM_FUNC_END(name)
-#endif
-#endif /* CONFIG_ARCH_USE_SYM_ANNOTATIONS */
 
 /* === generic annotations === */
 

@@ -17,9 +17,7 @@ static DEFINE_PER_CPU_PAGE_ALIGNED(struct exception_stacks, exception_stacks);
 DEFINE_PER_CPU(struct cea_exception_stacks*, cea_exception_stacks);
 #endif
 
-#ifdef CONFIG_X86_32
 DECLARE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack);
-#endif
 
 /* Is called from entry code, so must be noinstr */
 noinstr struct cpu_entry_area *get_cpu_entry_area(int cpu)
@@ -59,7 +57,6 @@ cea_map_percpu_pages(void *cea_vaddr, void *ptr, int pages, pgprot_t prot)
 
 static void __init percpu_setup_debug_store(unsigned int cpu)
 {
-#ifdef CONFIG_CPU_SUP_INTEL
 	unsigned int npages;
 	void *cea;
 
@@ -80,7 +77,6 @@ static void __init percpu_setup_debug_store(unsigned int cpu)
 	npages = sizeof(struct debug_store_buffers) / PAGE_SIZE;
 	for (; npages; npages--, cea += PAGE_SIZE)
 		cea_set_pte(cea, 0, PAGE_NONE);
-#endif
 }
 
 #ifdef CONFIG_X86_64
@@ -189,9 +185,7 @@ static void __init setup_cpu_entry_area(unsigned int cpu)
 	cea_map_percpu_pages(&cea->tss, &per_cpu(cpu_tss_rw, cpu),
 			     sizeof(struct tss_struct) / PAGE_SIZE, tss_prot);
 
-#ifdef CONFIG_X86_32
 	per_cpu(cpu_entry_area, cpu) = cea;
-#endif
 
 	percpu_setup_exception_stacks(cpu);
 
@@ -200,7 +194,6 @@ static void __init setup_cpu_entry_area(unsigned int cpu)
 
 static __init void setup_cpu_entry_area_ptes(void)
 {
-#ifdef CONFIG_X86_32
 	unsigned long start, end;
 
 	/* The +1 is for the readonly IDT: */
@@ -214,7 +207,6 @@ static __init void setup_cpu_entry_area_ptes(void)
 	/* Careful here: start + PMD_SIZE might wrap around */
 	for (; start < end && start >= CPU_ENTRY_AREA_BASE; start += PMD_SIZE)
 		populate_extra_pte(start);
-#endif
 }
 
 void __init setup_cpu_entry_areas(void)

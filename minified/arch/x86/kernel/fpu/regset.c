@@ -174,7 +174,6 @@ out:
 	return ret;
 }
 
-#if defined CONFIG_X86_32 || defined CONFIG_IA32_EMULATION
 
 /*
  * FPU tag word conversions.
@@ -383,4 +382,3 @@ int fpregs_set(struct task_struct *target, const struct user_regset *regset,
 	return 0;
 }
 
-#endif	/* CONFIG_X86_32 || CONFIG_IA32_EMULATION */

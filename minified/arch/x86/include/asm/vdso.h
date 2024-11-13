@@ -41,9 +41,7 @@ extern const struct vdso_image vdso_image_64;
 extern const struct vdso_image vdso_image_x32;
 #endif
 
-#if defined CONFIG_X86_32 || defined CONFIG_COMPAT
 extern const struct vdso_image vdso_image_32;
-#endif
 
 extern void __init init_vdso_image(const struct vdso_image *image);
 

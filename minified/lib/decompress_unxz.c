@@ -122,9 +122,7 @@
  * For boot time use, we enable only the BCJ filter of the current
  * architecture or none if no BCJ filter is available for the architecture.
  */
-#ifdef CONFIG_X86
 #	define XZ_DEC_X86
-#endif
 #ifdef CONFIG_PPC
 #	define XZ_DEC_POWERPC
 #endif

@@ -56,7 +56,6 @@ DEFINE_IRQ_VECTOR_EVENT(error_apic);
  */
 DEFINE_IRQ_VECTOR_EVENT(x86_platform_ipi);
 
-#ifdef CONFIG_IRQ_WORK
 /*
  * irq_work - called when entering/exiting a irq work interrupt
  * vector handler
@@ -73,7 +72,6 @@ DEFINE_IRQ_VECTOR_EVENT(irq_work);
  *  4) goto 1
  */
 TRACE_EVENT_PERF_PERM(irq_work_exit, is_sampling_event(p_event) ? -EPERM : 0);
-#endif
 
 /*
  * The ifdef is required because that tracepoint macro hell emits tracepoint

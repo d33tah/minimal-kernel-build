@@ -67,10 +67,8 @@ struct task_struct init_task
 #endif
 	__aligned(L1_CACHE_BYTES)
 = {
-#ifdef CONFIG_THREAD_INFO_IN_TASK
 	.thread_info	= INIT_THREAD_INFO(init_task),
 	.stack_refcount	= REFCOUNT_INIT(1),
-#endif
 	.__state	= 0,
 	.stack		= init_stack,
 	.usage		= REFCOUNT_INIT(2),
@@ -138,10 +136,8 @@ struct task_struct init_task
 	.loginuid	= INVALID_UID,
 	.sessionid	= AUDIT_SID_UNSET,
 #endif
-#ifdef CONFIG_PERF_EVENTS
 	.perf_event_mutex = __MUTEX_INITIALIZER(init_task.perf_event_mutex),
 	.perf_event_list = LIST_HEAD_INIT(init_task.perf_event_list),
-#endif
 #ifdef CONFIG_PREEMPT_RCU
 	.rcu_read_lock_nesting = 0,
 	.rcu_read_unlock_special.s = 0,
@@ -216,6 +212,3 @@ EXPORT_SYMBOL(init_task);
  * Initial thread structure. Alignment of this is handled by a special
  * linker map entry.
  */
-#ifndef CONFIG_THREAD_INFO_IN_TASK
-struct thread_info init_thread_info __init_thread_info = INIT_THREAD_INFO(init_task);
-#endif

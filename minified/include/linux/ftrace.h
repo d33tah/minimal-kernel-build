@@ -386,23 +386,6 @@ static inline int modify_ftrace_direct_multi(struct ftrace_ops *ops, unsigned lo
 }
 #endif /* CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS */
 
-#ifndef CONFIG_HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
-/*
- * This must be implemented by the architecture.
- * It is the way the ftrace direct_ops helper, when called
- * via ftrace (because there's other callbacks besides the
- * direct call), can inform the architecture's trampoline that this
- * routine has a direct caller, and what the caller is.
- *
- * For example, in x86, it returns the direct caller
- * callback function via the regs->orig_ax parameter.
- * Then in the ftrace trampoline, if this is set, it makes
- * the return from the trampoline jump to the direct caller
- * instead of going back to the function it just traced.
- */
-static inline void arch_ftrace_set_direct_caller(struct pt_regs *regs,
-						 unsigned long addr) { }
-#endif /* CONFIG_HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS */
 
 #ifdef CONFIG_STACK_TRACER
 

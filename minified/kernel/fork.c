@@ -527,32 +527,22 @@ static void release_task_stack(struct task_struct *tsk)
 	free_thread_stack(tsk);
 }
 
-#ifdef CONFIG_THREAD_INFO_IN_TASK
 void put_task_stack(struct task_struct *tsk)
 {
 	if (refcount_dec_and_test(&tsk->stack_refcount))
 		release_task_stack(tsk);
 }
-#endif
 
 void free_task(struct task_struct *tsk)
 {
 	release_user_cpus_ptr(tsk);
 	scs_release(tsk);
 
-#ifndef CONFIG_THREAD_INFO_IN_TASK
-	/*
-	 * The task is finally done with both the stack and thread_info,
-	 * so free both.
-	 */
-	release_task_stack(tsk);
-#else
 	/*
 	 * If the task had a separate stack allocation, it should be gone
 	 * by now.
 	 */
 	WARN_ON_ONCE(refcount_read(&tsk->stack_refcount) != 0);
-#endif
 	rt_mutex_debug_task_free(tsk);
 	ftrace_graph_exit_task(tsk);
 	arch_release_task_struct(tsk);
@@ -576,7 +566,6 @@ static void dup_mm_exe_file(struct mm_struct *mm, struct mm_struct *oldmm)
 		pr_warn_once("deny_write_access() failed in %s\n", __func__);
 }
 
-#ifdef CONFIG_MMU
 static __latent_entropy int dup_mmap(struct mm_struct *mm,
 					struct mm_struct *oldmm)
 {
@@ -736,17 +725,6 @@ static inline void mm_free_pgd(struct mm_struct *mm)
 {
 	pgd_free(mm, mm->pgd);
 }
-#else
-static int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
-{
-	mmap_write_lock(oldmm);
-	dup_mm_exe_file(mm, oldmm);
-	mmap_write_unlock(oldmm);
-	return 0;
-}
-#define mm_alloc_pgd(mm)	(0)
-#define mm_free_pgd(mm)
-#endif /* CONFIG_MMU */
 
 static void check_mm(struct mm_struct *mm)
 {
@@ -875,10 +853,8 @@ static void set_max_threads(unsigned int max_threads_suggested)
 	max_threads = clamp_t(u64, threads, MIN_THREADS, MAX_THREADS);
 }
 
-#ifdef CONFIG_ARCH_WANTS_DYNAMIC_TASK_STRUCT
 /* Initialized by the architecture: */
 int arch_task_struct_size __read_mostly;
-#endif
 
 #ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
 static void task_struct_whitelist(unsigned long *offset, unsigned long *size)
@@ -978,9 +954,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	if (err)
 		goto free_tsk;
 
-#ifdef CONFIG_THREAD_INFO_IN_TASK
 	refcount_set(&tsk->stack_refcount, 1);
-#endif
 	account_kernel_stack(tsk, 1);
 
 	err = scs_prepare(tsk, node);
@@ -1045,9 +1019,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	tsk->active_memcg = NULL;
 #endif
 
-#ifdef CONFIG_CPU_SUP_INTEL
 	tsk->reported_split_lock = 0;
-#endif
 
 	return tsk;
 
@@ -1209,7 +1181,6 @@ void mmput(struct mm_struct *mm)
 }
 EXPORT_SYMBOL_GPL(mmput);
 
-#ifdef CONFIG_MMU
 static void mmput_async_fn(struct work_struct *work)
 {
 	struct mm_struct *mm = container_of(work, struct mm_struct,
@@ -1225,7 +1196,6 @@ void mmput_async(struct mm_struct *mm)
 		schedule_work(&mm->async_put_work);
 	}
 }
-#endif
 
 /**
  * set_mm_exe_file - change a reference to the mm's executable file
@@ -2304,9 +2274,7 @@ static __latent_entropy struct task_struct *copy_process(
 	 */
 	user_disable_single_step(p);
 	clear_task_syscall_work(p, SYSCALL_TRACE);
-#if defined(CONFIG_GENERIC_ENTRY) || defined(TIF_SYSCALL_EMU)
 	clear_task_syscall_work(p, SYSCALL_EMU);
-#endif
 	clear_tsk_latency_tracing(p);
 
 	/* ok, now we should be set up.. */
@@ -2727,16 +2695,11 @@ pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 #ifdef __ARCH_WANT_SYS_FORK
 SYSCALL_DEFINE0(fork)
 {
-#ifdef CONFIG_MMU
 	struct kernel_clone_args args = {
 		.exit_signal = SIGCHLD,
 	};
 
 	return kernel_clone(&args);
-#else
-	/* can not support in nommu mode */
-	return -EINVAL;
-#endif
 }
 #endif
 
@@ -2753,28 +2716,10 @@ SYSCALL_DEFINE0(vfork)
 #endif
 
 #ifdef __ARCH_WANT_SYS_CLONE
-#ifdef CONFIG_CLONE_BACKWARDS
 SYSCALL_DEFINE5(clone, unsigned long, clone_flags, unsigned long, newsp,
 		 int __user *, parent_tidptr,
 		 unsigned long, tls,
 		 int __user *, child_tidptr)
-#elif defined(CONFIG_CLONE_BACKWARDS2)
-SYSCALL_DEFINE5(clone, unsigned long, newsp, unsigned long, clone_flags,
-		 int __user *, parent_tidptr,
-		 int __user *, child_tidptr,
-		 unsigned long, tls)
-#elif defined(CONFIG_CLONE_BACKWARDS3)
-SYSCALL_DEFINE6(clone, unsigned long, clone_flags, unsigned long, newsp,
-		int, stack_size,
-		int __user *, parent_tidptr,
-		int __user *, child_tidptr,
-		unsigned long, tls)
-#else
-SYSCALL_DEFINE5(clone, unsigned long, clone_flags, unsigned long, newsp,
-		 int __user *, parent_tidptr,
-		 int __user *, child_tidptr,
-		 unsigned long, tls)
-#endif
 {
 	struct kernel_clone_args args = {
 		.flags		= (lower_32_bits(clone_flags) & ~CSIGNAL),

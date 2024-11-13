@@ -6,7 +6,6 @@
 #include <asm/pgtable.h>
 
 #ifndef __ASSEMBLY__
-#ifdef CONFIG_MMU
 
 #include <linux/mm_types.h>
 #include <linux/bug.h>
@@ -937,7 +936,6 @@ static inline void ptep_modify_prot_commit(struct vm_area_struct *vma,
 	__ptep_modify_prot_commit(vma, addr, ptep, pte);
 }
 #endif /* __HAVE_ARCH_PTEP_MODIFY_PROT_TRANSACTION */
-#endif /* CONFIG_MMU */
 
 /*
  * No-op macros that just return the current protection value. Defined here
@@ -968,7 +966,6 @@ static inline void ptep_modify_prot_commit(struct vm_area_struct *vma,
 #define pgprot_mhp(prot)	(prot)
 #endif
 
-#ifdef CONFIG_MMU
 #ifndef pgprot_modify
 #define pgprot_modify pgprot_modify
 static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
@@ -982,7 +979,6 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
 	return newprot;
 }
 #endif
-#endif /* CONFIG_MMU */
 
 #ifndef pgprot_encrypted
 #define pgprot_encrypted(prot)	(prot)
@@ -1200,7 +1196,6 @@ extern void untrack_pfn(struct vm_area_struct *vma, unsigned long pfn,
 extern void untrack_pfn_moved(struct vm_area_struct *vma);
 #endif
 
-#ifdef CONFIG_MMU
 #ifdef __HAVE_COLOR_ZERO_PAGE
 static inline int is_zero_pfn(unsigned long pfn)
 {
@@ -1224,19 +1219,7 @@ static inline unsigned long my_zero_pfn(unsigned long addr)
 	return zero_pfn;
 }
 #endif
-#else
-static inline int is_zero_pfn(unsigned long pfn)
-{
-	return 0;
-}
 
-static inline unsigned long my_zero_pfn(unsigned long addr)
-{
-	return 0;
-}
-#endif /* CONFIG_MMU */
-
-#ifdef CONFIG_MMU
 
 #ifndef CONFIG_TRANSPARENT_HUGEPAGE
 static inline int pmd_trans_huge(pmd_t pmd)
@@ -1442,7 +1425,6 @@ static inline int pmd_protnone(pmd_t pmd)
 }
 #endif /* CONFIG_NUMA_BALANCING */
 
-#endif /* CONFIG_MMU */
 
 #ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
 

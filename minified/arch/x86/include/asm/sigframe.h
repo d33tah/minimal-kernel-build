@@ -7,19 +7,10 @@
 #include <asm/ucontext.h>
 #include <linux/compat.h>
 
-#ifdef CONFIG_X86_32
 #define sigframe_ia32		sigframe
 #define rt_sigframe_ia32	rt_sigframe
 #define ucontext_ia32		ucontext
-#else /* !CONFIG_X86_32 */
 
-#ifdef CONFIG_IA32_EMULATION
-#include <asm/ia32.h>
-#endif /* CONFIG_IA32_EMULATION */
-
-#endif /* CONFIG_X86_32 */
-
-#if defined(CONFIG_X86_32) || defined(CONFIG_IA32_EMULATION)
 struct sigframe_ia32 {
 	u32 pretcode;
 	int sig;
@@ -52,7 +43,6 @@ struct rt_sigframe_ia32 {
 	char retcode[8];
 	/* fp state follows here */
 };
-#endif /* defined(CONFIG_X86_32) || defined(CONFIG_IA32_EMULATION) */
 
 #ifdef CONFIG_X86_64
 

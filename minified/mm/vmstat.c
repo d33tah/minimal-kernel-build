@@ -554,7 +554,6 @@ void __dec_node_page_state(struct page *page, enum node_stat_item item)
 }
 EXPORT_SYMBOL(__dec_node_page_state);
 
-#ifdef CONFIG_HAVE_CMPXCHG_LOCAL
 /*
  * If we have cmpxchg_local support then we do not need to incur the overhead
  * that comes with local_irq_save/restore if we use this_cpu_cmpxchg.
@@ -696,86 +695,6 @@ void dec_node_page_state(struct page *page, enum node_stat_item item)
 	mod_node_state(page_pgdat(page), item, -1, -1);
 }
 EXPORT_SYMBOL(dec_node_page_state);
-#else
-/*
- * Use interrupt disable to serialize counter updates
- */
-void mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
-			 long delta)
-{
-	unsigned long flags;
-
-	local_irq_save(flags);
-	__mod_zone_page_state(zone, item, delta);
-	local_irq_restore(flags);
-}
-EXPORT_SYMBOL(mod_zone_page_state);
-
-void inc_zone_page_state(struct page *page, enum zone_stat_item item)
-{
-	unsigned long flags;
-	struct zone *zone;
-
-	zone = page_zone(page);
-	local_irq_save(flags);
-	__inc_zone_state(zone, item);
-	local_irq_restore(flags);
-}
-EXPORT_SYMBOL(inc_zone_page_state);
-
-void dec_zone_page_state(struct page *page, enum zone_stat_item item)
-{
-	unsigned long flags;
-
-	local_irq_save(flags);
-	__dec_zone_page_state(page, item);
-	local_irq_restore(flags);
-}
-EXPORT_SYMBOL(dec_zone_page_state);
-
-void inc_node_state(struct pglist_data *pgdat, enum node_stat_item item)
-{
-	unsigned long flags;
-
-	local_irq_save(flags);
-	__inc_node_state(pgdat, item);
-	local_irq_restore(flags);
-}
-EXPORT_SYMBOL(inc_node_state);
-
-void mod_node_page_state(struct pglist_data *pgdat, enum node_stat_item item,
-					long delta)
-{
-	unsigned long flags;
-
-	local_irq_save(flags);
-	__mod_node_page_state(pgdat, item, delta);
-	local_irq_restore(flags);
-}
-EXPORT_SYMBOL(mod_node_page_state);
-
-void inc_node_page_state(struct page *page, enum node_stat_item item)
-{
-	unsigned long flags;
-	struct pglist_data *pgdat;
-
-	pgdat = page_pgdat(page);
-	local_irq_save(flags);
-	__inc_node_state(pgdat, item);
-	local_irq_restore(flags);
-}
-EXPORT_SYMBOL(inc_node_page_state);
-
-void dec_node_page_state(struct page *page, enum node_stat_item item)
-{
-	unsigned long flags;
-
-	local_irq_save(flags);
-	__dec_node_page_state(page, item);
-	local_irq_restore(flags);
-}
-EXPORT_SYMBOL(dec_node_page_state);
-#endif
 
 /*
  * Fold a differential into the global counters.
@@ -1400,10 +1319,8 @@ const char * const vmstat_text[] = {
 	"zswpin",
 	"zswpout",
 #endif
-#ifdef CONFIG_X86
 	"direct_map_level2_splits",
 	"direct_map_level3_splits",
-#endif
 #endif /* CONFIG_VM_EVENT_COUNTERS || CONFIG_MEMCG */
 };
 #endif /* CONFIG_PROC_FS || CONFIG_SYSFS || CONFIG_NUMA || CONFIG_MEMCG */

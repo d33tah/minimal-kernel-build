@@ -38,7 +38,6 @@ struct static_call_site {
 	extern struct static_call_key STATIC_CALL_KEY(name);		\
 	extern typeof(func) STATIC_CALL_TRAMP(name);
 
-#ifdef CONFIG_HAVE_STATIC_CALL
 
 #define __raw_static_call(name)	(&STATIC_CALL_TRAMP(name))
 
@@ -89,15 +88,5 @@ struct static_call_key {
 
 #define static_call(name)	__static_call(name)
 
-#else
-
-struct static_call_key {
-	void *func;
-};
-
-#define static_call(name)						\
-	((typeof(STATIC_CALL_TRAMP(name))*)(STATIC_CALL_KEY(name).func))
-
-#endif /* CONFIG_HAVE_STATIC_CALL */
 
 #endif /* _STATIC_CALL_TYPES_H */

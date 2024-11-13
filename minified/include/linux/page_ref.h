@@ -265,7 +265,6 @@ static inline bool folio_try_get(struct folio *folio)
 
 static inline bool folio_ref_try_add_rcu(struct folio *folio, int count)
 {
-#ifdef CONFIG_TINY_RCU
 	/*
 	 * The caller guarantees the folio will not be freed from interrupt
 	 * context, so (on !SMP) we only need preemption to be disabled
@@ -276,12 +275,6 @@ static inline bool folio_ref_try_add_rcu(struct folio *folio, int count)
 # endif
 	VM_BUG_ON_FOLIO(folio_ref_count(folio) == 0, folio);
 	folio_ref_add(folio, count);
-#else
-	if (unlikely(!folio_ref_add_unless(folio, count, 0))) {
-		/* Either the folio has been freed, or will be freed. */
-		return false;
-	}
-#endif
 	return true;
 }
 

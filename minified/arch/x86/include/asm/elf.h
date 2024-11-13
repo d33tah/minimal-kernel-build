@@ -77,9 +77,7 @@ typedef struct user_i387_struct elf_fpregset_t;
 #ifdef CONFIG_X86_64
 extern unsigned int vdso64_enabled;
 #endif
-#if defined(CONFIG_X86_32) || defined(CONFIG_IA32_EMULATION)
 extern unsigned int vdso32_enabled;
-#endif
 
 /*
  * This is used to ensure we don't load something for the wrong architecture.
@@ -89,7 +87,6 @@ extern unsigned int vdso32_enabled;
 
 #include <asm/processor.h>
 
-#ifdef CONFIG_X86_32
 #include <asm/desc.h>
 
 #define elf_check_arch(x)	elf_check_arch_ia32(x)
@@ -140,96 +137,6 @@ do {						\
 #define ELF_PLATFORM	(utsname()->machine)
 #define set_personality_64bit()	do { } while (0)
 
-#else /* CONFIG_X86_32 */
-
-/*
- * This is used to ensure we don't load something for the wrong architecture.
- */
-#define elf_check_arch(x)			\
-	((x)->e_machine == EM_X86_64)
-
-#define compat_elf_check_arch(x)					\
-	(elf_check_arch_ia32(x) ||					\
-	 (IS_ENABLED(CONFIG_X86_X32_ABI) && (x)->e_machine == EM_X86_64))
-
-#if __USER32_DS != __USER_DS
-# error "The following code assumes __USER32_DS == __USER_DS"
-#endif
-
-static inline void elf_common_init(struct thread_struct *t,
-				   struct pt_regs *regs, const u16 ds)
-{
-	/* ax gets execve's return value. */
-	/*regs->ax = */ regs->bx = regs->cx = regs->dx = 0;
-	regs->si = regs->di = regs->bp = 0;
-	regs->r8 = regs->r9 = regs->r10 = regs->r11 = 0;
-	regs->r12 = regs->r13 = regs->r14 = regs->r15 = 0;
-	t->fsbase = t->gsbase = 0;
-	t->fsindex = t->gsindex = 0;
-	t->ds = t->es = ds;
-}
-
-#define ELF_PLAT_INIT(_r, load_addr)			\
-	elf_common_init(&current->thread, _r, 0)
-
-#define	COMPAT_ELF_PLAT_INIT(regs, load_addr)		\
-	elf_common_init(&current->thread, regs, __USER_DS)
-
-void compat_start_thread(struct pt_regs *regs, u32 new_ip, u32 new_sp, bool x32);
-#define COMPAT_START_THREAD(ex, regs, new_ip, new_sp)	\
-	compat_start_thread(regs, new_ip, new_sp, ex->e_machine == EM_X86_64)
-
-void set_personality_ia32(bool);
-#define COMPAT_SET_PERSONALITY(ex)			\
-	set_personality_ia32((ex).e_machine == EM_X86_64)
-
-#define COMPAT_ELF_PLATFORM			("i686")
-
-/*
- * regs is struct pt_regs, pr_reg is elf_gregset_t (which is
- * now struct_user_regs, they are different). Assumes current is the process
- * getting dumped.
- */
-
-#define ELF_CORE_COPY_REGS(pr_reg, regs)			\
-do {								\
-	unsigned v;						\
-	(pr_reg)[0] = (regs)->r15;				\
-	(pr_reg)[1] = (regs)->r14;				\
-	(pr_reg)[2] = (regs)->r13;				\
-	(pr_reg)[3] = (regs)->r12;				\
-	(pr_reg)[4] = (regs)->bp;				\
-	(pr_reg)[5] = (regs)->bx;				\
-	(pr_reg)[6] = (regs)->r11;				\
-	(pr_reg)[7] = (regs)->r10;				\
-	(pr_reg)[8] = (regs)->r9;				\
-	(pr_reg)[9] = (regs)->r8;				\
-	(pr_reg)[10] = (regs)->ax;				\
-	(pr_reg)[11] = (regs)->cx;				\
-	(pr_reg)[12] = (regs)->dx;				\
-	(pr_reg)[13] = (regs)->si;				\
-	(pr_reg)[14] = (regs)->di;				\
-	(pr_reg)[15] = (regs)->orig_ax;				\
-	(pr_reg)[16] = (regs)->ip;				\
-	(pr_reg)[17] = (regs)->cs;				\
-	(pr_reg)[18] = (regs)->flags;				\
-	(pr_reg)[19] = (regs)->sp;				\
-	(pr_reg)[20] = (regs)->ss;				\
-	(pr_reg)[21] = x86_fsbase_read_cpu();			\
-	(pr_reg)[22] = x86_gsbase_read_cpu_inactive();		\
-	asm("movl %%ds,%0" : "=r" (v)); (pr_reg)[23] = v;	\
-	asm("movl %%es,%0" : "=r" (v)); (pr_reg)[24] = v;	\
-	asm("movl %%fs,%0" : "=r" (v)); (pr_reg)[25] = v;	\
-	asm("movl %%gs,%0" : "=r" (v)); (pr_reg)[26] = v;	\
-} while (0);
-
-/* I'm not sure if we can use '-' here */
-#define ELF_PLATFORM       ("x86_64")
-extern void set_personality_64bit(void);
-extern unsigned int sysctl_vsyscall32;
-extern int force_personality32;
-
-#endif /* !CONFIG_X86_32 */
 
 #define CORE_DUMP_USE_REGSET
 #define ELF_EXEC_PAGESIZE	4096
@@ -320,7 +227,6 @@ extern unsigned long get_mmap_base(int is_legacy);
 extern bool mmap_address_hint_valid(unsigned long addr, unsigned long len);
 extern unsigned long get_sigframe_size(void);
 
-#ifdef CONFIG_X86_32
 
 #define __STACK_RND_MASK(is32bit) (0x7ff)
 #define STACK_RND_MASK (0x7ff)
@@ -329,40 +235,6 @@ extern unsigned long get_sigframe_size(void);
 
 /* update AT_VECTOR_SIZE_ARCH if the number of NEW_AUX_ENT entries changes */
 
-#else /* CONFIG_X86_32 */
-
-/* 1GB for 64bit, 8MB for 32bit */
-#define __STACK_RND_MASK(is32bit) ((is32bit) ? 0x7ff : 0x3fffff)
-#define STACK_RND_MASK __STACK_RND_MASK(mmap_is_ia32())
-
-#define ARCH_DLINFO							\
-do {									\
-	if (vdso64_enabled)						\
-		NEW_AUX_ENT(AT_SYSINFO_EHDR,				\
-			    (unsigned long __force)current->mm->context.vdso); \
-	NEW_AUX_ENT(AT_MINSIGSTKSZ, get_sigframe_size());		\
-} while (0)
-
-/* As a historical oddity, the x32 and x86_64 vDSOs are controlled together. */
-#define ARCH_DLINFO_X32							\
-do {									\
-	if (vdso64_enabled)						\
-		NEW_AUX_ENT(AT_SYSINFO_EHDR,				\
-			    (unsigned long __force)current->mm->context.vdso); \
-	NEW_AUX_ENT(AT_MINSIGSTKSZ, get_sigframe_size());		\
-} while (0)
-
-#define AT_SYSINFO		32
-
-#define COMPAT_ARCH_DLINFO						\
-if (exec->e_machine == EM_X86_64)					\
-	ARCH_DLINFO_X32;						\
-else if (IS_ENABLED(CONFIG_IA32_EMULATION))				\
-	ARCH_DLINFO_IA32
-
-#define COMPAT_ELF_ET_DYN_BASE	(TASK_UNMAPPED_BASE + 0x1000000)
-
-#endif /* !CONFIG_X86_32 */
 
 #define VDSO_CURRENT_BASE	((unsigned long)current->mm->context.vdso)
 

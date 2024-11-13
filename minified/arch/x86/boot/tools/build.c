@@ -163,11 +163,7 @@ static void update_pecoff_section_header_fields(char *section_name, u32 vma, u32
 	pe_header = get_unaligned_le32(&buf[0x3c]);
 	num_sections = get_unaligned_le16(&buf[pe_header + 6]);
 
-#ifdef CONFIG_X86_32
 	section = &buf[pe_header + 0xa8];
-#else
-	section = &buf[pe_header + 0xb8];
-#endif
 
 	while (num_sections > 0) {
 		if (strncmp((char*)section, section_name, 8) == 0) {
@@ -278,12 +274,7 @@ static int reserve_pecoff_reloc_section(int c)
 static void efi_stub_defaults(void)
 {
 	/* Defaults for old kernel */
-#ifdef CONFIG_X86_32
 	efi_pe_entry = 0x10;
-#else
-	efi_pe_entry = 0x210;
-	startup_64 = 0x200;
-#endif
 }
 
 static void efi_stub_entry_update(void)

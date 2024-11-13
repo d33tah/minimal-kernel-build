@@ -71,7 +71,6 @@ static __always_inline unsigned long __vmcs_readl(unsigned long field)
 {
 	unsigned long value;
 
-#ifdef CONFIG_CC_HAS_ASM_GOTO_OUTPUT
 
 	asm_volatile_goto("1: vmread %[field], %[output]\n\t"
 			  "jna %l[do_fail]\n\t"
@@ -94,38 +93,6 @@ do_exception:
 	kvm_spurious_fault();
 	return 0;
 
-#else /* !CONFIG_CC_HAS_ASM_GOTO_OUTPUT */
-
-	asm volatile("1: vmread %2, %1\n\t"
-		     ".byte 0x3e\n\t" /* branch taken hint */
-		     "ja 3f\n\t"
-
-		     /*
-		      * VMREAD failed.  Push '0' for @fault, push the failing
-		      * @field, and bounce through the trampoline to preserve
-		      * volatile registers.
-		      */
-		     "xorl %k1, %k1\n\t"
-		     "2:\n\t"
-		     "push %1\n\t"
-		     "push %2\n\t"
-		     "call vmread_error_trampoline\n\t"
-
-		     /*
-		      * Unwind the stack.  Note, the trampoline zeros out the
-		      * memory for @fault so that the result is '0' on error.
-		      */
-		     "pop %2\n\t"
-		     "pop %1\n\t"
-		     "3:\n\t"
-
-		     /* VMREAD faulted.  As above, except push '1' for @fault. */
-		     _ASM_EXTABLE_TYPE_REG(1b, 2b, EX_TYPE_ONE_REG, %1)
-
-		     : ASM_CALL_CONSTRAINT, "=&r"(value) : "r"(field) : "cc");
-	return value;
-
-#endif /* CONFIG_CC_HAS_ASM_GOTO_OUTPUT */
 }
 
 static __always_inline u16 vmcs_read16(unsigned long field)

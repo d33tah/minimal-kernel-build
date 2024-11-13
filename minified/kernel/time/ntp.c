@@ -494,7 +494,6 @@ out:
 	return leap;
 }
 
-#if defined(CONFIG_GENERIC_CMOS_UPDATE) || defined(CONFIG_RTC_SYSTOHC)
 static void sync_hw_clock(struct work_struct *work);
 static DECLARE_WORK(sync_work, sync_hw_clock);
 static struct hrtimer sync_hrtimer;
@@ -564,17 +563,10 @@ static inline bool rtc_tv_nsec_ok(unsigned long set_offset_nsec,
 	return false;
 }
 
-#ifdef CONFIG_GENERIC_CMOS_UPDATE
 int __weak update_persistent_clock64(struct timespec64 now64)
 {
 	return -ENODEV;
 }
-#else
-static inline int update_persistent_clock64(struct timespec64 now64)
-{
-	return -ENODEV;
-}
-#endif
 
 #ifdef CONFIG_RTC_SYSTOHC
 /* Save NTP synchronized time to the RTC */
@@ -676,9 +668,6 @@ static void __init ntp_init_cmos_sync(void)
 	hrtimer_init(&sync_hrtimer, CLOCK_REALTIME, HRTIMER_MODE_ABS);
 	sync_hrtimer.function = sync_timer_callback;
 }
-#else /* CONFIG_GENERIC_CMOS_UPDATE) || defined(CONFIG_RTC_SYSTOHC) */
-static inline void __init ntp_init_cmos_sync(void) { }
-#endif /* !CONFIG_GENERIC_CMOS_UPDATE) || defined(CONFIG_RTC_SYSTOHC) */
 
 /*
  * Propagate a new txc->status value into the NTP state:

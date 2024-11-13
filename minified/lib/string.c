@@ -181,7 +181,6 @@ ssize_t strscpy(char *dest, const char *src, size_t count)
 	if (count == 0 || WARN_ON_ONCE(count > INT_MAX))
 		return -E2BIG;
 
-#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
 	/*
 	 * If src is unaligned, don't cross a page boundary,
 	 * since we don't know if the next page is mapped.
@@ -191,11 +190,6 @@ ssize_t strscpy(char *dest, const char *src, size_t count)
 		if (limit < max)
 			max = limit;
 	}
-#else
-	/* If src or dest is unaligned, don't do word-at-a-time. */
-	if (((long) dest | (long) src) & (sizeof(long) - 1))
-		max = 0;
-#endif
 
 	while (max >= sizeof(unsigned long)) {
 		unsigned long c, data;
@@ -749,7 +743,6 @@ __visible int memcmp(const void *cs, const void *ct, size_t count)
 	const unsigned char *su1, *su2;
 	int res = 0;
 
-#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
 	if (count >= sizeof(unsigned long)) {
 		const unsigned long *u1 = cs;
 		const unsigned long *u2 = ct;
@@ -763,7 +756,6 @@ __visible int memcmp(const void *cs, const void *ct, size_t count)
 		cs = u1;
 		ct = u2;
 	}
-#endif
 	for (su1 = cs, su2 = ct; 0 < count; ++su1, ++su2, count--)
 		if ((res = *su1 - *su2) != 0)
 			break;
@@ -921,12 +913,8 @@ void *memchr_inv(const void *start, int c, size_t bytes)
 	value64 = value;
 #if defined(CONFIG_ARCH_HAS_FAST_MULTIPLIER) && BITS_PER_LONG == 64
 	value64 *= 0x0101010101010101ULL;
-#elif defined(CONFIG_ARCH_HAS_FAST_MULTIPLIER)
-	value64 *= 0x01010101;
-	value64 |= value64 << 32;
 #else
-	value64 |= value64 << 8;
-	value64 |= value64 << 16;
+	value64 *= 0x01010101;
 	value64 |= value64 << 32;
 #endif
 

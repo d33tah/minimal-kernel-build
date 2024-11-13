@@ -333,7 +333,6 @@ struct apic {
 
 	void	(*inquire_remote_apic)(int apicid);
 
-#ifdef CONFIG_X86_32
 	/*
 	 * Called very early during boot from get_smp_config().  It should
 	 * return the logical apicid.  x86_[bios]_cpu_to_apicid is
@@ -345,7 +344,6 @@ struct apic {
 	 * won't be applied properly during early boot in this case.
 	 */
 	int (*x86_32_early_logical_apicid)(int cpu);
-#endif
 	char	*name;
 };
 

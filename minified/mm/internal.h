@@ -484,7 +484,6 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 void __vma_unlink_list(struct mm_struct *mm, struct vm_area_struct *vma);
 struct anon_vma *folio_anon_vma(struct folio *folio);
 
-#ifdef CONFIG_MMU
 void unmap_mapping_folio(struct folio *folio);
 extern long populate_vma_page_range(struct vm_area_struct *vma,
 		unsigned long start, unsigned long end, int *locked);
@@ -624,20 +623,6 @@ static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf,
 	}
 	return fpin;
 }
-#else /* !CONFIG_MMU */
-static inline void unmap_mapping_folio(struct folio *folio) { }
-static inline void mlock_vma_page(struct page *page,
-			struct vm_area_struct *vma, bool compound) { }
-static inline void munlock_vma_page(struct page *page,
-			struct vm_area_struct *vma, bool compound) { }
-static inline void mlock_new_page(struct page *page) { }
-static inline bool need_mlock_page_drain(int cpu) { return false; }
-static inline void mlock_page_drain_local(void) { }
-static inline void mlock_page_drain_remote(int cpu) { }
-static inline void vunmap_range_noflush(unsigned long start, unsigned long end)
-{
-}
-#endif /* !CONFIG_MMU */
 
 /*
  * Return the mem_map entry representing the 'offset' subpage within
@@ -767,11 +752,7 @@ unsigned int reclaim_clean_pages_from_list(struct zone *zone,
  * cannot assume a reduced access to memory reserves is sufficient for
  * !MMU
  */
-#ifdef CONFIG_MMU
 #define ALLOC_OOM		0x08
-#else
-#define ALLOC_OOM		ALLOC_NO_WATERMARKS
-#endif
 
 #define ALLOC_HARDER		 0x10 /* try to alloc harder */
 #define ALLOC_HIGH		 0x20 /* __GFP_HIGH set */
@@ -794,21 +775,9 @@ struct tlbflush_unmap_batch;
  */
 extern struct workqueue_struct *mm_percpu_wq;
 
-#ifdef CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
 void try_to_unmap_flush(void);
 void try_to_unmap_flush_dirty(void);
 void flush_tlb_batched_pending(struct mm_struct *mm);
-#else
-static inline void try_to_unmap_flush(void)
-{
-}
-static inline void try_to_unmap_flush_dirty(void)
-{
-}
-static inline void flush_tlb_batched_pending(struct mm_struct *mm)
-{
-}
-#endif /* CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH */
 
 extern const struct trace_print_flags pageflag_names[];
 extern const struct trace_print_flags vmaflag_names[];
@@ -835,17 +804,8 @@ struct migration_target_control {
 /*
  * mm/vmalloc.c
  */
-#ifdef CONFIG_MMU
 int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
                 pgprot_t prot, struct page **pages, unsigned int page_shift);
-#else
-static inline
-int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
-                pgprot_t prot, struct page **pages, unsigned int page_shift)
-{
-	return -EINVAL;
-}
-#endif
 
 void vunmap_range_noflush(unsigned long start, unsigned long end);
 

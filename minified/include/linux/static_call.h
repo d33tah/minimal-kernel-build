@@ -135,7 +135,6 @@
 #include <linux/cpu.h>
 #include <linux/static_call_types.h>
 
-#ifdef CONFIG_HAVE_STATIC_CALL
 #include <asm/static_call.h>
 
 /*
@@ -145,9 +144,6 @@ extern void arch_static_call_transform(void *site, void *tramp, void *func, bool
 
 #define STATIC_CALL_TRAMP_ADDR(name) &STATIC_CALL_TRAMP(name)
 
-#else
-#define STATIC_CALL_TRAMP_ADDR(name) NULL
-#endif
 
 #define static_call_update(name, func)					\
 ({									\
@@ -221,7 +217,7 @@ extern long __static_call_return0(void);
 	EXPORT_SYMBOL_GPL(STATIC_CALL_TRAMP(name));			\
 	ARCH_ADD_TRAMP_KEY(name)
 
-#elif defined(CONFIG_HAVE_STATIC_CALL)
+#else
 
 static inline int static_call_init(void) { return 0; }
 
@@ -277,68 +273,6 @@ extern long __static_call_return0(void);
 #define EXPORT_STATIC_CALL_TRAMP_GPL(name)				\
 	EXPORT_SYMBOL_GPL(STATIC_CALL_TRAMP(name))
 
-#else /* Generic implementation */
-
-static inline int static_call_init(void) { return 0; }
-
-static inline long __static_call_return0(void)
-{
-	return 0;
-}
-
-#define __DEFINE_STATIC_CALL(name, _func, _func_init)			\
-	DECLARE_STATIC_CALL(name, _func);				\
-	struct static_call_key STATIC_CALL_KEY(name) = {		\
-		.func = _func_init,					\
-	}
-
-#define DEFINE_STATIC_CALL(name, _func)					\
-	__DEFINE_STATIC_CALL(name, _func, _func)
-
-#define DEFINE_STATIC_CALL_NULL(name, _func)				\
-	__DEFINE_STATIC_CALL(name, _func, NULL)
-
-#define DEFINE_STATIC_CALL_RET0(name, _func)				\
-	__DEFINE_STATIC_CALL(name, _func, __static_call_return0)
-
-static inline void __static_call_nop(void) { }
-
-/*
- * This horrific hack takes care of two things:
- *
- *  - it ensures the compiler will only load the function pointer ONCE,
- *    which avoids a reload race.
- *
- *  - it ensures the argument evaluation is unconditional, similar
- *    to the HAVE_STATIC_CALL variant.
- *
- * Sadly current GCC/Clang (10 for both) do not optimize this properly
- * and will emit an indirect call for the NULL case :-(
- */
-#define __static_call_cond(name)					\
-({									\
-	void *func = READ_ONCE(STATIC_CALL_KEY(name).func);		\
-	if (!func)							\
-		func = &__static_call_nop;				\
-	(typeof(STATIC_CALL_TRAMP(name))*)func;				\
-})
-
-#define static_call_cond(name)	(void)__static_call_cond(name)
-
-static inline
-void __static_call_update(struct static_call_key *key, void *tramp, void *func)
-{
-	WRITE_ONCE(key->func, func);
-}
-
-static inline int static_call_text_reserved(void *start, void *end)
-{
-	return 0;
-}
-
-#define EXPORT_STATIC_CALL(name)	EXPORT_SYMBOL(STATIC_CALL_KEY(name))
-#define EXPORT_STATIC_CALL_GPL(name)	EXPORT_SYMBOL_GPL(STATIC_CALL_KEY(name))
-
-#endif /* CONFIG_HAVE_STATIC_CALL */
+#endif
 
 #endif /* _LINUX_STATIC_CALL_H */

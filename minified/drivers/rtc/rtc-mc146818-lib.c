@@ -179,11 +179,9 @@ EXPORT_SYMBOL_GPL(mc146818_get_time);
 /* AMD systems don't allow access to AltCentury with DV1 */
 static bool apply_amd_register_a_behavior(void)
 {
-#ifdef CONFIG_X86
 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD ||
 	    boot_cpu_data.x86_vendor == X86_VENDOR_HYGON)
 		return true;
-#endif
 	return false;
 }
 

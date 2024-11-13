@@ -15,7 +15,6 @@ struct cpu_dev {
 	void		(*c_identify)(struct cpuinfo_x86 *);
 	void		(*c_detect_tlb)(struct cpuinfo_x86 *);
 	int		c_x86_vendor;
-#ifdef CONFIG_X86_32
 	/* Optional vendor specific routine to obtain the cache size. */
 	unsigned int	(*legacy_cache_size)(struct cpuinfo_x86 *,
 					     unsigned int);
@@ -25,7 +24,6 @@ struct cpu_dev {
 		int		family;
 		const char	*model_names[16];
 	}		legacy_models[5];
-#endif
 };
 
 struct _tlb_table {
@@ -44,7 +42,6 @@ struct _tlb_table {
 extern const struct cpu_dev *const __x86_cpu_dev_start[],
 			    *const __x86_cpu_dev_end[];
 
-#ifdef CONFIG_CPU_SUP_INTEL
 enum tsx_ctrl_states {
 	TSX_CTRL_ENABLE,
 	TSX_CTRL_DISABLE,
@@ -56,10 +53,6 @@ extern __ro_after_init enum tsx_ctrl_states tsx_ctrl_state;
 
 extern void __init tsx_init(void);
 void tsx_ap_init(void);
-#else
-static inline void tsx_init(void) { }
-static inline void tsx_ap_init(void) { }
-#endif /* CONFIG_CPU_SUP_INTEL */
 
 extern void init_spectral_chicken(struct cpuinfo_x86 *c);
 

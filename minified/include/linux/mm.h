@@ -80,11 +80,9 @@ extern int sysctl_legacy_va_layout;
 #define sysctl_legacy_va_layout 0
 #endif
 
-#ifdef CONFIG_HAVE_ARCH_MMAP_RND_BITS
 extern const int mmap_rnd_bits_min;
 extern const int mmap_rnd_bits_max;
 extern int mmap_rnd_bits __read_mostly;
-#endif
 #ifdef CONFIG_HAVE_ARCH_MMAP_RND_COMPAT_BITS
 extern const int mmap_rnd_compat_bits_min;
 extern const int mmap_rnd_compat_bits_max;
@@ -246,12 +244,6 @@ struct vm_area_struct *vm_area_alloc(struct mm_struct *);
 struct vm_area_struct *vm_area_dup(struct vm_area_struct *);
 void vm_area_free(struct vm_area_struct *);
 
-#ifndef CONFIG_MMU
-extern struct rb_root nommu_region_tree;
-extern struct rw_semaphore nommu_region_sem;
-
-extern unsigned int kobjsize(const void *objp);
-#endif
 
 /*
  * vm_flags in vm_area_struct, see mm_types.h.
@@ -330,23 +322,7 @@ extern unsigned int kobjsize(const void *objp);
 #endif
 #endif /* CONFIG_ARCH_HAS_PKEYS */
 
-#if defined(CONFIG_X86)
 # define VM_PAT		VM_ARCH_1	/* PAT reserves whole VMA at once (x86) */
-#elif defined(CONFIG_PPC)
-# define VM_SAO		VM_ARCH_1	/* Strong Access Ordering (powerpc) */
-#elif defined(CONFIG_PARISC)
-# define VM_GROWSUP	VM_ARCH_1
-#elif defined(CONFIG_IA64)
-# define VM_GROWSUP	VM_ARCH_1
-#elif defined(CONFIG_SPARC64)
-# define VM_SPARC_ADI	VM_ARCH_1	/* Uses ADI tag for access control */
-# define VM_ARCH_CLEAR	VM_SPARC_ADI
-#elif defined(CONFIG_ARM64)
-# define VM_ARM64_BTI	VM_ARCH_1	/* BTI guarded page, a.k.a. GP bit */
-# define VM_ARCH_CLEAR	VM_ARM64_BTI
-#elif !defined(CONFIG_MMU)
-# define VM_MAPPED_COPY	VM_ARCH_1	/* T if mapped copy of data (nommu mmap) */
-#endif
 
 #if defined(CONFIG_ARM64_MTE)
 # define VM_MTE		VM_HIGH_ARCH_0	/* Use Tagged memory for access control */
@@ -763,19 +739,8 @@ unsigned long vmalloc_to_pfn(const void *addr);
 #define is_ioremap_addr(x) is_vmalloc_addr(x)
 #endif
 
-#ifdef CONFIG_MMU
 extern bool is_vmalloc_addr(const void *x);
 extern int is_vmalloc_or_module_addr(const void *x);
-#else
-static inline bool is_vmalloc_addr(const void *x)
-{
-	return false;
-}
-static inline int is_vmalloc_or_module_addr(const void *x)
-{
-	return 0;
-}
-#endif
 
 /*
  * How many times the entire folio is mapped as a single unit (eg by a
@@ -968,7 +933,6 @@ static inline unsigned long thp_size(struct page *page)
 
 void free_compound_page(struct page *page);
 
-#ifdef CONFIG_MMU
 /*
  * Do pte_mkwrite, but only if the vma says VM_WRITE.  We do this when
  * servicing faults for write access.  In the normal case, do always want
@@ -987,7 +951,6 @@ void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr);
 
 vm_fault_t finish_fault(struct vm_fault *vmf);
 vm_fault_t finish_mkwrite_fault(struct vm_fault *vmf);
-#endif
 
 /*
  * Multiple processes may "see" the same page. E.g. for untouched
@@ -1825,11 +1788,7 @@ extern void pagefault_out_of_memory(void);
 
 extern void show_free_areas(unsigned int flags, nodemask_t *nodemask);
 
-#ifdef CONFIG_MMU
 extern bool can_do_mlock(void);
-#else
-static inline bool can_do_mlock(void) { return false; }
-#endif
 extern int user_shm_lock(size_t, struct ucounts *);
 extern void user_shm_unlock(size_t, struct ucounts *);
 
@@ -1866,7 +1825,6 @@ void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to);
 void truncate_pagecache_range(struct inode *inode, loff_t offset, loff_t end);
 int generic_error_remove_page(struct address_space *mapping, struct page *page);
 
-#ifdef CONFIG_MMU
 extern vm_fault_t handle_mm_fault(struct vm_area_struct *vma,
 				  unsigned long address, unsigned int flags,
 				  struct pt_regs *regs);
@@ -1877,27 +1835,6 @@ void unmap_mapping_pages(struct address_space *mapping,
 		pgoff_t start, pgoff_t nr, bool even_cows);
 void unmap_mapping_range(struct address_space *mapping,
 		loff_t const holebegin, loff_t const holelen, int even_cows);
-#else
-static inline vm_fault_t handle_mm_fault(struct vm_area_struct *vma,
-					 unsigned long address, unsigned int flags,
-					 struct pt_regs *regs)
-{
-	/* should never happen if there's no MMU */
-	BUG();
-	return VM_FAULT_SIGBUS;
-}
-static inline int fixup_user_fault(struct mm_struct *mm, unsigned long address,
-		unsigned int fault_flags, bool *unlocked)
-{
-	/* should never happen if there's no MMU */
-	BUG();
-	return -EFAULT;
-}
-static inline void unmap_mapping_pages(struct address_space *mapping,
-		pgoff_t start, pgoff_t nr, bool even_cows) { }
-static inline void unmap_mapping_range(struct address_space *mapping,
-		loff_t const holebegin, loff_t const holelen, int even_cows) { }
-#endif
 
 static inline void unmap_shared_mapping_range(struct address_space *mapping,
 		loff_t const holebegin, loff_t const holelen)
@@ -2102,17 +2039,6 @@ static inline void sync_mm_rss(struct mm_struct *mm)
 }
 #endif
 
-#ifndef CONFIG_ARCH_HAS_PTE_SPECIAL
-static inline int pte_special(pte_t pte)
-{
-	return 0;
-}
-
-static inline pte_t pte_mkspecial(pte_t pte)
-{
-	return pte;
-}
-#endif
 
 #ifndef CONFIG_ARCH_HAS_PTE_DEVMAP
 static inline int pte_devmap(pte_t pte)
@@ -2198,7 +2124,6 @@ static inline void mm_dec_nr_pmds(struct mm_struct *mm)
 }
 #endif
 
-#ifdef CONFIG_MMU
 static inline void mm_pgtables_bytes_init(struct mm_struct *mm)
 {
 	atomic_long_set(&mm->pgtables_bytes, 0);
@@ -2218,22 +2143,10 @@ static inline void mm_dec_nr_ptes(struct mm_struct *mm)
 {
 	atomic_long_sub(PTRS_PER_PTE * sizeof(pte_t), &mm->pgtables_bytes);
 }
-#else
-
-static inline void mm_pgtables_bytes_init(struct mm_struct *mm) {}
-static inline unsigned long mm_pgtables_bytes(const struct mm_struct *mm)
-{
-	return 0;
-}
-
-static inline void mm_inc_nr_ptes(struct mm_struct *mm) {}
-static inline void mm_dec_nr_ptes(struct mm_struct *mm) {}
-#endif
 
 int __pte_alloc(struct mm_struct *mm, pmd_t *pmd);
 int __pte_alloc_kernel(pmd_t *pmd);
 
-#if defined(CONFIG_MMU)
 
 static inline p4d_t *p4d_alloc(struct mm_struct *mm, pgd_t *pgd,
 		unsigned long address)
@@ -2254,7 +2167,6 @@ static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long a
 	return (unlikely(pud_none(*pud)) && __pmd_alloc(mm, pud, address))?
 		NULL: pmd_offset(pud, address);
 }
-#endif /* CONFIG_MMU */
 
 #if USE_SPLIT_PTE_PTLOCKS
 #if ALLOC_SPLIT_PTLOCKS
@@ -2697,7 +2609,6 @@ extern int do_munmap(struct mm_struct *, unsigned long, size_t,
 		     struct list_head *uf);
 extern int do_madvise(struct mm_struct *mm, unsigned long start, size_t len_in, int behavior);
 
-#ifdef CONFIG_MMU
 extern int __mm_populate(unsigned long addr, unsigned long len,
 			 int ignore_errors);
 static inline void mm_populate(unsigned long addr, unsigned long len)
@@ -2705,9 +2616,6 @@ static inline void mm_populate(unsigned long addr, unsigned long len)
 	/* Ignore errors */
 	(void) __mm_populate(addr, len, 1);
 }
-#else
-static inline void mm_populate(unsigned long addr, unsigned long len) {}
-#endif
 
 /* These take the mm semaphore themselves */
 extern int __must_check vm_brk(unsigned long, unsigned long);
@@ -2845,19 +2753,8 @@ static inline bool range_in_vma(struct vm_area_struct *vma,
 	return (vma && vma->vm_start <= start && end <= vma->vm_end);
 }
 
-#ifdef CONFIG_MMU
 pgprot_t vm_get_page_prot(unsigned long vm_flags);
 void vma_set_page_prot(struct vm_area_struct *vma);
-#else
-static inline pgprot_t vm_get_page_prot(unsigned long vm_flags)
-{
-	return __pgprot(0);
-}
-static inline void vma_set_page_prot(struct vm_area_struct *vma)
-{
-	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
-}
-#endif
 
 void vma_set_file(struct vm_area_struct *vma, struct file *file);
 
@@ -3177,20 +3074,10 @@ int drop_caches_sysctl_handler(struct ctl_table *, int, void *, size_t *,
 
 void drop_slab(void);
 
-#ifndef CONFIG_MMU
-#define randomize_va_space 0
-#else
 extern int randomize_va_space;
-#endif
 
 const char * arch_vma_name(struct vm_area_struct *vma);
-#ifdef CONFIG_MMU
 void print_vma_addr(char *prefix, unsigned long rip);
-#else
-static inline void print_vma_addr(char *prefix, unsigned long rip)
-{
-}
-#endif
 
 #ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
 int vmemmap_remap_free(unsigned long start, unsigned long end,

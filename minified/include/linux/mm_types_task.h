@@ -15,9 +15,7 @@
 
 #include <asm/page.h>
 
-#ifdef CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
 #include <asm/tlbbatch.h>
-#endif
 
 #define USE_SPLIT_PTE_PTLOCKS	(NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS)
 #define USE_SPLIT_PMD_PTLOCKS	(USE_SPLIT_PTE_PTLOCKS && \
@@ -74,7 +72,6 @@ struct page_frag {
 
 /* Track pages that require TLB flushes */
 struct tlbflush_unmap_batch {
-#ifdef CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
 	/*
 	 * The arch code makes the following promise: generic code can modify a
 	 * PTE, then call arch_tlbbatch_add_mm() (which internally provides all
@@ -93,7 +90,6 @@ struct tlbflush_unmap_batch {
 	 * allows an update without redirtying the page.
 	 */
 	bool writable;
-#endif
 };
 
 #endif /* _LINUX_MM_TYPES_TASK_H */

@@ -27,7 +27,6 @@ EXPORT_SYMBOL(i8253_lock);
  */
 bool i8253_clear_counter_on_shutdown __ro_after_init = true;
 
-#ifdef CONFIG_CLKSRC_I8253
 /*
  * Since the PIT overflows every tick, its not very useful
  * to just read by itself. So use jiffies to emulate a free
@@ -105,9 +104,7 @@ int __init clocksource_i8253_init(void)
 {
 	return clocksource_register_hz(&i8253_cs, PIT_TICK_RATE);
 }
-#endif
 
-#ifdef CONFIG_CLKEVT_I8253
 static int pit_shutdown(struct clock_event_device *evt)
 {
 	if (!clockevent_state_oneshot(evt) && !clockevent_state_periodic(evt))
@@ -193,4 +190,3 @@ void __init clockevent_i8253_init(bool oneshot)
 	clockevents_config_and_register(&i8253_clockevent, PIT_TICK_RATE,
 					0xF, 0x7FFF);
 }
-#endif

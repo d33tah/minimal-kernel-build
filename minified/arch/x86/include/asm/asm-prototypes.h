@@ -13,7 +13,4 @@
 #include <asm/preempt.h>
 #include <asm/asm.h>
 
-#ifndef CONFIG_X86_CMPXCHG64
-extern void cmpxchg8b_emu(void);
-#endif
 

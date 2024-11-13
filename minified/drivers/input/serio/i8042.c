@@ -103,11 +103,9 @@ static bool i8042_kbdreset;
 module_param_named(kbdreset, i8042_kbdreset, bool, 0);
 MODULE_PARM_DESC(kbdreset, "Reset device connected to KBD port");
 
-#ifdef CONFIG_X86
 static bool i8042_dritek;
 module_param_named(dritek, i8042_dritek, bool, 0);
 MODULE_PARM_DESC(dritek, "Force enable the Dritek keyboard extension");
-#endif
 
 #ifdef CONFIG_PNP
 static bool i8042_nopnp;
@@ -967,7 +965,6 @@ static int i8042_controller_selftest(void)
 		msleep(50);
 	} while (i++ < 5);
 
-#ifdef CONFIG_X86
 	/*
 	 * On x86, we don't fail entire i8042 initialization if controller
 	 * reset fails in hopes that keyboard port will still be functional
@@ -976,10 +973,6 @@ static int i8042_controller_selftest(void)
 	 */
 	pr_info("giving up on controller selftest, continuing anyway...\n");
 	return 0;
-#else
-	pr_err("i8042 controller selftest failed\n");
-	return -EIO;
-#endif
 }
 
 /*
@@ -1151,7 +1144,6 @@ static long i8042_panic_blink(int state)
 
 #undef DELAY
 
-#ifdef CONFIG_X86
 static void i8042_dritek_enable(void)
 {
 	unsigned char param = 0x90;
@@ -1161,7 +1153,6 @@ static void i8042_dritek_enable(void)
 	if (error)
 		pr_warn("Failed to enable DRITEK extension: %d\n", error);
 }
-#endif
 
 #ifdef CONFIG_PM
 
@@ -1204,10 +1195,8 @@ static int i8042_controller_resume(bool s2r_wants_reset)
 	}
 
 
-#ifdef CONFIG_X86
 	if (i8042_dritek)
 		i8042_dritek_enable();
-#endif
 
 	if (i8042_mux_present) {
 		if (i8042_set_mux_mode(true, NULL) || i8042_enable_mux_ports())
@@ -1555,10 +1544,8 @@ static int i8042_probe(struct platform_device *dev)
 	if (error)
 		return error;
 
-#ifdef CONFIG_X86
 	if (i8042_dritek)
 		i8042_dritek_enable();
-#endif
 
 	if (!i8042_noaux) {
 		error = i8042_setup_aux();

@@ -82,7 +82,6 @@ struct resource *platform_get_mem_or_io(struct platform_device *dev,
 }
 EXPORT_SYMBOL_GPL(platform_get_mem_or_io);
 
-#ifdef CONFIG_HAS_IOMEM
 /**
  * devm_platform_get_and_ioremap_resource - call devm_ioremap_resource() for a
  *					    platform device and get resource
@@ -148,7 +147,6 @@ devm_platform_ioremap_resource_byname(struct platform_device *pdev,
 	return devm_ioremap_resource(&pdev->dev, res);
 }
 EXPORT_SYMBOL_GPL(devm_platform_ioremap_resource_byname);
-#endif /* CONFIG_HAS_IOMEM */
 
 /**
  * platform_get_irq_optional - get an optional IRQ for a device

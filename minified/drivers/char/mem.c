@@ -316,47 +316,14 @@ static pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
 }
 #endif
 
-#ifndef CONFIG_MMU
-static unsigned long get_unmapped_area_mem(struct file *file,
-					   unsigned long addr,
-					   unsigned long len,
-					   unsigned long pgoff,
-					   unsigned long flags)
-{
-	if (!valid_mmap_phys_addr_range(pgoff, len))
-		return (unsigned long) -EINVAL;
-	return pgoff << PAGE_SHIFT;
-}
-
-/* permit direct mmap, for read, write or exec */
-static unsigned memory_mmap_capabilities(struct file *file)
-{
-	return NOMMU_MAP_DIRECT |
-		NOMMU_MAP_READ | NOMMU_MAP_WRITE | NOMMU_MAP_EXEC;
-}
-
-static unsigned zero_mmap_capabilities(struct file *file)
-{
-	return NOMMU_MAP_COPY;
-}
-
-/* can't do an in-place private mapping if there's no MMU */
-static inline int private_mapping_ok(struct vm_area_struct *vma)
-{
-	return vma->vm_flags & VM_MAYSHARE;
-}
-#else
 
 static inline int private_mapping_ok(struct vm_area_struct *vma)
 {
 	return 1;
 }
-#endif
 
 static const struct vm_operations_struct mmap_mem_ops = {
-#ifdef CONFIG_HAVE_IOREMAP_PROT
 	.access = generic_access_phys
-#endif
 };
 
 static int mmap_mem(struct file *file, struct vm_area_struct *vma)
@@ -533,9 +500,6 @@ static ssize_t read_zero(struct file *file, char __user *buf,
 
 static int mmap_zero(struct file *file, struct vm_area_struct *vma)
 {
-#ifndef CONFIG_MMU
-	return -ENOSYS;
-#endif
 	if (vma->vm_flags & VM_SHARED)
 		return shmem_zero_setup(vma);
 	vma_set_anonymous(vma);
@@ -546,7 +510,6 @@ static unsigned long get_unmapped_area_zero(struct file *file,
 				unsigned long addr, unsigned long len,
 				unsigned long pgoff, unsigned long flags)
 {
-#ifdef CONFIG_MMU
 	if (flags & MAP_SHARED) {
 		/*
 		 * mmap_zero() will call shmem_zero_setup() to create a file,
@@ -559,9 +522,6 @@ static unsigned long get_unmapped_area_zero(struct file *file,
 
 	/* Otherwise flags & MAP_PRIVATE: with no shmem object beneath it */
 	return current->mm->get_unmapped_area(file, addr, len, pgoff, flags);
-#else
-	return -ENOSYS;
-#endif
 }
 
 static ssize_t write_full(struct file *file, const char __user *buf,
@@ -650,10 +610,6 @@ static const struct file_operations __maybe_unused mem_fops = {
 	.write		= write_mem,
 	.mmap		= mmap_mem,
 	.open		= open_mem,
-#ifndef CONFIG_MMU
-	.get_unmapped_area = get_unmapped_area_mem,
-	.mmap_capabilities = memory_mmap_capabilities,
-#endif
 };
 
 static const struct file_operations null_fops = {
@@ -680,9 +636,6 @@ static const struct file_operations zero_fops = {
 	.write_iter	= write_iter_zero,
 	.mmap		= mmap_zero,
 	.get_unmapped_area = get_unmapped_area_zero,
-#ifndef CONFIG_MMU
-	.mmap_capabilities = zero_mmap_capabilities,
-#endif
 };
 
 static const struct file_operations full_fops = {

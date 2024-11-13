@@ -79,9 +79,7 @@ static inline bool vt_busy(int i)
  * to the current console is done by the main ioctl code.
  */
 
-#ifdef CONFIG_X86
 #include <asm/syscalls.h>
-#endif
 
 static void complete_change_console(struct vc_data *vc);
 
@@ -333,7 +331,6 @@ static int vt_k_ioctl(struct tty_struct *tty, unsigned int cmd,
 		 *
 		 * XXX: you should never use these, just call ioperm directly..
 		 */
-#ifdef CONFIG_X86
 	case KDADDIO:
 	case KDDELIO:
 		/*
@@ -351,7 +348,6 @@ static int vt_k_ioctl(struct tty_struct *tty, unsigned int cmd,
 	case KDDISABIO:
 		return ksys_ioperm(GPFIRST, GPNUM,
 				  (cmd == KDENABIO)) ? -ENXIO : 0;
-#endif
 
 	/* Linux m68k/i386 interface for setting the keyboard delay/repeat rate */
 
@@ -1089,10 +1085,8 @@ long vt_compat_ioctl(struct tty_struct *tty,
 	 */
 	case KIOCSOUND:
 	case KDMKTONE:
-#ifdef CONFIG_X86
 	case KDADDIO:
 	case KDDELIO:
-#endif
 	case KDSETMODE:
 	case KDMAPDISP:
 	case KDUNMAPDISP:

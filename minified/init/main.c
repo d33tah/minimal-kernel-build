@@ -265,7 +265,6 @@ static int __init loglevel(char *str)
 
 early_param("loglevel", loglevel);
 
-#ifdef CONFIG_BLK_DEV_INITRD
 static void * __init get_boot_config_from_initrd(size_t *_size)
 {
 	u32 size, csum;
@@ -312,12 +311,6 @@ found:
 
 	return data;
 }
-#else
-static void * __init get_boot_config_from_initrd(size_t *_size)
-{
-	return NULL;
-}
-#endif
 
 #ifdef CONFIG_BOOT_CONFIG
 
@@ -1084,7 +1077,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 */
 	mem_encrypt_init();
 
-#ifdef CONFIG_BLK_DEV_INITRD
 	if (initrd_start && !initrd_below_start_ok &&
 	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {
 		pr_crit("initrd overwritten (0x%08lx < 0x%08lx) - disabling it.\n",
@@ -1092,7 +1084,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		    min_low_pfn);
 		initrd_start = 0;
 	}
-#endif
 	setup_per_cpu_pageset();
 	numa_policy_init();
 	acpi_early_init();
@@ -1102,10 +1093,8 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	calibrate_delay();
 	pid_idr_init();
 	anon_vma_init();
-#ifdef CONFIG_X86
 	if (efi_enabled(EFI_RUNTIME_SERVICES))
 		efi_enter_virtual_mode();
-#endif
 	thread_stack_cache_init();
 	cred_init();
 	fork_init();
@@ -1443,7 +1432,6 @@ static int try_to_run_init_process(const char *init_filename)
 
 static noinline void __init kernel_init_freeable(void);
 
-#if defined(CONFIG_STRICT_KERNEL_RWX) || defined(CONFIG_STRICT_MODULE_RWX)
 bool rodata_enabled __ro_after_init = true;
 static int __init set_debug_rodata(char *str)
 {
@@ -1452,9 +1440,7 @@ static int __init set_debug_rodata(char *str)
 	return 1;
 }
 __setup("rodata=", set_debug_rodata);
-#endif
 
-#ifdef CONFIG_STRICT_KERNEL_RWX
 static void mark_readonly(void)
 {
 	if (rodata_enabled) {
@@ -1470,17 +1456,6 @@ static void mark_readonly(void)
 	} else
 		pr_info("Kernel memory protection disabled.\n");
 }
-#elif defined(CONFIG_ARCH_HAS_STRICT_KERNEL_RWX)
-static inline void mark_readonly(void)
-{
-	pr_warn("Kernel memory protection not selected by kernel config.\n");
-}
-#else
-static inline void mark_readonly(void)
-{
-	pr_warn("This architecture does not have kernel memory protection.\n");
-}
-#endif
 
 void __weak free_initmem(void)
 {

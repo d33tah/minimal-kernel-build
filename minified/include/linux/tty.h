@@ -346,7 +346,6 @@ static inline bool tty_throttled(struct tty_struct *tty)
 	return test_bit(TTY_THROTTLED, &tty->flags);
 }
 
-#ifdef CONFIG_TTY
 void tty_kref_put(struct tty_struct *tty);
 struct pid *tty_get_pgrp(struct tty_struct *tty);
 void tty_vhangup_self(void);
@@ -361,33 +360,6 @@ struct tty_struct *tty_kopen_exclusive(dev_t device);
 struct tty_struct *tty_kopen_shared(dev_t device);
 void tty_kclose(struct tty_struct *tty);
 int tty_dev_name_to_number(const char *name, dev_t *number);
-#else
-static inline void tty_kref_put(struct tty_struct *tty)
-{ }
-static inline struct pid *tty_get_pgrp(struct tty_struct *tty)
-{ return NULL; }
-static inline void tty_vhangup_self(void)
-{ }
-static inline void disassociate_ctty(int priv)
-{ }
-static inline dev_t tty_devnum(struct tty_struct *tty)
-{ return 0; }
-static inline void proc_clear_tty(struct task_struct *p)
-{ }
-static inline struct tty_struct *get_current_tty(void)
-{ return NULL; }
-/* tty_io.c */
-static inline int __init tty_init(void)
-{ return 0; }
-static inline const char *tty_name(const struct tty_struct *tty)
-{ return "(none)"; }
-static inline struct tty_struct *tty_kopen_exclusive(dev_t device)
-{ return ERR_PTR(-ENODEV); }
-static inline void tty_kclose(struct tty_struct *tty)
-{ }
-static inline int tty_dev_name_to_number(const char *name, dev_t *number)
-{ return -ENOTSUPP; }
-#endif
 
 extern struct ktermios tty_std_termios;
 
@@ -477,11 +449,7 @@ extern struct mutex tty_mutex;
 
 /* n_tty.c */
 void n_tty_inherit_ops(struct tty_ldisc_ops *ops);
-#ifdef CONFIG_TTY
 void __init n_tty_init(void);
-#else
-static inline void n_tty_init(void) { }
-#endif
 
 /* tty_audit.c */
 #ifdef CONFIG_AUDIT

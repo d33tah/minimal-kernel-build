@@ -761,12 +761,6 @@ static inline netdev_features_t vlan_features_check(struct sk_buff *skb,
 static inline unsigned long compare_vlan_header(const struct vlan_hdr *h1,
 						const struct vlan_hdr *h2)
 {
-#if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS)
 	return *(u32 *)h1 ^ *(u32 *)h2;
-#else
-	return ((__force u32)h1->h_vlan_TCI ^ (__force u32)h2->h_vlan_TCI) |
-	       ((__force u32)h1->h_vlan_encapsulated_proto ^
-		(__force u32)h2->h_vlan_encapsulated_proto);
-#endif
 }
 #endif /* !(_LINUX_IF_VLAN_H_) */

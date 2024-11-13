@@ -129,15 +129,8 @@ extern void vm_unmap_ram(const void *mem, unsigned int count);
 extern void *vm_map_ram(struct page **pages, unsigned int count, int node);
 extern void vm_unmap_aliases(void);
 
-#ifdef CONFIG_MMU
 extern void __init vmalloc_init(void);
 extern unsigned long vmalloc_nr_pages(void);
-#else
-static inline void vmalloc_init(void)
-{
-}
-static inline unsigned long vmalloc_nr_pages(void) { return 0; }
-#endif
 
 extern void *vmalloc(unsigned long size) __alloc_size(1);
 extern void *vzalloc(unsigned long size) __alloc_size(1);
@@ -233,7 +226,6 @@ static inline bool is_vm_area_hugepages(const void *addr)
 #endif
 }
 
-#ifdef CONFIG_MMU
 void vunmap_range(unsigned long addr, unsigned long end);
 static inline void set_vm_flush_reset_perms(void *addr)
 {
@@ -243,11 +235,6 @@ static inline void set_vm_flush_reset_perms(void *addr)
 		vm->flags |= VM_FLUSH_RESET_PERMS;
 }
 
-#else
-static inline void set_vm_flush_reset_perms(void *addr)
-{
-}
-#endif
 
 /* for /proc/kcore */
 extern long vread(char *buf, char *addr, unsigned long count);
@@ -260,33 +247,14 @@ extern __init void vm_area_add_early(struct vm_struct *vm);
 extern __init void vm_area_register_early(struct vm_struct *vm, size_t align);
 
 #ifdef CONFIG_SMP
-# ifdef CONFIG_MMU
 struct vm_struct **pcpu_get_vm_areas(const unsigned long *offsets,
 				     const size_t *sizes, int nr_vms,
 				     size_t align);
 
 void pcpu_free_vm_areas(struct vm_struct **vms, int nr_vms);
-# else
-static inline struct vm_struct **
-pcpu_get_vm_areas(const unsigned long *offsets,
-		const size_t *sizes, int nr_vms,
-		size_t align)
-{
-	return NULL;
-}
-
-static inline void
-pcpu_free_vm_areas(struct vm_struct **vms, int nr_vms)
-{
-}
-# endif
 #endif
 
-#ifdef CONFIG_MMU
 #define VMALLOC_TOTAL (VMALLOC_END - VMALLOC_START)
-#else
-#define VMALLOC_TOTAL 0UL
-#endif
 
 int register_vmap_purge_notifier(struct notifier_block *nb);
 int unregister_vmap_purge_notifier(struct notifier_block *nb);

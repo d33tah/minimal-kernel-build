@@ -17,9 +17,7 @@
 #include <linux/init.h>
 #include <linux/atomic.h>
 #include <linux/kprobes.h>
-#ifdef CONFIG_HAVE_ARCH_KGDB
 #include <asm/kgdb.h>
-#endif
 
 #ifdef CONFIG_KGDB
 struct pt_regs;

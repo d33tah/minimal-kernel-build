@@ -151,7 +151,6 @@ extern int __get_user_bad(void);
 #define __get_user(x,ptr) do_get_user_call(get_user_nocheck,x,ptr)
 
 
-#ifdef CONFIG_X86_32
 #define __put_user_goto_u64(x, addr, label)			\
 	asm_volatile_goto("\n"					\
 		     "1:	movl %%eax,0(%1)\n"		\
@@ -161,10 +160,6 @@ extern int __get_user_bad(void);
 		     : : "A" (x), "r" (addr)			\
 		     : : label)
 
-#else
-#define __put_user_goto_u64(x, ptr, label) \
-	__put_user_goto(x, ptr, "q", "er", label)
-#endif
 
 extern void __put_user_bad(void);
 
@@ -267,9 +262,7 @@ do {									\
 	}								\
 } while (0)
 
-#ifdef CONFIG_CC_HAS_ASM_GOTO_OUTPUT
 
-#ifdef CONFIG_X86_32
 #define __get_user_asm_u64(x, ptr, label) do {				\
 	unsigned int __gu_low, __gu_high;				\
 	const unsigned int __user *__gu_ptr;				\
@@ -278,10 +271,6 @@ do {									\
 	__get_user_asm(__gu_high, __gu_ptr+1, "l", "=r", label);	\
 	(x) = ((unsigned long long)__gu_high << 32) | __gu_low;		\
 } while (0)
-#else
-#define __get_user_asm_u64(x, ptr, label)				\
-	__get_user_asm(x, ptr, "q", "=r", label)
-#endif
 
 #define __get_user_size(x, ptr, size, label)				\
 do {									\
@@ -315,72 +304,6 @@ do {									\
 		     : [umem] "m" (__m(addr))				\
 		     : : label)
 
-#else // !CONFIG_CC_HAS_ASM_GOTO_OUTPUT
-
-#ifdef CONFIG_X86_32
-#define __get_user_asm_u64(x, ptr, retval)				\
-({									\
-	__typeof__(ptr) __ptr = (ptr);					\
-	asm volatile("\n"						\
-		     "1:	movl %[lowbits],%%eax\n"		\
-		     "2:	movl %[highbits],%%edx\n"		\
-		     "3:\n"						\
-		     _ASM_EXTABLE_TYPE_REG(1b, 3b, EX_TYPE_EFAULT_REG |	\
-					   EX_FLAG_CLEAR_AX_DX,		\
-					   %[errout])			\
-		     _ASM_EXTABLE_TYPE_REG(2b, 3b, EX_TYPE_EFAULT_REG |	\
-					   EX_FLAG_CLEAR_AX_DX,		\
-					   %[errout])			\
-		     : [errout] "=r" (retval),				\
-		       [output] "=&A"(x)				\
-		     : [lowbits] "m" (__m(__ptr)),			\
-		       [highbits] "m" __m(((u32 __user *)(__ptr)) + 1),	\
-		       "0" (retval));					\
-})
-
-#else
-#define __get_user_asm_u64(x, ptr, retval) \
-	 __get_user_asm(x, ptr, retval, "q")
-#endif
-
-#define __get_user_size(x, ptr, size, retval)				\
-do {									\
-	unsigned char x_u8__;						\
-									\
-	retval = 0;							\
-	__chk_user_ptr(ptr);						\
-	switch (size) {							\
-	case 1:								\
-		__get_user_asm(x_u8__, ptr, retval, "b");		\
-		(x) = x_u8__;						\
-		break;							\
-	case 2:								\
-		__get_user_asm(x, ptr, retval, "w");			\
-		break;							\
-	case 4:								\
-		__get_user_asm(x, ptr, retval, "l");			\
-		break;							\
-	case 8:								\
-		__get_user_asm_u64(x, ptr, retval);			\
-		break;							\
-	default:							\
-		(x) = __get_user_bad();					\
-	}								\
-} while (0)
-
-#define __get_user_asm(x, addr, err, itype)				\
-	asm volatile("\n"						\
-		     "1:	mov"itype" %[umem],%[output]\n"		\
-		     "2:\n"						\
-		     _ASM_EXTABLE_TYPE_REG(1b, 2b, EX_TYPE_EFAULT_REG | \
-					   EX_FLAG_CLEAR_AX,		\
-					   %[errout])			\
-		     : [errout] "=r" (err),				\
-		       [output] "=a" (x)				\
-		     : [umem] "m" (__m(addr)),				\
-		       "0" (err))
-
-#endif // CONFIG_CC_HAS_ASM_GOTO_OUTPUT
 
 #ifdef CONFIG_CC_HAS_ASM_GOTO_TIED_OUTPUT
 #define __try_cmpxchg_user_asm(itype, ltype, _ptr, _pold, _new, label)	({ \
@@ -401,7 +324,6 @@ do {									\
 		*_old = __old;						\
 	likely(success);					})
 
-#ifdef CONFIG_X86_32
 #define __try_cmpxchg64_user_asm(_ptr, _pold, _new, label)	({	\
 	bool success;							\
 	__typeof__(_ptr) _old = (__typeof__(_ptr))(_pold);		\
@@ -420,7 +342,6 @@ do {									\
 	if (unlikely(!success))						\
 		*_old = __old;						\
 	likely(success);					})
-#endif // CONFIG_X86_32
 #else  // !CONFIG_CC_HAS_ASM_GOTO_TIED_OUTPUT
 #define __try_cmpxchg_user_asm(itype, ltype, _ptr, _pold, _new, label)	({ \
 	int __err = 0;							\
@@ -446,7 +367,6 @@ do {									\
 		*_old = __old;						\
 	likely(success);					})
 
-#ifdef CONFIG_X86_32
 /*
  * Unlike the normal CMPXCHG, hardcode ECX for both success/fail and error.
  * There are only six GPRs available and four (EAX, EBX, ECX, and EDX) are
@@ -476,7 +396,6 @@ do {									\
 	if (unlikely(!__result))					\
 		*_old = __old;						\
 	likely(__result);					})
-#endif // CONFIG_X86_32
 #endif // CONFIG_CC_HAS_ASM_GOTO_TIED_OUTPUT
 
 /* FIXME: this hack is definitely wrong -AK */
@@ -525,11 +444,7 @@ extern struct movsl_mask {
 
 #define ARCH_HAS_NOCACHE_UACCESS 1
 
-#ifdef CONFIG_X86_32
 # include <asm/uaccess_32.h>
-#else
-# include <asm/uaccess_64.h>
-#endif
 
 /*
  * The "unsafe" user accesses aren't really "unsafe", but the naming
@@ -553,30 +468,15 @@ static __must_check __always_inline bool user_access_begin(const void __user *pt
 #define unsafe_put_user(x, ptr, label)	\
 	__put_user_size((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)), label)
 
-#ifdef CONFIG_CC_HAS_ASM_GOTO_OUTPUT
 #define unsafe_get_user(x, ptr, err_label)					\
 do {										\
 	__inttype(*(ptr)) __gu_val;						\
 	__get_user_size(__gu_val, (ptr), sizeof(*(ptr)), err_label);		\
 	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
 } while (0)
-#else // !CONFIG_CC_HAS_ASM_GOTO_OUTPUT
-#define unsafe_get_user(x, ptr, err_label)					\
-do {										\
-	int __gu_err;								\
-	__inttype(*(ptr)) __gu_val;						\
-	__get_user_size(__gu_val, (ptr), sizeof(*(ptr)), __gu_err);		\
-	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
-	if (unlikely(__gu_err)) goto err_label;					\
-} while (0)
-#endif // CONFIG_CC_HAS_ASM_GOTO_OUTPUT
 
 extern void __try_cmpxchg_user_wrong_size(void);
 
-#ifndef CONFIG_X86_32
-#define __try_cmpxchg64_user_asm(_ptr, _oldp, _nval, _label)		\
-	__try_cmpxchg_user_asm("q", "r", (_ptr), (_oldp), (_nval), _label)
-#endif
 
 /*
  * Force the pointer to u<size> to match the size expected by the asm helper.
@@ -639,21 +539,9 @@ do {									\
 	unsafe_copy_loop(__ucu_dst, __ucu_src, __ucu_len, u8, label);	\
 } while (0)
 
-#ifdef CONFIG_CC_HAS_ASM_GOTO_OUTPUT
 #define __get_kernel_nofault(dst, src, type, err_label)			\
 	__get_user_size(*((type *)(dst)), (__force type __user *)(src),	\
 			sizeof(type), err_label)
-#else // !CONFIG_CC_HAS_ASM_GOTO_OUTPUT
-#define __get_kernel_nofault(dst, src, type, err_label)			\
-do {									\
-	int __kr_err;							\
-									\
-	__get_user_size(*((type *)(dst)), (__force type __user *)(src),	\
-			sizeof(type), __kr_err);			\
-	if (unlikely(__kr_err))						\
-		goto err_label;						\
-} while (0)
-#endif // CONFIG_CC_HAS_ASM_GOTO_OUTPUT
 
 #define __put_kernel_nofault(dst, src, type, err_label)			\
 	__put_user_size(*((type *)(src)), (__force type __user *)(dst),	\

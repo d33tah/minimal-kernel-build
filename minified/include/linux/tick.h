@@ -13,7 +13,6 @@
 #include <linux/sched.h>
 #include <linux/rcupdate.h>
 
-#ifdef CONFIG_GENERIC_CLOCKEVENTS
 extern void __init tick_init(void);
 /* Should be core only, but ARM BL switcher requires it */
 extern void tick_suspend_local(void);
@@ -21,13 +20,6 @@ extern void tick_suspend_local(void);
 extern void tick_resume_local(void);
 extern void tick_handover_do_timer(void);
 extern void tick_cleanup_dead_cpu(int cpu);
-#else /* CONFIG_GENERIC_CLOCKEVENTS */
-static inline void tick_init(void) { }
-static inline void tick_suspend_local(void) { }
-static inline void tick_resume_local(void) { }
-static inline void tick_handover_do_timer(void) { }
-static inline void tick_cleanup_dead_cpu(int cpu) { }
-#endif /* !CONFIG_GENERIC_CLOCKEVENTS */
 
 #if defined(CONFIG_GENERIC_CLOCKEVENTS) && defined(CONFIG_SUSPEND)
 extern void tick_freeze(void);
@@ -75,14 +67,7 @@ extern void tick_offline_cpu(unsigned int cpu);
 static inline void tick_offline_cpu(unsigned int cpu) { }
 #endif
 
-#ifdef CONFIG_GENERIC_CLOCKEVENTS
 extern int tick_broadcast_oneshot_control(enum tick_broadcast_state state);
-#else
-static inline int tick_broadcast_oneshot_control(enum tick_broadcast_state state)
-{
-	return 0;
-}
-#endif
 
 static inline void tick_broadcast_enable(void)
 {

@@ -13,22 +13,10 @@
 #ifndef KSYM_FUNC
 #define KSYM_FUNC(x) x
 #endif
-#ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
 #define KSYM_ALIGN 4
-#elif defined(CONFIG_64BIT)
-#define KSYM_ALIGN 8
-#else
-#define KSYM_ALIGN 4
-#endif
 
 .macro __put, val, name
-#ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
 	.long	\val - ., \name - ., 0
-#elif defined(CONFIG_64BIT)
-	.quad	\val, \name, 0
-#else
-	.long	\val, \name, 0
-#endif
 .endm
 
 /*

@@ -623,26 +623,6 @@ static bool get_desc(struct desc_struct *out, unsigned short sel)
 	struct desc_ptr gdt_desc = {0, 0};
 	unsigned long desc_base;
 
-#ifdef CONFIG_MODIFY_LDT_SYSCALL
-	if ((sel & SEGMENT_TI_MASK) == SEGMENT_LDT) {
-		bool success = false;
-		struct ldt_struct *ldt;
-
-		/* Bits [15:3] contain the index of the desired entry. */
-		sel >>= 3;
-
-		mutex_lock(&current->active_mm->context.lock);
-		ldt = current->active_mm->context.ldt;
-		if (ldt && sel < ldt->nr_entries) {
-			*out = ldt->entries[sel];
-			success = true;
-		}
-
-		mutex_unlock(&current->active_mm->context.lock);
-
-		return success;
-	}
-#endif
 	native_store_gdt(&gdt_desc);
 
 	/*

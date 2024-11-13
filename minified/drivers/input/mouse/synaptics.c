@@ -1481,67 +1481,16 @@ static int synaptics_reconnect(struct psmouse *psmouse)
 static bool impaired_toshiba_kbc;
 
 static const struct dmi_system_id toshiba_dmi_table[] __initconst = {
-#if defined(CONFIG_DMI) && defined(CONFIG_X86)
-	{
-		/* Toshiba Satellite */
-		.matches = {
-			DMI_MATCH(DMI_SYS_VENDOR, "TOSHIBA"),
-			DMI_MATCH(DMI_PRODUCT_NAME, "Satellite"),
-		},
-	},
-	{
-		/* Toshiba Dynabook */
-		.matches = {
-			DMI_MATCH(DMI_SYS_VENDOR, "TOSHIBA"),
-			DMI_MATCH(DMI_PRODUCT_NAME, "dynabook"),
-		},
-	},
-	{
-		/* Toshiba Portege M300 */
-		.matches = {
-			DMI_MATCH(DMI_SYS_VENDOR, "TOSHIBA"),
-			DMI_MATCH(DMI_PRODUCT_NAME, "PORTEGE M300"),
-		},
-
-	},
-	{
-		/* Toshiba Portege M300 */
-		.matches = {
-			DMI_MATCH(DMI_SYS_VENDOR, "TOSHIBA"),
-			DMI_MATCH(DMI_PRODUCT_NAME, "Portable PC"),
-			DMI_MATCH(DMI_PRODUCT_VERSION, "Version 1.0"),
-		},
-
-	},
-#endif
 	{ }
 };
 
 static bool broken_olpc_ec;
 
 static const struct dmi_system_id olpc_dmi_table[] __initconst = {
-#if defined(CONFIG_DMI) && defined(CONFIG_OLPC)
-	{
-		/* OLPC XO-1 or XO-1.5 */
-		.matches = {
-			DMI_MATCH(DMI_SYS_VENDOR, "OLPC"),
-			DMI_MATCH(DMI_PRODUCT_NAME, "XO"),
-		},
-	},
-#endif
 	{ }
 };
 
 static const struct dmi_system_id __initconst cr48_dmi_table[] = {
-#if defined(CONFIG_DMI) && defined(CONFIG_X86)
-	{
-		/* Cr-48 Chromebook (Codename Mario) */
-		.matches = {
-			DMI_MATCH(DMI_SYS_VENDOR, "IEC"),
-			DMI_MATCH(DMI_PRODUCT_NAME, "Mario"),
-		},
-	},
-#endif
 	{ }
 };
 

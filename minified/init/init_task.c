@@ -27,12 +27,6 @@ static struct signal_struct init_signals = {
 	.rlim		= INIT_RLIMITS,
 	.cred_guard_mutex = __MUTEX_INITIALIZER(init_signals.cred_guard_mutex),
 	.exec_update_lock = __RWSEM_INITIALIZER(init_signals.exec_update_lock),
-#ifdef CONFIG_POSIX_TIMERS
-	.posix_timers = LIST_HEAD_INIT(init_signals.posix_timers),
-	.cputimer	= {
-		.cputime_atomic	= INIT_CPUTIME_ATOMIC,
-	},
-#endif
 	INIT_CPU_TIMERS(init_signals)
 	.pids = {
 		[PIDTYPE_PID]	= &init_struct_pid,
@@ -94,9 +88,6 @@ struct task_struct init_task
 		.time_slice	= RR_TIMESLICE,
 	},
 	.tasks		= LIST_HEAD_INIT(init_task.tasks),
-#ifdef CONFIG_SMP
-	.pushable_tasks	= PLIST_NODE_INIT(init_task.pushable_tasks, MAX_PRIO),
-#endif
 #ifdef CONFIG_CGROUP_SCHED
 	.sched_task_group = &root_task_group,
 #endif
@@ -113,9 +104,6 @@ struct task_struct init_task
 	.thread		= INIT_THREAD,
 	.fs		= &init_fs,
 	.files		= &init_files,
-#ifdef CONFIG_IO_URING
-	.io_uring	= NULL,
-#endif
 	.signal		= &init_signals,
 	.sighand	= &init_sighand,
 	.nsproxy	= &init_nsproxy,

@@ -119,11 +119,7 @@ EXPORT_SYMBOL(high_memory);
  *   as ancient (libc5 based) binaries can segfault. )
  */
 int randomize_va_space __read_mostly =
-#ifdef CONFIG_COMPAT_BRK
-					1;
-#else
 					2;
-#endif
 
 #ifndef arch_faults_on_old_pte
 static inline bool arch_faults_on_old_pte(void)
@@ -664,47 +660,6 @@ out:
 	return pfn_to_page(pfn);
 }
 
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-struct page *vm_normal_page_pmd(struct vm_area_struct *vma, unsigned long addr,
-				pmd_t pmd)
-{
-	unsigned long pfn = pmd_pfn(pmd);
-
-	/*
-	 * There is no pmd_special() but there may be special pmds, e.g.
-	 * in a direct-access (dax) mapping, so let's just replicate the
-	 * !CONFIG_ARCH_HAS_PTE_SPECIAL case from vm_normal_page() here.
-	 */
-	if (unlikely(vma->vm_flags & (VM_PFNMAP|VM_MIXEDMAP))) {
-		if (vma->vm_flags & VM_MIXEDMAP) {
-			if (!pfn_valid(pfn))
-				return NULL;
-			goto out;
-		} else {
-			unsigned long off;
-			off = (addr - vma->vm_start) >> PAGE_SHIFT;
-			if (pfn == vma->vm_pgoff + off)
-				return NULL;
-			if (!is_cow_mapping(vma->vm_flags))
-				return NULL;
-		}
-	}
-
-	if (pmd_devmap(pmd))
-		return NULL;
-	if (is_huge_zero_pmd(pmd))
-		return NULL;
-	if (unlikely(pfn > highest_memmap_pfn))
-		return NULL;
-
-	/*
-	 * NOTE! We still have PageReserved() pages in the page tables.
-	 * eg. VDSO mappings can cause them to exist.
-	 */
-out:
-	return pfn_to_page(pfn);
-}
-#endif
 
 static void restore_exclusive_pte(struct vm_area_struct *vma,
 				  struct page *page, unsigned long address,
@@ -3464,10 +3419,6 @@ copy:
 	get_page(vmf->page);
 
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
-#ifdef CONFIG_KSM
-	if (PageKsm(vmf->page))
-		count_vm_event(COW_KSM);
-#endif
 	return wp_page_copy(vmf);
 }
 
@@ -4192,92 +4143,10 @@ static vm_fault_t __do_fault(struct vm_fault *vmf)
 	return ret;
 }
 
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-static void deposit_prealloc_pte(struct vm_fault *vmf)
-{
-	struct vm_area_struct *vma = vmf->vma;
-
-	pgtable_trans_huge_deposit(vma->vm_mm, vmf->pmd, vmf->prealloc_pte);
-	/*
-	 * We are going to consume the prealloc table,
-	 * count that as nr_ptes.
-	 */
-	mm_inc_nr_ptes(vma->vm_mm);
-	vmf->prealloc_pte = NULL;
-}
-
-vm_fault_t do_set_pmd(struct vm_fault *vmf, struct page *page)
-{
-	struct vm_area_struct *vma = vmf->vma;
-	bool write = vmf->flags & FAULT_FLAG_WRITE;
-	unsigned long haddr = vmf->address & HPAGE_PMD_MASK;
-	pmd_t entry;
-	int i;
-	vm_fault_t ret = VM_FAULT_FALLBACK;
-
-	if (!transhuge_vma_suitable(vma, haddr))
-		return ret;
-
-	page = compound_head(page);
-	if (compound_order(page) != HPAGE_PMD_ORDER)
-		return ret;
-
-	/*
-	 * Just backoff if any subpage of a THP is corrupted otherwise
-	 * the corrupted page may mapped by PMD silently to escape the
-	 * check.  This kind of THP just can be PTE mapped.  Access to
-	 * the corrupted subpage should trigger SIGBUS as expected.
-	 */
-	if (unlikely(PageHasHWPoisoned(page)))
-		return ret;
-
-	/*
-	 * Archs like ppc64 need additional space to store information
-	 * related to pte entry. Use the preallocated table for that.
-	 */
-	if (arch_needs_pgtable_deposit() && !vmf->prealloc_pte) {
-		vmf->prealloc_pte = pte_alloc_one(vma->vm_mm);
-		if (!vmf->prealloc_pte)
-			return VM_FAULT_OOM;
-	}
-
-	vmf->ptl = pmd_lock(vma->vm_mm, vmf->pmd);
-	if (unlikely(!pmd_none(*vmf->pmd)))
-		goto out;
-
-	for (i = 0; i < HPAGE_PMD_NR; i++)
-		flush_icache_page(vma, page + i);
-
-	entry = mk_huge_pmd(page, vma->vm_page_prot);
-	if (write)
-		entry = maybe_pmd_mkwrite(pmd_mkdirty(entry), vma);
-
-	add_mm_counter(vma->vm_mm, mm_counter_file(page), HPAGE_PMD_NR);
-	page_add_file_rmap(page, vma, true);
-
-	/*
-	 * deposit and withdraw with pmd lock held
-	 */
-	if (arch_needs_pgtable_deposit())
-		deposit_prealloc_pte(vmf);
-
-	set_pmd_at(vma->vm_mm, haddr, vmf->pmd, entry);
-
-	update_mmu_cache_pmd(vma, haddr, vmf->pmd);
-
-	/* fault is handled */
-	ret = 0;
-	count_vm_event(THP_FILE_MAPPED);
-out:
-	spin_unlock(vmf->ptl);
-	return ret;
-}
-#else
 vm_fault_t do_set_pmd(struct vm_fault *vmf, struct page *page)
 {
 	return VM_FAULT_FALLBACK;
 }
-#endif
 
 void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
 {
@@ -4390,38 +4259,6 @@ vm_fault_t finish_fault(struct vm_fault *vmf)
 static unsigned long fault_around_bytes __read_mostly =
 	rounddown_pow_of_two(65536);
 
-#ifdef CONFIG_DEBUG_FS
-static int fault_around_bytes_get(void *data, u64 *val)
-{
-	*val = fault_around_bytes;
-	return 0;
-}
-
-/*
- * fault_around_bytes must be rounded down to the nearest page order as it's
- * what do_fault_around() expects to see.
- */
-static int fault_around_bytes_set(void *data, u64 val)
-{
-	if (val / PAGE_SIZE > PTRS_PER_PTE)
-		return -EINVAL;
-	if (val > PAGE_SIZE)
-		fault_around_bytes = rounddown_pow_of_two(val);
-	else
-		fault_around_bytes = PAGE_SIZE; /* rounddown_pow_of_two(0) is undefined */
-	return 0;
-}
-DEFINE_DEBUGFS_ATTRIBUTE(fault_around_bytes_fops,
-		fault_around_bytes_get, fault_around_bytes_set, "%llu\n");
-
-static int __init fault_around_debugfs(void)
-{
-	debugfs_create_file_unsafe("fault_around_bytes", 0644, NULL, NULL,
-				   &fault_around_bytes_fops);
-	return 0;
-}
-late_initcall(fault_around_debugfs);
-#endif
 
 /*
  * do_fault_around() tries to map few pages around the fault address. The hope
@@ -5550,19 +5387,6 @@ void print_vma_addr(char *prefix, unsigned long ip)
 	mmap_read_unlock(mm);
 }
 
-#if defined(CONFIG_PROVE_LOCKING) || defined(CONFIG_DEBUG_ATOMIC_SLEEP)
-void __might_fault(const char *file, int line)
-{
-	if (pagefault_disabled())
-		return;
-	__might_sleep(file, line);
-#if defined(CONFIG_DEBUG_ATOMIC_SLEEP)
-	if (current->mm)
-		might_lock_read(&current->mm->mmap_lock);
-#endif
-}
-EXPORT_SYMBOL(__might_fault);
-#endif
 
 #if defined(CONFIG_TRANSPARENT_HUGEPAGE) || defined(CONFIG_HUGETLBFS)
 /*

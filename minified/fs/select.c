@@ -804,21 +804,6 @@ SYSCALL_DEFINE6(pselect6, int, n, fd_set __user *, inp, fd_set __user *, outp,
 	return do_pselect(n, inp, outp, exp, tsp, x.p, x.size, PT_TIMESPEC);
 }
 
-#if defined(CONFIG_COMPAT_32BIT_TIME) && !defined(CONFIG_64BIT)
-
-SYSCALL_DEFINE6(pselect6_time32, int, n, fd_set __user *, inp, fd_set __user *, outp,
-		fd_set __user *, exp, struct old_timespec32 __user *, tsp,
-		void __user *, sig)
-{
-	struct sigset_argpack x = {NULL, 0};
-
-	if (get_sigset_argpack(&x, sig))
-		return -EFAULT;
-
-	return do_pselect(n, inp, outp, exp, tsp, x.p, x.size, PT_OLD_TIMESPEC);
-}
-
-#endif
 
 #ifdef __ARCH_WANT_SYS_OLD_SELECT
 struct sel_arg_struct {
@@ -1122,32 +1107,6 @@ SYSCALL_DEFINE5(ppoll, struct pollfd __user *, ufds, unsigned int, nfds,
 	return poll_select_finish(&end_time, tsp, PT_TIMESPEC, ret);
 }
 
-#if defined(CONFIG_COMPAT_32BIT_TIME) && !defined(CONFIG_64BIT)
-
-SYSCALL_DEFINE5(ppoll_time32, struct pollfd __user *, ufds, unsigned int, nfds,
-		struct old_timespec32 __user *, tsp, const sigset_t __user *, sigmask,
-		size_t, sigsetsize)
-{
-	struct timespec64 ts, end_time, *to = NULL;
-	int ret;
-
-	if (tsp) {
-		if (get_old_timespec32(&ts, tsp))
-			return -EFAULT;
-
-		to = &end_time;
-		if (poll_select_set_timeout(to, ts.tv_sec, ts.tv_nsec))
-			return -EINVAL;
-	}
-
-	ret = set_user_sigmask(sigmask, sigsetsize);
-	if (ret)
-		return ret;
-
-	ret = do_sys_poll(ufds, nfds, to);
-	return poll_select_finish(&end_time, tsp, PT_OLD_TIMESPEC, ret);
-}
-#endif
 
 #ifdef CONFIG_COMPAT
 #define __COMPAT_NFDBITS       (8 * sizeof(compat_ulong_t))
@@ -1378,48 +1337,7 @@ COMPAT_SYSCALL_DEFINE6(pselect6_time64, int, n, compat_ulong_t __user *, inp,
 				 x.size, PT_TIMESPEC);
 }
 
-#if defined(CONFIG_COMPAT_32BIT_TIME)
 
-COMPAT_SYSCALL_DEFINE6(pselect6_time32, int, n, compat_ulong_t __user *, inp,
-	compat_ulong_t __user *, outp, compat_ulong_t __user *, exp,
-	struct old_timespec32 __user *, tsp, void __user *, sig)
-{
-	struct compat_sigset_argpack x = {0, 0};
-
-	if (get_compat_sigset_argpack(&x, sig))
-		return -EFAULT;
-
-	return do_compat_pselect(n, inp, outp, exp, tsp, compat_ptr(x.p),
-				 x.size, PT_OLD_TIMESPEC);
-}
-
-#endif
-
-#if defined(CONFIG_COMPAT_32BIT_TIME)
-COMPAT_SYSCALL_DEFINE5(ppoll_time32, struct pollfd __user *, ufds,
-	unsigned int,  nfds, struct old_timespec32 __user *, tsp,
-	const compat_sigset_t __user *, sigmask, compat_size_t, sigsetsize)
-{
-	struct timespec64 ts, end_time, *to = NULL;
-	int ret;
-
-	if (tsp) {
-		if (get_old_timespec32(&ts, tsp))
-			return -EFAULT;
-
-		to = &end_time;
-		if (poll_select_set_timeout(to, ts.tv_sec, ts.tv_nsec))
-			return -EINVAL;
-	}
-
-	ret = set_compat_user_sigmask(sigmask, sigsetsize);
-	if (ret)
-		return ret;
-
-	ret = do_sys_poll(ufds, nfds, to);
-	return poll_select_finish(&end_time, tsp, PT_OLD_TIMESPEC, ret);
-}
-#endif
 
 /* New compat syscall for 64 bit time_t*/
 COMPAT_SYSCALL_DEFINE5(ppoll_time64, struct pollfd __user *, ufds,

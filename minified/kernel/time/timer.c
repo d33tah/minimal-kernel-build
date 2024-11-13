@@ -223,56 +223,7 @@ static DEFINE_MUTEX(timer_keys_mutex);
 static void timer_update_keys(struct work_struct *work);
 static DECLARE_WORK(timer_update_work, timer_update_keys);
 
-#ifdef CONFIG_SMP
-static unsigned int sysctl_timer_migration = 1;
-
-DEFINE_STATIC_KEY_FALSE(timers_migration_enabled);
-
-static void timers_update_migration(void)
-{
-	if (sysctl_timer_migration && tick_nohz_active)
-		static_branch_enable(&timers_migration_enabled);
-	else
-		static_branch_disable(&timers_migration_enabled);
-}
-
-#ifdef CONFIG_SYSCTL
-static int timer_migration_handler(struct ctl_table *table, int write,
-			    void *buffer, size_t *lenp, loff_t *ppos)
-{
-	int ret;
-
-	mutex_lock(&timer_keys_mutex);
-	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
-	if (!ret && write)
-		timers_update_migration();
-	mutex_unlock(&timer_keys_mutex);
-	return ret;
-}
-
-static struct ctl_table timer_sysctl[] = {
-	{
-		.procname	= "timer_migration",
-		.data		= &sysctl_timer_migration,
-		.maxlen		= sizeof(unsigned int),
-		.mode		= 0644,
-		.proc_handler	= timer_migration_handler,
-		.extra1		= SYSCTL_ZERO,
-		.extra2		= SYSCTL_ONE,
-	},
-	{}
-};
-
-static int __init timer_sysctl_init(void)
-{
-	register_sysctl("kernel", timer_sysctl);
-	return 0;
-}
-device_initcall(timer_sysctl_init);
-#endif /* CONFIG_SYSCTL */
-#else /* CONFIG_SMP */
 static inline void timers_update_migration(void) { }
-#endif /* !CONFIG_SMP */
 
 static void timer_update_keys(struct work_struct *work)
 {
@@ -934,11 +885,6 @@ static inline struct timer_base *get_timer_base(u32 tflags)
 static inline struct timer_base *
 get_target_base(struct timer_base *base, unsigned tflags)
 {
-#if defined(CONFIG_SMP) && defined(CONFIG_NO_HZ_COMMON)
-	if (static_branch_likely(&timers_migration_enabled) &&
-	    !(tflags & TIMER_PINNED))
-		return get_timer_cpu_base(tflags, get_nohz_timer_target());
-#endif
 	return get_timer_this_cpu_base(tflags);
 }
 

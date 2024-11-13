@@ -150,14 +150,8 @@ static char *extra_command_line;
 /* Extra init arguments */
 static char *extra_init_args;
 
-#ifdef CONFIG_BOOT_CONFIG
-/* Is bootconfig on command line? */
-static bool bootconfig_found;
-static size_t initargs_offs;
-#else
 # define bootconfig_found false
 # define initargs_offs 0
-#endif
 
 static char *execute_command;
 static char *ramdisk_execute_command = "/init";
@@ -312,154 +306,6 @@ found:
 	return data;
 }
 
-#ifdef CONFIG_BOOT_CONFIG
-
-static char xbc_namebuf[XBC_KEYLEN_MAX] __initdata;
-
-#define rest(dst, end) ((end) > (dst) ? (end) - (dst) : 0)
-
-static int __init xbc_snprint_cmdline(char *buf, size_t size,
-				      struct xbc_node *root)
-{
-	struct xbc_node *knode, *vnode;
-	char *end = buf + size;
-	const char *val;
-	int ret;
-
-	xbc_node_for_each_key_value(root, knode, val) {
-		ret = xbc_node_compose_key_after(root, knode,
-					xbc_namebuf, XBC_KEYLEN_MAX);
-		if (ret < 0)
-			return ret;
-
-		vnode = xbc_node_get_child(knode);
-		if (!vnode) {
-			ret = snprintf(buf, rest(buf, end), "%s ", xbc_namebuf);
-			if (ret < 0)
-				return ret;
-			buf += ret;
-			continue;
-		}
-		xbc_array_for_each_value(vnode, val) {
-			ret = snprintf(buf, rest(buf, end), "%s=\"%s\" ",
-				       xbc_namebuf, val);
-			if (ret < 0)
-				return ret;
-			buf += ret;
-		}
-	}
-
-	return buf - (end - size);
-}
-#undef rest
-
-/* Make an extra command line under given key word */
-static char * __init xbc_make_cmdline(const char *key)
-{
-	struct xbc_node *root;
-	char *new_cmdline;
-	int ret, len = 0;
-
-	root = xbc_find_node(key);
-	if (!root)
-		return NULL;
-
-	/* Count required buffer size */
-	len = xbc_snprint_cmdline(NULL, 0, root);
-	if (len <= 0)
-		return NULL;
-
-	new_cmdline = memblock_alloc(len + 1, SMP_CACHE_BYTES);
-	if (!new_cmdline) {
-		pr_err("Failed to allocate memory for extra kernel cmdline.\n");
-		return NULL;
-	}
-
-	ret = xbc_snprint_cmdline(new_cmdline, len + 1, root);
-	if (ret < 0 || ret > len) {
-		pr_err("Failed to print extra kernel cmdline.\n");
-		memblock_free(new_cmdline, len + 1);
-		return NULL;
-	}
-
-	return new_cmdline;
-}
-
-static int __init bootconfig_params(char *param, char *val,
-				    const char *unused, void *arg)
-{
-	if (strcmp(param, "bootconfig") == 0) {
-		bootconfig_found = true;
-	}
-	return 0;
-}
-
-static int __init warn_bootconfig(char *str)
-{
-	/* The 'bootconfig' has been handled by bootconfig_params(). */
-	return 0;
-}
-
-static void __init setup_boot_config(void)
-{
-	static char tmp_cmdline[COMMAND_LINE_SIZE] __initdata;
-	const char *msg, *data;
-	int pos, ret;
-	size_t size;
-	char *err;
-
-	/* Cut out the bootconfig data even if we have no bootconfig option */
-	data = get_boot_config_from_initrd(&size);
-	/* If there is no bootconfig in initrd, try embedded one. */
-	if (!data)
-		data = xbc_get_embedded_bootconfig(&size);
-
-	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
-	err = parse_args("bootconfig", tmp_cmdline, NULL, 0, 0, 0, NULL,
-			 bootconfig_params);
-
-	if (IS_ERR(err) || !bootconfig_found)
-		return;
-
-	/* parse_args() stops at the next param of '--' and returns an address */
-	if (err)
-		initargs_offs = err - tmp_cmdline;
-
-	if (!data) {
-		pr_err("'bootconfig' found on command line, but no bootconfig found\n");
-		return;
-	}
-
-	if (size >= XBC_DATA_MAX) {
-		pr_err("bootconfig size %ld greater than max size %d\n",
-			(long)size, XBC_DATA_MAX);
-		return;
-	}
-
-	ret = xbc_init(data, size, &msg, &pos);
-	if (ret < 0) {
-		if (pos < 0)
-			pr_err("Failed to init bootconfig: %s.\n", msg);
-		else
-			pr_err("Failed to parse bootconfig: %s at %d.\n",
-				msg, pos);
-	} else {
-		xbc_get_info(&ret, NULL);
-		pr_info("Load bootconfig: %ld bytes %d nodes\n", (long)size, ret);
-		/* keys starting with "kernel." are passed via cmdline */
-		extra_command_line = xbc_make_cmdline("kernel");
-		/* Also, "init." keys are init arguments */
-		extra_init_args = xbc_make_cmdline("init");
-	}
-	return;
-}
-
-static void __init exit_boot_config(void)
-{
-	xbc_exit();
-}
-
-#else	/* !CONFIG_BOOT_CONFIG */
 
 static void __init setup_boot_config(void)
 {
@@ -475,7 +321,6 @@ static int __init warn_bootconfig(char *str)
 
 #define exit_boot_config()	do {} while (0)
 
-#endif	/* CONFIG_BOOT_CONFIG */
 
 early_param("bootconfig", warn_bootconfig);
 
@@ -593,11 +438,9 @@ static int __init rdinit_setup(char *str)
 }
 __setup("rdinit=", rdinit_setup);
 
-#ifndef CONFIG_SMP
 static const unsigned int setup_max_cpus = NR_CPUS;
 static inline void setup_nr_cpu_ids(void) { }
 static inline void smp_prepare_cpus(unsigned int maxcpus) { }
-#endif
 
 /*
  * We need to store the untouched command line for future reference.
@@ -847,28 +690,6 @@ static void __init mm_init(void)
 	pti_init();
 }
 
-#ifdef CONFIG_RANDOMIZE_KSTACK_OFFSET
-DEFINE_STATIC_KEY_MAYBE_RO(CONFIG_RANDOMIZE_KSTACK_OFFSET_DEFAULT,
-			   randomize_kstack_offset);
-DEFINE_PER_CPU(u32, kstack_offset);
-
-static int __init early_randomize_kstack_offset(char *buf)
-{
-	int ret;
-	bool bool_result;
-
-	ret = kstrtobool(buf, &bool_result);
-	if (ret)
-		return ret;
-
-	if (bool_result)
-		static_branch_enable(&randomize_kstack_offset);
-	else
-		static_branch_disable(&randomize_kstack_offset);
-	return 0;
-}
-early_param("randomize_kstack_offset", early_randomize_kstack_offset);
-#endif
 
 void __init __weak arch_call_rest_init(void)
 {
@@ -1145,70 +966,6 @@ static void __init do_ctors(void)
 #endif
 }
 
-#ifdef CONFIG_KALLSYMS
-struct blacklist_entry {
-	struct list_head next;
-	char *buf;
-};
-
-static __initdata_or_module LIST_HEAD(blacklisted_initcalls);
-
-static int __init initcall_blacklist(char *str)
-{
-	char *str_entry;
-	struct blacklist_entry *entry;
-
-	/* str argument is a comma-separated list of functions */
-	do {
-		str_entry = strsep(&str, ",");
-		if (str_entry) {
-			pr_debug("blacklisting initcall %s\n", str_entry);
-			entry = memblock_alloc(sizeof(*entry),
-					       SMP_CACHE_BYTES);
-			if (!entry)
-				panic("%s: Failed to allocate %zu bytes\n",
-				      __func__, sizeof(*entry));
-			entry->buf = memblock_alloc(strlen(str_entry) + 1,
-						    SMP_CACHE_BYTES);
-			if (!entry->buf)
-				panic("%s: Failed to allocate %zu bytes\n",
-				      __func__, strlen(str_entry) + 1);
-			strcpy(entry->buf, str_entry);
-			list_add(&entry->next, &blacklisted_initcalls);
-		}
-	} while (str_entry);
-
-	return 1;
-}
-
-static bool __init_or_module initcall_blacklisted(initcall_t fn)
-{
-	struct blacklist_entry *entry;
-	char fn_name[KSYM_SYMBOL_LEN];
-	unsigned long addr;
-
-	if (list_empty(&blacklisted_initcalls))
-		return false;
-
-	addr = (unsigned long) dereference_function_descriptor(fn);
-	sprint_symbol_no_offset(fn_name, addr);
-
-	/*
-	 * fn will be "function_name [module_name]" where [module_name] is not
-	 * displayed for built-in init functions.  Strip off the [module_name].
-	 */
-	strreplace(fn_name, ' ', '\0');
-
-	list_for_each_entry(entry, &blacklisted_initcalls, next) {
-		if (!strcmp(fn_name, entry->buf)) {
-			pr_debug("initcall %s blacklisted\n", fn_name);
-			return true;
-		}
-	}
-
-	return false;
-}
-#else
 static int __init initcall_blacklist(char *str)
 {
 	pr_warn("initcall_blacklist requires CONFIG_KALLSYMS\n");
@@ -1219,7 +976,6 @@ static bool __init_or_module initcall_blacklisted(initcall_t fn)
 {
 	return false;
 }
-#endif
 __setup("initcall_blacklist=", initcall_blacklist);
 
 static __init_or_module void

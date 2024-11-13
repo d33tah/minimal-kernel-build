@@ -241,30 +241,10 @@ static int f_getown_ex(struct file *filp, unsigned long arg)
 	return ret;
 }
 
-#ifdef CONFIG_CHECKPOINT_RESTORE
-static int f_getowner_uids(struct file *filp, unsigned long arg)
-{
-	struct user_namespace *user_ns = current_user_ns();
-	uid_t __user *dst = (void __user *)arg;
-	uid_t src[2];
-	int err;
-
-	read_lock_irq(&filp->f_owner.lock);
-	src[0] = from_kuid(user_ns, filp->f_owner.uid);
-	src[1] = from_kuid(user_ns, filp->f_owner.euid);
-	read_unlock_irq(&filp->f_owner.lock);
-
-	err  = put_user(src[0], &dst[0]);
-	err |= put_user(src[1], &dst[1]);
-
-	return err;
-}
-#else
 static int f_getowner_uids(struct file *filp, unsigned long arg)
 {
 	return -EINVAL;
 }
-#endif
 
 static bool rw_hint_valid(enum rw_hint hint)
 {

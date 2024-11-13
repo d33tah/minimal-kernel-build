@@ -81,13 +81,8 @@ void __init mk_early_pgtbl_32(void)
 	/* Enough space to fit pagetables for the low memory linear map */
 	const unsigned long limit = __pa(_end) +
 		(PAGE_TABLE_SIZE(LOWMEM_PAGES) << PAGE_SHIFT);
-#ifdef CONFIG_X86_PAE
-	pmd_t pl2, *pl2p = (pmd_t *)__pa(initial_pg_pmd);
-#define SET_PL2(pl2, val)    { (pl2).pmd = (val); }
-#else
 	pgd_t pl2, *pl2p = (pgd_t *)__pa(initial_page_table);
 #define SET_PL2(pl2, val)   { (pl2).pgd = (val); }
-#endif
 
 	ptep = (pte_t *)__pa(__brk_base);
 	pte.pte = PTE_IDENT_ATTR;
@@ -96,10 +91,8 @@ void __init mk_early_pgtbl_32(void)
 
 		SET_PL2(pl2, (unsigned long)ptep | PDE_IDENT_ATTR);
 		*pl2p = pl2;
-#ifndef CONFIG_X86_PAE
 		/* Kernel PDE entry */
 		*(pl2p +  ((PAGE_OFFSET >> PGDIR_SHIFT))) = pl2;
-#endif
 		for (i = 0; i < PTRS_PER_PTE; i++) {
 			*ptep = pte;
 			pte.pte += PAGE_SIZE;

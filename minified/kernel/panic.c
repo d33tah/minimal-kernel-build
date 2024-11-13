@@ -38,15 +38,7 @@
 #define PANIC_TIMER_STEP 100
 #define PANIC_BLINK_SPD 18
 
-#ifdef CONFIG_SMP
-/*
- * Should we dump all CPUs backtraces in an oops event?
- * Defaults to 0, can be changed via sysctl.
- */
-static unsigned int __read_mostly sysctl_oops_all_cpu_backtrace;
-#else
 #define sysctl_oops_all_cpu_backtrace 0
-#endif /* CONFIG_SMP */
 
 int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
 static unsigned long tainted_mask =
@@ -75,27 +67,6 @@ ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
 
 EXPORT_SYMBOL(panic_notifier_list);
 
-#if defined(CONFIG_SMP) && defined(CONFIG_SYSCTL)
-static struct ctl_table kern_panic_table[] = {
-	{
-		.procname       = "oops_all_cpu_backtrace",
-		.data           = &sysctl_oops_all_cpu_backtrace,
-		.maxlen         = sizeof(int),
-		.mode           = 0644,
-		.proc_handler   = proc_dointvec_minmax,
-		.extra1         = SYSCTL_ZERO,
-		.extra2         = SYSCTL_ONE,
-	},
-	{ }
-};
-
-static __init int kernel_panic_sysctls_init(void)
-{
-	register_sysctl_init("kernel", kern_panic_table);
-	return 0;
-}
-late_initcall(kernel_panic_sysctls_init);
-#endif
 
 static long no_blink(int state)
 {
@@ -666,47 +637,7 @@ void __warn_printk(const char *fmt, ...)
 EXPORT_SYMBOL(__warn_printk);
 #endif
 
-#ifdef CONFIG_BUG
 
-/* Support resetting WARN*_ONCE state */
-
-static int clear_warn_once_set(void *data, u64 val)
-{
-	generic_bug_clear_once();
-	memset(__start_once, 0, __end_once - __start_once);
-	return 0;
-}
-
-DEFINE_DEBUGFS_ATTRIBUTE(clear_warn_once_fops, NULL, clear_warn_once_set,
-			 "%lld\n");
-
-static __init int register_warn_debugfs(void)
-{
-	/* Don't care about failure */
-	debugfs_create_file_unsafe("clear_warn_once", 0200, NULL, NULL,
-				   &clear_warn_once_fops);
-	return 0;
-}
-
-device_initcall(register_warn_debugfs);
-#endif
-
-#ifdef CONFIG_STACKPROTECTOR
-
-/*
- * Called when gcc's -fstack-protector feature is used, and
- * gcc detects corruption of the on-stack canary value
- */
-__visible noinstr void __stack_chk_fail(void)
-{
-	instrumentation_begin();
-	panic("stack-protector: Kernel stack is corrupted in: %pB",
-		__builtin_return_address(0));
-	instrumentation_end();
-}
-EXPORT_SYMBOL(__stack_chk_fail);
-
-#endif
 
 core_param(panic, panic_timeout, int, 0644);
 core_param(panic_print, panic_print, ulong, 0644);

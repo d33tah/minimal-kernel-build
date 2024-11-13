@@ -2044,54 +2044,6 @@ static const char *walk_component(struct nameidata *nd, int flags)
 
 /* Architecture provides HASH_MIX and fold_hash() in <asm/hash.h> */
 
-#elif defined(CONFIG_64BIT)
-/*
- * Register pressure in the mixing function is an issue, particularly
- * on 32-bit x86, but almost any function requires one state value and
- * one temporary.  Instead, use a function designed for two state values
- * and no temporaries.
- *
- * This function cannot create a collision in only two iterations, so
- * we have two iterations to achieve avalanche.  In those two iterations,
- * we have six layers of mixing, which is enough to spread one bit's
- * influence out to 2^6 = 64 state bits.
- *
- * Rotate constants are scored by considering either 64 one-bit input
- * deltas or 64*63/2 = 2016 two-bit input deltas, and finding the
- * probability of that delta causing a change to each of the 128 output
- * bits, using a sample of random initial states.
- *
- * The Shannon entropy of the computed probabilities is then summed
- * to produce a score.  Ideally, any input change has a 50% chance of
- * toggling any given output bit.
- *
- * Mixing scores (in bits) for (12,45):
- * Input delta: 1-bit      2-bit
- * 1 round:     713.3    42542.6
- * 2 rounds:   2753.7   140389.8
- * 3 rounds:   5954.1   233458.2
- * 4 rounds:   7862.6   256672.2
- * Perfect:    8192     258048
- *            (64*128) (64*63/2 * 128)
- */
-#define HASH_MIX(x, y, a)	\
-	(	x ^= (a),	\
-	y ^= x,	x = rol64(x,12),\
-	x += y,	y = rol64(y,45),\
-	y *= 9			)
-
-/*
- * Fold two longs into one 32-bit hash value.  This must be fast, but
- * latency isn't quite as critical, as there is a fair bit of additional
- * work done before the hash value is used.
- */
-static inline unsigned int fold_hash(unsigned long x, unsigned long y)
-{
-	y ^= x * GOLDEN_RATIO_64;
-	y *= GOLDEN_RATIO_64;
-	return y >> 32;
-}
-
 #else	/* 32-bit case */
 
 /*
@@ -2813,32 +2765,6 @@ struct dentry *lookup_positive_unlocked(const char *name,
 }
 EXPORT_SYMBOL(lookup_positive_unlocked);
 
-#ifdef CONFIG_UNIX98_PTYS
-int path_pts(struct path *path)
-{
-	/* Find something mounted on "pts" in the same directory as
-	 * the input path.
-	 */
-	struct dentry *parent = dget_parent(path->dentry);
-	struct dentry *child;
-	struct qstr this = QSTR_INIT("pts", 3);
-
-	if (unlikely(!path_connected(path->mnt, parent))) {
-		dput(parent);
-		return -ENOENT;
-	}
-	dput(path->dentry);
-	path->dentry = parent;
-	child = d_hash_and_lookup(parent, &this);
-	if (!child)
-		return -ENOENT;
-
-	path->dentry = child;
-	dput(parent);
-	follow_down(path);
-	return 0;
-}
-#endif
 
 int user_path_at_empty(int dfd, const char __user *name, unsigned flags,
 		 struct path *path, int *empty)

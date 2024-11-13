@@ -16,11 +16,7 @@
 #include <asm/processor.h>
 #include <asm/vdso.h>
 
-#ifdef CONFIG_COMPAT_VDSO
-#define VDSO_DEFAULT	0
-#else
 #define VDSO_DEFAULT	1
-#endif
 
 /*
  * Should the kernel map a VDSO page into processes and pass its

@@ -822,29 +822,12 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.detect		= trackpoint_detect,
 		.try_passthru	= true,
 	},
-#ifdef CONFIG_MOUSE_PS2_TOUCHKIT
-	{
-		.type		= PSMOUSE_TOUCHKIT_PS2,
-		.name		= "touchkitPS/2",
-		.alias		= "touchkit",
-		.detect		= touchkit_ps2_detect,
-	},
-#endif
 #ifdef CONFIG_MOUSE_PS2_OLPC
 	{
 		.type		= PSMOUSE_HGPK,
 		.name		= "OLPC HGPK",
 		.alias		= "hgpk",
 		.detect		= hgpk_detect,
-	},
-#endif
-#ifdef CONFIG_MOUSE_PS2_ELANTECH
-	{
-		.type		= PSMOUSE_ELANTECH,
-		.name		= "ETPS/2",
-		.alias		= "elantech",
-		.detect		= elantech_detect,
-		.init		= elantech_init_ps2,
 	},
 #endif
 #ifdef CONFIG_MOUSE_PS2_ELANTECH_SMBUS
@@ -855,15 +838,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.detect		= elantech_detect,
 		.init		= elantech_init_smbus,
 		.smbus_companion = true,
-	},
-#endif
-#ifdef CONFIG_MOUSE_PS2_SENTELIC
-	{
-		.type		= PSMOUSE_FSP,
-		.name		= "FSPPS/2",
-		.alias		= "fsp",
-		.detect		= fsp_detect,
-		.init		= fsp_init,
 	},
 #endif
 	{

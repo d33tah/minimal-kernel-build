@@ -424,11 +424,7 @@ EXPORT_SYMBOL(zero_user_segments);
  * With DEBUG_KMAP_LOCAL the stack depth is doubled and every second
  * slot is unused which acts as a guard page
  */
-#ifdef CONFIG_DEBUG_KMAP_LOCAL
-# define KM_INCR	2
-#else
 # define KM_INCR	1
-#endif
 
 static inline int kmap_local_idx_push(void)
 {

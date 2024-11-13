@@ -165,13 +165,9 @@ void mnt_release_group_id(struct mount *mnt)
  */
 static inline void mnt_add_count(struct mount *mnt, int n)
 {
-#ifdef CONFIG_SMP
-	this_cpu_add(mnt->mnt_pcp->mnt_count, n);
-#else
 	preempt_disable();
 	mnt->mnt_count += n;
 	preempt_enable();
-#endif
 }
 
 /*
@@ -179,18 +175,7 @@ static inline void mnt_add_count(struct mount *mnt, int n)
  */
 int mnt_get_count(struct mount *mnt)
 {
-#ifdef CONFIG_SMP
-	int count = 0;
-	int cpu;
-
-	for_each_possible_cpu(cpu) {
-		count += per_cpu_ptr(mnt->mnt_pcp, cpu)->mnt_count;
-	}
-
-	return count;
-#else
 	return mnt->mnt_count;
-#endif
 }
 
 static struct mount *alloc_vfsmnt(const char *name)
@@ -210,16 +195,8 @@ static struct mount *alloc_vfsmnt(const char *name)
 				goto out_free_id;
 		}
 
-#ifdef CONFIG_SMP
-		mnt->mnt_pcp = alloc_percpu(struct mnt_pcp);
-		if (!mnt->mnt_pcp)
-			goto out_free_devname;
-
-		this_cpu_add(mnt->mnt_pcp->mnt_count, 1);
-#else
 		mnt->mnt_count = 1;
 		mnt->mnt_writers = 0;
-#endif
 
 		INIT_HLIST_NODE(&mnt->mnt_hash);
 		INIT_LIST_HEAD(&mnt->mnt_child);
@@ -236,10 +213,6 @@ static struct mount *alloc_vfsmnt(const char *name)
 	}
 	return mnt;
 
-#ifdef CONFIG_SMP
-out_free_devname:
-	kfree_const(mnt->mnt_devname);
-#endif
 out_free_id:
 	mnt_free_id(mnt);
 out_free_cache:
@@ -274,36 +247,17 @@ EXPORT_SYMBOL_GPL(__mnt_is_readonly);
 
 static inline void mnt_inc_writers(struct mount *mnt)
 {
-#ifdef CONFIG_SMP
-	this_cpu_inc(mnt->mnt_pcp->mnt_writers);
-#else
 	mnt->mnt_writers++;
-#endif
 }
 
 static inline void mnt_dec_writers(struct mount *mnt)
 {
-#ifdef CONFIG_SMP
-	this_cpu_dec(mnt->mnt_pcp->mnt_writers);
-#else
 	mnt->mnt_writers--;
-#endif
 }
 
 static unsigned int mnt_get_writers(struct mount *mnt)
 {
-#ifdef CONFIG_SMP
-	unsigned int count = 0;
-	int cpu;
-
-	for_each_possible_cpu(cpu) {
-		count += per_cpu_ptr(mnt->mnt_pcp, cpu)->mnt_writers;
-	}
-
-	return count;
-#else
 	return mnt->mnt_writers;
-#endif
 }
 
 static int mnt_is_readonly(struct vfsmount *mnt)
@@ -608,9 +562,6 @@ static void free_vfsmnt(struct mount *mnt)
 	if (!initial_idmapping(mnt_userns))
 		put_user_ns(mnt_userns);
 	kfree_const(mnt->mnt_devname);
-#ifdef CONFIG_SMP
-	free_percpu(mnt->mnt_pcp);
-#endif
 	kmem_cache_free(mnt_cache, mnt);
 }
 

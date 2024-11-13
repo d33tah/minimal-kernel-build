@@ -485,41 +485,6 @@ void flush_signals(struct task_struct *t)
 }
 EXPORT_SYMBOL(flush_signals);
 
-#ifdef CONFIG_POSIX_TIMERS
-static void __flush_itimer_signals(struct sigpending *pending)
-{
-	sigset_t signal, retain;
-	struct sigqueue *q, *n;
-
-	signal = pending->signal;
-	sigemptyset(&retain);
-
-	list_for_each_entry_safe(q, n, &pending->list, list) {
-		int sig = q->info.si_signo;
-
-		if (likely(q->info.si_code != SI_TIMER)) {
-			sigaddset(&retain, sig);
-		} else {
-			sigdelset(&signal, sig);
-			list_del_init(&q->list);
-			__sigqueue_free(q);
-		}
-	}
-
-	sigorsets(&pending->signal, &signal, &retain);
-}
-
-void flush_itimer_signals(void)
-{
-	struct task_struct *tsk = current;
-	unsigned long flags;
-
-	spin_lock_irqsave(&tsk->sighand->siglock, flags);
-	__flush_itimer_signals(&tsk->pending);
-	__flush_itimer_signals(&tsk->signal->shared_pending);
-	spin_unlock_irqrestore(&tsk->sighand->siglock, flags);
-}
-#endif
 
 void ignore_signals(struct task_struct *t)
 {
@@ -641,31 +606,6 @@ int dequeue_signal(struct task_struct *tsk, sigset_t *mask,
 		*type = PIDTYPE_TGID;
 		signr = __dequeue_signal(&tsk->signal->shared_pending,
 					 mask, info, &resched_timer);
-#ifdef CONFIG_POSIX_TIMERS
-		/*
-		 * itimer signal ?
-		 *
-		 * itimers are process shared and we restart periodic
-		 * itimers in the signal delivery path to prevent DoS
-		 * attacks in the high resolution timer case. This is
-		 * compliant with the old way of self-restarting
-		 * itimers, as the SIGALRM is a legacy signal and only
-		 * queued once. Changing the restart behaviour to
-		 * restart the timer in the signal dequeue path is
-		 * reducing the timer noise on heavy loaded !highres
-		 * systems too.
-		 */
-		if (unlikely(signr == SIGALRM)) {
-			struct hrtimer *tmr = &tsk->signal->real_timer;
-
-			if (!hrtimer_is_queued(tmr) &&
-			    tsk->signal->it_real_incr != 0) {
-				hrtimer_forward(tmr, tmr->base->get_time(),
-						tsk->signal->it_real_incr);
-				hrtimer_restart(tmr);
-			}
-		}
-#endif
 	}
 
 	recalc_sigpending();
@@ -687,22 +627,6 @@ int dequeue_signal(struct task_struct *tsk, sigset_t *mask,
 		 */
 		current->jobctl |= JOBCTL_STOP_DEQUEUED;
 	}
-#ifdef CONFIG_POSIX_TIMERS
-	if (resched_timer) {
-		/*
-		 * Release the siglock to ensure proper locking order
-		 * of timer locks outside of siglocks.  Note, we leave
-		 * irqs disabled here, since the posix-timers code is
-		 * about to disable them again anyway.
-		 */
-		spin_unlock(&tsk->sighand->siglock);
-		posixtimer_rearm(info);
-		spin_lock(&tsk->sighand->siglock);
-
-		/* Don't expose the si_sys_private value to userspace */
-		info->si_sys_private = 0;
-	}
-#endif
 	return signr;
 }
 EXPORT_SYMBOL_GPL(dequeue_signal);
@@ -3655,38 +3579,6 @@ SYSCALL_DEFINE4(rt_sigtimedwait, const sigset_t __user *, uthese,
 	return ret;
 }
 
-#ifdef CONFIG_COMPAT_32BIT_TIME
-SYSCALL_DEFINE4(rt_sigtimedwait_time32, const sigset_t __user *, uthese,
-		siginfo_t __user *, uinfo,
-		const struct old_timespec32 __user *, uts,
-		size_t, sigsetsize)
-{
-	sigset_t these;
-	struct timespec64 ts;
-	kernel_siginfo_t info;
-	int ret;
-
-	if (sigsetsize != sizeof(sigset_t))
-		return -EINVAL;
-
-	if (copy_from_user(&these, uthese, sizeof(these)))
-		return -EFAULT;
-
-	if (uts) {
-		if (get_old_timespec32(&ts, uts))
-			return -EFAULT;
-	}
-
-	ret = do_sigtimedwait(&these, &info, uts ? &ts : NULL);
-
-	if (ret > 0 && uinfo) {
-		if (copy_siginfo_to_user(uinfo, &info))
-			ret = -EFAULT;
-	}
-
-	return ret;
-}
-#endif
 
 #ifdef CONFIG_COMPAT
 COMPAT_SYSCALL_DEFINE4(rt_sigtimedwait_time64, compat_sigset_t __user *, uthese,
@@ -3719,37 +3611,6 @@ COMPAT_SYSCALL_DEFINE4(rt_sigtimedwait_time64, compat_sigset_t __user *, uthese,
 	return ret;
 }
 
-#ifdef CONFIG_COMPAT_32BIT_TIME
-COMPAT_SYSCALL_DEFINE4(rt_sigtimedwait_time32, compat_sigset_t __user *, uthese,
-		struct compat_siginfo __user *, uinfo,
-		struct old_timespec32 __user *, uts, compat_size_t, sigsetsize)
-{
-	sigset_t s;
-	struct timespec64 t;
-	kernel_siginfo_t info;
-	long ret;
-
-	if (sigsetsize != sizeof(sigset_t))
-		return -EINVAL;
-
-	if (get_compat_sigset(&s, uthese))
-		return -EFAULT;
-
-	if (uts) {
-		if (get_old_timespec32(&t, uts))
-			return -EFAULT;
-	}
-
-	ret = do_sigtimedwait(&s, &info, uts ? &t : NULL);
-
-	if (ret > 0 && uinfo) {
-		if (copy_siginfo_to_user32(uinfo, &info))
-			ret = -EFAULT;
-	}
-
-	return ret;
-}
-#endif
 #endif
 
 static inline void prepare_kill_siginfo(int sig, struct kernel_siginfo *info)
@@ -4548,28 +4409,6 @@ COMPAT_SYSCALL_DEFINE3(sigaction, int, sig,
 }
 #endif
 
-#ifdef CONFIG_SGETMASK_SYSCALL
-
-/*
- * For backwards compatibility.  Functionality superseded by sigprocmask.
- */
-SYSCALL_DEFINE0(sgetmask)
-{
-	/* SMP safe */
-	return current->blocked.sig[0];
-}
-
-SYSCALL_DEFINE1(ssetmask, int, newmask)
-{
-	int old = current->blocked.sig[0];
-	sigset_t newset;
-
-	siginitset(&newset, newmask);
-	set_current_blocked(&newset);
-
-	return old;
-}
-#endif /* CONFIG_SGETMASK_SYSCALL */
 
 #ifdef __ARCH_WANT_SYS_SIGNAL
 /*

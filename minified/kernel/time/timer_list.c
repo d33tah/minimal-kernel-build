@@ -104,10 +104,6 @@ print_base(struct seq_file *m, struct hrtimer_clock_base *base, u64 now)
 	SEQ_printf(m, "  .resolution: %u nsecs\n", hrtimer_resolution);
 
 	SEQ_printf(m,   "  .get_time:   %ps\n", base->get_time);
-#ifdef CONFIG_HIGH_RES_TIMERS
-	SEQ_printf(m, "  .offset:     %Lu nsecs\n",
-		   (unsigned long long) ktime_to_ns(base->offset));
-#endif
 	SEQ_printf(m,   "active timers:\n");
 	print_active_timers(m, base, now + ktime_to_ns(base->offset));
 }
@@ -129,14 +125,6 @@ static void print_cpu(struct seq_file *m, int cpu, u64 now)
 	SEQ_printf(m, "  .%-15s: %Lu nsecs\n", #x, \
 		   (unsigned long long)(ktime_to_ns(cpu_base->x)))
 
-#ifdef CONFIG_HIGH_RES_TIMERS
-	P_ns(expires_next);
-	P(hres_active);
-	P(nr_events);
-	P(nr_retries);
-	P(nr_hangs);
-	P(max_hang_time);
-#endif
 #undef P
 #undef P_ns
 

@@ -103,11 +103,6 @@ static void __exit_signal(struct task_struct *tsk)
 					lockdep_tasklist_lock_is_held());
 	spin_lock(&sighand->siglock);
 
-#ifdef CONFIG_POSIX_TIMERS
-	posix_cpu_timers_exit(tsk);
-	if (group_dead)
-		posix_cpu_timers_exit_group(tsk);
-#endif
 
 	if (group_dead) {
 		tty = sig->tty;
@@ -709,29 +704,7 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 	}
 }
 
-#ifdef CONFIG_DEBUG_STACK_USAGE
-static void check_stack_usage(void)
-{
-	static DEFINE_SPINLOCK(low_water_lock);
-	static int lowest_to_date = THREAD_SIZE;
-	unsigned long free;
-
-	free = stack_not_used(current);
-
-	if (free >= lowest_to_date)
-		return;
-
-	spin_lock(&low_water_lock);
-	if (free < lowest_to_date) {
-		pr_info("%s (%d) used greatest stack depth: %lu bytes left\n",
-			current->comm, task_pid_nr(current), free);
-		lowest_to_date = free;
-	}
-	spin_unlock(&low_water_lock);
-}
-#else
 static inline void check_stack_usage(void) {}
-#endif
 
 void __noreturn do_exit(long code)
 {
@@ -764,10 +737,6 @@ void __noreturn do_exit(long code)
 			panic("Attempted to kill init! exitcode=0x%08x\n",
 				tsk->signal->group_exit_code ?: (int)code);
 
-#ifdef CONFIG_POSIX_TIMERS
-		hrtimer_cancel(&tsk->signal->real_timer);
-		exit_itimers(tsk);
-#endif
 		if (tsk->mm)
 			setmax_mm_hiwater_rss(&tsk->signal->maxrss, tsk->mm);
 	}
@@ -815,10 +784,6 @@ void __noreturn do_exit(long code)
 	exit_notify(tsk, group_dead);
 	proc_exit_connector(tsk);
 	mpol_put_task_policy(tsk);
-#ifdef CONFIG_FUTEX
-	if (unlikely(current->pi_state_cache))
-		kfree(current->pi_state_cache);
-#endif
 	/*
 	 * Make sure we are holding no locks:
 	 */

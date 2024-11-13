@@ -71,18 +71,6 @@ static pmd_t * __init one_md_table_init(pgd_t *pgd)
 	pud_t *pud;
 	pmd_t *pmd_table;
 
-#ifdef CONFIG_X86_PAE
-	if (!(pgd_val(*pgd) & _PAGE_PRESENT)) {
-		pmd_table = (pmd_t *)alloc_low_page();
-		paravirt_alloc_pmd(&init_mm, __pa(pmd_table) >> PAGE_SHIFT);
-		set_pgd(pgd, __pgd(__pa(pmd_table) | _PAGE_PRESENT));
-		p4d = p4d_offset(pgd, 0);
-		pud = pud_offset(p4d, 0);
-		BUG_ON(pmd_table != pmd_offset(pud, 0));
-
-		return pmd_table;
-	}
-#endif
 	p4d = p4d_offset(pgd, 0);
 	pud = pud_offset(p4d, 0);
 	pmd_table = pmd_offset(pud, 0);
@@ -300,12 +288,7 @@ repeat:
 
 		if (pfn >= end_pfn)
 			continue;
-#ifdef CONFIG_X86_PAE
-		pmd_idx = pmd_index((pfn<<PAGE_SHIFT) + PAGE_OFFSET);
-		pmd += pmd_idx;
-#else
 		pmd_idx = 0;
-#endif
 		for (; pmd_idx < PTRS_PER_PMD && pfn < end_pfn;
 		     pmd++, pmd_idx++) {
 			unsigned int addr = pfn * PAGE_SIZE + PAGE_OFFSET;
@@ -625,12 +608,10 @@ static void __init highmem_pfn_init(void)
 		printk(KERN_WARNING "Use a HIGHMEM enabled kernel.\n");
 	max_pfn = MAXMEM_PFN;
 #else /* !CONFIG_HIGHMEM */
-#ifndef CONFIG_HIGHMEM64G
 	if (max_pfn > MAX_NONPAE_PFN) {
 		max_pfn = MAX_NONPAE_PFN;
 		printk(KERN_WARNING MSG_HIGHMEM_TRIMMED);
 	}
-#endif /* !CONFIG_HIGHMEM64G */
 #endif /* !CONFIG_HIGHMEM */
 }
 
@@ -801,13 +782,6 @@ void mark_rodata_ro(void)
 
 	kernel_set_to_readonly = 1;
 
-#ifdef CONFIG_CPA_DEBUG
-	pr_info("Testing CPA: Reverting %lx-%lx\n", start, start + size);
-	set_pages_rw(virt_to_page(start), size >> PAGE_SHIFT);
-
-	pr_info("Testing CPA: write protecting again\n");
-	set_pages_ro(virt_to_page(start), size >> PAGE_SHIFT);
-#endif
 	mark_nxdata_nx();
 	if (__supported_pte_mask & _PAGE_NX)
 		debug_checkwx();

@@ -909,11 +909,7 @@ int bitmap_parse(const char *start, unsigned int buflen,
 		if (!chunks--)
 			return -EOVERFLOW;
 
-#if defined(CONFIG_64BIT) && defined(__BIG_ENDIAN)
-		end = bitmap_get_x32_reverse(start, end, &bitmap[chunk ^ 1]);
-#else
 		end = bitmap_get_x32_reverse(start, end, &bitmap[chunk]);
-#endif
 		if (IS_ERR(end))
 			return PTR_ERR(end);
 	}

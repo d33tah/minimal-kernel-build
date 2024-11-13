@@ -297,14 +297,7 @@ static void dump_pagetable(unsigned long address)
 	pmd_t *pmd;
 	pte_t *pte;
 
-#ifdef CONFIG_X86_PAE
-	pr_info("*pdpt = %016Lx ", pgd_val(*pgd));
-	if (!low_pfn(pgd_val(*pgd) >> PAGE_SHIFT) || !pgd_present(*pgd))
-		goto out;
-#define pr_pde pr_cont
-#else
 #define pr_pde pr_info
-#endif
 	p4d = p4d_offset(pgd, address);
 	pud = pud_offset(p4d, address);
 	pmd = pmd_offset(pud, address);

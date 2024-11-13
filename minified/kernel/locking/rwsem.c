@@ -64,19 +64,7 @@
 #define RWSEM_NONSPINNABLE	(1UL << 1)
 #define RWSEM_OWNER_FLAGS_MASK	(RWSEM_READER_OWNED | RWSEM_NONSPINNABLE)
 
-#ifdef CONFIG_DEBUG_RWSEMS
-# define DEBUG_RWSEMS_WARN_ON(c, sem)	do {			\
-	if (!debug_locks_silent &&				\
-	    WARN_ONCE(c, "DEBUG_RWSEMS_WARN_ON(%s): count = 0x%lx, magic = 0x%lx, owner = 0x%lx, curr 0x%lx, list %sempty\n",\
-		#c, atomic_long_read(&(sem)->count),		\
-		(unsigned long) sem->magic,			\
-		atomic_long_read(&(sem)->owner), (long)current,	\
-		list_empty(&(sem)->wait_list) ? "" : "not "))	\
-			debug_locks_off();			\
-	} while (0)
-#else
 # define DEBUG_RWSEMS_WARN_ON(c, sem)
-#endif
 
 /*
  * On 64-bit architectures, the bit definitions of the count are:
@@ -181,40 +169,12 @@ static inline void rwsem_set_reader_owned(struct rw_semaphore *sem)
  */
 static inline bool is_rwsem_reader_owned(struct rw_semaphore *sem)
 {
-#ifdef CONFIG_DEBUG_RWSEMS
-	/*
-	 * Check the count to see if it is write-locked.
-	 */
-	long count = atomic_long_read(&sem->count);
-
-	if (count & RWSEM_WRITER_MASK)
-		return false;
-#endif
 	return rwsem_test_oflags(sem, RWSEM_READER_OWNED);
 }
 
-#ifdef CONFIG_DEBUG_RWSEMS
-/*
- * With CONFIG_DEBUG_RWSEMS configured, it will make sure that if there
- * is a task pointer in owner of a reader-owned rwsem, it will be the
- * real owner or one of the real owners. The only exception is when the
- * unlock is done by up_read_non_owner().
- */
-static inline void rwsem_clear_reader_owned(struct rw_semaphore *sem)
-{
-	unsigned long val = atomic_long_read(&sem->owner);
-
-	while ((val & ~RWSEM_OWNER_FLAGS_MASK) == (unsigned long)current) {
-		if (atomic_long_try_cmpxchg(&sem->owner, &val,
-					    val & RWSEM_OWNER_FLAGS_MASK))
-			return;
-	}
-}
-#else
 static inline void rwsem_clear_reader_owned(struct rw_semaphore *sem)
 {
 }
-#endif
 
 /*
  * Set the RWSEM_NONSPINNABLE bits if the RWSEM_READER_OWNED flag
@@ -305,16 +265,6 @@ rwsem_owner_flags(struct rw_semaphore *sem, unsigned long *pflags)
 void __init_rwsem(struct rw_semaphore *sem, const char *name,
 		  struct lock_class_key *key)
 {
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-	/*
-	 * Make sure we are not reinitializing a held semaphore:
-	 */
-	debug_check_no_locks_freed((void *)sem, sizeof(*sem));
-	lockdep_init_map_wait(&sem->dep_map, name, key, 0, LD_WAIT_SLEEP);
-#endif
-#ifdef CONFIG_DEBUG_RWSEMS
-	sem->magic = sem;
-#endif
 	atomic_long_set(&sem->count, RWSEM_UNLOCKED_VALUE);
 	raw_spin_lock_init(&sem->wait_lock);
 	INIT_LIST_HEAD(&sem->wait_list);
@@ -1406,10 +1356,6 @@ void __init_rwsem(struct rw_semaphore *sem, const char *name,
 {
 	init_rwbase_rt(&(sem)->rwbase);
 
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-	debug_check_no_locks_freed((void *)sem, sizeof(*sem));
-	lockdep_init_map_wait(&sem->dep_map, name, key, 0, LD_WAIT_SLEEP);
-#endif
 }
 EXPORT_SYMBOL(__init_rwsem);
 
@@ -1606,74 +1552,3 @@ void downgrade_write(struct rw_semaphore *sem)
 }
 EXPORT_SYMBOL(downgrade_write);
 
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-
-void down_read_nested(struct rw_semaphore *sem, int subclass)
-{
-	might_sleep();
-	rwsem_acquire_read(&sem->dep_map, subclass, 0, _RET_IP_);
-	LOCK_CONTENDED(sem, __down_read_trylock, __down_read);
-}
-EXPORT_SYMBOL(down_read_nested);
-
-int down_read_killable_nested(struct rw_semaphore *sem, int subclass)
-{
-	might_sleep();
-	rwsem_acquire_read(&sem->dep_map, subclass, 0, _RET_IP_);
-
-	if (LOCK_CONTENDED_RETURN(sem, __down_read_trylock, __down_read_killable)) {
-		rwsem_release(&sem->dep_map, _RET_IP_);
-		return -EINTR;
-	}
-
-	return 0;
-}
-EXPORT_SYMBOL(down_read_killable_nested);
-
-void _down_write_nest_lock(struct rw_semaphore *sem, struct lockdep_map *nest)
-{
-	might_sleep();
-	rwsem_acquire_nest(&sem->dep_map, 0, 0, nest, _RET_IP_);
-	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
-}
-EXPORT_SYMBOL(_down_write_nest_lock);
-
-void down_read_non_owner(struct rw_semaphore *sem)
-{
-	might_sleep();
-	__down_read(sem);
-	__rwsem_set_reader_owned(sem, NULL);
-}
-EXPORT_SYMBOL(down_read_non_owner);
-
-void down_write_nested(struct rw_semaphore *sem, int subclass)
-{
-	might_sleep();
-	rwsem_acquire(&sem->dep_map, subclass, 0, _RET_IP_);
-	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
-}
-EXPORT_SYMBOL(down_write_nested);
-
-int __sched down_write_killable_nested(struct rw_semaphore *sem, int subclass)
-{
-	might_sleep();
-	rwsem_acquire(&sem->dep_map, subclass, 0, _RET_IP_);
-
-	if (LOCK_CONTENDED_RETURN(sem, __down_write_trylock,
-				  __down_write_killable)) {
-		rwsem_release(&sem->dep_map, _RET_IP_);
-		return -EINTR;
-	}
-
-	return 0;
-}
-EXPORT_SYMBOL(down_write_killable_nested);
-
-void up_read_non_owner(struct rw_semaphore *sem)
-{
-	DEBUG_RWSEMS_WARN_ON(!is_rwsem_reader_owned(sem), sem);
-	__up_read(sem);
-}
-EXPORT_SYMBOL(up_read_non_owner);
-
-#endif

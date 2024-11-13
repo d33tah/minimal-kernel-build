@@ -1195,43 +1195,11 @@ static ssize_t type_store(struct kobject *kobj, struct kobj_attribute *attr,
 }
 static struct kobj_attribute reboot_type_attr = __ATTR_RW(type);
 
-#ifdef CONFIG_SMP
-static ssize_t cpu_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", reboot_cpu);
-}
-static ssize_t cpu_store(struct kobject *kobj, struct kobj_attribute *attr,
-			  const char *buf, size_t count)
-{
-	unsigned int cpunum;
-	int rc;
-
-	if (!capable(CAP_SYS_BOOT))
-		return -EPERM;
-
-	rc = kstrtouint(buf, 0, &cpunum);
-
-	if (rc)
-		return rc;
-
-	if (cpunum >= num_possible_cpus())
-		return -ERANGE;
-
-	reboot_default = 0;
-	reboot_cpu = cpunum;
-
-	return count;
-}
-static struct kobj_attribute reboot_cpu_attr = __ATTR_RW(cpu);
-#endif
 
 static struct attribute *reboot_attrs[] = {
 	&reboot_mode_attr.attr,
 	&reboot_force_attr.attr,
 	&reboot_type_attr.attr,
-#ifdef CONFIG_SMP
-	&reboot_cpu_attr.attr,
-#endif
 	NULL,
 };
 

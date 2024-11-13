@@ -509,24 +509,6 @@ EXPORT_SYMBOL(get_random_ ##type);
 DEFINE_BATCHED_ENTROPY(u64)
 DEFINE_BATCHED_ENTROPY(u32)
 
-#ifdef CONFIG_SMP
-/*
- * This function is called when the CPU is coming up, with entry
- * CPUHP_RANDOM_PREPARE, which comes before CPUHP_WORKQUEUE_PREP.
- */
-int __cold random_prepare_cpu(unsigned int cpu)
-{
-	/*
-	 * When the cpu comes back online, immediately invalidate both
-	 * the per-cpu crng and all batches, so that we serve fresh
-	 * randomness.
-	 */
-	per_cpu_ptr(&crngs, cpu)->generation = ULONG_MAX;
-	per_cpu_ptr(&batched_entropy_u32, cpu)->position = UINT_MAX;
-	per_cpu_ptr(&batched_entropy_u64, cpu)->position = UINT_MAX;
-	return 0;
-}
-#endif
 
 
 /**********************************************************************
@@ -910,13 +892,8 @@ struct fast_pool {
 };
 
 static DEFINE_PER_CPU(struct fast_pool, irq_randomness) = {
-#ifdef CONFIG_64BIT
-#define FASTMIX_PERM SIPHASH_PERMUTATION
-	.pool = { SIPHASH_CONST_0, SIPHASH_CONST_1, SIPHASH_CONST_2, SIPHASH_CONST_3 }
-#else
 #define FASTMIX_PERM HSIPHASH_PERMUTATION
 	.pool = { HSIPHASH_CONST_0, HSIPHASH_CONST_1, HSIPHASH_CONST_2, HSIPHASH_CONST_3 }
-#endif
 };
 
 /*
@@ -935,28 +912,6 @@ static void fast_mix(unsigned long s[4], unsigned long v1, unsigned long v2)
 	s[0] ^= v2;
 }
 
-#ifdef CONFIG_SMP
-/*
- * This function is called when the CPU has just come online, with
- * entry CPUHP_AP_RANDOM_ONLINE, just after CPUHP_AP_WORKQUEUE_ONLINE.
- */
-int __cold random_online_cpu(unsigned int cpu)
-{
-	/*
-	 * During CPU shutdown and before CPU onlining, add_interrupt_
-	 * randomness() may schedule mix_interrupt_randomness(), and
-	 * set the MIX_INFLIGHT flag. However, because the worker can
-	 * be scheduled on a different CPU during this period, that
-	 * flag will never be cleared. For that reason, we zero out
-	 * the flag here, which runs just after workqueues are onlined
-	 * for the CPU again. This also has the effect of setting the
-	 * irq randomness count to zero so that new accumulated irqs
-	 * are fresh.
-	 */
-	per_cpu_ptr(&irq_randomness, cpu)->count = 0;
-	return 0;
-}
-#endif
 
 static void mix_interrupt_randomness(struct work_struct *work)
 {

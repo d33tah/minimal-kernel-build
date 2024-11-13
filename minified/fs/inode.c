@@ -984,14 +984,6 @@ unsigned int get_next_ino(void)
 	unsigned int *p = &get_cpu_var(last_ino);
 	unsigned int res = *p;
 
-#ifdef CONFIG_SMP
-	if (unlikely((res & (LAST_INO_BATCH-1)) == 0)) {
-		static atomic_t shared_last_ino;
-		int next = atomic_add_return(LAST_INO_BATCH, &shared_last_ino);
-
-		res = next - LAST_INO_BATCH;
-	}
-#endif
 
 	res++;
 	/* get_next_ino should not provide a 0 inode number */
@@ -1051,26 +1043,6 @@ struct inode *new_inode(struct super_block *sb)
 }
 EXPORT_SYMBOL(new_inode);
 
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-void lockdep_annotate_inode_mutex_key(struct inode *inode)
-{
-	if (S_ISDIR(inode->i_mode)) {
-		struct file_system_type *type = inode->i_sb->s_type;
-
-		/* Set new key only if filesystem hasn't already changed it */
-		if (lockdep_match_class(&inode->i_rwsem, &type->i_mutex_key)) {
-			/*
-			 * ensure nobody is actually holding i_mutex
-			 */
-			// mutex_destroy(&inode->i_mutex);
-			init_rwsem(&inode->i_rwsem);
-			lockdep_set_class(&inode->i_rwsem,
-					  &type->i_mutex_dir_key);
-		}
-	}
-}
-EXPORT_SYMBOL(lockdep_annotate_inode_mutex_key);
-#endif
 
 /**
  * unlock_new_inode - clear the I_NEW state and wake up any waiters

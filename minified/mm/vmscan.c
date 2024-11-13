@@ -1734,9 +1734,6 @@ retry:
 					if (split_folio_to_list(folio,
 								page_list))
 						goto activate_locked;
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-					count_vm_event(THP_SWPOUT_FALLBACK);
-#endif
 					if (!add_to_swap(folio))
 						goto activate_locked_split;
 				}

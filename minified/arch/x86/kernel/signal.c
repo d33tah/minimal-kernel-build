@@ -799,11 +799,7 @@ void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
 	force_sig(SIGSEGV);
 }
 
-#ifdef CONFIG_STRICT_SIGALTSTACK_SIZE
-static bool strict_sigaltstack_size __ro_after_init = true;
-#else
 static bool strict_sigaltstack_size __ro_after_init = false;
-#endif
 
 static int __init strict_sas_size(char *arg)
 {

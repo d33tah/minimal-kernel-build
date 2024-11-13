@@ -19,11 +19,7 @@
 static DEFINE_MUTEX(param_lock);
 
 /* Use the module's mutex, or if built-in use the built-in mutex */
-#ifdef CONFIG_MODULES
-#define KPARAM_MUTEX(mod)	((mod) ? &(mod)->param_lock : &param_lock)
-#else
 #define KPARAM_MUTEX(mod)	(&param_lock)
-#endif
 
 static inline void check_kparam_locked(struct module *mod)
 {
@@ -592,11 +588,7 @@ static ssize_t param_attr_store(struct module_attribute *mattr,
 }
 #endif
 
-#ifdef CONFIG_MODULES
-#define __modinit
-#else
 #define __modinit __init
-#endif
 
 #ifdef CONFIG_SYSFS
 void kernel_param_lock(struct module *mod)
@@ -685,69 +677,6 @@ static __modinit int add_sysfs_param(struct module_kobject *mk,
 	return 0;
 }
 
-#ifdef CONFIG_MODULES
-static void free_module_param_attrs(struct module_kobject *mk)
-{
-	if (mk->mp)
-		kfree(mk->mp->grp.attrs);
-	kfree(mk->mp);
-	mk->mp = NULL;
-}
-
-/*
- * module_param_sysfs_setup - setup sysfs support for one module
- * @mod: module
- * @kparam: module parameters (array)
- * @num_params: number of module parameters
- *
- * Adds sysfs entries for module parameters under
- * /sys/module/[mod->name]/parameters/
- */
-int module_param_sysfs_setup(struct module *mod,
-			     const struct kernel_param *kparam,
-			     unsigned int num_params)
-{
-	int i, err;
-	bool params = false;
-
-	for (i = 0; i < num_params; i++) {
-		if (kparam[i].perm == 0)
-			continue;
-		err = add_sysfs_param(&mod->mkobj, &kparam[i], kparam[i].name);
-		if (err) {
-			free_module_param_attrs(&mod->mkobj);
-			return err;
-		}
-		params = true;
-	}
-
-	if (!params)
-		return 0;
-
-	/* Create the param group. */
-	err = sysfs_create_group(&mod->mkobj.kobj, &mod->mkobj.mp->grp);
-	if (err)
-		free_module_param_attrs(&mod->mkobj);
-	return err;
-}
-
-/*
- * module_param_sysfs_remove - remove sysfs support for one module
- * @mod: module
- *
- * Remove sysfs entries for module parameters and the corresponding
- * kobject.
- */
-void module_param_sysfs_remove(struct module *mod)
-{
-	if (mod->mkobj.mp) {
-		sysfs_remove_group(&mod->mkobj.kobj, &mod->mkobj.mp->grp);
-		/* We are positive that no one is using any param
-		 * attrs at this point.  Deallocate immediately. */
-		free_module_param_attrs(&mod->mkobj);
-	}
-}
-#endif
 
 void destroy_params(const struct kernel_param *params, unsigned num)
 {
@@ -775,10 +704,6 @@ static struct module_kobject * __init locate_module_kobject(const char *name)
 		mk->kobj.kset = module_kset;
 		err = kobject_init_and_add(&mk->kobj, &module_ktype, NULL,
 					   "%s", name);
-#ifdef CONFIG_MODULES
-		if (!err)
-			err = sysfs_create_file(&mk->kobj, &module_uevent.attr);
-#endif
 		if (err) {
 			kobject_put(&mk->kobj);
 			pr_crit("Adding module '%s' to sysfs failed (%d), the system may be unstable.\n",

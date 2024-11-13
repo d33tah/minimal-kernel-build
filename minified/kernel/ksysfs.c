@@ -34,58 +34,7 @@ static ssize_t uevent_seqnum_show(struct kobject *kobj,
 }
 KERNEL_ATTR_RO(uevent_seqnum);
 
-#ifdef CONFIG_UEVENT_HELPER
-/* uevent helper program, used during early boot */
-static ssize_t uevent_helper_show(struct kobject *kobj,
-				  struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%s\n", uevent_helper);
-}
-static ssize_t uevent_helper_store(struct kobject *kobj,
-				   struct kobj_attribute *attr,
-				   const char *buf, size_t count)
-{
-	if (count+1 > UEVENT_HELPER_PATH_LEN)
-		return -ENOENT;
-	memcpy(uevent_helper, buf, count);
-	uevent_helper[count] = '\0';
-	if (count && uevent_helper[count-1] == '\n')
-		uevent_helper[count-1] = '\0';
-	return count;
-}
-KERNEL_ATTR_RW(uevent_helper);
-#endif
 
-#ifdef CONFIG_PROFILING
-static ssize_t profiling_show(struct kobject *kobj,
-				  struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", prof_on);
-}
-static ssize_t profiling_store(struct kobject *kobj,
-				   struct kobj_attribute *attr,
-				   const char *buf, size_t count)
-{
-	int ret;
-
-	if (prof_on)
-		return -EEXIST;
-	/*
-	 * This eventually calls into get_option() which
-	 * has a ton of callers and is not const.  It is
-	 * easiest to cast it away here.
-	 */
-	profile_setup((char *)buf);
-	ret = profile_init();
-	if (ret)
-		return ret;
-	ret = create_proc_profile();
-	if (ret)
-		return ret;
-	return count;
-}
-KERNEL_ATTR_RW(profiling);
-#endif
 
 #ifdef CONFIG_KEXEC_CORE
 static ssize_t kexec_loaded_show(struct kobject *kobj,
@@ -175,12 +124,6 @@ EXPORT_SYMBOL_GPL(kernel_kobj);
 static struct attribute * kernel_attrs[] = {
 	&fscaps_attr.attr,
 	&uevent_seqnum_attr.attr,
-#ifdef CONFIG_UEVENT_HELPER
-	&uevent_helper_attr.attr,
-#endif
-#ifdef CONFIG_PROFILING
-	&profiling_attr.attr,
-#endif
 #ifdef CONFIG_KEXEC_CORE
 	&kexec_loaded_attr.attr,
 	&kexec_crash_loaded_attr.attr,

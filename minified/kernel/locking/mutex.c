@@ -36,11 +36,7 @@
 #ifndef CONFIG_PREEMPT_RT
 #include "mutex.h"
 
-#ifdef CONFIG_DEBUG_MUTEXES
-# define MUTEX_WARN_ON(cond) DEBUG_LOCKS_WARN_ON(cond)
-#else
 # define MUTEX_WARN_ON(cond)
-#endif
 
 void
 __mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key)
@@ -152,7 +148,6 @@ static inline bool __mutex_trylock(struct mutex *lock)
 	return !__mutex_trylock_common(lock, false);
 }
 
-#ifndef CONFIG_DEBUG_LOCK_ALLOC
 /*
  * Lockdep annotations are contained to the slow paths for simplicity.
  * There is nothing that would stop spreading the lockdep annotations outwards
@@ -180,7 +175,6 @@ static __always_inline bool __mutex_unlock_fast(struct mutex *lock)
 
 	return atomic_long_try_cmpxchg_release(&lock->owner, &curr, 0UL);
 }
-#endif
 
 static inline void __mutex_set_flag(struct mutex *lock, unsigned long flag)
 {
@@ -248,7 +242,6 @@ static void __mutex_handoff(struct mutex *lock, struct task_struct *task)
 	}
 }
 
-#ifndef CONFIG_DEBUG_LOCK_ALLOC
 /*
  * We split the mutex lock/unlock logic into separate fastpath and
  * slowpath functions, to reduce the register pressure on the fastpath.
@@ -286,7 +279,6 @@ void __sched mutex_lock(struct mutex *lock)
 		__mutex_lock_slowpath(lock);
 }
 EXPORT_SYMBOL(mutex_lock);
-#endif
 
 #include "ww_mutex.h"
 
@@ -536,10 +528,8 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigne
  */
 void __sched mutex_unlock(struct mutex *lock)
 {
-#ifndef CONFIG_DEBUG_LOCK_ALLOC
 	if (__mutex_unlock_fast(lock))
 		return;
-#endif
 	__mutex_unlock_slowpath(lock, _RET_IP_);
 }
 EXPORT_SYMBOL(mutex_unlock);
@@ -594,9 +584,6 @@ __mutex_lock_common(struct mutex *lock, unsigned int state, unsigned int subclas
 		if (ww_ctx->acquired == 0)
 			ww_ctx->wounded = 0;
 
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-		nest_lock = &ww_ctx->dep_map;
-#endif
 	}
 
 	preempt_disable();
@@ -792,108 +779,6 @@ int ww_mutex_trylock(struct ww_mutex *ww, struct ww_acquire_ctx *ww_ctx)
 }
 EXPORT_SYMBOL(ww_mutex_trylock);
 
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-void __sched
-mutex_lock_nested(struct mutex *lock, unsigned int subclass)
-{
-	__mutex_lock(lock, TASK_UNINTERRUPTIBLE, subclass, NULL, _RET_IP_);
-}
-
-EXPORT_SYMBOL_GPL(mutex_lock_nested);
-
-void __sched
-_mutex_lock_nest_lock(struct mutex *lock, struct lockdep_map *nest)
-{
-	__mutex_lock(lock, TASK_UNINTERRUPTIBLE, 0, nest, _RET_IP_);
-}
-EXPORT_SYMBOL_GPL(_mutex_lock_nest_lock);
-
-int __sched
-mutex_lock_killable_nested(struct mutex *lock, unsigned int subclass)
-{
-	return __mutex_lock(lock, TASK_KILLABLE, subclass, NULL, _RET_IP_);
-}
-EXPORT_SYMBOL_GPL(mutex_lock_killable_nested);
-
-int __sched
-mutex_lock_interruptible_nested(struct mutex *lock, unsigned int subclass)
-{
-	return __mutex_lock(lock, TASK_INTERRUPTIBLE, subclass, NULL, _RET_IP_);
-}
-EXPORT_SYMBOL_GPL(mutex_lock_interruptible_nested);
-
-void __sched
-mutex_lock_io_nested(struct mutex *lock, unsigned int subclass)
-{
-	int token;
-
-	might_sleep();
-
-	token = io_schedule_prepare();
-	__mutex_lock_common(lock, TASK_UNINTERRUPTIBLE,
-			    subclass, NULL, _RET_IP_, NULL, 0);
-	io_schedule_finish(token);
-}
-EXPORT_SYMBOL_GPL(mutex_lock_io_nested);
-
-static inline int
-ww_mutex_deadlock_injection(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
-{
-#ifdef CONFIG_DEBUG_WW_MUTEX_SLOWPATH
-	unsigned tmp;
-
-	if (ctx->deadlock_inject_countdown-- == 0) {
-		tmp = ctx->deadlock_inject_interval;
-		if (tmp > UINT_MAX/4)
-			tmp = UINT_MAX;
-		else
-			tmp = tmp*2 + tmp + tmp/2;
-
-		ctx->deadlock_inject_interval = tmp;
-		ctx->deadlock_inject_countdown = tmp;
-		ctx->contending_lock = lock;
-
-		ww_mutex_unlock(lock);
-
-		return -EDEADLK;
-	}
-#endif
-
-	return 0;
-}
-
-int __sched
-ww_mutex_lock(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
-{
-	int ret;
-
-	might_sleep();
-	ret =  __ww_mutex_lock(&lock->base, TASK_UNINTERRUPTIBLE,
-			       0, _RET_IP_, ctx);
-	if (!ret && ctx && ctx->acquired > 1)
-		return ww_mutex_deadlock_injection(lock, ctx);
-
-	return ret;
-}
-EXPORT_SYMBOL_GPL(ww_mutex_lock);
-
-int __sched
-ww_mutex_lock_interruptible(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
-{
-	int ret;
-
-	might_sleep();
-	ret = __ww_mutex_lock(&lock->base, TASK_INTERRUPTIBLE,
-			      0, _RET_IP_, ctx);
-
-	if (!ret && ctx && ctx->acquired > 1)
-		return ww_mutex_deadlock_injection(lock, ctx);
-
-	return ret;
-}
-EXPORT_SYMBOL_GPL(ww_mutex_lock_interruptible);
-
-#endif
 
 /*
  * Release the lock, slowpath:
@@ -951,7 +836,6 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigne
 	wake_up_q(&wake_q);
 }
 
-#ifndef CONFIG_DEBUG_LOCK_ALLOC
 /*
  * Here come the less common (and hence less performance-critical) APIs:
  * mutex_lock_interruptible() and mutex_trylock().
@@ -1062,7 +946,6 @@ __ww_mutex_lock_interruptible_slowpath(struct ww_mutex *lock,
 			       _RET_IP_, ctx);
 }
 
-#endif
 
 /**
  * mutex_trylock - try to acquire the mutex, without waiting
@@ -1092,7 +975,6 @@ int __sched mutex_trylock(struct mutex *lock)
 }
 EXPORT_SYMBOL(mutex_trylock);
 
-#ifndef CONFIG_DEBUG_LOCK_ALLOC
 int __sched
 ww_mutex_lock(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
 {
@@ -1123,7 +1005,6 @@ ww_mutex_lock_interruptible(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
 }
 EXPORT_SYMBOL(ww_mutex_lock_interruptible);
 
-#endif /* !CONFIG_DEBUG_LOCK_ALLOC */
 #endif /* !CONFIG_PREEMPT_RT */
 
 /**

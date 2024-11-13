@@ -80,11 +80,6 @@ static void swap_words_32(void *a, void *b, size_t n)
 static void swap_words_64(void *a, void *b, size_t n)
 {
 	do {
-#ifdef CONFIG_64BIT
-		u64 t = *(u64 *)(a + (n -= 8));
-		*(u64 *)(a + n) = *(u64 *)(b + n);
-		*(u64 *)(b + n) = t;
-#else
 		/* Use two 32-bit transfers to avoid base+index+4 addressing */
 		u32 t = *(u32 *)(a + (n -= 4));
 		*(u32 *)(a + n) = *(u32 *)(b + n);
@@ -93,7 +88,6 @@ static void swap_words_64(void *a, void *b, size_t n)
 		t = *(u32 *)(a + (n -= 4));
 		*(u32 *)(a + n) = *(u32 *)(b + n);
 		*(u32 *)(b + n) = t;
-#endif
 	} while (n);
 }
 

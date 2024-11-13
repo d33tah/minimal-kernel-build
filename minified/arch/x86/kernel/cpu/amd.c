@@ -445,28 +445,6 @@ static void srat_detect_node(struct cpuinfo_x86 *c)
 
 static void early_init_amd_mc(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_SMP
-	unsigned bits, ecx;
-
-	/* Multi core CPU? */
-	if (c->extended_cpuid_level < 0x80000008)
-		return;
-
-	ecx = cpuid_ecx(0x80000008);
-
-	c->x86_max_cores = (ecx & 0xff) + 1;
-
-	/* CPU telling us the core id bits shift? */
-	bits = (ecx >> 12) & 0xF;
-
-	/* Otherwise recompute */
-	if (bits == 0) {
-		while ((1 << bits) < c->x86_max_cores)
-			bits++;
-	}
-
-	c->x86_coreid_bits = bits;
-#endif
 }
 
 static void bsp_init_amd(struct cpuinfo_x86 *c)
@@ -714,16 +692,6 @@ static void init_amd_k8(struct cpuinfo_x86 *c)
 	if (!c->x86_model_id[0])
 		strcpy(c->x86_model_id, "Hammer");
 
-#ifdef CONFIG_SMP
-	/*
-	 * Disable TLB flush filter by setting HWCR.FFDIS on K8
-	 * bit 6 of msr C001_0015
-	 *
-	 * Errata 63 for SH-B3 steppings
-	 * Errata 122 for all steppings (F+ have it disabled by default)
-	 */
-	msr_set_bit(MSR_K7_HWCR, 6);
-#endif
 	set_cpu_bug(c, X86_BUG_SWAPGS_FENCE);
 }
 

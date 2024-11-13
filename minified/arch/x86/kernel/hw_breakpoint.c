@@ -273,15 +273,9 @@ static inline bool within_cpu_entry(unsigned long addr, unsigned long end)
 	 * When FSGSBASE is enabled, paranoid_entry() fetches the per-CPU
 	 * GSBASE value via __per_cpu_offset or pcpu_unit_offsets.
 	 */
-#ifdef CONFIG_SMP
-	if (within_area(addr, end, (unsigned long)__per_cpu_offset,
-			sizeof(unsigned long) * nr_cpu_ids))
-		return true;
-#else
 	if (within_area(addr, end, (unsigned long)&pcpu_unit_offsets,
 			sizeof(pcpu_unit_offsets)))
 		return true;
-#endif
 
 	for_each_possible_cpu(cpu) {
 		/* The original rw GDT is being used after load_direct_gdt() */

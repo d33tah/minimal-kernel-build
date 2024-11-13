@@ -85,23 +85,10 @@ unsigned int kmem_cache_size(struct kmem_cache *s)
 }
 EXPORT_SYMBOL(kmem_cache_size);
 
-#ifdef CONFIG_DEBUG_VM
-static int kmem_cache_sanity_check(const char *name, unsigned int size)
-{
-	if (!name || in_interrupt() || size > KMALLOC_MAX_SIZE) {
-		pr_err("kmem_cache_create(%s) integrity check failed\n", name);
-		return -EINVAL;
-	}
-
-	WARN_ON(strchr(name, ' '));	/* It confuses parsers */
-	return 0;
-}
-#else
 static inline int kmem_cache_sanity_check(const char *name, unsigned int size)
 {
 	return 0;
 }
-#endif
 
 void __kmem_cache_free_bulk(struct kmem_cache *s, size_t nr, void **p)
 {
@@ -536,105 +523,7 @@ bool slab_is_available(void)
 	return slab_state >= UP;
 }
 
-#ifdef CONFIG_PRINTK
-/**
- * kmem_valid_obj - does the pointer reference a valid slab object?
- * @object: pointer to query.
- *
- * Return: %true if the pointer is to a not-yet-freed object from
- * kmalloc() or kmem_cache_alloc(), either %true or %false if the pointer
- * is to an already-freed object, and %false otherwise.
- */
-bool kmem_valid_obj(void *object)
-{
-	struct folio *folio;
 
-	/* Some arches consider ZERO_SIZE_PTR to be a valid address. */
-	if (object < (void *)PAGE_SIZE || !virt_addr_valid(object))
-		return false;
-	folio = virt_to_folio(object);
-	return folio_test_slab(folio);
-}
-EXPORT_SYMBOL_GPL(kmem_valid_obj);
-
-static void kmem_obj_info(struct kmem_obj_info *kpp, void *object, struct slab *slab)
-{
-	if (__kfence_obj_info(kpp, object, slab))
-		return;
-	__kmem_obj_info(kpp, object, slab);
-}
-
-/**
- * kmem_dump_obj - Print available slab provenance information
- * @object: slab object for which to find provenance information.
- *
- * This function uses pr_cont(), so that the caller is expected to have
- * printed out whatever preamble is appropriate.  The provenance information
- * depends on the type of object and on how much debugging is enabled.
- * For a slab-cache object, the fact that it is a slab object is printed,
- * and, if available, the slab name, return address, and stack trace from
- * the allocation and last free path of that object.
- *
- * This function will splat if passed a pointer to a non-slab object.
- * If you are not sure what type of object you have, you should instead
- * use mem_dump_obj().
- */
-void kmem_dump_obj(void *object)
-{
-	char *cp = IS_ENABLED(CONFIG_MMU) ? "" : "/vmalloc";
-	int i;
-	struct slab *slab;
-	unsigned long ptroffset;
-	struct kmem_obj_info kp = { };
-
-	if (WARN_ON_ONCE(!virt_addr_valid(object)))
-		return;
-	slab = virt_to_slab(object);
-	if (WARN_ON_ONCE(!slab)) {
-		pr_cont(" non-slab memory.\n");
-		return;
-	}
-	kmem_obj_info(&kp, object, slab);
-	if (kp.kp_slab_cache)
-		pr_cont(" slab%s %s", cp, kp.kp_slab_cache->name);
-	else
-		pr_cont(" slab%s", cp);
-	if (is_kfence_address(object))
-		pr_cont(" (kfence)");
-	if (kp.kp_objp)
-		pr_cont(" start %px", kp.kp_objp);
-	if (kp.kp_data_offset)
-		pr_cont(" data offset %lu", kp.kp_data_offset);
-	if (kp.kp_objp) {
-		ptroffset = ((char *)object - (char *)kp.kp_objp) - kp.kp_data_offset;
-		pr_cont(" pointer offset %lu", ptroffset);
-	}
-	if (kp.kp_slab_cache && kp.kp_slab_cache->usersize)
-		pr_cont(" size %u", kp.kp_slab_cache->usersize);
-	if (kp.kp_ret)
-		pr_cont(" allocated at %pS\n", kp.kp_ret);
-	else
-		pr_cont("\n");
-	for (i = 0; i < ARRAY_SIZE(kp.kp_stack); i++) {
-		if (!kp.kp_stack[i])
-			break;
-		pr_info("    %pS\n", kp.kp_stack[i]);
-	}
-
-	if (kp.kp_free_stack[0])
-		pr_cont(" Free path:\n");
-
-	for (i = 0; i < ARRAY_SIZE(kp.kp_free_stack); i++) {
-		if (!kp.kp_free_stack[i])
-			break;
-		pr_info("    %pS\n", kp.kp_free_stack[i]);
-	}
-
-}
-EXPORT_SYMBOL_GPL(kmem_dump_obj);
-#endif
-
-#ifndef CONFIG_SLOB
 /* Create a cache during boot when no slab services are available yet */
 void __init create_boot_cache(struct kmem_cache *s, const char *name,
 		unsigned int size, slab_flags_t flags,
@@ -747,11 +636,7 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 	return kmalloc_caches[kmalloc_type(flags)][index];
 }
 
-#ifdef CONFIG_ZONE_DMA
-#define KMALLOC_DMA_NAME(sz)	.name[KMALLOC_DMA] = "dma-kmalloc-" #sz,
-#else
 #define KMALLOC_DMA_NAME(sz)
-#endif
 
 #ifdef CONFIG_MEMCG_KMEM
 #define KMALLOC_CGROUP_NAME(sz)	.name[KMALLOC_CGROUP] = "kmalloc-cg-" #sz,
@@ -912,7 +797,6 @@ void __init create_kmalloc_caches(slab_flags_t flags)
 	/* Kmalloc array is now usable */
 	slab_state = UP;
 }
-#endif /* !CONFIG_SLOB */
 
 gfp_t kmalloc_fix_flags(gfp_t flags)
 {
@@ -963,59 +847,9 @@ void *kmalloc_order_trace(size_t size, gfp_t flags, unsigned int order)
 EXPORT_SYMBOL(kmalloc_order_trace);
 #endif
 
-#ifdef CONFIG_SLAB_FREELIST_RANDOM
-/* Randomize a generic freelist */
-static void freelist_randomize(struct rnd_state *state, unsigned int *list,
-			       unsigned int count)
-{
-	unsigned int rand;
-	unsigned int i;
-
-	for (i = 0; i < count; i++)
-		list[i] = i;
-
-	/* Fisher-Yates shuffle */
-	for (i = count - 1; i > 0; i--) {
-		rand = prandom_u32_state(state);
-		rand %= (i + 1);
-		swap(list[i], list[rand]);
-	}
-}
-
-/* Create a random sequence per cache */
-int cache_random_seq_create(struct kmem_cache *cachep, unsigned int count,
-				    gfp_t gfp)
-{
-	struct rnd_state state;
-
-	if (count < 2 || cachep->random_seq)
-		return 0;
-
-	cachep->random_seq = kcalloc(count, sizeof(unsigned int), gfp);
-	if (!cachep->random_seq)
-		return -ENOMEM;
-
-	/* Get best entropy at this stage of boot */
-	prandom_seed_state(&state, get_random_long());
-
-	freelist_randomize(&state, cachep->random_seq, count);
-	return 0;
-}
-
-/* Destroy the per-cache random freelist sequence */
-void cache_random_seq_destroy(struct kmem_cache *cachep)
-{
-	kfree(cachep->random_seq);
-	cachep->random_seq = NULL;
-}
-#endif /* CONFIG_SLAB_FREELIST_RANDOM */
 
 #if defined(CONFIG_SLAB) || defined(CONFIG_SLUB_DEBUG)
-#ifdef CONFIG_SLAB
-#define SLABINFO_RIGHTS (0600)
-#else
 #define SLABINFO_RIGHTS (0400)
-#endif
 
 static void print_slabinfo_header(struct seq_file *m)
 {

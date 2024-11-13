@@ -93,20 +93,6 @@ int arch_show_interrupts(struct seq_file *p, int prec)
 		seq_puts(p, "  Platform interrupts\n");
 	}
 #endif
-#ifdef CONFIG_SMP
-	seq_printf(p, "%*s: ", prec, "RES");
-	for_each_online_cpu(j)
-		seq_printf(p, "%10u ", irq_stats(j)->irq_resched_count);
-	seq_puts(p, "  Rescheduling interrupts\n");
-	seq_printf(p, "%*s: ", prec, "CAL");
-	for_each_online_cpu(j)
-		seq_printf(p, "%10u ", irq_stats(j)->irq_call_count);
-	seq_puts(p, "  Function call interrupts\n");
-	seq_printf(p, "%*s: ", prec, "TLB");
-	for_each_online_cpu(j)
-		seq_printf(p, "%10u ", irq_stats(j)->irq_tlb_count);
-	seq_puts(p, "  TLB shootdowns\n");
-#endif
 #ifdef CONFIG_X86_THERMAL_VECTOR
 	seq_printf(p, "%*s: ", prec, "TRM");
 	for_each_online_cpu(j)
@@ -124,16 +110,6 @@ int arch_show_interrupts(struct seq_file *p, int prec)
 	for_each_online_cpu(j)
 		seq_printf(p, "%10u ", irq_stats(j)->irq_deferred_error_count);
 	seq_puts(p, "  Deferred Error APIC interrupts\n");
-#endif
-#ifdef CONFIG_X86_MCE
-	seq_printf(p, "%*s: ", prec, "MCE");
-	for_each_online_cpu(j)
-		seq_printf(p, "%10u ", per_cpu(mce_exception_count, j));
-	seq_puts(p, "  Machine check exceptions\n");
-	seq_printf(p, "%*s: ", prec, "MCP");
-	for_each_online_cpu(j)
-		seq_printf(p, "%10u ", per_cpu(mce_poll_count, j));
-	seq_puts(p, "  Machine check polls\n");
 #endif
 #ifdef CONFIG_X86_HV_CALLBACK_VECTOR
 	if (test_bit(HYPERVISOR_CALLBACK_VECTOR, system_vectors)) {
@@ -201,19 +177,11 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
 	if (x86_platform_ipi_callback)
 		sum += irq_stats(cpu)->x86_platform_ipis;
 #endif
-#ifdef CONFIG_SMP
-	sum += irq_stats(cpu)->irq_resched_count;
-	sum += irq_stats(cpu)->irq_call_count;
-#endif
 #ifdef CONFIG_X86_THERMAL_VECTOR
 	sum += irq_stats(cpu)->irq_thermal_count;
 #endif
 #ifdef CONFIG_X86_MCE_THRESHOLD
 	sum += irq_stats(cpu)->irq_threshold_count;
-#endif
-#ifdef CONFIG_X86_MCE
-	sum += per_cpu(mce_exception_count, cpu);
-	sum += per_cpu(mce_poll_count, cpu);
 #endif
 	return sum;
 }

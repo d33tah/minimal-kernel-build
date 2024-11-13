@@ -60,31 +60,13 @@ static int vidport;
 static int lines __section(".data");
 static int cols __section(".data");
 
-#ifdef CONFIG_KERNEL_GZIP
-#include "../../../../lib/decompress_inflate.c"
-#endif
 
-#ifdef CONFIG_KERNEL_BZIP2
-#include "../../../../lib/decompress_bunzip2.c"
-#endif
 
-#ifdef CONFIG_KERNEL_LZMA
-#include "../../../../lib/decompress_unlzma.c"
-#endif
 
 #include "../../../../lib/decompress_unxz.c"
 
-#ifdef CONFIG_KERNEL_LZO
-#include "../../../../lib/decompress_unlzo.c"
-#endif
 
-#ifdef CONFIG_KERNEL_LZ4
-#include "../../../../lib/decompress_unlz4.c"
-#endif
 
-#ifdef CONFIG_KERNEL_ZSTD
-#include "../../../../lib/decompress_unzstd.c"
-#endif
 /*
  * NOTE: When adding a new decompressor, please update the analysis in
  * ../header.S.
@@ -313,12 +295,7 @@ static void parse_elf(void *output)
 			if ((phdr->p_align % 0x200000) != 0)
 				error("Alignment of LOAD segment isn't multiple of 2MB");
 #endif
-#ifdef CONFIG_RELOCATABLE
-			dest = output;
-			dest += (phdr->p_paddr - LOAD_PHYSICAL_ADDR);
-#else
 			dest = (void *)(phdr->p_paddr);
-#endif
 			memmove(dest, output + phdr->p_offset, phdr->p_filesz);
 			break;
 		default: /* Ignore other PT_* */ break;
@@ -446,10 +423,8 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 	if (heap > ((-__PAGE_OFFSET-(128<<20)-1) & 0x7fffffff))
 		error("Destination address too large");
 #endif
-#ifndef CONFIG_RELOCATABLE
 	if (virt_addr != LOAD_PHYSICAL_ADDR)
 		error("Destination virtual address changed when not relocatable");
-#endif
 
 	debug_putstr("\nDecompressing Linux... ");
 	__decompress(input_data, input_len, NULL, NULL, output, output_len,

@@ -258,29 +258,6 @@ pipe_read(struct kiocb *iocb, struct iov_iter *to)
 		unsigned int tail = pipe->tail;
 		unsigned int mask = pipe->ring_size - 1;
 
-#ifdef CONFIG_WATCH_QUEUE
-		if (pipe->note_loss) {
-			struct watch_notification n;
-
-			if (total_len < 8) {
-				if (ret == 0)
-					ret = -ENOBUFS;
-				break;
-			}
-
-			n.type = WATCH_TYPE_META;
-			n.subtype = WATCH_META_LOSS_NOTIFICATION;
-			n.info = watch_sizeof(n);
-			if (copy_to_iter(&n, sizeof(n), to) != sizeof(n)) {
-				if (ret == 0)
-					ret = -EFAULT;
-				break;
-			}
-			ret += sizeof(n);
-			total_len -= sizeof(n);
-			pipe->note_loss = false;
-		}
-#endif
 
 		if (!pipe_empty(head, tail)) {
 			struct pipe_buffer *buf = &pipe->bufs[tail & mask];
@@ -323,10 +300,6 @@ pipe_read(struct kiocb *iocb, struct iov_iter *to)
 			if (!buf->len) {
 				pipe_buf_release(pipe, buf);
 				spin_lock_irq(&pipe->rd_wait.lock);
-#ifdef CONFIG_WATCH_QUEUE
-				if (buf->flags & PIPE_BUF_FLAG_LOSS)
-					pipe->note_loss = true;
-#endif
 				tail++;
 				pipe->tail = tail;
 				spin_unlock_irq(&pipe->rd_wait.lock);
@@ -436,12 +409,6 @@ pipe_write(struct kiocb *iocb, struct iov_iter *from)
 		goto out;
 	}
 
-#ifdef CONFIG_WATCH_QUEUE
-	if (pipe->watch_queue) {
-		ret = -EXDEV;
-		goto out;
-	}
-#endif
 
 	/*
 	 * If it wasn't empty we try to merge new data into
@@ -625,19 +592,6 @@ static long pipe_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 
 		return put_user(count, (int __user *)arg);
 
-#ifdef CONFIG_WATCH_QUEUE
-	case IOC_WATCH_QUEUE_SET_SIZE: {
-		int ret;
-		__pipe_lock(pipe);
-		ret = watch_queue_set_size(pipe, arg);
-		__pipe_unlock(pipe);
-		return ret;
-	}
-
-	case IOC_WATCH_QUEUE_SET_FILTER:
-		return watch_queue_set_filter(
-			pipe, (struct watch_notification_filter __user *)arg);
-#endif
 
 	default:
 		return -ENOIOCTLCMD;
@@ -831,10 +785,6 @@ void free_pipe_info(struct pipe_inode_info *pipe)
 {
 	unsigned int i;
 
-#ifdef CONFIG_WATCH_QUEUE
-	if (pipe->watch_queue)
-		watch_queue_clear(pipe->watch_queue);
-#endif
 
 	(void) account_pipe_buffers(pipe->user, pipe->nr_accounted, 0);
 	free_uid(pipe->user);
@@ -843,10 +793,6 @@ void free_pipe_info(struct pipe_inode_info *pipe)
 		if (buf->ops)
 			pipe_buf_release(pipe, buf);
 	}
-#ifdef CONFIG_WATCH_QUEUE
-	if (pipe->watch_queue)
-		put_watch_queue(pipe->watch_queue);
-#endif
 	if (pipe->tmp_page)
 		__free_page(pipe->tmp_page);
 	kfree(pipe->bufs);
@@ -1320,10 +1266,6 @@ static long pipe_set_size(struct pipe_inode_info *pipe, unsigned long arg)
 	unsigned int nr_slots, size;
 	long ret = 0;
 
-#ifdef CONFIG_WATCH_QUEUE
-	if (pipe->watch_queue)
-		return -EBUSY;
-#endif
 
 	size = round_pipe_size(arg);
 	nr_slots = size >> PAGE_SHIFT;
@@ -1375,10 +1317,6 @@ struct pipe_inode_info *get_pipe_info(struct file *file, bool for_splice)
 
 	if (file->f_op != &pipefifo_fops || !pipe)
 		return NULL;
-#ifdef CONFIG_WATCH_QUEUE
-	if (for_splice && pipe->watch_queue)
-		return NULL;
-#endif
 	return pipe;
 }
 

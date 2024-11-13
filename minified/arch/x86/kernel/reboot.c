@@ -684,22 +684,10 @@ void native_machine_shutdown(void)
 	clear_IO_APIC();
 #endif
 
-#ifdef CONFIG_SMP
-	/*
-	 * Stop all of the others. Also disable the local irq to
-	 * not receive the per-cpu timer interrupt which may trigger
-	 * scheduler's load balance.
-	 */
-	local_irq_disable();
-	stop_other_cpus();
-#endif
 
 	lapic_shutdown();
 	restore_boot_irq_mode();
 
-#ifdef CONFIG_HPET_TIMER
-	hpet_disable();
-#endif
 
 #ifdef CONFIG_X86_64
 	x86_platform.iommu_shutdown();
@@ -789,103 +777,6 @@ void machine_crash_shutdown(struct pt_regs *regs)
 /* This is the CPU performing the emergency shutdown work. */
 int crashing_cpu = -1;
 
-#if defined(CONFIG_SMP)
-
-static nmi_shootdown_cb shootdown_callback;
-
-static atomic_t waiting_for_crash_ipi;
-static int crash_ipi_issued;
-
-static int crash_nmi_callback(unsigned int val, struct pt_regs *regs)
-{
-	int cpu;
-
-	cpu = raw_smp_processor_id();
-
-	/*
-	 * Don't do anything if this handler is invoked on crashing cpu.
-	 * Otherwise, system will completely hang. Crashing cpu can get
-	 * an NMI if system was initially booted with nmi_watchdog parameter.
-	 */
-	if (cpu == crashing_cpu)
-		return NMI_HANDLED;
-	local_irq_disable();
-
-	shootdown_callback(cpu, regs);
-
-	atomic_dec(&waiting_for_crash_ipi);
-	/* Assume hlt works */
-	halt();
-	for (;;)
-		cpu_relax();
-
-	return NMI_HANDLED;
-}
-
-/*
- * Halt all other CPUs, calling the specified function on each of them
- *
- * This function can be used to halt all other CPUs on crash
- * or emergency reboot time. The function passed as parameter
- * will be called inside a NMI handler on all CPUs.
- */
-void nmi_shootdown_cpus(nmi_shootdown_cb callback)
-{
-	unsigned long msecs;
-	local_irq_disable();
-
-	/* Make a note of crashing cpu. Will be used in NMI callback. */
-	crashing_cpu = safe_smp_processor_id();
-
-	shootdown_callback = callback;
-
-	atomic_set(&waiting_for_crash_ipi, num_online_cpus() - 1);
-	/* Would it be better to replace the trap vector here? */
-	if (register_nmi_handler(NMI_LOCAL, crash_nmi_callback,
-				 NMI_FLAG_FIRST, "crash"))
-		return;		/* Return what? */
-	/*
-	 * Ensure the new callback function is set before sending
-	 * out the NMI
-	 */
-	wmb();
-
-	apic_send_IPI_allbutself(NMI_VECTOR);
-
-	/* Kick CPUs looping in NMI context. */
-	WRITE_ONCE(crash_ipi_issued, 1);
-
-	msecs = 1000; /* Wait at most a second for the other cpus to stop */
-	while ((atomic_read(&waiting_for_crash_ipi) > 0) && msecs) {
-		mdelay(1);
-		msecs--;
-	}
-
-	/* Leave the nmi callback set */
-}
-
-/*
- * Check if the crash dumping IPI got issued and if so, call its callback
- * directly. This function is used when we have already been in NMI handler.
- * It doesn't return.
- */
-void run_crash_ipi_callback(struct pt_regs *regs)
-{
-	if (crash_ipi_issued)
-		crash_nmi_callback(0, regs);
-}
-
-/* Override the weak function in kernel/panic.c */
-void nmi_panic_self_stop(struct pt_regs *regs)
-{
-	while (1) {
-		/* If no CPU is preparing crash dump, we simply loop here. */
-		run_crash_ipi_callback(regs);
-		cpu_relax();
-	}
-}
-
-#else /* !CONFIG_SMP */
 void nmi_shootdown_cpus(nmi_shootdown_cb callback)
 {
 	/* No other CPUs to shoot down */
@@ -894,4 +785,3 @@ void nmi_shootdown_cpus(nmi_shootdown_cb callback)
 void run_crash_ipi_callback(struct pt_regs *regs)
 {
 }
-#endif

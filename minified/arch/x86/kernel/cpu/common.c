@@ -840,47 +840,11 @@ static void cpu_detect_tlb(struct cpuinfo_x86 *c)
 
 int detect_ht_early(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_SMP
-	u32 eax, ebx, ecx, edx;
-
-	if (!cpu_has(c, X86_FEATURE_HT))
-		return -1;
-
-	if (cpu_has(c, X86_FEATURE_CMP_LEGACY))
-		return -1;
-
-	if (cpu_has(c, X86_FEATURE_XTOPOLOGY))
-		return -1;
-
-	cpuid(1, &eax, &ebx, &ecx, &edx);
-
-	smp_num_siblings = (ebx & 0xff0000) >> 16;
-	if (smp_num_siblings == 1)
-		pr_info_once("CPU0: Hyper-Threading is disabled\n");
-#endif
 	return 0;
 }
 
 void detect_ht(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_SMP
-	int index_msb, core_bits;
-
-	if (detect_ht_early(c) < 0)
-		return;
-
-	index_msb = get_count_order(smp_num_siblings);
-	c->phys_proc_id = apic->phys_pkg_id(c->initial_apicid, index_msb);
-
-	smp_num_siblings = smp_num_siblings / c->x86_max_cores;
-
-	index_msb = get_count_order(smp_num_siblings);
-
-	core_bits = get_count_order(c->x86_max_cores);
-
-	c->cpu_core_id = apic->phys_pkg_id(c->initial_apicid, index_msb) &
-				       ((1 << core_bits) - 1);
-#endif
 }
 
 static void get_cpu_vendor(struct cpuinfo_x86 *c)
@@ -1419,12 +1383,6 @@ static void __init cpu_parse_early_param(void)
 		if (!kstrtouint(opt, 10, &bit)) {
 			if (bit < NCAPINTS * 32) {
 
-#ifdef CONFIG_X86_FEATURE_NAMES
-				/* empty-string, i.e., ""-defined feature flags */
-				if (!x86_cap_flags[bit])
-					pr_cont(" " X86_CAP_FMT_NUM, x86_cap_flag_num(bit));
-				else
-#endif
 					pr_cont(" " X86_CAP_FMT, x86_cap_flag(bit));
 
 				setup_clear_cpu_cap(bit);
@@ -1437,24 +1395,6 @@ static void __init cpu_parse_early_param(void)
 			continue;
 		}
 
-#ifdef CONFIG_X86_FEATURE_NAMES
-		for (bit = 0; bit < 32 * NCAPINTS; bit++) {
-			if (!x86_cap_flag(bit))
-				continue;
-
-			if (strcmp(x86_cap_flag(bit), opt))
-				continue;
-
-			pr_cont(" %s", opt);
-			setup_clear_cpu_cap(bit);
-			taint++;
-			found = true;
-			break;
-		}
-
-		if (!found)
-			pr_cont(" (unknown: %s)", opt);
-#endif
 	}
 	pr_cont("\n");
 
@@ -1550,9 +1490,6 @@ void __init early_cpu_init(void)
 	const struct cpu_dev *const *cdev;
 	int count = 0;
 
-#ifdef CONFIG_PROCESSOR_SELECT
-	pr_info("KERNEL supported cpus:\n");
-#endif
 
 	for (cdev = __x86_cpu_dev_start; cdev < __x86_cpu_dev_end; cdev++) {
 		const struct cpu_dev *cpudev = *cdev;
@@ -1562,18 +1499,6 @@ void __init early_cpu_init(void)
 		cpu_devs[count] = cpudev;
 		count++;
 
-#ifdef CONFIG_PROCESSOR_SELECT
-		{
-			unsigned int j;
-
-			for (j = 0; j < 2; j++) {
-				if (!cpudev->c_ident[j])
-					continue;
-				pr_info("  %s %s\n", cpudev->c_vendor,
-					cpudev->c_ident[j]);
-			}
-		}
-#endif
 	}
 	early_identify_cpu(&boot_cpu_data);
 }
@@ -1660,11 +1585,7 @@ static void generic_identify(struct cpuinfo_x86 *c)
 
 	if (c->cpuid_level >= 0x00000001) {
 		c->initial_apicid = (cpuid_ebx(1) >> 24) & 0xFF;
-# ifdef CONFIG_SMP
-		c->apicid = apic->phys_pkg_id(c->initial_apicid, 0);
-# else
 		c->apicid = c->initial_apicid;
-# endif
 		c->phys_proc_id = c->initial_apicid;
 	}
 
@@ -1692,20 +1613,7 @@ static void generic_identify(struct cpuinfo_x86 *c)
  */
 static void validate_apic_and_package_id(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_SMP
-	unsigned int apicid, cpu = smp_processor_id();
-
-	apicid = apic->cpu_present_to_apicid(cpu);
-
-	if (apicid != c->apicid) {
-		pr_err(FW_BUG "CPU%u: APIC id mismatch. Firmware: %x APIC: %x\n",
-		       cpu, apicid, c->initial_apicid);
-	}
-	BUG_ON(topology_update_package_map(c->phys_proc_id, cpu));
-	BUG_ON(topology_update_die_map(c->cpu_die_id, cpu));
-#else
 	c->logical_proc_id = 0;
-#endif
 }
 
 /*
@@ -2017,10 +1925,6 @@ DEFINE_PER_CPU(unsigned long, cpu_current_top_of_stack) =
 	(unsigned long)&init_thread_union + THREAD_SIZE;
 EXPORT_PER_CPU_SYMBOL(cpu_current_top_of_stack);
 
-#ifdef CONFIG_STACKPROTECTOR
-DEFINE_PER_CPU(unsigned long, __stack_chk_guard);
-EXPORT_PER_CPU_SYMBOL(__stack_chk_guard);
-#endif
 
 #endif	/* CONFIG_X86_64 */
 
@@ -2040,31 +1944,10 @@ static void clear_all_debug_regs(void)
 	}
 }
 
-#ifdef CONFIG_KGDB
-/*
- * Restore debug regs if using kgdbwait and you have a kernel debugger
- * connection established.
- */
-static void dbg_restore_debug_regs(void)
-{
-	if (unlikely(kgdb_connected && arch_kgdb_ops.correct_hw_break))
-		arch_kgdb_ops.correct_hw_break();
-}
-#else /* ! CONFIG_KGDB */
 #define dbg_restore_debug_regs()
-#endif /* ! CONFIG_KGDB */
 
 static void wait_for_master_cpu(int cpu)
 {
-#ifdef CONFIG_SMP
-	/*
-	 * wait for ACK from master CPU before continuing
-	 * with AP initialization
-	 */
-	WARN_ON(cpumask_test_and_set_cpu(cpu, cpu_initialized_mask));
-	while (!cpumask_test_cpu(cpu, cpu_callout_mask))
-		cpu_relax();
-#endif
 }
 
 #ifdef CONFIG_X86_64
@@ -2123,16 +2006,6 @@ static inline void tss_setup_io_bitmap(struct tss_struct *tss)
 {
 	tss->x86_tss.io_bitmap_base = IO_BITMAP_OFFSET_INVALID;
 
-#ifdef CONFIG_X86_IOPL_IOPERM
-	tss->io_bitmap.prev_max = 0;
-	tss->io_bitmap.prev_sequence = 0;
-	memset(tss->io_bitmap.bitmap, 0xff, sizeof(tss->io_bitmap.bitmap));
-	/*
-	 * Invalidate the extra array entry past the end of the all
-	 * permission bitmap as required by the hardware.
-	 */
-	tss->io_bitmap.mapall[IO_BITMAP_LONGS] = ~0UL;
-#endif
 }
 
 /*
@@ -2232,17 +2105,6 @@ void cpu_init(void)
 	load_fixmap_gdt(cpu);
 }
 
-#ifdef CONFIG_SMP
-void cpu_init_secondary(void)
-{
-	/*
-	 * Relies on the BP having set-up the IDT tables, which are loaded
-	 * on this CPU in cpu_init_exception_handling().
-	 */
-	cpu_init_exception_handling();
-	cpu_init();
-}
-#endif
 
 #ifdef CONFIG_MICROCODE_LATE_LOADING
 /*

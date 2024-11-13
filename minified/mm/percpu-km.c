@@ -26,9 +26,6 @@
  *   chunk size is not aligned.  percpu-km code will whine about it.
  */
 
-#if defined(CONFIG_SMP) && defined(CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK)
-#error "contiguous percpu allocation is incompatible with paged first chunk"
-#endif
 
 #include <linux/log2.h>
 

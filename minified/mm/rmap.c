@@ -963,24 +963,8 @@ static int page_vma_mkclean_one(struct page_vma_mapped_walk *pvmw)
 			set_pte_at(vma->vm_mm, address, pte, entry);
 			ret = 1;
 		} else {
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-			pmd_t *pmd = pvmw->pmd;
-			pmd_t entry;
-
-			if (!pmd_dirty(*pmd) && !pmd_write(*pmd))
-				continue;
-
-			flush_cache_range(vma, address,
-					  address + HPAGE_PMD_SIZE);
-			entry = pmdp_invalidate(vma, address, pmd);
-			entry = pmd_wrprotect(entry);
-			entry = pmd_mkclean(entry);
-			set_pmd_at(vma->vm_mm, address, pmd, entry);
-			ret = 1;
-#else
 			/* unexpected pmd-mapped folio? */
 			WARN_ON_ONCE(1);
-#endif
 		}
 
 		/*

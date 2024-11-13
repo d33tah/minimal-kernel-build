@@ -884,7 +884,6 @@ static unsigned long native_calibrate_cpu(void)
 
 void recalibrate_cpu_khz(void)
 {
-#ifndef CONFIG_SMP
 	unsigned long cpu_khz_old = cpu_khz;
 
 	if (!boot_cpu_has(X86_FEATURE_TSC))
@@ -898,7 +897,6 @@ void recalibrate_cpu_khz(void)
 		cpu_khz = tsc_khz;
 	cpu_data(0).loops_per_jiffy = cpufreq_scale(cpu_data(0).loops_per_jiffy,
 						    cpu_khz_old, cpu_khz);
-#endif
 }
 
 EXPORT_SYMBOL(recalibrate_cpu_khz);
@@ -1176,18 +1174,6 @@ static void __init tsc_disable_clocksource_watchdog(void)
 
 static void __init check_system_tsc_reliable(void)
 {
-#if defined(CONFIG_MGEODEGX1) || defined(CONFIG_MGEODE_LX) || defined(CONFIG_X86_GENERIC)
-	if (is_geode_lx()) {
-		/* RTSC counts during suspend */
-#define RTSC_SUSP 0x100
-		unsigned long res_low, res_high;
-
-		rdmsr_safe(MSR_GEODE_BUSCONT_CONF0, &res_low, &res_high);
-		/* Geode_LX - the OLPC CPU has a very reliable TSC */
-		if (res_low & RTSC_SUSP)
-			tsc_clocksource_reliable = 1;
-	}
-#endif
 	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE))
 		tsc_clocksource_reliable = 1;
 
@@ -1218,10 +1204,6 @@ int unsynchronized_tsc(void)
 	if (!boot_cpu_has(X86_FEATURE_TSC) || tsc_unstable)
 		return 1;
 
-#ifdef CONFIG_SMP
-	if (apic_is_clustered_box())
-		return 1;
-#endif
 
 	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
 		return 0;
@@ -1541,25 +1523,3 @@ void __init tsc_init(void)
 	detect_art();
 }
 
-#ifdef CONFIG_SMP
-/*
- * If we have a constant TSC and are using the TSC for the delay loop,
- * we can skip clock calibration if another cpu in the same socket has already
- * been calibrated. This assumes that CONSTANT_TSC applies to all
- * cpus in the socket - this should be a safe assumption.
- */
-unsigned long calibrate_delay_is_known(void)
-{
-	int sibling, cpu = smp_processor_id();
-	int constant_tsc = cpu_has(&cpu_data(cpu), X86_FEATURE_CONSTANT_TSC);
-	const struct cpumask *mask = topology_core_cpumask(cpu);
-
-	if (!constant_tsc || !mask)
-		return 0;
-
-	sibling = cpumask_any_but(mask, cpu);
-	if (sibling < nr_cpu_ids)
-		return cpu_data(sibling).loops_per_jiffy;
-	return 0;
-}
-#endif

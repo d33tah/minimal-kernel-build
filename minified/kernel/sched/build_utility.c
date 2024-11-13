@@ -83,28 +83,14 @@
 #include "wait_bit.c"
 #include "wait.c"
 
-#ifdef CONFIG_SMP
-# include "cpupri.c"
-# include "stop_task.c"
-# include "topology.c"
-#endif
 
 #ifdef CONFIG_SCHED_CORE
 # include "core_sched.c"
 #endif
 
-#ifdef CONFIG_PSI
-# include "psi.c"
-#endif
 
-#ifdef CONFIG_MEMBARRIER
-# include "membarrier.c"
-#endif
 
 #ifdef CONFIG_CPU_ISOLATION
 # include "isolation.c"
 #endif
 
-#ifdef CONFIG_SCHED_AUTOGROUP
-# include "autogroup.c"
-#endif

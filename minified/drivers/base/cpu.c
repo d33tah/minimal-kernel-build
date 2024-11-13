@@ -136,61 +136,12 @@ struct bus_type cpu_subsys = {
 };
 EXPORT_SYMBOL_GPL(cpu_subsys);
 
-#ifdef CONFIG_KEXEC
-#include <linux/kexec.h>
-
-static ssize_t crash_notes_show(struct device *dev,
-				struct device_attribute *attr,
-				char *buf)
-{
-	struct cpu *cpu = container_of(dev, struct cpu, dev);
-	unsigned long long addr;
-	int cpunum;
-
-	cpunum = cpu->dev.id;
-
-	/*
-	 * Might be reading other cpu's data based on which cpu read thread
-	 * has been scheduled. But cpu data (memory) is allocated once during
-	 * boot up and this data does not change there after. Hence this
-	 * operation should be safe. No locking required.
-	 */
-	addr = per_cpu_ptr_to_phys(per_cpu_ptr(crash_notes, cpunum));
-
-	return sysfs_emit(buf, "%llx\n", addr);
-}
-static DEVICE_ATTR_ADMIN_RO(crash_notes);
-
-static ssize_t crash_notes_size_show(struct device *dev,
-				     struct device_attribute *attr,
-				     char *buf)
-{
-	return sysfs_emit(buf, "%zu\n", sizeof(note_buf_t));
-}
-static DEVICE_ATTR_ADMIN_RO(crash_notes_size);
-
-static struct attribute *crash_note_cpu_attrs[] = {
-	&dev_attr_crash_notes.attr,
-	&dev_attr_crash_notes_size.attr,
-	NULL
-};
-
-static const struct attribute_group crash_note_cpu_attr_group = {
-	.attrs = crash_note_cpu_attrs,
-};
-#endif
 
 static const struct attribute_group *common_cpu_attr_groups[] = {
-#ifdef CONFIG_KEXEC
-	&crash_note_cpu_attr_group,
-#endif
 	NULL
 };
 
 static const struct attribute_group *hotplugable_cpu_attr_groups[] = {
-#ifdef CONFIG_KEXEC
-	&crash_note_cpu_attr_group,
-#endif
 	NULL
 };
 

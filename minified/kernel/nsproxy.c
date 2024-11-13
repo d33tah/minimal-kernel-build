@@ -40,9 +40,6 @@ struct nsproxy init_nsproxy = {
 #ifdef CONFIG_NET
 	.net_ns			= &init_net,
 #endif
-#ifdef CONFIG_CGROUPS
-	.cgroup_ns		= &init_cgroup_ns,
-#endif
 #ifdef CONFIG_TIME_NS
 	.time_ns		= &init_time_ns,
 	.time_ns_for_children	= &init_time_ns,
@@ -277,10 +274,8 @@ static int check_setns_flags(unsigned long flags)
 	if (flags & CLONE_NEWIPC)
 		return -EINVAL;
 #endif
-#ifndef CONFIG_CGROUPS
 	if (flags & CLONE_NEWCGROUP)
 		return -EINVAL;
-#endif
 #ifndef CONFIG_NET_NS
 	if (flags & CLONE_NEWNET)
 		return -EINVAL;
@@ -447,13 +442,6 @@ static int validate_nsset(struct nsset *nsset, struct pid *pid)
 	}
 #endif
 
-#ifdef CONFIG_CGROUPS
-	if (flags & CLONE_NEWCGROUP) {
-		ret = validate_ns(nsset, &nsp->cgroup_ns->ns);
-		if (ret)
-			goto out;
-	}
-#endif
 
 #ifdef CONFIG_NET_NS
 	if (flags & CLONE_NEWNET) {

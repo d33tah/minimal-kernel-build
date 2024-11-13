@@ -756,23 +756,6 @@ void switch_fpu_return(void)
 }
 EXPORT_SYMBOL_GPL(switch_fpu_return);
 
-#ifdef CONFIG_X86_DEBUG_FPU
-/*
- * If current FPU state according to its tracking (loaded FPU context on this
- * CPU) is not valid then we must have TIF_NEED_FPU_LOAD set so the context is
- * loaded on return to userland.
- */
-void fpregs_assert_state_consistent(void)
-{
-	struct fpu *fpu = &current->thread.fpu;
-
-	if (test_thread_flag(TIF_NEED_FPU_LOAD))
-		return;
-
-	WARN_ON_FPU(!fpregs_state_valid(fpu, smp_processor_id()));
-}
-EXPORT_SYMBOL_GPL(fpregs_assert_state_consistent);
-#endif
 
 void fpregs_mark_activate(void)
 {

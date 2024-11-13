@@ -13,21 +13,12 @@
 
 extern struct lockdep_map rcu_trace_lock_map;
 
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-
-static inline int rcu_read_lock_trace_held(void)
-{
-	return lock_is_held(&rcu_trace_lock_map);
-}
-
-#else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
 
 static inline int rcu_read_lock_trace_held(void)
 {
 	return 1;
 }
 
-#endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
 
 #ifdef CONFIG_TASKS_TRACE_RCU
 

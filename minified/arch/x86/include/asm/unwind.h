@@ -24,16 +24,6 @@ struct unwind_state {
 	bool signal, full_regs;
 	unsigned long sp, bp, ip;
 	struct pt_regs *regs, *prev_regs;
-#elif defined(CONFIG_UNWINDER_FRAME_POINTER)
-	bool got_irq;
-	unsigned long *bp, *orig_sp, ip;
-	/*
-	 * If non-NULL: The current frame is incomplete and doesn't contain a
-	 * valid BP. When looking for the next frame, use this instead of the
-	 * non-existent saved BP.
-	 */
-	unsigned long *next_bp;
-	struct pt_regs *regs;
 #else
 	unsigned long *sp;
 #endif
@@ -144,11 +134,7 @@ unsigned long unwind_recover_ret_addr(struct unwind_state *state,
 
 static inline bool task_on_another_cpu(struct task_struct *task)
 {
-#ifdef CONFIG_SMP
-	return task != current && task->on_cpu;
-#else
 	return false;
-#endif
 }
 
 #endif /* _ASM_X86_UNWIND_H */

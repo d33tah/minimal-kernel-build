@@ -62,106 +62,6 @@ static const struct file_operations __fops = {				\
 
 typedef struct vfsmount *(*debugfs_automount_t)(struct dentry *, void *);
 
-#if defined(CONFIG_DEBUG_FS)
-
-struct dentry *debugfs_lookup(const char *name, struct dentry *parent);
-
-struct dentry *debugfs_create_file(const char *name, umode_t mode,
-				   struct dentry *parent, void *data,
-				   const struct file_operations *fops);
-struct dentry *debugfs_create_file_unsafe(const char *name, umode_t mode,
-				   struct dentry *parent, void *data,
-				   const struct file_operations *fops);
-
-void debugfs_create_file_size(const char *name, umode_t mode,
-			      struct dentry *parent, void *data,
-			      const struct file_operations *fops,
-			      loff_t file_size);
-
-struct dentry *debugfs_create_dir(const char *name, struct dentry *parent);
-
-struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
-				      const char *dest);
-
-struct dentry *debugfs_create_automount(const char *name,
-					struct dentry *parent,
-					debugfs_automount_t f,
-					void *data);
-
-void debugfs_remove(struct dentry *dentry);
-#define debugfs_remove_recursive debugfs_remove
-
-const struct file_operations *debugfs_real_fops(const struct file *filp);
-
-int debugfs_file_get(struct dentry *dentry);
-void debugfs_file_put(struct dentry *dentry);
-
-ssize_t debugfs_attr_read(struct file *file, char __user *buf,
-			size_t len, loff_t *ppos);
-ssize_t debugfs_attr_write(struct file *file, const char __user *buf,
-			size_t len, loff_t *ppos);
-
-struct dentry *debugfs_rename(struct dentry *old_dir, struct dentry *old_dentry,
-                struct dentry *new_dir, const char *new_name);
-
-void debugfs_create_u8(const char *name, umode_t mode, struct dentry *parent,
-		       u8 *value);
-void debugfs_create_u16(const char *name, umode_t mode, struct dentry *parent,
-			u16 *value);
-void debugfs_create_u32(const char *name, umode_t mode, struct dentry *parent,
-			u32 *value);
-void debugfs_create_u64(const char *name, umode_t mode, struct dentry *parent,
-			u64 *value);
-void debugfs_create_ulong(const char *name, umode_t mode, struct dentry *parent,
-			  unsigned long *value);
-void debugfs_create_x8(const char *name, umode_t mode, struct dentry *parent,
-		       u8 *value);
-void debugfs_create_x16(const char *name, umode_t mode, struct dentry *parent,
-			u16 *value);
-void debugfs_create_x32(const char *name, umode_t mode, struct dentry *parent,
-			u32 *value);
-void debugfs_create_x64(const char *name, umode_t mode, struct dentry *parent,
-			u64 *value);
-void debugfs_create_size_t(const char *name, umode_t mode,
-			   struct dentry *parent, size_t *value);
-void debugfs_create_atomic_t(const char *name, umode_t mode,
-			     struct dentry *parent, atomic_t *value);
-void debugfs_create_bool(const char *name, umode_t mode, struct dentry *parent,
-			 bool *value);
-void debugfs_create_str(const char *name, umode_t mode,
-			struct dentry *parent, char **value);
-
-struct dentry *debugfs_create_blob(const char *name, umode_t mode,
-				  struct dentry *parent,
-				  struct debugfs_blob_wrapper *blob);
-
-void debugfs_create_regset32(const char *name, umode_t mode,
-			     struct dentry *parent,
-			     struct debugfs_regset32 *regset);
-
-void debugfs_print_regs32(struct seq_file *s, const struct debugfs_reg32 *regs,
-			  int nregs, void __iomem *base, char *prefix);
-
-void debugfs_create_u32_array(const char *name, umode_t mode,
-			      struct dentry *parent,
-			      struct debugfs_u32_array *array);
-
-void debugfs_create_devm_seqfile(struct device *dev, const char *name,
-				 struct dentry *parent,
-				 int (*read_fn)(struct seq_file *s, void *data));
-
-bool debugfs_initialized(void);
-
-ssize_t debugfs_read_file_bool(struct file *file, char __user *user_buf,
-			       size_t count, loff_t *ppos);
-
-ssize_t debugfs_write_file_bool(struct file *file, const char __user *user_buf,
-				size_t count, loff_t *ppos);
-
-ssize_t debugfs_read_file_str(struct file *file, char __user *user_buf,
-			      size_t count, loff_t *ppos);
-
-#else
 
 #include <linux/err.h>
 
@@ -357,7 +257,6 @@ static inline ssize_t debugfs_read_file_str(struct file *file,
 	return -ENODEV;
 }
 
-#endif
 
 /**
  * debugfs_create_xul - create a debugfs file that is used to read and write an

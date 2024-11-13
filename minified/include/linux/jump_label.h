@@ -84,88 +84,10 @@ extern bool static_key_initialized;
 
 struct static_key {
 	atomic_t enabled;
-#ifdef CONFIG_JUMP_LABEL
-/*
- * Note:
- *   To make anonymous unions work with old compilers, the static
- *   initialization of them requires brackets. This creates a dependency
- *   on the order of the struct with the initializers. If any fields
- *   are added, STATIC_KEY_INIT_TRUE and STATIC_KEY_INIT_FALSE may need
- *   to be modified.
- *
- * bit 0 => 1 if key is initially true
- *	    0 if initially false
- * bit 1 => 1 if points to struct static_key_mod
- *	    0 if points to struct jump_entry
- */
-	union {
-		unsigned long type;
-		struct jump_entry *entries;
-		struct static_key_mod *next;
-	};
-#endif	/* CONFIG_JUMP_LABEL */
 };
 
 #endif /* __ASSEMBLY__ */
 
-#ifdef CONFIG_JUMP_LABEL
-#include <asm/jump_label.h>
-
-#ifndef __ASSEMBLY__
-
-struct jump_entry {
-	s32 code;
-	s32 target;
-	long key;	// key may be far away from the core kernel under KASLR
-};
-
-static inline unsigned long jump_entry_code(const struct jump_entry *entry)
-{
-	return (unsigned long)&entry->code + entry->code;
-}
-
-static inline unsigned long jump_entry_target(const struct jump_entry *entry)
-{
-	return (unsigned long)&entry->target + entry->target;
-}
-
-static inline struct static_key *jump_entry_key(const struct jump_entry *entry)
-{
-	long offset = entry->key & ~3L;
-
-	return (struct static_key *)((unsigned long)&entry->key + offset);
-}
-
-
-static inline bool jump_entry_is_branch(const struct jump_entry *entry)
-{
-	return (unsigned long)entry->key & 1UL;
-}
-
-static inline bool jump_entry_is_init(const struct jump_entry *entry)
-{
-	return (unsigned long)entry->key & 2UL;
-}
-
-static inline void jump_entry_set_init(struct jump_entry *entry, bool set)
-{
-	if (set)
-		entry->key |= 2;
-	else
-		entry->key &= ~2;
-}
-
-static inline int jump_entry_size(struct jump_entry *entry)
-{
-#ifdef JUMP_LABEL_NOP_SIZE
-	return JUMP_LABEL_NOP_SIZE;
-#else
-	return arch_jump_entry_size(entry);
-#endif
-}
-
-#endif
-#endif
 
 #ifndef __ASSEMBLY__
 
@@ -176,63 +98,6 @@ enum jump_label_type {
 
 struct module;
 
-#ifdef CONFIG_JUMP_LABEL
-
-#define JUMP_TYPE_FALSE		0UL
-#define JUMP_TYPE_TRUE		1UL
-#define JUMP_TYPE_LINKED	2UL
-#define JUMP_TYPE_MASK		3UL
-
-static __always_inline bool static_key_false(struct static_key *key)
-{
-	return arch_static_branch(key, false);
-}
-
-static __always_inline bool static_key_true(struct static_key *key)
-{
-	return !arch_static_branch(key, true);
-}
-
-extern struct jump_entry __start___jump_table[];
-extern struct jump_entry __stop___jump_table[];
-
-extern void jump_label_init(void);
-extern void jump_label_lock(void);
-extern void jump_label_unlock(void);
-extern void arch_jump_label_transform(struct jump_entry *entry,
-				      enum jump_label_type type);
-extern void arch_jump_label_transform_static(struct jump_entry *entry,
-					     enum jump_label_type type);
-extern bool arch_jump_label_transform_queue(struct jump_entry *entry,
-					    enum jump_label_type type);
-extern void arch_jump_label_transform_apply(void);
-extern int jump_label_text_reserved(void *start, void *end);
-extern void static_key_slow_inc(struct static_key *key);
-extern void static_key_slow_dec(struct static_key *key);
-extern void static_key_slow_inc_cpuslocked(struct static_key *key);
-extern void static_key_slow_dec_cpuslocked(struct static_key *key);
-extern void jump_label_apply_nops(struct module *mod);
-extern int static_key_count(struct static_key *key);
-extern void static_key_enable(struct static_key *key);
-extern void static_key_disable(struct static_key *key);
-extern void static_key_enable_cpuslocked(struct static_key *key);
-extern void static_key_disable_cpuslocked(struct static_key *key);
-
-/*
- * We should be using ATOMIC_INIT() for initializing .enabled, but
- * the inclusion of atomic.h is problematic for inclusion of jump_label.h
- * in 'low-level' headers. Thus, we are initializing .enabled with a
- * raw value, but have added a BUILD_BUG_ON() to catch any issues in
- * jump_label_init() see: kernel/jump_label.c.
- */
-#define STATIC_KEY_INIT_TRUE					\
-	{ .enabled = { 1 },					\
-	  { .type = JUMP_TYPE_TRUE } }
-#define STATIC_KEY_INIT_FALSE					\
-	{ .enabled = { 0 },					\
-	  { .type = JUMP_TYPE_FALSE } }
-
-#else  /* !CONFIG_JUMP_LABEL */
 
 #include <linux/atomic.h>
 #include <linux/bug.h>
@@ -317,7 +182,6 @@ static inline void static_key_disable(struct static_key *key)
 #define STATIC_KEY_INIT_TRUE	{ .enabled = ATOMIC_INIT(1) }
 #define STATIC_KEY_INIT_FALSE	{ .enabled = ATOMIC_INIT(0) }
 
-#endif	/* CONFIG_JUMP_LABEL */
 
 #define STATIC_KEY_INIT STATIC_KEY_INIT_FALSE
 #define jump_label_enabled static_key_enabled
@@ -396,94 +260,10 @@ extern bool ____wrong_branch_error(void);
 	static_key_count((struct static_key *)x) > 0;				\
 })
 
-#ifdef CONFIG_JUMP_LABEL
-
-/*
- * Combine the right initial value (type) with the right branch order
- * to generate the desired result.
- *
- *
- * type\branch|	likely (1)	      |	unlikely (0)
- * -----------+-----------------------+------------------
- *            |                       |
- *  true (1)  |	   ...		      |	   ...
- *            |    NOP		      |	   JMP L
- *            |    <br-stmts>	      |	1: ...
- *            |	L: ...		      |
- *            |			      |
- *            |			      |	L: <br-stmts>
- *            |			      |	   jmp 1b
- *            |                       |
- * -----------+-----------------------+------------------
- *            |                       |
- *  false (0) |	   ...		      |	   ...
- *            |    JMP L	      |	   NOP
- *            |    <br-stmts>	      |	1: ...
- *            |	L: ...		      |
- *            |			      |
- *            |			      |	L: <br-stmts>
- *            |			      |	   jmp 1b
- *            |                       |
- * -----------+-----------------------+------------------
- *
- * The initial value is encoded in the LSB of static_key::entries,
- * type: 0 = false, 1 = true.
- *
- * The branch type is encoded in the LSB of jump_entry::key,
- * branch: 0 = unlikely, 1 = likely.
- *
- * This gives the following logic table:
- *
- *	enabled	type	branch	  instuction
- * -----------------------------+-----------
- *	0	0	0	| NOP
- *	0	0	1	| JMP
- *	0	1	0	| NOP
- *	0	1	1	| JMP
- *
- *	1	0	0	| JMP
- *	1	0	1	| NOP
- *	1	1	0	| JMP
- *	1	1	1	| NOP
- *
- * Which gives the following functions:
- *
- *   dynamic: instruction = enabled ^ branch
- *   static:  instruction = type ^ branch
- *
- * See jump_label_type() / jump_label_init_type().
- */
-
-#define static_branch_likely(x)							\
-({										\
-	bool branch;								\
-	if (__builtin_types_compatible_p(typeof(*x), struct static_key_true))	\
-		branch = !arch_static_branch(&(x)->key, true);			\
-	else if (__builtin_types_compatible_p(typeof(*x), struct static_key_false)) \
-		branch = !arch_static_branch_jump(&(x)->key, true);		\
-	else									\
-		branch = ____wrong_branch_error();				\
-	likely_notrace(branch);								\
-})
-
-#define static_branch_unlikely(x)						\
-({										\
-	bool branch;								\
-	if (__builtin_types_compatible_p(typeof(*x), struct static_key_true))	\
-		branch = arch_static_branch_jump(&(x)->key, false);		\
-	else if (__builtin_types_compatible_p(typeof(*x), struct static_key_false)) \
-		branch = arch_static_branch(&(x)->key, false);			\
-	else									\
-		branch = ____wrong_branch_error();				\
-	unlikely_notrace(branch);							\
-})
-
-#else /* !CONFIG_JUMP_LABEL */
 
 #define static_branch_likely(x)		likely_notrace(static_key_enabled(&(x)->key))
 #define static_branch_unlikely(x)	unlikely_notrace(static_key_enabled(&(x)->key))
 
-#endif /* CONFIG_JUMP_LABEL */
 
 #define static_branch_maybe(config, x)					\
 	(IS_ENABLED(config) ? static_branch_likely(x)			\

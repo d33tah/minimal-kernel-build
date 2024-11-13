@@ -9,45 +9,12 @@
 #ifndef CONFIG_PREEMPT_RT
 
 typedef struct {
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-	struct lockdep_map	dep_map;
-	struct task_struct	*owner;
-#endif
 } local_lock_t;
 
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-# define LOCAL_LOCK_DEBUG_INIT(lockname)		\
-	.dep_map = {					\
-		.name = #lockname,			\
-		.wait_type_inner = LD_WAIT_CONFIG,	\
-		.lock_type = LD_LOCK_PERCPU,		\
-	},						\
-	.owner = NULL,
-
-static inline void local_lock_acquire(local_lock_t *l)
-{
-	lock_map_acquire(&l->dep_map);
-	DEBUG_LOCKS_WARN_ON(l->owner);
-	l->owner = current;
-}
-
-static inline void local_lock_release(local_lock_t *l)
-{
-	DEBUG_LOCKS_WARN_ON(l->owner != current);
-	l->owner = NULL;
-	lock_map_release(&l->dep_map);
-}
-
-static inline void local_lock_debug_init(local_lock_t *l)
-{
-	l->owner = NULL;
-}
-#else /* CONFIG_DEBUG_LOCK_ALLOC */
 # define LOCAL_LOCK_DEBUG_INIT(lockname)
 static inline void local_lock_acquire(local_lock_t *l) { }
 static inline void local_lock_release(local_lock_t *l) { }
 static inline void local_lock_debug_init(local_lock_t *l) { }
-#endif /* !CONFIG_DEBUG_LOCK_ALLOC */
 
 #define INIT_LOCAL_LOCK(lockname)	{ LOCAL_LOCK_DEBUG_INIT(lockname) }
 

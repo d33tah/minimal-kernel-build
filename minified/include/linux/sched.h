@@ -129,36 +129,10 @@ struct task_group;
 #define is_special_task_state(state)				\
 	((state) & (__TASK_STOPPED | __TASK_TRACED | TASK_PARKED | TASK_DEAD))
 
-#ifdef CONFIG_DEBUG_ATOMIC_SLEEP
-# define debug_normal_state_change(state_value)				\
-	do {								\
-		WARN_ON_ONCE(is_special_task_state(state_value));	\
-		current->task_state_change = _THIS_IP_;			\
-	} while (0)
-
-# define debug_special_state_change(state_value)			\
-	do {								\
-		WARN_ON_ONCE(!is_special_task_state(state_value));	\
-		current->task_state_change = _THIS_IP_;			\
-	} while (0)
-
-# define debug_rtlock_wait_set_state()					\
-	do {								 \
-		current->saved_state_change = current->task_state_change;\
-		current->task_state_change = _THIS_IP_;			 \
-	} while (0)
-
-# define debug_rtlock_wait_restore_state()				\
-	do {								 \
-		current->task_state_change = current->saved_state_change;\
-	} while (0)
-
-#else
 # define debug_normal_state_change(cond)	do { } while (0)
 # define debug_special_state_change(cond)	do { } while (0)
 # define debug_rtlock_wait_set_state()		do { } while (0)
 # define debug_rtlock_wait_restore_state()	do { } while (0)
-#endif
 
 /*
  * set_current_state() includes a barrier so that the write of current->state
@@ -353,10 +327,6 @@ enum uclamp_id {
 	UCLAMP_CNT
 };
 
-#ifdef CONFIG_SMP
-extern struct root_domain def_root_domain;
-extern struct mutex sched_domains_mutex;
-#endif
 
 struct sched_info {
 #ifdef CONFIG_SCHED_INFO
@@ -558,15 +528,6 @@ struct sched_entity {
 	unsigned long			runnable_weight;
 #endif
 
-#ifdef CONFIG_SMP
-	/*
-	 * Per entity load average tracking.
-	 *
-	 * Put into separate cache line so it does not
-	 * collide with read-mostly values above.
-	 */
-	struct sched_avg		avg;
-#endif
 };
 
 struct sched_rt_entity {
@@ -746,23 +707,6 @@ struct task_struct {
 	unsigned int			flags;
 	unsigned int			ptrace;
 
-#ifdef CONFIG_SMP
-	int				on_cpu;
-	struct __call_single_node	wake_entry;
-	unsigned int			wakee_flips;
-	unsigned long			wakee_flip_decay_ts;
-	struct task_struct		*last_wakee;
-
-	/*
-	 * recent_used_cpu is initially set as the last CPU used by a task
-	 * that wakes affine another task. Waker/wakee relationships can
-	 * push tasks around a CPU where each wakeup moves to the next one.
-	 * Tracking a recently used CPU allows a quick search for a recently
-	 * used CPU that may be idle.
-	 */
-	int				recent_used_cpu;
-	int				wake_cpu;
-#endif
 	int				on_rq;
 
 	int				prio;
@@ -815,9 +759,6 @@ struct task_struct {
 	cpumask_t			*user_cpus_ptr;
 	cpumask_t			cpus_mask;
 	void				*migration_pending;
-#ifdef CONFIG_SMP
-	unsigned short			migration_disabled;
-#endif
 	unsigned short			migration_flags;
 
 #ifdef CONFIG_PREEMPT_RCU
@@ -846,10 +787,6 @@ struct task_struct {
 	struct sched_info		sched_info;
 
 	struct list_head		tasks;
-#ifdef CONFIG_SMP
-	struct plist_node		pushable_tasks;
-	struct rb_node			pushable_dl_tasks;
-#endif
 
 	struct mm_struct		*mm;
 	struct mm_struct		*active_mm;
@@ -875,9 +812,6 @@ struct task_struct {
 	unsigned			sched_reset_on_fork:1;
 	unsigned			sched_contributes_to_load:1;
 	unsigned			sched_migrated:1;
-#ifdef CONFIG_PSI
-	unsigned			sched_psi_wake_requeue:1;
-#endif
 
 	/* Force alignment to the next boundary: */
 	unsigned			:0;
@@ -908,29 +842,8 @@ struct task_struct {
 #ifdef CONFIG_MEMCG
 	unsigned			in_user_fault:1;
 #endif
-#ifdef CONFIG_COMPAT_BRK
-	unsigned			brk_randomized:1;
-#endif
-#ifdef CONFIG_CGROUPS
-	/* disallow userland-initiated cgroup migration */
-	unsigned			no_cgroup_migration:1;
-	/* task is frozen/stopped (used by the cgroup freezer) */
-	unsigned			frozen:1;
-#endif
 #ifdef CONFIG_BLK_CGROUP
 	unsigned			use_memdelay:1;
-#endif
-#ifdef CONFIG_PSI
-	/* Stalled due to lack of memory */
-	unsigned			in_memstall:1;
-#endif
-#ifdef CONFIG_PAGE_OWNER
-	/* Used by page_owner=on to detect recursion in page tracking. */
-	unsigned			in_page_owner:1;
-#endif
-#ifdef CONFIG_EVENTFD
-	/* Recursion prevention for eventfd_signal() */
-	unsigned			in_eventfd_signal:1;
 #endif
 #ifdef CONFIG_IOMMU_SVA
 	unsigned			pasid_activated:1;
@@ -944,10 +857,6 @@ struct task_struct {
 	pid_t				pid;
 	pid_t				tgid;
 
-#ifdef CONFIG_STACKPROTECTOR
-	/* Canary value for the -fstack-protector GCC feature: */
-	unsigned long			stack_canary;
-#endif
 	/*
 	 * Pointers to the (original) parent process, youngest child, younger sibling,
 	 * older sibling, respectively.  (p->father can be replaced with
@@ -1040,10 +949,6 @@ struct task_struct {
 	/* Effective (overridable) subjective task credentials (COW): */
 	const struct cred __rcu		*cred;
 
-#ifdef CONFIG_KEYS
-	/* Cached requested key. */
-	struct key			*cached_requested_key;
-#endif
 
 	/*
 	 * executable name, excluding path.
@@ -1056,23 +961,12 @@ struct task_struct {
 
 	struct nameidata		*nameidata;
 
-#ifdef CONFIG_SYSVIPC
-	struct sysv_sem			sysvsem;
-	struct sysv_shm			sysvshm;
-#endif
-#ifdef CONFIG_DETECT_HUNG_TASK
-	unsigned long			last_switch_count;
-	unsigned long			last_switch_time;
-#endif
 	/* Filesystem information: */
 	struct fs_struct		*fs;
 
 	/* Open file information: */
 	struct files_struct		*files;
 
-#ifdef CONFIG_IO_URING
-	struct io_uring_task		*io_uring;
-#endif
 
 	/* Namespaces: */
 	struct nsproxy			*nsproxy;
@@ -1122,14 +1016,7 @@ struct task_struct {
 	struct rt_mutex_waiter		*pi_blocked_on;
 #endif
 
-#ifdef CONFIG_DEBUG_MUTEXES
-	/* Mutex deadlock detection: */
-	struct mutex_waiter		*blocked_on;
-#endif
 
-#ifdef CONFIG_DEBUG_ATOMIC_SLEEP
-	int				non_block_count;
-#endif
 
 #ifdef CONFIG_TRACE_IRQFLAGS
 	struct irqtrace_events		irqtrace;
@@ -1151,9 +1038,6 @@ struct task_struct {
 	struct held_lock		held_locks[MAX_LOCK_DEPTH];
 #endif
 
-#if defined(CONFIG_UBSAN) && !defined(CONFIG_UBSAN_TRAP)
-	unsigned int			in_ubsan;
-#endif
 
 	/* Journalling filesystem info: */
 	void				*journal_info;
@@ -1171,18 +1055,11 @@ struct task_struct {
 
 	struct io_context		*io_context;
 
-#ifdef CONFIG_COMPACTION
-	struct capture_control		*capture_control;
-#endif
 	/* Ptrace state: */
 	unsigned long			ptrace_message;
 	kernel_siginfo_t		*last_siginfo;
 
 	struct task_io_accounting	ioac;
-#ifdef CONFIG_PSI
-	/* Pressure stall state */
-	unsigned int			psi_flags;
-#endif
 #ifdef CONFIG_TASK_XACCT
 	/* Accumulated RSS usage: */
 	u64				acct_rss_mem1;
@@ -1198,26 +1075,6 @@ struct task_struct {
 	seqcount_spinlock_t		mems_allowed_seq;
 	int				cpuset_mem_spread_rotor;
 	int				cpuset_slab_spread_rotor;
-#endif
-#ifdef CONFIG_CGROUPS
-	/* Control Group info protected by css_set_lock: */
-	struct css_set __rcu		*cgroups;
-	/* cg_list protected by css_set_lock and tsk->alloc_lock: */
-	struct list_head		cg_list;
-#endif
-#ifdef CONFIG_X86_CPU_RESCTRL
-	u32				closid;
-	u32				rmid;
-#endif
-#ifdef CONFIG_FUTEX
-	struct robust_list_head __user	*robust_list;
-#ifdef CONFIG_COMPAT
-	struct compat_robust_list_head __user *compat_robust_list;
-#endif
-	struct list_head		pi_state_list;
-	struct futex_pi_state		*pi_state_cache;
-	struct mutex			futex_exit_mutex;
-	unsigned int			futex_state;
 #endif
 	struct perf_event_context	*perf_event_ctxp[perf_nr_task_contexts];
 	struct mutex			perf_event_mutex;
@@ -1281,15 +1138,6 @@ struct task_struct {
 	unsigned long			numa_pages_migrated;
 #endif /* CONFIG_NUMA_BALANCING */
 
-#ifdef CONFIG_RSEQ
-	struct rseq __user *rseq;
-	u32 rseq_sig;
-	/*
-	 * RmW on rseq_event_mask must be performed atomically
-	 * with respect to preemption.
-	 */
-	unsigned long rseq_event_mask;
-#endif
 
 	struct tlbflush_unmap_batch	tlb_ubc;
 
@@ -1307,10 +1155,6 @@ struct task_struct {
 	struct task_delay_info		*delays;
 #endif
 
-#ifdef CONFIG_FAULT_INJECTION
-	int				make_it_fail;
-	unsigned int			fail_nth;
-#endif
 	/*
 	 * When (nr_dirtied >= nr_dirtied_pause), it's time to call
 	 * balance_dirty_pages() for a dirty throttling pause:
@@ -1427,12 +1271,6 @@ struct task_struct {
 	unsigned int			sequential_io_avg;
 #endif
 	struct kmap_ctrl		kmap_ctrl;
-#ifdef CONFIG_DEBUG_ATOMIC_SLEEP
-	unsigned long			task_state_change;
-# ifdef CONFIG_PREEMPT_RT
-	unsigned long			saved_state_change;
-# endif
-#endif
 	int				pagefault_disabled;
 	struct task_struct		*oom_reaper_list;
 	struct timer_list		oom_reaper_timer;
@@ -1448,28 +1286,12 @@ struct task_struct {
 	/* Used by LSM modules for access restriction: */
 	void				*security;
 #endif
-#ifdef CONFIG_BPF_SYSCALL
-	/* Used by BPF task local storage */
-	struct bpf_local_storage __rcu	*bpf_storage;
-	/* Used for BPF run context */
-	struct bpf_run_ctx		*bpf_ctx;
-#endif
 
 #ifdef CONFIG_GCC_PLUGIN_STACKLEAK
 	unsigned long			lowest_stack;
 	unsigned long			prev_lowest_stack;
 #endif
 
-#ifdef CONFIG_X86_MCE
-	void __user			*mce_vaddr;
-	__u64				mce_kflags;
-	u64				mce_addr;
-	__u64				mce_ripv : 1,
-					mce_whole_page : 1,
-					__mce_reserved : 62;
-	struct callback_head		mce_kill_me;
-	int				mce_count;
-#endif
 
 #ifdef CONFIG_KRETPROBES
 	struct llist_head               kretprobe_instances;
@@ -1732,12 +1554,7 @@ extern struct pid *cad_pid;
 
 static __always_inline bool is_percpu_thread(void)
 {
-#ifdef CONFIG_SMP
-	return (current->flags & PF_NO_SETAFFINITY) &&
-		(current->nr_cpus_allowed  == 1);
-#else
 	return true;
-#endif
 }
 
 /* Per-process atomic flags. */
@@ -1800,15 +1617,6 @@ current_restore_flags(unsigned long orig_flags, unsigned long flags)
 
 extern int cpuset_cpumask_can_shrink(const struct cpumask *cur, const struct cpumask *trial);
 extern int task_can_attach(struct task_struct *p, const struct cpumask *cs_cpus_allowed);
-#ifdef CONFIG_SMP
-extern void do_set_cpus_allowed(struct task_struct *p, const struct cpumask *new_mask);
-extern int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask);
-extern int dup_user_cpus_ptr(struct task_struct *dst, struct task_struct *src, int node);
-extern void release_user_cpus_ptr(struct task_struct *p);
-extern int dl_task_check_affinity(struct task_struct *p, const struct cpumask *mask);
-extern void force_compatible_cpus_allowed_ptr(struct task_struct *p);
-extern void relax_compatible_cpus_allowed_ptr(struct task_struct *p);
-#else
 static inline void do_set_cpus_allowed(struct task_struct *p, const struct cpumask *new_mask)
 {
 }
@@ -1833,7 +1641,6 @@ static inline int dl_task_check_affinity(struct task_struct *p, const struct cpu
 {
 	return 0;
 }
-#endif
 
 extern int yield_to(struct task_struct *p, bool preempt);
 extern void set_user_nice(struct task_struct *p, long nice);
@@ -1914,11 +1721,7 @@ extern int wake_up_state(struct task_struct *tsk, unsigned int state);
 extern int wake_up_process(struct task_struct *tsk);
 extern void wake_up_new_task(struct task_struct *tsk);
 
-#ifdef CONFIG_SMP
-extern void kick_process(struct task_struct *tsk);
-#else
 static inline void kick_process(struct task_struct *tsk) { }
-#endif
 
 extern void __set_task_comm(struct task_struct *tsk, const char *from, bool exec);
 
@@ -1933,24 +1736,11 @@ extern char *__get_task_comm(char *to, size_t len, struct task_struct *tsk);
 	__get_task_comm(buf, sizeof(buf), tsk);		\
 })
 
-#ifdef CONFIG_SMP
-static __always_inline void scheduler_ipi(void)
-{
-	/*
-	 * Fold TIF_NEED_RESCHED into the preempt_count; anybody setting
-	 * TIF_NEED_RESCHED remotely (for the first time) will also send
-	 * this IPI.
-	 */
-	preempt_fold_need_resched();
-}
-extern unsigned long wait_task_inactive(struct task_struct *, unsigned int match_state);
-#else
 static inline void scheduler_ipi(void) { }
 static inline unsigned long wait_task_inactive(struct task_struct *p, unsigned int match_state)
 {
 	return 1;
 }
-#endif
 
 /*
  * Set thread flags in other task's structures.
@@ -2011,31 +1801,12 @@ static inline int test_tsk_need_resched(struct task_struct *tsk)
 #if !defined(CONFIG_PREEMPTION) || defined(CONFIG_PREEMPT_DYNAMIC)
 extern int __cond_resched(void);
 
-#if defined(CONFIG_PREEMPT_DYNAMIC) && defined(CONFIG_HAVE_PREEMPT_DYNAMIC_CALL)
-
-DECLARE_STATIC_CALL(cond_resched, __cond_resched);
-
-static __always_inline int _cond_resched(void)
-{
-	return static_call_mod(cond_resched)();
-}
-
-#elif defined(CONFIG_PREEMPT_DYNAMIC) && defined(CONFIG_HAVE_PREEMPT_DYNAMIC_KEY)
-extern int dynamic_cond_resched(void);
-
-static __always_inline int _cond_resched(void)
-{
-	return dynamic_cond_resched();
-}
-
-#else
 
 static inline int _cond_resched(void)
 {
 	return __cond_resched();
 }
 
-#endif /* CONFIG_PREEMPT_DYNAMIC */
 
 #else
 
@@ -2095,13 +1866,6 @@ static inline void cond_resched_rcu(void)
 #endif
 }
 
-#ifdef CONFIG_PREEMPT_DYNAMIC
-
-extern bool preempt_model_none(void);
-extern bool preempt_model_voluntary(void);
-extern bool preempt_model_full(void);
-
-#else
 
 static inline bool preempt_model_none(void)
 {
@@ -2116,7 +1880,6 @@ static inline bool preempt_model_full(void)
 	return IS_ENABLED(CONFIG_PREEMPT);
 }
 
-#endif
 
 static inline bool preempt_model_rt(void)
 {
@@ -2175,16 +1938,6 @@ static __always_inline bool need_resched(void)
 /*
  * Wrappers for p->thread_info->cpu access. No-op on UP.
  */
-#ifdef CONFIG_SMP
-
-static inline unsigned int task_cpu(const struct task_struct *p)
-{
-	return READ_ONCE(task_thread_info(p)->cpu);
-}
-
-extern void set_task_cpu(struct task_struct *p, unsigned int cpu);
-
-#else
 
 static inline unsigned int task_cpu(const struct task_struct *p)
 {
@@ -2195,7 +1948,6 @@ static inline void set_task_cpu(struct task_struct *p, unsigned int cpu)
 {
 }
 
-#endif /* CONFIG_SMP */
 
 extern bool sched_task_on_rq(struct task_struct *p);
 extern unsigned long get_wchan(struct task_struct *p);
@@ -2222,101 +1974,7 @@ extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
 #define TASK_SIZE_OF(tsk)	TASK_SIZE
 #endif
 
-#ifdef CONFIG_SMP
-static inline bool owner_on_cpu(struct task_struct *owner)
-{
-	/*
-	 * As lock holder preemption issue, we both skip spinning if
-	 * task is not on cpu or its cpu is preempted
-	 */
-	return READ_ONCE(owner->on_cpu) && !vcpu_is_preempted(task_cpu(owner));
-}
 
-/* Returns effective CPU energy utilization, as seen by the scheduler */
-unsigned long sched_cpu_util(int cpu, unsigned long max);
-#endif /* CONFIG_SMP */
-
-#ifdef CONFIG_RSEQ
-
-/*
- * Map the event mask on the user-space ABI enum rseq_cs_flags
- * for direct mask checks.
- */
-enum rseq_event_mask_bits {
-	RSEQ_EVENT_PREEMPT_BIT	= RSEQ_CS_FLAG_NO_RESTART_ON_PREEMPT_BIT,
-	RSEQ_EVENT_SIGNAL_BIT	= RSEQ_CS_FLAG_NO_RESTART_ON_SIGNAL_BIT,
-	RSEQ_EVENT_MIGRATE_BIT	= RSEQ_CS_FLAG_NO_RESTART_ON_MIGRATE_BIT,
-};
-
-enum rseq_event_mask {
-	RSEQ_EVENT_PREEMPT	= (1U << RSEQ_EVENT_PREEMPT_BIT),
-	RSEQ_EVENT_SIGNAL	= (1U << RSEQ_EVENT_SIGNAL_BIT),
-	RSEQ_EVENT_MIGRATE	= (1U << RSEQ_EVENT_MIGRATE_BIT),
-};
-
-static inline void rseq_set_notify_resume(struct task_struct *t)
-{
-	if (t->rseq)
-		set_tsk_thread_flag(t, TIF_NOTIFY_RESUME);
-}
-
-void __rseq_handle_notify_resume(struct ksignal *sig, struct pt_regs *regs);
-
-static inline void rseq_handle_notify_resume(struct ksignal *ksig,
-					     struct pt_regs *regs)
-{
-	if (current->rseq)
-		__rseq_handle_notify_resume(ksig, regs);
-}
-
-static inline void rseq_signal_deliver(struct ksignal *ksig,
-				       struct pt_regs *regs)
-{
-	preempt_disable();
-	__set_bit(RSEQ_EVENT_SIGNAL_BIT, &current->rseq_event_mask);
-	preempt_enable();
-	rseq_handle_notify_resume(ksig, regs);
-}
-
-/* rseq_preempt() requires preemption to be disabled. */
-static inline void rseq_preempt(struct task_struct *t)
-{
-	__set_bit(RSEQ_EVENT_PREEMPT_BIT, &t->rseq_event_mask);
-	rseq_set_notify_resume(t);
-}
-
-/* rseq_migrate() requires preemption to be disabled. */
-static inline void rseq_migrate(struct task_struct *t)
-{
-	__set_bit(RSEQ_EVENT_MIGRATE_BIT, &t->rseq_event_mask);
-	rseq_set_notify_resume(t);
-}
-
-/*
- * If parent process has a registered restartable sequences area, the
- * child inherits. Unregister rseq for a clone with CLONE_VM set.
- */
-static inline void rseq_fork(struct task_struct *t, unsigned long clone_flags)
-{
-	if (clone_flags & CLONE_VM) {
-		t->rseq = NULL;
-		t->rseq_sig = 0;
-		t->rseq_event_mask = 0;
-	} else {
-		t->rseq = current->rseq;
-		t->rseq_sig = current->rseq_sig;
-		t->rseq_event_mask = current->rseq_event_mask;
-	}
-}
-
-static inline void rseq_execve(struct task_struct *t)
-{
-	t->rseq = NULL;
-	t->rseq_sig = 0;
-	t->rseq_event_mask = 0;
-}
-
-#else
 
 static inline void rseq_set_notify_resume(struct task_struct *t)
 {
@@ -2342,7 +2000,6 @@ static inline void rseq_execve(struct task_struct *t)
 {
 }
 
-#endif
 
 #ifdef CONFIG_DEBUG_RSEQ
 

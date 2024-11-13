@@ -82,15 +82,11 @@ struct device;
  * Built-in firmware functionality is only available if FW_LOADER=y, but not
  * FW_LOADER=m
  */
-#ifdef CONFIG_FW_LOADER
-bool firmware_request_builtin(struct firmware *fw, const char *name);
-#else
 static inline bool firmware_request_builtin(struct firmware *fw,
 					    const char *name)
 {
 	return false;
 }
-#endif
 
 #if IS_REACHABLE(CONFIG_FW_LOADER)
 int request_firmware(const struct firmware **fw, const char *name,

@@ -1344,18 +1344,12 @@ static inline int security_locked_down(enum lockdown_reason what)
 }
 #endif	/* CONFIG_SECURITY */
 
-#if defined(CONFIG_SECURITY) && defined(CONFIG_WATCH_QUEUE)
-int security_post_notification(const struct cred *w_cred,
-			       const struct cred *cred,
-			       struct watch_notification *n);
-#else
 static inline int security_post_notification(const struct cred *w_cred,
 					     const struct cred *cred,
 					     struct watch_notification *n)
 {
 	return 0;
 }
-#endif
 
 #if defined(CONFIG_SECURITY) && defined(CONFIG_KEY_NOTIFICATIONS)
 int security_watch_key(struct key *key);
@@ -1842,43 +1836,6 @@ static inline int security_path_chroot(const struct path *path)
 }
 #endif	/* CONFIG_SECURITY_PATH */
 
-#ifdef CONFIG_KEYS
-#ifdef CONFIG_SECURITY
-
-int security_key_alloc(struct key *key, const struct cred *cred, unsigned long flags);
-void security_key_free(struct key *key);
-int security_key_permission(key_ref_t key_ref, const struct cred *cred,
-			    enum key_need_perm need_perm);
-int security_key_getsecurity(struct key *key, char **_buffer);
-
-#else
-
-static inline int security_key_alloc(struct key *key,
-				     const struct cred *cred,
-				     unsigned long flags)
-{
-	return 0;
-}
-
-static inline void security_key_free(struct key *key)
-{
-}
-
-static inline int security_key_permission(key_ref_t key_ref,
-					  const struct cred *cred,
-					  enum key_need_perm need_perm)
-{
-	return 0;
-}
-
-static inline int security_key_getsecurity(struct key *key, char **_buffer)
-{
-	*_buffer = NULL;
-	return 0;
-}
-
-#endif
-#endif /* CONFIG_KEYS */
 
 #ifdef CONFIG_AUDIT
 #ifdef CONFIG_SECURITY
@@ -1912,19 +1869,6 @@ static inline void security_audit_rule_free(void *lsmrule)
 #endif /* CONFIG_SECURITY */
 #endif /* CONFIG_AUDIT */
 
-#ifdef CONFIG_SECURITYFS
-
-extern struct dentry *securityfs_create_file(const char *name, umode_t mode,
-					     struct dentry *parent, void *data,
-					     const struct file_operations *fops);
-extern struct dentry *securityfs_create_dir(const char *name, struct dentry *parent);
-struct dentry *securityfs_create_symlink(const char *name,
-					 struct dentry *parent,
-					 const char *target,
-					 const struct inode_operations *iops);
-extern void securityfs_remove(struct dentry *dentry);
-
-#else /* CONFIG_SECURITYFS */
 
 static inline struct dentry *securityfs_create_dir(const char *name,
 						   struct dentry *parent)
@@ -1952,55 +1896,7 @@ static inline struct dentry *securityfs_create_symlink(const char *name,
 static inline void securityfs_remove(struct dentry *dentry)
 {}
 
-#endif
 
-#ifdef CONFIG_BPF_SYSCALL
-union bpf_attr;
-struct bpf_map;
-struct bpf_prog;
-struct bpf_prog_aux;
-#ifdef CONFIG_SECURITY
-extern int security_bpf(int cmd, union bpf_attr *attr, unsigned int size);
-extern int security_bpf_map(struct bpf_map *map, fmode_t fmode);
-extern int security_bpf_prog(struct bpf_prog *prog);
-extern int security_bpf_map_alloc(struct bpf_map *map);
-extern void security_bpf_map_free(struct bpf_map *map);
-extern int security_bpf_prog_alloc(struct bpf_prog_aux *aux);
-extern void security_bpf_prog_free(struct bpf_prog_aux *aux);
-#else
-static inline int security_bpf(int cmd, union bpf_attr *attr,
-					     unsigned int size)
-{
-	return 0;
-}
-
-static inline int security_bpf_map(struct bpf_map *map, fmode_t fmode)
-{
-	return 0;
-}
-
-static inline int security_bpf_prog(struct bpf_prog *prog)
-{
-	return 0;
-}
-
-static inline int security_bpf_map_alloc(struct bpf_map *map)
-{
-	return 0;
-}
-
-static inline void security_bpf_map_free(struct bpf_map *map)
-{ }
-
-static inline int security_bpf_prog_alloc(struct bpf_prog_aux *aux)
-{
-	return 0;
-}
-
-static inline void security_bpf_prog_free(struct bpf_prog_aux *aux)
-{ }
-#endif /* CONFIG_SECURITY */
-#endif /* CONFIG_BPF_SYSCALL */
 
 struct perf_event_attr;
 struct perf_event;
@@ -2038,20 +1934,5 @@ static inline int security_perf_event_write(struct perf_event *event)
 }
 #endif /* CONFIG_SECURITY */
 
-#ifdef CONFIG_IO_URING
-#ifdef CONFIG_SECURITY
-extern int security_uring_override_creds(const struct cred *new);
-extern int security_uring_sqpoll(void);
-#else
-static inline int security_uring_override_creds(const struct cred *new)
-{
-	return 0;
-}
-static inline int security_uring_sqpoll(void)
-{
-	return 0;
-}
-#endif /* CONFIG_SECURITY */
-#endif /* CONFIG_IO_URING */
 
 #endif /* ! __LINUX_SECURITY_H */

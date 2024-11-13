@@ -91,11 +91,7 @@ struct em_perf_domain {
  * resolution (i.e. 64-bit). The costs for increasing resolution when 32-bit
  * are pretty high and the returns do not justify the increased costs.
  */
-#ifdef CONFIG_64BIT
-#define em_scale_power(p) ((p) * 1000)
-#else
 #define em_scale_power(p) (p)
-#endif
 
 struct em_data_callback {
 	/**

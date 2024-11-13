@@ -53,19 +53,6 @@ do {							\
 		groups_free(group_info);		\
 } while (0)
 
-#ifdef CONFIG_MULTIUSER
-extern struct group_info *groups_alloc(int);
-extern void groups_free(struct group_info *);
-
-extern int in_group_p(kgid_t);
-extern int in_egroup_p(kgid_t);
-extern int groups_search(const struct group_info *, kgid_t);
-
-extern int set_current_groups(struct group_info *);
-extern void set_groups(struct cred *, struct group_info *);
-extern bool may_setgroups(void);
-extern void groups_sort(struct group_info *);
-#else
 static inline void groups_free(struct group_info *group_info)
 {
 }
@@ -82,7 +69,6 @@ static inline int groups_search(const struct group_info *group_info, kgid_t grp)
 {
 	return 1;
 }
-#endif
 
 /*
  * The security context of a task
@@ -109,13 +95,6 @@ static inline int groups_search(const struct group_info *group_info, kgid_t grp)
  */
 struct cred {
 	atomic_t	usage;
-#ifdef CONFIG_DEBUG_CREDENTIALS
-	atomic_t	subscribers;	/* number of processes subscribed */
-	void		*put_addr;
-	unsigned	magic;
-#define CRED_MAGIC	0x43736564
-#define CRED_MAGIC_DEAD	0x44656144
-#endif
 	kuid_t		uid;		/* real UID of the task */
 	kgid_t		gid;		/* real GID of the task */
 	kuid_t		suid;		/* saved UID of the task */
@@ -130,14 +109,6 @@ struct cred {
 	kernel_cap_t	cap_effective;	/* caps we can actually use */
 	kernel_cap_t	cap_bset;	/* capability bounding set */
 	kernel_cap_t	cap_ambient;	/* Ambient capability set */
-#ifdef CONFIG_KEYS
-	unsigned char	jit_keyring;	/* default keyring to attach requested
-					 * keys to */
-	struct key	*session_keyring; /* keyring inherited over fork */
-	struct key	*process_keyring; /* keyring private to this process */
-	struct key	*thread_keyring; /* keyring private to this thread */
-	struct key	*request_key_auth; /* assumed request_key authority */
-#endif
 #ifdef CONFIG_SECURITY
 	void		*security;	/* LSM security */
 #endif
@@ -175,32 +146,6 @@ extern int set_cred_ucounts(struct cred *);
 /*
  * check for validity of credentials
  */
-#ifdef CONFIG_DEBUG_CREDENTIALS
-extern void __noreturn __invalid_creds(const struct cred *, const char *, unsigned);
-extern void __validate_process_creds(struct task_struct *,
-				     const char *, unsigned);
-
-extern bool creds_are_invalid(const struct cred *cred);
-
-static inline void __validate_creds(const struct cred *cred,
-				    const char *file, unsigned line)
-{
-	if (unlikely(creds_are_invalid(cred)))
-		__invalid_creds(cred, file, line);
-}
-
-#define validate_creds(cred)				\
-do {							\
-	__validate_creds((cred), __FILE__, __LINE__);	\
-} while(0)
-
-#define validate_process_creds()				\
-do {								\
-	__validate_process_creds(current, __FILE__, __LINE__);	\
-} while(0)
-
-extern void validate_creds_for_do_exit(struct task_struct *);
-#else
 static inline void validate_creds(const struct cred *cred)
 {
 }
@@ -210,7 +155,6 @@ static inline void validate_creds_for_do_exit(struct task_struct *tsk)
 static inline void validate_process_creds(void)
 {
 }
-#endif
 
 static inline bool cap_ambient_invariant_ok(const struct cred *cred)
 {

@@ -56,16 +56,6 @@ extern void
 for_each_kernel_tracepoint(void (*fct)(struct tracepoint *tp, void *priv),
 		void *priv);
 
-#ifdef CONFIG_MODULES
-struct tp_module {
-	struct list_head list;
-	struct module *mod;
-};
-
-bool trace_module_has_bad_taint(struct module *mod);
-extern int register_tracepoint_module_notifier(struct notifier_block *nb);
-extern int unregister_tracepoint_module_notifier(struct notifier_block *nb);
-#else
 static inline bool trace_module_has_bad_taint(struct module *mod)
 {
 	return false;
@@ -80,7 +70,6 @@ int unregister_tracepoint_module_notifier(struct notifier_block *nb)
 {
 	return 0;
 }
-#endif /* CONFIG_MODULES */
 
 /*
  * tracepoint_synchronize_unregister must be called between the last tracepoint

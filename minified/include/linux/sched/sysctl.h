@@ -6,13 +6,8 @@
 
 struct ctl_table;
 
-#ifdef CONFIG_DETECT_HUNG_TASK
-/* used for hung_task and block/ */
-extern unsigned long sysctl_hung_task_timeout_secs;
-#else
 /* Avoid need for ifdefs elsewhere in the code */
 enum { sysctl_hung_task_timeout_secs = 0 };
-#endif
 
 enum sched_tunable_scaling {
 	SCHED_TUNABLESCALING_NONE,

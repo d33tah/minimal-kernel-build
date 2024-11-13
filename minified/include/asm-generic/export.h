@@ -26,17 +26,6 @@
  */
 
 .macro ___EXPORT_SYMBOL name,val,sec
-#if defined(CONFIG_MODULES) && !defined(__DISABLE_EXPORTS)
-	.section ___ksymtab\sec+\name,"a"
-	.balign KSYM_ALIGN
-__ksymtab_\name:
-	__put \val, __kstrtab_\name
-	.previous
-	.section __ksymtab_strings,"aMS",%progbits,1
-__kstrtab_\name:
-	.asciz "\name"
-	.previous
-#endif
 .endm
 
 #if defined(CONFIG_TRIM_UNUSED_KSYMS)

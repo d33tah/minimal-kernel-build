@@ -105,10 +105,6 @@ struct held_lock {
 	unsigned long			acquire_ip;
 	struct lockdep_map		*instance;
 	struct lockdep_map		*nest_lock;
-#ifdef CONFIG_LOCK_STAT
-	u64 				waittime_stamp;
-	u64				holdtime_stamp;
-#endif
 	/*
 	 * class_idx is zero-indexed; it points to the element in
 	 * lock_classes this held lock instance belongs to. class_idx is in
@@ -442,33 +438,6 @@ enum xhlock_context_t {
 static inline void lockdep_invariant_state(bool force) {}
 static inline void lockdep_free_task(struct task_struct *task) {}
 
-#ifdef CONFIG_LOCK_STAT
-
-extern void lock_contended(struct lockdep_map *lock, unsigned long ip);
-extern void lock_acquired(struct lockdep_map *lock, unsigned long ip);
-
-#define LOCK_CONTENDED(_lock, try, lock)			\
-do {								\
-	if (!try(_lock)) {					\
-		lock_contended(&(_lock)->dep_map, _RET_IP_);	\
-		lock(_lock);					\
-	}							\
-	lock_acquired(&(_lock)->dep_map, _RET_IP_);			\
-} while (0)
-
-#define LOCK_CONTENDED_RETURN(_lock, try, lock)			\
-({								\
-	int ____err = 0;					\
-	if (!try(_lock)) {					\
-		lock_contended(&(_lock)->dep_map, _RET_IP_);	\
-		____err = lock(_lock);				\
-	}							\
-	if (!____err)						\
-		lock_acquired(&(_lock)->dep_map, _RET_IP_);	\
-	____err;						\
-})
-
-#else /* CONFIG_LOCK_STAT */
 
 #define lock_contended(lockdep_map, ip) do {} while (0)
 #define lock_acquired(lockdep_map, ip) do {} while (0)
@@ -479,22 +448,13 @@ do {								\
 #define LOCK_CONTENDED_RETURN(_lock, try, lock) \
 	lock(_lock)
 
-#endif /* CONFIG_LOCK_STAT */
 
-#ifdef CONFIG_PROVE_LOCKING
-extern void print_irqtrace_events(struct task_struct *curr);
-#else
 static inline void print_irqtrace_events(struct task_struct *curr)
 {
 }
-#endif
 
 /* Variable used to make lockdep treat read_lock() as recursive in selftests */
-#ifdef CONFIG_DEBUG_LOCKING_API_SELFTESTS
-extern unsigned int force_read_lock_recursive;
-#else /* CONFIG_DEBUG_LOCKING_API_SELFTESTS */
 #define force_read_lock_recursive 0
-#endif /* CONFIG_DEBUG_LOCKING_API_SELFTESTS */
 
 #ifdef CONFIG_LOCKDEP
 extern bool read_lock_is_recursive(void);
@@ -552,75 +512,6 @@ do {									\
 #define lock_map_acquire_tryread(l)		lock_acquire_shared_recursive(l, 0, 1, NULL, _THIS_IP_)
 #define lock_map_release(l)			lock_release(l, _THIS_IP_)
 
-#ifdef CONFIG_PROVE_LOCKING
-# define might_lock(lock)						\
-do {									\
-	typecheck(struct lockdep_map *, &(lock)->dep_map);		\
-	lock_acquire(&(lock)->dep_map, 0, 0, 0, 1, NULL, _THIS_IP_);	\
-	lock_release(&(lock)->dep_map, _THIS_IP_);			\
-} while (0)
-# define might_lock_read(lock)						\
-do {									\
-	typecheck(struct lockdep_map *, &(lock)->dep_map);		\
-	lock_acquire(&(lock)->dep_map, 0, 0, 1, 1, NULL, _THIS_IP_);	\
-	lock_release(&(lock)->dep_map, _THIS_IP_);			\
-} while (0)
-# define might_lock_nested(lock, subclass)				\
-do {									\
-	typecheck(struct lockdep_map *, &(lock)->dep_map);		\
-	lock_acquire(&(lock)->dep_map, subclass, 0, 1, 1, NULL,		\
-		     _THIS_IP_);					\
-	lock_release(&(lock)->dep_map, _THIS_IP_);			\
-} while (0)
-
-DECLARE_PER_CPU(int, hardirqs_enabled);
-DECLARE_PER_CPU(int, hardirq_context);
-DECLARE_PER_CPU(unsigned int, lockdep_recursion);
-
-#define __lockdep_enabled	(debug_locks && !this_cpu_read(lockdep_recursion))
-
-#define lockdep_assert_irqs_enabled()					\
-do {									\
-	WARN_ON_ONCE(__lockdep_enabled && !this_cpu_read(hardirqs_enabled)); \
-} while (0)
-
-#define lockdep_assert_irqs_disabled()					\
-do {									\
-	WARN_ON_ONCE(__lockdep_enabled && this_cpu_read(hardirqs_enabled)); \
-} while (0)
-
-#define lockdep_assert_in_irq()						\
-do {									\
-	WARN_ON_ONCE(__lockdep_enabled && !this_cpu_read(hardirq_context)); \
-} while (0)
-
-#define lockdep_assert_preemption_enabled()				\
-do {									\
-	WARN_ON_ONCE(IS_ENABLED(CONFIG_PREEMPT_COUNT)	&&		\
-		     __lockdep_enabled			&&		\
-		     (preempt_count() != 0		||		\
-		      !this_cpu_read(hardirqs_enabled)));		\
-} while (0)
-
-#define lockdep_assert_preemption_disabled()				\
-do {									\
-	WARN_ON_ONCE(IS_ENABLED(CONFIG_PREEMPT_COUNT)	&&		\
-		     __lockdep_enabled			&&		\
-		     (preempt_count() == 0		&&		\
-		      this_cpu_read(hardirqs_enabled)));		\
-} while (0)
-
-/*
- * Acceptable for protecting per-CPU resources accessed from BH.
- * Much like in_softirq() - semantics are ambiguous, use carefully.
- */
-#define lockdep_assert_in_softirq()					\
-do {									\
-	WARN_ON_ONCE(__lockdep_enabled			&&		\
-		     (!in_softirq() || in_irq() || in_nmi()));		\
-} while (0)
-
-#else
 # define might_lock(lock) do { } while (0)
 # define might_lock_read(lock) do { } while (0)
 # define might_lock_nested(lock, subclass) do { } while (0)
@@ -632,7 +523,6 @@ do {									\
 # define lockdep_assert_preemption_enabled() do { } while (0)
 # define lockdep_assert_preemption_disabled() do { } while (0)
 # define lockdep_assert_in_softirq() do { } while (0)
-#endif
 
 #ifdef CONFIG_PROVE_RAW_LOCK_NESTING
 

@@ -57,17 +57,7 @@ static inline u64 local_clock(void)
 	return sched_clock_cpu(raw_smp_processor_id());
 }
 
-#ifdef CONFIG_IRQ_TIME_ACCOUNTING
-/*
- * An i/f to runtime opt-in for irq time accounting based off of sched_clock.
- * The reason for this explicit opt-in is not to have perf penalty with
- * slow sched_clocks.
- */
-extern void enable_sched_clock_irqtime(void);
-extern void disable_sched_clock_irqtime(void);
-#else
 static inline void enable_sched_clock_irqtime(void) {}
 static inline void disable_sched_clock_irqtime(void) {}
-#endif
 
 #endif /* _LINUX_SCHED_CLOCK_H */

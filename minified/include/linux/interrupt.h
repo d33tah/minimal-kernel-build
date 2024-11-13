@@ -301,69 +301,6 @@ struct irq_affinity_desc {
 	unsigned int	is_managed : 1;
 };
 
-#if defined(CONFIG_SMP)
-
-extern cpumask_var_t irq_default_affinity;
-
-extern int irq_set_affinity(unsigned int irq, const struct cpumask *cpumask);
-extern int irq_force_affinity(unsigned int irq, const struct cpumask *cpumask);
-
-extern int irq_can_set_affinity(unsigned int irq);
-extern int irq_select_affinity(unsigned int irq);
-
-extern int __irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m,
-				     bool setaffinity);
-
-/**
- * irq_update_affinity_hint - Update the affinity hint
- * @irq:	Interrupt to update
- * @m:		cpumask pointer (NULL to clear the hint)
- *
- * Updates the affinity hint, but does not change the affinity of the interrupt.
- */
-static inline int
-irq_update_affinity_hint(unsigned int irq, const struct cpumask *m)
-{
-	return __irq_apply_affinity_hint(irq, m, false);
-}
-
-/**
- * irq_set_affinity_and_hint - Update the affinity hint and apply the provided
- *			     cpumask to the interrupt
- * @irq:	Interrupt to update
- * @m:		cpumask pointer (NULL to clear the hint)
- *
- * Updates the affinity hint and if @m is not NULL it applies it as the
- * affinity of that interrupt.
- */
-static inline int
-irq_set_affinity_and_hint(unsigned int irq, const struct cpumask *m)
-{
-	return __irq_apply_affinity_hint(irq, m, true);
-}
-
-/*
- * Deprecated. Use irq_update_affinity_hint() or irq_set_affinity_and_hint()
- * instead.
- */
-static inline int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
-{
-	return irq_set_affinity_and_hint(irq, m);
-}
-
-extern int irq_update_affinity_desc(unsigned int irq,
-				    struct irq_affinity_desc *affinity);
-
-extern int
-irq_set_affinity_notifier(unsigned int irq, struct irq_affinity_notify *notify);
-
-struct irq_affinity_desc *
-irq_create_affinity_masks(unsigned int nvec, struct irq_affinity *affd);
-
-unsigned int irq_calc_affinity_vectors(unsigned int minvec, unsigned int maxvec,
-				       const struct irq_affinity *affd);
-
-#else /* CONFIG_SMP */
 
 static inline int irq_set_affinity(unsigned int irq, const struct cpumask *m)
 {
@@ -425,7 +362,6 @@ irq_calc_affinity_vectors(unsigned int minvec, unsigned int maxvec,
 	return maxvec;
 }
 
-#endif /* CONFIG_SMP */
 
 /*
  * Special lockdep variants of irq disabling/enabling.

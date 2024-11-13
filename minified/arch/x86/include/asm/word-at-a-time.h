@@ -17,20 +17,6 @@ struct word_at_a_time {
 
 #define WORD_AT_A_TIME_CONSTANTS { REPEAT_BYTE(0x01), REPEAT_BYTE(0x80) }
 
-#ifdef CONFIG_64BIT
-
-/*
- * Jan Achrenius on G+: microoptimized version of
- * the simpler "(mask & ONEBYTES) * ONEBYTES >> 56"
- * that works for the bytemasks without having to
- * mask them first.
- */
-static inline long count_masked_bytes(unsigned long mask)
-{
-	return mask*0x0001020304050608ul >> 56;
-}
-
-#else	/* 32-bit case */
 
 /* Carl Chatfield / Jan Achrenius G+ version for 32-bit */
 static inline long count_masked_bytes(long mask)
@@ -41,7 +27,6 @@ static inline long count_masked_bytes(long mask)
 	return a & mask;
 }
 
-#endif
 
 /* Return nonzero if it has a zero */
 static inline unsigned long has_zero(unsigned long a, unsigned long *bits, const struct word_at_a_time *c)

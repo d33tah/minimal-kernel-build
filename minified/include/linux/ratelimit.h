@@ -42,28 +42,6 @@ ratelimit_set_flags(struct ratelimit_state *rs, unsigned long flags)
 
 extern struct ratelimit_state printk_ratelimit_state;
 
-#ifdef CONFIG_PRINTK
-
-#define WARN_ON_RATELIMIT(condition, state)	({		\
-	bool __rtn_cond = !!(condition);			\
-	WARN_ON(__rtn_cond && __ratelimit(state));		\
-	__rtn_cond;						\
-})
-
-#define WARN_RATELIMIT(condition, format, ...)			\
-({								\
-	static DEFINE_RATELIMIT_STATE(_rs,			\
-				      DEFAULT_RATELIMIT_INTERVAL,	\
-				      DEFAULT_RATELIMIT_BURST);	\
-	int rtn = !!(condition);				\
-								\
-	if (unlikely(rtn && __ratelimit(&_rs)))			\
-		WARN(rtn, format, ##__VA_ARGS__);		\
-								\
-	rtn;							\
-})
-
-#else
 
 #define WARN_ON_RATELIMIT(condition, state)			\
 	WARN_ON(condition)
@@ -74,6 +52,5 @@ extern struct ratelimit_state printk_ratelimit_state;
 	rtn;							\
 })
 
-#endif
 
 #endif /* _LINUX_RATELIMIT_H */

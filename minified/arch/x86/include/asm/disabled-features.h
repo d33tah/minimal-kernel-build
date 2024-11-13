@@ -10,11 +10,7 @@
  * cpu_feature_enabled().
  */
 
-#ifdef CONFIG_X86_UMIP
-# define DISABLE_UMIP	0
-#else
 # define DISABLE_UMIP	(1<<(X86_FEATURE_UMIP & 31))
-#endif
 
 #ifdef CONFIG_X86_64
 # define DISABLE_VME		(1<<(X86_FEATURE_VME & 31))

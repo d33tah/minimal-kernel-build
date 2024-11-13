@@ -49,11 +49,7 @@ static inline bool cxl_mem_active(void)
  */
 
 
-#ifdef CONFIG_PM
-extern const char power_group_name[];		/* = "power" */
-#else
 #define power_group_name	NULL
-#endif
 
 typedef struct pm_message {
 	int event;
@@ -359,12 +355,7 @@ struct dev_pm_ops {
 #define SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
 #endif
 
-#ifdef CONFIG_PM
-#define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
-	RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
-#else
 #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
-#endif
 
 #define _DEFINE_DEV_PM_OPS(name, \
 			   suspend_fn, resume_fn, \
@@ -374,19 +365,11 @@ const struct dev_pm_ops name = { \
 	RUNTIME_PM_OPS(runtime_suspend_fn, runtime_resume_fn, idle_fn) \
 }
 
-#ifdef CONFIG_PM
-#define _EXPORT_DEV_PM_OPS(name, suspend_fn, resume_fn, runtime_suspend_fn, \
-			   runtime_resume_fn, idle_fn, sec, ns)		\
-	_DEFINE_DEV_PM_OPS(name, suspend_fn, resume_fn, runtime_suspend_fn, \
-			   runtime_resume_fn, idle_fn); \
-	__EXPORT_SYMBOL(name, sec, ns)
-#else
 #define _EXPORT_DEV_PM_OPS(name, suspend_fn, resume_fn, runtime_suspend_fn, \
 			   runtime_resume_fn, idle_fn, sec, ns) \
 static __maybe_unused _DEFINE_DEV_PM_OPS(__static_##name, suspend_fn, \
 					 resume_fn, runtime_suspend_fn, \
 					 runtime_resume_fn, idle_fn)
-#endif
 
 /*
  * Use this if you want to use the same suspend and resume callbacks for suspend
@@ -648,37 +631,6 @@ struct dev_pm_info {
 	unsigned int		may_skip_resume:1;	/* Set by subsystems */
 #else
 	unsigned int		should_wakeup:1;
-#endif
-#ifdef CONFIG_PM
-	struct hrtimer		suspend_timer;
-	u64			timer_expires;
-	struct work_struct	work;
-	wait_queue_head_t	wait_queue;
-	struct wake_irq		*wakeirq;
-	atomic_t		usage_count;
-	atomic_t		child_count;
-	unsigned int		disable_depth:3;
-	unsigned int		idle_notification:1;
-	unsigned int		request_pending:1;
-	unsigned int		deferred_resume:1;
-	unsigned int		needs_force_resume:1;
-	unsigned int		runtime_auto:1;
-	bool			ignore_children:1;
-	unsigned int		no_callbacks:1;
-	unsigned int		irq_safe:1;
-	unsigned int		use_autosuspend:1;
-	unsigned int		timer_autosuspends:1;
-	unsigned int		memalloc_noio:1;
-	unsigned int		links_count;
-	enum rpm_request	request;
-	enum rpm_status		runtime_status;
-	enum rpm_status		last_status;
-	int			runtime_error;
-	int			autosuspend_delay;
-	u64			last_busy;
-	u64			active_time;
-	u64			suspended_time;
-	u64			accounting_timestamp;
 #endif
 	struct pm_subsys_data	*subsys_data;  /* Owned by the subsystem. */
 	void (*set_latency_tolerance)(struct device *, s32);

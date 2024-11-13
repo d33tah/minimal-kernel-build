@@ -10,9 +10,6 @@
 #define PIPE_BUF_FLAG_PACKET	0x08	/* read() as a packet */
 #define PIPE_BUF_FLAG_CAN_MERGE	0x10	/* can merge buffers */
 #define PIPE_BUF_FLAG_WHOLE	0x20	/* read() must return entire buffer or error */
-#ifdef CONFIG_WATCH_QUEUE
-#define PIPE_BUF_FLAG_LOSS	0x40	/* Message loss happened after this buffer */
-#endif
 
 /**
  *	struct pipe_buffer - a linux kernel pipe buffer
@@ -62,9 +59,6 @@ struct pipe_inode_info {
 	unsigned int tail;
 	unsigned int max_usage;
 	unsigned int ring_size;
-#ifdef CONFIG_WATCH_QUEUE
-	bool note_loss;
-#endif
 	unsigned int nr_accounted;
 	unsigned int readers;
 	unsigned int writers;
@@ -77,9 +71,6 @@ struct pipe_inode_info {
 	struct fasync_struct *fasync_writers;
 	struct pipe_buffer *bufs;
 	struct user_struct *user;
-#ifdef CONFIG_WATCH_QUEUE
-	struct watch_queue *watch_queue;
-#endif
 };
 
 /*
@@ -252,18 +243,8 @@ void generic_pipe_buf_release(struct pipe_inode_info *, struct pipe_buffer *);
 
 extern const struct pipe_buf_operations nosteal_pipe_buf_ops;
 
-#ifdef CONFIG_WATCH_QUEUE
-unsigned long account_pipe_buffers(struct user_struct *user,
-				   unsigned long old, unsigned long new);
-bool too_many_pipe_buffers_soft(unsigned long user_bufs);
-bool too_many_pipe_buffers_hard(unsigned long user_bufs);
-bool pipe_is_unprivileged_user(void);
-#endif
 
 /* for F_SETPIPE_SZ and F_GETPIPE_SZ */
-#ifdef CONFIG_WATCH_QUEUE
-int pipe_resize_ring(struct pipe_inode_info *pipe, unsigned int nr_slots);
-#endif
 long pipe_fcntl(struct file *, unsigned int, unsigned long arg);
 struct pipe_inode_info *get_pipe_info(struct file *file, bool for_splice);
 

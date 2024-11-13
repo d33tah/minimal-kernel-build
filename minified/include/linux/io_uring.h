@@ -27,34 +27,6 @@ struct io_uring_cmd {
 	u8		pdu[32]; /* available inline for free use */
 };
 
-#if defined(CONFIG_IO_URING)
-void io_uring_cmd_done(struct io_uring_cmd *cmd, ssize_t ret, ssize_t res2);
-void io_uring_cmd_complete_in_task(struct io_uring_cmd *ioucmd,
-			void (*task_work_cb)(struct io_uring_cmd *));
-struct sock *io_uring_get_socket(struct file *file);
-void __io_uring_cancel(bool cancel_all);
-void __io_uring_free(struct task_struct *tsk);
-void io_uring_unreg_ringfd(void);
-const char *io_uring_get_opcode(u8 opcode);
-
-static inline void io_uring_files_cancel(void)
-{
-	if (current->io_uring) {
-		io_uring_unreg_ringfd();
-		__io_uring_cancel(false);
-	}
-}
-static inline void io_uring_task_cancel(void)
-{
-	if (current->io_uring)
-		__io_uring_cancel(true);
-}
-static inline void io_uring_free(struct task_struct *tsk)
-{
-	if (tsk->io_uring)
-		__io_uring_free(tsk);
-}
-#else
 static inline void io_uring_cmd_done(struct io_uring_cmd *cmd, ssize_t ret,
 		ssize_t ret2)
 {
@@ -80,6 +52,5 @@ static inline const char *io_uring_get_opcode(u8 opcode)
 {
 	return "";
 }
-#endif
 
 #endif

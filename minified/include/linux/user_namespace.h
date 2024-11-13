@@ -77,16 +77,6 @@ struct user_namespace {
 	 * in its effective capability set at the child ns creation time. */
 	bool			parent_could_setfcap;
 
-#ifdef CONFIG_KEYS
-	/* List of joinable keyrings in this namespace.  Modification access of
-	 * these pointers is controlled by keyring_sem.  Once
-	 * user_keyring_register is set, it won't be changed, so it can be
-	 * accessed directly with READ_ONCE().
-	 */
-	struct list_head	keyring_name_list;
-	struct key		*user_keyring_register;
-	struct rw_semaphore	keyring_sem;
-#endif
 
 	/* Register of per-UID persistent keyrings for this namespace */
 #ifdef CONFIG_PERSISTENT_KEYRINGS

@@ -159,21 +159,9 @@ static __always_inline unsigned long read_ti_thread_flags(struct thread_info *ti
 #define tif_need_resched() test_thread_flag(TIF_NEED_RESCHED)
 
 
-#ifdef CONFIG_HARDENED_USERCOPY
-extern void __check_object_size(const void *ptr, unsigned long n,
-					bool to_user);
-
-static __always_inline void check_object_size(const void *ptr, unsigned long n,
-					      bool to_user)
-{
-	if (!__builtin_constant_p(n))
-		__check_object_size(ptr, n, to_user);
-}
-#else
 static inline void check_object_size(const void *ptr, unsigned long n,
 				     bool to_user)
 { }
-#endif /* CONFIG_HARDENED_USERCOPY */
 
 extern void __compiletime_error("copy source size is too small")
 __bad_copy_from(void);

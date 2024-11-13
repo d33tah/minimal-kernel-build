@@ -608,22 +608,6 @@ struct hid_device {							/* device report descriptor */
 	struct mutex ll_open_lock;
 	unsigned int ll_open_count;
 
-#ifdef CONFIG_HID_BATTERY_STRENGTH
-	/*
-	 * Power supply information for HID devices which report
-	 * battery strength. power_supply was successfully registered if
-	 * battery is non-NULL.
-	 */
-	struct power_supply *battery;
-	__s32 battery_capacity;
-	__s32 battery_min;
-	__s32 battery_max;
-	__s32 battery_report_type;
-	__s32 battery_report_id;
-	enum hid_battery_status battery_status;
-	bool battery_avoid_query;
-	ktime_t battery_ratelimit_time;
-#endif
 
 	unsigned long status;						/* see STAT flags above */
 	unsigned claimed;						/* Claimed by hidinput, hiddev? */
@@ -806,11 +790,6 @@ struct hid_driver {
 	void (*feature_mapping)(struct hid_device *hdev,
 			struct hid_field *field,
 			struct hid_usage *usage);
-#ifdef CONFIG_PM
-	int (*suspend)(struct hid_device *hdev, pm_message_t message);
-	int (*resume)(struct hid_device *hdev);
-	int (*reset_resume)(struct hid_device *hdev);
-#endif
 /* private: */
 	struct device_driver driver;
 };
@@ -958,15 +937,9 @@ s32 hid_snto32(__u32 value, unsigned n);
 __u32 hid_field_extract(const struct hid_device *hid, __u8 *report,
 		     unsigned offset, unsigned n);
 
-#ifdef CONFIG_PM
-int hid_driver_suspend(struct hid_device *hdev, pm_message_t state);
-int hid_driver_reset_resume(struct hid_device *hdev);
-int hid_driver_resume(struct hid_device *hdev);
-#else
 static inline int hid_driver_suspend(struct hid_device *hdev, pm_message_t state) { return 0; }
 static inline int hid_driver_reset_resume(struct hid_device *hdev) { return 0; }
 static inline int hid_driver_resume(struct hid_device *hdev) { return 0; }
-#endif
 
 /**
  * hid_device_io_start - enable HID input during probe, remove

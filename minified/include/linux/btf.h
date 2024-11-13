@@ -343,22 +343,6 @@ static inline struct btf_param *btf_params(const struct btf_type *t)
 	return (struct btf_param *)(t + 1);
 }
 
-#ifdef CONFIG_BPF_SYSCALL
-struct bpf_prog;
-
-const struct btf_type *btf_type_by_id(const struct btf *btf, u32 type_id);
-const char *btf_name_by_offset(const struct btf *btf, u32 offset);
-struct btf *btf_parse_vmlinux(void);
-struct btf *bpf_prog_get_target_btf(const struct bpf_prog *prog);
-bool btf_kfunc_id_set_contains(const struct btf *btf,
-			       enum bpf_prog_type prog_type,
-			       enum btf_kfunc_type type, u32 kfunc_btf_id);
-int register_btf_kfunc_id_set(enum bpf_prog_type prog_type,
-			      const struct btf_kfunc_id_set *s);
-s32 btf_find_dtor_kfunc(struct btf *btf, u32 btf_id);
-int register_btf_id_dtor_kfuncs(const struct btf_id_dtor_kfunc *dtors, u32 add_cnt,
-				struct module *owner);
-#else
 static inline const struct btf_type *btf_type_by_id(const struct btf *btf,
 						    u32 type_id)
 {
@@ -390,6 +374,5 @@ static inline int register_btf_id_dtor_kfuncs(const struct btf_id_dtor_kfunc *dt
 {
 	return 0;
 }
-#endif
 
 #endif

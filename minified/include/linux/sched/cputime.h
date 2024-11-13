@@ -75,45 +75,11 @@ void thread_group_sample_cputime(struct task_struct *tsk, u64 *samples);
  *
  * @tsk:	Pointer to target task.
  */
-#ifdef CONFIG_POSIX_TIMERS
-static inline
-struct thread_group_cputimer *get_running_cputimer(struct task_struct *tsk)
-{
-	struct thread_group_cputimer *cputimer = &tsk->signal->cputimer;
-
-	/*
-	 * Check whether posix CPU timers are active. If not the thread
-	 * group accounting is not active either. Lockless check.
-	 */
-	if (!READ_ONCE(tsk->signal->posix_cputimers.timers_active))
-		return NULL;
-
-	/*
-	 * After we flush the task's sum_exec_runtime to sig->sum_sched_runtime
-	 * in __exit_signal(), we won't account to the signal struct further
-	 * cputime consumed by that task, even though the task can still be
-	 * ticking after __exit_signal().
-	 *
-	 * In order to keep a consistent behaviour between thread group cputime
-	 * and thread group cputimer accounting, lets also ignore the cputime
-	 * elapsing after __exit_signal() in any thread group timer running.
-	 *
-	 * This makes sure that POSIX CPU clocks and timers are synchronized, so
-	 * that a POSIX CPU timer won't expire while the corresponding POSIX CPU
-	 * clock delta is behind the expiring timer value.
-	 */
-	if (unlikely(!tsk->sighand))
-		return NULL;
-
-	return cputimer;
-}
-#else
 static inline
 struct thread_group_cputimer *get_running_cputimer(struct task_struct *tsk)
 {
 	return NULL;
 }
-#endif
 
 /**
  * account_group_user_time - Maintain utime for a thread group.

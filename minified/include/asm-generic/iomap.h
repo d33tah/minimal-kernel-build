@@ -31,10 +31,6 @@ extern unsigned int ioread16(const void __iomem *);
 extern unsigned int ioread16be(const void __iomem *);
 extern unsigned int ioread32(const void __iomem *);
 extern unsigned int ioread32be(const void __iomem *);
-#ifdef CONFIG_64BIT
-extern u64 ioread64(const void __iomem *);
-extern u64 ioread64be(const void __iomem *);
-#endif
 
 #ifdef readq
 #define ioread64_lo_hi ioread64_lo_hi
@@ -52,10 +48,6 @@ extern void iowrite16(u16, void __iomem *);
 extern void iowrite16be(u16, void __iomem *);
 extern void iowrite32(u32, void __iomem *);
 extern void iowrite32be(u32, void __iomem *);
-#ifdef CONFIG_64BIT
-extern void iowrite64(u64, void __iomem *);
-extern void iowrite64be(u64, void __iomem *);
-#endif
 
 #ifdef writeq
 #define iowrite64_lo_hi iowrite64_lo_hi

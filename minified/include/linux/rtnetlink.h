@@ -41,14 +41,10 @@ extern wait_queue_head_t netdev_unregistering_wq;
 extern struct rw_semaphore pernet_ops_rwsem;
 extern struct rw_semaphore net_rwsem;
 
-#ifdef CONFIG_PROVE_LOCKING
-extern bool lockdep_rtnl_is_held(void);
-#else
 static inline bool lockdep_rtnl_is_held(void)
 {
 	return true;
 }
-#endif /* #ifdef CONFIG_PROVE_LOCKING */
 
 /**
  * rcu_dereference_rtnl - rcu_dereference with debug checking

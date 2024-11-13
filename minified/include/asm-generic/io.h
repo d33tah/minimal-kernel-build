@@ -92,15 +92,6 @@ static inline u32 __raw_readl(const volatile void __iomem *addr)
 }
 #endif
 
-#ifdef CONFIG_64BIT
-#ifndef __raw_readq
-#define __raw_readq __raw_readq
-static inline u64 __raw_readq(const volatile void __iomem *addr)
-{
-	return *(const volatile u64 __force *)addr;
-}
-#endif
-#endif /* CONFIG_64BIT */
 
 #ifndef __raw_writeb
 #define __raw_writeb __raw_writeb
@@ -126,15 +117,6 @@ static inline void __raw_writel(u32 value, volatile void __iomem *addr)
 }
 #endif
 
-#ifdef CONFIG_64BIT
-#ifndef __raw_writeq
-#define __raw_writeq __raw_writeq
-static inline void __raw_writeq(u64 value, volatile void __iomem *addr)
-{
-	*(volatile u64 __force *)addr = value;
-}
-#endif
-#endif /* CONFIG_64BIT */
 
 /*
  * {read,write}{b,w,l,q}() access little endian memory and return result in
@@ -180,20 +162,6 @@ static inline u32 readl(const volatile void __iomem *addr)
 }
 #endif
 
-#ifdef CONFIG_64BIT
-#ifndef readq
-#define readq readq
-static inline u64 readq(const volatile void __iomem *addr)
-{
-	u64 val;
-
-	__io_br();
-	val = __le64_to_cpu(__raw_readq(addr));
-	__io_ar(val);
-	return val;
-}
-#endif
-#endif /* CONFIG_64BIT */
 
 #ifndef writeb
 #define writeb writeb
@@ -225,17 +193,6 @@ static inline void writel(u32 value, volatile void __iomem *addr)
 }
 #endif
 
-#ifdef CONFIG_64BIT
-#ifndef writeq
-#define writeq writeq
-static inline void writeq(u64 value, volatile void __iomem *addr)
-{
-	__io_bw();
-	__raw_writeq(__cpu_to_le64(value), addr);
-	__io_aw();
-}
-#endif
-#endif /* CONFIG_64BIT */
 
 /*
  * {read,write}{b,w,l,q}_relaxed() are like the regular version, but
@@ -358,23 +315,6 @@ static inline void readsl(const volatile void __iomem *addr, void *buffer,
 }
 #endif
 
-#ifdef CONFIG_64BIT
-#ifndef readsq
-#define readsq readsq
-static inline void readsq(const volatile void __iomem *addr, void *buffer,
-			  unsigned int count)
-{
-	if (count) {
-		u64 *buf = buffer;
-
-		do {
-			u64 x = __raw_readq(addr);
-			*buf++ = x;
-		} while (--count);
-	}
-}
-#endif
-#endif /* CONFIG_64BIT */
 
 #ifndef writesb
 #define writesb writesb
@@ -421,22 +361,6 @@ static inline void writesl(volatile void __iomem *addr, const void *buffer,
 }
 #endif
 
-#ifdef CONFIG_64BIT
-#ifndef writesq
-#define writesq writesq
-static inline void writesq(volatile void __iomem *addr, const void *buffer,
-			   unsigned int count)
-{
-	if (count) {
-		const u64 *buf = buffer;
-
-		do {
-			__raw_writeq(*buf++, addr);
-		} while (--count);
-	}
-}
-#endif
-#endif /* CONFIG_64BIT */
 
 #ifndef PCI_IOBASE
 #define PCI_IOBASE ((void __iomem *)0)

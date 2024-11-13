@@ -56,9 +56,6 @@ extern void rt_mutex_base_init(struct rt_mutex_base *rtb);
  */
 struct rt_mutex {
 	struct rt_mutex_base	rtmutex;
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-	struct lockdep_map	dep_map;
-#endif
 };
 
 struct rt_mutex_waiter;
@@ -76,15 +73,7 @@ do { \
 	__rt_mutex_init(mutex, __func__, &__key); \
 } while (0)
 
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-#define __DEP_MAP_RT_MUTEX_INITIALIZER(mutexname)	\
-	.dep_map = {					\
-		.name = #mutexname,			\
-		.wait_type_inner = LD_WAIT_SLEEP,	\
-	}
-#else
 #define __DEP_MAP_RT_MUTEX_INITIALIZER(mutexname)
-#endif
 
 #define __RT_MUTEX_INITIALIZER(mutexname)				\
 {									\
@@ -97,21 +86,9 @@ do { \
 
 extern void __rt_mutex_init(struct rt_mutex *lock, const char *name, struct lock_class_key *key);
 
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-extern void rt_mutex_lock_nested(struct rt_mutex *lock, unsigned int subclass);
-extern void _rt_mutex_lock_nest_lock(struct rt_mutex *lock, struct lockdep_map *nest_lock);
-#define rt_mutex_lock(lock) rt_mutex_lock_nested(lock, 0)
-#define rt_mutex_lock_nest_lock(lock, nest_lock)			\
-	do {								\
-		typecheck(struct lockdep_map *, &(nest_lock)->dep_map);	\
-		_rt_mutex_lock_nest_lock(lock, &(nest_lock)->dep_map);	\
-	} while (0)
-
-#else
 extern void rt_mutex_lock(struct rt_mutex *lock);
 #define rt_mutex_lock_nested(lock, subclass) rt_mutex_lock(lock)
 #define rt_mutex_lock_nest_lock(lock, nest_lock) rt_mutex_lock(lock)
-#endif
 
 extern int rt_mutex_lock_interruptible(struct rt_mutex *lock);
 extern int rt_mutex_lock_killable(struct rt_mutex *lock);

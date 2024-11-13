@@ -58,17 +58,6 @@ void __puthex(unsigned long value);
 #define error_putstr(__x)  __putstr(__x)
 #define error_puthex(__x)  __puthex(__x)
 
-#ifdef CONFIG_X86_VERBOSE_BOOTUP
-
-#define debug_putstr(__x)  __putstr(__x)
-#define debug_puthex(__x)  __puthex(__x)
-#define debug_putaddr(__x) { \
-		debug_putstr(#__x ": 0x"); \
-		debug_puthex((unsigned long)(__x)); \
-		debug_putstr("\n"); \
-	}
-
-#else
 
 static inline void debug_putstr(const char *s)
 { }
@@ -76,7 +65,6 @@ static inline void debug_puthex(unsigned long value)
 { }
 #define debug_putaddr(x) /* */
 
-#endif
 
 /* cmdline.c */
 int cmdline_find_option(const char *option, char *buffer, int bufsize);
@@ -114,15 +102,9 @@ extern int set_page_non_present(unsigned long address);
 extern unsigned char _pgtable[];
 #endif
 
-#ifdef CONFIG_EARLY_PRINTK
-/* early_serial_console.c */
-extern int early_serial_base;
-void console_init(void);
-#else
 static const int early_serial_base;
 static inline void console_init(void)
 { }
-#endif
 
 #ifdef CONFIG_AMD_MEM_ENCRYPT
 void sev_enable(struct boot_params *bp);

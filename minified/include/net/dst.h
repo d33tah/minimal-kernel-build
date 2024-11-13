@@ -64,9 +64,6 @@ struct dst_entry {
 	 * __refcnt wants to be on a different cache line from
 	 * input/output/ops or performance tanks badly
 	 */
-#ifdef CONFIG_64BIT
-	atomic_t		__refcnt;	/* 64-bit offset 64 */
-#endif
 	int			__use;
 	unsigned long		lastuse;
 	struct lwtunnel_state   *lwtstate;
@@ -74,9 +71,7 @@ struct dst_entry {
 	short			error;
 	short			__pad;
 	__u32			tclassid;
-#ifndef CONFIG_64BIT
 	atomic_t		__refcnt;	/* 32-bit offset 64 */
-#endif
 	netdevice_tracker	dev_tracker;
 };
 

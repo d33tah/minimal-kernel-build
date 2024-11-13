@@ -87,10 +87,6 @@
  * eventually turn into it's own annotation.
  */
 .macro ANNOTATE_UNRET_END
-#ifdef CONFIG_DEBUG_ENTRY
-	ANNOTATE_RETPOLINE_SAFE
-	nop
-#endif
 .endm
 
 /*

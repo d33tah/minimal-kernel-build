@@ -22,12 +22,7 @@
  * checked in the actual fixmap C code to make sure that the fixmap is
  * covered fully.
  */
-#ifndef CONFIG_DEBUG_KMAP_LOCAL_FORCE_MAP
 # define FIXMAP_PMD_NUM	2
-#else
-# define KM_PMDS	(KM_MAX_IDX * ((CONFIG_NR_CPUS + 511) / 512))
-# define FIXMAP_PMD_NUM (KM_PMDS + 2)
-#endif
 /* fixmap starts downwards from the 507th entry in level2_fixmap_pgt */
 #define FIXMAP_PMD_TOP	507
 

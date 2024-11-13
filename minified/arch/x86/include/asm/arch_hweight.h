@@ -4,13 +4,8 @@
 
 #include <asm/cpufeatures.h>
 
-#ifdef CONFIG_64BIT
-#define REG_IN "D"
-#define REG_OUT "a"
-#else
 #define REG_IN "a"
 #define REG_OUT "a"
-#endif
 
 static __always_inline unsigned int __arch_hweight32(unsigned int w)
 {

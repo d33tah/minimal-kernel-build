@@ -132,9 +132,6 @@ struct page {
 			unsigned char compound_order;
 			atomic_t compound_mapcount;
 			atomic_t compound_pincount;
-#ifdef CONFIG_64BIT
-			unsigned int compound_nr; /* 1 << compound_order */
-#endif
 		};
 		struct {	/* Second tail page of compound page */
 			unsigned long _compound_pad_1;	/* compound_head */
@@ -369,15 +366,8 @@ struct vm_region {
 						* this region */
 };
 
-#ifdef CONFIG_USERFAULTFD
-#define NULL_VM_UFFD_CTX ((struct vm_userfaultfd_ctx) { NULL, })
-struct vm_userfaultfd_ctx {
-	struct userfaultfd_ctx *ctx;
-};
-#else /* CONFIG_USERFAULTFD */
 #define NULL_VM_UFFD_CTX ((struct vm_userfaultfd_ctx) {})
 struct vm_userfaultfd_ctx {};
-#endif /* CONFIG_USERFAULTFD */
 
 struct anon_vma_name {
 	struct kref kref;
@@ -490,15 +480,6 @@ struct mm_struct {
 		unsigned long highest_vm_end;	/* highest vma end address */
 		pgd_t * pgd;
 
-#ifdef CONFIG_MEMBARRIER
-		/**
-		 * @membarrier_state: Flags controlling membarrier behavior.
-		 *
-		 * This field is close to @pgd to hopefully fit in the same
-		 * cache-line, which needs to be touched by switch_mm().
-		 */
-		atomic_t membarrier_state;
-#endif
 
 		/**
 		 * @mm_users: The number of users including userspace.
@@ -586,10 +567,6 @@ struct mm_struct {
 
 		unsigned long flags; /* Must use atomic bitops to access */
 
-#ifdef CONFIG_AIO
-		spinlock_t			ioctx_lock;
-		struct kioctx_table __rcu	*ioctx_table;
-#endif
 #ifdef CONFIG_MEMCG
 		/*
 		 * "owner" points to a task that is regarded as the canonical
@@ -609,9 +586,6 @@ struct mm_struct {
 		struct file __rcu *exe_file;
 #ifdef CONFIG_MMU_NOTIFIER
 		struct mmu_notifier_subscriptions *notifier_subscriptions;
-#endif
-#if defined(CONFIG_TRANSPARENT_HUGEPAGE) && !USE_SPLIT_PMD_PTLOCKS
-		pgtable_t pmd_huge_pte; /* protected by page_table_lock */
 #endif
 #ifdef CONFIG_NUMA_BALANCING
 		/*
@@ -646,13 +620,6 @@ struct mm_struct {
 
 #ifdef CONFIG_IOMMU_SVA
 		u32 pasid;
-#endif
-#ifdef CONFIG_KSM
-		/*
-		 * Represent how many pages of this process are involved in KSM
-		 * merging.
-		 */
-		unsigned long ksm_merging_pages;
 #endif
 	} __randomize_layout;
 

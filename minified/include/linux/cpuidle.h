@@ -39,10 +39,6 @@ struct cpuidle_state_usage {
 	unsigned long long	above; /* Number of times it's been too deep */
 	unsigned long long	below; /* Number of times it's been too shallow */
 	unsigned long long	rejected; /* Number of times idle entry was rejected */
-#ifdef CONFIG_SUSPEND
-	unsigned long long	s2idle_usage;
-	unsigned long long	s2idle_time; /* in US */
-#endif
 };
 
 struct cpuidle_state {

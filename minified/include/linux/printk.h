@@ -132,71 +132,11 @@ struct va_format {
 	0;						\
 })
 
-#ifdef CONFIG_EARLY_PRINTK
-extern asmlinkage __printf(1, 2)
-void early_printk(const char *fmt, ...);
-#else
 static inline __printf(1, 2) __cold
 void early_printk(const char *s, ...) { }
-#endif
 
 struct dev_printk_info;
 
-#ifdef CONFIG_PRINTK
-asmlinkage __printf(4, 0)
-int vprintk_emit(int facility, int level,
-		 const struct dev_printk_info *dev_info,
-		 const char *fmt, va_list args);
-
-asmlinkage __printf(1, 0)
-int vprintk(const char *fmt, va_list args);
-
-asmlinkage __printf(1, 2) __cold
-int _printk(const char *fmt, ...);
-
-/*
- * Special printk facility for scheduler/timekeeping use only, _DO_NOT_USE_ !
- */
-__printf(1, 2) __cold int _printk_deferred(const char *fmt, ...);
-
-extern void __printk_safe_enter(void);
-extern void __printk_safe_exit(void);
-/*
- * The printk_deferred_enter/exit macros are available only as a hack for
- * some code paths that need to defer all printk console printing. Interrupts
- * must be disabled for the deferred duration.
- */
-#define printk_deferred_enter __printk_safe_enter
-#define printk_deferred_exit __printk_safe_exit
-
-extern bool pr_flush(int timeout_ms, bool reset_on_progress);
-
-/*
- * Please don't use printk_ratelimit(), because it shares ratelimiting state
- * with all other unrelated printk_ratelimit() callsites.  Instead use
- * printk_ratelimited() or plain old __ratelimit().
- */
-extern int __printk_ratelimit(const char *func);
-#define printk_ratelimit() __printk_ratelimit(__func__)
-extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
-				   unsigned int interval_msec);
-
-extern int printk_delay_msec;
-extern int dmesg_restrict;
-
-extern void wake_up_klogd(void);
-
-char *log_buf_addr_get(void);
-u32 log_buf_len_get(void);
-void log_buf_vmcoreinfo_setup(void);
-void __init setup_log_buf(int early);
-__printf(1, 2) void dump_stack_set_arch_desc(const char *fmt, ...);
-void dump_stack_print_info(const char *log_lvl);
-void show_regs_print_info(const char *log_lvl);
-extern asmlinkage void dump_stack_lvl(const char *log_lvl) __cold;
-extern asmlinkage void dump_stack(void) __cold;
-void printk_trigger_flush(void);
-#else
 static inline __printf(1, 0)
 int vprintk(const char *s, va_list args)
 {
@@ -280,19 +220,11 @@ static inline void dump_stack(void)
 static inline void printk_trigger_flush(void)
 {
 }
-#endif
 
-#ifdef CONFIG_SMP
-extern int __printk_cpu_sync_try_get(void);
-extern void __printk_cpu_sync_wait(void);
-extern void __printk_cpu_sync_put(void);
-
-#else
 
 #define __printk_cpu_sync_try_get() true
 #define __printk_cpu_sync_wait()
 #define __printk_cpu_sync_put()
-#endif /* CONFIG_SMP */
 
 /**
  * printk_cpu_sync_get_irqsave() - Disable interrupts and acquire the printk
@@ -598,17 +530,10 @@ struct pi_entry {
  * Print a one-time message (analogous to WARN_ONCE() et al):
  */
 
-#ifdef CONFIG_PRINTK
-#define printk_once(fmt, ...)					\
-	DO_ONCE_LITE(printk, fmt, ##__VA_ARGS__)
-#define printk_deferred_once(fmt, ...)				\
-	DO_ONCE_LITE(printk_deferred, fmt, ##__VA_ARGS__)
-#else
 #define printk_once(fmt, ...)					\
 	no_printk(fmt, ##__VA_ARGS__)
 #define printk_deferred_once(fmt, ...)				\
 	no_printk(fmt, ##__VA_ARGS__)
-#endif
 
 #define pr_emerg_once(fmt, ...)					\
 	printk_once(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
@@ -647,20 +572,8 @@ struct pi_entry {
  * ratelimited messages with local ratelimit_state,
  * no local ratelimit_state used in the !PRINTK case
  */
-#ifdef CONFIG_PRINTK
-#define printk_ratelimited(fmt, ...)					\
-({									\
-	static DEFINE_RATELIMIT_STATE(_rs,				\
-				      DEFAULT_RATELIMIT_INTERVAL,	\
-				      DEFAULT_RATELIMIT_BURST);		\
-									\
-	if (__ratelimit(&_rs))						\
-		printk(fmt, ##__VA_ARGS__);				\
-})
-#else
 #define printk_ratelimited(fmt, ...)					\
 	no_printk(fmt, ##__VA_ARGS__)
-#endif
 
 #define pr_emerg_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
@@ -718,11 +631,6 @@ enum {
 extern int hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
 			      int groupsize, char *linebuf, size_t linebuflen,
 			      bool ascii);
-#ifdef CONFIG_PRINTK
-extern void print_hex_dump(const char *level, const char *prefix_str,
-			   int prefix_type, int rowsize, int groupsize,
-			   const void *buf, size_t len, bool ascii);
-#else
 static inline void print_hex_dump(const char *level, const char *prefix_str,
 				  int prefix_type, int rowsize, int groupsize,
 				  const void *buf, size_t len, bool ascii)
@@ -733,7 +641,6 @@ static inline void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
 {
 }
 
-#endif
 
 #if defined(CONFIG_DYNAMIC_DEBUG) || \
 	(defined(CONFIG_DYNAMIC_DEBUG_CORE) && defined(DYNAMIC_DEBUG_MODULE))

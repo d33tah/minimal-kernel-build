@@ -34,18 +34,10 @@ struct hidraw_list {
 	struct mutex read_mutex;
 };
 
-#ifdef CONFIG_HIDRAW
-int hidraw_init(void);
-void hidraw_exit(void);
-int hidraw_report_event(struct hid_device *, u8 *, int);
-int hidraw_connect(struct hid_device *);
-void hidraw_disconnect(struct hid_device *);
-#else
 static inline int hidraw_init(void) { return 0; }
 static inline void hidraw_exit(void) { }
 static inline int hidraw_report_event(struct hid_device *hid, u8 *data, int len) { return 0; }
 static inline int hidraw_connect(struct hid_device *hid) { return -1; }
 static inline void hidraw_disconnect(struct hid_device *hid) { }
-#endif
 
 #endif

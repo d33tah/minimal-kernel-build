@@ -39,13 +39,8 @@ void ptdump_walk_user_pgd_level_checkwx(void);
 #define pgprot_encrypted(prot)	__pgprot(cc_mkenc(pgprot_val(prot)))
 #define pgprot_decrypted(prot)	__pgprot(cc_mkdec(pgprot_val(prot)))
 
-#ifdef CONFIG_DEBUG_WX
-#define debug_checkwx()		ptdump_walk_pgd_level_checkwx()
-#define debug_checkwx_user()	ptdump_walk_user_pgd_level_checkwx()
-#else
 #define debug_checkwx()		do { } while (0)
 #define debug_checkwx_user()	do { } while (0)
-#endif
 
 /*
  * ZERO_PAGE is a global shared page that is always zero: used
@@ -229,50 +224,6 @@ static inline int pmd_large(pmd_t pte)
 	return pmd_flags(pte) & _PAGE_PSE;
 }
 
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-/* NOTE: when predicate huge page, consider also pmd_devmap, or use pmd_large */
-static inline int pmd_trans_huge(pmd_t pmd)
-{
-	return (pmd_val(pmd) & (_PAGE_PSE|_PAGE_DEVMAP)) == _PAGE_PSE;
-}
-
-#ifdef CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD
-static inline int pud_trans_huge(pud_t pud)
-{
-	return (pud_val(pud) & (_PAGE_PSE|_PAGE_DEVMAP)) == _PAGE_PSE;
-}
-#endif
-
-#define has_transparent_hugepage has_transparent_hugepage
-static inline int has_transparent_hugepage(void)
-{
-	return boot_cpu_has(X86_FEATURE_PSE);
-}
-
-#ifdef CONFIG_ARCH_HAS_PTE_DEVMAP
-static inline int pmd_devmap(pmd_t pmd)
-{
-	return !!(pmd_val(pmd) & _PAGE_DEVMAP);
-}
-
-#ifdef CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD
-static inline int pud_devmap(pud_t pud)
-{
-	return !!(pud_val(pud) & _PAGE_DEVMAP);
-}
-#else
-static inline int pud_devmap(pud_t pud)
-{
-	return 0;
-}
-#endif
-
-static inline int pgd_devmap(pgd_t pgd)
-{
-	return 0;
-}
-#endif
-#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 
 static inline pte_t pte_set_flags(pte_t pte, pteval_t set)
 {
@@ -562,14 +513,6 @@ static inline pgprotval_t check_pgprot(pgprot_t pgprot)
 	pgprotval_t massaged_val = massage_pgprot(pgprot);
 
 	/* mmdebug.h can not be included here because of dependencies */
-#ifdef CONFIG_DEBUG_VM
-	WARN_ONCE(pgprot_val(pgprot) != massaged_val,
-		  "attempted to set unsupported pgprot: %016llx "
-		  "bits: %016llx supported: %016llx\n",
-		  (u64)pgprot_val(pgprot),
-		  (u64)pgprot_val(pgprot) ^ massaged_val,
-		  (u64)__supported_pte_mask);
-#endif
 
 	return massaged_val;
 }

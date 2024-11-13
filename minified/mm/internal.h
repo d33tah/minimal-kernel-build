@@ -377,73 +377,6 @@ extern void *memmap_alloc(phys_addr_t size, phys_addr_t align,
 int split_free_page(struct page *free_page,
 			unsigned int order, unsigned long split_pfn_offset);
 
-#if defined CONFIG_COMPACTION || defined CONFIG_CMA
-
-/*
- * in mm/compaction.c
- */
-/*
- * compact_control is used to track pages being migrated and the free pages
- * they are being migrated to during memory compaction. The free_pfn starts
- * at the end of a zone and migrate_pfn begins at the start. Movable pages
- * are moved to the end of a zone during a compaction run and the run
- * completes when free_pfn <= migrate_pfn
- */
-struct compact_control {
-	struct list_head freepages;	/* List of free pages to migrate to */
-	struct list_head migratepages;	/* List of pages being migrated */
-	unsigned int nr_freepages;	/* Number of isolated free pages */
-	unsigned int nr_migratepages;	/* Number of pages to migrate */
-	unsigned long free_pfn;		/* isolate_freepages search base */
-	/*
-	 * Acts as an in/out parameter to page isolation for migration.
-	 * isolate_migratepages uses it as a search base.
-	 * isolate_migratepages_block will update the value to the next pfn
-	 * after the last isolated one.
-	 */
-	unsigned long migrate_pfn;
-	unsigned long fast_start_pfn;	/* a pfn to start linear scan from */
-	struct zone *zone;
-	unsigned long total_migrate_scanned;
-	unsigned long total_free_scanned;
-	unsigned short fast_search_fail;/* failures to use free list searches */
-	short search_order;		/* order to start a fast search at */
-	const gfp_t gfp_mask;		/* gfp mask of a direct compactor */
-	int order;			/* order a direct compactor needs */
-	int migratetype;		/* migratetype of direct compactor */
-	const unsigned int alloc_flags;	/* alloc flags of a direct compactor */
-	const int highest_zoneidx;	/* zone index of a direct compactor */
-	enum migrate_mode mode;		/* Async or sync migration mode */
-	bool ignore_skip_hint;		/* Scan blocks even if marked skip */
-	bool no_set_skip_hint;		/* Don't mark blocks for skipping */
-	bool ignore_block_suitable;	/* Scan blocks considered unsuitable */
-	bool direct_compaction;		/* False from kcompactd or /proc/... */
-	bool proactive_compaction;	/* kcompactd proactive compaction */
-	bool whole_zone;		/* Whole zone should/has been scanned */
-	bool contended;			/* Signal lock contention */
-	bool rescan;			/* Rescanning the same pageblock */
-	bool alloc_contig;		/* alloc_contig_range allocation */
-};
-
-/*
- * Used in direct compaction when a page should be taken from the freelists
- * immediately when one is created during the free path.
- */
-struct capture_control {
-	struct compact_control *cc;
-	struct page *page;
-};
-
-unsigned long
-isolate_freepages_range(struct compact_control *cc,
-			unsigned long start_pfn, unsigned long end_pfn);
-int
-isolate_migratepages_range(struct compact_control *cc,
-			   unsigned long low_pfn, unsigned long end_pfn);
-
-int __alloc_contig_migrate_range(struct compact_control *cc,
-					unsigned long start, unsigned long end);
-#endif
 int find_suitable_fallback(struct free_area *area, unsigned int order,
 			int migratetype, bool only_stealable, bool *can_steal);
 
@@ -659,23 +592,6 @@ enum mminit_level {
 	MMINIT_TRACE
 };
 
-#ifdef CONFIG_DEBUG_MEMORY_INIT
-
-extern int mminit_loglevel;
-
-#define mminit_dprintk(level, prefix, fmt, arg...) \
-do { \
-	if (level < mminit_loglevel) { \
-		if (level <= MMINIT_WARNING) \
-			pr_warn("mminit::" prefix " " fmt, ##arg);	\
-		else \
-			printk(KERN_DEBUG "mminit::" prefix " " fmt, ##arg); \
-	} \
-} while (0)
-
-extern void mminit_verify_pageflags_layout(void);
-extern void mminit_verify_zonelist(void);
-#else
 
 static inline void mminit_dprintk(enum mminit_level level,
 				const char *prefix, const char *fmt, ...)
@@ -689,7 +605,6 @@ static inline void mminit_verify_pageflags_layout(void)
 static inline void mminit_verify_zonelist(void)
 {
 }
-#endif /* CONFIG_DEBUG_MEMORY_INIT */
 
 #define NODE_RECLAIM_NOSCAN	-2
 #define NODE_RECLAIM_FULL	-1

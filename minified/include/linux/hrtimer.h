@@ -138,11 +138,7 @@ struct hrtimer_sleeper {
 	struct task_struct *task;
 };
 
-#ifdef CONFIG_64BIT
-# define __hrtimer_clock_base_align	____cacheline_aligned
-#else
 # define __hrtimer_clock_base_align
-#endif
 
 /**
  * struct hrtimer_clock_base - the timer base for a specific clock
@@ -220,12 +216,6 @@ struct hrtimer_cpu_base {
 					in_hrtirq		: 1,
 					hang_detected		: 1,
 					softirq_activated       : 1;
-#ifdef CONFIG_HIGH_RES_TIMERS
-	unsigned int			nr_events;
-	unsigned short			nr_retries;
-	unsigned short			nr_hangs;
-	unsigned int			max_hang_time;
-#endif
 #ifdef CONFIG_PREEMPT_RT
 	spinlock_t			softirq_expiry_lock;
 	atomic_t			timer_waiters;
@@ -313,18 +303,9 @@ static inline int hrtimer_is_hres_active(struct hrtimer *timer)
 		timer->base->cpu_base->hres_active : 0;
 }
 
-#ifdef CONFIG_HIGH_RES_TIMERS
-struct clock_event_device;
-
-extern void hrtimer_interrupt(struct clock_event_device *dev);
-
-extern unsigned int hrtimer_resolution;
-
-#else
 
 #define hrtimer_resolution	(unsigned int)LOW_RES_NSEC
 
-#endif
 
 static inline ktime_t
 __hrtimer_expires_remaining_adjusted(const struct hrtimer *timer, ktime_t now)
@@ -347,13 +328,8 @@ hrtimer_expires_remaining_adjusted(const struct hrtimer *timer)
 						    timer->base->get_time());
 }
 
-#ifdef CONFIG_TIMERFD
-extern void timerfd_clock_was_set(void);
-extern void timerfd_resume(void);
-#else
 static inline void timerfd_clock_was_set(void) { }
 static inline void timerfd_resume(void) { }
-#endif
 
 DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
 

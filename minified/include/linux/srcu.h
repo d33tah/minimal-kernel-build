@@ -23,25 +23,10 @@
 
 struct srcu_struct;
 
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-
-int __init_srcu_struct(struct srcu_struct *ssp, const char *name,
-		       struct lock_class_key *key);
-
-#define init_srcu_struct(ssp) \
-({ \
-	static struct lock_class_key __srcu_key; \
-	\
-	__init_srcu_struct((ssp), #ssp, &__srcu_key); \
-})
-
-#define __SRCU_DEP_MAP_INIT(srcu_name)	.dep_map = { .name = #srcu_name },
-#else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
 
 int init_srcu_struct(struct srcu_struct *ssp);
 
 #define __SRCU_DEP_MAP_INIT(srcu_name)
-#endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
 
 #include <linux/srcutiny.h>
 
@@ -57,39 +42,12 @@ bool poll_state_synchronize_srcu(struct srcu_struct *ssp, unsigned long cookie);
 
 void srcu_init(void);
 
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-
-/**
- * srcu_read_lock_held - might we be in SRCU read-side critical section?
- * @ssp: The srcu_struct structure to check
- *
- * If CONFIG_DEBUG_LOCK_ALLOC is selected, returns nonzero iff in an SRCU
- * read-side critical section.  In absence of CONFIG_DEBUG_LOCK_ALLOC,
- * this assumes we are in an SRCU read-side critical section unless it can
- * prove otherwise.
- *
- * Checks debug_lockdep_rcu_enabled() to prevent false positives during boot
- * and while lockdep is disabled.
- *
- * Note that SRCU is based on its own statemachine and it doesn't
- * relies on normal RCU, it can be called from the CPU which
- * is in the idle loop from an RCU point of view or offline.
- */
-static inline int srcu_read_lock_held(const struct srcu_struct *ssp)
-{
-	if (!debug_lockdep_rcu_enabled())
-		return 1;
-	return lock_is_held(&ssp->dep_map);
-}
-
-#else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
 
 static inline int srcu_read_lock_held(const struct srcu_struct *ssp)
 {
 	return 1;
 }
 
-#endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
 
 /**
  * srcu_dereference_check - fetch SRCU-protected pointer for later dereferencing

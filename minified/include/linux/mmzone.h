@@ -45,19 +45,6 @@ enum migratetype {
 	MIGRATE_RECLAIMABLE,
 	MIGRATE_PCPTYPES,	/* the number of types on the pcp lists */
 	MIGRATE_HIGHATOMIC = MIGRATE_PCPTYPES,
-#ifdef CONFIG_CMA
-	/*
-	 * MIGRATE_CMA migration type is designed to mimic the way
-	 * ZONE_MOVABLE works.  Only movable pages can be allocated
-	 * from MIGRATE_CMA pageblocks and page allocator never
-	 * implicitly change migration type of MIGRATE_CMA pageblock.
-	 *
-	 * The way to use it is to change migratetype of a range of
-	 * pageblocks to MIGRATE_CMA which can be done by
-	 * __free_pageblock_cma() function.
-	 */
-	MIGRATE_CMA,
-#endif
 #ifdef CONFIG_MEMORY_ISOLATION
 	MIGRATE_ISOLATE,	/* can't allocate from here */
 #endif
@@ -67,13 +54,8 @@ enum migratetype {
 /* In mm/page_alloc.c; keep in sync also with show_migration_types() there */
 extern const char * const migratetype_names[MIGRATE_TYPES];
 
-#ifdef CONFIG_CMA
-#  define is_migrate_cma(migratetype) unlikely((migratetype) == MIGRATE_CMA)
-#  define is_migrate_cma_page(_page) (get_pageblock_migratetype(_page) == MIGRATE_CMA)
-#else
 #  define is_migrate_cma(migratetype) false
 #  define is_migrate_cma_page(_page) false
-#endif
 
 static inline bool is_migrate_movable(int mt)
 {
@@ -126,14 +108,7 @@ struct pglist_data;
  * cachelines.  There are very few zone structures in the machine, so space
  * consumption is not a concern here.
  */
-#if defined(CONFIG_SMP)
-struct zone_padding {
-	char x[0];
-} ____cacheline_internodealigned_in_smp;
-#define ZONE_PADDING(name)	struct zone_padding name;
-#else
 #define ZONE_PADDING(name)
-#endif
 
 #ifdef CONFIG_NUMA
 enum numa_stat_item {
@@ -358,11 +333,7 @@ enum zone_watermarks {
  * One per migratetype for each PAGE_ALLOC_COSTLY_ORDER plus one additional
  * for pageblock size for THP if configured.
  */
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-#define NR_PCP_THP 1
-#else
 #define NR_PCP_THP 0
-#endif
 #define NR_PCP_LISTS (MIGRATE_PCPTYPES * (PAGE_ALLOC_COSTLY_ORDER + 1 + NR_PCP_THP))
 
 /*
@@ -392,10 +363,6 @@ struct per_cpu_pages {
 };
 
 struct per_cpu_zonestat {
-#ifdef CONFIG_SMP
-	s8 vm_stat_diff[NR_VM_ZONE_STAT_ITEMS];
-	s8 stat_threshold;
-#endif
 #ifdef CONFIG_NUMA
 	/*
 	 * Low priority inaccurate counters that are only folded
@@ -424,9 +391,6 @@ enum zone_type {
 	 * platforms may need both zones as they support peripherals with
 	 * different DMA addressing limitations.
 	 */
-#ifdef CONFIG_ZONE_DMA
-	ZONE_DMA,
-#endif
 #ifdef CONFIG_ZONE_DMA32
 	ZONE_DMA32,
 #endif
@@ -600,9 +564,6 @@ struct zone {
 #if defined(CONFIG_MEMORY_HOTPLUG)
 	unsigned long		present_early_pages;
 #endif
-#ifdef CONFIG_CMA
-	unsigned long		cma_pages;
-#endif
 
 	const char		*name;
 
@@ -644,31 +605,8 @@ struct zone {
 	 */
 	unsigned long percpu_drift_mark;
 
-#if defined CONFIG_COMPACTION || defined CONFIG_CMA
-	/* pfn where compaction free scanner should start */
-	unsigned long		compact_cached_free_pfn;
-	/* pfn where compaction migration scanner should start */
-	unsigned long		compact_cached_migrate_pfn[ASYNC_AND_SYNC];
-	unsigned long		compact_init_migrate_pfn;
-	unsigned long		compact_init_free_pfn;
-#endif
 
-#ifdef CONFIG_COMPACTION
-	/*
-	 * On compaction failure, 1<<compact_defer_shift compactions
-	 * are skipped before trying again. The number attempted since
-	 * last failure is tracked with compact_considered.
-	 * compact_order_failed is the minimum compaction failed order.
-	 */
-	unsigned int		compact_considered;
-	unsigned int		compact_defer_shift;
-	int			compact_order_failed;
-#endif
 
-#if defined CONFIG_COMPACTION || defined CONFIG_CMA
-	/* Set to true when the PG_migrate_skip bits should be cleared */
-	bool			compact_blockskip_flush;
-#endif
 
 	bool			contiguous;
 
@@ -703,11 +641,7 @@ static inline unsigned long zone_managed_pages(struct zone *zone)
 
 static inline unsigned long zone_cma_pages(struct zone *zone)
 {
-#ifdef CONFIG_CMA
-	return zone->cma_pages;
-#else
 	return 0;
-#endif
 }
 
 static inline unsigned long zone_end_pfn(const struct zone *zone)
@@ -802,13 +736,6 @@ struct zonelist {
  */
 extern struct page *mem_map;
 
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-struct deferred_split {
-	spinlock_t split_queue_lock;
-	struct list_head split_queue;
-	unsigned long split_queue_len;
-};
-#endif
 
 /*
  * On NUMA machines, each NUMA node would have a pg_data_t to describe
@@ -835,9 +762,6 @@ typedef struct pglist_data {
 
 	int nr_zones; /* number of populated zones in this node */
 	struct page *node_mem_map;
-#ifdef CONFIG_PAGE_EXTENSION
-	struct page_ext *node_page_ext;
-#endif
 #if defined(CONFIG_MEMORY_HOTPLUG) || defined(CONFIG_DEFERRED_STRUCT_PAGE_INIT)
 	/*
 	 * Must be held any time you expect node_start_pfn,
@@ -874,13 +798,6 @@ typedef struct pglist_data {
 
 	int kswapd_failures;		/* Number of 'reclaimed == 0' runs */
 
-#ifdef CONFIG_COMPACTION
-	int kcompactd_max_order;
-	enum zone_type kcompactd_highest_zoneidx;
-	wait_queue_head_t kcompactd_wait;
-	struct task_struct *kcompactd;
-	bool proactive_compact_trigger;
-#endif
 	/*
 	 * This is a per-node reserve of pages that are not available
 	 * to userspace allocations.
@@ -906,9 +823,6 @@ typedef struct pglist_data {
 	unsigned long first_deferred_pfn;
 #endif /* CONFIG_DEFERRED_STRUCT_PAGE_INIT */
 
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-	struct deferred_split deferred_split_queue;
-#endif
 
 	/* Fields commonly accessed by the page reclaim scanner */
 
@@ -1051,14 +965,10 @@ static inline int is_highmem_idx(enum zone_type idx)
 #endif
 }
 
-#ifdef CONFIG_ZONE_DMA
-bool has_managed_dma(void);
-#else
 static inline bool has_managed_dma(void)
 {
 	return false;
 }
-#endif
 
 /**
  * is_highmem - helper function to quickly check if a struct zone is a
@@ -1353,14 +1263,6 @@ struct mem_section {
 	unsigned long section_mem_map;
 
 	struct mem_section_usage *usage;
-#ifdef CONFIG_PAGE_EXTENSION
-	/*
-	 * If SPARSEMEM, pgdat doesn't have page_ext pointer. We use
-	 * section. (see page_ext.h about this.)
-	 */
-	struct page_ext *page_ext;
-	unsigned long pad;
-#endif
 	/*
 	 * WARNING: mem_section must be a power-of-2 in size for the
 	 * calculation and use of SECTION_ROOT_MASK to make sense.

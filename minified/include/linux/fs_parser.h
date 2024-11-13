@@ -80,19 +80,12 @@ extern int fs_lookup_param(struct fs_context *fc,
 
 extern int lookup_constant(const struct constant_table tbl[], const char *name, int not_found);
 
-#ifdef CONFIG_VALIDATE_FS_PARSER
-extern bool validate_constant_table(const struct constant_table *tbl, size_t tbl_size,
-				    int low, int high, int special);
-extern bool fs_validate_description(const char *name,
-				    const struct fs_parameter_spec *desc);
-#else
 static inline bool validate_constant_table(const struct constant_table *tbl, size_t tbl_size,
 					   int low, int high, int special)
 { return true; }
 static inline bool fs_validate_description(const char *name,
 					   const struct fs_parameter_spec *desc)
 { return true; }
-#endif
 
 /*
  * Parameter type, name, index and flags element constructors.  Use as:

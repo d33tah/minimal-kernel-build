@@ -92,17 +92,6 @@ extern ssize_t arch_cpu_release(const char *, size_t);
 #define CPU_POST_DEAD		0x0009 /* CPU successfully unplugged */
 #define CPU_BROKEN		0x000B /* CPU did not die properly */
 
-#ifdef CONFIG_SMP
-extern bool cpuhp_tasks_frozen;
-int add_cpu(unsigned int cpu);
-int cpu_device_up(struct device *dev);
-void notify_cpu_starting(unsigned int cpu);
-extern void cpu_maps_update_begin(void);
-extern void cpu_maps_update_done(void);
-int bringup_hibernate_cpu(unsigned int sleep_cpu);
-void bringup_nonboot_cpus(unsigned int setup_max_cpus);
-
-#else	/* CONFIG_SMP */
 #define cpuhp_tasks_frozen	0
 
 static inline void cpu_maps_update_begin(void)
@@ -115,7 +104,6 @@ static inline void cpu_maps_update_done(void)
 
 static inline int add_cpu(unsigned int cpu) { return 0;}
 
-#endif /* CONFIG_SMP */
 extern struct bus_type cpu_subsys;
 
 extern int lockdep_is_cpus_held(void);
@@ -213,21 +201,12 @@ enum cpuhp_smt_control {
 	CPU_SMT_NOT_IMPLEMENTED,
 };
 
-#if defined(CONFIG_SMP) && defined(CONFIG_HOTPLUG_SMT)
-extern enum cpuhp_smt_control cpu_smt_control;
-extern void cpu_smt_disable(bool force);
-extern void cpu_smt_check_topology(void);
-extern bool cpu_smt_possible(void);
-extern int cpuhp_smt_enable(void);
-extern int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval);
-#else
 # define cpu_smt_control		(CPU_SMT_NOT_IMPLEMENTED)
 static inline void cpu_smt_disable(bool force) { }
 static inline void cpu_smt_check_topology(void) { }
 static inline bool cpu_smt_possible(void) { return false; }
 static inline int cpuhp_smt_enable(void) { return 0; }
 static inline int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval) { return 0; }
-#endif
 
 extern bool cpu_mitigations_off(void);
 extern bool cpu_mitigations_auto_nosmt(void);

@@ -320,13 +320,8 @@ void platform_unregister_drivers(struct platform_driver * const *drivers,
 #define platform_register_drivers(drivers, count) \
 	__platform_register_drivers(drivers, count, THIS_MODULE)
 
-#ifdef CONFIG_SUSPEND
-extern int platform_pm_suspend(struct device *dev);
-extern int platform_pm_resume(struct device *dev);
-#else
 #define platform_pm_suspend		NULL
 #define platform_pm_resume		NULL
-#endif
 
 #ifdef CONFIG_HIBERNATE_CALLBACKS
 extern int platform_pm_freeze(struct device *dev);

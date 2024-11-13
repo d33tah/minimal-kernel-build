@@ -202,9 +202,6 @@ struct backing_dev_info {
 
 	struct timer_list laptop_mode_wb_timer;
 
-#ifdef CONFIG_DEBUG_FS
-	struct dentry *debug_dir;
-#endif
 };
 
 struct wb_lock_cookie {

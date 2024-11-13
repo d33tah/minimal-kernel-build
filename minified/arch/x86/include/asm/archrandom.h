@@ -68,34 +68,8 @@ static inline bool __must_check rdseed_int(unsigned int *v)
  * stubs in <linux/random.h> are to be invoked,
  * i.e. CONFIG_ARCH_RANDOM is not defined.
  */
-#ifdef CONFIG_ARCH_RANDOM
-
-static inline bool __must_check arch_get_random_long(unsigned long *v)
-{
-	return static_cpu_has(X86_FEATURE_RDRAND) ? rdrand_long(v) : false;
-}
-
-static inline bool __must_check arch_get_random_int(unsigned int *v)
-{
-	return static_cpu_has(X86_FEATURE_RDRAND) ? rdrand_int(v) : false;
-}
-
-static inline bool __must_check arch_get_random_seed_long(unsigned long *v)
-{
-	return static_cpu_has(X86_FEATURE_RDSEED) ? rdseed_long(v) : false;
-}
-
-static inline bool __must_check arch_get_random_seed_int(unsigned int *v)
-{
-	return static_cpu_has(X86_FEATURE_RDSEED) ? rdseed_int(v) : false;
-}
-
-extern void x86_init_rdrand(struct cpuinfo_x86 *c);
-
-#else  /* !CONFIG_ARCH_RANDOM */
 
 static inline void x86_init_rdrand(struct cpuinfo_x86 *c) { }
 
-#endif  /* !CONFIG_ARCH_RANDOM */
 
 #endif /* ASM_X86_ARCHRANDOM_H */

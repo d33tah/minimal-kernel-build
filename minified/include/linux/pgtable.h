@@ -171,14 +171,6 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma,
 #endif
 
 #ifndef __HAVE_ARCH_PMDP_SET_ACCESS_FLAGS
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-extern int pmdp_set_access_flags(struct vm_area_struct *vma,
-				 unsigned long address, pmd_t *pmdp,
-				 pmd_t entry, int dirty);
-extern int pudp_set_access_flags(struct vm_area_struct *vma,
-				 unsigned long address, pud_t *pudp,
-				 pud_t entry, int dirty);
-#else
 static inline int pmdp_set_access_flags(struct vm_area_struct *vma,
 					unsigned long address, pmd_t *pmdp,
 					pmd_t entry, int dirty)
@@ -193,7 +185,6 @@ static inline int pudp_set_access_flags(struct vm_area_struct *vma,
 	BUILD_BUG();
 	return 0;
 }
-#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 #endif
 
 #ifndef __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
@@ -212,20 +203,6 @@ static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
 #endif
 
 #ifndef __HAVE_ARCH_PMDP_TEST_AND_CLEAR_YOUNG
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-static inline int pmdp_test_and_clear_young(struct vm_area_struct *vma,
-					    unsigned long address,
-					    pmd_t *pmdp)
-{
-	pmd_t pmd = *pmdp;
-	int r = 1;
-	if (!pmd_young(pmd))
-		r = 0;
-	else
-		set_pmd_at(vma->vm_mm, address, pmdp, pmd_mkold(pmd));
-	return r;
-}
-#else
 static inline int pmdp_test_and_clear_young(struct vm_area_struct *vma,
 					    unsigned long address,
 					    pmd_t *pmdp)
@@ -233,7 +210,6 @@ static inline int pmdp_test_and_clear_young(struct vm_area_struct *vma,
 	BUILD_BUG();
 	return 0;
 }
-#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 #endif
 
 #ifndef __HAVE_ARCH_PTEP_CLEAR_YOUNG_FLUSH
@@ -242,10 +218,6 @@ int ptep_clear_flush_young(struct vm_area_struct *vma,
 #endif
 
 #ifndef __HAVE_ARCH_PMDP_CLEAR_YOUNG_FLUSH
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-extern int pmdp_clear_flush_young(struct vm_area_struct *vma,
-				  unsigned long address, pmd_t *pmdp);
-#else
 /*
  * Despite relevant to THP only, this API is called from generic rmap code
  * under PageTransHuge(), hence needs a dummy implementation for !THP
@@ -256,7 +228,6 @@ static inline int pmdp_clear_flush_young(struct vm_area_struct *vma,
 	BUILD_BUG();
 	return 0;
 }
-#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 #endif
 
 #ifndef __HAVE_ARCH_PTEP_GET_AND_CLEAR
@@ -339,54 +310,7 @@ static inline pte_t ptep_get_lockless(pte_t *ptep)
 }
 #endif /* CONFIG_GUP_GET_PTE_LOW_HIGH */
 
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-#ifndef __HAVE_ARCH_PMDP_HUGE_GET_AND_CLEAR
-static inline pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm,
-					    unsigned long address,
-					    pmd_t *pmdp)
-{
-	pmd_t pmd = *pmdp;
 
-	pmd_clear(pmdp);
-	page_table_check_pmd_clear(mm, address, pmd);
-
-	return pmd;
-}
-#endif /* __HAVE_ARCH_PMDP_HUGE_GET_AND_CLEAR */
-#ifndef __HAVE_ARCH_PUDP_HUGE_GET_AND_CLEAR
-static inline pud_t pudp_huge_get_and_clear(struct mm_struct *mm,
-					    unsigned long address,
-					    pud_t *pudp)
-{
-	pud_t pud = *pudp;
-
-	pud_clear(pudp);
-	page_table_check_pud_clear(mm, address, pud);
-
-	return pud;
-}
-#endif /* __HAVE_ARCH_PUDP_HUGE_GET_AND_CLEAR */
-#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
-
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-#ifndef __HAVE_ARCH_PMDP_HUGE_GET_AND_CLEAR_FULL
-static inline pmd_t pmdp_huge_get_and_clear_full(struct vm_area_struct *vma,
-					    unsigned long address, pmd_t *pmdp,
-					    int full)
-{
-	return pmdp_huge_get_and_clear(vma->vm_mm, address, pmdp);
-}
-#endif
-
-#ifndef __HAVE_ARCH_PUDP_HUGE_GET_AND_CLEAR_FULL
-static inline pud_t pudp_huge_get_and_clear_full(struct mm_struct *mm,
-					    unsigned long address, pud_t *pudp,
-					    int full)
-{
-	return pudp_huge_get_and_clear(mm, address, pudp);
-}
-#endif
-#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 
 #ifndef __HAVE_ARCH_PTEP_GET_AND_CLEAR_FULL
 static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
@@ -496,20 +420,11 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 #endif
 
 #ifndef __HAVE_ARCH_PMDP_SET_WRPROTECT
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-static inline void pmdp_set_wrprotect(struct mm_struct *mm,
-				      unsigned long address, pmd_t *pmdp)
-{
-	pmd_t old_pmd = *pmdp;
-	set_pmd_at(mm, address, pmdp, pmd_wrprotect(old_pmd));
-}
-#else
 static inline void pmdp_set_wrprotect(struct mm_struct *mm,
 				      unsigned long address, pmd_t *pmdp)
 {
 	BUILD_BUG();
 }
-#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 #endif
 #ifndef __HAVE_ARCH_PUDP_SET_WRPROTECT
 #ifdef CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD
@@ -530,10 +445,6 @@ static inline void pudp_set_wrprotect(struct mm_struct *mm,
 #endif
 
 #ifndef pmdp_collapse_flush
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-extern pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
-				 unsigned long address, pmd_t *pmdp);
-#else
 static inline pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
 					unsigned long address,
 					pmd_t *pmdp)
@@ -542,7 +453,6 @@ static inline pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
 	return *pmdp;
 }
 #define pmdp_collapse_flush pmdp_collapse_flush
-#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 #endif
 
 #ifndef __HAVE_ARCH_PGTABLE_DEPOSIT
@@ -554,20 +464,6 @@ extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
 extern pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
 #endif
 
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-/*
- * This is an implementation of pmdp_establish() that is only suitable for an
- * architecture that doesn't have hardware dirty/accessed bits. In this case we
- * can't race with CPU which sets these bits and non-atomic approach is fine.
- */
-static inline pmd_t generic_pmdp_establish(struct vm_area_struct *vma,
-		unsigned long address, pmd_t *pmdp, pmd_t pmd)
-{
-	pmd_t old_pmd = *pmdp;
-	set_pmd_at(vma->vm_mm, address, pmdp, pmd);
-	return old_pmd;
-}
-#endif
 
 #ifndef __HAVE_ARCH_PMDP_INVALIDATE
 extern pmd_t pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
@@ -1221,7 +1117,6 @@ static inline unsigned long my_zero_pfn(unsigned long addr)
 #endif
 
 
-#ifndef CONFIG_TRANSPARENT_HUGEPAGE
 static inline int pmd_trans_huge(pmd_t pmd)
 {
 	return 0;
@@ -1233,7 +1128,6 @@ static inline int pmd_write(pmd_t pmd)
 	return 0;
 }
 #endif /* pmd_write */
-#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 
 #ifndef pud_write
 static inline int pud_write(pud_t pud)
@@ -1243,7 +1137,6 @@ static inline int pud_write(pud_t pud)
 }
 #endif /* pud_write */
 
-#if !defined(CONFIG_ARCH_HAS_PTE_DEVMAP) || !defined(CONFIG_TRANSPARENT_HUGEPAGE)
 static inline int pmd_devmap(pmd_t pmd)
 {
 	return 0;
@@ -1256,7 +1149,6 @@ static inline int pgd_devmap(pgd_t pgd)
 {
 	return 0;
 }
-#endif
 
 #if !defined(CONFIG_TRANSPARENT_HUGEPAGE) || \
 	(defined(CONFIG_TRANSPARENT_HUGEPAGE) && \
@@ -1345,9 +1237,6 @@ static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
 	 * be also null or the pmd_none() check below would be
 	 * confused.
 	 */
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-	barrier();
-#endif
 	/*
 	 * !pmd_present() checks for pmd migration entries
 	 *
@@ -1387,11 +1276,7 @@ static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
  */
 static inline int pmd_trans_unstable(pmd_t *pmd)
 {
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-	return pmd_none_or_trans_huge_or_clear_bad(pmd);
-#else
 	return 0;
-#endif
 }
 
 /*
@@ -1483,22 +1368,8 @@ static inline int pmd_free_pte_page(pmd_t *pmd, unsigned long addr)
 #endif	/* CONFIG_HAVE_ARCH_HUGE_VMAP */
 
 #ifndef __HAVE_ARCH_FLUSH_PMD_TLB_RANGE
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-/*
- * ARCHes with special requirements for evicting THP backing TLB entries can
- * implement this. Otherwise also, it can help optimize normal TLB flush in
- * THP regime. Stock flush_tlb_range() typically has optimization to nuke the
- * entire TLB if flush span is greater than a threshold, which will
- * likely be true for a single huge page. Thus a single THP flush will
- * invalidate the entire TLB which is not desirable.
- * e.g. see arch/arc: flush_pmd_tlb_range
- */
-#define flush_pmd_tlb_range(vma, addr, end)	flush_tlb_range(vma, addr, end)
-#define flush_pud_tlb_range(vma, addr, end)	flush_tlb_range(vma, addr, end)
-#else
 #define flush_pmd_tlb_range(vma, addr, end)	BUILD_BUG()
 #define flush_pud_tlb_range(vma, addr, end)	BUILD_BUG()
-#endif
 #endif
 
 struct file;
@@ -1580,11 +1451,7 @@ typedef unsigned int pgtbl_mod_mask;
 #endif
 
 #ifndef has_transparent_hugepage
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-#define has_transparent_hugepage() 1
-#else
 #define has_transparent_hugepage() 0
-#endif
 #endif
 
 /*

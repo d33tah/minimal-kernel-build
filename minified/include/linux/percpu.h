@@ -12,11 +12,7 @@
 #include <asm/percpu.h>
 
 /* enough to cover all DEFINE_PER_CPUs in modules */
-#ifdef CONFIG_MODULES
-#define PERCPU_MODULE_RESERVE		(8 << 10)
-#else
 #define PERCPU_MODULE_RESERVE		0
-#endif
 
 /* minimum unit size, also is the maximum supported allocation size */
 #define PCPU_MIN_UNIT_SIZE		PFN_ALIGN(32 << 10)
@@ -117,9 +113,7 @@ extern void __percpu *__alloc_reserved_percpu(size_t size, size_t align) __alloc
 extern bool __is_kernel_percpu_address(unsigned long addr, unsigned long *can_addr);
 extern bool is_kernel_percpu_address(unsigned long addr);
 
-#if !defined(CONFIG_SMP) || !defined(CONFIG_HAVE_SETUP_PER_CPU_AREA)
 extern void __init setup_per_cpu_areas(void);
-#endif
 
 extern void __percpu *__alloc_percpu_gfp(size_t size, size_t align, gfp_t gfp) __alloc_size(1);
 extern void __percpu *__alloc_percpu(size_t size, size_t align) __alloc_size(1);

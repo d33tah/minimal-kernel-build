@@ -7,11 +7,7 @@
 
 #include <linux/tracepoint.h>
 
-#ifdef CONFIG_RCU_TRACE
-#define TRACE_EVENT_RCU TRACE_EVENT
-#else
 #define TRACE_EVENT_RCU TRACE_EVENT_NOP
-#endif
 
 /*
  * Tracepoint for start/end markers used for utilization calculations.

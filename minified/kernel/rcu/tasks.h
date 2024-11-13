@@ -1058,12 +1058,6 @@ static int __init rcu_spawn_tasks_rude_kthread(void)
 // scheduler context-switch ordering (for locked-down non-running readers).
 
 // The lockdep state must be outside of #ifdef to be useful.
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-static struct lock_class_key rcu_lock_trace_key;
-struct lockdep_map rcu_trace_lock_map =
-	STATIC_LOCKDEP_MAP_INIT("rcu_read_lock_trace", &rcu_lock_trace_key);
-EXPORT_SYMBOL_GPL(rcu_trace_lock_map);
-#endif /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
 
 #ifdef CONFIG_TASKS_TRACE_RCU
 

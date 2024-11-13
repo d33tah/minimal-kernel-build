@@ -20,15 +20,7 @@
 #include <linux/osq_lock.h>
 #include <linux/debug_locks.h>
 
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-# define __DEP_MAP_MUTEX_INITIALIZER(lockname)			\
-		, .dep_map = {					\
-			.name = #lockname,			\
-			.wait_type_inner = LD_WAIT_SLEEP,	\
-		}
-#else
 # define __DEP_MAP_MUTEX_INITIALIZER(lockname)
-#endif
 
 #ifndef CONFIG_PREEMPT_RT
 
@@ -67,28 +59,13 @@ struct mutex {
 	struct optimistic_spin_queue osq; /* Spinner MCS lock */
 #endif
 	struct list_head	wait_list;
-#ifdef CONFIG_DEBUG_MUTEXES
-	void			*magic;
-#endif
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-	struct lockdep_map	dep_map;
-#endif
 };
 
-#ifdef CONFIG_DEBUG_MUTEXES
-
-#define __DEBUG_MUTEX_INITIALIZER(lockname)				\
-	, .magic = &lockname
-
-extern void mutex_destroy(struct mutex *lock);
-
-#else
 
 # define __DEBUG_MUTEX_INITIALIZER(lockname)
 
 static inline void mutex_destroy(struct mutex *lock) {}
 
-#endif
 
 /**
  * mutex_init - initialize the mutex
@@ -134,9 +111,6 @@ extern bool mutex_is_locked(struct mutex *lock);
 
 struct mutex {
 	struct rt_mutex_base	rtmutex;
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-	struct lockdep_map	dep_map;
-#endif
 };
 
 #define __MUTEX_INITIALIZER(mutexname)					\
@@ -174,28 +148,6 @@ do {							\
  * See kernel/locking/mutex.c for detailed documentation of these APIs.
  * Also see Documentation/locking/mutex-design.rst.
  */
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-extern void mutex_lock_nested(struct mutex *lock, unsigned int subclass);
-extern void _mutex_lock_nest_lock(struct mutex *lock, struct lockdep_map *nest_lock);
-
-extern int __must_check mutex_lock_interruptible_nested(struct mutex *lock,
-					unsigned int subclass);
-extern int __must_check mutex_lock_killable_nested(struct mutex *lock,
-					unsigned int subclass);
-extern void mutex_lock_io_nested(struct mutex *lock, unsigned int subclass);
-
-#define mutex_lock(lock) mutex_lock_nested(lock, 0)
-#define mutex_lock_interruptible(lock) mutex_lock_interruptible_nested(lock, 0)
-#define mutex_lock_killable(lock) mutex_lock_killable_nested(lock, 0)
-#define mutex_lock_io(lock) mutex_lock_io_nested(lock, 0)
-
-#define mutex_lock_nest_lock(lock, nest_lock)				\
-do {									\
-	typecheck(struct lockdep_map *, &(nest_lock)->dep_map);	\
-	_mutex_lock_nest_lock(lock, &(nest_lock)->dep_map);		\
-} while (0)
-
-#else
 extern void mutex_lock(struct mutex *lock);
 extern int __must_check mutex_lock_interruptible(struct mutex *lock);
 extern int __must_check mutex_lock_killable(struct mutex *lock);
@@ -206,7 +158,6 @@ extern void mutex_lock_io(struct mutex *lock);
 # define mutex_lock_killable_nested(lock, subclass) mutex_lock_killable(lock)
 # define mutex_lock_nest_lock(lock, nest_lock) mutex_lock(lock)
 # define mutex_lock_io_nested(lock, subclass) mutex_lock_io(lock)
-#endif
 
 /*
  * NOTE: mutex_trylock() follows the spin_trylock() convention,

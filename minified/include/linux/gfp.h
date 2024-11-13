@@ -406,11 +406,7 @@ static inline bool gfpflags_normal_context(const gfp_t gfp_flags)
 #define OPT_ZONE_HIGHMEM ZONE_NORMAL
 #endif
 
-#ifdef CONFIG_ZONE_DMA
-#define OPT_ZONE_DMA ZONE_DMA
-#else
 #define OPT_ZONE_DMA ZONE_NORMAL
-#endif
 
 #ifdef CONFIG_ZONE_DMA32
 #define OPT_ZONE_DMA32 ZONE_DMA32
@@ -711,9 +707,5 @@ extern struct page *alloc_contig_pages(unsigned long nr_pages, gfp_t gfp_mask,
 #endif
 void free_contig_range(unsigned long pfn, unsigned long nr_pages);
 
-#ifdef CONFIG_CMA
-/* CMA stuff */
-extern void init_cma_reserved_pageblock(struct page *page);
-#endif
 
 #endif /* __LINUX_GFP_H */

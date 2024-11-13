@@ -57,15 +57,7 @@ static inline unsigned long get_random_long(void)
  * On 64-bit architectures, protect against non-terminated C string overflows
  * by zeroing out the first byte of the canary; this leaves 56 bits of entropy.
  */
-#ifdef CONFIG_64BIT
-# ifdef __LITTLE_ENDIAN
-#  define CANARY_MASK 0xffffffffffffff00UL
-# else /* big endian, 64 bits: */
-#  define CANARY_MASK 0x00ffffffffffffffUL
-# endif
-#else /* 32 bits: */
 # define CANARY_MASK 0xffffffffUL
-#endif
 
 static inline unsigned long get_random_canary(void)
 {
@@ -106,14 +98,10 @@ declare_get_random_var_wait(long, unsigned long)
  */
 #include <linux/prandom.h>
 
-#ifdef CONFIG_ARCH_RANDOM
-# include <asm/archrandom.h>
-#else
 static inline bool __must_check arch_get_random_long(unsigned long *v) { return false; }
 static inline bool __must_check arch_get_random_int(unsigned int *v) { return false; }
 static inline bool __must_check arch_get_random_seed_long(unsigned long *v) { return false; }
 static inline bool __must_check arch_get_random_seed_int(unsigned int *v) { return false; }
-#endif
 
 /*
  * Called from the boot CPU during startup; not valid to call once
@@ -135,10 +123,6 @@ static inline bool __init arch_get_random_long_early(unsigned long *v)
 }
 #endif
 
-#ifdef CONFIG_SMP
-int random_prepare_cpu(unsigned int cpu);
-int random_online_cpu(unsigned int cpu);
-#endif
 
 #ifndef MODULE
 extern const struct file_operations random_fops, urandom_fops;

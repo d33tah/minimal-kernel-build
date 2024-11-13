@@ -246,23 +246,12 @@ extern struct list_head vmap_area_list;
 extern __init void vm_area_add_early(struct vm_struct *vm);
 extern __init void vm_area_register_early(struct vm_struct *vm, size_t align);
 
-#ifdef CONFIG_SMP
-struct vm_struct **pcpu_get_vm_areas(const unsigned long *offsets,
-				     const size_t *sizes, int nr_vms,
-				     size_t align);
-
-void pcpu_free_vm_areas(struct vm_struct **vms, int nr_vms);
-#endif
 
 #define VMALLOC_TOTAL (VMALLOC_END - VMALLOC_START)
 
 int register_vmap_purge_notifier(struct notifier_block *nb);
 int unregister_vmap_purge_notifier(struct notifier_block *nb);
 
-#if defined(CONFIG_MMU) && defined(CONFIG_PRINTK)
-bool vmalloc_dump_obj(void *object);
-#else
 static inline bool vmalloc_dump_obj(void *object) { return false; }
-#endif
 
 #endif /* _LINUX_VMALLOC_H */

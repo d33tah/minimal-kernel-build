@@ -401,10 +401,5 @@ static inline void user_access_restore(unsigned long flags) { }
 #define user_read_access_end user_access_end
 #endif
 
-#ifdef CONFIG_HARDENED_USERCOPY
-void __noreturn usercopy_abort(const char *name, const char *detail,
-			       bool to_user, unsigned long offset,
-			       unsigned long len);
-#endif
 
 #endif		/* __LINUX_UACCESS_H__ */

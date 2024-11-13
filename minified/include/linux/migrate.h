@@ -90,11 +90,6 @@ static inline int next_demotion_node(int node)
 #define numa_demotion_enabled  false
 #endif
 
-#ifdef CONFIG_COMPACTION
-extern int PageMovable(struct page *page);
-extern void __SetPageMovable(struct page *page, struct address_space *mapping);
-extern void __ClearPageMovable(struct page *page);
-#else
 static inline int PageMovable(struct page *page) { return 0; }
 static inline void __SetPageMovable(struct page *page,
 				struct address_space *mapping)
@@ -103,7 +98,6 @@ static inline void __SetPageMovable(struct page *page,
 static inline void __ClearPageMovable(struct page *page)
 {
 }
-#endif
 
 static inline bool folio_test_movable(struct folio *folio)
 {

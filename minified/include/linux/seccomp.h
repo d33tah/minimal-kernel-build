@@ -15,47 +15,6 @@
 #define SECCOMP_NOTIFY_ADDFD_SIZE_VER0 24
 #define SECCOMP_NOTIFY_ADDFD_SIZE_LATEST SECCOMP_NOTIFY_ADDFD_SIZE_VER0
 
-#ifdef CONFIG_SECCOMP
-
-#include <linux/thread_info.h>
-#include <linux/atomic.h>
-#include <asm/seccomp.h>
-
-struct seccomp_filter;
-/**
- * struct seccomp - the state of a seccomp'ed process
- *
- * @mode:  indicates one of the valid values above for controlled
- *         system calls available to a process.
- * @filter: must always point to a valid seccomp-filter or NULL as it is
- *          accessed without locking during system call entry.
- *
- *          @filter must only be accessed from the context of current as there
- *          is no read locking.
- */
-struct seccomp {
-	int mode;
-	atomic_t filter_count;
-	struct seccomp_filter *filter;
-};
-
-extern int __secure_computing(const struct seccomp_data *sd);
-static inline int secure_computing(void)
-{
-	if (unlikely(test_syscall_work(SECCOMP)))
-		return  __secure_computing(NULL);
-	return 0;
-}
-
-extern long prctl_get_seccomp(void);
-extern long prctl_set_seccomp(unsigned long, void __user *);
-
-static inline int seccomp_mode(struct seccomp *s)
-{
-	return s->mode;
-}
-
-#else /* CONFIG_SECCOMP */
 
 #include <linux/errno.h>
 
@@ -80,7 +39,6 @@ static inline int seccomp_mode(struct seccomp *s)
 {
 	return SECCOMP_MODE_DISABLED;
 }
-#endif /* CONFIG_SECCOMP */
 
 #ifdef CONFIG_SECCOMP_FILTER
 extern void seccomp_filter_release(struct task_struct *tsk);
@@ -96,12 +54,6 @@ static inline void get_seccomp_filter(struct task_struct *tsk)
 }
 #endif /* CONFIG_SECCOMP_FILTER */
 
-#if defined(CONFIG_SECCOMP_FILTER) && defined(CONFIG_CHECKPOINT_RESTORE)
-extern long seccomp_get_filter(struct task_struct *task,
-			       unsigned long filter_off, void __user *data);
-extern long seccomp_get_metadata(struct task_struct *task,
-				 unsigned long filter_off, void __user *data);
-#else
 static inline long seccomp_get_filter(struct task_struct *task,
 				      unsigned long n, void __user *data)
 {
@@ -113,7 +65,6 @@ static inline long seccomp_get_metadata(struct task_struct *task,
 {
 	return -EINVAL;
 }
-#endif /* CONFIG_SECCOMP_FILTER && CONFIG_CHECKPOINT_RESTORE */
 
 #ifdef CONFIG_SECCOMP_CACHE_DEBUG
 struct seq_file;

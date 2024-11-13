@@ -29,33 +29,6 @@ struct dev_printk_info {
 	char device[PRINTK_INFO_DEVICE_LEN];
 };
 
-#ifdef CONFIG_PRINTK
-
-__printf(3, 0) __cold
-int dev_vprintk_emit(int level, const struct device *dev,
-		     const char *fmt, va_list args);
-__printf(3, 4) __cold
-int dev_printk_emit(int level, const struct device *dev, const char *fmt, ...);
-
-__printf(3, 4) __cold
-void _dev_printk(const char *level, const struct device *dev,
-		 const char *fmt, ...);
-__printf(2, 3) __cold
-void _dev_emerg(const struct device *dev, const char *fmt, ...);
-__printf(2, 3) __cold
-void _dev_alert(const struct device *dev, const char *fmt, ...);
-__printf(2, 3) __cold
-void _dev_crit(const struct device *dev, const char *fmt, ...);
-__printf(2, 3) __cold
-void _dev_err(const struct device *dev, const char *fmt, ...);
-__printf(2, 3) __cold
-void _dev_warn(const struct device *dev, const char *fmt, ...);
-__printf(2, 3) __cold
-void _dev_notice(const struct device *dev, const char *fmt, ...);
-__printf(2, 3) __cold
-void _dev_info(const struct device *dev, const char *fmt, ...);
-
-#else
 
 static inline __printf(3, 0)
 int dev_vprintk_emit(int level, const struct device *dev,
@@ -95,7 +68,6 @@ static inline __printf(2, 3)
 void _dev_info(const struct device *dev, const char *fmt, ...)
 {}
 
-#endif
 
 /*
  * Need to take variadic arguments even though we don't use them, as dev_fmt()
@@ -164,23 +136,11 @@ void _dev_info(const struct device *dev, const char *fmt, ...)
 })
 #endif
 
-#ifdef CONFIG_PRINTK
-#define dev_level_once(dev_level, dev, fmt, ...)			\
-do {									\
-	static bool __print_once __read_mostly;				\
-									\
-	if (!__print_once) {						\
-		__print_once = true;					\
-		dev_level(dev, fmt, ##__VA_ARGS__);			\
-	}								\
-} while (0)
-#else
 #define dev_level_once(dev_level, dev, fmt, ...)			\
 do {									\
 	if (0)								\
 		dev_level(dev, fmt, ##__VA_ARGS__);			\
 } while (0)
-#endif
 
 #define dev_emerg_once(dev, fmt, ...)					\
 	dev_level_once(dev_emerg, dev, fmt, ##__VA_ARGS__)

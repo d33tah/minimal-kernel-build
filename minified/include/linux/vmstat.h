@@ -40,52 +40,6 @@ enum writeback_stat_item {
 	NR_VM_WRITEBACK_STAT_ITEMS,
 };
 
-#ifdef CONFIG_VM_EVENT_COUNTERS
-/*
- * Light weight per cpu counter implementation.
- *
- * Counters should only be incremented and no critical kernel component
- * should rely on the counter values.
- *
- * Counters are handled completely inline. On many platforms the code
- * generated will simply be the increment of a global address.
- */
-
-struct vm_event_state {
-	unsigned long event[NR_VM_EVENT_ITEMS];
-};
-
-DECLARE_PER_CPU(struct vm_event_state, vm_event_states);
-
-/*
- * vm counters are allowed to be racy. Use raw_cpu_ops to avoid the
- * local_irq_disable overhead.
- */
-static inline void __count_vm_event(enum vm_event_item item)
-{
-	raw_cpu_inc(vm_event_states.event[item]);
-}
-
-static inline void count_vm_event(enum vm_event_item item)
-{
-	this_cpu_inc(vm_event_states.event[item]);
-}
-
-static inline void __count_vm_events(enum vm_event_item item, long delta)
-{
-	raw_cpu_add(vm_event_states.event[item], delta);
-}
-
-static inline void count_vm_events(enum vm_event_item item, long delta)
-{
-	this_cpu_add(vm_event_states.event[item], delta);
-}
-
-extern void all_vm_events(unsigned long *);
-
-extern void vm_events_fold_cpu(int cpu);
-
-#else
 
 /* Disable counters */
 static inline void count_vm_event(enum vm_event_item item)
@@ -107,7 +61,6 @@ static inline void vm_events_fold_cpu(int cpu)
 {
 }
 
-#endif /* CONFIG_VM_EVENT_COUNTERS */
 
 #ifdef CONFIG_NUMA_BALANCING
 #define count_vm_numa_event(x)     count_vm_event(x)
@@ -117,13 +70,8 @@ static inline void vm_events_fold_cpu(int cpu)
 #define count_vm_numa_events(x, y) do { (void)(y); } while (0)
 #endif /* CONFIG_NUMA_BALANCING */
 
-#ifdef CONFIG_DEBUG_TLBFLUSH
-#define count_vm_tlb_event(x)	   count_vm_event(x)
-#define count_vm_tlb_events(x, y)  count_vm_events(x, y)
-#else
 #define count_vm_tlb_event(x)     do {} while (0)
 #define count_vm_tlb_events(x, y) do { (void)(y); } while (0)
-#endif
 
 #ifdef CONFIG_DEBUG_VM_VMACACHE
 #define count_vm_vmacache_event(x) count_vm_event(x)
@@ -179,10 +127,6 @@ static inline void node_page_state_add(long x, struct pglist_data *pgdat,
 static inline unsigned long global_zone_page_state(enum zone_stat_item item)
 {
 	long x = atomic_long_read(&vm_zone_stat[item]);
-#ifdef CONFIG_SMP
-	if (x < 0)
-		x = 0;
-#endif
 	return x;
 }
 
@@ -190,10 +134,6 @@ static inline
 unsigned long global_node_page_state_pages(enum node_stat_item item)
 {
 	long x = atomic_long_read(&vm_node_stat[item]);
-#ifdef CONFIG_SMP
-	if (x < 0)
-		x = 0;
-#endif
 	return x;
 }
 
@@ -208,10 +148,6 @@ static inline unsigned long zone_page_state(struct zone *zone,
 					enum zone_stat_item item)
 {
 	long x = atomic_long_read(&zone->vm_stat[item]);
-#ifdef CONFIG_SMP
-	if (x < 0)
-		x = 0;
-#endif
 	return x;
 }
 
@@ -226,14 +162,6 @@ static inline unsigned long zone_page_state_snapshot(struct zone *zone,
 {
 	long x = atomic_long_read(&zone->vm_stat[item]);
 
-#ifdef CONFIG_SMP
-	int cpu;
-	for_each_online_cpu(cpu)
-		x += per_cpu_ptr(zone->per_cpu_zonestats, cpu)->vm_stat_diff[item];
-
-	if (x < 0)
-		x = 0;
-#endif
 	return x;
 }
 
@@ -272,45 +200,6 @@ static inline void fold_vm_numa_events(void)
 }
 #endif /* CONFIG_NUMA */
 
-#ifdef CONFIG_SMP
-void __mod_zone_page_state(struct zone *, enum zone_stat_item item, long);
-void __inc_zone_page_state(struct page *, enum zone_stat_item);
-void __dec_zone_page_state(struct page *, enum zone_stat_item);
-
-void __mod_node_page_state(struct pglist_data *, enum node_stat_item item, long);
-void __inc_node_page_state(struct page *, enum node_stat_item);
-void __dec_node_page_state(struct page *, enum node_stat_item);
-
-void mod_zone_page_state(struct zone *, enum zone_stat_item, long);
-void inc_zone_page_state(struct page *, enum zone_stat_item);
-void dec_zone_page_state(struct page *, enum zone_stat_item);
-
-void mod_node_page_state(struct pglist_data *, enum node_stat_item, long);
-void inc_node_page_state(struct page *, enum node_stat_item);
-void dec_node_page_state(struct page *, enum node_stat_item);
-
-extern void inc_node_state(struct pglist_data *, enum node_stat_item);
-extern void __inc_zone_state(struct zone *, enum zone_stat_item);
-extern void __inc_node_state(struct pglist_data *, enum node_stat_item);
-extern void dec_zone_state(struct zone *, enum zone_stat_item);
-extern void __dec_zone_state(struct zone *, enum zone_stat_item);
-extern void __dec_node_state(struct pglist_data *, enum node_stat_item);
-
-void quiet_vmstat(void);
-void cpu_vm_stats_fold(int cpu);
-void refresh_zone_stat_thresholds(void);
-
-struct ctl_table;
-int vmstat_refresh(struct ctl_table *, int write, void *buffer, size_t *lenp,
-		loff_t *ppos);
-
-void drain_zonestat(struct zone *zone, struct per_cpu_zonestat *);
-
-int calculate_pressure_threshold(struct zone *zone);
-int calculate_normal_threshold(struct zone *zone);
-void set_pgdat_percpu_threshold(pg_data_t *pgdat,
-				int (*calculate_pressure)(struct zone *));
-#else /* CONFIG_SMP */
 
 /*
  * We do not maintain differentials in a single processor configuration.
@@ -413,7 +302,6 @@ static inline void quiet_vmstat(void) { }
 
 static inline void drain_zonestat(struct zone *zone,
 			struct per_cpu_zonestat *pzstats) { }
-#endif		/* CONFIG_SMP */
 
 static inline void __zone_stat_mod_folio(struct folio *folio,
 		enum zone_stat_item item, long nr)

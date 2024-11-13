@@ -8,7 +8,6 @@
 
 #ifdef CONFIG_PAGE_IDLE_FLAG
 
-#ifndef CONFIG_64BIT
 /*
  * If there is not enough space to store Idle and Young bits in page flags, use
  * page ext flags instead.
@@ -73,7 +72,6 @@ static inline void folio_clear_idle(struct folio *folio)
 
 	clear_bit(PAGE_EXT_IDLE, &page_ext->flags);
 }
-#endif /* !CONFIG_64BIT */
 
 #else /* !CONFIG_PAGE_IDLE_FLAG */
 

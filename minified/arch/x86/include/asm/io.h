@@ -341,15 +341,6 @@ extern bool is_early_ioremap_ptep(pte_t *ptep);
 #include <asm-generic/io.h>
 #undef PCI_IOBASE
 
-#ifdef CONFIG_MTRR
-extern int __must_check arch_phys_wc_index(int handle);
-#define arch_phys_wc_index arch_phys_wc_index
-
-extern int __must_check arch_phys_wc_add(unsigned long base,
-					 unsigned long size);
-extern void arch_phys_wc_del(int handle);
-#define arch_phys_wc_add arch_phys_wc_add
-#endif
 
 #ifdef CONFIG_X86_PAT
 extern int arch_io_reserve_memtype_wc(resource_size_t start, resource_size_t size);

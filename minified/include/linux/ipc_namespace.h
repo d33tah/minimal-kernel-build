@@ -21,9 +21,6 @@ struct ipc_ids {
 	struct idr ipcs_idr;
 	int max_idx;
 	int last_idx;	/* For wrap around detection */
-#ifdef CONFIG_CHECKPOINT_RESTORE
-	int next_id;
-#endif
 	struct rhashtable key_ht;
 };
 
@@ -82,11 +79,7 @@ struct ipc_namespace {
 extern struct ipc_namespace init_ipc_ns;
 extern spinlock_t mq_lock;
 
-#ifdef CONFIG_SYSVIPC
-extern void shm_destroy_orphaned(struct ipc_namespace *ns);
-#else /* CONFIG_SYSVIPC */
 static inline void shm_destroy_orphaned(struct ipc_namespace *ns) {}
-#endif /* CONFIG_SYSVIPC */
 
 #ifdef CONFIG_POSIX_MQUEUE
 extern int mq_init_ns(struct ipc_namespace *ns);

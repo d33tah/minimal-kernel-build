@@ -12,13 +12,7 @@
 #include <asm/smap.h>
 #include <asm/extable.h>
 
-#ifdef CONFIG_DEBUG_ATOMIC_SLEEP
-static inline bool pagefault_disabled(void);
-# define WARN_ON_IN_IRQ()	\
-	WARN_ON_ONCE(!in_task() && !pagefault_disabled())
-#else
 # define WARN_ON_IN_IRQ()
-#endif
 
 /**
  * access_ok - Checks if a user space pointer is valid

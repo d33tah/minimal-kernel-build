@@ -131,30 +131,6 @@ struct signal_struct {
 	unsigned int		is_child_subreaper:1;
 	unsigned int		has_child_subreaper:1;
 
-#ifdef CONFIG_POSIX_TIMERS
-
-	/* POSIX.1b Interval Timers */
-	int			posix_timer_id;
-	struct list_head	posix_timers;
-
-	/* ITIMER_REAL timer for the process */
-	struct hrtimer real_timer;
-	ktime_t it_real_incr;
-
-	/*
-	 * ITIMER_PROF and ITIMER_VIRTUAL timers for the process, we use
-	 * CPUCLOCK_PROF and CPUCLOCK_VIRT for indexing array as these
-	 * values are defined to 0 and 1 respectively
-	 */
-	struct cpu_itimer it[2];
-
-	/*
-	 * Thread group totals for process CPU timers.
-	 * See thread_group_cputimer(), et al, for details.
-	 */
-	struct thread_group_cputimer cputimer;
-
-#endif
 	/* Empty if CONFIG_POSIX_TIMERS=n */
 	struct posix_cputimers posix_cputimers;
 
@@ -172,9 +148,6 @@ struct signal_struct {
 
 	struct tty_struct *tty; /* NULL if no tty */
 
-#ifdef CONFIG_SCHED_AUTOGROUP
-	struct autogroup *autogroup;
-#endif
 	/*
 	 * Cumulative resource counters for dead threads in the group,
 	 * and for reaped dead child processes forked by this group.

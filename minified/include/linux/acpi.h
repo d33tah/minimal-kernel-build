@@ -1077,15 +1077,6 @@ static inline void arch_reserve_mem_area(acpi_physical_address addr,
 #define acpi_os_set_prepare_sleep(func, pm1a_ctrl, pm1b_ctrl) do { } while (0)
 #endif
 
-#if defined(CONFIG_ACPI) && defined(CONFIG_PM)
-int acpi_dev_suspend(struct device *dev, bool wakeup);
-int acpi_dev_resume(struct device *dev);
-int acpi_subsys_runtime_suspend(struct device *dev);
-int acpi_subsys_runtime_resume(struct device *dev);
-int acpi_dev_pm_attach(struct device *dev, bool power_on);
-bool acpi_storage_d3(struct device *dev);
-bool acpi_dev_state_d0(struct device *dev);
-#else
 static inline int acpi_subsys_runtime_suspend(struct device *dev) { return 0; }
 static inline int acpi_subsys_runtime_resume(struct device *dev) { return 0; }
 static inline int acpi_dev_pm_attach(struct device *dev, bool power_on)
@@ -1100,7 +1091,6 @@ static inline bool acpi_dev_state_d0(struct device *dev)
 {
 	return true;
 }
-#endif
 
 #if defined(CONFIG_ACPI) && defined(CONFIG_PM_SLEEP)
 int acpi_subsys_prepare(struct device *dev);

@@ -14,35 +14,15 @@
  * Released under the General Public License (GPL).
  */
 
-#ifdef CONFIG_DEBUG_SPINLOCK
-  extern void __rwlock_init(rwlock_t *lock, const char *name,
-			    struct lock_class_key *key);
-# define rwlock_init(lock)					\
-do {								\
-	static struct lock_class_key __key;			\
-								\
-	__rwlock_init((lock), #lock, &__key);			\
-} while (0)
-#else
 # define rwlock_init(lock)					\
 	do { *(lock) = __RW_LOCK_UNLOCKED(lock); } while (0)
-#endif
 
-#ifdef CONFIG_DEBUG_SPINLOCK
- extern void do_raw_read_lock(rwlock_t *lock) __acquires(lock);
- extern int do_raw_read_trylock(rwlock_t *lock);
- extern void do_raw_read_unlock(rwlock_t *lock) __releases(lock);
- extern void do_raw_write_lock(rwlock_t *lock) __acquires(lock);
- extern int do_raw_write_trylock(rwlock_t *lock);
- extern void do_raw_write_unlock(rwlock_t *lock) __releases(lock);
-#else
 # define do_raw_read_lock(rwlock)	do {__acquire(lock); arch_read_lock(&(rwlock)->raw_lock); } while (0)
 # define do_raw_read_trylock(rwlock)	arch_read_trylock(&(rwlock)->raw_lock)
 # define do_raw_read_unlock(rwlock)	do {arch_read_unlock(&(rwlock)->raw_lock); __release(lock); } while (0)
 # define do_raw_write_lock(rwlock)	do {__acquire(lock); arch_write_lock(&(rwlock)->raw_lock); } while (0)
 # define do_raw_write_trylock(rwlock)	arch_write_trylock(&(rwlock)->raw_lock)
 # define do_raw_write_unlock(rwlock)	do {arch_write_unlock(&(rwlock)->raw_lock); __release(lock); } while (0)
-#endif
 
 /*
  * Define the various rw_lock methods.  Note we define these
@@ -55,26 +35,8 @@ do {								\
 #define write_lock(lock)	_raw_write_lock(lock)
 #define read_lock(lock)		_raw_read_lock(lock)
 
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-#define write_lock_nested(lock, subclass)	_raw_write_lock_nested(lock, subclass)
-#else
 #define write_lock_nested(lock, subclass)	_raw_write_lock(lock)
-#endif
 
-#if defined(CONFIG_SMP) || defined(CONFIG_DEBUG_SPINLOCK)
-
-#define read_lock_irqsave(lock, flags)			\
-	do {						\
-		typecheck(unsigned long, flags);	\
-		flags = _raw_read_lock_irqsave(lock);	\
-	} while (0)
-#define write_lock_irqsave(lock, flags)			\
-	do {						\
-		typecheck(unsigned long, flags);	\
-		flags = _raw_write_lock_irqsave(lock);	\
-	} while (0)
-
-#else
 
 #define read_lock_irqsave(lock, flags)			\
 	do {						\
@@ -87,7 +49,6 @@ do {								\
 		_raw_write_lock_irqsave(lock, flags);	\
 	} while (0)
 
-#endif
 
 #define read_lock_irq(lock)		_raw_read_lock_irq(lock)
 #define read_lock_bh(lock)		_raw_read_lock_bh(lock)

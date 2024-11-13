@@ -33,11 +33,7 @@
 #ifdef CONFIG_RCU_FANOUT
 #define RCU_FANOUT CONFIG_RCU_FANOUT
 #else /* #ifdef CONFIG_RCU_FANOUT */
-# ifdef CONFIG_64BIT
-# define RCU_FANOUT 64
-# else
 # define RCU_FANOUT 32
-# endif
 #endif /* #else #ifdef CONFIG_RCU_FANOUT */
 
 #ifdef CONFIG_RCU_FANOUT_LEAF

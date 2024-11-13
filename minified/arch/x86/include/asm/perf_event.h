@@ -515,25 +515,6 @@ extern int x86_perf_get_lbr(struct x86_pmu_lbr *lbr);
  extern void amd_pmu_enable_virt(void);
  extern void amd_pmu_disable_virt(void);
 
-#if defined(CONFIG_PERF_EVENTS_AMD_BRS)
-
-#define PERF_NEEDS_LOPWR_CB 1
-
-/*
- * architectural low power callback impacts
- * drivers/acpi/processor_idle.c
- * drivers/acpi/acpi_pad.c
- */
-extern void perf_amd_brs_lopwr_cb(bool lopwr_in);
-
-DECLARE_STATIC_CALL(perf_lopwr_cb, perf_amd_brs_lopwr_cb);
-
-static inline void perf_lopwr_cb(bool lopwr_in)
-{
-	static_call_mod(perf_lopwr_cb)(lopwr_in);
-}
-
-#endif /* PERF_NEEDS_LOPWR_CB */
 
 
 #define arch_perf_out_copy_user copy_from_user_nmi

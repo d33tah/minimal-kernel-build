@@ -67,18 +67,6 @@ void set_pfnblock_flags_mask(struct page *page,
 				unsigned long mask);
 
 /* Declarations for getting and setting flags. See mm/page_alloc.c */
-#ifdef CONFIG_COMPACTION
-#define get_pageblock_skip(page) \
-	get_pfnblock_flags_mask(page, page_to_pfn(page),	\
-			(1 << (PB_migrate_skip)))
-#define clear_pageblock_skip(page) \
-	set_pfnblock_flags_mask(page, 0, page_to_pfn(page),	\
-			(1 << PB_migrate_skip))
-#define set_pageblock_skip(page) \
-	set_pfnblock_flags_mask(page, (1 << PB_migrate_skip),	\
-			page_to_pfn(page),			\
-			(1 << PB_migrate_skip))
-#else
 static inline bool get_pageblock_skip(struct page *page)
 {
 	return false;
@@ -89,6 +77,5 @@ static inline void clear_pageblock_skip(struct page *page)
 static inline void set_pageblock_skip(struct page *page)
 {
 }
-#endif /* CONFIG_COMPACTION */
 
 #endif	/* PAGEBLOCK_FLAGS_H */

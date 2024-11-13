@@ -126,13 +126,6 @@ enum pageflags {
 #ifdef CONFIG_MEMORY_FAILURE
 	PG_hwpoison,		/* hardware poisoned page. Don't touch */
 #endif
-#if defined(CONFIG_PAGE_IDLE_FLAG) && defined(CONFIG_64BIT)
-	PG_young,
-	PG_idle,
-#endif
-#ifdef CONFIG_64BIT
-	PG_arch_2,
-#endif
 #ifdef CONFIG_KASAN_HW_TAGS
 	PG_skip_kasan_poison,
 #endif
@@ -321,13 +314,9 @@ static inline int PagePoisoned(const struct page *page)
 	return READ_ONCE(page->flags) == PAGE_POISON_PATTERN;
 }
 
-#ifdef CONFIG_DEBUG_VM
-void page_init_poison(struct page *page, size_t size);
-#else
 static inline void page_init_poison(struct page *page, size_t size)
 {
 }
-#endif
 
 static unsigned long *folio_flags(struct folio *folio, unsigned n)
 {
@@ -600,12 +589,6 @@ PAGEFLAG_FALSE(HWPoison, hwpoison)
 #define __PG_HWPOISON 0
 #endif
 
-#if defined(CONFIG_PAGE_IDLE_FLAG) && defined(CONFIG_64BIT)
-TESTPAGEFLAG(Young, young, PF_ANY)
-SETPAGEFLAG(Young, young, PF_ANY)
-TESTCLEARFLAG(Young, young, PF_ANY)
-PAGEFLAG(Idle, idle, PF_ANY)
-#endif
 
 #ifdef CONFIG_KASAN_HW_TAGS
 PAGEFLAG(SkipKASanPoison, skip_kasan_poison, PF_HEAD)
@@ -669,26 +652,7 @@ static __always_inline int __PageMovable(struct page *page)
 				PAGE_MAPPING_MOVABLE;
 }
 
-#ifdef CONFIG_KSM
-/*
- * A KSM page is one of those write-protected "shared pages" or "merged pages"
- * which KSM maps into multiple mms, wherever identical anonymous page content
- * is found in VM_MERGEABLE vmas.  It's a PageAnon page, pointing not to any
- * anon_vma, but to that page's node of the stable tree.
- */
-static __always_inline bool folio_test_ksm(struct folio *folio)
-{
-	return ((unsigned long)folio->mapping & PAGE_MAPPING_FLAGS) ==
-				PAGE_MAPPING_KSM;
-}
-
-static __always_inline bool PageKsm(struct page *page)
-{
-	return folio_test_ksm(page_folio(page));
-}
-#else
 TESTPAGEFLAG_FALSE(Ksm, ksm)
-#endif
 
 u64 stable_page_flags(struct page *page);
 
@@ -807,13 +771,6 @@ static __always_inline void clear_compound_head(struct page *page)
 	WRITE_ONCE(page->compound_head, 0);
 }
 
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-static inline void ClearPageCompound(struct page *page)
-{
-	BUG_ON(!PageHead(page));
-	ClearPageHead(page);
-}
-#endif
 
 #define PG_head_mask ((1UL << PG_head))
 
@@ -829,83 +786,15 @@ TESTPAGEFLAG_FALSE(Huge, hugetlb)
 TESTPAGEFLAG_FALSE(HeadHuge, headhuge)
 #endif
 
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-/*
- * PageHuge() only returns true for hugetlbfs pages, but not for
- * normal or transparent huge pages.
- *
- * PageTransHuge() returns true for both transparent huge and
- * hugetlbfs pages, but not normal pages. PageTransHuge() can only be
- * called only in the core VM paths where hugetlbfs pages can't exist.
- */
-static inline int PageTransHuge(struct page *page)
-{
-	VM_BUG_ON_PAGE(PageTail(page), page);
-	return PageHead(page);
-}
-
-static inline bool folio_test_transhuge(struct folio *folio)
-{
-	return folio_test_head(folio);
-}
-
-/*
- * PageTransCompound returns true for both transparent huge pages
- * and hugetlbfs pages, so it should only be called when it's known
- * that hugetlbfs pages aren't involved.
- */
-static inline int PageTransCompound(struct page *page)
-{
-	return PageCompound(page);
-}
-
-/*
- * PageTransTail returns true for both transparent huge pages
- * and hugetlbfs pages, so it should only be called when it's known
- * that hugetlbfs pages aren't involved.
- */
-static inline int PageTransTail(struct page *page)
-{
-	return PageTail(page);
-}
-
-/*
- * PageDoubleMap indicates that the compound page is mapped with PTEs as well
- * as PMDs.
- *
- * This is required for optimization of rmap operations for THP: we can postpone
- * per small page mapcount accounting (and its overhead from atomic operations)
- * until the first PMD split.
- *
- * For the page PageDoubleMap means ->_mapcount in all sub-pages is offset up
- * by one. This reference will go away with last compound_mapcount.
- *
- * See also __split_huge_pmd_locked() and page_remove_anon_compound_rmap().
- */
-PAGEFLAG(DoubleMap, double_map, PF_SECOND)
-	TESTSCFLAG(DoubleMap, double_map, PF_SECOND)
-#else
 TESTPAGEFLAG_FALSE(TransHuge, transhuge)
 TESTPAGEFLAG_FALSE(TransCompound, transcompound)
 TESTPAGEFLAG_FALSE(TransCompoundMap, transcompoundmap)
 TESTPAGEFLAG_FALSE(TransTail, transtail)
 PAGEFLAG_FALSE(DoubleMap, double_map)
 	TESTSCFLAG_FALSE(DoubleMap, double_map)
-#endif
 
-#if defined(CONFIG_MEMORY_FAILURE) && defined(CONFIG_TRANSPARENT_HUGEPAGE)
-/*
- * PageHasHWPoisoned indicates that at least one subpage is hwpoisoned in the
- * compound page.
- *
- * This flag is set by hwpoison handler.  Cleared by THP split or free page.
- */
-PAGEFLAG(HasHWPoisoned, has_hwpoisoned, PF_SECOND)
-	TESTSCFLAG(HasHWPoisoned, has_hwpoisoned, PF_SECOND)
-#else
 PAGEFLAG_FALSE(HasHWPoisoned, has_hwpoisoned)
 	TESTSCFLAG_FALSE(HasHWPoisoned, has_hwpoisoned)
-#endif
 
 /*
  * Check if a page is currently marked HWPoisoned. Note that this check is

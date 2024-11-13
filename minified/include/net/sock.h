@@ -103,9 +103,6 @@ typedef struct {
 	 * the slock as a lock variant (in addition to
 	 * the slock itself):
 	 */
-#ifdef CONFIG_DEBUG_LOCK_ALLOC
-	struct lockdep_map dep_map;
-#endif
 } socket_lock_t;
 
 struct sock;
@@ -532,9 +529,6 @@ struct sock {
 #endif
 	void                    (*sk_destruct)(struct sock *sk);
 	struct sock_reuseport __rcu	*sk_reuseport_cb;
-#ifdef CONFIG_BPF_SYSCALL
-	struct bpf_local_storage __rcu	*sk_bpf_storage;
-#endif
 	struct rcu_head		sk_rcu;
 	netns_tracker		ns_tracker;
 };
@@ -1219,11 +1213,6 @@ struct proto {
 	void			(*rehash)(struct sock *sk);
 	int			(*get_port)(struct sock *sk, unsigned short snum);
 	void			(*put_port)(struct sock *sk);
-#ifdef CONFIG_BPF_SYSCALL
-	int			(*psock_update_sk_prot)(struct sock *sk,
-							struct sk_psock *psock,
-							bool restore);
-#endif
 
 	/* Keeping track of sockets in use */
 #ifdef CONFIG_PROC_FS

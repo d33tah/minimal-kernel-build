@@ -24,18 +24,7 @@
 # error "Invalid value for CONFIG_PHYSICAL_ALIGN"
 #endif
 
-#if defined(CONFIG_KERNEL_BZIP2)
-# define BOOT_HEAP_SIZE		0x400000
-#elif defined(CONFIG_KERNEL_ZSTD)
-/*
- * Zstd needs to allocate the ZSTD_DCtx in order to decompress the kernel.
- * The ZSTD_DCtx is ~160KB, so set the heap size to 192KB because it is a
- * round number and to allow some slack.
- */
-# define BOOT_HEAP_SIZE		 0x30000
-#else
 # define BOOT_HEAP_SIZE		 0x10000
-#endif
 
 #ifdef CONFIG_X86_64
 # define BOOT_STACK_SIZE	0x4000
@@ -49,11 +38,7 @@
  * 2 pages for first 2M (video RAM: CONFIG_X86_VERBOSE_BOOTUP).
  * Total is 19 pages.
  */
-#  ifdef CONFIG_X86_VERBOSE_BOOTUP
-#   define BOOT_PGT_SIZE	(19*4096)
-#  else /* !CONFIG_X86_VERBOSE_BOOTUP */
 #   define BOOT_PGT_SIZE	(17*4096)
-#  endif
 # else /* !CONFIG_RANDOMIZE_BASE */
 #  define BOOT_PGT_SIZE		BOOT_INIT_PGT_SIZE
 # endif

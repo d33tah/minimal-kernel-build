@@ -145,19 +145,15 @@ static __always_inline void *__constant_memcpy(void *to, const void *from,
 #define __HAVE_ARCH_MEMCPY
 extern void *memcpy(void *, const void *, size_t);
 
-#ifndef CONFIG_FORTIFY_SOURCE
 
 #define memcpy(t, f, n) __builtin_memcpy(t, f, n)
 
-#endif /* !CONFIG_FORTIFY_SOURCE */
 
 #define __HAVE_ARCH_MEMMOVE
 void *memmove(void *dest, const void *src, size_t n);
 
 extern int memcmp(const void *, const void *, size_t);
-#ifndef CONFIG_FORTIFY_SOURCE
 #define memcmp __builtin_memcmp
-#endif
 
 #define __HAVE_ARCH_MEMCHR
 extern void *memchr(const void *cs, int c, size_t count);
@@ -191,9 +187,7 @@ extern char *strstr(const char *cs, const char *ct);
 
 #define __HAVE_ARCH_MEMSET
 extern void *memset(void *, int, size_t);
-#ifndef CONFIG_FORTIFY_SOURCE
 #define memset(s, c, count) __builtin_memset(s, c, count)
-#endif /* !CONFIG_FORTIFY_SOURCE */
 
 #define __HAVE_ARCH_MEMSET16
 static inline void *memset16(uint16_t *s, uint16_t v, size_t n)

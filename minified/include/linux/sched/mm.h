@@ -390,42 +390,6 @@ set_active_memcg(struct mem_cgroup *memcg)
 }
 #endif
 
-#ifdef CONFIG_MEMBARRIER
-enum {
-	MEMBARRIER_STATE_PRIVATE_EXPEDITED_READY		= (1U << 0),
-	MEMBARRIER_STATE_PRIVATE_EXPEDITED			= (1U << 1),
-	MEMBARRIER_STATE_GLOBAL_EXPEDITED_READY			= (1U << 2),
-	MEMBARRIER_STATE_GLOBAL_EXPEDITED			= (1U << 3),
-	MEMBARRIER_STATE_PRIVATE_EXPEDITED_SYNC_CORE_READY	= (1U << 4),
-	MEMBARRIER_STATE_PRIVATE_EXPEDITED_SYNC_CORE		= (1U << 5),
-	MEMBARRIER_STATE_PRIVATE_EXPEDITED_RSEQ_READY		= (1U << 6),
-	MEMBARRIER_STATE_PRIVATE_EXPEDITED_RSEQ			= (1U << 7),
-};
-
-enum {
-	MEMBARRIER_FLAG_SYNC_CORE	= (1U << 0),
-	MEMBARRIER_FLAG_RSEQ		= (1U << 1),
-};
-
-#ifdef CONFIG_ARCH_HAS_MEMBARRIER_CALLBACKS
-#include <asm/membarrier.h>
-#endif
-
-static inline void membarrier_mm_sync_core_before_usermode(struct mm_struct *mm)
-{
-	if (current->mm != mm)
-		return;
-	if (likely(!(atomic_read(&mm->membarrier_state) &
-		     MEMBARRIER_STATE_PRIVATE_EXPEDITED_SYNC_CORE)))
-		return;
-	sync_core_before_usermode();
-}
-
-extern void membarrier_exec_mmap(struct mm_struct *mm);
-
-extern void membarrier_update_current_mm(struct mm_struct *next_mm);
-
-#else
 #ifdef CONFIG_ARCH_HAS_MEMBARRIER_CALLBACKS
 static inline void membarrier_arch_switch_mm(struct mm_struct *prev,
 					     struct mm_struct *next,
@@ -442,7 +406,6 @@ static inline void membarrier_mm_sync_core_before_usermode(struct mm_struct *mm)
 static inline void membarrier_update_current_mm(struct mm_struct *next_mm)
 {
 }
-#endif
 
 #ifdef CONFIG_IOMMU_SVA
 static inline void mm_pasid_init(struct mm_struct *mm)

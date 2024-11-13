@@ -448,21 +448,7 @@ put_compat_sigset(compat_sigset_t __user *compat, const sigset_t *set,
 		  unsigned int size)
 {
 	/* size <= sizeof(compat_sigset_t) <= sizeof(sigset_t) */
-#if defined(__BIG_ENDIAN) && defined(CONFIG_64BIT)
-	compat_sigset_t v;
-	switch (_NSIG_WORDS) {
-	case 4: v.sig[7] = (set->sig[3] >> 32); v.sig[6] = set->sig[3];
-		fallthrough;
-	case 3: v.sig[5] = (set->sig[2] >> 32); v.sig[4] = set->sig[2];
-		fallthrough;
-	case 2: v.sig[3] = (set->sig[1] >> 32); v.sig[2] = set->sig[1];
-		fallthrough;
-	case 1: v.sig[1] = (set->sig[0] >> 32); v.sig[0] = set->sig[0];
-	}
-	return copy_to_user(compat, &v, size) ? -EFAULT : 0;
-#else
 	return copy_to_user(compat, set, size) ? -EFAULT : 0;
-#endif
 }
 
 #ifdef CONFIG_CPU_BIG_ENDIAN

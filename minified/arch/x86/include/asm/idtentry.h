@@ -569,16 +569,6 @@ DECLARE_IDTENTRY_RAW(X86_TRAP_UD,		exc_invalid_op);
 DECLARE_IDTENTRY_RAW(X86_TRAP_BP,		exc_int3);
 DECLARE_IDTENTRY_RAW_ERRORCODE(X86_TRAP_PF,	exc_page_fault);
 
-#ifdef CONFIG_X86_MCE
-#ifdef CONFIG_X86_64
-DECLARE_IDTENTRY_MCE(X86_TRAP_MC,	exc_machine_check);
-#else
-DECLARE_IDTENTRY_RAW(X86_TRAP_MC,	exc_machine_check);
-#endif
-#ifdef CONFIG_XEN_PV
-DECLARE_IDTENTRY_RAW(X86_TRAP_MC,	xenpv_exc_machine_check);
-#endif
-#endif
 
 /* NMI */
 
@@ -650,13 +640,6 @@ DECLARE_IDTENTRY_SYSVEC(LOCAL_TIMER_VECTOR,		sysvec_apic_timer_interrupt);
 DECLARE_IDTENTRY_SYSVEC(X86_PLATFORM_IPI_VECTOR,	sysvec_x86_platform_ipi);
 #endif
 
-#ifdef CONFIG_SMP
-DECLARE_IDTENTRY(RESCHEDULE_VECTOR,			sysvec_reschedule_ipi);
-DECLARE_IDTENTRY_SYSVEC(IRQ_MOVE_CLEANUP_VECTOR,	sysvec_irq_move_cleanup);
-DECLARE_IDTENTRY_SYSVEC(REBOOT_VECTOR,			sysvec_reboot);
-DECLARE_IDTENTRY_SYSVEC(CALL_FUNCTION_SINGLE_VECTOR,	sysvec_call_function_single);
-DECLARE_IDTENTRY_SYSVEC(CALL_FUNCTION_VECTOR,		sysvec_call_function);
-#endif
 
 #ifdef CONFIG_X86_LOCAL_APIC
 # ifdef CONFIG_X86_MCE_THRESHOLD

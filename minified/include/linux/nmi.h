@@ -25,13 +25,8 @@ extern unsigned long watchdog_enabled;
 
 extern struct cpumask watchdog_cpumask;
 extern unsigned long *watchdog_cpumask_bits;
-#ifdef CONFIG_SMP
-extern int sysctl_softlockup_all_cpu_backtrace;
-extern int sysctl_hardlockup_all_cpu_backtrace;
-#else
 #define sysctl_softlockup_all_cpu_backtrace 0
 #define sysctl_hardlockup_all_cpu_backtrace 0
-#endif /* !CONFIG_SMP */
 
 #else /* CONFIG_LOCKUP_DETECTOR */
 static inline void lockup_detector_init(void) { }
@@ -39,16 +34,6 @@ static inline void lockup_detector_soft_poweroff(void) { }
 static inline void lockup_detector_cleanup(void) { }
 #endif /* !CONFIG_LOCKUP_DETECTOR */
 
-#ifdef CONFIG_SOFTLOCKUP_DETECTOR
-extern void touch_softlockup_watchdog_sched(void);
-extern void touch_softlockup_watchdog(void);
-extern void touch_softlockup_watchdog_sync(void);
-extern void touch_all_softlockup_watchdogs(void);
-extern unsigned int  softlockup_panic;
-
-extern int lockup_detector_online_cpu(unsigned int cpu);
-extern int lockup_detector_offline_cpu(unsigned int cpu);
-#else /* CONFIG_SOFTLOCKUP_DETECTOR */
 static inline void touch_softlockup_watchdog_sched(void) { }
 static inline void touch_softlockup_watchdog(void) { }
 static inline void touch_softlockup_watchdog_sync(void) { }
@@ -56,13 +41,8 @@ static inline void touch_all_softlockup_watchdogs(void) { }
 
 #define lockup_detector_online_cpu	NULL
 #define lockup_detector_offline_cpu	NULL
-#endif /* CONFIG_SOFTLOCKUP_DETECTOR */
 
-#ifdef CONFIG_DETECT_HUNG_TASK
-void reset_hung_task_detector(void);
-#else
 static inline void reset_hung_task_detector(void) { }
-#endif
 
 /*
  * The run state of the lockup detectors is controlled by the content of the
@@ -81,12 +61,7 @@ static inline void reset_hung_task_detector(void) { }
 #define NMI_WATCHDOG_ENABLED      (1 << NMI_WATCHDOG_ENABLED_BIT)
 #define SOFT_WATCHDOG_ENABLED     (1 << SOFT_WATCHDOG_ENABLED_BIT)
 
-#if defined(CONFIG_HARDLOCKUP_DETECTOR)
-extern void hardlockup_detector_disable(void);
-extern unsigned int hardlockup_panic;
-#else
 static inline void hardlockup_detector_disable(void) {}
-#endif
 
 #if defined(CONFIG_HAVE_NMI_WATCHDOG) || defined(CONFIG_HARDLOCKUP_DETECTOR)
 # define NMI_WATCHDOG_SYSCTL_PERM	0644

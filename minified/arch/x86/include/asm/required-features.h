@@ -35,11 +35,7 @@
 # define NEED_NOPL	0
 #endif
 
-#ifdef CONFIG_MATOM
-# define NEED_MOVBE	(1<<(X86_FEATURE_MOVBE & 31))
-#else
 # define NEED_MOVBE	0
-#endif
 
 #ifdef CONFIG_X86_64
 #ifdef CONFIG_PARAVIRT_XXL

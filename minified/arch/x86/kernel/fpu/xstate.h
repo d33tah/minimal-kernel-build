@@ -140,11 +140,7 @@ static inline u64 xfeatures_mask_independent(void)
 		     : "D" (st), "m" (*st), "a" (lmask), "d" (hmask)	\
 		     : "memory")
 
-#if defined(CONFIG_X86_64) && defined(CONFIG_X86_DEBUG_FPU)
-extern void xfd_validate_state(struct fpstate *fpstate, u64 mask, bool rstor);
-#else
 static inline void xfd_validate_state(struct fpstate *fpstate, u64 mask, bool rstor) { }
-#endif
 
 #ifdef CONFIG_X86_64
 static inline void xfd_update_state(struct fpstate *fpstate)

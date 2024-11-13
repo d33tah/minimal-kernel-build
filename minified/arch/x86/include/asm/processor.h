@@ -180,13 +180,8 @@ extern struct cpuinfo_x86	new_cpu_data;
 extern __u32			cpu_caps_cleared[NCAPINTS + NBUGINTS];
 extern __u32			cpu_caps_set[NCAPINTS + NBUGINTS];
 
-#ifdef CONFIG_SMP
-DECLARE_PER_CPU_READ_MOSTLY(struct cpuinfo_x86, cpu_info);
-#define cpu_data(cpu)		per_cpu(cpu_info, cpu)
-#else
 #define cpu_info		boot_cpu_data
 #define cpu_data(cpu)		boot_cpu_data
-#endif
 
 extern const struct seq_operations cpuinfo_op;
 
@@ -323,18 +318,8 @@ struct x86_hw_tss {
 	(offsetof(struct tss_struct, io_bitmap.mapall) -	\
 	 offsetof(struct tss_struct, x86_tss))
 
-#ifdef CONFIG_X86_IOPL_IOPERM
-/*
- * sizeof(unsigned long) coming from an extra "long" at the end of the
- * iobitmap. The limit is inclusive, i.e. the last valid byte.
- */
-# define __KERNEL_TSS_LIMIT	\
-	(IO_BITMAP_OFFSET_VALID_ALL + IO_BITMAP_BYTES + \
-	 sizeof(unsigned long) - 1)
-#else
 # define __KERNEL_TSS_LIMIT	\
 	(offsetof(struct tss_struct, x86_tss) + sizeof(struct x86_hw_tss) - 1)
-#endif
 
 /* Base offset outside of TSS_LIMIT so unpriviledged IO causes #GP */
 #define IO_BITMAP_OFFSET_INVALID	(__KERNEL_TSS_LIMIT + 1)
@@ -427,9 +412,6 @@ extern asmlinkage void ignore_sysret(void);
 /* Save actual FS/GS selectors and bases to current->thread */
 void current_save_fsgs(void);
 #else	/* X86_64 */
-#ifdef CONFIG_STACKPROTECTOR
-DECLARE_PER_CPU(unsigned long, __stack_chk_guard);
-#endif
 DECLARE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
 DECLARE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
 #endif	/* !X86_64 */

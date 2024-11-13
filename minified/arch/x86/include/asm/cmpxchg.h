@@ -29,11 +29,7 @@ extern void __add_wrong_size(void)
 #define __X86_CASE_B	1
 #define __X86_CASE_W	2
 #define __X86_CASE_L	4
-#ifdef CONFIG_64BIT
-#define __X86_CASE_Q	8
-#else
 #define	__X86_CASE_Q	-1		/* sizeof will never return -1 */
-#endif
 
 /* 
  * An exchange-type operation, which takes a value and a pointer, and

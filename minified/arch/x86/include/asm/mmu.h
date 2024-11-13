@@ -33,10 +33,6 @@ typedef struct {
 	 */
 	atomic64_t tlb_gen;
 
-#ifdef CONFIG_MODIFY_LDT_SYSCALL
-	struct rw_semaphore	ldt_usr_sem;
-	struct ldt_struct	*ldt;
-#endif
 
 #ifdef CONFIG_X86_64
 	unsigned short flags;

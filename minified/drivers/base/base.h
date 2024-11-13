@@ -165,20 +165,11 @@ extern void deferred_probe_extend_timeout(void);
 extern struct kset *devices_kset;
 extern void devices_kset_move_last(struct device *dev);
 
-#if defined(CONFIG_MODULES) && defined(CONFIG_SYSFS)
-extern void module_add_driver(struct module *mod, struct device_driver *drv);
-extern void module_remove_driver(struct device_driver *drv);
-#else
 static inline void module_add_driver(struct module *mod,
 				     struct device_driver *drv) { }
 static inline void module_remove_driver(struct device_driver *drv) { }
-#endif
 
-#ifdef CONFIG_DEVTMPFS
-extern int devtmpfs_init(void);
-#else
 static inline int devtmpfs_init(void) { return 0; }
-#endif
 
 /* Device links support */
 extern int device_links_read_lock(void);
@@ -196,13 +187,8 @@ extern void fw_devlink_drivers_done(void);
 /* device pm support */
 void device_pm_move_to_tail(struct device *dev);
 
-#ifdef CONFIG_DEVTMPFS
-int devtmpfs_create_node(struct device *dev);
-int devtmpfs_delete_node(struct device *dev);
-#else
 static inline int devtmpfs_create_node(struct device *dev) { return 0; }
 static inline int devtmpfs_delete_node(struct device *dev) { return 0; }
-#endif
 
 void software_node_notify(struct device *dev);
 void software_node_notify_remove(struct device *dev);

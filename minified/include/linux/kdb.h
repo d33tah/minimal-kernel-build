@@ -196,14 +196,10 @@ int kdb_process_cpu(const struct task_struct *p)
 	return cpu;
 }
 
-#ifdef CONFIG_KALLSYMS
-extern const char *kdb_walk_kallsyms(loff_t *pos);
-#else /* ! CONFIG_KALLSYMS */
 static inline const char *kdb_walk_kallsyms(loff_t *pos)
 {
 	return NULL;
 }
-#endif /* ! CONFIG_KALLSYMS */
 
 /* Dynamic kdb shell command registration */
 extern int kdb_register(kdbtab_t *cmd);

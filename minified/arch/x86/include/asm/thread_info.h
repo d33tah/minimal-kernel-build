@@ -53,9 +53,6 @@ struct thread_info {
 	unsigned long		flags;		/* low level flags */
 	unsigned long		syscall_work;	/* SYSCALL_WORK_ flags */
 	u32			status;		/* thread synchronous flags */
-#ifdef CONFIG_SMP
-	u32			cpu;		/* current CPU */
-#endif
 };
 
 #define INIT_THREAD_INFO(tsk)			\
@@ -127,18 +124,9 @@ struct thread_info {
 /*
  * Avoid calls to __switch_to_xtra() on UP as STIBP is not evaluated.
  */
-#ifdef CONFIG_SMP
-# define _TIF_WORK_CTXSW	(_TIF_WORK_CTXSW_BASE | _TIF_SPEC_IB)
-#else
 # define _TIF_WORK_CTXSW	(_TIF_WORK_CTXSW_BASE)
-#endif
 
-#ifdef CONFIG_X86_IOPL_IOPERM
-# define _TIF_WORK_CTXSW_PREV	(_TIF_WORK_CTXSW| _TIF_USER_RETURN_NOTIFY | \
-				 _TIF_IO_BITMAP)
-#else
 # define _TIF_WORK_CTXSW_PREV	(_TIF_WORK_CTXSW| _TIF_USER_RETURN_NOTIFY)
-#endif
 
 #define _TIF_WORK_CTXSW_NEXT	(_TIF_WORK_CTXSW)
 

@@ -634,15 +634,7 @@ static inline bool vma_is_accessible(struct vm_area_struct *vma)
 	return vma->vm_flags & VM_ACCESS_FLAGS;
 }
 
-#ifdef CONFIG_SHMEM
-/*
- * The vma_is_shmem is not inline because it is used only by slow
- * paths in userfault.
- */
-bool vma_is_shmem(struct vm_area_struct *vma);
-#else
 static inline bool vma_is_shmem(struct vm_area_struct *vma) { return false; }
-#endif
 
 int vma_is_stack_for_current(struct vm_area_struct *vma);
 
@@ -793,18 +785,10 @@ static inline int page_mapcount(struct page *page)
 
 int folio_mapcount(struct folio *folio);
 
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-static inline int total_mapcount(struct page *page)
-{
-	return folio_mapcount(page_folio(page));
-}
-
-#else
 static inline int total_mapcount(struct page *page)
 {
 	return page_mapcount(page);
 }
-#endif
 
 static inline struct page *virt_to_head_page(const void *x)
 {
@@ -843,9 +827,6 @@ enum compound_dtor_id {
 #ifdef CONFIG_HUGETLB_PAGE
 	HUGETLB_PAGE_DTOR,
 #endif
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-	TRANSHUGE_PAGE_DTOR,
-#endif
 	NR_COMPOUND_DTORS,
 };
 extern compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS];
@@ -871,9 +852,6 @@ static inline int head_compound_pincount(struct page *head)
 static inline void set_compound_order(struct page *page, unsigned int order)
 {
 	page[1].compound_order = order;
-#ifdef CONFIG_64BIT
-	page[1].compound_nr = 1U << order;
-#endif
 }
 
 /* Returns the number of pages in this potentially compound page. */
@@ -881,11 +859,7 @@ static inline unsigned long compound_nr(struct page *page)
 {
 	if (!PageHead(page))
 		return 1;
-#ifdef CONFIG_64BIT
-	return page[1].compound_nr;
-#else
 	return 1UL << compound_order(page);
-#endif
 }
 
 /* Returns the number of bytes in this potentially compound page. */
@@ -1557,12 +1531,6 @@ static inline bool page_needs_cow_for_dma(struct vm_area_struct *vma,
 #ifdef CONFIG_MIGRATION
 static inline bool is_pinnable_page(struct page *page)
 {
-#ifdef CONFIG_CMA
-	int mt = get_pageblock_migratetype(page);
-
-	if (mt == MIGRATE_CMA || mt == MIGRATE_ISOLATE)
-		return false;
-#endif
 	return !is_zone_movable_page(page) || is_zero_pfn(page_to_pfn(page));
 }
 #else
@@ -2296,17 +2264,11 @@ static inline spinlock_t *pmd_lockptr(struct mm_struct *mm, pmd_t *pmd)
 
 static inline bool pmd_ptlock_init(struct page *page)
 {
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-	page->pmd_huge_pte = NULL;
-#endif
 	return ptlock_init(page);
 }
 
 static inline void pmd_ptlock_free(struct page *page)
 {
-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-	VM_BUG_ON_PAGE(page->pmd_huge_pte, page);
-#endif
 	ptlock_free(page);
 }
 
@@ -2953,40 +2915,11 @@ extern int apply_to_existing_page_range(struct mm_struct *mm,
 				   pte_fn_t fn, void *data);
 
 extern void init_mem_debugging_and_hardening(void);
-#ifdef CONFIG_PAGE_POISONING
-extern void __kernel_poison_pages(struct page *page, int numpages);
-extern void __kernel_unpoison_pages(struct page *page, int numpages);
-extern bool _page_poisoning_enabled_early;
-DECLARE_STATIC_KEY_FALSE(_page_poisoning_enabled);
-static inline bool page_poisoning_enabled(void)
-{
-	return _page_poisoning_enabled_early;
-}
-/*
- * For use in fast paths after init_mem_debugging() has run, or when a
- * false negative result is not harmful when called too early.
- */
-static inline bool page_poisoning_enabled_static(void)
-{
-	return static_branch_unlikely(&_page_poisoning_enabled);
-}
-static inline void kernel_poison_pages(struct page *page, int numpages)
-{
-	if (page_poisoning_enabled_static())
-		__kernel_poison_pages(page, numpages);
-}
-static inline void kernel_unpoison_pages(struct page *page, int numpages)
-{
-	if (page_poisoning_enabled_static())
-		__kernel_unpoison_pages(page, numpages);
-}
-#else
 static inline bool page_poisoning_enabled(void) { return false; }
 static inline bool page_poisoning_enabled_static(void) { return false; }
 static inline void __kernel_poison_pages(struct page *page, int nunmpages) { }
 static inline void kernel_poison_pages(struct page *page, int numpages) { }
 static inline void kernel_unpoison_pages(struct page *page, int numpages) { }
-#endif
 
 DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
 static inline bool want_init_on_alloc(gfp_t flags)
@@ -3025,28 +2958,8 @@ static inline bool debug_pagealloc_enabled_static(void)
 	return static_branch_unlikely(&_debug_pagealloc_enabled);
 }
 
-#ifdef CONFIG_DEBUG_PAGEALLOC
-/*
- * To support DEBUG_PAGEALLOC architecture must ensure that
- * __kernel_map_pages() never fails
- */
-extern void __kernel_map_pages(struct page *page, int numpages, int enable);
-
-static inline void debug_pagealloc_map_pages(struct page *page, int numpages)
-{
-	if (debug_pagealloc_enabled_static())
-		__kernel_map_pages(page, numpages, 1);
-}
-
-static inline void debug_pagealloc_unmap_pages(struct page *page, int numpages)
-{
-	if (debug_pagealloc_enabled_static())
-		__kernel_map_pages(page, numpages, 0);
-}
-#else	/* CONFIG_DEBUG_PAGEALLOC */
 static inline void debug_pagealloc_map_pages(struct page *page, int numpages) {}
 static inline void debug_pagealloc_unmap_pages(struct page *page, int numpages) {}
-#endif	/* CONFIG_DEBUG_PAGEALLOC */
 
 #ifdef __HAVE_ARCH_GATE_AREA
 extern struct vm_area_struct *get_gate_vma(struct mm_struct *mm);
@@ -3218,32 +3131,9 @@ static inline bool vma_is_special_huge(const struct vm_area_struct *vma)
 
 #endif /* CONFIG_TRANSPARENT_HUGEPAGE || CONFIG_HUGETLBFS */
 
-#ifdef CONFIG_DEBUG_PAGEALLOC
-extern unsigned int _debug_guardpage_minorder;
-DECLARE_STATIC_KEY_FALSE(_debug_guardpage_enabled);
-
-static inline unsigned int debug_guardpage_minorder(void)
-{
-	return _debug_guardpage_minorder;
-}
-
-static inline bool debug_guardpage_enabled(void)
-{
-	return static_branch_unlikely(&_debug_guardpage_enabled);
-}
-
-static inline bool page_is_guard(struct page *page)
-{
-	if (!debug_guardpage_enabled())
-		return false;
-
-	return PageGuard(page);
-}
-#else
 static inline unsigned int debug_guardpage_minorder(void) { return 0; }
 static inline bool debug_guardpage_enabled(void) { return false; }
 static inline bool page_is_guard(struct page *page) { return false; }
-#endif /* CONFIG_DEBUG_PAGEALLOC */
 
 #if MAX_NUMNODES > 1
 void __init setup_nr_node_ids(void);
@@ -3272,11 +3162,7 @@ unsigned long wp_shared_mapping_range(struct address_space *mapping,
 
 extern int sysctl_nr_trim_pages;
 
-#ifdef CONFIG_PRINTK
-void mem_dump_obj(void *object);
-#else
 static inline void mem_dump_obj(void *object) {}
-#endif
 
 /**
  * seal_check_future_write - Check for F_SEAL_FUTURE_WRITE flag and handle it

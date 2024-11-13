@@ -10,5 +10,5 @@ copy:
 
 vm:
 	cd minified && make tinyconfig && make
-	-script -c  'timeout 10s  qemu-system-x86_64 -kernel minified/arch/x86/boot/bzImage   -display curses'
+	-script -c  'timeout 10s  qemu-system-x86_64 -kernel minified/arch/x86/boot/bzImage   -display curses -m 32M'
 

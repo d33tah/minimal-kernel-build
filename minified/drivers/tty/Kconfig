@@ -172,8 +172,6 @@ config LDISC_AUTOLOAD
 	  dev.tty.ldisc_autoload sysctl, this configuration option will
 	  only set the default value of this functionality.
 
-source "drivers/tty/serial/Kconfig"
-
 config SERIAL_NONSTANDARD
 	bool "Non-standard serial port support"
 	depends on HAS_IOMEM
@@ -366,8 +364,6 @@ config VCC
 	help
 	  Support for Sun logical domain consoles.
 
-source "drivers/tty/hvc/Kconfig"
-
 config RPMSG_TTY
 	tristate "RPMSG tty driver"
 	depends on RPMSG
@@ -381,5 +377,3 @@ config RPMSG_TTY
 	  called rpmsg_tty.
 
 endif # TTY
-
-source "drivers/tty/serdev/Kconfig"

@@ -32,8 +32,6 @@ obj-$(CONFIG_NSC_GPIO)		+= nsc_gpio.o
 obj-$(CONFIG_GPIO_TB0219)	+= tb0219.o
 obj-$(CONFIG_TELCLOCK)		+= tlclk.o
 
-obj-y				+= agp/
-
 obj-$(CONFIG_HANGCHECK_TIMER)	+= hangcheck-timer.o
 
 obj-$(CONFIG_PS3_FLASH)		+= ps3flash.o

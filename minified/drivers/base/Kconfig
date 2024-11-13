@@ -101,8 +101,6 @@ config PREVENT_FIRMWARE_BUILD
 	    o CONFIG_WANXL through CONFIG_WANXL_BUILD_FIRMWARE
 	    o CONFIG_SCSI_AIC79XX through CONFIG_AIC79XX_BUILD_FIRMWARE
 
-source "drivers/base/firmware_loader/Kconfig"
-
 config WANT_DEV_COREDUMP
 	bool
 	help
@@ -175,8 +173,6 @@ config HMEM_REPORTING
 	  Enable reporting for heterogeneous memory access attributes under
 	  their non-uniform memory nodes.
 
-source "drivers/base/test/Kconfig"
-
 config SYS_HYPERVISOR
 	bool
 	default n
@@ -194,8 +190,6 @@ config GENERIC_CPU_VULNERABILITIES
 config SOC_BUS
 	bool
 	select GLOB
-
-source "drivers/base/regmap/Kconfig"
 
 config DMA_SHARED_BUFFER
 	bool

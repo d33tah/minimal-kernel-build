@@ -8,69 +8,6 @@
 #include <asm/intel_ds.h>
 #include <asm/pgtable_areas.h>
 
-#ifdef CONFIG_X86_64
-
-#ifdef CONFIG_AMD_MEM_ENCRYPT
-#define VC_EXCEPTION_STKSZ	EXCEPTION_STKSZ
-#else
-#define VC_EXCEPTION_STKSZ	0
-#endif
-
-/* Macro to enforce the same ordering and stack sizes */
-#define ESTACKS_MEMBERS(guardsize, optional_stack_size)		\
-	char	DF_stack_guard[guardsize];			\
-	char	DF_stack[EXCEPTION_STKSZ];			\
-	char	NMI_stack_guard[guardsize];			\
-	char	NMI_stack[EXCEPTION_STKSZ];			\
-	char	DB_stack_guard[guardsize];			\
-	char	DB_stack[EXCEPTION_STKSZ];			\
-	char	MCE_stack_guard[guardsize];			\
-	char	MCE_stack[EXCEPTION_STKSZ];			\
-	char	VC_stack_guard[guardsize];			\
-	char	VC_stack[optional_stack_size];			\
-	char	VC2_stack_guard[guardsize];			\
-	char	VC2_stack[optional_stack_size];			\
-	char	IST_top_guard[guardsize];			\
-
-/* The exception stacks' physical storage. No guard pages required */
-struct exception_stacks {
-	ESTACKS_MEMBERS(0, VC_EXCEPTION_STKSZ)
-};
-
-/* The effective cpu entry area mapping with guard pages. */
-struct cea_exception_stacks {
-	ESTACKS_MEMBERS(PAGE_SIZE, EXCEPTION_STKSZ)
-};
-
-/*
- * The exception stack ordering in [cea_]exception_stacks
- */
-enum exception_stack_ordering {
-	ESTACK_DF,
-	ESTACK_NMI,
-	ESTACK_DB,
-	ESTACK_MCE,
-	ESTACK_VC,
-	ESTACK_VC2,
-	N_EXCEPTION_STACKS
-};
-
-#define CEA_ESTACK_SIZE(st)					\
-	sizeof(((struct cea_exception_stacks *)0)->st## _stack)
-
-#define CEA_ESTACK_BOT(ceastp, st)				\
-	((unsigned long)&(ceastp)->st## _stack)
-
-#define CEA_ESTACK_TOP(ceastp, st)				\
-	(CEA_ESTACK_BOT(ceastp, st) + CEA_ESTACK_SIZE(st))
-
-#define CEA_ESTACK_OFFS(st)					\
-	offsetof(struct cea_exception_stacks, st## _stack)
-
-#define CEA_ESTACK_PAGES					\
-	(sizeof(struct cea_exception_stacks) / PAGE_SIZE)
-
-#endif
 
 struct doublefault_stack {
 	unsigned long stack[(PAGE_SIZE - sizeof(struct x86_hw_tss)) / sizeof(unsigned long)];
@@ -105,12 +42,6 @@ struct cpu_entry_area {
 	 */
 	struct tss_struct tss;
 
-#ifdef CONFIG_X86_64
-	/*
-	 * Exception stacks used for IST entries with guard pages.
-	 */
-	struct cea_exception_stacks estacks;
-#endif
 	/*
 	 * Per CPU debug store for Intel performance monitoring. Wastes a
 	 * full page at the moment.

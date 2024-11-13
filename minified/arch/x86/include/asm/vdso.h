@@ -33,13 +33,7 @@ struct vdso_image {
 	long sym_vdso32_rt_sigreturn_landing_pad;
 };
 
-#ifdef CONFIG_X86_64
-extern const struct vdso_image vdso_image_64;
-#endif
 
-#ifdef CONFIG_X86_X32_ABI
-extern const struct vdso_image vdso_image_x32;
-#endif
 
 extern const struct vdso_image vdso_image_32;
 

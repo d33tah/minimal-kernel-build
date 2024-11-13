@@ -57,9 +57,6 @@ extern struct mm_struct *pgd_page_get_mm(struct page *page);
 
 extern pmdval_t early_pmd_flags;
 
-#ifdef CONFIG_PARAVIRT_XXL
-#include <asm/paravirt.h>
-#else  /* !CONFIG_PARAVIRT_XXL */
 #define set_pte(ptep, pte)		native_set_pte(ptep, pte)
 
 #define set_pte_atomic(ptep, pte)					\
@@ -113,7 +110,6 @@ extern pmdval_t early_pmd_flags;
 #define __pte(x)	native_make_pte(x)
 
 #define arch_end_context_switch(prev)	do {} while(0)
-#endif	/* CONFIG_PARAVIRT_XXL */
 
 /*
  * The following only work if pte_present() is true.
@@ -239,22 +235,6 @@ static inline pte_t pte_clear_flags(pte_t pte, pteval_t clear)
 	return native_make_pte(v & ~clear);
 }
 
-#ifdef CONFIG_HAVE_ARCH_USERFAULTFD_WP
-static inline int pte_uffd_wp(pte_t pte)
-{
-	return pte_flags(pte) & _PAGE_UFFD_WP;
-}
-
-static inline pte_t pte_mkuffd_wp(pte_t pte)
-{
-	return pte_set_flags(pte, _PAGE_UFFD_WP);
-}
-
-static inline pte_t pte_clear_uffd_wp(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_UFFD_WP);
-}
-#endif /* CONFIG_HAVE_ARCH_USERFAULTFD_WP */
 
 static inline pte_t pte_mkclean(pte_t pte)
 {
@@ -335,22 +315,6 @@ static inline pmd_t pmd_clear_flags(pmd_t pmd, pmdval_t clear)
 	return native_make_pmd(v & ~clear);
 }
 
-#ifdef CONFIG_HAVE_ARCH_USERFAULTFD_WP
-static inline int pmd_uffd_wp(pmd_t pmd)
-{
-	return pmd_flags(pmd) & _PAGE_UFFD_WP;
-}
-
-static inline pmd_t pmd_mkuffd_wp(pmd_t pmd)
-{
-	return pmd_set_flags(pmd, _PAGE_UFFD_WP);
-}
-
-static inline pmd_t pmd_clear_uffd_wp(pmd_t pmd)
-{
-	return pmd_clear_flags(pmd, _PAGE_UFFD_WP);
-}
-#endif /* CONFIG_HAVE_ARCH_USERFAULTFD_WP */
 
 static inline pmd_t pmd_mkold(pmd_t pmd)
 {
@@ -446,53 +410,6 @@ static inline pud_t pud_mkwrite(pud_t pud)
 	return pud_set_flags(pud, _PAGE_RW);
 }
 
-#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
-static inline int pte_soft_dirty(pte_t pte)
-{
-	return pte_flags(pte) & _PAGE_SOFT_DIRTY;
-}
-
-static inline int pmd_soft_dirty(pmd_t pmd)
-{
-	return pmd_flags(pmd) & _PAGE_SOFT_DIRTY;
-}
-
-static inline int pud_soft_dirty(pud_t pud)
-{
-	return pud_flags(pud) & _PAGE_SOFT_DIRTY;
-}
-
-static inline pte_t pte_mksoft_dirty(pte_t pte)
-{
-	return pte_set_flags(pte, _PAGE_SOFT_DIRTY);
-}
-
-static inline pmd_t pmd_mksoft_dirty(pmd_t pmd)
-{
-	return pmd_set_flags(pmd, _PAGE_SOFT_DIRTY);
-}
-
-static inline pud_t pud_mksoft_dirty(pud_t pud)
-{
-	return pud_set_flags(pud, _PAGE_SOFT_DIRTY);
-}
-
-static inline pte_t pte_clear_soft_dirty(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_SOFT_DIRTY);
-}
-
-static inline pmd_t pmd_clear_soft_dirty(pmd_t pmd)
-{
-	return pmd_clear_flags(pmd, _PAGE_SOFT_DIRTY);
-}
-
-static inline pud_t pud_clear_soft_dirty(pud_t pud)
-{
-	return pud_clear_flags(pud, _PAGE_SOFT_DIRTY);
-}
-
-#endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
 
 /*
  * Mask out unsupported bits in a present pgprot.  Non-present pgprots
@@ -627,26 +544,10 @@ static inline int is_new_memtype_allowed(u64 paddr, unsigned long size,
 pmd_t *populate_extra_pmd(unsigned long vaddr);
 pte_t *populate_extra_pte(unsigned long vaddr);
 
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-pgd_t __pti_set_user_pgtbl(pgd_t *pgdp, pgd_t pgd);
-
-/*
- * Take a PGD location (pgdp) and a pgd value that needs to be set there.
- * Populates the user and returns the resulting PGD that must be set in
- * the kernel copy of the page tables.
- */
-static inline pgd_t pti_set_user_pgtbl(pgd_t *pgdp, pgd_t pgd)
-{
-	if (!static_cpu_has(X86_FEATURE_PTI))
-		return pgd;
-	return __pti_set_user_pgtbl(pgdp, pgd);
-}
-#else   /* CONFIG_PAGE_TABLE_ISOLATION */
 static inline pgd_t pti_set_user_pgtbl(pgd_t *pgdp, pgd_t pgd)
 {
 	return pgd;
 }
-#endif  /* CONFIG_PAGE_TABLE_ISOLATION */
 
 #endif	/* __ASSEMBLY__ */
 
@@ -675,12 +576,6 @@ static inline int pte_present(pte_t a)
 	return pte_flags(a) & (_PAGE_PRESENT | _PAGE_PROTNONE);
 }
 
-#ifdef CONFIG_ARCH_HAS_PTE_DEVMAP
-static inline int pte_devmap(pte_t a)
-{
-	return (pte_flags(a) & _PAGE_DEVMAP) == _PAGE_DEVMAP;
-}
-#endif
 
 #define pte_accessible pte_accessible
 static inline bool pte_accessible(struct mm_struct *mm, pte_t a)
@@ -706,23 +601,6 @@ static inline int pmd_present(pmd_t pmd)
 	return pmd_flags(pmd) & (_PAGE_PRESENT | _PAGE_PROTNONE | _PAGE_PSE);
 }
 
-#ifdef CONFIG_NUMA_BALANCING
-/*
- * These work without NUMA balancing but the kernel does not care. See the
- * comment in include/linux/pgtable.h
- */
-static inline int pte_protnone(pte_t pte)
-{
-	return (pte_flags(pte) & (_PAGE_PROTNONE | _PAGE_PRESENT))
-		== _PAGE_PROTNONE;
-}
-
-static inline int pmd_protnone(pmd_t pmd)
-{
-	return (pmd_flags(pmd) & (_PAGE_PROTNONE | _PAGE_PRESENT))
-		== _PAGE_PROTNONE;
-}
-#endif /* CONFIG_NUMA_BALANCING */
 
 static inline int pmd_none(pmd_t pmd)
 {
@@ -910,9 +788,6 @@ void __init poking_init(void);
 unsigned long init_memory_mapping(unsigned long start,
 				  unsigned long end, pgprot_t prot);
 
-#ifdef CONFIG_X86_64
-extern pgd_t trampoline_pgd_entry;
-#endif
 
 /* local pte updates need not use xchg for locking */
 static inline pte_t native_local_ptep_get_and_clear(pte_t *ptep)
@@ -1119,54 +994,6 @@ static inline bool pgdp_maps_userspace(void *__ptr)
 #define pgd_leaf	pgd_large
 static inline int pgd_large(pgd_t pgd) { return 0; }
 
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-/*
- * All top-level PAGE_TABLE_ISOLATION page tables are order-1 pages
- * (8k-aligned and 8k in size).  The kernel one is at the beginning 4k and
- * the user one is in the last 4k.  To switch between them, you
- * just need to flip the 12th bit in their addresses.
- */
-#define PTI_PGTABLE_SWITCH_BIT	PAGE_SHIFT
-
-/*
- * This generates better code than the inline assembly in
- * __set_bit().
- */
-static inline void *ptr_set_bit(void *ptr, int bit)
-{
-	unsigned long __ptr = (unsigned long)ptr;
-
-	__ptr |= BIT(bit);
-	return (void *)__ptr;
-}
-static inline void *ptr_clear_bit(void *ptr, int bit)
-{
-	unsigned long __ptr = (unsigned long)ptr;
-
-	__ptr &= ~BIT(bit);
-	return (void *)__ptr;
-}
-
-static inline pgd_t *kernel_to_user_pgdp(pgd_t *pgdp)
-{
-	return ptr_set_bit(pgdp, PTI_PGTABLE_SWITCH_BIT);
-}
-
-static inline pgd_t *user_to_kernel_pgdp(pgd_t *pgdp)
-{
-	return ptr_clear_bit(pgdp, PTI_PGTABLE_SWITCH_BIT);
-}
-
-static inline p4d_t *kernel_to_user_p4dp(p4d_t *p4dp)
-{
-	return ptr_set_bit(p4dp, PTI_PGTABLE_SWITCH_BIT);
-}
-
-static inline p4d_t *user_to_kernel_p4dp(p4d_t *p4dp)
-{
-	return ptr_clear_bit(p4dp, PTI_PGTABLE_SWITCH_BIT);
-}
-#endif /* CONFIG_PAGE_TABLE_ISOLATION */
 
 /*
  * clone_pgd_range(pgd_t *dst, pgd_t *src, int count);
@@ -1181,13 +1008,6 @@ static inline p4d_t *user_to_kernel_p4dp(p4d_t *p4dp)
 static inline void clone_pgd_range(pgd_t *dst, pgd_t *src, int count)
 {
 	memcpy(dst, src, count * sizeof(pgd_t));
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-	if (!static_cpu_has(X86_FEATURE_PTI))
-		return;
-	/* Clone the user space pgd as well */
-	memcpy(kernel_to_user_pgdp(dst), kernel_to_user_pgdp(src),
-	       count * sizeof(pgd_t));
-#endif
 }
 
 #define PTE_SHIFT ilog2(PTRS_PER_PTE)
@@ -1238,80 +1058,11 @@ static inline pte_t pte_swp_clear_exclusive(pte_t pte)
 }
 #endif /* _PAGE_SWP_EXCLUSIVE */
 
-#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
-static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
-{
-	return pte_set_flags(pte, _PAGE_SWP_SOFT_DIRTY);
-}
 
-static inline int pte_swp_soft_dirty(pte_t pte)
-{
-	return pte_flags(pte) & _PAGE_SWP_SOFT_DIRTY;
-}
-
-static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_SWP_SOFT_DIRTY);
-}
-
-#ifdef CONFIG_ARCH_ENABLE_THP_MIGRATION
-static inline pmd_t pmd_swp_mksoft_dirty(pmd_t pmd)
-{
-	return pmd_set_flags(pmd, _PAGE_SWP_SOFT_DIRTY);
-}
-
-static inline int pmd_swp_soft_dirty(pmd_t pmd)
-{
-	return pmd_flags(pmd) & _PAGE_SWP_SOFT_DIRTY;
-}
-
-static inline pmd_t pmd_swp_clear_soft_dirty(pmd_t pmd)
-{
-	return pmd_clear_flags(pmd, _PAGE_SWP_SOFT_DIRTY);
-}
-#endif
-#endif
-
-#ifdef CONFIG_HAVE_ARCH_USERFAULTFD_WP
-static inline pte_t pte_swp_mkuffd_wp(pte_t pte)
-{
-	return pte_set_flags(pte, _PAGE_SWP_UFFD_WP);
-}
-
-static inline int pte_swp_uffd_wp(pte_t pte)
-{
-	return pte_flags(pte) & _PAGE_SWP_UFFD_WP;
-}
-
-static inline pte_t pte_swp_clear_uffd_wp(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_SWP_UFFD_WP);
-}
-
-static inline pmd_t pmd_swp_mkuffd_wp(pmd_t pmd)
-{
-	return pmd_set_flags(pmd, _PAGE_SWP_UFFD_WP);
-}
-
-static inline int pmd_swp_uffd_wp(pmd_t pmd)
-{
-	return pmd_flags(pmd) & _PAGE_SWP_UFFD_WP;
-}
-
-static inline pmd_t pmd_swp_clear_uffd_wp(pmd_t pmd)
-{
-	return pmd_clear_flags(pmd, _PAGE_SWP_UFFD_WP);
-}
-#endif /* CONFIG_HAVE_ARCH_USERFAULTFD_WP */
 
 static inline u16 pte_flags_pkey(unsigned long pte_flags)
 {
-#ifdef CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS
-	/* ifdef to avoid doing 59-bit shift on 32-bit values */
-	return (pte_flags & _PAGE_PKEY_MASK) >> _PAGE_BIT_PKEY_BIT0;
-#else
 	return 0;
-#endif
 }
 
 static inline bool __pkru_allows_pkey(u16 pkey, bool write)
@@ -1376,22 +1127,6 @@ static inline bool arch_faults_on_old_pte(void)
 	return false;
 }
 
-#ifdef CONFIG_PAGE_TABLE_CHECK
-static inline bool pte_user_accessible_page(pte_t pte)
-{
-	return (pte_val(pte) & _PAGE_PRESENT) && (pte_val(pte) & _PAGE_USER);
-}
-
-static inline bool pmd_user_accessible_page(pmd_t pmd)
-{
-	return pmd_leaf(pmd) && (pmd_val(pmd) & _PAGE_PRESENT) && (pmd_val(pmd) & _PAGE_USER);
-}
-
-static inline bool pud_user_accessible_page(pud_t pud)
-{
-	return pud_leaf(pud) && (pud_val(pud) & _PAGE_PRESENT) && (pud_val(pud) & _PAGE_USER);
-}
-#endif
 
 #endif	/* __ASSEMBLY__ */
 

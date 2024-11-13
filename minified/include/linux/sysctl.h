@@ -193,64 +193,6 @@ struct ctl_path {
 	const char *procname;
 };
 
-#ifdef CONFIG_SYSCTL
-
-#define DECLARE_SYSCTL_BASE(_name, _table)				\
-static struct ctl_table _name##_base_table[] = {			\
-	{								\
-		.procname	= #_name,				\
-		.mode		= 0555,					\
-		.child		= _table,				\
-	},								\
-	{ },								\
-}
-
-extern int __register_sysctl_base(struct ctl_table *base_table);
-
-#define register_sysctl_base(_name) __register_sysctl_base(_name##_base_table)
-
-void proc_sys_poll_notify(struct ctl_table_poll *poll);
-
-extern void setup_sysctl_set(struct ctl_table_set *p,
-	struct ctl_table_root *root,
-	int (*is_seen)(struct ctl_table_set *));
-extern void retire_sysctl_set(struct ctl_table_set *set);
-
-struct ctl_table_header *__register_sysctl_table(
-	struct ctl_table_set *set,
-	const char *path, struct ctl_table *table);
-struct ctl_table_header *__register_sysctl_paths(
-	struct ctl_table_set *set,
-	const struct ctl_path *path, struct ctl_table *table);
-struct ctl_table_header *register_sysctl(const char *path, struct ctl_table *table);
-struct ctl_table_header *register_sysctl_table(struct ctl_table * table);
-struct ctl_table_header *register_sysctl_paths(const struct ctl_path *path,
-						struct ctl_table *table);
-
-void unregister_sysctl_table(struct ctl_table_header * table);
-
-extern int sysctl_init_bases(void);
-extern void __register_sysctl_init(const char *path, struct ctl_table *table,
-				 const char *table_name);
-#define register_sysctl_init(path, table) __register_sysctl_init(path, table, #table)
-extern struct ctl_table_header *register_sysctl_mount_point(const char *path);
-
-void do_sysctl_args(void);
-int do_proc_douintvec(struct ctl_table *table, int write,
-		      void *buffer, size_t *lenp, loff_t *ppos,
-		      int (*conv)(unsigned long *lvalp,
-				  unsigned int *valp,
-				  int write, void *data),
-		      void *data);
-
-extern int pwrsw_enabled;
-extern int unaligned_enabled;
-extern int unaligned_dump_stack;
-extern int no_unaligned_warning;
-
-extern struct ctl_table sysctl_mount_point[];
-
-#else /* CONFIG_SYSCTL */
 
 #define DECLARE_SYSCTL_BASE(_name, _table)
 
@@ -295,7 +237,6 @@ static inline void setup_sysctl_set(struct ctl_table_set *p,
 static inline void do_sysctl_args(void)
 {
 }
-#endif /* CONFIG_SYSCTL */
 
 int sysctl_max_threads(struct ctl_table *table, int write, void *buffer,
 		size_t *lenp, loff_t *ppos);

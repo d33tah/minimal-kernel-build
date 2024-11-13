@@ -71,35 +71,6 @@ static inline unsigned long native_read_cr4(void)
 
 void native_write_cr4(unsigned long val);
 
-#ifdef CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS
-static inline u32 rdpkru(void)
-{
-	u32 ecx = 0;
-	u32 edx, pkru;
-
-	/*
-	 * "rdpkru" instruction.  Places PKRU contents in to EAX,
-	 * clears EDX and requires that ecx=0.
-	 */
-	asm volatile(".byte 0x0f,0x01,0xee\n\t"
-		     : "=a" (pkru), "=d" (edx)
-		     : "c" (ecx));
-	return pkru;
-}
-
-static inline void wrpkru(u32 pkru)
-{
-	u32 ecx = 0, edx = 0;
-
-	/*
-	 * "wrpkru" instruction.  Loads contents in EAX to PKRU,
-	 * requires that ecx = edx = 0.
-	 */
-	asm volatile(".byte 0x0f,0x01,0xef\n\t"
-		     : : "a" (pkru), "c"(ecx), "d"(edx));
-}
-
-#else
 static inline u32 rdpkru(void)
 {
 	return 0;
@@ -108,7 +79,6 @@ static inline u32 rdpkru(void)
 static inline void wrpkru(u32 pkru)
 {
 }
-#endif
 
 static inline void native_wbinvd(void)
 {
@@ -131,9 +101,6 @@ static inline unsigned long __read_cr4(void)
 	return native_read_cr4();
 }
 
-#ifdef CONFIG_PARAVIRT_XXL
-#include <asm/paravirt.h>
-#else
 
 static inline unsigned long read_cr0(void)
 {
@@ -182,14 +149,9 @@ static inline void wbinvd(void)
 
 static inline void load_gs_index(unsigned int selector)
 {
-#ifdef CONFIG_X86_64
-	native_load_gs_index(selector);
-#else
 	loadsegment(gs, selector);
-#endif
 }
 
-#endif /* CONFIG_PARAVIRT_XXL */
 
 static inline void clflush(volatile void *__p)
 {

@@ -32,9 +32,6 @@ struct scm_cookie {
 	struct pid		*pid;		/* Skb credentials */
 	struct scm_fp_list	*fp;		/* Passed files		*/
 	struct scm_creds	creds;		/* Skb credentials	*/
-#ifdef CONFIG_SECURITY_NETWORK
-	u32			secid;		/* Passed security ID 	*/
-#endif
 };
 
 void scm_detach_fds(struct msghdr *msg, struct scm_cookie *scm);
@@ -43,15 +40,8 @@ int __scm_send(struct socket *sock, struct msghdr *msg, struct scm_cookie *scm);
 void __scm_destroy(struct scm_cookie *scm);
 struct scm_fp_list *scm_fp_dup(struct scm_fp_list *fpl);
 
-#ifdef CONFIG_SECURITY_NETWORK
-static __inline__ void unix_get_peersec_dgram(struct socket *sock, struct scm_cookie *scm)
-{
-	security_socket_getpeersec_dgram(sock, NULL, &scm->secid);
-}
-#else
 static __inline__ void unix_get_peersec_dgram(struct socket *sock, struct scm_cookie *scm)
 { }
-#endif /* CONFIG_SECURITY_NETWORK */
 
 static __inline__ void scm_set_cred(struct scm_cookie *scm,
 				    struct pid *pid, kuid_t uid, kgid_t gid)
@@ -89,26 +79,8 @@ static __inline__ int scm_send(struct socket *sock, struct msghdr *msg,
 	return __scm_send(sock, msg, scm);
 }
 
-#ifdef CONFIG_SECURITY_NETWORK
-static inline void scm_passec(struct socket *sock, struct msghdr *msg, struct scm_cookie *scm)
-{
-	char *secdata;
-	u32 seclen;
-	int err;
-
-	if (test_bit(SOCK_PASSSEC, &sock->flags)) {
-		err = security_secid_to_secctx(scm->secid, &secdata, &seclen);
-
-		if (!err) {
-			put_cmsg(msg, SOL_SOCKET, SCM_SECURITY, seclen, secdata);
-			security_release_secctx(secdata, seclen);
-		}
-	}
-}
-#else
 static inline void scm_passec(struct socket *sock, struct msghdr *msg, struct scm_cookie *scm)
 { }
-#endif /* CONFIG_SECURITY_NETWORK */
 
 static __inline__ void scm_recv(struct socket *sock, struct msghdr *msg,
 				struct scm_cookie *scm, int flags)

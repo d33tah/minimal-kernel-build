@@ -34,19 +34,11 @@ extern void fpregs_mark_activate(void);
 /* Code that is unaware of kernel_fpu_begin_mask() can use this */
 static inline void kernel_fpu_begin(void)
 {
-#ifdef CONFIG_X86_64
-	/*
-	 * Any 64-bit code that uses 387 instructions must explicitly request
-	 * KFPU_387.
-	 */
-	kernel_fpu_begin_mask(KFPU_MXCSR);
-#else
 	/*
 	 * 32-bit kernel code may use 387 operations as well as SSE2, etc,
 	 * as long as it checks that the CPU has the required capability.
 	 */
 	kernel_fpu_begin_mask(KFPU_387 | KFPU_MXCSR);
-#endif
 }
 
 /*
@@ -109,21 +101,13 @@ extern void fpu__init_system(struct cpuinfo_x86 *c);
 extern void fpu__init_check_bugs(void);
 extern void fpu__resume_cpu(void);
 
-#ifdef CONFIG_MATH_EMULATION
-extern void fpstate_init_soft(struct swregs_state *soft);
-#else
 static inline void fpstate_init_soft(struct swregs_state *soft) {}
-#endif
 
 /* State tracking */
 DECLARE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 
 /* Process cleanup */
-#ifdef CONFIG_X86_64
-extern void fpstate_free(struct fpu *fpu);
-#else
 static inline void fpstate_free(struct fpu *fpu) { }
-#endif
 
 /* fpstate-related functions which are exported to KVM */
 extern void fpstate_clear_xstate_component(struct fpstate *fps, unsigned int xfeature);
@@ -136,13 +120,8 @@ extern void fpu_free_guest_fpstate(struct fpu_guest *gfpu);
 extern int fpu_swap_kvm_fpstate(struct fpu_guest *gfpu, bool enter_guest);
 extern int fpu_enable_guest_xfd_features(struct fpu_guest *guest_fpu, u64 xfeatures);
 
-#ifdef CONFIG_X86_64
-extern void fpu_update_guest_xfd(struct fpu_guest *guest_fpu, u64 xfd);
-extern void fpu_sync_guest_vmexit_xfd_state(void);
-#else
 static inline void fpu_update_guest_xfd(struct fpu_guest *guest_fpu, u64 xfd) { }
 static inline void fpu_sync_guest_vmexit_xfd_state(void) { }
-#endif
 
 extern void fpu_copy_guest_fpstate_to_uabi(struct fpu_guest *gfpu, void *buf, unsigned int size, u32 pkru);
 extern int fpu_copy_uabi_to_guest_fpstate(struct fpu_guest *gfpu, const void *buf, u64 xcr0, u32 *vpkru);

@@ -39,35 +39,6 @@ struct of_pci_range {
 extern u64 of_translate_dma_address(struct device_node *dev,
 				    const __be32 *in_addr);
 
-#ifdef CONFIG_OF_ADDRESS
-extern u64 of_translate_address(struct device_node *np, const __be32 *addr);
-extern int of_address_to_resource(struct device_node *dev, int index,
-				  struct resource *r);
-extern void __iomem *of_iomap(struct device_node *device, int index);
-void __iomem *of_io_request_and_map(struct device_node *device,
-				    int index, const char *name);
-
-/* Extract an address from a device, returns the region size and
- * the address space flags too. The PCI version uses a BAR number
- * instead of an absolute index
- */
-extern const __be32 *__of_get_address(struct device_node *dev, int index, int bar_no,
-				      u64 *size, unsigned int *flags);
-
-extern int of_pci_range_parser_init(struct of_pci_range_parser *parser,
-			struct device_node *node);
-extern int of_pci_dma_range_parser_init(struct of_pci_range_parser *parser,
-			struct device_node *node);
-extern struct of_pci_range *of_pci_range_parser_one(
-					struct of_pci_range_parser *parser,
-					struct of_pci_range *range);
-extern int of_pci_address_to_resource(struct device_node *dev, int bar,
-				      struct resource *r);
-extern int of_pci_range_to_resource(struct of_pci_range *range,
-				    struct device_node *np,
-				    struct resource *res);
-extern bool of_dma_is_coherent(struct device_node *np);
-#else /* CONFIG_OF_ADDRESS */
 static inline void __iomem *of_io_request_and_map(struct device_node *device,
 						  int index, const char *name)
 {
@@ -122,7 +93,6 @@ static inline bool of_dma_is_coherent(struct device_node *np)
 {
 	return false;
 }
-#endif /* CONFIG_OF_ADDRESS */
 
 static inline int of_address_to_resource(struct device_node *dev, int index,
 					 struct resource *r)

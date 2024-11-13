@@ -72,22 +72,6 @@ struct dma_map_ops {
 	unsigned long (*get_merge_boundary)(struct device *dev);
 };
 
-#ifdef CONFIG_DMA_OPS
-#include <asm/dma-mapping.h>
-
-static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
-{
-	if (dev->dma_ops)
-		return dev->dma_ops;
-	return get_arch_dma_ops(dev->bus);
-}
-
-static inline void set_dma_ops(struct device *dev,
-			       const struct dma_map_ops *dma_ops)
-{
-	dev->dma_ops = dma_ops;
-}
-#else /* CONFIG_DMA_OPS */
 static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
 {
 	return NULL;
@@ -96,31 +80,7 @@ static inline void set_dma_ops(struct device *dev,
 			       const struct dma_map_ops *dma_ops)
 {
 }
-#endif /* CONFIG_DMA_OPS */
 
-#ifdef CONFIG_DMA_CMA
-extern struct cma *dma_contiguous_default_area;
-
-static inline struct cma *dev_get_cma_area(struct device *dev)
-{
-	if (dev && dev->cma_area)
-		return dev->cma_area;
-	return dma_contiguous_default_area;
-}
-
-void dma_contiguous_reserve(phys_addr_t addr_limit);
-int __init dma_contiguous_reserve_area(phys_addr_t size, phys_addr_t base,
-		phys_addr_t limit, struct cma **res_cma, bool fixed);
-
-struct page *dma_alloc_from_contiguous(struct device *dev, size_t count,
-				       unsigned int order, bool no_warn);
-bool dma_release_from_contiguous(struct device *dev, struct page *pages,
-				 int count);
-struct page *dma_alloc_contiguous(struct device *dev, size_t size, gfp_t gfp);
-void dma_free_contiguous(struct device *dev, struct page *page, size_t size);
-
-void dma_contiguous_early_fixup(phys_addr_t base, unsigned long size);
-#else /* CONFIG_DMA_CMA */
 static inline struct cma *dev_get_cma_area(struct device *dev)
 {
 	return NULL;
@@ -155,23 +115,9 @@ static inline void dma_free_contiguous(struct device *dev, struct page *page,
 {
 	__free_pages(page, get_order(size));
 }
-#endif /* CONFIG_DMA_CMA*/
 
-#ifdef CONFIG_DMA_PERNUMA_CMA
-void dma_pernuma_cma_reserve(void);
-#else
 static inline void dma_pernuma_cma_reserve(void) { }
-#endif /* CONFIG_DMA_PERNUMA_CMA */
 
-#ifdef CONFIG_DMA_DECLARE_COHERENT
-int dma_declare_coherent_memory(struct device *dev, phys_addr_t phys_addr,
-		dma_addr_t device_addr, size_t size);
-int dma_alloc_from_dev_coherent(struct device *dev, ssize_t size,
-		dma_addr_t *dma_handle, void **ret);
-int dma_release_from_dev_coherent(struct device *dev, int order, void *vaddr);
-int dma_mmap_from_dev_coherent(struct device *dev, struct vm_area_struct *vma,
-		void *cpu_addr, size_t size, int *ret);
-#else
 static inline int dma_declare_coherent_memory(struct device *dev,
 		phys_addr_t phys_addr, dma_addr_t device_addr, size_t size)
 {
@@ -180,16 +126,7 @@ static inline int dma_declare_coherent_memory(struct device *dev,
 #define dma_alloc_from_dev_coherent(dev, size, handle, ret) (0)
 #define dma_release_from_dev_coherent(dev, order, vaddr) (0)
 #define dma_mmap_from_dev_coherent(dev, vma, vaddr, order, ret) (0)
-#endif /* CONFIG_DMA_DECLARE_COHERENT */
 
-#ifdef CONFIG_DMA_GLOBAL_POOL
-void *dma_alloc_from_global_coherent(struct device *dev, ssize_t size,
-		dma_addr_t *dma_handle);
-int dma_release_from_global_coherent(int order, void *vaddr);
-int dma_mmap_from_global_coherent(struct vm_area_struct *vma, void *cpu_addr,
-		size_t size, int *ret);
-int dma_init_global_coherent(phys_addr_t phys_addr, size_t size);
-#else
 static inline void *dma_alloc_from_global_coherent(struct device *dev,
 		ssize_t size, dma_addr_t *dma_handle)
 {
@@ -204,7 +141,6 @@ static inline int dma_mmap_from_global_coherent(struct vm_area_struct *vma,
 {
 	return 0;
 }
-#endif /* CONFIG_DMA_GLOBAL_POOL */
 
 /*
  * This is the actual return value from the ->alloc_noncontiguous method.
@@ -278,84 +214,44 @@ void arch_dma_free(struct device *dev, size_t size, void *cpu_addr,
 
 pgprot_t dma_pgprot(struct device *dev, pgprot_t prot, unsigned long attrs);
 
-#ifdef CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE
-void arch_sync_dma_for_device(phys_addr_t paddr, size_t size,
-		enum dma_data_direction dir);
-#else
 static inline void arch_sync_dma_for_device(phys_addr_t paddr, size_t size,
 		enum dma_data_direction dir)
 {
 }
-#endif /* ARCH_HAS_SYNC_DMA_FOR_DEVICE */
 
-#ifdef CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU
-void arch_sync_dma_for_cpu(phys_addr_t paddr, size_t size,
-		enum dma_data_direction dir);
-#else
 static inline void arch_sync_dma_for_cpu(phys_addr_t paddr, size_t size,
 		enum dma_data_direction dir)
 {
 }
-#endif /* ARCH_HAS_SYNC_DMA_FOR_CPU */
 
-#ifdef CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL
-void arch_sync_dma_for_cpu_all(void);
-#else
 static inline void arch_sync_dma_for_cpu_all(void)
 {
 }
-#endif /* CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL */
 
-#ifdef CONFIG_ARCH_HAS_DMA_PREP_COHERENT
-void arch_dma_prep_coherent(struct page *page, size_t size);
-#else
 static inline void arch_dma_prep_coherent(struct page *page, size_t size)
 {
 }
-#endif /* CONFIG_ARCH_HAS_DMA_PREP_COHERENT */
 
-#ifdef CONFIG_ARCH_HAS_DMA_MARK_CLEAN
-void arch_dma_mark_clean(phys_addr_t paddr, size_t size);
-#else
 static inline void arch_dma_mark_clean(phys_addr_t paddr, size_t size)
 {
 }
-#endif /* ARCH_HAS_DMA_MARK_CLEAN */
 
 void *arch_dma_set_uncached(void *addr, size_t size);
 void arch_dma_clear_uncached(void *addr, size_t size);
 
-#ifdef CONFIG_ARCH_HAS_DMA_MAP_DIRECT
-bool arch_dma_map_page_direct(struct device *dev, phys_addr_t addr);
-bool arch_dma_unmap_page_direct(struct device *dev, dma_addr_t dma_handle);
-bool arch_dma_map_sg_direct(struct device *dev, struct scatterlist *sg,
-		int nents);
-bool arch_dma_unmap_sg_direct(struct device *dev, struct scatterlist *sg,
-		int nents);
-#else
 #define arch_dma_map_page_direct(d, a)		(false)
 #define arch_dma_unmap_page_direct(d, a)	(false)
 #define arch_dma_map_sg_direct(d, s, n)		(false)
 #define arch_dma_unmap_sg_direct(d, s, n)	(false)
-#endif
 
-#ifdef CONFIG_ARCH_HAS_SETUP_DMA_OPS
-void arch_setup_dma_ops(struct device *dev, u64 dma_base, u64 size,
-		const struct iommu_ops *iommu, bool coherent);
-#else
 static inline void arch_setup_dma_ops(struct device *dev, u64 dma_base,
 		u64 size, const struct iommu_ops *iommu, bool coherent)
 {
 }
-#endif /* CONFIG_ARCH_HAS_SETUP_DMA_OPS */
 
-#ifdef CONFIG_ARCH_HAS_TEARDOWN_DMA_OPS
-void arch_teardown_dma_ops(struct device *dev);
-#else
 static inline void arch_teardown_dma_ops(struct device *dev)
 {
 }
-#endif /* CONFIG_ARCH_HAS_TEARDOWN_DMA_OPS */
 
 static inline void dma_debug_add_bus(struct bus_type *bus)
 {

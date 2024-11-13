@@ -113,19 +113,11 @@ static inline void fib_rule_put(struct fib_rule *rule)
 		kfree_rcu(rule, rcu);
 }
 
-#ifdef CONFIG_NET_L3_MASTER_DEV
-static inline u32 fib_rule_get_table(struct fib_rule *rule,
-				     struct fib_lookup_arg *arg)
-{
-	return rule->l3mdev ? arg->table : rule->table;
-}
-#else
 static inline u32 fib_rule_get_table(struct fib_rule *rule,
 				     struct fib_lookup_arg *arg)
 {
 	return rule->table;
 }
-#endif
 
 static inline u32 frh_get_table(struct fib_rule_hdr *frh, struct nlattr **nla)
 {

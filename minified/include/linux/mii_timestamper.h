@@ -80,19 +80,6 @@ struct mii_timestamping_ctrl {
 				struct mii_timestamper *mii_ts);
 };
 
-#ifdef CONFIG_NETWORK_PHY_TIMESTAMPING
-
-int register_mii_tstamp_controller(struct device *device,
-				   struct mii_timestamping_ctrl *ctrl);
-
-void unregister_mii_tstamp_controller(struct device *device);
-
-struct mii_timestamper *register_mii_timestamper(struct device_node *node,
-						 unsigned int port);
-
-void unregister_mii_timestamper(struct mii_timestamper *mii_ts);
-
-#else
 
 static inline
 int register_mii_tstamp_controller(struct device *device,
@@ -116,6 +103,5 @@ static inline void unregister_mii_timestamper(struct mii_timestamper *mii_ts)
 {
 }
 
-#endif
 
 #endif

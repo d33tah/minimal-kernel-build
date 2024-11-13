@@ -514,14 +514,6 @@ static int __init retain_initrd_param(char *str)
 }
 __setup("retain_initrd", retain_initrd_param);
 
-#ifdef CONFIG_ARCH_HAS_KEEPINITRD
-static int __init keepinitrd_setup(char *__unused)
-{
-	do_retain_initrd = 1;
-	return 1;
-}
-__setup("keepinitrd", keepinitrd_setup);
-#endif
 
 static bool __initdata initramfs_async = true;
 static int __init initramfs_async_setup(char *str)
@@ -583,70 +575,16 @@ disable:
 
 void __weak __init free_initrd_mem(unsigned long start, unsigned long end)
 {
-#ifdef CONFIG_ARCH_KEEP_MEMBLOCK
-	unsigned long aligned_start = ALIGN_DOWN(start, PAGE_SIZE);
-	unsigned long aligned_end = ALIGN(end, PAGE_SIZE);
-
-	memblock_free((void *)aligned_start, aligned_end - aligned_start);
-#endif
 
 	free_reserved_area((void *)start, (void *)end, POISON_FREE_INITMEM,
 			"initrd");
 }
 
-#ifdef CONFIG_KEXEC_CORE
-static bool __init kexec_free_initrd(void)
-{
-	unsigned long crashk_start = (unsigned long)__va(crashk_res.start);
-	unsigned long crashk_end   = (unsigned long)__va(crashk_res.end);
-
-	/*
-	 * If the initrd region is overlapped with crashkernel reserved region,
-	 * free only memory that is not part of crashkernel region.
-	 */
-	if (initrd_start >= crashk_end || initrd_end <= crashk_start)
-		return false;
-
-	/*
-	 * Initialize initrd memory region since the kexec boot does not do.
-	 */
-	memset((void *)initrd_start, 0, initrd_end - initrd_start);
-	if (initrd_start < crashk_start)
-		free_initrd_mem(initrd_start, crashk_start);
-	if (initrd_end > crashk_end)
-		free_initrd_mem(crashk_end, initrd_end);
-	return true;
-}
-#else
 static inline bool kexec_free_initrd(void)
 {
 	return false;
 }
-#endif /* CONFIG_KEXEC_CORE */
 
-#ifdef CONFIG_BLK_DEV_RAM
-static void __init populate_initrd_image(char *err)
-{
-	ssize_t written;
-	struct file *file;
-	loff_t pos = 0;
-
-	unpack_to_rootfs(__initramfs_start, __initramfs_size);
-
-	printk(KERN_INFO "rootfs image is not initramfs (%s); looks like an initrd\n",
-			err);
-	file = filp_open("/initrd.image", O_WRONLY | O_CREAT, 0700);
-	if (IS_ERR(file))
-		return;
-
-	written = xwrite(file, (char *)initrd_start, initrd_end - initrd_start,
-			&pos);
-	if (written != initrd_end - initrd_start)
-		pr_err("/initrd.image: incomplete write (%zd != %ld)\n",
-		       written, initrd_end - initrd_start);
-	fput(file);
-}
-#endif /* CONFIG_BLK_DEV_RAM */
 
 static void __init do_populate_rootfs(void *unused, async_cookie_t cookie)
 {
@@ -665,11 +603,7 @@ static void __init do_populate_rootfs(void *unused, async_cookie_t cookie)
 
 	err = unpack_to_rootfs((char *)initrd_start, initrd_end - initrd_start);
 	if (err) {
-#ifdef CONFIG_BLK_DEV_RAM
-		populate_initrd_image(err);
-#else
 		printk(KERN_EMERG "Initramfs unpacking failed: %s\n", err);
-#endif
 	}
 
 done:

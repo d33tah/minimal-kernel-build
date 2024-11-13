@@ -105,70 +105,6 @@ static int __init pat_debug_setup(char *str)
 }
 __setup("debugpat", pat_debug_setup);
 
-#ifdef CONFIG_X86_PAT
-/*
- * X86 PAT uses page flags arch_1 and uncached together to keep track of
- * memory type of pages that have backing page struct.
- *
- * X86 PAT supports 4 different memory types:
- *  - _PAGE_CACHE_MODE_WB
- *  - _PAGE_CACHE_MODE_WC
- *  - _PAGE_CACHE_MODE_UC_MINUS
- *  - _PAGE_CACHE_MODE_WT
- *
- * _PAGE_CACHE_MODE_WB is the default type.
- */
-
-#define _PGMT_WB		0
-#define _PGMT_WC		(1UL << PG_arch_1)
-#define _PGMT_UC_MINUS		(1UL << PG_uncached)
-#define _PGMT_WT		(1UL << PG_uncached | 1UL << PG_arch_1)
-#define _PGMT_MASK		(1UL << PG_uncached | 1UL << PG_arch_1)
-#define _PGMT_CLEAR_MASK	(~_PGMT_MASK)
-
-static inline enum page_cache_mode get_page_memtype(struct page *pg)
-{
-	unsigned long pg_flags = pg->flags & _PGMT_MASK;
-
-	if (pg_flags == _PGMT_WB)
-		return _PAGE_CACHE_MODE_WB;
-	else if (pg_flags == _PGMT_WC)
-		return _PAGE_CACHE_MODE_WC;
-	else if (pg_flags == _PGMT_UC_MINUS)
-		return _PAGE_CACHE_MODE_UC_MINUS;
-	else
-		return _PAGE_CACHE_MODE_WT;
-}
-
-static inline void set_page_memtype(struct page *pg,
-				    enum page_cache_mode memtype)
-{
-	unsigned long memtype_flags;
-	unsigned long old_flags;
-	unsigned long new_flags;
-
-	switch (memtype) {
-	case _PAGE_CACHE_MODE_WC:
-		memtype_flags = _PGMT_WC;
-		break;
-	case _PAGE_CACHE_MODE_UC_MINUS:
-		memtype_flags = _PGMT_UC_MINUS;
-		break;
-	case _PAGE_CACHE_MODE_WT:
-		memtype_flags = _PGMT_WT;
-		break;
-	case _PAGE_CACHE_MODE_WB:
-	default:
-		memtype_flags = _PGMT_WB;
-		break;
-	}
-
-	do {
-		old_flags = pg->flags;
-		new_flags = (old_flags & _PGMT_CLEAR_MASK) | memtype_flags;
-	} while (cmpxchg(&pg->flags, old_flags, new_flags) != old_flags);
-}
-#else
 static inline enum page_cache_mode get_page_memtype(struct page *pg)
 {
 	return -1;
@@ -177,7 +113,6 @@ static inline void set_page_memtype(struct page *pg,
 				    enum page_cache_mode memtype)
 {
 }
-#endif
 
 enum {
 	PAT_UC = 0,		/* uncached */
@@ -333,9 +268,7 @@ void pat_init(void)
 	u64 pat;
 	struct cpuinfo_x86 *c = &boot_cpu_data;
 
-#ifndef CONFIG_X86_PAT
 	pr_info_once("x86/PAT: PAT support disabled because CONFIG_X86_PAT is disabled in the kernel.\n");
-#endif
 
 	if (pat_disabled)
 		return;
@@ -805,21 +738,6 @@ void memtype_free_io(resource_size_t start, resource_size_t end)
 	memtype_free(start, end);
 }
 
-#ifdef CONFIG_X86_PAT
-int arch_io_reserve_memtype_wc(resource_size_t start, resource_size_t size)
-{
-	enum page_cache_mode type = _PAGE_CACHE_MODE_WC;
-
-	return memtype_reserve_io(start, start + size, &type);
-}
-EXPORT_SYMBOL(arch_io_reserve_memtype_wc);
-
-void arch_io_free_memtype_wc(resource_size_t start, resource_size_t size)
-{
-	memtype_free_io(start, start + size);
-}
-EXPORT_SYMBOL(arch_io_free_memtype_wc);
-#endif
 
 pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
 				unsigned long size, pgprot_t vma_prot)
@@ -830,13 +748,6 @@ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
 	return vma_prot;
 }
 
-#ifdef CONFIG_STRICT_DEVMEM
-/* This check is done in drivers/char/mem.c in case of STRICT_DEVMEM */
-static inline int range_is_allowed(unsigned long pfn, unsigned long size)
-{
-	return 1;
-}
-#else
 /* This check is needed to avoid cache aliasing when PAT is enabled */
 static inline int range_is_allowed(unsigned long pfn, unsigned long size)
 {
@@ -855,7 +766,6 @@ static inline int range_is_allowed(unsigned long pfn, unsigned long size)
 	}
 	return 1;
 }
-#endif /* CONFIG_STRICT_DEVMEM */
 
 int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
 				unsigned long size, pgprot_t *vma_prot)

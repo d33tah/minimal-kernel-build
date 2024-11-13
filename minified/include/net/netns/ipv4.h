@@ -42,29 +42,12 @@ struct tcp_fastopen_context;
 struct netns_ipv4 {
 	struct inet_timewait_death_row *tcp_death_row;
 
-#ifdef CONFIG_SYSCTL
-	struct ctl_table_header	*forw_hdr;
-	struct ctl_table_header	*frags_hdr;
-	struct ctl_table_header	*ipv4_hdr;
-	struct ctl_table_header *route_hdr;
-	struct ctl_table_header *xfrm4_hdr;
-#endif
 	struct ipv4_devconf	*devconf_all;
 	struct ipv4_devconf	*devconf_dflt;
 	struct ip_ra_chain __rcu *ra_chain;
 	struct mutex		ra_mutex;
-#ifdef CONFIG_IP_MULTIPLE_TABLES
-	struct fib_rules_ops	*rules_ops;
-	struct fib_table __rcu	*fib_main;
-	struct fib_table __rcu	*fib_default;
-	unsigned int		fib_rules_require_fldissect;
-	bool			fib_has_custom_rules;
-#endif
 	bool			fib_has_custom_local_routes;
 	bool			fib_offload_disabled;
-#ifdef CONFIG_IP_ROUTE_CLASSID
-	atomic_t		fib_num_tclassid_users;
-#endif
 	struct hlist_head	*fib_table_hash;
 	struct sock		*fibnl;
 
@@ -99,9 +82,6 @@ struct netns_ipv4 {
 	/* Shall we try to damage output packets if routing dev changes? */
 	u8 sysctl_ip_dynaddr;
 	u8 sysctl_ip_early_demux;
-#ifdef CONFIG_NET_L3_MASTER_DEV
-	u8 sysctl_raw_l3mdev_accept;
-#endif
 	u8 sysctl_tcp_early_demux;
 	u8 sysctl_udp_early_demux;
 
@@ -109,9 +89,6 @@ struct netns_ipv4 {
 
 	u8 sysctl_fwmark_reflect;
 	u8 sysctl_tcp_fwmark_accept;
-#ifdef CONFIG_NET_L3_MASTER_DEV
-	u8 sysctl_tcp_l3mdev_accept;
-#endif
 	u8 sysctl_tcp_mtu_probing;
 	int sysctl_tcp_mtu_probe_floor;
 	int sysctl_tcp_base_mss;
@@ -184,9 +161,6 @@ struct netns_ipv4 {
 
 	u8 sysctl_fib_notify_on_flag_change;
 
-#ifdef CONFIG_NET_L3_MASTER_DEV
-	u8 sysctl_udp_l3mdev_accept;
-#endif
 
 	u8 sysctl_igmp_llm_reports;
 	int sysctl_igmp_max_memberships;
@@ -197,24 +171,7 @@ struct netns_ipv4 {
 
 	atomic_t dev_addr_genid;
 
-#ifdef CONFIG_SYSCTL
-	unsigned long *sysctl_local_reserved_ports;
-	int sysctl_ip_prot_sock;
-#endif
 
-#ifdef CONFIG_IP_MROUTE
-#ifndef CONFIG_IP_MROUTE_MULTIPLE_TABLES
-	struct mr_table		*mrt;
-#else
-	struct list_head	mr_tables;
-	struct fib_rules_ops	*mr_rules_ops;
-#endif
-#endif
-#ifdef CONFIG_IP_ROUTE_MULTIPATH
-	u32 sysctl_fib_multipath_hash_fields;
-	u8 sysctl_fib_multipath_use_neigh;
-	u8 sysctl_fib_multipath_hash_policy;
-#endif
 
 	struct fib_notifier_ops	*notifier_ops;
 	unsigned int	fib_seq;	/* protected by rtnl_mutex */

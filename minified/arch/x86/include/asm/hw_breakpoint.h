@@ -28,9 +28,6 @@ struct arch_hw_breakpoint {
 #define X86_BREAKPOINT_LEN_2		0x44
 #define X86_BREAKPOINT_LEN_4		0x4c
 
-#ifdef CONFIG_X86_64
-#define X86_BREAKPOINT_LEN_8		0x48
-#endif
 
 /* Available HW breakpoint type encodings */
 

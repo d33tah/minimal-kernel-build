@@ -21,11 +21,7 @@
 
 #define X2APIC_MSR(r) (APIC_BASE_MSR + ((r) >> 4))
 
-#ifdef CONFIG_X86_64
-#define MAX_NR_USER_RETURN_MSRS	7
-#else
 #define MAX_NR_USER_RETURN_MSRS	4
-#endif
 
 #define MAX_NR_LOADSTORE_MSRS	8
 
@@ -272,10 +268,6 @@ struct vcpu_vmx {
 	 */
 	struct vmx_uret_msr   guest_uret_msrs[MAX_NR_USER_RETURN_MSRS];
 	bool                  guest_uret_msrs_loaded;
-#ifdef CONFIG_X86_64
-	u64		      msr_host_kernel_gs_base;
-	u64		      msr_guest_kernel_gs_base;
-#endif
 
 	u64		      spec_ctrl;
 	u32		      msr_ia32_umwait_control;

@@ -42,18 +42,6 @@ static inline u64 hv_do_hypercall(u64 control, void *input, void *output)
 	u64 output_address = output ? virt_to_phys(output) : 0;
 	u64 hv_status;
 
-#ifdef CONFIG_X86_64
-	if (!hv_hypercall_pg)
-		return U64_MAX;
-
-	__asm__ __volatile__("mov %4, %%r8\n"
-			     CALL_NOSPEC
-			     : "=a" (hv_status), ASM_CALL_CONSTRAINT,
-			       "+c" (control), "+d" (input_address)
-			     :  "r" (output_address),
-				THUNK_TARGET(hv_hypercall_pg)
-			     : "cc", "memory", "r8", "r9", "r10", "r11");
-#else
 	u32 input_address_hi = upper_32_bits(input_address);
 	u32 input_address_lo = lower_32_bits(input_address);
 	u32 output_address_hi = upper_32_bits(output_address);
@@ -70,7 +58,6 @@ static inline u64 hv_do_hypercall(u64 control, void *input, void *output)
 			       "D"(output_address_hi), "S"(output_address_lo),
 			       THUNK_TARGET(hv_hypercall_pg)
 			     : "cc", "memory");
-#endif /* !x86_64 */
 	return hv_status;
 }
 
@@ -79,15 +66,6 @@ static inline u64 hv_do_fast_hypercall8(u16 code, u64 input1)
 {
 	u64 hv_status, control = (u64)code | HV_HYPERCALL_FAST_BIT;
 
-#ifdef CONFIG_X86_64
-	{
-		__asm__ __volatile__(CALL_NOSPEC
-				     : "=a" (hv_status), ASM_CALL_CONSTRAINT,
-				       "+c" (control), "+d" (input1)
-				     : THUNK_TARGET(hv_hypercall_pg)
-				     : "cc", "r8", "r9", "r10", "r11");
-	}
-#else
 	{
 		u32 input1_hi = upper_32_bits(input1);
 		u32 input1_lo = lower_32_bits(input1);
@@ -101,7 +79,6 @@ static inline u64 hv_do_fast_hypercall8(u16 code, u64 input1)
 					THUNK_TARGET(hv_hypercall_pg)
 				      : "cc", "edi", "esi");
 	}
-#endif
 		return hv_status;
 }
 
@@ -110,17 +87,6 @@ static inline u64 hv_do_fast_hypercall16(u16 code, u64 input1, u64 input2)
 {
 	u64 hv_status, control = (u64)code | HV_HYPERCALL_FAST_BIT;
 
-#ifdef CONFIG_X86_64
-	{
-		__asm__ __volatile__("mov %4, %%r8\n"
-				     CALL_NOSPEC
-				     : "=a" (hv_status), ASM_CALL_CONSTRAINT,
-				       "+c" (control), "+d" (input1)
-				     : "r" (input2),
-				       THUNK_TARGET(hv_hypercall_pg)
-				     : "cc", "r8", "r9", "r10", "r11");
-	}
-#else
 	{
 		u32 input1_hi = upper_32_bits(input1);
 		u32 input1_lo = lower_32_bits(input1);
@@ -135,7 +101,6 @@ static inline u64 hv_do_fast_hypercall16(u16 code, u64 input1, u64 input2)
 					THUNK_TARGET(hv_hypercall_pg)
 				      : "cc");
 	}
-#endif
 	return hv_status;
 }
 
@@ -161,13 +126,7 @@ int hyperv_fill_flush_guest_mapping_list(
 		struct hv_guest_mapping_flush_list *flush,
 		u64 start_gfn, u64 end_gfn);
 
-#ifdef CONFIG_X86_64
-void hv_apic_init(void);
-void __init hv_init_spinlocks(void);
-bool hv_vcpu_is_preempted(int vcpu);
-#else
 static inline void hv_apic_init(void) {}
-#endif
 
 struct irq_domain *hv_create_pci_msi_domain(void);
 
@@ -176,17 +135,10 @@ int hv_map_ioapic_interrupt(int ioapic_id, bool level, int vcpu, int vector,
 int hv_unmap_ioapic_interrupt(int ioapic_id, struct hv_interrupt_entry *entry);
 int hv_set_mem_host_visibility(unsigned long addr, int numpages, bool visible);
 
-#ifdef CONFIG_AMD_MEM_ENCRYPT
-void hv_ghcb_msr_write(u64 msr, u64 value);
-void hv_ghcb_msr_read(u64 msr, u64 *value);
-bool hv_ghcb_negotiate_protocol(void);
-void hv_ghcb_terminate(unsigned int set, unsigned int reason);
-#else
 static inline void hv_ghcb_msr_write(u64 msr, u64 value) {}
 static inline void hv_ghcb_msr_read(u64 msr, u64 *value) {}
 static inline bool hv_ghcb_negotiate_protocol(void) { return false; }
 static inline void hv_ghcb_terminate(unsigned int set, unsigned int reason) {}
-#endif
 
 extern bool hv_isolation_type_snp(void);
 

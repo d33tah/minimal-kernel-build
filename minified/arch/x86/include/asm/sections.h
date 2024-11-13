@@ -10,9 +10,6 @@
 extern char __brk_base[], __brk_limit[];
 extern char __end_rodata_aligned[];
 
-#if defined(CONFIG_X86_64)
-extern char __end_rodata_hpage_align[];
-#endif
 
 extern char __end_of_kernel_reserve[];
 

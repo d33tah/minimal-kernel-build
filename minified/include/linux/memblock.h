@@ -60,9 +60,6 @@ struct memblock_region {
 	phys_addr_t base;
 	phys_addr_t size;
 	enum memblock_flags flags;
-#ifdef CONFIG_NUMA
-	int nid;
-#endif
 };
 
 /**
@@ -97,15 +94,9 @@ struct memblock {
 
 extern struct memblock memblock;
 
-#ifndef CONFIG_ARCH_KEEP_MEMBLOCK
 #define __init_memblock __meminit
 #define __initdata_memblock __meminitdata
 void memblock_discard(void);
-#else
-#define __init_memblock
-#define __initdata_memblock
-static inline void memblock_discard(void) {}
-#endif
 
 void memblock_allow_resize(void);
 int memblock_add_node(phys_addr_t base, phys_addr_t size, int nid,
@@ -114,9 +105,6 @@ int memblock_add(phys_addr_t base, phys_addr_t size);
 int memblock_remove(phys_addr_t base, phys_addr_t size);
 int memblock_phys_free(phys_addr_t base, phys_addr_t size);
 int memblock_reserve(phys_addr_t base, phys_addr_t size);
-#ifdef CONFIG_HAVE_MEMBLOCK_PHYS_MAP
-int memblock_physmem_add(phys_addr_t base, phys_addr_t size);
-#endif
 void memblock_trim_memory(phys_addr_t align);
 bool memblock_overlaps_region(struct memblock_type *type,
 			      phys_addr_t base, phys_addr_t size);
@@ -144,29 +132,6 @@ void __next_mem_range_rev(u64 *idx, int nid, enum memblock_flags flags,
 
 void memblock_free_late(phys_addr_t base, phys_addr_t size);
 
-#ifdef CONFIG_HAVE_MEMBLOCK_PHYS_MAP
-static inline void __next_physmem_range(u64 *idx, struct memblock_type *type,
-					phys_addr_t *out_start,
-					phys_addr_t *out_end)
-{
-	extern struct memblock_type physmem;
-
-	__next_mem_range(idx, NUMA_NO_NODE, MEMBLOCK_NONE, &physmem, type,
-			 out_start, out_end, NULL);
-}
-
-/**
- * for_each_physmem_range - iterate through physmem areas not included in type.
- * @i: u64 used as loop variable
- * @type: ptr to memblock_type which excludes from the iteration, can be %NULL
- * @p_start: ptr to phys_addr_t for start address of the range, can be %NULL
- * @p_end: ptr to phys_addr_t for end address of the range, can be %NULL
- */
-#define for_each_physmem_range(i, type, p_start, p_end)			\
-	for (i = 0, __next_physmem_range(&i, type, p_start, p_end);	\
-	     i != (u64)ULLONG_MAX;					\
-	     __next_physmem_range(&i, type, p_start, p_end))
-#endif /* CONFIG_HAVE_MEMBLOCK_PHYS_MAP */
 
 /**
  * __for_each_mem_range - iterate through memblock areas from type_a and not
@@ -284,49 +249,6 @@ void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn,
 	for (i = -1, __next_mem_pfn_range(&i, nid, p_start, p_end, p_nid); \
 	     i >= 0; __next_mem_pfn_range(&i, nid, p_start, p_end, p_nid))
 
-#ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
-void __next_mem_pfn_range_in_zone(u64 *idx, struct zone *zone,
-				  unsigned long *out_spfn,
-				  unsigned long *out_epfn);
-/**
- * for_each_free_mem_pfn_range_in_zone - iterate through zone specific free
- * memblock areas
- * @i: u64 used as loop variable
- * @zone: zone in which all of the memory blocks reside
- * @p_start: ptr to phys_addr_t for start address of the range, can be %NULL
- * @p_end: ptr to phys_addr_t for end address of the range, can be %NULL
- *
- * Walks over free (memory && !reserved) areas of memblock in a specific
- * zone. Available once memblock and an empty zone is initialized. The main
- * assumption is that the zone start, end, and pgdat have been associated.
- * This way we can use the zone to determine NUMA node, and if a given part
- * of the memblock is valid for the zone.
- */
-#define for_each_free_mem_pfn_range_in_zone(i, zone, p_start, p_end)	\
-	for (i = 0,							\
-	     __next_mem_pfn_range_in_zone(&i, zone, p_start, p_end);	\
-	     i != U64_MAX;					\
-	     __next_mem_pfn_range_in_zone(&i, zone, p_start, p_end))
-
-/**
- * for_each_free_mem_pfn_range_in_zone_from - iterate through zone specific
- * free memblock areas from a given point
- * @i: u64 used as loop variable
- * @zone: zone in which all of the memory blocks reside
- * @p_start: ptr to phys_addr_t for start address of the range, can be %NULL
- * @p_end: ptr to phys_addr_t for end address of the range, can be %NULL
- *
- * Walks over free (memory && !reserved) areas of memblock in a specific
- * zone, continuing from current position. Available as soon as memblock is
- * initialized.
- */
-#define for_each_free_mem_pfn_range_in_zone_from(i, zone, p_start, p_end) \
-	for (; i != U64_MAX;					  \
-	     __next_mem_pfn_range_in_zone(&i, zone, p_start, p_end))
-
-int __init deferred_page_init_max_threads(const struct cpumask *node_cpumask);
-
-#endif /* CONFIG_DEFERRED_STRUCT_PAGE_INIT */
 
 /**
  * for_each_free_mem_range - iterate through free memblock areas
@@ -364,17 +286,6 @@ int __init deferred_page_init_max_threads(const struct cpumask *node_cpumask);
 int memblock_set_node(phys_addr_t base, phys_addr_t size,
 		      struct memblock_type *type, int nid);
 
-#ifdef CONFIG_NUMA
-static inline void memblock_set_region_node(struct memblock_region *r, int nid)
-{
-	r->nid = nid;
-}
-
-static inline int memblock_get_region_node(const struct memblock_region *r)
-{
-	return r->nid;
-}
-#else
 static inline void memblock_set_region_node(struct memblock_region *r, int nid)
 {
 }
@@ -383,7 +294,6 @@ static inline int memblock_get_region_node(const struct memblock_region *r)
 {
 	return 0;
 }
-#endif /* CONFIG_NUMA */
 
 /* Flags for memblock allocation APIs */
 #define MEMBLOCK_ALLOC_ANYWHERE	(~(phys_addr_t)0)
@@ -589,12 +499,7 @@ extern void *alloc_large_system_hash(const char *tablename,
 /* Only NUMA needs hash distribution. 64bit NUMA architectures have
  * sufficient vmalloc space.
  */
-#ifdef CONFIG_NUMA
-#define HASHDIST_DEFAULT IS_ENABLED(CONFIG_64BIT)
-extern int hashdist;		/* Distribute hashes across NUMA nodes? */
-#else
 #define hashdist (0)
-#endif
 
 static inline void early_memtest(phys_addr_t start, phys_addr_t end)
 {

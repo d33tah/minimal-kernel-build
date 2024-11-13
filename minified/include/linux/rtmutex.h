@@ -61,11 +61,7 @@ struct rt_mutex {
 struct rt_mutex_waiter;
 struct hrtimer_sleeper;
 
-#ifdef CONFIG_DEBUG_RT_MUTEXES
-extern void rt_mutex_debug_task_free(struct task_struct *tsk);
-#else
 static inline void rt_mutex_debug_task_free(struct task_struct *tsk) { }
-#endif
 
 #define rt_mutex_init(mutex) \
 do { \

@@ -111,22 +111,10 @@ void xrstors(struct xregs_state *xsave, u64 mask);
 
 int xfd_enable_feature(u64 xfd_err);
 
-#ifdef CONFIG_X86_64
-DECLARE_STATIC_KEY_FALSE(__fpu_state_size_dynamic);
-#endif
 
-#ifdef CONFIG_X86_64
-DECLARE_STATIC_KEY_FALSE(__fpu_state_size_dynamic);
-
-static __always_inline __pure bool fpu_state_size_dynamic(void)
-{
-	return static_branch_unlikely(&__fpu_state_size_dynamic);
-}
-#else
 static __always_inline __pure bool fpu_state_size_dynamic(void)
 {
 	return false;
 }
-#endif
 
 #endif

@@ -14,13 +14,9 @@
 
 #include <linux/types.h>
 
-#ifdef CONFIG_JAILHOUSE_GUEST
-bool jailhouse_paravirt(void);
-#else
 static inline bool jailhouse_paravirt(void)
 {
 	return false;
 }
-#endif
 
 #endif /* _ASM_X86_JAILHOUSE_PARA_H */

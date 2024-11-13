@@ -1026,12 +1026,6 @@ void xdp_do_flush(void);
 
 void bpf_warn_invalid_xdp_action(struct net_device *dev, struct bpf_prog *prog, u32 act);
 
-#ifdef CONFIG_INET
-struct sock *bpf_run_sk_reuseport(struct sock_reuseport *reuse, struct sock *sk,
-				  struct bpf_prog *prog, struct sk_buff *skb,
-				  struct sock *migrating_sk,
-				  u32 hash);
-#else
 static inline struct sock *
 bpf_run_sk_reuseport(struct sock_reuseport *reuse, struct sock *sk,
 		     struct bpf_prog *prog, struct sk_buff *skb,
@@ -1040,129 +1034,7 @@ bpf_run_sk_reuseport(struct sock_reuseport *reuse, struct sock *sk,
 {
 	return NULL;
 }
-#endif
 
-#ifdef CONFIG_BPF_JIT
-extern int bpf_jit_enable;
-extern int bpf_jit_harden;
-extern int bpf_jit_kallsyms;
-extern long bpf_jit_limit;
-extern long bpf_jit_limit_max;
-
-typedef void (*bpf_jit_fill_hole_t)(void *area, unsigned int size);
-
-struct bpf_binary_header *
-bpf_jit_binary_alloc(unsigned int proglen, u8 **image_ptr,
-		     unsigned int alignment,
-		     bpf_jit_fill_hole_t bpf_fill_ill_insns);
-void bpf_jit_binary_free(struct bpf_binary_header *hdr);
-u64 bpf_jit_alloc_exec_limit(void);
-void *bpf_jit_alloc_exec(unsigned long size);
-void bpf_jit_free_exec(void *addr);
-void bpf_jit_free(struct bpf_prog *fp);
-
-struct bpf_binary_header *
-bpf_jit_binary_pack_alloc(unsigned int proglen, u8 **ro_image,
-			  unsigned int alignment,
-			  struct bpf_binary_header **rw_hdr,
-			  u8 **rw_image,
-			  bpf_jit_fill_hole_t bpf_fill_ill_insns);
-int bpf_jit_binary_pack_finalize(struct bpf_prog *prog,
-				 struct bpf_binary_header *ro_header,
-				 struct bpf_binary_header *rw_header);
-void bpf_jit_binary_pack_free(struct bpf_binary_header *ro_header,
-			      struct bpf_binary_header *rw_header);
-
-int bpf_jit_add_poke_descriptor(struct bpf_prog *prog,
-				struct bpf_jit_poke_descriptor *poke);
-
-int bpf_jit_get_func_addr(const struct bpf_prog *prog,
-			  const struct bpf_insn *insn, bool extra_pass,
-			  u64 *func_addr, bool *func_addr_fixed);
-
-struct bpf_prog *bpf_jit_blind_constants(struct bpf_prog *fp);
-void bpf_jit_prog_release_other(struct bpf_prog *fp, struct bpf_prog *fp_other);
-
-static inline void bpf_jit_dump(unsigned int flen, unsigned int proglen,
-				u32 pass, void *image)
-{
-	pr_err("flen=%u proglen=%u pass=%u image=%pK from=%s pid=%d\n", flen,
-	       proglen, pass, image, current->comm, task_pid_nr(current));
-
-	if (image)
-		print_hex_dump(KERN_ERR, "JIT code: ", DUMP_PREFIX_OFFSET,
-			       16, 1, image, proglen, false);
-}
-
-static inline bool bpf_jit_is_ebpf(void)
-{
-	return true;
-}
-
-static inline bool ebpf_jit_enabled(void)
-{
-	return bpf_jit_enable && bpf_jit_is_ebpf();
-}
-
-static inline bool bpf_prog_ebpf_jited(const struct bpf_prog *fp)
-{
-	return fp->jited && bpf_jit_is_ebpf();
-}
-
-static inline bool bpf_jit_blinding_enabled(struct bpf_prog *prog)
-{
-	/* These are the prerequisites, should someone ever have the
-	 * idea to call blinding outside of them, we make sure to
-	 * bail out.
-	 */
-	if (!bpf_jit_is_ebpf())
-		return false;
-	if (!prog->jit_requested)
-		return false;
-	if (!bpf_jit_harden)
-		return false;
-	if (bpf_jit_harden == 1 && capable(CAP_SYS_ADMIN))
-		return false;
-
-	return true;
-}
-
-static inline bool bpf_jit_kallsyms_enabled(void)
-{
-	/* There are a couple of corner cases where kallsyms should
-	 * not be enabled f.e. on hardening.
-	 */
-	if (bpf_jit_harden)
-		return false;
-	if (!bpf_jit_kallsyms)
-		return false;
-	if (bpf_jit_kallsyms == 1)
-		return true;
-
-	return false;
-}
-
-const char *__bpf_address_lookup(unsigned long addr, unsigned long *size,
-				 unsigned long *off, char *sym);
-bool is_bpf_text_address(unsigned long addr);
-int bpf_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
-		    char *sym);
-
-static inline const char *
-bpf_address_lookup(unsigned long addr, unsigned long *size,
-		   unsigned long *off, char **modname, char *sym)
-{
-	const char *ret = __bpf_address_lookup(addr, size, off, sym);
-
-	if (ret && modname)
-		*modname = NULL;
-	return ret;
-}
-
-void bpf_prog_kallsyms_add(struct bpf_prog *fp);
-void bpf_prog_kallsyms_del(struct bpf_prog *fp);
-
-#else /* CONFIG_BPF_JIT */
 
 static inline bool ebpf_jit_enabled(void)
 {
@@ -1229,7 +1101,6 @@ static inline void bpf_prog_kallsyms_del(struct bpf_prog *fp)
 {
 }
 
-#endif /* CONFIG_BPF_JIT */
 
 void bpf_prog_kallsyms_del_all(struct bpf_prog *fp);
 

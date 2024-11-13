@@ -43,9 +43,6 @@ static __always_inline void update_lru_size(struct lruvec *lruvec,
 	__mod_lruvec_state(lruvec, NR_LRU_BASE + lru, nr_pages);
 	__mod_zone_page_state(&pgdat->node_zones[zid],
 				NR_ZONE_LRU_BASE + lru, nr_pages);
-#ifdef CONFIG_MEMCG
-	mem_cgroup_update_lru_size(lruvec, lru, zid, nr_pages);
-#endif
 }
 
 /**
@@ -145,71 +142,6 @@ static __always_inline void del_page_from_lru_list(struct page *page,
 	lruvec_del_folio(lruvec, page_folio(page));
 }
 
-#ifdef CONFIG_ANON_VMA_NAME
-/*
- * mmap_lock should be read-locked when calling anon_vma_name(). Caller should
- * either keep holding the lock while using the returned pointer or it should
- * raise anon_vma_name refcount before releasing the lock.
- */
-extern struct anon_vma_name *anon_vma_name(struct vm_area_struct *vma);
-extern struct anon_vma_name *anon_vma_name_alloc(const char *name);
-extern void anon_vma_name_free(struct kref *kref);
-
-/* mmap_lock should be read-locked */
-static inline void anon_vma_name_get(struct anon_vma_name *anon_name)
-{
-	if (anon_name)
-		kref_get(&anon_name->kref);
-}
-
-static inline void anon_vma_name_put(struct anon_vma_name *anon_name)
-{
-	if (anon_name)
-		kref_put(&anon_name->kref, anon_vma_name_free);
-}
-
-static inline
-struct anon_vma_name *anon_vma_name_reuse(struct anon_vma_name *anon_name)
-{
-	/* Prevent anon_name refcount saturation early on */
-	if (kref_read(&anon_name->kref) < REFCOUNT_MAX) {
-		anon_vma_name_get(anon_name);
-		return anon_name;
-
-	}
-	return anon_vma_name_alloc(anon_name->name);
-}
-
-static inline void dup_anon_vma_name(struct vm_area_struct *orig_vma,
-				     struct vm_area_struct *new_vma)
-{
-	struct anon_vma_name *anon_name = anon_vma_name(orig_vma);
-
-	if (anon_name)
-		new_vma->anon_name = anon_vma_name_reuse(anon_name);
-}
-
-static inline void free_anon_vma_name(struct vm_area_struct *vma)
-{
-	/*
-	 * Not using anon_vma_name because it generates a warning if mmap_lock
-	 * is not held, which might be the case here.
-	 */
-	if (!vma->vm_file)
-		anon_vma_name_put(vma->anon_name);
-}
-
-static inline bool anon_vma_name_eq(struct anon_vma_name *anon_name1,
-				    struct anon_vma_name *anon_name2)
-{
-	if (anon_name1 == anon_name2)
-		return true;
-
-	return anon_name1 && anon_name2 &&
-		!strcmp(anon_name1->name, anon_name2->name);
-}
-
-#else /* CONFIG_ANON_VMA_NAME */
 static inline struct anon_vma_name *anon_vma_name(struct vm_area_struct *vma)
 {
 	return NULL;
@@ -232,7 +164,6 @@ static inline bool anon_vma_name_eq(struct anon_vma_name *anon_name1,
 	return true;
 }
 
-#endif  /* CONFIG_ANON_VMA_NAME */
 
 static inline void init_tlb_flush_pending(struct mm_struct *mm)
 {
@@ -334,30 +265,6 @@ static inline void
 pte_install_uffd_wp_if_needed(struct vm_area_struct *vma, unsigned long addr,
 			      pte_t *pte, pte_t pteval)
 {
-#ifdef CONFIG_PTE_MARKER_UFFD_WP
-	bool arm_uffd_pte = false;
-
-	/* The current status of the pte should be "cleared" before calling */
-	WARN_ON_ONCE(!pte_none(*pte));
-
-	if (vma_is_anonymous(vma) || !userfaultfd_wp(vma))
-		return;
-
-	/* A uffd-wp wr-protected normal pte */
-	if (unlikely(pte_present(pteval) && pte_uffd_wp(pteval)))
-		arm_uffd_pte = true;
-
-	/*
-	 * A uffd-wp wr-protected swap pte.  Note: this should even cover an
-	 * existing pte marker with uffd-wp bit set.
-	 */
-	if (unlikely(pte_swp_uffd_wp_any(pteval)))
-		arm_uffd_pte = true;
-
-	if (unlikely(arm_uffd_pte))
-		set_pte_at(vma->vm_mm, addr, pte,
-			   make_pte_marker(PTE_MARKER_UFFD_WP));
-#endif
 }
 
 #endif

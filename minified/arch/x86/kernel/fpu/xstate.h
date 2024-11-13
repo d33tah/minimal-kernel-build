@@ -6,9 +6,6 @@
 #include <asm/fpu/xstate.h>
 #include <asm/fpu/xcr.h>
 
-#ifdef CONFIG_X86_64
-DECLARE_PER_CPU(u64, xfd_state);
-#endif
 
 static inline void xstate_init_xcomp_bv(struct xregs_state *xsave, u64 mask)
 {
@@ -70,11 +67,7 @@ static inline u64 xfeatures_mask_independent(void)
 
 /* XSAVE/XRSTOR wrapper functions */
 
-#ifdef CONFIG_X86_64
-#define REX_PREFIX	"0x48, "
-#else
 #define REX_PREFIX
-#endif
 
 /* These macros all use (%edi)/(%rdi) as the single memory argument. */
 #define XSAVE		".byte " REX_PREFIX "0x0f,0xae,0x27"
@@ -142,27 +135,11 @@ static inline u64 xfeatures_mask_independent(void)
 
 static inline void xfd_validate_state(struct fpstate *fpstate, u64 mask, bool rstor) { }
 
-#ifdef CONFIG_X86_64
-static inline void xfd_update_state(struct fpstate *fpstate)
-{
-	if (fpu_state_size_dynamic()) {
-		u64 xfd = fpstate->xfd;
-
-		if (__this_cpu_read(xfd_state) != xfd) {
-			wrmsrl(MSR_IA32_XFD, xfd);
-			__this_cpu_write(xfd_state, xfd);
-		}
-	}
-}
-
-extern int __xfd_enable_feature(u64 which, struct fpu_guest *guest_fpu);
-#else
 static inline void xfd_update_state(struct fpstate *fpstate) { }
 
 static inline int __xfd_enable_feature(u64 which, struct fpu_guest *guest_fpu) {
 	return -EPERM;
 }
-#endif
 
 /*
  * Save processor xstate to xsave area.

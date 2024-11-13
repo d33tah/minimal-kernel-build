@@ -48,20 +48,6 @@ static inline int is_ksym_addr(unsigned long addr)
 
 static inline void *dereference_symbol_descriptor(void *ptr)
 {
-#ifdef CONFIG_HAVE_FUNCTION_DESCRIPTORS
-	struct module *mod;
-
-	ptr = dereference_kernel_function_descriptor(ptr);
-	if (is_ksym_addr((unsigned long)ptr))
-		return ptr;
-
-	preempt_disable();
-	mod = __module_address((unsigned long)ptr);
-	preempt_enable();
-
-	if (mod)
-		ptr = dereference_module_function_descriptor(mod, ptr);
-#endif
 	return ptr;
 }
 

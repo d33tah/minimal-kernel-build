@@ -412,10 +412,6 @@ struct address_space {
 	struct rw_semaphore	invalidate_lock;
 	gfp_t			gfp_mask;
 	atomic_t		i_mmap_writable;
-#ifdef CONFIG_READ_ONLY_THP_FOR_FS
-	/* number of thp, only for non-shmem files */
-	atomic_t		nr_thps;
-#endif
 	struct rb_root_cached	i_mmap;
 	struct rw_semaphore	i_mmap_rwsem;
 	unsigned long		nrpages;
@@ -576,18 +572,11 @@ struct inode {
 	kgid_t			i_gid;
 	unsigned int		i_flags;
 
-#ifdef CONFIG_FS_POSIX_ACL
-	struct posix_acl	*i_acl;
-	struct posix_acl	*i_default_acl;
-#endif
 
 	const struct inode_operations	*i_op;
 	struct super_block	*i_sb;
 	struct address_space	*i_mapping;
 
-#ifdef CONFIG_SECURITY
-	void			*i_security;
-#endif
 
 	/* Stat data, not accessed from path walking */
 	unsigned long		i_ino;
@@ -626,14 +615,6 @@ struct inode {
 
 	struct hlist_node	i_hash;
 	struct list_head	i_io_list;	/* backing dev IO list */
-#ifdef CONFIG_CGROUP_WRITEBACK
-	struct bdi_writeback	*i_wb;		/* the associated cgroup wb */
-
-	/* foreign inode detection, see wbc_detach_inode() */
-	int			i_wb_frn_winner;
-	u16			i_wb_frn_avg_time;
-	u16			i_wb_frn_history;
-#endif
 	struct list_head	i_lru;		/* inode LRU list */
 	struct list_head	i_sb_list;
 	struct list_head	i_wb_list;	/* backing dev writeback list */
@@ -646,9 +627,6 @@ struct inode {
 	atomic_t		i_count;
 	atomic_t		i_dio_count;
 	atomic_t		i_writecount;
-#if defined(CONFIG_IMA) || defined(CONFIG_FILE_LOCKING)
-	atomic_t		i_readcount; /* struct files open RO */
-#endif
 	union {
 		const struct file_operations	*i_fop;	/* former ->i_op->default_file_ops */
 		void (*free_inode)(struct inode *);
@@ -665,10 +643,6 @@ struct inode {
 
 	__u32			i_generation;
 
-#ifdef CONFIG_FSNOTIFY
-	__u32			i_fsnotify_mask; /* all events this inode cares about */
-	struct fsnotify_mark_connector __rcu	*i_fsnotify_marks;
-#endif
 
 
 
@@ -817,16 +791,7 @@ void filemap_invalidate_unlock_two(struct address_space *mapping1,
  */
 static inline loff_t i_size_read(const struct inode *inode)
 {
-#if   BITS_PER_LONG==32 && defined(CONFIG_PREEMPTION)
-	loff_t i_size;
-
-	preempt_disable();
-	i_size = inode->i_size;
-	preempt_enable();
-	return i_size;
-#else
 	return inode->i_size;
-#endif
 }
 
 /*
@@ -836,13 +801,7 @@ static inline loff_t i_size_read(const struct inode *inode)
  */
 static inline void i_size_write(struct inode *inode, loff_t i_size)
 {
-#if   BITS_PER_LONG==32 && defined(CONFIG_PREEMPTION)
-	preempt_disable();
 	inode->i_size = i_size;
-	preempt_enable();
-#else
-	inode->i_size = i_size;
-#endif
 }
 
 static inline unsigned iminor(const struct inode *inode)
@@ -919,9 +878,6 @@ struct file {
 	struct file_ra_state	f_ra;
 
 	u64			f_version;
-#ifdef CONFIG_SECURITY
-	void			*f_security;
-#endif
 	/* needed for tty driver, and maybe others */
 	void			*private_data;
 
@@ -1370,9 +1326,6 @@ struct super_block {
 	struct rw_semaphore	s_umount;
 	int			s_count;
 	atomic_t		s_active;
-#ifdef CONFIG_SECURITY
-	void                    *s_security;
-#endif
 	const struct xattr_handler **s_xattr;
 #if IS_ENABLED(CONFIG_UNICODE)
 	struct unicode_map *s_encoding;
@@ -1401,10 +1354,6 @@ struct super_block {
 	/* Time limits for c/m/atime in seconds */
 	time64_t		   s_time_min;
 	time64_t		   s_time_max;
-#ifdef CONFIG_FSNOTIFY
-	__u32			s_fsnotify_mask;
-	struct fsnotify_mark_connector __rcu	*s_fsnotify_marks;
-#endif
 
 	char			s_id[32];	/* Informational name */
 	uuid_t			s_uuid;		/* UUID */
@@ -1804,12 +1753,7 @@ int vfs_utimes(const struct path *path, struct timespec64 *times);
 
 extern long vfs_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
 
-#ifdef CONFIG_COMPAT
-extern long compat_ptr_ioctl(struct file *file, unsigned int cmd,
-					unsigned long arg);
-#else
 #define compat_ptr_ioctl NULL
-#endif
 
 /*
  * VFS file helper functions.
@@ -2043,11 +1987,7 @@ struct super_operations {
 #define S_IMA		(1 << 10) /* Inode has an associated IMA struct */
 #define S_AUTOMOUNT	(1 << 11) /* Automount/referral quasi-directory */
 #define S_NOSEC		(1 << 12) /* no suid or xattr security attributes */
-#ifdef CONFIG_FS_DAX
-#define S_DAX		(1 << 13) /* Direct Access, avoiding the page cache */
-#else
 #define S_DAX		0	  /* Make all the DAX code disappear */
-#endif
 #define S_ENCRYPTED	(1 << 14) /* Encrypted file (using fs/crypto/) */
 #define S_CASEFOLD	(1 << 15) /* Casefolded file */
 #define S_VERITY	(1 << 16) /* Verity file (using fs/verity/) */
@@ -2681,17 +2621,6 @@ static inline bool inode_is_open_for_write(const struct inode *inode)
 	return atomic_read(&inode->i_writecount) > 0;
 }
 
-#if defined(CONFIG_IMA) || defined(CONFIG_FILE_LOCKING)
-static inline void i_readcount_dec(struct inode *inode)
-{
-	BUG_ON(!atomic_read(&inode->i_readcount));
-	atomic_dec(&inode->i_readcount);
-}
-static inline void i_readcount_inc(struct inode *inode)
-{
-	atomic_inc(&inode->i_readcount);
-}
-#else
 static inline void i_readcount_dec(struct inode *inode)
 {
 	return;
@@ -2700,7 +2629,6 @@ static inline void i_readcount_inc(struct inode *inode)
 {
 	return;
 }
-#endif
 extern int do_pipe_flags(int *, int);
 
 extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
@@ -3023,17 +2951,8 @@ extern int generic_check_addressable(unsigned, u64);
 
 extern void generic_set_encrypted_ci_d_ops(struct dentry *dentry);
 
-#ifdef CONFIG_MIGRATION
-extern int buffer_migrate_page(struct address_space *,
-				struct page *, struct page *,
-				enum migrate_mode);
-extern int buffer_migrate_page_norefs(struct address_space *,
-				struct page *, struct page *,
-				enum migrate_mode);
-#else
 #define buffer_migrate_page NULL
 #define buffer_migrate_page_norefs NULL
-#endif
 
 int may_setattr(struct user_namespace *mnt_userns, struct inode *inode,
 		unsigned int ia_valid);

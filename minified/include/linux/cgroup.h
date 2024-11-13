@@ -98,24 +98,11 @@ static inline void cgroup_account_cputime_field(struct task_struct *task,
  * sock->sk_cgrp_data handling.  For more info, see sock_cgroup_data
  * definition in cgroup-defs.h.
  */
-#ifdef CONFIG_SOCK_CGROUP_DATA
-
-void cgroup_sk_alloc(struct sock_cgroup_data *skcd);
-void cgroup_sk_clone(struct sock_cgroup_data *skcd);
-void cgroup_sk_free(struct sock_cgroup_data *skcd);
-
-static inline struct cgroup *sock_cgroup_ptr(struct sock_cgroup_data *skcd)
-{
-	return skcd->cgroup;
-}
-
-#else	/* CONFIG_CGROUP_DATA */
 
 static inline void cgroup_sk_alloc(struct sock_cgroup_data *skcd) {}
 static inline void cgroup_sk_clone(struct sock_cgroup_data *skcd) {}
 static inline void cgroup_sk_free(struct sock_cgroup_data *skcd) {}
 
-#endif	/* CONFIG_CGROUP_DATA */
 
 struct cgroup_namespace {
 	struct ns_common	ns;
@@ -157,22 +144,9 @@ static inline bool cgroup_task_frozen(struct task_struct *task)
 }
 
 
-#ifdef CONFIG_CGROUP_BPF
-static inline void cgroup_bpf_get(struct cgroup *cgrp)
-{
-	percpu_ref_get(&cgrp->bpf.refcnt);
-}
-
-static inline void cgroup_bpf_put(struct cgroup *cgrp)
-{
-	percpu_ref_put(&cgrp->bpf.refcnt);
-}
-
-#else /* CONFIG_CGROUP_BPF */
 
 static inline void cgroup_bpf_get(struct cgroup *cgrp) {}
 static inline void cgroup_bpf_put(struct cgroup *cgrp) {}
 
-#endif /* CONFIG_CGROUP_BPF */
 
 #endif /* _LINUX_CGROUP_H */

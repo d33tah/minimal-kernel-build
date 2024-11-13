@@ -1087,31 +1087,6 @@ static int input_attach_handler(struct input_dev *dev, struct input_handler *han
 	return error;
 }
 
-#ifdef CONFIG_COMPAT
-
-static int input_bits_to_string(char *buf, int buf_size,
-				unsigned long bits, bool skip_empty)
-{
-	int len = 0;
-
-	if (in_compat_syscall()) {
-		u32 dword = bits >> 32;
-		if (dword || !skip_empty)
-			len += snprintf(buf, buf_size, "%x ", dword);
-
-		dword = bits & 0xffffffffUL;
-		if (dword || !skip_empty || len)
-			len += snprintf(buf + len, max(buf_size - len, 0),
-					"%x", dword);
-	} else {
-		if (bits || !skip_empty)
-			len += snprintf(buf, buf_size, "%lx", bits);
-	}
-
-	return len;
-}
-
-#else /* !CONFIG_COMPAT */
 
 static int input_bits_to_string(char *buf, int buf_size,
 				unsigned long bits, bool skip_empty)
@@ -1120,7 +1095,6 @@ static int input_bits_to_string(char *buf, int buf_size,
 		snprintf(buf, buf_size, "%lx", bits) : 0;
 }
 
-#endif
 
 static inline void input_wakeup_procfs_readers(void) { }
 static inline int input_proc_init(void) { return 0; }
@@ -1596,88 +1570,11 @@ out:
 	return ret;
 }
 
-#ifdef CONFIG_PM_SLEEP
-static int input_dev_suspend(struct device *dev)
-{
-	struct input_dev *input_dev = to_input_dev(dev);
-
-	spin_lock_irq(&input_dev->event_lock);
-
-	/*
-	 * Keys that are pressed now are unlikely to be
-	 * still pressed when we resume.
-	 */
-	input_dev_release_keys(input_dev);
-
-	/* Turn off LEDs and sounds, if any are active. */
-	input_dev_toggle(input_dev, false);
-
-	spin_unlock_irq(&input_dev->event_lock);
-
-	return 0;
-}
-
-static int input_dev_resume(struct device *dev)
-{
-	struct input_dev *input_dev = to_input_dev(dev);
-
-	spin_lock_irq(&input_dev->event_lock);
-
-	/* Restore state of LEDs and sounds, if any were active. */
-	input_dev_toggle(input_dev, true);
-
-	spin_unlock_irq(&input_dev->event_lock);
-
-	return 0;
-}
-
-static int input_dev_freeze(struct device *dev)
-{
-	struct input_dev *input_dev = to_input_dev(dev);
-
-	spin_lock_irq(&input_dev->event_lock);
-
-	/*
-	 * Keys that are pressed now are unlikely to be
-	 * still pressed when we resume.
-	 */
-	input_dev_release_keys(input_dev);
-
-	spin_unlock_irq(&input_dev->event_lock);
-
-	return 0;
-}
-
-static int input_dev_poweroff(struct device *dev)
-{
-	struct input_dev *input_dev = to_input_dev(dev);
-
-	spin_lock_irq(&input_dev->event_lock);
-
-	/* Turn off LEDs and sounds, if any are active. */
-	input_dev_toggle(input_dev, false);
-
-	spin_unlock_irq(&input_dev->event_lock);
-
-	return 0;
-}
-
-static const struct dev_pm_ops input_dev_pm_ops = {
-	.suspend	= input_dev_suspend,
-	.resume		= input_dev_resume,
-	.freeze		= input_dev_freeze,
-	.poweroff	= input_dev_poweroff,
-	.restore	= input_dev_resume,
-};
-#endif /* CONFIG_PM */
 
 static const struct device_type input_dev_type = {
 	.groups		= input_dev_attr_groups,
 	.release	= input_dev_release,
 	.uevent		= input_dev_uevent,
-#ifdef CONFIG_PM_SLEEP
-	.pm		= &input_dev_pm_ops,
-#endif
 };
 
 static char *input_devnode(struct device *dev, umode_t *mode)

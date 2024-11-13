@@ -301,11 +301,7 @@ static inline u32 acpi_osc_ctx_get_cxl_control(struct acpi_osc_context *context)
 }
 
 
-#ifdef CONFIG_ACPI_HOTPLUG_IOAPIC
-int acpi_ioapic_add(acpi_handle root);
-#else
 static inline int acpi_ioapic_add(acpi_handle root) { return 0; }
-#endif
 
 #define acpi_os_set_prepare_sleep(func, pm1a_ctrl, pm1b_ctrl) do { } while (0)
 
@@ -366,18 +362,12 @@ static inline void acpi_evaluation_failure_warn(acpi_handle handle,
 #define acpi_handle_debug(handle, fmt, ...)				\
 	acpi_handle_printk(KERN_DEBUG, handle, fmt, ##__VA_ARGS__)
 #else
-#if defined(CONFIG_DYNAMIC_DEBUG)
-#define acpi_handle_debug(handle, fmt, ...)				\
-	_dynamic_func_call(fmt, __acpi_handle_debug,			\
-			   handle, pr_fmt(fmt), ##__VA_ARGS__)
-#else
 #define acpi_handle_debug(handle, fmt, ...)				\
 ({									\
 	if (0)								\
 		acpi_handle_printk(KERN_DEBUG, handle, fmt, ##__VA_ARGS__); \
 	0;								\
 })
-#endif
 #endif
 
 static inline bool acpi_gpio_get_irq_resource(struct acpi_resource *ares,
@@ -467,23 +457,14 @@ acpi_graph_get_remote_endpoint(const struct fwnode_handle *fwnode,
 
 #define acpi_probe_device_table(t)	({ int __r = 0; __r;})
 
-#ifdef CONFIG_ACPI_TABLE_UPGRADE
-void acpi_table_upgrade(void);
-#else
 static inline void acpi_table_upgrade(void) { }
-#endif
 
 static inline bool acpi_has_watchdog(void) { return false; }
 
-#ifdef CONFIG_ACPI_SPCR_TABLE
-extern bool qdf2400_e44_present;
-int acpi_parse_spcr(bool enable_earlycon, bool enable_console);
-#else
 static inline int acpi_parse_spcr(bool enable_earlycon, bool enable_console)
 {
 	return 0;
 }
-#endif
 
 #if IS_ENABLED(CONFIG_ACPI_GENERIC_GSI)
 int acpi_irq_get(acpi_handle handle, unsigned int index, struct resource *res);
@@ -495,23 +476,11 @@ int acpi_irq_get(acpi_handle handle, unsigned int index, struct resource *res)
 }
 #endif
 
-#ifdef CONFIG_ACPI_LPIT
-int lpit_read_residency_count_address(u64 *address);
-#else
 static inline int lpit_read_residency_count_address(u64 *address)
 {
 	return -EINVAL;
 }
-#endif
 
-#ifdef CONFIG_ACPI_PPTT
-int acpi_pptt_cpu_is_thread(unsigned int cpu);
-int find_acpi_cpu_topology(unsigned int cpu, int level);
-int find_acpi_cpu_topology_cluster(unsigned int cpu);
-int find_acpi_cpu_topology_package(unsigned int cpu);
-int find_acpi_cpu_topology_hetero_id(unsigned int cpu);
-int find_acpi_cpu_cache_topology(unsigned int cpu, int level);
-#else
 static inline int acpi_pptt_cpu_is_thread(unsigned int cpu)
 {
 	return -EINVAL;
@@ -536,13 +505,8 @@ static inline int find_acpi_cpu_cache_topology(unsigned int cpu, int level)
 {
 	return -EINVAL;
 }
-#endif
 
-#ifdef CONFIG_ACPI_PCC
-void acpi_init_pcc(void);
-#else
 static inline void acpi_init_pcc(void) { }
-#endif
 
 static inline void acpi_device_notify(struct device *dev) { }
 static inline void acpi_device_notify_remove(struct device *dev) { }

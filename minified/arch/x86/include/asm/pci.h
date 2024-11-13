@@ -15,12 +15,6 @@
 struct pci_sysdata {
 	int		domain;		/* PCI domain */
 	int		node;		/* NUMA node */
-#ifdef CONFIG_X86_64
-	void		*iommu;		/* IOMMU private data */
-#endif
-#ifdef CONFIG_PCI_MSI_IRQ_DOMAIN
-	void		*fwnode;	/* IRQ domain for MSI assignment */
-#endif
 #if IS_ENABLED(CONFIG_VMD)
 	struct pci_dev	*vmd_dev;	/* VMD Device if in Intel VMD domain */
 #endif
@@ -61,23 +55,6 @@ extern void pci_iommu_alloc(void);
 /* generic pci stuff */
 #include <asm-generic/pci.h>
 
-#ifdef CONFIG_NUMA
-/* Returns the node based on pci bus */
-static inline int __pcibus_to_node(const struct pci_bus *bus)
-{
-	return to_pci_sysdata(bus)->node;
-}
-
-static inline const struct cpumask *
-cpumask_of_pcibus(const struct pci_bus *bus)
-{
-	int node;
-
-	node = __pcibus_to_node(bus);
-	return (node == NUMA_NO_NODE) ? cpu_online_mask :
-			      cpumask_of_node(node);
-}
-#endif
 
 struct pci_setup_rom {
 	struct setup_data data;

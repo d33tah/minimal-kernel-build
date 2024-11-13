@@ -16,18 +16,8 @@
 #include <asm/mem_encrypt.h>
 
 
-#ifdef CONFIG_AMD_MEM_ENCRYPT
-/*
- * The __sme_set() and __sme_clr() macros are useful for adding or removing
- * the encryption mask from a value (e.g. when dealing with pagetable
- * entries).
- */
-#define __sme_set(x)		((x) | sme_me_mask)
-#define __sme_clr(x)		((x) & ~sme_me_mask)
-#else
 #define __sme_set(x)		(x)
 #define __sme_clr(x)		(x)
-#endif
 
 #endif	/* __ASSEMBLY__ */
 

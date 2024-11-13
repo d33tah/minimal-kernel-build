@@ -354,14 +354,7 @@ struct tcp_sock {
 
 
 /* Sock_ops bpf program related variables */
-#ifdef CONFIG_BPF
-	u8	bpf_sock_ops_cb_flags;  /* Control calling BPF programs
-					 * values defined in uapi/linux/tcp.h
-					 */
-#define BPF_SOCK_OPS_TEST_FLAG(TP, ARG) (TP->bpf_sock_ops_cb_flags & ARG)
-#else
 #define BPF_SOCK_OPS_TEST_FLAG(TP, ARG) 0
-#endif
 
 	u16 timeout_rehash;	/* Timeout-triggered rehash attempts */
 
@@ -398,13 +391,6 @@ struct tcp_sock {
 	bool	syn_smc;	/* SYN includes SMC */
 #endif
 
-#ifdef CONFIG_TCP_MD5SIG
-/* TCP AF-Specific parts; only used by MD5 Signature support so far */
-	const struct tcp_sock_af_ops	*af_specific;
-
-/* TCP MD5 Signature Option information */
-	struct tcp_md5sig_info	__rcu *md5sig_info;
-#endif
 
 /* TCP fastopen related information */
 	struct tcp_fastopen_request *fastopen_req;
@@ -453,9 +439,6 @@ struct tcp_timewait_sock {
 
 	int			  tw_ts_recent_stamp;
 	u32			  tw_tx_delay;
-#ifdef CONFIG_TCP_MD5SIG
-	struct tcp_md5sig_key	  *tw_md5_key;
-#endif
 };
 
 static inline struct tcp_timewait_sock *tcp_twsk(const struct sock *sk)

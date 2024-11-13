@@ -101,10 +101,6 @@ enum {
 	PCI_ROM_RESOURCE,
 
 	/* Device-specific resources */
-#ifdef CONFIG_PCI_IOV
-	PCI_IOV_RESOURCES,
-	PCI_IOV_RESOURCE_END = PCI_IOV_RESOURCES + PCI_SRIOV_NUM_BARS - 1,
-#endif
 
 /* PCI-to-PCI (P2P) bridge windows */
 #define PCI_BRIDGE_IO_WINDOW		(PCI_BRIDGE_RESOURCES + 0)
@@ -335,14 +331,6 @@ struct pci_dev {
 	unsigned int	class;		/* 3 bytes: (base,sub,prog-if) */
 	u8		revision;	/* PCI revision, low byte of class word */
 	u8		hdr_type;	/* PCI header type (`multi' flag masked out) */
-#ifdef CONFIG_PCIEAER
-	u16		aer_cap;	/* AER capability offset */
-	struct aer_stats *aer_stats;	/* AER stats for this device */
-#endif
-#ifdef CONFIG_PCIEPORTBUS
-	struct rcec_ea	*rcec_ea;	/* RCEC cached endpoint association */
-	struct pci_dev  *rcec;          /* Associated RCEC device */
-#endif
 	u32		devcap;		/* PCIe Device Capabilities */
 	u8		pcie_cap;	/* PCIe capability offset */
 	u8		msi_cap;	/* MSI capability offset */
@@ -389,12 +377,6 @@ struct pci_dev {
 	unsigned int	d3hot_delay;	/* D3hot->D0 transition time in ms */
 	unsigned int	d3cold_delay;	/* D3cold->D0 transition time in ms */
 
-#ifdef CONFIG_PCIEASPM
-	struct pcie_link_state	*link_state;	/* ASPM link state */
-	unsigned int	ltr_path:1;	/* Latency Tolerance Reporting
-					   supported from root to here */
-	u16		l1ss;		/* L1SS Capability pointer */
-#endif
 	unsigned int	pasid_no_tlp:1;		/* PASID works without TLP Prefix */
 	unsigned int	eetlp_prefix_path:1;	/* End-to-End TLP Prefix */
 
@@ -471,44 +453,7 @@ struct pci_dev {
 	struct bin_attribute *res_attr[DEVICE_COUNT_RESOURCE]; /* sysfs file for resources */
 	struct bin_attribute *res_attr_wc[DEVICE_COUNT_RESOURCE]; /* sysfs file for WC mapping of resources */
 
-#ifdef CONFIG_HOTPLUG_PCI_PCIE
-	unsigned int	broken_cmd_compl:1;	/* No compl for some cmds */
-#endif
-#ifdef CONFIG_PCIE_PTM
-	unsigned int	ptm_root:1;
-	unsigned int	ptm_enabled:1;
-	u8		ptm_granularity;
-#endif
-#ifdef CONFIG_PCI_MSI
-	void __iomem	*msix_base;
-	raw_spinlock_t	msi_lock;
-#endif
 	struct pci_vpd	vpd;
-#ifdef CONFIG_PCIE_DPC
-	u16		dpc_cap;
-	unsigned int	dpc_rp_extensions:1;
-	u8		dpc_rp_log_size;
-#endif
-#ifdef CONFIG_PCI_ATS
-	union {
-		struct pci_sriov	*sriov;		/* PF: SR-IOV info */
-		struct pci_dev		*physfn;	/* VF: related PF */
-	};
-	u16		ats_cap;	/* ATS Capability offset */
-	u8		ats_stu;	/* ATS Smallest Translation Unit */
-#endif
-#ifdef CONFIG_PCI_PRI
-	u16		pri_cap;	/* PRI Capability offset */
-	u32		pri_reqs_alloc; /* Number of PRI requests allocated */
-	unsigned int	pasid_required:1; /* PRG Response PASID Required */
-#endif
-#ifdef CONFIG_PCI_PASID
-	u16		pasid_cap;	/* PASID Capability offset */
-	u16		pasid_features;
-#endif
-#ifdef CONFIG_PCI_P2PDMA
-	struct pci_p2pdma __rcu *p2pdma;
-#endif
 	u16		acs_cap;	/* ACS Capability offset */
 	phys_addr_t	rom;		/* Physical address if not from BAR */
 	size_t		romlen;		/* Length if not from BAR */
@@ -526,10 +471,6 @@ struct pci_dev {
 
 static inline struct pci_dev *pci_physfn(struct pci_dev *dev)
 {
-#ifdef CONFIG_PCI_IOV
-	if (dev->is_virtfn)
-		dev = dev->physfn;
-#endif
 	return dev;
 }
 
@@ -655,9 +596,6 @@ struct pci_bus {
 	unsigned char	primary;	/* Number of primary bridge */
 	unsigned char	max_bus_speed;	/* enum pci_bus_speed */
 	unsigned char	cur_bus_speed;	/* enum pci_bus_speed */
-#ifdef CONFIG_PCI_DOMAINS_GENERIC
-	int		domain_nr;
-#endif
 
 	char		name[48];
 
@@ -717,14 +655,7 @@ static inline struct pci_dev *pci_upstream_bridge(struct pci_dev *dev)
 	return dev->bus->self;
 }
 
-#ifdef CONFIG_PCI_MSI
-static inline bool pci_dev_msi_enabled(struct pci_dev *pci_dev)
-{
-	return pci_dev->msi_enabled || pci_dev->msix_enabled;
-}
-#else
 static inline bool pci_dev_msi_enabled(struct pci_dev *pci_dev) { return false; }
-#endif
 
 /* Error values that may be returned by PCI functions */
 #define PCIBIOS_SUCCESSFUL		0x00
@@ -778,11 +709,7 @@ int raw_pci_read(unsigned int domain, unsigned int bus, unsigned int devfn,
 int raw_pci_write(unsigned int domain, unsigned int bus, unsigned int devfn,
 		  int reg, int len, u32 val);
 
-#ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
-typedef u64 pci_bus_addr_t;
-#else
 typedef u32 pci_bus_addr_t;
-#endif
 
 struct pci_bus_region {
 	pci_bus_addr_t	start;
@@ -1304,22 +1231,10 @@ enum pci_fixup_pass {
  * handle such renamings when referenced from inline asm. To work
  * around this, create global C stubs for these cases.
  */
-#ifdef CONFIG_LTO_CLANG
-#define __DECLARE_PCI_FIXUP_SECTION(sec, name, vendor, device, class,	\
-				  class_shift, hook, stub)		\
-	void __cficanonical stub(struct pci_dev *dev);			\
-	void __cficanonical stub(struct pci_dev *dev)			\
-	{ 								\
-		hook(dev); 						\
-	}								\
-	___DECLARE_PCI_FIXUP_SECTION(sec, name, vendor, device, class,	\
-				  class_shift, stub)
-#else
 #define __DECLARE_PCI_FIXUP_SECTION(sec, name, vendor, device, class,	\
 				  class_shift, hook, stub)		\
 	___DECLARE_PCI_FIXUP_SECTION(sec, name, vendor, device, class,	\
 				  class_shift, hook)
-#endif
 
 #define DECLARE_PCI_FIXUP_SECTION(sec, name, vendor, device, class,	\
 				  class_shift, hook)			\
@@ -1384,12 +1299,8 @@ enum pci_fixup_pass {
 	DECLARE_PCI_FIXUP_SECTION(.pci_fixup_suspend_late,		\
 		suspend_late##hook, vendor, device, PCI_ANY_ID, 0, hook)
 
-#ifdef CONFIG_PCI_QUIRKS
-void pci_fixup_device(enum pci_fixup_pass pass, struct pci_dev *dev);
-#else
 static inline void pci_fixup_device(enum pci_fixup_pass pass,
 				    struct pci_dev *dev) { }
-#endif
 
 void __iomem *pcim_iomap(struct pci_dev *pdev, int bar, unsigned long maxlen);
 void pcim_iounmap(struct pci_dev *pdev, void __iomem *addr);
@@ -1438,30 +1349,6 @@ int pci_ext_cfg_avail(void);
 void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar);
 void __iomem *pci_ioremap_wc_bar(struct pci_dev *pdev, int bar);
 
-#ifdef CONFIG_PCI_IOV
-int pci_iov_virtfn_bus(struct pci_dev *dev, int id);
-int pci_iov_virtfn_devfn(struct pci_dev *dev, int id);
-int pci_iov_vf_id(struct pci_dev *dev);
-void *pci_iov_get_pf_drvdata(struct pci_dev *dev, struct pci_driver *pf_driver);
-int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn);
-void pci_disable_sriov(struct pci_dev *dev);
-
-int pci_iov_sysfs_link(struct pci_dev *dev, struct pci_dev *virtfn, int id);
-int pci_iov_add_virtfn(struct pci_dev *dev, int id);
-void pci_iov_remove_virtfn(struct pci_dev *dev, int id);
-int pci_num_vf(struct pci_dev *dev);
-int pci_vfs_assigned(struct pci_dev *dev);
-int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs);
-int pci_sriov_get_totalvfs(struct pci_dev *dev);
-int pci_sriov_configure_simple(struct pci_dev *dev, int nr_virtfn);
-resource_size_t pci_iov_resource_size(struct pci_dev *dev, int resno);
-void pci_vf_drivers_autoprobe(struct pci_dev *dev, bool probe);
-
-/* Arch may override these (weak) */
-int pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs);
-int pcibios_sriov_disable(struct pci_dev *pdev);
-resource_size_t pcibios_iov_resource_alignment(struct pci_dev *dev, int resno);
-#else
 static inline int pci_iov_virtfn_bus(struct pci_dev *dev, int id)
 {
 	return -ENOSYS;
@@ -1508,7 +1395,6 @@ static inline int pci_sriov_get_totalvfs(struct pci_dev *dev)
 static inline resource_size_t pci_iov_resource_size(struct pci_dev *dev, int resno)
 { return 0; }
 static inline void pci_vf_drivers_autoprobe(struct pci_dev *dev, bool probe) { }
-#endif
 
 #if defined(CONFIG_HOTPLUG_PCI) || defined(CONFIG_HOTPLUG_PCI_MODULE)
 void pci_hp_create_module_link(struct pci_slot *pci_slot);
@@ -1664,12 +1550,6 @@ static inline struct irq_domain *
 pci_host_bridge_acpi_msi_domain(struct pci_bus *bus) { return NULL; }
 static inline bool pci_pr3_present(struct pci_dev *pdev) { return false; }
 
-#ifdef CONFIG_EEH
-static inline struct eeh_dev *pci_dev_to_eeh_dev(struct pci_dev *pdev)
-{
-	return pdev->dev.archdata.edev;
-}
-#endif
 
 void pci_add_dma_alias(struct pci_dev *dev, u8 devfn_from, unsigned nr_devfns);
 bool pci_devs_are_dma_aliases(struct pci_dev *dev1, struct pci_dev *dev2);
@@ -1724,9 +1604,6 @@ static inline bool pci_is_thunderbolt_attached(struct pci_dev *pdev)
 	return false;
 }
 
-#if defined(CONFIG_PCIEPORTBUS) || defined(CONFIG_EEH)
-void pci_uevent_ers(struct pci_dev *pdev, enum  pci_ers_result err_type);
-#endif
 
 #include <linux/dma-mapping.h>
 

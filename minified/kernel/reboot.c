@@ -27,11 +27,7 @@ static int C_A_D = 1;
 struct pid *cad_pid;
 EXPORT_SYMBOL(cad_pid);
 
-#if defined(CONFIG_ARM)
-#define DEFAULT_REBOOT_MODE		= REBOOT_HARD
-#else
 #define DEFAULT_REBOOT_MODE
-#endif
 enum reboot_mode reboot_mode DEFAULT_REBOOT_MODE;
 EXPORT_SYMBOL_GPL(reboot_mode);
 enum reboot_mode panic_reboot_mode = REBOOT_UNDEFINED;
@@ -748,17 +744,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 		kernel_restart(buffer);
 		break;
 
-#ifdef CONFIG_KEXEC_CORE
-	case LINUX_REBOOT_CMD_KEXEC:
-		ret = kernel_kexec();
-		break;
-#endif
 
-#ifdef CONFIG_HIBERNATION
-	case LINUX_REBOOT_CMD_SW_SUSPEND:
-		ret = hibernate();
-		break;
-#endif
 
 	default:
 		ret = -EINVAL;

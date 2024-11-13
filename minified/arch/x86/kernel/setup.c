@@ -149,29 +149,9 @@ unsigned long saved_video_mode;
 
 static char __initdata command_line[COMMAND_LINE_SIZE];
 
-#if defined(CONFIG_EDD) || defined(CONFIG_EDD_MODULE)
-struct edd edd;
-#ifdef CONFIG_EDD_MODULE
-EXPORT_SYMBOL(edd);
-#endif
-/**
- * copy_edd() - Copy the BIOS EDD information
- *              from boot_params into a safe place.
- *
- */
-static inline void __init copy_edd(void)
-{
-     memcpy(edd.mbr_signature, boot_params.edd_mbr_sig_buffer,
-	    sizeof(edd.mbr_signature));
-     memcpy(edd.edd_info, boot_params.eddbuf, sizeof(edd.edd_info));
-     edd.mbr_signature_nr = boot_params.edd_mbr_sig_buf_entries;
-     edd.edd_info_nr = boot_params.eddbuf_entries;
-}
-#else
 static inline void __init copy_edd(void)
 {
 }
-#endif
 
 void * __init extend_brk(size_t size, size_t align)
 {
@@ -401,48 +381,6 @@ static void __init memblock_x86_reserve_range_setup_data(void)
 
 static int __init reserve_crashkernel_low(void)
 {
-#ifdef CONFIG_X86_64
-	unsigned long long base, low_base = 0, low_size = 0;
-	unsigned long low_mem_limit;
-	int ret;
-
-	low_mem_limit = min(memblock_phys_mem_size(), CRASH_ADDR_LOW_MAX);
-
-	/* crashkernel=Y,low */
-	ret = parse_crashkernel_low(boot_command_line, low_mem_limit, &low_size, &base);
-	if (ret) {
-		/*
-		 * two parts from kernel/dma/swiotlb.c:
-		 * -swiotlb size: user-specified with swiotlb= or default.
-		 *
-		 * -swiotlb overflow buffer: now hardcoded to 32k. We round it
-		 * to 8M for other buffers that may need to stay low too. Also
-		 * make sure we allocate enough extra low memory so that we
-		 * don't run out of DMA buffers for 32-bit devices.
-		 */
-		low_size = max(swiotlb_size_or_default() + (8UL << 20), 256UL << 20);
-	} else {
-		/* passed with crashkernel=0,low ? */
-		if (!low_size)
-			return 0;
-	}
-
-	low_base = memblock_phys_alloc_range(low_size, CRASH_ALIGN, 0, CRASH_ADDR_LOW_MAX);
-	if (!low_base) {
-		pr_err("Cannot reserve %ldMB crashkernel low memory, please try smaller size.\n",
-		       (unsigned long)(low_size >> 20));
-		return -ENOMEM;
-	}
-
-	pr_info("Reserving %ldMB of low memory at %ldMB for crashkernel (low RAM limit: %ldMB)\n",
-		(unsigned long)(low_size >> 20),
-		(unsigned long)(low_base >> 20),
-		(unsigned long)(low_mem_limit >> 20));
-
-	crashk_low_res.start = low_base;
-	crashk_low_res.end   = low_base + low_size - 1;
-	insert_resource(&iomem_resource, &crashk_low_res);
-#endif
 	return 0;
 }
 
@@ -708,13 +646,9 @@ static void __init x86_report_nx(void)
 		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
 		       "missing in CPU!\n");
 	} else {
-#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
-		printk(KERN_INFO "NX (Execute Disable) protection: active\n");
-#else
 		/* 32bit non-PAE kernel, NX cannot be used */
 		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
 		       "cannot be enabled: non-PAE kernel!\n");
-#endif
 	}
 }
 
@@ -783,19 +717,6 @@ void __init setup_arch(char **cmdline_p)
 	bootloader_version  = bootloader_type & 0xf;
 	bootloader_version |= boot_params.hdr.ext_loader_ver << 4;
 
-#ifdef CONFIG_BLK_DEV_RAM
-	rd_image_start = boot_params.hdr.ram_size & RAMDISK_IMAGE_START_MASK;
-#endif
-#ifdef CONFIG_EFI
-	if (!strncmp((char *)&boot_params.efi_info.efi_loader_signature,
-		     EFI32_LOADER_SIGNATURE, 4)) {
-		set_bit(EFI_BOOT, &efi.flags);
-	} else if (!strncmp((char *)&boot_params.efi_info.efi_loader_signature,
-		     EFI64_LOADER_SIGNATURE, 4)) {
-		set_bit(EFI_BOOT, &efi.flags);
-		set_bit(EFI_64BIT, &efi.flags);
-	}
-#endif
 
 	x86_init.oem.arch_setup();
 
@@ -848,36 +769,10 @@ void __init setup_arch(char **cmdline_p)
 	if (efi_enabled(EFI_BOOT))
 		efi_memblock_x86_reserve_range();
 
-#ifdef CONFIG_MEMORY_HOTPLUG
-	/*
-	 * Memory used by the kernel cannot be hot-removed because Linux
-	 * cannot migrate the kernel pages. When memory hotplug is
-	 * enabled, we should prevent memblock from allocating memory
-	 * for the kernel.
-	 *
-	 * ACPI SRAT records all hotpluggable memory ranges. But before
-	 * SRAT is parsed, we don't know about it.
-	 *
-	 * The kernel image is loaded into memory at very early time. We
-	 * cannot prevent this anyway. So on NUMA system, we set any
-	 * node the kernel resides in as un-hotpluggable.
-	 *
-	 * Since on modern servers, one node could have double-digit
-	 * gigabytes memory, we can assume the memory around the kernel
-	 * image is also un-hotpluggable. So before SRAT is parsed, just
-	 * allocate memory near the kernel image to try the best to keep
-	 * the kernel away from hotpluggable memory.
-	 */
-	if (movable_node_is_enabled())
-		memblock_set_bottom_up(true);
-#endif
 
 	x86_report_nx();
 
 	if (acpi_mps_check()) {
-#ifdef CONFIG_X86_LOCAL_APIC
-		disable_apic = 1;
-#endif
 		setup_clear_cpu_cap(X86_FEATURE_APIC);
 	}
 
@@ -1027,10 +922,6 @@ void __init setup_arch(char **cmdline_p)
 	 * NOTE: On x86-32, only from this point on, fixmaps are ready for use.
 	 */
 
-#ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
-	if (init_ohci1394_dma_early)
-		init_ohci1394_dma_on_all_controllers();
-#endif
 	/* Allocate bigger log buffer */
 	setup_log_buf(1);
 
@@ -1150,10 +1041,6 @@ void __init setup_arch(char **cmdline_p)
 
 	register_refined_jiffies(CLOCK_TICK_RATE);
 
-#ifdef CONFIG_EFI
-	if (efi_enabled(EFI_BOOT))
-		efi_apply_memmap_quirks();
-#endif
 
 	unwind_init();
 }

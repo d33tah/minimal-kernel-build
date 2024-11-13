@@ -409,12 +409,6 @@ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
 
 #define __MODULE_STRING(x) __stringify(x)
 
-#ifdef CONFIG_GENERIC_BUG
-void module_bug_finalize(const Elf_Ehdr *, const Elf_Shdr *,
-			 struct module *);
-void module_bug_cleanup(struct module *);
-
-#else	/* !CONFIG_GENERIC_BUG */
 
 static inline void module_bug_finalize(const Elf_Ehdr *hdr,
 					const Elf_Shdr *sechdrs,
@@ -422,25 +416,12 @@ static inline void module_bug_finalize(const Elf_Ehdr *hdr,
 {
 }
 static inline void module_bug_cleanup(struct module *mod) {}
-#endif	/* CONFIG_GENERIC_BUG */
 
-#ifdef CONFIG_RETPOLINE
-extern bool retpoline_module_ok(bool has_retpoline);
-#else
 static inline bool retpoline_module_ok(bool has_retpoline)
 {
 	return true;
 }
-#endif
 
-#ifdef CONFIG_MODULE_SIG
-bool is_module_sig_enforced(void);
-
-static inline bool module_sig_ok(struct module *module)
-{
-	return module->sig_ok;
-}
-#else	/* !CONFIG_MODULE_SIG */
 static inline bool is_module_sig_enforced(void)
 {
 	return false;
@@ -450,7 +431,6 @@ static inline bool module_sig_ok(struct module *module)
 {
 	return true;
 }
-#endif	/* CONFIG_MODULE_SIG */
 
 int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
 					     struct module *, unsigned long),

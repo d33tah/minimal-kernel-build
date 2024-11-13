@@ -193,9 +193,6 @@ static inline long __trace_sched_switch_state(bool preempt,
 {
 	unsigned int state;
 
-#ifdef CONFIG_SCHED_DEBUG
-	BUG_ON(p != current);
-#endif /* CONFIG_SCHED_DEBUG */
 
 	/*
 	 * Preemption ignores task state, therefore preempted tasks are always
@@ -421,13 +418,8 @@ TRACE_EVENT(sched_process_exec,
 );
 
 
-#ifdef CONFIG_SCHEDSTATS
-#define DEFINE_EVENT_SCHEDSTAT DEFINE_EVENT
-#define DECLARE_EVENT_CLASS_SCHEDSTAT DECLARE_EVENT_CLASS
-#else
 #define DEFINE_EVENT_SCHEDSTAT DEFINE_EVENT_NOP
 #define DECLARE_EVENT_CLASS_SCHEDSTAT DECLARE_EVENT_CLASS_NOP
-#endif
 
 /*
  * XXX the below sched_stat tracepoints only apply to SCHED_OTHER/BATCH/IDLE

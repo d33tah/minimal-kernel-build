@@ -111,19 +111,11 @@ extern int devices_init(void);
 extern int buses_init(void);
 extern int classes_init(void);
 extern int firmware_init(void);
-#ifdef CONFIG_SYS_HYPERVISOR
-extern int hypervisor_init(void);
-#else
 static inline int hypervisor_init(void) { return 0; }
-#endif
 extern int platform_bus_init(void);
 extern void cpu_dev_init(void);
 extern void container_dev_init(void);
-#ifdef CONFIG_AUXILIARY_BUS
-extern void auxiliary_bus_init(void);
-#else
 static inline void auxiliary_bus_init(void) { }
-#endif
 
 struct kobject *virtual_device_parent(struct device *dev);
 

@@ -59,9 +59,6 @@ static inline __cpuidle void native_halt(void)
 
 #endif
 
-#ifdef CONFIG_PARAVIRT_XXL
-#include <asm/paravirt.h>
-#else
 #ifndef __ASSEMBLY__
 #include <linux/types.h>
 
@@ -109,12 +106,8 @@ static __always_inline unsigned long arch_local_irq_save(void)
 }
 #else
 
-#ifdef CONFIG_X86_64
-
-#endif
 
 #endif /* __ASSEMBLY__ */
-#endif /* CONFIG_PARAVIRT_XXL */
 
 #ifndef __ASSEMBLY__
 static __always_inline int arch_irqs_disabled_flags(unsigned long flags)

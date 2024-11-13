@@ -35,18 +35,6 @@
 #include "physical_location.h"
 #include "power/power.h"
 
-#ifdef CONFIG_SYSFS_DEPRECATED
-#ifdef CONFIG_SYSFS_DEPRECATED_V2
-long sysfs_deprecated = 1;
-#else
-long sysfs_deprecated = 0;
-#endif
-static int __init sysfs_deprecated_setup(char *arg)
-{
-	return kstrtol(arg, 10, &sysfs_deprecated);
-}
-early_param("sysfs.deprecated", sysfs_deprecated_setup);
-#endif
 
 /* Device links support. */
 static LIST_HEAD(deferred_sync);
@@ -2854,9 +2842,6 @@ void device_initialize(struct device *dev)
     defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
     defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
 	dev->dma_coherent = dma_default_coherent;
-#endif
-#ifdef CONFIG_SWIOTLB
-	dev->dma_io_tlb_mem = &io_tlb_default_mem;
 #endif
 }
 EXPORT_SYMBOL_GPL(device_initialize);

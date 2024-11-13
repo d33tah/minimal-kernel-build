@@ -86,22 +86,12 @@ EXPORT_PER_CPU_SYMBOL_GPL(__tss_limit_invalid);
 int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
 {
 	memcpy(dst, src, arch_task_struct_size);
-#ifdef CONFIG_VM86
-	dst->thread.vm86 = NULL;
-#endif
 	/* Drop the copied pointer to current's fpstate */
 	dst->thread.fpu.fpstate = NULL;
 
 	return 0;
 }
 
-#ifdef CONFIG_X86_64
-void arch_release_task_struct(struct task_struct *tsk)
-{
-	if (fpu_state_size_dynamic())
-		fpstate_free(&tsk->thread.fpu);
-}
-#endif
 
 /*
  * Free thread data structures etc..
@@ -150,16 +140,6 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 	p->thread.iopl_warn = 0;
 	memset(p->thread.ptrace_bps, 0, sizeof(p->thread.ptrace_bps));
 
-#ifdef CONFIG_X86_64
-	current_save_fsgs();
-	p->thread.fsindex = current->thread.fsindex;
-	p->thread.fsbase = current->thread.fsbase;
-	p->thread.gsindex = current->thread.gsindex;
-	p->thread.gsbase = current->thread.gsbase;
-
-	savesegment(es, p->thread.es);
-	savesegment(ds, p->thread.ds);
-#else
 	p->thread.sp0 = (unsigned long) (childregs + 1);
 	savesegment(gs, p->thread.gs);
 	/*
@@ -169,7 +149,6 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 	 * ensured via objtool, which lacks 32bit support.
 	 */
 	frame->flags = X86_EFLAGS_FIXED;
-#endif
 
 	fpu_clone(p, clone_flags, args->fn);
 
@@ -552,16 +531,6 @@ void __cpuidle default_idle(void)
 EXPORT_SYMBOL(default_idle);
 #endif
 
-#ifdef CONFIG_XEN
-bool xen_set_default_idle(void)
-{
-	bool ret = !!x86_idle;
-
-	x86_idle = default_idle;
-
-	return ret;
-}
-#endif
 
 void __noreturn stop_this_cpu(void *dummy)
 {

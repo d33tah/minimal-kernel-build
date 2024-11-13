@@ -17,8 +17,6 @@
 #include "i8042-ip22io.h"
 #elif defined(CONFIG_SNI_RM)
 #include "i8042-snirm.h"
-#elif defined(CONFIG_SPARC)
-#include "i8042-sparcio.h"
 #else
 #include "i8042-x86ia64io.h"
 #endif

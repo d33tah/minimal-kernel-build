@@ -15,9 +15,6 @@
 #define Elf_Ehdr	Elf32_Ehdr
 #define Elf_Addr	Elf32_Addr
 #define Elf_Rel		Elf32_Rel
-#ifdef CONFIG_MODULES_USE_ELF_RELA
-#define Elf_Rela	Elf32_Rela
-#endif
 #define ELF_R_TYPE(X)	ELF32_R_TYPE(X)
 #define ELF_R_SYM(X)	ELF32_R_SYM(X)
 

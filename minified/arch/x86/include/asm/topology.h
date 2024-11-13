@@ -32,55 +32,6 @@
  */
 #include <linux/numa.h>
 
-#ifdef CONFIG_NUMA
-#include <linux/cpumask.h>
-
-#include <asm/mpspec.h>
-#include <asm/percpu.h>
-
-/* Mappings between logical cpu number and node number */
-DECLARE_EARLY_PER_CPU(int, x86_cpu_to_node_map);
-
-#ifdef CONFIG_DEBUG_PER_CPU_MAPS
-/*
- * override generic percpu implementation of cpu_to_node
- */
-extern int __cpu_to_node(int cpu);
-#define cpu_to_node __cpu_to_node
-
-extern int early_cpu_to_node(int cpu);
-
-#else	/* !CONFIG_DEBUG_PER_CPU_MAPS */
-
-/* Same function but used if called before per_cpu areas are setup */
-static inline int early_cpu_to_node(int cpu)
-{
-	return early_per_cpu(x86_cpu_to_node_map, cpu);
-}
-
-#endif /* !CONFIG_DEBUG_PER_CPU_MAPS */
-
-/* Mappings between node number and cpus on that node. */
-extern cpumask_var_t node_to_cpumask_map[MAX_NUMNODES];
-
-#ifdef CONFIG_DEBUG_PER_CPU_MAPS
-extern const struct cpumask *cpumask_of_node(int node);
-#else
-/* Returns a pointer to the cpumask of CPUs on Node 'node'. */
-static inline const struct cpumask *cpumask_of_node(int node)
-{
-	return node_to_cpumask_map[node];
-}
-#endif
-
-extern void setup_node_to_cpumask_map(void);
-
-#define pcibus_to_node(bus) __pcibus_to_node(bus)
-
-extern int __node_distance(int, int);
-#define node_distance(a, b) __node_distance(a, b)
-
-#else /* !CONFIG_NUMA */
 
 static inline int numa_node_id(void)
 {
@@ -98,7 +49,6 @@ static inline int early_cpu_to_node(int cpu)
 
 static inline void setup_node_to_cpumask_map(void) { }
 
-#endif
 
 #include <asm-generic/topology.h>
 
@@ -137,22 +87,6 @@ void x86_pci_root_bus_resources(int bus, struct list_head *resources);
 
 extern bool x86_topology_update;
 
-#ifdef CONFIG_SCHED_MC_PRIO
-#include <asm/percpu.h>
-
-DECLARE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
-extern unsigned int __read_mostly sysctl_sched_itmt_enabled;
-
-/* Interface to set priority of a cpu */
-void sched_set_itmt_core_prio(int prio, int core_cpu);
-
-/* Interface to notify scheduler that system supports ITMT */
-int sched_set_itmt_support(void);
-
-/* Interface to notify scheduler that system revokes ITMT support */
-void sched_clear_itmt_support(void);
-
-#else /* CONFIG_SCHED_MC_PRIO */
 
 #define sysctl_sched_itmt_enabled	0
 static inline void sched_set_itmt_core_prio(int prio, int core_cpu)
@@ -165,7 +99,6 @@ static inline int sched_set_itmt_support(void)
 static inline void sched_clear_itmt_support(void)
 {
 }
-#endif /* CONFIG_SCHED_MC_PRIO */
 
 static inline void arch_set_max_freq_ratio(bool turbo_disabled) { }
 static inline void freq_invariance_set_perf_ratio(u64 ratio, bool turbo_disabled) { }
@@ -173,9 +106,5 @@ static inline void freq_invariance_set_perf_ratio(u64 ratio, bool turbo_disabled
 extern void arch_scale_freq_tick(void);
 #define arch_scale_freq_tick arch_scale_freq_tick
 
-#ifdef CONFIG_ACPI_CPPC_LIB
-void init_freq_invariance_cppc(void);
-#define arch_init_invariance_cppc init_freq_invariance_cppc
-#endif
 
 #endif /* _ASM_X86_TOPOLOGY_H */

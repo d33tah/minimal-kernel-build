@@ -28,27 +28,6 @@ struct pt_regs;
 
 #endif	/* __CHECKER__ */
 
-#ifdef CONFIG_GENERIC_BUG
-#include <asm-generic/bug.h>
-
-static inline int is_warning_bug(const struct bug_entry *bug)
-{
-	return bug->flags & BUGFLAG_WARNING;
-}
-
-void bug_get_file_line(struct bug_entry *bug, const char **file,
-		       unsigned int *line);
-
-struct bug_entry *find_bug(unsigned long bugaddr);
-
-enum bug_trap_type report_bug(unsigned long bug_addr, struct pt_regs *regs);
-
-/* These are defined by the architecture */
-int is_valid_bugaddr(unsigned long addr);
-
-void generic_bug_clear_once(void);
-
-#else	/* !CONFIG_GENERIC_BUG */
 
 static inline void *find_bug(unsigned long bugaddr)
 {
@@ -71,7 +50,6 @@ static inline void bug_get_file_line(struct bug_entry *bug, const char **file,
 
 static inline void generic_bug_clear_once(void) {}
 
-#endif	/* CONFIG_GENERIC_BUG */
 
 /*
  * Since detected data corruption should stop operation on the affected

@@ -82,13 +82,6 @@ check_prefetch_opcode(struct pt_regs *regs, unsigned char *instr,
 		 * X86_64 will never get here anyway
 		 */
 		return ((instr_lo & 7) == 0x6);
-#ifdef CONFIG_X86_64
-	case 0x40:
-		/*
-		 * In 64-bit mode 0x40..0x4F are valid REX prefixes
-		 */
-		return (!user_mode(regs) || user_64bit_mode(regs));
-#endif
 	case 0x60:
 		/* 0x64 thru 0x67 are valid prefixes in all modes. */
 		return (instr_lo & 0xC) == 0x4;
@@ -336,28 +329,6 @@ out:
  */
 static int is_errata93(struct pt_regs *regs, unsigned long address)
 {
-#if defined(CONFIG_X86_64) && defined(CONFIG_CPU_SUP_AMD)
-	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD
-	    || boot_cpu_data.x86 != 0xf)
-		return 0;
-
-	if (user_mode(regs))
-		return 0;
-
-	if (address != regs->ip)
-		return 0;
-
-	if ((address >> 32) != 0)
-		return 0;
-
-	address |= 0xffffffffUL << 32;
-	if ((address >= (u64)_stext && address <= (u64)_etext) ||
-	    (address >= MODULES_VADDR && address <= MODULES_END)) {
-		printk_once(errata93_warning);
-		regs->ip = address;
-		return 1;
-	}
-#endif
 	return 0;
 }
 
@@ -371,10 +342,6 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
  */
 static int is_errata100(struct pt_regs *regs, unsigned long address)
 {
-#ifdef CONFIG_X86_64
-	if ((regs->cs == __USER32_CS || (regs->cs & (1<<2))) && (address >> 32))
-		return 1;
-#endif
 	return 0;
 }
 
@@ -382,13 +349,6 @@ static int is_errata100(struct pt_regs *regs, unsigned long address)
 static int is_f00f_bug(struct pt_regs *regs, unsigned long error_code,
 		       unsigned long address)
 {
-#ifdef CONFIG_X86_F00F_BUG
-	if (boot_cpu_has_bug(X86_BUG_F00F) && !(error_code & X86_PF_USER) &&
-	    idt_is_f00f_address(address)) {
-		handle_invalid_op(regs);
-		return 1;
-	}
-#endif
 	return 0;
 }
 
@@ -416,9 +376,6 @@ static void show_ldttss(const struct desc_ptr *gdt, const char *name, u16 index)
 	}
 
 	addr = desc.base0 | (desc.base1 << 16) | ((unsigned long)desc.base2 << 24);
-#ifdef CONFIG_X86_64
-	addr |= ((u64)desc.base3 << 32);
-#endif
 	pr_alert("%s: 0x%hx -- base=0x%lx limit=0x%x\n",
 		 name, index, addr, (desc.limit0 | (desc.limit1 << 16)));
 }
@@ -552,9 +509,6 @@ static noinline void
 page_fault_oops(struct pt_regs *regs, unsigned long error_code,
 		unsigned long address)
 {
-#ifdef CONFIG_VMAP_STACK
-	struct stack_info info;
-#endif
 	unsigned long flags;
 	int sig;
 
@@ -566,32 +520,6 @@ page_fault_oops(struct pt_regs *regs, unsigned long error_code,
 		goto oops;
 	}
 
-#ifdef CONFIG_VMAP_STACK
-	/*
-	 * Stack overflow?  During boot, we can fault near the initial
-	 * stack in the direct map, but that's not an overflow -- check
-	 * that we're in vmalloc space to avoid this.
-	 */
-	if (is_vmalloc_addr((void *)address) &&
-	    get_stack_guard_info((void *)address, &info)) {
-		/*
-		 * We're likely to be running with very little stack space
-		 * left.  It's plausible that we'd hit this condition but
-		 * double-fault even before we get this far, in which case
-		 * we're fine: the double-fault handler will deal with it.
-		 *
-		 * We don't want to make it all the way into the oops code
-		 * and then double-fault, though, because we're likely to
-		 * break the console driver and lose most of the stack dump.
-		 */
-		call_on_stack(__this_cpu_ist_top_va(DF) - sizeof(void*),
-			      handle_stack_overflow,
-			      ASM_CALL_ARG3,
-			      , [arg1] "r" (regs), [arg2] "r" (address), [arg3] "r" (&info));
-
-		unreachable();
-	}
-#endif
 
 	/*
 	 * Buggy firmware could access regions which might page fault.  If
@@ -872,22 +800,6 @@ do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address,
 
 	set_signal_archinfo(address, error_code);
 
-#ifdef CONFIG_MEMORY_FAILURE
-	if (fault & (VM_FAULT_HWPOISON|VM_FAULT_HWPOISON_LARGE)) {
-		struct task_struct *tsk = current;
-		unsigned lsb = 0;
-
-		pr_err(
-	"MCE: Killing %s:%d due to hardware memory corruption fault at %lx\n",
-			tsk->comm, tsk->pid, address);
-		if (fault & VM_FAULT_HWPOISON_LARGE)
-			lsb = hstate_index_to_shift(VM_FAULT_GET_HINDEX(fault));
-		if (fault & VM_FAULT_HWPOISON)
-			lsb = PAGE_SHIFT;
-		force_sig_mceerr(BUS_MCEERR_AR, (void __user *)address, lsb);
-		return;
-	}
-#endif
 	force_sig_fault(SIGBUS, BUS_ADRERR, (void __user *)address);
 }
 
@@ -1223,23 +1135,6 @@ void do_user_addr_fault(struct pt_regs *regs,
 	if (error_code & X86_PF_INSTR)
 		flags |= FAULT_FLAG_INSTRUCTION;
 
-#ifdef CONFIG_X86_64
-	/*
-	 * Faults in the vsyscall page might need emulation.  The
-	 * vsyscall page is at a high address (>PAGE_OFFSET), but is
-	 * considered to be part of the user address space.
-	 *
-	 * The vsyscall page does not have a "real" VMA, so do this
-	 * emulation before we go searching for VMAs.
-	 *
-	 * PKRU never rejects instruction fetches, so we don't need
-	 * to consider the PF_PK bit.
-	 */
-	if (is_vsyscall_vaddr(address)) {
-		if (emulate_vsyscall(error_code, regs, address))
-			return;
-	}
-#endif
 
 	/*
 	 * Kernel-mode access to the user address space should only occur

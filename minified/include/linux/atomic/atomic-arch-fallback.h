@@ -1334,9 +1334,6 @@ arch_atomic_dec_if_positive(atomic_t *v)
 #define arch_atomic_dec_if_positive arch_atomic_dec_if_positive
 #endif
 
-#ifdef CONFIG_GENERIC_ATOMIC64
-#include <asm-generic/atomic64.h>
-#endif
 
 #ifndef arch_atomic64_read_acquire
 static __always_inline s64

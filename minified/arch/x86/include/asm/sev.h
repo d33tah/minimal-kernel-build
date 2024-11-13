@@ -134,75 +134,6 @@ struct snp_secrets_page_layout {
 	u8 rsvd3[3840];
 } __packed;
 
-#ifdef CONFIG_AMD_MEM_ENCRYPT
-extern struct static_key_false sev_es_enable_key;
-extern void __sev_es_ist_enter(struct pt_regs *regs);
-extern void __sev_es_ist_exit(void);
-static __always_inline void sev_es_ist_enter(struct pt_regs *regs)
-{
-	if (static_branch_unlikely(&sev_es_enable_key))
-		__sev_es_ist_enter(regs);
-}
-static __always_inline void sev_es_ist_exit(void)
-{
-	if (static_branch_unlikely(&sev_es_enable_key))
-		__sev_es_ist_exit();
-}
-extern int sev_es_setup_ap_jump_table(struct real_mode_header *rmh);
-extern void __sev_es_nmi_complete(void);
-static __always_inline void sev_es_nmi_complete(void)
-{
-	if (static_branch_unlikely(&sev_es_enable_key))
-		__sev_es_nmi_complete();
-}
-extern int __init sev_es_efi_map_ghcbs(pgd_t *pgd);
-extern enum es_result sev_es_ghcb_hv_call(struct ghcb *ghcb,
-					  bool set_ghcb_msr,
-					  struct es_em_ctxt *ctxt,
-					  u64 exit_code, u64 exit_info_1,
-					  u64 exit_info_2);
-static inline int rmpadjust(unsigned long vaddr, bool rmp_psize, unsigned long attrs)
-{
-	int rc;
-
-	/* "rmpadjust" mnemonic support in binutils 2.36 and newer */
-	asm volatile(".byte 0xF3,0x0F,0x01,0xFE\n\t"
-		     : "=a"(rc)
-		     : "a"(vaddr), "c"(rmp_psize), "d"(attrs)
-		     : "memory", "cc");
-
-	return rc;
-}
-static inline int pvalidate(unsigned long vaddr, bool rmp_psize, bool validate)
-{
-	bool no_rmpupdate;
-	int rc;
-
-	/* "pvalidate" mnemonic support in binutils 2.36 and newer */
-	asm volatile(".byte 0xF2, 0x0F, 0x01, 0xFF\n\t"
-		     CC_SET(c)
-		     : CC_OUT(c) (no_rmpupdate), "=a"(rc)
-		     : "a"(vaddr), "c"(rmp_psize), "d"(validate)
-		     : "memory", "cc");
-
-	if (no_rmpupdate)
-		return PVALIDATE_FAIL_NOUPDATE;
-
-	return rc;
-}
-void setup_ghcb(void);
-void __init early_snp_set_memory_private(unsigned long vaddr, unsigned long paddr,
-					 unsigned int npages);
-void __init early_snp_set_memory_shared(unsigned long vaddr, unsigned long paddr,
-					unsigned int npages);
-void __init snp_prep_memory(unsigned long paddr, unsigned int sz, enum psc_op op);
-void snp_set_memory_shared(unsigned long vaddr, unsigned int npages);
-void snp_set_memory_private(unsigned long vaddr, unsigned int npages);
-void snp_set_wakeup_secondary_cpu(void);
-bool snp_init(struct boot_params *bp);
-void snp_abort(void);
-int snp_issue_guest_request(u64 exit_code, struct snp_req_data *input, unsigned long *fw_err);
-#else
 static inline void sev_es_ist_enter(struct pt_regs *regs) { }
 static inline void sev_es_ist_exit(void) { }
 static inline int sev_es_setup_ap_jump_table(struct real_mode_header *rmh) { return 0; }
@@ -226,6 +157,5 @@ static inline int snp_issue_guest_request(u64 exit_code, struct snp_req_data *in
 {
 	return -ENOTTY;
 }
-#endif
 
 #endif

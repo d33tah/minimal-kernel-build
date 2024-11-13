@@ -187,22 +187,6 @@
  *  various ptep_get_and_clear() functions.
  */
 
-#ifdef CONFIG_MMU_GATHER_TABLE_FREE
-
-struct mmu_table_batch {
-#ifdef CONFIG_MMU_GATHER_RCU_TABLE_FREE
-	struct rcu_head		rcu;
-#endif
-	unsigned int		nr;
-	void			*tables[];
-};
-
-#define MAX_TABLE_BATCH		\
-	((PAGE_SIZE - sizeof(struct mmu_table_batch)) / sizeof(void *))
-
-extern void tlb_remove_table(struct mmu_gather *tlb, void *table);
-
-#else /* !CONFIG_MMU_GATHER_HAVE_TABLE_FREE */
 
 /*
  * Without MMU_GATHER_TABLE_FREE the architecture is assumed to have page based
@@ -210,24 +194,12 @@ extern void tlb_remove_table(struct mmu_gather *tlb, void *table);
  */
 #define tlb_remove_table(tlb, page) tlb_remove_page((tlb), (page))
 
-#endif /* CONFIG_MMU_GATHER_TABLE_FREE */
 
-#ifdef CONFIG_MMU_GATHER_RCU_TABLE_FREE
-/*
- * This allows an architecture that does not use the linux page-tables for
- * hardware to skip the TLBI when freeing page tables.
- */
-#ifndef tlb_needs_table_invalidate
-#define tlb_needs_table_invalidate() (true)
-#endif
-
-#else
 
 #ifdef tlb_needs_table_invalidate
 #error tlb_needs_table_invalidate() requires MMU_GATHER_RCU_TABLE_FREE
 #endif
 
-#endif /* CONFIG_MMU_GATHER_RCU_TABLE_FREE */
 
 
 #ifndef CONFIG_MMU_GATHER_NO_GATHER
@@ -266,9 +238,6 @@ extern bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page,
 struct mmu_gather {
 	struct mm_struct	*mm;
 
-#ifdef CONFIG_MMU_GATHER_TABLE_FREE
-	struct mmu_table_batch	*batch;
-#endif
 
 	unsigned long		start;
 	unsigned long		end;
@@ -311,9 +280,6 @@ struct mmu_gather {
 	struct mmu_gather_batch	local;
 	struct page		*__pages[MMU_GATHER_BUNDLE];
 
-#ifdef CONFIG_MMU_GATHER_PAGE_SIZE
-	unsigned int page_size;
-#endif
 #endif
 };
 
@@ -347,27 +313,6 @@ static inline void __tlb_reset_range(struct mmu_gather *tlb)
 	 */
 }
 
-#ifdef CONFIG_MMU_GATHER_NO_RANGE
-
-#if defined(tlb_flush)
-#error MMU_GATHER_NO_RANGE relies on default tlb_flush()
-#endif
-
-/*
- * When an architecture does not have efficient means of range flushing TLBs
- * there is no point in doing intermediate flushes on tlb_end_vma() to keep the
- * range small. We equally don't have to worry about page granularity or other
- * things.
- *
- * All we need to do is issue a full flush for any !0 range.
- */
-static inline void tlb_flush(struct mmu_gather *tlb)
-{
-	if (tlb->end)
-		flush_tlb_mm(tlb->mm);
-}
-
-#else /* CONFIG_MMU_GATHER_NO_RANGE */
 
 #ifndef tlb_flush
 /*
@@ -391,7 +336,6 @@ static inline void tlb_flush(struct mmu_gather *tlb)
 }
 #endif
 
-#endif /* CONFIG_MMU_GATHER_NO_RANGE */
 
 static inline void
 tlb_update_vma_flags(struct mmu_gather *tlb, struct vm_area_struct *vma)
@@ -451,14 +395,6 @@ static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
 static inline void tlb_change_page_size(struct mmu_gather *tlb,
 						     unsigned int page_size)
 {
-#ifdef CONFIG_MMU_GATHER_PAGE_SIZE
-	if (tlb->page_size && tlb->page_size != page_size) {
-		if (!tlb->fullmm && !tlb->need_flush_all)
-			tlb_flush_mmu(tlb);
-	}
-
-	tlb->page_size = page_size;
-#endif
 }
 
 static inline unsigned long tlb_get_unmap_shift(struct mmu_gather *tlb)

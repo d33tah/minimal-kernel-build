@@ -174,10 +174,6 @@ struct proto_ops {
 				      struct poll_table_struct *wait);
 	int		(*ioctl)     (struct socket *sock, unsigned int cmd,
 				      unsigned long arg);
-#ifdef CONFIG_COMPAT
-	int	 	(*compat_ioctl) (struct socket *sock, unsigned int cmd,
-				      unsigned long arg);
-#endif
 	int		(*gettstamp) (struct socket *sock, void __user *userstamp,
 				      bool timeval, bool time32);
 	int		(*listen)    (struct socket *sock, int len);

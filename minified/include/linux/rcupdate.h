@@ -42,20 +42,6 @@ void rcu_barrier_tasks(void);
 void rcu_barrier_tasks_rude(void);
 void synchronize_rcu(void);
 
-#ifdef CONFIG_PREEMPT_RCU
-
-void __rcu_read_lock(void);
-void __rcu_read_unlock(void);
-
-/*
- * Defined as a macro as it is a very low level header included from
- * areas that don't even know about current.  This gives the rcu_read_lock()
- * nesting depth, but makes sense only if CONFIG_PREEMPT_RCU -- in other
- * types of kernel builds, the rcu_read_lock() nesting depth is unknowable.
- */
-#define rcu_preempt_depth() READ_ONCE(current->rcu_read_lock_nesting)
-
-#else /* #ifdef CONFIG_PREEMPT_RCU */
 
 #define rcu_read_unlock_strict() do { } while (0)
 
@@ -76,7 +62,6 @@ static inline int rcu_preempt_depth(void)
 	return 0;
 }
 
-#endif /* #else #ifdef CONFIG_PREEMPT_RCU */
 
 /* Internal to kernel */
 void rcu_init(void);
@@ -85,39 +70,18 @@ void rcu_sched_clock_irq(int user);
 void rcu_report_dead(unsigned int cpu);
 void rcutree_migrate_callbacks(int cpu);
 
-#ifdef CONFIG_TASKS_RCU_GENERIC
-void rcu_init_tasks_generic(void);
-#else
 static inline void rcu_init_tasks_generic(void) { }
-#endif
 
-#ifdef CONFIG_RCU_STALL_COMMON
-void rcu_sysrq_start(void);
-void rcu_sysrq_end(void);
-#else /* #ifdef CONFIG_RCU_STALL_COMMON */
 static inline void rcu_sysrq_start(void) { }
 static inline void rcu_sysrq_end(void) { }
-#endif /* #else #ifdef CONFIG_RCU_STALL_COMMON */
 
-#ifdef CONFIG_NO_HZ_FULL
-void rcu_user_enter(void);
-void rcu_user_exit(void);
-#else
 static inline void rcu_user_enter(void) { }
 static inline void rcu_user_exit(void) { }
-#endif /* CONFIG_NO_HZ_FULL */
 
-#ifdef CONFIG_RCU_NOCB_CPU
-void rcu_init_nohz(void);
-int rcu_nocb_cpu_offload(int cpu);
-int rcu_nocb_cpu_deoffload(int cpu);
-void rcu_nocb_flush_deferred_wakeup(void);
-#else /* #ifdef CONFIG_RCU_NOCB_CPU */
 static inline void rcu_init_nohz(void) { }
 static inline int rcu_nocb_cpu_offload(int cpu) { return -EINVAL; }
 static inline int rcu_nocb_cpu_deoffload(int cpu) { return 0; }
 static inline void rcu_nocb_flush_deferred_wakeup(void) { }
-#endif /* #else #ifdef CONFIG_RCU_NOCB_CPU */
 
 /**
  * RCU_NONIDLE - Indicate idle-loop code that needs RCU readers
@@ -148,50 +112,6 @@ static inline void rcu_nocb_flush_deferred_wakeup(void) { }
  * Note a quasi-voluntary context switch for RCU-tasks's benefit.
  * This is a macro rather than an inline function to avoid #include hell.
  */
-#ifdef CONFIG_TASKS_RCU_GENERIC
-
-# ifdef CONFIG_TASKS_RCU
-# define rcu_tasks_classic_qs(t, preempt)				\
-	do {								\
-		if (!(preempt) && READ_ONCE((t)->rcu_tasks_holdout))	\
-			WRITE_ONCE((t)->rcu_tasks_holdout, false);	\
-	} while (0)
-void call_rcu_tasks(struct rcu_head *head, rcu_callback_t func);
-void synchronize_rcu_tasks(void);
-# else
-# define rcu_tasks_classic_qs(t, preempt) do { } while (0)
-# define call_rcu_tasks call_rcu
-# define synchronize_rcu_tasks synchronize_rcu
-# endif
-
-# ifdef CONFIG_TASKS_TRACE_RCU
-# define rcu_tasks_trace_qs(t)						\
-	do {								\
-		if (!likely(READ_ONCE((t)->trc_reader_checked)) &&	\
-		    !unlikely(READ_ONCE((t)->trc_reader_nesting))) {	\
-			smp_store_release(&(t)->trc_reader_checked, true); \
-			smp_mb(); /* Readers partitioned by store. */	\
-		}							\
-	} while (0)
-# else
-# define rcu_tasks_trace_qs(t) do { } while (0)
-# endif
-
-#define rcu_tasks_qs(t, preempt)					\
-do {									\
-	rcu_tasks_classic_qs((t), (preempt));				\
-	rcu_tasks_trace_qs((t));					\
-} while (0)
-
-# ifdef CONFIG_TASKS_RUDE_RCU
-void call_rcu_tasks_rude(struct rcu_head *head, rcu_callback_t func);
-void synchronize_rcu_tasks_rude(void);
-# endif
-
-#define rcu_note_voluntary_context_switch(t) rcu_tasks_qs(t, false)
-void exit_tasks_rcu_start(void);
-void exit_tasks_rcu_finish(void);
-#else /* #ifdef CONFIG_TASKS_RCU_GENERIC */
 #define rcu_tasks_classic_qs(t, preempt) do { } while (0)
 #define rcu_tasks_qs(t, preempt) do { } while (0)
 #define rcu_note_voluntary_context_switch(t) do { } while (0)
@@ -199,7 +119,6 @@ void exit_tasks_rcu_finish(void);
 #define synchronize_rcu_tasks synchronize_rcu
 static inline void exit_tasks_rcu_start(void) { }
 static inline void exit_tasks_rcu_finish(void) { }
-#endif /* #else #ifdef CONFIG_TASKS_RCU_GENERIC */
 
 /**
  * cond_resched_tasks_rcu_qs - Report potential quiescent states to RCU
@@ -233,23 +152,12 @@ do { \
  * structures.  However, rcu_head structures allocated dynamically in the
  * heap don't need any initialization.
  */
-#ifdef CONFIG_DEBUG_OBJECTS_RCU_HEAD
-void init_rcu_head(struct rcu_head *head);
-void destroy_rcu_head(struct rcu_head *head);
-void init_rcu_head_on_stack(struct rcu_head *head);
-void destroy_rcu_head_on_stack(struct rcu_head *head);
-#else /* !CONFIG_DEBUG_OBJECTS_RCU_HEAD */
 static inline void init_rcu_head(struct rcu_head *head) { }
 static inline void destroy_rcu_head(struct rcu_head *head) { }
 static inline void init_rcu_head_on_stack(struct rcu_head *head) { }
 static inline void destroy_rcu_head_on_stack(struct rcu_head *head) { }
-#endif	/* #else !CONFIG_DEBUG_OBJECTS_RCU_HEAD */
 
-#if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PROVE_RCU)
-bool rcu_lockdep_current_cpu_online(void);
-#else /* #if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PROVE_RCU) */
 static inline bool rcu_lockdep_current_cpu_online(void) { return true; }
-#endif /* #else #if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PROVE_RCU) */
 
 extern struct lockdep_map rcu_lock_map;
 extern struct lockdep_map rcu_bh_lock_map;
@@ -281,48 +189,10 @@ static inline int rcu_read_lock_any_held(void)
 }
 
 
-#ifdef CONFIG_PROVE_RCU
-
-/**
- * RCU_LOCKDEP_WARN - emit lockdep splat if specified condition is met
- * @c: condition to check
- * @s: informative message
- */
-#define RCU_LOCKDEP_WARN(c, s)						\
-	do {								\
-		static bool __section(".data.unlikely") __warned;	\
-		if ((c) && debug_lockdep_rcu_enabled() && !__warned) {	\
-			__warned = true;				\
-			lockdep_rcu_suspicious(__FILE__, __LINE__, s);	\
-		}							\
-	} while (0)
-
-#if defined(CONFIG_PROVE_RCU) && !defined(CONFIG_PREEMPT_RCU)
-static inline void rcu_preempt_sleep_check(void)
-{
-	RCU_LOCKDEP_WARN(lock_is_held(&rcu_lock_map),
-			 "Illegal context switch in RCU read-side critical section");
-}
-#else /* #ifdef CONFIG_PROVE_RCU */
-static inline void rcu_preempt_sleep_check(void) { }
-#endif /* #else #ifdef CONFIG_PROVE_RCU */
-
-#define rcu_sleep_check()						\
-	do {								\
-		rcu_preempt_sleep_check();				\
-		if (!IS_ENABLED(CONFIG_PREEMPT_RT))			\
-		    RCU_LOCKDEP_WARN(lock_is_held(&rcu_bh_lock_map),	\
-				 "Illegal context switch in RCU-bh read-side critical section"); \
-		RCU_LOCKDEP_WARN(lock_is_held(&rcu_sched_lock_map),	\
-				 "Illegal context switch in RCU-sched read-side critical section"); \
-	} while (0)
-
-#else /* #ifdef CONFIG_PROVE_RCU */
 
 #define RCU_LOCKDEP_WARN(c, s) do { } while (0 && (c))
 #define rcu_sleep_check() do { } while (0)
 
-#endif /* #else #ifdef CONFIG_PROVE_RCU */
 
 /*
  * Helper functions for rcu_dereference_check(), rcu_dereference_protected()
@@ -935,11 +805,7 @@ do {								\
  * if the UNLOCK and LOCK are executed by the same CPU or if the
  * UNLOCK and LOCK operate on the same lock variable.
  */
-#ifdef CONFIG_ARCH_WEAK_RELEASE_ACQUIRE
-#define smp_mb__after_unlock_lock()	smp_mb()  /* Full ordering for lock. */
-#else /* #ifdef CONFIG_ARCH_WEAK_RELEASE_ACQUIRE */
 #define smp_mb__after_unlock_lock()	do { } while (0)
-#endif /* #else #ifdef CONFIG_ARCH_WEAK_RELEASE_ACQUIRE */
 
 
 /* Has the specified rcu_head structure been handed to call_rcu()? */

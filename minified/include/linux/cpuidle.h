@@ -102,10 +102,6 @@ struct cpuidle_device {
 	struct cpuidle_device_kobj *kobj_dev;
 	struct list_head 	device_list;
 
-#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
-	cpumask_t		coupled_cpus;
-	struct cpuidle_coupled	*coupled;
-#endif
 };
 
 DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
@@ -187,13 +183,9 @@ static inline void cpuidle_use_deepest_state(u64 latency_limit_ns)
 extern void sched_idle_set_state(struct cpuidle_state *idle_state);
 extern void default_idle_call(void);
 
-#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
-void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, atomic_t *a);
-#else
 static inline void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, atomic_t *a)
 {
 }
-#endif
 
 static inline void cpuidle_poll_state_init(struct cpuidle_driver *drv) {}
 

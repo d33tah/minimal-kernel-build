@@ -40,16 +40,9 @@ struct saved_msrs {
  * edx:eax, while for x86_64 it doesn't mean rdx:rax or edx:eax. Instead,
  * it means rax *or* rdx.
  */
-#ifdef CONFIG_X86_64
-/* Using 64-bit values saves one instruction clearing the high half of low */
-#define DECLARE_ARGS(val, low, high)	unsigned long low, high
-#define EAX_EDX_VAL(val, low, high)	((low) | (high) << 32)
-#define EAX_EDX_RET(val, low, high)	"=a" (low), "=d" (high)
-#else
 #define DECLARE_ARGS(val, low, high)	unsigned long long val
 #define EAX_EDX_VAL(val, low, high)	(val)
 #define EAX_EDX_RET(val, low, high)	"=A" (val)
-#endif
 
 /*
  * Be very careful with includes. This header is prone to include loops.
@@ -57,18 +50,9 @@ struct saved_msrs {
 #include <asm/atomic.h>
 #include <linux/tracepoint-defs.h>
 
-#ifdef CONFIG_TRACEPOINTS
-DECLARE_TRACEPOINT(read_msr);
-DECLARE_TRACEPOINT(write_msr);
-DECLARE_TRACEPOINT(rdpmc);
-extern void do_trace_write_msr(unsigned int msr, u64 val, int failed);
-extern void do_trace_read_msr(unsigned int msr, u64 val, int failed);
-extern void do_trace_rdpmc(unsigned int msr, u64 val, int failed);
-#else
 static inline void do_trace_write_msr(unsigned int msr, u64 val, int failed) {}
 static inline void do_trace_read_msr(unsigned int msr, u64 val, int failed) {}
 static inline void do_trace_rdpmc(unsigned int msr, u64 val, int failed) {}
-#endif
 
 /*
  * __rdmsr() and __wrmsr() are the two primitives which are the bare minimum MSR
@@ -232,9 +216,6 @@ static inline unsigned long long native_read_pmc(int counter)
 	return EAX_EDX_VAL(val, low, high);
 }
 
-#ifdef CONFIG_PARAVIRT_XXL
-#include <asm/paravirt.h>
-#else
 #include <linux/errno.h>
 /*
  * Access to machine-specific registers (available on 586 and better only)
@@ -295,7 +276,6 @@ do {							\
 
 #define rdpmcl(counter, val) ((val) = native_read_pmc(counter))
 
-#endif	/* !CONFIG_PARAVIRT_XXL */
 
 /*
  * 64-bit version of wrmsr_safe():

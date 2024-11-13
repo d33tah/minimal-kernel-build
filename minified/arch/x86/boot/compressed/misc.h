@@ -38,11 +38,7 @@
 
 #include "efi.h"
 
-#ifdef CONFIG_X86_64
-#define memptr long
-#else
 #define memptr unsigned
-#endif
 
 /* boot/compressed/vmlinux start and end markers */
 extern char _head[], _end[];
@@ -75,14 +71,6 @@ struct mem_vector {
 	u64 size;
 };
 
-#ifdef CONFIG_RANDOMIZE_BASE
-/* kaslr.c */
-void choose_random_location(unsigned long input,
-			    unsigned long input_size,
-			    unsigned long *output,
-			    unsigned long output_size,
-			    unsigned long *virt_addr);
-#else
 static inline void choose_random_location(unsigned long input,
 					  unsigned long input_size,
 					  unsigned long *output,
@@ -90,30 +78,15 @@ static inline void choose_random_location(unsigned long input,
 					  unsigned long *virt_addr)
 {
 }
-#endif
 
 /* cpuflags.c */
 bool has_cpuflag(int flag);
 
-#ifdef CONFIG_X86_64
-extern int set_page_decrypted(unsigned long address);
-extern int set_page_encrypted(unsigned long address);
-extern int set_page_non_present(unsigned long address);
-extern unsigned char _pgtable[];
-#endif
 
 static const int early_serial_base;
 static inline void console_init(void)
 { }
 
-#ifdef CONFIG_AMD_MEM_ENCRYPT
-void sev_enable(struct boot_params *bp);
-void sev_es_shutdown_ghcb(void);
-extern bool sev_es_check_ghcb_fault(unsigned long address);
-void snp_set_page_private(unsigned long paddr);
-void snp_set_page_shared(unsigned long paddr);
-void sev_prep_identity_maps(unsigned long top_level_pgt);
-#else
 static inline void sev_enable(struct boot_params *bp) { }
 static inline void sev_es_shutdown_ghcb(void) { }
 static inline bool sev_es_check_ghcb_fault(unsigned long address)
@@ -123,7 +96,6 @@ static inline bool sev_es_check_ghcb_fault(unsigned long address)
 static inline void snp_set_page_private(unsigned long paddr) { }
 static inline void snp_set_page_shared(unsigned long paddr) { }
 static inline void sev_prep_identity_maps(unsigned long top_level_pgt) { }
-#endif
 
 /* acpi.c */
 static inline acpi_physical_address get_rsdp_addr(void) { return 0; }
@@ -131,9 +103,6 @@ static inline acpi_physical_address get_rsdp_addr(void) { return 0; }
 static inline int count_immovable_mem_regions(void) { return 0; }
 
 /* ident_map_64.c */
-#ifdef CONFIG_X86_5LEVEL
-extern unsigned int __pgtable_l5_enabled, pgdir_shift, ptrs_per_p4d;
-#endif
 extern void kernel_add_identity_map(unsigned long start, unsigned long end);
 
 /* Used by PAGE_KERN* macros: */
@@ -143,11 +112,7 @@ extern pteval_t __default_kernel_pte_mask;
 extern gate_desc boot_idt[BOOT_IDT_ENTRIES];
 extern struct desc_ptr boot_idt_desc;
 
-#ifdef CONFIG_X86_64
-void cleanup_exception_handling(void);
-#else
 static inline void cleanup_exception_handling(void) { }
-#endif
 
 /* IDT Entry Points */
 void boot_page_fault(void);
@@ -162,17 +127,6 @@ enum efi_type {
 	EFI_TYPE_NONE,
 };
 
-#ifdef CONFIG_EFI
-/* helpers for early EFI config table access */
-enum efi_type efi_get_type(struct boot_params *bp);
-unsigned long efi_get_system_table(struct boot_params *bp);
-int efi_get_conf_table(struct boot_params *bp, unsigned long *cfg_tbl_pa,
-		       unsigned int *cfg_tbl_len);
-unsigned long efi_find_vendor_table(struct boot_params *bp,
-				    unsigned long cfg_tbl_pa,
-				    unsigned int cfg_tbl_len,
-				    efi_guid_t guid);
-#else
 static inline enum efi_type efi_get_type(struct boot_params *bp)
 {
 	return EFI_TYPE_NONE;
@@ -197,6 +151,5 @@ static inline unsigned long efi_find_vendor_table(struct boot_params *bp,
 {
 	return 0;
 }
-#endif /* CONFIG_EFI */
 
 #endif /* BOOT_COMPRESSED_MISC_H */

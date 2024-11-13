@@ -40,10 +40,6 @@ static inline int seccomp_mode(struct seccomp *s)
 	return SECCOMP_MODE_DISABLED;
 }
 
-#ifdef CONFIG_SECCOMP_FILTER
-extern void seccomp_filter_release(struct task_struct *tsk);
-extern void get_seccomp_filter(struct task_struct *tsk);
-#else  /* CONFIG_SECCOMP_FILTER */
 static inline void seccomp_filter_release(struct task_struct *tsk)
 {
 	return;
@@ -52,7 +48,6 @@ static inline void get_seccomp_filter(struct task_struct *tsk)
 {
 	return;
 }
-#endif /* CONFIG_SECCOMP_FILTER */
 
 static inline long seccomp_get_filter(struct task_struct *task,
 				      unsigned long n, void __user *data)
@@ -66,10 +61,4 @@ static inline long seccomp_get_metadata(struct task_struct *task,
 	return -EINVAL;
 }
 
-#ifdef CONFIG_SECCOMP_CACHE_DEBUG
-struct seq_file;
-
-int proc_pid_seccomp_cache(struct seq_file *m, struct pid_namespace *ns,
-			   struct pid *pid, struct task_struct *task);
-#endif
 #endif /* _LINUX_SECCOMP_H */

@@ -977,26 +977,6 @@ int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 }
 EXPORT_SYMBOL_GPL(filemap_add_folio);
 
-#ifdef CONFIG_NUMA
-struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
-{
-	int n;
-	struct folio *folio;
-
-	if (cpuset_do_page_mem_spread()) {
-		unsigned int cpuset_mems_cookie;
-		do {
-			cpuset_mems_cookie = read_mems_allowed_begin();
-			n = cpuset_mem_spread_node();
-			folio = __folio_alloc_node(gfp, order, n);
-		} while (!folio && read_mems_allowed_retry(cpuset_mems_cookie));
-
-		return folio;
-	}
-	return folio_alloc(gfp, order);
-}
-EXPORT_SYMBOL(filemap_alloc_folio);
-#endif
 
 /*
  * filemap_invalidate_lock_two - lock invalidate_lock for two mappings
@@ -1379,94 +1359,6 @@ repeat:
 	return wait->flags & WQ_FLAG_WOKEN ? 0 : -EINTR;
 }
 
-#ifdef CONFIG_MIGRATION
-/**
- * migration_entry_wait_on_locked - Wait for a migration entry to be removed
- * @entry: migration swap entry.
- * @ptep: mapped pte pointer. Will return with the ptep unmapped. Only required
- *        for pte entries, pass NULL for pmd entries.
- * @ptl: already locked ptl. This function will drop the lock.
- *
- * Wait for a migration entry referencing the given page to be removed. This is
- * equivalent to put_and_wait_on_page_locked(page, TASK_UNINTERRUPTIBLE) except
- * this can be called without taking a reference on the page. Instead this
- * should be called while holding the ptl for the migration entry referencing
- * the page.
- *
- * Returns after unmapping and unlocking the pte/ptl with pte_unmap_unlock().
- *
- * This follows the same logic as folio_wait_bit_common() so see the comments
- * there.
- */
-void migration_entry_wait_on_locked(swp_entry_t entry, pte_t *ptep,
-				spinlock_t *ptl)
-{
-	struct wait_page_queue wait_page;
-	wait_queue_entry_t *wait = &wait_page.wait;
-	bool thrashing = false;
-	bool delayacct = false;
-	unsigned long pflags;
-	wait_queue_head_t *q;
-	struct folio *folio = page_folio(pfn_swap_entry_to_page(entry));
-
-	q = folio_waitqueue(folio);
-	if (!folio_test_uptodate(folio) && folio_test_workingset(folio)) {
-		if (!folio_test_swapbacked(folio)) {
-			delayacct_thrashing_start();
-			delayacct = true;
-		}
-		psi_memstall_enter(&pflags);
-		thrashing = true;
-	}
-
-	init_wait(wait);
-	wait->func = wake_page_function;
-	wait_page.folio = folio;
-	wait_page.bit_nr = PG_locked;
-	wait->flags = 0;
-
-	spin_lock_irq(&q->lock);
-	folio_set_waiters(folio);
-	if (!folio_trylock_flag(folio, PG_locked, wait))
-		__add_wait_queue_entry_tail(q, wait);
-	spin_unlock_irq(&q->lock);
-
-	/*
-	 * If a migration entry exists for the page the migration path must hold
-	 * a valid reference to the page, and it must take the ptl to remove the
-	 * migration entry. So the page is valid until the ptl is dropped.
-	 */
-	if (ptep)
-		pte_unmap_unlock(ptep, ptl);
-	else
-		spin_unlock(ptl);
-
-	for (;;) {
-		unsigned int flags;
-
-		set_current_state(TASK_UNINTERRUPTIBLE);
-
-		/* Loop until we've been woken or interrupted */
-		flags = smp_load_acquire(&wait->flags);
-		if (!(flags & WQ_FLAG_WOKEN)) {
-			if (signal_pending_state(TASK_UNINTERRUPTIBLE, current))
-				break;
-
-			io_schedule();
-			continue;
-		}
-		break;
-	}
-
-	finish_wait(q, wait);
-
-	if (thrashing) {
-		if (delayacct)
-			delayacct_thrashing_end();
-		psi_memstall_leave(&pflags);
-	}
-}
-#endif
 
 void folio_wait_bit(struct folio *folio, int bit_nr)
 {

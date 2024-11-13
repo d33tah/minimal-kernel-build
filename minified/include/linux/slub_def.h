@@ -49,31 +49,14 @@ struct kmem_cache_cpu {
 	void **freelist;	/* Pointer to next available object */
 	unsigned long tid;	/* Globally unique transaction id */
 	struct slab *slab;	/* The slab from which we are allocating */
-#ifdef CONFIG_SLUB_CPU_PARTIAL
-	struct slab *partial;	/* Partially allocated frozen slabs */
-#endif
 	local_lock_t lock;	/* Protects the fields above */
-#ifdef CONFIG_SLUB_STATS
-	unsigned stat[NR_SLUB_STAT_ITEMS];
-#endif
 };
 
-#ifdef CONFIG_SLUB_CPU_PARTIAL
-#define slub_percpu_partial(c)		((c)->partial)
-
-#define slub_set_percpu_partial(c, p)		\
-({						\
-	slub_percpu_partial(c) = (p)->next;	\
-})
-
-#define slub_percpu_partial_read_once(c)     READ_ONCE(slub_percpu_partial(c))
-#else
 #define slub_percpu_partial(c)			NULL
 
 #define slub_set_percpu_partial(c, p)
 
 #define slub_percpu_partial_read_once(c)	NULL
-#endif // CONFIG_SLUB_CPU_PARTIAL
 
 /*
  * Word size structure that can be atomically updated or read and that
@@ -96,12 +79,6 @@ struct kmem_cache {
 	unsigned int object_size;/* The size of an object without metadata */
 	struct reciprocal_value reciprocal_size;
 	unsigned int offset;	/* Free pointer offset */
-#ifdef CONFIG_SLUB_CPU_PARTIAL
-	/* Number of per cpu partial objects to keep around */
-	unsigned int cpu_partial;
-	/* Number of per cpu partial slabs to keep around */
-	unsigned int cpu_partial_slabs;
-#endif
 	struct kmem_cache_order_objects oo;
 
 	/* Allocation and freeing of slabs */
@@ -115,17 +92,8 @@ struct kmem_cache {
 	const char *name;	/* Name (only for display!) */
 	struct list_head list;	/* List of slab caches */
 
-#ifdef CONFIG_NUMA
-	/*
-	 * Defragmentation by allocating from a remote node.
-	 */
-	unsigned int remote_node_defrag_ratio;
-#endif
 
 
-#ifdef CONFIG_KASAN
-	struct kasan_cache kasan_info;
-#endif
 
 	unsigned int useroffset;	/* Usercopy region offset */
 	unsigned int usersize;		/* Usercopy region size */

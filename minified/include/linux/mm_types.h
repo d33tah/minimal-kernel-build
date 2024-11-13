@@ -192,9 +192,6 @@ struct page {
 	/* Usage count. *DO NOT USE DIRECTLY*. See page_ref.h */
 	atomic_t _refcount;
 
-#ifdef CONFIG_MEMCG
-	unsigned long memcg_data;
-#endif
 
 	/*
 	 * On machines where all RAM is mapped into kernel address space,
@@ -263,9 +260,6 @@ struct folio {
 			void *private;
 			atomic_t _mapcount;
 			atomic_t _refcount;
-#ifdef CONFIG_MEMCG
-			unsigned long memcg_data;
-#endif
 	/* private: the union with struct page is transitional */
 		};
 		struct page page;
@@ -283,9 +277,6 @@ FOLIO_MATCH(index, index);
 FOLIO_MATCH(private, private);
 FOLIO_MATCH(_mapcount, _mapcount);
 FOLIO_MATCH(_refcount, _refcount);
-#ifdef CONFIG_MEMCG
-FOLIO_MATCH(memcg_data, memcg_data);
-#endif
 #undef FOLIO_MATCH
 
 static inline atomic_t *folio_mapcount_ptr(struct folio *folio)
@@ -451,12 +442,6 @@ struct vm_area_struct {
 	struct file * vm_file;		/* File we map to (can be NULL). */
 	void * vm_private_data;		/* was vm_pte (shared mem) */
 
-#ifdef CONFIG_SWAP
-	atomic_long_t swap_readahead_info;
-#endif
-#ifdef CONFIG_NUMA
-	struct mempolicy *vm_policy;	/* NUMA policy for the VMA */
-#endif
 	struct vm_userfaultfd_ctx vm_userfaultfd_ctx;
 } __randomize_layout;
 
@@ -471,11 +456,6 @@ struct mm_struct {
 				unsigned long pgoff, unsigned long flags);
 		unsigned long mmap_base;	/* base of mmap area */
 		unsigned long mmap_legacy_base;	/* base of mmap area in bottom-up allocations */
-#ifdef CONFIG_HAVE_ARCH_COMPAT_MMAP_BASES
-		/* Base addresses for compatible mmap() */
-		unsigned long mmap_compat_base;
-		unsigned long mmap_compat_legacy_base;
-#endif
 		unsigned long task_size;	/* size of task vm space */
 		unsigned long highest_vm_end;	/* highest vma end address */
 		pgd_t * pgd;
@@ -567,40 +547,10 @@ struct mm_struct {
 
 		unsigned long flags; /* Must use atomic bitops to access */
 
-#ifdef CONFIG_MEMCG
-		/*
-		 * "owner" points to a task that is regarded as the canonical
-		 * user/owner of this mm. All of the following must be true in
-		 * order for it to be changed:
-		 *
-		 * current == mm->owner
-		 * current->mm != mm
-		 * new_owner->mm == mm
-		 * new_owner->alloc_lock is held
-		 */
-		struct task_struct __rcu *owner;
-#endif
 		struct user_namespace *user_ns;
 
 		/* store ref to file /proc/<pid>/exe symlink points to */
 		struct file __rcu *exe_file;
-#ifdef CONFIG_MMU_NOTIFIER
-		struct mmu_notifier_subscriptions *notifier_subscriptions;
-#endif
-#ifdef CONFIG_NUMA_BALANCING
-		/*
-		 * numa_next_scan is the next time that the PTEs will be marked
-		 * pte_numa. NUMA hinting faults will gather statistics and
-		 * migrate pages to new nodes if necessary.
-		 */
-		unsigned long numa_next_scan;
-
-		/* Restart point for scanning and setting pte_numa */
-		unsigned long numa_scan_offset;
-
-		/* numa_scan_seq prevents two threads setting pte_numa */
-		int numa_scan_seq;
-#endif
 		/*
 		 * An operation with batched TLB flushing is going on. Anything
 		 * that can move process memory needs to flush the TLB when
@@ -610,17 +560,8 @@ struct mm_struct {
 		/* See flush_tlb_batched_pending() */
 		atomic_t tlb_flush_batched;
 		struct uprobes_state uprobes_state;
-#ifdef CONFIG_PREEMPT_RT
-		struct rcu_head delayed_drop;
-#endif
-#ifdef CONFIG_HUGETLB_PAGE
-		atomic_long_t hugetlb_usage;
-#endif
 		struct work_struct async_put_work;
 
-#ifdef CONFIG_IOMMU_SVA
-		u32 pasid;
-#endif
 	} __randomize_layout;
 
 	/*

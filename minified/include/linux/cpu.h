@@ -75,11 +75,6 @@ extern __printf(4, 5)
 struct device *cpu_device_create(struct device *parent, void *drvdata,
 				 const struct attribute_group **groups,
 				 const char *fmt, ...);
-#ifdef CONFIG_HOTPLUG_CPU
-extern void unregister_cpu(struct cpu *cpu);
-extern ssize_t arch_cpu_probe(const char *, size_t);
-extern ssize_t arch_cpu_release(const char *, size_t);
-#endif
 
 /*
  * These states are not related to the core CPU hotplug mechanism. They are
@@ -108,21 +103,6 @@ extern struct bus_type cpu_subsys;
 
 extern int lockdep_is_cpus_held(void);
 
-#ifdef CONFIG_HOTPLUG_CPU
-extern void cpus_write_lock(void);
-extern void cpus_write_unlock(void);
-extern void cpus_read_lock(void);
-extern void cpus_read_unlock(void);
-extern int  cpus_read_trylock(void);
-extern void lockdep_assert_cpus_held(void);
-extern void cpu_hotplug_disable(void);
-extern void cpu_hotplug_enable(void);
-void clear_tasks_mm_cpumask(int cpu);
-int remove_cpu(unsigned int cpu);
-int cpu_device_down(struct device *dev);
-extern void smp_shutdown_nonboot_cpus(unsigned int primary_cpu);
-
-#else /* CONFIG_HOTPLUG_CPU */
 
 static inline void cpus_write_lock(void) { }
 static inline void cpus_write_unlock(void) { }
@@ -134,31 +114,10 @@ static inline void cpu_hotplug_disable(void) { }
 static inline void cpu_hotplug_enable(void) { }
 static inline int remove_cpu(unsigned int cpu) { return -EPERM; }
 static inline void smp_shutdown_nonboot_cpus(unsigned int primary_cpu) { }
-#endif	/* !CONFIG_HOTPLUG_CPU */
 
-#ifdef CONFIG_PM_SLEEP_SMP
-extern int freeze_secondary_cpus(int primary);
-extern void thaw_secondary_cpus(void);
-
-static inline int suspend_disable_secondary_cpus(void)
-{
-	int cpu = 0;
-
-	if (IS_ENABLED(CONFIG_PM_SLEEP_SMP_NONZERO_CPU))
-		cpu = -1;
-
-	return freeze_secondary_cpus(cpu);
-}
-static inline void suspend_enable_secondary_cpus(void)
-{
-	return thaw_secondary_cpus();
-}
-
-#else /* !CONFIG_PM_SLEEP_SMP */
 static inline void thaw_secondary_cpus(void) {}
 static inline int suspend_disable_secondary_cpus(void) { return 0; }
 static inline void suspend_enable_secondary_cpus(void) { }
-#endif /* !CONFIG_PM_SLEEP_SMP */
 
 void __noreturn cpu_startup_entry(enum cpuhp_state state);
 
@@ -185,13 +144,7 @@ static inline void play_idle(unsigned long duration_us)
 	play_idle_precise(duration_us * NSEC_PER_USEC, U64_MAX);
 }
 
-#ifdef CONFIG_HOTPLUG_CPU
-bool cpu_wait_death(unsigned int cpu, int seconds);
-bool cpu_report_death(void);
-void cpuhp_report_idle_dead(void);
-#else
 static inline void cpuhp_report_idle_dead(void) { }
-#endif /* #ifdef CONFIG_HOTPLUG_CPU */
 
 enum cpuhp_smt_control {
 	CPU_SMT_ENABLED,

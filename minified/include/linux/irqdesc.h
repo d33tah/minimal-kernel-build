@@ -74,16 +74,6 @@ struct irq_desc {
 	unsigned long		threads_oneshot;
 	atomic_t		threads_active;
 	wait_queue_head_t       wait_for_threads;
-#ifdef CONFIG_PM_SLEEP
-	unsigned int		nr_actions;
-	unsigned int		no_suspend_depth;
-	unsigned int		cond_suspend_depth;
-	unsigned int		force_resume_depth;
-#endif
-#ifdef CONFIG_GENERIC_IRQ_DEBUGFS
-	struct dentry		*debugfs_file;
-	const char		*dev_name;
-#endif
 	struct rcu_head		rcu;
 	struct kobject		kobj;
 	struct mutex		request_mutex;
@@ -144,15 +134,6 @@ int handle_irq_desc(struct irq_desc *desc);
 int generic_handle_irq(unsigned int irq);
 int generic_handle_irq_safe(unsigned int irq);
 
-#ifdef CONFIG_IRQ_DOMAIN
-/*
- * Convert a HW interrupt number to a logical one using a IRQ domain,
- * and handle the result interrupt number. Return -EINVAL if
- * conversion failed.
- */
-int generic_handle_domain_irq(struct irq_domain *domain, unsigned int hwirq);
-int generic_handle_domain_nmi(struct irq_domain *domain, unsigned int hwirq);
-#endif
 
 /* Test to see if a driver has successfully requested an irq */
 static inline int irq_desc_has_action(struct irq_desc *desc)

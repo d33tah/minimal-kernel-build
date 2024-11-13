@@ -663,13 +663,6 @@ struct phy_device {
 	/* Energy efficient ethernet modes which should be prohibited */
 	u32 eee_broken_modes;
 
-#ifdef CONFIG_LED_TRIGGER_PHY
-	struct phy_led_trigger *phy_led_triggers;
-	unsigned int phy_num_led_triggers;
-	struct phy_led_trigger *last_triggered;
-
-	struct phy_led_trigger *led_link_trigger;
-#endif
 
 	/*
 	 * Interrupt number for this PHY

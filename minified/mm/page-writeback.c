@@ -121,10 +121,6 @@ struct wb_domain global_wb_domain;
 
 /* consolidated parameters for balance_dirty_pages() and its subroutines */
 struct dirty_throttle_control {
-#ifdef CONFIG_CGROUP_WRITEBACK
-	struct wb_domain	*dom;
-	struct dirty_throttle_control *gdtc;	/* only set in memcg dtc's */
-#endif
 	struct bdi_writeback	*wb;
 	struct fprop_local_percpu *wb_completions;
 
@@ -147,67 +143,6 @@ struct dirty_throttle_control {
  */
 #define VM_COMPLETIONS_PERIOD_LEN (3*HZ)
 
-#ifdef CONFIG_CGROUP_WRITEBACK
-
-#define GDTC_INIT(__wb)		.wb = (__wb),				\
-				.dom = &global_wb_domain,		\
-				.wb_completions = &(__wb)->completions
-
-#define GDTC_INIT_NO_WB		.dom = &global_wb_domain
-
-#define MDTC_INIT(__wb, __gdtc)	.wb = (__wb),				\
-				.dom = mem_cgroup_wb_domain(__wb),	\
-				.wb_completions = &(__wb)->memcg_completions, \
-				.gdtc = __gdtc
-
-static bool mdtc_valid(struct dirty_throttle_control *dtc)
-{
-	return dtc->dom;
-}
-
-static struct wb_domain *dtc_dom(struct dirty_throttle_control *dtc)
-{
-	return dtc->dom;
-}
-
-static struct dirty_throttle_control *mdtc_gdtc(struct dirty_throttle_control *mdtc)
-{
-	return mdtc->gdtc;
-}
-
-static struct fprop_local_percpu *wb_memcg_completions(struct bdi_writeback *wb)
-{
-	return &wb->memcg_completions;
-}
-
-static void wb_min_max_ratio(struct bdi_writeback *wb,
-			     unsigned long *minp, unsigned long *maxp)
-{
-	unsigned long this_bw = READ_ONCE(wb->avg_write_bandwidth);
-	unsigned long tot_bw = atomic_long_read(&wb->bdi->tot_write_bandwidth);
-	unsigned long long min = wb->bdi->min_ratio;
-	unsigned long long max = wb->bdi->max_ratio;
-
-	/*
-	 * @wb may already be clean by the time control reaches here and
-	 * the total may not include its bw.
-	 */
-	if (this_bw < tot_bw) {
-		if (min) {
-			min *= this_bw;
-			min = div64_ul(min, tot_bw);
-		}
-		if (max < 100) {
-			max *= this_bw;
-			max = div64_ul(max, tot_bw);
-		}
-	}
-
-	*minp = min;
-	*maxp = max;
-}
-
-#else	/* CONFIG_CGROUP_WRITEBACK */
 
 #define GDTC_INIT(__wb)		.wb = (__wb),                           \
 				.wb_completions = &(__wb)->completions
@@ -241,7 +176,6 @@ static void wb_min_max_ratio(struct bdi_writeback *wb,
 	*maxp = wb->bdi->max_ratio;
 }
 
-#endif	/* CONFIG_CGROUP_WRITEBACK */
 
 /*
  * In a memory zone, there is a certain amount of pages we consider
@@ -297,42 +231,7 @@ static unsigned long node_dirtyable_memory(struct pglist_data *pgdat)
 
 static unsigned long highmem_dirtyable_memory(unsigned long total)
 {
-#ifdef CONFIG_HIGHMEM
-	int node;
-	unsigned long x = 0;
-	int i;
-
-	for_each_node_state(node, N_HIGH_MEMORY) {
-		for (i = ZONE_NORMAL + 1; i < MAX_NR_ZONES; i++) {
-			struct zone *z;
-			unsigned long nr_pages;
-
-			if (!is_highmem_idx(i))
-				continue;
-
-			z = &NODE_DATA(node)->node_zones[i];
-			if (!populated_zone(z))
-				continue;
-
-			nr_pages = zone_page_state(z, NR_FREE_PAGES);
-			/* watch for underflows */
-			nr_pages -= min(nr_pages, high_wmark_pages(z));
-			nr_pages += zone_page_state(z, NR_ZONE_INACTIVE_FILE);
-			nr_pages += zone_page_state(z, NR_ZONE_ACTIVE_FILE);
-			x += nr_pages;
-		}
-	}
-
-	/*
-	 * Make sure that the number of highmem pages is never larger
-	 * than the number of the total dirtyable memory. This can only
-	 * occur in very strange VM situations but we want to make sure
-	 * that this does not occur.
-	 */
-	return min(x, total);
-#else
 	return 0;
-#endif
 }
 
 /**
@@ -491,57 +390,6 @@ bool node_dirty_ok(struct pglist_data *pgdat)
 	return nr_pages <= limit;
 }
 
-#ifdef CONFIG_SYSCTL
-static int dirty_background_ratio_handler(struct ctl_table *table, int write,
-		void *buffer, size_t *lenp, loff_t *ppos)
-{
-	int ret;
-
-	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
-	if (ret == 0 && write)
-		dirty_background_bytes = 0;
-	return ret;
-}
-
-static int dirty_background_bytes_handler(struct ctl_table *table, int write,
-		void *buffer, size_t *lenp, loff_t *ppos)
-{
-	int ret;
-
-	ret = proc_doulongvec_minmax(table, write, buffer, lenp, ppos);
-	if (ret == 0 && write)
-		dirty_background_ratio = 0;
-	return ret;
-}
-
-static int dirty_ratio_handler(struct ctl_table *table, int write, void *buffer,
-		size_t *lenp, loff_t *ppos)
-{
-	int old_ratio = vm_dirty_ratio;
-	int ret;
-
-	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
-	if (ret == 0 && write && vm_dirty_ratio != old_ratio) {
-		writeback_set_ratelimit();
-		vm_dirty_bytes = 0;
-	}
-	return ret;
-}
-
-static int dirty_bytes_handler(struct ctl_table *table, int write,
-		void *buffer, size_t *lenp, loff_t *ppos)
-{
-	unsigned long old_bytes = vm_dirty_bytes;
-	int ret;
-
-	ret = proc_doulongvec_minmax(table, write, buffer, lenp, ppos);
-	if (ret == 0 && write && vm_dirty_bytes != old_bytes) {
-		writeback_set_ratelimit();
-		vm_dirty_ratio = 0;
-	}
-	return ret;
-}
-#endif
 
 static unsigned long wp_next_time(unsigned long cur_time)
 {
@@ -635,13 +483,6 @@ int wb_domain_init(struct wb_domain *dom, gfp_t gfp)
 	return fprop_global_init(&dom->completions, gfp);
 }
 
-#ifdef CONFIG_CGROUP_WRITEBACK
-void wb_domain_exit(struct wb_domain *dom)
-{
-	del_timer_sync(&dom->period_timer);
-	fprop_global_destroy(&dom->completions);
-}
-#endif
 
 /*
  * bdi_min_ratio keeps the sum of the minimum dirty shares of all
@@ -1990,32 +1831,6 @@ bool wb_over_bg_thresh(struct bdi_writeback *wb)
 	return false;
 }
 
-#ifdef CONFIG_SYSCTL
-/*
- * sysctl handler for /proc/sys/vm/dirty_writeback_centisecs
- */
-static int dirty_writeback_centisecs_handler(struct ctl_table *table, int write,
-		void *buffer, size_t *length, loff_t *ppos)
-{
-	unsigned int old_interval = dirty_writeback_interval;
-	int ret;
-
-	ret = proc_dointvec(table, write, buffer, length, ppos);
-
-	/*
-	 * Writing 0 to dirty_writeback_interval will disable periodic writeback
-	 * and a different non-zero value will wakeup the writeback threads.
-	 * wb_wakeup_delayed() would be more appropriate, but it's a pain to
-	 * iterate over all bdis and wbs.
-	 * The reason we do this is to make the change take effect immediately.
-	 */
-	if (!ret && write && dirty_writeback_interval &&
-		dirty_writeback_interval != old_interval)
-		wakeup_flusher_threads(WB_REASON_PERIODIC);
-
-	return ret;
-}
-#endif
 
 void laptop_mode_timer_fn(struct timer_list *t)
 {
@@ -2080,82 +1895,6 @@ static int page_writeback_cpu_online(unsigned int cpu)
 	return 0;
 }
 
-#ifdef CONFIG_SYSCTL
-
-/* this is needed for the proc_doulongvec_minmax of vm_dirty_bytes */
-static const unsigned long dirty_bytes_min = 2 * PAGE_SIZE;
-
-static struct ctl_table vm_page_writeback_sysctls[] = {
-	{
-		.procname   = "dirty_background_ratio",
-		.data       = &dirty_background_ratio,
-		.maxlen     = sizeof(dirty_background_ratio),
-		.mode       = 0644,
-		.proc_handler   = dirty_background_ratio_handler,
-		.extra1     = SYSCTL_ZERO,
-		.extra2     = SYSCTL_ONE_HUNDRED,
-	},
-	{
-		.procname   = "dirty_background_bytes",
-		.data       = &dirty_background_bytes,
-		.maxlen     = sizeof(dirty_background_bytes),
-		.mode       = 0644,
-		.proc_handler   = dirty_background_bytes_handler,
-		.extra1     = SYSCTL_LONG_ONE,
-	},
-	{
-		.procname   = "dirty_ratio",
-		.data       = &vm_dirty_ratio,
-		.maxlen     = sizeof(vm_dirty_ratio),
-		.mode       = 0644,
-		.proc_handler   = dirty_ratio_handler,
-		.extra1     = SYSCTL_ZERO,
-		.extra2     = SYSCTL_ONE_HUNDRED,
-	},
-	{
-		.procname   = "dirty_bytes",
-		.data       = &vm_dirty_bytes,
-		.maxlen     = sizeof(vm_dirty_bytes),
-		.mode       = 0644,
-		.proc_handler   = dirty_bytes_handler,
-		.extra1     = (void *)&dirty_bytes_min,
-	},
-	{
-		.procname   = "dirty_writeback_centisecs",
-		.data       = &dirty_writeback_interval,
-		.maxlen     = sizeof(dirty_writeback_interval),
-		.mode       = 0644,
-		.proc_handler   = dirty_writeback_centisecs_handler,
-	},
-	{
-		.procname   = "dirty_expire_centisecs",
-		.data       = &dirty_expire_interval,
-		.maxlen     = sizeof(dirty_expire_interval),
-		.mode       = 0644,
-		.proc_handler   = proc_dointvec_minmax,
-		.extra1     = SYSCTL_ZERO,
-	},
-#ifdef CONFIG_HIGHMEM
-	{
-		.procname	= "highmem_is_dirtyable",
-		.data		= &vm_highmem_is_dirtyable,
-		.maxlen		= sizeof(vm_highmem_is_dirtyable),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec_minmax,
-		.extra1		= SYSCTL_ZERO,
-		.extra2		= SYSCTL_ONE,
-	},
-#endif
-	{
-		.procname	= "laptop_mode",
-		.data		= &laptop_mode,
-		.maxlen		= sizeof(laptop_mode),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec_jiffies,
-	},
-	{}
-};
-#endif
 
 /*
  * Called early on to tune the page writeback dirty limits.
@@ -2181,9 +1920,6 @@ void __init page_writeback_init(void)
 			  page_writeback_cpu_online, NULL);
 	cpuhp_setup_state(CPUHP_MM_WRITEBACK_DEAD, "mm/writeback:dead", NULL,
 			  page_writeback_cpu_online);
-#ifdef CONFIG_SYSCTL
-	register_sysctl_init("vm", vm_page_writeback_sysctls);
-#endif
 }
 
 /**

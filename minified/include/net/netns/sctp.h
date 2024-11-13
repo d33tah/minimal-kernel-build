@@ -10,9 +10,6 @@ struct ctl_table_header;
 struct netns_sctp {
 	DEFINE_SNMP_STAT(struct sctp_mib, sctp_statistics);
 
-#ifdef CONFIG_SYSCTL
-	struct ctl_table_header *sysctl_header;
-#endif
 	/* This is the global socket data structure used for responding to
 	 * the Out-of-the-blue (OOTB) packets.  A control sock will be created
 	 * for this socket at the initialization time.

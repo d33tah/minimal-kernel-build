@@ -92,13 +92,11 @@
 #warning Unfortunate NUMA and NUMA Balancing config, growing page-frame for last_cpupid.
 #endif
 
-#ifndef CONFIG_NUMA
 unsigned long max_mapnr;
 EXPORT_SYMBOL(max_mapnr);
 
 struct page *mem_map;
 EXPORT_SYMBOL(mem_map);
-#endif
 
 static vm_fault_t do_fault(struct vm_fault *vmf);
 
@@ -2775,14 +2773,6 @@ EXPORT_SYMBOL_GPL(apply_to_existing_page_range);
 static inline int pte_unmap_same(struct vm_fault *vmf)
 {
 	int same = 1;
-#if defined(CONFIG_SMP) || defined(CONFIG_PREEMPTION)
-	if (sizeof(pte_t) > sizeof(unsigned long)) {
-		spinlock_t *ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
-		spin_lock(ptl);
-		same = pte_same(*vmf->pte, vmf->orig_pte);
-		spin_unlock(ptl);
-	}
-#endif
 	pte_unmap(vmf->pte);
 	vmf->pte = NULL;
 	return same;

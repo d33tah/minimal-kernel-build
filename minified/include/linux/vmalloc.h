@@ -51,9 +51,6 @@ struct vm_struct {
 	unsigned long		size;
 	unsigned long		flags;
 	struct page		**pages;
-#ifdef CONFIG_HAVE_ARCH_HUGE_VMALLOC
-	unsigned int		page_order;
-#endif
 	unsigned int		nr_pages;
 	phys_addr_t		phys_addr;
 	const void		*caller;
@@ -219,11 +216,7 @@ static inline bool is_vm_area_hugepages(const void *addr)
 	 * prevents that. This only indicates the size of the physical page
 	 * allocated in the vmalloc layer.
 	 */
-#ifdef CONFIG_HAVE_ARCH_HUGE_VMALLOC
-	return find_vm_area(addr)->page_order > 0;
-#else
 	return false;
-#endif
 }
 
 void vunmap_range(unsigned long addr, unsigned long end);

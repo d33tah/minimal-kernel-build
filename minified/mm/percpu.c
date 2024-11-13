@@ -1379,10 +1379,6 @@ static struct pcpu_chunk * __init pcpu_alloc_first_chunk(unsigned long tmp_addr,
 		panic("%s: Failed to allocate %zu bytes\n", __func__,
 		      alloc_size);
 
-#ifdef CONFIG_MEMCG_KMEM
-	/* first chunk is free to use */
-	chunk->obj_cgroups = NULL;
-#endif
 	pcpu_init_md_blocks(chunk);
 
 	/* manage populated page bitmap */
@@ -1450,15 +1446,6 @@ static struct pcpu_chunk *pcpu_alloc_chunk(gfp_t gfp)
 	if (!chunk->md_blocks)
 		goto md_blocks_fail;
 
-#ifdef CONFIG_MEMCG_KMEM
-	if (!mem_cgroup_kmem_disabled()) {
-		chunk->obj_cgroups =
-			pcpu_mem_zalloc(pcpu_chunk_map_bits(chunk) *
-					sizeof(struct obj_cgroup *), gfp);
-		if (!chunk->obj_cgroups)
-			goto objcg_fail;
-	}
-#endif
 
 	pcpu_init_md_blocks(chunk);
 
@@ -1467,10 +1454,6 @@ static struct pcpu_chunk *pcpu_alloc_chunk(gfp_t gfp)
 
 	return chunk;
 
-#ifdef CONFIG_MEMCG_KMEM
-objcg_fail:
-	pcpu_mem_free(chunk->md_blocks);
-#endif
 md_blocks_fail:
 	pcpu_mem_free(chunk->bound_map);
 bound_map_fail:
@@ -1485,9 +1468,6 @@ static void pcpu_free_chunk(struct pcpu_chunk *chunk)
 {
 	if (!chunk)
 		return;
-#ifdef CONFIG_MEMCG_KMEM
-	pcpu_mem_free(chunk->obj_cgroups);
-#endif
 	pcpu_mem_free(chunk->md_blocks);
 	pcpu_mem_free(chunk->bound_map);
 	pcpu_mem_free(chunk->alloc_map);
@@ -1602,71 +1582,6 @@ static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
 	return pcpu_get_page_chunk(pcpu_addr_to_page(addr));
 }
 
-#ifdef CONFIG_MEMCG_KMEM
-static bool pcpu_memcg_pre_alloc_hook(size_t size, gfp_t gfp,
-				      struct obj_cgroup **objcgp)
-{
-	struct obj_cgroup *objcg;
-
-	if (!memcg_kmem_enabled() || !(gfp & __GFP_ACCOUNT))
-		return true;
-
-	objcg = get_obj_cgroup_from_current();
-	if (!objcg)
-		return true;
-
-	if (obj_cgroup_charge(objcg, gfp, pcpu_obj_full_size(size))) {
-		obj_cgroup_put(objcg);
-		return false;
-	}
-
-	*objcgp = objcg;
-	return true;
-}
-
-static void pcpu_memcg_post_alloc_hook(struct obj_cgroup *objcg,
-				       struct pcpu_chunk *chunk, int off,
-				       size_t size)
-{
-	if (!objcg)
-		return;
-
-	if (likely(chunk && chunk->obj_cgroups)) {
-		chunk->obj_cgroups[off >> PCPU_MIN_ALLOC_SHIFT] = objcg;
-
-		rcu_read_lock();
-		mod_memcg_state(obj_cgroup_memcg(objcg), MEMCG_PERCPU_B,
-				pcpu_obj_full_size(size));
-		rcu_read_unlock();
-	} else {
-		obj_cgroup_uncharge(objcg, pcpu_obj_full_size(size));
-		obj_cgroup_put(objcg);
-	}
-}
-
-static void pcpu_memcg_free_hook(struct pcpu_chunk *chunk, int off, size_t size)
-{
-	struct obj_cgroup *objcg;
-
-	if (unlikely(!chunk->obj_cgroups))
-		return;
-
-	objcg = chunk->obj_cgroups[off >> PCPU_MIN_ALLOC_SHIFT];
-	if (!objcg)
-		return;
-	chunk->obj_cgroups[off >> PCPU_MIN_ALLOC_SHIFT] = NULL;
-
-	obj_cgroup_uncharge(objcg, pcpu_obj_full_size(size));
-
-	rcu_read_lock();
-	mod_memcg_state(obj_cgroup_memcg(objcg), MEMCG_PERCPU_B,
-			-pcpu_obj_full_size(size));
-	rcu_read_unlock();
-
-	obj_cgroup_put(objcg);
-}
-
-#else /* CONFIG_MEMCG_KMEM */
 static bool
 pcpu_memcg_pre_alloc_hook(size_t size, gfp_t gfp, struct obj_cgroup **objcgp)
 {
@@ -1682,7 +1597,6 @@ static void pcpu_memcg_post_alloc_hook(struct obj_cgroup *objcg,
 static void pcpu_memcg_free_hook(struct pcpu_chunk *chunk, int off, size_t size)
 {
 }
-#endif /* CONFIG_MEMCG_KMEM */
 
 /**
  * pcpu_alloc - the percpu allocator

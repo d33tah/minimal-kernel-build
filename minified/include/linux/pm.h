@@ -23,26 +23,17 @@
 extern void (*pm_power_off)(void);
 
 struct device; /* we have a circular dep with device.h */
-#ifdef CONFIG_VT_CONSOLE_SLEEP
-extern void pm_vt_switch_required(struct device *dev, bool required);
-extern void pm_vt_switch_unregister(struct device *dev);
-#else
 static inline void pm_vt_switch_required(struct device *dev, bool required)
 {
 }
 static inline void pm_vt_switch_unregister(struct device *dev)
 {
 }
-#endif /* CONFIG_VT_CONSOLE_SLEEP */
 
-#ifdef CONFIG_CXL_SUSPEND
-bool cxl_mem_active(void);
-#else
 static inline bool cxl_mem_active(void)
 {
 	return false;
 }
-#endif
 
 /*
  * Device power management
@@ -334,26 +325,11 @@ struct dev_pm_ops {
 	.runtime_resume = resume_fn, \
 	.runtime_idle = idle_fn,
 
-#ifdef CONFIG_PM_SLEEP
-#define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-	SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-#else
 #define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-#endif
 
-#ifdef CONFIG_PM_SLEEP
-#define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-	LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-#else
 #define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-#endif
 
-#ifdef CONFIG_PM_SLEEP
-#define SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-	NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-#else
 #define SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-#endif
 
 #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
 
@@ -578,14 +554,6 @@ struct pm_domain_data;
 struct pm_subsys_data {
 	spinlock_t lock;
 	unsigned int refcount;
-#ifdef CONFIG_PM_CLK
-	unsigned int clock_op_might_sleep;
-	struct mutex clock_mutex;
-	struct list_head clock_list;
-#endif
-#ifdef CONFIG_PM_GENERIC_DOMAINS
-	struct pm_domain_data *domain_data;
-#endif
 };
 
 /*
@@ -620,18 +588,7 @@ struct dev_pm_info {
 	bool			direct_complete:1;	/* Owned by the PM core */
 	u32			driver_flags;
 	spinlock_t		lock;
-#ifdef CONFIG_PM_SLEEP
-	struct list_head	entry;
-	struct completion	completion;
-	struct wakeup_source	*wakeup;
-	bool			wakeup_path:1;
-	bool			syscore:1;
-	bool			no_pm_callbacks:1;	/* Owned by the PM core */
-	unsigned int		must_resume:1;	/* Owned by the PM core */
-	unsigned int		may_skip_resume:1;	/* Set by subsystems */
-#else
 	unsigned int		should_wakeup:1;
-#endif
 	struct pm_subsys_data	*subsys_data;  /* Owned by the subsystem. */
 	void (*set_latency_tolerance)(struct device *, s32);
 	struct dev_pm_qos	*qos;
@@ -717,58 +674,6 @@ struct dev_pm_domain {
  * or from system low-power states such as standby or suspend-to-RAM.
  */
 
-#ifdef CONFIG_PM_SLEEP
-extern void device_pm_lock(void);
-extern void dpm_resume_start(pm_message_t state);
-extern void dpm_resume_end(pm_message_t state);
-extern void dpm_resume_noirq(pm_message_t state);
-extern void dpm_resume_early(pm_message_t state);
-extern void dpm_resume(pm_message_t state);
-extern void dpm_complete(pm_message_t state);
-
-extern void device_pm_unlock(void);
-extern int dpm_suspend_end(pm_message_t state);
-extern int dpm_suspend_start(pm_message_t state);
-extern int dpm_suspend_noirq(pm_message_t state);
-extern int dpm_suspend_late(pm_message_t state);
-extern int dpm_suspend(pm_message_t state);
-extern int dpm_prepare(pm_message_t state);
-
-extern void __suspend_report_result(const char *function, struct device *dev, void *fn, int ret);
-
-#define suspend_report_result(dev, fn, ret)				\
-	do {								\
-		__suspend_report_result(__func__, dev, fn, ret);	\
-	} while (0)
-
-extern int device_pm_wait_for_dev(struct device *sub, struct device *dev);
-extern void dpm_for_each_dev(void *data, void (*fn)(struct device *, void *));
-
-extern int pm_generic_prepare(struct device *dev);
-extern int pm_generic_suspend_late(struct device *dev);
-extern int pm_generic_suspend_noirq(struct device *dev);
-extern int pm_generic_suspend(struct device *dev);
-extern int pm_generic_resume_early(struct device *dev);
-extern int pm_generic_resume_noirq(struct device *dev);
-extern int pm_generic_resume(struct device *dev);
-extern int pm_generic_freeze_noirq(struct device *dev);
-extern int pm_generic_freeze_late(struct device *dev);
-extern int pm_generic_freeze(struct device *dev);
-extern int pm_generic_thaw_noirq(struct device *dev);
-extern int pm_generic_thaw_early(struct device *dev);
-extern int pm_generic_thaw(struct device *dev);
-extern int pm_generic_restore_noirq(struct device *dev);
-extern int pm_generic_restore_early(struct device *dev);
-extern int pm_generic_restore(struct device *dev);
-extern int pm_generic_poweroff_noirq(struct device *dev);
-extern int pm_generic_poweroff_late(struct device *dev);
-extern int pm_generic_poweroff(struct device *dev);
-extern void pm_generic_complete(struct device *dev);
-
-extern bool dev_pm_skip_resume(struct device *dev);
-extern bool dev_pm_skip_suspend(struct device *dev);
-
-#else /* !CONFIG_PM_SLEEP */
 
 #define device_pm_lock() do {} while (0)
 #define device_pm_unlock() do {} while (0)
@@ -809,7 +714,6 @@ static inline void dpm_for_each_dev(void *data, void (*fn)(struct device *, void
 #define pm_generic_poweroff_late	NULL
 #define pm_generic_poweroff		NULL
 #define pm_generic_complete		NULL
-#endif /* !CONFIG_PM_SLEEP */
 
 /* How to reorder dpm_list after device_move() */
 enum dpm_order {

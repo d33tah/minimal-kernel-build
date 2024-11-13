@@ -89,9 +89,6 @@ struct irq_desc *irq_to_desc(unsigned int irq)
 {
 	return radix_tree_lookup(&irq_desc_tree, irq);
 }
-#ifdef CONFIG_KVM_BOOK3S_64_HV_MODULE
-EXPORT_SYMBOL_GPL(irq_to_desc);
-#endif
 
 static void delete_irq_desc(unsigned int irq)
 {
@@ -326,41 +323,6 @@ int generic_handle_irq_safe(unsigned int irq)
 }
 EXPORT_SYMBOL_GPL(generic_handle_irq_safe);
 
-#ifdef CONFIG_IRQ_DOMAIN
-/**
- * generic_handle_domain_irq - Invoke the handler for a HW irq belonging
- *                             to a domain.
- * @domain:	The domain where to perform the lookup
- * @hwirq:	The HW irq number to convert to a logical one
- *
- * Returns:	0 on success, or -EINVAL if conversion has failed
- *
- * 		This function must be called from an IRQ context with irq regs
- * 		initialized.
- */
-int generic_handle_domain_irq(struct irq_domain *domain, unsigned int hwirq)
-{
-	return handle_irq_desc(irq_resolve_mapping(domain, hwirq));
-}
-EXPORT_SYMBOL_GPL(generic_handle_domain_irq);
-
-/**
- * generic_handle_domain_nmi - Invoke the handler for a HW nmi belonging
- *                             to a domain.
- * @domain:	The domain where to perform the lookup
- * @hwirq:	The HW irq number to convert to a logical one
- *
- * Returns:	0 on success, or -EINVAL if conversion has failed
- *
- * 		This function must be called from an NMI context with irq regs
- * 		initialized.
- **/
-int generic_handle_domain_nmi(struct irq_domain *domain, unsigned int hwirq)
-{
-	WARN_ON_ONCE(!in_nmi());
-	return handle_irq_desc(irq_resolve_mapping(domain, hwirq));
-}
-#endif
 
 /* Dynamic interrupt handling */
 
@@ -592,16 +554,3 @@ unsigned int kstat_irqs_usr(unsigned int irq)
 	return sum;
 }
 
-#ifdef CONFIG_LOCKDEP
-void __irq_set_lockdep_class(unsigned int irq, struct lock_class_key *lock_class,
-			     struct lock_class_key *request_class)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-
-	if (desc) {
-		lockdep_set_class(&desc->lock, lock_class);
-		lockdep_set_class(&desc->request_mutex, request_class);
-	}
-}
-EXPORT_SYMBOL_GPL(__irq_set_lockdep_class);
-#endif

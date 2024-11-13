@@ -34,11 +34,7 @@
 extern u64 relocated_ramdisk;
 
 /* Interrupt control for vSMPowered x86_64 systems */
-#ifdef CONFIG_X86_64
-void vsmp_init(void);
-#else
 static inline void vsmp_init(void) { }
-#endif
 
 struct pt_regs;
 
@@ -54,17 +50,9 @@ extern void startup_64_setup_env(unsigned long physbase);
 extern void early_setup_idt(void);
 extern void __init do_early_exception(struct pt_regs *regs, int trapnr);
 
-#ifdef CONFIG_X86_INTEL_MID
-extern void x86_intel_mid_early_setup(void);
-#else
 static inline void x86_intel_mid_early_setup(void) { }
-#endif
 
-#ifdef CONFIG_X86_INTEL_CE
-extern void x86_ce4100_early_setup(void);
-#else
 static inline void x86_ce4100_early_setup(void) { }
-#endif
 
 #ifndef _SETUP
 

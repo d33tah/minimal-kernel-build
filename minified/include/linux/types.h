@@ -137,21 +137,13 @@ typedef u64 blkcnt_t;
  * but drivers do memory-mapped I/O to ioremapped kernel virtual addresses,
  * so they don't care about the size of the actual bus addresses.
  */
-#ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
-typedef u64 dma_addr_t;
-#else
 typedef u32 dma_addr_t;
-#endif
 
 typedef unsigned int __bitwise gfp_t;
 typedef unsigned int __bitwise slab_flags_t;
 typedef unsigned int __bitwise fmode_t;
 
-#ifdef CONFIG_PHYS_ADDR_T_64BIT
-typedef u64 phys_addr_t;
-#else
 typedef u32 phys_addr_t;
-#endif
 
 typedef phys_addr_t resource_size_t;
 
@@ -182,11 +174,7 @@ struct hlist_node {
 
 struct ustat {
 	__kernel_daddr_t	f_tfree;
-#ifdef CONFIG_ARCH_32BIT_USTAT_F_TINODE
-	unsigned int		f_tinode;
-#else
 	unsigned long		f_tinode;
-#endif
 	char			f_fname[6];
 	char			f_fpack[6];
 };

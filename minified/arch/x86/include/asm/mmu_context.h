@@ -15,12 +15,10 @@
 
 extern atomic64_t last_mm_ctx_id;
 
-#ifndef CONFIG_PARAVIRT_XXL
 static inline void paravirt_activate_mm(struct mm_struct *prev,
 					struct mm_struct *next)
 {
 }
-#endif	/* !CONFIG_PARAVIRT_XXL */
 
 DECLARE_STATIC_KEY_FALSE(rdpmc_never_available_key);
 DECLARE_STATIC_KEY_FALSE(rdpmc_always_available_key);
@@ -60,14 +58,6 @@ static inline int init_new_context(struct task_struct *tsk,
 	mm->context.ctx_id = atomic64_inc_return(&last_mm_ctx_id);
 	atomic64_set(&mm->context.tlb_gen, 0);
 
-#ifdef CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS
-	if (cpu_feature_enabled(X86_FEATURE_OSPKE)) {
-		/* pkey 0 is the default and allocated implicitly */
-		mm->context.pkey_allocation_map = 0x1;
-		/* -1 means unallocated or invalid */
-		mm->context.execute_only_pkey = -1;
-	}
-#endif
 	init_new_context_ldt(mm);
 	return 0;
 }
@@ -99,14 +89,6 @@ do {						\
 static inline void arch_dup_pkeys(struct mm_struct *oldmm,
 				  struct mm_struct *mm)
 {
-#ifdef CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS
-	if (!cpu_feature_enabled(X86_FEATURE_OSPKE))
-		return;
-
-	/* Duplicate the oldmm pkey state in mm: */
-	mm->context.pkey_allocation_map = oldmm->context.pkey_allocation_map;
-	mm->context.execute_only_pkey   = oldmm->context.execute_only_pkey;
-#endif
 }
 
 static inline int arch_dup_mmap(struct mm_struct *oldmm, struct mm_struct *mm)
@@ -122,18 +104,10 @@ static inline void arch_exit_mmap(struct mm_struct *mm)
 	ldt_arch_exit_mmap(mm);
 }
 
-#ifdef CONFIG_X86_64
-static inline bool is_64bit_mm(struct mm_struct *mm)
-{
-	return	!IS_ENABLED(CONFIG_IA32_EMULATION) ||
-		!(mm->context.flags & MM_CONTEXT_UPROBE_IA32);
-}
-#else
 static inline bool is_64bit_mm(struct mm_struct *mm)
 {
 	return false;
 }
-#endif
 
 static inline void arch_unmap(struct mm_struct *mm, unsigned long start,
 			      unsigned long end)

@@ -36,9 +36,6 @@
 #include <linux/dynamic_queue_limits.h>
 
 #include <net/net_namespace.h>
-#ifdef CONFIG_DCB
-#include <net/dcbnl.h>
-#endif
 #include <net/netprio_cgroup.h>
 #include <net/xdp.h>
 
@@ -210,11 +207,6 @@ struct net_device_core_stats {
 #include <linux/cache.h>
 #include <linux/skbuff.h>
 
-#ifdef CONFIG_RPS
-#include <linux/static_key.h>
-extern struct static_key_false rps_needed;
-extern struct static_key_false rfs_needed;
-#endif
 
 struct neighbour;
 struct neigh_parms;
@@ -340,9 +332,6 @@ struct napi_struct {
 	int			defer_hard_irqs_count;
 	unsigned long		gro_bitmask;
 	int			(*poll)(struct napi_struct *, int);
-#ifdef CONFIG_NETPOLL
-	int			poll_owner;
-#endif
 	struct net_device	*dev;
 	struct gro_list		gro_hash[GRO_HASH_BUCKETS];
 	struct sk_buff		*skb;
@@ -595,9 +584,6 @@ struct netdev_queue {
 
 	struct Qdisc __rcu	*qdisc;
 	struct Qdisc		*qdisc_sleeping;
-#if defined(CONFIG_XPS) && defined(CONFIG_NUMA)
-	int			numa_node;
-#endif
 	unsigned long		tx_maxrate;
 	/*
 	 * Number of TX timeouts for this queue
@@ -607,9 +593,6 @@ struct netdev_queue {
 
 	/* Subordinate device that the queue has been assigned to */
 	struct net_device	*sb_dev;
-#ifdef CONFIG_XDP_SOCKETS
-	struct xsk_buff_pool    *pool;
-#endif
 /*
  * write-mostly part
  */
@@ -622,9 +605,6 @@ struct netdev_queue {
 
 	unsigned long		state;
 
-#ifdef CONFIG_BQL
-	struct dql		dql;
-#endif
 } ____cacheline_aligned_in_smp;
 
 extern int sysctl_fb_tunnels_only_for_init_net;
@@ -644,112 +624,21 @@ static inline bool net_has_fallback_tunnels(const struct net *net)
 
 static inline int netdev_queue_numa_node_read(const struct netdev_queue *q)
 {
-#if defined(CONFIG_XPS) && defined(CONFIG_NUMA)
-	return q->numa_node;
-#else
 	return NUMA_NO_NODE;
-#endif
 }
 
 static inline void netdev_queue_numa_node_write(struct netdev_queue *q, int node)
 {
-#if defined(CONFIG_XPS) && defined(CONFIG_NUMA)
-	q->numa_node = node;
-#endif
 }
 
-#ifdef CONFIG_RPS
-/*
- * This structure holds an RPS map which can be of variable length.  The
- * map is an array of CPUs.
- */
-struct rps_map {
-	unsigned int len;
-	struct rcu_head rcu;
-	u16 cpus[];
-};
-#define RPS_MAP_SIZE(_num) (sizeof(struct rps_map) + ((_num) * sizeof(u16)))
-
-/*
- * The rps_dev_flow structure contains the mapping of a flow to a CPU, the
- * tail pointer for that CPU's input queue at the time of last enqueue, and
- * a hardware filter index.
- */
-struct rps_dev_flow {
-	u16 cpu;
-	u16 filter;
-	unsigned int last_qtail;
-};
-#define RPS_NO_FILTER 0xffff
-
-/*
- * The rps_dev_flow_table structure contains a table of flow mappings.
- */
-struct rps_dev_flow_table {
-	unsigned int mask;
-	struct rcu_head rcu;
-	struct rps_dev_flow flows[];
-};
-#define RPS_DEV_FLOW_TABLE_SIZE(_num) (sizeof(struct rps_dev_flow_table) + \
-    ((_num) * sizeof(struct rps_dev_flow)))
-
-/*
- * The rps_sock_flow_table contains mappings of flows to the last CPU
- * on which they were processed by the application (set in recvmsg).
- * Each entry is a 32bit value. Upper part is the high-order bits
- * of flow hash, lower part is CPU number.
- * rps_cpu_mask is used to partition the space, depending on number of
- * possible CPUs : rps_cpu_mask = roundup_pow_of_two(nr_cpu_ids) - 1
- * For example, if 64 CPUs are possible, rps_cpu_mask = 0x3f,
- * meaning we use 32-6=26 bits for the hash.
- */
-struct rps_sock_flow_table {
-	u32	mask;
-
-	u32	ents[] ____cacheline_aligned_in_smp;
-};
-#define	RPS_SOCK_FLOW_TABLE_SIZE(_num) (offsetof(struct rps_sock_flow_table, ents[_num]))
-
-#define RPS_NO_CPU 0xffff
-
-extern u32 rps_cpu_mask;
-extern struct rps_sock_flow_table __rcu *rps_sock_flow_table;
-
-static inline void rps_record_sock_flow(struct rps_sock_flow_table *table,
-					u32 hash)
-{
-	if (table && hash) {
-		unsigned int index = hash & table->mask;
-		u32 val = hash & ~rps_cpu_mask;
-
-		/* We only give a hint, preemption can change CPU under us */
-		val |= raw_smp_processor_id();
-
-		if (table->ents[index] != val)
-			table->ents[index] = val;
-	}
-}
-
-#ifdef CONFIG_RFS_ACCEL
-bool rps_may_expire_flow(struct net_device *dev, u16 rxq_index, u32 flow_id,
-			 u16 filter_id);
-#endif
-#endif /* CONFIG_RPS */
 
 /* This structure contains an instance of an RX queue. */
 struct netdev_rx_queue {
 	struct xdp_rxq_info		xdp_rxq;
-#ifdef CONFIG_RPS
-	struct rps_map __rcu		*rps_map;
-	struct rps_dev_flow_table __rcu	*rps_flow_table;
-#endif
 	struct kobject			kobj;
 	struct net_device		*dev;
 	netdevice_tracker		dev_tracker;
 
-#ifdef CONFIG_XDP_SOCKETS
-	struct xsk_buff_pool            *pool;
-#endif
 } ____cacheline_aligned_in_smp;
 
 /*
@@ -769,46 +658,6 @@ enum xps_map_type {
 	XPS_MAPS_MAX,
 };
 
-#ifdef CONFIG_XPS
-/*
- * This structure holds an XPS map which can be of variable length.  The
- * map is an array of queues.
- */
-struct xps_map {
-	unsigned int len;
-	unsigned int alloc_len;
-	struct rcu_head rcu;
-	u16 queues[];
-};
-#define XPS_MAP_SIZE(_num) (sizeof(struct xps_map) + ((_num) * sizeof(u16)))
-#define XPS_MIN_MAP_ALLOC ((L1_CACHE_ALIGN(offsetof(struct xps_map, queues[1])) \
-       - sizeof(struct xps_map)) / sizeof(u16))
-
-/*
- * This structure holds all XPS maps for device.  Maps are indexed by CPU.
- *
- * We keep track of the number of cpus/rxqs used when the struct is allocated,
- * in nr_ids. This will help not accessing out-of-bound memory.
- *
- * We keep track of the number of traffic classes used when the struct is
- * allocated, in num_tc. This will be used to navigate the maps, to ensure we're
- * not crossing its upper bound, as the original dev->num_tc can be updated in
- * the meantime.
- */
-struct xps_dev_maps {
-	struct rcu_head rcu;
-	unsigned int nr_ids;
-	s16 num_tc;
-	struct xps_map __rcu *attr_map[]; /* Either CPUs map or RXQs map */
-};
-
-#define XPS_CPU_DEV_MAPS_SIZE(_tcs) (sizeof(struct xps_dev_maps) +	\
-	(nr_cpu_ids * (_tcs) * sizeof(struct xps_map *)))
-
-#define XPS_RXQ_DEV_MAPS_SIZE(_tcs, _rxqs) (sizeof(struct xps_dev_maps) +\
-	(_rxqs * (_tcs) * sizeof(struct xps_map *)))
-
-#endif /* CONFIG_XPS */
 
 #define TC_MAX_QUEUE	16
 #define TC_BITMASK	15
@@ -1001,16 +850,6 @@ struct netdev_bpf {
 #define XDP_WAKEUP_RX (1 << 0)
 #define XDP_WAKEUP_TX (1 << 1)
 
-#ifdef CONFIG_XFRM_OFFLOAD
-struct xfrmdev_ops {
-	int	(*xdo_dev_state_add) (struct xfrm_state *x);
-	void	(*xdo_dev_state_delete) (struct xfrm_state *x);
-	void	(*xdo_dev_state_free) (struct xfrm_state *x);
-	bool	(*xdo_dev_offload_ok) (struct sk_buff *skb,
-				       struct xfrm_state *x);
-	void	(*xdo_dev_state_advance_esn) (struct xfrm_state *x);
-};
-#endif
 
 struct dev_ifalias {
 	struct rcu_head rcuhead;
@@ -1412,12 +1251,6 @@ struct net_device_ops {
 						       __be16 proto, u16 vid);
 	int			(*ndo_vlan_rx_kill_vid)(struct net_device *dev,
 						        __be16 proto, u16 vid);
-#ifdef CONFIG_NET_POLL_CONTROLLER
-	void                    (*ndo_poll_controller)(struct net_device *dev);
-	int			(*ndo_netpoll_setup)(struct net_device *dev,
-						     struct netpoll_info *info);
-	void			(*ndo_netpoll_cleanup)(struct net_device *dev);
-#endif
 	int			(*ndo_set_vf_mac)(struct net_device *dev,
 						  int queue, u8 *mac);
 	int			(*ndo_set_vf_vlan)(struct net_device *dev,
@@ -1481,12 +1314,6 @@ struct net_device_ops {
 						    u64 *wwn, int type);
 #endif
 
-#ifdef CONFIG_RFS_ACCEL
-	int			(*ndo_rx_flow_steer)(struct net_device *dev,
-						     const struct sk_buff *skb,
-						     u16 rxq_index,
-						     u32 flow_id);
-#endif
 	int			(*ndo_add_slave)(struct net_device *dev,
 						 struct net_device *slave_dev,
 						 struct netlink_ext_ack *extack);
@@ -2053,21 +1880,11 @@ struct net_device {
 	atomic_t		carrier_up_count;
 	atomic_t		carrier_down_count;
 
-#ifdef CONFIG_WIRELESS_EXT
-	const struct iw_handler_def *wireless_handlers;
-	struct iw_public_data	*wireless_data;
-#endif
 	const struct ethtool_ops *ethtool_ops;
-#ifdef CONFIG_NET_L3_MASTER_DEV
-	const struct l3mdev_ops	*l3mdev_ops;
-#endif
 #if IS_ENABLED(CONFIG_IPV6)
 	const struct ndisc_ops *ndisc_ops;
 #endif
 
-#ifdef CONFIG_XFRM_OFFLOAD
-	const struct xfrmdev_ops *xfrmdev_ops;
-#endif
 
 #if IS_ENABLED(CONFIG_TLS_DEVICE)
 	const struct tlsdev_ops *tlsdev_ops;
@@ -2100,15 +1917,9 @@ struct net_device {
 	struct netdev_hw_addr_list	mc;
 	struct netdev_hw_addr_list	dev_addrs;
 
-#ifdef CONFIG_LOCKDEP
-	struct list_head	unlink_list;
-#endif
 	unsigned int		promiscuity;
 	unsigned int		allmulti;
 	bool			uc_promisc;
-#ifdef CONFIG_LOCKDEP
-	unsigned char		nested_level;
-#endif
 
 
 	/* Protocol-specific pointers */
@@ -2168,18 +1979,9 @@ struct net_device {
 	rx_handler_func_t __rcu	*rx_handler;
 	void __rcu		*rx_handler_data;
 
-#ifdef CONFIG_NET_CLS_ACT
-	struct mini_Qdisc __rcu	*miniq_ingress;
-#endif
 	struct netdev_queue __rcu *ingress_queue;
-#ifdef CONFIG_NETFILTER_INGRESS
-	struct nf_hook_entries __rcu *nf_hooks_ingress;
-#endif
 
 	unsigned char		broadcast[MAX_ADDR_LEN];
-#ifdef CONFIG_RFS_ACCEL
-	struct cpu_rmap		*rx_cpu_rmap;
-#endif
 	struct hlist_node	index_hlist;
 
 /*
@@ -2194,19 +1996,7 @@ struct net_device {
 
 	struct xdp_dev_bulk_queue __percpu *xdp_bulkq;
 
-#ifdef CONFIG_XPS
-	struct xps_dev_maps __rcu *xps_maps[XPS_MAPS_MAX];
-#endif
-#ifdef CONFIG_NET_CLS_ACT
-	struct mini_Qdisc __rcu	*miniq_egress;
-#endif
-#ifdef CONFIG_NETFILTER_EGRESS
-	struct nf_hook_entries __rcu *nf_hooks_egress;
-#endif
 
-#ifdef CONFIG_NET_SCHED
-	DECLARE_HASHTABLE	(qdisc_hash, 4);
-#endif
 	/* These may be needed for future network-power-down code. */
 	struct timer_list	watchdog_timer;
 	int			watchdog_timeo;
@@ -2215,11 +2005,7 @@ struct net_device {
 
 	struct list_head	todo_list;
 
-#ifdef CONFIG_PCPU_DEV_REFCNT
-	int __percpu		*pcpu_refcnt;
-#else
 	refcount_t		dev_refcnt;
-#endif
 	struct ref_tracker_dir	refcnt_tracker;
 
 	struct list_head	link_watch_list;
@@ -2242,9 +2028,6 @@ struct net_device {
 	bool needs_free_netdev;
 	void (*priv_destructor)(struct net_device *dev);
 
-#ifdef CONFIG_NETPOLL
-	struct netpoll_info __rcu	*npinfo;
-#endif
 
 	possible_net_t			nd_net;
 
@@ -2289,9 +2072,6 @@ struct net_device {
 #define TSO_MAX_SEGS		U16_MAX
 	u16			tso_max_segs;
 
-#ifdef CONFIG_DCB
-	const struct dcbnl_rtnl_ops *dcbnl_ops;
-#endif
 	s16			num_tc;
 	struct netdev_tc_txq	tc_to_txq[TC_MAX_QUEUE];
 	u8			prio_tc_map[TC_BITMASK + 1];
@@ -3095,38 +2875,14 @@ struct softnet_data {
 	unsigned int		processed;
 	unsigned int		time_squeeze;
 	unsigned int		received_rps;
-#ifdef CONFIG_RPS
-	struct softnet_data	*rps_ipi_list;
-#endif
-#ifdef CONFIG_NET_FLOW_LIMIT
-	struct sd_flow_limit __rcu *flow_limit;
-#endif
 	struct Qdisc		*output_queue;
 	struct Qdisc		**output_queue_tailp;
 	struct sk_buff		*completion_queue;
-#ifdef CONFIG_XFRM_OFFLOAD
-	struct sk_buff_head	xfrm_backlog;
-#endif
 	/* written and read only by owning cpu: */
 	struct {
 		u16 recursion;
 		u8  more;
-#ifdef CONFIG_NET_EGRESS
-		u8  skip_txqueue;
-#endif
 	} xmit;
-#ifdef CONFIG_RPS
-	/* input_queue_head should be written by cpu owning this struct,
-	 * and only read by other cpus. Worth using a cache line.
-	 */
-	unsigned int		input_queue_head ____cacheline_aligned_in_smp;
-
-	/* Elements below can be accessed between CPUs for RPS/RFS */
-	call_single_data_t	csd ____cacheline_aligned_in_smp;
-	struct softnet_data	*rps_ipi_next;
-	unsigned int		cpu;
-	unsigned int		input_queue_tail;
-#endif
 	unsigned int		dropped;
 	struct sk_buff_head	input_pkt_queue;
 	struct napi_struct	backlog;
@@ -3141,17 +2897,11 @@ struct softnet_data {
 
 static inline void input_queue_head_incr(struct softnet_data *sd)
 {
-#ifdef CONFIG_RPS
-	sd->input_queue_head++;
-#endif
 }
 
 static inline void input_queue_tail_incr_save(struct softnet_data *sd,
 					      unsigned int *qtail)
 {
-#ifdef CONFIG_RPS
-	*qtail = ++sd->input_queue_tail;
-#endif
 }
 
 DECLARE_PER_CPU_ALIGNED(struct softnet_data, softnet_data);
@@ -3304,9 +3054,6 @@ netif_xmit_frozen_or_drv_stopped(const struct netdev_queue *dev_queue)
 static inline void netdev_queue_set_dql_min_limit(struct netdev_queue *dev_queue,
 						  unsigned int min_limit)
 {
-#ifdef CONFIG_BQL
-	dev_queue->dql.min_limit = min_limit;
-#endif
 }
 
 /**
@@ -3318,9 +3065,6 @@ static inline void netdev_queue_set_dql_min_limit(struct netdev_queue *dev_queue
  */
 static inline void netdev_txq_bql_enqueue_prefetchw(struct netdev_queue *dev_queue)
 {
-#ifdef CONFIG_BQL
-	prefetchw(&dev_queue->dql.num_queued);
-#endif
 }
 
 /**
@@ -3332,33 +3076,11 @@ static inline void netdev_txq_bql_enqueue_prefetchw(struct netdev_queue *dev_que
  */
 static inline void netdev_txq_bql_complete_prefetchw(struct netdev_queue *dev_queue)
 {
-#ifdef CONFIG_BQL
-	prefetchw(&dev_queue->dql.limit);
-#endif
 }
 
 static inline void netdev_tx_sent_queue(struct netdev_queue *dev_queue,
 					unsigned int bytes)
 {
-#ifdef CONFIG_BQL
-	dql_queued(&dev_queue->dql, bytes);
-
-	if (likely(dql_avail(&dev_queue->dql) >= 0))
-		return;
-
-	set_bit(__QUEUE_STATE_STACK_XOFF, &dev_queue->state);
-
-	/*
-	 * The XOFF flag must be set before checking the dql_avail below,
-	 * because in netdev_tx_completed_queue we update the dql_completed
-	 * before checking the XOFF flag.
-	 */
-	smp_mb();
-
-	/* check again in case another CPU has just made room avail */
-	if (unlikely(dql_avail(&dev_queue->dql) >= 0))
-		clear_bit(__QUEUE_STATE_STACK_XOFF, &dev_queue->state);
-#endif
 }
 
 /* Variant of netdev_tx_sent_queue() for drivers that are aware
@@ -3372,9 +3094,6 @@ static inline bool __netdev_tx_sent_queue(struct netdev_queue *dev_queue,
 					  bool xmit_more)
 {
 	if (xmit_more) {
-#ifdef CONFIG_BQL
-		dql_queued(&dev_queue->dql, bytes);
-#endif
 		return netif_tx_queue_stopped(dev_queue);
 	}
 	netdev_tx_sent_queue(dev_queue, bytes);
@@ -3406,25 +3125,6 @@ static inline bool __netdev_sent_queue(struct net_device *dev,
 static inline void netdev_tx_completed_queue(struct netdev_queue *dev_queue,
 					     unsigned int pkts, unsigned int bytes)
 {
-#ifdef CONFIG_BQL
-	if (unlikely(!bytes))
-		return;
-
-	dql_completed(&dev_queue->dql, bytes);
-
-	/*
-	 * Without the memory barrier there is a small possiblity that
-	 * netdev_tx_sent_queue will miss the update and cause the queue to
-	 * be stopped forever
-	 */
-	smp_mb();
-
-	if (unlikely(dql_avail(&dev_queue->dql) < 0))
-		return;
-
-	if (test_and_clear_bit(__QUEUE_STATE_STACK_XOFF, &dev_queue->state))
-		netif_schedule_queue(dev_queue);
-#endif
 }
 
 /**
@@ -3445,10 +3145,6 @@ static inline void netdev_completed_queue(struct net_device *dev,
 
 static inline void netdev_tx_reset_queue(struct netdev_queue *q)
 {
-#ifdef CONFIG_BQL
-	clear_bit(__QUEUE_STATE_STACK_XOFF, &q->state);
-	dql_reset(&q->dql);
-#endif
 }
 
 /**
@@ -3570,96 +3266,6 @@ static inline void netif_wake_subqueue(struct net_device *dev, u16 queue_index)
 	netif_tx_wake_queue(txq);
 }
 
-#ifdef CONFIG_XPS
-int netif_set_xps_queue(struct net_device *dev, const struct cpumask *mask,
-			u16 index);
-int __netif_set_xps_queue(struct net_device *dev, const unsigned long *mask,
-			  u16 index, enum xps_map_type type);
-
-/**
- *	netif_attr_test_mask - Test a CPU or Rx queue set in a mask
- *	@j: CPU/Rx queue index
- *	@mask: bitmask of all cpus/rx queues
- *	@nr_bits: number of bits in the bitmask
- *
- * Test if a CPU or Rx queue index is set in a mask of all CPU/Rx queues.
- */
-static inline bool netif_attr_test_mask(unsigned long j,
-					const unsigned long *mask,
-					unsigned int nr_bits)
-{
-	cpu_max_bits_warn(j, nr_bits);
-	return test_bit(j, mask);
-}
-
-/**
- *	netif_attr_test_online - Test for online CPU/Rx queue
- *	@j: CPU/Rx queue index
- *	@online_mask: bitmask for CPUs/Rx queues that are online
- *	@nr_bits: number of bits in the bitmask
- *
- * Returns true if a CPU/Rx queue is online.
- */
-static inline bool netif_attr_test_online(unsigned long j,
-					  const unsigned long *online_mask,
-					  unsigned int nr_bits)
-{
-	cpu_max_bits_warn(j, nr_bits);
-
-	if (online_mask)
-		return test_bit(j, online_mask);
-
-	return (j < nr_bits);
-}
-
-/**
- *	netif_attrmask_next - get the next CPU/Rx queue in a cpu/Rx queues mask
- *	@n: CPU/Rx queue index
- *	@srcp: the cpumask/Rx queue mask pointer
- *	@nr_bits: number of bits in the bitmask
- *
- * Returns >= nr_bits if no further CPUs/Rx queues set.
- */
-static inline unsigned int netif_attrmask_next(int n, const unsigned long *srcp,
-					       unsigned int nr_bits)
-{
-	/* -1 is a legal arg here. */
-	if (n != -1)
-		cpu_max_bits_warn(n, nr_bits);
-
-	if (srcp)
-		return find_next_bit(srcp, nr_bits, n + 1);
-
-	return n + 1;
-}
-
-/**
- *	netif_attrmask_next_and - get the next CPU/Rx queue in \*src1p & \*src2p
- *	@n: CPU/Rx queue index
- *	@src1p: the first CPUs/Rx queues mask pointer
- *	@src2p: the second CPUs/Rx queues mask pointer
- *	@nr_bits: number of bits in the bitmask
- *
- * Returns >= nr_bits if no further CPUs/Rx queues set in both.
- */
-static inline int netif_attrmask_next_and(int n, const unsigned long *src1p,
-					  const unsigned long *src2p,
-					  unsigned int nr_bits)
-{
-	/* -1 is a legal arg here. */
-	if (n != -1)
-		cpu_max_bits_warn(n, nr_bits);
-
-	if (src1p && src2p)
-		return find_next_and_bit(src1p, src2p, nr_bits, n + 1);
-	else if (src1p)
-		return find_next_bit(src1p, nr_bits, n + 1);
-	else if (src2p)
-		return find_next_bit(src2p, nr_bits, n + 1);
-
-	return n + 1;
-}
-#else
 static inline int netif_set_xps_queue(struct net_device *dev,
 				      const struct cpumask *mask,
 				      u16 index)
@@ -3673,7 +3279,6 @@ static inline int __netif_set_xps_queue(struct net_device *dev,
 {
 	return 0;
 }
-#endif
 
 /**
  *	netif_is_multiqueue - test if device has multiple transmit queues
@@ -3912,22 +3517,14 @@ void dev_queue_xmit_nit(struct sk_buff *skb, struct net_device *dev);
 static inline void __dev_put(struct net_device *dev)
 {
 	if (dev) {
-#ifdef CONFIG_PCPU_DEV_REFCNT
-		this_cpu_dec(*dev->pcpu_refcnt);
-#else
 		refcount_dec(&dev->dev_refcnt);
-#endif
 	}
 }
 
 static inline void __dev_hold(struct net_device *dev)
 {
 	if (dev) {
-#ifdef CONFIG_PCPU_DEV_REFCNT
-		this_cpu_inc(*dev->pcpu_refcnt);
-#else
 		refcount_inc(&dev->dev_refcnt);
-#endif
 	}
 }
 
@@ -4361,9 +3958,6 @@ static inline void netif_addr_lock(struct net_device *dev)
 {
 	unsigned char nest_level = 0;
 
-#ifdef CONFIG_LOCKDEP
-	nest_level = dev->nested_level;
-#endif
 	spin_lock_nested(&dev->addr_list_lock, nest_level);
 }
 
@@ -4371,9 +3965,6 @@ static inline void netif_addr_lock_bh(struct net_device *dev)
 {
 	unsigned char nest_level = 0;
 
-#ifdef CONFIG_LOCKDEP
-	nest_level = dev->nested_level;
-#endif
 	local_bh_disable();
 	spin_lock_nested(&dev->addr_list_lock, nest_level);
 }

@@ -92,24 +92,6 @@ build_mmio_write(__writel, "l", unsigned int, "r", )
 #define __raw_writew __writew
 #define __raw_writel __writel
 
-#ifdef CONFIG_X86_64
-
-build_mmio_read(readq, "q", u64, "=r", :"memory")
-build_mmio_read(__readq, "q", u64, "=r", )
-build_mmio_write(writeq, "q", u64, "r", :"memory")
-build_mmio_write(__writeq, "q", u64, "r", )
-
-#define readq_relaxed(a)	__readq(a)
-#define writeq_relaxed(v, a)	__writeq(v, a)
-
-#define __raw_readq		__readq
-#define __raw_writeq		__writeq
-
-/* Let people know that we have them */
-#define readq			readq
-#define writeq			writeq
-
-#endif
 
 #define ARCH_HAS_VALID_PHYS_ADDR_RANGE
 extern int valid_phys_addr_range(phys_addr_t addr, size_t size);
@@ -240,9 +222,6 @@ extern void native_io_delay(void);
 extern int io_delay_type;
 extern void io_delay_init(void);
 
-#if defined(CONFIG_PARAVIRT)
-#include <asm/paravirt.h>
-#else
 
 static inline void slow_down_io(void)
 {
@@ -254,7 +233,6 @@ static inline void slow_down_io(void)
 #endif
 }
 
-#endif
 
 #define BUILDIO(bwl, bw, type)						\
 static inline void out##bwl##_p(type value, u16 port)			\
@@ -342,27 +320,12 @@ extern bool is_early_ioremap_ptep(pte_t *ptep);
 #undef PCI_IOBASE
 
 
-#ifdef CONFIG_X86_PAT
-extern int arch_io_reserve_memtype_wc(resource_size_t start, resource_size_t size);
-extern void arch_io_free_memtype_wc(resource_size_t start, resource_size_t size);
-#define arch_io_reserve_memtype_wc arch_io_reserve_memtype_wc
-#endif
 
-#ifdef CONFIG_AMD_MEM_ENCRYPT
-extern bool arch_memremap_can_ram_remap(resource_size_t offset,
-					unsigned long size,
-					unsigned long flags);
-#define arch_memremap_can_ram_remap arch_memremap_can_ram_remap
-
-extern bool phys_mem_access_encrypted(unsigned long phys_addr,
-				      unsigned long size);
-#else
 static inline bool phys_mem_access_encrypted(unsigned long phys_addr,
 					     unsigned long size)
 {
 	return true;
 }
-#endif
 
 /**
  * iosubmit_cmds512 - copy data to single MMIO location, in 512-bit units

@@ -52,9 +52,6 @@ struct pcpu_chunk {
 	int			end_offset;	/* additional area required to
 						   have the region end page
 						   aligned */
-#ifdef CONFIG_MEMCG_KMEM
-	struct obj_cgroup	**obj_cgroups;	/* vector of object cgroups */
-#endif
 
 	int			nr_pages;	/* # of pages served by this chunk */
 	int			nr_populated;	/* # of populated pages */
@@ -120,9 +117,6 @@ static inline size_t pcpu_obj_full_size(size_t size)
 {
 	size_t extra_size = 0;
 
-#ifdef CONFIG_MEMCG_KMEM
-	extra_size += size / PCPU_MIN_ALLOC_SIZE * sizeof(struct obj_cgroup *);
-#endif
 
 	return size * num_possible_cpus() + extra_size;
 }

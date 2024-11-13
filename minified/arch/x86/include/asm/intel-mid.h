@@ -20,17 +20,10 @@ extern void intel_mid_pwr_power_off(void);
 
 extern int intel_mid_pwr_get_lss_id(struct pci_dev *pdev);
 
-#ifdef CONFIG_X86_INTEL_MID
-
-extern void intel_scu_devices_create(void);
-extern void intel_scu_devices_destroy(void);
-
-#else /* !CONFIG_X86_INTEL_MID */
 
 static inline void intel_scu_devices_create(void) { }
 static inline void intel_scu_devices_destroy(void) { }
 
-#endif /* !CONFIG_X86_INTEL_MID */
 
 /* Bus Select SoC Fuse value */
 #define BSEL_SOC_FUSE_MASK		0x7

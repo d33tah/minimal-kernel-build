@@ -65,9 +65,6 @@ struct block_device {
 	struct super_block	*bd_fsfreeze_sb;
 
 	struct partition_meta_info *bd_meta_info;
-#ifdef CONFIG_FAIL_MAKE_REQUEST
-	bool			bd_make_it_fail;
-#endif
 } __randomize_layout;
 
 #define bdev_whole(_bdev) \
@@ -263,23 +260,7 @@ struct bio {
 	blk_qc_t		bi_cookie;
 	bio_end_io_t		*bi_end_io;
 	void			*bi_private;
-#ifdef CONFIG_BLK_CGROUP
-	/*
-	 * Represents the association of the css and request_queue for the bio.
-	 * If a bio goes direct to device, it will not have a blkg as it will
-	 * not have a request_queue associated with it.  The reference is put
-	 * on release of the bio.
-	 */
-	struct blkcg_gq		*bi_blkg;
-	struct bio_issue	bi_issue;
-#ifdef CONFIG_BLK_CGROUP_IOCOST
-	u64			bi_iocost_cost;
-#endif
-#endif
 
-#ifdef CONFIG_BLK_INLINE_ENCRYPTION
-	struct bio_crypt_ctx	*bi_crypt_context;
-#endif
 
 	union {
 #if defined(CONFIG_BLK_DEV_INTEGRITY)

@@ -13,13 +13,6 @@
 struct ctl_table_header;
 
 struct netns_sysctl_ipv6 {
-#ifdef CONFIG_SYSCTL
-	struct ctl_table_header *hdr;
-	struct ctl_table_header *route_hdr;
-	struct ctl_table_header *icmp_hdr;
-	struct ctl_table_header *frags_hdr;
-	struct ctl_table_header *xfrm6_hdr;
-#endif
 	int flush_delay;
 	int ip6_rt_max_size;
 	int ip6_rt_gc_min_interval;
@@ -78,17 +71,6 @@ struct netns_ipv6 {
 	atomic_t		ip6_rt_gc_expire;
 	unsigned long		ip6_rt_last_gc;
 	unsigned char		flowlabel_has_excl;
-#ifdef CONFIG_IPV6_MULTIPLE_TABLES
-	bool			fib6_has_custom_rules;
-	unsigned int		fib6_rules_require_fldissect;
-#ifdef CONFIG_IPV6_SUBTREES
-	unsigned int		fib6_routes_require_src;
-#endif
-	struct rt6_info         *ip6_prohibit_entry;
-	struct rt6_info         *ip6_blk_hole_entry;
-	struct fib6_table       *fib6_local_tbl;
-	struct fib_rules_ops    *fib6_rules_ops;
-#endif
 	struct sock             *ndisc_sk;
 	struct sock             *tcp_sk;
 	struct sock             *igmp_sk;
@@ -98,14 +80,6 @@ struct netns_ipv6 {
 	spinlock_t		addrconf_hash_lock;
 	struct delayed_work	addr_chk_work;
 
-#ifdef CONFIG_IPV6_MROUTE
-#ifndef CONFIG_IPV6_MROUTE_MULTIPLE_TABLES
-	struct mr_table		*mrt6;
-#else
-	struct list_head	mr6_tables;
-	struct fib_rules_ops	*mr6_rules_ops;
-#endif
-#endif
 	atomic_t		dev_addr_genid;
 	atomic_t		fib6_sernum;
 	struct seg6_pernet_data *seg6_data;

@@ -12,76 +12,31 @@
 
 # define DISABLE_UMIP	(1<<(X86_FEATURE_UMIP & 31))
 
-#ifdef CONFIG_X86_64
-# define DISABLE_VME		(1<<(X86_FEATURE_VME & 31))
-# define DISABLE_K6_MTRR	(1<<(X86_FEATURE_K6_MTRR & 31))
-# define DISABLE_CYRIX_ARR	(1<<(X86_FEATURE_CYRIX_ARR & 31))
-# define DISABLE_CENTAUR_MCR	(1<<(X86_FEATURE_CENTAUR_MCR & 31))
-# define DISABLE_PCID		0
-#else
 # define DISABLE_VME		0
 # define DISABLE_K6_MTRR	0
 # define DISABLE_CYRIX_ARR	0
 # define DISABLE_CENTAUR_MCR	0
 # define DISABLE_PCID		(1<<(X86_FEATURE_PCID & 31))
-#endif /* CONFIG_X86_64 */
 
-#ifdef CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS
-# define DISABLE_PKU		0
-# define DISABLE_OSPKE		0
-#else
 # define DISABLE_PKU		(1<<(X86_FEATURE_PKU & 31))
 # define DISABLE_OSPKE		(1<<(X86_FEATURE_OSPKE & 31))
-#endif /* CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS */
 
-#ifdef CONFIG_X86_5LEVEL
-# define DISABLE_LA57	0
-#else
 # define DISABLE_LA57	(1<<(X86_FEATURE_LA57 & 31))
-#endif
 
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-# define DISABLE_PTI		0
-#else
 # define DISABLE_PTI		(1 << (X86_FEATURE_PTI & 31))
-#endif
 
-#ifdef CONFIG_RETPOLINE
-# define DISABLE_RETPOLINE	0
-#else
 # define DISABLE_RETPOLINE	((1 << (X86_FEATURE_RETPOLINE & 31)) | \
 				 (1 << (X86_FEATURE_RETPOLINE_LFENCE & 31)))
-#endif
 
-#ifdef CONFIG_RETHUNK
-# define DISABLE_RETHUNK	0
-#else
 # define DISABLE_RETHUNK	(1 << (X86_FEATURE_RETHUNK & 31))
-#endif
 
-#ifdef CONFIG_CPU_UNRET_ENTRY
-# define DISABLE_UNRET		0
-#else
 # define DISABLE_UNRET		(1 << (X86_FEATURE_UNRET & 31))
-#endif
 
-#ifdef CONFIG_INTEL_IOMMU_SVM
-# define DISABLE_ENQCMD		0
-#else
 # define DISABLE_ENQCMD		(1 << (X86_FEATURE_ENQCMD & 31))
-#endif
 
-#ifdef CONFIG_X86_SGX
-# define DISABLE_SGX	0
-#else
 # define DISABLE_SGX	(1 << (X86_FEATURE_SGX & 31))
-#endif
 
-#ifdef CONFIG_INTEL_TDX_GUEST
-# define DISABLE_TDX_GUEST	0
-#else
 # define DISABLE_TDX_GUEST	(1 << (X86_FEATURE_TDX_GUEST & 31))
-#endif
 
 /*
  * Make sure to add features to the correct mask

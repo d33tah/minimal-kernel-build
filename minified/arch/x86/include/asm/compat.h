@@ -75,17 +75,9 @@ struct compat_statfs {
 	int		f_spare[4];
 };
 
-#ifdef CONFIG_X86_X32_ABI
-#define COMPAT_USE_64BIT_TIME \
-	(!!(task_pt_regs(current)->orig_ax & __X32_SYSCALL_BIT))
-#endif
 
 static inline bool in_x32_syscall(void)
 {
-#ifdef CONFIG_X86_X32_ABI
-	if (task_pt_regs(current)->orig_ax & __X32_SYSCALL_BIT)
-		return true;
-#endif
 	return false;
 }
 
@@ -94,21 +86,8 @@ static inline bool in_32bit_syscall(void)
 	return in_ia32_syscall() || in_x32_syscall();
 }
 
-#ifdef CONFIG_COMPAT
-static inline bool in_compat_syscall(void)
-{
-	return in_32bit_syscall();
-}
-#define in_compat_syscall in_compat_syscall	/* override the generic impl */
-#define compat_need_64bit_alignment_fixup in_ia32_syscall
-#endif
 
 struct compat_siginfo;
 
-#ifdef CONFIG_X86_X32_ABI
-int copy_siginfo_to_user32(struct compat_siginfo __user *to,
-		const kernel_siginfo_t *from);
-#define copy_siginfo_to_user32 copy_siginfo_to_user32
-#endif /* CONFIG_X86_X32_ABI */
 
 #endif /* _ASM_X86_COMPAT_H */

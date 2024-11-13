@@ -86,15 +86,8 @@ static inline void pack_gate(gate_desc *gate, unsigned type, unsigned long func,
 	gate->bits.zero		= 0;
 	gate->bits.type		= type;
 	gate->offset_middle	= (u16) (func >> 16);
-#ifdef CONFIG_X86_64
-	gate->segment		= __KERNEL_CS;
-	gate->bits.ist		= ist;
-	gate->reserved		= 0;
-	gate->offset_high	= (u32) (func >> 32);
-#else
 	gate->segment		= seg;
 	gate->bits.ist		= 0;
-#endif
 }
 
 static inline int desc_empty(const void *ptr)
@@ -104,9 +97,6 @@ static inline int desc_empty(const void *ptr)
 	return !(desc[0] | desc[1]);
 }
 
-#ifdef CONFIG_PARAVIRT_XXL
-#include <asm/paravirt.h>
-#else
 #define load_TR_desc()				native_load_tr_desc()
 #define load_gdt(dtr)				native_load_gdt(dtr)
 #define load_idt(dtr)				native_load_idt(dtr)
@@ -130,7 +120,6 @@ static inline void paravirt_alloc_ldt(struct desc_struct *ldt, unsigned entries)
 static inline void paravirt_free_ldt(struct desc_struct *ldt, unsigned entries)
 {
 }
-#endif	/* CONFIG_PARAVIRT_XXL */
 
 #define store_ldt(ldt) asm("sldt %0" : "=m"(ldt))
 
@@ -172,9 +161,6 @@ static inline void set_tssldt_descriptor(void *d, unsigned long addr,
 	desc->p			= 1;
 	desc->limit1		= (size >> 16) & 0xF;
 	desc->base2		= (addr >> 24) & 0xFF;
-#ifdef CONFIG_X86_64
-	desc->base3		= (u32) (addr >> 32);
-#endif
 }
 
 static inline void __set_tss_desc(unsigned cpu, unsigned int entry, struct x86_hw_tss *addr)
@@ -250,35 +236,10 @@ static inline void native_idt_invalidate(void)
  * a read-only remapping. To prevent a page fault, the GDT is switched to the
  * original writeable version when needed.
  */
-#ifdef CONFIG_X86_64
-static inline void native_load_tr_desc(void)
-{
-	struct desc_ptr gdt;
-	int cpu = raw_smp_processor_id();
-	bool restore = 0;
-	struct desc_struct *fixmap_gdt;
-
-	native_store_gdt(&gdt);
-	fixmap_gdt = get_cpu_gdt_ro(cpu);
-
-	/*
-	 * If the current GDT is the read-only fixmap, swap to the original
-	 * writeable version. Swap back at the end.
-	 */
-	if (gdt.address == (unsigned long)fixmap_gdt) {
-		load_direct_gdt(cpu);
-		restore = 1;
-	}
-	asm volatile("ltr %w0"::"q" (GDT_ENTRY_TSS*8));
-	if (restore)
-		load_fixmap_gdt(cpu);
-}
-#else
 static inline void native_load_tr_desc(void)
 {
 	asm volatile("ltr %w0"::"q" (GDT_ENTRY_TSS*8));
 }
-#endif
 
 static inline unsigned long native_store_tr(void)
 {
@@ -425,10 +386,6 @@ static inline void idt_init_desc(gate_desc *gate, const struct idt_data *d)
 	gate->segment		= (u16) d->segment;
 	gate->bits		= d->bits;
 	gate->offset_middle	= (u16) (addr >> 16);
-#ifdef CONFIG_X86_64
-	gate->offset_high	= (u32) (addr >> 32);
-	gate->reserved		= 0;
-#endif
 }
 
 extern unsigned long system_vectors[];
@@ -440,11 +397,7 @@ extern void idt_setup_traps(void);
 extern void idt_setup_apic_and_irq_gates(void);
 extern bool idt_is_f00f_address(unsigned long address);
 
-#ifdef CONFIG_X86_64
-extern void idt_setup_early_pf(void);
-#else
 static inline void idt_setup_early_pf(void) { }
-#endif
 
 extern void idt_invalidate(void);
 

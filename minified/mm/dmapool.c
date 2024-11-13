@@ -36,9 +36,6 @@
 #include <linux/types.h>
 #include <linux/wait.h>
 
-#if defined(CONFIG_DEBUG_SLAB) || defined(CONFIG_SLUB_DEBUG_ON)
-#define DMAPOOL_DEBUG 1
-#endif
 
 struct dma_pool {		/* the pool */
 	struct list_head page_list;

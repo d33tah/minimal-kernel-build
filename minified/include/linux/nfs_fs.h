@@ -15,9 +15,6 @@
 /*
  * Enable dprintk() debugging support for nfs client.
  */
-#ifdef CONFIG_NFS_DEBUG
-# define NFS_DEBUG
-#endif
 
 #include <linux/in.h>
 #include <linux/mm.h>
@@ -203,14 +200,8 @@ struct nfs_inode {
 	/* how many bytes have been written/read and how many bytes queued up */
 	__u64 write_io;
 	__u64 read_io;
-#ifdef CONFIG_NFS_FSCACHE
-	struct fscache_cookie	*fscache;
-#endif
 	struct inode		vfs_inode;
 
-#ifdef CONFIG_NFS_V4_2
-	struct nfs4_xattr_cache *xattr_cache;
-#endif
 };
 
 struct nfs4_copy_state {
@@ -330,11 +321,7 @@ static inline int NFS_STALE(const struct inode *inode)
 
 static inline struct fscache_cookie *nfs_i_fscache(struct inode *inode)
 {
-#ifdef CONFIG_NFS_FSCACHE
-	return NFS_I(inode)->fscache;
-#else
 	return NULL;
-#endif
 }
 
 static inline __u64 NFS_FILEID(const struct inode *inode)
@@ -426,12 +413,6 @@ extern struct nfs_fattr *nfs_alloc_fattr_with_label(struct nfs_server *server);
 
 static inline void nfs4_label_free(struct nfs4_label *label)
 {
-#ifdef CONFIG_NFS_V4_SECURITY_LABEL
-	if (label) {
-		kfree(label->label);
-		kfree(label);
-	}
-#endif
 }
 
 static inline void nfs_free_fattr(const struct nfs_fattr *fattr)
@@ -541,13 +522,8 @@ extern const struct inode_operations nfs_symlink_inode_operations;
 /*
  * linux/fs/nfs/sysctl.c
  */
-#ifdef CONFIG_SYSCTL
-extern int nfs_register_sysctl(void);
-extern void nfs_unregister_sysctl(void);
-#else
 #define nfs_register_sysctl() 0
 #define nfs_unregister_sysctl() do { } while(0)
-#endif
 
 /*
  * linux/fs/nfs/namespace.c

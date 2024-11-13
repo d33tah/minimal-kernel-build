@@ -120,15 +120,6 @@ enum pageflags {
 	PG_swapbacked,		/* Page is backed by RAM/swap */
 	PG_unevictable,		/* Page is "unevictable"  */
 	PG_mlocked,		/* Page is vma mlocked */
-#ifdef CONFIG_ARCH_USES_PG_UNCACHED
-	PG_uncached,		/* Page has been mapped as uncached */
-#endif
-#ifdef CONFIG_MEMORY_FAILURE
-	PG_hwpoison,		/* hardware poisoned page. Don't touch */
-#endif
-#ifdef CONFIG_KASAN_HW_TAGS
-	PG_skip_kasan_poison,
-#endif
 	__NR_PAGEFLAGS,
 
 	PG_readahead = PG_reclaim,
@@ -170,14 +161,6 @@ enum pageflags {
 	/* Compound pages. Stored in first tail page's flags */
 	PG_double_map = PG_workingset,
 
-#ifdef CONFIG_MEMORY_FAILURE
-	/*
-	 * Compound pages. Stored in first tail page's flags.
-	 * Indicates that at least one subpage is hwpoisoned in the
-	 * THP.
-	 */
-	PG_has_hwpoisoned = PG_error,
-#endif
 
 	/* non-lru isolated movable page */
 	PG_isolated = PG_reclaim,
@@ -190,58 +173,6 @@ enum pageflags {
 
 #ifndef __GENERATING_BOUNDS_H
 
-#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
-DECLARE_STATIC_KEY_MAYBE(CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP_DEFAULT_ON,
-			 hugetlb_optimize_vmemmap_key);
-
-static __always_inline bool hugetlb_optimize_vmemmap_enabled(void)
-{
-	return static_branch_maybe(CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP_DEFAULT_ON,
-				   &hugetlb_optimize_vmemmap_key);
-}
-
-/*
- * If the feature of optimizing vmemmap pages associated with each HugeTLB
- * page is enabled, the head vmemmap page frame is reused and all of the tail
- * vmemmap addresses map to the head vmemmap page frame (furture details can
- * refer to the figure at the head of the mm/hugetlb_vmemmap.c).  In other
- * words, there are more than one page struct with PG_head associated with each
- * HugeTLB page.  We __know__ that there is only one head page struct, the tail
- * page structs with PG_head are fake head page structs.  We need an approach
- * to distinguish between those two different types of page structs so that
- * compound_head() can return the real head page struct when the parameter is
- * the tail page struct but with PG_head.
- *
- * The page_fixed_fake_head() returns the real head page struct if the @page is
- * fake page head, otherwise, returns @page which can either be a true page
- * head or tail.
- */
-static __always_inline const struct page *page_fixed_fake_head(const struct page *page)
-{
-	if (!hugetlb_optimize_vmemmap_enabled())
-		return page;
-
-	/*
-	 * Only addresses aligned with PAGE_SIZE of struct page may be fake head
-	 * struct page. The alignment check aims to avoid access the fields (
-	 * e.g. compound_head) of the @page[1]. It can avoid touch a (possibly)
-	 * cold cacheline in some cases.
-	 */
-	if (IS_ALIGNED((unsigned long)page, PAGE_SIZE) &&
-	    test_bit(PG_head, &page->flags)) {
-		/*
-		 * We can safely access the field of the @page[1] with PG_head
-		 * because the @page is a compound page composed with at least
-		 * two contiguous pages.
-		 */
-		unsigned long head = READ_ONCE(page[1].compound_head);
-
-		if (likely(head & 1))
-			return (const struct page *)(head - 1);
-	}
-	return page;
-}
-#else
 static inline const struct page *page_fixed_fake_head(const struct page *page)
 {
 	return page;
@@ -251,7 +182,6 @@ static inline bool hugetlb_optimize_vmemmap_enabled(void)
 {
 	return false;
 }
-#endif
 
 static __always_inline int page_is_fake_head(struct page *page)
 {
@@ -533,33 +463,9 @@ PAGEFLAG(Reclaim, reclaim, PF_NO_TAIL)
 PAGEFLAG(Readahead, readahead, PF_NO_COMPOUND)
 	TESTCLEARFLAG(Readahead, readahead, PF_NO_COMPOUND)
 
-#ifdef CONFIG_HIGHMEM
-/*
- * Must use a macro here due to header dependency issues. page_zone() is not
- * available at this point.
- */
-#define PageHighMem(__p) is_highmem_idx(page_zonenum(__p))
-#else
 PAGEFLAG_FALSE(HighMem, highmem)
-#endif
 
-#ifdef CONFIG_SWAP
-static __always_inline bool folio_test_swapcache(struct folio *folio)
-{
-	return folio_test_swapbacked(folio) &&
-			test_bit(PG_swapcache, folio_flags(folio, 0));
-}
-
-static __always_inline bool PageSwapCache(struct page *page)
-{
-	return folio_test_swapcache(page_folio(page));
-}
-
-SETPAGEFLAG(SwapCache, swapcache, PF_NO_TAIL)
-CLEARPAGEFLAG(SwapCache, swapcache, PF_NO_TAIL)
-#else
 PAGEFLAG_FALSE(SwapCache, swapcache)
-#endif
 
 PAGEFLAG(Unevictable, unevictable, PF_HEAD)
 	__CLEARPAGEFLAG(Unevictable, unevictable, PF_HEAD)
@@ -569,32 +475,13 @@ PAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 	__CLEARPAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 	TESTSCFLAG(Mlocked, mlocked, PF_NO_TAIL)
 
-#ifdef CONFIG_ARCH_USES_PG_UNCACHED
-PAGEFLAG(Uncached, uncached, PF_NO_COMPOUND)
-#else
 PAGEFLAG_FALSE(Uncached, uncached)
-#endif
 
-#ifdef CONFIG_MEMORY_FAILURE
-PAGEFLAG(HWPoison, hwpoison, PF_ANY)
-TESTSCFLAG(HWPoison, hwpoison, PF_ANY)
-#define __PG_HWPOISON (1UL << PG_hwpoison)
-#define MAGIC_HWPOISON	0x48575053U	/* HWPS */
-extern void SetPageHWPoisonTakenOff(struct page *page);
-extern void ClearPageHWPoisonTakenOff(struct page *page);
-extern bool take_page_off_buddy(struct page *page);
-extern bool put_page_back_buddy(struct page *page);
-#else
 PAGEFLAG_FALSE(HWPoison, hwpoison)
 #define __PG_HWPOISON 0
-#endif
 
 
-#ifdef CONFIG_KASAN_HW_TAGS
-PAGEFLAG(SkipKASanPoison, skip_kasan_poison, PF_HEAD)
-#else
 PAGEFLAG_FALSE(SkipKASanPoison, skip_kasan_poison)
-#endif
 
 /*
  * PageReported() is used to track reported free pages within the Buddy
@@ -774,17 +661,8 @@ static __always_inline void clear_compound_head(struct page *page)
 
 #define PG_head_mask ((1UL << PG_head))
 
-#ifdef CONFIG_HUGETLB_PAGE
-int PageHuge(struct page *page);
-int PageHeadHuge(struct page *page);
-static inline bool folio_test_hugetlb(struct folio *folio)
-{
-	return PageHeadHuge(&folio->page);
-}
-#else
 TESTPAGEFLAG_FALSE(Huge, hugetlb)
 TESTPAGEFLAG_FALSE(HeadHuge, headhuge)
-#endif
 
 TESTPAGEFLAG_FALSE(TransHuge, transhuge)
 TESTPAGEFLAG_FALSE(TransCompound, transcompound)

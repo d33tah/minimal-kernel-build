@@ -72,31 +72,6 @@ static inline bool trace_seq_has_overflowed(struct trace_seq *s)
 /*
  * Currently only defined when tracing is enabled.
  */
-#ifdef CONFIG_TRACING
-extern __printf(2, 3)
-void trace_seq_printf(struct trace_seq *s, const char *fmt, ...);
-extern __printf(2, 0)
-void trace_seq_vprintf(struct trace_seq *s, const char *fmt, va_list args);
-extern void
-trace_seq_bprintf(struct trace_seq *s, const char *fmt, const u32 *binary);
-extern int trace_print_seq(struct seq_file *m, struct trace_seq *s);
-extern int trace_seq_to_user(struct trace_seq *s, char __user *ubuf,
-			     int cnt);
-extern void trace_seq_puts(struct trace_seq *s, const char *str);
-extern void trace_seq_putc(struct trace_seq *s, unsigned char c);
-extern void trace_seq_putmem(struct trace_seq *s, const void *mem, unsigned int len);
-extern void trace_seq_putmem_hex(struct trace_seq *s, const void *mem,
-				unsigned int len);
-extern int trace_seq_path(struct trace_seq *s, const struct path *path);
-
-extern void trace_seq_bitmask(struct trace_seq *s, const unsigned long *maskp,
-			     int nmaskbits);
-
-extern int trace_seq_hex_dump(struct trace_seq *s, const char *prefix_str,
-			      int prefix_type, int rowsize, int groupsize,
-			      const void *buf, size_t len, bool ascii);
-
-#else /* CONFIG_TRACING */
 static inline void trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
 {
 }
@@ -138,6 +113,5 @@ static inline int trace_seq_path(struct trace_seq *s, const struct path *path)
 {
 	return 0;
 }
-#endif /* CONFIG_TRACING */
 
 #endif /* _LINUX_TRACE_SEQ_H */

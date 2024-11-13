@@ -84,51 +84,6 @@ struct page_pool_params {
 	void *init_arg;
 };
 
-#ifdef CONFIG_PAGE_POOL_STATS
-struct page_pool_alloc_stats {
-	u64 fast; /* fast path allocations */
-	u64 slow; /* slow-path order 0 allocations */
-	u64 slow_high_order; /* slow-path high order allocations */
-	u64 empty; /* failed refills due to empty ptr ring, forcing
-		    * slow path allocation
-		    */
-	u64 refill; /* allocations via successful refill */
-	u64 waive;  /* failed refills due to numa zone mismatch */
-};
-
-struct page_pool_recycle_stats {
-	u64 cached;	/* recycling placed page in the cache. */
-	u64 cache_full; /* cache was full */
-	u64 ring;	/* recycling placed page back into ptr ring */
-	u64 ring_full;	/* page was released from page-pool because
-			 * PTR ring was full.
-			 */
-	u64 released_refcnt; /* page released because of elevated
-			      * refcnt
-			      */
-};
-
-/* This struct wraps the above stats structs so users of the
- * page_pool_get_stats API can pass a single argument when requesting the
- * stats for the page pool.
- */
-struct page_pool_stats {
-	struct page_pool_alloc_stats alloc_stats;
-	struct page_pool_recycle_stats recycle_stats;
-};
-
-int page_pool_ethtool_stats_get_count(void);
-u8 *page_pool_ethtool_stats_get_strings(u8 *data);
-u64 *page_pool_ethtool_stats_get(u64 *data, void *stats);
-
-/*
- * Drivers that wish to harvest page pool stats and report them to users
- * (perhaps via ethtool, debugfs, or another mechanism) can allocate a
- * struct page_pool_stats call page_pool_get_stats to get stats for the specified pool.
- */
-bool page_pool_get_stats(struct page_pool *pool,
-			 struct page_pool_stats *stats);
-#else
 
 static inline int page_pool_ethtool_stats_get_count(void)
 {
@@ -145,7 +100,6 @@ static inline u64 *page_pool_ethtool_stats_get(u64 *data, void *stats)
 	return data;
 }
 
-#endif
 
 struct page_pool {
 	struct page_pool_params p;
@@ -160,10 +114,6 @@ struct page_pool {
 	struct page *frag_page;
 	long frag_users;
 
-#ifdef CONFIG_PAGE_POOL_STATS
-	/* these stats are incremented while in softirq context */
-	struct page_pool_alloc_stats alloc_stats;
-#endif
 	u32 xdp_mem_id;
 
 	/*
@@ -194,10 +144,6 @@ struct page_pool {
 	 */
 	struct ptr_ring ring;
 
-#ifdef CONFIG_PAGE_POOL_STATS
-	/* recycle stats are per-cpu to avoid locking */
-	struct page_pool_recycle_stats __percpu *recycle_stats;
-#endif
 	atomic_t pages_state_release_cnt;
 
 	/* A page_pool is strictly tied to a single RX-queue being
@@ -245,14 +191,6 @@ struct page_pool *page_pool_create(const struct page_pool_params *params);
 
 struct xdp_mem_info;
 
-#ifdef CONFIG_PAGE_POOL
-void page_pool_destroy(struct page_pool *pool);
-void page_pool_use_xdp_mem(struct page_pool *pool, void (*disconnect)(void *),
-			   struct xdp_mem_info *mem);
-void page_pool_release_page(struct page_pool *pool, struct page *page);
-void page_pool_put_page_bulk(struct page_pool *pool, void **data,
-			     int count);
-#else
 static inline void page_pool_destroy(struct page_pool *pool)
 {
 }
@@ -271,7 +209,6 @@ static inline void page_pool_put_page_bulk(struct page_pool *pool, void **data,
 					   int count)
 {
 }
-#endif
 
 void page_pool_put_defragged_page(struct page_pool *pool, struct page *page,
 				  unsigned int dma_sync_size,
@@ -319,12 +256,6 @@ static inline void page_pool_put_page(struct page_pool *pool,
 	/* When page_pool isn't compiled-in, net/core/xdp.c doesn't
 	 * allow registering MEM_TYPE_PAGE_POOL, but shield linker.
 	 */
-#ifdef CONFIG_PAGE_POOL
-	if (!page_pool_is_last_frag(pool, page))
-		return;
-
-	page_pool_put_defragged_page(pool, page, dma_sync_size, allow_direct);
-#endif
 }
 
 /* Same as above but will try to sync the entire area pool->max_len */
@@ -363,11 +294,7 @@ static inline void page_pool_set_dma_addr(struct page *page, dma_addr_t addr)
 
 static inline bool is_page_pool_compiled_in(void)
 {
-#ifdef CONFIG_PAGE_POOL
-	return true;
-#else
 	return false;
-#endif
 }
 
 static inline bool page_pool_put(struct page_pool *pool)

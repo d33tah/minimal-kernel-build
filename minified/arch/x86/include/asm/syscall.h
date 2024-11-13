@@ -41,18 +41,6 @@ static inline long syscall_get_error(struct task_struct *task,
 				     struct pt_regs *regs)
 {
 	unsigned long error = regs->ax;
-#ifdef CONFIG_IA32_EMULATION
-	/*
-	 * TS_COMPAT is set for 32-bit syscall entries and then
-	 * remains set until we return to user mode.
-	 */
-	if (task->thread_info.status & (TS_COMPAT|TS_I386_REGS_POKED))
-		/*
-		 * Sign-extend the value so (int)-EFOO becomes (long)-EFOO
-		 * and will match correctly in comparisons.
-		 */
-		error = (long) (int) error;
-#endif
 	return IS_ERR_VALUE(error) ? error : 0;
 }
 

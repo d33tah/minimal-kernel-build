@@ -1366,26 +1366,8 @@ static void pt_addr_filters_fini(struct perf_event *event)
 	event->hw.addr_filters = NULL;
 }
 
-#ifdef CONFIG_X86_64
-/* Clamp to a canonical address greater-than-or-equal-to the address given */
-static u64 clamp_to_ge_canonical_addr(u64 vaddr, u8 vaddr_bits)
-{
-	return __is_canonical_address(vaddr, vaddr_bits) ?
-	       vaddr :
-	       -BIT_ULL(vaddr_bits - 1);
-}
-
-/* Clamp to a canonical address less-than-or-equal-to the address given */
-static u64 clamp_to_le_canonical_addr(u64 vaddr, u8 vaddr_bits)
-{
-	return __is_canonical_address(vaddr, vaddr_bits) ?
-	       vaddr :
-	       BIT_ULL(vaddr_bits - 1) - 1;
-}
-#else
 #define clamp_to_ge_canonical_addr(x, y) (x)
 #define clamp_to_le_canonical_addr(x, y) (x)
-#endif
 
 static int pt_event_addr_filters_validate(struct list_head *filters)
 {

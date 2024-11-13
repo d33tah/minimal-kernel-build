@@ -34,105 +34,11 @@ static int cpu_subsys_match(struct device *dev, struct device_driver *drv)
 	return 0;
 }
 
-#ifdef CONFIG_HOTPLUG_CPU
-static void change_cpu_under_node(struct cpu *cpu,
-			unsigned int from_nid, unsigned int to_nid)
-{
-	int cpuid = cpu->dev.id;
-	unregister_cpu_under_node(cpuid, from_nid);
-	register_cpu_under_node(cpuid, to_nid);
-	cpu->node_id = to_nid;
-}
-
-static int cpu_subsys_online(struct device *dev)
-{
-	struct cpu *cpu = container_of(dev, struct cpu, dev);
-	int cpuid = dev->id;
-	int from_nid, to_nid;
-	int ret;
-
-	from_nid = cpu_to_node(cpuid);
-	if (from_nid == NUMA_NO_NODE)
-		return -ENODEV;
-
-	ret = cpu_device_up(dev);
-	/*
-	 * When hot adding memory to memoryless node and enabling a cpu
-	 * on the node, node number of the cpu may internally change.
-	 */
-	to_nid = cpu_to_node(cpuid);
-	if (from_nid != to_nid)
-		change_cpu_under_node(cpu, from_nid, to_nid);
-
-	return ret;
-}
-
-static int cpu_subsys_offline(struct device *dev)
-{
-	return cpu_device_down(dev);
-}
-
-void unregister_cpu(struct cpu *cpu)
-{
-	int logical_cpu = cpu->dev.id;
-
-	unregister_cpu_under_node(logical_cpu, cpu_to_node(logical_cpu));
-
-	device_unregister(&cpu->dev);
-	per_cpu(cpu_sys_devices, logical_cpu) = NULL;
-	return;
-}
-
-#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-static ssize_t cpu_probe_store(struct device *dev,
-			       struct device_attribute *attr,
-			       const char *buf,
-			       size_t count)
-{
-	ssize_t cnt;
-	int ret;
-
-	ret = lock_device_hotplug_sysfs();
-	if (ret)
-		return ret;
-
-	cnt = arch_cpu_probe(buf, count);
-
-	unlock_device_hotplug();
-	return cnt;
-}
-
-static ssize_t cpu_release_store(struct device *dev,
-				 struct device_attribute *attr,
-				 const char *buf,
-				 size_t count)
-{
-	ssize_t cnt;
-	int ret;
-
-	ret = lock_device_hotplug_sysfs();
-	if (ret)
-		return ret;
-
-	cnt = arch_cpu_release(buf, count);
-
-	unlock_device_hotplug();
-	return cnt;
-}
-
-static DEVICE_ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
-static DEVICE_ATTR(release, S_IWUSR, NULL, cpu_release_store);
-#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
-#endif /* CONFIG_HOTPLUG_CPU */
 
 struct bus_type cpu_subsys = {
 	.name = "cpu",
 	.dev_name = "cpu",
 	.match = cpu_subsys_match,
-#ifdef CONFIG_HOTPLUG_CPU
-	.online = cpu_subsys_online,
-	.offline = cpu_subsys_offline,
-#endif
 };
 EXPORT_SYMBOL_GPL(cpu_subsys);
 
@@ -235,14 +141,6 @@ static ssize_t print_cpus_isolated(struct device *dev,
 }
 static DEVICE_ATTR(isolated, 0444, print_cpus_isolated, NULL);
 
-#ifdef CONFIG_NO_HZ_FULL
-static ssize_t print_cpus_nohz_full(struct device *dev,
-				    struct device_attribute *attr, char *buf)
-{
-	return sysfs_emit(buf, "%*pbl\n", cpumask_pr_args(tick_nohz_full_mask));
-}
-static DEVICE_ATTR(nohz_full, 0444, print_cpus_nohz_full, NULL);
-#endif
 
 static void cpu_device_release(struct device *dev)
 {
@@ -401,19 +299,12 @@ EXPORT_SYMBOL_GPL(cpu_device_create);
 static DEVICE_ATTR(modalias, 0444, print_cpu_modalias, NULL);
 
 static struct attribute *cpu_root_attrs[] = {
-#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-	&dev_attr_probe.attr,
-	&dev_attr_release.attr,
-#endif
 	&cpu_attrs[0].attr.attr,
 	&cpu_attrs[1].attr.attr,
 	&cpu_attrs[2].attr.attr,
 	&dev_attr_kernel_max.attr,
 	&dev_attr_offline.attr,
 	&dev_attr_isolated.attr,
-#ifdef CONFIG_NO_HZ_FULL
-	&dev_attr_nohz_full.attr,
-#endif
 	&dev_attr_modalias.attr,
 	NULL
 };
@@ -434,20 +325,9 @@ bool cpu_is_hotpluggable(unsigned int cpu)
 }
 EXPORT_SYMBOL_GPL(cpu_is_hotpluggable);
 
-#ifdef CONFIG_GENERIC_CPU_DEVICES
-static DEFINE_PER_CPU(struct cpu, cpu_devices);
-#endif
 
 static void __init cpu_dev_register_generic(void)
 {
-#ifdef CONFIG_GENERIC_CPU_DEVICES
-	int i;
-
-	for_each_possible_cpu(i) {
-		if (register_cpu(&per_cpu(cpu_devices, i), i))
-			panic("Failed to register CPU device");
-	}
-#endif
 }
 
 

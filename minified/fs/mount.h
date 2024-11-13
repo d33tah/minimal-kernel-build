@@ -64,10 +64,6 @@ struct mount {
 		struct hlist_node mnt_umount;
 	};
 	struct list_head mnt_umounting; /* list entry for umount propagation */
-#ifdef CONFIG_FSNOTIFY
-	struct fsnotify_mark_connector __rcu *mnt_fsnotify_marks;
-	__u32 mnt_fsnotify_mask;
-#endif
 	int mnt_id;			/* mount identifier */
 	int mnt_group_id;		/* peer group identifier */
 	int mnt_expiry_mark;		/* true if marked for expiry */

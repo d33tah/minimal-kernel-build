@@ -673,88 +673,6 @@ size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
 }
 EXPORT_SYMBOL(_copy_to_iter);
 
-#ifdef CONFIG_ARCH_HAS_COPY_MC
-static int copyout_mc(void __user *to, const void *from, size_t n)
-{
-	if (access_ok(to, n)) {
-		instrument_copy_to_user(to, from, n);
-		n = copy_mc_to_user((__force void *) to, from, n);
-	}
-	return n;
-}
-
-static size_t copy_mc_pipe_to_iter(const void *addr, size_t bytes,
-				struct iov_iter *i)
-{
-	struct pipe_inode_info *pipe = i->pipe;
-	unsigned int p_mask = pipe->ring_size - 1;
-	unsigned int i_head;
-	size_t n, off, xfer = 0;
-
-	if (!sanity(i))
-		return 0;
-
-	n = push_pipe(i, bytes, &i_head, &off);
-	while (n) {
-		size_t chunk = min_t(size_t, n, PAGE_SIZE - off);
-		char *p = kmap_local_page(pipe->bufs[i_head & p_mask].page);
-		unsigned long rem;
-		rem = copy_mc_to_kernel(p + off, addr + xfer, chunk);
-		chunk -= rem;
-		kunmap_local(p);
-		i->head = i_head;
-		i->iov_offset = off + chunk;
-		xfer += chunk;
-		if (rem)
-			break;
-		n -= chunk;
-		off = 0;
-		i_head++;
-	}
-	i->count -= xfer;
-	return xfer;
-}
-
-/**
- * _copy_mc_to_iter - copy to iter with source memory error exception handling
- * @addr: source kernel address
- * @bytes: total transfer length
- * @i: destination iterator
- *
- * The pmem driver deploys this for the dax operation
- * (dax_copy_to_iter()) for dax reads (bypass page-cache and the
- * block-layer). Upon #MC read(2) aborts and returns EIO or the bytes
- * successfully copied.
- *
- * The main differences between this and typical _copy_to_iter().
- *
- * * Typical tail/residue handling after a fault retries the copy
- *   byte-by-byte until the fault happens again. Re-triggering machine
- *   checks is potentially fatal so the implementation uses source
- *   alignment and poison alignment assumptions to avoid re-triggering
- *   hardware exceptions.
- *
- * * ITER_KVEC, ITER_PIPE, and ITER_BVEC can return short copies.
- *   Compare to copy_to_iter() where only ITER_IOVEC attempts might return
- *   a short copy.
- *
- * Return: number of bytes copied (may be %0)
- */
-size_t _copy_mc_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
-{
-	if (unlikely(iov_iter_is_pipe(i)))
-		return copy_mc_pipe_to_iter(addr, bytes, i);
-	if (iter_is_iovec(i))
-		might_fault();
-	__iterate_and_advance(i, bytes, base, len, off,
-		copyout_mc(base, addr + off, len),
-		copy_mc_to_kernel(base, addr + off, len)
-	)
-
-	return bytes;
-}
-EXPORT_SYMBOL_GPL(_copy_mc_to_iter);
-#endif /* CONFIG_ARCH_HAS_COPY_MC */
 
 size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i)
 {
@@ -788,38 +706,6 @@ size_t _copy_from_iter_nocache(void *addr, size_t bytes, struct iov_iter *i)
 }
 EXPORT_SYMBOL(_copy_from_iter_nocache);
 
-#ifdef CONFIG_ARCH_HAS_UACCESS_FLUSHCACHE
-/**
- * _copy_from_iter_flushcache - write destination through cpu cache
- * @addr: destination kernel address
- * @bytes: total transfer length
- * @i: source iterator
- *
- * The pmem driver arranges for filesystem-dax to use this facility via
- * dax_copy_from_iter() for ensuring that writes to persistent memory
- * are flushed through the CPU cache. It is differentiated from
- * _copy_from_iter_nocache() in that guarantees all data is flushed for
- * all iterator types. The _copy_from_iter_nocache() only attempts to
- * bypass the cache for the ITER_IOVEC case, and on some archs may use
- * instructions that strand dirty-data in the cache.
- *
- * Return: number of bytes copied (may be %0)
- */
-size_t _copy_from_iter_flushcache(void *addr, size_t bytes, struct iov_iter *i)
-{
-	if (unlikely(iov_iter_is_pipe(i))) {
-		WARN_ON(1);
-		return 0;
-	}
-	iterate_and_advance(i, bytes, base, len, off,
-		__copy_from_user_flushcache(addr + off, base, len),
-		memcpy_flushcache(addr + off, base, len)
-	)
-
-	return bytes;
-}
-EXPORT_SYMBOL_GPL(_copy_from_iter_flushcache);
-#endif
 
 static inline bool page_copy_sane(struct page *page, size_t offset, size_t n)
 {
@@ -1737,19 +1623,7 @@ EXPORT_SYMBOL(csum_and_copy_to_iter);
 size_t hash_and_copy_to_iter(const void *addr, size_t bytes, void *hashp,
 		struct iov_iter *i)
 {
-#ifdef CONFIG_CRYPTO_HASH
-	struct ahash_request *hash = hashp;
-	struct scatterlist sg;
-	size_t copied;
-
-	copied = copy_to_iter(addr, bytes, i);
-	sg_init_one(&sg, addr, copied);
-	ahash_request_set_crypt(hash, &sg, NULL, copied);
-	crypto_ahash_update(hash);
-	return copied;
-#else
 	return 0;
-#endif
 }
 EXPORT_SYMBOL(hash_and_copy_to_iter);
 

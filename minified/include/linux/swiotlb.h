@@ -59,78 +59,6 @@ void swiotlb_sync_single_for_cpu(struct device *dev, phys_addr_t tlb_addr,
 dma_addr_t swiotlb_map(struct device *dev, phys_addr_t phys,
 		size_t size, enum dma_data_direction dir, unsigned long attrs);
 
-#ifdef CONFIG_SWIOTLB
-extern enum swiotlb_force swiotlb_force;
-
-/**
- * struct io_tlb_mem - IO TLB Memory Pool Descriptor
- *
- * @start:	The start address of the swiotlb memory pool. Used to do a quick
- *		range check to see if the memory was in fact allocated by this
- *		API.
- * @end:	The end address of the swiotlb memory pool. Used to do a quick
- *		range check to see if the memory was in fact allocated by this
- *		API.
- * @vaddr:	The vaddr of the swiotlb memory pool. The swiotlb memory pool
- *		may be remapped in the memory encrypted case and store virtual
- *		address for bounce buffer operation.
- * @nslabs:	The number of IO TLB blocks (in groups of 64) between @start and
- *		@end. For default swiotlb, this is command line adjustable via
- *		setup_io_tlb_npages.
- * @used:	The number of used IO TLB block.
- * @list:	The free list describing the number of free entries available
- *		from each index.
- * @index:	The index to start searching in the next round.
- * @orig_addr:	The original address corresponding to a mapped entry.
- * @alloc_size:	Size of the allocated buffer.
- * @lock:	The lock to protect the above data structures in the map and
- *		unmap calls.
- * @debugfs:	The dentry to debugfs.
- * @late_alloc:	%true if allocated using the page allocator
- * @force_bounce: %true if swiotlb bouncing is forced
- * @for_alloc:  %true if the pool is used for memory allocation
- */
-struct io_tlb_mem {
-	phys_addr_t start;
-	phys_addr_t end;
-	void *vaddr;
-	unsigned long nslabs;
-	unsigned long used;
-	unsigned int index;
-	spinlock_t lock;
-	struct dentry *debugfs;
-	bool late_alloc;
-	bool force_bounce;
-	bool for_alloc;
-	struct io_tlb_slot {
-		phys_addr_t orig_addr;
-		size_t alloc_size;
-		unsigned int list;
-	} *slots;
-};
-extern struct io_tlb_mem io_tlb_default_mem;
-
-static inline bool is_swiotlb_buffer(struct device *dev, phys_addr_t paddr)
-{
-	struct io_tlb_mem *mem = dev->dma_io_tlb_mem;
-
-	return mem && paddr >= mem->start && paddr < mem->end;
-}
-
-static inline bool is_swiotlb_force_bounce(struct device *dev)
-{
-	struct io_tlb_mem *mem = dev->dma_io_tlb_mem;
-
-	return mem && mem->force_bounce;
-}
-
-void swiotlb_init(bool addressing_limited, unsigned int flags);
-void __init swiotlb_exit(void);
-unsigned int swiotlb_max_segment(void);
-size_t swiotlb_max_mapping_size(struct device *dev);
-bool is_swiotlb_active(struct device *dev);
-void __init swiotlb_adjust_size(unsigned long size);
-#else
 static inline void swiotlb_init(bool addressing_limited, unsigned int flags)
 {
 }
@@ -162,19 +90,9 @@ static inline bool is_swiotlb_active(struct device *dev)
 static inline void swiotlb_adjust_size(unsigned long size)
 {
 }
-#endif /* CONFIG_SWIOTLB */
 
 extern void swiotlb_print_info(void);
 
-#ifdef CONFIG_DMA_RESTRICTED_POOL
-struct page *swiotlb_alloc(struct device *dev, size_t size);
-bool swiotlb_free(struct device *dev, struct page *page, size_t size);
-
-static inline bool is_swiotlb_for_alloc(struct device *dev)
-{
-	return dev->dma_io_tlb_mem->for_alloc;
-}
-#else
 static inline struct page *swiotlb_alloc(struct device *dev, size_t size)
 {
 	return NULL;
@@ -188,7 +106,6 @@ static inline bool is_swiotlb_for_alloc(struct device *dev)
 {
 	return false;
 }
-#endif /* CONFIG_DMA_RESTRICTED_POOL */
 
 extern phys_addr_t swiotlb_unencrypted_base;
 

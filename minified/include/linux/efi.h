@@ -49,11 +49,7 @@ typedef u16 efi_char16_t;		/* UNICODE character */
 typedef u64 efi_physical_addr_t;
 typedef void *efi_handle_t;
 
-#if defined(CONFIG_X86_64)
-#define __efiapi __attribute__((ms_abi))
-#else
 #define __efiapi __attribute__((regparm(0)))
-#endif
 
 /*
  * The UEFI spec and EDK2 reference implementation both define EFI_GUID as
@@ -670,11 +666,7 @@ efi_guid_to_str(efi_guid_t *guid, char *out)
 }
 
 extern void efi_init (void);
-#ifdef CONFIG_EFI
-extern void efi_enter_virtual_mode (void);	/* switch EFI to virtual mode, if possible */
-#else
 static inline void efi_enter_virtual_mode (void) {}
-#endif
 extern efi_status_t efi_query_variable_store(u32 attributes,
 					     unsigned long size,
 					     bool nonblocking);
@@ -693,11 +685,7 @@ extern int __init efi_memmap_split_count(efi_memory_desc_t *md,
 extern void __init efi_memmap_insert(struct efi_memory_map *old_memmap,
 				     void *buf, struct efi_mem_range *mem);
 
-#ifdef CONFIG_EFI_ESRT
-extern void __init efi_esrt_init(void);
-#else
 static inline void efi_esrt_init(void) { }
-#endif
 extern int efi_config_parse_tables(const efi_config_table_t *config_tables,
 				   int count,
 				   const efi_config_table_type_t *arch_tables);
@@ -722,11 +710,7 @@ extern struct kobject *efi_kobj;
 extern int efi_reboot_quirk_mode;
 extern bool efi_poweroff_required(void);
 
-#ifdef CONFIG_EFI_FAKE_MEMMAP
-extern void __init efi_fake_memmap(void);
-#else
 static inline void efi_fake_memmap(void) { }
-#endif
 
 extern unsigned long efi_mem_attr_table;
 
@@ -817,9 +801,6 @@ static inline int efi_range_is_wc(unsigned long start, unsigned long len)
 	return 1;
 }
 
-#ifdef CONFIG_EFI_PCDP
-extern int __init efi_setup_pcdp_console(char *);
-#endif
 
 /*
  * We play games with efi_enabled so that the compiler will, if
@@ -838,29 +819,6 @@ extern int __init efi_setup_pcdp_console(char *);
 #define EFI_MEM_NO_SOFT_RESERVE	11	/* Is the kernel configured to ignore soft reservations? */
 #define EFI_PRESERVE_BS_REGIONS	12	/* Are EFI boot-services memory segments available? */
 
-#ifdef CONFIG_EFI
-/*
- * Test whether the above EFI_* bits are enabled.
- */
-static inline bool efi_enabled(int feature)
-{
-	return test_bit(feature, &efi.flags) != 0;
-}
-extern void efi_reboot(enum reboot_mode reboot_mode, const char *__unused);
-
-bool __pure __efi_soft_reserve_enabled(void);
-
-static inline bool __pure efi_soft_reserve_enabled(void)
-{
-	return IS_ENABLED(CONFIG_EFI_SOFT_RESERVE)
-		&& __efi_soft_reserve_enabled();
-}
-
-static inline bool efi_rt_services_supported(unsigned int mask)
-{
-	return (efi.runtime_supported_mask & mask) == mask;
-}
-#else
 static inline bool efi_enabled(int feature)
 {
 	return false;
@@ -877,7 +835,6 @@ static inline bool efi_rt_services_supported(unsigned int mask)
 {
 	return false;
 }
-#endif
 
 extern int efi_status_to_err(efi_status_t status);
 
@@ -1095,12 +1052,6 @@ extern int efi_capsule_update(efi_capsule_header_t *capsule,
 static inline bool efi_capsule_pending(int *reset_type) { return false; }
 #endif
 
-#ifdef CONFIG_EFI_RUNTIME_MAP
-int efi_runtime_map_init(struct kobject *);
-int efi_get_runtime_map_size(void);
-int efi_get_runtime_map_desc_size(void);
-int efi_runtime_map_copy(void *buf, size_t bufsz);
-#else
 static inline int efi_runtime_map_init(struct kobject *kobj)
 {
 	return 0;
@@ -1121,13 +1072,8 @@ static inline int efi_runtime_map_copy(void *buf, size_t bufsz)
 	return 0;
 }
 
-#endif
 
-#ifdef CONFIG_EFI
-extern bool efi_runtime_disabled(void);
-#else
 static inline bool efi_runtime_disabled(void) { return true; }
-#endif
 
 extern void efi_call_virt_check_flags(unsigned long flags, const char *call);
 extern unsigned long efi_call_virt_save_flags(void);
@@ -1161,11 +1107,7 @@ enum efi_secureboot_mode efi_get_secureboot_mode(efi_get_variable_t *get_var)
 	return efi_secureboot_mode_enabled;
 }
 
-#ifdef CONFIG_EFI_EMBEDDED_FIRMWARE
-void efi_check_for_embedded_firmwares(void);
-#else
 static inline void efi_check_for_embedded_firmwares(void) { }
-#endif
 
 efi_status_t efi_random_get_seed(void);
 
@@ -1318,12 +1260,6 @@ struct efi_mokvar_table_entry {
 	u8 data[];
 } __attribute((packed));
 
-#ifdef CONFIG_LOAD_UEFI_KEYS
-extern void __init efi_mokvar_table_init(void);
-extern struct efi_mokvar_table_entry *efi_mokvar_entry_next(
-			struct efi_mokvar_table_entry **mokvar_entry);
-extern struct efi_mokvar_table_entry *efi_mokvar_entry_find(const char *name);
-#else
 static inline void efi_mokvar_table_init(void) { }
 static inline struct efi_mokvar_table_entry *efi_mokvar_entry_next(
 			struct efi_mokvar_table_entry **mokvar_entry)
@@ -1335,7 +1271,6 @@ static inline struct efi_mokvar_table_entry *efi_mokvar_entry_find(
 {
 	return NULL;
 }
-#endif
 
 extern void efifb_setup_from_dmi(struct screen_info *si, const char *opt);
 

@@ -31,9 +31,6 @@
 #include <linux/uaccess.h>
 #include <linux/security.h>
 
-#ifdef CONFIG_IA64
-# include <linux/efi.h>
-#endif
 
 #define DEVMEM_MINOR	1
 #define DEVPORT_MINOR	4
@@ -60,26 +57,6 @@ static inline int valid_mmap_phys_addr_range(unsigned long pfn, size_t size)
 }
 #endif
 
-#ifdef CONFIG_STRICT_DEVMEM
-static inline int page_is_allowed(unsigned long pfn)
-{
-	return devmem_is_allowed(pfn);
-}
-static inline int range_is_allowed(unsigned long pfn, unsigned long size)
-{
-	u64 from = ((u64)pfn) << PAGE_SHIFT;
-	u64 to = from + size;
-	u64 cursor = from;
-
-	while (cursor < to) {
-		if (!devmem_is_allowed(pfn))
-			return 0;
-		cursor += PAGE_SIZE;
-		pfn++;
-	}
-	return 1;
-}
-#else
 static inline int page_is_allowed(unsigned long pfn)
 {
 	return 1;
@@ -88,7 +65,6 @@ static inline int range_is_allowed(unsigned long pfn, unsigned long size)
 {
 	return 1;
 }
-#endif
 
 #ifndef unxlate_dev_mem_ptr
 #define unxlate_dev_mem_ptr unxlate_dev_mem_ptr
@@ -284,13 +260,6 @@ int __weak phys_mem_access_prot_allowed(struct file *file,
 #ifdef pgprot_noncached
 static int uncached_access(struct file *file, phys_addr_t addr)
 {
-#if defined(CONFIG_IA64)
-	/*
-	 * On ia64, we ignore O_DSYNC because we cannot tolerate memory
-	 * attribute aliases.
-	 */
-	return !(efi_mem_attributes(addr) & EFI_MEMORY_WB);
-#else
 	/*
 	 * Accessing memory above the top the kernel knows about or through a
 	 * file pointer
@@ -299,7 +268,6 @@ static int uncached_access(struct file *file, phys_addr_t addr)
 	if (file->f_flags & O_DSYNC)
 		return 1;
 	return addr >= __pa(high_memory);
-#endif
 }
 #endif
 
@@ -651,9 +619,6 @@ static const struct memdev {
 	fmode_t fmode;
 } devlist[] = {
 	 [3] = { "null", 0666, &null_fops, FMODE_NOWAIT },
-#ifdef CONFIG_DEVPORT
-	 [4] = { "port", 0, &port_fops, 0 },
-#endif
 	 [5] = { "zero", 0666, &zero_fops, FMODE_NOWAIT },
 	 [7] = { "full", 0666, &full_fops, 0 },
 	 [8] = { "random", 0666, &random_fops, 0 },

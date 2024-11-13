@@ -245,59 +245,6 @@ TRACE_EVENT_RCU(rcu_exp_funnel_lock,
 		  __entry->grphi, __entry->gpevent)
 );
 
-#ifdef CONFIG_RCU_NOCB_CPU
-/*
- * Tracepoint for RCU no-CBs CPU callback handoffs.  This event is intended
- * to assist debugging of these handoffs.
- *
- * The first argument is the name of the RCU flavor, and the second is
- * the number of the offloaded CPU are extracted.  The third and final
- * argument is a string as follows:
- *
- * "AlreadyAwake": The to-be-awakened rcuo kthread is already awake.
- * "Bypass": rcuo GP kthread sees non-empty ->nocb_bypass.
- * "CBSleep": rcuo CB kthread sleeping waiting for CBs.
- * "Check": rcuo GP kthread checking specified CPU for work.
- * "DeferredWake": Timer expired or polled check, time to wake.
- * "DoWake": The to-be-awakened rcuo kthread needs to be awakened.
- * "EndSleep": Done waiting for GP for !rcu_nocb_poll.
- * "FirstBQ": New CB to empty ->nocb_bypass (->cblist maybe non-empty).
- * "FirstBQnoWake": FirstBQ plus rcuo kthread need not be awakened.
- * "FirstBQwake": FirstBQ plus rcuo kthread must be awakened.
- * "FirstQ": New CB to empty ->cblist (->nocb_bypass maybe non-empty).
- * "NeedWaitGP": rcuo GP kthread must wait on a grace period.
- * "Poll": Start of new polling cycle for rcu_nocb_poll.
- * "Sleep": Sleep waiting for GP for !rcu_nocb_poll.
- * "Timer": Deferred-wake timer expired.
- * "WakeEmptyIsDeferred": Wake rcuo kthread later, first CB to empty list.
- * "WakeEmpty": Wake rcuo kthread, first CB to empty list.
- * "WakeNot": Don't wake rcuo kthread.
- * "WakeNotPoll": Don't wake rcuo kthread because it is polling.
- * "WakeOvfIsDeferred": Wake rcuo kthread later, CB list is huge.
- * "WakeBypassIsDeferred": Wake rcuo kthread later, bypass list is contended.
- * "WokeEmpty": rcuo CB kthread woke to find empty list.
- */
-TRACE_EVENT_RCU(rcu_nocb_wake,
-
-	TP_PROTO(const char *rcuname, int cpu, const char *reason),
-
-	TP_ARGS(rcuname, cpu, reason),
-
-	TP_STRUCT__entry(
-		__field(const char *, rcuname)
-		__field(int, cpu)
-		__field(const char *, reason)
-	),
-
-	TP_fast_assign(
-		__entry->rcuname = rcuname;
-		__entry->cpu = cpu;
-		__entry->reason = reason;
-	),
-
-	TP_printk("%s %d %s", __entry->rcuname, __entry->cpu, __entry->reason)
-);
-#endif
 
 /*
  * Tracepoint for tasks blocking within preemptible-RCU read-side

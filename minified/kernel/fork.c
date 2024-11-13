@@ -141,13 +141,6 @@ DEFINE_PER_CPU(unsigned long, process_counts) = 0;
 
 __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);  /* outer */
 
-#ifdef CONFIG_PROVE_RCU
-int lockdep_tasklist_lock_is_held(void)
-{
-	return lockdep_is_held(&tasklist_lock);
-}
-EXPORT_SYMBOL_GPL(lockdep_tasklist_lock_is_held);
-#endif /* #ifdef CONFIG_PROVE_RCU */
 
 int nr_processes(void)
 {
@@ -186,163 +179,6 @@ static inline void free_task_struct(struct task_struct *tsk)
  */
 # if THREAD_SIZE >= PAGE_SIZE || defined(CONFIG_VMAP_STACK)
 
-#  ifdef CONFIG_VMAP_STACK
-/*
- * vmalloc() is a bit slow, and calling vfree() enough times will force a TLB
- * flush.  Try to minimize the number of calls by caching stacks.
- */
-#define NR_CACHED_STACKS 2
-static DEFINE_PER_CPU(struct vm_struct *, cached_stacks[NR_CACHED_STACKS]);
-
-struct vm_stack {
-	struct rcu_head rcu;
-	struct vm_struct *stack_vm_area;
-};
-
-static bool try_release_thread_stack_to_cache(struct vm_struct *vm)
-{
-	unsigned int i;
-
-	for (i = 0; i < NR_CACHED_STACKS; i++) {
-		if (this_cpu_cmpxchg(cached_stacks[i], NULL, vm) != NULL)
-			continue;
-		return true;
-	}
-	return false;
-}
-
-static void thread_stack_free_rcu(struct rcu_head *rh)
-{
-	struct vm_stack *vm_stack = container_of(rh, struct vm_stack, rcu);
-
-	if (try_release_thread_stack_to_cache(vm_stack->stack_vm_area))
-		return;
-
-	vfree(vm_stack);
-}
-
-static void thread_stack_delayed_free(struct task_struct *tsk)
-{
-	struct vm_stack *vm_stack = tsk->stack;
-
-	vm_stack->stack_vm_area = tsk->stack_vm_area;
-	call_rcu(&vm_stack->rcu, thread_stack_free_rcu);
-}
-
-static int free_vm_stack_cache(unsigned int cpu)
-{
-	struct vm_struct **cached_vm_stacks = per_cpu_ptr(cached_stacks, cpu);
-	int i;
-
-	for (i = 0; i < NR_CACHED_STACKS; i++) {
-		struct vm_struct *vm_stack = cached_vm_stacks[i];
-
-		if (!vm_stack)
-			continue;
-
-		vfree(vm_stack->addr);
-		cached_vm_stacks[i] = NULL;
-	}
-
-	return 0;
-}
-
-static int memcg_charge_kernel_stack(struct vm_struct *vm)
-{
-	int i;
-	int ret;
-
-	BUILD_BUG_ON(IS_ENABLED(CONFIG_VMAP_STACK) && PAGE_SIZE % 1024 != 0);
-	BUG_ON(vm->nr_pages != THREAD_SIZE / PAGE_SIZE);
-
-	for (i = 0; i < THREAD_SIZE / PAGE_SIZE; i++) {
-		ret = memcg_kmem_charge_page(vm->pages[i], GFP_KERNEL, 0);
-		if (ret)
-			goto err;
-	}
-	return 0;
-err:
-	/*
-	 * If memcg_kmem_charge_page() fails, page's memory cgroup pointer is
-	 * NULL, and memcg_kmem_uncharge_page() in free_thread_stack() will
-	 * ignore this page.
-	 */
-	for (i = 0; i < THREAD_SIZE / PAGE_SIZE; i++)
-		memcg_kmem_uncharge_page(vm->pages[i], 0);
-	return ret;
-}
-
-static int alloc_thread_stack_node(struct task_struct *tsk, int node)
-{
-	struct vm_struct *vm;
-	void *stack;
-	int i;
-
-	for (i = 0; i < NR_CACHED_STACKS; i++) {
-		struct vm_struct *s;
-
-		s = this_cpu_xchg(cached_stacks[i], NULL);
-
-		if (!s)
-			continue;
-
-		/* Reset stack metadata. */
-		kasan_unpoison_range(s->addr, THREAD_SIZE);
-
-		stack = kasan_reset_tag(s->addr);
-
-		/* Clear stale pointers from reused stack. */
-		memset(stack, 0, THREAD_SIZE);
-
-		if (memcg_charge_kernel_stack(s)) {
-			vfree(s->addr);
-			return -ENOMEM;
-		}
-
-		tsk->stack_vm_area = s;
-		tsk->stack = stack;
-		return 0;
-	}
-
-	/*
-	 * Allocated stacks are cached and later reused by new threads,
-	 * so memcg accounting is performed manually on assigning/releasing
-	 * stacks to tasks. Drop __GFP_ACCOUNT.
-	 */
-	stack = __vmalloc_node_range(THREAD_SIZE, THREAD_ALIGN,
-				     VMALLOC_START, VMALLOC_END,
-				     THREADINFO_GFP & ~__GFP_ACCOUNT,
-				     PAGE_KERNEL,
-				     0, node, __builtin_return_address(0));
-	if (!stack)
-		return -ENOMEM;
-
-	vm = find_vm_area(stack);
-	if (memcg_charge_kernel_stack(vm)) {
-		vfree(stack);
-		return -ENOMEM;
-	}
-	/*
-	 * We can't call find_vm_area() in interrupt context, and
-	 * free_thread_stack() can be called in interrupt context,
-	 * so cache the vm_struct.
-	 */
-	tsk->stack_vm_area = vm;
-	stack = kasan_reset_tag(stack);
-	tsk->stack = stack;
-	return 0;
-}
-
-static void free_thread_stack(struct task_struct *tsk)
-{
-	if (!try_release_thread_stack_to_cache(tsk->stack_vm_area))
-		thread_stack_delayed_free(tsk);
-
-	tsk->stack = NULL;
-	tsk->stack_vm_area = NULL;
-}
-
-#  else /* !CONFIG_VMAP_STACK */
 
 static void thread_stack_free_rcu(struct rcu_head *rh)
 {
@@ -374,7 +210,6 @@ static void free_thread_stack(struct task_struct *tsk)
 	tsk->stack = NULL;
 }
 
-#  endif /* CONFIG_VMAP_STACK */
 # else /* !(THREAD_SIZE >= PAGE_SIZE || defined(CONFIG_VMAP_STACK)) */
 
 static struct kmem_cache *thread_stack_cache;
@@ -906,10 +741,6 @@ void __init fork_init(void)
 	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_SIGPENDING, RLIM_INFINITY);
 	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_MEMLOCK,    RLIM_INFINITY);
 
-#ifdef CONFIG_VMAP_STACK
-	cpuhp_setup_state(CPUHP_BP_PREPARE_DYN, "fork:vm_stack_cache",
-			  NULL, free_vm_stack_cache);
-#endif
 
 	scs_init();
 
@@ -976,9 +807,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	refcount_set(&tsk->rcu_users, 2);
 	/* One for the rcu users */
 	refcount_set(&tsk->usage, 1);
-#ifdef CONFIG_BLK_DEV_IO_TRACE
-	tsk->btrace_seq = 0;
-#endif
 	tsk->splice_pipe = NULL;
 	tsk->task_frag.page = NULL;
 	tsk->wake_q.next = NULL;
@@ -988,18 +816,8 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	kmap_local_fork(tsk);
 
 
-#ifdef CONFIG_BLK_CGROUP
-	tsk->throttle_queue = NULL;
-	tsk->use_memdelay = 0;
-#endif
 
-#ifdef CONFIG_IOMMU_SVA
-	tsk->pasid_activated = 0;
-#endif
 
-#ifdef CONFIG_MEMCG
-	tsk->active_memcg = NULL;
-#endif
 
 	tsk->reported_split_lock = 0;
 
@@ -1036,24 +854,14 @@ static void mm_init_aio(struct mm_struct *mm)
 static __always_inline void mm_clear_owner(struct mm_struct *mm,
 					   struct task_struct *p)
 {
-#ifdef CONFIG_MEMCG
-	if (mm->owner == p)
-		WRITE_ONCE(mm->owner, NULL);
-#endif
 }
 
 static void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
 {
-#ifdef CONFIG_MEMCG
-	mm->owner = p;
-#endif
 }
 
 static void mm_init_uprobes_state(struct mm_struct *mm)
 {
-#ifdef CONFIG_UPROBES
-	mm->uprobes_state.xol_area = NULL;
-#endif
 }
 
 static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
@@ -1680,11 +1488,6 @@ SYSCALL_DEFINE1(set_tid_address, int __user *, tidptr)
 static void rt_mutex_init_task(struct task_struct *p)
 {
 	raw_spin_lock_init(&p->pi_lock);
-#ifdef CONFIG_RT_MUTEXES
-	p->pi_waiters = RB_ROOT_CACHED;
-	p->pi_top_task = NULL;
-	p->pi_blocked_on = NULL;
-#endif
 }
 
 static inline void init_task_pid_links(struct task_struct *task)
@@ -1706,22 +1509,6 @@ init_task_pid(struct task_struct *task, enum pid_type type, struct pid *pid)
 
 static inline void rcu_copy_process(struct task_struct *p)
 {
-#ifdef CONFIG_PREEMPT_RCU
-	p->rcu_read_lock_nesting = 0;
-	p->rcu_read_unlock_special.s = 0;
-	p->rcu_blocked_node = NULL;
-	INIT_LIST_HEAD(&p->rcu_node_entry);
-#endif /* #ifdef CONFIG_PREEMPT_RCU */
-#ifdef CONFIG_TASKS_RCU
-	p->rcu_tasks_holdout = false;
-	INIT_LIST_HEAD(&p->rcu_tasks_holdout_list);
-	p->rcu_tasks_idle_cpu = -1;
-#endif /* #ifdef CONFIG_TASKS_RCU */
-#ifdef CONFIG_TASKS_TRACE_RCU
-	p->trc_reader_nesting = 0;
-	p->trc_reader_special.s = 0;
-	INIT_LIST_HEAD(&p->trc_holdout_list);
-#endif /* #ifdef CONFIG_TASKS_TRACE_RCU */
 }
 
 struct pid *pidfd_pid(const struct file *file)
@@ -1965,16 +1752,8 @@ static __latent_entropy struct task_struct *copy_process(
 	init_sigpending(&p->pending);
 
 	p->utime = p->stime = p->gtime = 0;
-#ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME
-	p->utimescaled = p->stimescaled = 0;
-#endif
 	prev_cputime_init(&p->prev_cputime);
 
-#ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
-	seqcount_init(&p->vtime.seqcount);
-	p->vtime.starttime = 0;
-	p->vtime.state = VTIME_INACTIVE;
-#endif
 
 
 #if defined(SPLIT_RSS_COUNTING)
@@ -1996,37 +1775,10 @@ static __latent_entropy struct task_struct *copy_process(
 		if (!set_kthread_struct(p))
 			goto bad_fork_cleanup_delayacct;
 	}
-#ifdef CONFIG_NUMA
-	p->mempolicy = mpol_dup(p->mempolicy);
-	if (IS_ERR(p->mempolicy)) {
-		retval = PTR_ERR(p->mempolicy);
-		p->mempolicy = NULL;
-		goto bad_fork_cleanup_delayacct;
-	}
-#endif
-#ifdef CONFIG_CPUSETS
-	p->cpuset_mem_spread_rotor = NUMA_NO_NODE;
-	p->cpuset_slab_spread_rotor = NUMA_NO_NODE;
-	seqcount_spinlock_init(&p->mems_allowed_seq, &p->alloc_lock);
-#endif
-#ifdef CONFIG_TRACE_IRQFLAGS
-	memset(&p->irqtrace, 0, sizeof(p->irqtrace));
-	p->irqtrace.hardirq_disable_ip	= _THIS_IP_;
-	p->irqtrace.softirq_enable_ip	= _THIS_IP_;
-	p->softirqs_enabled		= 1;
-	p->softirq_context		= 0;
-#endif
 
 	p->pagefault_disabled = 0;
 
-#ifdef CONFIG_LOCKDEP
-	lockdep_init_task(p);
-#endif
 
-#ifdef CONFIG_BCACHE
-	p->sequential_io	= 0;
-	p->sequential_io_avg	= 0;
-#endif
 
 	/* Perform scheduler related setup. Assign this task to a CPU. */
 	retval = sched_fork(clone_flags, p);
@@ -2145,12 +1897,6 @@ static __latent_entropy struct task_struct *copy_process(
 	p->task_works = NULL;
 	clear_posix_cputimers_work(p);
 
-#ifdef CONFIG_KRETPROBES
-	p->kretprobe_instances.first = NULL;
-#endif
-#ifdef CONFIG_RETHOOK
-	p->rethooks.first = NULL;
-#endif
 
 	/*
 	 * Ensure that the cgroup subsystem policies allow the new process to be
@@ -2337,9 +2083,6 @@ bad_fork_cleanup_perf:
 	perf_event_free_task(p);
 bad_fork_cleanup_policy:
 	lockdep_free_task(p);
-#ifdef CONFIG_NUMA
-	mpol_put(p->mempolicy);
-#endif
 bad_fork_cleanup_delayacct:
 	delayacct_tsk_free(p);
 bad_fork_cleanup_count:
@@ -2675,9 +2418,7 @@ static inline bool clone3_stack_valid(struct kernel_clone_args *kargs)
 		if (!access_ok((void __user *)kargs->stack, kargs->stack_size))
 			return false;
 
-#if !defined(CONFIG_STACK_GROWSUP) && !defined(CONFIG_IA64)
 		kargs->stack += kargs->stack_size;
-#endif
 	}
 
 	return true;

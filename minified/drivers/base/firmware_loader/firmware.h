@@ -73,16 +73,6 @@ struct fw_priv {
 	size_t allocated_size;
 	size_t offset;
 	u32 opt_flags;
-#ifdef CONFIG_FW_LOADER_PAGED_BUF
-	bool is_paged_buf;
-	struct page **pages;
-	int nr_pages;
-	int page_array_size;
-#endif
-#ifdef CONFIG_FW_LOADER_USER_HELPER
-	bool need_uevent;
-	struct list_head pending_list;
-#endif
 	const char *fw_name;
 };
 
@@ -119,13 +109,6 @@ static inline void __fw_state_set(struct fw_priv *fw_priv,
 	WRITE_ONCE(fw_st->status, status);
 
 	if (status == FW_STATUS_DONE || status == FW_STATUS_ABORTED) {
-#ifdef CONFIG_FW_LOADER_USER_HELPER
-		/*
-		 * Doing this here ensures that the fw_priv is deleted from
-		 * the pending list in all abort/done paths.
-		 */
-		list_del_init(&fw_priv->pending_list);
-#endif
 		complete_all(&fw_st->completion);
 	}
 }
@@ -178,16 +161,9 @@ static inline bool firmware_request_builtin_buf(struct firmware *fw,
 	return false;
 }
 
-#ifdef CONFIG_FW_LOADER_PAGED_BUF
-void fw_free_paged_buf(struct fw_priv *fw_priv);
-int fw_grow_paged_buf(struct fw_priv *fw_priv, int pages_needed);
-int fw_map_paged_buf(struct fw_priv *fw_priv);
-bool fw_is_paged_buf(struct fw_priv *fw_priv);
-#else
 static inline void fw_free_paged_buf(struct fw_priv *fw_priv) {}
 static inline int fw_grow_paged_buf(struct fw_priv *fw_priv, int pages_needed) { return -ENXIO; }
 static inline int fw_map_paged_buf(struct fw_priv *fw_priv) { return -ENXIO; }
 static inline bool fw_is_paged_buf(struct fw_priv *fw_priv) { return false; }
-#endif
 
 #endif /* __FIRMWARE_LOADER_H */

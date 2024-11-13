@@ -68,30 +68,9 @@ enum fixed_addresses {
 	FIX_HOLE,
 	FIX_DBGP_BASE,
 	FIX_EARLYCON_MEM_BASE,
-#ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
-	FIX_OHCI1394_BASE,
-#endif
-#ifdef CONFIG_X86_LOCAL_APIC
-	FIX_APIC_BASE,	/* local (CPU) APIC) -- required for SMP or not */
-#endif
-#ifdef CONFIG_X86_IO_APIC
-	FIX_IO_APIC_BASE_0,
-	FIX_IO_APIC_BASE_END = FIX_IO_APIC_BASE_0 + MAX_IO_APICS - 1,
-#endif
 	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel mappings */
 	FIX_KMAP_END = FIX_KMAP_BEGIN + (KM_MAX_IDX * NR_CPUS) - 1,
-#ifdef CONFIG_PCI_MMCONFIG
-	FIX_PCIE_MCFG,
-#endif
-#ifdef CONFIG_PARAVIRT_XXL
-	FIX_PARAVIRT_BOOTMAP,
-#endif
 
-#ifdef CONFIG_ACPI_APEI_GHES
-	/* Used for GHES mapping from assorted contexts */
-	FIX_APEI_GHES_IRQ,
-	FIX_APEI_GHES_NMI,
-#endif
 
 	__end_of_permanent_fixed_addresses,
 
@@ -114,9 +93,6 @@ enum fixed_addresses {
 	 : __end_of_permanent_fixed_addresses,
 	FIX_BTMAP_BEGIN = FIX_BTMAP_END + TOTAL_FIX_BTMAPS - 1,
 	FIX_WP_TEST,
-#ifdef CONFIG_INTEL_TXT
-	FIX_TBOOT_BASE,
-#endif
 	__end_of_fixed_addresses
 };
 
@@ -136,13 +112,11 @@ void __native_set_fixmap(enum fixed_addresses idx, pte_t pte);
 void native_set_fixmap(unsigned /* enum fixed_addresses */ idx,
 		       phys_addr_t phys, pgprot_t flags);
 
-#ifndef CONFIG_PARAVIRT_XXL
 static inline void __set_fixmap(enum fixed_addresses idx,
 				phys_addr_t phys, pgprot_t flags)
 {
 	native_set_fixmap(idx, phys, flags);
 }
-#endif
 
 /*
  * FIXMAP_PAGE_NOCACHE is used for MMIO. Memory encryption is not

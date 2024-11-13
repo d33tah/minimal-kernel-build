@@ -109,18 +109,8 @@ static inline int efi_guidcmp (efi_guid_t left, efi_guid_t right)
 	return memcmp(&left, &right, sizeof (efi_guid_t));
 }
 
-#ifdef CONFIG_EFI
-bool __pure __efi_soft_reserve_enabled(void);
-
-static inline bool __pure efi_soft_reserve_enabled(void)
-{
-	return IS_ENABLED(CONFIG_EFI_SOFT_RESERVE)
-		&& __efi_soft_reserve_enabled();
-}
-#else
 static inline bool efi_soft_reserve_enabled(void)
 {
 	return false;
 }
-#endif /* CONFIG_EFI */
 #endif /* BOOT_COMPRESSED_EFI_H */

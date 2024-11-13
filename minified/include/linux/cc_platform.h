@@ -92,26 +92,8 @@ enum cc_attr {
 	CC_ATTR_HOTPLUG_DISABLED,
 };
 
-#ifdef CONFIG_ARCH_HAS_CC_PLATFORM
-
-/**
- * cc_platform_has() - Checks if the specified cc_attr attribute is active
- * @attr: Confidential computing attribute to check
- *
- * The cc_platform_has() function will return an indicator as to whether the
- * specified Confidential Computing attribute is currently active.
- *
- * Context: Any context
- * Return:
- * * TRUE  - Specified Confidential Computing attribute is active
- * * FALSE - Specified Confidential Computing attribute is not active
- */
-bool cc_platform_has(enum cc_attr attr);
-
-#else	/* !CONFIG_ARCH_HAS_CC_PLATFORM */
 
 static inline bool cc_platform_has(enum cc_attr attr) { return false; }
 
-#endif	/* CONFIG_ARCH_HAS_CC_PLATFORM */
 
 #endif	/* _LINUX_CC_PLATFORM_H */

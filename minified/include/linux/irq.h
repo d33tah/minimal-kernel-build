@@ -146,18 +146,9 @@ struct irq_domain;
  */
 struct irq_common_data {
 	unsigned int		__private state_use_accessors;
-#ifdef CONFIG_NUMA
-	unsigned int		node;
-#endif
 	void			*handler_data;
 	struct msi_desc		*msi_desc;
 	cpumask_var_t		affinity;
-#ifdef CONFIG_GENERIC_IRQ_EFFECTIVE_AFF_MASK
-	cpumask_var_t		effective_affinity;
-#endif
-#ifdef CONFIG_GENERIC_IRQ_IPI
-	unsigned int		ipi_offset;
-#endif
 };
 
 /**
@@ -181,9 +172,6 @@ struct irq_data {
 	struct irq_common_data	*common;
 	struct irq_chip		*chip;
 	struct irq_domain	*domain;
-#ifdef	CONFIG_IRQ_DOMAIN_HIERARCHY
-	struct irq_data		*parent_data;
-#endif
 	void			*chip_data;
 };
 
@@ -522,10 +510,6 @@ struct irq_chip {
 	void		(*irq_bus_lock)(struct irq_data *data);
 	void		(*irq_bus_sync_unlock)(struct irq_data *data);
 
-#ifdef CONFIG_DEPRECATED_IRQ_CPU_ONOFFLINE
-	void		(*irq_cpu_online)(struct irq_data *data);
-	void		(*irq_cpu_offline)(struct irq_data *data);
-#endif
 	void		(*irq_suspend)(struct irq_data *data);
 	void		(*irq_resume)(struct irq_data *data);
 	void		(*irq_pm_shutdown)(struct irq_data *data);
@@ -607,10 +591,6 @@ struct irqaction;
 extern int setup_percpu_irq(unsigned int irq, struct irqaction *new);
 extern void remove_percpu_irq(unsigned int irq, struct irqaction *act);
 
-#ifdef CONFIG_DEPRECATED_IRQ_CPU_ONOFFLINE
-extern void irq_cpu_online(void);
-extern void irq_cpu_offline(void);
-#endif
 extern int irq_set_affinity_locked(struct irq_data *data,
 				   const struct cpumask *cpumask, bool force);
 extern int irq_set_vcpu_affinity(unsigned int irq, void *vcpu_info);
@@ -646,33 +626,6 @@ extern void handle_percpu_devid_fasteoi_nmi(struct irq_desc *desc);
 extern int irq_chip_compose_msi_msg(struct irq_data *data, struct msi_msg *msg);
 extern int irq_chip_pm_get(struct irq_data *data);
 extern int irq_chip_pm_put(struct irq_data *data);
-#ifdef	CONFIG_IRQ_DOMAIN_HIERARCHY
-extern void handle_fasteoi_ack_irq(struct irq_desc *desc);
-extern void handle_fasteoi_mask_irq(struct irq_desc *desc);
-extern int irq_chip_set_parent_state(struct irq_data *data,
-				     enum irqchip_irq_state which,
-				     bool val);
-extern int irq_chip_get_parent_state(struct irq_data *data,
-				     enum irqchip_irq_state which,
-				     bool *state);
-extern void irq_chip_enable_parent(struct irq_data *data);
-extern void irq_chip_disable_parent(struct irq_data *data);
-extern void irq_chip_ack_parent(struct irq_data *data);
-extern int irq_chip_retrigger_hierarchy(struct irq_data *data);
-extern void irq_chip_mask_parent(struct irq_data *data);
-extern void irq_chip_mask_ack_parent(struct irq_data *data);
-extern void irq_chip_unmask_parent(struct irq_data *data);
-extern void irq_chip_eoi_parent(struct irq_data *data);
-extern int irq_chip_set_affinity_parent(struct irq_data *data,
-					const struct cpumask *dest,
-					bool force);
-extern int irq_chip_set_wake_parent(struct irq_data *data, unsigned int on);
-extern int irq_chip_set_vcpu_affinity_parent(struct irq_data *data,
-					     void *vcpu_info);
-extern int irq_chip_set_type_parent(struct irq_data *data, unsigned int type);
-extern int irq_chip_request_resources_parent(struct irq_data *data);
-extern void irq_chip_release_resources_parent(struct irq_data *data);
-#endif
 
 /* Handling of unhandled and spurious interrupts: */
 extern void note_interrupt(struct irq_desc *desc, irqreturn_t action_ret);
@@ -844,11 +797,7 @@ static inline u32 irq_get_trigger_type(unsigned int irq)
 
 static inline int irq_common_data_get_node(struct irq_common_data *d)
 {
-#ifdef CONFIG_NUMA
-	return d->node;
-#else
 	return 0;
-#endif
 }
 
 static inline int irq_data_get_node(struct irq_data *d)
@@ -868,18 +817,6 @@ static inline struct cpumask *irq_data_get_affinity_mask(struct irq_data *d)
 	return d->common->affinity;
 }
 
-#ifdef CONFIG_GENERIC_IRQ_EFFECTIVE_AFF_MASK
-static inline
-struct cpumask *irq_data_get_effective_affinity_mask(struct irq_data *d)
-{
-	return d->common->effective_affinity;
-}
-static inline void irq_data_update_effective_affinity(struct irq_data *d,
-						      const struct cpumask *m)
-{
-	cpumask_copy(d->common->effective_affinity, m);
-}
-#else
 static inline void irq_data_update_effective_affinity(struct irq_data *d,
 						      const struct cpumask *m)
 {
@@ -889,7 +826,6 @@ struct cpumask *irq_data_get_effective_affinity_mask(struct irq_data *d)
 {
 	return d->common->affinity;
 }
-#endif
 
 static inline struct cpumask *irq_get_effective_affinity_mask(unsigned int irq)
 {
@@ -945,9 +881,6 @@ static inline void irq_free_desc(unsigned int irq)
 	irq_free_descs(irq, 1);
 }
 
-#ifdef CONFIG_GENERIC_IRQ_LEGACY
-void irq_init_desc(unsigned int irq);
-#endif
 
 /**
  * struct irq_chip_regs - register offsets for struct irq_gci
@@ -1214,31 +1147,12 @@ int __ipi_send_mask(struct irq_desc *desc, const struct cpumask *dest);
 int ipi_send_single(unsigned int virq, unsigned int cpu);
 int ipi_send_mask(unsigned int virq, const struct cpumask *dest);
 
-#ifdef CONFIG_GENERIC_IRQ_MULTI_HANDLER
-/*
- * Registers a generic IRQ handling function as the top-level IRQ handler in
- * the system, which is generally the first C code called from an assembly
- * architecture-specific interrupt handler.
- *
- * Returns 0 on success, or -EBUSY if an IRQ handler has already been
- * registered.
- */
-int __init set_handle_irq(void (*handle_irq)(struct pt_regs *));
-
-/*
- * Allows interrupt handlers to find the irqchip that's been registered as the
- * top-level IRQ handler.
- */
-extern void (*handle_arch_irq)(struct pt_regs *) __ro_after_init;
-asmlinkage void generic_handle_arch_irq(struct pt_regs *regs);
-#else
 #ifndef set_handle_irq
 #define set_handle_irq(handle_irq)		\
 	do {					\
 		(void)handle_irq;		\
 		WARN_ON(1);			\
 	} while (0)
-#endif
 #endif
 
 #endif /* _LINUX_IRQ_H */

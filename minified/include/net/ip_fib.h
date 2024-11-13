@@ -106,9 +106,6 @@ struct fib_nh {
 	struct fib_nh_common	nh_common;
 	struct hlist_node	nh_hash;
 	struct fib_info		*nh_parent;
-#ifdef CONFIG_IP_ROUTE_CLASSID
-	__u32			nh_tclassid;
-#endif
 	__be32			nh_saddr;
 	int			nh_saddr_genid;
 #define fib_nh_family		nh_common.nhc_family
@@ -160,9 +157,6 @@ struct fib_info {
 };
 
 
-#ifdef CONFIG_IP_MULTIPLE_TABLES
-struct fib_rule;
-#endif
 
 struct fib_table;
 struct fib_result {
@@ -193,11 +187,7 @@ struct fib_result_nl {
 	int             err;
 };
 
-#ifdef CONFIG_IP_MULTIPLE_TABLES
-#define FIB_TABLE_HASHSZ 256
-#else
 #define FIB_TABLE_HASHSZ 2
-#endif
 
 __be32 fib_info_update_nhc_saddr(struct net *net, struct fib_nh_common *nhc,
 				 unsigned char scope);
@@ -282,7 +272,6 @@ struct fib_table *fib_trie_unmerge(struct fib_table *main_tb);
 void fib_table_flush_external(struct fib_table *table);
 void fib_free_table(struct fib_table *tb);
 
-#ifndef CONFIG_IP_MULTIPLE_TABLES
 
 #define TABLE_LOCAL_INDEX	(RT_TABLE_LOCAL & (FIB_TABLE_HASHSZ - 1))
 #define TABLE_MAIN_INDEX	(RT_TABLE_MAIN  & (FIB_TABLE_HASHSZ - 1))
@@ -354,79 +343,6 @@ static inline bool fib4_rules_early_flow_dissect(struct net *net,
 {
 	return false;
 }
-#else /* CONFIG_IP_MULTIPLE_TABLES */
-int __net_init fib4_rules_init(struct net *net);
-void __net_exit fib4_rules_exit(struct net *net);
-
-struct fib_table *fib_new_table(struct net *net, u32 id);
-struct fib_table *fib_get_table(struct net *net, u32 id);
-
-int __fib_lookup(struct net *net, struct flowi4 *flp,
-		 struct fib_result *res, unsigned int flags);
-
-static inline int fib_lookup(struct net *net, struct flowi4 *flp,
-			     struct fib_result *res, unsigned int flags)
-{
-	struct fib_table *tb;
-	int err = -ENETUNREACH;
-
-	flags |= FIB_LOOKUP_NOREF;
-	if (net->ipv4.fib_has_custom_rules)
-		return __fib_lookup(net, flp, res, flags);
-
-	rcu_read_lock();
-
-	res->tclassid = 0;
-
-	tb = rcu_dereference_rtnl(net->ipv4.fib_main);
-	if (tb)
-		err = fib_table_lookup(tb, flp, res, flags);
-
-	if (!err)
-		goto out;
-
-	tb = rcu_dereference_rtnl(net->ipv4.fib_default);
-	if (tb)
-		err = fib_table_lookup(tb, flp, res, flags);
-
-out:
-	if (err == -EAGAIN)
-		err = -ENETUNREACH;
-
-	rcu_read_unlock();
-
-	return err;
-}
-
-static inline bool fib4_has_custom_rules(const struct net *net)
-{
-	return net->ipv4.fib_has_custom_rules;
-}
-
-bool fib4_rule_default(const struct fib_rule *rule);
-int fib4_rules_dump(struct net *net, struct notifier_block *nb,
-		    struct netlink_ext_ack *extack);
-unsigned int fib4_rules_seq_read(struct net *net);
-
-static inline bool fib4_rules_early_flow_dissect(struct net *net,
-						 struct sk_buff *skb,
-						 struct flowi4 *fl4,
-						 struct flow_keys *flkeys)
-{
-	unsigned int flag = FLOW_DISSECTOR_F_STOP_AT_ENCAP;
-
-	if (!net->ipv4.fib_rules_require_fldissect)
-		return false;
-
-	skb_flow_dissect_flow_keys(skb, flkeys, flag);
-	fl4->fl4_sport = flkeys->ports.src;
-	fl4->fl4_dport = flkeys->ports.dst;
-	fl4->flowi4_proto = flkeys->basic.ip_proto;
-
-	return true;
-}
-
-#endif /* CONFIG_IP_MULTIPLE_TABLES */
 
 /* Exported by fib_frontend.c */
 extern const struct nla_policy rtm_ipv4_policy[];
@@ -438,17 +354,10 @@ bool fib_info_nh_uses_dev(struct fib_info *fi, const struct net_device *dev);
 int fib_validate_source(struct sk_buff *skb, __be32 src, __be32 dst,
 			u8 tos, int oif, struct net_device *dev,
 			struct in_device *idev, u32 *itag);
-#ifdef CONFIG_IP_ROUTE_CLASSID
-static inline int fib_num_tclassid_users(struct net *net)
-{
-	return atomic_read(&net->ipv4.fib_num_tclassid_users);
-}
-#else
 static inline int fib_num_tclassid_users(struct net *net)
 {
 	return 0;
 }
-#endif
 int fib_unmerge(struct net *net);
 
 static inline bool nhc_l3mdev_matches_dev(const struct fib_nh_common *nhc,
@@ -512,10 +421,6 @@ void fib_nhc_update_mtu(struct fib_nh_common *nhc, u32 new, u32 orig);
 	 FIB_MULTIPATH_HASH_FIELD_DST_IP |		\
 	 FIB_MULTIPATH_HASH_FIELD_IP_PROTO)
 
-#ifdef CONFIG_IP_ROUTE_MULTIPATH
-int fib_multipath_hash(const struct net *net, const struct flowi4 *fl4,
-		       const struct sk_buff *skb, struct flow_keys *flkeys);
-#endif
 int fib_check_nh(struct net *net, struct fib_nh *nh, u32 table, u8 scope,
 		 struct netlink_ext_ack *extack);
 void fib_select_multipath(struct fib_result *res, int hash);
@@ -541,27 +446,6 @@ bool fib_lookup_good_nhc(const struct fib_nh_common *nhc, int fib_flags,
 
 static inline void fib_combine_itag(u32 *itag, const struct fib_result *res)
 {
-#ifdef CONFIG_IP_ROUTE_CLASSID
-	struct fib_nh_common *nhc = res->nhc;
-#ifdef CONFIG_IP_MULTIPLE_TABLES
-	u32 rtag;
-#endif
-	if (nhc->nhc_family == AF_INET) {
-		struct fib_nh *nh;
-
-		nh = container_of(nhc, struct fib_nh, nh_common);
-		*itag = nh->nh_tclassid << 16;
-	} else {
-		*itag = 0;
-	}
-
-#ifdef CONFIG_IP_MULTIPLE_TABLES
-	rtag = res->tclassid;
-	if (*itag == 0)
-		*itag = (rtag<<16);
-	*itag |= (rtag>>16);
-#endif
-#endif
 }
 
 void fib_flush(struct net *net);

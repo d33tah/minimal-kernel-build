@@ -74,9 +74,6 @@ typedef struct user_i387_struct elf_fpregset_t;
 
 #include <asm/vdso.h>
 
-#ifdef CONFIG_X86_64
-extern unsigned int vdso64_enabled;
-#endif
 extern unsigned int vdso32_enabled;
 
 /*

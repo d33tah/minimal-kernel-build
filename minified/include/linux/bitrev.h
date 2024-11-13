@@ -4,14 +4,6 @@
 
 #include <linux/types.h>
 
-#ifdef CONFIG_HAVE_ARCH_BITREVERSE
-#include <asm/bitrev.h>
-
-#define __bitrev32 __arch_bitrev32
-#define __bitrev16 __arch_bitrev16
-#define __bitrev8 __arch_bitrev8
-
-#else
 extern u8 const byte_rev_table[256];
 static inline u8 __bitrev8(u8 byte)
 {
@@ -28,7 +20,6 @@ static inline u32 __bitrev32(u32 x)
 	return (__bitrev16(x & 0xffff) << 16) | __bitrev16(x >> 16);
 }
 
-#endif /* CONFIG_HAVE_ARCH_BITREVERSE */
 
 #define __bitrev8x4(x)	(__bitrev32(swab32(x)))
 

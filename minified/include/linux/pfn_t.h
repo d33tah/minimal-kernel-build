@@ -82,14 +82,6 @@ static inline pte_t pfn_t_pte(pfn_t pfn, pgprot_t pgprot)
 }
 
 
-#ifdef CONFIG_ARCH_HAS_PTE_DEVMAP
-static inline bool pfn_t_devmap(pfn_t pfn)
-{
-	const u64 flags = PFN_DEV|PFN_MAP;
-
-	return (pfn.val & flags) == flags;
-}
-#else
 static inline bool pfn_t_devmap(pfn_t pfn)
 {
 	return false;
@@ -100,7 +92,6 @@ pmd_t pmd_mkdevmap(pmd_t pmd);
 	defined(CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD)
 pud_t pud_mkdevmap(pud_t pud);
 #endif
-#endif /* CONFIG_ARCH_HAS_PTE_DEVMAP */
 
 static inline bool pfn_t_special(pfn_t pfn)
 {

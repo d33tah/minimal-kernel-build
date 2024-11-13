@@ -32,14 +32,6 @@ posix_acl_xattr_count(size_t size)
 	return size / sizeof(struct posix_acl_xattr_entry);
 }
 
-#ifdef CONFIG_FS_POSIX_ACL
-void posix_acl_fix_xattr_from_user(struct user_namespace *mnt_userns,
-				   struct inode *inode,
-				   void *value, size_t size);
-void posix_acl_fix_xattr_to_user(struct user_namespace *mnt_userns,
-				   struct inode *inode,
-				 void *value, size_t size);
-#else
 static inline void posix_acl_fix_xattr_from_user(struct user_namespace *mnt_userns,
 						 struct inode *inode,
 						 void *value, size_t size)
@@ -50,7 +42,6 @@ static inline void posix_acl_fix_xattr_to_user(struct user_namespace *mnt_userns
 					       void *value, size_t size)
 {
 }
-#endif
 
 struct posix_acl *posix_acl_from_xattr(struct user_namespace *user_ns, 
 				       const void *value, size_t size);

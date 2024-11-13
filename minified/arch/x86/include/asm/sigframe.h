@@ -34,46 +34,12 @@ struct rt_sigframe_ia32 {
 	int sig;
 	u32 pinfo;
 	u32 puc;
-#ifdef CONFIG_IA32_EMULATION
-	compat_siginfo_t info;
-#else /* !CONFIG_IA32_EMULATION */
 	struct siginfo info;
-#endif /* CONFIG_IA32_EMULATION */
 	struct ucontext_ia32 uc;
 	char retcode[8];
 	/* fp state follows here */
 };
 
-#ifdef CONFIG_X86_64
-
-struct rt_sigframe {
-	char __user *pretcode;
-	struct ucontext uc;
-	struct siginfo info;
-	/* fp state follows here */
-};
-
-#ifdef CONFIG_X86_X32_ABI
-
-struct ucontext_x32 {
-	unsigned int	  uc_flags;
-	unsigned int 	  uc_link;
-	compat_stack_t	  uc_stack;
-	unsigned int	  uc__pad0;     /* needed for alignment */
-	struct sigcontext uc_mcontext;  /* the 64-bit sigcontext type */
-	compat_sigset_t	  uc_sigmask;	/* mask last for extensibility */
-};
-
-struct rt_sigframe_x32 {
-	u64 pretcode;
-	struct ucontext_x32 uc;
-	compat_siginfo_t info;
-	/* fp state follows here */
-};
-
-#endif /* CONFIG_X86_X32_ABI */
-
-#endif /* CONFIG_X86_64 */
 
 void __init init_sigframe_size(void);
 

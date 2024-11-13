@@ -123,18 +123,6 @@
  * architecture or none if no BCJ filter is available for the architecture.
  */
 #	define XZ_DEC_X86
-#ifdef CONFIG_PPC
-#	define XZ_DEC_POWERPC
-#endif
-#ifdef CONFIG_ARM
-#	define XZ_DEC_ARM
-#endif
-#ifdef CONFIG_IA64
-#	define XZ_DEC_IA64
-#endif
-#ifdef CONFIG_SPARC
-#	define XZ_DEC_SPARC
-#endif
 
 /*
  * This will get the basic headers so that memeq() and others

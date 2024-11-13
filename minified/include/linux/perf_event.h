@@ -754,21 +754,8 @@ struct perf_event {
 	perf_overflow_handler_t		overflow_handler;
 	void				*overflow_handler_context;
 
-#ifdef CONFIG_EVENT_TRACING
-	struct trace_event_call		*tp_event;
-	struct event_filter		*filter;
-#ifdef CONFIG_FUNCTION_TRACER
-	struct ftrace_ops               ftrace_ops;
-#endif
-#endif
 
-#ifdef CONFIG_CGROUP_PERF
-	struct perf_cgroup		*cgrp; /* cgroup event is attach to */
-#endif
 
-#ifdef CONFIG_SECURITY
-	void *security;
-#endif
 	struct list_head		sb_list;
 };
 
@@ -835,9 +822,6 @@ struct perf_event_context {
 	u64				parent_gen;
 	u64				generation;
 	int				pin_count;
-#ifdef CONFIG_CGROUP_PERF
-	int				nr_cgroups;	 /* cgroup evts */
-#endif
 	void				*task_ctx_data; /* pmu specific data */
 	struct rcu_head			rcu_head;
 };
@@ -862,10 +846,6 @@ struct perf_cpu_context {
 	ktime_t				hrtimer_interval;
 	unsigned int			hrtimer_active;
 
-#ifdef CONFIG_CGROUP_PERF
-	struct perf_cgroup		*cgrp;
-	struct list_head		cgrp_cpuctx_entry;
-#endif
 
 	struct list_head		sched_cb_entry;
 	int				sched_cb_usage;
@@ -899,38 +879,6 @@ struct bpf_perf_event_data_kern {
 	struct perf_event *event;
 };
 
-#ifdef CONFIG_CGROUP_PERF
-
-/*
- * perf_cgroup_info keeps track of time_enabled for a cgroup.
- * This is a per-cpu dynamically allocated data structure.
- */
-struct perf_cgroup_info {
-	u64				time;
-	u64				timestamp;
-	u64				timeoffset;
-	int				active;
-};
-
-struct perf_cgroup {
-	struct cgroup_subsys_state	css;
-	struct perf_cgroup_info	__percpu *info;
-};
-
-/*
- * Must ensure cgroup is pinned (css_get) before calling
- * this function. In other words, we cannot call this function
- * if there is no cgroup event for the current CPU context.
- */
-static inline struct perf_cgroup *
-perf_cgroup_from_task(struct task_struct *task, struct perf_event_context *ctx)
-{
-	return container_of(task_css_check(task, perf_event_cgrp_id,
-					   ctx ? lockdep_is_held(&ctx->lock)
-					       : true),
-			    struct perf_cgroup, css);
-}
-#endif /* CONFIG_CGROUP_PERF */
 
 
 extern void *perf_aux_output_begin(struct perf_output_handle *handle,
@@ -1225,12 +1173,6 @@ static inline void perf_event_task_sched_out(struct task_struct *prev,
 	if (__perf_sw_enabled(PERF_COUNT_SW_CONTEXT_SWITCHES))
 		__perf_sw_event_sched(PERF_COUNT_SW_CONTEXT_SWITCHES, 1, 0);
 
-#ifdef CONFIG_CGROUP_PERF
-	if (__perf_sw_enabled(PERF_COUNT_SW_CGROUP_SWITCHES) &&
-	    perf_cgroup_from_task(prev, NULL) !=
-	    perf_cgroup_from_task(next, NULL))
-		__perf_sw_event_sched(PERF_COUNT_SW_CGROUP_SWITCHES, 1, 0);
-#endif
 
 	if (static_branch_unlikely(&perf_sched_events))
 		__perf_event_task_sched_out(prev, next);
@@ -1244,32 +1186,9 @@ extern void perf_event_bpf_event(struct bpf_prog *prog,
 				 enum perf_bpf_event_type type,
 				 u16 flags);
 
-#ifdef CONFIG_GUEST_PERF_EVENTS
-extern struct perf_guest_info_callbacks __rcu *perf_guest_cbs;
-
-DECLARE_STATIC_CALL(__perf_guest_state, *perf_guest_cbs->state);
-DECLARE_STATIC_CALL(__perf_guest_get_ip, *perf_guest_cbs->get_ip);
-DECLARE_STATIC_CALL(__perf_guest_handle_intel_pt_intr, *perf_guest_cbs->handle_intel_pt_intr);
-
-static inline unsigned int perf_guest_state(void)
-{
-	return static_call(__perf_guest_state)();
-}
-static inline unsigned long perf_guest_get_ip(void)
-{
-	return static_call(__perf_guest_get_ip)();
-}
-static inline unsigned int perf_guest_handle_intel_pt_intr(void)
-{
-	return static_call(__perf_guest_handle_intel_pt_intr)();
-}
-extern void perf_register_guest_info_callbacks(struct perf_guest_info_callbacks *cbs);
-extern void perf_unregister_guest_info_callbacks(struct perf_guest_info_callbacks *cbs);
-#else
 static inline unsigned int perf_guest_state(void)		 { return 0; }
 static inline unsigned long perf_guest_get_ip(void)		 { return 0; }
 static inline unsigned int perf_guest_handle_intel_pt_intr(void) { return 0; }
-#endif /* CONFIG_GUEST_PERF_EVENTS */
 
 extern void perf_event_exec(void);
 extern void perf_event_comm(struct task_struct *tsk, bool exec);

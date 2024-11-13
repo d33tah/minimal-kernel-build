@@ -39,24 +39,6 @@ extern int of_irq_to_resource(struct device_node *dev, int index,
 
 extern void of_irq_init(const struct of_device_id *matches);
 
-#ifdef CONFIG_OF_IRQ
-extern int of_irq_parse_one(struct device_node *device, int index,
-			  struct of_phandle_args *out_irq);
-extern int of_irq_count(struct device_node *dev);
-extern int of_irq_get(struct device_node *dev, int index);
-extern int of_irq_get_byname(struct device_node *dev, const char *name);
-extern int of_irq_to_resource_table(struct device_node *dev,
-		struct resource *res, int nr_irqs);
-extern struct device_node *of_irq_find_parent(struct device_node *child);
-extern struct irq_domain *of_msi_get_domain(struct device *dev,
-					    struct device_node *np,
-					    enum irq_domain_bus_token token);
-extern struct irq_domain *of_msi_map_get_device_domain(struct device *dev,
-							u32 id,
-							u32 bus_token);
-extern void of_msi_configure(struct device *dev, struct device_node *np);
-u32 of_msi_map_id(struct device *dev, struct device_node *msi_np, u32 id_in);
-#else
 static inline int of_irq_parse_one(struct device_node *device, int index,
 				   struct of_phandle_args *out_irq)
 {
@@ -103,22 +85,11 @@ static inline u32 of_msi_map_id(struct device *dev,
 {
 	return id_in;
 }
-#endif
 
-#if defined(CONFIG_OF_IRQ) || defined(CONFIG_SPARC)
-/*
- * irq_of_parse_and_map() is used by all OF enabled platforms; but SPARC
- * implements it differently.  However, the prototype is the same for all,
- * so declare it here regardless of the CONFIG_OF_IRQ setting.
- */
-extern unsigned int irq_of_parse_and_map(struct device_node *node, int index);
-
-#else /* !CONFIG_OF && !CONFIG_SPARC */
 static inline unsigned int irq_of_parse_and_map(struct device_node *dev,
 						int index)
 {
 	return 0;
 }
-#endif /* !CONFIG_OF */
 
 #endif /* __OF_IRQ_H */

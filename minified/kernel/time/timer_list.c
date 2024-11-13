@@ -128,33 +128,6 @@ static void print_cpu(struct seq_file *m, int cpu, u64 now)
 #undef P
 #undef P_ns
 
-#ifdef CONFIG_TICK_ONESHOT
-# define P(x) \
-	SEQ_printf(m, "  .%-15s: %Lu\n", #x, \
-		   (unsigned long long)(ts->x))
-# define P_ns(x) \
-	SEQ_printf(m, "  .%-15s: %Lu nsecs\n", #x, \
-		   (unsigned long long)(ktime_to_ns(ts->x)))
-	{
-		struct tick_sched *ts = tick_get_tick_sched(cpu);
-		P(nohz_mode);
-		P_ns(last_tick);
-		P(tick_stopped);
-		P(idle_jiffies);
-		P(idle_calls);
-		P(idle_sleeps);
-		P_ns(idle_entrytime);
-		P_ns(idle_waketime);
-		P_ns(idle_exittime);
-		P_ns(idle_sleeptime);
-		P_ns(iowait_sleeptime);
-		P(last_jiffies);
-		P(next_timer);
-		P_ns(idle_expires);
-		SEQ_printf(m, "jiffies: %Lu\n",
-			   (unsigned long long)jiffies);
-	}
-#endif
 
 #undef P
 #undef P_ns
@@ -216,28 +189,11 @@ print_tickdevice(struct seq_file *m, struct tick_device *td, int cpu)
 	SEQ_printf(m, "\n");
 	SEQ_printf(m, " retries:        %lu\n", dev->retries);
 
-#ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
-	if (cpu >= 0) {
-		const struct clock_event_device *wd = tick_get_wakeup_device(cpu);
-
-		SEQ_printf(m, "Wakeup Device: %s\n", wd ? wd->name : "<NULL>");
-	}
-#endif
 	SEQ_printf(m, "\n");
 }
 
 static void timer_list_show_tickdevices_header(struct seq_file *m)
 {
-#ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
-	print_tickdevice(m, tick_get_broadcast_device(), -1);
-	SEQ_printf(m, "tick_broadcast_mask: %*pb\n",
-		   cpumask_pr_args(tick_get_broadcast_mask()));
-#ifdef CONFIG_TICK_ONESHOT
-	SEQ_printf(m, "tick_broadcast_oneshot_mask: %*pb\n",
-		   cpumask_pr_args(tick_get_broadcast_oneshot_mask()));
-#endif
-	SEQ_printf(m, "\n");
-#endif
 }
 
 static inline void timer_list_header(struct seq_file *m, u64 now)

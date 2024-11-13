@@ -110,10 +110,6 @@ struct nd_opt_hdr {
 /* ND options */
 struct ndisc_options {
 	struct nd_opt_hdr *nd_opt_array[__ND_OPT_ARRAY_MAX];
-#ifdef CONFIG_IPV6_ROUTE_INFO
-	struct nd_opt_hdr *nd_opts_ri;
-	struct nd_opt_hdr *nd_opts_ri_end;
-#endif
 	struct nd_opt_hdr *nd_useropts;
 	struct nd_opt_hdr *nd_useropts_end;
 #if IS_ENABLED(CONFIG_IEEE802154_6LOWPAN)
@@ -485,13 +481,6 @@ void igmp6_event_query(struct sk_buff *skb);
 void igmp6_event_report(struct sk_buff *skb);
 
 
-#ifdef CONFIG_SYSCTL
-int ndisc_ifinfo_sysctl_change(struct ctl_table *ctl, int write,
-			       void *buffer, size_t *lenp, loff_t *ppos);
-int ndisc_ifinfo_sysctl_strategy(struct ctl_table *ctl,
-				 void __user *oldval, size_t __user *oldlenp,
-				 void __user *newval, size_t newlen);
-#endif
 
 void inet6_ifinfo_notify(int event, struct inet6_dev *idev);
 

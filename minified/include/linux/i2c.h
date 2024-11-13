@@ -500,18 +500,12 @@ static inline struct i2c_client *i2c_verify_client(struct device *dev)
  * This is done at arch_initcall time, before declaring any i2c adapters.
  * Modules for add-on boards must use other calls.
  */
-#ifdef CONFIG_I2C_BOARDINFO
-int
-i2c_register_board_info(int busnum, struct i2c_board_info const *info,
-			unsigned n);
-#else
 static inline int
 i2c_register_board_info(int busnum, struct i2c_board_info const *info,
 			unsigned n)
 {
 	return 0;
 }
-#endif /* I2C_BOARDINFO */
 
 /**
  * struct i2c_algorithm - represent I2C transfer method

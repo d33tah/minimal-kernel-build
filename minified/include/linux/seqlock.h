@@ -116,11 +116,7 @@ static inline void __seqcount_init(seqcount_t *s, const char *name,
  * This lock-unlock technique must be implemented for all of PREEMPT_RT
  * sleeping locks.  See Documentation/locking/locktypes.rst
  */
-#if defined(CONFIG_LOCKDEP) || defined(CONFIG_PREEMPT_RT)
-#define __SEQ_LOCK(expr)	expr
-#else
 #define __SEQ_LOCK(expr)
-#endif
 
 /*
  * typedef seqcount_LOCKNAME_t - sequence counter with LOCKNAME associated

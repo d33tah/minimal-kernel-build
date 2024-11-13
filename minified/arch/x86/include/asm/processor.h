@@ -51,13 +51,8 @@ struct vm86;
  * but in the task_struct case we must also meet hardware imposed
  * alignment requirements of the FPU state:
  */
-#ifdef CONFIG_X86_VSMP
-# define ARCH_MIN_TASKALIGN		(1 << INTERNODE_CACHE_SHIFT)
-# define ARCH_MIN_MMSTRUCT_ALIGN	(1 << INTERNODE_CACHE_SHIFT)
-#else
 # define ARCH_MIN_TASKALIGN		__alignof__(union fpregs_state)
 # define ARCH_MIN_MMSTRUCT_ALIGN	0
-#endif
 
 enum tlb_infos {
 	ENTRIES,
@@ -83,13 +78,6 @@ struct cpuinfo_x86 {
 	__u8			x86_vendor;	/* CPU vendor */
 	__u8			x86_model;
 	__u8			x86_stepping;
-#ifdef CONFIG_X86_64
-	/* Number of 4K pages in DTLB/ITLB combined(in pages): */
-	int			x86_tlbsize;
-#endif
-#ifdef CONFIG_X86_VMX_FEATURE_NAMES
-	__u32			vmx_capability[NVMXINTS];
-#endif
 	__u8			x86_virt_bits;
 	__u8			x86_phys_bits;
 	/* CPUID returned core id bits: */
@@ -383,38 +371,8 @@ struct irq_stack {
 
 DECLARE_PER_CPU(unsigned long, cpu_current_top_of_stack);
 
-#ifdef CONFIG_X86_64
-struct fixed_percpu_data {
-	/*
-	 * GCC hardcodes the stack canary as %gs:40.  Since the
-	 * irq_stack is the object at %gs:0, we reserve the bottom
-	 * 48 bytes of the irq stack for the canary.
-	 *
-	 * Once we are willing to require -mstack-protector-guard-symbol=
-	 * support for x86_64 stackprotector, we can get rid of this.
-	 */
-	char		gs_base[40];
-	unsigned long	stack_canary;
-};
-
-DECLARE_PER_CPU_FIRST(struct fixed_percpu_data, fixed_percpu_data) __visible;
-DECLARE_INIT_PER_CPU(fixed_percpu_data);
-
-static inline unsigned long cpu_kernelmode_gs_base(int cpu)
-{
-	return (unsigned long)per_cpu(fixed_percpu_data.gs_base, cpu);
-}
-
-DECLARE_PER_CPU(void *, hardirq_stack_ptr);
-DECLARE_PER_CPU(bool, hardirq_stack_inuse);
-extern asmlinkage void ignore_sysret(void);
-
-/* Save actual FS/GS selectors and bases to current->thread */
-void current_save_fsgs(void);
-#else	/* X86_64 */
 DECLARE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
 DECLARE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
-#endif	/* !X86_64 */
 
 struct perf_event;
 
@@ -425,17 +383,12 @@ struct thread_struct {
 	unsigned long		sp;
 	unsigned long		sysenter_cs;
 
-#ifdef CONFIG_X86_64
-	unsigned long		fsbase;
-	unsigned long		gsbase;
-#else
 	/*
 	 * XXX: this could presumably be unsigned short.  Alternatively,
 	 * 32-bit kernels could be taught to use fsindex instead.
 	 */
 	unsigned long fs;
 	unsigned long gs;
-#endif
 
 	/* Save middle states of ptrace breakpoints */
 	struct perf_event	*ptrace_bps[HBP_NUM];
@@ -447,10 +400,6 @@ struct thread_struct {
 	unsigned long		cr2;
 	unsigned long		trap_nr;
 	unsigned long		error_code;
-#ifdef CONFIG_VM86
-	/* Virtual 86 mode info */
-	struct vm86		*vm86;
-#endif
 	/* IO permissions: */
 	struct io_bitmap	*io_bitmap;
 
@@ -497,9 +446,6 @@ native_load_sp0(unsigned long sp0)
 
 static __always_inline void native_swapgs(void)
 {
-#ifdef CONFIG_X86_64
-	asm volatile("swapgs" ::: "memory");
-#endif
 }
 
 static __always_inline unsigned long current_top_of_stack(void)
@@ -518,9 +464,6 @@ static __always_inline bool on_thread_stack(void)
 			       current_stack_pointer) < THREAD_SIZE;
 }
 
-#ifdef CONFIG_PARAVIRT_XXL
-#include <asm/paravirt.h>
-#else
 #define __cpuid			native_cpuid
 
 static inline void load_sp0(unsigned long sp0)
@@ -528,7 +471,6 @@ static inline void load_sp0(unsigned long sp0)
 	native_load_sp0(sp0);
 }
 
-#endif /* CONFIG_PARAVIRT_XXL */
 
 /* Free all resources held by a thread. */
 extern void release_thread(struct task_struct *);
@@ -750,11 +692,7 @@ void free_init_pages(const char *what, unsigned long begin, unsigned long end);
 extern void free_kernel_image_pages(const char *what, void *begin, void *end);
 
 void default_idle(void);
-#ifdef	CONFIG_XEN
-bool xen_set_default_idle(void);
-#else
 #define xen_set_default_idle 0
-#endif
 
 void __noreturn stop_this_cpu(void *dummy);
 void microcode_check(void);
@@ -776,12 +714,5 @@ enum mds_mitigations {
 	MDS_MITIGATION_VMWERV,
 };
 
-#ifdef CONFIG_X86_SGX
-int arch_memory_failure(unsigned long pfn, int flags);
-#define arch_memory_failure arch_memory_failure
-
-bool arch_is_platform_page(u64 paddr);
-#define arch_is_platform_page arch_is_platform_page
-#endif
 
 #endif /* _ASM_X86_PROCESSOR_H */

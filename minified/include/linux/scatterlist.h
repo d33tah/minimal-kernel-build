@@ -334,16 +334,6 @@ static inline int sg_alloc_table_from_pages(struct sg_table *sgt,
 						 size, UINT_MAX, gfp_mask);
 }
 
-#ifdef CONFIG_SGL_ALLOC
-struct scatterlist *sgl_alloc_order(unsigned long long length,
-				    unsigned int order, bool chainable,
-				    gfp_t gfp, unsigned int *nent_p);
-struct scatterlist *sgl_alloc(unsigned long long length, gfp_t gfp,
-			      unsigned int *nent_p);
-void sgl_free_n_order(struct scatterlist *sgl, int nents, int order);
-void sgl_free_order(struct scatterlist *sgl, int order);
-void sgl_free(struct scatterlist *sgl);
-#endif /* CONFIG_SGL_ALLOC */
 
 size_t sg_copy_buffer(struct scatterlist *sgl, unsigned int nents, void *buf,
 		      size_t buflen, off_t skip, bool to_buffer);
@@ -379,19 +369,8 @@ size_t sg_zero_buffer(struct scatterlist *sgl, unsigned int nents,
  * Like SG_CHUNK_SIZE, but for archs that have sg chaining. This limit
  * is totally arbitrary, a setting of 2048 will get you at least 8mb ios.
  */
-#ifdef CONFIG_ARCH_NO_SG_CHAIN
-#define SG_MAX_SEGMENTS	SG_CHUNK_SIZE
-#else
 #define SG_MAX_SEGMENTS	2048
-#endif
 
-#ifdef CONFIG_SG_POOL
-void sg_free_table_chained(struct sg_table *table,
-			   unsigned nents_first_chunk);
-int sg_alloc_table_chained(struct sg_table *table, int nents,
-			   struct scatterlist *first_chunk,
-			   unsigned nents_first_chunk);
-#endif
 
 /*
  * sg page iterator

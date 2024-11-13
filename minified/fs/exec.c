@@ -138,13 +138,6 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
 	int ret;
 	unsigned int gup_flags = FOLL_FORCE;
 
-#ifdef CONFIG_STACK_GROWSUP
-	if (write) {
-		ret = expand_downwards(bprm->vma, pos);
-		if (ret < 0)
-			return NULL;
-	}
-#endif
 
 	if (write)
 		gup_flags |= FOLL_WRITE;
@@ -268,14 +261,8 @@ err:
 }
 
 struct user_arg_ptr {
-#ifdef CONFIG_COMPAT
-	bool is_compat;
-#endif
 	union {
 		const char __user *const __user *native;
-#ifdef CONFIG_COMPAT
-		const compat_uptr_t __user *compat;
-#endif
 	} ptr;
 };
 
@@ -283,16 +270,6 @@ static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
 {
 	const char __user *native;
 
-#ifdef CONFIG_COMPAT
-	if (unlikely(argv.is_compat)) {
-		compat_uptr_t compat;
-
-		if (get_user(compat, argv.ptr.compat + nr))
-			return ERR_PTR(-EFAULT);
-
-		return compat_ptr(compat);
-	}
-#endif
 
 	if (get_user(native, argv.ptr.native + nr))
 		return ERR_PTR(-EFAULT);
@@ -634,25 +611,6 @@ int setup_arg_pages(struct linux_binprm *bprm,
 	unsigned long rlim_stack;
 	struct mmu_gather tlb;
 
-#ifdef CONFIG_STACK_GROWSUP
-	/* Limit stack size */
-	stack_base = bprm->rlim_stack.rlim_max;
-
-	stack_base = calc_max_stack_size(stack_base);
-
-	/* Add space for stack randomization. */
-	stack_base += (STACK_RND_MASK << PAGE_SHIFT);
-
-	/* Make sure we didn't let the argument array grow too large. */
-	if (vma->vm_end - vma->vm_start > stack_base)
-		return -ENOMEM;
-
-	stack_base = PAGE_ALIGN(stack_top - stack_base);
-
-	stack_shift = vma->vm_start - stack_base;
-	mm->arg_start = bprm->p - stack_shift;
-	bprm->p = vma->vm_end - stack_shift;
-#else
 	stack_top = arch_align_stack(stack_top);
 	stack_top = PAGE_ALIGN(stack_top);
 
@@ -664,7 +622,6 @@ int setup_arg_pages(struct linux_binprm *bprm,
 
 	bprm->p -= stack_shift;
 	mm->arg_start = bprm->p;
-#endif
 
 	if (bprm->loader)
 		bprm->loader -= stack_shift;
@@ -718,17 +675,10 @@ int setup_arg_pages(struct linux_binprm *bprm,
 	 * will align it up.
 	 */
 	rlim_stack = bprm->rlim_stack.rlim_cur & PAGE_MASK;
-#ifdef CONFIG_STACK_GROWSUP
-	if (stack_size + stack_expand > rlim_stack)
-		stack_base = vma->vm_start + rlim_stack;
-	else
-		stack_base = vma->vm_end + stack_expand;
-#else
 	if (stack_size + stack_expand > rlim_stack)
 		stack_base = vma->vm_end - rlim_stack;
 	else
 		stack_base = vma->vm_start - stack_expand;
-#endif
 	current->mm->start_stack = bprm->p;
 	ret = expand_stack(vma, stack_base);
 	if (ret)
@@ -1864,38 +1814,6 @@ static int do_execveat(int fd, struct filename *filename,
 	return do_execveat_common(fd, filename, argv, envp, flags);
 }
 
-#ifdef CONFIG_COMPAT
-static int compat_do_execve(struct filename *filename,
-	const compat_uptr_t __user *__argv,
-	const compat_uptr_t __user *__envp)
-{
-	struct user_arg_ptr argv = {
-		.is_compat = true,
-		.ptr.compat = __argv,
-	};
-	struct user_arg_ptr envp = {
-		.is_compat = true,
-		.ptr.compat = __envp,
-	};
-	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
-}
-
-static int compat_do_execveat(int fd, struct filename *filename,
-			      const compat_uptr_t __user *__argv,
-			      const compat_uptr_t __user *__envp,
-			      int flags)
-{
-	struct user_arg_ptr argv = {
-		.is_compat = true,
-		.ptr.compat = __argv,
-	};
-	struct user_arg_ptr envp = {
-		.is_compat = true,
-		.ptr.compat = __envp,
-	};
-	return do_execveat_common(fd, filename, argv, envp, flags);
-}
-#endif
 
 void set_binfmt(struct linux_binfmt *new)
 {
@@ -1940,56 +1858,4 @@ SYSCALL_DEFINE5(execveat,
 			   argv, envp, flags);
 }
 
-#ifdef CONFIG_COMPAT
-COMPAT_SYSCALL_DEFINE3(execve, const char __user *, filename,
-	const compat_uptr_t __user *, argv,
-	const compat_uptr_t __user *, envp)
-{
-	return compat_do_execve(getname(filename), argv, envp);
-}
 
-COMPAT_SYSCALL_DEFINE5(execveat, int, fd,
-		       const char __user *, filename,
-		       const compat_uptr_t __user *, argv,
-		       const compat_uptr_t __user *, envp,
-		       int,  flags)
-{
-	return compat_do_execveat(fd,
-				  getname_uflags(filename, flags),
-				  argv, envp, flags);
-}
-#endif
-
-#ifdef CONFIG_SYSCTL
-
-static int proc_dointvec_minmax_coredump(struct ctl_table *table, int write,
-		void *buffer, size_t *lenp, loff_t *ppos)
-{
-	int error = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
-
-	if (!error)
-		validate_coredump_safety();
-	return error;
-}
-
-static struct ctl_table fs_exec_sysctls[] = {
-	{
-		.procname	= "suid_dumpable",
-		.data		= &suid_dumpable,
-		.maxlen		= sizeof(int),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec_minmax_coredump,
-		.extra1		= SYSCTL_ZERO,
-		.extra2		= SYSCTL_TWO,
-	},
-	{ }
-};
-
-static int __init init_fs_exec_sysctls(void)
-{
-	register_sysctl_init("fs", fs_exec_sysctls);
-	return 0;
-}
-
-fs_initcall(init_fs_exec_sysctls);
-#endif /* CONFIG_SYSCTL */

@@ -319,11 +319,7 @@ struct ucred {
 #define MSG_CMSG_CLOEXEC 0x40000000	/* Set close_on_exec for file
 					   descriptor received through
 					   SCM_RIGHTS */
-#if defined(CONFIG_COMPAT)
-#define MSG_CMSG_COMPAT	0x80000000	/* This message needs 32 bit fixups */
-#else
 #define MSG_CMSG_COMPAT	0		/* We never have 32 bit fixups */
-#endif
 
 
 /* Setsockoptions(2) level. Thanks to BSD these must match IPPROTO_xxx */

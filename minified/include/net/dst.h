@@ -27,11 +27,7 @@ struct dst_entry {
 	struct  dst_ops	        *ops;
 	unsigned long		_metrics;
 	unsigned long           expires;
-#ifdef CONFIG_XFRM
-	struct xfrm_state	*xfrm;
-#else
 	void			*__pad1;
-#endif
 	int			(*input)(struct sk_buff *);
 	int			(*output)(struct net *net, struct sock *sk, struct sk_buff *skb);
 
@@ -365,13 +361,6 @@ static inline void skb_tunnel_rx(struct sk_buff *skb, struct net_device *dev,
 
 static inline u32 dst_tclassid(const struct sk_buff *skb)
 {
-#ifdef CONFIG_IP_ROUTE_CLASSID
-	const struct dst_entry *dst;
-
-	dst = skb_dst(skb);
-	if (dst)
-		return dst->tclassid;
-#endif
 	return 0;
 }
 
@@ -477,7 +466,6 @@ enum {
 };
 
 struct flowi;
-#ifndef CONFIG_XFRM
 static inline struct dst_entry *xfrm_lookup(struct net *net,
 					    struct dst_entry *dst_orig,
 					    const struct flowi *fl,
@@ -509,27 +497,6 @@ static inline struct xfrm_state *dst_xfrm(const struct dst_entry *dst)
 	return NULL;
 }
 
-#else
-struct dst_entry *xfrm_lookup(struct net *net, struct dst_entry *dst_orig,
-			      const struct flowi *fl, const struct sock *sk,
-			      int flags);
-
-struct dst_entry *xfrm_lookup_with_ifid(struct net *net,
-					struct dst_entry *dst_orig,
-					const struct flowi *fl,
-					const struct sock *sk, int flags,
-					u32 if_id);
-
-struct dst_entry *xfrm_lookup_route(struct net *net, struct dst_entry *dst_orig,
-				    const struct flowi *fl, const struct sock *sk,
-				    int flags);
-
-/* skb attached with this dst needs transformation if dst->xfrm is valid */
-static inline struct xfrm_state *dst_xfrm(const struct dst_entry *dst)
-{
-	return dst->xfrm;
-}
-#endif
 
 static inline void skb_dst_update_pmtu(struct sk_buff *skb, u32 mtu)
 {

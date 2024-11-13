@@ -21,9 +21,6 @@
 #include <asm/tdx.h>
 #include "../kvm/vmx/vmx.h"
 
-#ifdef CONFIG_XEN
-#include <xen/interface/xen.h>
-#endif
 
 # include "asm-offsets_32.c"
 
@@ -51,12 +48,6 @@ static void __used common(void)
 	BLANK();
 	OFFSET(IA32_RT_SIGFRAME_sigcontext, rt_sigframe_ia32, uc.uc_mcontext);
 
-#ifdef CONFIG_XEN
-	BLANK();
-	OFFSET(XEN_vcpu_info_mask, vcpu_info, evtchn_upcall_mask);
-	OFFSET(XEN_vcpu_info_pending, vcpu_info, evtchn_upcall_pending);
-	OFFSET(XEN_vcpu_info_arch_cr2, vcpu_info, arch.cr2);
-#endif
 
 	BLANK();
 	OFFSET(TDX_MODULE_rcx, tdx_module_output, rcx);

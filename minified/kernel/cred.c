@@ -145,10 +145,6 @@ void exit_creds(struct task_struct *tsk)
 	alter_cred_subscribers(cred, -1);
 	put_cred(cred);
 
-#ifdef CONFIG_KEYS_REQUEST_CACHE
-	key_put(tsk->cached_requested_key);
-	tsk->cached_requested_key = NULL;
-#endif
 }
 
 /**
@@ -239,9 +235,6 @@ struct cred *prepare_creds(void)
 	get_user_ns(new->user_ns);
 
 
-#ifdef CONFIG_SECURITY
-	new->security = NULL;
-#endif
 
 	new->ucounts = get_ucounts(new->ucounts);
 	if (!new->ucounts)
@@ -292,9 +285,6 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 	struct cred *new;
 	int ret;
 
-#ifdef CONFIG_KEYS_REQUEST_CACHE
-	p->cached_requested_key = NULL;
-#endif
 
 	if (
 		clone_flags & CLONE_THREAD
@@ -657,9 +647,6 @@ struct cred *prepare_kernel_cred(struct task_struct *daemon)
 	get_group_info(new->group_info);
 
 
-#ifdef CONFIG_SECURITY
-	new->security = NULL;
-#endif
 	new->ucounts = get_ucounts(new->ucounts);
 	if (!new->ucounts)
 		goto error;

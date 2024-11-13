@@ -190,14 +190,9 @@ extern void mce_unregister_decode_chain(struct notifier_block *nb);
 
 extern int mce_p5_enabled;
 
-#ifdef CONFIG_ARCH_HAS_COPY_MC
-extern void enable_copy_mc_fragile(void);
-unsigned long __must_check copy_mc_fragile(void *dst, const void *src, unsigned cnt);
-#else
 static inline void enable_copy_mc_fragile(void)
 {
 }
-#endif
 
 struct cper_ia_proc_ctx;
 
@@ -214,21 +209,12 @@ DECLARE_PER_CPU(struct device *, mce_device);
 /* Maximum number of MCA banks per CPU. */
 #define MAX_NR_BANKS 64
 
-#ifdef CONFIG_X86_MCE_INTEL
-void mce_intel_feature_init(struct cpuinfo_x86 *c);
-void mce_intel_feature_clear(struct cpuinfo_x86 *c);
-void cmci_clear(void);
-void cmci_reenable(void);
-void cmci_rediscover(void);
-void cmci_recheck(void);
-#else
 static inline void mce_intel_feature_init(struct cpuinfo_x86 *c) { }
 static inline void mce_intel_feature_clear(struct cpuinfo_x86 *c) { }
 static inline void cmci_clear(void) {}
 static inline void cmci_reenable(void) {}
 static inline void cmci_rediscover(void) {}
 static inline void cmci_recheck(void) {}
-#endif
 
 int mce_available(struct cpuinfo_x86 *c);
 bool mce_is_memory_error(struct mce *m);
@@ -281,61 +267,11 @@ extern void apei_mce_report_mem_error(int corrected,
  * Enumerate new IP types and HWID values in AMD processors which support
  * Scalable MCA.
  */
-#ifdef CONFIG_X86_MCE_AMD
-
-/* These may be used by multiple smca_hwid_mcatypes */
-enum smca_bank_types {
-	SMCA_LS = 0,	/* Load Store */
-	SMCA_LS_V2,
-	SMCA_IF,	/* Instruction Fetch */
-	SMCA_L2_CACHE,	/* L2 Cache */
-	SMCA_DE,	/* Decoder Unit */
-	SMCA_RESERVED,	/* Reserved */
-	SMCA_EX,	/* Execution Unit */
-	SMCA_FP,	/* Floating Point */
-	SMCA_L3_CACHE,	/* L3 Cache */
-	SMCA_CS,	/* Coherent Slave */
-	SMCA_CS_V2,
-	SMCA_PIE,	/* Power, Interrupts, etc. */
-	SMCA_UMC,	/* Unified Memory Controller */
-	SMCA_UMC_V2,
-	SMCA_PB,	/* Parameter Block */
-	SMCA_PSP,	/* Platform Security Processor */
-	SMCA_PSP_V2,
-	SMCA_SMU,	/* System Management Unit */
-	SMCA_SMU_V2,
-	SMCA_MP5,	/* Microprocessor 5 Unit */
-	SMCA_MPDMA,	/* MPDMA Unit */
-	SMCA_NBIO,	/* Northbridge IO Unit */
-	SMCA_PCIE,	/* PCI Express Unit */
-	SMCA_PCIE_V2,
-	SMCA_XGMI_PCS,	/* xGMI PCS Unit */
-	SMCA_NBIF,	/* NBIF Unit */
-	SMCA_SHUB,	/* System HUB Unit */
-	SMCA_SATA,	/* SATA Unit */
-	SMCA_USB,	/* USB Unit */
-	SMCA_GMI_PCS,	/* GMI PCS Unit */
-	SMCA_XGMI_PHY,	/* xGMI PHY Unit */
-	SMCA_WAFL_PHY,	/* WAFL PHY Unit */
-	SMCA_GMI_PHY,	/* GMI PHY Unit */
-	N_SMCA_BANK_TYPES
-};
-
-extern const char *smca_get_long_name(enum smca_bank_types t);
-extern bool amd_mce_is_memory_error(struct mce *m);
-
-extern int mce_threshold_create_device(unsigned int cpu);
-extern int mce_threshold_remove_device(unsigned int cpu);
-
-void mce_amd_feature_init(struct cpuinfo_x86 *c);
-enum smca_bank_types smca_get_bank_type(unsigned int cpu, unsigned int bank);
-#else
 
 static inline int mce_threshold_create_device(unsigned int cpu)		{ return 0; };
 static inline int mce_threshold_remove_device(unsigned int cpu)		{ return 0; };
 static inline bool amd_mce_is_memory_error(struct mce *m)		{ return false; };
 static inline void mce_amd_feature_init(struct cpuinfo_x86 *c)		{ }
-#endif
 
 static inline void mce_hygon_feature_init(struct cpuinfo_x86 *c)	{ return mce_amd_feature_init(c); }
 #endif /* _ASM_X86_MCE_H */

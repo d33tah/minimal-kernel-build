@@ -118,25 +118,12 @@ static inline int inet_request_bound_dev_if(const struct sock *sk,
 					    struct sk_buff *skb)
 {
 	int bound_dev_if = READ_ONCE(sk->sk_bound_dev_if);
-#ifdef CONFIG_NET_L3_MASTER_DEV
-	struct net *net = sock_net(sk);
-
-	if (!bound_dev_if && READ_ONCE(net->ipv4.sysctl_tcp_l3mdev_accept))
-		return l3mdev_master_ifindex_by_index(net, skb->skb_iif);
-#endif
 
 	return bound_dev_if;
 }
 
 static inline int inet_sk_bound_l3mdev(const struct sock *sk)
 {
-#ifdef CONFIG_NET_L3_MASTER_DEV
-	struct net *net = sock_net(sk);
-
-	if (!READ_ONCE(net->ipv4.sysctl_tcp_l3mdev_accept))
-		return l3mdev_master_ifindex_by_index(net,
-						      sk->sk_bound_dev_if);
-#endif
 
 	return 0;
 }
@@ -268,20 +255,12 @@ static inline bool sk_is_inet(struct sock *sk)
  */
 static inline struct sock *sk_to_full_sk(struct sock *sk)
 {
-#ifdef CONFIG_INET
-	if (sk && sk->sk_state == TCP_NEW_SYN_RECV)
-		sk = inet_reqsk(sk)->rsk_listener;
-#endif
 	return sk;
 }
 
 /* sk_to_full_sk() variant with a const argument */
 static inline const struct sock *sk_const_to_full_sk(const struct sock *sk)
 {
-#ifdef CONFIG_INET
-	if (sk && sk->sk_state == TCP_NEW_SYN_RECV)
-		sk = ((const struct request_sock *)sk)->rsk_listener;
-#endif
 	return sk;
 }
 

@@ -46,31 +46,9 @@
 #include "internal.h"
 #include "pgalloc-track.h"
 
-#ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
-static unsigned int __ro_after_init ioremap_max_page_shift = BITS_PER_LONG - 1;
-
-static int __init set_nohugeiomap(char *str)
-{
-	ioremap_max_page_shift = PAGE_SHIFT;
-	return 0;
-}
-early_param("nohugeiomap", set_nohugeiomap);
-#else /* CONFIG_HAVE_ARCH_HUGE_VMAP */
 static const unsigned int ioremap_max_page_shift = PAGE_SHIFT;
-#endif	/* CONFIG_HAVE_ARCH_HUGE_VMAP */
 
-#ifdef CONFIG_HAVE_ARCH_HUGE_VMALLOC
-static bool __ro_after_init vmap_allow_huge = true;
-
-static int __init set_nohugevmalloc(char *str)
-{
-	vmap_allow_huge = false;
-	return 0;
-}
-early_param("nohugevmalloc", set_nohugevmalloc);
-#else /* CONFIG_HAVE_ARCH_HUGE_VMALLOC */
 static const bool vmap_allow_huge = false;
-#endif	/* CONFIG_HAVE_ARCH_HUGE_VMALLOC */
 
 bool is_vmalloc_addr(const void *x)
 {
@@ -113,17 +91,6 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 	do {
 		BUG_ON(!pte_none(*pte));
 
-#ifdef CONFIG_HUGETLB_PAGE
-		size = arch_vmap_pte_range_map_size(addr, end, pfn, max_page_shift);
-		if (size != PAGE_SIZE) {
-			pte_t entry = pfn_pte(pfn, prot);
-
-			entry = arch_make_huge_pte(entry, ilog2(size), 0);
-			set_huge_pte_at(&init_mm, addr, pte, entry);
-			pfn += PFN_DOWN(size);
-			continue;
-		}
-#endif
 		set_pte_at(&init_mm, addr, pte, pfn_pte(pfn, prot));
 		pfn++;
 	} while (pte += PFN_DOWN(size), addr += size, addr != end);
@@ -2234,20 +2201,12 @@ static struct vm_struct *vmlist __initdata;
 
 static inline unsigned int vm_area_page_order(struct vm_struct *vm)
 {
-#ifdef CONFIG_HAVE_ARCH_HUGE_VMALLOC
-	return vm->page_order;
-#else
 	return 0;
-#endif
 }
 
 static inline void set_vm_area_page_order(struct vm_struct *vm, unsigned int order)
 {
-#ifdef CONFIG_HAVE_ARCH_HUGE_VMALLOC
-	vm->page_order = order;
-#else
 	BUG_ON(order != 0);
-#endif
 }
 
 /**
@@ -2812,50 +2771,6 @@ void *vmap(struct page **pages, unsigned int count,
 }
 EXPORT_SYMBOL(vmap);
 
-#ifdef CONFIG_VMAP_PFN
-struct vmap_pfn_data {
-	unsigned long	*pfns;
-	pgprot_t	prot;
-	unsigned int	idx;
-};
-
-static int vmap_pfn_apply(pte_t *pte, unsigned long addr, void *private)
-{
-	struct vmap_pfn_data *data = private;
-
-	if (WARN_ON_ONCE(pfn_valid(data->pfns[data->idx])))
-		return -EINVAL;
-	*pte = pte_mkspecial(pfn_pte(data->pfns[data->idx++], data->prot));
-	return 0;
-}
-
-/**
- * vmap_pfn - map an array of PFNs into virtually contiguous space
- * @pfns: array of PFNs
- * @count: number of pages to map
- * @prot: page protection for the mapping
- *
- * Maps @count PFNs from @pfns into contiguous kernel virtual space and returns
- * the start address of the mapping.
- */
-void *vmap_pfn(unsigned long *pfns, unsigned int count, pgprot_t prot)
-{
-	struct vmap_pfn_data data = { .pfns = pfns, .prot = pgprot_nx(prot) };
-	struct vm_struct *area;
-
-	area = get_vm_area_caller(count * PAGE_SIZE, VM_IOREMAP,
-			__builtin_return_address(0));
-	if (!area)
-		return NULL;
-	if (apply_to_page_range(&init_mm, (unsigned long)area->addr,
-			count * PAGE_SIZE, vmap_pfn_apply, &data)) {
-		free_vm_area(area);
-		return NULL;
-	}
-	return area->addr;
-}
-EXPORT_SYMBOL_GPL(vmap_pfn);
-#endif /* CONFIG_VMAP_PFN */
 
 static inline unsigned int
 vm_area_alloc_pages(gfp_t gfp, int nid,
@@ -3230,9 +3145,6 @@ void *__vmalloc_node(unsigned long size, unsigned long align,
  * It is required by vmalloc test module, therefore do not use it other
  * than that.
  */
-#ifdef CONFIG_TEST_VMALLOC_MODULE
-EXPORT_SYMBOL_GPL(__vmalloc_node);
-#endif
 
 void *__vmalloc(unsigned long size, gfp_t gfp_mask)
 {

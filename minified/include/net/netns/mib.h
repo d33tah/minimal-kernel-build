@@ -18,14 +18,8 @@ struct netns_mib {
 	DEFINE_SNMP_STAT(struct udp_mib, udp_stats_in6);
 #endif
 
-#ifdef CONFIG_XFRM_STATISTICS
-	DEFINE_SNMP_STAT(struct linux_xfrm_mib, xfrm_statistics);
-#endif
 #if IS_ENABLED(CONFIG_TLS)
 	DEFINE_SNMP_STAT(struct linux_tls_mib, tls_statistics);
-#endif
-#ifdef CONFIG_MPTCP
-	DEFINE_SNMP_STAT(struct mptcp_mib, mptcp_statistics);
 #endif
 
 	DEFINE_SNMP_STAT(struct udp_mib, udplite_statistics);

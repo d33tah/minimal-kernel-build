@@ -73,56 +73,10 @@ static inline bool is_memcg_oom(struct oom_control *oc)
 	return oc->memcg != NULL;
 }
 
-#ifdef CONFIG_NUMA
-/**
- * oom_cpuset_eligible() - check task eligibility for kill
- * @start: task struct of which task to consider
- * @oc: pointer to struct oom_control
- *
- * Task eligibility is determined by whether or not a candidate task, @tsk,
- * shares the same mempolicy nodes as current if it is bound by such a policy
- * and whether or not it has the same set of allowed cpuset nodes.
- *
- * This function is assuming oom-killer context and 'current' has triggered
- * the oom-killer.
- */
-static bool oom_cpuset_eligible(struct task_struct *start,
-				struct oom_control *oc)
-{
-	struct task_struct *tsk;
-	bool ret = false;
-	const nodemask_t *mask = oc->nodemask;
-
-	rcu_read_lock();
-	for_each_thread(start, tsk) {
-		if (mask) {
-			/*
-			 * If this is a mempolicy constrained oom, tsk's
-			 * cpuset is irrelevant.  Only return true if its
-			 * mempolicy intersects current, otherwise it may be
-			 * needlessly killed.
-			 */
-			ret = mempolicy_in_oom_domain(tsk, mask);
-		} else {
-			/*
-			 * This is not a mempolicy constrained oom, so only
-			 * check the mems of tsk's cpuset.
-			 */
-			ret = cpuset_mems_allowed_intersects(current, tsk);
-		}
-		if (ret)
-			break;
-	}
-	rcu_read_unlock();
-
-	return ret;
-}
-#else
 static bool oom_cpuset_eligible(struct task_struct *tsk, struct oom_control *oc)
 {
 	return true;
 }
-#endif /* CONFIG_NUMA */
 
 /*
  * The process p may have detached its own ->mm while exiting or through
@@ -699,41 +653,10 @@ static void queue_oom_reaper(struct task_struct *tsk)
 	add_timer(&tsk->oom_reaper_timer);
 }
 
-#ifdef CONFIG_SYSCTL
-static struct ctl_table vm_oom_kill_table[] = {
-	{
-		.procname	= "panic_on_oom",
-		.data		= &sysctl_panic_on_oom,
-		.maxlen		= sizeof(sysctl_panic_on_oom),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec_minmax,
-		.extra1		= SYSCTL_ZERO,
-		.extra2		= SYSCTL_TWO,
-	},
-	{
-		.procname	= "oom_kill_allocating_task",
-		.data		= &sysctl_oom_kill_allocating_task,
-		.maxlen		= sizeof(sysctl_oom_kill_allocating_task),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec,
-	},
-	{
-		.procname	= "oom_dump_tasks",
-		.data		= &sysctl_oom_dump_tasks,
-		.maxlen		= sizeof(sysctl_oom_dump_tasks),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec,
-	},
-	{}
-};
-#endif
 
 static int __init oom_init(void)
 {
 	oom_reaper_th = kthread_run(oom_reaper, NULL, "oom_reaper");
-#ifdef CONFIG_SYSCTL
-	register_sysctl_init("vm", vm_oom_kill_table);
-#endif
 	return 0;
 }
 subsys_initcall(oom_init)

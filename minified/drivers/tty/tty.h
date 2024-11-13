@@ -96,10 +96,6 @@ void tty_ldisc_deinit(struct tty_struct *tty);
 void tty_sysctl_init(void);
 
 /* tty_audit.c */
-#ifdef CONFIG_AUDIT
-void tty_audit_add_data(struct tty_struct *tty, const void *data, size_t size);
-void tty_audit_tiocsti(struct tty_struct *tty, char ch);
-#else
 static inline void tty_audit_add_data(struct tty_struct *tty, const void *data,
 				      size_t size)
 {
@@ -107,7 +103,6 @@ static inline void tty_audit_add_data(struct tty_struct *tty, const void *data,
 static inline void tty_audit_tiocsti(struct tty_struct *tty, char ch)
 {
 }
-#endif
 
 ssize_t redirected_tty_write(struct kiocb *, struct iov_iter *);
 

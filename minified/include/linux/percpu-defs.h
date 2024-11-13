@@ -162,15 +162,7 @@
  * Declaration/definition used for per-CPU variables that should be accessed
  * as decrypted when memory encryption is enabled in the guest.
  */
-#ifdef CONFIG_AMD_MEM_ENCRYPT
-#define DECLARE_PER_CPU_DECRYPTED(type, name)				\
-	DECLARE_PER_CPU_SECTION(type, name, "..decrypted")
-
-#define DEFINE_PER_CPU_DECRYPTED(type, name)				\
-	DEFINE_PER_CPU_SECTION(type, name, "..decrypted")
-#else
 #define DEFINE_PER_CPU_DECRYPTED(type, name)	DEFINE_PER_CPU(type, name)
-#endif
 
 /*
  * Intermodule exports for per-CPU variables.  sparse forgets about
@@ -260,11 +252,7 @@ do {									\
 
 extern void __bad_size_call_parameter(void);
 
-#ifdef CONFIG_DEBUG_PREEMPT
-extern void __this_cpu_preempt_check(const char *op);
-#else
 static inline void __this_cpu_preempt_check(const char *op) { }
-#endif
 
 #define __pcpu_size_call_return(stem, variable)				\
 ({									\

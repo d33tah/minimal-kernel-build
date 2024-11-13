@@ -302,18 +302,6 @@ struct power_supply {
 	bool removing;
 	atomic_t use_cnt;
 
-#ifdef CONFIG_LEDS_TRIGGERS
-	struct led_trigger *charging_full_trig;
-	char *charging_full_trig_name;
-	struct led_trigger *charging_trig;
-	char *charging_trig_name;
-	struct led_trigger *full_trig;
-	char *full_trig_name;
-	struct led_trigger *online_trig;
-	char *online_trig_name;
-	struct led_trigger *charging_blink_full_solid_trig;
-	char *charging_blink_full_solid_trig_name;
-#endif
 };
 
 /*
@@ -893,10 +881,6 @@ static inline bool power_supply_is_watt_property(enum power_supply_property psp)
 	return false;
 }
 
-#ifdef CONFIG_POWER_SUPPLY_HWMON
-int power_supply_add_hwmon_sysfs(struct power_supply *psy);
-void power_supply_remove_hwmon_sysfs(struct power_supply *psy);
-#else
 static inline int power_supply_add_hwmon_sysfs(struct power_supply *psy)
 {
 	return 0;
@@ -904,7 +888,6 @@ static inline int power_supply_add_hwmon_sysfs(struct power_supply *psy)
 
 static inline
 void power_supply_remove_hwmon_sysfs(struct power_supply *psy) {}
-#endif
 
 static inline
 ssize_t power_supply_charge_behaviour_show(struct device *dev,

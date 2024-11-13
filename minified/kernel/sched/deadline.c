@@ -23,32 +23,6 @@
  */
 static unsigned int sysctl_sched_dl_period_max = 1 << 22; /* ~4 seconds */
 static unsigned int sysctl_sched_dl_period_min = 100;     /* 100 us */
-#ifdef CONFIG_SYSCTL
-static struct ctl_table sched_dl_sysctls[] = {
-	{
-		.procname       = "sched_deadline_period_max_us",
-		.data           = &sysctl_sched_dl_period_max,
-		.maxlen         = sizeof(unsigned int),
-		.mode           = 0644,
-		.proc_handler   = proc_dointvec,
-	},
-	{
-		.procname       = "sched_deadline_period_min_us",
-		.data           = &sysctl_sched_dl_period_min,
-		.maxlen         = sizeof(unsigned int),
-		.mode           = 0644,
-		.proc_handler   = proc_dointvec,
-	},
-	{}
-};
-
-static int __init sched_dl_sysctl_init(void)
-{
-	register_sysctl_init("kernel", sched_dl_sysctls);
-	return 0;
-}
-late_initcall(sched_dl_sysctl_init);
-#endif
 
 static inline struct task_struct *dl_task_of(struct sched_dl_entity *dl_se)
 {
@@ -73,17 +47,6 @@ static inline int on_dl_rq(struct sched_dl_entity *dl_se)
 	return !RB_EMPTY_NODE(&dl_se->rb_node);
 }
 
-#ifdef CONFIG_RT_MUTEXES
-static inline struct sched_dl_entity *pi_of(struct sched_dl_entity *dl_se)
-{
-	return dl_se->pi_se;
-}
-
-static inline bool is_dl_boosted(struct sched_dl_entity *dl_se)
-{
-	return pi_of(dl_se) != dl_se;
-}
-#else
 static inline struct sched_dl_entity *pi_of(struct sched_dl_entity *dl_se)
 {
 	return dl_se;
@@ -93,7 +56,6 @@ static inline bool is_dl_boosted(struct sched_dl_entity *dl_se)
 {
 	return false;
 }
-#endif
 
 static inline struct dl_bw *dl_bw_of(int i)
 {
@@ -1451,16 +1413,9 @@ static void check_preempt_curr_dl(struct rq *rq, struct task_struct *p,
 
 }
 
-#ifdef CONFIG_SCHED_HRTICK
-static void start_hrtick_dl(struct rq *rq, struct task_struct *p)
-{
-	hrtick_start(rq, p->dl.runtime);
-}
-#else /* !CONFIG_SCHED_HRTICK */
 static void start_hrtick_dl(struct rq *rq, struct task_struct *p)
 {
 }
-#endif
 
 static void set_next_task_dl(struct rq *rq, struct task_struct *p, bool first)
 {
@@ -1937,9 +1892,6 @@ void __dl_clear_params(struct task_struct *p)
 	dl_se->dl_non_contending	= 0;
 	dl_se->dl_overrun		= 0;
 
-#ifdef CONFIG_RT_MUTEXES
-	dl_se->pi_se			= dl_se;
-#endif
 }
 
 bool dl_param_changed(struct task_struct *p, const struct sched_attr *attr)
@@ -1956,9 +1908,3 @@ bool dl_param_changed(struct task_struct *p, const struct sched_attr *attr)
 }
 
 
-#ifdef CONFIG_SCHED_DEBUG
-void print_dl_stats(struct seq_file *m, int cpu)
-{
-	print_dl_rq(m, cpu, &cpu_rq(cpu)->dl);
-}
-#endif /* CONFIG_SCHED_DEBUG */

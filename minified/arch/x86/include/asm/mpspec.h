@@ -32,11 +32,7 @@ extern unsigned int boot_cpu_physical_apicid;
 extern u8 boot_cpu_apic_version;
 extern unsigned long mp_lapic_addr;
 
-#ifdef CONFIG_X86_LOCAL_APIC
-extern int smp_found_config;
-#else
 # define smp_found_config 0
-#endif
 
 static inline void get_smp_config(void)
 {
@@ -53,17 +49,10 @@ static inline void find_smp_config(void)
 	x86_init.mpparse.find_smp_config();
 }
 
-#ifdef CONFIG_X86_MPPARSE
-extern void e820__memblock_alloc_reserved_mpc_new(void);
-extern int enable_update_mptable;
-extern void default_find_smp_config(void);
-extern void default_get_smp_config(unsigned int early);
-#else
 static inline void e820__memblock_alloc_reserved_mpc_new(void) { }
 #define enable_update_mptable 0
 #define default_find_smp_config x86_init_noop
 #define default_get_smp_config x86_init_uint_noop
-#endif
 
 int generic_processor_info(int apicid, int version);
 

@@ -581,10 +581,6 @@ static inline void skb_frag_size_sub(skb_frag_t *frag, int delta)
  */
 static inline bool skb_frag_must_loop(struct page *p)
 {
-#if defined(CONFIG_HIGHMEM)
-	if (IS_ENABLED(CONFIG_DEBUG_KMAP_LOCAL_FORCE_MAP) || PageHighMem(p))
-		return true;
-#endif
 	return false;
 }
 
@@ -1045,9 +1041,6 @@ struct sk_buff {
 			void		(*destructor)(struct sk_buff *skb);
 		};
 		struct list_head	tcp_tsorted_anchor;
-#ifdef CONFIG_NET_SOCK_MSG
-		unsigned long		_sk_redir;
-#endif
 	};
 
 #if defined(CONFIG_NF_CONNTRACK) || defined(CONFIG_NF_CONNTRACK_MODULE)
@@ -1081,9 +1074,6 @@ struct sk_buff {
 				head_frag:1,
 				pfmemalloc:1,
 				pp_recycle:1; /* page_pool recycle indicator */
-#ifdef CONFIG_SKB_EXTENSIONS
-	__u8			active_extensions;
-#endif
 
 	/* Fields enclosed in headers group are copied
 	 * using a single memcpy() in __copy_skb_header()
@@ -1117,37 +1107,14 @@ struct sk_buff {
 	__u8			csum_level:2;
 	__u8			dst_pending_confirm:1;
 	__u8			mono_delivery_time:1;	/* See SKB_MONO_DELIVERY_TIME_MASK */
-#ifdef CONFIG_NET_CLS_ACT
-	__u8			tc_skip_classify:1;
-	__u8			tc_at_ingress:1;	/* See TC_AT_INGRESS_MASK */
-#endif
-#ifdef CONFIG_IPV6_NDISC_NODETYPE
-	__u8			ndisc_nodetype:2;
-#endif
 
 	__u8			ipvs_property:1;
 	__u8			inner_protocol_type:1;
 	__u8			remcsum_offload:1;
-#ifdef CONFIG_NET_SWITCHDEV
-	__u8			offload_fwd_mark:1;
-	__u8			offload_l3_fwd_mark:1;
-#endif
 	__u8			redirected:1;
-#ifdef CONFIG_NET_REDIRECT
-	__u8			from_ingress:1;
-#endif
-#ifdef CONFIG_NETFILTER_SKIP_EGRESS
-	__u8			nf_skip_egress:1;
-#endif
-#ifdef CONFIG_TLS_DEVICE
-	__u8			decrypted:1;
-#endif
 	__u8			slow_gro:1;
 	__u8			csum_not_inet:1;
 
-#ifdef CONFIG_NET_SCHED
-	__u16			tc_index;	/* traffic control index */
-#endif
 
 	union {
 		__wsum		csum;
@@ -1161,16 +1128,7 @@ struct sk_buff {
 	__u32			hash;
 	__be16			vlan_proto;
 	__u16			vlan_tci;
-#if defined(CONFIG_NET_RX_BUSY_POLL) || defined(CONFIG_XPS)
-	union {
-		unsigned int	napi_id;
-		unsigned int	sender_cpu;
-	};
-#endif
 	u16			alloc_cpu;
-#ifdef CONFIG_NETWORK_SECMARK
-	__u32		secmark;
-#endif
 
 	union {
 		__u32		mark;
@@ -1191,9 +1149,6 @@ struct sk_buff {
 	__u16			network_header;
 	__u16			mac_header;
 
-#ifdef CONFIG_KCOV
-	u64			kcov_handle;
-#endif
 
 	); /* end headers group */
 
@@ -1205,10 +1160,6 @@ struct sk_buff {
 	unsigned int		truesize;
 	refcount_t		users;
 
-#ifdef CONFIG_SKB_EXTENSIONS
-	/* only useable after checking ->active_extensions != 0 */
-	struct skb_ext		*extensions;
-#endif
 };
 
 /* if you move pkt_type around you also must adapt those constants */
@@ -1339,11 +1290,7 @@ static inline bool skb_pkt_type_ok(u32 ptype)
  */
 static inline unsigned int skb_napi_id(const struct sk_buff *skb)
 {
-#ifdef CONFIG_NET_RX_BUSY_POLL
-	return skb->napi_id;
-#else
 	return 0;
-#endif
 }
 
 /**
@@ -1386,14 +1333,10 @@ static inline void kfree_skb_list(struct sk_buff *segs)
 	kfree_skb_list_reason(segs, SKB_DROP_REASON_NOT_SPECIFIED);
 }
 
-#ifdef CONFIG_TRACEPOINTS
-void consume_skb(struct sk_buff *skb);
-#else
 static inline void consume_skb(struct sk_buff *skb)
 {
 	return kfree_skb(skb);
 }
-#endif
 
 void __consume_stateless_skb(struct sk_buff *skb);
 void  __kfree_skb(struct sk_buff *skb);
@@ -1728,9 +1671,6 @@ static inline void skb_copy_hash(struct sk_buff *to, const struct sk_buff *from)
 static inline void skb_copy_decrypted(struct sk_buff *to,
 				      const struct sk_buff *from)
 {
-#ifdef CONFIG_TLS_DEVICE
-	to->decrypted = from->decrypted;
-#endif
 }
 
 #ifdef NET_SKBUFF_DATA_USES_OFFSET
@@ -3480,10 +3420,6 @@ static inline void __skb_frag_unref(skb_frag_t *frag, bool recycle)
 {
 	struct page *page = skb_frag_page(frag);
 
-#ifdef CONFIG_PAGE_POOL
-	if (recycle && page_pool_return_skb_page(page))
-		return;
-#endif
 	put_page(page);
 }
 
@@ -4328,12 +4264,6 @@ static inline void skb_metadata_clear(struct sk_buff *skb)
 
 struct sk_buff *skb_clone_sk(struct sk_buff *skb);
 
-#ifdef CONFIG_NETWORK_PHY_TIMESTAMPING
-
-void skb_clone_tx_timestamp(struct sk_buff *skb);
-bool skb_defer_rx_timestamp(struct sk_buff *skb);
-
-#else /* CONFIG_NETWORK_PHY_TIMESTAMPING */
 
 static inline void skb_clone_tx_timestamp(struct sk_buff *skb)
 {
@@ -4344,7 +4274,6 @@ static inline bool skb_defer_rx_timestamp(struct sk_buff *skb)
 	return false;
 }
 
-#endif /* !CONFIG_NETWORK_PHY_TIMESTAMPING */
 
 /**
  * skb_complete_tx_timestamp() - deliver cloned skb with tx timestamps
@@ -4656,122 +4585,12 @@ static inline void skb_set_nfct(struct sk_buff *skb, unsigned long nfct)
 #endif
 }
 
-#ifdef CONFIG_SKB_EXTENSIONS
-enum skb_ext_id {
-#if IS_ENABLED(CONFIG_BRIDGE_NETFILTER)
-	SKB_EXT_BRIDGE_NF,
-#endif
-#ifdef CONFIG_XFRM
-	SKB_EXT_SEC_PATH,
-#endif
-#if IS_ENABLED(CONFIG_NET_TC_SKB_EXT)
-	TC_SKB_EXT,
-#endif
-#if IS_ENABLED(CONFIG_MPTCP)
-	SKB_EXT_MPTCP,
-#endif
-#if IS_ENABLED(CONFIG_MCTP_FLOWS)
-	SKB_EXT_MCTP,
-#endif
-	SKB_EXT_NUM, /* must be last */
-};
-
-/**
- *	struct skb_ext - sk_buff extensions
- *	@refcnt: 1 on allocation, deallocated on 0
- *	@offset: offset to add to @data to obtain extension address
- *	@chunks: size currently allocated, stored in SKB_EXT_ALIGN_SHIFT units
- *	@data: start of extension data, variable sized
- *
- *	Note: offsets/lengths are stored in chunks of 8 bytes, this allows
- *	to use 'u8' types while allowing up to 2kb worth of extension data.
- */
-struct skb_ext {
-	refcount_t refcnt;
-	u8 offset[SKB_EXT_NUM]; /* in chunks of 8 bytes */
-	u8 chunks;		/* same */
-	char data[] __aligned(8);
-};
-
-struct skb_ext *__skb_ext_alloc(gfp_t flags);
-void *__skb_ext_set(struct sk_buff *skb, enum skb_ext_id id,
-		    struct skb_ext *ext);
-void *skb_ext_add(struct sk_buff *skb, enum skb_ext_id id);
-void __skb_ext_del(struct sk_buff *skb, enum skb_ext_id id);
-void __skb_ext_put(struct skb_ext *ext);
-
-static inline void skb_ext_put(struct sk_buff *skb)
-{
-	if (skb->active_extensions)
-		__skb_ext_put(skb->extensions);
-}
-
-static inline void __skb_ext_copy(struct sk_buff *dst,
-				  const struct sk_buff *src)
-{
-	dst->active_extensions = src->active_extensions;
-
-	if (src->active_extensions) {
-		struct skb_ext *ext = src->extensions;
-
-		refcount_inc(&ext->refcnt);
-		dst->extensions = ext;
-	}
-}
-
-static inline void skb_ext_copy(struct sk_buff *dst, const struct sk_buff *src)
-{
-	skb_ext_put(dst);
-	__skb_ext_copy(dst, src);
-}
-
-static inline bool __skb_ext_exist(const struct skb_ext *ext, enum skb_ext_id i)
-{
-	return !!ext->offset[i];
-}
-
-static inline bool skb_ext_exist(const struct sk_buff *skb, enum skb_ext_id id)
-{
-	return skb->active_extensions & (1 << id);
-}
-
-static inline void skb_ext_del(struct sk_buff *skb, enum skb_ext_id id)
-{
-	if (skb_ext_exist(skb, id))
-		__skb_ext_del(skb, id);
-}
-
-static inline void *skb_ext_find(const struct sk_buff *skb, enum skb_ext_id id)
-{
-	if (skb_ext_exist(skb, id)) {
-		struct skb_ext *ext = skb->extensions;
-
-		return (void *)ext + (ext->offset[id] << 3);
-	}
-
-	return NULL;
-}
-
-static inline void skb_ext_reset(struct sk_buff *skb)
-{
-	if (unlikely(skb->active_extensions)) {
-		__skb_ext_put(skb->extensions);
-		skb->active_extensions = 0;
-	}
-}
-
-static inline bool skb_has_extensions(struct sk_buff *skb)
-{
-	return unlikely(skb->active_extensions);
-}
-#else
 static inline void skb_ext_put(struct sk_buff *skb) {}
 static inline void skb_ext_reset(struct sk_buff *skb) {}
 static inline void skb_ext_del(struct sk_buff *skb, int unused) {}
 static inline void __skb_ext_copy(struct sk_buff *d, const struct sk_buff *s) {}
 static inline void skb_ext_copy(struct sk_buff *dst, const struct sk_buff *s) {}
 static inline bool skb_has_extensions(struct sk_buff *skb) { return false; }
-#endif /* CONFIG_SKB_EXTENSIONS */
 
 static inline void nf_reset_ct(struct sk_buff *skb)
 {
@@ -4818,31 +4637,15 @@ static inline void nf_copy(struct sk_buff *dst, const struct sk_buff *src)
 	__nf_copy(dst, src, true);
 }
 
-#ifdef CONFIG_NETWORK_SECMARK
-static inline void skb_copy_secmark(struct sk_buff *to, const struct sk_buff *from)
-{
-	to->secmark = from->secmark;
-}
-
-static inline void skb_init_secmark(struct sk_buff *skb)
-{
-	skb->secmark = 0;
-}
-#else
 static inline void skb_copy_secmark(struct sk_buff *to, const struct sk_buff *from)
 { }
 
 static inline void skb_init_secmark(struct sk_buff *skb)
 { }
-#endif
 
 static inline int secpath_exists(const struct sk_buff *skb)
 {
-#ifdef CONFIG_XFRM
-	return skb_ext_exist(skb, SKB_EXT_SEC_PATH);
-#else
 	return 0;
-#endif
 }
 
 static inline bool skb_irq_freeable(const struct sk_buff *skb)
@@ -4896,11 +4699,7 @@ static inline bool skb_get_dst_pending_confirm(const struct sk_buff *skb)
 
 static inline struct sec_path *skb_sec_path(const struct sk_buff *skb)
 {
-#ifdef CONFIG_XFRM
-	return skb_ext_find(skb, SKB_EXT_SEC_PATH);
-#else
 	return NULL;
-#endif
 }
 
 /* Keeps track of mac header offset relative to skb->head.
@@ -5108,11 +4907,6 @@ static inline bool skb_is_redirected(const struct sk_buff *skb)
 static inline void skb_set_redirected(struct sk_buff *skb, bool from_ingress)
 {
 	skb->redirected = 1;
-#ifdef CONFIG_NET_REDIRECT
-	skb->from_ingress = from_ingress;
-	if (skb->from_ingress)
-		skb_clear_tstamp(skb);
-#endif
 }
 
 static inline void skb_reset_redirect(struct sk_buff *skb)
@@ -5128,26 +4922,13 @@ static inline bool skb_csum_is_sctp(struct sk_buff *skb)
 static inline void skb_set_kcov_handle(struct sk_buff *skb,
 				       const u64 kcov_handle)
 {
-#ifdef CONFIG_KCOV
-	skb->kcov_handle = kcov_handle;
-#endif
 }
 
 static inline u64 skb_get_kcov_handle(struct sk_buff *skb)
 {
-#ifdef CONFIG_KCOV
-	return skb->kcov_handle;
-#else
 	return 0;
-#endif
 }
 
-#ifdef CONFIG_PAGE_POOL
-static inline void skb_mark_for_recycle(struct sk_buff *skb)
-{
-	skb->pp_recycle = 1;
-}
-#endif
 
 static inline bool skb_pp_recycle(struct sk_buff *skb, void *data)
 {

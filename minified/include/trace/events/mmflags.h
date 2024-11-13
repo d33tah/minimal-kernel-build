@@ -53,14 +53,7 @@
 	gfpflag_string(__GFP_KSWAPD_RECLAIM),	\
 	gfpflag_string(__GFP_ZEROTAGS)
 
-#ifdef CONFIG_KASAN_HW_TAGS
-#define __def_gfpflag_names_kasan ,			\
-	gfpflag_string(__GFP_SKIP_ZERO),		\
-	gfpflag_string(__GFP_SKIP_KASAN_POISON),	\
-	gfpflag_string(__GFP_SKIP_KASAN_UNPOISON)
-#else
 #define __def_gfpflag_names_kasan
-#endif
 
 #define show_gfp_flags(flags)						\
 	(flags) ? __print_flags(flags, "|",				\
@@ -69,27 +62,15 @@
 
 #define IF_HAVE_PG_MLOCK(flag,string) ,{1UL << flag, string}
 
-#ifdef CONFIG_ARCH_USES_PG_UNCACHED
-#define IF_HAVE_PG_UNCACHED(flag,string) ,{1UL << flag, string}
-#else
 #define IF_HAVE_PG_UNCACHED(flag,string)
-#endif
 
-#ifdef CONFIG_MEMORY_FAILURE
-#define IF_HAVE_PG_HWPOISON(flag,string) ,{1UL << flag, string}
-#else
 #define IF_HAVE_PG_HWPOISON(flag,string)
-#endif
 
 #define IF_HAVE_PG_IDLE(flag,string)
 
 #define IF_HAVE_PG_ARCH_2(flag,string)
 
-#ifdef CONFIG_KASAN_HW_TAGS
-#define IF_HAVE_PG_SKIP_KASAN_POISON(flag,string) ,{1UL << flag, string}
-#else
 #define IF_HAVE_PG_SKIP_KASAN_POISON(flag,string)
-#endif
 
 #define __def_pageflag_names						\
 	{1UL << PG_locked,		"locked"	},		\
@@ -128,17 +109,9 @@ IF_HAVE_PG_SKIP_KASAN_POISON(PG_skip_kasan_poison, "skip_kasan_poison")
 
 #define __VM_ARCH_SPECIFIC_1 {VM_PAT,     "pat"           }
 
-#ifdef CONFIG_MEM_SOFT_DIRTY
-#define IF_HAVE_VM_SOFTDIRTY(flag,name) {flag, name },
-#else
 #define IF_HAVE_VM_SOFTDIRTY(flag,name)
-#endif
 
-#ifdef CONFIG_HAVE_ARCH_USERFAULTFD_MINOR
-# define IF_HAVE_UFFD_MINOR(flag, name) {flag, name},
-#else
 # define IF_HAVE_UFFD_MINOR(flag, name)
-#endif
 
 #define __def_vmaflag_names						\
 	{VM_READ,			"read"		},		\
@@ -185,17 +158,9 @@ IF_HAVE_VM_SOFTDIRTY(VM_SOFTDIRTY,	"softdirty"	)		\
 
 #define IFDEF_ZONE_DMA(X)
 
-#ifdef CONFIG_ZONE_DMA32
-#define IFDEF_ZONE_DMA32(X) X
-#else
 #define IFDEF_ZONE_DMA32(X)
-#endif
 
-#ifdef CONFIG_HIGHMEM
-#define IFDEF_ZONE_HIGHMEM(X) X
-#else
 #define IFDEF_ZONE_HIGHMEM(X)
-#endif
 
 #define ZONE_TYPE						\
 	IFDEF_ZONE_DMA(		EM (ZONE_DMA,	 "DMA"))	\

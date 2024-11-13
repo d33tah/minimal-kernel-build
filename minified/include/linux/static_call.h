@@ -154,70 +154,6 @@ extern void arch_static_call_transform(void *site, void *tramp, void *func, bool
 
 #define static_call_query(name) (READ_ONCE(STATIC_CALL_KEY(name).func))
 
-#ifdef CONFIG_HAVE_STATIC_CALL_INLINE
-
-extern int __init static_call_init(void);
-
-struct static_call_mod {
-	struct static_call_mod *next;
-	struct module *mod; /* for vmlinux, mod == NULL */
-	struct static_call_site *sites;
-};
-
-/* For finding the key associated with a trampoline */
-struct static_call_tramp_key {
-	s32 tramp;
-	s32 key;
-};
-
-extern void __static_call_update(struct static_call_key *key, void *tramp, void *func);
-extern int static_call_mod_init(struct module *mod);
-extern int static_call_text_reserved(void *start, void *end);
-
-extern long __static_call_return0(void);
-
-#define DEFINE_STATIC_CALL(name, _func)					\
-	DECLARE_STATIC_CALL(name, _func);				\
-	struct static_call_key STATIC_CALL_KEY(name) = {		\
-		.func = _func,						\
-		.type = 1,						\
-	};								\
-	ARCH_DEFINE_STATIC_CALL_TRAMP(name, _func)
-
-#define DEFINE_STATIC_CALL_NULL(name, _func)				\
-	DECLARE_STATIC_CALL(name, _func);				\
-	struct static_call_key STATIC_CALL_KEY(name) = {		\
-		.func = NULL,						\
-		.type = 1,						\
-	};								\
-	ARCH_DEFINE_STATIC_CALL_NULL_TRAMP(name)
-
-#define DEFINE_STATIC_CALL_RET0(name, _func)				\
-	DECLARE_STATIC_CALL(name, _func);				\
-	struct static_call_key STATIC_CALL_KEY(name) = {		\
-		.func = __static_call_return0,				\
-		.type = 1,						\
-	};								\
-	ARCH_DEFINE_STATIC_CALL_RET0_TRAMP(name)
-
-#define static_call_cond(name)	(void)__static_call(name)
-
-#define EXPORT_STATIC_CALL(name)					\
-	EXPORT_SYMBOL(STATIC_CALL_KEY(name));				\
-	EXPORT_SYMBOL(STATIC_CALL_TRAMP(name))
-#define EXPORT_STATIC_CALL_GPL(name)					\
-	EXPORT_SYMBOL_GPL(STATIC_CALL_KEY(name));			\
-	EXPORT_SYMBOL_GPL(STATIC_CALL_TRAMP(name))
-
-/* Leave the key unexported, so modules can't change static call targets: */
-#define EXPORT_STATIC_CALL_TRAMP(name)					\
-	EXPORT_SYMBOL(STATIC_CALL_TRAMP(name));				\
-	ARCH_ADD_TRAMP_KEY(name)
-#define EXPORT_STATIC_CALL_TRAMP_GPL(name)				\
-	EXPORT_SYMBOL_GPL(STATIC_CALL_TRAMP(name));			\
-	ARCH_ADD_TRAMP_KEY(name)
-
-#else
 
 static inline int static_call_init(void) { return 0; }
 
@@ -273,6 +209,5 @@ extern long __static_call_return0(void);
 #define EXPORT_STATIC_CALL_TRAMP_GPL(name)				\
 	EXPORT_SYMBOL_GPL(STATIC_CALL_TRAMP(name))
 
-#endif
 
 #endif /* _LINUX_STATIC_CALL_H */

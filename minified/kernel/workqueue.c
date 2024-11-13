@@ -275,11 +275,6 @@ struct workqueue_struct {
 	struct workqueue_attrs	*unbound_attrs;	/* PW: only for unbound wqs */
 	struct pool_workqueue	*dfl_pwq;	/* PW: only for unbound wqs */
 
-#ifdef CONFIG_LOCKDEP
-	char			*lock_name;
-	struct lock_class_key	key;
-	struct lockdep_map	lockdep_map;
-#endif
 	char			name[WQ_NAME_LEN]; /* I: workqueue name */
 
 	/*
@@ -438,102 +433,8 @@ static void show_one_worker_pool(struct worker_pool *pool);
 	list_for_each_entry_rcu((pwq), &(wq)->pwqs, pwqs_node,		\
 				 lockdep_is_held(&(wq->mutex)))
 
-#ifdef CONFIG_DEBUG_OBJECTS_WORK
-
-static const struct debug_obj_descr work_debug_descr;
-
-static void *work_debug_hint(void *addr)
-{
-	return ((struct work_struct *) addr)->func;
-}
-
-static bool work_is_static_object(void *addr)
-{
-	struct work_struct *work = addr;
-
-	return test_bit(WORK_STRUCT_STATIC_BIT, work_data_bits(work));
-}
-
-/*
- * fixup_init is called when:
- * - an active object is initialized
- */
-static bool work_fixup_init(void *addr, enum debug_obj_state state)
-{
-	struct work_struct *work = addr;
-
-	switch (state) {
-	case ODEBUG_STATE_ACTIVE:
-		cancel_work_sync(work);
-		debug_object_init(work, &work_debug_descr);
-		return true;
-	default:
-		return false;
-	}
-}
-
-/*
- * fixup_free is called when:
- * - an active object is freed
- */
-static bool work_fixup_free(void *addr, enum debug_obj_state state)
-{
-	struct work_struct *work = addr;
-
-	switch (state) {
-	case ODEBUG_STATE_ACTIVE:
-		cancel_work_sync(work);
-		debug_object_free(work, &work_debug_descr);
-		return true;
-	default:
-		return false;
-	}
-}
-
-static const struct debug_obj_descr work_debug_descr = {
-	.name		= "work_struct",
-	.debug_hint	= work_debug_hint,
-	.is_static_object = work_is_static_object,
-	.fixup_init	= work_fixup_init,
-	.fixup_free	= work_fixup_free,
-};
-
-static inline void debug_work_activate(struct work_struct *work)
-{
-	debug_object_activate(work, &work_debug_descr);
-}
-
-static inline void debug_work_deactivate(struct work_struct *work)
-{
-	debug_object_deactivate(work, &work_debug_descr);
-}
-
-void __init_work(struct work_struct *work, int onstack)
-{
-	if (onstack)
-		debug_object_init_on_stack(work, &work_debug_descr);
-	else
-		debug_object_init(work, &work_debug_descr);
-}
-EXPORT_SYMBOL_GPL(__init_work);
-
-void destroy_work_on_stack(struct work_struct *work)
-{
-	debug_object_free(work, &work_debug_descr);
-}
-EXPORT_SYMBOL_GPL(destroy_work_on_stack);
-
-void destroy_delayed_work_on_stack(struct delayed_work *work)
-{
-	destroy_timer_on_stack(&work->timer);
-	debug_object_free(&work->work, &work_debug_descr);
-}
-EXPORT_SYMBOL_GPL(destroy_delayed_work_on_stack);
-
-#else
 static inline void debug_work_activate(struct work_struct *work) { }
 static inline void debug_work_deactivate(struct work_struct *work) { }
-#endif
 
 /**
  * worker_pool_assign_id - allocate ID and assign it to @pool
@@ -2180,18 +2081,6 @@ __acquires(&pool->lock)
 	bool cpu_intensive = pwq->wq->flags & WQ_CPU_INTENSIVE;
 	unsigned long work_data;
 	struct worker *collision;
-#ifdef CONFIG_LOCKDEP
-	/*
-	 * It is permissible to free the struct work_struct from
-	 * inside the function that is called from it, this we need to
-	 * take into account for lockdep too.  To avoid bogus "held
-	 * lock freed" warnings as well as problems when looking into
-	 * work->lockdep_map, make a copy and use that here.
-	 */
-	struct lockdep_map lockdep_map;
-
-	lockdep_copy_map(&lockdep_map, &work->lockdep_map);
-#endif
 	/* ensure we're on the correct CPU */
 	WARN_ON_ONCE(!(pool->flags & POOL_DISASSOCIATED) &&
 		     raw_smp_processor_id() != pool->cpu);
@@ -3464,31 +3353,6 @@ static int init_worker_pool(struct worker_pool *pool)
 	return 0;
 }
 
-#ifdef CONFIG_LOCKDEP
-static void wq_init_lockdep(struct workqueue_struct *wq)
-{
-	char *lock_name;
-
-	lockdep_register_key(&wq->key);
-	lock_name = kasprintf(GFP_KERNEL, "%s%s", "(wq_completion)", wq->name);
-	if (!lock_name)
-		lock_name = wq->name;
-
-	wq->lock_name = lock_name;
-	lockdep_init_map(&wq->lockdep_map, lock_name, &wq->key, 0);
-}
-
-static void wq_unregister_lockdep(struct workqueue_struct *wq)
-{
-	lockdep_unregister_key(&wq->key);
-}
-
-static void wq_free_lockdep(struct workqueue_struct *wq)
-{
-	if (wq->lock_name != wq->name)
-		kfree(wq->lock_name);
-}
-#else
 static void wq_init_lockdep(struct workqueue_struct *wq)
 {
 }
@@ -3500,7 +3364,6 @@ static void wq_unregister_lockdep(struct workqueue_struct *wq)
 static void wq_free_lockdep(struct workqueue_struct *wq)
 {
 }
-#endif
 
 static void rcu_free_wq(struct rcu_head *rcu)
 {
@@ -4935,117 +4798,6 @@ void wq_worker_comm(char *buf, size_t size, struct task_struct *task)
 }
 
 
-#ifdef CONFIG_FREEZER
-
-/**
- * freeze_workqueues_begin - begin freezing workqueues
- *
- * Start freezing workqueues.  After this function returns, all freezable
- * workqueues will queue new works to their inactive_works list instead of
- * pool->worklist.
- *
- * CONTEXT:
- * Grabs and releases wq_pool_mutex, wq->mutex and pool->lock's.
- */
-void freeze_workqueues_begin(void)
-{
-	struct workqueue_struct *wq;
-	struct pool_workqueue *pwq;
-
-	mutex_lock(&wq_pool_mutex);
-
-	WARN_ON_ONCE(workqueue_freezing);
-	workqueue_freezing = true;
-
-	list_for_each_entry(wq, &workqueues, list) {
-		mutex_lock(&wq->mutex);
-		for_each_pwq(pwq, wq)
-			pwq_adjust_max_active(pwq);
-		mutex_unlock(&wq->mutex);
-	}
-
-	mutex_unlock(&wq_pool_mutex);
-}
-
-/**
- * freeze_workqueues_busy - are freezable workqueues still busy?
- *
- * Check whether freezing is complete.  This function must be called
- * between freeze_workqueues_begin() and thaw_workqueues().
- *
- * CONTEXT:
- * Grabs and releases wq_pool_mutex.
- *
- * Return:
- * %true if some freezable workqueues are still busy.  %false if freezing
- * is complete.
- */
-bool freeze_workqueues_busy(void)
-{
-	bool busy = false;
-	struct workqueue_struct *wq;
-	struct pool_workqueue *pwq;
-
-	mutex_lock(&wq_pool_mutex);
-
-	WARN_ON_ONCE(!workqueue_freezing);
-
-	list_for_each_entry(wq, &workqueues, list) {
-		if (!(wq->flags & WQ_FREEZABLE))
-			continue;
-		/*
-		 * nr_active is monotonically decreasing.  It's safe
-		 * to peek without lock.
-		 */
-		rcu_read_lock();
-		for_each_pwq(pwq, wq) {
-			WARN_ON_ONCE(pwq->nr_active < 0);
-			if (pwq->nr_active) {
-				busy = true;
-				rcu_read_unlock();
-				goto out_unlock;
-			}
-		}
-		rcu_read_unlock();
-	}
-out_unlock:
-	mutex_unlock(&wq_pool_mutex);
-	return busy;
-}
-
-/**
- * thaw_workqueues - thaw workqueues
- *
- * Thaw workqueues.  Normal queueing is restored and all collected
- * frozen works are transferred to their respective pool worklists.
- *
- * CONTEXT:
- * Grabs and releases wq_pool_mutex, wq->mutex and pool->lock's.
- */
-void thaw_workqueues(void)
-{
-	struct workqueue_struct *wq;
-	struct pool_workqueue *pwq;
-
-	mutex_lock(&wq_pool_mutex);
-
-	if (!workqueue_freezing)
-		goto out_unlock;
-
-	workqueue_freezing = false;
-
-	/* restore max_active and repopulate worklist */
-	list_for_each_entry(wq, &workqueues, list) {
-		mutex_lock(&wq->mutex);
-		for_each_pwq(pwq, wq)
-			pwq_adjust_max_active(pwq);
-		mutex_unlock(&wq->mutex);
-	}
-
-out_unlock:
-	mutex_unlock(&wq_pool_mutex);
-}
-#endif /* CONFIG_FREEZER */
 
 static int workqueue_apply_unbound_cpumask(void)
 {

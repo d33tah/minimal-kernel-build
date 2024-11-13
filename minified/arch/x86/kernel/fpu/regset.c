@@ -257,26 +257,10 @@ static void __convert_from_fxsr(struct user_i387_ia32_struct *env,
 	env->swd = fxsave->swd | 0xffff0000u;
 	env->twd = twd_fxsr_to_i387(fxsave);
 
-#ifdef CONFIG_X86_64
-	env->fip = fxsave->rip;
-	env->foo = fxsave->rdp;
-	/*
-	 * should be actually ds/cs at fpu exception time, but
-	 * that information is not available in 64bit mode.
-	 */
-	env->fcs = task_pt_regs(tsk)->cs;
-	if (tsk == current) {
-		savesegment(ds, env->fos);
-	} else {
-		env->fos = tsk->thread.ds;
-	}
-	env->fos |= 0xffff0000;
-#else
 	env->fip = fxsave->fip;
 	env->fcs = (u16) fxsave->fcs | ((u32) fxsave->fop << 16);
 	env->foo = fxsave->foo;
 	env->fos = fxsave->fos;
-#endif
 
 	for (i = 0; i < 8; ++i)
 		memcpy(&to[i], &from[i], sizeof(to[0]));
@@ -300,16 +284,10 @@ void convert_to_fxsr(struct fxregs_state *fxsave,
 	fxsave->swd = env->swd;
 	fxsave->twd = twd_i387_to_fxsr(env->twd);
 	fxsave->fop = (u16) ((u32) env->fcs >> 16);
-#ifdef CONFIG_X86_64
-	fxsave->rip = env->fip;
-	fxsave->rdp = env->foo;
-	/* cs and ds ignored */
-#else
 	fxsave->fip = env->fip;
 	fxsave->fcs = (env->fcs & 0xffff);
 	fxsave->foo = env->foo;
 	fxsave->fos = env->fos;
-#endif
 
 	for (i = 0; i < 8; ++i)
 		memcpy(&to[i], &from[i], sizeof(from[0]));

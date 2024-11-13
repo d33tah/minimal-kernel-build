@@ -18,23 +18,9 @@ struct timer_list {
 	void			(*function)(struct timer_list *);
 	u32			flags;
 
-#ifdef CONFIG_LOCKDEP
-	struct lockdep_map	lockdep_map;
-#endif
 };
 
-#ifdef CONFIG_LOCKDEP
-/*
- * NB: because we have to copy the lockdep_map, setting the lockdep_map key
- * (second argument) here is required, otherwise it could be initialised to
- * the copy of the lockdep_map later! We use the pointer to and the string
- * "<file>:<line>" as the key resp. the name of the lockdep_map.
- */
-#define __TIMER_LOCKDEP_MAP_INITIALIZER(_kn)				\
-	.lockdep_map = STATIC_LOCKDEP_MAP_INIT(_kn, &_kn),
-#else
 #define __TIMER_LOCKDEP_MAP_INITIALIZER(_kn)
-#endif
 
 /**
  * @TIMER_DEFERRABLE: A deferrable timer will work normally when the
@@ -92,12 +78,6 @@ void init_timer_key(struct timer_list *timer,
 		    void (*func)(struct timer_list *), unsigned int flags,
 		    const char *name, struct lock_class_key *key);
 
-#ifdef CONFIG_DEBUG_OBJECTS_TIMERS
-extern void init_timer_on_stack_key(struct timer_list *timer,
-				    void (*func)(struct timer_list *),
-				    unsigned int flags, const char *name,
-				    struct lock_class_key *key);
-#else
 static inline void init_timer_on_stack_key(struct timer_list *timer,
 					   void (*func)(struct timer_list *),
 					   unsigned int flags,
@@ -106,27 +86,11 @@ static inline void init_timer_on_stack_key(struct timer_list *timer,
 {
 	init_timer_key(timer, func, flags, name, key);
 }
-#endif
 
-#ifdef CONFIG_LOCKDEP
-#define __init_timer(_timer, _fn, _flags)				\
-	do {								\
-		static struct lock_class_key __key;			\
-		init_timer_key((_timer), (_fn), (_flags), #_timer, &__key);\
-	} while (0)
-
-#define __init_timer_on_stack(_timer, _fn, _flags)			\
-	do {								\
-		static struct lock_class_key __key;			\
-		init_timer_on_stack_key((_timer), (_fn), (_flags),	\
-					#_timer, &__key);		 \
-	} while (0)
-#else
 #define __init_timer(_timer, _fn, _flags)				\
 	init_timer_key((_timer), (_fn), (_flags), NULL, NULL)
 #define __init_timer_on_stack(_timer, _fn, _flags)			\
 	init_timer_on_stack_key((_timer), (_fn), (_flags), NULL, NULL)
-#endif
 
 /**
  * timer_setup - prepare a timer for first use
@@ -144,11 +108,7 @@ static inline void init_timer_on_stack_key(struct timer_list *timer,
 #define timer_setup_on_stack(timer, callback, flags)		\
 	__init_timer_on_stack((timer), (callback), (flags))
 
-#ifdef CONFIG_DEBUG_OBJECTS_TIMERS
-extern void destroy_timer_on_stack(struct timer_list *timer);
-#else
 static inline void destroy_timer_on_stack(struct timer_list *timer) { }
-#endif
 
 #define from_timer(var, callback_timer, timer_fieldname) \
 	container_of(callback_timer, typeof(*var), timer_fieldname)
@@ -184,11 +144,7 @@ extern void add_timer(struct timer_list *timer);
 
 extern int try_to_del_timer_sync(struct timer_list *timer);
 
-#if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT_RT)
-  extern int del_timer_sync(struct timer_list *timer);
-#else
 # define del_timer_sync(t)		del_timer(t)
-#endif
 
 #define del_singleshot_timer_sync(t) del_timer_sync(t)
 
@@ -206,12 +162,7 @@ unsigned long __round_jiffies_up_relative(unsigned long j, int cpu);
 unsigned long round_jiffies_up(unsigned long j);
 unsigned long round_jiffies_up_relative(unsigned long j);
 
-#ifdef CONFIG_HOTPLUG_CPU
-int timers_prepare_cpu(unsigned int cpu);
-int timers_dead_cpu(unsigned int cpu);
-#else
 #define timers_prepare_cpu	NULL
 #define timers_dead_cpu		NULL
-#endif
 
 #endif

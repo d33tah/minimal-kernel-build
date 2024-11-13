@@ -123,9 +123,6 @@ void __noreturn machine_real_restart(unsigned int type)
 		     "a" (type));
 	unreachable();
 }
-#ifdef CONFIG_APM_MODULE
-EXPORT_SYMBOL(machine_real_restart);
-#endif
 STACK_FRAME_NON_STANDARD(machine_real_restart);
 
 /*
@@ -669,29 +666,12 @@ static void native_machine_emergency_restart(void)
 void native_machine_shutdown(void)
 {
 	/* Stop the cpus and apics */
-#ifdef CONFIG_X86_IO_APIC
-	/*
-	 * Disabling IO APIC before local APIC is a workaround for
-	 * erratum AVR31 in "Intel Atom Processor C2000 Product Family
-	 * Specification Update". In this situation, interrupts that target
-	 * a Logical Processor whose Local APIC is either in the process of
-	 * being hardware disabled or software disabled are neither delivered
-	 * nor discarded. When this erratum occurs, the processor may hang.
-	 *
-	 * Even without the erratum, it still makes sense to quiet IO APIC
-	 * before disabling Local APIC.
-	 */
-	clear_IO_APIC();
-#endif
 
 
 	lapic_shutdown();
 	restore_boot_irq_mode();
 
 
-#ifdef CONFIG_X86_64
-	x86_platform.iommu_shutdown();
-#endif
 }
 
 static void __machine_emergency_restart(int emergency)
@@ -736,9 +716,6 @@ struct machine_ops machine_ops __ro_after_init = {
 	.emergency_restart = native_machine_emergency_restart,
 	.restart = native_machine_restart,
 	.halt = native_machine_halt,
-#ifdef CONFIG_KEXEC_CORE
-	.crash_shutdown = native_machine_crash_shutdown,
-#endif
 };
 
 void machine_power_off(void)
@@ -766,12 +743,6 @@ void machine_halt(void)
 	machine_ops.halt();
 }
 
-#ifdef CONFIG_KEXEC_CORE
-void machine_crash_shutdown(struct pt_regs *regs)
-{
-	machine_ops.crash_shutdown(regs);
-}
-#endif
 
 
 /* This is the CPU performing the emergency shutdown work. */

@@ -661,13 +661,7 @@ __init void e820__setup_pci_gap(void)
 	found  = e820_search_gap(&gapstart, &gapsize);
 
 	if (!found) {
-#ifdef CONFIG_X86_64
-		gapstart = (max_pfn << PAGE_SHIFT) + 1024*1024;
-		pr_err("Cannot find an available gap in the 32-bit address range\n");
-		pr_err("PCI devices with unassigned 32-bit BARs may not work!\n");
-#else
 		gapstart = 0x10000000;
-#endif
 	}
 
 	/*
@@ -871,9 +865,6 @@ static int __init parse_memopt(char *p)
 
 	e820__range_remove(mem_size, ULLONG_MAX - mem_size, E820_TYPE_RAM, 1);
 
-#ifdef CONFIG_MEMORY_HOTPLUG
-	max_mem_size = mem_size;
-#endif
 
 	return 0;
 }

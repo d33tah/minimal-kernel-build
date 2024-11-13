@@ -42,28 +42,8 @@
  * change over time, possibly while we're accessing them.
  */
 
-#ifdef CONFIG_PARAVIRT_CLOCK
-/*
- * This is the vCPU 0 pvclock page.  We only use pvclock from the vDSO
- * if the hypervisor tells us that all vCPUs can get valid data from the
- * vCPU 0 page.
- */
-extern struct pvclock_vsyscall_time_info pvclock_page
-	__attribute__((visibility("hidden")));
-#endif
 
-#ifdef CONFIG_HYPERV_TIMER
-extern struct ms_hyperv_tsc_page hvclock_page
-	__attribute__((visibility("hidden")));
-#endif
 
-#ifdef CONFIG_TIME_NS
-static __always_inline
-const struct vdso_data *__arch_get_timens_vdso_data(const struct vdso_data *vd)
-{
-	return __timens_vdso_data;
-}
-#endif
 
 #ifndef BUILD_VDSO32
 
@@ -193,54 +173,7 @@ long clock_getres32_fallback(clockid_t _clkid, struct old_timespec32 *_ts)
 
 #endif
 
-#ifdef CONFIG_PARAVIRT_CLOCK
-static u64 vread_pvclock(void)
-{
-	const struct pvclock_vcpu_time_info *pvti = &pvclock_page.pvti;
-	u32 version;
-	u64 ret;
 
-	/*
-	 * Note: The kernel and hypervisor must guarantee that cpu ID
-	 * number maps 1:1 to per-CPU pvclock time info.
-	 *
-	 * Because the hypervisor is entirely unaware of guest userspace
-	 * preemption, it cannot guarantee that per-CPU pvclock time
-	 * info is updated if the underlying CPU changes or that that
-	 * version is increased whenever underlying CPU changes.
-	 *
-	 * On KVM, we are guaranteed that pvti updates for any vCPU are
-	 * atomic as seen by *all* vCPUs.  This is an even stronger
-	 * guarantee than we get with a normal seqlock.
-	 *
-	 * On Xen, we don't appear to have that guarantee, but Xen still
-	 * supplies a valid seqlock using the version field.
-	 *
-	 * We only do pvclock vdso timing at all if
-	 * PVCLOCK_TSC_STABLE_BIT is set, and we interpret that bit to
-	 * mean that all vCPUs have matching pvti and that the TSC is
-	 * synced, so we can just look at vCPU 0's pvti.
-	 */
-
-	do {
-		version = pvclock_read_begin(pvti);
-
-		if (unlikely(!(pvti->flags & PVCLOCK_TSC_STABLE_BIT)))
-			return U64_MAX;
-
-		ret = __pvclock_read_cycles(pvti, rdtsc_ordered());
-	} while (pvclock_read_retry(pvti, version));
-
-	return ret;
-}
-#endif
-
-#ifdef CONFIG_HYPERV_TIMER
-static u64 vread_hvclock(void)
-{
-	return hv_read_tsc_page(&hvclock_page);
-}
-#endif
 
 static inline u64 __arch_get_hw_counter(s32 clock_mode,
 					const struct vdso_data *vd)
@@ -253,18 +186,6 @@ static inline u64 __arch_get_hw_counter(s32 clock_mode,
 	 * might end up touching the memory-mapped page even if the vclock in
 	 * question isn't enabled, which will segfault.  Hence the barriers.
 	 */
-#ifdef CONFIG_PARAVIRT_CLOCK
-	if (clock_mode == VDSO_CLOCKMODE_PVCLOCK) {
-		barrier();
-		return vread_pvclock();
-	}
-#endif
-#ifdef CONFIG_HYPERV_TIMER
-	if (clock_mode == VDSO_CLOCKMODE_HVCLOCK) {
-		barrier();
-		return vread_hvclock();
-	}
-#endif
 	return U64_MAX;
 }
 

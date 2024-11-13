@@ -79,39 +79,6 @@ extern int __read_mostly node_reclaim_distance;
 #define PENALTY_FOR_NODE_WITH_CPUS	(1)
 #endif
 
-#ifdef CONFIG_USE_PERCPU_NUMA_NODE_ID
-DECLARE_PER_CPU(int, numa_node);
-
-#ifndef numa_node_id
-/* Returns the number of the current Node. */
-static inline int numa_node_id(void)
-{
-	return raw_cpu_read(numa_node);
-}
-#endif
-
-#ifndef cpu_to_node
-static inline int cpu_to_node(int cpu)
-{
-	return per_cpu(numa_node, cpu);
-}
-#endif
-
-#ifndef set_numa_node
-static inline void set_numa_node(int node)
-{
-	this_cpu_write(numa_node, node);
-}
-#endif
-
-#ifndef set_cpu_numa_node
-static inline void set_cpu_numa_node(int cpu, int node)
-{
-	per_cpu(numa_node, cpu) = node;
-}
-#endif
-
-#else	/* !CONFIG_USE_PERCPU_NUMA_NODE_ID */
 
 /* Returns the number of the current Node. */
 #ifndef numa_node_id
@@ -121,47 +88,7 @@ static inline int numa_node_id(void)
 }
 #endif
 
-#endif	/* [!]CONFIG_USE_PERCPU_NUMA_NODE_ID */
 
-#ifdef CONFIG_HAVE_MEMORYLESS_NODES
-
-/*
- * N.B., Do NOT reference the '_numa_mem_' per cpu variable directly.
- * It will not be defined when CONFIG_HAVE_MEMORYLESS_NODES is not defined.
- * Use the accessor functions set_numa_mem(), numa_mem_id() and cpu_to_mem().
- */
-DECLARE_PER_CPU(int, _numa_mem_);
-
-#ifndef set_numa_mem
-static inline void set_numa_mem(int node)
-{
-	this_cpu_write(_numa_mem_, node);
-}
-#endif
-
-#ifndef numa_mem_id
-/* Returns the number of the nearest Node with memory */
-static inline int numa_mem_id(void)
-{
-	return raw_cpu_read(_numa_mem_);
-}
-#endif
-
-#ifndef cpu_to_mem
-static inline int cpu_to_mem(int cpu)
-{
-	return per_cpu(_numa_mem_, cpu);
-}
-#endif
-
-#ifndef set_cpu_numa_mem
-static inline void set_cpu_numa_mem(int cpu, int node)
-{
-	per_cpu(_numa_mem_, cpu) = node;
-}
-#endif
-
-#else	/* !CONFIG_HAVE_MEMORYLESS_NODES */
 
 #ifndef numa_mem_id
 /* Returns the number of the nearest Node with memory */
@@ -178,7 +105,6 @@ static inline int cpu_to_mem(int cpu)
 }
 #endif
 
-#endif	/* [!]CONFIG_HAVE_MEMORYLESS_NODES */
 
 #if defined(topology_die_id) && defined(topology_die_cpumask)
 #define TOPOLOGY_DIE_SYSFS
@@ -233,12 +159,6 @@ static inline int cpu_to_mem(int cpu)
 #define topology_drawer_cpumask(cpu)		cpumask_of(cpu)
 #endif
 
-#if defined(CONFIG_SCHED_SMT) && !defined(cpu_smt_mask)
-static inline const struct cpumask *cpu_smt_mask(int cpu)
-{
-	return topology_sibling_cpumask(cpu);
-}
-#endif
 
 static inline const struct cpumask *cpu_cpu_mask(int cpu)
 {

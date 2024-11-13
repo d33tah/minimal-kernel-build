@@ -140,21 +140,6 @@ DEFINE_EVENT(mm_vmscan_direct_reclaim_begin_template, mm_vmscan_direct_reclaim_b
 	TP_ARGS(order, gfp_flags)
 );
 
-#ifdef CONFIG_MEMCG
-DEFINE_EVENT(mm_vmscan_direct_reclaim_begin_template, mm_vmscan_memcg_reclaim_begin,
-
-	TP_PROTO(int order, gfp_t gfp_flags),
-
-	TP_ARGS(order, gfp_flags)
-);
-
-DEFINE_EVENT(mm_vmscan_direct_reclaim_begin_template, mm_vmscan_memcg_softlimit_reclaim_begin,
-
-	TP_PROTO(int order, gfp_t gfp_flags),
-
-	TP_ARGS(order, gfp_flags)
-);
-#endif /* CONFIG_MEMCG */
 
 DECLARE_EVENT_CLASS(mm_vmscan_direct_reclaim_end_template,
 
@@ -180,21 +165,6 @@ DEFINE_EVENT(mm_vmscan_direct_reclaim_end_template, mm_vmscan_direct_reclaim_end
 	TP_ARGS(nr_reclaimed)
 );
 
-#ifdef CONFIG_MEMCG
-DEFINE_EVENT(mm_vmscan_direct_reclaim_end_template, mm_vmscan_memcg_reclaim_end,
-
-	TP_PROTO(unsigned long nr_reclaimed),
-
-	TP_ARGS(nr_reclaimed)
-);
-
-DEFINE_EVENT(mm_vmscan_direct_reclaim_end_template, mm_vmscan_memcg_softlimit_reclaim_end,
-
-	TP_PROTO(unsigned long nr_reclaimed),
-
-	TP_ARGS(nr_reclaimed)
-);
-#endif /* CONFIG_MEMCG */
 
 TRACE_EVENT(mm_shrink_slab_start,
 	TP_PROTO(struct shrinker *shr, struct shrink_control *sc,

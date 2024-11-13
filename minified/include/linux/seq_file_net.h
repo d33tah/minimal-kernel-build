@@ -8,19 +8,11 @@ struct net;
 extern struct net init_net;
 
 struct seq_net_private {
-#ifdef CONFIG_NET_NS
-	struct net	*net;
-	netns_tracker	ns_tracker;
-#endif
 };
 
 static inline struct net *seq_file_net(struct seq_file *seq)
 {
-#ifdef CONFIG_NET_NS
-	return ((struct seq_net_private *)seq->private)->net;
-#else
 	return &init_net;
-#endif
 }
 
 /*
@@ -29,11 +21,7 @@ static inline struct net *seq_file_net(struct seq_file *seq)
  */
 static inline struct net *seq_file_single_net(struct seq_file *seq)
 {
-#ifdef CONFIG_NET_NS
-	return (struct net *)seq->private;
-#else
 	return &init_net;
-#endif
 }
 
 #endif

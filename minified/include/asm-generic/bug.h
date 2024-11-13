@@ -8,14 +8,6 @@
 
 #define CUT_HERE		"------------[ cut here ]------------\n"
 
-#ifdef CONFIG_GENERIC_BUG
-#define BUGFLAG_WARNING		(1 << 0)
-#define BUGFLAG_ONCE		(1 << 1)
-#define BUGFLAG_DONE		(1 << 2)
-#define BUGFLAG_NO_CUT_HERE	(1 << 3)	/* CUT_HERE already sent */
-#define BUGFLAG_TAINT(taint)	((taint) << 8)
-#define BUG_GET_TAINT(bug)	((bug)->flags >> 8)
-#endif
 
 #ifndef __ASSEMBLY__
 #include <linux/panic.h>

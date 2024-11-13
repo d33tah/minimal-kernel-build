@@ -4557,24 +4557,3 @@ const struct proc_ns_operations mntns_operations = {
 	.owner		= mntns_owner,
 };
 
-#ifdef CONFIG_SYSCTL
-static struct ctl_table fs_namespace_sysctls[] = {
-	{
-		.procname	= "mount-max",
-		.data		= &sysctl_mount_max,
-		.maxlen		= sizeof(unsigned int),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec_minmax,
-		.extra1		= SYSCTL_ONE,
-	},
-	{ }
-};
-
-static int __init init_fs_namespace_sysctls(void)
-{
-	register_sysctl_init("fs", fs_namespace_sysctls);
-	return 0;
-}
-fs_initcall(init_fs_namespace_sysctls);
-
-#endif /* CONFIG_SYSCTL */

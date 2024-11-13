@@ -21,9 +21,6 @@
 #include <asm/debugreg.h>
 #include <asm/resctrl.h>
 
-#ifdef CONFIG_X86_64
-# include <asm/mmconfig.h>
-#endif
 
 #include "cpu.h"
 
@@ -274,28 +271,6 @@ static void init_amd_k7(struct cpuinfo_x86 *c)
 	add_taint(TAINT_CPU_OUT_OF_SPEC, LOCKDEP_NOW_UNRELIABLE);
 }
 
-#ifdef CONFIG_NUMA
-/*
- * To workaround broken NUMA config.  Read the comment in
- * srat_detect_node().
- */
-static int nearby_node(int apicid)
-{
-	int i, node;
-
-	for (i = apicid - 1; i >= 0; i--) {
-		node = __apicid_to_node[i];
-		if (node != NUMA_NO_NODE && node_online(node))
-			return node;
-	}
-	for (i = apicid + 1; i < MAX_LOCAL_APIC; i++) {
-		node = __apicid_to_node[i];
-		if (node != NUMA_NO_NODE && node_online(node))
-			return node;
-	}
-	return first_node(node_online_map); /* Shouldn't happen */
-}
-#endif
 
 /*
  * Fix up cpu_core_id for pre-F17h systems to be in the
@@ -394,53 +369,6 @@ EXPORT_SYMBOL_GPL(amd_get_nodes_per_socket);
 
 static void srat_detect_node(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_NUMA
-	int cpu = smp_processor_id();
-	int node;
-	unsigned apicid = c->apicid;
-
-	node = numa_cpu_node(cpu);
-	if (node == NUMA_NO_NODE)
-		node = get_llc_id(cpu);
-
-	/*
-	 * On multi-fabric platform (e.g. Numascale NumaChip) a
-	 * platform-specific handler needs to be called to fixup some
-	 * IDs of the CPU.
-	 */
-	if (x86_cpuinit.fixup_cpu_id)
-		x86_cpuinit.fixup_cpu_id(c, node);
-
-	if (!node_online(node)) {
-		/*
-		 * Two possibilities here:
-		 *
-		 * - The CPU is missing memory and no node was created.  In
-		 *   that case try picking one from a nearby CPU.
-		 *
-		 * - The APIC IDs differ from the HyperTransport node IDs
-		 *   which the K8 northbridge parsing fills in.  Assume
-		 *   they are all increased by a constant offset, but in
-		 *   the same order as the HT nodeids.  If that doesn't
-		 *   result in a usable node fall back to the path for the
-		 *   previous case.
-		 *
-		 * This workaround operates directly on the mapping between
-		 * APIC ID and NUMA node, assuming certain relationship
-		 * between APIC ID, HT node ID and NUMA topology.  As going
-		 * through CPU mapping may alter the outcome, directly
-		 * access __apicid_to_node[].
-		 */
-		int ht_nodeid = c->initial_apicid;
-
-		if (__apicid_to_node[ht_nodeid] != NUMA_NO_NODE)
-			node = __apicid_to_node[ht_nodeid];
-		/* Pick a nearby node */
-		if (!node_online(node))
-			node = nearby_node(apicid);
-	}
-	numa_set_node(cpu, node);
-#endif
 }
 
 static void early_init_amd_mc(struct cpuinfo_x86 *c)
@@ -596,15 +524,11 @@ static void early_init_amd(struct cpuinfo_x86 *c)
 	if (c->x86_power & BIT(14))
 		set_cpu_cap(c, X86_FEATURE_RAPL);
 
-#ifdef CONFIG_X86_64
-	set_cpu_cap(c, X86_FEATURE_SYSCALL32);
-#else
 	/*  Set MTRR capability flag if appropriate */
 	if (c->x86 == 5)
 		if (c->x86_model == 13 || c->x86_model == 9 ||
 		    (c->x86_model == 8 && c->x86_stepping >= 8))
 			set_cpu_cap(c, X86_FEATURE_K6_MTRR);
-#endif
 
 	/*
 	 * This is only needed to tell the kernel whether to use VMCALL
@@ -677,13 +601,6 @@ static void init_amd_k8(struct cpuinfo_x86 *c)
 
 static void init_amd_gh(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_MMCONF_FAM10H
-	/* do this for boot cpu */
-	if (c == &boot_cpu_data)
-		check_enable_amd_mmconf_dmi();
-
-	fam10h_check_enable_mmcfg();
-#endif
 
 	/*
 	 * Disable GART TLB Walk Errors on Fam10h. We do this here because this
@@ -804,33 +721,12 @@ static void init_amd_bd(struct cpuinfo_x86 *c)
 
 void init_spectral_chicken(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_CPU_UNRET_ENTRY
-	u64 value;
-
-	/*
-	 * On Zen2 we offer this chicken (bit) on the altar of Speculation.
-	 *
-	 * This suppresses speculation from the middle of a basic block, i.e. it
-	 * suppresses non-branch predictions.
-	 *
-	 * We use STIBP as a heuristic to filter out Zen2 from the rest of F17H
-	 */
-	if (!cpu_has(c, X86_FEATURE_HYPERVISOR) && cpu_has(c, X86_FEATURE_AMD_STIBP)) {
-		if (!rdmsrl_safe(MSR_ZEN2_SPECTRAL_CHICKEN, &value)) {
-			value |= MSR_ZEN2_SPECTRAL_CHICKEN_BIT;
-			wrmsrl_safe(MSR_ZEN2_SPECTRAL_CHICKEN, value);
-		}
-	}
-#endif
 }
 
 static void init_amd_zn(struct cpuinfo_x86 *c)
 {
 	set_cpu_cap(c, X86_FEATURE_ZEN);
 
-#ifdef CONFIG_NUMA
-	node_reclaim_distance = 32;
-#endif
 
 	/* Fix up CPUID bits, but only if not virtualised. */
 	if (!cpu_has(c, X86_FEATURE_HYPERVISOR)) {

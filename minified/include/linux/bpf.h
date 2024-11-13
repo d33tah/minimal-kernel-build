@@ -197,9 +197,6 @@ struct bpf_map {
 	 */
 	const struct bpf_map_ops *ops ____cacheline_aligned;
 	struct bpf_map *inner_map_meta;
-#ifdef CONFIG_SECURITY
-	void *security;
-#endif
 	enum bpf_map_type map_type;
 	u32 key_size;
 	u32 value_size;
@@ -215,9 +212,6 @@ struct bpf_map {
 	u32 btf_value_type_id;
 	u32 btf_vmlinux_value_type_id;
 	struct btf *btf;
-#ifdef CONFIG_MEMCG_KMEM
-	struct mem_cgroup *memcg;
-#endif
 	char name[BPF_OBJ_NAME_LEN];
 	struct bpf_map_off_arr *off_arr;
 	/* The 3rd and 4th cacheline with misc members to avoid false sharing
@@ -869,59 +863,6 @@ static __always_inline __nocfi unsigned int bpf_dispatcher_nop_func(
 	return bpf_func(ctx, insnsi);
 }
 
-#ifdef CONFIG_BPF_JIT
-int bpf_trampoline_link_prog(struct bpf_tramp_link *link, struct bpf_trampoline *tr);
-int bpf_trampoline_unlink_prog(struct bpf_tramp_link *link, struct bpf_trampoline *tr);
-struct bpf_trampoline *bpf_trampoline_get(u64 key,
-					  struct bpf_attach_target_info *tgt_info);
-void bpf_trampoline_put(struct bpf_trampoline *tr);
-int arch_prepare_bpf_dispatcher(void *image, s64 *funcs, int num_funcs);
-#define BPF_DISPATCHER_INIT(_name) {				\
-	.mutex = __MUTEX_INITIALIZER(_name.mutex),		\
-	.func = &_name##_func,					\
-	.progs = {},						\
-	.num_progs = 0,						\
-	.image = NULL,						\
-	.image_off = 0,						\
-	.ksym = {						\
-		.name  = #_name,				\
-		.lnode = LIST_HEAD_INIT(_name.ksym.lnode),	\
-	},							\
-}
-
-#define DEFINE_BPF_DISPATCHER(name)					\
-	noinline __nocfi unsigned int bpf_dispatcher_##name##_func(	\
-		const void *ctx,					\
-		const struct bpf_insn *insnsi,				\
-		unsigned int (*bpf_func)(const void *,			\
-					 const struct bpf_insn *))	\
-	{								\
-		return bpf_func(ctx, insnsi);				\
-	}								\
-	EXPORT_SYMBOL(bpf_dispatcher_##name##_func);			\
-	struct bpf_dispatcher bpf_dispatcher_##name =			\
-		BPF_DISPATCHER_INIT(bpf_dispatcher_##name);
-#define DECLARE_BPF_DISPATCHER(name)					\
-	unsigned int bpf_dispatcher_##name##_func(			\
-		const void *ctx,					\
-		const struct bpf_insn *insnsi,				\
-		unsigned int (*bpf_func)(const void *,			\
-					 const struct bpf_insn *));	\
-	extern struct bpf_dispatcher bpf_dispatcher_##name;
-#define BPF_DISPATCHER_FUNC(name) bpf_dispatcher_##name##_func
-#define BPF_DISPATCHER_PTR(name) (&bpf_dispatcher_##name)
-void bpf_dispatcher_change_prog(struct bpf_dispatcher *d, struct bpf_prog *from,
-				struct bpf_prog *to);
-/* Called only from JIT-enabled code, so there's no need for stubs. */
-void *bpf_jit_alloc_exec_page(void);
-void bpf_image_ksym_add(void *data, struct bpf_ksym *ksym);
-void bpf_image_ksym_del(struct bpf_ksym *ksym);
-void bpf_ksym_add(struct bpf_ksym *ksym);
-void bpf_ksym_del(struct bpf_ksym *ksym);
-int bpf_jit_charge_modmem(u32 size);
-void bpf_jit_uncharge_modmem(u32 size);
-bool bpf_prog_has_trampoline(const struct bpf_prog *prog);
-#else
 static inline int bpf_trampoline_link_prog(struct bpf_tramp_link *link,
 					   struct bpf_trampoline *tr)
 {
@@ -953,7 +894,6 @@ static inline bool bpf_prog_has_trampoline(const struct bpf_prog *prog)
 {
 	return false;
 }
-#endif
 
 struct bpf_func_info_aux {
 	u16 linkage;
@@ -1047,9 +987,6 @@ struct bpf_prog_aux {
 	u32 verified_insns;
 	struct bpf_map *cgroup_storage[MAX_BPF_CGROUP_STORAGE_TYPE];
 	char name[BPF_OBJ_NAME_LEN];
-#ifdef CONFIG_SECURITY
-	void *security;
-#endif
 	struct bpf_prog_offload *offload;
 	struct btf *btf;
 	struct bpf_func_info *func_info;
@@ -1770,35 +1707,6 @@ static inline u32 bpf_sock_convert_ctx_access(enum bpf_access_type type,
 	return 0;
 }
 
-#ifdef CONFIG_INET
-struct sk_reuseport_kern {
-	struct sk_buff *skb;
-	struct sock *sk;
-	struct sock *selected_sk;
-	struct sock *migrating_sk;
-	void *data_end;
-	u32 hash;
-	u32 reuseport_id;
-	bool bind_inany;
-};
-bool bpf_tcp_sock_is_valid_access(int off, int size, enum bpf_access_type type,
-				  struct bpf_insn_access_aux *info);
-
-u32 bpf_tcp_sock_convert_ctx_access(enum bpf_access_type type,
-				    const struct bpf_insn *si,
-				    struct bpf_insn *insn_buf,
-				    struct bpf_prog *prog,
-				    u32 *target_size);
-
-bool bpf_xdp_sock_is_valid_access(int off, int size, enum bpf_access_type type,
-				  struct bpf_insn_access_aux *info);
-
-u32 bpf_xdp_sock_convert_ctx_access(enum bpf_access_type type,
-				    const struct bpf_insn *si,
-				    struct bpf_insn *insn_buf,
-				    struct bpf_prog *prog,
-				    u32 *target_size);
-#else
 static inline bool bpf_tcp_sock_is_valid_access(int off, int size,
 						enum bpf_access_type type,
 						struct bpf_insn_access_aux *info)
@@ -1829,7 +1737,6 @@ static inline u32 bpf_xdp_sock_convert_ctx_access(enum bpf_access_type type,
 {
 	return 0;
 }
-#endif /* CONFIG_INET */
 
 enum bpf_text_poke_type {
 	BPF_MOD_CALL,

@@ -142,24 +142,7 @@ struct led_classdev {
 	struct work_struct	set_brightness_work;
 	int			delayed_set_value;
 
-#ifdef CONFIG_LEDS_TRIGGERS
-	/* Protects the trigger data below */
-	struct rw_semaphore	 trigger_lock;
 
-	struct led_trigger	*trigger;
-	struct list_head	 trig_list;
-	void			*trigger_data;
-	/* true if activated - deactivate routine uses it to do cleanup */
-	bool			activated;
-
-	/* LEDs that have private triggers have this set */
-	struct led_hw_trigger_type	*trigger_type;
-#endif
-
-#ifdef CONFIG_LEDS_BRIGHTNESS_HW_CHANGED
-	int			 brightness_hw_changed;
-	struct kernfs_node	*brightness_hw_changed_kn;
-#endif
 
 	/* Ensures consistent access to the LED Flash Class device */
 	struct mutex		led_access;
@@ -346,91 +329,6 @@ static inline bool led_sysfs_is_disabled(struct led_classdev *led_cdev)
 #define DEFINE_LED_TRIGGER(x)		static struct led_trigger *x;
 #define DEFINE_LED_TRIGGER_GLOBAL(x)	struct led_trigger *x;
 
-#ifdef CONFIG_LEDS_TRIGGERS
-
-#define TRIG_NAME_MAX 50
-
-struct led_trigger {
-	/* Trigger Properties */
-	const char	 *name;
-	int		(*activate)(struct led_classdev *led_cdev);
-	void		(*deactivate)(struct led_classdev *led_cdev);
-
-	/* LED-private triggers have this set */
-	struct led_hw_trigger_type *trigger_type;
-
-	/* LEDs under control by this trigger (for simple triggers) */
-	spinlock_t	  leddev_list_lock;
-	struct list_head  led_cdevs;
-
-	/* Link to next registered trigger */
-	struct list_head  next_trig;
-
-	const struct attribute_group **groups;
-};
-
-/*
- * Currently the attributes in struct led_trigger::groups are added directly to
- * the LED device. As this might change in the future, the following
- * macros abstract getting the LED device and its trigger_data from the dev
- * parameter passed to the attribute accessor functions.
- */
-#define led_trigger_get_led(dev)	((struct led_classdev *)dev_get_drvdata((dev)))
-#define led_trigger_get_drvdata(dev)	(led_get_trigger_data(led_trigger_get_led(dev)))
-
-/* Registration functions for complex triggers */
-int led_trigger_register(struct led_trigger *trigger);
-void led_trigger_unregister(struct led_trigger *trigger);
-int devm_led_trigger_register(struct device *dev,
-				     struct led_trigger *trigger);
-
-void led_trigger_register_simple(const char *name,
-				struct led_trigger **trigger);
-void led_trigger_unregister_simple(struct led_trigger *trigger);
-void led_trigger_event(struct led_trigger *trigger,  enum led_brightness event);
-void led_trigger_blink(struct led_trigger *trigger, unsigned long *delay_on,
-		       unsigned long *delay_off);
-void led_trigger_blink_oneshot(struct led_trigger *trigger,
-			       unsigned long *delay_on,
-			       unsigned long *delay_off,
-			       int invert);
-void led_trigger_set_default(struct led_classdev *led_cdev);
-int led_trigger_set(struct led_classdev *led_cdev, struct led_trigger *trigger);
-void led_trigger_remove(struct led_classdev *led_cdev);
-
-static inline void led_set_trigger_data(struct led_classdev *led_cdev,
-					void *trigger_data)
-{
-	led_cdev->trigger_data = trigger_data;
-}
-
-static inline void *led_get_trigger_data(struct led_classdev *led_cdev)
-{
-	return led_cdev->trigger_data;
-}
-
-/**
- * led_trigger_rename_static - rename a trigger
- * @name: the new trigger name
- * @trig: the LED trigger to rename
- *
- * Change a LED trigger name by copying the string passed in
- * name into current trigger name, which MUST be large
- * enough for the new string.
- *
- * Note that name must NOT point to the same string used
- * during LED registration, as that could lead to races.
- *
- * This is meant to be used on triggers with statically
- * allocated name.
- */
-void led_trigger_rename_static(const char *name, struct led_trigger *trig);
-
-#define module_led_trigger(__led_trigger) \
-	module_driver(__led_trigger, led_trigger_register, \
-		      led_trigger_unregister)
-
-#else
 
 /* Trigger has no members */
 struct led_trigger {};
@@ -462,20 +360,11 @@ static inline void *led_get_trigger_data(struct led_classdev *led_cdev)
 	return NULL;
 }
 
-#endif /* CONFIG_LEDS_TRIGGERS */
 
 /* Trigger specific functions */
-#ifdef CONFIG_LEDS_TRIGGER_DISK
-void ledtrig_disk_activity(bool write);
-#else
 static inline void ledtrig_disk_activity(bool write) {}
-#endif
 
-#ifdef CONFIG_LEDS_TRIGGER_MTD
-void ledtrig_mtd_activity(void);
-#else
 static inline void ledtrig_mtd_activity(void) {}
-#endif
 
 #if defined(CONFIG_LEDS_TRIGGER_CAMERA) || defined(CONFIG_LEDS_TRIGGER_CAMERA_MODULE)
 void ledtrig_flash_ctrl(bool on);
@@ -553,22 +442,13 @@ enum cpu_led_event {
 	CPU_LED_STOP,		/* Machine stops, especially suspend */
 	CPU_LED_HALTED,		/* Machine shutdown */
 };
-#ifdef CONFIG_LEDS_TRIGGER_CPU
-void ledtrig_cpu(enum cpu_led_event evt);
-#else
 static inline void ledtrig_cpu(enum cpu_led_event evt)
 {
 	return;
 }
-#endif
 
-#ifdef CONFIG_LEDS_BRIGHTNESS_HW_CHANGED
-void led_classdev_notify_brightness_hw_changed(
-	struct led_classdev *led_cdev, unsigned int brightness);
-#else
 static inline void led_classdev_notify_brightness_hw_changed(
 	struct led_classdev *led_cdev, enum led_brightness brightness) { }
-#endif
 
 /**
  * struct led_pattern - pattern interval settings

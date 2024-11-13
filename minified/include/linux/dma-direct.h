@@ -49,12 +49,6 @@ static inline phys_addr_t translate_dma_to_phys(struct device *dev,
 	return (phys_addr_t)-1;
 }
 
-#ifdef CONFIG_ARCH_HAS_PHYS_TO_DMA
-#include <asm/dma-direct.h>
-#ifndef phys_to_dma_unencrypted
-#define phys_to_dma_unencrypted		phys_to_dma
-#endif
-#else
 static inline dma_addr_t phys_to_dma_unencrypted(struct device *dev,
 		phys_addr_t paddr)
 {
@@ -85,16 +79,11 @@ static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t dma_addr)
 
 	return __sme_clr(paddr);
 }
-#endif /* !CONFIG_ARCH_HAS_PHYS_TO_DMA */
 
-#ifdef CONFIG_ARCH_HAS_FORCE_DMA_UNENCRYPTED
-bool force_dma_unencrypted(struct device *dev);
-#else
 static inline bool force_dma_unencrypted(struct device *dev)
 {
 	return false;
 }
-#endif /* CONFIG_ARCH_HAS_FORCE_DMA_UNENCRYPTED */
 
 static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size,
 		bool is_ram)

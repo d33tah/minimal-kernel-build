@@ -36,55 +36,7 @@ KERNEL_ATTR_RO(uevent_seqnum);
 
 
 
-#ifdef CONFIG_KEXEC_CORE
-static ssize_t kexec_loaded_show(struct kobject *kobj,
-				 struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", !!kexec_image);
-}
-KERNEL_ATTR_RO(kexec_loaded);
 
-static ssize_t kexec_crash_loaded_show(struct kobject *kobj,
-				       struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", kexec_crash_loaded());
-}
-KERNEL_ATTR_RO(kexec_crash_loaded);
-
-static ssize_t kexec_crash_size_show(struct kobject *kobj,
-				       struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%zu\n", crash_get_memory_size());
-}
-static ssize_t kexec_crash_size_store(struct kobject *kobj,
-				   struct kobj_attribute *attr,
-				   const char *buf, size_t count)
-{
-	unsigned long cnt;
-	int ret;
-
-	if (kstrtoul(buf, 0, &cnt))
-		return -EINVAL;
-
-	ret = crash_shrink_memory(cnt);
-	return ret < 0 ? ret : count;
-}
-KERNEL_ATTR_RW(kexec_crash_size);
-
-#endif /* CONFIG_KEXEC_CORE */
-
-#ifdef CONFIG_CRASH_CORE
-
-static ssize_t vmcoreinfo_show(struct kobject *kobj,
-			       struct kobj_attribute *attr, char *buf)
-{
-	phys_addr_t vmcore_base = paddr_vmcoreinfo_note();
-	return sprintf(buf, "%pa %x\n", &vmcore_base,
-			(unsigned int)VMCOREINFO_NOTE_SIZE);
-}
-KERNEL_ATTR_RO(vmcoreinfo);
-
-#endif /* CONFIG_CRASH_CORE */
 
 /* whether file capabilities are enabled */
 static ssize_t fscaps_show(struct kobject *kobj,
@@ -124,14 +76,6 @@ EXPORT_SYMBOL_GPL(kernel_kobj);
 static struct attribute * kernel_attrs[] = {
 	&fscaps_attr.attr,
 	&uevent_seqnum_attr.attr,
-#ifdef CONFIG_KEXEC_CORE
-	&kexec_loaded_attr.attr,
-	&kexec_crash_loaded_attr.attr,
-	&kexec_crash_size_attr.attr,
-#endif
-#ifdef CONFIG_CRASH_CORE
-	&vmcoreinfo_attr.attr,
-#endif
 	NULL
 };
 

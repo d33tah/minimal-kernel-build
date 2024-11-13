@@ -116,7 +116,6 @@ struct mem_section;
 #define SLAB_CALLBACK_PRI       1
 #define IPC_CALLBACK_PRI        10
 
-#ifndef CONFIG_MEMORY_HOTPLUG
 static inline void memory_dev_init(void)
 {
 	return;
@@ -139,41 +138,6 @@ static inline int hotplug_memory_notifier(notifier_fn_t fn, int pri)
 /* These aren't inline functions due to a GCC bug. */
 #define register_hotmemory_notifier(nb)    ({ (void)(nb); 0; })
 #define unregister_hotmemory_notifier(nb)  ({ (void)(nb); })
-#else /* CONFIG_MEMORY_HOTPLUG */
-extern int register_memory_notifier(struct notifier_block *nb);
-extern void unregister_memory_notifier(struct notifier_block *nb);
-int create_memory_block_devices(unsigned long start, unsigned long size,
-				unsigned long vmemmap_pages,
-				struct memory_group *group);
-void remove_memory_block_devices(unsigned long start, unsigned long size);
-extern void memory_dev_init(void);
-extern int memory_notify(unsigned long val, void *v);
-extern struct memory_block *find_memory_block(unsigned long section_nr);
-typedef int (*walk_memory_blocks_func_t)(struct memory_block *, void *);
-extern int walk_memory_blocks(unsigned long start, unsigned long size,
-			      void *arg, walk_memory_blocks_func_t func);
-extern int for_each_memory_block(void *arg, walk_memory_blocks_func_t func);
-
-extern int memory_group_register_static(int nid, unsigned long max_pages);
-extern int memory_group_register_dynamic(int nid, unsigned long unit_pages);
-extern int memory_group_unregister(int mgid);
-struct memory_group *memory_group_find_by_id(int mgid);
-typedef int (*walk_memory_groups_func_t)(struct memory_group *, void *);
-int walk_dynamic_memory_groups(int nid, walk_memory_groups_func_t func,
-			       struct memory_group *excluded, void *arg);
-#define hotplug_memory_notifier(fn, pri) ({		\
-	static __meminitdata struct notifier_block fn##_mem_nb =\
-		{ .notifier_call = fn, .priority = pri };\
-	register_memory_notifier(&fn##_mem_nb);			\
-})
-#define register_hotmemory_notifier(nb)		register_memory_notifier(nb)
-#define unregister_hotmemory_notifier(nb) 	unregister_memory_notifier(nb)
-
-#ifdef CONFIG_NUMA
-void memory_block_add_nid(struct memory_block *mem, int nid,
-			  enum meminit_context context);
-#endif /* CONFIG_NUMA */
-#endif	/* CONFIG_MEMORY_HOTPLUG */
 
 /*
  * Kernel text modification mutex, used for code patching. Users of this lock

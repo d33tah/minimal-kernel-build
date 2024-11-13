@@ -1375,9 +1375,6 @@ static int intel_pmu_pebs_fixup_ip(struct pt_regs *regs)
 
 		old_to = to;
 
-#ifdef CONFIG_X86_64
-		is_64bit = kernel_ip(to) || any_64bit_mode(regs);
-#endif
 		insn_init(&insn, kaddr, size, is_64bit);
 
 		/*

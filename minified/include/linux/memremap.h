@@ -150,19 +150,6 @@ static inline bool is_pci_p2pdma_page(const struct page *page)
 		page->pgmap->type == MEMORY_DEVICE_PCI_P2PDMA;
 }
 
-#ifdef CONFIG_ZONE_DEVICE
-void *memremap_pages(struct dev_pagemap *pgmap, int nid);
-void memunmap_pages(struct dev_pagemap *pgmap);
-void *devm_memremap_pages(struct device *dev, struct dev_pagemap *pgmap);
-void devm_memunmap_pages(struct device *dev, struct dev_pagemap *pgmap);
-struct dev_pagemap *get_dev_pagemap(unsigned long pfn,
-		struct dev_pagemap *pgmap);
-bool pgmap_pfn_valid(struct dev_pagemap *pgmap, unsigned long pfn);
-
-unsigned long vmem_altmap_offset(struct vmem_altmap *altmap);
-void vmem_altmap_free(struct vmem_altmap *altmap, unsigned long nr_pfns);
-unsigned long memremap_compat_align(void);
-#else
 static inline void *devm_memremap_pages(struct device *dev,
 		struct dev_pagemap *pgmap)
 {
@@ -206,7 +193,6 @@ static inline unsigned long memremap_compat_align(void)
 {
 	return PAGE_SIZE;
 }
-#endif /* CONFIG_ZONE_DEVICE */
 
 static inline void put_dev_pagemap(struct dev_pagemap *pgmap)
 {

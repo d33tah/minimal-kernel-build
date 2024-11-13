@@ -28,29 +28,10 @@ enum pageblock_bits {
 	NR_PAGEBLOCK_BITS
 };
 
-#ifdef CONFIG_HUGETLB_PAGE
-
-#ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
-
-/* Huge page sizes are variable */
-extern unsigned int pageblock_order;
-
-#else /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
-
-/*
- * Huge pages are a constant size, but don't exceed the maximum allocation
- * granularity.
- */
-#define pageblock_order		min_t(unsigned int, HUGETLB_PAGE_ORDER, MAX_ORDER - 1)
-
-#endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
-
-#else /* CONFIG_HUGETLB_PAGE */
 
 /* If huge pages are not used, group by MAX_ORDER_NR_PAGES */
 #define pageblock_order		(MAX_ORDER-1)
 
-#endif /* CONFIG_HUGETLB_PAGE */
 
 #define pageblock_nr_pages	(1UL << pageblock_order)
 

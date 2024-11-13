@@ -219,8 +219,6 @@ struct pstore_ftrace_record {
 
 #if NR_CPUS <= 2 && defined(CONFIG_ARM_THUMB)
 #define PSTORE_CPU_IN_IP 0x1
-#elif NR_CPUS <= 4 && defined(CONFIG_ARM)
-#define PSTORE_CPU_IN_IP 0x3
 #endif
 
 #define TS_CPU_SHIFT 8

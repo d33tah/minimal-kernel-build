@@ -318,31 +318,17 @@ static inline bool mapping_large_folio_support(struct address_space *mapping)
 
 static inline int filemap_nr_thps(struct address_space *mapping)
 {
-#ifdef CONFIG_READ_ONLY_THP_FOR_FS
-	return atomic_read(&mapping->nr_thps);
-#else
 	return 0;
-#endif
 }
 
 static inline void filemap_nr_thps_inc(struct address_space *mapping)
 {
-#ifdef CONFIG_READ_ONLY_THP_FOR_FS
-	if (!mapping_large_folio_support(mapping))
-		atomic_inc(&mapping->nr_thps);
-#else
 	WARN_ON_ONCE(mapping_large_folio_support(mapping) == 0);
-#endif
 }
 
 static inline void filemap_nr_thps_dec(struct address_space *mapping)
 {
-#ifdef CONFIG_READ_ONLY_THP_FOR_FS
-	if (!mapping_large_folio_support(mapping))
-		atomic_dec(&mapping->nr_thps);
-#else
 	WARN_ON_ONCE(mapping_large_folio_support(mapping) == 0);
-#endif
 }
 
 void release_pages(struct page **pages, int nr);
@@ -468,14 +454,10 @@ static inline void *detach_page_private(struct page *page)
 	return folio_detach_private(page_folio(page));
 }
 
-#ifdef CONFIG_NUMA
-struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order);
-#else
 static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 {
 	return folio_alloc(gfp, order);
 }
-#endif
 
 static inline struct page *__page_cache_alloc(gfp_t gfp)
 {

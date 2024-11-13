@@ -19,10 +19,6 @@ static inline bool can_set_direct_map(void)
 #define can_set_direct_map can_set_direct_map
 #endif
 
-#ifdef CONFIG_X86_64
-int set_mce_nospec(unsigned long pfn);
-int clear_mce_nospec(unsigned long pfn);
-#else
 static inline int set_mce_nospec(unsigned long pfn)
 {
 	return 0;
@@ -31,7 +27,6 @@ static inline int clear_mce_nospec(unsigned long pfn)
 {
 	return 0;
 }
-#endif
 
 
 #endif /* _LINUX_SET_MEMORY_H_ */

@@ -28,82 +28,8 @@
 #include <asm/irq.h>
 #include <asm/sections.h>
 
-#ifdef	CONFIG_X86_LOCAL_APIC
-struct irq_data;
-struct pci_dev;
-struct msi_desc;
-
-enum irq_alloc_type {
-	X86_IRQ_ALLOC_TYPE_IOAPIC = 1,
-	X86_IRQ_ALLOC_TYPE_HPET,
-	X86_IRQ_ALLOC_TYPE_PCI_MSI,
-	X86_IRQ_ALLOC_TYPE_PCI_MSIX,
-	X86_IRQ_ALLOC_TYPE_DMAR,
-	X86_IRQ_ALLOC_TYPE_AMDVI,
-	X86_IRQ_ALLOC_TYPE_UV,
-};
-
-struct ioapic_alloc_info {
-	int		pin;
-	int		node;
-	u32		is_level	: 1;
-	u32		active_low	: 1;
-	u32		valid		: 1;
-};
-
-struct uv_alloc_info {
-	int		limit;
-	int		blade;
-	unsigned long	offset;
-	char		*name;
-
-};
-
-/**
- * irq_alloc_info - X86 specific interrupt allocation info
- * @type:	X86 specific allocation type
- * @flags:	Flags for allocation tweaks
- * @devid:	Device ID for allocations
- * @hwirq:	Associated hw interrupt number in the domain
- * @mask:	CPU mask for vector allocation
- * @desc:	Pointer to msi descriptor
- * @data:	Allocation specific data
- *
- * @ioapic:	IOAPIC specific allocation data
- * @uv:		UV specific allocation data
-*/
-struct irq_alloc_info {
-	enum irq_alloc_type	type;
-	u32			flags;
-	u32			devid;
-	irq_hw_number_t		hwirq;
-	const struct cpumask	*mask;
-	struct msi_desc		*desc;
-	void			*data;
-
-	union {
-		struct ioapic_alloc_info	ioapic;
-		struct uv_alloc_info		uv;
-	};
-};
-
-struct irq_cfg {
-	unsigned int		dest_apicid;
-	unsigned int		vector;
-};
-
-extern struct irq_cfg *irq_cfg(unsigned int irq);
-extern struct irq_cfg *irqd_cfg(struct irq_data *irq_data);
-extern void lock_vector_lock(void);
-extern void unlock_vector_lock(void);
-static inline void send_cleanup_vector(struct irq_cfg *c) { }
-static inline void irq_complete_move(struct irq_cfg *c) { }
-
-extern void apic_ack_edge(struct irq_data *data);
-#else	/*  CONFIG_X86_LOCAL_APIC */
 static inline void lock_vector_lock(void) {}
 static inline void unlock_vector_lock(void) {}
-#endif	/* CONFIG_X86_LOCAL_APIC */
 
 /* Statistics */
 extern atomic_t irq_err_count;
@@ -112,9 +38,6 @@ extern atomic_t irq_mis_count;
 extern void elcr_set_level_irq(unsigned int irq);
 
 extern char irq_entries_start[];
-#ifdef CONFIG_TRACING
-#define trace_irq_entries_start irq_entries_start
-#endif
 
 extern char spurious_entries_start[];
 

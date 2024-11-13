@@ -39,16 +39,12 @@ extern int sysctl_page_lock_unfairness;
 
 void init_mm_internals(void);
 
-#ifndef CONFIG_NUMA		/* Don't use mapnrs, do it properly */
 extern unsigned long max_mapnr;
 
 static inline void set_max_mapnr(unsigned long limit)
 {
 	max_mapnr = limit;
 }
-#else
-static inline void set_max_mapnr(unsigned long limit) { }
-#endif
 
 extern atomic_long_t _totalram_pages;
 static inline unsigned long totalram_pages(void)
@@ -74,20 +70,11 @@ static inline void totalram_pages_add(long count)
 extern void * high_memory;
 extern int page_cluster;
 
-#ifdef CONFIG_SYSCTL
-extern int sysctl_legacy_va_layout;
-#else
 #define sysctl_legacy_va_layout 0
-#endif
 
 extern const int mmap_rnd_bits_min;
 extern const int mmap_rnd_bits_max;
 extern int mmap_rnd_bits __read_mostly;
-#ifdef CONFIG_HAVE_ARCH_MMAP_RND_COMPAT_BITS
-extern const int mmap_rnd_compat_bits_min;
-extern const int mmap_rnd_compat_bits_max;
-extern int mmap_rnd_compat_bits __read_mostly;
-#endif
 
 #include <asm/page.h>
 #include <asm/processor.h>
@@ -208,13 +195,8 @@ int overcommit_kbytes_handler(struct ctl_table *, int, void *, size_t *,
 int overcommit_policy_handler(struct ctl_table *, int, void *, size_t *,
 		loff_t *);
 
-#if defined(CONFIG_SPARSEMEM) && !defined(CONFIG_SPARSEMEM_VMEMMAP)
-#define nth_page(page,n) pfn_to_page(page_to_pfn((page)) + (n))
-#define folio_page_idx(folio, p)	(page_to_pfn(p) - folio_pfn(folio))
-#else
 #define nth_page(page,n) ((page) + (n))
 #define folio_page_idx(folio, p)	((p) - &(folio)->page)
-#endif
 
 /* to align the pointer to the (next) page boundary */
 #define PAGE_ALIGN(addr) ALIGN(addr, PAGE_SIZE)
@@ -285,42 +267,14 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_WIPEONFORK	0x02000000	/* Wipe VMA contents in child. */
 #define VM_DONTDUMP	0x04000000	/* Do not include in the core dump */
 
-#ifdef CONFIG_MEM_SOFT_DIRTY
-# define VM_SOFTDIRTY	0x08000000	/* Not soft dirty clean area */
-#else
 # define VM_SOFTDIRTY	0
-#endif
 
 #define VM_MIXEDMAP	0x10000000	/* Can contain "struct page" and pure PFN pages */
 #define VM_HUGEPAGE	0x20000000	/* MADV_HUGEPAGE marked this vma */
 #define VM_NOHUGEPAGE	0x40000000	/* MADV_NOHUGEPAGE marked this vma */
 #define VM_MERGEABLE	0x80000000	/* KSM may merge identical pages */
 
-#ifdef CONFIG_ARCH_USES_HIGH_VMA_FLAGS
-#define VM_HIGH_ARCH_BIT_0	32	/* bit only usable on 64-bit architectures */
-#define VM_HIGH_ARCH_BIT_1	33	/* bit only usable on 64-bit architectures */
-#define VM_HIGH_ARCH_BIT_2	34	/* bit only usable on 64-bit architectures */
-#define VM_HIGH_ARCH_BIT_3	35	/* bit only usable on 64-bit architectures */
-#define VM_HIGH_ARCH_BIT_4	36	/* bit only usable on 64-bit architectures */
-#define VM_HIGH_ARCH_0	BIT(VM_HIGH_ARCH_BIT_0)
-#define VM_HIGH_ARCH_1	BIT(VM_HIGH_ARCH_BIT_1)
-#define VM_HIGH_ARCH_2	BIT(VM_HIGH_ARCH_BIT_2)
-#define VM_HIGH_ARCH_3	BIT(VM_HIGH_ARCH_BIT_3)
-#define VM_HIGH_ARCH_4	BIT(VM_HIGH_ARCH_BIT_4)
-#endif /* CONFIG_ARCH_USES_HIGH_VMA_FLAGS */
 
-#ifdef CONFIG_ARCH_HAS_PKEYS
-# define VM_PKEY_SHIFT	VM_HIGH_ARCH_BIT_0
-# define VM_PKEY_BIT0	VM_HIGH_ARCH_0	/* A protection key is a 4-bit value */
-# define VM_PKEY_BIT1	VM_HIGH_ARCH_1	/* on x86 and 5-bit value on ppc64   */
-# define VM_PKEY_BIT2	VM_HIGH_ARCH_2
-# define VM_PKEY_BIT3	VM_HIGH_ARCH_3
-#ifdef CONFIG_PPC
-# define VM_PKEY_BIT4  VM_HIGH_ARCH_4
-#else
-# define VM_PKEY_BIT4  0
-#endif
-#endif /* CONFIG_ARCH_HAS_PKEYS */
 
 # define VM_PAT		VM_ARCH_1	/* PAT reserves whole VMA at once (x86) */
 
@@ -336,12 +290,7 @@ void vm_area_free(struct vm_area_struct *);
 # define VM_GROWSUP	VM_NONE
 #endif
 
-#ifdef CONFIG_HAVE_ARCH_USERFAULTFD_MINOR
-# define VM_UFFD_MINOR_BIT	37
-# define VM_UFFD_MINOR		BIT(VM_UFFD_MINOR_BIT)	/* UFFD minor faults */
-#else /* !CONFIG_HAVE_ARCH_USERFAULTFD_MINOR */
 # define VM_UFFD_MINOR		VM_NONE
-#endif /* CONFIG_HAVE_ARCH_USERFAULTFD_MINOR */
 
 /* Bits set in the VMA until the stack is in its final location */
 #define VM_STACK_INCOMPLETE_SETUP	(VM_RAND_READ | VM_SEQ_READ)
@@ -364,11 +313,7 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_STACK_DEFAULT_FLAGS VM_DATA_DEFAULT_FLAGS
 #endif
 
-#ifdef CONFIG_STACK_GROWSUP
-#define VM_STACK	VM_GROWSUP
-#else
 #define VM_STACK	VM_GROWSDOWN
-#endif
 
 #define VM_STACK_FLAGS	(VM_STACK | VM_STACK_DEFAULT_FLAGS | VM_ACCOUNT)
 
@@ -552,29 +497,6 @@ struct vm_operations_struct {
 	 * vma to be dumped unconditionally. */
 	const char *(*name)(struct vm_area_struct *vma);
 
-#ifdef CONFIG_NUMA
-	/*
-	 * set_policy() op must add a reference to any non-NULL @new mempolicy
-	 * to hold the policy upon return.  Caller should pass NULL @new to
-	 * remove a policy and fall back to surrounding context--i.e. do not
-	 * install a MPOL_DEFAULT policy, nor the task or system default
-	 * mempolicy.
-	 */
-	int (*set_policy)(struct vm_area_struct *vma, struct mempolicy *new);
-
-	/*
-	 * get_policy() op must add reference [mpol_get()] to any policy at
-	 * (vma,addr) marked as MPOL_SHARED.  The shared policy infrastructure
-	 * in mm/mempolicy.c will do this automatically.
-	 * get_policy() must NOT add a ref if the policy at (vma,addr) is not
-	 * marked as MPOL_SHARED. vma policies are protected by the mmap_lock.
-	 * If no [shared/vma] mempolicy exists at the addr, get_policy() op
-	 * must return NULL--i.e., do not "fallback" to task or system default
-	 * policy.
-	 */
-	struct mempolicy *(*get_policy)(struct vm_area_struct *vma,
-					unsigned long addr);
-#endif
 	/*
 	 * Called by vm_normal_page() for special PTEs to find the
 	 * page for @addr.  This is useful if the default behavior
@@ -824,9 +746,6 @@ typedef void compound_page_dtor(struct page *);
 enum compound_dtor_id {
 	NULL_COMPOUND_DTOR,
 	COMPOUND_PAGE_DTOR,
-#ifdef CONFIG_HUGETLB_PAGE
-	HUGETLB_PAGE_DTOR,
-#endif
 	NR_COMPOUND_DTORS,
 };
 extern compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS];
@@ -1040,19 +959,10 @@ static inline enum zone_type folio_zonenum(const struct folio *folio)
 	return page_zonenum(&folio->page);
 }
 
-#ifdef CONFIG_ZONE_DEVICE
-static inline bool is_zone_device_page(const struct page *page)
-{
-	return page_zonenum(page) == ZONE_DEVICE;
-}
-extern void memmap_init_zone_device(struct zone *, unsigned long,
-				    unsigned long, struct dev_pagemap *);
-#else
 static inline bool is_zone_device_page(const struct page *page)
 {
 	return false;
 }
-#endif
 
 static inline bool folio_is_zone_device(const struct folio *folio)
 {
@@ -1064,25 +974,10 @@ static inline bool is_zone_movable_page(const struct page *page)
 	return page_zonenum(page) == ZONE_MOVABLE;
 }
 
-#if defined(CONFIG_ZONE_DEVICE) && defined(CONFIG_FS_DAX)
-DECLARE_STATIC_KEY_FALSE(devmap_managed_key);
-
-bool __put_devmap_managed_page(struct page *page);
-static inline bool put_devmap_managed_page(struct page *page)
-{
-	if (!static_branch_unlikely(&devmap_managed_key))
-		return false;
-	if (!is_zone_device_page(page))
-		return false;
-	return __put_devmap_managed_page(page);
-}
-
-#else /* CONFIG_ZONE_DEVICE && CONFIG_FS_DAX */
 static inline bool put_devmap_managed_page(struct page *page)
 {
 	return false;
 }
-#endif /* CONFIG_ZONE_DEVICE && CONFIG_FS_DAX */
 
 /* 127: arbitrary random number, small enough to assemble well */
 #define folio_ref_zero_or_close_to_overflow(folio) \
@@ -1214,9 +1109,6 @@ static inline bool is_cow_mapping(vm_flags_t flags)
 	return (flags & (VM_SHARED | VM_MAYWRITE)) == VM_MAYWRITE;
 }
 
-#if defined(CONFIG_SPARSEMEM) && !defined(CONFIG_SPARSEMEM_VMEMMAP)
-#define SECTION_IN_PAGE_FLAGS
-#endif
 
 /*
  * The identification function is mainly used by the buddy allocator for
@@ -1247,71 +1139,6 @@ static inline int folio_nid(const struct folio *folio)
 	return page_to_nid(&folio->page);
 }
 
-#ifdef CONFIG_NUMA_BALANCING
-static inline int cpu_pid_to_cpupid(int cpu, int pid)
-{
-	return ((cpu & LAST__CPU_MASK) << LAST__PID_SHIFT) | (pid & LAST__PID_MASK);
-}
-
-static inline int cpupid_to_pid(int cpupid)
-{
-	return cpupid & LAST__PID_MASK;
-}
-
-static inline int cpupid_to_cpu(int cpupid)
-{
-	return (cpupid >> LAST__PID_SHIFT) & LAST__CPU_MASK;
-}
-
-static inline int cpupid_to_nid(int cpupid)
-{
-	return cpu_to_node(cpupid_to_cpu(cpupid));
-}
-
-static inline bool cpupid_pid_unset(int cpupid)
-{
-	return cpupid_to_pid(cpupid) == (-1 & LAST__PID_MASK);
-}
-
-static inline bool cpupid_cpu_unset(int cpupid)
-{
-	return cpupid_to_cpu(cpupid) == (-1 & LAST__CPU_MASK);
-}
-
-static inline bool __cpupid_match_pid(pid_t task_pid, int cpupid)
-{
-	return (task_pid & LAST__PID_MASK) == cpupid_to_pid(cpupid);
-}
-
-#define cpupid_match_pid(task, cpupid) __cpupid_match_pid(task->pid, cpupid)
-#ifdef LAST_CPUPID_NOT_IN_PAGE_FLAGS
-static inline int page_cpupid_xchg_last(struct page *page, int cpupid)
-{
-	return xchg(&page->_last_cpupid, cpupid & LAST_CPUPID_MASK);
-}
-
-static inline int page_cpupid_last(struct page *page)
-{
-	return page->_last_cpupid;
-}
-static inline void page_cpupid_reset_last(struct page *page)
-{
-	page->_last_cpupid = -1 & LAST_CPUPID_MASK;
-}
-#else
-static inline int page_cpupid_last(struct page *page)
-{
-	return (page->flags >> LAST_CPUPID_PGSHIFT) & LAST_CPUPID_MASK;
-}
-
-extern int page_cpupid_xchg_last(struct page *page, int cpupid);
-
-static inline void page_cpupid_reset_last(struct page *page)
-{
-	page->flags |= LAST_CPUPID_MASK << LAST_CPUPID_PGSHIFT;
-}
-#endif /* LAST_CPUPID_NOT_IN_PAGE_FLAGS */
-#else /* !CONFIG_NUMA_BALANCING */
 static inline int page_cpupid_xchg_last(struct page *page, int cpupid)
 {
 	return page_to_nid(page); /* XXX */
@@ -1355,51 +1182,7 @@ static inline bool cpupid_match_pid(struct task_struct *task, int cpupid)
 {
 	return false;
 }
-#endif /* CONFIG_NUMA_BALANCING */
 
-#if defined(CONFIG_KASAN_SW_TAGS) || defined(CONFIG_KASAN_HW_TAGS)
-
-/*
- * KASAN per-page tags are stored xor'ed with 0xff. This allows to avoid
- * setting tags for all pages to native kernel tag value 0xff, as the default
- * value 0x00 maps to 0xff.
- */
-
-static inline u8 page_kasan_tag(const struct page *page)
-{
-	u8 tag = 0xff;
-
-	if (kasan_enabled()) {
-		tag = (page->flags >> KASAN_TAG_PGSHIFT) & KASAN_TAG_MASK;
-		tag ^= 0xff;
-	}
-
-	return tag;
-}
-
-static inline void page_kasan_tag_set(struct page *page, u8 tag)
-{
-	unsigned long old_flags, flags;
-
-	if (!kasan_enabled())
-		return;
-
-	tag ^= 0xff;
-	old_flags = READ_ONCE(page->flags);
-	do {
-		flags = old_flags;
-		flags &= ~(KASAN_TAG_MASK << KASAN_TAG_PGSHIFT);
-		flags |= (tag & KASAN_TAG_MASK) << KASAN_TAG_PGSHIFT;
-	} while (unlikely(!try_cmpxchg(&page->flags, &old_flags, flags)));
-}
-
-static inline void page_kasan_tag_reset(struct page *page)
-{
-	if (kasan_enabled())
-		page_kasan_tag_set(page, 0xff);
-}
-
-#else /* CONFIG_KASAN_SW_TAGS || CONFIG_KASAN_HW_TAGS */
 
 static inline u8 page_kasan_tag(const struct page *page)
 {
@@ -1409,7 +1192,6 @@ static inline u8 page_kasan_tag(const struct page *page)
 static inline void page_kasan_tag_set(struct page *page, u8 tag) { }
 static inline void page_kasan_tag_reset(struct page *page) { }
 
-#endif /* CONFIG_KASAN_SW_TAGS || CONFIG_KASAN_HW_TAGS */
 
 static inline struct zone *page_zone(const struct page *page)
 {
@@ -1528,17 +1310,10 @@ static inline bool page_needs_cow_for_dma(struct vm_area_struct *vma,
 }
 
 /* MIGRATE_CMA and ZONE_MOVABLE do not allow pin pages */
-#ifdef CONFIG_MIGRATION
-static inline bool is_pinnable_page(struct page *page)
-{
-	return !is_zone_movable_page(page) || is_zero_pfn(page_to_pfn(page));
-}
-#else
 static inline bool is_pinnable_page(struct page *page)
 {
 	return true;
 }
-#endif
 
 static inline bool folio_is_pinnable(struct folio *folio)
 {
@@ -1660,9 +1435,6 @@ static __always_inline void *lowmem_page_address(const struct page *page)
 	return page_to_virt(page);
 }
 
-#if defined(CONFIG_HIGHMEM) && !defined(WANT_PAGE_VIRTUAL)
-#define HASHED_PAGE_VIRTUAL
-#endif
 
 #if defined(WANT_PAGE_VIRTUAL)
 static inline void *page_address(const struct page *page)
@@ -2008,12 +1780,10 @@ static inline void sync_mm_rss(struct mm_struct *mm)
 #endif
 
 
-#ifndef CONFIG_ARCH_HAS_PTE_DEVMAP
 static inline int pte_devmap(pte_t pte)
 {
 	return 0;
 }
-#endif
 
 int vma_wants_writenotify(struct vm_area_struct *vma, pgprot_t vm_page_prot);
 
@@ -2414,15 +2184,10 @@ extern void get_pfn_range_for_nid(unsigned int nid,
 			unsigned long *start_pfn, unsigned long *end_pfn);
 extern unsigned long find_min_pfn_with_active_regions(void);
 
-#ifndef CONFIG_NUMA
 static inline int early_pfn_to_nid(unsigned long pfn)
 {
 	return 0;
 }
-#else
-/* please see mm/page_alloc.c */
-extern int __meminit early_pfn_to_nid(unsigned long pfn);
-#endif
 
 extern void set_dma_reserve(unsigned long new_dma_reserve);
 extern void memmap_init_range(unsigned long, int, unsigned long,
@@ -2482,9 +2247,6 @@ anon_vma_interval_tree_iter_first(struct rb_root_cached *root,
 				  unsigned long start, unsigned long last);
 struct anon_vma_chain *anon_vma_interval_tree_iter_next(
 	struct anon_vma_chain *node, unsigned long start, unsigned long last);
-#ifdef CONFIG_DEBUG_VM_RB
-void anon_vma_interval_tree_verify(struct anon_vma_chain *node);
-#endif
 
 #define anon_vma_interval_tree_foreach(avc, root, start, last)		 \
 	for (avc = anon_vma_interval_tree_iter_first(root, start, last); \
@@ -2720,10 +2482,6 @@ void vma_set_page_prot(struct vm_area_struct *vma);
 
 void vma_set_file(struct vm_area_struct *vma, struct file *file);
 
-#ifdef CONFIG_NUMA_BALANCING
-unsigned long change_prot_numa(struct vm_area_struct *vma,
-			unsigned long start, unsigned long end);
-#endif
 
 struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 int remap_pfn_range(struct vm_area_struct *, unsigned long addr,
@@ -2979,11 +2737,6 @@ static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
 
 extern bool process_shares_mm(struct task_struct *p, struct mm_struct *mm);
 
-#ifdef CONFIG_SYSCTL
-extern int sysctl_drop_caches;
-int drop_caches_sysctl_handler(struct ctl_table *, int, void *, size_t *,
-		loff_t *);
-#endif
 
 void drop_slab(void);
 
@@ -2992,12 +2745,6 @@ extern int randomize_va_space;
 const char * arch_vma_name(struct vm_area_struct *vma);
 void print_vma_addr(char *prefix, unsigned long rip);
 
-#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
-int vmemmap_remap_free(unsigned long start, unsigned long end,
-		       unsigned long reuse);
-int vmemmap_remap_alloc(unsigned long start, unsigned long end,
-			unsigned long reuse, gfp_t gfp_mask);
-#endif
 
 void *sparse_buffer_alloc(unsigned long size);
 struct page * __populate_section_memmap(unsigned long pfn,
@@ -3019,10 +2766,6 @@ int vmemmap_populate_basepages(unsigned long start, unsigned long end,
 int vmemmap_populate(unsigned long start, unsigned long end, int node,
 		struct vmem_altmap *altmap);
 void vmemmap_populate_print_last(void);
-#ifdef CONFIG_MEMORY_HOTPLUG
-void vmemmap_free(unsigned long start, unsigned long end,
-		struct vmem_altmap *altmap);
-#endif
 void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
 				  unsigned long nr_pages);
 
@@ -3043,14 +2786,10 @@ extern int sysctl_memory_failure_recovery;
 extern void shake_page(struct page *p);
 extern atomic_long_t num_poisoned_pages __read_mostly;
 extern int soft_offline_page(unsigned long pfn, int flags);
-#ifdef CONFIG_MEMORY_FAILURE
-extern int __get_huge_page_for_hwpoison(unsigned long pfn, int flags);
-#else
 static inline int __get_huge_page_for_hwpoison(unsigned long pfn, int flags)
 {
 	return 0;
 }
-#endif
 
 #ifndef arch_memory_failure
 static inline int arch_memory_failure(unsigned long pfn, int flags)
@@ -3118,17 +2857,6 @@ static inline int pages_identical(struct page *page1, struct page *page2)
 	return !memcmp_pages(page1, page2);
 }
 
-#ifdef CONFIG_MAPPING_DIRTY_HELPERS
-unsigned long clean_record_shared_mapping_range(struct address_space *mapping,
-						pgoff_t first_index, pgoff_t nr,
-						pgoff_t bitmap_pgoff,
-						unsigned long *bitmap,
-						pgoff_t *start,
-						pgoff_t *end);
-
-unsigned long wp_shared_mapping_range(struct address_space *mapping,
-				      pgoff_t first_index, pgoff_t nr);
-#endif
 
 extern int sysctl_nr_trim_pages;
 
@@ -3166,17 +2894,11 @@ static inline int seal_check_future_write(int seals, struct vm_area_struct *vma)
 	return 0;
 }
 
-#ifdef CONFIG_ANON_VMA_NAME
-int madvise_set_anon_name(struct mm_struct *mm, unsigned long start,
-			  unsigned long len_in,
-			  struct anon_vma_name *anon_name);
-#else
 static inline int
 madvise_set_anon_name(struct mm_struct *mm, unsigned long start,
 		      unsigned long len_in, struct anon_vma_name *anon_name) {
 	return 0;
 }
-#endif
 
 /*
  * Whether to drop the pte markers, for example, the uffd-wp information for

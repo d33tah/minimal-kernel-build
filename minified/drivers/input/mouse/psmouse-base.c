@@ -789,16 +789,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.detect		= synaptics_detect,
 		.init		= synaptics_init_relative,
 	},
-#ifdef CONFIG_MOUSE_PS2_SYNAPTICS_SMBUS
-	{
-		.type		= PSMOUSE_SYNAPTICS_SMBUS,
-		.name		= "SynSMBus",
-		.alias		= "synaptics-smbus",
-		.detect		= synaptics_detect,
-		.init		= synaptics_init_smbus,
-		.smbus_companion = true,
-	},
-#endif
 	{
 		.type		= PSMOUSE_ALPS,
 		.name		= "AlpsPS/2",
@@ -806,15 +796,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.detect		= alps_detect,
 		.init		= alps_init,
 	},
-#ifdef CONFIG_MOUSE_PS2_LIFEBOOK
-	{
-		.type		= PSMOUSE_LIFEBOOK,
-		.name		= "LBPS/2",
-		.alias		= "lifebook",
-		.detect		= lifebook_detect,
-		.init		= lifebook_init,
-	},
-#endif
 	{
 		.type		= PSMOUSE_TRACKPOINT,
 		.name		= "TPPS/2",
@@ -822,24 +803,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.detect		= trackpoint_detect,
 		.try_passthru	= true,
 	},
-#ifdef CONFIG_MOUSE_PS2_OLPC
-	{
-		.type		= PSMOUSE_HGPK,
-		.name		= "OLPC HGPK",
-		.alias		= "hgpk",
-		.detect		= hgpk_detect,
-	},
-#endif
-#ifdef CONFIG_MOUSE_PS2_ELANTECH_SMBUS
-	{
-		.type		= PSMOUSE_ELANTECH_SMBUS,
-		.name		= "ETSMBus",
-		.alias		= "elantech-smbus",
-		.detect		= elantech_detect,
-		.init		= elantech_init_smbus,
-		.smbus_companion = true,
-	},
-#endif
 	{
 		.type		= PSMOUSE_CORTRON,
 		.name		= "CortronPS/2",
@@ -853,15 +816,6 @@ static const struct psmouse_protocol psmouse_protocols[] = {
 		.detect		= focaltech_detect,
 		.init		= focaltech_init,
 	},
-#ifdef CONFIG_MOUSE_PS2_VMMOUSE
-	{
-		.type		= PSMOUSE_VMMOUSE,
-		.name		= VMMOUSE_PSNAME,
-		.alias		= "vmmouse",
-		.detect		= vmmouse_detect,
-		.init		= vmmouse_init,
-	},
-#endif
 	{
 		.type		= PSMOUSE_BYD,
 		.name		= "BYDPS/2",

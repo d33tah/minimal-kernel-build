@@ -31,23 +31,6 @@ void cpu_idle_poll_ctrl(bool enable)
 	}
 }
 
-#ifdef CONFIG_GENERIC_IDLE_POLL_SETUP
-static int __init cpu_idle_poll_setup(char *__unused)
-{
-	cpu_idle_force_poll = 1;
-
-	return 1;
-}
-__setup("nohlt", cpu_idle_poll_setup);
-
-static int __init cpu_idle_nopoll_setup(char *__unused)
-{
-	cpu_idle_force_poll = 0;
-
-	return 1;
-}
-__setup("hlt", cpu_idle_nopoll_setup);
-#endif
 
 static noinline int __cpuidle cpu_idle_poll(void)
 {

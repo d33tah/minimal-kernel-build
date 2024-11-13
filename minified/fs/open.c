@@ -146,12 +146,6 @@ SYSCALL_DEFINE2(truncate, const char __user *, path, long, length)
 	return do_sys_truncate(path, length);
 }
 
-#ifdef CONFIG_COMPAT
-COMPAT_SYSCALL_DEFINE2(truncate, const char __user *, path, compat_off_t, length)
-{
-	return do_sys_truncate(path, length);
-}
-#endif
 
 long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
 {
@@ -204,12 +198,6 @@ SYSCALL_DEFINE2(ftruncate, unsigned int, fd, unsigned long, length)
 	return do_sys_ftruncate(fd, length, 1);
 }
 
-#ifdef CONFIG_COMPAT
-COMPAT_SYSCALL_DEFINE2(ftruncate, unsigned int, fd, compat_ulong_t, length)
-{
-	return do_sys_ftruncate(fd, length, 1);
-}
-#endif
 
 /* LFS versions of truncate are only needed on 32 bit machines */
 #if BITS_PER_LONG == 32
@@ -224,21 +212,7 @@ SYSCALL_DEFINE2(ftruncate64, unsigned int, fd, loff_t, length)
 }
 #endif /* BITS_PER_LONG == 32 */
 
-#if defined(CONFIG_COMPAT) && defined(__ARCH_WANT_COMPAT_TRUNCATE64)
-COMPAT_SYSCALL_DEFINE3(truncate64, const char __user *, pathname,
-		       compat_arg_u64_dual(length))
-{
-	return ksys_truncate(pathname, compat_arg_u64_glue(length));
-}
-#endif
 
-#if defined(CONFIG_COMPAT) && defined(__ARCH_WANT_COMPAT_FTRUNCATE64)
-COMPAT_SYSCALL_DEFINE3(ftruncate64, unsigned int, fd,
-		       compat_arg_u64_dual(length))
-{
-	return ksys_ftruncate(fd, compat_arg_u64_glue(length));
-}
-#endif
 
 int vfs_fallocate(struct file *file, int mode, loff_t offset, loff_t len)
 {
@@ -354,14 +328,6 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
 	return ksys_fallocate(fd, mode, offset, len);
 }
 
-#if defined(CONFIG_COMPAT) && defined(__ARCH_WANT_COMPAT_FALLOCATE)
-COMPAT_SYSCALL_DEFINE6(fallocate, int, fd, int, mode, compat_arg_u64_dual(offset),
-		       compat_arg_u64_dual(len))
-{
-	return ksys_fallocate(fd, mode, compat_arg_u64_glue(offset),
-			      compat_arg_u64_glue(len));
-}
-#endif
 
 /*
  * access() needs to use the real uid/gid, not the effective uid/gid.
@@ -1335,25 +1301,6 @@ SYSCALL_DEFINE4(openat2, int, dfd, const char __user *, filename,
 	return do_sys_openat2(dfd, filename, &tmp);
 }
 
-#ifdef CONFIG_COMPAT
-/*
- * Exactly like sys_open(), except that it doesn't set the
- * O_LARGEFILE flag.
- */
-COMPAT_SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, umode_t, mode)
-{
-	return do_sys_open(AT_FDCWD, filename, flags, mode);
-}
-
-/*
- * Exactly like sys_openat(), except that it doesn't set the
- * O_LARGEFILE flag.
- */
-COMPAT_SYSCALL_DEFINE4(openat, int, dfd, const char __user *, filename, int, flags, umode_t, mode)
-{
-	return do_sys_open(dfd, filename, flags, mode);
-}
-#endif
 
 #ifndef __alpha__
 

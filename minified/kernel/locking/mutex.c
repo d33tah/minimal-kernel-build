@@ -33,7 +33,6 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/lock.h>
 
-#ifndef CONFIG_PREEMPT_RT
 #include "mutex.h"
 
 # define MUTEX_WARN_ON(cond)
@@ -44,9 +43,6 @@ __mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key)
 	atomic_long_set(&lock->owner, 0);
 	raw_spin_lock_init(&lock->wait_lock);
 	INIT_LIST_HEAD(&lock->wait_list);
-#ifdef CONFIG_MUTEX_SPIN_ON_OWNER
-	osq_lock_init(&lock->osq);
-#endif
 
 	debug_mutex_init(lock, name, key);
 }
@@ -282,236 +278,12 @@ EXPORT_SYMBOL(mutex_lock);
 
 #include "ww_mutex.h"
 
-#ifdef CONFIG_MUTEX_SPIN_ON_OWNER
-
-/*
- * Trylock variant that returns the owning task on failure.
- */
-static inline struct task_struct *__mutex_trylock_or_owner(struct mutex *lock)
-{
-	return __mutex_trylock_common(lock, false);
-}
-
-static inline
-bool ww_mutex_spin_on_owner(struct mutex *lock, struct ww_acquire_ctx *ww_ctx,
-			    struct mutex_waiter *waiter)
-{
-	struct ww_mutex *ww;
-
-	ww = container_of(lock, struct ww_mutex, base);
-
-	/*
-	 * If ww->ctx is set the contents are undefined, only
-	 * by acquiring wait_lock there is a guarantee that
-	 * they are not invalid when reading.
-	 *
-	 * As such, when deadlock detection needs to be
-	 * performed the optimistic spinning cannot be done.
-	 *
-	 * Check this in every inner iteration because we may
-	 * be racing against another thread's ww_mutex_lock.
-	 */
-	if (ww_ctx->acquired > 0 && READ_ONCE(ww->ctx))
-		return false;
-
-	/*
-	 * If we aren't on the wait list yet, cancel the spin
-	 * if there are waiters. We want  to avoid stealing the
-	 * lock from a waiter with an earlier stamp, since the
-	 * other thread may already own a lock that we also
-	 * need.
-	 */
-	if (!waiter && (atomic_long_read(&lock->owner) & MUTEX_FLAG_WAITERS))
-		return false;
-
-	/*
-	 * Similarly, stop spinning if we are no longer the
-	 * first waiter.
-	 */
-	if (waiter && !__mutex_waiter_is_first(lock, waiter))
-		return false;
-
-	return true;
-}
-
-/*
- * Look out! "owner" is an entirely speculative pointer access and not
- * reliable.
- *
- * "noinline" so that this function shows up on perf profiles.
- */
-static noinline
-bool mutex_spin_on_owner(struct mutex *lock, struct task_struct *owner,
-			 struct ww_acquire_ctx *ww_ctx, struct mutex_waiter *waiter)
-{
-	bool ret = true;
-
-	lockdep_assert_preemption_disabled();
-
-	while (__mutex_owner(lock) == owner) {
-		/*
-		 * Ensure we emit the owner->on_cpu, dereference _after_
-		 * checking lock->owner still matches owner. And we already
-		 * disabled preemption which is equal to the RCU read-side
-		 * crital section in optimistic spinning code. Thus the
-		 * task_strcut structure won't go away during the spinning
-		 * period
-		 */
-		barrier();
-
-		/*
-		 * Use vcpu_is_preempted to detect lock holder preemption issue.
-		 */
-		if (!owner_on_cpu(owner) || need_resched()) {
-			ret = false;
-			break;
-		}
-
-		if (ww_ctx && !ww_mutex_spin_on_owner(lock, ww_ctx, waiter)) {
-			ret = false;
-			break;
-		}
-
-		cpu_relax();
-	}
-
-	return ret;
-}
-
-/*
- * Initial check for entering the mutex spinning loop
- */
-static inline int mutex_can_spin_on_owner(struct mutex *lock)
-{
-	struct task_struct *owner;
-	int retval = 1;
-
-	lockdep_assert_preemption_disabled();
-
-	if (need_resched())
-		return 0;
-
-	/*
-	 * We already disabled preemption which is equal to the RCU read-side
-	 * crital section in optimistic spinning code. Thus the task_strcut
-	 * structure won't go away during the spinning period.
-	 */
-	owner = __mutex_owner(lock);
-	if (owner)
-		retval = owner_on_cpu(owner);
-
-	/*
-	 * If lock->owner is not set, the mutex has been released. Return true
-	 * such that we'll trylock in the spin path, which is a faster option
-	 * than the blocking slow path.
-	 */
-	return retval;
-}
-
-/*
- * Optimistic spinning.
- *
- * We try to spin for acquisition when we find that the lock owner
- * is currently running on a (different) CPU and while we don't
- * need to reschedule. The rationale is that if the lock owner is
- * running, it is likely to release the lock soon.
- *
- * The mutex spinners are queued up using MCS lock so that only one
- * spinner can compete for the mutex. However, if mutex spinning isn't
- * going to happen, there is no point in going through the lock/unlock
- * overhead.
- *
- * Returns true when the lock was taken, otherwise false, indicating
- * that we need to jump to the slowpath and sleep.
- *
- * The waiter flag is set to true if the spinner is a waiter in the wait
- * queue. The waiter-spinner will spin on the lock directly and concurrently
- * with the spinner at the head of the OSQ, if present, until the owner is
- * changed to itself.
- */
-static __always_inline bool
-mutex_optimistic_spin(struct mutex *lock, struct ww_acquire_ctx *ww_ctx,
-		      struct mutex_waiter *waiter)
-{
-	if (!waiter) {
-		/*
-		 * The purpose of the mutex_can_spin_on_owner() function is
-		 * to eliminate the overhead of osq_lock() and osq_unlock()
-		 * in case spinning isn't possible. As a waiter-spinner
-		 * is not going to take OSQ lock anyway, there is no need
-		 * to call mutex_can_spin_on_owner().
-		 */
-		if (!mutex_can_spin_on_owner(lock))
-			goto fail;
-
-		/*
-		 * In order to avoid a stampede of mutex spinners trying to
-		 * acquire the mutex all at once, the spinners need to take a
-		 * MCS (queued) lock first before spinning on the owner field.
-		 */
-		if (!osq_lock(&lock->osq))
-			goto fail;
-	}
-
-	for (;;) {
-		struct task_struct *owner;
-
-		/* Try to acquire the mutex... */
-		owner = __mutex_trylock_or_owner(lock);
-		if (!owner)
-			break;
-
-		/*
-		 * There's an owner, wait for it to either
-		 * release the lock or go to sleep.
-		 */
-		if (!mutex_spin_on_owner(lock, owner, ww_ctx, waiter))
-			goto fail_unlock;
-
-		/*
-		 * The cpu_relax() call is a compiler barrier which forces
-		 * everything in this loop to be re-loaded. We don't need
-		 * memory barriers as we'll eventually observe the right
-		 * values at the cost of a few extra spins.
-		 */
-		cpu_relax();
-	}
-
-	if (!waiter)
-		osq_unlock(&lock->osq);
-
-	return true;
-
-
-fail_unlock:
-	if (!waiter)
-		osq_unlock(&lock->osq);
-
-fail:
-	/*
-	 * If we fell out of the spin path because of need_resched(),
-	 * reschedule now, before we try-lock the mutex. This avoids getting
-	 * scheduled out right after we obtained the mutex.
-	 */
-	if (need_resched()) {
-		/*
-		 * We _should_ have TASK_RUNNING here, but just in case
-		 * we do not, make it so, otherwise we might get stuck.
-		 */
-		__set_current_state(TASK_RUNNING);
-		schedule_preempt_disabled();
-	}
-
-	return false;
-}
-#else
 static __always_inline bool
 mutex_optimistic_spin(struct mutex *lock, struct ww_acquire_ctx *ww_ctx,
 		      struct mutex_waiter *waiter)
 {
 	return false;
 }
-#endif
 
 static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigned long ip);
 
@@ -1005,7 +777,6 @@ ww_mutex_lock_interruptible(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
 }
 EXPORT_SYMBOL(ww_mutex_lock_interruptible);
 
-#endif /* !CONFIG_PREEMPT_RT */
 
 /**
  * atomic_dec_and_mutex_lock - return holding mutex if we dec to 0

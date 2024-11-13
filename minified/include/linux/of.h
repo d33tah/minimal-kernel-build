@@ -33,9 +33,6 @@ struct property {
 	int	length;
 	void	*value;
 	struct property *next;
-#if defined(CONFIG_OF_DYNAMIC) || defined(CONFIG_SPARC)
-	unsigned long _flags;
-#endif
 #if defined(CONFIG_OF_PROMTREE)
 	unsigned int unique_id;
 #endif
@@ -44,9 +41,6 @@ struct property {
 #endif
 };
 
-#if defined(CONFIG_SPARC)
-struct of_irq_controller;
-#endif
 
 struct device_node {
 	const char *name;
@@ -64,10 +58,6 @@ struct device_node {
 #endif
 	unsigned long _flags;
 	void	*data;
-#if defined(CONFIG_SPARC)
-	unsigned int unique_id;
-	struct of_irq_controller *irq_trans;
-#endif
 };
 
 #define MAX_PHANDLE_ARGS 16
@@ -117,17 +107,12 @@ static inline void of_node_init(struct device_node *node)
 #define of_node_kobj(n) NULL
 #endif
 
-#ifdef CONFIG_OF_DYNAMIC
-extern struct device_node *of_node_get(struct device_node *node);
-extern void of_node_put(struct device_node *node);
-#else /* CONFIG_OF_DYNAMIC */
 /* Dummy ref counting routines - to be implemented later */
 static inline struct device_node *of_node_get(struct device_node *node)
 {
 	return node;
 }
 static inline void of_node_put(struct device_node *node) { }
-#endif /* !CONFIG_OF_DYNAMIC */
 
 /* Pointer for first entry in chain of all nodes. */
 extern struct device_node *of_root;
@@ -570,14 +555,10 @@ static inline int of_node_to_nid(struct device_node *device)
 	return NUMA_NO_NODE;
 }
 
-#ifdef CONFIG_OF_NUMA
-extern int of_numa_init(void);
-#else
 static inline int of_numa_init(void)
 {
 	return -ENOSYS;
 }
-#endif
 
 static inline struct device_node *of_find_matching_node(
 	struct device_node *from,
@@ -1153,51 +1134,6 @@ enum of_reconfig_change {
 	OF_RECONFIG_CHANGE_REMOVE,
 };
 
-#ifdef CONFIG_OF_DYNAMIC
-extern int of_reconfig_notifier_register(struct notifier_block *);
-extern int of_reconfig_notifier_unregister(struct notifier_block *);
-extern int of_reconfig_notify(unsigned long, struct of_reconfig_data *rd);
-extern int of_reconfig_get_state_change(unsigned long action,
-					struct of_reconfig_data *arg);
-
-extern void of_changeset_init(struct of_changeset *ocs);
-extern void of_changeset_destroy(struct of_changeset *ocs);
-extern int of_changeset_apply(struct of_changeset *ocs);
-extern int of_changeset_revert(struct of_changeset *ocs);
-extern int of_changeset_action(struct of_changeset *ocs,
-		unsigned long action, struct device_node *np,
-		struct property *prop);
-
-static inline int of_changeset_attach_node(struct of_changeset *ocs,
-		struct device_node *np)
-{
-	return of_changeset_action(ocs, OF_RECONFIG_ATTACH_NODE, np, NULL);
-}
-
-static inline int of_changeset_detach_node(struct of_changeset *ocs,
-		struct device_node *np)
-{
-	return of_changeset_action(ocs, OF_RECONFIG_DETACH_NODE, np, NULL);
-}
-
-static inline int of_changeset_add_property(struct of_changeset *ocs,
-		struct device_node *np, struct property *prop)
-{
-	return of_changeset_action(ocs, OF_RECONFIG_ADD_PROPERTY, np, prop);
-}
-
-static inline int of_changeset_remove_property(struct of_changeset *ocs,
-		struct device_node *np, struct property *prop)
-{
-	return of_changeset_action(ocs, OF_RECONFIG_REMOVE_PROPERTY, np, prop);
-}
-
-static inline int of_changeset_update_property(struct of_changeset *ocs,
-		struct device_node *np, struct property *prop)
-{
-	return of_changeset_action(ocs, OF_RECONFIG_UPDATE_PROPERTY, np, prop);
-}
-#else /* CONFIG_OF_DYNAMIC */
 static inline int of_reconfig_notifier_register(struct notifier_block *nb)
 {
 	return -EINVAL;
@@ -1216,7 +1152,6 @@ static inline int of_reconfig_get_state_change(unsigned long action,
 {
 	return -EINVAL;
 }
-#endif /* CONFIG_OF_DYNAMIC */
 
 /**
  * of_device_is_system_power_controller - Tells if system-power-controller is found for device_node
@@ -1259,17 +1194,6 @@ struct of_overlay_notify_data {
 	struct device_node *target;
 };
 
-#ifdef CONFIG_OF_OVERLAY
-
-int of_overlay_fdt_apply(const void *overlay_fdt, u32 overlay_fdt_size,
-			 int *ovcs_id);
-int of_overlay_remove(int *ovcs_id);
-int of_overlay_remove_all(void);
-
-int of_overlay_notifier_register(struct notifier_block *nb);
-int of_overlay_notifier_unregister(struct notifier_block *nb);
-
-#else
 
 static inline int of_overlay_fdt_apply(void *overlay_fdt, u32 overlay_fdt_size,
 				       int *ovcs_id)
@@ -1297,6 +1221,5 @@ static inline int of_overlay_notifier_unregister(struct notifier_block *nb)
 	return 0;
 }
 
-#endif
 
 #endif /* _LINUX_OF_H */

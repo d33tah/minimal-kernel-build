@@ -323,29 +323,12 @@ void platform_unregister_drivers(struct platform_driver * const *drivers,
 #define platform_pm_suspend		NULL
 #define platform_pm_resume		NULL
 
-#ifdef CONFIG_HIBERNATE_CALLBACKS
-extern int platform_pm_freeze(struct device *dev);
-extern int platform_pm_thaw(struct device *dev);
-extern int platform_pm_poweroff(struct device *dev);
-extern int platform_pm_restore(struct device *dev);
-#else
 #define platform_pm_freeze		NULL
 #define platform_pm_thaw		NULL
 #define platform_pm_poweroff		NULL
 #define platform_pm_restore		NULL
-#endif
 
-#ifdef CONFIG_PM_SLEEP
-#define USE_PLATFORM_PM_SLEEP_OPS \
-	.suspend = platform_pm_suspend, \
-	.resume = platform_pm_resume, \
-	.freeze = platform_pm_freeze, \
-	.thaw = platform_pm_thaw, \
-	.poweroff = platform_pm_poweroff, \
-	.restore = platform_pm_restore,
-#else
 #define USE_PLATFORM_PM_SLEEP_OPS
-#endif
 
 #ifndef CONFIG_SUPERH
 /*

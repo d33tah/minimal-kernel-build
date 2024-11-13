@@ -35,9 +35,6 @@
 	(typeof(ptr)) (__ptr + (off));					\
 })
 
-#ifdef CONFIG_RETPOLINE
-#define __noretpoline __attribute__((__indirect_branch__("keep")))
-#endif
 
 #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
 
@@ -87,9 +84,6 @@
 #define KASAN_ABI_VERSION 4
 #endif
 
-#ifdef CONFIG_SHADOW_CALL_STACK
-#define __noscs __attribute__((__no_sanitize__("shadow-call-stack")))
-#endif
 
 #if __has_attribute(__no_sanitize_address__)
 #define __no_sanitize_address __attribute__((no_sanitize_address))
@@ -109,11 +103,7 @@
 #define __no_sanitize_undefined
 #endif
 
-#if defined(CONFIG_KCOV) && __has_attribute(__no_sanitize_coverage__)
-#define __no_sanitize_coverage __attribute__((no_sanitize_coverage))
-#else
 #define __no_sanitize_coverage
-#endif
 
 /*
  * Treat __SANITIZE_HWADDRESS__ the same as __SANITIZE_ADDRESS__ in the kernel,

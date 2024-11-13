@@ -187,33 +187,6 @@ extern bool initcall_debug;
 	__PASTE(__,						\
 	__PASTE(__iid, id))))
 
-#ifdef CONFIG_LTO_CLANG
-/*
- * With LTO, the compiler doesn't necessarily obey link order for
- * initcalls. In order to preserve the correct order, we add each
- * variable into its own section and generate a linker script (in
- * scripts/link-vmlinux.sh) to specify the order of the sections.
- */
-#define __initcall_section(__sec, __iid)			\
-	#__sec ".init.." #__iid
-
-/*
- * With LTO, the compiler can rename static functions to avoid
- * global naming collisions. We use a global stub function for
- * initcalls to create a stable symbol name whose address can be
- * taken in inline assembly when PREL32 relocations are used.
- */
-#define __initcall_stub(fn, __iid, id)				\
-	__initcall_name(initstub, __iid, id)
-
-#define __define_initcall_stub(__stub, fn)			\
-	int __init __cficanonical __stub(void);			\
-	int __init __cficanonical __stub(void)			\
-	{ 							\
-		return fn();					\
-	}							\
-	__ADDRESSABLE(__stub)
-#else
 #define __initcall_section(__sec, __iid)			\
 	#__sec ".init"
 
@@ -221,7 +194,6 @@ extern bool initcall_debug;
 
 #define __define_initcall_stub(__stub, fn)			\
 	__ADDRESSABLE(fn)
-#endif
 
 #define ____define_initcall(fn, __stub, __name, __sec)		\
 	__define_initcall_stub(__stub, fn)			\

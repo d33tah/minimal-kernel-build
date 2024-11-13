@@ -1513,11 +1513,6 @@ void xas_pause(struct xa_state *);
 
 void xas_create_range(struct xa_state *);
 
-#ifdef CONFIG_XARRAY_MULTI
-int xa_get_order(struct xarray *, unsigned long index);
-void xas_split(struct xa_state *, void *entry, unsigned int order);
-void xas_split_alloc(struct xa_state *, void *entry, unsigned int order, gfp_t);
-#else
 static inline int xa_get_order(struct xarray *xa, unsigned long index)
 {
 	return 0;
@@ -1533,7 +1528,6 @@ static inline void xas_split_alloc(struct xa_state *xas, void *entry,
 		unsigned int order, gfp_t gfp)
 {
 }
-#endif
 
 /**
  * xas_reload() - Refetch an entry from the xarray.
@@ -1611,15 +1605,8 @@ static inline void xas_advance(struct xa_state *xas, unsigned long index)
 static inline void xas_set_order(struct xa_state *xas, unsigned long index,
 					unsigned int order)
 {
-#ifdef CONFIG_XARRAY_MULTI
-	xas->xa_index = order < BITS_PER_LONG ? (index >> order) << order : 0;
-	xas->xa_shift = order - (order % XA_CHUNK_SHIFT);
-	xas->xa_sibs = (1 << (order % XA_CHUNK_SHIFT)) - 1;
-	xas->xa_node = XAS_RESTART;
-#else
 	BUG_ON(order > 0);
 	xas_set(xas, index);
-#endif
 }
 
 /**

@@ -3553,9 +3553,6 @@ static const struct tty_operations con_ops = {
 	.put_char = con_put_char,
 	.flush_chars = con_flush_chars,
 	.ioctl = vt_ioctl,
-#ifdef CONFIG_COMPAT
-	.compat_ioctl = vt_compat_ioctl,
-#endif
 	.stop = con_stop,
 	.start = con_start,
 	.throttle = con_throttle,
@@ -3613,9 +3610,6 @@ int __init vty_init(const struct file_operations *console_fops)
 		panic("Couldn't register console driver\n");
 	kbd_init();
 	console_map_init();
-#ifdef CONFIG_MDA_CONSOLE
-	mda_console_init();
-#endif
 	return 0;
 }
 
@@ -3863,35 +3857,6 @@ int con_debug_enter(struct vc_data *vc)
 	console_blanked = 0;
 	if (vc->vc_sw->con_debug_enter)
 		ret = vc->vc_sw->con_debug_enter(vc);
-#ifdef CONFIG_KGDB_KDB
-	/* Set the initial LINES variable if it is not already set */
-	if (vc->vc_rows < 999) {
-		int linecount;
-		char lns[4];
-		const char *setargs[3] = {
-			"set",
-			"LINES",
-			lns,
-		};
-		if (kdbgetintenv(setargs[0], &linecount)) {
-			snprintf(lns, 4, "%i", vc->vc_rows);
-			kdb_set(2, setargs);
-		}
-	}
-	if (vc->vc_cols < 999) {
-		int colcount;
-		char cols[4];
-		const char *setargs[3] = {
-			"set",
-			"COLUMNS",
-			cols,
-		};
-		if (kdbgetintenv(setargs[0], &colcount)) {
-			snprintf(cols, 4, "%i", vc->vc_cols);
-			kdb_set(2, setargs);
-		}
-	}
-#endif /* CONFIG_KGDB_KDB */
 	return ret;
 }
 EXPORT_SYMBOL_GPL(con_debug_enter);

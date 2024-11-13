@@ -1214,12 +1214,6 @@ static inline void ac6_proc_exit(struct net *net) { }
 static inline int snmp6_register_dev(struct inet6_dev *idev) { return 0; }
 static inline int snmp6_unregister_dev(struct inet6_dev *idev) { return 0; }
 
-#ifdef CONFIG_SYSCTL
-struct ctl_table *ipv6_icmp_sysctl_init(struct net *net);
-struct ctl_table *ipv6_route_sysctl_init(struct net *net);
-int ipv6_sysctl_register(void);
-void ipv6_sysctl_unregister(void);
-#endif
 
 int ipv6_sock_mc_join(struct sock *sk, int ifindex,
 		      const struct in6_addr *addr);

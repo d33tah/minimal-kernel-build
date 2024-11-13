@@ -16,17 +16,8 @@ struct unwind_state {
 	unsigned long stack_mask;
 	struct task_struct *task;
 	int graph_idx;
-#if defined(CONFIG_RETHOOK)
-	struct llist_node *kr_cur;
-#endif
 	bool error;
-#if defined(CONFIG_UNWINDER_ORC)
-	bool signal, full_regs;
-	unsigned long sp, bp, ip;
-	struct pt_regs *regs, *prev_regs;
-#else
 	unsigned long *sp;
-#endif
 };
 
 void __unwind_start(struct unwind_state *state, struct task_struct *task,
@@ -54,54 +45,21 @@ void unwind_start(struct unwind_state *state, struct task_struct *task,
 	__unwind_start(state, task, regs, first_frame);
 }
 
-#if defined(CONFIG_UNWINDER_ORC) || defined(CONFIG_UNWINDER_FRAME_POINTER)
-/*
- * If 'partial' returns true, only the iret frame registers are valid.
- */
-static inline struct pt_regs *unwind_get_entry_regs(struct unwind_state *state,
-						    bool *partial)
-{
-	if (unwind_done(state))
-		return NULL;
-
-	if (partial) {
-#ifdef CONFIG_UNWINDER_ORC
-		*partial = !state->full_regs;
-#else
-		*partial = false;
-#endif
-	}
-
-	return state->regs;
-}
-#else
 static inline struct pt_regs *unwind_get_entry_regs(struct unwind_state *state,
 						    bool *partial)
 {
 	return NULL;
 }
-#endif
 
-#ifdef CONFIG_UNWINDER_ORC
-void unwind_init(void);
-void unwind_module_init(struct module *mod, void *orc_ip, size_t orc_ip_size,
-			void *orc, size_t orc_size);
-#else
 static inline void unwind_init(void) {}
 static inline
 void unwind_module_init(struct module *mod, void *orc_ip, size_t orc_ip_size,
 			void *orc, size_t orc_size) {}
-#endif
 
 static inline
 unsigned long unwind_recover_rethook(struct unwind_state *state,
 				     unsigned long addr, unsigned long *addr_p)
 {
-#ifdef CONFIG_RETHOOK
-	if (is_rethook_trampoline(addr))
-		return rethook_find_ret_addr(state->task, (unsigned long)addr_p,
-					     &state->kr_cur);
-#endif
 	return addr;
 }
 

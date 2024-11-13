@@ -230,12 +230,7 @@ static inline bool qdisc_may_bulk(const struct Qdisc *qdisc)
 
 static inline int qdisc_avail_bulklimit(const struct netdev_queue *txq)
 {
-#ifdef CONFIG_BQL
-	/* Non-BQL migrated drivers will return 0, too. */
-	return dql_avail(&txq->dql);
-#else
 	return 0;
-#endif
 }
 
 struct Qdisc_class_ops {
@@ -677,14 +672,6 @@ void qdisc_reset(struct Qdisc *qdisc);
 void qdisc_put(struct Qdisc *qdisc);
 void qdisc_put_unlocked(struct Qdisc *qdisc);
 void qdisc_tree_reduce_backlog(struct Qdisc *qdisc, int n, int len);
-#ifdef CONFIG_NET_SCHED
-int qdisc_offload_dump_helper(struct Qdisc *q, enum tc_setup_type type,
-			      void *type_data);
-void qdisc_offload_graft_helper(struct net_device *dev, struct Qdisc *sch,
-				struct Qdisc *new, struct Qdisc *old,
-				enum tc_setup_type type, void *type_data,
-				struct netlink_ext_ack *extack);
-#else
 static inline int
 qdisc_offload_dump_helper(struct Qdisc *q, enum tc_setup_type type,
 			  void *type_data)
@@ -700,7 +687,6 @@ qdisc_offload_graft_helper(struct net_device *dev, struct Qdisc *sch,
 			   struct netlink_ext_ack *extack)
 {
 }
-#endif
 struct Qdisc *qdisc_alloc(struct netdev_queue *dev_queue,
 			  const struct Qdisc_ops *ops,
 			  struct netlink_ext_ack *extack);
@@ -714,21 +700,11 @@ int skb_do_redirect(struct sk_buff *);
 
 static inline bool skb_at_tc_ingress(const struct sk_buff *skb)
 {
-#ifdef CONFIG_NET_CLS_ACT
-	return skb->tc_at_ingress;
-#else
 	return false;
-#endif
 }
 
 static inline bool skb_skip_tc_classify(struct sk_buff *skb)
 {
-#ifdef CONFIG_NET_CLS_ACT
-	if (skb->tc_skip_classify) {
-		skb->tc_skip_classify = 0;
-		return true;
-	}
-#endif
 	return false;
 }
 
@@ -803,21 +779,11 @@ enum net_xmit_qdisc_t {
 	__NET_XMIT_BYPASS = 0x00020000,
 };
 
-#ifdef CONFIG_NET_CLS_ACT
-#define net_xmit_drop_count(e)	((e) & __NET_XMIT_STOLEN ? 0 : 1)
-#else
 #define net_xmit_drop_count(e)	(1)
-#endif
 
 static inline void qdisc_calculate_pkt_len(struct sk_buff *skb,
 					   const struct Qdisc *sch)
 {
-#ifdef CONFIG_NET_SCHED
-	struct qdisc_size_table *stab = rcu_dereference_bh(sch->stab);
-
-	if (stab)
-		__qdisc_calculate_pkt_len(skb, stab);
-#endif
 }
 
 static inline int qdisc_enqueue(struct sk_buff *skb, struct Qdisc *sch,

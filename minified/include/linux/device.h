@@ -378,12 +378,6 @@ struct dev_links_info {
  * @data:	Pointer to MSI device data
  */
 struct dev_msi_info {
-#ifdef CONFIG_GENERIC_MSI_IRQ_DOMAIN
-	struct irq_domain	*domain;
-#endif
-#ifdef CONFIG_GENERIC_MSI_IRQ
-	struct msi_device_data	*data;
-#endif
 };
 
 /**
@@ -576,14 +570,8 @@ struct device {
 	struct dev_pm_info	power;
 	struct dev_pm_domain	*pm_domain;
 
-#ifdef CONFIG_ENERGY_MODEL
-	struct em_perf_domain	*em_pd;
-#endif
 
 	struct dev_msi_info	msi;
-#ifdef CONFIG_DMA_OPS
-	const struct dma_map_ops *dma_ops;
-#endif
 	u64		*dma_mask;	/* dma mask (if dma'able device) */
 	u64		coherent_dma_mask;/* Like dma_mask, but for
 					     alloc_coherent mappings as
@@ -597,26 +585,12 @@ struct device {
 
 	struct list_head	dma_pools;	/* dma pools (if dma'ble) */
 
-#ifdef CONFIG_DMA_DECLARE_COHERENT
-	struct dma_coherent_mem	*dma_mem; /* internal for coherent mem
-					     override */
-#endif
-#ifdef CONFIG_DMA_CMA
-	struct cma *cma_area;		/* contiguous memory area for dma
-					   allocations */
-#endif
-#ifdef CONFIG_SWIOTLB
-	struct io_tlb_mem *dma_io_tlb_mem;
-#endif
 	/* arch specific additions */
 	struct dev_archdata	archdata;
 
 	struct device_node	*of_node; /* associated device tree node */
 	struct fwnode_handle	*fwnode; /* firmware device node */
 
-#ifdef CONFIG_NUMA
-	int		numa_node;	/* NUMA node this device is close to */
-#endif
 	dev_t			devt;	/* dev_t, creates the sysfs "dev" */
 	u32			id;	/* device instance */
 
@@ -643,9 +617,6 @@ struct device {
     defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
     defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
 	bool			dma_coherent:1;
-#endif
-#ifdef CONFIG_DMA_OPS_BYPASS
-	bool			dma_ops_bypass : 1;
 #endif
 };
 
@@ -718,16 +689,6 @@ static inline const char *dev_bus_name(const struct device *dev)
 
 __printf(2, 3) int dev_set_name(struct device *dev, const char *name, ...);
 
-#ifdef CONFIG_NUMA
-static inline int dev_to_node(struct device *dev)
-{
-	return dev->numa_node;
-}
-static inline void set_dev_node(struct device *dev, int node)
-{
-	dev->numa_node = node;
-}
-#else
 static inline int dev_to_node(struct device *dev)
 {
 	return NUMA_NO_NODE;
@@ -735,22 +696,14 @@ static inline int dev_to_node(struct device *dev)
 static inline void set_dev_node(struct device *dev, int node)
 {
 }
-#endif
 
 static inline struct irq_domain *dev_get_msi_domain(const struct device *dev)
 {
-#ifdef CONFIG_GENERIC_MSI_IRQ_DOMAIN
-	return dev->msi.domain;
-#else
 	return NULL;
-#endif
 }
 
 static inline void dev_set_msi_domain(struct device *dev, struct irq_domain *d)
 {
-#ifdef CONFIG_GENERIC_MSI_IRQ_DOMAIN
-	dev->msi.domain = d;
-#endif
 }
 
 static inline void *dev_get_drvdata(const struct device *dev)
@@ -812,9 +765,6 @@ static inline void device_set_pm_not_required(struct device *dev)
 
 static inline void dev_pm_syscore_device(struct device *dev, bool val)
 {
-#ifdef CONFIG_PM_SLEEP
-	dev->power.syscore = val;
-#endif
 }
 
 static inline void dev_pm_set_driver_flags(struct device *dev, u32 flags)
@@ -931,18 +881,7 @@ do {                                                                   \
  * from driver ->probe(). Take care to only override the default
  * lockdep_no_validate class.
  */
-#ifdef CONFIG_LOCKDEP
-#define device_lock_set_class(dev, key)                                    \
-do {                                                                       \
-	struct device *__d = dev;                                          \
-	dev_WARN_ONCE(__d, !lockdep_match_class(&__d->mutex,               \
-						&__lockdep_no_validate__), \
-		 "overriding existing custom lock class\n");               \
-	__device_lock_set_class(__d, #key, key);                           \
-} while (0)
-#else
 #define device_lock_set_class(dev, key) __device_lock_set_class(dev, #key, key)
-#endif
 
 /**
  * device_lock_reset_class - Return a device to the default lockdep novalidate state
@@ -1092,10 +1031,6 @@ int dev_err_probe(const struct device *dev, int err, const char *fmt, ...);
 #define MODULE_ALIAS_CHARDEV_MAJOR(major) \
 	MODULE_ALIAS("char-major-" __stringify(major) "-*")
 
-#ifdef CONFIG_SYSFS_DEPRECATED
-extern long sysfs_deprecated;
-#else
 #define sysfs_deprecated 0
-#endif
 
 #endif /* _DEVICE_H_ */

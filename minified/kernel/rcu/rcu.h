@@ -165,31 +165,6 @@ static inline unsigned long rcu_seq_diff(unsigned long new, unsigned long old)
  * RCU implementations.
  */
 
-#ifdef CONFIG_DEBUG_OBJECTS_RCU_HEAD
-# define STATE_RCU_HEAD_READY	0
-# define STATE_RCU_HEAD_QUEUED	1
-
-extern const struct debug_obj_descr rcuhead_debug_descr;
-
-static inline int debug_rcu_head_queue(struct rcu_head *head)
-{
-	int r1;
-
-	r1 = debug_object_activate(head, &rcuhead_debug_descr);
-	debug_object_active_state(head, &rcuhead_debug_descr,
-				  STATE_RCU_HEAD_READY,
-				  STATE_RCU_HEAD_QUEUED);
-	return r1;
-}
-
-static inline void debug_rcu_head_unqueue(struct rcu_head *head)
-{
-	debug_object_active_state(head, &rcuhead_debug_descr,
-				  STATE_RCU_HEAD_QUEUED,
-				  STATE_RCU_HEAD_READY);
-	debug_object_deactivate(head, &rcuhead_debug_descr);
-}
-#else	/* !CONFIG_DEBUG_OBJECTS_RCU_HEAD */
 static inline int debug_rcu_head_queue(struct rcu_head *head)
 {
 	return 0;
@@ -198,7 +173,6 @@ static inline int debug_rcu_head_queue(struct rcu_head *head)
 static inline void debug_rcu_head_unqueue(struct rcu_head *head)
 {
 }
-#endif	/* #else !CONFIG_DEBUG_OBJECTS_RCU_HEAD */
 
 extern int rcu_cpu_stall_suppress_at_boot;
 
@@ -207,33 +181,6 @@ static inline bool rcu_stall_is_suppressed_at_boot(void)
 	return rcu_cpu_stall_suppress_at_boot && !rcu_inkernel_boot_has_ended();
 }
 
-#ifdef CONFIG_RCU_STALL_COMMON
-
-extern int rcu_cpu_stall_ftrace_dump;
-extern int rcu_cpu_stall_suppress;
-extern int rcu_cpu_stall_timeout;
-extern int rcu_exp_cpu_stall_timeout;
-int rcu_jiffies_till_stall_check(void);
-int rcu_exp_jiffies_till_stall_check(void);
-
-static inline bool rcu_stall_is_suppressed(void)
-{
-	return rcu_stall_is_suppressed_at_boot() || rcu_cpu_stall_suppress;
-}
-
-#define rcu_ftrace_dump_stall_suppress() \
-do { \
-	if (!rcu_cpu_stall_suppress) \
-		rcu_cpu_stall_suppress = 3; \
-} while (0)
-
-#define rcu_ftrace_dump_stall_unsuppress() \
-do { \
-	if (rcu_cpu_stall_suppress == 3) \
-		rcu_cpu_stall_suppress = 0; \
-} while (0)
-
-#else /* #endif #ifdef CONFIG_RCU_STALL_COMMON */
 
 static inline bool rcu_stall_is_suppressed(void)
 {
@@ -241,7 +188,6 @@ static inline bool rcu_stall_is_suppressed(void)
 }
 #define rcu_ftrace_dump_stall_suppress()
 #define rcu_ftrace_dump_stall_unsuppress()
-#endif /* #ifdef CONFIG_RCU_STALL_COMMON */
 
 /*
  * Strings used in tracepoints need to be exported via the
@@ -497,11 +443,7 @@ static inline void rcu_fwd_progress_check(unsigned long j) { }
 static inline void rcu_gp_slow_register(atomic_t *rgssp) { }
 static inline void rcu_gp_slow_unregister(atomic_t *rgssp) { }
 
-#ifdef CONFIG_RCU_NOCB_CPU
-void rcu_bind_current_to_nocb(void);
-#else
 static inline void rcu_bind_current_to_nocb(void) { }
-#endif
 
 static inline void show_rcu_tasks_classic_gp_kthread(void) {}
 static inline void show_rcu_tasks_rude_gp_kthread(void) {}

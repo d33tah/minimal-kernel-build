@@ -216,10 +216,6 @@ struct hrtimer_cpu_base {
 					in_hrtirq		: 1,
 					hang_detected		: 1,
 					softirq_activated       : 1;
-#ifdef CONFIG_PREEMPT_RT
-	spinlock_t			softirq_expiry_lock;
-	atomic_t			timer_waiters;
-#endif
 	ktime_t				expires_next;
 	struct hrtimer			*next_timer;
 	ktime_t				softirq_expires_next;
@@ -333,14 +329,10 @@ static inline void timerfd_resume(void) { }
 
 DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
 
-#ifdef CONFIG_PREEMPT_RT
-void hrtimer_cancel_wait_running(const struct hrtimer *timer);
-#else
 static inline void hrtimer_cancel_wait_running(struct hrtimer *timer)
 {
 	cpu_relax();
 }
-#endif
 
 /* Exported timer functions: */
 
@@ -350,15 +342,6 @@ extern void hrtimer_init(struct hrtimer *timer, clockid_t which_clock,
 extern void hrtimer_init_sleeper(struct hrtimer_sleeper *sl, clockid_t clock_id,
 				 enum hrtimer_mode mode);
 
-#ifdef CONFIG_DEBUG_OBJECTS_TIMERS
-extern void hrtimer_init_on_stack(struct hrtimer *timer, clockid_t which_clock,
-				  enum hrtimer_mode mode);
-extern void hrtimer_init_sleeper_on_stack(struct hrtimer_sleeper *sl,
-					  clockid_t clock_id,
-					  enum hrtimer_mode mode);
-
-extern void destroy_hrtimer_on_stack(struct hrtimer *timer);
-#else
 static inline void hrtimer_init_on_stack(struct hrtimer *timer,
 					 clockid_t which_clock,
 					 enum hrtimer_mode mode)
@@ -374,7 +357,6 @@ static inline void hrtimer_init_sleeper_on_stack(struct hrtimer_sleeper *sl,
 }
 
 static inline void destroy_hrtimer_on_stack(struct hrtimer *timer) { }
-#endif
 
 /* Basic timer operations: */
 extern void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
@@ -506,10 +488,6 @@ extern void __init hrtimers_init(void);
 extern void sysrq_timer_list_show(void);
 
 int hrtimers_prepare_cpu(unsigned int cpu);
-#ifdef CONFIG_HOTPLUG_CPU
-int hrtimers_dead_cpu(unsigned int cpu);
-#else
 #define hrtimers_dead_cpu	NULL
-#endif
 
 #endif

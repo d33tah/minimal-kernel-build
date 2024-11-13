@@ -2,21 +2,13 @@
 #ifndef _ASM_X86_PERCPU_H
 #define _ASM_X86_PERCPU_H
 
-#ifdef CONFIG_X86_64
-#define __percpu_seg		gs
-#else
 #define __percpu_seg		fs
-#endif
 
 #ifdef __ASSEMBLY__
 
 #define PER_CPU_VAR(var)	var
 
-#ifdef CONFIG_X86_64_SMP
-#define INIT_PER_CPU_VAR(var)  init_per_cpu__##var
-#else
 #define INIT_PER_CPU_VAR(var)  var
-#endif
 
 #else /* ...!ASSEMBLY */
 
@@ -37,11 +29,7 @@
 #define DECLARE_INIT_PER_CPU(var) \
        extern typeof(var) init_per_cpu_var(var)
 
-#ifdef CONFIG_X86_64_SMP
-#define init_per_cpu_var(var)  init_per_cpu__##var
-#else
 #define init_per_cpu_var(var)  var
-#endif
 
 /* For arch-specific code, we can use direct single-insn ops (they
  * don't give an lvalue though). */
@@ -287,49 +275,6 @@ do {									\
  * Per cpu atomic 64 bit operations are only available under 64 bit.
  * 32 bit must fall back to generic operations.
  */
-#ifdef CONFIG_X86_64
-#define raw_cpu_read_8(pcp)			percpu_from_op(8, , "mov", pcp)
-#define raw_cpu_write_8(pcp, val)		percpu_to_op(8, , "mov", (pcp), val)
-#define raw_cpu_add_8(pcp, val)			percpu_add_op(8, , (pcp), val)
-#define raw_cpu_and_8(pcp, val)			percpu_to_op(8, , "and", (pcp), val)
-#define raw_cpu_or_8(pcp, val)			percpu_to_op(8, , "or", (pcp), val)
-#define raw_cpu_add_return_8(pcp, val)		percpu_add_return_op(8, , pcp, val)
-#define raw_cpu_xchg_8(pcp, nval)		raw_percpu_xchg_op(pcp, nval)
-#define raw_cpu_cmpxchg_8(pcp, oval, nval)	percpu_cmpxchg_op(8, , pcp, oval, nval)
-
-#define this_cpu_read_8(pcp)			percpu_from_op(8, volatile, "mov", pcp)
-#define this_cpu_write_8(pcp, val)		percpu_to_op(8, volatile, "mov", (pcp), val)
-#define this_cpu_add_8(pcp, val)		percpu_add_op(8, volatile, (pcp), val)
-#define this_cpu_and_8(pcp, val)		percpu_to_op(8, volatile, "and", (pcp), val)
-#define this_cpu_or_8(pcp, val)			percpu_to_op(8, volatile, "or", (pcp), val)
-#define this_cpu_add_return_8(pcp, val)		percpu_add_return_op(8, volatile, pcp, val)
-#define this_cpu_xchg_8(pcp, nval)		percpu_xchg_op(8, volatile, pcp, nval)
-#define this_cpu_cmpxchg_8(pcp, oval, nval)	percpu_cmpxchg_op(8, volatile, pcp, oval, nval)
-
-/*
- * Pretty complex macro to generate cmpxchg16 instruction.  The instruction
- * is not supported on early AMD64 processors so we must be able to emulate
- * it in software.  The address used in the cmpxchg16 instruction must be
- * aligned to a 16 byte boundary.
- */
-#define percpu_cmpxchg16b_double(pcp1, pcp2, o1, o2, n1, n2)		\
-({									\
-	bool __ret;							\
-	typeof(pcp1) __o1 = (o1), __n1 = (n1);				\
-	typeof(pcp2) __o2 = (o2), __n2 = (n2);				\
-	alternative_io("leaq %P1,%%rsi\n\tcall this_cpu_cmpxchg16b_emu\n\t", \
-		       "cmpxchg16b " __percpu_arg(1) "\n\tsetz %0\n\t",	\
-		       X86_FEATURE_CX16,				\
-		       ASM_OUTPUT2("=a" (__ret), "+m" (pcp1),		\
-				   "+m" (pcp2), "+d" (__o2)),		\
-		       "b" (__n1), "c" (__n2), "a" (__o1) : "rsi");	\
-	__ret;								\
-})
-
-#define raw_cpu_cmpxchg_double_8	percpu_cmpxchg16b_double
-#define this_cpu_cmpxchg_double_8	percpu_cmpxchg16b_double
-
-#endif
 
 static __always_inline bool x86_this_cpu_constant_test_bit(unsigned int nr,
                         const unsigned long __percpu *addr)
@@ -337,11 +282,7 @@ static __always_inline bool x86_this_cpu_constant_test_bit(unsigned int nr,
 	unsigned long __percpu *a =
 		(unsigned long __percpu *)addr + nr / BITS_PER_LONG;
 
-#ifdef CONFIG_X86_64
-	return ((1UL << (nr % BITS_PER_LONG)) & raw_cpu_read_8(*a)) != 0;
-#else
 	return ((1UL << (nr % BITS_PER_LONG)) & raw_cpu_read_4(*a)) != 0;
-#endif
 }
 
 static inline bool x86_this_cpu_variable_test_bit(int nr,

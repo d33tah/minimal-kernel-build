@@ -50,34 +50,10 @@ static inline void mmdrop(struct mm_struct *mm)
 		__mmdrop(mm);
 }
 
-#ifdef CONFIG_PREEMPT_RT
-/*
- * RCU callback for delayed mm drop. Not strictly RCU, but call_rcu() is
- * by far the least expensive way to do that.
- */
-static inline void __mmdrop_delayed(struct rcu_head *rhp)
-{
-	struct mm_struct *mm = container_of(rhp, struct mm_struct, delayed_drop);
-
-	__mmdrop(mm);
-}
-
-/*
- * Invoked from finish_task_switch(). Delegates the heavy lifting on RT
- * kernels via RCU.
- */
-static inline void mmdrop_sched(struct mm_struct *mm)
-{
-	/* Provides a full memory barrier. See mmdrop() */
-	if (atomic_dec_and_test(&mm->mm_count))
-		call_rcu(&mm->delayed_drop, __mmdrop_delayed);
-}
-#else
 static inline void mmdrop_sched(struct mm_struct *mm)
 {
 	mmdrop(mm);
 }
-#endif
 
 /**
  * mmget() - Pin the address space associated with a &struct mm_struct.
@@ -125,13 +101,9 @@ extern void exit_mm_release(struct task_struct *, struct mm_struct *);
 /* Remove the current tasks stale references to the old mm_struct on exec() */
 extern void exec_mm_release(struct task_struct *, struct mm_struct *);
 
-#ifdef CONFIG_MEMCG
-extern void mm_update_next_owner(struct mm_struct *mm);
-#else
 static inline void mm_update_next_owner(struct mm_struct *mm)
 {
 }
-#endif /* CONFIG_MEMCG */
 
 #ifndef arch_get_mmap_end
 #define arch_get_mmap_end(addr, len, flags)	(TASK_SIZE)
@@ -213,17 +185,10 @@ static inline gfp_t current_gfp_context(gfp_t flags)
 	return flags;
 }
 
-#ifdef CONFIG_LOCKDEP
-extern void __fs_reclaim_acquire(unsigned long ip);
-extern void __fs_reclaim_release(unsigned long ip);
-extern void fs_reclaim_acquire(gfp_t gfp_mask);
-extern void fs_reclaim_release(gfp_t gfp_mask);
-#else
 static inline void __fs_reclaim_acquire(unsigned long ip) { }
 static inline void __fs_reclaim_release(unsigned long ip) { }
 static inline void fs_reclaim_acquire(gfp_t gfp_mask) { }
 static inline void fs_reclaim_release(gfp_t gfp_mask) { }
-#endif
 
 /* Any memory-allocation retry loop should use
  * memalloc_retry_wait(), and pass the flags for the most
@@ -354,49 +319,12 @@ static inline void memalloc_pin_restore(unsigned int flags)
 	current->flags = (current->flags & ~PF_MEMALLOC_PIN) | flags;
 }
 
-#ifdef CONFIG_MEMCG
-DECLARE_PER_CPU(struct mem_cgroup *, int_active_memcg);
-/**
- * set_active_memcg - Starts the remote memcg charging scope.
- * @memcg: memcg to charge.
- *
- * This function marks the beginning of the remote memcg charging scope. All the
- * __GFP_ACCOUNT allocations till the end of the scope will be charged to the
- * given memcg.
- *
- * NOTE: This function can nest. Users must save the return value and
- * reset the previous value after their own charging scope is over.
- */
-static inline struct mem_cgroup *
-set_active_memcg(struct mem_cgroup *memcg)
-{
-	struct mem_cgroup *old;
-
-	if (!in_task()) {
-		old = this_cpu_read(int_active_memcg);
-		this_cpu_write(int_active_memcg, memcg);
-	} else {
-		old = current->active_memcg;
-		current->active_memcg = memcg;
-	}
-
-	return old;
-}
-#else
 static inline struct mem_cgroup *
 set_active_memcg(struct mem_cgroup *memcg)
 {
 	return NULL;
 }
-#endif
 
-#ifdef CONFIG_ARCH_HAS_MEMBARRIER_CALLBACKS
-static inline void membarrier_arch_switch_mm(struct mm_struct *prev,
-					     struct mm_struct *next,
-					     struct task_struct *tsk)
-{
-}
-#endif
 static inline void membarrier_exec_mmap(struct mm_struct *mm)
 {
 }
@@ -407,29 +335,8 @@ static inline void membarrier_update_current_mm(struct mm_struct *next_mm)
 {
 }
 
-#ifdef CONFIG_IOMMU_SVA
-static inline void mm_pasid_init(struct mm_struct *mm)
-{
-	mm->pasid = INVALID_IOASID;
-}
-
-/* Associate a PASID with an mm_struct: */
-static inline void mm_pasid_set(struct mm_struct *mm, u32 pasid)
-{
-	mm->pasid = pasid;
-}
-
-static inline void mm_pasid_drop(struct mm_struct *mm)
-{
-	if (pasid_valid(mm->pasid)) {
-		ioasid_free(mm->pasid);
-		mm->pasid = INVALID_IOASID;
-	}
-}
-#else
 static inline void mm_pasid_init(struct mm_struct *mm) {}
 static inline void mm_pasid_set(struct mm_struct *mm, u32 pasid) {}
 static inline void mm_pasid_drop(struct mm_struct *mm) {}
-#endif
 
 #endif /* _LINUX_SCHED_MM_H */

@@ -50,12 +50,8 @@ struct hgpk_data {
 int hgpk_detect(struct psmouse *psmouse, bool set_properties);
 int hgpk_init(struct psmouse *psmouse);
 
-#ifdef CONFIG_MOUSE_PS2_OLPC
-void hgpk_module_init(void);
-#else
 static inline void hgpk_module_init(void)
 {
 }
-#endif
 
 #endif

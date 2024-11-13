@@ -146,63 +146,6 @@ void finish_rcuwait(struct rcuwait *w)
 }
 EXPORT_SYMBOL_GPL(finish_rcuwait);
 
-#ifdef CONFIG_DEBUG_OBJECTS_RCU_HEAD
-void init_rcu_head(struct rcu_head *head)
-{
-	debug_object_init(head, &rcuhead_debug_descr);
-}
-EXPORT_SYMBOL_GPL(init_rcu_head);
-
-void destroy_rcu_head(struct rcu_head *head)
-{
-	debug_object_free(head, &rcuhead_debug_descr);
-}
-EXPORT_SYMBOL_GPL(destroy_rcu_head);
-
-static bool rcuhead_is_static_object(void *addr)
-{
-	return true;
-}
-
-/**
- * init_rcu_head_on_stack() - initialize on-stack rcu_head for debugobjects
- * @head: pointer to rcu_head structure to be initialized
- *
- * This function informs debugobjects of a new rcu_head structure that
- * has been allocated as an auto variable on the stack.  This function
- * is not required for rcu_head structures that are statically defined or
- * that are dynamically allocated on the heap.  This function has no
- * effect for !CONFIG_DEBUG_OBJECTS_RCU_HEAD kernel builds.
- */
-void init_rcu_head_on_stack(struct rcu_head *head)
-{
-	debug_object_init_on_stack(head, &rcuhead_debug_descr);
-}
-EXPORT_SYMBOL_GPL(init_rcu_head_on_stack);
-
-/**
- * destroy_rcu_head_on_stack() - destroy on-stack rcu_head for debugobjects
- * @head: pointer to rcu_head structure to be initialized
- *
- * This function informs debugobjects that an on-stack rcu_head structure
- * is about to go out of scope.  As with init_rcu_head_on_stack(), this
- * function is not required for rcu_head structures that are statically
- * defined or that are dynamically allocated on the heap.  Also as with
- * init_rcu_head_on_stack(), this function has no effect for
- * !CONFIG_DEBUG_OBJECTS_RCU_HEAD kernel builds.
- */
-void destroy_rcu_head_on_stack(struct rcu_head *head)
-{
-	debug_object_free(head, &rcuhead_debug_descr);
-}
-EXPORT_SYMBOL_GPL(destroy_rcu_head_on_stack);
-
-const struct debug_obj_descr rcuhead_debug_descr = {
-	.name = "rcu_head",
-	.is_static_object = rcuhead_is_static_object,
-};
-EXPORT_SYMBOL_GPL(rcuhead_debug_descr);
-#endif /* #ifdef CONFIG_DEBUG_OBJECTS_RCU_HEAD */
 
 #if defined(CONFIG_TREE_RCU) || defined(CONFIG_RCU_TRACE)
 void do_trace_rcu_torture_read(const char *rcutorturename, struct rcu_head *rhp,
@@ -230,17 +173,6 @@ long rcutorture_sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 EXPORT_SYMBOL_GPL(rcutorture_sched_setaffinity);
 #endif
 
-#ifdef CONFIG_RCU_STALL_COMMON
-int rcu_cpu_stall_ftrace_dump __read_mostly;
-module_param(rcu_cpu_stall_ftrace_dump, int, 0644);
-int rcu_cpu_stall_suppress __read_mostly; // !0 = suppress stall warnings.
-EXPORT_SYMBOL_GPL(rcu_cpu_stall_suppress);
-module_param(rcu_cpu_stall_suppress, int, 0644);
-int rcu_cpu_stall_timeout __read_mostly = CONFIG_RCU_CPU_STALL_TIMEOUT;
-module_param(rcu_cpu_stall_timeout, int, 0644);
-int rcu_exp_cpu_stall_timeout __read_mostly = CONFIG_RCU_EXP_CPU_STALL_TIMEOUT;
-module_param(rcu_exp_cpu_stall_timeout, int, 0644);
-#endif /* #ifdef CONFIG_RCU_STALL_COMMON */
 
 // Suppress boot-time RCU CPU stall warnings and rcutorture writer stall
 // warnings.  Also used by rcutorture even if stall warnings are excluded.
@@ -248,79 +180,7 @@ int rcu_cpu_stall_suppress_at_boot __read_mostly; // !0 = suppress boot stalls.
 EXPORT_SYMBOL_GPL(rcu_cpu_stall_suppress_at_boot);
 module_param(rcu_cpu_stall_suppress_at_boot, int, 0444);
 
-#ifdef CONFIG_PROVE_RCU
-
-/*
- * Early boot self test parameters.
- */
-static bool rcu_self_test;
-module_param(rcu_self_test, bool, 0444);
-
-static int rcu_self_test_counter;
-
-static void test_callback(struct rcu_head *r)
-{
-	rcu_self_test_counter++;
-	pr_info("RCU test callback executed %d\n", rcu_self_test_counter);
-}
-
-DEFINE_STATIC_SRCU(early_srcu);
-static unsigned long early_srcu_cookie;
-
-struct early_boot_kfree_rcu {
-	struct rcu_head rh;
-};
-
-static void early_boot_test_call_rcu(void)
-{
-	static struct rcu_head head;
-	static struct rcu_head shead;
-	struct early_boot_kfree_rcu *rhp;
-
-	call_rcu(&head, test_callback);
-	if (IS_ENABLED(CONFIG_SRCU)) {
-		early_srcu_cookie = start_poll_synchronize_srcu(&early_srcu);
-		call_srcu(&early_srcu, &shead, test_callback);
-	}
-	rhp = kmalloc(sizeof(*rhp), GFP_KERNEL);
-	if (!WARN_ON_ONCE(!rhp))
-		kfree_rcu(rhp, rh);
-}
-
-void rcu_early_boot_tests(void)
-{
-	pr_info("Running RCU self tests\n");
-
-	if (rcu_self_test)
-		early_boot_test_call_rcu();
-	rcu_test_sync_prims();
-}
-
-static int rcu_verify_early_boot_tests(void)
-{
-	int ret = 0;
-	int early_boot_test_counter = 0;
-
-	if (rcu_self_test) {
-		early_boot_test_counter++;
-		rcu_barrier();
-		if (IS_ENABLED(CONFIG_SRCU)) {
-			early_boot_test_counter++;
-			srcu_barrier(&early_srcu);
-			WARN_ON_ONCE(!poll_state_synchronize_srcu(&early_srcu, early_srcu_cookie));
-		}
-	}
-	if (rcu_self_test_counter != early_boot_test_counter) {
-		WARN_ON(1);
-		ret = -1;
-	}
-
-	return ret;
-}
-late_initcall(rcu_verify_early_boot_tests);
-#else
 void rcu_early_boot_tests(void) {}
-#endif /* CONFIG_PROVE_RCU */
 
 #include "tasks.h"
 

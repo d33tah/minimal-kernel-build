@@ -42,22 +42,12 @@
 
 #define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
 
-#ifdef CONFIG_X86_64
-#include <asm/page_64_types.h>
-#define IOREMAP_MAX_ORDER       (PUD_SHIFT)
-#else
 #include <asm/page_32_types.h>
 #define IOREMAP_MAX_ORDER       (PMD_SHIFT)
-#endif	/* CONFIG_X86_64 */
 
 #ifndef __ASSEMBLY__
 
-#ifdef CONFIG_DYNAMIC_PHYSICAL_MASK
-extern phys_addr_t physical_mask;
-#define __PHYSICAL_MASK		physical_mask
-#else
 #define __PHYSICAL_MASK		((phys_addr_t)((1ULL << __PHYSICAL_MASK_SHIFT) - 1))
-#endif
 
 extern int devmem_is_allowed(unsigned long pagenr);
 

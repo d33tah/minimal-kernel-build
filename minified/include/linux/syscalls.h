@@ -124,85 +124,12 @@ enum landlock_rule_type;
 #define __SC_ARGS(t, a)	a
 #define __SC_TEST(t, a) (void)BUILD_BUG_ON_ZERO(!__TYPE_IS_LL(t) && sizeof(t) > sizeof(long))
 
-#ifdef CONFIG_FTRACE_SYSCALLS
-#define __SC_STR_ADECL(t, a)	#a
-#define __SC_STR_TDECL(t, a)	#t
-
-extern struct trace_event_class event_class_syscall_enter;
-extern struct trace_event_class event_class_syscall_exit;
-extern struct trace_event_functions enter_syscall_print_funcs;
-extern struct trace_event_functions exit_syscall_print_funcs;
-
-#define SYSCALL_TRACE_ENTER_EVENT(sname)				\
-	static struct syscall_metadata __syscall_meta_##sname;		\
-	static struct trace_event_call __used				\
-	  event_enter_##sname = {					\
-		.class			= &event_class_syscall_enter,	\
-		{							\
-			.name                   = "sys_enter"#sname,	\
-		},							\
-		.event.funcs            = &enter_syscall_print_funcs,	\
-		.data			= (void *)&__syscall_meta_##sname,\
-		.flags                  = TRACE_EVENT_FL_CAP_ANY,	\
-	};								\
-	static struct trace_event_call __used				\
-	  __section("_ftrace_events")					\
-	 *__event_enter_##sname = &event_enter_##sname;
-
-#define SYSCALL_TRACE_EXIT_EVENT(sname)					\
-	static struct syscall_metadata __syscall_meta_##sname;		\
-	static struct trace_event_call __used				\
-	  event_exit_##sname = {					\
-		.class			= &event_class_syscall_exit,	\
-		{							\
-			.name                   = "sys_exit"#sname,	\
-		},							\
-		.event.funcs		= &exit_syscall_print_funcs,	\
-		.data			= (void *)&__syscall_meta_##sname,\
-		.flags                  = TRACE_EVENT_FL_CAP_ANY,	\
-	};								\
-	static struct trace_event_call __used				\
-	  __section("_ftrace_events")					\
-	*__event_exit_##sname = &event_exit_##sname;
-
-#define SYSCALL_METADATA(sname, nb, ...)			\
-	static const char *types_##sname[] = {			\
-		__MAP(nb,__SC_STR_TDECL,__VA_ARGS__)		\
-	};							\
-	static const char *args_##sname[] = {			\
-		__MAP(nb,__SC_STR_ADECL,__VA_ARGS__)		\
-	};							\
-	SYSCALL_TRACE_ENTER_EVENT(sname);			\
-	SYSCALL_TRACE_EXIT_EVENT(sname);			\
-	static struct syscall_metadata __used			\
-	  __syscall_meta_##sname = {				\
-		.name 		= "sys"#sname,			\
-		.syscall_nr	= -1,	/* Filled in at boot */	\
-		.nb_args 	= nb,				\
-		.types		= nb ? types_##sname : NULL,	\
-		.args		= nb ? args_##sname : NULL,	\
-		.enter_event	= &event_enter_##sname,		\
-		.exit_event	= &event_exit_##sname,		\
-		.enter_fields	= LIST_HEAD_INIT(__syscall_meta_##sname.enter_fields), \
-	};							\
-	static struct syscall_metadata __used			\
-	  __section("__syscalls_metadata")			\
-	 *__p_syscall_meta_##sname = &__syscall_meta_##sname;
-
-static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
-{
-	return tp_event->class == &event_class_syscall_enter ||
-	       tp_event->class == &event_class_syscall_exit;
-}
-
-#else
 #define SYSCALL_METADATA(sname, nb, ...)
 
 static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 {
 	return 0;
 }
-#endif
 
 #ifndef SYSCALL_DEFINE0
 #define SYSCALL_DEFINE0(sname)					\
@@ -261,21 +188,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 #endif
 #define SC_VAL64(type, name) ((type) name##_hi << 32 | name##_lo)
 
-#ifdef CONFIG_COMPAT
-#define SYSCALL32_DEFINE1 COMPAT_SYSCALL_DEFINE1
-#define SYSCALL32_DEFINE2 COMPAT_SYSCALL_DEFINE2
-#define SYSCALL32_DEFINE3 COMPAT_SYSCALL_DEFINE3
-#define SYSCALL32_DEFINE4 COMPAT_SYSCALL_DEFINE4
-#define SYSCALL32_DEFINE5 COMPAT_SYSCALL_DEFINE5
-#define SYSCALL32_DEFINE6 COMPAT_SYSCALL_DEFINE6
-#else
 #define SYSCALL32_DEFINE1 SYSCALL_DEFINE1
 #define SYSCALL32_DEFINE2 SYSCALL_DEFINE2
 #define SYSCALL32_DEFINE3 SYSCALL_DEFINE3
 #define SYSCALL32_DEFINE4 SYSCALL_DEFINE4
 #define SYSCALL32_DEFINE5 SYSCALL_DEFINE5
 #define SYSCALL32_DEFINE6 SYSCALL_DEFINE6
-#endif
 
 /*
  * Called before coming back to user-mode. Returning to user-mode with an

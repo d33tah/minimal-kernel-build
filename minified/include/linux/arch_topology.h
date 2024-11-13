@@ -11,9 +11,6 @@
 void topology_normalize_cpu_scale(void);
 int topology_update_cpu_topology(void);
 
-#ifdef CONFIG_ACPI_CPPC_LIB
-void topology_init_cpu_capacity_cppc(void);
-#endif
 
 struct device_node;
 bool topology_parse_cpu_capacity(struct device_node *cpu_node, int cpu);
@@ -75,24 +72,5 @@ struct cpu_topology {
 	cpumask_t llc_sibling;
 };
 
-#ifdef CONFIG_GENERIC_ARCH_TOPOLOGY
-extern struct cpu_topology cpu_topology[NR_CPUS];
-
-#define topology_physical_package_id(cpu)	(cpu_topology[cpu].package_id)
-#define topology_cluster_id(cpu)	(cpu_topology[cpu].cluster_id)
-#define topology_core_id(cpu)		(cpu_topology[cpu].core_id)
-#define topology_core_cpumask(cpu)	(&cpu_topology[cpu].core_sibling)
-#define topology_sibling_cpumask(cpu)	(&cpu_topology[cpu].thread_sibling)
-#define topology_cluster_cpumask(cpu)	(&cpu_topology[cpu].cluster_sibling)
-#define topology_llc_cpumask(cpu)	(&cpu_topology[cpu].llc_sibling)
-void init_cpu_topology(void);
-void store_cpu_topology(unsigned int cpuid);
-const struct cpumask *cpu_coregroup_mask(int cpu);
-const struct cpumask *cpu_clustergroup_mask(int cpu);
-void update_siblings_masks(unsigned int cpu);
-void remove_cpu_topology(unsigned int cpuid);
-void reset_cpu_topology(void);
-int parse_acpi_topology(void);
-#endif
 
 #endif /* _LINUX_ARCH_TOPOLOGY_H_ */

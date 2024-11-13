@@ -93,9 +93,6 @@ struct pt_regs {
 
 #endif /* !__i386__ */
 
-#ifdef CONFIG_PARAVIRT
-#include <asm/paravirt_types.h>
-#endif
 
 #include <asm/proto.h>
 
@@ -140,20 +137,7 @@ static __always_inline int v8086_mode(struct pt_regs *regs)
 
 static inline bool user_64bit_mode(struct pt_regs *regs)
 {
-#ifdef CONFIG_X86_64
-#ifndef CONFIG_PARAVIRT_XXL
-	/*
-	 * On non-paravirt systems, this is the only long mode CPL 3
-	 * selector.  We do not allow long mode selectors in the LDT.
-	 */
-	return regs->cs == __USER_CS;
-#else
-	/* Headers are too twisted for this to go in paravirt.h. */
-	return regs->cs == __USER_CS || regs->cs == pv_info.extra_user_64bit_cs;
-#endif
-#else /* !CONFIG_X86_64 */
 	return false;
-#endif
 }
 
 /*
@@ -162,34 +146,9 @@ static inline bool user_64bit_mode(struct pt_regs *regs)
  */
 static inline bool any_64bit_mode(struct pt_regs *regs)
 {
-#ifdef CONFIG_X86_64
-	return !user_mode(regs) || user_64bit_mode(regs);
-#else
 	return false;
-#endif
 }
 
-#ifdef CONFIG_X86_64
-#define current_user_stack_pointer()	current_pt_regs()->sp
-#define compat_user_stack_pointer()	current_pt_regs()->sp
-
-static __always_inline bool ip_within_syscall_gap(struct pt_regs *regs)
-{
-	bool ret = (regs->ip >= (unsigned long)entry_SYSCALL_64 &&
-		    regs->ip <  (unsigned long)entry_SYSCALL_64_safe_stack);
-
-	ret = ret || (regs->ip >= (unsigned long)entry_SYSRETQ_unsafe_stack &&
-		      regs->ip <  (unsigned long)entry_SYSRETQ_end);
-#ifdef CONFIG_IA32_EMULATION
-	ret = ret || (regs->ip >= (unsigned long)entry_SYSCALL_compat &&
-		      regs->ip <  (unsigned long)entry_SYSCALL_compat_safe_stack);
-	ret = ret || (regs->ip >= (unsigned long)entry_SYSRETL_compat_unsafe_stack &&
-		      regs->ip <  (unsigned long)entry_SYSRETL_compat_end);
-#endif
-
-	return ret;
-}
-#endif
 
 static inline unsigned long kernel_stack_pointer(struct pt_regs *regs)
 {
@@ -371,11 +330,7 @@ extern int do_get_thread_area(struct task_struct *p, int idx,
 extern int do_set_thread_area(struct task_struct *p, int idx,
 			      struct user_desc __user *info, int can_allocate);
 
-#ifdef CONFIG_X86_64
-# define do_set_thread_area_64(p, s, t)	do_arch_prctl_64(p, s, t)
-#else
 # define do_set_thread_area_64(p, s, t)	(0)
-#endif
 
 #endif /* !__ASSEMBLY__ */
 #endif /* _ASM_X86_PTRACE_H */

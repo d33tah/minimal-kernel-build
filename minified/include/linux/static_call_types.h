@@ -41,33 +41,6 @@ struct static_call_site {
 
 #define __raw_static_call(name)	(&STATIC_CALL_TRAMP(name))
 
-#ifdef CONFIG_HAVE_STATIC_CALL_INLINE
-
-/*
- * __ADDRESSABLE() is used to ensure the key symbol doesn't get stripped from
- * the symbol table so that objtool can reference it when it generates the
- * .static_call_sites section.
- */
-#define __STATIC_CALL_ADDRESSABLE(name) \
-	__ADDRESSABLE(STATIC_CALL_KEY(name))
-
-#define __static_call(name)						\
-({									\
-	__STATIC_CALL_ADDRESSABLE(name);				\
-	__raw_static_call(name);					\
-})
-
-struct static_call_key {
-	void *func;
-	union {
-		/* bit 0: 0 = mods, 1 = sites */
-		unsigned long type;
-		struct static_call_mod *mods;
-		struct static_call_site *sites;
-	};
-};
-
-#else /* !CONFIG_HAVE_STATIC_CALL_INLINE */
 
 #define __STATIC_CALL_ADDRESSABLE(name)
 #define __static_call(name)	__raw_static_call(name)
@@ -76,7 +49,6 @@ struct static_call_key {
 	void *func;
 };
 
-#endif /* CONFIG_HAVE_STATIC_CALL_INLINE */
 
 #ifdef MODULE
 #define __STATIC_CALL_MOD_ADDRESSABLE(name)

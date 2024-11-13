@@ -57,10 +57,6 @@ struct ldttss_desc {
 
 	u16	base1 : 8, type : 5, dpl : 2, p : 1;
 	u16	limit1 : 4, zero0 : 3, g : 1, base2 : 8;
-#ifdef CONFIG_X86_64
-	u32	base3;
-	u32	zero1;
-#endif
 } __attribute__((packed));
 
 typedef struct ldttss_desc ldt_desc;
@@ -86,22 +82,13 @@ struct gate_struct {
 	u16		segment;
 	struct idt_bits	bits;
 	u16		offset_middle;
-#ifdef CONFIG_X86_64
-	u32		offset_high;
-	u32		reserved;
-#endif
 } __attribute__((packed));
 
 typedef struct gate_struct gate_desc;
 
 static inline unsigned long gate_offset(const gate_desc *g)
 {
-#ifdef CONFIG_X86_64
-	return g->offset_low | ((unsigned long)g->offset_middle << 16) |
-		((unsigned long) g->offset_high << 32);
-#else
 	return g->offset_low | ((unsigned long)g->offset_middle << 16);
-#endif
 }
 
 static inline unsigned long gate_segment(const gate_desc *g)

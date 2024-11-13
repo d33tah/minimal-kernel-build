@@ -100,10 +100,6 @@ static void __dump_page(struct page *page)
 				head_compound_pincount(head));
 	}
 
-#ifdef CONFIG_MEMCG
-	if (head->memcg_data)
-		pr_warn("memcg:%lx\n", head->memcg_data);
-#endif
 	if (PageKsm(page))
 		type = "ksm ";
 	else if (PageAnon(page))

@@ -275,115 +275,6 @@ struct compress_alg {
 			      unsigned int slen, u8 *dst, unsigned int *dlen);
 };
 
-#ifdef CONFIG_CRYPTO_STATS
-/*
- * struct crypto_istat_aead - statistics for AEAD algorithm
- * @encrypt_cnt:	number of encrypt requests
- * @encrypt_tlen:	total data size handled by encrypt requests
- * @decrypt_cnt:	number of decrypt requests
- * @decrypt_tlen:	total data size handled by decrypt requests
- * @err_cnt:		number of error for AEAD requests
- */
-struct crypto_istat_aead {
-	atomic64_t encrypt_cnt;
-	atomic64_t encrypt_tlen;
-	atomic64_t decrypt_cnt;
-	atomic64_t decrypt_tlen;
-	atomic64_t err_cnt;
-};
-
-/*
- * struct crypto_istat_akcipher - statistics for akcipher algorithm
- * @encrypt_cnt:	number of encrypt requests
- * @encrypt_tlen:	total data size handled by encrypt requests
- * @decrypt_cnt:	number of decrypt requests
- * @decrypt_tlen:	total data size handled by decrypt requests
- * @verify_cnt:		number of verify operation
- * @sign_cnt:		number of sign requests
- * @err_cnt:		number of error for akcipher requests
- */
-struct crypto_istat_akcipher {
-	atomic64_t encrypt_cnt;
-	atomic64_t encrypt_tlen;
-	atomic64_t decrypt_cnt;
-	atomic64_t decrypt_tlen;
-	atomic64_t verify_cnt;
-	atomic64_t sign_cnt;
-	atomic64_t err_cnt;
-};
-
-/*
- * struct crypto_istat_cipher - statistics for cipher algorithm
- * @encrypt_cnt:	number of encrypt requests
- * @encrypt_tlen:	total data size handled by encrypt requests
- * @decrypt_cnt:	number of decrypt requests
- * @decrypt_tlen:	total data size handled by decrypt requests
- * @err_cnt:		number of error for cipher requests
- */
-struct crypto_istat_cipher {
-	atomic64_t encrypt_cnt;
-	atomic64_t encrypt_tlen;
-	atomic64_t decrypt_cnt;
-	atomic64_t decrypt_tlen;
-	atomic64_t err_cnt;
-};
-
-/*
- * struct crypto_istat_compress - statistics for compress algorithm
- * @compress_cnt:	number of compress requests
- * @compress_tlen:	total data size handled by compress requests
- * @decompress_cnt:	number of decompress requests
- * @decompress_tlen:	total data size handled by decompress requests
- * @err_cnt:		number of error for compress requests
- */
-struct crypto_istat_compress {
-	atomic64_t compress_cnt;
-	atomic64_t compress_tlen;
-	atomic64_t decompress_cnt;
-	atomic64_t decompress_tlen;
-	atomic64_t err_cnt;
-};
-
-/*
- * struct crypto_istat_hash - statistics for has algorithm
- * @hash_cnt:		number of hash requests
- * @hash_tlen:		total data size hashed
- * @err_cnt:		number of error for hash requests
- */
-struct crypto_istat_hash {
-	atomic64_t hash_cnt;
-	atomic64_t hash_tlen;
-	atomic64_t err_cnt;
-};
-
-/*
- * struct crypto_istat_kpp - statistics for KPP algorithm
- * @setsecret_cnt:		number of setsecrey operation
- * @generate_public_key_cnt:	number of generate_public_key operation
- * @compute_shared_secret_cnt:	number of compute_shared_secret operation
- * @err_cnt:			number of error for KPP requests
- */
-struct crypto_istat_kpp {
-	atomic64_t setsecret_cnt;
-	atomic64_t generate_public_key_cnt;
-	atomic64_t compute_shared_secret_cnt;
-	atomic64_t err_cnt;
-};
-
-/*
- * struct crypto_istat_rng: statistics for RNG algorithm
- * @generate_cnt:	number of RNG generate requests
- * @generate_tlen:	total data size of generated data by the RNG
- * @seed_cnt:		number of times the RNG was seeded
- * @err_cnt:		number of error for RNG requests
- */
-struct crypto_istat_rng {
-	atomic64_t generate_cnt;
-	atomic64_t generate_tlen;
-	atomic64_t seed_cnt;
-	atomic64_t err_cnt;
-};
-#endif /* CONFIG_CRYPTO_STATS */
 
 #define cra_cipher	cra_u.cipher
 #define cra_compress	cra_u.compress
@@ -503,41 +394,9 @@ struct crypto_alg {
 	
 	struct module *cra_module;
 
-#ifdef CONFIG_CRYPTO_STATS
-	union {
-		struct crypto_istat_aead aead;
-		struct crypto_istat_akcipher akcipher;
-		struct crypto_istat_cipher cipher;
-		struct crypto_istat_compress compress;
-		struct crypto_istat_hash hash;
-		struct crypto_istat_rng rng;
-		struct crypto_istat_kpp kpp;
-	} stats;
-#endif /* CONFIG_CRYPTO_STATS */
 
 } CRYPTO_MINALIGN_ATTR;
 
-#ifdef CONFIG_CRYPTO_STATS
-void crypto_stats_init(struct crypto_alg *alg);
-void crypto_stats_get(struct crypto_alg *alg);
-void crypto_stats_aead_encrypt(unsigned int cryptlen, struct crypto_alg *alg, int ret);
-void crypto_stats_aead_decrypt(unsigned int cryptlen, struct crypto_alg *alg, int ret);
-void crypto_stats_ahash_update(unsigned int nbytes, int ret, struct crypto_alg *alg);
-void crypto_stats_ahash_final(unsigned int nbytes, int ret, struct crypto_alg *alg);
-void crypto_stats_akcipher_encrypt(unsigned int src_len, int ret, struct crypto_alg *alg);
-void crypto_stats_akcipher_decrypt(unsigned int src_len, int ret, struct crypto_alg *alg);
-void crypto_stats_akcipher_sign(int ret, struct crypto_alg *alg);
-void crypto_stats_akcipher_verify(int ret, struct crypto_alg *alg);
-void crypto_stats_compress(unsigned int slen, int ret, struct crypto_alg *alg);
-void crypto_stats_decompress(unsigned int slen, int ret, struct crypto_alg *alg);
-void crypto_stats_kpp_set_secret(struct crypto_alg *alg, int ret);
-void crypto_stats_kpp_generate_public_key(struct crypto_alg *alg, int ret);
-void crypto_stats_kpp_compute_shared_secret(struct crypto_alg *alg, int ret);
-void crypto_stats_rng_seed(struct crypto_alg *alg, int ret);
-void crypto_stats_rng_generate(struct crypto_alg *alg, unsigned int dlen, int ret);
-void crypto_stats_skcipher_encrypt(unsigned int cryptlen, int ret, struct crypto_alg *alg);
-void crypto_stats_skcipher_decrypt(unsigned int cryptlen, int ret, struct crypto_alg *alg);
-#else
 static inline void crypto_stats_init(struct crypto_alg *alg)
 {}
 static inline void crypto_stats_get(struct crypto_alg *alg)
@@ -576,7 +435,6 @@ static inline void crypto_stats_skcipher_encrypt(unsigned int cryptlen, int ret,
 {}
 static inline void crypto_stats_skcipher_decrypt(unsigned int cryptlen, int ret, struct crypto_alg *alg)
 {}
-#endif
 /*
  * A helper struct for waiting for completion of async crypto ops
  */

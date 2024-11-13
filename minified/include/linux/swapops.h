@@ -201,51 +201,6 @@ static inline bool is_writable_device_exclusive_entry(swp_entry_t entry)
 }
 #endif /* CONFIG_DEVICE_PRIVATE */
 
-#ifdef CONFIG_MIGRATION
-static inline int is_migration_entry(swp_entry_t entry)
-{
-	return unlikely(swp_type(entry) == SWP_MIGRATION_READ ||
-			swp_type(entry) == SWP_MIGRATION_READ_EXCLUSIVE ||
-			swp_type(entry) == SWP_MIGRATION_WRITE);
-}
-
-static inline int is_writable_migration_entry(swp_entry_t entry)
-{
-	return unlikely(swp_type(entry) == SWP_MIGRATION_WRITE);
-}
-
-static inline int is_readable_migration_entry(swp_entry_t entry)
-{
-	return unlikely(swp_type(entry) == SWP_MIGRATION_READ);
-}
-
-static inline int is_readable_exclusive_migration_entry(swp_entry_t entry)
-{
-	return unlikely(swp_type(entry) == SWP_MIGRATION_READ_EXCLUSIVE);
-}
-
-static inline swp_entry_t make_readable_migration_entry(pgoff_t offset)
-{
-	return swp_entry(SWP_MIGRATION_READ, offset);
-}
-
-static inline swp_entry_t make_readable_exclusive_migration_entry(pgoff_t offset)
-{
-	return swp_entry(SWP_MIGRATION_READ_EXCLUSIVE, offset);
-}
-
-static inline swp_entry_t make_writable_migration_entry(pgoff_t offset)
-{
-	return swp_entry(SWP_MIGRATION_WRITE, offset);
-}
-
-extern void __migration_entry_wait(struct mm_struct *mm, pte_t *ptep,
-					spinlock_t *ptl);
-extern void migration_entry_wait(struct mm_struct *mm, pmd_t *pmd,
-					unsigned long address);
-extern void migration_entry_wait_huge(struct vm_area_struct *vma,
-		struct mm_struct *mm, pte_t *pte);
-#else
 static inline swp_entry_t make_readable_migration_entry(pgoff_t offset)
 {
 	return swp_entry(0, 0);
@@ -281,36 +236,12 @@ static inline int is_readable_migration_entry(swp_entry_t entry)
 	return 0;
 }
 
-#endif
 
 typedef unsigned long pte_marker;
 
 #define  PTE_MARKER_UFFD_WP  BIT(0)
 #define  PTE_MARKER_MASK     (PTE_MARKER_UFFD_WP)
 
-#ifdef CONFIG_PTE_MARKER
-
-static inline swp_entry_t make_pte_marker_entry(pte_marker marker)
-{
-	return swp_entry(SWP_PTE_MARKER, marker);
-}
-
-static inline bool is_pte_marker_entry(swp_entry_t entry)
-{
-	return swp_type(entry) == SWP_PTE_MARKER;
-}
-
-static inline pte_marker pte_marker_get(swp_entry_t entry)
-{
-	return swp_offset(entry) & PTE_MARKER_MASK;
-}
-
-static inline bool is_pte_marker(pte_t pte)
-{
-	return is_swap_pte(pte) && is_pte_marker_entry(pte_to_swp_entry(pte));
-}
-
-#else /* CONFIG_PTE_MARKER */
 
 static inline swp_entry_t make_pte_marker_entry(pte_marker marker)
 {
@@ -334,7 +265,6 @@ static inline bool is_pte_marker(pte_t pte)
 	return false;
 }
 
-#endif /* CONFIG_PTE_MARKER */
 
 static inline pte_t make_pte_marker(pte_marker marker)
 {
@@ -388,40 +318,6 @@ static inline bool is_pfn_swap_entry(swp_entry_t entry)
 
 struct page_vma_mapped_walk;
 
-#ifdef CONFIG_ARCH_ENABLE_THP_MIGRATION
-extern int set_pmd_migration_entry(struct page_vma_mapped_walk *pvmw,
-		struct page *page);
-
-extern void remove_migration_pmd(struct page_vma_mapped_walk *pvmw,
-		struct page *new);
-
-extern void pmd_migration_entry_wait(struct mm_struct *mm, pmd_t *pmd);
-
-static inline swp_entry_t pmd_to_swp_entry(pmd_t pmd)
-{
-	swp_entry_t arch_entry;
-
-	if (pmd_swp_soft_dirty(pmd))
-		pmd = pmd_swp_clear_soft_dirty(pmd);
-	if (pmd_swp_uffd_wp(pmd))
-		pmd = pmd_swp_clear_uffd_wp(pmd);
-	arch_entry = __pmd_to_swp_entry(pmd);
-	return swp_entry(__swp_type(arch_entry), __swp_offset(arch_entry));
-}
-
-static inline pmd_t swp_entry_to_pmd(swp_entry_t entry)
-{
-	swp_entry_t arch_entry;
-
-	arch_entry = __swp_entry(swp_type(entry), swp_offset(entry));
-	return __swp_entry_to_pmd(arch_entry);
-}
-
-static inline int is_pmd_migration_entry(pmd_t pmd)
-{
-	return is_swap_pmd(pmd) && is_migration_entry(pmd_to_swp_entry(pmd));
-}
-#else
 static inline int set_pmd_migration_entry(struct page_vma_mapped_walk *pvmw,
 		struct page *page)
 {
@@ -450,42 +346,7 @@ static inline int is_pmd_migration_entry(pmd_t pmd)
 {
 	return 0;
 }
-#endif
 
-#ifdef CONFIG_MEMORY_FAILURE
-
-extern atomic_long_t num_poisoned_pages __read_mostly;
-
-/*
- * Support for hardware poisoned pages
- */
-static inline swp_entry_t make_hwpoison_entry(struct page *page)
-{
-	BUG_ON(!PageLocked(page));
-	return swp_entry(SWP_HWPOISON, page_to_pfn(page));
-}
-
-static inline int is_hwpoison_entry(swp_entry_t entry)
-{
-	return swp_type(entry) == SWP_HWPOISON;
-}
-
-static inline unsigned long hwpoison_entry_to_pfn(swp_entry_t entry)
-{
-	return swp_offset(entry);
-}
-
-static inline void num_poisoned_pages_inc(void)
-{
-	atomic_long_inc(&num_poisoned_pages);
-}
-
-static inline void num_poisoned_pages_dec(void)
-{
-	atomic_long_dec(&num_poisoned_pages);
-}
-
-#else
 
 static inline swp_entry_t make_hwpoison_entry(struct page *page)
 {
@@ -500,7 +361,6 @@ static inline int is_hwpoison_entry(swp_entry_t swp)
 static inline void num_poisoned_pages_inc(void)
 {
 }
-#endif
 
 static inline int non_swap_entry(swp_entry_t entry)
 {

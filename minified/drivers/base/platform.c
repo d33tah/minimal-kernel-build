@@ -169,13 +169,6 @@ EXPORT_SYMBOL_GPL(devm_platform_ioremap_resource_byname);
 int platform_get_irq_optional(struct platform_device *dev, unsigned int num)
 {
 	int ret;
-#ifdef CONFIG_SPARC
-	/* sparc does not have irqs represented as IORESOURCE_IRQ resources */
-	if (!dev || num >= dev->archdata.num_irqs)
-		goto out_not_found;
-	ret = dev->archdata.irqs[num];
-	goto out;
-#else
 	struct resource *r;
 
 	if (IS_ENABLED(CONFIG_OF_IRQ) && dev->dev.of_node) {
@@ -227,7 +220,6 @@ int platform_get_irq_optional(struct platform_device *dev, unsigned int num)
 			goto out;
 	}
 
-#endif
 out_not_found:
 	ret = -ENXIO;
 out:
@@ -1084,110 +1076,8 @@ static const struct platform_device_id *platform_match_id(
 	return NULL;
 }
 
-#ifdef CONFIG_PM_SLEEP
-
-static int platform_legacy_suspend(struct device *dev, pm_message_t mesg)
-{
-	struct platform_driver *pdrv = to_platform_driver(dev->driver);
-	struct platform_device *pdev = to_platform_device(dev);
-	int ret = 0;
-
-	if (dev->driver && pdrv->suspend)
-		ret = pdrv->suspend(pdev, mesg);
-
-	return ret;
-}
-
-static int platform_legacy_resume(struct device *dev)
-{
-	struct platform_driver *pdrv = to_platform_driver(dev->driver);
-	struct platform_device *pdev = to_platform_device(dev);
-	int ret = 0;
-
-	if (dev->driver && pdrv->resume)
-		ret = pdrv->resume(pdev);
-
-	return ret;
-}
-
-#endif /* CONFIG_PM_SLEEP */
 
 
-#ifdef CONFIG_HIBERNATE_CALLBACKS
-
-int platform_pm_freeze(struct device *dev)
-{
-	struct device_driver *drv = dev->driver;
-	int ret = 0;
-
-	if (!drv)
-		return 0;
-
-	if (drv->pm) {
-		if (drv->pm->freeze)
-			ret = drv->pm->freeze(dev);
-	} else {
-		ret = platform_legacy_suspend(dev, PMSG_FREEZE);
-	}
-
-	return ret;
-}
-
-int platform_pm_thaw(struct device *dev)
-{
-	struct device_driver *drv = dev->driver;
-	int ret = 0;
-
-	if (!drv)
-		return 0;
-
-	if (drv->pm) {
-		if (drv->pm->thaw)
-			ret = drv->pm->thaw(dev);
-	} else {
-		ret = platform_legacy_resume(dev);
-	}
-
-	return ret;
-}
-
-int platform_pm_poweroff(struct device *dev)
-{
-	struct device_driver *drv = dev->driver;
-	int ret = 0;
-
-	if (!drv)
-		return 0;
-
-	if (drv->pm) {
-		if (drv->pm->poweroff)
-			ret = drv->pm->poweroff(dev);
-	} else {
-		ret = platform_legacy_suspend(dev, PMSG_HIBERNATE);
-	}
-
-	return ret;
-}
-
-int platform_pm_restore(struct device *dev)
-{
-	struct device_driver *drv = dev->driver;
-	int ret = 0;
-
-	if (!drv)
-		return 0;
-
-	if (drv->pm) {
-		if (drv->pm->restore)
-			ret = drv->pm->restore(dev);
-	} else {
-		ret = platform_legacy_resume(dev);
-	}
-
-	return ret;
-}
-
-#endif /* CONFIG_HIBERNATE_CALLBACKS */
 
 /* modalias support enables more hands-off userspace setup:
  * (a) environment variable lets new-style hotplug events work once system is

@@ -247,22 +247,10 @@ u64 native_sched_clock_from_tsc(u64 tsc)
 
 /* We need to define a real function for sched_clock, to override the
    weak default version */
-#ifdef CONFIG_PARAVIRT
-unsigned long long sched_clock(void)
-{
-	return paravirt_sched_clock();
-}
-
-bool using_native_sched_clock(void)
-{
-	return static_call_query(pv_sched_clock) == native_sched_clock;
-}
-#else
 unsigned long long
 sched_clock(void) __attribute__((alias("native_sched_clock")));
 
 bool using_native_sched_clock(void) { return true; }
-#endif
 
 int check_tsc_unstable(void)
 {
@@ -668,15 +656,6 @@ unsigned long native_calibrate_tsc(void)
 	if (boot_cpu_data.x86_model == INTEL_FAM6_ATOM_GOLDMONT)
 		setup_force_cpu_cap(X86_FEATURE_TSC_RELIABLE);
 
-#ifdef CONFIG_X86_LOCAL_APIC
-	/*
-	 * The local APIC appears to be fed by the core crystal clock
-	 * (which sounds entirely sensible). We can set the global
-	 * lapic_timer_period here to avoid having to calibrate the APIC
-	 * timer later.
-	 */
-	lapic_timer_period = crystal_khz * 1000 / HZ;
-#endif
 
 	return crystal_khz * ebx_numerator / eax_denominator;
 }

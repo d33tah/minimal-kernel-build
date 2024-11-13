@@ -223,25 +223,6 @@ static int serport_ldisc_ioctl(struct tty_struct *tty, unsigned int cmd,
 	return -EINVAL;
 }
 
-#ifdef CONFIG_COMPAT
-#define COMPAT_SPIOCSTYPE	_IOW('q', 0x01, compat_ulong_t)
-static int serport_ldisc_compat_ioctl(struct tty_struct *tty,
-				       unsigned int cmd, unsigned long arg)
-{
-	if (cmd == COMPAT_SPIOCSTYPE) {
-		void __user *uarg = compat_ptr(arg);
-		compat_ulong_t compat_type;
-
-		if (get_user(compat_type, (compat_ulong_t __user *)uarg))
-			return -EFAULT;
-
-		serport_set_type(tty, compat_type);
-		return 0;
-	}
-
-	return -EINVAL;
-}
-#endif
 
 static void serport_ldisc_hangup(struct tty_struct *tty)
 {
@@ -278,9 +259,6 @@ static struct tty_ldisc_ops serport_ldisc = {
 	.close =	serport_ldisc_close,
 	.read =		serport_ldisc_read,
 	.ioctl =	serport_ldisc_ioctl,
-#ifdef CONFIG_COMPAT
-	.compat_ioctl =	serport_ldisc_compat_ioctl,
-#endif
 	.receive_buf =	serport_ldisc_receive,
 	.hangup =	serport_ldisc_hangup,
 	.write_wakeup =	serport_ldisc_write_wakeup

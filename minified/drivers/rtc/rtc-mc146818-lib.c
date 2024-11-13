@@ -88,9 +88,6 @@ EXPORT_SYMBOL_GPL(mc146818_does_rtc_work);
 struct mc146818_get_time_callback_param {
 	struct rtc_time *time;
 	unsigned char ctrl;
-#ifdef CONFIG_MACH_DECSTATION
-	unsigned int real_year;
-#endif
 };
 
 static void mc146818_get_time_callback(unsigned char seconds, void *param_in)
@@ -109,9 +106,6 @@ static void mc146818_get_time_callback(unsigned char seconds, void *param_in)
 	p->time->tm_mday = CMOS_READ(RTC_DAY_OF_MONTH);
 	p->time->tm_mon = CMOS_READ(RTC_MONTH);
 	p->time->tm_year = CMOS_READ(RTC_YEAR);
-#ifdef CONFIG_MACH_DECSTATION
-	p->real_year = CMOS_READ(RTC_DEC_YEAR);
-#endif
 
 	p->ctrl = CMOS_READ(RTC_CONTROL);
 }
@@ -137,9 +131,6 @@ int mc146818_get_time(struct rtc_time *time)
 		time->tm_year = bcd2bin(time->tm_year);
 	}
 
-#ifdef CONFIG_MACH_DECSTATION
-	time->tm_year += p.real_year - 72;
-#endif
 
 
 	/*
@@ -171,9 +162,6 @@ int mc146818_set_time(struct rtc_time *time)
 	unsigned char mon, day, hrs, min, sec;
 	unsigned char save_control, save_freq_select;
 	unsigned int yrs;
-#ifdef CONFIG_MACH_DECSTATION
-	unsigned int real_yrs, leap_yr;
-#endif
 	unsigned char century = 0;
 
 	yrs = time->tm_year;
@@ -186,22 +174,6 @@ int mc146818_set_time(struct rtc_time *time)
 	if (yrs > 255)	/* They are unsigned */
 		return -EINVAL;
 
-#ifdef CONFIG_MACH_DECSTATION
-	real_yrs = yrs;
-	leap_yr = ((!((yrs + 1900) % 4) && ((yrs + 1900) % 100)) ||
-			!((yrs + 1900) % 400));
-	yrs = 72;
-
-	/*
-	 * We want to keep the year set to 73 until March
-	 * for non-leap years, so that Feb, 29th is handled
-	 * correctly.
-	 */
-	if (!leap_yr && mon < 3) {
-		real_yrs--;
-		yrs = 73;
-	}
-#endif
 
 
 	/* These limits and adjustments are independent of
@@ -235,9 +207,6 @@ int mc146818_set_time(struct rtc_time *time)
 	else
 		CMOS_WRITE((save_freq_select|RTC_DIV_RESET2), RTC_FREQ_SELECT);
 
-#ifdef CONFIG_MACH_DECSTATION
-	CMOS_WRITE(real_yrs, RTC_DEC_YEAR);
-#endif
 	CMOS_WRITE(yrs, RTC_YEAR);
 	CMOS_WRITE(mon, RTC_MONTH);
 	CMOS_WRITE(day, RTC_DAY_OF_MONTH);

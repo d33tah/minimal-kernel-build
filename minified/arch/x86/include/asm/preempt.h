@@ -103,28 +103,5 @@ static __always_inline bool should_resched(int preempt_offset)
 	return unlikely(raw_cpu_read_4(__preempt_count) == preempt_offset);
 }
 
-#ifdef CONFIG_PREEMPTION
-
-extern asmlinkage void preempt_schedule(void);
-extern asmlinkage void preempt_schedule_thunk(void);
-
-#define preempt_schedule_dynamic_enabled	preempt_schedule_thunk
-#define preempt_schedule_dynamic_disabled	NULL
-
-extern asmlinkage void preempt_schedule_notrace(void);
-extern asmlinkage void preempt_schedule_notrace_thunk(void);
-
-#define preempt_schedule_notrace_dynamic_enabled	preempt_schedule_notrace_thunk
-#define preempt_schedule_notrace_dynamic_disabled	NULL
-
-
-#define __preempt_schedule() \
-	asm volatile ("call preempt_schedule_thunk" : ASM_CALL_CONSTRAINT);
-
-#define __preempt_schedule_notrace() \
-	asm volatile ("call preempt_schedule_notrace_thunk" : ASM_CALL_CONSTRAINT);
-
-
-#endif /* PREEMPTION */
 
 #endif /* __ASM_PREEMPT_H */

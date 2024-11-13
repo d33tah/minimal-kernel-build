@@ -32,12 +32,7 @@ enum {
 	WORK_STRUCT_INACTIVE_BIT= 1,	/* work item is inactive */
 	WORK_STRUCT_PWQ_BIT	= 2,	/* data points to pwq */
 	WORK_STRUCT_LINKED_BIT	= 3,	/* next work is linked to this one */
-#ifdef CONFIG_DEBUG_OBJECTS_WORK
-	WORK_STRUCT_STATIC_BIT	= 4,	/* static initializer (debugobjects) */
-	WORK_STRUCT_COLOR_SHIFT	= 5,	/* color for workqueue flushing */
-#else
 	WORK_STRUCT_COLOR_SHIFT	= 4,	/* color for workqueue flushing */
-#endif
 
 	WORK_STRUCT_COLOR_BITS	= 4,
 
@@ -45,11 +40,7 @@ enum {
 	WORK_STRUCT_INACTIVE	= 1 << WORK_STRUCT_INACTIVE_BIT,
 	WORK_STRUCT_PWQ		= 1 << WORK_STRUCT_PWQ_BIT,
 	WORK_STRUCT_LINKED	= 1 << WORK_STRUCT_LINKED_BIT,
-#ifdef CONFIG_DEBUG_OBJECTS_WORK
-	WORK_STRUCT_STATIC	= 1 << WORK_STRUCT_STATIC_BIT,
-#else
 	WORK_STRUCT_STATIC	= 0,
-#endif
 
 	WORK_NR_COLORS		= (1 << WORK_STRUCT_COLOR_BITS),
 
@@ -98,9 +89,6 @@ struct work_struct {
 	atomic_long_t data;
 	struct list_head entry;
 	work_func_t func;
-#ifdef CONFIG_LOCKDEP
-	struct lockdep_map lockdep_map;
-#endif
 };
 
 #define WORK_DATA_INIT()	ATOMIC_LONG_INIT((unsigned long)WORK_STRUCT_NO_POOL)
@@ -164,17 +152,7 @@ struct execute_work {
 	struct work_struct work;
 };
 
-#ifdef CONFIG_LOCKDEP
-/*
- * NB: because we have to copy the lockdep_map, setting _key
- * here is required, otherwise it could get initialised to the
- * copy of the lockdep_map!
- */
-#define __WORK_INIT_LOCKDEP_MAP(n, k) \
-	.lockdep_map = STATIC_LOCKDEP_MAP_INIT(n, k),
-#else
 #define __WORK_INIT_LOCKDEP_MAP(n, k)
-#endif
 
 #define __WORK_INITIALIZER(n, f) {					\
 	.data = WORK_DATA_STATIC_INIT(),				\
@@ -198,20 +176,10 @@ struct execute_work {
 #define DECLARE_DEFERRABLE_WORK(n, f)					\
 	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, TIMER_DEFERRABLE)
 
-#ifdef CONFIG_DEBUG_OBJECTS_WORK
-extern void __init_work(struct work_struct *work, int onstack);
-extern void destroy_work_on_stack(struct work_struct *work);
-extern void destroy_delayed_work_on_stack(struct delayed_work *work);
-static inline unsigned int work_static(struct work_struct *work)
-{
-	return *work_data_bits(work) & WORK_STRUCT_STATIC;
-}
-#else
 static inline void __init_work(struct work_struct *work, int onstack) { }
 static inline void destroy_work_on_stack(struct work_struct *work) { }
 static inline void destroy_delayed_work_on_stack(struct delayed_work *work) { }
 static inline unsigned int work_static(struct work_struct *work) { return 0; }
-#endif
 
 /*
  * initialize all of a work item in one go
@@ -220,18 +188,6 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
  * assignment of the work data initializer allows the compiler
  * to generate better code.
  */
-#ifdef CONFIG_LOCKDEP
-#define __INIT_WORK(_work, _func, _onstack)				\
-	do {								\
-		static struct lock_class_key __key;			\
-									\
-		__init_work((_work), _onstack);				\
-		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
-		lockdep_init_map(&(_work)->lockdep_map, "(work_completion)"#_work, &__key, 0); \
-		INIT_LIST_HEAD(&(_work)->entry);			\
-		(_work)->func = (_func);				\
-	} while (0)
-#else
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
 		__init_work((_work), _onstack);				\
@@ -239,7 +195,6 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
 		INIT_LIST_HEAD(&(_work)->entry);			\
 		(_work)->func = (_func);				\
 	} while (0)
-#endif
 
 #define INIT_WORK(_work, _func)						\
 	__INIT_WORK((_work), (_func), 0)
@@ -678,11 +633,6 @@ static inline long work_on_cpu_safe(int cpu, long (*fn)(void *), void *arg)
 	return fn(arg);
 }
 
-#ifdef CONFIG_FREEZER
-extern void freeze_workqueues_begin(void);
-extern bool freeze_workqueues_busy(void);
-extern void thaw_workqueues(void);
-#endif /* CONFIG_FREEZER */
 
 static inline int workqueue_sysfs_register(struct workqueue_struct *wq)
 { return 0; }

@@ -35,24 +35,9 @@ struct ipv6_devconf {
 	__s32		accept_ra_min_hop_limit;
 	__s32		accept_ra_pinfo;
 	__s32		ignore_routes_with_linkdown;
-#ifdef CONFIG_IPV6_ROUTER_PREF
-	__s32		accept_ra_rtr_pref;
-	__s32		rtr_probe_interval;
-#ifdef CONFIG_IPV6_ROUTE_INFO
-	__s32		accept_ra_rt_info_min_plen;
-	__s32		accept_ra_rt_info_max_plen;
-#endif
-#endif
 	__s32		proxy_ndp;
 	__s32		accept_source_route;
 	__s32		accept_ra_from_local;
-#ifdef CONFIG_IPV6_OPTIMISTIC_DAD
-	__s32		optimistic_dad;
-	__s32		use_optimistic;
-#endif
-#ifdef CONFIG_IPV6_MROUTE
-	atomic_t	mc_forwarding;
-#endif
 	__s32		disable_ipv6;
 	__s32		drop_unicast_in_l2_multicast;
 	__s32		accept_dad;
@@ -69,9 +54,6 @@ struct ipv6_devconf {
 	__s32		use_oif_addrs_only;
 	__s32		keep_addr_on_down;
 	__s32		seg6_enabled;
-#ifdef CONFIG_IPV6_SEG6_HMAC
-	__s32		seg6_require_hmac;
-#endif
 	__u32		enhanced_dad;
 	__u32		addr_gen_mode;
 	__s32		disable_policy;
@@ -148,17 +130,10 @@ struct inet6_skb_parm {
 #define IP6SKB_FAKEJUMBO      512
 };
 
-#if defined(CONFIG_NET_L3_MASTER_DEV)
-static inline bool ipv6_l3mdev_skb(__u16 flags)
-{
-	return flags & IP6SKB_L3SLAVE;
-}
-#else
 static inline bool ipv6_l3mdev_skb(__u16 flags)
 {
 	return false;
 }
-#endif
 
 #define IP6CB(skb)	((struct inet6_skb_parm*)((skb)->cb))
 #define IP6CBMTU(skb)	((struct ip6_mtuinfo *)((skb)->cb))
@@ -211,9 +186,6 @@ struct ipv6_pinfo {
 	struct in6_addr 	saddr;
 	struct in6_pktinfo	sticky_pktinfo;
 	const struct in6_addr		*daddr_cache;
-#ifdef CONFIG_IPV6_SUBTREES
-	const struct in6_addr		*saddr_cache;
-#endif
 
 	__be32			flow_label;
 	__u32			frag_size;

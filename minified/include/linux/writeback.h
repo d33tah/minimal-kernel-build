@@ -87,18 +87,6 @@ struct writeback_control {
 	 */
 	struct swap_iocb **swap_plug;
 
-#ifdef CONFIG_CGROUP_WRITEBACK
-	struct bdi_writeback *wb;	/* wb this writeback is issued under */
-	struct inode *inode;		/* inode being written out */
-
-	/* foreign inode detection, see wbc_detach_inode() */
-	int wb_id;			/* current wb id */
-	int wb_lcand_id;		/* last foreign candidate wb id */
-	int wb_tcand_id;		/* this foreign candidate wb id */
-	size_t wb_bytes;		/* bytes written by current wb */
-	size_t wb_lcand_bytes;		/* bytes written by last candidate */
-	size_t wb_tcand_bytes;		/* bytes written by this candidate */
-#endif
 };
 
 static inline int wbc_to_write_flags(struct writeback_control *wbc)
@@ -116,12 +104,7 @@ static inline int wbc_to_write_flags(struct writeback_control *wbc)
 	return flags;
 }
 
-#ifdef CONFIG_CGROUP_WRITEBACK
-#define wbc_blkcg_css(wbc) \
-	((wbc)->wb ? (wbc)->wb->blkcg_css : blkcg_root_css)
-#else
 #define wbc_blkcg_css(wbc)		(blkcg_root_css)
-#endif /* CONFIG_CGROUP_WRITEBACK */
 
 /*
  * A wb_domain represents a domain that wb's (bdi_writeback's) belong to
@@ -210,93 +193,6 @@ static inline void wait_on_inode(struct inode *inode)
 	wait_on_bit(&inode->i_state, __I_NEW, TASK_UNINTERRUPTIBLE);
 }
 
-#ifdef CONFIG_CGROUP_WRITEBACK
-
-#include <linux/cgroup.h>
-#include <linux/bio.h>
-
-void __inode_attach_wb(struct inode *inode, struct page *page);
-void wbc_attach_and_unlock_inode(struct writeback_control *wbc,
-				 struct inode *inode)
-	__releases(&inode->i_lock);
-void wbc_detach_inode(struct writeback_control *wbc);
-void wbc_account_cgroup_owner(struct writeback_control *wbc, struct page *page,
-			      size_t bytes);
-int cgroup_writeback_by_id(u64 bdi_id, int memcg_id,
-			   enum wb_reason reason, struct wb_completion *done);
-void cgroup_writeback_umount(void);
-bool cleanup_offline_cgwb(struct bdi_writeback *wb);
-
-/**
- * inode_attach_wb - associate an inode with its wb
- * @inode: inode of interest
- * @page: page being dirtied (may be NULL)
- *
- * If @inode doesn't have its wb, associate it with the wb matching the
- * memcg of @page or, if @page is NULL, %current.  May be called w/ or w/o
- * @inode->i_lock.
- */
-static inline void inode_attach_wb(struct inode *inode, struct page *page)
-{
-	if (!inode->i_wb)
-		__inode_attach_wb(inode, page);
-}
-
-/**
- * inode_detach_wb - disassociate an inode from its wb
- * @inode: inode of interest
- *
- * @inode is being freed.  Detach from its wb.
- */
-static inline void inode_detach_wb(struct inode *inode)
-{
-	if (inode->i_wb) {
-		WARN_ON_ONCE(!(inode->i_state & I_CLEAR));
-		wb_put(inode->i_wb);
-		inode->i_wb = NULL;
-	}
-}
-
-/**
- * wbc_attach_fdatawrite_inode - associate wbc and inode for fdatawrite
- * @wbc: writeback_control of interest
- * @inode: target inode
- *
- * This function is to be used by __filemap_fdatawrite_range(), which is an
- * alternative entry point into writeback code, and first ensures @inode is
- * associated with a bdi_writeback and attaches it to @wbc.
- */
-static inline void wbc_attach_fdatawrite_inode(struct writeback_control *wbc,
-					       struct inode *inode)
-{
-	spin_lock(&inode->i_lock);
-	inode_attach_wb(inode, NULL);
-	wbc_attach_and_unlock_inode(wbc, inode);
-}
-
-/**
- * wbc_init_bio - writeback specific initializtion of bio
- * @wbc: writeback_control for the writeback in progress
- * @bio: bio to be initialized
- *
- * @bio is a part of the writeback in progress controlled by @wbc.  Perform
- * writeback specific initialization.  This is used to apply the cgroup
- * writeback context.  Must be called after the bio has been associated with
- * a device.
- */
-static inline void wbc_init_bio(struct writeback_control *wbc, struct bio *bio)
-{
-	/*
-	 * pageout() path doesn't attach @wbc to the inode being written
-	 * out.  This is intentional as we don't want the function to block
-	 * behind a slow cgroup.  Ultimately, we want pageout() to kick off
-	 * regular writeback instead of writing things out itself.
-	 */
-	if (wbc->wb)
-		bio_associate_blkg_from_css(bio, wbc->wb->blkcg_css);
-}
-
-#else	/* CONFIG_CGROUP_WRITEBACK */
 
 static inline void inode_attach_wb(struct inode *inode, struct page *page)
 {
@@ -335,7 +231,6 @@ static inline void cgroup_writeback_umount(void)
 {
 }
 
-#endif	/* CONFIG_CGROUP_WRITEBACK */
 
 /*
  * mm/page-writeback.c
@@ -345,9 +240,6 @@ void laptop_sync_completion(void);
 void laptop_mode_timer_fn(struct timer_list *t);
 bool node_dirty_ok(struct pglist_data *pgdat);
 int wb_domain_init(struct wb_domain *dom, gfp_t gfp);
-#ifdef CONFIG_CGROUP_WRITEBACK
-void wb_domain_exit(struct wb_domain *dom);
-#endif
 
 extern struct wb_domain global_wb_domain;
 

@@ -186,10 +186,6 @@ static int arch_bp_generic_len(int x86_len)
 		return HW_BREAKPOINT_LEN_2;
 	case X86_BREAKPOINT_LEN_4:
 		return HW_BREAKPOINT_LEN_4;
-#ifdef CONFIG_X86_64
-	case X86_BREAKPOINT_LEN_8:
-		return HW_BREAKPOINT_LEN_8;
-#endif
 	default:
 		return -EINVAL;
 	}
@@ -381,11 +377,6 @@ static int arch_build_bp_info(struct perf_event *bp,
 	case HW_BREAKPOINT_LEN_4:
 		hw->len = X86_BREAKPOINT_LEN_4;
 		break;
-#ifdef CONFIG_X86_64
-	case HW_BREAKPOINT_LEN_8:
-		hw->len = X86_BREAKPOINT_LEN_8;
-		break;
-#endif
 	default:
 		/* AMD range breakpoint */
 		if (!is_power_of_2(attr->bp_len))
@@ -437,11 +428,6 @@ int hw_breakpoint_arch_parse(struct perf_event *bp,
 	case X86_BREAKPOINT_LEN_4:
 		align = 3;
 		break;
-#ifdef CONFIG_X86_64
-	case X86_BREAKPOINT_LEN_8:
-		align = 7;
-		break;
-#endif
 	default:
 		WARN_ON_ONCE(1);
 		return -EINVAL;

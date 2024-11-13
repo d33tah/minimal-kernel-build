@@ -54,20 +54,10 @@ struct vm_area_struct;
 #define ___GFP_THISNODE		0x200000u
 #define ___GFP_ACCOUNT		0x400000u
 #define ___GFP_ZEROTAGS		0x800000u
-#ifdef CONFIG_KASAN_HW_TAGS
-#define ___GFP_SKIP_ZERO		0x1000000u
-#define ___GFP_SKIP_KASAN_UNPOISON	0x2000000u
-#define ___GFP_SKIP_KASAN_POISON	0x4000000u
-#else
 #define ___GFP_SKIP_ZERO		0
 #define ___GFP_SKIP_KASAN_UNPOISON	0
 #define ___GFP_SKIP_KASAN_POISON	0
-#endif
-#ifdef CONFIG_LOCKDEP
-#define ___GFP_NOLOCKDEP	0x8000000u
-#else
 #define ___GFP_NOLOCKDEP	0
-#endif
 /* If the above are modified, __GFP_BITS_SHIFT may need updating */
 
 /*
@@ -400,19 +390,11 @@ static inline bool gfpflags_normal_context(const gfp_t gfp_flags)
 		__GFP_DIRECT_RECLAIM;
 }
 
-#ifdef CONFIG_HIGHMEM
-#define OPT_ZONE_HIGHMEM ZONE_HIGHMEM
-#else
 #define OPT_ZONE_HIGHMEM ZONE_NORMAL
-#endif
 
 #define OPT_ZONE_DMA ZONE_NORMAL
 
-#ifdef CONFIG_ZONE_DMA32
-#define OPT_ZONE_DMA32 ZONE_DMA32
-#else
 #define OPT_ZONE_DMA32 ZONE_NORMAL
-#endif
 
 /*
  * GFP_ZONE_TABLE is a word size bitstring that is used for looking up the
@@ -506,10 +488,6 @@ static inline enum zone_type gfp_zone(gfp_t flags)
 
 static inline int gfp_zonelist(gfp_t flags)
 {
-#ifdef CONFIG_NUMA
-	if (unlikely(flags & __GFP_THISNODE))
-		return ZONELIST_NOFALLBACK;
-#endif
 	return ZONELIST_FALLBACK;
 }
 
@@ -606,12 +584,6 @@ static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
 	return __alloc_pages_node(nid, gfp_mask, order);
 }
 
-#ifdef CONFIG_NUMA
-struct page *alloc_pages(gfp_t gfp, unsigned int order);
-struct folio *folio_alloc(gfp_t gfp, unsigned order);
-struct folio *vma_alloc_folio(gfp_t gfp, int order, struct vm_area_struct *vma,
-		unsigned long addr, bool hugepage);
-#else
 static inline struct page *alloc_pages(gfp_t gfp_mask, unsigned int order)
 {
 	return alloc_pages_node(numa_node_id(), gfp_mask, order);
@@ -622,7 +594,6 @@ static inline struct folio *folio_alloc(gfp_t gfp, unsigned int order)
 }
 #define vma_alloc_folio(gfp, order, vma, addr, hugepage)		\
 	folio_alloc(gfp, order)
-#endif
 #define alloc_page(gfp_mask) alloc_pages(gfp_mask, 0)
 static inline struct page *alloc_page_vma(gfp_t gfp,
 		struct vm_area_struct *vma, unsigned long addr)
@@ -689,22 +660,11 @@ extern void pm_restore_gfp_mask(void);
 
 extern gfp_t vma_thp_gfp_mask(struct vm_area_struct *vma);
 
-#ifdef CONFIG_PM_SLEEP
-extern bool pm_suspended_storage(void);
-#else
 static inline bool pm_suspended_storage(void)
 {
 	return false;
 }
-#endif /* CONFIG_PM_SLEEP */
 
-#ifdef CONFIG_CONTIG_ALLOC
-/* The below functions must be run on a range from a single zone. */
-extern int alloc_contig_range(unsigned long start, unsigned long end,
-			      unsigned migratetype, gfp_t gfp_mask);
-extern struct page *alloc_contig_pages(unsigned long nr_pages, gfp_t gfp_mask,
-				       int nid, nodemask_t *nodemask);
-#endif
 void free_contig_range(unsigned long pfn, unsigned long nr_pages);
 
 

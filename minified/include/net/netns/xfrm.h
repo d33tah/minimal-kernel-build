@@ -68,9 +68,6 @@ struct netns_xfrm {
 
 	u8			policy_default[XFRM_POLICY_MAX];
 
-#ifdef CONFIG_SYSCTL
-	struct ctl_table_header	*sysctl_hdr;
-#endif
 
 	struct dst_ops		xfrm4_dst_ops;
 #if IS_ENABLED(CONFIG_IPV6)

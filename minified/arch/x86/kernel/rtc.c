@@ -172,22 +172,6 @@ static struct platform_device rtc_device = {
 
 static __init int add_rtc_cmos(void)
 {
-#ifdef CONFIG_PNP
-	static const char * const ids[] __initconst =
-	    { "PNP0b00", "PNP0b01", "PNP0b02", };
-	struct pnp_dev *dev;
-	struct pnp_id *id;
-	int i;
-
-	pnp_for_each_dev(dev) {
-		for (id = dev->id; id; id = id->next) {
-			for (i = 0; i < ARRAY_SIZE(ids); i++) {
-				if (compare_pnp_id(id, ids[i]) != 0)
-					return 0;
-			}
-		}
-	}
-#endif
 	if (!x86_platform.legacy.rtc)
 		return -ENODEV;
 

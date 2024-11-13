@@ -24,7 +24,6 @@
 
 #include "internals.h"
 
-#if defined(CONFIG_IRQ_FORCED_THREADING) && !defined(CONFIG_PREEMPT_RT)
 DEFINE_STATIC_KEY_FALSE(force_irqthreads_key);
 
 static int __init setup_forced_irqthreads(char *arg)
@@ -33,7 +32,6 @@ static int __init setup_forced_irqthreads(char *arg)
 	return 0;
 }
 early_param("threadirqs", setup_forced_irqthreads);
-#endif
 
 static void __synchronize_hardirq(struct irq_desc *desc, bool sync_chip)
 {
@@ -169,11 +167,7 @@ int irq_set_vcpu_affinity(unsigned int irq, void *vcpu_info)
 		chip = irq_data_get_irq_chip(data);
 		if (chip && chip->irq_set_vcpu_affinity)
 			break;
-#ifdef CONFIG_IRQ_DOMAIN_HIERARCHY
-		data = data->parent_data;
-#else
 		data = NULL;
-#endif
 	} while (data);
 
 	if (data)
@@ -876,11 +870,6 @@ static bool irq_supports_nmi(struct irq_desc *desc)
 {
 	struct irq_data *d = irq_desc_get_irq_data(desc);
 
-#ifdef CONFIG_IRQ_DOMAIN_HIERARCHY
-	/* Only IRQs directly managed by the root irqchip can be set as NMI */
-	if (d->parent_data)
-		return false;
-#endif
 	/* Don't support NMIs for chips behind a slow bus */
 	if (d->chip->irq_bus_lock || d->chip->irq_bus_sync_unlock)
 		return false;
@@ -1637,25 +1626,6 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 		kfree(action);
 	}
 
-#ifdef CONFIG_DEBUG_SHIRQ_FIXME
-	if (!retval && (irqflags & IRQF_SHARED)) {
-		/*
-		 * It's a shared IRQ -- the driver ought to be prepared for it
-		 * to happen immediately, so let's make sure....
-		 * We disable the irq to make sure that a 'real' IRQ doesn't
-		 * run in parallel with our fake.
-		 */
-		unsigned long flags;
-
-		disable_irq(irq);
-		local_irq_save(flags);
-
-		handler(irq, dev_id);
-
-		local_irq_restore(flags);
-		enable_irq(irq);
-	}
-#endif
 	return retval;
 }
 EXPORT_SYMBOL(request_threaded_irq);
@@ -2232,11 +2202,7 @@ int __irq_get_irqchip_state(struct irq_data *data, enum irqchip_irq_state which,
 			return -ENODEV;
 		if (chip->irq_get_irqchip_state)
 			break;
-#ifdef CONFIG_IRQ_DOMAIN_HIERARCHY
-		data = data->parent_data;
-#else
 		data = NULL;
-#endif
 	} while (data);
 
 	if (data)
@@ -2313,11 +2279,7 @@ int irq_set_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
 		}
 		if (chip->irq_set_irqchip_state)
 			break;
-#ifdef CONFIG_IRQ_DOMAIN_HIERARCHY
-		data = data->parent_data;
-#else
 		data = NULL;
-#endif
 	} while (data);
 
 	if (data)

@@ -28,14 +28,10 @@ search_module_extables(unsigned long addr)
 	return NULL;
 }
 
-#ifdef CONFIG_BPF_JIT
-const struct exception_table_entry *search_bpf_extables(unsigned long addr);
-#else
 static inline const struct exception_table_entry *
 search_bpf_extables(unsigned long addr)
 {
 	return NULL;
 }
-#endif
 
 #endif /* _LINUX_EXTABLE_H */

@@ -38,20 +38,11 @@ depot_stack_handle_t __stack_depot_save(unsigned long *entries,
  * functions should only be called from code that makes sure CONFIG_STACKDEPOT
  * is enabled.
  */
-#ifdef CONFIG_STACKDEPOT
-int stack_depot_init(void);
-
-void __init stack_depot_want_early_init(void);
-
-/* This is supposed to be called only from mm_init() */
-int __init stack_depot_early_init(void);
-#else
 static inline int stack_depot_init(void) { return 0; }
 
 static inline void stack_depot_want_early_init(void) { }
 
 static inline int stack_depot_early_init(void)	{ return 0; }
-#endif
 
 depot_stack_handle_t stack_depot_save(unsigned long *entries,
 				      unsigned int nr_entries, gfp_t gfp_flags);

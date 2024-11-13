@@ -7,24 +7,14 @@
 #include <asm/fixmap.h>
 #include <asm/mtrr.h>
 
-#ifdef CONFIG_DYNAMIC_PHYSICAL_MASK
-phys_addr_t physical_mask __ro_after_init = (1ULL << __PHYSICAL_MASK_SHIFT) - 1;
-EXPORT_SYMBOL(physical_mask);
-#endif
 
-#ifdef CONFIG_HIGHPTE
-#define PGTABLE_HIGHMEM __GFP_HIGHMEM
-#else
 #define PGTABLE_HIGHMEM 0
-#endif
 
-#ifndef CONFIG_PARAVIRT
 static inline
 void paravirt_tlb_remove_table(struct mmu_gather *tlb, void *table)
 {
 	tlb_remove_page(tlb, table);
 }
-#endif
 
 gfp_t __userpte_alloc_gfp = GFP_PGTABLE_USER | PGTABLE_HIGHMEM;
 
@@ -236,16 +226,6 @@ static void pgd_mop_up_pmds(struct mm_struct *mm, pgd_t *pgdp)
 	for (i = 0; i < PREALLOCATED_PMDS; i++)
 		mop_up_one_pmd(mm, &pgdp[i]);
 
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-
-	if (!boot_cpu_has(X86_FEATURE_PTI))
-		return;
-
-	pgdp = kernel_to_user_pgdp(pgdp);
-
-	for (i = 0; i < PREALLOCATED_USER_PMDS; i++)
-		mop_up_one_pmd(mm, &pgdp[i + KERNEL_PGD_BOUNDARY]);
-#endif
 }
 
 static void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmds[])
@@ -271,38 +251,10 @@ static void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmds[])
 	}
 }
 
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-static void pgd_prepopulate_user_pmd(struct mm_struct *mm,
-				     pgd_t *k_pgd, pmd_t *pmds[])
-{
-	pgd_t *s_pgd = kernel_to_user_pgdp(swapper_pg_dir);
-	pgd_t *u_pgd = kernel_to_user_pgdp(k_pgd);
-	p4d_t *u_p4d;
-	pud_t *u_pud;
-	int i;
-
-	u_p4d = p4d_offset(u_pgd, 0);
-	u_pud = pud_offset(u_p4d, 0);
-
-	s_pgd += KERNEL_PGD_BOUNDARY;
-	u_pud += KERNEL_PGD_BOUNDARY;
-
-	for (i = 0; i < PREALLOCATED_USER_PMDS; i++, u_pud++, s_pgd++) {
-		pmd_t *pmd = pmds[i];
-
-		memcpy(pmd, (pmd_t *)pgd_page_vaddr(*s_pgd),
-		       sizeof(pmd_t) * PTRS_PER_PMD);
-
-		pud_populate(mm, u_pud, pmd);
-	}
-
-}
-#else
 static void pgd_prepopulate_user_pmd(struct mm_struct *mm,
 				     pgd_t *k_pgd, pmd_t *pmds[])
 {
 }
-#endif
 /*
  * Xen paravirt assumes pgd table should be in one page. 64 bit kernel also
  * assumes that pgd should be in one page.
@@ -451,14 +403,6 @@ void __native_set_fixmap(enum fixed_addresses idx, pte_t pte)
 {
 	unsigned long address = __fix_to_virt(idx);
 
-#ifdef CONFIG_X86_64
-       /*
-	* Ensure that the static initial page tables are covering the
-	* fixmap completely.
-	*/
-	BUILD_BUG_ON(__end_of_permanent_fixed_addresses >
-		     (FIXMAP_PMD_NUM * PTRS_PER_PTE));
-#endif
 
 	if (idx >= __end_of_fixed_addresses) {
 		BUG();
@@ -477,207 +421,3 @@ void native_set_fixmap(unsigned /* enum fixed_addresses */ idx,
 	__native_set_fixmap(idx, pfn_pte(phys >> PAGE_SHIFT, flags));
 }
 
-#ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
-#ifdef CONFIG_X86_5LEVEL
-/**
- * p4d_set_huge - setup kernel P4D mapping
- *
- * No 512GB pages yet -- always return 0
- */
-int p4d_set_huge(p4d_t *p4d, phys_addr_t addr, pgprot_t prot)
-{
-	return 0;
-}
-
-/**
- * p4d_clear_huge - clear kernel P4D mapping when it is set
- *
- * No 512GB pages yet -- always return 0
- */
-void p4d_clear_huge(p4d_t *p4d)
-{
-}
-#endif
-
-/**
- * pud_set_huge - setup kernel PUD mapping
- *
- * MTRRs can override PAT memory types with 4KiB granularity. Therefore, this
- * function sets up a huge page only if any of the following conditions are met:
- *
- * - MTRRs are disabled, or
- *
- * - MTRRs are enabled and the range is completely covered by a single MTRR, or
- *
- * - MTRRs are enabled and the corresponding MTRR memory type is WB, which
- *   has no effect on the requested PAT memory type.
- *
- * Callers should try to decrease page size (1GB -> 2MB -> 4K) if the bigger
- * page mapping attempt fails.
- *
- * Returns 1 on success and 0 on failure.
- */
-int pud_set_huge(pud_t *pud, phys_addr_t addr, pgprot_t prot)
-{
-	u8 mtrr, uniform;
-
-	mtrr = mtrr_type_lookup(addr, addr + PUD_SIZE, &uniform);
-	if ((mtrr != MTRR_TYPE_INVALID) && (!uniform) &&
-	    (mtrr != MTRR_TYPE_WRBACK))
-		return 0;
-
-	/* Bail out if we are we on a populated non-leaf entry: */
-	if (pud_present(*pud) && !pud_huge(*pud))
-		return 0;
-
-	set_pte((pte_t *)pud, pfn_pte(
-		(u64)addr >> PAGE_SHIFT,
-		__pgprot(protval_4k_2_large(pgprot_val(prot)) | _PAGE_PSE)));
-
-	return 1;
-}
-
-/**
- * pmd_set_huge - setup kernel PMD mapping
- *
- * See text over pud_set_huge() above.
- *
- * Returns 1 on success and 0 on failure.
- */
-int pmd_set_huge(pmd_t *pmd, phys_addr_t addr, pgprot_t prot)
-{
-	u8 mtrr, uniform;
-
-	mtrr = mtrr_type_lookup(addr, addr + PMD_SIZE, &uniform);
-	if ((mtrr != MTRR_TYPE_INVALID) && (!uniform) &&
-	    (mtrr != MTRR_TYPE_WRBACK)) {
-		pr_warn_once("%s: Cannot satisfy [mem %#010llx-%#010llx] with a huge-page mapping due to MTRR override.\n",
-			     __func__, addr, addr + PMD_SIZE);
-		return 0;
-	}
-
-	/* Bail out if we are we on a populated non-leaf entry: */
-	if (pmd_present(*pmd) && !pmd_huge(*pmd))
-		return 0;
-
-	set_pte((pte_t *)pmd, pfn_pte(
-		(u64)addr >> PAGE_SHIFT,
-		__pgprot(protval_4k_2_large(pgprot_val(prot)) | _PAGE_PSE)));
-
-	return 1;
-}
-
-/**
- * pud_clear_huge - clear kernel PUD mapping when it is set
- *
- * Returns 1 on success and 0 on failure (no PUD map is found).
- */
-int pud_clear_huge(pud_t *pud)
-{
-	if (pud_large(*pud)) {
-		pud_clear(pud);
-		return 1;
-	}
-
-	return 0;
-}
-
-/**
- * pmd_clear_huge - clear kernel PMD mapping when it is set
- *
- * Returns 1 on success and 0 on failure (no PMD map is found).
- */
-int pmd_clear_huge(pmd_t *pmd)
-{
-	if (pmd_large(*pmd)) {
-		pmd_clear(pmd);
-		return 1;
-	}
-
-	return 0;
-}
-
-#ifdef CONFIG_X86_64
-/**
- * pud_free_pmd_page - Clear pud entry and free pmd page.
- * @pud: Pointer to a PUD.
- * @addr: Virtual address associated with pud.
- *
- * Context: The pud range has been unmapped and TLB purged.
- * Return: 1 if clearing the entry succeeded. 0 otherwise.
- *
- * NOTE: Callers must allow a single page allocation.
- */
-int pud_free_pmd_page(pud_t *pud, unsigned long addr)
-{
-	pmd_t *pmd, *pmd_sv;
-	pte_t *pte;
-	int i;
-
-	pmd = pud_pgtable(*pud);
-	pmd_sv = (pmd_t *)__get_free_page(GFP_KERNEL);
-	if (!pmd_sv)
-		return 0;
-
-	for (i = 0; i < PTRS_PER_PMD; i++) {
-		pmd_sv[i] = pmd[i];
-		if (!pmd_none(pmd[i]))
-			pmd_clear(&pmd[i]);
-	}
-
-	pud_clear(pud);
-
-	/* INVLPG to clear all paging-structure caches */
-	flush_tlb_kernel_range(addr, addr + PAGE_SIZE-1);
-
-	for (i = 0; i < PTRS_PER_PMD; i++) {
-		if (!pmd_none(pmd_sv[i])) {
-			pte = (pte_t *)pmd_page_vaddr(pmd_sv[i]);
-			free_page((unsigned long)pte);
-		}
-	}
-
-	free_page((unsigned long)pmd_sv);
-
-	pgtable_pmd_page_dtor(virt_to_page(pmd));
-	free_page((unsigned long)pmd);
-
-	return 1;
-}
-
-/**
- * pmd_free_pte_page - Clear pmd entry and free pte page.
- * @pmd: Pointer to a PMD.
- * @addr: Virtual address associated with pmd.
- *
- * Context: The pmd range has been unmapped and TLB purged.
- * Return: 1 if clearing the entry succeeded. 0 otherwise.
- */
-int pmd_free_pte_page(pmd_t *pmd, unsigned long addr)
-{
-	pte_t *pte;
-
-	pte = (pte_t *)pmd_page_vaddr(*pmd);
-	pmd_clear(pmd);
-
-	/* INVLPG to clear all paging-structure caches */
-	flush_tlb_kernel_range(addr, addr + PAGE_SIZE-1);
-
-	free_page((unsigned long)pte);
-
-	return 1;
-}
-
-#else /* !CONFIG_X86_64 */
-
-/*
- * Disable free page handling on x86-PAE. This assures that ioremap()
- * does not update sync'd pmd entries. See vmalloc_sync_one().
- */
-int pmd_free_pte_page(pmd_t *pmd, unsigned long addr)
-{
-	return pmd_none(*pmd);
-}
-
-#endif /* CONFIG_X86_64 */
-#endif	/* CONFIG_HAVE_ARCH_HUGE_VMAP */

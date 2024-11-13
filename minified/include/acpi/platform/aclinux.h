@@ -34,17 +34,8 @@
 /* Kernel specific ACPICA configuration */
 
 
-#ifdef CONFIG_ACPI_REDUCED_HARDWARE_ONLY
-#define ACPI_REDUCED_HARDWARE 1
-#endif
 
-#ifdef CONFIG_ACPI_DEBUGGER
-#define ACPI_DEBUGGER
-#endif
 
-#ifdef CONFIG_ACPI_DEBUG
-#define ACPI_MUTEX_DEBUG
-#endif
 
 #include <linux/string.h>
 #include <linux/kernel.h>

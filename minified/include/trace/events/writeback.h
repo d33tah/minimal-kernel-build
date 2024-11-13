@@ -146,21 +146,6 @@ DEFINE_EVENT(writeback_dirty_inode_template, writeback_dirty_inode,
 );
 
 #ifdef CREATE_TRACE_POINTS
-#ifdef CONFIG_CGROUP_WRITEBACK
-
-static inline ino_t __trace_wb_assign_cgroup(struct bdi_writeback *wb)
-{
-	return cgroup_ino(wb->memcg_css->cgroup);
-}
-
-static inline ino_t __trace_wbc_assign_cgroup(struct writeback_control *wbc)
-{
-	if (wbc->wb)
-		return __trace_wb_assign_cgroup(wbc->wb);
-	else
-		return 1;
-}
-#else	/* CONFIG_CGROUP_WRITEBACK */
 
 static inline ino_t __trace_wb_assign_cgroup(struct bdi_writeback *wb)
 {
@@ -172,134 +157,8 @@ static inline ino_t __trace_wbc_assign_cgroup(struct writeback_control *wbc)
 	return 1;
 }
 
-#endif	/* CONFIG_CGROUP_WRITEBACK */
 #endif	/* CREATE_TRACE_POINTS */
 
-#ifdef CONFIG_CGROUP_WRITEBACK
-TRACE_EVENT(inode_foreign_history,
-
-	TP_PROTO(struct inode *inode, struct writeback_control *wbc,
-		 unsigned int history),
-
-	TP_ARGS(inode, wbc, history),
-
-	TP_STRUCT__entry(
-		__array(char,		name, 32)
-		__field(ino_t,		ino)
-		__field(ino_t,		cgroup_ino)
-		__field(unsigned int,	history)
-	),
-
-	TP_fast_assign(
-		strscpy_pad(__entry->name, bdi_dev_name(inode_to_bdi(inode)), 32);
-		__entry->ino		= inode->i_ino;
-		__entry->cgroup_ino	= __trace_wbc_assign_cgroup(wbc);
-		__entry->history	= history;
-	),
-
-	TP_printk("bdi %s: ino=%lu cgroup_ino=%lu history=0x%x",
-		__entry->name,
-		(unsigned long)__entry->ino,
-		(unsigned long)__entry->cgroup_ino,
-		__entry->history
-	)
-);
-
-TRACE_EVENT(inode_switch_wbs,
-
-	TP_PROTO(struct inode *inode, struct bdi_writeback *old_wb,
-		 struct bdi_writeback *new_wb),
-
-	TP_ARGS(inode, old_wb, new_wb),
-
-	TP_STRUCT__entry(
-		__array(char,		name, 32)
-		__field(ino_t,		ino)
-		__field(ino_t,		old_cgroup_ino)
-		__field(ino_t,		new_cgroup_ino)
-	),
-
-	TP_fast_assign(
-		strscpy_pad(__entry->name, bdi_dev_name(old_wb->bdi), 32);
-		__entry->ino		= inode->i_ino;
-		__entry->old_cgroup_ino	= __trace_wb_assign_cgroup(old_wb);
-		__entry->new_cgroup_ino	= __trace_wb_assign_cgroup(new_wb);
-	),
-
-	TP_printk("bdi %s: ino=%lu old_cgroup_ino=%lu new_cgroup_ino=%lu",
-		__entry->name,
-		(unsigned long)__entry->ino,
-		(unsigned long)__entry->old_cgroup_ino,
-		(unsigned long)__entry->new_cgroup_ino
-	)
-);
-
-TRACE_EVENT(track_foreign_dirty,
-
-	TP_PROTO(struct folio *folio, struct bdi_writeback *wb),
-
-	TP_ARGS(folio, wb),
-
-	TP_STRUCT__entry(
-		__array(char,		name, 32)
-		__field(u64,		bdi_id)
-		__field(ino_t,		ino)
-		__field(unsigned int,	memcg_id)
-		__field(ino_t,		cgroup_ino)
-		__field(ino_t,		page_cgroup_ino)
-	),
-
-	TP_fast_assign(
-		struct address_space *mapping = folio_mapping(folio);
-		struct inode *inode = mapping ? mapping->host : NULL;
-
-		strscpy_pad(__entry->name, bdi_dev_name(wb->bdi), 32);
-		__entry->bdi_id		= wb->bdi->id;
-		__entry->ino		= inode ? inode->i_ino : 0;
-		__entry->memcg_id	= wb->memcg_css->id;
-		__entry->cgroup_ino	= __trace_wb_assign_cgroup(wb);
-		__entry->page_cgroup_ino = cgroup_ino(folio_memcg(folio)->css.cgroup);
-	),
-
-	TP_printk("bdi %s[%llu]: ino=%lu memcg_id=%u cgroup_ino=%lu page_cgroup_ino=%lu",
-		__entry->name,
-		__entry->bdi_id,
-		(unsigned long)__entry->ino,
-		__entry->memcg_id,
-		(unsigned long)__entry->cgroup_ino,
-		(unsigned long)__entry->page_cgroup_ino
-	)
-);
-
-TRACE_EVENT(flush_foreign,
-
-	TP_PROTO(struct bdi_writeback *wb, unsigned int frn_bdi_id,
-		 unsigned int frn_memcg_id),
-
-	TP_ARGS(wb, frn_bdi_id, frn_memcg_id),
-
-	TP_STRUCT__entry(
-		__array(char,		name, 32)
-		__field(ino_t,		cgroup_ino)
-		__field(unsigned int,	frn_bdi_id)
-		__field(unsigned int,	frn_memcg_id)
-	),
-
-	TP_fast_assign(
-		strscpy_pad(__entry->name, bdi_dev_name(wb->bdi), 32);
-		__entry->cgroup_ino	= __trace_wb_assign_cgroup(wb);
-		__entry->frn_bdi_id	= frn_bdi_id;
-		__entry->frn_memcg_id	= frn_memcg_id;
-	),
-
-	TP_printk("bdi %s: cgroup_ino=%lu frn_bdi_id=%u frn_memcg_id=%u",
-		__entry->name,
-		(unsigned long)__entry->cgroup_ino,
-		__entry->frn_bdi_id,
-		__entry->frn_memcg_id
-	)
-);
-#endif
 
 DECLARE_EVENT_CLASS(writeback_write_inode_template,
 

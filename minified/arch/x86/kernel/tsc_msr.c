@@ -210,9 +210,6 @@ unsigned long cpu_khz_from_msr(void)
 	if (freq == 0)
 		pr_err("Error MSR_FSB_FREQ index %d is unknown\n", index);
 
-#ifdef CONFIG_X86_LOCAL_APIC
-	lapic_timer_period = (freq * 1000) / HZ;
-#endif
 
 	/*
 	 * TSC frequency determined by MSR is always considered "known"

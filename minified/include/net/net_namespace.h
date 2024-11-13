@@ -91,9 +91,6 @@ struct net {
 	struct proc_dir_entry 	*proc_net;
 	struct proc_dir_entry 	*proc_net_stat;
 
-#ifdef CONFIG_SYSCTL
-	struct ctl_table_set	sysctls;
-#endif
 
 	struct sock 		*rtnl;			/* rtnetlink socket */
 	struct sock		*genl_sock;
@@ -129,27 +126,12 @@ struct net {
 #if defined(CONFIG_IP_SCTP) || defined(CONFIG_IP_SCTP_MODULE)
 	struct netns_sctp	sctp;
 #endif
-#ifdef CONFIG_NETFILTER
-	struct netns_nf		nf;
-#if defined(CONFIG_NF_CONNTRACK) || defined(CONFIG_NF_CONNTRACK_MODULE)
-	struct netns_ct		ct;
-#endif
-#if defined(CONFIG_NF_TABLES) || defined(CONFIG_NF_TABLES_MODULE)
-	struct netns_nftables	nft;
-#endif
-#endif
-#ifdef CONFIG_WEXT_CORE
-	struct sk_buff_head	wext_nlevents;
-#endif
 	struct net_generic __rcu	*gen;
 
 	/* Used to store attached BPF programs */
 	struct netns_bpf	bpf;
 
 	/* Note : following structs are cache line aligned */
-#ifdef CONFIG_XFRM
-	struct netns_xfrm	xfrm;
-#endif
 
 	u64			net_cookie; /* written once */
 
@@ -161,9 +143,6 @@ struct net {
 #endif
 #if IS_ENABLED(CONFIG_CAN)
 	struct netns_can	can;
-#endif
-#ifdef CONFIG_XDP_SOCKETS
-	struct netns_xdp	xdp;
 #endif
 #if IS_ENABLED(CONFIG_MCTP)
 	struct netns_mctp	mctp;
@@ -182,17 +161,6 @@ struct net {
 /* Init's network namespace */
 extern struct net init_net;
 
-#ifdef CONFIG_NET_NS
-struct net *copy_net_ns(unsigned long flags, struct user_namespace *user_ns,
-			struct net *old_net);
-
-void net_ns_get_ownership(const struct net *net, kuid_t *uid, kgid_t *gid);
-
-void net_ns_barrier(void);
-
-struct ns_common *get_net_ns(struct ns_common *ns);
-struct net *get_net_ns_by_fd(int fd);
-#else /* CONFIG_NET_NS */
 #include <linux/sched.h>
 #include <linux/nsproxy.h>
 static inline struct net *copy_net_ns(unsigned long flags,
@@ -221,64 +189,15 @@ static inline struct net *get_net_ns_by_fd(int fd)
 {
 	return ERR_PTR(-EINVAL);
 }
-#endif /* CONFIG_NET_NS */
 
 
 extern struct list_head net_namespace_list;
 
 struct net *get_net_ns_by_pid(pid_t pid);
 
-#ifdef CONFIG_SYSCTL
-void ipx_register_sysctl(void);
-void ipx_unregister_sysctl(void);
-#else
 #define ipx_register_sysctl()
 #define ipx_unregister_sysctl()
-#endif
 
-#ifdef CONFIG_NET_NS
-void __put_net(struct net *net);
-
-/* Try using get_net_track() instead */
-static inline struct net *get_net(struct net *net)
-{
-	refcount_inc(&net->ns.count);
-	return net;
-}
-
-static inline struct net *maybe_get_net(struct net *net)
-{
-	/* Used when we know struct net exists but we
-	 * aren't guaranteed a previous reference count
-	 * exists.  If the reference count is zero this
-	 * function fails and returns NULL.
-	 */
-	if (!refcount_inc_not_zero(&net->ns.count))
-		net = NULL;
-	return net;
-}
-
-/* Try using put_net_track() instead */
-static inline void put_net(struct net *net)
-{
-	if (refcount_dec_and_test(&net->ns.count))
-		__put_net(net);
-}
-
-static inline
-int net_eq(const struct net *net1, const struct net *net2)
-{
-	return net1 == net2;
-}
-
-static inline int check_net(const struct net *net)
-{
-	return refcount_read(&net->ns.count) != 0;
-}
-
-void net_drop_ns(void *);
-
-#else
 
 static inline struct net *get_net(struct net *net)
 {
@@ -306,7 +225,6 @@ static inline int check_net(const struct net *net)
 }
 
 #define net_drop_ns NULL
-#endif
 
 
 static inline void netns_tracker_alloc(struct net *net,
@@ -334,25 +252,15 @@ static inline void put_net_track(struct net *net, netns_tracker *tracker)
 }
 
 typedef struct {
-#ifdef CONFIG_NET_NS
-	struct net *net;
-#endif
 } possible_net_t;
 
 static inline void write_pnet(possible_net_t *pnet, struct net *net)
 {
-#ifdef CONFIG_NET_NS
-	pnet->net = net;
-#endif
 }
 
 static inline struct net *read_pnet(const possible_net_t *pnet)
 {
-#ifdef CONFIG_NET_NS
-	return pnet->net;
-#else
 	return &init_net;
-#endif
 }
 
 /* Protected by net_rwsem */
@@ -363,17 +271,10 @@ static inline struct net *read_pnet(const possible_net_t *pnet)
 #define for_each_net_rcu(VAR)				\
 	list_for_each_entry_rcu(VAR, &net_namespace_list, list)
 
-#ifdef CONFIG_NET_NS
-#define __net_init
-#define __net_exit
-#define __net_initdata
-#define __net_initconst
-#else
 #define __net_init	__init
 #define __net_exit	__ref
 #define __net_initdata	__initdata
 #define __net_initconst	__initconst
-#endif
 
 int peernet2id_alloc(struct net *net, struct net *peer, gfp_t gfp);
 int peernet2id(const struct net *net, struct net *peer);
@@ -438,12 +339,6 @@ void unregister_pernet_device(struct pernet_operations *);
 
 struct ctl_table;
 
-#ifdef CONFIG_SYSCTL
-int net_sysctl_init(void);
-struct ctl_table_header *register_net_sysctl(struct net *net, const char *path,
-					     struct ctl_table *table);
-void unregister_net_sysctl_table(struct ctl_table_header *header);
-#else
 static inline int net_sysctl_init(void) { return 0; }
 static inline struct ctl_table_header *register_net_sysctl(struct net *net,
 	const char *path, struct ctl_table *table)
@@ -453,7 +348,6 @@ static inline struct ctl_table_header *register_net_sysctl(struct net *net,
 static inline void unregister_net_sysctl_table(struct ctl_table_header *header)
 {
 }
-#endif
 
 static inline int rt_genid_ipv4(const struct net *net)
 {

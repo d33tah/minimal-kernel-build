@@ -95,23 +95,11 @@
  * attack.
  */
 .macro JMP_NOSPEC reg:req
-#ifdef CONFIG_RETPOLINE
-	ALTERNATIVE_2 __stringify(ANNOTATE_RETPOLINE_SAFE; jmp *%\reg), \
-		      __stringify(jmp __x86_indirect_thunk_\reg), X86_FEATURE_RETPOLINE, \
-		      __stringify(lfence; ANNOTATE_RETPOLINE_SAFE; jmp *%\reg), X86_FEATURE_RETPOLINE_LFENCE
-#else
 	jmp	*%\reg
-#endif
 .endm
 
 .macro CALL_NOSPEC reg:req
-#ifdef CONFIG_RETPOLINE
-	ALTERNATIVE_2 __stringify(ANNOTATE_RETPOLINE_SAFE; call *%\reg), \
-		      __stringify(call __x86_indirect_thunk_\reg), X86_FEATURE_RETPOLINE, \
-		      __stringify(lfence; ANNOTATE_RETPOLINE_SAFE; call *%\reg), X86_FEATURE_RETPOLINE_LFENCE
-#else
 	call	*%\reg
-#endif
 .endm
 
  /*
@@ -124,11 +112,7 @@
 .Lskip_rsb_\@:
 .endm
 
-#ifdef CONFIG_CPU_UNRET_ENTRY
-#define CALL_ZEN_UNTRAIN_RET	"call zen_untrain_ret"
-#else
 #define CALL_ZEN_UNTRAIN_RET	""
-#endif
 
 /*
  * Mitigate RETBleed for AMD/Hygon Zen uarch. Requires KERNEL CR3 because the
@@ -165,66 +149,8 @@ extern void __x86_return_thunk(void);
 extern void zen_untrain_ret(void);
 extern void entry_ibpb(void);
 
-#ifdef CONFIG_RETPOLINE
-
-#define GEN(reg) \
-	extern retpoline_thunk_t __x86_indirect_thunk_ ## reg;
-#include <asm/GEN-for-each-reg.h>
-#undef GEN
-
-#ifdef CONFIG_X86_64
-
-/*
- * Inline asm uses the %V modifier which is only in newer GCC
- * which is ensured when CONFIG_RETPOLINE is defined.
- */
-# define CALL_NOSPEC						\
-	ALTERNATIVE_2(						\
-	ANNOTATE_RETPOLINE_SAFE					\
-	"call *%[thunk_target]\n",				\
-	"call __x86_indirect_thunk_%V[thunk_target]\n",		\
-	X86_FEATURE_RETPOLINE,					\
-	"lfence;\n"						\
-	ANNOTATE_RETPOLINE_SAFE					\
-	"call *%[thunk_target]\n",				\
-	X86_FEATURE_RETPOLINE_LFENCE)
-
-# define THUNK_TARGET(addr) [thunk_target] "r" (addr)
-
-#else /* CONFIG_X86_32 */
-/*
- * For i386 we use the original ret-equivalent retpoline, because
- * otherwise we'll run out of registers. We don't care about CET
- * here, anyway.
- */
-# define CALL_NOSPEC						\
-	ALTERNATIVE_2(						\
-	ANNOTATE_RETPOLINE_SAFE					\
-	"call *%[thunk_target]\n",				\
-	"       jmp    904f;\n"					\
-	"       .align 16\n"					\
-	"901:	call   903f;\n"					\
-	"902:	pause;\n"					\
-	"    	lfence;\n"					\
-	"       jmp    902b;\n"					\
-	"       .align 16\n"					\
-	"903:	lea    4(%%esp), %%esp;\n"			\
-	"       pushl  %[thunk_target];\n"			\
-	"       ret;\n"						\
-	"       .align 16\n"					\
-	"904:	call   901b;\n",				\
-	X86_FEATURE_RETPOLINE,					\
-	"lfence;\n"						\
-	ANNOTATE_RETPOLINE_SAFE					\
-	"call *%[thunk_target]\n",				\
-	X86_FEATURE_RETPOLINE_LFENCE)
-
-# define THUNK_TARGET(addr) [thunk_target] "rm" (addr)
-#endif
-#else /* No retpoline for C / inline asm */
 # define CALL_NOSPEC "call *%[thunk_target]\n"
 # define THUNK_TARGET(addr) [thunk_target] "rm" (addr)
-#endif
 
 /* The Spectre V2 mitigation variants */
 enum spectre_v2_mitigation {

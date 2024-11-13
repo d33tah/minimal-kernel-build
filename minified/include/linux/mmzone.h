@@ -45,9 +45,6 @@ enum migratetype {
 	MIGRATE_RECLAIMABLE,
 	MIGRATE_PCPTYPES,	/* the number of types on the pcp lists */
 	MIGRATE_HIGHATOMIC = MIGRATE_PCPTYPES,
-#ifdef CONFIG_MEMORY_ISOLATION
-	MIGRATE_ISOLATE,	/* can't allocate from here */
-#endif
 	MIGRATE_TYPES
 };
 
@@ -110,19 +107,7 @@ struct pglist_data;
  */
 #define ZONE_PADDING(name)
 
-#ifdef CONFIG_NUMA
-enum numa_stat_item {
-	NUMA_HIT,		/* allocated in intended node */
-	NUMA_MISS,		/* allocated in non intended node */
-	NUMA_FOREIGN,		/* was intended here, hit elsewhere */
-	NUMA_INTERLEAVE_HIT,	/* interleaver preferred this zone */
-	NUMA_LOCAL,		/* allocation from local node */
-	NUMA_OTHER,		/* allocation from other node */
-	NR_VM_NUMA_EVENT_ITEMS
-};
-#else
 #define NR_VM_NUMA_EVENT_ITEMS 0
-#endif
 
 enum zone_stat_item {
 	/* First 128 byte cacheline (assuming 64 bit words) */
@@ -191,12 +176,6 @@ enum node_stat_item {
 	NR_KERNEL_SCS_KB,	/* measured in KiB */
 #endif
 	NR_PAGETABLE,		/* used for pagetables */
-#ifdef CONFIG_SWAP
-	NR_SWAPCACHE,
-#endif
-#ifdef CONFIG_NUMA_BALANCING
-	PGPROMOTE_SUCCESS,	/* promote successfully */
-#endif
 	NR_VM_NODE_STAT_ITEMS
 };
 
@@ -306,9 +285,6 @@ struct lruvec {
 	unsigned long			refaults[ANON_AND_FILE];
 	/* Various lruvec state flags (enum lruvec_flags) */
 	unsigned long			flags;
-#ifdef CONFIG_MEMCG
-	struct pglist_data *pgdat;
-#endif
 };
 
 /* Isolate unmapped pages */
@@ -354,23 +330,12 @@ struct per_cpu_pages {
 	int high;		/* high watermark, emptying needed */
 	int batch;		/* chunk size for buddy add/remove */
 	short free_factor;	/* batch scaling factor during free */
-#ifdef CONFIG_NUMA
-	short expire;		/* When 0, remote pagesets are drained */
-#endif
 
 	/* Lists of pages, one per migrate type stored on the pcp-lists */
 	struct list_head lists[NR_PCP_LISTS];
 };
 
 struct per_cpu_zonestat {
-#ifdef CONFIG_NUMA
-	/*
-	 * Low priority inaccurate counters that are only folded
-	 * on demand. Use a large type to avoid the overhead of
-	 * folding during refresh_cpu_vm_stats.
-	 */
-	unsigned long vm_numa_event[NR_VM_NUMA_EVENT_ITEMS];
-#endif
 };
 
 struct per_cpu_nodestat {
@@ -391,26 +356,12 @@ enum zone_type {
 	 * platforms may need both zones as they support peripherals with
 	 * different DMA addressing limitations.
 	 */
-#ifdef CONFIG_ZONE_DMA32
-	ZONE_DMA32,
-#endif
 	/*
 	 * Normal addressable memory is in ZONE_NORMAL. DMA operations can be
 	 * performed on pages in ZONE_NORMAL if the DMA devices support
 	 * transfers to all addressable memory.
 	 */
 	ZONE_NORMAL,
-#ifdef CONFIG_HIGHMEM
-	/*
-	 * A memory area that is only addressable by the kernel through
-	 * mapping portions into its own address space. This is for example
-	 * used by i386 to allow the kernel to address the memory beyond
-	 * 900MB. The kernel will set up special mappings (page
-	 * table entries on i386) for each page that the kernel needs to
-	 * access.
-	 */
-	ZONE_HIGHMEM,
-#endif
 	/*
 	 * ZONE_MOVABLE is similar to ZONE_NORMAL, except that it contains
 	 * movable pages with few exceptional cases described below. Main use
@@ -461,9 +412,6 @@ enum zone_type {
 	 * there can be false negatives).
 	 */
 	ZONE_MOVABLE,
-#ifdef CONFIG_ZONE_DEVICE
-	ZONE_DEVICE,
-#endif
 	__MAX_NR_ZONES
 
 };
@@ -492,9 +440,6 @@ struct zone {
 	 */
 	long lowmem_reserve[MAX_NR_ZONES];
 
-#ifdef CONFIG_NUMA
-	int node;
-#endif
 	struct pglist_data	*zone_pgdat;
 	struct per_cpu_pages	__percpu *per_cpu_pageset;
 	struct per_cpu_zonestat	__percpu *per_cpu_zonestats;
@@ -505,13 +450,11 @@ struct zone {
 	int pageset_high;
 	int pageset_batch;
 
-#ifndef CONFIG_SPARSEMEM
 	/*
 	 * Flags for a pageblock_nr_pages block. See pageblock-flags.h.
 	 * In SPARSEMEM, this map is stored in struct mem_section
 	 */
 	unsigned long		*pageblock_flags;
-#endif /* CONFIG_SPARSEMEM */
 
 	/* zone_start_pfn == zone_start_paddr >> PAGE_SHIFT */
 	unsigned long		zone_start_pfn;
@@ -561,25 +504,10 @@ struct zone {
 	atomic_long_t		managed_pages;
 	unsigned long		spanned_pages;
 	unsigned long		present_pages;
-#if defined(CONFIG_MEMORY_HOTPLUG)
-	unsigned long		present_early_pages;
-#endif
 
 	const char		*name;
 
-#ifdef CONFIG_MEMORY_ISOLATION
-	/*
-	 * Number of isolated pageblock. It is used to solve incorrect
-	 * freepage counting problem due to racy retrieving migratetype
-	 * of pageblock. Protected by zone->lock.
-	 */
-	unsigned long		nr_isolate_pageblock;
-#endif
 
-#ifdef CONFIG_MEMORY_HOTPLUG
-	/* see spanned/present_pages for more description */
-	seqlock_t		span_seqlock;
-#endif
 
 	int initialized;
 
@@ -692,13 +620,6 @@ static inline bool zone_intersects(struct zone *zone,
 
 enum {
 	ZONELIST_FALLBACK,	/* zonelist with fallback */
-#ifdef CONFIG_NUMA
-	/*
-	 * The NUMA zonelists are doubled because we need zonelists that
-	 * restrict the allocations to a single node for __GFP_THISNODE.
-	 */
-	ZONELIST_NOFALLBACK,	/* zonelist without fallback (__GFP_THISNODE) */
-#endif
 	MAX_ZONELISTS
 };
 
@@ -762,21 +683,6 @@ typedef struct pglist_data {
 
 	int nr_zones; /* number of populated zones in this node */
 	struct page *node_mem_map;
-#if defined(CONFIG_MEMORY_HOTPLUG) || defined(CONFIG_DEFERRED_STRUCT_PAGE_INIT)
-	/*
-	 * Must be held any time you expect node_start_pfn,
-	 * node_present_pages, node_spanned_pages or nr_zones to stay constant.
-	 * Also synchronizes pgdat->first_deferred_pfn during deferred page
-	 * init.
-	 *
-	 * pgdat_resize_lock() and pgdat_resize_unlock() are provided to
-	 * manipulate node_size_lock without checking for CONFIG_MEMORY_HOTPLUG
-	 * or CONFIG_DEFERRED_STRUCT_PAGE_INIT.
-	 *
-	 * Nests above zone->lock and zone->span_seqlock
-	 */
-	spinlock_t node_size_lock;
-#endif
 	unsigned long node_start_pfn;
 	unsigned long node_present_pages; /* total number of physical pages */
 	unsigned long node_spanned_pages; /* total size of physical page
@@ -804,24 +710,10 @@ typedef struct pglist_data {
 	 */
 	unsigned long		totalreserve_pages;
 
-#ifdef CONFIG_NUMA
-	/*
-	 * node reclaim becomes active if more unmapped pages exist.
-	 */
-	unsigned long		min_unmapped_pages;
-	unsigned long		min_slab_pages;
-#endif /* CONFIG_NUMA */
 
 	/* Write-intensive fields used by page reclaim */
 	ZONE_PADDING(_pad1_)
 
-#ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
-	/*
-	 * If memory initialisation on large machines is deferred then this
-	 * is the first PFN that needs to be initialised.
-	 */
-	unsigned long first_deferred_pfn;
-#endif /* CONFIG_DEFERRED_STRUCT_PAGE_INIT */
 
 
 	/* Fields commonly accessed by the page reclaim scanner */
@@ -887,35 +779,20 @@ extern void lruvec_init(struct lruvec *lruvec);
 
 static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec)
 {
-#ifdef CONFIG_MEMCG
-	return lruvec->pgdat;
-#else
 	return container_of(lruvec, struct pglist_data, __lruvec);
-#endif
 }
 
-#ifdef CONFIG_HAVE_MEMORYLESS_NODES
-int local_memory_node(int node_id);
-#else
 static inline int local_memory_node(int node_id) { return node_id; };
-#endif
 
 /*
  * zone_idx() returns 0 for the ZONE_DMA zone, 1 for the ZONE_NORMAL zone, etc.
  */
 #define zone_idx(zone)		((zone) - (zone)->zone_pgdat->node_zones)
 
-#ifdef CONFIG_ZONE_DEVICE
-static inline bool zone_is_zone_device(struct zone *zone)
-{
-	return zone_idx(zone) == ZONE_DEVICE;
-}
-#else
 static inline bool zone_is_zone_device(struct zone *zone)
 {
 	return false;
 }
-#endif
 
 /*
  * Returns true if a zone has pages managed by the buddy allocator.
@@ -934,35 +811,18 @@ static inline bool populated_zone(struct zone *zone)
 	return zone->present_pages;
 }
 
-#ifdef CONFIG_NUMA
-static inline int zone_to_nid(struct zone *zone)
-{
-	return zone->node;
-}
-
-static inline void zone_set_nid(struct zone *zone, int nid)
-{
-	zone->node = nid;
-}
-#else
 static inline int zone_to_nid(struct zone *zone)
 {
 	return 0;
 }
 
 static inline void zone_set_nid(struct zone *zone, int nid) {}
-#endif
 
 extern int movable_zone;
 
 static inline int is_highmem_idx(enum zone_type idx)
 {
-#ifdef CONFIG_HIGHMEM
-	return (idx == ZONE_HIGHMEM ||
-		(idx == ZONE_MOVABLE && movable_zone == ZONE_HIGHMEM));
-#else
 	return 0;
-#endif
 }
 
 static inline bool has_managed_dma(void)
@@ -979,11 +839,7 @@ static inline bool has_managed_dma(void)
  */
 static inline int is_highmem(struct zone *zone)
 {
-#ifdef CONFIG_HIGHMEM
-	return is_highmem_idx(zone_idx(zone));
-#else
 	return 0;
-#endif
 }
 
 /* These two functions are used to setup the per zone pages min values */
@@ -1008,7 +864,6 @@ extern int percpu_pagelist_high_fraction;
 extern char numa_zonelist_order[];
 #define NUMA_ZONELIST_ORDER_LEN	16
 
-#ifndef CONFIG_NUMA
 
 extern struct pglist_data contig_page_data;
 static inline struct pglist_data *NODE_DATA(int nid)
@@ -1016,11 +871,6 @@ static inline struct pglist_data *NODE_DATA(int nid)
 	return &contig_page_data;
 }
 
-#else /* CONFIG_NUMA */
-
-#include <asm/mmzone.h>
-
-#endif /* !CONFIG_NUMA */
 
 extern struct pglist_data *first_online_pgdat(void);
 extern struct pglist_data *next_online_pgdat(struct pglist_data *pgdat);
@@ -1180,310 +1030,13 @@ static inline bool movable_only_nodes(nodemask_t *nodes)
 }
 
 
-#ifdef CONFIG_SPARSEMEM
-#include <asm/sparsemem.h>
-#endif
 
 #define pfn_to_nid(pfn)		(0)
 
-#ifdef CONFIG_SPARSEMEM
-
-/*
- * PA_SECTION_SHIFT		physical address to/from section number
- * PFN_SECTION_SHIFT		pfn to/from section number
- */
-#define PA_SECTION_SHIFT	(SECTION_SIZE_BITS)
-#define PFN_SECTION_SHIFT	(SECTION_SIZE_BITS - PAGE_SHIFT)
-
-#define NR_MEM_SECTIONS		(1UL << SECTIONS_SHIFT)
-
-#define PAGES_PER_SECTION       (1UL << PFN_SECTION_SHIFT)
-#define PAGE_SECTION_MASK	(~(PAGES_PER_SECTION-1))
-
-#define SECTION_BLOCKFLAGS_BITS \
-	((1UL << (PFN_SECTION_SHIFT - pageblock_order)) * NR_PAGEBLOCK_BITS)
-
-#if (MAX_ORDER - 1 + PAGE_SHIFT) > SECTION_SIZE_BITS
-#error Allocator MAX_ORDER exceeds SECTION_SIZE
-#endif
-
-static inline unsigned long pfn_to_section_nr(unsigned long pfn)
-{
-	return pfn >> PFN_SECTION_SHIFT;
-}
-static inline unsigned long section_nr_to_pfn(unsigned long sec)
-{
-	return sec << PFN_SECTION_SHIFT;
-}
-
-#define SECTION_ALIGN_UP(pfn)	(((pfn) + PAGES_PER_SECTION - 1) & PAGE_SECTION_MASK)
-#define SECTION_ALIGN_DOWN(pfn)	((pfn) & PAGE_SECTION_MASK)
-
-#define SUBSECTION_SHIFT 21
-#define SUBSECTION_SIZE (1UL << SUBSECTION_SHIFT)
-
-#define PFN_SUBSECTION_SHIFT (SUBSECTION_SHIFT - PAGE_SHIFT)
-#define PAGES_PER_SUBSECTION (1UL << PFN_SUBSECTION_SHIFT)
-#define PAGE_SUBSECTION_MASK (~(PAGES_PER_SUBSECTION-1))
-
-#if SUBSECTION_SHIFT > SECTION_SIZE_BITS
-#error Subsection size exceeds section size
-#else
-#define SUBSECTIONS_PER_SECTION (1UL << (SECTION_SIZE_BITS - SUBSECTION_SHIFT))
-#endif
-
-#define SUBSECTION_ALIGN_UP(pfn) ALIGN((pfn), PAGES_PER_SUBSECTION)
-#define SUBSECTION_ALIGN_DOWN(pfn) ((pfn) & PAGE_SUBSECTION_MASK)
-
-struct mem_section_usage {
-#ifdef CONFIG_SPARSEMEM_VMEMMAP
-	DECLARE_BITMAP(subsection_map, SUBSECTIONS_PER_SECTION);
-#endif
-	/* See declaration of similar field in struct zone */
-	unsigned long pageblock_flags[0];
-};
-
-void subsection_map_init(unsigned long pfn, unsigned long nr_pages);
-
-struct page;
-struct page_ext;
-struct mem_section {
-	/*
-	 * This is, logically, a pointer to an array of struct
-	 * pages.  However, it is stored with some other magic.
-	 * (see sparse.c::sparse_init_one_section())
-	 *
-	 * Additionally during early boot we encode node id of
-	 * the location of the section here to guide allocation.
-	 * (see sparse.c::memory_present())
-	 *
-	 * Making it a UL at least makes someone do a cast
-	 * before using it wrong.
-	 */
-	unsigned long section_mem_map;
-
-	struct mem_section_usage *usage;
-	/*
-	 * WARNING: mem_section must be a power-of-2 in size for the
-	 * calculation and use of SECTION_ROOT_MASK to make sense.
-	 */
-};
-
-#ifdef CONFIG_SPARSEMEM_EXTREME
-#define SECTIONS_PER_ROOT       (PAGE_SIZE / sizeof (struct mem_section))
-#else
-#define SECTIONS_PER_ROOT	1
-#endif
-
-#define SECTION_NR_TO_ROOT(sec)	((sec) / SECTIONS_PER_ROOT)
-#define NR_SECTION_ROOTS	DIV_ROUND_UP(NR_MEM_SECTIONS, SECTIONS_PER_ROOT)
-#define SECTION_ROOT_MASK	(SECTIONS_PER_ROOT - 1)
-
-#ifdef CONFIG_SPARSEMEM_EXTREME
-extern struct mem_section **mem_section;
-#else
-extern struct mem_section mem_section[NR_SECTION_ROOTS][SECTIONS_PER_ROOT];
-#endif
-
-static inline unsigned long *section_to_usemap(struct mem_section *ms)
-{
-	return ms->usage->pageblock_flags;
-}
-
-static inline struct mem_section *__nr_to_section(unsigned long nr)
-{
-	unsigned long root = SECTION_NR_TO_ROOT(nr);
-
-	if (unlikely(root >= NR_SECTION_ROOTS))
-		return NULL;
-
-#ifdef CONFIG_SPARSEMEM_EXTREME
-	if (!mem_section || !mem_section[root])
-		return NULL;
-#endif
-	return &mem_section[root][nr & SECTION_ROOT_MASK];
-}
-extern size_t mem_section_usage_size(void);
-
-/*
- * We use the lower bits of the mem_map pointer to store
- * a little bit of information.  The pointer is calculated
- * as mem_map - section_nr_to_pfn(pnum).  The result is
- * aligned to the minimum alignment of the two values:
- *   1. All mem_map arrays are page-aligned.
- *   2. section_nr_to_pfn() always clears PFN_SECTION_SHIFT
- *      lowest bits.  PFN_SECTION_SHIFT is arch-specific
- *      (equal SECTION_SIZE_BITS - PAGE_SHIFT), and the
- *      worst combination is powerpc with 256k pages,
- *      which results in PFN_SECTION_SHIFT equal 6.
- * To sum it up, at least 6 bits are available.
- */
-#define SECTION_MARKED_PRESENT		(1UL<<0)
-#define SECTION_HAS_MEM_MAP		(1UL<<1)
-#define SECTION_IS_ONLINE		(1UL<<2)
-#define SECTION_IS_EARLY		(1UL<<3)
-#define SECTION_TAINT_ZONE_DEVICE	(1UL<<4)
-#define SECTION_MAP_LAST_BIT		(1UL<<5)
-#define SECTION_MAP_MASK		(~(SECTION_MAP_LAST_BIT-1))
-#define SECTION_NID_SHIFT		6
-
-static inline struct page *__section_mem_map_addr(struct mem_section *section)
-{
-	unsigned long map = section->section_mem_map;
-	map &= SECTION_MAP_MASK;
-	return (struct page *)map;
-}
-
-static inline int present_section(struct mem_section *section)
-{
-	return (section && (section->section_mem_map & SECTION_MARKED_PRESENT));
-}
-
-static inline int present_section_nr(unsigned long nr)
-{
-	return present_section(__nr_to_section(nr));
-}
-
-static inline int valid_section(struct mem_section *section)
-{
-	return (section && (section->section_mem_map & SECTION_HAS_MEM_MAP));
-}
-
-static inline int early_section(struct mem_section *section)
-{
-	return (section && (section->section_mem_map & SECTION_IS_EARLY));
-}
-
-static inline int valid_section_nr(unsigned long nr)
-{
-	return valid_section(__nr_to_section(nr));
-}
-
-static inline int online_section(struct mem_section *section)
-{
-	return (section && (section->section_mem_map & SECTION_IS_ONLINE));
-}
-
-static inline int online_device_section(struct mem_section *section)
-{
-	unsigned long flags = SECTION_IS_ONLINE | SECTION_TAINT_ZONE_DEVICE;
-
-	return section && ((section->section_mem_map & flags) == flags);
-}
-
-static inline int online_section_nr(unsigned long nr)
-{
-	return online_section(__nr_to_section(nr));
-}
-
-#ifdef CONFIG_MEMORY_HOTPLUG
-void online_mem_sections(unsigned long start_pfn, unsigned long end_pfn);
-void offline_mem_sections(unsigned long start_pfn, unsigned long end_pfn);
-#endif
-
-static inline struct mem_section *__pfn_to_section(unsigned long pfn)
-{
-	return __nr_to_section(pfn_to_section_nr(pfn));
-}
-
-extern unsigned long __highest_present_section_nr;
-
-static inline int subsection_map_index(unsigned long pfn)
-{
-	return (pfn & ~(PAGE_SECTION_MASK)) / PAGES_PER_SUBSECTION;
-}
-
-#ifdef CONFIG_SPARSEMEM_VMEMMAP
-static inline int pfn_section_valid(struct mem_section *ms, unsigned long pfn)
-{
-	int idx = subsection_map_index(pfn);
-
-	return test_bit(idx, ms->usage->subsection_map);
-}
-#else
-static inline int pfn_section_valid(struct mem_section *ms, unsigned long pfn)
-{
-	return 1;
-}
-#endif
-
-#ifndef CONFIG_HAVE_ARCH_PFN_VALID
-/**
- * pfn_valid - check if there is a valid memory map entry for a PFN
- * @pfn: the page frame number to check
- *
- * Check if there is a valid memory map entry aka struct page for the @pfn.
- * Note, that availability of the memory map entry does not imply that
- * there is actual usable memory at that @pfn. The struct page may
- * represent a hole or an unusable page frame.
- *
- * Return: 1 for PFNs that have memory map entries and 0 otherwise
- */
-static inline int pfn_valid(unsigned long pfn)
-{
-	struct mem_section *ms;
-
-	/*
-	 * Ensure the upper PAGE_SHIFT bits are clear in the
-	 * pfn. Else it might lead to false positives when
-	 * some of the upper bits are set, but the lower bits
-	 * match a valid pfn.
-	 */
-	if (PHYS_PFN(PFN_PHYS(pfn)) != pfn)
-		return 0;
-
-	if (pfn_to_section_nr(pfn) >= NR_MEM_SECTIONS)
-		return 0;
-	ms = __pfn_to_section(pfn);
-	if (!valid_section(ms))
-		return 0;
-	/*
-	 * Traditionally early sections always returned pfn_valid() for
-	 * the entire section-sized span.
-	 */
-	return early_section(ms) || pfn_section_valid(ms, pfn);
-}
-#endif
-
-static inline int pfn_in_present_section(unsigned long pfn)
-{
-	if (pfn_to_section_nr(pfn) >= NR_MEM_SECTIONS)
-		return 0;
-	return present_section(__pfn_to_section(pfn));
-}
-
-static inline unsigned long next_present_section_nr(unsigned long section_nr)
-{
-	while (++section_nr <= __highest_present_section_nr) {
-		if (present_section_nr(section_nr))
-			return section_nr;
-	}
-
-	return -1;
-}
-
-/*
- * These are _only_ used during initialisation, therefore they
- * can use __initdata ...  They could have names to indicate
- * this restriction.
- */
-#ifdef CONFIG_NUMA
-#define pfn_to_nid(pfn)							\
-({									\
-	unsigned long __pfn_to_nid_pfn = (pfn);				\
-	page_to_nid(pfn_to_page(__pfn_to_nid_pfn));			\
-})
-#else
-#define pfn_to_nid(pfn)		(0)
-#endif
-
-void sparse_init(void);
-#else
 #define sparse_init()	do {} while (0)
 #define sparse_index_init(_sec, _nid)  do {} while (0)
 #define pfn_in_present_section pfn_valid
 #define subsection_map_init(_pfn, _nr_pages) do {} while (0)
-#endif /* CONFIG_SPARSEMEM */
 
 #endif /* !__GENERATING_BOUNDS.H */
 #endif /* !__ASSEMBLY__ */

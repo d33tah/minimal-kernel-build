@@ -50,14 +50,6 @@ static int is_setting_trap_flag(struct task_struct *child, struct pt_regs *regs)
 		case 0xf0: case 0xf2: case 0xf3:
 			continue;
 
-#ifdef CONFIG_X86_64
-		case 0x40 ... 0x4f:
-			if (!user_64bit_mode(regs))
-				/* 32-bit mode: register increment */
-				return 0;
-			/* 64-bit mode: REX prefix */
-			continue;
-#endif
 
 			/* CHECKME: f2, f3 */
 

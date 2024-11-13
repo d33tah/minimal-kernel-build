@@ -105,9 +105,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
  * -include argument in c_flags, occurs prior to the asm-generic wrappers being
  * generated.
  */
-#ifdef CONFIG_HAVE_ARCH_COMPILER_H
-#include <asm/compiler.h>
-#endif
 
 struct ftrace_branch_data {
 	const char *func;

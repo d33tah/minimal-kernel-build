@@ -770,17 +770,6 @@ static int ptrace_peek_siginfo(struct task_struct *child,
 		if (!found) /* beyond the end of the list */
 			break;
 
-#ifdef CONFIG_COMPAT
-		if (unlikely(in_compat_syscall())) {
-			compat_siginfo_t __user *uinfo = compat_ptr(data);
-
-			if (copy_siginfo_to_user32(uinfo, &info)) {
-				ret = -EFAULT;
-				break;
-			}
-
-		} else
-#endif
 		{
 			siginfo_t __user *uinfo = (siginfo_t __user *) data;
 
@@ -1156,31 +1145,6 @@ int ptrace_request(struct task_struct *child, long request,
 		ret = ptrace_detach(child, data);
 		break;
 
-#ifdef CONFIG_BINFMT_ELF_FDPIC
-	case PTRACE_GETFDPIC: {
-		struct mm_struct *mm = get_task_mm(child);
-		unsigned long tmp = 0;
-
-		ret = -ESRCH;
-		if (!mm)
-			break;
-
-		switch (addr) {
-		case PTRACE_GETFDPIC_EXEC:
-			tmp = mm->context.exec_fdpic_loadmap;
-			break;
-		case PTRACE_GETFDPIC_INTERP:
-			tmp = mm->context.interp_fdpic_loadmap;
-			break;
-		default:
-			break;
-		}
-		mmput(mm);
-
-		ret = put_user(tmp, datalp);
-		break;
-	}
-#endif
 
 	case PTRACE_SINGLESTEP:
 #ifdef PTRACE_SINGLEBLOCK
@@ -1295,117 +1259,3 @@ int generic_ptrace_pokedata(struct task_struct *tsk, unsigned long addr,
 	return (copied == sizeof(data)) ? 0 : -EIO;
 }
 
-#if defined CONFIG_COMPAT
-
-int compat_ptrace_request(struct task_struct *child, compat_long_t request,
-			  compat_ulong_t addr, compat_ulong_t data)
-{
-	compat_ulong_t __user *datap = compat_ptr(data);
-	compat_ulong_t word;
-	kernel_siginfo_t siginfo;
-	int ret;
-
-	switch (request) {
-	case PTRACE_PEEKTEXT:
-	case PTRACE_PEEKDATA:
-		ret = ptrace_access_vm(child, addr, &word, sizeof(word),
-				FOLL_FORCE);
-		if (ret != sizeof(word))
-			ret = -EIO;
-		else
-			ret = put_user(word, datap);
-		break;
-
-	case PTRACE_POKETEXT:
-	case PTRACE_POKEDATA:
-		ret = ptrace_access_vm(child, addr, &data, sizeof(data),
-				FOLL_FORCE | FOLL_WRITE);
-		ret = (ret != sizeof(data) ? -EIO : 0);
-		break;
-
-	case PTRACE_GETEVENTMSG:
-		ret = put_user((compat_ulong_t) child->ptrace_message, datap);
-		break;
-
-	case PTRACE_GETSIGINFO:
-		ret = ptrace_getsiginfo(child, &siginfo);
-		if (!ret)
-			ret = copy_siginfo_to_user32(
-				(struct compat_siginfo __user *) datap,
-				&siginfo);
-		break;
-
-	case PTRACE_SETSIGINFO:
-		ret = copy_siginfo_from_user32(
-			&siginfo, (struct compat_siginfo __user *) datap);
-		if (!ret)
-			ret = ptrace_setsiginfo(child, &siginfo);
-		break;
-	case PTRACE_GETREGSET:
-	case PTRACE_SETREGSET:
-	{
-		struct iovec kiov;
-		struct compat_iovec __user *uiov =
-			(struct compat_iovec __user *) datap;
-		compat_uptr_t ptr;
-		compat_size_t len;
-
-		if (!access_ok(uiov, sizeof(*uiov)))
-			return -EFAULT;
-
-		if (__get_user(ptr, &uiov->iov_base) ||
-		    __get_user(len, &uiov->iov_len))
-			return -EFAULT;
-
-		kiov.iov_base = compat_ptr(ptr);
-		kiov.iov_len = len;
-
-		ret = ptrace_regset(child, request, addr, &kiov);
-		if (!ret)
-			ret = __put_user(kiov.iov_len, &uiov->iov_len);
-		break;
-	}
-
-	default:
-		ret = ptrace_request(child, request, addr, data);
-	}
-
-	return ret;
-}
-
-COMPAT_SYSCALL_DEFINE4(ptrace, compat_long_t, request, compat_long_t, pid,
-		       compat_long_t, addr, compat_long_t, data)
-{
-	struct task_struct *child;
-	long ret;
-
-	if (request == PTRACE_TRACEME) {
-		ret = ptrace_traceme();
-		goto out;
-	}
-
-	child = find_get_task_by_vpid(pid);
-	if (!child) {
-		ret = -ESRCH;
-		goto out;
-	}
-
-	if (request == PTRACE_ATTACH || request == PTRACE_SEIZE) {
-		ret = ptrace_attach(child, request, addr, data);
-		goto out_put_task_struct;
-	}
-
-	ret = ptrace_check_attach(child, request == PTRACE_KILL ||
-				  request == PTRACE_INTERRUPT);
-	if (!ret) {
-		ret = compat_arch_ptrace(child, request, addr, data);
-		if (ret || request != PTRACE_DETACH)
-			ptrace_unfreeze_traced(child);
-	}
-
- out_put_task_struct:
-	put_task_struct(child);
- out:
-	return ret;
-}
-#endif	/* CONFIG_COMPAT */

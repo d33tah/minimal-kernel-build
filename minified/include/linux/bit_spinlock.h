@@ -61,11 +61,7 @@ static inline void __bit_spin_unlock(int bitnum, unsigned long *addr)
  */
 static inline int bit_spin_is_locked(int bitnum, unsigned long *addr)
 {
-#if   defined CONFIG_PREEMPT_COUNT
-	return preempt_count();
-#else
 	return 1;
-#endif
 }
 
 #endif /* __LINUX_BIT_SPINLOCK_H */

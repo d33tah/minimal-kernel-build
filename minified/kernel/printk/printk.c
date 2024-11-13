@@ -99,11 +99,6 @@ int __read_mostly suppress_printk;
  */
 static int __read_mostly suppress_panic_printk;
 
-#ifdef CONFIG_LOCKDEP
-static struct lockdep_map console_lock_dep_map = {
-	.name = "console_lock"
-};
-#endif
 
 enum devkmsg_log_bits {
 	__DEVKMSG_LOG_BIT_ON = 0,

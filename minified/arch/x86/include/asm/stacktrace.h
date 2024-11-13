@@ -62,25 +62,11 @@ static inline bool on_stack(struct stack_info *info, void *addr, size_t len)
 
 #define STACKSLOTS_PER_LINE 8
 
-#ifdef CONFIG_FRAME_POINTER
-static inline unsigned long *
-get_frame_pointer(struct task_struct *task, struct pt_regs *regs)
-{
-	if (regs)
-		return (unsigned long *)regs->bp;
-
-	if (task == current)
-		return __builtin_frame_address(0);
-
-	return &((struct inactive_task_frame *)task->thread.sp)->bp;
-}
-#else
 static inline unsigned long *
 get_frame_pointer(struct task_struct *task, struct pt_regs *regs)
 {
 	return NULL;
 }
-#endif /* CONFIG_FRAME_POINTER */
 
 static inline unsigned long *
 get_stack_pointer(struct task_struct *task, struct pt_regs *regs)

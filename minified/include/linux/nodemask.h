@@ -391,11 +391,7 @@ enum node_states {
 	N_POSSIBLE,		/* The node could become online at some point */
 	N_ONLINE,		/* The node is online */
 	N_NORMAL_MEMORY,	/* The node has regular memory */
-#ifdef CONFIG_HIGHMEM
-	N_HIGH_MEMORY,		/* The node has regular or high memory */
-#else
 	N_HIGH_MEMORY = N_NORMAL_MEMORY,
-#endif
 	N_MEMORY,		/* The node has memory(regular, high, movable) */
 	N_CPU,		/* The node has one or more cpus */
 	N_GENERIC_INITIATOR,	/* The node has one or more Generic Initiators */
@@ -493,14 +489,10 @@ static inline int num_node_state(enum node_states state)
 
 #endif
 
-#if defined(CONFIG_NUMA) && (MAX_NUMNODES > 1)
-extern int node_random(const nodemask_t *maskp);
-#else
 static inline int node_random(const nodemask_t *mask)
 {
 	return 0;
 }
-#endif
 
 #define node_online_map 	node_states[N_ONLINE]
 #define node_possible_map 	node_states[N_POSSIBLE]

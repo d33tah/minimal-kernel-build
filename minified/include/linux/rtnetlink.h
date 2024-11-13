@@ -88,16 +88,7 @@ static inline struct netdev_queue *dev_ingress_queue_rcu(struct net_device *dev)
 
 struct netdev_queue *dev_ingress_queue_create(struct net_device *dev);
 
-#ifdef CONFIG_NET_INGRESS
-void net_inc_ingress_queue(void);
-void net_dec_ingress_queue(void);
-#endif
 
-#ifdef CONFIG_NET_EGRESS
-void net_inc_egress_queue(void);
-void net_dec_egress_queue(void);
-void netdev_xmit_skip_txqueue(bool skip);
-#endif
 
 void rtnetlink_init(void);
 void __rtnl_unlock(void);

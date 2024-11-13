@@ -109,9 +109,6 @@ struct cred {
 	kernel_cap_t	cap_effective;	/* caps we can actually use */
 	kernel_cap_t	cap_bset;	/* capability bounding set */
 	kernel_cap_t	cap_ambient;	/* Ambient capability set */
-#ifdef CONFIG_SECURITY
-	void		*security;	/* LSM security */
-#endif
 	struct user_struct *user;	/* real user ID subscription */
 	struct user_namespace *user_ns; /* user_ns the caps and keyrings are relative to. */
 	struct ucounts *ucounts;
@@ -335,14 +332,10 @@ static inline void put_cred(const struct cred *_cred)
 #define current_ucounts()	(current_cred_xxx(ucounts))
 
 extern struct user_namespace init_user_ns;
-#ifdef CONFIG_USER_NS
-#define current_user_ns()	(current_cred_xxx(user_ns))
-#else
 static inline struct user_namespace *current_user_ns(void)
 {
 	return &init_user_ns;
 }
-#endif
 
 
 #define current_uid_gid(_uid, _gid)		\

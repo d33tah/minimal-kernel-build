@@ -107,11 +107,6 @@ static bool i8042_dritek;
 module_param_named(dritek, i8042_dritek, bool, 0);
 MODULE_PARM_DESC(dritek, "Force enable the Dritek keyboard extension");
 
-#ifdef CONFIG_PNP
-static bool i8042_nopnp;
-module_param_named(nopnp, i8042_nopnp, bool, 0);
-MODULE_PARM_DESC(nopnp, "Do not use PNP to detect controller settings");
-#endif
 
 #define DEBUG
 #ifdef DEBUG

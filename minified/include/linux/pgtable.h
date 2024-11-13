@@ -93,15 +93,8 @@ static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
 #define pte_offset_kernel pte_offset_kernel
 #endif
 
-#if defined(CONFIG_HIGHPTE)
-#define pte_offset_map(dir, address)				\
-	((pte_t *)kmap_atomic(pmd_page(*(dir))) +		\
-	 pte_index((address)))
-#define pte_unmap(pte) kunmap_atomic((pte))
-#else
 #define pte_offset_map(dir, address)	pte_offset_kernel((dir), (address))
 #define pte_unmap(pte) ((void)(pte))	/* NOP */
-#endif
 
 /* Find an entry in the second-level page table.. */
 #ifndef pmd_offset
@@ -255,52 +248,6 @@ static inline pte_t ptep_get(pte_t *ptep)
 }
 #endif
 
-#ifdef CONFIG_GUP_GET_PTE_LOW_HIGH
-/*
- * WARNING: only to be used in the get_user_pages_fast() implementation.
- *
- * With get_user_pages_fast(), we walk down the pagetables without taking any
- * locks.  For this we would like to load the pointers atomically, but sometimes
- * that is not possible (e.g. without expensive cmpxchg8b on x86_32 PAE).  What
- * we do have is the guarantee that a PTE will only either go from not present
- * to present, or present to not present or both -- it will not switch to a
- * completely different present page without a TLB flush in between; something
- * that we are blocking by holding interrupts off.
- *
- * Setting ptes from not present to present goes:
- *
- *   ptep->pte_high = h;
- *   smp_wmb();
- *   ptep->pte_low = l;
- *
- * And present to not present goes:
- *
- *   ptep->pte_low = 0;
- *   smp_wmb();
- *   ptep->pte_high = 0;
- *
- * We must ensure here that the load of pte_low sees 'l' IFF pte_high sees 'h'.
- * We load pte_high *after* loading pte_low, which ensures we don't see an older
- * value of pte_high.  *Then* we recheck pte_low, which ensures that we haven't
- * picked up a changed pte high. We might have gotten rubbish values from
- * pte_low and pte_high, but we are guaranteed that pte_low will not have the
- * present bit set *unless* it is 'l'. Because get_user_pages_fast() only
- * operates on present ptes we're safe.
- */
-static inline pte_t ptep_get_lockless(pte_t *ptep)
-{
-	pte_t pte;
-
-	do {
-		pte.pte_low = ptep->pte_low;
-		smp_rmb();
-		pte.pte_high = ptep->pte_high;
-		smp_rmb();
-	} while (unlikely(pte.pte_low != ptep->pte_low));
-
-	return pte;
-}
-#else /* CONFIG_GUP_GET_PTE_LOW_HIGH */
 /*
  * We require that the PTE can be read atomically.
  */
@@ -308,7 +255,6 @@ static inline pte_t ptep_get_lockless(pte_t *ptep)
 {
 	return ptep_get(ptep);
 }
-#endif /* CONFIG_GUP_GET_PTE_LOW_HIGH */
 
 
 
@@ -427,21 +373,11 @@ static inline void pmdp_set_wrprotect(struct mm_struct *mm,
 }
 #endif
 #ifndef __HAVE_ARCH_PUDP_SET_WRPROTECT
-#ifdef CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD
-static inline void pudp_set_wrprotect(struct mm_struct *mm,
-				      unsigned long address, pud_t *pudp)
-{
-	pud_t old_pud = *pudp;
-
-	set_pud_at(mm, address, pudp, pud_wrprotect(old_pud));
-}
-#else
 static inline void pudp_set_wrprotect(struct mm_struct *mm,
 				      unsigned long address, pud_t *pudp)
 {
 	BUILD_BUG();
 }
-#endif /* CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD */
 #endif
 
 #ifndef pmdp_collapse_flush
@@ -949,24 +885,6 @@ static inline pte_t pte_swp_clear_exclusive(pte_t pte)
 }
 #endif
 
-#ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
-#ifndef CONFIG_ARCH_ENABLE_THP_MIGRATION
-static inline pmd_t pmd_swp_mksoft_dirty(pmd_t pmd)
-{
-	return pmd;
-}
-
-static inline int pmd_swp_soft_dirty(pmd_t pmd)
-{
-	return 0;
-}
-
-static inline pmd_t pmd_swp_clear_soft_dirty(pmd_t pmd)
-{
-	return pmd;
-}
-#endif
-#else /* !CONFIG_HAVE_ARCH_SOFT_DIRTY */
 static inline int pte_soft_dirty(pte_t pte)
 {
 	return 0;
@@ -1026,7 +944,6 @@ static inline pmd_t pmd_swp_clear_soft_dirty(pmd_t pmd)
 {
 	return pmd;
 }
-#endif
 
 #ifndef __HAVE_PFNMAP_TRACKING
 /*
@@ -1290,7 +1207,6 @@ static inline int pmd_devmap_trans_unstable(pmd_t *pmd)
 	return pmd_devmap(*pmd) || pmd_trans_unstable(pmd);
 }
 
-#ifndef CONFIG_NUMA_BALANCING
 /*
  * Technically a PTE can be PROTNONE even when not doing NUMA balancing but
  * the only case the kernel cares is for NUMA balancing and is only ever set
@@ -1308,30 +1224,8 @@ static inline int pmd_protnone(pmd_t pmd)
 {
 	return 0;
 }
-#endif /* CONFIG_NUMA_BALANCING */
 
 
-#ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
-
-#ifndef __PAGETABLE_P4D_FOLDED
-int p4d_set_huge(p4d_t *p4d, phys_addr_t addr, pgprot_t prot);
-void p4d_clear_huge(p4d_t *p4d);
-#else
-static inline int p4d_set_huge(p4d_t *p4d, phys_addr_t addr, pgprot_t prot)
-{
-	return 0;
-}
-static inline void p4d_clear_huge(p4d_t *p4d) { }
-#endif /* !__PAGETABLE_P4D_FOLDED */
-
-int pud_set_huge(pud_t *pud, phys_addr_t addr, pgprot_t prot);
-int pmd_set_huge(pmd_t *pmd, phys_addr_t addr, pgprot_t prot);
-int pud_clear_huge(pud_t *pud);
-int pmd_clear_huge(pmd_t *pmd);
-int p4d_free_pud_page(p4d_t *p4d, unsigned long addr);
-int pud_free_pmd_page(pud_t *pud, unsigned long addr);
-int pmd_free_pte_page(pmd_t *pmd, unsigned long addr);
-#else	/* !CONFIG_HAVE_ARCH_HUGE_VMAP */
 static inline int p4d_set_huge(p4d_t *p4d, phys_addr_t addr, pgprot_t prot)
 {
 	return 0;
@@ -1365,7 +1259,6 @@ static inline int pmd_free_pte_page(pmd_t *pmd, unsigned long addr)
 {
 	return 0;
 }
-#endif	/* CONFIG_HAVE_ARCH_HUGE_VMAP */
 
 #ifndef __HAVE_ARCH_FLUSH_PMD_TLB_RANGE
 #define flush_pmd_tlb_range(vma, addr, end)	BUILD_BUG()
@@ -1376,9 +1269,7 @@ struct file;
 int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
 			unsigned long size, pgprot_t *vma_prot);
 
-#ifndef CONFIG_X86_ESPFIX64
 static inline void init_espfix_bsp(void) { }
-#endif
 
 extern void __init pgtable_cache_init(void);
 
@@ -1438,16 +1329,7 @@ typedef unsigned int pgtbl_mod_mask;
 #endif /* !__ASSEMBLY__ */
 
 #if !defined(MAX_POSSIBLE_PHYSMEM_BITS) && !defined(CONFIG_64BIT)
-#ifdef CONFIG_PHYS_ADDR_T_64BIT
-/*
- * ZSMALLOC needs to know the highest PFN on 32-bit architectures
- * with physical address space extension, but falls back to
- * BITS_PER_LONG otherwise.
- */
-#error Missing MAX_POSSIBLE_PHYSMEM_BITS definition
-#else
 #define MAX_POSSIBLE_PHYSMEM_BITS 32
-#endif
 #endif
 
 #ifndef has_transparent_hugepage

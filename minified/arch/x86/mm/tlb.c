@@ -21,15 +21,11 @@
 
 #include "mm_internal.h"
 
-#ifdef CONFIG_PARAVIRT
-# define STATIC_NOPV
-#else
 # define STATIC_NOPV			static
 # define __flush_tlb_local		native_flush_tlb_local
 # define __flush_tlb_global		native_flush_tlb_global
 # define __flush_tlb_one_user(addr)	native_flush_tlb_one_user(addr)
 # define __flush_tlb_multi(msk, info)	native_flush_tlb_multi(msk, info)
-#endif
 
 /*
  *	TLB flushing, formerly SMP-only
@@ -91,11 +87,7 @@
  * When enabled, PAGE_TABLE_ISOLATION consumes a single bit for
  * user/kernel switches
  */
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-# define PTI_CONSUMED_PCID_BITS	1
-#else
 # define PTI_CONSUMED_PCID_BITS	0
-#endif
 
 #define CR3_AVAIL_PCID_BITS (X86_CR3_PCID_BITS - PTI_CONSUMED_PCID_BITS)
 
@@ -113,19 +105,6 @@ static inline u16 kern_pcid(u16 asid)
 {
 	VM_WARN_ON_ONCE(asid > MAX_ASID_AVAILABLE);
 
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-	/*
-	 * Make sure that the dynamic ASID space does not conflict with the
-	 * bit we are using to switch between user and kernel ASIDs.
-	 */
-	BUILD_BUG_ON(TLB_NR_DYN_ASIDS >= (1 << X86_CR3_PTI_PCID_USER_BIT));
-
-	/*
-	 * The ASID being passed in here should have respected the
-	 * MAX_ASID_AVAILABLE and thus never have the switch bit set.
-	 */
-	VM_WARN_ON_ONCE(asid & (1 << X86_CR3_PTI_PCID_USER_BIT));
-#endif
 	/*
 	 * The dynamically-assigned ASIDs that get passed in are small
 	 * (<TLB_NR_DYN_ASIDS).  They never have the high switch bit set,
@@ -148,9 +127,6 @@ static inline u16 kern_pcid(u16 asid)
 static inline u16 user_pcid(u16 asid)
 {
 	u16 ret = kern_pcid(asid);
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-	ret |= 1 << X86_CR3_PTI_PCID_USER_BIT;
-#endif
 	return ret;
 }
 

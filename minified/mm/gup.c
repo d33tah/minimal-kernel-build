@@ -1804,118 +1804,13 @@ EXPORT_SYMBOL(fault_in_readable);
  *
  * Called without mmap_lock (takes and releases the mmap_lock by itself).
  */
-#ifdef CONFIG_ELF_CORE
-struct page *get_dump_page(unsigned long addr)
-{
-	struct mm_struct *mm = current->mm;
-	struct page *page;
-	int locked = 1;
-	int ret;
 
-	if (mmap_read_lock_killable(mm))
-		return NULL;
-	ret = __get_user_pages_locked(mm, addr, 1, &page, NULL, &locked,
-				      FOLL_FORCE | FOLL_DUMP | FOLL_GET);
-	if (locked)
-		mmap_read_unlock(mm);
-	return (ret == 1) ? page : NULL;
-}
-#endif /* CONFIG_ELF_CORE */
-
-#ifdef CONFIG_MIGRATION
-/*
- * Check whether all pages are pinnable, if so return number of pages.  If some
- * pages are not pinnable, migrate them, and unpin all pages. Return zero if
- * pages were migrated, or if some pages were not successfully isolated.
- * Return negative error if migration fails.
- */
-static long check_and_migrate_movable_pages(unsigned long nr_pages,
-					    struct page **pages,
-					    unsigned int gup_flags)
-{
-	unsigned long isolation_error_count = 0, i;
-	struct folio *prev_folio = NULL;
-	LIST_HEAD(movable_page_list);
-	bool drain_allow = true;
-	int ret = 0;
-
-	for (i = 0; i < nr_pages; i++) {
-		struct folio *folio = page_folio(pages[i]);
-
-		if (folio == prev_folio)
-			continue;
-		prev_folio = folio;
-
-		if (folio_is_pinnable(folio))
-			continue;
-
-		/*
-		 * Try to move out any movable page before pinning the range.
-		 */
-		if (folio_test_hugetlb(folio)) {
-			if (!isolate_huge_page(&folio->page,
-						&movable_page_list))
-				isolation_error_count++;
-			continue;
-		}
-
-		if (!folio_test_lru(folio) && drain_allow) {
-			lru_add_drain_all();
-			drain_allow = false;
-		}
-
-		if (folio_isolate_lru(folio)) {
-			isolation_error_count++;
-			continue;
-		}
-		list_add_tail(&folio->lru, &movable_page_list);
-		node_stat_mod_folio(folio,
-				    NR_ISOLATED_ANON + folio_is_file_lru(folio),
-				    folio_nr_pages(folio));
-	}
-
-	if (!list_empty(&movable_page_list) || isolation_error_count)
-		goto unpin_pages;
-
-	/*
-	 * If list is empty, and no isolation errors, means that all pages are
-	 * in the correct zone.
-	 */
-	return nr_pages;
-
-unpin_pages:
-	if (gup_flags & FOLL_PIN) {
-		unpin_user_pages(pages, nr_pages);
-	} else {
-		for (i = 0; i < nr_pages; i++)
-			put_page(pages[i]);
-	}
-
-	if (!list_empty(&movable_page_list)) {
-		struct migration_target_control mtc = {
-			.nid = NUMA_NO_NODE,
-			.gfp_mask = GFP_USER | __GFP_NOWARN,
-		};
-
-		ret = migrate_pages(&movable_page_list, alloc_migration_target,
-				    NULL, (unsigned long)&mtc, MIGRATE_SYNC,
-				    MR_LONGTERM_PIN, NULL);
-		if (ret > 0) /* number of pages not migrated */
-			ret = -ENOMEM;
-	}
-
-	if (ret && !list_empty(&movable_page_list))
-		putback_movable_pages(&movable_page_list);
-	return ret;
-}
-#else
 static long check_and_migrate_movable_pages(unsigned long nr_pages,
 					    struct page **pages,
 					    unsigned int gup_flags)
 {
 	return nr_pages;
 }
-#endif /* CONFIG_MIGRATION */
 
 /*
  * __gup_longterm_locked() is a wrapper for __get_user_pages_locked which
@@ -2297,83 +2192,12 @@ static int record_subpages(struct page *page, unsigned long addr,
 	return nr;
 }
 
-#ifdef CONFIG_ARCH_HAS_HUGEPD
-static unsigned long hugepte_addr_end(unsigned long addr, unsigned long end,
-				      unsigned long sz)
-{
-	unsigned long __boundary = (addr + sz) & ~(sz-1);
-	return (__boundary - 1 < end - 1) ? __boundary : end;
-}
-
-static int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
-		       unsigned long end, unsigned int flags,
-		       struct page **pages, int *nr)
-{
-	unsigned long pte_end;
-	struct page *page;
-	struct folio *folio;
-	pte_t pte;
-	int refs;
-
-	pte_end = (addr + sz) & ~(sz-1);
-	if (pte_end < end)
-		end = pte_end;
-
-	pte = huge_ptep_get(ptep);
-
-	if (!pte_access_permitted(pte, flags & FOLL_WRITE))
-		return 0;
-
-	/* hugepages are never "special" */
-	VM_BUG_ON(!pfn_valid(pte_pfn(pte)));
-
-	page = nth_page(pte_page(pte), (addr & (sz - 1)) >> PAGE_SHIFT);
-	refs = record_subpages(page, addr, end, pages + *nr);
-
-	folio = try_grab_folio(page, refs, flags);
-	if (!folio)
-		return 0;
-
-	if (unlikely(pte_val(pte) != pte_val(*ptep))) {
-		gup_put_folio(folio, refs, flags);
-		return 0;
-	}
-
-	if (!pte_write(pte) && gup_must_unshare(flags, &folio->page)) {
-		gup_put_folio(folio, refs, flags);
-		return 0;
-	}
-
-	*nr += refs;
-	folio_set_referenced(folio);
-	return 1;
-}
-
-static int gup_huge_pd(hugepd_t hugepd, unsigned long addr,
-		unsigned int pdshift, unsigned long end, unsigned int flags,
-		struct page **pages, int *nr)
-{
-	pte_t *ptep;
-	unsigned long sz = 1UL << hugepd_shift(hugepd);
-	unsigned long next;
-
-	ptep = hugepte_offset(hugepd, addr, pdshift);
-	do {
-		next = hugepte_addr_end(addr, end, sz);
-		if (!gup_hugepte(ptep, sz, addr, end, flags, pages, nr))
-			return 0;
-	} while (ptep++, addr = next, addr != end);
-
-	return 1;
-}
-#else
 static inline int gup_huge_pd(hugepd_t hugepd, unsigned long addr,
 		unsigned int pdshift, unsigned long end, unsigned int flags,
 		struct page **pages, int *nr)
 {
 	return 0;
 }
-#endif /* CONFIG_ARCH_HAS_HUGEPD */
 
 static int gup_huge_pmd(pmd_t orig, pmd_t *pmdp, unsigned long addr,
 			unsigned long end, unsigned int flags,

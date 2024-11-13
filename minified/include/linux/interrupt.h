@@ -377,40 +377,25 @@ irq_calc_affinity_vectors(unsigned int minvec, unsigned int maxvec,
 static inline void disable_irq_nosync_lockdep(unsigned int irq)
 {
 	disable_irq_nosync(irq);
-#ifdef CONFIG_LOCKDEP
-	local_irq_disable();
-#endif
 }
 
 static inline void disable_irq_nosync_lockdep_irqsave(unsigned int irq, unsigned long *flags)
 {
 	disable_irq_nosync(irq);
-#ifdef CONFIG_LOCKDEP
-	local_irq_save(*flags);
-#endif
 }
 
 static inline void disable_irq_lockdep(unsigned int irq)
 {
 	disable_irq(irq);
-#ifdef CONFIG_LOCKDEP
-	local_irq_disable();
-#endif
 }
 
 static inline void enable_irq_lockdep(unsigned int irq)
 {
-#ifdef CONFIG_LOCKDEP
-	local_irq_enable();
-#endif
 	enable_irq(irq);
 }
 
 static inline void enable_irq_lockdep_irqrestore(unsigned int irq, unsigned long *flags)
 {
-#ifdef CONFIG_LOCKDEP
-	local_irq_restore(*flags);
-#endif
 	enable_irq(irq);
 }
 
@@ -442,12 +427,8 @@ extern int irq_get_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
 extern int irq_set_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
 				 bool state);
 
-# ifdef CONFIG_PREEMPT_RT
-#  define force_irqthreads()	(true)
-# else
 DECLARE_STATIC_KEY_FALSE(force_irqthreads_key);
 #  define force_irqthreads()	(static_branch_unlikely(&force_irqthreads_key))
-# endif
 
 #ifndef local_softirq_pending
 
@@ -521,14 +502,10 @@ struct softirq_action
 asmlinkage void do_softirq(void);
 asmlinkage void __do_softirq(void);
 
-#ifdef CONFIG_PREEMPT_RT
-extern void do_softirq_post_smp_call_flush(unsigned int was_pending);
-#else
 static inline void do_softirq_post_smp_call_flush(unsigned int unused)
 {
 	do_softirq();
 }
-#endif
 
 extern void open_softirq(int nr, void (*action)(struct softirq_action *));
 extern void softirq_init(void);
@@ -615,22 +592,10 @@ enum
 	TASKLET_STATE_RUN	/* Tasklet is running (SMP only) */
 };
 
-#if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT_RT)
-static inline int tasklet_trylock(struct tasklet_struct *t)
-{
-	return !test_and_set_bit(TASKLET_STATE_RUN, &(t)->state);
-}
-
-void tasklet_unlock(struct tasklet_struct *t);
-void tasklet_unlock_wait(struct tasklet_struct *t);
-void tasklet_unlock_spin_wait(struct tasklet_struct *t);
-
-#else
 static inline int tasklet_trylock(struct tasklet_struct *t) { return 1; }
 static inline void tasklet_unlock(struct tasklet_struct *t) { }
 static inline void tasklet_unlock_wait(struct tasklet_struct *t) { }
 static inline void tasklet_unlock_spin_wait(struct tasklet_struct *t) { }
-#endif
 
 extern void __tasklet_schedule(struct tasklet_struct *t);
 
@@ -720,11 +685,6 @@ static inline void init_irq_proc(void)
 {
 }
 
-#ifdef CONFIG_IRQ_TIMINGS
-void irq_timings_enable(void);
-void irq_timings_disable(void);
-u64 irq_timings_next_event(u64 now);
-#endif
 
 struct seq_file;
 int show_interrupts(struct seq_file *p, void *v);

@@ -294,11 +294,6 @@ static inline int nvdimm_ctl(struct nvdimm *nvdimm, unsigned int cmd, void *buf,
 	return nd_desc->ndctl(nd_desc, nvdimm, cmd, buf, buf_len, cmd_rc);
 }
 
-#ifdef CONFIG_ARCH_HAS_PMEM_API
-#define ARCH_MEMREMAP_PMEM MEMREMAP_WB
-void arch_wb_cache_pmem(void *addr, size_t size);
-void arch_invalidate_pmem(void *addr, size_t size);
-#else
 #define ARCH_MEMREMAP_PMEM MEMREMAP_WT
 static inline void arch_wb_cache_pmem(void *addr, size_t size)
 {
@@ -306,6 +301,5 @@ static inline void arch_wb_cache_pmem(void *addr, size_t size)
 static inline void arch_invalidate_pmem(void *addr, size_t size)
 {
 }
-#endif
 
 #endif /* __LIBNVDIMM_H__ */

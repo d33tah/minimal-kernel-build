@@ -58,25 +58,16 @@ struct ucode_cpu_info {
 extern struct ucode_cpu_info ucode_cpu_info[];
 struct cpio_data find_microcode_in_initrd(const char *path, bool use_pa);
 
-#ifdef CONFIG_MICROCODE_INTEL
-extern struct microcode_ops * __init init_intel_microcode(void);
-#else
 static inline struct microcode_ops * __init init_intel_microcode(void)
 {
 	return NULL;
 }
-#endif /* CONFIG_MICROCODE_INTEL */
 
-#ifdef CONFIG_MICROCODE_AMD
-extern struct microcode_ops * __init init_amd_microcode(void);
-extern void __exit exit_amd_microcode(void);
-#else
 static inline struct microcode_ops * __init init_amd_microcode(void)
 {
 	return NULL;
 }
 static inline void __exit exit_amd_microcode(void) {}
-#endif
 
 #define MAX_UCODE_COUNT 128
 

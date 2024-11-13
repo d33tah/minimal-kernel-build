@@ -7,11 +7,7 @@
 #include <linux/syscalls.h>
 #include <asm/syscall.h>
 
-#ifdef CONFIG_IA32_EMULATION
-#define __SYSCALL_WITH_COMPAT(nr, native, compat)	__SYSCALL(nr, compat)
-#else
 #define __SYSCALL_WITH_COMPAT(nr, native, compat)	__SYSCALL(nr, native)
-#endif
 
 #define __SYSCALL(nr, sym) extern long __ia32_##sym(const struct pt_regs *);
 

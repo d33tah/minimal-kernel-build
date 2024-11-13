@@ -120,17 +120,10 @@ void put_task_struct_rcu_user(struct task_struct *task);
 extern int arch_task_struct_size __read_mostly;
 
 
-#ifdef CONFIG_VMAP_STACK
-static inline struct vm_struct *task_stack_vm_area(const struct task_struct *t)
-{
-	return t->stack_vm_area;
-}
-#else
 static inline struct vm_struct *task_stack_vm_area(const struct task_struct *t)
 {
 	return NULL;
 }
-#endif
 
 /*
  * Protects ->fs, ->files, ->mm, ->group_info, ->comm, keyring

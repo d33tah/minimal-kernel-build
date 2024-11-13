@@ -33,11 +33,7 @@
  *
  * x86_64 has a fixed-length stack frame.
  */
-# ifdef CONFIG_VM86
-#  define TOP_OF_KERNEL_STACK_PADDING 16
-# else
 #  define TOP_OF_KERNEL_STACK_PADDING 8
-# endif
 
 /*
  * low level task data that entry.S needs immediate access to
@@ -152,36 +148,7 @@ static inline int arch_within_stack_frames(const void * const stack,
 					   const void * const stackend,
 					   const void *obj, unsigned long len)
 {
-#if defined(CONFIG_FRAME_POINTER)
-	const void *frame = NULL;
-	const void *oldframe;
-
-	oldframe = __builtin_frame_address(1);
-	if (oldframe)
-		frame = __builtin_frame_address(2);
-	/*
-	 * low ----------------------------------------------> high
-	 * [saved bp][saved ip][args][local vars][saved bp][saved ip]
-	 *                     ^----------------^
-	 *               allow copies only within here
-	 */
-	while (stack <= frame && frame < stackend) {
-		/*
-		 * If obj + len extends past the last frame, this
-		 * check won't pass and the next frame will be 0,
-		 * causing us to bail out and correctly report
-		 * the copy as invalid.
-		 */
-		if (obj + len <= frame)
-			return obj >= oldframe + 2 * sizeof(void *) ?
-				GOOD_FRAME : BAD_STACK;
-		oldframe = frame;
-		frame = *(const void * const *)frame;
-	}
-	return BAD_STACK;
-#else
 	return NOT_STACK;
-#endif
 }
 
 #endif  /* !__ASSEMBLY__ */
@@ -196,13 +163,6 @@ static inline int arch_within_stack_frames(const void * const stack,
 #define TS_COMPAT		0x0002	/* 32bit syscall active (64BIT)*/
 
 #ifndef __ASSEMBLY__
-#ifdef CONFIG_COMPAT
-#define TS_I386_REGS_POKED	0x0004	/* regs poked by 32-bit ptracer */
-
-#define arch_set_restart_data(restart)	\
-	do { restart->arch_data = current_thread_info()->status; } while (0)
-
-#endif
 
 #define in_ia32_syscall() true
 

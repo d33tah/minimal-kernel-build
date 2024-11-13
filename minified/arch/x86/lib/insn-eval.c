@@ -344,30 +344,6 @@ static short get_segment_selector(struct pt_regs *regs, int seg_reg_idx)
 {
 	unsigned short sel;
 
-#ifdef CONFIG_X86_64
-	switch (seg_reg_idx) {
-	case INAT_SEG_REG_IGNORE:
-		return 0;
-	case INAT_SEG_REG_CS:
-		return (unsigned short)(regs->cs & 0xffff);
-	case INAT_SEG_REG_SS:
-		return (unsigned short)(regs->ss & 0xffff);
-	case INAT_SEG_REG_DS:
-		savesegment(ds, sel);
-		return sel;
-	case INAT_SEG_REG_ES:
-		savesegment(es, sel);
-		return sel;
-	case INAT_SEG_REG_FS:
-		savesegment(fs, sel);
-		return sel;
-	case INAT_SEG_REG_GS:
-		savesegment(gs, sel);
-		return sel;
-	default:
-		return -EINVAL;
-	}
-#else /* CONFIG_X86_32 */
 	struct kernel_vm86_regs *vm86regs = (struct kernel_vm86_regs *)regs;
 
 	if (v8086_mode(regs)) {
@@ -408,7 +384,6 @@ static short get_segment_selector(struct pt_regs *regs, int seg_reg_idx)
 	default:
 		return -EINVAL;
 	}
-#endif /* CONFIG_X86_64 */
 }
 
 static const int pt_regoff[] = {
@@ -420,21 +395,10 @@ static const int pt_regoff[] = {
 	offsetof(struct pt_regs, bp),
 	offsetof(struct pt_regs, si),
 	offsetof(struct pt_regs, di),
-#ifdef CONFIG_X86_64
-	offsetof(struct pt_regs, r8),
-	offsetof(struct pt_regs, r9),
-	offsetof(struct pt_regs, r10),
-	offsetof(struct pt_regs, r11),
-	offsetof(struct pt_regs, r12),
-	offsetof(struct pt_regs, r13),
-	offsetof(struct pt_regs, r14),
-	offsetof(struct pt_regs, r15),
-#else
 	offsetof(struct pt_regs, ds),
 	offsetof(struct pt_regs, es),
 	offsetof(struct pt_regs, fs),
 	offsetof(struct pt_regs, gs),
-#endif
 };
 
 int pt_regs_offset(struct pt_regs *regs, int regno)
@@ -1363,49 +1327,10 @@ out:
  *
  * -1L on error.
  */
-#ifndef CONFIG_X86_64
 static void __user *get_addr_ref_64(struct insn *insn, struct pt_regs *regs)
 {
 	return (void __user *)-1L;
 }
-#else
-static void __user *get_addr_ref_64(struct insn *insn, struct pt_regs *regs)
-{
-	unsigned long linear_addr = -1L, seg_base;
-	int regoff, ret;
-	long eff_addr;
-
-	if (insn->addr_bytes != 8)
-		goto out;
-
-	if (X86_MODRM_MOD(insn->modrm.value) == 3) {
-		ret = get_eff_addr_reg(insn, regs, &regoff, &eff_addr);
-		if (ret)
-			goto out;
-
-	} else {
-		if (insn->sib.nbytes) {
-			ret = get_eff_addr_sib(insn, regs, &regoff, &eff_addr);
-			if (ret)
-				goto out;
-		} else {
-			ret = get_eff_addr_modrm(insn, regs, &regoff, &eff_addr);
-			if (ret)
-				goto out;
-		}
-
-	}
-
-	ret = get_seg_base_limit(insn, regs, regoff, &seg_base, NULL);
-	if (ret)
-		goto out;
-
-	linear_addr = (unsigned long)eff_addr + seg_base;
-
-out:
-	return (void __user *)linear_addr;
-}
-#endif /* CONFIG_X86_64 */
 
 /**
  * insn_get_addr_ref() - Obtain the linear address referred by instruction

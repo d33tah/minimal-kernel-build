@@ -76,16 +76,8 @@ int unregister_tracepoint_module_notifier(struct notifier_block *nb)
  * probe unregistration and the end of module exit to make sure there is no
  * caller executing a probe when it is freed.
  */
-#ifdef CONFIG_TRACEPOINTS
-static inline void tracepoint_synchronize_unregister(void)
-{
-	synchronize_srcu(&tracepoint_srcu);
-	synchronize_rcu();
-}
-#else
 static inline void tracepoint_synchronize_unregister(void)
 { }
-#endif
 
 extern int syscall_regfunc(void);
 extern void syscall_unregfunc(void);
@@ -131,9 +123,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
  * wants to be able to disable its tracepoints from being created
  * it can define NOTRACE before including the tracepoint headers.
  */
-#if defined(CONFIG_TRACEPOINTS) && !defined(NOTRACE)
-#define TRACEPOINTS_ENABLED
-#endif
 
 #ifdef TRACEPOINTS_ENABLED
 
@@ -343,41 +332,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 
 #endif /* TRACEPOINTS_ENABLED */
 
-#ifdef CONFIG_TRACING
-/**
- * tracepoint_string - register constant persistent string to trace system
- * @str - a constant persistent string that will be referenced in tracepoints
- *
- * If constant strings are being used in tracepoints, it is faster and
- * more efficient to just save the pointer to the string and reference
- * that with a printf "%s" instead of saving the string in the ring buffer
- * and wasting space and time.
- *
- * The problem with the above approach is that userspace tools that read
- * the binary output of the trace buffers do not have access to the string.
- * Instead they just show the address of the string which is not very
- * useful to users.
- *
- * With tracepoint_string(), the string will be registered to the tracing
- * system and exported to userspace via the debugfs/tracing/printk_formats
- * file that maps the string address to the string text. This way userspace
- * tools that read the binary buffers have a way to map the pointers to
- * the ASCII strings they represent.
- *
- * The @str used must be a constant string and persistent as it would not
- * make sense to show a string that no longer exists. But it is still fine
- * to be used with modules, because when modules are unloaded, if they
- * had tracepoints, the ring buffers are cleared too. As long as the string
- * does not change during the life of the module, it is fine to use
- * tracepoint_string() within a module.
- */
-#define tracepoint_string(str)						\
-	({								\
-		static const char *___tp_str __tracepoint_string = str; \
-		___tp_str;						\
-	})
-#define __tracepoint_string	__used __section("__tracepoint_str")
-#else
 /*
  * tracepoint_string() is used to save the string address for userspace
  * tracing tools. When tracing isn't configured, there's no need to save
@@ -385,7 +339,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
  */
 # define tracepoint_string(str) str
 # define __tracepoint_string
-#endif
 
 #define DECLARE_TRACE(name, proto, args)				\
 	__DECLARE_TRACE(name, PARAMS(proto), PARAMS(args),		\

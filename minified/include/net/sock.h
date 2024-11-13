@@ -221,9 +221,6 @@ struct sock_common {
 		struct hlist_nulls_node skc_nulls_node;
 	};
 	unsigned short		skc_tx_queue_mapping;
-#ifdef CONFIG_SOCK_RX_QUEUE_MAPPING
-	unsigned short		skc_rx_queue_mapping;
-#endif
 	union {
 		int		skc_incoming_cpu;
 		u32		skc_rcv_wnd;
@@ -356,9 +353,6 @@ struct sock {
 #define sk_nulls_node		__sk_common.skc_nulls_node
 #define sk_refcnt		__sk_common.skc_refcnt
 #define sk_tx_queue_mapping	__sk_common.skc_tx_queue_mapping
-#ifdef CONFIG_SOCK_RX_QUEUE_MAPPING
-#define sk_rx_queue_mapping	__sk_common.skc_rx_queue_mapping
-#endif
 
 #define sk_dontcopy_begin	__sk_common.skc_dontcopy_begin
 #define sk_dontcopy_end		__sk_common.skc_dontcopy_end
@@ -415,11 +409,6 @@ struct sock {
 
 	int			sk_forward_alloc;
 	u32			sk_reserved_mem;
-#ifdef CONFIG_NET_RX_BUSY_POLL
-	unsigned int		sk_ll_usec;
-	/* ===== mostly read cache line ===== */
-	unsigned int		sk_napi_id;
-#endif
 	int			sk_rcvbuf;
 
 	struct sk_filter __rcu	*sk_filter;
@@ -429,9 +418,6 @@ struct sock {
 		struct socket_wq	*sk_wq_raw;
 		/* public: */
 	};
-#ifdef CONFIG_XFRM
-	struct xfrm_policy __rcu *sk_policy[2];
-#endif
 
 	struct dst_entry __rcu	*sk_dst_cache;
 	atomic_t		sk_omem_alloc;
@@ -485,10 +471,6 @@ struct sock {
 	u32			sk_max_ack_backlog;
 	kuid_t			sk_uid;
 	u8			sk_txrehash;
-#ifdef CONFIG_NET_RX_BUSY_POLL
-	u8			sk_prefer_busy_poll;
-	u16			sk_busy_poll_budget;
-#endif
 	spinlock_t		sk_peer_lock;
 	int			sk_bind_phc;
 	struct pid		*sk_peer_pid;
@@ -511,9 +493,6 @@ struct sock {
 
 	struct socket		*sk_socket;
 	void			*sk_user_data;
-#ifdef CONFIG_SECURITY
-	void			*sk_security;
-#endif
 	struct sock_cgroup_data	sk_cgrp_data;
 	struct mem_cgroup	*sk_memcg;
 	void			(*sk_state_change)(struct sock *sk);
@@ -522,11 +501,6 @@ struct sock {
 	void			(*sk_error_report)(struct sock *sk);
 	int			(*sk_backlog_rcv)(struct sock *sk,
 						  struct sk_buff *skb);
-#ifdef CONFIG_SOCK_VALIDATE_XMIT
-	struct sk_buff*		(*sk_validate_xmit_skb)(struct sock *sk,
-							struct net_device *dev,
-							struct sk_buff *skb);
-#endif
 	void                    (*sk_destruct)(struct sock *sk);
 	struct sock_reuseport __rcu	*sk_reuseport_cb;
 	struct rcu_head		sk_rcu;
@@ -1044,50 +1018,19 @@ static inline void sk_incoming_cpu_update(struct sock *sk)
 
 static inline void sock_rps_record_flow_hash(__u32 hash)
 {
-#ifdef CONFIG_RPS
-	struct rps_sock_flow_table *sock_flow_table;
-
-	rcu_read_lock();
-	sock_flow_table = rcu_dereference(rps_sock_flow_table);
-	rps_record_sock_flow(sock_flow_table, hash);
-	rcu_read_unlock();
-#endif
 }
 
 static inline void sock_rps_record_flow(const struct sock *sk)
 {
-#ifdef CONFIG_RPS
-	if (static_branch_unlikely(&rfs_needed)) {
-		/* Reading sk->sk_rxhash might incur an expensive cache line
-		 * miss.
-		 *
-		 * TCP_ESTABLISHED does cover almost all states where RFS
-		 * might be useful, and is cheaper [1] than testing :
-		 *	IPv4: inet_sk(sk)->inet_daddr
-		 * 	IPv6: ipv6_addr_any(&sk->sk_v6_daddr)
-		 * OR	an additional socket flag
-		 * [1] : sk_state and sk_prot are in the same cache line.
-		 */
-		if (sk->sk_state == TCP_ESTABLISHED)
-			sock_rps_record_flow_hash(sk->sk_rxhash);
-	}
-#endif
 }
 
 static inline void sock_rps_save_rxhash(struct sock *sk,
 					const struct sk_buff *skb)
 {
-#ifdef CONFIG_RPS
-	if (unlikely(sk->sk_rxhash != skb->hash))
-		sk->sk_rxhash = skb->hash;
-#endif
 }
 
 static inline void sock_rps_reset_rxhash(struct sock *sk)
 {
-#ifdef CONFIG_RPS
-	sk->sk_rxhash = 0;
-#endif
 }
 
 #define sk_wait_event(__sk, __timeo, __condition, __wait)		\
@@ -1175,10 +1118,6 @@ struct proto {
 					int optname, char __user *optval,
 					int __user *option);
 	void			(*keepalive)(struct sock *sk, int valbool);
-#ifdef CONFIG_COMPAT
-	int			(*compat_ioctl)(struct sock *sk,
-					unsigned int cmd, unsigned long arg);
-#endif
 	int			(*sendmsg)(struct sock *sk, struct msghdr *msg,
 					   size_t len);
 	int			(*recvmsg)(struct sock *sk, struct msghdr *msg,
@@ -1333,12 +1272,7 @@ static inline bool sk_stream_is_writeable(const struct sock *sk)
 static inline int sk_under_cgroup_hierarchy(struct sock *sk,
 					    struct cgroup *ancestor)
 {
-#ifdef CONFIG_SOCK_CGROUP_DATA
-	return cgroup_is_descendant(sock_cgroup_ptr(&sk->sk_cgrp_data),
-				    ancestor);
-#else
 	return -ENOTSUPP;
-#endif
 }
 
 static inline bool sk_has_memory_pressure(const struct sock *sk)
@@ -1709,9 +1643,6 @@ static inline void unlock_sock_fast(struct sock *sk, bool slow)
 
 static inline void sock_owned_by_me(const struct sock *sk)
 {
-#ifdef CONFIG_LOCKDEP
-	WARN_ON_ONCE(!lockdep_sock_is_held(sk) && debug_locks);
-#endif
 }
 
 static inline bool sock_owned_by_user(const struct sock *sk)
@@ -1760,12 +1691,7 @@ struct sk_buff *sock_omalloc(struct sock *sk, unsigned long size,
 void skb_orphan_partial(struct sk_buff *skb);
 void sock_rfree(struct sk_buff *skb);
 void sock_efree(struct sk_buff *skb);
-#ifdef CONFIG_INET
-void sock_edemux(struct sk_buff *skb);
-void sock_pfree(struct sk_buff *skb);
-#else
 #define sock_edemux sock_efree
-#endif
 
 int sock_setsockopt(struct socket *sock, int level, int op,
 		    sockptr_t optval, unsigned int optlen);
@@ -1920,15 +1846,6 @@ static inline void __sk_rx_queue_set(struct sock *sk,
 				     const struct sk_buff *skb,
 				     bool force_set)
 {
-#ifdef CONFIG_SOCK_RX_QUEUE_MAPPING
-	if (skb_rx_queue_recorded(skb)) {
-		u16 rx_queue = skb_get_rx_queue(skb);
-
-		if (force_set ||
-		    unlikely(READ_ONCE(sk->sk_rx_queue_mapping) != rx_queue))
-			WRITE_ONCE(sk->sk_rx_queue_mapping, rx_queue);
-	}
-#endif
 }
 
 static inline void sk_rx_queue_set(struct sock *sk, const struct sk_buff *skb)
@@ -1943,21 +1860,10 @@ static inline void sk_rx_queue_update(struct sock *sk, const struct sk_buff *skb
 
 static inline void sk_rx_queue_clear(struct sock *sk)
 {
-#ifdef CONFIG_SOCK_RX_QUEUE_MAPPING
-	WRITE_ONCE(sk->sk_rx_queue_mapping, NO_QUEUE_MAPPING);
-#endif
 }
 
 static inline int sk_rx_queue_get(const struct sock *sk)
 {
-#ifdef CONFIG_SOCK_RX_QUEUE_MAPPING
-	if (sk) {
-		int res = READ_ONCE(sk->sk_rx_queue_mapping);
-
-		if (res != NO_QUEUE_MAPPING)
-			return res;
-	}
-#endif
 
 	return -1;
 }
@@ -2684,11 +2590,7 @@ static inline void sk_eat_skb(struct sock *sk, struct sk_buff *skb)
 static inline bool
 skb_sk_is_prefetched(struct sk_buff *skb)
 {
-#ifdef CONFIG_INET
-	return skb->destructor == sock_pfree;
-#else
 	return false;
-#endif /* CONFIG_INET */
 }
 
 /* This helper checks if a socket is a full socket,
@@ -2735,19 +2637,6 @@ skb_steal_sock(struct sk_buff *skb, bool *refcounted)
 static inline struct sk_buff *sk_validate_xmit_skb(struct sk_buff *skb,
 						   struct net_device *dev)
 {
-#ifdef CONFIG_SOCK_VALIDATE_XMIT
-	struct sock *sk = skb->sk;
-
-	if (sk && sk_fullsock(sk) && sk->sk_validate_xmit_skb) {
-		skb = sk->sk_validate_xmit_skb(sk, dev, skb);
-#ifdef CONFIG_TLS_DEVICE
-	} else if (unlikely(skb->decrypted)) {
-		pr_warn_ratelimited("unencrypted skb with no associated socket - dropping\n");
-		kfree_skb(skb);
-		skb = NULL;
-#endif
-	}
-#endif
 
 	return skb;
 }

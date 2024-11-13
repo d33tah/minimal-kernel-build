@@ -12,10 +12,6 @@
 
 extern void pm_set_vt_switch(int);
 
-#ifdef CONFIG_VT_CONSOLE_SLEEP
-extern void pm_prepare_console(void);
-extern void pm_restore_console(void);
-#else
 static inline void pm_prepare_console(void)
 {
 }
@@ -23,7 +19,6 @@ static inline void pm_prepare_console(void)
 static inline void pm_restore_console(void)
 {
 }
-#endif
 
 typedef int __bitwise suspend_state_t;
 
@@ -287,27 +282,6 @@ struct platform_hibernation_ops {
 	void (*recover)(void);
 };
 
-#ifdef CONFIG_HIBERNATION
-/* kernel/power/snapshot.c */
-extern void register_nosave_region(unsigned long b, unsigned long e);
-extern int swsusp_page_is_forbidden(struct page *);
-extern void swsusp_set_page_free(struct page *);
-extern void swsusp_unset_page_free(struct page *);
-extern unsigned long get_safe_page(gfp_t gfp_mask);
-extern asmlinkage int swsusp_arch_suspend(void);
-extern asmlinkage int swsusp_arch_resume(void);
-
-extern u32 swsusp_hardware_signature;
-extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
-extern int hibernate(void);
-extern bool system_entering_hibernation(void);
-extern bool hibernation_available(void);
-asmlinkage int swsusp_save(void);
-extern struct pbe *restore_pblist;
-int pfn_is_nosave(unsigned long pfn);
-
-int hibernate_quiet_exec(int (*func)(void *data), void *data);
-#else /* CONFIG_HIBERNATION */
 static inline void register_nosave_region(unsigned long b, unsigned long e) {}
 static inline int swsusp_page_is_forbidden(struct page *p) { return 0; }
 static inline void swsusp_set_page_free(struct page *p) {}
@@ -321,13 +295,8 @@ static inline bool hibernation_available(void) { return false; }
 static inline int hibernate_quiet_exec(int (*func)(void *data), void *data) {
 	return -ENOTSUPP;
 }
-#endif /* CONFIG_HIBERNATION */
 
-#ifdef CONFIG_HIBERNATION_SNAPSHOT_DEV
-int is_hibernate_resume_dev(dev_t dev);
-#else
 static inline int is_hibernate_resume_dev(dev_t dev) { return 0; }
-#endif
 
 /* Hibernation and suspend events */
 #define PM_HIBERNATION_PREPARE	0x0001 /* Going to hibernate */
@@ -339,40 +308,6 @@ static inline int is_hibernate_resume_dev(dev_t dev) { return 0; }
 
 extern struct mutex system_transition_mutex;
 
-#ifdef CONFIG_PM_SLEEP
-void save_processor_state(void);
-void restore_processor_state(void);
-
-/* kernel/power/main.c */
-extern int register_pm_notifier(struct notifier_block *nb);
-extern int unregister_pm_notifier(struct notifier_block *nb);
-extern void ksys_sync_helper(void);
-
-#define pm_notifier(fn, pri) {				\
-	static struct notifier_block fn##_nb =			\
-		{ .notifier_call = fn, .priority = pri };	\
-	register_pm_notifier(&fn##_nb);			\
-}
-
-/* drivers/base/power/wakeup.c */
-extern bool events_check_enabled;
-extern suspend_state_t pm_suspend_target_state;
-
-extern bool pm_wakeup_pending(void);
-extern void pm_system_wakeup(void);
-extern void pm_system_cancel_wakeup(void);
-extern void pm_wakeup_clear(unsigned int irq_number);
-extern void pm_system_irq_wakeup(unsigned int irq_number);
-extern unsigned int pm_wakeup_irq(void);
-extern bool pm_get_wakeup_count(unsigned int *count, bool block);
-extern bool pm_save_wakeup_count(unsigned int count);
-extern void pm_wakep_autosleep_enabled(bool set);
-extern void pm_print_active_wakeup_sources(void);
-
-extern void lock_system_sleep(void);
-extern void unlock_system_sleep(void);
-
-#else /* !CONFIG_PM_SLEEP */
 
 static inline int register_pm_notifier(struct notifier_block *nb)
 {
@@ -396,35 +331,7 @@ static inline void pm_system_irq_wakeup(unsigned int irq_number) {}
 static inline void lock_system_sleep(void) {}
 static inline void unlock_system_sleep(void) {}
 
-#endif /* !CONFIG_PM_SLEEP */
 
-#ifdef CONFIG_PM_SLEEP_DEBUG
-extern bool pm_print_times_enabled;
-extern bool pm_debug_messages_on;
-static inline int pm_dyn_debug_messages_on(void)
-{
-#ifdef CONFIG_DYNAMIC_DEBUG
-	return 1;
-#else
-	return 0;
-#endif
-}
-#ifndef pr_fmt
-#define pr_fmt(fmt) "PM: " fmt
-#endif
-#define __pm_pr_dbg(fmt, ...)					\
-	do {							\
-		if (pm_debug_messages_on)			\
-			printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__);	\
-		else if (pm_dyn_debug_messages_on())		\
-			pr_debug(fmt, ##__VA_ARGS__);	\
-	} while (0)
-#define __pm_deferred_pr_dbg(fmt, ...)				\
-	do {							\
-		if (pm_debug_messages_on)			\
-			printk_deferred(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__);	\
-	} while (0)
-#else
 #define pm_print_times_enabled	(false)
 #define pm_debug_messages_on	(false)
 
@@ -434,7 +341,6 @@ static inline int pm_dyn_debug_messages_on(void)
 	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
 #define __pm_deferred_pr_dbg(fmt, ...) \
 	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-#endif
 
 /**
  * pm_pr_dbg - print pm sleep debug messages
@@ -452,15 +358,8 @@ static inline int pm_dyn_debug_messages_on(void)
 #define pm_deferred_pr_dbg(fmt, ...) \
 	__pm_deferred_pr_dbg(fmt, ##__VA_ARGS__)
 
-#ifdef CONFIG_PM_AUTOSLEEP
-
-/* kernel/power/autosleep.c */
-void queue_up_suspend_work(void);
-
-#else /* !CONFIG_PM_AUTOSLEEP */
 
 static inline void queue_up_suspend_work(void) {}
 
-#endif /* !CONFIG_PM_AUTOSLEEP */
 
 #endif /* _LINUX_SUSPEND_H */

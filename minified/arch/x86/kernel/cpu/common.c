@@ -178,9 +178,6 @@ void __init setup_cpu_local_masks(void)
 
 static void default_init(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_X86_64
-	cpu_detect_cache_sizes(c);
-#else
 	/* Not much we can do here... */
 	/* Check if at least it has cpuid */
 	if (c->cpuid_level == -1) {
@@ -190,7 +187,6 @@ static void default_init(struct cpuinfo_x86 *c)
 		else if (c->x86 == 3)
 			strcpy(c->x86_model_id, "386");
 	}
-#endif
 }
 
 static const struct cpu_dev default_cpu = {
@@ -202,22 +198,6 @@ static const struct cpu_dev default_cpu = {
 static const struct cpu_dev *this_cpu = &default_cpu;
 
 DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
-#ifdef CONFIG_X86_64
-	/*
-	 * We need valid kernel segments for data and code in long mode too
-	 * IRET will check the segment types  kkeil 2000/10/28
-	 * Also sysret mandates a special GDT layout
-	 *
-	 * TLS descriptors are currently at a different place compared to i386.
-	 * Hopefully nobody expects them at a fixed place (Wine?)
-	 */
-	[GDT_ENTRY_KERNEL32_CS]		= GDT_ENTRY_INIT(0xc09b, 0, 0xfffff),
-	[GDT_ENTRY_KERNEL_CS]		= GDT_ENTRY_INIT(0xa09b, 0, 0xfffff),
-	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc093, 0, 0xfffff),
-	[GDT_ENTRY_DEFAULT_USER32_CS]	= GDT_ENTRY_INIT(0xc0fb, 0, 0xfffff),
-	[GDT_ENTRY_DEFAULT_USER_DS]	= GDT_ENTRY_INIT(0xc0f3, 0, 0xfffff),
-	[GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xa0fb, 0, 0xfffff),
-#else
 	[GDT_ENTRY_KERNEL_CS]		= GDT_ENTRY_INIT(0xc09a, 0, 0xfffff),
 	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
 	[GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xc0fa, 0, 0xfffff),
@@ -250,27 +230,9 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
 
 	[GDT_ENTRY_ESPFIX_SS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
 	[GDT_ENTRY_PERCPU]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
-#endif
 } };
 EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
 
-#ifdef CONFIG_X86_64
-static int __init x86_nopcid_setup(char *s)
-{
-	/* nopcid doesn't accept parameters */
-	if (s)
-		return -EINVAL;
-
-	/* do not emit a message if the feature is not present */
-	if (!boot_cpu_has(X86_FEATURE_PCID))
-		return 0;
-
-	setup_clear_cpu_cap(X86_FEATURE_PCID);
-	pr_info("nopcid: PCID feature disabled\n");
-	return 0;
-}
-early_param("nopcid", x86_nopcid_setup);
-#endif
 
 static int __init x86_noinvpcid_setup(char *s)
 {
@@ -537,54 +499,7 @@ static __always_inline void setup_pku(struct cpuinfo_x86 *c)
 	pkru_write_default();
 }
 
-#ifdef CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS
-static __init int setup_disable_pku(char *arg)
-{
-	/*
-	 * Do not clear the X86_FEATURE_PKU bit.  All of the
-	 * runtime checks are against OSPKE so clearing the
-	 * bit does nothing.
-	 *
-	 * This way, we will see "pku" in cpuinfo, but not
-	 * "ospke", which is exactly what we want.  It shows
-	 * that the CPU has PKU, but the OS has not enabled it.
-	 * This happens to be exactly how a system would look
-	 * if we disabled the config option.
-	 */
-	pr_info("x86: 'nopku' specified, disabling Memory Protection Keys\n");
-	pku_disabled = true;
-	return 1;
-}
-__setup("nopku", setup_disable_pku);
-#endif /* CONFIG_X86_64 */
 
-#ifdef CONFIG_X86_KERNEL_IBT
-
-__noendbr u64 ibt_save(void)
-{
-	u64 msr = 0;
-
-	if (cpu_feature_enabled(X86_FEATURE_IBT)) {
-		rdmsrl(MSR_IA32_S_CET, msr);
-		wrmsrl(MSR_IA32_S_CET, msr & ~CET_ENDBR_EN);
-	}
-
-	return msr;
-}
-
-__noendbr void ibt_restore(u64 save)
-{
-	u64 msr;
-
-	if (cpu_feature_enabled(X86_FEATURE_IBT)) {
-		rdmsrl(MSR_IA32_S_CET, msr);
-		msr &= ~CET_ENDBR_EN;
-		msr |= (save & CET_ENDBR_EN);
-		wrmsrl(MSR_IA32_S_CET, msr);
-	}
-}
-
-#endif
 
 static __always_inline void setup_cet(struct cpuinfo_x86 *c)
 {
@@ -786,10 +701,6 @@ void cpu_detect_cache_sizes(struct cpuinfo_x86 *c)
 	if (n >= 0x80000005) {
 		cpuid(0x80000005, &dummy, &ebx, &ecx, &edx);
 		c->x86_cache_size = (ecx>>24) + (edx>>24);
-#ifdef CONFIG_X86_64
-		/* On K8 L1 TLB is inclusive, so don't count it */
-		c->x86_tlbsize = 0;
-#endif
 	}
 
 	if (n < 0x80000006)	/* Some chips just has a large L1. */
@@ -798,9 +709,6 @@ void cpu_detect_cache_sizes(struct cpuinfo_x86 *c)
 	cpuid(0x80000006, &dummy, &ebx, &ecx, &edx);
 	l2size = ecx >> 16;
 
-#ifdef CONFIG_X86_64
-	c->x86_tlbsize += ((ebx >> 16) & 0xfff) + (ebx & 0xfff);
-#else
 	/* do processor-specific cache resizing */
 	if (this_cpu->legacy_cache_size)
 		l2size = this_cpu->legacy_cache_size(c, l2size);
@@ -811,7 +719,6 @@ void cpu_detect_cache_sizes(struct cpuinfo_x86 *c)
 
 	if (l2size == 0)
 		return;		/* Again, no L2 cache is possible */
-#endif
 
 	c->x86_cache_size = l2size;
 }
@@ -1346,11 +1253,7 @@ static void __init cpu_parse_early_param(void)
 	int arglen, taint = 0;
 
 	if (cmdline_find_option_bool(boot_command_line, "no387"))
-#ifdef CONFIG_MATH_EMULATION
-		setup_clear_cpu_cap(X86_FEATURE_FPU);
-#else
 		pr_err("Option 'no387' required CONFIG_MATH_EMULATION enabled.\n");
-#endif
 
 	if (cmdline_find_option_bool(boot_command_line, "nofxsr"))
 		setup_clear_cpu_cap(X86_FEATURE_FXSR);
@@ -1413,15 +1316,9 @@ static void __init cpu_parse_early_param(void)
  */
 static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 {
-#ifdef CONFIG_X86_64
-	c->x86_clflush_size = 64;
-	c->x86_phys_bits = 36;
-	c->x86_virt_bits = 48;
-#else
 	c->x86_clflush_size = 32;
 	c->x86_phys_bits = 32;
 	c->x86_virt_bits = 32;
-#endif
 	c->x86_cache_alignment = c->x86_clflush_size;
 
 	memset(&c->x86_capability, 0, sizeof(c->x86_capability));
@@ -1632,21 +1529,12 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	c->x86_max_cores = 1;
 	c->x86_coreid_bits = 0;
 	c->cu_id = 0xff;
-#ifdef CONFIG_X86_64
-	c->x86_clflush_size = 64;
-	c->x86_phys_bits = 36;
-	c->x86_virt_bits = 48;
-#else
 	c->cpuid_level = -1;	/* CPUID not detected */
 	c->x86_clflush_size = 32;
 	c->x86_phys_bits = 32;
 	c->x86_virt_bits = 32;
-#endif
 	c->x86_cache_alignment = c->x86_clflush_size;
 	memset(&c->x86_capability, 0, sizeof(c->x86_capability));
-#ifdef CONFIG_X86_VMX_FEATURE_NAMES
-	memset(&c->vmx_capability, 0, sizeof(c->vmx_capability));
-#endif
 
 	generic_identify(c);
 
@@ -1656,9 +1544,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	/* Clear/Set all flags overridden by options, after probe */
 	apply_forced_caps(c);
 
-#ifdef CONFIG_X86_64
-	c->apicid = apic->phys_pkg_id(c->initial_apicid, 0);
-#endif
 
 	/*
 	 * Vendor-specific initialization.  In this section we
@@ -1707,9 +1592,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 				c->x86, c->x86_model);
 	}
 
-#ifdef CONFIG_X86_64
-	detect_ht(c);
-#endif
 
 	x86_init_rdrand(c);
 	setup_pku(c);
@@ -1744,9 +1626,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 
 	select_idle_routine(c);
 
-#ifdef CONFIG_NUMA
-	numa_add_cpu(smp_processor_id());
-#endif
 }
 
 /*
@@ -1840,76 +1719,6 @@ static __init int setup_clearcpuid(char *arg)
 }
 __setup("clearcpuid=", setup_clearcpuid);
 
-#ifdef CONFIG_X86_64
-DEFINE_PER_CPU_FIRST(struct fixed_percpu_data,
-		     fixed_percpu_data) __aligned(PAGE_SIZE) __visible;
-EXPORT_PER_CPU_SYMBOL_GPL(fixed_percpu_data);
-
-/*
- * The following percpu variables are hot.  Align current_task to
- * cacheline size such that they fall in the same cacheline.
- */
-DEFINE_PER_CPU(struct task_struct *, current_task) ____cacheline_aligned =
-	&init_task;
-EXPORT_PER_CPU_SYMBOL(current_task);
-
-DEFINE_PER_CPU(void *, hardirq_stack_ptr);
-DEFINE_PER_CPU(bool, hardirq_stack_inuse);
-
-DEFINE_PER_CPU(int, __preempt_count) = INIT_PREEMPT_COUNT;
-EXPORT_PER_CPU_SYMBOL(__preempt_count);
-
-DEFINE_PER_CPU(unsigned long, cpu_current_top_of_stack) = TOP_OF_INIT_STACK;
-
-static void wrmsrl_cstar(unsigned long val)
-{
-	/*
-	 * Intel CPUs do not support 32-bit SYSCALL. Writing to MSR_CSTAR
-	 * is so far ignored by the CPU, but raises a #VE trap in a TDX
-	 * guest. Avoid the pointless write on all Intel CPUs.
-	 */
-	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
-		wrmsrl(MSR_CSTAR, val);
-}
-
-/* May not be marked __init: used by software suspend */
-void syscall_init(void)
-{
-	wrmsr(MSR_STAR, 0, (__USER32_CS << 16) | __KERNEL_CS);
-	wrmsrl(MSR_LSTAR, (unsigned long)entry_SYSCALL_64);
-
-#ifdef CONFIG_IA32_EMULATION
-	wrmsrl_cstar((unsigned long)entry_SYSCALL_compat);
-	/*
-	 * This only works on Intel CPUs.
-	 * On AMD CPUs these MSRs are 32-bit, CPU truncates MSR_IA32_SYSENTER_EIP.
-	 * This does not cause SYSENTER to jump to the wrong location, because
-	 * AMD doesn't allow SYSENTER in long mode (either 32- or 64-bit).
-	 */
-	wrmsrl_safe(MSR_IA32_SYSENTER_CS, (u64)__KERNEL_CS);
-	wrmsrl_safe(MSR_IA32_SYSENTER_ESP,
-		    (unsigned long)(cpu_entry_stack(smp_processor_id()) + 1));
-	wrmsrl_safe(MSR_IA32_SYSENTER_EIP, (u64)entry_SYSENTER_compat);
-#else
-	wrmsrl_cstar((unsigned long)ignore_sysret);
-	wrmsrl_safe(MSR_IA32_SYSENTER_CS, (u64)GDT_ENTRY_INVALID_SEG);
-	wrmsrl_safe(MSR_IA32_SYSENTER_ESP, 0ULL);
-	wrmsrl_safe(MSR_IA32_SYSENTER_EIP, 0ULL);
-#endif
-
-	/*
-	 * Flags to clear on syscall; clear as much as possible
-	 * to minimize user space-kernel interference.
-	 */
-	wrmsrl(MSR_SYSCALL_MASK,
-	       X86_EFLAGS_CF|X86_EFLAGS_PF|X86_EFLAGS_AF|
-	       X86_EFLAGS_ZF|X86_EFLAGS_SF|X86_EFLAGS_TF|
-	       X86_EFLAGS_IF|X86_EFLAGS_DF|X86_EFLAGS_OF|
-	       X86_EFLAGS_IOPL|X86_EFLAGS_NT|X86_EFLAGS_RF|
-	       X86_EFLAGS_AC|X86_EFLAGS_ID);
-}
-
-#else	/* CONFIG_X86_64 */
 
 DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;
 EXPORT_PER_CPU_SYMBOL(current_task);
@@ -1926,7 +1735,6 @@ DEFINE_PER_CPU(unsigned long, cpu_current_top_of_stack) =
 EXPORT_PER_CPU_SYMBOL(cpu_current_top_of_stack);
 
 
-#endif	/* CONFIG_X86_64 */
 
 /*
  * Clear all 6 debug registers:
@@ -1950,46 +1758,6 @@ static void wait_for_master_cpu(int cpu)
 {
 }
 
-#ifdef CONFIG_X86_64
-static inline void setup_getcpu(int cpu)
-{
-	unsigned long cpudata = vdso_encode_cpunode(cpu, early_cpu_to_node(cpu));
-	struct desc_struct d = { };
-
-	if (boot_cpu_has(X86_FEATURE_RDTSCP) || boot_cpu_has(X86_FEATURE_RDPID))
-		wrmsr(MSR_TSC_AUX, cpudata, 0);
-
-	/* Store CPU and node number in limit. */
-	d.limit0 = cpudata;
-	d.limit1 = cpudata >> 16;
-
-	d.type = 5;		/* RO data, expand down, accessed */
-	d.dpl = 3;		/* Visible to user code */
-	d.s = 1;		/* Not a system segment */
-	d.p = 1;		/* Present */
-	d.d = 1;		/* 32-bit */
-
-	write_gdt_entry(get_cpu_gdt_rw(cpu), GDT_ENTRY_CPUNODE, &d, DESCTYPE_S);
-}
-
-static inline void ucode_cpu_init(int cpu)
-{
-	if (cpu)
-		load_ucode_ap();
-}
-
-static inline void tss_setup_ist(struct tss_struct *tss)
-{
-	/* Set up the per-CPU TSS IST stacks */
-	tss->x86_tss.ist[IST_INDEX_DF] = __this_cpu_ist_top_va(DF);
-	tss->x86_tss.ist[IST_INDEX_NMI] = __this_cpu_ist_top_va(NMI);
-	tss->x86_tss.ist[IST_INDEX_DB] = __this_cpu_ist_top_va(DB);
-	tss->x86_tss.ist[IST_INDEX_MCE] = __this_cpu_ist_top_va(MCE);
-	/* Only mapped when SEV-ES is active */
-	tss->x86_tss.ist[IST_INDEX_VC] = __this_cpu_ist_top_va(VC);
-}
-
-#else /* CONFIG_X86_64 */
 
 static inline void setup_getcpu(int cpu) { }
 
@@ -2000,7 +1768,6 @@ static inline void ucode_cpu_init(int cpu)
 
 static inline void tss_setup_ist(struct tss_struct *tss) { }
 
-#endif /* !CONFIG_X86_64 */
 
 static inline void tss_setup_io_bitmap(struct tss_struct *tss)
 {
@@ -2049,11 +1816,6 @@ void cpu_init(void)
 
 	ucode_cpu_init(cpu);
 
-#ifdef CONFIG_NUMA
-	if (this_cpu_read(numa_node) == 0 &&
-	    early_cpu_to_node(cpu) != NUMA_NO_NODE)
-		set_numa_node(early_cpu_to_node(cpu));
-#endif
 	pr_debug("Initializing CPU#%d\n", cpu);
 
 	if (IS_ENABLED(CONFIG_X86_64) || cpu_feature_enabled(X86_FEATURE_VME) ||
@@ -2106,37 +1868,6 @@ void cpu_init(void)
 }
 
 
-#ifdef CONFIG_MICROCODE_LATE_LOADING
-/*
- * The microcode loader calls this upon late microcode load to recheck features,
- * only when microcode has been updated. Caller holds microcode_mutex and CPU
- * hotplug lock.
- */
-void microcode_check(void)
-{
-	struct cpuinfo_x86 info;
-
-	perf_check_microcode();
-
-	/* Reload CPUID max function as it might've changed. */
-	info.cpuid_level = cpuid_eax(0);
-
-	/*
-	 * Copy all capability leafs to pick up the synthetic ones so that
-	 * memcmp() below doesn't fail on that. The ones coming from CPUID will
-	 * get overwritten in get_cpu_cap().
-	 */
-	memcpy(&info.x86_capability, &boot_cpu_data.x86_capability, sizeof(info.x86_capability));
-
-	get_cpu_cap(&info);
-
-	if (!memcmp(&info.x86_capability, &boot_cpu_data.x86_capability, sizeof(info.x86_capability)))
-		return;
-
-	pr_warn("x86/CPU: CPU features have changed after loading microcode, but might not take effect.\n");
-	pr_warn("x86/CPU: Please consider either early loading through initrd/built-in or a potential BIOS update.\n");
-}
-#endif
 
 /*
  * Invoked from core CPU hotplug code after hotplug operations

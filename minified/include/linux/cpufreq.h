@@ -233,17 +233,10 @@ static inline bool cpufreq_supports_freq_invariance(void)
 }
 static inline void disable_cpufreq(void) { }
 
-#ifdef CONFIG_CPU_FREQ_STAT
-void cpufreq_stats_create_table(struct cpufreq_policy *policy);
-void cpufreq_stats_free_table(struct cpufreq_policy *policy);
-void cpufreq_stats_record_transition(struct cpufreq_policy *policy,
-				     unsigned int new_freq);
-#else
 static inline void cpufreq_stats_create_table(struct cpufreq_policy *policy) { }
 static inline void cpufreq_stats_free_table(struct cpufreq_policy *policy) { }
 static inline void cpufreq_stats_record_transition(struct cpufreq_policy *policy,
 						   unsigned int new_freq) { }
-#endif /* CONFIG_CPU_FREQ_STAT */
 
 /*********************************************************************
  *                      CPUFREQ DRIVER INTERFACE                     *
@@ -776,13 +769,8 @@ static inline int of_perf_domain_get_sharing_cpumask(int pcpu, const char *list_
 	return -EOPNOTSUPP;
 }
 
-#if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
-void sched_cpufreq_governor_change(struct cpufreq_policy *policy,
-			struct cpufreq_governor *old_gov);
-#else
 static inline void sched_cpufreq_governor_change(struct cpufreq_policy *policy,
 			struct cpufreq_governor *old_gov) { }
-#endif
 
 extern unsigned int arch_freq_get_on_cpu(int cpu);
 

@@ -207,22 +207,3 @@ static int __init pci_iommu_init(void)
 /* Must execute after PCI subsystem */
 rootfs_initcall(pci_iommu_init);
 
-#ifdef CONFIG_PCI
-/* Many VIA bridges seem to corrupt data for DAC. Disable it here */
-
-static int via_no_dac_cb(struct pci_dev *pdev, void *data)
-{
-	pdev->dev.bus_dma_limit = DMA_BIT_MASK(32);
-	return 0;
-}
-
-static void via_no_dac(struct pci_dev *dev)
-{
-	if (!disable_dac_quirk) {
-		dev_info(&dev->dev, "disabling DAC on VIA PCI bridge\n");
-		pci_walk_bus(dev->subordinate, via_no_dac_cb, NULL);
-	}
-}
-DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_VENDOR_ID_VIA, PCI_ANY_ID,
-				PCI_CLASS_BRIDGE_PCI, 8, via_no_dac);
-#endif

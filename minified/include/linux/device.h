@@ -580,9 +580,6 @@ struct device {
 	struct em_perf_domain	*em_pd;
 #endif
 
-#ifdef CONFIG_PINCTRL
-	struct dev_pin_info	*pins;
-#endif
 	struct dev_msi_info	msi;
 #ifdef CONFIG_DMA_OPS
 	const struct dma_map_ops *dma_ops;

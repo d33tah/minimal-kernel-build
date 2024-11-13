@@ -106,19 +106,12 @@ int check_irq_resend(struct irq_desc *desc, bool inject);
 bool irq_wait_for_poll(struct irq_desc *desc);
 void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action);
 
-#ifdef CONFIG_PROC_FS
-extern void register_irq_proc(unsigned int irq, struct irq_desc *desc);
-extern void unregister_irq_proc(unsigned int irq, struct irq_desc *desc);
-extern void register_handler_proc(unsigned int irq, struct irqaction *action);
-extern void unregister_handler_proc(unsigned int irq, struct irqaction *action);
-#else
 static inline void register_irq_proc(unsigned int irq, struct irq_desc *desc) { }
 static inline void unregister_irq_proc(unsigned int irq, struct irq_desc *desc) { }
 static inline void register_handler_proc(unsigned int irq,
 					 struct irqaction *action) { }
 static inline void unregister_handler_proc(unsigned int irq,
 					   struct irqaction *action) { }
-#endif
 
 extern bool irq_can_set_affinity_usr(unsigned int irq);
 

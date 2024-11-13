@@ -918,15 +918,6 @@ static inline bool sock_flag(const struct sock *sk, enum sock_flags flag)
 	return test_bit(flag, &sk->sk_flags);
 }
 
-#ifdef CONFIG_NET
-DECLARE_STATIC_KEY_FALSE(memalloc_socks_key);
-static inline int sk_memalloc_socks(void)
-{
-	return static_branch_unlikely(&memalloc_socks_key);
-}
-
-void __receive_sock(struct file *file);
-#else
 
 static inline int sk_memalloc_socks(void)
 {
@@ -935,7 +926,6 @@ static inline int sk_memalloc_socks(void)
 
 static inline void __receive_sock(struct file *file)
 { }
-#endif
 
 static inline gfp_t sk_gfp_mask(const struct sock *sk, gfp_t gfp_mask)
 {
@@ -1215,9 +1205,6 @@ struct proto {
 	void			(*put_port)(struct sock *sk);
 
 	/* Keeping track of sockets in use */
-#ifdef CONFIG_PROC_FS
-	unsigned int		inuse_idx;
-#endif
 
 #if IS_ENABLED(CONFIG_MPTCP)
 	int			(*forward_alloc_get)(const struct sock *sk);
@@ -1430,27 +1417,6 @@ proto_memory_pressure(struct proto *prot)
 }
 
 
-#ifdef CONFIG_PROC_FS
-#define PROTO_INUSE_NR	64	/* should be enough for the first time */
-struct prot_inuse {
-	int all;
-	int val[PROTO_INUSE_NR];
-};
-
-static inline void sock_prot_inuse_add(const struct net *net,
-				       const struct proto *prot, int val)
-{
-	this_cpu_add(net->core.prot_inuse->val[prot->inuse_idx], val);
-}
-
-static inline void sock_inuse_add(const struct net *net, int val)
-{
-	this_cpu_add(net->core.prot_inuse->all, val);
-}
-
-int sock_prot_inuse_get(struct net *net, struct proto *proto);
-int sock_inuse_get(struct net *net);
-#else
 static inline void sock_prot_inuse_add(const struct net *net,
 				       const struct proto *prot, int val)
 {
@@ -1459,7 +1425,6 @@ static inline void sock_prot_inuse_add(const struct net *net,
 static inline void sock_inuse_add(const struct net *net, int val)
 {
 }
-#endif
 
 
 /* With per-bucket locks this operation is not-atomic, so that

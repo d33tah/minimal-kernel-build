@@ -255,26 +255,7 @@ extern typeof(name) __mod_##type##__##name##_device_table		\
  * local headers in "srcversion".
  */
 
-#if defined(MODULE) || !defined(CONFIG_SYSFS)
 #define MODULE_VERSION(_version) MODULE_INFO(version, _version)
-#else
-#define MODULE_VERSION(_version)					\
-	MODULE_INFO(version, _version);					\
-	static struct module_version_attribute __modver_attr		\
-		__used __section("__modver")				\
-		__aligned(__alignof__(struct module_version_attribute)) \
-		= {							\
-			.mattr	= {					\
-				.attr	= {				\
-					.name	= "version",		\
-					.mode	= S_IRUGO,		\
-				},					\
-				.show	= __modver_version_show,	\
-			},						\
-			.module_name	= KBUILD_MODNAME,		\
-			.version	= _version,			\
-		}
-#endif
 
 /* Optional firmware file (or files) needed by the module
  * format is simply firmware file name.  Multiple firmware
@@ -421,11 +402,6 @@ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
 }
 
 
-#ifdef CONFIG_SYSFS
-extern struct kset *module_kset;
-extern struct kobj_type module_ktype;
-extern int module_sysfs_initialized;
-#endif /* CONFIG_SYSFS */
 
 #define symbol_request(x) try_then_request_module(symbol_get(x), "symbol:" #x)
 

@@ -765,9 +765,6 @@ bool icmp_global_allow(void);
 extern int sysctl_icmp_msgs_per_sec;
 extern int sysctl_icmp_msgs_burst;
 
-#ifdef CONFIG_PROC_FS
-int ip_misc_proc_init(void);
-#endif
 
 int rtm_getroute_parse_ip_proto(struct nlattr *attr, u8 *ip_proto, u8 family,
 				struct netlink_ext_ack *extack);

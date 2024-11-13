@@ -579,12 +579,7 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 		const struct attribute_group **attr_grp);
 void tty_unregister_device(struct tty_driver *driver, unsigned index);
 
-#ifdef CONFIG_PROC_FS
-void proc_tty_register_driver(struct tty_driver *);
-void proc_tty_unregister_driver(struct tty_driver *);
-#else
 static inline void proc_tty_register_driver(struct tty_driver *d) {}
 static inline void proc_tty_unregister_driver(struct tty_driver *d) {}
-#endif
 
 #endif /* #ifdef _LINUX_TTY_DRIVER_H */

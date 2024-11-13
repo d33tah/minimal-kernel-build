@@ -49,26 +49,6 @@ void *devm_memremap(struct device *dev, resource_size_t offset,
 		size_t size, unsigned long flags);
 void devm_memunmap(struct device *dev, void *addr);
 
-#ifdef CONFIG_PCI
-/*
- * The PCI specifications (Rev 3.0, 3.2.5 "Transaction Ordering and
- * Posting") mandate non-posted configuration transactions. This default
- * implementation attempts to use the ioremap_np() API to provide this
- * on arches that support it, and falls back to ioremap() on those that
- * don't. Overriding this function is deprecated; arches that properly
- * support non-posted accesses should implement ioremap_np() instead, which
- * this default implementation can then use to return mappings compliant with
- * the PCI specification.
- */
-#ifndef pci_remap_cfgspace
-#define pci_remap_cfgspace pci_remap_cfgspace
-static inline void __iomem *pci_remap_cfgspace(phys_addr_t offset,
-					       size_t size)
-{
-	return ioremap_np(offset, size) ?: ioremap(offset, size);
-}
-#endif
-#endif
 
 /*
  * Some systems do not have legacy ISA devices.

@@ -10,9 +10,6 @@ struct ctl_table_header;
 struct netns_sctp {
 	DEFINE_SNMP_STAT(struct sctp_mib, sctp_statistics);
 
-#ifdef CONFIG_PROC_FS
-	struct proc_dir_entry *proc_net_sctp;
-#endif
 #ifdef CONFIG_SYSCTL
 	struct ctl_table_header *sysctl_header;
 #endif

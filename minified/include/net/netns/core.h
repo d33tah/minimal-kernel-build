@@ -12,9 +12,6 @@ struct netns_core {
 	int	sysctl_somaxconn;
 	u8	sysctl_txrehash;
 
-#ifdef CONFIG_PROC_FS
-	struct prot_inuse __percpu *prot_inuse;
-#endif
 };
 
 #endif

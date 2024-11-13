@@ -372,12 +372,3 @@ void ioport_unmap(void __iomem *addr)
 EXPORT_SYMBOL(ioport_map);
 EXPORT_SYMBOL(ioport_unmap);
 
-#ifdef CONFIG_PCI
-/* Hide the details if this is a MMIO or PIO address space and just do what
- * you expect in the correct way. */
-void pci_iounmap(struct pci_dev *dev, void __iomem * addr)
-{
-	IO_COND(addr, /* nothing */, iounmap(addr));
-}
-EXPORT_SYMBOL(pci_iounmap);
-#endif /* CONFIG_PCI */

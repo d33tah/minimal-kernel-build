@@ -812,10 +812,6 @@ struct rq {
 	unsigned int		ttwu_local;
 #endif
 
-#ifdef CONFIG_CPU_IDLE
-	/* Must be inspected within a rcu lock section */
-	struct cpuidle_state	*idle_state;
-#endif
 
 	unsigned int		push_busy;
 	struct cpu_stop_work	push_work;
@@ -1750,20 +1746,6 @@ extern struct task_struct *pick_next_task_idle(struct rq *rq);
 #define SCA_USER		0x08
 
 
-#ifdef CONFIG_CPU_IDLE
-static inline void idle_set_state(struct rq *rq,
-				  struct cpuidle_state *idle_state)
-{
-	rq->idle_state = idle_state;
-}
-
-static inline struct cpuidle_state *idle_get_state(struct rq *rq)
-{
-	SCHED_WARN_ON(!rcu_read_lock_held());
-
-	return rq->idle_state;
-}
-#else
 static inline void idle_set_state(struct rq *rq,
 				  struct cpuidle_state *idle_state)
 {
@@ -1773,7 +1755,6 @@ static inline struct cpuidle_state *idle_get_state(struct rq *rq)
 {
 	return NULL;
 }
-#endif
 
 extern void schedule_idle(void);
 
@@ -2065,43 +2046,7 @@ static inline void nohz_balance_exit_idle(struct rq *rq) { }
 static inline void nohz_run_idle_balance(int cpu) { }
 
 
-#ifdef CONFIG_CPU_FREQ
-DECLARE_PER_CPU(struct update_util_data __rcu *, cpufreq_update_util_data);
-
-/**
- * cpufreq_update_util - Take a note about CPU utilization changes.
- * @rq: Runqueue to carry out the update for.
- * @flags: Update reason flags.
- *
- * This function is called by the scheduler on the CPU whose utilization is
- * being updated.
- *
- * It can only be called from RCU-sched read-side critical sections.
- *
- * The way cpufreq is currently arranged requires it to evaluate the CPU
- * performance state (frequency/voltage) on a regular basis to prevent it from
- * being stuck in a completely inadequate performance level for too long.
- * That is not guaranteed to happen if the updates are only triggered from CFS
- * and DL, though, because they may not be coming in if only RT tasks are
- * active all the time (or there are RT tasks only).
- *
- * As a workaround for that issue, this function is called periodically by the
- * RT sched class to trigger extra cpufreq updates to prevent it from stalling,
- * but that really is a band-aid.  Going forward it should be replaced with
- * solutions targeted more specifically at RT tasks.
- */
-static inline void cpufreq_update_util(struct rq *rq, unsigned int flags)
-{
-	struct update_util_data *data;
-
-	data = rcu_dereference_sched(*per_cpu_ptr(&cpufreq_update_util_data,
-						  cpu_of(rq)));
-	if (data)
-		data->func(data, rq_clock(rq), flags);
-}
-#else
 static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
-#endif /* CONFIG_CPU_FREQ */
 
 #ifdef arch_scale_freq_capacity
 # ifndef arch_scale_freq_invariant

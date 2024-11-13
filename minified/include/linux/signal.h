@@ -466,10 +466,6 @@ int __save_altstack(stack_t __user *, unsigned long);
 
 bool sigaltstack_size_valid(size_t ss_size);
 
-#ifdef CONFIG_PROC_FS
-struct seq_file;
-extern void render_sigset_t(struct seq_file *, const char *, sigset_t *);
-#endif
 
 #ifndef arch_untagged_si_addr
 /*

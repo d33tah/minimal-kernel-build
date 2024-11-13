@@ -63,39 +63,6 @@ static DEFINE_MUTEX(misc_mtx);
 #define DYNAMIC_MINORS 128 /* like dynamic majors */
 static DECLARE_BITMAP(misc_minors, DYNAMIC_MINORS);
 
-#ifdef CONFIG_PROC_FS
-static void *misc_seq_start(struct seq_file *seq, loff_t *pos)
-{
-	mutex_lock(&misc_mtx);
-	return seq_list_start(&misc_list, *pos);
-}
-
-static void *misc_seq_next(struct seq_file *seq, void *v, loff_t *pos)
-{
-	return seq_list_next(v, &misc_list, pos);
-}
-
-static void misc_seq_stop(struct seq_file *seq, void *v)
-{
-	mutex_unlock(&misc_mtx);
-}
-
-static int misc_seq_show(struct seq_file *seq, void *v)
-{
-	const struct miscdevice *p = list_entry(v, struct miscdevice, list);
-
-	seq_printf(seq, "%3i %s\n", p->minor, p->name ? p->name : "");
-	return 0;
-}
-
-
-static const struct seq_operations misc_seq_ops = {
-	.start = misc_seq_start,
-	.next  = misc_seq_next,
-	.stop  = misc_seq_stop,
-	.show  = misc_seq_show,
-};
-#endif
 
 static int misc_open(struct inode *inode, struct file *file)
 {

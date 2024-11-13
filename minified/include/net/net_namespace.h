@@ -312,17 +312,11 @@ static inline int check_net(const struct net *net)
 static inline void netns_tracker_alloc(struct net *net,
 				       netns_tracker *tracker, gfp_t gfp)
 {
-#ifdef CONFIG_NET_NS_REFCNT_TRACKER
-	ref_tracker_alloc(&net->refcnt_tracker, tracker, gfp);
-#endif
 }
 
 static inline void netns_tracker_free(struct net *net,
 				      netns_tracker *tracker)
 {
-#ifdef CONFIG_NET_NS_REFCNT_TRACKER
-       ref_tracker_free(&net->refcnt_tracker, tracker);
-#endif
 }
 
 static inline struct net *get_net_track(struct net *net,
@@ -510,10 +504,6 @@ static inline void fnhe_genid_bump(struct net *net)
 	atomic_inc(&net->fnhe_genid);
 }
 
-#ifdef CONFIG_NET
-void net_ns_init(void);
-#else
 static inline void net_ns_init(void) {}
-#endif
 
 #endif /* __NET_NET_NAMESPACE_H */

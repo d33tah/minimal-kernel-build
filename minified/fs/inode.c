@@ -1744,31 +1744,6 @@ retry:
 }
 EXPORT_SYMBOL(iput);
 
-#ifdef CONFIG_BLOCK
-/**
- *	bmap	- find a block number in a file
- *	@inode:  inode owning the block number being requested
- *	@block: pointer containing the block to find
- *
- *	Replaces the value in ``*block`` with the block number on the device holding
- *	corresponding to the requested block number in the file.
- *	That is, asked for block 4 of inode 1 the function will replace the
- *	4 in ``*block``, with disk block relative to the disk start that holds that
- *	block of the file.
- *
- *	Returns -EINVAL in case of error, 0 otherwise. If mapping falls into a
- *	hole, returns 0 and ``*block`` is also set to 0.
- */
-int bmap(struct inode *inode, sector_t *block)
-{
-	if (!inode->i_mapping->a_ops->bmap)
-		return -EINVAL;
-
-	*block = inode->i_mapping->a_ops->bmap(inode->i_mapping, *block);
-	return 0;
-}
-EXPORT_SYMBOL(bmap);
-#endif
 
 /*
  * With relative atime, only update atime if the previous atime is

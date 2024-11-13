@@ -228,27 +228,11 @@ bus_find_next_device(struct bus_type *bus,struct device *cur)
 	return bus_find_device(bus, cur, NULL, device_match_any);
 }
 
-#ifdef CONFIG_ACPI
-struct acpi_device;
-
-/**
- * bus_find_device_by_acpi_dev : device iterator for locating a particular device
- * matching the ACPI COMPANION device.
- * @bus: bus type
- * @adev: ACPI COMPANION device to match.
- */
-static inline struct device *
-bus_find_device_by_acpi_dev(struct bus_type *bus, const struct acpi_device *adev)
-{
-	return bus_find_device(bus, NULL, adev, device_match_acpi_dev);
-}
-#else
 static inline struct device *
 bus_find_device_by_acpi_dev(struct bus_type *bus, const void *adev)
 {
 	return NULL;
 }
-#endif
 
 struct device *subsys_find_device_by_id(struct bus_type *bus, unsigned int id,
 					struct device *hint);

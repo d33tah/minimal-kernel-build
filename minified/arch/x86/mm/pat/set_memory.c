@@ -79,50 +79,7 @@ static inline pgprot_t cachemode2pgprot(enum page_cache_mode pcm)
 	return __pgprot(cachemode2protval(pcm));
 }
 
-#ifdef CONFIG_PROC_FS
-static unsigned long direct_pages_count[PG_LEVEL_NUM];
-
-void update_page_count(int level, unsigned long pages)
-{
-	/* Protect against CPA */
-	spin_lock(&pgd_lock);
-	direct_pages_count[level] += pages;
-	spin_unlock(&pgd_lock);
-}
-
-static void split_page_count(int level)
-{
-	if (direct_pages_count[level] == 0)
-		return;
-
-	direct_pages_count[level]--;
-	if (system_state == SYSTEM_RUNNING) {
-		if (level == PG_LEVEL_2M)
-			count_vm_event(DIRECT_MAP_LEVEL2_SPLIT);
-		else if (level == PG_LEVEL_1G)
-			count_vm_event(DIRECT_MAP_LEVEL3_SPLIT);
-	}
-	direct_pages_count[level - 1] += PTRS_PER_PTE;
-}
-
-void arch_report_meminfo(struct seq_file *m)
-{
-	seq_printf(m, "DirectMap4k:    %8lu kB\n",
-			direct_pages_count[PG_LEVEL_4K] << 2);
-#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
-	seq_printf(m, "DirectMap2M:    %8lu kB\n",
-			direct_pages_count[PG_LEVEL_2M] << 11);
-#else
-	seq_printf(m, "DirectMap4M:    %8lu kB\n",
-			direct_pages_count[PG_LEVEL_2M] << 12);
-#endif
-	if (direct_gbpages)
-		seq_printf(m, "DirectMap1G:    %8lu kB\n",
-			direct_pages_count[PG_LEVEL_1G] << 20);
-}
-#else
 static inline void split_page_count(int level) { }
-#endif
 
 #ifdef CONFIG_X86_CPA_STATISTICS
 

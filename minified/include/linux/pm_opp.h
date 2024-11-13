@@ -465,27 +465,6 @@ static inline int dev_pm_opp_sync_regulators(struct device *dev)
 
 #endif		/* CONFIG_PM_OPP */
 
-#if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
-int dev_pm_opp_of_add_table(struct device *dev);
-int dev_pm_opp_of_add_table_indexed(struct device *dev, int index);
-int devm_pm_opp_of_add_table_indexed(struct device *dev, int index);
-int dev_pm_opp_of_add_table_noclk(struct device *dev, int index);
-int devm_pm_opp_of_add_table_noclk(struct device *dev, int index);
-void dev_pm_opp_of_remove_table(struct device *dev);
-int devm_pm_opp_of_add_table(struct device *dev);
-int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask);
-void dev_pm_opp_of_cpumask_remove_table(const struct cpumask *cpumask);
-int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
-struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
-struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
-int of_get_required_opp_performance_state(struct device_node *np, int index);
-int dev_pm_opp_of_find_icc_paths(struct device *dev, struct opp_table *opp_table);
-int dev_pm_opp_of_register_em(struct device *dev, struct cpumask *cpus);
-static inline void dev_pm_opp_of_unregister_em(struct device *dev)
-{
-	em_dev_unregister_perf_domain(dev);
-}
-#else
 static inline int dev_pm_opp_of_add_table(struct device *dev)
 {
 	return -EOPNOTSUPP;
@@ -563,6 +542,5 @@ static inline int dev_pm_opp_of_find_icc_paths(struct device *dev, struct opp_ta
 {
 	return -EOPNOTSUPP;
 }
-#endif
 
 #endif		/* __LINUX_OPP_H__ */

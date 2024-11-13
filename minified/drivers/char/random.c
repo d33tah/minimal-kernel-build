@@ -1068,31 +1068,6 @@ void add_input_randomness(unsigned int type, unsigned int code, unsigned int val
 }
 EXPORT_SYMBOL_GPL(add_input_randomness);
 
-#ifdef CONFIG_BLOCK
-void add_disk_randomness(struct gendisk *disk)
-{
-	if (!disk || !disk->random)
-		return;
-	/* First major is 1, so we get >= 0x200 here. */
-	add_timer_randomness(disk->random, 0x100 + disk_devt(disk));
-}
-EXPORT_SYMBOL_GPL(add_disk_randomness);
-
-void __cold rand_initialize_disk(struct gendisk *disk)
-{
-	struct timer_rand_state *state;
-
-	/*
-	 * If kzalloc returns null, we just won't use that entropy
-	 * source.
-	 */
-	state = kzalloc(sizeof(struct timer_rand_state), GFP_KERNEL);
-	if (state) {
-		state->last_time = INITIAL_JIFFIES;
-		disk->random = state;
-	}
-}
-#endif
 
 struct entropy_timer_state {
 	unsigned long entropy;

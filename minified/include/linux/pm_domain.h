@@ -235,9 +235,6 @@ void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next);
 
 extern struct dev_power_governor simple_qos_governor;
 extern struct dev_power_governor pm_domain_always_on_gov;
-#ifdef CONFIG_CPU_IDLE
-extern struct dev_power_governor pm_domain_cpu_gov;
-#endif
 #else
 
 static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)

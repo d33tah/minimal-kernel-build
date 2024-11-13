@@ -85,9 +85,6 @@ struct node {
 	struct device	dev;
 	struct list_head access_list;
 
-#if defined(CONFIG_MEMORY_HOTPLUG) && defined(CONFIG_HUGETLBFS)
-	struct work_struct	node_work;
-#endif
 #ifdef CONFIG_HMEM_REPORTING
 	struct list_head cache_attrs;
 	struct device *cache_dev;
@@ -145,10 +142,6 @@ extern int register_memory_node_under_compute_node(unsigned int mem_nid,
 						   unsigned int cpu_nid,
 						   unsigned access);
 
-#ifdef CONFIG_HUGETLBFS
-extern void register_hugetlbfs_with_node(node_registration_func_t doregister,
-					 node_registration_func_t unregister);
-#endif
 #else
 static inline void node_dev_init(void)
 {

@@ -20,11 +20,6 @@ struct pipe_inode_info;
 /*
  * block/bdev.c
  */
-#ifdef CONFIG_BLOCK
-extern void __init bdev_cache_init(void);
-
-void emergency_thaw_bdev(struct super_block *sb);
-#else
 static inline void bdev_cache_init(void)
 {
 }
@@ -32,7 +27,6 @@ static inline int emergency_thaw_bdev(struct super_block *sb)
 {
 	return 0;
 }
-#endif /* CONFIG_BLOCK */
 
 /*
  * buffer.c

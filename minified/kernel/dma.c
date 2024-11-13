@@ -112,37 +112,6 @@ void free_dma(unsigned int dmanr)
 
 #endif
 
-#ifdef CONFIG_PROC_FS
-
-#ifdef MAX_DMA_CHANNELS
-static int proc_dma_show(struct seq_file *m, void *v)
-{
-	int i;
-
-	for (i = 0 ; i < MAX_DMA_CHANNELS ; i++) {
-		if (dma_chan_busy[i].lock) {
-			seq_printf(m, "%2d: %s\n", i,
-				   dma_chan_busy[i].device_id);
-		}
-	}
-	return 0;
-}
-#else
-static int proc_dma_show(struct seq_file *m, void *v)
-{
-	seq_puts(m, "No DMA\n");
-	return 0;
-}
-#endif /* MAX_DMA_CHANNELS */
-
-static int __init proc_dma_init(void)
-{
-	proc_create_single("dma", 0, NULL, proc_dma_show);
-	return 0;
-}
-
-__initcall(proc_dma_init);
-#endif
 
 EXPORT_SYMBOL(request_dma);
 EXPORT_SYMBOL(free_dma);

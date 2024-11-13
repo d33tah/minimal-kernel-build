@@ -578,10 +578,6 @@ static inline void fib_info_put(struct fib_info *fi)
 		free_fib_info(fi);
 }
 
-#ifdef CONFIG_PROC_FS
-int __net_init fib_proc_init(struct net *net);
-void __net_exit fib_proc_exit(struct net *net);
-#else
 static inline int fib_proc_init(struct net *net)
 {
 	return 0;
@@ -589,7 +585,6 @@ static inline int fib_proc_init(struct net *net)
 static inline void fib_proc_exit(struct net *net)
 {
 }
-#endif
 
 u32 ip_mtu_from_fib_result(struct fib_result *res, __be32 daddr);
 

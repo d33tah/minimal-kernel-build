@@ -89,101 +89,6 @@ struct clk_bulk_data {
 	struct clk		*clk;
 };
 
-#ifdef CONFIG_COMMON_CLK
-
-/**
- * clk_notifier_register - register a clock rate-change notifier callback
- * @clk: clock whose rate we are interested in
- * @nb: notifier block with callback function pointer
- *
- * ProTip: debugging across notifier chains can be frustrating. Make sure that
- * your notifier callback function prints a nice big warning in case of
- * failure.
- */
-int clk_notifier_register(struct clk *clk, struct notifier_block *nb);
-
-/**
- * clk_notifier_unregister - unregister a clock rate-change notifier callback
- * @clk: clock whose rate we are no longer interested in
- * @nb: notifier block which will be unregistered
- */
-int clk_notifier_unregister(struct clk *clk, struct notifier_block *nb);
-
-/**
- * devm_clk_notifier_register - register a managed rate-change notifier callback
- * @dev: device for clock "consumer"
- * @clk: clock whose rate we are interested in
- * @nb: notifier block with callback function pointer
- *
- * Returns 0 on success, -EERROR otherwise
- */
-int devm_clk_notifier_register(struct device *dev, struct clk *clk,
-			       struct notifier_block *nb);
-
-/**
- * clk_get_accuracy - obtain the clock accuracy in ppb (parts per billion)
- *		      for a clock source.
- * @clk: clock source
- *
- * This gets the clock source accuracy expressed in ppb.
- * A perfect clock returns 0.
- */
-long clk_get_accuracy(struct clk *clk);
-
-/**
- * clk_set_phase - adjust the phase shift of a clock signal
- * @clk: clock signal source
- * @degrees: number of degrees the signal is shifted
- *
- * Shifts the phase of a clock signal by the specified degrees. Returns 0 on
- * success, -EERROR otherwise.
- */
-int clk_set_phase(struct clk *clk, int degrees);
-
-/**
- * clk_get_phase - return the phase shift of a clock signal
- * @clk: clock signal source
- *
- * Returns the phase shift of a clock node in degrees, otherwise returns
- * -EERROR.
- */
-int clk_get_phase(struct clk *clk);
-
-/**
- * clk_set_duty_cycle - adjust the duty cycle ratio of a clock signal
- * @clk: clock signal source
- * @num: numerator of the duty cycle ratio to be applied
- * @den: denominator of the duty cycle ratio to be applied
- *
- * Adjust the duty cycle of a clock signal by the specified ratio. Returns 0 on
- * success, -EERROR otherwise.
- */
-int clk_set_duty_cycle(struct clk *clk, unsigned int num, unsigned int den);
-
-/**
- * clk_get_scaled_duty_cycle - return the duty cycle ratio of a clock signal
- * @clk: clock signal source
- * @scale: scaling factor to be applied to represent the ratio as an integer
- *
- * Returns the duty cycle ratio multiplied by the scale provided, otherwise
- * returns -EERROR.
- */
-int clk_get_scaled_duty_cycle(struct clk *clk, unsigned int scale);
-
-/**
- * clk_is_match - check if two clk's point to the same hardware clock
- * @p: clk compared against q
- * @q: clk compared against p
- *
- * Returns true if the two struct clk pointers both point to the same hardware
- * clock node. Put differently, returns true if @p and @q
- * share the same &struct clk_core object.
- *
- * Returns false otherwise. Note that two NULL clks are treated as matching.
- */
-bool clk_is_match(const struct clk *p, const struct clk *q);
-
-#else
 
 static inline int clk_notifier_register(struct clk *clk,
 					struct notifier_block *nb)
@@ -236,7 +141,6 @@ static inline bool clk_is_match(const struct clk *p, const struct clk *q)
 	return p == q;
 }
 
-#endif
 
 #ifdef CONFIG_HAVE_CLK_PREPARE
 /**
@@ -1016,11 +920,6 @@ static inline struct clk *clk_get_optional(struct device *dev, const char *id)
 	return clk;
 }
 
-#if defined(CONFIG_OF) && defined(CONFIG_COMMON_CLK)
-struct clk *of_clk_get(struct device_node *np, int index);
-struct clk *of_clk_get_by_name(struct device_node *np, const char *name);
-struct clk *of_clk_get_from_provider(struct of_phandle_args *clkspec);
-#else
 static inline struct clk *of_clk_get(struct device_node *np, int index)
 {
 	return ERR_PTR(-ENOENT);
@@ -1034,6 +933,5 @@ static inline struct clk *of_clk_get_from_provider(struct of_phandle_args *clksp
 {
 	return ERR_PTR(-ENOENT);
 }
-#endif
 
 #endif

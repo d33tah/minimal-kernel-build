@@ -111,16 +111,6 @@ void set_dax_nocache(struct dax_device *dax_dev);
 void set_dax_nomc(struct dax_device *dax_dev);
 
 struct writeback_control;
-#if defined(CONFIG_BLOCK) && defined(CONFIG_FS_DAX)
-int dax_add_host(struct dax_device *dax_dev, struct gendisk *disk);
-void dax_remove_host(struct gendisk *disk);
-struct dax_device *fs_dax_get_by_bdev(struct block_device *bdev,
-		u64 *start_off);
-static inline void fs_put_dax(struct dax_device *dax_dev)
-{
-	put_dax(dax_dev);
-}
-#else
 static inline int dax_add_host(struct dax_device *dax_dev, struct gendisk *disk)
 {
 	return 0;
@@ -136,7 +126,6 @@ static inline struct dax_device *fs_dax_get_by_bdev(struct block_device *bdev,
 static inline void fs_put_dax(struct dax_device *dax_dev)
 {
 }
-#endif /* CONFIG_BLOCK && CONFIG_FS_DAX */
 
 #if IS_ENABLED(CONFIG_FS_DAX)
 int dax_writeback_mapping_range(struct address_space *mapping,

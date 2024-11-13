@@ -18,10 +18,6 @@ struct socket;
 #define __sockaddr_check_size(size)	\
 	BUILD_BUG_ON(((size) > sizeof(struct __kernel_sockaddr_storage)))
 
-#ifdef CONFIG_PROC_FS
-struct seq_file;
-extern void socket_seq_show(struct seq_file *seq);
-#endif
 
 typedef __kernel_sa_family_t	sa_family_t;
 

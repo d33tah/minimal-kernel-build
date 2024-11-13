@@ -167,26 +167,11 @@ static inline struct device *class_find_device_by_devt(struct class *class,
 	return class_find_device(class, NULL, &devt, device_match_devt);
 }
 
-#ifdef CONFIG_ACPI
-struct acpi_device;
-/**
- * class_find_device_by_acpi_dev : device iterator for locating a particular
- * device matching the ACPI_COMPANION device.
- * @class: class type
- * @adev: ACPI_COMPANION device to match.
- */
-static inline struct device *
-class_find_device_by_acpi_dev(struct class *class, const struct acpi_device *adev)
-{
-	return class_find_device(class, NULL, adev, device_match_acpi_dev);
-}
-#else
 static inline struct device *
 class_find_device_by_acpi_dev(struct class *class, const void *adev)
 {
 	return NULL;
 }
-#endif
 
 struct class_attribute {
 	struct attribute attr;

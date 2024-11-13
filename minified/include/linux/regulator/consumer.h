@@ -188,127 +188,6 @@ struct regulator_bulk_data {
 	int ret;
 };
 
-#if defined(CONFIG_REGULATOR)
-
-/* regulator get and put */
-struct regulator *__must_check regulator_get(struct device *dev,
-					     const char *id);
-struct regulator *__must_check devm_regulator_get(struct device *dev,
-					     const char *id);
-struct regulator *__must_check regulator_get_exclusive(struct device *dev,
-						       const char *id);
-struct regulator *__must_check devm_regulator_get_exclusive(struct device *dev,
-							const char *id);
-struct regulator *__must_check regulator_get_optional(struct device *dev,
-						      const char *id);
-struct regulator *__must_check devm_regulator_get_optional(struct device *dev,
-							   const char *id);
-void regulator_put(struct regulator *regulator);
-void devm_regulator_put(struct regulator *regulator);
-
-int regulator_register_supply_alias(struct device *dev, const char *id,
-				    struct device *alias_dev,
-				    const char *alias_id);
-void regulator_unregister_supply_alias(struct device *dev, const char *id);
-
-int regulator_bulk_register_supply_alias(struct device *dev,
-					 const char *const *id,
-					 struct device *alias_dev,
-					 const char *const *alias_id,
-					 int num_id);
-void regulator_bulk_unregister_supply_alias(struct device *dev,
-					    const char * const *id, int num_id);
-
-int devm_regulator_register_supply_alias(struct device *dev, const char *id,
-					 struct device *alias_dev,
-					 const char *alias_id);
-
-int devm_regulator_bulk_register_supply_alias(struct device *dev,
-					      const char *const *id,
-					      struct device *alias_dev,
-					      const char *const *alias_id,
-					      int num_id);
-
-/* regulator output control and status */
-int __must_check regulator_enable(struct regulator *regulator);
-int regulator_disable(struct regulator *regulator);
-int regulator_force_disable(struct regulator *regulator);
-int regulator_is_enabled(struct regulator *regulator);
-int regulator_disable_deferred(struct regulator *regulator, int ms);
-
-int __must_check regulator_bulk_get(struct device *dev, int num_consumers,
-				    struct regulator_bulk_data *consumers);
-int __must_check devm_regulator_bulk_get(struct device *dev, int num_consumers,
-					 struct regulator_bulk_data *consumers);
-int __must_check regulator_bulk_enable(int num_consumers,
-				       struct regulator_bulk_data *consumers);
-int regulator_bulk_disable(int num_consumers,
-			   struct regulator_bulk_data *consumers);
-int regulator_bulk_force_disable(int num_consumers,
-			   struct regulator_bulk_data *consumers);
-void regulator_bulk_free(int num_consumers,
-			 struct regulator_bulk_data *consumers);
-
-int regulator_count_voltages(struct regulator *regulator);
-int regulator_list_voltage(struct regulator *regulator, unsigned selector);
-int regulator_is_supported_voltage(struct regulator *regulator,
-				   int min_uV, int max_uV);
-unsigned int regulator_get_linear_step(struct regulator *regulator);
-int regulator_set_voltage(struct regulator *regulator, int min_uV, int max_uV);
-int regulator_set_voltage_time(struct regulator *regulator,
-			       int old_uV, int new_uV);
-int regulator_get_voltage(struct regulator *regulator);
-int regulator_sync_voltage(struct regulator *regulator);
-int regulator_set_current_limit(struct regulator *regulator,
-			       int min_uA, int max_uA);
-int regulator_get_current_limit(struct regulator *regulator);
-
-int regulator_set_mode(struct regulator *regulator, unsigned int mode);
-unsigned int regulator_get_mode(struct regulator *regulator);
-int regulator_get_error_flags(struct regulator *regulator,
-				unsigned int *flags);
-int regulator_set_load(struct regulator *regulator, int load_uA);
-
-int regulator_allow_bypass(struct regulator *regulator, bool allow);
-
-struct regmap *regulator_get_regmap(struct regulator *regulator);
-int regulator_get_hardware_vsel_register(struct regulator *regulator,
-					 unsigned *vsel_reg,
-					 unsigned *vsel_mask);
-int regulator_list_hardware_vsel(struct regulator *regulator,
-				 unsigned selector);
-
-/* regulator notifier block */
-int regulator_register_notifier(struct regulator *regulator,
-			      struct notifier_block *nb);
-int devm_regulator_register_notifier(struct regulator *regulator,
-				     struct notifier_block *nb);
-int regulator_unregister_notifier(struct regulator *regulator,
-				struct notifier_block *nb);
-void devm_regulator_unregister_notifier(struct regulator *regulator,
-					struct notifier_block *nb);
-
-/* regulator suspend */
-int regulator_suspend_enable(struct regulator_dev *rdev,
-			     suspend_state_t state);
-int regulator_suspend_disable(struct regulator_dev *rdev,
-			      suspend_state_t state);
-int regulator_set_suspend_voltage(struct regulator *regulator, int min_uV,
-				  int max_uV, suspend_state_t state);
-
-/* driver data - core doesn't touch */
-void *regulator_get_drvdata(struct regulator *regulator);
-void regulator_set_drvdata(struct regulator *regulator, void *data);
-
-/* misc helpers */
-
-void regulator_bulk_set_supply_names(struct regulator_bulk_data *consumers,
-				     const char *const *supply_names,
-				     unsigned int num_supplies);
-
-bool regulator_is_equal(struct regulator *reg1, struct regulator *reg2);
-
-#else
 
 /*
  * Make sure client drivers will still build on systems with no software
@@ -639,7 +518,6 @@ regulator_is_equal(struct regulator *reg1, struct regulator *reg2)
 {
 	return false;
 }
-#endif
 
 static inline int regulator_set_voltage_triplet(struct regulator *regulator,
 						int min_uV, int target_uV,

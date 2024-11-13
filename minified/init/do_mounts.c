@@ -60,169 +60,6 @@ static int __init readwrite(char *str)
 __setup("ro", readonly);
 __setup("rw", readwrite);
 
-#ifdef CONFIG_BLOCK
-struct uuidcmp {
-	const char *uuid;
-	int len;
-};
-
-/**
- * match_dev_by_uuid - callback for finding a partition using its uuid
- * @dev:	device passed in by the caller
- * @data:	opaque pointer to the desired struct uuidcmp to match
- *
- * Returns 1 if the device matches, and 0 otherwise.
- */
-static int match_dev_by_uuid(struct device *dev, const void *data)
-{
-	struct block_device *bdev = dev_to_bdev(dev);
-	const struct uuidcmp *cmp = data;
-
-	if (!bdev->bd_meta_info ||
-	    strncasecmp(cmp->uuid, bdev->bd_meta_info->uuid, cmp->len))
-		return 0;
-	return 1;
-}
-
-/**
- * devt_from_partuuid - looks up the dev_t of a partition by its UUID
- * @uuid_str:	char array containing ascii UUID
- *
- * The function will return the first partition which contains a matching
- * UUID value in its partition_meta_info struct.  This does not search
- * by filesystem UUIDs.
- *
- * If @uuid_str is followed by a "/PARTNROFF=%d", then the number will be
- * extracted and used as an offset from the partition identified by the UUID.
- *
- * Returns the matching dev_t on success or 0 on failure.
- */
-static dev_t devt_from_partuuid(const char *uuid_str)
-{
-	struct uuidcmp cmp;
-	struct device *dev = NULL;
-	dev_t devt = 0;
-	int offset = 0;
-	char *slash;
-
-	cmp.uuid = uuid_str;
-
-	slash = strchr(uuid_str, '/');
-	/* Check for optional partition number offset attributes. */
-	if (slash) {
-		char c = 0;
-
-		/* Explicitly fail on poor PARTUUID syntax. */
-		if (sscanf(slash + 1, "PARTNROFF=%d%c", &offset, &c) != 1)
-			goto clear_root_wait;
-		cmp.len = slash - uuid_str;
-	} else {
-		cmp.len = strlen(uuid_str);
-	}
-
-	if (!cmp.len)
-		goto clear_root_wait;
-
-	dev = class_find_device(&block_class, NULL, &cmp, &match_dev_by_uuid);
-	if (!dev)
-		return 0;
-
-	if (offset) {
-		/*
-		 * Attempt to find the requested partition by adding an offset
-		 * to the partition number found by UUID.
-		 */
-		devt = part_devt(dev_to_disk(dev),
-				 dev_to_bdev(dev)->bd_partno + offset);
-	} else {
-		devt = dev->devt;
-	}
-
-	put_device(dev);
-	return devt;
-
-clear_root_wait:
-	pr_err("VFS: PARTUUID= is invalid.\n"
-	       "Expected PARTUUID=<valid-uuid-id>[/PARTNROFF=%%d]\n");
-	if (root_wait)
-		pr_err("Disabling rootwait; root= is invalid.\n");
-	root_wait = 0;
-	return 0;
-}
-
-/**
- * match_dev_by_label - callback for finding a partition using its label
- * @dev:	device passed in by the caller
- * @data:	opaque pointer to the label to match
- *
- * Returns 1 if the device matches, and 0 otherwise.
- */
-static int match_dev_by_label(struct device *dev, const void *data)
-{
-	struct block_device *bdev = dev_to_bdev(dev);
-	const char *label = data;
-
-	if (!bdev->bd_meta_info || strcmp(label, bdev->bd_meta_info->volname))
-		return 0;
-	return 1;
-}
-
-static dev_t devt_from_partlabel(const char *label)
-{
-	struct device *dev;
-	dev_t devt = 0;
-
-	dev = class_find_device(&block_class, NULL, label, &match_dev_by_label);
-	if (dev) {
-		devt = dev->devt;
-		put_device(dev);
-	}
-
-	return devt;
-}
-
-static dev_t devt_from_devname(const char *name)
-{
-	dev_t devt = 0;
-	int part;
-	char s[32];
-	char *p;
-
-	if (strlen(name) > 31)
-		return 0;
-	strcpy(s, name);
-	for (p = s; *p; p++) {
-		if (*p == '/')
-			*p = '!';
-	}
-
-	devt = blk_lookup_devt(s, 0);
-	if (devt)
-		return devt;
-
-	/*
-	 * Try non-existent, but valid partition, which may only exist after
-	 * opening the device, like partitioned md devices.
-	 */
-	while (p > s && isdigit(p[-1]))
-		p--;
-	if (p == s || !*p || *p == '0')
-		return 0;
-
-	/* try disk name without <part number> */
-	part = simple_strtoul(p, NULL, 10);
-	*p = '\0';
-	devt = blk_lookup_devt(s, part);
-	if (devt)
-		return devt;
-
-	/* try disk name without p<part number> */
-	if (p < s + 2 || !isdigit(p[-2]) || p[-1] != 'p')
-		return 0;
-	p[-1] = '\0';
-	return blk_lookup_devt(s, part);
-}
-#endif /* CONFIG_BLOCK */
 
 static dev_t devt_from_devnum(const char *name)
 {
@@ -282,14 +119,6 @@ dev_t name_to_dev_t(const char *name)
 		return Root_CIFS;
 	if (strcmp(name, "/dev/ram") == 0)
 		return Root_RAM0;
-#ifdef CONFIG_BLOCK
-	if (strncmp(name, "PARTUUID=", 9) == 0)
-		return devt_from_partuuid(name + 9);
-	if (strncmp(name, "PARTLABEL=", 10) == 0)
-		return devt_from_partlabel(name + 10);
-	if (strncmp(name, "/dev/", 5) == 0)
-		return devt_from_devname(name + 5);
-#endif
 	return devt_from_devnum(name);
 }
 EXPORT_SYMBOL_GPL(name_to_dev_t);
@@ -583,15 +412,6 @@ void __init mount_root(void)
 		if (mount_nodev_root() == 0)
 			return;
 	}
-#ifdef CONFIG_BLOCK
-	{
-		int err = create_dev("/dev/root", ROOT_DEV);
-
-		if (err < 0)
-			pr_emerg("Failed to create /dev/root: %d\n", err);
-		mount_block_root("/dev/root", root_mountflags);
-	}
-#endif
 }
 
 /*

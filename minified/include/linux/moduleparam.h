@@ -300,17 +300,12 @@ struct kparam_array
 	__module_param_call(MODULE_PARAM_PREFIX,			\
 			    name, &__param_ops_##name, arg, perm, -1, 0)
 
-#ifdef CONFIG_SYSFS
-extern void kernel_param_lock(struct module *mod);
-extern void kernel_param_unlock(struct module *mod);
-#else
 static inline void kernel_param_lock(struct module *mod)
 {
 }
 static inline void kernel_param_unlock(struct module *mod)
 {
 }
-#endif
 
 #ifndef MODULE
 /**
@@ -393,14 +388,10 @@ extern char *parse_args(const char *name,
 				     const char *doing, void *arg));
 
 /* Called by module remove. */
-#ifdef CONFIG_SYSFS
-extern void destroy_params(const struct kernel_param *params, unsigned num);
-#else
 static inline void destroy_params(const struct kernel_param *params,
 				  unsigned num)
 {
 }
-#endif /* !CONFIG_SYSFS */
 
 /* All the helper functions */
 /* The macros to do compile-time type checking stolen from Jakub

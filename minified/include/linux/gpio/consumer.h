@@ -53,142 +53,6 @@ enum gpiod_flags {
 	GPIOD_OUT_HIGH_OPEN_DRAIN = GPIOD_OUT_HIGH | GPIOD_FLAGS_BIT_OPEN_DRAIN,
 };
 
-#ifdef CONFIG_GPIOLIB
-
-/* Return the number of GPIOs associated with a device / function */
-int gpiod_count(struct device *dev, const char *con_id);
-
-/* Acquire and dispose GPIOs */
-struct gpio_desc *__must_check gpiod_get(struct device *dev,
-					 const char *con_id,
-					 enum gpiod_flags flags);
-struct gpio_desc *__must_check gpiod_get_index(struct device *dev,
-					       const char *con_id,
-					       unsigned int idx,
-					       enum gpiod_flags flags);
-struct gpio_desc *__must_check gpiod_get_optional(struct device *dev,
-						  const char *con_id,
-						  enum gpiod_flags flags);
-struct gpio_desc *__must_check gpiod_get_index_optional(struct device *dev,
-							const char *con_id,
-							unsigned int index,
-							enum gpiod_flags flags);
-struct gpio_descs *__must_check gpiod_get_array(struct device *dev,
-						const char *con_id,
-						enum gpiod_flags flags);
-struct gpio_descs *__must_check gpiod_get_array_optional(struct device *dev,
-							const char *con_id,
-							enum gpiod_flags flags);
-void gpiod_put(struct gpio_desc *desc);
-void gpiod_put_array(struct gpio_descs *descs);
-
-struct gpio_desc *__must_check devm_gpiod_get(struct device *dev,
-					      const char *con_id,
-					      enum gpiod_flags flags);
-struct gpio_desc *__must_check devm_gpiod_get_index(struct device *dev,
-						    const char *con_id,
-						    unsigned int idx,
-						    enum gpiod_flags flags);
-struct gpio_desc *__must_check devm_gpiod_get_optional(struct device *dev,
-						       const char *con_id,
-						       enum gpiod_flags flags);
-struct gpio_desc *__must_check
-devm_gpiod_get_index_optional(struct device *dev, const char *con_id,
-			      unsigned int index, enum gpiod_flags flags);
-struct gpio_descs *__must_check devm_gpiod_get_array(struct device *dev,
-						     const char *con_id,
-						     enum gpiod_flags flags);
-struct gpio_descs *__must_check
-devm_gpiod_get_array_optional(struct device *dev, const char *con_id,
-			      enum gpiod_flags flags);
-void devm_gpiod_put(struct device *dev, struct gpio_desc *desc);
-void devm_gpiod_unhinge(struct device *dev, struct gpio_desc *desc);
-void devm_gpiod_put_array(struct device *dev, struct gpio_descs *descs);
-
-int gpiod_get_direction(struct gpio_desc *desc);
-int gpiod_direction_input(struct gpio_desc *desc);
-int gpiod_direction_output(struct gpio_desc *desc, int value);
-int gpiod_direction_output_raw(struct gpio_desc *desc, int value);
-int gpiod_enable_hw_timestamp_ns(struct gpio_desc *desc, unsigned long flags);
-int gpiod_disable_hw_timestamp_ns(struct gpio_desc *desc, unsigned long flags);
-
-/* Value get/set from non-sleeping context */
-int gpiod_get_value(const struct gpio_desc *desc);
-int gpiod_get_array_value(unsigned int array_size,
-			  struct gpio_desc **desc_array,
-			  struct gpio_array *array_info,
-			  unsigned long *value_bitmap);
-void gpiod_set_value(struct gpio_desc *desc, int value);
-int gpiod_set_array_value(unsigned int array_size,
-			  struct gpio_desc **desc_array,
-			  struct gpio_array *array_info,
-			  unsigned long *value_bitmap);
-int gpiod_get_raw_value(const struct gpio_desc *desc);
-int gpiod_get_raw_array_value(unsigned int array_size,
-			      struct gpio_desc **desc_array,
-			      struct gpio_array *array_info,
-			      unsigned long *value_bitmap);
-void gpiod_set_raw_value(struct gpio_desc *desc, int value);
-int gpiod_set_raw_array_value(unsigned int array_size,
-			      struct gpio_desc **desc_array,
-			      struct gpio_array *array_info,
-			      unsigned long *value_bitmap);
-
-/* Value get/set from sleeping context */
-int gpiod_get_value_cansleep(const struct gpio_desc *desc);
-int gpiod_get_array_value_cansleep(unsigned int array_size,
-				   struct gpio_desc **desc_array,
-				   struct gpio_array *array_info,
-				   unsigned long *value_bitmap);
-void gpiod_set_value_cansleep(struct gpio_desc *desc, int value);
-int gpiod_set_array_value_cansleep(unsigned int array_size,
-				   struct gpio_desc **desc_array,
-				   struct gpio_array *array_info,
-				   unsigned long *value_bitmap);
-int gpiod_get_raw_value_cansleep(const struct gpio_desc *desc);
-int gpiod_get_raw_array_value_cansleep(unsigned int array_size,
-				       struct gpio_desc **desc_array,
-				       struct gpio_array *array_info,
-				       unsigned long *value_bitmap);
-void gpiod_set_raw_value_cansleep(struct gpio_desc *desc, int value);
-int gpiod_set_raw_array_value_cansleep(unsigned int array_size,
-				       struct gpio_desc **desc_array,
-				       struct gpio_array *array_info,
-				       unsigned long *value_bitmap);
-
-int gpiod_set_config(struct gpio_desc *desc, unsigned long config);
-int gpiod_set_debounce(struct gpio_desc *desc, unsigned int debounce);
-int gpiod_set_transitory(struct gpio_desc *desc, bool transitory);
-void gpiod_toggle_active_low(struct gpio_desc *desc);
-
-int gpiod_is_active_low(const struct gpio_desc *desc);
-int gpiod_cansleep(const struct gpio_desc *desc);
-
-int gpiod_to_irq(const struct gpio_desc *desc);
-int gpiod_set_consumer_name(struct gpio_desc *desc, const char *name);
-
-/* Convert between the old gpio_ and new gpiod_ interfaces */
-struct gpio_desc *gpio_to_desc(unsigned gpio);
-int desc_to_gpio(const struct gpio_desc *desc);
-
-/* Child properties interface */
-struct fwnode_handle;
-
-struct gpio_desc *fwnode_get_named_gpiod(struct fwnode_handle *fwnode,
-					 const char *propname, int index,
-					 enum gpiod_flags dflags,
-					 const char *label);
-struct gpio_desc *fwnode_gpiod_get_index(struct fwnode_handle *fwnode,
-					 const char *con_id, int index,
-					 enum gpiod_flags flags,
-					 const char *label);
-struct gpio_desc *devm_fwnode_gpiod_get_index(struct device *dev,
-					      struct fwnode_handle *child,
-					      const char *con_id, int index,
-					      enum gpiod_flags flags,
-					      const char *label);
-
-#else /* CONFIG_GPIOLIB */
 
 #include <linux/kernel.h>
 
@@ -581,7 +445,6 @@ struct gpio_desc *devm_fwnode_gpiod_get_index(struct device *dev,
 	return ERR_PTR(-ENOSYS);
 }
 
-#endif /* CONFIG_GPIOLIB */
 
 static inline
 struct gpio_desc *devm_fwnode_gpiod_get(struct device *dev,
@@ -638,16 +501,6 @@ struct gpio_desc *gpiod_get_from_of_node(const struct device_node *node,
 
 #endif /* CONFIG_GPIOLIB && CONFIG_OF_GPIO */
 
-#ifdef CONFIG_GPIOLIB
-struct device_node;
-
-struct gpio_desc *devm_gpiod_get_from_of_node(struct device *dev,
-					      const struct device_node *node,
-					      const char *propname, int index,
-					      enum gpiod_flags dflags,
-					      const char *label);
-
-#else  /* CONFIG_GPIOLIB */
 
 struct device_node;
 
@@ -661,7 +514,6 @@ struct gpio_desc *devm_gpiod_get_from_of_node(struct device *dev,
 	return ERR_PTR(-ENOSYS);
 }
 
-#endif /* CONFIG_GPIOLIB */
 
 struct acpi_gpio_params {
 	unsigned int crs_entry_index;

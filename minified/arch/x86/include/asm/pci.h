@@ -15,9 +15,6 @@
 struct pci_sysdata {
 	int		domain;		/* PCI domain */
 	int		node;		/* NUMA node */
-#ifdef CONFIG_ACPI
-	struct acpi_device *companion;	/* ACPI companion device */
-#endif
 #ifdef CONFIG_X86_64
 	void		*iommu;		/* IOMMU private data */
 #endif
@@ -38,47 +35,7 @@ static inline struct pci_sysdata *to_pci_sysdata(const struct pci_bus *bus)
 	return bus->sysdata;
 }
 
-#ifdef CONFIG_PCI
-
-#ifdef CONFIG_PCI_DOMAINS
-static inline int pci_domain_nr(struct pci_bus *bus)
-{
-	return to_pci_sysdata(bus)->domain;
-}
-
-static inline int pci_proc_domain(struct pci_bus *bus)
-{
-	return pci_domain_nr(bus);
-}
-#endif
-
-#ifdef CONFIG_PCI_MSI_IRQ_DOMAIN
-static inline void *_pci_root_bus_fwnode(struct pci_bus *bus)
-{
-	return to_pci_sysdata(bus)->fwnode;
-}
-
-#define pci_root_bus_fwnode	_pci_root_bus_fwnode
-#endif
-
-#if IS_ENABLED(CONFIG_VMD)
-static inline bool is_vmd(struct pci_bus *bus)
-{
-	return to_pci_sysdata(bus)->vmd_dev != NULL;
-}
-#else
-#define is_vmd(bus)		false
-#endif /* CONFIG_VMD */
-
-/* Can be used to override the logic in pci_scan_bus for skipping
-   already-configured bus numbers - to be used for buggy BIOSes
-   or architectures with incomplete PCI setup by the loader */
-
-extern unsigned int pcibios_assign_all_busses(void);
-extern int pci_legacy_init(void);
-#else
 static inline int pcibios_assign_all_busses(void) { return 0; }
-#endif
 
 extern unsigned long pci_mem_start;
 #define PCIBIOS_MIN_IO		0x1000
@@ -97,11 +54,7 @@ int pcibios_set_irq_routing(struct pci_dev *dev, int pin, int irq);
 #define arch_can_pci_mmap_wc()	pat_enabled()
 #define ARCH_GENERIC_PCI_MMAP_RESOURCE
 
-#ifdef CONFIG_PCI
-extern void early_quirks(void);
-#else
 static inline void early_quirks(void) { }
-#endif
 
 extern void pci_iommu_alloc(void);
 

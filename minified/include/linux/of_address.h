@@ -124,11 +124,6 @@ static inline bool of_dma_is_coherent(struct device_node *np)
 }
 #endif /* CONFIG_OF_ADDRESS */
 
-#ifdef CONFIG_OF
-extern int of_address_to_resource(struct device_node *dev, int index,
-				  struct resource *r);
-void __iomem *of_iomap(struct device_node *node, int index);
-#else
 static inline int of_address_to_resource(struct device_node *dev, int index,
 					 struct resource *r)
 {
@@ -139,7 +134,6 @@ static inline void __iomem *of_iomap(struct device_node *device, int index)
 {
 	return NULL;
 }
-#endif
 #define of_range_parser_init of_pci_range_parser_init
 
 static inline const __be32 *of_get_address(struct device_node *dev, int index,

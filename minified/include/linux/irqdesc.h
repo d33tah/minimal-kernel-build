@@ -80,9 +80,6 @@ struct irq_desc {
 	unsigned int		cond_suspend_depth;
 	unsigned int		force_resume_depth;
 #endif
-#ifdef CONFIG_PROC_FS
-	struct proc_dir_entry	*dir;
-#endif
 #ifdef CONFIG_GENERIC_IRQ_DEBUGFS
 	struct dentry		*debugfs_file;
 	const char		*dev_name;

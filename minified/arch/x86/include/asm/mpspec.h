@@ -25,9 +25,6 @@ extern int pic_mode;
 extern unsigned int def_to_bigsmp;
 
 
-#ifdef CONFIG_EISA
-extern int mp_bus_id_to_type[MAX_MP_BUSSES];
-#endif
 
 extern DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
 

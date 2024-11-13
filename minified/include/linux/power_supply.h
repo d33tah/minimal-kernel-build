@@ -301,10 +301,6 @@ struct power_supply {
 	bool initialized;
 	bool removing;
 	atomic_t use_cnt;
-#ifdef CONFIG_THERMAL
-	struct thermal_zone_device *tzd;
-	struct thermal_cooling_device *tcd;
-#endif
 
 #ifdef CONFIG_LEDS_TRIGGERS
 	struct led_trigger *charging_full_trig;
@@ -741,19 +737,12 @@ static inline void power_supply_put(struct power_supply *psy) {}
 static inline struct power_supply *power_supply_get_by_name(const char *name)
 { return NULL; }
 #endif
-#ifdef CONFIG_OF
-extern struct power_supply *power_supply_get_by_phandle(struct device_node *np,
-							const char *property);
-extern struct power_supply *devm_power_supply_get_by_phandle(
-				    struct device *dev, const char *property);
-#else /* !CONFIG_OF */
 static inline struct power_supply *
 power_supply_get_by_phandle(struct device_node *np, const char *property)
 { return NULL; }
 static inline struct power_supply *
 devm_power_supply_get_by_phandle(struct device *dev, const char *property)
 { return NULL; }
-#endif /* CONFIG_OF */
 
 extern int power_supply_get_battery_info(struct power_supply *psy,
 					 struct power_supply_battery_info **info_out);
@@ -806,11 +795,7 @@ power_supply_supports_temp2ri(struct power_supply_battery_info *info)
 		info->resist_table_size > 0);
 }
 
-#ifdef CONFIG_POWER_SUPPLY
-extern int power_supply_is_system_supplied(void);
-#else
 static inline int power_supply_is_system_supplied(void) { return -ENOSYS; }
-#endif
 
 extern int power_supply_get_property(struct power_supply *psy,
 			    enum power_supply_property psp,
@@ -921,14 +906,6 @@ static inline
 void power_supply_remove_hwmon_sysfs(struct power_supply *psy) {}
 #endif
 
-#ifdef CONFIG_SYSFS
-ssize_t power_supply_charge_behaviour_show(struct device *dev,
-					   unsigned int available_behaviours,
-					   enum power_supply_charge_behaviour behaviour,
-					   char *buf);
-
-int power_supply_charge_behaviour_parse(unsigned int available_behaviours, const char *buf);
-#else
 static inline
 ssize_t power_supply_charge_behaviour_show(struct device *dev,
 					   unsigned int available_behaviours,
@@ -943,6 +920,5 @@ static inline int power_supply_charge_behaviour_parse(unsigned int available_beh
 {
 	return -EOPNOTSUPP;
 }
-#endif
 
 #endif /* __LINUX_POWER_SUPPLY_H__ */

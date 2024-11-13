@@ -72,93 +72,6 @@ static inline struct proc_fs_info *proc_sb_info(struct super_block *sb)
 	return sb->s_fs_info;
 }
 
-#ifdef CONFIG_PROC_FS
-
-typedef int (*proc_write_t)(struct file *, char *, size_t);
-
-extern void proc_root_init(void);
-extern void proc_flush_pid(struct pid *);
-
-extern struct proc_dir_entry *proc_symlink(const char *,
-		struct proc_dir_entry *, const char *);
-struct proc_dir_entry *_proc_mkdir(const char *, umode_t, struct proc_dir_entry *, void *, bool);
-extern struct proc_dir_entry *proc_mkdir(const char *, struct proc_dir_entry *);
-extern struct proc_dir_entry *proc_mkdir_data(const char *, umode_t,
-					      struct proc_dir_entry *, void *);
-extern struct proc_dir_entry *proc_mkdir_mode(const char *, umode_t,
-					      struct proc_dir_entry *);
-struct proc_dir_entry *proc_create_mount_point(const char *name);
-
-struct proc_dir_entry *proc_create_seq_private(const char *name, umode_t mode,
-		struct proc_dir_entry *parent, const struct seq_operations *ops,
-		unsigned int state_size, void *data);
-#define proc_create_seq_data(name, mode, parent, ops, data) \
-	proc_create_seq_private(name, mode, parent, ops, 0, data)
-#define proc_create_seq(name, mode, parent, ops) \
-	proc_create_seq_private(name, mode, parent, ops, 0, NULL)
-struct proc_dir_entry *proc_create_single_data(const char *name, umode_t mode,
-		struct proc_dir_entry *parent,
-		int (*show)(struct seq_file *, void *), void *data);
-#define proc_create_single(name, mode, parent, show) \
-	proc_create_single_data(name, mode, parent, show, NULL)
- 
-extern struct proc_dir_entry *proc_create_data(const char *, umode_t,
-					       struct proc_dir_entry *,
-					       const struct proc_ops *,
-					       void *);
-
-struct proc_dir_entry *proc_create(const char *name, umode_t mode, struct proc_dir_entry *parent, const struct proc_ops *proc_ops);
-extern void proc_set_size(struct proc_dir_entry *, loff_t);
-extern void proc_set_user(struct proc_dir_entry *, kuid_t, kgid_t);
-
-/*
- * Obtain the private data passed by user through proc_create_data() or
- * related.
- */
-static inline void *pde_data(const struct inode *inode)
-{
-	return inode->i_private;
-}
-
-extern void *proc_get_parent_data(const struct inode *);
-extern void proc_remove(struct proc_dir_entry *);
-extern void remove_proc_entry(const char *, struct proc_dir_entry *);
-extern int remove_proc_subtree(const char *, struct proc_dir_entry *);
-
-struct proc_dir_entry *proc_create_net_data(const char *name, umode_t mode,
-		struct proc_dir_entry *parent, const struct seq_operations *ops,
-		unsigned int state_size, void *data);
-#define proc_create_net(name, mode, parent, ops, state_size) \
-	proc_create_net_data(name, mode, parent, ops, state_size, NULL)
-struct proc_dir_entry *proc_create_net_single(const char *name, umode_t mode,
-		struct proc_dir_entry *parent,
-		int (*show)(struct seq_file *, void *), void *data);
-struct proc_dir_entry *proc_create_net_data_write(const char *name, umode_t mode,
-						  struct proc_dir_entry *parent,
-						  const struct seq_operations *ops,
-						  proc_write_t write,
-						  unsigned int state_size, void *data);
-struct proc_dir_entry *proc_create_net_single_write(const char *name, umode_t mode,
-						    struct proc_dir_entry *parent,
-						    int (*show)(struct seq_file *, void *),
-						    proc_write_t write,
-						    void *data);
-extern struct pid *tgid_pidfd_to_pid(const struct file *file);
-
-struct bpf_iter_aux_info;
-extern int bpf_iter_init_seq_net(void *priv_data, struct bpf_iter_aux_info *aux);
-extern void bpf_iter_fini_seq_net(void *priv_data);
-
-#ifdef CONFIG_PROC_PID_ARCH_STATUS
-/*
- * The architecture which selects CONFIG_PROC_PID_ARCH_STATUS must
- * provide proc_pid_arch_status() definition.
- */
-int proc_pid_arch_status(struct seq_file *m, struct pid_namespace *ns,
-			struct pid *pid, struct task_struct *task);
-#endif /* CONFIG_PROC_PID_ARCH_STATUS */
-
-#else /* CONFIG_PROC_FS */
 
 static inline void proc_root_init(void)
 {
@@ -216,7 +129,6 @@ static inline struct pid *tgid_pidfd_to_pid(const struct file *file)
 	return ERR_PTR(-EBADF);
 }
 
-#endif /* CONFIG_PROC_FS */
 
 struct net;
 

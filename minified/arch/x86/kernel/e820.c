@@ -66,9 +66,6 @@ struct e820_table *e820_table_firmware __refdata	= &e820_table_firmware_init;
 
 /* For PCI or other memory-mapped resources */
 unsigned long pci_mem_start = 0xaeedbabe;
-#ifdef CONFIG_PCI
-EXPORT_SYMBOL(pci_mem_start);
-#endif
 
 /*
  * This function checks if any part of the range <start,end> is mapped
@@ -771,26 +768,6 @@ void __init e820__register_nosave_regions(unsigned long limit_pfn)
 	}
 }
 
-#ifdef CONFIG_ACPI
-/*
- * Register ACPI NVS memory regions, so that we can save/restore them during
- * hibernation and the subsequent resume:
- */
-static int __init e820__register_nvs_regions(void)
-{
-	int i;
-
-	for (i = 0; i < e820_table->nr_entries; i++) {
-		struct e820_entry *entry = &e820_table->entries[i];
-
-		if (entry->type == E820_TYPE_NVS)
-			acpi_nvs_register(entry->addr, entry->size);
-	}
-
-	return 0;
-}
-core_initcall(e820__register_nvs_regions);
-#endif
 
 /*
  * Allocate the requested number of bytes with the requested alignment

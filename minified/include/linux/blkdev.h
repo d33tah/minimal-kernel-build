@@ -1007,57 +1007,6 @@ extern void blk_put_queue(struct request_queue *);
 
 void blk_mark_disk_dead(struct gendisk *disk);
 
-#ifdef CONFIG_BLOCK
-/*
- * blk_plug permits building a queue of related requests by holding the I/O
- * fragments for a short period. This allows merging of sequential requests
- * into single larger request. As the requests are moved from a per-task list to
- * the device's request_queue in a batch, this results in improved scalability
- * as the lock contention for request_queue lock is reduced.
- *
- * It is ok not to disable preemption when adding the request to the plug list
- * or when attempting a merge. For details, please see schedule() where
- * blk_flush_plug() is called.
- */
-struct blk_plug {
-	struct request *mq_list; /* blk-mq requests */
-
-	/* if ios_left is > 1, we can batch tag/rq allocations */
-	struct request *cached_rq;
-	unsigned short nr_ios;
-
-	unsigned short rq_count;
-
-	bool multiple_queues;
-	bool has_elevator;
-	bool nowait;
-
-	struct list_head cb_list; /* md requires an unplug callback */
-};
-
-struct blk_plug_cb;
-typedef void (*blk_plug_cb_fn)(struct blk_plug_cb *, bool);
-struct blk_plug_cb {
-	struct list_head list;
-	blk_plug_cb_fn callback;
-	void *data;
-};
-extern struct blk_plug_cb *blk_check_plugged(blk_plug_cb_fn unplug,
-					     void *data, int size);
-extern void blk_start_plug(struct blk_plug *);
-extern void blk_start_plug_nr_ios(struct blk_plug *, unsigned short);
-extern void blk_finish_plug(struct blk_plug *);
-
-void __blk_flush_plug(struct blk_plug *plug, bool from_schedule);
-static inline void blk_flush_plug(struct blk_plug *plug, bool async)
-{
-	if (plug)
-		__blk_flush_plug(plug, async);
-}
-
-int blkdev_issue_flush(struct block_device *bdev);
-long nr_blockdev_pages(void);
-#else /* CONFIG_BLOCK */
 struct blk_plug {
 };
 
@@ -1087,7 +1036,6 @@ static inline long nr_blockdev_pages(void)
 {
 	return 0;
 }
-#endif /* CONFIG_BLOCK */
 
 extern void blk_io_schedule(void);
 
@@ -1498,11 +1446,7 @@ void blkdev_show(struct seq_file *seqf, off_t offset);
 
 #define BDEVNAME_SIZE	32	/* Largest string for a blockdev identifier */
 #define BDEVT_SIZE	10	/* Largest string for MAJ:MIN for blkdev */
-#ifdef CONFIG_BLOCK
-#define BLKDEV_MAJOR_MAX	512
-#else
 #define BLKDEV_MAJOR_MAX	0
-#endif
 
 struct block_device *blkdev_get_by_path(const char *path, fmode_t mode,
 		void *holder);
@@ -1521,14 +1465,6 @@ struct block_device *I_BDEV(struct inode *inode);
 int truncate_bdev_range(struct block_device *bdev, fmode_t mode, loff_t lstart,
 		loff_t lend);
 
-#ifdef CONFIG_BLOCK
-void invalidate_bdev(struct block_device *bdev);
-int sync_blockdev(struct block_device *bdev);
-int sync_blockdev_range(struct block_device *bdev, loff_t lstart, loff_t lend);
-int sync_blockdev_nowait(struct block_device *bdev);
-void sync_bdevs(bool wait);
-void printk_all_partitions(void);
-#else
 static inline void invalidate_bdev(struct block_device *bdev)
 {
 }
@@ -1546,7 +1482,6 @@ static inline void sync_bdevs(bool wait)
 static inline void printk_all_partitions(void)
 {
 }
-#endif /* CONFIG_BLOCK */
 
 int fsync_bdev(struct block_device *bdev);
 

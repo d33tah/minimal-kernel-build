@@ -257,40 +257,6 @@ static void init_cyrix(struct cpuinfo_x86 *c)
 
 	case 4: /* MediaGX/GXm or Geode GXM/GXLV/GX1 */
 	case 11: /* GX1 with inverted Device ID */
-#ifdef CONFIG_PCI
-	{
-		u32 vendor, device;
-		/*
-		 * It isn't really a PCI quirk directly, but the cure is the
-		 * same. The MediaGX has deep magic SMM stuff that handles the
-		 * SB emulation. It throws away the fifo on disable_dma() which
-		 * is wrong and ruins the audio.
-		 *
-		 *  Bug2: VSA1 has a wrap bug so that using maximum sized DMA
-		 *  causes bad things. According to NatSemi VSA2 has another
-		 *  bug to do with 'hlt'. I've not seen any boards using VSA2
-		 *  and X doesn't seem to support it either so who cares 8).
-		 *  VSA1 we work around however.
-		 */
-
-		pr_info("Working around Cyrix MediaGX virtual DMA bugs.\n");
-		isa_dma_bridge_buggy = 2;
-
-		/* We do this before the PCI layer is running. However we
-		   are safe here as we know the bridge must be a Cyrix
-		   companion and must be present */
-		vendor = read_pci_config_16(0, 0, 0x12, PCI_VENDOR_ID);
-		device = read_pci_config_16(0, 0, 0x12, PCI_DEVICE_ID);
-
-		/*
-		 *  The 5510/5520 companion chips have a funky PIT.
-		 */
-		if (vendor == PCI_VENDOR_ID_CYRIX &&
-			(device == PCI_DEVICE_ID_CYRIX_5510 ||
-					device == PCI_DEVICE_ID_CYRIX_5520))
-			mark_tsc_unstable("cyrix 5510/5520 detected");
-	}
-#endif
 		c->x86_cache_size = 16;	/* Yep 16K integrated cache that's it */
 
 		/* GXm supports extended cpuid levels 'ala' AMD */

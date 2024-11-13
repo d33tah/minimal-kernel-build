@@ -670,13 +670,7 @@ struct inode {
 	struct fsnotify_mark_connector __rcu	*i_fsnotify_marks;
 #endif
 
-#ifdef CONFIG_FS_ENCRYPTION
-	struct fscrypt_info	*i_crypt_info;
-#endif
 
-#ifdef CONFIG_FS_VERITY
-	struct fsverity_info	*i_verity_info;
-#endif
 
 	void			*i_private; /* fs or device private pointer */
 } __randomize_layout;
@@ -1380,13 +1374,6 @@ struct super_block {
 	void                    *s_security;
 #endif
 	const struct xattr_handler **s_xattr;
-#ifdef CONFIG_FS_ENCRYPTION
-	const struct fscrypt_operations	*s_cop;
-	struct key		*s_master_keys; /* master crypto keys in use */
-#endif
-#ifdef CONFIG_FS_VERITY
-	const struct fsverity_operations *s_vop;
-#endif
 #if IS_ENABLED(CONFIG_UNICODE)
 	struct unicode_map *s_encoding;
 	__u16 s_encoding_flags;
@@ -2034,11 +2021,6 @@ struct super_operations {
 	int (*show_devname)(struct seq_file *, struct dentry *);
 	int (*show_path)(struct seq_file *, struct dentry *);
 	int (*show_stats)(struct seq_file *, struct dentry *);
-#ifdef CONFIG_QUOTA
-	ssize_t (*quota_read)(struct super_block *, int, char *, size_t, loff_t);
-	ssize_t (*quota_write)(struct super_block *, int, const char *, size_t, loff_t);
-	struct dquot **(*get_dquots)(struct inode *);
-#endif
 	long (*nr_cached_objects)(struct super_block *,
 				  struct shrink_control *);
 	long (*free_cached_objects)(struct super_block *,
@@ -2602,14 +2584,10 @@ static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count)
 extern void emergency_sync(void);
 extern void emergency_remount(void);
 
-#ifdef CONFIG_BLOCK
-extern int bmap(struct inode *inode, sector_t *block);
-#else
 static inline int bmap(struct inode *inode,  sector_t *block)
 {
 	return -EINVAL;
 }
-#endif
 
 int notify_change(struct user_namespace *, struct dentry *,
 		  struct iattr *, struct inode **);
@@ -2893,33 +2871,6 @@ extern int generic_file_open(struct inode * inode, struct file * filp);
 extern int nonseekable_open(struct inode * inode, struct file * filp);
 extern int stream_open(struct inode * inode, struct file * filp);
 
-#ifdef CONFIG_BLOCK
-typedef void (dio_submit_t)(struct bio *bio, struct inode *inode,
-			    loff_t file_offset);
-
-enum {
-	/* need locking between buffered and direct access */
-	DIO_LOCKING	= 0x01,
-
-	/* filesystem does not support filling holes */
-	DIO_SKIP_HOLES	= 0x02,
-};
-
-ssize_t __blockdev_direct_IO(struct kiocb *iocb, struct inode *inode,
-			     struct block_device *bdev, struct iov_iter *iter,
-			     get_block_t get_block,
-			     dio_iodone_t end_io, dio_submit_t submit_io,
-			     int flags);
-
-static inline ssize_t blockdev_direct_IO(struct kiocb *iocb,
-					 struct inode *inode,
-					 struct iov_iter *iter,
-					 get_block_t get_block)
-{
-	return __blockdev_direct_IO(iocb, inode, inode->i_sb->s_bdev, iter,
-			get_block, NULL, NULL, DIO_LOCKING | DIO_SKIP_HOLES);
-}
-#endif
 
 void inode_dio_wait(struct inode *inode);
 

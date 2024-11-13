@@ -684,12 +684,8 @@ extern bool freeze_workqueues_busy(void);
 extern void thaw_workqueues(void);
 #endif /* CONFIG_FREEZER */
 
-#ifdef CONFIG_SYSFS
-int workqueue_sysfs_register(struct workqueue_struct *wq);
-#else	/* CONFIG_SYSFS */
 static inline int workqueue_sysfs_register(struct workqueue_struct *wq)
 { return 0; }
-#endif	/* CONFIG_SYSFS */
 
 static inline void wq_watchdog_touch(int cpu) { }
 

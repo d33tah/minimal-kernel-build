@@ -37,9 +37,6 @@ struct nsproxy init_nsproxy = {
 #endif
 	.mnt_ns			= NULL,
 	.pid_ns_for_children	= &init_pid_ns,
-#ifdef CONFIG_NET
-	.net_ns			= &init_net,
-#endif
 #ifdef CONFIG_TIME_NS
 	.time_ns		= &init_time_ns,
 	.time_ns_for_children	= &init_time_ns,

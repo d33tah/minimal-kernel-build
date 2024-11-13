@@ -1997,17 +1997,10 @@ int lock_device_hotplug_sysfs(void)
 	return restart_syscall();
 }
 
-#ifdef CONFIG_BLOCK
-static inline int device_is_not_partition(struct device *dev)
-{
-	return !(dev->type == &part_type);
-}
-#else
 static inline int device_is_not_partition(struct device *dev)
 {
 	return 1;
 }
-#endif
 
 static void device_platform_notify(struct device *dev)
 {
@@ -2938,14 +2931,6 @@ static struct kobject *get_device_parent(struct device *dev,
 		struct kobject *parent_kobj;
 		struct kobject *k;
 
-#ifdef CONFIG_BLOCK
-		/* block disks show up in /sys/block */
-		if (sysfs_deprecated && dev->class == &block_class) {
-			if (parent && parent->class == &block_class)
-				return &parent->kobj;
-			return &block_class.p->subsys.kobj;
-		}
-#endif
 
 		/*
 		 * If we have no parent, we live in "virtual".
@@ -3118,11 +3103,6 @@ static int device_add_class_symlinks(struct device *dev)
 			goto out_subsys;
 	}
 
-#ifdef CONFIG_BLOCK
-	/* /sys/block has directories and does not need symlinks */
-	if (sysfs_deprecated && dev->class == &block_class)
-		return 0;
-#endif
 
 	/* link in the class directory pointing to the device */
 	error = sysfs_create_link(&dev->class->p->subsys.kobj,
@@ -3153,10 +3133,6 @@ static void device_remove_class_symlinks(struct device *dev)
 	if (dev->parent && device_is_not_partition(dev))
 		sysfs_remove_link(&dev->kobj, "device");
 	sysfs_remove_link(&dev->kobj, "subsystem");
-#ifdef CONFIG_BLOCK
-	if (sysfs_deprecated && dev->class == &block_class)
-		return;
-#endif
 	sysfs_delete_link(&dev->class->p->subsys.kobj, &dev->kobj, dev_name(dev));
 }
 
@@ -4420,10 +4396,6 @@ int device_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid)
 	if (error)
 		goto out;
 
-#ifdef CONFIG_BLOCK
-	if (sysfs_deprecated && dev->class == &block_class)
-		goto out;
-#endif
 
 	/*
 	 * Change the owner of the symlink located in the class directory of

@@ -218,26 +218,11 @@ static inline struct device *driver_find_next_device(struct device_driver *drv,
 	return driver_find_device(drv, start, NULL, device_match_any);
 }
 
-#ifdef CONFIG_ACPI
-/**
- * driver_find_device_by_acpi_dev : device iterator for locating a particular
- * device matching the ACPI_COMPANION device.
- * @drv: the driver we're iterating
- * @adev: ACPI_COMPANION device to match.
- */
-static inline struct device *
-driver_find_device_by_acpi_dev(struct device_driver *drv,
-			       const struct acpi_device *adev)
-{
-	return driver_find_device(drv, NULL, adev, device_match_acpi_dev);
-}
-#else
 static inline struct device *
 driver_find_device_by_acpi_dev(struct device_driver *drv, const void *adev)
 {
 	return NULL;
 }
-#endif
 
 extern int driver_deferred_probe_timeout;
 void driver_deferred_probe_add(struct device *dev);

@@ -1184,14 +1184,10 @@ void devm_clk_hw_unregister(struct device *dev, struct clk_hw *hw);
 /* helper functions */
 const char *__clk_get_name(const struct clk *clk);
 const char *clk_hw_get_name(const struct clk_hw *hw);
-#ifdef CONFIG_COMMON_CLK
-struct clk_hw *__clk_get_hw(struct clk *clk);
-#else
 static inline struct clk_hw *__clk_get_hw(struct clk *clk)
 {
 	return (struct clk_hw *)clk;
 }
-#endif
 
 struct clk *clk_hw_get_clk(struct clk_hw *hw, const char *con_id);
 struct clk *devm_clk_hw_get_clk(struct device *dev, struct clk_hw *hw,
@@ -1408,34 +1404,6 @@ struct clk_hw_onecell_data {
 						      _flags),		\
 	}
 
-#ifdef CONFIG_OF
-int of_clk_add_provider(struct device_node *np,
-			struct clk *(*clk_src_get)(struct of_phandle_args *args,
-						   void *data),
-			void *data);
-int of_clk_add_hw_provider(struct device_node *np,
-			   struct clk_hw *(*get)(struct of_phandle_args *clkspec,
-						 void *data),
-			   void *data);
-int devm_of_clk_add_hw_provider(struct device *dev,
-			   struct clk_hw *(*get)(struct of_phandle_args *clkspec,
-						 void *data),
-			   void *data);
-void of_clk_del_provider(struct device_node *np);
-void devm_of_clk_del_provider(struct device *dev);
-struct clk *of_clk_src_simple_get(struct of_phandle_args *clkspec,
-				  void *data);
-struct clk_hw *of_clk_hw_simple_get(struct of_phandle_args *clkspec,
-				    void *data);
-struct clk *of_clk_src_onecell_get(struct of_phandle_args *clkspec, void *data);
-struct clk_hw *of_clk_hw_onecell_get(struct of_phandle_args *clkspec,
-				     void *data);
-int of_clk_parent_fill(struct device_node *np, const char **parents,
-		       unsigned int size);
-int of_clk_detect_critical(struct device_node *np, int index,
-			    unsigned long *flags);
-
-#else /* !CONFIG_OF */
 
 static inline int of_clk_add_provider(struct device_node *np,
 			struct clk *(*clk_src_get)(struct of_phandle_args *args,
@@ -1490,7 +1458,6 @@ static inline int of_clk_detect_critical(struct device_node *np, int index,
 {
 	return 0;
 }
-#endif /* CONFIG_OF */
 
 void clk_gate_restore_context(struct clk_hw *hw);
 

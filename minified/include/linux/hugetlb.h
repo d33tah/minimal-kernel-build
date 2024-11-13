@@ -438,52 +438,6 @@ enum {
 	HUGETLB_ANONHUGE_INODE  = 2,
 };
 
-#ifdef CONFIG_HUGETLBFS
-struct hugetlbfs_sb_info {
-	long	max_inodes;   /* inodes allowed */
-	long	free_inodes;  /* inodes free */
-	spinlock_t	stat_lock;
-	struct hstate *hstate;
-	struct hugepage_subpool *spool;
-	kuid_t	uid;
-	kgid_t	gid;
-	umode_t mode;
-};
-
-static inline struct hugetlbfs_sb_info *HUGETLBFS_SB(struct super_block *sb)
-{
-	return sb->s_fs_info;
-}
-
-struct hugetlbfs_inode_info {
-	struct shared_policy policy;
-	struct inode vfs_inode;
-	unsigned int seals;
-};
-
-static inline struct hugetlbfs_inode_info *HUGETLBFS_I(struct inode *inode)
-{
-	return container_of(inode, struct hugetlbfs_inode_info, vfs_inode);
-}
-
-extern const struct file_operations hugetlbfs_file_operations;
-extern const struct vm_operations_struct hugetlb_vm_ops;
-struct file *hugetlb_file_setup(const char *name, size_t size, vm_flags_t acct,
-				int creat_flags, int page_size_log);
-
-static inline bool is_file_hugepages(struct file *file)
-{
-	if (file->f_op == &hugetlbfs_file_operations)
-		return true;
-
-	return is_file_shm_hugepages(file);
-}
-
-static inline struct hstate *hstate_inode(struct inode *i)
-{
-	return HUGETLBFS_SB(i->i_sb)->hstate;
-}
-#else /* !CONFIG_HUGETLBFS */
 
 #define is_file_hugepages(file)			false
 static inline struct file *
@@ -497,7 +451,6 @@ static inline struct hstate *hstate_inode(struct inode *i)
 {
 	return NULL;
 }
-#endif /* !CONFIG_HUGETLBFS */
 
 #ifdef HAVE_ARCH_HUGETLB_UNMAPPED_AREA
 unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,

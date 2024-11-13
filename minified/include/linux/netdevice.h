@@ -595,9 +595,6 @@ struct netdev_queue {
 
 	struct Qdisc __rcu	*qdisc;
 	struct Qdisc		*qdisc_sleeping;
-#ifdef CONFIG_SYSFS
-	struct kobject		kobj;
-#endif
 #if defined(CONFIG_XPS) && defined(CONFIG_NUMA)
 	int			numa_node;
 #endif
@@ -2103,9 +2100,6 @@ struct net_device {
 	struct netdev_hw_addr_list	mc;
 	struct netdev_hw_addr_list	dev_addrs;
 
-#ifdef CONFIG_SYSFS
-	struct kset		*queues_kset;
-#endif
 #ifdef CONFIG_LOCKDEP
 	struct list_head	unlink_list;
 #endif
@@ -3694,16 +3688,12 @@ static inline bool netif_is_multiqueue(const struct net_device *dev)
 
 int netif_set_real_num_tx_queues(struct net_device *dev, unsigned int txq);
 
-#ifdef CONFIG_SYSFS
-int netif_set_real_num_rx_queues(struct net_device *dev, unsigned int rxq);
-#else
 static inline int netif_set_real_num_rx_queues(struct net_device *dev,
 						unsigned int rxqs)
 {
 	dev->real_num_rx_queues = rxqs;
 	return 0;
 }
-#endif
 int netif_set_real_num_queues(struct net_device *dev,
 			      unsigned int txq, unsigned int rxq);
 
@@ -3713,17 +3703,6 @@ __netif_get_rx_queue(struct net_device *dev, unsigned int rxq)
 	return dev->_rx + rxq;
 }
 
-#ifdef CONFIG_SYSFS
-static inline unsigned int get_netdev_rx_queue_index(
-		struct netdev_rx_queue *queue)
-{
-	struct net_device *dev = queue->dev;
-	int index = queue - dev->_rx;
-
-	BUG_ON(index >= dev->num_rx_queues);
-	return index;
-}
-#endif
 
 int netif_get_num_default_rss_queues(void);
 
@@ -3956,9 +3935,6 @@ static inline void __netdev_tracker_alloc(struct net_device *dev,
 					  netdevice_tracker *tracker,
 					  gfp_t gfp)
 {
-#ifdef CONFIG_NET_DEV_REFCNT_TRACKER
-	ref_tracker_alloc(&dev->refcnt_tracker, tracker, gfp);
-#endif
 }
 
 /* netdev_tracker_alloc() can upgrade a prior untracked reference
@@ -3967,18 +3943,11 @@ static inline void __netdev_tracker_alloc(struct net_device *dev,
 static inline void netdev_tracker_alloc(struct net_device *dev,
 					netdevice_tracker *tracker, gfp_t gfp)
 {
-#ifdef CONFIG_NET_DEV_REFCNT_TRACKER
-	refcount_dec(&dev->refcnt_tracker.no_tracker);
-	__netdev_tracker_alloc(dev, tracker, gfp);
-#endif
 }
 
 static inline void netdev_tracker_free(struct net_device *dev,
 				       netdevice_tracker *tracker)
 {
-#ifdef CONFIG_NET_DEV_REFCNT_TRACKER
-	ref_tracker_free(&dev->refcnt_tracker, tracker);
-#endif
 }
 
 static inline void dev_hold_track(struct net_device *dev,

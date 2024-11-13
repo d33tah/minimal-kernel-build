@@ -153,30 +153,6 @@ int __init list_bdev_fs_names(char *buf, size_t size)
 	return count;
 }
 
-#ifdef CONFIG_PROC_FS
-static int filesystems_proc_show(struct seq_file *m, void *v)
-{
-	struct file_system_type * tmp;
-
-	read_lock(&file_systems_lock);
-	tmp = file_systems;
-	while (tmp) {
-		seq_printf(m, "%s\t%s\n",
-			(tmp->fs_flags & FS_REQUIRES_DEV) ? "" : "nodev",
-			tmp->name);
-		tmp = tmp->next;
-	}
-	read_unlock(&file_systems_lock);
-	return 0;
-}
-
-static int __init proc_filesystems_init(void)
-{
-	proc_create_single("filesystems", 0, NULL, filesystems_proc_show);
-	return 0;
-}
-module_init(proc_filesystems_init);
-#endif
 
 static struct file_system_type *__get_fs_type(const char *name, int len)
 {

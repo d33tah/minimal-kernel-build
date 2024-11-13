@@ -33,9 +33,6 @@
 
 /* Kernel specific ACPICA configuration */
 
-#ifdef CONFIG_PCI
-#define ACPI_PCI_CONFIGURED
-#endif
 
 #ifdef CONFIG_ACPI_REDUCED_HARDWARE_ONLY
 #define ACPI_REDUCED_HARDWARE 1
@@ -60,9 +57,6 @@
 #ifdef EXPORT_ACPI_INTERFACES
 #include <linux/export.h>
 #endif
-#ifdef CONFIG_ACPI
-#include <asm/acenv.h>
-#endif
 
 #define ACPI_INIT_FUNCTION __init
 
@@ -71,7 +65,6 @@
 #undef ACPI_DEBUG_DEFAULT
 #define ACPI_DEBUG_DEFAULT          (ACPI_LV_INFO | ACPI_LV_REPAIR)
 
-#ifndef CONFIG_ACPI
 
 /* External globals for __KERNEL__, stubs is needed */
 
@@ -100,7 +93,6 @@
 #define ACPI_EXTERNAL_RETURN_PTR(prototype) \
 	static ACPI_INLINE prototype {return(NULL);}
 
-#endif				/* CONFIG_ACPI */
 
 /* Host-dependent types and defines for in-kernel ACPICA */
 

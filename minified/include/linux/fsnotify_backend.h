@@ -234,26 +234,6 @@ struct fsnotify_group {
 	/* groups can define private fields here or use the void *private */
 	union {
 		void *private;
-#ifdef CONFIG_INOTIFY_USER
-		struct inotify_group_private_data {
-			spinlock_t	idr_lock;
-			struct idr      idr;
-			struct ucounts *ucounts;
-		} inotify_data;
-#endif
-#ifdef CONFIG_FANOTIFY
-		struct fanotify_group_private_data {
-			/* Hash table of events for merge */
-			struct hlist_head *merge_hash;
-			/* allows a group to block waiting for a userspace response */
-			struct list_head access_list;
-			wait_queue_head_t access_waitq;
-			int flags;           /* flags from fanotify_init() */
-			int f_flags; /* event_f_flags from fanotify_init() */
-			struct ucounts *ucounts;
-			mempool_t error_events_pool;
-		} fanotify_data;
-#endif /* CONFIG_FANOTIFY */
 	};
 };
 

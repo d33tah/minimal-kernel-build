@@ -200,10 +200,10 @@ __ioremap_caller(resource_size_t phys_addr, unsigned long size,
 	area->phys_addr = phys_addr;
 	vaddr = (unsigned long) area->addr;
 
-	ioremap_page_range(vaddr, vaddr + size, phys_addr, prot);
+	    ioremap_page_range(vaddr, vaddr + size, phys_addr, prot);
 
 	ret_addr = (void __iomem *) (vaddr + offset);
-	mmiotrace_ioremap(unaligned_phys_addr, unaligned_size, ret_addr);
+	    mmiotrace_ioremap(unaligned_phys_addr, unaligned_size, ret_addr);
 
 	return ret_addr;
 }

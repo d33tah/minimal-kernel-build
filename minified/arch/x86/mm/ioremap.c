@@ -199,57 +199,20 @@ __ioremap_caller(resource_size_t phys_addr, unsigned long size,
 
 	retval = memtype_reserve(phys_addr, (u64)phys_addr + size,
 						pcm, &new_pcm);
-	if (retval) {
-		printk(KERN_ERR "ioremap memtype_reserve failed %d\n", retval);
-		return NULL;
-	}
-
-	if (pcm != new_pcm) {
-		if (!is_new_memtype_allowed(phys_addr, size, pcm, new_pcm)) {
-			printk(KERN_ERR
-		"ioremap error for 0x%llx-0x%llx, requested 0x%x, got 0x%x\n",
-				(unsigned long long)phys_addr,
-				(unsigned long long)(phys_addr + size),
-				pcm, new_pcm);
-			goto err_free_memtype;
-		}
-		pcm = new_pcm;
-	}
-
-	/*
-	 * If the page being mapped is in memory and SEV is active then
-	 * make sure the memory encryption attribute is enabled in the
-	 * resulting mapping.
-	 * In TDX guests, memory is marked private by default. If encryption
-	 * is not requested (using encrypted), explicitly set decrypt
-	 * attribute in all IOREMAPPED memory.
-	 */
 	prot = PAGE_KERNEL_IO;
 	area = get_vm_area_caller(size, VM_IOREMAP, caller);
-	if (!area)
-		goto err_free_memtype;
 	area->phys_addr = phys_addr;
 	vaddr = (unsigned long) area->addr;
 
-	if (ioremap_page_range(vaddr, vaddr + size, phys_addr, prot))
-		goto err_free_area;
+	ioremap_page_range(vaddr, vaddr + size, phys_addr, prot);
 
 	ret_addr = (void __iomem *) (vaddr + offset);
 	mmiotrace_ioremap(unaligned_phys_addr, unaligned_size, ret_addr);
 
-	/*
-	 * Check if the request spans more than any BAR in the iomem resource
-	 * tree.
-	 */
 	if (iomem_map_sanity_check(unaligned_phys_addr, unaligned_size))
 		pr_warn("caller %pS mapping multiple BARs\n", caller);
 
 	return ret_addr;
-err_free_area:
-	free_vm_area(area);
-err_free_memtype:
-	memtype_free(phys_addr, phys_addr + size);
-	return NULL;
 }
 
 /**

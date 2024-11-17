@@ -189,16 +189,12 @@ __ioremap_caller(resource_size_t phys_addr, unsigned long size,
 	int retval;
 	void __iomem *ret_addr;
 
-	/* Don't allow wraparound or zero size */
 	last_addr = phys_addr + size - 1;
-	__ioremap_check_mem(phys_addr, size, &io_desc);
 
 	offset = phys_addr & ~PAGE_MASK;
 	phys_addr &= PHYSICAL_PAGE_MASK;
 	size = PAGE_ALIGN(last_addr+1) - phys_addr;
 
-	retval = memtype_reserve(phys_addr, (u64)phys_addr + size,
-						pcm, &new_pcm);
 	prot = PAGE_KERNEL_IO;
 	area = get_vm_area_caller(size, VM_IOREMAP, caller);
 	area->phys_addr = phys_addr;
@@ -208,9 +204,6 @@ __ioremap_caller(resource_size_t phys_addr, unsigned long size,
 
 	ret_addr = (void __iomem *) (vaddr + offset);
 	mmiotrace_ioremap(unaligned_phys_addr, unaligned_size, ret_addr);
-
-	if (iomem_map_sanity_check(unaligned_phys_addr, unaligned_size))
-		pr_warn("caller %pS mapping multiple BARs\n", caller);
 
 	return ret_addr;
 }

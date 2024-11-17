@@ -191,30 +191,8 @@ __ioremap_caller(resource_size_t phys_addr, unsigned long size,
 
 	/* Don't allow wraparound or zero size */
 	last_addr = phys_addr + size - 1;
-	if (!size || last_addr < phys_addr)
-		return NULL;
-
-	if (!phys_addr_valid(phys_addr)) {
-		printk(KERN_WARNING "ioremap: invalid physical address %llx\n",
-		       (unsigned long long)phys_addr);
-		WARN_ON_ONCE(1);
-		return NULL;
-	}
-
 	__ioremap_check_mem(phys_addr, size, &io_desc);
 
-	/*
-	 * Don't allow anybody to remap normal RAM that we're using..
-	 */
-	if (io_desc.flags & IORES_MAP_SYSTEM_RAM) {
-		WARN_ONCE(1, "ioremap on RAM at %pa - %pa\n",
-			  &phys_addr, &last_addr);
-		return NULL;
-	}
-
-	/*
-	 * Mappings have to be page-aligned
-	 */
 	offset = phys_addr & ~PAGE_MASK;
 	phys_addr &= PHYSICAL_PAGE_MASK;
 	size = PAGE_ALIGN(last_addr+1) - phys_addr;

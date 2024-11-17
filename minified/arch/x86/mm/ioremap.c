@@ -247,44 +247,11 @@ __ioremap_caller(resource_size_t phys_addr, unsigned long size,
 	 * attribute in all IOREMAPPED memory.
 	 */
 	prot = PAGE_KERNEL_IO;
-	if ((io_desc.flags & IORES_MAP_ENCRYPTED) || encrypted)
-		prot = pgprot_encrypted(prot);
-	else
-		prot = pgprot_decrypted(prot);
-
-	switch (pcm) {
-	case _PAGE_CACHE_MODE_UC:
-	default:
-		prot = __pgprot(pgprot_val(prot) |
-				cachemode2protval(_PAGE_CACHE_MODE_UC));
-		break;
-	case _PAGE_CACHE_MODE_UC_MINUS:
-		prot = __pgprot(pgprot_val(prot) |
-				cachemode2protval(_PAGE_CACHE_MODE_UC_MINUS));
-		break;
-	case _PAGE_CACHE_MODE_WC:
-		prot = __pgprot(pgprot_val(prot) |
-				cachemode2protval(_PAGE_CACHE_MODE_WC));
-		break;
-	case _PAGE_CACHE_MODE_WT:
-		prot = __pgprot(pgprot_val(prot) |
-				cachemode2protval(_PAGE_CACHE_MODE_WT));
-		break;
-	case _PAGE_CACHE_MODE_WB:
-		break;
-	}
-
-	/*
-	 * Ok, go for it..
-	 */
 	area = get_vm_area_caller(size, VM_IOREMAP, caller);
 	if (!area)
 		goto err_free_memtype;
 	area->phys_addr = phys_addr;
 	vaddr = (unsigned long) area->addr;
-
-	if (memtype_kernel_map_sync(phys_addr, size, pcm))
-		goto err_free_area;
 
 	if (ioremap_page_range(vaddr, vaddr + size, phys_addr, prot))
 		goto err_free_area;

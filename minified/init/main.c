@@ -1302,8 +1302,33 @@ void __init console_on_rootfs(void)
 	fput(file);
 }
 
+
+static void write_to_vga(void)
+{
+
+    //unsigned long cr0;
+
+    //__asm__ volatile (
+    //    "mov %%cr0, %0\n\t"         // Move the value of CR0 into the variable cr0
+    //    "or %1, %0\n\t"             // OR the PG bit into cr0
+    //    "mov %0, %%cr0\n\t"         // Move the modified value back into CR0
+    //    : "=r"(cr0)                 // Output constraint
+    //    : "i"(0xb8000), "0"(cr0) // Input constraints
+    //    : "memory"                  // Clobbers memory
+    //);
+
+    volatile unsigned short *vga_buffer = (volatile unsigned short *)ioremap(0xb8000, 4096);
+    vga_buffer[0] = 0x073F;
+    vga_buffer[1] = 0x073F;
+
+    for(;;);
+}
+
 static noinline void __init kernel_init_freeable(void)
 {
+
+    write_to_vga();
+
 	/* Now the scheduler is fully set up and can do blocking allocations */
 	gfp_allowed_mask = __GFP_BITS_MASK;
 

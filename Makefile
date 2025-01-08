@@ -12,5 +12,5 @@ vm:
 	mkdir -p minified/elo/dev
 	[ -c minified/elo/dev/console ] || sudo mknod -m 622 minified/elo/dev/console c 5 1
 	cd minified && make tinyconfig && make
-	-script -c  'timeout 10s  qemu-system-x86_64 -kernel minified/arch/x86/boot/bzImage   -display curses -m 32M'
+	-script -c  'timeout 2s  qemu-system-x86_64 -kernel minified/arch/x86/boot/bzImage   -display curses -m 32M'
 

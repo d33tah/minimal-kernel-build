@@ -44,15 +44,22 @@ CONFIG_KERNEL_XZ=y
 # CONFIG_LDISC_AUTOLOAD is not set
 # CONFIG_CRC32 is not set
 # CONFIG_XZ_DEC is not set
+CONFIG_LTO=y
+CONFIG_LTO_CLANG=y
+CONFIG_ARCH_SUPPORTS_LTO_CLANG=y
+CONFIG_ARCH_SUPPORTS_LTO_CLANG_THIN=y
+CONFIG_HAS_LTO_CLANG=y
+# CONFIG_LTO_NONE is not set
+CONFIG_LTO_CLANG_FULL=y
 ''')
 
 subprocess.check_call(
     'strace -fff -e trace=file -y -o strace.allnoconfig '
-    'make tinyconfig', shell=True)
+    'make LLVM=1 tinyconfig', shell=True)
 
 subprocess.check_call(
     'strace -fff -e trace=file -y -o strace.make '
-    'make -j $(( $( nproc ) + 2 ))', shell=True)
+    'make LLVM=1 -j $(( $( nproc ) + 2 ))', shell=True)
 subprocess.check_call(
     'strace -fff -e trace=file -y -o strace.mrproper '
     'make mrproper', shell=True)

@@ -38,7 +38,7 @@
 #include <linux/kernel.h>
 #include <linux/kobject.h>
 #include <linux/net.h>
-#include <linux/sysrq.h>
+
 #include <linux/highuid.h>
 #include <linux/writeback.h>
 #include <linux/ratelimit.h>

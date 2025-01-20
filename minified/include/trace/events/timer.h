@@ -367,4 +367,4 @@ TRACE_EVENT(itimer_expire,
 #endif /*  _TRACE_TIMER_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

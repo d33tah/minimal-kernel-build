@@ -16,4 +16,4 @@
 #endif /*  _TRACE_IRQ_VECTORS_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

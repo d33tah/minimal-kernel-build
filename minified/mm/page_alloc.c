@@ -56,7 +56,7 @@
 #include <linux/compaction.h>
 #include <trace/events/kmem.h>
 #include <trace/events/oom.h>
-#include <linux/prefetch.h>
+
 #include <linux/mm_inline.h>
 #include <linux/mmu_notifier.h>
 #include <linux/migrate.h>

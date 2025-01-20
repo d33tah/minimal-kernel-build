@@ -4,7 +4,7 @@
 
 #include <linux/compiler.h>
 #include <linux/instrumentation.h>
-#include <linux/once_lite.h>
+
 
 #define CUT_HERE		"------------[ cut here ]------------\n"
 

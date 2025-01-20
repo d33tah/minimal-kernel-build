@@ -9,9 +9,9 @@
 #define _CRYPTO_HASH_INFO_H
 
 #include <crypto/sha1.h>
-#include <crypto/sha2.h>
-#include <crypto/md5.h>
-#include <crypto/streebog.h>
+
+
+
 
 #include <uapi/linux/hash_info.h>
 

@@ -139,4 +139,4 @@ DEFINE_EVENT(migration_pte, remove_migration_pte,
 #endif /* _TRACE_MIGRATE_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

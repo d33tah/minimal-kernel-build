@@ -92,4 +92,4 @@ TRACE_EVENT(cpuhp_exit,
 #endif
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

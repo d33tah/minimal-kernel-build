@@ -2,7 +2,7 @@
 /* System call table for i386. */
 
 #include <linux/linkage.h>
-#include <linux/sys.h>
+
 #include <linux/cache.h>
 #include <linux/syscalls.h>
 #include <asm/syscall.h>

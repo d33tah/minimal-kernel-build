@@ -16,7 +16,7 @@
 
 #include <linux/const.h>
 #include <linux/types.h>
-#include <linux/if_ether.h>
+
 
 #ifndef __KERNEL__
 #include <limits.h> /* for INT_MAX */

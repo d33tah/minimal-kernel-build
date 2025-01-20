@@ -49,7 +49,7 @@
 #include <linux/security.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
-#include <linux/page_counter.h>
+
 #include <linux/memcontrol.h>
 #include <linux/static_key.h>
 #include <linux/sched.h>

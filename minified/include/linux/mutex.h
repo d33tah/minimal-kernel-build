@@ -17,7 +17,7 @@
 #include <linux/lockdep.h>
 #include <linux/atomic.h>
 #include <asm/processor.h>
-#include <linux/osq_lock.h>
+
 #include <linux/debug_locks.h>
 
 # define __DEP_MAP_MUTEX_INITIALIZER(lockname)

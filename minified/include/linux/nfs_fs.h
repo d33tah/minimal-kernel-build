@@ -9,7 +9,7 @@
 #ifndef _LINUX_NFS_FS_H
 #define _LINUX_NFS_FS_H
 
-#include <uapi/linux/nfs_fs.h>
+
 
 
 /*
@@ -24,9 +24,9 @@
 #include <linux/rwsem.h>
 #include <linux/wait.h>
 
-#include <linux/sunrpc/debug.h>
+
 #include <linux/sunrpc/auth.h>
-#include <linux/sunrpc/clnt.h>
+
 
 #include <linux/nfs.h>
 #include <linux/nfs2.h>

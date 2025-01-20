@@ -20,7 +20,7 @@
 #include <linux/timex.h>
 #include <linux/tick.h>
 #include <linux/stop_machine.h>
-#include <linux/pvclock_gtod.h>
+
 #include <linux/compiler.h>
 #include <linux/audit.h>
 

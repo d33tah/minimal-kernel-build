@@ -24,7 +24,7 @@
 #include <linux/err.h>
 #include <linux/irqflags.h>
 #include <linux/context_tracking.h>
-#include <linux/irqbypass.h>
+
 #include <linux/rcuwait.h>
 #include <linux/refcount.h>
 #include <linux/nospec.h>
@@ -38,7 +38,7 @@
 #include <asm/signal.h>
 
 #include <linux/kvm.h>
-#include <linux/kvm_para.h>
+
 
 #include <linux/kvm_types.h>
 

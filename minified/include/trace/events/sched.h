@@ -712,4 +712,4 @@ DECLARE_TRACE(sched_update_nr_running_tp,
 #endif /* _TRACE_SCHED_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

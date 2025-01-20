@@ -30,7 +30,7 @@
 #define ACPI_HANDLE_FWNODE(fwnode)	(NULL)
 #define ACPI_DEVICE_CLASS(_cls, _msk)	.cls = (0), .cls_msk = (0),
 
-#include <acpi/acpi_numa.h>
+
 
 struct fwnode_handle;
 

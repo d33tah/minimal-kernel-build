@@ -12,7 +12,7 @@
 #include <linux/kernel.h>
 #include <linux/of.h>
 #include <linux/of_address.h>
-#include <linux/of_graph.h>
+
 #include <linux/of_irq.h>
 #include <linux/property.h>
 #include <linux/phy.h>

@@ -29,7 +29,7 @@
 #include <linux/uaccess.h>
 #include <linux/initrd.h>
 
-#include <trace/events/module.h>
+
 
 #define CAP_BSET	(void *)1
 #define CAP_PI		(void *)2

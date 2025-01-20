@@ -46,7 +46,7 @@
 #include <linux/sysctl.h>
 #include <linux/oom.h>
 #include <linux/pagevec.h>
-#include <linux/prefetch.h>
+
 #include <linux/printk.h>
 #include <linux/dax.h>
 #include <linux/psi.h>
@@ -55,7 +55,7 @@
 #include <asm/div64.h>
 
 #include <linux/swapops.h>
-#include <linux/balloon_compaction.h>
+
 #include <linux/sched/sysctl.h>
 
 #include "internal.h"

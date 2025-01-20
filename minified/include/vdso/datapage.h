@@ -14,7 +14,7 @@
 #include <vdso/ktime.h>
 #include <vdso/limits.h>
 #include <vdso/math64.h>
-#include <vdso/processor.h>
+
 #include <vdso/time.h>
 #include <vdso/time32.h>
 #include <vdso/time64.h>

@@ -10,7 +10,7 @@
 
 #include <linux/sunrpc/msg_prot.h>
 #include <linux/string.h>
-#include <uapi/linux/nfs.h>
+
 
 /*
  * This is the kernel NFS client file handle representation

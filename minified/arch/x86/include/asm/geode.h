@@ -9,7 +9,7 @@
 
 #include <asm/processor.h>
 #include <linux/io.h>
-#include <linux/cs5535.h>
+
 
 static inline int is_geode_gx(void)
 {

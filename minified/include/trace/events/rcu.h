@@ -779,4 +779,4 @@ TRACE_EVENT_RCU(rcu_barrier,
 #endif /* _TRACE_RCU_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

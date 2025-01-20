@@ -53,4 +53,4 @@ DEFINE_EVENT(devres, devres_log,
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE trace
 
-#include <trace/define_trace.h>
+

@@ -717,4 +717,4 @@ DEFINE_EVENT(writeback_inode_template, sb_clear_inode_writeback,
 #endif /* _TRACE_WRITEBACK_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

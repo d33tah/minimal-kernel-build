@@ -137,6 +137,6 @@ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
 
 unsigned long __get_current_cr3_fast(void);
 
-#include <asm-generic/mmu_context.h>
+
 
 #endif /* _ASM_X86_MMU_CONTEXT_H */

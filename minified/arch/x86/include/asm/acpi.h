@@ -6,7 +6,7 @@
  *  Copyright (C) 2001 Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>
  *  Copyright (C) 2001 Patrick Mochel <mochel@osdl.org>
  */
-#include <acpi/pdc_intel.h>
+
 
 #include <asm/numa.h>
 #include <asm/fixmap.h>

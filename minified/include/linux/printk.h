@@ -7,7 +7,7 @@
 #include <linux/kern_levels.h>
 #include <linux/linkage.h>
 #include <linux/ratelimit_types.h>
-#include <linux/once_lite.h>
+
 
 extern const char linux_banner[];
 extern const char linux_proc_banner[];

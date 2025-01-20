@@ -18,13 +18,13 @@
 #include <linux/workqueue.h>
 
 #include <linux/kvm.h>
-#include <linux/kvm_para.h>
+
 #include <linux/kvm_types.h>
 #include <linux/perf_event.h>
-#include <linux/pvclock_gtod.h>
+
 #include <linux/clocksource.h>
-#include <linux/irqbypass.h>
-#include <linux/hyperv.h>
+
+
 
 #include <asm/apic.h>
 #include <asm/pvclock-abi.h>

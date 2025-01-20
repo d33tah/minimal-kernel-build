@@ -25,7 +25,7 @@
 #include <linux/bug.h>
 #include <linux/delay.h>
 #include <linux/atomic.h>
-#include <linux/prefetch.h>
+
 #include <asm/cache.h>
 #include <asm/byteorder.h>
 #include <asm/local.h>
@@ -33,17 +33,17 @@
 #include <linux/percpu.h>
 #include <linux/rculist.h>
 #include <linux/workqueue.h>
-#include <linux/dynamic_queue_limits.h>
+
 
 #include <net/net_namespace.h>
-#include <net/netprio_cgroup.h>
+
 #include <net/xdp.h>
 
 #include <linux/netdev_features.h>
 #include <linux/neighbour.h>
 #include <uapi/linux/netdevice.h>
 #include <uapi/linux/if_bonding.h>
-#include <uapi/linux/pkt_cls.h>
+
 #include <linux/hashtable.h>
 #include <linux/rbtree.h>
 #include <net/net_trackers.h>

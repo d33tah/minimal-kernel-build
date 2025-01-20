@@ -21,10 +21,10 @@
 #define _ROUTE_H
 
 #include <net/dst.h>
-#include <net/inetpeer.h>
+
 #include <net/flow.h>
 #include <net/inet_sock.h>
-#include <net/ip_fib.h>
+
 #include <net/arp.h>
 #include <net/ndisc.h>
 #include <linux/in_route.h>

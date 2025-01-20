@@ -334,9 +334,9 @@ static __always_inline int fls(unsigned int x)
 #include <asm-generic/bitops/instrumented-non-atomic.h>
 #include <asm-generic/bitops/instrumented-lock.h>
 
-#include <asm-generic/bitops/le.h>
 
-#include <asm-generic/bitops/ext2-atomic-setbit.h>
+
+
 
 #endif /* __KERNEL__ */
 #endif /* _ASM_X86_BITOPS_H */

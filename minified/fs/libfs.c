@@ -11,7 +11,7 @@
 #include <linux/cred.h>
 #include <linux/mount.h>
 #include <linux/vfs.h>
-#include <linux/quotaops.h>
+
 #include <linux/mutex.h>
 #include <linux/namei.h>
 #include <linux/exportfs.h>
@@ -20,7 +20,7 @@
 #include <linux/fs_context.h>
 #include <linux/pseudo_fs.h>
 #include <linux/fsnotify.h>
-#include <linux/unicode.h>
+
 #include <linux/fscrypt.h>
 
 #include <linux/uaccess.h>

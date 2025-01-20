@@ -11,10 +11,10 @@
 #include <linux/string.h> /* for memset() and memcpy() */
 #include <linux/types.h>
 
-#include <asm-generic/iomap.h>
+
 
 #include <asm/mmiowb.h>
-#include <asm-generic/pci_iomap.h>
+
 
 #ifndef __io_br
 #define __io_br()      barrier()

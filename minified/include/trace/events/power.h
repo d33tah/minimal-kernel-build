@@ -503,4 +503,4 @@ DEFINE_EVENT(dev_pm_qos_request, dev_pm_qos_remove_request,
 #endif /* _TRACE_POWER_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

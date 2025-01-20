@@ -11,7 +11,7 @@
 #ifndef __LINUX_OPP_H__
 #define __LINUX_OPP_H__
 
-#include <linux/energy_model.h>
+
 #include <linux/err.h>
 #include <linux/notifier.h>
 

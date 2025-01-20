@@ -21,7 +21,7 @@
 
 #include <linux/device.h>
 #include <linux/dma-mapping.h>
-#include <linux/dmapool.h>
+
 #include <linux/kernel.h>
 #include <linux/list.h>
 #include <linux/export.h>

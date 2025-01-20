@@ -19,8 +19,8 @@
 #include <linux/percpu-rwsem.h>
 #include <linux/u64_stats_sync.h>
 #include <linux/workqueue.h>
-#include <linux/bpf-cgroup-defs.h>
-#include <linux/psi_types.h>
+
+
 
 
 #define CGROUP_SUBSYS_COUNT 0

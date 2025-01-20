@@ -24,7 +24,7 @@
 #include <asm/types.h>
 #include <linux/spinlock.h>
 #include <linux/net.h>
-#include <linux/textsearch.h>
+
 #include <net/checksum.h>
 #include <linux/rcupdate.h>
 #include <linux/hrtimer.h>

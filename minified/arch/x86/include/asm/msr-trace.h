@@ -55,4 +55,4 @@ DEFINE_EVENT(msr_trace_class, rdpmc,
 #endif /* _TRACE_MSR_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

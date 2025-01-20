@@ -53,7 +53,7 @@ static inline void early_quirks(void) { }
 extern void pci_iommu_alloc(void);
 
 /* generic pci stuff */
-#include <asm-generic/pci.h>
+
 
 
 struct pci_setup_rom {

@@ -2,7 +2,7 @@
 #include <linux/module.h>
 #include <linux/sched.h>
 #include <linux/ctype.h>
-#include <linux/fd.h>
+
 #include <linux/tty.h>
 #include <linux/suspend.h>
 #include <linux/root_dev.h>

@@ -7,7 +7,7 @@
 #include <asm/checksum.h>
 #include <asm/mce.h>
 
-#include <asm-generic/asm-prototypes.h>
+
 
 #include <asm/special_insns.h>
 #include <asm/preempt.h>

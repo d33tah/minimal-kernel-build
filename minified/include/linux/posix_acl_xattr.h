@@ -12,7 +12,7 @@
 
 #include <uapi/linux/xattr.h>
 #include <uapi/linux/posix_acl_xattr.h>
-#include <linux/posix_acl.h>
+
 
 static inline size_t
 posix_acl_xattr_size(int count)

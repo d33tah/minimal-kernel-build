@@ -8,8 +8,6 @@
 #ifndef _LINUX_TSACCT_KERN_H
 #define _LINUX_TSACCT_KERN_H
 
-#include <linux/taskstats.h>
-
 static inline void bacct_add_tsk(struct user_namespace *user_ns,
 				 struct pid_namespace *pid_ns,
 				 struct taskstats *stats, struct task_struct *tsk)

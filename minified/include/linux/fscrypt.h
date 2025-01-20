@@ -16,7 +16,7 @@
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/slab.h>
-#include <uapi/linux/fscrypt.h>
+
 
 /*
  * The lengths of all file contents blocks must be divisible by this value.

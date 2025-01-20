@@ -4,7 +4,7 @@
 
 #include <linux/list.h>
 #include <asm/page.h>
-#include <uapi/linux/shm.h>
+
 #include <asm/shmparam.h>
 
 struct file;

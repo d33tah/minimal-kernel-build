@@ -27,7 +27,7 @@
 #include <linux/wait.h>
 #include <linux/rbtree.h>
 #include <linux/uidgid.h>
-#include <uapi/linux/sysctl.h>
+
 
 /* For the /proc/sys support */
 struct completion;

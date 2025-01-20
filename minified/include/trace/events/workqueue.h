@@ -127,4 +127,4 @@ TRACE_EVENT(workqueue_execute_end,
 #endif /*  _TRACE_WORKQUEUE_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

@@ -10,7 +10,7 @@
 #include <linux/sched.h>
 #include <linux/sched/coredump.h>
 #include <linux/key.h>
-#include <linux/keyctl.h>
+
 #include <linux/init_task.h>
 #include <linux/security.h>
 #include <linux/binfmts.h>

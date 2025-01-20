@@ -368,8 +368,8 @@ struct acpi_table_desc {
  * Get the remaining ACPI tables
  */
 #include <acpi/actbl1.h>
-#include <acpi/actbl2.h>
-#include <acpi/actbl3.h>
+
+
 
 /* Macros used to generate offsets to specific table fields */
 

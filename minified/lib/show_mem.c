@@ -6,7 +6,7 @@
  */
 
 #include <linux/mm.h>
-#include <linux/cma.h>
+
 
 void show_mem(unsigned int filter, nodemask_t *nodemask)
 {

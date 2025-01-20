@@ -73,4 +73,4 @@ DEFINE_EVENT(error_report_template, error_report_end,
 #endif /* _TRACE_ERROR_REPORT_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

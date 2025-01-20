@@ -35,4 +35,4 @@ TRACE_EVENT(nmi_handler,
 #endif /* _TRACE_NMI_H */
 
 /* This part ust be outside protection */
-#include <trace/define_trace.h>
+

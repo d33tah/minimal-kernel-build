@@ -94,4 +94,4 @@ DEFINE_EVENT(alarm_class, alarmtimer_cancel,
 #endif /* _TRACE_ALARMTIMER_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

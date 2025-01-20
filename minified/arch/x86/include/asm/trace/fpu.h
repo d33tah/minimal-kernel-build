@@ -96,4 +96,4 @@ DEFINE_EVENT(x86_fpu, x86_fpu_xstate_check_failed,
 #endif /* _TRACE_FPU_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

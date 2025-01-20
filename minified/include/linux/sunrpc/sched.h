@@ -12,11 +12,11 @@
 
 #include <linux/timer.h>
 #include <linux/ktime.h>
-#include <linux/sunrpc/types.h>
+
 #include <linux/spinlock.h>
 #include <linux/wait_bit.h>
 #include <linux/workqueue.h>
-#include <linux/sunrpc/xdr.h>
+
 
 /*
  * This is the actual RPC procedure call info.

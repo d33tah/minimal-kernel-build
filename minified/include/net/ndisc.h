@@ -51,7 +51,7 @@ enum {
 #define ND_RETRANS_TIMER		HZ
 
 #include <linux/compiler.h>
-#include <linux/icmpv6.h>
+
 #include <linux/in6.h>
 #include <linux/types.h>
 #include <linux/if_arp.h>

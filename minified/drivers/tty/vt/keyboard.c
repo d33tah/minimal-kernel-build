@@ -31,7 +31,7 @@
 #include <linux/jiffies.h>
 #include <linux/kbd_diacr.h>
 #include <linux/kbd_kern.h>
-#include <linux/leds.h>
+
 #include <linux/mm.h>
 #include <linux/module.h>
 #include <linux/nospec.h>

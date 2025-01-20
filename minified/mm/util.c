@@ -20,7 +20,7 @@
 #include <linux/elf-randomize.h>
 #include <linux/personality.h>
 #include <linux/random.h>
-#include <linux/processor.h>
+
 #include <linux/sizes.h>
 #include <linux/compat.h>
 

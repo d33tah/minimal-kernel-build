@@ -67,4 +67,4 @@ TRACE_EVENT(contention_end,
 #endif /* _TRACE_LOCK_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

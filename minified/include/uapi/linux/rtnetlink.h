@@ -4,7 +4,7 @@
 
 #include <linux/types.h>
 #include <linux/netlink.h>
-#include <linux/if_link.h>
+
 #include <linux/if_addr.h>
 #include <linux/neighbour.h>
 

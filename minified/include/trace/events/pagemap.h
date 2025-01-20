@@ -80,4 +80,4 @@ TRACE_EVENT(mm_lru_activate,
 #endif /* _TRACE_PAGEMAP_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

@@ -9,7 +9,7 @@
 #define _LINUX_EVENTPOLL_H
 
 #include <uapi/linux/eventpoll.h>
-#include <uapi/linux/kcmp.h>
+
 
 
 /* Forward declarations to avoid compiler errors */

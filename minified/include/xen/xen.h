@@ -21,7 +21,7 @@ enum xen_domain_type {
 
 extern uint32_t xen_start_flags;
 
-#include <xen/interface/hvm/start_info.h>
+
 extern struct hvm_start_info pvh_start_info;
 
 #define xen_initial_domain()	(0)

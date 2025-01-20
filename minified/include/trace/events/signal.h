@@ -122,4 +122,4 @@ TRACE_EVENT(signal_deliver,
 #endif /* _TRACE_SIGNAL_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

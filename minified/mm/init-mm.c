@@ -10,7 +10,7 @@
 
 #include <linux/atomic.h>
 #include <linux/user_namespace.h>
-#include <linux/ioasid.h>
+
 #include <asm/mmu.h>
 
 #ifndef INIT_MM_CONTEXT

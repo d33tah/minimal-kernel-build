@@ -5,7 +5,7 @@
 #include <linux/fs_struct.h>
 #include <linux/fs.h>
 #include <linux/slab.h>
-#include <linux/prefetch.h>
+
 #include "mount.h"
 
 struct prepend_buffer {

@@ -102,7 +102,7 @@
 #include <linux/device.h>
 #include <linux/io.h>
 #include <linux/uaccess.h>
-#include <linux/kdb.h>
+
 #include <linux/ctype.h>
 #include <linux/bsearch.h>
 #include <linux/gcd.h>

@@ -15,7 +15,7 @@
 
 #include <linux/types.h>
 #include <linux/interrupt.h>
-#include <linux/nvmem-provider.h>
+
 #include <uapi/linux/rtc.h>
 
 extern int rtc_month_days(unsigned int month, unsigned int year);

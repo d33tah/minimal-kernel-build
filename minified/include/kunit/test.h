@@ -9,7 +9,7 @@
 #ifndef _KUNIT_TEST_H
 #define _KUNIT_TEST_H
 
-#include <kunit/assert.h>
+
 #include <kunit/try-catch.h>
 
 #include <linux/compiler.h>
@@ -1346,6 +1346,6 @@ do {									       \
 
 // TODO(dlatypov@google.com): consider eventually migrating users to explicitly
 // include resource.h themselves if they need it.
-#include <kunit/resource.h>
+
 
 #endif /* _KUNIT_TEST_H */

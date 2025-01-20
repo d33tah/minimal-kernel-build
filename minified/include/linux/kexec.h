@@ -18,7 +18,7 @@
 #include <linux/crash_core.h>
 #include <asm/io.h>
 
-#include <uapi/linux/kexec.h>
+
 
 /* Location of a reserved region to hold the crash kernel.
  */

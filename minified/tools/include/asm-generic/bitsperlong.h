@@ -2,7 +2,7 @@
 #ifndef __ASM_GENERIC_BITS_PER_LONG
 #define __ASM_GENERIC_BITS_PER_LONG
 
-#include <uapi/asm-generic/bitsperlong.h>
+
 
 #ifdef __SIZEOF_LONG__
 #define BITS_PER_LONG (__CHAR_BIT__ * __SIZEOF_LONG__)

@@ -16,7 +16,7 @@
 #include <asm/x86_init.h>
 
 #include <xen/xen.h>
-#include <xen/swiotlb-xen.h>
+
 
 static bool disable_dac_quirk __read_mostly;
 

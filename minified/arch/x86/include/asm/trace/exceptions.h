@@ -51,4 +51,4 @@ DEFINE_PAGE_FAULT_EVENT(page_fault_kernel);
 #endif /*  _TRACE_PAGE_FAULT_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

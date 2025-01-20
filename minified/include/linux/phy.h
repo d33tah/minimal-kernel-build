@@ -25,7 +25,7 @@
 #include <linux/mod_devicetable.h>
 #include <linux/u64_stats_sync.h>
 #include <linux/irqreturn.h>
-#include <linux/iopoll.h>
+
 #include <linux/refcount.h>
 
 #include <linux/atomic.h>

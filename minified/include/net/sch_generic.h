@@ -6,9 +6,8 @@
 #include <linux/types.h>
 #include <linux/rcupdate.h>
 #include <linux/pkt_sched.h>
-#include <linux/pkt_cls.h>
 #include <linux/percpu.h>
-#include <linux/dynamic_queue_limits.h>
+
 #include <linux/list.h>
 #include <linux/refcount.h>
 #include <linux/workqueue.h>

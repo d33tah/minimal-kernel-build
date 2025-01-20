@@ -21,7 +21,7 @@
 #include <linux/percpu-refcount.h>
 #include <linux/blkzoned.h>
 #include <linux/sched.h>
-#include <linux/sbitmap.h>
+
 #include <linux/srcu.h>
 #include <linux/uuid.h>
 #include <linux/xarray.h>

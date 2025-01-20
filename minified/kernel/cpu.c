@@ -9,7 +9,7 @@
 #include <linux/init.h>
 #include <linux/notifier.h>
 #include <linux/sched/signal.h>
-#include <linux/sched/hotplug.h>
+
 #include <linux/sched/isolation.h>
 #include <linux/sched/task.h>
 #include <linux/sched/smt.h>
@@ -29,7 +29,7 @@
 #include <linux/irq.h>
 #include <linux/nmi.h>
 #include <linux/smpboot.h>
-#include <linux/relay.h>
+
 #include <linux/slab.h>
 #include <linux/scs.h>
 #include <linux/percpu-rwsem.h>

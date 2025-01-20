@@ -163,4 +163,4 @@ DEFINE_EVENT(softirq, softirq_raise,
 #endif /*  _TRACE_IRQ_H */
 
 /* This part must be outside protection */
-#include <trace/define_trace.h>
+

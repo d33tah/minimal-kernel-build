@@ -21,7 +21,7 @@
 #include <linux/init.h>
 #include <linux/time.h>
 #include <linux/cpu.h>
-#include <linux/prefetch.h>
+
 #include <linux/slab.h>
 #include <linux/mm.h>
 

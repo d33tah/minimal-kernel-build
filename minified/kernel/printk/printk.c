@@ -37,7 +37,7 @@
 #include <linux/crash_core.h>
 #include <linux/ratelimit.h>
 #include <linux/kmsg_dump.h>
-#include <linux/syslog.h>
+
 #include <linux/cpu.h>
 #include <linux/rculist.h>
 #include <linux/poll.h>
@@ -53,7 +53,7 @@
 
 #include <trace/events/initcall.h>
 #define CREATE_TRACE_POINTS
-#include <trace/events/printk.h>
+
 
 #include "printk_ringbuffer.h"
 #include "console_cmdline.h"

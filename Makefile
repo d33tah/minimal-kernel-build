@@ -10,7 +10,6 @@ copy:
 	chown 1000:1000 -R minified
 
 vm:
-	mkdir -p minified/elo/dev
 	cd minified && make LLVM=1 tinyconfig && make LLVM=1 -j1
 	./vmtest.tcl
 	ls -lh minified/arch/x86/boot/bzImage*

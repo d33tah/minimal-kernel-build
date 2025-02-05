@@ -43,11 +43,29 @@ _start:
     mov edx, hello_len
     int 0x80
 
+    ; read one byte somewhere from stdin so we can test terminal:
+    mov eax, 3
+    xor ebx, ebx
+    mov ecx, hello
+    mov edx, 1
+    int 0x80
+
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, still_alive_msg
+    mov edx, still_alive_len
+    int 0x80
+
     mov eax, 1
     xor ebx, ebx
     int 0x80
 
-    hello db 'Hello, World!', 0xA
-    hello_len equ $ - hello
+hello:
+hello db 'Hello, World!', 0xA
+hello_len equ $ - hello
+
+still_alive_msg:
+still_alive_msg db 'Still alive', 0xA
+still_alive_len equ $ - still_alive_msg
 
 filesize      equ     $ - $$

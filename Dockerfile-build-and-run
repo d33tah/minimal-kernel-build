@@ -1,0 +1,9 @@
+FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y build-essential llvm clang lld flex yacc bison bc qemu-system-x86 expect
+ADD minified minified
+RUN cd minified ; LLVM=1 make tinyconfig ; LLVM=1 make -j`nproc`
+ADD Makefile Makefile
+# RUN apt-get install screen -y
+ADD vmtest.tcl vmtest.tcl
+RUN TERM=xterm make vm

@@ -20,4 +20,4 @@ jobs:
       uses: docker/setup-buildx-action@v2
 
     - name: Build Docker image
-      run: docker build .
+      run: docker build . -f Dockerfile-build-and-run

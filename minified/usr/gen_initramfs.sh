@@ -158,6 +158,15 @@ dir_filelist() {
 			list_parse $x
 			parse $x
 		done
+
+        # Added by d33tah: always include /dev/console. This means that
+        # the initramfs will always have a console, even if the user
+        # doesn't include it in the list of files.
+        #
+        # This way we don't need to be root to build the initramfs.
+	    echo "dir /dev 755 1000 1000" >> $cpio_list
+        echo "nod /dev/console 600 1000 1000 c 5 1" >> $cpio_list
+
 	fi
 }
 

@@ -4,7 +4,7 @@ set timeout 10
 spawn qemu-system-x86_64 -kernel minified/arch/x86/boot/bzImage -display curses -m 32M
 
 expect {
-    "Hello, World2" {
+    "Hello, World" {
         exit 0
     }
     timeout {

@@ -9,6 +9,11 @@ import os
 import subprocess
 
 argv = sys.argv[1:]
+# this is here because invocations like -Wp,-MMD,arch/x86/boot/.video-mode.o.d
+# don't produce the .d file
 subprocess.check_call(['clang'] + argv)
+
+# If the last argument is not a .S file, call iwyu. iwyu doesn't seem to
+# support .S files
 if not argv[-1].endswith('.S'):
     subprocess.check_call(['iwyu'] + argv)

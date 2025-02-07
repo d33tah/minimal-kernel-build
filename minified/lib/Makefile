@@ -121,7 +121,7 @@ ifdef CONFIG_CC_IS_GCC
 #
 # can be triggered. Otherwise gcc doesn't complain.
 FPU_CFLAGS += -mhard-float
-FPU_CFLAGS += $(call cc-option,-msse -mpreferred-stack-boundary=3,-mpreferred-stack-boundary=4)
+#FPU_CFLAGS += $(call cc-option,-msse -mpreferred-stack-boundary=3,-mpreferred-stack-boundary=4)
 endif
 
 obj-$(CONFIG_TEST_FPU) += test_fpu.o

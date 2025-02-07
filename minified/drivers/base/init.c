@@ -4,13 +4,14 @@
  * Copyright (c) 2002-3 Open Source Development Labs
  */
 
-#include <linux/device.h>
 #include <linux/init.h>
 #include <linux/memory.h>
 #include <linux/of.h>
 #include <linux/backing-dev.h>
 
 #include "base.h"
+#include "linux/device/driver.h"
+#include "linux/node.h"
 
 /**
  * driver_init - initialize driver model.

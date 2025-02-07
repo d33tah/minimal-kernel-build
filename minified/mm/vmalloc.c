@@ -9,18 +9,16 @@
  */
 
 #include <linux/vmalloc.h>
+#include <asm-generic/percpu.h>
+#include <asm-generic/pgtable-nopmd.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
+#include <asm/percpu.h>
 #include <linux/mm.h>
-#include <linux/module.h>
-#include <linux/highmem.h>
 #include <linux/sched/signal.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
-#include <linux/interrupt.h>
-#include <linux/proc_fs.h>
-#include <linux/seq_file.h>
-#include <linux/set_memory.h>
 #include <linux/debugobjects.h>
-#include <linux/kallsyms.h>
 #include <linux/list.h>
 #include <linux/notifier.h>
 #include <linux/rbtree.h>
@@ -37,14 +35,61 @@
 #include <linux/rbtree_augmented.h>
 #include <linux/overflow.h>
 #include <linux/pgtable.h>
-#include <linux/uaccess.h>
-#include <linux/hugetlb.h>
 #include <linux/sched/mm.h>
 #include <asm/tlbflush.h>
 #include <asm/shmparam.h>
 
 #include "internal.h"
 #include "pgalloc-track.h"
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/cacheflush.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/getorder.h"
+#include "asm-generic/memory_model.h"
+#include "asm-generic/pgtable-nop4d.h"
+#include "asm-generic/pgtable-nopmd.h"
+#include "asm/cache.h"
+#include "asm/current.h"
+#include "asm/page.h"
+#include "asm/page_32.h"
+#include "asm/percpu.h"
+#include "asm/pgtable.h"
+#include "asm/set_memory.h"
+#include "asm/string_32.h"
+#include "asm/topology.h"
+#include "linux/align.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler_attributes.h"
+#include "linux/container_of.h"
+#include "linux/cpumask.h"
+#include "linux/debug_locks.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/highmem-internal.h"
+#include "linux/init.h"
+#include "linux/kasan-enabled.h"
+#include "linux/kasan.h"
+#include "linux/kconfig.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/limits.h"
+#include "linux/lockdep.h"
+#include "linux/log2.h"
+#include "linux/minmax.h"
+#include "linux/mm_types.h"
+#include "linux/mmdebug.h"
+#include "linux/mutex.h"
+#include "linux/nodemask.h"
+#include "linux/numa.h"
+#include "linux/preempt.h"
+#include "linux/printk.h"
+#include "linux/rculist.h"
+#include "linux/sched.h"
+#include "linux/spinlock_types.h"
+#include "linux/threads.h"
+#include "linux/workqueue.h"
+#include "vdso/limits.h"
 
 static const unsigned int ioremap_max_page_shift = PAGE_SHIFT;
 

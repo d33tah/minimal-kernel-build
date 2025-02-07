@@ -21,33 +21,12 @@
  * hopefully all marked.  This should be fixed.
  */
 
-#include <linux/kernel.h>
-#include <linux/sched.h>
-#include <linux/fs.h>
-#include <linux/file.h>
-#include <linux/signal.h>
 #include <linux/syscalls.h>
-#include <linux/times.h>
-#include <linux/utsname.h>
-#include <linux/mm.h>
-#include <linux/uio.h>
-#include <linux/poll.h>
-#include <linux/personality.h>
-#include <linux/stat.h>
-#include <linux/rwsem.h>
-#include <linux/compat.h>
-#include <linux/vfs.h>
-#include <linux/ptrace.h>
-#include <linux/highuid.h>
-#include <linux/sysctl.h>
-#include <linux/slab.h>
-#include <linux/sched/task.h>
-#include <asm/mman.h>
-#include <asm/types.h>
-#include <linux/uaccess.h>
-#include <linux/atomic.h>
-#include <asm/vgtod.h>
-#include <asm/ia32.h>
+
+#include "asm-generic/int-ll64.h"
+#include "asm/ptrace.h"
+#include "linux/compiler_types.h"
+#include "linux/types.h"
 
 #define AA(__x)		((unsigned long)(__x))
 

@@ -4,16 +4,9 @@
 #include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/types.h>
-#include <linux/fcntl.h>
-#include <linux/delay.h>
-#include <linux/string.h>
-#include <linux/dirent.h>
-#include <linux/syscalls.h>
-#include <linux/utime.h>
 #include <linux/file.h>
 #include <linux/memblock.h>
 #include <linux/mm.h>
-#include <linux/namei.h>
 #include <linux/init_syscalls.h>
 #include <linux/task_work.h>
 #include <linux/umh.h>
@@ -526,7 +519,35 @@ __setup("initramfs_async=", initramfs_async_setup);
 extern char __initramfs_start[];
 extern unsigned long __initramfs_size;
 #include <linux/initrd.h>
-#include <linux/kexec.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/fcntl.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/page.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/fcntl.h"
+#include "linux/gfp.h"
+#include "linux/kconfig.h"
+#include "linux/kdev_t.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/kstrtox.h"
+#include "linux/limits.h"
+#include "linux/math.h"
+#include "linux/panic.h"
+#include "linux/poison.h"
+#include "linux/printk.h"
+#include "linux/stat.h"
+#include "linux/stdarg.h"
+#include "linux/stddef.h"
+#include "linux/time64.h"
+
+struct path;
 
 void __init reserve_initrd_mem(void)
 {

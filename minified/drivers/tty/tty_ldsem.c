@@ -26,12 +26,23 @@
  */
 
 #include <linux/list.h>
+#include <asm/barrier.h>
 #include <linux/spinlock.h>
-#include <linux/atomic.h>
-#include <linux/tty.h>
 #include <linux/sched.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/task.h>
+
+#include "asm-generic/bitsperlong.h"
+#include "asm/current.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler_types.h"
+#include "linux/instruction_pointer.h"
+#include "linux/kernel.h"
+#include "linux/lockdep.h"
+#include "linux/tty_ldisc.h"
+#include "linux/types.h"
+
+struct lock_class_key;
 
 
 #if BITS_PER_LONG == 64

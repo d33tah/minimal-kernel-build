@@ -6,7 +6,7 @@
  */
 
 #include <linux/fs_context.h>
-#include <linux/fs_parser.h>
+#include <linux/build_bug.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/syscalls.h>
@@ -15,8 +15,30 @@
 #include <linux/namei.h>
 #include <linux/file.h>
 #include <uapi/linux/mount.h>
+
 #include "internal.h"
-#include "mount.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/fcntl.h"
+#include "asm/page_types.h"
+#include "asm/ptrace.h"
+#include "asm/string_32.h"
+#include "linux/capability.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/fcntl.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/kernel.h"
+#include "linux/mount.h"
+#include "linux/mutex.h"
+#include "linux/path.h"
+#include "linux/refcount.h"
+#include "linux/rwsem.h"
+#include "linux/string.h"
+#include "linux/types.h"
 
 /*
  * Allow the user to read back any error, warning or informational messages.

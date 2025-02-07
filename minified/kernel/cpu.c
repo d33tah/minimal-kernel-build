@@ -3,45 +3,35 @@
  *
  * This code is licenced under the GPL.
  */
-#include <linux/sched/mm.h>
-#include <linux/proc_fs.h>
 #include <linux/smp.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
+#include <asm/percpu.h>
 #include <linux/init.h>
-#include <linux/notifier.h>
-#include <linux/sched/signal.h>
 
-#include <linux/sched/isolation.h>
-#include <linux/sched/task.h>
-#include <linux/sched/smt.h>
-#include <linux/unistd.h>
 #include <linux/cpu.h>
-#include <linux/oom.h>
-#include <linux/rcupdate.h>
 #include <linux/export.h>
-#include <linux/bug.h>
-#include <linux/kthread.h>
-#include <linux/stop_machine.h>
 #include <linux/mutex.h>
-#include <linux/gfp.h>
-#include <linux/suspend.h>
-#include <linux/lockdep.h>
-#include <linux/tick.h>
-#include <linux/irq.h>
-#include <linux/nmi.h>
-#include <linux/smpboot.h>
 
-#include <linux/slab.h>
-#include <linux/scs.h>
-#include <linux/percpu-rwsem.h>
-#include <linux/cpuset.h>
-#include <linux/random.h>
-#include <linux/cc_platform.h>
-
-#include <trace/events/power.h>
 #define CREATE_TRACE_POINTS
 #include <trace/events/cpuhp.h>
 
-#include "smpboot.h"
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/errno-base.h"
+#include "asm/cache.h"
+#include "asm/percpu.h"
+#include "asm/string_32.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/bitops.h"
+#include "linux/cache.h"
+#include "linux/compiler_types.h"
+#include "linux/cpuhotplug.h"
+#include "linux/cpumask.h"
+#include "linux/list.h"
+#include "linux/printk.h"
+#include "linux/stddef.h"
+#include "linux/threads.h"
+#include "linux/types.h"
 
 /**
  * struct cpuhp_cpu_state - Per cpu hotplug state storage

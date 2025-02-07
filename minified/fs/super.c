@@ -22,22 +22,63 @@
  */
 
 #include <linux/export.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
+#include <linux/atomic.h>
 #include <linux/slab.h>
 #include <linux/blkdev.h>
-#include <linux/mount.h>
 #include <linux/security.h>
 #include <linux/writeback.h>		/* for the emergency remount stuff */
 #include <linux/idr.h>
 #include <linux/mutex.h>
 #include <linux/backing-dev.h>
-#include <linux/rculist_bl.h>
 #include <linux/fscrypt.h>
-#include <linux/fsnotify.h>
 #include <linux/lockdep.h>
 #include <linux/user_namespace.h>
 #include <linux/fs_context.h>
 #include <uapi/linux/mount.h>
+
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/rwonce.h"
+#include "asm/bug.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/capability.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/cred.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/fs.h"
+#include "linux/fsnotify_backend.h"
+#include "linux/gfp.h"
+#include "linux/instruction_pointer.h"
+#include "linux/kdev_t.h"
+#include "linux/kern_levels.h"
+#include "linux/list.h"
+#include "linux/list_bl.h"
+#include "linux/list_lru.h"
+#include "linux/lockdep_types.h"
+#include "linux/math.h"
+#include "linux/numa.h"
+#include "linux/percpu-rwsem.h"
+#include "linux/printk.h"
+#include "linux/quota.h"
+#include "linux/rcupdate.h"
+#include "linux/rwsem.h"
+#include "linux/shrinker.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stdarg.h"
+#include "linux/stddef.h"
+#include "linux/string.h"
+#include "linux/time64.h"
+#include "linux/types.h"
+#include "linux/wait.h"
+#include "linux/workqueue.h"
+
+struct block_device;
 
 static int thaw_super_locked(struct super_block *sb);
 

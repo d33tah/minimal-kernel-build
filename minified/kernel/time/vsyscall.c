@@ -8,12 +8,24 @@
  */
 
 #include <linux/hrtimer.h>
+#include <asm/vdso/vsyscall.h>
 #include <linux/timekeeper_internal.h>
 #include <vdso/datapage.h>
 #include <vdso/helpers.h>
 #include <vdso/vsyscall.h>
 
 #include "timekeeping_internal.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/rwonce.h"
+#include "asm/vdso/vsyscall.h"
+#include "linux/clocksource.h"
+#include "linux/compiler_types.h"
+#include "linux/spinlock.h"
+#include "linux/time.h"
+#include "linux/time64.h"
+#include "vdso/clocksource.h"
+#include "vdso/math64.h"
+#include "vdso/time64.h"
 
 static inline void update_vdso_data(struct vdso_data *vdata,
 				    struct timekeeper *tk)

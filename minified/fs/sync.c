@@ -4,20 +4,33 @@
  */
 
 #include <linux/blkdev.h>
-#include <linux/kernel.h>
+#include <asm/bug.h>
 #include <linux/file.h>
 #include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/export.h>
-#include <linux/namei.h>
-#include <linux/sched.h>
 #include <linux/writeback.h>
 #include <linux/syscalls.h>
-#include <linux/linkage.h>
 #include <linux/pagemap.h>
 
-#include <linux/backing-dev.h>
-#include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/page_types.h"
+#include "asm/ptrace.h"
+#include "linux/backing-dev-defs.h"
+#include "linux/compiler.h"
+#include "linux/dcache.h"
+#include "linux/errseq.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/path.h"
+#include "linux/printk.h"
+#include "linux/rwsem.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/workqueue.h"
+#include "vdso/limits.h"
 
 #define VALID_FLAGS (SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE| \
 			SYNC_FILE_RANGE_WAIT_AFTER)

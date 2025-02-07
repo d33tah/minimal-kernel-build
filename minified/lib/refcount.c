@@ -4,9 +4,16 @@
  */
 
 #include <linux/mutex.h>
+#include <asm/bug.h>
 #include <linux/refcount.h>
 #include <linux/spinlock.h>
-#include <linux/bug.h>
+
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler.h"
+#include "linux/export.h"
+#include "linux/spinlock_types.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 #define REFCOUNT_WARN(str)	WARN_ONCE(1, "refcount_t: " str ".\n")
 

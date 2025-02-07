@@ -34,8 +34,18 @@
  */
 
 #include <linux/klist.h>
+#include <asm/bug.h>
 #include <linux/export.h>
 #include <linux/sched.h>
+
+#include "asm/barrier.h"
+#include "asm/current.h"
+#include "linux/compiler.h"
+#include "linux/container_of.h"
+#include "linux/kref.h"
+#include "linux/list.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
 
 /*
  * Use the lowest bit of n_klist to mark deleted nodes and exclude

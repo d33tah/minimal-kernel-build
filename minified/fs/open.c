@@ -5,36 +5,62 @@
  *  Copyright (C) 1991, 1992  Linus Torvalds
  */
 
-#include <linux/string.h>
 #include <linux/mm.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/fsnotify.h>
-#include <linux/module.h>
 #include <linux/tty.h>
 #include <linux/namei.h>
-#include <linux/backing-dev.h>
 #include <linux/capability.h>
 #include <linux/securebits.h>
 #include <linux/security.h>
 #include <linux/mount.h>
 #include <linux/fcntl.h>
-#include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/fs.h>
-#include <linux/personality.h>
 #include <linux/pagemap.h>
 #include <linux/syscalls.h>
-#include <linux/rcupdate.h>
 #include <linux/audit.h>
 #include <linux/falloc.h>
 #include <linux/fs_struct.h>
-#include <linux/ima.h>
 #include <linux/dnotify.h>
-#include <linux/compat.h>
 #include <linux/mnt_idmapping.h>
 
 #include "internal.h"
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/fcntl.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/current.h"
+#include "asm/ptrace.h"
+#include "linux/build_bug.h"
+#include "linux/capability.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/cred.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/errno.h"
+#include "linux/export.h"
+#include "linux/falloc.h"
+#include "linux/fcntl.h"
+#include "linux/kconfig.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/openat2.h"
+#include "linux/path.h"
+#include "linux/printk.h"
+#include "linux/sched.h"
+#include "linux/securebits.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/uidgid.h"
+
+struct user_namespace;
 
 int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry,
 		loff_t length, unsigned int time_attrs, struct file *filp)

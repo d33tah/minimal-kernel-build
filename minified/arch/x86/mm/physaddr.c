@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/memblock.h>
-#include <linux/mmdebug.h>
 #include <linux/export.h>
 #include <linux/mm.h>
 
 #include <asm/page.h>
-#include <linux/vmalloc.h>
 
 #include "physaddr.h"
+#include "asm/fixmap.h"
+#include "asm/page_32.h"
+#include "asm/page_types.h"
+#include "asm/pgtable_32_areas.h"
+#include "linux/stddef.h"
 
 
 

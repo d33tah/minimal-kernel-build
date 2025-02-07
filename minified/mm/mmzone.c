@@ -6,9 +6,17 @@
  */
 
 
-#include <linux/stddef.h>
-#include <linux/mm.h>
 #include <linux/mmzone.h>
+
+#include "asm/string_32.h"
+#include "generated/bounds.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/list.h"
+#include "linux/nodemask.h"
+#include "linux/numa.h"
+#include "linux/spinlock.h"
+#include "linux/types.h"
 
 struct pglist_data *first_online_pgdat(void)
 {

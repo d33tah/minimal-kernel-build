@@ -3,25 +3,43 @@
  * CPU subsystem support
  */
 
-#include <linux/kernel.h>
-#include <linux/module.h>
 #include <linux/init.h>
-#include <linux/sched.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
 #include <linux/cpu.h>
-#include <linux/topology.h>
 #include <linux/device.h>
 #include <linux/node.h>
 #include <linux/gfp.h>
 #include <linux/slab.h>
-#include <linux/percpu.h>
 #include <linux/acpi.h>
 #include <linux/of.h>
-#include <linux/cpufeature.h>
-#include <linux/tick.h>
 #include <linux/pm_qos.h>
 #include <linux/sched/isolation.h>
 
 #include "base.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/topology.h"
+#include "asm/cpufeature.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/compiler_attributes.h"
+#include "linux/container_of.h"
+#include "linux/cpumask.h"
+#include "linux/device/bus.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/kobject.h"
+#include "linux/panic.h"
+#include "linux/printk.h"
+#include "linux/stdarg.h"
+#include "linux/stddef.h"
+#include "linux/sysfs.h"
+#include "linux/threads.h"
+#include "linux/types.h"
+
+struct device_driver;
 
 static DEFINE_PER_CPU(struct device *, cpu_sys_devices);
 

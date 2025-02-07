@@ -9,15 +9,36 @@
  */
 
 
-#include <linux/uaccess.h>
 #include <linux/kernel.h>
-#include <linux/sched.h>
+#include <asm/bitops.h>
 #include <linux/slab.h>
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/serio.h>
 #include <linux/tty.h>
-#include <linux/compat.h>
+
+#include "asm-generic/bitops/instrumented-atomic.h"
+#include "asm-generic/errno-base.h"
+#include "asm/uaccess.h"
+#include "linux/capability.h"
+#include "linux/compiler_types.h"
+#include "linux/device.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/kern_levels.h"
+#include "linux/mod_devicetable.h"
+#include "linux/printk.h"
+#include "linux/serio.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/string.h"
+#include "linux/tty.h"
+#include "linux/tty_buffer.h"
+#include "linux/tty_driver.h"
+#include "linux/tty_ldisc.h"
+#include "linux/wait.h"
+
+struct file;
 
 MODULE_AUTHOR("Vojtech Pavlik <vojtech@ucw.cz>");
 MODULE_DESCRIPTION("Input device TTY line discipline");

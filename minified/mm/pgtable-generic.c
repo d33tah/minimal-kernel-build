@@ -7,11 +7,17 @@
  *  Copyright (C) 2010  Linus Torvalds
  */
 
-#include <linux/pagemap.h>
-#include <linux/hugetlb.h>
 #include <linux/pgtable.h>
-#include <linux/mm_inline.h>
-#include <asm/tlb.h>
+
+#include "asm-generic/pgtable-nop4d.h"
+#include "asm-generic/pgtable-nopmd.h"
+#include "asm-generic/pgtable-nopud.h"
+#include "asm/pgtable-2level.h"
+#include "asm/pgtable-2level_types.h"
+#include "asm/pgtable.h"
+#include "asm/pgtable_types.h"
+#include "asm/tlbflush.h"
+#include "linux/mm_types.h"
 
 /*
  * If a p?d_bad entry is found while walking page tables, report

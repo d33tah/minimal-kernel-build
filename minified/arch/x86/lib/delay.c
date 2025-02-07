@@ -13,15 +13,29 @@
  */
 
 #include <linux/export.h>
-#include <linux/sched.h>
+#include <asm-generic/percpu.h>
+#include <asm/percpu.h>
 #include <linux/timex.h>
 #include <linux/preempt.h>
 #include <linux/delay.h>
 
 #include <asm/processor.h>
 #include <asm/delay.h>
-#include <asm/timer.h>
 #include <asm/mwait.h>
+
+#include "asm-generic/delay.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/param.h"
+#include "asm/msr.h"
+#include "asm/percpu.h"
+#include "asm/vdso/processor.h"
+#include "linux/cache.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/init.h"
+#include "linux/kernel.h"
+#include "linux/minmax.h"
+#include "linux/smp.h"
 
 
 static void delay_loop(u64 __loops);

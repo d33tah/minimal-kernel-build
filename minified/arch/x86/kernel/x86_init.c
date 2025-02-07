@@ -4,12 +4,8 @@
  *  For licencing details see kernel-base/COPYING
  */
 #include <linux/init.h>
-#include <linux/ioport.h>
 #include <linux/export.h>
-#include <linux/pci.h>
-
 #include <asm/acpi.h>
-#include <asm/bios_ebda.h>
 #include <asm/paravirt.h>
 #include <asm/pci_x86.h>
 #include <asm/mpspec.h>
@@ -19,12 +15,21 @@
 #include <asm/time.h>
 #include <asm/irq.h>
 #include <asm/io_apic.h>
-#include <asm/hpet.h>
-#include <asm/memtype.h>
 #include <asm/tsc.h>
-#include <asm/iommu.h>
 #include <asm/mach_traps.h>
 #include <asm/irqdomain.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/mc146818rtc.h"
+#include "asm/pgtable_types.h"
+#include "asm/x86_init.h"
+#include "linux/cache.h"
+#include "linux/mod_devicetable.h"
+#include "linux/of.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+
+struct timespec64;
 
 void x86_init_noop(void) { }
 void __init x86_init_uint_noop(unsigned int unused) { }

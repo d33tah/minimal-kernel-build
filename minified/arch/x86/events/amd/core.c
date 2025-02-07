@@ -1,17 +1,56 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #include <linux/perf_event.h>
-#include <linux/jump_label.h>
+#include <asm-generic/percpu.h>
+#include <asm/bitops.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
+#include <asm/percpu.h>
+#include <linux/bitmap.h>
 #include <linux/export.h>
 #include <linux/types.h>
 #include <linux/init.h>
 #include <linux/slab.h>
-#include <linux/delay.h>
 #include <linux/jiffies.h>
 #include <asm/apicdef.h>
-#include <asm/apic.h>
 #include <asm/nmi.h>
 
 #include "../perf_event.h"
+#include "asm-generic/delay.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/topology.h"
+#include "asm/cache.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/hardirq.h"
+#include "asm/msr-index.h"
+#include "asm/msr.h"
+#include "asm/page_types.h"
+#include "asm/percpu.h"
+#include "asm/perf_event.h"
+#include "asm/processor.h"
+#include "asm/string_32.h"
+#include "asm/topology.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/bitops.h"
+#include "linux/bits.h"
+#include "linux/compiler_types.h"
+#include "linux/cpumask.h"
+#include "linux/device.h"
+#include "linux/gfp.h"
+#include "linux/kernel.h"
+#include "linux/perf_event.h"
+#include "linux/preempt.h"
+#include "linux/printk.h"
+#include "linux/static_call.h"
+#include "linux/static_call_types.h"
+#include "linux/stddef.h"
+#include "linux/stringify.h"
+#include "linux/sysfs.h"
+
+struct kobject;
+struct pt_regs;
 
 static DEFINE_PER_CPU(unsigned long, perf_nmi_tstamp);
 static unsigned long perf_nmi_window;

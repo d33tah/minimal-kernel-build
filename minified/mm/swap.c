@@ -15,30 +15,42 @@
  */
 
 #include <linux/mm.h>
-#include <linux/sched.h>
-#include <linux/kernel_stat.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
+#include <linux/rcupdate.h>
 #include <linux/swap.h>
-#include <linux/mman.h>
 #include <linux/pagemap.h>
 #include <linux/pagevec.h>
 #include <linux/init.h>
 #include <linux/export.h>
 #include <linux/mm_inline.h>
-#include <linux/percpu_counter.h>
-#include <linux/memremap.h>
-#include <linux/percpu.h>
-#include <linux/cpu.h>
-#include <linux/notifier.h>
-#include <linux/backing-dev.h>
 #include <linux/memcontrol.h>
 #include <linux/gfp.h>
 #include <linux/uio.h>
-#include <linux/hugetlb.h>
 #include <linux/page_idle.h>
 #include <linux/local_lock.h>
 #include <linux/buffer_head.h>
 
 #include "internal.h"
+#include "asm/page_types.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/highmem-internal.h"
+#include "linux/huge_mm.h"
+#include "linux/list.h"
+#include "linux/mm_types.h"
+#include "linux/mmdebug.h"
+#include "linux/mmzone.h"
+#include "linux/smp.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/vm_event_item.h"
+#include "linux/vmstat.h"
+#include "linux/xarray.h"
+
+struct address_space;
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/pagemap.h>

@@ -12,20 +12,15 @@
  * Handle hardware traps and faults.
  */
 #include <linux/spinlock.h>
-#include <linux/kprobes.h>
-#include <linux/kdebug.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
+#include <asm/percpu.h>
 #include <linux/sched/debug.h>
 #include <linux/nmi.h>
 #include <linux/debugfs.h>
-#include <linux/delay.h>
-#include <linux/hardirq.h>
-#include <linux/ratelimit.h>
-#include <linux/slab.h>
 #include <linux/export.h>
-#include <linux/atomic.h>
 #include <linux/sched/clock.h>
 
-#include <asm/cpu_entry_area.h>
 #include <asm/traps.h>
 #include <asm/mach_traps.h>
 #include <asm/nmi.h>
@@ -37,6 +32,40 @@
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/nmi.h>
+
+#include "asm-generic/delay.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/kprobes.h"
+#include "asm/cpumask.h"
+#include "asm/debugreg.h"
+#include "asm/div64.h"
+#include "asm/hardirq.h"
+#include "asm/idtentry.h"
+#include "asm/percpu.h"
+#include "asm/ptrace.h"
+#include "asm/shared/io.h"
+#include "asm/special_insns.h"
+#include "asm/string_32.h"
+#include "asm/vdso/processor.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/entry-common.h"
+#include "linux/init.h"
+#include "linux/instrumentation.h"
+#include "linux/kconfig.h"
+#include "linux/kern_levels.h"
+#include "linux/list.h"
+#include "linux/panic.h"
+#include "linux/preempt.h"
+#include "linux/printk.h"
+#include "linux/rculist.h"
+#include "linux/rcupdate.h"
+#include "linux/smp.h"
+#include "linux/spinlock_types_raw.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "vdso/time64.h"
 
 struct nmi_desc {
 	raw_spinlock_t lock;

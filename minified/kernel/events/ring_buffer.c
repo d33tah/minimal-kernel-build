@@ -9,13 +9,46 @@
  */
 
 #include <linux/perf_event.h>
-#include <linux/vmalloc.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
+#include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/circ_buf.h>
-#include <linux/poll.h>
 #include <linux/nospec.h>
 
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/getorder.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/rwonce.h"
+#include "asm-generic/topology.h"
+#include "asm/cmpxchg.h"
+#include "asm/local.h"
+#include "asm/page.h"
+#include "asm/page_types.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/eventpoll.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/irq_work.h"
+#include "linux/list.h"
+#include "linux/log2.h"
+#include "linux/math.h"
+#include "linux/minmax.h"
+#include "linux/mm.h"
+#include "linux/mm_types.h"
+#include "linux/mmzone.h"
+#include "linux/perf_event.h"
+#include "linux/preempt.h"
+#include "linux/rcupdate.h"
+#include "linux/refcount.h"
+#include "linux/smp.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 static void perf_output_wakeup(struct perf_output_handle *handle)
 {

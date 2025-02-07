@@ -5,13 +5,26 @@
  * Copyright (C) 2009/2010 Stefani Seibold <stefani@seibold.net>
  */
 
-#include <linux/kernel.h>
 #include <linux/export.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
 #include <linux/slab.h>
-#include <linux/err.h>
 #include <linux/log2.h>
 #include <linux/uaccess.h>
 #include <linux/kfifo.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/io.h"
+#include "asm/page.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/math.h"
+#include "linux/minmax.h"
+#include "linux/mm.h"
+#include "linux/scatterlist.h"
+#include "linux/types.h"
 
 /*
  * internal helper to calculate the unused elements in a fifo

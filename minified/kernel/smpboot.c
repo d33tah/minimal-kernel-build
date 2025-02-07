@@ -3,20 +3,28 @@
  * Common SMP CPU bringup/teardown functions
  */
 #include <linux/cpu.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
 #include <linux/err.h>
 #include <linux/smp.h>
-#include <linux/delay.h>
-#include <linux/init.h>
 #include <linux/list.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/sched/task.h>
 #include <linux/export.h>
-#include <linux/percpu.h>
 #include <linux/kthread.h>
 #include <linux/smpboot.h>
 
 #include "smpboot.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/topology.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/cpumask.h"
+#include "linux/gfp.h"
+#include "linux/kconfig.h"
+#include "linux/mutex.h"
+#include "linux/preempt.h"
+#include "linux/types.h"
 
 
 static LIST_HEAD(hotplug_threads);

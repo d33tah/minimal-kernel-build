@@ -10,15 +10,22 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/audit.h>
 #include <linux/capability.h>
-#include <linux/mm.h>
+#include <asm/bug.h>
 #include <linux/export.h>
 #include <linux/security.h>
-#include <linux/syscalls.h>
-#include <linux/pid_namespace.h>
-#include <linux/user_namespace.h>
-#include <linux/uaccess.h>
+
+#include "linux/capability.h"
+#include "linux/cred.h"
+#include "linux/fs.h"
+#include "linux/init.h"
+#include "linux/rcupdate.h"
+#include "linux/sched.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/uidgid.h"
+
+struct user_namespace;
 
 /*
  * Leveraged for setting/resetting capabilities

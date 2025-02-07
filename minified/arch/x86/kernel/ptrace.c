@@ -6,43 +6,55 @@
  */
 
 #include <linux/kernel.h>
+#include <asm/bug.h>
+#include <asm/signal.h>
+#include <linux/build_bug.h>
 #include <linux/sched.h>
-#include <linux/sched/task_stack.h>
-#include <linux/mm.h>
-#include <linux/smp.h>
-#include <linux/errno.h>
-#include <linux/slab.h>
 #include <linux/ptrace.h>
-#include <linux/user.h>
-#include <linux/elf.h>
-#include <linux/security.h>
-#include <linux/audit.h>
-#include <linux/seccomp.h>
-#include <linux/signal.h>
 #include <linux/perf_event.h>
 #include <linux/hw_breakpoint.h>
-#include <linux/rcupdate.h>
-#include <linux/export.h>
-#include <linux/context_tracking.h>
 #include <linux/nospec.h>
 
-#include <linux/uaccess.h>
 #include <asm/processor.h>
 #include <asm/fpu/signal.h>
 #include <asm/fpu/regset.h>
 #include <asm/fpu/xstate.h>
-#include <asm/debugreg.h>
 #include <asm/ldt.h>
-#include <asm/desc.h>
-#include <asm/prctl.h>
-#include <asm/proto.h>
 #include <asm/hw_breakpoint.h>
-#include <asm/traps.h>
-#include <asm/syscall.h>
-#include <asm/fsgsbase.h>
 #include <asm/io_bitmap.h>
 
 #include "tls.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/siginfo.h"
+#include "asm/current.h"
+#include "asm/debugreg.h"
+#include "asm/fpu/types.h"
+#include "asm/processor-flags.h"
+#include "asm/ptrace-abi.h"
+#include "asm/ptrace.h"
+#include "asm/segment.h"
+#include "asm/string_32.h"
+#include "asm/thread_info.h"
+#include "asm/trapnr.h"
+#include "asm/uaccess.h"
+#include "asm/user.h"
+#include "asm/user_32.h"
+#include "linux/build_bug.h"
+#include "linux/cache.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/elf-em.h"
+#include "linux/elf.h"
+#include "linux/err.h"
+#include "linux/init.h"
+#include "linux/math.h"
+#include "linux/perf_event.h"
+#include "linux/ptrace.h"
+#include "linux/regset.h"
+#include "linux/sched/signal.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 enum x86_regset {
 	REGSET_GENERAL,

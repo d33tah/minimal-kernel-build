@@ -12,7 +12,11 @@
  */
 
 #include <linux/export.h>
-#include <linux/kernel.h>
+#include <linux/bitops.h>
+
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/int-ll64.h"
+#include "linux/compiler_attributes.h"
 
 int __weak __ctzsi2(int val);
 int __weak __ctzsi2(int val)

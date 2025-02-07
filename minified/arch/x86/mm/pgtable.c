@@ -1,11 +1,37 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/mm.h>
+#include <asm-generic/pgtable-nopmd.h>
+#include <asm-generic/pgtable-nopud.h>
+#include <asm/bug.h>
+#include <asm/pgtable.h>
+#include <linux/pgtable.h>
 #include <linux/gfp.h>
-#include <linux/hugetlb.h>
 #include <asm/pgalloc.h>
 #include <asm/tlb.h>
 #include <asm/fixmap.h>
-#include <asm/mtrr.h>
+
+#include "asm-generic/bitops/instrumented-atomic.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/memory_model.h"
+#include "asm-generic/pgtable-nopmd.h"
+#include "asm/bug.h"
+#include "asm/page.h"
+#include "asm/page_types.h"
+#include "asm/pgtable-2level_types.h"
+#include "asm/pgtable_types.h"
+#include "asm/string_32.h"
+#include "generated/autoconf.h"
+#include "linux/compiler_types.h"
+#include "linux/init.h"
+#include "linux/kern_levels.h"
+#include "linux/list.h"
+#include "linux/math.h"
+#include "linux/minmax.h"
+#include "linux/mm_types.h"
+#include "linux/printk.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 
 #define PGTABLE_HIGHMEM 0

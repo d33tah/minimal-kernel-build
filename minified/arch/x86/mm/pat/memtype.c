@@ -31,23 +31,15 @@
  *   below for details. )
  */
 
-#include <linux/seq_file.h>
-#include <linux/memblock.h>
-#include <linux/debugfs.h>
 #include <linux/ioport.h>
-#include <linux/kernel.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
 #include <linux/pfn_t.h>
 #include <linux/slab.h>
 #include <linux/mm.h>
 #include <linux/fs.h>
-#include <linux/rbtree.h>
-
-#include <asm/cacheflush.h>
 #include <asm/processor.h>
-#include <asm/tlbflush.h>
 #include <asm/x86_init.h>
-#include <asm/fcntl.h>
-#include <asm/e820/api.h>
 #include <asm/mtrr.h>
 #include <asm/page.h>
 #include <asm/msr.h>
@@ -56,6 +48,32 @@
 
 #include "memtype.h"
 #include "../mm_internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/fcntl.h"
+#include "asm-generic/memory_model.h"
+#include "asm/cache.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/current.h"
+#include "asm/e820/types.h"
+#include "asm/msr-index.h"
+#include "asm/mtrr.h"
+#include "asm/page_types.h"
+#include "asm/pgtable.h"
+#include "asm/string_32.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/kconfig.h"
+#include "linux/mm_types.h"
+#include "linux/panic.h"
+#include "linux/pfn.h"
+#include "linux/pgtable.h"
+#include "linux/sched.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stddef.h"
 
 #undef pr_fmt
 #define pr_fmt(fmt) "" fmt

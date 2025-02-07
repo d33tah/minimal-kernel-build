@@ -3,8 +3,16 @@
  * Copyright (c) 2014 The Linux Foundation
  */
 #include <linux/dma-map-ops.h>
+#include <asm/bug.h>
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
+
+#include "asm/page_types.h"
+#include "asm/pgtable_types.h"
+#include "linux/gfp.h"
+#include "linux/mm.h"
+
+struct page;
 
 struct page **dma_common_find_pages(void *cpu_addr)
 {

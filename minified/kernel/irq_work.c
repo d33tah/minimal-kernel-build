@@ -6,21 +6,35 @@
  * context. The enqueueing is NMI-safe.
  */
 
-#include <linux/bug.h>
 #include <linux/kernel.h>
+#include <asm-generic/percpu.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
+#include <asm/percpu.h>
 #include <linux/export.h>
 #include <linux/irq_work.h>
-#include <linux/percpu.h>
-#include <linux/hardirq.h>
 #include <linux/irqflags.h>
 #include <linux/sched.h>
 #include <linux/tick.h>
-#include <linux/cpu.h>
-#include <linux/notifier.h>
 #include <linux/smp.h>
 #include <linux/smpboot.h>
-#include <asm/processor.h>
-#include <linux/kasan.h>
+
+#include "asm/current.h"
+#include "asm/irq_work.h"
+#include "asm/percpu.h"
+#include "asm/vdso/processor.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler_attributes.h"
+#include "linux/cpumask.h"
+#include "linux/init.h"
+#include "linux/kconfig.h"
+#include "linux/llist.h"
+#include "linux/lockdep.h"
+#include "linux/preempt.h"
+#include "linux/rcuwait.h"
+#include "linux/smp_types.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 static DEFINE_PER_CPU(struct llist_head, raised_list);
 static DEFINE_PER_CPU(struct llist_head, lazy_list);

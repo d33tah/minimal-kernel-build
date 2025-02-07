@@ -7,22 +7,42 @@
  */
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-#include <linux/module.h>
 #include <linux/fs_context.h>
+#include <asm/bug.h>
+#include <linux/build_bug.h>
 #include <linux/fs_parser.h>
 #include <linux/fs.h>
-#include <linux/mount.h>
 #include <linux/nsproxy.h>
 #include <linux/slab.h>
-#include <linux/magic.h>
 #include <linux/security.h>
-#include <linux/mnt_namespace.h>
-#include <linux/pid_namespace.h>
 #include <linux/user_namespace.h>
 #include <net/net_namespace.h>
-#include <asm/sections.h>
-#include "mount.h"
+
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/build_bug.h"
+#include "linux/compiler_attributes.h"
+#include "linux/cred.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/errno.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/mutex.h"
+#include "linux/printk.h"
+#include "linux/refcount.h"
+#include "linux/sched.h"
+#include "linux/stdarg.h"
+#include "linux/stddef.h"
+#include "linux/string.h"
 
 enum legacy_fs_param {
 	LEGACY_FS_UNSET_PARAMS,

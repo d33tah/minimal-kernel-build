@@ -10,12 +10,13 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/kernel.h>
-#include <linux/slab.h>
+#include <asm/bitops.h>
+#include <asm/bug.h>
+#include <asm/page_types.h>
 #include <linux/backing-dev.h>
 #include <linux/mm.h>
 #include <linux/mm_inline.h>
 #include <linux/vmacache.h>
-#include <linux/shm.h>
 #include <linux/mman.h>
 #include <linux/pagemap.h>
 #include <linux/swap.h>
@@ -24,13 +25,10 @@
 #include <linux/init.h>
 #include <linux/file.h>
 #include <linux/fs.h>
-#include <linux/personality.h>
 #include <linux/security.h>
 #include <linux/hugetlb.h>
 #include <linux/shmem_fs.h>
-#include <linux/profile.h>
 #include <linux/export.h>
-#include <linux/mount.h>
 #include <linux/mempolicy.h>
 #include <linux/rmap.h>
 #include <linux/mmu_notifier.h>
@@ -50,7 +48,6 @@
 #include <linux/sched/mm.h>
 
 #include <linux/uaccess.h>
-#include <asm/cacheflush.h>
 #include <asm/tlb.h>
 #include <asm/mmu_context.h>
 
@@ -58,6 +55,58 @@
 #include <trace/events/mmap.h>
 
 #include "internal.h"
+#include "asm-generic/bitops/instrumented-atomic.h"
+#include "asm-generic/cacheflush.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/mman-common.h"
+#include "asm-generic/mman.h"
+#include "asm-generic/resource.h"
+#include "asm-generic/rwonce.h"
+#include "asm/bug.h"
+#include "asm/cache.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/pgtable.h"
+#include "asm/pgtable_types.h"
+#include "asm/ptrace.h"
+#include "asm/unistd.h"
+#include "generated/autoconf.h"
+#include "linux/align.h"
+#include "linux/cache.h"
+#include "linux/capability.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/err.h"
+#include "linux/gfp.h"
+#include "linux/huge_mm.h"
+#include "linux/hugetlb_inline.h"
+#include "linux/kconfig.h"
+#include "linux/kstrtox.h"
+#include "linux/list.h"
+#include "linux/minmax.h"
+#include "linux/mm_types.h"
+#include "linux/mman.h"
+#include "linux/mmap_lock.h"
+#include "linux/mmzone.h"
+#include "linux/mutex.h"
+#include "linux/percpu_counter.h"
+#include "linux/personality.h"
+#include "linux/pgtable.h"
+#include "linux/rbtree.h"
+#include "linux/rbtree_types.h"
+#include "linux/rwsem.h"
+#include "linux/sched.h"
+#include "linux/sched/coredump.h"
+#include "linux/sched/signal.h"
+#include "linux/spinlock.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/vmstat.h"
+#include "vdso/limits.h"
 
 #ifndef arch_mmap_check
 #define arch_mmap_check(addr, len, flags)	(0)

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/syscalls.h>
+#include <asm/posix_types.h>
 #include <linux/export.h>
 #include <linux/fs.h>
 #include <linux/file.h>
@@ -8,8 +9,23 @@
 #include <linux/statfs.h>
 #include <linux/security.h>
 #include <linux/uaccess.h>
-#include <linux/compat.h>
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/statfs.h"
+#include "asm/ptrace.h"
+#include "asm/string_32.h"
+#include "linux/compiler_types.h"
+#include "linux/dcache.h"
+#include "linux/fcntl.h"
+#include "linux/kconfig.h"
+#include "linux/kdev_t.h"
+#include "linux/minmax.h"
+#include "linux/path.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "vdso/limits.h"
 
 static int flags_by_mnt(int mnt_flags)
 {

@@ -4,29 +4,42 @@
  *
  * Author: Suresh Siddha <suresh.b.siddha@intel.com>
  */
-#include <linux/bitops.h>
-#include <linux/compat.h>
-#include <linux/cpu.h>
-#include <linux/mman.h>
-#include <linux/nospec.h>
-#include <linux/pkeys.h>
-#include <linux/seq_file.h>
-#include <linux/proc_fs.h>
-#include <linux/vmalloc.h>
-
 #include <asm/fpu/api.h>
-#include <asm/fpu/regset.h>
-#include <asm/fpu/signal.h>
 #include <asm/fpu/xcr.h>
-
 #include <asm/tlbflush.h>
 #include <asm/prctl.h>
-#include <asm/elf.h>
+#include <asm/bug.h>
+#include <linux/bitmap.h>
+#include <linux/build_bug.h>
 
-#include "context.h"
 #include "internal.h"
 #include "legacy.h"
 #include "xstate.h"
+#include "asm-generic/bitops/fls64.h"
+#include "asm-generic/errno.h"
+#include "asm/cpufeature.h"
+#include "asm/fpu/xstate.h"
+#include "asm/msr-index.h"
+#include "asm/msr.h"
+#include "asm/processor-flags.h"
+#include "asm/string_32.h"
+#include "asm/uaccess.h"
+#include "linux/align.h"
+#include "linux/bits.h"
+#include "linux/build_bug.h"
+#include "linux/cache.h"
+#include "linux/compiler_attributes.h"
+#include "linux/export.h"
+#include "linux/init.h"
+#include "linux/kconfig.h"
+#include "linux/kernel.h"
+#include "linux/minmax.h"
+#include "linux/printk.h"
+#include "linux/regset.h"
+#include "linux/string.h"
+#include "linux/stringify.h"
+#include "linux/uaccess.h"
+#include "vdso/bits.h"
 
 #define for_each_extended_xfeature(bit, mask)				\
 	(bit) = FIRST_EXTENDED_XFEATURE;				\

@@ -7,11 +7,12 @@
  */
 
 #include <linux/capability.h>
-#include <linux/mman.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
+#include <asm/page_types.h>
+#include <linux/local_lock.h>
 #include <linux/mm.h>
-#include <linux/sched/user.h>
 #include <linux/swap.h>
-#include <linux/swapops.h>
 #include <linux/pagemap.h>
 #include <linux/pagevec.h>
 #include <linux/pagewalk.h>
@@ -19,14 +20,45 @@
 #include <linux/syscalls.h>
 #include <linux/sched.h>
 #include <linux/export.h>
-#include <linux/rmap.h>
 #include <linux/mmzone.h>
-#include <linux/hugetlb.h>
 #include <linux/memcontrol.h>
 #include <linux/mm_inline.h>
 #include <linux/secretmem.h>
 
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/mman-common.h"
+#include "asm-generic/mman.h"
+#include "asm-generic/pgtable-nopmd.h"
+#include "asm-generic/resource.h"
+#include "asm-generic/rwonce.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/pgtable-2level_types.h"
+#include "asm/pgtable.h"
+#include "asm/ptrace.h"
+#include "linux/capability.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/cpumask.h"
+#include "linux/fs.h"
+#include "linux/huge_mm.h"
+#include "linux/hugetlb_inline.h"
+#include "linux/local_lock.h"
+#include "linux/mm_types.h"
+#include "linux/mmap_lock.h"
+#include "linux/mmdebug.h"
+#include "linux/pgtable.h"
+#include "linux/sched/signal.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/user_namespace.h"
+#include "linux/vm_event_item.h"
+#include "linux/vmstat.h"
+#include "vdso/limits.h"
 
 struct mlock_pvec {
 	local_lock_t lock;

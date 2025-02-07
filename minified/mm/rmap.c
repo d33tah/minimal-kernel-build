@@ -53,7 +53,8 @@
  */
 
 #include <linux/mm.h>
-#include <linux/sched/mm.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
 #include <linux/sched/task.h>
 #include <linux/pagemap.h>
 #include <linux/swap.h>
@@ -66,10 +67,8 @@
 #include <linux/export.h>
 #include <linux/memcontrol.h>
 #include <linux/mmu_notifier.h>
-#include <linux/migrate.h>
 #include <linux/hugetlb.h>
 #include <linux/huge_mm.h>
-#include <linux/backing-dev.h>
 #include <linux/page_idle.h>
 #include <linux/memremap.h>
 #include <linux/userfaultfd_k.h>
@@ -78,10 +77,48 @@
 #include <asm/tlbflush.h>
 
 #define CREATE_TRACE_POINTS
-#include <trace/events/tlb.h>
 #include <trace/events/migrate.h>
 
 #include "internal.h"
+#include "asm-generic/cacheflush.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/memory_model.h"
+#include "asm-generic/pgtable-nop4d.h"
+#include "asm-generic/pgtable-nopmd.h"
+#include "asm-generic/pgtable-nopud.h"
+#include "asm-generic/pgtable_uffd.h"
+#include "asm-generic/rwonce.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/pgtable-2level_types.h"
+#include "asm/pgtable.h"
+#include "asm/pgtable_types.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/cpumask.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/kconfig.h"
+#include "linux/kernel.h"
+#include "linux/list.h"
+#include "linux/mm_types.h"
+#include "linux/mm_types_task.h"
+#include "linux/mmdebug.h"
+#include "linux/mmzone.h"
+#include "linux/page_ref.h"
+#include "linux/pgtable.h"
+#include "linux/rbtree.h"
+#include "linux/rbtree_types.h"
+#include "linux/rwsem.h"
+#include "linux/sched.h"
+#include "linux/smp.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/vmstat.h"
+
+struct mem_cgroup;
 
 static struct kmem_cache *anon_vma_cachep;
 static struct kmem_cache *anon_vma_chain_cachep;

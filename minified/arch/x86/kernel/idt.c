@@ -2,15 +2,30 @@
 /*
  * Interrupt descriptor table related code
  */
-#include <linux/interrupt.h>
-
 #include <asm/cpu_entry_area.h>
-#include <asm/set_memory.h>
-#include <asm/traps.h>
 #include <asm/proto.h>
 #include <asm/desc.h>
 #include <asm/hw_irq.h>
 #include <asm/idtentry.h>
+#include <asm/bug.h>
+#include <linux/bitmap.h>
+
+#include "asm-generic/bitops/instrumented-atomic.h"
+#include "asm-generic/set_memory.h"
+#include "asm/desc_defs.h"
+#include "asm/irq_vectors.h"
+#include "asm/page.h"
+#include "asm/pgtable_areas.h"
+#include "asm/pgtable_types.h"
+#include "asm/segment.h"
+#include "asm/trapnr.h"
+#include "linux/cache.h"
+#include "linux/init.h"
+#include "linux/kernel.h"
+#include "linux/linkage.h"
+#include "linux/lockdep.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 #define DPL0		0x0
 #define DPL3		0x3

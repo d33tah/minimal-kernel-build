@@ -12,26 +12,30 @@
  *
  * Author: John Stultz <john.stultz@linaro.org>
  */
-#include <linux/time.h>
 #include <linux/hrtimer.h>
+#include <linux/ktime.h>
 #include <linux/timerqueue.h>
-#include <linux/rtc.h>
-#include <linux/sched/signal.h>
-#include <linux/sched/debug.h>
 #include <linux/alarmtimer.h>
-#include <linux/mutex.h>
 #include <linux/platform_device.h>
-#include <linux/posix-timers.h>
-#include <linux/workqueue.h>
-#include <linux/freezer.h>
-#include <linux/compat.h>
-#include <linux/module.h>
 #include <linux/time_namespace.h>
-
-#include "posix-timers.h"
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/alarmtimer.h>
+
+#include "asm-generic/int-ll64.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/export.h"
+#include "linux/init.h"
+#include "linux/ktime.h"
+#include "linux/pm.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/time.h"
+
+struct device;
+struct timespec64;
 
 /**
  * struct alarm_base - Alarm timer bases

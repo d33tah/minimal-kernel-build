@@ -11,18 +11,33 @@
  * Copyright 2007 Jiri Kosina, SUSE Labs.
  */
 
-#include <linux/personality.h>
 #include <linux/mm.h>
+#include <asm/cpufeatures.h>
+#include <asm/page_types.h>
 #include <linux/random.h>
-#include <linux/limits.h>
-#include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
-#include <linux/compat.h>
 #include <linux/elf-randomize.h>
 #include <asm/elf.h>
 #include <asm/io.h>
 
 #include "physaddr.h"
+#include "asm/cache.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/current.h"
+#include "asm/page.h"
+#include "asm/page_32.h"
+#include "asm/page_types.h"
+#include "asm/pgtable-2level.h"
+#include "asm/pgtable.h"
+#include "asm/pgtable_types.h"
+#include "linux/capability.h"
+#include "linux/mm_types.h"
+#include "linux/personality.h"
+#include "linux/resource.h"
+#include "linux/sched.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 struct va_alignment __read_mostly va_align = {
 	.flags = -1,

@@ -1,12 +1,24 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#include <linux/stat.h>
-#include <linux/sysctl.h>
 #include <linux/slab.h>
-#include <linux/cred.h>
+#include <asm/bug.h>
+#include <linux/atomic.h>
 #include <linux/hash.h>
-#include <linux/kmemleak.h>
 #include <linux/user_namespace.h>
+
+#include "asm-generic/rwonce.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/list.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/uidgid.h"
+#include "vdso/limits.h"
 
 struct ucounts init_ucounts = {
 	.ns    = &init_user_ns,

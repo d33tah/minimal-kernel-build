@@ -5,6 +5,8 @@
 #include <linux/export.h>
 #include <linux/timecounter.h>
 
+#include "asm-generic/int-ll64.h"
+
 void timecounter_init(struct timecounter *tc,
 		      const struct cyclecounter *cc,
 		      u64 start_tstamp)

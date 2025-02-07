@@ -4,9 +4,13 @@
  * (C) 1999 Andrea Arcangeli <andrea@suse.de> (dynamic inode allocation)
  */
 #include <linux/export.h>
+#include <asm-generic/percpu.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
+#include <asm/percpu.h>
+#include <linux/ktime.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
-#include <linux/backing-dev.h>
 #include <linux/hash.h>
 #include <linux/swap.h>
 #include <linux/security.h>
@@ -17,11 +21,64 @@
 
 
 #include <linux/buffer_head.h> /* for inode_has_buffers */
-#include <linux/ratelimit.h>
 #include <linux/list_lru.h>
 #include <linux/iversion.h>
 #include <trace/events/writeback.h>
+
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/rwonce.h"
+#include "asm/cache.h"
+#include "asm/current.h"
+#include "asm/percpu.h"
+#include "asm/processor.h"
+#include "asm/string_32.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/bitops.h"
+#include "linux/cache.h"
+#include "linux/capability.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/cpumask.h"
+#include "linux/cred.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/kern_levels.h"
+#include "linux/kstrtox.h"
+#include "linux/list.h"
+#include "linux/lockdep.h"
+#include "linux/minmax.h"
+#include "linux/pagemap.h"
+#include "linux/path.h"
+#include "linux/printk.h"
+#include "linux/rbtree_types.h"
+#include "linux/rculist.h"
+#include "linux/rcupdate.h"
+#include "linux/rwsem.h"
+#include "linux/sched.h"
+#include "linux/slab.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/time64.h"
+#include "linux/types.h"
+#include "linux/uaccess.h"
+#include "linux/uidgid.h"
+#include "linux/vm_event_item.h"
+#include "linux/vmstat.h"
+#include "linux/wait.h"
+#include "linux/wait_bit.h"
+#include "linux/writeback.h"
+#include "linux/xarray.h"
+#include "vdso/time64.h"
+
+struct shrink_control;
+struct user_namespace;
 
 /*
  * Inode locking rules:

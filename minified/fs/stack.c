@@ -2,6 +2,9 @@
 #include <linux/export.h>
 #include <linux/fs.h>
 
+#include "linux/spinlock.h"
+#include "linux/types.h"
+
 
 /* does _NOT_ require i_mutex to be held.
  *

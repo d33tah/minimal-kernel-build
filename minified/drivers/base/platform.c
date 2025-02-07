@@ -10,6 +10,7 @@
  */
 
 #include <linux/string.h>
+#include <asm/bug.h>
 #include <linux/platform_device.h>
 #include <linux/of_device.h>
 #include <linux/of_irq.h>
@@ -18,23 +19,50 @@
 #include <linux/interrupt.h>
 #include <linux/ioport.h>
 #include <linux/dma-mapping.h>
-#include <linux/memblock.h>
 #include <linux/err.h>
 #include <linux/slab.h>
-#include <linux/pm_runtime.h>
 #include <linux/pm_domain.h>
 #include <linux/idr.h>
 #include <linux/acpi.h>
 #include <linux/clk/clk-conf.h>
-#include <linux/limits.h>
 #include <linux/property.h>
-#include <linux/kmemleak.h>
 #include <linux/types.h>
 #include <linux/iommu.h>
 #include <linux/dma-map-ops.h>
 
 #include "base.h"
-#include "power/power.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/dev_printk.h"
+#include "linux/device.h"
+#include "linux/device/bus.h"
+#include "linux/device/driver.h"
+#include "linux/errno.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/irq.h"
+#include "linux/irqdomain.h"
+#include "linux/kconfig.h"
+#include "linux/klist.h"
+#include "linux/kobject.h"
+#include "linux/list.h"
+#include "linux/mod_devicetable.h"
+#include "linux/numa.h"
+#include "linux/of.h"
+#include "linux/of_platform.h"
+#include "linux/pm.h"
+#include "linux/printk.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/sysfs.h"
+
+struct module;
 
 /* For automatically allocated device IDs */
 static DEFINE_IDA(platform_devid_ida);

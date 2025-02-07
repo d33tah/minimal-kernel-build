@@ -1,18 +1,50 @@
 // SPDX-License-Identifier: GPL-2.0-only
-#include <crypto/hash.h>
 #include <linux/export.h>
+#include <asm/bug.h>
+#include <asm/compat.h>
+#include <linux/mm.h>
 #include <linux/bvec.h>
 #include <linux/fault-inject-usercopy.h>
 #include <linux/uio.h>
 #include <linux/pagemap.h>
 #include <linux/highmem.h>
 #include <linux/slab.h>
-#include <linux/vmalloc.h>
 #include <linux/splice.h>
 #include <linux/compat.h>
 #include <net/checksum.h>
-#include <linux/scatterlist.h>
 #include <linux/instrumented.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/bug.h"
+#include "asm/checksum_32.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "asm/uaccess.h"
+#include "asm/uaccess_32.h"
+#include "linux/build_bug.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/err.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/highmem-internal.h"
+#include "linux/kconfig.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/math.h"
+#include "linux/minmax.h"
+#include "linux/mm.h"
+#include "linux/mm_types.h"
+#include "linux/pipe_fs_i.h"
+#include "linux/printk.h"
+#include "linux/rcupdate.h"
+#include "linux/stddef.h"
+#include "linux/string.h"
+#include "linux/types.h"
+#include "linux/uaccess.h"
+#include "linux/uio.h"
+#include "linux/xarray.h"
+#include "vdso/limits.h"
 
 #define PIPE_PARANOIA /* for now */
 

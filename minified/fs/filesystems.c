@@ -7,16 +7,20 @@
  *  table of configured filesystems
  */
 
-#include <linux/syscalls.h>
 #include <linux/fs.h>
-#include <linux/proc_fs.h>
-#include <linux/seq_file.h>
+#include <asm/bug.h>
+#include <linux/spinlock.h>
+#include <linux/spinlock_types.h>
 #include <linux/kmod.h>
 #include <linux/init.h>
 #include <linux/module.h>
-#include <linux/slab.h>
-#include <linux/uaccess.h>
 #include <linux/fs_parser.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/string_32.h"
+#include "linux/export.h"
+#include "linux/printk.h"
+#include "linux/rcupdate.h"
 
 /*
  * Handling of filesystem drivers list.

@@ -18,22 +18,39 @@
  */
 
 #include <linux/irqflags.h>
-#include <linux/kallsyms.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
 #include <linux/notifier.h>
-#include <linux/kprobes.h>
 #include <linux/kdebug.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
 #include <linux/percpu.h>
 #include <linux/sched.h>
 #include <linux/init.h>
 #include <linux/slab.h>
 #include <linux/list.h>
 #include <linux/cpu.h>
-#include <linux/smp.h>
-#include <linux/bug.h>
 
 #include <linux/hw_breakpoint.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/current.h"
+#include "asm/hw_breakpoint.h"
+#include "asm/string_32.h"
+#include "linux/capability.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/cpumask.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/hw_breakpoint.h"
+#include "linux/mutex.h"
+#include "linux/perf_event.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+
 /*
  * Constraints data
  */

@@ -1,10 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0-only
-#include <linux/sched.h>
-#include <linux/ftrace.h>
-#include <asm/ptrace.h>
-#include <asm/bitops.h>
 #include <asm/stacktrace.h>
 #include <asm/unwind.h>
+
+#include "asm-generic/rwonce.h"
+#include "asm/string_32.h"
+#include "linux/align.h"
+#include "linux/export.h"
+#include "linux/kernel.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+
+struct pt_regs;
+struct task_struct;
 
 unsigned long unwind_get_return_address(struct unwind_state *state)
 {

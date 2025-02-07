@@ -33,13 +33,13 @@ export RETPOLINE_VDSO_CFLAGS
 
 # For gcc stack alignment is specified with -mpreferred-stack-boundary,
 # clang has the option -mstack-alignment for that purpose.
-ifneq ($(call cc-option, -mpreferred-stack-boundary=4),)
-      cc_stack_align4 := -mpreferred-stack-boundary=2
-      cc_stack_align8 := -mpreferred-stack-boundary=3
-else ifneq ($(call cc-option, -mstack-alignment=16),)
-      cc_stack_align4 := -mstack-alignment=4
-      cc_stack_align8 := -mstack-alignment=8
-endif
+#ifneq ($(call cc-option, -mpreferred-stack-boundary=4),)
+#      cc_stack_align4 := -mpreferred-stack-boundary=2
+#      cc_stack_align8 := -mpreferred-stack-boundary=3
+#else ifneq ($(call cc-option, -mstack-alignment=16),)
+#      cc_stack_align4 := -mstack-alignment=4
+#      cc_stack_align8 := -mstack-alignment=8
+#endif
 
 # How to compile the 16-bit code.  Note we always compile for -march=i386;
 # that way we can complain to the user if the CPU is insufficient.
@@ -51,7 +51,7 @@ REALMODE_CFLAGS	:= -m16 -g -Os -DDISABLE_BRANCH_PROFILING -D__DISABLE_EXPORTS \
 REALMODE_CFLAGS += -ffreestanding
 REALMODE_CFLAGS += -fno-stack-protector
 REALMODE_CFLAGS += -Wno-address-of-packed-member
-REALMODE_CFLAGS += $(cc_stack_align4)
+#REALMODE_CFLAGS += $(cc_stack_align4)
 REALMODE_CFLAGS += $(CLANG_FLAGS)
 export REALMODE_CFLAGS
 
@@ -142,7 +142,7 @@ else
         # default alignment which keep the stack *mis*aligned.
         # Furthermore an alignment to the register width reduces stack usage
         # and the number of alignment instructions.
-        KBUILD_CFLAGS += $(cc_stack_align8)
+        #KBUILD_CFLAGS += $(cc_stack_align8)
 
 	# Use -mskip-rax-setup if supported.
 	KBUILD_CFLAGS += $(call cc-option,-mskip-rax-setup)

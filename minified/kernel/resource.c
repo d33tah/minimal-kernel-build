@@ -11,16 +11,16 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/export.h>
-#include <linux/errno.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
+#include <linux/spinlock_types.h>
 #include <linux/ioport.h>
 #include <linux/init.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/fs.h>
-#include <linux/proc_fs.h>
 #include <linux/pseudo_fs.h>
 #include <linux/sched.h>
-#include <linux/seq_file.h>
 #include <linux/device.h>
 #include <linux/pfn.h>
 #include <linux/mm.h>
@@ -28,6 +28,29 @@
 #include <linux/resource_ext.h>
 #include <uapi/linux/magic.h>
 #include <asm/io.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/align.h"
+#include "linux/compiler_attributes.h"
+#include "linux/dev_printk.h"
+#include "linux/err.h"
+#include "linux/gfp.h"
+#include "linux/kconfig.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/list.h"
+#include "linux/minmax.h"
+#include "linux/printk.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/wait.h"
+
+struct fs_context;
+struct seq_file;
 
 
 struct resource ioport_resource = {

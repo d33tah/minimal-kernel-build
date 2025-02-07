@@ -9,16 +9,24 @@
  */
 
 #include <linux/device/class.h>
+#include <asm/bug.h>
 #include <linux/device.h>
-#include <linux/module.h>
 #include <linux/init.h>
-#include <linux/string.h>
-#include <linux/kdev_t.h>
 #include <linux/err.h>
 #include <linux/slab.h>
-#include <linux/blkdev.h>
 #include <linux/mutex.h>
 #include "base.h"
+#include "asm-generic/errno-base.h"
+#include "linux/container_of.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/klist.h"
+#include "linux/kobject.h"
+#include "linux/list.h"
+#include "linux/printk.h"
+
+struct lock_class_key;
+struct module;
 
 #define to_class_attr(_attr) container_of(_attr, struct class_attribute, attr)
 

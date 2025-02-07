@@ -13,21 +13,24 @@
  *	Greg Kroah-Hartman	<greg@kroah.com>
  */
 
-#include <linux/spinlock.h>
 #include <linux/string.h>
+#include <asm/bug.h>
 #include <linux/kobject.h>
 #include <linux/export.h>
-#include <linux/kmod.h>
 #include <linux/slab.h>
-#include <linux/socket.h>
-#include <linux/skbuff.h>
-#include <linux/netlink.h>
-#include <linux/uidgid.h>
 #include <linux/uuid.h>
 #include <linux/ctype.h>
-#include <net/sock.h>
-#include <net/netlink.h>
-#include <net/net_namespace.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/string_32.h"
+#include "linux/gfp.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/mutex.h"
+#include "linux/printk.h"
+#include "linux/stdarg.h"
+#include "linux/types.h"
 
 
 u64 uevent_seqnum;

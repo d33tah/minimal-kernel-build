@@ -5,27 +5,64 @@
  */
 
 #include <linux/blkdev.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
+#include <linux/mm.h>
 #include <linux/export.h>
 #include <linux/pagemap.h>
 #include <linux/slab.h>
 #include <linux/cred.h>
 #include <linux/mount.h>
-#include <linux/vfs.h>
 
 #include <linux/mutex.h>
-#include <linux/namei.h>
 #include <linux/exportfs.h>
-#include <linux/writeback.h>
 #include <linux/buffer_head.h> /* sync_mapping_buffers */
 #include <linux/fs_context.h>
 #include <linux/pseudo_fs.h>
 #include <linux/fsnotify.h>
 
-#include <linux/fscrypt.h>
-
 #include <linux/uaccess.h>
 
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/cacheflush.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/highmem.h"
+#include "linux/kconfig.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/kstrtox.h"
+#include "linux/limits.h"
+#include "linux/list.h"
+#include "linux/minmax.h"
+#include "linux/mm.h"
+#include "linux/mm_types.h"
+#include "linux/path.h"
+#include "linux/printk.h"
+#include "linux/sched.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stat.h"
+#include "linux/statfs.h"
+#include "linux/stddef.h"
+#include "linux/string.h"
+#include "linux/types.h"
+#include "linux/uidgid.h"
+#include "linux/user_namespace.h"
+
+struct delayed_call;
+struct iov_iter;
 
 int simple_getattr(struct user_namespace *mnt_userns, const struct path *path,
 		   struct kstat *stat, u32 request_mask,

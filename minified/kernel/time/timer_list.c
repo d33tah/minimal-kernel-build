@@ -5,17 +5,26 @@
  * Copyright(C) 2006, Red Hat, Inc., Ingo Molnar
  */
 
-#include <linux/proc_fs.h>
-#include <linux/module.h>
 #include <linux/spinlock.h>
-#include <linux/sched.h>
+#include <asm-generic/percpu.h>
+#include <linux/ktime.h>
 #include <linux/seq_file.h>
-#include <linux/kallsyms.h>
 #include <linux/nmi.h>
 
-#include <linux/uaccess.h>
-
 #include "tick-internal.h"
+#include "asm-generic/int-ll64.h"
+#include "linux/clockchips.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/cpumask.h"
+#include "linux/hrtimer.h"
+#include "linux/ktime.h"
+#include "linux/printk.h"
+#include "linux/stdarg.h"
+#include "linux/timerqueue.h"
+#include "linux/types.h"
+#include "tick-sched.h"
 
 struct timer_list_iter {
 	int cpu;

@@ -1,8 +1,21 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/pagewalk.h>
-#include <linux/highmem.h>
-#include <linux/sched.h>
 #include <linux/hugetlb.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/page_types.h"
+#include "asm/pgtable.h"
+#include "linux/fs.h"
+#include "linux/huge_mm.h"
+#include "linux/hugetlb_inline.h"
+#include "linux/lockdep.h"
+#include "linux/minmax.h"
+#include "linux/mm.h"
+#include "linux/mm_types.h"
+#include "linux/mmap_lock.h"
+#include "linux/pgtable.h"
+#include "linux/spinlock_types.h"
+#include "linux/stddef.h"
 
 /*
  * We want to know the real level where a entry is located ignoring any

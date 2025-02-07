@@ -1,9 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/err.h>
-#include <linux/mm.h>
 #include <asm/current.h>
-#include <asm/traps.h>
 #include <asm/vdso.h>
+
+#include "asm/mmu.h"
+#include "asm/ptrace.h"
+#include "asm/trapnr.h"
+#include "linux/mm_types.h"
+#include "linux/sched.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 struct vdso_exception_table_entry {
 	int insn, fixup;

@@ -15,10 +15,10 @@
 
 
 
-#include <linux/types.h>
-#include <linux/string.h>
 #include <linux/init.h>
 #include <linux/printk.h>
+
+#include "asm/string_32.h"
 
 #ifndef CONFIG_DECOMPRESS_GZIP
 # define gunzip NULL

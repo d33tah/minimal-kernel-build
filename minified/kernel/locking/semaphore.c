@@ -31,8 +31,17 @@
 #include <linux/sched/debug.h>
 #include <linux/semaphore.h>
 #include <linux/spinlock.h>
-#include <linux/ftrace.h>
 #include <trace/events/lock.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm/current.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/list.h"
+#include "linux/sched/signal.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 static noinline void __down(struct semaphore *sem);
 static noinline int __down_interruptible(struct semaphore *sem);

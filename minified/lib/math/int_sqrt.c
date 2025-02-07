@@ -8,8 +8,12 @@
 
 #include <linux/export.h>
 #include <linux/bitops.h>
-#include <linux/limits.h>
 #include <linux/math.h>
+
+#include "asm-generic/bitops/fls64.h"
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/int-ll64.h"
+#include "vdso/limits.h"
 
 /**
  * int_sqrt - computes the integer square root

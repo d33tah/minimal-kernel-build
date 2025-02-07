@@ -19,23 +19,48 @@
  *
  */
 #include <linux/bvec.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
+#include <asm/signal.h>
+#include <linux/build_bug.h>
+#include <linux/mm.h>
 #include <linux/fs.h>
 #include <linux/file.h>
 #include <linux/pagemap.h>
 #include <linux/splice.h>
-#include <linux/memcontrol.h>
-#include <linux/mm_inline.h>
 #include <linux/swap.h>
-#include <linux/writeback.h>
 #include <linux/export.h>
 #include <linux/syscalls.h>
 #include <linux/uio.h>
-#include <linux/security.h>
 #include <linux/gfp.h>
 #include <linux/socket.h>
 #include <linux/sched/signal.h>
 
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/fcntl.h"
+#include "asm-generic/rwonce.h"
+#include "asm-generic/siginfo.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/ptrace.h"
+#include "linux/compiler_types.h"
+#include "linux/errno.h"
+#include "linux/kernel.h"
+#include "linux/minmax.h"
+#include "linux/mm.h"
+#include "linux/mm_types.h"
+#include "linux/pipe_fs_i.h"
+#include "linux/printk.h"
+#include "linux/sched.h"
+#include "linux/slab.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/uaccess.h"
+#include "linux/uio.h"
+#include "linux/wait.h"
 
 /*
  * Attempt to steal a page from a pipe buffer. This should perhaps go into

@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <linux/bitops.h>
-#include <linux/cache.h>
+#include <asm/bitops.h>
 #include <linux/export.h>
 #include <linux/platform-feature.h>
+
+#include "asm-generic/bitops/instrumented-atomic.h"
+#include "asm/cache.h"
+#include "linux/types.h"
 
 #define PLATFORM_FEAT_ARRAY_SZ  BITS_TO_LONGS(PLATFORM_FEAT_N)
 static unsigned long __read_mostly platform_features[PLATFORM_FEAT_ARRAY_SZ];

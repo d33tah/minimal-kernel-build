@@ -1,8 +1,16 @@
 /* Declare dependencies between CPUIDs */
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/module.h>
 #include <asm/cpufeature.h>
+#include <asm/bitops.h>
+#include <asm/bug.h>
+
+#include "asm-generic/bitops/instrumented-atomic.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/cpufeatures.h"
+#include "asm/processor.h"
+#include "asm/string_32.h"
+#include "linux/compiler_types.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 struct cpuid_dep {
 	unsigned int	feature;

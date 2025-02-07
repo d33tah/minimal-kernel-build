@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/perf_event.h>
+#include <asm-generic/percpu.h>
+#include <asm/bitops.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
+#include <linux/bitops.h>
 #include <linux/types.h>
 
 #include <asm/perf_event.h>
@@ -7,6 +12,35 @@
 #include <asm/insn.h>
 
 #include "../perf_event.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/topology.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/current.h"
+#include "asm/fpu/types.h"
+#include "asm/fpu/xstate.h"
+#include "asm/inat_types.h"
+#include "asm/msr-index.h"
+#include "asm/processor.h"
+#include "asm/uaccess.h"
+#include "linux/bits.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/cpumask.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/jump_label.h"
+#include "linux/kernel.h"
+#include "linux/minmax.h"
+#include "linux/perf_event.h"
+#include "linux/printk.h"
+#include "linux/sched.h"
+#include "linux/slab.h"
+#include "linux/smp.h"
+#include "linux/stddef.h"
 
 /*
  * Intel LBR_SELECT bits

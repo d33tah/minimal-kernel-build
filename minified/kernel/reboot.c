@@ -7,17 +7,50 @@
 
 #define pr_fmt(fmt)	"reboot: " fmt
 
-#include <linux/atomic.h>
 #include <linux/ctype.h>
+#include <asm/bug.h>
+#include <asm/signal.h>
 #include <linux/export.h>
-#include <linux/kexec.h>
-#include <linux/kmod.h>
 #include <linux/kmsg_dump.h>
 #include <linux/reboot.h>
 #include <linux/suspend.h>
 #include <linux/syscalls.h>
 #include <linux/syscore_ops.h>
-#include <linux/uaccess.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/current.h"
+#include "asm/emergency-restart.h"
+#include "asm/ptrace.h"
+#include "asm/string_32.h"
+#include "asm/uaccess.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/capability.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/cpu.h"
+#include "linux/cpumask.h"
+#include "linux/device.h"
+#include "linux/err.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/jiffies.h"
+#include "linux/kernel.h"
+#include "linux/kstrtox.h"
+#include "linux/mutex.h"
+#include "linux/notifier.h"
+#include "linux/pid_namespace.h"
+#include "linux/printk.h"
+#include "linux/reboot.h"
+#include "linux/sched.h"
+#include "linux/sched/signal.h"
+#include "linux/slab.h"
+#include "linux/stddef.h"
+#include "linux/string.h"
+#include "linux/types.h"
+#include "linux/umh.h"
+#include "linux/workqueue.h"
 
 /*
  * this indicates whether you can reboot with ctrl-alt-del: the default is yes

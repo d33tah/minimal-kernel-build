@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/export.h>
 #include <linux/types.h>
-#include <linux/bits.h>
 #include "probe.h"
+#include "asm-generic/bitsperlong.h"
+#include "asm/msr.h"
+#include "linux/sysfs.h"
+#include "vdso/bits.h"
+
+struct kobject;
 
 static umode_t
 not_visible(struct kobject *kobj, struct attribute *attr, int i)

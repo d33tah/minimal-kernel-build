@@ -267,5 +267,6 @@ syscall_list() {
 	done
 }
 
-(ignore_list && syscall_list $(dirname $0)/../arch/x86/entry/syscalls/syscall_32.tbl) | \
-$* -Wno-error -Wno-unused-macros -E -x c - > /dev/null
+TMPFILE=$(mktemp /tmp/checksyscalls.XXXXXX)
+(ignore_list && syscall_list $(dirname $0)/../arch/x86/entry/syscalls/syscall_32.tbl) > $TMPFILE
+$* -Wno-error -Wno-unused-macros -E -x c $TMPFILE > /dev/null

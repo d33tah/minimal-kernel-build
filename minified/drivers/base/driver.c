@@ -9,13 +9,20 @@
  */
 
 #include <linux/device/driver.h>
+#include <asm/bug.h>
 #include <linux/device.h>
-#include <linux/module.h>
-#include <linux/errno.h>
 #include <linux/slab.h>
 #include <linux/string.h>
 #include <linux/sysfs.h>
 #include "base.h"
+#include "asm-generic/errno-base.h"
+#include "asm/page_types.h"
+#include "linux/device/bus.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/klist.h"
+#include "linux/kobject.h"
+#include "linux/printk.h"
 
 static struct device *next_device(struct klist_iter *i)
 {

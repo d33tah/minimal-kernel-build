@@ -18,8 +18,11 @@
  */
 
 #include <linux/earlycpio.h>
-#include <linux/kernel.h>
 #include <linux/string.h>
+
+#include "asm/string_32.h"
+#include "linux/align.h"
+#include "linux/printk.h"
 
 enum cpio_fields {
 	C_MAGIC,

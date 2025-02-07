@@ -32,15 +32,16 @@
  * s1 > 1, s2 > 7, s3 > 15, s4 > 127.
  */
 
-#include <linux/types.h>
-#include <linux/percpu.h>
 #include <linux/export.h>
-#include <linux/jiffies.h>
+#include <asm-generic/percpu.h>
 #include <linux/random.h>
-#include <linux/sched.h>
-#include <linux/bitops.h>
-#include <linux/slab.h>
-#include <asm/unaligned.h>
+
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/unaligned.h"
+#include "linux/bits.h"
+#include "linux/compiler_types.h"
+#include "linux/cpumask.h"
+#include "linux/prandom.h"
 
 /**
  *	prandom_u32_state - seeded pseudo-random number generator.

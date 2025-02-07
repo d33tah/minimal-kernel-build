@@ -2,8 +2,17 @@
 #include <linux/ptrace.h>
 #include <linux/sched.h>
 #include <linux/sched/task_stack.h>
-#include <linux/export.h>
 #include <asm/syscall.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/rwonce.h"
+#include "asm/current.h"
+#include "asm/processor.h"
+#include "asm/ptrace.h"
+#include "asm/string_32.h"
+#include "linux/compiler.h"
+#include "linux/seccomp.h"
 
 static int collect_syscall(struct task_struct *target, struct syscall_info *info)
 {

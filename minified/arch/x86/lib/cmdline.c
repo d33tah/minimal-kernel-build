@@ -3,10 +3,11 @@
  *
  * Misc librarized functions for cmdline poking.
  */
-#include <linux/kernel.h>
-#include <linux/string.h>
-#include <linux/ctype.h>
 #include <asm/setup.h>
+
+#include "asm-generic/int-ll64.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
 
 static inline int myisspace(u8 c)
 {

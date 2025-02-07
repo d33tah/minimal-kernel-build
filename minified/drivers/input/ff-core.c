@@ -12,10 +12,22 @@
 /* #define DEBUG */
 
 #include <linux/input.h>
-#include <linux/module.h>
+#include <asm/bitops.h>
+#include <linux/bitmap.h>
 #include <linux/mutex.h>
-#include <linux/sched.h>
 #include <linux/slab.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "linux/compiler_types.h"
+#include "linux/dev_printk.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/input-event-codes.h"
+#include "linux/input.h"
+#include "linux/spinlock.h"
+
+struct file;
 
 /*
  * Check that the effect_id is a valid effect and whether the user

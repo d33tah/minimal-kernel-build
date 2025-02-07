@@ -7,11 +7,32 @@
  */
 
 #include <linux/device.h>
-#include <linux/kernel.h>
 #include <linux/property.h>
 #include <linux/slab.h>
 
 #include "base.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/string_32.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/fwnode.h"
+#include "linux/gfp.h"
+#include "linux/idr.h"
+#include "linux/init.h"
+#include "linux/kobject.h"
+#include "linux/kstrtox.h"
+#include "linux/list.h"
+#include "linux/log2.h"
+#include "linux/minmax.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/string.h"
+#include "linux/sysfs.h"
+#include "linux/types.h"
 
 struct swnode {
 	struct kobject kobj;

@@ -5,15 +5,31 @@
  *
  * Generic LRU infrastructure
  */
-#include <linux/kernel.h>
-#include <linux/module.h>
 #include <linux/mm.h>
 #include <linux/list_lru.h>
 #include <linux/slab.h>
-#include <linux/mutex.h>
 #include <linux/memcontrol.h>
-#include "slab.h"
-#include "internal.h"
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/rwonce.h"
+#include "asm/bug.h"
+#include "asm/page.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/list.h"
+#include "linux/lockdep.h"
+#include "linux/nodemask.h"
+#include "linux/rcupdate.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+
+struct lock_class_key;
+struct mem_cgroup;
+struct shrinker;
 
 static void list_lru_register(struct list_lru *lru)
 {

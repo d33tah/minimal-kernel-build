@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <linux/linkage.h>
-#include <linux/errno.h>
-
-#include <asm/unistd.h>
-
 /* Architectures may override COND_SYSCALL and COND_SYSCALL_COMPAT */
 #include <asm/syscall_wrapper.h>
+
+#include "asm-generic/errno.h"
+
+struct pt_regs;
 
 /*  we can't #include <linux/syscalls.h> here,
     but tell gcc to not warn with -Wmissing-prototypes  */

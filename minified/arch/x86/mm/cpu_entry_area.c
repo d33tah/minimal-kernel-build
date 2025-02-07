@@ -1,14 +1,30 @@
 // SPDX-License-Identifier: GPL-2.0
 
-#include <linux/spinlock.h>
 #include <linux/percpu.h>
-#include <linux/kallsyms.h>
-
-#include <linux/pgtable.h>
-
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
+#include <asm/pgtable.h>
 #include <asm/cpu_entry_area.h>
-#include <asm/fixmap.h>
 #include <asm/desc.h>
+
+#include "asm-generic/pgtable-nopmd.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/intel_ds.h"
+#include "asm/page_types.h"
+#include "asm/pgtable-2level_types.h"
+#include "asm/pgtable.h"
+#include "asm/pgtable_32_areas.h"
+#include "asm/pgtable_types.h"
+#include "asm/processor.h"
+#include "linux/build_bug.h"
+#include "linux/compiler_types.h"
+#include "linux/cpumask.h"
+#include "linux/export.h"
+#include "linux/init.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 static DEFINE_PER_CPU_PAGE_ALIGNED(struct entry_stack_page, entry_stack_storage);
 

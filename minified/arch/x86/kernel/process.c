@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/errno.h>
-#include <linux/kernel.h>
 #include <linux/mm.h>
+#include <asm-generic/percpu.h>
+#include <asm/cpufeatures.h>
+#include <asm/percpu.h>
 #include <linux/smp.h>
 #include <linux/prctl.h>
-#include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/sched/idle.h>
 #include <linux/sched/debug.h>
@@ -14,32 +14,20 @@
 #include <linux/sched/task_stack.h>
 #include <linux/init.h>
 #include <linux/export.h>
-#include <linux/pm.h>
 #include <linux/tick.h>
 #include <linux/random.h>
 #include <linux/user-return-notifier.h>
-#include <linux/dmi.h>
-#include <linux/utsname.h>
-#include <linux/stackprotector.h>
-#include <linux/cpuidle.h>
-#include <linux/acpi.h>
 #include <linux/elf-randomize.h>
-#include <trace/events/power.h>
 #include <linux/hw_breakpoint.h>
-#include <asm/cpu.h>
 #include <asm/apic.h>
-#include <linux/uaccess.h>
 #include <asm/mwait.h>
 #include <asm/fpu/api.h>
 #include <asm/fpu/sched.h>
-#include <asm/fpu/xstate.h>
-#include <asm/debugreg.h>
 #include <asm/nmi.h>
 #include <asm/tlbflush.h>
 #include <asm/mce.h>
 #include <asm/vm86.h>
 #include <asm/switch_to.h>
-#include <asm/desc.h>
 #include <asm/prctl.h>
 #include <asm/spec-ctrl.h>
 #include <asm/io_bitmap.h>
@@ -49,6 +37,43 @@
 #include <asm/tdx.h>
 
 #include "process.h"
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/barrier.h"
+#include "asm/bug.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/current.h"
+#include "asm/fpu/types.h"
+#include "asm/irqflags.h"
+#include "asm/msr-index.h"
+#include "asm/msr.h"
+#include "asm/percpu.h"
+#include "asm/pkru.h"
+#include "asm/processor-flags.h"
+#include "asm/processor.h"
+#include "asm/ptrace.h"
+#include "asm/segment.h"
+#include "asm/special_insns.h"
+#include "asm/string_32.h"
+#include "asm/tsc.h"
+#include "asm/uaccess.h"
+#include "linux/compiler_attributes.h"
+#include "linux/container_of.h"
+#include "linux/cpu.h"
+#include "linux/cpumask.h"
+#include "linux/irqflags.h"
+#include "linux/lockdep.h"
+#include "linux/mm_types.h"
+#include "linux/personality.h"
+#include "linux/preempt.h"
+#include "linux/printk.h"
+#include "linux/ptrace.h"
+#include "linux/sched.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "vdso/bits.h"
 
 /*
  * per-CPU TSS segments. Threads are completely 'soft' on Linux,

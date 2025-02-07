@@ -16,24 +16,48 @@
  */
 
 #include <linux/perf_event.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
+#include <asm/page_types.h>
+#include <asm/percpu.h>
 #include <linux/hw_breakpoint.h>
-#include <linux/irqflags.h>
 #include <linux/notifier.h>
-#include <linux/kallsyms.h>
 #include <linux/kprobes.h>
 #include <linux/percpu.h>
 #include <linux/kdebug.h>
-#include <linux/kernel.h>
 #include <linux/export.h>
 #include <linux/sched.h>
-#include <linux/smp.h>
-
 #include <asm/hw_breakpoint.h>
 #include <asm/processor.h>
 #include <asm/debugreg.h>
-#include <asm/user.h>
 #include <asm/desc.h>
 #include <asm/tlbflush.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm/cpu_entry_area.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/current.h"
+#include "asm/debugreg.h"
+#include "asm/kdebug.h"
+#include "asm/percpu.h"
+#include "asm/pgtable_32_areas.h"
+#include "asm/processor-flags.h"
+#include "asm/ptrace.h"
+#include "asm/segment.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/cpumask.h"
+#include "linux/err.h"
+#include "linux/hw_breakpoint.h"
+#include "linux/lockdep.h"
+#include "linux/log2.h"
+#include "linux/perf_event.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 /* Per cpu debug control register value */
 DEFINE_PER_CPU(unsigned long, cpu_dr7);

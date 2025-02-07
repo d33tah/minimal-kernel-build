@@ -5,14 +5,33 @@
 */
 #include <linux/kernel.h>
 #include <linux/string.h>
-#include <linux/errno.h>
 #include <linux/module.h>
 #include <linux/moduleparam.h>
-#include <linux/device.h>
 #include <linux/err.h>
 #include <linux/slab.h>
-#include <linux/ctype.h>
 #include <linux/security.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/irqflags.h"
+#include "linux/kstrtox.h"
+#include "linux/list.h"
+#include "linux/panic.h"
+#include "linux/printk.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stddef.h"
+#include "linux/sysfs.h"
+#include "linux/types.h"
+
+struct module;
 
 static inline void check_kparam_locked(struct module *mod)
 {

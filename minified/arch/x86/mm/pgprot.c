@@ -2,7 +2,9 @@
 
 #include <linux/export.h>
 #include <linux/mm.h>
-#include <asm/pgtable.h>
+
+#include "asm/pgtable_types.h"
+#include "linux/mem_encrypt.h"
 
 pgprot_t vm_get_page_prot(unsigned long vm_flags)
 {

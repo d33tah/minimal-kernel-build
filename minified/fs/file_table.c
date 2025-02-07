@@ -6,12 +6,11 @@
  *  Copyright (C) 1997 David S. Miller (davem@caip.rutgers.edu)
  */
 
-#include <linux/string.h>
 #include <linux/slab.h>
+#include <asm/bug.h>
+#include <linux/spinlock.h>
 #include <linux/file.h>
-#include <linux/fdtable.h>
 #include <linux/init.h>
-#include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/security.h>
 #include <linux/cred.h>
@@ -21,17 +20,43 @@
 #include <linux/capability.h>
 #include <linux/cdev.h>
 #include <linux/fsnotify.h>
-#include <linux/sysctl.h>
 #include <linux/percpu_counter.h>
-#include <linux/percpu.h>
 #include <linux/task_work.h>
 #include <linux/ima.h>
 #include <linux/swap.h>
-#include <linux/kmemleak.h>
-
-#include <linux/atomic.h>
-
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/fcntl.h"
+#include "asm/cache.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/cache.h"
+#include "linux/capability.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/kernel.h"
+#include "linux/llist.h"
+#include "linux/minmax.h"
+#include "linux/mm.h"
+#include "linux/mutex.h"
+#include "linux/pagemap.h"
+#include "linux/path.h"
+#include "linux/pid.h"
+#include "linux/preempt.h"
+#include "linux/printk.h"
+#include "linux/sched.h"
+#include "linux/spinlock.h"
+#include "linux/stat.h"
+#include "linux/types.h"
+#include "linux/workqueue.h"
 
 /* sysctl tunables... */
 static struct files_stat_struct files_stat = {

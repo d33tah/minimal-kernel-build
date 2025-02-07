@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0
 
-#include <linux/sched.h>
-#include <linux/sched/clock.h>
-
 #include <asm/cpu.h>
 #include <asm/cpufeature.h>
-#include <asm/e820/api.h>
-#include <asm/mtrr.h>
 #include <asm/msr.h>
 
 #include "cpu.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/cpufeatures.h"
+#include "asm/msr-index.h"
+#include "asm/processor.h"
+#include "linux/kernel.h"
+#include "linux/printk.h"
 
 #define ACE_PRESENT	(1 << 6)
 #define ACE_ENABLED	(1 << 7)

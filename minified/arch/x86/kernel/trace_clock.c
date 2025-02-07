@@ -3,8 +3,9 @@
  * X86 trace clocks
  */
 #include <asm/trace_clock.h>
-#include <asm/barrier.h>
 #include <asm/msr.h>
+
+#include "asm/linkage.h"
 
 /*
  * trace_clock_x86_tsc(): A clock that is just the cycle counter.

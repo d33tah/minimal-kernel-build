@@ -11,11 +11,22 @@
 
 #include <linux/fs.h>
 #include <linux/export.h>
-#include <linux/stat.h>
-#include <linux/time.h>
-#include <linux/namei.h>
-#include <linux/poll.h>
-#include <linux/fiemap.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "linux/compiler_types.h"
+#include "linux/err.h"
+#include "linux/stat.h"
+#include "linux/types.h"
+
+struct delayed_call;
+struct dentry;
+struct fiemap_extent_info;
+struct kstat;
+struct path;
+struct posix_acl;
+struct timespec64;
+struct user_namespace;
 
 static int bad_file_open(struct inode *inode, struct file *filp)
 {

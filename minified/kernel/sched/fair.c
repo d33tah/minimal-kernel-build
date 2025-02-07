@@ -21,39 +21,44 @@
  *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra
  */
 
-#include <linux/mmap_lock.h>
-#include <linux/hugetlb_inline.h>
 #include <linux/jiffies.h>
-
-#include <linux/highmem.h>
-
-
-
+#include <asm/barrier.h>
+#include <asm/bug.h>
+#include <linux/bitops.h>
 
 
-#include <linux/topology.h>
-#include <linux/sched/clock.h>
+
+
 
 #include <linux/sched/cputime.h>
-#include <linux/sched/isolation.h>
-#include <linux/sched/nohz.h>
-
-#include <linux/cpuidle.h>
-#include <linux/interrupt.h>
-#include <linux/mempolicy.h>
-
-#include <linux/profile.h>
-#include <linux/psi.h>
-#include <linux/ratelimit.h>
-#include <linux/task_work.h>
-
-#include <asm/switch_to.h>
-
-
-
 #include "sched.h"
 #include "stats.h"
-#include "autogroup.h"
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/rwonce.h"
+#include "asm/cache.h"
+#include "asm/current.h"
+#include "asm/div64.h"
+#include "linux/cgroup.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/cpumask.h"
+#include "linux/init.h"
+#include "linux/jump_label.h"
+#include "linux/kstrtox.h"
+#include "linux/log2.h"
+#include "linux/math64.h"
+#include "linux/minmax.h"
+#include "linux/printk.h"
+#include "linux/rbtree.h"
+#include "linux/rbtree_types.h"
+#include "linux/sched.h"
+#include "linux/sched/cpufreq.h"
+#include "linux/sched/sysctl.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "trace/events/sched.h"
 
 /*
  * Targeted preemption latency for CPU-bound tasks:
@@ -507,6 +512,9 @@ static u64 sched_vslice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 }
 
 #include "pelt.h"
+
+struct task_group;
+
 void init_entity_runnable_average(struct sched_entity *se)
 {
 }

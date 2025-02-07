@@ -45,7 +45,6 @@ asynchronous and synchronous parts of the kernel.
 */
 
 #include <linux/async.h>
-#include <linux/atomic.h>
 #include <linux/ktime.h>
 #include <linux/export.h>
 #include <linux/wait.h>
@@ -54,6 +53,16 @@ asynchronous and synchronous parts of the kernel.
 #include <linux/workqueue.h>
 
 #include "workqueue_internal.h"
+#include "asm/current.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/container_of.h"
+#include "linux/gfp.h"
+#include "linux/list.h"
+#include "linux/printk.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/types.h"
+#include "vdso/limits.h"
 
 static async_cookie_t next_cookie = 1;
 

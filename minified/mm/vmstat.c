@@ -10,27 +10,16 @@
  *		Christoph Lameter <christoph@lameter.com>
  *  Copyright (C) 2008-2014 Christoph Lameter
  */
-#include <linux/fs.h>
 #include <linux/mm.h>
-#include <linux/err.h>
-#include <linux/module.h>
-#include <linux/slab.h>
-#include <linux/cpu.h>
-#include <linux/cpumask.h>
-#include <linux/vmstat.h>
-#include <linux/proc_fs.h>
-#include <linux/seq_file.h>
-#include <linux/debugfs.h>
-#include <linux/sched.h>
-#include <linux/math64.h>
-#include <linux/writeback.h>
-#include <linux/compaction.h>
-#include <linux/mm_inline.h>
-#include <linux/page_ext.h>
-#include <linux/page_owner.h>
+#include <linux/atomic.h>
 #include <linux/migrate.h>
 
-#include "internal.h"
+#include "linux/cache.h"
+#include "linux/compiler_attributes.h"
+#include "linux/export.h"
+#include "linux/init.h"
+#include "linux/mmzone.h"
+#include "linux/workqueue.h"
 
 
 

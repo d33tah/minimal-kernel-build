@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/string.h>
 #include <linux/export.h>
+
+#include "asm/string_32.h"
 
 char *strstr(const char *cs, const char *ct)
 {

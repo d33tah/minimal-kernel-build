@@ -1,11 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/kernel.h>
 #include <linux/export.h>
+#include <asm/page_types.h>
 #include <linux/uaccess.h>
 #include <linux/mm.h>
 #include <linux/bitops.h>
 
 #include <asm/word-at-a-time.h>
+
+#include "asm/uaccess.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
 
 /*
  * Do a strnlen, return length of string *with* final '\0'.

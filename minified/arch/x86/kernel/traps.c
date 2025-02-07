@@ -12,61 +12,76 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/context_tracking.h>
-#include <linux/interrupt.h>
-#include <linux/kallsyms.h>
-#include <linux/spinlock.h>
 #include <linux/kprobes.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
+#include <asm/page_types.h>
+#include <asm/signal.h>
+#include <linux/rcupdate.h>
 #include <linux/uaccess.h>
 #include <linux/kdebug.h>
-#include <linux/kgdb.h>
 #include <linux/kernel.h>
-#include <linux/export.h>
-#include <linux/ptrace.h>
 #include <linux/uprobes.h>
-#include <linux/string.h>
-#include <linux/delay.h>
-#include <linux/errno.h>
-#include <linux/kexec.h>
 #include <linux/sched.h>
-#include <linux/sched/task_stack.h>
-#include <linux/timer.h>
 #include <linux/init.h>
 #include <linux/bug.h>
-#include <linux/nmi.h>
 #include <linux/mm.h>
-#include <linux/smp.h>
-#include <linux/io.h>
-#include <linux/hardirq.h>
-#include <linux/atomic.h>
-
-
-#include <asm/stacktrace.h>
 #include <asm/processor.h>
 #include <asm/debugreg.h>
-#include <asm/realmode.h>
 #include <asm/text-patching.h>
-#include <asm/ftrace.h>
 #include <asm/traps.h>
 #include <asm/desc.h>
 #include <asm/fpu/api.h>
 #include <asm/cpu.h>
 #include <asm/cpu_entry_area.h>
-#include <asm/mce.h>
-#include <asm/fixmap.h>
-#include <asm/mach_traps.h>
-#include <asm/alternative.h>
 #include <asm/fpu/xstate.h>
 #include <asm/vm86.h>
 #include <asm/umip.h>
 #include <asm/insn.h>
 #include <asm/insn-eval.h>
 #include <asm/vdso.h>
-#include <asm/tdx.h>
-
-#include <asm/processor-flags.h>
-#include <asm/setup.h>
 #include <asm/proto.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/kprobes.h"
+#include "asm-generic/siginfo.h"
+#include "asm/bug.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/current.h"
+#include "asm/debugreg.h"
+#include "asm/extable.h"
+#include "asm/idtentry.h"
+#include "asm/irq_vectors.h"
+#include "asm/kdebug.h"
+#include "asm/mem_encrypt.h"
+#include "asm/msr-index.h"
+#include "asm/msr.h"
+#include "asm/processor-flags.h"
+#include "asm/ptrace.h"
+#include "asm/special_insns.h"
+#include "asm/thread_info.h"
+#include "asm/trapnr.h"
+#include "asm/uaccess.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/cpu.h"
+#include "linux/entry-common.h"
+#include "linux/instrumentation.h"
+#include "linux/irqflags.h"
+#include "linux/kconfig.h"
+#include "linux/kern_levels.h"
+#include "linux/notifier.h"
+#include "linux/panic.h"
+#include "linux/preempt.h"
+#include "linux/printk.h"
+#include "linux/rcupdate.h"
+#include "linux/sched/signal.h"
+#include "linux/signal.h"
+#include "linux/stddef.h"
+#include "linux/thread_info.h"
+#include "linux/types.h"
 
 DECLARE_BITMAP(system_vectors, NR_VECTORS);
 

@@ -1,10 +1,20 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/err.h>
-#include <linux/pci.h>
 #include <linux/io.h>
+#include <asm/bug.h>
+#include <asm/io.h>
 #include <linux/gfp.h>
 #include <linux/export.h>
 #include <linux/of_address.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/io.h"
+#include "linux/compiler_types.h"
+#include "linux/dev_printk.h"
+#include "linux/device.h"
+#include "linux/ioport.h"
+#include "linux/types.h"
+
+struct device_node;
 
 enum devm_ioremap_type {
 	DEVM_IOREMAP = 0,

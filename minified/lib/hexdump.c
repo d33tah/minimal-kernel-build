@@ -5,11 +5,15 @@
 
 #include <linux/types.h>
 #include <linux/ctype.h>
-#include <linux/errno.h>
 #include <linux/kernel.h>
-#include <linux/minmax.h>
 #include <linux/export.h>
-#include <asm/unaligned.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/unaligned.h"
+#include "linux/compiler.h"
+#include "linux/log2.h"
+#include "linux/printk.h"
 
 const char hex_asc[] = "0123456789abcdef";
 EXPORT_SYMBOL(hex_asc);

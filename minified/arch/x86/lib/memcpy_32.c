@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/string.h>
 #include <linux/export.h>
+
+#include "asm/string_32.h"
+#include "linux/compiler_attributes.h"
 
 #undef memcpy
 #undef memset

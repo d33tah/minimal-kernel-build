@@ -9,7 +9,9 @@
 #include <linux/input/vivaldi-fmap.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/types.h>
+
+#include "asm-generic/int-ll64.h"
+#include "asm/page_types.h"
 
 /**
  * vivaldi_function_row_physmap_show - Print vivaldi function row physmap attribute

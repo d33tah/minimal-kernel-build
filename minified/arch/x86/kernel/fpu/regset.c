@@ -2,8 +2,8 @@
 /*
  * FPU register's regset abstraction, for ptrace, core dumps, etc.
  */
-#include <linux/sched/task_stack.h>
 #include <linux/vmalloc.h>
+#include <asm/cpufeatures.h>
 
 #include <asm/fpu/api.h>
 #include <asm/fpu/signal.h>
@@ -13,6 +13,22 @@
 #include "internal.h"
 #include "legacy.h"
 #include "xstate.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/current.h"
+#include "asm/fpu/types.h"
+#include "asm/processor.h"
+#include "asm/sigcontext.h"
+#include "asm/string_32.h"
+#include "asm/thread_info.h"
+#include "asm/user_32.h"
+#include "linux/build_bug.h"
+#include "linux/compiler_types.h"
+#include "linux/regset.h"
+#include "linux/sched.h"
+#include "linux/uaccess.h"
 
 /*
  * The xstateregs_active() routine is the same as the regset_fpregs_active() routine,

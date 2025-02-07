@@ -7,7 +7,8 @@
 
 #include <linux/export.h>
 #include <linux/math.h>
-#include <linux/types.h>
+
+#include "asm-generic/int-ll64.h"
 
 /**
  * int_pow - computes the exponentiation of the given base and exponent

@@ -9,31 +9,71 @@
  */
 
 #include <linux/acpi.h>
+#include <asm/bug.h>
+#include <linux/srcu.h>
 #include <linux/cpufreq.h>
 #include <linux/device.h>
 #include <linux/err.h>
 #include <linux/fwnode.h>
 #include <linux/init.h>
-#include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/string.h>
 #include <linux/kdev_t.h>
 #include <linux/notifier.h>
 #include <linux/of.h>
 #include <linux/of_device.h>
-#include <linux/blkdev.h>
 #include <linux/mutex.h>
 #include <linux/pm_runtime.h>
-#include <linux/netdevice.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
-#include <linux/swiotlb.h>
 #include <linux/sysfs.h>
-#include <linux/dma-map-ops.h> /* for dma_default_coherent */
-
 #include "base.h"
 #include "physical_location.h"
 #include "power/power.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/rwonce.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/delay.h"
+#include "linux/dev_printk.h"
+#include "linux/device/bus.h"
+#include "linux/device/class.h"
+#include "linux/device/driver.h"
+#include "linux/errno.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/kernfs.h"
+#include "linux/klist.h"
+#include "linux/kobject.h"
+#include "linux/kref.h"
+#include "linux/kstrtox.h"
+#include "linux/list.h"
+#include "linux/lockdep.h"
+#include "linux/minmax.h"
+#include "linux/numa.h"
+#include "linux/pm.h"
+#include "linux/printk.h"
+#include "linux/projid.h"
+#include "linux/property.h"
+#include "linux/rculist.h"
+#include "linux/refcount.h"
+#include "linux/spinlock.h"
+#include "linux/srcu.h"
+#include "linux/stat.h"
+#include "linux/stdarg.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/uidgid.h"
+#include "linux/workqueue.h"
+#include "vdso/limits.h"
+
+struct module;
 
 
 /* Device links support. */

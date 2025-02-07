@@ -7,14 +7,25 @@
  */
 
 
-#include <linux/delay.h>
 #include <linux/module.h>
-#include <linux/sched.h>
-#include <linux/interrupt.h>
-#include <linux/input.h>
+#include <asm/bug.h>
 #include <linux/serio.h>
-#include <linux/i8042.h>
 #include <linux/libps2.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/string_32.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/dev_printk.h"
+#include "linux/export.h"
+#include "linux/jiffies.h"
+#include "linux/lockdep.h"
+#include "linux/mutex.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/wait.h"
 
 #define DRIVER_DESC	"PS/2 driver library"
 

@@ -10,15 +10,25 @@
  */
 
 #include <linux/init.h>
-#include <linux/sched.h>
 #include <linux/slab.h>
-#include <linux/bitops.h>
-#include <linux/key.h>
 #include <linux/sched/user.h>
-#include <linux/interrupt.h>
 #include <linux/export.h>
 #include <linux/user_namespace.h>
 #include <linux/proc_ns.h>
+
+#include "asm-generic/param.h"
+#include "generated/autoconf.h"
+#include "linux/compiler_types.h"
+#include "linux/gfp.h"
+#include "linux/list.h"
+#include "linux/panic.h"
+#include "linux/ratelimit.h"
+#include "linux/ratelimit_types.h"
+#include "linux/refcount.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/types.h"
+#include "linux/uidgid.h"
 
 /*
  * userns count is 1 for root user, 1 for init_uts_ns,

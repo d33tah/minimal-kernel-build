@@ -5,33 +5,54 @@
  * (C) 2012 Christoph Lameter <cl@linux.com>
  */
 #include <linux/slab.h>
+#include <asm/bug.h>
+#include <linux/bitops.h>
+#include <linux/build_bug.h>
+#include <linux/rcupdate.h>
 
 #include <linux/mm.h>
-#include <linux/poison.h>
-#include <linux/interrupt.h>
-#include <linux/memory.h>
 #include <linux/cache.h>
-#include <linux/compiler.h>
 #include <linux/kfence.h>
-#include <linux/module.h>
 #include <linux/cpu.h>
-#include <linux/uaccess.h>
-#include <linux/seq_file.h>
-#include <linux/proc_fs.h>
-#include <linux/debugfs.h>
 #include <linux/kasan.h>
-#include <asm/cacheflush.h>
-#include <asm/tlbflush.h>
-#include <asm/page.h>
 #include <linux/memcontrol.h>
-#include <linux/stackdepot.h>
 
 #define CREATE_TRACE_POINTS
-#include <trace/events/kmem.h>
-
 #include "internal.h"
-
 #include "slab.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/error-injection.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/page_types.h"
+#include "asm/processor.h"
+#include "asm/string_32.h"
+#include "linux/align.h"
+#include "linux/build_bug.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/fault-inject.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/instruction_pointer.h"
+#include "linux/kconfig.h"
+#include "linux/kernel.h"
+#include "linux/kmemleak.h"
+#include "linux/list.h"
+#include "linux/log2.h"
+#include "linux/minmax.h"
+#include "linux/mmzone.h"
+#include "linux/mutex.h"
+#include "linux/panic.h"
+#include "linux/printk.h"
+#include "linux/slub_def.h"
+#include "linux/stddef.h"
+#include "linux/string.h"
+#include "linux/tracepoint.h"
+#include "linux/types.h"
+#include "linux/vmstat.h"
+#include "linux/workqueue.h"
 
 enum slab_state slab_state;
 LIST_HEAD(slab_caches);

@@ -3,8 +3,21 @@
  * Access kernel or user memory without faulting.
  */
 #include <linux/export.h>
-#include <linux/mm.h>
+#include <asm/bug.h>
 #include <linux/uaccess.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/ptrace.h"
+#include "asm/uaccess.h"
+#include "generated/autoconf.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/kconfig.h"
+#include "linux/stddef.h"
+#include "linux/thread_info.h"
+#include "linux/types.h"
 
 bool __weak copy_from_kernel_nofault_allowed(const void *unsafe_src,
 		size_t size)

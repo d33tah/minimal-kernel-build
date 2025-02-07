@@ -8,6 +8,7 @@
 #include <linux/export.h>
 #include <linux/uaccess.h>
 #include "input-compat.h"
+#include "asm-generic/errno-base.h"
 
 
 int input_event_from_user(const char __user *buffer,

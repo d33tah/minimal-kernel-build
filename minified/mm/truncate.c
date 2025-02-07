@@ -8,9 +8,8 @@
  *		Initial version.
  */
 
-#include <linux/kernel.h>
-#include <linux/backing-dev.h>
 #include <linux/dax.h>
+#include <asm/bug.h>
 #include <linux/gfp.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
@@ -18,11 +17,26 @@
 #include <linux/pagemap.h>
 #include <linux/highmem.h>
 #include <linux/pagevec.h>
-#include <linux/task_io_accounting_ops.h>
-#include <linux/buffer_head.h>	/* grr. try_to_release_page */
 #include <linux/shmem_fs.h>
 #include <linux/rmap.h>
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/page_types.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/fs.h"
+#include "linux/huge_mm.h"
+#include "linux/math.h"
+#include "linux/mm_types.h"
+#include "linux/mmdebug.h"
+#include "linux/page_ref.h"
+#include "linux/sched.h"
+#include "linux/spinlock.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/xarray.h"
 
 /*
  * Regular page slots are stabilized by the page lock even without the tree

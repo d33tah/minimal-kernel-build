@@ -21,23 +21,22 @@
 /*#define DEBUG*/
 
 #include <linux/pm_qos.h>
-#include <linux/sched.h>
+#include <asm/bug.h>
 #include <linux/spinlock.h>
-#include <linux/slab.h>
-#include <linux/time.h>
-#include <linux/fs.h>
-#include <linux/device.h>
-#include <linux/miscdevice.h>
-#include <linux/string.h>
-#include <linux/platform_device.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/debugfs.h>
-#include <linux/seq_file.h>
 
-#include <linux/uaccess.h>
 #include <linux/export.h>
 #include <trace/events/power.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/rwonce.h"
+#include "linux/compiler_attributes.h"
+#include "linux/err.h"
+#include "linux/list.h"
+#include "linux/notifier.h"
+#include "linux/plist.h"
+#include "linux/spinlock_types.h"
+#include "linux/types.h"
 
 /*
  * locking rule: all changes to constraints or notifiers lists

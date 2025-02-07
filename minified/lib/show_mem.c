@@ -7,6 +7,11 @@
 
 #include <linux/mm.h>
 
+#include "generated/bounds.h"
+#include "linux/mmzone.h"
+#include "linux/nodemask.h"
+#include "linux/printk.h"
+
 
 void show_mem(unsigned int filter, nodemask_t *nodemask)
 {

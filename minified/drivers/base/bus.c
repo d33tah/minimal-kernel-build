@@ -8,18 +8,27 @@
  * Copyright (c) 2007 Novell Inc.
  */
 
-#include <linux/async.h>
 #include <linux/device/bus.h>
 #include <linux/device.h>
-#include <linux/module.h>
-#include <linux/errno.h>
 #include <linux/slab.h>
 #include <linux/init.h>
-#include <linux/string.h>
 #include <linux/mutex.h>
 #include <linux/sysfs.h>
 #include "base.h"
-#include "power/power.h"
+#include "asm-generic/errno-base.h"
+#include "linux/compiler_attributes.h"
+#include "linux/container_of.h"
+#include "linux/device/driver.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/kern_levels.h"
+#include "linux/klist.h"
+#include "linux/kobject.h"
+#include "linux/list.h"
+#include "linux/notifier.h"
+#include "linux/printk.h"
+#include "linux/spinlock.h"
+#include "linux/types.h"
 
 /* /sys/devices/system */
 static struct kset *system_kset;

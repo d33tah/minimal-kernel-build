@@ -5,13 +5,15 @@
  * Copyright (C) 2015 Martin Willi
  */
 
-#include <linux/bug.h>
 #include <linux/kernel.h>
+#include <asm/bug.h>
 #include <linux/export.h>
 #include <linux/bitops.h>
-#include <linux/string.h>
-#include <asm/unaligned.h>
 #include <crypto/chacha.h>
+
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/unaligned.h"
+#include "asm/string_32.h"
 
 static void chacha_permute(u32 *x, int nrounds)
 {

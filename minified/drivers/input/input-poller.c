@@ -11,6 +11,19 @@
 #include <linux/types.h>
 #include <linux/workqueue.h>
 #include "input-poller.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/param.h"
+#include "linux/container_of.h"
+#include "linux/dev_printk.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/kernel.h"
+#include "linux/kstrtox.h"
+#include "linux/stddef.h"
+#include "linux/sysfs.h"
+#include "linux/timer.h"
+
+struct kobject;
 
 struct input_dev_poller {
 	void (*poll)(struct input_dev *dev);

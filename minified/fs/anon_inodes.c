@@ -9,20 +9,28 @@
  *
  */
 
-#include <linux/cred.h>
 #include <linux/file.h>
-#include <linux/poll.h>
-#include <linux/sched.h>
 #include <linux/init.h>
 #include <linux/fs.h>
 #include <linux/mount.h>
 #include <linux/module.h>
-#include <linux/kernel.h>
 #include <linux/magic.h>
 #include <linux/anon_inodes.h>
 #include <linux/pseudo_fs.h>
 
-#include <linux/uaccess.h>
+#include "asm-generic/errno-base.h"
+#include "asm-generic/fcntl.h"
+#include "asm/cache.h"
+#include "asm/string_32.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/panic.h"
+#include "linux/security.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+
+struct fs_context;
 
 static struct vfsmount *anon_inode_mnt __read_mostly;
 static struct inode *anon_inode_inode;

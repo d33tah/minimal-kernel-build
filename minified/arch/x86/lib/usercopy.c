@@ -5,9 +5,13 @@
  */
 
 #include <linux/uaccess.h>
+#include <asm/uaccess.h>
 #include <linux/export.h>
 
 #include <asm/tlbflush.h>
+
+#include "asm/uaccess.h"
+#include "linux/compiler_types.h"
 
 /**
  * copy_from_user_nmi - NMI safe copy from user

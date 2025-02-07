@@ -1,31 +1,43 @@
 // SPDX-License-Identifier: GPL-2.0-only
-#include <linux/module.h>
 #include <linux/sched.h>
-#include <linux/ctype.h>
 
-#include <linux/tty.h>
-#include <linux/suspend.h>
 #include <linux/root_dev.h>
-#include <linux/security.h>
 #include <linux/delay.h>
 #include <linux/mount.h>
 #include <linux/device.h>
 #include <linux/init.h>
 #include <linux/fs.h>
-#include <linux/initrd.h>
 #include <linux/async.h>
 #include <linux/fs_struct.h>
-#include <linux/slab.h>
 #include <linux/ramfs.h>
 #include <linux/shmem_fs.h>
 
-#include <linux/nfs_fs.h>
-#include <linux/nfs_fs_sb.h>
-#include <linux/nfs_mount.h>
 #include <linux/raid/detect.h>
 #include <uapi/linux/mount.h>
 
 #include "do_mounts.h"
+#include "asm-generic/errno-base.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/blkdev.h"
+#include "linux/dcache.h"
+#include "linux/device/driver.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/init_syscalls.h"
+#include "linux/kconfig.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/kstrtox.h"
+#include "linux/mm.h"
+#include "linux/panic.h"
+#include "linux/path.h"
+#include "linux/printk.h"
+#include "linux/stddef.h"
+#include "linux/string.h"
+
+struct fs_context;
 
 int root_mountflags = MS_RDONLY | MS_SILENT;
 static char * __initdata root_device_name;

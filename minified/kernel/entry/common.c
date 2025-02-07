@@ -1,15 +1,44 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <linux/context_tracking.h>
+#include <asm/bug.h>
+#include <linux/preempt.h>
+#include <linux/rcupdate.h>
 #include <linux/entry-common.h>
 #include <linux/resume_user_mode.h>
-#include <linux/highmem.h>
-#include <linux/jump_label.h>
 #include <linux/livepatch.h>
 #include <linux/audit.h>
 #include <linux/tick.h>
 
 #include "common.h"
+#include "asm-generic/rwonce.h"
+#include "asm/current.h"
+#include "asm/entry-common.h"
+#include "asm/processor.h"
+#include "asm/ptrace.h"
+#include "asm/syscall.h"
+#include "asm/thread_info.h"
+#include "generated/autoconf.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/context_tracking_state.h"
+#include "linux/ftrace.h"
+#include "linux/ftrace_irq.h"
+#include "linux/hardirq.h"
+#include "linux/highmem-internal.h"
+#include "linux/instrumentation.h"
+#include "linux/irqflags.h"
+#include "linux/kconfig.h"
+#include "linux/lockdep.h"
+#include "linux/ptrace.h"
+#include "linux/sched.h"
+#include "linux/seccomp.h"
+#include "linux/stddef.h"
+#include "linux/syscall_user_dispatch.h"
+#include "linux/syscalls.h"
+#include "linux/thread_info.h"
+#include "linux/uprobes.h"
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/syscalls.h>

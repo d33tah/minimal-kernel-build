@@ -1,11 +1,25 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #include <linux/kdebug.h>
-#include <linux/kprobes.h>
+#include <asm/bug.h>
+#include <linux/linkage.h>
 #include <linux/export.h>
 #include <linux/notifier.h>
 #include <linux/rcupdate.h>
-#include <linux/vmalloc.h>
-#include <linux/reboot.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/kprobes.h"
+#include "asm/bug.h"
+#include "asm/kdebug.h"
+#include "linux/compiler.h"
+#include "linux/kernel.h"
+#include "linux/mutex.h"
+#include "linux/rwsem.h"
+#include "linux/spinlock.h"
+#include "linux/srcu.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+
+struct pt_regs;
 
 /*
  *	Notifier list for kernel code which wants to be called

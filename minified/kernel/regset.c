@@ -3,6 +3,14 @@
 #include <linux/slab.h>
 #include <linux/regset.h>
 
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "linux/compiler_types.h"
+#include "linux/gfp.h"
+#include "linux/uaccess.h"
+
+struct task_struct;
+
 static int __regset_get(struct task_struct *target,
 			const struct user_regset *regset,
 			unsigned int size,

@@ -6,8 +6,6 @@
  * it may have to be protected with a spinlock, depending on the context.
  */
 
-#include <linux/spinlock.h>
-
-#include <asm/pc-conf-reg.h>
+#include "linux/spinlock_types_raw.h"
 
 DEFINE_RAW_SPINLOCK(pc_conf_lock);

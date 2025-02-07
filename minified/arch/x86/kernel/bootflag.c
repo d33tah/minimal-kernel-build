@@ -2,15 +2,15 @@
 /*
  *	Implement 'Simple Boot Flag Specification 2.0'
  */
-#include <linux/types.h>
-#include <linux/kernel.h>
 #include <linux/init.h>
-#include <linux/string.h>
 #include <linux/spinlock.h>
-#include <linux/acpi.h>
-#include <asm/io.h>
 
 #include <linux/mc146818rtc.h>
+
+#include "asm-generic/int-ll64.h"
+#include "asm/mc146818rtc.h"
+#include "linux/kern_levels.h"
+#include "linux/printk.h"
 
 #define SBF_RESERVED (0x78)
 #define SBF_PNPOS    (1<<0)

@@ -7,9 +7,9 @@
  *          H. Peter Anvin <hpa@linux.intel.com>
  */
 
-#include <asm/processor.h>
-#include <asm/archrandom.h>
-#include <asm/sections.h>
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "linux/init.h"
 
 static int __init x86_rdrand_setup(char *s)
 {

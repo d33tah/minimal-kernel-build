@@ -9,10 +9,32 @@
  */
 
 #include <linux/perf_event.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
 #include <linux/slab.h>
-#include <linux/sched/task_stack.h>
-
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/topology.h"
+#include "asm/cache.h"
+#include "asm/current.h"
+#include "asm/processor.h"
+#include "asm/ptrace.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/cpumask.h"
+#include "linux/gfp.h"
+#include "linux/mutex.h"
+#include "linux/perf_event.h"
+#include "linux/rcupdate.h"
+#include "linux/sched.h"
+#include "linux/smp.h"
+#include "linux/stddef.h"
+#include "linux/sysctl.h"
+#include "linux/types.h"
 
 struct callchain_cpus_entries {
 	struct rcu_head			rcu_head;

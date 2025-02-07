@@ -4,34 +4,40 @@
 #include <linux/export.h>
 #include <linux/reboot.h>
 #include <linux/init.h>
-#include <linux/pm.h>
 #include <linux/efi.h>
 #include <linux/dmi.h>
-#include <linux/sched.h>
 #include <linux/tboot.h>
-#include <linux/delay.h>
 #include <linux/objtool.h>
-#include <linux/pgtable.h>
 #include <acpi/reboot.h>
-#include <asm/io.h>
 #include <asm/apic.h>
 #include <asm/io_apic.h>
 #include <asm/desc.h>
-#include <asm/hpet.h>
-#include <asm/proto.h>
 #include <asm/reboot_fixups.h>
 #include <asm/reboot.h>
-#include <asm/pci_x86.h>
 #include <asm/virtext.h>
-#include <asm/cpu.h>
-#include <asm/nmi.h>
-#include <asm/smp.h>
-
-#include <linux/ctype.h>
 #include <linux/mc146818rtc.h>
 #include <asm/realmode.h>
-#include <asm/x86_init.h>
 #include <asm/efi.h>
+
+#include "asm-generic/delay.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/emergency-restart.h"
+#include "asm/mc146818rtc.h"
+#include "asm/page.h"
+#include "asm/processor.h"
+#include "asm/shared/io.h"
+#include "linux/cache.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/irqflags.h"
+#include "linux/mod_devicetable.h"
+#include "linux/printk.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+
+struct pt_regs;
 
 /*
  * Power off function, if any

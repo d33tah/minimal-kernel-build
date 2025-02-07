@@ -7,20 +7,24 @@
  */
 
 #include <linux/init.h>
+#include <asm/pgtable.h>
+#include <linux/linkage.h>
 #include <linux/start_kernel.h>
-#include <linux/mm.h>
-#include <linux/memblock.h>
-
 #include <asm/desc.h>
 #include <asm/setup.h>
 #include <asm/sections.h>
-#include <asm/e820/api.h>
 #include <asm/page.h>
-#include <asm/apic.h>
 #include <asm/io_apic.h>
-#include <asm/bios_ebda.h>
 #include <asm/tlbflush.h>
 #include <asm/bootparam_utils.h>
+
+#include "asm-generic/sections.h"
+#include "asm/bootparam.h"
+#include "asm/page_types.h"
+#include "asm/pgtable-2level_types.h"
+#include "asm/pgtable_types.h"
+#include "asm/x86_init.h"
+#include "linux/compiler_attributes.h"
 
 static void __init i386_default_early_setup(void)
 {

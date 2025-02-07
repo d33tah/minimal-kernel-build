@@ -9,19 +9,41 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/cache.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
 #include <linux/fs.h>
 #include <linux/export.h>
 #include <linux/seq_file.h>
-#include <linux/vmalloc.h>
 #include <linux/slab.h>
-#include <linux/cred.h>
-#include <linux/mm.h>
 #include <linux/printk.h>
 #include <linux/string_helpers.h>
 #include <linux/uio.h>
 
-#include <linux/uaccess.h>
-#include <asm/page.h>
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/cpumask.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/kernel.h"
+#include "linux/list.h"
+#include "linux/minmax.h"
+#include "linux/mutex.h"
+#include "linux/rculist.h"
+#include "linux/rcupdate.h"
+#include "linux/stdarg.h"
+#include "linux/types.h"
+#include "linux/uio.h"
+
+struct path;
 
 static struct kmem_cache *seq_file_cache __ro_after_init;
 

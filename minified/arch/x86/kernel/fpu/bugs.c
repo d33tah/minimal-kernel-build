@@ -3,6 +3,14 @@
  * x86 FPU bug checks:
  */
 #include <asm/fpu/api.h>
+#include <asm/cpufeatures.h>
+
+#include "asm-generic/int-ll64.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/processor.h"
+#include "linux/init.h"
+#include "linux/printk.h"
 
 /*
  * Boot time CPU/FPU FDIV bug detection code:

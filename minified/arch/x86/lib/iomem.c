@@ -1,6 +1,11 @@
-#include <linux/string.h>
-#include <linux/module.h>
-#include <linux/io.h>
+
+#include "asm/io.h"
+#include "asm/string_32.h"
+#include "linux/cc_platform.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/export.h"
 
 #define movs(type,to,from) \
 	asm volatile("movs" type:"=&D" (to), "=&S" (from):"0" (to), "1" (from):"memory")

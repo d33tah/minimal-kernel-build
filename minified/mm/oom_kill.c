@@ -19,6 +19,9 @@
  */
 
 #include <linux/oom.h>
+#include <asm/bitops.h>
+#include <asm/bug.h>
+#include <asm/signal.h>
 #include <linux/mm.h>
 #include <linux/err.h>
 #include <linux/gfp.h>
@@ -29,25 +32,61 @@
 #include <linux/sched/debug.h>
 #include <linux/swap.h>
 #include <linux/syscalls.h>
-#include <linux/timex.h>
 #include <linux/jiffies.h>
 #include <linux/cpuset.h>
 #include <linux/export.h>
 #include <linux/notifier.h>
 #include <linux/memcontrol.h>
-#include <linux/mempolicy.h>
-#include <linux/security.h>
-#include <linux/ptrace.h>
 #include <linux/freezer.h>
-#include <linux/ftrace.h>
-#include <linux/ratelimit.h>
 #include <linux/kthread.h>
 #include <linux/init.h>
 #include <linux/mmu_notifier.h>
 
 #include <asm/tlb.h>
+
 #include "internal.h"
 #include "slab.h"
+#include "asm-generic/bitops/instrumented-atomic.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/param.h"
+#include "asm-generic/rwonce.h"
+#include "asm/cache.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/ptrace.h"
+#include "asm/thread_info.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/cred.h"
+#include "linux/debug_locks.h"
+#include "linux/kconfig.h"
+#include "linux/mm_types.h"
+#include "linux/mm_types_task.h"
+#include "linux/mmap_lock.h"
+#include "linux/mmzone.h"
+#include "linux/mutex.h"
+#include "linux/nodemask.h"
+#include "linux/oom.h"
+#include "linux/panic.h"
+#include "linux/pid.h"
+#include "linux/printk.h"
+#include "linux/ratelimit_types.h"
+#include "linux/rcupdate.h"
+#include "linux/sched/signal.h"
+#include "linux/signal.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stddef.h"
+#include "linux/thread_info.h"
+#include "linux/timer.h"
+#include "linux/types.h"
+#include "linux/uidgid.h"
+#include "linux/user_namespace.h"
+#include "linux/vm_event_item.h"
+#include "linux/vmstat.h"
+#include "vdso/limits.h"
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/oom.h>

@@ -1,21 +1,51 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#include <linux/blkdev.h>
 #include <linux/wait.h>
+#include <asm/bitops.h>
+#include <asm/bug.h>
+#include <linux/rcupdate.h>
 #include <linux/rbtree.h>
-#include <linux/kthread.h>
 #include <linux/backing-dev.h>
-#include <linux/blk-cgroup.h>
-#include <linux/freezer.h>
 #include <linux/fs.h>
 #include <linux/pagemap.h>
-#include <linux/mm.h>
-#include <linux/sched/mm.h>
-#include <linux/sched.h>
-#include <linux/module.h>
 #include <linux/writeback.h>
 #include <linux/device.h>
 #include <trace/events/writeback.h>
+
+#include "asm-generic/bitops/instrumented-atomic.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/backing-dev-defs.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/dev_printk.h"
+#include "linux/device/class.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/flex_proportions.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/jiffies.h"
+#include "linux/kdev_t.h"
+#include "linux/kernel.h"
+#include "linux/kref.h"
+#include "linux/kstrtox.h"
+#include "linux/list.h"
+#include "linux/lockdep.h"
+#include "linux/percpu_counter.h"
+#include "linux/rbtree_types.h"
+#include "linux/rculist.h"
+#include "linux/slab.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stdarg.h"
+#include "linux/sysfs.h"
+#include "linux/timer.h"
+#include "linux/types.h"
+#include "linux/workqueue.h"
 
 struct backing_dev_info noop_backing_dev_info;
 EXPORT_SYMBOL_GPL(noop_backing_dev_info);

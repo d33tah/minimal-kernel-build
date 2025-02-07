@@ -6,15 +6,21 @@
  * Author: Bin Gao <bin.gao@intel.com>
  */
 
-#include <linux/kernel.h>
-#include <linux/thread_info.h>
-
-#include <asm/apic.h>
 #include <asm/cpu_device_id.h>
 #include <asm/intel-family.h>
 #include <asm/msr.h>
-#include <asm/param.h>
 #include <asm/tsc.h>
+
+#include "asm-generic/int-ll64.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/msr-index.h"
+#include "asm/processor.h"
+#include "linux/math.h"
+#include "linux/mod_devicetable.h"
+#include "linux/printk.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 #define MAX_NUM_FREQS	16 /* 4 bits to select the frequency */
 

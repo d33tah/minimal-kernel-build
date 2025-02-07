@@ -8,10 +8,21 @@
 #include <linux/export.h>
 #include <linux/fs_context.h>
 #include <linux/fs_parser.h>
-#include <linux/slab.h>
-#include <linux/security.h>
-#include <linux/namei.h>
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm/string_32.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/errno.h"
+#include "linux/fs.h"
+#include "linux/kstrtox.h"
+#include "linux/path.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "vdso/limits.h"
 
 static const struct constant_table bool_names[] = {
 	{ "0",		false },

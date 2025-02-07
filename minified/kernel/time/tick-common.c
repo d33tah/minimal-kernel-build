@@ -7,20 +7,31 @@
  * Copyright(C) 2005-2007, Red Hat, Inc., Ingo Molnar
  * Copyright(C) 2006-2007, Timesys Corp., Thomas Gleixner
  */
-#include <linux/cpu.h>
-#include <linux/err.h>
-#include <linux/hrtimer.h>
 #include <linux/interrupt.h>
-#include <linux/nmi.h>
-#include <linux/percpu.h>
+#include <asm-generic/percpu.h>
+#include <asm/percpu.h>
+#include <linux/ktime.h>
 #include <linux/profile.h>
-#include <linux/sched.h>
 #include <linux/module.h>
-#include <trace/events/power.h>
-
-#include <asm/irq_regs.h>
-
 #include "tick-internal.h"
+#include "asm-generic/irq_regs.h"
+#include "asm/cache.h"
+#include "asm/percpu.h"
+#include "asm/ptrace.h"
+#include "linux/clockchips.h"
+#include "linux/cpumask.h"
+#include "linux/export.h"
+#include "linux/init.h"
+#include "linux/ktime.h"
+#include "linux/seqlock.h"
+#include "linux/smp.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/tick.h"
+#include "linux/types.h"
+#include "tick-sched.h"
+#include "timekeeping.h"
+#include "vdso/jiffies.h"
 
 /*
  * Tick devices

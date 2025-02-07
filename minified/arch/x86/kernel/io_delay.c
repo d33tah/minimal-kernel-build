@@ -6,12 +6,17 @@
  * and possibly other systems. Also allow for the gradual elimination of
  * outb_p/inb_p API uses.
  */
-#include <linux/kernel.h>
 #include <linux/export.h>
-#include <linux/delay.h>
 #include <linux/init.h>
 #include <linux/dmi.h>
-#include <linux/io.h>
+
+#include "asm-generic/delay.h"
+#include "asm-generic/errno-base.h"
+#include "asm/cache.h"
+#include "asm/io.h"
+#include "asm/string_32.h"
+#include "linux/mod_devicetable.h"
+#include "linux/printk.h"
 
 #define IO_DELAY_TYPE_0X80	0
 #define IO_DELAY_TYPE_0XED	1

@@ -14,6 +14,12 @@
 #include <linux/string.h>
 #include <linux/ctype.h>
 
+#include "asm/string_32.h"
+#include "linux/compiler_attributes.h"
+#include "linux/kstrtox.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+
 /*
  *	If a hyphen was found in get_option, this will handle the
  *	range of numbers, M-N.  This will expand the range and insert

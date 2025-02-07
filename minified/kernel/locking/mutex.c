@@ -21,19 +21,30 @@
 #include <linux/mutex.h>
 #include <linux/ww_mutex.h>
 #include <linux/sched/signal.h>
-#include <linux/sched/rt.h>
 #include <linux/sched/wake_q.h>
 #include <linux/sched/debug.h>
 #include <linux/export.h>
 #include <linux/spinlock.h>
-#include <linux/interrupt.h>
-#include <linux/debug_locks.h>
 
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/lock.h>
 
 #include "mutex.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/rwonce.h"
+#include "asm/current.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler.h"
+#include "linux/container_of.h"
+#include "linux/instruction_pointer.h"
+#include "linux/kernel.h"
+#include "linux/list.h"
+#include "linux/lockdep.h"
+#include "linux/preempt.h"
+#include "linux/sched.h"
+#include "linux/stddef.h"
 
 # define MUTEX_WARN_ON(cond)
 
@@ -277,6 +288,9 @@ void __sched mutex_lock(struct mutex *lock)
 EXPORT_SYMBOL(mutex_lock);
 
 #include "ww_mutex.h"
+
+struct lock_class_key;
+struct lockdep_map;
 
 static __always_inline bool
 mutex_optimistic_spin(struct mutex *lock, struct ww_acquire_ctx *ww_ctx,

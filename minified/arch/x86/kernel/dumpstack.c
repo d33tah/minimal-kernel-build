@@ -2,26 +2,53 @@
  *  Copyright (C) 1991, 1992  Linus Torvalds
  *  Copyright (C) 2000, 2001, 2002 Andi Kleen, SuSE Labs
  */
-#include <linux/kallsyms.h>
-#include <linux/kprobes.h>
 #include <linux/uaccess.h>
-#include <linux/utsname.h>
-#include <linux/hardirq.h>
+#include <asm/cpufeatures.h>
+#include <asm/page_types.h>
+#include <asm/signal.h>
+#include <linux/spinlock.h>
+#include <linux/spinlock_types_raw.h>
 #include <linux/kdebug.h>
 #include <linux/module.h>
-#include <linux/ptrace.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/task_stack.h>
 #include <linux/ftrace.h>
 #include <linux/kexec.h>
-#include <linux/bug.h>
 #include <linux/nmi.h>
-#include <linux/sysfs.h>
 #include <linux/kasan.h>
 
 #include <asm/cpu_entry_area.h>
 #include <asm/stacktrace.h>
 #include <asm/unwind.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/kprobes.h"
+#include "asm-generic/rwonce.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/current.h"
+#include "asm/kdebug.h"
+#include "asm/processor.h"
+#include "asm/ptrace.h"
+#include "asm/uaccess.h"
+#include "linux/align.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/irqflags.h"
+#include "linux/kconfig.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/mm.h"
+#include "linux/notifier.h"
+#include "linux/panic.h"
+#include "linux/preempt.h"
+#include "linux/printk.h"
+#include "linux/sched.h"
+#include "linux/smp.h"
+#include "linux/stddef.h"
+#include "linux/stringify.h"
+#include "linux/types.h"
 
 int panic_on_unrecovered_nmi;
 int panic_on_io_nmi;

@@ -9,23 +9,28 @@
  * For detailed explanation of Read-Copy Update mechanism see -
  *		Documentation/RCU
  */
-#include <linux/completion.h>
 #include <linux/interrupt.h>
-#include <linux/notifier.h>
+#include <linux/build_bug.h>
+#include <linux/preempt.h>
+#include <linux/rcupdate.h>
 #include <linux/rcupdate_wait.h>
-#include <linux/kernel.h>
 #include <linux/export.h>
-#include <linux/mutex.h>
 #include <linux/sched.h>
 #include <linux/types.h>
 #include <linux/init.h>
-#include <linux/time.h>
-#include <linux/cpu.h>
 
 #include <linux/slab.h>
-#include <linux/mm.h>
-
 #include "rcu.h"
+#include "asm-generic/rwonce.h"
+#include "asm/current.h"
+#include "asm/processor.h"
+#include "linux/bottom_half.h"
+#include "linux/compiler_types.h"
+#include "linux/irqflags.h"
+#include "linux/lockdep.h"
+#include "linux/rcupdate.h"
+#include "linux/stddef.h"
+#include "trace/events/rcu.h"
 
 /* Global control variables for rcupdate callback mechanism. */
 struct rcu_ctrlblk {

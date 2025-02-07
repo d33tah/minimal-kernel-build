@@ -8,17 +8,12 @@
  * 2001-05-06	Complete rewrite,  Christoph Hellwig (hch@infradead.org)
  */
 
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/kmod.h>
-#include <linux/module.h>
 #include <linux/personality.h>
-#include <linux/proc_fs.h>
 #include <linux/sched.h>
-#include <linux/seq_file.h>
 #include <linux/syscalls.h>
-#include <linux/sysctl.h>
-#include <linux/types.h>
+
+#include "asm/current.h"
+#include "asm/ptrace.h"
 
 
 SYSCALL_DEFINE1(personality, unsigned int, personality)

@@ -12,13 +12,14 @@
  *		Initial version
  */
 
-#include <linux/kernel.h>
 #include <linux/export.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
+#include <asm/percpu.h>
 #include <linux/spinlock.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
-#include <linux/slab.h>
 #include <linux/pagemap.h>
 #include <linux/writeback.h>
 #include <linux/init.h>
@@ -27,19 +28,54 @@
 #include <linux/blkdev.h>
 
 #include <linux/rmap.h>
-#include <linux/percpu.h>
-#include <linux/smp.h>
-#include <linux/sysctl.h>
-#include <linux/cpu.h>
-#include <linux/syscalls.h>
 #include <linux/pagevec.h>
 #include <linux/timer.h>
 #include <linux/sched/rt.h>
 #include <linux/sched/signal.h>
-#include <linux/mm_inline.h>
 #include <trace/events/writeback.h>
 
 #include "internal.h"
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/param.h"
+#include "asm-generic/rwonce.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/percpu.h"
+#include "asm/string_32.h"
+#include "asm/topology.h"
+#include "generated/bounds.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/backing-dev-defs.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/cpuhotplug.h"
+#include "linux/cpumask.h"
+#include "linux/flex_proportions.h"
+#include "linux/gfp.h"
+#include "linux/irqflags.h"
+#include "linux/jiffies.h"
+#include "linux/kconfig.h"
+#include "linux/log2.h"
+#include "linux/math.h"
+#include "linux/math64.h"
+#include "linux/memcontrol.h"
+#include "linux/minmax.h"
+#include "linux/mm_types.h"
+#include "linux/mmdebug.h"
+#include "linux/mmzone.h"
+#include "linux/percpu_counter.h"
+#include "linux/preempt.h"
+#include "linux/rculist.h"
+#include "linux/rcupdate.h"
+#include "linux/sched.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/vmstat.h"
+#include "linux/workqueue.h"
+#include "linux/xarray.h"
+#include "vdso/limits.h"
 
 /*
  * Sleep at most 200ms at a time in balance_dirty_pages().

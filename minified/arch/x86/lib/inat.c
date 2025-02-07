@@ -8,6 +8,8 @@
 
 /* Attribute tables are generated from opcode map */
 #include "inat-tables.c"
+#include "asm/inat.h"
+#include "asm/inat_types.h"
 
 /* Attribute search APIs */
 insn_attr_t inat_get_opcode_attribute(insn_byte_t opcode)

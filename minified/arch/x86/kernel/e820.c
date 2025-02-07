@@ -9,16 +9,44 @@
  * quirks and other tweaks, and feeds that into the generic Linux memory
  * allocation code routines via a platform independent interface (memblock, etc.).
  */
-#include <linux/crash_dump.h>
 #include <linux/memblock.h>
+#include <asm/bug.h>
+#include <linux/build_bug.h>
 #include <linux/suspend.h>
-#include <linux/acpi.h>
 #include <linux/firmware-map.h>
 #include <linux/sort.h>
-#include <linux/memory_hotplug.h>
-
 #include <asm/e820/api.h>
 #include <asm/setup.h>
+
+#include "asm-generic/early_ioremap.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/bootparam.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/e820/types.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "asm/x86_init.h"
+#include "linux/build_bug.h"
+#include "linux/cache.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/ioport.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/kstrtox.h"
+#include "linux/math.h"
+#include "linux/minmax.h"
+#include "linux/panic.h"
+#include "linux/pfn.h"
+#include "linux/printk.h"
+#include "linux/screen_info.h"
+#include "linux/stddef.h"
+#include "linux/string.h"
+#include "linux/types.h"
+#include "vdso/limits.h"
 
 /*
  * We organize the E820 table into three main data structures:

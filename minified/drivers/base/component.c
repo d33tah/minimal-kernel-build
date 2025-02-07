@@ -3,12 +3,24 @@
  * Componentized device handling.
  */
 #include <linux/component.h>
+#include <asm/bug.h>
 #include <linux/device.h>
 #include <linux/list.h>
 #include <linux/mutex.h>
 #include <linux/of.h>
 #include <linux/slab.h>
-#include <linux/debugfs.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/string_32.h"
+#include "linux/dev_printk.h"
+#include "linux/device/bus.h"
+#include "linux/err.h"
+#include "linux/errno.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/minmax.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 /**
  * DOC: overview
@@ -35,8 +47,6 @@
  * using component_master_add_with_match(), and unregistered using
  * component_master_del().
  */
-
-struct component;
 
 struct component_match_array {
 	void *data;

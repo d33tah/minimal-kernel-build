@@ -6,8 +6,16 @@
  * - Derived from security/selinux/hooks.c
  */
 #include <linux/sched/signal.h>
-#include <linux/sched/task.h>
-#include <linux/sched/mm.h>
+#include <asm/barrier.h>
+
+#include "asm/current.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler.h"
+#include "linux/mm_types.h"
+#include "linux/rcupdate.h"
+#include "linux/sched.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 /*
  * Returns true if the task does not share ->mm with another thread/process.

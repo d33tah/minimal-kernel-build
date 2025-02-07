@@ -8,17 +8,28 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/acpi.h>
-#include <linux/bitops.h>
+#include <asm-generic/percpu.h>
 #include <linux/cacheinfo.h>
 #include <linux/compiler.h>
 #include <linux/cpu.h>
 #include <linux/device.h>
 #include <linux/init.h>
 #include <linux/of.h>
-#include <linux/sched.h>
 #include <linux/slab.h>
-#include <linux/smp.h>
 #include <linux/sysfs.h>
+
+#include "asm-generic/errno-base.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/cpuhotplug.h"
+#include "linux/cpumask.h"
+#include "linux/err.h"
+#include "linux/errno.h"
+#include "linux/gfp.h"
+#include "linux/printk.h"
+#include "linux/types.h"
+
+struct kobject;
 
 /* pointer to per cpu cacheinfo */
 static DEFINE_PER_CPU(struct cpu_cacheinfo, ci_cpu_cacheinfo);

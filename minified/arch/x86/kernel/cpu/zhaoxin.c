@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/sched.h>
-#include <linux/sched/clock.h>
-
 #include <asm/cpu.h>
 #include <asm/cpufeature.h>
 
 #include "cpu.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/cpufeatures.h"
+#include "asm/msr.h"
+#include "asm/processor.h"
+#include "linux/bitops.h"
+#include "linux/printk.h"
 
 #define MSR_ZHAOXIN_FCR57 0x00001257
 

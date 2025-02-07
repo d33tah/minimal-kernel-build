@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/tty.h>
-#include <linux/module.h>
-#include <linux/kallsyms.h>
-#include <linux/semaphore.h>
-#include <linux/sched.h>
-#include "tty.h"
+#include <asm/bug.h>
+
+#include "asm-generic/errno-base.h"
+#include "linux/export.h"
+#include "linux/lockdep.h"
+#include "linux/mutex.h"
 
 /* Legacy tty mutex glue */
 

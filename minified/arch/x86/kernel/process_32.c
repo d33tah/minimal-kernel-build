@@ -9,45 +9,20 @@
  * This file handles the architecture-dependent parts of process handling..
  */
 
-#include <linux/cpu.h>
-#include <linux/errno.h>
 #include <linux/sched.h>
-#include <linux/sched/task.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
+#include <asm/page_types.h>
+#include <asm/percpu.h>
 #include <linux/sched/task_stack.h>
-#include <linux/fs.h>
-#include <linux/kernel.h>
-#include <linux/mm.h>
-#include <linux/elfcore.h>
 #include <linux/smp.h>
-#include <linux/stddef.h>
-#include <linux/slab.h>
-#include <linux/vmalloc.h>
-#include <linux/user.h>
-#include <linux/interrupt.h>
-#include <linux/delay.h>
-#include <linux/reboot.h>
-#include <linux/mc146818rtc.h>
 #include <linux/export.h>
-#include <linux/kallsyms.h>
-#include <linux/ptrace.h>
-#include <linux/personality.h>
-#include <linux/percpu.h>
-#include <linux/prctl.h>
 #include <linux/ftrace.h>
-#include <linux/uaccess.h>
-#include <linux/io.h>
-#include <linux/kdebug.h>
 #include <linux/syscalls.h>
 
-#include <asm/ldt.h>
 #include <asm/processor.h>
 #include <asm/fpu/sched.h>
 #include <asm/desc.h>
-
-#include <linux/err.h>
-
-#include <asm/tlbflush.h>
-#include <asm/cpu.h>
 #include <asm/debugreg.h>
 #include <asm/switch_to.h>
 #include <asm/vm86.h>
@@ -55,6 +30,21 @@
 #include <asm/proto.h>
 
 #include "process.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/current.h"
+#include "asm/debugreg.h"
+#include "asm/kdebug.h"
+#include "asm/percpu.h"
+#include "asm/pgtable.h"
+#include "asm/processor-flags.h"
+#include "asm/ptrace.h"
+#include "asm/segment.h"
+#include "asm/special_insns.h"
+#include "asm/stacktrace.h"
+#include "asm/thread_info.h"
+#include "linux/compiler_attributes.h"
+#include "linux/printk.h"
+#include "linux/thread_info.h"
 
 void __show_regs(struct pt_regs *regs, enum show_regs_mode mode,
 		 const char *log_lvl)

@@ -17,12 +17,11 @@
  */
 
 #include <linux/debugfs.h>
+#include <linux/ktime.h>
 #include <linux/device.h>
-#include <linux/delay.h>
 #include <linux/dma-map-ops.h>
 #include <linux/init.h>
 #include <linux/module.h>
-#include <linux/kthread.h>
 #include <linux/wait.h>
 #include <linux/async.h>
 #include <linux/pm_runtime.h>
@@ -31,6 +30,36 @@
 
 #include "base.h"
 #include "power/power.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/param.h"
+#include "asm/string_32.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler_types.h"
+#include "linux/dev_printk.h"
+#include "linux/device/bus.h"
+#include "linux/device/driver.h"
+#include "linux/errno.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/kconfig.h"
+#include "linux/kernel.h"
+#include "linux/klist.h"
+#include "linux/kobject.h"
+#include "linux/kstrtox.h"
+#include "linux/ktime.h"
+#include "linux/list.h"
+#include "linux/mutex.h"
+#include "linux/notifier.h"
+#include "linux/pm.h"
+#include "linux/printk.h"
+#include "linux/seq_file.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/string.h"
+#include "linux/sysfs.h"
+#include "linux/types.h"
+#include "linux/workqueue.h"
 
 /*
  * Deferred Probe infrastructure.

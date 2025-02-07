@@ -4,6 +4,15 @@
 #include <linux/export.h>
 #include <linux/mc146818rtc.h>
 
+#include "asm-generic/errno-base.h"
+#include "asm/mc146818rtc.h"
+#include "asm/processor.h"
+#include "asm/string_32.h"
+#include "linux/rtc.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+
 
 /*
  * Execute a function while the UIP (Update-in-progress) bit of the RTC is

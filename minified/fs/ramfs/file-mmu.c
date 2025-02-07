@@ -25,11 +25,10 @@
  */
 
 #include <linux/fs.h>
-#include <linux/mm.h>
-#include <linux/ramfs.h>
 #include <linux/sched.h>
 
-#include "internal.h"
+#include "asm/current.h"
+#include "linux/mm_types.h"
 
 static unsigned long ramfs_mmu_get_unmapped_area(struct file *file,
 		unsigned long addr, unsigned long len, unsigned long pgoff,

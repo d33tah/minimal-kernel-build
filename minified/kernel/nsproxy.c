@@ -10,9 +10,7 @@
  */
 
 #include <linux/slab.h>
-#include <linux/export.h>
 #include <linux/nsproxy.h>
-#include <linux/init_task.h>
 #include <linux/mnt_namespace.h>
 #include <linux/utsname.h>
 #include <linux/pid_namespace.h>
@@ -26,6 +24,28 @@
 #include <linux/syscalls.h>
 #include <linux/cgroup.h>
 #include <linux/perf_event.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/current.h"
+#include "asm/ptrace.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/capability.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/cred.h"
+#include "linux/err.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/kernel.h"
+#include "linux/ns_common.h"
+#include "linux/pid.h"
+#include "linux/ptrace.h"
+#include "linux/rcupdate.h"
+#include "linux/sched.h"
+#include "linux/sched/task.h"
+#include "linux/types.h"
+#include "linux/user_namespace.h"
 
 static struct kmem_cache *nsproxy_cachep;
 

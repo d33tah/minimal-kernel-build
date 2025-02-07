@@ -4,12 +4,21 @@
  */
 #include <linux/clockchips.h>
 #include <linux/init.h>
-#include <linux/io.h>
 #include <linux/spinlock.h>
 #include <linux/timex.h>
-#include <linux/module.h>
 #include <linux/i8253.h>
 #include <linux/smp.h>
+
+#include "asm-generic/int-ll64.h"
+#include "asm/io.h"
+#include "linux/cache.h"
+#include "linux/clocksource.h"
+#include "linux/cpumask.h"
+#include "linux/export.h"
+#include "linux/jiffies.h"
+#include "linux/spinlock_types_raw.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 /*
  * Protects access to I/O ports

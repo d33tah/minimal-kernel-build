@@ -1,16 +1,21 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/compiler.h>
+#include <asm/page_types.h>
 #include <linux/export.h>
 #include <linux/fault-inject-usercopy.h>
 #include <linux/kasan-checks.h>
 #include <linux/thread_info.h>
 #include <linux/uaccess.h>
 #include <linux/kernel.h>
-#include <linux/errno.h>
 #include <linux/mm.h>
 
-#include <asm/byteorder.h>
 #include <asm/word-at-a-time.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/uaccess.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/stddef.h"
 
 #define IS_UNALIGNED(src, dst)	0
 

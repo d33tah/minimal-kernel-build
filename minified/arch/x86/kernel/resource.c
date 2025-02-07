@@ -4,6 +4,10 @@
 #include <asm/e820/api.h>
 #include <asm/pci_x86.h>
 
+#include "asm-generic/int-ll64.h"
+#include "asm/e820/types.h"
+#include "linux/types.h"
+
 static void resource_clip(struct resource *res, resource_size_t start,
 			  resource_size_t end)
 {

@@ -6,6 +6,10 @@
 #include <linux/export.h>
 #include <linux/io.h>
 
+#include "asm-generic/int-ll64.h"
+#include "asm/io.h"
+#include "linux/compiler_types.h"
+
 /**
  * __iowrite32_copy - copy data to MMIO space, in 32-bit units
  * @to: destination, in MMIO space (must be 32-bit aligned)

@@ -23,18 +23,28 @@
  * stack overflow.
  */
 
-#include <linux/module.h>
 #include <linux/kd.h>
-#include <linux/errno.h>
-#include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/init.h>
-#include <linux/tty.h>
 #include <linux/uaccess.h>
 #include <linux/console.h>
 #include <linux/consolemap.h>
 #include <linux/vt_kern.h>
 #include <linux/string.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/string_32.h"
+#include "asm/uaccess.h"
+#include "linux/compiler_types.h"
+#include "linux/console_struct.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/minmax.h"
+#include "linux/overflow.h"
+#include "linux/types.h"
+#include "linux/vt.h"
 
 static unsigned short translations[][256] = {
   /* 8-bit Latin-1 mapped to Unicode -- trivial mapping */

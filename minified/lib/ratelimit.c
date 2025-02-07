@@ -12,6 +12,10 @@
 #include <linux/jiffies.h>
 #include <linux/export.h>
 
+#include "linux/kern_levels.h"
+#include "linux/ratelimit_types.h"
+#include "linux/spinlock.h"
+
 /*
  * __ratelimit - rate limiting
  * @rs: ratelimit_state data

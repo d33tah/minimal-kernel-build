@@ -11,20 +11,37 @@
  * pointer as suggested by Josh Triplett
  */
 
-#include <linux/atomic.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
 #include <linux/log2.h>
+#include <asm/barrier.h>
+#include <linux/build_bug.h>
 #include <linux/sched.h>
-#include <linux/rculist.h>
 #include <linux/slab.h>
-#include <linux/vmalloc.h>
-#include <linux/mm.h>
 #include <linux/jhash.h>
 #include <linux/random.h>
 #include <linux/rhashtable.h>
 #include <linux/err.h>
 #include <linux/export.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/gfp.h"
+#include "linux/list.h"
+#include "linux/lockdep.h"
+#include "linux/lockdep_types.h"
+#include "linux/minmax.h"
+#include "linux/mutex.h"
+#include "linux/overflow.h"
+#include "linux/rcupdate.h"
+#include "linux/rhashtable-types.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/workqueue.h"
 
 #define HASH_DEFAULT_SIZE	64UL
 #define HASH_MIN_SIZE		4U

@@ -1,16 +1,27 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/unistd.h>
 #include <linux/kernel.h>
 #include <linux/fs.h>
-#include <linux/minix_fs.h>
-#include <linux/romfs_fs.h>
 #include <linux/initrd.h>
 #include <linux/sched.h>
-#include <linux/freezer.h>
-#include <linux/kmod.h>
 #include <uapi/linux/mount.h>
 
 #include "do_mounts.h"
+#include "asm-generic/errno-base.h"
+#include "asm/current.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/init_syscalls.h"
+#include "linux/kdev_t.h"
+#include "linux/kern_levels.h"
+#include "linux/printk.h"
+#include "linux/root_dev.h"
+#include "linux/sched.h"
+#include "linux/stddef.h"
+#include "linux/syscalls.h"
+#include "linux/types.h"
+#include "linux/umh.h"
+
+struct cred;
 
 unsigned long initrd_start, initrd_end;
 int initrd_below_start_ok;

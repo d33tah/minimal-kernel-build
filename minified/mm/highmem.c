@@ -18,17 +18,30 @@
  */
 
 #include <linux/mm.h>
+#include <asm/bug.h>
+#include <asm/fixmap.h>
 #include <linux/export.h>
-#include <linux/swap.h>
-#include <linux/bio.h>
-#include <linux/pagemap.h>
-#include <linux/mempool.h>
-#include <linux/init.h>
-#include <linux/hash.h>
-#include <linux/highmem.h>
-#include <linux/kgdb.h>
-#include <asm/tlbflush.h>
-#include <linux/vmalloc.h>
+
+#include "asm-generic/kmap_size.h"
+#include "asm-generic/memory_model.h"
+#include "asm/current.h"
+#include "asm/fixmap.h"
+#include "asm/page_types.h"
+#include "asm/pgtable-2level_types.h"
+#include "asm/pgtable.h"
+#include "asm/pgtable_types.h"
+#include "asm/string_32.h"
+#include "linux/compiler_types.h"
+#include "linux/highmem-internal.h"
+#include "linux/irqflags.h"
+#include "linux/kconfig.h"
+#include "linux/mm_types.h"
+#include "linux/pgtable.h"
+#include "linux/preempt.h"
+#include "linux/sched.h"
+#include "linux/smp.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 /*
  * Virtual_count is not a pure "count".
@@ -39,8 +52,6 @@
  *  n means that there are (n-1) current users of it.
  */
 
-
-#include <asm/kmap_size.h>
 
 /*
  * With DEBUG_KMAP_LOCAL the stack depth is doubled and every second

@@ -3,20 +3,23 @@
  *  Copyright (C) 1991, 1992  Linus Torvalds
  *  Copyright (C) 2000, 2001, 2002 Andi Kleen, SuSE Labs
  */
-#include <linux/sched/debug.h>
-#include <linux/kallsyms.h>
-#include <linux/kprobes.h>
-#include <linux/uaccess.h>
-#include <linux/hardirq.h>
-#include <linux/kdebug.h>
-#include <linux/export.h>
-#include <linux/ptrace.h>
-#include <linux/kexec.h>
-#include <linux/sysfs.h>
-#include <linux/bug.h>
-#include <linux/nmi.h>
-
 #include <asm/stacktrace.h>
+#include <asm-generic/percpu.h>
+#include <asm/page_types.h>
+#include <asm/percpu.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/cpu_entry_area.h"
+#include "asm/current.h"
+#include "asm/percpu.h"
+#include "asm/processor.h"
+#include "linux/kern_levels.h"
+#include "linux/printk.h"
+#include "linux/smp.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+
+struct task_struct;
 
 const char *stack_type_name(enum stack_type type)
 {

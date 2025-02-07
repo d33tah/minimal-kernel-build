@@ -6,21 +6,44 @@
  * Copyright (C) 2001 Peter Bergner.
  */
 
-#include <linux/kernel.h>
 #include <linux/slab.h>
+#include <asm/bug.h>
+#include <linux/mmzone.h>
 #include <linux/init.h>
 #include <linux/bitops.h>
-#include <linux/poison.h>
 #include <linux/pfn.h>
-#include <linux/debugfs.h>
 #include <linux/kmemleak.h>
-#include <linux/seq_file.h>
 #include <linux/memblock.h>
 
-#include <asm/sections.h>
-#include <linux/io.h>
-
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/memory_model.h"
+#include "asm/io.h"
+#include "asm/page.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "generated/bounds.h"
+#include "linux/align.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/cache.h"
+#include "linux/compiler_types.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/instruction_pointer.h"
+#include "linux/kconfig.h"
+#include "linux/limits.h"
+#include "linux/math.h"
+#include "linux/memory_hotplug.h"
+#include "linux/minmax.h"
+#include "linux/mm.h"
+#include "linux/mm_types.h"
+#include "linux/mmzone.h"
+#include "linux/numa.h"
+#include "linux/printk.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "vdso/limits.h"
 
 #define INIT_MEMBLOCK_REGIONS			128
 #define INIT_PHYSMEM_REGIONS			4

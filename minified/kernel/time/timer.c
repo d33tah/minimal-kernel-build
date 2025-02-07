@@ -19,43 +19,59 @@
  */
 
 #include <linux/kernel_stat.h>
+#include <asm-generic/percpu.h>
+#include <asm/bitops.h>
+#include <asm/bug.h>
+#include <linux/bitmap.h>
+#include <linux/ktime.h>
+#include <linux/preempt.h>
 #include <linux/export.h>
 #include <linux/interrupt.h>
-#include <linux/percpu.h>
 #include <linux/init.h>
-#include <linux/mm.h>
-#include <linux/swap.h>
-#include <linux/pid_namespace.h>
-#include <linux/notifier.h>
-#include <linux/thread_info.h>
-#include <linux/time.h>
 #include <linux/jiffies.h>
 #include <linux/posix-timers.h>
-#include <linux/cpu.h>
-#include <linux/syscalls.h>
 #include <linux/delay.h>
 #include <linux/tick.h>
-#include <linux/kallsyms.h>
 #include <linux/irq_work.h>
 #include <linux/sched/signal.h>
-#include <linux/sched/sysctl.h>
 #include <linux/sched/nohz.h>
 #include <linux/sched/debug.h>
-#include <linux/slab.h>
-#include <linux/compat.h>
-#include <linux/random.h>
-#include <linux/sysctl.h>
-
-#include <linux/uaccess.h>
-#include <asm/unistd.h>
-#include <asm/div64.h>
-#include <asm/timex.h>
-#include <asm/io.h>
-
-#include "tick-internal.h"
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/timer.h>
+
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/param.h"
+#include "asm-generic/rwonce.h"
+#include "asm/current.h"
+#include "asm/vdso/processor.h"
+#include "linux/cache.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/cpumask.h"
+#include "linux/hrtimer.h"
+#include "linux/kconfig.h"
+#include "linux/kern_levels.h"
+#include "linux/ktime.h"
+#include "linux/list.h"
+#include "linux/lockdep.h"
+#include "linux/poison.h"
+#include "linux/preempt.h"
+#include "linux/printk.h"
+#include "linux/rcupdate.h"
+#include "linux/sched.h"
+#include "linux/smp.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types_raw.h"
+#include "linux/stddef.h"
+#include "linux/timer.h"
+#include "linux/types.h"
+#include "timekeeping.h"
+#include "vdso/limits.h"
+#include "vdso/time64.h"
+
+struct lock_class_key;
 
 __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 

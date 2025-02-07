@@ -5,16 +5,32 @@
  * Copyright (c) 2006  SUSE Linux Products GmbH
  * Copyright (c) 2006  Tejun Heo <teheo@suse.de>
  */
-#include <linux/memblock.h> /* for max_pfn */
-#include <linux/acpi.h>
 #include <linux/dma-map-ops.h>
+#include <asm/bug.h>
 #include <linux/export.h>
 #include <linux/gfp.h>
-#include <linux/of_device.h>
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
 #include "debug.h"
 #include "direct.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/memory_model.h"
+#include "asm/page_types.h"
+#include "asm/pgtable_types.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/device.h"
+#include "linux/dma-direct.h"
+#include "linux/dma-direction.h"
+#include "linux/dma-mapping.h"
+#include "linux/irqflags.h"
+#include "linux/limits.h"
+#include "linux/mm.h"
+#include "linux/mm_types.h"
+#include "linux/scatterlist.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 bool dma_default_coherent;
 

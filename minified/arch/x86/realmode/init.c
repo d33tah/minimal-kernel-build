@@ -1,15 +1,27 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/io.h>
 #include <linux/slab.h>
+#include <asm/bug.h>
+#include <asm/pgtable.h>
 #include <linux/memblock.h>
 #include <linux/cc_platform.h>
-#include <linux/pgtable.h>
-
 #include <asm/set_memory.h>
 #include <asm/realmode.h>
 #include <asm/tlbflush.h>
-#include <asm/crash.h>
-#include <asm/sev.h>
+
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/set_memory.h"
+#include "asm/page.h"
+#include "asm/page_types.h"
+#include "asm/pgtable_types.h"
+#include "asm/processor.h"
+#include "asm/segment.h"
+#include "asm/string_32.h"
+#include "linux/init.h"
+#include "linux/mm.h"
+#include "linux/panic.h"
+#include "linux/printk.h"
+#include "linux/sizes.h"
+#include "linux/types.h"
 
 struct real_mode_header *real_mode_header;
 u32 *trampoline_cr4_features;

@@ -10,9 +10,13 @@
  * Copyright 2010,2011 Intel Corp.
  *   Author: Huang Ying <ying.huang@intel.com>
  */
-#include <linux/kernel.h>
 #include <linux/export.h>
+#include <asm/barrier.h>
 #include <linux/llist.h>
+
+#include "asm-generic/rwonce.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/types.h"
 
 
 /**

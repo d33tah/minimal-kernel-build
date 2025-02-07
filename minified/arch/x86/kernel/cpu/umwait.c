@@ -1,10 +1,30 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/syscore_ops.h>
-#include <linux/suspend.h>
+#include <asm/cpufeatures.h>
 #include <linux/cpu.h>
 
 #include <asm/msr.h>
-#include <asm/mwait.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/rwonce.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/msr-index.h"
+#include "linux/cache.h"
+#include "linux/compiler_types.h"
+#include "linux/cpuhotplug.h"
+#include "linux/device.h"
+#include "linux/device/bus.h"
+#include "linux/init.h"
+#include "linux/irqflags.h"
+#include "linux/kernel.h"
+#include "linux/kstrtox.h"
+#include "linux/lockdep.h"
+#include "linux/mutex.h"
+#include "linux/smp.h"
+#include "linux/sysfs.h"
+#include "linux/types.h"
 
 #define UMWAIT_C02_ENABLE	0
 

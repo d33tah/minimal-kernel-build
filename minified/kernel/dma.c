@@ -11,14 +11,14 @@
  *   assumption introduced because of those /proc/dma patches. -- Hennus]
  */
 #include <linux/export.h>
-#include <linux/kernel.h>
-#include <linux/errno.h>
-#include <linux/spinlock.h>
-#include <linux/string.h>
-#include <linux/seq_file.h>
-#include <linux/proc_fs.h>
-#include <linux/init.h>
 #include <asm/dma.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/cmpxchg.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/kern_levels.h"
+#include "linux/printk.h"
+#include "linux/spinlock_types.h"
 
 
 

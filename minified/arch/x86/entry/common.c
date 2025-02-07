@@ -7,29 +7,38 @@
  * in ptrace.c and signal.c.
  */
 
-#include <linux/kernel.h>
 #include <linux/sched.h>
-#include <linux/sched/task_stack.h>
+#include <asm/cpufeatures.h>
 #include <linux/entry-common.h>
-#include <linux/mm.h>
-#include <linux/smp.h>
-#include <linux/errno.h>
-#include <linux/ptrace.h>
-#include <linux/export.h>
 #include <linux/nospec.h>
 #include <linux/syscalls.h>
-#include <linux/uaccess.h>
-
-
-#include <asm/desc.h>
-#include <asm/traps.h>
 #include <asm/vdso.h>
 #include <asm/cpufeature.h>
-#include <asm/fpu/api.h>
-#include <asm/nospec-branch.h>
-#include <asm/io_bitmap.h>
 #include <asm/syscall.h>
-#include <asm/irq_stack.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/cpufeatures.h"
+#include "asm/current.h"
+#include "asm/mmu.h"
+#include "asm/processor-flags.h"
+#include "asm/ptrace.h"
+#include "asm/segment.h"
+#include "asm/thread_info.h"
+#include "asm/uaccess.h"
+#include "asm/unistd.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/instrumentation.h"
+#include "linux/irqflags.h"
+#include "linux/kconfig.h"
+#include "linux/mm_types.h"
+#include "linux/randomize_kstack.h"
+#include "linux/stddef.h"
+#include "linux/thread_info.h"
+#include "linux/types.h"
 
 
 static __always_inline int syscall_32_enter(struct pt_regs *regs)

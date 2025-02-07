@@ -35,12 +35,8 @@
 
 #include <linux/module.h>
 #include <linux/types.h>
-#include <linux/fs.h>
-#include <linux/kernel.h>
 #include <linux/console.h>
-#include <linux/string.h>
 #include <linux/kd.h>
-#include <linux/slab.h>
 #include <linux/vt_kern.h>
 #include <linux/sched.h>
 #include <linux/selection.h>
@@ -50,6 +46,20 @@
 #include <linux/screen_info.h>
 #include <video/vga.h>
 #include <asm/io.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/cache.h"
+#include "asm/shared/io.h"
+#include "asm/vga.h"
+#include "linux/compiler_types.h"
+#include "linux/console_struct.h"
+#include "linux/export.h"
+#include "linux/screen_info.h"
+#include "linux/spinlock_types_raw.h"
+#include "linux/stddef.h"
+#include "linux/vt.h"
+#include "linux/vt_buffer.h"
 
 static DEFINE_RAW_SPINLOCK(vga_lock);
 static int cursor_size_lastfrom;

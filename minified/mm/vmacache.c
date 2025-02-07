@@ -2,10 +2,17 @@
 /*
  * Copyright (C) 2014 Davidlohr Bueso.
  */
-#include <linux/sched/signal.h>
-#include <linux/sched/task.h>
-#include <linux/mm.h>
 #include <linux/vmacache.h>
+
+#include "asm-generic/pgtable-nopmd.h"
+#include "asm/current.h"
+#include "linux/compiler_types.h"
+#include "linux/mm_types.h"
+#include "linux/mm_types_task.h"
+#include "linux/sched.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/vmstat.h"
 
 /*
  * Hash based on the pmd of addr if configured with MMU, which provides a good

@@ -4,6 +4,21 @@
 #include <linux/gfp.h>
 #include <linux/kmemleak.h>
 
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/rwonce.h"
+#include "asm/cmpxchg.h"
+#include "asm/page_types.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler_types.h"
+#include "linux/log2.h"
+#include "linux/math.h"
+#include "linux/minmax.h"
+#include "linux/types.h"
+
+struct genradix_root;
+
 #define GENRADIX_ARY		(PAGE_SIZE / sizeof(struct genradix_node *))
 #define GENRADIX_ARY_SHIFT	ilog2(GENRADIX_ARY)
 

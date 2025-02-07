@@ -2,11 +2,21 @@
 #include <linux/file.h>
 #include <linux/mount.h>
 #include <linux/namei.h>
-#include <linux/utime.h>
 #include <linux/syscalls.h>
-#include <linux/uaccess.h>
-#include <linux/compat.h>
-#include <asm/unistd.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/ptrace.h"
+#include "linux/compiler_types.h"
+#include "linux/dcache.h"
+#include "linux/fcntl.h"
+#include "linux/fs.h"
+#include "linux/path.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/time.h"
+#include "linux/time64.h"
+#include "linux/time_types.h"
+#include "linux/types.h"
 
 static bool nsec_valid(long nsec)
 {

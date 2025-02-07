@@ -6,8 +6,13 @@
  * parts of early kernel initialization.
  */
 #include <linux/acpi.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
+#include <asm/page_types.h>
+#include <asm/pgtable.h>
+#include <linux/pgtable.h>
+#include <linux/timex.h>
 #include <linux/console.h>
-#include <linux/crash_dump.h>
 #include <linux/dma-map-ops.h>
 #include <linux/dmi.h>
 #include <linux/efi.h>
@@ -16,25 +21,19 @@
 #include <linux/iscsi_ibft.h>
 #include <linux/memblock.h>
 #include <linux/panic_notifier.h>
-#include <linux/pci.h>
 #include <linux/root_dev.h>
 #include <linux/hugetlb.h>
 #include <linux/tboot.h>
 #include <linux/usb/xhci-dbgp.h>
 #include <linux/static_call.h>
-#include <linux/swiotlb.h>
-
 #include <uapi/linux/mount.h>
-
 #include <xen/xen.h>
-
 #include <asm/apic.h>
 #include <asm/numa.h>
 #include <asm/bios_ebda.h>
 #include <asm/bugs.h>
 #include <asm/cpu.h>
 #include <asm/efi.h>
-#include <asm/gart.h>
 #include <asm/hypervisor.h>
 #include <asm/io_apic.h>
 #include <asm/kasan.h>
@@ -44,13 +43,67 @@
 #include <asm/mtrr.h>
 #include <asm/realmode.h>
 #include <asm/olpc_ofw.h>
-#include <asm/pci-direct.h>
 #include <asm/prom.h>
 #include <asm/proto.h>
 #include <asm/thermal.h>
 #include <asm/unwind.h>
 #include <asm/vsyscall.h>
-#include <linux/vmalloc.h>
+
+#include "asm-generic/early_ioremap.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/pgtable-nopud.h"
+#include "asm-generic/sections.h"
+#include "asm/bootparam.h"
+#include "asm/cache.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/desc.h"
+#include "asm/e820/api.h"
+#include "asm/e820/types.h"
+#include "asm/io.h"
+#include "asm/ist.h"
+#include "asm/mem_encrypt.h"
+#include "asm/mpspec.h"
+#include "asm/page.h"
+#include "asm/page_types.h"
+#include "asm/pci.h"
+#include "asm/pgtable_32_areas.h"
+#include "asm/pgtable_types.h"
+#include "asm/processor-flags.h"
+#include "asm/processor.h"
+#include "asm/sections.h"
+#include "asm/setup.h"
+#include "asm/special_insns.h"
+#include "asm/string_32.h"
+#include "asm/tlbflush.h"
+#include "asm/tsc.h"
+#include "asm/x86_init.h"
+#include "linux/apm_bios.h"
+#include "linux/cache.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/crash_core.h"
+#include "linux/export.h"
+#include "linux/init.h"
+#include "linux/ioport.h"
+#include "linux/jiffies.h"
+#include "linux/jump_label.h"
+#include "linux/kconfig.h"
+#include "linux/kdev_t.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/kexec.h"
+#include "linux/mm.h"
+#include "linux/notifier.h"
+#include "linux/panic.h"
+#include "linux/pfn.h"
+#include "linux/printk.h"
+#include "linux/screen_info.h"
+#include "linux/sizes.h"
+#include "linux/stddef.h"
+#include "linux/string.h"
+#include "linux/types.h"
+#include "video/edid.h"
 
 /*
  * max_low_pfn_mapped: highest directly mapped pfn < 4 GB

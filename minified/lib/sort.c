@@ -16,6 +16,9 @@
 #include <linux/export.h>
 #include <linux/sort.h>
 
+#include "asm-generic/int-ll64.h"
+#include "linux/compiler_attributes.h"
+
 /**
  * is_aligned - is this pointer & size okay for word-wide copying?
  * @base: pointer to data

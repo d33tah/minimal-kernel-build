@@ -1,7 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/spinlock.h>
+#include <asm/bug.h>
 #include <linux/task_work.h>
 #include <linux/resume_user_mode.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/rwonce.h"
+#include "asm/current.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler.h"
+#include "linux/kasan.h"
+#include "linux/sched.h"
+#include "linux/sched/signal.h"
+#include "linux/types.h"
 
 static struct callback_head work_exited; /* all we need is ->next == NULL */
 

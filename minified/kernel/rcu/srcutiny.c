@@ -9,16 +9,29 @@
  */
 
 #include <linux/export.h>
-#include <linux/mutex.h>
+#include <asm/bug.h>
+#include <linux/rcupdate.h>
 #include <linux/preempt.h>
 #include <linux/rcupdate_wait.h>
-#include <linux/sched.h>
-#include <linux/delay.h>
 #include <linux/srcu.h>
 
-#include <linux/rcu_node_tree.h>
-#include "rcu_segcblist.h"
 #include "rcu.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/rwonce.h"
+#include "asm/cache.h"
+#include "linux/bottom_half.h"
+#include "linux/compiler.h"
+#include "linux/completion.h"
+#include "linux/container_of.h"
+#include "linux/init.h"
+#include "linux/irqflags.h"
+#include "linux/list.h"
+#include "linux/rcupdate.h"
+#include "linux/stddef.h"
+#include "linux/swait.h"
+#include "linux/types.h"
+#include "linux/workqueue.h"
+#include "vdso/limits.h"
 
 int rcu_scheduler_active __read_mostly;
 static LIST_HEAD(srcu_boot_list);

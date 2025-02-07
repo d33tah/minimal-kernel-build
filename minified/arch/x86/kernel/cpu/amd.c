@@ -1,28 +1,47 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #include <linux/export.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
 #include <linux/bitops.h>
-#include <linux/elf.h>
 #include <linux/mm.h>
 
-#include <linux/io.h>
-#include <linux/sched.h>
-#include <linux/sched/clock.h>
 #include <linux/random.h>
-#include <linux/topology.h>
 #include <asm/processor.h>
-#include <asm/apic.h>
 #include <asm/cacheinfo.h>
-#include <asm/cpu.h>
 #include <asm/spec-ctrl.h>
 #include <asm/smp.h>
-#include <asm/numa.h>
-#include <asm/pci-direct.h>
 #include <asm/delay.h>
 #include <asm/debugreg.h>
 #include <asm/resctrl.h>
 
-
 #include "cpu.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/elf.h"
+#include "asm/mem_encrypt.h"
+#include "asm/msr-index.h"
+#include "asm/msr.h"
+#include "asm/page_types.h"
+#include "asm/shared/io.h"
+#include "asm/special_insns.h"
+#include "asm/string_32.h"
+#include "asm/topology.h"
+#include "generated/autoconf.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/init.h"
+#include "linux/irqflags.h"
+#include "linux/kconfig.h"
+#include "linux/panic.h"
+#include "linux/printk.h"
+#include "linux/smp.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "vdso/bits.h"
 
 static const int amd_erratum_383[];
 static const int amd_erratum_400[];

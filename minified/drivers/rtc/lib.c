@@ -13,6 +13,17 @@
 #include <linux/export.h>
 #include <linux/rtc.h>
 
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "linux/kernel.h"
+#include "linux/ktime.h"
+#include "linux/math64.h"
+#include "linux/rtc.h"
+#include "linux/time.h"
+#include "linux/time64.h"
+#include "linux/types.h"
+#include "vdso/limits.h"
+
 static const unsigned char rtc_days_in_month[] = {
 	31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };

@@ -26,29 +26,43 @@
  *	 - making it shorter - scr_readw are macros which expand in PRETTY long code
  */
 
-#include <linux/kernel.h>
 #include <linux/major.h>
-#include <linux/errno.h>
+#include <asm/signal.h>
 #include <linux/export.h>
 #include <linux/tty.h>
-#include <linux/interrupt.h>
-#include <linux/mm.h>
 #include <linux/init.h>
 #include <linux/vt_kern.h>
 #include <linux/selection.h>
-#include <linux/kbd_kern.h>
 #include <linux/console.h>
 #include <linux/device.h>
-#include <linux/sched.h>
 #include <linux/fs.h>
 #include <linux/poll.h>
-#include <linux/signal.h>
 #include <linux/slab.h>
 #include <linux/notifier.h>
 
 #include <linux/uaccess.h>
-#include <asm/byteorder.h>
-#include <asm/unaligned.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/siginfo.h"
+#include "asm-generic/unaligned.h"
+#include "asm/page_types.h"
+#include "generated/autoconf.h"
+#include "linux/compiler_types.h"
+#include "linux/console_struct.h"
+#include "linux/container_of.h"
+#include "linux/device/class.h"
+#include "linux/eventpoll.h"
+#include "linux/gfp.h"
+#include "linux/kdev_t.h"
+#include "linux/minmax.h"
+#include "linux/panic.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/vt.h"
+#include "linux/wait.h"
 
 #define HEADER_SIZE	4u
 #define CON_BUF_SIZE (CONFIG_BASE_SMALL ? 256 : PAGE_SIZE)

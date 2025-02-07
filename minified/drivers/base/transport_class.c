@@ -30,6 +30,12 @@
 #include <linux/attribute_container.h>
 #include <linux/transport_class.h>
 
+#include "asm/bug.h"
+#include "linux/compiler.h"
+#include "linux/device.h"
+#include "linux/device/class.h"
+#include "linux/sysfs.h"
+
 static int transport_remove_classdev(struct attribute_container *cont,
 				     struct device *dev,
 				     struct device *classdev);

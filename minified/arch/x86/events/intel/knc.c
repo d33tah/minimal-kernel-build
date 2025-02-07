@@ -2,11 +2,27 @@
 /* Driver for Intel Xeon Phi "Knights Corner" PMU */
 
 #include <linux/perf_event.h>
-#include <linux/types.h>
-
+#include <asm-generic/percpu.h>
+#include <asm/bitops.h>
+#include <asm/bug.h>
+#include <asm/percpu.h>
+#include <linux/bitmap.h>
 #include <asm/hardirq.h>
 
 #include "../perf_event.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/msr-index.h"
+#include "asm/msr.h"
+#include "asm/percpu.h"
+#include "asm/perf_event.h"
+#include "asm/string_32.h"
+#include "linux/compiler_types.h"
+#include "linux/device.h"
+#include "linux/init.h"
+#include "linux/kernel.h"
+#include "linux/perf_event.h"
+
+struct pt_regs;
 
 static const u64 knc_perfmon_event_map[] =
 {

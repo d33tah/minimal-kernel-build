@@ -12,6 +12,21 @@
 #include <linux/init_syscalls.h>
 #include <linux/security.h>
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm/current.h"
+#include "linux/capability.h"
+#include "linux/compiler.h"
+#include "linux/cred.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/fcntl.h"
+#include "linux/kdev_t.h"
+#include "linux/path.h"
+#include "linux/sched.h"
+#include "linux/stat.h"
+#include "linux/types.h"
+
+struct timespec64;
 
 int __init init_mount(const char *dev_name, const char *dir_name,
 		const char *type_page, unsigned long flags, void *data_page)

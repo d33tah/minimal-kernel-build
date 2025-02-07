@@ -22,8 +22,11 @@
  * information.
  */
 
-#include <linux/bug.h>
 #include <linux/plist.h>
+#include <asm/bug.h>
+
+#include "linux/list.h"
+#include "linux/types.h"
 
 # define plist_check_head(h)	do { } while (0)
 

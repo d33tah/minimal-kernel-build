@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/export.h>
 #include <linux/spinlock.h>
-#include <linux/atomic.h>
+
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/spinlock_types.h"
+#include "linux/types.h"
 
 /*
  * This is an implementation of the notion of "decrement a

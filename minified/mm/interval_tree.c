@@ -6,9 +6,15 @@
  */
 
 #include <linux/mm.h>
-#include <linux/fs.h>
 #include <linux/rmap.h>
 #include <linux/interval_tree_generic.h>
+
+#include "linux/compiler_types.h"
+#include "linux/mm_types.h"
+#include "linux/mmdebug.h"
+#include "linux/rbtree.h"
+#include "linux/rbtree_augmented.h"
+#include "linux/rbtree_types.h"
 
 static inline unsigned long vma_start_pgoff(struct vm_area_struct *v)
 {

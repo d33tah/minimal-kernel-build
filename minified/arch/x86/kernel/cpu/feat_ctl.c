@@ -1,11 +1,20 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/tboot.h>
+#include <asm/cpufeatures.h>
 
 #include <asm/cpufeature.h>
 #include <asm/msr-index.h>
-#include <asm/processor.h>
-#include <asm/vmx.h>
-#include "cpu.h"
+
+#include "asm-generic/int-ll64.h"
+#include "asm/cpufeatures.h"
+#include "asm/msr.h"
+#include "linux/init.h"
+#include "linux/kconfig.h"
+#include "linux/printk.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+
+struct cpuinfo_x86;
 
 #undef pr_fmt
 #define pr_fmt(fmt)	"x86/cpu: " fmt

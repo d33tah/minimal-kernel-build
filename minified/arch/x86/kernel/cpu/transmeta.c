@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/kernel.h>
-#include <linux/sched.h>
-#include <linux/sched/clock.h>
-#include <linux/mm.h>
 #include <asm/cpufeature.h>
 #include <asm/msr.h>
+
 #include "cpu.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/cpufeatures.h"
+#include "asm/processor.h"
+#include "linux/printk.h"
 
 static void early_init_transmeta(struct cpuinfo_x86 *c)
 {

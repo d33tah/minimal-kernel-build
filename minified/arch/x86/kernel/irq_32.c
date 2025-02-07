@@ -9,20 +9,28 @@
  * io_apic.c.)
  */
 
-#include <linux/seq_file.h>
 #include <linux/interrupt.h>
+#include <asm-generic/percpu.h>
+#include <asm/page_types.h>
+#include <asm/percpu.h>
 #include <linux/irq.h>
-#include <linux/kernel_stat.h>
-#include <linux/notifier.h>
-#include <linux/cpu.h>
-#include <linux/delay.h>
-#include <linux/uaccess.h>
-#include <linux/percpu.h>
 #include <linux/mm.h>
 
-#include <asm/apic.h>
 #include <asm/nospec-branch.h>
-#include <asm/softirq_stack.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/softirq_stack.h"
+#include "asm-generic/topology.h"
+#include "asm/asm.h"
+#include "asm/irq.h"
+#include "asm/percpu.h"
+#include "asm/processor.h"
+#include "asm/ptrace.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/gfp.h"
+#include "linux/thread_info.h"
 
 static inline int check_stack_overflow(void) { return 0; }
 static inline void print_stack_overflow(void) { }

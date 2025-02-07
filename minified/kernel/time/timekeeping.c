@@ -4,13 +4,12 @@
  *  timer.c, moved in commit 8524070b7982.
  */
 #include <linux/timekeeper_internal.h>
+#include <asm/bug.h>
+#include <linux/ktime.h>
+#include <linux/linkage.h>
 #include <linux/module.h>
-#include <linux/interrupt.h>
-#include <linux/percpu.h>
 #include <linux/init.h>
-#include <linux/mm.h>
 #include <linux/nmi.h>
-#include <linux/sched.h>
 #include <linux/sched/loadavg.h>
 #include <linux/sched/clock.h>
 #include <linux/syscore_ops.h>
@@ -18,7 +17,6 @@
 #include <linux/jiffies.h>
 #include <linux/time.h>
 #include <linux/timex.h>
-#include <linux/tick.h>
 #include <linux/stop_machine.h>
 
 #include <linux/compiler.h>
@@ -27,6 +25,43 @@
 #include "tick-internal.h"
 #include "ntp_internal.h"
 #include "timekeeping_internal.h"
+#include "asm-generic/bitops/fls64.h"
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/param.h"
+#include "asm-generic/rwonce.h"
+#include "asm/cache.h"
+#include "asm/div64.h"
+#include "asm/string_32.h"
+#include "linux/cache.h"
+#include "linux/capability.h"
+#include "linux/clockchips.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/export.h"
+#include "linux/hrtimer.h"
+#include "linux/kconfig.h"
+#include "linux/kern_levels.h"
+#include "linux/ktime.h"
+#include "linux/log2.h"
+#include "linux/math.h"
+#include "linux/math64.h"
+#include "linux/minmax.h"
+#include "linux/notifier.h"
+#include "linux/printk.h"
+#include "linux/seqlock.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types_raw.h"
+#include "linux/stddef.h"
+#include "linux/time.h"
+#include "linux/time64.h"
+#include "linux/timex.h"
+#include "linux/types.h"
+#include "timekeeping.h"
+#include "vdso/limits.h"
+#include "vdso/time64.h"
 
 #define TK_CLEAR_NTP		(1 << 0)
 #define TK_MIRROR		(1 << 1)

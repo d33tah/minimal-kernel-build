@@ -16,6 +16,8 @@
  */
 
 #include <linux/types.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
 #include <linux/kernel.h>
 #include <linux/sched.h>
 #include <linux/sched/rt.h>
@@ -23,13 +25,29 @@
 #include <linux/sched/debug.h>
 #include <linux/sched/wake_q.h>
 #include <linux/sched/signal.h>
-#include <linux/sched/clock.h>
 #include <linux/export.h>
 #include <linux/rwsem.h>
-#include <linux/atomic.h>
 #include <trace/events/lock.h>
 
 #include "lock_events.h"
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/param.h"
+#include "asm/current.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/err.h"
+#include "linux/instruction_pointer.h"
+#include "linux/jiffies.h"
+#include "linux/list.h"
+#include "linux/lockdep.h"
+#include "linux/math.h"
+#include "linux/preempt.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+
+struct lock_class_key;
 
 /*
  * The least significant 2 bits of the owner value has the following

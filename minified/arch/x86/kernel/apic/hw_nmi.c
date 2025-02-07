@@ -9,18 +9,6 @@
  *  Bits copied from original nmi.c file
  *
  */
-#include <linux/thread_info.h>
-#include <asm/apic.h>
-#include <asm/nmi.h>
-
-#include <linux/cpumask.h>
-#include <linux/kdebug.h>
-#include <linux/notifier.h>
-#include <linux/kprobes.h>
-#include <linux/nmi.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-
 
 #ifdef arch_trigger_cpumask_backtrace
 static void nmi_raise_cpu_backtrace(cpumask_t *mask)

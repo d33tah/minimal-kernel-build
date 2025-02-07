@@ -11,11 +11,27 @@
  */
 
 #include <linux/kobject.h>
+#include <asm/bug.h>
 #include <linux/string.h>
 #include <linux/export.h>
-#include <linux/stat.h>
 #include <linux/slab.h>
-#include <linux/random.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/string_32.h"
+#include "linux/container_of.h"
+#include "linux/gfp.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/kobject_ns.h"
+#include "linux/kref.h"
+#include "linux/list.h"
+#include "linux/printk.h"
+#include "linux/spinlock.h"
+#include "linux/stdarg.h"
+#include "linux/stddef.h"
+#include "linux/sysfs.h"
+#include "linux/types.h"
+#include "linux/uidgid.h"
 
 /**
  * kobject_namespace() - Return @kobj's namespace tag.

@@ -10,33 +10,22 @@
  */
 
 #include <linux/types.h>
+#include <asm/signal.h>
 #include <linux/errno.h>
 #include <linux/sched/signal.h>
 #include <linux/tty.h>
-#include <linux/timer.h>
-#include <linux/kernel.h>
-#include <linux/compat.h>
-#include <linux/module.h>
 #include <linux/kd.h>
-#include <linux/vt.h>
-#include <linux/string.h>
-#include <linux/slab.h>
-#include <linux/major.h>
-#include <linux/fs.h>
 #include <linux/console.h>
-#include <linux/consolemap.h>
 #include <linux/signal.h>
 #include <linux/suspend.h>
 #include <linux/timex.h>
 
-#include <asm/io.h>
 #include <linux/uaccess.h>
 
 #include <linux/nospec.h>
 
 #include <linux/kbd_kern.h>
 #include <linux/vt_kern.h>
-#include <linux/kbd_diacr.h>
 #include <linux/selection.h>
 
 bool vt_dont_switch;
@@ -80,6 +69,33 @@ static inline bool vt_busy(int i)
  */
 
 #include <asm/syscalls.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/ioctls.h"
+#include "asm/current.h"
+#include "asm/string_32.h"
+#include "asm/uaccess.h"
+#include "linux/capability.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/console_struct.h"
+#include "linux/container_of.h"
+#include "linux/export.h"
+#include "linux/jiffies.h"
+#include "linux/kref.h"
+#include "linux/list.h"
+#include "linux/pid.h"
+#include "linux/printk.h"
+#include "linux/sched.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stddef.h"
+#include "linux/tty_ldisc.h"
+#include "linux/tty_port.h"
+#include "linux/vt.h"
+#include "linux/wait.h"
+
+struct work_struct;
 
 static void complete_change_console(struct vc_data *vc);
 

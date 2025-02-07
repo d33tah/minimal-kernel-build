@@ -12,8 +12,9 @@
  */
 
 #define __NO_FORTIFY
-#include <linux/string.h>
 #include <linux/export.h>
+
+#include "asm/string_32.h"
 
 #ifdef __HAVE_ARCH_STRCPY
 char *strcpy(char *dest, const char *src)

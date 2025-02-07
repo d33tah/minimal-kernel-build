@@ -5,11 +5,11 @@
  *
  * This file contains the dummy interrupt chip implementation
  */
-#include <linux/interrupt.h>
 #include <linux/irq.h>
 #include <linux/export.h>
 
 #include "internals.h"
+#include "asm/hardirq.h"
 
 /*
  * What should we do if we get a hw irq event on an illegal vector?

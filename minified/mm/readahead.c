@@ -114,22 +114,36 @@
  */
 
 #include <linux/blkdev.h>
-#include <linux/kernel.h>
-#include <linux/dax.h>
-#include <linux/gfp.h>
+#include <asm/bug.h>
+#include <linux/bitops.h>
+#include <linux/mm.h>
 #include <linux/export.h>
 #include <linux/backing-dev.h>
-#include <linux/task_io_accounting_ops.h>
-#include <linux/pagevec.h>
 #include <linux/pagemap.h>
 #include <linux/syscalls.h>
 #include <linux/file.h>
-#include <linux/mm_inline.h>
 #include <linux/blk-cgroup.h>
 #include <linux/fadvise.h>
 #include <linux/sched/mm.h>
 
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm/page_types.h"
+#include "asm/ptrace.h"
+#include "linux/backing-dev-defs.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/fs.h"
+#include "linux/log2.h"
+#include "linux/math.h"
+#include "linux/minmax.h"
+#include "linux/mm.h"
+#include "linux/mm_types.h"
+#include "linux/rcupdate.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/xarray.h"
 
 /*
  * Initialise a struct file's readahead state.  Assumes that the caller has

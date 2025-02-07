@@ -1,8 +1,15 @@
 #include <linux/export.h>
-#include <linux/kernel.h>
-#include <linux/mm.h>
 #include <linux/slab.h>
-#include <linux/vmalloc.h>
+
+#include "asm-generic/errno-base.h"
+#include "linux/cpumask.h"
+#include "linux/lockdep.h"
+#include "linux/minmax.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/types.h"
+
+struct lock_class_key;
 
 /* Allocate an array of spinlocks to be accessed by a hash. Two arguments
  * indicate the number of elements to allocate in the array. max_size

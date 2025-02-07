@@ -1,10 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/export.h>
+#include <linux/bitops.h>
 #include <linux/percpu.h>
-#include <linux/preempt.h>
 #include <asm/msr.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/shared/msr.h"
+#include "linux/compiler_types.h"
+#include "linux/printk.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+
 #define CREATE_TRACE_POINTS
-#include <asm/msr-trace.h>
 
 struct msr *msrs_alloc(void)
 {

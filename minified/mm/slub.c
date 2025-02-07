@@ -11,39 +11,85 @@
  */
 
 #include <linux/mm.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
+#include <asm/percpu.h>
+#include <linux/local_lock.h>
 #include <linux/swap.h> /* struct reclaim_state */
-#include <linux/module.h>
 #include <linux/bit_spinlock.h>
-#include <linux/interrupt.h>
-#include <linux/swab.h>
 #include <linux/bitops.h>
 #include <linux/slab.h>
 #include "slab.h"
-#include <linux/proc_fs.h>
-#include <linux/seq_file.h>
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/getorder.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/rwonce.h"
+#include "asm/cmpxchg_32.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/percpu.h"
+#include "asm/processor.h"
+#include "asm/string_32.h"
+#include "asm/vdso/processor.h"
+#include "generated/autoconf.h"
+#include "linux/align.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/build_bug.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/cpuhotplug.h"
+#include "linux/cpumask.h"
+#include "linux/debug_locks.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/instruction_pointer.h"
+#include "linux/irqflags.h"
+#include "linux/kconfig.h"
+#include "linux/kcsan-checks.h"
+#include "linux/kernel.h"
+#include "linux/kmemleak.h"
+#include "linux/list.h"
+#include "linux/local_lock.h"
+#include "linux/lockdep.h"
+#include "linux/log2.h"
+#include "linux/minmax.h"
+#include "linux/mm_types.h"
+#include "linux/mmdebug.h"
+#include "linux/mmzone.h"
+#include "linux/mutex.h"
+#include "linux/nodemask.h"
+#include "linux/notifier.h"
+#include "linux/numa.h"
+#include "linux/percpu.h"
+#include "linux/poison.h"
+#include "linux/printk.h"
+#include "linux/rcupdate.h"
+#include "linux/reciprocal_div.h"
+#include "linux/sched.h"
+#include "linux/slub_def.h"
+#include "linux/smp.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/topology.h"
+#include "linux/types.h"
+#include "linux/uaccess.h"
+#include "linux/vmstat.h"
+#include "linux/workqueue.h"
 #include <linux/kasan.h>
 #include <linux/cpu.h>
-#include <linux/cpuset.h>
-#include <linux/mempolicy.h>
-#include <linux/ctype.h>
-#include <linux/stackdepot.h>
 #include <linux/debugobjects.h>
-#include <linux/kallsyms.h>
 #include <linux/kfence.h>
 #include <linux/memory.h>
-#include <linux/math64.h>
-#include <linux/fault-inject.h>
-#include <linux/stacktrace.h>
-
-#include <linux/memcontrol.h>
-#include <linux/random.h>
-#include <kunit/test.h>
-#include <linux/sort.h>
-
-#include <linux/debugfs.h>
 #include <trace/events/kmem.h>
 
 #include "internal.h"
+
+struct list_lru;
 
 /*
  * Lock order:

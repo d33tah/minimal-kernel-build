@@ -1,8 +1,22 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 #include <linux/device.h>
+#include <asm/bug.h>
 #include <linux/types.h>
 #include <linux/io.h>
 #include <linux/mm.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/memory_model.h"
+#include "asm/io.h"
+#include "asm/page.h"
+#include "asm/page_32.h"
+#include "linux/compiler_types.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/ioport.h"
+#include "linux/pfn.h"
+#include "linux/stddef.h"
 
 #ifndef ioremap_cache
 /* temporary while we convert existing ioremap_cache users to memremap */

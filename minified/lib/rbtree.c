@@ -12,6 +12,14 @@
 #include <linux/rbtree_augmented.h>
 #include <linux/export.h>
 
+#include "asm-generic/rwonce.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/rbtree.h"
+#include "linux/rbtree_types.h"
+#include "linux/stddef.h"
+
 /*
  * red-black trees properties:  https://en.wikipedia.org/wiki/Rbtree
  *

@@ -8,14 +8,20 @@
  *
  */
 
-#include <crypto/internal/blake2s.h>
-#include <linux/types.h>
-#include <linux/string.h>
 #include <linux/kernel.h>
+#include <asm/bug.h>
 #include <linux/module.h>
-#include <linux/init.h>
-#include <linux/bug.h>
-#include <asm/unaligned.h>
+
+#include "asm-generic/int-ll64.h"
+#include "asm/string_32.h"
+#include "crypto/blake2s.h"
+#include "crypto/internal/blake2s.h"
+#include "linux/bitops.h"
+#include "linux/byteorder/generic.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/export.h"
+#include "linux/kconfig.h"
 
 static const u8 blake2s_sigma[10][16] = {
 	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 },

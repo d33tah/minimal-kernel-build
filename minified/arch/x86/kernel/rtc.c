@@ -3,18 +3,30 @@
  * RTC related functions
  */
 #include <linux/platform_device.h>
+#include <asm/bug.h>
+#include <linux/ktime.h>
 #include <linux/mc146818rtc.h>
-#include <linux/acpi.h>
 #include <linux/bcd.h>
 #include <linux/export.h>
 
-#include <linux/of.h>
-
-#include <asm/vsyscall.h>
 #include <asm/x86_init.h>
-#include <asm/time.h>
-#include <asm/intel-mid.h>
-#include <asm/setup.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/mc146818rtc.h"
+#include "asm/shared/io.h"
+#include "asm/vdso/processor.h"
+#include "linux/dev_printk.h"
+#include "linux/init.h"
+#include "linux/ioport.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/pm-trace.h"
+#include "linux/printk.h"
+#include "linux/rtc.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/time.h"
+#include "linux/time64.h"
 
 /*
  * This is a special lock that is owned by the CPU and holds the index

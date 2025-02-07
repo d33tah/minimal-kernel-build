@@ -25,21 +25,25 @@
 
 #include <linux/fs.h>
 #include <linux/pagemap.h>
-#include <linux/highmem.h>
-#include <linux/time.h>
 #include <linux/init.h>
-#include <linux/string.h>
-#include <linux/backing-dev.h>
 #include <linux/ramfs.h>
-#include <linux/sched.h>
-#include <linux/parser.h>
 #include <linux/magic.h>
 #include <linux/slab.h>
-#include <linux/uaccess.h>
 #include <linux/fs_context.h>
 #include <linux/fs_parser.h>
 #include <linux/seq_file.h>
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/dcache.h"
+#include "linux/errno.h"
+#include "linux/gfp.h"
+#include "linux/projid.h"
+#include "linux/stat.h"
+#include "linux/types.h"
+
+struct user_namespace;
 
 struct ramfs_mount_opts {
 	umode_t mode;

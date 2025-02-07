@@ -4,15 +4,32 @@
  */
 #include <asm/fpu/api.h>
 #include <asm/tlbflush.h>
-#include <asm/setup.h>
+#include <asm/bitops.h>
+#include <asm/cpufeatures.h>
 
 #include <linux/sched.h>
 #include <linux/sched/task.h>
 #include <linux/init.h>
 
 #include "internal.h"
-#include "legacy.h"
 #include "xstate.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/current.h"
+#include "asm/fpu/types.h"
+#include "asm/processor-flags.h"
+#include "asm/processor.h"
+#include "asm/special_insns.h"
+#include "linux/align.h"
+#include "linux/build_bug.h"
+#include "linux/cache.h"
+#include "linux/export.h"
+#include "linux/printk.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+
+struct fpu__init_task_struct_size;
 
 /*
  * Initialize the registers found in all CPUs, CR0 and CR4:

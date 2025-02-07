@@ -10,10 +10,19 @@
  */
 #include <linux/fs.h>
 #include <linux/mm.h>
-#include <linux/mman.h>
 #include <linux/file.h>
 #include <linux/syscalls.h>
 #include <linux/sched.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/mman-common.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/ptrace.h"
+#include "linux/minmax.h"
+#include "linux/mm_types.h"
+#include "linux/mmap_lock.h"
+#include "linux/types.h"
 
 /*
  * MS_SYNC syncs the entire file - including mappings.

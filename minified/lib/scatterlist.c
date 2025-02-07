@@ -5,10 +5,31 @@
  * Scatterlist handling helpers.
  */
 #include <linux/export.h>
+#include <asm/bug.h>
 #include <linux/slab.h>
 #include <linux/scatterlist.h>
-#include <linux/highmem.h>
 #include <linux/kmemleak.h>
+
+#include "asm-generic/cacheflush.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/memory_model.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/align.h"
+#include "linux/compiler.h"
+#include "linux/err.h"
+#include "linux/gfp.h"
+#include "linux/highmem-internal.h"
+#include "linux/kconfig.h"
+#include "linux/minmax.h"
+#include "linux/mm.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/uaccess.h"
+
+struct page;
 
 /**
  * sg_next - return the next scatterlist entry in a list

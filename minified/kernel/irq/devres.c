@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/module.h>
 #include <linux/interrupt.h>
+#include <asm/bug.h>
 #include <linux/device.h>
 #include <linux/gfp.h>
 #include <linux/irq.h>
 
-#include "internals.h"
+#include "asm-generic/errno-base.h"
+#include "linux/export.h"
+
+struct module;
 
 /*
  * Device resource management aware IRQ request/free implementation.

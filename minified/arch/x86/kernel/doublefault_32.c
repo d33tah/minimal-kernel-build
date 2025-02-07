@@ -1,14 +1,27 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/mm.h>
-#include <linux/sched.h>
-#include <linux/sched/debug.h>
-#include <linux/init_task.h>
-#include <linux/fs.h>
-
-#include <linux/uaccess.h>
 #include <asm/processor.h>
 #include <asm/desc.h>
-#include <asm/traps.h>
+#include <asm-generic/percpu.h>
+#include <asm/percpu.h>
+#include <asm/pgtable.h>
+#include <linux/linkage.h>
+
+#include "asm/cpu_entry_area.h"
+#include "asm/idtentry.h"
+#include "asm/page.h"
+#include "asm/page_types.h"
+#include "asm/percpu.h"
+#include "asm/pgtable_32_areas.h"
+#include "asm/processor-flags.h"
+#include "asm/ptrace.h"
+#include "asm/segment.h"
+#include "asm/special_insns.h"
+#include "linux/build_bug.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/irqflags.h"
+#include "linux/panic.h"
+#include "linux/smp.h"
 
 #define ptr_ok(x) ((x) > PAGE_OFFSET && (x) < PAGE_OFFSET + MAXMEM)
 

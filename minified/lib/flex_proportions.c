@@ -35,6 +35,17 @@
  */
 #include <linux/flex_proportions.h>
 
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/int-ll64.h"
+#include "linux/compiler.h"
+#include "linux/cpumask.h"
+#include "linux/log2.h"
+#include "linux/math64.h"
+#include "linux/percpu_counter.h"
+#include "linux/seqlock.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+
 int fprop_global_init(struct fprop_global *p, gfp_t gfp)
 {
 	int err;

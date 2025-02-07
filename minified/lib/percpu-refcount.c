@@ -1,12 +1,30 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #define pr_fmt(fmt) "%s: " fmt, __func__
 
-#include <linux/kernel.h>
-#include <linux/sched.h>
 #include <linux/wait.h>
+#include <asm-generic/percpu.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
 #include <linux/slab.h>
 #include <linux/mm.h>
 #include <linux/percpu-refcount.h>
+
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/errno-base.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/cpumask.h"
+#include "linux/export.h"
+#include "linux/lockdep.h"
+#include "linux/minmax.h"
+#include "linux/percpu.h"
+#include "linux/printk.h"
+#include "linux/rcupdate.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 /*
  * Initially, a percpu refcount is just a set of percpu counters. Initially, we

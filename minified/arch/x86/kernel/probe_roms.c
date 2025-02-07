@@ -1,27 +1,22 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/sched.h>
-#include <linux/mm.h>
 #include <linux/uaccess.h>
-#include <linux/mmzone.h>
 #include <linux/ioport.h>
-#include <linux/seq_file.h>
-#include <linux/console.h>
 #include <linux/init.h>
-#include <linux/edd.h>
-#include <linux/dmi.h>
-#include <linux/pfn.h>
 #include <linux/pci.h>
 #include <linux/export.h>
 
 #include <asm/probe_roms.h>
-#include <asm/pci-direct.h>
-#include <asm/e820/api.h>
-#include <asm/mmzone.h>
 #include <asm/setup.h>
-#include <asm/sections.h>
 #include <asm/io.h>
-#include <asm/setup_arch.h>
 #include <asm/sev.h>
+
+#include "asm/sev-common.h"
+#include "linux/compiler_types.h"
+#include "linux/device.h"
+#include "linux/kernel.h"
+#include "linux/mod_devicetable.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 static struct resource system_rom_resource = {
 	.name	= "System ROM",

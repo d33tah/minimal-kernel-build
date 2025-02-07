@@ -7,21 +7,25 @@
  * Author: Len Brown <len.brown@intel.com>
  */
 #include <linux/cpufreq.h>
-#include <linux/delay.h>
-#include <linux/ktime.h>
+#include <asm-generic/percpu.h>
+#include <asm/cpufeatures.h>
+#include <asm/percpu.h>
 #include <linux/math64.h>
-#include <linux/percpu.h>
-#include <linux/rcupdate.h>
-#include <linux/sched/isolation.h>
-#include <linux/sched/topology.h>
-#include <linux/smp.h>
-#include <linux/syscore_ops.h>
-
 #include <asm/cpu.h>
-#include <asm/cpu_device_id.h>
-#include <asm/intel-family.h>
 
-#include "cpu.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/param.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/msr-index.h"
+#include "asm/msr.h"
+#include "asm/percpu.h"
+#include "asm/topology.h"
+#include "asm/tsc.h"
+#include "linux/compiler_types.h"
+#include "linux/init.h"
+#include "linux/jiffies.h"
+#include "linux/seqlock.h"
 
 struct aperfmperf {
 	seqcount_t	seq;

@@ -4,10 +4,17 @@
  *
  * (C) Copyright 2004 Linus Torvalds
  */
-#include <linux/pci.h>
-#include <linux/io.h>
 
 #include <linux/export.h>
+#include <asm/bug.h>
+#include <asm/io.h>
+
+#include "asm-generic/int-ll64.h"
+#include "asm/io.h"
+#include "asm/shared/io.h"
+#include "linux/compiler_types.h"
+#include "linux/kern_levels.h"
+#include "linux/swab.h"
 
 /*
  * Read/write from/to an (offsettable) iomem cookie. It might be a PIO

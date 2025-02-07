@@ -6,26 +6,52 @@
  */
 
 #include <linux/syscalls.h>
-#include <linux/mm.h>
 #include <linux/capability.h>
-#include <linux/compat.h>
 #include <linux/file.h>
 #include <linux/fs.h>
 #include <linux/security.h>
 #include <linux/export.h>
 #include <linux/uaccess.h>
-#include <linux/writeback.h>
-#include <linux/buffer_head.h>
 #include <linux/falloc.h>
-#include <linux/sched/signal.h>
 #include <linux/fiemap.h>
 #include <linux/mount.h>
 #include <linux/fscrypt.h>
 #include <linux/fileattr.h>
 
-#include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/fcntl.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/ioctls.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/ptrace.h"
+#include "asm/string_32.h"
+#include "asm/uaccess.h"
+#include "linux/capability.h"
+#include "linux/compiler_types.h"
+#include "linux/cred.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/errno.h"
+#include "linux/falloc.h"
+#include "linux/fiemap.h"
+#include "linux/fs.h"
+#include "linux/pagemap.h"
+#include "linux/path.h"
+#include "linux/printk.h"
+#include "linux/projid.h"
+#include "linux/sched.h"
+#include "linux/slab.h"
+#include "linux/spinlock.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/string.h"
+#include "linux/types.h"
+#include "linux/user_namespace.h"
+#include "vdso/limits.h"
 
-#include <asm/ioctls.h>
+
 
 /* So that the fiemap access checks can't overflow on 32 bit machines. */
 #define FIEMAP_MAX_EXTENTS	(UINT_MAX / sizeof(struct fiemap_extent))

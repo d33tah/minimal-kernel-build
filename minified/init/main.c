@@ -13,17 +13,20 @@
 #define DEBUG		/* Enable initcall_debug */
 
 #include <linux/types.h>
+#include <asm/bug.h>
+#include <asm/page_types.h>
+#include <linux/build_bug.h>
+#include <linux/ktime.h>
+#include <linux/linkage.h>
+#include <linux/preempt.h>
 #include <linux/extable.h>
 #include <linux/module.h>
 #include <linux/proc_fs.h>
 #include <linux/binfmts.h>
 #include <linux/kernel.h>
-#include <linux/syscalls.h>
 #include <linux/stackprotector.h>
 #include <linux/string.h>
-#include <linux/ctype.h>
 #include <linux/delay.h>
-#include <linux/ioport.h>
 #include <linux/init.h>
 #include <linux/initrd.h>
 #include <linux/memblock.h>
@@ -32,10 +35,8 @@
 #include <linux/console.h>
 #include <linux/nmi.h>
 #include <linux/percpu.h>
-#include <linux/kmod.h>
 #include <linux/kprobes.h>
 #include <linux/vmalloc.h>
-#include <linux/kernel_stat.h>
 #include <linux/start_kernel.h>
 #include <linux/security.h>
 #include <linux/smp.h>
@@ -44,9 +45,7 @@
 #include <linux/rcupdate.h>
 #include <linux/srcu.h>
 #include <linux/moduleparam.h>
-#include <linux/kallsyms.h>
 #include <linux/buildid.h>
-#include <linux/writeback.h>
 #include <linux/cpu.h>
 #include <linux/cpuset.h>
 #include <linux/cgroup.h>
@@ -56,7 +55,6 @@
 #include <linux/interrupt.h>
 #include <linux/taskstats_kern.h>
 #include <linux/delayacct.h>
-#include <linux/unistd.h>
 #include <linux/utsname.h>
 #include <linux/rmap.h>
 #include <linux/mempolicy.h>
@@ -73,44 +71,80 @@
 #include <linux/sched.h>
 #include <linux/sched/init.h>
 #include <linux/signal.h>
-#include <linux/idr.h>
 #include <linux/kgdb.h>
 #include <linux/ftrace.h>
 #include <linux/async.h>
-#include <linux/shmem_fs.h>
 #include <linux/slab.h>
 #include <linux/perf_event.h>
-#include <linux/ptrace.h>
 #include <linux/pti.h>
-#include <linux/blkdev.h>
 #include <linux/sched/clock.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/context_tracking.h>
 #include <linux/random.h>
-#include <linux/list.h>
 #include <linux/integrity.h>
 #include <linux/proc_ns.h>
-#include <linux/io.h>
 #include <linux/cache.h>
 #include <linux/rodata_test.h>
 #include <linux/jump_label.h>
-#include <linux/mem_encrypt.h>
 #include <linux/kcsan.h>
 #include <linux/init_syscalls.h>
 #include <linux/stackdepot.h>
 #include <net/net_namespace.h>
-
-#include <asm/io.h>
 #include <asm/bugs.h>
 #include <asm/setup.h>
-#include <asm/sections.h>
-#include <asm/cacheflush.h>
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/initcall.h>
-
 #include <kunit/test.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/fcntl.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/memory_model.h"
+#include "asm/bug.h"
+#include "asm/cache.h"
+#include "asm/current.h"
+#include "asm/mem_encrypt.h"
+#include "asm/page.h"
+#include "asm/page_types.h"
+#include "asm/pgtable.h"
+#include "asm/string_32.h"
+#include "generated/autoconf.h"
+#include "linux/byteorder/generic.h"
+#include "linux/compiler-clang.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/completion.h"
+#include "linux/cpuhotplug.h"
+#include "linux/cpumask.h"
+#include "linux/cred.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/file.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/hrtimer.h"
+#include "linux/irqflags.h"
+#include "linux/kconfig.h"
+#include "linux/kern_levels.h"
+#include "linux/kstrtox.h"
+#include "linux/ktime.h"
+#include "linux/mm.h"
+#include "linux/mmzone.h"
+#include "linux/nodemask.h"
+#include "linux/panic.h"
+#include "linux/pgtable.h"
+#include "linux/pid.h"
+#include "linux/poison.h"
+#include "linux/printk.h"
+#include "linux/sched.h"
+#include "linux/seq_file.h"
+#include "linux/stddef.h"
+#include "linux/sysctl.h"
+#include "linux/threads.h"
+#include "linux/timer.h"
+#include "linux/workqueue.h"
 
 static int kernel_init(void *);
 

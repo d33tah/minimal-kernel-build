@@ -13,10 +13,11 @@
  * converter.
  */
 
-#include <linux/delay.h>
 #include <linux/module.h>
+#include <asm/bitops.h>
+#include <linux/build_bug.h>
+#include <linux/device.h>
 #include <linux/slab.h>
-#include <linux/interrupt.h>
 #include <linux/init.h>
 #include <linux/input.h>
 #include <linux/input/vivaldi-fmap.h>
@@ -26,6 +27,37 @@
 #include <linux/mutex.h>
 #include <linux/dmi.h>
 #include <linux/property.h>
+
+#include "asm-generic/bitops/instrumented-atomic.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/barrier.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/bitmap.h"
+#include "linux/bits.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/dev_printk.h"
+#include "linux/device.h"
+#include "linux/gfp.h"
+#include "linux/input-event-codes.h"
+#include "linux/input.h"
+#include "linux/irqreturn.h"
+#include "linux/jiffies.h"
+#include "linux/kernel.h"
+#include "linux/kstrtox.h"
+#include "linux/mod_devicetable.h"
+#include "linux/moduleparam.h"
+#include "linux/printk.h"
+#include "linux/serio.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/sysfs.h"
+#include "linux/types.h"
+
+struct kobject;
 
 #define DRIVER_DESC	"AT and PS/2 keyboard driver"
 

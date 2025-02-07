@@ -9,32 +9,58 @@
  *	- Andrew D. Balsa (code cleanup).
  */
 #include <linux/init.h>
+#include <asm-generic/percpu.h>
+#include <asm/cpufeatures.h>
+#include <asm/percpu.h>
 #include <linux/utsname.h>
 #include <linux/cpu.h>
-#include <linux/module.h>
 #include <linux/nospec.h>
 #include <linux/prctl.h>
 #include <linux/sched/smt.h>
-#include <linux/pgtable.h>
 #include <linux/bpf.h>
 
 #include <asm/spec-ctrl.h>
 #include <asm/cmdline.h>
 #include <asm/bugs.h>
 #include <asm/processor.h>
-#include <asm/processor-flags.h>
 #include <asm/fpu/api.h>
 #include <asm/msr.h>
 #include <asm/vmx.h>
-#include <asm/paravirt.h>
 #include <asm/alternative.h>
-#include <asm/set_memory.h>
 #include <asm/intel-family.h>
 #include <asm/e820/api.h>
-#include <asm/hypervisor.h>
-#include <asm/tlbflush.h>
 
 #include "cpu.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/current.h"
+#include "asm/e820/types.h"
+#include "asm/msr-index.h"
+#include "asm/nospec-branch.h"
+#include "asm/page_types.h"
+#include "asm/percpu.h"
+#include "asm/string_32.h"
+#include "asm/thread_info.h"
+#include "generated/autoconf.h"
+#include "linux/cache.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/export.h"
+#include "linux/jump_label.h"
+#include "linux/kconfig.h"
+#include "linux/kernel.h"
+#include "linux/mutex.h"
+#include "linux/panic.h"
+#include "linux/printk.h"
+#include "linux/sched.h"
+#include "linux/smp.h"
+#include "linux/stddef.h"
+#include "linux/thread_info.h"
+#include "linux/types.h"
+#include "linux/utsname.h"
+#include "vdso/limits.h"
 
 static void __init spectre_v1_select_mitigation(void);
 static void __init spectre_v2_select_mitigation(void);

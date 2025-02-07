@@ -14,8 +14,25 @@
  * from scratch.
  */
 #include <linux/uaccess.h>
+#include <asm/bug.h>
 #include <linux/seq_file.h>
 #include <linux/seq_buf.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/string_32.h"
+#include "linux/build_bug.h"
+#include "linux/compiler_types.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/kernel.h"
+#include "linux/minmax.h"
+#include "linux/printk.h"
+#include "linux/stdarg.h"
+#include "linux/types.h"
+
+struct path;
 
 /**
  * seq_buf_can_fit - can the new data fit in the current buffer?

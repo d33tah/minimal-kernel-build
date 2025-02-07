@@ -4,14 +4,22 @@
  *
  */
 #include <linux/clockchips.h>
+#include <asm/cpufeatures.h>
 #include <linux/init.h>
-#include <linux/timex.h>
 #include <linux/i8253.h>
 
 #include <asm/apic.h>
 #include <asm/hpet.h>
 #include <asm/time.h>
-#include <asm/smp.h>
+
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "generated/autoconf.h"
+#include "linux/clocksource.h"
+#include "linux/cpumask.h"
+#include "linux/kconfig.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 /*
  * HPET replaces the PIT, when enabled. So we need to know, which of

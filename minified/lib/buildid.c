@@ -1,10 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <linux/buildid.h>
-#include <linux/cache.h>
-#include <linux/elf.h>
-#include <linux/kernel.h>
 #include <linux/pagemap.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/align.h"
+#include "linux/elf.h"
+#include "linux/fs.h"
+#include "linux/highmem-internal.h"
+#include "linux/mm.h"
+#include "linux/mm_types.h"
 
 #define BUILD_ID 3
 

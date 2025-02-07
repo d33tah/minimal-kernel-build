@@ -6,21 +6,35 @@
  * Please see those files for relevant copyright info and historical
  * changelogs.
  */
-#include <linux/capability.h>
-#include <linux/clocksource.h>
 #include <linux/workqueue.h>
+#include <linux/ktime.h>
 #include <linux/hrtimer.h>
 #include <linux/jiffies.h>
 #include <linux/math64.h>
 #include <linux/timex.h>
 #include <linux/time.h>
-#include <linux/mm.h>
-#include <linux/module.h>
-#include <linux/rtc.h>
 #include <linux/audit.h>
 
 #include "ntp_internal.h"
-#include "timekeeping_internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/param.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/init.h"
+#include "linux/kern_levels.h"
+#include "linux/kstrtox.h"
+#include "linux/ktime.h"
+#include "linux/minmax.h"
+#include "linux/printk.h"
+#include "linux/stddef.h"
+#include "linux/time.h"
+#include "linux/time64.h"
+#include "linux/timex.h"
+#include "linux/types.h"
+#include "vdso/jiffies.h"
+#include "vdso/time64.h"
 
 
 /*

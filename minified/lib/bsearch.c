@@ -8,7 +8,9 @@
 
 #include <linux/export.h>
 #include <linux/bsearch.h>
-#include <linux/kprobes.h>
+
+#include "asm-generic/kprobes.h"
+#include "linux/types.h"
 
 /*
  * bsearch - binary search an array of elements

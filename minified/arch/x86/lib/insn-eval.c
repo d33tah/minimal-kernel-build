@@ -4,16 +4,28 @@
  * Copyright (C) Intel Corporation 2017
  */
 #include <linux/kernel.h>
-#include <linux/string.h>
-#include <linux/ratelimit.h>
-#include <linux/mmu_context.h>
+#include <asm/bug.h>
 #include <asm/desc_defs.h>
 #include <asm/desc.h>
 #include <asm/inat.h>
 #include <asm/insn.h>
 #include <asm/insn-eval.h>
-#include <asm/ldt.h>
 #include <asm/vm86.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/inat_types.h"
+#include "asm/msr-index.h"
+#include "asm/msr.h"
+#include "asm/ptrace.h"
+#include "asm/segment.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/kconfig.h"
+#include "linux/printk.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/uaccess.h"
+#include "vdso/bits.h"
 
 #undef pr_fmt
 #define pr_fmt(fmt) "insn: " fmt

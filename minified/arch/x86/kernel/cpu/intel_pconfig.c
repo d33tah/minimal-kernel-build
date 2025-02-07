@@ -10,6 +10,16 @@
 
 #include <asm/cpufeature.h>
 #include <asm/intel_pconfig.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
+
+#include "asm-generic/int-ll64.h"
+#include "asm/cache.h"
+#include "asm/cpufeatures.h"
+#include "asm/processor.h"
+#include "linux/build_bug.h"
+#include "linux/init.h"
+#include "vdso/limits.h"
 
 #define	PCONFIG_CPUID			0x1b
 

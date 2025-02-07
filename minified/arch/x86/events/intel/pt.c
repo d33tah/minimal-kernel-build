@@ -13,19 +13,60 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/types.h>
-#include <linux/bits.h>
-#include <linux/limits.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
+#include <linux/bitops.h>
+#include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/device.h>
 
 #include <asm/perf_event.h>
-#include <asm/insn.h>
 #include <asm/io.h>
 #include <asm/intel_pt.h>
 #include <asm/intel-family.h>
 
 #include "../perf_event.h"
 #include "pt.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/rwonce.h"
+#include "asm-generic/topology.h"
+#include "asm/barrier.h"
+#include "asm/cmpxchg.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/msr-index.h"
+#include "asm/msr.h"
+#include "asm/page.h"
+#include "asm/page_types.h"
+#include "asm/processor.h"
+#include "asm/string_32.h"
+#include "linux/build_bug.h"
+#include "linux/cache.h"
+#include "linux/container_of.h"
+#include "linux/cpu.h"
+#include "linux/cpumask.h"
+#include "linux/errno.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/irqflags.h"
+#include "linux/kernel.h"
+#include "linux/list.h"
+#include "linux/mm.h"
+#include "linux/mm_types.h"
+#include "linux/path.h"
+#include "linux/pfn.h"
+#include "linux/printk.h"
+#include "linux/sched.h"
+#include "linux/smp.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/stringify.h"
+#include "linux/sysfs.h"
+#include "vdso/bits.h"
+#include "vdso/limits.h"
 
 static DEFINE_PER_CPU(struct pt, pt_ctx);
 

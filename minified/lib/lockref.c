@@ -2,6 +2,8 @@
 #include <linux/export.h>
 #include <linux/lockref.h>
 
+#include "linux/spinlock.h"
+
 #if USE_CMPXCHG_LOCKREF
 
 /*

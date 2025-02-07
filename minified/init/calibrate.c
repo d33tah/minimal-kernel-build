@@ -6,11 +6,21 @@
  */
 
 #include <linux/jiffies.h>
+#include <asm-generic/percpu.h>
 #include <linux/delay.h>
 #include <linux/init.h>
 #include <linux/timex.h>
 #include <linux/smp.h>
-#include <linux/percpu.h>
+
+#include "asm-generic/delay.h"
+#include "asm-generic/param.h"
+#include "asm/timex.h"
+#include "asm/tsc.h"
+#include "linux/kern_levels.h"
+#include "linux/kstrtox.h"
+#include "linux/printk.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 unsigned long lpj_fine;
 unsigned long preset_lpj;

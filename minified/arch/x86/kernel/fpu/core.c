@@ -7,23 +7,46 @@
  *	Gareth Hughes <gareth@valinux.com>, May 2000
  */
 #include <asm/fpu/api.h>
-#include <asm/fpu/regset.h>
 #include <asm/fpu/sched.h>
 #include <asm/fpu/signal.h>
 #include <asm/fpu/types.h>
-#include <asm/traps.h>
-#include <asm/irq_regs.h>
-
-#include <uapi/asm/kvm.h>
-
-#include <linux/hardirq.h>
-#include <linux/pkeys.h>
-#include <linux/vmalloc.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
+#include <asm/percpu.h>
 
 #include "context.h"
 #include "internal.h"
 #include "legacy.h"
 #include "xstate.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/siginfo.h"
+#include "asm/asm.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/current.h"
+#include "asm/fpu/xstate.h"
+#include "asm/percpu.h"
+#include "asm/pkru.h"
+#include "asm/processor.h"
+#include "asm/string_32.h"
+#include "asm/thread_info.h"
+#include "asm/trapnr.h"
+#include "linux/build_bug.h"
+#include "linux/cache.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/export.h"
+#include "linux/jiffies.h"
+#include "linux/kconfig.h"
+#include "linux/preempt.h"
+#include "linux/sched.h"
+#include "linux/sched/signal.h"
+#include "linux/smp.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/thread_info.h"
+#include "linux/types.h"
 
 #define CREATE_TRACE_POINTS
 #include <asm/trace/fpu.h>

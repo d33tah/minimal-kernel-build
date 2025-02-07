@@ -13,53 +13,98 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/mm.h>
+#include <asm/bitops.h>
+#include <asm/bug.h>
+#include <linux/atomic.h>
+#include <linux/mmzone.h>
 #include <linux/sched/mm.h>
 #include <linux/module.h>
 #include <linux/gfp.h>
-#include <linux/kernel_stat.h>
 #include <linux/swap.h>
 #include <linux/pagemap.h>
 #include <linux/init.h>
-#include <linux/highmem.h>
 #include <linux/vmpressure.h>
 #include <linux/vmstat.h>
-#include <linux/file.h>
 #include <linux/writeback.h>
 #include <linux/blkdev.h>
 #include <linux/buffer_head.h>	/* for try_to_release_page(),
+
 					buffer_heads_over_limit */
 #include <linux/mm_inline.h>
-#include <linux/backing-dev.h>
 #include <linux/rmap.h>
-#include <linux/topology.h>
-#include <linux/cpu.h>
 #include <linux/cpuset.h>
 #include <linux/compaction.h>
-#include <linux/notifier.h>
 #include <linux/rwsem.h>
-#include <linux/delay.h>
 #include <linux/kthread.h>
 #include <linux/freezer.h>
 #include <linux/memcontrol.h>
 #include <linux/migrate.h>
 #include <linux/delayacct.h>
-#include <linux/sysctl.h>
-#include <linux/oom.h>
 #include <linux/pagevec.h>
 
 #include <linux/printk.h>
 #include <linux/dax.h>
 #include <linux/psi.h>
 
-#include <asm/tlbflush.h>
 #include <asm/div64.h>
-
-#include <linux/swapops.h>
-
 #include <linux/sched/sysctl.h>
 
 #include "internal.h"
 #include "swap.h"
+#include "asm-generic/bitops/instrumented-atomic.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/param.h"
+#include "asm-generic/rwonce.h"
+#include "asm-generic/topology.h"
+#include "asm/bug.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/processor.h"
+#include "asm/string_32.h"
+#include "generated/bounds.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/backing-dev-defs.h"
+#include "linux/build_bug.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/cpumask.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/fs.h"
+#include "linux/huge_mm.h"
+#include "linux/instruction_pointer.h"
+#include "linux/jiffies.h"
+#include "linux/kconfig.h"
+#include "linux/kernel.h"
+#include "linux/limits.h"
+#include "linux/list.h"
+#include "linux/math.h"
+#include "linux/math64.h"
+#include "linux/migrate_mode.h"
+#include "linux/minmax.h"
+#include "linux/mm_types.h"
+#include "linux/mmdebug.h"
+#include "linux/mmzone.h"
+#include "linux/nodemask.h"
+#include "linux/numa.h"
+#include "linux/page_ref.h"
+#include "linux/sched.h"
+#include "linux/sched/signal.h"
+#include "linux/shrinker.h"
+#include "linux/slab.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/vm_event_item.h"
+#include "linux/wait.h"
+#include "linux/xarray.h"
+#include "vdso/limits.h"
+
+struct mem_cgroup;
+struct swap_iocb;
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/vmscan.h>

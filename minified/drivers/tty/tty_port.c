@@ -4,21 +4,44 @@
  */
 
 #include <linux/types.h>
+#include <asm/bug.h>
 #include <linux/errno.h>
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
 #include <linux/tty_flip.h>
-#include <linux/serial.h>
-#include <linux/timer.h>
-#include <linux/string.h>
 #include <linux/slab.h>
 #include <linux/sched/signal.h>
 #include <linux/wait.h>
-#include <linux/bitops.h>
 #include <linux/delay.h>
-#include <linux/module.h>
 #include <linux/serdev.h>
 #include "tty.h"
+#include "asm-generic/bitops/instrumented-atomic.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/fcntl.h"
+#include "asm-generic/param.h"
+#include "asm-generic/rwonce.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/container_of.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/jiffies.h"
+#include "linux/kfifo.h"
+#include "linux/kref.h"
+#include "linux/minmax.h"
+#include "linux/mutex.h"
+#include "linux/sched.h"
+#include "linux/serial.h"
+#include "linux/spinlock.h"
+#include "linux/tty_flags.h"
+#include "linux/tty_ldisc.h"
+#include "linux/tty_port.h"
+
+struct attribute_group;
+struct device;
 
 static int tty_port_default_receive_buf(struct tty_port *port,
 					const unsigned char *p,

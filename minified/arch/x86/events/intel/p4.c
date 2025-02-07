@@ -8,12 +8,41 @@
  */
 
 #include <linux/perf_event.h>
+#include <asm-generic/percpu.h>
+#include <asm/bitops.h>
+#include <asm/bug.h>
+#include <asm/percpu.h>
+#include <linux/build_bug.h>
 
 #include <asm/perf_event_p4.h>
 #include <asm/hardirq.h>
 #include <asm/apic.h>
 
 #include "../perf_event.h"
+#include "asm-generic/bitops/instrumented-atomic.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/apicdef.h"
+#include "asm/msr-index.h"
+#include "asm/msr.h"
+#include "asm/percpu.h"
+#include "asm/perf_event.h"
+#include "asm/processor.h"
+#include "asm/string_32.h"
+#include "linux/bitmap.h"
+#include "linux/bitops.h"
+#include "linux/build_bug.h"
+#include "linux/compiler_types.h"
+#include "linux/device.h"
+#include "linux/init.h"
+#include "linux/kernel.h"
+#include "linux/perf_event.h"
+#include "linux/printk.h"
+#include "linux/smp.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+
+struct pt_regs;
 
 #define P4_CNTR_LIMIT 3
 /*

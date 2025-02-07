@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/memblock.h>
 
-#include <asm/setup.h>
 #include <asm/bios_ebda.h>
+
+#include "asm/page.h"
+#include "asm/x86_init.h"
 
 /*
  * This function reserves all conventional PC system BIOS related

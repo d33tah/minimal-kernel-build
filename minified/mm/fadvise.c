@@ -8,21 +8,22 @@
  *		Initial version.
  */
 
-#include <linux/kernel.h>
-#include <linux/file.h>
 #include <linux/fs.h>
-#include <linux/mm.h>
 #include <linux/pagemap.h>
 #include <linux/backing-dev.h>
-#include <linux/pagevec.h>
 #include <linux/fadvise.h>
 #include <linux/writeback.h>
-#include <linux/syscalls.h>
 #include <linux/swap.h>
 
-#include <asm/unistd.h>
-
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/page_types.h"
+#include "linux/backing-dev-defs.h"
+#include "linux/export.h"
+#include "linux/spinlock.h"
+#include "linux/stat.h"
+#include "linux/types.h"
 
 /*
  * POSIX_FADV_WILLNEED could set PG_Referenced, and POSIX_FADV_NOREUSE could

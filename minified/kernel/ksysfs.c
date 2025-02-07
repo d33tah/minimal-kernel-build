@@ -7,18 +7,20 @@
  */
 
 #include <linux/kobject.h>
-#include <linux/string.h>
 #include <linux/sysfs.h>
 #include <linux/export.h>
 #include <linux/init.h>
-#include <linux/kexec.h>
-#include <linux/profile.h>
 #include <linux/stat.h>
-#include <linux/sched.h>
 #include <linux/capability.h>
-#include <linux/compiler.h>
 
-#include <linux/rcupdate.h>	/* rcu_expedited and rcu_normal */
+#include "asm-generic/errno-base.h"
+#include "asm/string_32.h"
+#include "linux/cache.h"
+#include "linux/compiler_attributes.h"
+#include "linux/kernel.h"
+#include "linux/types.h"
+
+struct file;
 
 #define KERNEL_ATTR_RO(_name) \
 static struct kobj_attribute _name##_attr = __ATTR_RO(_name)

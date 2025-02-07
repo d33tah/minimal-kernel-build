@@ -8,10 +8,12 @@
  */
 
 #include <linux/syscalls.h>
+#include <asm/barrier.h>
+#include <asm/bitops.h>
+#include <asm/bug.h>
+#include <linux/bitmap.h>
 #include <linux/export.h>
 #include <linux/fs.h>
-#include <linux/kernel.h>
-#include <linux/mm.h>
 #include <linux/sched/signal.h>
 #include <linux/slab.h>
 #include <linux/file.h>
@@ -23,6 +25,38 @@
 #include <net/sock.h>
 
 #include "internal.h"
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/fcntl.h"
+#include "asm-generic/resource.h"
+#include "asm/cache.h"
+#include "asm/cmpxchg.h"
+#include "asm/current.h"
+#include "asm/ptrace.h"
+#include "asm/string_32.h"
+#include "asm/uaccess.h"
+#include "linux/align.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/bitmap.h"
+#include "linux/bits.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/gfp.h"
+#include "linux/kern_levels.h"
+#include "linux/log2.h"
+#include "linux/minmax.h"
+#include "linux/mutex.h"
+#include "linux/nospec.h"
+#include "linux/printk.h"
+#include "linux/sched.h"
+#include "linux/sched/task.h"
+#include "linux/security.h"
+#include "linux/spinlock_types.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/wait.h"
+#include "vdso/limits.h"
 
 unsigned int sysctl_nr_open __read_mostly = 1024*1024;
 unsigned int sysctl_nr_open_min = BITS_PER_LONG;

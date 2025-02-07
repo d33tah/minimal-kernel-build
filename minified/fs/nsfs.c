@@ -6,13 +6,34 @@
 #include <linux/proc_fs.h>
 #include <linux/proc_ns.h>
 #include <linux/magic.h>
-#include <linux/ktime.h>
 #include <linux/seq_file.h>
 #include <linux/user_namespace.h>
 #include <linux/nsfs.h>
-#include <linux/uaccess.h>
 
-#include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/fcntl.h"
+#include "asm/uaccess.h"
+#include "asm/vdso/processor.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/cred.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/init.h"
+#include "linux/kernel.h"
+#include "linux/lockref.h"
+#include "linux/ns_common.h"
+#include "linux/panic.h"
+#include "linux/path.h"
+#include "linux/rcupdate.h"
+#include "linux/sched.h"
+#include "linux/stat.h"
+#include "linux/types.h"
+#include "linux/uidgid.h"
+
+struct fs_context;
 
 static struct vfsmount *nsfs_mnt;
 

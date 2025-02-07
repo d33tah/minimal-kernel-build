@@ -4,10 +4,21 @@
  * eventually.
  */
 
-#include <linux/migrate.h>
 #include <linux/pagemap.h>
+#include <linux/mm.h>
 #include <linux/swap.h>
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "linux/compiler_attributes.h"
+#include "linux/export.h"
+#include "linux/mm.h"
+#include "linux/mm_types.h"
+#include "linux/ratelimit.h"
+#include "linux/types.h"
+#include "linux/writeback.h"
+#include "linux/xarray.h"
+
+struct address_space;
 
 struct address_space *page_mapping(struct page *page)
 {

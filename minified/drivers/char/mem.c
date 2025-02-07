@@ -10,26 +10,53 @@
  */
 
 #include <linux/mm.h>
-#include <linux/miscdevice.h>
+#include <linux/build_bug.h>
 #include <linux/slab.h>
-#include <linux/vmalloc.h>
-#include <linux/mman.h>
 #include <linux/random.h>
 #include <linux/init.h>
 #include <linux/tty.h>
 #include <linux/capability.h>
 #include <linux/ptrace.h>
 #include <linux/device.h>
-#include <linux/highmem.h>
-#include <linux/backing-dev.h>
 #include <linux/shmem_fs.h>
 #include <linux/splice.h>
-#include <linux/pfn.h>
 #include <linux/export.h>
 #include <linux/io.h>
 #include <linux/uio.h>
 #include <linux/uaccess.h>
 #include <linux/security.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm/current.h"
+#include "asm/io.h"
+#include "asm/page_types.h"
+#include "asm/pgtable_types.h"
+#include "asm/shared/io.h"
+#include "asm/uaccess.h"
+#include "linux/capability.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/device/class.h"
+#include "linux/err.h"
+#include "linux/errno.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/ioport.h"
+#include "linux/kdev_t.h"
+#include "linux/kernel.h"
+#include "linux/major.h"
+#include "linux/minmax.h"
+#include "linux/mm_types.h"
+#include "linux/mman.h"
+#include "linux/pgtable.h"
+#include "linux/printk.h"
+#include "linux/sched.h"
+#include "linux/sched/signal.h"
+#include "linux/types.h"
+
+struct pipe_buffer;
+struct pipe_inode_info;
 
 
 #define DEVMEM_MINOR	1

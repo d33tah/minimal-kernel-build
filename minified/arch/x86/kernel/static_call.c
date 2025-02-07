@@ -1,8 +1,22 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/static_call.h>
+#include <asm/cpufeatures.h>
 #include <linux/memory.h>
-#include <linux/bug.h>
 #include <asm/text-patching.h>
+
+#include "asm-generic/int-ll64.h"
+#include "asm/bug.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/nops.h"
+#include "asm/nospec-branch.h"
+#include "asm/string_32.h"
+#include "linux/init.h"
+#include "linux/kconfig.h"
+#include "linux/kernel.h"
+#include "linux/mutex.h"
+#include "linux/printk.h"
+#include "linux/types.h"
 
 enum insn_type {
 	CALL = 0, /* site call */

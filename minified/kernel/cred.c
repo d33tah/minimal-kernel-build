@@ -5,17 +5,40 @@
  * Written by David Howells (dhowells@redhat.com)
  */
 #include <linux/export.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
 #include <linux/cred.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/sched/coredump.h>
 #include <linux/key.h>
 
-#include <linux/init_task.h>
 #include <linux/security.h>
 #include <linux/binfmts.h>
 #include <linux/cn_proc.h>
 #include <linux/uidgid.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/current.h"
+#include "asm/string_32.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/capability.h"
+#include "linux/cn_proc.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/panic.h"
+#include "linux/printk.h"
+#include "linux/rcupdate.h"
+#include "linux/sched.h"
+#include "linux/sched/user.h"
+#include "linux/securebits.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/user_namespace.h"
 
 #if 0
 #define kdebug(FMT, ...)						\

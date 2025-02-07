@@ -1,8 +1,19 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/perf_event.h>
-#include <linux/types.h>
-
 #include "../perf_event.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/msr-index.h"
+#include "asm/msr.h"
+#include "asm/perf_event.h"
+#include "asm/processor.h"
+#include "asm/string_32.h"
+#include "linux/compiler_types.h"
+#include "linux/device.h"
+#include "linux/init.h"
+#include "linux/kernel.h"
+#include "linux/perf_event.h"
+#include "linux/printk.h"
 
 /*
  * Not sure about some of these

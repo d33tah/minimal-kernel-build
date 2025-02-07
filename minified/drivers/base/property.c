@@ -7,15 +7,26 @@
  *          Mika Westerberg <mika.westerberg@linux.intel.com>
  */
 
-#include <linux/acpi.h>
 #include <linux/export.h>
-#include <linux/kernel.h>
 #include <linux/of.h>
-#include <linux/of_address.h>
 
-#include <linux/of_irq.h>
 #include <linux/property.h>
 #include <linux/phy.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/string_32.h"
+#include "linux/compiler_types.h"
+#include "linux/device.h"
+#include "linux/err.h"
+#include "linux/fwnode.h"
+#include "linux/gfp.h"
+#include "linux/kconfig.h"
+#include "linux/slab.h"
+#include "linux/stddef.h"
+#include "linux/string.h"
+#include "linux/types.h"
 
 struct fwnode_handle *dev_fwnode(struct device *dev)
 {

@@ -1,15 +1,34 @@
 // SPDX-License-Identifier: GPL-2.0-only
-#include <linux/atomic.h>
 #include <linux/percpu.h>
+#include <asm-generic/percpu.h>
+#include <asm/barrier.h>
+#include <asm/percpu.h>
 #include <linux/wait.h>
 #include <linux/lockdep.h>
 #include <linux/percpu-rwsem.h>
-#include <linux/rcupdate.h>
 #include <linux/sched.h>
 #include <linux/sched/task.h>
 #include <linux/sched/debug.h>
-#include <linux/errno.h>
 #include <trace/events/lock.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/percpu.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/cpumask.h"
+#include "linux/export.h"
+#include "linux/instruction_pointer.h"
+#include "linux/kernel.h"
+#include "linux/list.h"
+#include "linux/preempt.h"
+#include "linux/rcu_sync.h"
+#include "linux/rcuwait.h"
+#include "linux/spinlock.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+
+struct lock_class_key;
 
 int __percpu_init_rwsem(struct percpu_rw_semaphore *sem,
 			const char *name, struct lock_class_key *key)

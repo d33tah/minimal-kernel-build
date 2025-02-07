@@ -3,15 +3,11 @@
  * FPU signal frame handling routines.
  */
 
-#include <linux/compat.h>
-#include <linux/cpu.h>
 #include <linux/pagemap.h>
+#include <asm/cpufeatures.h>
 
 #include <asm/fpu/signal.h>
 #include <asm/fpu/regset.h>
-#include <asm/fpu/xstate.h>
-
-#include <asm/sigframe.h>
 #include <asm/trapnr.h>
 #include <asm/trace/fpu.h>
 
@@ -19,6 +15,29 @@
 #include "internal.h"
 #include "legacy.h"
 #include "xstate.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/current.h"
+#include "asm/fpu/api.h"
+#include "asm/fpu/types.h"
+#include "asm/processor.h"
+#include "asm/sigcontext.h"
+#include "asm/thread_info.h"
+#include "asm/uaccess.h"
+#include "asm/user_32.h"
+#include "generated/autoconf.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/init.h"
+#include "linux/kconfig.h"
+#include "linux/math.h"
+#include "linux/regset.h"
+#include "linux/sched.h"
+#include "linux/stddef.h"
+#include "linux/thread_info.h"
+#include "linux/types.h"
+#include "linux/uaccess.h"
 
 /*
  * Check for the presence of extended state information in the

@@ -7,16 +7,33 @@
  */
 
 #include <linux/export.h>
-#include <linux/time.h>
-#include <linux/mm.h>
-#include <linux/string.h>
+#include <asm/bug.h>
+#include <asm/signal.h>
 #include <linux/sched/signal.h>
 #include <linux/capability.h>
 #include <linux/fsnotify.h>
-#include <linux/fcntl.h>
 #include <linux/security.h>
 #include <linux/evm.h>
 #include <linux/ima.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/resource.h"
+#include "asm/bug.h"
+#include "asm/current.h"
+#include "linux/capability.h"
+#include "linux/cred.h"
+#include "linux/dcache.h"
+#include "linux/fs.h"
+#include "linux/mnt_idmapping.h"
+#include "linux/sched.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/time64.h"
+#include "linux/types.h"
+#include "linux/uidgid.h"
+
+struct user_namespace;
 
 /**
  * chown_ok - verify permissions to chown inode

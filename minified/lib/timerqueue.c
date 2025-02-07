@@ -9,10 +9,15 @@
  *  to avoid races. No locking is done by this library code.
  */
 
-#include <linux/bug.h>
 #include <linux/timerqueue.h>
+#include <asm/bug.h>
 #include <linux/rbtree.h>
 #include <linux/export.h>
+
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/rbtree_types.h"
+#include "linux/types.h"
 
 #define __node_2_tq(_n) \
 	rb_entry((_n), struct timerqueue_node, node)

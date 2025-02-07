@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/bitops.h>
 #include <linux/delay.h>
-#include <linux/pci.h>
-#include <asm/dma.h>
-#include <linux/io.h>
+#include <asm/cpufeatures.h>
 #include <asm/processor-cyrix.h>
-#include <asm/processor-flags.h>
-#include <linux/timer.h>
-#include <asm/pci-direct.h>
-#include <asm/tsc.h>
 #include <asm/cpufeature.h>
-#include <linux/sched.h>
-#include <linux/sched/clock.h>
 
 #include "cpu.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/cpufeatures.h"
+#include "asm/processor-flags.h"
+#include "asm/processor.h"
+#include "asm/special_insns.h"
+#include "asm/string_32.h"
+#include "linux/compiler_types.h"
+#include "linux/irqflags.h"
+#include "linux/printk.h"
 
 /*
  * Read NSC/Cyrix DEVID registers (DIR) to get more detailed info. about the CPU

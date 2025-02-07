@@ -6,23 +6,31 @@
  */
 
 #include <linux/stddef.h>
-#include <linux/kernel.h>
 #include <linux/export.h>
-#include <linux/time.h>
-#include <linux/mm.h>
-#include <linux/errno.h>
-#include <linux/stat.h>
 #include <linux/file.h>
 #include <linux/fs.h>
 #include <linux/fsnotify.h>
 #include <linux/dirent.h>
 #include <linux/security.h>
 #include <linux/syscalls.h>
-#include <linux/unistd.h>
-#include <linux/compat.h>
 #include <linux/uaccess.h>
 
-#include <asm/unaligned.h>
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/current.h"
+#include "asm/ptrace.h"
+#include "asm/string_32.h"
+#include "asm/uaccess.h"
+#include "asm/unistd.h"
+#include "linux/align.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/limits.h"
+#include "linux/rwsem.h"
+#include "linux/sched/signal.h"
+#include "linux/types.h"
 
 /*
  * Note the "unsafe_put_user() semantics: we goto a

@@ -15,8 +15,10 @@
 /* [Feb-Apr 2000, AV] Rewrite to the new namespace architecture.
  */
 
-#include <linux/init.h>
 #include <linux/export.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
+#include <linux/mm.h>
 #include <linux/kernel.h>
 #include <linux/slab.h>
 #include <linux/fs.h>
@@ -24,7 +26,6 @@
 #include <linux/pagemap.h>
 #include <linux/sched/mm.h>
 #include <linux/fsnotify.h>
-#include <linux/personality.h>
 #include <linux/security.h>
 #include <linux/ima.h>
 #include <linux/syscalls.h>
@@ -32,17 +33,58 @@
 #include <linux/audit.h>
 #include <linux/capability.h>
 #include <linux/file.h>
-#include <linux/fcntl.h>
 #include <linux/device_cgroup.h>
 #include <linux/fs_struct.h>
 
 #include <linux/hash.h>
 #include <linux/bitops.h>
-#include <linux/init_task.h>
 #include <linux/uaccess.h>
 
 #include "internal.h"
 #include "mount.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/fcntl.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/rwonce.h"
+#include "asm/cache.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/ptrace.h"
+#include "asm/string_32.h"
+#include "asm/uaccess.h"
+#include "linux/audit.h"
+#include "linux/capability.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/cred.h"
+#include "linux/dcache.h"
+#include "linux/delayed_call.h"
+#include "linux/err.h"
+#include "linux/errno.h"
+#include "linux/fcntl.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/kdev_t.h"
+#include "linux/limits.h"
+#include "linux/lockref.h"
+#include "linux/mm.h"
+#include "linux/mutex.h"
+#include "linux/path.h"
+#include "linux/rcupdate.h"
+#include "linux/sched.h"
+#include "linux/seqlock.h"
+#include "linux/spinlock.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/stringhash.h"
+#include "linux/types.h"
+#include "linux/uidgid.h"
+#include "linux/utsname.h"
+#include "linux/wait.h"
+
+struct user_namespace;
 
 /* [Feb-1997 T. Schoebel-Theuer]
  * Fundamental changes in the pathname lookup mechanisms (namei)

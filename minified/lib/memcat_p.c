@@ -2,6 +2,10 @@
 
 #include <linux/slab.h>
 
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/string.h"
+
 /*
  * Merge two NULL-terminated pointer arrays into a newly allocated
  * array, which is also NULL-terminated. Nomenclature is inspired by

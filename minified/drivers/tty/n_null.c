@@ -1,8 +1,15 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/types.h>
-#include <linux/errno.h>
-#include <linux/tty.h>
 #include <linux/module.h>
+#include <asm/bug.h>
+
+#include "asm-generic/errno.h"
+#include "linux/export.h"
+#include "linux/init.h"
+#include "linux/tty.h"
+#include "linux/tty_ldisc.h"
+
+struct file;
+struct tty_struct;
 
 /*
  *  n_null.c - Null line discipline used in the failure path

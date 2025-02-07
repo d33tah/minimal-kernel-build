@@ -3,28 +3,47 @@
  */
 
 #include <linux/capability.h>
+#include <asm/bug.h>
 #include <linux/audit.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
 
-#include <linux/file.h>
-#include <linux/mm.h>
-#include <linux/mman.h>
-#include <linux/pagemap.h>
-#include <linux/swap.h>
-#include <linux/skbuff.h>
-#include <linux/netlink.h>
 #include <linux/ptrace.h>
 #include <linux/xattr.h>
-#include <linux/hugetlb.h>
 #include <linux/mount.h>
 #include <linux/sched.h>
 #include <linux/prctl.h>
 #include <linux/securebits.h>
 #include <linux/user_namespace.h>
 #include <linux/binfmts.h>
-#include <linux/personality.h>
 #include <linux/mnt_idmapping.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/current.h"
+#include "asm/string_32.h"
+#include "linux/byteorder/generic.h"
+#include "linux/capability.h"
+#include "linux/compiler_types.h"
+#include "linux/cred.h"
+#include "linux/dcache.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/kern_levels.h"
+#include "linux/path.h"
+#include "linux/personality.h"
+#include "linux/printk.h"
+#include "linux/rcupdate.h"
+#include "linux/securebits.h"
+#include "linux/security.h"
+#include "linux/slab.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/uidgid.h"
+#include "linux/xattr.h"
+
+struct mm_struct;
+struct timespec64;
+struct timezone;
 
 /*
  * If a non-root user executes a setuid-root binary in

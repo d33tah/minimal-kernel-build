@@ -11,6 +11,13 @@
 #include <linux/slab.h>
 #include <linux/string.h>
 
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/string_32.h"
+#include "linux/gfp.h"
+#include "linux/stddef.h"
+#include "vdso/limits.h"
+
 /**
  * match_one - Determines if a string matches a simple pattern
  * @s: the string to examine for presence of the pattern

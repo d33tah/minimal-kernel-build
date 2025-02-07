@@ -4,20 +4,32 @@
  */
 
 #include <linux/types.h>
-#include <linux/errno.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
 #include <linux/tty.h>
-#include <linux/tty_driver.h>
 #include <linux/tty_flip.h>
-#include <linux/timer.h>
-#include <linux/string.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
-#include <linux/wait.h>
-#include <linux/bitops.h>
-#include <linux/delay.h>
-#include <linux/module.h>
-#include <linux/ratelimit.h>
 #include "tty.h"
+#include "asm-generic/errno-base.h"
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/align.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/llist.h"
+#include "linux/lockdep.h"
+#include "linux/minmax.h"
+#include "linux/mutex.h"
+#include "linux/spinlock.h"
+#include "linux/tty_buffer.h"
+#include "linux/tty_ldisc.h"
+#include "linux/tty_port.h"
+#include "linux/workqueue.h"
 
 #define MIN_TTYB_SIZE	256
 #define TTYB_ALIGN_MASK	255

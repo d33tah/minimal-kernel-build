@@ -7,14 +7,29 @@
  */
 
 #include <linux/device.h>
-#include <linux/module.h>
+#include <asm/bug.h>
 #include <linux/slab.h>
 #include <linux/percpu.h>
 
-#include <asm/sections.h>
-
 #include "base.h"
 #include "trace.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/sections.h"
+#include "asm/string_32.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/kernel.h"
+#include "linux/list.h"
+#include "linux/overflow.h"
+#include "linux/spinlock.h"
+#include "linux/stdarg.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 struct devres_node {
 	struct list_head		entry;

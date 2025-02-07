@@ -39,15 +39,14 @@
  * Aug/Sep 2004 Changed to four level page tables (Andi Kleen)
  */
 
-#include <linux/kernel_stat.h>
 #include <linux/mm.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
 #include <linux/mm_inline.h>
 #include <linux/sched/mm.h>
-#include <linux/sched/coredump.h>
 #include <linux/sched/numa_balancing.h>
 #include <linux/sched/task.h>
 #include <linux/hugetlb.h>
-#include <linux/mman.h>
 #include <linux/swap.h>
 #include <linux/highmem.h>
 #include <linux/pagemap.h>
@@ -62,21 +61,16 @@
 #include <linux/memcontrol.h>
 #include <linux/mmu_notifier.h>
 #include <linux/swapops.h>
-#include <linux/elf.h>
 #include <linux/gfp.h>
 #include <linux/migrate.h>
 #include <linux/string.h>
-#include <linux/debugfs.h>
 #include <linux/userfaultfd_k.h>
-#include <linux/dax.h>
 #include <linux/oom.h>
 #include <linux/numa.h>
 #include <linux/perf_event.h>
-#include <linux/ptrace.h>
 #include <linux/vmalloc.h>
 
 #include <trace/events/kmem.h>
-
 #include <asm/io.h>
 #include <asm/mmu_context.h>
 #include <asm/pgalloc.h>
@@ -87,6 +81,67 @@
 #include "pgalloc-track.h"
 #include "internal.h"
 #include "swap.h"
+#include "asm-generic/cacheflush.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/memory_model.h"
+#include "asm-generic/param.h"
+#include "asm-generic/pgtable-nop4d.h"
+#include "asm-generic/pgtable-nopmd.h"
+#include "asm-generic/pgtable-nopud.h"
+#include "asm-generic/pgtable_uffd.h"
+#include "asm-generic/rwonce.h"
+#include "asm/cache.h"
+#include "asm/current.h"
+#include "asm/page.h"
+#include "asm/page_32.h"
+#include "asm/page_types.h"
+#include "asm/pgtable-2level_types.h"
+#include "asm/pgtable.h"
+#include "asm/pgtable_32_types.h"
+#include "asm/pgtable_types.h"
+#include "asm/string_32.h"
+#include "asm/topology.h"
+#include "generated/autoconf.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/err.h"
+#include "linux/file.h"
+#include "linux/fs.h"
+#include "linux/highmem-internal.h"
+#include "linux/huge_mm.h"
+#include "linux/hugetlb_inline.h"
+#include "linux/jiffies.h"
+#include "linux/kconfig.h"
+#include "linux/list.h"
+#include "linux/lockdep.h"
+#include "linux/log2.h"
+#include "linux/mempolicy.h"
+#include "linux/minmax.h"
+#include "linux/mm_types.h"
+#include "linux/mm_types_task.h"
+#include "linux/mmap_lock.h"
+#include "linux/mmdebug.h"
+#include "linux/page-flags-layout.h"
+#include "linux/page_ref.h"
+#include "linux/panic.h"
+#include "linux/perf_event.h"
+#include "linux/pfn.h"
+#include "linux/pgtable.h"
+#include "linux/printk.h"
+#include "linux/rbtree.h"
+#include "linux/rbtree_types.h"
+#include "linux/sched.h"
+#include "linux/seqlock.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/uprobes.h"
+#include "linux/vm_event_item.h"
+#include "linux/vmstat.h"
+#include "vdso/limits.h"
+
+struct pt_regs;
 
 #if defined(LAST_CPUPID_NOT_IN_PAGE_FLAGS) && !defined(CONFIG_COMPILE_TEST)
 #warning Unfortunate NUMA and NUMA Balancing config, growing page-frame for last_cpupid.

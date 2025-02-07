@@ -5,13 +5,18 @@
  * (C) Copyright IBM Corporation 2005.
  *	Author : Ram Pai (linuxram@us.ibm.com)
  */
-#include <linux/mnt_namespace.h>
 #include <linux/mount.h>
+#include <asm/bug.h>
 #include <linux/fs.h>
-#include <linux/nsproxy.h>
 #include <uapi/linux/mount.h>
-#include "internal.h"
+
 #include "pnode.h"
+#include "linux/err.h"
+#include "linux/list.h"
+#include "linux/seqlock.h"
+#include "linux/stddef.h"
+
+struct path;
 
 /* return the next shared peer mount of @p */
 static inline struct mount *next_peer(struct mount *p)

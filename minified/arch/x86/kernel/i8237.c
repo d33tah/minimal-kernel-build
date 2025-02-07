@@ -12,6 +12,8 @@
 #include <asm/dma.h>
 #include <asm/x86_init.h>
 
+#include "asm-generic/errno-base.h"
+
 /*
  * This module just handles suspend/resume issues with the
  * 8237A DMA controller (used for ISA and LPC).

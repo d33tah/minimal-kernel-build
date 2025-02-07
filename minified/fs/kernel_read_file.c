@@ -5,6 +5,19 @@
 #include <linux/security.h>
 #include <linux/vmalloc.h>
 
+#include "asm-generic/errno-base.h"
+#include "asm-generic/fcntl.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/file.h"
+#include "linux/minmax.h"
+#include "linux/path.h"
+#include "linux/sched.h"
+#include "linux/sched/task.h"
+#include "linux/stat.h"
+#include "linux/types.h"
+#include "vdso/limits.h"
+
 /**
  * kernel_read_file() - read file contents into a kernel buffer
  *

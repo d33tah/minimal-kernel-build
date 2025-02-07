@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/init.h>
-#include <linux/mm.h>
 #include <linux/security.h>
 #include <linux/sysctl.h>
+
+#include "asm-generic/errno-base.h"
+#include "generated/autoconf.h"
+#include "linux/capability.h"
+#include "linux/types.h"
 
 /* amount of vm to protect from userspace access by both DAC and the LSM*/
 unsigned long mmap_min_addr;

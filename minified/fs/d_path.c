@@ -1,12 +1,33 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 #include <linux/syscalls.h>
+#include <asm/barrier.h>
 #include <linux/export.h>
 #include <linux/uaccess.h>
 #include <linux/fs_struct.h>
 #include <linux/fs.h>
-#include <linux/slab.h>
-
 #include "mount.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/rwonce.h"
+#include "asm/current.h"
+#include "asm/processor.h"
+#include "asm/ptrace.h"
+#include "asm/string_32.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/kernel.h"
+#include "linux/limits.h"
+#include "linux/mount.h"
+#include "linux/path.h"
+#include "linux/rcupdate.h"
+#include "linux/sched.h"
+#include "linux/seqlock.h"
+#include "linux/stdarg.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 struct prepend_buffer {
 	char *buf;

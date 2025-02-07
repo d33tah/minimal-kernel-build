@@ -20,38 +20,18 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/kernel.h>
-#include <linux/mm.h>
+#include <asm/bug.h>
 #include <linux/tty.h>
-#include <linux/tty_driver.h>
 #include <linux/console.h>
 #include <linux/init.h>
-#include <linux/jiffies.h>
-#include <linux/nmi.h>
-#include <linux/module.h>
 #include <linux/moduleparam.h>
-#include <linux/delay.h>
 #include <linux/smp.h>
-#include <linux/security.h>
-#include <linux/memblock.h>
-#include <linux/syscalls.h>
-#include <linux/crash_core.h>
-#include <linux/ratelimit.h>
-#include <linux/kmsg_dump.h>
 
 #include <linux/cpu.h>
-#include <linux/rculist.h>
-#include <linux/poll.h>
-#include <linux/irq_work.h>
 #include <linux/ctype.h>
-#include <linux/uio.h>
-#include <linux/sched/clock.h>
 #include <linux/sched/debug.h>
-#include <linux/sched/task_stack.h>
-
-#include <linux/uaccess.h>
-#include <asm/sections.h>
-
 #include <trace/events/initcall.h>
+
 #define CREATE_TRACE_POINTS
 
 
@@ -59,6 +39,35 @@
 #include "console_cmdline.h"
 #include "braille.h"
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/sections.h"
+#include "asm/cache.h"
+#include "asm/string_32.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/build_bug.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/cpuhotplug.h"
+#include "linux/cpumask.h"
+#include "linux/export.h"
+#include "linux/instruction_pointer.h"
+#include "linux/irqflags.h"
+#include "linux/kern_levels.h"
+#include "linux/kstrtox.h"
+#include "linux/lockdep.h"
+#include "linux/mutex.h"
+#include "linux/panic.h"
+#include "linux/printk.h"
+#include "linux/sched.h"
+#include "linux/semaphore.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/string.h"
+#include "linux/types.h"
+#include "vdso/bits.h"
+
+struct dev_printk_info;
 
 int console_printk[4] = {
 	CONSOLE_LOGLEVEL_DEFAULT,	/* console_loglevel */

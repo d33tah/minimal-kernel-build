@@ -30,8 +30,13 @@
  */
 
 #include <linux/time.h>
-#include <linux/module.h>
 #include <linux/kernel.h>
+
+#include "asm-generic/int-ll64.h"
+#include "linux/export.h"
+#include "linux/math64.h"
+#include "linux/time64.h"
+#include "linux/types.h"
 
 #define SECS_PER_HOUR	(60 * 60)
 #define SECS_PER_DAY	(SECS_PER_HOUR * 24)

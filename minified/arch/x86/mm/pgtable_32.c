@@ -1,22 +1,23 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/sched.h>
 #include <linux/kernel.h>
-#include <linux/errno.h>
-#include <linux/mm.h>
-#include <linux/nmi.h>
-#include <linux/swap.h>
-#include <linux/smp.h>
-#include <linux/highmem.h>
-#include <linux/pagemap.h>
-#include <linux/spinlock.h>
-
-#include <asm/cpu_entry_area.h>
+#include <asm/pgtable.h>
 #include <asm/fixmap.h>
-#include <asm/e820/api.h>
-#include <asm/tlb.h>
 #include <asm/tlbflush.h>
-#include <asm/io.h>
-#include <linux/vmalloc.h>
+
+#include "asm-generic/early_ioremap.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/pgtable-nop4d.h"
+#include "asm-generic/pgtable-nopmd.h"
+#include "asm-generic/pgtable-nopud.h"
+#include "asm/bug.h"
+#include "asm/pgtable-2level_types.h"
+#include "asm/pgtable.h"
+#include "asm/pgtable_32_areas.h"
+#include "asm/pgtable_types.h"
+#include "linux/export.h"
+#include "linux/init.h"
+#include "linux/mm_types.h"
+#include "linux/pgtable.h"
 
 unsigned int __VMALLOC_RESERVE = 128 << 20;
 

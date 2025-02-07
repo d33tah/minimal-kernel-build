@@ -15,10 +15,12 @@
  * the dcache entry is deleted or garbage collected.
  */
 
-#include <linux/ratelimit.h>
-#include <linux/string.h>
-#include <linux/mm.h>
 #include <linux/fs.h>
+#include <asm-generic/percpu.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
+#include <asm/percpu.h>
+#include <linux/build_bug.h>
 #include <linux/fscrypt.h>
 #include <linux/fsnotify.h>
 #include <linux/slab.h>
@@ -29,11 +31,54 @@
 #include <linux/security.h>
 #include <linux/seqlock.h>
 #include <linux/memblock.h>
-#include <linux/bit_spinlock.h>
 #include <linux/rculist_bl.h>
 #include <linux/list_lru.h>
 #include "internal.h"
 #include "mount.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/rwonce.h"
+#include "asm/cache.h"
+#include "asm/current.h"
+#include "asm/percpu.h"
+#include "asm/string_32.h"
+#include "asm/vdso/processor.h"
+#include "linux/align.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/build_bug.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/fsnotify_backend.h"
+#include "linux/gfp.h"
+#include "linux/instruction_pointer.h"
+#include "linux/kern_levels.h"
+#include "linux/kernel.h"
+#include "linux/kstrtox.h"
+#include "linux/limits.h"
+#include "linux/list.h"
+#include "linux/list_bl.h"
+#include "linux/lockdep.h"
+#include "linux/lockref.h"
+#include "linux/minmax.h"
+#include "linux/mutex.h"
+#include "linux/path.h"
+#include "linux/printk.h"
+#include "linux/rcupdate.h"
+#include "linux/rwsem.h"
+#include "linux/sched.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/stringhash.h"
+#include "linux/types.h"
+#include "linux/wait.h"
+#include "linux/wait_bit.h"
+
+struct shrink_control;
 
 /*
  * Usage:
@@ -135,6 +180,7 @@ static DEFINE_PER_CPU(long, nr_dentry_negative);
  */
 
 #include <asm/word-at-a-time.h>
+
 /*
  * NOTE! 'cs' and 'scount' come from a dentry, so it has a
  * aligned allocation for this particular component. We don't

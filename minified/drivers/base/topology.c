@@ -8,11 +8,20 @@
  *
  * All rights reserved.
  */
-#include <linux/mm.h>
 #include <linux/cpu.h>
-#include <linux/module.h>
-#include <linux/hardirq.h>
 #include <linux/topology.h>
+
+#include "asm/processor.h"
+#include "asm/topology.h"
+#include "linux/cpuhotplug.h"
+#include "linux/cpumask.h"
+#include "linux/device.h"
+#include "linux/init.h"
+#include "linux/sysfs.h"
+#include "linux/types.h"
+
+struct file;
+struct kobject;
 
 #define define_id_show_func(name, fmt)					\
 static ssize_t name##_show(struct device *dev,				\

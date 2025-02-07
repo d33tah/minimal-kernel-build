@@ -6,24 +6,34 @@
  */
 
 #include <linux/init.h>
+#include <asm/bug.h>
 #include <linux/fs.h>
 #include <linux/kdev_t.h>
 #include <linux/slab.h>
 #include <linux/string.h>
 
-#include <linux/major.h>
-#include <linux/errno.h>
 #include <linux/module.h>
-#include <linux/seq_file.h>
 
 #include <linux/kobject.h>
 #include <linux/kobj_map.h>
 #include <linux/cdev.h>
 #include <linux/mutex.h>
-#include <linux/backing-dev.h>
-#include <linux/tty.h>
-
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm/string_32.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/device.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/kernel.h"
+#include "linux/kmod.h"
+#include "linux/list.h"
+#include "linux/printk.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/types.h"
 
 static struct kobj_map *cdev_map;
 

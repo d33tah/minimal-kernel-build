@@ -9,15 +9,20 @@
  *
  */
 #include <linux/kernel.h>
+#include <asm/bug.h>
 #include <linux/init.h>
-#include <linux/io.h>
-#include <linux/module.h>
-#include <linux/slab.h>
 #include <linux/mm.h>
-#include <linux/vmalloc.h>
 #include <asm/fixmap.h>
-#include <asm/early_ioremap.h>
+
 #include "internal.h"
+#include "asm-generic/early_ioremap.h"
+#include "asm/page_types.h"
+#include "asm/pgtable_types.h"
+#include "asm/string_32.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/kern_levels.h"
+#include "linux/types.h"
 
 static int early_ioremap_debug __initdata;
 

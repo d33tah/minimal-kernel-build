@@ -6,10 +6,12 @@
  */
 
 #include <linux/mm.h>
+#include <asm/barrier.h>
+#include <asm/bug.h>
+#include <asm/signal.h>
 #include <linux/file.h>
 #include <linux/poll.h>
 #include <linux/slab.h>
-#include <linux/module.h>
 #include <linux/init.h>
 #include <linux/fs.h>
 #include <linux/log2.h>
@@ -18,19 +20,52 @@
 #include <linux/magic.h>
 #include <linux/pipe_fs_i.h>
 #include <linux/uio.h>
-#include <linux/highmem.h>
 #include <linux/pagemap.h>
 #include <linux/audit.h>
 #include <linux/syscalls.h>
-#include <linux/fcntl.h>
 #include <linux/memcontrol.h>
 #include <linux/watch_queue.h>
-#include <linux/sysctl.h>
 
 #include <linux/uaccess.h>
-#include <asm/ioctls.h>
-
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm-generic/fcntl.h"
+#include "asm-generic/ioctls.h"
+#include "asm-generic/rwonce.h"
+#include "asm-generic/siginfo.h"
+#include "asm/cache.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/ptrace.h"
+#include "asm/string_32.h"
+#include "asm/uaccess.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/capability.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/cred.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/errno.h"
+#include "linux/eventpoll.h"
+#include "linux/export.h"
+#include "linux/fcntl.h"
+#include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/mutex.h"
+#include "linux/page_ref.h"
+#include "linux/sched.h"
+#include "linux/sched/signal.h"
+#include "linux/sched/user.h"
+#include "linux/spinlock.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/wait.h"
+#include "linux/watch_queue.h"
+
+struct fs_context;
 
 /*
  * New pipe buffers will be restricted to this size while the user is exceeding

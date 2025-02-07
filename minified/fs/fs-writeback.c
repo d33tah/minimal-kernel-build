@@ -15,21 +15,48 @@
  */
 
 #include <linux/kernel.h>
+#include <asm/barrier.h>
+#include <asm/bitops.h>
+#include <asm/bug.h>
 #include <linux/export.h>
 #include <linux/spinlock.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/fs.h>
-#include <linux/mm.h>
 #include <linux/pagemap.h>
-#include <linux/kthread.h>
 #include <linux/writeback.h>
 #include <linux/blkdev.h>
 #include <linux/backing-dev.h>
 #include <linux/tracepoint.h>
-#include <linux/device.h>
-#include <linux/memcontrol.h>
 #include "internal.h"
+#include "asm-generic/bitops/instrumented-atomic.h"
+#include "asm-generic/param.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/backing-dev-defs.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/init.h"
+#include "linux/jiffies.h"
+#include "linux/list.h"
+#include "linux/math.h"
+#include "linux/minmax.h"
+#include "linux/mmzone.h"
+#include "linux/mutex.h"
+#include "linux/rculist.h"
+#include "linux/rcupdate.h"
+#include "linux/rwsem.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/sysctl.h"
+#include "linux/types.h"
+#include "linux/vmstat.h"
+#include "linux/wait.h"
+#include "linux/wait_bit.h"
+#include "linux/workqueue.h"
+#include "vdso/limits.h"
 
 /*
  * 4MB minimal write chunk size

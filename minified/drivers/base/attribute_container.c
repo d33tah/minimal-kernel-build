@@ -11,14 +11,21 @@
  */
 
 #include <linux/attribute_container.h>
+#include <asm/bug.h>
 #include <linux/device.h>
-#include <linux/kernel.h>
 #include <linux/slab.h>
 #include <linux/list.h>
-#include <linux/module.h>
 #include <linux/mutex.h>
 
-#include "base.h"
+#include "asm-generic/errno-base.h"
+#include "linux/container_of.h"
+#include "linux/dev_printk.h"
+#include "linux/device/class.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/klist.h"
+#include "linux/spinlock.h"
+#include "linux/sysfs.h"
 
 /* This is a private structure used to tie the classdev and the
  * container .. it should never be visible outside this file */

@@ -6,16 +6,43 @@
  */
 
 #include <linux/memcontrol.h>
+#include <asm/bug.h>
 #include <linux/mm_inline.h>
-#include <linux/writeback.h>
-#include <linux/shmem_fs.h>
 #include <linux/pagemap.h>
-#include <linux/atomic.h>
 #include <linux/module.h>
 #include <linux/swap.h>
-#include <linux/dax.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
+
+#include "asm-generic/bitsperlong.h"
+#include "asm/cache.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/bitops.h"
+#include "linux/build_bug.h"
+#include "linux/compiler_types.h"
+#include "linux/container_of.h"
+#include "linux/init.h"
+#include "linux/list.h"
+#include "linux/list_lru.h"
+#include "linux/lockdep.h"
+#include "linux/lockdep_types.h"
+#include "linux/mmdebug.h"
+#include "linux/mmzone.h"
+#include "linux/numa.h"
+#include "linux/page_ref.h"
+#include "linux/printk.h"
+#include "linux/rcupdate.h"
+#include "linux/sched.h"
+#include "linux/shrinker.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/vmstat.h"
+#include "linux/xarray.h"
+
+struct folio;
+struct mem_cgroup;
 
 /*
  *		Double CLOCK lists

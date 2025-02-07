@@ -20,12 +20,34 @@
 #include <linux/export.h>
 #include <linux/fsnotify.h>
 #include <linux/audit.h>
-#include <linux/vmalloc.h>
 #include <linux/posix_acl_xattr.h>
 
 #include <linux/uaccess.h>
 
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/errno.h"
+#include "asm/ptrace.h"
+#include "asm/string_32.h"
+#include "asm/uaccess.h"
+#include "linux/capability.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/fcntl.h"
+#include "linux/gfp.h"
+#include "linux/limits.h"
+#include "linux/list.h"
+#include "linux/path.h"
+#include "linux/spinlock.h"
+#include "linux/stat.h"
+#include "linux/stddef.h"
+#include "linux/string.h"
+#include "linux/types.h"
+#include "linux/xattr.h"
+
+struct user_namespace;
 
 static const char *
 strcmp_prefix(const char *a, const char *a_prefix)

@@ -1,8 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/kernel.h>
-#include <linux/errno.h>
 #include <linux/sched.h>
-#include <linux/user.h>
 #include <linux/regset.h>
 #include <linux/syscalls.h>
 #include <linux/nospec.h>
@@ -11,9 +8,21 @@
 #include <asm/desc.h>
 #include <asm/ldt.h>
 #include <asm/processor.h>
-#include <asm/proto.h>
 
 #include "tls.h"
+#include "asm-generic/errno-base.h"
+#include "asm/current.h"
+#include "asm/desc_defs.h"
+#include "asm/ptrace.h"
+#include "asm/segment.h"
+#include "asm/special_insns.h"
+#include "asm/string_32.h"
+#include "asm/uaccess.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/smp.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 /*
  * sys_alloc_thread_area: get a yet unused TLS descriptor index.

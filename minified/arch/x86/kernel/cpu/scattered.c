@@ -2,13 +2,12 @@
  *	Routines to identify additional cpu features that are scattered in
  *	cpuid space.
  */
-#include <linux/cpu.h>
-
-#include <asm/memtype.h>
-#include <asm/apic.h>
 #include <asm/processor.h>
 
 #include "cpu.h"
+#include "asm-generic/int-ll64.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
 
 struct cpuid_bit {
 	u16 feature;

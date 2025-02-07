@@ -7,8 +7,9 @@
  * (C) Copyright 1995 1996 Linus Torvalds
  */
 
-#include <linux/memblock.h>
 #include <linux/init.h>
+#include <asm/bug.h>
+#include <linux/mm.h>
 #include <linux/io.h>
 #include <linux/ioport.h>
 #include <linux/slab.h>
@@ -19,15 +20,40 @@
 #include <linux/pgtable.h>
 
 #include <asm/set_memory.h>
-#include <asm/e820/api.h>
-#include <asm/efi.h>
 #include <asm/fixmap.h>
 #include <asm/tlbflush.h>
 #include <asm/pgalloc.h>
 #include <asm/memtype.h>
-#include <asm/setup.h>
 
 #include "physaddr.h"
+#include "asm-generic/early_ioremap.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/memory_model.h"
+#include "asm-generic/pgtable-nop4d.h"
+#include "asm-generic/pgtable-nopmd.h"
+#include "asm-generic/pgtable-nopud.h"
+#include "asm/bug.h"
+#include "asm/e820/types.h"
+#include "asm/io.h"
+#include "asm/page.h"
+#include "asm/page_32.h"
+#include "asm/page_types.h"
+#include "asm/pgtable-2level_types.h"
+#include "asm/pgtable.h"
+#include "asm/pgtable_types.h"
+#include "asm/processor.h"
+#include "asm/string_32.h"
+#include "linux/build_bug.h"
+#include "linux/compiler_types.h"
+#include "linux/export.h"
+#include "linux/kconfig.h"
+#include "linux/kern_levels.h"
+#include "linux/linkage.h"
+#include "linux/mm.h"
+#include "linux/mm_types.h"
+#include "linux/printk.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 /*
  * Descriptor controlling ioremap() behavior.

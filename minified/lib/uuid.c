@@ -8,10 +8,16 @@
 
 #include <linux/kernel.h>
 #include <linux/ctype.h>
-#include <linux/errno.h>
 #include <linux/export.h>
 #include <linux/uuid.h>
 #include <linux/random.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "linux/prandom.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/uuid.h"
 
 const guid_t guid_null;
 EXPORT_SYMBOL(guid_null);

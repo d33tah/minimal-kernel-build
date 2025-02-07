@@ -5,15 +5,33 @@
  * DMA operations that map physical memory directly without using an IOMMU.
  */
 #include <linux/memblock.h> /* for max_pfn */
-#include <linux/export.h>
+#include <asm/bug.h>
 #include <linux/mm.h>
 #include <linux/dma-map-ops.h>
 #include <linux/scatterlist.h>
 #include <linux/pfn.h>
 #include <linux/vmalloc.h>
-#include <linux/set_memory.h>
 #include <linux/slab.h>
 #include "direct.h"
+#include "asm-generic/bitops/fls64.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/getorder.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/memory_model.h"
+#include "asm/page_types.h"
+#include "asm/pgtable.h"
+#include "asm/pgtable_types.h"
+#include "asm/set_memory.h"
+#include "asm/string_32.h"
+#include "linux/cache.h"
+#include "linux/dma-direct.h"
+#include "linux/err.h"
+#include "linux/gfp.h"
+#include "linux/kconfig.h"
+#include "linux/limits.h"
+#include "linux/minmax.h"
+#include "linux/mm_types.h"
+#include "linux/printk.h"
 
 /*
  * Most architectures use ZONE_DMA for the first 16 Megabytes, but some use

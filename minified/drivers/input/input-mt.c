@@ -6,8 +6,17 @@
  */
 
 #include <linux/input/mt.h>
+#include <asm/bitops.h>
 #include <linux/export.h>
 #include <linux/slab.h>
+
+#include "asm-generic/errno-base.h"
+#include "linux/gfp.h"
+#include "linux/input-event-codes.h"
+#include "linux/input.h"
+#include "linux/overflow.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 #define TRKID_SGN	((TRKID_MAX + 1) >> 1)
 

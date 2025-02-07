@@ -6,11 +6,20 @@
  */
 #include <linux/clocksource.h>
 #include <linux/jiffies.h>
-#include <linux/module.h>
 #include <linux/init.h>
 
-#include "timekeeping.h"
 #include "tick-internal.h"
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/param.h"
+#include "asm/div64.h"
+#include "linux/cache.h"
+#include "linux/compiler_attributes.h"
+#include "linux/export.h"
+#include "linux/seqlock.h"
+#include "linux/spinlock_types_raw.h"
+#include "vdso/jiffies.h"
+#include "vdso/time64.h"
 
 
 static u64 jiffies_read(struct clocksource *cs)

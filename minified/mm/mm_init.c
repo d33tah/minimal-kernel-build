@@ -6,15 +6,11 @@
  * Author Mel Gorman <mel@csn.ul.ie>
  *
  */
-#include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/kobject.h>
 #include <linux/export.h>
-#include <linux/memory.h>
-#include <linux/notifier.h>
-#include <linux/sched.h>
-#include <linux/mman.h>
-#include "internal.h"
+
+#include "asm-generic/errno-base.h"
 
 
 struct kobject *mm_kobj;

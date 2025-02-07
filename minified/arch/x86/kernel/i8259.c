@@ -1,28 +1,23 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <linux/linkage.h>
-#include <linux/errno.h>
-#include <linux/signal.h>
-#include <linux/sched.h>
-#include <linux/ioport.h>
 #include <linux/interrupt.h>
 #include <linux/irq.h>
-#include <linux/timex.h>
-#include <linux/random.h>
 #include <linux/init.h>
-#include <linux/kernel_stat.h>
 #include <linux/syscore_ops.h>
-#include <linux/bitops.h>
-#include <linux/acpi.h>
-#include <linux/io.h>
-#include <linux/delay.h>
-#include <linux/pgtable.h>
-
-#include <linux/atomic.h>
-#include <asm/timer.h>
 #include <asm/hw_irq.h>
-#include <asm/desc.h>
 #include <asm/apic.h>
 #include <asm/i8259.h>
+
+#include "asm-generic/delay.h"
+#include "asm/irq_vectors.h"
+#include "asm/shared/io.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler_types.h"
+#include "linux/export.h"
+#include "linux/kern_levels.h"
+#include "linux/printk.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types_raw.h"
+#include "linux/stddef.h"
 
 /*
  * This is the 'legacy' 8259A Programmable Interrupt Controller,

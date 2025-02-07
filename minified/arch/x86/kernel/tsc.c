@@ -1,34 +1,66 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/kernel.h>
-#include <linux/sched.h>
 #include <linux/sched/clock.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
+#include <asm/percpu.h>
+#include <linux/ktime.h>
 #include <linux/init.h>
 #include <linux/export.h>
-#include <linux/timer.h>
 #include <linux/acpi_pmtmr.h>
 #include <linux/cpufreq.h>
 #include <linux/delay.h>
 #include <linux/clocksource.h>
-#include <linux/percpu.h>
 #include <linux/timex.h>
-#include <linux/static_key.h>
-#include <linux/static_call.h>
-
 #include <asm/hpet.h>
 #include <asm/timer.h>
-#include <asm/vgtod.h>
-#include <asm/time.h>
 #include <asm/delay.h>
-#include <asm/hypervisor.h>
-#include <asm/nmi.h>
 #include <asm/x86_init.h>
-#include <asm/geode.h>
 #include <asm/apic.h>
 #include <asm/intel-family.h>
 #include <asm/i8259.h>
 #include <asm/uv/uv.h>
+
+#include "asm-generic/delay.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/param.h"
+#include "asm/cache.h"
+#include "asm/clocksource.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/div64.h"
+#include "asm/msr-index.h"
+#include "asm/msr.h"
+#include "asm/percpu.h"
+#include "asm/processor.h"
+#include "asm/shared/io.h"
+#include "asm/string_32.h"
+#include "asm/tsc.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/cpumask.h"
+#include "linux/irqflags.h"
+#include "linux/jiffies.h"
+#include "linux/jump_label.h"
+#include "linux/kstrtox.h"
+#include "linux/list.h"
+#include "linux/math.h"
+#include "linux/math64.h"
+#include "linux/minmax.h"
+#include "linux/nodemask.h"
+#include "linux/preempt.h"
+#include "linux/printk.h"
+#include "linux/seqlock.h"
+#include "linux/smp.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
+#include "linux/workqueue.h"
+#include "vdso/clocksource.h"
+#include "vdso/limits.h"
+#include "vdso/time64.h"
 
 unsigned int __read_mostly cpu_khz;	/* TSC clocks / usec, not used here */
 EXPORT_SYMBOL(cpu_khz);

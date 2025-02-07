@@ -6,10 +6,14 @@
  */
 
 #include <linux/stdarg.h>
+#include <asm/bug.h>
 #include <linux/export.h>
 #include <linux/slab.h>
 #include <linux/types.h>
 #include <linux/string.h>
+
+#include "asm/string_32.h"
+#include "linux/kernel.h"
 
 /* Simplified asprintf. */
 char *kvasprintf(gfp_t gfp, const char *fmt, va_list ap)

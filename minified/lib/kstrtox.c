@@ -13,7 +13,6 @@
  * If -E is returned, result is not touched.
  */
 #include <linux/ctype.h>
-#include <linux/errno.h>
 #include <linux/export.h>
 #include <linux/kstrtox.h>
 #include <linux/math64.h>
@@ -21,6 +20,14 @@
 #include <linux/uaccess.h>
 
 #include "kstrtox.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/minmax.h"
+#include "linux/stddef.h"
+#include "vdso/limits.h"
 
 noinline
 const char *_parse_integer_fixup_radix(const char *s, unsigned int *base)

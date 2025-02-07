@@ -7,9 +7,12 @@
 
 #include <linux/syscore_ops.h>
 #include <linux/mutex.h>
-#include <linux/module.h>
-#include <linux/suspend.h>
-#include <trace/events/power.h>
+
+#include "linux/export.h"
+#include "linux/init.h"
+#include "linux/list.h"
+#include "linux/printk.h"
+#include "linux/types.h"
 
 static LIST_HEAD(syscore_ops_list);
 static DEFINE_MUTEX(syscore_ops_lock);

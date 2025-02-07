@@ -9,12 +9,16 @@
  */
 
 #include <crypto/internal/blake2s.h>
-#include <linux/types.h>
+#include <asm/bug.h>
 #include <linux/string.h>
-#include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/init.h>
-#include <linux/bug.h>
+
+#include "crypto/blake2s.h"
+#include "crypto/internal/blake2s.h"
+#include "linux/export.h"
+#include "linux/kconfig.h"
+#include "linux/stddef.h"
 
 void blake2s_update(struct blake2s_state *state, const u8 *in, size_t inlen)
 {

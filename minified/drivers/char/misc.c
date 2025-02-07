@@ -34,22 +34,28 @@
  * Added devfs support. Richard Gooch <rgooch@atnf.csiro.au>  10-Jan-1998
  */
 
-#include <linux/module.h>
-
 #include <linux/fs.h>
-#include <linux/errno.h>
+#include <asm/bug.h>
+#include <linux/bitmap.h>
 #include <linux/miscdevice.h>
-#include <linux/kernel.h>
 #include <linux/major.h>
 #include <linux/mutex.h>
 #include <linux/proc_fs.h>
-#include <linux/seq_file.h>
-#include <linux/stat.h>
 #include <linux/init.h>
 #include <linux/device.h>
-#include <linux/tty.h>
 #include <linux/kmod.h>
 #include <linux/gfp.h>
+
+#include "asm-generic/bitops/instrumented-atomic.h"
+#include "asm-generic/errno-base.h"
+#include "linux/device/class.h"
+#include "linux/err.h"
+#include "linux/export.h"
+#include "linux/kdev_t.h"
+#include "linux/list.h"
+#include "linux/printk.h"
+#include "linux/string.h"
+#include "linux/types.h"
 
 /*
  * Head entry for the doubly linked miscdevice list

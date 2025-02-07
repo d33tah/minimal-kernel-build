@@ -6,12 +6,12 @@
  * This was based on the git SHA1 implementation.
  */
 
-#include <linux/kernel.h>
 #include <linux/export.h>
 #include <linux/bitops.h>
-#include <linux/string.h>
 #include <crypto/sha1.h>
-#include <asm/unaligned.h>
+
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/unaligned.h"
 
 /*
  * If you have 32 registers or more, the compiler can (and should)

@@ -3,37 +3,63 @@
  * Copyright 2002 Andi Kleen, SuSE Labs.
  * Thanks to Ben LaHaise for precious feedback.
  */
-#include <linux/highmem.h>
-#include <linux/memblock.h>
-#include <linux/sched.h>
 #include <linux/mm.h>
-#include <linux/interrupt.h>
-#include <linux/seq_file.h>
-#include <linux/debugfs.h>
+#include <asm-generic/pgtable-nopmd.h>
+#include <asm-generic/pgtable-nopud.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
 #include <linux/pfn.h>
-#include <linux/percpu.h>
 #include <linux/gfp.h>
-#include <linux/pci.h>
 #include <linux/vmalloc.h>
 
-#include <linux/vmstat.h>
 #include <linux/kernel.h>
 #include <linux/cc_platform.h>
-#include <linux/set_memory.h>
-
-#include <asm/e820/api.h>
 #include <asm/processor.h>
 #include <asm/tlbflush.h>
-#include <asm/sections.h>
 #include <asm/setup.h>
-#include <linux/uaccess.h>
 #include <asm/pgalloc.h>
-#include <asm/proto.h>
 #include <asm/memtype.h>
-#include <asm/hyperv-tlfs.h>
 #include <asm/mshyperv.h>
 
 #include "../mm_internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/memory_model.h"
+#include "asm-generic/mshyperv.h"
+#include "asm-generic/pgtable-nopmd.h"
+#include "asm-generic/sections.h"
+#include "asm-generic/set_memory.h"
+#include "asm/barrier.h"
+#include "asm/cacheflush.h"
+#include "asm/cpufeature.h"
+#include "asm/cpufeatures.h"
+#include "asm/page.h"
+#include "asm/page_types.h"
+#include "asm/pgtable-2level_types.h"
+#include "asm/pgtable.h"
+#include "asm/pgtable_types.h"
+#include "asm/set_memory.h"
+#include "asm/special_insns.h"
+#include "asm/string_32.h"
+#include "asm/x86_init.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/cpumask.h"
+#include "linux/export.h"
+#include "linux/highmem-internal.h"
+#include "linux/init.h"
+#include "linux/irqflags.h"
+#include "linux/kern_levels.h"
+#include "linux/list.h"
+#include "linux/minmax.h"
+#include "linux/mm_types.h"
+#include "linux/pgtable.h"
+#include "linux/printk.h"
+#include "linux/smp.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 /*
  * The current flushing context - we pass it instead of 5 arguments:

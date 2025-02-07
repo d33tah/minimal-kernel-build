@@ -9,26 +9,57 @@
  */
 
 #include <linux/mm.h>
+#include <asm/bug.h>
+#include <asm/page_types.h>
 #include <linux/hugetlb.h>
-#include <linux/shm.h>
 #include <linux/ksm.h>
 #include <linux/mman.h>
-#include <linux/swap.h>
-#include <linux/capability.h>
 #include <linux/fs.h>
-#include <linux/swapops.h>
-#include <linux/highmem.h>
 #include <linux/security.h>
 #include <linux/syscalls.h>
 #include <linux/mmu_notifier.h>
-#include <linux/uaccess.h>
 #include <linux/userfaultfd_k.h>
 
-#include <asm/cacheflush.h>
-#include <asm/tlb.h>
 #include <asm/pgalloc.h>
 
 #include "internal.h"
+#include "asm-generic/cacheflush.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/mman-common.h"
+#include "asm-generic/pgtable-nop4d.h"
+#include "asm-generic/pgtable-nopmd.h"
+#include "asm-generic/pgtable-nopud.h"
+#include "asm/current.h"
+#include "asm/page_types.h"
+#include "asm/pgtable-2level_types.h"
+#include "asm/pgtable.h"
+#include "asm/pgtable_types.h"
+#include "asm/ptrace.h"
+#include "asm/tlbflush.h"
+#include "generated/autoconf.h"
+#include "linux/align.h"
+#include "linux/build_bug.h"
+#include "linux/compiler.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/err.h"
+#include "linux/huge_mm.h"
+#include "linux/hugetlb_inline.h"
+#include "linux/kconfig.h"
+#include "linux/list.h"
+#include "linux/lockdep.h"
+#include "linux/mm_types.h"
+#include "linux/mman.h"
+#include "linux/mmap_lock.h"
+#include "linux/mmdebug.h"
+#include "linux/pgtable.h"
+#include "linux/printk.h"
+#include "linux/rmap.h"
+#include "linux/sched.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 static pud_t *get_old_pud(struct mm_struct *mm, unsigned long addr)
 {

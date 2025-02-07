@@ -19,6 +19,9 @@
 #include <linux/minmax.h>
 #include <linux/swab.h>
 
+#include "asm-generic/bitsperlong.h"
+#include "linux/compiler.h"
+
 #if !defined(find_next_bit) || !defined(find_next_zero_bit) ||			\
 	!defined(find_next_bit_le) || !defined(find_next_zero_bit_le) ||	\
 	!defined(find_next_and_bit)

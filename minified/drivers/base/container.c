@@ -9,6 +9,9 @@
 #include <linux/container.h>
 
 #include "base.h"
+#include "linux/device.h"
+#include "linux/init.h"
+#include "linux/printk.h"
 
 #define CONTAINER_BUS_NAME	"container"
 

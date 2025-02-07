@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/kernel.h>
-#include <linux/pgtable.h>
+#include <asm-generic/percpu.h>
+#include <asm/bug.h>
+#include <asm/cpufeatures.h>
+#include <asm/percpu.h>
+#include <asm/signal.h>
 
-#include <linux/string.h>
 #include <linux/bitops.h>
 #include <linux/smp.h>
 #include <linux/sched.h>
-#include <linux/sched/clock.h>
 #include <linux/semaphore.h>
-#include <linux/thread_info.h>
 #include <linux/init.h>
-#include <linux/uaccess.h>
 #include <linux/workqueue.h>
 #include <linux/delay.h>
 #include <linux/cpuhotplug.h>
@@ -25,13 +25,37 @@
 #include <asm/elf.h>
 #include <asm/cpu_device_id.h>
 #include <asm/cmdline.h>
-#include <asm/traps.h>
 #include <asm/resctrl.h>
-#include <asm/numa.h>
 #include <asm/thermal.h>
 
-
 #include "cpu.h"
+#include "asm-generic/errno-base.h"
+#include "asm-generic/int-ll64.h"
+#include "asm-generic/param.h"
+#include "asm-generic/siginfo.h"
+#include "asm/cache.h"
+#include "asm/cpufeatures.h"
+#include "asm/current.h"
+#include "asm/microcode.h"
+#include "asm/msr-index.h"
+#include "asm/percpu.h"
+#include "asm/processor-flags.h"
+#include "asm/processor.h"
+#include "asm/ptrace.h"
+#include "asm/string_32.h"
+#include "asm/trapnr.h"
+#include "linux/cache.h"
+#include "linux/compiler_attributes.h"
+#include "linux/compiler_types.h"
+#include "linux/export.h"
+#include "linux/mod_devicetable.h"
+#include "linux/panic.h"
+#include "linux/printk.h"
+#include "linux/ratelimit.h"
+#include "linux/ratelimit_types.h"
+#include "linux/sched/signal.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 
 
 enum split_lock_detect_state {

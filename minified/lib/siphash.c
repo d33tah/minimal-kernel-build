@@ -10,7 +10,10 @@
  */
 
 #include <linux/siphash.h>
-#include <asm/unaligned.h>
+
+#include "asm-generic/bitsperlong.h"
+#include "asm-generic/unaligned.h"
+#include "linux/export.h"
 
 #if defined(CONFIG_DCACHE_WORD_ACCESS) && BITS_PER_LONG == 64
 #include <linux/dcache.h>

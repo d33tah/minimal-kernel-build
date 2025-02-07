@@ -16,10 +16,35 @@
 #include <linux/module.h>
 #include <linux/serio.h>
 #include <linux/errno.h>
-#include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/workqueue.h>
 #include <linux/mutex.h>
+
+#include "asm-generic/errno-base.h"
+#include "asm/string_32.h"
+#include "linux/atomic/atomic-instrumented.h"
+#include "linux/compiler.h"
+#include "linux/dev_printk.h"
+#include "linux/device.h"
+#include "linux/device/bus.h"
+#include "linux/device/driver.h"
+#include "linux/export.h"
+#include "linux/gfp.h"
+#include "linux/init.h"
+#include "linux/irqreturn.h"
+#include "linux/kernel.h"
+#include "linux/kobject.h"
+#include "linux/list.h"
+#include "linux/lockdep.h"
+#include "linux/mod_devicetable.h"
+#include "linux/printk.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
+#include "linux/stat.h"
+#include "linux/sysfs.h"
+#include "linux/types.h"
+
+struct module;
 
 MODULE_AUTHOR("Vojtech Pavlik <vojtech@ucw.cz>");
 MODULE_DESCRIPTION("Serio abstraction core");

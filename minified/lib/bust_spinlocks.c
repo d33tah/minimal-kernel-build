@@ -11,9 +11,6 @@
 
 #include <linux/kernel.h>
 #include <linux/printk.h>
-#include <linux/spinlock.h>
-#include <linux/tty.h>
-#include <linux/wait.h>
 #include <linux/vt_kern.h>
 #include <linux/console.h>
 

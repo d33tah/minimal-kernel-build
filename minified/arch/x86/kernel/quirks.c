@@ -3,12 +3,12 @@
  * This file contains work-arounds for x86 and x86_64 platform bugs.
  */
 #include <linux/dmi.h>
-#include <linux/pci.h>
-#include <linux/irq.h>
-
-#include <asm/hpet.h>
 #include <asm/setup.h>
-#include <asm/mce.h>
+
+#include "linux/export.h"
+#include "linux/init.h"
+#include "linux/mod_devicetable.h"
+#include "linux/types.h"
 
 
 

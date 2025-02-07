@@ -20,21 +20,31 @@
  */
 
 #include <linux/device.h>
+#include <asm/bug.h>
 #include <linux/dma-mapping.h>
 
 #include <linux/kernel.h>
 #include <linux/list.h>
 #include <linux/export.h>
 #include <linux/mutex.h>
-#include <linux/poison.h>
-#include <linux/sched.h>
 #include <linux/sched/mm.h>
 #include <linux/slab.h>
-#include <linux/stat.h>
 #include <linux/spinlock.h>
 #include <linux/string.h>
 #include <linux/types.h>
-#include <linux/wait.h>
+
+#include "asm/page_types.h"
+#include "asm/string_32.h"
+#include "linux/align.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/dev_printk.h"
+#include "linux/gfp.h"
+#include "linux/minmax.h"
+#include "linux/mm.h"
+#include "linux/printk.h"
+#include "linux/spinlock_types.h"
+#include "linux/stddef.h"
 
 
 struct dma_pool {		/* the pool */

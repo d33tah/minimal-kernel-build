@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #include <linux/export.h>
+#include <linux/spinlock.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
 #include <linux/fs.h>
@@ -7,6 +8,15 @@
 #include <linux/slab.h>
 #include <linux/fs_struct.h>
 #include "internal.h"
+#include "asm-generic/errno-base.h"
+#include "asm/current.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
+#include "linux/gfp.h"
+#include "linux/sched.h"
+#include "linux/seqlock.h"
+#include "linux/spinlock.h"
+#include "linux/spinlock_types.h"
 
 /*
  * Replace the fs->{rootmnt,root} with {mnt,dentry}. Put the old values.

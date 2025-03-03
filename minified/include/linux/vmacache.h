@@ -20,4 +20,10 @@ static inline void vmacache_invalidate(struct mm_struct *mm)
 	mm->vmacache_seqnum++;
 }
 
+#ifndef CONFIG_MMU
+extern struct vm_area_struct *vmacache_find_exact(struct mm_struct *mm,
+                                                  unsigned long start,
+                                                  unsigned long end);
+#endif
+
 #endif /* __LINUX_VMACACHE_H */

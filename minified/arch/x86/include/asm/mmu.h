@@ -38,6 +38,9 @@ typedef struct {
 	struct mutex lock;
 	void __user *vdso;			/* vdso base address */
 	const struct vdso_image *vdso_image;	/* vdso image in use */
+#ifndef CONFIG_MMU
+    unsigned long           end_brk;
+#endif
 
 	atomic_t perf_rdpmc_allowed;	/* nonzero if rdpmc is allowed */
 } mm_context_t;

@@ -277,6 +277,7 @@ void vm_area_free(struct vm_area_struct *);
 
 
 # define VM_PAT		VM_ARCH_1	/* PAT reserves whole VMA at once (x86) */
+# define VM_MAPPED_COPY VM_ARCH_1   /* Special mapping for CONFIG_NOMMU */
 
 #if defined(CONFIG_ARM64_MTE)
 # define VM_MTE		VM_HIGH_ARCH_0	/* Use Tagged memory for access control */

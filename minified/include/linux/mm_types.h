@@ -373,6 +373,8 @@ struct anon_vma_name {
  * library, the executable area etc).
  */
 struct vm_area_struct {
+            struct vm_region *vm_region;    /* NOMMU mapping region */
+
 	/* The first cache line has the info for VMA tree walking. */
 
 	unsigned long vm_start;		/* Our start address within vm_mm. */
@@ -448,12 +450,21 @@ struct vm_area_struct {
 struct kioctx_table;
 struct mm_struct {
 	struct {
-		struct vm_area_struct *mmap;		/* list of VMAs */
-		struct rb_root mm_rb;
-		u64 vmacache_seqnum;                   /* per-thread vmacache */
+#ifndef CONFIG_MMU
+                        unsigned long (*get_unmapped_area) (struct file *filp,
+                                unsigned long addr, unsigned long len,
+                                unsigned long pgoff, unsigned long flags);
+#else
 		unsigned long (*get_unmapped_area) (struct file *filp,
 				unsigned long addr, unsigned long len,
 				unsigned long pgoff, unsigned long flags);
+
+#endif
+
+
+		struct vm_area_struct *mmap;		/* list of VMAs */
+		struct rb_root mm_rb;
+		u64 vmacache_seqnum;                   /* per-thread vmacache */
 		unsigned long mmap_base;	/* base of mmap area */
 		unsigned long mmap_legacy_base;	/* base of mmap area in bottom-up allocations */
 		unsigned long task_size;	/* size of task vm space */

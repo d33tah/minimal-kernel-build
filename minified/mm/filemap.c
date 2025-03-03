@@ -2831,6 +2831,7 @@ unlock:
 	return start;
 }
 
+#ifdef CONFIG_MMU
 #define MMAP_LOTSAMISS  (100)
 /*
  * lock_folio_maybe_drop_mmap - lock the page, possibly dropping the mmap_lock
@@ -3352,6 +3353,20 @@ int generic_file_readonly_mmap(struct file *file, struct vm_area_struct *vma)
 		return -EINVAL;
 	return generic_file_mmap(file, vma);
 }
+#else
+vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
+{
+    return VM_FAULT_SIGBUS;
+}
+int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
+{
+    return -ENOSYS;
+}
+int generic_file_readonly_mmap(struct file *file, struct vm_area_struct *vma)
+{
+    return -ENOSYS;
+}
+#endif /* CONFIG_MMU */
 
 EXPORT_SYMBOL(filemap_page_mkwrite);
 EXPORT_SYMBOL(generic_file_mmap);

@@ -417,6 +417,7 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 void __vma_unlink_list(struct mm_struct *mm, struct vm_area_struct *vma);
 struct anon_vma *folio_anon_vma(struct folio *folio);
 
+#ifdef CONFIG_MMU
 void unmap_mapping_folio(struct folio *folio);
 extern long populate_vma_page_range(struct vm_area_struct *vma,
 		unsigned long start, unsigned long end, int *locked);
@@ -556,6 +557,20 @@ static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf,
 	}
 	return fpin;
 }
+#else
+static inline void unmap_mapping_folio(struct folio *folio) { }
+static inline void mlock_vma_page(struct page *page,
+            struct vm_area_struct *vma, bool compound) { }
+static inline void munlock_vma_page(struct page *page,
+            struct vm_area_struct *vma, bool compound) { }
+static inline void mlock_new_page(struct page *page) { }
+static inline bool need_mlock_page_drain(int cpu) { return false; }
+static inline void mlock_page_drain_local(void) { }
+static inline void mlock_page_drain_remote(int cpu) { }
+static inline void vunmap_range_noflush(unsigned long start, unsigned long end)
+{
+}
+#endif
 
 /*
  * Return the mem_map entry representing the 'offset' subpage within

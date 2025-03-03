@@ -113,6 +113,7 @@ bool path_noexec(const struct path *path)
 }
 
 
+#ifdef CONFIG_MMU
 /*
  * The nascent bprm->mm is not visible until exec_mmap() but it can
  * use a lot of memory, account these pages in current->mm temporary
@@ -222,6 +223,66 @@ static bool valid_arg_len(struct linux_binprm *bprm, long len)
 {
 	return len <= MAX_ARG_STRLEN;
 }
+
+#else
+
+static inline void acct_arg_size(struct linux_binprm *bprm, unsigned long pages)
+{
+}
+
+static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
+        int write)
+{
+    struct page *page;
+
+    page = bprm->page[pos / PAGE_SIZE];
+    if (!page && write) {
+        page = alloc_page(GFP_HIGHUSER|__GFP_ZERO);
+        if (!page)
+            return NULL;
+        bprm->page[pos / PAGE_SIZE] = page;
+    }
+
+    return page;
+}
+
+static void put_arg_page(struct page *page)
+{
+}
+
+static void free_arg_page(struct linux_binprm *bprm, int i)
+{
+    if (bprm->page[i]) {
+        __free_page(bprm->page[i]);
+        bprm->page[i] = NULL;
+    }
+}
+
+static void free_arg_pages(struct linux_binprm *bprm)
+{
+    int i;
+
+    for (i = 0; i < MAX_ARG_PAGES; i++)
+        free_arg_page(bprm, i);
+}
+
+static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
+        struct page *page)
+{
+}
+
+static int __bprm_mm_init(struct linux_binprm *bprm)
+{
+    bprm->p = PAGE_SIZE * MAX_ARG_PAGES - sizeof(void *);
+    return 0;
+}
+
+static bool valid_arg_len(struct linux_binprm *bprm, long len)
+{
+    return len <= bprm->p;
+}
+
+#endif
 
 
 /*
@@ -399,8 +460,10 @@ static int copy_strings(int argc, struct user_arg_ptr argv,
 		pos = bprm->p;
 		str += len;
 		bprm->p -= len;
+#ifdef CONFIG_MMU
 		if (bprm->p < bprm->argmin)
 			goto out;
+#endif
 
 		while (len > 0) {
 			int offset, bytes_to_copy;
@@ -518,6 +581,7 @@ static int copy_strings_kernel(int argc, const char *const *argv,
 }
 
 
+#ifdef CONFIG_MMU
 /*
  * During bprm_mm_init(), we create a temporary stack at STACK_TOP_MAX.  Once
  * the binfmt code determines where the new stack should reside, we shift it to
@@ -690,6 +754,40 @@ out_unlock:
 }
 EXPORT_SYMBOL(setup_arg_pages);
 
+#else
+
+/*
+ * Transfer the program arguments and environment from the holding pages
+ * onto the stack. The provided stack pointer is adjusted accordingly.
+ */
+int transfer_args_to_stack(struct linux_binprm *bprm,
+               unsigned long *sp_location)
+{
+    unsigned long index, stop, sp;
+    int ret = 0;
+
+    stop = bprm->p >> PAGE_SHIFT;
+    sp = *sp_location;
+
+    for (index = MAX_ARG_PAGES - 1; index >= stop; index--) {
+        unsigned int offset = index == stop ? bprm->p & ~PAGE_MASK : 0;
+        char *src = kmap(bprm->page[index]) + offset;
+        sp -= PAGE_SIZE - offset;
+        if (copy_to_user((void *) sp, src, PAGE_SIZE - offset) != 0)
+            ret = -EFAULT;
+        kunmap(bprm->page[index]);
+        if (ret)
+            goto out;
+    }
+
+    *sp_location = sp;
+
+out:
+    return ret;
+}
+EXPORT_SYMBOL(transfer_args_to_stack);
+
+#endif /* CONFIG_MMU */
 
 static struct file *do_open_execat(int fd, struct filename *name, int flags)
 {

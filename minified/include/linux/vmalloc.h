@@ -126,8 +126,15 @@ extern void vm_unmap_ram(const void *mem, unsigned int count);
 extern void *vm_map_ram(struct page **pages, unsigned int count, int node);
 extern void vm_unmap_aliases(void);
 
+#ifdef CONFIG_MMU
 extern void __init vmalloc_init(void);
 extern unsigned long vmalloc_nr_pages(void);
+#else
+static inline void vmalloc_init(void)
+{
+}
+static inline unsigned long vmalloc_nr_pages(void) { return 0; }
+#endif
 
 extern void *vmalloc(unsigned long size) __alloc_size(1);
 extern void *vzalloc(unsigned long size) __alloc_size(1);

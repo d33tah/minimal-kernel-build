@@ -5,18 +5,33 @@
 - **Baseline LOC**: 633,022 (assuming target ~380,000 based on previous work) - Need to reduce by ~253,000 lines
 - **Boot test**: Not yet tested in this session
 
-## Attempted Approach: Disable CONFIG_PERF_EVENTS
+## Attempted Approaches
 
-### What Was Tried
+### Attempt 1: Disable CONFIG_PERF_EVENTS
+
+#### What Was Tried
 1. Disabled CONFIG_PERF_EVENTS in .config
 2. Modified Makefiles (arch/x86/events/Makefile, kernel/events/Makefile) to make perf events conditional
 3. Rebuilt kernel
 
-### Why It Failed
+#### Why It Failed
 - The kernel's Makefiles had `obj-y` (always compile) for perf events code
 - Simply changing to `obj-$(CONFIG_PERF_EVENTS)` triggered build system issues
 - Build completed compilation but did not generate final bzImage
 - Perf events code was still being compiled despite CONFIG being disabled
+
+### Attempt 2: Disable CONFIG_VT (Virtual Terminal)
+
+#### What Was Tried
+1. Disabled CONFIG_VT and CONFIG_VT_CONSOLE in .config
+2. Ran make olddefconfig to resolve dependencies
+3. Built kernel
+
+#### Why It Failed
+- Linker errors: undefined symbols (conswitchp, vga_con, vty_init, unblank_screen, console_driver, fg_console)
+- These VT symbols are referenced by other kernel code (setup_arch, tty_init, oops_end, panic, bust_spinlocks, tty_lookup_driver)
+- Even with CONFIG_VT disabled, other parts of the kernel still expect these symbols to exist
+- **Result**: Cannot disable CONFIG_VT without breaking the build
 
 ## Challenges Discovered
 

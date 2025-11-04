@@ -100,3 +100,28 @@ To reduce an additional 25,040 lines would require disabling more subsystems in 
 - More VT/TTY features
 - Network stack remnants
 - Additional debug/tracing infrastructure
+
+## Current Status (Nov 4, 2025)
+
+**Build Configuration**:
+- Using LLVM=1 (clang) instead of GCC - THIS IS CRITICAL
+- tinyconfig base with LTO_CLANG_FULL enabled
+- CONFIG_PERF_EVENTS cannot be disabled (selected by arch/x86/Kconfig)
+
+**Measurements**:
+- bzImage: 611,568 bytes (11.6KB over target of 600,000)
+- LOC: 638,277 (258,277 over target of 380,000)
+- Boot: ✓ PASSES ("Hello, World!" and "Still alive" displayed)
+
+**Key Findings**:
+1. Must use `make LLVM=1 tinyconfig && make LLVM=1 -j$(nproc)` to build
+2. Testing with GCC-built kernels resulted in boot failures
+3. The vmtest.tcl script correctly tests the kernel boot
+4. PERF_EVENTS is hardcoded as selected in arch/x86/Kconfig:273
+
+**Challenges**:
+- LOC target requires removing ~40% of source code
+- Simply disabling config options doesn't reduce LOC count (files remain in tree)
+- Would need to actually delete source files and commit the deletions
+- Most remaining code is essential for minimal boot (mm/, kernel/, arch/x86/)
+- bzImage target is very close but needs additional 11.6KB savings

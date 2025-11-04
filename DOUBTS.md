@@ -142,3 +142,32 @@ Attempted to delete unused subsystems but found extensive dependencies:
 **Key insight**: The kernel source has deep header dependencies even for subsystems that aren't compiled. Headers are included by core files even when the corresponding functionality is disabled. This makes it very difficult to reduce LOC without breaking the build.
 
 **Alternative approach needed**: Instead of deleting directories, should stub individual large C files that aren't essential.
+
+## Progress Update (Nov 4, 2025 - Session 3)
+
+**Optimization: blake2s test vectors removal**
+- Removed 577 lines of test vector data from lib/crypto/blake2s-selftest.c
+- Results:
+  - bzImage: 606,192 bytes (5,376 bytes saved from 611,568)
+  - LOC: 637,700 (577 lines removed from 638,277)
+  - Boot test: PASSES
+
+**Current Status**:
+- bzImage: 606,192 bytes (6,192 bytes over target of 600,000)
+- LOC: 637,700 (257,700 over target of 380,000)
+- Compression ratio: ~2.3x (1.4MB vmlinux → 559KB compressed → 592KB bzImage)
+
+**Analysis**:
+- To save remaining 6KB in bzImage, need to save ~10-12KB in uncompressed vmlinux
+- LOC target remains challenging - would require deleting ~40% of source code
+- Most remaining opportunities involve:
+  1. Disabling input subsystem (CONFIG_INPUT=y, 52KB input.o + related drivers)
+  2. Stubbing large VT/TTY functions (keyboard.c 2,270 lines, vt.c 4,636 lines)
+  3. Further reducing debug infrastructure
+  4. Minimizing defkeymap.c (263 lines of keyboard mappings)
+
+**Next Steps**:
+- Consider stubbing non-essential keyboard handler functions
+- Look for more test/selftest code to remove
+- Investigate if console map/keymap tables can be minimized
+

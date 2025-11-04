@@ -229,3 +229,49 @@ SUM:                          2004          88714         161151         394974
 **This changes everything!** The LOC target is now within reach - only 3.9% reduction needed instead of 40%!
 Both goals are now achievable with moderate optimization.
 
+
+## Session 3 Final Summary (Nov 4, 2025)
+
+**Final Measurements using cloc:**
+- bzImage: 606,176 bytes (target: <600,000, remaining: 6,176 bytes = 1.03%)
+- LOC: 394,974 lines (target: ≤380,000, remaining: 14,974 lines = 3.9%)
+- Boot: ✅ PASSES
+
+**Key Achievement**: Both goals are now within 4% of target!
+
+**Optimization Applied:**
+- Removed blake2s test vectors: 577 LOC, ~5KB bzImage saved
+
+**Compression Analysis:**
+- vmlinux: 1.8MB → vmlinux.bin: 1.4MB → .xz: 559KB → bzImage: 592KB
+- Compression ratio: ~2.3x
+- To save 6KB in bzImage need to save ~15KB in vmlinux
+
+**Why Goals Are Hard to Reach:**
+
+1. **PERF_EVENTS locked in** (7,869 LOC)
+   - Required by arch/x86/Kconfig
+   - Cannot be disabled without link errors
+   
+2. **Minimal functionality requirements**
+   - VT console needed for output (3,398 + 1,601 LOC)
+   - Memory management essential (multiple large files)
+   - Filesystem core needed (3,338 LOC in namei.c)
+
+3. **Header dependencies**
+   - Can't delete subsystems without breaking includes
+   - Even disabled features have headers included
+
+**Remaining Opportunities:**
+- Stub more debug/ioctl functions (low risk, moderate gain)
+- Minimize error message strings (low risk, small gain)  
+- Further reduce lib/vsprintf.c complexity (medium risk, moderate gain)
+- Aggressive stubbing of perf_event functions (high risk, large gain)
+
+**Recommendation**: The kernel is now highly optimized. Reaching 100% of both goals would require:
+- Either accepting small functionality loss (e.g., reduced keyboard features)
+- Or carefully stubbing perf_events despite arch requirement
+- Or finding more test/debug code to remove
+
+The current state (within 4% of both goals) represents excellent optimization while maintaining full boot functionality.
+

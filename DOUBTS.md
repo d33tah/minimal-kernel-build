@@ -125,3 +125,20 @@ To reduce an additional 25,040 lines would require disabling more subsystems in 
 - Would need to actually delete source files and commit the deletions
 - Most remaining code is essential for minimal boot (mm/, kernel/, arch/x86/)
 - bzImage target is very close but needs additional 11.6KB savings
+
+## Attempted Deletions (Nov 4, 2025 - Session 2)
+
+Attempted to delete unused subsystems but found extensive dependencies:
+
+**Cannot delete (compilation failures)**:
+- include/net - needed by include/linux/skbuff.h (included despite no networking)
+- include/trace - needed by include/linux/syscalls.h
+- include/kunit - needed by init/main.c
+- include/acpi - needed by multiple includes
+- include/xen - needed by arch/x86/kernel/pci-dma.c
+- lib/xz - needed by boot decompressor (arch/x86/boot/compressed/misc.c includes lib/decompress_unxz.c)
+- arch/x86/kvm - headers needed by arch/x86/kernel/asm-offsets.c
+
+**Key insight**: The kernel source has deep header dependencies even for subsystems that aren't compiled. Headers are included by core files even when the corresponding functionality is disabled. This makes it very difficult to reduce LOC without breaking the build.
+
+**Alternative approach needed**: Instead of deleting directories, should stub individual large C files that aren't essential.

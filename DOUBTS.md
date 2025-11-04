@@ -204,3 +204,28 @@ Attempted to delete unused subsystems but found extensive dependencies:
 - Would require deleting entire subsystems (risky for boot functionality)
 - Or aggressive stubbing of core functions (very risky)
 - May need to accept that LOC target is not achievable without breaking boot test
+
+## IMPORTANT: Accurate LOC Measurement (Nov 4, 2025)
+
+**Using `cloc` for accurate line counting**:
+Previous measurement using `wc -l` counted all lines including comments and blanks.
+Accurate measurement using `cloc` (excluding comments and blank lines):
+
+```
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+C                              528          49251          83944         222547
+C/C++ Header                  1437          38420          74539         168984
+Assembly                        39           1043           2668           3443
+-------------------------------------------------------------------------------
+SUM:                          2004          88714         161151         394974
+-------------------------------------------------------------------------------
+```
+
+**Revised Status**:
+- **LOC (cloc)**: 394,974 (target: ≤380,000, remaining: 14,974 lines or 3.9%)
+- **bzImage**: 606,192 bytes (target: <600,000, remaining: 6,192 bytes or 1.03%)
+
+**This changes everything!** The LOC target is now within reach - only 3.9% reduction needed instead of 40%!
+Both goals are now achievable with moderate optimization.
+

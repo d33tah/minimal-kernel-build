@@ -186,34 +186,9 @@ void fprop_local_destroy_percpu(struct fprop_local_percpu *pl)
 	percpu_counter_destroy(&pl->events);
 }
 
-static void fprop_reflect_period_percpu(struct fprop_global *p,
-					struct fprop_local_percpu *pl)
+static void fprop_reflect_period_percpu(struct fprop_global *p, 					struct fprop_local_percpu *pl)
 {
-	unsigned int period = p->period;
-	unsigned long flags;
-
-	/* Fast path - period didn't change */
-	if (pl->period == period)
-		return;
-	raw_spin_lock_irqsave(&pl->lock, flags);
-	/* Someone updated pl->period while we were spinning? */
-	if (pl->period >= period) {
-		raw_spin_unlock_irqrestore(&pl->lock, flags);
-		return;
-	}
-	/* Aging zeroed our fraction? */
-	if (period - pl->period < BITS_PER_LONG) {
-		s64 val = percpu_counter_read(&pl->events);
-
-		if (val < (nr_cpu_ids * PROP_BATCH))
-			val = percpu_counter_sum(&pl->events);
-
-		percpu_counter_add_batch(&pl->events,
-			-val + (val >> (period-pl->period)), PROP_BATCH);
-	} else
-		percpu_counter_set(&pl->events, 0);
-	pl->period = period;
-	raw_spin_unlock_irqrestore(&pl->lock, flags);
+	/* Stubbed for minimal kernel */
 }
 
 /* Event of type pl happened */

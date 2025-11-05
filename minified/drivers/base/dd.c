@@ -387,32 +387,7 @@ bool device_is_bound(struct device *dev)
 
 static void driver_bound(struct device *dev)
 {
-	if (device_is_bound(dev)) {
-		pr_warn("%s: device %s already bound\n",
-			__func__, kobject_name(&dev->kobj));
-		return;
-	}
-
-	pr_debug("driver: '%s': %s: bound to device '%s'\n", dev->driver->name,
-		 __func__, dev_name(dev));
-
-	klist_add_tail(&dev->p->knode_driver, &dev->driver->p->klist_devices);
-	device_links_driver_bound(dev);
-
-	device_pm_check_callbacks(dev);
-
-	/*
-	 * Make sure the device is no longer in one of the deferred lists and
-	 * kick off retrying all pending devices
-	 */
-	driver_deferred_probe_del(dev);
-	driver_deferred_probe_trigger();
-
-	if (dev->bus)
-		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-					     BUS_NOTIFY_BOUND_DRIVER, dev);
-
-	kobject_uevent(&dev->kobj, KOBJ_BIND);
+	/* Stubbed for minimal kernel */
 }
 
 static ssize_t coredump_store(struct device *dev, struct device_attribute *attr,

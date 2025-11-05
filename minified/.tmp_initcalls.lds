@@ -13,8 +13,8 @@ SECTIONS {
 		*(.initcall2.init..kmod_backing_dev__244_148_bdi_class_init) ;
 		*(.initcall2.init..kmod_mm_init__219_32_mm_sysfs_init) ;
 		*(.initcall2.init..kmod_page_alloc__379_6569_init_per_zone_wmark_min) ;
-		*(.initcall2.init..kmod_tty_io__214_3288_tty_class_init) ;
-		*(.initcall2.init..kmod_vt__233_4061_vtconsole_class_init) ;
+		*(.initcall2.init..kmod_tty_io__209_3247_tty_class_init) ;
+		*(.initcall2.init..kmod_vt__233_4018_vtconsole_class_init) ;
 		*(.initcall2.init..kmod_core__308_575_devlink_class_init) ;
 		*(.initcall2.init..kmod_swnode__159_1167_software_node_init) ;
 	}
@@ -82,7 +82,7 @@ SECTIONS {
 		*(.initcall7.init..kmod_dd__201_366_deferred_probe_initcall) ;
 	}
 	.con_initcall.init : {
-		*(.con_initcall.init..kmod_vt__227_3515_con_init) ;
+		*(.con_initcall.init..kmod_vt__227_3472_con_init) ;
 	}
 	.initcallearly.init : {
 		*(.initcallearly.init..kmod_core__233_2168_init_hw_perf_events) ;

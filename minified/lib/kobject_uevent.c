@@ -53,41 +53,10 @@ static const char *kobject_actions[] = {
 	[KOBJ_UNBIND] =		"unbind",
 };
 
-static int kobject_action_type(const char *buf, size_t count,
-			       enum kobject_action *type,
-			       const char **args)
+static int kobject_action_type(const char *buf, size_t count, 			       enum kobject_action *type, 			       const char **args)
 {
-	enum kobject_action action;
-	size_t count_first;
-	const char *args_start;
-	int ret = -EINVAL;
-
-	if (count && (buf[count-1] == '\n' || buf[count-1] == '\0'))
-		count--;
-
-	if (!count)
-		goto out;
-
-	args_start = strnchr(buf, count, ' ');
-	if (args_start) {
-		count_first = args_start - buf;
-		args_start = args_start + 1;
-	} else
-		count_first = count;
-
-	for (action = 0; action < ARRAY_SIZE(kobject_actions); action++) {
-		if (strncmp(kobject_actions[action], buf, count_first) != 0)
-			continue;
-		if (kobject_actions[action][count_first] != '\0')
-			continue;
-		if (args)
-			*args = args_start;
-		*type = action;
-		ret = 0;
-		break;
-	}
-out:
-	return ret;
+	/* Stubbed for minimal kernel */
+	return 0;
 }
 
 static const char *action_arg_word_end(const char *buf, const char *buf_end,

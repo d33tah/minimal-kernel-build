@@ -5349,32 +5349,7 @@ EXPORT_SYMBOL_GPL(access_process_vm);
  */
 void print_vma_addr(char *prefix, unsigned long ip)
 {
-	struct mm_struct *mm = current->mm;
-	struct vm_area_struct *vma;
-
-	/*
-	 * we might be running from an atomic context so we cannot sleep
-	 */
-	if (!mmap_read_trylock(mm))
-		return;
-
-	vma = find_vma(mm, ip);
-	if (vma && vma->vm_file) {
-		struct file *f = vma->vm_file;
-		char *buf = (char *)__get_free_page(GFP_NOWAIT);
-		if (buf) {
-			char *p;
-
-			p = file_path(f, buf, PAGE_SIZE);
-			if (IS_ERR(p))
-				p = "?";
-			printk("%s%s[%lx+%lx]", prefix, kbasename(p),
-					vma->vm_start,
-					vma->vm_end - vma->vm_start);
-			free_page((unsigned long)buf);
-		}
-	}
-	mmap_read_unlock(mm);
+	/* Stubbed for minimal kernel */
 }
 
 

@@ -656,34 +656,7 @@ early_param("rdrand", rdrand_cmdline);
 
 static void clear_rdrand_cpuid_bit(struct cpuinfo_x86 *c)
 {
-	/*
-	 * Saving of the MSR used to hide the RDRAND support during
-	 * suspend/resume is done by arch/x86/power/cpu.c, which is
-	 * dependent on CONFIG_PM_SLEEP.
-	 */
-	if (!IS_ENABLED(CONFIG_PM_SLEEP))
-		return;
-
-	/*
-	 * The nordrand option can clear X86_FEATURE_RDRAND, so check for
-	 * RDRAND support using the CPUID function directly.
-	 */
-	if (!(cpuid_ecx(1) & BIT(30)) || rdrand_force)
-		return;
-
-	msr_clear_bit(MSR_AMD64_CPUID_FN_1, 62);
-
-	/*
-	 * Verify that the CPUID change has occurred in case the kernel is
-	 * running virtualized and the hypervisor doesn't support the MSR.
-	 */
-	if (cpuid_ecx(1) & BIT(30)) {
-		pr_info_once("BIOS may not properly restore RDRAND after suspend, but hypervisor does not support hiding RDRAND via CPUID.\n");
-		return;
-	}
-
-	clear_cpu_cap(c, X86_FEATURE_RDRAND);
-	pr_info_once("BIOS may not properly restore RDRAND after suspend, hiding RDRAND via CPUID. Use rdrand=force to reenable.\n");
+	/* Stubbed for minimal kernel */
 }
 
 static void init_amd_jg(struct cpuinfo_x86 *c)

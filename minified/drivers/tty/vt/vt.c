@@ -583,37 +583,7 @@ void vc_uniscr_copy_line(const struct vc_data *vc, void *dest, bool viewed,
 /* this is for validation and debugging only */
 static void vc_uniscr_debug_check(struct vc_data *vc)
 {
-	struct uni_screen *uniscr = get_vc_uniscr(vc);
-	unsigned short *p;
-	int x, y, mask;
-
-	if (!VC_UNI_SCREEN_DEBUG || !uniscr)
-		return;
-
-	WARN_CONSOLE_UNLOCKED();
-
-	/*
-	 * Make sure our unicode screen translates into the same glyphs
-	 * as the actual screen. This is brutal indeed.
-	 */
-	p = (unsigned short *)vc->vc_origin;
-	mask = vc->vc_hi_font_mask | 0xff;
-	for (y = 0; y < vc->vc_rows; y++) {
-		char32_t *line = uniscr->lines[y];
-		for (x = 0; x < vc->vc_cols; x++) {
-			u16 glyph = scr_readw(p++) & mask;
-			char32_t uc = line[x];
-			int tc = conv_uni_to_pc(vc, uc);
-			if (tc == -4)
-				tc = conv_uni_to_pc(vc, 0xfffd);
-			if (tc == -4)
-				tc = conv_uni_to_pc(vc, '?');
-			if (tc != glyph)
-				pr_err_ratelimited(
-					"%s: mismatch at %d,%d: glyph=%#x tc=%#x\n",
-					__func__, x, y, glyph, tc);
-		}
-	}
+	return;
 }
 
 
@@ -1427,20 +1397,20 @@ const unsigned char color_table[] = { 0, 4, 2, 6, 1, 5, 3, 7,
 
 /* the default colour table, for VGA+ colour systems */
 unsigned char default_red[] = {
-	0x00, 0xaa, 0x00, 0xaa, 0x00, 0xaa, 0x00, 0xaa,
-	0x55, 0xff, 0x55, 0xff, 0x55, 0xff, 0x55, 0xff
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0
 };
 module_param_array(default_red, byte, NULL, S_IRUGO | S_IWUSR);
 
 unsigned char default_grn[] = {
-	0x00, 0x00, 0xaa, 0x55, 0x00, 0x00, 0xaa, 0xaa,
-	0x55, 0x55, 0xff, 0xff, 0x55, 0x55, 0xff, 0xff
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0
 };
 module_param_array(default_grn, byte, NULL, S_IRUGO | S_IWUSR);
 
 unsigned char default_blu[] = {
-	0x00, 0x00, 0x00, 0x00, 0xaa, 0xaa, 0xaa, 0xaa,
-	0x55, 0x55, 0x55, 0x55, 0xff, 0xff, 0xff, 0xff
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0
 };
 module_param_array(default_blu, byte, NULL, S_IRUGO | S_IWUSR);
 
@@ -3846,18 +3816,7 @@ EXPORT_SYMBOL(con_is_visible);
  */
 int con_debug_enter(struct vc_data *vc)
 {
-	int ret = 0;
-
-	saved_fg_console = fg_console;
-	saved_last_console = last_console;
-	saved_want_console = want_console;
-	saved_vc_mode = vc->vc_mode;
-	saved_console_blanked = console_blanked;
-	vc->vc_mode = KD_TEXT;
-	console_blanked = 0;
-	if (vc->vc_sw->con_debug_enter)
-		ret = vc->vc_sw->con_debug_enter(vc);
-	return ret;
+	return 0;
 }
 EXPORT_SYMBOL_GPL(con_debug_enter);
 
@@ -3873,19 +3832,7 @@ EXPORT_SYMBOL_GPL(con_debug_enter);
  */
 int con_debug_leave(void)
 {
-	struct vc_data *vc;
-	int ret = 0;
-
-	fg_console = saved_fg_console;
-	last_console = saved_last_console;
-	want_console = saved_want_console;
-	console_blanked = saved_console_blanked;
-	vc_cons[fg_console].d->vc_mode = saved_vc_mode;
-
-	vc = vc_cons[fg_console].d;
-	if (vc->vc_sw->con_debug_leave)
-		ret = vc->vc_sw->con_debug_leave(vc);
-	return ret;
+	return 0;
 }
 EXPORT_SYMBOL_GPL(con_debug_leave);
 

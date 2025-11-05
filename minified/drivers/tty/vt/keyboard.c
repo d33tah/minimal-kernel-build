@@ -481,26 +481,17 @@ static void fn_enter(struct vc_data *vc)
 
 static void fn_caps_toggle(struct vc_data *vc)
 {
-	if (rep)
-		return;
-
-	chg_vc_kbd_led(kbd, VC_CAPSLOCK);
+	return;
 }
 
 static void fn_caps_on(struct vc_data *vc)
 {
-	if (rep)
-		return;
-
-	set_vc_kbd_led(kbd, VC_CAPSLOCK);
+	return;
 }
 
 static void fn_show_ptregs(struct vc_data *vc)
 {
-	struct pt_regs *regs = get_irq_regs();
-
-	if (regs)
-		show_regs(regs);
+	/* Stubbed for minimal kernel */
 }
 
 static void fn_hold(struct vc_data *vc)
@@ -543,25 +534,12 @@ static void fn_bare_num(struct vc_data *vc)
 
 static void fn_lastcons(struct vc_data *vc)
 {
-	/* switch to the last used console, ChN */
-	set_console(last_console);
+	return;
 }
 
 static void fn_dec_console(struct vc_data *vc)
 {
-	int i, cur = fg_console;
-
-	/* Currently switching?  Queue this next switch relative to that. */
-	if (want_console != -1)
-		cur = want_console;
-
-	for (i = cur - 1; i != cur; i--) {
-		if (i == -1)
-			i = MAX_NR_CONSOLES - 1;
-		if (vc_cons_allocated(i))
-			break;
-	}
-	set_console(i);
+	return;
 }
 
 static void fn_inc_console(struct vc_data *vc)
@@ -599,12 +577,12 @@ static void fn_scroll_back(struct vc_data *vc)
 
 static void fn_show_mem(struct vc_data *vc)
 {
-	show_mem(0, NULL);
+	/* Stubbed for minimal kernel */
 }
 
 static void fn_show_state(struct vc_data *vc)
 {
-	show_state();
+	/* Stubbed for minimal kernel */
 }
 
 static void fn_boot_it(struct vc_data *vc)
@@ -614,7 +592,7 @@ static void fn_boot_it(struct vc_data *vc)
 
 static void fn_compose(struct vc_data *vc)
 {
-	dead_key_next = true;
+	return;
 }
 
 static void fn_spawn_con(struct vc_data *vc)

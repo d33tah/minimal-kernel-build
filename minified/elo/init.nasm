@@ -43,13 +43,6 @@ _start:
     mov edx, hello_len
     int 0x80
 
-    ; read one byte somewhere from stdin so we can test terminal:
-    mov eax, 3
-    xor ebx, ebx
-    mov ecx, hello
-    mov edx, 1
-    int 0x80
-
     mov eax, 4
     mov ebx, 1
     mov ecx, still_alive_msg

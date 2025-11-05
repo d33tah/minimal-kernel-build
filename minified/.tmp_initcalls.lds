@@ -38,7 +38,7 @@ SECTIONS {
 		*(.initcall4.init..kmod_mmap__278_3461_init_admin_reserve) ;
 		*(.initcall4.init..kmod_mmap__280_3531_init_reserve_notifier) ;
 		*(.initcall4.init..kmod_misc__199_260_misc_init) ;
-		*(.initcall4.init..kmod_serio__162_1006_serio_init) ;
+		*(.initcall4.init..kmod_serio__162_988_serio_init) ;
 		*(.initcall4.init..kmod_input_core__250_2331_input_init) ;
 	}
 	.initcall5.init : {

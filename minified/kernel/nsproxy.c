@@ -243,26 +243,7 @@ void exit_task_namespaces(struct task_struct *p)
 
 static int check_setns_flags(unsigned long flags)
 {
-	if (!flags || (flags & ~(CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |
-				 CLONE_NEWNET | CLONE_NEWTIME | CLONE_NEWUSER |
-				 CLONE_NEWPID | CLONE_NEWCGROUP)))
-		return -EINVAL;
-
-	if (flags & CLONE_NEWUSER)
-		return -EINVAL;
-	if (flags & CLONE_NEWPID)
-		return -EINVAL;
-	if (flags & CLONE_NEWUTS)
-		return -EINVAL;
-	if (flags & CLONE_NEWIPC)
-		return -EINVAL;
-	if (flags & CLONE_NEWCGROUP)
-		return -EINVAL;
-	if (flags & CLONE_NEWNET)
-		return -EINVAL;
-	if (flags & CLONE_NEWTIME)
-		return -EINVAL;
-
+	/* Stubbed for minimal kernel */
 	return 0;
 }
 

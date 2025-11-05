@@ -404,14 +404,7 @@ static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
 
 static int check_fcntl_cmd(unsigned cmd)
 {
-	switch (cmd) {
-	case F_DUPFD:
-	case F_DUPFD_CLOEXEC:
-	case F_GETFD:
-	case F_SETFD:
-	case F_GETFL:
-		return 1;
-	}
+	/* Stubbed for minimal kernel */
 	return 0;
 }
 

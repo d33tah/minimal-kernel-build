@@ -11,6 +11,8 @@
 #include <linux/compat.h>
 #include "internal.h"
 
+/* Minimal stub for statfs - syscalls not used in minimal kernel */
+
 static int flags_by_mnt(int mnt_flags)
 {
 	int flags = 0;
@@ -94,172 +96,29 @@ int vfs_statfs(const struct path *path, struct kstatfs *buf)
 }
 EXPORT_SYMBOL(vfs_statfs);
 
-int user_statfs(const char __user *pathname, struct kstatfs *st)
-{
-	struct path path;
-	int error;
-	unsigned int lookup_flags = LOOKUP_FOLLOW|LOOKUP_AUTOMOUNT;
-retry:
-	error = user_path_at(AT_FDCWD, pathname, lookup_flags, &path);
-	if (!error) {
-		error = vfs_statfs(&path, st);
-		path_put(&path);
-		if (retry_estale(error, lookup_flags)) {
-			lookup_flags |= LOOKUP_REVAL;
-			goto retry;
-		}
-	}
-	return error;
-}
-
-int fd_statfs(int fd, struct kstatfs *st)
-{
-	struct fd f = fdget_raw(fd);
-	int error = -EBADF;
-	if (f.file) {
-		error = vfs_statfs(&f.file->f_path, st);
-		fdput(f);
-	}
-	return error;
-}
-
-static int do_statfs_native(struct kstatfs *st, struct statfs __user *p)
-{
-	struct statfs buf;
-
-	if (sizeof(buf) == sizeof(*st))
-		memcpy(&buf, st, sizeof(*st));
-	else {
-		if (sizeof buf.f_blocks == 4) {
-			if ((st->f_blocks | st->f_bfree | st->f_bavail |
-			     st->f_bsize | st->f_frsize) &
-			    0xffffffff00000000ULL)
-				return -EOVERFLOW;
-			/*
-			 * f_files and f_ffree may be -1; it's okay to stuff
-			 * that into 32 bits
-			 */
-			if (st->f_files != -1 &&
-			    (st->f_files & 0xffffffff00000000ULL))
-				return -EOVERFLOW;
-			if (st->f_ffree != -1 &&
-			    (st->f_ffree & 0xffffffff00000000ULL))
-				return -EOVERFLOW;
-		}
-
-		buf.f_type = st->f_type;
-		buf.f_bsize = st->f_bsize;
-		buf.f_blocks = st->f_blocks;
-		buf.f_bfree = st->f_bfree;
-		buf.f_bavail = st->f_bavail;
-		buf.f_files = st->f_files;
-		buf.f_ffree = st->f_ffree;
-		buf.f_fsid = st->f_fsid;
-		buf.f_namelen = st->f_namelen;
-		buf.f_frsize = st->f_frsize;
-		buf.f_flags = st->f_flags;
-		memset(buf.f_spare, 0, sizeof(buf.f_spare));
-	}
-	if (copy_to_user(p, &buf, sizeof(buf)))
-		return -EFAULT;
-	return 0;
-}
-
-static int do_statfs64(struct kstatfs *st, struct statfs64 __user *p)
-{
-	struct statfs64 buf;
-	if (sizeof(buf) == sizeof(*st))
-		memcpy(&buf, st, sizeof(*st));
-	else {
-		buf.f_type = st->f_type;
-		buf.f_bsize = st->f_bsize;
-		buf.f_blocks = st->f_blocks;
-		buf.f_bfree = st->f_bfree;
-		buf.f_bavail = st->f_bavail;
-		buf.f_files = st->f_files;
-		buf.f_ffree = st->f_ffree;
-		buf.f_fsid = st->f_fsid;
-		buf.f_namelen = st->f_namelen;
-		buf.f_frsize = st->f_frsize;
-		buf.f_flags = st->f_flags;
-		memset(buf.f_spare, 0, sizeof(buf.f_spare));
-	}
-	if (copy_to_user(p, &buf, sizeof(buf)))
-		return -EFAULT;
-	return 0;
-}
+/* Syscalls stubbed - not used by minimal init */
 
 SYSCALL_DEFINE2(statfs, const char __user *, pathname, struct statfs __user *, buf)
 {
-	struct kstatfs st;
-	int error = user_statfs(pathname, &st);
-	if (!error)
-		error = do_statfs_native(&st, buf);
-	return error;
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE3(statfs64, const char __user *, pathname, size_t, sz, struct statfs64 __user *, buf)
 {
-	struct kstatfs st;
-	int error;
-	if (sz != sizeof(*buf))
-		return -EINVAL;
-	error = user_statfs(pathname, &st);
-	if (!error)
-		error = do_statfs64(&st, buf);
-	return error;
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE2(fstatfs, unsigned int, fd, struct statfs __user *, buf)
 {
-	struct kstatfs st;
-	int error = fd_statfs(fd, &st);
-	if (!error)
-		error = do_statfs_native(&st, buf);
-	return error;
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE3(fstatfs64, unsigned int, fd, size_t, sz, struct statfs64 __user *, buf)
 {
-	struct kstatfs st;
-	int error;
-
-	if (sz != sizeof(*buf))
-		return -EINVAL;
-
-	error = fd_statfs(fd, &st);
-	if (!error)
-		error = do_statfs64(&st, buf);
-	return error;
-}
-
-static int vfs_ustat(dev_t dev, struct kstatfs *sbuf)
-{
-	struct super_block *s = user_get_super(dev, false);
-	int err;
-	if (!s)
-		return -EINVAL;
-
-	err = statfs_by_dentry(s->s_root, sbuf);
-	drop_super(s);
-	return err;
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE2(ustat, unsigned, dev, struct ustat __user *, ubuf)
 {
-	struct ustat tmp;
-	struct kstatfs sbuf;
-	int err = vfs_ustat(new_decode_dev(dev), &sbuf);
-	if (err)
-		return err;
-
-	memset(&tmp,0,sizeof(struct ustat));
-	tmp.f_tfree = sbuf.f_bfree;
-	if (IS_ENABLED(CONFIG_ARCH_32BIT_USTAT_F_TINODE))
-		tmp.f_tinode = min_t(u64, sbuf.f_ffree, UINT_MAX);
-	else
-		tmp.f_tinode = sbuf.f_ffree;
-
-	return copy_to_user(ubuf, &tmp, sizeof(struct ustat)) ? -EFAULT : 0;
+	return -ENOSYS;
 }
-

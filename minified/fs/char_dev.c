@@ -46,3 +46,8 @@ void __unregister_chrdev(unsigned int major, unsigned int baseminor,
 EXPORT_SYMBOL(__unregister_chrdev);
 
 void __init chrdev_init(void) { }
+
+void cdev_put(struct cdev *p) { }
+void cd_forget(struct inode *inode) { }
+
+const struct file_operations def_chr_fops = { };

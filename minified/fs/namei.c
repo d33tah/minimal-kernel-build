@@ -1152,26 +1152,7 @@ int may_linkat(struct user_namespace *mnt_userns, struct path *link)
 static int may_create_in_sticky(struct user_namespace *mnt_userns,
 				struct nameidata *nd, struct inode *const inode)
 {
-	umode_t dir_mode = nd->dir_mode;
-	kuid_t dir_uid = nd->dir_uid;
-
-	if ((!sysctl_protected_fifos && S_ISFIFO(inode->i_mode)) ||
-	    (!sysctl_protected_regular && S_ISREG(inode->i_mode)) ||
-	    likely(!(dir_mode & S_ISVTX)) ||
-	    uid_eq(i_uid_into_mnt(mnt_userns, inode), dir_uid) ||
-	    uid_eq(current_fsuid(), i_uid_into_mnt(mnt_userns, inode)))
-		return 0;
-
-	if (likely(dir_mode & 0002) ||
-	    (dir_mode & 0020 &&
-	     ((sysctl_protected_fifos >= 2 && S_ISFIFO(inode->i_mode)) ||
-	      (sysctl_protected_regular >= 2 && S_ISREG(inode->i_mode))))) {
-		const char *operation = S_ISFIFO(inode->i_mode) ?
-					"sticky_create_fifo" :
-					"sticky_create_regular";
-		audit_log_path_denied(AUDIT_ANOM_CREAT, operation);
-		return -EACCES;
-	}
+	/* Stubbed for minimal kernel */
 	return 0;
 }
 
@@ -1187,24 +1168,7 @@ static int may_create_in_sticky(struct user_namespace *mnt_userns,
  */
 int follow_up(struct path *path)
 {
-	struct mount *mnt = real_mount(path->mnt);
-	struct mount *parent;
-	struct dentry *mountpoint;
-
-	read_seqlock_excl(&mount_lock);
-	parent = mnt->mnt_parent;
-	if (parent == mnt) {
-		read_sequnlock_excl(&mount_lock);
-		return 0;
-	}
-	mntget(&parent->mnt);
-	mountpoint = dget(mnt->mnt_mountpoint);
-	read_sequnlock_excl(&mount_lock);
-	dput(path->dentry);
-	path->dentry = mountpoint;
-	mntput(path->mnt);
-	path->mnt = &parent->mnt;
-	return 1;
+	return 0;
 }
 EXPORT_SYMBOL(follow_up);
 

@@ -180,35 +180,7 @@ static inline int bad_action_ret(irqreturn_t action_ret)
  */
 static void __report_bad_irq(struct irq_desc *desc, irqreturn_t action_ret)
 {
-	unsigned int irq = irq_desc_get_irq(desc);
-	struct irqaction *action;
-	unsigned long flags;
-
-	if (bad_action_ret(action_ret)) {
-		printk(KERN_ERR "irq event %d: bogus return value %x\n",
-				irq, action_ret);
-	} else {
-		printk(KERN_ERR "irq %d: nobody cared (try booting with "
-				"the \"irqpoll\" option)\n", irq);
-	}
-	dump_stack();
-	printk(KERN_ERR "handlers:\n");
-
-	/*
-	 * We need to take desc->lock here. note_interrupt() is called
-	 * w/o desc->lock held, but IRQ_PROGRESS set. We might race
-	 * with something else removing an action. It's ok to take
-	 * desc->lock here. See synchronize_irq().
-	 */
-	raw_spin_lock_irqsave(&desc->lock, flags);
-	for_each_action_of_desc(desc, action) {
-		printk(KERN_ERR "[<%p>] %ps", action->handler, action->handler);
-		if (action->thread_fn)
-			printk(KERN_CONT " threaded [<%p>] %ps",
-					action->thread_fn, action->thread_fn);
-		printk(KERN_CONT "\n");
-	}
-	raw_spin_unlock_irqrestore(&desc->lock, flags);
+	/* Stubbed for minimal kernel */
 }
 
 static void report_bad_irq(struct irq_desc *desc, irqreturn_t action_ret)

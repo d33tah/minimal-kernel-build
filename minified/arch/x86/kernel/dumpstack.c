@@ -112,33 +112,15 @@ static int copy_code(struct pt_regs *regs, u8 *buf, unsigned long src,
  */
 void show_opcodes(struct pt_regs *regs, const char *loglvl)
 {
-#define PROLOGUE_SIZE 42
-#define EPILOGUE_SIZE 21
-#define OPCODE_BUFSIZE (PROLOGUE_SIZE + 1 + EPILOGUE_SIZE)
-	u8 opcodes[OPCODE_BUFSIZE];
-	unsigned long prologue = regs->ip - PROLOGUE_SIZE;
-
-	switch (copy_code(regs, opcodes, prologue, sizeof(opcodes))) {
-	case 0:
-		printk("%sCode: %" __stringify(PROLOGUE_SIZE) "ph <%02x> %"
-		       __stringify(EPILOGUE_SIZE) "ph\n", loglvl, opcodes,
-		       opcodes[PROLOGUE_SIZE], opcodes + PROLOGUE_SIZE + 1);
-		break;
-	case -EPERM:
-		/* No access to the user space stack of other tasks. Ignore. */
-		break;
-	default:
-		printk("%sCode: Unable to access opcode bytes at RIP 0x%lx.\n",
-		       loglvl, prologue);
-		break;
-	}
+	/* Stubbed for minimal kernel */
 }
+
 
 void show_ip(struct pt_regs *regs, const char *loglvl)
 {
-	printk("%sEIP: %pS\n", loglvl, (void *)regs->ip);
-	show_opcodes(regs, loglvl);
+	/* Stubbed for minimal kernel */
 }
+
 
 void show_iret_regs(struct pt_regs *regs, const char *log_lvl)
 {

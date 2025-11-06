@@ -900,25 +900,7 @@ static int serio_bus_match(struct device *dev, struct device_driver *drv)
 
 static int serio_uevent(struct device *dev, struct kobj_uevent_env *env)
 {
-	struct serio *serio;
-
-	if (!dev)
-		return -ENODEV;
-
-	serio = to_serio_port(dev);
-
-	SERIO_ADD_UEVENT_VAR("SERIO_TYPE=%02x", serio->id.type);
-	SERIO_ADD_UEVENT_VAR("SERIO_PROTO=%02x", serio->id.proto);
-	SERIO_ADD_UEVENT_VAR("SERIO_ID=%02x", serio->id.id);
-	SERIO_ADD_UEVENT_VAR("SERIO_EXTRA=%02x", serio->id.extra);
-
-	SERIO_ADD_UEVENT_VAR("MODALIAS=serio:ty%02Xpr%02Xid%02Xex%02X",
-				serio->id.type, serio->id.proto, serio->id.id, serio->id.extra);
-
-	if (serio->firmware_id[0])
-		SERIO_ADD_UEVENT_VAR("SERIO_FIRMWARE_ID=%s",
-				     serio->firmware_id);
-
+	/* Stubbed for minimal kernel */
 	return 0;
 }
 #undef SERIO_ADD_UEVENT_VAR

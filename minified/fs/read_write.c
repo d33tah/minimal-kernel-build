@@ -359,25 +359,8 @@ out_putf:
 
 int rw_verify_area(int read_write, struct file *file, const loff_t *ppos, size_t count)
 {
-	if (unlikely((ssize_t) count < 0))
-		return -EINVAL;
-
-	if (ppos) {
-		loff_t pos = *ppos;
-
-		if (unlikely(pos < 0)) {
-			if (!unsigned_offsets(file))
-				return -EINVAL;
-			if (count >= -pos) /* both values are in 0..LLONG_MAX */
-				return -EOVERFLOW;
-		} else if (unlikely((loff_t) (pos + count) < 0)) {
-			if (!unsigned_offsets(file))
-				return -EINVAL;
-		}
-	}
-
-	return security_file_permission(file,
-				read_write == READ ? MAY_READ : MAY_WRITE);
+	/* Stubbed for minimal kernel */
+	return 0;
 }
 EXPORT_SYMBOL(rw_verify_area);
 

@@ -56,41 +56,7 @@ void kobject_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
 
 static int create_dir(struct kobject *kobj)
 {
-	const struct kobj_type *ktype = get_ktype(kobj);
-	const struct kobj_ns_type_operations *ops;
-	int error;
-
-	error = sysfs_create_dir_ns(kobj, kobject_namespace(kobj));
-	if (error)
-		return error;
-
-	if (ktype) {
-		error = sysfs_create_groups(kobj, ktype->default_groups);
-		if (error) {
-			sysfs_remove_dir(kobj);
-			return error;
-		}
-	}
-
-	/*
-	 * @kobj->sd may be deleted by an ancestor going away.  Hold an
-	 * extra reference so that it stays until @kobj is gone.
-	 */
-	sysfs_get(kobj->sd);
-
-	/*
-	 * If @kobj has ns_ops, its children need to be filtered based on
-	 * their namespace tags.  Enable namespace support on @kobj->sd.
-	 */
-	ops = kobj_child_ns_ops(kobj);
-	if (ops) {
-		BUG_ON(ops->type <= KOBJ_NS_TYPE_NONE);
-		BUG_ON(ops->type >= KOBJ_NS_TYPES);
-		BUG_ON(!kobj_ns_type_registered(ops->type));
-
-		sysfs_enable_ns(kobj->sd);
-	}
-
+	/* Stubbed for minimal kernel */
 	return 0;
 }
 

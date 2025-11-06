@@ -690,44 +690,6 @@ static void *xas_create(struct xa_state *xas, bool allow_root)
  */
 void xas_create_range(struct xa_state *xas)
 {
-	unsigned long index = xas->xa_index;
-	unsigned char shift = xas->xa_shift;
-	unsigned char sibs = xas->xa_sibs;
-
-	xas->xa_index |= ((sibs + 1UL) << shift) - 1;
-	if (xas_is_node(xas) && xas->xa_node->shift == xas->xa_shift)
-		xas->xa_offset |= sibs;
-	xas->xa_shift = 0;
-	xas->xa_sibs = 0;
-
-	for (;;) {
-		xas_create(xas, true);
-		if (xas_error(xas))
-			goto restore;
-		if (xas->xa_index <= (index | XA_CHUNK_MASK))
-			goto success;
-		xas->xa_index -= XA_CHUNK_SIZE;
-
-		for (;;) {
-			struct xa_node *node = xas->xa_node;
-			if (node->shift >= shift)
-				break;
-			xas->xa_node = xa_parent_locked(xas->xa, node);
-			xas->xa_offset = node->offset - 1;
-			if (node->offset != 0)
-				break;
-		}
-	}
-
-restore:
-	xas->xa_shift = shift;
-	xas->xa_sibs = sibs;
-	xas->xa_index = index;
-	return;
-success:
-	xas->xa_index = index;
-	if (xas->xa_node)
-		xas_set_offset(xas);
 }
 EXPORT_SYMBOL_GPL(xas_create_range);
 
@@ -957,24 +919,6 @@ EXPORT_SYMBOL_GPL(xas_init_marks);
  */
 void xas_pause(struct xa_state *xas)
 {
-	struct xa_node *node = xas->xa_node;
-
-	if (xas_invalid(xas))
-		return;
-
-	xas->xa_node = XAS_RESTART;
-	if (node) {
-		unsigned long offset = xas->xa_offset;
-		while (++offset < XA_CHUNK_SIZE) {
-			if (!xa_is_sibling(xa_entry(xas->xa, node, offset)))
-				break;
-		}
-		xas->xa_index += (offset - xas->xa_offset) << node->shift;
-		if (xas->xa_index == 0)
-			xas->xa_node = XAS_BOUNDS;
-	} else {
-		xas->xa_index++;
-	}
 }
 EXPORT_SYMBOL_GPL(xas_pause);
 
@@ -1231,52 +1175,6 @@ EXPORT_SYMBOL_GPL(xas_find_marked);
  */
 void *xas_find_conflict(struct xa_state *xas)
 {
-	void *curr;
-
-	if (xas_error(xas))
-		return NULL;
-
-	if (!xas->xa_node)
-		return NULL;
-
-	if (xas_top(xas->xa_node)) {
-		curr = xas_start(xas);
-		if (!curr)
-			return NULL;
-		while (xa_is_node(curr)) {
-			struct xa_node *node = xa_to_node(curr);
-			curr = xas_descend(xas, node);
-		}
-		if (curr)
-			return curr;
-	}
-
-	if (xas->xa_node->shift > xas->xa_shift)
-		return NULL;
-
-	for (;;) {
-		if (xas->xa_node->shift == xas->xa_shift) {
-			if ((xas->xa_offset & xas->xa_sibs) == xas->xa_sibs)
-				break;
-		} else if (xas->xa_offset == XA_CHUNK_MASK) {
-			xas->xa_offset = xas->xa_node->offset;
-			xas->xa_node = xa_parent_locked(xas->xa, xas->xa_node);
-			if (!xas->xa_node)
-				break;
-			continue;
-		}
-		curr = xa_entry_locked(xas->xa, xas->xa_node, ++xas->xa_offset);
-		if (xa_is_sibling(curr))
-			continue;
-		while (xa_is_node(curr)) {
-			xas->xa_node = xa_to_node(curr);
-			xas->xa_offset = 0;
-			curr = xa_entry_locked(xas->xa, xas->xa_node, 0);
-		}
-		if (curr)
-			return curr;
-	}
-	xas->xa_offset -= xas->xa_sibs;
 	return NULL;
 }
 EXPORT_SYMBOL_GPL(xas_find_conflict);
@@ -1870,14 +1768,7 @@ static unsigned int xas_extract_marked(struct xa_state *xas, void **dst,
 unsigned int xa_extract(struct xarray *xa, void **dst, unsigned long start,
 			unsigned long max, unsigned int n, xa_mark_t filter)
 {
-	XA_STATE(xas, xa, start);
-
-	if (!n)
-		return 0;
-
-	if ((__force unsigned int)filter < XA_MAX_MARKS)
-		return xas_extract_marked(&xas, dst, max, n, filter);
-	return xas_extract_present(&xas, dst, max, n);
+	return 0;
 }
 EXPORT_SYMBOL(xa_extract);
 
@@ -1937,79 +1828,21 @@ EXPORT_SYMBOL(xa_destroy);
 #ifdef XA_DEBUG
 void xa_dump_node(const struct xa_node *node)
 {
-	unsigned i, j;
-
-	if (!node)
-		return;
-	if ((unsigned long)node & 3) {
-		pr_cont("node %px\n", node);
-		return;
-	}
-
-	pr_cont("node %px %s %d parent %px shift %d count %d values %d "
-		"array %px list %px %px marks",
-		node, node->parent ? "offset" : "max", node->offset,
-		node->parent, node->shift, node->count, node->nr_values,
-		node->array, node->private_list.prev, node->private_list.next);
-	for (i = 0; i < XA_MAX_MARKS; i++)
-		for (j = 0; j < XA_MARK_LONGS; j++)
-			pr_cont(" %lx", node->marks[i][j]);
-	pr_cont("\n");
+	/* Stubbed for minimal kernel */
 }
 
 void xa_dump_index(unsigned long index, unsigned int shift)
 {
-	if (!shift)
-		pr_info("%lu: ", index);
-	else if (shift >= BITS_PER_LONG)
-		pr_info("0-%lu: ", ~0UL);
-	else
-		pr_info("%lu-%lu: ", index, index | ((1UL << shift) - 1));
+	/* Stubbed for minimal kernel */
 }
 
 void xa_dump_entry(const void *entry, unsigned long index, unsigned long shift)
 {
-	if (!entry)
-		return;
-
-	xa_dump_index(index, shift);
-
-	if (xa_is_node(entry)) {
-		if (shift == 0) {
-			pr_cont("%px\n", entry);
-		} else {
-			unsigned long i;
-			struct xa_node *node = xa_to_node(entry);
-			xa_dump_node(node);
-			for (i = 0; i < XA_CHUNK_SIZE; i++)
-				xa_dump_entry(node->slots[i],
-				      index + (i << node->shift), node->shift);
-		}
-	} else if (xa_is_value(entry))
-		pr_cont("value %ld (0x%lx) [%px]\n", xa_to_value(entry),
-						xa_to_value(entry), entry);
-	else if (!xa_is_internal(entry))
-		pr_cont("%px\n", entry);
-	else if (xa_is_retry(entry))
-		pr_cont("retry (%ld)\n", xa_to_internal(entry));
-	else if (xa_is_sibling(entry))
-		pr_cont("sibling (slot %ld)\n", xa_to_sibling(entry));
-	else if (xa_is_zero(entry))
-		pr_cont("zero (%ld)\n", xa_to_internal(entry));
-	else
-		pr_cont("UNKNOWN ENTRY (%px)\n", entry);
+	/* Stubbed for minimal kernel */
 }
 
 void xa_dump(const struct xarray *xa)
 {
-	void *entry = xa->xa_head;
-	unsigned int shift = 0;
-
-	pr_info("xarray: %px head %px flags %x marks %d %d %d\n", xa, entry,
-			xa->xa_flags, xa_marked(xa, XA_MARK_0),
-			xa_marked(xa, XA_MARK_1), xa_marked(xa, XA_MARK_2));
-	if (xa_is_node(entry))
-		shift = xa_to_node(entry)->shift + XA_CHUNK_SHIFT;
-	xa_dump_entry(entry, 0, shift);
+	/* Stubbed for minimal kernel */
 }
 #endif

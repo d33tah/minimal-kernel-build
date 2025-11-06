@@ -31,15 +31,7 @@ static char *cpu_name(int level)
 
 static void show_cap_strs(u32 *err_flags)
 {
-	int i, j;
-	for (i = 0; i < NCAPINTS; i++) {
-		u32 e = err_flags[i];
-		for (j = 0; j < 32; j++) {
-			if (e & 1)
-				printf("%d:%d ", i, j);
-			e >>= 1;
-		}
-	}
+	/* Stubbed for minimal kernel */
 }
 
 int validate_cpu(void)

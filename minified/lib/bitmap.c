@@ -480,10 +480,8 @@ EXPORT_SYMBOL(bitmap_parse_user);
 int bitmap_print_to_pagebuf(bool list, char *buf, const unsigned long *maskp,
 			    int nmaskbits)
 {
-	ptrdiff_t len = PAGE_SIZE - offset_in_page(buf);
-
-	return list ? scnprintf(buf, len, "%*pbl\n", nmaskbits, maskp) :
-		      scnprintf(buf, len, "%*pb\n", nmaskbits, maskp);
+	/* Stubbed for minimal kernel */
+	return 0;
 }
 EXPORT_SYMBOL(bitmap_print_to_pagebuf);
 
@@ -600,9 +598,10 @@ static int bitmap_print_to_buf(bool list, char *buf, const unsigned long *maskp,
  * Returns the number of characters actually printed to @buf
  */
 int bitmap_print_bitmask_to_buf(char *buf, const unsigned long *maskp,
-				int nmaskbits, loff_t off, size_t count)
+				 int nmaskbits, loff_t off, size_t count)
 {
-	return bitmap_print_to_buf(false, buf, maskp, nmaskbits, off, count);
+	/* Stubbed for minimal kernel */
+	return 0;
 }
 EXPORT_SYMBOL(bitmap_print_bitmask_to_buf);
 
@@ -618,9 +617,10 @@ EXPORT_SYMBOL(bitmap_print_bitmask_to_buf);
  * the print format.
  */
 int bitmap_print_list_to_buf(char *buf, const unsigned long *maskp,
-			     int nmaskbits, loff_t off, size_t count)
+			      int nmaskbits, loff_t off, size_t count)
 {
-	return bitmap_print_to_buf(true, buf, maskp, nmaskbits, off, count);
+	/* Stubbed for minimal kernel */
+	return 0;
 }
 EXPORT_SYMBOL(bitmap_print_list_to_buf);
 

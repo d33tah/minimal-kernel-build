@@ -186,22 +186,7 @@ static void vt_event_wait(struct vt_event_wait *vw)
 
 static int vt_event_wait_ioctl(struct vt_event __user *event)
 {
-	struct vt_event_wait vw;
-
-	if (copy_from_user(&vw.event, event, sizeof(struct vt_event)))
-		return -EFAULT;
-	/* Highest supported event for now */
-	if (vw.event.event & ~VT_MAX_EVENT)
-		return -EINVAL;
-
-	vt_event_wait(&vw);
-	/* If it occurred report it */
-	if (vw.done) {
-		if (copy_to_user(event, &vw.event, sizeof(struct vt_event)))
-			return -EFAULT;
-		return 0;
-	}
-	return -EINTR;
+	return -EINVAL;
 }
 
 /**
@@ -550,95 +535,18 @@ static int vt_io_ioctl(struct vc_data *vc, unsigned int cmd, void __user *up,
 
 static int vt_reldisp(struct vc_data *vc, unsigned int swtch)
 {
-	int newvt, ret;
-
-	if (vc->vt_mode.mode != VT_PROCESS)
-		return -EINVAL;
-
-	/* Switched-to response */
-	if (vc->vt_newvt < 0) {
-		 /* If it's just an ACK, ignore it */
-		return swtch == VT_ACKACQ ? 0 : -EINVAL;
-	}
-
-	/* Switching-from response */
-	if (swtch == 0) {
-		/* Switch disallowed, so forget we were trying to do it. */
-		vc->vt_newvt = -1;
-		return 0;
-	}
-
-	/* The current vt has been released, so complete the switch. */
-	newvt = vc->vt_newvt;
-	vc->vt_newvt = -1;
-	ret = vc_allocate(newvt);
-	if (ret)
-		return ret;
-
-	/*
-	 * When we actually do the console switch, make sure we are atomic with
-	 * respect to other console switches..
-	 */
-	complete_change_console(vc_cons[newvt].d);
-
-	return 0;
+	return -EINVAL;
 }
 
 static int vt_setactivate(struct vt_setactivate __user *sa)
 {
-	struct vt_setactivate vsa;
-	struct vc_data *nvc;
-	int ret;
-
-	if (copy_from_user(&vsa, sa, sizeof(vsa)))
-		return -EFAULT;
-	if (vsa.console == 0 || vsa.console > MAX_NR_CONSOLES)
-		return -ENXIO;
-
-	vsa.console--;
-	vsa.console = array_index_nospec(vsa.console, MAX_NR_CONSOLES);
-	console_lock();
-	ret = vc_allocate(vsa.console);
-	if (ret) {
-		console_unlock();
-		return ret;
-	}
-
-	/*
-	 * This is safe providing we don't drop the console sem between
-	 * vc_allocate and finishing referencing nvc.
-	 */
-	nvc = vc_cons[vsa.console].d;
-	nvc->vt_mode = vsa.mode;
-	nvc->vt_mode.frsig = 0;
-	put_pid(nvc->vt_pid);
-	nvc->vt_pid = get_pid(task_pid(current));
-	console_unlock();
-
-	/* Commence switch and lock */
-	/* Review set_console locks */
-	set_console(vsa.console);
-
-	return 0;
+	return -EINVAL;
 }
 
 /* deallocate a single console, if possible (leave 0) */
 static int vt_disallocate(unsigned int vc_num)
 {
-	struct vc_data *vc = NULL;
-	int ret = 0;
-
-	console_lock();
-	if (vt_busy(vc_num))
-		ret = -EBUSY;
-	else if (vc_num)
-		vc = vc_deallocate(vc_num);
-	console_unlock();
-
-	if (vc && vc_num >= MIN_NR_CONSOLES)
-		tty_port_put(&vc->port);
-
-	return ret;
+	return -EINVAL;
 }
 
 /* deallocate all unused consoles, but leave 0 */
@@ -663,66 +571,7 @@ static void vt_disallocate_all(void)
 
 static int vt_resizex(struct vc_data *vc, struct vt_consize __user *cs)
 {
-	struct vt_consize v;
-	int i;
-
-	if (copy_from_user(&v, cs, sizeof(struct vt_consize)))
-		return -EFAULT;
-
-	/* FIXME: Should check the copies properly */
-	if (!v.v_vlin)
-		v.v_vlin = vc->vc_scan_lines;
-
-	if (v.v_clin) {
-		int rows = v.v_vlin / v.v_clin;
-		if (v.v_rows != rows) {
-			if (v.v_rows) /* Parameters don't add up */
-				return -EINVAL;
-			v.v_rows = rows;
-		}
-	}
-
-	if (v.v_vcol && v.v_ccol) {
-		int cols = v.v_vcol / v.v_ccol;
-		if (v.v_cols != cols) {
-			if (v.v_cols)
-				return -EINVAL;
-			v.v_cols = cols;
-		}
-	}
-
-	if (v.v_clin > 32)
-		return -EINVAL;
-
-	for (i = 0; i < MAX_NR_CONSOLES; i++) {
-		struct vc_data *vcp;
-
-		if (!vc_cons[i].d)
-			continue;
-		console_lock();
-		vcp = vc_cons[i].d;
-		if (vcp) {
-			int ret;
-			int save_scan_lines = vcp->vc_scan_lines;
-			int save_cell_height = vcp->vc_cell_height;
-
-			if (v.v_vlin)
-				vcp->vc_scan_lines = v.v_vlin;
-			if (v.v_clin)
-				vcp->vc_cell_height = v.v_clin;
-			vcp->vc_resize_user = 1;
-			ret = vc_resize(vcp, v.v_cols, v.v_rows);
-			if (ret) {
-				vcp->vc_scan_lines = save_scan_lines;
-				vcp->vc_cell_height = save_cell_height;
-				console_unlock();
-				return ret;
-			}
-		}
-		console_unlock();
-	}
-
-	return 0;
+	return -EINVAL;
 }
 
 /*

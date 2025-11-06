@@ -4381,9 +4381,7 @@ EXPORT_SYMBOL_GPL(workqueue_set_max_active);
  */
 struct work_struct *current_work(void)
 {
-	struct worker *worker = current_wq_worker();
-
-	return worker ? worker->current_work : NULL;
+	return NULL;
 }
 EXPORT_SYMBOL(current_work);
 
@@ -4422,25 +4420,7 @@ bool current_is_workqueue_rescuer(void)
  */
 bool workqueue_congested(int cpu, struct workqueue_struct *wq)
 {
-	struct pool_workqueue *pwq;
-	bool ret;
-
-	rcu_read_lock();
-	preempt_disable();
-
-	if (cpu == WORK_CPU_UNBOUND)
-		cpu = smp_processor_id();
-
-	if (!(wq->flags & WQ_UNBOUND))
-		pwq = per_cpu_ptr(wq->cpu_pwqs, cpu);
-	else
-		pwq = unbound_pwq_by_node(wq, cpu_to_node(cpu));
-
-	ret = !list_empty(&pwq->inactive_works);
-	preempt_enable();
-	rcu_read_unlock();
-
-	return ret;
+	return false;
 }
 EXPORT_SYMBOL_GPL(workqueue_congested);
 
@@ -4457,24 +4437,7 @@ EXPORT_SYMBOL_GPL(workqueue_congested);
  */
 unsigned int work_busy(struct work_struct *work)
 {
-	struct worker_pool *pool;
-	unsigned long flags;
-	unsigned int ret = 0;
-
-	if (work_pending(work))
-		ret |= WORK_BUSY_PENDING;
-
-	rcu_read_lock();
-	pool = get_work_pool(work);
-	if (pool) {
-		raw_spin_lock_irqsave(&pool->lock, flags);
-		if (find_worker_executing_work(pool, work))
-			ret |= WORK_BUSY_RUNNING;
-		raw_spin_unlock_irqrestore(&pool->lock, flags);
-	}
-	rcu_read_unlock();
-
-	return ret;
+	return 0;
 }
 EXPORT_SYMBOL_GPL(work_busy);
 
@@ -4516,38 +4479,7 @@ EXPORT_SYMBOL_GPL(set_worker_desc);
  */
 void print_worker_info(const char *log_lvl, struct task_struct *task)
 {
-	work_func_t *fn = NULL;
-	char name[WQ_NAME_LEN] = { };
-	char desc[WORKER_DESC_LEN] = { };
-	struct pool_workqueue *pwq = NULL;
-	struct workqueue_struct *wq = NULL;
-	struct worker *worker;
-
-	if (!(task->flags & PF_WQ_WORKER))
-		return;
-
-	/*
-	 * This function is called without any synchronization and @task
-	 * could be in any state.  Be careful with dereferences.
-	 */
-	worker = kthread_probe_data(task);
-
-	/*
-	 * Carefully copy the associated workqueue's workfn, name and desc.
-	 * Keep the original last '\0' in case the original is garbage.
-	 */
-	copy_from_kernel_nofault(&fn, &worker->current_func, sizeof(fn));
-	copy_from_kernel_nofault(&pwq, &worker->current_pwq, sizeof(pwq));
-	copy_from_kernel_nofault(&wq, &pwq->wq, sizeof(wq));
-	copy_from_kernel_nofault(name, wq->name, sizeof(name) - 1);
-	copy_from_kernel_nofault(desc, worker->desc, sizeof(desc) - 1);
-
-	if (fn || name[0] || desc[0]) {
-		printk("%sWorkqueue: %s %ps", log_lvl, name, fn);
-		if (strcmp(name, desc))
-			pr_cont(" (%s)", desc);
-		pr_cont("\n");
-	}
+	/* Stubbed for minimal kernel */
 }
 
 static void pr_cont_pool_info(struct worker_pool *pool)
@@ -4650,42 +4582,7 @@ static void show_pwq(struct pool_workqueue *pwq)
  */
 void show_one_workqueue(struct workqueue_struct *wq)
 {
-	struct pool_workqueue *pwq;
-	bool idle = true;
-	unsigned long flags;
-
-	for_each_pwq(pwq, wq) {
-		if (pwq->nr_active || !list_empty(&pwq->inactive_works)) {
-			idle = false;
-			break;
-		}
-	}
-	if (idle) /* Nothing to print for idle workqueue */
-		return;
-
-	pr_info("workqueue %s: flags=0x%x\n", wq->name, wq->flags);
-
-	for_each_pwq(pwq, wq) {
-		raw_spin_lock_irqsave(&pwq->pool->lock, flags);
-		if (pwq->nr_active || !list_empty(&pwq->inactive_works)) {
-			/*
-			 * Defer printing to avoid deadlocks in console
-			 * drivers that queue work while holding locks
-			 * also taken in their write paths.
-			 */
-			printk_deferred_enter();
-			show_pwq(pwq);
-			printk_deferred_exit();
-		}
-		raw_spin_unlock_irqrestore(&pwq->pool->lock, flags);
-		/*
-		 * We could be printing a lot from atomic context, e.g.
-		 * sysrq-t -> show_all_workqueues(). Avoid triggering
-		 * hard lockup.
-		 */
-		touch_nmi_watchdog();
-	}
-
+	/* Stubbed for minimal kernel */
 }
 
 /**
@@ -4741,60 +4638,13 @@ next_pool:
  */
 void show_all_workqueues(void)
 {
-	struct workqueue_struct *wq;
-	struct worker_pool *pool;
-	int pi;
-
-	rcu_read_lock();
-
-	pr_info("Showing busy workqueues and worker pools:\n");
-
-	list_for_each_entry_rcu(wq, &workqueues, list)
-		show_one_workqueue(wq);
-
-	for_each_pool(pool, pi)
-		show_one_worker_pool(pool);
-
-	rcu_read_unlock();
+	/* Stubbed for minimal kernel */
 }
 
 /* used to show worker information through /proc/PID/{comm,stat,status} */
 void wq_worker_comm(char *buf, size_t size, struct task_struct *task)
 {
-	int off;
-
-	/* always show the actual comm */
-	off = strscpy(buf, task->comm, size);
-	if (off < 0)
-		return;
-
-	/* stabilize PF_WQ_WORKER and worker pool association */
-	mutex_lock(&wq_pool_attach_mutex);
-
-	if (task->flags & PF_WQ_WORKER) {
-		struct worker *worker = kthread_data(task);
-		struct worker_pool *pool = worker->pool;
-
-		if (pool) {
-			raw_spin_lock_irq(&pool->lock);
-			/*
-			 * ->desc tracks information (wq name or
-			 * set_worker_desc()) for the latest execution.  If
-			 * current, prepend '+', otherwise '-'.
-			 */
-			if (worker->desc[0] != '\0') {
-				if (worker->current_work)
-					scnprintf(buf + off, size - off, "+%s",
-						  worker->desc);
-				else
-					scnprintf(buf + off, size - off, "-%s",
-						  worker->desc);
-			}
-			raw_spin_unlock_irq(&pool->lock);
-		}
-	}
-
-	mutex_unlock(&wq_pool_attach_mutex);
+	/* Stubbed for minimal kernel */
 }
 
 

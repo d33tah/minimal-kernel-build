@@ -3900,29 +3900,7 @@ state_filter_match(unsigned long state_filter, struct task_struct *p)
 
 void show_state_filter(unsigned int state_filter)
 {
-	struct task_struct *g, *p;
-
-	rcu_read_lock();
-	for_each_process_thread(g, p) {
-		/*
-		 * reset the NMI-timeout, listing all files on a slow
-		 * console might take a lot of time:
-		 * Also, reset softlockup watchdogs on all CPUs, because
-		 * another CPU might be blocked waiting for us to process
-		 * an IPI.
-		 */
-		touch_nmi_watchdog();
-		touch_all_softlockup_watchdogs();
-		if (state_filter_match(state_filter, p))
-			sched_show_task(p);
-	}
-
-	rcu_read_unlock();
-	/*
-	 * Only show locks if all tasks are dumped:
-	 */
-	if (!state_filter)
-		debug_show_all_locks();
+	/* Stubbed for minimal kernel */
 }
 
 /**

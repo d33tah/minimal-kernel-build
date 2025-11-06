@@ -53,41 +53,10 @@ static const char *kobject_actions[] = {
 	[KOBJ_UNBIND] =		"unbind",
 };
 
-static int kobject_action_type(const char *buf, size_t count,
-			       enum kobject_action *type,
-			       const char **args)
+static int kobject_action_type(const char *buf, size_t count, 			       enum kobject_action *type, 			       const char **args)
 {
-	enum kobject_action action;
-	size_t count_first;
-	const char *args_start;
-	int ret = -EINVAL;
-
-	if (count && (buf[count-1] == '\n' || buf[count-1] == '\0'))
-		count--;
-
-	if (!count)
-		goto out;
-
-	args_start = strnchr(buf, count, ' ');
-	if (args_start) {
-		count_first = args_start - buf;
-		args_start = args_start + 1;
-	} else
-		count_first = count;
-
-	for (action = 0; action < ARRAY_SIZE(kobject_actions); action++) {
-		if (strncmp(kobject_actions[action], buf, count_first) != 0)
-			continue;
-		if (kobject_actions[action][count_first] != '\0')
-			continue;
-		if (args)
-			*args = args_start;
-		*type = action;
-		ret = 0;
-		break;
-	}
-out:
-	return ret;
+	/* Stubbed for minimal kernel */
+	return 0;
 }
 
 static const char *action_arg_word_end(const char *buf, const char *buf_end,
@@ -241,30 +210,7 @@ static int kobject_uevent_net_broadcast(struct kobject *kobj,
 
 static void zap_modalias_env(struct kobj_uevent_env *env)
 {
-	static const char modalias_prefix[] = "MODALIAS=";
-	size_t len;
-	int i, j;
-
-	for (i = 0; i < env->envp_idx;) {
-		if (strncmp(env->envp[i], modalias_prefix,
-			    sizeof(modalias_prefix) - 1)) {
-			i++;
-			continue;
-		}
-
-		len = strlen(env->envp[i]) + 1;
-
-		if (i != env->envp_idx - 1) {
-			memmove(env->envp[i], env->envp[i + 1],
-				env->buflen - len);
-
-			for (j = i; j < env->envp_idx - 1; j++)
-				env->envp[j] = env->envp[j + 1] - len;
-		}
-
-		env->envp_idx--;
-		env->buflen -= len;
-	}
+	/* Stubbed for minimal kernel */
 }
 
 /**

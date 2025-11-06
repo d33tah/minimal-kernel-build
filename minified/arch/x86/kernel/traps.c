@@ -135,18 +135,9 @@ do_trap_no_signal(struct task_struct *tsk, int trapnr, const char *str,
 	return -1;
 }
 
-static void show_signal(struct task_struct *tsk, int signr,
-			const char *type, const char *desc,
-			struct pt_regs *regs, long error_code)
+static void show_signal(struct task_struct *tsk, int signr, 			const char *type, const char *desc, 			struct pt_regs *regs, long error_code)
 {
-	if (show_unhandled_signals && unhandled_signal(tsk, signr) &&
-	    printk_ratelimit()) {
-		pr_info("%s[%d] %s%s ip:%lx sp:%lx error:%lx",
-			tsk->comm, task_pid_nr(tsk), type, desc,
-			regs->ip, regs->sp, error_code);
-		print_vma_addr(KERN_CONT " in ", regs->ip);
-		pr_cont("\n");
-	}
+	/* Stubbed for minimal kernel */
 }
 
 static void

@@ -1399,43 +1399,6 @@ ssize_t iov_iter_get_pages(struct iov_iter *i,
 		   struct page **pages, size_t maxsize, unsigned maxpages,
 		   size_t *start)
 {
-	size_t len;
-	int n, res;
-
-	if (maxsize > i->count)
-		maxsize = i->count;
-	if (!maxsize)
-		return 0;
-
-	if (likely(iter_is_iovec(i))) {
-		unsigned int gup_flags = 0;
-		unsigned long addr;
-
-		if (iov_iter_rw(i) != WRITE)
-			gup_flags |= FOLL_WRITE;
-		if (i->nofault)
-			gup_flags |= FOLL_NOFAULT;
-
-		addr = first_iovec_segment(i, &len, start, maxsize, maxpages);
-		n = DIV_ROUND_UP(len, PAGE_SIZE);
-		res = get_user_pages_fast(addr, n, gup_flags, pages);
-		if (unlikely(res <= 0))
-			return res;
-		return (res == n ? len : res * PAGE_SIZE) - *start;
-	}
-	if (iov_iter_is_bvec(i)) {
-		struct page *page;
-
-		page = first_bvec_segment(i, &len, start, maxsize, maxpages);
-		n = DIV_ROUND_UP(len, PAGE_SIZE);
-		while (n--)
-			get_page(*pages++ = page++);
-		return len - *start;
-	}
-	if (iov_iter_is_pipe(i))
-		return pipe_get_pages(i, pages, maxsize, maxpages, start);
-	if (iov_iter_is_xarray(i))
-		return iter_xarray_get_pages(i, pages, maxsize, maxpages, start);
 	return -EFAULT;
 }
 EXPORT_SYMBOL(iov_iter_get_pages);
@@ -1518,54 +1481,6 @@ ssize_t iov_iter_get_pages_alloc(struct iov_iter *i,
 		   struct page ***pages, size_t maxsize,
 		   size_t *start)
 {
-	struct page **p;
-	size_t len;
-	int n, res;
-
-	if (maxsize > i->count)
-		maxsize = i->count;
-	if (!maxsize)
-		return 0;
-
-	if (likely(iter_is_iovec(i))) {
-		unsigned int gup_flags = 0;
-		unsigned long addr;
-
-		if (iov_iter_rw(i) != WRITE)
-			gup_flags |= FOLL_WRITE;
-		if (i->nofault)
-			gup_flags |= FOLL_NOFAULT;
-
-		addr = first_iovec_segment(i, &len, start, maxsize, ~0U);
-		n = DIV_ROUND_UP(len, PAGE_SIZE);
-		p = get_pages_array(n);
-		if (!p)
-			return -ENOMEM;
-		res = get_user_pages_fast(addr, n, gup_flags, p);
-		if (unlikely(res <= 0)) {
-			kvfree(p);
-			*pages = NULL;
-			return res;
-		}
-		*pages = p;
-		return (res == n ? len : res * PAGE_SIZE) - *start;
-	}
-	if (iov_iter_is_bvec(i)) {
-		struct page *page;
-
-		page = first_bvec_segment(i, &len, start, maxsize, ~0U);
-		n = DIV_ROUND_UP(len, PAGE_SIZE);
-		*pages = p = get_pages_array(n);
-		if (!p)
-			return -ENOMEM;
-		while (n--)
-			get_page(*p++ = page++);
-		return len - *start;
-	}
-	if (iov_iter_is_pipe(i))
-		return pipe_get_pages_alloc(i, pages, maxsize, start);
-	if (iov_iter_is_xarray(i))
-		return iter_xarray_get_pages_alloc(i, pages, maxsize, start);
 	return -EFAULT;
 }
 EXPORT_SYMBOL(iov_iter_get_pages_alloc);
@@ -1573,50 +1488,14 @@ EXPORT_SYMBOL(iov_iter_get_pages_alloc);
 size_t csum_and_copy_from_iter(void *addr, size_t bytes, __wsum *csum,
 			       struct iov_iter *i)
 {
-	__wsum sum, next;
-	sum = *csum;
-	if (unlikely(iov_iter_is_pipe(i) || iov_iter_is_discard(i))) {
-		WARN_ON(1);
-		return 0;
-	}
-	iterate_and_advance(i, bytes, base, len, off, ({
-		next = csum_and_copy_from_user(base, addr + off, len);
-		sum = csum_block_add(sum, next, off);
-		next ? 0 : len;
-	}), ({
-		sum = csum_and_memcpy(addr + off, base, len, sum, off);
-	})
-	)
-	*csum = sum;
-	return bytes;
+	return 0;
 }
 EXPORT_SYMBOL(csum_and_copy_from_iter);
 
 size_t csum_and_copy_to_iter(const void *addr, size_t bytes, void *_csstate,
 			     struct iov_iter *i)
 {
-	struct csum_state *csstate = _csstate;
-	__wsum sum, next;
-
-	if (unlikely(iov_iter_is_discard(i))) {
-		WARN_ON(1);	/* for now */
-		return 0;
-	}
-
-	sum = csum_shift(csstate->csum, csstate->off);
-	if (unlikely(iov_iter_is_pipe(i)))
-		bytes = csum_and_copy_to_pipe_iter(addr, bytes, i, &sum);
-	else iterate_and_advance(i, bytes, base, len, off, ({
-		next = csum_and_copy_to_user(addr + off, base, len);
-		sum = csum_block_add(sum, next, off);
-		next ? 0 : len;
-	}), ({
-		sum = csum_and_memcpy(base, addr + off, len, sum, off);
-	})
-	)
-	csstate->csum = csum_shift(sum, csstate->off);
-	csstate->off += bytes;
-	return bytes;
+	return 0;
 }
 EXPORT_SYMBOL(csum_and_copy_to_iter);
 
@@ -1667,53 +1546,13 @@ static int bvec_npages(const struct iov_iter *i, int maxpages)
 
 int iov_iter_npages(const struct iov_iter *i, int maxpages)
 {
-	if (unlikely(!i->count))
-		return 0;
-	/* iovec and kvec have identical layouts */
-	if (likely(iter_is_iovec(i) || iov_iter_is_kvec(i)))
-		return iov_npages(i, maxpages);
-	if (iov_iter_is_bvec(i))
-		return bvec_npages(i, maxpages);
-	if (iov_iter_is_pipe(i)) {
-		unsigned int iter_head;
-		int npages;
-		size_t off;
-
-		if (!sanity(i))
-			return 0;
-
-		data_start(i, &iter_head, &off);
-		/* some of this one + all after this one */
-		npages = pipe_space_for_user(iter_head, i->pipe->tail, i->pipe);
-		return min(npages, maxpages);
-	}
-	if (iov_iter_is_xarray(i)) {
-		unsigned offset = (i->xarray_start + i->iov_offset) % PAGE_SIZE;
-		int npages = DIV_ROUND_UP(offset + i->count, PAGE_SIZE);
-		return min(npages, maxpages);
-	}
 	return 0;
 }
 EXPORT_SYMBOL(iov_iter_npages);
 
 const void *dup_iter(struct iov_iter *new, struct iov_iter *old, gfp_t flags)
 {
-	*new = *old;
-	if (unlikely(iov_iter_is_pipe(new))) {
-		WARN_ON(1);
-		return NULL;
-	}
-	if (unlikely(iov_iter_is_discard(new) || iov_iter_is_xarray(new)))
-		return NULL;
-	if (iov_iter_is_bvec(new))
-		return new->bvec = kmemdup(new->bvec,
-				    new->nr_segs * sizeof(struct bio_vec),
-				    flags);
-	else
-		/* iovec and kvec have identical layout */
-		return new->iov = kmemdup(new->iov,
-				   new->nr_segs * sizeof(struct iovec),
-				   flags);
+	return NULL;
 }
 EXPORT_SYMBOL(dup_iter);
 
@@ -1872,23 +1711,14 @@ ssize_t import_iovec(int type, const struct iovec __user *uvec,
 		 unsigned nr_segs, unsigned fast_segs,
 		 struct iovec **iovp, struct iov_iter *i)
 {
-	return __import_iovec(type, uvec, nr_segs, fast_segs, iovp, i,
-			      in_compat_syscall());
+	return -EFAULT;
 }
 EXPORT_SYMBOL(import_iovec);
 
 int import_single_range(int rw, void __user *buf, size_t len,
 		 struct iovec *iov, struct iov_iter *i)
 {
-	if (len > MAX_RW_COUNT)
-		len = MAX_RW_COUNT;
-	if (unlikely(!access_ok(buf, len)))
-		return -EFAULT;
-
-	iov->iov_base = buf;
-	iov->iov_len = len;
-	iov_iter_init(i, rw, iov, 1, len);
-	return 0;
+	return -EFAULT;
 }
 EXPORT_SYMBOL(import_single_range);
 

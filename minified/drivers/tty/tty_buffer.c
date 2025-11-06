@@ -219,27 +219,7 @@ static void tty_buffer_free(struct tty_port *port, struct tty_buffer *b)
  */
 void tty_buffer_flush(struct tty_struct *tty, struct tty_ldisc *ld)
 {
-	struct tty_port *port = tty->port;
-	struct tty_bufhead *buf = &port->buf;
-	struct tty_buffer *next;
-
-	atomic_inc(&buf->priority);
-
-	mutex_lock(&buf->lock);
-	/* paired w/ release in __tty_buffer_request_room; ensures there are
-	 * no pending memory accesses to the freed buffer
-	 */
-	while ((next = smp_load_acquire(&buf->head->next)) != NULL) {
-		tty_buffer_free(port, buf->head);
-		buf->head = next;
-	}
-	buf->head->read = buf->head->commit;
-
-	if (ld && ld->ops->flush_buffer)
-		ld->ops->flush_buffer(tty);
-
-	atomic_dec(&buf->priority);
-	mutex_unlock(&buf->lock);
+	/* Stubbed for minimal kernel */
 }
 
 /**

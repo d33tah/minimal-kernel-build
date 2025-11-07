@@ -2927,6 +2927,6 @@ config HAVE_ATOMIC_IOMAP
 	def_bool y
 	depends on X86_32
 
-source "arch/x86/kvm/Kconfig"
+# source "arch/x86/kvm/Kconfig"  # KVM subsystem removed
 
 source "arch/x86/Kconfig.assembler"

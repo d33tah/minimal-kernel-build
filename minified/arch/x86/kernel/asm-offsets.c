@@ -19,7 +19,9 @@
 #include <asm/suspend.h>
 #include <asm/tlbflush.h>
 #include <asm/tdx.h>
+#ifdef CONFIG_KVM_INTEL
 #include "../kvm/vmx/vmx.h"
+#endif
 
 
 # include "asm-offsets_32.c"
@@ -91,8 +93,8 @@ static void __used common(void)
 	OFFSET(TSS_sp1, tss_struct, x86_tss.sp1);
 	OFFSET(TSS_sp2, tss_struct, x86_tss.sp2);
 
-	if (IS_ENABLED(CONFIG_KVM_INTEL)) {
-		BLANK();
-		OFFSET(VMX_spec_ctrl, vcpu_vmx, spec_ctrl);
-	}
+#ifdef CONFIG_KVM_INTEL
+	BLANK();
+	OFFSET(VMX_spec_ctrl, vcpu_vmx, spec_ctrl);
+#endif
 }

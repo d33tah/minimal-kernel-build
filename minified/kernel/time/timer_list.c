@@ -206,17 +206,6 @@ static inline void timer_list_header(struct seq_file *m, u64 now)
 
 void sysrq_timer_list_show(void)
 {
-	u64 now = ktime_to_ns(ktime_get());
-	int cpu;
-
-	timer_list_header(NULL, now);
-
-	for_each_online_cpu(cpu)
-		print_cpu(NULL, cpu, now);
-
-	timer_list_show_tickdevices_header(NULL);
-	for_each_online_cpu(cpu)
-		print_tickdevice(NULL, tick_get_device(cpu), cpu);
-	return;
+	/* Stubbed - timer list debugging not needed */
 }
 

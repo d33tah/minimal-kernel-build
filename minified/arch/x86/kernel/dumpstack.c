@@ -124,9 +124,7 @@ void show_ip(struct pt_regs *regs, const char *loglvl)
 
 void show_iret_regs(struct pt_regs *regs, const char *log_lvl)
 {
-	show_ip(regs, log_lvl);
-	printk("%sRSP: %04x:%016lx EFLAGS: %08lx", log_lvl, (int)regs->ss,
-		regs->sp, regs->flags);
+	/* Stubbed for minimal kernel */
 }
 
 static void show_regs_if_on_stack(struct stack_info *info, struct pt_regs *regs,

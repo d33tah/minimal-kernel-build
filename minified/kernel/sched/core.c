@@ -3848,29 +3848,7 @@ SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
 
 void sched_show_task(struct task_struct *p)
 {
-	unsigned long free = 0;
-	int ppid;
-
-	if (!try_get_task_stack(p))
-		return;
-
-	pr_info("task:%-15.15s state:%c", p->comm, task_state_to_char(p));
-
-	if (task_is_running(p))
-		pr_cont("  running task    ");
-	ppid = 0;
-	rcu_read_lock();
-	if (pid_alive(p))
-		ppid = task_pid_nr(rcu_dereference(p->real_parent));
-	rcu_read_unlock();
-	pr_cont(" stack:%5lu pid:%5d ppid:%6d flags:0x%08lx\n",
-		free, task_pid_nr(p), ppid,
-		read_task_thread_flags(p));
-
-	print_worker_info(KERN_INFO, p);
-	print_stop_info(KERN_INFO, p);
-	show_stack(p, NULL, KERN_INFO);
-	put_task_stack(p);
+	/* Stubbed - task debugging not needed */
 }
 EXPORT_SYMBOL_GPL(sched_show_task);
 
@@ -4061,8 +4039,7 @@ void __init sched_init(void)
 
 void dump_cpu_task(int cpu)
 {
-	pr_info("Task dump for CPU %d:\n", cpu);
-	sched_show_task(cpu_curr(cpu));
+	/* Stubbed - CPU task dumping not needed */
 }
 
 /*

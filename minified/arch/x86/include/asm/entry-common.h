@@ -4,6 +4,7 @@
 
 #include <linux/randomize_kstack.h>
 #include <linux/user-return-notifier.h>
+#include <linux/sched/task_stack.h>
 
 #include <asm/nospec-branch.h>
 #include <asm/io_bitmap.h>

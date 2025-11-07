@@ -530,5 +530,7 @@ static inline bool mem_cgroup_swap_full(struct page *page)
 	return vm_swap_full();
 }
 
+
+
 #endif /* __KERNEL__*/
 #endif /* _LINUX_SWAP_H */

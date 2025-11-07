@@ -37,9 +37,6 @@
 #include <linux/random.h>
 #include <linux/cc_platform.h>
 
-#include <trace/events/power.h>
-#define CREATE_TRACE_POINTS
-#include <trace/events/cpuhp.h>
 
 #include "smpboot.h"
 
@@ -154,9 +151,9 @@ static int cpuhp_invoke_callback(unsigned int cpu, enum cpuhp_state state,
 		WARN_ON_ONCE(lastp && *lastp);
 		cb = bringup ? step->startup.single : step->teardown.single;
 
-		trace_cpuhp_enter(cpu, st->target, state, cb);
+		/* trace_cpuhp_enter(cpu, st->target, state, cb); */
 		ret = cb(cpu);
-		trace_cpuhp_exit(cpu, st->state, state, ret);
+		/* trace_cpuhp_exit(cpu, st->state, state, ret); */
 		return ret;
 	}
 	cbm = bringup ? step->startup.multi : step->teardown.multi;
@@ -164,9 +161,9 @@ static int cpuhp_invoke_callback(unsigned int cpu, enum cpuhp_state state,
 	/* Single invocation for instance add/remove */
 	if (node) {
 		WARN_ON_ONCE(lastp && *lastp);
-		trace_cpuhp_multi_enter(cpu, st->target, state, cbm, node);
+		/* trace_cpuhp_multi_enter(cpu, st->target, state, cbm, node); */
 		ret = cbm(cpu, node);
-		trace_cpuhp_exit(cpu, st->state, state, ret);
+		/* trace_cpuhp_exit(cpu, st->state, state, ret); */
 		return ret;
 	}
 
@@ -176,9 +173,9 @@ static int cpuhp_invoke_callback(unsigned int cpu, enum cpuhp_state state,
 		if (lastp && node == *lastp)
 			break;
 
-		trace_cpuhp_multi_enter(cpu, st->target, state, cbm, node);
+		/* trace_cpuhp_multi_enter(cpu, st->target, state, cbm, node); */
 		ret = cbm(cpu, node);
-		trace_cpuhp_exit(cpu, st->state, state, ret);
+		/* trace_cpuhp_exit(cpu, st->state, state, ret); */
 		if (ret) {
 			if (!lastp)
 				goto err;
@@ -201,9 +198,9 @@ err:
 		if (!cnt--)
 			break;
 
-		trace_cpuhp_multi_enter(cpu, st->target, state, cbm, node);
+		/* trace_cpuhp_multi_enter(cpu, st->target, state, cbm, node); */
 		ret = cbm(cpu, node);
-		trace_cpuhp_exit(cpu, st->state, state, ret);
+		/* trace_cpuhp_exit(cpu, st->state, state, ret); */
 		/*
 		 * Rollback must not fail,
 		 */

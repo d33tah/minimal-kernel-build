@@ -75,7 +75,6 @@
 #include <linux/ptrace.h>
 #include <linux/vmalloc.h>
 
-#include <trace/events/kmem.h>
 
 #include <asm/io.h>
 #include <asm/mmu_context.h>

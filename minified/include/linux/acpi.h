@@ -370,13 +370,13 @@ static inline void acpi_evaluation_failure_warn(acpi_handle handle,
 })
 #endif
 
-static inline bool acpi_gpio_get_irq_resource(struct acpi_resource *ares,
-					      struct acpi_resource_gpio **agpio)
+static inline bool acpi_gpio_get_irq_resource(void *ares,
+					      void **agpio)
 {
 	return false;
 }
-static inline bool acpi_gpio_get_io_resource(struct acpi_resource *ares,
-					     struct acpi_resource_gpio **agpio)
+static inline bool acpi_gpio_get_io_resource(void *ares,
+					     void **agpio)
 {
 	return false;
 }

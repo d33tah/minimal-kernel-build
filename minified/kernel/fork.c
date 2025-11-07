@@ -105,10 +105,7 @@
 #include <asm/cacheflush.h>
 #include <asm/tlbflush.h>
 
-#include <trace/events/sched.h>
 
-#define CREATE_TRACE_POINTS
-#include <trace/events/task.h>
 
 /*
  * Minimum number of threads to boot the kernel
@@ -2032,7 +2029,7 @@ static __latent_entropy struct task_struct *copy_process(
 	cgroup_post_fork(p, args);
 	perf_event_fork(p);
 
-	trace_task_newtask(p, clone_flags);
+	/* trace_task_newtask(p, clone_flags); */
 	uprobe_copy_process(p, clone_flags);
 
 	copy_oom_score_adj(clone_flags, p);
@@ -2222,7 +2219,7 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 	 * Do this prior waking up the new thread - the thread pointer
 	 * might get invalid after that point, if the thread exits quickly.
 	 */
-	trace_sched_process_fork(current, p);
+	/* /* trace_sched_process_fork( */current, p); */
 
 	pid = get_task_pid(p, PIDTYPE_PID);
 	nr = pid_vnr(pid);

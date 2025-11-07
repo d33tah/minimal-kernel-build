@@ -49,8 +49,6 @@
 #include "internal.h"
 #include "slab.h"
 
-#define CREATE_TRACE_POINTS
-#include <trace/events/oom.h>
 
 static int sysctl_panic_on_oom;
 static int sysctl_oom_kill_allocating_task;
@@ -522,7 +520,7 @@ static bool oom_reap_task_mm(struct task_struct *tsk, struct mm_struct *mm)
 	bool ret = true;
 
 	if (!mmap_read_trylock(mm)) {
-		trace_skip_task_reaping(tsk->pid);
+		/* trace_skip_task_reaping(tsk->pid); */
 		return false;
 	}
 
@@ -533,11 +531,11 @@ static bool oom_reap_task_mm(struct task_struct *tsk, struct mm_struct *mm)
 	 * mmap_write_lock();mmap_write_unlock() cycle in exit_mmap().
 	 */
 	if (test_bit(MMF_OOM_SKIP, &mm->flags)) {
-		trace_skip_task_reaping(tsk->pid);
+		/* trace_skip_task_reaping(tsk->pid); */
 		goto out_unlock;
 	}
 
-	trace_start_task_reaping(tsk->pid);
+	/* trace_start_task_reaping(tsk->pid); */
 
 	/* failed to reap part of the address space. Try again later */
 	ret = __oom_reap_task_mm(mm);
@@ -550,7 +548,7 @@ static bool oom_reap_task_mm(struct task_struct *tsk, struct mm_struct *mm)
 			K(get_mm_counter(mm, MM_FILEPAGES)),
 			K(get_mm_counter(mm, MM_SHMEMPAGES)));
 out_finish:
-	trace_finish_task_reaping(tsk->pid);
+	/* trace_finish_task_reaping(tsk->pid); */
 out_unlock:
 	mmap_read_unlock(mm);
 
@@ -628,7 +626,7 @@ static void wake_oom_reaper(struct timer_list *timer)
 	tsk->oom_reaper_list = oom_reaper_list;
 	oom_reaper_list = tsk;
 	spin_unlock_irqrestore(&oom_reaper_lock, flags);
-	trace_wake_reaper(tsk->pid);
+	/* trace_wake_reaper(tsk->pid); */
 	wake_up(&oom_reaper_wait);
 }
 
@@ -694,7 +692,7 @@ static void mark_oom_victim(struct task_struct *tsk)
 	 */
 	__thaw_task(tsk);
 	atomic_inc(&oom_victims);
-	trace_mark_victim(tsk->pid);
+	/* trace_mark_victim(tsk->pid); */
 }
 
 /**

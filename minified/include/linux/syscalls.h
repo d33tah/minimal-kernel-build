@@ -85,6 +85,7 @@ enum landlock_rule_type;
 #include <linux/quota.h>
 #include <linux/key.h>
 #include <linux/personality.h>
+#include <linux/fcntl.h>
 #include <trace/syscall.h>
 
 /*
@@ -95,6 +96,7 @@ enum landlock_rule_type;
  * CONFIG_ARCH_HAS_SYSCALL_WRAPPER is enabled.
  */
 #include <asm/syscall_wrapper.h>
+#include <asm/syscall.h>
 
 /*
  * __MAP - apply a macro to syscall arguments
@@ -124,7 +126,7 @@ enum landlock_rule_type;
 #define __SC_ARGS(t, a)	a
 #define __SC_TEST(t, a) (void)BUILD_BUG_ON_ZERO(!__TYPE_IS_LL(t) && sizeof(t) > sizeof(long))
 
-#define SYSCALL_METADATA(sname, nb, ...)
+#define SYSCALL_METADATA(sname, nb, ...) /* disabled for size reduction */
 
 static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 {

@@ -41,7 +41,6 @@
 #include <linux/sort.h>
 
 #include <linux/debugfs.h>
-#include <trace/events/kmem.h>
 
 #include "internal.h"
 

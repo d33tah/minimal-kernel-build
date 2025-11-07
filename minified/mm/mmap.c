@@ -54,8 +54,6 @@
 #include <asm/tlb.h>
 #include <asm/mmu_context.h>
 
-#define CREATE_TRACE_POINTS
-#include <trace/events/mmap.h>
 
 #include "internal.h"
 

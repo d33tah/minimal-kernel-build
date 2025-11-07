@@ -46,8 +46,6 @@
 #include <asm/tlbflush.h>
 #include "internal.h"
 
-#define CREATE_TRACE_POINTS
-#include <trace/events/filemap.h>
 
 /*
  * FIXME: remove all knowledge of the buffer layer from the core VM
@@ -218,7 +216,7 @@ void __filemap_remove_folio(struct folio *folio, void *shadow)
 {
 	struct address_space *mapping = folio->mapping;
 
-	trace_mm_filemap_delete_from_page_cache(folio);
+	/* trace_mm_filemap_delete_from_page_cache(folio); */
 	filemap_unaccount_folio(mapping, folio);
 	page_cache_delete(mapping, folio, shadow);
 }
@@ -328,7 +326,7 @@ void delete_from_page_cache_batch(struct address_space *mapping,
 	for (i = 0; i < folio_batch_count(fbatch); i++) {
 		struct folio *folio = fbatch->folios[i];
 
-		trace_mm_filemap_delete_from_page_cache(folio);
+		/* trace_mm_filemap_delete_from_page_cache(folio); */
 		filemap_unaccount_folio(mapping, folio);
 	}
 	page_cache_delete_batch(mapping, fbatch);
@@ -698,7 +696,7 @@ void __filemap_set_wb_err(struct address_space *mapping, int err)
 {
 	errseq_t eseq = errseq_set(&mapping->wb_err, err);
 
-	trace_filemap_set_wb_err(mapping, eseq);
+	/* trace_filemap_set_wb_err(mapping, eseq); */
 }
 EXPORT_SYMBOL(__filemap_set_wb_err);
 
@@ -739,7 +737,7 @@ int file_check_and_advance_wb_err(struct file *file)
 		old = file->f_wb_err;
 		err = errseq_check_and_advance(&mapping->wb_err,
 						&file->f_wb_err);
-		trace_file_check_and_advance_wb_err(file, old);
+		/* trace_file_check_and_advance_wb_err(file, old); */
 		spin_unlock(&file->f_lock);
 	}
 
@@ -917,7 +915,7 @@ unlock:
 	if (xas_error(&xas))
 		goto error;
 
-	trace_mm_filemap_add_to_page_cache(folio);
+	/* trace_mm_filemap_add_to_page_cache(folio); */
 	return 0;
 error:
 	if (charged)

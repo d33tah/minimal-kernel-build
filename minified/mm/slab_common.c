@@ -26,8 +26,6 @@
 #include <linux/memcontrol.h>
 #include <linux/stackdepot.h>
 
-#define CREATE_TRACE_POINTS
-#include <trace/events/kmem.h>
 
 #include "internal.h"
 
@@ -954,12 +952,6 @@ size_t ksize(const void *objp)
 EXPORT_SYMBOL(ksize);
 
 /* Tracepoints definitions. */
-EXPORT_TRACEPOINT_SYMBOL(kmalloc);
-EXPORT_TRACEPOINT_SYMBOL(kmem_cache_alloc);
-EXPORT_TRACEPOINT_SYMBOL(kmalloc_node);
-EXPORT_TRACEPOINT_SYMBOL(kmem_cache_alloc_node);
-EXPORT_TRACEPOINT_SYMBOL(kfree);
-EXPORT_TRACEPOINT_SYMBOL(kmem_cache_free);
 
 int should_failslab(struct kmem_cache *s, gfp_t gfpflags)
 {

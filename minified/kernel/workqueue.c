@@ -366,8 +366,6 @@ static void workqueue_sysfs_unregister(struct workqueue_struct *wq);
 static void show_pwq(struct pool_workqueue *pwq);
 static void show_one_worker_pool(struct worker_pool *pool);
 
-#define CREATE_TRACE_POINTS
-#include <trace/events/workqueue.h>
 
 #define assert_rcu_or_pool_mutex()					\
 	RCU_LOCKDEP_WARN(!rcu_read_lock_held() &&			\
@@ -1056,7 +1054,7 @@ static void pwq_activate_inactive_work(struct work_struct *work)
 {
 	struct pool_workqueue *pwq = get_work_pwq(work);
 
-	trace_workqueue_activate_work(work);
+	/* trace_workqueue_activate_work(work); */
 	if (list_empty(&pwq->pool->worklist))
 		pwq->pool->watchdog_ts = jiffies;
 	move_linked_works(work, &pwq->pool->worklist, NULL);
@@ -1388,7 +1386,7 @@ retry:
 	}
 
 	/* pwq determined, queue */
-	trace_workqueue_queue_work(req_cpu, pwq, work);
+	/* trace_workqueue_queue_work(req_cpu, pwq, work); */
 
 	if (WARN_ON(!list_empty(&work->entry)))
 		goto out;
@@ -1397,7 +1395,7 @@ retry:
 	work_flags = work_color_to_flags(pwq->work_color);
 
 	if (likely(pwq->nr_active < pwq->max_active)) {
-		trace_workqueue_activate_work(work);
+		/* trace_workqueue_activate_work(work); */
 		pwq->nr_active++;
 		worklist = &pwq->pool->worklist;
 		if (list_empty(worklist))
@@ -2167,13 +2165,13 @@ __acquires(&pool->lock)
 	 * workqueues), so hiding them isn't a problem.
 	 */
 	lockdep_invariant_state(true);
-	trace_workqueue_execute_start(work);
+	/* trace_workqueue_execute_start(work); */
 	worker->current_func(work);
 	/*
 	 * While we must be careful to not use "work" after this, the trace
 	 * point will only record its address.
 	 */
-	trace_workqueue_execute_end(work, worker->current_func);
+	/* trace_workqueue_execute_end(work, worker->current_func); */
 	lock_map_release(&lockdep_map);
 	lock_map_release(&pwq->wq->lockdep_map);
 
@@ -4506,74 +4504,7 @@ static void pr_cont_work(bool comma, struct work_struct *work)
 
 static void show_pwq(struct pool_workqueue *pwq)
 {
-	struct worker_pool *pool = pwq->pool;
-	struct work_struct *work;
-	struct worker *worker;
-	bool has_in_flight = false, has_pending = false;
-	int bkt;
-
-	pr_info("  pwq %d:", pool->id);
-	pr_cont_pool_info(pool);
-
-	pr_cont(" active=%d/%d refcnt=%d%s\n",
-		pwq->nr_active, pwq->max_active, pwq->refcnt,
-		!list_empty(&pwq->mayday_node) ? " MAYDAY" : "");
-
-	hash_for_each(pool->busy_hash, bkt, worker, hentry) {
-		if (worker->current_pwq == pwq) {
-			has_in_flight = true;
-			break;
-		}
-	}
-	if (has_in_flight) {
-		bool comma = false;
-
-		pr_info("    in-flight:");
-		hash_for_each(pool->busy_hash, bkt, worker, hentry) {
-			if (worker->current_pwq != pwq)
-				continue;
-
-			pr_cont("%s %d%s:%ps", comma ? "," : "",
-				task_pid_nr(worker->task),
-				worker->rescue_wq ? "(RESCUER)" : "",
-				worker->current_func);
-			list_for_each_entry(work, &worker->scheduled, entry)
-				pr_cont_work(false, work);
-			comma = true;
-		}
-		pr_cont("\n");
-	}
-
-	list_for_each_entry(work, &pool->worklist, entry) {
-		if (get_work_pwq(work) == pwq) {
-			has_pending = true;
-			break;
-		}
-	}
-	if (has_pending) {
-		bool comma = false;
-
-		pr_info("    pending:");
-		list_for_each_entry(work, &pool->worklist, entry) {
-			if (get_work_pwq(work) != pwq)
-				continue;
-
-			pr_cont_work(comma, work);
-			comma = !(*work_data_bits(work) & WORK_STRUCT_LINKED);
-		}
-		pr_cont("\n");
-	}
-
-	if (!list_empty(&pwq->inactive_works)) {
-		bool comma = false;
-
-		pr_info("    inactive:");
-		list_for_each_entry(work, &pwq->inactive_works, entry) {
-			pr_cont_work(comma, work);
-			comma = !(*work_data_bits(work) & WORK_STRUCT_LINKED);
-		}
-		pr_cont("\n");
-	}
+	/* Stubbed for minimal kernel */
 }
 
 /**
@@ -4591,43 +4522,7 @@ void show_one_workqueue(struct workqueue_struct *wq)
  */
 static void show_one_worker_pool(struct worker_pool *pool)
 {
-	struct worker *worker;
-	bool first = true;
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&pool->lock, flags);
-	if (pool->nr_workers == pool->nr_idle)
-		goto next_pool;
-	/*
-	 * Defer printing to avoid deadlocks in console drivers that
-	 * queue work while holding locks also taken in their write
-	 * paths.
-	 */
-	printk_deferred_enter();
-	pr_info("pool %d:", pool->id);
-	pr_cont_pool_info(pool);
-	pr_cont(" hung=%us workers=%d",
-		jiffies_to_msecs(jiffies - pool->watchdog_ts) / 1000,
-		pool->nr_workers);
-	if (pool->manager)
-		pr_cont(" manager: %d",
-			task_pid_nr(pool->manager->task));
-	list_for_each_entry(worker, &pool->idle_list, entry) {
-		pr_cont(" %s%d", first ? "idle: " : "",
-			task_pid_nr(worker->task));
-		first = false;
-	}
-	pr_cont("\n");
-	printk_deferred_exit();
-next_pool:
-	raw_spin_unlock_irqrestore(&pool->lock, flags);
-	/*
-	 * We could be printing a lot from atomic context, e.g.
-	 * sysrq-t -> show_all_workqueues(). Avoid triggering
-	 * hard lockup.
-	 */
-	touch_nmi_watchdog();
-
+	/* Stubbed for minimal kernel */
 }
 
 /**

@@ -15,7 +15,6 @@
 #include <linux/module.h>
 #include <linux/writeback.h>
 #include <linux/device.h>
-#include <trace/events/writeback.h>
 
 struct backing_dev_info noop_backing_dev_info;
 EXPORT_SYMBOL_GPL(noop_backing_dev_info);

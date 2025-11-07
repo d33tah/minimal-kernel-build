@@ -99,16 +99,12 @@
 #include <linux/kcsan.h>
 #include <linux/init_syscalls.h>
 #include <linux/stackdepot.h>
-#include <net/net_namespace.h>
 
 #include <asm/io.h>
 #include <asm/bugs.h>
 #include <asm/setup.h>
 #include <asm/sections.h>
 #include <asm/cacheflush.h>
-
-#define CREATE_TRACE_POINTS
-#include <trace/events/initcall.h>
 
 #include <kunit/test.h>
 
@@ -924,7 +920,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	key_init();
 	security_init();
 	dbg_late_init();
-	net_ns_init();
 	vfs_caches_init();
 	pagecache_init();
 	signals_init();
@@ -1102,7 +1097,7 @@ static void __init do_initcall_level(int level, char *command_line)
 		   level, level,
 		   NULL, ignore_unknown_bootoption);
 
-	trace_initcall_level(initcall_level_names[level]);
+
 	for (fn = initcall_levels[level]; fn < initcall_levels[level+1]; fn++)
 		do_one_initcall(initcall_from_entry(fn));
 }
@@ -1146,7 +1141,7 @@ static void __init do_pre_smp_initcalls(void)
 {
 	initcall_entry_t *fn;
 
-	trace_initcall_level("early");
+
 	for (fn = __initcall_start; fn < __initcall0_start; fn++)
 		do_one_initcall(initcall_from_entry(fn));
 }

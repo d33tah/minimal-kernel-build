@@ -10,7 +10,6 @@
 #ifndef __LINUX_RCU_H
 #define __LINUX_RCU_H
 
-#include <trace/events/rcu.h>
 
 /* Offset to allow distinguishing irq vs. task-based idle entry/exit. */
 #define DYNTICK_IRQ_NONIDLE	((LONG_MAX / 2) + 1)

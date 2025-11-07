@@ -1,25 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-/*
- * INET		An implementation of the TCP/IP protocol suite for the LINUX
- *		operating system.  INET is implemented using the  BSD Socket
- *		interface as the means of communication with the user level.
- *
- *		Definitions for the TCP protocol.
- *
- * Version:	@(#)tcp.h	1.0.2	04/28/93
- *
- * Author:	Fred N. van Kempen, <waltje@uWalt.NL.Mugnet.ORG>
- */
+/* Minimal TCP header stub - networking disabled */
 #ifndef _LINUX_TCP_H
 #define _LINUX_TCP_H
 
-
-#include <linux/skbuff.h>
-#include <linux/win_minmax.h>
-#include <net/sock.h>
-#include <net/inet_connection_sock.h>
-#include <net/inet_timewait_sock.h>
-#include <uapi/linux/tcp.h>
+/* TCP functionality stubbed since networking is disabled */
 
 static inline struct tcphdr *tcp_hdr(const struct sk_buff *skb)
 {

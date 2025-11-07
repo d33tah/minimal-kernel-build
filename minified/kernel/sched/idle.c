@@ -34,7 +34,7 @@ void cpu_idle_poll_ctrl(bool enable)
 
 static noinline int __cpuidle cpu_idle_poll(void)
 {
-	trace_cpu_idle(0, smp_processor_id());
+	/* trace_cpu_idle(0, smp_processor_id()); */
 	stop_critical_timings();
 	rcu_idle_enter();
 	local_irq_enable();
@@ -45,7 +45,7 @@ static noinline int __cpuidle cpu_idle_poll(void)
 
 	rcu_idle_exit();
 	start_critical_timings();
-	trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
+	/* trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id()); */
 
 	return 1;
 }
@@ -72,7 +72,7 @@ void __cpuidle default_idle_call(void)
 		local_irq_enable();
 	} else {
 
-		trace_cpu_idle(1, smp_processor_id());
+		/* trace_cpu_idle(1, smp_processor_id()); */
 		stop_critical_timings();
 
 		/*
@@ -84,7 +84,7 @@ void __cpuidle default_idle_call(void)
 		 * rcu_idle_enter() relies on lockdep IRQ state, so switch that
 		 * last -- this is very similar to the entry code.
 		 */
-		trace_hardirqs_on_prepare();
+		/* trace_hardirqs_on_prepare(); */
 		lockdep_hardirqs_on_prepare();
 		rcu_idle_enter();
 		lockdep_hardirqs_on(_THIS_IP_);
@@ -104,7 +104,7 @@ void __cpuidle default_idle_call(void)
 		raw_local_irq_enable();
 
 		start_critical_timings();
-		trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
+		/* trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id()); */
 	}
 }
 

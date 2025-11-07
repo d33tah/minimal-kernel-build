@@ -11,8 +11,6 @@
 
 #include "common.h"
 
-#define CREATE_TRACE_POINTS
-#include <trace/events/syscalls.h>
 
 /* See comment for enter_from_user_mode() in entry-common.h */
 static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
@@ -24,7 +22,7 @@ static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 	user_exit_irqoff();
 
 	instrumentation_begin();
-	trace_hardirqs_off_finish();
+	/* trace_hardirqs_off_finish(); */
 	instrumentation_end();
 }
 
@@ -76,7 +74,7 @@ static long syscall_trace_enter(struct pt_regs *regs, long syscall,
 	syscall = syscall_get_nr(current, regs);
 
 	if (unlikely(work & SYSCALL_WORK_SYSCALL_TRACEPOINT))
-		trace_sys_enter(regs, syscall);
+		/* trace_sys_enter(regs, syscall); */
 
 	syscall_enter_audit(regs, syscall);
 
@@ -125,7 +123,7 @@ noinstr void syscall_enter_from_user_mode_prepare(struct pt_regs *regs)
 static __always_inline void __exit_to_user_mode(void)
 {
 	instrumentation_begin();
-	trace_hardirqs_on_prepare();
+	/* trace_hardirqs_on_prepare(); */
 	lockdep_hardirqs_on_prepare();
 	instrumentation_end();
 
@@ -352,7 +350,7 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 		lockdep_hardirqs_off(CALLER_ADDR0);
 		rcu_irq_enter();
 		instrumentation_begin();
-		trace_hardirqs_off_finish();
+		/* trace_hardirqs_off_finish(); */
 		instrumentation_end();
 
 		ret.exit_rcu = true;
@@ -368,7 +366,7 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 	lockdep_hardirqs_off(CALLER_ADDR0);
 	instrumentation_begin();
 	rcu_irq_enter_check_tick();
-	trace_hardirqs_off_finish();
+	/* trace_hardirqs_off_finish(); */
 	instrumentation_end();
 
 	return ret;
@@ -402,7 +400,7 @@ noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 		if (state.exit_rcu) {
 			instrumentation_begin();
 			/* Tell the tracer that IRET will enable interrupts */
-			trace_hardirqs_on_prepare();
+			/* trace_hardirqs_on_prepare(); */
 			lockdep_hardirqs_on_prepare();
 			instrumentation_end();
 			rcu_irq_exit();
@@ -415,7 +413,7 @@ noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 			irqentry_exit_cond_resched();
 
 		/* Covers both tracing and lockdep */
-		trace_hardirqs_on();
+		/* trace_hardirqs_on(); */
 		instrumentation_end();
 	} else {
 		/*
@@ -439,7 +437,7 @@ irqentry_state_t noinstr irqentry_nmi_enter(struct pt_regs *regs)
 	rcu_nmi_enter();
 
 	instrumentation_begin();
-	trace_hardirqs_off_finish();
+	/* trace_hardirqs_off_finish(); */
 	ftrace_nmi_enter();
 	instrumentation_end();
 
@@ -451,7 +449,7 @@ void noinstr irqentry_nmi_exit(struct pt_regs *regs, irqentry_state_t irq_state)
 	instrumentation_begin();
 	ftrace_nmi_exit();
 	if (irq_state.lockdep) {
-		trace_hardirqs_on_prepare();
+		/* trace_hardirqs_on_prepare(); */
 		lockdep_hardirqs_on_prepare();
 	}
 	instrumentation_end();

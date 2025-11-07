@@ -54,8 +54,6 @@
 
 #include "tick-internal.h"
 
-#define CREATE_TRACE_POINTS
-#include <trace/events/timer.h>
 
 __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 
@@ -518,7 +516,7 @@ static void enqueue_timer(struct timer_base *base, struct timer_list *timer,
 	__set_bit(idx, base->pending_map);
 	timer_set_idx(timer, idx);
 
-	trace_timer_start(timer, timer->expires, timer->flags);
+	/* trace_timer_start(timer, timer->expires, timer->flags); */
 
 	/*
 	 * Check whether this is the new first expiring timer. The
@@ -554,13 +552,13 @@ static inline void debug_timer_assert_init(struct timer_list *timer) { }
 static inline void debug_init(struct timer_list *timer)
 {
 	debug_timer_init(timer);
-	trace_timer_init(timer);
+	/* trace_timer_init(timer); */
 }
 
 static inline void debug_deactivate(struct timer_list *timer)
 {
 	debug_timer_deactivate(timer);
-	trace_timer_cancel(timer);
+	/* trace_timer_cancel(timer); */
 }
 
 static inline void debug_assert_init(struct timer_list *timer)
@@ -1038,9 +1036,9 @@ static void call_timer_fn(struct timer_list *timer,
 	 */
 	lock_map_acquire(&lockdep_map);
 
-	trace_timer_expire_entry(timer, baseclk);
+	/* trace_timer_expire_entry(timer, baseclk); */
 	fn(timer);
-	trace_timer_expire_exit(timer);
+	/* trace_timer_expire_exit(timer); */
 
 	lock_map_release(&lockdep_map);
 

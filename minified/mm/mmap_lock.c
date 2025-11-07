@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: GPL-2.0
-#define CREATE_TRACE_POINTS
 
 
 #include <linux/mm.h>
@@ -13,9 +12,6 @@
 #include <linux/trace_events.h>
 #include <linux/local_lock.h>
 
-EXPORT_TRACEPOINT_SYMBOL(mmap_lock_start_locking);
-EXPORT_TRACEPOINT_SYMBOL(mmap_lock_acquire_returned);
-EXPORT_TRACEPOINT_SYMBOL(mmap_lock_released);
 
 
 int trace_mmap_lock_reg(void)

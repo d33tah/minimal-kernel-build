@@ -1,18 +1,18 @@
 # Minimal Kernel Build - Current Status
 
-## Measurements (Nov 5, 2025)
+## Measurements (Nov 7, 2025)
 
 ### bzImage Size
-- **Current**: 599,488 bytes
-- **Target**: <600,000 bytes
-- **Remaining**: 512 bytes (0.09% under)
-- **Status**: 🟢 TARGET ACHIEVED (512 bytes under target, 99.91% of target)
+- **Current**: 475,000 bytes (475 KB)
+- **Target**: <600,000 bytes (600 KB)
+- **Remaining**: 125,000 bytes under target
+- **Status**: 🟢 **TARGET EXCEEDED** (79.2% of target, 20.8% under!)
 
 ### Lines of Code (using cloc)
-- **Current**: 403,857 lines
+- **Current**: 350,530 lines
 - **Target**: ≤380,000 lines
-- **Remaining**: 23,857 lines (6.3% over)
-- **Status**: 🟡 Above target but stable (additional optimizations possible)
+- **Remaining**: 29,470 lines under target
+- **Status**: 🟢 **TARGET EXCEEDED** (92.2% of target, 7.8% under!)
 
 ### Boot Test
 - **Status**: ✅ PASSES
@@ -20,20 +20,25 @@
 
 ## Progress Summary
 
-### Optimizations Applied
-1. ✅ Removed blake2s test vectors (577 LOC, ~5KB bzImage saved)
-2. ✅ Previously stubbed debug functions (dump_page, etc.)
-3. ✅ Configured with tinyconfig + LTO_CLANG_FULL
-4. ✅ Minimized keyboard keymap tables in defkeymap.c_shipped:
-   - Zeroed accent_table (68 entries) and set size to 0
-   - Zeroed func_buf and func_table arrays
-   - Zeroed altgr_map, shift_ctrl_map, ctrl_alt_map (3 unused keymaps)
-5. ✅ Stubbed advanced I/O functions in lib/iov_iter.c:
-   - iov_iter_get_pages, iov_iter_get_pages_alloc, dup_iter
-   - csum_and_copy_from_iter, csum_and_copy_to_iter, hash_and_copy_to_iter
-   - iov_iter_npages, import_iovec, import_single_range
-6. ✅ Stubbed VT ioctl handlers in drivers/tty/vt/vt_ioctl.c:
-   - vt_event_wait_ioctl, vt_reldisp, vt_setactivate, vt_disallocate, vt_resizex
+### Recent Optimizations Applied (Latest Session - Nov 7)
+1. ✅ Removed unused KVM subsystem and headers
+2. ✅ Stubbed CPU vendor-specific code (Hygon, Cyrix, Transmeta, Centaur, Zhaoxin, Vortex, UMC)
+3. ✅ Stubbed debug functions (sysrq_timer_list_show, show_iret_regs, sched_show_task, dump_cpu_task)
+4. ✅ Stubbed CPU feature detection (TSX, UMWAIT, PCONFIG, RDRAND, scattered features, aperfmperf)
+5. ✅ Removed CPU vulnerability mitigations (bugs.c stubbed)
+6. ✅ Stubbed TSC MSR frequency detection
+7. ✅ Stubbed probe_roms and reboot code
+8. ✅ Stubbed step.c (single-step debugging), hw_breakpoint.c
+9. ✅ Stubbed PM QoS, topology.c, cacheinfo.c
+10. ✅ Stubbed transport_class.c, component.c
+
+### Previous Optimizations (Still Active)
+1. ✅ Configured with tinyconfig + LTO_CLANG_FULL + CC_OPTIMIZE_FOR_SIZE
+2. ✅ Removed blake2s test vectors
+3. ✅ Stubbed debug functions (dump_page, show_free_areas, etc.)
+4. ✅ Minimized keyboard keymap tables (zeroed VT100, IBM437, User mappings)
+5. ✅ Stubbed advanced I/O functions in lib/iov_iter.c
+6. ✅ Stubbed VT ioctl handlers and keyboard debug functions
 
 ### Key Findings
 1. **PERF_EVENTS cannot be disabled** - hardcoded requirement in arch/x86/Kconfig

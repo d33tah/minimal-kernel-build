@@ -70,10 +70,8 @@
 #include <asm/mmu_context.h>
 #include <asm/tlb.h>
 
-#include <trace/events/task.h>
 #include "internal.h"
 
-#include <trace/events/sched.h>
 
 static int bprm_creds_from_file(struct linux_binprm *bprm);
 
@@ -1022,7 +1020,7 @@ EXPORT_SYMBOL_GPL(__get_task_comm);
 void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 {
 	task_lock(tsk);
-	trace_task_rename(tsk, buf);
+	/* trace_task_rename(tsk, buf); */
 	strscpy_pad(tsk->comm, buf, sizeof(tsk->comm));
 	task_unlock(tsk);
 	perf_event_comm(tsk, exec);
@@ -1574,7 +1572,7 @@ static int exec_binprm(struct linux_binprm *bprm)
 	}
 
 	audit_bprm(bprm);
-	trace_sched_process_exec(current, old_pid, bprm);
+	/* trace_sched_process_exec(current, old_pid, bprm); */
 	ptrace_event(PTRACE_EVENT_EXEC, old_vpid);
 	proc_exec_connector(current);
 	return 0;

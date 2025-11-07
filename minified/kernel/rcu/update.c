@@ -44,7 +44,6 @@
 #include <linux/irq_work.h>
 
 
-#define CREATE_TRACE_POINTS
 
 #include "rcu.h"
 
@@ -152,7 +151,7 @@ void do_trace_rcu_torture_read(const char *rcutorturename, struct rcu_head *rhp,
 			       unsigned long secs,
 			       unsigned long c_old, unsigned long c)
 {
-	trace_rcu_torture_read(rcutorturename, rhp, secs, c_old, c);
+	/* trace_rcu_torture_read(rcutorturename, rhp, secs, c_old, c); */
 }
 EXPORT_SYMBOL_GPL(do_trace_rcu_torture_read);
 #else

@@ -14,6 +14,7 @@
 #include <linux/debug_locks.h>
 
 #include <linux/capability.h>
+#include <linux/security.h>
 
 #include <linux/wait_bit.h>
 #include <linux/jiffies.h>
@@ -71,11 +72,6 @@
 #include <asm/switch_to.h>
 #include <asm/tlb.h>
 
-#define CREATE_TRACE_POINTS
-
-#include <trace/events/sched.h>
-#undef CREATE_TRACE_POINTS
-
 #include "sched.h"
 #include "stats.h"
 #include "autogroup.h"
@@ -93,17 +89,6 @@
  * Export tracepoints that act as a bare tracehook (ie: have no trace event
  * associated with them) to allow external modules to probe them.
  */
-EXPORT_TRACEPOINT_SYMBOL_GPL(pelt_cfs_tp);
-EXPORT_TRACEPOINT_SYMBOL_GPL(pelt_rt_tp);
-EXPORT_TRACEPOINT_SYMBOL_GPL(pelt_dl_tp);
-EXPORT_TRACEPOINT_SYMBOL_GPL(pelt_irq_tp);
-EXPORT_TRACEPOINT_SYMBOL_GPL(pelt_se_tp);
-EXPORT_TRACEPOINT_SYMBOL_GPL(pelt_thermal_tp);
-EXPORT_TRACEPOINT_SYMBOL_GPL(sched_cpu_capacity_tp);
-EXPORT_TRACEPOINT_SYMBOL_GPL(sched_overutilized_tp);
-EXPORT_TRACEPOINT_SYMBOL_GPL(sched_util_est_cfs_tp);
-EXPORT_TRACEPOINT_SYMBOL_GPL(sched_util_est_se_tp);
-EXPORT_TRACEPOINT_SYMBOL_GPL(sched_update_nr_running_tp);
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
@@ -517,8 +502,6 @@ void resched_curr(struct rq *rq)
 
 	if (set_nr_and_not_polling(curr))
 		smp_send_reschedule(cpu);
-	else
-		trace_sched_wake_idle_without_ipi(cpu);
 }
 
 void resched_cpu(int cpu)
@@ -823,7 +806,7 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 {
 	check_preempt_curr(rq, p, wake_flags);
 	WRITE_ONCE(p->__state, TASK_RUNNING);
-	trace_sched_wakeup(p);
+	/* trace_sched_wakeup(p); */
 
 }
 
@@ -1083,9 +1066,9 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 		if (!ttwu_state_match(p, state, &success))
 			goto out;
 
-		trace_sched_waking(p);
+		/* trace_sched_waking(p); */
 		WRITE_ONCE(p->__state, TASK_RUNNING);
-		trace_sched_wakeup(p);
+		/* trace_sched_wakeup(p); */
 		goto out;
 	}
 
@@ -1093,14 +1076,13 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 * If we are going to wake up a thread waiting for CONDITION we
 	 * need to ensure that CONDITION=1 done by the caller can not be
 	 * reordered with p->state check below. This pairs with smp_store_mb()
-	 * in set_current_state() that the waiting thread does.
+	 * in set_current_state() and with changes of p->state from
+	 * TASK_INTERRUPTIBLE/TASK_UNINTERRUPTIBLE to TASK_RUNNING.
 	 */
-	raw_spin_lock_irqsave(&p->pi_lock, flags);
-	smp_mb__after_spinlock();
-	if (!ttwu_state_match(p, state, &success))
-		goto unlock;
+	if (READ_ONCE(p->__state) == TASK_RUNNING)
+		goto out;
 
-	trace_sched_waking(p);
+	/* trace_sched_waking(p); */
 
 	/*
 	 * Ensure we load p->on_rq _after_ p->state, otherwise it would
@@ -1378,7 +1360,7 @@ void wake_up_new_task(struct task_struct *p)
 	post_init_entity_util_avg(p);
 
 	activate_task(rq, p, ENQUEUE_NOCLOCK);
-	trace_sched_wakeup_new(p);
+	/* trace_sched_wakeup_new(p); */
 	check_preempt_curr(rq, p, WF_FORK);
 	task_rq_unlock(rq, p, &rf);
 }
@@ -1486,7 +1468,7 @@ prepare_task_switch(struct rq *rq, struct task_struct *prev,
 {
 	kcov_prepare_switch(prev);
 	sched_info_switch(rq, prev, next);
-	perf_event_task_sched_out(prev, next);
+	/* perf_event_task_sched_out(prev, next); */
 	rseq_preempt(prev);
 	fire_sched_out_preempt_notifiers(prev, next);
 	kmap_local_sched_out();
@@ -1551,7 +1533,7 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	 */
 	prev_state = READ_ONCE(prev->__state);
 	vtime_task_switch(prev);
-	perf_event_task_sched_in(prev, current);
+	/* perf_event_task_sched_in(prev, current); */
 	finish_task(prev);
 	tick_nohz_task_switch();
 	finish_lock_switch(rq);
@@ -1863,7 +1845,7 @@ void scheduler_tick(void)
 	if (sched_feat(LATENCY_WARN) && resched_latency)
 		resched_latency_warn(cpu, resched_latency);
 
-	perf_event_task_tick();
+	/* perf_event_task_tick(); */
 
 }
 
@@ -1880,7 +1862,7 @@ static inline void preempt_latency_start(int val)
 {
 	if (preempt_count() == val) {
 		unsigned long ip = get_lock_parent_ip();
-		trace_preempt_off(CALLER_ADDR0, ip);
+		/* trace_preempt_off(CALLER_ADDR0, ip); */
 	}
 }
 
@@ -2198,7 +2180,7 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 		migrate_disable_switch(rq, prev);
 		psi_sched_switch(prev, next, !task_on_rq_queued(prev));
 
-		trace_sched_switch(sched_mode & SM_MASK_PREEMPT, prev, next, prev_state);
+		/* trace_sched_switch(sched_mode & SM_MASK_PREEMPT, prev, next, prev_state); */
 
 		/* Also unlocks the rq: */
 		rq = context_switch(rq, prev, next, &rf);
@@ -4085,5 +4067,5 @@ const u32 sched_prio_to_wmult[40] = {
 
 void call_trace_sched_update_nr_running(struct rq *rq, int count)
 {
-        trace_sched_update_nr_running_tp(rq, count);
+        /* trace_sched_update_nr_running_tp(rq, count); */
 }

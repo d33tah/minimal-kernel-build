@@ -94,8 +94,6 @@
 #include <asm/tlbflush.h>
 #include <asm/io.h>
 
-#define CREATE_TRACE_POINTS
-#include <trace/events/percpu.h>
 
 #include "percpu-internal.h"
 

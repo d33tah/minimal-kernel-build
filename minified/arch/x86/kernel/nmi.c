@@ -35,8 +35,6 @@
 #include <asm/nospec-branch.h>
 #include <asm/sev.h>
 
-#define CREATE_TRACE_POINTS
-#include <trace/events/nmi.h>
 
 struct nmi_desc {
 	raw_spinlock_t lock;
@@ -140,7 +138,7 @@ static int nmi_handle(unsigned int type, struct pt_regs *regs)
 		thishandled = a->handler(type, regs);
 		handled += thishandled;
 		delta = sched_clock() - delta;
-		trace_nmi_handler(a->handler, (int)delta, thishandled);
+		/* trace_nmi_handler(a->handler, (int)delta, thishandled); */
 
 		nmi_check_duration(a, delta);
 	}

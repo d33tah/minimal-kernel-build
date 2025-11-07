@@ -65,7 +65,7 @@ void __show_regs(struct pt_regs *regs, enum show_regs_mode mode,
 
 	savesegment(gs, gs);
 
-	show_ip(regs, log_lvl);
+
 
 	printk("%sEAX: %08lx EBX: %08lx ECX: %08lx EDX: %08lx\n",
 		log_lvl, regs->ax, regs->bx, regs->cx, regs->dx);

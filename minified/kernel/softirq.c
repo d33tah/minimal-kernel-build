@@ -30,8 +30,6 @@
 
 #include <asm/softirq_stack.h>
 
-#define CREATE_TRACE_POINTS
-#include <trace/events/irq.h>
 
 /*
    - No shared variables, all the data are CPU local.
@@ -292,9 +290,9 @@ restart:
 
 		kstat_incr_softirqs_this_cpu(vec_nr);
 
-		trace_softirq_entry(vec_nr);
+		/* trace_softirq_entry(vec_nr); */
 		h->action(h);
-		trace_softirq_exit(vec_nr);
+		/* trace_softirq_exit(vec_nr); */
 		if (unlikely(prev_count != preempt_count())) {
 			pr_err("huh, entered softirq %u %s %p with preempt_count %08x, exited with %08x?\n",
 			       vec_nr, softirq_to_name[vec_nr], h->action,
@@ -425,7 +423,7 @@ void raise_softirq(unsigned int nr)
 void __raise_softirq_irqoff(unsigned int nr)
 {
 	lockdep_assert_irqs_disabled();
-	trace_softirq_raise(nr);
+	/* trace_softirq_raise(nr); */
 	or_softirq_pending(1UL << nr);
 }
 

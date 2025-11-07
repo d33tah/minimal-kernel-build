@@ -51,8 +51,6 @@
 #include <linux/uaccess.h>
 #include <asm/sections.h>
 
-#include <trace/events/initcall.h>
-#define CREATE_TRACE_POINTS
 
 
 #include "printk_ringbuffer.h"
@@ -1298,12 +1296,12 @@ void __init console_init(void)
 	 * inform about problems etc..
 	 */
 	ce = __con_initcall_start;
-	trace_initcall_level("console");
+	/* trace_initcall_level("console"); */
 	while (ce < __con_initcall_end) {
 		call = initcall_from_entry(ce);
-		trace_initcall_start(call);
+		/* trace_initcall_start(call); */
 		ret = call();
-		trace_initcall_finish(call, ret);
+		/* trace_initcall_finish(call, ret); */
 		ce++;
 	}
 }

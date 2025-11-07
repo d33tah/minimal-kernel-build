@@ -31,7 +31,7 @@
 #include <linux/utsname.h>
 #include <linux/mm.h>
 #include <linux/uio.h>
-#include <linux/poll.h>
+
 #include <linux/personality.h>
 #include <linux/stat.h>
 #include <linux/rwsem.h>
@@ -51,11 +51,11 @@
 
 #define AA(__x)		((unsigned long)(__x))
 
-SYSCALL_DEFINE3(ia32_truncate64, const char __user *, filename,
-		unsigned long, offset_low, unsigned long, offset_high)
+/* Stub ia32_truncate64 - 32-bit compatibility not needed for minimal kernel */
+asmlinkage long sys_ia32_truncate64(const char __user *filename,
+				   unsigned long offset_low, unsigned long offset_high)
 {
-	return ksys_truncate(filename,
-			    ((loff_t) offset_high << 32) | offset_low);
+	return -ENOSYS; /* Not implemented */
 }
 
 SYSCALL_DEFINE3(ia32_ftruncate64, unsigned int, fd,

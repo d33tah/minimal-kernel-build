@@ -3,7 +3,6 @@
 #include <linux/percpu.h>
 #include <linux/preempt.h>
 #include <asm/msr.h>
-#define CREATE_TRACE_POINTS
 #include <asm/msr-trace.h>
 
 struct msr *msrs_alloc(void)

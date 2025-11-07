@@ -23,7 +23,6 @@
 #include <asm/traps.h>
 #include <asm/thermal.h>
 
-#define CREATE_TRACE_POINTS
 #include <asm/trace/irq_vectors.h>
 
 DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);

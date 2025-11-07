@@ -32,7 +32,6 @@
 #include <linux/semaphore.h>
 #include <linux/spinlock.h>
 #include <linux/ftrace.h>
-#include <trace/events/lock.h>
 
 static noinline void __down(struct semaphore *sem);
 static noinline int __down_interruptible(struct semaphore *sem);
@@ -242,9 +241,9 @@ static inline int __sched __down_common(struct semaphore *sem, long state,
 {
 	int ret;
 
-	trace_contention_begin(sem, 0);
+	/* trace_contention_begin(sem, 0); */
 	ret = ___down_common(sem, state, timeout);
-	trace_contention_end(sem, ret);
+	/* trace_contention_end(sem, ret); */
 
 	return ret;
 }

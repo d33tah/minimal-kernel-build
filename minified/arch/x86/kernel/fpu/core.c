@@ -25,7 +25,6 @@
 #include "legacy.h"
 #include "xstate.h"
 
-#define CREATE_TRACE_POINTS
 #include <asm/trace/fpu.h>
 
 

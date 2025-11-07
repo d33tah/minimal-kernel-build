@@ -288,11 +288,9 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 #define DEFINE_TRACE(name, proto, args)		\
 	DEFINE_TRACE_FN(name, NULL, NULL, PARAMS(proto), PARAMS(args));
 
-#define EXPORT_TRACEPOINT_SYMBOL_GPL(name)				\
 	EXPORT_SYMBOL_GPL(__tracepoint_##name);				\
 	EXPORT_SYMBOL_GPL(__traceiter_##name);				\
 	EXPORT_STATIC_CALL_GPL(tp_func_##name)
-#define EXPORT_TRACEPOINT_SYMBOL(name)					\
 	EXPORT_SYMBOL(__tracepoint_##name);				\
 	EXPORT_SYMBOL(__traceiter_##name);				\
 	EXPORT_STATIC_CALL(tp_func_##name)
@@ -327,8 +325,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 
 #define DEFINE_TRACE_FN(name, reg, unreg, proto, args)
 #define DEFINE_TRACE(name, proto, args)
-#define EXPORT_TRACEPOINT_SYMBOL_GPL(name)
-#define EXPORT_TRACEPOINT_SYMBOL(name)
 
 #endif /* TRACEPOINTS_ENABLED */
 
@@ -508,3 +504,28 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 	DECLARE_EVENT_NOP(name, PARAMS(proto), PARAMS(args))
 
 #endif /* ifdef TRACE_EVENT (see note above) */
+
+/* Stub trace functions for minimal kernel - removed trace events */
+static inline void trace_sys_exit(struct pt_regs *regs, long ret) {}
+static inline void trace_alarmtimer_fired(void *alarm, ktime_t now) {}
+static inline void trace_alarmtimer_start(void *alarm, ktime_t now) {}
+static inline void trace_alarmtimer_cancel(void *alarm, ktime_t now) {}
+static inline void trace_mm_shrink_slab_start(void *shrinker, void *shrinkctl, long nr, long nr_to_scan) {}
+static inline void trace_mm_shrink_slab_end(void *shrinker, int nid, unsigned long freed, long nr, long new_nr, int total_scan) {}
+static inline void trace_mm_vmscan_throttled(int nid, unsigned long timeout) {}
+static inline void trace_mm_vmscan_write_folio(void *folio) {}
+static inline void trace_mm_vmscan_lru_isolate(int reclaim_idx, unsigned int order, unsigned long nr_to_scan, unsigned long nr_scanned, unsigned long nr_taken, int lru) {}
+static inline void trace_mm_vmscan_lru_shrink_inactive(int nid, unsigned long nr_scanned, unsigned long nr_reclaimed, int priority, int file) {}
+static inline void trace_mm_vmscan_lru_shrink_active(int nid, unsigned long nr_taken, unsigned long nr_activate, unsigned long nr_deactivate, int priority, int file) {}
+static inline void trace_mm_vmscan_direct_reclaim_begin(unsigned int order, gfp_t gfp_mask) {}
+static inline void trace_mm_vmscan_direct_reclaim_end(unsigned long nr_reclaimed) {}
+static inline void trace_mm_vmscan_kswapd_sleep(int nid) {}
+static inline void trace_mm_vmscan_kswapd_wake(int nid, int zid, int order) {}
+static inline void trace_mm_vmscan_wakeup_kswapd(int nid, int zid, int order) {}
+static inline void trace_global_dirty_state(unsigned long bg_thresh, unsigned long thresh) {}
+static inline void trace_bdi_dirty_ratelimit(struct bdi_writeback *wb, unsigned long dirty_rate, unsigned long task_ratelimit) {}
+static inline void trace_balance_dirty_pages(struct bdi_writeback *wb, unsigned long thresh, unsigned long bg_thresh, unsigned long dirty, unsigned long bdi_thresh, unsigned long bdi_dirty, unsigned long start_time) {}
+static inline void trace_wbc_writepage(struct writeback_control *wbc, struct backing_dev_info *bdi) {}
+static inline void trace_writeback_dirty_folio(struct folio *folio, struct address_space *mapping) {}
+static inline void trace_folio_wait_writeback(struct folio *folio, struct address_space *mapping) {}
+static inline void trace_mm_lru_activate(struct folio *folio) {}

@@ -34,7 +34,6 @@
 #include <asm/vdso.h>			/* fixup_vdso_exception()	*/
 #include <asm/irq_stack.h>
 
-#define CREATE_TRACE_POINTS
 #include <asm/trace/exceptions.h>
 
 /*

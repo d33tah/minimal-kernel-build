@@ -40,8 +40,6 @@
 
 #include "internal.h"
 
-#define CREATE_TRACE_POINTS
-#include <trace/events/pagemap.h>
 
 /* How many pages do we try to swap or page in/out together? */
 int page_cluster;

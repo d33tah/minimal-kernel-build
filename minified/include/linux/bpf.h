@@ -1,23 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-/* Copyright (c) 2011-2014 PLUMgrid, http://plumgrid.com
- */
+/* Minimal BPF header for stubbed functionality */
 #ifndef _LINUX_BPF_H
 #define _LINUX_BPF_H 1
 
-#include <uapi/linux/bpf.h>
+/* Stubbed BPF functions - all return no-ops since BPF is disabled */
+static inline void bpf_task_storage_free(struct task_struct *task)
+{
+}
 
-#include <linux/workqueue.h>
-#include <linux/file.h>
-#include <linux/percpu.h>
-#include <linux/err.h>
-#include <linux/rbtree_latch.h>
-#include <linux/numa.h>
-#include <linux/mm_types.h>
-#include <linux/wait.h>
-#include <linux/refcount.h>
-#include <linux/mutex.h>
-#include <linux/module.h>
-#include <linux/kallsyms.h>
+#endif /* _LINUX_BPF_H */
 #include <linux/capability.h>
 #include <linux/sched/mm.h>
 #include <linux/slab.h>

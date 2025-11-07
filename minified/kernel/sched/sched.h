@@ -68,8 +68,6 @@
 #include <linux/wait_bit.h>
 
 
-#include <trace/events/power.h>
-#include <trace/events/sched.h>
 
 #include "../workqueue_internal.h"
 
@@ -1155,9 +1153,9 @@ static inline void add_nr_running(struct rq *rq, unsigned count)
 	unsigned prev_nr = rq->nr_running;
 
 	rq->nr_running = prev_nr + count;
-	if (trace_sched_update_nr_running_tp_enabled()) {
+	/* if (trace_sched_update_nr_running_tp_enabled()) {
 		call_trace_sched_update_nr_running(rq, count);
-	}
+	} */
 
 
 	sched_update_tick_dependency(rq);
@@ -1166,9 +1164,9 @@ static inline void add_nr_running(struct rq *rq, unsigned count)
 static inline void sub_nr_running(struct rq *rq, unsigned count)
 {
 	rq->nr_running -= count;
-	if (trace_sched_update_nr_running_tp_enabled()) {
+	/* if (trace_sched_update_nr_running_tp_enabled()) {
 		call_trace_sched_update_nr_running(rq, -count);
-	}
+	} */
 
 	/* Check if we still need preemption */
 	sched_update_tick_dependency(rq);

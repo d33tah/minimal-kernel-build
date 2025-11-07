@@ -46,8 +46,6 @@
 #include <linux/cgroup.h>
 #include <linux/audit.h>
 
-#define CREATE_TRACE_POINTS
-#include <trace/events/signal.h>
 
 #include <asm/param.h>
 #include <linux/uaccess.h>
@@ -1112,7 +1110,7 @@ out_set:
 
 	complete_signal(sig, t, type);
 ret:
-	trace_signal_generate(sig, info, t, type != PIDTYPE_PID, result);
+	/* trace_signal_generate(sig, info, t, type != PIDTYPE_PID, result); */
 	return ret;
 }
 
@@ -1889,7 +1887,7 @@ int send_sigqueue(struct sigqueue *q, struct pid *pid, enum pid_type type)
 	complete_signal(sig, t, type);
 	result = TRACE_SIGNAL_DELIVERED;
 out:
-	trace_signal_generate(sig, &q->info, t, type != PIDTYPE_PID, result);
+	/* trace_signal_generate(sig, &q->info, t, type != PIDTYPE_PID, result); */
 	unlock_task_sighand(t, &flags);
 ret:
 	rcu_read_unlock();
@@ -2641,7 +2639,7 @@ relock:
 		ka = &sighand->action[signr-1];
 
 		/* Trace actually delivered signals. */
-		trace_signal_deliver(signr, &ksig->info, ka);
+		/* trace_signal_deliver(signr, &ksig->info, ka); */
 
 		if (ka->sa.sa_handler == SIG_IGN) /* Do nothing.  */
 			continue;

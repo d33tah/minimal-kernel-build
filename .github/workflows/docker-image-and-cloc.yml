@@ -1,0 +1,50 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile-build-and-run --tag my-image-name:$(date +%s)
+
+    - name: Install cloc
+      run: sudo apt-get update && sudo apt-get install -y cloc
+
+    - name: Calculate LOC Metric
+      id: loc_metric
+      run: |
+        LOC_VALUE=$(cd minified ; cloc . | tac | sed -n 2p | awk '{ print $NF }')
+        echo "metric_value=$LOC_VALUE" >> $GITHUB_OUTPUT
+
+    - name: Report Metric to Job Summary
+      run: |
+        echo "## 📉 Metryka Linii Kodu (LOC)" >> $GITHUB_STEP_SUMMARY
+        echo "Im mniej, tym lepiej." >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Metryka | Wartość |" >> $GITHUB_STEP_SUMMARY
+        echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+        echo "| **Liczba Linii Kodu (LOC)** | \`${{ steps.loc_metric.outputs.metric_value }}\` |" >> $GITHUB_STEP_SUMMARY
+
+    - name: Post Metric as PR Comment
+      if: github.event_name == 'pull_request'
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        header: loc-metric-summary
+        message: |
+          ## 📉 Metryka Postępu (Lines of Code)
+          
+          | Metryka | Wartość |
+          |---|---|
+          | **Liczba Linii Kodu (LOC)** | `${{ steps.loc_metric.outputs.metric_value }}` |
+          
+          *(Im mniej, tym lepiej)*

@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM debian:trixie
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y build-essential llvm clang lld flex yacc bison bc qemu-system-x86 expect
 ADD minified minified

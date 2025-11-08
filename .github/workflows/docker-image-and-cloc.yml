@@ -23,7 +23,7 @@ jobs:
     - name: Calculate LOC Metric
       id: loc_metric
       run: |
-        LOC_VALUE=$(cd minified ; cloc . | tac | sed -n 2p | awk '{ print $NF }')
+        LOC_VALUE=$(cd minified ; cloc . | tac | sed -n 2p | awk '{ print $NF }' | numfmt --grouping)
         echo "metric_value=$LOC_VALUE" >> $GITHUB_OUTPUT
 
     - name: Report Metric to Job Summary

@@ -7,3 +7,5 @@ FIXUP.md
 *.log
 *.pid
 *.txt
+.tmp.*
+*.tmp

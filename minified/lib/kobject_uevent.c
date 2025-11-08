@@ -20,14 +20,14 @@
 #include <linux/kmod.h>
 #include <linux/slab.h>
 #include <linux/socket.h>
-#include <linux/skbuff.h>
+/* #include <linux/skbuff.h> */
 #include <linux/netlink.h>
 #include <linux/uidgid.h>
 #include <linux/uuid.h>
 #include <linux/ctype.h>
-#include <net/sock.h>
-#include <net/netlink.h>
-#include <net/net_namespace.h>
+/* #include <net/sock.h> */
+/* #include <net/netlink.h> */
+/* #include <net/net_namespace.h> */
 
 
 u64 uevent_seqnum;

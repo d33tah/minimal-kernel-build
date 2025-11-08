@@ -1,2 +1,0 @@
-make[1]: *** No rule to make target 'scripts/mod/devicetable-offsets.s', needed by 'scripts/mod/devicetable-offsets.h'.  Stop.
-make: *** [Makefile:1195: prepare0] Error 2

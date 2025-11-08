@@ -3,3 +3,6 @@
 *.lds
 *.cmd
 FIXUP.md
+*.md
+*.log
+*.pid

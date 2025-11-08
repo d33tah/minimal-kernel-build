@@ -32,10 +32,6 @@
 #include <linux/console.h>
 #include <linux/nmi.h>
 #include <linux/percpu.h>
-#include <linux/kmod.h>
-#include <linux/kprobes.h>
-#include <linux/vmalloc.h>
-#include <linux/kernel_stat.h>
 #include <linux/start_kernel.h>
 #include <linux/security.h>
 #include <linux/smp.h>

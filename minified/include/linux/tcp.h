@@ -3,36 +3,97 @@
 #ifndef _LINUX_TCP_H
 #define _LINUX_TCP_H
 
+#include <net/sock.h>
+
 /* TCP functionality stubbed since networking is disabled */
+
+/* Minimal stub definitions for missing structs */
+struct tcphdr {
+	__be16	source;
+	__be16	dest;
+	__be32	seq;
+	__be32	ack_seq;
+	__be16	doff:4,
+		res1:4;
+	__be16	window;
+	__sum16	check;
+	__be16	urg_ptr;
+};
+
+struct inet_request_sock {
+	int	dummy;
+};
+
+struct request_sock_queue {
+	struct fastopen_queue {
+		int max_qlen;
+	} fastopenq;
+};
+
+struct inet_connection_sock {
+	struct request_sock_queue icsk_accept_queue;
+};
+
+struct inet_timewait_sock {
+	struct {
+		struct {
+			u32 skc_tw_rcv_nxt;
+			u32 skc_tw_snd_nxt;
+		} __tw_common;
+	} tw_sk;
+};
+
+struct minmax {
+	int dummy;
+};
+
+struct saved_syn {
+	u32 secid;
+	u32 peer_secid;
+	u16 mac_hdrlen;
+	u16 network_hdrlen;
+	u16 tcp_hdrlen;
+};
+
+struct request_sock {
+	struct saved_syn *saved_syn;
+};
+
+#define TCP_SYN_RECV 0
+
+static inline struct inet_connection_sock *inet_csk(const struct sock *sk)
+{
+	return (struct inet_connection_sock *)sk;
+}
 
 static inline struct tcphdr *tcp_hdr(const struct sk_buff *skb)
 {
-	return (struct tcphdr *)skb_transport_header(skb);
+	return NULL; /* Stubbed */
 }
 
 static inline unsigned int __tcp_hdrlen(const struct tcphdr *th)
 {
-	return th->doff * 4;
+	return th ? th->doff * 4 : 0;
 }
 
 static inline unsigned int tcp_hdrlen(const struct sk_buff *skb)
 {
-	return __tcp_hdrlen(tcp_hdr(skb));
+	return 0; /* Stubbed */
 }
 
 static inline struct tcphdr *inner_tcp_hdr(const struct sk_buff *skb)
 {
-	return (struct tcphdr *)skb_inner_transport_header(skb);
+	return NULL; /* Stubbed */
 }
 
 static inline unsigned int inner_tcp_hdrlen(const struct sk_buff *skb)
 {
-	return inner_tcp_hdr(skb)->doff * 4;
+	return 0; /* Stubbed */
 }
 
 static inline unsigned int tcp_optlen(const struct sk_buff *skb)
 {
-	return (tcp_hdr(skb)->doff - 5) * 4;
+	return 0; /* Stubbed */
 }
 
 /* TCP Fast Open */
@@ -113,6 +174,7 @@ struct tcp_request_sock {
 	u32				rcv_isn;
 	u32				snt_isn;
 	u32				ts_off;
+	u32				ts_recent;
 	u32				last_oow_ack_time; /* last SYNACK */
 	u32				rcv_nxt; /* the ack # by SYNACK. For
 						  * FastOpen it's the seq#
@@ -124,6 +186,26 @@ struct tcp_request_sock {
 static inline struct tcp_request_sock *tcp_rsk(const struct request_sock *req)
 {
 	return (struct tcp_request_sock *)req;
+}
+
+static inline u32 tcp_rsk_ts_recent(const struct request_sock *req)
+{
+	return tcp_rsk(req)->ts_recent;
+}
+
+static inline void tcp_rsk_set_ts_recent(const struct request_sock *req, u32 ts_recent)
+{
+	tcp_rsk(req)->ts_recent = ts_recent;
+}
+
+static inline u32 tcp_rsk_tfo_listener(const struct request_sock *req)
+{
+	return tcp_rsk(req)->tfo_listener;
+}
+
+static inline void tcp_rsk_set_tfo_listener(const struct request_sock *req, u32 tfo_listener)
+{
+	tcp_rsk(req)->tfo_listener = tfo_listener;
 }
 
 struct tcp_sock {
@@ -439,7 +521,7 @@ static inline bool tcp_passive_fastopen(const struct sock *sk)
 static inline void fastopen_queue_tune(struct sock *sk, int backlog)
 {
 	struct request_sock_queue *queue = &inet_csk(sk)->icsk_accept_queue;
-	int somaxconn = READ_ONCE(sock_net(sk)->core.sysctl_somaxconn);
+	int somaxconn = SOMAXCONN;
 
 	queue->fastopenq.max_qlen = min_t(unsigned int, backlog, somaxconn);
 }

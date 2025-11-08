@@ -333,6 +333,7 @@ struct vfs_ns_cap_data {
 /* Allow configuration of audit via unicast netlink socket */
 
 #define CAP_AUDIT_CONTROL    30
+#define CAP_OPT_NONE    0
 
 /* Set or remove capabilities on files.
    Map uid=0 into a child user namespace. */

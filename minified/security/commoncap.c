@@ -6,6 +6,7 @@
 #include <linux/audit.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
+#include <linux/security.h>
 
 #include <linux/file.h>
 #include <linux/mm.h>

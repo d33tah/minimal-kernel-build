@@ -39,6 +39,7 @@
 #include <linux/random.h>
 #include <kunit/test.h>
 #include <linux/sort.h>
+#include <linux/trace_stubs.h>
 
 #include <linux/debugfs.h>
 

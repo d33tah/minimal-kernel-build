@@ -52,8 +52,8 @@
 #define AA(__x)		((unsigned long)(__x))
 
 /* Stub ia32_truncate64 - 32-bit compatibility not needed for minimal kernel */
-asmlinkage long sys_ia32_truncate64(const char __user *filename,
-				   unsigned long offset_low, unsigned long offset_high)
+SYSCALL_DEFINE3(ia32_truncate64, const char __user *, filename,
+		unsigned long, offset_low, unsigned long, offset_high)
 {
 	return -ENOSYS; /* Not implemented */
 }

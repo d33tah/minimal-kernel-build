@@ -39,11 +39,15 @@ struct fd {
 #define FDPUT_FPUT       1
 #define FDPUT_POS_UNLOCK 2
 
+extern void __f_unlock_pos(struct file *);
+
 static inline void fdput(struct fd fd)
 {
-	if (fd.flags & FDPUT_FPUT)
-		fput(fd.file);
+	if (fd.flags & FDPUT_POS_UNLOCK)
+		__f_unlock_pos(fd.file);
+	fput(fd.file);
 }
+extern void fput(struct file *file);
 
 extern struct file *fget(unsigned int fd);
 extern struct file *fget_raw(unsigned int fd);
@@ -51,7 +55,6 @@ extern struct file *fget_task(struct task_struct *task, unsigned int fd);
 extern unsigned long __fdget(unsigned int fd);
 extern unsigned long __fdget_raw(unsigned int fd);
 extern unsigned long __fdget_pos(unsigned int fd);
-extern void __f_unlock_pos(struct file *);
 
 static inline struct fd __to_fd(unsigned long v)
 {

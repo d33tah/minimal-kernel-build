@@ -48,6 +48,7 @@
 #include <linux/pkeys.h>
 #include <linux/oom.h>
 #include <linux/sched/mm.h>
+#include <linux/trace_stubs.h>
 
 #include <linux/uaccess.h>
 #include <asm/cacheflush.h>

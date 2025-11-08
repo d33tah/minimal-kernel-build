@@ -1,0 +1,5 @@
+  HOSTCC  scripts/mod/file2alias.o
+fixdep: error opening file: scripts/mod/devicetable-offsets.h: No such file or directory
+make[1]: *** [scripts/Makefile.host:112: scripts/mod/file2alias.o] Error 2
+make[1]: *** Deleting file 'scripts/mod/file2alias.o'
+make: *** [Makefile:1195: prepare0] Error 2

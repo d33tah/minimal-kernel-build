@@ -8,6 +8,7 @@
 #include <linux/livepatch.h>
 #include <linux/audit.h>
 #include <linux/tick.h>
+#include <linux/tracepoint.h>
 
 #include "common.h"
 

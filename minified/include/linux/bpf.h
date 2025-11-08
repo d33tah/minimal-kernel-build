@@ -1,19 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /* Minimal BPF header for stubbed functionality */
 #ifndef _LINUX_BPF_H
-#define _LINUX_BPF_H 1
+#define _LINUX_BPF_H
 
-/* Stubbed BPF functions - all return no-ops since BPF is disabled */
-static inline void bpf_task_storage_free(struct task_struct *task)
-{
-}
-
-#endif /* _LINUX_BPF_H */
-#include <linux/capability.h>
-#include <linux/sched/mm.h>
-#include <linux/slab.h>
-#include <linux/percpu-refcount.h>
+#include <linux/types.h>
 #include <linux/bpfptr.h>
+
+#define KSYM_NAME_LEN 128
 #include <linux/btf.h>
 
 struct bpf_verifier_env;
@@ -1491,10 +1484,6 @@ bpf_base_func_proto(enum bpf_func_id func_id)
 	return NULL;
 }
 
-static inline void bpf_task_storage_free(struct task_struct *task)
-{
-}
-
 static inline bool bpf_prog_has_kfunc_call(const struct bpf_prog *prog)
 {
 	return false;
@@ -1589,6 +1578,10 @@ static inline int bpf_prog_test_run_syscall(struct bpf_prog *prog,
 
 
 static inline void bpf_sk_reuseport_detach(struct sock *sk)
+{
+}
+
+static inline void bpf_task_storage_free(struct task_struct *task)
 {
 }
 

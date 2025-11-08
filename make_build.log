@@ -1,0 +1,1060 @@
+  CALL    scripts/atomic/check-atomics.sh
+  CALL    scripts/checksyscalls.sh
+warning: generated include/linux/atomic/atomic-long.h has been modified.
+warning: generated include/linux/atomic/atomic-arch-fallback.h has been modified.
+  CHK     include/generated/compile.h
+  CC      mm/filemap.o
+  CC      mm/mempool.o
+  CC      kernel/entry/common.o
+  CC      security/commoncap.o
+  CC      fs/ramfs/inode.o
+  CC      drivers/base/core.o
+In file included from mm/filemap.c:23:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:13:
+./include/linux/cgroup.h:41:44: warning: declaration of 'struct cgroupstats' will not be visible outside of this function [-Wvisibility]
+   41 | static inline int cgroupstats_build(struct cgroupstats *stats,
+      |                                            ^
+In file included from security/commoncap.c:6:
+./include/linux/audit.h:267:41: warning: declaration of 'struct kern_ipc_perm' will not be visible outside of this function [-Wvisibility]
+  267 | static inline void audit_ipc_obj(struct kern_ipc_perm *ipcp)
+      |                                         ^
+In file included from mm/filemap.c:23:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from mm/filemap.c:23:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from mm/filemap.c:23:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+In file included from security/commoncap.c:14:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:13:
+./include/linux/cgroup.h:41:44: warning: declaration of 'struct cgroupstats' will not be visible outside of this function [-Wvisibility]
+   41 | static inline int cgroupstats_build(struct cgroupstats *stats,
+      |                                            ^
+In file included from kernel/entry/common.c:4:
+In file included from ./include/linux/entry-common.h:7:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+In file included from security/commoncap.c:14:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from security/commoncap.c:14:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from kernel/entry/common.c:5:
+In file included from ./include/linux/resume_user_mode.h:8:
+In file included from ./include/linux/memcontrol.h:13:
+./include/linux/cgroup.h:41:44: warning: declaration of 'struct cgroupstats' will not be visible outside of this function [-Wvisibility]
+   41 | static inline int cgroupstats_build(struct cgroupstats *stats,
+      |                                            ^
+In file included from security/commoncap.c:14:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+In file included from mm/mempool.c:20:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from mm/mempool.c:20:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from mm/filemap.c:40:
+./include/linux/delayacct.h:27:44: warning: declaration of 'struct taskstats' will not be visible outside of this function [-Wvisibility]
+   27 | static inline int delayacct_add_tsk(struct taskstats *d,
+      |                                            ^
+In file included from kernel/entry/common.c:5:
+In file included from ./include/linux/resume_user_mode.h:8:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from kernel/entry/common.c:5:
+In file included from ./include/linux/resume_user_mode.h:8:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from mm/mempool.c:20:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+security/commoncap.c:225:17: error: use of undeclared identifier 'CAP_OPT_NONE'
+  225 |                         CAP_SETPCAP, CAP_OPT_NONE) == 0)
+      |                                      ^
+mm/filemap.c:697:11: warning: unused variable 'eseq' [-Wunused-variable]
+  697 |         errseq_t eseq = errseq_set(&mapping->wb_err, err);
+      |                  ^~~~
+In file included from kernel/entry/common.c:5:
+In file included from ./include/linux/resume_user_mode.h:8:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+security/commoncap.c:923:24: error: use of undeclared identifier 'LSM_UNSAFE_PTRACE'
+  923 |             ((bprm->unsafe & ~LSM_UNSAFE_PTRACE) ||
+      |                               ^
+In file included from fs/ramfs/inode.c:32:
+In file included from ./include/linux/backing-dev.h:15:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from fs/ramfs/inode.c:32:
+In file included from ./include/linux/backing-dev.h:15:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from mm/mempool.c:21:
+In file included from mm/slab.h:160:
+In file included from ./include/linux/memcontrol.h:13:
+./include/linux/cgroup.h:41:44: warning: declaration of 'struct cgroupstats' will not be visible outside of this function [-Wvisibility]
+   41 | static inline int cgroupstats_build(struct cgroupstats *stats,
+      |                                            ^
+security/commoncap.c:927:23: error: use of undeclared identifier 'LSM_UNSAFE_NO_NEW_PRIVS'
+  927 |                     (bprm->unsafe & LSM_UNSAFE_NO_NEW_PRIVS)) {
+      |                                     ^
+In file included from kernel/entry/common.c:9:
+./include/linux/audit.h:267:41: warning: declaration of 'struct kern_ipc_perm' will not be visible outside of this function [-Wvisibility]
+  267 | static inline void audit_ipc_obj(struct kern_ipc_perm *ipcp)
+      |                                         ^
+security/commoncap.c:1132:7: error: use of undeclared identifier 'LSM_SETID_RE'
+ 1132 |         case LSM_SETID_RE:
+      |              ^
+security/commoncap.c:1133:7: error: use of undeclared identifier 'LSM_SETID_ID'
+ 1133 |         case LSM_SETID_ID:
+      |              ^
+In file included from fs/ramfs/inode.c:32:
+In file included from ./include/linux/backing-dev.h:15:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+security/commoncap.c:1134:7: error: use of undeclared identifier 'LSM_SETID_RES'
+ 1134 |         case LSM_SETID_RES:
+      |              ^
+security/commoncap.c:1141:7: error: use of undeclared identifier 'LSM_SETID_FS'
+ 1141 |         case LSM_SETID_FS:
+      |              ^
+security/commoncap.c:1313:9: error: use of undeclared identifier 'CAP_OPT_NONE'
+ 1313 |                                     CAP_OPT_NONE) != 0)                 /*[4]*/
+      |                                     ^
+security/commoncap.c:1411:20: error: use of undeclared identifier 'CAP_OPT_NOAUDIT'
+ 1411 |                                 CAP_SYS_ADMIN, CAP_OPT_NOAUDIT) == 0)
+      |                                                ^
+kernel/entry/common.c:243:3: error: call to undeclared function 'trace_sys_exit'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  243 |                 trace_sys_exit(regs, syscall_get_return_value(current, regs));
+      |                 ^
+kernel/entry/common.c:243:3: note: did you mean 'ftrace_nmi_exit'?
+./include/linux/ftrace_irq.h:11:20: note: 'ftrace_nmi_exit' declared here
+   11 | static inline void ftrace_nmi_exit(void)
+      |                    ^
+security/commoncap.c:1431:13: error: use of undeclared identifier 'dac_mmap_min_addr'; did you mean 'cap_mmap_addr'?
+ 1431 |         if (addr < dac_mmap_min_addr) {
+      |                    ^~~~~~~~~~~~~~~~~
+      |                    cap_mmap_addr
+security/commoncap.c:1427:5: note: 'cap_mmap_addr' declared here
+ 1427 | int cap_mmap_addr(unsigned long addr)
+      |     ^
+6 warnings and 1 error generated.
+security/commoncap.c:1433:7: error: use of undeclared identifier 'CAP_OPT_NONE'
+ 1433 |                                   CAP_OPT_NONE);
+      |                                   ^
+5 warnings and 11 errors generated.
+make[2]: *** [scripts/Makefile.build:249: kernel/entry/common.o] Error 1
+make[1]: *** [scripts/Makefile.build:466: kernel/entry] Error 2
+3 warnings generated.
+make: *** [Makefile:1839: kernel] Error 2
+make: *** Waiting for unfinished jobs....
+  CC      fs/open.o
+make[1]: *** [scripts/Makefile.build:249: security/commoncap.o] Error 1
+make: *** [Makefile:1839: security] Error 2
+4 warnings generated.
+  CC      drivers/char/mem.o
+In file included from drivers/base/core.c:24:
+./include/linux/blkdev.h:281:39: warning: declaration of 'struct blk_zone' will not be visible outside of this function [-Wvisibility]
+  281 | typedef int (*report_zones_cb)(struct blk_zone *zone, unsigned int idx,
+      |                                       ^
+  AR      fs/ramfs/built-in.a
+In file included from drivers/base/core.c:27:
+./include/linux/netdevice.h:40:10: fatal error: 'net/xdp.h' file not found
+   40 | #include <net/xdp.h>
+      |          ^~~~~~~~~~~
+  CC      mm/oom_kill.o
+  CC      fs/read_write.o
+1 warning and 1 error generated.
+make[2]: *** [scripts/Makefile.build:249: drivers/base/core.o] Error 1
+make[1]: *** [scripts/Makefile.build:466: drivers/base] Error 2
+make[1]: *** Waiting for unfinished jobs....
+  CC      drivers/char/random.o
+6 warnings generated.
+  CC      fs/file_table.o
+In file included from fs/open.c:12:
+In file included from ./include/linux/fsnotify.h:16:
+./include/linux/audit.h:267:41: warning: declaration of 'struct kern_ipc_perm' will not be visible outside of this function [-Wvisibility]
+  267 | static inline void audit_ipc_obj(struct kern_ipc_perm *ipcp)
+      |                                         ^
+In file included from drivers/char/mem.c:13:
+In file included from ./include/linux/miscdevice.h:7:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from drivers/char/mem.c:13:
+In file included from ./include/linux/miscdevice.h:7:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from fs/open.c:14:
+In file included from ./include/linux/tty.h:10:
+In file included from ./include/linux/tty_driver.h:9:
+In file included from ./include/linux/cdev.h:8:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from fs/open.c:14:
+In file included from ./include/linux/tty.h:10:
+In file included from ./include/linux/tty_driver.h:9:
+In file included from ./include/linux/cdev.h:8:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from fs/open.c:14:
+In file included from ./include/linux/tty.h:10:
+In file included from ./include/linux/tty_driver.h:9:
+In file included from ./include/linux/cdev.h:8:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+In file included from drivers/char/mem.c:13:
+In file included from ./include/linux/miscdevice.h:7:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+In file included from mm/oom_kill.c:30:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:13:
+./include/linux/cgroup.h:41:44: warning: declaration of 'struct cgroupstats' will not be visible outside of this function [-Wvisibility]
+   41 | static inline int cgroupstats_build(struct cgroupstats *stats,
+      |                                            ^
+In file included from fs/read_write.c:14:
+In file included from ./include/linux/fsnotify.h:16:
+./include/linux/audit.h:267:41: warning: declaration of 'struct kern_ipc_perm' will not be visible outside of this function [-Wvisibility]
+  267 | static inline void audit_ipc_obj(struct kern_ipc_perm *ipcp)
+      |                                         ^
+In file included from mm/oom_kill.c:30:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from fs/read_write.c:17:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+In file included from mm/oom_kill.c:30:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from fs/open.c:27:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+In file included from mm/oom_kill.c:30:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+In file included from drivers/char/mem.c:25:
+In file included from ./include/linux/shmem_fs.h:6:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:13:
+./include/linux/cgroup.h:41:44: warning: declaration of 'struct cgroupstats' will not be visible outside of this function [-Wvisibility]
+   41 | static inline int cgroupstats_build(struct cgroupstats *stats,
+      |                                            ^
+In file included from mm/oom_kill.c:31:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+4 warnings generated.
+5 warnings generated.
+  CC      fs/super.o
+In file included from drivers/char/random.c:39:
+In file included from ./include/linux/blkdev.h:9:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_devic  CC      fs/char_dev.o
+e_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from drivers/char/random.c:39:
+In file included from ./include/linux/blkdev.h:9:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+5 warnings generated.
+In file included from drivers/char/random.c:39:
+In file included from ./include/linux/blkdev.h:9:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+2 warnings generated.
+In file included from drivers/char/random.c:39:
+./include/linux/blkdev.h:281:39: warning: declaration of 'struct blk_zone' will not be visible outside of this function [-Wvisibility]
+  281 | typedef int (*report_zones_cb)(struct blk_zone *zone, unsigned int idx,
+      |                                       ^
+  CC      mm/fadvise.o
+  CC      mm/page-writeback.o
+In file included from drivers/char/random.c:50:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+In file included from drivers/char/random.c:54:
+In file included from ./include/linux/suspend.h:5:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:13:
+./include/linux/cgroup.h:41:44: warning: declaration of 'struct cgroupstats' will not be visible outside of this function [-Wvisibility]
+   41 | static inline int cgroupstats_build(struct cgroupstats *stats,
+      |                                            ^
+In file included from fs/file_table.c:22:
+In file included from ./include/linux/cdev.h:8:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from fs/file_table.c:22:
+In file included from ./include/linux/cdev.h:8:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from fs/file_table.c:22:
+In file included from ./include/linux/cdev.h:8:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+In file included from fs/file_table.c:29:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:13:
+./include/linux/cgroup.h:41:44: warning: declaration of 'struct cgroupstats' will not be visible outside of this function [-Wvisibility]
+   41 | static inline int cgroupstats_build(struct cgroupstats *stats,
+      |                                            ^
+4 warnings generated.
+6 warnings generated.
+  CC      mm/folio-compat.o
+  AR      drivers/char/built-in.a
+make: *** [Makefile:1839: drivers] Error 2
+  CC      mm/readahead.o
+In file included from fs/char_dev.c:21:
+In file included from ./include/linux/cdev.h:8:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from fs/super.c:26:
+In file included from ./include/linux/blkdev.h:9:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from fs/char_dev.c:21:
+In file included from ./include/linux/cdev.h:8:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from fs/super.c:26:
+In file included from ./include/linux/blkdev.h:9:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from fs/char_dev.c:21:
+In file included from ./include/linux/cdev.h:8:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+In file included from fs/super.c:26:
+In file included from ./include/linux/blkdev.h:9:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+In file included from fs/super.c:26:
+./include/linux/blkdev.h:281:39: warning: declaration of 'struct blk_zone' will not be visible outside of this function [-Wvisibility]
+  281 | typedef int (*report_zones_cb)(struct blk_zone *zone, unsigned int idx,
+      |                                       ^
+In file included from mm/page-writeback.c:20:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:13:
+./include/linux/cgroup.h:41:44: warning: declaration of 'struct cgroupstats' will not be visible outside of this function [-Wvisibility]
+   41 | static inline int cgroupstats_build(struct cgroupstats *stats,
+      |                                            ^
+In file included from mm/page-writeback.c:20:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from mm/page-writeback.c:20:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from mm/page-writeback.c:20:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+In file included from mm/page-writeback.c:27:
+./include/linux/blkdev.h:281:39: warning: declaration of 'struct blk_zone' will not be visible outside of this function [-Wvisibility]
+  281 | typedef int (*report_zones_cb)(struct blk_zone *zone, unsigned int idx,
+      |                                       ^
+In file included from mm/page-writeback.c:34:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+In file included from mm/fadvise.c:16:
+In file included from ./include/linux/backing-dev.h:15:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from mm/fadvise.c:16:
+In file included from ./include/linux/backing-dev.h:15:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+3 warnings generated.
+mm/page-writeback.c:327:3: error: call to undeclared function 'trace_global_dirty_state'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  327 |                 trace_global_dirty_state(bg_thresh, thresh);
+      |                 ^
+In file included from mm/fadvise.c:16:
+In file included from ./include/linux/backing-dev.h:15:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+mm/page-writeback.c:1167:2: error: call to undeclared function 'trace_bdi_dirty_ratelimit'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+ 1167 |         trace_bdi_dirty_ratelimit(wb, dirty_rate, task_ratelimit);
+      |         ^
+In file included from mm/fadvise.c:20:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+./include/linux/syscalls.h:327:15: warning: declaration of 'struct ipc_namespace' will not be visible outside of this function [-Wvisibility]
+  327 |                      struct ipc_namespace *ns);
+      |                             ^
+4 warnings generated.
+  CC      fs/stat.o
+mm/page-writeback.c:1591:4: error: call to undeclared function 'trace_balance_dirty_pages'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+ 1591 |                         trace_balance_dirty_pages(wb,
+      |                         ^
+mm/page-writeback.c:1591:4: note: did you mean 'balance_dirty_pages'?
+mm/page-writeback.c:1397:13: note: 'balance_dirty_pages' declared here
+ 1397 | static void balance_dirty_pages(struct bdi_writeback *wb,
+      |             ^
+mm/page-writeback.c:1620:3: error: call to undeclared function 'trace_balance_dirty_pages'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+ 1620 |                 trace_balance_dirty_pages(wb,
+      |                 ^
+In file included from mm/fadvise.c:21:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:13:
+./include/linux/cgroup.h:41:44: warning: declaration of 'struct cgroupstats' will not be visible outside of this function [-Wvisibility]
+   41 | static inline int cgroupstats_build(struct cgroupstats *stats,
+      |                                            ^
+mm/page-writeback.c:2068:4: error: call to undeclared function 'trace_wbc_writepage'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+ 2068 |                         trace_wbc_writepage(wbc, inode_to_bdi(mapping->host));
+      |                         ^
+  CC      fs/exec.o
+6 warnings generated.
+mm/page-writeback.c:2267:2: error: call to undeclared function 'trace_writeback_dirty_folio'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+ 2267 |         trace_writeback_dirty_folio(folio, mapping);
+      |         ^
+mm/page-writeback.c:2740:3: error: call to undeclared function 'trace_folio_wait_writeback'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+ 2740 |                 trace_folio_wait_writeback(folio, folio_mapping(folio));
+      |                 ^
+mm/page-writeback.c:2740:3: note: did you mean 'folio_wait_writeback'?
+mm/page-writeback.c:2737:6: note: 'folio_wait_writeback' declared here
+ 2737 | void folio_wait_writeback(struct folio *folio)
+      |      ^
+ 2738 | {
+ 2739 |         while (folio_test_writeback(folio)) {
+ 2740 |                 trace_folio_wait_writeback(folio, folio_mapping(folio));
+      |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                 folio_wait_writeback
+mm/page-writeback.c:2762:3: error: call to undeclared function 'trace_folio_wait_writeback'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+ 2762 |                 trace_folio_wait_writeback(folio, folio_mapping(folio));
+      |                 ^
+6 warnings and 8 errors generated.
+make[1]: *** [scripts/Makefile.build:250: mm/page-writeback.o] Error 1
+make[1]: *** Waiting for unfinished jobs....
+  CC      fs/pipe.o
+  CC      fs/namei.o
+In file included from mm/folio-compat.c:7:
+In file included from ./include/linux/migrate.h:8:
+In file included from ./include/linux/hugetlb.h:9:
+./include/linux/cgroup.h:41:44: warning: declaration of 'struct cgroupstats' will not be visible outside of this function [-Wvisibility]
+   41 | static inline int cgroupstats_build(struct cgroupstats *stats,
+      |                                            ^
+In file included from mm/readahead.c:116:
+In file included from ./include/linux/blkdev.h:9:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from mm/readahead.c:116:
+In file included from ./include/linux/blkdev.h:9:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from mm/folio-compat.c:9:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from mm/folio-compat.c:9:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from mm/readahead.c:116:
+In file included from ./include/linux/blkdev.h:9:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+In file included from mm/folio-compat.c:9:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+In file included from mm/readahead.c:116:
+./include/linux/blkdev.h:281:39: warning: declaration of 'struct blk_zone' will not be visible outside of this function [-Wvisibility]
+  281 | typedef int (*report_zones_cb)(struct blk_zone *zone, unsigned int idx,
+      |                                       ^
+In file included from mm/readahead.c:125:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+./include/linux/syscalls.h:327:15: warning: declaration of 'struct ipc_namespace' will not be visible outside of this function [-Wvisibility]
+  327 |                      struct ipc_namespace *ns);
+      |                             ^
+4 warnings generated.
+In file included from mm/readahead.c:127:
+In file included from ./include/linux/mm_inline.h:7:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:13:
+./include/linux/cgroup.h:41:44: warning: declaration of 'struct cgroupstats' will not be visible outside of this function [-Wvisibility]
+   41 | static inline int cgroupstats_build(struct cgroupstats *stats,
+      |                                            ^
+  CC      fs/fcntl.o
+7 warnings generated.
+In file included from fs/stat.c:5:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+./include/linux/syscalls.h:327:15: warning: declaration of 'struct ipc_namespace' will not be visible outside of this function [-Wvisibility]
+  327 |                      struct ipc_namespace *ns);
+      |                             ^
+make: *** [Makefile:1839: mm] Error 2
+  CC      fs/ioctl.o
+2 warnings generated.
+In file included from fs/exec.c:34:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:13:
+./include/linux/cgroup.h:41:44: warning: declaration of 'struct cgroupstats' will not be visible outside of this function [-Wvisibility]
+   41 | static inline int cgroupstats_build(struct cgroupstats *stats,
+      |                                            ^
+In file included from fs/exec.c:34:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+  CC      fs/readdir.o
+In file included from fs/exec.c:34:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from fs/exec.c:34:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+In file included from fs/pipe.c:6:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+./include/linux/syscalls.h:327:15: warning: declaration of 'struct ipc_namespace' will not be visible outside of this function [-Wvisibility]
+  327 |                      struct ipc_namespace *ns);
+      |                             ^
+2 warnings generated.
+In file included from fs/exec.c:55:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+In file included from fs/exec.c:56:
+./include/linux/tsacct_kern.h:13:13: warning: declaration of 'struct taskstats' will not be visible outside of this function [-Wvisibility]
+   13 |                                  struct taskstats *stats, struct task_struct *tsk)
+      |                                         ^
+./include/linux/tsacct_kern.h:16:41: warning: declaration of 'struct taskstats' will not be visible outside of this function [-Wvisibility]
+   16 | static inline void xacct_add_tsk(struct taskstats *stats, struct task_struct *p)
+      |                                         ^
+  CC      fs/select.o
+In file included from fs/fcntl.c:7:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+./include/linux/syscalls.h:327:15: warning: declaration of 'struct ipc_namespace' will not be visible outside of this function [-Wvisibility]
+  327 |                      struct ipc_namespace *ns);
+      |                             ^
+2 warnings generated.
+In file included from fs/namei.c:26:
+In file included from ./include/linux/fsnotify.h:16:
+./include/linux/audit.h:267:41: warning: declaration of 'struct kern_ipc_perm' will not be visible outside of this function [-Wvisibility]
+  267 | static inline void audit_ipc_obj(struct kern_ipc_perm *ipcp)
+      |                                         ^
+  CC      fs/dcache.o
+In file included from fs/namei.c:30:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+In file included from fs/namei.c:45:
+In file included from fs/mount.h:4:
+./include/linux/poll.h:123:9: warning: '__MAP' macro redefined [-Wmacro-redefined]
+  123 | #define __MAP(v, from, to) \
+      |         ^
+./include/linux/syscalls.h:117:9: note: previous definition is here
+  117 | #define __MAP(n,...) __MAP##n(__VA_ARGS__)
+      |         ^
+7 warnings generated.
+In file included from fs/ioctl.c:6:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+./include/linux/syscalls.h:327:15: warning: declaration of 'struct ipc_namespace' will not be visible outside of this function [-Wvisibility]
+  327 |                      struct ipc_namespace *ns);
+      |                             ^
+fs/namei.c:3700:1: error: expected parameter declarator
+ 3700 | SYSCALL_DEFINE4(mknodat, int, dfd, const char __user *, filename, umode_t, mode,
+      | ^
+./include/linux/syscalls.h:147:52: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                                    ^
+fs/namei.c:3700:1: error: expected ')'
+./include/linux/syscalls.h:147:52: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                                    ^
+fs/namei.c:3700:1: note: to match this '('
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:122:34: note: expanded from macro '__SYSCALL_DEFINEx'
+  122 |         static long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__));     \
+      |                                         ^
+fs/namei.c:3700:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+ 3700 | SYSCALL_DEFINE4(mknodat, int, dfd, const char __user *, filename, umode_t, mode,
+      | ^
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:122:29: note: expanded from macro '__SYSCALL_DEFINEx'
+  122 |         static long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__));     \
+      |                                    ^
+fs/namei.c:3700:1: error: a function declaration without a prototype is deprecated in all versions of C [-Werror,-Wstrict-prototypes]
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:122:34: note: expanded from macro '__SYSCALL_DEFINEx'
+  122 |         static long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__));     \
+      |                                         ^
+fs/namei.c:3700:1: error: expected parameter declarator
+./include/linux/syscalls.h:147:52: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                                    ^
+fs/namei.c:3700:1: error: expected ')'
+./include/linux/syscalls.h:147:52: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                                    ^
+fs/namei.c:3700:1: note: to match this '('
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:123:41: note: expanded from macro '__SYSCALL_DEFINEx'
+  123 |         static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__));\
+      |                                                ^
+fs/namei.c:3700:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+ 3700 | SYSCALL_DEFINE4(mknodat, int, dfd, const char __user *, filename, umode_t, mode,
+      | ^
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:123:36: note: expanded from macro '__SYSCALL_DEFINEx'
+  123 |         static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__));\
+      |                                           ^
+fs/namei.c:3700:1: error: a function declaration without a prototype is deprecated in all versions of C [-Werror,-Wstrict-prototypes]
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:123:41: note: expanded from macro '__SYSCALL_DEFINEx'
+  123 |         static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__));\
+      |                                                ^
+fs/namei.c2: warning3700s: generated1.
+: error: call to undeclared function '__MAP'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:125:2: note: expanded from macro '__SYSCALL_DEFINEx'
+  125 |         __IA32_SYS_STUBx(x, name, __VA_ARGS__)                          \
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:100:7: note: expanded from macro '__IA32_SYS_STUBx'
+  100 |                     SC_IA32_REGS_TO_ARGS(x, __VA_ARGS__))
+      |                     ^
+./arch/x86/include/asm/syscall_wrapper.h:63:2: note: expanded from macro 'SC_IA32_REGS_TO_ARGS'
+   63 |         __MAP(x,__SC_ARGS                                               \
+      |         ^
+fs/namei.c:3700:1: error: expected expression
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:125:2: note: expanded from macro '__SYSCALL_DEFINEx'
+  125 |         __IA32_SYS_STUBx(x, name, __VA_ARGS__)                          \
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:100:7: note: expanded from macro '__IA32_SYS_STUBx'
+  100 |                     SC_IA32_REGS_TO_ARGS(x, __VA_ARGS__))
+      |                     ^
+./arch/x86/include/asm/syscall_wrapper.h:64:9: note: expanded from macro 'SC_IA32_REGS_TO_ARGS'
+   64 |               ,,(unsigned int)regs->bx,,(unsigned int)regs->cx          \
+      |                ^
+fs/namei.c:3700:1: error: expected expression
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:125:2: note: expanded from macro '__SYSCALL_DEFINEx'
+  125 |         __IA32_SYS_STUBx(x, name, __VA_ARGS__)                          \
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:100:7: note: expanded from macro '__IA32_SYS_STUBx'
+  100 |                     SC_IA32_REGS_TO_ARGS(x, __VA_ARGS__))
+      |                     ^
+./arch/x86/include/asm/syscall_wrapper.h:64:33: note: expanded from macro 'SC_IA32_REGS_TO_ARGS'
+   64 |               ,,(unsigned int)regs->bx,,(unsigned int)regs->cx          \
+      |                                        ^
+fs/namei.c:3700:1: error: expected expression
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:125:2: note: expanded from macro '__SYSCALL_DEFINEx'
+  125 |         __IA32_SYS_STUBx(x, name, __VA_ARGS__)                          \
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:100:7: note: expanded from macro '__IA32_SYS_STUBx'
+  100 |                     SC_IA32_REGS_TO_ARGS(x, __VA_ARGS__))
+      |                     ^
+./arch/x86/include/asm/syscall_wrapper.h:65:9: note: expanded from macro 'SC_IA32_REGS_TO_ARGS'
+   65 |               ,,(unsigned int)regs->dx,,(unsigned int)regs->si          \
+      |                ^
+fs/namei.c:3700:1: error: expected expression
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:125:2: note: expanded from macro '__SYSCALL_DEFINEx'
+  125 |         __IA32_SYS_STUBx(x, name, __VA_ARGS__)                          \
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:100:7: note: expanded from macro '__IA32_SYS_STUBx'
+  100 |                     SC_IA32_REGS_TO_ARGS(x, __VA_ARGS__))
+      |                     ^
+./arch/x86/include/asm/syscall_wrapper.h:65:33: note: expanded from macro 'SC_IA32_REGS_TO_ARGS'
+   65 |               ,,(unsigned int)regs->dx,,(unsigned int)regs->si          \
+      |                                        ^
+fs/namei.c:3700:1: error: expected expression
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:125:2: note: expanded from macro '__SYSCALL_DEFINEx'
+  125 |         __IA32_SYS_STUBx(x, name, __VA_ARGS__)                          \
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:100:7: note: expanded from macro '__IA32_SYS_STUBx'
+  100 |                     SC_IA32_REGS_TO_ARGS(x, __VA_ARGS__))
+      |                     ^
+./arch/x86/include/asm/syscall_wrapper.h:66:9: note: expanded from macro 'SC_IA32_REGS_TO_ARGS'
+   66 |               ,,(unsigned int)regs->di,,(unsigned int)regs->bp)
+      |                ^
+fs/namei.c:3700:1: error: expected expression
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:125:2: note: expanded from macro '__SYSCALL_DEFINEx'
+  125 |         __IA32_SYS_STUBx(x, name, __VA_ARGS__)                          \
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:100:7: note: expanded from macro '__IA32_SYS_STUBx'
+  100 |                     SC_IA32_REGS_TO_ARGS(x, __VA_ARGS__))
+      |                     ^
+./arch/x86/include/asm/syscall_wrapper.h:66:33: note: expanded from macro 'SC_IA32_REGS_TO_ARGS'
+   66 |               ,,(unsigned int)regs->di,,(unsigned int)regs->bp)
+      |                                        ^
+fs/namei.c:3700:1: error: use of undeclared identifier '__SC_ARGS'
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:125:2: note: expanded from macro '__SYSCALL_DEFINEx'
+  125 |         __IA32_SYS_STUBx(x, name, __VA_ARGS__)                          \
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:100:7: note: expanded from macro '__IA32_SYS_STUBx'
+  100 |                     SC_IA32_REGS_TO_ARGS(x, __VA_ARGS__))
+      |                     ^
+./arch/x86/include/asm/syscall_wrapper.h:63:10: note: expanded from macro 'SC_IA32_REGS_TO_ARGS'
+   63 |         __MAP(x,__SC_ARGS                                               \
+      |                 ^
+fs/namei.c:3700:1: error: expected parameter declarator
+./include/linux/syscalls.h:147:52: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                                    ^
+fs/namei.c:3700:1: error: expected ')'
+./include/linux/syscalls.h:147:52: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                                    ^
+fs/namei.c:3700:1: note: to match this '('
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:126:34: note: expanded from macro '__SYSCALL_DEFINEx'
+  126 |         static long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__))      \
+      |                                         ^
+fs/namei.c:3700:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+ 3700 | SYSCALL_DEFINE4(mknodat, int, dfd, const char __user *, filename, umode_t, mode,
+      | ^
+./include/linux/syscalls.h:147:36: note: expanded from macro 'SYSCALL_DEFINE4'
+  147 | #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+      |                                    ^
+./include/linux/syscalls.h:155:2: note: expanded from macro 'SYSCALL_DEFINEx'
+  155 |         __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+      |         ^
+./arch/x86/include/asm/syscall_wrapper.h:126:29: note: expanded from macro '__SYSCALL_DEFINEx'
+  126 |         static long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__))      \
+      |                                    ^
+fatal error: too many errors emitted, stopping now [-ferror-limit=]
+3 warnings and 20 errors generated.
+  CC      fs/inode.o
+make[1]: *** [scripts/Makefile.build:249: fs/namei.o] Error 1
+make[1]: *** Waiting for unfinished jobs....
+In file included from fs/readdir.c:4:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+./include/linux/syscalls.h:327:15: warning: declaration of 'struct ipc_namespace' will not be visible outside of this function [-Wvisibility]
+  327 |                      struct ipc_namespace *ns);
+      |                             ^
+2 warnings generated.
+In file included from fs/select.c:5:
+./include/linux/syscalls.h:131:49: warning: declaration of 'struct trace_event_call' will not be visible outside of this function [-Wvisibility]
+  131 | static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+      |                                                 ^
+./include/linux/syscalls.h:327:15: warning: declaration of 'struct ipc_namespace' will not be visible outside of this function [-Wvisibility]
+  327 |                      struct ipc_namespace *ns);
+      |                             ^
+2 warnings generated.
+In file included from fs/dcache.c:23:
+In file included from ./include/linux/fsnotify.h:16:
+./include/linux/audit.h:267:41: warning: declaration of 'struct kern_ipc_perm' will not be visible outside of this function [-Wvisibility]
+  267 | static inline void audit_ipc_obj(struct kern_ipc_perm *ipcp)
+      |                                         ^
+In file included from fs/inode.c:9:
+In file included from ./include/linux/backing-dev.h:15:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from fs/inode.c:9:
+In file included from ./include/linux/backing-dev.h:15:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from fs/inode.c:9:
+In file included from ./include/linux/backing-dev.h:15:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+In file included from fs/inode.c:11:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:13:
+./include/linux/cgroup.h:41:44: warning: declaration of 'struct cgroupstats' will not be visible outside of this function [-Wvisibility]
+   41 | static inline int cgroupstats_build(struct cgroupstats *stats,
+      |                                            ^
+fs/inode.c:1634:4: error: call to undeclared function 'trace_writeback_lazytime_iput'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+ 1634 |                         trace_writeback_lazytime_iput(inode);
+      |                         ^
+4 warnings and 1 error generated.
+make[1]: *** [scripts/Makefile.build:249: fs/inode.o] Error 1
+1 warning generated.
+make: *** [Makefile:1839: fs] Error 2

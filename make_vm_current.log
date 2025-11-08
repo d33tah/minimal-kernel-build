@@ -1,0 +1,64 @@
+#
+# configuration written to .config
+#
+Using .config as base
+Merging ./kernel/configs/tiny.config
+Value of CONFIG_BLK_DEV_INITRD is redefined by fragment ./kernel/configs/tiny.config:
+Previous value: # CONFIG_BLK_DEV_INITRD is not set
+New value: CONFIG_BLK_DEV_INITRD=y
+
+Value of CONFIG_BINFMT_ELF is redefined by fragment ./kernel/configs/tiny.config:
+Previous value: # CONFIG_BINFMT_ELF is not set
+New value: CONFIG_BINFMT_ELF=y
+
+Value of CONFIG_TTY is redefined by fragment ./kernel/configs/tiny.config:
+Previous value: # CONFIG_TTY is not set
+New value: CONFIG_TTY=y
+
+Value of CONFIG_CC_OPTIMIZE_FOR_SIZE is redefined by fragment ./kernel/configs/tiny.config:
+Previous value: # CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+New value: CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+
+Value of CONFIG_KERNEL_GZIP is redefined by fragment ./kernel/configs/tiny.config:
+Previous value: CONFIG_KERNEL_GZIP=y
+New value: # CONFIG_KERNEL_GZIP is not set
+
+Value of CONFIG_KERNEL_XZ is redefined by fragment ./kernel/configs/tiny.config:
+Previous value: # CONFIG_KERNEL_XZ is not set
+New value: CONFIG_KERNEL_XZ=y
+
+Value of CONFIG_LTO_NONE is redefined by fragment ./kernel/configs/tiny.config:
+Previous value: CONFIG_LTO_NONE=y
+New value: # CONFIG_LTO_NONE is not set
+
+Value of CONFIG_LTO_CLANG_FULL is redefined by fragment ./kernel/configs/tiny.config:
+Previous value: # CONFIG_LTO_CLANG_FULL is not set
+New value: CONFIG_LTO_CLANG_FULL=y
+
+Merging ./arch/x86/configs/tiny.config
+Value of CONFIG_NOHIGHMEM is redefined by fragment ./arch/x86/configs/tiny.config:
+Previous value: # CONFIG_NOHIGHMEM is not set
+New value: CONFIG_NOHIGHMEM=y
+
+Value of CONFIG_HIGHMEM4G is redefined by fragment ./arch/x86/configs/tiny.config:
+Previous value: CONFIG_HIGHMEM4G=y
+New value: # CONFIG_HIGHMEM4G is not set
+
+Value of CONFIG_UNWINDER_GUESS is redefined by fragment ./arch/x86/configs/tiny.config:
+Previous value: # CONFIG_UNWINDER_GUESS is not set
+New value: CONFIG_UNWINDER_GUESS=y
+
+Value of CONFIG_UNWINDER_FRAME_POINTER is redefined by fragment ./arch/x86/configs/tiny.config:
+Previous value: CONFIG_UNWINDER_FRAME_POINTER=y
+New value: # CONFIG_UNWINDER_FRAME_POINTER is not set
+
+#
+# merged configuration written to .config (needs make)
+#
+.config:824:warning: override: CC_OPTIMIZE_FOR_SIZE changes choice state
+#
+# configuration written to .config
+#
+  SYNC    include/config/auto.conf
+make: *** [include/config/auto.conf] Deleting file 'include/generated/autoconf.h'
+make: *** [Makefile:728: include/config/auto.conf] Terminated

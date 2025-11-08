@@ -11,10 +11,11 @@
  */
 #include <linux/debug_locks.h>
 #include <linux/sched/debug.h>
-#include <linux/interrupt.h>
-#include <linux/kgdb.h>
-#include <linux/kmsg_dump.h>
+#include <linux/printk.h>
 #include <linux/kallsyms.h>
+#include <linux/kmsg_dump.h>
+#include <linux/kgdb.h>
+#include <trace/events/error_report.h>
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
 #include <linux/module.h>
@@ -586,7 +587,7 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
 	print_irqtrace_events(current);
 
 	print_oops_end_marker();
-	trace_error_report_end(ERROR_DETECTOR_WARN, (unsigned long)caller);
+	/* trace_error_report_end(ERROR_DETECTOR_WARN, (unsigned long)caller); */
 
 	/* Just a warning, don't kill lockdep. */
 	add_taint(taint, LOCKDEP_STILL_OK);

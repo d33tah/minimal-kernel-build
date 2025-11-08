@@ -25,6 +25,7 @@
 #include <linux/backing-dev.h>
 #include <linux/task_io_accounting_ops.h>
 #include <linux/blkdev.h>
+#include <linux/tracepoint.h>
 
 #include <linux/rmap.h>
 #include <linux/percpu.h>

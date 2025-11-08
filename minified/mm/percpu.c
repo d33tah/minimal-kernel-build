@@ -88,6 +88,7 @@
 #include <linux/sched.h>
 #include <linux/sched/mm.h>
 #include <linux/memcontrol.h>
+#include <linux/trace_stubs.h>
 
 #include <asm/cacheflush.h>
 #include <asm/sections.h>

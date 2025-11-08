@@ -1,0 +1,59 @@
+  CALL    scripts/checksyscalls.sh
+  CALL    scripts/atomic/check-atomics.sh
+warning: generated include/linux/atomic/atomic-long.h has been modified.
+warning: generated include/linux/atomic/atomic-arch-fallback.h has been modified.
+  CHK     include/generated/compile.h
+  CC      mm/vmscan.o
+In file included from mm/vmscan.c:20:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:13:
+./include/linux/cgroup.h:41:44: warning: declaration of 'struct cgroupstats' will not be visible outside of this function [-Wvisibility]
+   41 | static inline int cgroupstats_build(struct cgroupstats *stats,
+      |                                            ^
+In file included from mm/vmscan.c:20:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:30:
+./include/linux/device/bus.h:190:63: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  190 | bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
+      |                                                               ^
+In file included from mm/vmscan.c:20:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:31:
+./include/linux/device/class.h:140:64: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  140 | class_find_device_by_of_node(struct class *class, const struct device_node *np)
+      |                                                                ^
+In file included from mm/vmscan.c:20:
+In file included from ./include/linux/swap.h:9:
+In file included from ./include/linux/memcontrol.h:22:
+In file included from ./include/linux/writeback.h:13:
+In file included from ./include/linux/blk_types.h:11:
+In file included from ./include/linux/device.h:32:
+./include/linux/device/driver.h:185:23: warning: declaration of 'struct device_node' will not be visible outside of this function [-Wvisibility]
+  185 |                               const struct device_node *np)
+      |                                            ^
+In file included from mm/vmscan.c:28:
+./include/linux/blkdev.h:281:39: warning: declaration of 'struct blk_zone' will not be visible outside of this function [-Wvisibility]
+  281 | typedef int (*report_zones_cb)(struct blk_zone *zone, unsigned int idx,
+      |                                       ^
+In file included from mm/vmscan.c:45:
+./include/linux/delayacct.h:27:44: warning: declaration of 'struct taskstats' will not be visible outside of this function [-Wvisibility]
+   27 | static inline int delayacct_add_tsk(struct taskstats *d,
+      |                                            ^
+mm/vmscan.c:2195:2: error: call to undeclared function 'trace_mm_vmscan_lru_shrink_active'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+ 2195 |         trace_mm_vmscan_lru_shrink_active(pgdat->node_id, nr_taken, nr_activate,
+      |         ^
+mm/vmscan.c:4045:3: error: call to undeclared function 'trace_mm_vmscan_kswapd_wake'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+ 4045 |                 trace_mm_vmscan_kswapd_wake(pgdat->node_id, highest_zoneidx,
+      |                 ^
+mm/vmscan.c:4105:2: error: call to undeclared function 'trace_mm_vmscan_wakeup_kswapd'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+ 4105 |         trace_mm_vmscan_wakeup_kswapd(pgdat->node_id, highest_zoneidx, order,
+      |         ^
+6 warnings and 3 errors generated.
+make[1]: *** [scripts/Makefile.build:249: mm/vmscan.o] Error 1
+make: *** [Makefile:1839: mm] Error 2

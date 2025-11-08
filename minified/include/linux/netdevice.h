@@ -46,6 +46,7 @@
 
 #include <linux/hashtable.h>
 #include <linux/rbtree.h>
+#include <linux/u64_stats_sync.h>
 #include <net/net_trackers.h>
 #include <net/net_debug.h>
 
@@ -2029,7 +2030,7 @@ struct net_device {
 	void (*priv_destructor)(struct net_device *dev);
 
 
-	possible_net_t			nd_net;
+	struct net			*nd_net;
 
 	/* mid-layer private */
 	void				*ml_priv;
@@ -2267,13 +2268,13 @@ static inline void netdev_set_ml_priv(struct net_device *dev,
 static inline
 struct net *dev_net(const struct net_device *dev)
 {
-	return read_pnet(&dev->nd_net);
+	return read_pnet((possible_net_t *)&dev->nd_net);
 }
 
 static inline
 void dev_net_set(struct net_device *dev, struct net *net)
 {
-	write_pnet(&dev->nd_net, net);
+	dev->nd_net = net;
 }
 
 /**
@@ -4609,7 +4610,7 @@ static inline bool netif_reduces_vlan_mtu(struct net_device *dev)
 	return netif_is_macsec(dev);
 }
 
-extern struct pernet_operations __net_initdata loopback_net_ops;
+extern struct pernet_operations loopback_net_ops;
 
 /* Logging, debugging and troubleshooting/diagnostic helpers. */
 

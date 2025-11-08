@@ -1315,35 +1315,8 @@ static inline bool bpf_sk_lookup_run_v4(struct net *net, int protocol,
 					const __be32 daddr, const u16 dport,
 					const int ifindex, struct sock **psk)
 {
-	struct bpf_prog_array *run_array;
-	struct sock *selected_sk = NULL;
-	bool no_reuseport = false;
-
-	rcu_read_lock();
-	run_array = rcu_dereference(net->bpf.run_array[NETNS_BPF_SK_LOOKUP]);
-	if (run_array) {
-		struct bpf_sk_lookup_kern ctx = {
-			.family		= AF_INET,
-			.protocol	= protocol,
-			.v4.saddr	= saddr,
-			.v4.daddr	= daddr,
-			.sport		= sport,
-			.dport		= dport,
-			.ingress_ifindex	= ifindex,
-		};
-		u32 act;
-
-		act = BPF_PROG_SK_LOOKUP_RUN_ARRAY(run_array, ctx, bpf_prog_run);
-		if (act == SK_PASS) {
-			selected_sk = ctx.selected_sk;
-			no_reuseport = ctx.no_reuseport;
-		} else {
-			selected_sk = ERR_PTR(-ECONNREFUSED);
-		}
-	}
-	rcu_read_unlock();
-	*psk = selected_sk;
-	return no_reuseport;
+	*psk = NULL;
+	return false;
 }
 
 #if IS_ENABLED(CONFIG_IPV6)
@@ -1354,35 +1327,8 @@ static inline bool bpf_sk_lookup_run_v6(struct net *net, int protocol,
 					const u16 dport,
 					const int ifindex, struct sock **psk)
 {
-	struct bpf_prog_array *run_array;
-	struct sock *selected_sk = NULL;
-	bool no_reuseport = false;
-
-	rcu_read_lock();
-	run_array = rcu_dereference(net->bpf.run_array[NETNS_BPF_SK_LOOKUP]);
-	if (run_array) {
-		struct bpf_sk_lookup_kern ctx = {
-			.family		= AF_INET6,
-			.protocol	= protocol,
-			.v6.saddr	= saddr,
-			.v6.daddr	= daddr,
-			.sport		= sport,
-			.dport		= dport,
-			.ingress_ifindex	= ifindex,
-		};
-		u32 act;
-
-		act = BPF_PROG_SK_LOOKUP_RUN_ARRAY(run_array, ctx, bpf_prog_run);
-		if (act == SK_PASS) {
-			selected_sk = ctx.selected_sk;
-			no_reuseport = ctx.no_reuseport;
-		} else {
-			selected_sk = ERR_PTR(-ECONNREFUSED);
-		}
-	}
-	rcu_read_unlock();
-	*psk = selected_sk;
-	return no_reuseport;
+	*psk = NULL;
+	return false;
 }
 #endif /* IS_ENABLED(CONFIG_IPV6) */
 

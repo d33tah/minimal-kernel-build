@@ -14,6 +14,7 @@
 #include <linux/memblock.h>
 #include <linux/fsnotify.h>
 #include <linux/mount.h>
+#include <linux/tracepoint.h>
 
 
 #include <linux/buffer_head.h> /* for inode_has_buffers */

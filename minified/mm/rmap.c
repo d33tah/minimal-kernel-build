@@ -74,6 +74,7 @@
 #include <linux/memremap.h>
 #include <linux/userfaultfd_k.h>
 #include <linux/mm_inline.h>
+#include <linux/trace_stubs.h>
 
 #include <asm/tlbflush.h>
 

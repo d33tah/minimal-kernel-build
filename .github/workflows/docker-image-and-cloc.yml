@@ -20,19 +20,31 @@ jobs:
     - name: Install cloc
       run: sudo apt-get update && sudo apt-get install -y cloc
 
-    - name: Calculate LOC metric
-      id: cloc
+    - name: Calculate LOC Metric
+      id: loc_metric
       run: |
-        METRIC=$(cd minified ; cloc . | tac | sed -n 2p | awk '{ print $NF }')
-        echo "LOC_METRIC=$METRIC" >> $GITHUB_ENV
+        LOC_VALUE=$(cd minified ; cloc . | tac | sed -n 2p | awk '{ print $NF }')
+        echo "metric_value=$LOC_VALUE" >> $GITHUB_OUTPUT
 
-    - name: Report metric to Job Summary
+    - name: Report Metric to Job Summary
       run: |
-        echo "## 📊 Raport Metryki Kodu (LOC)" >> $GITHUB_STEP_SUMMARY
+        echo "## 📉 Metryka Linii Kodu (LOC)" >> $GITHUB_STEP_SUMMARY
+        echo "Im mniej, tym lepiej." >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "Nasza niestandardowa metryka (im mniej, tym lepiej):" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "# **${{ env.LOC_METRIC }}**" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "---" >> $GITHUB_STEP_SUMMARY
-        echo "![Metric Badge](https://img.shields.io/badge/LinesOfCode-${{ env.LOC_METRIC }}-blue)" >> $GITHUB_STEP_SUMMARY
+        echo "| Metryka | Wartość |" >> $GITHUB_STEP_SUMMARY
+        echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+        echo "| **Liczba Linii Kodu (LOC)** | \`${{ steps.loc_metric.outputs.metric_value }}\` |" >> $GITHUB_STEP_SUMMARY
+
+    - name: Post Metric as PR Comment
+      if: github.event_name == 'pull_request'
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        header: loc-metric-summary
+        message: |
+          ## 📉 Metryka Postępu (Lines of Code)
+          
+          | Metryka | Wartość |
+          |---|---|
+          | **Liczba Linii Kodu (LOC)** | `${{ steps.loc_metric.outputs.metric_value }}` |
+          
+          *(Im mniej, tym lepiej)*

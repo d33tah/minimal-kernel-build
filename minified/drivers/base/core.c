@@ -29,6 +29,7 @@
 #include <linux/sched/mm.h>
 #include <linux/swiotlb.h>
 #include <linux/sysfs.h>
+#include <linux/delay.h>
 #include <linux/dma-map-ops.h> /* for dma_default_coherent */
 
 #include "base.h"

@@ -1,14 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0 */
+/* Stub trace events for minimal kernel */
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM sched
 
 #if !defined(_TRACE_SCHED_H) || defined(TRACE_HEADER_MULTI_READ)
 #define _TRACE_SCHED_H
 
-#include <linux/kthread.h>
-#include <linux/sched/numa_balancing.h>
-#include <linux/tracepoint.h>
-#include <linux/binfmts.h>
+/* Stub trace events - no actual tracing in minimal kernel */
 
 /*
  * Tracepoint for calling kthread_stop, performed to end a kthread:

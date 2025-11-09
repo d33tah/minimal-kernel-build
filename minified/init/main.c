@@ -96,7 +96,6 @@
 #include <linux/kcsan.h>
 #include <linux/init_syscalls.h>
 #include <linux/stackdepot.h>
-#include <kunit/test.h>
 
 #include <asm/io.h>
 #include <asm/bugs.h>
@@ -1326,8 +1325,6 @@ static noinline void __init kernel_init_freeable(void)
 	page_ext_init();
 
 	do_basic_setup();
-
-	kunit_run_all_tests();
 
 	wait_for_initramfs();
 	console_on_rootfs();

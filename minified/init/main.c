@@ -96,6 +96,7 @@
 #include <linux/kcsan.h>
 #include <linux/init_syscalls.h>
 #include <linux/stackdepot.h>
+#include <kunit/test.h>
 
 #include <asm/io.h>
 #include <asm/bugs.h>
@@ -103,7 +104,7 @@
 #include <asm/sections.h>
 #include <asm/cacheflush.h>
 
-#include <kunit/test.h>
+
 
 static int kernel_init(void *);
 

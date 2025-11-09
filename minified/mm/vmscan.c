@@ -2193,8 +2193,8 @@ static void shrink_active_list(unsigned long nr_to_scan,
 
 	mem_cgroup_uncharge_list(&l_active);
 	free_unref_page_list(&l_active);
-	trace_mm_vmscan_lru_shrink_active(pgdat->node_id, nr_taken, nr_activate,
-			nr_deactivate, nr_rotated, sc->priority, file);
+	/* trace_mm_vmscan_lru_shrink_active(pgdat->node_id, nr_taken, nr_activate,
+			nr_deactivate, nr_rotated, sc->priority, file); */
 }
 
 static unsigned int reclaim_page_list(struct list_head *page_list,

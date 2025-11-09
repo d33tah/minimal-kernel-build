@@ -21,7 +21,6 @@
 #include <linux/freezer.h>
 #include <linux/pid_namespace.h>
 #include <linux/cgroup.h>
-#include <trace/events/signal.h>
 #include <linux/audit.h>
 #include <linux/task_work.h>
 #include <linux/coredump.h>
@@ -29,6 +28,7 @@
 #include <linux/tty.h>
 #include <linux/proc_fs.h>
 
+#include <trace/events/signal.h>
 
 #include <asm/param.h>
 #include <linux/uaccess.h>

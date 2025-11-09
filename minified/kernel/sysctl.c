@@ -51,7 +51,6 @@
 #include <linux/dcache.h>
 #include <linux/syscalls.h>
 #include <linux/vmstat.h>
-#include <linux/nfs_fs.h>
 #include <linux/acpi.h>
 #include <linux/reboot.h>
 #include <linux/ftrace.h>

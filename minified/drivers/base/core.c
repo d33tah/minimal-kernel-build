@@ -24,7 +24,6 @@
 #include <linux/blkdev.h>
 #include <linux/mutex.h>
 #include <linux/pm_runtime.h>
-#include <linux/netdevice.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
 #include <linux/swiotlb.h>

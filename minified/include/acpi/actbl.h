@@ -367,7 +367,7 @@ struct acpi_table_desc {
 /*
  * Get the remaining ACPI tables
  */
-#include <acpi/actbl1.h>
+/* #include <acpi/actbl1.h> */
 
 
 

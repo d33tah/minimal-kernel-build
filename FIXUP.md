@@ -1,3 +1,67 @@
+--- 2025-11-11 23:48 ---
+SECOND PHASE: Successfully removed 5 small unused headers! Build passed.
+Current LOC: ~321,146 (estimated -280 from deletion). Target: ~300k. Need ~21,146 reduction.
+
+Progress this session:
+1. Committed: Comment out #include <crypto/hash.h> from lib/iov_iter.c (passed)
+2. Committed: Remove 5 unused headers (linkmode, bpfptr, fileattr, seq_file_net, memfd)
+   - Total ~280 lines removed
+   - Build passed, Hello World works
+   - Had to restore 4 headers: hidden.h (build system needs), circ_buf, crc32, inet
+
+Findings:
+- Commenting out includes doesn't reduce LOC (file still exists)
+- Must actually DELETE header files to reduce LOC
+- Many headers interconnected via dependency chains
+- Build system includes some headers automatically (hidden.h)
+- Systematic scan found ~10-15 potentially removable small headers in include/linux
+
+Strategy going forward:
+- Continue with remaining candidates from systematic scan
+- Next: Scan include/uapi/linux for unused protocol headers
+- Also: Look for entire subsystem directories that could be removed
+- Challenge: Need ~21k LOC reduction, small headers give 100-300 LOC each
+
+--- 2025-11-11 23:48 ---
+SECOND PHASE: Testing small header removal. 1 commit pushed so far.
+Current LOC: ~321,426. Target: ~300k. Need ~21,426 reduction.
+
+Progress this session:
+1. Committed: Comment out #include <crypto/hash.h> from lib/iov_iter.c (passed)
+2. Testing: Remove 5 unused headers (linkmode, bpfptr, fileattr, seq_file_net, memfd)
+   - Total ~280 lines
+   - Build in progress (running 8+ minutes, may succeed)
+   - Had to restore 4 headers: hidden.h (build system needs), circ_buf, crc32, inet
+
+Findings:
+- Commenting out includes doesn't reduce LOC (file still exists)
+- Must actually DELETE header files to reduce LOC
+- Many headers interconnected via dependency chains
+- Build system includes some headers automatically (hidden.h)
+- Systematic scan found ~10-15 potentially removable small headers in include/linux
+
+Strategy going forward:
+- If current 5 headers build succeeds: ~280 LOC saved, commit and continue
+- Next: Scan include/uapi/linux for unused protocol headers
+- Also: Look for entire subsystem directories that could be removed
+- Challenge: Need ~21k LOC reduction, small headers give 100-300 LOC each
+
+--- 2025-11-11 23:24 ---
+SECOND PHASE: Small progress, continuing. 1 commit pushed.
+Current LOC: 321,427. Target: ~300k. Need ~21,427 reduction.
+
+Commit: Commented out #include <crypto/hash.h> from lib/iov_iter.c.
+Attempted removing crypto/hash.h file but blocked - included by crypto/internal/hash.h.
+Crypto headers form dependency chain: hash.h -> internal/hash.h -> internal/blake2s.h -> compiled blake2s code.
+
+Challenge: Large headers are deeply interconnected. Need different approach:
+1. Find truly isolated headers (rare)
+2. Remove entire header chains together (risky)
+3. Stub complete subsystems (complex)
+
+Next: Look for isolated large headers. Candidates: audit.h (522), XDP (412), flow_dissector (396).
+Also consider: Can we remove IPv6 completely? (ipv6.h: 1316, addrconf.h: 501, icmpv6.h: 178)
+
 --- 2025-11-11 23:15 ---
 SECOND PHASE: Continuing reduction. Searching for more removable headers.
 Current LOC: 321,427. Target: ~300k. Need ~21,427 reduction.

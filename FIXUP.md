@@ -1,3 +1,27 @@
+--- 2025-11-11 21:24 ---
+SECOND PHASE: Session complete. Good progress!
+Starting LOC: 331,935
+Ending LOC: ~328,416 (estimated, 328,663 - 247 from last commit)
+Total reduction: ~3,519 LOC
+Target: ~300k LOC. Need to reduce by ~28k more LOC.
+Kernel image: 474K. Build errors: 0.
+
+Changes made this session:
+1. Removed sock.h include from fs/file.c, added __receive_sock stub
+2. Removed unused NFS header includes from init/do_mounts.c
+3. Removed unused headers: if_vlan.h (403), sch_generic.h (988), min_heap.h (65), mii_timestamper.h (132)
+4. Removed unused arch headers: kvm_host.h (1,316), perf_event_p4.h (427)
+5. Removed unused network header: etherdevice.h (247)
+Total reduction: ~3,519 LOC (5 commits)
+
+Strategy for next session:
+The low-hanging fruit of unused headers is mostly gone. Need more aggressive approaches:
+- Trim large source files by stubbing unused functions (mm/page_alloc.c: 3,936 LOC, mm/memory.c: 3,330 LOC)
+- Look for subsystems that can be replaced with stubs
+- Network headers (netdevice.h: 2,785, skbuff.h: 2,690) still large but dependencies are complex
+- Consider removing entire .c files from subsystems not needed for Hello World
+- drivers/input still present (~6,882 LOC) but needed by VT/keyboard - might be able to stub parts
+
 --- 2025-11-11 21:08 ---
 SECOND PHASE: Good progress! Reduced LOC from 331,935 to 330,406 (-1,529 LOC).
 Target: ~300k LOC. Need to reduce by ~30k LOC.

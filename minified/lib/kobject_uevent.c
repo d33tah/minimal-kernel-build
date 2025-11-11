@@ -21,7 +21,7 @@
 #include <linux/slab.h>
 #include <linux/socket.h>
 /* #include <linux/skbuff.h> */
-#include <linux/netlink.h>
+/* #include <linux/netlink.h> */
 #include <linux/uidgid.h>
 #include <linux/uuid.h>
 #include <linux/ctype.h>

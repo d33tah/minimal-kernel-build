@@ -85,7 +85,6 @@
 #include <linux/kasan.h>
 #include <linux/scs.h>
 #include <linux/io_uring.h>
-#include <linux/bpf.h>
 #include <linux/sched/mm.h>
 
 #include <asm/pgalloc.h>

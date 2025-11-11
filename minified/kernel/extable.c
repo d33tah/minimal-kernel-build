@@ -12,9 +12,15 @@
 #include <linux/init.h>
 #include <linux/kprobes.h>
 #include <linux/filter.h>
+#include <linux/hardirq.h>
 
 #include <asm/sections.h>
 #include <linux/uaccess.h>
+
+static inline bool is_bpf_text_address(unsigned long addr)
+{
+	return false;
+}
 
 /*
  * mutex protecting text section modification (dynamic code patching).

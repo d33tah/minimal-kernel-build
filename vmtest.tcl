@@ -7,7 +7,7 @@ spawn qemu-system-x86_64 -kernel minified/arch/x86/boot/bzImage -display curses 
 # test succeeded. If we time out, exit with an error code.
 
 expect {
-    "Hello, World" { send "\n" }
+    "Hello, World!" { send "\n" }
     timeout { exit 1 }
 }
 

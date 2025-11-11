@@ -28,14 +28,11 @@
 #include <linux/initrd.h>
 #include <linux/memblock.h>
 #include <linux/acpi.h>
+
 #include <linux/bootconfig.h>
 #include <linux/console.h>
 #include <linux/nmi.h>
 #include <linux/percpu.h>
-#include <linux/kmod.h>
-#include <linux/kprobes.h>
-#include <linux/vmalloc.h>
-#include <linux/kernel_stat.h>
 #include <linux/start_kernel.h>
 #include <linux/security.h>
 #include <linux/smp.h>
@@ -80,6 +77,7 @@
 #include <linux/shmem_fs.h>
 #include <linux/slab.h>
 #include <linux/perf_event.h>
+
 #include <linux/ptrace.h>
 #include <linux/pti.h>
 #include <linux/blkdev.h>
@@ -106,7 +104,7 @@
 #include <asm/sections.h>
 #include <asm/cacheflush.h>
 
-#include <kunit/test.h>
+
 
 static int kernel_init(void *);
 
@@ -1328,8 +1326,6 @@ static noinline void __init kernel_init_freeable(void)
 	page_ext_init();
 
 	do_basic_setup();
-
-	kunit_run_all_tests();
 
 	wait_for_initramfs();
 	console_on_rootfs();

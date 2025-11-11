@@ -12,6 +12,7 @@
 
 #include <linux/sunrpc/sched.h>
 #include <linux/sunrpc/msg_prot.h>
+#include <linux/sunrpc/xdr.h>
 
 
 #include <linux/atomic.h>

@@ -9,3 +9,4 @@ FIXUP.md
 *.txt
 .tmp.*
 *.tmp
+*.backup

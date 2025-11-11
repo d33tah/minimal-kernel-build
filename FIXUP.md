@@ -1,3 +1,18 @@
+--- 2025-11-12 00:00 ---
+SECOND PHASE: Searching for more removable headers. Current LOC: ~321,223. Target: ~300k. Need ~21,223 reduction.
+
+Attempted but failed:
+- Tried removing tcp.h and udp.h (577 + 157 = 734 lines), but ipv6.h depends on them (uses tcp_sock, udp_sock structures)
+- Network headers form tight dependency chain: skbuff.h -> page_pool.h, flow_dissector.h; netdevice.h -> xdp.h
+- All net/ headers are interconnected or used by skbuff.h/netdevice.h
+
+Current findings:
+- Large network headers (xdp.h: 412, flow_dissector.h: 396, page_pool.h: 337) are only used by include chain, not .c files
+- But removing them would break skbuff.h/netdevice.h which are core
+- Need different approach: look for entire unused subsystems or trim large individual files
+
+Strategy: Will look for large comment blocks or unused functions in existing large files that could be trimmed inline.
+
 --- 2025-11-11 23:48 ---
 SECOND PHASE: Successfully removed 5 small unused headers! Build passed.
 Current LOC: ~321,146 (estimated -280 from deletion). Target: ~300k. Need ~21,146 reduction.

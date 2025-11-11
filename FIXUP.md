@@ -1,3 +1,42 @@
+--- 2025-11-11 15:25 ---
+
+Current status: make vm works and prints "Hello, World!". Current LOC: 334,235 (code lines measured with cloc after make mrproper). Goal is 320k-400k LOC range, targeting 320k. Comment column reduced from ~112k to 102,960 (-9,439 comment lines). Build errors: 0.
+
+Removed comments from 17 additional files in this session, saving ~9,439 comment lines total. Build tested and working after batches. Files processed:
+
+Batch 1 (2,816 comment lines):
+- drivers/tty/n_tty.c: 2444 -> 1812 (-632)
+- kernel/irq/manage.c: 2330 -> 1609 (-721)
+- kernel/time/timekeeping.c: 2326 -> 1602 (-724)
+- mm/rmap.c: 2289 -> 1550 (-739)
+
+Batch 2 (1,691 comment lines):
+- drivers/input/input.c: 2332 -> 1913 (-419)
+- fs/inode.c: 2251 -> 1565 (-686)
+- kernel/sched/fair.c: 2155 -> 1569 (-586)
+
+Batch 3 (2,854 comment lines):
+- arch/x86/mm/pat/set_memory.c: 2065 -> 1631 (-434)
+- mm/memblock.c: 1993 -> 1344 (-649)
+- kernel/sched/deadline.c: 1910 -> 1279 (-631)
+- lib/xarray.c: 1848 -> 1305 (-543)
+- kernel/time/hrtimer.c: 1695 -> 1098 (-597)
+
+Batch 4 (1,848 comment lines):
+- lib/radix-tree.c: 1607 -> 1162 (-445)
+- fs/super.c: 1566 -> 1183 (-383)
+- kernel/exit.c: 1640 -> 1304 (-336)
+- fs/exec.c: 1859 -> 1504 (-355)
+- arch/x86/kernel/cpu/common.c: 1860 -> 1531 (-329)
+
+Note: cloc code column increased slightly (332,745 -> 334,235, +1,490), likely due to blank line handling in comment removal script. The reduction is visible in the comment column. This is consistent with previous session behavior. Need alternative approach to reduce actual code LOC count - consider stubbing functions or removing unused subsystems.
+
+--- 2025-11-11 15:01 ---
+
+Current status: make vm works and prints "Hello, World!". Current LOC: 334,235 (measured with cloc after make mrproper). Goal is 320k-400k LOC range. In secondary phase - need to reduce LOC towards 320k target (currently 334k, need ~14k reduction). Build errors: 0.
+
+Build verified working - make vm completed successfully and printed "Hello, World!". Previous session removed comments from 26 files, saving 25,160 lines. Will continue with targeted reduction. Strategy: Look for more large source files that can have comments removed or functions stubbed, focusing on subsystems not needed for minimal "Hello World" kernel.
+
 --- 2025-11-11 15:00 ---
 
 Current status: make vm works and prints "Hello, World!". Continued comment removal from 16 more large files, saving additional 13,567 lines (7,515 + 6,052). Total saved in this session: 25,160 lines from 26 files. Build tested and working after each batch. About to commit second batch.

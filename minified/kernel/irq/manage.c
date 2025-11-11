@@ -1,10 +1,3 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Copyright (C) 1992, 1998-2006 Linus Torvalds, Ingo Molnar
- * Copyright (C) 2005-2006 Thomas Gleixner
- *
- * This file contains driver APIs to the irq subsystem.
- */
 
 #define pr_fmt(fmt) "genirq: " fmt
 
@@ -41,58 +34,22 @@ static void __synchronize_hardirq(struct irq_desc *desc, bool sync_chip)
 	do {
 		unsigned long flags;
 
-		/*
-		 * Wait until we're out of the critical section.  This might
-		 * give the wrong answer due to the lack of memory barriers.
-		 */
 		while (irqd_irq_inprogress(&desc->irq_data))
 			cpu_relax();
 
-		/* Ok, that indicated we're done: double-check carefully. */
 		raw_spin_lock_irqsave(&desc->lock, flags);
 		inprogress = irqd_irq_inprogress(&desc->irq_data);
 
-		/*
-		 * If requested and supported, check at the chip whether it
-		 * is in flight at the hardware level, i.e. already pending
-		 * in a CPU and waiting for service and acknowledge.
-		 */
 		if (!inprogress && sync_chip) {
-			/*
-			 * Ignore the return code. inprogress is only updated
-			 * when the chip supports it.
-			 */
+			
 			__irq_get_irqchip_state(irqd, IRQCHIP_STATE_ACTIVE,
 						&inprogress);
 		}
 		raw_spin_unlock_irqrestore(&desc->lock, flags);
 
-		/* Oops, that failed? */
 	} while (inprogress);
 }
 
-/**
- *	synchronize_hardirq - wait for pending hard IRQ handlers (on other CPUs)
- *	@irq: interrupt number to wait for
- *
- *	This function waits for any pending hard IRQ handlers for this
- *	interrupt to complete before returning. If you use this
- *	function while holding a resource the IRQ handler may need you
- *	will deadlock. It does not take associated threaded handlers
- *	into account.
- *
- *	Do not use this for shutdown scenarios where you must be sure
- *	that all parts (hardirq and threaded handler) have completed.
- *
- *	Returns: false if a threaded handler is active.
- *
- *	This function may be called - with care - from IRQ context.
- *
- *	It does not check whether there is an interrupt in flight at the
- *	hardware level, but not serviced yet, as this might deadlock when
- *	called with interrupts disabled and the target CPU of the interrupt
- *	is the current CPU.
- */
 bool synchronize_hardirq(unsigned int irq)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
@@ -106,51 +63,19 @@ bool synchronize_hardirq(unsigned int irq)
 }
 EXPORT_SYMBOL(synchronize_hardirq);
 
-/**
- *	synchronize_irq - wait for pending IRQ handlers (on other CPUs)
- *	@irq: interrupt number to wait for
- *
- *	This function waits for any pending IRQ handlers for this interrupt
- *	to complete before returning. If you use this function while
- *	holding a resource the IRQ handler may need you will deadlock.
- *
- *	Can only be called from preemptible code as it might sleep when
- *	an interrupt thread is associated to @irq.
- *
- *	It optionally makes sure (when the irq chip supports that method)
- *	that the interrupt is not pending in any CPU and waiting for
- *	service.
- */
 void synchronize_irq(unsigned int irq)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
 
 	if (desc) {
 		__synchronize_hardirq(desc, true);
-		/*
-		 * We made sure that no hardirq handler is
-		 * running. Now verify that no threaded handlers are
-		 * active.
-		 */
+		
 		wait_event(desc->wait_for_threads,
 			   !atomic_read(&desc->threads_active));
 	}
 }
 EXPORT_SYMBOL(synchronize_irq);
 
-
-
-/**
- *	irq_set_vcpu_affinity - Set vcpu affinity for the interrupt
- *	@irq: interrupt number to set affinity
- *	@vcpu_info: vCPU specific data or pointer to a percpu array of vCPU
- *	            specific data for percpu_devid interrupts
- *
- *	This function uses the vCPU specific data to set the vCPU
- *	affinity for an irq. The vCPU specific data is passed from
- *	outside, such as KVM. One example code path is as below:
- *	KVM -> IOMMU -> irq_set_vcpu_affinity().
- */
 int irq_set_vcpu_affinity(unsigned int irq, void *vcpu_info)
 {
 	unsigned long flags;
@@ -196,35 +121,12 @@ static int __disable_irq_nosync(unsigned int irq)
 	return 0;
 }
 
-/**
- *	disable_irq_nosync - disable an irq without waiting
- *	@irq: Interrupt to disable
- *
- *	Disable the selected interrupt line.  Disables and Enables are
- *	nested.
- *	Unlike disable_irq(), this function does not ensure existing
- *	instances of the IRQ handler have completed before returning.
- *
- *	This function may be called from IRQ context.
- */
 void disable_irq_nosync(unsigned int irq)
 {
 	__disable_irq_nosync(irq);
 }
 EXPORT_SYMBOL(disable_irq_nosync);
 
-/**
- *	disable_irq - disable an irq and wait for completion
- *	@irq: Interrupt to disable
- *
- *	Disable the selected interrupt line.  Enables and Disables are
- *	nested.
- *	This function waits for any pending IRQ handlers for this interrupt
- *	to complete before returning. If you use this function while
- *	holding a resource the IRQ handler may need you will deadlock.
- *
- *	This function may be called - with care - from IRQ context.
- */
 void disable_irq(unsigned int irq)
 {
 	if (!__disable_irq_nosync(irq))
@@ -232,23 +134,6 @@ void disable_irq(unsigned int irq)
 }
 EXPORT_SYMBOL(disable_irq);
 
-/**
- *	disable_hardirq - disables an irq and waits for hardirq completion
- *	@irq: Interrupt to disable
- *
- *	Disable the selected interrupt line.  Enables and Disables are
- *	nested.
- *	This function waits for any pending hard IRQ handlers for this
- *	interrupt to complete before returning. If you use this function while
- *	holding a resource the hard IRQ handler may need you will deadlock.
- *
- *	When used to optimistically disable an interrupt from atomic context
- *	the return value must be checked.
- *
- *	Returns: false if a threaded handler is active.
- *
- *	This function may be called - with care - from IRQ context.
- */
 bool disable_hardirq(unsigned int irq)
 {
 	if (!__disable_irq_nosync(irq))
@@ -258,16 +143,6 @@ bool disable_hardirq(unsigned int irq)
 }
 EXPORT_SYMBOL_GPL(disable_hardirq);
 
-/**
- *	disable_nmi_nosync - disable an nmi without waiting
- *	@irq: Interrupt to disable
- *
- *	Disable the selected interrupt line. Disables and enables are
- *	nested.
- *	The interrupt to disable must have been requested through request_nmi.
- *	Unlike disable_nmi(), this function does not ensure existing
- *	instances of the IRQ handler have completed before returning.
- */
 void disable_nmi_nosync(unsigned int irq)
 {
 	disable_irq_nosync(irq);
@@ -284,15 +159,9 @@ void __enable_irq(struct irq_desc *desc)
 	case 1: {
 		if (desc->istate & IRQS_SUSPENDED)
 			goto err_out;
-		/* Prevent probing on this irq: */
+		
 		irq_settings_set_noprobe(desc);
-		/*
-		 * Call irq_startup() not irq_enable() here because the
-		 * interrupt might be marked NOAUTOEN. So irq_startup()
-		 * needs to be invoked when it gets enabled the first
-		 * time. If it was already started up, then irq_startup()
-		 * will invoke irq_enable() under the hood.
-		 */
+		
 		irq_startup(desc, IRQ_RESEND, IRQ_START_FORCE);
 		break;
 	}
@@ -301,17 +170,6 @@ void __enable_irq(struct irq_desc *desc)
 	}
 }
 
-/**
- *	enable_irq - enable handling of an irq
- *	@irq: Interrupt to enable
- *
- *	Undoes the effect of one call to disable_irq().  If this
- *	matches the last disable, processing of interrupts on this
- *	IRQ line is re-enabled.
- *
- *	This function may be called from IRQ context only when
- *	desc->irq_data.chip->bus_lock and desc->chip->bus_sync_unlock are NULL !
- */
 void enable_irq(unsigned int irq)
 {
 	unsigned long flags;
@@ -329,15 +187,6 @@ out:
 }
 EXPORT_SYMBOL(enable_irq);
 
-/**
- *	enable_nmi - enable handling of an nmi
- *	@irq: Interrupt to enable
- *
- *	The interrupt to enable must have been requested through request_nmi.
- *	Undoes the effect of one call to disable_nmi(). If this
- *	matches the last disable, processing of interrupts on this
- *	IRQ line is re-enabled.
- */
 void enable_nmi(unsigned int irq)
 {
 	enable_irq(irq);
@@ -357,25 +206,6 @@ static int set_irq_wake_real(unsigned int irq, unsigned int on)
 	return ret;
 }
 
-/**
- *	irq_set_irq_wake - control irq power management wakeup
- *	@irq:	interrupt to control
- *	@on:	enable/disable power management wakeup
- *
- *	Enable/disable power management wakeup mode, which is
- *	disabled by default.  Enables and disables must match,
- *	just as they match for non-wakeup mode support.
- *
- *	Wakeup mode lets this IRQ wake the system from sleep
- *	states like "suspend to RAM".
- *
- *	Note: irq enable/disable state is completely orthogonal
- *	to the enable/disable state of irq wake. An irq can be
- *	disabled with disable_irq() and still wake the system as
- *	long as the irq has wake enabled. If this does not hold,
- *	then the underlying irq chip and the related driver need
- *	to be investigated.
- */
 int irq_set_irq_wake(unsigned int irq, unsigned int on)
 {
 	unsigned long flags;
@@ -385,15 +215,11 @@ int irq_set_irq_wake(unsigned int irq, unsigned int on)
 	if (!desc)
 		return -EINVAL;
 
-	/* Don't use NMIs as wake up interrupts please */
 	if (desc->istate & IRQS_NMI) {
 		ret = -EINVAL;
 		goto out_unlock;
 	}
 
-	/* wakeup-capable irqs can be shared between drivers that
-	 * don't need to have the same sleep mode behaviors.
-	 */
 	if (on) {
 		if (desc->wake_depth++ == 0) {
 			ret = set_irq_wake_real(irq, on);
@@ -420,11 +246,6 @@ out_unlock:
 }
 EXPORT_SYMBOL(irq_set_irq_wake);
 
-/*
- * Internal function that tells the architecture code whether a
- * particular irq has been exclusively allocated or is available
- * for driver use.
- */
 int can_request_irq(unsigned int irq, unsigned long irqflags)
 {
 	unsigned long flags;
@@ -449,10 +270,7 @@ int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 	int ret, unmask = 0;
 
 	if (!chip || !chip->irq_set_type) {
-		/*
-		 * IRQF_TRIGGER_* but the PIC does not support multiple
-		 * flow-types?
-		 */
+		
 		pr_debug("No set_type function for IRQ %d (%s)\n",
 			 irq_desc_get_irq(desc),
 			 chip ? (chip->name ? : "unknown") : "unknown");
@@ -466,7 +284,6 @@ int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 			unmask = 1;
 	}
 
-	/* Mask all flags except trigger mode */
 	flags &= IRQ_TYPE_SENSE_MASK;
 	ret = chip->irq_set_type(&desc->irq_data, flags);
 
@@ -513,20 +330,11 @@ int irq_set_parent(int irq, int parent_irq)
 }
 EXPORT_SYMBOL_GPL(irq_set_parent);
 
-/*
- * Default primary interrupt handler for threaded interrupts. Is
- * assigned as primary handler when request_threaded_irq is called
- * with handler == NULL. Useful for oneshot interrupts.
- */
 static irqreturn_t irq_default_primary_handler(int irq, void *dev_id)
 {
 	return IRQ_WAKE_THREAD;
 }
 
-/*
- * Primary handler for nested threaded interrupts. Should never be
- * called.
- */
 static irqreturn_t irq_nested_primary_handler(int irq, void *dev_id)
 {
 	WARN(1, "Primary handler called for nested irq %d\n", irq);
@@ -545,7 +353,7 @@ static int irq_wait_for_interrupt(struct irqaction *action)
 		set_current_state(TASK_INTERRUPTIBLE);
 
 		if (kthread_should_stop()) {
-			/* may need to run one last time */
+			
 			if (test_and_clear_bit(IRQTF_RUNTHREAD,
 					       &action->thread_flags)) {
 				__set_current_state(TASK_RUNNING);
@@ -564,11 +372,6 @@ static int irq_wait_for_interrupt(struct irqaction *action)
 	}
 }
 
-/*
- * Oneshot interrupts keep the irq line masked until the threaded
- * handler finished. unmask if the interrupt has not been disabled and
- * is marked MASKED.
- */
 static void irq_finalize_oneshot(struct irq_desc *desc,
 				 struct irqaction *action)
 {
@@ -579,20 +382,6 @@ again:
 	chip_bus_lock(desc);
 	raw_spin_lock_irq(&desc->lock);
 
-	/*
-	 * Implausible though it may be we need to protect us against
-	 * the following scenario:
-	 *
-	 * The thread is faster done than the hard interrupt handler
-	 * on the other CPU. If we unmask the irq line then the
-	 * interrupt can come in again and masks the line, leaves due
-	 * to IRQS_INPROGRESS and the irq line is masked forever.
-	 *
-	 * This also serializes the state of shared oneshot handlers
-	 * versus "desc->threads_oneshot |= action->thread_mask;" in
-	 * irq_wake_thread(). See the comment there which explains the
-	 * serialization.
-	 */
 	if (unlikely(irqd_irq_inprogress(&desc->irq_data))) {
 		raw_spin_unlock_irq(&desc->lock);
 		chip_bus_sync_unlock(desc);
@@ -600,11 +389,6 @@ again:
 		goto again;
 	}
 
-	/*
-	 * Now check again, whether the thread should run. Otherwise
-	 * we would clear the threads_oneshot bit of this thread which
-	 * was just set.
-	 */
 	if (test_bit(IRQTF_RUNTHREAD, &action->thread_flags))
 		goto out_unlock;
 
@@ -622,12 +406,6 @@ out_unlock:
 static inline void
 irq_thread_check_affinity(struct irq_desc *desc, struct irqaction *action) { }
 
-/*
- * Interrupts which are not explicitly requested as threaded
- * interrupts rely on the implicit bh/preempt disable of the hard irq
- * context. So we need to disable bh here to avoid deadlocks and other
- * side effects.
- */
 static irqreturn_t
 irq_forced_thread_fn(struct irq_desc *desc, struct irqaction *action)
 {
@@ -647,11 +425,6 @@ irq_forced_thread_fn(struct irq_desc *desc, struct irqaction *action)
 	return ret;
 }
 
-/*
- * Interrupts explicitly requested as threaded interrupts want to be
- * preemptible - many of them need to sleep and wait for slow busses to
- * complete.
- */
 static irqreturn_t irq_thread_fn(struct irq_desc *desc,
 		struct irqaction *action)
 {
@@ -685,16 +458,11 @@ static void irq_thread_dtor(struct callback_head *unused)
 	pr_err("exiting task \"%s\" (%d) is an active IRQ thread (irq %d)\n",
 	       tsk->comm, tsk->pid, action->irq);
 
-
 	desc = irq_to_desc(action->irq);
-	/*
-	 * If IRQTF_RUNTHREAD is set, we need to decrement
-	 * desc->threads_active and wake possible waiters.
-	 */
+	
 	if (test_and_clear_bit(IRQTF_RUNTHREAD, &action->thread_flags))
 		wake_threads_waitq(desc);
 
-	/* Prevent a stale desc->threads_oneshot */
 	irq_finalize_oneshot(desc, action);
 }
 
@@ -710,9 +478,6 @@ static void irq_wake_secondary(struct irq_desc *desc, struct irqaction *action)
 	raw_spin_unlock_irq(&desc->lock);
 }
 
-/*
- * Internal function to notify that a interrupt thread is ready.
- */
 static void irq_thread_set_ready(struct irq_desc *desc,
 				 struct irqaction *action)
 {
@@ -720,10 +485,6 @@ static void irq_thread_set_ready(struct irq_desc *desc,
 	wake_up(&desc->wait_for_threads);
 }
 
-/*
- * Internal function to wake up a interrupt thread and wait until it is
- * ready.
- */
 static void wake_up_and_wait_for_irq_thread_ready(struct irq_desc *desc,
 						  struct irqaction *action)
 {
@@ -735,9 +496,6 @@ static void wake_up_and_wait_for_irq_thread_ready(struct irq_desc *desc,
 		   test_bit(IRQTF_READY, &action->thread_flags));
 }
 
-/*
- * Interrupt handler thread
- */
 static int irq_thread(void *data)
 {
 	struct callback_head on_exit_work;
@@ -773,22 +531,10 @@ static int irq_thread(void *data)
 		wake_threads_waitq(desc);
 	}
 
-	/*
-	 * This is the regular exit path. __free_irq() is stopping the
-	 * thread via kthread_stop() after calling
-	 * synchronize_hardirq(). So neither IRQTF_RUNTHREAD nor the
-	 * oneshot mask bit can be set.
-	 */
 	task_work_cancel(current, irq_thread_dtor);
 	return 0;
 }
 
-/**
- *	irq_wake_thread - wake the irq thread for the action identified by dev_id
- *	@irq:		Interrupt line
- *	@dev_id:	Device identity for which the thread should be woken
- *
- */
 void irq_wake_thread(unsigned int irq, void *dev_id)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
@@ -817,22 +563,13 @@ static int irq_setup_forced_threading(struct irqaction *new)
 	if (new->flags & (IRQF_NO_THREAD | IRQF_PERCPU | IRQF_ONESHOT))
 		return 0;
 
-	/*
-	 * No further action required for interrupts which are requested as
-	 * threaded interrupts already
-	 */
 	if (new->handler == irq_default_primary_handler)
 		return 0;
 
 	new->flags |= IRQF_ONESHOT;
 
-	/*
-	 * Handle the case where we have a real primary handler and a
-	 * thread handler. We force thread them as well by creating a
-	 * secondary action.
-	 */
 	if (new->handler && new->thread_fn) {
-		/* Allocate the secondary action */
+		
 		new->secondary = kzalloc(sizeof(struct irqaction), GFP_KERNEL);
 		if (!new->secondary)
 			return -ENOMEM;
@@ -842,7 +579,7 @@ static int irq_setup_forced_threading(struct irqaction *new)
 		new->secondary->irq = new->irq;
 		new->secondary->name = new->name;
 	}
-	/* Deal with the primary handler */
+	
 	set_bit(IRQTF_FORCED_THREAD, &new->thread_flags);
 	new->thread_fn = new->handler;
 	new->handler = irq_default_primary_handler;
@@ -870,7 +607,6 @@ static bool irq_supports_nmi(struct irq_desc *desc)
 {
 	struct irq_data *d = irq_desc_get_irq_data(desc);
 
-	/* Don't support NMIs for chips behind a slow bus */
 	if (d->chip->irq_bus_lock || d->chip->irq_bus_sync_unlock)
 		return false;
 
@@ -910,39 +646,12 @@ setup_irq_thread(struct irqaction *new, unsigned int irq, bool secondary)
 	if (IS_ERR(t))
 		return PTR_ERR(t);
 
-	/*
-	 * We keep the reference to the task struct even if
-	 * the thread dies to avoid that the interrupt code
-	 * references an already freed task_struct.
-	 */
 	new->thread = get_task_struct(t);
-	/*
-	 * Tell the thread to set its affinity. This is
-	 * important for shared interrupt handlers as we do
-	 * not invoke setup_affinity() for the secondary
-	 * handlers as everything is already set up. Even for
-	 * interrupts marked with IRQF_NO_BALANCE this is
-	 * correct as we want the thread to move to the cpu(s)
-	 * on which the requesting code placed the interrupt.
-	 */
+	
 	set_bit(IRQTF_AFFINITY, &new->thread_flags);
 	return 0;
 }
 
-/*
- * Internal function to register an irqaction - typically used to
- * allocate special interrupts that are part of the architecture.
- *
- * Locking rules:
- *
- * desc->request_mutex	Provides serialization against a concurrent free_irq()
- *   chip_bus_lock	Provides serialization for slow bus operations
- *     desc->lock	Provides serialization against hard interrupts
- *
- * chip_bus_lock and desc->lock are sufficient for all other management and
- * interrupt related functions. desc->request_mutex solely serializes
- * request/free_irq().
- */
 static int
 __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 {
@@ -960,28 +669,16 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 
 	new->irq = irq;
 
-	/*
-	 * If the trigger type is not specified by the caller,
-	 * then use the default for this interrupt.
-	 */
 	if (!(new->flags & IRQF_TRIGGER_MASK))
 		new->flags |= irqd_get_trigger_type(&desc->irq_data);
 
-	/*
-	 * Check whether the interrupt nests into another interrupt
-	 * thread.
-	 */
 	nested = irq_settings_is_nested_thread(desc);
 	if (nested) {
 		if (!new->thread_fn) {
 			ret = -EINVAL;
 			goto out_mput;
 		}
-		/*
-		 * Replace the primary handler which was provided from
-		 * the driver for non nested interrupt handling by the
-		 * dummy function which warns when called.
-		 */
+		
 		new->handler = irq_nested_primary_handler;
 	} else {
 		if (irq_settings_can_thread(desc)) {
@@ -991,11 +688,6 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		}
 	}
 
-	/*
-	 * Create a handler thread when a thread function is supplied
-	 * and the interrupt does not nest into another interrupt
-	 * thread.
-	 */
 	if (new->thread_fn && !nested) {
 		ret = setup_irq_thread(new, irq, false);
 		if (ret)
@@ -1007,35 +699,13 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		}
 	}
 
-	/*
-	 * Drivers are often written to work w/o knowledge about the
-	 * underlying irq chip implementation, so a request for a
-	 * threaded irq without a primary hard irq context handler
-	 * requires the ONESHOT flag to be set. Some irq chips like
-	 * MSI based interrupts are per se one shot safe. Check the
-	 * chip flags, so we can avoid the unmask dance at the end of
-	 * the threaded handler for those.
-	 */
 	if (desc->irq_data.chip->flags & IRQCHIP_ONESHOT_SAFE)
 		new->flags &= ~IRQF_ONESHOT;
 
-	/*
-	 * Protects against a concurrent __free_irq() call which might wait
-	 * for synchronize_hardirq() to complete without holding the optional
-	 * chip bus lock and desc->lock. Also protects against handing out
-	 * a recycled oneshot thread_mask bit while it's still in use by
-	 * its previous owner.
-	 */
 	mutex_lock(&desc->request_mutex);
 
-	/*
-	 * Acquire bus lock as the irq_request_resources() callback below
-	 * might rely on the serialization or the magic power management
-	 * functions which are abusing the irq_bus_lock() callback,
-	 */
 	chip_bus_lock(desc);
 
-	/* First installed action requests resources. */
 	if (!desc->action) {
 		ret = irq_request_resources(desc);
 		if (ret) {
@@ -1045,24 +715,11 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		}
 	}
 
-	/*
-	 * The following block of code has to be executed atomically
-	 * protected against a concurrent interrupt and any of the other
-	 * management calls which are not serialized via
-	 * desc->request_mutex or the optional bus lock.
-	 */
 	raw_spin_lock_irqsave(&desc->lock, flags);
 	old_ptr = &desc->action;
 	old = *old_ptr;
 	if (old) {
-		/*
-		 * Can't share interrupts unless both agree to and are
-		 * the same type (level, edge, polarity). So both flag
-		 * fields must have IRQF_SHARED set and the bits which
-		 * set the trigger type must match. Also all must
-		 * agree on ONESHOT.
-		 * Interrupt lines used for NMIs cannot be shared.
-		 */
+		
 		unsigned int oldtype;
 
 		if (desc->istate & IRQS_NMI) {
@@ -1072,10 +729,6 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 			goto out_unlock;
 		}
 
-		/*
-		 * If nobody did set the configuration before, inherit
-		 * the one provided by the requester.
-		 */
 		if (irqd_trigger_type_was_set(&desc->irq_data)) {
 			oldtype = irqd_get_trigger_type(&desc->irq_data);
 		} else {
@@ -1088,18 +741,12 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		    ((old->flags ^ new->flags) & IRQF_ONESHOT))
 			goto mismatch;
 
-		/* All handlers must agree on per-cpuness */
 		if ((old->flags & IRQF_PERCPU) !=
 		    (new->flags & IRQF_PERCPU))
 			goto mismatch;
 
-		/* add new interrupt at end of irq queue */
 		do {
-			/*
-			 * Or all existing action->thread_mask bits,
-			 * so we can find the next zero bit for this
-			 * new action.
-			 */
+			
 			thread_mask |= old->thread_mask;
 			old_ptr = &old->next;
 			old = *old_ptr;
@@ -1107,59 +754,18 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		shared = 1;
 	}
 
-	/*
-	 * Setup the thread mask for this irqaction for ONESHOT. For
-	 * !ONESHOT irqs the thread mask is 0 so we can avoid a
-	 * conditional in irq_wake_thread().
-	 */
 	if (new->flags & IRQF_ONESHOT) {
-		/*
-		 * Unlikely to have 32 resp 64 irqs sharing one line,
-		 * but who knows.
-		 */
+		
 		if (thread_mask == ~0UL) {
 			ret = -EBUSY;
 			goto out_unlock;
 		}
-		/*
-		 * The thread_mask for the action is or'ed to
-		 * desc->thread_active to indicate that the
-		 * IRQF_ONESHOT thread handler has been woken, but not
-		 * yet finished. The bit is cleared when a thread
-		 * completes. When all threads of a shared interrupt
-		 * line have completed desc->threads_active becomes
-		 * zero and the interrupt line is unmasked. See
-		 * handle.c:irq_wake_thread() for further information.
-		 *
-		 * If no thread is woken by primary (hard irq context)
-		 * interrupt handlers, then desc->threads_active is
-		 * also checked for zero to unmask the irq line in the
-		 * affected hard irq flow handlers
-		 * (handle_[fasteoi|level]_irq).
-		 *
-		 * The new action gets the first zero bit of
-		 * thread_mask assigned. See the loop above which or's
-		 * all existing action->thread_mask bits.
-		 */
+		
 		new->thread_mask = 1UL << ffz(thread_mask);
 
 	} else if (new->handler == irq_default_primary_handler &&
 		   !(desc->irq_data.chip->flags & IRQCHIP_ONESHOT_SAFE)) {
-		/*
-		 * The interrupt was requested with handler = NULL, so
-		 * we use the default primary handler for it. But it
-		 * does not have the oneshot flag set. In combination
-		 * with level interrupts this is deadly, because the
-		 * default primary handler just wakes the thread, then
-		 * the irq lines is reenabled, but the device still
-		 * has the level irq asserted. Rinse and repeat....
-		 *
-		 * While this works for edge type interrupts, we play
-		 * it safe and reject unconditionally because we can't
-		 * say for sure which type this interrupt really
-		 * has. The type flags are unreliable as the
-		 * underlying chip implementation can override them.
-		 */
+		
 		pr_err("Threaded irq requested with handler=NULL and !ONESHOT for %s (irq %d)\n",
 		       new->name, irq);
 		ret = -EINVAL;
@@ -1167,7 +773,7 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 	}
 
 	if (!shared) {
-		/* Setup the type (level, edge polarity) if configured: */
+		
 		if (new->flags & IRQF_TRIGGER_MASK) {
 			ret = __irq_set_trigger(desc,
 						new->flags & IRQF_TRIGGER_MASK);
@@ -1176,17 +782,6 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 				goto out_unlock;
 		}
 
-		/*
-		 * Activate the interrupt. That activation must happen
-		 * independently of IRQ_NOAUTOEN. request_irq() can fail
-		 * and the callers are supposed to handle
-		 * that. enable_irq() of an interrupt requested with
-		 * IRQ_NOAUTOEN is not supposed to fail. The activation
-		 * keeps it in shutdown mode, it merily associates
-		 * resources if necessary and if that's not possible it
-		 * fails. Interrupts which are in managed shutdown mode
-		 * will simply ignore that activation request.
-		 */
 		ret = irq_activate(desc);
 		if (ret)
 			goto out_unlock;
@@ -1208,7 +803,6 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		if (new->flags & IRQF_ONESHOT)
 			desc->istate |= IRQS_ONESHOT;
 
-		/* Exclude IRQ from balancing if requested */
 		if (new->flags & IRQF_NOBALANCING) {
 			irq_settings_set_no_balancing(desc);
 			irqd_set(&desc->irq_data, IRQD_NO_BALANCING);
@@ -1218,14 +812,9 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		    irq_settings_can_autoenable(desc)) {
 			irq_startup(desc, IRQ_RESEND, IRQ_START_COND);
 		} else {
-			/*
-			 * Shared interrupts do not go well with disabling
-			 * auto enable. The sharing interrupt might request
-			 * it while it's still disabled and then wait for
-			 * interrupts forever.
-			 */
+			
 			WARN_ON_ONCE(new->flags & IRQF_SHARED);
-			/* Undo nested disables: */
+			
 			desc->depth = 1;
 		}
 
@@ -1234,7 +823,7 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		unsigned int omsk = irqd_get_trigger_type(&desc->irq_data);
 
 		if (nmsk != omsk)
-			/* hope the handler works with current  trigger mode */
+			
 			pr_warn("irq %d uses trigger mode %u; requested %u\n",
 				irq, omsk, nmsk);
 	}
@@ -1243,14 +832,9 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 
 	irq_pm_install_action(desc, new);
 
-	/* Reset broken irq detection when installing new handler */
 	desc->irq_count = 0;
 	desc->irqs_unhandled = 0;
 
-	/*
-	 * Check whether we disabled the irq via the spurious handler
-	 * before. Reenable it and give it another chance.
-	 */
 	if (shared && (desc->istate & IRQS_SPURIOUS_DISABLED)) {
 		desc->istate &= ~IRQS_SPURIOUS_DISABLED;
 		__enable_irq(desc);
@@ -1306,10 +890,6 @@ out_mput:
 	return ret;
 }
 
-/*
- * Internal function to unregister an irqaction - used to free
- * regular and special interrupts that are part of the architecture.
- */
 static struct irqaction *__free_irq(struct irq_desc *desc, void *dev_id)
 {
 	unsigned irq = desc->irq_data.irq;
@@ -1322,10 +902,6 @@ static struct irqaction *__free_irq(struct irq_desc *desc, void *dev_id)
 	chip_bus_lock(desc);
 	raw_spin_lock_irqsave(&desc->lock, flags);
 
-	/*
-	 * There can be multiple actions per IRQ descriptor, find the right
-	 * one based on the dev_id:
-	 */
 	action_ptr = &desc->action;
 	for (;;) {
 		action = *action_ptr;
@@ -1343,52 +919,24 @@ static struct irqaction *__free_irq(struct irq_desc *desc, void *dev_id)
 		action_ptr = &action->next;
 	}
 
-	/* Found it - now remove it from the list of entries: */
 	*action_ptr = action->next;
 
 	irq_pm_remove_action(desc, action);
 
-	/* If this was the last handler, shut down the IRQ line: */
 	if (!desc->action) {
 		irq_settings_clr_disable_unlazy(desc);
-		/* Only shutdown. Deactivate after synchronize_hardirq() */
+		
 		irq_shutdown(desc);
 	}
 
-
 	raw_spin_unlock_irqrestore(&desc->lock, flags);
-	/*
-	 * Drop bus_lock here so the changes which were done in the chip
-	 * callbacks above are synced out to the irq chips which hang
-	 * behind a slow bus (I2C, SPI) before calling synchronize_hardirq().
-	 *
-	 * Aside of that the bus_lock can also be taken from the threaded
-	 * handler in irq_finalize_oneshot() which results in a deadlock
-	 * because kthread_stop() would wait forever for the thread to
-	 * complete, which is blocked on the bus lock.
-	 *
-	 * The still held desc->request_mutex() protects against a
-	 * concurrent request_irq() of this irq so the release of resources
-	 * and timing data is properly serialized.
-	 */
+	
 	chip_bus_sync_unlock(desc);
 
 	unregister_handler_proc(irq, action);
 
-	/*
-	 * Make sure it's not being used on another CPU and if the chip
-	 * supports it also make sure that there is no (not yet serviced)
-	 * interrupt in flight at the hardware level.
-	 */
 	__synchronize_hardirq(desc, true);
 
-
-	/*
-	 * The action has already been removed above, but the thread writes
-	 * its oneshot mask bit when it completes. Though request_mutex is
-	 * held across this which prevents __setup_irq() from handing out
-	 * the same bit to a newly requested action.
-	 */
 	if (action->thread) {
 		kthread_stop(action->thread);
 		put_task_struct(action->thread);
@@ -1398,17 +946,10 @@ static struct irqaction *__free_irq(struct irq_desc *desc, void *dev_id)
 		}
 	}
 
-	/* Last action releases resources */
 	if (!desc->action) {
-		/*
-		 * Reacquire bus lock as irq_release_resources() might
-		 * require it to deallocate resources over the slow bus.
-		 */
+		
 		chip_bus_lock(desc);
-		/*
-		 * There is no interrupt on the fly anymore. Deactivate it
-		 * completely.
-		 */
+		
 		raw_spin_lock_irqsave(&desc->lock, flags);
 		irq_domain_deactivate_irq(&desc->irq_data);
 		raw_spin_unlock_irqrestore(&desc->lock, flags);
@@ -1426,22 +967,6 @@ static struct irqaction *__free_irq(struct irq_desc *desc, void *dev_id)
 	return action;
 }
 
-/**
- *	free_irq - free an interrupt allocated with request_irq
- *	@irq: Interrupt line to free
- *	@dev_id: Device identity to free
- *
- *	Remove an interrupt handler. The handler is removed and if the
- *	interrupt line is no longer in use by any driver it is disabled.
- *	On a shared IRQ the caller must ensure the interrupt is disabled
- *	on the card it drives before calling this function. The function
- *	does not return until any executing interrupts for this IRQ
- *	have completed.
- *
- *	This function must not be called from interrupt context.
- *
- *	Returns the devname argument passed to request_irq.
- */
 const void *free_irq(unsigned int irq, void *dev_id)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
@@ -1450,7 +975,6 @@ const void *free_irq(unsigned int irq, void *dev_id)
 
 	if (!desc || WARN_ON(irq_settings_is_per_cpu_devid(desc)))
 		return NULL;
-
 
 	action = __free_irq(desc, dev_id);
 
@@ -1463,7 +987,6 @@ const void *free_irq(unsigned int irq, void *dev_id)
 }
 EXPORT_SYMBOL(free_irq);
 
-/* This function must be called with desc->lock held */
 static const void *__cleanup_nmi(unsigned int irq, struct irq_desc *desc)
 {
 	const char *devname = NULL;
@@ -1502,7 +1025,6 @@ const void *free_nmi(unsigned int irq, void *dev_id)
 	if (WARN_ON(irq_settings_is_per_cpu_devid(desc)))
 		return NULL;
 
-	/* NMI still enabled */
 	if (WARN_ON(desc->depth == 0))
 		disable_nmi_nosync(irq);
 
@@ -1516,48 +1038,6 @@ const void *free_nmi(unsigned int irq, void *dev_id)
 	return devname;
 }
 
-/**
- *	request_threaded_irq - allocate an interrupt line
- *	@irq: Interrupt line to allocate
- *	@handler: Function to be called when the IRQ occurs.
- *		  Primary handler for threaded interrupts.
- *		  If handler is NULL and thread_fn != NULL
- *		  the default primary handler is installed.
- *	@thread_fn: Function called from the irq handler thread
- *		    If NULL, no irq thread is created
- *	@irqflags: Interrupt type flags
- *	@devname: An ascii name for the claiming device
- *	@dev_id: A cookie passed back to the handler function
- *
- *	This call allocates interrupt resources and enables the
- *	interrupt line and IRQ handling. From the point this
- *	call is made your handler function may be invoked. Since
- *	your handler function must clear any interrupt the board
- *	raises, you must take care both to initialise your hardware
- *	and to set up the interrupt handler in the right order.
- *
- *	If you want to set up a threaded irq handler for your device
- *	then you need to supply @handler and @thread_fn. @handler is
- *	still called in hard interrupt context and has to check
- *	whether the interrupt originates from the device. If yes it
- *	needs to disable the interrupt on the device and return
- *	IRQ_WAKE_THREAD which will wake up the handler thread and run
- *	@thread_fn. This split handler design is necessary to support
- *	shared interrupts.
- *
- *	Dev_id must be globally unique. Normally the address of the
- *	device data structure is used as the cookie. Since the handler
- *	receives this value it makes sense to use it.
- *
- *	If your interrupt is shared you must pass a non NULL dev_id
- *	as this is required when freeing the interrupt.
- *
- *	Flags:
- *
- *	IRQF_SHARED		Interrupt is shared
- *	IRQF_TRIGGER_*		Specify active edge(s) or level
- *	IRQF_ONESHOT		Run thread_fn with interrupt line masked
- */
 int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 			 irq_handler_t thread_fn, unsigned long irqflags,
 			 const char *devname, void *dev_id)
@@ -1569,19 +1049,6 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	if (irq == IRQ_NOTCONNECTED)
 		return -ENOTCONN;
 
-	/*
-	 * Sanity-check: shared interrupts must pass in a real dev-ID,
-	 * otherwise we'll have trouble later trying to figure out
-	 * which interrupt is which (messes up the interrupt freeing
-	 * logic etc).
-	 *
-	 * Also shared interrupts do not go well with disabling auto enable.
-	 * The sharing interrupt might request it while it's still disabled
-	 * and then wait for interrupts forever.
-	 *
-	 * Also IRQF_COND_SUSPEND only makes sense for shared interrupts and
-	 * it cannot be set along with IRQF_NO_SUSPEND.
-	 */
 	if (((irqflags & IRQF_SHARED) && !dev_id) ||
 	    ((irqflags & IRQF_SHARED) && (irqflags & IRQF_NO_AUTOEN)) ||
 	    (!(irqflags & IRQF_SHARED) && (irqflags & IRQF_COND_SUSPEND)) ||
@@ -1630,23 +1097,6 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 }
 EXPORT_SYMBOL(request_threaded_irq);
 
-/**
- *	request_any_context_irq - allocate an interrupt line
- *	@irq: Interrupt line to allocate
- *	@handler: Function to be called when the IRQ occurs.
- *		  Threaded handler for threaded interrupts.
- *	@flags: Interrupt type flags
- *	@name: An ascii name for the claiming device
- *	@dev_id: A cookie passed back to the handler function
- *
- *	This call allocates interrupt resources and enables the
- *	interrupt line and IRQ handling. It selects either a
- *	hardirq or threaded handling method depending on the
- *	context.
- *
- *	On failure, it returns a negative value. On success,
- *	it returns either IRQC_IS_HARDIRQ or IRQC_IS_NESTED.
- */
 int request_any_context_irq(unsigned int irq, irq_handler_t handler,
 			    unsigned long flags, const char *name, void *dev_id)
 {
@@ -1671,32 +1121,6 @@ int request_any_context_irq(unsigned int irq, irq_handler_t handler,
 }
 EXPORT_SYMBOL_GPL(request_any_context_irq);
 
-/**
- *	request_nmi - allocate an interrupt line for NMI delivery
- *	@irq: Interrupt line to allocate
- *	@handler: Function to be called when the IRQ occurs.
- *		  Threaded handler for threaded interrupts.
- *	@irqflags: Interrupt type flags
- *	@name: An ascii name for the claiming device
- *	@dev_id: A cookie passed back to the handler function
- *
- *	This call allocates interrupt resources and enables the
- *	interrupt line and IRQ handling. It sets up the IRQ line
- *	to be handled as an NMI.
- *
- *	An interrupt line delivering NMIs cannot be shared and IRQ handling
- *	cannot be threaded.
- *
- *	Interrupt lines requested for NMI delivering must produce per cpu
- *	interrupts and have auto enabling setting disabled.
- *
- *	Dev_id must be globally unique. Normally the address of the
- *	device data structure is used as the cookie. Since the handler
- *	receives this value it makes sense to use it.
- *
- *	If the interrupt line cannot be used to deliver NMIs, function
- *	will fail and return a negative value.
- */
 int request_nmi(unsigned int irq, irq_handler_t handler,
 		unsigned long irqflags, const char *name, void *dev_id)
 {
@@ -1708,7 +1132,6 @@ int request_nmi(unsigned int irq, irq_handler_t handler,
 	if (irq == IRQ_NOTCONNECTED)
 		return -ENOTCONN;
 
-	/* NMI cannot be shared, used for Polling */
 	if (irqflags & (IRQF_SHARED | IRQF_COND_SUSPEND | IRQF_IRQPOLL))
 		return -EINVAL;
 
@@ -1746,7 +1169,6 @@ int request_nmi(unsigned int irq, irq_handler_t handler,
 
 	raw_spin_lock_irqsave(&desc->lock, flags);
 
-	/* Setup NMI state */
 	desc->istate |= IRQS_NMI;
 	retval = irq_nmi_setup(desc);
 	if (retval) {
@@ -1776,10 +1198,6 @@ void enable_percpu_irq(unsigned int irq, unsigned int type)
 	if (!desc)
 		return;
 
-	/*
-	 * If the trigger type is not specified by the caller, then
-	 * use the default for this interrupt.
-	 */
 	type &= IRQ_TYPE_SENSE_MASK;
 	if (type == IRQ_TYPE_NONE)
 		type = irqd_get_trigger_type(&desc->irq_data);
@@ -1806,13 +1224,6 @@ void enable_percpu_nmi(unsigned int irq, unsigned int type)
 	enable_percpu_irq(irq, type);
 }
 
-/**
- * irq_percpu_is_enabled - Check whether the per cpu irq is enabled
- * @irq:	Linux irq number to check for
- *
- * Must be called from a non migratable context. Returns the enable
- * state of a per cpu interrupt on the current cpu.
- */
 bool irq_percpu_is_enabled(unsigned int irq)
 {
 	unsigned int cpu = smp_processor_id();
@@ -1850,9 +1261,6 @@ void disable_percpu_nmi(unsigned int irq)
 	disable_percpu_irq(irq);
 }
 
-/*
- * Internal function to unregister a percpu irqaction.
- */
 static struct irqaction *__free_percpu_irq(unsigned int irq, void __percpu *dev_id)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
@@ -1878,7 +1286,6 @@ static struct irqaction *__free_percpu_irq(unsigned int irq, void __percpu *dev_
 		goto bad;
 	}
 
-	/* Found it - now remove it from the list of entries: */
 	desc->action = NULL;
 
 	desc->istate &= ~IRQS_NMI;
@@ -1896,13 +1303,6 @@ bad:
 	return NULL;
 }
 
-/**
- *	remove_percpu_irq - free a per-cpu interrupt
- *	@irq: Interrupt line to free
- *	@act: irqaction for the interrupt
- *
- * Used to remove interrupts statically setup by the early boot process.
- */
 void remove_percpu_irq(unsigned int irq, struct irqaction *act)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
@@ -1911,18 +1311,6 @@ void remove_percpu_irq(unsigned int irq, struct irqaction *act)
 	    __free_percpu_irq(irq, act->percpu_dev_id);
 }
 
-/**
- *	free_percpu_irq - free an interrupt allocated with request_percpu_irq
- *	@irq: Interrupt line to free
- *	@dev_id: Device identity to free
- *
- *	Remove a percpu interrupt handler. The handler is removed, but
- *	the interrupt line is not disabled. This must be done on each
- *	CPU before calling this function. The function does not return
- *	until any executing interrupts for this IRQ have completed.
- *
- *	This function must not be called from interrupt context.
- */
 void free_percpu_irq(unsigned int irq, void __percpu *dev_id)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
@@ -1949,13 +1337,6 @@ void free_percpu_nmi(unsigned int irq, void __percpu *dev_id)
 	kfree(__free_percpu_irq(irq, dev_id));
 }
 
-/**
- *	setup_percpu_irq - setup a per-cpu interrupt
- *	@irq: Interrupt line to setup
- *	@act: irqaction for the interrupt
- *
- * Used to statically setup per-cpu interrupts in the early boot process.
- */
 int setup_percpu_irq(unsigned int irq, struct irqaction *act)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
@@ -1976,23 +1357,6 @@ int setup_percpu_irq(unsigned int irq, struct irqaction *act)
 	return retval;
 }
 
-/**
- *	__request_percpu_irq - allocate a percpu interrupt line
- *	@irq: Interrupt line to allocate
- *	@handler: Function to be called when the IRQ occurs.
- *	@flags: Interrupt type flags (IRQF_TIMER only)
- *	@devname: An ascii name for the claiming device
- *	@dev_id: A percpu cookie passed back to the handler function
- *
- *	This call allocates interrupt resources and enables the
- *	interrupt on the local CPU. If the interrupt is supposed to be
- *	enabled on other CPUs, it has to be done on each CPU using
- *	enable_percpu_irq().
- *
- *	Dev_id must be globally unique. It is a per-cpu variable, and
- *	the handler gets called with the interrupted CPU's instance of
- *	that variable.
- */
 int __request_percpu_irq(unsigned int irq, irq_handler_t handler,
 			 unsigned long flags, const char *devname,
 			 void __percpu *dev_id)
@@ -2038,27 +1402,6 @@ int __request_percpu_irq(unsigned int irq, irq_handler_t handler,
 }
 EXPORT_SYMBOL_GPL(__request_percpu_irq);
 
-/**
- *	request_percpu_nmi - allocate a percpu interrupt line for NMI delivery
- *	@irq: Interrupt line to allocate
- *	@handler: Function to be called when the IRQ occurs.
- *	@name: An ascii name for the claiming device
- *	@dev_id: A percpu cookie passed back to the handler function
- *
- *	This call allocates interrupt resources for a per CPU NMI. Per CPU NMIs
- *	have to be setup on each CPU by calling prepare_percpu_nmi() before
- *	being enabled on the same CPU by using enable_percpu_nmi().
- *
- *	Dev_id must be globally unique. It is a per-cpu variable, and
- *	the handler gets called with the interrupted CPU's instance of
- *	that variable.
- *
- *	Interrupt lines requested for NMI delivering should have auto enabling
- *	setting disabled.
- *
- *	If the interrupt line cannot be used to deliver NMIs, function
- *	will fail returning a negative value.
- */
 int request_percpu_nmi(unsigned int irq, irq_handler_t handler,
 		       const char *name, void __percpu *dev_id)
 {
@@ -2078,7 +1421,6 @@ int request_percpu_nmi(unsigned int irq, irq_handler_t handler,
 	    !irq_supports_nmi(desc))
 		return -EINVAL;
 
-	/* The line cannot already be NMI */
 	if (desc->istate & IRQS_NMI)
 		return -EINVAL;
 
@@ -2114,19 +1456,6 @@ err_out:
 	return retval;
 }
 
-/**
- *	prepare_percpu_nmi - performs CPU local setup for NMI delivery
- *	@irq: Interrupt line to prepare for NMI delivery
- *
- *	This call prepares an interrupt line to deliver NMI on the current CPU,
- *	before that interrupt line gets enabled with enable_percpu_nmi().
- *
- *	As a CPU local operation, this should be called from non-preemptible
- *	context.
- *
- *	If the interrupt line cannot be used to deliver NMIs, function
- *	will fail returning a negative value.
- */
 int prepare_percpu_nmi(unsigned int irq)
 {
 	unsigned long flags;
@@ -2158,18 +1487,6 @@ out:
 	return ret;
 }
 
-/**
- *	teardown_percpu_nmi - undoes NMI setup of IRQ line
- *	@irq: Interrupt line from which CPU local NMI configuration should be
- *	      removed
- *
- *	This call undoes the setup done by prepare_percpu_nmi().
- *
- *	IRQ line should not be enabled for the current CPU.
- *
- *	As a CPU local operation, this should be called from non-preemptible
- *	context.
- */
 void teardown_percpu_nmi(unsigned int irq)
 {
 	unsigned long flags;
@@ -2210,19 +1527,6 @@ int __irq_get_irqchip_state(struct irq_data *data, enum irqchip_irq_state which,
 	return err;
 }
 
-/**
- *	irq_get_irqchip_state - returns the irqchip state of a interrupt.
- *	@irq: Interrupt line that is forwarded to a VM
- *	@which: One of IRQCHIP_STATE_* the caller wants to know about
- *	@state: a pointer to a boolean where the state is to be stored
- *
- *	This call snapshots the internal irqchip state of an
- *	interrupt, returning into @state the bit corresponding to
- *	stage @which
- *
- *	This function should be called with preemption disabled if the
- *	interrupt controller has per-cpu registers.
- */
 int irq_get_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
 			  bool *state)
 {
@@ -2244,18 +1548,6 @@ int irq_get_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
 }
 EXPORT_SYMBOL_GPL(irq_get_irqchip_state);
 
-/**
- *	irq_set_irqchip_state - set the state of a forwarded interrupt.
- *	@irq: Interrupt line that is forwarded to a VM
- *	@which: State to be restored (one of IRQCHIP_STATE_*)
- *	@val: Value corresponding to @which
- *
- *	This call sets the internal irqchip state of an interrupt,
- *	depending on the value of @which.
- *
- *	This function should be called with migration disabled if the
- *	interrupt controller has per-cpu registers.
- */
 int irq_set_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
 			  bool val)
 {
@@ -2291,12 +1583,6 @@ out_unlock:
 }
 EXPORT_SYMBOL_GPL(irq_set_irqchip_state);
 
-/**
- * irq_has_action - Check whether an interrupt is requested
- * @irq:	The linux irq number
- *
- * Returns: A snapshot of the current state
- */
 bool irq_has_action(unsigned int irq)
 {
 	bool res;
@@ -2308,13 +1594,6 @@ bool irq_has_action(unsigned int irq)
 }
 EXPORT_SYMBOL_GPL(irq_has_action);
 
-/**
- * irq_check_status_bit - Check whether bits in the irq descriptor status are set
- * @irq:	The linux irq number
- * @bitmask:	The bitmask to evaluate
- *
- * Returns: True if one of the bits in @bitmask is set
- */
 bool irq_check_status_bit(unsigned int irq, unsigned int bitmask)
 {
 	struct irq_desc *desc;

@@ -19,9 +19,9 @@
 #include <linux/ramfs.h>
 #include <linux/shmem_fs.h>
 
-#include <linux/nfs_fs.h>
-#include <linux/nfs_fs_sb.h>
-#include <linux/nfs_mount.h>
+/* #include <linux/nfs_fs.h> */
+/* #include <linux/nfs_fs_sb.h> */
+/* #include <linux/nfs_mount.h> */
 #include <linux/raid/detect.h>
 #include <uapi/linux/mount.h>
 

@@ -21,9 +21,12 @@
 #include <linux/rcupdate.h>
 #include <linux/close_range.h>
 #include <linux/security.h>
-#include <net/sock.h>
+/* #include <net/sock.h> */
 
 #include "internal.h"
+
+/* Stub from sock.h - empty function */
+static inline void __receive_sock(struct file *file) { }
 
 unsigned int sysctl_nr_open __read_mostly = 1024*1024;
 unsigned int sysctl_nr_open_min = BITS_PER_LONG;

@@ -1,15 +1,26 @@
---- 2025-11-11 21:42 ---
+--- 2025-11-11 21:48 ---
 SECOND PHASE: Good progress in this session!
 Starting LOC: 328,416
-Current LOC: 326,513 (measured with cloc after make mrproper)
-Reduction this session: 1,903 LOC
-Target: ~300k LOC. Need to reduce by ~26,513 more LOC.
+Current LOC: ~325,778 (estimated: 326,513 - 735 from nfs4.h removal)
+Reduction this session: ~2,638 LOC
+Target: ~300k LOC. Need to reduce by ~25,778 more LOC.
 Kernel image: 474K. Build errors: 0.
 
 Changes made:
-1. Removed NFS header files (nfs_xdr.h: 1,546, nfs_fs.h: 605, nfs_fs_sb.h: 282) = 2,433 lines
-   - These were already not included by any .c files
-   - Build and Hello World test both pass
+1. Removed NFS header files:
+   - nfs_xdr.h (1,546 lines)
+   - nfs_fs.h (605 lines)
+   - nfs_fs_sb.h (282 lines)
+   - nfs4.h (735 lines)
+   Total: 3,168 lines removed
+2. These were already not included by any .c files
+3. Build and Hello World test both pass
+4. 2 commits pushed successfully
+
+Attempted but failed:
+- Tried removing netdevice.h, ethtool.h, tcp.h, mii.h, mdio.h, ptr_ring.h together
+- ptr_ring.h is needed by include/net/page_pool.h
+- Other headers likely have dependencies too
 
 Strategy going forward:
 Need ~26.5k more LOC reduction. Remaining large headers:

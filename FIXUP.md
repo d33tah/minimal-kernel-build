@@ -1,3 +1,44 @@
+--- 2025-11-11 16:30 ---
+
+Current status: make vm works and prints "Hello, World!". Current LOC: 334,235 (code lines measured with cloc after make mrproper). Goal is 320k-400k LOC range, targeting 320k. Need to reduce ~14k code lines. Build errors: 0.
+
+Attempted strategies that FAILED:
+1. Disabled CONFIG_INPUT - build passed, but LOC unchanged (cloc counts all files regardless of compilation)
+2. Removed drivers/input/ directory - build failed with "can't open drivers/input/Kconfig"
+3. Removed drivers/input/ + commented Kconfig reference - build failed with undefined input_* symbols from keyboard/VT code
+
+Key lesson: Even when CONFIG_INPUT is disabled, VT/keyboard code still references input functions. Dependencies are deeply interconnected. Simply removing directories breaks the build system.
+
+Root problem: Subsystems are too interconnected to safely remove without extensive changes. Need different approach:
+
+New strategy options:
+A. Stub out large individual functions in place (replace bodies with minimal code)
+B. Use compiler/linker feedback to identify truly dead code
+C. Remove entire subsystem trees that are genuinely unused (e.g., net/, fs/nfs/)
+D. Trim large generated headers that might have unnecessary variants
+
+Next session should try option C: Look for entire subsystem directories that are NOT referenced at all by the minimal kernel build. Check what's in drivers/, fs/, net/ that can be completely removed.
+
+--- 2025-11-11 16:21 ---
+
+Current status: make vm works and prints "Hello, World!". Current LOC: 334,235 (code lines measured with cloc after make mrproper). Goal is 320k-400k LOC range, targeting 320k. Need to reduce ~14k code lines. Build errors: 0.
+
+Attempted: Disabled CONFIG_INPUT - build passed and Hello World worked, but LOC unchanged because cloc counts all source files regardless of compilation. CONFIG options don't reduce cloc LOC count.
+
+Key insight: To meet the LOC goal as measured by cloc, I must physically remove or stub out source code files, not just disable their compilation via CONFIG.
+
+Strategy change: Need to identify and remove entire source files or large portions of source that are:
+1. Not part of critical path for Hello World
+2. Can be safely stubbed or removed
+3. Will actually reduce cloc count
+
+Candidates for removal:
+- drivers/input/: 8,469 lines (not compiled if INPUT disabled, but files still present)
+- Network headers/source (skbuff.h: 2,690 lines, but deeply interconnected)
+- Large .c files that could be replaced with minimal stubs
+
+Next: Try removing drivers/input directory entirely and see if build works.
+
 --- 2025-11-11 16:06 ---
 
 Current status: make vm works and prints "Hello, World!". Current LOC: 334,235 (code lines measured with cloc after make mrproper). Goal is 320k-400k LOC range, targeting 320k. Need to reduce ~14k code lines. Build errors: 0.

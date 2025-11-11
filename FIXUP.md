@@ -1,3 +1,23 @@
+--- 2025-11-11 22:52 ---
+SECOND PHASE: Excellent progress! Successfully removed unused headers.
+Current LOC: 322,652 (measured with cloc after make mrproper).
+Session starting LOC: 324,370
+Reduction this session: 1,718 LOC
+Target: ~300k LOC. Need to reduce by ~22,652 more LOC.
+Kernel image: 474K. Build errors: 0.
+
+Changes made (4 commits, all pushed):
+1. Removed NFS/sunrpc headers: nfs.h + sunrpc/ (sched.h 306, msg_prot.h 216, auth.h 196, xdr.h 12) = 777 lines
+2. Removed netfilter headers: netfilter.h (78), netfilter_defs.h (20) = 98 lines
+3. Removed watch_queue headers: watch_queue.h (23 + 104) = 127 lines
+4. Removed MII headers: mii.h (548 + 185) = 733 lines
+Total: 1,735 lines removed (cloc shows 1,718 due to comment/blank differences)
+
+Strategy: Continue systematically checking unused headers. Still have candidates:
+pci_regs.h (1106), input-event-codes.h (973), tcp.h (362), snmp.h (350),
+if_packet.h (316), in6.h (302), neighbour.h (217), net_tstamp.h (204),
+ipv6.h (202), icmpv6.h (178), if_ether.h (179), if_bonding.h (155).
+
 --- 2025-11-11 22:37 ---
 SECOND PHASE: New session starting. Build verified working.
 Current LOC: 324,370 (measured with cloc after make mrproper).

@@ -1,3 +1,11 @@
+--- 2025-11-11 23:15 ---
+SECOND PHASE: Continuing reduction. Searching for more removable headers.
+Current LOC: 321,427. Target: ~300k. Need ~21,427 reduction.
+Strategy: Systematically analyzing large headers to find removal candidates.
+Checking: crypto headers (hash.h: 1005 lines), IPv6 stack (ipv6.h: 1316 lines),
+rhashtable (1270 lines, only used by its own .c file), and protocol headers.
+Will test removing crypto/hash.h include from lib/iov_iter.c.
+
 --- 2025-11-11 23:06 ---
 SECOND PHASE: Excellent session! Successfully removed 6 commits worth of unused headers.
 Current LOC: 321,427 (measured with cloc after make mrproper).

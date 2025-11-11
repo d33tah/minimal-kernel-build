@@ -1,3 +1,15 @@
+--- 2025-11-11 14:32 ---
+
+Current status: make vm works and prints "Hello, World!". Current LOC: 332,717 (measured with cloc after make mrproper). Goal is 320k-400k LOC range. In secondary phase - need to reduce LOC towards 320k target (currently 332k, need ~12k reduction). Build errors: 0.
+
+Reverted commit 86dea0e which removed network headers (net/net_namespace.h, net/sock.h, net/checksum.h, etc.) as it broke the build. The removal was too aggressive - many files depend on these headers even for minimal kernel. Build and "Hello World" test verified working after revert. Force-pushed to update remote.
+
+Strategy going forward: Need more careful approach to header reduction. Instead of removing entire header files, should focus on:
+1. Trimming individual large header files by removing unused sections
+2. Finding large source files that can be replaced with stubs
+3. Identifying specific subsystems that can be safely stubbed
+4. Making incremental changes and testing after each one to avoid breaking builds
+
 --- 2025-11-09 14:19 ---
 
 Current status: make vm works and prints "Hello, World!". Current LOC: 332,499 (measured with cloc after make mrproper). Goal is 320k-400k LOC range. In secondary phase - need to reduce LOC towards 320k target (currently 332k, need ~12k reduction). Build errors: 0.

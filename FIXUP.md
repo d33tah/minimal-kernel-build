@@ -1,3 +1,20 @@
+--- 2025-11-11 20:52 ---
+SECOND PHASE: New session started. Build verified working.
+Current LOC: 331,935 (measured with cloc after make mrproper).
+Target: ~300k LOC. Need to reduce by ~32k LOC.
+Kernel image: 474K. Build errors: 0.
+
+Strategy for this session:
+Based on previous notes, comment removal doesn't reduce code LOC. Need to focus on actual code removal.
+Top candidates from cloc analysis:
+1. Network headers (netdevice.h: 2,785 LOC, skbuff.h: 2,690 LOC, sock.h: 1,774 LOC) - ~7.2k LOC
+2. Large source files that can be stubbed (mm/page_alloc.c: 3,936 LOC, mm/memory.c: 3,330 LOC)
+3. Unused subsystems (drivers/input: ~8k LOC, event code mentioned in notes)
+4. Large headers with inline functions that could be stubbed
+
+Will start by identifying which network headers/functions can be safely removed or stubbed.
+Previous attempts to remove network headers broke build, so need careful approach.
+
 --- 2025-11-11 20:50 ---
 SECOND PHASE: Successfully removed BPF header include and stub BPF header file.
 Build confirmed working - "make vm" succeeds and prints "Hello, World!" and "Still alive".

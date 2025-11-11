@@ -1,3 +1,49 @@
+--- 2025-11-11 15:33 ---
+
+Current status: make vm works and prints "Hello, World!". Current LOC: 334,235 (code lines measured with cloc after make mrproper). Goal is 320k-400k LOC range, targeting 320k. Need to reduce ~14k code lines. Build errors: 0.
+
+Analyzed subsystem sizes:
+- include/: 114,404 lines (34% of total!) - Largest subsystem
+  - include/linux/: 84,029 lines
+  - include/uapi/: 14,314 lines
+  - include/net/: 5,821 lines
+- arch/: 60,365 lines
+- kernel/: 40,076 lines
+- mm/: 34,231 lines
+- drivers/: 31,944 lines
+- fs/: 21,676 lines
+- lib/: 18,761 lines
+
+Largest headers:
+- include/linux/netdevice.h: 3,362 lines (network)
+- include/linux/skbuff.h: 3,322 lines (network)
+- include/linux/fs.h: 2,521 lines
+- include/linux/atomic/*: ~4,500 lines (generated)
+- include/linux/mm.h: 2,197 lines
+
+Previous session tried removing network headers but broke build. Network stack is deeply integrated.
+
+Strategy for next session:
+1. Try removing large, less-critical headers one at a time, testing build after each
+2. Focus on headers that are less likely to break things (e.g., trace, perf, nfs)
+3. Look for unused generated files or auto-generated code
+4. Consider trimming individual large header files (netdevice.h, skbuff.h) by removing inline functions or unused definitions
+5. Alternative: Use specialized tool to identify truly unused code/headers based on actual build output
+
+Note: Comment removal doesn't reduce code LOC - only comment column. Need actual code removal or stubbing.
+
+--- 2025-11-11 15:31 ---
+
+Current status: make vm works and prints "Hello, World!". Current LOC: 334,235 (code lines measured with cloc after make mrproper). Goal is 320k-400k LOC range, targeting 320k. Need to reduce ~14k code lines. Build errors: 0.
+
+Committed and pushed comment removal changes. Comment removal reduces comment column but doesn't reduce code LOC - need different strategy. Will now focus on removing/stubbing actual code:
+- Look for entire subsystems that can be removed (e.g., networking stack components not needed for Hello World)
+- Identify large files with functions that can be stubbed
+- Consider removing trace/debug infrastructure that's not needed
+- Look for driver code that can be trimmed
+
+Strategy: Start by analyzing which subsystems are actually needed for minimal Hello World kernel and systematically remove/stub the rest.
+
 --- 2025-11-11 15:25 ---
 
 Current status: make vm works and prints "Hello, World!". Current LOC: 334,235 (code lines measured with cloc after make mrproper). Goal is 320k-400k LOC range, targeting 320k. Comment column reduced from ~112k to 102,960 (-9,439 comment lines). Build errors: 0.

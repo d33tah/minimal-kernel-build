@@ -1,3 +1,69 @@
+--- 2025-11-11 16:06 ---
+
+Current status: make vm works and prints "Hello, World!". Current LOC: 334,235 (code lines measured with cloc after make mrproper). Goal is 320k-400k LOC range, targeting 320k. Need to reduce ~14k code lines. Build errors: 0.
+
+New session started. Build verified working. Disk space issue in /tmp resolved (was 100% full, cleaned up to 36%). Previous notes suggest that comment removal doesn't help with code LOC reduction - need actual code removal. Will focus on the strategies identified:
+1. Try disabling CONFIG options to reduce compiled code
+2. Look at large generated headers (atomic-arch-fallback.h: 2,456 lines, atomic-instrumented.h: 2,086 lines = 4,542 total)
+3. Stub unused inline functions in large headers
+4. Use compilation output to identify truly unused code
+
+Starting with strategy: Identify which large functions or sections can be stubbed without breaking the minimal "Hello World" functionality.
+
+--- 2025-11-11 15:50 ---
+
+Current status: make vm works and prints "Hello, World!". Current LOC: 334,233 (code lines measured with cloc after make mrproper). Goal is 320k-400k LOC range, targeting 320k. Need to reduce ~14k code lines. Build errors: 0.
+
+Explored reduction strategies:
+- skbuff.h: 2,690 code lines, 326 inline functions - but included by 13 files
+- pci.h: 977 code lines - but included by 10 core arch/x86 and lib files, likely needed
+- security.h: 1,231 code lines
+- nfs_xdr.h: 1,293 code lines - only included by 2 other NFS headers
+
+Analysis shows that headers are deeply interconnected. Removing entire headers breaks builds. Need different strategy:
+1. Focus on removing unused inline function bodies (replace with stubs)
+2. Identify #ifdef blocks that can be disabled
+3. Look for generated code that can be reduced (atomic headers are 2,456 + 2,086 lines)
+
+Next session should:
+- Try disabling CONFIG options to reduce what gets included
+- Look at the atomic-arch-fallback.h and atomic-instrumented.h (4,542 code lines total) - these are generated
+- Consider trimming individual large functions rather than entire files
+- Use compiler output to identify truly unused code
+
+Time management note: Spent significant time exploring but didn't commit reductions. Need to be more aggressive with trying changes and reverting if they fail.
+
+--- 2025-11-11 15:42 ---
+
+Current status: make vm works and prints "Hello, World!". Current LOC: 334,233 (code lines measured with cloc after make mrproper). Goal is 320k-400k LOC range, targeting 320k. Need to reduce ~14k code lines. Build errors: 0.
+
+Analysis done:
+- skbuff.h: 3,322 total lines, 2,690 code lines, 326 inline functions - mostly network-related
+- netdevice.h: 3,362 lines, 187 inline functions
+- Only 13 files include skbuff.h, and 2 already have it commented out
+- Network stack functions are prime candidates for trimming
+
+Strategy: Try removing large sections of inline functions from skbuff.h since network is not needed for Hello World. Many inline functions likely unused. Will try incremental approach:
+1. Identify a large section of inline functions in skbuff.h
+2. Comment them out or replace with minimal stubs
+3. Test build after each change
+4. If build fails, restore and try a different section
+
+Starting with trying to identify and remove unused inline functions from skbuff.h.
+
+--- 2025-11-11 15:35 ---
+
+Current status: make vm works and prints "Hello, World!". Current LOC: 334,233 (code lines measured with cloc after make mrproper). Goal is 320k-400k LOC range, targeting 320k. Need to reduce ~14k code lines. Build errors: 0.
+
+New session started. Committed watch.sh improvement. Based on previous notes, comment removal doesn't reduce code LOC. Need to focus on actual code removal:
+- Strategy 1: Identify and remove/stub entire source files from subsystems not needed for Hello World
+- Strategy 2: Look for large inline functions in headers that can be stubbed
+- Strategy 3: Find driver code or subsystems (networking, filesystem features, etc.) that can be trimmed
+
+Will start by investigating which .c files might be removable or stubbable. Since we need ~14k LOC reduction, need to be strategic. Looking at notes, include/ has 145k lines (34% of total), so trimming headers is most impactful.
+
+Plan: Use build system feedback to identify files that might not be compiled, or find large functions in compiled files that could be stubbed while keeping build working.
+
 --- 2025-11-11 15:33 ---
 
 Current status: make vm works and prints "Hello, World!". Current LOC: 334,235 (code lines measured with cloc after make mrproper). Goal is 320k-400k LOC range, targeting 320k. Need to reduce ~14k code lines. Build errors: 0.

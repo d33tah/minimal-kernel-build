@@ -1,3 +1,20 @@
+--- 2025-11-11 21:08 ---
+SECOND PHASE: Good progress! Reduced LOC from 331,935 to 330,406 (-1,529 LOC).
+Target: ~300k LOC. Need to reduce by ~30k LOC.
+Kernel image: 474K. Build errors: 0.
+
+Changes made this session:
+1. Removed sock.h include from fs/file.c, added __receive_sock stub
+2. Removed unused NFS header includes from init/do_mounts.c
+3. Removed unused headers: if_vlan.h (403), sch_generic.h (988), min_heap.h (65), mii_timestamper.h (132)
+Total reduction: 1,529 LOC
+
+Strategy going forward:
+- Continue finding unused headers to remove
+- Look for more unused includes that can be commented out
+- Consider trimming large source files by stubbing functions
+- Network headers still large: netdevice.h (2,785), skbuff.h (2,690) - need careful approach
+
 --- 2025-11-11 20:52 ---
 SECOND PHASE: New session started. Build verified working.
 Current LOC: 331,935 (measured with cloc after make mrproper).

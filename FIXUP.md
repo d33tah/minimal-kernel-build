@@ -1,8 +1,71 @@
+--- 2025-11-12 07:36 ---
+NEW SESSION: Continue reduction towards 200k LOC goal
+
+VERIFICATION (07:36):
+✓ Build status: make vm successful
+✓ Hello World: printing correctly ("Hello, World!" and "Still alive")
+✓ Current LOC: 305,113 (C: 176,283 + Headers: 117,675)
+✓ Kernel size: 472K
+✓ Target: 200k LOC = need 105,113 LOC reduction (34%)
+
+ANALYSIS (07:36-07:40):
+Previous session attempted to disable TTY/VT/INPUT subsystems but didn't complete.
+Current state shows 13k LOC reduction from previous session's 318k to 305k.
+
+Branch goal: 400kb-200k-loc-goal-according-to-cloc-and-make-vm-passing
+- Kernel size: 472K (MEETS 400kb goal)
+- LOC: 305k (DOES NOT meet 200k goal - need 105k more reduction)
+
+Instructions state: "CONTINUE. We want as little code as possible and as small kernel as possible -
+what's stated in the branch name is the absolute minimum, but you can and should do much better -
+even as much as 100K LOC better."
+
+STRATEGY:
+Will continue exploring aggressive reduction opportunities:
+1. Review largest subsystems for stubbing opportunities
+2. Check if TTY/VT/INPUT removal is feasible
+3. Look for large files that can be reduced
+4. Consider aggressive header reduction
+
+ATTEMPT 1: Disable CONFIG_INPUT (07:40-07:51)
+- Modified kernel/configs/tiny.config: changed CONFIG_INPUT=y to # CONFIG_INPUT is not set
+- Rebuilt kernel: BUILD SUCCESSFUL
+- Tested with make vm: ✓ "Hello, World!" and "Still alive" printed correctly
+- Kernel size: 472K (unchanged)
+- LOC: 305,113 (unchanged - files still in tree, just not compiled)
+
+ATTEMPT 2: Remove drivers/input/ directory (07:51-07:55)
+- Removed drivers/input/ entirely and updated drivers/Kconfig
+- BUILD FAILED: drivers/tty/vt/keyboard.c depends on INPUT symbols
+  (input_register_handler, input_handler_for_each_handle, input_inject_event, etc.)
+- Reverted changes: restored drivers/input/
+- CONCLUSION: keyboard.c in VT subsystem has hard INPUT dependency
+
+ATTEMPT 3: Disable CONFIG_VT (07:55-07:56)
+- Added # CONFIG_VT is not set and # CONFIG_VT_CONSOLE is not set to tiny.config
+- BUILD FAILED: TTY depends on VT console symbols (conswitchp, vga_con, vty_init, etc.)
+- Reverted changes
+- CONCLUSION: TTY<->VT<->INPUT form tight dependency triangle, can't easily break
+
+ANALYSIS (07:56-07:58):
+Attempted to remove ~17k LOC from TTY/VT/INPUT subsystem but dependencies are too complex.
+Previous sessions already documented similar findings. The kernel architecture requires these
+subsystems to be present together.
+
+Investigated other opportunities:
+- tools/: 488 LOC but needed for build (le_byteshift.h)
+- security.h: 1567 lines but previous sessions found stubs are used
+- ACPI/crypto headers: 120K+80K but previous sessions documented removal failures
+
+DECISION (07:58):
+Will commit current progress (CONFIG_INPUT disabled in config) and continue with
+different reduction strategies in next attempts.
+
 --- 2025-11-12 07:15 ---
-NEW SESSION: Attempt to disable TTY/VT/INPUT subsystems
+PREVIOUS SESSION: Attempt to disable TTY/VT/INPUT subsystems (INCOMPLETE)
 
 VERIFICATION (07:15):
-✓ Build status: make vm successful  
+✓ Build status: make vm successful
 ✓ Hello World: printing correctly
 ✓ Current LOC: 318,188 (C: 183,174 + Headers: 120,099)
 ✓ Kernel size: 472K
@@ -24,7 +87,7 @@ HYPOTHESIS:
 Init program (elo/init) is assembly that just writes "Hello, world!" via syscall.
 It doesn't need keyboard input or VT. Kernel console output might work with simpler driver.
 
-ATTEMPT 1: Disable INPUT/KEYBOARD subsystem (07:20)
+ATTEMPT 1: Disable INPUT/KEYBOARD subsystem (07:20) - [STATUS UNKNOWN - SESSION INCOMPLETE]
 
 --- 2025-11-12 07:02 ---
 NEW SESSION: Aggressive header reduction attempt

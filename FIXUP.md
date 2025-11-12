@@ -1,3 +1,43 @@
+--- 2025-11-12 21:13 ---
+PROGRESS UPDATE - PERF_EVENTS DISABLED
+
+Disabled CONFIG_PERF_EVENTS by commenting out "select PERF_EVENTS" in arch/x86/Kconfig
+Added comprehensive stubs in kernel/events/stubs.c for all perf functions
+Modified kernel/Makefile to always build events/ directory (obj-y += events/)
+
+Added stubs for:
+- perf_event functions (already present)
+- x86 specific: pt_regs_offset array, insn_get_addr_ref, insn_decode
+- irq_work_tick
+
+Current LOC: 300,481 total (C: 167,530 + Headers: 120,094 + Other: 12,857)
+Starting LOC: 304,380
+Reduction: 3,899 LOC (1.3%)
+Target: 200,000 LOC (need 100,481 more, 33.5%)
+Kernel: 420KB (down from 426KB, -6KB)
+Build status: PASSING - "Hello, World!" displayed
+
+Note: While LOC reduction is modest, disabling PERF_EVENTS removes significant
+compiled code. The 6KB kernel reduction confirms this.
+
+Next steps: Continue with other optional subsystems or header trimming.
+
+--- 2025-11-12 20:56 ---
+NEW SESSION START
+
+Current LOC: 304,380 total (C: 167,523 + Headers: 120,099 + Other: 16,758)
+Target: 200,000 LOC (need 104,380 more, 34.3%)
+Kernel: 426KB (target: 400KB, need 26KB reduction)
+Build status: PASSING - "Hello, World!" displayed
+
+Strategy: Need aggressive reduction. Previous sessions identified the challenge:
+- Incremental stubbing won't achieve 104K LOC goal
+- Headers are 120K LOC (39.4% of total) - major trimming opportunity
+- Large files (mm/page_alloc, mm/memory, tty/vt, fs/namei) have removable sections
+- Scheduler policies (deadline.c, rt.c) could be stubbed
+
+Will try header trimming approach systematically.
+
 --- 2025-11-12 20:54 ---
 SESSION EXPLORATION - NO CHANGES
 

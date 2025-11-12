@@ -93,3 +93,20 @@ DEFINE_STATIC_KEY_FALSE(rdpmc_always_available_key);
 DEFINE_PER_CPU_PAGE_ALIGNED(struct debug_store, cpu_debug_store);
 DEFINE_PER_CPU(struct pt_regs, __perf_regs[4]);
 
+/* x86 perf_regs stubs - pt_regs_offset array */
+#include <asm/perf_regs.h>
+#ifndef PERF_REG_X86_MAX
+#define PERF_REG_X86_MAX 32
+#endif
+unsigned int pt_regs_offset[PERF_REG_X86_MAX];
+
+/* x86 insn_get_addr_ref stub */
+int insn_get_addr_ref(struct insn *insn, struct pt_regs *regs) { return -ENOSYS; }
+
+/* x86 insn_decode stub */
+#include <asm/insn.h>
+int insn_decode(struct insn *insn, const void *kaddr, int buf_len, enum insn_mode m) { return -ENOSYS; }
+
+/* irq_work_tick stub */
+void irq_work_tick(void) { }
+

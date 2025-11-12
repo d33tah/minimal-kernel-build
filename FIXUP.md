@@ -1,3 +1,49 @@
+--- 2025-11-12 20:54 ---
+SESSION EXPLORATION - NO CHANGES
+
+Current LOC: 300,477 total (C: 167,521 + Headers: 120,099 + Other: 12,857)
+Target: 200,000 LOC (need 100,477 more, 33.4%)
+Kernel: 426KB (target: 400KB, need 26KB reduction)
+Build status: PASSING - "Hello, World!" displayed
+
+Explored candidates:
+- lib/scatterlist.c: 957 LOC, only used by kfifo.c (which is needed for tty)
+  Can't stub without breaking kfifo's sg_ function calls
+- lib/vsprintf.c: 2804 LOC, core printf/sprintf implementation, too risky
+- kernel/time/alarmtimer.c: Already stubbed (36 LOC only)
+
+Challenge: Need 100K LOC reduction (33%). Incremental stubbing won't achieve this.
+Reaching this goal requires either:
+1. Major architectural changes (NOMMU, TTY simplification, syscall reduction)
+2. Massive header trimming (120K LOC in headers, 40% of total)
+3. Aggressive scheduler/mm/fs simplification
+4. Combination of all above
+
+Current viable options:
+- Header trimming: High risk, could break build in subtle ways
+- Large file partial reductions: Need to identify removable sections systematically
+- Scheduler policies: deadline.c (981 LOC) + rt.c (705 LOC) = 1686 LOC potential
+
+Recommendation: Need to identify 10-20 files in 300-1000 LOC range OR
+one major subsystem (5K+ LOC) that can be aggressively reduced.
+
+--- 2025-11-12 20:52 ---
+NEW SESSION START
+
+Current LOC: 300,477 total (C: 167,521 + Headers: 120,099 + Other: 12,857)
+Target: 200,000 LOC (need 100,477 more, 33.4%)
+Kernel: 426KB (target: 400KB, need 26KB reduction)
+Build status: PASSING - "Hello, World!" displayed
+
+Note: LOC count higher than previous session - cloc counting differs slightly.
+Will focus on finding larger reduction opportunities rather than incremental changes.
+
+Strategy:
+1. Look for lib files with low usage (scatterlist, string_helpers candidates)
+2. Consider partial trimming of large files (mm/page_alloc.c, mm/memory.c, fs/namei.c)
+3. Evaluate scheduler policy files more carefully
+4. Keep testing frequently to avoid breaking "Hello, World!"
+
 --- 2025-11-12 20:29 ---
 ANALYSIS SESSION
 

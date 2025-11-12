@@ -1,3 +1,15 @@
+--- 2025-11-12 23:15 ---
+FAILED ATTEMPT - ptrace stubbing
+
+Attempted to stub kernel/ptrace.c (1247 LOC) but linker errors occurred:
+- Missing: ptrace_request, ptrace_may_access, __ptrace_link, __ptrace_unlink, exit_ptrace
+- These functions are called from other kernel subsystems (exit, wait, mm, pidfd, setns)
+- ptrace is too tightly integrated to stub without breaking core kernel functionality
+- Reverted changes
+- Lesson: Need to check for external dependencies before stubbing subsystems
+
+Continuing search for simpler reduction targets...
+
 --- 2025-11-12 23:07 ---
 SUCCESS - prctl syscall stubbed
 
@@ -9,8 +21,9 @@ Stubbed prctl syscall in kernel/sys.c:
 - Build: PASSING, "Hello, World!" displayed
 - Kernel: 417KB (down from 419KB, 2KB reduction)
 - Warnings reduced from 10 to 6
+- Committed and pushed: ff4de3c
 
-Current session total: 567 LOC reduced (cumulative with previous reductions this session)
+Current session total: 567 LOC reduced
 
 --- 2025-11-12 22:28 ---
 NEW SESSION START

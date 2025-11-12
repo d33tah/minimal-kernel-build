@@ -13,7 +13,7 @@ obj-y				+= tty/
 obj-y				+= char/
 
 obj-y				+= base/
-obj-$(CONFIG_SERIO)		+= input/serio/
-obj-$(CONFIG_INPUT)		+= input/
+# obj-$(CONFIG_SERIO)		+= input/serio/
+# obj-$(CONFIG_INPUT)		+= input/
 obj-$(CONFIG_RTC_LIB)		+= rtc/
 obj-y				+= clocksource/

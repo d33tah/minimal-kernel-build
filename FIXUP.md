@@ -1,3 +1,44 @@
+--- 2025-11-12 04:02 ---
+NEW SESSION: Continuing aggressive reduction attempts.
+Current LOC: 316,330 (minified/ directory, measured with cloc after make vm).
+Target: 200k. Need: 116,330 LOC reduction (37%).
+Kernel image: 472K. Build: working. "Hello, World!" printed successfully.
+
+VERIFIED STATE:
+✓ make vm succeeds and prints "Hello, World!"
+✓ Git diff is clean
+✓ Measurement confirmed: 316,330 LOC (C: 183,264, Headers: 120,161)
+
+APPROACH FOR THIS SESSION:
+Previous sessions determined 200k target is extremely difficult. Will attempt:
+1. Find largest header files and trim unused portions
+2. Look for additional subsystems that can be stubbed or removed
+3. Check for any remaining test/example/unused code
+4. Focus on headers (120k LOC - 38% of total) as primary reduction opportunity
+
+SESSION WORK (04:02-04:12):
+
+ATTEMPTED: Remove forced PERF_EVENTS selection (FAILED - dependencies too complex)
+- Found arch/x86/Kconfig:273 has unconditional `select PERF_EVENTS` in config X86
+- Attempted removal but broke build with missing symbols:
+  * pt_regs_offset (from arch/x86/lib/insn-eval.c, needs CONFIG_INSTRUCTION_DECODER)
+  * insn_decode, insn_get_addr_ref (from instruction decoder)
+  * irq_work_tick (from kernel/irq_work.c)
+- Issue: Many x86 core files (mm/extable.c, etc.) depend on these even when PERF disabled
+- PERF_EVENTS code is deeply integrated into x86 architecture
+- Reverting changes - removing PERF would require extensive refactoring of x86 core code
+
+ANALYSIS: The PERF_EVENTS subsystem cannot be easily removed because:
+1. x86 architecture unconditionally selects it (arch/x86/Kconfig:273)
+2. Core x86 code (extable, alternative, etc.) calls perf functions
+3. kernel/events/stubs.c exists but requires proper Makefile integration
+4. Removing it breaks dependencies on instruction decoder and other subsystems
+5. Would require adding #ifdefs throughout arch/x86 codebase
+
+CONCLUSION: PERF_EVENTS removal is not a viable path for LOC reduction.
+
+SESSION WORK:
+
 --- 2025-11-12 03:53 ---
 NEW SESSION: Measurement correction.
 Current LOC: 316,330 (minified/ directory, measured with cloc).

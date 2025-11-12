@@ -1,3 +1,40 @@
+--- 2025-11-12 05:52 ---
+INVESTIGATION SESSION: Analyzed codebase for large reduction targets.
+
+ANALYSIS (05:44-05:52):
+✓ Verified build working after FORTIFY_SOURCE fix
+✓ Measured current LOC: 293,958 (C: 176,283 + Headers: 117,675)
+  - Total with all files: 305,113 LOC (includes makefiles, assembly, scripts)
+  - Target: 200k C+Headers. Need: 93,958 LOC reduction (32%)
+
+Subsystem sizes analyzed:
+- include/: 88,623 LOC (75% of all headers!)
+  * include/linux: 5.1M disk (largest subdirectory)
+  * include/acpi: 1,494 LOC
+  * include/crypto: 80K disk
+- drivers/: 31,697 LOC (30k C + 1.1k headers)
+  * drivers/input: 6,879 LOC (can't remove - needed for test)
+- arch/x86: headers ~29k LOC
+- mm/: ~47k LOC
+- kernel/: ~61k LOC
+
+Largest individual files:
+- C files: page_alloc.c (5.2k), memory.c (4k), vt.c (3.9k) - core functionality
+- Headers: fs.h (2.5k), atomic headers (4.5k), mm.h (2.2k), perf (4.3k combined)
+
+ATTEMPTED: Remove include/acpi (1,494 LOC)
+✗ FAILED: include/linux/acpi.h includes acpi/acpi.h - build breaks immediately
+- Cannot simply delete directory without stubbing dependent headers
+
+CONCLUSION:
+32% reduction (94k LOC) is extremely aggressive. Need strategy that either:
+1. Aggressively stubs/truncates large headers (fs.h, mm.h, atomic headers, etc.)
+2. Removes entire large subsystems if possible
+3. Some combination of both
+
+Next session should try more careful header truncation or identify
+truly unused subsystems that can be fully removed with dependencies.
+
 --- 2025-11-12 05:36 ---
 NEW SESSION: Fixed build issue, ready for aggressive reduction.
 

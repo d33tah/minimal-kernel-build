@@ -1,3 +1,13 @@
+--- 2025-11-12 13:03 ---
+SUCCESSFUL REDUCTION: input-poller + serport + vivaldi-fmap (12:58-13:03)
+- Stubbed drivers/input/input-poller.c (222 → 60 lines, 162 LOC saved)
+- Stubbed drivers/input/serio/serport.c (287 → 30 lines, 257 LOC saved)
+- Stubbed drivers/input/vivaldi-fmap.c (39 → 18 lines, 21 LOC saved)
+- Total: 440 LOC removed
+- No external usage (exports not used by other modules)
+- Build OK, make vm passing
+- Kernel: 461KB → 460KB
+
 --- 2025-11-12 12:57 ---
 SUCCESSFUL REDUCTION: touchscreen.c + input-mt.c (12:55-12:57)
 - Stubbed drivers/input/touchscreen.c (207 → 32 lines, 175 LOC saved)

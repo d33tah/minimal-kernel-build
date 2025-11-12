@@ -1,3 +1,12 @@
+--- 2025-11-12 13:37 ---
+SUCCESSFUL REDUCTION: sha1 + list_sort (13:35-13:37)
+- Stubbed lib/sha1.c (131 → 20 lines, 111 LOC saved)
+- Stubbed lib/list_sort.c (253 → 11 lines, 242 LOC saved)
+- Total: 353 LOC removed
+- No external usage (exports not used by other modules)
+- Build OK, make vm passing
+- Kernel: 459KB (no change)
+
 --- 2025-11-12 13:35 ---
 FAILED ATTEMPT: mm/msync.c (13:32-13:35)
 - Tried to remove mm/msync.c (114 lines, msync syscall)

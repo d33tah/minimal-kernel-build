@@ -614,344 +614,46 @@ SYSCALL_DEFINE2(setdomainname, char __user *, name, int, len)
 }
 
 /* make sure you are allowed to change @tsk limits before calling this */
-static int do_prlimit(struct task_struct *tsk, unsigned int resource,
-		      struct rlimit *new_rlim, struct rlimit *old_rlim)
-{
-	struct rlimit *rlim;
-	int retval = 0;
-
-	if (resource >= RLIM_NLIMITS)
-		return -EINVAL;
-	if (new_rlim) {
-		if (new_rlim->rlim_cur > new_rlim->rlim_max)
-			return -EINVAL;
-		if (resource == RLIMIT_NOFILE &&
-				new_rlim->rlim_max > sysctl_nr_open)
-			return -EPERM;
-	}
-
-	/* Holding a refcount on tsk protects tsk->signal from disappearing. */
-	rlim = tsk->signal->rlim + resource;
-	task_lock(tsk->group_leader);
-	if (new_rlim) {
-		/*
-		 * Keep the capable check against init_user_ns until cgroups can
-		 * contain all limits.
-		 */
-		if (new_rlim->rlim_max > rlim->rlim_max &&
-				!capable(CAP_SYS_RESOURCE))
-			retval = -EPERM;
-		if (!retval)
-			retval = security_task_setrlimit(tsk, resource, new_rlim);
-	}
-	if (!retval) {
-		if (old_rlim)
-			*old_rlim = *rlim;
-		if (new_rlim)
-			*rlim = *new_rlim;
-	}
-	task_unlock(tsk->group_leader);
-
-	/*
-	 * RLIMIT_CPU handling. Arm the posix CPU timer if the limit is not
-	 * infinite. In case of RLIM_INFINITY the posix CPU timer code
-	 * ignores the rlimit.
-	 */
-	if (!retval && new_rlim && resource == RLIMIT_CPU &&
-	    new_rlim->rlim_cur != RLIM_INFINITY &&
-	    IS_ENABLED(CONFIG_POSIX_TIMERS)) {
-		/*
-		 * update_rlimit_cpu can fail if the task is exiting, but there
-		 * may be other tasks in the thread group that are not exiting,
-		 * and they need their cpu timers adjusted.
-		 *
-		 * The group_leader is the last task to be released, so if we
-		 * cannot update_rlimit_cpu on it, then the entire process is
-		 * exiting and we do not need to update at all.
-		 */
-		update_rlimit_cpu(tsk->group_leader, new_rlim->rlim_cur);
-	}
-
-	return retval;
-}
-
+/* Stubbed: Resource limits not needed for minimal "Hello World" system */
 SYSCALL_DEFINE2(getrlimit, unsigned int, resource, struct rlimit __user *, rlim)
 {
-	struct rlimit value;
-	int ret;
-
-	ret = do_prlimit(current, resource, NULL, &value);
-	if (!ret)
-		ret = copy_to_user(rlim, &value, sizeof(*rlim)) ? -EFAULT : 0;
-
-	return ret;
+	struct rlimit value = { .rlim_cur = RLIM_INFINITY, .rlim_max = RLIM_INFINITY };
+	return copy_to_user(rlim, &value, sizeof(value)) ? -EFAULT : 0;
 }
-
 
 #ifdef __ARCH_WANT_SYS_OLD_GETRLIMIT
-
-/*
- *	Back compatibility for getrlimit. Needed for some apps.
- */
-SYSCALL_DEFINE2(old_getrlimit, unsigned int, resource,
-		struct rlimit __user *, rlim)
+SYSCALL_DEFINE2(old_getrlimit, unsigned int, resource, struct rlimit __user *, rlim)
 {
-	struct rlimit x;
-	if (resource >= RLIM_NLIMITS)
-		return -EINVAL;
-
-	resource = array_index_nospec(resource, RLIM_NLIMITS);
-	task_lock(current->group_leader);
-	x = current->signal->rlim[resource];
-	task_unlock(current->group_leader);
-	if (x.rlim_cur > 0x7FFFFFFF)
-		x.rlim_cur = 0x7FFFFFFF;
-	if (x.rlim_max > 0x7FFFFFFF)
-		x.rlim_max = 0x7FFFFFFF;
+	struct rlimit x = { .rlim_cur = 0x7FFFFFFF, .rlim_max = 0x7FFFFFFF };
 	return copy_to_user(rlim, &x, sizeof(x)) ? -EFAULT : 0;
 }
-
-
 #endif
 
-static inline bool rlim64_is_infinity(__u64 rlim64)
-{
-#if BITS_PER_LONG < 64
-	return rlim64 >= ULONG_MAX;
-#else
-	return rlim64 == RLIM64_INFINITY;
-#endif
-}
-
-static void rlim_to_rlim64(const struct rlimit *rlim, struct rlimit64 *rlim64)
-{
-	if (rlim->rlim_cur == RLIM_INFINITY)
-		rlim64->rlim_cur = RLIM64_INFINITY;
-	else
-		rlim64->rlim_cur = rlim->rlim_cur;
-	if (rlim->rlim_max == RLIM_INFINITY)
-		rlim64->rlim_max = RLIM64_INFINITY;
-	else
-		rlim64->rlim_max = rlim->rlim_max;
-}
-
-static void rlim64_to_rlim(const struct rlimit64 *rlim64, struct rlimit *rlim)
-{
-	if (rlim64_is_infinity(rlim64->rlim_cur))
-		rlim->rlim_cur = RLIM_INFINITY;
-	else
-		rlim->rlim_cur = (unsigned long)rlim64->rlim_cur;
-	if (rlim64_is_infinity(rlim64->rlim_max))
-		rlim->rlim_max = RLIM_INFINITY;
-	else
-		rlim->rlim_max = (unsigned long)rlim64->rlim_max;
-}
-
-/* rcu lock must be held */
-static int check_prlimit_permission(struct task_struct *task,
-				    unsigned int flags)
-{
-	const struct cred *cred = current_cred(), *tcred;
-	bool id_match;
-
-	if (current == task)
-		return 0;
-
-	tcred = __task_cred(task);
-	id_match = (uid_eq(cred->uid, tcred->euid) &&
-		    uid_eq(cred->uid, tcred->suid) &&
-		    uid_eq(cred->uid, tcred->uid)  &&
-		    gid_eq(cred->gid, tcred->egid) &&
-		    gid_eq(cred->gid, tcred->sgid) &&
-		    gid_eq(cred->gid, tcred->gid));
-	if (!id_match && !ns_capable(tcred->user_ns, CAP_SYS_RESOURCE))
-		return -EPERM;
-
-	return security_task_prlimit(cred, tcred, flags);
-}
-
+/* Stubbed: prlimit64 and setrlimit - not needed for minimal system */
 SYSCALL_DEFINE4(prlimit64, pid_t, pid, unsigned int, resource,
 		const struct rlimit64 __user *, new_rlim,
 		struct rlimit64 __user *, old_rlim)
 {
-	struct rlimit64 old64, new64;
-	struct rlimit old, new;
-	struct task_struct *tsk;
-	unsigned int checkflags = 0;
-	int ret;
-
-	if (old_rlim)
-		checkflags |= LSM_PRLIMIT_READ;
-
-	if (new_rlim) {
-		if (copy_from_user(&new64, new_rlim, sizeof(new64)))
-			return -EFAULT;
-		rlim64_to_rlim(&new64, &new);
-		checkflags |= LSM_PRLIMIT_WRITE;
-	}
-
-	rcu_read_lock();
-	tsk = pid ? find_task_by_vpid(pid) : current;
-	if (!tsk) {
-		rcu_read_unlock();
-		return -ESRCH;
-	}
-	ret = check_prlimit_permission(tsk, checkflags);
-	if (ret) {
-		rcu_read_unlock();
-		return ret;
-	}
-	get_task_struct(tsk);
-	rcu_read_unlock();
-
-	ret = do_prlimit(tsk, resource, new_rlim ? &new : NULL,
-			old_rlim ? &old : NULL);
-
-	if (!ret && old_rlim) {
-		rlim_to_rlim64(&old, &old64);
-		if (copy_to_user(old_rlim, &old64, sizeof(old64)))
-			ret = -EFAULT;
-	}
-
-	put_task_struct(tsk);
-	return ret;
+	struct rlimit64 old64 = { .rlim_cur = RLIM64_INFINITY, .rlim_max = RLIM64_INFINITY };
+	if (old_rlim && copy_to_user(old_rlim, &old64, sizeof(old64)))
+		return -EFAULT;
+	return 0;
 }
 
 SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
 {
-	struct rlimit new_rlim;
-
-	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
-		return -EFAULT;
-	return do_prlimit(current, resource, &new_rlim, NULL);
+	return 0; /* Silently ignore - not needed for "Hello World" */
 }
 
-/*
- * It would make sense to put struct rusage in the task_struct,
- * except that would make the task_struct be *really big*.  After
- * task_struct gets moved into malloc'ed memory, it would
- * make sense to do this.  It will make moving the rest of the information
- * a lot simpler!  (Which we're not doing right now because we're not
- * measuring them yet).
- *
- * When sampling multiple threads for RUSAGE_SELF, under SMP we might have
- * races with threads incrementing their own counters.  But since word
- * reads are atomic, we either get new values or old values and we don't
- * care which for the sums.  We always take the siglock to protect reading
- * the c* fields from p->signal from races with exit.c updating those
- * fields when reaping, so a sample either gets all the additions of a
- * given child after it's reaped, or none so this sample is before reaping.
- *
- * Locking:
- * We need to take the siglock for CHILDEREN, SELF and BOTH
- * for  the cases current multithreaded, non-current single threaded
- * non-current multithreaded.  Thread traversal is now safe with
- * the siglock held.
- * Strictly speaking, we donot need to take the siglock if we are current and
- * single threaded,  as no one else can take our signal_struct away, no one
- * else can  reap the  children to update signal->c* counters, and no one else
- * can race with the signal-> fields. If we do not take any lock, the
- * signal-> fields could be read out of order while another thread was just
- * exiting. So we should  place a read memory barrier when we avoid the lock.
- * On the writer side,  write memory barrier is implied in  __exit_signal
- * as __exit_signal releases  the siglock spinlock after updating the signal->
- * fields. But we don't do this yet to keep things simple.
- *
- */
-
-static void accumulate_thread_rusage(struct task_struct *t, struct rusage *r)
-{
-	r->ru_nvcsw += t->nvcsw;
-	r->ru_nivcsw += t->nivcsw;
-	r->ru_minflt += t->min_flt;
-	r->ru_majflt += t->maj_flt;
-	r->ru_inblock += task_io_get_inblock(t);
-	r->ru_oublock += task_io_get_oublock(t);
-}
-
+/* Stubbed: rusage simplified for minimal system */
 void getrusage(struct task_struct *p, int who, struct rusage *r)
 {
-	struct task_struct *t;
-	unsigned long flags;
-	u64 tgutime, tgstime, utime, stime;
-	unsigned long maxrss = 0;
-
-	memset((char *)r, 0, sizeof (*r));
-	utime = stime = 0;
-
-	if (who == RUSAGE_THREAD) {
-		task_cputime_adjusted(current, &utime, &stime);
-		accumulate_thread_rusage(p, r);
-		maxrss = p->signal->maxrss;
-		goto out;
-	}
-
-	if (!lock_task_sighand(p, &flags))
-		return;
-
-	switch (who) {
-	case RUSAGE_BOTH:
-	case RUSAGE_CHILDREN:
-		utime = p->signal->cutime;
-		stime = p->signal->cstime;
-		r->ru_nvcsw = p->signal->cnvcsw;
-		r->ru_nivcsw = p->signal->cnivcsw;
-		r->ru_minflt = p->signal->cmin_flt;
-		r->ru_majflt = p->signal->cmaj_flt;
-		r->ru_inblock = p->signal->cinblock;
-		r->ru_oublock = p->signal->coublock;
-		maxrss = p->signal->cmaxrss;
-
-		if (who == RUSAGE_CHILDREN)
-			break;
-		fallthrough;
-
-	case RUSAGE_SELF:
-		thread_group_cputime_adjusted(p, &tgutime, &tgstime);
-		utime += tgutime;
-		stime += tgstime;
-		r->ru_nvcsw += p->signal->nvcsw;
-		r->ru_nivcsw += p->signal->nivcsw;
-		r->ru_minflt += p->signal->min_flt;
-		r->ru_majflt += p->signal->maj_flt;
-		r->ru_inblock += p->signal->inblock;
-		r->ru_oublock += p->signal->oublock;
-		if (maxrss < p->signal->maxrss)
-			maxrss = p->signal->maxrss;
-		t = p;
-		do {
-			accumulate_thread_rusage(t, r);
-		} while_each_thread(p, t);
-		break;
-
-	default:
-		BUG();
-	}
-	unlock_task_sighand(p, &flags);
-
-out:
-	r->ru_utime = ns_to_kernel_old_timeval(utime);
-	r->ru_stime = ns_to_kernel_old_timeval(stime);
-
-	if (who != RUSAGE_CHILDREN) {
-		struct mm_struct *mm = get_task_mm(p);
-
-		if (mm) {
-			setmax_mm_hiwater_rss(&maxrss, mm);
-			mmput(mm);
-		}
-	}
-	r->ru_maxrss = maxrss * (PAGE_SIZE / 1024); /* convert pages to KBs */
+	memset(r, 0, sizeof(*r));
 }
 
 SYSCALL_DEFINE2(getrusage, int, who, struct rusage __user *, ru)
 {
 	struct rusage r;
-
-	if (who != RUSAGE_SELF && who != RUSAGE_CHILDREN &&
-	    who != RUSAGE_THREAD)
-		return -EINVAL;
-
 	getrusage(current, who, &r);
 	return copy_to_user(ru, &r, sizeof(r)) ? -EFAULT : 0;
 }

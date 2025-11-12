@@ -1,3 +1,45 @@
+--- 2025-11-12 23:54 ---
+SUCCESS - Resource limit and rusage syscalls stubbed
+
+Stubbed resource limit and rusage syscalls in kernel/sys.c:
+- Removed do_prlimit() (60 lines)
+- Removed check_prlimit_permission() (21 lines)
+- Removed accumulate_thread_rusage() (9 lines)
+- Removed complex getrusage() implementation (73 lines)
+- Removed rlim64_is_infinity(), rlim_to_rlim64(), rlim64_to_rlim() (32 lines)
+- Simplified all 5 syscalls: getrlimit, old_getrlimit, prlimit64, setrlimit, getrusage
+- Total reduction: 298 LOC (sys.c: 1015 -> 717 lines)
+
+Build: PASSING, "Hello, World!" displayed
+Kernel: 416KB (down from 417KB, 1KB reduction)
+
+Note: Had to keep minimal getrusage() function as it's called by wait_consider_task()
+All resource limits now return RLIM_INFINITY (unlimited), rusage returns zeros.
+
+Next: Continue looking for more reduction opportunities.
+
+
+--- 2025-11-12 23:40 ---
+NEW SESSION START
+
+Current LOC: 286,938 total (C: 159,088 + Headers: 116,796 + Other: 11,054)
+Previous: 286,972 LOC (34 LOC reduction - documentation commit)
+Target: 200,000 LOC (need 86,938 more, 30.3% reduction)
+Kernel: 417KB (target: 400KB)
+Build status: PASSING - "Hello, World!" displayed
+
+Previous session achieved 567 LOC reduction through syscall stubbing (sys.c).
+Current sys.c is at 1015 lines - still opportunities for more stubbing.
+
+Strategy for this session:
+1. Look for more syscalls in sys.c that can be stubbed (targeting 500+ LOC)
+2. Explore header reduction - 116K LOC in headers is massive
+3. Look for other large subsystems to stub
+4. Consider aggressive cuts in unused functionality
+
+Will focus on finding larger wins (100+ LOC per change) to meet the 200K goal.
+
+
 --- 2025-11-12 23:35 ---
 SESSION SUMMARY
 

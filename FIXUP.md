@@ -1,4 +1,49 @@
+--- 2025-11-12 20:24 ---
+PROGRESS UPDATE
+
+Stubbed lib/parser.c: 191→54 LOC (137 removed)
+- Mount option parsing not needed for minimal boot
+- All match_* functions return errors
+- Verified: parser functions not called anywhere in current codebase
+
+Current LOC: ~289,470 (estimated after parser.c reduction)
+Target: 200,000 LOC (need ~89,470 more, 30.8%)
+Kernel: 426KB (target: 400KB, need 26KB reduction)
+Build status: PASSING - "Hello, World!" displayed
+
+Next targets (exploring):
+- More optional libraries with unused exports
+- Files with no actual callers in minimal boot
+- Consider scheduler policy reductions carefully
+
 --- 2025-11-12 20:12 ---
+NEW SESSION START
+
+Current LOC: 289,607 total (C: 160,769 + Headers: 117,675 + Other: 11,163)
+Target: 200,000 LOC (need 89,607 more, 30.9%)
+Kernel: 426KB (target: 400KB, need 26KB reduction)
+Build status: PASSING - "Hello, World!" displayed
+
+Note: cloc shows higher count than previous sessions - verifying.
+Top large files by LOC (code only):
+- mm/page_alloc.c: 3936 LOC
+- mm/memory.c: 3330 LOC
+- drivers/tty/vt/vt.c: 3310 LOC
+- fs/namei.c: 3304 LOC
+- fs/namespace.c: 3116 LOC
+- drivers/base/core.c: 2771 LOC
+- kernel/signal.c: 2426 LOC
+- kernel/workqueue.c: 2358 LOC
+- lib/vsprintf.c: 2299 LOC
+- mm/mmap.c: 2151 LOC
+
+Strategy:
+1. Look for scheduler policies that can be stubbed (deadline.c 981 LOC, rt.c 705 LOC)
+2. Find debug/trace code in large files that can be removed
+3. Target medium-sized optional subsystems
+4. Consider header trimming carefully
+
+--- 2025-11-12 20:12 (previous session) ---
 SESSION SUMMARY
 
 Completed this session:

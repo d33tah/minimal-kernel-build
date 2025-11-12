@@ -5,20 +5,21 @@ Stubbed so far:
 1. kernel/time/timecounter.c: 99 → 13 lines (86 LOC saved)
 2. mm/dmapool.c: 526 → 23 lines (503 LOC saved)
 3. mm/mempool.c: 483 → 51 lines (432 LOC saved)
+4. lib/logic_pio.c: 233 → 16 lines (217 LOC saved)
 
-Total: 1021 LOC removed
-Kernel: 457KB → 456KB (1KB reduction)
+Total: 1238 LOC removed
+Kernel: 456KB (stable)
 
 Files checked (in use):
-- string_helpers.c (used by vsprintf)
-- siphash.c (used by vsprintf)
+- string_helpers.c, siphash.c (used by vsprintf)
 - ff-core.c (used by input)
-- klist.c (heavily used - 62 usages)
-- kernel/irq files (in use)
-- mm/pagewalk.c (used by mprotect)
-- mm/backing-dev.c (10 usages)
+- klist.c (62 usages), flex_proportions.c (10 usages)
+- kernel/irq files, kernel/range.c (6 usages)
+- mm/pagewalk.c (mprotect), mm/backing-dev.c (10 usages)
+- mm/maccess.c (7 usages), mm/list_lru.c (13 usages)
+- fs/anon_inodes.c (3 usages), lib/errseq.c (5 usages)
 
-Next: Continue searching in mm/, lib/, drivers/, or fs/
+Next: Continue searching for unused exports
 
 SESSION START
 Current LOC: 299,144

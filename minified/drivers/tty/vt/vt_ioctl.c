@@ -170,12 +170,6 @@ static void __vt_event_dequeue(struct vt_event_wait *vw)
  *	or 0 if some event such as a signal ended the wait.
  */
 
-static void vt_event_wait(struct vt_event_wait *vw)
-{
-	__vt_event_queue(vw);
-	__vt_event_wait(vw);
-	__vt_event_dequeue(vw);
-}
 
 /**
  *	vt_event_wait_ioctl	-	event ioctl handler

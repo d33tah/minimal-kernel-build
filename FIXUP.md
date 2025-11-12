@@ -1,7 +1,7 @@
 --- 2025-11-12 04:31 ---
 NEW SESSION: Verification and continuation of reduction efforts.
-Current LOC: 316,330 (confirmed via cloc).
-Target: 200k. Need: 116,330 LOC reduction (37%).
+Current LOC: 305,324 (actual cloc after make mrproper - previous 316k included build artifacts).
+Target: 200k. Need: 105,324 LOC reduction (34%).
 Kernel image: 472K. Build: working. "Hello, World!" printed successfully.
 
 VERIFIED STATE (04:31-04:36):
@@ -9,8 +9,50 @@ VERIFIED STATE (04:31-04:36):
 ✓ Kernel boots and prints "Hello, World!" correctly
 ✓ vmtest.tcl passes (displays "Hello, World!" and "Still alive")
 ✓ Current kernel size: 472K compressed (bzImage)
+✓ Accurate LOC: 305,324 (C: 176,375, Headers: 117,737)
 
-Starting new reduction work to continue toward 200k LOC goal.
+SESSION WORK (04:36-04:42):
+
+ATTEMPTED: Remove include/acpi directory (FAILED)
+- include/acpi contains 1,494 LOC (7 header files)
+- Attempted removal but build fails with: 'acpi/acpi.h' file not found
+- include/linux/acpi.h unconditionally includes <acpi/acpi.h> on line 22
+- Cannot remove without stubbing out include/linux/acpi.h properly
+- Reverted changes
+
+ANALYSIS: Need different approach for header reduction
+- Simply removing header directories breaks compilation
+- Need to identify which specific functions/structs are unused
+- Large headers like security.h (1,567 lines) are mostly stubs but heavily referenced
+- include/acpi has 1,494 LOC but removing it requires fixing include/linux/acpi.h
+- include/crypto has 1,018 LOC - potentially removable if crypto is disabled
+- include/xen has 62 LOC - likely removable
+
+SESSION WORK (04:42-04:46):
+
+SUCCESSFUL: Fixed compiler warnings for unused code (81 LOC removed)
+- Removed 3 unused functions from kernel/time/timer_list.c (88 lines):
+  * print_cpu() - debug function for timer list
+  * print_tickdevice() - debug function for tick devices
+  * timer_list_show_tickdevices_header() - empty stub
+- Removed unused function from drivers/tty/vt/vt_ioctl.c (6 lines):
+  * vt_event_wait() - unused event waiting wrapper
+- Removed 5 unused variables from drivers/tty/vt/vt.c (5 lines):
+  * saved_fg_console, saved_last_console, saved_want_console
+  * saved_vc_mode, saved_console_blanked
+✓ Build successful, "Hello, World!" working
+✓ New LOC: 305,243 (down from 305,324, reduction: 81 lines)
+
+REMAINING WARNINGS TO FIX:
+- mm/filemap.c:437: unused variable 'eseq'
+- fs/namei.c: unused variables 'sysctl_protected_fifos', 'sysctl_protected_regular'
+- drivers/tty/tty_io.c: unused function 'this_tty'
+- kernel/workqueue.c: unused functions 'show_one_worker_pool', 'pr_cont_pool_info', 'pr_cont_work'
+- kernel/kthread.c: unused variable 'func'
+- lib/xarray.c: unused functions 'xas_extract_present', 'xas_extract_marked'
+- fs/nsfs.c: unused variable 'nsfs_mnt'
+
+Continue fixing warnings to identify and remove more unused code.
 
 --- 2025-11-12 04:20 ---
 PREVIOUS SESSION: Analysis of reduction opportunities.

@@ -108,11 +108,6 @@ static DECLARE_WORK(con_driver_unregister_work, con_driver_unregister_callback);
 int fg_console;
 int last_console;
 int want_console = -1;
-static int saved_fg_console;
-static int saved_last_console;
-static int saved_want_console;
-static int saved_vc_mode;
-static int saved_console_blanked;
 
 static struct vc_data *master_display_fg;
 

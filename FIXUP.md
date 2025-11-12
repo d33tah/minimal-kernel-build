@@ -1,3 +1,39 @@
+--- 2025-11-12 12:36 ---
+SESSION NOTE (progress so far)
+
+Successful reductions today:
+- timer_list.c: 83 LOC removed (committed: bdb7fdd)
+
+Failed attempts (need stubs for internal functions):
+- fs/fsopen.c: fscontext_fops referenced by fs/namespace.c  
+- mm/mremap.c: move_page_tables() referenced by setup_arg_pages
+- mm/mprotect.c: mprotect_fixup() referenced by setup_arg_pages
+
+Pattern observed: Many syscall implementations provide internal functions that are called by core kernel code (like setup_arg_pages during exec). Simply removing the file and relying on COND_SYSCALL isn't enough - need to provide stubs for these internal functions.
+
+Next strategy:
+- Look for more debug/proc files like timer_list.c
+- Look for optimization code that can be safely removed
+- Consider stubbing larger subsystems if they're self-contained
+
+Current status:
+- LOC: 302,964 (C: 174,138 + Headers: 117,675)
+- Target: 200,000 LOC (need 102,964 reduction, 34%)
+- Kernel: 463KB
+
+--- 2025-11-12 12:32 ---
+FAILED ATTEMPT: mm/mremap.c (12:30-12:31)
+- Tried to remove mm/mremap.c (1015 lines, 0 exports, mremap syscall)
+- Build FAILED: move_page_tables() referenced by setup_arg_pages
+- Would need to provide stub for move_page_tables
+- Reverted changes
+
+FAILED ATTEMPT: mm/mprotect.c (12:31-12:32)
+- Tried to remove mm/mprotect.c (759 lines, 0 exports, mprotect syscall)
+- Build FAILED: mprotect_fixup() referenced by setup_arg_pages
+- Would need to provide stub for mprotect_fixup
+- Reverted changes
+
 --- 2025-11-12 12:27 ---
 SUCCESSFUL REDUCTION: kernel/time/timer_list.c (12:20-12:27)
 - Removed kernel/time/timer_list.c (124 lines, 0 exports, debug/proc file)

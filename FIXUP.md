@@ -1,3 +1,23 @@
+--- 2025-11-12 02:20 ---
+NEW SESSION: Verified build working. Ready to continue reduction efforts.
+Current LOC: 305,446 (measured with cloc after make mrproper). Target: 200k. Need: 105,446 LOC reduction (35%).
+Kernel image: 472K. Build: working. "Hello, World!" printed successfully.
+
+✓ Build verified: make vm succeeds and prints "Hello, World!" and "Still alive"
+✓ Git diff clean - no uncommitted changes
+
+Previous session removed 6 unused headers (~574 LOC). Need MUCH bigger wins.
+
+Strategy for this session:
+Based on previous analysis, need to target large subsystems:
+1. **Stubbing large .c files**: mm/page_alloc.c (3,936 LOC), mm/memory.c (3,330 LOC) - RISKY but high impact
+2. **Trace/perf infrastructure**: ~5.7k LOC across 17 files - but heavily used, risky
+3. **Dead code removal**: Look for .c files NOT compiled (49 found previously)
+4. **Driver subsystems**: drivers/video (959 LOC), drivers/rtc (413 LOC) - verify not compiled
+5. **Large headers with stubs potential**: security.h (1,231 LOC), perf_event.h (842 LOC)
+
+Will start by identifying .c files that are NOT compiled and can be safely removed.
+
 --- 2025-11-12 02:10 ---
 SESSION IN PROGRESS: Small progress made, need bigger wins.
 Current LOC: 305,446 (measured with cloc after make mrproper). Target: 200k. Need: 105,446 LOC reduction (35%).
@@ -1139,3 +1159,13 @@ Further significant reduction would require:
 
 Recommendation: Current 308k LOC represents excellent optimization for a working
 Hello World kernel. Going below 300k risks breaking functionality.
+--- 2025-11-12 02:38 ---
+SESSION UPDATE: CONFIG changes don't reduce LOC - must DELETE files!
+Current LOC: 305,446. Target: 200k. Need: 105,446 LOC reduction (35%).
+
+KEY FINDING: Disabled CONFIG_PERF_EVENTS - build+Hello World work, but LOC UNCHANGED!
+Reason: cloc counts all source files, not just compiled ones.
+Conclusion: Must physically DELETE files to reduce LOC count.
+
+Will now remove arch/x86/events/ directory since PERF is disabled.
+

@@ -1,3 +1,18 @@
+--- 2025-11-12 05:36 ---
+NEW SESSION: Fixed build issue, ready for aggressive reduction.
+
+BUGFIX (05:36-05:44):
+After returning to HEAD, discovered "make vm" was failing with timeout.
+Root cause: After mrproper, new kernel config option CONFIG_FORTIFY_SOURCE
+appeared, causing interactive prompt during build (not auto-answered by
+"yes '' | make olddefconfig").
+
+SOLUTION:
+- Added "# CONFIG_FORTIFY_SOURCE is not set" to kernel/configs/tiny.config
+- Build now completes successfully
+- "Hello, World!" and "Still alive" both print correctly
+✓ Ready to commit and proceed with reduction
+
 --- 2025-11-12 05:09 ---
 NEW SESSION: Continue aggressive reduction.
 Actual LOC after clean measurement: 294,033 (C: 176,296 + Headers: 117,737).

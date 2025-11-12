@@ -1,3 +1,23 @@
+--- 2025-11-12 21:21 ---
+EXPLORATION - Looking for more reduction opportunities
+
+Explored:
+- inat-tables.c (1767 LOC): Generated file for instruction decoding, likely needed
+- vt.c (3945 LOC): Previous sessions noted stubbing caused boot failures
+- kobject.c (1061 LOC): Used 281 times across 22 files, core infrastructure
+- security/: Already minimal (196 LOC total)
+- net/: Already removed entirely
+- fs/: Core files needed for boot (namei 3897, namespace 3880, dcache 2371)
+
+Challenge: Most remaining code is tightly integrated core kernel functionality.
+Need to identify:
+1. Large optional subsystems (5K+ LOC)
+2. Debug/trace code in large files that can be removed
+3. Header file content that's unused
+
+Current LOC: 300,481 (need 100,481 more = 33.5% reduction)
+This is a very aggressive target requiring major architectural changes.
+
 --- 2025-11-12 21:13 ---
 PROGRESS UPDATE - PERF_EVENTS DISABLED
 

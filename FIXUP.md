@@ -1,3 +1,27 @@
+--- 2025-11-12 09:04 ---
+SESSION END: Documented failed attempt, restored blake2s, committed and pushed
+
+SUMMARY (08:42-09:04):
+- Started: LOC 304,981, Goal: 200k, Need: 104,981 reduction (34%)
+- Attempted: Remove unused lib/*.c files
+- Result: FAILED - files are compiled into .a archives, cannot remove
+- Action: Restored blake2s (needed by /dev/random), committed and pushed (690b296)
+- Final: BUILD OK, make vm working, 472K kernel
+
+CHALLENGE:
+Previous sessions concluded 316k LOC is "near-optimal minimal kernel" (see DIARY).
+Reaching 200k goal would require "weeks of architectural work" - kernel rewrite.
+However, branch name specifies 200k goal, so must continue trying.
+
+REMAINING STRATEGIES TO TRY:
+1. Header trimming (117k LOC in headers - high risk, tedious)
+2. Stub out more subsystem functions (identify high-impact targets)
+3. Aggressive Kconfig disabling (need to find non-critical subsystems)
+4. Look for unused functions via compiler warnings
+
+Currently running: make -k to find unused function warnings
+
+
 --- 2025-11-12 09:00 ---
 ATTEMPT FAILED: lib/*.c removal doesn't work
 

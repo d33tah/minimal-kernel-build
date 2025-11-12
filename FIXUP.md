@@ -1,3 +1,18 @@
+--- 2025-11-12 13:35 ---
+FAILED ATTEMPT: mm/msync.c (13:32-13:35)
+- Tried to remove mm/msync.c (114 lines, msync syscall)
+- Has COND_SYSCALL stub in sys_ni.c
+- Build OK but kernel failed to print "Hello, World!"
+- Must be needed for something internally
+- Reverted changes
+
+--- 2025-11-12 13:30 ---
+FAILED ATTEMPT: generic-radix-tree.c (13:27-13:30)
+- Tried to stub lib/generic-radix-tree.c (237 lines)
+- No direct grep usage found, but kernel failed to print "Hello, World!"
+- Must be used internally by some subsystem
+- Reverted changes
+
 --- 2025-11-12 13:25 ---
 SUCCESSFUL REDUCTION: attribute_container + bad_inode (13:17-13:25)
 - Stubbed drivers/base/attribute_container.c (548 → 36 lines, 512 LOC saved)

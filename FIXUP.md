@@ -1,3 +1,16 @@
+--- 2025-11-12 13:10 ---
+SUCCESSFUL REDUCTION: input-compat + 5 base drivers (13:05-13:10)
+- Stubbed drivers/input/input-compat.c (46 → 29 lines, 17 LOC saved)
+- Stubbed drivers/base/firmware.c (26 → 17 lines, 9 LOC saved)
+- Stubbed drivers/base/container.c (41 → 13 lines, 28 LOC saved)
+- Stubbed drivers/base/cacheinfo.c (43 → 8 lines, 35 LOC saved)
+- Stubbed drivers/base/component.c (93 → 92 lines, 1 LOC saved)
+- Stubbed drivers/base/transport_class.c (55 → 56 lines, -1 LOC)
+- Total: 89 LOC removed (net)
+- No external usage (exports not used)
+- Build OK, make vm passing
+- Kernel: 460KB (no change)
+
 --- 2025-11-12 13:03 ---
 SUCCESSFUL REDUCTION: input-poller + serport + vivaldi-fmap (12:58-13:03)
 - Stubbed drivers/input/input-poller.c (222 → 60 lines, 162 LOC saved)

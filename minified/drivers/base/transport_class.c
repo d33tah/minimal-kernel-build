@@ -1,11 +1,12 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
- * Minimal stub - transport classes not needed
+ * transport_class.c - transport class support - STUBBED for minimal kernel
  */
-#include <linux/export.h>
-#include <linux/attribute_container.h>
-#include <linux/transport_class.h>
 
+#include <linux/transport_class.h>
+#include <linux/export.h>
+
+/* Stub functions - all return success or do nothing */
 int transport_class_register(struct transport_class *tclass)
 {
 	return 0;

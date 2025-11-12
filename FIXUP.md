@@ -1,3 +1,31 @@
+--- 2025-11-12 07:15 ---
+NEW SESSION: Attempt to disable TTY/VT/INPUT subsystems
+
+VERIFICATION (07:15):
+✓ Build status: make vm successful  
+✓ Hello World: printing correctly
+✓ Current LOC: 318,188 (C: 183,174 + Headers: 120,099)
+✓ Kernel size: 472K
+✓ Target: 200k LOC = need 118,188 LOC reduction (37%)
+
+ANALYSIS (07:15-07:20):
+Current config enables unnecessary subsystems for "Hello World":
+- CONFIG_TTY=y, CONFIG_VT=y, CONFIG_VT_CONSOLE=y
+- CONFIG_INPUT=y, CONFIG_INPUT_KEYBOARD=y, CONFIG_KEYBOARD_ATKBD=y
+- CONFIG_SERIO=y, CONFIG_SERIO_I8042=y
+
+Files being built unnecessarily:
+- drivers/tty: vt.c (3945 LOC), tty_io.c (2396), keyboard.c (2232), n_tty.c (1812)
+- drivers/input: input.c (1913), atkbd.c (1895), i8042.c (1506)
+- drivers/video/console: vgacon.c (1203)
+Total ~17k LOC in TTY/VT/INPUT that may be removable
+
+HYPOTHESIS:
+Init program (elo/init) is assembly that just writes "Hello, world!" via syscall.
+It doesn't need keyboard input or VT. Kernel console output might work with simpler driver.
+
+ATTEMPT 1: Disable INPUT/KEYBOARD subsystem (07:20)
+
 --- 2025-11-12 07:02 ---
 NEW SESSION: Aggressive header reduction attempt
 
@@ -2338,4 +2366,12 @@ CONCLUSION:
 After investigation, crypto headers cannot be removed due to dependencies.
 The 200k LOC target requires more fundamental changes than file-level deletions.
 Current state is stable at 305,243 LOC with working "Hello, World!" output.
+
+RESULT: SUCCESS (07:25)
+- Disabled CONFIG_INPUT and CONFIG_SERIO in .config
+- Build succeeded, "Hello, World!" still prints
+- Kernel size: 472K (unchanged)
+- Next: Remove unused INPUT/SERIO driver files from source tree
+
+ATTEMPT 2: Remove INPUT/SERIO source files (07:26)
 

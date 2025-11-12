@@ -1,3 +1,64 @@
+--- 2025-11-13 00:47 ---
+SESSION SUMMARY - Two failed stubbing attempts
+
+1. ptrace syscall (kernel/ptrace.c):
+   - Attempted stubbing, build OK, but boot failed
+
+2. reboot syscall (kernel/reboot.c):
+   - Attempted stubbing, build OK, but boot failed
+
+Key lesson: Many syscalls that seem optional are actually required by the init
+process or boot sequence. Need to focus on truly optional code:
+- Debugging features
+- Performance monitoring
+- Advanced scheduling features
+- Optional subsystems
+
+No progress this session. Will try different approach in next session.
+
+
+--- 2025-11-13 00:42 ---
+FAILED - reboot syscall stubbing
+
+Attempted to stub reboot syscall (kernel/reboot.c) by returning -ENOSYS.
+Build succeeded but "Hello, World!" did NOT display.
+Reverted the change.
+
+Conclusion: Both ptrace and reboot syscalls are needed by the boot/init process.
+Cannot stub these without breaking boot.
+
+
+--- 2025-11-13 00:28 ---
+FAILED - ptrace syscall stubbing
+
+Attempted to stub ptrace syscall (kernel/ptrace.c) by returning -ENOSYS.
+Build succeeded but "Hello, World!" did NOT display - boot apparently uses ptrace.
+Reverted the change.
+
+Lesson: Even seemingly optional syscalls like ptrace may be needed during boot.
+Need to be more careful about what to stub.
+
+Will look for other opportunities...
+
+
+--- 2025-11-13 00:28 ---
+NEW SESSION START
+
+Current LOC: 300,301 total (C: 163,927 + Headers: 119,206 + Other: 17,168)
+Previous session: 291,084 LOC with 215 LOC reduction
+Target: 200,000 LOC (need 100,301 more, 33.4% reduction)
+Kernel: 415KB (target: 400KB)
+Build status: PASSING - "Hello, World!" displayed
+
+Strategy: Continue incremental stubbing approach. Look for:
+1. More syscalls that can be stubbed in kernel/sys.c
+2. TTY job control code (tty_jobctrl.c - 588 lines)
+3. Large header files that could be simplified
+4. Unused syscall implementations
+
+Starting work...
+
+
 --- 2025-11-13 00:28 ---
 SESSION ANALYSIS - Progress and remaining challenges
 

@@ -26,8 +26,6 @@
 
 #include <uapi/linux/mount.h>
 
-#include <xen/xen.h>
-
 #include <asm/apic.h>
 #include <asm/numa.h>
 #include <asm/bios_ebda.h>
@@ -404,11 +402,6 @@ static void __init reserve_crashkernel(void)
 		if (ret != 0 || crash_size <= 0)
 			return;
 		high = true;
-	}
-
-	if (xen_pv_domain()) {
-		pr_info("Ignoring crashkernel for a Xen PV domain\n");
-		return;
 	}
 
 	/* 0 means: find the address automatically */

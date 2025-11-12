@@ -3,7 +3,6 @@
 #include <linux/uaccess.h>
 #include <linux/sched/debug.h>
 #include <linux/bitfield.h>
-#include <xen/xen.h>
 
 #include <asm/fpu/api.h>
 #include <asm/sev.h>
@@ -224,7 +223,7 @@ void __init early_fixup_exception(struct pt_regs *regs, int trapnr)
 	 * the 486 DX works this way.
 	 * Xen pv domains are not using the default __KERNEL_CS.
 	 */
-	if (!xen_pv_domain() && regs->cs != __KERNEL_CS)
+	if (regs->cs != __KERNEL_CS)
 		goto fail;
 
 	/*

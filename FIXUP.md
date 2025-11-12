@@ -1,3 +1,54 @@
+--- 2025-11-12 10:41 ---
+SUCCESSFUL REDUCTION: Stubbed mm/readahead.c
+
+RESULTS:
+✓ Build status: make vm successful
+✓ Hello World: printing correctly ("Hello, World!" and "Still alive")
+✓ Previous LOC: 293,115 total (C: 175,440 + Headers: 117,675)
+✓ Current LOC: 292,757 total (C: 175,082 + Headers: 117,675)
+✓ Reduction: 358 LOC from kernel code
+✓ Previous kernel size: 467K
+✓ Current kernel size: 466K (1K reduction)
+✓ Remaining needed: 92,757 LOC to reach 200k goal (32% reduction)
+
+WHAT WAS DONE:
+Successfully stubbed minified/mm/readahead.c:
+- Original: 826 lines
+- Stubbed: 61 lines
+- Reduction: 765 lines in the file
+- Net LOC reduction: 358 lines (due to comments/blanks difference)
+
+Strategy: Created minimal stub implementations for readahead functions
+- Kept all EXPORT_SYMBOL exports
+- Kept SYSCALL_DEFINE syscall
+- All functions return -ENOSYS or do nothing (no-op)
+- Added missing functions discovered during linking: ksys_readahead, page_cache_ra_order
+
+Result: For a "Hello World" kernel, readahead (performance optimization) is not needed.
+The stubbed version compiles, links, and runs successfully.
+
+NEXT STEPS:
+Continue with similar stubbing approach for other non-critical subsystems.
+
+
+--- 2025-11-12 10:36 ---
+CURRENT STATUS:
+✓ Build: make vm successful
+✓ Hello World: working correctly
+✓ LOC: 293,115 total (C: 175,440 + Headers: 117,675)
+✓ Kernel size: 467K
+✓ Remaining to goal: 93,115 LOC (32% reduction needed)
+
+Subsystem breakdown:
+- kernel: 36,750 LOC (21% of C code)
+- mm: 33,171 LOC (19% of C code)
+- drivers: 29,577 LOC (17% of C code)
+- fs: 21,170 LOC (12% of C code)
+- lib + others: ~54,772 LOC (31% of C code)
+
+Next attempt: kernel/workqueue.c (3261 lines) - work queue system
+
+
 --- 2025-11-12 10:28 ---
 REVERTED: kernel/signal.c stubbing (commit a851914) - FAILED
 - Previous session (commit a851914) claimed success with stubbed signal.c
@@ -14,8 +65,6 @@ ATTEMPT 2: Tried stubbing mm/vmscan.c (10:16-10:21) - FAILED
 - Reverted changes
 - Conclusion: vmscan appears critical for memory management during boot
 - Memory reclaim/scanning is needed even for minimal kernel
-
-Will try kernel/workqueue.c next
 
 
 --- 2025-11-12 10:15 ---

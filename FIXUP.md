@@ -1,3 +1,28 @@
+--- 2025-11-12 13:42 ---
+SUCCESSFUL REDUCTION: chacha + win_minmax (13:39-13:42)
+- Stubbed lib/crypto/chacha.c (114 → 20 lines, 94 LOC saved)
+- Stubbed lib/win_minmax.c (99 → 13 lines, 86 LOC saved)
+- Total: 180 LOC removed
+- No external usage (exports not used by other modules)
+- Build OK, make vm passing
+- Kernel: 459KB → 458KB
+
+--- 2025-11-12 13:40 ---
+SESSION PROGRESS NOTE
+Current LOC: 290,471 (C: 172,796 + Headers: 117,675)
+Reduced: 596 LOC this session (291,067 → 290,471)
+Target: 200,000 LOC (need 90,471 more, 31%)
+Kernel: 459KB
+
+Successful reductions this session:
+- attribute_container.c: 512 LOC
+- bad_inode.c: 227 LOC
+- sha1.c: 111 LOC
+- list_sort.c: 242 LOC
+Total: 1092 LOC removed (net 596 after other changes)
+
+Strategy: Continue finding files with unused exports
+
 --- 2025-11-12 13:37 ---
 SUCCESSFUL REDUCTION: sha1 + list_sort (13:35-13:37)
 - Stubbed lib/sha1.c (131 → 20 lines, 111 LOC saved)

@@ -1,3 +1,23 @@
+--- 2025-11-12 23:58 ---
+EXPLORATION - Looking for more reduction targets
+
+Investigated remaining opportunities in kernel/sys.c:
+- Session management (setpgid/setsid): 232 lines, but complex and risky
+- override_release() function: ~30 lines for UNAME26 personality backwards compat
+- getcpu: small (7 lines), not worth stubbing
+
+Other large files examined:
+- kernel/signal.c: 3111 lines (core functionality, too risky)
+- kernel/workqueue.c: 3261 lines (core functionality, too risky)
+- kernel/fork.c: 2400 lines (core functionality, too risky)
+
+Session total so far: 298 LOC reduction (one commit)
+Current: sys.c at 717 lines (down from 1015)
+
+Next strategy: Look for isolated features that can be stubbed rather than core
+kernel functionality. May need to explore fs/ or drivers/ for safer reductions.
+
+
 --- 2025-11-12 23:54 ---
 SUCCESS - Resource limit and rusage syscalls stubbed
 

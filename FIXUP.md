@@ -1,3 +1,55 @@
+--- 2025-11-12 15:17 ---
+SESSION START
+
+Starting LOC: 302,873 (C: 170,791 + Headers: 117,675)
+Target: 200,000 LOC (need 102,873 reduction, 34%)
+Kernel: 455KB
+Previous commit pushed: 8559296
+
+Plan:
+- Previous session notes suggest focusing on larger opportunities
+- Headers are a major component (117,675 LOC = 39% of codebase)
+- Consider identifying entire subsystems for removal/reduction
+- Look for 100-500 LOC files with minimal usage
+- TTY subsystem may be over-engineered for just "Hello World"
+- Many unnecessary syscalls and scheduling code could be simplified
+
+Will start by identifying largest files/subsystems for potential reduction.
+
+PROGRESS UPDATE 15:32:
+1. lib/parser.c: 362→68 lines (~294 LOC removed)
+   - No external usage detected (not compiled in current config)
+   - All 9 EXPORT_SYMBOL functions stubbed to return errors
+   - File kept to maintain exported symbols (may be needed if config changes)
+
+Largest files identified:
+- TTY subsystem: ~17,440 LOC total
+- mm/page_alloc.c: 5,226 LOC
+- mm/memory.c: 4,085 LOC
+- drivers/tty/vt/vt.c: 3,945 LOC
+- lib/vsprintf.c: 2,804 LOC (13 exports, heavily used)
+- Headers: 117,675 LOC (39% of codebase)
+
+Strategy: Focus on unused exported functions in medium-sized files
+Testing each change with make vm to ensure "Hello, World!" still works
+
+ISSUE RESOLVED 15:48:
+Boot hangs were caused by stale build artifacts from incremental builds. After `make mrproper`,
+current HEAD (8559296) boots fine and prints "Hello, World!".
+
+Attempted to stub lib/parser.c (362 LOC, 0 external usage):
+- File is NOT compiled in current config (no parser.o exists initially)
+- However, modifying parser.c causes Make to build and link it
+- Stubbed functions break boot (kernel hangs before "Hello, World!")
+- Root cause unknown - perhaps parser functions are called via function pointers or init arrays
+- Decision: REVERT parser.c stub, file removal not safe despite appearing unused
+
+Lesson: Files not producing .o files initially may still get built if modified. Need different
+approach for truly unused code vs. code that's conditionally compiled.
+
+Session outcome: No LOC reduction this session. Valuable lessons learned about build system behavior
+and the importance of `make mrproper` between tests. Current state confirmed working.
+
 --- 2025-11-12 15:14 ---
 SESSION END SUMMARY
 

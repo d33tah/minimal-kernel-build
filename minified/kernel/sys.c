@@ -276,189 +276,32 @@ SYSCALL_DEFINE1(times, struct tms __user *, tbuf)
  *
  * !PF_FORKNOEXEC check to conform completely to POSIX.
  */
+/* Stubbed process group and session management - not needed for minimal kernel */
 SYSCALL_DEFINE2(setpgid, pid_t, pid, pid_t, pgid)
 {
-	struct task_struct *p;
-	struct task_struct *group_leader = current->group_leader;
-	struct pid *pgrp;
-	int err;
-
-	if (!pid)
-		pid = task_pid_vnr(group_leader);
-	if (!pgid)
-		pgid = pid;
-	if (pgid < 0)
-		return -EINVAL;
-	rcu_read_lock();
-
-	/* From this point forward we keep holding onto the tasklist lock
-	 * so that our parent does not change from under us. -DaveM
-	 */
-	write_lock_irq(&tasklist_lock);
-
-	err = -ESRCH;
-	p = find_task_by_vpid(pid);
-	if (!p)
-		goto out;
-
-	err = -EINVAL;
-	if (!thread_group_leader(p))
-		goto out;
-
-	if (same_thread_group(p->real_parent, group_leader)) {
-		err = -EPERM;
-		if (task_session(p) != task_session(group_leader))
-			goto out;
-		err = -EACCES;
-		if (!(p->flags & PF_FORKNOEXEC))
-			goto out;
-	} else {
-		err = -ESRCH;
-		if (p != group_leader)
-			goto out;
-	}
-
-	err = -EPERM;
-	if (p->signal->leader)
-		goto out;
-
-	pgrp = task_pid(p);
-	if (pgid != pid) {
-		struct task_struct *g;
-
-		pgrp = find_vpid(pgid);
-		g = pid_task(pgrp, PIDTYPE_PGID);
-		if (!g || task_session(g) != task_session(group_leader))
-			goto out;
-	}
-
-	err = security_task_setpgid(p, pgid);
-	if (err)
-		goto out;
-
-	if (task_pgrp(p) != pgrp)
-		change_pid(p, PIDTYPE_PGID, pgrp);
-
-	err = 0;
-out:
-	/* All paths lead to here, thus we are safe. -DaveM */
-	write_unlock_irq(&tasklist_lock);
-	rcu_read_unlock();
-	return err;
-}
-
-static int do_getpgid(pid_t pid)
-{
-	struct task_struct *p;
-	struct pid *grp;
-	int retval;
-
-	rcu_read_lock();
-	if (!pid)
-		grp = task_pgrp(current);
-	else {
-		retval = -ESRCH;
-		p = find_task_by_vpid(pid);
-		if (!p)
-			goto out;
-		grp = task_pgrp(p);
-		if (!grp)
-			goto out;
-
-		retval = security_task_getpgid(p);
-		if (retval)
-			goto out;
-	}
-	retval = pid_vnr(grp);
-out:
-	rcu_read_unlock();
-	return retval;
+	return 0; /* Pretend success */
 }
 
 SYSCALL_DEFINE1(getpgid, pid_t, pid)
 {
-	return do_getpgid(pid);
+	return 1; /* Return a dummy process group ID */
 }
 
 #ifdef __ARCH_WANT_SYS_GETPGRP
-
 SYSCALL_DEFINE0(getpgrp)
 {
-	return do_getpgid(0);
+	return 1; /* Return a dummy process group ID */
 }
-
 #endif
 
 SYSCALL_DEFINE1(getsid, pid_t, pid)
 {
-	struct task_struct *p;
-	struct pid *sid;
-	int retval;
-
-	rcu_read_lock();
-	if (!pid)
-		sid = task_session(current);
-	else {
-		retval = -ESRCH;
-		p = find_task_by_vpid(pid);
-		if (!p)
-			goto out;
-		sid = task_session(p);
-		if (!sid)
-			goto out;
-
-		retval = security_task_getsid(p);
-		if (retval)
-			goto out;
-	}
-	retval = pid_vnr(sid);
-out:
-	rcu_read_unlock();
-	return retval;
-}
-
-static void set_special_pids(struct pid *pid)
-{
-	struct task_struct *curr = current->group_leader;
-
-	if (task_session(curr) != pid)
-		change_pid(curr, PIDTYPE_SID, pid);
-
-	if (task_pgrp(curr) != pid)
-		change_pid(curr, PIDTYPE_PGID, pid);
+	return 1; /* Return a dummy session ID */
 }
 
 int ksys_setsid(void)
 {
-	struct task_struct *group_leader = current->group_leader;
-	struct pid *sid = task_pid(group_leader);
-	pid_t session = pid_vnr(sid);
-	int err = -EPERM;
-
-	write_lock_irq(&tasklist_lock);
-	/* Fail if I am already a session leader */
-	if (group_leader->signal->leader)
-		goto out;
-
-	/* Fail if a process group id already exists that equals the
-	 * proposed session id.
-	 */
-	if (pid_task(sid, PIDTYPE_PGID))
-		goto out;
-
-	group_leader->signal->leader = 1;
-	set_special_pids(sid);
-
-	proc_clear_tty(group_leader);
-
-	err = session;
-out:
-	write_unlock_irq(&tasklist_lock);
-	if (err > 0) {
-		proc_sid_connector(group_leader);
-		sched_autogroup_create_attach(group_leader);
-	}
-	return err;
+	return 1; /* Return a dummy session ID */
 }
 
 SYSCALL_DEFINE0(setsid)

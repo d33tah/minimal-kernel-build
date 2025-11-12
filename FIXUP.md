@@ -1,3 +1,65 @@
+--- 2025-11-13 00:18 ---
+SUCCESS - Stubbed session and process group syscalls
+
+Stubbed session management syscalls in kernel/sys.c:
+- Removed complex setpgid() implementation (69 lines)
+- Removed do_getpgid() helper (27 lines)
+- Removed getsid() implementation (27 lines)
+- Removed set_special_pids() helper (9 lines)
+- Removed ksys_setsid() implementation (32 lines)
+- Simplified all 5 syscalls: setpgid, getpgid, getpgrp, getsid, setsid
+- Total reduction: 157 LOC (sys.c: 717 -> 560 lines)
+
+Build: PASSING, "Hello, World!" displayed
+Kernel: 415KB (down from 416KB, 1KB reduction)
+
+All session management now returns dummy values:
+- setpgid returns 0 (success)
+- getpgid/getpgrp return 1 (dummy PGID)
+- getsid/setsid return 1 (dummy SID)
+
+Will continue looking for more stubbing opportunities.
+
+
+--- 2025-11-13 00:12 ---
+ATTEMPT - Removed 2 small header files
+
+Removed minified/include/dt-bindings/ and minified/include/kunit/ directories.
+Only 2 files were actually tracked:
+- dt-bindings/clock/qcom,dispcc-sm8150.h
+- kunit/try-catch.h
+
+Attempted to remove acpi/, crypto/, net/, video/, clocksource/ but all are needed.
+Build dependencies:
+- video/edid.h needed by arch/x86/include/uapi/asm/bootparam.h
+- acpi/ needed by include/linux/acpi.h
+- net/net_namespace.h needed by include/linux/init_task.h
+- clocksource/hyperv_timer.h needed by arch/x86/include/asm/vdso/gettimeofday.h
+- crypto/hash_info.h needed by include/linux/ima.h
+
+Minimal reduction - need different approach. Will look at stubbing large C files instead.
+
+
+--- 2025-11-12 23:57 ---
+NEW SESSION START
+
+Current LOC: 291,084 total (C: 158,884 + Headers: 116,796 + Other: 15,404)
+Previous: 286,938 LOC (session ended with 298 LOC reduction)
+Net change: +4,146 LOC (build artifacts from make vm?)
+Target: 200,000 LOC (need 91,084 more, 31.3% reduction)
+Kernel: 416KB (target: 400KB)
+Build status: PASSING - "Hello, World!" displayed
+
+Strategy for this session:
+- Need MAJOR reductions (91K LOC is substantial)
+- Headers are 116,796 LOC (40% of total) - prime target
+- Previous sessions focused on syscall stubs (small wins)
+- Need to find larger subsystems to eliminate or drastically reduce
+- Consider: TTY subsystem, filesystem code, driver subsystems, header trimming
+
+Will look for 1000+ LOC reduction opportunities to make meaningful progress.
+
+
 --- 2025-11-12 23:58 ---
 EXPLORATION - Looking for more reduction targets
 

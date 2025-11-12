@@ -485,7 +485,7 @@ extern void hrtimer_run_queues(void);
 extern void __init hrtimers_init(void);
 
 /* Show pending timers: */
-extern void sysrq_timer_list_show(void);
+static inline void sysrq_timer_list_show(void) { }
 
 int hrtimers_prepare_cpu(unsigned int cpu);
 #define hrtimers_dead_cpu	NULL

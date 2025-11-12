@@ -1,3 +1,55 @@
+--- 2025-11-12 16:27 ---
+PROGRESS UPDATE
+
+Starting LOC: 299,629 total (C: 170,789 + Headers: 117,675 = 288,464)
+Target: 200,000 LOC (need 99,629 total reduction, 33.2%)
+Kernel: 455KB
+Build status: PASSING - make vm displays "Hello, World!"
+
+Successfully identified and disabled CONFIG_INPUT:
+- Changed kernel/configs/tiny.config: CONFIG_INPUT=y → # CONFIG_INPUT is not set
+- Build successful, kernel still boots and prints "Hello, World!"
+- Input drivers no longer compiled (drivers/input/*.o = 0 files)
+- Kernel size unchanged at 455KB (LTO likely removed unused code anyway)
+
+Input driver LOC that are now uncompiled:
+- drivers/input/keyboard/atkbd.c: 1,895 LOC
+- drivers/input/serio/i8042.c: 1,506 LOC
+- drivers/input/input.c: 1,913 LOC
+- Total input subsystem: ~5,314 LOC not compiled
+
+Next: These files can now be stubbed/removed since they're not needed.
+Config change works - will commit and then stub the files for actual LOC reduction.
+
+--- 2025-11-12 16:13 ---
+SESSION START
+
+Starting LOC: 299,629 total (C: 170,789 + Headers: 117,675 = 288,464)
+Target: 200,000 LOC (need 99,629 total reduction, 33.2%)
+Kernel: 455KB
+Previous commit: 55ddf5e (Session documentation: exploration of reduction opportunities at 288K LOC)
+Build status: PASSING - make vm displays "Hello, World!"
+
+Current state: Clean working tree, build confirmed working.
+
+Goal: Need 99,629 LOC total reduction (33.2% from current 299,629)
+Note: Some cloc measurement variation between sessions due to build artifacts.
+Core code reduction needed: ~88K LOC (from 288,464)
+
+Strategy:
+- Focus on larger reduction opportunities (hundreds of LOC per change)
+- Headers: 117,675 LOC (39.3% of codebase) - major target
+- TTY subsystem: ~17,440 LOC - likely over-engineered for Hello World
+- Large mm/ files: page_alloc.c (5,226), memory.c (4,085)
+- Syscall reduction opportunities
+- Scheduler simplification opportunities
+- Look for entire subsystems that can be removed/heavily stubbed
+
+Previous session learned: parser.c cannot be safely stubbed despite appearing unused.
+Need to focus on files with clear non-usage or that are truly optional.
+
+Will identify largest files and check for reduction opportunities.
+
 --- 2025-11-12 15:54 ---
 SESSION START
 

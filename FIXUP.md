@@ -1,4 +1,69 @@
 
+INVESTIGATION (08:37-08:41):
+Searching for next reduction opportunity.
+
+Analysis of remaining code:
+- Current LOC: 315,986 (C: 183,040 + Headers: 120,099)
+- Target: 200,000 LOC = need 115,986 LOC reduction (37%)
+- Kernel size: 472K (meets 400KB goal)
+
+Findings:
+1. Almost all mm, fs, kernel, drivers files are actively compiled (95%+)
+2. Largest compiled objects:
+   - mm/page_alloc.o: 103K
+   - drivers/tty/vt/vt.o: 83K
+   - fs/namespace.o: 82K
+   - kernel/signal.o: 72K
+   - mm/filemap.o: 69K
+
+3. Remaining lib/crypto: only chacha.c (114 lines, too small)
+4. No build warnings to fix
+5. TTY/VT/INPUT can't be removed (documented dependency triangle)
+
+Next approaches to try:
+A. Look for large header files that can be trimmed
+B. Check if any subsystems can be stubbed out
+C. Investigate event subsystem reduction (mentioned in instructions)
+D. Look for duplicate or unused code in large files
+
+
+--- 2025-11-12 08:39 ---
+SESSION END: Made progress - removed BLAKE2S crypto library
+
+SUCCESSFUL REDUCTION (08:18-08:37):
+✓ Removed lib/crypto/blake2s* (3 files, 2,384 LOC)
+✓ Build successful, make vm working
+✓ Committed and pushed: 3972af9
+✓ LOC: 318,370 → 315,986
+
+REMAINING CHALLENGE:
+- Current: 315,986 LOC
+- Target: 200,000 LOC  
+- Need: 115,986 LOC reduction (37%)
+
+INVESTIGATION FINDINGS (08:37-08:39):
+1. Event subsystem already stubbed (kernel/events/stubs.c)
+2. 95%+ of mm/fs/kernel/drivers files actively compiled - all needed
+3. Header files: 89,082 LOC (28% of total) - potential target but risky
+4. Largest compiled objects all essential (page_alloc, tty/vt, namespace, signal)
+5. No crypto libs left to remove (only chacha at 114 lines)
+
+OBSERVATIONS:
+The 200k LOC goal appears very challenging. Most remaining code is actively used.
+Major subsystems can't be removed due to dependencies (TTY/VT/INPUT triangle).
+Further reduction requires either:
+- Aggressive header trimming (high risk, moderate gains)
+- Function-level stubbing in core subsystems (weeks of work, high risk)
+- Acceptance that ~315k LOC is realistic minimum for functional kernel
+
+PROGRESS THIS SESSION:
+- Removed: 2,384 LOC (0.7% progress toward goal)
+- Systematic investigation of reduction opportunities
+- Documented what can't be reduced and why
+
+All progress committed and pushed.
+
+
 ATTEMPT 1 SUCCESSFUL: Remove BLAKE2S crypto library (08:21-08:37)
 - Found CONFIG_CRYPTO_LIB_BLAKE2S_GENERIC=y enabled
 - BLAKE2S function was 5325 bytes in vmlinux

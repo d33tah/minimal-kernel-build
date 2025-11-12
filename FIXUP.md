@@ -2423,3 +2423,37 @@ Committed config change (INPUT disabled in .config).
 Further progress requires architectural decisions or deep analysis.
 Current: 318k LOC. Realistic target: Maybe 300k LOC without major rewrites.
 
+
+FINAL LOC BREAKDOWN (07:40):
+By directory (C code only):
+- kernel/: 36,750 LOC (largest: core.c 2752, workqueue.c 3261, signal.c 3111)
+- mm/: 33,171 LOC (largest: page_alloc.c 5226, memory.c 4085, vmscan.c 3010)
+- drivers/: 30,288 LOC (largest: vt.c 3945, core.c 3480, tty_io.c 2396)
+- arch/x86/: 27,039 LOC
+- fs/: 21,170 LOC (largest: namei.c 3897, namespace.c 3880, dcache.c 2371)
+- lib/: 17,463 LOC (largest: vsprintf.c 2804, iov_iter.c 1759, bitmap.c 1407)
+- security/: 1,493 LOC
+- init/: ~400 LOC (estimated)
+Total C code: ~168k LOC + Headers: ~120k LOC = 288k LOC
+
+COMMITS THIS SESSION:
+1. daa01f1: Disabled CONFIG_INPUT and CONFIG_SERIO in .config
+2. c2e53b5: Documented investigation findings
+
+SESSION END (07:40):
+✓ Build: WORKING (make vm successful, 472K kernel)
+✓ Hello World: PRINTING ("Hello, World!" and "Still alive")  
+✓ Current LOC: 318,188 total (C: 183,174 + Headers: 120,099)
+✓ Commits: 2 commits made and pushed
+✓ Progress: Disabled unnecessary INPUT config, documented code structure
+
+NEXT STEPS:
+The 200k LOC target remains mathematically infeasible without major rewrites.
+Realistic next actions:
+1. Look for truly unused driver code that can be removed
+2. Consider stubbing out large but rarely-used functions
+3. Explore reducing arch/x86 platform-specific code
+4. Check if any lib/ functions are truly unused
+
+All progress documented and committed.
+

@@ -1,3 +1,84 @@
+--- 2025-11-12 23:35 ---
+SESSION SUMMARY
+
+Successfully reduced kernel/sys.c through multiple syscall stubs:
+1. setpriority/getpriority (170 LOC) - commit 7cf44c8
+2. times syscall (14 LOC) - commit 2167e37
+3. sysinfo syscall (59 LOC) - commit 2167e37  
+4. sethostname/setdomainname (42 LOC) - commit 2734d18
+
+Total session reduction: 285 LOC from sys.c (1300 -> 1015 lines)
+Overall LOC: 286,972 (down from 287,165)
+Target: 200,000 LOC (need 86,972 more, 30.3% reduction)
+Kernel: 417KB (unchanged)
+
+All commits:
+- 7cf44c8: Stub setpriority/getpriority syscalls
+- 2167e37: Stub times and sysinfo syscalls
+- 2734d18: Stub sethostname/setdomainname syscalls
+
+Build: PASSING on all commits, "Hello, World!" displayed
+Progress: Small but consistent reductions, focusing on non-essential syscalls
+
+Strategy moving forward:
+- Continue looking for syscalls that can be stubbed
+- Consider looking at other subsystems for reduction
+- Headers still have 116,796 LOC - potential for trimming
+- TTY subsystem (8K+ LOC) but previous attempts failed
+
+
+--- 2025-11-12 23:29 ---
+PROGRESS - Multiple syscall stubs
+
+Successfully stubbed 3 syscalls in kernel/sys.c:
+1. setpriority/getpriority (170 LOC saved)
+   - Replaced complex priority management with stubs
+   - setpriority returns -ENOSYS, getpriority returns default (20)
+   - Removed set_one_prio() and set_one_prio_perm() helpers
+
+2. times syscall (14 LOC saved)
+   - Removed do_sys_times() helper
+   - Returns zeroed CPU time statistics
+
+3. sysinfo syscall (59 LOC saved)
+   - Removed do_sysinfo() helper
+   - Returns minimal stub data (uptime=1, procs=1, mem_unit=1)
+
+Total reduction: 243 LOC (sys.c: 1300 -> 1057 lines)
+Build: PASSING, "Hello, World!" displayed
+Kernel: 417KB (unchanged from session start)
+
+Session commits:
+- 7cf44c8: priority syscalls (170 LOC)
+- 2167e37: times and sysinfo (73 LOC)
+
+Next targets: Look for larger subsystems to reduce
+
+
+--- 2025-11-12 23:18 ---
+NEW SESSION START
+
+Current LOC: 287,165 total (C: 159,315 + Headers: 116,796 + Other: 11,054)
+Previous: 287,851 LOC (686 LOC reduction between sessions)
+Target: 200,000 LOC (need 87,165 more, 30.3% reduction)
+Kernel: 417KB (target: 400KB, down from 420KB)
+Build status: PASSING - "Hello, World!" displayed
+
+Starting position is good. Previous session notes show:
+- ptrace stubbing failed (too many dependencies)
+- prctl stubbed successfully (567 LOC saved)
+- calibrate.c stubbed (268 LOC)
+- remap_file_pages stubbed (68 LOC)
+
+Strategy for this session:
+1. Look for more syscalls that can be stubbed (focusing on sys.c, resource.c)
+2. Identify and stub unnecessary kernel subsystems
+3. Consider aggressive header trimming
+4. Explore simplifying scheduling/task management
+5. Look at event subsystem reduction
+6. Consider TTY simplification (but carefully, previous attempts failed)
+
+
 --- 2025-11-12 23:15 ---
 FAILED ATTEMPT - ptrace stubbing
 

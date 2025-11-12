@@ -1,3 +1,22 @@
+--- 2025-11-12 12:57 ---
+SUCCESSFUL REDUCTION: touchscreen.c + input-mt.c (12:55-12:57)
+- Stubbed drivers/input/touchscreen.c (207 → 32 lines, 175 LOC saved)
+- Stubbed drivers/input/input-mt.c (495 → 62 lines, 433 LOC saved)
+- Total: 608 LOC removed
+- No external dependencies (exports not used anywhere)
+- Build OK, make vm passing
+- Kernel: 463KB → 461KB
+
+--- 2025-11-12 12:55 ---
+FAILED ATTEMPT: kernel/ptrace.c (12:50-12:55)
+- Tried to stub kernel/ptrace.c (1247 lines)
+- Build FAILED: Multiple missing functions needed
+  - ptrace_request, __ptrace_link, __ptrace_unlink, exit_ptrace
+  - Referenced by arch_ptrace, ptrace_init_task, release_task, do_exit
+  - Also has conflicts with arch/x86/kernel/ptrace.c (task_user_regset_view)
+  - Too many dependencies to stub safely
+- Reverted changes
+
 --- 2025-11-12 12:36 ---
 SESSION NOTE (progress so far)
 

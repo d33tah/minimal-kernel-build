@@ -1,3 +1,20 @@
+--- 2025-11-12 12:25 ---
+SESSION PROGRESS NOTE (12:10-12:25)
+- Searching for more removable files
+- Strategy: Looking for syscall implementations with COND_SYSCALL stubs
+- Examined: epoll/eventfd (don't exist), sync.c (no stubs, needed), alarmtimer (obj-y, 9 exports)
+- Examined: drivers/tty/tty_jobctrl.c (588 lines, 3 exports, risky)
+- Examined: kernel/entry/syscall_user_dispatch.c (108 lines, conditional compile)
+- Headers: 831 files, 117,675 LOC (38% of total) - potential for reduction but risky
+- Largest headers: fs.h (2521), atomic-arch-fallback.h (2456, generated), mm.h (2197)
+- Current challenge: Most remaining code is tightly coupled core kernel
+- Need to find more optimization/feature code that can be removed
+
+Next candidates to try:
+- Look for more fs/ files with syscalls
+- Check kernel/time files more carefully
+- Consider removing entire subsystems if possible
+
 --- 2025-11-12 12:08 ---
 SUCCESSFUL REDUCTION: mm/mincore.c (12:02-12:08)
 - Removed mm/mincore.c (264 lines, 0 exports, mincore syscall)

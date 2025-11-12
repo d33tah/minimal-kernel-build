@@ -1,3 +1,50 @@
+
+ANALYSIS (05:57-06:01):
+Identified large header targets for reduction:
+- include/linux/atomic/ headers: 4,542 LOC (atomic-arch-fallback.h: 2,456, atomic-instrumented.h: 2,086)
+  * Auto-generated fallback implementations, but likely needed for compilation
+- include/linux/perf_event.h + uapi: 1,393 LOC
+  * Used by mm/mmap.c, mm/memory.c (perf_event_mmap, perf_sw_event calls)
+- include/acpi: 1,494 LOC
+  * Previous session failed - include/linux/acpi.h unconditionally includes it
+- include/crypto: 1,018 LOC  
+  * Used by drivers/char/random.c and lib/crypto/* (14 includes total)
+- include/linux/of*.h: 1,049 LOC (device tree headers)
+  * Used 17 times in C files
+
+Largest individual headers by line count:
+1. fs.h: 2,521 LOC
+2. atomic-arch-fallback.h: 2,456 LOC
+3. mm.h: 2,197 LOC
+4. atomic-instrumented.h: 2,086 LOC
+5. xarray.h: 1,839 LOC
+6. pci.h: 1,636 LOC
+7. sched.h: 1,579 LOC
+8. security.h: 1,567 LOC
+9. perf_event.h: 1,490 LOC
+10. pagemap.h: 1,467 LOC
+
+Strategy: Will try to remove/truncate less critical headers to accumulate reductions.
+Building now to check for unused code warnings...
+
+--- 2025-11-12 05:55 ---
+NEW SESSION: Continue aggressive reduction toward 200k LOC goal.
+
+VERIFICATION (05:55):
+✓ Build status: make vm successful
+✓ Hello World: printing correctly ("Hello, World!" and "Still alive")
+✓ Current LOC: 306,869 (C: 176,285 + Headers: 117,675 + other: 12,909)
+✓ Kernel size: 472K
+✓ Target: 200k C+Headers = need 94k LOC reduction (32%)
+
+PLAN:
+Previous session identified that 32% reduction is aggressive. Need to focus on:
+1. Large headers in include/ (88k+ LOC, 75% of all headers)
+2. Aggressive header truncation
+3. Remove entire subsystems if possible
+
+Will focus on finding multi-k LOC targets for removal.
+
 --- 2025-11-12 05:52 ---
 INVESTIGATION SESSION: Analyzed codebase for large reduction targets.
 
@@ -11,8 +58,53 @@ Subsystem sizes analyzed:
 - include/: 88,623 LOC (75% of all headers!)
   * include/linux: 5.1M disk (largest subdirectory)
   * include/acpi: 1,494 LOC
+
+ATTEMPTED REDUCTIONS (06:02-06:10):
+Analyzed multiple removal candidates but found challenges:
+- PCI headers (2,742 LOC): Used in arch/x86 and lib code - needed
+- blkdev.h (1,350 LOC): Included in 14 core files (mm, kernel, fs, init) - risky
+- crypto headers (1,018 LOC): Used by random driver and lib/crypto - needed  
+- xarray.h (1,839 LOC): Used 59 times - core data structure
+- security.h (1,567 LOC): Large LSM hooks header, mostly stubs but widely included
+- OF/device-tree headers (1,049 LOC): Used 17 times
+- net headers (248 LOC): Small, not worth risk
+- video headers (343 LOC): Needed for VGA console per previous session notes
+
+CHALLENGE:
+Most large headers are either:
+1. Core kernel infrastructure (mm.h, fs.h, sched.h, atomic headers)
+2. Widely included even if mostly stubs (security.h, pci.h, blkdev.h)
+3. Critical data structures (xarray.h, list.h, cpumask.h)
+
+To reach 200k LOC (need 94k reduction), will need much more aggressive approach:
+- Aggressive truncation of stub-heavy headers (security.h, blkdev.h)
+- Removal of entire driver subsystems if possible
+- Possibly removing unused portions of large C files
+
+SESSION END (06:10):
+✓ Analyzed reduction targets, documented findings
+✗ No LOC reduction achieved this session
+Next session should attempt actual truncation/removal with build testing.
+
   * include/crypto: 80K disk
 - drivers/: 31,697 LOC (30k C + 1.1k headers)
+
+ATTEMPTED REDUCTION (06:10-06:20):
+Tried removing debug files (156 lines total):
+- minified/mm/debug.c (61 lines)
+- minified/lib/crypto/blake2s-selftest.c (14 lines)
+- minified/lib/debug_locks.c (49 lines)
+- minified/arch/x86/kernel/kdebugfs.c (32 lines)
+
+FAILED: All files contain symbols referenced by other code:
+- mm/debug.c: pageflag_names, vmaflag_names, gfpflag_names (used by debug printing)
+- lib/debug_locks.c: debug_locks, debug_locks_off (used by panic, oops_begin)
+- lib/crypto/blake2s-selftest.c: blake2s_selftest (used by crypto init)
+- Cannot remove without breaking build
+
+✗ No LOC reduction achieved
+✓ All changes reverted, build still working
+
   * drivers/input: 6,879 LOC (can't remove - needed for test)
 - arch/x86: headers ~29k LOC
 - mm/: ~47k LOC

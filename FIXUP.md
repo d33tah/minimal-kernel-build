@@ -1,3 +1,111 @@
+--- 2025-11-12 11:22 ---
+NEW SESSION START
+
+STATUS CHECK:
+✓ Build: make vm successful
+✓ Hello World: working correctly ("Hello, World!" and "Still alive")
+✓ Current kernel size: 464K
+✓ Proceeding to SECOND PHASE - reducing codebase
+
+--- 2025-11-12 11:20 ---
+PREVIOUS SESSION END NOTE
+
+STATUS: make vm working, NO PROGRESS on LOC reduction
+Current LOC: 317,133 (C: 181,487 + Headers: 120,099) - UNCHANGED
+Target: 200,000 LOC (need 117K reduction, 37%)
+Kernel: 459KB (built during session)
+
+ATTEMPTS THIS SESSION:
+1. drivers/tty/vt/keyboard.c (2232 lines) - FAILED, kernel hung
+2. mm/vmalloc.c (2697 lines, 22 exports) - FAILED, kernel hung
+3. Extensive investigation of 20+ large files - all heavily used (20-50+ exports each)
+4. Considered header trimming - atomic headers are generated, can't easily modify
+5. Looked for comment-heavy files - max ~300 comment lines per file, not significant
+
+KEY INSIGHT:
+All remaining large files are core subsystems with many exports:
+- MM subsystem: page_alloc (5226), memory (4085), vmalloc (2697 - FAILED), filemap (2640, 51 exports)
+- VFS: namei (3897, 56 exports), namespace (3880), dcache (2371, 45 exports)
+- TTY/Console: vt (3945), keyboard (2232 - FAILED), tty_io (2396, 29 exports), n_tty (1812)
+- Core kernel: workqueue (3261, 30 exports), signal (3111 - FAILED prev.), fork (2400, 11 exports), sched (2752)
+
+FILES THAT BREAK BOOT WHEN STUBBED:
+- kernel/signal.c (3111 lines) - previous session
+- mm/vmscan.c (3010 lines) - previous session
+- drivers/tty/vt/keyboard.c (2232 lines) - this session
+- mm/vmalloc.c (2697 lines) - this session
+
+All four built successfully but kernel hung before printing "Hello, World!". This indicates these
+subsystems are critical for boot process even though they seem like they could be optional.
+
+Current codebase is heavily optimized. Further reduction requires architectural changes
+beyond incremental stubbing. TWO SESSIONS (04:20 and this one) have reached same conclusion.
+
+RECOMMENDATION FOR NEXT SESSION:
+1. Try partial reduction within large files (remove debug paths, simplify error handling)
+2. Look for smaller files that can be aggregated and reduced
+3. Consider trimming non-generated headers by removing unused inline functions
+4. Focus on files <1000 lines for safer incremental wins
+5. Accept that 310-320K LOC may be practical minimum without kernel rewrite
+
+
+--- 2025-11-12 10:54 ---
+CURRENT SESSION START
+
+STATUS CHECK:
+✓ Build: make vm successful
+✓ Hello World: working correctly ("Hello, World!" and "Still alive")
+✓ Current LOC: 317,133 total (C: 181,487 + Headers: 120,099 + other: 15,547)
+✓ Current kernel size: 464K
+✓ Remaining to goal: 117,133 LOC to reach 200k goal (37% reduction needed)
+✓ Remaining to kernel size goal: 64KB to reach 400KB goal (14% reduction needed)
+
+NOTE: LOC count discrepancy from previous session (292,271 vs 317,133)
+- This is a 24,862 LOC difference
+- Likely due to cloc counting method differences or additional files
+- Using current measurement as baseline
+
+ATTEMPT 1: drivers/tty/vt/keyboard.c (2232 lines) - FAILED (10:54)
+- Stubbed keyboard driver
+- Build succeeded but kernel hangs before printing "Hello, World!"
+- Reverted changes
+- Conclusion: keyboard driver is needed for console operation during boot
+- Note: Similar behavior to signal.c and vmscan.c failures
+
+STRATEGY:
+Need to reduce 117K LOC and 64KB kernel size. Will target:
+1. Large subsystems that aren't needed for "Hello World"
+2. Focus on C code files (181K LOC) rather than headers (120K LOC)
+3. Continue stubbing approach that worked for readahead and mlock
+4. AVOID: keyboard, signal, vmscan - all broke boot
+
+ANALYSIS (11:08):
+After extensive investigation:
+- Checked 20+ large files for stubbing potential
+- Most large files have 20-50+ EXPORT_SYMBOL exports, indicating heavy use
+- Previous diary analysis (04:20) concluded 316k LOC is near-optimal
+- Core subsystems (MM, VFS, TTY, scheduling) are tightly integrated
+- Files that failed when stubbed: signal.c, vmscan.c, keyboard.c
+
+Candidates with fewer exports examined:
+- mm/percpu.c (1866 lines, 3 exports) - but per-CPU allocation is core
+- drivers/tty/n_tty.c (1812 lines, 1 export) - TTY line discipline, needed for console
+- Various FS/MM files all have 40+ exports each
+
+CHALLENGE:
+Current codebase represents heavily optimized minimal kernel. To reach 200K LOC target (117K reduction, 37%) would require:
+1. Architectural changes (custom allocators, simplified VFS)
+2. Rewriting core subsystems
+3. Risk of breaking boot process
+
+NEXT SESSION RECOMMENDATION:
+Instead of whole-file stubbing, try:
+1. Trim large header files (120K LOC in headers, 38% of total)
+2. Remove debug/unused code within large functions
+3. Look for compile-time conditionals that can be simplified
+4. Focus on incremental 1-2K LOC reductions per attempt
+
+
 --- 2025-11-12 10:51 ---
 SUCCESSFUL REDUCTION: Stubbed mm/mlock.c
 

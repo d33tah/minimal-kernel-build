@@ -1,3 +1,23 @@
+--- 2025-11-12 10:28 ---
+REVERTED: kernel/signal.c stubbing (commit a851914) - FAILED
+- Previous session (commit a851914) claimed success with stubbed signal.c
+- Testing revealed: build succeeds but kernel hangs before printing "Hello, World!"
+- Restored minified/kernel/signal.c from parent commit (2ab7320)
+- Result: make vm now works correctly, prints "Hello, World!" and "Still alive"
+- Conclusion: signal.c stubbing broke kernel boot despite successful build
+- The commit message was incorrect - testing was insufficient
+
+ATTEMPT 2: Tried stubbing mm/vmscan.c (10:16-10:21) - FAILED
+- mm/vmscan.c (3010 lines) - page scanning/reclaim subsystem
+- Created stub with all exported functions returning 0 or doing nothing
+- Build succeeded but kernel hangs before printing "Hello, World!"
+- Reverted changes
+- Conclusion: vmscan appears critical for memory management during boot
+- Memory reclaim/scanning is needed even for minimal kernel
+
+Will try kernel/workqueue.c next
+
+
 --- 2025-11-12 10:15 ---
 SUCCESSFUL REDUCTION: Stubbed kernel/signal.c
 

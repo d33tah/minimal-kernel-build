@@ -1,3 +1,26 @@
+--- 2025-11-12 15:54 ---
+SESSION START
+
+Starting LOC: 288,466 (C: 170,791 + Headers: 117,675)
+Target: 200,000 LOC (need 88,466 reduction, 30.7%)
+Kernel: 455KB
+Previous commit: 0a079e5 (Session documentation: parser.c stub investigation)
+Build status: PASSING - make vm displays "Hello, World!"
+
+Goal: Need 88,466 LOC reduction (30.7%)
+Previous session noted LOC was 302,873 - appears cloc measurement variation between sessions.
+Using current baseline: 288,466 LOC
+
+Strategy:
+- Focus on larger reduction opportunities
+- Headers: 117,675 LOC (40.8% of codebase) - major target
+- TTY subsystem: ~17,440 LOC - likely over-engineered for Hello World
+- Large mm/ files: page_alloc.c (5,226), memory.c (4,085)
+- Syscall reduction opportunities
+- Scheduler simplification opportunities
+
+Will identify largest unused subsystems and files for removal/stubbing.
+
 --- 2025-11-12 15:17 ---
 SESSION START
 
@@ -3863,4 +3886,66 @@ Realistic next actions:
 4. Check if any lib/ functions are truly unused
 
 All progress documented and committed.
+
+
+ATTEMPT 16:00 - Scheduler files:
+- Tried to stub kernel/sched/deadline.c (1,279) and rt.c (1,074)
+- BUILD FAILED: These files provide required symbols:
+  - deadline.c: __dl_clear_params, __checkparam_dl, dl_param_changed, sched_dl_overflow, __setparam_dl, __getparam_dl
+  - rt.c: likely sched_rr_timeslice and related functions
+- Even though .o files aren't created, symbols are referenced by compiled code
+- Files restored from git
+
+Lesson: Can't stub files that provide symbols used via headers, even if not directly compiled.
+
+Strategy shift: Focus on finding truly unused code or reducing within large compiled files.
+
+
+SESSION SUMMARY 16:07:
+Duration: ~20 minutes
+Starting LOC: 288,464 (verified via cloc after mrproper)
+Current LOC: 288,464 (no changes made this session)
+Target: 200,000 LOC (need 88,464 reduction, 30.7%)
+Kernel: 455KB (unchanged)
+Build status: PASSING - make vm displays "Hello, World!"
+
+Work performed:
+1. Attempted to stub uncompiled scheduler files (deadline.c: 1,279, rt.c: 1,074)
+   - FAILED: Files provide symbols referenced by other compiled code via headers
+   - Even uncompiled .c files can define functions used elsewhere
+   - Restored from git
+
+2. Analyzed medium-sized files (200-500 lines) with exports:
+   - lib/siphash.c: 451 lines, 17 exports, only 3 usages (all in vsprintf for ptr hashing)
+   - lib/iomap.c: 374 lines, 26 exports, 0 direct usage found (but .o exists)
+   - lib/kstrtox.c: 431 lines, 13 exports, 55 usages (heavily used)
+   - lib/klist.c: 407 lines, 13 exports, 190 usages (heavily used)
+   - lib/devres.c: 406 lines, 11 exports, 306 usages (heavily used)
+   - kernel/sys.c: 1,867 lines, 30 syscalls (most unnecessary but risky to stub)
+
+3. Reviewed DIARY.md findings:
+   - Previous session (2025-11-12 04:20) concluded 316k LOC was "near-optimal"
+   - Current LOC is 288k - significant improvement from diary's assessment!
+   - This suggests 28k LOC was removed between diary entry and current state
+   - Original conclusion that 200k is "infeasible" may need revisiting
+
+4. Key insights:
+   - Headers remain largest component: 117,675 LOC (40.8%)
+   - Most large files are heavily interconnected and actively used
+   - Whole-file removal is rarely safe without breaking builds
+   - Incremental reductions within files might be more successful
+
+Opportunities identified but not yet attempted:
+- lib/siphash.c could potentially be replaced with simpler hash for vsprintf
+- Syscalls in kernel/sys.c could be stubbed if we can identify which are unused
+- Large header files might have removable inline functions or unused code
+- TTY/VT subsystem (17,440 LOC) is large for just "Hello World" output
+
+No commits this session - analysis and exploration only.
+
+Next session should:
+- Try reducing lib/siphash.c by replacing with simpler hash
+- Attempt careful syscall stubbing in kernel/sys.c
+- Look for removable code within large files rather than removing whole files
+- Consider header file content reduction
 

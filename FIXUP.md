@@ -1,3 +1,37 @@
+--- 2025-11-12 22:28 ---
+NEW SESSION START
+
+Current LOC: 287,851 total (C: 160,001 + Headers: 116,796 + Other: 11,054)
+Previous: 291,977 LOC (4,126 LOC improvement between sessions!)
+Target: 200,000 LOC (need 87,851 more, 30.5% reduction)
+Kernel: 420KB (target: 400KB)
+Build status: PASSING - "Hello, World!" displayed
+
+Good starting position: Unknown reduction of 4,126 LOC occurred between last session and now.
+This session will focus on aggressive but safe reductions. Strategy:
+1. Stub calibrate.c (316 LOC) with fixed delays
+2. Reduce lib/vsprintf.c format specifiers
+3. Look for more deprecated/optional features to stub
+4. Consider header trimming opportunities
+5. Explore TTY simplification
+
+--- 2025-11-12 22:35 ---
+PROGRESS - calibrate.c stubbed
+
+Successfully stubbed calibrate.c with fixed lpj value:
+- Reduced from 316 to 48 lines (268 LOC saved)
+- Removed calibrate_delay_direct() and calibrate_delay_converge()
+- Fixed lpj=12500000 for QEMU
+- Build: PASSING, "Hello, World!" displayed
+- Kernel: 419KB (1KB reduction)
+- Committed and pushed: 18357dc
+
+Exploring next targets:
+- lib/vsprintf.c (2804 LOC): Too complex, many format specifiers in use
+- kernel/time/ntp.c (702 LOC): Used by timekeeping.c, complex dependencies
+- DMA subsystem (1475 LOC): Need to verify if truly unused
+- Looking for simpler, safer stubbing opportunities
+
 --- 2025-11-12 22:20 ---
 SESSION END - Small but tangible progress
 

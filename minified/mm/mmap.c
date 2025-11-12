@@ -2100,78 +2100,10 @@ SYSCALL_DEFINE2(munmap, unsigned long, addr, size_t, len)
 SYSCALL_DEFINE5(remap_file_pages, unsigned long, start, unsigned long, size,
 		unsigned long, prot, unsigned long, pgoff, unsigned long, flags)
 {
-
-	struct mm_struct *mm = current->mm;
-	struct vm_area_struct *vma;
-	unsigned long populate = 0;
-	unsigned long ret = -EINVAL;
-	struct file *file;
-
-	pr_warn_once("%s (%d) uses deprecated remap_file_pages() syscall. See Documentation/vm/remap_file_pages.rst.\n",
+	/* Stubbed - deprecated syscall not supported in minimal kernel */
+	pr_warn_once("%s (%d) uses deprecated remap_file_pages() syscall which is not supported.\n",
 		     current->comm, current->pid);
-
-	if (prot)
-		return ret;
-	start = start & PAGE_MASK;
-	size = size & PAGE_MASK;
-
-	if (start + size <= start)
-		return ret;
-
-	
-	if (pgoff + (size >> PAGE_SHIFT) < pgoff)
-		return ret;
-
-	if (mmap_write_lock_killable(mm))
-		return -EINTR;
-
-	vma = vma_lookup(mm, start);
-
-	if (!vma || !(vma->vm_flags & VM_SHARED))
-		goto out;
-
-	if (start + size > vma->vm_end) {
-		struct vm_area_struct *next;
-
-		for (next = vma->vm_next; next; next = next->vm_next) {
-			
-			if (next->vm_start != next->vm_prev->vm_end)
-				goto out;
-
-			if (next->vm_file != vma->vm_file)
-				goto out;
-
-			if (next->vm_flags != vma->vm_flags)
-				goto out;
-
-			if (start + size <= next->vm_end)
-				break;
-		}
-
-		if (!next)
-			goto out;
-	}
-
-	prot |= vma->vm_flags & VM_READ ? PROT_READ : 0;
-	prot |= vma->vm_flags & VM_WRITE ? PROT_WRITE : 0;
-	prot |= vma->vm_flags & VM_EXEC ? PROT_EXEC : 0;
-
-	flags &= MAP_NONBLOCK;
-	flags |= MAP_SHARED | MAP_FIXED | MAP_POPULATE;
-	if (vma->vm_flags & VM_LOCKED)
-		flags |= MAP_LOCKED;
-
-	file = get_file(vma->vm_file);
-	ret = do_mmap(vma->vm_file, start, size,
-			prot, flags, pgoff, &populate, NULL);
-	fput(file);
-out:
-	mmap_write_unlock(mm);
-	if (populate)
-		mm_populate(ret, populate);
-	if (!IS_ERR_VALUE(ret))
-		ret = 0;
-	return ret;
+	return -ENOSYS;
 }
 
 static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long flags, struct list_head *uf)

@@ -311,47 +311,7 @@ SYSCALL_DEFINE0(setsid)
 
 DECLARE_RWSEM(uts_sem);
 
-#ifdef COMPAT_UTS_MACHINE
-#define override_architecture(name) \
-	(personality(current->personality) == PER_LINUX32 && \
-	 copy_to_user(name->machine, COMPAT_UTS_MACHINE, \
-		      sizeof(COMPAT_UTS_MACHINE)))
-#else
-#define override_architecture(name)	0
-#endif
-
-/*
- * Work around broken programs that cannot handle "Linux 3.0".
- * Instead we map 3.x to 2.6.40+x, so e.g. 3.0 would be 2.6.40
- * And we map 4.x and later versions to 2.6.60+x, so 4.0/5.0/6.0/... would be
- * 2.6.60.
- */
-static int override_release(char __user *release, size_t len)
-{
-	int ret = 0;
-
-	if (current->personality & UNAME26) {
-		const char *rest = UTS_RELEASE;
-		char buf[65] = { 0 };
-		int ndots = 0;
-		unsigned v;
-		size_t copy;
-
-		while (*rest) {
-			if (*rest == '.' && ++ndots >= 3)
-				break;
-			if (!isdigit(*rest) && *rest != '.')
-				break;
-			rest++;
-		}
-		v = LINUX_VERSION_PATCHLEVEL + 60;
-		copy = clamp_t(size_t, len, 1, sizeof(buf));
-		copy = scnprintf(buf, copy, "2.6.%u%s", v, rest);
-		ret = copy_to_user(release, buf, copy + 1);
-	}
-	return ret;
-}
-
+/* Simplified uname syscalls - removed backwards compatibility cruft */
 SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 {
 	struct new_utsname tmp;
@@ -361,18 +321,10 @@ SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 	up_read(&uts_sem);
 	if (copy_to_user(name, &tmp, sizeof(tmp)))
 		return -EFAULT;
-
-	if (override_release(name->release, sizeof(name->release)))
-		return -EFAULT;
-	if (override_architecture(name))
-		return -EFAULT;
 	return 0;
 }
 
 #ifdef __ARCH_WANT_SYS_OLD_UNAME
-/*
- * Old cruft
- */
 SYSCALL_DEFINE1(uname, struct old_utsname __user *, name)
 {
 	struct old_utsname tmp;
@@ -384,11 +336,6 @@ SYSCALL_DEFINE1(uname, struct old_utsname __user *, name)
 	memcpy(&tmp, utsname(), sizeof(tmp));
 	up_read(&uts_sem);
 	if (copy_to_user(name, &tmp, sizeof(tmp)))
-		return -EFAULT;
-
-	if (override_release(name->release, sizeof(name->release)))
-		return -EFAULT;
-	if (override_architecture(name))
 		return -EFAULT;
 	return 0;
 }
@@ -410,11 +357,6 @@ SYSCALL_DEFINE1(olduname, struct oldold_utsname __user *, name)
 	memcpy(&tmp.machine, &utsname()->machine, __OLD_UTS_LEN);
 	up_read(&uts_sem);
 	if (copy_to_user(name, &tmp, sizeof(tmp)))
-		return -EFAULT;
-
-	if (override_architecture(name))
-		return -EFAULT;
-	if (override_release(name->release, sizeof(name->release)))
 		return -EFAULT;
 	return 0;
 }

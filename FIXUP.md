@@ -1,3 +1,18 @@
+--- 2025-11-13 00:23 ---
+SUCCESS - Simplified uname syscalls
+
+Removed backwards compatibility code from uname syscalls in kernel/sys.c:
+- Removed override_release() function (25 lines) for UNAME26 personality
+- Removed override_architecture() macro (9 lines) for PER_LINUX32
+- Simplified newuname, uname, olduname syscalls
+- Total reduction: 58 LOC (sys.c: 560 -> 502 lines)
+
+Build: PASSING, "Hello, World!" displayed
+Kernel: 415KB (unchanged)
+
+Session total so far: 157 + 58 = 215 LOC reduced
+
+
 --- 2025-11-13 00:18 ---
 SUCCESS - Stubbed session and process group syscalls
 

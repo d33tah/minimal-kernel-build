@@ -1,3 +1,53 @@
+
+ATTEMPT 1 SUCCESSFUL: Remove BLAKE2S crypto library (08:21-08:37)
+- Found CONFIG_CRYPTO_LIB_BLAKE2S_GENERIC=y enabled
+- BLAKE2S function was 5325 bytes in vmlinux
+- Removed 3 source files:
+  * lib/crypto/blake2s.c
+  * lib/crypto/blake2s-generic.c
+  * lib/crypto/blake2s-selftest.c
+- Added "# CONFIG_CRYPTO_LIB_BLAKE2S_GENERIC is not set" to tiny.config
+- Build: SUCCESSFUL
+- make vm test: ✓ "Hello, World!" and "Still alive" printed
+- LOC reduction: 318,370 → 315,986 (reduced by 2,384 LOC)
+- Kernel size: 472K (unchanged)
+
+- PERF_EVENTS already disabled (line 30-31 in tiny.config)
+- No PCI, ACPI enabled - already minimal
+- Security subsystem disabled
+
+Found BLAKE2S crypto library enabled (5325 bytes in vmlinux)
+- CONFIG_CRYPTO_LIB_BLAKE2S_GENERIC=y
+- Attempting to disable
+
+
+ATTEMPT 1: Disable CONFIG_PERF_EVENTS (08:21)
+- Found CONFIG_PERF_EVENTS=y in .config
+- PERF headers are large: perf_event.h (1490+1395 lines)
+- Attempting to disable to reduce code size
+--- 2025-11-12 08:18 ---
+NEW SESSION: Continue reduction towards 200k LOC goal
+
+VERIFICATION (08:18):
+✓ Build status: make vm successful
+✓ Hello World: printing correctly ("Hello, World!" and "Still alive")
+✓ Current LOC: 318,370 (C: 183,174 + Headers: 120,099)
+✓ Kernel size: 472K
+✓ Target: 200k LOC = need 118,370 LOC reduction (37%)
+
+NOTE: LOC count discrepancy from previous session (305,113 vs 318,370).
+Previous session may have counted after some temporary deletions.
+Current count is authoritative from clean tree.
+
+ANALYSIS:
+Previous sessions documented that:
+- TTY/VT/INPUT subsystems form tight dependency triangle (can't remove)
+- XZ decompression needed for boot (CONFIG_KERNEL_XZ=y)
+- Many subsystem removal attempts failed due to dependencies
+
+Current approach: Look for new reduction opportunities
+Will investigate largest files/subsystems that haven't been attempted yet.
+
 --- 2025-11-12 08:16 ---
 SESSION END: Investigation session - documented findings
 

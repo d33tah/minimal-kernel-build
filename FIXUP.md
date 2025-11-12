@@ -2375,3 +2375,51 @@ RESULT: SUCCESS (07:25)
 
 ATTEMPT 2: Remove INPUT/SERIO source files (07:26)
 
+RESULT (07:30): 
+- Disabled CONFIG_INPUT=y in .config: Build works, Hello World prints
+- COMMITTED daa01f1 and PUSHED
+- Attempted to remove drivers/input source: BUILD FAILED
+- Issue: drivers/tty/vt/keyboard.c depends on input subsystem
+- keyboard.c is part of VT (virtual terminal) which depends on INPUT
+- Cannot easily remove INPUT without removing VT keyboard support
+
+ANALYSIS (07:30):
+Challenge: VT console is tightly coupled with keyboard/input
+- vt.c (3945 LOC) + keyboard.c (2232 LOC) + n_tty.c (1812 LOC) = ~8k LOC
+- input subsystem: ~9.7k LOC
+- But removing either breaks the build due to dependencies
+
+NEW STRATEGY (07:30):
+Look for other large, independent subsystems that can be removed.
+Check what's actually NEEDED vs what's just being built.
+
+
+INVESTIGATION CONTINUED (07:35):
+Analyzed code distribution to find reduction opportunities:
+- lib/: 27,324 LOC total (78 .o files compiled)
+  * vsprintf.c: 2804, iov_iter.c: 1759, bitmap.c: 1407
+  * xz decompressor: ~2.7k LOC (xz_dec_lzma2.c: 1344, xz_dec_stream.c: 837, xz_dec_bcj.c: 574)
+- fs/: 28,006 LOC total
+  * namei.c: 3897, namespace.c: 3880, dcache.c: 2371
+- kernel/sched/: fair.c (1569 LOC) is compiled, but deadline.c and rt.c are not
+- security/: 1493 LOC (minimal)
+- drivers/input: 8469 LOC (+ 1167 headers) = 9.7k LOC
+- TTY/VT: vt.c (3945), keyboard.c (2232), n_tty.c (1812) = ~8k LOC
+
+DEPENDENCY ANALYSIS (07:35):
+- Cannot remove drivers/input without breaking drivers/tty/vt/keyboard.c
+- keyboard.c is tightly coupled with VT console
+- VT console is needed for printk() output to display
+- Removing VT would require alternative console (serial/early_printk)
+
+REALISTIC REDUCTION TARGETS (07:36):
+1. XZ decompressor (~2.7k LOC) - check if can use simpler compression
+2. Trimming large FS files (namei.c, namespace.c) - risky, needs careful analysis
+3. Trimming lib functions - need to identify truly unused ones
+4. Checking if any subsystems in drivers/ can be removed entirely
+
+SESSION END (07:36):
+Committed config change (INPUT disabled in .config).
+Further progress requires architectural decisions or deep analysis.
+Current: 318k LOC. Realistic target: Maybe 300k LOC without major rewrites.
+

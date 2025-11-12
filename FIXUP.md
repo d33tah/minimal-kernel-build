@@ -6,8 +6,9 @@ Stubbed so far:
 2. mm/dmapool.c: 526 → 23 lines (503 LOC saved)
 3. mm/mempool.c: 483 → 51 lines (432 LOC saved)
 4. lib/logic_pio.c: 233 → 16 lines (217 LOC saved)
+5. lib/earlycpio.c: 141 → 9 lines (132 LOC saved)
 
-Total: 1238 LOC removed
+Total: 1370 LOC removed
 Kernel: 456KB (stable)
 
 Files checked (in use):

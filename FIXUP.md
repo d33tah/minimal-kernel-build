@@ -1,3 +1,87 @@
+--- 2025-11-12 09:00 ---
+ATTEMPT FAILED: lib/*.c removal doesn't work
+
+INVESTIGATION (08:42-09:00):
+Attempted to remove unused lib/*.c files but failed:
+
+1. Initial finding looked promising:
+   - 69 lib/*.c files without visible .o files
+   - lib/xz/, lib/vdso/ directories
+
+2. What went wrong:
+   - lib/ files are compiled into lib/lib.a archive
+   - Removing them causes build failures (e.g., "No rule to make target 'lib/argv_split.o'")
+   - lib/xz/ referenced by lib/Kconfig (can't remove)
+   - lib/vdso/ referenced by arch/x86/entry/vdso/Makefile (can't remove)
+   - blake2s was previously removed but is actually needed by /dev/random (had to restore)
+
+3. Key lesson: Can't remove source files based on absence of .o files in build dir
+   - Files get compiled into .a archives
+   - Build system tracks dependencies via Makefiles
+   - Need different strategy
+
+CURRENT STATUS:
+✓ Build working (make vm successful)
+✓ Hello World printing
+✓ Kernel size: 472K
+- LOC: Still ~305k (need to measure after cleanup)
+- blake2s restored (was incorrectly removed in previous session)
+
+NEED NEW STRATEGY:
+Can't just delete source files. Must either:
+1. Disable subsystems via Kconfig
+2. Stub out functionality while keeping source structure
+3. Trim header files (117k LOC potential)
+4. Find truly optional code that can be configured out
+
+
+--- 2025-11-12 08:50 ---
+BREAKTHROUGH: Found major reduction opportunity in lib/ (LATER FOUND TO BE INCORRECT)
+
+INVESTIGATION (08:42-08:50):
+Analyzed codebase systematically for reduction opportunities:
+
+1. Event subsystem: Already stubbed (kernel/events/stubs.c, only 111 LOC)
+2. Largest compiled objects identified:
+   - mm/page_alloc.o: 103K (critical, can't remove)
+   - drivers/tty/vt/vt.o: 83K (needed per instructions)
+   - fs/namespace.o: 82K (essential for FS)
+   - kernel/signal.o: 72K (needed for process control)
+
+3. Headers analysis: 117,675 LOC (38% of total) - potential target
+
+4. **MAJOR FINDING - lib/ directory** (INCORRECT):
+   - 69 .c files in lib/ WITHOUT corresponding .o files = 23,335 LOC unused
+   - lib/xz/ directory: 2,814 LOC unused (no .o files)
+   - lib/vdso/ directory: 360 LOC unused (no .o files)
+   - Only 7 tiny files compiled: math/{div64,lcm,int_sqrt,int_pow,gcd,reciprocal_div}.o + crypto/chacha.o
+
+**TOTAL lib/ REDUCTION POTENTIAL: 26,509 LOC (25% of goal!)** (THIS WAS WRONG)
+
+PLAN:
+1. Remove all unused lib/*.c files (23,335 LOC)
+2. Remove lib/xz/ (2,814 LOC)
+3. Remove lib/vdso/ (360 LOC)
+4. Test build and make vm
+5. If successful, commit and push
+
+
+--- 2025-11-12 08:42 ---
+NEW SESSION: Continue reduction towards 200k LOC goal
+
+VERIFICATION (08:42):
+✓ Build status: make vm successful
+✓ Hello World: printing correctly ("Hello, World!" and "Still alive")
+✓ Current LOC: 304,981 (C: 176,151 + Headers: 117,675)
+✓ Kernel size: 472K
+✓ Progress: LOC reduced from 315,986 to 304,981 (10,905 reduction)
+✓ Remaining needed: 104,981 LOC to reach 200k goal
+
+Next steps:
+1. Investigate event subsystem (instructions mention possible reduction)
+2. Look for large header files that can be trimmed
+3. Check largest compiled objects for stubbing opportunities
+
 
 INVESTIGATION (08:37-08:41):
 Searching for next reduction opportunity.

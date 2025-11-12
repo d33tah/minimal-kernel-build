@@ -4872,3 +4872,16 @@ Next session should:
 - Look for removable code within large files rather than removing whole files
 - Consider header file content reduction
 
+
+--- 2025-11-12 22:03 ---
+STRATEGY SHIFT - Focus on comment removal
+
+After attempting to remove tools/ and security/ directories (failed - needed for build),
+shifting to safer approach: strip comments from files with high comment-to-code ratios.
+
+Analysis shows:
+- lib/bitmap.c: 510 comment LOC out of 1407 total (36%)
+- Many files have substantial comments that don't affect functionality
+
+Will systematically find and strip comments from large files, test builds incrementally.
+

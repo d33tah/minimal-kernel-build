@@ -1,5 +1,22 @@
+--- 2025-11-12 08:16 ---
+SESSION UPDATE: XZ decompression attempt failed
+
+ATTEMPT 4 FAILED: Remove XZ decompression code (08:01-08:16)
+- Investigated which files aren't being compiled
+- Found lib/xz/ and lib/decompress_unxz.c (~2k LOC)
+- Verified CONFIG_XZ_DEC is disabled
+- Attempted to remove lib/xz/ and decompress_unxz.c
+- BUILD FAILED: arch/x86/boot/compressed/misc.c includes "../../../../lib/decompress_unxz.c"
+- REASON: CONFIG_KERNEL_XZ=y (kernel compressed with XZ), so bootloader needs XZ decompression
+- CONFIG_XZ_DEC relates to runtime decompression, not boot-time
+- Reverted changes
+
+LESSON: XZ code IS needed for boot despite CONFIG_XZ_DEC=n. Kernel uses XZ compression.
+
+NEXT: Will look for other unused code or try different reduction approaches.
+
 --- 2025-11-12 07:36 ---
-NEW SESSION: Continue reduction towards 200k LOC goal
+PREVIOUS SESSION: Continue reduction towards 200k LOC goal
 
 VERIFICATION (07:36):
 ✓ Build status: make vm successful

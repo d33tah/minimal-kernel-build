@@ -252,30 +252,16 @@ SYSCALL_DEFINE0(getegid)
 	return from_kgid_munged(current_user_ns(), current_egid());
 }
 
-static void do_sys_times(struct tms *tms)
-{
-	u64 tgutime, tgstime, cutime, cstime;
-
-	thread_group_cputime_adjusted(current, &tgutime, &tgstime);
-	cutime = current->signal->cutime;
-	cstime = current->signal->cstime;
-	tms->tms_utime = nsec_to_clock_t(tgutime);
-	tms->tms_stime = nsec_to_clock_t(tgstime);
-	tms->tms_cutime = nsec_to_clock_t(cutime);
-	tms->tms_cstime = nsec_to_clock_t(cstime);
-}
-
+/* Stubbed times syscall - not needed for minimal kernel */
 SYSCALL_DEFINE1(times, struct tms __user *, tbuf)
 {
+	/* Return all zeros for CPU times */
 	if (tbuf) {
-		struct tms tmp;
-
-		do_sys_times(&tmp);
+		struct tms tmp = {0};
 		if (copy_to_user(tbuf, &tmp, sizeof(struct tms)))
 			return -EFAULT;
 	}
-	force_successful_syscall_return();
-	return (long) jiffies_64_to_clock_t(get_jiffies_64());
+	return 0;
 }
 
 
@@ -1053,74 +1039,15 @@ SYSCALL_DEFINE3(getcpu, unsigned __user *, cpup, unsigned __user *, nodep,
  * do_sysinfo - fill in sysinfo struct
  * @info: pointer to buffer to fill
  */
-static int do_sysinfo(struct sysinfo *info)
-{
-	unsigned long mem_total, sav_total;
-	unsigned int mem_unit, bitcount;
-	struct timespec64 tp;
-
-	memset(info, 0, sizeof(struct sysinfo));
-
-	ktime_get_boottime_ts64(&tp);
-	timens_add_boottime(&tp);
-	info->uptime = tp.tv_sec + (tp.tv_nsec ? 1 : 0);
-
-	get_avenrun(info->loads, 0, SI_LOAD_SHIFT - FSHIFT);
-
-	info->procs = nr_threads;
-
-	si_meminfo(info);
-	si_swapinfo(info);
-
-	/*
-	 * If the sum of all the available memory (i.e. ram + swap)
-	 * is less than can be stored in a 32 bit unsigned long then
-	 * we can be binary compatible with 2.2.x kernels.  If not,
-	 * well, in that case 2.2.x was broken anyways...
-	 *
-	 *  -Erik Andersen <andersee@debian.org>
-	 */
-
-	mem_total = info->totalram + info->totalswap;
-	if (mem_total < info->totalram || mem_total < info->totalswap)
-		goto out;
-	bitcount = 0;
-	mem_unit = info->mem_unit;
-	while (mem_unit > 1) {
-		bitcount++;
-		mem_unit >>= 1;
-		sav_total = mem_total;
-		mem_total <<= 1;
-		if (mem_total < sav_total)
-			goto out;
-	}
-
-	/*
-	 * If mem_total did not overflow, multiply all memory values by
-	 * info->mem_unit and set it to 1.  This leaves things compatible
-	 * with 2.2.x, and also retains compatibility with earlier 2.4.x
-	 * kernels...
-	 */
-
-	info->mem_unit = 1;
-	info->totalram <<= bitcount;
-	info->freeram <<= bitcount;
-	info->sharedram <<= bitcount;
-	info->bufferram <<= bitcount;
-	info->totalswap <<= bitcount;
-	info->freeswap <<= bitcount;
-	info->totalhigh <<= bitcount;
-	info->freehigh <<= bitcount;
-
-out:
-	return 0;
-}
-
+/* Stubbed sysinfo syscall - not needed for minimal kernel */
 SYSCALL_DEFINE1(sysinfo, struct sysinfo __user *, info)
 {
-	struct sysinfo val;
+	struct sysinfo val = {0};
 
-	do_sysinfo(&val);
+	/* Return minimal stub data */
+	val.uptime = 1;
+	val.procs = 1;
+	val.mem_unit = 1;
 
 	if (copy_to_user(info, &val, sizeof(struct sysinfo)))
 		return -EFAULT;

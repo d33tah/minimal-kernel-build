@@ -155,8 +155,6 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 	struct subsys_private *cp;
 	int error;
 
-	pr_debug("device class '%s': registering\n", cls->name);
-
 	cp = kzalloc(sizeof(*cp), GFP_KERNEL);
 	if (!cp)
 		return -ENOMEM;
@@ -191,14 +189,12 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 
 void class_unregister(struct class *cls)
 {
-	pr_debug("device class '%s': unregistering\n", cls->name);
 	class_remove_groups(cls, cls->class_groups);
 	kset_unregister(&cls->p->subsys);
 }
 
 static void class_create_release(struct class *cls)
 {
-	pr_debug("%s called for %s\n", __func__, cls->name);
 	kfree(cls);
 }
 

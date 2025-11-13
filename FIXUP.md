@@ -1,3 +1,40 @@
+--- 2025-11-14 00:36 ---
+PROGRESS UPDATE (00:29-00:36): Successfully stubbed kernel/reboot.c
+
+Successfully stubbed kernel/reboot.c:
+- Original: 1,017 LOC
+- Stubbed: 251 LOC
+- Reduction: 766 LOC (75% reduction)
+- Approach: Kept essential reboot/halt/restart functions and notifier infrastructure
+  but removed complex sys-off handler logic, orderly shutdown, hardware protection
+
+Status after reboot.c stubbing (00:36):
+- Build: PASSES
+- make vm: PASSES
+- Hello World: PRINTS
+- Binary: 395KB (down from 397KB, 2KB reduction)
+- LOC: 280,458 total (down from 280,820)
+- Reduction: 362 LOC
+- Gap to 200K goal: 80,458 LOC
+
+Next targets:
+- Continue with other large files or partial reductions
+- Consider header reduction strategy (110K+ LOC in headers)
+- Look for other removable syscalls or subsystems
+
+--- 2025-11-14 00:29 ---
+NEW SESSION START: Attempt concrete reductions
+
+Status at session start (00:29):
+- Build: PASSES, make vm: PASSES, Hello World: PRINTS
+- LOC: 280,820 total
+- Gap to 200K: 80,820 LOC
+- Binary: 397KB (within 400KB goal)
+
+Strategy: Attempt concrete stubs rather than just investigation.
+Will try deadline scheduler first (981 LOC), then RT scheduler (705 LOC).
+If schedulers fail, will look at partial reductions or header trimming.
+
 --- 2025-11-14 00:31 ---
 SESSION END (00:08-00:31): Investigation only, no LOC reduction achieved
 

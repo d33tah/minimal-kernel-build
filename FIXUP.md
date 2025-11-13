@@ -21,6 +21,39 @@ Secondary targets if time permits:
 - Stubbing/simplifying subsystems (workqueue, TTY complexity)
 - Dead code in large C files
 
+Progress (21:10-21:22):
+Successfully removed unused stub code and headers:
+1. RAID detection code (commit 62670d0):
+   - include/linux/raid/detect.h (7 LOC) - empty stub functions
+   - init/do_mounts.c: removed md_run_setup() call and include (3 LOC)
+   - Total: 10 LOC reduction
+
+2. USB xHCI debug code (commit 214e88c):
+   - include/linux/usb/xhci-dbgp.h (25 LOC) - empty stub functions
+   - arch/x86/kernel/setup.c: removed dead code and include (4 LOC)
+   - Total: 29 LOC reduction
+
+Current session total: 39 LOC removed (2 commits, both builds pass, Hello World prints)
+
+Continuing to look for more stub headers and unused code...
+
+Investigation (21:22-21:27):
+Analyzed potential header removal opportunities:
+- Found ~20 small stub-only headers (<50 LOC with mostly empty inline functions)
+- Most are transitively included (e.g., latencytop.h via sched.h)
+- Attempted pm-trace.h removal but found it's actually used by arch/x86/kernel/rtc.c
+- Many stub functions (secretmem, fault-inject) return false but removing their checks requires C code changes (risky)
+
+Key finding: Header interdependencies make removal complex. Most "unused" headers are actually included indirectly through other headers. Need different approach.
+
+Alternative approaches to consider:
+1. Remove entire small stub C files (found several 1-line stub files in arch/x86/events/)
+2. Focus on large files - remove entire functions or subsystems within them
+3. Target specific subsystems for complete removal (e.g., workqueue simplification, TTY reduction)
+4. Look for #ifdef disabled code paths that can be completely deleted
+
+Current challenge: To reach 200K LOC goal (87K reduction needed), need architectural changes that are difficult to safely implement within a session.
+
 Progress (21:10-):
 
 --- 2025-11-13 20:53 ---

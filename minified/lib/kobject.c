@@ -90,9 +90,6 @@ static void fill_kobj_path(struct kobject *kobj, char *path, int length)
 		memcpy(path + length, kobject_name(parent), cur);
 		*(path + --length) = '/';
 	}
-
-	pr_debug("kobject: '%s' (%p): %s: path = '%s'\n", kobject_name(kobj),
-		 kobj, __func__, path);
 }
 
 /**
@@ -179,11 +176,6 @@ static int kobject_add_internal(struct kobject *kobj)
 		kobj_kset_join(kobj);
 		kobj->parent = parent;
 	}
-
-	pr_debug("kobject: '%s' (%p): %s: parent: '%s', set: '%s'\n",
-		 kobject_name(kobj), kobj, __func__,
-		 parent ? kobject_name(parent) : "<NULL>",
-		 kobj->kset ? kobject_name(&kobj->kset->kobj) : "<NULL>");
 
 	error = create_dir(kobj);
 	if (error) {
@@ -605,9 +597,6 @@ static void kobject_cleanup(struct kobject *kobj)
 	struct kobject *parent = kobj->parent;
 	const struct kobj_type *t = get_ktype(kobj);
 	const char *name = kobj->name;
-
-	pr_debug("kobject: '%s' (%p): %s, parent %p\n",
-		 kobject_name(kobj), kobj, __func__, kobj->parent);
 
 	if (t && !t->release)
 		pr_debug("kobject: '%s' (%p): does not have a release() function, it is broken and must be fixed. See Documentation/core-api/kobject.rst.\n",

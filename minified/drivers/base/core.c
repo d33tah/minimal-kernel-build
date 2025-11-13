@@ -57,8 +57,6 @@ int fwnode_link_add(struct fwnode_handle *con, struct fwnode_handle *sup)
 
 	list_add(&link->s_hook, &sup->consumers);
 	list_add(&link->c_hook, &con->suppliers);
-	pr_debug("%pfwP Linked as a fwnode consumer to %pfwP\n",
-		 con, sup);
 out:
 	mutex_unlock(&fwnode_link_lock);
 
@@ -67,8 +65,6 @@ out:
 
 static void __fwnode_link_del(struct fwnode_link *link)
 {
-	pr_debug("%pfwP Dropping the fwnode link to %pfwP\n",
-		 link->consumer, link->supplier);
 	list_del(&link->s_hook);
 	list_del(&link->c_hook);
 	kfree(link);
@@ -2055,8 +2051,6 @@ static void devices_kset_move_before(struct device *deva, struct device *devb)
 {
 	if (!devices_kset)
 		return;
-	pr_debug("devices_kset: Moving %s before %s\n",
-		 dev_name(deva), dev_name(devb));
 	spin_lock(&devices_kset->list_lock);
 	list_move_tail(&deva->kobj.entry, &devb->kobj.entry);
 	spin_unlock(&devices_kset->list_lock);
@@ -2066,8 +2060,6 @@ static void devices_kset_move_after(struct device *deva, struct device *devb)
 {
 	if (!devices_kset)
 		return;
-	pr_debug("devices_kset: Moving %s after %s\n",
-		 dev_name(deva), dev_name(devb));
 	spin_lock(&devices_kset->list_lock);
 	list_move(&deva->kobj.entry, &devb->kobj.entry);
 	spin_unlock(&devices_kset->list_lock);
@@ -2077,7 +2069,6 @@ void devices_kset_move_last(struct device *dev)
 {
 	if (!devices_kset)
 		return;
-	pr_debug("devices_kset: Moving %s to end of list\n", dev_name(dev));
 	spin_lock(&devices_kset->list_lock);
 	list_move_tail(&dev->kobj.entry, &devices_kset->list);
 	spin_unlock(&devices_kset->list_lock);

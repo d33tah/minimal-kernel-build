@@ -84,6 +84,60 @@ Challenges:
 - Most code is actually used (compiler already eliminates unused)
 - Need to find 77K LOC in places that won't break functionality
 
+Progress (14:49):
+Investigated multiple reduction opportunities:
+- RTC drivers: 412 LOC total, but 11 functions in final binary (actually used)
+- kernel/events: already stubbed (103 LOC)
+- Debug functions: found only 2 show_ functions in page_alloc.c
+- Print statements: 372 pr_debug/pr_info/pr_warn found, but removing individually is tedious
+
+Analysis of reduction challenge:
+To reach 77K LOC reduction need either:
+1. ~770 small reductions of 100 LOC each, OR
+2. ~15-77 large reductions of 1000-5000 LOC each
+
+Current approach (small incremental) is working but slow:
+- Session total: 14 LOC reduced
+- At this rate would need 5500 similar changes for 200K goal
+
+Potential strategies for larger reductions:
+1. Header reduction: 788 headers, need ~630 removed (80%) for ~45K LOC
+   - Risk: VM hangs from missing dependencies
+   - Requires careful transitive dependency analysis
+
+2. TTY/VT simplification: drivers/tty/vt/vt.c is 3918 lines
+   - Instructions say "too sophisticated just to print a few letters"
+   - Could try to create minimal VT implementation
+   - Risk: console output might break
+
+3. MM simplification: page_alloc.c (5183) + memory.c (4061) = 9244 lines
+   - DIARY says these are core functionality
+   - Could try NOMMU approach (instructions mention it)
+   - Risk: fundamental architectural change
+
+4. Syscall reduction: 246 syscalls but only write() actually used by init
+   - Many syscalls likely used during boot/mount
+   - Could try systematically stubbing unused ones
+   - Moderate risk
+
+SESSION END (14:50):
+Total reduction this session: 14 LOC
+Current: 277,247 LOC, Goal: 200,000 LOC, Gap: 77,247 LOC (27.9%)
+Commits: 2 (f8a7492 code changes, 75dab7a documentation)
+
+Summary:
+- Removed remaining EXPORT_PER_CPU_SYMBOL macros (14 LOC)
+- Analyzed reduction opportunities and documented challenges
+- Confirmed that progress beyond "near-optimal" (per DIARY) is possible
+- 39K LOC removed since 316K analysis, showing incremental approach works
+- However, need accelerated approach for remaining 77K LOC
+
+Next session recommendations:
+1. Attempt careful header reduction on clearly unused headers (input.h, xz.h)
+2. Profile actual boot execution to identify truly unused code paths
+3. Consider more aggressive CONFIG changes to disable subsystems
+4. Look for generated or macro-heavy code that inflates LOC counts
+
 --- 2025-11-13 14:16 ---
 NEW SESSION: Continue systematic LOC reduction
 

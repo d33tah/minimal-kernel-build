@@ -1,3 +1,60 @@
+--- 2025-11-13 02:04 ---
+SESSION END - Found uncompiled files but removal approach failed
+
+Current LOC: 300,505 total (measured with cloc after mrproper)
+Target: 200,000 LOC (need 100,505 more, 33.4% reduction)
+Kernel: 415KB (target: 400KB)
+Build status: PASSING - "Hello, World!" displayed
+
+Key discovery:
+Built minified with make clean and captured compiled files: 445 C files compiled.
+Total C files (excluding scripts): 494
+Uncompiled files: 52 files, ~14K LOC
+
+Initial attempt to remove uncompiled files:
+- Removed 41 files (events/, sched variants, xz, etc)
+- Restored build tools (conmakehash.c, XZ decompression needed for boot)
+- Restored asm-offsets_32.c (needed by build)
+- FAILED: Scheduler files (clock.c, wait.c, completion.c, etc) are #included
+  by build_policy.c and build_utility.c, not compiled separately
+- These cannot be removed - they're included as source, not linked
+
+Lesson learned:
+The scheduler uses a "unity build" approach where multiple .c files are
+#included into build_policy.c and build_utility.c. Simply removing uncompiled
+files breaks this. Need to:
+1. Check if files are #included before removing
+2. Or remove entire subsystems, not individual files
+
+The kernel/events/ directory (perf events) might still be removable if we can
+ensure it's truly not needed. Also arch/x86/events/ and arch/x86/lib/ instruction
+parsing code might be removable if no dependencies exist.
+
+Reverted all changes to restore working state.
+
+
+--- 2025-11-13 01:28 ---
+SESSION START - Fresh attempt at LOC reduction
+
+Current LOC: 300,505 total (measured with cloc after mrproper)
+Target: 200,000 LOC (need 100,505 more, 33.4% reduction)
+Kernel: 415KB (target: 400KB)
+Build status: PASSING - "Hello, World!" displayed
+
+Previous session documented that:
+- Headers: 1269 files, 119K LOC
+- C files: 491 files, 164K LOC
+- Most code is essential and compiled
+- Failed stubbing: ptrace, reboot, umh, intel workarounds
+
+Strategy for this session:
+Will try header reduction approaches:
+1. Look for large headers that might have removable sections
+2. Try simplifying atomic operations (atomic-fallback has 2456 LOC)
+3. Check if some file operations can be stubbed in fs.h (2521 LOC)
+4. Look for error handling macros that might be simplified
+
+
 --- 2025-11-13 01:21 ---
 SESSION END - Investigation complete, no progress possible
 

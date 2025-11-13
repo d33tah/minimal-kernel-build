@@ -39,13 +39,22 @@ Analysis performed:
 Key insight: Header removal has diminishing returns. Must focus on C code reduction.
 Most promising targets: MM subsystem, FS subsystem, TTY subsystem - all overly complex.
 
-Build status: Had to restore 4 headers that were previously removed but are still needed:
-- include/linux/elfnote-lto.h
-- include/linux/dirent.h
-- include/linux/mqueue.h
-- include/linux/rodata_test.h
+Build status: Had to restore 5 headers + 1 uapi file that were previously removed:
+- include/linux/elfnote-lto.h (needed by init/version.c)
+- include/linux/dirent.h (needed by init/initramfs.c)
+- include/linux/mqueue.h (wrapper for uapi version)
+- include/linux/rodata_test.h (needed by init/main.c)
+- include/linux/hidden.h (needed by build system)
+- include/uapi/linux/mqueue.h (defines MQ_BYTES_MAX constant)
 
-These headers are transitively needed by core init files. Build verified working.
+Also fixed include/asm-generic/resource.h to include mqueue.h properly.
+Build now passes, kernel boots and prints "Hello, World!" - 415KB kernel size.
+
+Session outcome:
+- Committed and pushed header restoration fixes
+- Build verified working end-to-end
+- Documented analysis of largest subsystems for future reduction work
+- Ready for next session to focus on C code reduction (not headers)
 
 --- 2025-11-13 05:05 ---
 SESSION: Header removal continued - 16 headers removed, 671 LOC total

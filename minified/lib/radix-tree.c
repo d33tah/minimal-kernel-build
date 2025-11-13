@@ -29,7 +29,6 @@ struct kmem_cache *radix_tree_node_cachep;
 DEFINE_PER_CPU(struct radix_tree_preload, radix_tree_preloads) = {
 	.lock = INIT_LOCAL_LOCK(lock),
 };
-EXPORT_PER_CPU_SYMBOL_GPL(radix_tree_preloads);
 
 static inline struct radix_tree_node *entry_to_node(void *ptr)
 {

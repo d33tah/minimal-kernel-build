@@ -10,7 +10,6 @@
 
 /* Per cpu debug control register value */
 DEFINE_PER_CPU(unsigned long, cpu_dr7);
-EXPORT_PER_CPU_SYMBOL(cpu_dr7);
 
 void hw_breakpoint_restore(void)
 {

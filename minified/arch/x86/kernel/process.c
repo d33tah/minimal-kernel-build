@@ -73,10 +73,8 @@ __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
 		.io_bitmap_base	= IO_BITMAP_OFFSET_INVALID,
 	 },
 };
-EXPORT_PER_CPU_SYMBOL(cpu_tss_rw);
 
 DEFINE_PER_CPU(bool, __tss_limit_invalid);
-EXPORT_PER_CPU_SYMBOL_GPL(__tss_limit_invalid);
 
 /*
  * this gets called so that we can store lazy state into memory and copy the

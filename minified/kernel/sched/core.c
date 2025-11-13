@@ -1049,8 +1049,6 @@ unsigned int nr_iowait(void)
 DEFINE_PER_CPU(struct kernel_stat, kstat);
 DEFINE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
 
-EXPORT_PER_CPU_SYMBOL(kstat);
-EXPORT_PER_CPU_SYMBOL(kernel_cpustat);
 
 static inline void prefetch_curr_exec_start(struct task_struct *p)
 {

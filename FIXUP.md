@@ -1,3 +1,60 @@
+--- 2025-11-13 12:00 ---
+SESSION START - Continue aggressive reduction (Phase 2)
+
+Current state:
+- LOC: 267,600 total (148,627 C + 110,670 headers = 259,297 code, excluding scripts)
+- Goal: 200,000 LOC (need 67,600 LOC reduction = 25.3%)
+- Build: Working (413KB, "Hello, World!" prints)
+- make vm: PASSES
+
+Note: LOC count corrected - previous counts included scripts directory.
+Actual kernel code (C + headers, excluding scripts): 259,297 LOC
+Need to reduce by 59,297 LOC to reach 200K goal (22.9%)
+
+ANALYSIS:
+Largest files: page_alloc.c (3936), memory.c (3331), vt.c (3310), namei.c (3304),
+namespace.c (3116), core.c (2771), signal.c (2426), workqueue.c (2358), vsprintf.c (2299)
+
+Largest headers: fs.h (2072), atomic-arch-fallback.h (2034), atomic-instrumented.h (1795),
+mm.h (1761), security.h (1231), pci.h (977), blkdev.h (946), efi.h (911), pgtable.h (900)
+
+Most headers (security.h, pci.h, blkdev.h, efi.h) are already stubs for disabled subsystems.
+Large C files (page_alloc, memory, workqueue, signal) are core functionality, hard to stub.
+TTY/VT files needed for console output.
+
+Strategy: Look for medium-sized files with less critical functionality that can be stubbed.
+Exploring alternatives to large subsystem stubbing.
+
+INVESTIGATION RESULTS (12:05):
+Subsystem LOC: kernel/=38178, mm/=29532, drivers/=21683, fs/=21318
+Sub-subsystems: sched/=7341, time/=5516, locking/=1712, events/=247 (already minimal)
+
+Medium files (500-1500 LOC): iov_iter.c (1443), percpu.c (1421), page-writeback.c (1381),
+exec.c (1202), xarray.c (1100), radix-tree.c (964), kthread.c (755)
+
+Challenge: Most medium/large files are core infrastructure with many exports and dependencies.
+Stubbing them would require careful analysis of what's actually used. Previous successful
+reductions (perf events, consolemap, vc_screen) were for clearly unnecessary functionality.
+
+Current approach may need to shift to: header trimming, finding unused code paths via dead
+code analysis, or identifying entire optional subsystems that can be disabled.
+
+POTENTIAL OPPORTUNITIES:
+- CPU vendor support: All 9 CPU vendors enabled (Intel, AMD, Cyrix, Hygon, Centaur, etc.)
+  intel.c (876 LOC), amd.c (590 LOC), hygon.c (22 LOC), etc.
+  Could potentially disable non-Intel/AMD vendors via Kconfig changes
+- Small debug files: mm/debug.c (61), lib/debug_locks.c (49), kdebugfs.c (32) = 142 LOC total
+- compat.h (556 LOC) - CONFIG_COMPAT_32 enabled, may be reducible
+
+CONCLUSION (12:07):
+Current LOC: 259,297. Goal: 200,000. Gap: 59,297 LOC (22.9%)
+Finding 59K LOC to remove is challenging. Most large files are core infrastructure.
+Best path forward may be CONFIG-level changes (disable CPU vendors, features) or
+header consolidation. Direct C file stubbing has limited opportunities remaining.
+
+Session focused on analysis rather than code reduction. No code changes committed this session.
+
+
 --- 2025-11-13 11:52 ---
 SESSION SUMMARY - Perf Events Reduction
 

@@ -28,6 +28,17 @@ SUCCESS: Removed lib/syscall.c (58 LOC) - task_current_syscall() was unused
 - Output: "Hello, World!" ✓
 - Reduction: ~25 LOC net (from 167,585 to 167,560)
 
+SUCCESS: Removed 4 more unused lib files (52 LOC total):
+- lib/is_single_threaded.c (13 LOC) - current_is_single_threaded() unused
+- lib/memweight.c (13 LOC) - memweight() unused
+- lib/win_minmax.c (12 LOC) - minmax_running_max() unused
+- lib/memcat_p.c (12 LOC) - __memcat_p() unused
+- lib/plist.c (15 LOC) - plist functions unused
+- Build: PASSING ✓
+- Output: "Hello, World!" ✓
+- Reduction: ~38 LOC net (from 167,560 to 167,522)
+- Total session reduction: 63 LOC (167,585 → 167,522)
+
 --- 2025-11-13 07:17 ---
 SESSION END: Attempted syscall stubbing, no progress
 

@@ -3,7 +3,7 @@ NEW SESSION: Systematic reduction targeting 200K LOC goal
 
 Current status at session start (19:15):
 - Commit: fb8d546 (Document session end: Investigation completed, no LOC reduction achieved)
-- LOC: 287,431 total
+- LOC: 287,431 total (cloc on whole repo), 285,641 in minified/ (160,068 C + 112,915 Headers)
 - Goal: 200,000 LOC
 - Gap: 87,431 LOC (30.4% reduction needed)
 - Build: PASSES, make vm: PASSES, Hello World: PRINTS
@@ -15,6 +15,26 @@ Based on extensive previous analysis, will focus on:
 2. Looking for dead code blocks (#if 0, unused functions)
 3. Attempting very careful reduction of large files
 4. Exploring opportunities in the VT/TTY subsystem (instructions say "too sophisticated")
+
+Progress (19:20-19:30):
+- Confirmed LOC: 285,641 in minified/ directory (160,068 C + 112,915 Headers)
+- Verified: 97 text functions in final binary (very minimal)
+- Committed baseline: 6c71612
+- Investigated reduction opportunities:
+  * No #if 0 blocks found (cleaned in previous sessions)
+  * 10 EXPORT_SYMBOL mentions (mostly comments/scripts, no actual macros to remove)
+  * 77 pr_debug statements (6 in mm/page_alloc.c, safe standalone lines)
+  * 427 total print statements (pr_debug/pr_info/pr_warn/pr_err)
+  * 69 show_/debug_/check functions (validated, not test code - actually used)
+  * 28 module_param/core_param definitions (minimal, 1 line each)
+  * security.h: 1567 LOC with 235 inline stubs (risky to reduce per FIXUP history)
+  * Only 1 header found unused: compiler-version.h (essentially empty, may be build-required)
+  * events/stubs.c: Already well-stubbed at 103 LOC
+  * VT subsystem: 159 static functions in vt.c (3914 LOC) - very complex for just "Hello World"
+
+Key finding from analysis:
+Most obvious reduction targets already addressed in previous 20+ sessions. Will attempt targeted
+removals that accumulate: pr_debug statements in MM subsystem appear safe for removal.
 
 --- 2025-11-13 19:13 ---
 SESSION END: Investigation session with no LOC reduction

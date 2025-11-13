@@ -3805,9 +3805,6 @@ static __meminit void zone_pcp_init(struct zone *zone)
 	zone->pageset_high = BOOT_PAGESET_HIGH;
 	zone->pageset_batch = BOOT_PAGESET_BATCH;
 
-	if (populated_zone(zone))
-		pr_debug("  %s zone: %lu pages, LIFO batch:%u\n", zone->name,
-			 zone->present_pages, zone_batchsize(zone));
 }
 
 void __meminit init_currently_empty_zone(struct zone *zone,
@@ -4031,7 +4028,6 @@ static void __init calculate_node_totalpages(struct pglist_data *pgdat,
 
 	pgdat->node_spanned_pages = totalpages;
 	pgdat->node_present_pages = realtotalpages;
-	pr_debug("On node %d totalpages: %lu\n", pgdat->node_id, realtotalpages);
 }
 
 static unsigned long __init usemap_size(unsigned long zone_start_pfn, unsigned long zonesize)
@@ -4134,9 +4130,6 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 		if (!is_highmem_idx(j)) {
 			if (freesize >= memmap_pages) {
 				freesize -= memmap_pages;
-				if (memmap_pages)
-					pr_debug("  %s zone: %lu pages used for memmap\n",
-						 zone_names[j], memmap_pages);
 			} else
 				pr_warn("  %s zone: %lu memmap pages exceeds freesize %lu\n",
 					zone_names[j], memmap_pages, freesize);
@@ -4145,7 +4138,6 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 		
 		if (j == 0 && freesize > dma_reserve) {
 			freesize -= dma_reserve;
-			pr_debug("  %s zone: %lu pages reserved\n", zone_names[0], dma_reserve);
 		}
 
 		if (!is_highmem_idx(j))
@@ -4194,9 +4186,6 @@ static void __init alloc_node_mem_map(struct pglist_data *pgdat)
 			      size, pgdat->node_id);
 		pgdat->node_mem_map = map + offset;
 	}
-	pr_debug("%s: node %d, pgdat %08lx, node_mem_map %08lx\n",
-				__func__, pgdat->node_id, (unsigned long)pgdat,
-				(unsigned long)pgdat->node_mem_map);
 	
 	if (pgdat == NODE_DATA(0)) {
 		mem_map = NODE_DATA(0)->node_mem_map;

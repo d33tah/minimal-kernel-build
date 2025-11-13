@@ -1,3 +1,42 @@
+--- 2025-11-13 18:56 ---
+NEW SESSION: Continue systematic reduction targeting 200K LOC goal
+
+Current status at session start (18:56):
+- Commit: 75a56d8 (Document session end: Investigation completed, no LOC reduction achieved)
+- LOC: 287,266 total (160,070 C + 112,976 Headers + 4,220 other)
+- Goal: 200,000 LOC
+- Gap: 87,266 LOC (30.4% reduction needed)
+- Build: PASSES, make vm: PASSES, Hello World: PRINTS
+- Binary size: 413KB (within 400KB goal)
+
+Note: LOC increased from previous 265,357 to 287,266 (+21,909 LOC). This appears to be due to:
+- Markdown documentation files (FIXUP.md now ~1,200 lines, DIARY.md ~65 lines)
+- cloc counting different file types (DOS Batch: 1,324, Text: 1,163, etc.)
+- Previous measurements may have used different cloc parameters
+
+Current measurement breakdown (cloc):
+- C code: 160,070 LOC (55.7%)
+- Headers: 112,976 LOC (39.3%)
+- Other: 14,220 LOC (5.0% - make, Assembly, scripts, etc.)
+
+Strategy for this session:
+Based on extensive analysis from previous sessions, the key findings are:
+1. Headers remain 39.3% of codebase (112,976 LOC) - largest opportunity but high risk
+2. VT/TTY code specifically mentioned in instructions as "too sophisticated"
+3. Previous sessions successfully removed duplicate includes, EXPORT_SYMBOL macros, unused headers
+4. Most low-hanging fruit removed in 20+ previous sessions
+5. Remaining reduction requires either:
+   - Careful VT/TTY simplification (vt.c 3914 LOC)
+   - Incremental header content reduction
+   - Stubbing specific subsystems
+   - Finding entire .c files that can be heavily reduced
+
+Will focus on:
+1. Looking for more duplicate includes and dead code (#if 0 blocks)
+2. Searching for unused functions/variables via compiler warnings
+3. Attempting careful VT/TTY code analysis
+4. Finding specific headers or C files that can be safely reduced
+
 --- 2025-11-13 18:50 ---
 SESSION END: Investigation session with no LOC reduction
 

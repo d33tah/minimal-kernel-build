@@ -11,7 +11,8 @@
 #include <linux/fs.h>
 #include <linux/security.h>
 #include <linux/kexec.h>
-#include <crypto/hash_info.h>
+// #include <crypto/hash_info.h>
+#include <uapi/linux/hash_info.h>
 struct linux_binprm;
 
 static inline enum hash_algo ima_get_current_hash_algo(void)

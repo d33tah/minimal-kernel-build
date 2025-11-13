@@ -524,17 +524,11 @@ void __init initmem_init(void)
 	max_mapnr = IS_ENABLED(CONFIG_HIGHMEM) ? highend_pfn : max_low_pfn;
 	__vmalloc_start_set = true;
 
-	printk(KERN_NOTICE "%ldMB LOWMEM available.\n",
-			pages_to_mb(max_low_pfn));
-
 	setup_bootmem_allocator();
 }
 
 void __init setup_bootmem_allocator(void)
 {
-	printk(KERN_INFO "  mapped low ram: 0 - %08lx\n",
-		 max_pfn_mapped<<PAGE_SHIFT);
-	printk(KERN_INFO "  low ram: 0 - %08lx\n", max_low_pfn<<PAGE_SHIFT);
 }
 
 /*

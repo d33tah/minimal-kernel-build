@@ -1,3 +1,57 @@
+--- 2025-11-13 09:18 ---
+ACPI HEADER REMOVAL - SUCCESS
+
+Starting status: 162,012 LOC (158,386 C + 3,626 make)
+Headers: 1,209 files, 116,039 LOC
+Total: 285,400 LOC
+
+Successfully removed include/acpi/ directory (7 header files, 1,490 LOC).
+ACPI was already disabled (acpi_disabled = 1), so headers were dead code.
+
+Changes made:
+1. Commented out #include <acpi/acpi.h> from include/linux/acpi.h
+2. Added minimal type definitions to include/linux/acpi.h:
+   - typedef void *acpi_handle
+   - typedef u32 acpi_status
+   - typedef u32 acpi_object_type
+   - union acpi_object (forward declaration)
+3. Added typedef u64 acpi_physical_address to arch/x86/boot/compressed/misc.h
+
+Result:
+- Headers: 1,209 -> 1,202 (7 files removed)
+- Header LOC: 116,039 -> 114,549 (1,490 LOC removed)
+- Total LOC: 285,400 -> 283,910 (1,490 reduction)
+- C+Make LOC: 162,012 (unchanged - headers counted separately)
+- Build: PASSING ✓
+- VM: "Hello, World!" ✓
+- Kernel: 415KB (unchanged)
+
+Committed as e57db42 and pushed.
+
+Investigation for more header reductions:
+- Crypto headers: 8 files, 1,948 LOC
+  - All lib/crypto/*.c files already removed
+  - include/crypto/ still present but only used by include/linux/ima.h
+  - Removing would require stubbing hash_algo enum and related types
+  - Complex dependency chain, defer for now
+
+- Other header directories checked:
+  - include/net: 2 files, 144 LOC (likely needed)
+  - include/video: 2 files, 467 LOC (VGA needed for console)
+  - include/clocksource: 1 file, 41 LOC (hyperv timer)
+
+Session summary:
+- Successfully removed ACPI headers (1,490 LOC reduction)
+- Investigated crypto, net, video headers - more complex to remove
+- Current progress: From 285,400 LOC -> 283,910 LOC
+- C+Make LOC: 162,012 (headers counted separately in cloc)
+- Build: PASSING ✓, VM: "Hello, World!" ✓, Kernel: 415KB
+
+Next session opportunities:
+- Continue header reduction (still have 1,202 headers vs target ~246)
+- Look for large files with internal stubbing opportunities
+- Examine medium-sized files for removal candidates
+
 --- 2025-11-13 09:05 ---
 SESSION START: Continuing reduction campaign
 

@@ -27,7 +27,16 @@ LOC: 297,153 -> 296,761 (392 LOC reduction)
 
 Cumulative: 500 LOC reduced. Need 96,761 more (32.5% of current codebase).
 
-Continuing to find more reducible files...
+Analysis: Incremental header reductions are too slow. At 500 LOC per 2 attempts,
+would need 193 more iterations. Need to find subsystems/files for bulk reduction.
+
+Candidates identified for future attempts:
+- Large headers: xarray.h (1839), pci.h (1636), security.h (1567), perf_event.h (1490)
+- Large C files: page_alloc.c (5226), memory.c (4085), vt.c (3945), namei.c (3897)
+- Subsystems: drivers/base (12.8K), drivers/tty (15.6K), mm (38K), kernel (54K)
+
+Next strategy: Look for entire files or subsystems that can be heavily stubbed,
+not just individual headers. Focus on non-critical functionality.
 
 --- 2025-11-13 10:33 (continued) ---
 SESSION START - Aggressive reduction phase

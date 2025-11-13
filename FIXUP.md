@@ -16,19 +16,20 @@ Strategy for this session:
 Looking for incremental wins - headers, unused code, stubbing opportunities.
 
 Progress:
-1. Removed include/acpi directory (2,708 LOC in headers, not counted by cloc)
-   - No C files include acpi/ headers
-   - ACPI not enabled in config
-   - Build passes, VM works
-   - Committed and pushed (1cff06d)
+1. FAILED: Attempted to remove include/acpi directory
+   - Initially seemed safe (no direct C file includes of acpi/)
+   - Build BROKE: arch/x86/boot/compressed/misc.c needs it via include/linux/acpi.h
+   - HAD TO REVERT (commit cb7b618)
+   - Lesson: Must check indirect includes through common headers
 
-2. Removed include/dt-bindings and include/kunit
+2. Successfully removed include/dt-bindings and include/kunit
    - Device tree bindings and kernel unit testing not used
    - Build passes
 
-Total LOC still 167,585 (headers not counted by cloc).
+Total LOC still 167,585 (headers not counted by cloc anyway).
 
-Next investigation: Looking at large lib/ files like vsprintf.c (2,804 LOC)
+Next: Looking for other safe reduction opportunities - maybe unused C files,
+or sections within large files that can be stubbed further
 
 --- 2025-11-13 05:54 ---
 SESSION START: Focusing on subsystem-level reductions

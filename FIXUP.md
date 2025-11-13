@@ -47,7 +47,16 @@ SUCCESS: Removed 5 more unused files (69 LOC total):
 - Build: PASSING ✓
 - Output: "Hello, World!" ✓
 - Reduction: ~54 LOC net (from 167,522 to 167,468)
-- Total session reduction: 117 LOC (167,585 → 167,468)
+
+SUCCESS: Removed 4 more stubbed lib files (80 LOC total):
+- lib/once.c (19 LOC) - __do_once_start/__do_once_done unused
+- lib/bucket_locks.c (20 LOC) - bucket spinlock functions unused
+- lib/seq_buf.c (20 LOC) - seq_buf functions unused
+- lib/sha1.c (20 LOC) - sha1 crypto functions unused
+- Build: PASSING ✓
+- Output: "Hello, World!" ✓
+- Reduction: ~58 LOC net (from 167,468 to 167,410)
+- Total session reduction: 175 LOC (167,585 → 167,410)
 
 --- 2025-11-13 07:17 ---
 SESSION END: Attempted syscall stubbing, no progress

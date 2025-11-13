@@ -2471,8 +2471,6 @@ int device_add(struct device *dev)
 		goto name_error;
 	}
 
-	pr_debug("device: '%s': %s\n", dev_name(dev), __func__);
-
 	parent = get_device(dev->parent);
 	kobj = get_device_parent(dev, parent);
 	if (IS_ERR(kobj)) {
@@ -2686,7 +2684,6 @@ void device_del(struct device *dev)
 
 void device_unregister(struct device *dev)
 {
-	pr_debug("device: '%s': %s\n", dev_name(dev), __func__);
 	device_del(dev);
 	put_device(dev);
 }
@@ -2956,7 +2953,6 @@ void root_device_unregister(struct device *dev)
 
 static void device_create_release(struct device *dev)
 {
-	pr_debug("device: '%s': %s\n", dev_name(dev), __func__);
 	kfree(dev);
 }
 

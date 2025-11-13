@@ -691,7 +691,6 @@ int driver_probe_done(void)
 {
 	int local_probe_count = atomic_read(&probe_count);
 
-	pr_debug("%s: probe_count = %d\n", __func__, local_probe_count);
 	if (local_probe_count)
 		return -EBUSY;
 	return 0;

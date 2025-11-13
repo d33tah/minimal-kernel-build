@@ -412,7 +412,6 @@ void __rb_erase_color(struct rb_node *parent, struct rb_root *root,
 {
 	____rb_erase_color(parent, root, augment_rotate);
 }
-EXPORT_SYMBOL(__rb_erase_color);
 
 /*
  * Non-augmented rbtree manipulation functions.
@@ -435,7 +434,6 @@ void rb_insert_color(struct rb_node *node, struct rb_root *root)
 {
 	__rb_insert(node, root, dummy_rotate);
 }
-EXPORT_SYMBOL(rb_insert_color);
 
 void rb_erase(struct rb_node *node, struct rb_root *root)
 {
@@ -444,7 +442,6 @@ void rb_erase(struct rb_node *node, struct rb_root *root)
 	if (rebalance)
 		____rb_erase_color(rebalance, root, dummy_rotate);
 }
-EXPORT_SYMBOL(rb_erase);
 
 /*
  * Augmented rbtree manipulation functions.
@@ -458,7 +455,6 @@ void __rb_insert_augmented(struct rb_node *node, struct rb_root *root,
 {
 	__rb_insert(node, root, augment_rotate);
 }
-EXPORT_SYMBOL(__rb_insert_augmented);
 
 /*
  * This function returns the first node (in sort order) of the tree.
@@ -474,7 +470,6 @@ struct rb_node *rb_first(const struct rb_root *root)
 		n = n->rb_left;
 	return n;
 }
-EXPORT_SYMBOL(rb_first);
 
 struct rb_node *rb_last(const struct rb_root *root)
 {
@@ -487,7 +482,6 @@ struct rb_node *rb_last(const struct rb_root *root)
 		n = n->rb_right;
 	return n;
 }
-EXPORT_SYMBOL(rb_last);
 
 struct rb_node *rb_next(const struct rb_node *node)
 {
@@ -519,7 +513,6 @@ struct rb_node *rb_next(const struct rb_node *node)
 
 	return parent;
 }
-EXPORT_SYMBOL(rb_next);
 
 struct rb_node *rb_prev(const struct rb_node *node)
 {
@@ -548,7 +541,6 @@ struct rb_node *rb_prev(const struct rb_node *node)
 
 	return parent;
 }
-EXPORT_SYMBOL(rb_prev);
 
 void rb_replace_node(struct rb_node *victim, struct rb_node *new,
 		     struct rb_root *root)
@@ -565,7 +557,6 @@ void rb_replace_node(struct rb_node *victim, struct rb_node *new,
 		rb_set_parent(victim->rb_right, new);
 	__rb_change_child(victim, new, parent, root);
 }
-EXPORT_SYMBOL(rb_replace_node);
 
 void rb_replace_node_rcu(struct rb_node *victim, struct rb_node *new,
 			 struct rb_root *root)
@@ -587,7 +578,6 @@ void rb_replace_node_rcu(struct rb_node *victim, struct rb_node *new,
 	 */
 	__rb_change_child_rcu(victim, new, parent, root);
 }
-EXPORT_SYMBOL(rb_replace_node_rcu);
 
 static struct rb_node *rb_left_deepest_node(const struct rb_node *node)
 {
@@ -618,7 +608,6 @@ struct rb_node *rb_next_postorder(const struct rb_node *node)
 		 * should be next */
 		return (struct rb_node *)parent;
 }
-EXPORT_SYMBOL(rb_next_postorder);
 
 struct rb_node *rb_first_postorder(const struct rb_root *root)
 {
@@ -627,4 +616,3 @@ struct rb_node *rb_first_postorder(const struct rb_root *root)
 
 	return rb_left_deepest_node(root->rb_node);
 }
-EXPORT_SYMBOL(rb_first_postorder);

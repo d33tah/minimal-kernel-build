@@ -23,7 +23,6 @@ int __percpu_init_rwsem(struct percpu_rw_semaphore *sem,
 	atomic_set(&sem->block, 0);
 	return 0;
 }
-EXPORT_SYMBOL_GPL(__percpu_init_rwsem);
 
 void percpu_free_rwsem(struct percpu_rw_semaphore *sem)
 {
@@ -38,7 +37,6 @@ void percpu_free_rwsem(struct percpu_rw_semaphore *sem)
 	free_percpu(sem->read_count);
 	sem->read_count = NULL; /* catch use after free bugs */
 }
-EXPORT_SYMBOL_GPL(percpu_free_rwsem);
 
 static bool __percpu_down_read_trylock(struct percpu_rw_semaphore *sem)
 {
@@ -175,7 +173,6 @@ bool __sched __percpu_down_read(struct percpu_rw_semaphore *sem, bool try)
 
 	return true;
 }
-EXPORT_SYMBOL_GPL(__percpu_down_read);
 
 #define per_cpu_sum(var)						\
 ({									\
@@ -238,7 +235,6 @@ void __sched percpu_down_write(struct percpu_rw_semaphore *sem)
 	rcuwait_wait_event(&sem->writer, readers_active_check(sem), TASK_UNINTERRUPTIBLE);
 	/* trace_contention_end(sem, 0); */
 }
-EXPORT_SYMBOL_GPL(percpu_down_write);
 
 void percpu_up_write(struct percpu_rw_semaphore *sem)
 {
@@ -268,4 +264,3 @@ void percpu_up_write(struct percpu_rw_semaphore *sem)
 	 */
 	rcu_sync_exit(&sem->rss);
 }
-EXPORT_SYMBOL_GPL(percpu_up_write);

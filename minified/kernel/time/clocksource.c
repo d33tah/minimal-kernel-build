@@ -73,7 +73,6 @@ clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec)
 	*mult = tmp;
 	*shift = sft;
 }
-EXPORT_SYMBOL_GPL(clocks_calc_mult_shift);
 
 /*[Clocksource internal variables]---------
  * curr_clocksource:
@@ -202,7 +201,6 @@ void clocksource_mark_unstable(struct clocksource *cs)
 
 ulong max_cswd_read_retries = 2;
 module_param(max_cswd_read_retries, ulong, 0644);
-EXPORT_SYMBOL_GPL(max_cswd_read_retries);
 static int verify_n_cpus = 8;
 module_param(verify_n_cpus, int, 0644);
 
@@ -377,7 +375,6 @@ void clocksource_verify_percpu(struct clocksource *cs)
 		pr_warn("        CPU %d check durations %lldns - %lldns for clocksource %s.\n",
 			testcpu, cs_nsec_min, cs_nsec_max, cs->name);
 }
-EXPORT_SYMBOL_GPL(clocksource_verify_percpu);
 
 static void clocksource_watchdog(struct timer_list *unused)
 {
@@ -1116,7 +1113,6 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq
 	pr_info("%s: mask: 0x%llx max_cycles: 0x%llx, max_idle_ns: %lld ns\n",
 		cs->name, cs->mask, cs->max_cycles, cs->max_idle_ns);
 }
-EXPORT_SYMBOL_GPL(__clocksource_update_freq_scale);
 
 /**
  * __clocksource_register_scale - Used to install new clocksources
@@ -1161,7 +1157,6 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 	mutex_unlock(&clocksource_mutex);
 	return 0;
 }
-EXPORT_SYMBOL_GPL(__clocksource_register_scale);
 
 static void __clocksource_change_rating(struct clocksource *cs, int rating)
 {
@@ -1189,7 +1184,6 @@ void clocksource_change_rating(struct clocksource *cs, int rating)
 	clocksource_suspend_select(false);
 	mutex_unlock(&clocksource_mutex);
 }
-EXPORT_SYMBOL(clocksource_change_rating);
 
 /*
  * Unbind clocksource @cs. Called with clocksource_mutex held
@@ -1243,7 +1237,6 @@ int clocksource_unregister(struct clocksource *cs)
 	mutex_unlock(&clocksource_mutex);
 	return ret;
 }
-EXPORT_SYMBOL(clocksource_unregister);
 
 
 /**

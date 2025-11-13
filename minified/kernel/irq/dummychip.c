@@ -61,4 +61,3 @@ struct irq_chip dummy_irq_chip = {
 	.irq_unmask	= noop,
 	.flags		= IRQCHIP_SKIP_SET_WAKE,
 };
-EXPORT_SYMBOL_GPL(dummy_irq_chip);

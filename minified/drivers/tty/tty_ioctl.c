@@ -60,7 +60,6 @@ unsigned int tty_chars_in_buffer(struct tty_struct *tty)
 		return tty->ops->chars_in_buffer(tty);
 	return 0;
 }
-EXPORT_SYMBOL(tty_chars_in_buffer);
 
 /**
  *	tty_write_room		-	write queue space
@@ -79,7 +78,6 @@ unsigned int tty_write_room(struct tty_struct *tty)
 		return tty->ops->write_room(tty);
 	return 2048;
 }
-EXPORT_SYMBOL(tty_write_room);
 
 /**
  *	tty_driver_flush_buffer	-	discard internal buffer
@@ -94,7 +92,6 @@ void tty_driver_flush_buffer(struct tty_struct *tty)
 	if (tty->ops->flush_buffer)
 		tty->ops->flush_buffer(tty);
 }
-EXPORT_SYMBOL(tty_driver_flush_buffer);
 
 /**
  *	tty_unthrottle		-	flow control
@@ -118,7 +115,6 @@ void tty_unthrottle(struct tty_struct *tty)
 	tty->flow_change = 0;
 	up_write(&tty->termios_rwsem);
 }
-EXPORT_SYMBOL(tty_unthrottle);
 
 /**
  *	tty_throttle_safe	-	flow control
@@ -212,7 +208,6 @@ void tty_wait_until_sent(struct tty_struct *tty, long timeout)
 	if (tty->ops->wait_until_sent)
 		tty->ops->wait_until_sent(tty, timeout);
 }
-EXPORT_SYMBOL(tty_wait_until_sent);
 
 
 /*
@@ -258,7 +253,6 @@ void tty_termios_copy_hw(struct ktermios *new, struct ktermios *old)
 	new->c_ispeed = old->c_ispeed;
 	new->c_ospeed = old->c_ospeed;
 }
-EXPORT_SYMBOL(tty_termios_copy_hw);
 
 /**
  *	tty_termios_hw_change	-	check for setting change
@@ -277,7 +271,6 @@ int tty_termios_hw_change(const struct ktermios *a, const struct ktermios *b)
 		return 1;
 	return 0;
 }
-EXPORT_SYMBOL(tty_termios_hw_change);
 
 /**
  *	tty_get_char_size	-	get size of a character
@@ -300,7 +293,6 @@ unsigned char tty_get_char_size(unsigned int cflag)
 		return 8;
 	}
 }
-EXPORT_SYMBOL_GPL(tty_get_char_size);
 
 /**
  *	tty_get_frame_size	-	get size of a frame
@@ -322,7 +314,6 @@ unsigned char tty_get_frame_size(unsigned int cflag)
 
 	return bits;
 }
-EXPORT_SYMBOL_GPL(tty_get_frame_size);
 
 /**
  *	tty_set_termios		-	update termios values
@@ -368,7 +359,6 @@ int tty_set_termios(struct tty_struct *tty, struct ktermios *new_termios)
 	up_write(&tty->termios_rwsem);
 	return 0;
 }
-EXPORT_SYMBOL_GPL(tty_set_termios);
 
 /**
  *	set_termios		-	set termios values for a tty
@@ -807,7 +797,6 @@ int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 		return -ENOIOCTLCMD;
 	}
 }
-EXPORT_SYMBOL_GPL(tty_mode_ioctl);
 
 
 /* Caller guarantees ldisc reference is held */
@@ -850,7 +839,6 @@ int tty_perform_flush(struct tty_struct *tty, unsigned long arg)
 		tty_ldisc_deref(ld);
 	return retval;
 }
-EXPORT_SYMBOL_GPL(tty_perform_flush);
 
 int n_tty_ioctl_helper(struct tty_struct *tty, unsigned int cmd,
 		unsigned long arg)
@@ -901,4 +889,3 @@ int n_tty_ioctl_helper(struct tty_struct *tty, unsigned int cmd,
 		return tty_mode_ioctl(tty, cmd, arg);
 	}
 }
-EXPORT_SYMBOL(n_tty_ioctl_helper);

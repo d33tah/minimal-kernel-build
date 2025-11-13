@@ -146,7 +146,6 @@ struct file *anon_inode_getfile(const char *name,
 {
 	return __anon_inode_getfile(name, fops, priv, flags, NULL, false);
 }
-EXPORT_SYMBOL_GPL(anon_inode_getfile);
 
 /**
  * anon_inode_getfile_secure - Like anon_inode_getfile(), but creates a new
@@ -228,7 +227,6 @@ int anon_inode_getfd(const char *name, const struct file_operations *fops,
 {
 	return __anon_inode_getfd(name, fops, priv, flags, NULL, false);
 }
-EXPORT_SYMBOL_GPL(anon_inode_getfd);
 
 /**
  * anon_inode_getfd_secure - Like anon_inode_getfd(), but creates a new
@@ -252,7 +250,6 @@ int anon_inode_getfd_secure(const char *name, const struct file_operations *fops
 {
 	return __anon_inode_getfd(name, fops, priv, flags, context_inode, true);
 }
-EXPORT_SYMBOL_GPL(anon_inode_getfd_secure);
 
 static int __init anon_inode_init(void)
 {

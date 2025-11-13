@@ -14,7 +14,6 @@ void refcount_warn_saturate(refcount_t *r, enum refcount_saturation_type t)
 {
 	/* Stubbed for minimal kernel */
 }
-EXPORT_SYMBOL(refcount_warn_saturate);
 
 /**
  * refcount_dec_if_one - decrement a refcount if it is 1
@@ -38,7 +37,6 @@ bool refcount_dec_if_one(refcount_t *r)
 
 	return atomic_try_cmpxchg_release(&r->refs, &val, 0);
 }
-EXPORT_SYMBOL(refcount_dec_if_one);
 
 /**
  * refcount_dec_not_one - decrement a refcount if it is not 1
@@ -72,7 +70,6 @@ bool refcount_dec_not_one(refcount_t *r)
 
 	return true;
 }
-EXPORT_SYMBOL(refcount_dec_not_one);
 
 /**
  * refcount_dec_and_mutex_lock - return holding mutex if able to decrement
@@ -103,7 +100,6 @@ bool refcount_dec_and_mutex_lock(refcount_t *r, struct mutex *lock)
 
 	return true;
 }
-EXPORT_SYMBOL(refcount_dec_and_mutex_lock);
 
 /**
  * refcount_dec_and_lock - return holding spinlock if able to decrement
@@ -134,7 +130,6 @@ bool refcount_dec_and_lock(refcount_t *r, spinlock_t *lock)
 
 	return true;
 }
-EXPORT_SYMBOL(refcount_dec_and_lock);
 
 /**
  * refcount_dec_and_lock_irqsave - return holding spinlock with disabled
@@ -163,4 +158,3 @@ bool refcount_dec_and_lock_irqsave(refcount_t *r, spinlock_t *lock,
 
 	return true;
 }
-EXPORT_SYMBOL(refcount_dec_and_lock_irqsave);

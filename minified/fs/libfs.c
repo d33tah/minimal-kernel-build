@@ -36,7 +36,6 @@ int simple_getattr(struct user_namespace *mnt_userns, const struct path *path,
 	stat->blocks = inode->i_mapping->nrpages << (PAGE_SHIFT - 9);
 	return 0;
 }
-EXPORT_SYMBOL(simple_getattr);
 
 int simple_statfs(struct dentry *dentry, struct kstatfs *buf)
 {
@@ -45,7 +44,6 @@ int simple_statfs(struct dentry *dentry, struct kstatfs *buf)
 	buf->f_namelen = NAME_MAX;
 	return 0;
 }
-EXPORT_SYMBOL(simple_statfs);
 
 /*
  * Retaining negative dentries for an in-memory filesystem just wastes
@@ -55,12 +53,10 @@ int always_delete_dentry(const struct dentry *dentry)
 {
 	return 1;
 }
-EXPORT_SYMBOL(always_delete_dentry);
 
 const struct dentry_operations simple_dentry_operations = {
 	.d_delete = always_delete_dentry,
 };
-EXPORT_SYMBOL(simple_dentry_operations);
 
 /*
  * Lookup the data. This is trivial - if the dentry didn't already
@@ -75,7 +71,6 @@ struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry, unsigned 
 	d_add(dentry, NULL);
 	return NULL;
 }
-EXPORT_SYMBOL(simple_lookup);
 
 int dcache_dir_open(struct inode *inode, struct file *file)
 {
@@ -83,14 +78,12 @@ int dcache_dir_open(struct inode *inode, struct file *file)
 
 	return file->private_data ? 0 : -ENOMEM;
 }
-EXPORT_SYMBOL(dcache_dir_open);
 
 int dcache_dir_close(struct inode *inode, struct file *file)
 {
 	dput(file->private_data);
 	return 0;
 }
-EXPORT_SYMBOL(dcache_dir_close);
 
 /* parent is locked at least shared */
 /*
@@ -171,7 +164,6 @@ loff_t dcache_dir_lseek(struct file *file, loff_t offset, int whence)
 	}
 	return offset;
 }
-EXPORT_SYMBOL(dcache_dir_lseek);
 
 /* Relationship between i_mode and the DT_xxx types */
 static inline unsigned char dt_type(struct inode *inode)
@@ -220,13 +212,11 @@ int dcache_readdir(struct file *file, struct dir_context *ctx)
 
 	return 0;
 }
-EXPORT_SYMBOL(dcache_readdir);
 
 ssize_t generic_read_dir(struct file *filp, char __user *buf, size_t siz, loff_t *ppos)
 {
 	return -EISDIR;
 }
-EXPORT_SYMBOL(generic_read_dir);
 
 const struct file_operations simple_dir_operations = {
 	.open		= dcache_dir_open,
@@ -236,12 +226,10 @@ const struct file_operations simple_dir_operations = {
 	.iterate_shared	= dcache_readdir,
 	.fsync		= noop_fsync,
 };
-EXPORT_SYMBOL(simple_dir_operations);
 
 const struct inode_operations simple_dir_inode_operations = {
 	.lookup		= simple_lookup,
 };
-EXPORT_SYMBOL(simple_dir_inode_operations);
 
 static struct dentry *find_next_child(struct dentry *parent, struct dentry *prev)
 {
@@ -310,7 +298,6 @@ void simple_recursive_removal(struct dentry *dentry,
 		this = child;
 	}
 }
-EXPORT_SYMBOL(simple_recursive_removal);
 
 static const struct super_operations simple_super_operations = {
 	.statfs		= simple_statfs,
@@ -381,7 +368,6 @@ struct pseudo_fs_context *init_pseudo(struct fs_context *fc,
 	}
 	return ctx;
 }
-EXPORT_SYMBOL(init_pseudo);
 
 int simple_open(struct inode *inode, struct file *file)
 {
@@ -389,7 +375,6 @@ int simple_open(struct inode *inode, struct file *file)
 		file->private_data = inode->i_private;
 	return 0;
 }
-EXPORT_SYMBOL(simple_open);
 
 int simple_link(struct dentry *old_dentry, struct inode *dir, struct dentry *dentry)
 {
@@ -402,7 +387,6 @@ int simple_link(struct dentry *old_dentry, struct inode *dir, struct dentry *den
 	d_instantiate(dentry, inode);
 	return 0;
 }
-EXPORT_SYMBOL(simple_link);
 
 int simple_empty(struct dentry *dentry)
 {
@@ -423,7 +407,6 @@ out:
 	spin_unlock(&dentry->d_lock);
 	return ret;
 }
-EXPORT_SYMBOL(simple_empty);
 
 int simple_unlink(struct inode *dir, struct dentry *dentry)
 {
@@ -434,7 +417,6 @@ int simple_unlink(struct inode *dir, struct dentry *dentry)
 	dput(dentry);
 	return 0;
 }
-EXPORT_SYMBOL(simple_unlink);
 
 int simple_rmdir(struct inode *dir, struct dentry *dentry)
 {
@@ -446,7 +428,6 @@ int simple_rmdir(struct inode *dir, struct dentry *dentry)
 	drop_nlink(dir);
 	return 0;
 }
-EXPORT_SYMBOL(simple_rmdir);
 
 int simple_rename_exchange(struct inode *old_dir, struct dentry *old_dentry,
 			   struct inode *new_dir, struct dentry *new_dentry)
@@ -470,7 +451,6 @@ int simple_rename_exchange(struct inode *old_dir, struct dentry *old_dentry,
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(simple_rename_exchange);
 
 int simple_rename(struct user_namespace *mnt_userns, struct inode *old_dir,
 		  struct dentry *old_dentry, struct inode *new_dir,
@@ -504,7 +484,6 @@ int simple_rename(struct user_namespace *mnt_userns, struct inode *old_dir,
 
 	return 0;
 }
-EXPORT_SYMBOL(simple_rename);
 
 /**
  * simple_setattr - setattr for simple filesystem
@@ -537,7 +516,6 @@ int simple_setattr(struct user_namespace *mnt_userns, struct dentry *dentry,
 	mark_inode_dirty(inode);
 	return 0;
 }
-EXPORT_SYMBOL(simple_setattr);
 
 static int simple_read_folio(struct file *file, struct folio *folio)
 {
@@ -570,7 +548,6 @@ int simple_write_begin(struct file *file, struct address_space *mapping,
 	}
 	return 0;
 }
-EXPORT_SYMBOL(simple_write_begin);
 
 /**
  * simple_write_end - .write_end helper for non-block-device FSes
@@ -633,7 +610,6 @@ const struct address_space_operations ram_aops = {
 	.write_end	= simple_write_end,
 	.dirty_folio	= noop_dirty_folio,
 };
-EXPORT_SYMBOL(ram_aops);
 
 /*
  * the inodes created here are not hashed. If you use iunique to generate
@@ -702,7 +678,6 @@ out:
 	dput(root);
 	return -ENOMEM;
 }
-EXPORT_SYMBOL(simple_fill_super);
 
 static DEFINE_SPINLOCK(pin_fs_lock);
 
@@ -725,7 +700,6 @@ int simple_pin_fs(struct file_system_type *type, struct vfsmount **mount, int *c
 	mntput(mnt);
 	return 0;
 }
-EXPORT_SYMBOL(simple_pin_fs);
 
 void simple_release_fs(struct vfsmount **mount, int *count)
 {
@@ -737,7 +711,6 @@ void simple_release_fs(struct vfsmount **mount, int *count)
 	spin_unlock(&pin_fs_lock);
 	mntput(mnt);
 }
-EXPORT_SYMBOL(simple_release_fs);
 
 /**
  * simple_read_from_buffer - copy data from the buffer to user space
@@ -772,7 +745,6 @@ ssize_t simple_read_from_buffer(void __user *to, size_t count, loff_t *ppos,
 	*ppos = pos + count;
 	return count;
 }
-EXPORT_SYMBOL(simple_read_from_buffer);
 
 /**
  * simple_write_to_buffer - copy data from user space to the buffer
@@ -807,7 +779,6 @@ ssize_t simple_write_to_buffer(void *to, size_t available, loff_t *ppos,
 	*ppos = pos + count;
 	return count;
 }
-EXPORT_SYMBOL(simple_write_to_buffer);
 
 /**
  * memory_read_from_buffer - copy data from the buffer
@@ -839,7 +810,6 @@ ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
 
 	return count;
 }
-EXPORT_SYMBOL(memory_read_from_buffer);
 
 /*
  * Transaction based IO.
@@ -861,7 +831,6 @@ void simple_transaction_set(struct file *file, size_t n)
 	smp_mb();
 	ar->size = n;
 }
-EXPORT_SYMBOL(simple_transaction_set);
 
 char *simple_transaction_get(struct file *file, const char __user *buf, size_t size)
 {
@@ -893,7 +862,6 @@ char *simple_transaction_get(struct file *file, const char __user *buf, size_t s
 
 	return ar->data;
 }
-EXPORT_SYMBOL(simple_transaction_get);
 
 ssize_t simple_transaction_read(struct file *file, char __user *buf, size_t size, loff_t *pos)
 {
@@ -903,14 +871,12 @@ ssize_t simple_transaction_read(struct file *file, char __user *buf, size_t size
 		return 0;
 	return simple_read_from_buffer(buf, size, pos, ar->data, ar->size);
 }
-EXPORT_SYMBOL(simple_transaction_read);
 
 int simple_transaction_release(struct inode *inode, struct file *file)
 {
 	free_page((unsigned long)file->private_data);
 	return 0;
 }
-EXPORT_SYMBOL(simple_transaction_release);
 
 /* Simple attribute files */
 
@@ -946,14 +912,12 @@ int simple_attr_open(struct inode *inode, struct file *file,
 
 	return nonseekable_open(inode, file);
 }
-EXPORT_SYMBOL_GPL(simple_attr_open);
 
 int simple_attr_release(struct inode *inode, struct file *file)
 {
 	kfree(file->private_data);
 	return 0;
 }
-EXPORT_SYMBOL_GPL(simple_attr_release);	/* GPL-only?  This?  Really? */
 
 /* read from the buffer that is filled with the get function */
 ssize_t simple_attr_read(struct file *file, char __user *buf,
@@ -991,7 +955,6 @@ out:
 	mutex_unlock(&attr->mutex);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(simple_attr_read);
 
 /* interpret the buffer as a number to call the set function with */
 ssize_t simple_attr_write(struct file *file, const char __user *buf,
@@ -1026,7 +989,6 @@ out:
 	mutex_unlock(&attr->mutex);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(simple_attr_write);
 
 /**
  * generic_fh_to_dentry - generic helper for the fh_to_dentry export operation
@@ -1058,7 +1020,6 @@ struct dentry *generic_fh_to_dentry(struct super_block *sb, struct fid *fid,
 
 	return d_obtain_alias(inode);
 }
-EXPORT_SYMBOL_GPL(generic_fh_to_dentry);
 
 /**
  * generic_fh_to_parent - generic helper for the fh_to_parent export operation
@@ -1091,7 +1052,6 @@ struct dentry *generic_fh_to_parent(struct super_block *sb, struct fid *fid,
 
 	return d_obtain_alias(inode);
 }
-EXPORT_SYMBOL_GPL(generic_fh_to_parent);
 
 /**
  * __generic_file_fsync - generic fsync implementation for simple filesystems
@@ -1135,7 +1095,6 @@ out:
 		ret = err;
 	return ret;
 }
-EXPORT_SYMBOL(__generic_file_fsync);
 
 /**
  * generic_file_fsync - generic fsync implementation for simple filesystems
@@ -1158,7 +1117,6 @@ int generic_file_fsync(struct file *file, loff_t start, loff_t end,
 		return err;
 	return blkdev_issue_flush(inode->i_sb->s_bdev);
 }
-EXPORT_SYMBOL(generic_file_fsync);
 
 /**
  * generic_check_addressable - Check addressability of file system
@@ -1187,7 +1145,6 @@ int generic_check_addressable(unsigned blocksize_bits, u64 num_blocks)
 	}
 	return 0;
 }
-EXPORT_SYMBOL(generic_check_addressable);
 
 /*
  * No-op implementation of ->fsync for in-memory filesystems.
@@ -1196,7 +1153,6 @@ int noop_fsync(struct file *file, loff_t start, loff_t end, int datasync)
 {
 	return 0;
 }
-EXPORT_SYMBOL(noop_fsync);
 
 ssize_t noop_direct_IO(struct kiocb *iocb, struct iov_iter *iter)
 {
@@ -1208,14 +1164,12 @@ ssize_t noop_direct_IO(struct kiocb *iocb, struct iov_iter *iter)
 	 */
 	return -EINVAL;
 }
-EXPORT_SYMBOL_GPL(noop_direct_IO);
 
 /* Because kfree isn't assignment-compatible with void(void*) ;-/ */
 void kfree_link(void *p)
 {
 	kfree(p);
 }
-EXPORT_SYMBOL(kfree_link);
 
 struct inode *alloc_anon_inode(struct super_block *s)
 {
@@ -1244,7 +1198,6 @@ struct inode *alloc_anon_inode(struct super_block *s)
 	inode->i_atime = inode->i_mtime = inode->i_ctime = current_time(inode);
 	return inode;
 }
-EXPORT_SYMBOL(alloc_anon_inode);
 
 /**
  * simple_nosetlease - generic helper for prohibiting leases
@@ -1262,7 +1215,6 @@ simple_nosetlease(struct file *filp, long arg, struct file_lock **flp,
 {
 	return -EINVAL;
 }
-EXPORT_SYMBOL(simple_nosetlease);
 
 /**
  * simple_get_link - generic helper to get the target of "fast" symlinks
@@ -1283,12 +1235,10 @@ const char *simple_get_link(struct dentry *dentry, struct inode *inode,
 {
 	return inode->i_link;
 }
-EXPORT_SYMBOL(simple_get_link);
 
 const struct inode_operations simple_symlink_inode_operations = {
 	.get_link = simple_get_link,
 };
-EXPORT_SYMBOL(simple_symlink_inode_operations);
 
 /*
  * Operations for a permanently empty directory.
@@ -1492,4 +1442,3 @@ void generic_set_encrypted_ci_d_ops(struct dentry *dentry)
 	}
 #endif
 }
-EXPORT_SYMBOL(generic_set_encrypted_ci_d_ops);

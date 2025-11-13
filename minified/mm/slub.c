@@ -1295,14 +1295,12 @@ void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
 {
 	return __kmem_cache_alloc_lru(s, NULL, gfpflags);
 }
-EXPORT_SYMBOL(kmem_cache_alloc);
 
 void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru,
 			   gfp_t gfpflags)
 {
 	return __kmem_cache_alloc_lru(s, lru, gfpflags);
 }
-EXPORT_SYMBOL(kmem_cache_alloc_lru);
 
 static void __slab_free(struct kmem_cache *s, struct slab *slab,
 			void *head, void *tail, int cnt,
@@ -1453,7 +1451,6 @@ void kmem_cache_free(struct kmem_cache *s, void *x)
 	trace_kmem_cache_free(_RET_IP_, x, s->name);
 	slab_free(s, virt_to_slab(x), x, NULL, 1, _RET_IP_);
 }
-EXPORT_SYMBOL(kmem_cache_free);
 
 struct detached_freelist {
 	struct slab *slab;
@@ -1571,7 +1568,6 @@ void kmem_cache_free_bulk(struct kmem_cache *s, size_t size, void **p)
 		slab_free(df.s, df.slab, df.freelist, df.tail, df.cnt, _RET_IP_);
 	} while (likely(size));
 }
-EXPORT_SYMBOL(kmem_cache_free_bulk);
 
 int kmem_cache_alloc_bulk(struct kmem_cache *s, gfp_t flags, size_t size,
 			  void **p)
@@ -1634,7 +1630,6 @@ error:
 	__kmem_cache_free_bulk(s, i, p);
 	return 0;
 }
-EXPORT_SYMBOL(kmem_cache_alloc_bulk);
 
 static unsigned int slub_min_order;
 static unsigned int slub_max_order = PAGE_ALLOC_COSTLY_ORDER;
@@ -2015,7 +2010,6 @@ void *__kmalloc(size_t size, gfp_t flags)
 
 	return ret;
 }
-EXPORT_SYMBOL(__kmalloc);
 
 size_t __ksize(const void *object)
 {
@@ -2031,7 +2025,6 @@ size_t __ksize(const void *object)
 
 	return slab_ksize(folio_slab(folio)->slab_cache);
 }
-EXPORT_SYMBOL(__ksize);
 
 void kfree(const void *x)
 {
@@ -2052,7 +2045,6 @@ void kfree(const void *x)
 	slab = folio_slab(folio);
 	slab_free(slab->slab_cache, slab, object, NULL, 1, _RET_IP_);
 }
-EXPORT_SYMBOL(kfree);
 
 #define SHRINK_PROMOTE_MAX 32
 
@@ -2356,5 +2348,4 @@ void *__kmalloc_track_caller(size_t size, gfp_t gfpflags, unsigned long caller)
 
 	return ret;
 }
-EXPORT_SYMBOL(__kmalloc_track_caller);
 

@@ -343,7 +343,6 @@ int tick_broadcast_oneshot_control(enum tick_broadcast_state state)
 
 	return __tick_broadcast_oneshot_control(state);
 }
-EXPORT_SYMBOL_GPL(tick_broadcast_oneshot_control);
 
 
 /**

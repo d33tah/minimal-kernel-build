@@ -36,7 +36,6 @@ struct resource ioport_resource = {
 	.end	= IO_SPACE_LIMIT,
 	.flags	= IORESOURCE_IO,
 };
-EXPORT_SYMBOL(ioport_resource);
 
 struct resource iomem_resource = {
 	.name	= "PCI mem",
@@ -44,7 +43,6 @@ struct resource iomem_resource = {
 	.end	= -1,
 	.flags	= IORESOURCE_MEM,
 };
-EXPORT_SYMBOL(iomem_resource);
 
 /* constraints to be met while allocating resources */
 struct resource_constraint {
@@ -222,7 +220,6 @@ int request_resource(struct resource *root, struct resource *new)
 	return conflict ? -EBUSY : 0;
 }
 
-EXPORT_SYMBOL(request_resource);
 
 /**
  * release_resource - release a previously reserved resource
@@ -238,7 +235,6 @@ int release_resource(struct resource *old)
 	return retval;
 }
 
-EXPORT_SYMBOL(release_resource);
 
 /**
  * find_next_iomem_res - Finds the lowest iomem resource that covers part of
@@ -348,7 +344,6 @@ int walk_iomem_res_desc(unsigned long desc, unsigned long flags, u64 start,
 {
 	return __walk_iomem_res_desc(start, end, flags, desc, arg, func);
 }
-EXPORT_SYMBOL_GPL(walk_iomem_res_desc);
 
 /*
  * This function calls the @func callback against all memory ranges of type
@@ -422,7 +417,6 @@ int __weak page_is_ram(unsigned long pfn)
 {
 	return walk_system_ram_range(pfn, 1, NULL, __is_ram) == 1;
 }
-EXPORT_SYMBOL_GPL(page_is_ram);
 
 static int __region_intersects(resource_size_t start, size_t size,
 			unsigned long flags, unsigned long desc)
@@ -483,7 +477,6 @@ int region_intersects(resource_size_t start, size_t size, unsigned long flags,
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(region_intersects);
 
 void __weak arch_remove_reservations(struct resource *avail)
 {
@@ -672,7 +665,6 @@ int allocate_resource(struct resource *root, struct resource *new,
 	return err;
 }
 
-EXPORT_SYMBOL(allocate_resource);
 
 /**
  * lookup_resource - find an existing resource by a resource start address
@@ -791,7 +783,6 @@ int insert_resource(struct resource *parent, struct resource *new)
 	conflict = insert_resource_conflict(parent, new);
 	return conflict ? -EBUSY : 0;
 }
-EXPORT_SYMBOL_GPL(insert_resource);
 
 /**
  * insert_resource_expand_to_fit - Insert a resource into the resource tree
@@ -851,7 +842,6 @@ int remove_resource(struct resource *old)
 	write_unlock(&resource_lock);
 	return retval;
 }
-EXPORT_SYMBOL_GPL(remove_resource);
 
 static int __adjust_resource(struct resource *res, resource_size_t start,
 				resource_size_t size)
@@ -910,7 +900,6 @@ int adjust_resource(struct resource *res, resource_size_t start,
 	write_unlock(&resource_lock);
 	return result;
 }
-EXPORT_SYMBOL(adjust_resource);
 
 static void __init
 __reserve_region_with_split(struct resource *root, resource_size_t start,
@@ -1131,7 +1120,6 @@ struct resource *__request_region(struct resource *parent,
 
 	return res;
 }
-EXPORT_SYMBOL(__request_region);
 
 /**
  * __release_region - release a previously reserved resource region
@@ -1180,7 +1168,6 @@ void __release_region(struct resource *parent, resource_size_t start,
 		"<%016llx-%016llx>\n", (unsigned long long)start,
 		(unsigned long long)end);
 }
-EXPORT_SYMBOL(__release_region);
 
 
 
@@ -1234,7 +1221,6 @@ int devm_request_resource(struct device *dev, struct resource *root,
 	devres_add(dev, ptr);
 	return 0;
 }
-EXPORT_SYMBOL(devm_request_resource);
 
 static int devm_resource_match(struct device *dev, void *res, void *data)
 {
@@ -1255,7 +1241,6 @@ void devm_release_resource(struct device *dev, struct resource *new)
 	WARN_ON(devres_release(dev, devm_resource_release, devm_resource_match,
 			       new));
 }
-EXPORT_SYMBOL(devm_release_resource);
 
 struct region_devres {
 	struct resource *parent;
@@ -1302,7 +1287,6 @@ __devm_request_region(struct device *dev, struct resource *parent,
 
 	return res;
 }
-EXPORT_SYMBOL(__devm_request_region);
 
 void __devm_release_region(struct device *dev, struct resource *parent,
 			   resource_size_t start, resource_size_t n)
@@ -1313,7 +1297,6 @@ void __devm_release_region(struct device *dev, struct resource *parent,
 	WARN_ON(devres_destroy(dev, devm_region_release, devm_region_match,
 			       &match_data));
 }
-EXPORT_SYMBOL(__devm_release_region);
 
 /*
  * Reserve I/O ports or memory based on "reserve=" kernel parameter.
@@ -1476,7 +1459,6 @@ struct resource_entry *resource_list_create_entry(struct resource *res,
 
 	return entry;
 }
-EXPORT_SYMBOL(resource_list_create_entry);
 
 void resource_list_free(struct list_head *head)
 {
@@ -1485,7 +1467,6 @@ void resource_list_free(struct list_head *head)
 	list_for_each_entry_safe(entry, tmp, head, node)
 		resource_list_destroy_entry(entry);
 }
-EXPORT_SYMBOL(resource_list_free);
 
 
 static int __init strict_iomem(char *str)

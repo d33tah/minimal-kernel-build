@@ -17,7 +17,6 @@ unsigned long unwind_get_return_address(struct unwind_state *state)
 
 	return unwind_recover_ret_addr(state, addr, state->sp);
 }
-EXPORT_SYMBOL_GPL(unwind_get_return_address);
 
 unsigned long *unwind_get_return_address_ptr(struct unwind_state *state)
 {
@@ -46,7 +45,6 @@ bool unwind_next_frame(struct unwind_state *state)
 
 	return false;
 }
-EXPORT_SYMBOL_GPL(unwind_next_frame);
 
 void __unwind_start(struct unwind_state *state, struct task_struct *task,
 		    struct pt_regs *regs, unsigned long *first_frame)
@@ -69,4 +67,3 @@ void __unwind_start(struct unwind_state *state, struct task_struct *task,
 	    !__kernel_text_address(*first_frame)))
 		unwind_next_frame(state);
 }
-EXPORT_SYMBOL_GPL(__unwind_start);

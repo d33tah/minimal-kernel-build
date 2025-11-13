@@ -31,7 +31,6 @@ int rtc_month_days(unsigned int month, unsigned int year)
 {
 	return rtc_days_in_month[month] + (is_leap_year(year) && month == 1);
 }
-EXPORT_SYMBOL(rtc_month_days);
 
 /*
  * The number of days since January 1. (0 to 365)
@@ -40,7 +39,6 @@ int rtc_year_days(unsigned int day, unsigned int month, unsigned int year)
 {
 	return rtc_ydays[is_leap_year(year)][month] + day - 1;
 }
-EXPORT_SYMBOL(rtc_year_days);
 
 /**
  * rtc_time64_to_tm - converts time64_t to rtc_time.
@@ -139,7 +137,6 @@ void rtc_time64_to_tm(time64_t time, struct rtc_time *tm)
 
 	tm->tm_isdst = 0;
 }
-EXPORT_SYMBOL(rtc_time64_to_tm);
 
 /*
  * Does the rtc_time represent a valid date/time?
@@ -159,7 +156,6 @@ int rtc_valid_tm(struct rtc_time *tm)
 
 	return 0;
 }
-EXPORT_SYMBOL(rtc_valid_tm);
 
 /*
  * rtc_tm_to_time64 - Converts rtc_time to time64_t.
@@ -170,7 +166,6 @@ time64_t rtc_tm_to_time64(struct rtc_time *tm)
 	return mktime64(((unsigned int)tm->tm_year + 1900), tm->tm_mon + 1,
 			tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
-EXPORT_SYMBOL(rtc_tm_to_time64);
 
 /*
  * Convert rtc_time to ktime
@@ -179,7 +174,6 @@ ktime_t rtc_tm_to_ktime(struct rtc_time tm)
 {
 	return ktime_set(rtc_tm_to_time64(&tm), 0);
 }
-EXPORT_SYMBOL_GPL(rtc_tm_to_ktime);
 
 /*
  * Convert ktime to rtc_time
@@ -196,4 +190,3 @@ struct rtc_time rtc_ktime_to_tm(ktime_t kt)
 	rtc_time64_to_tm(ts.tv_sec, &ret);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(rtc_ktime_to_tm);

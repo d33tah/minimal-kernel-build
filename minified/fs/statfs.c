@@ -83,7 +83,6 @@ int vfs_get_fsid(struct dentry *dentry, __kernel_fsid_t *fsid)
 	*fsid = st.f_fsid;
 	return 0;
 }
-EXPORT_SYMBOL(vfs_get_fsid);
 
 int vfs_statfs(const struct path *path, struct kstatfs *buf)
 {
@@ -94,7 +93,6 @@ int vfs_statfs(const struct path *path, struct kstatfs *buf)
 		buf->f_flags = calculate_f_flags(path->mnt);
 	return error;
 }
-EXPORT_SYMBOL(vfs_statfs);
 
 /* Syscalls stubbed - not used by minimal init */
 

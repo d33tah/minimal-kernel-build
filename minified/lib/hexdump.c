@@ -12,9 +12,7 @@
 #include <asm/unaligned.h>
 
 const char hex_asc[] = "0123456789abcdef";
-EXPORT_SYMBOL(hex_asc);
 const char hex_asc_upper[] = "0123456789ABCDEF";
-EXPORT_SYMBOL(hex_asc_upper);
 
 /**
  * hex_to_bin - convert a hex digit to its real value
@@ -50,7 +48,6 @@ int hex_to_bin(unsigned char ch)
 		((ch - '0' +  1) & (unsigned)((ch - '9' - 1) & ('0' - 1 - ch)) >> 8) +
 		((cu - 'A' + 11) & (unsigned)((cu - 'F' - 1) & ('A' - 1 - cu)) >> 8);
 }
-EXPORT_SYMBOL(hex_to_bin);
 
 /**
  * hex2bin - convert an ascii hexadecimal string to its binary representation
@@ -76,7 +73,6 @@ int hex2bin(u8 *dst, const char *src, size_t count)
 	}
 	return 0;
 }
-EXPORT_SYMBOL(hex2bin);
 
 /**
  * bin2hex - convert binary data to an ascii hexadecimal string
@@ -92,7 +88,6 @@ char *bin2hex(char *dst, const void *src, size_t count)
 		dst = hex_byte_pack(dst, *_src++);
 	return dst;
 }
-EXPORT_SYMBOL(bin2hex);
 
 /**
  * hex_dump_to_buffer - convert a blob of data to "hex ASCII" in memory
@@ -132,5 +127,4 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
 		linebuf[0] = '\0';
 	return 0;
 }
-EXPORT_SYMBOL(hex_dump_to_buffer);
 

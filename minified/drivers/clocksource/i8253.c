@@ -18,7 +18,6 @@
  * 0061-0061 : NMI Control Register which contains two speaker control bits.
  */
 DEFINE_RAW_SPINLOCK(i8253_lock);
-EXPORT_SYMBOL(i8253_lock);
 
 /*
  * Handle PIT quirk in pit_shutdown() where zeroing the counter register

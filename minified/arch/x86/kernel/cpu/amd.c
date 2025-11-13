@@ -365,7 +365,6 @@ u32 amd_get_nodes_per_socket(void)
 {
 	return nodes_per_socket;
 }
-EXPORT_SYMBOL_GPL(amd_get_nodes_per_socket);
 
 static void srat_detect_node(struct cpuinfo_x86 *c)
 {
@@ -998,4 +997,3 @@ u32 amd_get_highest_perf(void)
 
 	return 255;
 }
-EXPORT_SYMBOL_GPL(amd_get_highest_perf);

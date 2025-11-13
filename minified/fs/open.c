@@ -117,7 +117,6 @@ mnt_drop_write_and_out:
 out:
 	return error;
 }
-EXPORT_SYMBOL_GPL(vfs_truncate);
 
 long do_sys_truncate(const char __user *pathname, loff_t length)
 {
@@ -309,7 +308,6 @@ int vfs_fallocate(struct file *file, int mode, loff_t offset, loff_t len)
 	file_end_write(file);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(vfs_fallocate);
 
 int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len)
 {
@@ -906,7 +904,6 @@ int finish_open(struct file *file, struct dentry *dentry,
 	file->f_path.dentry = dentry;
 	return do_dentry_open(file, d_backing_inode(dentry), open);
 }
-EXPORT_SYMBOL(finish_open);
 
 /**
  * finish_no_open - finish ->atomic_open() without opening the file
@@ -927,13 +924,11 @@ int finish_no_open(struct file *file, struct dentry *dentry)
 	file->f_path.dentry = dentry;
 	return 0;
 }
-EXPORT_SYMBOL(finish_no_open);
 
 char *file_path(struct file *filp, char *buf, int buflen)
 {
 	return d_path(&filp->f_path, buf, buflen);
 }
-EXPORT_SYMBOL(file_path);
 
 /**
  * vfs_open - open the file at the given path
@@ -968,7 +963,6 @@ struct file *dentry_open(const struct path *path, int flags,
 	}
 	return f;
 }
-EXPORT_SYMBOL(dentry_open);
 
 /**
  * dentry_create - Create and open a file
@@ -1010,7 +1004,6 @@ struct file *dentry_create(const struct path *path, int flags, umode_t mode,
 	}
 	return f;
 }
-EXPORT_SYMBOL(dentry_create);
 
 struct file *open_with_fake_path(const struct path *path, int flags,
 				struct inode *inode, const struct cred *cred)
@@ -1028,7 +1021,6 @@ struct file *open_with_fake_path(const struct path *path, int flags,
 	}
 	return f;
 }
-EXPORT_SYMBOL(open_with_fake_path);
 
 #define WILL_CREATE(flags)	(flags & (O_CREAT | __O_TMPFILE))
 #define O_PATH_FLAGS		(O_DIRECTORY | O_NOFOLLOW | O_PATH | O_CLOEXEC)
@@ -1211,7 +1203,6 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 	}
 	return file;
 }
-EXPORT_SYMBOL(filp_open);
 
 struct file *file_open_root(const struct path *root,
 			    const char *filename, int flags, umode_t mode)
@@ -1223,7 +1214,6 @@ struct file *file_open_root(const struct path *root,
 		return ERR_PTR(err);
 	return do_file_open_root(root, filename, &op);
 }
-EXPORT_SYMBOL(file_open_root);
 
 static long do_sys_openat2(int dfd, const char __user *filename,
 			   struct open_how *how)
@@ -1342,7 +1332,6 @@ int filp_close(struct file *filp, fl_owner_t id)
 	return retval;
 }
 
-EXPORT_SYMBOL(filp_close);
 
 /*
  * Careful here! We test whether the file pointer is NULL before
@@ -1406,7 +1395,6 @@ int generic_file_open(struct inode * inode, struct file * filp)
 	return 0;
 }
 
-EXPORT_SYMBOL(generic_file_open);
 
 /*
  * This is used by subsystems that don't want seekable
@@ -1420,7 +1408,6 @@ int nonseekable_open(struct inode *inode, struct file *filp)
 	return 0;
 }
 
-EXPORT_SYMBOL(nonseekable_open);
 
 /*
  * stream_open is used by subsystems that want stream-like file descriptors.
@@ -1439,4 +1426,3 @@ int stream_open(struct inode *inode, struct file *filp)
 	return 0;
 }
 
-EXPORT_SYMBOL(stream_open);

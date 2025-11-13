@@ -27,7 +27,6 @@ char *strcpy(char *dest, const char *src)
 		: "0" (src), "1" (dest) : "memory");
 	return dest;
 }
-EXPORT_SYMBOL(strcpy);
 #endif
 
 #ifdef __HAVE_ARCH_STRNCPY
@@ -47,7 +46,6 @@ char *strncpy(char *dest, const char *src, size_t count)
 		: "0" (src), "1" (dest), "2" (count) : "memory");
 	return dest;
 }
-EXPORT_SYMBOL(strncpy);
 #endif
 
 #ifdef __HAVE_ARCH_STRCAT
@@ -65,7 +63,6 @@ char *strcat(char *dest, const char *src)
 		: "0" (src), "1" (dest), "2" (0), "3" (0xffffffffu) : "memory");
 	return dest;
 }
-EXPORT_SYMBOL(strcat);
 #endif
 
 #ifdef __HAVE_ARCH_STRNCAT
@@ -89,7 +86,6 @@ char *strncat(char *dest, const char *src, size_t count)
 		: "memory");
 	return dest;
 }
-EXPORT_SYMBOL(strncat);
 #endif
 
 #ifdef __HAVE_ARCH_STRCMP
@@ -112,7 +108,6 @@ int strcmp(const char *cs, const char *ct)
 		: "memory");
 	return res;
 }
-EXPORT_SYMBOL(strcmp);
 #endif
 
 #ifdef __HAVE_ARCH_STRNCMP
@@ -137,7 +132,6 @@ int strncmp(const char *cs, const char *ct, size_t count)
 		: "memory");
 	return res;
 }
-EXPORT_SYMBOL(strncmp);
 #endif
 
 #ifdef __HAVE_ARCH_STRCHR
@@ -159,7 +153,6 @@ char *strchr(const char *s, int c)
 		: "memory");
 	return res;
 }
-EXPORT_SYMBOL(strchr);
 #endif
 
 #ifdef __HAVE_ARCH_STRLEN
@@ -174,7 +167,6 @@ size_t strlen(const char *s)
 		: "memory");
 	return ~res - 1;
 }
-EXPORT_SYMBOL(strlen);
 #endif
 
 #ifdef __HAVE_ARCH_MEMCHR
@@ -194,7 +186,6 @@ void *memchr(const void *cs, int c, size_t count)
 		: "memory");
 	return res;
 }
-EXPORT_SYMBOL(memchr);
 #endif
 
 #ifdef __HAVE_ARCH_MEMSCAN
@@ -211,7 +202,6 @@ void *memscan(void *addr, int c, size_t size)
 	    : "memory");
 	return addr;
 }
-EXPORT_SYMBOL(memscan);
 #endif
 
 #ifdef __HAVE_ARCH_STRNLEN
@@ -233,5 +223,4 @@ size_t strnlen(const char *s, size_t count)
 		: "memory");
 	return res;
 }
-EXPORT_SYMBOL(strnlen);
 #endif

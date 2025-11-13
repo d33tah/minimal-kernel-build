@@ -122,7 +122,6 @@ int cpu_has_xfeatures(u64 xfeatures_needed, const char **feature_name)
 
 	return 1;
 }
-EXPORT_SYMBOL_GPL(cpu_has_xfeatures);
 
 static bool xfeature_is_aligned64(int xfeature_nr)
 {
@@ -1303,7 +1302,6 @@ void fpstate_clear_xstate_component(struct fpstate *fps, unsigned int xfeature)
 	if (addr)
 		memset(addr, 0, xstate_sizes[xfeature]);
 }
-EXPORT_SYMBOL_GPL(fpstate_clear_xstate_component);
 #endif
 
 static inline int xstate_request_perm(unsigned long idx, bool guest)
@@ -1315,7 +1313,6 @@ u64 xstate_get_guest_group_perm(void)
 {
 	return xstate_get_group_perm(true);
 }
-EXPORT_SYMBOL_GPL(xstate_get_guest_group_perm);
 
 /**
  * fpu_xstate_prctl - xstate permission operations

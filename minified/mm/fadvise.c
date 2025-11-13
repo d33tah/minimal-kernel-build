@@ -44,7 +44,6 @@ int generic_fadvise(struct file *file, loff_t offset, loff_t len, int advice)
 		return -EINVAL;
 	}
 }
-EXPORT_SYMBOL(generic_fadvise);
 
 int vfs_fadvise(struct file *file, loff_t offset, loff_t len, int advice)
 {
@@ -53,5 +52,4 @@ int vfs_fadvise(struct file *file, loff_t offset, loff_t len, int advice)
 
 	return generic_fadvise(file, offset, len, advice);
 }
-EXPORT_SYMBOL(vfs_fadvise);
 

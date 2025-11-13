@@ -43,7 +43,6 @@ unsigned long profile_pc(struct pt_regs *regs)
 	}
 	return pc;
 }
-EXPORT_SYMBOL(profile_pc);
 
 /*
  * Default timer interrupt handler for PIT/HPET

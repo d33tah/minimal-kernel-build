@@ -18,7 +18,6 @@
 #include <linux/device.h>
 
 struct backing_dev_info noop_backing_dev_info;
-EXPORT_SYMBOL_GPL(noop_backing_dev_info);
 
 static struct class *bdi_class;
 static const char *bdi_unknown_name = "(unknown)";
@@ -337,7 +336,6 @@ struct backing_dev_info *bdi_alloc(int node_id)
 	timer_setup(&bdi->laptop_mode_wb_timer, laptop_mode_timer_fn, 0);
 	return bdi;
 }
-EXPORT_SYMBOL(bdi_alloc);
 
 static struct rb_node **bdi_lookup_rb_node(u64 id, struct rb_node **parentp)
 {
@@ -432,7 +430,6 @@ int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...)
 	va_end(args);
 	return ret;
 }
-EXPORT_SYMBOL(bdi_register);
 
 void bdi_set_owner(struct backing_dev_info *bdi, struct device *owner)
 {
@@ -481,7 +478,6 @@ void bdi_unregister(struct backing_dev_info *bdi)
 		bdi->owner = NULL;
 	}
 }
-EXPORT_SYMBOL(bdi_unregister);
 
 static void release_bdi(struct kref *ref)
 {
@@ -498,7 +494,6 @@ void bdi_put(struct backing_dev_info *bdi)
 {
 	kref_put(&bdi->refcnt, release_bdi);
 }
-EXPORT_SYMBOL(bdi_put);
 
 struct backing_dev_info *inode_to_bdi(struct inode *inode)
 {
@@ -510,7 +505,6 @@ struct backing_dev_info *inode_to_bdi(struct inode *inode)
 	sb = inode->i_sb;
 	return sb->s_bdi;
 }
-EXPORT_SYMBOL(inode_to_bdi);
 
 const char *bdi_dev_name(struct backing_dev_info *bdi)
 {
@@ -518,4 +512,3 @@ const char *bdi_dev_name(struct backing_dev_info *bdi)
 		return bdi_unknown_name;
 	return bdi->dev_name;
 }
-EXPORT_SYMBOL_GPL(bdi_dev_name);

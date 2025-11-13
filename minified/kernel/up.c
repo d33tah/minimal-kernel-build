@@ -23,7 +23,6 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
 
 	return 0;
 }
-EXPORT_SYMBOL(smp_call_function_single);
 
 int smp_call_function_single_async(int cpu, struct __call_single_data *csd)
 {
@@ -34,7 +33,6 @@ int smp_call_function_single_async(int cpu, struct __call_single_data *csd)
 	local_irq_restore(flags);
 	return 0;
 }
-EXPORT_SYMBOL(smp_call_function_single_async);
 
 /*
  * Preemption is disabled here to make sure the cond_func is called under the
@@ -53,7 +51,6 @@ void on_each_cpu_cond_mask(smp_cond_func_t cond_func, smp_call_func_t func,
 	}
 	preempt_enable();
 }
-EXPORT_SYMBOL(on_each_cpu_cond_mask);
 
 int smp_call_on_cpu(unsigned int cpu, int (*func)(void *), void *par, bool phys)
 {
@@ -70,4 +67,3 @@ int smp_call_on_cpu(unsigned int cpu, int (*func)(void *), void *par, bool phys)
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(smp_call_on_cpu);

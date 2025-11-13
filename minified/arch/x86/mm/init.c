@@ -63,7 +63,6 @@ unsigned long cachemode2protval(enum page_cache_mode pcm)
 		return 0;
 	return __cachemode2pte_tbl[pcm];
 }
-EXPORT_SYMBOL(cachemode2protval);
 
 static uint8_t __pte2cachemode_tbl[8] = {
 	[__pte2cm_idx( 0        | 0         | 0        )] = _PAGE_CACHE_MODE_WB,

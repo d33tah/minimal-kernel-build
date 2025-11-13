@@ -1663,7 +1663,6 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 	return error ? error : addr;
 }
 
-EXPORT_SYMBOL(get_unmapped_area);
 
 struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 {
@@ -1697,7 +1696,6 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 	return vma;
 }
 
-EXPORT_SYMBOL(find_vma);
 
 struct vm_area_struct *
 find_vma_prev(struct mm_struct *mm, unsigned long addr,
@@ -1849,7 +1847,6 @@ find_extend_vma(struct mm_struct *mm, unsigned long addr)
 	return vma;
 }
 
-EXPORT_SYMBOL_GPL(find_extend_vma);
 
 static void remove_vma_list(struct mm_struct *mm, struct vm_area_struct *vma)
 {
@@ -2089,7 +2086,6 @@ int vm_munmap(unsigned long start, size_t len)
 {
 	return __vm_munmap(start, len, false);
 }
-EXPORT_SYMBOL(vm_munmap);
 
 SYSCALL_DEFINE2(munmap, unsigned long, addr, size_t, len)
 {
@@ -2197,13 +2193,11 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 		mm_populate(addr, len);
 	return ret;
 }
-EXPORT_SYMBOL(vm_brk_flags);
 
 int vm_brk(unsigned long addr, unsigned long len)
 {
 	return vm_brk_flags(addr, len, 0);
 }
-EXPORT_SYMBOL(vm_brk);
 
 void exit_mmap(struct mm_struct *mm)
 {

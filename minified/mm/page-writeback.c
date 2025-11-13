@@ -51,13 +51,11 @@ static unsigned long vm_dirty_bytes;
 
 unsigned int dirty_writeback_interval = 5 * 100; 
 
-EXPORT_SYMBOL_GPL(dirty_writeback_interval);
 
 unsigned int dirty_expire_interval = 30 * 100; 
 
 int laptop_mode;
 
-EXPORT_SYMBOL(laptop_mode);
 
 struct wb_domain global_wb_domain;
 
@@ -293,7 +291,6 @@ void wb_writeout_inc(struct bdi_writeback *wb)
 	__wb_writeout_add(wb, 1);
 	local_irq_restore(flags);
 }
-EXPORT_SYMBOL_GPL(wb_writeout_inc);
 
 static void writeout_period(struct timer_list *t)
 {
@@ -372,7 +369,6 @@ int bdi_set_max_ratio(struct backing_dev_info *bdi, unsigned max_ratio)
 
 	return ret;
 }
-EXPORT_SYMBOL(bdi_set_max_ratio);
 
 static unsigned long dirty_freerun_ceiling(unsigned long thresh,
 					   unsigned long bg_thresh)
@@ -1112,7 +1108,6 @@ void balance_dirty_pages_ratelimited(struct address_space *mapping)
 
 	wb_put(wb);
 }
-EXPORT_SYMBOL(balance_dirty_pages_ratelimited);
 
 bool wb_over_bg_thresh(struct bdi_writeback *wb)
 {
@@ -1239,7 +1234,6 @@ void tag_pages_for_writeback(struct address_space *mapping,
 	}
 	xas_unlock_irq(&xas);
 }
-EXPORT_SYMBOL(tag_pages_for_writeback);
 
 int write_cache_pages(struct address_space *mapping,
 		      struct writeback_control *wbc, writepage_t writepage,
@@ -1347,7 +1341,6 @@ continue_unlock:
 
 	return ret;
 }
-EXPORT_SYMBOL(write_cache_pages);
 
 static int __writepage(struct page *page, struct writeback_control *wbc,
 		       void *data)
@@ -1374,7 +1367,6 @@ int generic_writepages(struct address_space *mapping,
 	return ret;
 }
 
-EXPORT_SYMBOL(generic_writepages);
 
 int do_writepages(struct address_space *mapping, struct writeback_control *wbc)
 {
@@ -1431,7 +1423,6 @@ int folio_write_one(struct folio *folio)
 		ret = filemap_check_errors(mapping);
 	return ret;
 }
-EXPORT_SYMBOL(folio_write_one);
 
 bool noop_dirty_folio(struct address_space *mapping, struct folio *folio)
 {
@@ -1439,7 +1430,6 @@ bool noop_dirty_folio(struct address_space *mapping, struct folio *folio)
 		return !folio_test_set_dirty(folio);
 	return false;
 }
-EXPORT_SYMBOL(noop_dirty_folio);
 
 static void folio_account_dirtied(struct folio *folio,
 		struct address_space *mapping)
@@ -1510,7 +1500,6 @@ bool filemap_dirty_folio(struct address_space *mapping, struct folio *folio)
 	}
 	return true;
 }
-EXPORT_SYMBOL(filemap_dirty_folio);
 
 void folio_account_redirty(struct folio *folio)
 {
@@ -1529,7 +1518,6 @@ void folio_account_redirty(struct folio *folio)
 		unlocked_inode_to_wb_end(inode, &cookie);
 	}
 }
-EXPORT_SYMBOL(folio_account_redirty);
 
 bool folio_redirty_for_writepage(struct writeback_control *wbc,
 		struct folio *folio)
@@ -1543,7 +1531,6 @@ bool folio_redirty_for_writepage(struct writeback_control *wbc,
 
 	return ret;
 }
-EXPORT_SYMBOL(folio_redirty_for_writepage);
 
 bool folio_mark_dirty(struct folio *folio)
 {
@@ -1558,7 +1545,6 @@ bool folio_mark_dirty(struct folio *folio)
 
 	return noop_dirty_folio(mapping, folio);
 }
-EXPORT_SYMBOL(folio_mark_dirty);
 
 int set_page_dirty_lock(struct page *page)
 {
@@ -1569,7 +1555,6 @@ int set_page_dirty_lock(struct page *page)
 	unlock_page(page);
 	return ret;
 }
-EXPORT_SYMBOL(set_page_dirty_lock);
 
 void __folio_cancel_dirty(struct folio *folio)
 {
@@ -1592,7 +1577,6 @@ void __folio_cancel_dirty(struct folio *folio)
 		folio_clear_dirty(folio);
 	}
 }
-EXPORT_SYMBOL(__folio_cancel_dirty);
 
 bool folio_clear_dirty_for_io(struct folio *folio)
 {
@@ -1623,7 +1607,6 @@ bool folio_clear_dirty_for_io(struct folio *folio)
 	}
 	return folio_test_clear_dirty(folio);
 }
-EXPORT_SYMBOL(folio_clear_dirty_for_io);
 
 static void wb_inode_writeback_start(struct bdi_writeback *wb)
 {
@@ -1737,7 +1720,6 @@ bool __folio_start_writeback(struct folio *folio, bool keep_write)
 
 	return ret;
 }
-EXPORT_SYMBOL(__folio_start_writeback);
 
 void folio_wait_writeback(struct folio *folio)
 {
@@ -1746,7 +1728,6 @@ void folio_wait_writeback(struct folio *folio)
 		folio_wait_bit(folio, PG_writeback);
 	}
 }
-EXPORT_SYMBOL_GPL(folio_wait_writeback);
 
 int folio_wait_writeback_killable(struct folio *folio)
 {
@@ -1758,11 +1739,9 @@ int folio_wait_writeback_killable(struct folio *folio)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(folio_wait_writeback_killable);
 
 void folio_wait_stable(struct folio *folio)
 {
 	if (folio_inode(folio)->i_sb->s_iflags & SB_I_STABLE_WRITES)
 		folio_wait_writeback(folio);
 }
-EXPORT_SYMBOL_GPL(folio_wait_stable);

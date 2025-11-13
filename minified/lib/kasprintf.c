@@ -32,7 +32,6 @@ char *kvasprintf(gfp_t gfp, const char *fmt, va_list ap)
 
 	return p;
 }
-EXPORT_SYMBOL(kvasprintf);
 
 /*
  * If fmt contains no % (or is exactly %s), use kstrdup_const. If fmt
@@ -48,7 +47,6 @@ const char *kvasprintf_const(gfp_t gfp, const char *fmt, va_list ap)
 		return kstrdup_const(va_arg(ap, const char*), gfp);
 	return kvasprintf(gfp, fmt, ap);
 }
-EXPORT_SYMBOL(kvasprintf_const);
 
 char *kasprintf(gfp_t gfp, const char *fmt, ...)
 {
@@ -61,4 +59,3 @@ char *kasprintf(gfp_t gfp, const char *fmt, ...)
 
 	return p;
 }
-EXPORT_SYMBOL(kasprintf);

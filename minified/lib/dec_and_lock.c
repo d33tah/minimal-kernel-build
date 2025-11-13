@@ -32,7 +32,6 @@ int _atomic_dec_and_lock(atomic_t *atomic, spinlock_t *lock)
 	return 0;
 }
 
-EXPORT_SYMBOL(_atomic_dec_and_lock);
 
 int _atomic_dec_and_lock_irqsave(atomic_t *atomic, spinlock_t *lock,
 				 unsigned long *flags)
@@ -48,4 +47,3 @@ int _atomic_dec_and_lock_irqsave(atomic_t *atomic, spinlock_t *lock,
 	spin_unlock_irqrestore(lock, *flags);
 	return 0;
 }
-EXPORT_SYMBOL(_atomic_dec_and_lock_irqsave);

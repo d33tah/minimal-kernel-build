@@ -17,13 +17,11 @@ struct msr *msrs_alloc(void)
 
 	return msrs;
 }
-EXPORT_SYMBOL(msrs_alloc);
 
 void msrs_free(struct msr *msrs)
 {
 	free_percpu(msrs);
 }
-EXPORT_SYMBOL(msrs_free);
 
 /**
  * Read an MSR with error handling

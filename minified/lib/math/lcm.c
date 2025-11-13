@@ -12,7 +12,6 @@ unsigned long lcm(unsigned long a, unsigned long b)
 	else
 		return 0;
 }
-EXPORT_SYMBOL_GPL(lcm);
 
 unsigned long lcm_not_zero(unsigned long a, unsigned long b)
 {
@@ -23,4 +22,3 @@ unsigned long lcm_not_zero(unsigned long a, unsigned long b)
 
 	return (b ? : a);
 }
-EXPORT_SYMBOL_GPL(lcm_not_zero);

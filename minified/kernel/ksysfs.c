@@ -71,7 +71,6 @@ static struct bin_attribute notes_attr __ro_after_init  = {
 };
 
 struct kobject *kernel_kobj;
-EXPORT_SYMBOL_GPL(kernel_kobj);
 
 static struct attribute * kernel_attrs[] = {
 	&fscaps_attr.attr,

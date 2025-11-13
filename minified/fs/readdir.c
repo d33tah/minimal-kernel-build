@@ -5,7 +5,6 @@
 #include <linux/export.h>
 
 int iterate_dir(struct file *file, struct dir_context *ctx) { return 0; }
-EXPORT_SYMBOL(iterate_dir);
 
 SYSCALL_DEFINE3(getdents64, unsigned int, fd,
 		struct linux_dirent64 __user *, dirent, unsigned int, count) { return 0; }

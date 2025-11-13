@@ -62,7 +62,6 @@ void down(struct semaphore *sem)
 		__down(sem);
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 }
-EXPORT_SYMBOL(down);
 
 /**
  * down_interruptible - acquire the semaphore unless interrupted
@@ -88,7 +87,6 @@ int down_interruptible(struct semaphore *sem)
 
 	return result;
 }
-EXPORT_SYMBOL(down_interruptible);
 
 /**
  * down_killable - acquire the semaphore unless killed
@@ -115,7 +113,6 @@ int down_killable(struct semaphore *sem)
 
 	return result;
 }
-EXPORT_SYMBOL(down_killable);
 
 /**
  * down_trylock - try to acquire the semaphore, without waiting
@@ -143,7 +140,6 @@ int down_trylock(struct semaphore *sem)
 
 	return (count < 0);
 }
-EXPORT_SYMBOL(down_trylock);
 
 /**
  * down_timeout - acquire the semaphore within a specified time
@@ -170,7 +166,6 @@ int down_timeout(struct semaphore *sem, long timeout)
 
 	return result;
 }
-EXPORT_SYMBOL(down_timeout);
 
 /**
  * up - release the semaphore
@@ -190,7 +185,6 @@ void up(struct semaphore *sem)
 		__up(sem);
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 }
-EXPORT_SYMBOL(up);
 
 /* Functions for the contended case */
 

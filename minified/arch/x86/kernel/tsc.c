@@ -31,10 +31,8 @@
 #include <asm/uv/uv.h>
 
 unsigned int __read_mostly cpu_khz;	/* TSC clocks / usec, not used here */
-EXPORT_SYMBOL(cpu_khz);
 
 unsigned int __read_mostly tsc_khz;
-EXPORT_SYMBOL(tsc_khz);
 
 #define KHZ	1000
 
@@ -256,7 +254,6 @@ int check_tsc_unstable(void)
 {
 	return tsc_unstable;
 }
-EXPORT_SYMBOL_GPL(check_tsc_unstable);
 
 int __init notsc_setup(char *str)
 {
@@ -878,7 +875,6 @@ void recalibrate_cpu_khz(void)
 						    cpu_khz_old, cpu_khz);
 }
 
-EXPORT_SYMBOL(recalibrate_cpu_khz);
 
 
 static unsigned long long cyc2ns_suspend;
@@ -1078,7 +1074,6 @@ void mark_tsc_unstable(char *reason)
 	clocksource_mark_unstable(&clocksource_tsc);
 }
 
-EXPORT_SYMBOL_GPL(mark_tsc_unstable);
 
 static void __init tsc_disable_clocksource_watchdog(void)
 {
@@ -1155,7 +1150,6 @@ struct system_counterval_t convert_art_to_tsc(u64 art)
 	return (struct system_counterval_t) {.cs = art_related_clocksource,
 			.cycles = res};
 }
-EXPORT_SYMBOL(convert_art_to_tsc);
 
 /**
  * convert_art_ns_to_tsc() - Convert ART in nanoseconds to TSC.
@@ -1193,7 +1187,6 @@ struct system_counterval_t convert_art_ns_to_tsc(u64 art_ns)
 	return (struct system_counterval_t) { .cs = art_related_clocksource,
 					      .cycles = res};
 }
-EXPORT_SYMBOL(convert_art_ns_to_tsc);
 
 
 static void tsc_refine_calibration_work(struct work_struct *work);

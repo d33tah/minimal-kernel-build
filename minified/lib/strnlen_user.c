@@ -117,4 +117,3 @@ long strnlen_user(const char __user *str, long count)
 	}
 	return 0;
 }
-EXPORT_SYMBOL(strnlen_user);

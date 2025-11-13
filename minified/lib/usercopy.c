@@ -19,7 +19,6 @@ unsigned long _copy_from_user(void *to, const void __user *from, unsigned long n
 		memset(to + (n - res), 0, res);
 	return res;
 }
-EXPORT_SYMBOL(_copy_from_user);
 #endif
 
 #ifndef INLINE_COPY_TO_USER
@@ -34,7 +33,6 @@ unsigned long _copy_to_user(void __user *to, const void *from, unsigned long n)
 	}
 	return n;
 }
-EXPORT_SYMBOL(_copy_to_user);
 #endif
 
 /**
@@ -56,4 +54,3 @@ int check_zeroed_user(const void __user *from, size_t size)
 	/* Stubbed for minimal kernel */
 	return 0;
 }
-EXPORT_SYMBOL(check_zeroed_user);

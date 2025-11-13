@@ -7,16 +7,12 @@
 
 /* Basic perf event functions */
 int perf_event_refresh(struct perf_event *event, int refresh) { return 0; }
-EXPORT_SYMBOL_GPL(perf_event_refresh);
 
 int perf_event_release_kernel(struct perf_event *event) { return 0; }
-EXPORT_SYMBOL_GPL(perf_event_release_kernel);
 
 u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running) { return 0; }
-EXPORT_SYMBOL_GPL(perf_event_read_value);
 
 u64 perf_event_pause(struct perf_event *event, bool reset) { return 0; }
-EXPORT_SYMBOL_GPL(perf_event_pause);
 
 struct perf_event *perf_event_create_kernel_counter(struct perf_event_attr *attr, int cpu,
                                                      struct task_struct *task,
@@ -25,13 +21,11 @@ struct perf_event *perf_event_create_kernel_counter(struct perf_event_attr *attr
 { 
     return ERR_PTR(-ENOSYS); 
 }
-EXPORT_SYMBOL_GPL(perf_event_create_kernel_counter);
 
 ssize_t perf_event_sysfs_show(struct device *dev, struct device_attribute *attr, char *page) 
 { 
     return 0; 
 }
-EXPORT_SYMBOL_GPL(perf_event_sysfs_show);
 
 /* HW breakpoints */
 struct perf_event *register_user_hw_breakpoint(struct perf_event_attr *attr,
@@ -40,16 +34,13 @@ struct perf_event *register_user_hw_breakpoint(struct perf_event_attr *attr,
 { 
     return ERR_PTR(-ENOSYS); 
 }
-EXPORT_SYMBOL_GPL(register_user_hw_breakpoint);
 
 int modify_user_hw_breakpoint(struct perf_event *bp, struct perf_event_attr *attr) 
 { 
     return -ENOSYS; 
 }
-EXPORT_SYMBOL_GPL(modify_user_hw_breakpoint);
 
 void unregister_hw_breakpoint(struct perf_event *bp) { }
-EXPORT_SYMBOL_GPL(unregister_hw_breakpoint);
 
 /* Task/scheduler integration */
 void __perf_event_task_sched_in(struct task_struct *prev, struct task_struct *task) { }

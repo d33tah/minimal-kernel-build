@@ -81,7 +81,6 @@ unsigned int kmem_cache_size(struct kmem_cache *s)
 {
 	return s->object_size;
 }
-EXPORT_SYMBOL(kmem_cache_size);
 
 static inline int kmem_cache_sanity_check(const char *name, unsigned int size)
 {
@@ -354,7 +353,6 @@ out_unlock:
 	}
 	return s;
 }
-EXPORT_SYMBOL(kmem_cache_create_usercopy);
 
 /**
  * kmem_cache_create - Create a cache.
@@ -388,7 +386,6 @@ kmem_cache_create(const char *name, unsigned int size, unsigned int align,
 	return kmem_cache_create_usercopy(name, size, align, flags, 0, 0,
 					  ctor);
 }
-EXPORT_SYMBOL(kmem_cache_create);
 
 static void slab_caches_to_rcu_destroy_workfn(struct work_struct *work)
 {
@@ -480,7 +477,6 @@ out_unlock:
 	mutex_unlock(&slab_mutex);
 	cpus_read_unlock();
 }
-EXPORT_SYMBOL(kmem_cache_destroy);
 
 /**
  * kmem_cache_shrink - Shrink a cache.
@@ -501,7 +497,6 @@ int kmem_cache_shrink(struct kmem_cache *cachep)
 
 	return ret;
 }
-EXPORT_SYMBOL(kmem_cache_shrink);
 
 bool slab_is_available(void)
 {
@@ -559,7 +554,6 @@ struct kmem_cache *__init create_kmalloc_cache(const char *name,
 struct kmem_cache *
 kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1] __ro_after_init =
 { /* initialization for https://bugs.llvm.org/show_bug.cgi?id=42570 */ };
-EXPORT_SYMBOL(kmalloc_caches);
 
 /*
  * Conversion table for small slabs sizes / 8 to the index in the
@@ -816,7 +810,6 @@ void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
 	kmemleak_alloc(ret, size, 1, flags);
 	return ret;
 }
-EXPORT_SYMBOL(kmalloc_order);
 
 
 
@@ -880,7 +873,6 @@ void *krealloc(const void *p, size_t new_size, gfp_t flags)
 
 	return ret;
 }
-EXPORT_SYMBOL(krealloc);
 
 /**
  * kfree_sensitive - Clear sensitive information in memory before freeing
@@ -903,7 +895,6 @@ void kfree_sensitive(const void *p)
 		memzero_explicit(mem, ks);
 	kfree(mem);
 }
-EXPORT_SYMBOL(kfree_sensitive);
 
 /**
  * ksize - get the actual amount of memory allocated for a given object
@@ -949,7 +940,6 @@ size_t ksize(const void *objp)
 	kasan_unpoison_range(objp, size);
 	return size;
 }
-EXPORT_SYMBOL(ksize);
 
 /* Tracepoints definitions. */
 

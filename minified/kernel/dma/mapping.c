@@ -65,7 +65,6 @@ void dmam_free_coherent(struct device *dev, size_t size, void *vaddr,
 	dma_free_coherent(dev, size, vaddr, dma_handle);
 	WARN_ON(devres_destroy(dev, dmam_release, dmam_match, &match_data));
 }
-EXPORT_SYMBOL(dmam_free_coherent);
 
 /**
  * dmam_alloc_attrs - Managed dma_alloc_attrs()
@@ -106,7 +105,6 @@ void *dmam_alloc_attrs(struct device *dev, size_t size, dma_addr_t *dma_handle,
 
 	return vaddr;
 }
-EXPORT_SYMBOL(dmam_alloc_attrs);
 
 static bool dma_go_direct(struct device *dev, dma_addr_t mask,
 		const struct dma_map_ops *ops)
@@ -155,7 +153,6 @@ dma_addr_t dma_map_page_attrs(struct device *dev, struct page *page,
 
 	return addr;
 }
-EXPORT_SYMBOL(dma_map_page_attrs);
 
 void dma_unmap_page_attrs(struct device *dev, dma_addr_t addr, size_t size,
 		enum dma_data_direction dir, unsigned long attrs)
@@ -170,7 +167,6 @@ void dma_unmap_page_attrs(struct device *dev, dma_addr_t addr, size_t size,
 		ops->unmap_page(dev, addr, size, dir, attrs);
 	debug_dma_unmap_page(dev, addr, size, dir);
 }
-EXPORT_SYMBOL(dma_unmap_page_attrs);
 
 static int __dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
 	 int nents, enum dma_data_direction dir, unsigned long attrs)
@@ -225,7 +221,6 @@ unsigned int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
 		return 0;
 	return ret;
 }
-EXPORT_SYMBOL(dma_map_sg_attrs);
 
 /**
  * dma_map_sgtable - Map the given buffer for DMA
@@ -262,7 +257,6 @@ int dma_map_sgtable(struct device *dev, struct sg_table *sgt,
 	sgt->nents = nents;
 	return 0;
 }
-EXPORT_SYMBOL_GPL(dma_map_sgtable);
 
 void dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sg,
 				      int nents, enum dma_data_direction dir,
@@ -278,7 +272,6 @@ void dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sg,
 	else if (ops->unmap_sg)
 		ops->unmap_sg(dev, sg, nents, dir, attrs);
 }
-EXPORT_SYMBOL(dma_unmap_sg_attrs);
 
 dma_addr_t dma_map_resource(struct device *dev, phys_addr_t phys_addr,
 		size_t size, enum dma_data_direction dir, unsigned long attrs)
@@ -299,7 +292,6 @@ dma_addr_t dma_map_resource(struct device *dev, phys_addr_t phys_addr,
 	debug_dma_map_resource(dev, phys_addr, size, dir, addr, attrs);
 	return addr;
 }
-EXPORT_SYMBOL(dma_map_resource);
 
 void dma_unmap_resource(struct device *dev, dma_addr_t addr, size_t size,
 		enum dma_data_direction dir, unsigned long attrs)
@@ -311,7 +303,6 @@ void dma_unmap_resource(struct device *dev, dma_addr_t addr, size_t size,
 		ops->unmap_resource(dev, addr, size, dir, attrs);
 	debug_dma_unmap_resource(dev, addr, size, dir);
 }
-EXPORT_SYMBOL(dma_unmap_resource);
 
 void dma_sync_single_for_cpu(struct device *dev, dma_addr_t addr, size_t size,
 		enum dma_data_direction dir)
@@ -325,7 +316,6 @@ void dma_sync_single_for_cpu(struct device *dev, dma_addr_t addr, size_t size,
 		ops->sync_single_for_cpu(dev, addr, size, dir);
 	debug_dma_sync_single_for_cpu(dev, addr, size, dir);
 }
-EXPORT_SYMBOL(dma_sync_single_for_cpu);
 
 void dma_sync_single_for_device(struct device *dev, dma_addr_t addr,
 		size_t size, enum dma_data_direction dir)
@@ -339,7 +329,6 @@ void dma_sync_single_for_device(struct device *dev, dma_addr_t addr,
 		ops->sync_single_for_device(dev, addr, size, dir);
 	debug_dma_sync_single_for_device(dev, addr, size, dir);
 }
-EXPORT_SYMBOL(dma_sync_single_for_device);
 
 void dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
 		    int nelems, enum dma_data_direction dir)
@@ -353,7 +342,6 @@ void dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
 		ops->sync_sg_for_cpu(dev, sg, nelems, dir);
 	debug_dma_sync_sg_for_cpu(dev, sg, nelems, dir);
 }
-EXPORT_SYMBOL(dma_sync_sg_for_cpu);
 
 void dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
 		       int nelems, enum dma_data_direction dir)
@@ -367,7 +355,6 @@ void dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
 		ops->sync_sg_for_device(dev, sg, nelems, dir);
 	debug_dma_sync_sg_for_device(dev, sg, nelems, dir);
 }
-EXPORT_SYMBOL(dma_sync_sg_for_device);
 
 /*
  * The whole dma_get_sgtable() idea is fundamentally unsafe - it seems
@@ -393,7 +380,6 @@ int dma_get_sgtable_attrs(struct device *dev, struct sg_table *sgt,
 		return -ENXIO;
 	return ops->get_sgtable(dev, sgt, cpu_addr, dma_addr, size, attrs);
 }
-EXPORT_SYMBOL(dma_get_sgtable_attrs);
 
 /*
  * Return the page attributes used for mapping dma_alloc_* memory, either in
@@ -421,7 +407,6 @@ bool dma_can_mmap(struct device *dev)
 		return dma_direct_can_mmap(dev);
 	return ops->mmap != NULL;
 }
-EXPORT_SYMBOL_GPL(dma_can_mmap);
 
 /**
  * dma_mmap_attrs - map a coherent DMA allocation into user space
@@ -449,7 +434,6 @@ int dma_mmap_attrs(struct device *dev, struct vm_area_struct *vma,
 		return -ENXIO;
 	return ops->mmap(dev, vma, cpu_addr, dma_addr, size, attrs);
 }
-EXPORT_SYMBOL(dma_mmap_attrs);
 
 u64 dma_get_required_mask(struct device *dev)
 {
@@ -470,7 +454,6 @@ u64 dma_get_required_mask(struct device *dev)
 	 */
 	return DMA_BIT_MASK(32);
 }
-EXPORT_SYMBOL_GPL(dma_get_required_mask);
 
 void *dma_alloc_attrs(struct device *dev, size_t size, dma_addr_t *dma_handle,
 		gfp_t flag, unsigned long attrs)
@@ -496,7 +479,6 @@ void *dma_alloc_attrs(struct device *dev, size_t size, dma_addr_t *dma_handle,
 	debug_dma_alloc_coherent(dev, size, *dma_handle, cpu_addr, attrs);
 	return cpu_addr;
 }
-EXPORT_SYMBOL(dma_alloc_attrs);
 
 void dma_free_attrs(struct device *dev, size_t size, void *cpu_addr,
 		dma_addr_t dma_handle, unsigned long attrs)
@@ -523,7 +505,6 @@ void dma_free_attrs(struct device *dev, size_t size, void *cpu_addr,
 	else if (ops->free)
 		ops->free(dev, size, cpu_addr, dma_handle, attrs);
 }
-EXPORT_SYMBOL(dma_free_attrs);
 
 static struct page *__dma_alloc_pages(struct device *dev, size_t size,
 		dma_addr_t *dma_handle, enum dma_data_direction dir, gfp_t gfp)
@@ -552,7 +533,6 @@ struct page *dma_alloc_pages(struct device *dev, size_t size,
 		debug_dma_map_page(dev, page, 0, size, dir, *dma_handle, 0);
 	return page;
 }
-EXPORT_SYMBOL_GPL(dma_alloc_pages);
 
 static void __dma_free_pages(struct device *dev, size_t size, struct page *page,
 		dma_addr_t dma_handle, enum dma_data_direction dir)
@@ -572,7 +552,6 @@ void dma_free_pages(struct device *dev, size_t size, struct page *page,
 	debug_dma_unmap_page(dev, dma_handle, size, dir);
 	__dma_free_pages(dev, size, page, dma_handle, dir);
 }
-EXPORT_SYMBOL_GPL(dma_free_pages);
 
 int dma_mmap_pages(struct device *dev, struct vm_area_struct *vma,
 		size_t size, struct page *page)
@@ -585,7 +564,6 @@ int dma_mmap_pages(struct device *dev, struct vm_area_struct *vma,
 			       page_to_pfn(page) + vma->vm_pgoff,
 			       vma_pages(vma) << PAGE_SHIFT, vma->vm_page_prot);
 }
-EXPORT_SYMBOL_GPL(dma_mmap_pages);
 
 static struct sg_table *alloc_single_sgt(struct device *dev, size_t size,
 		enum dma_data_direction dir, gfp_t gfp)
@@ -631,7 +609,6 @@ struct sg_table *dma_alloc_noncontiguous(struct device *dev, size_t size,
 	}
 	return sgt;
 }
-EXPORT_SYMBOL_GPL(dma_alloc_noncontiguous);
 
 static void free_single_sgt(struct device *dev, size_t size,
 		struct sg_table *sgt, enum dma_data_direction dir)
@@ -653,7 +630,6 @@ void dma_free_noncontiguous(struct device *dev, size_t size,
 	else
 		free_single_sgt(dev, size, sgt, dir);
 }
-EXPORT_SYMBOL_GPL(dma_free_noncontiguous);
 
 void *dma_vmap_noncontiguous(struct device *dev, size_t size,
 		struct sg_table *sgt)
@@ -665,7 +641,6 @@ void *dma_vmap_noncontiguous(struct device *dev, size_t size,
 		return vmap(sgt_handle(sgt)->pages, count, VM_MAP, PAGE_KERNEL);
 	return page_address(sg_page(sgt->sgl));
 }
-EXPORT_SYMBOL_GPL(dma_vmap_noncontiguous);
 
 void dma_vunmap_noncontiguous(struct device *dev, void *vaddr)
 {
@@ -674,7 +649,6 @@ void dma_vunmap_noncontiguous(struct device *dev, void *vaddr)
 	if (ops && ops->alloc_noncontiguous)
 		vunmap(vaddr);
 }
-EXPORT_SYMBOL_GPL(dma_vunmap_noncontiguous);
 
 int dma_mmap_noncontiguous(struct device *dev, struct vm_area_struct *vma,
 		size_t size, struct sg_table *sgt)
@@ -691,7 +665,6 @@ int dma_mmap_noncontiguous(struct device *dev, struct vm_area_struct *vma,
 	}
 	return dma_mmap_pages(dev, vma, size, sg_page(sgt->sgl));
 }
-EXPORT_SYMBOL_GPL(dma_mmap_noncontiguous);
 
 int dma_supported(struct device *dev, u64 mask)
 {
@@ -707,7 +680,6 @@ int dma_supported(struct device *dev, u64 mask)
 		return 1;
 	return ops->dma_supported(dev, mask);
 }
-EXPORT_SYMBOL(dma_supported);
 
 #define arch_dma_set_mask(dev, mask)	do { } while (0)
 
@@ -726,7 +698,6 @@ int dma_set_mask(struct device *dev, u64 mask)
 	*dev->dma_mask = mask;
 	return 0;
 }
-EXPORT_SYMBOL(dma_set_mask);
 
 int dma_set_coherent_mask(struct device *dev, u64 mask)
 {
@@ -742,7 +713,6 @@ int dma_set_coherent_mask(struct device *dev, u64 mask)
 	dev->coherent_dma_mask = mask;
 	return 0;
 }
-EXPORT_SYMBOL(dma_set_coherent_mask);
 
 size_t dma_max_mapping_size(struct device *dev)
 {
@@ -756,7 +726,6 @@ size_t dma_max_mapping_size(struct device *dev)
 
 	return size;
 }
-EXPORT_SYMBOL_GPL(dma_max_mapping_size);
 
 bool dma_need_sync(struct device *dev, dma_addr_t dma_addr)
 {
@@ -766,7 +735,6 @@ bool dma_need_sync(struct device *dev, dma_addr_t dma_addr)
 		return dma_direct_need_sync(dev, dma_addr);
 	return ops->sync_single_for_cpu || ops->sync_single_for_device;
 }
-EXPORT_SYMBOL_GPL(dma_need_sync);
 
 unsigned long dma_get_merge_boundary(struct device *dev)
 {
@@ -777,4 +745,3 @@ unsigned long dma_get_merge_boundary(struct device *dev)
 
 	return ops->get_merge_boundary(dev);
 }
-EXPORT_SYMBOL_GPL(dma_get_merge_boundary);

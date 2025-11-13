@@ -395,7 +395,6 @@ void task_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st)
 		cputime.sum_exec_runtime = task_sched_runtime(p);
 	cputime_adjust(&cputime, &p->prev_cputime, ut, st);
 }
-EXPORT_SYMBOL_GPL(task_cputime_adjusted);
 
 void thread_group_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st)
 {

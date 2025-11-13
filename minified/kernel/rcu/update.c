@@ -97,7 +97,6 @@ void wakeme_after_rcu(struct rcu_head *head)
 	rcu = container_of(head, struct rcu_synchronize, head);
 	complete(&rcu->completion);
 }
-EXPORT_SYMBOL_GPL(wakeme_after_rcu);
 
 void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 		   struct rcu_synchronize *rs_array)
@@ -136,14 +135,12 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 		}
 	}
 }
-EXPORT_SYMBOL_GPL(__wait_rcu_gp);
 
 void finish_rcuwait(struct rcuwait *w)
 {
 	rcu_assign_pointer(w->task, NULL);
 	__set_current_state(TASK_RUNNING);
 }
-EXPORT_SYMBOL_GPL(finish_rcuwait);
 
 
 #if defined(CONFIG_TREE_RCU) || defined(CONFIG_RCU_TRACE)
@@ -153,7 +150,6 @@ void do_trace_rcu_torture_read(const char *rcutorturename, struct rcu_head *rhp,
 {
 	/* trace_rcu_torture_read(rcutorturename, rhp, secs, c_old, c); */
 }
-EXPORT_SYMBOL_GPL(do_trace_rcu_torture_read);
 #else
 #define do_trace_rcu_torture_read(rcutorturename, rhp, secs, c_old, c) \
 	do { } while (0)
@@ -169,14 +165,12 @@ long rcutorture_sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 	WARN_ONCE(ret, "%s: sched_setaffinity() returned %d\n", __func__, ret);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(rcutorture_sched_setaffinity);
 #endif
 
 
 // Suppress boot-time RCU CPU stall warnings and rcutorture writer stall
 // warnings.  Also used by rcutorture even if stall warnings are excluded.
 int rcu_cpu_stall_suppress_at_boot __read_mostly; // !0 = suppress boot stalls.
-EXPORT_SYMBOL_GPL(rcu_cpu_stall_suppress_at_boot);
 module_param(rcu_cpu_stall_suppress_at_boot, int, 0444);
 
 void rcu_early_boot_tests(void) {}

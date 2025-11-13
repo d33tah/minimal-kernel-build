@@ -1264,13 +1264,11 @@ void __percpu *__alloc_percpu_gfp(size_t size, size_t align, gfp_t gfp)
 {
 	return pcpu_alloc(size, align, false, gfp);
 }
-EXPORT_SYMBOL_GPL(__alloc_percpu_gfp);
 
 void __percpu *__alloc_percpu(size_t size, size_t align)
 {
 	return pcpu_alloc(size, align, false, GFP_KERNEL);
 }
-EXPORT_SYMBOL_GPL(__alloc_percpu);
 
 void __percpu *__alloc_reserved_percpu(size_t size, size_t align)
 {
@@ -1523,7 +1521,6 @@ void free_percpu(void __percpu *ptr)
 	if (need_balance)
 		pcpu_schedule_balance_work();
 }
-EXPORT_SYMBOL_GPL(free_percpu);
 
 bool __is_kernel_percpu_address(unsigned long addr, unsigned long *can_addr)
 {

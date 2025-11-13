@@ -25,7 +25,6 @@
  */
 
 const kernel_cap_t __cap_empty_set = CAP_EMPTY_SET;
-EXPORT_SYMBOL(__cap_empty_set);
 
 int file_caps_enabled = 1;
 
@@ -61,7 +60,6 @@ bool file_ns_capable(const struct file *file, struct user_namespace *ns,
 
 	return false;
 }
-EXPORT_SYMBOL(file_ns_capable);
 
 /**
  * privileged_wrt_inode_uidgid - Do capabilities in the namespace work over the inode?
@@ -95,7 +93,6 @@ bool capable_wrt_inode_uidgid(struct user_namespace *mnt_userns,
 	return ns_capable(ns, cap) &&
 	       privileged_wrt_inode_uidgid(ns, mnt_userns, inode);
 }
-EXPORT_SYMBOL(capable_wrt_inode_uidgid);
 
 /**
  * ptracer_capable - Determine if the ptracer holds CAP_SYS_PTRACE in the namespace

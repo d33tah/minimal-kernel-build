@@ -10,16 +10,13 @@ void make_bad_inode(struct inode *inode)
 {
 	/* Stub - do nothing */
 }
-EXPORT_SYMBOL(make_bad_inode);
 
 bool is_bad_inode(struct inode *inode)
 {
 	return false;
 }
-EXPORT_SYMBOL(is_bad_inode);
 
 void iget_failed(struct inode *inode)
 {
 	/* Stub - do nothing */
 }
-EXPORT_SYMBOL(iget_failed);

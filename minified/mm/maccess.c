@@ -44,7 +44,6 @@ Efault:
 	pagefault_enable();
 	return -EFAULT;
 }
-EXPORT_SYMBOL_GPL(copy_from_kernel_nofault);
 
 #define copy_to_kernel_nofault_loop(dst, src, len, type, err_label)	\
 	while (len >= sizeof(type)) {					\
@@ -123,7 +122,6 @@ long copy_from_user_nofault(void *dst, const void __user *src, size_t size)
 		return -EFAULT;
 	return 0;
 }
-EXPORT_SYMBOL_GPL(copy_from_user_nofault);
 
 /**
  * copy_to_user_nofault(): safely attempt to write to a user-space location
@@ -148,7 +146,6 @@ long copy_to_user_nofault(void __user *dst, const void *src, size_t size)
 		return -EFAULT;
 	return 0;
 }
-EXPORT_SYMBOL_GPL(copy_to_user_nofault);
 
 /**
  * strncpy_from_user_nofault: - Copy a NUL terminated string from unsafe user
@@ -221,4 +218,3 @@ void __copy_overflow(int size, unsigned long count)
 {
 	WARN(1, "Buffer overflow detected (%d < %lu)!\n", size, count);
 }
-EXPORT_SYMBOL(__copy_overflow);

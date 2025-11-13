@@ -10,13 +10,11 @@ __visible void *memcpy(void *to, const void *from, size_t n)
 {
 	return __memcpy(to, from, n);
 }
-EXPORT_SYMBOL(memcpy);
 
 __visible void *memset(void *s, int c, size_t count)
 {
 	return __memset(s, c, count);
 }
-EXPORT_SYMBOL(memset);
 
 __visible void *memmove(void *dest, const void *src, size_t n)
 {
@@ -203,4 +201,3 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 	return ret;
 
 }
-EXPORT_SYMBOL(memmove);

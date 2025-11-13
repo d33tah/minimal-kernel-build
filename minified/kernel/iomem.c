@@ -117,14 +117,12 @@ void *memremap(resource_size_t offset, size_t size, unsigned long flags)
 
 	return addr;
 }
-EXPORT_SYMBOL(memremap);
 
 void memunmap(void *addr)
 {
 	if (is_ioremap_addr(addr))
 		iounmap((void __iomem *) addr);
 }
-EXPORT_SYMBOL(memunmap);
 
 static void devm_memremap_release(struct device *dev, void *res)
 {
@@ -157,11 +155,9 @@ void *devm_memremap(struct device *dev, resource_size_t offset,
 
 	return addr;
 }
-EXPORT_SYMBOL(devm_memremap);
 
 void devm_memunmap(struct device *dev, void *addr)
 {
 	WARN_ON(devres_release(dev, devm_memremap_release,
 				devm_memremap_match, addr));
 }
-EXPORT_SYMBOL(devm_memunmap);

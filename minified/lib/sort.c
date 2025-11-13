@@ -267,7 +267,6 @@ void sort_r(void *base, size_t num, size_t size,
 		}
 	}
 }
-EXPORT_SYMBOL(sort_r);
 
 void sort(void *base, size_t num, size_t size,
 	  cmp_func_t cmp_func,
@@ -280,4 +279,3 @@ void sort(void *base, size_t num, size_t size,
 
 	return sort_r(base, num, size, _CMP_WRAPPER, SWAP_WRAPPER, &w);
 }
-EXPORT_SYMBOL(sort);

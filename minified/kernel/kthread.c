@@ -149,13 +149,11 @@ bool kthread_should_stop(void)
 {
 	return test_bit(KTHREAD_SHOULD_STOP, &to_kthread(current)->flags);
 }
-EXPORT_SYMBOL(kthread_should_stop);
 
 bool __kthread_should_park(struct task_struct *k)
 {
 	return test_bit(KTHREAD_SHOULD_PARK, &to_kthread(k)->flags);
 }
-EXPORT_SYMBOL_GPL(__kthread_should_park);
 
 /**
  * kthread_should_park - should this kthread park now?
@@ -172,7 +170,6 @@ bool kthread_should_park(void)
 {
 	return __kthread_should_park(current);
 }
-EXPORT_SYMBOL_GPL(kthread_should_park);
 
 /**
  * kthread_freezable_should_stop - should this freezable kthread return now?
@@ -197,7 +194,6 @@ bool kthread_freezable_should_stop(bool *was_frozen)
 
 	return kthread_should_stop();
 }
-EXPORT_SYMBOL_GPL(kthread_freezable_should_stop);
 
 /**
  * kthread_func - return the function specified on kthread creation
@@ -212,7 +208,6 @@ void *kthread_func(struct task_struct *task)
 		return kthread->threadfn;
 	return NULL;
 }
-EXPORT_SYMBOL_GPL(kthread_func);
 
 /**
  * kthread_data - return data value specified on kthread creation
@@ -226,7 +221,6 @@ void *kthread_data(struct task_struct *task)
 {
 	return to_kthread(task)->data;
 }
-EXPORT_SYMBOL_GPL(kthread_data);
 
 /**
  * kthread_probe_data - speculative version of kthread_data()
@@ -280,7 +274,6 @@ void kthread_parkme(void)
 {
 	__kthread_parkme(to_kthread(current));
 }
-EXPORT_SYMBOL_GPL(kthread_parkme);
 
 /**
  * kthread_exit - Cause the current kthread return @result to kthread_stop().
@@ -318,7 +311,6 @@ void __noreturn kthread_complete_and_exit(struct completion *comp, long code)
 
 	kthread_exit(code);
 }
-EXPORT_SYMBOL(kthread_complete_and_exit);
 
 static int kthread(void *_create)
 {
@@ -500,7 +492,6 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 
 	return task;
 }
-EXPORT_SYMBOL(kthread_create_on_node);
 
 static void __kthread_bind_mask(struct task_struct *p, const struct cpumask *mask, unsigned int state)
 {
@@ -541,7 +532,6 @@ void kthread_bind(struct task_struct *p, unsigned int cpu)
 {
 	__kthread_bind(p, cpu, TASK_UNINTERRUPTIBLE);
 }
-EXPORT_SYMBOL(kthread_bind);
 
 /**
  * kthread_create_on_cpu - Create a cpu bound kthread
@@ -568,7 +558,6 @@ struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
 	to_kthread(p)->cpu = cpu;
 	return p;
 }
-EXPORT_SYMBOL(kthread_create_on_cpu);
 
 void kthread_set_per_cpu(struct task_struct *k, int cpu)
 {
@@ -621,7 +610,6 @@ void kthread_unpark(struct task_struct *k)
 	 */
 	wake_up_state(k, TASK_PARKED);
 }
-EXPORT_SYMBOL_GPL(kthread_unpark);
 
 /**
  * kthread_park - park a thread created by kthread_create().
@@ -662,7 +650,6 @@ int kthread_park(struct task_struct *k)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(kthread_park);
 
 /**
  * kthread_stop - stop a thread created by kthread_create().
@@ -698,7 +685,6 @@ int kthread_stop(struct task_struct *k)
 	/* trace_sched_kthread_stop_ret(ret); */
 	return ret;
 }
-EXPORT_SYMBOL(kthread_stop);
 
 int kthreadd(void *unused)
 {
@@ -748,7 +734,6 @@ void __kthread_init_worker(struct kthread_worker *worker,
 	INIT_LIST_HEAD(&worker->work_list);
 	INIT_LIST_HEAD(&worker->delayed_work_list);
 }
-EXPORT_SYMBOL_GPL(__kthread_init_worker);
 
 /**
  * kthread_worker_fn - kthread function to process kthread_worker
@@ -817,7 +802,6 @@ repeat:
 	cond_resched();
 	goto repeat;
 }
-EXPORT_SYMBOL_GPL(kthread_worker_fn);
 
 static __printf(3, 0) struct kthread_worker *
 __kthread_create_worker(int cpu, unsigned int flags,
@@ -875,7 +859,6 @@ kthread_create_worker(unsigned int flags, const char namefmt[], ...)
 
 	return worker;
 }
-EXPORT_SYMBOL(kthread_create_worker);
 
 /**
  * kthread_create_worker_on_cpu - create a kthread worker and bind it
@@ -925,7 +908,6 @@ kthread_create_worker_on_cpu(int cpu, unsigned int flags,
 
 	return worker;
 }
-EXPORT_SYMBOL(kthread_create_worker_on_cpu);
 
 /*
  * Returns true when the work could not be queued at the moment.
@@ -990,7 +972,6 @@ bool kthread_queue_work(struct kthread_worker *worker,
 	raw_spin_unlock_irqrestore(&worker->lock, flags);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(kthread_queue_work);
 
 /**
  * kthread_delayed_work_timer_fn - callback that queues the associated kthread
@@ -1026,7 +1007,6 @@ void kthread_delayed_work_timer_fn(struct timer_list *t)
 
 	raw_spin_unlock_irqrestore(&worker->lock, flags);
 }
-EXPORT_SYMBOL(kthread_delayed_work_timer_fn);
 
 static void __kthread_queue_delayed_work(struct kthread_worker *worker, 					 struct kthread_delayed_work *dwork, 					 unsigned long delay)
 {
@@ -1066,7 +1046,6 @@ bool kthread_queue_delayed_work(struct kthread_worker *worker,
 	raw_spin_unlock_irqrestore(&worker->lock, flags);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(kthread_queue_delayed_work);
 
 struct kthread_flush_work {
 	struct kthread_work	work;
@@ -1116,7 +1095,6 @@ void kthread_flush_work(struct kthread_work *work)
 	if (!noop)
 		wait_for_completion(&fwork.done);
 }
-EXPORT_SYMBOL_GPL(kthread_flush_work);
 
 /*
  * Make sure that the timer is neither set nor running and could
@@ -1240,7 +1218,6 @@ out:
 	raw_spin_unlock_irqrestore(&worker->lock, flags);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(kthread_mod_delayed_work);
 
 static bool __kthread_cancel_work_sync(struct kthread_work *work, bool is_dwork)
 {
@@ -1299,7 +1276,6 @@ bool kthread_cancel_work_sync(struct kthread_work *work)
 {
 	return __kthread_cancel_work_sync(work, false);
 }
-EXPORT_SYMBOL_GPL(kthread_cancel_work_sync);
 
 /**
  * kthread_cancel_delayed_work_sync - cancel a kthread delayed work and
@@ -1314,7 +1290,6 @@ bool kthread_cancel_delayed_work_sync(struct kthread_delayed_work *dwork)
 {
 	return __kthread_cancel_work_sync(&dwork->work, true);
 }
-EXPORT_SYMBOL_GPL(kthread_cancel_delayed_work_sync);
 
 /**
  * kthread_flush_worker - flush all current works on a kthread_worker
@@ -1333,7 +1308,6 @@ void kthread_flush_worker(struct kthread_worker *worker)
 	kthread_queue_work(worker, &fwork.work);
 	wait_for_completion(&fwork.done);
 }
-EXPORT_SYMBOL_GPL(kthread_flush_worker);
 
 /**
  * kthread_destroy_worker - destroy a kthread worker
@@ -1356,7 +1330,6 @@ void kthread_destroy_worker(struct kthread_worker *worker)
 	WARN_ON(!list_empty(&worker->work_list));
 	kfree(worker);
 }
-EXPORT_SYMBOL(kthread_destroy_worker);
 
 /**
  * kthread_use_mm - make the calling kthread operate on an address space
@@ -1401,7 +1374,6 @@ void kthread_use_mm(struct mm_struct *mm)
 	else
 		smp_mb();
 }
-EXPORT_SYMBOL_GPL(kthread_use_mm);
 
 /**
  * kthread_unuse_mm - reverse the effect of kthread_use_mm()
@@ -1432,5 +1404,4 @@ void kthread_unuse_mm(struct mm_struct *mm)
 	local_irq_enable();
 	task_unlock(tsk);
 }
-EXPORT_SYMBOL_GPL(kthread_unuse_mm);
 

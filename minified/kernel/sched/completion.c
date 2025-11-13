@@ -36,7 +36,6 @@ void complete(struct completion *x)
 	swake_up_locked(&x->wait);
 	raw_spin_unlock_irqrestore(&x->wait.lock, flags);
 }
-EXPORT_SYMBOL(complete);
 
 /**
  * complete_all: - signals all threads waiting on this completion
@@ -65,7 +64,6 @@ void complete_all(struct completion *x)
 	swake_up_all_locked(&x->wait);
 	raw_spin_unlock_irqrestore(&x->wait.lock, flags);
 }
-EXPORT_SYMBOL(complete_all);
 
 static inline long __sched
 do_wait_for_common(struct completion *x,
@@ -137,7 +135,6 @@ void __sched wait_for_completion(struct completion *x)
 {
 	wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_UNINTERRUPTIBLE);
 }
-EXPORT_SYMBOL(wait_for_completion);
 
 /**
  * wait_for_completion_timeout: - waits for completion of a task (w/timeout)
@@ -156,7 +153,6 @@ wait_for_completion_timeout(struct completion *x, unsigned long timeout)
 {
 	return wait_for_common(x, timeout, TASK_UNINTERRUPTIBLE);
 }
-EXPORT_SYMBOL(wait_for_completion_timeout);
 
 /**
  * wait_for_completion_io: - waits for completion of a task
@@ -170,7 +166,6 @@ void __sched wait_for_completion_io(struct completion *x)
 {
 	wait_for_common_io(x, MAX_SCHEDULE_TIMEOUT, TASK_UNINTERRUPTIBLE);
 }
-EXPORT_SYMBOL(wait_for_completion_io);
 
 /**
  * wait_for_completion_io_timeout: - waits for completion of a task (w/timeout)
@@ -190,7 +185,6 @@ wait_for_completion_io_timeout(struct completion *x, unsigned long timeout)
 {
 	return wait_for_common_io(x, timeout, TASK_UNINTERRUPTIBLE);
 }
-EXPORT_SYMBOL(wait_for_completion_io_timeout);
 
 /**
  * wait_for_completion_interruptible: - waits for completion of a task (w/intr)
@@ -208,7 +202,6 @@ int __sched wait_for_completion_interruptible(struct completion *x)
 		return t;
 	return 0;
 }
-EXPORT_SYMBOL(wait_for_completion_interruptible);
 
 /**
  * wait_for_completion_interruptible_timeout: - waits for completion (w/(to,intr))
@@ -227,7 +220,6 @@ wait_for_completion_interruptible_timeout(struct completion *x,
 {
 	return wait_for_common(x, timeout, TASK_INTERRUPTIBLE);
 }
-EXPORT_SYMBOL(wait_for_completion_interruptible_timeout);
 
 /**
  * wait_for_completion_killable: - waits for completion of a task (killable)
@@ -245,7 +237,6 @@ int __sched wait_for_completion_killable(struct completion *x)
 		return t;
 	return 0;
 }
-EXPORT_SYMBOL(wait_for_completion_killable);
 
 /**
  * wait_for_completion_killable_timeout: - waits for completion of a task (w/(to,killable))
@@ -265,7 +256,6 @@ wait_for_completion_killable_timeout(struct completion *x,
 {
 	return wait_for_common(x, timeout, TASK_KILLABLE);
 }
-EXPORT_SYMBOL(wait_for_completion_killable_timeout);
 
 /**
  *	try_wait_for_completion - try to decrement a completion without blocking
@@ -301,7 +291,6 @@ bool try_wait_for_completion(struct completion *x)
 	raw_spin_unlock_irqrestore(&x->wait.lock, flags);
 	return ret;
 }
-EXPORT_SYMBOL(try_wait_for_completion);
 
 /**
  *	completion_done - Test to see if a completion has any waiters
@@ -328,4 +317,3 @@ bool completion_done(struct completion *x)
 	raw_spin_unlock_irqrestore(&x->wait.lock, flags);
 	return true;
 }
-EXPORT_SYMBOL(completion_done);

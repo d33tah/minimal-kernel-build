@@ -89,7 +89,6 @@ void klist_init(struct klist *k, void (*get)(struct klist_node *),
 	k->get = get;
 	k->put = put;
 }
-EXPORT_SYMBOL_GPL(klist_init);
 
 static void add_head(struct klist *k, struct klist_node *n)
 {
@@ -124,7 +123,6 @@ void klist_add_head(struct klist_node *n, struct klist *k)
 	klist_node_init(k, n);
 	add_head(k, n);
 }
-EXPORT_SYMBOL_GPL(klist_add_head);
 
 /**
  * klist_add_tail - Initialize a klist_node and add it to back.
@@ -136,7 +134,6 @@ void klist_add_tail(struct klist_node *n, struct klist *k)
 	klist_node_init(k, n);
 	add_tail(k, n);
 }
-EXPORT_SYMBOL_GPL(klist_add_tail);
 
 /**
  * klist_add_behind - Init a klist_node and add it after an existing node
@@ -152,7 +149,6 @@ void klist_add_behind(struct klist_node *n, struct klist_node *pos)
 	list_add(&n->n_node, &pos->n_node);
 	spin_unlock(&k->k_lock);
 }
-EXPORT_SYMBOL_GPL(klist_add_behind);
 
 /**
  * klist_add_before - Init a klist_node and add it before an existing node
@@ -168,7 +164,6 @@ void klist_add_before(struct klist_node *n, struct klist_node *pos)
 	list_add_tail(&n->n_node, &pos->n_node);
 	spin_unlock(&k->k_lock);
 }
-EXPORT_SYMBOL_GPL(klist_add_before);
 
 struct klist_waiter {
 	struct list_head list;
@@ -229,7 +224,6 @@ void klist_del(struct klist_node *n)
 {
 	klist_put(n, true);
 }
-EXPORT_SYMBOL_GPL(klist_del);
 
 /**
  * klist_remove - Decrement the refcount of node and wait for it to go away.
@@ -256,7 +250,6 @@ void klist_remove(struct klist_node *n)
 	}
 	__set_current_state(TASK_RUNNING);
 }
-EXPORT_SYMBOL_GPL(klist_remove);
 
 /**
  * klist_node_attached - Say whether a node is bound to a list or not.
@@ -266,7 +259,6 @@ int klist_node_attached(struct klist_node *n)
 {
 	return (n->n_klist != NULL);
 }
-EXPORT_SYMBOL_GPL(klist_node_attached);
 
 /**
  * klist_iter_init_node - Initialize a klist_iter structure.
@@ -285,7 +277,6 @@ void klist_iter_init_node(struct klist *k, struct klist_iter *i,
 	if (n && kref_get_unless_zero(&n->n_ref))
 		i->i_cur = n;
 }
-EXPORT_SYMBOL_GPL(klist_iter_init_node);
 
 /**
  * klist_iter_init - Iniitalize a klist_iter structure.
@@ -298,7 +289,6 @@ void klist_iter_init(struct klist *k, struct klist_iter *i)
 {
 	klist_iter_init_node(k, i, NULL);
 }
-EXPORT_SYMBOL_GPL(klist_iter_init);
 
 /**
  * klist_iter_exit - Finish a list iteration.
@@ -315,7 +305,6 @@ void klist_iter_exit(struct klist_iter *i)
 		i->i_cur = NULL;
 	}
 }
-EXPORT_SYMBOL_GPL(klist_iter_exit);
 
 static struct klist_node *to_klist_node(struct list_head *n)
 {
@@ -362,7 +351,6 @@ struct klist_node *klist_prev(struct klist_iter *i)
 		put(last);
 	return i->i_cur;
 }
-EXPORT_SYMBOL_GPL(klist_prev);
 
 /**
  * klist_next - Ante up next node in list.
@@ -404,4 +392,3 @@ struct klist_node *klist_next(struct klist_iter *i)
 		put(last);
 	return i->i_cur;
 }
-EXPORT_SYMBOL_GPL(klist_next);

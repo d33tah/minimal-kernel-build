@@ -58,14 +58,12 @@ int register_oom_notifier(struct notifier_block *nb)
 {
 	return 0;
 }
-EXPORT_SYMBOL_GPL(register_oom_notifier);
 
 /* Stub: unregister_oom_notifier */
 int unregister_oom_notifier(struct notifier_block *nb)
 {
 	return 0;
 }
-EXPORT_SYMBOL_GPL(unregister_oom_notifier);
 
 /* Stub: out_of_memory */
 bool out_of_memory(struct oom_control *oc)

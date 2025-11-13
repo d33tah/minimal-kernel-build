@@ -121,7 +121,6 @@ extern void radix_tree_init(void);
 bool early_boot_irqs_disabled __read_mostly;
 
 enum system_states system_state __read_mostly;
-EXPORT_SYMBOL(system_state);
 
 /*
  * Boot command-line arguments
@@ -155,7 +154,6 @@ static char *ramdisk_execute_command = "/init";
  * before jump_label_init is called.
  */
 bool static_key_initialized __read_mostly;
-EXPORT_SYMBOL_GPL(static_key_initialized);
 
 /*
  * If set, this is an indication to the drivers that reset the underlying
@@ -167,7 +165,6 @@ EXPORT_SYMBOL_GPL(static_key_initialized);
  * skipped and devices will be in unknown state.
  */
 unsigned int reset_devices;
-EXPORT_SYMBOL(reset_devices);
 
 static int __init set_reset_devices(char *str)
 {
@@ -217,7 +214,6 @@ static bool __init obsolete_checksetup(char *line)
  * still work even if initially too large, it will just take slightly longer
  */
 unsigned long loops_per_jiffy = (1<<12);
-EXPORT_SYMBOL(loops_per_jiffy);
 
 static int __init debug_kernel(char *str)
 {

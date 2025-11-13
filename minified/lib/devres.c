@@ -70,7 +70,6 @@ void __iomem *devm_ioremap(struct device *dev, resource_size_t offset,
 {
 	return __devm_ioremap(dev, offset, size, DEVM_IOREMAP);
 }
-EXPORT_SYMBOL(devm_ioremap);
 
 /**
  * devm_ioremap_uc - Managed ioremap_uc()
@@ -85,7 +84,6 @@ void __iomem *devm_ioremap_uc(struct device *dev, resource_size_t offset,
 {
 	return __devm_ioremap(dev, offset, size, DEVM_IOREMAP_UC);
 }
-EXPORT_SYMBOL_GPL(devm_ioremap_uc);
 
 /**
  * devm_ioremap_wc - Managed ioremap_wc()
@@ -100,7 +98,6 @@ void __iomem *devm_ioremap_wc(struct device *dev, resource_size_t offset,
 {
 	return __devm_ioremap(dev, offset, size, DEVM_IOREMAP_WC);
 }
-EXPORT_SYMBOL(devm_ioremap_wc);
 
 /**
  * devm_ioremap_np - Managed ioremap_np()
@@ -115,7 +112,6 @@ void __iomem *devm_ioremap_np(struct device *dev, resource_size_t offset,
 {
 	return __devm_ioremap(dev, offset, size, DEVM_IOREMAP_NP);
 }
-EXPORT_SYMBOL(devm_ioremap_np);
 
 /**
  * devm_iounmap - Managed iounmap()
@@ -130,7 +126,6 @@ void devm_iounmap(struct device *dev, void __iomem *addr)
 			       (__force void *)addr));
 	iounmap(addr);
 }
-EXPORT_SYMBOL(devm_iounmap);
 
 static void __iomem *
 __devm_ioremap_resource(struct device *dev, const struct resource *res,
@@ -201,7 +196,6 @@ void __iomem *devm_ioremap_resource(struct device *dev,
 {
 	return __devm_ioremap_resource(dev, res, DEVM_IOREMAP);
 }
-EXPORT_SYMBOL(devm_ioremap_resource);
 
 /**
  * devm_ioremap_resource_wc() - write-combined variant of
@@ -259,7 +253,6 @@ void __iomem *devm_of_iomap(struct device *dev, struct device_node *node, int in
 		*size = resource_size(&res);
 	return devm_ioremap_resource(dev, &res);
 }
-EXPORT_SYMBOL(devm_of_iomap);
 
 /*
  * Generic iomap devres
@@ -304,7 +297,6 @@ void __iomem *devm_ioport_map(struct device *dev, unsigned long port,
 
 	return addr;
 }
-EXPORT_SYMBOL(devm_ioport_map);
 
 /**
  * devm_ioport_unmap - Managed ioport_unmap()
@@ -320,7 +312,6 @@ void devm_ioport_unmap(struct device *dev, void __iomem *addr)
 	WARN_ON(devres_destroy(dev, devm_ioport_map_release,
 			       devm_ioport_map_match, (__force void *)addr));
 }
-EXPORT_SYMBOL(devm_ioport_unmap);
 
 
 static void devm_arch_phys_ac_add_release(struct device *dev, void *res)
@@ -357,7 +348,6 @@ int devm_arch_phys_wc_add(struct device *dev, unsigned long base, unsigned long 
 
 	return ret;
 }
-EXPORT_SYMBOL(devm_arch_phys_wc_add);
 
 struct arch_io_reserve_memtype_wc_devres {
 	resource_size_t start;
@@ -403,4 +393,3 @@ int devm_arch_io_reserve_memtype_wc(struct device *dev, resource_size_t start,
 
 	return ret;
 }
-EXPORT_SYMBOL(devm_arch_io_reserve_memtype_wc);

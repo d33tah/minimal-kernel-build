@@ -82,4 +82,3 @@ unsigned long gcd(unsigned long a, unsigned long b)
 
 #endif
 
-EXPORT_SYMBOL_GPL(gcd);

@@ -8,7 +8,6 @@
 
 /* Stub kobject */
 struct kobject *firmware_kobj;
-EXPORT_SYMBOL_GPL(firmware_kobj);
 
 /* Stub init function */
 int __init firmware_init(void)

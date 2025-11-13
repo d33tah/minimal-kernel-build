@@ -29,4 +29,3 @@ u64 int_pow(u64 base, unsigned int exp)
 
 	return result;
 }
-EXPORT_SYMBOL_GPL(int_pow);

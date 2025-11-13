@@ -23,7 +23,6 @@ noinstr struct cpu_entry_area *get_cpu_entry_area(int cpu)
 
 	return (struct cpu_entry_area *) va;
 }
-EXPORT_SYMBOL(get_cpu_entry_area);
 
 void cea_set_pte(void *cea_vaddr, phys_addr_t pa, pgprot_t flags)
 {

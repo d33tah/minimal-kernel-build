@@ -57,7 +57,6 @@
 
 __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 
-EXPORT_SYMBOL(jiffies_64);
 
 /*
  * The timer wheel has LVL_DEPTH array levels. Each level provides an array of
@@ -269,7 +268,6 @@ unsigned long __round_jiffies(unsigned long j, int cpu)
 {
 	return round_jiffies_common(j, cpu, false);
 }
-EXPORT_SYMBOL_GPL(__round_jiffies);
 
 /**
  * __round_jiffies_relative - function to round jiffies to a full second
@@ -298,7 +296,6 @@ unsigned long __round_jiffies_relative(unsigned long j, int cpu)
 	/* Use j0 because jiffies might change while we run */
 	return round_jiffies_common(j + j0, cpu, false) - j0;
 }
-EXPORT_SYMBOL_GPL(__round_jiffies_relative);
 
 /**
  * round_jiffies - function to round jiffies to a full second
@@ -319,7 +316,6 @@ unsigned long round_jiffies(unsigned long j)
 {
 	return round_jiffies_common(j, raw_smp_processor_id(), false);
 }
-EXPORT_SYMBOL_GPL(round_jiffies);
 
 /**
  * round_jiffies_relative - function to round jiffies to a full second
@@ -340,7 +336,6 @@ unsigned long round_jiffies_relative(unsigned long j)
 {
 	return __round_jiffies_relative(j, raw_smp_processor_id());
 }
-EXPORT_SYMBOL_GPL(round_jiffies_relative);
 
 /**
  * __round_jiffies_up - function to round jiffies up to a full second
@@ -356,7 +351,6 @@ unsigned long __round_jiffies_up(unsigned long j, int cpu)
 {
 	return round_jiffies_common(j, cpu, true);
 }
-EXPORT_SYMBOL_GPL(__round_jiffies_up);
 
 /**
  * __round_jiffies_up_relative - function to round jiffies up to a full second
@@ -375,7 +369,6 @@ unsigned long __round_jiffies_up_relative(unsigned long j, int cpu)
 	/* Use j0 because jiffies might change while we run */
 	return round_jiffies_common(j + j0, cpu, true) - j0;
 }
-EXPORT_SYMBOL_GPL(__round_jiffies_up_relative);
 
 /**
  * round_jiffies_up - function to round jiffies up to a full second
@@ -390,7 +383,6 @@ unsigned long round_jiffies_up(unsigned long j)
 {
 	return round_jiffies_common(j, raw_smp_processor_id(), true);
 }
-EXPORT_SYMBOL_GPL(round_jiffies_up);
 
 /**
  * round_jiffies_up_relative - function to round jiffies up to a full second
@@ -405,7 +397,6 @@ unsigned long round_jiffies_up_relative(unsigned long j)
 {
 	return __round_jiffies_up_relative(j, raw_smp_processor_id());
 }
-EXPORT_SYMBOL_GPL(round_jiffies_up_relative);
 
 
 static inline unsigned int timer_get_idx(struct timer_list *timer)
@@ -598,7 +589,6 @@ void init_timer_key(struct timer_list *timer,
 	debug_init(timer);
 	do_init_timer(timer, func, flags, name, key);
 }
-EXPORT_SYMBOL(init_timer_key);
 
 static inline void detach_timer(struct timer_list *timer, bool clear_pending)
 {
@@ -858,7 +848,6 @@ int mod_timer_pending(struct timer_list *timer, unsigned long expires)
 {
 	return __mod_timer(timer, expires, MOD_TIMER_PENDING_ONLY);
 }
-EXPORT_SYMBOL(mod_timer_pending);
 
 /**
  * mod_timer - modify a timer's timeout
@@ -884,7 +873,6 @@ int mod_timer(struct timer_list *timer, unsigned long expires)
 {
 	return __mod_timer(timer, expires, 0);
 }
-EXPORT_SYMBOL(mod_timer);
 
 /**
  * timer_reduce - Modify a timer's timeout if it would reduce the timeout
@@ -899,7 +887,6 @@ int timer_reduce(struct timer_list *timer, unsigned long expires)
 {
 	return __mod_timer(timer, expires, MOD_TIMER_REDUCE);
 }
-EXPORT_SYMBOL(timer_reduce);
 
 /**
  * add_timer - start a timer
@@ -920,7 +907,6 @@ void add_timer(struct timer_list *timer)
 	BUG_ON(timer_pending(timer));
 	__mod_timer(timer, timer->expires, MOD_TIMER_NOTPENDING);
 }
-EXPORT_SYMBOL(add_timer);
 
 /**
  * add_timer_on - start a timer on a particular CPU
@@ -959,7 +945,6 @@ void add_timer_on(struct timer_list *timer, int cpu)
 	internal_add_timer(base, timer);
 	raw_spin_unlock_irqrestore(&base->lock, flags);
 }
-EXPORT_SYMBOL_GPL(add_timer_on);
 
 /**
  * del_timer - deactivate a timer.
@@ -988,7 +973,6 @@ int del_timer(struct timer_list *timer)
 
 	return ret;
 }
-EXPORT_SYMBOL(del_timer);
 
 /**
  * try_to_del_timer_sync - Try to deactivate a timer
@@ -1014,7 +998,6 @@ int try_to_del_timer_sync(struct timer_list *timer)
 
 	return ret;
 }
-EXPORT_SYMBOL(try_to_del_timer_sync);
 
 static inline void timer_base_init_expiry_lock(struct timer_base *base) { }
 static inline void timer_base_lock_expiry(struct timer_base *base) { }
@@ -1396,7 +1379,6 @@ signed long __sched schedule_timeout(signed long timeout)
  out:
 	return timeout < 0 ? 0 : timeout;
 }
-EXPORT_SYMBOL(schedule_timeout);
 
 /*
  * We can use __set_current_state() here because schedule_timeout() calls
@@ -1407,21 +1389,18 @@ signed long __sched schedule_timeout_interruptible(signed long timeout)
 	__set_current_state(TASK_INTERRUPTIBLE);
 	return schedule_timeout(timeout);
 }
-EXPORT_SYMBOL(schedule_timeout_interruptible);
 
 signed long __sched schedule_timeout_killable(signed long timeout)
 {
 	__set_current_state(TASK_KILLABLE);
 	return schedule_timeout(timeout);
 }
-EXPORT_SYMBOL(schedule_timeout_killable);
 
 signed long __sched schedule_timeout_uninterruptible(signed long timeout)
 {
 	__set_current_state(TASK_UNINTERRUPTIBLE);
 	return schedule_timeout(timeout);
 }
-EXPORT_SYMBOL(schedule_timeout_uninterruptible);
 
 /*
  * Like schedule_timeout_uninterruptible(), except this task will not contribute
@@ -1432,7 +1411,6 @@ signed long __sched schedule_timeout_idle(signed long timeout)
 	__set_current_state(TASK_IDLE);
 	return schedule_timeout(timeout);
 }
-EXPORT_SYMBOL(schedule_timeout_idle);
 
 
 static void __init init_timer_cpu(int cpu)
@@ -1477,7 +1455,6 @@ void msleep(unsigned int msecs)
 		timeout = schedule_timeout_uninterruptible(timeout);
 }
 
-EXPORT_SYMBOL(msleep);
 
 /**
  * msleep_interruptible - sleep waiting for signals
@@ -1492,7 +1469,6 @@ unsigned long msleep_interruptible(unsigned int msecs)
 	return jiffies_to_msecs(timeout);
 }
 
-EXPORT_SYMBOL(msleep_interruptible);
 
 /**
  * usleep_range_state - Sleep for an approximate time in a given state
@@ -1519,4 +1495,3 @@ void __sched usleep_range_state(unsigned long min, unsigned long max,
 			break;
 	}
 }
-EXPORT_SYMBOL(usleep_range_state);

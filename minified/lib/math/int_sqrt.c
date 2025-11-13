@@ -38,7 +38,6 @@ unsigned long int_sqrt(unsigned long x)
 
 	return y;
 }
-EXPORT_SYMBOL(int_sqrt);
 
 #if BITS_PER_LONG < 64
 /**
@@ -67,5 +66,4 @@ u32 int_sqrt64(u64 x)
 
 	return y;
 }
-EXPORT_SYMBOL(int_sqrt64);
 #endif

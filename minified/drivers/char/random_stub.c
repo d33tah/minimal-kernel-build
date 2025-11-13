@@ -18,25 +18,21 @@ int wait_for_random_bytes(void)
 {
 	return 0;
 }
-EXPORT_SYMBOL(wait_for_random_bytes);
 
 void get_random_bytes(void *buf, size_t len)
 {
 	memset(buf, 0, len);
 }
-EXPORT_SYMBOL(get_random_bytes);
 
 u32 get_random_u32(void)
 {
 	return 0;
 }
-EXPORT_SYMBOL(get_random_u32);
 
 u64 get_random_u64(void)
 {
 	return 0;
 }
-EXPORT_SYMBOL(get_random_u64);
 
 int __init random_init(const char *command_line)
 {
@@ -46,12 +42,10 @@ int __init random_init(const char *command_line)
 void add_device_randomness(const void *buf, size_t len)
 {
 }
-EXPORT_SYMBOL(add_device_randomness);
 
 void add_hwgenerator_randomness(const void *buf, size_t len, size_t entropy)
 {
 }
-EXPORT_SYMBOL(add_hwgenerator_randomness);
 
 void __init add_bootloader_randomness(const void *buf, size_t len)
 {
@@ -60,18 +54,15 @@ void __init add_bootloader_randomness(const void *buf, size_t len)
 void add_interrupt_randomness(int irq)
 {
 }
-EXPORT_SYMBOL_GPL(add_interrupt_randomness);
 
 void add_input_randomness(unsigned int type, unsigned int code, unsigned int value)
 {
 }
-EXPORT_SYMBOL_GPL(add_input_randomness);
 
 bool rng_is_initialized(void)
 {
 	return true;
 }
-EXPORT_SYMBOL(rng_is_initialized);
 
 /* Stub file operations for /dev/random and /dev/urandom */
 

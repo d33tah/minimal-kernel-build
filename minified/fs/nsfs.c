@@ -37,7 +37,6 @@ int open_related_ns(struct ns_common *ns,
 {
 	return -ENOSYS;
 }
-EXPORT_SYMBOL_GPL(open_related_ns);
 
 int ns_get_name(char *buf, size_t size, struct task_struct *task,
 			const struct proc_ns_operations *ns_ops)

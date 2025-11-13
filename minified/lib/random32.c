@@ -59,7 +59,6 @@ u32 prandom_u32_state(struct rnd_state *state)
 
 	return (state->s1 ^ state->s2 ^ state->s3 ^ state->s4);
 }
-EXPORT_SYMBOL(prandom_u32_state);
 
 /**
  *	prandom_bytes_state - get the requested number of pseudo-random bytes
@@ -90,7 +89,6 @@ void prandom_bytes_state(struct rnd_state *state, void *buf, size_t bytes)
 		} while (bytes > 0);
 	}
 }
-EXPORT_SYMBOL(prandom_bytes_state);
 
 static void prandom_warmup(struct rnd_state *state)
 {
@@ -124,5 +122,4 @@ void prandom_seed_full_state(struct rnd_state __percpu *pcpu_state)
 		prandom_warmup(state);
 	}
 }
-EXPORT_SYMBOL(prandom_seed_full_state);
 

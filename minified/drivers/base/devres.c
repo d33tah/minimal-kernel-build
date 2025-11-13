@@ -152,7 +152,6 @@ void *__devres_alloc_node(dr_release_t release, size_t size, gfp_t gfp, int nid,
 	set_node_dbginfo(&dr->node, name, size);
 	return dr->data;
 }
-EXPORT_SYMBOL_GPL(__devres_alloc_node);
 
 /**
  * devres_for_each_res - Resource iterator
@@ -194,7 +193,6 @@ void devres_for_each_res(struct device *dev, dr_release_t release,
 	}
 	spin_unlock_irqrestore(&dev->devres_lock, flags);
 }
-EXPORT_SYMBOL_GPL(devres_for_each_res);
 
 /**
  * devres_free - Free device resource data
@@ -211,7 +209,6 @@ void devres_free(void *res)
 		kfree(dr);
 	}
 }
-EXPORT_SYMBOL_GPL(devres_free);
 
 /**
  * devres_add - Register device resource
@@ -231,7 +228,6 @@ void devres_add(struct device *dev, void *res)
 	add_dr(dev, &dr->node);
 	spin_unlock_irqrestore(&dev->devres_lock, flags);
 }
-EXPORT_SYMBOL_GPL(devres_add);
 
 static struct devres *find_dr(struct device *dev, dr_release_t release,
 			      dr_match_t match, void *match_data)
@@ -279,7 +275,6 @@ void * devres_find(struct device *dev, dr_release_t release,
 		return dr->data;
 	return NULL;
 }
-EXPORT_SYMBOL_GPL(devres_find);
 
 /**
  * devres_get - Find devres, if non-existent, add one atomically
@@ -314,7 +309,6 @@ void * devres_get(struct device *dev, void *new_res,
 
 	return dr->data;
 }
-EXPORT_SYMBOL_GPL(devres_get);
 
 /**
  * devres_remove - Find a device resource and remove it
@@ -349,7 +343,6 @@ void * devres_remove(struct device *dev, dr_release_t release,
 		return dr->data;
 	return NULL;
 }
-EXPORT_SYMBOL_GPL(devres_remove);
 
 /**
  * devres_destroy - Find a device resource and destroy it
@@ -381,7 +374,6 @@ int devres_destroy(struct device *dev, dr_release_t release,
 	devres_free(res);
 	return 0;
 }
-EXPORT_SYMBOL_GPL(devres_destroy);
 
 
 /**
@@ -412,7 +404,6 @@ int devres_release(struct device *dev, dr_release_t release,
 	devres_free(res);
 	return 0;
 }
-EXPORT_SYMBOL_GPL(devres_release);
 
 static int remove_nodes(struct device *dev,
 			struct list_head *first, struct list_head *end,
@@ -555,7 +546,6 @@ void * devres_open_group(struct device *dev, void *id, gfp_t gfp)
 	spin_unlock_irqrestore(&dev->devres_lock, flags);
 	return grp->id;
 }
-EXPORT_SYMBOL_GPL(devres_open_group);
 
 /* Find devres group with ID @id.  If @id is NULL, look for the latest. */
 static struct devres_group * find_group(struct device *dev, void *id)
@@ -603,7 +593,6 @@ void devres_close_group(struct device *dev, void *id)
 
 	spin_unlock_irqrestore(&dev->devres_lock, flags);
 }
-EXPORT_SYMBOL_GPL(devres_close_group);
 
 /**
  * devres_remove_group - Remove a devres group
@@ -633,7 +622,6 @@ void devres_remove_group(struct device *dev, void *id)
 
 	kfree(grp);
 }
-EXPORT_SYMBOL_GPL(devres_remove_group);
 
 /**
  * devres_release_group - Release resources in a devres group
@@ -675,7 +663,6 @@ int devres_release_group(struct device *dev, void *id)
 
 	return cnt;
 }
-EXPORT_SYMBOL_GPL(devres_release_group);
 
 /*
  * Custom devres actions allow inserting a simple function call
@@ -727,7 +714,6 @@ int devm_add_action(struct device *dev, void (*action)(void *), void *data)
 	devres_add(dev, devres);
 	return 0;
 }
-EXPORT_SYMBOL_GPL(devm_add_action);
 
 /**
  * devm_remove_action() - removes previously added custom action
@@ -748,7 +734,6 @@ void devm_remove_action(struct device *dev, void (*action)(void *), void *data)
 	WARN_ON(devres_destroy(dev, devm_action_release, devm_action_match,
 			       &devres));
 }
-EXPORT_SYMBOL_GPL(devm_remove_action);
 
 /**
  * devm_release_action() - release previously added custom action
@@ -771,7 +756,6 @@ void devm_release_action(struct device *dev, void (*action)(void *), void *data)
 			       &devres));
 
 }
-EXPORT_SYMBOL_GPL(devm_release_action);
 
 /*
  * Managed kmalloc/kfree
@@ -819,7 +803,6 @@ void *devm_kmalloc(struct device *dev, size_t size, gfp_t gfp)
 	devres_add(dev, dr->data);
 	return dr->data;
 }
-EXPORT_SYMBOL_GPL(devm_kmalloc);
 
 /**
  * devm_krealloc - Resource-managed krealloc()
@@ -916,7 +899,6 @@ void *devm_krealloc(struct device *dev, void *ptr, size_t new_size, gfp_t gfp)
 
 	return new_dr->data;
 }
-EXPORT_SYMBOL_GPL(devm_krealloc);
 
 /**
  * devm_kstrdup - Allocate resource managed space and
@@ -942,7 +924,6 @@ char *devm_kstrdup(struct device *dev, const char *s, gfp_t gfp)
 		memcpy(buf, s, size);
 	return buf;
 }
-EXPORT_SYMBOL_GPL(devm_kstrdup);
 
 /**
  * devm_kstrdup_const - resource managed conditional string duplication
@@ -964,7 +945,6 @@ const char *devm_kstrdup_const(struct device *dev, const char *s, gfp_t gfp)
 
 	return devm_kstrdup(dev, s, gfp);
 }
-EXPORT_SYMBOL_GPL(devm_kstrdup_const);
 
 /**
  * devm_kvasprintf - Allocate resource managed space and format a string
@@ -996,7 +976,6 @@ char *devm_kvasprintf(struct device *dev, gfp_t gfp, const char *fmt,
 
 	return p;
 }
-EXPORT_SYMBOL(devm_kvasprintf);
 
 /**
  * devm_kasprintf - Allocate resource managed space and format a string
@@ -1020,7 +999,6 @@ char *devm_kasprintf(struct device *dev, gfp_t gfp, const char *fmt, ...)
 
 	return p;
 }
-EXPORT_SYMBOL_GPL(devm_kasprintf);
 
 /**
  * devm_kfree - Resource-managed kfree
@@ -1044,7 +1022,6 @@ void devm_kfree(struct device *dev, const void *p)
 			    devm_kmalloc_match, (void *)p);
 	WARN_ON(rc);
 }
-EXPORT_SYMBOL_GPL(devm_kfree);
 
 /**
  * devm_kmemdup - Resource-managed kmemdup
@@ -1065,7 +1042,6 @@ void *devm_kmemdup(struct device *dev, const void *src, size_t len, gfp_t gfp)
 
 	return p;
 }
-EXPORT_SYMBOL_GPL(devm_kmemdup);
 
 struct pages_devres {
 	unsigned long addr;
@@ -1124,7 +1100,6 @@ unsigned long devm_get_free_pages(struct device *dev,
 	devres_add(dev, devres);
 	return addr;
 }
-EXPORT_SYMBOL_GPL(devm_get_free_pages);
 
 /**
  * devm_free_pages - Resource-managed free_pages
@@ -1141,7 +1116,6 @@ void devm_free_pages(struct device *dev, unsigned long addr)
 	WARN_ON(devres_release(dev, devm_pages_release, devm_pages_match,
 			       &devres));
 }
-EXPORT_SYMBOL_GPL(devm_free_pages);
 
 static void devm_percpu_release(struct device *dev, void *pdata)
 {
@@ -1192,7 +1166,6 @@ void __percpu *__devm_alloc_percpu(struct device *dev, size_t size,
 
 	return pcpu;
 }
-EXPORT_SYMBOL_GPL(__devm_alloc_percpu);
 
 /**
  * devm_free_percpu - Resource-managed free_percpu
@@ -1206,4 +1179,3 @@ void devm_free_percpu(struct device *dev, void __percpu *pdata)
 	WARN_ON(devres_destroy(dev, devm_percpu_release, devm_percpu_match,
 			       (__force void *)pdata));
 }
-EXPORT_SYMBOL_GPL(devm_free_percpu);

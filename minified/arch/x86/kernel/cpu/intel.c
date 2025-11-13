@@ -207,7 +207,6 @@ int intel_cpu_collect_info(struct ucode_cpu_info *uci)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(intel_cpu_collect_info);
 
 static void early_init_intel(struct cpuinfo_x86 *c)
 {
@@ -1125,7 +1124,6 @@ bool handle_guest_split_lock(unsigned long ip)
 	force_sig_fault(SIGBUS, BUS_ADRALN, NULL);
 	return false;
 }
-EXPORT_SYMBOL_GPL(handle_guest_split_lock);
 
 static void bus_lock_init(void)
 {

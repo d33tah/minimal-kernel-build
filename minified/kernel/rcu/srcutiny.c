@@ -53,7 +53,6 @@ int init_srcu_struct(struct srcu_struct *ssp)
 {
 	return init_srcu_struct_fields(ssp);
 }
-EXPORT_SYMBOL_GPL(init_srcu_struct);
 
 
 /*
@@ -74,7 +73,6 @@ void cleanup_srcu_struct(struct srcu_struct *ssp)
 	WARN_ON(ssp->srcu_idx != ssp->srcu_idx_max);
 	WARN_ON(ssp->srcu_idx & 0x1);
 }
-EXPORT_SYMBOL_GPL(cleanup_srcu_struct);
 
 /*
  * Removes the count for the old reader from the appropriate element of
@@ -88,7 +86,6 @@ void __srcu_read_unlock(struct srcu_struct *ssp, int idx)
 	if (!newval && READ_ONCE(ssp->srcu_gp_waiting) && in_task())
 		swake_up_one(&ssp->srcu_wq);
 }
-EXPORT_SYMBOL_GPL(__srcu_read_unlock);
 
 /*
  * Workqueue handler to drive one grace period and invoke any callbacks
@@ -139,7 +136,6 @@ void srcu_drive_gp(struct work_struct *wp)
 	if (USHORT_CMP_LT(ssp->srcu_idx, READ_ONCE(ssp->srcu_idx_max)))
 		schedule_work(&ssp->srcu_work);
 }
-EXPORT_SYMBOL_GPL(srcu_drive_gp);
 
 static void srcu_gp_start_if_needed(struct srcu_struct *ssp)
 {
@@ -174,7 +170,6 @@ void call_srcu(struct srcu_struct *ssp, struct rcu_head *rhp,
 	local_irq_restore(flags);
 	srcu_gp_start_if_needed(ssp);
 }
-EXPORT_SYMBOL_GPL(call_srcu);
 
 /*
  * synchronize_srcu - wait for prior SRCU read-side critical-section completion
@@ -189,7 +184,6 @@ void synchronize_srcu(struct srcu_struct *ssp)
 	wait_for_completion(&rs.completion);
 	destroy_rcu_head_on_stack(&rs.head);
 }
-EXPORT_SYMBOL_GPL(synchronize_srcu);
 
 /*
  * get_state_synchronize_srcu - Provide an end-of-grace-period cookie
@@ -203,7 +197,6 @@ unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp)
 	barrier();
 	return ret & USHRT_MAX;
 }
-EXPORT_SYMBOL_GPL(get_state_synchronize_srcu);
 
 /*
  * start_poll_synchronize_srcu - Provide cookie and start grace period
@@ -219,7 +212,6 @@ unsigned long start_poll_synchronize_srcu(struct srcu_struct *ssp)
 	srcu_gp_start_if_needed(ssp);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(start_poll_synchronize_srcu);
 
 /*
  * poll_state_synchronize_srcu - Has cookie's grace period ended?
@@ -231,7 +223,6 @@ bool poll_state_synchronize_srcu(struct srcu_struct *ssp, unsigned long cookie)
 	barrier();
 	return ret;
 }
-EXPORT_SYMBOL_GPL(poll_state_synchronize_srcu);
 
 /* Lockdep diagnostics.  */
 void __init rcu_scheduler_starting(void)

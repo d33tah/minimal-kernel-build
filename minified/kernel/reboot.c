@@ -26,11 +26,9 @@
 
 static int C_A_D = 1;
 struct pid *cad_pid;
-EXPORT_SYMBOL(cad_pid);
 
 #define DEFAULT_REBOOT_MODE
 enum reboot_mode reboot_mode DEFAULT_REBOOT_MODE;
-EXPORT_SYMBOL_GPL(reboot_mode);
 enum reboot_mode panic_reboot_mode = REBOOT_UNDEFINED;
 
 /*
@@ -73,7 +71,6 @@ void emergency_restart(void)
 	kmsg_dump(KMSG_DUMP_EMERG);
 	machine_emergency_restart();
 }
-EXPORT_SYMBOL_GPL(emergency_restart);
 
 void kernel_restart_prepare(char *cmd)
 {
@@ -97,7 +94,6 @@ int register_reboot_notifier(struct notifier_block *nb)
 {
 	return blocking_notifier_chain_register(&reboot_notifier_list, nb);
 }
-EXPORT_SYMBOL(register_reboot_notifier);
 
 /**
  *	unregister_reboot_notifier - Unregister previously registered reboot notifier
@@ -112,7 +108,6 @@ int unregister_reboot_notifier(struct notifier_block *nb)
 {
 	return blocking_notifier_chain_unregister(&reboot_notifier_list, nb);
 }
-EXPORT_SYMBOL(unregister_reboot_notifier);
 
 static void devm_unregister_reboot_notifier(struct device *dev, void *res)
 {
@@ -139,7 +134,6 @@ int devm_register_reboot_notifier(struct device *dev, struct notifier_block *nb)
 
 	return ret;
 }
-EXPORT_SYMBOL(devm_register_reboot_notifier);
 
 /*
  *	Notifier list for kernel code which wants to be called
@@ -189,7 +183,6 @@ int register_restart_handler(struct notifier_block *nb)
 {
 	return atomic_notifier_chain_register(&restart_handler_list, nb);
 }
-EXPORT_SYMBOL(register_restart_handler);
 
 /**
  *	unregister_restart_handler - Unregister previously registered
@@ -204,7 +197,6 @@ int unregister_restart_handler(struct notifier_block *nb)
 {
 	return atomic_notifier_chain_unregister(&restart_handler_list, nb);
 }
-EXPORT_SYMBOL(unregister_restart_handler);
 
 /**
  *	do_kernel_restart - Execute kernel restart handler call chain
@@ -260,7 +252,6 @@ void kernel_restart(char *cmd)
 	kmsg_dump(KMSG_DUMP_SHUTDOWN);
 	machine_restart(cmd);
 }
-EXPORT_SYMBOL_GPL(kernel_restart);
 
 static void kernel_shutdown_prepare(enum system_states state)
 {
@@ -284,7 +275,6 @@ void kernel_halt(void)
 	kmsg_dump(KMSG_DUMP_SHUTDOWN);
 	machine_halt();
 }
-EXPORT_SYMBOL_GPL(kernel_halt);
 
 /*
  *	Notifier list for kernel code which wants to be called
@@ -431,7 +421,6 @@ register_sys_off_handler(enum sys_off_mode mode,
 
 	return handler;
 }
-EXPORT_SYMBOL_GPL(register_sys_off_handler);
 
 /**
  *	unregister_sys_off_handler - Unregister sys-off handler
@@ -458,7 +447,6 @@ void unregister_sys_off_handler(struct sys_off_handler *handler)
 
 	free_sys_off_handler(handler);
 }
-EXPORT_SYMBOL_GPL(unregister_sys_off_handler);
 
 static void devm_unregister_sys_off_handler(void *data)
 {
@@ -494,7 +482,6 @@ int devm_register_sys_off_handler(struct device *dev,
 	return devm_add_action_or_reset(dev, devm_unregister_sys_off_handler,
 					handler);
 }
-EXPORT_SYMBOL_GPL(devm_register_sys_off_handler);
 
 /**
  *	devm_register_power_off_handler - Register power-off handler
@@ -516,7 +503,6 @@ int devm_register_power_off_handler(struct device *dev,
 					     SYS_OFF_PRIO_DEFAULT,
 					     callback, cb_data);
 }
-EXPORT_SYMBOL_GPL(devm_register_power_off_handler);
 
 /**
  *	devm_register_restart_handler - Register restart handler
@@ -538,7 +524,6 @@ int devm_register_restart_handler(struct device *dev,
 					     SYS_OFF_PRIO_DEFAULT,
 					     callback, cb_data);
 }
-EXPORT_SYMBOL_GPL(devm_register_restart_handler);
 
 static struct sys_off_handler *platform_power_off_handler;
 
@@ -577,7 +562,6 @@ int register_platform_power_off(void (*power_off)(void))
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(register_platform_power_off);
 
 /**
  *	unregister_platform_power_off - Unregister platform-level power-off callback
@@ -593,7 +577,6 @@ void unregister_platform_power_off(void (*power_off)(void))
 		platform_power_off_handler = NULL;
 	}
 }
-EXPORT_SYMBOL_GPL(unregister_platform_power_off);
 
 static int legacy_pm_power_off(struct sys_off_data *data)
 {
@@ -648,7 +631,6 @@ bool kernel_can_power_off(void)
 	return !atomic_notifier_call_chain_is_empty(&power_off_handler_list) ||
 		pm_power_off;
 }
-EXPORT_SYMBOL_GPL(kernel_can_power_off);
 
 /**
  *	kernel_power_off - power_off the system
@@ -665,7 +647,6 @@ void kernel_power_off(void)
 	kmsg_dump(KMSG_DUMP_SHUTDOWN);
 	machine_power_off();
 }
-EXPORT_SYMBOL_GPL(kernel_power_off);
 
 DEFINE_MUTEX(system_transition_mutex);
 
@@ -857,7 +838,6 @@ void orderly_poweroff(bool force)
 		poweroff_force = true;
 	schedule_work(&poweroff_work);
 }
-EXPORT_SYMBOL_GPL(orderly_poweroff);
 
 static void reboot_work_func(struct work_struct *work)
 {
@@ -876,7 +856,6 @@ void orderly_reboot(void)
 {
 	schedule_work(&reboot_work);
 }
-EXPORT_SYMBOL_GPL(orderly_reboot);
 
 /**
  * hw_failure_emergency_poweroff_func - emergency poweroff work after a known delay
@@ -954,7 +933,6 @@ void hw_protection_shutdown(const char *reason, int ms_until_forced)
 	hw_failure_emergency_poweroff(ms_until_forced);
 	orderly_poweroff(true);
 }
-EXPORT_SYMBOL_GPL(hw_protection_shutdown);
 
 static int __init reboot_setup(char *str)
 {

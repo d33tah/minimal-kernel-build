@@ -137,7 +137,6 @@ void _local_bh_enable(void)
 	WARN_ON_ONCE(in_hardirq());
 	__local_bh_enable(SOFTIRQ_DISABLE_OFFSET);
 }
-EXPORT_SYMBOL(_local_bh_enable);
 
 void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 {
@@ -165,7 +164,6 @@ void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 	preempt_count_dec();
 	preempt_check_resched();
 }
-EXPORT_SYMBOL(__local_bh_enable_ip);
 
 static inline void softirq_handle_begin(void)
 {
@@ -464,14 +462,12 @@ void __tasklet_schedule(struct tasklet_struct *t)
 	__tasklet_schedule_common(t, &tasklet_vec,
 				  TASKLET_SOFTIRQ);
 }
-EXPORT_SYMBOL(__tasklet_schedule);
 
 void __tasklet_hi_schedule(struct tasklet_struct *t)
 {
 	__tasklet_schedule_common(t, &tasklet_hi_vec,
 				  HI_SOFTIRQ);
 }
-EXPORT_SYMBOL(__tasklet_hi_schedule);
 
 static bool tasklet_clear_sched(struct tasklet_struct *t)
 {
@@ -547,7 +543,6 @@ void tasklet_setup(struct tasklet_struct *t,
 	t->use_callback = true;
 	t->data = 0;
 }
-EXPORT_SYMBOL(tasklet_setup);
 
 void tasklet_init(struct tasklet_struct *t,
 		  void (*func)(unsigned long), unsigned long data)
@@ -559,7 +554,6 @@ void tasklet_init(struct tasklet_struct *t,
 	t->use_callback = false;
 	t->data = data;
 }
-EXPORT_SYMBOL(tasklet_init);
 
 
 void tasklet_kill(struct tasklet_struct *t)
@@ -573,7 +567,6 @@ void tasklet_kill(struct tasklet_struct *t)
 	tasklet_unlock_wait(t);
 	tasklet_clear_sched(t);
 }
-EXPORT_SYMBOL(tasklet_kill);
 
 
 void __init softirq_init(void)

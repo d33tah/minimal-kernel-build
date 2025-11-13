@@ -44,7 +44,6 @@ int lookup_constant(const struct constant_table *tbl, const char *name, int not_
 
 	return p ? p->value : not_found;
 }
-EXPORT_SYMBOL(lookup_constant);
 
 static inline bool is_flag(const struct fs_parameter_spec *p)
 {
@@ -131,7 +130,6 @@ int __fs_parse(struct p_log *log,
 	}
 	return p->opt;
 }
-EXPORT_SYMBOL(__fs_parse);
 
 /**
  * fs_lookup_param - Look up a path referred to by a parameter
@@ -186,7 +184,6 @@ out:
 		putname(f);
 	return ret;
 }
-EXPORT_SYMBOL(fs_lookup_param);
 
 static int fs_param_bad_value(struct p_log *log, struct fs_parameter *param)
 {
@@ -207,7 +204,6 @@ int fs_param_is_bool(struct p_log *log, const struct fs_parameter_spec *p,
 	result->boolean = b;
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_bool);
 
 int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p,
 		    struct fs_parameter *param, struct fs_parse_result *result)
@@ -221,7 +217,6 @@ int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p,
 		return fs_param_bad_value(log, param);
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_u32);
 
 int fs_param_is_s32(struct p_log *log, const struct fs_parameter_spec *p,
 		    struct fs_parameter *param, struct fs_parse_result *result)
@@ -234,7 +229,6 @@ int fs_param_is_s32(struct p_log *log, const struct fs_parameter_spec *p,
 		return fs_param_bad_value(log, param);
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_s32);
 
 int fs_param_is_u64(struct p_log *log, const struct fs_parameter_spec *p,
 		    struct fs_parameter *param, struct fs_parse_result *result)
@@ -247,7 +241,6 @@ int fs_param_is_u64(struct p_log *log, const struct fs_parameter_spec *p,
 		return fs_param_bad_value(log, param);
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_u64);
 
 int fs_param_is_enum(struct p_log *log, const struct fs_parameter_spec *p,
 		     struct fs_parameter *param, struct fs_parse_result *result)
@@ -263,7 +256,6 @@ int fs_param_is_enum(struct p_log *log, const struct fs_parameter_spec *p,
 	result->uint_32 = c->value;
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_enum);
 
 int fs_param_is_string(struct p_log *log, const struct fs_parameter_spec *p,
 		       struct fs_parameter *param, struct fs_parse_result *result)
@@ -273,7 +265,6 @@ int fs_param_is_string(struct p_log *log, const struct fs_parameter_spec *p,
 		return fs_param_bad_value(log, param);
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_string);
 
 int fs_param_is_blob(struct p_log *log, const struct fs_parameter_spec *p,
 		     struct fs_parameter *param, struct fs_parse_result *result)
@@ -282,7 +273,6 @@ int fs_param_is_blob(struct p_log *log, const struct fs_parameter_spec *p,
 		return fs_param_bad_value(log, param);
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_blob);
 
 int fs_param_is_fd(struct p_log *log, const struct fs_parameter_spec *p,
 		  struct fs_parameter *param, struct fs_parse_result *result)
@@ -305,19 +295,16 @@ int fs_param_is_fd(struct p_log *log, const struct fs_parameter_spec *p,
 	}
 	return fs_param_bad_value(log, param);
 }
-EXPORT_SYMBOL(fs_param_is_fd);
 
 int fs_param_is_blockdev(struct p_log *log, const struct fs_parameter_spec *p,
 		  struct fs_parameter *param, struct fs_parse_result *result)
 {
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_blockdev);
 
 int fs_param_is_path(struct p_log *log, const struct fs_parameter_spec *p,
 		     struct fs_parameter *param, struct fs_parse_result *result)
 {
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_path);
 

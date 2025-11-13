@@ -61,7 +61,6 @@ bool synchronize_hardirq(unsigned int irq)
 
 	return true;
 }
-EXPORT_SYMBOL(synchronize_hardirq);
 
 void synchronize_irq(unsigned int irq)
 {
@@ -74,7 +73,6 @@ void synchronize_irq(unsigned int irq)
 			   !atomic_read(&desc->threads_active));
 	}
 }
-EXPORT_SYMBOL(synchronize_irq);
 
 int irq_set_vcpu_affinity(unsigned int irq, void *vcpu_info)
 {
@@ -101,7 +99,6 @@ int irq_set_vcpu_affinity(unsigned int irq, void *vcpu_info)
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(irq_set_vcpu_affinity);
 
 void __disable_irq(struct irq_desc *desc)
 {
@@ -125,14 +122,12 @@ void disable_irq_nosync(unsigned int irq)
 {
 	__disable_irq_nosync(irq);
 }
-EXPORT_SYMBOL(disable_irq_nosync);
 
 void disable_irq(unsigned int irq)
 {
 	if (!__disable_irq_nosync(irq))
 		synchronize_irq(irq);
 }
-EXPORT_SYMBOL(disable_irq);
 
 bool disable_hardirq(unsigned int irq)
 {
@@ -141,7 +136,6 @@ bool disable_hardirq(unsigned int irq)
 
 	return false;
 }
-EXPORT_SYMBOL_GPL(disable_hardirq);
 
 void disable_nmi_nosync(unsigned int irq)
 {
@@ -185,7 +179,6 @@ void enable_irq(unsigned int irq)
 out:
 	irq_put_desc_busunlock(desc, flags);
 }
-EXPORT_SYMBOL(enable_irq);
 
 void enable_nmi(unsigned int irq)
 {
@@ -244,7 +237,6 @@ out_unlock:
 	irq_put_desc_busunlock(desc, flags);
 	return ret;
 }
-EXPORT_SYMBOL(irq_set_irq_wake);
 
 int can_request_irq(unsigned int irq, unsigned long irqflags)
 {
@@ -328,7 +320,6 @@ int irq_set_parent(int irq, int parent_irq)
 	irq_put_desc_unlock(desc, flags);
 	return 0;
 }
-EXPORT_SYMBOL_GPL(irq_set_parent);
 
 static irqreturn_t irq_default_primary_handler(int irq, void *dev_id)
 {
@@ -554,7 +545,6 @@ void irq_wake_thread(unsigned int irq, void *dev_id)
 	}
 	raw_spin_unlock_irqrestore(&desc->lock, flags);
 }
-EXPORT_SYMBOL_GPL(irq_wake_thread);
 
 static int irq_setup_forced_threading(struct irqaction *new)
 {
@@ -985,7 +975,6 @@ const void *free_irq(unsigned int irq, void *dev_id)
 	kfree(action);
 	return devname;
 }
-EXPORT_SYMBOL(free_irq);
 
 static const void *__cleanup_nmi(unsigned int irq, struct irq_desc *desc)
 {
@@ -1095,7 +1084,6 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 
 	return retval;
 }
-EXPORT_SYMBOL(request_threaded_irq);
 
 int request_any_context_irq(unsigned int irq, irq_handler_t handler,
 			    unsigned long flags, const char *name, void *dev_id)
@@ -1119,7 +1107,6 @@ int request_any_context_irq(unsigned int irq, irq_handler_t handler,
 	ret = request_irq(irq, handler, flags, name, dev_id);
 	return !ret ? IRQC_IS_HARDIRQ : ret;
 }
-EXPORT_SYMBOL_GPL(request_any_context_irq);
 
 int request_nmi(unsigned int irq, irq_handler_t handler,
 		unsigned long irqflags, const char *name, void *dev_id)
@@ -1217,7 +1204,6 @@ void enable_percpu_irq(unsigned int irq, unsigned int type)
 out:
 	irq_put_desc_unlock(desc, flags);
 }
-EXPORT_SYMBOL_GPL(enable_percpu_irq);
 
 void enable_percpu_nmi(unsigned int irq, unsigned int type)
 {
@@ -1240,7 +1226,6 @@ bool irq_percpu_is_enabled(unsigned int irq)
 
 	return is_enabled;
 }
-EXPORT_SYMBOL_GPL(irq_percpu_is_enabled);
 
 void disable_percpu_irq(unsigned int irq)
 {
@@ -1254,7 +1239,6 @@ void disable_percpu_irq(unsigned int irq)
 	irq_percpu_disable(desc, cpu);
 	irq_put_desc_unlock(desc, flags);
 }
-EXPORT_SYMBOL_GPL(disable_percpu_irq);
 
 void disable_percpu_nmi(unsigned int irq)
 {
@@ -1322,7 +1306,6 @@ void free_percpu_irq(unsigned int irq, void __percpu *dev_id)
 	kfree(__free_percpu_irq(irq, dev_id));
 	chip_bus_sync_unlock(desc);
 }
-EXPORT_SYMBOL_GPL(free_percpu_irq);
 
 void free_percpu_nmi(unsigned int irq, void __percpu *dev_id)
 {
@@ -1400,7 +1383,6 @@ int __request_percpu_irq(unsigned int irq, irq_handler_t handler,
 
 	return retval;
 }
-EXPORT_SYMBOL_GPL(__request_percpu_irq);
 
 int request_percpu_nmi(unsigned int irq, irq_handler_t handler,
 		       const char *name, void __percpu *dev_id)
@@ -1546,7 +1528,6 @@ int irq_get_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
 	irq_put_desc_busunlock(desc, flags);
 	return err;
 }
-EXPORT_SYMBOL_GPL(irq_get_irqchip_state);
 
 int irq_set_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
 			  bool val)
@@ -1581,7 +1562,6 @@ out_unlock:
 	irq_put_desc_busunlock(desc, flags);
 	return err;
 }
-EXPORT_SYMBOL_GPL(irq_set_irqchip_state);
 
 bool irq_has_action(unsigned int irq)
 {
@@ -1592,7 +1572,6 @@ bool irq_has_action(unsigned int irq)
 	rcu_read_unlock();
 	return res;
 }
-EXPORT_SYMBOL_GPL(irq_has_action);
 
 bool irq_check_status_bit(unsigned int irq, unsigned int bitmask)
 {
@@ -1606,4 +1585,3 @@ bool irq_check_status_bit(unsigned int irq, unsigned int bitmask)
 	rcu_read_unlock();
 	return res;
 }
-EXPORT_SYMBOL_GPL(irq_check_status_bit);

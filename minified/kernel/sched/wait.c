@@ -12,7 +12,6 @@ void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *name, st
 	INIT_LIST_HEAD(&wq_head->head);
 }
 
-EXPORT_SYMBOL(__init_waitqueue_head);
 
 void add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
@@ -23,7 +22,6 @@ void add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq
 	__add_wait_queue(wq_head, wq_entry);
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 }
-EXPORT_SYMBOL(add_wait_queue);
 
 void add_wait_queue_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
@@ -34,7 +32,6 @@ void add_wait_queue_exclusive(struct wait_queue_head *wq_head, struct wait_queue
 	__add_wait_queue_entry_tail(wq_head, wq_entry);
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 }
-EXPORT_SYMBOL(add_wait_queue_exclusive);
 
 void add_wait_queue_priority(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
@@ -45,7 +42,6 @@ void add_wait_queue_priority(struct wait_queue_head *wq_head, struct wait_queue_
 	__add_wait_queue(wq_head, wq_entry);
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 }
-EXPORT_SYMBOL_GPL(add_wait_queue_priority);
 
 void remove_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
@@ -55,7 +51,6 @@ void remove_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry 
 	__remove_wait_queue(wq_head, wq_entry);
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 }
-EXPORT_SYMBOL(remove_wait_queue);
 
 /*
  * Scan threshold to break wait queue walk.
@@ -155,7 +150,6 @@ void __wake_up(struct wait_queue_head *wq_head, unsigned int mode,
 {
 	__wake_up_common_lock(wq_head, mode, nr_exclusive, 0, key);
 }
-EXPORT_SYMBOL(__wake_up);
 
 /*
  * Same as __wake_up but called with the spinlock in wait_queue_head_t held.
@@ -164,20 +158,17 @@ void __wake_up_locked(struct wait_queue_head *wq_head, unsigned int mode, int nr
 {
 	__wake_up_common(wq_head, mode, nr, 0, NULL, NULL);
 }
-EXPORT_SYMBOL_GPL(__wake_up_locked);
 
 void __wake_up_locked_key(struct wait_queue_head *wq_head, unsigned int mode, void *key)
 {
 	__wake_up_common(wq_head, mode, 1, 0, key, NULL);
 }
-EXPORT_SYMBOL_GPL(__wake_up_locked_key);
 
 void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 		unsigned int mode, void *key, wait_queue_entry_t *bookmark)
 {
 	__wake_up_common(wq_head, mode, 1, 0, key, bookmark);
 }
-EXPORT_SYMBOL_GPL(__wake_up_locked_key_bookmark);
 
 /**
  * __wake_up_sync_key - wake up threads blocked on a waitqueue.
@@ -203,7 +194,6 @@ void __wake_up_sync_key(struct wait_queue_head *wq_head, unsigned int mode,
 
 	__wake_up_common_lock(wq_head, mode, 1, WF_SYNC, key);
 }
-EXPORT_SYMBOL_GPL(__wake_up_sync_key);
 
 /**
  * __wake_up_locked_sync_key - wake up a thread blocked on a locked waitqueue.
@@ -226,7 +216,6 @@ void __wake_up_locked_sync_key(struct wait_queue_head *wq_head,
 {
         __wake_up_common(wq_head, mode, 1, WF_SYNC, key, NULL);
 }
-EXPORT_SYMBOL_GPL(__wake_up_locked_sync_key);
 
 /*
  * __wake_up_sync - see __wake_up_sync_key()
@@ -235,7 +224,6 @@ void __wake_up_sync(struct wait_queue_head *wq_head, unsigned int mode)
 {
 	__wake_up_sync_key(wq_head, mode, NULL);
 }
-EXPORT_SYMBOL_GPL(__wake_up_sync);	/* For internal use only */
 
 void __wake_up_pollfree(struct wait_queue_head *wq_head)
 {
@@ -268,7 +256,6 @@ prepare_to_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_ent
 	set_current_state(state);
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 }
-EXPORT_SYMBOL(prepare_to_wait);
 
 /* Returns true if we are the first waiter in the queue, false otherwise. */
 bool
@@ -287,7 +274,6 @@ prepare_to_wait_exclusive(struct wait_queue_head *wq_head, struct wait_queue_ent
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 	return was_empty;
 }
-EXPORT_SYMBOL(prepare_to_wait_exclusive);
 
 void init_wait_entry(struct wait_queue_entry *wq_entry, int flags)
 {
@@ -296,7 +282,6 @@ void init_wait_entry(struct wait_queue_entry *wq_entry, int flags)
 	wq_entry->func = autoremove_wake_function;
 	INIT_LIST_HEAD(&wq_entry->entry);
 }
-EXPORT_SYMBOL(init_wait_entry);
 
 long prepare_to_wait_event(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state)
 {
@@ -332,7 +317,6 @@ long prepare_to_wait_event(struct wait_queue_head *wq_head, struct wait_queue_en
 
 	return ret;
 }
-EXPORT_SYMBOL(prepare_to_wait_event);
 
 /*
  * Note! These two wait functions are entered with the
@@ -356,7 +340,6 @@ int do_wait_intr(wait_queue_head_t *wq, wait_queue_entry_t *wait)
 
 	return 0;
 }
-EXPORT_SYMBOL(do_wait_intr);
 
 int do_wait_intr_irq(wait_queue_head_t *wq, wait_queue_entry_t *wait)
 {
@@ -373,7 +356,6 @@ int do_wait_intr_irq(wait_queue_head_t *wq, wait_queue_entry_t *wait)
 
 	return 0;
 }
-EXPORT_SYMBOL(do_wait_intr_irq);
 
 /**
  * finish_wait - clean up after waiting in a queue
@@ -408,7 +390,6 @@ void finish_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_en
 		spin_unlock_irqrestore(&wq_head->lock, flags);
 	}
 }
-EXPORT_SYMBOL(finish_wait);
 
 int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync, void *key)
 {
@@ -419,7 +400,6 @@ int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, i
 
 	return ret;
 }
-EXPORT_SYMBOL(autoremove_wake_function);
 
 static inline bool is_kthread_should_stop(void)
 {
@@ -469,7 +449,6 @@ long wait_woken(struct wait_queue_entry *wq_entry, unsigned mode, long timeout)
 
 	return timeout;
 }
-EXPORT_SYMBOL(wait_woken);
 
 int woken_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync, void *key)
 {
@@ -479,4 +458,3 @@ int woken_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int sy
 
 	return default_wake_function(wq_entry, mode, sync, key);
 }
-EXPORT_SYMBOL(woken_wake_function);

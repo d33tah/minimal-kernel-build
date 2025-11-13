@@ -179,7 +179,6 @@ int __register_nmi_handler(unsigned int type, struct nmiaction *action)
 	raw_spin_unlock_irqrestore(&desc->lock, flags);
 	return 0;
 }
-EXPORT_SYMBOL(__register_nmi_handler);
 
 void unregister_nmi_handler(unsigned int type, const char *name)
 {
@@ -209,7 +208,6 @@ void unregister_nmi_handler(unsigned int type, const char *name)
 		INIT_LIST_HEAD(&found->list);
 	}
 }
-EXPORT_SYMBOL_GPL(unregister_nmi_handler);
 
 static void
 pci_serr_error(unsigned char reason, struct pt_regs *regs)
@@ -524,7 +522,6 @@ nmi_restart:
 }
 
 #if IS_MODULE(CONFIG_KVM_INTEL)
-EXPORT_SYMBOL_GPL(asm_exc_nmi_noist);
 #endif
 
 void stop_nmi(void)
@@ -542,4 +539,3 @@ void local_touch_nmi(void)
 {
 	__this_cpu_write(last_nmi_rip, 0);
 }
-EXPORT_SYMBOL_GPL(local_touch_nmi);

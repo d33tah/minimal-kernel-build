@@ -57,7 +57,6 @@ const struct x86_cpu_id *x86_match_cpu(const struct x86_cpu_id *match)
 	}
 	return NULL;
 }
-EXPORT_SYMBOL(x86_match_cpu);
 
 static const struct x86_cpu_desc *
 x86_match_cpu_with_stepping(const struct x86_cpu_desc *match)
@@ -88,4 +87,3 @@ bool x86_cpu_has_min_microcode_rev(const struct x86_cpu_desc *table)
 
 	return true;
 }
-EXPORT_SYMBOL_GPL(x86_cpu_has_min_microcode_rev);

@@ -112,7 +112,6 @@ struct task_struct init_task
 	.perf_event_list = LIST_HEAD_INIT(init_task.perf_event_list),
 	INIT_PREV_CPUTIME(init_task)
 };
-EXPORT_SYMBOL(init_task);
 
 /*
  * Initial thread structure. Alignment of this is handled by a special

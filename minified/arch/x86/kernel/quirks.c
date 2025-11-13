@@ -15,7 +15,6 @@
 
 
 bool x86_apple_machine;
-EXPORT_SYMBOL(x86_apple_machine);
 
 void __init early_platform_quirks(void)
 {

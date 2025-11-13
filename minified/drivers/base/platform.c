@@ -42,7 +42,6 @@ static DEFINE_IDA(platform_devid_ida);
 struct device platform_bus = {
 	.init_name	= "platform",
 };
-EXPORT_SYMBOL_GPL(platform_bus);
 
 /**
  * platform_get_resource - get a resource for a device
@@ -65,7 +64,6 @@ struct resource *platform_get_resource(struct platform_device *dev,
 	}
 	return NULL;
 }
-EXPORT_SYMBOL_GPL(platform_get_resource);
 
 struct resource *platform_get_mem_or_io(struct platform_device *dev,
 					unsigned int num)
@@ -80,7 +78,6 @@ struct resource *platform_get_mem_or_io(struct platform_device *dev,
 	}
 	return NULL;
 }
-EXPORT_SYMBOL_GPL(platform_get_mem_or_io);
 
 /**
  * devm_platform_get_and_ioremap_resource - call devm_ioremap_resource() for a
@@ -105,7 +102,6 @@ devm_platform_get_and_ioremap_resource(struct platform_device *pdev,
 		*res = r;
 	return devm_ioremap_resource(&pdev->dev, r);
 }
-EXPORT_SYMBOL_GPL(devm_platform_get_and_ioremap_resource);
 
 /**
  * devm_platform_ioremap_resource - call devm_ioremap_resource() for a platform
@@ -123,7 +119,6 @@ void __iomem *devm_platform_ioremap_resource(struct platform_device *pdev,
 {
 	return devm_platform_get_and_ioremap_resource(pdev, index, NULL);
 }
-EXPORT_SYMBOL_GPL(devm_platform_ioremap_resource);
 
 /**
  * devm_platform_ioremap_resource_byname - call devm_ioremap_resource for
@@ -146,7 +141,6 @@ devm_platform_ioremap_resource_byname(struct platform_device *pdev,
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, name);
 	return devm_ioremap_resource(&pdev->dev, res);
 }
-EXPORT_SYMBOL_GPL(devm_platform_ioremap_resource_byname);
 
 /**
  * platform_get_irq_optional - get an optional IRQ for a device
@@ -227,7 +221,6 @@ out:
 		return -EINVAL;
 	return ret;
 }
-EXPORT_SYMBOL_GPL(platform_get_irq_optional);
 
 /**
  * platform_get_irq - get an IRQ for a device
@@ -257,7 +250,6 @@ int platform_get_irq(struct platform_device *dev, unsigned int num)
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(platform_get_irq);
 
 /**
  * platform_irq_count - Count the number of IRQs a platform device uses
@@ -277,7 +269,6 @@ int platform_irq_count(struct platform_device *dev)
 
 	return nr;
 }
-EXPORT_SYMBOL_GPL(platform_irq_count);
 
 struct irq_affinity_devres {
 	unsigned int count;
@@ -398,7 +389,6 @@ err_free_devres:
 	devres_free(ptr);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(devm_platform_get_irqs_affinity);
 
 /**
  * platform_get_resource_byname - get a resource for a device by name
@@ -423,7 +413,6 @@ struct resource *platform_get_resource_byname(struct platform_device *dev,
 	}
 	return NULL;
 }
-EXPORT_SYMBOL_GPL(platform_get_resource_byname);
 
 static int __platform_get_irq_byname(struct platform_device *dev,
 				     const char *name)
@@ -466,7 +455,6 @@ int platform_get_irq_byname(struct platform_device *dev, const char *name)
 				     name);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(platform_get_irq_byname);
 
 /**
  * platform_get_irq_byname_optional - get an optional IRQ for a device by name
@@ -483,7 +471,6 @@ int platform_get_irq_byname_optional(struct platform_device *dev,
 {
 	return __platform_get_irq_byname(dev, name);
 }
-EXPORT_SYMBOL_GPL(platform_get_irq_byname_optional);
 
 /**
  * platform_add_devices - add a numbers of platform devices
@@ -505,7 +492,6 @@ int platform_add_devices(struct platform_device **devs, int num)
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(platform_add_devices);
 
 struct platform_object {
 	struct platform_device pdev;
@@ -540,7 +526,6 @@ void platform_device_put(struct platform_device *pdev)
 	if (!IS_ERR_OR_NULL(pdev))
 		put_device(&pdev->dev);
 }
-EXPORT_SYMBOL_GPL(platform_device_put);
 
 static void platform_device_release(struct device *dev)
 {
@@ -579,7 +564,6 @@ struct platform_device *platform_device_alloc(const char *name, int id)
 
 	return pa ? &pa->pdev : NULL;
 }
-EXPORT_SYMBOL_GPL(platform_device_alloc);
 
 /**
  * platform_device_add_resources - add resources to a platform device
@@ -607,7 +591,6 @@ int platform_device_add_resources(struct platform_device *pdev,
 	pdev->num_resources = num;
 	return 0;
 }
-EXPORT_SYMBOL_GPL(platform_device_add_resources);
 
 /**
  * platform_device_add_data - add platform-specific data to a platform device
@@ -634,7 +617,6 @@ int platform_device_add_data(struct platform_device *pdev, const void *data,
 	pdev->dev.platform_data = d;
 	return 0;
 }
-EXPORT_SYMBOL_GPL(platform_device_add_data);
 
 /**
  * platform_device_add - add a platform device to device hierarchy
@@ -723,7 +705,6 @@ int platform_device_add(struct platform_device *pdev)
  err_out:
 	return ret;
 }
-EXPORT_SYMBOL_GPL(platform_device_add);
 
 /**
  * platform_device_del - remove a platform-level device
@@ -752,7 +733,6 @@ void platform_device_del(struct platform_device *pdev)
 		}
 	}
 }
-EXPORT_SYMBOL_GPL(platform_device_del);
 
 /**
  * platform_device_register - add a platform-level device
@@ -768,7 +748,6 @@ int platform_device_register(struct platform_device *pdev)
 	setup_pdev_dma_masks(pdev);
 	return platform_device_add(pdev);
 }
-EXPORT_SYMBOL_GPL(platform_device_register);
 
 /**
  * platform_device_unregister - unregister a platform-level device
@@ -783,7 +762,6 @@ void platform_device_unregister(struct platform_device *pdev)
 	platform_device_del(pdev);
 	platform_device_put(pdev);
 }
-EXPORT_SYMBOL_GPL(platform_device_unregister);
 
 /**
  * platform_device_register_full - add a platform-level device with
@@ -841,7 +819,6 @@ err:
 
 	return pdev;
 }
-EXPORT_SYMBOL_GPL(platform_device_register_full);
 
 /**
  * __platform_driver_register - register a driver for platform-level devices
@@ -856,7 +833,6 @@ int __platform_driver_register(struct platform_driver *drv,
 
 	return driver_register(&drv->driver);
 }
-EXPORT_SYMBOL_GPL(__platform_driver_register);
 
 /**
  * platform_driver_unregister - unregister a driver for platform-level devices
@@ -866,7 +842,6 @@ void platform_driver_unregister(struct platform_driver *drv)
 {
 	driver_unregister(&drv->driver);
 }
-EXPORT_SYMBOL_GPL(platform_driver_unregister);
 
 static int platform_probe_fail(struct platform_device *pdev)
 {
@@ -942,7 +917,6 @@ int __init_or_module __platform_driver_probe(struct platform_driver *drv,
 		platform_driver_unregister(drv);
 	return retval;
 }
-EXPORT_SYMBOL_GPL(__platform_driver_probe);
 
 /**
  * __platform_create_bundle - register driver and create corresponding device
@@ -999,7 +973,6 @@ err_pdev_put:
 err_out:
 	return ERR_PTR(error);
 }
-EXPORT_SYMBOL_GPL(__platform_create_bundle);
 
 /**
  * __platform_register_drivers - register an array of platform drivers
@@ -1041,7 +1014,6 @@ error:
 
 	return err;
 }
-EXPORT_SYMBOL_GPL(__platform_register_drivers);
 
 /**
  * platform_unregister_drivers - unregister an array of platform drivers
@@ -1060,7 +1032,6 @@ void platform_unregister_drivers(struct platform_driver * const *drivers,
 		platform_driver_unregister(drivers[count]);
 	}
 }
-EXPORT_SYMBOL_GPL(platform_unregister_drivers);
 
 static const struct platform_device_id *platform_match_id(
 			const struct platform_device_id *id,
@@ -1334,7 +1305,6 @@ struct bus_type platform_bus_type = {
 	.dma_cleanup	= platform_dma_cleanup,
 	.pm		= &platform_dev_pm_ops,
 };
-EXPORT_SYMBOL_GPL(platform_bus_type);
 
 static inline int __platform_match(struct device *dev, const void *drv)
 {
@@ -1353,7 +1323,6 @@ struct device *platform_find_device_by_driver(struct device *start,
 	return bus_find_device(&platform_bus_type, start, drv,
 			       __platform_match);
 }
-EXPORT_SYMBOL_GPL(platform_find_device_by_driver);
 
 void __weak __init early_platform_cleanup(void) { }
 

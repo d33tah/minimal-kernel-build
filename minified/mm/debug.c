@@ -57,5 +57,4 @@ void dump_page(struct page *page, const char *reason)
 {
 	/* Stubbed for minimization */
 }
-EXPORT_SYMBOL(dump_page);
 

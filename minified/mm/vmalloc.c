@@ -48,7 +48,6 @@ bool is_vmalloc_addr(const void *x)
 
 	return addr >= VMALLOC_START && addr < VMALLOC_END;
 }
-EXPORT_SYMBOL(is_vmalloc_addr);
 
 struct vfree_deferred {
 	struct llist_head list;
@@ -594,13 +593,11 @@ struct page *vmalloc_to_page(const void *vmalloc_addr)
 
 	return page;
 }
-EXPORT_SYMBOL(vmalloc_to_page);
 
 unsigned long vmalloc_to_pfn(const void *vmalloc_addr)
 {
 	return page_to_pfn(vmalloc_to_page(vmalloc_addr));
 }
-EXPORT_SYMBOL(vmalloc_to_pfn);
 
 #define DEBUG_AUGMENT_PROPAGATE_CHECK 0
 #define DEBUG_AUGMENT_LOWEST_MATCH_CHECK 0
@@ -1279,13 +1276,11 @@ int register_vmap_purge_notifier(struct notifier_block *nb)
 {
 	return blocking_notifier_chain_register(&vmap_notify_list, nb);
 }
-EXPORT_SYMBOL_GPL(register_vmap_purge_notifier);
 
 int unregister_vmap_purge_notifier(struct notifier_block *nb)
 {
 	return blocking_notifier_chain_unregister(&vmap_notify_list, nb);
 }
-EXPORT_SYMBOL_GPL(unregister_vmap_purge_notifier);
 
 static unsigned long lazy_max_pages(void)
 {
@@ -1709,7 +1704,6 @@ void vm_unmap_aliases(void)
 
 	_vm_unmap_aliases(start, end, flush);
 }
-EXPORT_SYMBOL_GPL(vm_unmap_aliases);
 
 void vm_unmap_ram(const void *mem, unsigned int count)
 {
@@ -1737,7 +1731,6 @@ void vm_unmap_ram(const void *mem, unsigned int count)
 				    (va->va_end - va->va_start));
 	free_unmap_vmap_area(va);
 }
-EXPORT_SYMBOL(vm_unmap_ram);
 
 void *vm_map_ram(struct page **pages, unsigned int count, int node)
 {
@@ -1772,7 +1765,6 @@ void *vm_map_ram(struct page **pages, unsigned int count, int node)
 
 	return mem;
 }
-EXPORT_SYMBOL(vm_map_ram);
 
 static struct vm_struct *vmlist __initdata;
 
@@ -2157,7 +2149,6 @@ void vfree(const void *addr)
 
 	__vfree(addr);
 }
-EXPORT_SYMBOL(vfree);
 
 void vunmap(const void *addr)
 {
@@ -2166,7 +2157,6 @@ void vunmap(const void *addr)
 	if (addr)
 		__vunmap(addr, 0);
 }
-EXPORT_SYMBOL(vunmap);
 
 void *vmap(struct page **pages, unsigned int count,
 	   unsigned long flags, pgprot_t prot)
@@ -2202,7 +2192,6 @@ void *vmap(struct page **pages, unsigned int count,
 	}
 	return area->addr;
 }
-EXPORT_SYMBOL(vmap);
 
 static inline unsigned int
 vm_area_alloc_pages(gfp_t gfp, int nid,
@@ -2471,14 +2460,12 @@ void *__vmalloc(unsigned long size, gfp_t gfp_mask)
 	return __vmalloc_node(size, 1, gfp_mask, NUMA_NO_NODE,
 				__builtin_return_address(0));
 }
-EXPORT_SYMBOL(__vmalloc);
 
 void *vmalloc(unsigned long size)
 {
 	return __vmalloc_node(size, 1, GFP_KERNEL, NUMA_NO_NODE,
 				__builtin_return_address(0));
 }
-EXPORT_SYMBOL(vmalloc);
 
 void *vmalloc_huge(unsigned long size, gfp_t gfp_mask)
 {
@@ -2486,14 +2473,12 @@ void *vmalloc_huge(unsigned long size, gfp_t gfp_mask)
 				    gfp_mask, PAGE_KERNEL, VM_ALLOW_HUGE_VMAP,
 				    NUMA_NO_NODE, __builtin_return_address(0));
 }
-EXPORT_SYMBOL_GPL(vmalloc_huge);
 
 void *vzalloc(unsigned long size)
 {
 	return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_ZERO, NUMA_NO_NODE,
 				__builtin_return_address(0));
 }
-EXPORT_SYMBOL(vzalloc);
 
 void *vmalloc_user(unsigned long size)
 {
@@ -2502,21 +2487,18 @@ void *vmalloc_user(unsigned long size)
 				    VM_USERMAP, NUMA_NO_NODE,
 				    __builtin_return_address(0));
 }
-EXPORT_SYMBOL(vmalloc_user);
 
 void *vmalloc_node(unsigned long size, int node)
 {
 	return __vmalloc_node(size, 1, GFP_KERNEL, node,
 			__builtin_return_address(0));
 }
-EXPORT_SYMBOL(vmalloc_node);
 
 void *vzalloc_node(unsigned long size, int node)
 {
 	return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_ZERO, node,
 				__builtin_return_address(0));
 }
-EXPORT_SYMBOL(vzalloc_node);
 
 #define GFP_VMALLOC32 (GFP_DMA32 | GFP_KERNEL)
 
@@ -2525,7 +2507,6 @@ void *vmalloc_32(unsigned long size)
 	return __vmalloc_node(size, 1, GFP_VMALLOC32, NUMA_NO_NODE,
 			__builtin_return_address(0));
 }
-EXPORT_SYMBOL(vmalloc_32);
 
 void *vmalloc_32_user(unsigned long size)
 {
@@ -2534,7 +2515,6 @@ void *vmalloc_32_user(unsigned long size)
 				    VM_USERMAP, NUMA_NO_NODE,
 				    __builtin_return_address(0));
 }
-EXPORT_SYMBOL(vmalloc_32_user);
 
 static int aligned_vread(char *buf, char *addr, unsigned long count)
 {
@@ -2684,7 +2664,6 @@ int remap_vmalloc_range(struct vm_area_struct *vma, void *addr,
 					   addr, pgoff,
 					   vma->vm_end - vma->vm_start);
 }
-EXPORT_SYMBOL(remap_vmalloc_range);
 
 void free_vm_area(struct vm_struct *area)
 {
@@ -2693,5 +2672,4 @@ void free_vm_area(struct vm_struct *area)
 	BUG_ON(ret != area);
 	kfree(area);
 }
-EXPORT_SYMBOL_GPL(free_vm_area);
 

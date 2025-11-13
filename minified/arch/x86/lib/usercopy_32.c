@@ -56,7 +56,6 @@ clear_user(void __user *to, unsigned long n)
 		__do_clear_user(to, n);
 	return n;
 }
-EXPORT_SYMBOL(clear_user);
 
 /**
  * __clear_user - Zero a block of memory in user space, with less checking.
@@ -75,7 +74,6 @@ __clear_user(void __user *to, unsigned long n)
 	__do_clear_user(to, n);
 	return n;
 }
-EXPORT_SYMBOL(__clear_user);
 
 
 /*
@@ -123,7 +121,6 @@ unsigned long __copy_user_ll(void *to, const void *from, unsigned long n)
 	__uaccess_end();
 	return n;
 }
-EXPORT_SYMBOL(__copy_user_ll);
 
 unsigned long __copy_from_user_ll_nocache_nozero(void *to, const void __user *from,
 					unsigned long n)
@@ -133,4 +130,3 @@ unsigned long __copy_from_user_ll_nocache_nozero(void *to, const void __user *fr
 	__uaccess_end();
 	return n;
 }
-EXPORT_SYMBOL(__copy_from_user_ll_nocache_nozero);

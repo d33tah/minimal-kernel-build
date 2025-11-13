@@ -656,15 +656,3 @@ void __init chrdev_init(void)
 
 
 /* Let modules do char dev stuff */
-EXPORT_SYMBOL(register_chrdev_region);
-EXPORT_SYMBOL(unregister_chrdev_region);
-EXPORT_SYMBOL(alloc_chrdev_region);
-EXPORT_SYMBOL(cdev_init);
-EXPORT_SYMBOL(cdev_alloc);
-EXPORT_SYMBOL(cdev_del);
-EXPORT_SYMBOL(cdev_add);
-EXPORT_SYMBOL(cdev_set_parent);
-EXPORT_SYMBOL(cdev_device_add);
-EXPORT_SYMBOL(cdev_device_del);
-EXPORT_SYMBOL(__register_chrdev);
-EXPORT_SYMBOL(__unregister_chrdev);

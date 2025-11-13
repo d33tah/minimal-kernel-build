@@ -16,7 +16,6 @@ void hw_breakpoint_restore(void)
 {
 	/* Stubbed */
 }
-EXPORT_SYMBOL_GPL(hw_breakpoint_restore);
 
 int arch_install_hw_breakpoint(struct perf_event *bp)
 {

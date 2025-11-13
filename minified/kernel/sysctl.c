@@ -162,15 +162,3 @@ int proc_do_large_bitmap(struct ctl_table *table, int write,
  * No sense putting this after each symbol definition, twice,
  * exception granted :-)
  */
-EXPORT_SYMBOL(proc_dobool);
-EXPORT_SYMBOL(proc_dointvec);
-EXPORT_SYMBOL(proc_douintvec);
-EXPORT_SYMBOL(proc_dointvec_jiffies);
-EXPORT_SYMBOL(proc_dointvec_minmax);
-EXPORT_SYMBOL_GPL(proc_douintvec_minmax);
-EXPORT_SYMBOL(proc_dointvec_userhz_jiffies);
-EXPORT_SYMBOL(proc_dointvec_ms_jiffies);
-EXPORT_SYMBOL(proc_dostring);
-EXPORT_SYMBOL(proc_doulongvec_minmax);
-EXPORT_SYMBOL(proc_doulongvec_ms_jiffies_minmax);
-EXPORT_SYMBOL(proc_do_large_bitmap);

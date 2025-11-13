@@ -43,7 +43,6 @@ __mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key)
 
 	debug_mutex_init(lock, name, key);
 }
-EXPORT_SYMBOL(__mutex_init);
 
 /*
  * @owner: contains: 'struct task_struct *' to the current lock owner,
@@ -79,7 +78,6 @@ bool mutex_is_locked(struct mutex *lock)
 {
 	return __mutex_owner(lock) != NULL;
 }
-EXPORT_SYMBOL(mutex_is_locked);
 
 static inline unsigned long __owner_flags(unsigned long owner)
 {
@@ -271,7 +269,6 @@ void __sched mutex_lock(struct mutex *lock)
 	if (!__mutex_trylock_fast(lock))
 		__mutex_lock_slowpath(lock);
 }
-EXPORT_SYMBOL(mutex_lock);
 
 #include "ww_mutex.h"
 
@@ -301,7 +298,6 @@ void __sched mutex_unlock(struct mutex *lock)
 		return;
 	__mutex_unlock_slowpath(lock, _RET_IP_);
 }
-EXPORT_SYMBOL(mutex_unlock);
 
 /**
  * ww_mutex_unlock - release the w/w mutex
@@ -319,7 +315,6 @@ void __sched ww_mutex_unlock(struct ww_mutex *lock)
 	__ww_mutex_unlock(lock);
 	mutex_unlock(&lock->base);
 }
-EXPORT_SYMBOL(ww_mutex_unlock);
 
 /*
  * Lock a mutex (possibly interruptible), slowpath:
@@ -546,7 +541,6 @@ int ww_mutex_trylock(struct ww_mutex *ww, struct ww_acquire_ctx *ww_ctx)
 
 	return 0;
 }
-EXPORT_SYMBOL(ww_mutex_trylock);
 
 
 /*
@@ -637,7 +631,6 @@ int __sched mutex_lock_interruptible(struct mutex *lock)
 	return __mutex_lock_interruptible_slowpath(lock);
 }
 
-EXPORT_SYMBOL(mutex_lock_interruptible);
 
 /**
  * mutex_lock_killable() - Acquire the mutex, interruptible by fatal signals.
@@ -660,7 +653,6 @@ int __sched mutex_lock_killable(struct mutex *lock)
 
 	return __mutex_lock_killable_slowpath(lock);
 }
-EXPORT_SYMBOL(mutex_lock_killable);
 
 /**
  * mutex_lock_io() - Acquire the mutex and mark the process as waiting for I/O
@@ -680,7 +672,6 @@ void __sched mutex_lock_io(struct mutex *lock)
 	mutex_lock(lock);
 	io_schedule_finish(token);
 }
-EXPORT_SYMBOL_GPL(mutex_lock_io);
 
 static noinline void __sched
 __mutex_lock_slowpath(struct mutex *lock)
@@ -742,7 +733,6 @@ int __sched mutex_trylock(struct mutex *lock)
 
 	return locked;
 }
-EXPORT_SYMBOL(mutex_trylock);
 
 int __sched
 ww_mutex_lock(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
@@ -757,7 +747,6 @@ ww_mutex_lock(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
 
 	return __ww_mutex_lock_slowpath(lock, ctx);
 }
-EXPORT_SYMBOL(ww_mutex_lock);
 
 int __sched
 ww_mutex_lock_interruptible(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
@@ -772,7 +761,6 @@ ww_mutex_lock_interruptible(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
 
 	return __ww_mutex_lock_interruptible_slowpath(lock, ctx);
 }
-EXPORT_SYMBOL(ww_mutex_lock_interruptible);
 
 
 /**
@@ -797,4 +785,3 @@ int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock)
 	/* we hit 0, and we hold the lock */
 	return 1;
 }
-EXPORT_SYMBOL(atomic_dec_and_mutex_lock);

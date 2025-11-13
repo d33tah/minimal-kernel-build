@@ -107,17 +107,14 @@ struct cpuinfo_x86 new_cpu_data;
 
 /* Common CPU data for all CPUs */
 struct cpuinfo_x86 boot_cpu_data __read_mostly;
-EXPORT_SYMBOL(boot_cpu_data);
 
 unsigned int def_to_bigsmp;
 
 struct apm_info apm_info;
-EXPORT_SYMBOL(apm_info);
 
 #if defined(CONFIG_X86_SPEEDSTEP_SMI) || \
 	defined(CONFIG_X86_SPEEDSTEP_SMI_MODULE)
 struct ist_info ist_info;
-EXPORT_SYMBOL(ist_info);
 #else
 struct ist_info ist_info;
 #endif
@@ -133,9 +130,7 @@ int bootloader_type, bootloader_version;
  * Setup options
  */
 struct screen_info screen_info;
-EXPORT_SYMBOL(screen_info);
 struct edid_info edid_info;
-EXPORT_SYMBOL_GPL(edid_info);
 
 extern int root_mountflags;
 

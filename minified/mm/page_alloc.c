@@ -103,20 +103,16 @@ nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
 	[N_MEMORY] = { { [0] = 1UL } },
 	[N_CPU] = { { [0] = 1UL } },
 };
-EXPORT_SYMBOL(node_states);
 
 atomic_long_t _totalram_pages __read_mostly;
-EXPORT_SYMBOL(_totalram_pages);
 unsigned long totalreserve_pages __read_mostly;
 unsigned long totalcma_pages __read_mostly;
 
 int percpu_pagelist_high_fraction;
 gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
 DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
-EXPORT_SYMBOL(init_on_alloc);
 
 DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_FREE_DEFAULT_ON, init_on_free);
-EXPORT_SYMBOL(init_on_free);
 
 static bool _init_on_alloc_enabled_early __read_mostly
 				= IS_ENABLED(CONFIG_INIT_ON_ALLOC_DEFAULT_ON);
@@ -189,13 +185,10 @@ static unsigned long zone_movable_pfn[MAX_NUMNODES] __initdata;
 static bool mirrored_kernelcore __meminitdata;
 
 int movable_zone;
-EXPORT_SYMBOL(movable_zone);
 
 #if MAX_NUMNODES > 1
 unsigned int nr_node_ids __read_mostly = MAX_NUMNODES;
 unsigned int nr_online_nodes __read_mostly = 1;
-EXPORT_SYMBOL(nr_node_ids);
-EXPORT_SYMBOL(nr_online_nodes);
 #endif
 
 int page_group_by_mobility_disabled __read_mostly;
@@ -1941,7 +1934,6 @@ void split_page(struct page *page, unsigned int order)
 	split_page_owner(page, 1 << order);
 	split_page_memcg(page, 1 << order);
 }
-EXPORT_SYMBOL_GPL(split_page);
 
 int __isolate_free_page(struct page *page, unsigned int order)
 {
@@ -3069,7 +3061,6 @@ failed:
 
 	goto out;
 }
-EXPORT_SYMBOL_GPL(__alloc_pages_bulk);
 
 struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 							nodemask_t *nodemask)
@@ -3118,7 +3109,6 @@ out:
 
 	return page;
 }
-EXPORT_SYMBOL(__alloc_pages);
 
 struct folio *__folio_alloc(gfp_t gfp, unsigned int order, int preferred_nid,
 		nodemask_t *nodemask)
@@ -3130,7 +3120,6 @@ struct folio *__folio_alloc(gfp_t gfp, unsigned int order, int preferred_nid,
 		prep_transhuge_page(page);
 	return (struct folio *)page;
 }
-EXPORT_SYMBOL(__folio_alloc);
 
 unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
 {
@@ -3141,13 +3130,11 @@ unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
 		return 0;
 	return (unsigned long) page_address(page);
 }
-EXPORT_SYMBOL(__get_free_pages);
 
 unsigned long get_zeroed_page(gfp_t gfp_mask)
 {
 	return __get_free_pages(gfp_mask | __GFP_ZERO, 0);
 }
-EXPORT_SYMBOL(get_zeroed_page);
 
 void __free_pages(struct page *page, unsigned int order)
 {
@@ -3157,7 +3144,6 @@ void __free_pages(struct page *page, unsigned int order)
 		while (order-- > 0)
 			free_the_page(page + (1 << order), order);
 }
-EXPORT_SYMBOL(__free_pages);
 
 void free_pages(unsigned long addr, unsigned int order)
 {
@@ -3167,7 +3153,6 @@ void free_pages(unsigned long addr, unsigned int order)
 	}
 }
 
-EXPORT_SYMBOL(free_pages);
 
 static struct page *__page_frag_cache_refill(struct page_frag_cache *nc,
 					     gfp_t gfp_mask)
@@ -3197,7 +3182,6 @@ void __page_frag_cache_drain(struct page *page, unsigned int count)
 	if (page_ref_sub_and_test(page, count))
 		free_the_page(page, compound_order(page));
 }
-EXPORT_SYMBOL(__page_frag_cache_drain);
 
 void *page_frag_alloc_align(struct page_frag_cache *nc,
 		      unsigned int fragsz, gfp_t gfp_mask,
@@ -3256,7 +3240,6 @@ refill:
 
 	return nc->va + offset;
 }
-EXPORT_SYMBOL(page_frag_alloc_align);
 
 void page_frag_free(void *addr)
 {
@@ -3265,7 +3248,6 @@ void page_frag_free(void *addr)
 	if (unlikely(put_page_testzero(page)))
 		free_the_page(page, compound_order(page));
 }
-EXPORT_SYMBOL(page_frag_free);
 
 static void *make_alloc_exact(unsigned long addr, unsigned int order,
 		size_t size)
@@ -3294,7 +3276,6 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
 	addr = __get_free_pages(gfp_mask, order);
 	return make_alloc_exact(addr, order, size);
 }
-EXPORT_SYMBOL(alloc_pages_exact);
 
 void * __meminit alloc_pages_exact_nid(int nid, size_t size, gfp_t gfp_mask)
 {
@@ -3320,7 +3301,6 @@ void free_pages_exact(void *virt, size_t size)
 		addr += PAGE_SIZE;
 	}
 }
-EXPORT_SYMBOL(free_pages_exact);
 
 static unsigned long nr_free_zone_pages(int offset)
 {
@@ -3346,7 +3326,6 @@ unsigned long nr_free_buffer_pages(void)
 {
 	return nr_free_zone_pages(gfp_zone(GFP_USER));
 }
-EXPORT_SYMBOL_GPL(nr_free_buffer_pages);
 
 static inline void show_node(struct zone *zone)
 {
@@ -3387,7 +3366,6 @@ long si_mem_available(void)
 		available = 0;
 	return available;
 }
-EXPORT_SYMBOL_GPL(si_mem_available);
 
 void si_meminfo(struct sysinfo *val)
 {
@@ -3400,7 +3378,6 @@ void si_meminfo(struct sysinfo *val)
 	val->mem_unit = PAGE_SIZE;
 }
 
-EXPORT_SYMBOL(si_meminfo);
 
 #define K(x) ((x) << (PAGE_SHIFT-10))
 
@@ -4670,7 +4647,6 @@ void adjust_managed_page_count(struct page *page, long count)
 	atomic_long_add(count, &page_zone(page)->managed_pages);
 	totalram_pages_add(count);
 }
-EXPORT_SYMBOL(adjust_managed_page_count);
 
 unsigned long free_reserved_area(void *start, void *end, int poison, const char *s)
 {
@@ -5151,7 +5127,6 @@ void free_contig_range(unsigned long pfn, unsigned long nr_pages)
 	}
 	WARN(count != 0, "%lu pages are still in use!\n", count);
 }
-EXPORT_SYMBOL(free_contig_range);
 
 void zone_pcp_update(struct zone *zone, int cpu_online)
 {
@@ -5205,5 +5180,4 @@ bool is_free_buddy_page(struct page *page)
 
 	return order < MAX_ORDER;
 }
-EXPORT_SYMBOL(is_free_buddy_page);
 

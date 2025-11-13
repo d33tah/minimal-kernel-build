@@ -52,7 +52,6 @@ void lockref_get(struct lockref *lockref)
 	lockref->count++;
 	spin_unlock(&lockref->lock);
 }
-EXPORT_SYMBOL(lockref_get);
 
 /**
  * lockref_get_not_zero - Increments count unless the count is 0 or dead
@@ -80,7 +79,6 @@ int lockref_get_not_zero(struct lockref *lockref)
 	spin_unlock(&lockref->lock);
 	return retval;
 }
-EXPORT_SYMBOL(lockref_get_not_zero);
 
 /**
  * lockref_put_not_zero - Decrements count unless count <= 1 before decrement
@@ -108,7 +106,6 @@ int lockref_put_not_zero(struct lockref *lockref)
 	spin_unlock(&lockref->lock);
 	return retval;
 }
-EXPORT_SYMBOL(lockref_put_not_zero);
 
 /**
  * lockref_put_return - Decrement reference count if possible
@@ -128,7 +125,6 @@ int lockref_put_return(struct lockref *lockref)
 	);
 	return -1;
 }
-EXPORT_SYMBOL(lockref_put_return);
 
 /**
  * lockref_put_or_lock - decrements count unless count <= 1 before decrement
@@ -152,7 +148,6 @@ int lockref_put_or_lock(struct lockref *lockref)
 	spin_unlock(&lockref->lock);
 	return 1;
 }
-EXPORT_SYMBOL(lockref_put_or_lock);
 
 /**
  * lockref_mark_dead - mark lockref dead
@@ -163,7 +158,6 @@ void lockref_mark_dead(struct lockref *lockref)
 	assert_spin_locked(&lockref->lock);
 	lockref->count = -128;
 }
-EXPORT_SYMBOL(lockref_mark_dead);
 
 /**
  * lockref_get_not_dead - Increments count unless the ref is dead
@@ -191,4 +185,3 @@ int lockref_get_not_dead(struct lockref *lockref)
 	spin_unlock(&lockref->lock);
 	return retval;
 }
-EXPORT_SYMBOL(lockref_get_not_dead);

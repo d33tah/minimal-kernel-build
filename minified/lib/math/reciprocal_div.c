@@ -30,7 +30,6 @@ struct reciprocal_value reciprocal_value(u32 d)
 
 	return R;
 }
-EXPORT_SYMBOL(reciprocal_value);
 
 struct reciprocal_value_adv reciprocal_value_adv(u32 d, u8 prec)
 {
@@ -70,4 +69,3 @@ struct reciprocal_value_adv reciprocal_value_adv(u32 d, u8 prec)
 
 	return R;
 }
-EXPORT_SYMBOL(reciprocal_value_adv);

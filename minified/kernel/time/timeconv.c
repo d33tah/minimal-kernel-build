@@ -138,4 +138,3 @@ void time64_to_tm(time64_t totalsecs, int offset, struct tm *result)
 	result->tm_mday = (int) day;
 	result->tm_yday = (int) day_of_year;
 }
-EXPORT_SYMBOL(time64_to_tm);

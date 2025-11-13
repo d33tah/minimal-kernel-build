@@ -222,7 +222,6 @@ int filemap_check_errors(struct address_space *mapping)
 		ret = -EIO;
 	return ret;
 }
-EXPORT_SYMBOL(filemap_check_errors);
 
 static int filemap_check_and_keep_errors(struct address_space *mapping)
 {
@@ -248,7 +247,6 @@ int filemap_fdatawrite_wbc(struct address_space *mapping,
 	wbc_detach_inode(wbc);
 	return ret;
 }
-EXPORT_SYMBOL(filemap_fdatawrite_wbc);
 
 int __filemap_fdatawrite_range(struct address_space *mapping, loff_t start,
 				loff_t end, int sync_mode)
@@ -273,20 +271,17 @@ int filemap_fdatawrite(struct address_space *mapping)
 {
 	return __filemap_fdatawrite(mapping, WB_SYNC_ALL);
 }
-EXPORT_SYMBOL(filemap_fdatawrite);
 
 int filemap_fdatawrite_range(struct address_space *mapping, loff_t start,
 				loff_t end)
 {
 	return __filemap_fdatawrite_range(mapping, start, end, WB_SYNC_ALL);
 }
-EXPORT_SYMBOL(filemap_fdatawrite_range);
 
 int filemap_flush(struct address_space *mapping)
 {
 	return __filemap_fdatawrite(mapping, WB_SYNC_NONE);
 }
-EXPORT_SYMBOL(filemap_flush);
 
 bool filemap_range_has_page(struct address_space *mapping,
 			   loff_t start_byte, loff_t end_byte)
@@ -313,7 +308,6 @@ bool filemap_range_has_page(struct address_space *mapping,
 
 	return page != NULL;
 }
-EXPORT_SYMBOL(filemap_range_has_page);
 
 static void __filemap_fdatawait_range(struct address_space *mapping,
 				     loff_t start_byte, loff_t end_byte)
@@ -352,7 +346,6 @@ int filemap_fdatawait_range(struct address_space *mapping, loff_t start_byte,
 	__filemap_fdatawait_range(mapping, start_byte, end_byte);
 	return filemap_check_errors(mapping);
 }
-EXPORT_SYMBOL(filemap_fdatawait_range);
 
 int filemap_fdatawait_range_keep_errors(struct address_space *mapping,
 		loff_t start_byte, loff_t end_byte)
@@ -360,7 +353,6 @@ int filemap_fdatawait_range_keep_errors(struct address_space *mapping,
 	__filemap_fdatawait_range(mapping, start_byte, end_byte);
 	return filemap_check_and_keep_errors(mapping);
 }
-EXPORT_SYMBOL(filemap_fdatawait_range_keep_errors);
 
 int file_fdatawait_range(struct file *file, loff_t start_byte, loff_t end_byte)
 {
@@ -369,14 +361,12 @@ int file_fdatawait_range(struct file *file, loff_t start_byte, loff_t end_byte)
 	__filemap_fdatawait_range(mapping, start_byte, end_byte);
 	return file_check_and_advance_wb_err(file);
 }
-EXPORT_SYMBOL(file_fdatawait_range);
 
 int filemap_fdatawait_keep_errors(struct address_space *mapping)
 {
 	__filemap_fdatawait_range(mapping, 0, LLONG_MAX);
 	return filemap_check_and_keep_errors(mapping);
 }
-EXPORT_SYMBOL(filemap_fdatawait_keep_errors);
 
 static bool mapping_needs_writeback(struct address_space *mapping)
 {
@@ -405,7 +395,6 @@ bool filemap_range_has_writeback(struct address_space *mapping,
 	rcu_read_unlock();
 	return page != NULL;
 }
-EXPORT_SYMBOL_GPL(filemap_range_has_writeback);
 
 int filemap_write_and_wait_range(struct address_space *mapping,
 				 loff_t lstart, loff_t lend)
@@ -430,7 +419,6 @@ int filemap_write_and_wait_range(struct address_space *mapping,
 	}
 	return err;
 }
-EXPORT_SYMBOL(filemap_write_and_wait_range);
 
 void __filemap_set_wb_err(struct address_space *mapping, int err)
 {
@@ -438,7 +426,6 @@ void __filemap_set_wb_err(struct address_space *mapping, int err)
 
 
 }
-EXPORT_SYMBOL(__filemap_set_wb_err);
 
 int file_check_and_advance_wb_err(struct file *file)
 {
@@ -462,7 +449,6 @@ int file_check_and_advance_wb_err(struct file *file)
 	clear_bit(AS_ENOSPC, &mapping->flags);
 	return err;
 }
-EXPORT_SYMBOL(file_check_and_advance_wb_err);
 
 int file_write_and_wait_range(struct file *file, loff_t lstart, loff_t lend)
 {
@@ -481,7 +467,6 @@ int file_write_and_wait_range(struct file *file, loff_t lstart, loff_t lend)
 		err = err2;
 	return err;
 }
-EXPORT_SYMBOL(file_write_and_wait_range);
 
 void replace_page_cache_page(struct page *old, struct page *new)
 {
@@ -520,7 +505,6 @@ void replace_page_cache_page(struct page *old, struct page *new)
 		free_folio(fold);
 	folio_put(fold);
 }
-EXPORT_SYMBOL_GPL(replace_page_cache_page);
 
 noinline int __filemap_add_folio(struct address_space *mapping,
 		struct folio *folio, pgoff_t index, gfp_t gfp, void **shadowp)
@@ -616,7 +600,6 @@ int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
 	return __filemap_add_folio(mapping, page_folio(page), offset,
 					  gfp_mask, NULL);
 }
-EXPORT_SYMBOL(add_to_page_cache_locked);
 
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 				pgoff_t index, gfp_t gfp)
@@ -637,7 +620,6 @@ int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 	}
 	return ret;
 }
-EXPORT_SYMBOL_GPL(filemap_add_folio);
 
 void filemap_invalidate_lock_two(struct address_space *mapping1,
 				 struct address_space *mapping2)
@@ -649,7 +631,6 @@ void filemap_invalidate_lock_two(struct address_space *mapping1,
 	if (mapping2 && mapping1 != mapping2)
 		down_write_nested(&mapping2->invalidate_lock, 1);
 }
-EXPORT_SYMBOL(filemap_invalidate_lock_two);
 
 void filemap_invalidate_unlock_two(struct address_space *mapping1,
 				   struct address_space *mapping2)
@@ -659,7 +640,6 @@ void filemap_invalidate_unlock_two(struct address_space *mapping1,
 	if (mapping2 && mapping1 != mapping2)
 		up_write(&mapping2->invalidate_lock);
 }
-EXPORT_SYMBOL(filemap_invalidate_unlock_two);
 
 #define PAGE_WAIT_TABLE_BITS 8
 #define PAGE_WAIT_TABLE_SIZE (1 << PAGE_WAIT_TABLE_BITS)
@@ -870,13 +850,11 @@ void folio_wait_bit(struct folio *folio, int bit_nr)
 {
 	folio_wait_bit_common(folio, bit_nr, TASK_UNINTERRUPTIBLE, SHARED);
 }
-EXPORT_SYMBOL(folio_wait_bit);
 
 int folio_wait_bit_killable(struct folio *folio, int bit_nr)
 {
 	return folio_wait_bit_common(folio, bit_nr, TASK_KILLABLE, SHARED);
 }
-EXPORT_SYMBOL(folio_wait_bit_killable);
 
 int folio_put_wait_locked(struct folio *folio, int state)
 {
@@ -893,7 +871,6 @@ void folio_add_wait_queue(struct folio *folio, wait_queue_entry_t *waiter)
 	folio_set_waiters(folio);
 	spin_unlock_irqrestore(&q->lock, flags);
 }
-EXPORT_SYMBOL_GPL(folio_add_wait_queue);
 
 #ifndef clear_bit_unlock_is_negative_byte
 
@@ -915,7 +892,6 @@ void folio_unlock(struct folio *folio)
 	if (clear_bit_unlock_is_negative_byte(PG_locked, folio_flags(folio, 0)))
 		folio_wake_bit(folio, PG_locked);
 }
-EXPORT_SYMBOL(folio_unlock);
 
 void folio_end_private_2(struct folio *folio)
 {
@@ -924,14 +900,12 @@ void folio_end_private_2(struct folio *folio)
 	folio_wake_bit(folio, PG_private_2);
 	folio_put(folio);
 }
-EXPORT_SYMBOL(folio_end_private_2);
 
 void folio_wait_private_2(struct folio *folio)
 {
 	while (folio_test_private_2(folio))
 		folio_wait_bit(folio, PG_private_2);
 }
-EXPORT_SYMBOL(folio_wait_private_2);
 
 int folio_wait_private_2_killable(struct folio *folio)
 {
@@ -945,7 +919,6 @@ int folio_wait_private_2_killable(struct folio *folio)
 
 	return ret;
 }
-EXPORT_SYMBOL(folio_wait_private_2_killable);
 
 void folio_end_writeback(struct folio *folio)
 {
@@ -965,7 +938,6 @@ void folio_end_writeback(struct folio *folio)
 	acct_reclaim_writeback(folio);
 	folio_put(folio);
 }
-EXPORT_SYMBOL(folio_end_writeback);
 
 void page_endio(struct page *page, bool is_write, int err)
 {
@@ -989,21 +961,18 @@ void page_endio(struct page *page, bool is_write, int err)
 		end_page_writeback(page);
 	}
 }
-EXPORT_SYMBOL_GPL(page_endio);
 
 void __folio_lock(struct folio *folio)
 {
 	folio_wait_bit_common(folio, PG_locked, TASK_UNINTERRUPTIBLE,
 				EXCLUSIVE);
 }
-EXPORT_SYMBOL(__folio_lock);
 
 int __folio_lock_killable(struct folio *folio)
 {
 	return folio_wait_bit_common(folio, PG_locked, TASK_KILLABLE,
 					EXCLUSIVE);
 }
-EXPORT_SYMBOL_GPL(__folio_lock_killable);
 
 static int __folio_lock_async(struct folio *folio, struct wait_page_queue *wait)
 {
@@ -1071,7 +1040,6 @@ pgoff_t page_cache_next_miss(struct address_space *mapping,
 
 	return xas.xa_index;
 }
-EXPORT_SYMBOL(page_cache_next_miss);
 
 pgoff_t page_cache_prev_miss(struct address_space *mapping,
 			     pgoff_t index, unsigned long max_scan)
@@ -1088,7 +1056,6 @@ pgoff_t page_cache_prev_miss(struct address_space *mapping,
 
 	return xas.xa_index;
 }
-EXPORT_SYMBOL(page_cache_prev_miss);
 
 static void *mapping_get_entry(struct address_space *mapping, pgoff_t index)
 {
@@ -1196,7 +1163,6 @@ no_page:
 
 	return folio;
 }
-EXPORT_SYMBOL(__filemap_get_folio);
 
 static inline struct folio *find_get_entry(struct xa_state *xas, pgoff_t max,
 		xa_mark_t mark)
@@ -1374,7 +1340,6 @@ retry:
 	rcu_read_unlock();
 	return ret;
 }
-EXPORT_SYMBOL(find_get_pages_contig);
 
 unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
 			pgoff_t end, xa_mark_t tag, unsigned int nr_pages,
@@ -1410,7 +1375,6 @@ out:
 
 	return ret;
 }
-EXPORT_SYMBOL(find_get_pages_range_tag);
 
 static void shrink_readahead_size_eio(struct file_ra_state *ra)
 {
@@ -1748,7 +1712,6 @@ put_folios:
 
 	return already_read ? already_read : error;
 }
-EXPORT_SYMBOL_GPL(filemap_read);
 
 ssize_t
 generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
@@ -1795,7 +1758,6 @@ generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 
 	return filemap_read(iocb, iter, retval);
 }
-EXPORT_SYMBOL(generic_file_read_iter);
 
 static inline loff_t folio_seek_hole_data(struct xa_state *xas,
 		struct address_space *mapping, struct folio *folio,
@@ -2088,7 +2050,6 @@ out_retry:
 		fput(fpin);
 	return ret | VM_FAULT_RETRY;
 }
-EXPORT_SYMBOL(filemap_fault);
 
 static bool filemap_map_pmd(struct vm_fault *vmf, struct page *page)
 {
@@ -2251,7 +2212,6 @@ out:
 	WRITE_ONCE(file->f_ra.mmap_miss, mmap_miss);
 	return ret;
 }
-EXPORT_SYMBOL(filemap_map_pages);
 
 vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
 {
@@ -2299,9 +2259,6 @@ int generic_file_readonly_mmap(struct file *file, struct vm_area_struct *vma)
 	return generic_file_mmap(file, vma);
 }
 
-EXPORT_SYMBOL(filemap_page_mkwrite);
-EXPORT_SYMBOL(generic_file_mmap);
-EXPORT_SYMBOL(generic_file_readonly_mmap);
 
 static struct folio *do_read_cache_folio(struct address_space *mapping,
 		pgoff_t index, filler_t filler, struct file *file, gfp_t gfp)
@@ -2377,7 +2334,6 @@ struct folio *read_cache_folio(struct address_space *mapping, pgoff_t index,
 	return do_read_cache_folio(mapping, index, filler, file,
 			mapping_gfp_mask(mapping));
 }
-EXPORT_SYMBOL(read_cache_folio);
 
 static struct page *do_read_cache_page(struct address_space *mapping,
 		pgoff_t index, filler_t *filler, struct file *file, gfp_t gfp)
@@ -2396,7 +2352,6 @@ struct page *read_cache_page(struct address_space *mapping,
 	return do_read_cache_page(mapping, index, filler, file,
 			mapping_gfp_mask(mapping));
 }
-EXPORT_SYMBOL(read_cache_page);
 
 struct page *read_cache_page_gfp(struct address_space *mapping,
 				pgoff_t index,
@@ -2404,7 +2359,6 @@ struct page *read_cache_page_gfp(struct address_space *mapping,
 {
 	return do_read_cache_page(mapping, index, NULL, NULL, gfp);
 }
-EXPORT_SYMBOL(read_cache_page_gfp);
 
 void dio_warn_stale_pagecache(struct file *filp)
 {
@@ -2480,7 +2434,6 @@ generic_file_direct_write(struct kiocb *iocb, struct iov_iter *from)
 out:
 	return written;
 }
-EXPORT_SYMBOL(generic_file_direct_write);
 
 ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
 {
@@ -2548,7 +2501,6 @@ again:
 
 	return written ? written : status;
 }
-EXPORT_SYMBOL(generic_perform_write);
 
 ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
@@ -2605,7 +2557,6 @@ out:
 	current->backing_dev_info = NULL;
 	return written ? written : err;
 }
-EXPORT_SYMBOL(__generic_file_write_iter);
 
 ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
@@ -2623,7 +2574,6 @@ ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 		ret = generic_write_sync(iocb, ret);
 	return ret;
 }
-EXPORT_SYMBOL(generic_file_write_iter);
 
 bool filemap_release_folio(struct folio *folio, gfp_t gfp)
 {
@@ -2637,4 +2587,3 @@ bool filemap_release_folio(struct folio *folio, gfp_t gfp)
 		return mapping->a_ops->release_folio(folio, gfp);
 	return try_to_free_buffers(folio);
 }
-EXPORT_SYMBOL(filemap_release_folio);

@@ -92,13 +92,11 @@ bool e820__mapped_raw_any(u64 start, u64 end, enum e820_type type)
 {
 	return _e820__mapped_any(e820_table_firmware, start, end, type);
 }
-EXPORT_SYMBOL_GPL(e820__mapped_raw_any);
 
 bool e820__mapped_any(u64 start, u64 end, enum e820_type type)
 {
 	return _e820__mapped_any(e820_table, start, end, type);
 }
-EXPORT_SYMBOL_GPL(e820__mapped_any);
 
 /*
  * This function checks if the entire <start,end> range is mapped with 'type'.

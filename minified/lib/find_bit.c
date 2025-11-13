@@ -68,7 +68,6 @@ unsigned long _find_next_bit(const unsigned long *addr1,
 
 	return min(start + __ffs(tmp), nbits);
 }
-EXPORT_SYMBOL(_find_next_bit);
 #endif
 
 #ifndef find_first_bit
@@ -86,7 +85,6 @@ unsigned long _find_first_bit(const unsigned long *addr, unsigned long size)
 
 	return size;
 }
-EXPORT_SYMBOL(_find_first_bit);
 #endif
 
 #ifndef find_first_and_bit
@@ -107,7 +105,6 @@ unsigned long _find_first_and_bit(const unsigned long *addr1,
 
 	return size;
 }
-EXPORT_SYMBOL(_find_first_and_bit);
 #endif
 
 #ifndef find_first_zero_bit
@@ -125,7 +122,6 @@ unsigned long _find_first_zero_bit(const unsigned long *addr, unsigned long size
 
 	return size;
 }
-EXPORT_SYMBOL(_find_first_zero_bit);
 #endif
 
 #ifndef find_last_bit
@@ -145,7 +141,6 @@ unsigned long _find_last_bit(const unsigned long *addr, unsigned long size)
 	}
 	return size;
 }
-EXPORT_SYMBOL(_find_last_bit);
 #endif
 
 unsigned long find_next_clump8(unsigned long *clump, const unsigned long *addr,
@@ -160,4 +155,3 @@ unsigned long find_next_clump8(unsigned long *clump, const unsigned long *addr,
 
 	return offset;
 }
-EXPORT_SYMBOL(find_next_clump8);

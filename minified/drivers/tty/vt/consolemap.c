@@ -49,7 +49,6 @@ u16 inverse_translate(const struct vc_data *conp, int glyph, int use_unicode)
 		return 0;
 	return glyph; /* Identity mapping */
 }
-EXPORT_SYMBOL_GPL(inverse_translate);
 
 int con_set_trans_old(unsigned char __user * arg)
 {
@@ -146,7 +145,6 @@ int con_set_default_unimap(struct vc_data *vc)
 {
 	return 0; /* Stub */
 }
-EXPORT_SYMBOL(con_set_default_unimap);
 
 int con_copy_unimap(struct vc_data *dst_vc, struct vc_data *src_vc)
 {
@@ -161,7 +159,6 @@ int con_copy_unimap(struct vc_data *dst_vc, struct vc_data *src_vc)
 	*dst_vc->vc_uni_pagedir_loc = q;
 	return 0;
 }
-EXPORT_SYMBOL(con_copy_unimap);
 
 int con_get_unimap(struct vc_data *vc, ushort ct, ushort __user *uct, struct unipair __user *list)
 {

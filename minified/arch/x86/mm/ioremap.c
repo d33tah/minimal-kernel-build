@@ -343,7 +343,6 @@ void __iomem *ioremap(resource_size_t phys_addr, unsigned long size)
 	return __ioremap_caller(phys_addr, size, pcm,
 				__builtin_return_address(0), false);
 }
-EXPORT_SYMBOL(ioremap);
 
 /**
  * ioremap_uc     -   map bus memory into CPU space as strongly uncachable
@@ -376,7 +375,6 @@ void __iomem *ioremap_uc(resource_size_t phys_addr, unsigned long size)
 	return __ioremap_caller(phys_addr, size, pcm,
 				__builtin_return_address(0), false);
 }
-EXPORT_SYMBOL_GPL(ioremap_uc);
 
 /**
  * ioremap_wc	-	map memory into CPU space write combined
@@ -393,7 +391,6 @@ void __iomem *ioremap_wc(resource_size_t phys_addr, unsigned long size)
 	return __ioremap_caller(phys_addr, size, _PAGE_CACHE_MODE_WC,
 					__builtin_return_address(0), false);
 }
-EXPORT_SYMBOL(ioremap_wc);
 
 /**
  * ioremap_wt	-	map memory into CPU space write through
@@ -410,21 +407,18 @@ void __iomem *ioremap_wt(resource_size_t phys_addr, unsigned long size)
 	return __ioremap_caller(phys_addr, size, _PAGE_CACHE_MODE_WT,
 					__builtin_return_address(0), false);
 }
-EXPORT_SYMBOL(ioremap_wt);
 
 void __iomem *ioremap_encrypted(resource_size_t phys_addr, unsigned long size)
 {
 	return __ioremap_caller(phys_addr, size, _PAGE_CACHE_MODE_WB,
 				__builtin_return_address(0), true);
 }
-EXPORT_SYMBOL(ioremap_encrypted);
 
 void __iomem *ioremap_cache(resource_size_t phys_addr, unsigned long size)
 {
 	return __ioremap_caller(phys_addr, size, _PAGE_CACHE_MODE_WB,
 				__builtin_return_address(0), false);
 }
-EXPORT_SYMBOL(ioremap_cache);
 
 void __iomem *ioremap_prot(resource_size_t phys_addr, unsigned long size,
 				unsigned long prot_val)
@@ -433,7 +427,6 @@ void __iomem *ioremap_prot(resource_size_t phys_addr, unsigned long size,
 				pgprot2cachemode(__pgprot(prot_val)),
 				__builtin_return_address(0), false);
 }
-EXPORT_SYMBOL(ioremap_prot);
 
 /**
  * iounmap - Free a IO remapping
@@ -486,7 +479,6 @@ void iounmap(volatile void __iomem *addr)
 	BUG_ON(p != o || o == NULL);
 	kfree(p);
 }
-EXPORT_SYMBOL(iounmap);
 
 /*
  * Convert a physical pointer to a virtual kernel pointer for /dev/mem

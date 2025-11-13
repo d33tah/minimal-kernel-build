@@ -54,7 +54,6 @@ int irq_set_chip(unsigned int irq, const struct irq_chip *chip)
 	irq_mark_irq(irq);
 	return 0;
 }
-EXPORT_SYMBOL(irq_set_chip);
 
 /**
  *	irq_set_irq_type - set the irq trigger type for an irq
@@ -74,7 +73,6 @@ int irq_set_irq_type(unsigned int irq, unsigned int type)
 	irq_put_desc_busunlock(desc, flags);
 	return ret;
 }
-EXPORT_SYMBOL(irq_set_irq_type);
 
 /**
  *	irq_set_handler_data - set irq handler data for an irq
@@ -94,7 +92,6 @@ int irq_set_handler_data(unsigned int irq, void *data)
 	irq_put_desc_unlock(desc, flags);
 	return 0;
 }
-EXPORT_SYMBOL(irq_set_handler_data);
 
 /**
  *	irq_set_msi_desc_off - set MSI descriptor data for an irq at offset
@@ -149,7 +146,6 @@ int irq_set_chip_data(unsigned int irq, void *data)
 	irq_put_desc_unlock(desc, flags);
 	return 0;
 }
-EXPORT_SYMBOL(irq_set_chip_data);
 
 struct irq_data *irq_get_irq_data(unsigned int irq)
 {
@@ -157,7 +153,6 @@ struct irq_data *irq_get_irq_data(unsigned int irq)
 
 	return desc ? &desc->irq_data : NULL;
 }
-EXPORT_SYMBOL_GPL(irq_get_irq_data);
 
 static void irq_state_clr_disabled(struct irq_desc *desc)
 {
@@ -451,7 +446,6 @@ void handle_nested_irq(unsigned int irq)
 out_unlock:
 	raw_spin_unlock_irq(&desc->lock);
 }
-EXPORT_SYMBOL_GPL(handle_nested_irq);
 
 static bool irq_check_poll(struct irq_desc *desc)
 {
@@ -516,7 +510,6 @@ void handle_simple_irq(struct irq_desc *desc)
 out_unlock:
 	raw_spin_unlock(&desc->lock);
 }
-EXPORT_SYMBOL_GPL(handle_simple_irq);
 
 /**
  *	handle_untracked_irq - Simple and software-decoded IRQs.
@@ -557,7 +550,6 @@ void handle_untracked_irq(struct irq_desc *desc)
 out_unlock:
 	raw_spin_unlock(&desc->lock);
 }
-EXPORT_SYMBOL_GPL(handle_untracked_irq);
 
 /*
  * Called unconditionally from handle_level_irq() and only for oneshot
@@ -613,7 +605,6 @@ void handle_level_irq(struct irq_desc *desc)
 out_unlock:
 	raw_spin_unlock(&desc->lock);
 }
-EXPORT_SYMBOL_GPL(handle_level_irq);
 
 static void cond_unmask_eoi_irq(struct irq_desc *desc, struct irq_chip *chip)
 {
@@ -681,7 +672,6 @@ out:
 		chip->irq_eoi(&desc->irq_data);
 	raw_spin_unlock(&desc->lock);
 }
-EXPORT_SYMBOL_GPL(handle_fasteoi_irq);
 
 /**
  *	handle_fasteoi_nmi - irq handler for NMI interrupt lines
@@ -714,7 +704,6 @@ void handle_fasteoi_nmi(struct irq_desc *desc)
 	if (chip->irq_eoi)
 		chip->irq_eoi(&desc->irq_data);
 }
-EXPORT_SYMBOL_GPL(handle_fasteoi_nmi);
 
 /**
  *	handle_edge_irq - edge type IRQ handler
@@ -783,7 +772,6 @@ void handle_edge_irq(struct irq_desc *desc)
 out_unlock:
 	raw_spin_unlock(&desc->lock);
 }
-EXPORT_SYMBOL(handle_edge_irq);
 
 
 /**
@@ -946,7 +934,6 @@ __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 	__irq_do_set_handler(desc, handle, is_chained, name);
 	irq_put_desc_busunlock(desc, flags);
 }
-EXPORT_SYMBOL_GPL(__irq_set_handler);
 
 void
 irq_set_chained_handler_and_data(unsigned int irq, irq_flow_handler_t handle,
@@ -963,7 +950,6 @@ irq_set_chained_handler_and_data(unsigned int irq, irq_flow_handler_t handle,
 
 	irq_put_desc_busunlock(desc, flags);
 }
-EXPORT_SYMBOL_GPL(irq_set_chained_handler_and_data);
 
 void
 irq_set_chip_and_handler_name(unsigned int irq, const struct irq_chip *chip,
@@ -972,7 +958,6 @@ irq_set_chip_and_handler_name(unsigned int irq, const struct irq_chip *chip,
 	irq_set_chip(irq, chip);
 	__irq_set_handler(irq, handle, 0, name);
 }
-EXPORT_SYMBOL_GPL(irq_set_chip_and_handler_name);
 
 void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set)
 {
@@ -1011,7 +996,6 @@ void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set)
 
 	irq_put_desc_unlock(desc, flags);
 }
-EXPORT_SYMBOL_GPL(irq_modify_status);
 
 
 

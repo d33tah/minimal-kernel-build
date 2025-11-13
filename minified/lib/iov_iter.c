@@ -464,7 +464,6 @@ size_t fault_in_iov_iter_readable(const struct iov_iter *i, size_t size)
 	}
 	return 0;
 }
-EXPORT_SYMBOL(fault_in_iov_iter_readable);
 
 /*
  * fault_in_iov_iter_writeable - fault in iov iterator for writing
@@ -503,7 +502,6 @@ size_t fault_in_iov_iter_writeable(const struct iov_iter *i, size_t size)
 	}
 	return 0;
 }
-EXPORT_SYMBOL(fault_in_iov_iter_writeable);
 
 void iov_iter_init(struct iov_iter *i, unsigned int direction,
 			const struct iovec *iov, unsigned long nr_segs,
@@ -520,7 +518,6 @@ void iov_iter_init(struct iov_iter *i, unsigned int direction,
 		.count = count
 	};
 }
-EXPORT_SYMBOL(iov_iter_init);
 
 static inline bool allocated(struct pipe_buffer *buf)
 {
@@ -633,7 +630,6 @@ size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
 
 	return bytes;
 }
-EXPORT_SYMBOL(_copy_to_iter);
 
 
 size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i)
@@ -651,7 +647,6 @@ size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i)
 
 	return bytes;
 }
-EXPORT_SYMBOL(_copy_from_iter);
 
 size_t _copy_from_iter_nocache(void *addr, size_t bytes, struct iov_iter *i)
 {
@@ -666,7 +661,6 @@ size_t _copy_from_iter_nocache(void *addr, size_t bytes, struct iov_iter *i)
 
 	return bytes;
 }
-EXPORT_SYMBOL(_copy_from_iter_nocache);
 
 
 static inline bool page_copy_sane(struct page *page, size_t offset, size_t n)
@@ -739,7 +733,6 @@ size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes,
 	}
 	return res;
 }
-EXPORT_SYMBOL(copy_page_to_iter);
 
 size_t copy_page_from_iter(struct page *page, size_t offset, size_t bytes,
 			 struct iov_iter *i)
@@ -757,7 +750,6 @@ size_t copy_page_from_iter(struct page *page, size_t offset, size_t bytes,
 	WARN_ON(1);
 	return 0;
 }
-EXPORT_SYMBOL(copy_page_from_iter);
 
 static size_t pipe_zero(size_t bytes, struct iov_iter *i)
 {
@@ -799,7 +791,6 @@ size_t iov_iter_zero(size_t bytes, struct iov_iter *i)
 
 	return bytes;
 }
-EXPORT_SYMBOL(iov_iter_zero);
 
 size_t copy_page_from_iter_atomic(struct page *page, unsigned offset, size_t bytes,
 				  struct iov_iter *i)
@@ -821,7 +812,6 @@ size_t copy_page_from_iter_atomic(struct page *page, unsigned offset, size_t byt
 	kunmap_atomic(kaddr);
 	return bytes;
 }
-EXPORT_SYMBOL(copy_page_from_iter_atomic);
 
 static inline void pipe_truncate(struct iov_iter *i)
 {
@@ -927,7 +917,6 @@ void iov_iter_advance(struct iov_iter *i, size_t size)
 		i->count -= size;
 	}
 }
-EXPORT_SYMBOL(iov_iter_advance);
 
 void iov_iter_revert(struct iov_iter *i, size_t unroll)
 {
@@ -1000,7 +989,6 @@ void iov_iter_revert(struct iov_iter *i, size_t unroll)
 		}
 	}
 }
-EXPORT_SYMBOL(iov_iter_revert);
 
 /*
  * Return the count of just the current iov_iter segment.
@@ -1015,7 +1003,6 @@ size_t iov_iter_single_seg_count(const struct iov_iter *i)
 	}
 	return i->count;
 }
-EXPORT_SYMBOL(iov_iter_single_seg_count);
 
 void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 			const struct kvec *kvec, unsigned long nr_segs,
@@ -1031,7 +1018,6 @@ void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 		.count = count
 	};
 }
-EXPORT_SYMBOL(iov_iter_kvec);
 
 void iov_iter_bvec(struct iov_iter *i, unsigned int direction,
 			const struct bio_vec *bvec, unsigned long nr_segs,
@@ -1047,7 +1033,6 @@ void iov_iter_bvec(struct iov_iter *i, unsigned int direction,
 		.count = count
 	};
 }
-EXPORT_SYMBOL(iov_iter_bvec);
 
 void iov_iter_pipe(struct iov_iter *i, unsigned int direction,
 			struct pipe_inode_info *pipe,
@@ -1065,7 +1050,6 @@ void iov_iter_pipe(struct iov_iter *i, unsigned int direction,
 		.count = count
 	};
 }
-EXPORT_SYMBOL(iov_iter_pipe);
 
 /**
  * iov_iter_xarray - Initialise an I/O iterator to use the pages in an xarray
@@ -1093,7 +1077,6 @@ void iov_iter_xarray(struct iov_iter *i, unsigned int direction,
 		.iov_offset = 0
 	};
 }
-EXPORT_SYMBOL(iov_iter_xarray);
 
 /**
  * iov_iter_discard - Initialise an I/O iterator that discards data
@@ -1114,7 +1097,6 @@ void iov_iter_discard(struct iov_iter *i, unsigned int direction, size_t count)
 		.iov_offset = 0
 	};
 }
-EXPORT_SYMBOL(iov_iter_discard);
 
 static unsigned long iov_iter_alignment_iovec(const struct iov_iter *i)
 {
@@ -1181,7 +1163,6 @@ unsigned long iov_iter_alignment(const struct iov_iter *i)
 
 	return 0;
 }
-EXPORT_SYMBOL(iov_iter_alignment);
 
 unsigned long iov_iter_gap_alignment(const struct iov_iter *i)
 {
@@ -1206,7 +1187,6 @@ unsigned long iov_iter_gap_alignment(const struct iov_iter *i)
 	}
 	return res;
 }
-EXPORT_SYMBOL(iov_iter_gap_alignment);
 
 ssize_t iov_iter_get_pages(struct iov_iter *i,
 		   struct page **pages, size_t maxsize, unsigned maxpages,
@@ -1214,7 +1194,6 @@ ssize_t iov_iter_get_pages(struct iov_iter *i,
 {
 	return -EFAULT;
 }
-EXPORT_SYMBOL(iov_iter_get_pages);
 
 ssize_t iov_iter_get_pages_alloc(struct iov_iter *i,
 		   struct page ***pages, size_t maxsize,
@@ -1222,40 +1201,34 @@ ssize_t iov_iter_get_pages_alloc(struct iov_iter *i,
 {
 	return -EFAULT;
 }
-EXPORT_SYMBOL(iov_iter_get_pages_alloc);
 
 size_t csum_and_copy_from_iter(void *addr, size_t bytes, __wsum *csum,
 			       struct iov_iter *i)
 {
 	return 0;
 }
-EXPORT_SYMBOL(csum_and_copy_from_iter);
 
 size_t csum_and_copy_to_iter(const void *addr, size_t bytes, void *_csstate,
 			     struct iov_iter *i)
 {
 	return 0;
 }
-EXPORT_SYMBOL(csum_and_copy_to_iter);
 
 size_t hash_and_copy_to_iter(const void *addr, size_t bytes, void *hashp,
 		struct iov_iter *i)
 {
 	return 0;
 }
-EXPORT_SYMBOL(hash_and_copy_to_iter);
 
 int iov_iter_npages(const struct iov_iter *i, int maxpages)
 {
 	return 0;
 }
-EXPORT_SYMBOL(iov_iter_npages);
 
 const void *dup_iter(struct iov_iter *new, struct iov_iter *old, gfp_t flags)
 {
 	return NULL;
 }
-EXPORT_SYMBOL(dup_iter);
 
 static int copy_compat_iovec_from_user(struct iovec *iov,
 		const struct iovec __user *uvec, unsigned long nr_segs)
@@ -1414,14 +1387,12 @@ ssize_t import_iovec(int type, const struct iovec __user *uvec,
 {
 	return -EFAULT;
 }
-EXPORT_SYMBOL(import_iovec);
 
 int import_single_range(int rw, void __user *buf, size_t len,
 		 struct iovec *iov, struct iov_iter *i)
 {
 	return -EFAULT;
 }
-EXPORT_SYMBOL(import_single_range);
 
 /**
  * iov_iter_restore() - Restore a &struct iov_iter to the same state as when

@@ -146,7 +146,6 @@ void unpin_user_page(struct page *page)
 	sanity_check_pinned_pages(&page, 1);
 	gup_put_folio(page_folio(page), 1, FOLL_PIN);
 }
-EXPORT_SYMBOL(unpin_user_page);
 
 static inline struct folio *gup_folio_range_next(struct page *start,
 		unsigned long npages, unsigned long i, unsigned int *ntails)
@@ -202,7 +201,6 @@ void unpin_user_pages_dirty_lock(struct page **pages, unsigned long npages,
 		gup_put_folio(folio, nr, FOLL_PIN);
 	}
 }
-EXPORT_SYMBOL(unpin_user_pages_dirty_lock);
 
 void unpin_user_page_range_dirty_lock(struct page *page, unsigned long npages,
 				      bool make_dirty)
@@ -221,7 +219,6 @@ void unpin_user_page_range_dirty_lock(struct page *page, unsigned long npages,
 		gup_put_folio(folio, nr, FOLL_PIN);
 	}
 }
-EXPORT_SYMBOL(unpin_user_page_range_dirty_lock);
 
 static void unpin_user_pages_lockless(struct page **pages, unsigned long npages)
 {
@@ -252,7 +249,6 @@ void unpin_user_pages(struct page **pages, unsigned long npages)
 		gup_put_folio(folio, nr, FOLL_PIN);
 	}
 }
-EXPORT_SYMBOL(unpin_user_pages);
 
 static inline void mm_set_has_pinned_flag(unsigned long *mm_flags)
 {
@@ -940,7 +936,6 @@ retry:
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(fixup_user_fault);
 
 static __always_inline long __get_user_pages_locked(struct mm_struct *mm,
 						unsigned long start,
@@ -1179,7 +1174,6 @@ out:
 		return size - (uaddr - start);
 	return 0;
 }
-EXPORT_SYMBOL(fault_in_writeable);
 
 size_t fault_in_subpage_writeable(char __user *uaddr, size_t size)
 {
@@ -1192,7 +1186,6 @@ size_t fault_in_subpage_writeable(char __user *uaddr, size_t size)
 
 	return size - faulted_in;
 }
-EXPORT_SYMBOL(fault_in_subpage_writeable);
 
 size_t fault_in_safe_writeable(const char __user *uaddr, size_t size)
 {
@@ -1218,7 +1211,6 @@ size_t fault_in_safe_writeable(const char __user *uaddr, size_t size)
 		return size - ((unsigned long)uaddr - start);
 	return 0;
 }
-EXPORT_SYMBOL(fault_in_safe_writeable);
 
 size_t fault_in_readable(const char __user *uaddr, size_t size)
 {
@@ -1248,7 +1240,6 @@ out:
 		return size - (uaddr - start);
 	return 0;
 }
-EXPORT_SYMBOL(fault_in_readable);
 
 static long check_and_migrate_movable_pages(unsigned long nr_pages,
 					    struct page **pages,
@@ -1326,7 +1317,6 @@ long get_user_pages_remote(struct mm_struct *mm,
 	return __get_user_pages_remote(mm, start, nr_pages, gup_flags,
 				       pages, vmas, locked);
 }
-EXPORT_SYMBOL(get_user_pages_remote);
 
 long get_user_pages(unsigned long start, unsigned long nr_pages,
 		unsigned int gup_flags, struct page **pages,
@@ -1338,7 +1328,6 @@ long get_user_pages(unsigned long start, unsigned long nr_pages,
 	return __gup_longterm_locked(current->mm, start, nr_pages,
 				     pages, vmas, gup_flags | FOLL_TOUCH);
 }
-EXPORT_SYMBOL(get_user_pages);
 
 long get_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
 			     struct page **pages, unsigned int gup_flags)
@@ -1358,7 +1347,6 @@ long get_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
 		mmap_read_unlock(mm);
 	return ret;
 }
-EXPORT_SYMBOL(get_user_pages_unlocked);
 
 static void __maybe_unused undo_dev_pagemap(int *nr, int nr_start,
 					    unsigned int flags,
@@ -1835,7 +1823,6 @@ int get_user_pages_fast_only(unsigned long start, int nr_pages,
 
 	return nr_pinned;
 }
-EXPORT_SYMBOL_GPL(get_user_pages_fast_only);
 
 int get_user_pages_fast(unsigned long start, int nr_pages,
 			unsigned int gup_flags, struct page **pages)
@@ -1847,7 +1834,6 @@ int get_user_pages_fast(unsigned long start, int nr_pages,
 	gup_flags |= FOLL_GET;
 	return internal_get_user_pages_fast(start, nr_pages, gup_flags, pages);
 }
-EXPORT_SYMBOL_GPL(get_user_pages_fast);
 
 int pin_user_pages_fast(unsigned long start, int nr_pages,
 			unsigned int gup_flags, struct page **pages)
@@ -1862,7 +1848,6 @@ int pin_user_pages_fast(unsigned long start, int nr_pages,
 	gup_flags |= FOLL_PIN;
 	return internal_get_user_pages_fast(start, nr_pages, gup_flags, pages);
 }
-EXPORT_SYMBOL_GPL(pin_user_pages_fast);
 
 int pin_user_pages_fast_only(unsigned long start, int nr_pages,
 			     unsigned int gup_flags, struct page **pages)
@@ -1885,7 +1870,6 @@ int pin_user_pages_fast_only(unsigned long start, int nr_pages,
 
 	return nr_pinned;
 }
-EXPORT_SYMBOL_GPL(pin_user_pages_fast_only);
 
 long pin_user_pages_remote(struct mm_struct *mm,
 			   unsigned long start, unsigned long nr_pages,
@@ -1903,7 +1887,6 @@ long pin_user_pages_remote(struct mm_struct *mm,
 	return __get_user_pages_remote(mm, start, nr_pages, gup_flags,
 				       pages, vmas, locked);
 }
-EXPORT_SYMBOL(pin_user_pages_remote);
 
 long pin_user_pages(unsigned long start, unsigned long nr_pages,
 		    unsigned int gup_flags, struct page **pages,
@@ -1920,7 +1903,6 @@ long pin_user_pages(unsigned long start, unsigned long nr_pages,
 	return __gup_longterm_locked(current->mm, start, nr_pages,
 				     pages, vmas, gup_flags);
 }
-EXPORT_SYMBOL(pin_user_pages);
 
 long pin_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
 			     struct page **pages, unsigned int gup_flags)
@@ -1935,4 +1917,3 @@ long pin_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
 	gup_flags |= FOLL_PIN;
 	return get_user_pages_unlocked(start, nr_pages, pages, gup_flags);
 }
-EXPORT_SYMBOL(pin_user_pages_unlocked);

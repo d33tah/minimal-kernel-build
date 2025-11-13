@@ -64,17 +64,14 @@ int console_printk[4] = {
 	CONSOLE_LOGLEVEL_MIN,		/* minimum_console_loglevel */
 	CONSOLE_LOGLEVEL_DEFAULT,	/* default_console_loglevel */
 };
-EXPORT_SYMBOL_GPL(console_printk);
 
 atomic_t ignore_console_lock_warning __read_mostly = ATOMIC_INIT(0);
-EXPORT_SYMBOL(ignore_console_lock_warning);
 
 /*
  * Low level drivers may need that to know if they can schedule in
  * their unblank() callback or not. So let's export it.
  */
 int oops_in_progress;
-EXPORT_SYMBOL(oops_in_progress);
 
 /*
  * console_sem protects the console_drivers list, and also
@@ -83,7 +80,6 @@ EXPORT_SYMBOL(oops_in_progress);
  */
 static DEFINE_SEMAPHORE(console_sem);
 struct console *console_drivers;
-EXPORT_SYMBOL_GPL(console_drivers);
 
 /*
  * System may need to suppress printk message under certain
@@ -243,7 +239,6 @@ static struct console_cmdline console_cmdline[MAX_CMDLINECONSOLES];
 
 static int preferred_console = -1;
 int console_set_on_cmdline;
-EXPORT_SYMBOL(console_set_on_cmdline);
 
 /* Flag: console code may call schedule() */
 static int console_may_schedule;
@@ -478,7 +473,6 @@ int add_preferred_console(char *name, int idx, char *options)
 }
 
 bool console_suspend_enabled = true;
-EXPORT_SYMBOL(console_suspend_enabled);
 
 static int __init console_suspend_disable(char *str)
 {
@@ -498,7 +492,6 @@ void console_verbose(void)
 	if (console_loglevel && !printk_console_no_auto_verbose)
 		console_loglevel = CONSOLE_LOGLEVEL_MOTORMOUTH;
 }
-EXPORT_SYMBOL_GPL(console_verbose);
 
 module_param_named(console_no_auto_verbose, printk_console_no_auto_verbose, bool, 0644);
 MODULE_PARM_DESC(console_no_auto_verbose, "Disable console loglevel raise to highest on oops/panic/etc");
@@ -566,7 +559,6 @@ void console_lock(void)
 	console_locked = 1;
 	console_may_schedule = 1;
 }
-EXPORT_SYMBOL(console_lock);
 
 /**
  * console_trylock - try to lock the console system for exclusive use.
@@ -588,13 +580,11 @@ int console_trylock(void)
 	console_may_schedule = 0;
 	return 1;
 }
-EXPORT_SYMBOL(console_trylock);
 
 int is_console_locked(void)
 {
 	return console_locked;
 }
-EXPORT_SYMBOL(is_console_locked);
 
 /*
  * Return true when this CPU should unlock console_sem without pushing all
@@ -874,7 +864,6 @@ void console_unlock(void)
 		 */
 	} while (prb_read_valid(prb, next_seq, NULL) && console_trylock());
 }
-EXPORT_SYMBOL(console_unlock);
 
 /**
  * console_conditional_schedule - yield the CPU if required
@@ -890,7 +879,6 @@ void __sched console_conditional_schedule(void)
 	if (console_may_schedule)
 		cond_resched();
 }
-EXPORT_SYMBOL(console_conditional_schedule);
 
 void console_unblank(void)
 {
@@ -978,7 +966,6 @@ void console_stop(struct console *console)
 	console->flags &= ~CON_ENABLED;
 	console_unlock();
 }
-EXPORT_SYMBOL(console_stop);
 
 void console_start(struct console *console)
 {
@@ -987,7 +974,6 @@ void console_start(struct console *console)
 	console_unlock();
 	__pr_flush(console, 1000, true);
 }
-EXPORT_SYMBOL(console_start);
 
 static int __read_mostly keep_bootcon;
 
@@ -1216,7 +1202,6 @@ void register_console(struct console *newcon)
 				unregister_console(con);
 	}
 }
-EXPORT_SYMBOL(register_console);
 
 int unregister_console(struct console *console)
 {
@@ -1274,7 +1259,6 @@ out_disable_unlock:
 
 	return res;
 }
-EXPORT_SYMBOL(unregister_console);
 
 /*
  * Initialize the console device. This is called *early*, so

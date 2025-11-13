@@ -106,7 +106,6 @@ int vfs_parse_fs_param_source(struct fs_context *fc, struct fs_parameter *param)
 	param->string = NULL;
 	return 0;
 }
-EXPORT_SYMBOL(vfs_parse_fs_param_source);
 
 /**
  * vfs_parse_fs_param - Add a single parameter to a superblock config
@@ -158,7 +157,6 @@ int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
 	return invalf(fc, "%s: Unknown parameter '%s'",
 		      fc->fs_type->name, param->key);
 }
-EXPORT_SYMBOL(vfs_parse_fs_param);
 
 /**
  * vfs_parse_fs_string - Convenience function to just parse a string.
@@ -185,7 +183,6 @@ int vfs_parse_fs_string(struct fs_context *fc, const char *key,
 	kfree(param.string);
 	return ret;
 }
-EXPORT_SYMBOL(vfs_parse_fs_string);
 
 /**
  * generic_parse_monolithic - Parse key[=val][,key[=val]]* mount data
@@ -229,7 +226,6 @@ int generic_parse_monolithic(struct fs_context *fc, void *data)
 
 	return ret;
 }
-EXPORT_SYMBOL(generic_parse_monolithic);
 
 /**
  * alloc_fs_context - Create a filesystem context.
@@ -304,7 +300,6 @@ struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
 	return alloc_fs_context(fs_type, NULL, sb_flags, 0,
 					FS_CONTEXT_FOR_MOUNT);
 }
-EXPORT_SYMBOL(fs_context_for_mount);
 
 struct fs_context *fs_context_for_reconfigure(struct dentry *dentry,
 					unsigned int sb_flags,
@@ -313,14 +308,12 @@ struct fs_context *fs_context_for_reconfigure(struct dentry *dentry,
 	return alloc_fs_context(dentry->d_sb->s_type, dentry, sb_flags,
 				sb_flags_mask, FS_CONTEXT_FOR_RECONFIGURE);
 }
-EXPORT_SYMBOL(fs_context_for_reconfigure);
 
 struct fs_context *fs_context_for_submount(struct file_system_type *type,
 					   struct dentry *reference)
 {
 	return alloc_fs_context(type, reference, 0, 0, FS_CONTEXT_FOR_SUBMOUNT);
 }
-EXPORT_SYMBOL(fs_context_for_submount);
 
 void fc_drop_locked(struct fs_context *fc)
 {
@@ -375,7 +368,6 @@ err_fc:
 	put_fs_context(fc);
 	return ERR_PTR(ret);
 }
-EXPORT_SYMBOL(vfs_dup_fs_context);
 
 /**
  * logfc - Log a message to a filesystem context
@@ -429,7 +421,6 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 	}
 	va_end(va);
 }
-EXPORT_SYMBOL(logfc);
 
 /*
  * Free a logging structure.
@@ -477,7 +468,6 @@ void put_fs_context(struct fs_context *fc)
 	kfree(fc->source);
 	kfree(fc);
 }
-EXPORT_SYMBOL(put_fs_context);
 
 /*
  * Free the config for a filesystem that doesn't support fs_context.

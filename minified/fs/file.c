@@ -567,7 +567,6 @@ int get_unused_fd_flags(unsigned flags)
 {
 	return __get_unused_fd_flags(flags, rlimit(RLIMIT_NOFILE));
 }
-EXPORT_SYMBOL(get_unused_fd_flags);
 
 static void __put_unused_fd(struct files_struct *files, unsigned int fd)
 {
@@ -585,7 +584,6 @@ void put_unused_fd(unsigned int fd)
 	spin_unlock(&files->file_lock);
 }
 
-EXPORT_SYMBOL(put_unused_fd);
 
 /*
  * Install a file pointer in the fd array.
@@ -627,7 +625,6 @@ void fd_install(unsigned int fd, struct file *file)
 	rcu_read_unlock_sched();
 }
 
-EXPORT_SYMBOL(fd_install);
 
 /**
  * pick_file - return file associatd with fd
@@ -667,7 +664,6 @@ int close_fd(unsigned fd)
 
 	return filp_close(file, files);
 }
-EXPORT_SYMBOL(close_fd); /* for ksys_close() */
 
 /**
  * last_fd - return last valid index into fd table
@@ -929,13 +925,11 @@ struct file *fget(unsigned int fd)
 {
 	return __fget(fd, FMODE_PATH);
 }
-EXPORT_SYMBOL(fget);
 
 struct file *fget_raw(unsigned int fd)
 {
 	return __fget(fd, 0);
 }
-EXPORT_SYMBOL(fget_raw);
 
 struct file *fget_task(struct task_struct *task, unsigned int fd)
 {
@@ -1022,7 +1016,6 @@ unsigned long __fdget(unsigned int fd)
 {
 	return __fget_light(fd, FMODE_PATH);
 }
-EXPORT_SYMBOL(__fdget);
 
 unsigned long __fdget_raw(unsigned int fd)
 {
@@ -1204,7 +1197,6 @@ int receive_fd(struct file *file, unsigned int o_flags)
 {
 	return __receive_fd(file, NULL, o_flags);
 }
-EXPORT_SYMBOL_GPL(receive_fd);
 
 static int ksys_dup3(unsigned int oldfd, unsigned int newfd, int flags)
 {
@@ -1310,4 +1302,3 @@ int iterate_fd(struct files_struct *files, unsigned n,
 	spin_unlock(&files->file_lock);
 	return res;
 }
-EXPORT_SYMBOL(iterate_fd);

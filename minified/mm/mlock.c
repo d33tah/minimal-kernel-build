@@ -14,7 +14,6 @@ bool can_do_mlock(void)
 {
 	return false;  /* No mlock allowed */
 }
-EXPORT_SYMBOL(can_do_mlock);
 
 SYSCALL_DEFINE2(mlock, unsigned long, start, size_t, len)
 {

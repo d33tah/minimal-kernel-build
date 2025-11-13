@@ -39,7 +39,6 @@ bool timerqueue_add(struct timerqueue_head *head, struct timerqueue_node *node)
 
 	return rb_add_cached(&node->node, &head->rb_root, __timerqueue_less);
 }
-EXPORT_SYMBOL_GPL(timerqueue_add);
 
 /**
  * timerqueue_del - Removes a timer from the timerqueue.
@@ -59,7 +58,6 @@ bool timerqueue_del(struct timerqueue_head *head, struct timerqueue_node *node)
 
 	return !RB_EMPTY_ROOT(&head->rb_root.rb_root);
 }
-EXPORT_SYMBOL_GPL(timerqueue_del);
 
 /**
  * timerqueue_iterate_next - Returns the timer after the provided timer
@@ -81,4 +79,3 @@ struct timerqueue_node *timerqueue_iterate_next(struct timerqueue_node *node)
 		return NULL;
 	return container_of(next, struct timerqueue_node, node);
 }
-EXPORT_SYMBOL_GPL(timerqueue_iterate_next);

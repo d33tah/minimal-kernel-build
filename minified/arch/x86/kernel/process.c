@@ -491,7 +491,6 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
  * Idle related variables and functions
  */
 unsigned long boot_option_idle_override = IDLE_NO_OVERRIDE;
-EXPORT_SYMBOL(boot_option_idle_override);
 
 static void (*x86_idle)(void);
 
@@ -527,7 +526,6 @@ void __cpuidle default_idle(void)
 	raw_safe_halt();
 }
 #if defined(CONFIG_APM_MODULE) || defined(CONFIG_HALTPOLL_CPUIDLE_MODULE)
-EXPORT_SYMBOL(default_idle);
 #endif
 
 

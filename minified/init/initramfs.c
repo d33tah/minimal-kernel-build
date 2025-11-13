@@ -637,7 +637,6 @@ void wait_for_initramfs(void)
 	}
 	async_synchronize_cookie_domain(initramfs_cookie + 1, &initramfs_domain);
 }
-EXPORT_SYMBOL_GPL(wait_for_initramfs);
 
 static int __init populate_rootfs(void)
 {

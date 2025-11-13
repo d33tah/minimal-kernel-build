@@ -66,7 +66,6 @@ struct ktermios tty_std_termios = {
 	.c_ospeed = 38400,
 	
 };
-EXPORT_SYMBOL(tty_std_termios);
 
 LIST_HEAD(tty_drivers);			
 
@@ -145,7 +144,6 @@ const char *tty_name(const struct tty_struct *tty)
 		return "NULL tty";
 	return tty->name;
 }
-EXPORT_SYMBOL(tty_name);
 
 const char *tty_driver_name(const struct tty_struct *tty)
 {
@@ -248,7 +246,6 @@ out:
 	mutex_unlock(&tty_mutex);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(tty_dev_name_to_number);
 
 static ssize_t hung_up_tty_read(struct kiocb *iocb, struct iov_iter *to)
 {
@@ -347,7 +344,6 @@ void tty_wakeup(struct tty_struct *tty)
 	}
 	wake_up_interruptible_poll(&tty->write_wait, EPOLLOUT);
 }
-EXPORT_SYMBOL_GPL(tty_wakeup);
 
 static struct file *tty_release_redirect(struct tty_struct *tty)
 {
@@ -449,14 +445,12 @@ void tty_hangup(struct tty_struct *tty)
 	tty_debug_hangup(tty, "hangup\n");
 	schedule_work(&tty->hangup_work);
 }
-EXPORT_SYMBOL(tty_hangup);
 
 void tty_vhangup(struct tty_struct *tty)
 {
 	tty_debug_hangup(tty, "vhangup\n");
 	__tty_hangup(tty, 0);
 }
-EXPORT_SYMBOL(tty_vhangup);
 
 void tty_vhangup_self(void)
 {
@@ -479,7 +473,6 @@ int tty_hung_up_p(struct file *filp)
 {
 	return (filp && filp->f_op == &hung_up_tty_fops);
 }
-EXPORT_SYMBOL(tty_hung_up_p);
 
 void __stop_tty(struct tty_struct *tty)
 {
@@ -498,7 +491,6 @@ void stop_tty(struct tty_struct *tty)
 	__stop_tty(tty);
 	spin_unlock_irqrestore(&tty->flow.lock, flags);
 }
-EXPORT_SYMBOL(stop_tty);
 
 void __start_tty(struct tty_struct *tty)
 {
@@ -518,7 +510,6 @@ void start_tty(struct tty_struct *tty)
 	__start_tty(tty);
 	spin_unlock_irqrestore(&tty->flow.lock, flags);
 }
-EXPORT_SYMBOL(start_tty);
 
 static void tty_update_time(struct timespec64 *time)
 {
@@ -840,7 +831,6 @@ void tty_init_termios(struct tty_struct *tty)
 	tty->termios.c_ispeed = tty_termios_input_baud_rate(&tty->termios);
 	tty->termios.c_ospeed = tty_termios_baud_rate(&tty->termios);
 }
-EXPORT_SYMBOL_GPL(tty_init_termios);
 
 int tty_standard_install(struct tty_driver *driver, struct tty_struct *tty)
 {
@@ -850,7 +840,6 @@ int tty_standard_install(struct tty_driver *driver, struct tty_struct *tty)
 	driver->ttys[tty->index] = tty;
 	return 0;
 }
-EXPORT_SYMBOL_GPL(tty_standard_install);
 
 static int tty_driver_install_tty(struct tty_driver *driver,
 						struct tty_struct *tty)
@@ -983,7 +972,6 @@ void tty_save_termios(struct tty_struct *tty)
 	}
 	*tp = tty->termios;
 }
-EXPORT_SYMBOL_GPL(tty_save_termios);
 
 static void tty_flush_works(struct tty_struct *tty)
 {
@@ -1032,7 +1020,6 @@ void tty_kref_put(struct tty_struct *tty)
 	if (tty)
 		kref_put(&tty->kref, queue_release_one_tty);
 }
-EXPORT_SYMBOL(tty_kref_put);
 
 static void release_tty(struct tty_struct *tty, int idx)
 {
@@ -1105,7 +1092,6 @@ void tty_kclose(struct tty_struct *tty)
 	release_tty(tty, tty->index);
 	mutex_unlock(&tty_mutex);
 }
-EXPORT_SYMBOL_GPL(tty_kclose);
 
 void tty_release_struct(struct tty_struct *tty, int idx)
 {
@@ -1121,7 +1107,6 @@ void tty_release_struct(struct tty_struct *tty, int idx)
 	release_tty(tty, idx);
 	mutex_unlock(&tty_mutex);
 }
-EXPORT_SYMBOL_GPL(tty_release_struct);
 
 int tty_release(struct inode *inode, struct file *filp)
 {
@@ -1336,13 +1321,11 @@ struct tty_struct *tty_kopen_exclusive(dev_t device)
 {
 	return tty_kopen(device, 0);
 }
-EXPORT_SYMBOL_GPL(tty_kopen_exclusive);
 
 struct tty_struct *tty_kopen_shared(dev_t device)
 {
 	return tty_kopen(device, 1);
 }
-EXPORT_SYMBOL_GPL(tty_kopen_shared);
 
 static struct tty_struct *tty_open_by_driver(dev_t device,
 					     struct file *filp)
@@ -1582,7 +1565,6 @@ done:
 	mutex_unlock(&tty->winsize_mutex);
 	return 0;
 }
-EXPORT_SYMBOL(tty_do_resize);
 
 static int tiocswinsz(struct tty_struct *tty, struct winsize __user *arg)
 {
@@ -1734,7 +1716,6 @@ int tty_get_icount(struct tty_struct *tty,
 	else
 		return -ENOTTY;
 }
-EXPORT_SYMBOL_GPL(tty_get_icount);
 
 static int tty_tiocgicount(struct tty_struct *tty, void __user *arg)
 {
@@ -1949,7 +1930,6 @@ void do_SAK(struct tty_struct *tty)
 		return;
 	schedule_work(&tty->SAK_work);
 }
-EXPORT_SYMBOL(do_SAK);
 
 static struct device *tty_get_device(struct tty_struct *tty)
 {
@@ -2004,7 +1984,6 @@ int tty_put_char(struct tty_struct *tty, unsigned char ch)
 		return tty->ops->put_char(tty, ch);
 	return tty->ops->write(tty, &ch, 1);
 }
-EXPORT_SYMBOL_GPL(tty_put_char);
 
 struct class *tty_class;
 
@@ -2030,7 +2009,6 @@ struct device *tty_register_device(struct tty_driver *driver, unsigned index,
 {
 	return tty_register_device_attr(driver, index, device, NULL, NULL);
 }
-EXPORT_SYMBOL(tty_register_device);
 
 static void tty_device_create_release(struct device *dev)
 {
@@ -2103,7 +2081,6 @@ err_put:
 
 	return ERR_PTR(retval);
 }
-EXPORT_SYMBOL_GPL(tty_register_device_attr);
 
 void tty_unregister_device(struct tty_driver *driver, unsigned index)
 {
@@ -2114,7 +2091,6 @@ void tty_unregister_device(struct tty_driver *driver, unsigned index)
 		driver->cdevs[index] = NULL;
 	}
 }
-EXPORT_SYMBOL(tty_unregister_device);
 
 struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
 		unsigned long flags)
@@ -2172,7 +2148,6 @@ err_free_all:
 	kfree(driver);
 	return ERR_PTR(err);
 }
-EXPORT_SYMBOL(__tty_alloc_driver);
 
 static void destruct_tty_driver(struct kref *kref)
 {
@@ -2205,7 +2180,6 @@ void tty_driver_kref_put(struct tty_driver *driver)
 {
 	kref_put(&driver->kref, destruct_tty_driver);
 }
-EXPORT_SYMBOL(tty_driver_kref_put);
 
 int tty_register_driver(struct tty_driver *driver)
 {
@@ -2264,7 +2238,6 @@ err_unreg_char:
 err:
 	return error;
 }
-EXPORT_SYMBOL(tty_register_driver);
 
 void tty_unregister_driver(struct tty_driver *driver)
 {
@@ -2274,13 +2247,11 @@ void tty_unregister_driver(struct tty_driver *driver)
 	list_del(&driver->tty_drivers);
 	mutex_unlock(&tty_mutex);
 }
-EXPORT_SYMBOL(tty_unregister_driver);
 
 dev_t tty_devnum(struct tty_struct *tty)
 {
 	return MKDEV(tty->driver->major, tty->driver->minor_start) + tty->index;
 }
-EXPORT_SYMBOL(tty_devnum);
 
 void tty_default_fops(struct file_operations *fops)
 {

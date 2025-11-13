@@ -120,7 +120,6 @@ void __put_cred(struct cred *cred)
 	else
 		call_rcu(&cred->rcu, put_cred_rcu);
 }
-EXPORT_SYMBOL(__put_cred);
 
 /*
  * Clean up a task's credentials when it exits
@@ -171,7 +170,6 @@ const struct cred *get_task_cred(struct task_struct *task)
 	rcu_read_unlock();
 	return cred;
 }
-EXPORT_SYMBOL(get_task_cred);
 
 /*
  * Allocate blank credentials, such that the credentials can be filled in at a
@@ -250,7 +248,6 @@ error:
 	abort_creds(new);
 	return NULL;
 }
-EXPORT_SYMBOL(prepare_creds);
 
 /*
  * Prepare credentials for current to perform an execve()
@@ -435,7 +432,6 @@ int commit_creds(struct cred *new)
 	put_cred(old);
 	return 0;
 }
-EXPORT_SYMBOL(commit_creds);
 
 /**
  * abort_creds - Discard a set of credentials and unlock the current task
@@ -453,7 +449,6 @@ void abort_creds(struct cred *new)
 	BUG_ON(atomic_read(&new->usage) < 1);
 	put_cred(new);
 }
-EXPORT_SYMBOL(abort_creds);
 
 /**
  * override_creds - Override the current process's subjective credentials
@@ -494,7 +489,6 @@ const struct cred *override_creds(const struct cred *new)
 	       read_cred_subscribers(old));
 	return old;
 }
-EXPORT_SYMBOL(override_creds);
 
 /**
  * revert_creds - Revert a temporary subjective credentials override
@@ -518,7 +512,6 @@ void revert_creds(const struct cred *old)
 	alter_cred_subscribers(override, -1);
 	put_cred(override);
 }
-EXPORT_SYMBOL(revert_creds);
 
 /**
  * cred_fscmp - Compare two credentials with respect to filesystem access.
@@ -572,7 +565,6 @@ int cred_fscmp(const struct cred *a, const struct cred *b)
 	}
 	return 0;
 }
-EXPORT_SYMBOL(cred_fscmp);
 
 int set_cred_ucounts(struct cred *new)
 {
@@ -663,7 +655,6 @@ error:
 	put_cred(old);
 	return NULL;
 }
-EXPORT_SYMBOL(prepare_kernel_cred);
 
 /**
  * set_security_override - Set the security ID in a set of credentials
@@ -677,7 +668,6 @@ int set_security_override(struct cred *new, u32 secid)
 {
 	return security_kernel_act_as(new, secid);
 }
-EXPORT_SYMBOL(set_security_override);
 
 /**
  * set_security_override_from_ctx - Set the security ID in a set of credentials
@@ -700,7 +690,6 @@ int set_security_override_from_ctx(struct cred *new, const char *secctx)
 
 	return set_security_override(new, secid);
 }
-EXPORT_SYMBOL(set_security_override_from_ctx);
 
 /**
  * set_create_files_as - Set the LSM file create context in a set of credentials
@@ -719,5 +708,4 @@ int set_create_files_as(struct cred *new, struct inode *inode)
 	new->fsgid = inode->i_gid;
 	return security_kernel_create_files_as(new, inode);
 }
-EXPORT_SYMBOL(set_create_files_as);
 

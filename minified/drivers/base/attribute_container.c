@@ -13,19 +13,16 @@ attribute_container_classdev_to_container(struct device *classdev)
 {
 	return NULL;
 }
-EXPORT_SYMBOL_GPL(attribute_container_classdev_to_container);
 
 int attribute_container_register(struct attribute_container *cont)
 {
 	return 0;
 }
-EXPORT_SYMBOL_GPL(attribute_container_register);
 
 int attribute_container_unregister(struct attribute_container *cont)
 {
 	return 0;
 }
-EXPORT_SYMBOL_GPL(attribute_container_unregister);
 
 struct device *
 attribute_container_find_class_device(struct attribute_container *cont,
@@ -33,4 +30,3 @@ attribute_container_find_class_device(struct attribute_container *cont,
 {
 	return NULL;
 }
-EXPORT_SYMBOL_GPL(attribute_container_find_class_device);

@@ -12,28 +12,24 @@ void file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping)
 {
 	/* No-op */
 }
-EXPORT_SYMBOL_GPL(file_ra_state_init);
 
 void page_cache_ra_unbounded(struct readahead_control *ractl,
 		unsigned long nr_to_read, unsigned long lookahead_size)
 {
 	/* No-op */
 }
-EXPORT_SYMBOL_GPL(page_cache_ra_unbounded);
 
 void page_cache_sync_ra(struct readahead_control *ractl,
 		unsigned long req_count)
 {
 	/* No-op */
 }
-EXPORT_SYMBOL_GPL(page_cache_sync_ra);
 
 void page_cache_async_ra(struct readahead_control *ractl,
 		struct folio *folio, unsigned long req_count)
 {
 	/* No-op */
 }
-EXPORT_SYMBOL_GPL(page_cache_async_ra);
 
 SYSCALL_DEFINE3(readahead, int, fd, loff_t, offset, size_t, count)
 {
@@ -45,7 +41,6 @@ void readahead_expand(struct readahead_control *ractl,
 {
 	/* No-op */
 }
-EXPORT_SYMBOL(readahead_expand);
 
 /* Additional missing functions */
 ssize_t ksys_readahead(int fd, loff_t offset, size_t count)

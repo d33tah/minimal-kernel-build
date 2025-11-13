@@ -164,7 +164,6 @@ kill_priv:
 
 	return 0;
 }
-EXPORT_SYMBOL(setattr_prepare);
 
 /**
  * inode_newsize_ok - may this inode be truncated to a given size
@@ -208,7 +207,6 @@ out_sig:
 out_big:
 	return -EFBIG;
 }
-EXPORT_SYMBOL(inode_newsize_ok);
 
 /**
  * setattr_copy - copy simple metadata updates into the generic inode
@@ -261,7 +259,6 @@ void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 		inode->i_mode = mode;
 	}
 }
-EXPORT_SYMBOL(setattr_copy);
 
 int may_setattr(struct user_namespace *mnt_userns, struct inode *inode,
 		unsigned int ia_valid)
@@ -289,7 +286,6 @@ int may_setattr(struct user_namespace *mnt_userns, struct inode *inode,
 	}
 	return 0;
 }
-EXPORT_SYMBOL(may_setattr);
 
 /**
  * notify_change - modify attributes of a filesytem object
@@ -433,4 +429,3 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 
 	return error;
 }
-EXPORT_SYMBOL(notify_change);

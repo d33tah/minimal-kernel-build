@@ -210,7 +210,6 @@ int rcuwait_wake_up(struct rcuwait *w)
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(rcuwait_wake_up);
 
 static int will_become_orphaned_pgrp(struct pid *pgrp,
 					struct task_struct *ignored_task)
@@ -1293,7 +1292,6 @@ bool thread_group_exited(struct pid *pid)
 
 	return exited;
 }
-EXPORT_SYMBOL(thread_group_exited);
 
 __weak void abort(void)
 {
@@ -1301,4 +1299,3 @@ __weak void abort(void)
 
 	panic("Oops failed to kill thread");
 }
-EXPORT_SYMBOL(abort);

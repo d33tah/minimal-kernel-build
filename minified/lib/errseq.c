@@ -106,7 +106,6 @@ errseq_t errseq_set(errseq_t *eseq, int err)
 	}
 	return cur;
 }
-EXPORT_SYMBOL(errseq_set);
 
 /**
  * errseq_sample() - Grab current errseq_t value.
@@ -129,7 +128,6 @@ errseq_t errseq_sample(errseq_t *eseq)
 		old = 0;
 	return old;
 }
-EXPORT_SYMBOL(errseq_sample);
 
 /**
  * errseq_check() - Has an error occurred since a particular sample point?
@@ -150,7 +148,6 @@ int errseq_check(errseq_t *eseq, errseq_t since)
 		return 0;
 	return -(cur & MAX_ERRNO);
 }
-EXPORT_SYMBOL(errseq_check);
 
 /**
  * errseq_check_and_advance() - Check an errseq_t and advance to current value.
@@ -204,4 +201,3 @@ int errseq_check_and_advance(errseq_t *eseq, errseq_t *since)
 	}
 	return err;
 }
-EXPORT_SYMBOL(errseq_check_and_advance);

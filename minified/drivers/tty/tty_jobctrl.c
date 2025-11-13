@@ -70,7 +70,6 @@ int tty_check_change(struct tty_struct *tty)
 {
 	return __tty_check_change(tty, SIGTTOU);
 }
-EXPORT_SYMBOL(tty_check_change);
 
 void proc_clear_tty(struct task_struct *p)
 {
@@ -167,7 +166,6 @@ struct tty_struct *get_current_tty(void)
 	spin_unlock_irqrestore(&current->sighand->siglock, flags);
 	return tty;
 }
-EXPORT_SYMBOL_GPL(get_current_tty);
 
 /*
  * Called from tty_release().
@@ -424,7 +422,6 @@ struct pid *tty_get_pgrp(struct tty_struct *tty)
 
 	return pgrp;
 }
-EXPORT_SYMBOL_GPL(tty_get_pgrp);
 
 /*
  * This checks not only the pgrp, but falls back on the pid if no

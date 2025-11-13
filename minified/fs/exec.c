@@ -63,7 +63,6 @@ void __register_binfmt(struct linux_binfmt * fmt, int insert)
 	write_unlock(&binfmt_lock);
 }
 
-EXPORT_SYMBOL(__register_binfmt);
 
 void unregister_binfmt(struct linux_binfmt * fmt)
 {
@@ -72,7 +71,6 @@ void unregister_binfmt(struct linux_binfmt * fmt)
 	write_unlock(&binfmt_lock);
 }
 
-EXPORT_SYMBOL(unregister_binfmt);
 
 static inline void put_binfmt(struct linux_binfmt * fmt)
 {
@@ -411,7 +409,6 @@ int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 
 	return 0;
 }
-EXPORT_SYMBOL(copy_string_kernel);
 
 static int copy_strings_kernel(int argc, const char *const *argv,
 			       struct linux_binprm *bprm)
@@ -550,7 +547,6 @@ out_unlock:
 	mmap_write_unlock(mm);
 	return ret;
 }
-EXPORT_SYMBOL(setup_arg_pages);
 
 static struct file *do_open_execat(int fd, struct filename *name, int flags)
 {
@@ -605,7 +601,6 @@ struct file *open_exec(const char *name)
 	}
 	return f;
 }
-EXPORT_SYMBOL(open_exec);
 
 #if defined(CONFIG_HAVE_AOUT) || defined(CONFIG_BINFMT_FLAT) || \
     defined(CONFIG_BINFMT_ELF_FDPIC)
@@ -616,7 +611,6 @@ ssize_t read_code(struct file *file, unsigned long addr, loff_t pos, size_t len)
 		flush_icache_user_range(addr, addr + len);
 	return res;
 }
-EXPORT_SYMBOL(read_code);
 #endif
 
 static int exec_mmap(struct mm_struct *mm)
@@ -805,7 +799,6 @@ char *__get_task_comm(char *buf, size_t buf_size, struct task_struct *tsk)
 	task_unlock(tsk);
 	return buf;
 }
-EXPORT_SYMBOL_GPL(__get_task_comm);
 
 void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 {
@@ -917,7 +910,6 @@ out_unlock:
 out:
 	return retval;
 }
-EXPORT_SYMBOL(begin_new_exec);
 
 void would_dump(struct linux_binprm *bprm, struct file *file)
 {
@@ -938,7 +930,6 @@ void would_dump(struct linux_binprm *bprm, struct file *file)
 		}
 	}
 }
-EXPORT_SYMBOL(would_dump);
 
 void setup_new_exec(struct linux_binprm * bprm)
 {
@@ -953,7 +944,6 @@ void setup_new_exec(struct linux_binprm * bprm)
 	up_write(&me->signal->exec_update_lock);
 	mutex_unlock(&me->signal->cred_guard_mutex);
 }
-EXPORT_SYMBOL(setup_new_exec);
 
 void finalize_exec(struct linux_binprm *bprm)
 {
@@ -962,7 +952,6 @@ void finalize_exec(struct linux_binprm *bprm)
 	current->signal->rlim[RLIMIT_STACK] = bprm->rlim_stack;
 	task_unlock(current->group_leader);
 }
-EXPORT_SYMBOL(finalize_exec);
 
 static int prepare_bprm_creds(struct linux_binprm *bprm)
 {
@@ -1044,7 +1033,6 @@ int bprm_change_interp(const char *interp, struct linux_binprm *bprm)
 		return -ENOMEM;
 	return 0;
 }
-EXPORT_SYMBOL(bprm_change_interp);
 
 static void check_unsafe_exec(struct linux_binprm *bprm)
 {
@@ -1169,7 +1157,6 @@ int remove_arg_zero(struct linux_binprm *bprm)
 out:
 	return ret;
 }
-EXPORT_SYMBOL(remove_arg_zero);
 
 #define printable(c) (((c)=='\t') || ((c)=='\n') || (0x20<=(c) && (c)<=0x7e))
 
@@ -1474,7 +1461,6 @@ void set_binfmt(struct linux_binfmt *new)
 	if (new)
 		__module_get(new->module);
 }
-EXPORT_SYMBOL(set_binfmt);
 
 void set_dumpable(struct mm_struct *mm, int value)
 {

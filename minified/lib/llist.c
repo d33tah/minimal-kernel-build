@@ -34,7 +34,6 @@ bool llist_add_batch(struct llist_node *new_first, struct llist_node *new_last,
 
 	return !first;
 }
-EXPORT_SYMBOL_GPL(llist_add_batch);
 
 /**
  * llist_del_first - delete the first entry of lock-less list
@@ -67,7 +66,6 @@ struct llist_node *llist_del_first(struct llist_head *head)
 
 	return entry;
 }
-EXPORT_SYMBOL_GPL(llist_del_first);
 
 /**
  * llist_reverse_order - reverse order of a llist chain
@@ -89,4 +87,3 @@ struct llist_node *llist_reverse_order(struct llist_node *head)
 
 	return new_head;
 }
-EXPORT_SYMBOL_GPL(llist_reverse_order);

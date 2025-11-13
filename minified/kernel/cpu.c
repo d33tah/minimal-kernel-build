@@ -415,7 +415,6 @@ int __cpuhp_state_add_instance(enum cpuhp_state state, struct hlist_node *node,
 	cpus_read_unlock();
 	return ret;
 }
-EXPORT_SYMBOL_GPL(__cpuhp_state_add_instance);
 
 /**
  * __cpuhp_setup_state_cpuslocked - Setup the callbacks for an hotplug machine state
@@ -492,7 +491,6 @@ out:
 		return state;
 	return ret;
 }
-EXPORT_SYMBOL(__cpuhp_setup_state_cpuslocked);
 
 int __cpuhp_setup_state(enum cpuhp_state state,
 			const char *name, bool invoke,
@@ -508,7 +506,6 @@ int __cpuhp_setup_state(enum cpuhp_state state,
 	cpus_read_unlock();
 	return ret;
 }
-EXPORT_SYMBOL(__cpuhp_setup_state);
 
 int __cpuhp_state_remove_instance(enum cpuhp_state state,
 				  struct hlist_node *node, bool invoke)
@@ -546,7 +543,6 @@ remove:
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(__cpuhp_state_remove_instance);
 
 /**
  * __cpuhp_remove_state_cpuslocked - Remove the callbacks for an hotplug machine state
@@ -594,7 +590,6 @@ remove:
 	cpuhp_store_callbacks(state, NULL, NULL, NULL, false);
 	mutex_unlock(&cpuhp_state_mutex);
 }
-EXPORT_SYMBOL(__cpuhp_remove_state_cpuslocked);
 
 void __cpuhp_remove_state(enum cpuhp_state state, bool invoke)
 {
@@ -602,7 +597,6 @@ void __cpuhp_remove_state(enum cpuhp_state state, bool invoke)
 	__cpuhp_remove_state_cpuslocked(state, invoke);
 	cpus_read_unlock();
 }
-EXPORT_SYMBOL(__cpuhp_remove_state);
 
 
 
@@ -629,28 +623,20 @@ const unsigned long cpu_bit_bitmap[BITS_PER_LONG+1][BITS_TO_LONGS(NR_CPUS)] = {
 	MASK_DECLARE_8(48),	MASK_DECLARE_8(56),
 #endif
 };
-EXPORT_SYMBOL_GPL(cpu_bit_bitmap);
 
 const DECLARE_BITMAP(cpu_all_bits, NR_CPUS) = CPU_BITS_ALL;
-EXPORT_SYMBOL(cpu_all_bits);
 
 struct cpumask __cpu_possible_mask __read_mostly;
-EXPORT_SYMBOL(__cpu_possible_mask);
 
 struct cpumask __cpu_online_mask __read_mostly;
-EXPORT_SYMBOL(__cpu_online_mask);
 
 struct cpumask __cpu_present_mask __read_mostly;
-EXPORT_SYMBOL(__cpu_present_mask);
 
 struct cpumask __cpu_active_mask __read_mostly;
-EXPORT_SYMBOL(__cpu_active_mask);
 
 struct cpumask __cpu_dying_mask __read_mostly;
-EXPORT_SYMBOL(__cpu_dying_mask);
 
 atomic_t __num_online_cpus __read_mostly;
-EXPORT_SYMBOL(__num_online_cpus);
 
 void init_cpu_present(const struct cpumask *src)
 {
@@ -745,11 +731,9 @@ bool cpu_mitigations_off(void)
 {
 	return cpu_mitigations == CPU_MITIGATIONS_OFF;
 }
-EXPORT_SYMBOL_GPL(cpu_mitigations_off);
 
 /* mitigations=auto,nosmt */
 bool cpu_mitigations_auto_nosmt(void)
 {
 	return cpu_mitigations == CPU_MITIGATIONS_AUTO_NOSMT;
 }
-EXPORT_SYMBOL_GPL(cpu_mitigations_auto_nosmt);

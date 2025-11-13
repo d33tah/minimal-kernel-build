@@ -243,7 +243,6 @@ int generic_permission(struct user_namespace *mnt_userns, struct inode *inode,
 
 	return -EACCES;
 }
-EXPORT_SYMBOL(generic_permission);
 
 static inline int do_inode_permission(struct user_namespace *mnt_userns,
 				      struct inode *inode, int mask)
@@ -301,21 +300,18 @@ int inode_permission(struct user_namespace *mnt_userns,
 
 	return security_inode_permission(inode, mask);
 }
-EXPORT_SYMBOL(inode_permission);
 
 void path_get(const struct path *path)
 {
 	mntget(path->mnt);
 	dget(path->dentry);
 }
-EXPORT_SYMBOL(path_get);
 
 void path_put(const struct path *path)
 {
 	dput(path->dentry);
 	mntput(path->mnt);
 }
-EXPORT_SYMBOL(path_put);
 
 #define EMBEDDED_LEVELS 2
 struct nameidata {
@@ -773,7 +769,6 @@ int follow_up(struct path *path)
 {
 	return 0;
 }
-EXPORT_SYMBOL(follow_up);
 
 static bool choose_mountpoint_rcu(struct mount *m, const struct path *root,
 				  struct path *path, unsigned *seqp)
@@ -917,7 +912,6 @@ int follow_down_one(struct path *path)
 	}
 	return 0;
 }
-EXPORT_SYMBOL(follow_down_one);
 
 int follow_down(struct path *path)
 {
@@ -929,7 +923,6 @@ int follow_down(struct path *path)
 		mntput(mnt);
 	return ret;
 }
-EXPORT_SYMBOL(follow_down);
 
 static bool __follow_mount_rcu(struct nameidata *nd, struct path *path,
 			       struct inode **inode, unsigned *seqp)
@@ -1475,7 +1468,6 @@ unsigned int full_name_hash(const void *salt, const char *name, unsigned int len
 done:
 	return fold_hash(x, y);
 }
-EXPORT_SYMBOL(full_name_hash);
 
 u64 hashlen_string(const void *salt, const char *name)
 {
@@ -1499,7 +1491,6 @@ inside:
 
 	return hashlen_create(fold_hash(x, y), len + find_zero(mask));
 }
-EXPORT_SYMBOL(hashlen_string);
 
 static inline u64 hash_name(const void *salt, const char *name)
 {
@@ -1877,7 +1868,6 @@ int kern_path(const char *name, unsigned int flags, struct path *path)
 	return ret;
 
 }
-EXPORT_SYMBOL(kern_path);
 
 int vfs_path_lookup(struct dentry *dentry, struct vfsmount *mnt,
 		    const char *name, unsigned int flags,
@@ -1893,7 +1883,6 @@ int vfs_path_lookup(struct dentry *dentry, struct vfsmount *mnt,
 	putname(filename);
 	return ret;
 }
-EXPORT_SYMBOL(vfs_path_lookup);
 
 static int lookup_one_common(struct user_namespace *mnt_userns,
 			     const char *name, struct dentry *base, int len,
@@ -1938,7 +1927,6 @@ struct dentry *try_lookup_one_len(const char *name, struct dentry *base, int len
 
 	return lookup_dcache(&this, base, 0);
 }
-EXPORT_SYMBOL(try_lookup_one_len);
 
 struct dentry *lookup_one_len(const char *name, struct dentry *base, int len)
 {
@@ -1955,7 +1943,6 @@ struct dentry *lookup_one_len(const char *name, struct dentry *base, int len)
 	dentry = lookup_dcache(&this, base, 0);
 	return dentry ? dentry : __lookup_slow(&this, base, 0);
 }
-EXPORT_SYMBOL(lookup_one_len);
 
 struct dentry *lookup_one(struct user_namespace *mnt_userns, const char *name,
 			  struct dentry *base, int len)
@@ -1973,7 +1960,6 @@ struct dentry *lookup_one(struct user_namespace *mnt_userns, const char *name,
 	dentry = lookup_dcache(&this, base, 0);
 	return dentry ? dentry : __lookup_slow(&this, base, 0);
 }
-EXPORT_SYMBOL(lookup_one);
 
 struct dentry *lookup_one_unlocked(struct user_namespace *mnt_userns,
 				   const char *name, struct dentry *base,
@@ -1992,7 +1978,6 @@ struct dentry *lookup_one_unlocked(struct user_namespace *mnt_userns,
 		ret = lookup_slow(&this, base, 0);
 	return ret;
 }
-EXPORT_SYMBOL(lookup_one_unlocked);
 
 struct dentry *lookup_one_positive_unlocked(struct user_namespace *mnt_userns,
 					    const char *name,
@@ -2006,21 +1991,18 @@ struct dentry *lookup_one_positive_unlocked(struct user_namespace *mnt_userns,
 	}
 	return ret;
 }
-EXPORT_SYMBOL(lookup_one_positive_unlocked);
 
 struct dentry *lookup_one_len_unlocked(const char *name,
 				       struct dentry *base, int len)
 {
 	return lookup_one_unlocked(&init_user_ns, name, base, len);
 }
-EXPORT_SYMBOL(lookup_one_len_unlocked);
 
 struct dentry *lookup_positive_unlocked(const char *name,
 				       struct dentry *base, int len)
 {
 	return lookup_one_positive_unlocked(&init_user_ns, name, base, len);
 }
-EXPORT_SYMBOL(lookup_positive_unlocked);
 
 int user_path_at_empty(int dfd, const char __user *name, unsigned flags,
 		 struct path *path, int *empty)
@@ -2031,7 +2013,6 @@ int user_path_at_empty(int dfd, const char __user *name, unsigned flags,
 	putname(filename);
 	return ret;
 }
-EXPORT_SYMBOL(user_path_at_empty);
 
 int __check_sticky(struct user_namespace *mnt_userns, struct inode *dir,
 		   struct inode *inode)
@@ -2044,7 +2025,6 @@ int __check_sticky(struct user_namespace *mnt_userns, struct inode *dir,
 		return 0;
 	return !capable_wrt_inode_uidgid(mnt_userns, inode, CAP_FOWNER);
 }
-EXPORT_SYMBOL(__check_sticky);
 
 static int may_delete(struct user_namespace *mnt_userns, struct inode *dir,
 		      struct dentry *victim, bool isdir)
@@ -2132,7 +2112,6 @@ struct dentry *lock_rename(struct dentry *p1, struct dentry *p2)
 	inode_lock_nested(p2->d_inode, I_MUTEX_PARENT2);
 	return NULL;
 }
-EXPORT_SYMBOL(lock_rename);
 
 void unlock_rename(struct dentry *p1, struct dentry *p2)
 {
@@ -2142,7 +2121,6 @@ void unlock_rename(struct dentry *p1, struct dentry *p2)
 		mutex_unlock(&p1->d_sb->s_vfs_rename_mutex);
 	}
 }
-EXPORT_SYMBOL(unlock_rename);
 
 int vfs_create(struct user_namespace *mnt_userns, struct inode *dir,
 	       struct dentry *dentry, umode_t mode, bool want_excl)
@@ -2163,7 +2141,6 @@ int vfs_create(struct user_namespace *mnt_userns, struct inode *dir,
 		fsnotify_create(dir, dentry);
 	return error;
 }
-EXPORT_SYMBOL(vfs_create);
 
 int vfs_mkobj(struct dentry *dentry, umode_t mode,
 		int (*f)(struct dentry *, umode_t, void *),
@@ -2184,7 +2161,6 @@ int vfs_mkobj(struct dentry *dentry, umode_t mode,
 		fsnotify_create(dir, dentry);
 	return error;
 }
-EXPORT_SYMBOL(vfs_mkobj);
 
 bool may_open_dev(const struct path *path)
 {
@@ -2610,7 +2586,6 @@ out_err:
 	dput(child);
 	return ERR_PTR(error);
 }
-EXPORT_SYMBOL(vfs_tmpfile);
 
 static int do_tmpfile(struct nameidata *nd, unsigned flags,
 		const struct open_flags *op,
@@ -2803,7 +2778,6 @@ struct dentry *kern_path_create(int dfd, const char *pathname,
 	putname(filename);
 	return res;
 }
-EXPORT_SYMBOL(kern_path_create);
 
 void done_path_create(struct path *path, struct dentry *dentry)
 {
@@ -2812,7 +2786,6 @@ void done_path_create(struct path *path, struct dentry *dentry)
 	mnt_drop_write(path->mnt);
 	path_put(path);
 }
-EXPORT_SYMBOL(done_path_create);
 
 inline struct dentry *user_path_create(int dfd, const char __user *pathname,
 				struct path *path, unsigned int lookup_flags)
@@ -2823,7 +2796,6 @@ inline struct dentry *user_path_create(int dfd, const char __user *pathname,
 	putname(filename);
 	return res;
 }
-EXPORT_SYMBOL(user_path_create);
 
 int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 	      struct dentry *dentry, umode_t mode, dev_t dev)
@@ -2854,7 +2826,6 @@ int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 		fsnotify_create(dir, dentry);
 	return error;
 }
-EXPORT_SYMBOL(vfs_mknod);
 
 static int may_mknod(umode_t mode)
 {
@@ -2961,7 +2932,6 @@ int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 		fsnotify_mkdir(dir, dentry);
 	return error;
 }
-EXPORT_SYMBOL(vfs_mkdir);
 
 int do_mkdirat(int dfd, struct filename *name, umode_t mode)
 {
@@ -3044,7 +3014,6 @@ out:
 		d_delete_notify(dir, dentry);
 	return error;
 }
-EXPORT_SYMBOL(vfs_rmdir);
 
 int do_rmdir(int dfd, struct filename *name)
 {
@@ -3154,7 +3123,6 @@ out:
 
 	return error;
 }
-EXPORT_SYMBOL(vfs_unlink);
 
 int do_unlinkat(int dfd, struct filename *name)
 {
@@ -3267,7 +3235,6 @@ int vfs_symlink(struct user_namespace *mnt_userns, struct inode *dir,
 		fsnotify_create(dir, dentry);
 	return error;
 }
-EXPORT_SYMBOL(vfs_symlink);
 
 int do_symlinkat(struct filename *from, int newdfd, struct filename *to)
 {
@@ -3371,7 +3338,6 @@ int vfs_link(struct dentry *old_dentry, struct user_namespace *mnt_userns,
 		fsnotify_link(dir, inode, new_dentry);
 	return error;
 }
-EXPORT_SYMBOL(vfs_link);
 
 int do_linkat(int olddfd, struct filename *old, int newdfd,
 	      struct filename *new, int flags)
@@ -3584,7 +3550,6 @@ out:
 
 	return error;
 }
-EXPORT_SYMBOL(vfs_rename);
 
 int do_renameat2(int olddfd, struct filename *from, int newdfd,
 		 struct filename *to, unsigned int flags)
@@ -3792,7 +3757,6 @@ int vfs_readlink(struct dentry *dentry, char __user *buffer, int buflen)
 	do_delayed_call(&done);
 	return res;
 }
-EXPORT_SYMBOL(vfs_readlink);
 
 const char *vfs_get_link(struct dentry *dentry, struct delayed_call *done)
 {
@@ -3806,7 +3770,6 @@ const char *vfs_get_link(struct dentry *dentry, struct delayed_call *done)
 	}
 	return res;
 }
-EXPORT_SYMBOL(vfs_get_link);
 
 const char *page_get_link(struct dentry *dentry, struct inode *inode,
 			  struct delayed_call *callback)
@@ -3835,13 +3798,11 @@ const char *page_get_link(struct dentry *dentry, struct inode *inode,
 	return kaddr;
 }
 
-EXPORT_SYMBOL(page_get_link);
 
 void page_put_link(void *arg)
 {
 	put_page(arg);
 }
-EXPORT_SYMBOL(page_put_link);
 
 int page_readlink(struct dentry *dentry, char __user *buffer, int buflen)
 {
@@ -3852,7 +3813,6 @@ int page_readlink(struct dentry *dentry, char __user *buffer, int buflen)
 	do_delayed_call(&done);
 	return res;
 }
-EXPORT_SYMBOL(page_readlink);
 
 int page_symlink(struct inode *inode, const char *symname, int len)
 {
@@ -3887,9 +3847,7 @@ retry:
 fail:
 	return err;
 }
-EXPORT_SYMBOL(page_symlink);
 
 const struct inode_operations page_symlink_inode_operations = {
 	.get_link	= page_get_link,
 };
-EXPORT_SYMBOL(page_symlink_inode_operations);

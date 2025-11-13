@@ -55,7 +55,6 @@ void tty_buffer_lock_exclusive(struct tty_port *port)
 	atomic_inc(&buf->priority);
 	mutex_lock(&buf->lock);
 }
-EXPORT_SYMBOL_GPL(tty_buffer_lock_exclusive);
 
 /**
  * tty_buffer_unlock_exclusive	-	release exclusive access
@@ -77,7 +76,6 @@ void tty_buffer_unlock_exclusive(struct tty_port *port)
 	if (restart)
 		queue_work(system_unbound_wq, &buf->work);
 }
-EXPORT_SYMBOL_GPL(tty_buffer_unlock_exclusive);
 
 /**
  * tty_buffer_space_avail	-	return unused buffer space
@@ -96,7 +94,6 @@ unsigned int tty_buffer_space_avail(struct tty_port *port)
 
 	return max(space, 0);
 }
-EXPORT_SYMBOL_GPL(tty_buffer_space_avail);
 
 static void tty_buffer_reset(struct tty_buffer *p, size_t size)
 {
@@ -277,7 +274,6 @@ int tty_buffer_request_room(struct tty_port *port, size_t size)
 {
 	return __tty_buffer_request_room(port, size, 0);
 }
-EXPORT_SYMBOL_GPL(tty_buffer_request_room);
 
 /**
  * tty_insert_flip_string_fixed_flag - add characters to the tty buffer
@@ -316,7 +312,6 @@ int tty_insert_flip_string_fixed_flag(struct tty_port *port,
 	} while (unlikely(size > copied));
 	return copied;
 }
-EXPORT_SYMBOL(tty_insert_flip_string_fixed_flag);
 
 /**
  * tty_insert_flip_string_flags	-	add characters to the tty buffer
@@ -354,7 +349,6 @@ int tty_insert_flip_string_flags(struct tty_port *port,
 	} while (unlikely(size > copied));
 	return copied;
 }
-EXPORT_SYMBOL(tty_insert_flip_string_flags);
 
 /**
  * __tty_insert_flip_char   -	add one character to the tty buffer
@@ -380,7 +374,6 @@ int __tty_insert_flip_char(struct tty_port *port, unsigned char ch, char flag)
 
 	return 1;
 }
-EXPORT_SYMBOL(__tty_insert_flip_char);
 
 /**
  * tty_prepare_flip_string	-	make room for characters
@@ -411,7 +404,6 @@ int tty_prepare_flip_string(struct tty_port *port, unsigned char **chars,
 	}
 	return space;
 }
-EXPORT_SYMBOL_GPL(tty_prepare_flip_string);
 
 /**
  * tty_ldisc_receive_buf	-	forward data to line discipline
@@ -437,7 +429,6 @@ int tty_ldisc_receive_buf(struct tty_ldisc *ld, const unsigned char *p,
 	}
 	return count;
 }
-EXPORT_SYMBOL_GPL(tty_ldisc_receive_buf);
 
 static int
 receive_buf(struct tty_port *port, struct tty_buffer *head, int count)
@@ -538,7 +529,6 @@ void tty_flip_buffer_push(struct tty_port *port)
 	tty_flip_buffer_commit(buf->tail);
 	queue_work(system_unbound_wq, &buf->work);
 }
-EXPORT_SYMBOL(tty_flip_buffer_push);
 
 /**
  * tty_insert_flip_string_and_push_buffer - add characters to the tty buffer and
@@ -609,7 +599,6 @@ int tty_buffer_set_limit(struct tty_port *port, int limit)
 	port->buf.mem_limit = limit;
 	return 0;
 }
-EXPORT_SYMBOL_GPL(tty_buffer_set_limit);
 
 /* slave ptys can claim nested buffer lock when handling BRK and INTR */
 void tty_buffer_set_lock_subclass(struct tty_port *port)

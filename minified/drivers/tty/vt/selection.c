@@ -38,7 +38,6 @@ void clear_selection(void)
 {
 	/* Stubbed */
 }
-EXPORT_SYMBOL_GPL(clear_selection);
 
 bool vc_is_sel(struct vc_data *vc)
 {
@@ -60,10 +59,8 @@ int set_selection_kernel(struct tiocl_selection *v, struct tty_struct *tty)
 {
 	return 0;
 }
-EXPORT_SYMBOL_GPL(set_selection_kernel);
 
 int paste_selection(struct tty_struct *tty)
 {
 	return 0;
 }
-EXPORT_SYMBOL_GPL(paste_selection);

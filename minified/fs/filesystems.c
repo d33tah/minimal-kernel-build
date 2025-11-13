@@ -91,7 +91,6 @@ int register_filesystem(struct file_system_type * fs)
 	return res;
 }
 
-EXPORT_SYMBOL(register_filesystem);
 
 /**
  *	unregister_filesystem - unregister a file system
@@ -126,7 +125,6 @@ int unregister_filesystem(struct file_system_type * fs)
 	return -EINVAL;
 }
 
-EXPORT_SYMBOL(unregister_filesystem);
 
 
 int __init list_bdev_fs_names(char *buf, size_t size)
@@ -187,4 +185,3 @@ struct file_system_type *get_fs_type(const char *name)
 	return fs;
 }
 
-EXPORT_SYMBOL(get_fs_type);

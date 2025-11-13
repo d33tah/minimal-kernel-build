@@ -8,17 +8,14 @@
 
 /* Stubbed sync functions - not needed for minimal boot */
 int sync_filesystem(struct super_block *sb) { return 0; }
-EXPORT_SYMBOL(sync_filesystem);
 
 void ksys_sync(void) { }
 SYSCALL_DEFINE0(sync) { return 0; }
 SYSCALL_DEFINE1(syncfs, int, fd) { return -ENOSYS; }
 
 int vfs_fsync_range(struct file *file, loff_t start, loff_t end, int datasync) { return 0; }
-EXPORT_SYMBOL(vfs_fsync_range);
 
 int vfs_fsync(struct file *file, int datasync) { return 0; }
-EXPORT_SYMBOL(vfs_fsync);
 
 SYSCALL_DEFINE1(fsync, unsigned int, fd) { return -ENOSYS; }
 SYSCALL_DEFINE1(fdatasync, unsigned int, fd) { return -ENOSYS; }

@@ -54,7 +54,6 @@ int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid,
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(idr_alloc_u32);
 
 /**
  * idr_alloc() - Allocate an ID.
@@ -90,7 +89,6 @@ int idr_alloc(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
 
 	return id;
 }
-EXPORT_SYMBOL_GPL(idr_alloc);
 
 /**
  * idr_alloc_cyclic() - Allocate an ID cyclically.
@@ -133,7 +131,6 @@ int idr_alloc_cyclic(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
 	idr->idr_next = id + 1;
 	return id;
 }
-EXPORT_SYMBOL(idr_alloc_cyclic);
 
 /**
  * idr_remove() - Remove an ID from the IDR.
@@ -153,7 +150,6 @@ void *idr_remove(struct idr *idr, unsigned long id)
 {
 	return radix_tree_delete_item(&idr->idr_rt, id - idr->idr_base, NULL);
 }
-EXPORT_SYMBOL_GPL(idr_remove);
 
 /**
  * idr_find() - Return pointer for given ID.
@@ -173,7 +169,6 @@ void *idr_find(const struct idr *idr, unsigned long id)
 {
 	return radix_tree_lookup(&idr->idr_rt, id - idr->idr_base);
 }
-EXPORT_SYMBOL_GPL(idr_find);
 
 /**
  * idr_for_each() - Iterate through all stored pointers.
@@ -212,7 +207,6 @@ int idr_for_each(const struct idr *idr,
 
 	return 0;
 }
-EXPORT_SYMBOL(idr_for_each);
 
 /**
  * idr_get_next_ul() - Find next populated entry.
@@ -249,7 +243,6 @@ void *idr_get_next_ul(struct idr *idr, unsigned long *nextid)
 	*nextid = iter.index + base;
 	return entry;
 }
-EXPORT_SYMBOL(idr_get_next_ul);
 
 /**
  * idr_get_next() - Find next populated entry.
@@ -271,7 +264,6 @@ void *idr_get_next(struct idr *idr, int *nextid)
 	*nextid = id;
 	return entry;
 }
-EXPORT_SYMBOL(idr_get_next);
 
 /**
  * idr_replace() - replace pointer for given ID.
@@ -303,7 +295,6 @@ void *idr_replace(struct idr *idr, void *ptr, unsigned long id)
 
 	return entry;
 }
-EXPORT_SYMBOL(idr_replace);
 
 /**
  * DOC: IDA description
@@ -474,7 +465,6 @@ nospc:
 	kfree(alloc);
 	return -ENOSPC;
 }
-EXPORT_SYMBOL(ida_alloc_range);
 
 /**
  * ida_free() - Release an allocated ID.
@@ -524,7 +514,6 @@ delete:
 	xas_unlock_irqrestore(&xas, flags);
 	WARN(1, "ida_free called for id=%d which is not allocated.\n", id);
 }
-EXPORT_SYMBOL(ida_free);
 
 /**
  * ida_destroy() - Free all IDs.
@@ -552,7 +541,6 @@ void ida_destroy(struct ida *ida)
 	}
 	xas_unlock_irqrestore(&xas, flags);
 }
-EXPORT_SYMBOL(ida_destroy);
 
 #ifndef __KERNEL__
 extern void xa_dump_index(unsigned long index, unsigned int shift);

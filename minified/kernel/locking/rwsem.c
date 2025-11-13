@@ -268,7 +268,6 @@ void __init_rwsem(struct rw_semaphore *sem, const char *name,
 	INIT_LIST_HEAD(&sem->wait_list);
 	atomic_long_set(&sem->owner, 0L);
 }
-EXPORT_SYMBOL(__init_rwsem);
 
 enum rwsem_waiter_type {
 	RWSEM_WAITING_FOR_WRITE,
@@ -1058,7 +1057,6 @@ void __sched down_read(struct rw_semaphore *sem)
 
 	LOCK_CONTENDED(sem, __down_read_trylock, __down_read);
 }
-EXPORT_SYMBOL(down_read);
 
 int __sched down_read_interruptible(struct rw_semaphore *sem)
 {
@@ -1072,7 +1070,6 @@ int __sched down_read_interruptible(struct rw_semaphore *sem)
 
 	return 0;
 }
-EXPORT_SYMBOL(down_read_interruptible);
 
 int __sched down_read_killable(struct rw_semaphore *sem)
 {
@@ -1086,7 +1083,6 @@ int __sched down_read_killable(struct rw_semaphore *sem)
 
 	return 0;
 }
-EXPORT_SYMBOL(down_read_killable);
 
 /*
  * trylock for reading -- returns 1 if successful, 0 if contention
@@ -1099,7 +1095,6 @@ int down_read_trylock(struct rw_semaphore *sem)
 		rwsem_acquire_read(&sem->dep_map, 0, 1, _RET_IP_);
 	return ret;
 }
-EXPORT_SYMBOL(down_read_trylock);
 
 /*
  * lock for writing
@@ -1110,7 +1105,6 @@ void __sched down_write(struct rw_semaphore *sem)
 	rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
 	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
 }
-EXPORT_SYMBOL(down_write);
 
 /*
  * lock for writing
@@ -1128,7 +1122,6 @@ int __sched down_write_killable(struct rw_semaphore *sem)
 
 	return 0;
 }
-EXPORT_SYMBOL(down_write_killable);
 
 /*
  * trylock for writing -- returns 1 if successful, 0 if contention
@@ -1142,7 +1135,6 @@ int down_write_trylock(struct rw_semaphore *sem)
 
 	return ret;
 }
-EXPORT_SYMBOL(down_write_trylock);
 
 /*
  * release a read lock
@@ -1152,7 +1144,6 @@ void up_read(struct rw_semaphore *sem)
 	rwsem_release(&sem->dep_map, _RET_IP_);
 	__up_read(sem);
 }
-EXPORT_SYMBOL(up_read);
 
 /*
  * release a write lock
@@ -1162,7 +1153,6 @@ void up_write(struct rw_semaphore *sem)
 	rwsem_release(&sem->dep_map, _RET_IP_);
 	__up_write(sem);
 }
-EXPORT_SYMBOL(up_write);
 
 /*
  * downgrade write lock to read lock
@@ -1172,5 +1162,4 @@ void downgrade_write(struct rw_semaphore *sem)
 	lock_downgrade(&sem->dep_map, _RET_IP_);
 	__downgrade_write(sem);
 }
-EXPORT_SYMBOL(downgrade_write);
 

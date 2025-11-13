@@ -40,7 +40,6 @@ bool is_software_node(const struct fwnode_handle *fwnode)
 {
 	return !IS_ERR_OR_NULL(fwnode) && fwnode->ops == &software_node_ops;
 }
-EXPORT_SYMBOL_GPL(is_software_node);
 
 #define to_swnode(__fwnode)						\
 	({								\
@@ -93,7 +92,6 @@ const struct software_node *to_software_node(const struct fwnode_handle *fwnode)
 
 	return swnode ? swnode->node : NULL;
 }
-EXPORT_SYMBOL_GPL(to_software_node);
 
 struct fwnode_handle *software_node_fwnode(const struct software_node *node)
 {
@@ -101,7 +99,6 @@ struct fwnode_handle *software_node_fwnode(const struct software_node *node)
 
 	return swnode ? &swnode->fwnode : NULL;
 }
-EXPORT_SYMBOL_GPL(software_node_fwnode);
 
 /* -------------------------------------------------------------------------- */
 /* property_entry processing */
@@ -337,7 +334,6 @@ property_entries_dup(const struct property_entry *properties)
 
 	return p;
 }
-EXPORT_SYMBOL_GPL(property_entries_dup);
 
 /**
  * property_entries_free - free previously allocated array of properties
@@ -358,7 +354,6 @@ void property_entries_free(const struct property_entry *properties)
 
 	kfree(properties);
 }
-EXPORT_SYMBOL_GPL(property_entries_free);
 
 /* -------------------------------------------------------------------------- */
 /* fwnode operations */
@@ -714,7 +709,6 @@ software_node_find_by_name(const struct software_node *parent, const char *name)
 
 	return swnode ? swnode->node : NULL;
 }
-EXPORT_SYMBOL_GPL(software_node_find_by_name);
 
 static struct software_node *software_node_alloc(const struct property_entry *properties)
 {
@@ -853,7 +847,6 @@ err_unregister_nodes:
 	software_node_unregister_nodes(nodes);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(software_node_register_nodes);
 
 /**
  * software_node_unregister_nodes - Unregister an array of software nodes
@@ -878,7 +871,6 @@ void software_node_unregister_nodes(const struct software_node *nodes)
 	while (i--)
 		software_node_unregister(&nodes[i]);
 }
-EXPORT_SYMBOL_GPL(software_node_unregister_nodes);
 
 /**
  * software_node_register_node_group - Register a group of software nodes
@@ -908,7 +900,6 @@ int software_node_register_node_group(const struct software_node **node_group)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(software_node_register_node_group);
 
 /**
  * software_node_unregister_node_group - Unregister a group of software nodes
@@ -937,7 +928,6 @@ void software_node_unregister_node_group(
 	while (i--)
 		software_node_unregister(node_group[i]);
 }
-EXPORT_SYMBOL_GPL(software_node_unregister_node_group);
 
 /**
  * software_node_register - Register static software node
@@ -955,7 +945,6 @@ int software_node_register(const struct software_node *node)
 
 	return PTR_ERR_OR_ZERO(swnode_register(node, parent, 0));
 }
-EXPORT_SYMBOL_GPL(software_node_register);
 
 /**
  * software_node_unregister - Unregister static software node
@@ -969,7 +958,6 @@ void software_node_unregister(const struct software_node *node)
 	if (swnode)
 		fwnode_remove_software_node(&swnode->fwnode);
 }
-EXPORT_SYMBOL_GPL(software_node_unregister);
 
 struct fwnode_handle *
 fwnode_create_software_node(const struct property_entry *properties,
@@ -998,7 +986,6 @@ fwnode_create_software_node(const struct property_entry *properties,
 
 	return fwnode;
 }
-EXPORT_SYMBOL_GPL(fwnode_create_software_node);
 
 void fwnode_remove_software_node(struct fwnode_handle *fwnode)
 {
@@ -1009,7 +996,6 @@ void fwnode_remove_software_node(struct fwnode_handle *fwnode)
 
 	kobject_put(&swnode->kobj);
 }
-EXPORT_SYMBOL_GPL(fwnode_remove_software_node);
 
 /**
  * device_add_software_node - Assign software node to a device
@@ -1053,7 +1039,6 @@ int device_add_software_node(struct device *dev, const struct software_node *nod
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(device_add_software_node);
 
 /**
  * device_remove_software_node - Remove device's software node
@@ -1075,7 +1060,6 @@ void device_remove_software_node(struct device *dev)
 	set_secondary_fwnode(dev, NULL);
 	kobject_put(&swnode->kobj);
 }
-EXPORT_SYMBOL_GPL(device_remove_software_node);
 
 /**
  * device_create_managed_software_node - Create a software node for a device
@@ -1115,7 +1099,6 @@ int device_create_managed_software_node(struct device *dev,
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(device_create_managed_software_node);
 
 void software_node_notify(struct device *dev)
 {

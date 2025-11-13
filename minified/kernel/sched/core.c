@@ -701,7 +701,6 @@ int wake_up_process(struct task_struct *p)
 {
 	return try_to_wake_up(p, TASK_NORMAL, 0);
 }
-EXPORT_SYMBOL(wake_up_process);
 
 int wake_up_state(struct task_struct *p, unsigned int state)
 {
@@ -1020,7 +1019,6 @@ bool single_task_running(void)
 {
 	return raw_rq()->nr_running == 1;
 }
-EXPORT_SYMBOL(single_task_running);
 
 unsigned long long nr_context_switches(void)
 {
@@ -1133,7 +1131,6 @@ void preempt_count_add(int val)
 	__preempt_count_add(val);
 	preempt_latency_start(val);
 }
-EXPORT_SYMBOL(preempt_count_add);
 NOKPROBE_SYMBOL(preempt_count_add);
 
 static inline void preempt_latency_stop(int val)
@@ -1148,7 +1145,6 @@ void preempt_count_sub(int val)
 	preempt_latency_stop(val);
 	__preempt_count_sub(val);
 }
-EXPORT_SYMBOL(preempt_count_sub);
 NOKPROBE_SYMBOL(preempt_count_sub);
 
 #else
@@ -1405,7 +1401,6 @@ asmlinkage __visible void __sched schedule(void)
 	} while (need_resched());
 	sched_update_worker(tsk);
 }
-EXPORT_SYMBOL(schedule);
 
 void __sched schedule_idle(void)
 {
@@ -1463,7 +1458,6 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flag
 	WARN_ON_ONCE(IS_ENABLED(CONFIG_SCHED_DEBUG) && wake_flags & ~WF_SYNC);
 	return try_to_wake_up(curr->private, mode, wake_flags);
 }
-EXPORT_SYMBOL(default_wake_function);
 
 static void __setscheduler_prio(struct task_struct *p, int prio)
 {
@@ -1523,7 +1517,6 @@ void set_user_nice(struct task_struct *p, long nice)
 out_unlock:
 	task_rq_unlock(rq, p, &rf);
 }
-EXPORT_SYMBOL(set_user_nice);
 
 int can_nice(const struct task_struct *p, const int nice)
 {
@@ -1870,7 +1863,6 @@ int sched_setattr_nocheck(struct task_struct *p, const struct sched_attr *attr)
 {
 	return __sched_setscheduler(p, attr, false, true);
 }
-EXPORT_SYMBOL_GPL(sched_setattr_nocheck);
 
 int sched_setscheduler_nocheck(struct task_struct *p, int policy,
 			       const struct sched_param *param)
@@ -1883,14 +1875,12 @@ void sched_set_fifo(struct task_struct *p)
 	struct sched_param sp = { .sched_priority = MAX_RT_PRIO / 2 };
 	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
 }
-EXPORT_SYMBOL_GPL(sched_set_fifo);
 
 void sched_set_fifo_low(struct task_struct *p)
 {
 	struct sched_param sp = { .sched_priority = 1 };
 	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
 }
-EXPORT_SYMBOL_GPL(sched_set_fifo_low);
 
 void sched_set_normal(struct task_struct *p, int nice)
 {
@@ -1900,7 +1890,6 @@ void sched_set_normal(struct task_struct *p, int nice)
 	};
 	WARN_ON_ONCE(sched_setattr_nocheck(p, &attr) != 0);
 }
-EXPORT_SYMBOL_GPL(sched_set_normal);
 
 static int
 do_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
@@ -2332,7 +2321,6 @@ int __sched __cond_resched(void)
 	rcu_all_qs();
 	return 0;
 }
-EXPORT_SYMBOL(__cond_resched);
 
 int __cond_resched_lock(spinlock_t *lock)
 {
@@ -2350,7 +2338,6 @@ int __cond_resched_lock(spinlock_t *lock)
 	}
 	return ret;
 }
-EXPORT_SYMBOL(__cond_resched_lock);
 
 int __cond_resched_rwlock_read(rwlock_t *lock)
 {
@@ -2368,7 +2355,6 @@ int __cond_resched_rwlock_read(rwlock_t *lock)
 	}
 	return ret;
 }
-EXPORT_SYMBOL(__cond_resched_rwlock_read);
 
 int __cond_resched_rwlock_write(rwlock_t *lock)
 {
@@ -2386,7 +2372,6 @@ int __cond_resched_rwlock_write(rwlock_t *lock)
 	}
 	return ret;
 }
-EXPORT_SYMBOL(__cond_resched_rwlock_write);
 
 static inline void preempt_dynamic_init(void) { }
 
@@ -2395,7 +2380,6 @@ void __sched yield(void)
 	set_current_state(TASK_RUNNING);
 	do_sched_yield();
 }
-EXPORT_SYMBOL(yield);
 
 int __sched yield_to(struct task_struct *p, bool preempt)
 {
@@ -2448,7 +2432,6 @@ out_irq:
 
 	return yielded;
 }
-EXPORT_SYMBOL_GPL(yield_to);
 
 int io_schedule_prepare(void)
 {
@@ -2475,7 +2458,6 @@ long __sched io_schedule_timeout(long timeout)
 
 	return ret;
 }
-EXPORT_SYMBOL(io_schedule_timeout);
 
 void __sched io_schedule(void)
 {
@@ -2485,7 +2467,6 @@ void __sched io_schedule(void)
 	schedule();
 	io_schedule_finish(token);
 }
-EXPORT_SYMBOL(io_schedule);
 
 SYSCALL_DEFINE1(sched_get_priority_max, int, policy)
 {
@@ -2576,7 +2557,6 @@ void sched_show_task(struct task_struct *p)
 {
 	
 }
-EXPORT_SYMBOL_GPL(sched_show_task);
 
 static inline bool
 state_filter_match(unsigned long state_filter, struct task_struct *p)

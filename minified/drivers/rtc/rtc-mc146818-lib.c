@@ -73,7 +73,6 @@ bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
 	}
 	return false;
 }
-EXPORT_SYMBOL_GPL(mc146818_avoid_UIP);
 
 /*
  * If the UIP (Update-in-progress) bit of the RTC is set for more then
@@ -83,7 +82,6 @@ bool mc146818_does_rtc_work(void)
 {
 	return mc146818_avoid_UIP(NULL, NULL);
 }
-EXPORT_SYMBOL_GPL(mc146818_does_rtc_work);
 
 struct mc146818_get_time_callback_param {
 	struct rtc_time *time;
@@ -144,7 +142,6 @@ int mc146818_get_time(struct rtc_time *time)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(mc146818_get_time);
 
 /* AMD systems don't allow access to AltCentury with DV1 */
 static bool apply_amd_register_a_behavior(void)
@@ -221,4 +218,3 @@ int mc146818_set_time(struct rtc_time *time)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(mc146818_set_time);

@@ -19,7 +19,6 @@ void tty_lock(struct tty_struct *tty)
 	tty_kref_get(tty);
 	mutex_lock(&tty->legacy_mutex);
 }
-EXPORT_SYMBOL(tty_lock);
 
 int tty_lock_interruptible(struct tty_struct *tty)
 {
@@ -41,7 +40,6 @@ void tty_unlock(struct tty_struct *tty)
 	mutex_unlock(&tty->legacy_mutex);
 	tty_kref_put(tty);
 }
-EXPORT_SYMBOL(tty_unlock);
 
 void tty_lock_slave(struct tty_struct *tty)
 {

@@ -91,7 +91,6 @@ void shmem_truncate_range(struct inode *inode, loff_t lstart, loff_t lend)
 {
 	truncate_inode_pages_range(inode->i_mapping, lstart, lend);
 }
-EXPORT_SYMBOL_GPL(shmem_truncate_range);
 
 #define shmem_vm_ops				generic_file_vm_ops
 #define shmem_file_operations			ramfs_file_operations
@@ -160,7 +159,6 @@ struct file *shmem_file_setup(const char *name, loff_t size, unsigned long flags
 {
 	return __shmem_file_setup(shm_mnt, name, size, flags, 0);
 }
-EXPORT_SYMBOL_GPL(shmem_file_setup);
 
 /**
  * shmem_file_setup_with_mnt - get an unlinked file living in tmpfs
@@ -174,7 +172,6 @@ struct file *shmem_file_setup_with_mnt(struct vfsmount *mnt, const char *name,
 {
 	return __shmem_file_setup(mnt, name, size, flags, 0);
 }
-EXPORT_SYMBOL_GPL(shmem_file_setup_with_mnt);
 
 /**
  * shmem_zero_setup - setup a shared anonymous mapping
@@ -226,4 +223,3 @@ struct page *shmem_read_mapping_page_gfp(struct address_space *mapping,
 	 */
 	return read_cache_page_gfp(mapping, index, gfp);
 }
-EXPORT_SYMBOL_GPL(shmem_read_mapping_page_gfp);

@@ -46,7 +46,6 @@ void rcu_barrier(void)
 {
 	wait_rcu_gp(call_rcu);
 }
-EXPORT_SYMBOL(rcu_barrier);
 
 /* Record an rcu quiescent state.  */
 void rcu_qs(void)
@@ -153,7 +152,6 @@ void synchronize_rcu(void)
 			 lock_is_held(&rcu_sched_lock_map),
 			 "Illegal synchronize_rcu() in RCU read-side critical section");
 }
-EXPORT_SYMBOL_GPL(synchronize_rcu);
 
 /*
  * Post an RCU callback to be invoked after the end of an RCU grace
@@ -178,7 +176,6 @@ void call_rcu(struct rcu_head *head, rcu_callback_t func)
 		resched_cpu(0);
 	}
 }
-EXPORT_SYMBOL_GPL(call_rcu);
 
 /*
  * Return a grace-period-counter "cookie".  For more information,
@@ -188,7 +185,6 @@ unsigned long get_state_synchronize_rcu(void)
 {
 	return READ_ONCE(rcu_ctrlblk.gp_seq);
 }
-EXPORT_SYMBOL_GPL(get_state_synchronize_rcu);
 
 /*
  * Return a grace-period-counter "cookie" and ensure that a future grace
@@ -204,7 +200,6 @@ unsigned long start_poll_synchronize_rcu(void)
 	}
 	return gp_seq;
 }
-EXPORT_SYMBOL_GPL(start_poll_synchronize_rcu);
 
 /*
  * Return true if the grace period corresponding to oldstate has completed
@@ -215,7 +210,6 @@ bool poll_state_synchronize_rcu(unsigned long oldstate)
 {
 	return READ_ONCE(rcu_ctrlblk.gp_seq) != oldstate;
 }
-EXPORT_SYMBOL_GPL(poll_state_synchronize_rcu);
 
 void __init rcu_init(void)
 {

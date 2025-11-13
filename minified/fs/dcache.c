@@ -21,20 +21,15 @@
 #include "mount.h"
 
 int sysctl_vfs_cache_pressure __read_mostly = 100;
-EXPORT_SYMBOL_GPL(sysctl_vfs_cache_pressure);
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
 
-EXPORT_SYMBOL(rename_lock);
 
 static struct kmem_cache *dentry_cache __read_mostly;
 
 const struct qstr empty_name = QSTR_INIT("", 0);
-EXPORT_SYMBOL(empty_name);
 const struct qstr slash_name = QSTR_INIT("/", 1);
-EXPORT_SYMBOL(slash_name);
 const struct qstr dotdot_name = QSTR_INIT("..", 2);
-EXPORT_SYMBOL(dotdot_name);
 
 static unsigned int d_hash_shift __read_mostly;
 
@@ -144,7 +139,6 @@ void take_dentry_name_snapshot(struct name_snapshot *name, struct dentry *dentry
 	}
 	spin_unlock(&dentry->d_lock);
 }
-EXPORT_SYMBOL(take_dentry_name_snapshot);
 
 void release_dentry_name_snapshot(struct name_snapshot *name)
 {
@@ -155,7 +149,6 @@ void release_dentry_name_snapshot(struct name_snapshot *name)
 			kfree_rcu(p, u.head);
 	}
 }
-EXPORT_SYMBOL(release_dentry_name_snapshot);
 
 static inline void __d_set_inode_and_type(struct dentry *dentry,
 					  struct inode *inode,
@@ -297,7 +290,6 @@ void __d_drop(struct dentry *dentry)
 		write_seqcount_invalidate(&dentry->d_seq);
 	}
 }
-EXPORT_SYMBOL(__d_drop);
 
 void d_drop(struct dentry *dentry)
 {
@@ -305,7 +297,6 @@ void d_drop(struct dentry *dentry)
 	__d_drop(dentry);
 	spin_unlock(&dentry->d_lock);
 }
-EXPORT_SYMBOL(d_drop);
 
 static inline void dentry_unlist(struct dentry *dentry, struct dentry *parent)
 {
@@ -438,7 +429,6 @@ void d_mark_dontcache(struct inode *inode)
 	inode->i_state |= I_DONTCACHE;
 	spin_unlock(&inode->i_lock);
 }
-EXPORT_SYMBOL(d_mark_dontcache);
 
 static struct dentry *dentry_kill(struct dentry *dentry)
 	__releases(dentry->d_lock)
@@ -559,7 +549,6 @@ void dput(struct dentry *dentry)
 		dentry = dentry_kill(dentry);
 	}
 }
-EXPORT_SYMBOL(dput);
 
 static void __dput_to_list(struct dentry *dentry, struct list_head *list)
 __must_hold(&dentry->d_lock)
@@ -632,7 +621,6 @@ repeat:
 	spin_unlock(&ret->d_lock);
 	return ret;
 }
-EXPORT_SYMBOL(dget_parent);
 
 static struct dentry * __d_find_any_alias(struct inode *inode)
 {
@@ -654,7 +642,6 @@ struct dentry *d_find_any_alias(struct inode *inode)
 	spin_unlock(&inode->i_lock);
 	return de;
 }
-EXPORT_SYMBOL(d_find_any_alias);
 
 static struct dentry *__d_find_alias(struct inode *inode)
 {
@@ -686,7 +673,6 @@ struct dentry *d_find_alias(struct inode *inode)
 	}
 	return de;
 }
-EXPORT_SYMBOL(d_find_alias);
 
 struct dentry *d_find_alias_rcu(struct inode *inode)
 {
@@ -730,7 +716,6 @@ restart:
 	}
 	spin_unlock(&inode->i_lock);
 }
-EXPORT_SYMBOL(d_prune_aliases);
 
 static bool shrink_lock_dentry(struct dentry *dentry)
 {
@@ -869,7 +854,6 @@ void shrink_dcache_sb(struct super_block *sb)
 		shrink_dentry_list(&dispose);
 	} while (list_lru_count(&sb->s_dentry_lru) > 0);
 }
-EXPORT_SYMBOL(shrink_dcache_sb);
 
 enum d_walk_ret {
 	D_WALK_CONTINUE,
@@ -1011,7 +995,6 @@ int path_has_submounts(const struct path *parent)
 
 	return data.mounted;
 }
-EXPORT_SYMBOL(path_has_submounts);
 
 int d_set_mounted(struct dentry *dentry)
 {
@@ -1138,7 +1121,6 @@ void shrink_dcache_parent(struct dentry *parent)
 			shrink_dentry_list(&data.dispose);
 	}
 }
-EXPORT_SYMBOL(shrink_dcache_parent);
 
 static enum d_walk_ret umount_check(void *_data, struct dentry *dentry)
 {
@@ -1227,7 +1209,6 @@ void d_invalidate(struct dentry *dentry)
 		dput(victim);
 	}
 }
-EXPORT_SYMBOL(d_invalidate);
 
  
 static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
@@ -1314,13 +1295,11 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
 
 	return dentry;
 }
-EXPORT_SYMBOL(d_alloc);
 
 struct dentry *d_alloc_anon(struct super_block *sb)
 {
 	return __d_alloc(sb, NULL);
 }
-EXPORT_SYMBOL(d_alloc_anon);
 
 struct dentry *d_alloc_cursor(struct dentry * parent)
 {
@@ -1348,7 +1327,6 @@ struct dentry *d_alloc_name(struct dentry *parent, const char *name)
 	q.hash_len = hashlen_string(parent, name);
 	return d_alloc(parent, &q);
 }
-EXPORT_SYMBOL(d_alloc_name);
 
 void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
 {
@@ -1378,7 +1356,6 @@ void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
 		dentry->d_flags |= DCACHE_OP_REAL;
 
 }
-EXPORT_SYMBOL(d_set_d_op);
 
 void d_set_fallthru(struct dentry *dentry)
 {
@@ -1386,7 +1363,6 @@ void d_set_fallthru(struct dentry *dentry)
 	dentry->d_flags |= DCACHE_FALLTHRU;
 	spin_unlock(&dentry->d_lock);
 }
-EXPORT_SYMBOL(d_set_fallthru);
 
 static unsigned d_flags_for_inode(struct inode *inode)
 {
@@ -1451,7 +1427,6 @@ void d_instantiate(struct dentry *entry, struct inode * inode)
 		spin_unlock(&inode->i_lock);
 	}
 }
-EXPORT_SYMBOL(d_instantiate);
 
 void d_instantiate_new(struct dentry *entry, struct inode *inode)
 {
@@ -1467,7 +1442,6 @@ void d_instantiate_new(struct dentry *entry, struct inode *inode)
 	wake_up_bit(&inode->i_state, __I_NEW);
 	spin_unlock(&inode->i_lock);
 }
-EXPORT_SYMBOL(d_instantiate_new);
 
 struct dentry *d_make_root(struct inode *root_inode)
 {
@@ -1482,7 +1456,6 @@ struct dentry *d_make_root(struct inode *root_inode)
 	}
 	return res;
 }
-EXPORT_SYMBOL(d_make_root);
 
 static struct dentry *__d_instantiate_anon(struct dentry *dentry,
 					   struct inode *inode,
@@ -1528,7 +1501,6 @@ struct dentry *d_instantiate_anon(struct dentry *dentry, struct inode *inode)
 {
 	return __d_instantiate_anon(dentry, inode, true);
 }
-EXPORT_SYMBOL(d_instantiate_anon);
 
 static struct dentry *__d_obtain_alias(struct inode *inode, bool disconnected)
 {
@@ -1561,13 +1533,11 @@ struct dentry *d_obtain_alias(struct inode *inode)
 {
 	return __d_obtain_alias(inode, true);
 }
-EXPORT_SYMBOL(d_obtain_alias);
 
 struct dentry *d_obtain_root(struct inode *inode)
 {
 	return __d_obtain_alias(inode, false);
 }
-EXPORT_SYMBOL(d_obtain_root);
 
 struct dentry *d_add_ci(struct dentry *dentry, struct inode *inode,
 			struct qstr *name)
@@ -1601,7 +1571,6 @@ struct dentry *d_add_ci(struct dentry *dentry, struct inode *inode,
 	}
 	return found;
 }
-EXPORT_SYMBOL(d_add_ci);
 
 static inline bool d_same_name(const struct dentry *dentry,
 				const struct dentry *parent,
@@ -1681,7 +1650,6 @@ struct dentry *d_lookup(const struct dentry *parent, const struct qstr *name)
 	} while (read_seqretry(&rename_lock, seq));
 	return dentry;
 }
-EXPORT_SYMBOL(d_lookup);
 
 struct dentry *__d_lookup(const struct dentry *parent, const struct qstr *name)
 {
@@ -1733,7 +1701,6 @@ struct dentry *d_hash_and_lookup(struct dentry *dir, struct qstr *name)
 	}
 	return d_lookup(dir, name);
 }
-EXPORT_SYMBOL(d_hash_and_lookup);
 
  
 
@@ -1754,7 +1721,6 @@ void d_delete(struct dentry * dentry)
 		spin_unlock(&inode->i_lock);
 	}
 }
-EXPORT_SYMBOL(d_delete);
 
 static void __d_rehash(struct dentry *entry)
 {
@@ -1772,7 +1738,6 @@ void d_rehash(struct dentry * entry)
 	__d_rehash(entry);
 	spin_unlock(&entry->d_lock);
 }
-EXPORT_SYMBOL(d_rehash);
 
 static inline unsigned start_dir_add(struct inode *dir)
 {
@@ -1898,7 +1863,6 @@ mismatch:
 	dput(dentry);
 	goto retry;
 }
-EXPORT_SYMBOL(d_alloc_parallel);
 
 void __d_lookup_done(struct dentry *dentry)
 {
@@ -1913,7 +1877,6 @@ void __d_lookup_done(struct dentry *dentry)
 	INIT_HLIST_NODE(&dentry->d_u.d_alias);
 	INIT_LIST_HEAD(&dentry->d_lru);
 }
-EXPORT_SYMBOL(__d_lookup_done);
 
 static inline void __d_add(struct dentry *dentry, struct inode *inode)
 {
@@ -1949,7 +1912,6 @@ void d_add(struct dentry *entry, struct inode *inode)
 	}
 	__d_add(entry, inode);
 }
-EXPORT_SYMBOL(d_add);
 
 struct dentry *d_exact_alias(struct dentry *entry, struct inode *inode)
 {
@@ -1980,7 +1942,6 @@ struct dentry *d_exact_alias(struct dentry *entry, struct inode *inode)
 	spin_unlock(&inode->i_lock);
 	return NULL;
 }
-EXPORT_SYMBOL(d_exact_alias);
 
 static void swap_names(struct dentry *dentry, struct dentry *target)
 {
@@ -2119,7 +2080,6 @@ void d_move(struct dentry *dentry, struct dentry *target)
 	__d_move(dentry, target, false);
 	write_sequnlock(&rename_lock);
 }
-EXPORT_SYMBOL(d_move);
 
 void d_exchange(struct dentry *dentry1, struct dentry *dentry2)
 {
@@ -2224,7 +2184,6 @@ out:
 	__d_add(dentry, inode);
 	return NULL;
 }
-EXPORT_SYMBOL(d_splice_alias);
 
   
 bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
@@ -2249,7 +2208,6 @@ bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
 
 	return result;
 }
-EXPORT_SYMBOL(is_subdir);
 
 static enum d_walk_ret d_genocide_kill(void *data, struct dentry *dentry)
 {
@@ -2271,7 +2229,6 @@ void d_genocide(struct dentry *parent)
 	d_walk(parent, parent, d_genocide_kill);
 }
 
-EXPORT_SYMBOL(d_genocide);
 
 void d_tmpfile(struct dentry *dentry, struct inode *inode)
 {
@@ -2287,7 +2244,6 @@ void d_tmpfile(struct dentry *dentry, struct inode *inode)
 	spin_unlock(&dentry->d_parent->d_lock);
 	d_instantiate(dentry, inode);
 }
-EXPORT_SYMBOL(d_tmpfile);
 
 static __initdata unsigned long dhash_entries;
 static int __init set_dhash_entries(char *str)
@@ -2343,7 +2299,6 @@ static void __init dcache_init(void)
 }
 
 struct kmem_cache *names_cachep __read_mostly;
-EXPORT_SYMBOL(names_cachep);
 
 void __init vfs_caches_init_early(void)
 {

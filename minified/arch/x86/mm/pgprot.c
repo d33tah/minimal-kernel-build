@@ -15,4 +15,3 @@ pgprot_t vm_get_page_prot(unsigned long vm_flags)
 		val &= __supported_pte_mask;
 	return __pgprot(val);
 }
-EXPORT_SYMBOL(vm_get_page_prot);

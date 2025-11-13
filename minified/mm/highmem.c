@@ -155,7 +155,6 @@ void *__kmap_local_pfn_prot(unsigned long pfn, pgprot_t prot)
 
 	return (void *)vaddr;
 }
-EXPORT_SYMBOL_GPL(__kmap_local_pfn_prot);
 
 void *__kmap_local_page_prot(struct page *page, pgprot_t prot)
 {
@@ -176,7 +175,6 @@ void *__kmap_local_page_prot(struct page *page, pgprot_t prot)
 
 	return __kmap_local_pfn_prot(page_to_pfn(page), prot);
 }
-EXPORT_SYMBOL(__kmap_local_page_prot);
 
 void kunmap_local_indexed(void *vaddr)
 {
@@ -215,7 +213,6 @@ void kunmap_local_indexed(void *vaddr)
 	preempt_enable();
 	migrate_enable();
 }
-EXPORT_SYMBOL(kunmap_local_indexed);
 
 /*
  * Invoked before switch_to(). This is safe even when during or after
@@ -360,7 +357,6 @@ void *page_address(const struct page *page)
 	spin_unlock_irqrestore(&pas->lock, flags);
 	return ret;
 }
-EXPORT_SYMBOL(page_address);
 
 /**
  * set_page_address - set a page's virtual address

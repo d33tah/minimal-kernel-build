@@ -57,7 +57,6 @@ const struct tty_port_client_operations tty_port_default_client_ops = {
 	.receive_buf = tty_port_default_receive_buf,
 	.write_wakeup = tty_port_default_wakeup,
 };
-EXPORT_SYMBOL_GPL(tty_port_default_client_ops);
 
 /**
  * tty_port_init -- initialize tty_port
@@ -82,7 +81,6 @@ void tty_port_init(struct tty_port *port)
 	port->client_ops = &tty_port_default_client_ops;
 	kref_init(&port->kref);
 }
-EXPORT_SYMBOL(tty_port_init);
 
 /**
  * tty_port_link_device - link tty and tty_port
@@ -102,7 +100,6 @@ void tty_port_link_device(struct tty_port *port,
 		return;
 	driver->ports[index] = port;
 }
-EXPORT_SYMBOL_GPL(tty_port_link_device);
 
 /**
  * tty_port_register_device - register tty device
@@ -121,7 +118,6 @@ struct device *tty_port_register_device(struct tty_port *port,
 {
 	return tty_port_register_device_attr(port, driver, index, device, NULL, NULL);
 }
-EXPORT_SYMBOL_GPL(tty_port_register_device);
 
 /**
  * tty_port_register_device_attr - register tty device
@@ -145,7 +141,6 @@ struct device *tty_port_register_device_attr(struct tty_port *port,
 	return tty_register_device_attr(driver, index, device, drvdata,
 			attr_grp);
 }
-EXPORT_SYMBOL_GPL(tty_port_register_device_attr);
 
 /**
  * tty_port_register_device_attr_serdev - register tty or serdev device
@@ -177,7 +172,6 @@ struct device *tty_port_register_device_attr_serdev(struct tty_port *port,
 	return tty_register_device_attr(driver, index, device, drvdata,
 			attr_grp);
 }
-EXPORT_SYMBOL_GPL(tty_port_register_device_attr_serdev);
 
 /**
  * tty_port_register_device_serdev - register tty or serdev device
@@ -196,7 +190,6 @@ struct device *tty_port_register_device_serdev(struct tty_port *port,
 	return tty_port_register_device_attr_serdev(port, driver, index,
 			device, NULL, NULL);
 }
-EXPORT_SYMBOL_GPL(tty_port_register_device_serdev);
 
 /**
  * tty_port_unregister_device - deregister a tty or serdev device
@@ -219,7 +212,6 @@ void tty_port_unregister_device(struct tty_port *port,
 
 	tty_unregister_device(driver, index);
 }
-EXPORT_SYMBOL_GPL(tty_port_unregister_device);
 
 int tty_port_alloc_xmit_buf(struct tty_port *port)
 {
@@ -235,7 +227,6 @@ int tty_port_alloc_xmit_buf(struct tty_port *port)
 		return -ENOMEM;
 	return 0;
 }
-EXPORT_SYMBOL(tty_port_alloc_xmit_buf);
 
 void tty_port_free_xmit_buf(struct tty_port *port)
 {
@@ -245,7 +236,6 @@ void tty_port_free_xmit_buf(struct tty_port *port)
 	INIT_KFIFO(port->xmit_fifo);
 	mutex_unlock(&port->buf_mutex);
 }
-EXPORT_SYMBOL(tty_port_free_xmit_buf);
 
 /**
  * tty_port_destroy -- destroy inited port
@@ -260,7 +250,6 @@ void tty_port_destroy(struct tty_port *port)
 	tty_buffer_cancel_work(port);
 	tty_buffer_free_all(port);
 }
-EXPORT_SYMBOL(tty_port_destroy);
 
 static void tty_port_destructor(struct kref *kref)
 {
@@ -289,7 +278,6 @@ void tty_port_put(struct tty_port *port)
 	if (port)
 		kref_put(&port->kref, tty_port_destructor);
 }
-EXPORT_SYMBOL(tty_port_put);
 
 /**
  * tty_port_tty_get	-	get a tty reference
@@ -308,7 +296,6 @@ struct tty_struct *tty_port_tty_get(struct tty_port *port)
 	spin_unlock_irqrestore(&port->lock, flags);
 	return tty;
 }
-EXPORT_SYMBOL(tty_port_tty_get);
 
 /**
  * tty_port_tty_set	-	set the tty of a port
@@ -327,7 +314,6 @@ void tty_port_tty_set(struct tty_port *port, struct tty_struct *tty)
 	port->tty = tty_kref_get(tty);
 	spin_unlock_irqrestore(&port->lock, flags);
 }
-EXPORT_SYMBOL(tty_port_tty_set);
 
 /**
  * tty_port_shutdown - internal helper to shutdown the device
@@ -388,7 +374,6 @@ void tty_port_hangup(struct tty_port *port)
 	wake_up_interruptible(&port->open_wait);
 	wake_up_interruptible(&port->delta_msr_wait);
 }
-EXPORT_SYMBOL(tty_port_hangup);
 
 /**
  * tty_port_tty_hangup - helper to hang up a tty
@@ -403,7 +388,6 @@ void tty_port_tty_hangup(struct tty_port *port, bool check_clocal)
 		tty_hangup(tty);
 	tty_kref_put(tty);
 }
-EXPORT_SYMBOL_GPL(tty_port_tty_hangup);
 
 /**
  * tty_port_tty_wakeup - helper to wake up a tty
@@ -413,7 +397,6 @@ void tty_port_tty_wakeup(struct tty_port *port)
 {
 	port->client_ops->write_wakeup(port);
 }
-EXPORT_SYMBOL_GPL(tty_port_tty_wakeup);
 
 /**
  * tty_port_carrier_raised	-	carrier raised check
@@ -429,7 +412,6 @@ int tty_port_carrier_raised(struct tty_port *port)
 		return 1;
 	return port->ops->carrier_raised(port);
 }
-EXPORT_SYMBOL(tty_port_carrier_raised);
 
 /**
  * tty_port_raise_dtr_rts	-	Raise DTR/RTS
@@ -444,7 +426,6 @@ void tty_port_raise_dtr_rts(struct tty_port *port)
 	if (port->ops->dtr_rts)
 		port->ops->dtr_rts(port, 1);
 }
-EXPORT_SYMBOL(tty_port_raise_dtr_rts);
 
 /**
  * tty_port_lower_dtr_rts	-	Lower DTR/RTS
@@ -459,7 +440,6 @@ void tty_port_lower_dtr_rts(struct tty_port *port)
 	if (port->ops->dtr_rts)
 		port->ops->dtr_rts(port, 0);
 }
-EXPORT_SYMBOL(tty_port_lower_dtr_rts);
 
 /**
  * tty_port_block_til_ready	-	Waiting logic for tty open
@@ -570,7 +550,6 @@ int tty_port_block_til_ready(struct tty_port *port,
 		tty_port_set_active(port, 1);
 	return retval;
 }
-EXPORT_SYMBOL(tty_port_block_til_ready);
 
 static void tty_port_drain_delay(struct tty_port *port, struct tty_struct *tty)
 {
@@ -644,7 +623,6 @@ int tty_port_close_start(struct tty_port *port,
 	/* Report to caller this is the last port reference */
 	return 1;
 }
-EXPORT_SYMBOL(tty_port_close_start);
 
 /**
  * tty_port_close_end - helper for tty->ops->close, part 2/2
@@ -676,7 +654,6 @@ void tty_port_close_end(struct tty_port *port, struct tty_struct *tty)
 	spin_unlock_irqrestore(&port->lock, flags);
 	tty_port_set_active(port, 0);
 }
-EXPORT_SYMBOL(tty_port_close_end);
 
 /**
  * tty_port_close - generic tty->ops->close handler
@@ -702,7 +679,6 @@ void tty_port_close(struct tty_port *port, struct tty_struct *tty,
 	tty_port_close_end(port, tty);
 	tty_port_tty_set(port, NULL);
 }
-EXPORT_SYMBOL(tty_port_close);
 
 /**
  * tty_port_install - generic tty->ops->install handler
@@ -720,7 +696,6 @@ int tty_port_install(struct tty_port *port, struct tty_driver *driver,
 	tty->port = port;
 	return tty_standard_install(driver, tty);
 }
-EXPORT_SYMBOL_GPL(tty_port_install);
 
 /**
  * tty_port_open - generic tty->ops->open handler
@@ -772,4 +747,3 @@ int tty_port_open(struct tty_port *port, struct tty_struct *tty,
 	mutex_unlock(&port->mutex);
 	return tty_port_block_til_ready(port, tty, filp);
 }
-EXPORT_SYMBOL(tty_port_open);

@@ -188,7 +188,6 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 	class_put(cls);
 	return error;
 }
-EXPORT_SYMBOL_GPL(__class_register);
 
 void class_unregister(struct class *cls)
 {
@@ -243,7 +242,6 @@ error:
 	kfree(cls);
 	return ERR_PTR(retval);
 }
-EXPORT_SYMBOL_GPL(__class_create);
 
 /**
  * class_destroy - destroys a struct class structure
@@ -282,7 +280,6 @@ void class_dev_iter_init(struct class_dev_iter *iter, struct class *class,
 	klist_iter_init_node(&class->p->klist_devices, &iter->ki, start_knode);
 	iter->type = type;
 }
-EXPORT_SYMBOL_GPL(class_dev_iter_init);
 
 /**
  * class_dev_iter_next - iterate to the next device
@@ -310,7 +307,6 @@ struct device *class_dev_iter_next(struct class_dev_iter *iter)
 			return dev;
 	}
 }
-EXPORT_SYMBOL_GPL(class_dev_iter_next);
 
 /**
  * class_dev_iter_exit - finish iteration
@@ -323,7 +319,6 @@ void class_dev_iter_exit(struct class_dev_iter *iter)
 {
 	klist_iter_exit(&iter->ki);
 }
-EXPORT_SYMBOL_GPL(class_dev_iter_exit);
 
 /**
  * class_for_each_device - device iterator
@@ -368,7 +363,6 @@ int class_for_each_device(struct class *class, struct device *start,
 
 	return error;
 }
-EXPORT_SYMBOL_GPL(class_for_each_device);
 
 /**
  * class_find_device - device iterator for locating a particular device
@@ -416,7 +410,6 @@ struct device *class_find_device(struct class *class, struct device *start,
 
 	return dev;
 }
-EXPORT_SYMBOL_GPL(class_find_device);
 
 int class_interface_register(struct class_interface *class_intf)
 {
@@ -475,7 +468,6 @@ ssize_t show_class_attr_string(struct class *class,
 	return sysfs_emit(buf, "%s\n", cs->str);
 }
 
-EXPORT_SYMBOL_GPL(show_class_attr_string);
 
 struct class_compat {
 	struct kobject *kobj;
@@ -502,7 +494,6 @@ struct class_compat *class_compat_register(const char *name)
 	}
 	return cls;
 }
-EXPORT_SYMBOL_GPL(class_compat_register);
 
 /**
  * class_compat_unregister - unregister a compatibility class
@@ -513,7 +504,6 @@ void class_compat_unregister(struct class_compat *cls)
 	kobject_put(cls->kobj);
 	kfree(cls);
 }
-EXPORT_SYMBOL_GPL(class_compat_unregister);
 
 /**
  * class_compat_create_link - create a compatibility class device link to
@@ -545,7 +535,6 @@ int class_compat_create_link(struct class_compat *cls, struct device *dev,
 
 	return error;
 }
-EXPORT_SYMBOL_GPL(class_compat_create_link);
 
 /**
  * class_compat_remove_link - remove a compatibility class device link to
@@ -562,7 +551,6 @@ void class_compat_remove_link(struct class_compat *cls, struct device *dev,
 		sysfs_remove_link(&dev->kobj, "device");
 	sysfs_remove_link(cls->kobj, dev_name(dev));
 }
-EXPORT_SYMBOL_GPL(class_compat_remove_link);
 
 int __init classes_init(void)
 {
@@ -572,10 +560,4 @@ int __init classes_init(void)
 	return 0;
 }
 
-EXPORT_SYMBOL_GPL(class_create_file_ns);
-EXPORT_SYMBOL_GPL(class_remove_file_ns);
-EXPORT_SYMBOL_GPL(class_unregister);
-EXPORT_SYMBOL_GPL(class_destroy);
 
-EXPORT_SYMBOL_GPL(class_interface_register);
-EXPORT_SYMBOL_GPL(class_interface_unregister);

@@ -59,7 +59,6 @@ static inline bool ipv6_addr_is_isatap(const struct in6_addr *addr)
 #include "kstrtox.h"
 
 bool no_hash_pointers __ro_after_init;
-EXPORT_SYMBOL_GPL(no_hash_pointers);
 
 static noinline unsigned long long simple_strntoull(const char *startp, size_t max_chars, char **endp, unsigned int base)
 {
@@ -90,13 +89,11 @@ unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int bas
 {
 	return simple_strntoull(cp, INT_MAX, endp, base);
 }
-EXPORT_SYMBOL(simple_strtoull);
 
 unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base)
 {
 	return simple_strtoull(cp, endp, base);
 }
-EXPORT_SYMBOL(simple_strtoul);
 
 long simple_strtol(const char *cp, char **endp, unsigned int base)
 {
@@ -105,7 +102,6 @@ long simple_strtol(const char *cp, char **endp, unsigned int base)
 
 	return simple_strtoul(cp, endp, base);
 }
-EXPORT_SYMBOL(simple_strtol);
 
 static long long simple_strntoll(const char *cp, size_t max_chars, char **endp,
 				 unsigned int base)
@@ -121,7 +117,6 @@ long long simple_strtoll(const char *cp, char **endp, unsigned int base)
 {
 	return simple_strntoll(cp, INT_MAX, endp, base);
 }
-EXPORT_SYMBOL(simple_strtoll);
 
 static noinline_for_stack
 int skip_atoi(const char **s)
@@ -2474,7 +2469,6 @@ out:
 	return str-buf;
 
 }
-EXPORT_SYMBOL(vsnprintf);
 
 int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
 {
@@ -2490,7 +2484,6 @@ int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
 
 	return size - 1;
 }
-EXPORT_SYMBOL(vscnprintf);
 
 int snprintf(char *buf, size_t size, const char *fmt, ...)
 {
@@ -2503,7 +2496,6 @@ int snprintf(char *buf, size_t size, const char *fmt, ...)
 
 	return i;
 }
-EXPORT_SYMBOL(snprintf);
 
 int scnprintf(char *buf, size_t size, const char *fmt, ...)
 {
@@ -2516,13 +2508,11 @@ int scnprintf(char *buf, size_t size, const char *fmt, ...)
 
 	return i;
 }
-EXPORT_SYMBOL(scnprintf);
 
 int vsprintf(char *buf, const char *fmt, va_list args)
 {
 	return vsnprintf(buf, INT_MAX, fmt, args);
 }
-EXPORT_SYMBOL(vsprintf);
 
 int sprintf(char *buf, const char *fmt, ...)
 {
@@ -2535,7 +2525,6 @@ int sprintf(char *buf, const char *fmt, ...)
 
 	return i;
 }
-EXPORT_SYMBOL(sprintf);
 
 int vsscanf(const char *buf, const char *fmt, va_list args)
 {
@@ -2788,7 +2777,6 @@ int vsscanf(const char *buf, const char *fmt, va_list args)
 
 	return num;
 }
-EXPORT_SYMBOL(vsscanf);
 
 int sscanf(const char *buf, const char *fmt, ...)
 {
@@ -2801,4 +2789,3 @@ int sscanf(const char *buf, const char *fmt, ...)
 
 	return i;
 }
-EXPORT_SYMBOL(sscanf);

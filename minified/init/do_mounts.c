@@ -121,7 +121,6 @@ dev_t name_to_dev_t(const char *name)
 		return Root_RAM0;
 	return devt_from_devnum(name);
 }
-EXPORT_SYMBOL_GPL(name_to_dev_t);
 
 static int __init root_dev_setup(char *line)
 {

@@ -81,7 +81,6 @@ struct pid_namespace init_pid_ns = {
 	.user_ns = &init_user_ns,
 	.ns.inum = PROC_PID_INIT_INO,
 };
-EXPORT_SYMBOL_GPL(init_pid_ns);
 
 /*
  * Note: disable interrupts while the pidmap_lock is held as an
@@ -112,7 +111,6 @@ void put_pid(struct pid *pid)
 		put_pid_ns(ns);
 	}
 }
-EXPORT_SYMBOL_GPL(put_pid);
 
 static void delayed_put_pid(struct rcu_head *rhp)
 {
@@ -307,13 +305,11 @@ struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
 {
 	return idr_find(&ns->idr, nr);
 }
-EXPORT_SYMBOL_GPL(find_pid_ns);
 
 struct pid *find_vpid(int nr)
 {
 	return find_pid_ns(nr, task_active_pid_ns(current));
 }
-EXPORT_SYMBOL_GPL(find_vpid);
 
 static struct pid **task_pid_ptr(struct task_struct *task, enum pid_type type)
 {
@@ -402,7 +398,6 @@ struct task_struct *pid_task(struct pid *pid, enum pid_type type)
 	}
 	return result;
 }
-EXPORT_SYMBOL(pid_task);
 
 /*
  * Must be called under rcu_read_lock().
@@ -440,7 +435,6 @@ struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
 	rcu_read_unlock();
 	return pid;
 }
-EXPORT_SYMBOL_GPL(get_task_pid);
 
 struct task_struct *get_pid_task(struct pid *pid, enum pid_type type)
 {
@@ -452,7 +446,6 @@ struct task_struct *get_pid_task(struct pid *pid, enum pid_type type)
 	rcu_read_unlock();
 	return result;
 }
-EXPORT_SYMBOL_GPL(get_pid_task);
 
 struct pid *find_get_pid(pid_t nr)
 {
@@ -464,7 +457,6 @@ struct pid *find_get_pid(pid_t nr)
 
 	return pid;
 }
-EXPORT_SYMBOL_GPL(find_get_pid);
 
 pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
 {
@@ -478,13 +470,11 @@ pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
 	}
 	return nr;
 }
-EXPORT_SYMBOL_GPL(pid_nr_ns);
 
 pid_t pid_vnr(struct pid *pid)
 {
 	return pid_nr_ns(pid, task_active_pid_ns(current));
 }
-EXPORT_SYMBOL_GPL(pid_vnr);
 
 pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type,
 			struct pid_namespace *ns)
@@ -499,13 +489,11 @@ pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type,
 
 	return nr;
 }
-EXPORT_SYMBOL(__task_pid_nr_ns);
 
 struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 {
 	return ns_of_pid(task_pid(tsk));
 }
-EXPORT_SYMBOL_GPL(task_active_pid_ns);
 
 /*
  * Used by proc to find the first pid that is greater than or equal to nr.

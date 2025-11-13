@@ -117,7 +117,6 @@ char *kobject_get_path(struct kobject *kobj, gfp_t gfp_mask)
 
 	return path;
 }
-EXPORT_SYMBOL_GPL(kobject_get_path);
 
 /* add the kobject to its kset's list */
 static void kobj_kset_join(struct kobject *kobj)
@@ -266,7 +265,6 @@ int kobject_set_name(struct kobject *kobj, const char *fmt, ...)
 
 	return retval;
 }
-EXPORT_SYMBOL(kobject_set_name);
 
 /**
  * kobject_init() - Initialize a kobject structure.
@@ -307,7 +305,6 @@ error:
 	pr_err("kobject (%p): %s\n", kobj, err_str);
 	dump_stack();
 }
-EXPORT_SYMBOL(kobject_init);
 
 static __printf(3, 0) int kobject_add_varg(struct kobject *kobj,
 					   struct kobject *parent,
@@ -378,7 +375,6 @@ int kobject_add(struct kobject *kobj, struct kobject *parent,
 
 	return retval;
 }
-EXPORT_SYMBOL(kobject_add);
 
 /**
  * kobject_init_and_add() - Initialize a kobject structure and add it to
@@ -409,7 +405,6 @@ int kobject_init_and_add(struct kobject *kobj, const struct kobj_type *ktype,
 
 	return retval;
 }
-EXPORT_SYMBOL_GPL(kobject_init_and_add);
 
 /**
  * kobject_rename() - Change the name of an object.
@@ -478,7 +473,6 @@ out:
 
 	return error;
 }
-EXPORT_SYMBOL_GPL(kobject_rename);
 
 /**
  * kobject_move() - Move object to another parent.
@@ -531,7 +525,6 @@ out:
 	kfree(devpath);
 	return error;
 }
-EXPORT_SYMBOL_GPL(kobject_move);
 
 static void __kobject_del(struct kobject *kobj)
 {
@@ -577,7 +570,6 @@ void kobject_del(struct kobject *kobj)
 	__kobject_del(kobj);
 	kobject_put(parent);
 }
-EXPORT_SYMBOL(kobject_del);
 
 /**
  * kobject_get() - Increment refcount for object.
@@ -594,7 +586,6 @@ struct kobject *kobject_get(struct kobject *kobj)
 	}
 	return kobj;
 }
-EXPORT_SYMBOL(kobject_get);
 
 struct kobject * __must_check kobject_get_unless_zero(struct kobject *kobj)
 {
@@ -604,7 +595,6 @@ struct kobject * __must_check kobject_get_unless_zero(struct kobject *kobj)
 		kobj = NULL;
 	return kobj;
 }
-EXPORT_SYMBOL(kobject_get_unless_zero);
 
 /*
  * kobject_cleanup - free kobject resources.
@@ -671,7 +661,6 @@ void kobject_put(struct kobject *kobj)
 		kref_put(&kobj->kref, kobject_release);
 	}
 }
-EXPORT_SYMBOL(kobject_put);
 
 static void dynamic_kobj_release(struct kobject *kobj)
 {
@@ -737,7 +726,6 @@ struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
 	}
 	return kobj;
 }
-EXPORT_SYMBOL_GPL(kobject_create_and_add);
 
 /**
  * kset_init() - Initialize a kset for use.
@@ -779,7 +767,6 @@ const struct sysfs_ops kobj_sysfs_ops = {
 	.show	= kobj_attr_show,
 	.store	= kobj_attr_store,
 };
-EXPORT_SYMBOL_GPL(kobj_sysfs_ops);
 
 /**
  * kset_register() - Initialize and add a kset.
@@ -799,7 +786,6 @@ int kset_register(struct kset *k)
 	kobject_uevent(&k->kobj, KOBJ_ADD);
 	return 0;
 }
-EXPORT_SYMBOL(kset_register);
 
 /**
  * kset_unregister() - Remove a kset.
@@ -812,7 +798,6 @@ void kset_unregister(struct kset *k)
 	kobject_del(&k->kobj);
 	kobject_put(&k->kobj);
 }
-EXPORT_SYMBOL(kset_unregister);
 
 /**
  * kset_find_obj() - Search for object in kset.
@@ -840,7 +825,6 @@ struct kobject *kset_find_obj(struct kset *kset, const char *name)
 	spin_unlock(&kset->list_lock);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(kset_find_obj);
 
 static void kset_release(struct kobject *kobj)
 {
@@ -937,7 +921,6 @@ struct kset *kset_create_and_add(const char *name,
 	}
 	return kset;
 }
-EXPORT_SYMBOL_GPL(kset_create_and_add);
 
 
 static DEFINE_SPINLOCK(kobj_ns_type_lock);
@@ -1022,7 +1005,6 @@ void *kobj_ns_grab_current(enum kobj_ns_type type)
 
 	return ns;
 }
-EXPORT_SYMBOL_GPL(kobj_ns_grab_current);
 
 const void *kobj_ns_netlink(enum kobj_ns_type type, struct sock *sk)
 {
@@ -1058,4 +1040,3 @@ void kobj_ns_drop(enum kobj_ns_type type, void *ns)
 		kobj_ns_ops_tbl[type]->drop_ns(ns);
 	spin_unlock(&kobj_ns_type_lock);
 }
-EXPORT_SYMBOL_GPL(kobj_ns_drop);

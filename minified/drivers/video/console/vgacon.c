@@ -1198,6 +1198,5 @@ const struct consw vga_con = {
 	.con_build_attr = vgacon_build_attr,
 	.con_invert_region = vgacon_invert_region,
 };
-EXPORT_SYMBOL(vga_con);
 
 MODULE_LICENSE("GPL");

@@ -129,7 +129,6 @@ void string_get_size(u64 size, u64 blk_size, const enum string_size_units units,
 	snprintf(buf, len, "%u%s %s", (u32)size,
 		 tmp, unit);
 }
-EXPORT_SYMBOL(string_get_size);
 
 static bool unescape_space(char **src, char **dst)
 {
@@ -299,7 +298,6 @@ int string_unescape(char *src, char *dst, size_t size, unsigned int flags)
 
 	return out - dst;
 }
-EXPORT_SYMBOL(string_unescape);
 
 static bool escape_passthrough(unsigned char c, char **dst, char *end)
 {
@@ -585,7 +583,6 @@ int string_escape_mem(const char *src, size_t isz, char *dst, size_t osz,
 
 	return p - dst;
 }
-EXPORT_SYMBOL(string_escape_mem);
 
 /*
  * Return an allocated string that has been escaped of special characters
@@ -612,7 +609,6 @@ char *kstrdup_quotable(const char *src, gfp_t gfp)
 
 	return dst;
 }
-EXPORT_SYMBOL_GPL(kstrdup_quotable);
 
 /*
  * Returns allocated NULL-terminated string containing process
@@ -645,7 +641,6 @@ char *kstrdup_quotable_cmdline(struct task_struct *task, gfp_t gfp)
 	kfree(buffer);
 	return quoted;
 }
-EXPORT_SYMBOL_GPL(kstrdup_quotable_cmdline);
 
 /*
  * Returns allocated NULL-terminated string containing pathname,
@@ -673,7 +668,6 @@ char *kstrdup_quotable_file(struct file *file, gfp_t gfp)
 	kfree(temp);
 	return pathname;
 }
-EXPORT_SYMBOL_GPL(kstrdup_quotable_file);
 
 /**
  * kasprintf_strarray - allocate and fill array of sequential strings
@@ -706,7 +700,6 @@ char **kasprintf_strarray(gfp_t gfp, const char *prefix, size_t n)
 
 	return names;
 }
-EXPORT_SYMBOL_GPL(kasprintf_strarray);
 
 /**
  * kfree_strarray - free a number of dynamically allocated strings contained
@@ -729,7 +722,6 @@ void kfree_strarray(char **array, size_t n)
 		kfree(array[i]);
 	kfree(array);
 }
-EXPORT_SYMBOL_GPL(kfree_strarray);
 
 struct strarray {
 	char **array;
@@ -762,7 +754,6 @@ char **devm_kasprintf_strarray(struct device *dev, const char *prefix, size_t n)
 
 	return ptr->array;
 }
-EXPORT_SYMBOL_GPL(devm_kasprintf_strarray);
 
 /**
  * strscpy_pad() - Copy a C-string into a sized buffer
@@ -796,7 +787,6 @@ ssize_t strscpy_pad(char *dest, const char *src, size_t count)
 
 	return written;
 }
-EXPORT_SYMBOL(strscpy_pad);
 
 /**
  * skip_spaces - Removes leading whitespace from @str.
@@ -810,7 +800,6 @@ char *skip_spaces(const char *str)
 		++str;
 	return (char *)str;
 }
-EXPORT_SYMBOL(skip_spaces);
 
 /**
  * strim - Removes leading and trailing whitespace from @s.
@@ -836,7 +825,6 @@ char *strim(char *s)
 
 	return skip_spaces(s);
 }
-EXPORT_SYMBOL(strim);
 
 /**
  * sysfs_streq - return true if strings are equal, modulo trailing newline
@@ -863,7 +851,6 @@ bool sysfs_streq(const char *s1, const char *s2)
 		return true;
 	return false;
 }
-EXPORT_SYMBOL(sysfs_streq);
 
 /**
  * match_string - matches given string in an array
@@ -897,7 +884,6 @@ int match_string(const char * const *array, size_t n, const char *string)
 
 	return -EINVAL;
 }
-EXPORT_SYMBOL(match_string);
 
 /**
  * __sysfs_match_string - matches given string in an array
@@ -931,7 +917,6 @@ int __sysfs_match_string(const char * const *array, size_t n, const char *str)
 
 	return -EINVAL;
 }
-EXPORT_SYMBOL(__sysfs_match_string);
 
 /**
  * strreplace - Replace all occurrences of character in string.
@@ -948,7 +933,6 @@ char *strreplace(char *s, char old, char new)
 			*s = new;
 	return s;
 }
-EXPORT_SYMBOL(strreplace);
 
 /**
  * memcpy_and_pad - Copy one buffer to another with padding
@@ -968,5 +952,4 @@ void memcpy_and_pad(void *dest, size_t dest_len, const void *src, size_t count,
 		memcpy(dest, src, dest_len);
 	}
 }
-EXPORT_SYMBOL(memcpy_and_pad);
 

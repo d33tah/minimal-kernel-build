@@ -210,7 +210,6 @@ async_cookie_t async_schedule_node_domain(async_func_t func, void *data,
 
 	return newcookie;
 }
-EXPORT_SYMBOL_GPL(async_schedule_node_domain);
 
 /**
  * async_schedule_node - NUMA specific version of async_schedule
@@ -229,7 +228,6 @@ async_cookie_t async_schedule_node(async_func_t func, void *data, int node)
 {
 	return async_schedule_node_domain(func, data, node, &async_dfl_domain);
 }
-EXPORT_SYMBOL_GPL(async_schedule_node);
 
 /**
  * async_synchronize_full - synchronize all asynchronous function calls
@@ -240,7 +238,6 @@ void async_synchronize_full(void)
 {
 	async_synchronize_full_domain(NULL);
 }
-EXPORT_SYMBOL_GPL(async_synchronize_full);
 
 /**
  * async_synchronize_full_domain - synchronize all asynchronous function within a certain domain
@@ -253,7 +250,6 @@ void async_synchronize_full_domain(struct async_domain *domain)
 {
 	async_synchronize_cookie_domain(ASYNC_COOKIE_MAX, domain);
 }
-EXPORT_SYMBOL_GPL(async_synchronize_full_domain);
 
 /**
  * async_synchronize_cookie_domain - synchronize asynchronous function calls within a certain domain with cookie checkpointing
@@ -276,7 +272,6 @@ void async_synchronize_cookie_domain(async_cookie_t cookie, struct async_domain 
 	pr_debug("async_continuing @ %i after %lli usec\n", task_pid_nr(current),
 		 microseconds_since(starttime));
 }
-EXPORT_SYMBOL_GPL(async_synchronize_cookie_domain);
 
 /**
  * async_synchronize_cookie - synchronize asynchronous function calls with cookie checkpointing
@@ -289,7 +284,6 @@ void async_synchronize_cookie(async_cookie_t cookie)
 {
 	async_synchronize_cookie_domain(cookie, &async_dfl_domain);
 }
-EXPORT_SYMBOL_GPL(async_synchronize_cookie);
 
 /**
  * current_is_async - is %current an async worker task?
@@ -302,4 +296,3 @@ bool current_is_async(void)
 
 	return worker && worker->current_func == async_run_entry_fn;
 }
-EXPORT_SYMBOL_GPL(current_is_async);

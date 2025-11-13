@@ -37,7 +37,6 @@ int regset_get(struct task_struct *target,
 {
 	return __regset_get(target, regset, size, &data);
 }
-EXPORT_SYMBOL(regset_get);
 
 int regset_get_alloc(struct task_struct *target,
 		     const struct user_regset *regset,
@@ -47,7 +46,6 @@ int regset_get_alloc(struct task_struct *target,
 	*data = NULL;
 	return __regset_get(target, regset, size, data);
 }
-EXPORT_SYMBOL(regset_get_alloc);
 
 /**
  * copy_regset_to_user - fetch a thread's user_regset data into user memory

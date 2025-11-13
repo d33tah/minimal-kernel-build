@@ -70,7 +70,6 @@ bool list_lru_add(struct list_lru *lru, struct list_head *item)
 	spin_unlock(&nlru->lock);
 	return false;
 }
-EXPORT_SYMBOL_GPL(list_lru_add);
 
 bool list_lru_del(struct list_lru *lru, struct list_head *item)
 {
@@ -90,14 +89,12 @@ bool list_lru_del(struct list_lru *lru, struct list_head *item)
 	spin_unlock(&nlru->lock);
 	return false;
 }
-EXPORT_SYMBOL_GPL(list_lru_del);
 
 void list_lru_isolate(struct list_lru_one *list, struct list_head *item)
 {
 	list_del_init(item);
 	list->nr_items--;
 }
-EXPORT_SYMBOL_GPL(list_lru_isolate);
 
 void list_lru_isolate_move(struct list_lru_one *list, struct list_head *item,
 			   struct list_head *head)
@@ -105,7 +102,6 @@ void list_lru_isolate_move(struct list_lru_one *list, struct list_head *item,
 	list_move(item, head);
 	list->nr_items--;
 }
-EXPORT_SYMBOL_GPL(list_lru_isolate_move);
 
 unsigned long list_lru_count_one(struct list_lru *lru,
 				 int nid, struct mem_cgroup *memcg)
@@ -123,7 +119,6 @@ unsigned long list_lru_count_one(struct list_lru *lru,
 
 	return count;
 }
-EXPORT_SYMBOL_GPL(list_lru_count_one);
 
 unsigned long list_lru_count_node(struct list_lru *lru, int nid)
 {
@@ -132,7 +127,6 @@ unsigned long list_lru_count_node(struct list_lru *lru, int nid)
 	nlru = &lru->node[nid];
 	return nlru->nr_items;
 }
-EXPORT_SYMBOL_GPL(list_lru_count_node);
 
 static unsigned long
 __list_lru_walk_one(struct list_lru *lru, int nid, int memcg_idx,
@@ -210,7 +204,6 @@ list_lru_walk_one(struct list_lru *lru, int nid, struct mem_cgroup *memcg,
 	spin_unlock(&nlru->lock);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(list_lru_walk_one);
 
 unsigned long
 list_lru_walk_one_irq(struct list_lru *lru, int nid, struct mem_cgroup *memcg,
@@ -239,7 +232,6 @@ unsigned long list_lru_walk_node(struct list_lru *lru, int nid,
 
 	return isolated;
 }
-EXPORT_SYMBOL_GPL(list_lru_walk_node);
 
 static void init_one_lru(struct list_lru_one *l)
 {
@@ -277,7 +269,6 @@ int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(__list_lru_init);
 
 void list_lru_destroy(struct list_lru *lru)
 {
@@ -292,4 +283,3 @@ void list_lru_destroy(struct list_lru *lru)
 	lru->node = NULL;
 
 }
-EXPORT_SYMBOL_GPL(list_lru_destroy);

@@ -52,7 +52,6 @@ unsigned long panic_on_taint;
 bool panic_on_taint_nousertaint = false;
 
 int panic_timeout = CONFIG_PANIC_TIMEOUT;
-EXPORT_SYMBOL_GPL(panic_timeout);
 
 #define PANIC_PRINT_TASK_INFO		0x00000001
 #define PANIC_PRINT_MEM_INFO		0x00000002
@@ -65,7 +64,6 @@ unsigned long panic_print;
 
 ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
 
-EXPORT_SYMBOL(panic_notifier_list);
 
 
 static long no_blink(int state)
@@ -75,7 +73,6 @@ static long no_blink(int state)
 
 /* Returns how long it waited in ms */
 long (*panic_blink)(int state);
-EXPORT_SYMBOL(panic_blink);
 
 /*
  * Stop ourself in panic -- architecture code may override this
@@ -141,7 +138,6 @@ void nmi_panic(struct pt_regs *regs, const char *msg)
 	else if (old_cpu != cpu)
 		nmi_panic_self_stop(regs);
 }
-EXPORT_SYMBOL(nmi_panic);
 
 static void panic_print_sys_info(bool console_flush)
 {
@@ -362,7 +358,6 @@ void panic(const char *fmt, ...)
 	}
 }
 
-EXPORT_SYMBOL(panic);
 
 /*
  * TAINT_FORCED_RMMOD could be a per-module flag but the module
@@ -424,7 +419,6 @@ int test_taint(unsigned flag)
 {
 	return test_bit(flag, &tainted_mask);
 }
-EXPORT_SYMBOL(test_taint);
 
 unsigned long get_taint(void)
 {
@@ -451,7 +445,6 @@ void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
 		panic("panic_on_taint set ...");
 	}
 }
-EXPORT_SYMBOL(add_taint);
 
 static void spin_msec(int msecs)
 {
@@ -612,7 +605,6 @@ void warn_slowpath_fmt(const char *file, int line, unsigned taint,
 	__warn(file, line, __builtin_return_address(0), taint, NULL, &args);
 	va_end(args.args);
 }
-EXPORT_SYMBOL(warn_slowpath_fmt);
 #else
 void __warn_printk(const char *fmt, ...)
 {
@@ -624,7 +616,6 @@ void __warn_printk(const char *fmt, ...)
 	vprintk(fmt, args);
 	va_end(args);
 }
-EXPORT_SYMBOL(__warn_printk);
 #endif
 
 

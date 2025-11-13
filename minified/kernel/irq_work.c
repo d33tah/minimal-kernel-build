@@ -107,7 +107,6 @@ bool irq_work_queue(struct irq_work *work)
 
 	return true;
 }
-EXPORT_SYMBOL_GPL(irq_work_queue);
 
 /*
  * Enqueue the irq_work @work on @cpu unless it's already pending
@@ -204,7 +203,6 @@ void irq_work_run(void)
 	else
 		wake_irq_workd();
 }
-EXPORT_SYMBOL_GPL(irq_work_run);
 
 void irq_work_tick(void)
 {
@@ -238,7 +236,6 @@ void irq_work_sync(struct irq_work *work)
 	while (irq_work_is_busy(work))
 		cpu_relax();
 }
-EXPORT_SYMBOL_GPL(irq_work_sync);
 
 static void run_irq_workd(unsigned int cpu)
 {

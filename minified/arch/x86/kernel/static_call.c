@@ -125,5 +125,4 @@ void arch_static_call_transform(void *site, void *tramp, void *func, bool tail)
 
 	mutex_unlock(&text_mutex);
 }
-EXPORT_SYMBOL_GPL(arch_static_call_transform);
 

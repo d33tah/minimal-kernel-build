@@ -1,3 +1,54 @@
+--- 2025-11-13 14:16 ---
+NEW SESSION: Continue systematic LOC reduction
+
+Current status at session start:
+- LOC: 289,789 total (cloc)
+- Goal: 200,000 LOC
+- Gap: 89,789 LOC (31.0% reduction needed)
+- Build: PASSES
+- make vm: PASSES, prints "Hello, World!"
+
+Plan for this session:
+1. Look for compiler warnings that indicate unused code
+2. Identify large functions or subsystems that can be stubbed
+3. Continue previous session's systematic approach
+4. Focus on finding medium-sized reduction opportunities (100-500 LOC each)
+
+Progress (14:27):
+- Built with LLVM=1: No unused function/variable warnings found (previous sessions removed them all)
+- Analyzed binary: 6474 local functions + 97 global = 6571 functions in final vmlinux
+- All compiled code is actually used at runtime - compiler/linker eliminated dead code
+- 1521 EXPORT_SYMBOL macros (~3K LOC max if removed, but low priority)
+- 246 syscall definitions but init only uses write(1, ...)
+- Confirmed: Headers are 142,591 LOC, largest being fs.h (2521), pci.h (1636), mm.h (2197)
+
+Analysis:
+Previous DIARY (at 316K LOC) concluded near-optimal state. Current 289K is 27K better (8.5% improvement).
+However, still 89K LOC (31%) away from 200K goal.
+
+Key insight: Previous sessions successfully reduced from 332K to 289K (43K = 13% reduction).
+To reach 200K would require another 31% reduction - this is significantly harder than what's been achieved.
+
+Strategy options:
+1. Remove EXPORT_SYMBOL macros (~3K LOC gain, low effort)
+2. Stub out rarely-used syscalls (moderate risk, ~5-10K potential)
+3. Aggressive header reduction (high risk, ~20-30K potential but caused VM hangs before)
+4. Simplify complex subsystems like mm/page_alloc.c (very high risk, architectural change)
+
+Will try option 1 first as low-hanging fruit.
+
+Progress (14:35):
+- Removed all 2476 EXPORT_SYMBOL/EXPORT_SYMBOL_GPL lines from 270 files
+- Build: PASSES
+- make vm: PASSES
+- Hello World: PRINTS
+- New LOC: 278,042 (down from 289,789)
+- Reduction: 11,747 LOC (4.1%)
+- Gap to goal: 78,042 LOC (28.1% reduction still needed)
+
+This was successful! The kernel doesn't need module exports since it's monolithic.
+Will commit and push, then continue with more reductions.
+
 --- 2025-11-13 13:48 ---
 NEW SESSION: Aggressive LOC reduction targeting headers and subsystems
 

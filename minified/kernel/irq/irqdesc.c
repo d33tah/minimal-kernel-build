@@ -61,7 +61,6 @@ static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 }
 
 int nr_irqs = NR_IRQS;
-EXPORT_SYMBOL_GPL(nr_irqs);
 
 static DEFINE_MUTEX(sparse_irq_lock);
 static DECLARE_BITMAP(allocated_irqs, IRQ_BITMAP_BITS);
@@ -298,7 +297,6 @@ int generic_handle_irq(unsigned int irq)
 {
 	return handle_irq_desc(irq_to_desc(irq));
 }
-EXPORT_SYMBOL_GPL(generic_handle_irq);
 
 /**
  * generic_handle_irq_safe - Invoke the handler for a particular irq from any
@@ -321,7 +319,6 @@ int generic_handle_irq_safe(unsigned int irq)
 	local_irq_restore(flags);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(generic_handle_irq_safe);
 
 
 /* Dynamic interrupt handling */
@@ -345,7 +342,6 @@ void irq_free_descs(unsigned int from, unsigned int cnt)
 	bitmap_clear(allocated_irqs, from, cnt);
 	mutex_unlock(&sparse_irq_lock);
 }
-EXPORT_SYMBOL_GPL(irq_free_descs);
 
 /**
  * __irq_alloc_descs - allocate and initialize a range of irq descriptors
@@ -400,7 +396,6 @@ unlock:
 	mutex_unlock(&sparse_irq_lock);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(__irq_alloc_descs);
 
 /**
  * irq_get_next_irq - get next allocated irq number
@@ -487,7 +482,6 @@ int irq_get_percpu_devid_partition(unsigned int irq, struct cpumask *affinity)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(irq_get_percpu_devid_partition);
 
 void kstat_incr_irq_this_cpu(unsigned int irq)
 {

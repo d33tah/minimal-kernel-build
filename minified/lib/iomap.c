@@ -95,11 +95,6 @@ unsigned int ioread32be(const void __iomem *addr)
 	IO_COND(addr, return pio_read32be(port), return mmio_read32be(addr));
 	return 0xffffffff;
 }
-EXPORT_SYMBOL(ioread8);
-EXPORT_SYMBOL(ioread16);
-EXPORT_SYMBOL(ioread16be);
-EXPORT_SYMBOL(ioread32);
-EXPORT_SYMBOL(ioread32be);
 
 #ifdef readq
 static u64 pio_read64_lo_hi(unsigned long port)
@@ -168,10 +163,6 @@ u64 ioread64be_hi_lo(const void __iomem *addr)
 	return 0xffffffffffffffffULL;
 }
 
-EXPORT_SYMBOL(ioread64_lo_hi);
-EXPORT_SYMBOL(ioread64_hi_lo);
-EXPORT_SYMBOL(ioread64be_lo_hi);
-EXPORT_SYMBOL(ioread64be_hi_lo);
 
 #endif /* readq */
 
@@ -206,11 +197,6 @@ void iowrite32be(u32 val, void __iomem *addr)
 {
 	IO_COND(addr, pio_write32be(val,port), mmio_write32be(val, addr));
 }
-EXPORT_SYMBOL(iowrite8);
-EXPORT_SYMBOL(iowrite16);
-EXPORT_SYMBOL(iowrite16be);
-EXPORT_SYMBOL(iowrite32);
-EXPORT_SYMBOL(iowrite32be);
 
 #ifdef writeq
 static void pio_write64_lo_hi(u64 val, unsigned long port)
@@ -261,10 +247,6 @@ void iowrite64be_hi_lo(u64 val, void __iomem *addr)
 		mmio_write64be(val, addr));
 }
 
-EXPORT_SYMBOL(iowrite64_lo_hi);
-EXPORT_SYMBOL(iowrite64_hi_lo);
-EXPORT_SYMBOL(iowrite64be_lo_hi);
-EXPORT_SYMBOL(iowrite64be_hi_lo);
 
 #endif /* readq */
 
@@ -337,9 +319,6 @@ void ioread32_rep(const void __iomem *addr, void *dst, unsigned long count)
 {
 	IO_COND(addr, insl(port,dst,count), mmio_insl(addr, dst, count));
 }
-EXPORT_SYMBOL(ioread8_rep);
-EXPORT_SYMBOL(ioread16_rep);
-EXPORT_SYMBOL(ioread32_rep);
 
 void iowrite8_rep(void __iomem *addr, const void *src, unsigned long count)
 {
@@ -353,9 +332,6 @@ void iowrite32_rep(void __iomem *addr, const void *src, unsigned long count)
 {
 	IO_COND(addr, outsl(port, src,count), mmio_outsl(addr, src, count));
 }
-EXPORT_SYMBOL(iowrite8_rep);
-EXPORT_SYMBOL(iowrite16_rep);
-EXPORT_SYMBOL(iowrite32_rep);
 
 /* Create a virtual mapping cookie for an IO port range */
 void __iomem *ioport_map(unsigned long port, unsigned int nr)
@@ -369,6 +345,4 @@ void ioport_unmap(void __iomem *addr)
 {
 	/* Nothing to do */
 }
-EXPORT_SYMBOL(ioport_map);
-EXPORT_SYMBOL(ioport_unmap);
 

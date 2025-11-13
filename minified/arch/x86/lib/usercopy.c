@@ -49,4 +49,3 @@ copy_from_user_nmi(void *to, const void __user *from, unsigned long n)
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(copy_from_user_nmi);

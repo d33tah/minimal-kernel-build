@@ -114,7 +114,6 @@ void fw_devlink_purge_absent_suppliers(struct fwnode_handle *fwnode)
 	fwnode_for_each_available_child_node(fwnode, child)
 		fw_devlink_purge_absent_suppliers(child);
 }
-EXPORT_SYMBOL_GPL(fw_devlink_purge_absent_suppliers);
 
 static DEFINE_MUTEX(device_links_lock);
 DEFINE_STATIC_SRCU(device_links_srcu);
@@ -661,7 +660,6 @@ out:
 
 	return link;
 }
-EXPORT_SYMBOL_GPL(device_link_add);
 
 static void __device_link_del(struct kref *kref)
 {
@@ -692,7 +690,6 @@ void device_link_del(struct device_link *link)
 	device_link_put_kref(link);
 	device_links_write_unlock();
 }
-EXPORT_SYMBOL_GPL(device_link_del);
 
 void device_link_remove(void *consumer, struct device *supplier)
 {
@@ -712,7 +709,6 @@ void device_link_remove(void *consumer, struct device *supplier)
 
 	device_links_write_unlock();
 }
-EXPORT_SYMBOL_GPL(device_link_remove);
 
 static void device_links_missing_supplier(struct device *dev)
 {
@@ -1496,7 +1492,6 @@ const char *dev_driver_string(const struct device *dev)
 	drv = READ_ONCE(dev->driver);
 	return drv ? drv->name : dev_bus_name(dev);
 }
-EXPORT_SYMBOL(dev_driver_string);
 
 #define to_dev_attr(_attr) container_of(_attr, struct device_attribute, attr)
 
@@ -1550,7 +1545,6 @@ ssize_t device_store_ulong(struct device *dev,
 	
 	return size;
 }
-EXPORT_SYMBOL_GPL(device_store_ulong);
 
 ssize_t device_show_ulong(struct device *dev,
 			  struct device_attribute *attr,
@@ -1559,7 +1553,6 @@ ssize_t device_show_ulong(struct device *dev,
 	struct dev_ext_attribute *ea = to_ext_attr(attr);
 	return sysfs_emit(buf, "%lx\n", *(unsigned long *)(ea->var));
 }
-EXPORT_SYMBOL_GPL(device_show_ulong);
 
 ssize_t device_store_int(struct device *dev,
 			 struct device_attribute *attr,
@@ -1579,7 +1572,6 @@ ssize_t device_store_int(struct device *dev,
 	
 	return size;
 }
-EXPORT_SYMBOL_GPL(device_store_int);
 
 ssize_t device_show_int(struct device *dev,
 			struct device_attribute *attr,
@@ -1589,7 +1581,6 @@ ssize_t device_show_int(struct device *dev,
 
 	return sysfs_emit(buf, "%d\n", *(int *)(ea->var));
 }
-EXPORT_SYMBOL_GPL(device_show_int);
 
 ssize_t device_store_bool(struct device *dev, struct device_attribute *attr,
 			  const char *buf, size_t size)
@@ -1601,7 +1592,6 @@ ssize_t device_store_bool(struct device *dev, struct device_attribute *attr,
 
 	return size;
 }
-EXPORT_SYMBOL_GPL(device_store_bool);
 
 ssize_t device_show_bool(struct device *dev, struct device_attribute *attr,
 			 char *buf)
@@ -1610,7 +1600,6 @@ ssize_t device_show_bool(struct device *dev, struct device_attribute *attr,
 
 	return sysfs_emit(buf, "%d\n", *(bool *)(ea->var));
 }
-EXPORT_SYMBOL_GPL(device_show_bool);
 
 static void device_release(struct kobject *kobj)
 {
@@ -1870,14 +1859,12 @@ int device_add_groups(struct device *dev, const struct attribute_group **groups)
 {
 	return sysfs_create_groups(&dev->kobj, groups);
 }
-EXPORT_SYMBOL_GPL(device_add_groups);
 
 void device_remove_groups(struct device *dev,
 			  const struct attribute_group **groups)
 {
 	sysfs_remove_groups(&dev->kobj, groups);
 }
-EXPORT_SYMBOL_GPL(device_remove_groups);
 
 union device_attr_group_devres {
 	const struct attribute_group *group;
@@ -1927,7 +1914,6 @@ int devm_device_add_group(struct device *dev, const struct attribute_group *grp)
 	devres_add(dev, devres);
 	return 0;
 }
-EXPORT_SYMBOL_GPL(devm_device_add_group);
 
 void devm_device_remove_group(struct device *dev,
 			      const struct attribute_group *grp)
@@ -1936,7 +1922,6 @@ void devm_device_remove_group(struct device *dev,
 			       devm_attr_group_match,
 			        (void *)grp));
 }
-EXPORT_SYMBOL_GPL(devm_device_remove_group);
 
 int devm_device_add_groups(struct device *dev,
 			   const struct attribute_group **groups)
@@ -1959,7 +1944,6 @@ int devm_device_add_groups(struct device *dev,
 	devres_add(dev, devres);
 	return 0;
 }
-EXPORT_SYMBOL_GPL(devm_device_add_groups);
 
 void devm_device_remove_groups(struct device *dev,
 			       const struct attribute_group **groups)
@@ -1968,7 +1952,6 @@ void devm_device_remove_groups(struct device *dev,
 			       devm_attr_group_match,
 			        (void *)groups));
 }
-EXPORT_SYMBOL_GPL(devm_device_remove_groups);
 
 static int device_add_attrs(struct device *dev)
 {
@@ -2117,7 +2100,6 @@ int device_create_file(struct device *dev,
 
 	return error;
 }
-EXPORT_SYMBOL_GPL(device_create_file);
 
 void device_remove_file(struct device *dev,
 			const struct device_attribute *attr)
@@ -2125,7 +2107,6 @@ void device_remove_file(struct device *dev,
 	if (dev)
 		sysfs_remove_file(&dev->kobj, &attr->attr);
 }
-EXPORT_SYMBOL_GPL(device_remove_file);
 
 bool device_remove_file_self(struct device *dev,
 			     const struct device_attribute *attr)
@@ -2135,7 +2116,6 @@ bool device_remove_file_self(struct device *dev,
 	else
 		return false;
 }
-EXPORT_SYMBOL_GPL(device_remove_file_self);
 
 int device_create_bin_file(struct device *dev,
 			   const struct bin_attribute *attr)
@@ -2145,7 +2125,6 @@ int device_create_bin_file(struct device *dev,
 		error = sysfs_create_bin_file(&dev->kobj, attr);
 	return error;
 }
-EXPORT_SYMBOL_GPL(device_create_bin_file);
 
 void device_remove_bin_file(struct device *dev,
 			    const struct bin_attribute *attr)
@@ -2153,7 +2132,6 @@ void device_remove_bin_file(struct device *dev,
 	if (dev)
 		sysfs_remove_bin_file(&dev->kobj, attr);
 }
-EXPORT_SYMBOL_GPL(device_remove_bin_file);
 
 static void klist_children_get(struct klist_node *n)
 {
@@ -2192,7 +2170,6 @@ void device_initialize(struct device *dev)
 	dev->dma_coherent = dma_default_coherent;
 #endif
 }
-EXPORT_SYMBOL_GPL(device_initialize);
 
 struct kobject *virtual_device_parent(struct device *dev)
 {
@@ -2411,7 +2388,6 @@ int dev_set_name(struct device *dev, const char *fmt, ...)
 	va_end(vargs);
 	return err;
 }
-EXPORT_SYMBOL_GPL(dev_set_name);
 
 static struct kobject *device_to_dev_kobj(struct device *dev)
 {
@@ -2618,20 +2594,17 @@ name_error:
 	dev->p = NULL;
 	goto done;
 }
-EXPORT_SYMBOL_GPL(device_add);
 
 int device_register(struct device *dev)
 {
 	device_initialize(dev);
 	return device_add(dev);
 }
-EXPORT_SYMBOL_GPL(device_register);
 
 struct device *get_device(struct device *dev)
 {
 	return dev ? kobj_to_dev(kobject_get(&dev->kobj)) : NULL;
 }
-EXPORT_SYMBOL_GPL(get_device);
 
 void put_device(struct device *dev)
 {
@@ -2639,7 +2612,6 @@ void put_device(struct device *dev)
 	if (dev)
 		kobject_put(&dev->kobj);
 }
-EXPORT_SYMBOL_GPL(put_device);
 
 bool kill_device(struct device *dev)
 {
@@ -2651,7 +2623,6 @@ bool kill_device(struct device *dev)
 	dev->p->dead = true;
 	return true;
 }
-EXPORT_SYMBOL_GPL(kill_device);
 
 void device_del(struct device *dev)
 {
@@ -2712,7 +2683,6 @@ void device_del(struct device *dev)
 	memalloc_noio_restore(noio_flag);
 	put_device(parent);
 }
-EXPORT_SYMBOL_GPL(device_del);
 
 void device_unregister(struct device *dev)
 {
@@ -2720,7 +2690,6 @@ void device_unregister(struct device *dev)
 	device_del(dev);
 	put_device(dev);
 }
-EXPORT_SYMBOL_GPL(device_unregister);
 
 static struct device *prev_device(struct klist_iter *i)
 {
@@ -2796,7 +2765,6 @@ int device_for_each_child(struct device *parent, void *data,
 	klist_iter_exit(&i);
 	return error;
 }
-EXPORT_SYMBOL_GPL(device_for_each_child);
 
 int device_for_each_child_reverse(struct device *parent, void *data,
 				  int (*fn)(struct device *dev, void *data))
@@ -2814,7 +2782,6 @@ int device_for_each_child_reverse(struct device *parent, void *data,
 	klist_iter_exit(&i);
 	return error;
 }
-EXPORT_SYMBOL_GPL(device_for_each_child_reverse);
 
 struct device *device_find_child(struct device *parent, void *data,
 				 int (*match)(struct device *dev, void *data))
@@ -2832,7 +2799,6 @@ struct device *device_find_child(struct device *parent, void *data,
 	klist_iter_exit(&i);
 	return child;
 }
-EXPORT_SYMBOL_GPL(device_find_child);
 
 struct device *device_find_child_by_name(struct device *parent,
 					 const char *name)
@@ -2850,7 +2816,6 @@ struct device *device_find_child_by_name(struct device *parent,
 	klist_iter_exit(&i);
 	return child;
 }
-EXPORT_SYMBOL_GPL(device_find_child_by_name);
 
 int __init devices_init(void)
 {
@@ -2978,7 +2943,6 @@ struct device *__root_device_register(const char *name, struct module *owner)
 
 	return &root->dev;
 }
-EXPORT_SYMBOL_GPL(__root_device_register);
 
 void root_device_unregister(struct device *dev)
 {
@@ -2989,7 +2953,6 @@ void root_device_unregister(struct device *dev)
 
 	device_unregister(dev);
 }
-EXPORT_SYMBOL_GPL(root_device_unregister);
 
 static void device_create_release(struct device *dev)
 {
@@ -3050,7 +3013,6 @@ struct device *device_create(struct class *class, struct device *parent,
 	va_end(vargs);
 	return dev;
 }
-EXPORT_SYMBOL_GPL(device_create);
 
 struct device *device_create_with_groups(struct class *class,
 					 struct device *parent, dev_t devt,
@@ -3067,7 +3029,6 @@ struct device *device_create_with_groups(struct class *class,
 	va_end(vargs);
 	return dev;
 }
-EXPORT_SYMBOL_GPL(device_create_with_groups);
 
 void device_destroy(struct class *class, dev_t devt)
 {
@@ -3079,7 +3040,6 @@ void device_destroy(struct class *class, dev_t devt)
 		device_unregister(dev);
 	}
 }
-EXPORT_SYMBOL_GPL(device_destroy);
 
 int device_rename(struct device *dev, const char *new_name)
 {
@@ -3118,7 +3078,6 @@ out:
 
 	return error;
 }
-EXPORT_SYMBOL_GPL(device_rename);
 
 static int device_move_class_links(struct device *dev,
 				   struct device *old_parent,
@@ -3215,7 +3174,6 @@ out:
 	put_device(dev);
 	return error;
 }
-EXPORT_SYMBOL_GPL(device_move);
 
 static int device_attrs_change_owner(struct device *dev, kuid_t kuid,
 				     kgid_t kgid)
@@ -3296,7 +3254,6 @@ out:
 	put_device(dev);
 	return error;
 }
-EXPORT_SYMBOL_GPL(device_change_owner);
 
 void device_shutdown(void)
 {
@@ -3376,7 +3333,6 @@ int dev_err_probe(const struct device *dev, int err, const char *fmt, ...)
 
 	return err;
 }
-EXPORT_SYMBOL_GPL(dev_err_probe);
 
 static inline bool fwnode_is_primary(struct fwnode_handle *fwnode)
 {
@@ -3408,7 +3364,6 @@ void set_primary_fwnode(struct device *dev, struct fwnode_handle *fwnode)
 		}
 	}
 }
-EXPORT_SYMBOL_GPL(set_primary_fwnode);
 
 void set_secondary_fwnode(struct device *dev, struct fwnode_handle *fwnode)
 {
@@ -3420,7 +3375,6 @@ void set_secondary_fwnode(struct device *dev, struct fwnode_handle *fwnode)
 	else
 		dev->fwnode = fwnode;
 }
-EXPORT_SYMBOL_GPL(set_secondary_fwnode);
 
 void device_set_of_node_from_dev(struct device *dev, const struct device *dev2)
 {
@@ -3428,53 +3382,44 @@ void device_set_of_node_from_dev(struct device *dev, const struct device *dev2)
 	dev->of_node = of_node_get(dev2->of_node);
 	dev->of_node_reused = true;
 }
-EXPORT_SYMBOL_GPL(device_set_of_node_from_dev);
 
 void device_set_node(struct device *dev, struct fwnode_handle *fwnode)
 {
 	dev->fwnode = fwnode;
 	dev->of_node = to_of_node(fwnode);
 }
-EXPORT_SYMBOL_GPL(device_set_node);
 
 int device_match_name(struct device *dev, const void *name)
 {
 	return sysfs_streq(dev_name(dev), name);
 }
-EXPORT_SYMBOL_GPL(device_match_name);
 
 int device_match_of_node(struct device *dev, const void *np)
 {
 	return dev->of_node == np;
 }
-EXPORT_SYMBOL_GPL(device_match_of_node);
 
 int device_match_fwnode(struct device *dev, const void *fwnode)
 {
 	return dev_fwnode(dev) == fwnode;
 }
-EXPORT_SYMBOL_GPL(device_match_fwnode);
 
 int device_match_devt(struct device *dev, const void *pdevt)
 {
 	return dev->devt == *(dev_t *)pdevt;
 }
-EXPORT_SYMBOL_GPL(device_match_devt);
 
 int device_match_acpi_dev(struct device *dev, const void *adev)
 {
 	return ACPI_COMPANION(dev) == adev;
 }
-EXPORT_SYMBOL(device_match_acpi_dev);
 
 int device_match_acpi_handle(struct device *dev, const void *handle)
 {
 	return ACPI_HANDLE(dev) == handle;
 }
-EXPORT_SYMBOL(device_match_acpi_handle);
 
 int device_match_any(struct device *dev, const void *unused)
 {
 	return 1;
 }
-EXPORT_SYMBOL_GPL(device_match_any);

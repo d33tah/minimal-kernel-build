@@ -884,7 +884,6 @@ static int ptrace_regset(struct task_struct *task, int req, unsigned int type,
  * code.  We put the export here, near the primary machine-neutral use,
  * to ensure no machine forgets it.
  */
-EXPORT_SYMBOL_GPL(task_user_regset_view);
 
 static unsigned long
 ptrace_get_syscall_info_entry(struct task_struct *child, struct pt_regs *regs,

@@ -248,7 +248,6 @@ out:
 	cpus_read_unlock();
 	return ret;
 }
-EXPORT_SYMBOL_GPL(smpboot_register_percpu_thread);
 
 /**
  * smpboot_unregister_percpu_thread - Unregister a per_cpu thread related to hotplug
@@ -265,7 +264,6 @@ void smpboot_unregister_percpu_thread(struct smp_hotplug_thread *plug_thread)
 	mutex_unlock(&smpboot_threads_lock);
 	cpus_read_unlock();
 }
-EXPORT_SYMBOL_GPL(smpboot_unregister_percpu_thread);
 
 static DEFINE_PER_CPU(atomic_t, cpu_hotplug_state) = ATOMIC_INIT(CPU_POST_DEAD);
 

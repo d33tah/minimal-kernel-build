@@ -237,7 +237,6 @@ int usermodehelper_read_trylock(void)
 	finish_wait(&usermodehelper_disabled_waitq, &wait);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(usermodehelper_read_trylock);
 
 long usermodehelper_read_lock_wait(long timeout)
 {
@@ -264,13 +263,11 @@ long usermodehelper_read_lock_wait(long timeout)
 	finish_wait(&usermodehelper_disabled_waitq, &wait);
 	return timeout;
 }
-EXPORT_SYMBOL_GPL(usermodehelper_read_lock_wait);
 
 void usermodehelper_read_unlock(void)
 {
 	up_read(&umhelper_sem);
 }
-EXPORT_SYMBOL_GPL(usermodehelper_read_unlock);
 
 /**
  * __usermodehelper_set_disable_depth - Modify usermodehelper_disabled.
@@ -378,7 +375,6 @@ struct subprocess_info *call_usermodehelper_setup(const char *path, char **argv,
   out:
 	return sub_info;
 }
-EXPORT_SYMBOL(call_usermodehelper_setup);
 
 /**
  * call_usermodehelper_exec - start a usermode application
@@ -452,7 +448,6 @@ unlock:
 	helper_unlock();
 	return retval;
 }
-EXPORT_SYMBOL(call_usermodehelper_exec);
 
 /**
  * call_usermodehelper() - prepare and start a usermode application
@@ -479,7 +474,6 @@ int call_usermodehelper(const char *path, char **argv, char **envp, int wait)
 
 	return call_usermodehelper_exec(info, wait);
 }
-EXPORT_SYMBOL(call_usermodehelper);
 
 static int proc_cap_handler(struct ctl_table *table, int write,
 			 void *buffer, size_t *lenp, loff_t *ppos)

@@ -61,7 +61,6 @@ struct user_namespace init_user_ns = {
 	.ns.inum = PROC_USER_INIT_INO,
 	.flags = USERNS_INIT_FLAGS,
 };
-EXPORT_SYMBOL_GPL(init_user_ns);
 
 /*
  * UID task count cache, to get fast user lookup in "alloc_uid"

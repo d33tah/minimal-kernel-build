@@ -86,4 +86,3 @@ const struct consw dummy_con = {
 	.con_switch =	dummycon_switch,
 	.con_blank =	dummycon_blank,
 };
-EXPORT_SYMBOL_GPL(dummy_con);

@@ -10,7 +10,6 @@
 #include <asm/io.h>
 
 void (*pm_power_off)(void);
-EXPORT_SYMBOL(pm_power_off);
 
 bool port_cf9_safe = false;
 

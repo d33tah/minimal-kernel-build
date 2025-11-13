@@ -94,7 +94,6 @@ bool pat_enabled(void)
 {
 	return pat_bp_enabled;
 }
-EXPORT_SYMBOL_GPL(pat_enabled);
 
 int pat_debug_enable;
 
@@ -686,7 +685,6 @@ bool pat_pfn_immune_to_uc_mtrr(unsigned long pfn)
 	       cm == _PAGE_CACHE_MODE_UC_MINUS ||
 	       cm == _PAGE_CACHE_MODE_WC;
 }
-EXPORT_SYMBOL_GPL(pat_pfn_immune_to_uc_mtrr);
 
 /**
  * memtype_reserve_io - Request a memory type mapping for a region of memory
@@ -1032,12 +1030,10 @@ pgprot_t pgprot_writecombine(pgprot_t prot)
 	return __pgprot(pgprot_val(prot) |
 				cachemode2protval(_PAGE_CACHE_MODE_WC));
 }
-EXPORT_SYMBOL_GPL(pgprot_writecombine);
 
 pgprot_t pgprot_writethrough(pgprot_t prot)
 {
 	return __pgprot(pgprot_val(prot) |
 				cachemode2protval(_PAGE_CACHE_MODE_WT));
 }
-EXPORT_SYMBOL_GPL(pgprot_writethrough);
 

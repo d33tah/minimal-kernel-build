@@ -32,7 +32,6 @@ const struct file_operations generic_ro_fops = {
 	.splice_read	= generic_file_splice_read,
 };
 
-EXPORT_SYMBOL(generic_ro_fops);
 
 static inline bool unsigned_offsets(struct file *file)
 {
@@ -64,7 +63,6 @@ loff_t vfs_setpos(struct file *file, loff_t offset, loff_t maxsize)
 	}
 	return offset;
 }
-EXPORT_SYMBOL(vfs_setpos);
 
 /**
  * generic_file_llseek_size - generic llseek implementation for regular files
@@ -129,7 +127,6 @@ generic_file_llseek_size(struct file *file, loff_t offset, int whence,
 
 	return vfs_setpos(file, offset, maxsize);
 }
-EXPORT_SYMBOL(generic_file_llseek_size);
 
 /**
  * generic_file_llseek - generic llseek implementation for regular files
@@ -149,7 +146,6 @@ loff_t generic_file_llseek(struct file *file, loff_t offset, int whence)
 					inode->i_sb->s_maxbytes,
 					i_size_read(inode));
 }
-EXPORT_SYMBOL(generic_file_llseek);
 
 /**
  * fixed_size_llseek - llseek implementation for fixed-sized devices
@@ -169,7 +165,6 @@ loff_t fixed_size_llseek(struct file *file, loff_t offset, int whence, loff_t si
 		return -EINVAL;
 	}
 }
-EXPORT_SYMBOL(fixed_size_llseek);
 
 /**
  * no_seek_end_llseek - llseek implementation for fixed-sized devices
@@ -188,7 +183,6 @@ loff_t no_seek_end_llseek(struct file *file, loff_t offset, int whence)
 		return -EINVAL;
 	}
 }
-EXPORT_SYMBOL(no_seek_end_llseek);
 
 /**
  * no_seek_end_llseek_size - llseek implementation for fixed-sized devices
@@ -208,7 +202,6 @@ loff_t no_seek_end_llseek_size(struct file *file, loff_t offset, int whence, lof
 		return -EINVAL;
 	}
 }
-EXPORT_SYMBOL(no_seek_end_llseek_size);
 
 /**
  * noop_llseek - No Operation Performed llseek implementation
@@ -225,13 +218,11 @@ loff_t noop_llseek(struct file *file, loff_t offset, int whence)
 {
 	return file->f_pos;
 }
-EXPORT_SYMBOL(noop_llseek);
 
 loff_t no_llseek(struct file *file, loff_t offset, int whence)
 {
 	return -ESPIPE;
 }
-EXPORT_SYMBOL(no_llseek);
 
 loff_t default_llseek(struct file *file, loff_t offset, int whence)
 {
@@ -286,7 +277,6 @@ out:
 	inode_unlock(inode);
 	return retval;
 }
-EXPORT_SYMBOL(default_llseek);
 
 loff_t vfs_llseek(struct file *file, loff_t offset, int whence)
 {
@@ -299,7 +289,6 @@ loff_t vfs_llseek(struct file *file, loff_t offset, int whence)
 	}
 	return fn(file, offset, whence);
 }
-EXPORT_SYMBOL(vfs_llseek);
 
 static off_t ksys_lseek(unsigned int fd, off_t offset, unsigned int whence)
 {
@@ -362,7 +351,6 @@ int rw_verify_area(int read_write, struct file *file, const loff_t *ppos, size_t
 	/* Stubbed for minimal kernel */
 	return 0;
 }
-EXPORT_SYMBOL(rw_verify_area);
 
 static ssize_t new_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
 {
@@ -434,7 +422,6 @@ ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 		return ret;
 	return __kernel_read(file, buf, count, pos);
 }
-EXPORT_SYMBOL(kernel_read);
 
 ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 {
@@ -527,7 +514,6 @@ ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t 
  * this symbol for autofs, even though it really isn't appropriate
  * for any other kernel modules.
  */
-EXPORT_SYMBOL_GPL(__kernel_write);
 
 ssize_t kernel_write(struct file *file, const void *buf, size_t count,
 			    loff_t *pos)
@@ -543,7 +529,6 @@ ssize_t kernel_write(struct file *file, const void *buf, size_t count,
 	file_end_write(file);
 	return ret;
 }
-EXPORT_SYMBOL(kernel_write);
 
 ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_t *pos)
 {
@@ -798,7 +783,6 @@ out:
 		fsnotify_access(file);
 	return ret;
 }
-EXPORT_SYMBOL(vfs_iocb_iter_read);
 
 ssize_t vfs_iter_read(struct file *file, struct iov_iter *iter, loff_t *ppos,
 		rwf_t flags)
@@ -807,7 +791,6 @@ ssize_t vfs_iter_read(struct file *file, struct iov_iter *iter, loff_t *ppos,
 		return -EINVAL;
 	return do_iter_read(file, iter, ppos, flags);
 }
-EXPORT_SYMBOL(vfs_iter_read);
 
 static ssize_t do_iter_write(struct file *file, struct iov_iter *iter,
 		loff_t *pos, rwf_t flags)
@@ -862,7 +845,6 @@ ssize_t vfs_iocb_iter_write(struct file *file, struct kiocb *iocb,
 
 	return ret;
 }
-EXPORT_SYMBOL(vfs_iocb_iter_write);
 
 ssize_t vfs_iter_write(struct file *file, struct iov_iter *iter, loff_t *ppos,
 		rwf_t flags)
@@ -871,7 +853,6 @@ ssize_t vfs_iter_write(struct file *file, struct iov_iter *iter, loff_t *ppos,
 		return -EINVAL;
 	return do_iter_write(file, iter, ppos, flags);
 }
-EXPORT_SYMBOL(vfs_iter_write);
 
 static ssize_t vfs_readv(struct file *file, const struct iovec __user *vec,
 		  unsigned long vlen, loff_t *pos, rwf_t flags)
@@ -1237,7 +1218,6 @@ ssize_t generic_copy_file_range(struct file *file_in, loff_t pos_in,
 	return do_splice_direct(file_in, &pos_in, file_out, &pos_out,
 				len > MAX_RW_COUNT ? MAX_RW_COUNT : len, 0);
 }
-EXPORT_SYMBOL(generic_copy_file_range);
 
 /*
  * Performs necessary checks before doing a file copy
@@ -1393,7 +1373,6 @@ done:
 
 	return ret;
 }
-EXPORT_SYMBOL(vfs_copy_file_range);
 
 SYSCALL_DEFINE6(copy_file_range, int, fd_in, loff_t __user *, off_in,
 		int, fd_out, loff_t __user *, off_out,
@@ -1507,7 +1486,6 @@ int generic_write_checks_count(struct kiocb *iocb, loff_t *count)
 
 	return generic_write_check_limits(iocb->ki_filp, iocb->ki_pos, count);
 }
-EXPORT_SYMBOL(generic_write_checks_count);
 
 /*
  * Performs necessary checks before doing a write
@@ -1528,7 +1506,6 @@ ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from)
 	iov_iter_truncate(from, count);
 	return iov_iter_count(from);
 }
-EXPORT_SYMBOL(generic_write_checks);
 
 /*
  * Performs common checks before doing a file copy/clone

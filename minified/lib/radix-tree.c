@@ -268,7 +268,6 @@ int radix_tree_preload(gfp_t gfp_mask)
 	WARN_ON_ONCE(!gfpflags_allow_blocking(gfp_mask));
 	return __radix_tree_preload(gfp_mask, RADIX_TREE_PRELOAD_SIZE);
 }
-EXPORT_SYMBOL(radix_tree_preload);
 
 int radix_tree_maybe_preload(gfp_t gfp_mask)
 {
@@ -278,7 +277,6 @@ int radix_tree_maybe_preload(gfp_t gfp_mask)
 	local_lock(&radix_tree_preloads.lock);
 	return 0;
 }
-EXPORT_SYMBOL(radix_tree_maybe_preload);
 
 static unsigned radix_tree_load_root(const struct radix_tree_root *root,
 		struct radix_tree_node **nodep, unsigned long *maxindex)
@@ -540,7 +538,6 @@ int radix_tree_insert(struct radix_tree_root *root, unsigned long index,
 
 	return 0;
 }
-EXPORT_SYMBOL(radix_tree_insert);
 
 void *__radix_tree_lookup(const struct radix_tree_root *root,
 			  unsigned long index, struct radix_tree_node **nodep,
@@ -585,13 +582,11 @@ void __rcu **radix_tree_lookup_slot(const struct radix_tree_root *root,
 		return NULL;
 	return slot;
 }
-EXPORT_SYMBOL(radix_tree_lookup_slot);
 
 void *radix_tree_lookup(const struct radix_tree_root *root, unsigned long index)
 {
 	return __radix_tree_lookup(root, index, NULL, NULL);
 }
-EXPORT_SYMBOL(radix_tree_lookup);
 
 static void replace_slot(void __rcu **slot, void *item,
 		struct radix_tree_node *node, int count, int values)
@@ -651,7 +646,6 @@ void radix_tree_replace_slot(struct radix_tree_root *root,
 {
 	__radix_tree_replace(root, NULL, slot, item);
 }
-EXPORT_SYMBOL(radix_tree_replace_slot);
 
 void radix_tree_iter_replace(struct radix_tree_root *root,
 				const struct radix_tree_iter *iter,
@@ -701,7 +695,6 @@ void *radix_tree_tag_set(struct radix_tree_root *root,
 
 	return node;
 }
-EXPORT_SYMBOL(radix_tree_tag_set);
 
 static void node_tag_clear(struct radix_tree_root *root,
 				struct radix_tree_node *node,
@@ -745,7 +738,6 @@ void *radix_tree_tag_clear(struct radix_tree_root *root,
 
 	return node;
 }
-EXPORT_SYMBOL(radix_tree_tag_clear);
 
 void radix_tree_iter_tag_clear(struct radix_tree_root *root,
 			const struct radix_tree_iter *iter, unsigned int tag)
@@ -780,7 +772,6 @@ int radix_tree_tag_get(const struct radix_tree_root *root,
 
 	return 1;
 }
-EXPORT_SYMBOL(radix_tree_tag_get);
 
 static void set_iter_tags(struct radix_tree_iter *iter,
 				struct radix_tree_node *node, unsigned offset,
@@ -815,7 +806,6 @@ void __rcu **radix_tree_iter_resume(void __rcu **slot,
 	iter->tags = 0;
 	return NULL;
 }
-EXPORT_SYMBOL(radix_tree_iter_resume);
 
 void __rcu **radix_tree_next_chunk(const struct radix_tree_root *root,
 			     struct radix_tree_iter *iter, unsigned flags)
@@ -892,7 +882,6 @@ void __rcu **radix_tree_next_chunk(const struct radix_tree_root *root,
 
 	return node->slots + offset;
 }
-EXPORT_SYMBOL(radix_tree_next_chunk);
 
 unsigned int
 radix_tree_gang_lookup(const struct radix_tree_root *root, void **results,
@@ -919,7 +908,6 @@ radix_tree_gang_lookup(const struct radix_tree_root *root, void **results,
 
 	return ret;
 }
-EXPORT_SYMBOL(radix_tree_gang_lookup);
 
 unsigned int
 radix_tree_gang_lookup_tag(const struct radix_tree_root *root, void **results,
@@ -947,7 +935,6 @@ radix_tree_gang_lookup_tag(const struct radix_tree_root *root, void **results,
 
 	return ret;
 }
-EXPORT_SYMBOL(radix_tree_gang_lookup_tag);
 
 unsigned int
 radix_tree_gang_lookup_tag_slot(const struct radix_tree_root *root,
@@ -969,7 +956,6 @@ radix_tree_gang_lookup_tag_slot(const struct radix_tree_root *root,
 
 	return ret;
 }
-EXPORT_SYMBOL(radix_tree_gang_lookup_tag_slot);
 
 static bool __radix_tree_delete(struct radix_tree_root *root,
 				struct radix_tree_node *node, void __rcu **slot)
@@ -995,7 +981,6 @@ void radix_tree_iter_delete(struct radix_tree_root *root,
 	if (__radix_tree_delete(root, iter->node, slot))
 		iter->index = iter->next_index;
 }
-EXPORT_SYMBOL(radix_tree_iter_delete);
 
 void *radix_tree_delete_item(struct radix_tree_root *root,
 			     unsigned long index, void *item)
@@ -1018,26 +1003,22 @@ void *radix_tree_delete_item(struct radix_tree_root *root,
 
 	return entry;
 }
-EXPORT_SYMBOL(radix_tree_delete_item);
 
 void *radix_tree_delete(struct radix_tree_root *root, unsigned long index)
 {
 	return radix_tree_delete_item(root, index, NULL);
 }
-EXPORT_SYMBOL(radix_tree_delete);
 
 int radix_tree_tagged(const struct radix_tree_root *root, unsigned int tag)
 {
 	return root_tag_get(root, tag);
 }
-EXPORT_SYMBOL(radix_tree_tagged);
 
 void idr_preload(gfp_t gfp_mask)
 {
 	if (__radix_tree_preload(gfp_mask, IDR_PRELOAD_SIZE))
 		local_lock(&radix_tree_preloads.lock);
 }
-EXPORT_SYMBOL(idr_preload);
 
 void __rcu **idr_get_free(struct radix_tree_root *root,
 			      struct radix_tree_iter *iter, gfp_t gfp,
@@ -1119,7 +1100,6 @@ void idr_destroy(struct idr *idr)
 	idr->idr_rt.xa_head = NULL;
 	root_tag_set(&idr->idr_rt, IDR_FREE);
 }
-EXPORT_SYMBOL(idr_destroy);
 
 static void
 radix_tree_node_ctor(void *arg)

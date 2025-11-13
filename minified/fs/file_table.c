@@ -74,7 +74,6 @@ unsigned long get_max_files(void)
 {
 	return files_stat.max_files;
 }
-EXPORT_SYMBOL_GPL(get_max_files);
 
 
 static struct file *__alloc_file(int flags, const struct cred *cred)
@@ -220,7 +219,6 @@ struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
 	}
 	return file;
 }
-EXPORT_SYMBOL(alloc_file_pseudo);
 
 struct file *alloc_file_clone(struct file *base, int flags,
 				const struct file_operations *fops)
@@ -311,7 +309,6 @@ void flush_delayed_fput(void)
 {
 	delayed_fput(NULL);
 }
-EXPORT_SYMBOL_GPL(flush_delayed_fput);
 
 static DECLARE_DELAYED_WORK(delayed_fput_work, delayed_fput);
 
@@ -353,8 +350,6 @@ void __fput_sync(struct file *file)
 	}
 }
 
-EXPORT_SYMBOL(fput);
-EXPORT_SYMBOL(__fput_sync);
 
 void __init files_init(void)
 {

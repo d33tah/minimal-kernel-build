@@ -31,7 +31,6 @@ struct scatterlist *sg_next(struct scatterlist *sg)
 
 	return sg;
 }
-EXPORT_SYMBOL(sg_next);
 
 /**
  * sg_nents - return total count of entries in scatterlist
@@ -49,7 +48,6 @@ int sg_nents(struct scatterlist *sg)
 		nents++;
 	return nents;
 }
-EXPORT_SYMBOL(sg_nents);
 
 /**
  * sg_nents_for_len - return total count of entries in scatterlist
@@ -82,7 +80,6 @@ int sg_nents_for_len(struct scatterlist *sg, u64 len)
 
 	return -EINVAL;
 }
-EXPORT_SYMBOL(sg_nents_for_len);
 
 /**
  * sg_last - return the last scatterlist entry in a list
@@ -109,7 +106,6 @@ struct scatterlist *sg_last(struct scatterlist *sgl, unsigned int nents)
 	BUG_ON(!sg_is_last(ret));
 	return ret;
 }
-EXPORT_SYMBOL(sg_last);
 
 /**
  * sg_init_table - Initialize SG table
@@ -126,7 +122,6 @@ void sg_init_table(struct scatterlist *sgl, unsigned int nents)
 	memset(sgl, 0, sizeof(*sgl) * nents);
 	sg_init_marker(sgl, nents);
 }
-EXPORT_SYMBOL(sg_init_table);
 
 /**
  * sg_init_one - Initialize a single entry sg list
@@ -140,7 +135,6 @@ void sg_init_one(struct scatterlist *sg, const void *buf, unsigned int buflen)
 	sg_init_table(sg, 1);
 	sg_set_buf(sg, buf, buflen);
 }
-EXPORT_SYMBOL(sg_init_one);
 
 /*
  * The default behaviour of sg_alloc_table() is to use these kmalloc/kfree
@@ -231,7 +225,6 @@ void __sg_free_table(struct sg_table *table, unsigned int max_ents,
 
 	table->sgl = NULL;
 }
-EXPORT_SYMBOL(__sg_free_table);
 
 /**
  * sg_free_append_table - Free a previously allocated append sg table.
@@ -243,7 +236,6 @@ void sg_free_append_table(struct sg_append_table *table)
 	__sg_free_table(&table->sgt, SG_MAX_SINGLE_ALLOC, false, sg_kfree,
 			table->total_nents);
 }
-EXPORT_SYMBOL(sg_free_append_table);
 
 
 /**
@@ -256,7 +248,6 @@ void sg_free_table(struct sg_table *table)
 	__sg_free_table(table, SG_MAX_SINGLE_ALLOC, false, sg_kfree,
 			table->orig_nents);
 }
-EXPORT_SYMBOL(sg_free_table);
 
 /**
  * __sg_alloc_table - Allocate and initialize an sg table with given allocator
@@ -351,7 +342,6 @@ int __sg_alloc_table(struct sg_table *table, unsigned int nents,
 
 	return 0;
 }
-EXPORT_SYMBOL(__sg_alloc_table);
 
 /**
  * sg_alloc_table - Allocate and initialize an sg table
@@ -374,7 +364,6 @@ int sg_alloc_table(struct sg_table *table, unsigned int nents, gfp_t gfp_mask)
 		sg_free_table(table);
 	return ret;
 }
-EXPORT_SYMBOL(sg_alloc_table);
 
 static struct scatterlist *get_next_sg(struct sg_append_table *table,
 				       struct scatterlist *cur,
@@ -533,7 +522,6 @@ out:
 		sg_mark_end(s);
 	return 0;
 }
-EXPORT_SYMBOL(sg_alloc_append_table_from_pages);
 
 /**
  * sg_alloc_table_from_pages_segment - Allocate and initialize an sg table from
@@ -576,7 +564,6 @@ int sg_alloc_table_from_pages_segment(struct sg_table *sgt, struct page **pages,
 	WARN_ON(append.total_nents != sgt->orig_nents);
 	return 0;
 }
-EXPORT_SYMBOL(sg_alloc_table_from_pages_segment);
 
 
 void __sg_page_iter_start(struct sg_page_iter *piter,
@@ -589,7 +576,6 @@ void __sg_page_iter_start(struct sg_page_iter *piter,
 	piter->sg = sglist;
 	piter->sg_pgoffset = pgoffset;
 }
-EXPORT_SYMBOL(__sg_page_iter_start);
 
 static int sg_page_count(struct scatterlist *sg)
 {
@@ -613,7 +599,6 @@ bool __sg_page_iter_next(struct sg_page_iter *piter)
 
 	return true;
 }
-EXPORT_SYMBOL(__sg_page_iter_next);
 
 static int sg_dma_page_count(struct scatterlist *sg)
 {
@@ -639,7 +624,6 @@ bool __sg_page_iter_dma_next(struct sg_dma_page_iter *dma_iter)
 
 	return true;
 }
-EXPORT_SYMBOL(__sg_page_iter_dma_next);
 
 /**
  * sg_miter_start - start mapping iteration over a sg list
@@ -662,7 +646,6 @@ void sg_miter_start(struct sg_mapping_iter *miter, struct scatterlist *sgl,
 	WARN_ON(!(flags & (SG_MITER_TO_SG | SG_MITER_FROM_SG)));
 	miter->__flags = flags;
 }
-EXPORT_SYMBOL(sg_miter_start);
 
 static bool sg_miter_get_next_page(struct sg_mapping_iter *miter)
 {
@@ -722,7 +705,6 @@ bool sg_miter_skip(struct sg_mapping_iter *miter, off_t offset)
 
 	return true;
 }
-EXPORT_SYMBOL(sg_miter_skip);
 
 /**
  * sg_miter_next - proceed mapping iterator to the next mapping
@@ -761,7 +743,6 @@ bool sg_miter_next(struct sg_mapping_iter *miter)
 
 	return true;
 }
-EXPORT_SYMBOL(sg_miter_next);
 
 /**
  * sg_miter_stop - stop mapping iteration
@@ -800,7 +781,6 @@ void sg_miter_stop(struct sg_mapping_iter *miter)
 		miter->consumed = 0;
 	}
 }
-EXPORT_SYMBOL(sg_miter_stop);
 
 /**
  * sg_copy_buffer - Copy data between a linear buffer and an SG list
@@ -849,7 +829,6 @@ size_t sg_copy_buffer(struct scatterlist *sgl, unsigned int nents, void *buf,
 
 	return offset;
 }
-EXPORT_SYMBOL(sg_copy_buffer);
 
 /**
  * sg_copy_from_buffer - Copy from a linear buffer to an SG list
@@ -866,7 +845,6 @@ size_t sg_copy_from_buffer(struct scatterlist *sgl, unsigned int nents,
 {
 	return sg_copy_buffer(sgl, nents, (void *)buf, buflen, 0, false);
 }
-EXPORT_SYMBOL(sg_copy_from_buffer);
 
 /**
  * sg_copy_to_buffer - Copy from an SG list to a linear buffer
@@ -883,7 +861,6 @@ size_t sg_copy_to_buffer(struct scatterlist *sgl, unsigned int nents,
 {
 	return sg_copy_buffer(sgl, nents, buf, buflen, 0, true);
 }
-EXPORT_SYMBOL(sg_copy_to_buffer);
 
 /**
  * sg_pcopy_from_buffer - Copy from a linear buffer to an SG list
@@ -901,7 +878,6 @@ size_t sg_pcopy_from_buffer(struct scatterlist *sgl, unsigned int nents,
 {
 	return sg_copy_buffer(sgl, nents, (void *)buf, buflen, skip, false);
 }
-EXPORT_SYMBOL(sg_pcopy_from_buffer);
 
 /**
  * sg_pcopy_to_buffer - Copy from an SG list to a linear buffer
@@ -919,7 +895,6 @@ size_t sg_pcopy_to_buffer(struct scatterlist *sgl, unsigned int nents,
 {
 	return sg_copy_buffer(sgl, nents, buf, buflen, skip, true);
 }
-EXPORT_SYMBOL(sg_pcopy_to_buffer);
 
 /**
  * sg_zero_buffer - Zero-out a part of a SG list
@@ -954,4 +929,3 @@ size_t sg_zero_buffer(struct scatterlist *sgl, unsigned int nents,
 	sg_miter_stop(&miter);
 	return offset;
 }
-EXPORT_SYMBOL(sg_zero_buffer);

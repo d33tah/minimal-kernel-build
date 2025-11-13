@@ -147,8 +147,6 @@
 int overflowuid = DEFAULT_OVERFLOWUID;
 int overflowgid = DEFAULT_OVERFLOWGID;
 
-EXPORT_SYMBOL(overflowuid);
-EXPORT_SYMBOL(overflowgid);
 
 /*
  * the same as above, but for filesystems which can only store a 16-bit
@@ -158,8 +156,6 @@ EXPORT_SYMBOL(overflowgid);
 int fs_overflowuid = DEFAULT_FS_OVERFLOWUID;
 int fs_overflowgid = DEFAULT_FS_OVERFLOWGID;
 
-EXPORT_SYMBOL(fs_overflowuid);
-EXPORT_SYMBOL(fs_overflowgid);
 
 /* Stubbed priority syscalls - not needed for minimal kernel */
 SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)

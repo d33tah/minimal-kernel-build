@@ -31,13 +31,11 @@ int iomap_create_wc(resource_size_t base, unsigned long size, pgprot_t *prot)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(iomap_create_wc);
 
 void iomap_free(resource_size_t base, unsigned long size)
 {
 	memtype_free_io(base, base + size);
 }
-EXPORT_SYMBOL_GPL(iomap_free);
 
 void __iomem *__iomap_local_pfn_prot(unsigned long pfn, pgprot_t prot)
 {
@@ -57,4 +55,3 @@ void __iomem *__iomap_local_pfn_prot(unsigned long pfn, pgprot_t prot)
 
 	return (void __force __iomem *)__kmap_local_pfn_prot(pfn, prot);
 }
-EXPORT_SYMBOL_GPL(__iomap_local_pfn_prot);

@@ -76,7 +76,6 @@ struct mount_kattr {
 };
 
 struct kobject *fs_kobj;
-EXPORT_SYMBOL_GPL(fs_kobj);
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
 
@@ -194,7 +193,6 @@ bool __mnt_is_readonly(struct vfsmount *mnt)
 {
 	return (mnt->mnt_flags & MNT_READONLY) || sb_rdonly(mnt->mnt_sb);
 }
-EXPORT_SYMBOL_GPL(__mnt_is_readonly);
 
 static inline void mnt_inc_writers(struct mount *mnt)
 {
@@ -262,7 +260,6 @@ int mnt_want_write(struct vfsmount *m)
 		sb_end_write(m->mnt_sb);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(mnt_want_write);
 
 int __mnt_want_write_file(struct file *file)
 {
@@ -285,7 +282,6 @@ int mnt_want_write_file(struct file *file)
 		sb_end_write(file_inode(file)->i_sb);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(mnt_want_write_file);
 
 void __mnt_drop_write(struct vfsmount *mnt)
 {
@@ -299,7 +295,6 @@ void mnt_drop_write(struct vfsmount *mnt)
 	__mnt_drop_write(mnt);
 	sb_end_write(mnt->mnt_sb);
 }
-EXPORT_SYMBOL_GPL(mnt_drop_write);
 
 void __mnt_drop_write_file(struct file *file)
 {
@@ -312,7 +307,6 @@ void mnt_drop_write_file(struct file *file)
 	__mnt_drop_write_file(file);
 	sb_end_write(file_inode(file)->i_sb);
 }
-EXPORT_SYMBOL(mnt_drop_write_file);
 
 static inline int mnt_hold_writers(struct mount *mnt)
 {
@@ -738,7 +732,6 @@ struct vfsmount *vfs_create_mount(struct fs_context *fc)
 	unlock_mount_hash();
 	return &mnt->mnt;
 }
-EXPORT_SYMBOL(vfs_create_mount);
 
 struct vfsmount *fc_mount(struct fs_context *fc)
 {
@@ -749,7 +742,6 @@ struct vfsmount *fc_mount(struct fs_context *fc)
 	}
 	return ERR_PTR(err);
 }
-EXPORT_SYMBOL(fc_mount);
 
 struct vfsmount *vfs_kern_mount(struct file_system_type *type,
 				int flags, const char *name,
@@ -779,7 +771,6 @@ struct vfsmount *vfs_kern_mount(struct file_system_type *type,
 	put_fs_context(fc);
 	return mnt;
 }
-EXPORT_SYMBOL_GPL(vfs_kern_mount);
 
 struct vfsmount *
 vfs_submount(const struct dentry *mountpoint, struct file_system_type *type,
@@ -791,7 +782,6 @@ vfs_submount(const struct dentry *mountpoint, struct file_system_type *type,
 
 	return vfs_kern_mount(type, SB_SUBMOUNT, name, data);
 }
-EXPORT_SYMBOL_GPL(vfs_submount);
 
 static struct mount *clone_mnt(struct mount *old, struct dentry *root,
 					int flag)
@@ -963,7 +953,6 @@ void mntput(struct vfsmount *mnt)
 		mntput_no_expire(m);
 	}
 }
-EXPORT_SYMBOL(mntput);
 
 struct vfsmount *mntget(struct vfsmount *mnt)
 {
@@ -971,7 +960,6 @@ struct vfsmount *mntget(struct vfsmount *mnt)
 		mnt_add_count(real_mount(mnt), 1);
 	return mnt;
 }
-EXPORT_SYMBOL(mntget);
 
 bool path_is_mountpoint(const struct path *path)
 {
@@ -990,7 +978,6 @@ bool path_is_mountpoint(const struct path *path)
 
 	return res;
 }
-EXPORT_SYMBOL(path_is_mountpoint);
 
 struct vfsmount *mnt_clone_internal(const struct path *path)
 {
@@ -1024,7 +1011,6 @@ int may_umount_tree(struct vfsmount *m)
 	return 1;
 }
 
-EXPORT_SYMBOL(may_umount_tree);
 
 int may_umount(struct vfsmount *mnt)
 {
@@ -1038,7 +1024,6 @@ int may_umount(struct vfsmount *mnt)
 	return ret;
 }
 
-EXPORT_SYMBOL(may_umount);
 
 static void namespace_unlock(void)
 {
@@ -1537,7 +1522,6 @@ invalid:
 	up_read(&namespace_sem);
 	return ERR_PTR(-EINVAL);
 }
-EXPORT_SYMBOL_GPL(clone_private_mount);
 
 int iterate_mounts(int (*f)(struct vfsmount *, void *), void *arg,
 		   struct vfsmount *root)
@@ -2499,7 +2483,6 @@ void mnt_set_expiry(struct vfsmount *mnt, struct list_head *expiry_list)
 
 	namespace_unlock();
 }
-EXPORT_SYMBOL(mnt_set_expiry);
 
 void mark_mounts_for_expiry(struct list_head *mounts)
 {
@@ -2528,7 +2511,6 @@ void mark_mounts_for_expiry(struct list_head *mounts)
 	namespace_unlock();
 }
 
-EXPORT_SYMBOL_GPL(mark_mounts_for_expiry);
 
 static int select_submounts(struct mount *parent, struct list_head *graveyard)
 {
@@ -2880,7 +2862,6 @@ struct dentry *mount_subtree(struct vfsmount *m, const char *name)
 	
 	return path.dentry;
 }
-EXPORT_SYMBOL(mount_subtree);
 
 SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
 		char __user *, type, unsigned long, flags, void __user *, data)
@@ -3129,7 +3110,6 @@ bool path_is_under(const struct path *path1, const struct path *path2)
 	read_sequnlock_excl(&mount_lock);
 	return res;
 }
-EXPORT_SYMBOL(path_is_under);
 
 SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
 		const char __user *, put_old)
@@ -3652,7 +3632,6 @@ struct vfsmount *kern_mount(struct file_system_type *type)
 	}
 	return mnt;
 }
-EXPORT_SYMBOL_GPL(kern_mount);
 
 void kern_unmount(struct vfsmount *mnt)
 {
@@ -3663,7 +3642,6 @@ void kern_unmount(struct vfsmount *mnt)
 		mntput(mnt);
 	}
 }
-EXPORT_SYMBOL(kern_unmount);
 
 void kern_unmount_array(struct vfsmount *mnt[], unsigned int num)
 {
@@ -3676,7 +3654,6 @@ void kern_unmount_array(struct vfsmount *mnt[], unsigned int num)
 	for (i = 0; i < num; i++)
 		mntput(mnt[i]);
 }
-EXPORT_SYMBOL(kern_unmount_array);
 
 bool our_mnt(struct vfsmount *mnt)
 {

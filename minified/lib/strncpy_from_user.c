@@ -138,4 +138,3 @@ long strncpy_from_user(char *dst, const char __user *src, long count)
 	}
 	return -EFAULT;
 }
-EXPORT_SYMBOL(strncpy_from_user);

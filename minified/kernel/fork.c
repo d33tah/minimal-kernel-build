@@ -341,7 +341,6 @@ void free_task(struct task_struct *tsk)
 		free_kthread_struct(tsk);
 	free_task_struct(tsk);
 }
-EXPORT_SYMBOL(free_task);
 
 static void dup_mm_exe_file(struct mm_struct *mm, struct mm_struct *oldmm)
 {
@@ -536,7 +535,6 @@ void __mmdrop(struct mm_struct *mm)
 	mm_pasid_drop(mm);
 	free_mm(mm);
 }
-EXPORT_SYMBOL_GPL(__mmdrop);
 
 static void mmdrop_async_fn(struct work_struct *work)
 {
@@ -587,7 +585,6 @@ void __put_task_struct(struct task_struct *tsk)
 	sched_core_free(tsk);
 	free_task(tsk);
 }
-EXPORT_SYMBOL_GPL(__put_task_struct);
 
 void __init __weak arch_task_cache_init(void) { }
 
@@ -867,7 +864,6 @@ void mmput(struct mm_struct *mm)
 	if (atomic_dec_and_test(&mm->mm_users))
 		__mmput(mm);
 }
-EXPORT_SYMBOL_GPL(mmput);
 
 static void mmput_async_fn(struct work_struct *work)
 {
@@ -988,7 +984,6 @@ struct mm_struct *get_task_mm(struct task_struct *task)
 	task_unlock(task);
 	return mm;
 }
-EXPORT_SYMBOL_GPL(get_task_mm);
 
 struct mm_struct *mm_access(struct task_struct *task, unsigned int mode)
 {

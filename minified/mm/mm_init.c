@@ -18,7 +18,6 @@
 
 
 struct kobject *mm_kobj;
-EXPORT_SYMBOL_GPL(mm_kobj);
 
 
 static int __init mm_sysfs_init(void)

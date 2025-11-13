@@ -12,28 +12,24 @@ int register_keyboard_notifier(struct notifier_block *nb)
 {
 	return -ENODEV;
 }
-EXPORT_SYMBOL_GPL(register_keyboard_notifier);
 
 /* Stub: unregister_keyboard_notifier */
 int unregister_keyboard_notifier(struct notifier_block *nb)
 {
 	return -ENODEV;
 }
-EXPORT_SYMBOL_GPL(unregister_keyboard_notifier);
 
 /* Stub: kd_mksound */
 void kd_mksound(unsigned int hz, unsigned int ticks)
 {
 	/* No-op: no sound support */
 }
-EXPORT_SYMBOL(kd_mksound);
 
 /* Stub: vt_get_leds */
 int vt_get_leds(int console, int flag)
 {
 	return 0;
 }
-EXPORT_SYMBOL_GPL(vt_get_leds);
 
 /* Stub: vt_kbd_con_start */
 void vt_kbd_con_start(int console)

@@ -700,7 +700,6 @@ int folio_mkclean(struct folio *folio)
 
 	return cleaned;
 }
-EXPORT_SYMBOL_GPL(folio_mkclean);
 
 int pfn_mkclean_range(unsigned long pfn, unsigned long nr_pages, pgoff_t pgoff,
 		      struct vm_area_struct *vma)

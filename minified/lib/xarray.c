@@ -189,7 +189,6 @@ void *xas_load(struct xa_state *xas)
 	}
 	return entry;
 }
-EXPORT_SYMBOL_GPL(xas_load);
 
 extern struct kmem_cache *radix_tree_node_cachep;
 extern void radix_tree_node_rcu_free(struct rcu_head *head);
@@ -231,7 +230,6 @@ bool xas_nomem(struct xa_state *xas, gfp_t gfp)
 	xas->xa_node = XAS_RESTART;
 	return true;
 }
-EXPORT_SYMBOL_GPL(xas_nomem);
 
 static bool __xas_nomem(struct xa_state *xas, gfp_t gfp)
 	__must_hold(xas->xa->xa_lock)
@@ -544,7 +542,6 @@ static void *xas_create(struct xa_state *xas, bool allow_root)
 void xas_create_range(struct xa_state *xas)
 {
 }
-EXPORT_SYMBOL_GPL(xas_create_range);
 
 static void update_node(struct xa_state *xas, struct xa_node *node,
 		int count, int values)
@@ -627,7 +624,6 @@ void *xas_store(struct xa_state *xas, void *entry)
 	update_node(xas, node, count, values);
 	return first;
 }
-EXPORT_SYMBOL_GPL(xas_store);
 
 bool xas_get_mark(const struct xa_state *xas, xa_mark_t mark)
 {
@@ -637,7 +633,6 @@ bool xas_get_mark(const struct xa_state *xas, xa_mark_t mark)
 		return xa_marked(xas->xa, mark);
 	return node_get_mark(xas->xa_node, xas->xa_offset, mark);
 }
-EXPORT_SYMBOL_GPL(xas_get_mark);
 
 void xas_set_mark(const struct xa_state *xas, xa_mark_t mark)
 {
@@ -657,7 +652,6 @@ void xas_set_mark(const struct xa_state *xas, xa_mark_t mark)
 	if (!xa_marked(xas->xa, mark))
 		xa_mark_set(xas->xa, mark);
 }
-EXPORT_SYMBOL_GPL(xas_set_mark);
 
 void xas_clear_mark(const struct xa_state *xas, xa_mark_t mark)
 {
@@ -680,7 +674,6 @@ void xas_clear_mark(const struct xa_state *xas, xa_mark_t mark)
 	if (xa_marked(xas->xa, mark))
 		xa_mark_clear(xas->xa, mark);
 }
-EXPORT_SYMBOL_GPL(xas_clear_mark);
 
 void xas_init_marks(const struct xa_state *xas)
 {
@@ -696,12 +689,10 @@ void xas_init_marks(const struct xa_state *xas)
 		mark_inc(mark);
 	}
 }
-EXPORT_SYMBOL_GPL(xas_init_marks);
 
 void xas_pause(struct xa_state *xas)
 {
 }
-EXPORT_SYMBOL_GPL(xas_pause);
 
 void *__xas_prev(struct xa_state *xas)
 {
@@ -733,7 +724,6 @@ void *__xas_prev(struct xa_state *xas)
 		xas_set_offset(xas);
 	}
 }
-EXPORT_SYMBOL_GPL(__xas_prev);
 
 void *__xas_next(struct xa_state *xas)
 {
@@ -765,7 +755,6 @@ void *__xas_next(struct xa_state *xas)
 		xas_set_offset(xas);
 	}
 }
-EXPORT_SYMBOL_GPL(__xas_next);
 
 void *xas_find(struct xa_state *xas, unsigned long max)
 {
@@ -813,7 +802,6 @@ void *xas_find(struct xa_state *xas, unsigned long max)
 		xas->xa_node = XAS_BOUNDS;
 	return NULL;
 }
-EXPORT_SYMBOL_GPL(xas_find);
 
 void *xas_find_marked(struct xa_state *xas, unsigned long max, xa_mark_t mark)
 {
@@ -892,13 +880,11 @@ max:
 	xas->xa_node = XAS_RESTART;
 	return NULL;
 }
-EXPORT_SYMBOL_GPL(xas_find_marked);
 
 void *xas_find_conflict(struct xa_state *xas)
 {
 	return NULL;
 }
-EXPORT_SYMBOL_GPL(xas_find_conflict);
 
 void *xa_load(struct xarray *xa, unsigned long index)
 {
@@ -915,7 +901,6 @@ void *xa_load(struct xarray *xa, unsigned long index)
 
 	return entry;
 }
-EXPORT_SYMBOL(xa_load);
 
 static void *xas_result(struct xa_state *xas, void *curr)
 {
@@ -931,7 +916,6 @@ void *__xa_erase(struct xarray *xa, unsigned long index)
 	XA_STATE(xas, xa, index);
 	return xas_result(&xas, xas_store(&xas, NULL));
 }
-EXPORT_SYMBOL(__xa_erase);
 
 void *xa_erase(struct xarray *xa, unsigned long index)
 {
@@ -943,7 +927,6 @@ void *xa_erase(struct xarray *xa, unsigned long index)
 
 	return entry;
 }
-EXPORT_SYMBOL(xa_erase);
 
 void *__xa_store(struct xarray *xa, unsigned long index, void *entry, gfp_t gfp)
 {
@@ -963,7 +946,6 @@ void *__xa_store(struct xarray *xa, unsigned long index, void *entry, gfp_t gfp)
 
 	return xas_result(&xas, curr);
 }
-EXPORT_SYMBOL(__xa_store);
 
 void *xa_store(struct xarray *xa, unsigned long index, void *entry, gfp_t gfp)
 {
@@ -975,7 +957,6 @@ void *xa_store(struct xarray *xa, unsigned long index, void *entry, gfp_t gfp)
 
 	return curr;
 }
-EXPORT_SYMBOL(xa_store);
 
 void *__xa_cmpxchg(struct xarray *xa, unsigned long index,
 			void *old, void *entry, gfp_t gfp)
@@ -997,7 +978,6 @@ void *__xa_cmpxchg(struct xarray *xa, unsigned long index,
 
 	return xas_result(&xas, curr);
 }
-EXPORT_SYMBOL(__xa_cmpxchg);
 
 int __xa_insert(struct xarray *xa, unsigned long index, void *entry, gfp_t gfp)
 {
@@ -1022,7 +1002,6 @@ int __xa_insert(struct xarray *xa, unsigned long index, void *entry, gfp_t gfp)
 
 	return xas_error(&xas);
 }
-EXPORT_SYMBOL(__xa_insert);
 
 int __xa_alloc(struct xarray *xa, u32 *id, void *entry,
 		struct xa_limit limit, gfp_t gfp)
@@ -1050,7 +1029,6 @@ int __xa_alloc(struct xarray *xa, u32 *id, void *entry,
 
 	return xas_error(&xas);
 }
-EXPORT_SYMBOL(__xa_alloc);
 
 int __xa_alloc_cyclic(struct xarray *xa, u32 *id, void *entry,
 		struct xa_limit limit, u32 *next, gfp_t gfp)
@@ -1079,7 +1057,6 @@ int __xa_alloc_cyclic(struct xarray *xa, u32 *id, void *entry,
 	}
 	return ret;
 }
-EXPORT_SYMBOL(__xa_alloc_cyclic);
 
 void __xa_set_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
 {
@@ -1089,7 +1066,6 @@ void __xa_set_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
 	if (entry)
 		xas_set_mark(&xas, mark);
 }
-EXPORT_SYMBOL(__xa_set_mark);
 
 void __xa_clear_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
 {
@@ -1099,7 +1075,6 @@ void __xa_clear_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
 	if (entry)
 		xas_clear_mark(&xas, mark);
 }
-EXPORT_SYMBOL(__xa_clear_mark);
 
 bool xa_get_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
 {
@@ -1119,7 +1094,6 @@ bool xa_get_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
 	rcu_read_unlock();
 	return true;
 }
-EXPORT_SYMBOL(xa_get_mark);
 
 void xa_set_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
 {
@@ -1127,7 +1101,6 @@ void xa_set_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
 	__xa_set_mark(xa, index, mark);
 	xa_unlock(xa);
 }
-EXPORT_SYMBOL(xa_set_mark);
 
 void xa_clear_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
 {
@@ -1135,7 +1108,6 @@ void xa_clear_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
 	__xa_clear_mark(xa, index, mark);
 	xa_unlock(xa);
 }
-EXPORT_SYMBOL(xa_clear_mark);
 
 void *xa_find(struct xarray *xa, unsigned long *indexp,
 			unsigned long max, xa_mark_t filter)
@@ -1156,7 +1128,6 @@ void *xa_find(struct xarray *xa, unsigned long *indexp,
 		*indexp = xas.xa_index;
 	return entry;
 }
-EXPORT_SYMBOL(xa_find);
 
 static bool xas_sibling(struct xa_state *xas)
 {
@@ -1199,14 +1170,12 @@ void *xa_find_after(struct xarray *xa, unsigned long *indexp,
 		*indexp = xas.xa_index;
 	return entry;
 }
-EXPORT_SYMBOL(xa_find_after);
 
 unsigned int xa_extract(struct xarray *xa, void **dst, unsigned long start,
 			unsigned long max, unsigned int n, xa_mark_t filter)
 {
 	return 0;
 }
-EXPORT_SYMBOL(xa_extract);
 
 void xa_delete_node(struct xa_node *node, xa_update_node_t update)
 {
@@ -1222,7 +1191,6 @@ void xa_delete_node(struct xa_node *node, xa_update_node_t update)
 
 	xas_store(&xas, NULL);
 }
-EXPORT_SYMBOL_GPL(xa_delete_node);	
 
 void xa_destroy(struct xarray *xa)
 {
@@ -1242,7 +1210,6 @@ void xa_destroy(struct xarray *xa)
 		xas_free_nodes(&xas, xa_to_node(entry));
 	xas_unlock_irqrestore(&xas, flags);
 }
-EXPORT_SYMBOL(xa_destroy);
 
 #ifdef XA_DEBUG
 void xa_dump_node(const struct xa_node *node)

@@ -69,7 +69,6 @@ int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc)
 
 	return ret;
 }
-EXPORT_SYMBOL(tty_register_ldisc);
 
 /**
  * tty_unregister_ldisc	-	unload a line discipline
@@ -89,7 +88,6 @@ void tty_unregister_ldisc(struct tty_ldisc_ops *ldisc)
 	tty_ldiscs[ldisc->num] = NULL;
 	raw_spin_unlock_irqrestore(&tty_ldiscs_lock, flags);
 }
-EXPORT_SYMBOL(tty_unregister_ldisc);
 
 static struct tty_ldisc_ops *get_ldops(int disc)
 {
@@ -247,7 +245,6 @@ struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *tty)
 		ldsem_up_read(&tty->ldisc_sem);
 	return ld;
 }
-EXPORT_SYMBOL_GPL(tty_ldisc_ref_wait);
 
 /**
  * tty_ldisc_ref	-	get the tty ldisc
@@ -268,7 +265,6 @@ struct tty_ldisc *tty_ldisc_ref(struct tty_struct *tty)
 	}
 	return ld;
 }
-EXPORT_SYMBOL_GPL(tty_ldisc_ref);
 
 /**
  * tty_ldisc_deref	-	free a tty ldisc reference
@@ -281,7 +277,6 @@ void tty_ldisc_deref(struct tty_ldisc *ld)
 {
 	ldsem_up_read(&ld->tty->ldisc_sem);
 }
-EXPORT_SYMBOL_GPL(tty_ldisc_deref);
 
 
 static inline int
@@ -390,7 +385,6 @@ void tty_ldisc_flush(struct tty_struct *tty)
 	if (ld)
 		tty_ldisc_deref(ld);
 }
-EXPORT_SYMBOL_GPL(tty_ldisc_flush);
 
 /**
  * tty_set_termios_ldisc	-	set ldisc field
@@ -589,7 +583,6 @@ err:
 	tty_unlock(tty);
 	return retval;
 }
-EXPORT_SYMBOL_GPL(tty_set_ldisc);
 
 /**
  * tty_ldisc_kill	-	teardown ldisc

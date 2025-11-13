@@ -92,7 +92,6 @@ void memcpy_fromio(void *to, const volatile void __iomem *from, size_t n)
 	else
 		string_memcpy_fromio(to, from, n);
 }
-EXPORT_SYMBOL(memcpy_fromio);
 
 void memcpy_toio(volatile void __iomem *to, const void *from, size_t n)
 {
@@ -101,7 +100,6 @@ void memcpy_toio(volatile void __iomem *to, const void *from, size_t n)
 	else
 		string_memcpy_toio(to, from, n);
 }
-EXPORT_SYMBOL(memcpy_toio);
 
 void memset_io(volatile void __iomem *a, int b, size_t c)
 {
@@ -115,4 +113,3 @@ void memset_io(volatile void __iomem *a, int b, size_t c)
 		memset((void *)a, b, c);
 	}
 }
-EXPORT_SYMBOL(memset_io);

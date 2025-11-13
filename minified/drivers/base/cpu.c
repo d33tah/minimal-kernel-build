@@ -40,7 +40,6 @@ struct bus_type cpu_subsys = {
 	.dev_name = "cpu",
 	.match = cpu_subsys_match,
 };
-EXPORT_SYMBOL_GPL(cpu_subsys);
 
 
 static const struct attribute_group *common_cpu_attr_groups[] = {
@@ -240,7 +239,6 @@ struct device *get_cpu_device(unsigned int cpu)
 	else
 		return NULL;
 }
-EXPORT_SYMBOL_GPL(get_cpu_device);
 
 static void device_create_release(struct device *dev)
 {
@@ -294,7 +292,6 @@ struct device *cpu_device_create(struct device *parent, void *drvdata,
 	va_end(vargs);
 	return dev;
 }
-EXPORT_SYMBOL_GPL(cpu_device_create);
 
 static DEVICE_ATTR(modalias, 0444, print_cpu_modalias, NULL);
 
@@ -323,7 +320,6 @@ bool cpu_is_hotpluggable(unsigned int cpu)
 	struct device *dev = get_cpu_device(cpu);
 	return dev && container_of(dev, struct cpu, dev)->hotpluggable;
 }
-EXPORT_SYMBOL_GPL(cpu_is_hotpluggable);
 
 
 static void __init cpu_dev_register_generic(void)

@@ -257,7 +257,6 @@ static int deferred_devs_show(struct seq_file *s, void *data)
 DEFINE_SHOW_ATTRIBUTE(deferred_devs);
 
 int driver_deferred_probe_timeout;
-EXPORT_SYMBOL_GPL(driver_deferred_probe_timeout);
 
 static int __init deferred_probe_timeout_setup(char *str)
 {
@@ -296,7 +295,6 @@ int driver_deferred_probe_check_state(struct device *dev)
 
 	return -EPROBE_DEFER;
 }
-EXPORT_SYMBOL_GPL(driver_deferred_probe_check_state);
 
 static void deferred_probe_timeout_work_func(struct work_struct *work)
 {
@@ -477,7 +475,6 @@ int device_bind_driver(struct device *dev)
 					     BUS_NOTIFY_DRIVER_NOT_BOUND, dev);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(device_bind_driver);
 
 static atomic_t probe_count = ATOMIC_INIT(0);
 static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
@@ -713,7 +710,6 @@ void wait_for_device_probe(void)
 	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
 	async_synchronize_full();
 }
-EXPORT_SYMBOL_GPL(wait_for_device_probe);
 
 static int __driver_probe_device(struct device_driver *drv, struct device *dev)
 {
@@ -1006,7 +1002,6 @@ int device_attach(struct device *dev)
 {
 	return __device_attach(dev, false);
 }
-EXPORT_SYMBOL_GPL(device_attach);
 
 void device_initial_probe(struct device *dev)
 {
@@ -1068,7 +1063,6 @@ int device_driver_attach(struct device_driver *drv, struct device *dev)
 		return -EAGAIN;
 	return ret;
 }
-EXPORT_SYMBOL_GPL(device_driver_attach);
 
 static void __driver_attach_async_helper(void *_dev, async_cookie_t cookie)
 {
@@ -1154,7 +1148,6 @@ int driver_attach(struct device_driver *drv)
 {
 	return bus_for_each_dev(drv->bus, NULL, drv, __driver_attach);
 }
-EXPORT_SYMBOL_GPL(driver_attach);
 
 /*
  * __device_release_driver() must be called with @dev lock held.
@@ -1245,7 +1238,6 @@ void device_release_driver(struct device *dev)
 	 */
 	device_release_driver_internal(dev, NULL, NULL);
 }
-EXPORT_SYMBOL_GPL(device_release_driver);
 
 /**
  * device_driver_detach - detach driver from a specific device

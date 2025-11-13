@@ -86,7 +86,6 @@ u64 clockevent_delta2ns(unsigned long latch, struct clock_event_device *evt)
 {
 	return cev_delta2ns(latch, evt, false);
 }
-EXPORT_SYMBOL_GPL(clockevent_delta2ns);
 
 static int __clockevents_switch_state(struct clock_event_device *dev,
 				      enum clock_event_state state)
@@ -403,7 +402,6 @@ int clockevents_unbind_device(struct clock_event_device *ced, int cpu)
 	mutex_unlock(&clockevents_mutex);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(clockevents_unbind_device);
 
 /**
  * clockevents_register_device - register a clock event device
@@ -435,7 +433,6 @@ void clockevents_register_device(struct clock_event_device *dev)
 
 	raw_spin_unlock_irqrestore(&clockevents_lock, flags);
 }
-EXPORT_SYMBOL_GPL(clockevents_register_device);
 
 static void clockevents_config(struct clock_event_device *dev, u32 freq)
 {
@@ -479,7 +476,6 @@ void clockevents_config_and_register(struct clock_event_device *dev,
 	clockevents_config(dev, freq);
 	clockevents_register_device(dev);
 }
-EXPORT_SYMBOL_GPL(clockevents_config_and_register);
 
 int __clockevents_update_freq(struct clock_event_device *dev, u32 freq)
 {

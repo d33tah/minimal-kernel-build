@@ -238,7 +238,6 @@ void deactivate_locked_super(struct super_block *s)
 	}
 }
 
-EXPORT_SYMBOL(deactivate_locked_super);
 
 void deactivate_super(struct super_block *s)
 {
@@ -248,7 +247,6 @@ void deactivate_super(struct super_block *s)
 	}
 }
 
-EXPORT_SYMBOL(deactivate_super);
 
 static int grab_super(struct super_block *s) __releases(sb_lock)
 {
@@ -319,7 +317,6 @@ void generic_shutdown_super(struct super_block *sb)
 	}
 }
 
-EXPORT_SYMBOL(generic_shutdown_super);
 
 bool mount_capable(struct fs_context *fc)
 {
@@ -384,7 +381,6 @@ share_extant_sb:
 	destroy_unused_super(s);
 	return old;
 }
-EXPORT_SYMBOL(sget_fc);
 
 struct super_block *sget(struct file_system_type *type,
 			int (*test)(struct super_block *,void *),
@@ -440,7 +436,6 @@ retry:
 	register_shrinker_prepared(&s->s_shrink);
 	return s;
 }
-EXPORT_SYMBOL(sget);
 
 void drop_super(struct super_block *sb)
 {
@@ -448,14 +443,12 @@ void drop_super(struct super_block *sb)
 	put_super(sb);
 }
 
-EXPORT_SYMBOL(drop_super);
 
 void drop_super_exclusive(struct super_block *sb)
 {
 	up_write(&sb->s_umount);
 	put_super(sb);
 }
-EXPORT_SYMBOL(drop_super_exclusive);
 
 static void __iterate_supers(void (*f)(struct super_block *))
 {
@@ -531,7 +524,6 @@ void iterate_supers_type(struct file_system_type *type,
 	spin_unlock(&sb_lock);
 }
 
-EXPORT_SYMBOL(iterate_supers_type);
 
 struct super_block *get_super(struct block_device *bdev)
 {
@@ -772,19 +764,16 @@ int get_anon_bdev(dev_t *p)
 	*p = MKDEV(0, dev);
 	return 0;
 }
-EXPORT_SYMBOL(get_anon_bdev);
 
 void free_anon_bdev(dev_t dev)
 {
 	ida_free(&unnamed_dev_ida, MINOR(dev));
 }
-EXPORT_SYMBOL(free_anon_bdev);
 
 int set_anon_super(struct super_block *s, void *data)
 {
 	return get_anon_bdev(&s->s_dev);
 }
-EXPORT_SYMBOL(set_anon_super);
 
 void kill_anon_super(struct super_block *sb)
 {
@@ -792,7 +781,6 @@ void kill_anon_super(struct super_block *sb)
 	generic_shutdown_super(sb);
 	free_anon_bdev(dev);
 }
-EXPORT_SYMBOL(kill_anon_super);
 
 void kill_litter_super(struct super_block *sb)
 {
@@ -800,13 +788,11 @@ void kill_litter_super(struct super_block *sb)
 		d_genocide(sb->s_root);
 	kill_anon_super(sb);
 }
-EXPORT_SYMBOL(kill_litter_super);
 
 int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)
 {
 	return set_anon_super(sb, NULL);
 }
-EXPORT_SYMBOL(set_anon_super_fc);
 
 static int test_keyed_super(struct super_block *sb, struct fs_context *fc)
 {
@@ -871,7 +857,6 @@ error:
 	deactivate_locked_super(sb);
 	return err;
 }
-EXPORT_SYMBOL(vfs_get_super);
 
 int get_tree_nodev(struct fs_context *fc,
 		  int (*fill_super)(struct super_block *sb,
@@ -879,7 +864,6 @@ int get_tree_nodev(struct fs_context *fc,
 {
 	return vfs_get_super(fc, vfs_get_independent_super, fill_super);
 }
-EXPORT_SYMBOL(get_tree_nodev);
 
 int get_tree_single(struct fs_context *fc,
 		  int (*fill_super)(struct super_block *sb,
@@ -887,7 +871,6 @@ int get_tree_single(struct fs_context *fc,
 {
 	return vfs_get_super(fc, vfs_get_single_super, fill_super);
 }
-EXPORT_SYMBOL(get_tree_single);
 
 int get_tree_single_reconf(struct fs_context *fc,
 		  int (*fill_super)(struct super_block *sb,
@@ -895,7 +878,6 @@ int get_tree_single_reconf(struct fs_context *fc,
 {
 	return vfs_get_super(fc, vfs_get_single_reconf_super, fill_super);
 }
-EXPORT_SYMBOL(get_tree_single_reconf);
 
 int get_tree_keyed(struct fs_context *fc,
 		  int (*fill_super)(struct super_block *sb,
@@ -905,7 +887,6 @@ int get_tree_keyed(struct fs_context *fc,
 	fc->s_fs_info = key;
 	return vfs_get_super(fc, vfs_get_keyed_super, fill_super);
 }
-EXPORT_SYMBOL(get_tree_keyed);
 
 struct dentry *mount_nodev(struct file_system_type *fs_type,
 	int flags, void *data,
@@ -925,7 +906,6 @@ struct dentry *mount_nodev(struct file_system_type *fs_type,
 	s->s_flags |= SB_ACTIVE;
 	return dget(s->s_root);
 }
-EXPORT_SYMBOL(mount_nodev);
 
 int reconfigure_single(struct super_block *s,
 		       int flags, void *data)
@@ -975,7 +955,6 @@ struct dentry *mount_single(struct file_system_type *fs_type,
 	}
 	return dget(s->s_root);
 }
-EXPORT_SYMBOL(mount_single);
 
 int vfs_get_tree(struct fs_context *fc)
 {
@@ -1013,7 +992,6 @@ int vfs_get_tree(struct fs_context *fc)
 
 	return 0;
 }
-EXPORT_SYMBOL(vfs_get_tree);
 
 int super_setup_bdi_name(struct super_block *sb, char *fmt, ...)
 {
@@ -1038,7 +1016,6 @@ int super_setup_bdi_name(struct super_block *sb, char *fmt, ...)
 
 	return 0;
 }
-EXPORT_SYMBOL(super_setup_bdi_name);
 
 int super_setup_bdi(struct super_block *sb)
 {
@@ -1047,7 +1024,6 @@ int super_setup_bdi(struct super_block *sb)
 	return super_setup_bdi_name(sb, "%.28s-%ld", sb->s_type->name,
 				    atomic_long_inc_return(&bdi_seq));
 }
-EXPORT_SYMBOL(super_setup_bdi);
 
 static void sb_wait_write(struct super_block *sb, int level)
 {
@@ -1138,7 +1114,6 @@ int freeze_super(struct super_block *sb)
 	up_write(&sb->s_umount);
 	return 0;
 }
-EXPORT_SYMBOL(freeze_super);
 
 static int thaw_super_locked(struct super_block *sb)
 {
@@ -1180,4 +1155,3 @@ int thaw_super(struct super_block *sb)
 	down_write(&sb->s_umount);
 	return thaw_super_locked(sb);
 }
-EXPORT_SYMBOL(thaw_super);

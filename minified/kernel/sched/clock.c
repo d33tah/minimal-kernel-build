@@ -64,7 +64,6 @@ notrace unsigned long long __weak sched_clock(void)
 	return (unsigned long long)(jiffies - INITIAL_JIFFIES)
 					* (NSEC_PER_SEC / HZ);
 }
-EXPORT_SYMBOL_GPL(sched_clock);
 
 static DEFINE_STATIC_KEY_FALSE(sched_clock_running);
 
@@ -381,7 +380,6 @@ notrace u64 sched_clock_cpu(int cpu)
 
 	return clock;
 }
-EXPORT_SYMBOL_GPL(sched_clock_cpu);
 
 notrace void sched_clock_tick(void)
 {
@@ -424,7 +422,6 @@ notrace void sched_clock_idle_sleep_event(void)
 {
 	sched_clock_cpu(smp_processor_id());
 }
-EXPORT_SYMBOL_GPL(sched_clock_idle_sleep_event);
 
 /*
  * We just idled; resync with ktime.
@@ -443,7 +440,6 @@ notrace void sched_clock_idle_wakeup_event(void)
 	sched_clock_tick();
 	local_irq_restore(flags);
 }
-EXPORT_SYMBOL_GPL(sched_clock_idle_wakeup_event);
 
 
 /*

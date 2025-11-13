@@ -66,7 +66,6 @@ void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
 }
 
 unsigned long __FIXADDR_TOP = 0xfffff000;
-EXPORT_SYMBOL(__FIXADDR_TOP);
 
 /*
  * vmalloc=size forces the vmalloc area to be exactly 'size'

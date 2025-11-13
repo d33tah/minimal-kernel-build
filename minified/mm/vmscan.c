@@ -12,25 +12,21 @@ int register_shrinker(struct shrinker *shrinker)
 {
 	return 0;  // Success, but do nothing
 }
-EXPORT_SYMBOL(register_shrinker);
 
 void unregister_shrinker(struct shrinker *shrinker)
 {
 	// Do nothing
 }
-EXPORT_SYMBOL(unregister_shrinker);
 
 void synchronize_shrinkers(void)
 {
 	// Do nothing
 }
-EXPORT_SYMBOL(synchronize_shrinkers);
 
 void check_move_unevictable_pages(struct pagevec *pvec)
 {
 	// Do nothing - no page eviction needed
 }
-EXPORT_SYMBOL_GPL(check_move_unevictable_pages);
 
 // Additional internal functions needed by the kernel
 int prealloc_shrinker(struct shrinker *shrinker)

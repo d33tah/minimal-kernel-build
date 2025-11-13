@@ -124,7 +124,6 @@ void __put_page(struct page *page)
 	else
 		__put_single_page(page);
 }
-EXPORT_SYMBOL(__put_page);
 
 /**
  * put_pages_list() - release a list of pages
@@ -152,7 +151,6 @@ void put_pages_list(struct list_head *pages)
 	free_unref_page_list(pages);
 	INIT_LIST_HEAD(pages);
 }
-EXPORT_SYMBOL(put_pages_list);
 
 /*
  * get_kernel_pages() - pin kernel pages in memory
@@ -182,7 +180,6 @@ int get_kernel_pages(const struct kvec *kiov, int nr_segs, int write,
 
 	return seg;
 }
-EXPORT_SYMBOL_GPL(get_kernel_pages);
 
 static void pagevec_lru_move_fn(struct pagevec *pvec,
 	void (*move_fn)(struct page *page, struct lruvec *lruvec))
@@ -402,7 +399,6 @@ void folio_mark_accessed(struct folio *folio)
 	if (folio_test_idle(folio))
 		folio_clear_idle(folio);
 }
-EXPORT_SYMBOL(folio_mark_accessed);
 
 /**
  * folio_add_lru - Add a folio to an LRU list.
@@ -427,7 +423,6 @@ void folio_add_lru(struct folio *folio)
 		__pagevec_lru_add(pvec);
 	local_unlock(&lru_pvecs.lock);
 }
-EXPORT_SYMBOL(folio_add_lru);
 
 /**
  * lru_cache_add_inactive_or_unevictable
@@ -817,7 +812,6 @@ void release_pages(struct page **pages, int nr)
 	mem_cgroup_uncharge_list(&pages_to_free);
 	free_unref_page_list(&pages_to_free);
 }
-EXPORT_SYMBOL(release_pages);
 
 /*
  * The pages which we're about to release may be in the deferred lru-addition
@@ -838,7 +832,6 @@ void __pagevec_release(struct pagevec *pvec)
 	release_pages(pvec->pages, pagevec_count(pvec));
 	pagevec_reinit(pvec);
 }
-EXPORT_SYMBOL(__pagevec_release);
 
 static void __pagevec_lru_add_fn(struct folio *folio, struct lruvec *lruvec)
 {
@@ -951,7 +944,6 @@ unsigned pagevec_lookup_range(struct pagevec *pvec,
 					pvec->pages);
 	return pagevec_count(pvec);
 }
-EXPORT_SYMBOL(pagevec_lookup_range);
 
 unsigned pagevec_lookup_range_tag(struct pagevec *pvec,
 		struct address_space *mapping, pgoff_t *index, pgoff_t end,
@@ -961,7 +953,6 @@ unsigned pagevec_lookup_range_tag(struct pagevec *pvec,
 					PAGEVEC_SIZE, pvec->pages);
 	return pagevec_count(pvec);
 }
-EXPORT_SYMBOL(pagevec_lookup_range_tag);
 
 /*
  * Perform any setup for the swap system

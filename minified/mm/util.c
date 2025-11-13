@@ -40,7 +40,6 @@ void kfree_const(const void *x)
 	if (!is_kernel_rodata((unsigned long)x))
 		kfree(x);
 }
-EXPORT_SYMBOL(kfree_const);
 
 /**
  * kstrdup - allocate space for and copy an existing string
@@ -63,7 +62,6 @@ char *kstrdup(const char *s, gfp_t gfp)
 		memcpy(buf, s, len);
 	return buf;
 }
-EXPORT_SYMBOL(kstrdup);
 
 /**
  * kstrdup_const - conditionally duplicate an existing const string
@@ -83,7 +81,6 @@ const char *kstrdup_const(const char *s, gfp_t gfp)
 
 	return kstrdup(s, gfp);
 }
-EXPORT_SYMBOL(kstrdup_const);
 
 /**
  * kstrndup - allocate space for and copy an existing string
@@ -111,7 +108,6 @@ char *kstrndup(const char *s, size_t max, gfp_t gfp)
 	}
 	return buf;
 }
-EXPORT_SYMBOL(kstrndup);
 
 /**
  * kmemdup - duplicate region of memory
@@ -131,7 +127,6 @@ void *kmemdup(const void *src, size_t len, gfp_t gfp)
 		memcpy(p, src, len);
 	return p;
 }
-EXPORT_SYMBOL(kmemdup);
 
 /**
  * kmemdup_nul - Create a NUL-terminated string from unterminated data
@@ -156,7 +151,6 @@ char *kmemdup_nul(const char *s, size_t len, gfp_t gfp)
 	}
 	return buf;
 }
-EXPORT_SYMBOL(kmemdup_nul);
 
 /**
  * memdup_user - duplicate memory region from user space
@@ -182,7 +176,6 @@ void *memdup_user(const void __user *src, size_t len)
 
 	return p;
 }
-EXPORT_SYMBOL(memdup_user);
 
 /**
  * vmemdup_user - duplicate memory region from user space
@@ -208,7 +201,6 @@ void *vmemdup_user(const void __user *src, size_t len)
 
 	return p;
 }
-EXPORT_SYMBOL(vmemdup_user);
 
 /**
  * strndup_user - duplicate an existing string from user space
@@ -239,7 +231,6 @@ char *strndup_user(const char __user *s, long n)
 
 	return p;
 }
-EXPORT_SYMBOL(strndup_user);
 
 /**
  * memdup_user_nul - duplicate memory region from user space and NUL-terminate
@@ -270,7 +261,6 @@ void *memdup_user_nul(const void __user *src, size_t len)
 
 	return p;
 }
-EXPORT_SYMBOL(memdup_user_nul);
 
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct vm_area_struct *prev)
@@ -322,7 +312,6 @@ void vma_set_file(struct vm_area_struct *vma, struct file *file)
 	swap(vma->vm_file, file);
 	fput(file);
 }
-EXPORT_SYMBOL(vma_set_file);
 
 #ifndef STACK_RND_MASK
 #define STACK_RND_MASK (0x7ff >> (PAGE_SHIFT - 12))     /* 8MB of VA */
@@ -424,7 +413,6 @@ int __account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc,
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(__account_locked_vm);
 
 /**
  * account_locked_vm - account locked pages to an mm's locked_vm
@@ -452,7 +440,6 @@ int account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc)
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(account_locked_vm);
 
 unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 	unsigned long len, unsigned long prot,
@@ -488,7 +475,6 @@ unsigned long vm_mmap(struct file *file, unsigned long addr,
 
 	return vm_mmap_pgoff(file, addr, len, prot, flag, offset >> PAGE_SHIFT);
 }
-EXPORT_SYMBOL(vm_mmap);
 
 /**
  * kvmalloc_node - attempt to allocate physically contiguous memory, but upon
@@ -553,7 +539,6 @@ void *kvmalloc_node(size_t size, gfp_t flags, int node)
 			flags, PAGE_KERNEL, VM_ALLOW_HUGE_VMAP,
 			node, __builtin_return_address(0));
 }
-EXPORT_SYMBOL(kvmalloc_node);
 
 /**
  * kvfree() - Free memory.
@@ -572,7 +557,6 @@ void kvfree(const void *addr)
 	else
 		kfree(addr);
 }
-EXPORT_SYMBOL(kvfree);
 
 /**
  * kvfree_sensitive - Free a data object containing sensitive information.
@@ -590,7 +574,6 @@ void kvfree_sensitive(const void *addr, size_t len)
 		kvfree(addr);
 	}
 }
-EXPORT_SYMBOL(kvfree_sensitive);
 
 void *kvrealloc(const void *p, size_t oldsize, size_t newsize, gfp_t flags)
 {
@@ -605,7 +588,6 @@ void *kvrealloc(const void *p, size_t oldsize, size_t newsize, gfp_t flags)
 	kvfree(p);
 	return newp;
 }
-EXPORT_SYMBOL(kvrealloc);
 
 /**
  * __vmalloc_array - allocate memory for a virtually contiguous array.
@@ -621,7 +603,6 @@ void *__vmalloc_array(size_t n, size_t size, gfp_t flags)
 		return NULL;
 	return __vmalloc(bytes, flags);
 }
-EXPORT_SYMBOL(__vmalloc_array);
 
 /**
  * vmalloc_array - allocate memory for a virtually contiguous array.
@@ -632,7 +613,6 @@ void *vmalloc_array(size_t n, size_t size)
 {
 	return __vmalloc_array(n, size, GFP_KERNEL);
 }
-EXPORT_SYMBOL(vmalloc_array);
 
 /**
  * __vcalloc - allocate and zero memory for a virtually contiguous array.
@@ -644,7 +624,6 @@ void *__vcalloc(size_t n, size_t size, gfp_t flags)
 {
 	return __vmalloc_array(n, size, flags | __GFP_ZERO);
 }
-EXPORT_SYMBOL(__vcalloc);
 
 /**
  * vcalloc - allocate and zero memory for a virtually contiguous array.
@@ -655,7 +634,6 @@ void *vcalloc(size_t n, size_t size)
 {
 	return __vmalloc_array(n, size, GFP_KERNEL | __GFP_ZERO);
 }
-EXPORT_SYMBOL(vcalloc);
 
 /* Neutral page->mapping pointer to address_space or anon_vma or other */
 void *page_rmapping(struct page *page)
@@ -687,7 +665,6 @@ bool folio_mapped(struct folio *folio)
 	}
 	return false;
 }
-EXPORT_SYMBOL(folio_mapped);
 
 struct anon_vma *folio_anon_vma(struct folio *folio)
 {
@@ -727,7 +704,6 @@ struct address_space *folio_mapping(struct folio *folio)
 
 	return (void *)((unsigned long)mapping & ~PAGE_MAPPING_FLAGS);
 }
-EXPORT_SYMBOL(folio_mapping);
 
 /* Slow path of page_mapcount() for compound pages */
 int __page_mapcount(struct page *page)
@@ -747,7 +723,6 @@ int __page_mapcount(struct page *page)
 		ret--;
 	return ret;
 }
-EXPORT_SYMBOL_GPL(__page_mapcount);
 
 /**
  * folio_mapcount() - Calculate the number of mappings of this folio.
@@ -915,7 +890,6 @@ unsigned long vm_memory_committed(void)
 {
 	return percpu_counter_sum_positive(&vm_committed_as);
 }
-EXPORT_SYMBOL_GPL(vm_memory_committed);
 
 /*
  * Check that a process has enough memory to allocate a new virtual
@@ -1080,13 +1054,11 @@ void page_offline_begin(void)
 {
 	down_write(&page_offline_rwsem);
 }
-EXPORT_SYMBOL(page_offline_begin);
 
 void page_offline_end(void)
 {
 	up_write(&page_offline_rwsem);
 }
-EXPORT_SYMBOL(page_offline_end);
 
 #ifndef ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO
 void flush_dcache_folio(struct folio *folio)
@@ -1096,5 +1068,4 @@ void flush_dcache_folio(struct folio *folio)
 	for (i = 0; i < nr; i++)
 		flush_dcache_page(folio_page(folio, i));
 }
-EXPORT_SYMBOL(flush_dcache_folio);
 #endif

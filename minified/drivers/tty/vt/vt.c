@@ -132,13 +132,11 @@ int register_vt_notifier(struct notifier_block *nb)
 {
 	return atomic_notifier_chain_register(&vt_notifier_list, nb);
 }
-EXPORT_SYMBOL_GPL(register_vt_notifier);
 
 int unregister_vt_notifier(struct notifier_block *nb)
 {
 	return atomic_notifier_chain_unregister(&vt_notifier_list, nb);
 }
-EXPORT_SYMBOL_GPL(unregister_vt_notifier);
 
 static void notify_write(struct vc_data *vc, unsigned int unicode)
 {
@@ -3274,7 +3272,6 @@ int con_is_bound(const struct consw *csw)
 
 	return bound;
 }
-EXPORT_SYMBOL(con_is_bound);
 
 bool con_is_visible(const struct vc_data *vc)
 {
@@ -3282,19 +3279,16 @@ bool con_is_visible(const struct vc_data *vc)
 
 	return *vc->vc_display_fg == vc;
 }
-EXPORT_SYMBOL(con_is_visible);
 
 int con_debug_enter(struct vc_data *vc)
 {
 	return 0;
 }
-EXPORT_SYMBOL_GPL(con_debug_enter);
 
 int con_debug_leave(void)
 {
 	return 0;
 }
-EXPORT_SYMBOL_GPL(con_debug_leave);
 
 static int do_register_con_driver(const struct consw *csw, int first, int last)
 {
@@ -3390,7 +3384,6 @@ int do_unregister_con_driver(const struct consw *csw)
 
 	return -ENODEV;
 }
-EXPORT_SYMBOL_GPL(do_unregister_con_driver);
 
 static void con_driver_unregister_callback(struct work_struct *ignored)
 {
@@ -3438,7 +3431,6 @@ int do_take_over_console(const struct consw *csw, int first, int last, int deflt
 
 	return err;
 }
-EXPORT_SYMBOL_GPL(do_take_over_console);
 
 void give_up_console(const struct consw *csw)
 {
@@ -3552,7 +3544,6 @@ void do_blank_screen(int entering_gfx)
 	}
 	vt_event_post(VT_EVENT_BLANK, vc->vc_num, vc->vc_num);
 }
-EXPORT_SYMBOL(do_blank_screen);
 
 void do_unblank_screen(int leaving_gfx)
 {
@@ -3592,7 +3583,6 @@ void do_unblank_screen(int leaving_gfx)
 	set_cursor(vc);
 	vt_event_post(VT_EVENT_UNBLANK, vc->vc_num, vc->vc_num);
 }
-EXPORT_SYMBOL(do_unblank_screen);
 
 void unblank_screen(void)
 {
@@ -3835,7 +3825,6 @@ u16 screen_glyph(const struct vc_data *vc, int offset)
 		c |= 0x100;
 	return c;
 }
-EXPORT_SYMBOL_GPL(screen_glyph);
 
 u32 screen_glyph_unicode(const struct vc_data *vc, int n)
 {
@@ -3845,13 +3834,11 @@ u32 screen_glyph_unicode(const struct vc_data *vc, int n)
 		return uniscr->lines[n / vc->vc_cols][n % vc->vc_cols];
 	return inverse_translate(vc, screen_glyph(vc, n * 2), 1);
 }
-EXPORT_SYMBOL_GPL(screen_glyph_unicode);
 
 unsigned short *screen_pos(const struct vc_data *vc, int w_offset, bool viewed)
 {
 	return screenpos(vc, 2 * w_offset, viewed);
 }
-EXPORT_SYMBOL_GPL(screen_pos);
 
 void getconsxy(const struct vc_data *vc, unsigned char xy[static 2])
 {
@@ -3926,20 +3913,6 @@ void vc_scrolldelta_helper(struct vc_data *c, int lines,
 
 	c->vc_visible_origin = ubase + (from + from_off) % wrap;
 }
-EXPORT_SYMBOL_GPL(vc_scrolldelta_helper);
 
-EXPORT_SYMBOL(color_table);
-EXPORT_SYMBOL(default_red);
-EXPORT_SYMBOL(default_grn);
-EXPORT_SYMBOL(default_blu);
-EXPORT_SYMBOL(update_region);
-EXPORT_SYMBOL(redraw_screen);
-EXPORT_SYMBOL(vc_resize);
-EXPORT_SYMBOL(fg_console);
-EXPORT_SYMBOL(console_blank_hook);
-EXPORT_SYMBOL(console_blanked);
-EXPORT_SYMBOL(vc_cons);
-EXPORT_SYMBOL(global_cursor_default);
 #ifndef VT_SINGLE_DRIVER
-EXPORT_SYMBOL(give_up_console);
 #endif

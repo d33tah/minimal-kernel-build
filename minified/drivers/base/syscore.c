@@ -23,7 +23,6 @@ void register_syscore_ops(struct syscore_ops *ops)
 	list_add_tail(&ops->node, &syscore_ops_list);
 	mutex_unlock(&syscore_ops_lock);
 }
-EXPORT_SYMBOL_GPL(register_syscore_ops);
 
 /**
  * unregister_syscore_ops - Unregister a set of system core operations.
@@ -35,7 +34,6 @@ void unregister_syscore_ops(struct syscore_ops *ops)
 	list_del(&ops->node);
 	mutex_unlock(&syscore_ops_lock);
 }
-EXPORT_SYMBOL_GPL(unregister_syscore_ops);
 
 
 /**

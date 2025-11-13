@@ -2988,41 +2988,14 @@ void print_worker_info(const char *log_lvl, struct task_struct *task)
 	
 }
 
-static void pr_cont_pool_info(struct worker_pool *pool)
-{
-	pr_cont(" cpus=%*pbl", nr_cpumask_bits, pool->attrs->cpumask);
-	if (pool->node != NUMA_NO_NODE)
-		pr_cont(" node=%d", pool->node);
-	pr_cont(" flags=0x%x nice=%d", pool->flags, pool->attrs->nice);
-}
-
-static void pr_cont_work(bool comma, struct work_struct *work)
-{
-	if (work->func == wq_barrier_func) {
-		struct wq_barrier *barr;
-
-		barr = container_of(work, struct wq_barrier, work);
-
-		pr_cont("%s BAR(%d)", comma ? "," : "",
-			task_pid_nr(barr->task));
-	} else {
-		pr_cont("%s %ps", comma ? "," : "", work->func);
-	}
-}
-
 static void show_pwq(struct pool_workqueue *pwq)
 {
-	
+
 }
 
 void show_one_workqueue(struct workqueue_struct *wq)
 {
-	
-}
 
-static void show_one_worker_pool(struct worker_pool *pool)
-{
-	
 }
 
 void show_all_workqueues(void)

@@ -37,16 +37,6 @@ struct uni_pagedir {
 
 static struct uni_pagedir *dflt;
 
-static void set_inverse_transl(struct vc_data *conp, struct uni_pagedir *p, int i)
-{
-	/* Stub - not needed for minimal output */
-}
-
-static void set_inverse_trans_unicode(struct vc_data *conp, struct uni_pagedir *p)
-{
-	/* Stub - not needed for minimal output */
-}
-
 unsigned short *set_translate(int m, struct vc_data *vc)
 {
 	inv_translate[vc->vc_num] = m;
@@ -60,11 +50,6 @@ u16 inverse_translate(const struct vc_data *conp, int glyph, int use_unicode)
 	return glyph; /* Identity mapping */
 }
 EXPORT_SYMBOL_GPL(inverse_translate);
-
-static void update_user_maps(void)
-{
-	/* Stub */
-}
 
 int con_set_trans_old(unsigned char __user * arg)
 {
@@ -120,16 +105,6 @@ void con_free_unimap(struct vc_data *vc)
 		return;
 	con_release_unimap(p);
 	kfree(p);
-}
-
-static int con_unify_unimap(struct vc_data *conp, struct uni_pagedir *p)
-{
-	return 0; /* Stub */
-}
-
-static int con_insert_unipair(struct uni_pagedir *p, u_short unicode, u_short fontpos)
-{
-	return 0; /* Stub */
 }
 
 static int con_do_clear_unimap(struct vc_data *vc)

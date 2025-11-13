@@ -98,6 +98,7 @@ static inline void snp_set_page_shared(unsigned long paddr) { }
 static inline void sev_prep_identity_maps(unsigned long top_level_pgt) { }
 
 /* acpi.c */
+typedef u64 acpi_physical_address;
 static inline acpi_physical_address get_rsdp_addr(void) { return 0; }
 
 static inline int count_immovable_mem_regions(void) { return 0; }

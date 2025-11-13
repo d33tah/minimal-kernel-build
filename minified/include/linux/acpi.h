@@ -19,8 +19,13 @@
 #ifndef _LINUX
 #define _LINUX
 #endif
-#include <acpi/acpi.h>
+// #include <acpi/acpi.h>  // Removed - not needed since ACPI is disabled
 
+// Define minimal ACPI types needed for stub functions
+typedef void *acpi_handle;
+typedef u32 acpi_status;
+typedef u32 acpi_object_type;
+union acpi_object;
 
 #define acpi_disabled 1
 

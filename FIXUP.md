@@ -2173,3 +2173,29 @@ Next opportunities:
   * Scheduler (2,724 lines in kernel/sched/core.c + more in other sched files)
 - Header consolidation still represents 110,485 LOC (40.2% of codebase)
 
+
+Progress continued (22:11-22:16):
+3. Identified drivers/base/devres.c (1,181 lines) as next candidate:
+   - Checked usage: No devm_* functions used by critical drivers (TTY, char, video)
+   - Device managed resource tracking not needed for minimal kernel
+
+4. Stubbed drivers/base/devres.c (SUCCESSFUL):
+   - Reduced from 1,181 lines to 181 lines  
+   - Stubbed 26 functions covering devres tracking and devm_* allocation APIs
+   - Note: Some devm_ioremap* functions already in lib/devres.c, not duplicated
+   - Stubs delegate to regular kmalloc/kfree (no automatic cleanup tracking)
+   
+5. Testing:
+   - Build: PASSES (make vm successful)
+   - VM Boot: PASSES
+   - Hello World: PRINTS
+   - Binary: 405KB (3KB reduction from 408KB)
+
+6. LOC Measurement:
+   Before: 274,965 total (153,505 C + 110,485 Headers)
+   After:  274,505 total (153,045 C + 110,485 Headers)
+   Reduction: 460 LOC (mostly C code)
+
+Current session cumulative: ~11,651 LOC removed
+Remaining gap to goal: ~74,505 LOC (goal: 200,000, current: 274,505)
+

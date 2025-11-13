@@ -25,6 +25,18 @@ Progress (16:05):
 - Tested removal of win_minmax.h: Build PASSES, VM PASSES, Hello World PRINTS
 - Tested removal of list_sort.h: Build PASSES, VM PASSES, Hello World PRINTS
 - Total reduction: 94 LOC (42 + 38 + 14)
+- Committed and pushed: 660e923
+
+Progress (16:10):
+- Searched arch/x86/include/asm/ for unused headers
+- Found 14 unused headers totaling 553 LOC:
+  * kvm-x86-ops.h (134), amd_nb.h (87), kvm_page_track.h (79)
+  * intel_pconfig.h (65), dwarf2.h (41), orc_lookup.h (34), intel_pt.h (34)
+  * processor-cyrix.h (18), kbdleds.h (18), kvm_vcpu_regs.h (15)
+  * simd.h (12), reboot_fixups.h (7), kvm_types.h (7), setup_arch.h (3)
+- Tested removal of all 14 headers together: Build PASSES, VM PASSES, Hello World PRINTS
+- Note: simd.h was auto-generated as 1-line wrapper, net reduction 11 LOC
+- Total reduction: 553 LOC
 - Ready to commit
 
 --- 2025-11-13 15:43 ---

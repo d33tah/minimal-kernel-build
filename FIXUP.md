@@ -1,3 +1,47 @@
+--- 2025-11-13 06:39 ---
+SESSION START: Continuing aggressive reduction
+
+Current status:
+- Total: 167,569 LOC (163,925 C + 3,644 make)
+- Kernel: 415KB
+- Build: PASSING ✓
+- Output: "Hello, World!" ✓
+- Goal: 200K LOC (ACHIEVED at 167K!) - continuing for maximum reduction
+
+Strategy: Look for larger subsystem reduction opportunities. Previous session
+focused on headers which don't count in LOC. Need to find actual C code to remove.
+
+Attempts:
+1. FAILED: Tried to remove lib/radix-tree.c (964 LOC)
+   - Initially built without it
+   - Link failed: needed by idr.c and xarray.c (radix_tree_* symbols)
+   - HAD TO REVERT
+
+2. FAILED: Tried to remove lib/siphash.c (331 LOC)
+   - Link failed: needed by vsprintf.c (ptr_to_hashval, default_pointer)
+   - HAD TO REVERT
+
+Analysis: Individual library files are tightly coupled. Most large files
+(kernel/workqueue.c 2358 LOC, kernel/signal.c 2426 LOC, etc.) are full
+implementations, not stubs.
+
+Strategy shift needed: Instead of removing entire files, look for:
+- Large subsystems that could have functions stubbed
+- Optional features within files that could be removed
+- Compile-time options that could be disabled
+
+Investigation findings:
+- Most library files (radix-tree, siphash, etc.) are tightly coupled and needed
+- Large kernel subsystems (workqueue 2358 LOC, signal 2426 LOC) are full implementations
+- TTY subsystem (15K+ LOC) is needed for console output
+- MM subsystem (38K+ LOC) has complex interdependencies (page_alloc, memory, filemap, etc.)
+- FS namespace code (3116 LOC) defines many syscalls but deeply integrated
+- Build is very clean - only 2 warnings about generated atomics
+- CONFIG already minimal: PRINTK is disabled
+
+Current status: 167,569 LOC, already 17% below 200K goal.
+Codebase is heavily optimized. Further reduction requires more invasive changes.
+
 --- 2025-11-13 06:38 ---
 SESSION END: Header removal exploration, mixed results
 

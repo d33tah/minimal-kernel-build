@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 obj-y += time.o timer.o hrtimer.o
 obj-y += timekeeping.o ntp.o clocksource.o jiffies.o
-obj-y += timeconv.o timecounter.o alarmtimer.o
+obj-y += timeconv.o
 
 ifeq ($(CONFIG_POSIX_TIMERS),y)
  obj-y += posix-timers.o posix-cpu-timers.o posix-clock.o itimer.o

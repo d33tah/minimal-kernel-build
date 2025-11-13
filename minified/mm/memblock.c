@@ -1178,11 +1178,6 @@ static void __init_memblock memblock_dump(struct memblock_type *type)
 
 static void __init_memblock __memblock_dump_all(void)
 {
-	pr_info("MEMBLOCK configuration:\n");
-	pr_info(" memory size = %pa reserved size = %pa\n",
-		&memblock.memory.total_size,
-		&memblock.reserved.total_size);
-
 	memblock_dump(&memblock.memory);
 	memblock_dump(&memblock.reserved);
 }

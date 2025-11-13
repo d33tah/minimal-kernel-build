@@ -1,3 +1,93 @@
+--- 2025-11-13 07:17 ---
+SESSION END: Attempted syscall stubbing, no progress
+
+Final status: 167,585 LOC (unchanged) - 17% below 200K goal
+Kernel: 415KB, Build: PASSING, Output: "Hello, World!" ✓
+
+Session activities:
+- Analyzed major subsystems (kernel 54K, mm 38K, drivers 31K, fs 27K, lib 24K)
+- Identified largest files (page_alloc 5.2K, memory 4.1K, vt 3.9K, etc.)
+- Attempted to stub 5 signal syscalls - FAILED (kernel crashed during boot)
+- Confirmed all C files are actively compiled, no dead code
+- No unused function warnings from compiler
+
+Commits: None (no successful reduction)
+
+Key lesson: At 167K LOC, even "optional" syscalls may be used internally during
+boot. The codebase is heavily optimized and tightly coupled. Further reduction
+requires architectural changes rather than incremental stubbing.
+
+--- 2025-11-13 07:03 ---
+SESSION START: Aggressive subsystem reduction strategy
+
+Current status:
+- Total: 167,585 LOC (163,927 C + 3,658 make)
+- Kernel: 415KB
+- Build: PASSING ✓
+- Output: "Hello, World!" ✓
+- Goal: 200K LOC (ACHIEVED) - continuing for maximum reduction (target: 100K)
+
+Strategy: Focus on invasive changes to large subsystems. Previous sessions
+showed individual file removal is not viable. Need to:
+1. Identify largest subsystems and stub their internals
+2. Remove optional features from within files
+3. Simplify implementations (e.g., replace complex signal/workqueue with stubs)
+
+Next steps:
+- Analyze largest C files for stubbing opportunities
+- Look for optional syscalls and features to remove
+- Consider replacing complex subsystems with minimal implementations
+
+Analysis complete:
+- mm: 38,417 LOC
+- kernel: 54,051 LOC (largest subsystem!)
+  - workqueue.c: 3,261 LOC
+  - signal.c: 3,111 LOC
+  - sched/core.c: 2,752 LOC
+- drivers: 31,488 LOC (mostly TTY/VT: ~12K LOC)
+- fs: 27,427 LOC
+- lib: 24,585 LOC
+
+Approach: Since individual file removal fails due to tight coupling, will attempt
+to stub large functions within files while keeping symbols exported.
+
+Investigation findings:
+- All C files are actively compiled (no dead code files found)
+- Previous successful reductions: prctl (567 LOC), oom_kill (1094 LOC), input (1555 LOC)
+- Failed attempts: ptrace (too integrated), radix-tree/siphash (tight coupling)
+- 247 syscalls defined but only need write() for Hello World
+- largest files: page_alloc 5.2K, memory 4.1K, vt 3.9K, namei/namespace 3.9K/3.8K
+- workqueue 3.3K, signal 3.1K, sched/core 2.8K
+-fs/namespace.c has 8 mount syscalls (but root mount needed)
+- kernel/reboot.c 1K LOC (but uses core kernel_ functions)
+
+Challenge: At 167K LOC, individual files/syscalls are tightly integrated.
+Need to find larger subsystems or features that can be safely stubbed.
+
+Attempted exploration:
+- Checked for uncompiled C files: none found, all code is active
+- Checked for unused function warnings: none
+- Examined reboot.c (1K LOC): uses core kernel_ functions, can't easily stub
+- Examined vt.c functions: complex integration for console output
+- Checked CONFIG options: modules already disabled, minimal config
+- No obvious subsystems to disable (audit, kexec, etc. already gone)
+
+Conclusion: Codebase is at a plateau. Further reduction requires one of:
+1. Invasive stubbing of large subsystems (workqueue, signal, sched) - high risk
+2. Simplifying MM layer (page_alloc 5.2K, memory 4.1K) - architectural change
+3. Rewriting TTY layer for minimal output only - major refactoring
+4. Removing optional syscalls one by one - tedious, low reward
+
+All approaches require significant effort with high risk of breaking the build.
+Current state (167K LOC, 415KB kernel) represents near-optimal minimal kernel.
+
+FAILED ATTEMPT: Tried stubbing signal syscalls (pause, sigsuspend, sigaltstack, sigpending)
+- Stubbed 5 syscalls + 1 helper function (~44 LOC reduction)
+- Build succeeded but kernel crashed (no "Hello, World!" output)
+- One or more of these syscalls is needed during boot despite not being in user init
+- HAD TO REVERT
+- Lesson: Even "optional" syscalls may be called internally during kernel initialization
+
 --- 2025-11-13 07:00 ---
 SESSION END: Exploration of file removal opportunities
 

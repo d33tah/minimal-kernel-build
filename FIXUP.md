@@ -1,3 +1,44 @@
+--- 2025-11-13 17:15 ---
+NEW SESSION: Aggressive code reduction - targeting bulk removals
+
+Current status at session start (17:15):
+- Commit: 3f6168e (Document session start)
+- LOC: 285,687 total (160,086 C + 112,943 Headers + other)
+- Goal: 200,000 LOC
+- Gap: 85,687 LOC (30% reduction needed)
+- Build: PASSES, make vm: PASSES, Hello World: PRINTS
+- Binary size: 413KB (within 400KB goal)
+
+Analysis:
+Previous session noted that small header removals (10-30 LOC) have diminishing returns.
+Need larger reduction strategies. Current analysis shows:
+- TTY subsystem: ~13K LOC (vt.c 3918, tty_io.c 2360, n_tty.c 1811)
+- Largest files: page_alloc.c 5183, memory.c 4061, vt.c 3918
+- 655 print statements total (77 pr_debug, rest are pr_info/pr_warn/etc)
+- 69 show_/debug_ functions
+- Headers: 112,943 LOC (39.5% of total)
+
+Strategy for this session:
+Will try bulk removal of debug code and explore stubbing opportunities.
+
+Progress (17:20):
+Attempted bulk pr_debug removal with sed - FAILED
+- Removed all lines containing pr_debug (77 lines across 19 files)
+- Build broke: init/main.c had pr_debug inside for loops
+- Deleting pr_debug line left empty for loops → syntax error
+- Reverted changes - bulk sed removal too aggressive
+
+Analysis of current challenge:
+Gap of 85,687 LOC (30%) is substantial. Previous 316K→285K took multiple sessions (31K/10%).
+Remaining opportunities are difficult:
+1. Headers (113K LOC/39.5%) - previous stubbing caused VM hangs
+2. Large .c files - mostly core functionality (MM, FS, TTY all essential per DIARY)
+3. Debug code - needs manual removal, not bulk sed
+4. Small wins (10-100 LOC) need ~850-8500 changes for 30% goal
+
+Time spent so far: ~15-20 minutes of investigation with no LOC reduction.
+Need to make progress before session ends. Will try focused manual approach.
+
 --- 2025-11-13 17:00 ---
 SESSION INCOMPLETE: Minimal header removal progress
 

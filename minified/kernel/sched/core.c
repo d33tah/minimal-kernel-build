@@ -633,37 +633,34 @@ bool ttwu_state_match(struct task_struct *p, unsigned int state, int *success)
 static int
 try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 {
-	unsigned long flags;
 	int cpu, success = 0;
 
 	preempt_disable();
 	if (p == current) {
-		
+
 		if (!ttwu_state_match(p, state, &success))
 			goto out;
 
-		
+
 		WRITE_ONCE(p->__state, TASK_RUNNING);
-		
+
 		goto out;
 	}
 
-	
+
 	if (READ_ONCE(p->__state) == TASK_RUNNING)
 		goto out;
 
-	
 
-	
+
+
 	smp_rmb();
 	if (READ_ONCE(p->on_rq) && ttwu_runnable(p, wake_flags))
-		goto unlock;
+		goto out;
 
 	cpu = task_cpu(p);
 
 	ttwu_queue(p, cpu, wake_flags);
-unlock:
-	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 out:
 	if (success)
 		ttwu_stat(p, task_cpu(p), wake_flags);

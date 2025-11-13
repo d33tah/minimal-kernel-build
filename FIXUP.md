@@ -1,3 +1,154 @@
+--- 2025-11-13 01:15 ---
+FAILED - Intel CPU workaround removal
+
+Attempted to simplify intel_workarounds() function in arch/x86/kernel/cpu/intel.c
+by removing old CPU workarounds (Pentium Pro, Pentium M, P4 Xeon, APIC bugs).
+Removed ~47 lines including forcepae setup.
+Build succeeded but "Hello, World!" did NOT display.
+Reverted the change.
+
+Conclusion: Even old CPU workarounds are apparently needed, possibly because
+QEMU emulates these features or the kernel expects certain CPU capabilities
+to be set correctly during early boot.
+
+Session summary - 4 failed stubbing attempts:
+1. ptrace syscall - boot failed
+2. reboot syscall - boot failed  
+3. umh (usermode helper) - boot failed
+4. intel CPU workarounds - boot failed
+
+Lesson learned: The minimal kernel is already highly optimized. Most code that
+seems optional is actually boot-critical. The 300,342 LOC current state may be
+close to the practical minimum without major architectural changes.
+
+To reach 200K LOC target (33.4% more reduction) would likely require:
+- Rewriting core subsystems from scratch
+- Replacing VFS with minimal single-FS implementation
+- Custom minimal memory allocator
+- Assembly-optimized critical paths
+- Weeks of architectural work vs incremental reduction
+
+No progress this session. Will document and continue looking for opportunities.
+
+
+--- 2025-11-13 01:05 ---
+SESSION END - Thorough investigation, no code changes
+
+Current LOC: 300,342 total (stable)
+Target: 200,000 LOC (need 100,342 more, 33.4% reduction)
+Kernel: 415KB (target: 400KB)
+Build status: PASSING - "Hello, World!" displayed
+
+Attempts made this session:
+1. FAILED - kernel/umh.c stubbing (560 -> 59 lines stub)
+   - Boot failed, reverted
+   
+Comprehensive investigation:
+- Headers: 1293 files totaling ~119K LOC (largest: fs.h 2521, atomic fallback 2456, mm.h 2197)
+- Subsystems: kernel 54K, mm 38K, fs 27K, drivers 31K, lib 24K, arch/x86 40K
+- Vendor CPU code: intel.c (1274) + amd.c (1001) = 2275 lines
+- Largest files: page_alloc.c 5226, memory.c 4085, vt.c 3945, namei.c 3897, namespace.c 3880
+- Debug code: only ~110 lines (mm/debug.c, lib/debug_locks.c)
+- sys_ni.c: 479 lines, already stubs many syscalls
+
+Key findings:
+- Many seemingly optional subsystems are boot-critical (umh, ptrace, reboot)
+- Previous DIARY.md analysis (316K LOC) concluded near-optimal state
+- Current 300K is actually better than previous measurement!
+- Tinyconfig already minimal, no debug features enabled
+- Most large files are essential (VT for console, MM for memory, FS for mount/exec)
+
+Challenges:
+- Incremental stubbing is slow and error-prone (3 failed attempts: ptrace, reboot, umh)
+- Hard to identify what's truly optional vs boot-critical
+- Headers are interconnected, hard to remove without breaking builds
+- Large files contain essential functionality
+
+Recommendations for next session:
+1. Try smaller, safer changes:
+   - Remove specific workaround code in cpu/intel.c, cpu/amd.c for old CPUs
+   - Simplify CPU vulnerability detection (Spectre/Meltdown checks)
+   - Look for unused ioctl handlers in TTY/VT code
+2. Focus on code simplification within files rather than whole-file stubbing
+3. Check for dead code using build warnings
+4. Consider trimming individual large functions rather than entire subsystems
+
+No changes committed - investigation only.
+
+
+--- 2025-11-13 01:00 ---
+SESSION PROGRESS UPDATE
+
+Current LOC: 300,342 total (verified stable)
+Previous: 300,301 LOC  
+Target: 200,000 LOC (need 100,342 more, 33.4% reduction)
+Kernel: 415KB (target: 400KB)
+Build status: PASSING - "Hello, World!" displayed
+
+Session attempts so far:
+1. FAILED - kernel/umh.c stubbing (560 -> 59 lines)
+   - Build OK, boot FAILED (no "Hello World")
+   - Reverted
+   
+Investigation findings:
+- Many syscalls/subsystems that seem optional are boot-critical
+- ptrace, reboot, umh all needed by boot process
+- Headers: 1293 files, ~119K LOC
+- Biggest subsystems: kernel (54K), mm (38K), fs (27K)
+- Vendor CPU code: 2275 lines (intel.c + amd.c)
+
+Strategy needs refinement:
+- Incremental stubbing is too slow and error-prone
+- Need to focus on truly optional code:
+  * Debugging features (mm/debug.c, lib/debug_locks.c - only 110 lines)
+  * Performance monitoring (small amounts already)
+  * Unused driver features
+  * Header reduction (but hard to identify what's unused)
+
+Will continue looking for safer opportunities...
+
+
+--- 2025-11-13 00:50 ---
+FAILED - usermode helper stubbing
+
+Attempted to stub kernel/umh.c (560 lines -> 59 lines stub).
+Build succeeded but "Hello, World!" did NOT display.
+Reverted the change.
+
+Conclusion: Usermode helper is needed by the boot process.
+Similar to ptrace and reboot syscalls, this is boot-critical.
+
+Need different strategy. Will look for code that's truly optional:
+- Debugging/tracing features
+- Performance monitoring
+- Advanced features not used in minimal boot
+
+
+--- 2025-11-13 00:45 ---
+NEW SESSION START
+
+Current LOC: 300,342 total (cloc output)
+Previous session: 300,301 LOC (no net progress - failed stubbing attempts)
+Target: 200,000 LOC (need 100,342 more, 33.4% reduction)
+Kernel: 415KB (target: 400KB, need 15KB reduction)
+Build status: PASSING - "Hello, World!" displayed
+
+Previous session lessons:
+- ptrace syscall cannot be stubbed (boot needs it)
+- reboot syscall cannot be stubbed (boot needs it)
+- Need to focus on truly optional code, not boot-critical syscalls
+
+Strategy for this session:
+1. Look for large subsystems that can be simplified/stubbed
+2. Focus on header files (119K LOC in headers)
+3. TTY job control (tty_jobctrl.c - 588 lines)
+4. Event/notification code
+5. Scheduler policies that aren't needed
+6. Debugging/tracing features
+
+Starting work...
+
+
 --- 2025-11-13 00:47 ---
 SESSION SUMMARY - Two failed stubbing attempts
 

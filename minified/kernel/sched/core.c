@@ -62,11 +62,8 @@
 #include "sched.h"
 #include "stats.h"
 #include "autogroup.h"
-
-#include "autogroup.h"
 #include "pelt.h"
 #include "smp.h"
-#include "stats.h"
 
 #include "../workqueue_internal.h"
 #include "../../fs/io-wq.h"

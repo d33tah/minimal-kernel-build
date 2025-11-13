@@ -322,8 +322,6 @@ void deferred_probe_extend_timeout(void)
 	if (cancel_delayed_work(&deferred_probe_timeout_work)) {
 		schedule_delayed_work(&deferred_probe_timeout_work,
 				driver_deferred_probe_timeout * HZ);
-		pr_debug("Extended deferred probe timeout by %d secs\n",
-					driver_deferred_probe_timeout);
 	}
 }
 
@@ -535,8 +533,6 @@ static int call_driver_probe(struct device *dev, struct device_driver *drv)
 		break;
 	case -ENODEV:
 	case -ENXIO:
-		pr_debug("%s: probe of %s rejects match %d\n",
-			 drv->name, dev_name(dev), ret);
 		break;
 	default:
 		/* driver matched but the probe failed */
@@ -568,8 +564,6 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 	if (ret)
 		return ret;
 
-	pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
-		 drv->bus->name, __func__, drv->name, dev_name(dev));
 	if (!list_empty(&dev->devres_head)) {
 		dev_crit(dev, "Resources present before probing\n");
 		ret = -EBUSY;
@@ -643,8 +637,6 @@ re_probe:
 		dev->pm_domain->sync(dev);
 
 	driver_bound(dev);
-	pr_debug("bus: '%s': %s: bound device %s to driver %s\n",
-		 drv->bus->name, __func__, dev_name(dev), drv->name);
 	goto done;
 
 dev_sysfs_state_synced_failed:
@@ -676,8 +668,6 @@ static int really_probe_debug(struct device *dev, struct device_driver *drv)
 	calltime = ktime_get();
 	ret = really_probe(dev, drv);
 	rettime = ktime_get();
-	pr_debug("probe of %s returned %d after %lld usecs\n",
-		 dev_name(dev), ret, ktime_us_delta(rettime, calltime));
 	return ret;
 }
 
@@ -720,8 +710,6 @@ static int __driver_probe_device(struct device_driver *drv, struct device *dev)
 		return -EBUSY;
 
 	dev->can_match = true;
-	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
-		 drv->bus->name, __func__, dev_name(dev), drv->name);
 
 	pm_runtime_get_suppliers(dev);
 	if (dev->parent)

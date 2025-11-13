@@ -17,6 +17,16 @@ Reduced func_buf from 150 zeros to single {0}, func_table and accent_table to {N
 Build: PASSES, make vm: PASSES, Hello World: PRINTS
 LOC: 297,261 -> 297,153 (108 LOC reduction)
 
+ATTEMPT 2: Stub keyboard.h (SUCCESS - 392 LOC)
+Reduced include/uapi/linux/keyboard.h from 465 lines to 53 lines.
+Removed hundreds of unused K_* key constant definitions (K_F1-F245, K_FIND, etc).
+Kept only essential macros: KG_* modifiers, KT_* key types, K()/KTYP()/KVAL().
+Removed duplicate struct definitions (kbdiacr*, already in kd.h).
+Build: PASSES, make vm: PASSES, Hello World: PRINTS
+LOC: 297,153 -> 296,761 (392 LOC reduction)
+
+Cumulative: 500 LOC reduced. Need 96,761 more (32.5% of current codebase).
+
 Continuing to find more reducible files...
 
 --- 2025-11-13 10:33 (continued) ---

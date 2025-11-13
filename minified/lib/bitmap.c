@@ -496,23 +496,6 @@ EXPORT_SYMBOL(bitmap_print_to_pagebuf);
  * @off: in the string from which we are copying, We copy to @buf
  * @count: the maximum number of bytes to print
  */
-static int bitmap_print_to_buf(bool list, char *buf, const unsigned long *maskp,
-		int nmaskbits, loff_t off, size_t count)
-{
-	const char *fmt = list ? "%*pbl\n" : "%*pb\n";
-	ssize_t size;
-	void *data;
-
-	data = kasprintf(GFP_KERNEL, fmt, nmaskbits, maskp);
-	if (!data)
-		return -ENOMEM;
-
-	size = memory_read_from_buffer(buf, count, &off, data, strlen(data) + 1);
-	kfree(data);
-
-	return size;
-}
-
 /**
  * bitmap_print_bitmask_to_buf  - convert bitmap to hex bitmask format ASCII string
  * @buf: buffer into which string is placed

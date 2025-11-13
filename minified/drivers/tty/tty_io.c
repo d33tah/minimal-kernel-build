@@ -1931,13 +1931,6 @@ long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	return retval;
 }
 
-static int this_tty(const void *t, struct file *file, unsigned fd)
-{
-	if (likely(file->f_op->read_iter != tty_read))
-		return 0;
-	return file_tty(file) != t ? 0 : fd + 1;
-}
-
 void __do_SAK(struct tty_struct *tty)
 {
 	

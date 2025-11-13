@@ -1201,44 +1201,6 @@ void *xa_find_after(struct xarray *xa, unsigned long *indexp,
 }
 EXPORT_SYMBOL(xa_find_after);
 
-static unsigned int xas_extract_present(struct xa_state *xas, void **dst,
-			unsigned long max, unsigned int n)
-{
-	void *entry;
-	unsigned int i = 0;
-
-	rcu_read_lock();
-	xas_for_each(xas, entry, max) {
-		if (xas_retry(xas, entry))
-			continue;
-		dst[i++] = entry;
-		if (i == n)
-			break;
-	}
-	rcu_read_unlock();
-
-	return i;
-}
-
-static unsigned int xas_extract_marked(struct xa_state *xas, void **dst,
-			unsigned long max, unsigned int n, xa_mark_t mark)
-{
-	void *entry;
-	unsigned int i = 0;
-
-	rcu_read_lock();
-	xas_for_each_marked(xas, entry, max, mark) {
-		if (xas_retry(xas, entry))
-			continue;
-		dst[i++] = entry;
-		if (i == n)
-			break;
-	}
-	rcu_read_unlock();
-
-	return i;
-}
-
 unsigned int xa_extract(struct xarray *xa, void **dst, unsigned long start,
 			unsigned long max, unsigned int n, xa_mark_t filter)
 {

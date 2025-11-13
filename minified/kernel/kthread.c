@@ -802,7 +802,6 @@ repeat:
 	raw_spin_unlock_irq(&worker->lock);
 
 	if (work) {
-		kthread_work_func_t func = work->func;
 		__set_current_state(TASK_RUNNING);
 		/* trace_sched_kthread_work_execute_start(work); */
 		work->func(work);

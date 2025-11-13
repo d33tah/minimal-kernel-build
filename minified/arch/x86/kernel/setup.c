@@ -504,8 +504,6 @@ static void __init trim_snb_memory(void)
 	if (!snb_gfx_workaround_needed())
 		return;
 
-	printk(KERN_DEBUG "reserving inaccessible SNB gfx pages\n");
-
 	/*
 	 * SandyBridge integrated graphics devices have a bug that prevents
 	 * them from accessing certain memory ranges, namely anything below

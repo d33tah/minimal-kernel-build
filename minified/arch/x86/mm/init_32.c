@@ -568,17 +568,13 @@ static void __init test_wp_bit(void)
 {
 	char z = 0;
 
-	printk(KERN_INFO "Checking if this processor honours the WP bit even in supervisor mode...");
-
 	__set_fixmap(FIX_WP_TEST, __pa_symbol(empty_zero_page), PAGE_KERNEL_RO);
 
 	if (copy_to_kernel_nofault((char *)fix_to_virt(FIX_WP_TEST), &z, 1)) {
 		clear_fixmap(FIX_WP_TEST);
-		printk(KERN_CONT "Ok.\n");
 		return;
 	}
 
-	printk(KERN_CONT "No.\n");
 	panic("Linux doesn't support CPUs with broken WP.");
 }
 

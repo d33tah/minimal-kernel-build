@@ -397,7 +397,6 @@ bool noirqdebug __read_mostly;
 int noirqdebug_setup(char *str)
 {
 	noirqdebug = 1;
-	printk(KERN_INFO "IRQ lockup detection disabled\n");
 
 	return 1;
 }

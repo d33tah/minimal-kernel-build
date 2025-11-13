@@ -1514,11 +1514,7 @@ static void set_mode(struct vc_data *vc, int on_off)
 				else
 					clr_kbd(vc, decckm);
 				break;
-			case 3:	
-#if 0
-				vc_resize(deccolm ? 132 : 80, vc->vc_rows);
-				
-#endif
+			case 3:
 				break;
 			case 5:			
 				if (vc->vc_decscnm != on_off) {

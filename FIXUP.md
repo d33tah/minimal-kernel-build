@@ -1,3 +1,48 @@
+--- 2025-11-13 03:35 ---
+SESSION RECOVERY - Reverted failed changes
+
+Previous attempt (03:05-03:21) removed:
+1. percpu-km.c (127 LOC) - FAILED: #included by mm/percpu.c
+2. irq_work.c (267 LOC) - SUCCESS: not compiled, not included
+3. include/crypto/ (1,948 LOC) - FAILED: included by linux/ima.h
+
+Build error after removals: crypto/hash_info.h not found
+Root cause: Didn't check if headers were transitively included
+Lesson: Must grep for includes in ALL files, not just direct <crypto/...> includes
+
+Reverted all 3 commits with git reset --hard HEAD~3
+Current state: Back to 96bee14, kernel builds and prints "Hello, World!"
+
+Will retry removal of ONLY irq_work.c (the one that actually worked).
+
+Note: irq_work.c doesn't exist at this commit (96bee14) - it was never there.
+The file was only present after a previous reduction attempt.
+
+--- 2025-11-13 03:38 ---
+SESSION END - No net progress (reverted changes)
+
+Session duration: 33 minutes (03:05 - 03:38)
+LOC at start: 295,806 (from mrproper + cloc)
+LOC at end: ~295,806 (after revert, back to starting point)
+Net reduction: 0 LOC
+Kernel: 415KB
+Build status: PASSING
+
+Commits made: 3 (all reverted with git reset --hard)
+
+Key learnings from failed attempt:
+1. percpu-km.c is #included by mm/percpu.c - can't remove even if not compiled directly
+2. crypto/ headers are transitively included (linux/ima.h includes crypto/hash_info.h)
+3. Need more thorough checking:
+   - Check if file is #included anywhere (not just if it compiles to .o)
+   - Check transitive includes, not just direct includes
+   - grep -r for filename, not just include path
+
+Successful strategy for next session:
+- Look for files that are both: not compiled AND not #included
+- Check ALL #include statements, not just those matching the pattern
+- Test incrementally - don't bundle multiple changes in one commit
+
 --- 2025-11-13 02:48 ---
 SESSION START - Continue LOC reduction from 286K to 200K
 

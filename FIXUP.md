@@ -38,6 +38,26 @@ Observations:
 Current approach:
 Will look for removal opportunities by identifying unused/unnecessary code in the largest files
 
+Investigation (21:05-21:10):
+Explored several reduction approaches:
+1. pr_debug/pr_notice statements: Most are in control structures (if/for), risky to remove individually
+2. Comment removal: Large files have minimal comments (e.g., page_alloc.c: 1 line)
+3. proc/sysfs code: Found 60 occurrences across 11 files - potential target
+4. Large files analysis:
+   - mm/page_alloc.c: 3,876 LOC - complex memory allocator, hard to reduce without breaking
+   - kernel/workqueue.c: 3,203 LOC - workqueue subsystem, likely needed
+   - drivers/tty/vt/vt.c: 3,914 LOC - VT console, needed for output but may have reducible portions
+
+Conclusion:
+Meaningful LOC reduction (78K lines needed) requires architectural changes:
+- Stubbing entire subsystems (workqueue simplification, memory management features)
+- TTY/VT layer simplification (we only need basic console write)
+- Removing unused syscalls (246 defined, need ~10)
+- Header reduction (1,237 files, could target 50% reduction)
+
+These changes need careful planning and testing. Current session focused on establishing baseline
+and identifying opportunities. Future sessions should tackle one large subsystem at a time.
+
 Progress (20:53-):
 
 --- 2025-11-13 20:32 ---

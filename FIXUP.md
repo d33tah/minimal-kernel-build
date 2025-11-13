@@ -1,3 +1,71 @@
+--- 2025-11-13 02:06 ---
+SESSION START - Continue LOC reduction
+
+Current LOC: 300,488 total (measured with cloc)
+Target: 200,000 LOC (need 100,488 more, 33.4% reduction)
+Kernel: 415KB (target: 400KB)
+Build status: PASSING - "Hello, World!" displayed
+
+Previous session findings:
+- Unity build approach in scheduler - files are #included not compiled separately
+- Cannot simply remove "uncompiled" files - they may be #included
+- kernel/events/ and arch/x86/events/ might be removable if truly not needed
+- arch/x86/lib/ instruction parsing might be removable
+
+Strategy for this session:
+Will investigate removal of entire subsystems that seem unnecessary:
+1. Check kernel/events/ directory - perf events subsystem
+2. Check arch/x86/events/ - architecture-specific perf code
+3. Look at arch/x86/lib/ instruction parsing/decoding
+4. Consider simplifying large headers if subsystem removal doesn't work
+
+Starting investigation...
+
+Analysis completed:
+- Events subsystem already minimal (stubs.c has 112 LOC, all others 1 line)
+- TTY subsystem: 11,458 LOC (vt.c=3945, tty_io.c=2396, n_tty.c=1812)
+- FS subsystem: 20,814 LOC (namei.c=3897, namespace.c=3880, dcache.c=2371)
+- Largest headers: fs.h(2521), atomic-fallback(2456), mm.h(2197)
+- Object file sizes: page_alloc(103K), vt(83K), namespace(82K), signal(72K)
+- 440 syscalls in syscall table (only need ~3 for init)
+- Workqueue: 3261 LOC, used 86 times (essential)
+- XZ decompression: 2181 LOC (needed for boot per previous notes)
+- insn decode: 2330 LOC (used in trap handler, likely boot-critical)
+
+Target for this attempt: Signal handling simplification
+Signal.c is 3111 LOC generating 72K object. Init only needs basic signal support.
+Will try to stub complex signal features while keeping basics.
+
+Detailed analysis findings:
+- Vmlinux contains only 97 total functions (T symbols) - extremely minimal
+- Comments/blanks: 161K lines (blank: 69K, comments: 92K)
+- Actual code: 295K lines (C: 164K, Headers: 119K)
+- Most included headers: export.h(184x), slab.h(119x), kernel.h(106x), mm.h(105x)
+- Stub files already minimal: random_stub.c(123 lines), posix-stubs.c(163 lines)
+- Build has 0 errors/warnings - very clean
+- All syscall stubs point to same address (aliased to sys_ni_posix_timers)
+
+Key insight: Headers are 40% of LOC but deeply interconnected
+- mm.h (2197 LOC) included 105 times
+- fs.h (2521 LOC) included 69 times
+- security.h (1567 LOC) included 44 times
+- atomic-fallback.h (2456 LOC) - generated, cannot easily modify
+
+The challenge: Need 100K LOC reduction (33%) from already near-optimal state
+Previous sessions documented failures of all "obvious" approaches:
+- Stubbing core functions → boot failures
+- Removing "uncompiled" files → build failures (unity build, #includes)
+- Disabling syscalls → boot failures
+
+Remaining options (all high-risk):
+1. Header consolidation/reduction (but breaking API surface is dangerous)
+2. TTY subsystem replacement with minimal write-only console (11K LOC → 1-2K?)
+3. VFS simplification (20K LOC in fs/ - could we make single-fs minimal VFS?)
+4. MM subsystem simplification (but page_alloc is boot-critical)
+
+Will attempt conservative TTY reduction as it's least likely to break boot.
+
+
 --- 2025-11-13 02:04 ---
 SESSION END - Found uncompiled files but removal approach failed
 

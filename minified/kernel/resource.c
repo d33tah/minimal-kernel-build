@@ -811,8 +811,6 @@ void insert_resource_expand_to_fit(struct resource *root, struct resource *new)
 			new->start = conflict->start;
 		if (conflict->end > new->end)
 			new->end = conflict->end;
-
-		printk("Expanded resource %s due to conflict with %s\n", new->name, conflict->name);
 	}
 	write_unlock(&resource_lock);
 }

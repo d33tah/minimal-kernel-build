@@ -620,13 +620,6 @@ static size_t copy_pipe_to_iter(const void *addr, size_t bytes,
 	return bytes;
 }
 
-static __wsum csum_and_memcpy(void *to, const void *from, size_t len,
-			      __wsum sum, size_t off)
-{
-	__wsum next = csum_partial_copy_nocheck(from, to, len);
-	return csum_block_add(sum, next, off);
-}
-
 size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
 {
 	if (unlikely(iov_iter_is_pipe(i)))
@@ -1215,33 +1208,6 @@ unsigned long iov_iter_gap_alignment(const struct iov_iter *i)
 }
 EXPORT_SYMBOL(iov_iter_gap_alignment);
 
-static ssize_t iter_xarray_populate_pages(struct page **pages, struct xarray *xa,
-					  pgoff_t index, unsigned int nr_pages)
-{
-	XA_STATE(xas, xa, index);
-	struct page *page;
-	unsigned int ret = 0;
-
-	rcu_read_lock();
-	for (page = xas_load(&xas); page; page = xas_next(&xas)) {
-		if (xas_retry(&xas, page))
-			continue;
-
-		/* Has the page moved or been split? */
-		if (unlikely(page != xas_reload(&xas))) {
-			xas_reset(&xas);
-			continue;
-		}
-
-		pages[ret] = find_subpage(page, xas.xa_index);
-		get_page(pages[ret]);
-		if (++ret == nr_pages)
-			break;
-	}
-	rcu_read_unlock();
-	return ret;
-}
-
 ssize_t iov_iter_get_pages(struct iov_iter *i,
 		   struct page **pages, size_t maxsize, unsigned maxpages,
 		   size_t *start)
@@ -1249,11 +1215,6 @@ ssize_t iov_iter_get_pages(struct iov_iter *i,
 	return -EFAULT;
 }
 EXPORT_SYMBOL(iov_iter_get_pages);
-
-static struct page **get_pages_array(size_t n)
-{
-	return kvmalloc_array(n, sizeof(struct page *), GFP_KERNEL);
-}
 
 ssize_t iov_iter_get_pages_alloc(struct iov_iter *i,
 		   struct page ***pages, size_t maxsize,

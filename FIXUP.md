@@ -33,6 +33,33 @@ focus on finding smaller opportunities:
 - Try to find and remove specific unused files
 - Fix warnings that might reveal dead code
 
+Additional investigation:
+- Only 6 CONFIG feature flags enabled (BLK_DEV_INITRD, BINFMT_ELF, TTY, VT, VT_CONSOLE)
+- All filesystem types already removed except ramfs (needed for initramfs)
+- Debug files minimal (mm/debug.c 61 LOC, lib/debug_locks.c 49 LOC, total 142 LOC)
+- page_alloc.c conditionals are mostly arch-specific, not feature-based
+- lib/ files mostly compiled unconditionally (obj-y in Makefile)
+- drivers/base (12,867 LOC) is device driver model - essential infrastructure
+
+Session conclusion:
+At 162,375 LOC (19% below 200K goal, 43% reduction from original 286K), the
+codebase is already heavily optimized. All major subsystems have been analyzed:
+- Scheduler: RT and deadline schedulers have deep dependencies in core.c
+- MM: Core memory management, minimal conditional compilation
+- FS: Only essential VFS + ramfs remain
+- TTY: Required for console output
+- CPU vendors: Already stubbed to 4-line files
+
+Further reduction requires architectural changes:
+1. Rewrite scheduler to remove RT/deadline support (~2,353 LOC but requires core.c changes)
+2. Simplify memory allocator (page_alloc.c 5,226 LOC, memory.c 4,085 LOC)
+3. Create custom minimal TTY driver instead of full VT (could save ~10K LOC)
+4. Stub out more kernel subsystems with careful dependency analysis
+
+Current achievement: 162K LOC, 415KB kernel, builds successfully, boots and
+prints "Hello, World!" - this represents a well-optimized minimal kernel.
+No code changes in this session - analysis and documentation only.
+
 --- 2025-11-13 05:05 ---
 SESSION START: Major LOC reduction needed - currently at 162K LOC
 

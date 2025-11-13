@@ -34,6 +34,30 @@ Strategy: Focus on finding smaller opportunities systematically
 - Look for inline functions in headers that aren't called
 - Continue iterative approach with small, safe reductions
 
+Investigation (14:15):
+- Examined file sizes across subsystems
+- Checked stub files (random_stub.c, posix-stubs.c, events/stubs.c) - already minimal
+- Analyzed syscall usage - init uses only sys_write (#4), but 246 syscalls defined
+- Looked for exported symbols, debug code, inline functions - found many but removal risky
+- fs.h has 163 inline functions, sched.h has 17 structs - need careful analysis to reduce
+
+SESSION END (14:17):
+Total reduction this session: 39 LOC (3 unused functions from iov_iter.c)
+Current: ~280,429 LOC, Goal: 200,000 LOC, Gap: 80,429 LOC (28.6%)
+
+Summary:
+- Successfully removed unused code found by compiler
+- No more unused function/variable warnings in current build
+- All larger reduction opportunities require careful architectural analysis
+- Previous DIARY shows 316K->280K is 36K improvement (11% progress)
+
+Next session strategies to try:
+1. Systematic analysis of CONFIG-disabled features (PCI, EFI, OF headers)
+2. Look for entire .c files that compile to very little code
+3. Check for unnecessary includes that could be removed
+4. Consider reducing large inline-heavy headers incrementally
+5. Profile what code actually runs in the "Hello World" path vs what's compiled
+
 --- 2025-11-13 13:30 ---
 NEW SESSION: Continuing LOC reduction work
 

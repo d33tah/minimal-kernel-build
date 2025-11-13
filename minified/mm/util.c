@@ -406,11 +406,6 @@ int __account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc,
 		mm->locked_vm = locked_vm - pages;
 	}
 
-	pr_debug("%s: [%d] caller %ps %c%lu %lu/%lu%s\n", __func__, task->pid,
-		 (void *)_RET_IP_, (inc) ? '+' : '-', pages << PAGE_SHIFT,
-		 locked_vm << PAGE_SHIFT, task_rlimit(task, RLIMIT_MEMLOCK),
-		 ret ? " - exceeded" : "");
-
 	return ret;
 }
 

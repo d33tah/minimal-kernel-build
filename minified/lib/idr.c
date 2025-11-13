@@ -580,8 +580,6 @@ static void ida_dump_entry(void *entry, unsigned long index)
 static void ida_dump(struct ida *ida)
 {
 	struct xarray *xa = &ida->xa;
-	pr_debug("ida: %p node %p free %d\n", ida, xa->xa_head,
-				xa->xa_flags >> ROOT_TAG_SHIFT);
 	ida_dump_entry(xa->xa_head, 0);
 }
 #endif

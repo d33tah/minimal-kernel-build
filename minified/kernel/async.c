@@ -120,15 +120,9 @@ static void async_run_entry_fn(struct work_struct *work)
 	ktime_t calltime;
 
 	/* 1) run (and print duration) */
-	pr_debug("calling  %lli_%pS @ %i\n", (long long)entry->cookie,
-		 entry->func, task_pid_nr(current));
 	calltime = ktime_get();
 
 	entry->func(entry->data, entry->cookie);
-
-	pr_debug("initcall %lli_%pS returned after %lld usecs\n",
-		 (long long)entry->cookie, entry->func,
-		 microseconds_since(calltime));
 
 	/* 2) remove self from the pending queues */
 	spin_lock_irqsave(&async_lock, flags);

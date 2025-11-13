@@ -51,8 +51,6 @@ static void class_release(struct kobject *kobj)
 	struct subsys_private *cp = to_subsys_private(kobj);
 	struct class *class = cp->class;
 
-	pr_debug("class '%s': release.\n", class->name);
-
 	if (class->class_release)
 		class->class_release(class);
 	else

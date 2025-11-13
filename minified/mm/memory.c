@@ -31,6 +31,7 @@
 #include <linux/userfaultfd_k.h>
 #include <linux/dax.h>
 #include <linux/oom.h>
+#include <linux/file.h>
 #include <linux/numa.h>
 #include <linux/perf_event.h>
 #include <linux/ptrace.h>

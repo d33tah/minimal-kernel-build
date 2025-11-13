@@ -1,3 +1,83 @@
+--- 2025-11-13 02:48 ---
+SESSION START - Continue LOC reduction from 286K to 200K
+
+Current LOC: 286,504 (measured with cloc in minified/)
+- C files: 158,715 LOC
+- Headers: 116,796 LOC (40.8% of total - MAJOR opportunity!)
+- Other: 10,993 LOC (make, asm, shell, etc.)
+
+Target: 200,000 LOC (need 86,504 reduction, 30.2%)
+Kernel: 415KB (target: 400KB)
+Build status: PASSING - "Hello, World!" displayed
+
+Strategy: Headers represent 41% of codebase - massive reduction opportunity
+- 1,226 header files with 116,796 LOC
+- Average 95 LOC per header
+- Many headers likely contain unused declarations, macros, inline functions
+- Plan: Identify largest headers and trim/consolidate them
+
+Will start by finding the largest headers to target first.
+
+Analysis of compiled files:
+- 484 object files compiled
+- Many CPU vendor files already stubbed (centaur, cyrix, transmeta, etc - 4 lines each)
+- intel.c: 1,274 LOC - MAJOR opportunity
+- amd.c: need to check size
+- common.c: 1,531 LOC - probably needed
+
+Strategy: Try stubbing intel.c and amd.c - these are CPU-specific features we likely don't need.
+Most systems work fine with generic x86 code.
+
+Attempt 1: Stub intel.c and amd.c (FAILED - kernel hangs at boot)
+- Reduced intel.c from 1,274 LOC to 12 LOC (stubs only)
+- Reduced amd.c from 1,001 LOC to 4 LOC (stub only)
+- Kernel built successfully (410KB)
+- BUT: Kernel hangs after "Booting from ROM..." - doesn't print "Hello, World!"
+- Conclusion: CPU-specific init code is CRITICAL for boot, cannot stub
+- Reverted changes
+
+Current status: Back to working state (415KB, 286,504 LOC)
+
+--- 2025-11-13 03:08 ---
+New Strategy: Focus on header reduction
+- CPU init code is boot-critical, can't be stubbed
+- Headers are 116,796 LOC (40.8% of codebase)
+- Need to find headers with unused code that can be trimmed
+- Top candidates: atomic-*.h (5,053 LOC auto-generated), perf_event.h (4,342 LOC), fs.h (2,521 LOC), mm.h (2,197 LOC)
+
+Next: Will try measuring kernel size after stubbing these large headers to understand impact
+
+--- 2025-11-13 03:09 ---
+SESSION END - One failed reduction attempt
+
+Session duration: 26 minutes
+LOC at start: 286,504 (measured cleanly)
+LOC at end: 286,504 (no change - intel/amd stub reverted)
+Kernel: 415KB (no change)
+Build status: PASSING
+
+Summary:
+1. Attempted to stub intel.c (1,274 LOC) and amd.c (1,001 LOC)
+2. Build succeeded but kernel failed to boot (hangs after "Booting from ROM...")
+3. Confirmed CPU vendor init code is boot-critical and cannot be stubbed
+4. Reverted changes
+5. Analyzed codebase: 484 object files, headers are 41% of code (116,796 LOC)
+
+Key learnings:
+- CPU vendor-specific init (Intel/AMD) is absolutely required for boot
+- Even with stub functions providing required symbols, kernel won't boot without real init
+- Headers remain the best opportunity (116,796 LOC, 41% of total)
+- Largest headers: atomic (5K LOC), perf (4K LOC), fs.h (2.5K LOC), mm.h (2.2K LOC)
+
+The challenge: Need 86,504 LOC reduction (30.2%) from near-optimal state.
+Previous sessions showed only 97 functions in vmlinux - extremely minimal.
+All straightforward reductions already attempted and either completed or failed.
+
+Remaining approach requires careful header analysis:
+- Identify which headers contain unused inline functions/macros
+- Trim headers without breaking compilation
+- Focus on auto-generated headers (atomic) which may have excessive fallbacks
+
 --- 2025-11-13 02:23 ---
 SESSION START - Blank line removal attempt
 

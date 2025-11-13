@@ -3505,11 +3505,6 @@ void __ref build_all_zonelists(pg_data_t *pgdat)
 		page_group_by_mobility_disabled = 1;
 	else
 		page_group_by_mobility_disabled = 0;
-
-	pr_info("Built %u zonelists, mobility grouping %s.  Total pages: %ld\n",
-		nr_online_nodes,
-		page_group_by_mobility_disabled ? "off" : "on",
-		vm_total_pages);
 }
 
 static bool __meminit
@@ -4692,15 +4687,6 @@ void __init mem_init_print_info(void)
 	adj_init_size(_sdata, _edata, datasize, __start_rodata, rosize);
 
 #undef	adj_init_size
-
-	pr_info("Memory: %luK/%luK available (%luK kernel code, %luK rwdata, %luK rodata, %luK init, %luK bss, %luK reserved, %luK cma-reserved"
-		")\n",
-		K(nr_free_pages()), K(physpages),
-		codesize >> 10, datasize >> 10, rosize >> 10,
-		(init_data_size + init_code_size) >> 10, bss_size >> 10,
-		K(physpages - totalram_pages() - totalcma_pages),
-		K(totalcma_pages)
-		);
 }
 
 void __init set_dma_reserve(unsigned long new_dma_reserve)

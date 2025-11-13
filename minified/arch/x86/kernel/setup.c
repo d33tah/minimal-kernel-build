@@ -20,7 +20,6 @@
 #include <linux/root_dev.h>
 #include <linux/hugetlb.h>
 #include <linux/tboot.h>
-#include <linux/usb/xhci-dbgp.h>
 #include <linux/static_call.h>
 #include <linux/swiotlb.h>
 
@@ -952,9 +951,6 @@ void __init setup_arch(char **cmdline_p)
 	reserve_crashkernel();
 
 	memblock_find_dma_reserve();
-
-	if (!early_xdbc_setup_hardware())
-		early_xdbc_register_console();
 
 	x86_init.paging.pagetable_init();
 

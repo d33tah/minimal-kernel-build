@@ -1,3 +1,38 @@
+--- 2025-11-13 05:54 ---
+SESSION START: Focusing on subsystem-level reductions
+
+Verified current status:
+- Total: 162,375 LOC (158,717 C + 3,658 make)
+- Kernel: 415KB
+- Build: PASSING ✓
+- Output: "Hello, World!" ✓
+- Goal: 200K LOC (ACHIEVED!) - continuing for maximum reduction
+
+Subsystem breakdown (C code only):
+- Kernel: 54,051 LOC (34% of total) - includes sched 9,576 LOC
+- MM: 38,417 LOC (24% of total)
+- FS: 27,427 LOC (17% of total)
+- TTY: 15,388 LOC (10% of total)
+- Total from these 4: 135,283 LOC (85% of total C code)
+
+Analysis and attempts:
+1. CPU vendor support files already minimized to 4-line stubs (centaur, cyrix, etc)
+2. Scheduler subsystem (9,576 LOC) includes:
+   - rt.c (1,074 LOC) - real-time scheduler
+   - deadline.c (1,279 LOC) - deadline scheduler
+   - Attempted to remove rt.c and deadline.c but core.c has dependencies
+   - These would require extensive stubbing (many functions referenced)
+3. TTY/VT subsystem is required for console output - cannot easily remove
+4. Major subsystems (MM, FS, kernel) are deeply interdependent
+
+Strategy shift:
+Instead of trying to remove entire subsystems (high risk, complex dependencies),
+focus on finding smaller opportunities:
+- Look for unused functions within files
+- Search for conditionally compiled code that could be disabled
+- Try to find and remove specific unused files
+- Fix warnings that might reveal dead code
+
 --- 2025-11-13 05:05 ---
 SESSION START: Major LOC reduction needed - currently at 162K LOC
 

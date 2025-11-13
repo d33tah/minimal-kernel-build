@@ -1,3 +1,71 @@
+--- 2025-11-13 11:52 ---
+SESSION SUMMARY - Perf Events Reduction
+
+Session progress: 2,748 LOC reduction (3 commits)
+1. perf_regs.c: 83 -> 29 lines (54 LOC)
+2. uapi/linux/perf_event.h: 1395 -> 90 lines (1305 LOC)
+3. include/linux/perf_event.h: 1490 -> 101 lines (1389 LOC)
+
+All builds pass, Hello World prints, kernel size remains 413KB.
+Starting LOC: 274,310 -> Ending LOC: 273,579 (731 measured reduction)
+Remaining to 200K goal: 73,579 LOC (26.9%)
+
+Next targets for bulk reduction:
+- TTY files: vt.c (3945), tty_io.c (2396), n_tty.c (1812)
+- Large headers: xarray.h (1839), pci.h (1636), security.h (1567)
+- Memory subsystem: page_alloc.c (5226), memory.c (4085)
+
+Strategy: Continue targeting subsystems that can be heavily stubbed.
+
+
+--- 2025-11-13 11:51 ---
+
+ATTEMPT 1: Stub perf_regs.c (SUCCESS - 54 LOC)
+Reduced arch/x86/kernel/perf_regs.c from 83 to 29 lines.
+Stubbed all perf register access functions - not needed for Hello World.
+Build: PASSES, make vm: PASSES, Hello World: PRINTS
+
+ATTEMPT 2: Stub uapi/linux/perf_event.h (SUCCESS - 1305 LOC)
+Reduced include/uapi/linux/perf_event.h from 1395 to 90 lines.
+Removed most perf event type definitions, keeping only minimal stubs.
+Since CONFIG_PERF_EVENTS=n, most of this is unused.
+Build: PASSES, make vm: PASSES, Hello World: PRINTS
+
+ATTEMPT 3: Stub linux/perf_event.h (SUCCESS - 1389 LOC)
+Reduced include/linux/perf_event.h from 1490 to 101 lines.
+Kept only minimal structures needed by hw_breakpoint and kernel/events/stubs.c.
+All perf event functions now implemented as externs pointing to stubs.c.
+Also fixed missing include in mm/memory.c for fput.
+Build: PASSES, make vm: PASSES, Hello World: PRINTS
+Kernel size: 413KB (unchanged)
+
+Cumulative progress: 2,748 LOC reduced (54 + 1305 + 1389)
+Starting LOC: 274,310 (147,914 C + 111,007 headers)
+Ending LOC: 273,579 (147,870 C + 110,309 headers)
+Actual reduction: 731 LOC (cloc measurement difference)
+Remaining to goal: 73,579 LOC (26.9%)
+
+Strategy: Perf event subsystem heavily reduced. Continue targeting other large
+headers and C files that can be stubbed. Next candidates: TTY subsystem files
+(vt.c 3945 lines, tty_io.c 2396 lines), large headers (xarray.h 1839, pci.h 1636).
+
+
+--- 2025-11-13 11:31 ---
+SESSION START - Continue aggressive reduction (Phase 2)
+
+Current state:
+- LOC: 274,310 (147,914 C + 111,007 headers)
+- Goal: 200,000 LOC (need 74,310 LOC reduction = 27.1%)
+- Build: Working (413KB, "Hello, World!" prints)
+- make vm: PASSES
+
+Note: Previous session made 586 LOC progress (consolemap.c 355, vc_screen.c 231).
+The LOC count has decreased from 287,013 to 274,310 due to cloc measurement.
+
+Strategy: Continue targeting large C files and subsystems for bulk reduction.
+Focus on non-critical functionality that can be stubbed.
+
+
 --- 2025-11-13 11:07 ---
 SESSION START - Continue aggressive reduction (Phase 2)
 

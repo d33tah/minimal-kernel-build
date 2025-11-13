@@ -3,6 +3,7 @@
 #define _ASM_GENERIC_RESOURCE_H
 
 #include <uapi/asm-generic/resource.h>
+#include <uapi/linux/mqueue.h>
 
 
 /*

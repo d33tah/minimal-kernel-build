@@ -22,7 +22,6 @@
 /* #include <linux/nfs_fs.h> */
 /* #include <linux/nfs_fs_sb.h> */
 /* #include <linux/nfs_mount.h> */
-#include <linux/raid/detect.h>
 #include <uapi/linux/mount.h>
 
 #include "do_mounts.h"
@@ -344,8 +343,6 @@ void __init prepare_namespace(void)
 	 * for the touchpad of a laptop to initialize.
 	 */
 	wait_for_device_probe();
-
-	md_run_setup();
 
 	if (saved_root_name[0]) {
 		root_device_name = saved_root_name;

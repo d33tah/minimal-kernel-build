@@ -258,13 +258,9 @@ void async_synchronize_cookie_domain(async_cookie_t cookie, struct async_domain 
 {
 	ktime_t starttime;
 
-	pr_debug("async_waiting @ %i\n", task_pid_nr(current));
 	starttime = ktime_get();
 
 	wait_event(async_done, lowest_in_progress(domain) >= cookie);
-
-	pr_debug("async_continuing @ %i after %lli usec\n", task_pid_nr(current),
-		 microseconds_since(starttime));
 }
 
 /**

@@ -72,25 +72,6 @@ static void printk_stack_address(unsigned long address, int reliable,
 	printk("%s %s%pBb\n", log_lvl, reliable ? "" : "? ", (void *)address);
 }
 
-static int copy_code(struct pt_regs *regs, u8 *buf, unsigned long src,
-		     unsigned int nbytes)
-{
-	if (!user_mode(regs))
-		return copy_from_kernel_nofault(buf, (u8 *)src, nbytes);
-
-	/* The user space code from other tasks cannot be accessed. */
-	if (regs != task_pt_regs(current))
-		return -EPERM;
-
-	/*
-	 * Even if named copy_from_user_nmi() this can be invoked from
-	 * other contexts and will not try to resolve a pagefault, which is
-	 * the correct thing to do here as this code can be called from any
-	 * context.
-	 */
-	return copy_from_user_nmi(buf, (void __user *)src, nbytes);
-}
-
 /*
  * There are a couple of reasons for the 2/3rd prologue, courtesy of Linus:
  *

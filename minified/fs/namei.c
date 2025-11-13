@@ -686,8 +686,6 @@ static inline void put_link(struct nameidata *nd)
 
 static int sysctl_protected_symlinks __read_mostly;
 static int sysctl_protected_hardlinks __read_mostly;
-static int sysctl_protected_fifos __read_mostly;
-static int sysctl_protected_regular __read_mostly;
 
 static inline int may_follow_link(struct nameidata *nd, const struct inode *inode)
 {

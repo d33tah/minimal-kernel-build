@@ -1084,13 +1084,6 @@ static void __split_lock_reenable(struct work_struct *work)
  *
  * Unconditionally re-enable detection here.
  */
-static int splitlock_cpu_offline(unsigned int cpu)
-{
-	sld_update_msr(true);
-
-	return 0;
-}
-
 static DECLARE_DELAYED_WORK(split_lock_reenable, __split_lock_reenable);
 
 static void split_lock_warn(unsigned long ip)

@@ -3402,24 +3402,7 @@ void si_meminfo(struct sysinfo *val)
 
 EXPORT_SYMBOL(si_meminfo);
 
-static bool show_mem_node_skip(unsigned int flags, int nid, nodemask_t *nodemask)
-{
-	if (!(flags & SHOW_MEM_FILTER_NODES))
-		return false;
-
-	
-	if (!nodemask)
-		nodemask = &cpuset_current_mems_allowed;
-
-	return !node_isset(nid, *nodemask);
-}
-
 #define K(x) ((x) << (PAGE_SHIFT-10))
-
-static void show_migration_types(unsigned char type)
-{
-	
-}
 
 void show_free_areas(unsigned int filter, nodemask_t *nodemask)
 {

@@ -16,8 +16,6 @@
 
 /* Minimal stub for nsfs - namespace operations not used in minimal kernel */
 
-static struct vfsmount *nsfs_mnt;
-
 const struct dentry_operations ns_dentry_operations = {
 	.d_delete	= always_delete_dentry,
 };

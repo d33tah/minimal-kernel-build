@@ -1,3 +1,59 @@
+--- 2025-11-13 03:48 ---
+FAILED ATTEMPT: Removing uncompiled lib files
+
+Attempted to remove 69 uncompiled lib/*.c files (20,868 LOC).
+Result: Build failed - files are referenced in lib/Makefile for lib.a
+
+Error: "make[1]: *** No rule to make target 'lib/argv_split.o', needed by 'lib/lib.a'"
+
+Root cause: Even though files aren't compiled directly, they're listed in Makefile
+to be included in lib.a static library.
+
+Lesson: Can't just delete source files - must also update Makefiles OR stub the files
+to minimal implementations.
+
+Reverted all changes with: git checkout minified/lib/
+
+New strategy needed: Either:
+1. Modify lib/Makefile to remove these object references
+2. Stub the functions in these files instead of deleting
+3. Look for a different reduction target
+
+Will try modifying Makefiles to remove obj references next.
+
+--- 2025-11-13 03:43 ---
+ANALYSIS: Found 69 uncompiled lib/*.c files (20,868 LOC)
+
+These files are neither compiled nor #included by any other file.
+Total: 20,868 LOC potential reduction (7.3% of total codebase)
+
+Strategy: Remove all uncompiled lib files in one commit, test build
+If successful, this will reduce from 286,504 LOC to ~265,636 LOC
+
+Files to remove: argv_split.c, bcd.c, bitmap.c, bsearch.c, bucket_locks.c,
+buildid.c, bust_spinlocks.c, clz_ctz.c, cmdline.c, ctype.c, debug_locks.c,
+dec_and_lock.c, decompress.c, decompress_unxz.c, devres.c, earlycpio.c,
+errseq.c, extable.c, find_bit.c, flex_proportions.c, and 49 more.
+
+Proceeding with removal...
+
+--- 2025-11-13 03:38 ---
+SESSION START - Continue reduction from 286,504 LOC to 200K target
+
+Current state:
+- LOC: 286,504 (C: 158,715, Headers: 116,796, Other: 10,993)
+- Kernel: 415KB
+- Build: PASSING, prints "Hello, World!"
+- Branch goal: 400KB kernel, 200K LOC
+
+Previous session learnings:
+- CPU init code (intel.c, amd.c) is boot-critical, cannot stub
+- Headers are often transitively included, need thorough checking
+- Must verify files are neither compiled NOR #included before removing
+
+New strategy: Look for large compiled files that might be reducible
+Will search for largest .c files that compile to .o and assess if they're needed.
+
 --- 2025-11-13 03:35 ---
 SESSION RECOVERY - Reverted failed changes
 

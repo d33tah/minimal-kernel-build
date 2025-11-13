@@ -37,7 +37,17 @@ SUCCESS: Removed 4 more unused lib files (52 LOC total):
 - Build: PASSING ✓
 - Output: "Hello, World!" ✓
 - Reduction: ~38 LOC net (from 167,560 to 167,522)
-- Total session reduction: 63 LOC (167,585 → 167,522)
+
+SUCCESS: Removed 5 more unused files (69 LOC total):
+- lib/nodemask.c (15 LOC) - __next_node_in() unused
+- lib/bcd.c (15 LOC) - _bcd2bin/_bin2bcd unused
+- kernel/dma.c (16 LOC) - request_dma/free_dma unused
+- kernel/exec_domain.c (22 LOC) - personality syscall unused
+- lib/logic_pio.c (16 LOC) - logic PIO functions unused
+- Build: PASSING ✓
+- Output: "Hello, World!" ✓
+- Reduction: ~54 LOC net (from 167,522 to 167,468)
+- Total session reduction: 117 LOC (167,585 → 167,468)
 
 --- 2025-11-13 07:17 ---
 SESSION END: Attempted syscall stubbing, no progress

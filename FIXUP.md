@@ -23,6 +23,67 @@ Strategy for this session:
 3. Focus on medium-sized reductions (100-500 LOC each)
 4. Consider header reduction in disabled CONFIG features
 
+Progress (14:40):
+- Removed 14 remaining EXPORT_PER_CPU_SYMBOL macros from 9 files
+- Build: PASSES, make vm: PASSES, Hello World: PRINTS
+- New LOC: 277,247 (down from 277,261)
+- Reduction: 14 LOC
+- Committed and pushed: f8a7492
+
+Progress (14:44):
+- Ran find_unused_headers3.sh to identify unused headers
+- Found many potentially unused headers, largest:
+  * pci_regs.h (1106 lines) - but included by uapi/linux/pci.h
+  * vmlinux.lds.h (914 lines)
+  * input.h (580 lines) - CONFIG_INPUT is not set
+  * xz.h (370 lines)
+- Need to be careful: previous sessions had VM hangs from aggressive header removal
+- Headers might be transitively included even if not directly #included
+
+Analysis:
+- Total 788 headers, goal per instructions is ~20% = 158 headers (need to remove 630!)
+- Current gap to 200K: 77,247 LOC (27.9%)
+- Small incremental reductions (14 LOC) are insufficient for the gap
+- Need to find bigger opportunities while maintaining build+VM functionality
+
+Next strategy:
+- Look for large C files with debug/optional functionality that can be stubbed
+- Consider CONFIG options that could disable entire subsystems
+- Try to identify entire .c files that compile to very little actual code
+
+Progress (14:46):
+- Reviewed DIARY.md from 2025-11-12 at 316K LOC
+- DIARY concluded that reaching 200K would require fundamental architectural changes
+- Since then: reduced from 316K to 277K (39K = 12% reduction!) - significant progress!
+- Still need 77K LOC (27.9%) to reach 200K goal
+
+Key insight from DIARY:
+At 316K, analysis showed all large files are essential:
+- MM files (page_alloc, memory): core functionality
+- FS files (namei, namespace): essential VFS
+- Workqueue: needed by drivers
+- VT/TTY: required for console I/O
+- Headers: 111K LOC (40% of total)
+
+However, 39K was removed since that analysis by:
+1. Removing EXPORT_SYMBOL macros (11,747 LOC)
+2. Other incremental optimizations (27K LOC)
+
+This shows that incremental progress IS possible beyond what was thought!
+
+Current opportunities being explored:
+- 788 headers vs target of ~158 (20%) = need to remove 630 headers
+- find_unused_headers3.sh found candidates: pci_regs.h (1106), vmlinux.lds.h (914), input.h (580), xz.h (370)
+- 372 pr_debug/pr_info/pr_warn statements
+- Debug and show_ functions in various files
+- CONFIG-disabled features that still have large header files
+
+Challenges:
+- Previous sessions had VM hangs from aggressive header removal
+- Headers might be transitively included
+- Most code is actually used (compiler already eliminates unused)
+- Need to find 77K LOC in places that won't break functionality
+
 --- 2025-11-13 14:16 ---
 NEW SESSION: Continue systematic LOC reduction
 

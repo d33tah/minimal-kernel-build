@@ -28,6 +28,32 @@ Actions (11:23-):
    - Can create minimal stubs for both
 
 Attempting perf header reduction (11:30):
+4. Successfully stubbed perf headers:
+   - arch/x86/include/asm/perf_event.h: 518 -> 65 lines (added asm/stacktrace.h)
+   - arch/x86/events/perf_event.h: 1457 -> 10 lines (unused header, minimal stub)
+   - include/uapi/linux/perf_event.h: 1395 -> 133 lines (kept perf_event_attr struct)
+   Total reduction: 3162 lines in headers -> 208 lines
+
+5. Build test: PASSED ✓
+   - Initial build failed with show_opcodes undefined
+   - Fixed by adding #include <asm/stacktrace.h> to asm/perf_event.h
+   - make vm now works perfectly
+
+6. Committed and pushed (11:33)
+   - Commit 44d099a: "Stub perf_event headers to reduce LOC (3162 lines saved)"
+   - New LOC: 276,380 (down from 277,966)
+   - Actual reduction: 1,586 LOC by cloc (header line counting differs)
+   - Gap to 200K: 76,380 LOC (27.6% reduction needed)
+
+Session summary (11:35):
+SUCCESS - Reduced 1,586 LOC through perf header stubbing.
+Strategy was effective: targeting large unused/minimally-used headers.
+
+Next steps for future sessions:
+- Continue attacking large headers (110k LOC, 41% of codebase)
+- Look for more subsystem headers that can be minimized
+- Candidates: EFI headers (1249 LOC), OF headers (931 LOC), crypto headers
+- Could also try removing unused driver headers
 
 --- 2025-11-14 11:06 ---
 SESSION START (11:06):

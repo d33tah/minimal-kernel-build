@@ -61,6 +61,36 @@ Strategy: Logging removal has limited impact (only ~10 LOC per commit). Need to:
 3. Look for unused syscalls and stub them out
 4. Simplify large files (vt.c 3610 LOC, namespace.c 3857 LOC)
 
+3. SUCCESS - Removed filesystem warning messages (18:35-18:40):
+   - fs/exec.c: Removed executable stack and NULL argv warnings (6 LOC)
+   - fs/namespace.c: Removed mount-related warnings (17 LOC)
+   - Total: 23 LOC removed
+   - Binary: 375KB (unchanged)
+   - Build successful, "Hello, World!" printed
+   - Committed & pushed
+
+SESSION COMPLETE (18:40):
+- Total LOC removed this session: 33 (10 from printk + 23 from fs)
+- Starting LOC: 257,823 (estimated based on previous)
+- Final LOC: 257,792 (C+headers, measured with cloc)
+- Actual removed: 31 LOC net (some discrepancy due to measurement timing)
+- Gap to 200K goal: 57,792 LOC (22.4% reduction needed)
+- Binary: 375KB, make vm working, Hello World printing
+- Commits: 2 (printk warnings, fs warnings)
+- Time spent: ~16 minutes
+
+Summary: Successfully removed 33 LOC of logging statements from printk and fs subsystems.
+Binary size unchanged at 375KB. Both commits tested and pushed successfully.
+Avoided mm subsystem after discovering that some warnings may be critical for boot.
+Strategy of removing logging messages has limited impact (~10-23 LOC per commit).
+
+Next session should focus on:
+1. Larger code block removal (entire unused subsystems)
+2. Header file reduction (108K LOC, 42% of codebase)
+3. Stubbing unused syscalls and features
+4. Simplifying large files (vt.c, namespace.c, signal.c)
+
+
 Note: Attempted mm subsystem warning removal but it broke boot - some warnings
 may be critical for initialization. Stick to safer areas like printk/console.
 

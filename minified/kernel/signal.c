@@ -197,9 +197,6 @@ static inline void print_dropped_signal(int sig)
 
 	if (!__ratelimit(&ratelimit_state))
 		return;
-
-	pr_info("%s/%d: reached RLIMIT_SIGPENDING, dropped signal %d\n",
-				current->comm, current->pid, sig);
 }
 
 bool task_set_jobctl_pending(struct task_struct *task, unsigned long mask)

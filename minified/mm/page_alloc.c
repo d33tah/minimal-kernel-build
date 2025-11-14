@@ -408,8 +408,6 @@ void init_mem_debugging_and_hardening(void)
 
 	if ((_init_on_alloc_enabled_early || _init_on_free_enabled_early) &&
 	    page_poisoning_requested) {
-		pr_info("mem auto-init: CONFIG_PAGE_POISONING is on, "
-			"will take precedence over init_on_alloc and init_on_free\n");
 		_init_on_alloc_enabled_early = false;
 		_init_on_free_enabled_early = false;
 	}
@@ -3589,9 +3587,6 @@ static void __init init_unavailable_range(unsigned long spfn,
 		pgcnt++;
 	}
 
-	if (pgcnt)
-		pr_info("On node %d, zone %s: %lld pages in unavailable ranges",
-			node, zone_names[zone], pgcnt);
 }
 
 static void __init memmap_init_zone_range(struct zone *zone,
@@ -5033,10 +5028,6 @@ void *__init alloc_large_system_hash(const char *tablename,
 
 	if (!table)
 		panic("Failed to allocate %s hash table\n", tablename);
-
-	pr_info("%s hash table entries: %ld (order: %d, %lu bytes, %s)\n",
-		tablename, 1UL << log2qty, ilog2(size) - PAGE_SHIFT, size,
-		virt ? (huge ? "vmalloc hugepage" : "vmalloc") : "linear");
 
 	if (_hash_shift)
 		*_hash_shift = log2qty;

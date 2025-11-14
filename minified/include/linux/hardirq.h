@@ -5,7 +5,6 @@
 #include <linux/context_tracking_state.h>
 #include <linux/preempt.h>
 #include <linux/lockdep.h>
-#include <linux/ftrace_irq.h>
 #include <linux/sched.h>
 #include <linux/vtime.h>
 #include <asm/hardirq.h>
@@ -117,7 +116,6 @@ static inline void rcu_nmi_exit(void) { }
 		lockdep_hardirq_enter();			\
 		rcu_nmi_enter();				\
 		instrumentation_begin();			\
-		ftrace_nmi_enter();				\
 		instrumentation_end();				\
 	} while (0)
 
@@ -132,7 +130,6 @@ static inline void rcu_nmi_exit(void) { }
 #define nmi_exit()						\
 	do {							\
 		instrumentation_begin();			\
-		ftrace_nmi_exit();				\
 		instrumentation_end();				\
 		rcu_nmi_exit();					\
 		lockdep_hardirq_exit();				\

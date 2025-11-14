@@ -439,7 +439,6 @@ irqentry_state_t noinstr irqentry_nmi_enter(struct pt_regs *regs)
 
 	instrumentation_begin();
 	/* trace_hardirqs_off_finish(); */
-	ftrace_nmi_enter();
 	instrumentation_end();
 
 	return irq_state;
@@ -448,7 +447,6 @@ irqentry_state_t noinstr irqentry_nmi_enter(struct pt_regs *regs)
 void noinstr irqentry_nmi_exit(struct pt_regs *regs, irqentry_state_t irq_state)
 {
 	instrumentation_begin();
-	ftrace_nmi_exit();
 	if (irq_state.lockdep) {
 		/* trace_hardirqs_on_prepare(); */
 		lockdep_hardirqs_on_prepare();

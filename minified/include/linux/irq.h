@@ -239,31 +239,6 @@ enum {
 
 #define __irqd_to_state(d) ACCESS_PRIVATE((d)->common, state_use_accessors)
 
-static inline bool irqd_is_setaffinity_pending(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_SETAFFINITY_PENDING;
-}
-
-static inline bool irqd_is_per_cpu(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_PER_CPU;
-}
-
-static inline bool irqd_can_balance(struct irq_data *d)
-{
-	return !(__irqd_to_state(d) & (IRQD_PER_CPU | IRQD_NO_BALANCING));
-}
-
-static inline bool irqd_affinity_was_set(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_AFFINITY_SET;
-}
-
-static inline void irqd_mark_affinity_was_set(struct irq_data *d)
-{
-	__irqd_to_state(d) |= IRQD_AFFINITY_SET;
-}
-
 static inline bool irqd_trigger_type_was_set(struct irq_data *d)
 {
 	return __irqd_to_state(d) & IRQD_DEFAULT_TRIGGER_SET;
@@ -285,50 +260,10 @@ static inline void irqd_set_trigger_type(struct irq_data *d, u32 type)
 	__irqd_to_state(d) |= IRQD_DEFAULT_TRIGGER_SET;
 }
 
-static inline bool irqd_is_level_type(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_LEVEL;
-}
-
 /*
  * Must only be called of irqchip.irq_set_affinity() or low level
  * hierarchy domain allocation functions.
  */
-static inline void irqd_set_single_target(struct irq_data *d)
-{
-	__irqd_to_state(d) |= IRQD_SINGLE_TARGET;
-}
-
-static inline bool irqd_is_single_target(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_SINGLE_TARGET;
-}
-
-static inline void irqd_set_handle_enforce_irqctx(struct irq_data *d)
-{
-	__irqd_to_state(d) |= IRQD_HANDLE_ENFORCE_IRQCTX;
-}
-
-static inline bool irqd_is_handle_enforce_irqctx(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_HANDLE_ENFORCE_IRQCTX;
-}
-
-static inline bool irqd_is_enabled_on_suspend(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_IRQ_ENABLED_ON_SUSPEND;
-}
-
-static inline bool irqd_is_wakeup_set(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_WAKEUP_STATE;
-}
-
-static inline bool irqd_can_move_in_process_context(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_MOVE_PCNTXT;
-}
-
 static inline bool irqd_irq_disabled(struct irq_data *d)
 {
 	return __irqd_to_state(d) & IRQD_IRQ_DISABLED;
@@ -342,26 +277,6 @@ static inline bool irqd_irq_masked(struct irq_data *d)
 static inline bool irqd_irq_inprogress(struct irq_data *d)
 {
 	return __irqd_to_state(d) & IRQD_IRQ_INPROGRESS;
-}
-
-static inline bool irqd_is_wakeup_armed(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_WAKEUP_ARMED;
-}
-
-static inline bool irqd_is_forwarded_to_vcpu(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_FORWARDED_TO_VCPU;
-}
-
-static inline void irqd_set_forwarded_to_vcpu(struct irq_data *d)
-{
-	__irqd_to_state(d) |= IRQD_FORWARDED_TO_VCPU;
-}
-
-static inline void irqd_clr_forwarded_to_vcpu(struct irq_data *d)
-{
-	__irqd_to_state(d) &= ~IRQD_FORWARDED_TO_VCPU;
 }
 
 static inline bool irqd_affinity_is_managed(struct irq_data *d)
@@ -389,57 +304,7 @@ static inline bool irqd_is_started(struct irq_data *d)
 	return __irqd_to_state(d) & IRQD_IRQ_STARTED;
 }
 
-static inline bool irqd_is_managed_and_shutdown(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_MANAGED_SHUTDOWN;
-}
-
-static inline void irqd_set_can_reserve(struct irq_data *d)
-{
-	__irqd_to_state(d) |= IRQD_CAN_RESERVE;
-}
-
-static inline void irqd_clr_can_reserve(struct irq_data *d)
-{
-	__irqd_to_state(d) &= ~IRQD_CAN_RESERVE;
-}
-
-static inline bool irqd_can_reserve(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_CAN_RESERVE;
-}
-
-static inline void irqd_set_msi_nomask_quirk(struct irq_data *d)
-{
-	__irqd_to_state(d) |= IRQD_MSI_NOMASK_QUIRK;
-}
-
-static inline void irqd_clr_msi_nomask_quirk(struct irq_data *d)
-{
-	__irqd_to_state(d) &= ~IRQD_MSI_NOMASK_QUIRK;
-}
-
-static inline bool irqd_msi_nomask_quirk(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_MSI_NOMASK_QUIRK;
-}
-
-static inline void irqd_set_affinity_on_activate(struct irq_data *d)
-{
-	__irqd_to_state(d) |= IRQD_AFFINITY_ON_ACTIVATE;
-}
-
-static inline bool irqd_affinity_on_activate(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_AFFINITY_ON_ACTIVATE;
-}
-
 #undef __irqd_to_state
-
-static inline irq_hw_number_t irqd_to_hwirq(struct irq_data *d)
-{
-	return d->hwirq;
-}
 
 /**
  * struct irq_chip - hardware interrupt chip descriptor
@@ -597,10 +462,6 @@ extern int irq_set_vcpu_affinity(unsigned int irq, void *vcpu_info);
 
 # define irq_affinity_online_cpu	NULL
 
-static inline void irq_move_irq(struct irq_data *data) { }
-static inline void irq_move_masked_irq(struct irq_data *data) { }
-static inline void irq_force_complete_move(struct irq_desc *desc) { }
-
 extern int no_irq_affinity;
 
 int irq_set_parent(int irq, int parent_irq);
@@ -700,34 +561,6 @@ static inline void irq_clear_status_flags(unsigned int irq, unsigned long clr)
 	irq_modify_status(irq, clr, 0);
 }
 
-static inline void irq_set_noprobe(unsigned int irq)
-{
-	irq_modify_status(irq, 0, IRQ_NOPROBE);
-}
-
-static inline void irq_set_probe(unsigned int irq)
-{
-	irq_modify_status(irq, IRQ_NOPROBE, 0);
-}
-
-static inline void irq_set_nothread(unsigned int irq)
-{
-	irq_modify_status(irq, 0, IRQ_NOTHREAD);
-}
-
-static inline void irq_set_thread(unsigned int irq)
-{
-	irq_modify_status(irq, IRQ_NOTHREAD, 0);
-}
-
-static inline void irq_set_nested_thread(unsigned int irq, bool nest)
-{
-	if (nest)
-		irq_set_status_flags(irq, IRQ_NESTED_THREAD);
-	else
-		irq_clear_status_flags(irq, IRQ_NESTED_THREAD);
-}
-
 static inline void irq_set_percpu_devid_flags(unsigned int irq)
 {
 	irq_set_status_flags(irq,
@@ -789,20 +622,9 @@ static inline struct msi_desc *irq_data_get_msi_desc(struct irq_data *d)
 	return d->common->msi_desc;
 }
 
-static inline u32 irq_get_trigger_type(unsigned int irq)
-{
-	struct irq_data *d = irq_get_irq_data(irq);
-	return d ? irqd_get_trigger_type(d) : 0;
-}
-
 static inline int irq_common_data_get_node(struct irq_common_data *d)
 {
 	return 0;
-}
-
-static inline int irq_data_get_node(struct irq_data *d)
-{
-	return irq_common_data_get_node(d->common);
 }
 
 static inline struct cpumask *irq_get_affinity_mask(int irq)
@@ -817,10 +639,6 @@ static inline struct cpumask *irq_data_get_affinity_mask(struct irq_data *d)
 	return d->common->affinity;
 }
 
-static inline void irq_data_update_effective_affinity(struct irq_data *d,
-						      const struct cpumask *m)
-{
-}
 static inline
 struct cpumask *irq_data_get_effective_affinity_mask(struct irq_data *d)
 {
@@ -876,12 +694,6 @@ int __devm_irq_alloc_descs(struct device *dev, int irq, unsigned int from,
 	devm_irq_alloc_descs(dev, -1, from, cnt, node)
 
 void irq_free_descs(unsigned int irq, unsigned int cnt);
-static inline void irq_free_desc(unsigned int irq)
-{
-	irq_free_descs(irq, 1);
-}
-
-
 /**
  * struct irq_chip_regs - register offsets for struct irq_gci
  * @enable:	Enable register offset to reg_base
@@ -1070,14 +882,6 @@ static inline void irq_free_generic_chip(struct irq_chip_generic *gc)
 	kfree(gc);
 }
 
-static inline void irq_destroy_generic_chip(struct irq_chip_generic *gc,
-					    u32 msk, unsigned int clr,
-					    unsigned int set)
-{
-	irq_remove_generic_chip(gc, msk, clr, set);
-	irq_free_generic_chip(gc);
-}
-
 static inline struct irq_chip_type *irq_data_get_chip_type(struct irq_data *d)
 {
 	return container_of(d->chip, struct irq_chip_type, chip);
@@ -1086,8 +890,6 @@ static inline struct irq_chip_type *irq_data_get_chip_type(struct irq_data *d)
 #define IRQ_MSK(n) (u32)((n) < 32 ? ((1 << (n)) - 1) : UINT_MAX)
 
 static inline void irq_gc_lock(struct irq_chip_generic *gc) { }
-static inline void irq_gc_unlock(struct irq_chip_generic *gc) { }
-
 /*
  * The irqsave variants are for usage in non interrupt code. Do not use
  * them in irq_chip callbacks. Use irq_gc_lock() instead.
@@ -1097,24 +899,6 @@ static inline void irq_gc_unlock(struct irq_chip_generic *gc) { }
 
 #define irq_gc_unlock_irqrestore(gc, flags)	\
 	raw_spin_unlock_irqrestore(&(gc)->lock, flags)
-
-static inline void irq_reg_writel(struct irq_chip_generic *gc,
-				  u32 val, int reg_offset)
-{
-	if (gc->reg_writel)
-		gc->reg_writel(val, gc->reg_base + reg_offset);
-	else
-		writel(val, gc->reg_base + reg_offset);
-}
-
-static inline u32 irq_reg_readl(struct irq_chip_generic *gc,
-				int reg_offset)
-{
-	if (gc->reg_readl)
-		return gc->reg_readl(gc->reg_base + reg_offset);
-	else
-		return readl(gc->reg_base + reg_offset);
-}
 
 struct irq_matrix;
 struct irq_matrix *irq_alloc_matrix(unsigned int matrix_bits,

@@ -75,7 +75,6 @@
 #include <linux/khugepaged.h>
 #include <linux/signalfd.h>
 #include <linux/uprobes.h>
-#include <linux/aio.h>
 #include <linux/compiler.h>
 #include <linux/sysctl.h>
 #include <linux/kcov.h>
@@ -840,7 +839,6 @@ static inline void __mmput(struct mm_struct *mm)
 	VM_BUG_ON(atomic_read(&mm->mm_users));
 
 	uprobe_clear_state(mm);
-	exit_aio(mm);
 	ksm_exit(mm);
 	khugepaged_exit(mm); 
 	exit_mmap(mm);

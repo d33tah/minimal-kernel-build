@@ -1,3 +1,38 @@
+--- 2025-11-14 17:27 ---
+
+SESSION START (17:27):
+
+Current status:
+- make vm: PASSES ✓
+- Hello World: PRINTS ✓
+- Binary: 375KB (meets 400KB goal ✓)
+- LOC (measured with cloc): 275,917 total
+  - C: 149,286 LOC
+  - C/C++ Headers: 108,668 LOC
+  - C+Headers: 257,954 LOC
+  - Other (make, asm, scripts, etc): 17,963 LOC
+- Gap to 200K: 57,954 LOC (22.5% reduction needed)
+- vmlinux size: 660KB text, 181KB data, 1.2MB BSS
+
+Actions (17:27-):
+
+1. ANALYSIS (17:27-17:45):
+   - Examined binary structure: BSS is 1.2MB, mostly __brk_pagetables (1MB) for early boot page tables
+   - Found keyboard maps taking ~1.6KB BSS (shift_map, ctrl_map, altgr_map, etc - 200 bytes each)
+   - Found 246 SYSCALL_DEFINE in codebase, init only uses 2 (write, exit)
+   - kernel/sys.c has 498 LOC with 30 syscalls (getpid, setpriority, etc) - all unused by init
+   - kernel/sched/ has 9,483 LOC with 13 sched-related syscalls - all unused
+   - fs/ layer is 26,375 LOC total (namespace.c 3857, namei.c 3853, dcache.c 2326)
+   - 316 CONFIG options enabled, minimal debug/trace configs
+   - Only 2 compiler warnings (about generated atomic headers)
+   - drivers/tty/vt/defkeymap.c is 165 LOC (generated keyboard map)
+   - DIARY notes from 2025-11-12 indicate subsystems are deeply interconnected
+   
+2. NEXT ATTEMPT - Target: simplify keyboard/console code:
+   - Will investigate if keyboard maps can be simplified
+   - Check if defkeymap.c generation can be reduced
+   - Examine if VT color handling or other VT features can be stubbed
+
 --- 2025-11-14 16:03 ---
 
 SESSION START (16:03):

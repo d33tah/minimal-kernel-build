@@ -16,7 +16,7 @@ Strategy: Need to find larger reduction opportunities. Will explore:
 2. Subsystems that can be more aggressively reduced
 3. Driver code (vt.c, console, etc.)
 
-Actions (12:28-12:35):
+Actions (12:28-12:41):
 1. Analyzed large files to find reduction targets:
    - vt.c: 3897 LOC, 164 functions, many for selection/scrollback/tioclinux
    - vsprintf.c: 2791 LOC with specialized formatters (MAC, IP, UUID, etc.)
@@ -30,12 +30,24 @@ Actions (12:28-12:35):
    - vt.c: 3897 → 3797 lines (100 lines saved)
    - Total: 259,439 → 259,284 LOC (155 lines saved)
    - Binary: Still 380KB
+   - Committed & pushed ✓
 
-Current: 259,284 LOC (150,677 C + 108,607 headers)
-Gap to 200K: 59,284 LOC (22.9% reduction still needed)
+3. Stubbed vt.c font functions (12:40):
+   - Removed con_font_get(), con_font_set(), con_font_default() (116 lines total)
+   - Stubbed con_font_op() to return -ENOSYS (font ioctls not needed)
+   - Result: Build successful, make vm prints "Hello, World!" ✓
+   - vt.c: 3797 → 3669 lines (128 lines saved)
+   - Total: 259,284 → 259,175 LOC (109 lines saved)
+   - Binary: 380KB → 379KB (1KB saved)
+
+Current: 259,175 LOC (150,568 C + 108,607 headers)
+Gap to 200K: 59,175 LOC (22.8% reduction still needed)
+
+Progress this session: 264 LOC saved (155 + 109)
+Cumulative from 259,439 → 259,175
 
 Next targets to explore:
-- More vt.c functions (scrollback, selection helpers)
+- More vt.c ioctl functions
 - vsprintf.c specialized formatters
 - Device framework code in drivers/base/core.c
 

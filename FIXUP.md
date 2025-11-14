@@ -24,7 +24,47 @@ ATTEMPT 1: Removing lib/xz/ (02:30-02:35) - SUCCESS
 - Result: 280,535 LOC (down from 282,358) = 1,823 LOC reduction
 - Binary: 393KB (unchanged)
 - Gap to 200K: 80,535 LOC remaining
+- COMMITTED
+
+EXPLORATION (02:35-03:05):
+- Investigated schedulers (RT/deadline): deeply integrated, can't easily stub
+- Checked lib files: most are actively used (bcd.c needed by RTC, etc.)
+- Examined headers: large headers exist (blkdev.h, pci.h, of.h) but included even when disabled
+- UAPI headers: 13,837 LOC but needed for kernel/user interface
+- Looked for test/debug code: already removed
+- Checked drivers: only essential drivers remain (tty, base, char, video, clocksource, rtc)
+- AMD/Hygon CPU support: compiled despite config trying to disable
+
+Key findings:
+- XZ removal was the main low-hanging fruit found
+- Most remaining code is tightly integrated
+- Headers account for ~40% but risky to remove
+- Scripts (18K LOC) don't count in kernel binary
+- Need different strategy for further reductions
+
+Current status (03:05):
+- LOC: 280,535
+- Gap to 200K: 80,535 LOC
+- Binary: 393KB
+- Session progress: 1,823 LOC reduced
+
+ATTEMPT 2: Removing arch/x86/events/ (03:05-03:10) - SUCCESS
+- Found arch/x86/events/ directory with 1,623 LOC total
+- No .o files present - not being compiled (PERF_EVENTS disabled)
+- Deleted entire arch/x86/events/ directory
+- Removed "source arch/x86/events/Kconfig" from minified/arch/x86/Kconfig
+- Build succeeded, Hello World prints
+- Result: 279,547 LOC (down from 280,535) = 988 LOC reduction
+- Binary: 393KB (unchanged)
+- Gap to 200K: 79,547 LOC remaining
 - COMMITTING
+
+SESSION SUMMARY (02:30-03:10):
+- Total reduction: 2,811 LOC (1,823 from xz + 988 from events)
+- Final LOC: 279,547 (down from 282,358)
+- Gap to 200K: 79,547 LOC remaining
+- Binary: 393KB (unchanged)
+- Both reductions were from disabled subsystems with unused code
 
 --- 2025-11-14 02:28 ---
 SESSION SUMMARY (02:05-02:28):

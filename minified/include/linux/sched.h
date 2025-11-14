@@ -976,22 +976,6 @@ static inline pid_t task_pgrp_nr_ns(struct task_struct *tsk, struct pid_namespac
 	return __task_pid_nr_ns(tsk, PIDTYPE_PGID, ns);
 }
 
-static inline pid_t task_pgrp_vnr(struct task_struct *tsk)
-{
-	return __task_pid_nr_ns(tsk, PIDTYPE_PGID, NULL);
-}
-
-
-static inline pid_t task_session_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
-{
-	return __task_pid_nr_ns(tsk, PIDTYPE_SID, ns);
-}
-
-static inline pid_t task_session_vnr(struct task_struct *tsk)
-{
-	return __task_pid_nr_ns(tsk, PIDTYPE_SID, NULL);
-}
-
 static inline pid_t task_tgid_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
 {
 	return __task_pid_nr_ns(tsk, PIDTYPE_TGID, ns);
@@ -1014,17 +998,7 @@ static inline pid_t task_ppid_nr_ns(const struct task_struct *tsk, struct pid_na
 	return pid;
 }
 
-static inline pid_t task_ppid_nr(const struct task_struct *tsk)
-{
-	return task_ppid_nr_ns(tsk, &init_pid_ns);
-}
-
 /* Obsolete, do not use: */
-static inline pid_t task_pgrp_nr(struct task_struct *tsk)
-{
-	return task_pgrp_nr_ns(tsk, &init_pid_ns);
-}
-
 #define TASK_REPORT_IDLE	(TASK_REPORT + 1)
 #define TASK_REPORT_MAX		(TASK_REPORT_IDLE << 1)
 
@@ -1061,11 +1035,6 @@ static inline char task_index_to_char(unsigned int state)
 	BUILD_BUG_ON(1 + ilog2(TASK_REPORT_MAX) != sizeof(state_char) - 1);
 
 	return state_char[state];
-}
-
-static inline char task_state_to_char(struct task_struct *tsk)
-{
-	return task_index_to_char(task_state_index(tsk));
 }
 
 /**
@@ -1346,12 +1315,6 @@ static inline void clear_tsk_thread_flag(struct task_struct *tsk, int flag)
 	clear_ti_thread_flag(task_thread_info(tsk), flag);
 }
 
-static inline void update_tsk_thread_flag(struct task_struct *tsk, int flag,
-					  bool value)
-{
-	update_ti_thread_flag(task_thread_info(tsk), flag, value);
-}
-
 static inline int test_and_set_tsk_thread_flag(struct task_struct *tsk, int flag)
 {
 	return test_and_set_ti_thread_flag(task_thread_info(tsk), flag);
@@ -1431,22 +1394,6 @@ extern int __cond_resched_rwlock_write(rwlock_t *lock);
 	__cond_resched_rwlock_write(lock);					\
 })
 
-static inline void cond_resched_rcu(void)
-{
-	rcu_read_unlock();
-	cond_resched();
-	rcu_read_lock();
-}
-
-
-static inline bool preempt_model_none(void)
-{
-	return IS_ENABLED(CONFIG_PREEMPT_NONE);
-}
-static inline bool preempt_model_voluntary(void)
-{
-	return IS_ENABLED(CONFIG_PREEMPT_VOLUNTARY);
-}
 static inline bool preempt_model_full(void)
 {
 	return IS_ENABLED(CONFIG_PREEMPT);
@@ -1466,11 +1413,6 @@ static inline bool preempt_model_rt(void)
  * kernel is *built* with CONFIG_PREEMPTION=y but may run with e.g. the
  * PREEMPT_NONE model.
  */
-static inline bool preempt_model_preemptible(void)
-{
-	return preempt_model_full() || preempt_model_rt();
-}
-
 /*
  * Does a critical section need to be broken due to another
  * task waiting?: (technically does not depend on CONFIG_PREEMPTION,
@@ -1508,11 +1450,6 @@ static inline unsigned int task_cpu(const struct task_struct *p)
 	return 0;
 }
 
-static inline void set_task_cpu(struct task_struct *p, unsigned int cpu)
-{
-}
-
-
 extern bool sched_task_on_rq(struct task_struct *p);
 extern unsigned long get_wchan(struct task_struct *p);
 
@@ -1540,9 +1477,6 @@ extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
 
 
 
-static inline void rseq_set_notify_resume(struct task_struct *t)
-{
-}
 static inline void rseq_handle_notify_resume(struct ksignal *ksig,
 					     struct pt_regs *regs)
 {

@@ -235,12 +235,6 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
 }
 #endif
 
-static inline void ptep_clear(struct mm_struct *mm, unsigned long addr,
-			      pte_t *ptep)
-{
-	ptep_get_and_clear(mm, addr, ptep);
-}
-
 #ifndef __HAVE_ARCH_PTEP_GET
 static inline pte_t ptep_get(pte_t *ptep)
 {
@@ -366,18 +360,8 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 #endif
 
 #ifndef __HAVE_ARCH_PMDP_SET_WRPROTECT
-static inline void pmdp_set_wrprotect(struct mm_struct *mm,
-				      unsigned long address, pmd_t *pmdp)
-{
-	BUILD_BUG();
-}
 #endif
 #ifndef __HAVE_ARCH_PUDP_SET_WRPROTECT
-static inline void pudp_set_wrprotect(struct mm_struct *mm,
-				      unsigned long address, pud_t *pudp)
-{
-	BUILD_BUG();
-}
 #endif
 
 #ifndef pmdp_collapse_flush
@@ -577,26 +561,12 @@ static inline int arch_unmap_one(struct mm_struct *mm,
  * prototypes must be defined in the arch-specific asm/pgtable.h file.
  */
 #ifndef __HAVE_ARCH_PREPARE_TO_SWAP
-static inline int arch_prepare_to_swap(struct page *page)
-{
-	return 0;
-}
 #endif
 
 #ifndef __HAVE_ARCH_SWAP_INVALIDATE
-static inline void arch_swap_invalidate_page(int type, pgoff_t offset)
-{
-}
-
-static inline void arch_swap_invalidate_area(int type)
-{
-}
 #endif
 
 #ifndef __HAVE_ARCH_SWAP_RESTORE
-static inline void arch_swap_restore(swp_entry_t entry, struct folio *folio)
-{
-}
 #endif
 
 #ifndef __HAVE_ARCH_PGD_OFFSET_GATE
@@ -890,29 +860,9 @@ static inline int pte_soft_dirty(pte_t pte)
 	return 0;
 }
 
-static inline int pmd_soft_dirty(pmd_t pmd)
-{
-	return 0;
-}
-
 static inline pte_t pte_mksoft_dirty(pte_t pte)
 {
 	return pte;
-}
-
-static inline pmd_t pmd_mksoft_dirty(pmd_t pmd)
-{
-	return pmd;
-}
-
-static inline pte_t pte_clear_soft_dirty(pte_t pte)
-{
-	return pte;
-}
-
-static inline pmd_t pmd_clear_soft_dirty(pmd_t pmd)
-{
-	return pmd;
 }
 
 static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
@@ -928,21 +878,6 @@ static inline int pte_swp_soft_dirty(pte_t pte)
 static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
 {
 	return pte;
-}
-
-static inline pmd_t pmd_swp_mksoft_dirty(pmd_t pmd)
-{
-	return pmd;
-}
-
-static inline int pmd_swp_soft_dirty(pmd_t pmd)
-{
-	return 0;
-}
-
-static inline pmd_t pmd_swp_clear_soft_dirty(pmd_t pmd)
-{
-	return pmd;
 }
 
 #ifndef __HAVE_PFNMAP_TRACKING

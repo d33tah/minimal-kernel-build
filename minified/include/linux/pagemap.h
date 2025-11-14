@@ -21,12 +21,6 @@ struct folio_batch;
 unsigned long invalidate_mapping_pages(struct address_space *mapping,
 					pgoff_t start, pgoff_t end);
 
-static inline void invalidate_remote_inode(struct inode *inode)
-{
-	if (S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode) ||
-	    S_ISLNK(inode->i_mode))
-		invalidate_mapping_pages(inode->i_mapping, 0, -1);
-}
 int invalidate_inode_pages2(struct address_space *mapping);
 int invalidate_inode_pages2_range(struct address_space *mapping,
 		pgoff_t start, pgoff_t end);
@@ -37,11 +31,6 @@ int filemap_fdatawait_keep_errors(struct address_space *mapping);
 int filemap_fdatawait_range(struct address_space *, loff_t lstart, loff_t lend);
 int filemap_fdatawait_range_keep_errors(struct address_space *mapping,
 		loff_t start_byte, loff_t end_byte);
-
-static inline int filemap_fdatawait(struct address_space *mapping)
-{
-	return filemap_fdatawait_range(mapping, 0, LLONG_MAX);
-}
 
 bool filemap_range_has_page(struct address_space *, loff_t lstart, loff_t lend);
 int filemap_write_and_wait_range(struct address_space *mapping,
@@ -126,12 +115,6 @@ static inline errseq_t file_sample_sb_err(struct file *file)
  * required to prevent further writes to this file until we're done setting
  * flags.
  */
-static inline int inode_drain_writes(struct inode *inode)
-{
-	inode_dio_wait(inode);
-	return filemap_write_and_wait(inode->i_mapping);
-}
-
 static inline bool mapping_empty(struct address_space *mapping)
 {
 	return xa_empty(&mapping->i_pages);
@@ -239,11 +222,6 @@ static inline void mapping_set_unevictable(struct address_space *mapping)
 	set_bit(AS_UNEVICTABLE, &mapping->flags);
 }
 
-static inline void mapping_clear_unevictable(struct address_space *mapping)
-{
-	clear_bit(AS_UNEVICTABLE, &mapping->flags);
-}
-
 static inline bool mapping_unevictable(struct address_space *mapping)
 {
 	return mapping && test_bit(AS_UNEVICTABLE, &mapping->flags);
@@ -257,11 +235,6 @@ static inline void mapping_set_exiting(struct address_space *mapping)
 static inline int mapping_exiting(struct address_space *mapping)
 {
 	return test_bit(AS_EXITING, &mapping->flags);
-}
-
-static inline void mapping_set_no_writeback_tags(struct address_space *mapping)
-{
-	set_bit(AS_NO_WRITEBACK_TAGS, &mapping->flags);
 }
 
 static inline int mapping_use_writeback_tags(struct address_space *mapping)
@@ -319,11 +292,6 @@ static inline bool mapping_large_folio_support(struct address_space *mapping)
 static inline int filemap_nr_thps(struct address_space *mapping)
 {
 	return 0;
-}
-
-static inline void filemap_nr_thps_inc(struct address_space *mapping)
-{
-	WARN_ON_ONCE(mapping_large_folio_support(mapping) == 0);
 }
 
 static inline void filemap_nr_thps_dec(struct address_space *mapping)
@@ -444,11 +412,6 @@ static inline void *folio_detach_private(struct folio *folio)
 	return data;
 }
 
-static inline void attach_page_private(struct page *page, void *data)
-{
-	folio_attach_private(page_folio(page), data);
-}
-
 static inline void *detach_page_private(struct page *page)
 {
 	return folio_detach_private(page_folio(page));
@@ -467,11 +430,6 @@ static inline struct page *__page_cache_alloc(gfp_t gfp)
 static inline struct page *page_cache_alloc(struct address_space *x)
 {
 	return __page_cache_alloc(mapping_gfp_mask(x));
-}
-
-static inline gfp_t readahead_gfp_mask(struct address_space *x)
-{
-	return mapping_gfp_mask(x) | __GFP_NORETRY | __GFP_NOWARN;
 }
 
 typedef int filler_t(struct file *, struct folio *);
@@ -708,14 +666,6 @@ unsigned find_get_pages_contig(struct address_space *mapping, pgoff_t start,
 unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
 			pgoff_t end, xa_mark_t tag, unsigned int nr_pages,
 			struct page **pages);
-static inline unsigned find_get_pages_tag(struct address_space *mapping,
-			pgoff_t *index, xa_mark_t tag, unsigned int nr_pages,
-			struct page **pages)
-{
-	return find_get_pages_range_tag(mapping, index, (pgoff_t)-1, tag,
-					nr_pages, pages);
-}
-
 struct page *grab_cache_page_write_begin(struct address_space *mapping,
 			pgoff_t index);
 
@@ -1017,16 +967,6 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 	return folio_wait_bit_killable(folio, PG_locked);
 }
 
-static inline void wait_on_page_locked(struct page *page)
-{
-	folio_wait_locked(page_folio(page));
-}
-
-static inline int wait_on_page_locked_killable(struct page *page)
-{
-	return folio_wait_locked_killable(page_folio(page));
-}
-
 int folio_put_wait_locked(struct folio *folio, int state);
 void wait_on_page_writeback(struct page *page);
 void folio_wait_writeback(struct folio *folio);
@@ -1036,11 +976,6 @@ void folio_end_writeback(struct folio *folio);
 void wait_for_stable_page(struct page *page);
 void folio_wait_stable(struct folio *folio);
 void __folio_mark_dirty(struct folio *folio, struct address_space *, int warn);
-static inline void __set_page_dirty(struct page *page,
-		struct address_space *mapping, int warn)
-{
-	__folio_mark_dirty(page_folio(page), mapping, warn);
-}
 void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb);
 void __folio_cancel_dirty(struct folio *folio);
 static inline void folio_cancel_dirty(struct folio *folio)
@@ -1053,11 +988,6 @@ bool folio_clear_dirty_for_io(struct folio *folio);
 bool clear_page_dirty_for_io(struct page *page);
 void folio_invalidate(struct folio *folio, size_t offset, size_t length);
 int __must_check folio_write_one(struct folio *folio);
-static inline int __must_check write_one_page(struct page *page)
-{
-	return folio_write_one(page_folio(page));
-}
-
 int __set_page_dirty_nobuffers(struct page *page);
 bool noop_dirty_folio(struct address_space *mapping, struct folio *folio);
 
@@ -1105,18 +1035,6 @@ loff_t mapping_seek_hole_data(struct address_space *, loff_t start, loff_t end,
  * Like add_to_page_cache_locked, but used to add newly allocated pages:
  * the page is new, so we can just run __SetPageLocked() against it.
  */
-static inline int add_to_page_cache(struct page *page,
-		struct address_space *mapping, pgoff_t offset, gfp_t gfp_mask)
-{
-	int error;
-
-	__SetPageLocked(page);
-	error = add_to_page_cache_locked(page, mapping, offset, gfp_mask);
-	if (unlikely(error))
-		__ClearPageLocked(page);
-	return error;
-}
-
 /* Must be non-static for BPF error injection */
 int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp, void **shadowp);
@@ -1378,12 +1296,6 @@ static inline unsigned int readahead_count(struct readahead_control *rac)
 static inline size_t readahead_batch_length(struct readahead_control *rac)
 {
 	return rac->_batch_count * PAGE_SIZE;
-}
-
-static inline unsigned long dir_pages(struct inode *inode)
-{
-	return (unsigned long)(inode->i_size + PAGE_SIZE - 1) >>
-			       PAGE_SHIFT;
 }
 
 /**

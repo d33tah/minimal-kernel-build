@@ -45,15 +45,38 @@ Attempting perf header reduction (11:30):
    - Actual reduction: 1,586 LOC by cloc (header line counting differs)
    - Gap to 200K: 76,380 LOC (27.6% reduction needed)
 
-Session summary (11:35):
+7. Explored additional header reduction opportunities (11:35-11:45):
+   Checked several large headers for reduction potential:
+   - kfifo.h (893 LOC): Only used by lib/kfifo.c
+   - trace_events.h (875 LOC): Used by 2 files, needs trace_print_flags
+   - fscrypt.h (690 LOC): Already well-stubbed with inline functions
+   - of.h (931 LOC): Not directly included in .c files, but device_node struct
+     is used in many other headers (device/driver.h, irqdomain.h, etc.)
+   - mod_devicetable.h (914 LOC): Only used by build scripts
+   - crypto.h (634 LOC): Only included in asm-offsets.c (not used)
+
+   Analysis: Most remaining large headers are either:
+   - Already well-stubbed (fscrypt.h)
+   - Provide core structures used widely (of.h - device_node)
+   - Used only in build infrastructure (mod_devicetable.h)
+   - Have limited usage but tricky dependencies (trace_events.h)
+
+Session summary (11:45):
 SUCCESS - Reduced 1,586 LOC through perf header stubbing.
 Strategy was effective: targeting large unused/minimally-used headers.
 
+Current progress:
+- Started: 277,966 LOC
+- Ended: 276,380 LOC
+- Reduction: 1,586 LOC (0.6% reduction)
+- Gap to 200K: 76,380 LOC (27.6% reduction needed)
+
 Next steps for future sessions:
-- Continue attacking large headers (110k LOC, 41% of codebase)
-- Look for more subsystem headers that can be minimized
-- Candidates: EFI headers (1249 LOC), OF headers (931 LOC), crypto headers
-- Could also try removing unused driver headers
+- More aggressive header minimization needed
+- Consider stubbing entire subsystems more aggressively
+- Could try minimizing of.h functions while keeping structures
+- Look at removing more inline functions from large headers
+- Consider attacking core MM/VFS headers if all else fails
 
 --- 2025-11-14 11:06 ---
 SESSION START (11:06):

@@ -850,151 +850,13 @@ char *mac_address_string(char *buf, char *end, u8 *addr,
 	return error_string(buf, end, "(mac)", spec);
 }
 
-static noinline_for_stack
-char *ip4_string(char *p, const u8 *addr, const char *fmt)
-{
-	/* Stubbed: IPv4 string formatting not needed for minimal kernel */
-	strcpy(p, "(ipv4)");
-	return p + 6;
-}
-
-static noinline_for_stack
-char *ip6_compressed_string(char *p, const char *addr)
-{
-	/* Stubbed: IPv6 compressed string formatting not needed for minimal kernel */
-	strcpy(p, "(ipv6c)");
-	return p + 7;
-}
-
-static noinline_for_stack
-char *ip6_string(char *p, const char *addr, const char *fmt)
-{
-	/* Stubbed: IPv6 string formatting not needed for minimal kernel */
-	strcpy(p, "(ipv6)");
-	return p + 6;
-}
-
-static noinline_for_stack
-char *ip6_addr_string(char *buf, char *end, const u8 *addr,
-		      struct printf_spec spec, const char *fmt)
-{
-	char ip6_addr[sizeof("xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:255.255.255.255")];
-
-	if (fmt[0] == 'I' && fmt[2] == 'c')
-		ip6_compressed_string(ip6_addr, addr);
-	else
-		ip6_string(ip6_addr, addr, fmt);
-
-	return string_nocheck(buf, end, ip6_addr, spec);
-}
-
-static noinline_for_stack
-char *ip4_addr_string(char *buf, char *end, const u8 *addr,
-		      struct printf_spec spec, const char *fmt)
-{
-	char ip4_addr[sizeof("255.255.255.255")];
-
-	ip4_string(ip4_addr, addr, fmt);
-
-	return string_nocheck(buf, end, ip4_addr, spec);
-}
-
-static noinline_for_stack
-char *ip6_addr_string_sa(char *buf, char *end, const struct sockaddr_in6 *sa,
-			 struct printf_spec spec, const char *fmt)
-{
-	bool have_p = false, have_s = false, have_f = false, have_c = false;
-	char ip6_addr[sizeof("[xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:255.255.255.255]") +
-		      sizeof(":12345") + sizeof("/123456789") +
-		      sizeof("%1234567890")];
-	char *p = ip6_addr, *pend = ip6_addr + sizeof(ip6_addr);
-	const u8 *addr = (const u8 *) &sa->sin6_addr;
-	char fmt6[2] = { fmt[0], '6' };
-	u8 off = 0;
-
-	fmt++;
-	while (isalpha(*++fmt)) {
-		switch (*fmt) {
-		case 'p':
-			have_p = true;
-			break;
-		case 'f':
-			have_f = true;
-			break;
-		case 's':
-			have_s = true;
-			break;
-		case 'c':
-			have_c = true;
-			break;
-		}
-	}
-
-	if (have_p || have_s || have_f) {
-		*p = '[';
-		off = 1;
-	}
-
-	if (fmt6[0] == 'I' && have_c)
-		p = ip6_compressed_string(ip6_addr + off, addr);
-	else
-		p = ip6_string(ip6_addr + off, addr, fmt6);
-
-	if (have_p || have_s || have_f)
-		*p++ = ']';
-
-	if (have_p) {
-		*p++ = ':';
-		p = number(p, pend, ntohs(sa->sin6_port), spec);
-	}
-	if (have_f) {
-		*p++ = '/';
-		p = number(p, pend, ntohl(sa->sin6_flowinfo &
-					  IPV6_FLOWINFO_MASK), spec);
-	}
-	if (have_s) {
-		*p++ = '%';
-		p = number(p, pend, sa->sin6_scope_id, spec);
-	}
-	*p = '\0';
-
-	return string_nocheck(buf, end, ip6_addr, spec);
-}
-
-static noinline_for_stack
-char *ip4_addr_string_sa(char *buf, char *end, const struct sockaddr_in *sa,
-			 struct printf_spec spec, const char *fmt)
-{
-	bool have_p = false;
-	char *p, ip4_addr[sizeof("255.255.255.255") + sizeof(":12345")];
-	char *pend = ip4_addr + sizeof(ip4_addr);
-	const u8 *addr = (const u8 *) &sa->sin_addr.s_addr;
-	char fmt4[3] = { fmt[0], '4', 0 };
-
-	fmt++;
-	while (isalpha(*++fmt)) {
-		switch (*fmt) {
-		case 'p':
-			have_p = true;
-			break;
-		case 'h':
-		case 'l':
-		case 'n':
-		case 'b':
-			fmt4[2] = *fmt;
-			break;
-		}
-	}
-
-	p = ip4_string(ip4_addr, addr, fmt4);
-	if (have_p) {
-		*p++ = ':';
-		p = number(p, pend, ntohs(sa->sin_port), spec);
-	}
-	*p = '\0';
-
-	return string_nocheck(buf, end, ip4_addr, spec);
-}
+/* Removed: ip4/ip6 socket address formatting functions not needed for minimal kernel
+ * Deleted functions (143 lines):
+ * - ip4_string, ip6_compressed_string, ip6_string
+ * - ip6_addr_string, ip4_addr_string
+ * - ip6_addr_string_sa, ip4_addr_string_sa
+ * These were only used for network address formatting which is unnecessary for Hello World
+ */
 
 static noinline_for_stack
 char *ip_addr_string(char *buf, char *end, const void *ptr,
@@ -1138,20 +1000,7 @@ int __init no_hash_pointers_enable(char *str)
 		return 0;
 
 	no_hash_pointers = true;
-
-	pr_warn("**********************************************************\n");
-	pr_warn("**   NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **\n");
-	pr_warn("**                                                      **\n");
-	pr_warn("** This system shows unhashed kernel memory addresses   **\n");
-	pr_warn("** via the console, logs, and other interfaces. This    **\n");
-	pr_warn("** might reduce the security of your system.            **\n");
-	pr_warn("**                                                      **\n");
-	pr_warn("** If you see this message and you are not debugging    **\n");
-	pr_warn("** the kernel, report this immediately to your system   **\n");
-	pr_warn("** administrator!                                       **\n");
-	pr_warn("**                                                      **\n");
-	pr_warn("**   NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **\n");
-	pr_warn("**********************************************************\n");
+	pr_warn("Kernel memory addresses will be shown unhashed\n");
 
 	return 0;
 }

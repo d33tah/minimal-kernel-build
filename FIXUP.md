@@ -22,6 +22,54 @@ Strategy:
 
 Actions:
 
+1. SUCCESS - Removed unused security.h includes (21:11-21:21):
+   Found 12 files that include <linux/security.h> but don't call any security_*
+   functions. Removed includes from:
+
+   Filesystem layer (4 files):
+   - fs/binfmt_elf.c
+   - fs/fs_parser.c
+   - fs/kernel_read_file.c
+   - fs/read_write.c
+
+   Memory management (2 files):
+   - mm/filemap.c
+   - mm/mlock.c
+
+   Kernel core (6 files):
+   - kernel/printk/printk.c
+   - kernel/ptrace.c
+   - kernel/sched/build_utility.c
+   - kernel/sys.c
+   - kernel/sysctl.c
+   - kernel/umh.c
+
+   Result: Build successful, "Hello, World!" printed
+   Binary: 375KB (no change)
+   Committed and pushed: 7d10a30
+
+   Note: While this doesn't directly reduce LOC (security.h itself is still present
+   for files that do use it), it's good hygiene and reduces unnecessary dependencies.
+
+2. SUCCESS - Removed 8 more unused includes from kernel/ (21:21-21:26):
+   Found additional unused header includes in sys.c and sysctl.c:
+
+   kernel/sys.c (5 headers removed):
+   - linux/perf_event.h (0 perf_event_ calls)
+   - linux/workqueue.h (0 workqueue_ calls)
+   - linux/device.h (0 device_ calls)
+   - linux/key.h (0 key_ calls)
+   - linux/suspend.h (0 suspend references)
+
+   kernel/sysctl.c (3 headers removed):
+   - linux/hugetlb.h (0 hugetlb/huge_ calls)
+   - linux/initrd.h (0 initrd references)
+   - linux/key.h (0 key_ calls)
+
+   Result: Build successful, "Hello, World!" printed
+   Binary: 375KB (no change)
+   Committed and pushed: d46a91a
+
 --- 2025-11-14 21:02 ---
 
 2. Removed unnecessary profile.h includes (21:06-21:09):

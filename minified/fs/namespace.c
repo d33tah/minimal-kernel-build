@@ -1268,11 +1268,6 @@ bool may_mount(void)
 
 static void warn_mandlock(void)
 {
-	pr_warn_once("=======================================================\n"
-		     "WARNING: The mand mount option has been deprecated and\n"
-		     "         and is ignored by this kernel. Remove the mand\n"
-		     "         option from the mount to silence this warning.\n"
-		     "=======================================================\n");
 }
 
 static int can_umount(const struct path *path, int flags)
@@ -2015,19 +2010,6 @@ static void mnt_warn_timestamp_expiry(struct path *mountpoint, struct vfsmount *
 	if (!__mnt_is_readonly(mnt) &&
 	   (!(sb->s_iflags & SB_I_TS_EXPIRY_WARNED)) &&
 	   (ktime_get_real_seconds() + TIME_UPTIME_SEC_MAX > sb->s_time_max)) {
-		char *buf = (char *)__get_free_page(GFP_KERNEL);
-		char *mntpath = buf ? d_path(mountpoint, buf, PAGE_SIZE) : ERR_PTR(-ENOMEM);
-		struct tm tm;
-
-		time64_to_tm(sb->s_time_max, 0, &tm);
-
-		pr_warn("%s filesystem being %s at %s supports timestamps until %04ld (0x%llx)\n",
-			sb->s_type->name,
-			is_mounted(mnt) ? "remounted" : "mounted",
-			mntpath,
-			tm.tm_year+1900, (unsigned long long)sb->s_time_max);
-
-		free_page((unsigned long)buf);
 		sb->s_iflags |= SB_I_TS_EXPIRY_WARNED;
 	}
 }
@@ -2984,7 +2966,6 @@ SYSCALL_DEFINE3(fsmount, int, fs_fd, unsigned int, flags,
 
 	ret = -EPERM;
 	if (mount_too_revealing(fc->root->d_sb, &mnt_flags)) {
-		pr_warn("VFS: Mount too revealing\n");
 		goto err_unlock;
 	}
 

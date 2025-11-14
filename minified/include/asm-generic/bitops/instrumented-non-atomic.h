@@ -60,26 +60,7 @@ static __always_inline void __change_bit(long nr, volatile unsigned long *addr)
 
 static __always_inline void __instrument_read_write_bitop(long nr, volatile unsigned long *addr)
 {
-	if (IS_ENABLED(CONFIG_KCSAN_ASSUME_PLAIN_WRITES_ATOMIC)) {
-		/*
-		 * We treat non-atomic read-write bitops a little more special.
-		 * Given the operations here only modify a single bit, assuming
-		 * non-atomicity of the writer is sufficient may be reasonable
-		 * for certain usage (and follows the permissible nature of the
-		 * assume-plain-writes-atomic rule):
-		 * 1. report read-modify-write races -> check read;
-		 * 2. do not report races with marked readers, but do report
-		 *    races with unmarked readers -> check "atomic" write.
-		 */
-		kcsan_check_read(addr + BIT_WORD(nr), sizeof(long));
-		/*
-		 * Use generic write instrumentation, in case other sanitizers
-		 * or tools are enabled alongside KCSAN.
-		 */
-		instrument_write(addr + BIT_WORD(nr), sizeof(long));
-	} else {
-		instrument_read_write(addr + BIT_WORD(nr), sizeof(long));
-	}
+	instrument_read_write(addr + BIT_WORD(nr), sizeof(long));
 }
 
 /**

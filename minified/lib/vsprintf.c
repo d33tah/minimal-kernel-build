@@ -857,100 +857,8 @@ static noinline_for_stack
 char *resource_string(char *buf, char *end, struct resource *res,
 		      struct printf_spec spec, const char *fmt)
 {
-#ifndef IO_RSRC_PRINTK_SIZE
-#define IO_RSRC_PRINTK_SIZE	6
-#endif
-
-#ifndef MEM_RSRC_PRINTK_SIZE
-#define MEM_RSRC_PRINTK_SIZE	10
-#endif
-	static const struct printf_spec io_spec = {
-		.base = 16,
-		.field_width = IO_RSRC_PRINTK_SIZE,
-		.precision = -1,
-		.flags = SPECIAL | SMALL | ZEROPAD,
-	};
-	static const struct printf_spec mem_spec = {
-		.base = 16,
-		.field_width = MEM_RSRC_PRINTK_SIZE,
-		.precision = -1,
-		.flags = SPECIAL | SMALL | ZEROPAD,
-	};
-	static const struct printf_spec bus_spec = {
-		.base = 16,
-		.field_width = 2,
-		.precision = -1,
-		.flags = SMALL | ZEROPAD,
-	};
-	static const struct printf_spec str_spec = {
-		.field_width = -1,
-		.precision = 10,
-		.flags = LEFT,
-	};
-
-	
-#define RSRC_BUF_SIZE		((2 * sizeof(resource_size_t)) + 4)
-#define FLAG_BUF_SIZE		(2 * sizeof(res->flags))
-#define DECODED_BUF_SIZE	sizeof("[mem - 64bit pref window disabled]")
-#define RAW_BUF_SIZE		sizeof("[mem - flags 0x]")
-	char sym[max(2*RSRC_BUF_SIZE + DECODED_BUF_SIZE,
-		     2*RSRC_BUF_SIZE + FLAG_BUF_SIZE + RAW_BUF_SIZE)];
-
-	char *p = sym, *pend = sym + sizeof(sym);
-	int decode = (fmt[0] == 'R') ? 1 : 0;
-	const struct printf_spec *specp;
-
-	if (check_pointer(&buf, end, res, spec))
-		return buf;
-
-	*p++ = '[';
-	if (res->flags & IORESOURCE_IO) {
-		p = string_nocheck(p, pend, "io  ", str_spec);
-		specp = &io_spec;
-	} else if (res->flags & IORESOURCE_MEM) {
-		p = string_nocheck(p, pend, "mem ", str_spec);
-		specp = &mem_spec;
-	} else if (res->flags & IORESOURCE_IRQ) {
-		p = string_nocheck(p, pend, "irq ", str_spec);
-		specp = &default_dec_spec;
-	} else if (res->flags & IORESOURCE_DMA) {
-		p = string_nocheck(p, pend, "dma ", str_spec);
-		specp = &default_dec_spec;
-	} else if (res->flags & IORESOURCE_BUS) {
-		p = string_nocheck(p, pend, "bus ", str_spec);
-		specp = &bus_spec;
-	} else {
-		p = string_nocheck(p, pend, "??? ", str_spec);
-		specp = &mem_spec;
-		decode = 0;
-	}
-	if (decode && res->flags & IORESOURCE_UNSET) {
-		p = string_nocheck(p, pend, "size ", str_spec);
-		p = number(p, pend, resource_size(res), *specp);
-	} else {
-		p = number(p, pend, res->start, *specp);
-		if (res->start != res->end) {
-			*p++ = '-';
-			p = number(p, pend, res->end, *specp);
-		}
-	}
-	if (decode) {
-		if (res->flags & IORESOURCE_MEM_64)
-			p = string_nocheck(p, pend, " 64bit", str_spec);
-		if (res->flags & IORESOURCE_PREFETCH)
-			p = string_nocheck(p, pend, " pref", str_spec);
-		if (res->flags & IORESOURCE_WINDOW)
-			p = string_nocheck(p, pend, " window", str_spec);
-		if (res->flags & IORESOURCE_DISABLED)
-			p = string_nocheck(p, pend, " disabled", str_spec);
-	} else {
-		p = string_nocheck(p, pend, " flags ", str_spec);
-		p = number(p, pend, res->flags, default_flag_spec);
-	}
-	*p++ = ']';
-	*p = '\0';
-
-	return string_nocheck(buf, end, sym, spec);
+	/* Stubbed: resource formatting not needed for minimal kernel */
+	return error_string(buf, end, "(rsrc)", spec);
 }
 
 static noinline_for_stack
@@ -1007,115 +915,24 @@ static noinline_for_stack
 char *bitmap_string(char *buf, char *end, unsigned long *bitmap,
 		    struct printf_spec spec, const char *fmt)
 {
-	const int CHUNKSZ = 32;
-	int nr_bits = max_t(int, spec.field_width, 0);
-	int i, chunksz;
-	bool first = true;
-
-	if (check_pointer(&buf, end, bitmap, spec))
-		return buf;
-
-	
-	spec = (struct printf_spec){ .flags = SMALL | ZEROPAD, .base = 16 };
-
-	chunksz = nr_bits & (CHUNKSZ - 1);
-	if (chunksz == 0)
-		chunksz = CHUNKSZ;
-
-	i = ALIGN(nr_bits, CHUNKSZ) - CHUNKSZ;
-	for (; i >= 0; i -= CHUNKSZ) {
-		u32 chunkmask, val;
-		int word, bit;
-
-		chunkmask = ((1ULL << chunksz) - 1);
-		word = i / BITS_PER_LONG;
-		bit = i % BITS_PER_LONG;
-		val = (bitmap[word] >> bit) & chunkmask;
-
-		if (!first) {
-			if (buf < end)
-				*buf = ',';
-			buf++;
-		}
-		first = false;
-
-		spec.field_width = DIV_ROUND_UP(chunksz, 4);
-		buf = number(buf, end, val, spec);
-
-		chunksz = CHUNKSZ;
-	}
-	return buf;
+	/* Stubbed: bitmap formatting not needed for minimal kernel */
+	return error_string(buf, end, "(bitmap)", spec);
 }
 
 static noinline_for_stack
 char *bitmap_list_string(char *buf, char *end, unsigned long *bitmap,
 			 struct printf_spec spec, const char *fmt)
 {
-	int nr_bits = max_t(int, spec.field_width, 0);
-	bool first = true;
-	int rbot, rtop;
-
-	if (check_pointer(&buf, end, bitmap, spec))
-		return buf;
-
-	for_each_set_bitrange(rbot, rtop, bitmap, nr_bits) {
-		if (!first) {
-			if (buf < end)
-				*buf = ',';
-			buf++;
-		}
-		first = false;
-
-		buf = number(buf, end, rbot, default_dec_spec);
-		if (rtop == rbot + 1)
-			continue;
-
-		if (buf < end)
-			*buf = '-';
-		buf = number(++buf, end, rtop - 1, default_dec_spec);
-	}
-	return buf;
+	/* Stubbed: bitmap list formatting not needed for minimal kernel */
+	return error_string(buf, end, "(blist)", spec);
 }
 
 static noinline_for_stack
 char *mac_address_string(char *buf, char *end, u8 *addr,
 			 struct printf_spec spec, const char *fmt)
 {
-	char mac_addr[sizeof("xx:xx:xx:xx:xx:xx")];
-	char *p = mac_addr;
-	int i;
-	char separator;
-	bool reversed = false;
-
-	if (check_pointer(&buf, end, addr, spec))
-		return buf;
-
-	switch (fmt[1]) {
-	case 'F':
-		separator = '-';
-		break;
-
-	case 'R':
-		reversed = true;
-		fallthrough;
-
-	default:
-		separator = ':';
-		break;
-	}
-
-	for (i = 0; i < 6; i++) {
-		if (reversed)
-			p = hex_byte_pack(p, addr[5 - i]);
-		else
-			p = hex_byte_pack(p, addr[i]);
-
-		if (fmt[0] == 'M' && i != 5)
-			*p++ = separator;
-	}
-	*p = '\0';
-
-	return string_nocheck(buf, end, mac_addr, spec);
+	/* Stubbed: MAC address formatting not needed for minimal kernel */
+	return error_string(buf, end, "(mac)", spec);
 }
 
 static noinline_for_stack
@@ -1393,35 +1210,8 @@ static noinline_for_stack
 char *ip_addr_string(char *buf, char *end, const void *ptr,
 		     struct printf_spec spec, const char *fmt)
 {
-	char *err_fmt_msg;
-
-	if (check_pointer(&buf, end, ptr, spec))
-		return buf;
-
-	switch (fmt[1]) {
-	case '6':
-		return ip6_addr_string(buf, end, ptr, spec, fmt);
-	case '4':
-		return ip4_addr_string(buf, end, ptr, spec, fmt);
-	case 'S': {
-		const union {
-			struct sockaddr		raw;
-			struct sockaddr_in	v4;
-			struct sockaddr_in6	v6;
-		} *sa = ptr;
-
-		switch (sa->raw.sa_family) {
-		case AF_INET:
-			return ip4_addr_string_sa(buf, end, &sa->v4, spec, fmt);
-		case AF_INET6:
-			return ip6_addr_string_sa(buf, end, &sa->v6, spec, fmt);
-		default:
-			return error_string(buf, end, "(einval)", spec);
-		}}
-	}
-
-	err_fmt_msg = fmt[0] == 'i' ? "(%pi?)" : "(%pI?)";
-	return error_string(buf, end, err_fmt_msg, spec);
+	/* Stubbed: IP address formatting not needed for minimal kernel */
+	return error_string(buf, end, "(ip)", spec);
 }
 
 static noinline_for_stack
@@ -1498,105 +1288,24 @@ static noinline_for_stack
 char *uuid_string(char *buf, char *end, const u8 *addr,
 		  struct printf_spec spec, const char *fmt)
 {
-	char uuid[UUID_STRING_LEN + 1];
-	char *p = uuid;
-	int i;
-	const u8 *index = uuid_index;
-	bool uc = false;
-
-	if (check_pointer(&buf, end, addr, spec))
-		return buf;
-
-	switch (*(++fmt)) {
-	case 'L':
-		uc = true;
-		fallthrough;
-	case 'l':
-		index = guid_index;
-		break;
-	case 'B':
-		uc = true;
-		break;
-	}
-
-	for (i = 0; i < 16; i++) {
-		if (uc)
-			p = hex_byte_pack_upper(p, addr[index[i]]);
-		else
-			p = hex_byte_pack(p, addr[index[i]]);
-		switch (i) {
-		case 3:
-		case 5:
-		case 7:
-		case 9:
-			*p++ = '-';
-			break;
-		}
-	}
-
-	*p = 0;
-
-	return string_nocheck(buf, end, uuid, spec);
+	/* Stubbed: UUID formatting not needed for minimal kernel */
+	return error_string(buf, end, "(uuid)", spec);
 }
 
 static noinline_for_stack
 char *netdev_bits(char *buf, char *end, const void *addr,
 		  struct printf_spec spec,  const char *fmt)
 {
-	unsigned long long num;
-	int size;
-
-	if (check_pointer(&buf, end, addr, spec))
-		return buf;
-
-	switch (fmt[1]) {
-	case 'F':
-		num = *(const netdev_features_t *)addr;
-		size = sizeof(netdev_features_t);
-		break;
-	default:
-		return error_string(buf, end, "(%pN?)", spec);
-	}
-
-	return special_hex_number(buf, end, num, size);
+	/* Stubbed: netdev formatting not needed for minimal kernel */
+	return error_string(buf, end, "(netdev)", spec);
 }
 
 static noinline_for_stack
 char *fourcc_string(char *buf, char *end, const u32 *fourcc,
 		    struct printf_spec spec, const char *fmt)
 {
-	char output[sizeof("0123 little-endian (0x01234567)")];
-	char *p = output;
-	unsigned int i;
-	u32 orig, val;
-
-	if (fmt[1] != 'c' || fmt[2] != 'c')
-		return error_string(buf, end, "(%p4?)", spec);
-
-	if (check_pointer(&buf, end, fourcc, spec))
-		return buf;
-
-	orig = get_unaligned(fourcc);
-	val = orig & ~BIT(31);
-
-	for (i = 0; i < sizeof(u32); i++) {
-		unsigned char c = val >> (i * 8);
-
-		
-		*p++ = isascii(c) && isprint(c) ? c : '.';
-	}
-
-	*p++ = ' ';
-	strcpy(p, orig & BIT(31) ? "big-endian" : "little-endian");
-	p += strlen(p);
-
-	*p++ = ' ';
-	*p++ = '(';
-	p = special_hex_number(p, output + sizeof(output) - 2, orig, sizeof(u32));
-	*p++ = ')';
-	*p = '\0';
-
-	return string(buf, end, output, spec);
+	/* Stubbed: fourcc formatting not needed for minimal kernel */
+	return error_string(buf, end, "(fourcc)", spec);
 }
 
 static noinline_for_stack
@@ -1736,31 +1445,16 @@ static noinline_for_stack
 char *time_and_date(char *buf, char *end, void *ptr, struct printf_spec spec,
 		    const char *fmt)
 {
-	switch (fmt[1]) {
-	case 'R':
-		return rtc_str(buf, end, (const struct rtc_time *)ptr, spec, fmt);
-	case 'T':
-		return time64_str(buf, end, *(const time64_t *)ptr, spec, fmt);
-	default:
-		return error_string(buf, end, "(%pt?)", spec);
-	}
+	/* Stubbed: time/date formatting not needed for minimal kernel */
+	return error_string(buf, end, "(time)", spec);
 }
 
 static noinline_for_stack
 char *clock(char *buf, char *end, struct clk *clk, struct printf_spec spec,
 	    const char *fmt)
 {
-	if (!IS_ENABLED(CONFIG_HAVE_CLK))
-		return error_string(buf, end, "(%pC?)", spec);
-
-	if (check_pointer(&buf, end, clk, spec))
-		return buf;
-
-	switch (fmt[1]) {
-	case 'n':
-	default:
-		return ptr_to_id(buf, end, clk, spec);
-	}
+	/* Stubbed: clock formatting not needed for minimal kernel */
+	return error_string(buf, end, "(clock)", spec);
 }
 
 static

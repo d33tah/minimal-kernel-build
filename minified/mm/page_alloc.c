@@ -4120,9 +4120,7 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 		if (!is_highmem_idx(j)) {
 			if (freesize >= memmap_pages) {
 				freesize -= memmap_pages;
-			} else
-				pr_warn("  %s zone: %lu memmap pages exceeds freesize %lu\n",
-					zone_names[j], memmap_pages, freesize);
+			}
 		}
 
 		
@@ -4325,9 +4323,6 @@ static void __init find_zone_movable_pfns_for_nodes(void)
 				min(usable_startpfn, zone_movable_pfn[nid]) :
 				usable_startpfn;
 		}
-
-		if (mem_below_4gb_not_mirrored)
-			pr_warn("This configuration results in unmirrored kernel memory.\n");
 
 		goto out2;
 	}
@@ -4821,9 +4816,6 @@ void calculate_min_free_kbytes(void)
 
 	if (new_min_free_kbytes > user_min_free_kbytes)
 		min_free_kbytes = clamp(new_min_free_kbytes, 128, 262144);
-	else
-		pr_warn("min_free_kbytes is not updated to %d because user defined value %d is preferred\n",
-				new_min_free_kbytes, user_min_free_kbytes);
 
 }
 

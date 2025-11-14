@@ -32,23 +32,31 @@ WORK COMPLETED (06:09-06:25):
   - Before: 1285 lines → After: 1249 lines (36 line reduction)
   - Build: PASSES, Binary: 390KB (unchanged), Hello World: PRINTS ✓
 
-SESSION SUMMARY (06:09-06:25, 16 minutes):
-✓ Removed 546 total lines from 3 headers:
+✓ acpi.h reduction (commit 936d3c6):
+  - Analyzed 83 inline functions, found 57 unused (69%)
+  - Removed 57 unused ACPI functions (CONFIG_ACPI disabled)
+  - Before: 519 lines → After: 288 lines (231 line reduction, 44.5%!)
+  - Build: PASSES, Binary: 390KB (unchanged), Hello World: PRINTS ✓
+
+SESSION SUMMARY (06:09-06:28, 19 minutes):
+✓ Removed 777 total lines from 4 headers:
   - of.h: 294 lines (51 functions)
   - irq.h: 216 lines (43 functions)
   - efi.h: 36 lines (8 functions)
-  - Total: 102 unused inline functions removed
+  - acpi.h: 231 lines (57 functions)
+  - Total: 159 unused inline functions removed from 4 headers
 
-Final status (06:25):
-- LOC: 276,904 (down 3,846 from 280,750 session start)
-- Gap to 200K: 76,904 LOC (27.8% reduction still needed)
+Final status (06:28):
+- LOC: 276,713 (down 4,037 from 280,750 session start)
+- Gap to 200K: 76,713 LOC (27.7% reduction still needed)
 - Binary: 390KB (unchanged - all removed code was unused)
 - make vm: PASSES ✓
 - Hello World: PRINTS ✓
 
-Progress: This session achieved 1.4% reduction in ~16 minutes.
+Progress: This session achieved 1.44% reduction in 19 minutes.
+Rate: ~212 LOC/minute removed through header trimming
 
-Next steps: Continue header reduction on remaining large headers.
+Next steps: Continue header reduction. Many headers still have unused functions for disabled CONFIG features.
 
 --- 2025-11-14 05:45 ---
 SESSION START:

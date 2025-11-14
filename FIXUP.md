@@ -1,3 +1,32 @@
+Investigation of TTY/VT subsystem (06:57-07:10):
+- Checked minified/drivers/tty/vt/ files:
+  - vt.c: 3914 lines (main VT code - complex, risky to modify)
+  - vt_ioctl.c: 1039 lines (ioctl handlers - could stub some, but risky)
+  - keyboard.c: 176 lines (ALREADY STUBBED ✓)
+  - selection.c: 66 lines (ALREADY STUBBED ✓)
+  - vc_screen.c: 24 lines (ALREADY STUBBED ✓)
+- Total stubbed: 266 lines already optimized
+- Remaining: 4953 lines (vt.c + vt_ioctl.c)
+- Risk: High - core console functionality, modifications may break boot
+
+--- 2025-11-14 06:57 ---
+SESSION START:
+
+Current status at session start (06:57):
+- make vm: PASSES ✓
+- Hello World: PRINTS ✓
+- Binary: 390KB
+- LOC: 267,497 total (C: 148,294, Headers: 108,221, Other: 10,982)
+- Gap to 200K: 67,497 LOC (25.2% reduction needed)
+
+Strategy: Header inline trimming exhausted. Focus on large C file simplification:
+1. TTY/VT code (vt.c 3280 lines, tty_io.c 1933, n_tty.c 1534) - only need console output
+2. Filesystem code (namei.c 3260, namespace.c 3093) - might be over-engineered
+3. Memory management (page_alloc.c 3876, memory.c 3306) - check for unused features
+4. Scheduler (core.c 2036, fair.c 1172, deadline.c 981) - single-task simplification?
+
+WORK IN PROGRESS (06:57-):
+
 --- 2025-11-14 06:45 ---
 SESSION START:
 

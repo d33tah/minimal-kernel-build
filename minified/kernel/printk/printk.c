@@ -31,7 +31,6 @@
 #include <linux/moduleparam.h>
 #include <linux/delay.h>
 #include <linux/smp.h>
-#include <linux/security.h>
 #include <linux/memblock.h>
 #include <linux/syscalls.h>
 #include <linux/crash_core.h>

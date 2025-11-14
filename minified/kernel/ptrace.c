@@ -15,7 +15,6 @@
 #include <linux/highmem.h>
 #include <linux/pagemap.h>
 #include <linux/ptrace.h>
-#include <linux/security.h>
 #include <linux/signal.h>
 #include <linux/uio.h>
 #include <linux/audit.h>

@@ -2,7 +2,6 @@
 #include <linux/fs.h>
 #include <linux/fs_struct.h>
 #include <linux/kernel_read_file.h>
-#include <linux/security.h>
 #include <linux/vmalloc.h>
 
 /* Minimal stub - kernel_read_file not used by minimal init */

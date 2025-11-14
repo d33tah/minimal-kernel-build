@@ -29,7 +29,6 @@
 #include <linux/panic.h>
 #include <linux/printk.h>
 #include <linux/proc_fs.h>
-#include <linux/security.h>
 #include <linux/ctype.h>
 #include <linux/kmemleak.h>
 #include <linux/filter.h>

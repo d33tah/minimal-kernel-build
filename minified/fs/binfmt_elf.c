@@ -31,7 +31,6 @@
 #include <linux/hugetlb.h>
 #include <linux/pagemap.h>
 #include <linux/vmalloc.h>
-#include <linux/security.h>
 #include <linux/random.h>
 #include <linux/elf.h>
 #include <linux/elf-randomize.h>

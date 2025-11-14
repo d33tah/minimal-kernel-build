@@ -24,7 +24,6 @@
 #include <linux/key.h>
 #include <linux/times.h>
 #include <linux/posix-timers.h>
-#include <linux/security.h>
 #include <linux/suspend.h>
 #include <linux/tty.h>
 #include <linux/signal.h>

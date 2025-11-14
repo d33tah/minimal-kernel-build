@@ -7,7 +7,6 @@
 #include <linux/sched/user.h>
 #include <linux/syscalls.h>
 #include <linux/export.h>
-#include <linux/security.h>
 #include <linux/hugetlb.h>
 
 bool can_do_mlock(void)

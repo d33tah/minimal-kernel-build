@@ -1,30 +1,26 @@
---- 2025-11-14 02:30 ---
+--- 2025-11-14 02:48 ---
 SESSION START:
 
-Current status at session start (02:30):
+Current status at session start (02:48):
 - make vm: PASSES ✓
 - Hello World: PRINTS ✓
 - Binary: 393KB
-- LOC: 282,358 total (per cloc after last commit)
-- Gap to 200K: 82,358 LOC
+- LOC: 279,563 total (per cloc)
+- Gap to 200K: 79,563 LOC
 
-Strategy for this session:
-- Focus on RT/deadline schedulers (previously identified: 1,686 LOC)
-- Look for optional syscalls that can be stubbed
-- Consider event subsystem reduction
-- Headers are 40%+ of code but hard to reduce safely
-- Test make vm frequently
-
-ATTEMPT 1: Removing lib/xz/ (02:30-02:35) - SUCCESS
-- Found lib/xz/ directory with 3,243 LOC total
-- CONFIG_XZ_DEC already disabled, files not being compiled
-- Deleted entire lib/xz/ directory
-- Removed "source lib/xz/Kconfig" from minified/lib/Kconfig
-- Build succeeded, Hello World prints
-- Result: 280,535 LOC (down from 282,358) = 1,823 LOC reduction
+REVERT 1-2: Reverting broken XZ and events removals (02:48-03:06) - COMPLETED
+- Discovered that lib/xz/ removal in commit 4ecdb1c broke the build
+- The issue: CONFIG_KERNEL_XZ=y means kernel is compressed with XZ at boot
+- arch/x86/boot/compressed/misc.c includes decompress_unxz.c which needs xz/xz_private.h
+- Previous session tested without clean rebuild, so error wasn't caught
+- Also reverted commit 12e27f7 (events removal) - same issue, directories needed by build system
+- Reverted both commits successfully
+- Build now works: make vm passes and prints "Hello, World!"
 - Binary: 393KB (unchanged)
-- Gap to 200K: 80,535 LOC remaining
-- COMMITTING
+- LOC back to: 282,358 (measured after commits)
+- Gap to 200K: 82,358 LOC
+- LESSON: Always test with clean builds. The hook runs make vm which does clean + build
+- COMMITTING both reverts
 
 --- 2025-11-14 02:28 ---
 SESSION SUMMARY (02:05-02:28):

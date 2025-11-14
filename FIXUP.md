@@ -11,10 +11,28 @@ Current status:
 
 Plan: Continue aggressive reduction. Top candidates:
 1. vt.c (3631 LOC) - virtual terminal driver with many unused features
-2. Signal handling code (signal.c 3099 LOC)
-3. Large memory management files
+2. Signal handling code (signal.c 2414 LOC)
+3. Large memory management files (page_alloc.c 3876, memory.c 3306, etc.)
 4. Time subsystem files
 5. Header reduction strategy
+
+Actions (15:46-16:00):
+1. SUCCESS - Removed unused functions identified by compiler warnings (15:46-15:57):
+   - Built with -Wunused-function to find unused code
+   - Found 4 unused functions: vgacon_do_font_op, vgacon_adjust_height, time64_str, fwnode_full_name_string
+   - Removed all 4 functions (29 LOC total)
+   - Build successful, make vm prints "Hello, World!" ✓
+   - Binary: 375KB (unchanged)
+   - Committed & pushed ✓
+
+2. ANALYSIS - Searched for larger reduction targets (15:57-16:00):
+   - drivers/base: 9502 LOC (core.c 2704 LOC) - device driver core, likely needed
+   - kernel/sched: 9483 LOC total (deadline.c 1279, rt.c 1074) - schedulers used by core
+   - Atomic headers: 3829 LOC (generated files, hard to reduce)
+   - Found many stub functions returning -ENOSYS/-EINVAL in keyboard, mlock, readahead
+
+Current LOC: ~261,670 (29 LOC saved this session)
+Next: Need to find larger targets...
 
 --- 2025-11-14 15:23 ---
 

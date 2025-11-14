@@ -52,6 +52,55 @@ Actions:
    Removed: rm -rf minified/tools/testing
    Test: make vm - SUCCESS, still prints "Hello, World!"
    Savings: 488 LOC
+   Committed and pushed.
+
+3. Continued investigation (23:30-23:35):
+   Explored additional reduction opportunities:
+   - tools/include: 488 LOC but used by scripts/Makefile for sorttable.o - keep
+   - arch/x86/lib/x86-opcode-map.txt: 1,188 LOC but used to generate instruction tables - keep
+   - Assembly files (.S): 5,772 LOC total - core functionality, can't reduce
+   - MM subsystem files: page_alloc.c (5,081), memory.c (4,055), etc. - all core MM
+
+   Status after 25 minutes:
+   - Achieved: 488 LOC reduction (one easy win)
+   - Remaining: ~51,082 LOC to reach 200K goal
+   - Challenge: Most remaining code is core infrastructure (MM, VFS, scheduler, drivers)
+
+   The codebase has been heavily optimized already (down from 316k to 251k).
+   Further reductions require either:
+   a) Risky architectural changes (stubbing scheduler policies, simplifying MM)
+   b) Tedious function-by-function analysis within large files
+   c) Finding more non-compiled files (like tools/testing)
+
+4. Analysis of non-compiled .c files (23:35-23:40):
+   Found 14,745 LOC in .c files without corresponding .o files.
+   Breakdown:
+   - Scheduler files (deadline.c, rt.c, idle.c, etc.): 4,689 LOC
+     These ARE compiled - they're #included into build_policy.c
+   - XZ decompressor files (xz_dec_*.c): 2,755 LOC
+     These might be #included into other files
+   - Build tools (mkpiggy.c, build.c, relocs.c, gen_init_cpio.c): 2,264 LOC
+     These are hostprogs - not kernel code but needed for build
+   - Other files (insn-eval.c, insn.c, etc.): rest
+     Need to check if these are #included
+
+   Key insight: Many .c files don't have .o files because they're #included into
+   other .c files (kernel's "single compilation unit" optimization). These ARE
+   part of the kernel despite lacking .o files.
+
+   True non-kernel code: ~2,264 LOC in build tools, but these are needed.
+
+SESSION END (23:40):
+- Total time: 30 minutes
+- LOC reduction: 488 LOC (tools/testing removal)
+- Commits: 1
+- Current LOC: ~251,082 (down from 251,570)
+- Gap to 200K goal: ~51,082 LOC (20.3% reduction still needed)
+- Binary: 375KB (meets 400KB goal)
+
+Conclusion: Achieved one small win (tools/testing). Most remaining code is core
+kernel infrastructure. The 200K goal requires deeper architectural changes than
+simple file removal. The codebase is already heavily optimized.
 
 --- 2025-11-14 22:27 ---
 

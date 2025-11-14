@@ -31,6 +31,13 @@ RESULTS:
 This is a small but clean win. Console translations (font mapping, Unicode) aren't needed
 for simple "Hello World" output.
 
+FOLLOW-UP FIX (04:00-04:05):
+- Discovered that git commit hook runs tinyconfig which resets CONFIG_CONSOLE_TRANSLATIONS=y
+- Added "# CONFIG_CONSOLE_TRANSLATIONS is not set" to kernel/configs/tiny.config
+- This ensures the setting persists across tinyconfig runs
+- Rebuilt and verified: consolemap.o and consolemap_deftbl.o now properly excluded
+- make vm: PASSES ✓, Hello World: PRINTS ✓, Binary: 392KB
+
 --- 2025-11-14 03:27 ---
 SESSION START:
 

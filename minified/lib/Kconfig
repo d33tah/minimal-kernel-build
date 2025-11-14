@@ -345,7 +345,7 @@ config ZSTD_DECOMPRESS
 	tristate
 
 # XZ removed - not needed for minimal kernel
-# source "lib/xz/Kconfig"
+source "lib/xz/Kconfig"
 
 #
 # These all provide a common interface (hence the apparent duplication with

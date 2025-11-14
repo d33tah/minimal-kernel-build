@@ -344,7 +344,8 @@ config ZSTD_DECOMPRESS
 	select XXHASH
 	tristate
 
-source "lib/xz/Kconfig"
+# XZ removed - not needed for minimal kernel
+# source "lib/xz/Kconfig"
 
 #
 # These all provide a common interface (hence the apparent duplication with

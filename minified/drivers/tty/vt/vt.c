@@ -204,25 +204,8 @@ struct uni_screen {
 
 static struct uni_screen *vc_uniscr_alloc(unsigned int cols, unsigned int rows)
 {
-	struct uni_screen *uniscr;
-	void *p;
-	unsigned int memsize, i;
-
-	
-	memsize = cols * rows * sizeof(char32_t);
-	memsize += rows * sizeof(char32_t *);
-	p = vmalloc(memsize);
-	if (!p)
-		return NULL;
-
-	
-	uniscr = p;
-	p = uniscr->lines + rows;
-	for (i = 0; i < rows; i++) {
-		uniscr->lines[i] = p;
-		p += cols * sizeof(char32_t);
-	}
-	return uniscr;
+	/* Stubbed: unicode screen buffer disabled to save memory/code */
+	return NULL;
 }
 
 static void vc_uniscr_free(struct uni_screen *uniscr)

@@ -72,6 +72,34 @@ SESSION SUMMARY (21:42-22:03):
 
 No LOC changes this session (RTC removal reverted).
 
+--- 2025-11-14 22:04 ---
+
+NEXT SESSION RECOMMENDATIONS:
+
+Based on analysis, the remaining 75K LOC reduction to reach 200K goal requires:
+
+1. CONFIG-based approach: Modify minified/kernel/configs/tiny.config to disable more features
+   - Potential candidates: disable more CPU vendor support, reduce scheduler features
+   - Check CONFIG_SLUB vs simpler allocator
+   - Consider disabling SYSFS, PROC_FS features if not needed
+
+2. Systematic header analysis: Use automated tools to find truly unused headers
+   - Previous attempts at manual header removal were error-prone
+   - Create script to test header removal one at a time with build verification
+
+3. Large file simplification: Instead of removing files, simplify their internals
+   - fs/namespace.c (3838 LOC): stub out unused mount syscalls
+   - kernel/signal.c (3093 LOC): reduce signal handling complexity
+   - mm/page_alloc.c (5081 LOC): simplify allocator if possible
+
+4. Driver consolidation: Check if TTY/VT drivers can use simpler implementations
+   - drivers/tty/vt/vt.c is 3610 LOC - likely overkill for "Hello World"
+   - Consider minimal console output driver
+
+The key insight: 40K LOC were removed from 316K to 275K previously. This proves
+significant reduction IS achievable, but requires careful systematic approach rather
+than ad-hoc file removal.
+
 --- 2025-11-14 21:28 ---
 
 SESSION START (21:28):

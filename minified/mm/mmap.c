@@ -2096,9 +2096,6 @@ SYSCALL_DEFINE2(munmap, unsigned long, addr, size_t, len)
 SYSCALL_DEFINE5(remap_file_pages, unsigned long, start, unsigned long, size,
 		unsigned long, prot, unsigned long, pgoff, unsigned long, flags)
 {
-	/* Stubbed - deprecated syscall not supported in minimal kernel */
-	pr_warn_once("%s (%d) uses deprecated remap_file_pages() syscall which is not supported.\n",
-		     current->comm, current->pid);
 	return -ENOSYS;
 }
 

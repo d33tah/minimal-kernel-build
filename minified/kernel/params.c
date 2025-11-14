@@ -87,8 +87,6 @@ static bool param_check_unsafe(const struct kernel_param *kp)
 		return false;
 
 	if (kp->flags & KERNEL_PARAM_FL_UNSAFE) {
-		pr_notice("Setting dangerous option %s - tainting kernel\n",
-			  kp->name);
 		add_taint(TAINT_USER, LOCKDEP_STILL_OK);
 	}
 

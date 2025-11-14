@@ -8,7 +8,6 @@
 #include <linux/interrupt.h>
 #include <linux/tick.h>
 #include <linux/err.h>
-#include <linux/debugobjects.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/sysctl.h>
 #include <linux/sched/rt.h>

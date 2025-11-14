@@ -11,7 +11,6 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/set_memory.h>
-#include <linux/debugobjects.h>
 #include <linux/kallsyms.h>
 #include <linux/list.h>
 #include <linux/notifier.h>
@@ -2082,7 +2081,6 @@ static void __vunmap(const void *addr, int deallocate_pages)
 	}
 
 	debug_check_no_locks_freed(area->addr, get_vm_area_size(area));
-	debug_check_no_obj_freed(area->addr, get_vm_area_size(area));
 
 	kasan_poison_vmalloc(area->addr, get_vm_area_size(area));
 

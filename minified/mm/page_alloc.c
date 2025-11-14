@@ -36,7 +36,6 @@
 #include <linux/backing-dev.h>
 #include <linux/fault-inject.h>
 #include <linux/page-isolation.h>
-#include <linux/debugobjects.h>
 #include <linux/kmemleak.h>
 #include <linux/compaction.h>
 
@@ -789,8 +788,6 @@ static __always_inline bool free_pages_prepare(struct page *page,
 
 	if (!PageHighMem(page)) {
 		debug_check_no_locks_freed(page_address(page),
-					   PAGE_SIZE << order);
-		debug_check_no_obj_freed(page_address(page),
 					   PAGE_SIZE << order);
 	}
 

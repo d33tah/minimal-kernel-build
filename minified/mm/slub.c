@@ -17,7 +17,6 @@
 #include <linux/mempolicy.h>
 #include <linux/ctype.h>
 #include <linux/stackdepot.h>
-#include <linux/debugobjects.h>
 #include <linux/kallsyms.h>
 #include <linux/kfence.h>
 #include <linux/memory.h>
@@ -355,10 +354,6 @@ static __always_inline bool slab_free_hook(struct kmem_cache *s,
 	kmemleak_free_recursive(x, s->flags);
 
 	debug_check_no_locks_freed(x, s->object_size);
-
-	if (!(s->flags & SLAB_DEBUG_OBJECTS))
-		debug_check_no_obj_freed(x, s->object_size);
-
 
 	if (init) {
 		int rsize;

@@ -1,70 +1,23 @@
---- 2025-11-14 02:30 ---
+--- 2025-11-14 02:48 ---
 SESSION START:
 
-Current status at session start (02:30):
+Current status at session start (02:48):
 - make vm: PASSES ✓
 - Hello World: PRINTS ✓
 - Binary: 393KB
-- LOC: 282,358 total (per cloc after last commit)
-- Gap to 200K: 82,358 LOC
+- LOC: 279,563 total (per cloc)
+- Gap to 200K: 79,563 LOC
 
-Strategy for this session:
-- Focus on RT/deadline schedulers (previously identified: 1,686 LOC)
-- Look for optional syscalls that can be stubbed
-- Consider event subsystem reduction
-- Headers are 40%+ of code but hard to reduce safely
-- Test make vm frequently
-
-ATTEMPT 1: Removing lib/xz/ (02:30-02:35) - SUCCESS
-- Found lib/xz/ directory with 3,243 LOC total
-- CONFIG_XZ_DEC already disabled, files not being compiled
-- Deleted entire lib/xz/ directory
-- Removed "source lib/xz/Kconfig" from minified/lib/Kconfig
-- Build succeeded, Hello World prints
-- Result: 280,535 LOC (down from 282,358) = 1,823 LOC reduction
+REVERT 1: Reverting XZ and events removal (02:48-03:01) - SUCCESS
+- Discovered that lib/xz/ removal in commit 4ecdb1c broke the build
+- The issue: CONFIG_KERNEL_XZ=y means kernel is compressed with XZ at boot
+- arch/x86/boot/compressed/misc.c includes decompress_unxz.c which needs xz headers
+- Previous session tested without clean rebuild, so error wasn't caught
+- Reverted commits 4ecdb1c (XZ removal) and 12e27f7 (events removal)
+- Build now works: make vm passes and prints "Hello, World!"
 - Binary: 393KB (unchanged)
-- Gap to 200K: 80,535 LOC remaining
-- COMMITTED
-
-EXPLORATION (02:35-03:05):
-- Investigated schedulers (RT/deadline): deeply integrated, can't easily stub
-- Checked lib files: most are actively used (bcd.c needed by RTC, etc.)
-- Examined headers: large headers exist (blkdev.h, pci.h, of.h) but included even when disabled
-- UAPI headers: 13,837 LOC but needed for kernel/user interface
-- Looked for test/debug code: already removed
-- Checked drivers: only essential drivers remain (tty, base, char, video, clocksource, rtc)
-- AMD/Hygon CPU support: compiled despite config trying to disable
-
-Key findings:
-- XZ removal was the main low-hanging fruit found
-- Most remaining code is tightly integrated
-- Headers account for ~40% but risky to remove
-- Scripts (18K LOC) don't count in kernel binary
-- Need different strategy for further reductions
-
-Current status (03:05):
-- LOC: 280,535
-- Gap to 200K: 80,535 LOC
-- Binary: 393KB
-- Session progress: 1,823 LOC reduced
-
-ATTEMPT 2: Removing arch/x86/events/ (03:05-03:10) - SUCCESS
-- Found arch/x86/events/ directory with 1,623 LOC total
-- No .o files present - not being compiled (PERF_EVENTS disabled)
-- Deleted entire arch/x86/events/ directory
-- Removed "source arch/x86/events/Kconfig" from minified/arch/x86/Kconfig
-- Build succeeded, Hello World prints
-- Result: 279,547 LOC (down from 280,535) = 988 LOC reduction
-- Binary: 393KB (unchanged)
-- Gap to 200K: 79,547 LOC remaining
-- COMMITTING
-
-SESSION SUMMARY (02:30-03:10):
-- Total reduction: 2,811 LOC (1,823 from xz + 988 from events)
-- Final LOC: 279,547 (down from 282,358)
-- Gap to 200K: 79,547 LOC remaining
-- Binary: 393KB (unchanged)
-- Both reductions were from disabled subsystems with unused code
+- LOC back to: ~282K (will measure after commit)
+- Note: Need to be more careful with testing - always do clean rebuilds
 
 --- 2025-11-14 02:28 ---
 SESSION SUMMARY (02:05-02:28):

@@ -660,16 +660,7 @@ done:
 /*
  * For initcall_debug, show the driver probe time.
  */
-static int really_probe_debug(struct device *dev, struct device_driver *drv)
-{
-	ktime_t calltime, rettime;
-	int ret;
-
-	calltime = ktime_get();
-	ret = really_probe(dev, drv);
-	rettime = ktime_get();
-	return ret;
-}
+/* Removed really_probe_debug - initcall_debug not needed for minimal kernel */
 
 /**
  * driver_probe_done
@@ -716,10 +707,7 @@ static int __driver_probe_device(struct device_driver *drv, struct device *dev)
 		pm_runtime_get_sync(dev->parent);
 
 	pm_runtime_barrier(dev);
-	if (initcall_debug)
-		ret = really_probe_debug(dev, drv);
-	else
-		ret = really_probe(dev, drv);
+	ret = really_probe(dev, drv);
 	pm_request_idle(dev);
 
 	if (dev->parent)

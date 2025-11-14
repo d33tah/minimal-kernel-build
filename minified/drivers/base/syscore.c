@@ -46,11 +46,8 @@ void syscore_shutdown(void)
 	mutex_lock(&syscore_ops_lock);
 
 	list_for_each_entry_reverse(ops, &syscore_ops_list, node)
-		if (ops->shutdown) {
-			if (initcall_debug)
-				pr_info("PM: Calling %pS\n", ops->shutdown);
+		if (ops->shutdown)
 			ops->shutdown();
-		}
 
 	mutex_unlock(&syscore_ops_lock);
 }

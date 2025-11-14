@@ -28,7 +28,6 @@
 #include <asm/traps.h>
 #include <asm/resctrl.h>
 #include <asm/numa.h>
-#include <asm/thermal.h>
 
 
 #include "cpu.h"
@@ -679,8 +678,6 @@ static void init_intel(struct cpuinfo_x86 *c)
 
 	split_lock_init();
 	bus_lock_init();
-
-	intel_init_thermal(c);
 }
 
 static unsigned int intel_size_cache(struct cpuinfo_x86 *c, unsigned int size)

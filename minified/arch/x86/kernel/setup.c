@@ -44,7 +44,6 @@
 #include <asm/pci-direct.h>
 #include <asm/prom.h>
 #include <asm/proto.h>
-#include <asm/thermal.h>
 #include <asm/unwind.h>
 #include <asm/vsyscall.h>
 #include <linux/vmalloc.h>
@@ -1017,7 +1016,6 @@ void __init setup_arch(char **cmdline_p)
 	 * leading to softlockups on machines which have configured SMI
 	 * interrupt delivery.
 	 */
-	therm_lvt_init();
 
 	mcheck_init();
 

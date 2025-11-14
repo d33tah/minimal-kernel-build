@@ -56,7 +56,6 @@ static inline void x86_ce4100_early_setup(void) { }
 
 #ifndef _SETUP
 
-#include <asm/espfix.h>
 #include <linux/kernel.h>
 
 /*

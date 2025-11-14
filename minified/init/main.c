@@ -90,7 +90,6 @@
 #include <linux/proc_ns.h>
 #include <linux/io.h>
 #include <linux/cache.h>
-#include <linux/rodata_test.h>
 #include <linux/jump_label.h>
 #include <linux/mem_encrypt.h>
 #include <linux/init_syscalls.h>
@@ -1180,7 +1179,6 @@ static void mark_readonly(void)
 		 */
 		rcu_barrier();
 		mark_rodata_ro();
-		rodata_test();
 	} else
 		pr_info("Kernel memory protection disabled.\n");
 }

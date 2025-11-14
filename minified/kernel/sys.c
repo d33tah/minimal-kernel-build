@@ -15,16 +15,11 @@
 #include <linux/highuid.h>
 #include <linux/fs.h>
 #include <linux/kmod.h>
-#include <linux/perf_event.h>
 #include <linux/resource.h>
 #include <linux/kernel.h>
-#include <linux/workqueue.h>
 #include <linux/capability.h>
-#include <linux/device.h>
-#include <linux/key.h>
 #include <linux/times.h>
 #include <linux/posix-timers.h>
-#include <linux/suspend.h>
 #include <linux/tty.h>
 #include <linux/signal.h>
 #include <linux/cn_proc.h>

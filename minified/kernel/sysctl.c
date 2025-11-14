@@ -42,9 +42,6 @@
 #include <linux/writeback.h>
 #include <linux/ratelimit.h>
 #include <linux/compaction.h>
-#include <linux/hugetlb.h>
-#include <linux/initrd.h>
-#include <linux/key.h>
 #include <linux/times.h>
 #include <linux/limits.h>
 #include <linux/dcache.h>

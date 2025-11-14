@@ -21,7 +21,6 @@
 #include <linux/security.h>
 #include <linux/hugetlb.h>
 #include <linux/shmem_fs.h>
-#include <linux/profile.h>
 #include <linux/export.h>
 #include <linux/mount.h>
 #include <linux/mempolicy.h>

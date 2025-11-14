@@ -45,7 +45,6 @@
 #include <linux/nmi.h>
 #include <linux/nospec.h>
 
-#include <linux/profile.h>
 #include <linux/psi.h>
 
 #include <linux/sched/wake_q.h>
@@ -1183,7 +1182,6 @@ static inline void schedule_debug(struct task_struct *prev, bool preempt)
 	rcu_sleep_check();
 	SCHED_WARN_ON(ct_state() == CONTEXT_USER);
 
-	profile_hit(SCHED_PROFILING, __builtin_return_address(0));
 
 	schedstat_inc(this_rq()->sched_count);
 }

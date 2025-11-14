@@ -1,3 +1,24 @@
+--- 2025-11-14 21:02 ---
+
+2. Removed unnecessary profile.h includes (21:06-21:09):
+   Removed #include <linux/profile.h> from 8 files that don't actually
+   use any profile functions:
+   - minified/mm/mmap.c
+   - minified/kernel/exit.c
+   - minified/kernel/ksysfs.c
+   - minified/kernel/fork.c
+   - minified/kernel/sched/core.c (kept profile_hit call)
+   - minified/kernel/sched/sched.h
+   - minified/kernel/sched/fair.c
+   - minified/arch/x86/include/asm/hw_irq.h
+
+   Note: profile.h itself kept since init/main.c calls profile_init()
+   and tick-common.c calls profile_tick().
+
+   Result: Build successful, "Hello, World!" printed
+   Binary: 375KB (no change)
+   Commit: pending
+
 --- 2025-11-14 20:49 ---
 
 SESSION START (20:49):

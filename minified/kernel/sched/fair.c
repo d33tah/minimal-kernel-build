@@ -16,7 +16,6 @@
 #include <linux/interrupt.h>
 #include <linux/mempolicy.h>
 
-#include <linux/profile.h>
 #include <linux/psi.h>
 #include <linux/ratelimit.h>
 #include <linux/task_work.h>

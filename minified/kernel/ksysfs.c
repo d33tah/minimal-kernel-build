@@ -12,7 +12,6 @@
 #include <linux/export.h>
 #include <linux/init.h>
 #include <linux/kexec.h>
-#include <linux/profile.h>
 #include <linux/stat.h>
 #include <linux/sched.h>
 #include <linux/capability.h>

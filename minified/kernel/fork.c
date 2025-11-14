@@ -53,7 +53,6 @@
 #include <linux/audit.h>
 #include <linux/memcontrol.h>
 #include <linux/proc_fs.h>
-#include <linux/profile.h>
 #include <linux/rmap.h>
 #include <linux/ksm.h>
 #include <linux/acct.h>

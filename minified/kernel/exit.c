@@ -25,7 +25,6 @@
 #include <linux/nsproxy.h>
 #include <linux/pid_namespace.h>
 #include <linux/ptrace.h>
-#include <linux/profile.h>
 #include <linux/mount.h>
 #include <linux/proc_fs.h>
 #include <linux/kthread.h>

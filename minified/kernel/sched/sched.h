@@ -48,7 +48,6 @@
 #include <linux/plist.h>
 #include <linux/poll.h>
 #include <linux/proc_fs.h>
-#include <linux/profile.h>
 #include <linux/psi.h>
 #include <linux/rcupdate.h>
 #include <linux/seq_file.h>

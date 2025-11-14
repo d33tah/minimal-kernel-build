@@ -1,3 +1,77 @@
+--- 2025-11-14 21:42 ---
+
+SESSION START (21:42):
+
+Current status:
+- make vm: PASSES ✓
+- Hello World: PRINTS ✓
+- Binary: 375KB (meets 400KB goal ✓)
+- LOC (measured with cloc after make mrproper): 275,765 total
+  - C: 148,854 LOC
+  - C/C++ Headers: 108,008 LOC (39.2% of total)
+  - Assembly: 3,381 LOC
+  - make: 3,639 LOC
+  - Other: 11,883 LOC
+- Gap to 200K goal: 75,765 LOC (27.5% reduction needed)
+
+NOTE: LOC increased from 260,714 to 275,765 (+15,051) - this suggests make mrproper wasn't run last time.
+Actual baseline should be 275,765 LOC.
+
+Strategy:
+- Need to remove ~76K LOC to reach 200K goal
+- Previous sessions show include removal is error-prone and gives small gains
+- Focus on larger subsystem removal/stubbing
+- Target: syscalls (215 total, need ~10), DMA subsystem (1442 LOC), unused drivers
+- Also consider: lib/xz (3243 LOC), event code, TTY complexity
+
+Actions:
+
+1. Analysis (21:42-21:58):
+   Rebuilt kernel after mrproper. Verified make vm still works.
+
+   Current subsystem sizes:
+   - fs/namespace.c: 3838 LOC (8 mount-related syscalls)
+   - lib/xz: 1836 LOC (kernel compression)
+   - Total syscalls defined: 246 (vs ~10 needed for Hello World)
+   - drivers/: 16,769 LOC total (rtc: 403, video: 818, tty: large, base: large)
+
+   Reviewing previous DIARY.md (Nov 12): claimed 316K LOC was "near-optimal" but
+   current measurement is 275K LOC - so 41K was already removed since then!
+   This suggests further reduction IS possible despite previous pessimistic assessment.
+
+   Strategy: Target whole driver subsystems or large feature sets, not individual includes.
+
+2. FAILED - Attempted to remove RTC driver (21:58-22:00):
+   Removed minified/drivers/rtc/ directory and commented out CONFIG_RTC_LIB build line.
+   Result: Build failed with undefined symbols:
+   - rtc_time64_to_tm
+   - rtc_valid_tm
+   - mc146818_set_time
+   Called from: arch/x86/kernel/rtc.c (mach_set_rtc_mmss function)
+   Lesson: RTC is deeply integrated into x86 arch code. Would need to stub arch functions too.
+   Reverted with git restore.
+
+3. Further analysis (22:00-22:03):
+   Checked various subsystems for removal opportunities:
+   - kernel/signal.c: 3093 LOC (likely needed for basic process management)
+   - kernel/fork.c: 2381 LOC (essential for init)
+   - kernel/ptrace.c: 117 LOC (already minimized)
+   - quota subsystem: already removed
+
+   Key challenge: Most remaining code is tightly coupled. Previous 40K LOC reduction
+   (from 316K to 275K) likely came from whole-subsystem removals or config changes.
+   Need to identify which subsystems can be disabled via CONFIG options rather than
+   manual file removal.
+
+SESSION SUMMARY (21:42-22:03):
+- Verified build status: make vm works, 375KB binary, prints "Hello World"
+- Measured baseline: 275,765 LOC (need 75K more reduction for 200K goal)
+- Attempted RTC driver removal: FAILED (x86 arch dependencies)
+- Key insight: 40K LOC were removed since Nov 12 pessimistic assessment
+- Next steps: Focus on CONFIG-based feature removal, not file deletion
+
+No LOC changes this session (RTC removal reverted).
+
 --- 2025-11-14 21:28 ---
 
 SESSION START (21:28):

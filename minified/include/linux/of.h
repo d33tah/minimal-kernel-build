@@ -93,14 +93,6 @@ struct of_reconfig_data {
 /* initialize a node */
 extern struct kobj_type of_node_ktype;
 extern const struct fwnode_operations of_fwnode_ops;
-static inline void of_node_init(struct device_node *node)
-{
-#if defined(CONFIG_OF_KOBJ)
-	kobject_init(&node->kobj, &of_node_ktype);
-#endif
-	fwnode_init(&node->fwnode, &of_fwnode_ops);
-}
-
 #if defined(CONFIG_OF_KOBJ)
 #define of_node_kobj(n) (&(n)->kobj)
 #else
@@ -139,29 +131,9 @@ static inline void of_core_init(void)
 {
 }
 
-static inline bool is_of_node(const struct fwnode_handle *fwnode)
-{
-	return false;
-}
-
 static inline struct device_node *to_of_node(const struct fwnode_handle *fwnode)
 {
 	return NULL;
-}
-
-static inline bool of_node_name_eq(const struct device_node *np, const char *name)
-{
-	return false;
-}
-
-static inline bool of_node_name_prefix(const struct device_node *np, const char *prefix)
-{
-	return false;
-}
-
-static inline const char* of_node_full_name(const struct device_node *np)
-{
-	return "<no-node>";
 }
 
 static inline struct device_node *of_find_node_by_name(struct device_node *from,
@@ -230,11 +202,6 @@ static inline struct device_node *of_find_node_with_property(
 
 #define of_fwnode_handle(node) NULL
 
-static inline bool of_have_populated_dt(void)
-{
-	return false;
-}
-
 static inline struct device_node *of_get_compatible_child(const struct device_node *parent,
 					const char *compatible)
 {
@@ -248,24 +215,7 @@ static inline struct device_node *of_get_child_by_name(
 	return NULL;
 }
 
-static inline int of_device_is_compatible(const struct device_node *device,
-					  const char *name)
-{
-	return 0;
-}
-
-static inline  int of_device_compatible_match(struct device_node *device,
-					      const char *const *compat)
-{
-	return 0;
-}
-
 static inline bool of_device_is_available(const struct device_node *device)
-{
-	return false;
-}
-
-static inline bool of_device_is_big_endian(const struct device_node *device)
 {
 	return false;
 }
@@ -287,18 +237,6 @@ static inline struct device_node *of_find_compatible_node(
 
 static inline int of_property_count_elems_of_size(const struct device_node *np,
 			const char *propname, int elem_size)
-{
-	return -ENOSYS;
-}
-
-static inline int of_property_read_u32_index(const struct device_node *np,
-			const char *propname, u32 index, u32 *out_value)
-{
-	return -ENOSYS;
-}
-
-static inline int of_property_read_u64_index(const struct device_node *np,
-			const char *propname, u32 index, u64 *out_value)
 {
 	return -ENOSYS;
 }
@@ -327,16 +265,6 @@ static inline struct device_node *of_get_cpu_state_node(struct device_node *cpu_
 	return NULL;
 }
 
-static inline int of_n_addr_cells(struct device_node *np)
-{
-	return 0;
-
-}
-static inline int of_n_size_cells(struct device_node *np)
-{
-	return 0;
-}
-
 static inline int of_property_read_variable_u8_array(const struct device_node *np,
 					const char *propname, u8 *out_values,
 					size_t sz_min, size_t sz_max)
@@ -360,12 +288,6 @@ static inline int of_property_read_variable_u32_array(const struct device_node *
 	return -ENOSYS;
 }
 
-static inline int of_property_read_u64(const struct device_node *np,
-				       const char *propname, u64 *out_value)
-{
-	return -ENOSYS;
-}
-
 static inline int of_property_read_variable_u64_array(const struct device_node *np,
 					const char *propname,
 					u64 *out_values,
@@ -378,13 +300,6 @@ static inline int of_property_read_variable_u64_array(const struct device_node *
 static inline int of_property_read_string(const struct device_node *np,
 					  const char *propname,
 					  const char **out_string)
-{
-	return -ENOSYS;
-}
-
-static inline int of_property_match_string(const struct device_node *np,
-					   const char *propname,
-					   const char *string)
 {
 	return -ENOSYS;
 }
@@ -406,22 +321,6 @@ static inline int __of_parse_phandle_with_args(const struct device_node *np,
 	return -ENOSYS;
 }
 
-static inline int of_parse_phandle_with_args_map(const struct device_node *np,
-						 const char *list_name,
-						 const char *stem_name,
-						 int index,
-						 struct of_phandle_args *out_args)
-{
-	return -ENOSYS;
-}
-
-static inline int of_count_phandle_with_args(const struct device_node *np,
-					     const char *list_name,
-					     const char *cells_name)
-{
-	return -ENOSYS;
-}
-
 static inline int of_phandle_iterator_init(struct of_phandle_iterator *it,
 					   const struct device_node *np,
 					   const char *list_name,
@@ -434,43 +333,6 @@ static inline int of_phandle_iterator_init(struct of_phandle_iterator *it,
 static inline int of_phandle_iterator_next(struct of_phandle_iterator *it)
 {
 	return -ENOSYS;
-}
-
-static inline int of_phandle_iterator_args(struct of_phandle_iterator *it,
-					   uint32_t *args,
-					   int size)
-{
-	return 0;
-}
-
-static inline int of_alias_get_id(struct device_node *np, const char *stem)
-{
-	return -ENOSYS;
-}
-
-static inline int of_alias_get_highest_id(const char *stem)
-{
-	return -ENOSYS;
-}
-
-static inline int of_machine_is_compatible(const char *compat)
-{
-	return 0;
-}
-
-static inline int of_add_property(struct device_node *np, struct property *prop)
-{
-	return 0;
-}
-
-static inline int of_remove_property(struct device_node *np, struct property *prop)
-{
-	return 0;
-}
-
-static inline bool of_console_check(const struct device_node *dn, const char *name, int index)
-{
-	return false;
 }
 
 static inline const __be32 *of_prop_next_u32(struct property *prop,
@@ -490,50 +352,6 @@ static inline int of_node_check_flag(struct device_node *n, unsigned long flag)
 	return 0;
 }
 
-static inline int of_node_test_and_set_flag(struct device_node *n,
-					    unsigned long flag)
-{
-	return 0;
-}
-
-static inline void of_node_set_flag(struct device_node *n, unsigned long flag)
-{
-}
-
-static inline void of_node_clear_flag(struct device_node *n, unsigned long flag)
-{
-}
-
-static inline int of_property_check_flag(struct property *p, unsigned long flag)
-{
-	return 0;
-}
-
-static inline void of_property_set_flag(struct property *p, unsigned long flag)
-{
-}
-
-static inline void of_property_clear_flag(struct property *p, unsigned long flag)
-{
-}
-
-static inline int of_cpu_node_to_id(struct device_node *np)
-{
-	return -ENODEV;
-}
-
-static inline int of_map_id(struct device_node *np, u32 id,
-			     const char *map_name, const char *map_mask_name,
-			     struct device_node **target, u32 *id_out)
-{
-	return -EINVAL;
-}
-
-static inline phys_addr_t of_dma_get_max_cpu_address(struct device_node *np)
-{
-	return PHYS_ADDR_MAX;
-}
-
 #define of_match_ptr(_ptr)	NULL
 #define of_match_node(_matches, _node)	NULL
 
@@ -543,22 +361,6 @@ static inline phys_addr_t of_dma_get_max_cpu_address(struct device_node *np)
 #define of_prop_cmp(s1, s2)		strcmp((s1), (s2))
 #define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
 #endif
-
-static inline int of_prop_val_eq(struct property *p1, struct property *p2)
-{
-	return p1->length == p2->length &&
-	       !memcmp(p1->value, p2->value, (size_t)p1->length);
-}
-
-static inline int of_node_to_nid(struct device_node *device)
-{
-	return NUMA_NO_NODE;
-}
-
-static inline int of_numa_init(void)
-{
-	return -ENOSYS;
-}
 
 static inline struct device_node *of_find_matching_node(
 	struct device_node *from,
@@ -570,13 +372,6 @@ static inline struct device_node *of_find_matching_node(
 static inline const char *of_node_get_device_type(const struct device_node *np)
 {
 	return of_get_property(np, "device_type", NULL);
-}
-
-static inline bool of_node_is_type(const struct device_node *np, const char *type)
-{
-	const char *match = of_node_get_device_type(np);
-
-	return np && match && type && !strcmp(match, type);
 }
 
 /**
@@ -973,32 +768,11 @@ static inline int of_property_read_u64_array(const struct device_node *np,
 		return ret;
 }
 
-static inline int of_property_read_u8(const struct device_node *np,
-				       const char *propname,
-				       u8 *out_value)
-{
-	return of_property_read_u8_array(np, propname, out_value, 1);
-}
-
-static inline int of_property_read_u16(const struct device_node *np,
-				       const char *propname,
-				       u16 *out_value)
-{
-	return of_property_read_u16_array(np, propname, out_value, 1);
-}
-
 static inline int of_property_read_u32(const struct device_node *np,
 				       const char *propname,
 				       u32 *out_value)
 {
 	return of_property_read_u32_array(np, propname, out_value, 1);
-}
-
-static inline int of_property_read_s32(const struct device_node *np,
-				       const char *propname,
-				       s32 *out_value)
-{
-	return of_property_read_u32(np, propname, (u32*) out_value);
 }
 
 #define of_for_each_phandle(it, err, np, ln, cn, cc)			\
@@ -1049,28 +823,6 @@ static inline int of_property_read_s32(const struct device_node *np,
 #define for_each_node_with_property(dn, prop_name) \
 	for (dn = of_find_node_with_property(NULL, prop_name); dn; \
 	     dn = of_find_node_with_property(dn, prop_name))
-
-static inline int of_get_child_count(const struct device_node *np)
-{
-	struct device_node *child;
-	int num = 0;
-
-	for_each_child_of_node(np, child)
-		num++;
-
-	return num;
-}
-
-static inline int of_get_available_child_count(const struct device_node *np)
-{
-	struct device_node *child;
-	int num = 0;
-
-	for_each_available_child_of_node(np, child)
-		num++;
-
-	return num;
-}
 
 #define _OF_DECLARE_STUB(table, name, compat, fn, fn_type)		\
 	static const struct of_device_id __of_table_##name		\
@@ -1134,25 +886,6 @@ enum of_reconfig_change {
 	OF_RECONFIG_CHANGE_REMOVE,
 };
 
-static inline int of_reconfig_notifier_register(struct notifier_block *nb)
-{
-	return -EINVAL;
-}
-static inline int of_reconfig_notifier_unregister(struct notifier_block *nb)
-{
-	return -EINVAL;
-}
-static inline int of_reconfig_notify(unsigned long action,
-				     struct of_reconfig_data *arg)
-{
-	return -EINVAL;
-}
-static inline int of_reconfig_get_state_change(unsigned long action,
-						struct of_reconfig_data *arg)
-{
-	return -EINVAL;
-}
-
 /**
  * of_device_is_system_power_controller - Tells if system-power-controller is found for device_node
  * @np: Pointer to the given device_node
@@ -1193,33 +926,6 @@ struct of_overlay_notify_data {
 	struct device_node *overlay;
 	struct device_node *target;
 };
-
-
-static inline int of_overlay_fdt_apply(void *overlay_fdt, u32 overlay_fdt_size,
-				       int *ovcs_id)
-{
-	return -ENOTSUPP;
-}
-
-static inline int of_overlay_remove(int *ovcs_id)
-{
-	return -ENOTSUPP;
-}
-
-static inline int of_overlay_remove_all(void)
-{
-	return -ENOTSUPP;
-}
-
-static inline int of_overlay_notifier_register(struct notifier_block *nb)
-{
-	return 0;
-}
-
-static inline int of_overlay_notifier_unregister(struct notifier_block *nb)
-{
-	return 0;
-}
 
 
 #endif /* _LINUX_OF_H */

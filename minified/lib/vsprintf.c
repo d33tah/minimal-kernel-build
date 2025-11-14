@@ -822,50 +822,8 @@ static noinline_for_stack
 char *hex_string(char *buf, char *end, u8 *addr, struct printf_spec spec,
 		 const char *fmt)
 {
-	int i, len = 1;		
-	char separator;
-
-	if (spec.field_width == 0)
-		
-		return buf;
-
-	if (check_pointer(&buf, end, addr, spec))
-		return buf;
-
-	switch (fmt[1]) {
-	case 'C':
-		separator = ':';
-		break;
-	case 'D':
-		separator = '-';
-		break;
-	case 'N':
-		separator = 0;
-		break;
-	default:
-		separator = ' ';
-		break;
-	}
-
-	if (spec.field_width > 0)
-		len = min_t(int, spec.field_width, 64);
-
-	for (i = 0; i < len; ++i) {
-		if (buf < end)
-			*buf = hex_asc_hi(addr[i]);
-		++buf;
-		if (buf < end)
-			*buf = hex_asc_lo(addr[i]);
-		++buf;
-
-		if (separator && i != len - 1) {
-			if (buf < end)
-				*buf = separator;
-			++buf;
-		}
-	}
-
-	return buf;
+	/* Stubbed: hex dump formatting not needed for minimal kernel */
+	return error_string(buf, end, "(hex)", spec);
 }
 
 static noinline_for_stack
@@ -1175,55 +1133,8 @@ static noinline_for_stack
 char *escaped_string(char *buf, char *end, u8 *addr, struct printf_spec spec,
 		     const char *fmt)
 {
-	bool found = true;
-	int count = 1;
-	unsigned int flags = 0;
-	int len;
-
-	if (spec.field_width == 0)
-		return buf;				
-
-	if (check_pointer(&buf, end, addr, spec))
-		return buf;
-
-	do {
-		switch (fmt[count++]) {
-		case 'a':
-			flags |= ESCAPE_ANY;
-			break;
-		case 'c':
-			flags |= ESCAPE_SPECIAL;
-			break;
-		case 'h':
-			flags |= ESCAPE_HEX;
-			break;
-		case 'n':
-			flags |= ESCAPE_NULL;
-			break;
-		case 'o':
-			flags |= ESCAPE_OCTAL;
-			break;
-		case 'p':
-			flags |= ESCAPE_NP;
-			break;
-		case 's':
-			flags |= ESCAPE_SPACE;
-			break;
-		default:
-			found = false;
-			break;
-		}
-	} while (found);
-
-	if (!flags)
-		flags = ESCAPE_ANY_NP;
-
-	len = spec.field_width < 0 ? 1 : spec.field_width;
-
-	
-	buf += string_escape_mem(addr, len, buf, buf < end ? end - buf : 0, flags, NULL);
-
-	return buf;
+	/* Stubbed: string escaping not needed for minimal kernel */
+	return error_string(buf, end, "(esc)", spec);
 }
 
 static char *va_format(char *buf, char *end, struct va_format *va_fmt,
@@ -1329,50 +1240,8 @@ static noinline_for_stack
 char *rtc_str(char *buf, char *end, const struct rtc_time *tm,
 	      struct printf_spec spec, const char *fmt)
 {
-	bool have_t = true, have_d = true;
-	bool raw = false, iso8601_separator = true;
-	bool found = true;
-	int count = 2;
-
-	if (check_pointer(&buf, end, tm, spec))
-		return buf;
-
-	switch (fmt[count]) {
-	case 'd':
-		have_t = false;
-		count++;
-		break;
-	case 't':
-		have_d = false;
-		count++;
-		break;
-	}
-
-	do {
-		switch (fmt[count++]) {
-		case 'r':
-			raw = true;
-			break;
-		case 's':
-			iso8601_separator = false;
-			break;
-		default:
-			found = false;
-			break;
-		}
-	} while (found);
-
-	if (have_d)
-		buf = date_str(buf, end, tm, raw);
-	if (have_d && have_t) {
-		if (buf < end)
-			*buf = iso8601_separator ? 'T' : ' ';
-		buf++;
-	}
-	if (have_t)
-		buf = time_str(buf, end, tm, raw);
-
-	return buf;
+	/* Stubbed: RTC time formatting not needed for minimal kernel */
+	return error_string(buf, end, "(rtc)", spec);
 }
 
 static noinline_for_stack
@@ -1465,48 +1334,8 @@ static const struct page_flags_fields pff[] = {
 static
 char *format_page_flags(char *buf, char *end, unsigned long flags)
 {
-	unsigned long main_flags = flags & PAGEFLAGS_MASK;
-	bool append = false;
-	int i;
-
-	buf = number(buf, end, flags, default_flag_spec);
-	if (buf < end)
-		*buf = '(';
-	buf++;
-
-	
-	if (main_flags) {
-		buf = format_flags(buf, end, main_flags, pageflag_names);
-		append = true;
-	}
-
-	
-	for (i = 0; i < ARRAY_SIZE(pff); i++) {
-		
-		if (!pff[i].width)
-			continue;
-
-		
-		if (append) {
-			if (buf < end)
-				*buf = '|';
-			buf++;
-		}
-
-		buf = string(buf, end, pff[i].name, default_str_spec);
-		if (buf < end)
-			*buf = '=';
-		buf++;
-		buf = number(buf, end, (flags >> pff[i].shift) & pff[i].mask,
-			     *pff[i].spec);
-
-		append = true;
-	}
-	if (buf < end)
-		*buf = ')';
-	buf++;
-
-	return buf;
+	/* Stubbed: page flags formatting not needed for minimal kernel */
+	return number(buf, end, flags, default_flag_spec);
 }
 
 static noinline_for_stack

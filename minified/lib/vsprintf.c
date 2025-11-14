@@ -1202,69 +1202,11 @@ char *address_val(char *buf, char *end, const void *addr,
 }
 
 static noinline_for_stack
-char *date_str(char *buf, char *end, const struct rtc_time *tm, bool r)
-{
-	int year = tm->tm_year + (r ? 0 : 1900);
-	int mon = tm->tm_mon + (r ? 0 : 1);
-
-	buf = number(buf, end, year, default_dec04_spec);
-	if (buf < end)
-		*buf = '-';
-	buf++;
-
-	buf = number(buf, end, mon, default_dec02_spec);
-	if (buf < end)
-		*buf = '-';
-	buf++;
-
-	return number(buf, end, tm->tm_mday, default_dec02_spec);
-}
-
-static noinline_for_stack
-char *time_str(char *buf, char *end, const struct rtc_time *tm, bool r)
-{
-	buf = number(buf, end, tm->tm_hour, default_dec02_spec);
-	if (buf < end)
-		*buf = ':';
-	buf++;
-
-	buf = number(buf, end, tm->tm_min, default_dec02_spec);
-	if (buf < end)
-		*buf = ':';
-	buf++;
-
-	return number(buf, end, tm->tm_sec, default_dec02_spec);
-}
-
-static noinline_for_stack
-char *rtc_str(char *buf, char *end, const struct rtc_time *tm,
-	      struct printf_spec spec, const char *fmt)
-{
-	/* Stubbed: RTC time formatting not needed for minimal kernel */
-	return error_string(buf, end, "(rtc)", spec);
-}
-
-static noinline_for_stack
 char *time64_str(char *buf, char *end, const time64_t time,
 		 struct printf_spec spec, const char *fmt)
 {
-	struct rtc_time rtc_time;
-	struct tm tm;
-
-	time64_to_tm(time, 0, &tm);
-
-	rtc_time.tm_sec = tm.tm_sec;
-	rtc_time.tm_min = tm.tm_min;
-	rtc_time.tm_hour = tm.tm_hour;
-	rtc_time.tm_mday = tm.tm_mday;
-	rtc_time.tm_mon = tm.tm_mon;
-	rtc_time.tm_year = tm.tm_year;
-	rtc_time.tm_wday = tm.tm_wday;
-	rtc_time.tm_yday = tm.tm_yday;
-
-	rtc_time.tm_isdst = 0;
-
-	return rtc_str(buf, end, &rtc_time, spec, fmt);
+	/* Stubbed: time/date formatting not needed for minimal kernel */
+	return error_string(buf, end, "(time)", spec);
 }
 
 static noinline_for_stack
@@ -1283,61 +1225,6 @@ char *clock(char *buf, char *end, struct clk *clk, struct printf_spec spec,
 	return error_string(buf, end, "(clock)", spec);
 }
 
-static
-char *format_flags(char *buf, char *end, unsigned long flags,
-					const struct trace_print_flags *names)
-{
-	unsigned long mask;
-
-	for ( ; flags && names->name; names++) {
-		mask = names->mask;
-		if ((flags & mask) != mask)
-			continue;
-
-		buf = string(buf, end, names->name, default_str_spec);
-
-		flags &= ~mask;
-		if (flags) {
-			if (buf < end)
-				*buf = '|';
-			buf++;
-		}
-	}
-
-	if (flags)
-		buf = number(buf, end, flags, default_flag_spec);
-
-	return buf;
-}
-
-struct page_flags_fields {
-	int width;
-	int shift;
-	int mask;
-	const struct printf_spec *spec;
-	const char *name;
-};
-
-static const struct page_flags_fields pff[] = {
-	{SECTIONS_WIDTH, SECTIONS_PGSHIFT, SECTIONS_MASK,
-	 &default_dec_spec, "section"},
-	{NODES_WIDTH, NODES_PGSHIFT, NODES_MASK,
-	 &default_dec_spec, "node"},
-	{ZONES_WIDTH, ZONES_PGSHIFT, ZONES_MASK,
-	 &default_dec_spec, "zone"},
-	{LAST_CPUPID_WIDTH, LAST_CPUPID_PGSHIFT, LAST_CPUPID_MASK,
-	 &default_flag_spec, "lastcpupid"},
-	{KASAN_TAG_WIDTH, KASAN_TAG_PGSHIFT, KASAN_TAG_MASK,
-	 &default_flag_spec, "kasantag"},
-};
-
-static
-char *format_page_flags(char *buf, char *end, unsigned long flags)
-{
-	/* Stubbed: page flags formatting not needed for minimal kernel */
-	return number(buf, end, flags, default_flag_spec);
-}
-
 static noinline_for_stack
 char *flags_string(char *buf, char *end, void *flags_ptr,
 		   struct printf_spec spec, const char *fmt)
@@ -1350,22 +1237,8 @@ static noinline_for_stack
 char *fwnode_full_name_string(struct fwnode_handle *fwnode, char *buf,
 			      char *end)
 {
-	int depth;
-
-	
-	for (depth = fwnode_count_parents(fwnode); depth >= 0; depth--) {
-		struct fwnode_handle *__fwnode =
-			fwnode_get_nth_parent(fwnode, depth);
-
-		buf = string(buf, end, fwnode_get_name_prefix(__fwnode),
-			     default_str_spec);
-		buf = string(buf, end, fwnode_get_name(__fwnode),
-			     default_str_spec);
-
-		fwnode_handle_put(__fwnode);
-	}
-
-	return buf;
+	/* Stubbed: firmware node formatting not needed for minimal kernel */
+	return string(buf, end, "(fwnode)", default_str_spec);
 }
 
 static noinline_for_stack

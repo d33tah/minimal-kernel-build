@@ -70,6 +70,24 @@ Actions (19:02-):
 
    Total LOC removed so far: ~40-45 LOC (aio.h + signalfd.h)
 
+5. SUCCESS - Removed stackleak and kcsan headers (19:22):
+   Found stackleak.h (17 LOC) and kcsan.h (20 LOC) with stub functions.
+   Both were only doing empty initialization.
+
+   Changes:
+   - Removed #include <linux/stackleak.h> from kernel/fork.c
+   - Removed stackleak_task_init() call from fork.c
+   - Removed #include <linux/kcsan.h> from include/linux/sched.h and init/main.c
+   - Removed kcsan_init() call from main.c
+   - Deleted minified/include/linux/stackleak.h (17 LOC)
+   - Deleted minified/include/linux/kcsan.h (20 LOC)
+
+   Result: Build successful, "Hello, World!" printed ✓
+   LOC removed: ~40 LOC (headers + includes + function calls)
+   Binary: 375KB (unchanged)
+
+   Total LOC removed so far: ~80-85 LOC (aio.h + signalfd.h + stackleak.h + kcsan.h)
+
 --- 2025-11-14 18:42 ---
 
 SESSION START (18:42):

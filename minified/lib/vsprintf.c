@@ -755,59 +755,16 @@ static noinline_for_stack
 char *dentry_name(char *buf, char *end, const struct dentry *d, struct printf_spec spec,
 		  const char *fmt)
 {
-	const char *array[4], *s;
-	const struct dentry *p;
-	int depth;
-	int i, n;
-
-	switch (fmt[1]) {
-		case '2': case '3': case '4':
-			depth = fmt[1] - '0';
-			break;
-		default:
-			depth = 1;
-	}
-
-	rcu_read_lock();
-	for (i = 0; i < depth; i++, d = p) {
-		if (check_pointer(&buf, end, d, spec)) {
-			rcu_read_unlock();
-			return buf;
-		}
-
-		p = READ_ONCE(d->d_parent);
-		array[i] = READ_ONCE(d->d_name.name);
-		if (p == d) {
-			if (i)
-				array[i] = "";
-			i++;
-			break;
-		}
-	}
-	s = array[--i];
-	for (n = 0; n != spec.precision; n++, buf++) {
-		char c = *s++;
-		if (!c) {
-			if (!i)
-				break;
-			c = '/';
-			s = array[--i];
-		}
-		if (buf < end)
-			*buf = c;
-	}
-	rcu_read_unlock();
-	return widen_string(buf, n, end, spec);
+	/* Stubbed: dentry formatting not needed for minimal kernel */
+	return error_string(buf, end, "(dentry)", spec);
 }
 
 static noinline_for_stack
 char *file_dentry_name(char *buf, char *end, const struct file *f,
 			struct printf_spec spec, const char *fmt)
 {
-	if (check_pointer(&buf, end, f, spec))
-		return buf;
-
-	return dentry_name(buf, end, f->f_path.dentry, spec, fmt);
+	/* Stubbed: file dentry formatting not needed for minimal kernel */
+	return error_string(buf, end, "(file)", spec);
 }
 
 static noinline_for_stack
@@ -1556,28 +1513,8 @@ static noinline_for_stack
 char *flags_string(char *buf, char *end, void *flags_ptr,
 		   struct printf_spec spec, const char *fmt)
 {
-	unsigned long flags;
-	const struct trace_print_flags *names;
-
-	if (check_pointer(&buf, end, flags_ptr, spec))
-		return buf;
-
-	switch (fmt[1]) {
-	case 'p':
-		return format_page_flags(buf, end, *(unsigned long *)flags_ptr);
-	case 'v':
-		flags = *(unsigned long *)flags_ptr;
-		names = vmaflag_names;
-		break;
-	case 'g':
-		flags = (__force unsigned long)(*(gfp_t *)flags_ptr);
-		names = gfpflag_names;
-		break;
-	default:
-		return error_string(buf, end, "(%pG?)", spec);
-	}
-
-	return format_flags(buf, end, flags, names);
+	/* Stubbed: flags formatting not needed for minimal kernel */
+	return error_string(buf, end, "(flags)", spec);
 }
 
 static noinline_for_stack
@@ -1606,120 +1543,16 @@ static noinline_for_stack
 char *device_node_string(char *buf, char *end, struct device_node *dn,
 			 struct printf_spec spec, const char *fmt)
 {
-	char tbuf[sizeof("xxxx") + 1];
-	const char *p;
-	int ret;
-	char *buf_start = buf;
-	struct property *prop;
-	bool has_mult, pass;
-
-	struct printf_spec str_spec = spec;
-	str_spec.field_width = -1;
-
-	if (fmt[0] != 'F')
-		return error_string(buf, end, "(%pO?)", spec);
-
-	if (!IS_ENABLED(CONFIG_OF))
-		return error_string(buf, end, "(%pOF?)", spec);
-
-	if (check_pointer(&buf, end, dn, spec))
-		return buf;
-
-	
-	fmt++;
-	if (fmt[0] == '\0' || strcspn(fmt,"fnpPFcC") > 0)
-		fmt = "f";
-
-	for (pass = false; strspn(fmt,"fnpPFcC"); fmt++, pass = true) {
-		int precision;
-		if (pass) {
-			if (buf < end)
-				*buf = ':';
-			buf++;
-		}
-
-		switch (*fmt) {
-		case 'f':	
-			buf = fwnode_full_name_string(of_fwnode_handle(dn), buf,
-						      end);
-			break;
-		case 'n':	
-			p = fwnode_get_name(of_fwnode_handle(dn));
-			precision = str_spec.precision;
-			str_spec.precision = strchrnul(p, '@') - p;
-			buf = string(buf, end, p, str_spec);
-			str_spec.precision = precision;
-			break;
-		case 'p':	
-			buf = number(buf, end, (unsigned int)dn->phandle, default_dec_spec);
-			break;
-		case 'P':	
-			p = fwnode_get_name(of_fwnode_handle(dn));
-			if (!p[1])
-				p = "/";
-			buf = string(buf, end, p, str_spec);
-			break;
-		case 'F':	
-			tbuf[0] = of_node_check_flag(dn, OF_DYNAMIC) ? 'D' : '-';
-			tbuf[1] = of_node_check_flag(dn, OF_DETACHED) ? 'd' : '-';
-			tbuf[2] = of_node_check_flag(dn, OF_POPULATED) ? 'P' : '-';
-			tbuf[3] = of_node_check_flag(dn, OF_POPULATED_BUS) ? 'B' : '-';
-			tbuf[4] = 0;
-			buf = string_nocheck(buf, end, tbuf, str_spec);
-			break;
-		case 'c':	
-			ret = of_property_read_string(dn, "compatible", &p);
-			if (!ret)
-				buf = string(buf, end, p, str_spec);
-			break;
-		case 'C':	
-			has_mult = false;
-			of_property_for_each_string(dn, "compatible", prop, p) {
-				if (has_mult)
-					buf = string_nocheck(buf, end, ",", str_spec);
-				buf = string_nocheck(buf, end, "\"", str_spec);
-				buf = string(buf, end, p, str_spec);
-				buf = string_nocheck(buf, end, "\"", str_spec);
-
-				has_mult = true;
-			}
-			break;
-		default:
-			break;
-		}
-	}
-
-	return widen_string(buf, buf - buf_start, end, spec);
+	/* Stubbed: device node formatting not needed for minimal kernel */
+	return error_string(buf, end, "(devnode)", spec);
 }
 
 static noinline_for_stack
 char *fwnode_string(char *buf, char *end, struct fwnode_handle *fwnode,
 		    struct printf_spec spec, const char *fmt)
 {
-	struct printf_spec str_spec = spec;
-	char *buf_start = buf;
-
-	str_spec.field_width = -1;
-
-	if (*fmt != 'w')
-		return error_string(buf, end, "(%pf?)", spec);
-
-	if (check_pointer(&buf, end, fwnode, spec))
-		return buf;
-
-	fmt++;
-
-	switch (*fmt) {
-	case 'P':	
-		buf = string(buf, end, fwnode_get_name(fwnode), str_spec);
-		break;
-	case 'f':	
-	default:
-		buf = fwnode_full_name_string(fwnode, buf, end);
-		break;
-	}
-
-	return widen_string(buf, buf - buf_start, end, spec);
+	/* Stubbed: fwnode formatting not needed for minimal kernel */
+	return error_string(buf, end, "(fwnode)", spec);
 }
 
 int __init no_hash_pointers_enable(char *str)

@@ -41,11 +41,6 @@ void init_mm_internals(void);
 
 extern unsigned long max_mapnr;
 
-static inline void set_max_mapnr(unsigned long limit)
-{
-	max_mapnr = limit;
-}
-
 extern atomic_long_t _totalram_pages;
 static inline unsigned long totalram_pages(void)
 {
@@ -55,11 +50,6 @@ static inline unsigned long totalram_pages(void)
 static inline void totalram_pages_inc(void)
 {
 	atomic_long_inc(&_totalram_pages);
-}
-
-static inline void totalram_pages_dec(void)
-{
-	atomic_long_dec(&_totalram_pages);
 }
 
 static inline void totalram_pages_add(long count)
@@ -409,8 +399,6 @@ static inline bool vma_is_accessible(struct vm_area_struct *vma)
 	return vma->vm_flags & VM_ACCESS_FLAGS;
 }
 
-static inline bool vma_is_shmem(struct vm_area_struct *vma) { return false; }
-
 int vma_is_stack_for_current(struct vm_area_struct *vma);
 
 #define TLB_FLUSH_VMA(mm,flags) { .vm_mm = (mm), .vm_flags = (flags) }
@@ -441,11 +429,6 @@ static inline int put_page_testzero(struct page *page)
 static inline int folio_put_testzero(struct folio *folio)
 {
 	return put_page_testzero(&folio->page);
-}
-
-static inline bool get_page_unless_zero(struct page *page)
-{
-	return page_ref_add_unless(page, 1, 0);
 }
 
 extern int page_is_ram(unsigned long pfn);
@@ -496,11 +479,6 @@ static inline int page_mapcount(struct page *page)
 
 int folio_mapcount(struct folio *folio);
 
-static inline int total_mapcount(struct page *page)
-{
-	return page_mapcount(page);
-}
-
 static inline struct page *virt_to_head_page(const void *x)
 {
 	struct page *page = virt_to_page(x);
@@ -544,11 +522,6 @@ static inline void destroy_compound_page(struct page *page)
 {
 	VM_BUG_ON_PAGE(page[1].compound_dtor >= NR_COMPOUND_DTORS, page);
 	compound_page_dtors[page[1].compound_dtor](page);
-}
-
-static inline int head_compound_pincount(struct page *head)
-{
-	return atomic_read(compound_pincount_ptr(head));
 }
 
 static inline void set_compound_order(struct page *page, unsigned int order)
@@ -657,11 +630,6 @@ static inline bool folio_is_zone_device(const struct folio *folio)
 	return is_zone_device_page(&folio->page);
 }
 
-static inline bool is_zone_movable_page(const struct page *page)
-{
-	return page_zonenum(page) == ZONE_MOVABLE;
-}
-
 static inline bool put_devmap_managed_page(struct page *page)
 {
 	return false;
@@ -682,15 +650,6 @@ static inline void get_page(struct page *page)
 }
 
 bool __must_check try_grab_page(struct page *page, unsigned int flags);
-
-static inline __must_check bool try_get_page(struct page *page)
-{
-	page = compound_head(page);
-	if (WARN_ON_ONCE(page_ref_count(page) <= 0))
-		return false;
-	page_ref_inc(page);
-	return true;
-}
 
 static inline void folio_put(struct folio *folio)
 {
@@ -759,38 +718,8 @@ static inline int page_cpupid_last(struct page *page)
 	return page_to_nid(page); 
 }
 
-static inline int cpupid_to_nid(int cpupid)
-{
-	return -1;
-}
-
-static inline int cpupid_to_pid(int cpupid)
-{
-	return -1;
-}
-
-static inline int cpupid_to_cpu(int cpupid)
-{
-	return -1;
-}
-
-static inline int cpu_pid_to_cpupid(int nid, int pid)
-{
-	return -1;
-}
-
-static inline bool cpupid_pid_unset(int cpupid)
-{
-	return true;
-}
-
 static inline void page_cpupid_reset_last(struct page *page)
 {
-}
-
-static inline bool cpupid_match_pid(struct task_struct *task, int cpupid)
-{
-	return false;
 }
 
 static inline u8 page_kasan_tag(const struct page *page)
@@ -828,10 +757,6 @@ static inline void set_page_section(struct page *page, unsigned long section)
 	page->flags |= (section & SECTIONS_MASK) << SECTIONS_PGSHIFT;
 }
 
-static inline unsigned long page_to_section(const struct page *page)
-{
-	return (page->flags >> SECTIONS_PGSHIFT) & SECTIONS_MASK;
-}
 #endif
 
 static inline unsigned long folio_pfn(struct folio *folio)
@@ -873,11 +798,6 @@ static inline bool page_needs_cow_for_dma(struct vm_area_struct *vma,
 static inline bool is_pinnable_page(struct page *page)
 {
 	return true;
-}
-
-static inline bool folio_is_pinnable(struct folio *folio)
-{
-	return is_pinnable_page(&folio->page);
 }
 
 static inline void set_page_zone(struct page *page, enum zone_type zone)
@@ -1068,12 +988,6 @@ void unmap_mapping_pages(struct address_space *mapping,
 void unmap_mapping_range(struct address_space *mapping,
 		loff_t const holebegin, loff_t const holelen, int even_cows);
 
-static inline void unmap_shared_mapping_range(struct address_space *mapping,
-		loff_t const holebegin, loff_t const holelen)
-{
-	unmap_mapping_range(mapping, holebegin, holelen, 0);
-}
-
 extern int access_process_vm(struct task_struct *tsk, unsigned long addr,
 		void *buf, int len, unsigned int gup_flags);
 extern int access_remote_vm(struct mm_struct *mm, unsigned long addr,
@@ -1147,12 +1061,6 @@ int get_user_pages_fast_only(unsigned long start, int nr_pages,
 int pin_user_pages_fast_only(unsigned long start, int nr_pages,
 			     unsigned int gup_flags, struct page **pages);
 
-static inline bool get_user_page_fast_only(unsigned long addr,
-			unsigned int gup_flags, struct page **pagep)
-{
-	return get_user_pages_fast_only(addr, 1, gup_flags, pagep) == 1;
-}
-
 static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
 {
 	long val = atomic_long_read(&mm->rss_stat.count[member]);
@@ -1214,11 +1122,6 @@ static inline unsigned long get_mm_hiwater_rss(struct mm_struct *mm)
 	return max(mm->hiwater_rss, get_mm_rss(mm));
 }
 
-static inline unsigned long get_mm_hiwater_vm(struct mm_struct *mm)
-{
-	return max(mm->hiwater_vm, mm->total_vm);
-}
-
 static inline void update_hiwater_rss(struct mm_struct *mm)
 {
 	unsigned long _rss = get_mm_rss(mm);
@@ -1231,11 +1134,6 @@ static inline void update_hiwater_vm(struct mm_struct *mm)
 {
 	if (mm->hiwater_vm < mm->total_vm)
 		mm->hiwater_vm = mm->total_vm;
-}
-
-static inline void reset_mm_hiwater_rss(struct mm_struct *mm)
-{
-	mm->hiwater_rss = get_mm_rss(mm);
 }
 
 static inline void setmax_mm_hiwater_rss(unsigned long *maxrss,
@@ -1580,12 +1478,6 @@ static inline void free_reserved_page(struct page *page)
 }
 #define free_highmem_page(page) free_reserved_page(page)
 
-static inline void mark_page_reserved(struct page *page)
-{
-	SetPageReserved(page);
-	adjust_managed_page_count(page, -1);
-}
-
 static inline unsigned long free_initmem_default(int poison)
 {
 	extern char __init_begin[], __init_end[];
@@ -1614,11 +1506,6 @@ extern unsigned long absent_pages_in_range(unsigned long start_pfn,
 extern void get_pfn_range_for_nid(unsigned int nid,
 			unsigned long *start_pfn, unsigned long *end_pfn);
 extern unsigned long find_min_pfn_with_active_regions(void);
-
-static inline int early_pfn_to_nid(unsigned long pfn)
-{
-	return 0;
-}
 
 extern void set_dma_reserve(unsigned long new_dma_reserve);
 extern void memmap_init_range(unsigned long, int, unsigned long,
@@ -1911,19 +1798,6 @@ vm_fault_t vmf_insert_mixed_mkwrite(struct vm_area_struct *vma,
 		unsigned long addr, pfn_t pfn);
 int vm_iomap_memory(struct vm_area_struct *vma, phys_addr_t start, unsigned long len);
 
-static inline vm_fault_t vmf_insert_page(struct vm_area_struct *vma,
-				unsigned long addr, struct page *page)
-{
-	int err = vm_insert_page(vma, addr, page);
-
-	if (err == -ENOMEM)
-		return VM_FAULT_OOM;
-	if (err < 0 && err != -EBUSY)
-		return VM_FAULT_SIGBUS;
-
-	return VM_FAULT_NOPAGE;
-}
-
 #ifndef io_remap_pfn_range
 static inline int io_remap_pfn_range(struct vm_area_struct *vma,
 				     unsigned long addr, unsigned long pfn,
@@ -1932,13 +1806,6 @@ static inline int io_remap_pfn_range(struct vm_area_struct *vma,
 	return remap_pfn_range(vma, addr, pfn, size, pgprot_decrypted(prot));
 }
 #endif
-
-static inline vm_fault_t vmf_error(int err)
-{
-	if (err == -ENOMEM)
-		return VM_FAULT_OOM;
-	return VM_FAULT_SIGBUS;
-}
 
 struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
 			 unsigned int foll_flags);
@@ -1993,9 +1860,6 @@ extern int apply_to_existing_page_range(struct mm_struct *mm,
 				   pte_fn_t fn, void *data);
 
 extern void init_mem_debugging_and_hardening(void);
-static inline bool page_poisoning_enabled(void) { return false; }
-static inline bool page_poisoning_enabled_static(void) { return false; }
-static inline void __kernel_poison_pages(struct page *page, int nunmpages) { }
 static inline void kernel_poison_pages(struct page *page, int numpages) { }
 static inline void kernel_unpoison_pages(struct page *page, int numpages) { }
 
@@ -2100,11 +1964,6 @@ extern int sysctl_memory_failure_recovery;
 extern void shake_page(struct page *p);
 extern atomic_long_t num_poisoned_pages __read_mostly;
 extern int soft_offline_page(unsigned long pfn, int flags);
-static inline int __get_huge_page_for_hwpoison(unsigned long pfn, int flags)
-{
-	return 0;
-}
-
 #ifndef arch_memory_failure
 static inline int arch_memory_failure(unsigned long pfn, int flags)
 {
@@ -2151,7 +2010,6 @@ enum mf_action_page_type {
 };
 
 static inline unsigned int debug_guardpage_minorder(void) { return 0; }
-static inline bool debug_guardpage_enabled(void) { return false; }
 static inline bool page_is_guard(struct page *page) { return false; }
 
 #if MAX_NUMNODES > 1
@@ -2162,29 +2020,7 @@ static inline void setup_nr_node_ids(void) {}
 
 extern int memcmp_pages(struct page *page1, struct page *page2);
 
-static inline int pages_identical(struct page *page1, struct page *page2)
-{
-	return !memcmp_pages(page1, page2);
-}
-
 extern int sysctl_nr_trim_pages;
-
-static inline void mem_dump_obj(void *object) {}
-
-static inline int seal_check_future_write(int seals, struct vm_area_struct *vma)
-{
-	if (seals & F_SEAL_FUTURE_WRITE) {
-		
-		if ((vma->vm_flags & VM_SHARED) && (vma->vm_flags & VM_WRITE))
-			return -EPERM;
-
-		
-		if (vma->vm_flags & VM_SHARED)
-			vma->vm_flags &= ~(VM_MAYWRITE);
-	}
-
-	return 0;
-}
 
 static inline int
 madvise_set_anon_name(struct mm_struct *mm, unsigned long start,

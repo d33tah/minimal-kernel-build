@@ -79,7 +79,6 @@
 #include <linux/perf_event.h>
 
 #include <linux/ptrace.h>
-#include <linux/pti.h>
 #include <linux/blkdev.h>
 #include <linux/sched/clock.h>
 #include <linux/sched/task.h>
@@ -675,8 +674,6 @@ static void __init mm_init(void)
 	vmalloc_init();
 	/* Should be run before the first non-init thread is created */
 	init_espfix_bsp();
-	/* Should be run after espfix64 is set up. */
-	pti_init();
 }
 
 
@@ -1213,12 +1210,6 @@ static int __ref kernel_init(void *unused)
 	exit_boot_config();
 	free_initmem();
 	mark_readonly();
-
-	/*
-	 * Kernel mappings are now finalized - update the userspace page-table
-	 * to finalize PTI.
-	 */
-	pti_finalize();
 
 	system_state = SYSTEM_RUNNING;
 	numa_default_policy();

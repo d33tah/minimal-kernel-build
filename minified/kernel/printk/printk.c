@@ -142,7 +142,6 @@ static int __control_devkmsg(char *str)
 static int __init control_devkmsg(char *str)
 {
 	if (__control_devkmsg(str) < 0) {
-		pr_warn("printk.devkmsg: bad option string '%s'\n", str);
 		return 1;
 	}
 
@@ -505,7 +504,6 @@ void suspend_console(void)
 {
 	if (!console_suspend_enabled)
 		return;
-	pr_info("Suspending console(s) (use no_console_suspend to debug)\n");
 	pr_flush(1000, true);
 	console_lock();
 	console_suspended = 1;
@@ -680,7 +678,6 @@ static bool console_emit_next_record(struct console *con, char *text, char *ext_
 		con->seq = r.info->seq;
 		if (panic_in_progress() && panic_console_dropped++ > 10) {
 			suppress_panic_printk = 1;
-			pr_warn_once("Too many dropped messages. Suppress messages on non-panic CPUs to prevent livelock.\n");
 		}
 	}
 
@@ -980,8 +977,6 @@ static int __read_mostly keep_bootcon;
 static int __init keep_bootcon_setup(char *str)
 {
 	keep_bootcon = 1;
-	pr_info("debug: skip boot console de-registration.\n");
-
 	return 0;
 }
 
@@ -1104,8 +1099,6 @@ void register_console(struct console *newcon)
 
 	/* Do not register boot consoles when there already is a real one. */
 	if (newcon->flags & CON_BOOT && realcon_enabled) {
-		pr_info("Too late to register bootconsole %s%d\n",
-			newcon->name, newcon->index);
 		return;
 	}
 
@@ -1320,12 +1313,6 @@ static int __init printk_late_init(void)
 		    init_section_contains(con->device, 0) ||
 		    init_section_contains(con->unblank, 0) ||
 		    init_section_contains(con->data, 0)) {
-			/*
-			 * Please, consider moving the reported consoles out
-			 * of the init section.
-			 */
-			pr_warn("bootconsole [%s%d] uses init memory and must be disabled even before the real one is ready\n",
-				con->name, con->index);
 			unregister_console(con);
 		}
 	}

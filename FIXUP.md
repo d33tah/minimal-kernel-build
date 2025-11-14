@@ -25,14 +25,30 @@ Actions (15:46-16:00):
    - Binary: 375KB (unchanged)
    - Committed & pushed ✓
 
-2. ANALYSIS - Searched for larger reduction targets (15:57-16:00):
+2. ANALYSIS - Searched for larger reduction targets (15:57-16:05):
    - drivers/base: 9502 LOC (core.c 2704 LOC) - device driver core, likely needed
    - kernel/sched: 9483 LOC total (deadline.c 1279, rt.c 1074) - schedulers used by core
    - Atomic headers: 3829 LOC (generated files, hard to reduce)
    - Found many stub functions returning -ENOSYS/-EINVAL in keyboard, mlock, readahead
+   - notifier.c: 579 LOC, used in 85 places - notification chains needed
+   - Binary analysis: 660KB text, 181KB data, 1.2MB BSS (__brk_pagetables is 1MB)
+   - 96 global symbols exported from vmlinux
 
-Current LOC: ~261,670 (29 LOC saved this session)
-Next: Need to find larger targets...
+SESSION END (16:05):
+- Successfully removed 29 LOC this session
+- Committed & pushed all progress
+- Binary: 375KB, make vm working
+- Current: ~261,670 LOC (gap to 200K: 61,670 LOC)
+
+Key insight: Most easy wins already taken. Remaining code is core functionality.
+Need to find functions within large files that can be safely stubbed.
+Consider: vt.c features, signal syscalls, scheduler simplifications.
+
+Next session should focus on:
+1. Methodically examining large C files for stubbable functions
+2. Using compilation with full warnings to find more unused code
+3. Looking for optional features in core subsystems
+4. Possibly attempting careful vt.c reduction (3631 LOC is significant)
 
 --- 2025-11-14 15:23 ---
 

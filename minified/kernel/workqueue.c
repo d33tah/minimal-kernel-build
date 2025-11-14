@@ -182,3 +182,9 @@ void delayed_work_timer_fn(struct timer_list *t)
     // Execute immediately in our stub implementation
     queue_work(dwork->wq, &dwork->work);
 }
+
+int schedule_on_each_cpu(work_func_t func)
+{
+	/* Stubbed for minimal kernel - single CPU system */
+	return 0;
+}

@@ -137,9 +137,7 @@ struct file *alloc_empty_file(int flags, const struct cred *cred)
 	return f;
 
 over:
-	/* Ran out of filps - report that */
 	if (get_nr_files() > old_max) {
-		pr_info("VFS: file-max limit %lu reached\n", get_max_files());
 		old_max = get_nr_files();
 	}
 	return ERR_PTR(-ENFILE);

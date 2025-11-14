@@ -27,7 +27,6 @@
 #include <linux/memcontrol.h>
 #include <linux/random.h>
 #include <linux/sort.h>
-#include <linux/trace_stubs.h>
 
 #include <linux/debugfs.h>
 
@@ -1275,8 +1274,6 @@ void *__kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru,
 {
 	void *ret = slab_alloc(s, lru, gfpflags, _RET_IP_, s->object_size);
 
-	trace_kmem_cache_alloc(_RET_IP_, ret, s->object_size,
-				s->size, gfpflags);
 
 	return ret;
 }
@@ -1438,7 +1435,6 @@ void kmem_cache_free(struct kmem_cache *s, void *x)
 	s = cache_from_obj(s, x);
 	if (!s)
 		return;
-	trace_kmem_cache_free(_RET_IP_, x, s->name);
 	slab_free(s, virt_to_slab(x), x, NULL, 1, _RET_IP_);
 }
 
@@ -1994,7 +1990,6 @@ void *__kmalloc(size_t size, gfp_t flags)
 
 	ret = slab_alloc(s, NULL, flags, _RET_IP_, size);
 
-	trace_kmalloc(_RET_IP_, ret, size, s->size, flags);
 
 	ret = kasan_kmalloc(s, ret, size, flags);
 
@@ -2022,7 +2017,6 @@ void kfree(const void *x)
 	struct slab *slab;
 	void *object = (void *)x;
 
-	trace_kfree(_RET_IP_, x);
 
 	if (unlikely(ZERO_OR_NULL_PTR(x)))
 		return;
@@ -2329,7 +2323,6 @@ void *__kmalloc_track_caller(size_t size, gfp_t gfpflags, unsigned long caller)
 	ret = slab_alloc(s, NULL, gfpflags, caller, size);
 
 	
-	trace_kmalloc(caller, ret, size, s->size, gfpflags);
 
 	return ret;
 }

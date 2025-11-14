@@ -36,7 +36,6 @@
 #include <linux/perf_event.h>
 #include <linux/ptrace.h>
 #include <linux/vmalloc.h>
-#include <linux/trace_stubs.h>
 
 #include <asm/io.h>
 #include <asm/mmu_context.h>
@@ -97,11 +96,6 @@ static int __init init_zero_pfn(void)
 	return 0;
 }
 early_initcall(init_zero_pfn);
-
-void mm_trace_rss_stat(struct mm_struct *mm, int member, long count)
-{
-	trace_rss_stat(mm, member, count);
-}
 
 #if defined(SPLIT_RSS_COUNTING)
 

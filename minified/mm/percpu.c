@@ -22,7 +22,6 @@
 #include <linux/sched.h>
 #include <linux/sched/mm.h>
 #include <linux/memcontrol.h>
-#include <linux/trace_stubs.h>
 
 #include <asm/cacheflush.h>
 #include <asm/sections.h>
@@ -1227,9 +1226,6 @@ area_found:
 	ptr = __addr_to_pcpu_ptr(chunk->base_addr + off);
 	kmemleak_alloc_percpu(ptr, size, gfp);
 
-	trace_percpu_alloc_percpu(_RET_IP_, reserved, is_atomic, size, align,
-				  chunk->base_addr, off, ptr,
-				  pcpu_obj_full_size(size), gfp);
 
 	pcpu_memcg_post_alloc_hook(objcg, chunk, off, size);
 
@@ -1238,7 +1234,6 @@ area_found:
 fail_unlock:
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 fail:
-	trace_percpu_alloc_percpu_fail(reserved, is_atomic, size, align);
 
 	if (!is_atomic && do_warn && warn_limit) {
 		pr_warn("allocation failed, size=%zu align=%zu atomic=%d, %s\n",
@@ -1514,7 +1509,6 @@ void free_percpu(void __percpu *ptr)
 		need_balance = true;
 	}
 
-	trace_percpu_free_percpu(chunk->base_addr, off, ptr);
 
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
@@ -1818,7 +1812,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	pcpu_nr_populated += PFN_DOWN(size_sum);
 
 	pcpu_stats_chunk_alloc();
-	trace_percpu_create_chunk(base_addr);
 
 	
 	pcpu_base_addr = base_addr;

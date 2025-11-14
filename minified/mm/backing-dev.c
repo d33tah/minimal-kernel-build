@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#include <linux/trace_stubs.h>
 #include <linux/blkdev.h>
 #include <linux/wait.h>
 #include <linux/rbtree.h>
@@ -416,7 +415,6 @@ int bdi_register_va(struct backing_dev_info *bdi, const char *fmt, va_list args)
 
 	spin_unlock_bh(&bdi_lock);
 
-	trace_writeback_bdi_register(bdi);
 	return 0;
 }
 

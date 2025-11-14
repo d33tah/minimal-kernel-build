@@ -41,7 +41,6 @@
 #include <linux/pkeys.h>
 #include <linux/oom.h>
 #include <linux/sched/mm.h>
-#include <linux/trace_stubs.h>
 
 #include <linux/uaccess.h>
 #include <asm/cacheflush.h>
@@ -1520,7 +1519,6 @@ unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
 	else
 		addr = unmapped_area(info);
 
-	trace_vm_unmapped_area(addr, info);
 	return addr;
 }
 

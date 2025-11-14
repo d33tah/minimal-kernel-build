@@ -21,7 +21,6 @@
 #include <linux/memremap.h>
 #include <linux/userfaultfd_k.h>
 #include <linux/mm_inline.h>
-#include <linux/trace_stubs.h>
 
 #include <asm/tlbflush.h>
 
@@ -1298,8 +1297,6 @@ static bool try_to_migrate_one(struct folio *folio, struct vm_area_struct *vma,
 			if (pte_swp_uffd_wp(pteval))
 				swp_pte = pte_swp_mkuffd_wp(swp_pte);
 			set_pte_at(mm, pvmw.address, pvmw.pte, swp_pte);
-			trace_set_migration_pte(pvmw.address, pte_val(swp_pte),
-						compound_order(&folio->page));
 			
 		} else if (PageHWPoison(subpage)) {
 			pteval = swp_entry_to_pte(make_hwpoison_entry(subpage));
@@ -1365,8 +1362,6 @@ static bool try_to_migrate_one(struct folio *folio, struct vm_area_struct *vma,
 						     swp_pte, vma_mmu_pagesize(vma));
 			else
 				set_pte_at(mm, address, pvmw.pte, swp_pte);
-			trace_set_migration_pte(address, pte_val(swp_pte),
-						compound_order(&folio->page));
 			
 		}
 

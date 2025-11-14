@@ -1073,7 +1073,7 @@ static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
 	return (unsigned long)val;
 }
 
-void mm_trace_rss_stat(struct mm_struct *mm, int member, long count);
+static inline void mm_trace_rss_stat(struct mm_struct *mm, int member, long count) {}
 
 static inline void add_mm_counter(struct mm_struct *mm, int member, long value)
 {

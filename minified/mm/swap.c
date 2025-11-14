@@ -308,7 +308,6 @@ static void __folio_activate(struct folio *folio, struct lruvec *lruvec)
 		lruvec_del_folio(lruvec, folio);
 		folio_set_active(folio);
 		lruvec_add_folio(lruvec, folio);
-		trace_mm_lru_activate(folio);
 
 		__count_vm_events(PGACTIVATE, nr_pages);
 		__count_memcg_events(lruvec_memcg(lruvec), PGACTIVATE,
@@ -871,7 +870,6 @@ static void __pagevec_lru_add_fn(struct folio *folio, struct lruvec *lruvec)
 	}
 
 	lruvec_add_folio(lruvec, folio);
-	trace_mm_lru_insertion(folio);
 }
 
 /*

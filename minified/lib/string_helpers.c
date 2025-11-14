@@ -132,98 +132,22 @@ void string_get_size(u64 size, u64 blk_size, const enum string_size_units units,
 
 static bool unescape_space(char **src, char **dst)
 {
-	char *p = *dst, *q = *src;
-
-	switch (*q) {
-	case 'n':
-		*p = '\n';
-		break;
-	case 'r':
-		*p = '\r';
-		break;
-	case 't':
-		*p = '\t';
-		break;
-	case 'v':
-		*p = '\v';
-		break;
-	case 'f':
-		*p = '\f';
-		break;
-	default:
-		return false;
-	}
-	*dst += 1;
-	*src += 1;
-	return true;
+	return false; /* Stubbed: not needed for minimal kernel */
 }
 
 static bool unescape_octal(char **src, char **dst)
 {
-	char *p = *dst, *q = *src;
-	u8 num;
-
-	if (isodigit(*q) == 0)
-		return false;
-
-	num = (*q++) & 7;
-	while (num < 32 && isodigit(*q) && (q - *src < 3)) {
-		num <<= 3;
-		num += (*q++) & 7;
-	}
-	*p = num;
-	*dst += 1;
-	*src = q;
-	return true;
+	return false; /* Stubbed: not needed for minimal kernel */
 }
 
 static bool unescape_hex(char **src, char **dst)
 {
-	char *p = *dst, *q = *src;
-	int digit;
-	u8 num;
-
-	if (*q++ != 'x')
-		return false;
-
-	num = digit = hex_to_bin(*q++);
-	if (digit < 0)
-		return false;
-
-	digit = hex_to_bin(*q);
-	if (digit >= 0) {
-		q++;
-		num = (num << 4) | digit;
-	}
-	*p = num;
-	*dst += 1;
-	*src = q;
-	return true;
+	return false; /* Stubbed: not needed for minimal kernel */
 }
 
 static bool unescape_special(char **src, char **dst)
 {
-	char *p = *dst, *q = *src;
-
-	switch (*q) {
-	case '\"':
-		*p = '\"';
-		break;
-	case '\\':
-		*p = '\\';
-		break;
-	case 'a':
-		*p = '\a';
-		break;
-	case 'e':
-		*p = '\e';
-		break;
-	default:
-		return false;
-	}
-	*dst += 1;
-	*src += 1;
-	return true;
+	return false; /* Stubbed: not needed for minimal kernel */
 }
 
 /**
@@ -311,131 +235,27 @@ static bool escape_passthrough(unsigned char c, char **dst, char *end)
 
 static bool escape_space(unsigned char c, char **dst, char *end)
 {
-	char *out = *dst;
-	unsigned char to;
-
-	switch (c) {
-	case '\n':
-		to = 'n';
-		break;
-	case '\r':
-		to = 'r';
-		break;
-	case '\t':
-		to = 't';
-		break;
-	case '\v':
-		to = 'v';
-		break;
-	case '\f':
-		to = 'f';
-		break;
-	default:
-		return false;
-	}
-
-	if (out < end)
-		*out = '\\';
-	++out;
-	if (out < end)
-		*out = to;
-	++out;
-
-	*dst = out;
-	return true;
+	return false; /* Stubbed: not needed for minimal kernel */
 }
 
 static bool escape_special(unsigned char c, char **dst, char *end)
 {
-	char *out = *dst;
-	unsigned char to;
-
-	switch (c) {
-	case '\\':
-		to = '\\';
-		break;
-	case '\a':
-		to = 'a';
-		break;
-	case '\e':
-		to = 'e';
-		break;
-	case '"':
-		to = '"';
-		break;
-	default:
-		return false;
-	}
-
-	if (out < end)
-		*out = '\\';
-	++out;
-	if (out < end)
-		*out = to;
-	++out;
-
-	*dst = out;
-	return true;
+	return false; /* Stubbed: not needed for minimal kernel */
 }
 
 static bool escape_null(unsigned char c, char **dst, char *end)
 {
-	char *out = *dst;
-
-	if (c)
-		return false;
-
-	if (out < end)
-		*out = '\\';
-	++out;
-	if (out < end)
-		*out = '0';
-	++out;
-
-	*dst = out;
-	return true;
+	return false; /* Stubbed: not needed for minimal kernel */
 }
 
 static bool escape_octal(unsigned char c, char **dst, char *end)
 {
-	char *out = *dst;
-
-	if (out < end)
-		*out = '\\';
-	++out;
-	if (out < end)
-		*out = ((c >> 6) & 0x07) + '0';
-	++out;
-	if (out < end)
-		*out = ((c >> 3) & 0x07) + '0';
-	++out;
-	if (out < end)
-		*out = ((c >> 0) & 0x07) + '0';
-	++out;
-
-	*dst = out;
-	return true;
+	return false; /* Stubbed: not needed for minimal kernel */
 }
 
 static bool escape_hex(unsigned char c, char **dst, char *end)
 {
-	char *out = *dst;
-
-	if (out < end)
-		*out = '\\';
-	++out;
-	if (out < end)
-		*out = 'x';
-	++out;
-	if (out < end)
-		*out = hex_asc_hi(c);
-	++out;
-	if (out < end)
-		*out = hex_asc_lo(c);
-	++out;
-
-	*dst = out;
-	return true;
+	return false; /* Stubbed: not needed for minimal kernel */
 }
 
 /**

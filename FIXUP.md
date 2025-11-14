@@ -17,10 +17,39 @@ REVERT 1-2: Reverting broken XZ and events removals (02:48-03:06) - COMPLETED
 - Reverted both commits successfully
 - Build now works: make vm passes and prints "Hello, World!"
 - Binary: 393KB (unchanged)
-- LOC back to: 282,358 (measured after commits)
-- Gap to 200K: 82,358 LOC
+- LOC: 279,515 (measured at 03:09 after reverts)
+- Gap to 200K: 79,515 LOC
 - LESSON: Always test with clean builds. The hook runs make vm which does clean + build
-- COMMITTING both reverts
+- COMMITTED and PUSHED both reverts
+
+EXPLORATION (03:09-03:20): Looking for reduction opportunities
+- Analyzed codebase structure:
+  - Headers: 112,805 LOC (40% of code)
+  - C source: 154,053 LOC
+  - Largest files: mm/page_alloc.c (5,158), mm/memory.c (4,061), drivers/tty/vt/vt.c (3,914)
+  - UAPI headers: 8,376 LOC
+- Checked for unused subsystems:
+  - PCI: Disabled, but headers remain (pci.h: 1,636 LOC, pci_regs.h: 1,106 LOC)
+  - EFI: Disabled, efi.h still exists (1,285 LOC)
+  - Network: Already fully removed
+  - Crypto: lib/crypto and arch/x86/crypto only have Makefiles, no source
+- Found directories with source but no objects:
+  - lib/xz: 4 C files, 3,243 LOC - BUT these are #included by decompress_unxz.c for early boot
+  - arch/x86/events: 1,623 LOC, 0 objects - but Makefile system needs directory structure for clean
+- Checked optional syscalls:
+  - mlock.c: already stubbed (67 LOC)
+  - readahead.c: already stubbed (55 LOC)
+  - mremap.c: NOT stubbed (1,015 LOC) - potential target
+  - mprotect.c: NOT stubbed (759 LOC) - potential target
+
+Key findings:
+- Most obvious reductions already done in previous sessions
+- Headers are large but hard to trim (interconnected, many inline functions)
+- Core subsystems (MM, VFS, TTY) are fundamental
+- Previous session (DIARY.md) noted 316K as "near-optimal", we're now at 279K (37K better!)
+- Getting to 200K requires architectural changes, not just code removal
+
+Session ended without commits - exploration only.
 
 --- 2025-11-14 02:28 ---
 SESSION SUMMARY (02:05-02:28):

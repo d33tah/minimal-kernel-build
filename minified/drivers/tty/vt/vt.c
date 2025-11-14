@@ -73,7 +73,6 @@ static void gotoxy(struct vc_data *vc, int new_x, int new_y);
 static void save_cur(struct vc_data *vc);
 static void reset_terminal(struct vc_data *vc, int do_clear);
 static void con_flush_chars(struct tty_struct *tty);
-static int set_vesa_blanking(char __user *p);
 static void set_cursor(struct vc_data *vc);
 static void hide_cursor(struct vc_data *vc);
 static void console_callback(struct work_struct *ignored);
@@ -2663,96 +2662,7 @@ static struct console vt_console_driver = {
 
 int tioclinux(struct tty_struct *tty, unsigned long arg)
 {
-	char type, data;
-	char __user *p = (char __user *)arg;
-	int lines;
-	int ret;
-
-	if (current->signal->tty != tty && !capable(CAP_SYS_ADMIN))
-		return -EPERM;
-	if (get_user(type, p))
-		return -EFAULT;
-	ret = 0;
-
-	switch (type)
-	{
-		case TIOCL_SETSEL:
-			ret = set_selection_user((struct tiocl_selection
-						 __user *)(p+1), tty);
-			break;
-		case TIOCL_PASTESEL:
-			ret = paste_selection(tty);
-			break;
-		case TIOCL_UNBLANKSCREEN:
-			console_lock();
-			unblank_screen();
-			console_unlock();
-			break;
-		case TIOCL_SELLOADLUT:
-			console_lock();
-			ret = sel_loadlut(p);
-			console_unlock();
-			break;
-		case TIOCL_GETSHIFTSTATE:
-
-	
-			data = vt_get_shift_state();
-			ret = put_user(data, p);
-			break;
-		case TIOCL_GETMOUSEREPORTING:
-			console_lock();	
-			data = mouse_reporting();
-			console_unlock();
-			ret = put_user(data, p);
-			break;
-		case TIOCL_SETVESABLANK:
-			console_lock();
-			ret = set_vesa_blanking(p);
-			console_unlock();
-			break;
-		case TIOCL_GETKMSGREDIRECT:
-			data = vt_get_kmsg_redirect();
-			ret = put_user(data, p);
-			break;
-		case TIOCL_SETKMSGREDIRECT:
-			if (!capable(CAP_SYS_ADMIN)) {
-				ret = -EPERM;
-			} else {
-				if (get_user(data, p+1))
-					ret = -EFAULT;
-				else
-					vt_kmsg_redirect(data);
-			}
-			break;
-		case TIOCL_GETFGCONSOLE:
-			
-			ret = fg_console;
-			break;
-		case TIOCL_SCROLLCONSOLE:
-			if (get_user(lines, (s32 __user *)(p+4))) {
-				ret = -EFAULT;
-			} else {
-				
-				console_lock();
-				scrollfront(vc_cons[fg_console].d, lines);
-				console_unlock();
-				ret = 0;
-			}
-			break;
-		case TIOCL_BLANKSCREEN:	
-			console_lock();
-			ignore_poke = 1;
-			do_blank_screen(0);
-			console_unlock();
-			break;
-		case TIOCL_BLANKEDSCREEN:
-			ret = console_blanked;
-			break;
-		default:
-			ret = -EINVAL;
-			break;
-	}
-	return ret;
+	return -EINVAL;
 }
 
 static int con_write(struct tty_struct *tty, const unsigned char *buf, int count)
@@ -3456,16 +3366,6 @@ postcore_initcall(vtconsole_class_init);
 
 #endif
 
-static int set_vesa_blanking(char __user *p)
-{
-	unsigned int mode;
-
-	if (get_user(mode, p + 1))
-		return -EFAULT;
-
-	vesa_blank_mode = (mode < 4) ? mode : 0;
-	return 0;
-}
 
 void do_blank_screen(int entering_gfx)
 {

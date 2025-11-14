@@ -262,10 +262,6 @@ int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 	int ret, unmask = 0;
 
 	if (!chip || !chip->irq_set_type) {
-		
-		pr_debug("No set_type function for IRQ %d (%s)\n",
-			 irq_desc_get_irq(desc),
-			 chip ? (chip->name ? : "unknown") : "unknown");
 		return 0;
 	}
 

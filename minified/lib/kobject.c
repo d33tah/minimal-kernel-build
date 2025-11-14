@@ -531,8 +531,6 @@ static void __kobject_del(struct kobject *kobj)
 
 	/* send "remove" if the caller did not do it but sent "add" */
 	if (kobj->state_add_uevent_sent && !kobj->state_remove_uevent_sent) {
-		pr_debug("kobject: '%s' (%p): auto cleanup 'remove' event\n",
-			 kobject_name(kobj), kobj);
 		kobject_uevent(kobj, KOBJ_REMOVE);
 	}
 
@@ -598,14 +596,8 @@ static void kobject_cleanup(struct kobject *kobj)
 	const struct kobj_type *t = get_ktype(kobj);
 	const char *name = kobj->name;
 
-	if (t && !t->release)
-		pr_debug("kobject: '%s' (%p): does not have a release() function, it is broken and must be fixed. See Documentation/core-api/kobject.rst.\n",
-			 kobject_name(kobj), kobj);
-
 	/* remove from sysfs if the caller did not do it */
 	if (kobj->state_in_sysfs) {
-		pr_debug("kobject: '%s' (%p): auto cleanup kobject_del\n",
-			 kobject_name(kobj), kobj);
 		__kobject_del(kobj);
 	} else {
 		/* avoid dropping the parent reference unnecessarily */
@@ -613,14 +605,11 @@ static void kobject_cleanup(struct kobject *kobj)
 	}
 
 	if (t && t->release) {
-		pr_debug("kobject: '%s' (%p): calling ktype release\n",
-			 kobject_name(kobj), kobj);
 		t->release(kobj);
 	}
 
 	/* free name if we allocated it */
 	if (name) {
-		pr_debug("kobject: '%s': free name\n", name);
 		kfree_const(name);
 	}
 

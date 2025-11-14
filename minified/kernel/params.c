@@ -117,8 +117,6 @@ static int parse_one(char *param,
 			if (!val &&
 			    !(params[i].ops->flags & KERNEL_PARAM_OPS_FL_NOARG))
 				return -EINVAL;
-			pr_debug("handling %s with %p\n", param,
-				params[i].ops->set);
 			kernel_param_lock(params[i].mod);
 			if (param_check_unsafe(&params[i]))
 				err = params[i].ops->set(val, &params[i]);
@@ -130,11 +128,9 @@ static int parse_one(char *param,
 	}
 
 	if (handle_unknown) {
-		pr_debug("doing %s: %s='%s'\n", doing, param, val);
 		return handle_unknown(param, val, doing, arg);
 	}
 
-	pr_debug("Unknown argument '%s'\n", param);
 	return -ENOENT;
 }
 
@@ -155,9 +151,7 @@ char *parse_args(const char *doing,
 	args = skip_spaces(args);
 
 	if (*args)
-		pr_debug("doing %s, parsing ARGS: '%s'\n", doing, args);
-
-	while (*args) {
+		while (*args) {
 		int ret;
 		int irq_was_disabled;
 

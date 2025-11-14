@@ -1146,12 +1146,6 @@ static int run_init_process(const char *init_filename)
 
 	argv_init[0] = init_filename;
 	pr_info("Run %s as init process\n", init_filename);
-	pr_debug("  with arguments:\n");
-	for (p = argv_init; *p; p++)
-		pr_debug("    %s\n", *p);
-	pr_debug("  with environment:\n");
-	for (p = envp_init; *p; p++)
-		pr_debug("    %s\n", *p);
 	return kernel_execve(init_filename, argv_init, envp_init);
 }
 

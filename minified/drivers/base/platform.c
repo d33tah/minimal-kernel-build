@@ -991,8 +991,6 @@ int __platform_register_drivers(struct platform_driver * const *drivers,
 	int err;
 
 	for (i = 0; i < count; i++) {
-		pr_debug("registering platform driver %ps\n", drivers[i]);
-
 		err = __platform_driver_register(drivers[i], owner);
 		if (err < 0) {
 			pr_err("failed to register platform driver %ps: %d\n",
@@ -1005,7 +1003,6 @@ int __platform_register_drivers(struct platform_driver * const *drivers,
 
 error:
 	while (i--) {
-		pr_debug("unregistering platform driver %ps\n", drivers[i]);
 		platform_driver_unregister(drivers[i]);
 	}
 
@@ -1025,7 +1022,6 @@ void platform_unregister_drivers(struct platform_driver * const *drivers,
 				 unsigned int count)
 {
 	while (count--) {
-		pr_debug("unregistering platform driver %ps\n", drivers[count]);
 		platform_driver_unregister(drivers[count]);
 	}
 }

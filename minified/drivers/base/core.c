@@ -1705,28 +1705,17 @@ static int dev_uevent(struct kobject *kobj, struct kobj_uevent_env *env)
 
 	
 	if (dev->bus && dev->bus->uevent) {
-		retval = dev->bus->uevent(dev, env);
-		if (retval)
-			pr_debug("device: '%s': %s: bus uevent() returned %d\n",
-				 dev_name(dev), __func__, retval);
+		dev->bus->uevent(dev, env);
 	}
 
 	
 	if (dev->class && dev->class->dev_uevent) {
-		retval = dev->class->dev_uevent(dev, env);
-		if (retval)
-			pr_debug("device: '%s': %s: class uevent() "
-				 "returned %d\n", dev_name(dev),
-				 __func__, retval);
+		dev->class->dev_uevent(dev, env);
 	}
 
 	
 	if (dev->type && dev->type->uevent) {
 		retval = dev->type->uevent(dev, env);
-		if (retval)
-			pr_debug("device: '%s': %s: dev_type uevent() "
-				 "returned %d\n", dev_name(dev),
-				 __func__, retval);
 	}
 
 	return retval;
@@ -3096,8 +3085,6 @@ int device_move(struct device *dev, struct device *new_parent,
 		goto out;
 	}
 
-	pr_debug("device: '%s': %s: moving to '%s'\n", dev_name(dev),
-		 __func__, new_parent ? dev_name(new_parent) : "<NULL>");
 	error = kobject_move(&dev->kobj, new_parent_kobj);
 	if (error) {
 		cleanup_glue_dir(dev, new_parent_kobj);

@@ -429,11 +429,6 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 		nr_range--;
 	}
 
-	for (i = 0; i < nr_range; i++)
-		pr_debug(" [mem %#010lx-%#010lx] page %s\n",
-				mr[i].start, mr[i].end - 1,
-				page_size_string(&mr[i]));
-
 	return nr_range;
 }
 
@@ -476,9 +471,6 @@ unsigned long __ref init_memory_mapping(unsigned long start,
 	struct map_range mr[NR_RANGE_MR];
 	unsigned long ret = 0;
 	int nr_range, i;
-
-	pr_debug("init_memory_mapping: [mem %#010lx-%#010lx]\n",
-	       start, end - 1);
 
 	memset(mr, 0, sizeof(mr));
 	nr_range = split_mem_range(mr, 0, start, end);

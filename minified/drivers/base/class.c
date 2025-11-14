@@ -53,9 +53,6 @@ static void class_release(struct kobject *kobj)
 
 	if (class->class_release)
 		class->class_release(class);
-	else
-		pr_debug("class '%s' does not have a release() function, "
-			 "be careful\n", class->name);
 
 	kfree(cp);
 }

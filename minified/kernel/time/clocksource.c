@@ -954,8 +954,6 @@ static void __clocksource_select(bool skipcur)
 				 * The override cannot be currently verified.
 				 * Deferring to let the watchdog check.
 				 */
-				pr_info("Override clocksource %s is not currently HRT compatible - deferring\n",
-					cs->name);
 			}
 		} else
 			/* Override clocksource can be used. */
@@ -965,7 +963,6 @@ static void __clocksource_select(bool skipcur)
 
 found:
 	if (curr_clocksource != best && !timekeeping_notify(best)) {
-		pr_info("Switched to clocksource %s\n", best->name);
 		curr_clocksource = best;
 	}
 }
@@ -1109,9 +1106,6 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq
 		cs->name);
 
 	clocksource_update_max_deferment(cs);
-
-	pr_info("%s: mask: 0x%llx max_cycles: 0x%llx, max_idle_ns: %lld ns\n",
-		cs->name, cs->mask, cs->max_cycles, cs->max_idle_ns);
 }
 
 /**

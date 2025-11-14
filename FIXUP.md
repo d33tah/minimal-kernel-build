@@ -19,6 +19,71 @@ Actions (19:24-19:38):
 1. SUCCESS - Removed pti.h and randomize_kstack.h stub headers (19:29):
    Both headers only contained empty stub functions/macros.
 
+
+1. SUCCESS - Removed exec.h stub header (19:48):
+   arch/x86/include/asm/exec.h contained only a comment and no actual
+   definitions. The arch_align_stack() function it mentioned is already
+   declared elsewhere.
+   
+   Changes:
+   - Removed include from include/linux/binfmts.h
+   - Deleted arch/x86/include/asm/exec.h
+   
+   Result: Build successful, "Hello, World!" printed
+   LOC removed: ~2
+   Commit: 53c5b6b
+
+2. SUCCESS - Removed ftrace_irq.h stub header (19:53):
+   include/linux/ftrace_irq.h contained only empty stub functions
+   (ftrace_nmi_enter and ftrace_nmi_exit) that did nothing.
+   
+   Changes:
+   - Removed ftrace_nmi_enter() calls from kernel/entry/common.c (2 calls)
+   - Removed ftrace_nmi_enter/exit() calls from include/linux/hardirq.h macros
+   - Removed include from include/linux/hardirq.h
+   - Deleted include/linux/ftrace_irq.h
+   
+   Result: Build successful, "Hello, World!" printed
+   LOC removed: ~15
+   Commit: 10bb1e2
+
+3. SUCCESS - Removed pm-trace.h stub header (19:55):
+   include/linux/pm-trace.h contained only stub functions and macros
+
+SESSION END (19:58):
+- Total LOC removed this session: ~37 (exec.h ~2 + ftrace_irq.h ~15 + pm-trace.h ~20)
+- Starting LOC: 270,712 total (C+headers: 257,596)
+- Final LOC: 270,699 total (C+headers: 257,568)
+- Gap to 200K goal: 57,568 LOC (22.4% reduction still needed)
+- Binary: 375KB, make vm working, Hello World printing
+- Commits: 3 (exec.h, ftrace_irq.h, pm-trace.h)
+- Time spent: ~15 minutes
+
+Strategy summary:
+- Successfully removed 3 stub headers that provided no functionality
+- Each header was small but removing them is safe and cumulative
+- Found pattern: look for small headers with only stub functions/macros
+- Verified each change builds successfully and prints "Hello, World!"
+
+Next session should:
+- Continue looking for more stub headers in include/linux
+- Consider larger reduction opportunities like unused subsystems
+- Target the 108K LOC of headers (42% of total codebase)
+- Look at keyboard/input code which is unused for our simple init
+
+--- 2025-11-14 19:24 ---
+   that did nothing. The only use of pm_trace_rtc_valid() always
+   returned true, making the conditional check unnecessary.
+   
+   Changes:
+   - Removed pm_trace_rtc_valid() check and dead code from arch/x86/kernel/rtc.c
+   - Removed include from include/linux/mc146818rtc.h
+   - Deleted include/linux/pm-trace.h
+   
+   Result: Build successful, "Hello, World!" printed
+   LOC removed: ~20
+   Commit: 10f1248
+
    Changes:
    - Removed pti.h: pti_init() and pti_finalize() from init/main.c
    - Removed randomize_kstack.h: add/choose_random_kstack_offset macros from arch/x86

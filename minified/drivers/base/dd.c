@@ -284,12 +284,10 @@ __setup("deferred_probe_timeout=", deferred_probe_timeout_setup);
 int driver_deferred_probe_check_state(struct device *dev)
 {
 	if (!IS_ENABLED(CONFIG_MODULES) && initcalls_done) {
-		dev_warn(dev, "ignoring dependency for device, assuming no driver\n");
 		return -ENODEV;
 	}
 
 	if (!driver_deferred_probe_timeout && initcalls_done) {
-		dev_warn(dev, "deferred probe timeout, ignoring dependency\n");
 		return -ETIMEDOUT;
 	}
 
@@ -307,8 +305,7 @@ static void deferred_probe_timeout_work_func(struct work_struct *work)
 	flush_work(&deferred_probe_work);
 
 	mutex_lock(&deferred_probe_mutex);
-	list_for_each_entry(p, &deferred_probe_pending_list, deferred_probe)
-		dev_info(p->device, "deferred probe pending\n");
+	list_for_each_entry(p, &deferred_probe_pending_list, deferred_probe);
 	mutex_unlock(&deferred_probe_mutex);
 }
 static DECLARE_DELAYED_WORK(deferred_probe_timeout_work, deferred_probe_timeout_work_func);

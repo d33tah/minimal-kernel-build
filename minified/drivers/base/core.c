@@ -1295,8 +1295,6 @@ static int fw_devlink_create_devlink(struct device *con,
 		
 		if (!device_link_add(con, sup_dev, flags) &&
 		    !(flags & DL_FLAG_SYNC_STATE_ONLY)) {
-			dev_info(con, "Fixing up cyclic dependency with %s\n",
-				 dev_name(sup_dev));
 			device_links_write_lock();
 			fw_devlink_relax_cycle(con, sup_dev);
 			device_links_write_unlock();
@@ -1319,14 +1317,12 @@ static int fw_devlink_create_devlink(struct device *con,
 	
 	sup_dev = fwnode_get_next_parent_dev(sup_handle);
 	if (sup_dev && device_is_dependent(con, sup_dev)) {
-		dev_info(con, "Fixing up cyclic dependency with %pfwP (%s)\n",
-			 sup_handle, dev_name(sup_dev));
 		device_links_write_lock();
 		fw_devlink_relax_cycle(con, sup_dev);
 		device_links_write_unlock();
 		ret = -EINVAL;
 	} else {
-		
+
 		ret = -EAGAIN;
 	}
 

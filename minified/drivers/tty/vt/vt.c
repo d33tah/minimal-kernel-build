@@ -3505,50 +3505,12 @@ static void set_palette(struct vc_data *vc)
 
 int con_set_cmap(unsigned char __user *arg)
 {
-	int i, j, k;
-	unsigned char colormap[3*16];
-
-	if (copy_from_user(colormap, arg, sizeof(colormap)))
-		return -EFAULT;
-
-	console_lock();
-	for (i = k = 0; i < 16; i++) {
-		default_red[i] = colormap[k++];
-		default_grn[i] = colormap[k++];
-		default_blu[i] = colormap[k++];
-	}
-	for (i = 0; i < MAX_NR_CONSOLES; i++) {
-		if (!vc_cons_allocated(i))
-			continue;
-		for (j = k = 0; j < 16; j++) {
-			vc_cons[i].d->vc_palette[k++] = default_red[j];
-			vc_cons[i].d->vc_palette[k++] = default_grn[j];
-			vc_cons[i].d->vc_palette[k++] = default_blu[j];
-		}
-		set_palette(vc_cons[i].d);
-	}
-	console_unlock();
-
-	return 0;
+	return -EINVAL;
 }
 
 int con_get_cmap(unsigned char __user *arg)
 {
-	int i, k;
-	unsigned char colormap[3*16];
-
-	console_lock();
-	for (i = k = 0; i < 16; i++) {
-		colormap[k++] = default_red[i];
-		colormap[k++] = default_grn[i];
-		colormap[k++] = default_blu[i];
-	}
-	console_unlock();
-
-	if (copy_to_user(arg, colormap, sizeof(colormap)))
-		return -EFAULT;
-
-	return 0;
+	return -EINVAL;
 }
 
 void reset_palette(struct vc_data *vc)

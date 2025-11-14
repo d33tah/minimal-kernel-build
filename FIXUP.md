@@ -1,3 +1,58 @@
+--- 2025-11-14 23:10 ---
+
+SESSION START (23:10):
+
+Current status (23:10):
+- make vm: PASSES ✓
+- Hello World: PRINTS ✓
+- Binary: 375KB (meets 400KB goal ✓)
+- LOC: 251,570 (in minified/, excluding scripts)
+- Gap to 200K goal: 51,570 LOC (20.5% reduction needed)
+
+Strategy: Look for large opportunities to reduce code. Based on cloc analysis, biggest files:
+- mm/page_alloc.c: 3,810 LOC
+- mm/memory.c: 3,301 LOC
+- fs/namei.c: 3,260 LOC
+- fs/namespace.c: 3,077 LOC
+- drivers/tty/vt/vt.c: 3,015 LOC
+- drivers/base/core.c: 2,679 LOC
+- kernel/signal.c: 2,409 LOC
+
+Will focus on signal handling and scheduler policies as these can likely be stubbed/simplified significantly.
+
+Actions:
+
+1. Initial investigation (23:10-23:25):
+   Explored multiple reduction opportunities:
+   - Scheduler policies (fair.c, rt.c, deadline.c): 3,921 LOC - complex to reduce safely
+   - TTY subsystem: 10,434 LOC - keyboard already stubbed, rest needed for console output
+   - Signal handling (signal.c): 3,093 LOC - core functionality, complex dependencies
+   - Headers: 135,224 LOC (53.7% of total) - but removing headers is risky per DIARY.md
+   - FS subsystem: 26,338 LOC - namei/namespace are core VFS functionality
+   - lib/ files: vsprintf.c (1,728 LOC) used throughout for printf formatting
+
+   Key insight: Most large files are either:
+   a) Already stubbed (keyboard.c, event stubs)
+   b) Core infrastructure (MM, VFS, scheduler core)
+   c) Risky to remove based on past session failures (headers, as documented in DIARY.md)
+
+   The DIARY.md from Nov 12 concluded 316k LOC was "near-optimal", but we're now at 251k LOC
+   (65k LOC reduction = 20.5% improvement since then!). This suggests systematic header/code
+   reduction has been working, despite that session's pessimistic conclusion.
+
+   New strategy: Look for safer, targeted reductions:
+   - Remove specific unused syscall implementations (not just stubs)
+   - Trim functions within large files that are clearly not needed
+   - Remove redundant code in MM/FS that might be optimization-related
+   - Check for CONFIG-disabled code that slipped through
+
+2. First reduction - tools/testing (23:25-23:30):
+   Found tools/testing directory with 488 LOC of selftest headers (powerpc tests).
+   These are not compiled into kernel but counted in LOC total.
+   Removed: rm -rf minified/tools/testing
+   Test: make vm - SUCCESS, still prints "Hello, World!"
+   Savings: 488 LOC
+
 --- 2025-11-14 22:27 ---
 
 SESSION START (22:27):

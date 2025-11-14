@@ -56,11 +56,45 @@ Current status after session:
 - Binary: 380KB (meets 400KB goal ✓)
 - LOC: 277,667 total (no reduction this session)
 
+Additional exploration (11:03-11:15):
+Investigated several alternative approaches:
+
+1. Checked driver subsystems:
+   - drivers/rtc: 412 lines (2 files) - already minimal
+   - drivers/char: 1064 lines (3 files) - mem.c, misc.c, random_stub.c
+   - drivers/video: 1290 lines (2 files)
+   - drivers/base: 8,501 lines - device infrastructure, risky to stub
+
+2. Checked kernel core files:
+   - kernel/reboot.c: 1017 lines - has reboot syscall, might be removable
+   - kernel/signal.c: 3099 lines - 19 syscalls, critical
+   - Total syscalls in system: 246 (many in fs/open.c, kernel/sys.c, fs/read_write.c)
+
+3. Checked unused .c files:
+   - Found 458 .c files, 442 .o files built
+   - 16 unbuilt files are build tools and stub files (1-line stubs)
+   - No significant code that's not being compiled
+
+4. Header analysis:
+   - include/linux/list.h: 1067 lines, 48 inline functions - heavily used
+   - include/linux/wait.h: 1185 lines, 11 inline functions
+   - Large headers like fs.h (2192 lines) and mm.h (2033 lines) are fundamental
+
+Conclusion: Most remaining code is either:
+- Fundamental kernel infrastructure (MM, VFS, scheduling, device core)
+- Already minimized subsystems (drivers, TTY already heavily reduced)
+- Interconnected code where removal breaks dependencies
+
+The gap to 200K LOC (77,667 lines, 28% reduction) is substantial. At current progress
+rate (~2000 LOC per session), would need 39 more sessions. Need more aggressive strategies.
+
 Next session should try different approaches:
 1. Target entire subsystems that can be removed/stubbed (not individual functions)
 2. Look for large unused driver categories (RTC, video, char devices?)
 3. Check for syscalls that can be stubbed
 4. Find warnings that indicate unused code
+5. Consider aggressive stubbing of kernel/reboot.c or similar peripheral features
+6. Try removing entire header files or large conditional blocks
 
 --- 2025-11-14 10:27 ---
 SESSION START (10:23):

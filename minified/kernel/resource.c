@@ -1060,8 +1060,6 @@ static int __request_region_locked(struct resource *res, struct resource *parent
 		 * not expected.  Warn to aid debugging if encountered.
 		 */
 		if (conflict->desc == IORES_DESC_DEVICE_PRIVATE_MEMORY) {
-			pr_warn("Unaddressable device %s %pR conflicts with %pR",
-				conflict->name, conflict, res);
 		}
 		if (conflict != parent) {
 			if (!(conflict->flags & IORESOURCE_BUSY)) {

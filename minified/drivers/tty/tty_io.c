@@ -157,13 +157,9 @@ static int tty_paranoia_check(struct tty_struct *tty, struct inode *inode,
 {
 #ifdef TTY_PARANOIA_CHECK
 	if (!tty) {
-		pr_warn("(%d:%d): %s: NULL tty\n",
-			imajor(inode), iminor(inode), routine);
 		return 1;
 	}
 	if (tty->magic != TTY_MAGIC) {
-		pr_warn("(%d:%d): %s: bad magic number\n",
-			imajor(inode), iminor(inode), routine);
 		return 1;
 	}
 #endif
@@ -1737,10 +1733,6 @@ static int tty_set_serial(struct tty_struct *tty, struct serial_struct *ss)
 	int flags;
 
 	flags = ss->flags & ASYNC_DEPRECATED;
-
-	if (flags)
-		pr_warn_ratelimited("%s: '%s' is using deprecated serial flags (with no effect): %.8x\n",
-				__func__, get_task_comm(comm, current), flags);
 
 	if (!tty->ops->set_serial)
 		return -ENOTTY;

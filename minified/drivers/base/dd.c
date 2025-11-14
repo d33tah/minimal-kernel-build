@@ -532,9 +532,6 @@ static int call_driver_probe(struct device *dev, struct device_driver *drv)
 	case -ENXIO:
 		break;
 	default:
-		/* driver matched but the probe failed */
-		pr_warn("%s: probe of %s failed with error %d\n",
-			drv->name, dev_name(dev), ret);
 		break;
 	}
 
@@ -762,9 +759,6 @@ static inline bool cmdline_requested_async_probing(const char *drv_name)
 /* The option format is "driver_async_probe=drv_name1,drv_name2,..." */
 static int __init save_async_options(char *buf)
 {
-	if (strlen(buf) >= ASYNC_DRV_NAMES_MAX_LEN)
-		pr_warn("Too long list of driver names for 'driver_async_probe'!\n");
-
 	strlcpy(async_probe_drv_names, buf, ASYNC_DRV_NAMES_MAX_LEN);
 	async_probe_default = parse_option_str(async_probe_drv_names, "*");
 

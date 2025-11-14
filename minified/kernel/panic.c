@@ -435,8 +435,8 @@ unsigned long get_taint(void)
  */
 void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
 {
-	if (lockdep_ok == LOCKDEP_NOW_UNRELIABLE && __debug_locks_off())
-		pr_warn("Disabling lock debugging due to kernel taint\n");
+	if (lockdep_ok == LOCKDEP_NOW_UNRELIABLE)
+		__debug_locks_off();
 
 	set_bit(flag, &tainted_mask);
 
@@ -531,7 +531,6 @@ void oops_enter(void)
 
 static void print_oops_end_marker(void)
 {
-	pr_warn("---[ end trace %016llx ]---\n", 0ULL);
 }
 
 /*
@@ -554,14 +553,6 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
 	    struct pt_regs *regs, struct warn_args *args)
 {
 	disable_trace_on_warning();
-
-	if (file)
-		pr_warn("WARNING: CPU: %d PID: %d at %s:%d %pS\n",
-			raw_smp_processor_id(), current->pid, file, line,
-			caller);
-	else
-		pr_warn("WARNING: CPU: %d PID: %d at %pS\n",
-			raw_smp_processor_id(), current->pid, caller);
 
 	if (args)
 		vprintk(args->fmt, args->args);
@@ -592,8 +583,6 @@ void warn_slowpath_fmt(const char *file, int line, unsigned taint,
 {
 	struct warn_args args;
 
-	pr_warn(CUT_HERE);
-
 	if (!fmt) {
 		__warn(file, line, __builtin_return_address(0), taint,
 		       NULL, NULL);
@@ -609,8 +598,6 @@ void warn_slowpath_fmt(const char *file, int line, unsigned taint,
 void __warn_printk(const char *fmt, ...)
 {
 	va_list args;
-
-	pr_warn(CUT_HERE);
 
 	va_start(args, fmt);
 	vprintk(fmt, args);

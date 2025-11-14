@@ -168,10 +168,6 @@ char *parse_args(const char *doing,
 		irq_was_disabled = irqs_disabled();
 		ret = parse_one(param, val, doing, params, num,
 				min_level, max_level, arg, unknown);
-		if (irq_was_disabled && !irqs_disabled())
-			pr_warn("%s: option '%s' enabled irq's!\n",
-				doing, param);
-
 		switch (ret) {
 		case 0:
 			continue;

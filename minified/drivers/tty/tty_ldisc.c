@@ -485,11 +485,10 @@ static int tty_ldisc_failto(struct tty_struct *tty, int ld)
  */
 static void tty_ldisc_restore(struct tty_struct *tty, struct tty_ldisc *old)
 {
+	const char *name = tty_name(tty);
+
 	/* There is an outstanding reference here so this is safe */
 	if (tty_ldisc_failto(tty, old->ops->num) < 0) {
-		const char *name = tty_name(tty);
-
-		pr_warn("Falling back ldisc for %s.\n", name);
 		/*
 		 * The traditional behaviour is to fall back to N_TTY, we
 		 * want to avoid falling back to N_NULL unless we have no

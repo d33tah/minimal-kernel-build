@@ -347,9 +347,9 @@ static void dup_mm_exe_file(struct mm_struct *mm, struct mm_struct *oldmm)
 
 	exe_file = get_mm_exe_file(oldmm);
 	RCU_INIT_POINTER(mm->exe_file, exe_file);
-	
-	if (exe_file && deny_write_access(exe_file))
-		pr_warn_once("deny_write_access() failed in %s\n", __func__);
+
+	if (exe_file)
+		deny_write_access(exe_file);
 }
 
 static __latent_entropy int dup_mmap(struct mm_struct *mm,

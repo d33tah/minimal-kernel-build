@@ -2458,8 +2458,6 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int co
 
 	currcons = vc->vc_num;
 	if (!vc_cons_allocated(currcons)) {
-		
-		pr_warn_once("con_write: tty %d not allocated\n", currcons+1);
 		console_unlock();
 		return 0;
 	}
@@ -2890,9 +2888,6 @@ static int __init con_init(void)
 	gotoxy(vc, vc->state.x, vc->state.y);
 	csi_J(vc, 0);
 	update_screen(vc);
-	pr_info("Console: %s %s %dx%d\n",
-		vc->vc_can_do_color ? "colour" : "mono",
-		display_desc, vc->vc_cols, vc->vc_rows);
 	printable = 1;
 
 	console_unlock();
@@ -3049,15 +3044,8 @@ static int do_bind_con_driver(const struct consw *csw, int first, int last,
 			clear_buffer_attributes(vc);
 	}
 
-	pr_info("Console: switching ");
-	if (!deflt)
-		pr_cont("consoles %d-%d ", first + 1, last + 1);
 	if (j >= 0) {
 		struct vc_data *vc = vc_cons[j].d;
-
-		pr_cont("to %s %s %dx%d\n",
-			vc->vc_can_do_color ? "colour" : "mono",
-			desc, vc->vc_cols, vc->vc_rows);
 
 		if (k >= 0) {
 			vc = vc_cons[k].d;
@@ -3235,8 +3223,6 @@ static int do_register_con_driver(const struct consw *csw, int first, int last)
 					  con_driver, con_dev_groups,
 					  "vtcon%i", con_driver->node);
 	if (IS_ERR(con_driver->dev)) {
-		pr_warn("Unable to create device for %s; errno = %ld\n",
-			con_driver->desc, PTR_ERR(con_driver->dev));
 		con_driver->dev = NULL;
 	} else {
 		vtconsole_init_device(con_driver);
@@ -3334,8 +3320,6 @@ static int __init vtconsole_class_init(void)
 
 	vtconsole_class = class_create(THIS_MODULE, "vtconsole");
 	if (IS_ERR(vtconsole_class)) {
-		pr_warn("Unable to create vt console class; errno = %ld\n",
-			PTR_ERR(vtconsole_class));
 		vtconsole_class = NULL;
 	}
 
@@ -3351,8 +3335,6 @@ static int __init vtconsole_class_init(void)
 							  "vtcon%i", con->node);
 
 			if (IS_ERR(con->dev)) {
-				pr_warn("Unable to create device for %s; errno = %ld\n",
-					con->desc, PTR_ERR(con->dev));
 				con->dev = NULL;
 			} else {
 				vtconsole_init_device(con);
@@ -3438,9 +3420,6 @@ void do_unblank_screen(int leaving_gfx)
 	if (!console_blanked)
 		return;
 	if (!vc_cons_allocated(fg_console)) {
-		
-		pr_warn("unblank_screen: tty %d not allocated ??\n",
-			fg_console + 1);
 		return;
 	}
 	vc = vc_cons[fg_console].d;

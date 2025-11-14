@@ -6,7 +6,6 @@
 #include <linux/irqflags.h>
 #include <linux/utsname.h>
 #include <linux/lockdep.h>
-#include <linux/ftrace.h>
 #include <linux/ipc.h>
 #include <linux/pid_namespace.h>
 #include <linux/user_namespace.h>

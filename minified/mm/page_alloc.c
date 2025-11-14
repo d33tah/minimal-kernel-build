@@ -49,7 +49,6 @@
 #include <linux/page_table_check.h>
 #include <linux/kthread.h>
 #include <linux/memcontrol.h>
-#include <linux/ftrace.h>
 #include <linux/lockdep.h>
 #include <linux/nmi.h>
 #include <linux/psi.h>

@@ -12,7 +12,6 @@
 #include <linux/ptrace.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/task_stack.h>
-#include <linux/ftrace.h>
 #include <linux/kexec.h>
 #include <linux/bug.h>
 #include <linux/nmi.h>

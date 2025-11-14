@@ -52,7 +52,6 @@
 #include <linux/mount.h>
 #include <linux/audit.h>
 #include <linux/memcontrol.h>
-#include <linux/ftrace.h>
 #include <linux/proc_fs.h>
 #include <linux/profile.h>
 #include <linux/rmap.h>
@@ -328,10 +327,9 @@ void free_task(struct task_struct *tsk)
 	release_user_cpus_ptr(tsk);
 	scs_release(tsk);
 
-	
+
 	WARN_ON_ONCE(refcount_read(&tsk->stack_refcount) != 0);
 	rt_mutex_debug_task_free(tsk);
-	ftrace_graph_exit_task(tsk);
 	arch_release_task_struct(tsk);
 	if (tsk->flags & PF_KTHREAD)
 		free_kthread_struct(tsk);
@@ -1455,10 +1453,8 @@ static __latent_entropy struct task_struct *copy_process(
 	}
 
 	p->set_child_tid = (clone_flags & CLONE_CHILD_SETTID) ? args->child_tid : NULL;
-	
-	p->clear_child_tid = (clone_flags & CLONE_CHILD_CLEARTID) ? args->child_tid : NULL;
 
-	ftrace_graph_init_task(p);
+	p->clear_child_tid = (clone_flags & CLONE_CHILD_CLEARTID) ? args->child_tid : NULL;
 
 	rt_mutex_init_task(p);
 

@@ -8,7 +8,6 @@
 #include <linux/of.h>
 #include <linux/seq_file.h>
 #include <linux/smp.h>
-#include <linux/ftrace.h>
 #include <linux/delay.h>
 #include <linux/export.h>
 #include <linux/irq.h>

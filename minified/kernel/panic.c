@@ -20,7 +20,6 @@
 #include <linux/vt_kern.h>
 #include <linux/module.h>
 #include <linux/random.h>
-#include <linux/ftrace.h>
 #include <linux/reboot.h>
 #include <linux/delay.h>
 #include <linux/kexec.h>

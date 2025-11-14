@@ -1,3 +1,57 @@
+--- 2025-11-14 20:27 ---
+
+SESSION START (20:27):
+
+Current status:
+- make vm: PASSES ✓
+- Hello World: PRINTS ✓
+- Binary: 375KB (meets 400KB goal ✓)
+- LOC (measured with cloc after make mrproper): 261,093 total
+  - C: 143,846 LOC
+  - C/C++ Headers: 105,789 LOC (40.5% of total)
+  - Assembly: 3,037 LOC
+  - make: 3,625 LOC
+  - Other: 4,796 LOC
+- Gap to 200K goal: 61,093 LOC (23.4% reduction still needed)
+
+Strategy:
+- Continue looking for stub headers with empty functions
+- Consider larger subsystems that can be reduced/removed
+- Focus on headers (105,789 LOC = 40.5% of codebase)
+
+Actions:
+
+1. SUCCESS - Removed ftrace.h and asm/ftrace.h stub headers (20:27-20:42):
+   include/linux/ftrace.h (291 lines) and arch/x86/include/asm/ftrace.h (30 lines)
+   contained almost entirely empty stub functions for ftrace/tracing infrastructure
+   that is not enabled in this minimal build.
+
+   Changes:
+   - Deleted include/linux/ftrace.h (291 lines)
+   - Deleted arch/x86/include/asm/ftrace.h (30 lines)
+   - Removed 16 includes of these headers from .c and .h files
+   - Removed 8 ftrace function calls:
+     * ftrace_init(), early_trace_init(), trace_init() from init/main.c
+     * ftrace_free_init_mem() from init/main.c
+     * ftrace_graph_exit_task(), ftrace_graph_init_task() from kernel/fork.c
+     * ftrace_graph_init_idle_task() from kernel/sched/core.c
+   - Removed trace_preempt_on() calls and get_lock_parent_ip() usage from
+     kernel/sched/core.c and kernel/softirq.c (both were no-ops)
+   - Removed __notrace_funcgraph attribute from arch/x86/kernel/process_32.c
+   - Moved minimal stubs to include/linux/irqflags.h:
+     * CALLER_ADDR0 macro (still used by lockdep stubs)
+     * ftrace_graph_ret_addr() (used by unwinder)
+     * disable_trace_on_warning() (used by panic.c)
+     * is_ftrace_trampoline() (used by extable.c)
+   - Added missing includes:
+     * linux/sched/signal.h to kernel/locking/semaphore.c
+     * linux/ptrace.h to kernel/pid.c
+
+   Result: Build successful, "Hello, World!" printed
+   Binary: 375KB (no change)
+   LOC removed: 230 (cloc: 261,093 → 260,863)
+   Files changed: 2 headers deleted, ~20 source files modified
+
 --- 2025-11-14 20:10 ---
 
 SESSION CONTINUATION (20:10-20:18):

@@ -21,7 +21,6 @@
 #include <linux/freezer.h>
 #include <linux/kthread.h>
 #include <linux/rcupdate.h>
-#include <linux/ftrace.h>
 #include <linux/smp.h>
 #include <linux/smpboot.h>
 #include <linux/tick.h>
@@ -117,9 +116,6 @@ static bool ksoftirqd_running(unsigned long pending)
 static void __local_bh_enable(unsigned int cnt)
 {
 	lockdep_assert_irqs_disabled();
-
-	if (preempt_count() == cnt)
-		trace_preempt_on(CALLER_ADDR0, get_lock_parent_ip());
 
 	if (softirq_count() == (cnt & SOFTIRQ_MASK))
 		lockdep_softirqs_on(_RET_IP_);

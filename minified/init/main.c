@@ -71,7 +71,6 @@
 #include <linux/signal.h>
 #include <linux/idr.h>
 #include <linux/kgdb.h>
-#include <linux/ftrace.h>
 #include <linux/async.h>
 #include <linux/shmem_fs.h>
 #include <linux/slab.h>
@@ -781,11 +780,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	trap_init();
 	mm_init();
 
-	ftrace_init();
-
-	/* trace_printk can be enabled here */
-	early_trace_init();
-
 	/*
 	 * Set up the scheduler prior starting any interrupts (such as the
 	 * timer interrupt). Full topology setup happens at smp_init()
@@ -812,9 +806,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	workqueue_init_early();
 
 	rcu_init();
-
-	/* Trace events are available after this */
-	trace_init();
 
 	if (initcall_debug)
 		initcall_debug_enable();
@@ -1200,7 +1191,6 @@ static int __ref kernel_init(void *unused)
 
 	system_state = SYSTEM_FREEING_INITMEM;
 	kprobe_free_init_mem();
-	ftrace_free_init_mem();
 	kgdb_free_init_mem();
 	exit_boot_config();
 	free_initmem();

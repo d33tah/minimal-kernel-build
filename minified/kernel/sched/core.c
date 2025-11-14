@@ -1115,10 +1115,6 @@ static inline void sched_tick_stop(int cpu) { }
 
 static inline void preempt_latency_start(int val)
 {
-	if (preempt_count() == val) {
-		unsigned long ip = get_lock_parent_ip();
-		
-	}
 }
 
 void preempt_count_add(int val)
@@ -1130,8 +1126,6 @@ NOKPROBE_SYMBOL(preempt_count_add);
 
 static inline void preempt_latency_stop(int val)
 {
-	if (preempt_count() == val)
-		trace_preempt_on(CALLER_ADDR0, get_lock_parent_ip());
 }
 
 void preempt_count_sub(int val)
@@ -2608,9 +2602,8 @@ void __init init_idle(struct task_struct *idle, int cpu)
 	
 	init_idle_preempt_count(idle, cpu);
 
-	
+
 	idle->sched_class = &idle_sched_class;
-	ftrace_graph_init_idle_task(idle, cpu);
 	vtime_init_idle(idle, cpu);
 }
 

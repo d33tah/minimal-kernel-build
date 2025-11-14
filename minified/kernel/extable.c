@@ -4,7 +4,6 @@
 
 */
 #include <linux/elf.h>
-#include <linux/ftrace.h>
 #include <linux/memory.h>
 #include <linux/extable.h>
 #include <linux/module.h>

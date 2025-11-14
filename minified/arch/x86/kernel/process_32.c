@@ -33,7 +33,6 @@
 #include <linux/personality.h>
 #include <linux/percpu.h>
 #include <linux/prctl.h>
-#include <linux/ftrace.h>
 #include <linux/uaccess.h>
 #include <linux/io.h>
 #include <linux/kdebug.h>
@@ -150,7 +149,7 @@ start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
  * the task-switch, and shows up in ret_from_fork in entry.S,
  * for example.
  */
-__visible __notrace_funcgraph struct task_struct *
+__visible struct task_struct *
 __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 {
 	struct thread_struct *prev = &prev_p->thread,

@@ -10,7 +10,6 @@
 #define _LINUX_LIVEPATCH_H_
 
 #include <linux/module.h>
-#include <linux/ftrace.h>
 #include <linux/completion.h>
 #include <linux/list.h>
 

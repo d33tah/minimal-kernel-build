@@ -16,6 +16,25 @@
 #include <asm/irqflags.h>
 #include <asm/percpu.h>
 
+/* Minimal CALLER_ADDR0 support for lockdep stubs */
+#ifndef ftrace_return_address0
+# define ftrace_return_address0 __builtin_return_address(0)
+#endif
+#define CALLER_ADDR0 ((unsigned long)ftrace_return_address0)
+
+/* Minimal ftrace stubs */
+struct task_struct;
+static inline unsigned long ftrace_graph_ret_addr(struct task_struct *task, int *idx,
+						  unsigned long ret, unsigned long *retp)
+{
+	return ret;
+}
+static inline void disable_trace_on_warning(void) { }
+static inline bool is_ftrace_trampoline(unsigned long addr)
+{
+	return false;
+}
+
 /* Currently lockdep_softirqs_on/off is used only by lockdep */
   static inline void lockdep_softirqs_on(unsigned long ip) { }
   static inline void lockdep_softirqs_off(unsigned long ip) { }

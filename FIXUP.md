@@ -32,6 +32,20 @@ Actions:
    - Actual removal: 25 lines from 2 headers
    - Will commit this small progress and continue searching for more opportunities
 
+3. Continue header cleanup (22:15-22:20):
+   Searched for more unused headers in UAPI and linux/ directories.
+
+   Found and removed:
+   - 12 empty UAPI headers (1 line each = 12 lines):
+     * uapi/asm-generic/sockios.h, uapi/linux/aio_abi.h, uapi/linux/blkzoned.h
+     * uapi/linux/cgroupstats.h, uapi/linux/dqblk_xfs.h, uapi/linux/input-event-codes.h
+     * uapi/linux/input.h, uapi/linux/membarrier.h, uapi/linux/param.h
+     * uapi/linux/ppp-ioctl.h, uapi/linux/rseq.h, uapi/linux/utime.h
+   - include/linux/pm_opp.h (546 lines) - Power Management OPP interface, not needed
+
+   Total removal: 558 lines (12 + 546)
+   Build test: SUCCESS - make vm works, prints "Hello, World!"
+
 --- 2025-11-14 21:42 ---
 
 SESSION START (21:42):

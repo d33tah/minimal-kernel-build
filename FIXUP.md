@@ -1,3 +1,60 @@
+--- 2025-11-14 07:59 ---
+SESSION START (07:45):
+
+Current status at session start:
+- make vm: PASSES ✓
+- Hello World: PRINTS ✓
+- Binary: 390KB
+- LOC: 267,497 total (down from 280,342!)
+- Gap to 200K: 67,497 LOC (25.2% reduction needed)
+
+Investigation performed (07:45-07:59):
+
+1. Explored removing lib/xz/* (2015 LOC) for XZ decompression
+   - Commented out lib/xz/Kconfig source in lib/Kconfig
+   - Removed lib/xz directory and lib/decompress_unxz.c
+   - Build FAILED: arch/x86/boot/compressed/misc.c:66 includes lib/decompress_unxz.c directly
+   - XZ decompressor IS needed for kernel decompression during boot
+   - Reverted all changes
+
+2. Checked for uncompiled C files
+   - Found mm/percpu-km.c not compiled (only 73 LOC - negligible)
+   - Verified lib/math/*.c all compiled and used
+   - All TTY files (including n_tty.c 1534 LOC) are compiled and linked
+
+3. Attempted to remove scripts/mod/ (4464 LOC - modpost for kernel modules)
+   - CONFIG_MODULES=n, so theoretically not needed
+   - Build FAILED: scripts/Makefile.build:43 requires scripts/mod/Makefile
+   - Build system requires modpost infrastructure even with modules disabled
+   - Reverted changes
+
+4. Analyzed final vmlinux symbols
+   - Only 96 global ('T') functions in vmlinux
+   - LTO (Link Time Optimization) is very effective at removing dead code from binary
+   - Problem: source LOC still counts even if code eliminated by LTO
+
+5. Investigated large files for stubbing opportunities
+   - signal.c (2414 LOC): 29 signal functions in vmlinux, actively used
+   - n_tty.c (1534 LOC): n_tty_ioctl_helper and other functions in binary
+   - page_alloc.c (3876 LOC): fundamental memory allocator
+   - All large files are actually used in final binary
+
+Key findings:
+- Current LOC: 267,497 (significant progress from 280,342 at previous session)
+- Binary size: 390KB (meets 400KB goal ✓)
+- LOC reduction since Nov 12 DIARY entry: 316K → 267K = 49K LOC (15.5% reduction)
+- Remaining gap to 200K target: 67,497 LOC (25.2% more reduction needed)
+
+Challenges identified:
+- LTO eliminates dead code at binary level but source files still count
+- XZ decompressor required despite CONFIG_DECOMPRESS_XZ=n (used in boot)
+- Build system infrastructure (scripts/mod) required even when not logically needed
+- Most remaining code is tightly coupled and actively used
+- 783 header files, many quite large (atomic-arch-fallback.h: 2034 LOC)
+- scripts/ directory: 18,096 LOC (build tools, not kernel code, but counts toward LOC)
+
+No commits this session - all attempted reductions failed build or broke functionality.
+
 --- 2025-11-14 07:28 ---
 SESSION START:
 

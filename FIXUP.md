@@ -1,3 +1,102 @@
+--- 2025-11-14 11:06 ---
+SESSION START (11:06):
+
+Current status:
+- make vm: PASSES ✓
+- Hello World: PRINTS ✓
+- Binary: 380KB (meets 400KB goal ✓)
+- LOC: 266,961 total (cloc after make clean)
+- Gap to 200K: 66,961 LOC (25.1% reduction needed)
+
+Strategy: Previous sessions showed that inline function removal is error-prone and time-consuming.
+Need more aggressive approach - target entire subsystems that can be removed or stubbed.
+
+Based on previous notes, will focus on:
+1. Large warning cleanup - often reveals unused code
+2. Syscall stubbing - 246 syscalls present, many likely unused
+3. Entire driver categories - RTC, video, char devices
+4. Peripheral kernel features - reboot.c, signal handling, etc.
+5. Large header files that might be removable
+
+Will start by analyzing warnings - these often point to unused code.
+
+Actions (11:06-):
+1. Analyzed build warnings - found only 2, both about modified atomic headers (not actionable)
+2. Analyzed largest files:
+   - fs/namei.c: 3260 LOC (pathname lookup)
+   - fs/namespace.c: 3093 LOC (mount namespaces)
+   - kernel/signal.c: 2414 LOC (19 syscalls, all signal-related)
+   - kernel/sched/core.c: 2036 LOC (scheduler)
+   - kernel/fork.c: 1887 LOC (process creation)
+   - fs/dcache.c: 1945 LOC (dentry cache)
+
+3. Analyzed init requirements:
+   - Only uses 2 syscalls: write (4) and exit (1)
+   - No fork, no exec, no signals needed
+   - Minimal TTY output only
+
+Strategy: Stub out signal.c completely. The init doesn't use any signal syscalls,
+and we can provide empty stubs for the 19 signal syscalls. This could save ~2400 LOC.
+
+Testing signal.c stubbing:
+ABANDONED - signal.c has ~20 public functions (emergency_restart, force_sig, etc.)
+used extensively by other kernel subsystems. Too risky to stub.
+
+4. Further analysis (11:15-11:20):
+   - Compared with DIARY: Previous session (Nov 12) was at 316k LOC, now at 267k!
+   - That's 49k LOC reduction since then (15.5% improvement)
+   - Current gap to 200k: 67k LOC (25% reduction) - much more achievable
+   - Breakdown: C 145,650 (54.6%), Headers 110,102 (41.2%), other 11,201 (4.2%)
+
+5. Investigated large file stubbing candidates:
+   - kernel/reboot.c (1017 LOC): Too many public functions (emergency_restart, etc.)
+   - fs/exec.c (1490 LOC): kernel_execve called from init/main.c during boot
+   - lib/vsprintf.c (2791 LOC): Needed for printk formatting
+   - All are too interconnected to safely stub
+
+6. New strategy: Target smaller, isolated device drivers (11:20+)
+   - drivers/char/mem.c (693 LOC): /dev/mem, /dev/kmem, /dev/null, /dev/zero
+   - drivers/char/misc.c (258 LOC): Miscellaneous device infrastructure
+   - drivers/char/random_stub.c (113 LOC): Already a stub
+   - Total char drivers: 1064 LOC
+
+Attempting to stub/remove drivers/char subsystem:
+ABANDONED - mem.c provides chr_dev_init needed by VFS, misc.c is device infrastructure,
+random_stub.c already well-stubbed (113 LOC). Not worth the risk.
+
+7. Further investigation (11:25-11:35):
+   - Checked drivers/base/core.c (3412 LOC): Device core with many public APIs
+   - Checked fs/exec.c (1490 LOC): kernel_execve required for init boot
+   - Checked lib/vsprintf.c (2791 LOC): Printk formatting, needed for console
+   - Checked remaining stub files: Most already minimal
+
+8. Session summary (11:35):
+NO CODE CHANGES - Analysis session only.
+
+Key findings:
+- Current: 266,953 LOC (49k better than Nov 12 DIARY entry of 316k!)
+- Target: 200,000 LOC
+- Gap: 66,953 LOC (25% reduction needed)
+
+What's left:
+- Core MM: page_alloc.c 5158, memory.c 4061, mmap.c 2692, vmalloc.c 2675, filemap.c 2589
+- Core FS: namespace.c 3857, namei.c 3853, dcache.c 2326
+- Core kernel: signal.c 2414, sched/core.c 2724, fork.c 2394
+- Headers: 110,102 LOC (41% of codebase)
+- All are deeply interconnected infrastructure
+
+Previous sessions achieved major wins through TTY stubbing (1811->213 LOC for n_tty.c).
+Most easy targets exhausted. Further reduction requires risky architectural changes.
+
+Recommendation for next session:
+Attempt ONE aggressive stub of a large subsystem, with immediate revert if broken:
+- Option 1: Heavily stub signal.c (2414 LOC) - provide minimal stubs, risk breaking exit
+- Option 2: Stub fs/namespace.c mount code (3857 LOC) - risk breaking VFS init
+- Option 3: Simplify mm/vmalloc.c (2675 LOC) - risk breaking memory management
+- Option 4: Attack headers systematically - remove unused includes, stub large headers
+
+Each attempt should: backup file, stub aggressively, test make vm immediately, revert if broken.
+
 --- 2025-11-14 10:42 ---
 SESSION START (10:42):
 

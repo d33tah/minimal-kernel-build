@@ -4,7 +4,6 @@
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
-#include <asm/exec.h>
 #include <uapi/linux/binfmts.h>
 
 struct filename;

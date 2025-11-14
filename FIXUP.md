@@ -1,3 +1,23 @@
+
+--- 2025-11-14 01:50 ---
+SESSION NOTE (01:24-01:50):
+
+Attempted to disable AMD and Hygon CPU support:
+- Modified kernel/configs/tiny.config to disable CONFIG_CPU_SUP_AMD
+- Modified arch/x86/Kconfig.cpu to change defaults to n
+- Deleted arch/x86/kernel/cpu/amd.c (999 LOC) and hygon.c (31 LOC)
+- Build succeeded but kernel failed to boot (no "Hello, World!")
+- REVERTED all changes - AMD/Hygon support appears necessary even on Intel/QEMU
+
+Observation: QEMU might be emulating AMD CPU or AMD codepaths are needed for generic x86
+
+Need different strategy:
+- Look for truly optional subsystems
+- Focus on reducing file/header complexity rather than whole subsystems
+- Try smaller, safer incremental reductions
+
+Current status: 270,389 LOC, 70,389 LOC from 200K goal
+
 --- 2025-11-14 01:24 ---
 SESSION END NOTE (01:14-01:24):
 

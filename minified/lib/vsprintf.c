@@ -853,150 +853,25 @@ char *mac_address_string(char *buf, char *end, u8 *addr,
 static noinline_for_stack
 char *ip4_string(char *p, const u8 *addr, const char *fmt)
 {
-	int i;
-	bool leading_zeros = (fmt[0] == 'i');
-	int index;
-	int step;
-
-	switch (fmt[2]) {
-	case 'h':
-#ifdef __BIG_ENDIAN
-		index = 0;
-		step = 1;
-#else
-		index = 3;
-		step = -1;
-#endif
-		break;
-	case 'l':
-		index = 3;
-		step = -1;
-		break;
-	case 'n':
-	case 'b':
-	default:
-		index = 0;
-		step = 1;
-		break;
-	}
-	for (i = 0; i < 4; i++) {
-		char temp[4] __aligned(2);	
-		int digits = put_dec_trunc8(temp, addr[index]) - temp;
-		if (leading_zeros) {
-			if (digits < 3)
-				*p++ = '0';
-			if (digits < 2)
-				*p++ = '0';
-		}
-		
-		while (digits--)
-			*p++ = temp[digits];
-		if (i < 3)
-			*p++ = '.';
-		index += step;
-	}
-	*p = '\0';
-
-	return p;
+	/* Stubbed: IPv4 string formatting not needed for minimal kernel */
+	strcpy(p, "(ipv4)");
+	return p + 6;
 }
 
 static noinline_for_stack
 char *ip6_compressed_string(char *p, const char *addr)
 {
-	int i, j, range;
-	unsigned char zerolength[8];
-	int longest = 1;
-	int colonpos = -1;
-	u16 word;
-	u8 hi, lo;
-	bool needcolon = false;
-	bool useIPv4;
-	struct in6_addr in6;
-
-	memcpy(&in6, addr, sizeof(struct in6_addr));
-
-	useIPv4 = ipv6_addr_v4mapped(&in6) || ipv6_addr_is_isatap(&in6);
-
-	memset(zerolength, 0, sizeof(zerolength));
-
-	if (useIPv4)
-		range = 6;
-	else
-		range = 8;
-
-	
-	for (i = 0; i < range; i++) {
-		for (j = i; j < range; j++) {
-			if (in6.s6_addr16[j] != 0)
-				break;
-			zerolength[i]++;
-		}
-	}
-	for (i = 0; i < range; i++) {
-		if (zerolength[i] > longest) {
-			longest = zerolength[i];
-			colonpos = i;
-		}
-	}
-	if (longest == 1)		
-		colonpos = -1;
-
-	
-	for (i = 0; i < range; i++) {
-		if (i == colonpos) {
-			if (needcolon || i == 0)
-				*p++ = ':';
-			*p++ = ':';
-			needcolon = false;
-			i += longest - 1;
-			continue;
-		}
-		if (needcolon) {
-			*p++ = ':';
-			needcolon = false;
-		}
-		
-		word = ntohs(in6.s6_addr16[i]);
-		hi = word >> 8;
-		lo = word & 0xff;
-		if (hi) {
-			if (hi > 0x0f)
-				p = hex_byte_pack(p, hi);
-			else
-				*p++ = hex_asc_lo(hi);
-			p = hex_byte_pack(p, lo);
-		}
-		else if (lo > 0x0f)
-			p = hex_byte_pack(p, lo);
-		else
-			*p++ = hex_asc_lo(lo);
-		needcolon = true;
-	}
-
-	if (useIPv4) {
-		if (needcolon)
-			*p++ = ':';
-		p = ip4_string(p, &in6.s6_addr[12], "I4");
-	}
-	*p = '\0';
-
-	return p;
+	/* Stubbed: IPv6 compressed string formatting not needed for minimal kernel */
+	strcpy(p, "(ipv6c)");
+	return p + 7;
 }
 
 static noinline_for_stack
 char *ip6_string(char *p, const char *addr, const char *fmt)
 {
-	int i;
-
-	for (i = 0; i < 8; i++) {
-		p = hex_byte_pack(p, *addr++);
-		p = hex_byte_pack(p, *addr++);
-		if (fmt[0] == 'I' && i != 7)
-			*p++ = ':';
-	}
-	*p = '\0';
-
-	return p;
+	/* Stubbed: IPv6 string formatting not needed for minimal kernel */
+	strcpy(p, "(ipv6)");
+	return p + 6;
 }
 
 static noinline_for_stack

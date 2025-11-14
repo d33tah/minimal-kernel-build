@@ -831,11 +831,6 @@ static inline bool efi_soft_reserve_enabled(void)
 	return false;
 }
 
-static inline bool efi_rt_services_supported(unsigned int mask)
-{
-	return false;
-}
-
 extern int efi_status_to_err(efi_status_t status);
 
 /*
@@ -935,12 +930,6 @@ struct efi_dev_path {
 
 struct device *efi_get_device_by_path(const struct efi_dev_path **node,
 				      size_t *len);
-
-static inline void memrange_efi_to_native(u64 *addr, u64 *npages)
-{
-	*npages = PFN_UP(*addr + (*npages<<EFI_PAGE_SHIFT)) - PFN_DOWN(*addr);
-	*addr &= PAGE_MASK;
-}
 
 /*
  * EFI Variable support.
@@ -1052,29 +1041,6 @@ extern int efi_capsule_update(efi_capsule_header_t *capsule,
 static inline bool efi_capsule_pending(int *reset_type) { return false; }
 #endif
 
-static inline int efi_runtime_map_init(struct kobject *kobj)
-{
-	return 0;
-}
-
-static inline int efi_get_runtime_map_size(void)
-{
-	return 0;
-}
-
-static inline int efi_get_runtime_map_desc_size(void)
-{
-	return 0;
-}
-
-static inline int efi_runtime_map_copy(void *buf, size_t bufsz)
-{
-	return 0;
-}
-
-
-static inline bool efi_runtime_disabled(void) { return true; }
-
 extern void efi_call_virt_check_flags(unsigned long flags, const char *call);
 extern unsigned long efi_call_virt_save_flags(void);
 
@@ -1106,8 +1072,6 @@ enum efi_secureboot_mode efi_get_secureboot_mode(efi_get_variable_t *get_var)
 		return efi_secureboot_mode_disabled;
 	return efi_secureboot_mode_enabled;
 }
-
-static inline void efi_check_for_embedded_firmwares(void) { }
 
 efi_status_t efi_random_get_seed(void);
 

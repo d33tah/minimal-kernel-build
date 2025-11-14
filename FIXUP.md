@@ -54,6 +54,22 @@ Actions (19:02-):
    This approach (finding stub headers and removing them) is safe and effective.
    Should continue looking for more stub headers.
 
+4. SUCCESS - Removed signalfd header and stubs (19:18):
+   Found signalfd.h (20 LOC) with two stub functions included in signal.c and fork.c.
+   Both signalfd_notify() and signalfd_cleanup() were empty stubs.
+
+   Changes:
+   - Removed #include <linux/signalfd.h> from kernel/signal.c and kernel/fork.c
+   - Removed 2x signalfd_notify() calls from signal.c
+   - Removed signalfd_cleanup() call from fork.c
+   - Deleted minified/include/linux/signalfd.h (20 LOC)
+
+   Result: Build successful, "Hello, World!" printed ✓
+   LOC removed: ~20-25 LOC (header + includes + function calls)
+   Binary: 375KB (unchanged)
+
+   Total LOC removed so far: ~40-45 LOC (aio.h + signalfd.h)
+
 --- 2025-11-14 18:42 ---
 
 SESSION START (18:42):

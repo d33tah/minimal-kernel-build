@@ -3,7 +3,6 @@
 #include <linux/slab.h>
 #include <linux/syscalls.h>
 #include <linux/security.h>
-#include <linux/signalfd.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
 #include <linux/file.h>
@@ -778,7 +777,6 @@ static int __send_signal_locked(int sig, struct kernel_siginfo *info,
 	}
 
 out_set:
-	signalfd_notify(t, sig);
 	sigaddset(&pending->signal, sig);
 
 	
@@ -1433,7 +1431,6 @@ int send_sigqueue(struct sigqueue *q, struct pid *pid, enum pid_type type)
 	}
 	q->info.si_overrun = 0;
 
-	signalfd_notify(t, sig);
 	pending = (type != PIDTYPE_PID) ? &t->signal->shared_pending : &t->pending;
 	list_add_tail(&q->list, &pending->list);
 	sigaddset(&pending->signal, sig);

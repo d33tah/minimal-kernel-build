@@ -40,16 +40,35 @@ Actions (12:28-12:41):
    - Total: 259,284 → 259,175 LOC (109 lines saved)
    - Binary: 380KB → 379KB (1KB saved)
 
+4. Explored additional reduction opportunities (12:43):
+   - Checked cmap functions (con_set_cmap, con_get_cmap) - 46 lines, exported in vt_kern.h
+   - Checked blanking functions (do_blank_screen, do_unblank_screen) - risky to stub
+   - Checked large functions:
+     * do_con_trol: 403 lines - core escape sequence handler, too risky
+     * do_renameat2, vfs_rename in fs/namei.c - core VFS, too risky
+   - Noted vc_screen.c already stubbed to 24 lines
+
+Session END (12:43):
 Current: 259,175 LOC (150,568 C + 108,607 headers)
 Gap to 200K: 59,175 LOC (22.8% reduction still needed)
 
 Progress this session: 264 LOC saved (155 + 109)
-Cumulative from 259,439 → 259,175
+  - tioclinux + set_vesa_blanking: 155 LOC
+  - font operations (con_font_*): 109 LOC
+  - Binary: 380KB → 379KB (1KB)
+  - Commits: 2, both pushed ✓
 
-Next targets to explore:
-- More vt.c ioctl functions
-- vsprintf.c specialized formatters
-- Device framework code in drivers/base/core.c
+Next targets to consider:
+- cmap functions (con_set_cmap, con_get_cmap) if safe to stub
+- More vt.c ioctl/feature functions
+- vsprintf.c specialized formatters (risky - used everywhere)
+- Device framework code in drivers/base/core.c (risky - core infrastructure)
+
+Observations:
+- Diminishing returns continue - most easy wins exhausted
+- vt.c reduced from 3897 → 3669 lines this session (228 lines, 5.9%)
+- Need to find more large subsystems or collections of functions to stub
+- Current approach: identify ioctl handlers and optional features in vt.c
 
 --- 2025-11-14 12:07 ---
 SESSION START (12:07):

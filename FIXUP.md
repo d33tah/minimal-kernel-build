@@ -20,6 +20,29 @@ Investigation findings:
    - include/linux/of.h: 931 LOC (14 includes, stubs already present for CONFIG_OF=n)
    - Auto-generated atomic headers: 4248 LOC (atomic-arch-fallback.h, atomic-instrumented.h)
    - include/linux/mm.h: 169 inline functions
+
+Failed attempt (09:17):
+- Tried removing lib/xz/ (1,832 LOC) but build failed
+- XZ decompression IS needed for CONFIG_KERNEL_XZ=y (kernel image decompression)
+- This explains why it was reverted before in commit c0b8c8a
+
+
+Session end notes (09:25):
+- XZ cannot be removed (needed for kernel image decompression, CONFIG_KERNEL_XZ=y)
+- All major subsystems appear to be essential or already minimized
+- Most low-hanging fruit has been exhausted
+- Need to focus on more systematic approaches:
+  * Remove unused inline functions from large headers not yet cleaned
+  * Stub smaller subsystems
+  * Simplify large files (VFS, MM, scheduler)
+
+Current gap: 69,227 LOC to 200K goal (25.7% reduction needed)
+
+Next session should focus on:
+1. Removing unused inline functions from device.h, cpumask.h, wait.h
+2. Looking for smaller subsystems that can be stubbed
+3. Considering more aggressive simplifications of core subsystems
+
    - include/linux/fs.h: 102 inline functions
 
 2. Subsystem analysis:

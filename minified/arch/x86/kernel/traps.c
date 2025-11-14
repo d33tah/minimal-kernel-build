@@ -214,7 +214,6 @@ static noinstr bool handle_bug(struct pt_regs *regs)
 	/*
 	 * All lies, just get the WARN/BUG out.
 	 */
-	instrumentation_begin();
 	/*
 	 * Since we're emulating a CALL with exceptions, restore the interrupt
 	 * state to what it was at the exception site.
@@ -227,7 +226,6 @@ static noinstr bool handle_bug(struct pt_regs *regs)
 	}
 	if (regs->flags & X86_EFLAGS_IF)
 		raw_local_irq_disable();
-	instrumentation_end();
 
 	return handled;
 }
@@ -245,9 +243,7 @@ DEFINE_IDTENTRY_RAW(exc_invalid_op)
 		return;
 
 	state = irqentry_enter(regs);
-	instrumentation_begin();
 	handle_invalid_op(regs);
-	instrumentation_end();
 	irqentry_exit(regs, state);
 }
 
@@ -325,7 +321,6 @@ DEFINE_IDTENTRY_DF(exc_double_fault)
 
 
 	irqentry_nmi_enter(regs);
-	instrumentation_begin();
 	notify_die(DIE_TRAP, str, regs, error_code, X86_TRAP_DF, SIGSEGV);
 
 	tsk->thread.error_code = error_code;
@@ -335,7 +330,6 @@ DEFINE_IDTENTRY_DF(exc_double_fault)
 	pr_emerg("PANIC: double fault, error_code: 0x%lx\n", error_code);
 	die("double fault", regs, error_code);
 	panic("Machine halted.");
-	instrumentation_end();
 }
 
 DEFINE_IDTENTRY(exc_bounds)
@@ -559,17 +553,13 @@ DEFINE_IDTENTRY_RAW(exc_int3)
 	 */
 	if (user_mode(regs)) {
 		irqentry_enter_from_user_mode(regs);
-		instrumentation_begin();
 		do_int3_user(regs);
-		instrumentation_end();
 		irqentry_exit_to_user_mode(regs);
 	} else {
 		irqentry_state_t irq_state = irqentry_nmi_enter(regs);
 
-		instrumentation_begin();
 		if (!do_int3(regs))
 			die("int3", regs, 0);
-		instrumentation_end();
 		irqentry_nmi_exit(regs, irq_state);
 	}
 }
@@ -668,7 +658,6 @@ static __always_inline void exc_debug_kernel(struct pt_regs *regs,
 	 */
 	unsigned long dr7 = local_db_save();
 	irqentry_state_t irq_state = irqentry_nmi_enter(regs);
-	instrumentation_begin();
 
 	/*
 	 * If something gets miswired and we end up here for a user mode
@@ -720,7 +709,6 @@ static __always_inline void exc_debug_kernel(struct pt_regs *regs,
 	if (WARN_ON_ONCE(dr6 & DR_STEP))
 		regs->flags &= ~X86_EFLAGS_TF;
 out:
-	instrumentation_end();
 	irqentry_nmi_exit(regs, irq_state);
 
 	local_db_restore(dr7);
@@ -747,7 +735,6 @@ static __always_inline void exc_debug_user(struct pt_regs *regs,
 	 */
 
 	irqentry_enter_from_user_mode(regs);
-	instrumentation_begin();
 
 	/*
 	 * Start the virtual/ptrace DR6 value with just the DR_STEP mask
@@ -795,7 +782,6 @@ static __always_inline void exc_debug_user(struct pt_regs *regs,
 out_irq:
 	local_irq_disable();
 out:
-	instrumentation_end();
 	irqentry_exit_to_user_mode(regs);
 }
 

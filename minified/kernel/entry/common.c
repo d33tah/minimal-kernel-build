@@ -22,9 +22,7 @@ static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 	CT_WARN_ON(ct_state() != CONTEXT_USER);
 	user_exit_irqoff();
 
-	instrumentation_begin();
 	/* trace_hardirqs_off_finish(); */
-	instrumentation_end();
 }
 
 void noinstr enter_from_user_mode(struct pt_regs *regs)
@@ -104,10 +102,8 @@ noinstr long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall)
 
 	__enter_from_user_mode(regs);
 
-	instrumentation_begin();
 	local_irq_enable();
 	ret = __syscall_enter_from_user_work(regs, syscall);
-	instrumentation_end();
 
 	return ret;
 }
@@ -115,18 +111,14 @@ noinstr long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall)
 noinstr void syscall_enter_from_user_mode_prepare(struct pt_regs *regs)
 {
 	__enter_from_user_mode(regs);
-	instrumentation_begin();
 	local_irq_enable();
-	instrumentation_end();
 }
 
 /* See comment for exit_to_user_mode() in entry-common.h */
 static __always_inline void __exit_to_user_mode(void)
 {
-	instrumentation_begin();
 	/* trace_hardirqs_on_prepare(); */
 	lockdep_hardirqs_on_prepare();
-	instrumentation_end();
 
 	user_enter_irqoff();
 	arch_exit_to_user_mode();
@@ -289,9 +281,7 @@ void syscall_exit_to_user_mode_work(struct pt_regs *regs)
 
 __visible noinstr void syscall_exit_to_user_mode(struct pt_regs *regs)
 {
-	instrumentation_begin();
 	__syscall_exit_to_user_mode_work(regs);
-	instrumentation_end();
 	__exit_to_user_mode();
 }
 
@@ -302,9 +292,7 @@ noinstr void irqentry_enter_from_user_mode(struct pt_regs *regs)
 
 noinstr void irqentry_exit_to_user_mode(struct pt_regs *regs)
 {
-	instrumentation_begin();
 	exit_to_user_mode_prepare(regs);
-	instrumentation_end();
 	__exit_to_user_mode();
 }
 
@@ -350,9 +338,7 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 		 */
 		lockdep_hardirqs_off(CALLER_ADDR0);
 		rcu_irq_enter();
-		instrumentation_begin();
 		/* trace_hardirqs_off_finish(); */
-		instrumentation_end();
 
 		ret.exit_rcu = true;
 		return ret;
@@ -365,10 +351,8 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 	 * in having another one here.
 	 */
 	lockdep_hardirqs_off(CALLER_ADDR0);
-	instrumentation_begin();
 	rcu_irq_enter_check_tick();
 	/* trace_hardirqs_off_finish(); */
-	instrumentation_end();
 
 	return ret;
 }
@@ -399,23 +383,19 @@ noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 		 * and RCU as the return to user mode path.
 		 */
 		if (state.exit_rcu) {
-			instrumentation_begin();
 			/* Tell the tracer that IRET will enable interrupts */
 			/* trace_hardirqs_on_prepare(); */
 			lockdep_hardirqs_on_prepare();
-			instrumentation_end();
 			rcu_irq_exit();
 			lockdep_hardirqs_on(CALLER_ADDR0);
 			return;
 		}
 
-		instrumentation_begin();
 		if (IS_ENABLED(CONFIG_PREEMPTION))
 			irqentry_exit_cond_resched();
 
 		/* Covers both tracing and lockdep */
 		/* trace_hardirqs_on(); */
-		instrumentation_end();
 	} else {
 		/*
 		 * IRQ flags state is correct already. Just tell RCU if it
@@ -437,21 +417,17 @@ irqentry_state_t noinstr irqentry_nmi_enter(struct pt_regs *regs)
 	lockdep_hardirq_enter();
 	rcu_nmi_enter();
 
-	instrumentation_begin();
 	/* trace_hardirqs_off_finish(); */
-	instrumentation_end();
 
 	return irq_state;
 }
 
 void noinstr irqentry_nmi_exit(struct pt_regs *regs, irqentry_state_t irq_state)
 {
-	instrumentation_begin();
 	if (irq_state.lockdep) {
 		/* trace_hardirqs_on_prepare(); */
 		lockdep_hardirqs_on_prepare();
 	}
-	instrumentation_end();
 
 	rcu_nmi_exit();
 	lockdep_hardirq_exit();

@@ -3,7 +3,6 @@
 #define _ASM_X86_BUG_H
 
 #include <linux/stringify.h>
-#include <linux/instrumentation.h>
 #include <linux/objtool.h>
 
 /*
@@ -20,23 +19,14 @@
 #define HAVE_ARCH_BUG
 #define BUG()							\
 do {								\
-	instrumentation_begin();				\
 	_BUG_FLAGS(ASM_UD2, 0, "");				\
 	__builtin_unreachable();				\
 } while (0)
 
-/*
- * This instrumentation_begin() is strictly speaking incorrect; but it
- * suppresses the complaints from WARN()s in noinstr code. If such a WARN()
- * were to trigger, we'd rather wreck the machine in an attempt to get the
- * message out than not know about it.
- */
 #define __WARN_FLAGS(flags)					\
 do {								\
 	__auto_type __flags = BUGFLAG_WARNING|(flags);		\
-	instrumentation_begin();				\
 	_BUG_FLAGS(ASM_UD2, __flags, ASM_REACHABLE);		\
-	instrumentation_end();					\
 } while (0)
 
 #include <asm-generic/bug.h>

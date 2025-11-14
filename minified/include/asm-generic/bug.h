@@ -3,7 +3,6 @@
 #define _ASM_GENERIC_BUG_H
 
 #include <linux/compiler.h>
-#include <linux/instrumentation.h>
 
 
 #define CUT_HERE		"------------[ cut here ]------------\n"

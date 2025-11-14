@@ -70,11 +70,9 @@ __visible noinstr void do_int80_syscall_32(struct pt_regs *regs)
 	 * the semantics of syscall_get_nr().
 	 */
 	nr = syscall_enter_from_user_mode(regs, nr);
-	instrumentation_begin();
 
 	do_syscall_32_irqs_on(regs, nr);
 
-	instrumentation_end();
 	syscall_exit_to_user_mode(regs);
 }
 
@@ -90,7 +88,6 @@ static noinstr bool __do_fast_syscall_32(struct pt_regs *regs)
 	 */
 	syscall_enter_from_user_mode_prepare(regs);
 
-	instrumentation_begin();
 	/* Fetch EBP from where the vDSO stashed it. */
 	if (IS_ENABLED(CONFIG_X86_64)) {
 		/*
@@ -109,7 +106,6 @@ static noinstr bool __do_fast_syscall_32(struct pt_regs *regs)
 		regs->ax = -EFAULT;
 
 		local_irq_disable();
-		instrumentation_end();
 		irqentry_exit_to_user_mode(regs);
 		return false;
 	}
@@ -119,7 +115,6 @@ static noinstr bool __do_fast_syscall_32(struct pt_regs *regs)
 	/* Now this is just like a normal syscall. */
 	do_syscall_32_irqs_on(regs, nr);
 
-	instrumentation_end();
 	syscall_exit_to_user_mode(regs);
 	return true;
 }

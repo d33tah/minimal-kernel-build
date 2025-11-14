@@ -5,7 +5,6 @@
 #include <linux/sched.h>
 #include <linux/vtime.h>
 #include <linux/context_tracking_state.h>
-#include <linux/instrumentation.h>
 
 #include <asm/ptrace.h>
 

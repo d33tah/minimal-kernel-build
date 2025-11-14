@@ -115,8 +115,6 @@ static inline void rcu_nmi_exit(void) { }
 		__nmi_enter();					\
 		lockdep_hardirq_enter();			\
 		rcu_nmi_enter();				\
-		instrumentation_begin();			\
-		instrumentation_end();				\
 	} while (0)
 
 #define __nmi_exit()						\
@@ -129,8 +127,6 @@ static inline void rcu_nmi_exit(void) { }
 
 #define nmi_exit()						\
 	do {							\
-		instrumentation_begin();			\
-		instrumentation_end();				\
 		rcu_nmi_exit();					\
 		lockdep_hardirq_exit();				\
 		__nmi_exit();					\

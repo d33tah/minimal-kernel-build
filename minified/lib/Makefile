@@ -46,8 +46,7 @@ obj-y += bcd.o sort.o parser.o debug_locks.o random32.o \
 	 bust_spinlocks.o kasprintf.o bitmap.o scatterlist.o \
 	 uuid.o iov_iter.o clz_ctz.o \
 	 bsearch.o find_bit.o llist.o kfifo.o \
-	 refcount.o usercopy.o errseq.o \
-	 generic-radix-tree.o
+	 refcount.o usercopy.o errseq.o
 obj-$(CONFIG_STRING_SELFTEST) += test_string.o
 obj-y += string_helpers.o
 obj-$(CONFIG_TEST_STRING_HELPERS) += test-string_helpers.o

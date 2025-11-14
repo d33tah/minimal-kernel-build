@@ -939,14 +939,6 @@ char *address_val(char *buf, char *end, const void *addr,
 }
 
 static noinline_for_stack
-char *time64_str(char *buf, char *end, const time64_t time,
-		 struct printf_spec spec, const char *fmt)
-{
-	/* Stubbed: time/date formatting not needed for minimal kernel */
-	return error_string(buf, end, "(time)", spec);
-}
-
-static noinline_for_stack
 char *time_and_date(char *buf, char *end, void *ptr, struct printf_spec spec,
 		    const char *fmt)
 {
@@ -968,14 +960,6 @@ char *flags_string(char *buf, char *end, void *flags_ptr,
 {
 	/* Stubbed: flags formatting not needed for minimal kernel */
 	return error_string(buf, end, "(flags)", spec);
-}
-
-static noinline_for_stack
-char *fwnode_full_name_string(struct fwnode_handle *fwnode, char *buf,
-			      char *end)
-{
-	/* Stubbed: firmware node formatting not needed for minimal kernel */
-	return string(buf, end, "(fwnode)", default_str_spec);
 }
 
 static noinline_for_stack

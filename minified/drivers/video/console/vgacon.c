@@ -838,19 +838,6 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
 #define blackwmap 0xa0000
 #define cmapsz 8192
 
-static int vgacon_do_font_op(struct vgastate *state, char *arg, int set,
-		bool ch512)
-{
-	return -EINVAL;
-}
-
-/*
- * Adjust the screen to fit a font of a certain height
- */
-static int vgacon_adjust_height(struct vc_data *vc, unsigned fontheight)
-{
-	return -EINVAL;
-}
 
 static int vgacon_font_set(struct vc_data *c, struct console_font *font,
 			   unsigned int flags)

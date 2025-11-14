@@ -1,3 +1,28 @@
+--- 2025-11-15 00:37 ---
+
+SESSION UPDATE (00:25-00:37):
+
+CRITICAL FIX: Previous session's file removals broke the build!
+
+Discovered that commits 9010b00 and 7ff01dd removed files marked as "uncompiled",
+but these files ARE needed - they're #included by other .c files during compilation.
+
+Restored files (~12,000 LOC):
+- XZ decompression library (lib/xz/, 8 files)
+- lib/decompress_unxz.c (393 LOC)
+- Scheduler files (11 files): deadline.c, rt.c, idle.c, wait.c, clock.c, cputime.c,
+  completion.c, wait_bit.c, loadavg.c, swait.c
+- lib/vdso/gettimeofday.c (360 LOC)
+- kernel/irq_work.c (264 LOC)
+- mm/percpu-km.c (125 LOC)
+- Uncommented "source lib/xz/Kconfig" in lib/Kconfig
+
+Result: make vm PASSES again, prints "Hello, World!", binary 375KB
+Current estimated LOC: ~281K (up from 269K, but build now works)
+
+Lesson: Files that don't generate .o files directly may still be needed as includes.
+Must test full "make vm" after any file removals, not just "make LLVM=1".
+
 --- 2025-11-15 00:11 ---
 
 SESSION START (00:11):

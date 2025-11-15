@@ -47,15 +47,6 @@ static inline int filemap_write_and_wait(struct address_space *mapping)
 	return filemap_write_and_wait_range(mapping, 0, LLONG_MAX);
 }
 
- 
-static inline void filemap_set_wb_err(struct address_space *mapping, int err)
-{
-	 
-	if (unlikely(err))
-		__filemap_set_wb_err(mapping, err);
-}
-
- 
 static inline int filemap_check_wb_err(struct address_space *mapping,
 					errseq_t since)
 {
@@ -219,17 +210,6 @@ static inline struct address_space *page_file_mapping(struct page *page)
 	return folio_file_mapping(page_folio(page));
 }
 
- 
-static inline struct address_space *page_mapping_file(struct page *page)
-{
-	struct folio *folio = page_folio(page);
-
-	if (unlikely(folio_test_swapcache(folio)))
-		return NULL;
-	return folio_mapping(folio);
-}
-
- 
 static inline struct inode *folio_inode(struct folio *folio)
 {
 	return folio->mapping->host;
@@ -316,18 +296,8 @@ static inline struct page *find_or_create_page(struct address_space *mapping,
 					gfp_mask);
 }
 
- 
-static inline struct page *grab_cache_page_nowait(struct address_space *mapping,
-				pgoff_t index)
-{
-	return pagecache_get_page(mapping, index,
-			FGP_LOCK|FGP_CREAT|FGP_NOFS|FGP_NOWAIT,
-			mapping_gfp_mask(mapping));
-}
-
 #define swapcache_index(folio)	__page_file_index(&(folio)->page)
 
- 
 static inline pgoff_t folio_index(struct folio *folio)
 {
         if (unlikely(folio_test_swapcache(folio)))

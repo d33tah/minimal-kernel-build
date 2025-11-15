@@ -12,6 +12,32 @@ Strategy:
 Previous session identified pgtable.h has 16 unused functions (~91 LOC potential savings).
 Will start with pgtable.h cleanup, then continue with other large headers.
 
+Work completed (18:35-18:52):
+
+1. pgtable.h cleanup (18:35-18:42):
+   - Removed pmd_off and pmdp_collapse_flush (16 LOC)
+   - Attempted to remove pmd_same/pud_same/p4d_same/pgd_same but these are used by set_*_safe macros
+   - 1068 LOC → 1052 LOC (16 LOC reduction)
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
+   - Commit: 72238d9, pushed to remote
+
+2. xarray.h cleanup (18:42-18:52):
+   - Removed 10 unused inline functions (214 LOC total)
+   - Functions removed: xa_tag_pointer, xa_untag_pointer, xa_pointer_tag,
+     xa_store_bh, xa_store_irq, xa_erase_bh, xa_erase_irq, xa_cmpxchg_bh, xa_cmpxchg_irq,
+     xa_insert_bh, xa_insert_irq, xa_alloc_bh, xa_alloc_irq, xa_alloc_cyclic (+ _bh/_irq),
+     xa_reserve, xa_reserve_bh, xa_reserve_irq
+   - Kept xa_mk_internal, xa_to_internal, xa_is_internal, xa_is_err, xa_err (used internally)
+   - 979 LOC → 765 LOC (214 LOC reduction)
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
+   - Commit: f5bbeb8, pushed to remote
+
+Total session progress: 230 LOC removed (16 + 214)
+Final LOC: 260,292 (C: 146,786 + Headers: 98,256 + other: 11,250)
+Gap to 200K goal: 60,292 LOC (23.1% reduction needed)
+
 --- 2025-11-15 18:20 ---
 
 SESSION START (18:20):

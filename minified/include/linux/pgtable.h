@@ -106,11 +106,6 @@ static inline pgd_t *pgd_offset_pgd(pgd_t *pgd, unsigned long address)
 #endif
 
  
-static inline pmd_t *pmd_off(struct mm_struct *mm, unsigned long va)
-{
-	return pmd_offset(pud_offset(p4d_offset(pgd_offset(mm, va), va), va), va);
-}
-
 static inline pmd_t *pmd_off_k(unsigned long va)
 {
 	return pmd_offset(pud_offset(p4d_offset(pgd_offset_k(va), va), va), va);
@@ -307,17 +302,6 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 #ifndef __HAVE_ARCH_PUDP_SET_WRPROTECT
 #endif
 
-#ifndef pmdp_collapse_flush
-static inline pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
-					unsigned long address,
-					pmd_t *pmdp)
-{
-	BUILD_BUG();
-	return *pmdp;
-}
-#define pmdp_collapse_flush pmdp_collapse_flush
-#endif
-
 #ifndef __HAVE_ARCH_PGTABLE_DEPOSIT
 extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
 				       pgtable_t pgtable);
@@ -406,7 +390,7 @@ static inline int pgd_same(pgd_t pgd_a, pgd_t pgd_b)
 }
 #endif
 
- 
+
 #define set_pte_safe(ptep, pte) \
 ({ \
 	WARN_ON_ONCE(pte_present(*ptep) && !pte_same(*ptep, pte)); \

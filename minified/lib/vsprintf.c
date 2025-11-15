@@ -22,7 +22,6 @@
  
 #include <linux/in.h>
 #include <linux/in6.h>
-#include <linux/netdev_features.h>
 #include <linux/random.h>
 #include <linux/siphash.h>
 

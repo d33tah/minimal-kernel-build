@@ -120,21 +120,6 @@ static inline ktime_t ktime_add_us(const ktime_t kt, const u64 usec)
 	return ktime_add_ns(kt, usec * NSEC_PER_USEC);
 }
 
-static inline ktime_t ktime_add_ms(const ktime_t kt, const u64 msec)
-{
-	return ktime_add_ns(kt, msec * NSEC_PER_MSEC);
-}
-
-static inline ktime_t ktime_sub_us(const ktime_t kt, const u64 usec)
-{
-	return ktime_sub_ns(kt, usec * NSEC_PER_USEC);
-}
-
-static inline ktime_t ktime_sub_ms(const ktime_t kt, const u64 msec)
-{
-	return ktime_sub_ns(kt, msec * NSEC_PER_MSEC);
-}
-
 extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);
 
  
@@ -154,11 +139,6 @@ static inline __must_check bool ktime_to_timespec64_cond(const ktime_t kt,
 static inline ktime_t ns_to_ktime(u64 ns)
 {
 	return ns;
-}
-
-static inline ktime_t ms_to_ktime(u64 ms)
-{
-	return ms * NSEC_PER_MSEC;
 }
 
 # include <linux/timekeeping.h>

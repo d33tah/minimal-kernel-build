@@ -1,3 +1,58 @@
+--- 2025-11-15 05:22 ---
+
+SESSION (05:22-):
+
+Current status (verified):
+- make vm: PASSES ✓
+- Hello World: PRINTS ✓
+- Binary: 372KB
+- Total LOC: 261,908 (C: 141,673, Headers: 101,503)
+- Gap to 200K goal: 61,908 LOC (23.7% reduction needed)
+
+Strategy: Focus on large subsystems that can be aggressively stubbed or removed. Based on previous exploration, targeting:
+1. Large C files in mm/, fs/, kernel/ that can be simplified
+2. Header reduction (101,503 LOC = 38.8% of codebase - massive!)
+3. TTY subsystem over-complexity for simple "Hello world" output
+4. Syscall code - we only need execve, and even that is minimal
+
+Exploration findings (05:22-05:36):
+- Largest C files: page_alloc.c (5,081), memory.c (4,055), namei.c (3,853), namespace.c (3,838), vt.c (3,610)
+- Largest headers: atomic-arch-fallback.h (2,456), fs.h (2,192), mm.h (2,033), atomic-instrumented.h (1,951), xarray.h (1,839)
+- VGA console (vgacon) heavily used - vgacon_blank (0x4d7 bytes), many vgacon_* functions
+- VT subsystem (drivers/tty/vt/vt.c @ 3,610 LOC) is WAY too complex for "Hello, World!"
+- TTY subsystem (drivers/tty/tty_io.c @ 2,352 LOC) also overly complex
+
+Candidate for reduction: xarray.h (1,839 LOC)
+- Check if xarray is actually used in runtime (nm vmlinux | grep xarray)
+- If not heavily used, could potentially stub it out
+- Result: Only iov_iter_xarray uses it - could be simplified but risky
+
+Attempted reduction: string_helpers.c (775 LOC)
+- Checked nm vmlinux | grep string_helper - no direct symbols
+- Tried removing lib/string_helpers.c and obj-y += string_helpers.o from lib/Makefile
+- Build failed with undefined symbols: skip_spaces, strscpy_pad, strreplace, sysfs_streq
+- These functions ARE in string_helpers.c and are used by kernel code
+- Conclusion: Not dead code, functions are used even if not directly visible in nm
+
+Attempted reduction: hexdump.c (130 LOC)
+- nm vmlinux | grep hexdump - no symbols
+- Only 130 LOC, minimal gain
+
+Attempted reduction: IRQ resend/spurious (438+125 LOC)
+- Both have symbols in vmlinux, actively used
+- Cannot remove
+
+Key learning: Need to use exported symbol analysis or build-time dead code detection
+- nm vmlinux only shows global symbols, not inline/static functions used via headers
+- Functions like skip_spaces, strreplace are used but not visible in nm because they're local/inline
+- Better strategy: Look for entire subsystems that can be stubbed, not individual files
+
+Next session should try:
+1. Stubbing large parts of mm/ with minimal allocators (page_alloc is 5,081 LOC!)
+2. Simplifying filesystem code (namei.c 3,853 LOC, namespace.c 3,838 LOC)
+3. Reducing header complexity by removing unused inlines
+4. Consider if device subsystem could be drastically simplified for single-purpose kernel
+
 --- 2025-11-15 05:20 ---
 
 SESSION (05:01-05:20):

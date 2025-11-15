@@ -186,33 +186,6 @@ enum kernel_load_data_id {
 	__kernel_read_file_id(__data_id_enumify)
 };
 
-static const char * const kernel_load_data_str[] = {
-	__kernel_read_file_id(__data_id_stringify)
-};
-
-static inline const char *kernel_load_data_id_str(enum kernel_load_data_id id)
-{
-	if ((unsigned)id >= LOADING_MAX_ID)
-		return kernel_load_data_str[LOADING_UNKNOWN];
-
-	return kernel_load_data_str[id];
-}
-
-
-static inline int call_blocking_lsm_notifier(enum lsm_event event, void *data)
-{
-	return 0;
-}
-
-static inline int register_blocking_lsm_notifier(struct notifier_block *nb)
-{
-	return 0;
-}
-
-static inline  int unregister_blocking_lsm_notifier(struct notifier_block *nb)
-{
-	return 0;
-}
 
 static inline void security_free_mnt_opts(void **mnt_opts)
 {

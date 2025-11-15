@@ -8,7 +8,7 @@ New session starting:
 
 Strategy: Continue systematic removal of unused functions. Look for refcount, atomic, and other widely-included header functions.
 
-Progress (23:30-23:35):
+Progress (23:30-23:43):
 
 1. refcount.h, kref.h & refcount.c cleanup (23:35):
    - Removed from refcount.h (3 LOC):
@@ -28,6 +28,24 @@ Progress (23:30-23:35):
    - Verified unused via grep in .c files
    - make vm: PASSES ✓, prints "Hello World" ✓
    - Binary: 365KB (down from 372KB, 7KB reduction) ✓
+   - Committed: 1fbe9fb
+
+2. sched.h, timer.c & core.c cleanup (23:43):
+   - Removed from sched.h (4 LOC):
+     * schedule_timeout_idle - extern declaration
+     * available_idle_cpu - extern declaration
+     * sched_set_normal - extern declaration
+     * cpuset_cpumask_can_shrink, task_can_attach - extern declarations (2 LOC)
+   - Removed from timer.c (6 LOC):
+     * schedule_timeout_idle implementation
+   - Removed from core.c (16 LOC):
+     * available_idle_cpu implementation (9 LOC)
+     * sched_set_normal implementation (7 LOC)
+   - Total: 26 LOC removed (4 + 6 + 16)
+   - Note: yield_to kept - used internally via yield_to_task callback
+   - Verified unused via grep in .c files
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB ✓
 
 --- 2025-11-15 22:59 ---
 

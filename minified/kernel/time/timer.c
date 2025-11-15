@@ -882,14 +882,6 @@ signed long __sched schedule_timeout_uninterruptible(signed long timeout)
 	return schedule_timeout(timeout);
 }
 
- 
-signed long __sched schedule_timeout_idle(signed long timeout)
-{
-	__set_current_state(TASK_IDLE);
-	return schedule_timeout(timeout);
-}
-
-
 static void __init init_timer_cpu(int cpu)
 {
 	struct timer_base *base;

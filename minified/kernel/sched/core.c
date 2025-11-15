@@ -1556,17 +1556,6 @@ int idle_cpu(int cpu)
 	return 1;
 }
 
-int available_idle_cpu(int cpu)
-{
-	if (!idle_cpu(cpu))
-		return 0;
-
-	if (vcpu_is_preempted(cpu))
-		return 0;
-
-	return 1;
-}
-
 struct task_struct *idle_task(int cpu)
 {
 	return cpu_rq(cpu)->idle;
@@ -1867,15 +1856,6 @@ void sched_set_fifo_low(struct task_struct *p)
 {
 	struct sched_param sp = { .sched_priority = 1 };
 	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
-}
-
-void sched_set_normal(struct task_struct *p, int nice)
-{
-	struct sched_attr attr = {
-		.sched_policy = SCHED_NORMAL,
-		.sched_nice = nice,
-	};
-	WARN_ON_ONCE(sched_setattr_nocheck(p, &attr) != 0);
 }
 
 static int

@@ -27,9 +27,6 @@ static inline pg_data_t *generic_alloc_nodedata(int nid)
 	BUG();
 	return NULL;
 }
-static inline void generic_free_nodedata(pg_data_t *pgdat)
-{
-}
 static inline void arch_refresh_nodedata(int nid, pg_data_t *pgdat)
 {
 }
@@ -42,64 +39,20 @@ static inline void arch_refresh_nodedata(int nid, pg_data_t *pgdat)
 	___page;				\
  })
 
-static inline unsigned zone_span_seqbegin(struct zone *zone)
-{
-	return 0;
-}
-static inline int zone_span_seqretry(struct zone *zone, unsigned iv)
-{
-	return 0;
-}
-static inline void zone_span_writelock(struct zone *zone) {}
-static inline void zone_span_writeunlock(struct zone *zone) {}
 static inline void zone_seqlock_init(struct zone *zone) {}
-
-static inline int try_online_node(int nid)
-{
-	return 0;
-}
-
-static inline void get_online_mems(void) {}
-static inline void put_online_mems(void) {}
-
-static inline void mem_hotplug_begin(void) {}
-static inline void mem_hotplug_done(void) {}
 
 static inline bool movable_node_is_enabled(void)
 {
 	return false;
 }
 
- 
+
 struct range arch_get_mappable_range(void);
 
- 
-static inline void pgdat_resize_lock(struct pglist_data *p, unsigned long *f) {}
-static inline void pgdat_resize_unlock(struct pglist_data *p, unsigned long *f) {}
+
 static inline void pgdat_resize_init(struct pglist_data *pgdat) {}
-
-static inline void try_offline_node(int nid) {}
-
-static inline int offline_pages(unsigned long start_pfn, unsigned long nr_pages,
-				struct zone *zone, struct memory_group *group)
-{
-	return -EINVAL;
-}
-
-static inline int remove_memory(u64 start, u64 size)
-{
-	return -EBUSY;
-}
-
-static inline void __remove_memory(u64 start, u64 size) {}
 
 extern void set_zone_contiguous(struct zone *zone);
 extern void clear_zone_contiguous(struct zone *zone);
-
-
-static inline bool mhp_memmap_on_memory(void)
-{
-	return false;
-}
 
 #endif  

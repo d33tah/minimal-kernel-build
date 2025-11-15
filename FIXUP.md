@@ -71,6 +71,12 @@ Observations:
   * Scheduler simplification
   * Consider subsystem stubbing for larger wins
 
+Next steps for future sessions:
+1. Continue header cleanups (low risk, steady progress)
+2. Investigate page-flags.h - found unused PAGEFLAG macros (XenRemapped, Checked, Pinned, SavePinned, Foreign)
+3. Look for entire unused .c files in lib/, drivers/, kernel/
+4. Consider larger refactorings once low-hanging fruit is exhausted
+
 --- 2025-11-15 23:57 ---
 
 New session starting:

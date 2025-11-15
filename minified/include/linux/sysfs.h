@@ -188,32 +188,10 @@ static inline int sysfs_move_dir_ns(struct kobject *kobj,
 	return 0;
 }
 
-static inline int sysfs_create_mount_point(struct kobject *parent_kobj,
-					   const char *name)
-{
-	return 0;
-}
-
-static inline void sysfs_remove_mount_point(struct kobject *parent_kobj,
-					    const char *name)
-{
-}
 
 static inline int sysfs_create_file_ns(struct kobject *kobj,
 				       const struct attribute *attr,
 				       const void *ns)
-{
-	return 0;
-}
-
-static inline int sysfs_create_files(struct kobject *kobj,
-				    const struct attribute * const *attr)
-{
-	return 0;
-}
-
-static inline int sysfs_chmod_file(struct kobject *kobj,
-				   const struct attribute *attr, umode_t mode)
 {
 	return 0;
 }
@@ -223,10 +201,6 @@ sysfs_break_active_protection(struct kobject *kobj,
 			      const struct attribute *attr)
 {
 	return NULL;
-}
-
-static inline void sysfs_unbreak_active_protection(struct kernfs_node *kn)
-{
 }
 
 static inline void sysfs_remove_file_ns(struct kobject *kobj,
@@ -239,11 +213,6 @@ static inline bool sysfs_remove_file_self(struct kobject *kobj,
 					  const struct attribute *attr)
 {
 	return false;
-}
-
-static inline void sysfs_remove_files(struct kobject *kobj,
-				     const struct attribute * const *attr)
-{
 }
 
 static inline int sysfs_create_bin_file(struct kobject *kobj,
@@ -259,13 +228,6 @@ static inline void sysfs_remove_bin_file(struct kobject *kobj,
 
 static inline int sysfs_create_link(struct kobject *kobj,
 				    struct kobject *target, const char *name)
-{
-	return 0;
-}
-
-static inline int sysfs_create_link_nowarn(struct kobject *kobj,
-					   struct kobject *target,
-					   const char *name)
 {
 	return 0;
 }
@@ -298,18 +260,6 @@ static inline int sysfs_create_groups(struct kobject *kobj,
 	return 0;
 }
 
-static inline int sysfs_update_groups(struct kobject *kobj,
-				      const struct attribute_group **groups)
-{
-	return 0;
-}
-
-static inline int sysfs_update_group(struct kobject *kobj,
-				const struct attribute_group *grp)
-{
-	return 0;
-}
-
 static inline void sysfs_remove_group(struct kobject *kobj,
 				      const struct attribute_group *grp)
 {
@@ -318,12 +268,6 @@ static inline void sysfs_remove_group(struct kobject *kobj,
 static inline void sysfs_remove_groups(struct kobject *kobj,
 				       const struct attribute_group **groups)
 {
-}
-
-static inline int sysfs_add_file_to_group(struct kobject *kobj,
-		const struct attribute *attr, const char *group)
-{
-	return 0;
 }
 
 static inline void sysfs_remove_file_from_group(struct kobject *kobj,

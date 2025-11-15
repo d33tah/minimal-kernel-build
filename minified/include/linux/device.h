@@ -176,25 +176,6 @@ __printf(3, 0) char *devm_kvasprintf(struct device *dev, gfp_t gfp,
 				     const char *fmt, va_list ap) __malloc;
 __printf(3, 4) char *devm_kasprintf(struct device *dev, gfp_t gfp,
 				    const char *fmt, ...) __malloc;
-static inline void *devm_kzalloc(struct device *dev, size_t size, gfp_t gfp)
-{
-	return devm_kmalloc(dev, size, gfp | __GFP_ZERO);
-}
-static inline void *devm_kmalloc_array(struct device *dev,
-				       size_t n, size_t size, gfp_t flags)
-{
-	size_t bytes;
-
-	if (unlikely(check_mul_overflow(n, size, &bytes)))
-		return NULL;
-
-	return devm_kmalloc(dev, bytes, flags);
-}
-static inline void *devm_kcalloc(struct device *dev,
-				 size_t n, size_t size, gfp_t flags)
-{
-	return devm_kmalloc_array(dev, n, size, flags | __GFP_ZERO);
-}
 void devm_kfree(struct device *dev, const void *p);
 char *devm_kstrdup(struct device *dev, const char *s, gfp_t gfp) __malloc;
 const char *devm_kstrdup_const(struct device *dev, const char *s, gfp_t gfp);
@@ -213,7 +194,7 @@ void __iomem *devm_of_iomap(struct device *dev,
 			    struct device_node *node, int index,
 			    resource_size_t *size);
 
- 
+
 int devm_add_action(struct device *dev, void (*action)(void *), void *data);
 void devm_remove_action(struct device *dev, void (*action)(void *), void *data);
 void devm_release_action(struct device *dev, void (*action)(void *), void *data);
@@ -415,13 +396,8 @@ static inline struct device *kobj_to_dev(struct kobject *kobj)
 	return container_of(kobj, struct device, kobj);
 }
 
- 
-static inline bool device_iommu_mapped(struct device *dev)
-{
-	return (dev->iommu_group != NULL);
-}
 
- 
+
 #include <linux/pm_wakeup.h>
 
 static inline const char *dev_name(const struct device *dev)
@@ -449,10 +425,6 @@ static inline void set_dev_node(struct device *dev, int node)
 {
 }
 
-static inline void dev_set_msi_domain(struct device *dev, struct irq_domain *d)
-{
-}
-
 static inline void *dev_get_drvdata(const struct device *dev)
 {
 	return dev->driver_data;
@@ -463,15 +435,6 @@ static inline void dev_set_drvdata(struct device *dev, void *data)
 	dev->driver_data = data;
 }
 
-static inline struct pm_subsys_data *dev_to_psd(struct device *dev)
-{
-	return dev ? dev->power.subsys_data : NULL;
-}
-
-static inline unsigned int dev_get_uevent_suppress(const struct device *dev)
-{
-	return dev->kobj.uevent_suppress;
-}
 
 static inline void dev_set_uevent_suppress(struct device *dev, int val)
 {
@@ -481,23 +444,6 @@ static inline void dev_set_uevent_suppress(struct device *dev, int val)
 static inline int device_is_registered(struct device *dev)
 {
 	return dev->kobj.state_in_sysfs;
-}
-
-static inline void device_enable_async_suspend(struct device *dev)
-{
-	if (!dev->power.is_prepared)
-		dev->power.async_suspend = true;
-}
-
-static inline void device_disable_async_suspend(struct device *dev)
-{
-	if (!dev->power.is_prepared)
-		dev->power.async_suspend = false;
-}
-
-static inline bool device_async_suspend_enabled(struct device *dev)
-{
-	return !!dev->power.async_suspend;
 }
 
 static inline bool device_pm_not_required(struct device *dev)
@@ -515,25 +461,12 @@ static inline void dev_pm_set_driver_flags(struct device *dev, u32 flags)
 	dev->power.driver_flags = flags;
 }
 
-static inline bool dev_pm_test_driver_flags(struct device *dev, u32 flags)
-{
-	return !!(dev->power.driver_flags & flags);
-}
 
 static inline void device_lock(struct device *dev)
 {
 	mutex_lock(&dev->mutex);
 }
 
-static inline int device_lock_interruptible(struct device *dev)
-{
-	return mutex_lock_interruptible(&dev->mutex);
-}
-
-static inline int device_trylock(struct device *dev)
-{
-	return mutex_trylock(&dev->mutex);
-}
 
 static inline void device_unlock(struct device *dev)
 {
@@ -561,17 +494,6 @@ static inline bool dev_has_sync_state(struct device *dev)
 	if (dev->bus && dev->bus->sync_state)
 		return true;
 	return false;
-}
-
-static inline void dev_set_removable(struct device *dev,
-				     enum device_removable removable)
-{
-	dev->removable = removable;
-}
-
-static inline bool dev_is_removable(struct device *dev)
-{
-	return dev->removable == DEVICE_REMOVABLE;
 }
 
 static inline bool dev_removable_is_valid(struct device *dev)
@@ -633,12 +555,6 @@ void set_secondary_fwnode(struct device *dev, struct fwnode_handle *fwnode);
 void device_set_of_node_from_dev(struct device *dev, const struct device *dev2);
 void device_set_node(struct device *dev, struct fwnode_handle *fwnode);
 
-static inline int dev_num_vf(struct device *dev)
-{
-	if (dev->bus && dev->bus->num_vf)
-		return dev->bus->num_vf(dev);
-	return 0;
-}
 
  
 struct device *__root_device_register(const char *name, struct module *owner);
@@ -648,11 +564,6 @@ struct device *__root_device_register(const char *name, struct module *owner);
 	__root_device_register(name, THIS_MODULE)
 
 void root_device_unregister(struct device *root);
-
-static inline void *dev_get_platdata(const struct device *dev)
-{
-	return dev->platform_data;
-}
 
  
 int __must_check device_driver_attach(struct device_driver *drv,

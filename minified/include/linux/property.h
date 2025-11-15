@@ -123,123 +123,6 @@ int fwnode_irq_get_byname(const struct fwnode_handle *fwnode, const char *name);
 
 unsigned int device_get_child_node_count(struct device *dev);
 
-static inline bool device_property_read_bool(struct device *dev,
-					     const char *propname)
-{
-	return device_property_present(dev, propname);
-}
-
-static inline int device_property_read_u8(struct device *dev,
-					  const char *propname, u8 *val)
-{
-	return device_property_read_u8_array(dev, propname, val, 1);
-}
-
-static inline int device_property_read_u16(struct device *dev,
-					   const char *propname, u16 *val)
-{
-	return device_property_read_u16_array(dev, propname, val, 1);
-}
-
-static inline int device_property_read_u32(struct device *dev,
-					   const char *propname, u32 *val)
-{
-	return device_property_read_u32_array(dev, propname, val, 1);
-}
-
-static inline int device_property_read_u64(struct device *dev,
-					   const char *propname, u64 *val)
-{
-	return device_property_read_u64_array(dev, propname, val, 1);
-}
-
-static inline int device_property_count_u8(struct device *dev, const char *propname)
-{
-	return device_property_read_u8_array(dev, propname, NULL, 0);
-}
-
-static inline int device_property_count_u16(struct device *dev, const char *propname)
-{
-	return device_property_read_u16_array(dev, propname, NULL, 0);
-}
-
-static inline int device_property_count_u32(struct device *dev, const char *propname)
-{
-	return device_property_read_u32_array(dev, propname, NULL, 0);
-}
-
-static inline int device_property_count_u64(struct device *dev, const char *propname)
-{
-	return device_property_read_u64_array(dev, propname, NULL, 0);
-}
-
-static inline int device_property_string_array_count(struct device *dev,
-						     const char *propname)
-{
-	return device_property_read_string_array(dev, propname, NULL, 0);
-}
-
-static inline bool fwnode_property_read_bool(const struct fwnode_handle *fwnode,
-					     const char *propname)
-{
-	return fwnode_property_present(fwnode, propname);
-}
-
-static inline int fwnode_property_read_u8(const struct fwnode_handle *fwnode,
-					  const char *propname, u8 *val)
-{
-	return fwnode_property_read_u8_array(fwnode, propname, val, 1);
-}
-
-static inline int fwnode_property_read_u16(const struct fwnode_handle *fwnode,
-					   const char *propname, u16 *val)
-{
-	return fwnode_property_read_u16_array(fwnode, propname, val, 1);
-}
-
-static inline int fwnode_property_read_u32(const struct fwnode_handle *fwnode,
-					   const char *propname, u32 *val)
-{
-	return fwnode_property_read_u32_array(fwnode, propname, val, 1);
-}
-
-static inline int fwnode_property_read_u64(const struct fwnode_handle *fwnode,
-					   const char *propname, u64 *val)
-{
-	return fwnode_property_read_u64_array(fwnode, propname, val, 1);
-}
-
-static inline int fwnode_property_count_u8(const struct fwnode_handle *fwnode,
-					   const char *propname)
-{
-	return fwnode_property_read_u8_array(fwnode, propname, NULL, 0);
-}
-
-static inline int fwnode_property_count_u16(const struct fwnode_handle *fwnode,
-					    const char *propname)
-{
-	return fwnode_property_read_u16_array(fwnode, propname, NULL, 0);
-}
-
-static inline int fwnode_property_count_u32(const struct fwnode_handle *fwnode,
-					    const char *propname)
-{
-	return fwnode_property_read_u32_array(fwnode, propname, NULL, 0);
-}
-
-static inline int fwnode_property_count_u64(const struct fwnode_handle *fwnode,
-					    const char *propname)
-{
-	return fwnode_property_read_u64_array(fwnode, propname, NULL, 0);
-}
-
-static inline int
-fwnode_property_string_array_count(const struct fwnode_handle *fwnode,
-				   const char *propname)
-{
-	return fwnode_property_read_string_array(fwnode, propname, NULL, 0);
-}
-
 struct software_node;
 
  
@@ -382,12 +265,7 @@ struct fwnode_handle *fwnode_graph_get_remote_port(
 struct fwnode_handle *fwnode_graph_get_remote_endpoint(
 	const struct fwnode_handle *fwnode);
 
-static inline bool fwnode_graph_is_endpoint(struct fwnode_handle *fwnode)
-{
-	return fwnode_property_present(fwnode, "remote-endpoint");
-}
 
- 
 #define FWNODE_GRAPH_ENDPOINT_NEXT	BIT(0)
 #define FWNODE_GRAPH_DEVICE_DISABLED	BIT(1)
 
@@ -410,13 +288,6 @@ typedef void *(*devcon_match_fn_t)(struct fwnode_handle *fwnode, const char *id,
 void *fwnode_connection_find_match(struct fwnode_handle *fwnode,
 				   const char *con_id, void *data,
 				   devcon_match_fn_t match);
-
-static inline void *device_connection_find_match(struct device *dev,
-						 const char *con_id, void *data,
-						 devcon_match_fn_t match)
-{
-	return fwnode_connection_find_match(dev_fwnode(dev), con_id, data, match);
-}
 
 int fwnode_connection_find_matches(struct fwnode_handle *fwnode,
 				   const char *con_id, void *data,

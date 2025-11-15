@@ -23,7 +23,7 @@ Progress (23:58-00:10):
    - Binary: 371KB (down from 372KB, 1KB reduction) ✓
    - Committed: 3b91f12
 
-2. wait.h cleanup - unused wait_event variants (00:10):
+2. wait.h cleanup - unused wait_event variants, batch 1 (00:10):
    - Removed from wait.h (41 LOC):
      * io_wait_event and __io_wait_event macros (13 LOC)
      * wait_event_freezable and __wait_event_freezable macros (13 LOC)
@@ -32,6 +32,20 @@ Progress (23:58-00:10):
      * wait_event_cmd and __wait_event_cmd macros (11 LOC)
      * Blank lines (counted in above)
    - Total: ~41 LOC removed
+   - Verified unused via grep in .c files
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 371KB (unchanged) ✓
+   - Committed: 88c7e11
+
+3. wait.h cleanup - more unused wait_event variants, batch 2 (00:15):
+   - Removed from wait.h (~28 LOC):
+     * wait_event_idle_exclusive_timeout and __wait_event_idle_exclusive_timeout (15 LOC)
+     * wait_event_interruptible_exclusive_locked (4 LOC)
+     * wait_event_interruptible_exclusive_locked_irq (4 LOC)
+     * wait_event_lock_irq_cmd (7 LOC)
+     * wait_event_interruptible_lock_irq_cmd (10 LOC)
+     * Blank lines (counted in above)
+   - Total: ~28 LOC removed
    - Verified unused via grep in .c files
    - make vm: PASSES ✓, prints "Hello World" ✓
    - Binary: 371KB (unchanged) ✓

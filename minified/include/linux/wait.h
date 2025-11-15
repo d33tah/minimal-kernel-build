@@ -372,21 +372,6 @@ do {										\
 	__ret;									\
 })
 
-#define __wait_event_idle_exclusive_timeout(wq_head, condition, timeout)	\
-	___wait_event(wq_head, ___wait_cond_timeout(condition),			\
-		      TASK_IDLE, 1, timeout,					\
-		      __ret = schedule_timeout(__ret))
-
- 
-#define wait_event_idle_exclusive_timeout(wq_head, condition, timeout)		\
-({										\
-	long __ret = timeout;							\
-	might_sleep();								\
-	if (!___wait_cond_timeout(condition))					\
-		__ret = __wait_event_idle_exclusive_timeout(wq_head, condition, timeout);\
-	__ret;									\
-})
-
 extern int do_wait_intr(wait_queue_head_t *, wait_queue_entry_t *);
 extern int do_wait_intr_irq(wait_queue_head_t *, wait_queue_entry_t *);
 
@@ -416,16 +401,6 @@ extern int do_wait_intr_irq(wait_queue_head_t *, wait_queue_entry_t *);
 #define wait_event_interruptible_locked_irq(wq, condition)			\
 	((condition)								\
 	 ? 0 : __wait_event_interruptible_locked(wq, condition, 0, do_wait_intr_irq))
-
- 
-#define wait_event_interruptible_exclusive_locked(wq, condition)		\
-	((condition)								\
-	 ? 0 : __wait_event_interruptible_locked(wq, condition, 1, do_wait_intr))
-
- 
-#define wait_event_interruptible_exclusive_locked_irq(wq, condition)		\
-	((condition)								\
-	 ? 0 : __wait_event_interruptible_locked(wq, condition, 1, do_wait_intr_irq))
 
 
 #define __wait_event_killable(wq, condition)					\
@@ -465,15 +440,7 @@ extern int do_wait_intr_irq(wait_queue_head_t *, wait_queue_entry_t *);
 			    schedule();						\
 			    spin_lock_irq(&lock))
 
- 
-#define wait_event_lock_irq_cmd(wq_head, condition, lock, cmd)			\
-do {										\
-	if (condition)								\
-		break;								\
-	__wait_event_lock_irq(wq_head, condition, lock, cmd);			\
-} while (0)
 
- 
 #define wait_event_lock_irq(wq_head, condition, lock)				\
 do {										\
 	if (condition)								\
@@ -489,17 +456,7 @@ do {										\
 		      schedule();						\
 		      spin_lock_irq(&lock))
 
- 
-#define wait_event_interruptible_lock_irq_cmd(wq_head, condition, lock, cmd)	\
-({										\
-	int __ret = 0;								\
-	if (!(condition))							\
-		__ret = __wait_event_interruptible_lock_irq(wq_head,		\
-						condition, lock, cmd);		\
-	__ret;									\
-})
 
- 
 #define wait_event_interruptible_lock_irq(wq_head, condition, lock)		\
 ({										\
 	int __ret = 0;								\

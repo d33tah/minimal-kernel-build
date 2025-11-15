@@ -235,42 +235,6 @@ static inline struct inode *folio_inode(struct folio *folio)
 	return folio->mapping->host;
 }
 
- 
-static inline void folio_attach_private(struct folio *folio, void *data)
-{
-	folio_get(folio);
-	folio->private = data;
-	folio_set_private(folio);
-}
-
- 
-static inline void *folio_change_private(struct folio *folio, void *data)
-{
-	void *old = folio_get_private(folio);
-
-	folio->private = data;
-	return old;
-}
-
- 
-static inline void *folio_detach_private(struct folio *folio)
-{
-	void *data = folio_get_private(folio);
-
-	if (!folio_test_private(folio))
-		return NULL;
-	folio_clear_private(folio);
-	folio->private = NULL;
-	folio_put(folio);
-
-	return data;
-}
-
-static inline void *detach_page_private(struct page *page)
-{
-	return folio_detach_private(page_folio(page));
-}
-
 static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 {
 	return folio_alloc(gfp, order);

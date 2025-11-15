@@ -1,19 +1,28 @@
 --- 2025-11-15 06:35 ---
 
-NEW SESSION START (06:35): Systematic reduction approach
+NEW SESSION (06:35-07:01): Library file removal - successful strategy
 
 Current baseline (measured with cloc after mrproper):
-- Total LOC: 254,688
-- Gap to 200K goal: 54,688 LOC (21.5% reduction needed)
-- Binary: 372KB
+- Starting LOC: 254,688
+- Current LOC: ~252,710 (after 2 removals)
+- Gap to 200K goal: 52,710 LOC (20.7% reduction needed)
+- Binary: 372KB (stable)
 - Build: PASSING, Hello World: PRINTING
 
-Strategy for this session:
-Will attempt aggressive reduction by identifying and removing/stubbing large subsystems:
-1. Look for CONFIG options to disable features
-2. Stub out error handling paths in critical subsystems
-3. Reduce header file complexity
-4. Target specific large files for reduction
+Progress this session:
+1. Removed lib/radix-tree.c (-943 LOC) - 0 radix_* symbols in vmlinux
+2. Removed lib/xarray.c (-1035 LOC) - 0 xa_* symbols in vmlinux
+Total reduction: 1,978 LOC (3.6% of gap closed)
+
+Strategy that worked:
+- Identify large library files using cloc
+- Check if symbols are actually used in final vmlinux using: nm vmlinux | grep " T " | grep <pattern>
+- Remove files with 0 matching symbols
+- Test with make vm to ensure Hello World still prints
+
+Continuing investigation:
+- Next targets: iov_iter.c (1164 LOC), scatterlist.c (468 LOC), other lib/ files
+- Need to continue checking for unused code systematically
 
 --- 2025-11-15 06:18 ---
 

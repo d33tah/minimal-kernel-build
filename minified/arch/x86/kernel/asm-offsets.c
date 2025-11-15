@@ -1,8 +1,7 @@
- 
- 
+
+
 #define COMPILE_OFFSETS
 
-#include <linux/crypto.h>
 #include <linux/sched.h>
 #include <linux/stddef.h>
 #include <linux/hardirq.h>

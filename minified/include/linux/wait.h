@@ -279,98 +279,12 @@ do {										\
 	__ret;									\
 })
 
- 
-#define wait_event_hrtimeout(wq_head, condition, timeout)			\
-({										\
-	int __ret = 0;								\
-	might_sleep();								\
-	if (!(condition))							\
-		__ret = __wait_event_hrtimeout(wq_head, condition, timeout,	\
-					       TASK_UNINTERRUPTIBLE);		\
-	__ret;									\
-})
-
- 
-#define wait_event_interruptible_hrtimeout(wq, condition, timeout)		\
-({										\
-	long __ret = 0;								\
-	might_sleep();								\
-	if (!(condition))							\
-		__ret = __wait_event_hrtimeout(wq, condition, timeout,		\
-					       TASK_INTERRUPTIBLE);		\
-	__ret;									\
-})
-
-#define __wait_event_interruptible_exclusive(wq, condition)			\
-	___wait_event(wq, condition, TASK_INTERRUPTIBLE, 1, 0,			\
-		      schedule())
-
-#define wait_event_interruptible_exclusive(wq, condition)			\
-({										\
-	int __ret = 0;								\
-	might_sleep();								\
-	if (!(condition))							\
-		__ret = __wait_event_interruptible_exclusive(wq, condition);	\
-	__ret;									\
-})
-
-#define __wait_event_killable_exclusive(wq, condition)				\
-	___wait_event(wq, condition, TASK_KILLABLE, 1, 0,			\
-		      schedule())
-
-#define wait_event_killable_exclusive(wq, condition)				\
-({										\
-	int __ret = 0;								\
-	might_sleep();								\
-	if (!(condition))							\
-		__ret = __wait_event_killable_exclusive(wq, condition);		\
-	__ret;									\
-})
-
-
-#define __wait_event_freezable_exclusive(wq, condition)				\
-	___wait_event(wq, condition, TASK_INTERRUPTIBLE, 1, 0,			\
-			freezable_schedule())
-
-#define wait_event_freezable_exclusive(wq, condition)				\
-({										\
-	int __ret = 0;								\
-	might_sleep();								\
-	if (!(condition))							\
-		__ret = __wait_event_freezable_exclusive(wq, condition);	\
-	__ret;									\
-})
-
- 
 #define wait_event_idle(wq_head, condition)					\
 do {										\
 	might_sleep();								\
 	if (!(condition))							\
 		___wait_event(wq_head, condition, TASK_IDLE, 0, 0, schedule());	\
 } while (0)
-
- 
-#define wait_event_idle_exclusive(wq_head, condition)				\
-do {										\
-	might_sleep();								\
-	if (!(condition))							\
-		___wait_event(wq_head, condition, TASK_IDLE, 1, 0, schedule());	\
-} while (0)
-
-#define __wait_event_idle_timeout(wq_head, condition, timeout)			\
-	___wait_event(wq_head, ___wait_cond_timeout(condition),			\
-		      TASK_IDLE, 0, timeout,					\
-		      __ret = schedule_timeout(__ret))
-
- 
-#define wait_event_idle_timeout(wq_head, condition, timeout)			\
-({										\
-	long __ret = timeout;							\
-	might_sleep();								\
-	if (!___wait_cond_timeout(condition))					\
-		__ret = __wait_event_idle_timeout(wq_head, condition, timeout);	\
-	__ret;									\
-})
 
 extern int do_wait_intr(wait_queue_head_t *, wait_queue_entry_t *);
 extern int do_wait_intr_irq(wait_queue_head_t *, wait_queue_entry_t *);
@@ -415,23 +329,6 @@ extern int do_wait_intr_irq(wait_queue_head_t *, wait_queue_entry_t *);
 		__ret = __wait_event_killable(wq_head, condition);		\
 	__ret;									\
 })
-
-#define __wait_event_killable_timeout(wq_head, condition, timeout)		\
-	___wait_event(wq_head, ___wait_cond_timeout(condition),			\
-		      TASK_KILLABLE, 0, timeout,				\
-		      __ret = schedule_timeout(__ret))
-
- 
-#define wait_event_killable_timeout(wq_head, condition, timeout)		\
-({										\
-	long __ret = timeout;							\
-	might_sleep();								\
-	if (!___wait_cond_timeout(condition))					\
-		__ret = __wait_event_killable_timeout(wq_head,			\
-						condition, timeout);		\
-	__ret;									\
-})
-
 
 #define __wait_event_lock_irq(wq_head, condition, lock, cmd)			\
 	(void)___wait_event(wq_head, condition, TASK_UNINTERRUPTIBLE, 0, 0,	\

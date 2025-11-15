@@ -343,21 +343,7 @@ static inline __alloc_size(1, 2) void *kmalloc_array(size_t n, size_t size, gfp_
 	return __kmalloc(bytes, flags);
 }
 
- 
-static inline __alloc_size(2, 3) void * __must_check krealloc_array(void *p,
-								    size_t new_n,
-								    size_t new_size,
-								    gfp_t flags)
-{
-	size_t bytes;
 
-	if (unlikely(check_mul_overflow(new_n, new_size, &bytes)))
-		return NULL;
-
-	return krealloc(p, bytes, flags);
-}
-
- 
 static inline __alloc_size(1, 2) void *kcalloc(size_t n, size_t size, gfp_t flags)
 {
 	return kmalloc_array(n, size, flags | __GFP_ZERO);
@@ -378,11 +364,6 @@ static inline __alloc_size(1, 2) void *kmalloc_array_node(size_t n, size_t size,
 	if (__builtin_constant_p(n) && __builtin_constant_p(size))
 		return kmalloc_node(bytes, flags, node);
 	return __kmalloc_node(bytes, flags, node);
-}
-
-static inline __alloc_size(1, 2) void *kcalloc_node(size_t n, size_t size, gfp_t flags, int node)
-{
-	return kmalloc_array_node(n, size, flags | __GFP_ZERO, node);
 }
 
 
@@ -414,10 +395,6 @@ static inline __alloc_size(1) void *kvmalloc(size_t size, gfp_t flags)
 {
 	return kvmalloc_node(size, flags, NUMA_NO_NODE);
 }
-static inline __alloc_size(1) void *kvzalloc_node(size_t size, gfp_t flags, int node)
-{
-	return kvmalloc_node(size, flags | __GFP_ZERO, node);
-}
 static inline __alloc_size(1) void *kvzalloc(size_t size, gfp_t flags)
 {
 	return kvmalloc(size, flags | __GFP_ZERO);
@@ -431,11 +408,6 @@ static inline __alloc_size(1, 2) void *kvmalloc_array(size_t n, size_t size, gfp
 		return NULL;
 
 	return kvmalloc(bytes, flags);
-}
-
-static inline __alloc_size(1, 2) void *kvcalloc(size_t n, size_t size, gfp_t flags)
-{
-	return kvmalloc_array(n, size, flags | __GFP_ZERO);
 }
 
 extern void *kvrealloc(const void *p, size_t oldsize, size_t newsize, gfp_t flags)

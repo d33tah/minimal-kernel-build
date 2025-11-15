@@ -46,9 +46,6 @@ static inline void __count_vm_event(enum vm_event_item item)
 static inline void __count_vm_events(enum vm_event_item item, long delta)
 {
 }
-static inline void all_vm_events(unsigned long *ret)
-{
-}
 static inline void vm_events_fold_cpu(int cpu)
 {
 }
@@ -124,12 +121,9 @@ static inline unsigned long zone_page_state_snapshot(struct zone *zone,
 #define sum_zone_node_page_state(node, item) global_zone_page_state(item)
 #define node_page_state(node, item) global_node_page_state(item)
 #define node_page_state_pages(node, item) global_node_page_state_pages(item)
-static inline void fold_vm_numa_events(void)
-{
-}
 
 
- 
+
 static inline void __mod_zone_page_state(struct zone *zone,
 			enum zone_stat_item item, long delta)
 {
@@ -301,32 +295,6 @@ static inline void __mod_zone_freepage_state(struct zone *zone, int nr_pages,
 }
 
 extern const char * const vmstat_text[];
-
-static inline const char *zone_stat_name(enum zone_stat_item item)
-{
-	return vmstat_text[item];
-}
-
-
-static inline const char *node_stat_name(enum node_stat_item item)
-{
-	return vmstat_text[NR_VM_ZONE_STAT_ITEMS +
-			   NR_VM_NUMA_EVENT_ITEMS +
-			   item];
-}
-
-static inline const char *lru_list_name(enum lru_list lru)
-{
-	return node_stat_name(NR_LRU_BASE + lru) + 3;  
-}
-
-static inline const char *writeback_stat_name(enum writeback_stat_item item)
-{
-	return vmstat_text[NR_VM_ZONE_STAT_ITEMS +
-			   NR_VM_NUMA_EVENT_ITEMS +
-			   NR_VM_NODE_STAT_ITEMS +
-			   item];
-}
 
 
 

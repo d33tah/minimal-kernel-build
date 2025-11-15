@@ -9,6 +9,33 @@ Starting new session:
 Strategy: Continue systematic header analysis to remove unused inline functions and macros.
 Looking for large header files with potentially unused code.
 
+Progress (20:46-21:07):
+
+1. ktime.h cleanup (20:58):
+   - Removed 3 unused inline time conversion functions (15 LOC):
+     * ktime_add_ms (4 LOC)
+     * ktime_sub_us (4 LOC)
+     * ktime_sub_ms (4 LOC)
+     * ms_to_ktime (4 LOC)
+   - Verified unused via grep in .c and .h files
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
+   - Commit: 4df6a5f, pushed to remote
+
+2. cred.h cleanup (21:05):
+   - Removed 1 unused inline function (6 LOC):
+     * cap_ambient_invariant_ok (6 LOC)
+   - This function checked ambient capability invariants but wasn't used
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
+   - Commit: 5eb51cd, pushed to remote
+
+Session progress: 21 LOC removed (15 + 6)
+Estimated LOC remaining: ~251,030
+Gap to 200K goal: ~51,030 LOC (20.3% reduction still needed)
+
+Next steps: Continue searching for unused inline functions in headers.
+
 --- 2025-11-15 20:29 ---
 
 Work completed (20:29-20:45):

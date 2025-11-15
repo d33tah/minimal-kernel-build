@@ -368,25 +368,6 @@ static inline int try_to_free_swap(struct page *page)
 	return 0;
 }
 
-static inline swp_entry_t folio_alloc_swap(struct folio *folio)
-{
-	swp_entry_t entry;
-	entry.val = 0;
-	return entry;
-}
-
-static inline int add_swap_extent(struct swap_info_struct *sis,
-				  unsigned long start_page,
-				  unsigned long nr_pages, sector_t start_block)
-{
-	return -EINVAL;
-}
-
-static inline int split_swap_cluster(swp_entry_t entry)
-{
-	return 0;
-}
-
 static inline int mem_cgroup_swappiness(struct mem_cgroup *mem)
 {
 	return vm_swappiness;

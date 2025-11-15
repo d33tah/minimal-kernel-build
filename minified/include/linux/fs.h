@@ -774,11 +774,6 @@ static inline void locks_remove_file(struct file *filp)
 	return;
 }
 
-static inline int locks_lock_inode_wait(struct inode *inode, struct file_lock *fl)
-{
-	return -ENOLCK;
-}
-
 struct files_struct;
 static inline struct inode *file_inode(const struct file *f)
 {
@@ -1582,21 +1577,11 @@ extern struct file *file_open_name(struct filename *, int, umode_t);
 extern struct file *filp_open(const char *, int, umode_t);
 extern struct file *file_open_root(const struct path *,
 				   const char *, int, umode_t);
-static inline struct file *file_open_root_mnt(struct vfsmount *mnt,
-				   const char *name, int flags, umode_t mode)
-{
-	return file_open_root(&(struct path){.mnt = mnt, .dentry = mnt->mnt_root},
-			      name, flags, mode);
-}
 extern struct file * dentry_open(const struct path *, int, const struct cred *);
 extern struct file *dentry_create(const struct path *path, int flags,
 				  umode_t mode, const struct cred *cred);
 extern struct file * open_with_fake_path(const struct path *, int,
 					 struct inode*, const struct cred *);
-static inline struct file *file_clone_open(struct file *file)
-{
-	return dentry_open(&file->f_path, file->f_flags, file->f_cred);
-}
 extern int filp_close(struct file *, fl_owner_t id);
 
 extern struct filename *getname_flags(const char __user *, int, int *);
@@ -1679,11 +1664,6 @@ static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count)
 
 extern void emergency_sync(void);
 extern void emergency_remount(void);
-
-static inline int bmap(struct inode *inode,  sector_t *block)
-{
-	return -EINVAL;
-}
 
 int notify_change(struct user_namespace *, struct dentry *,
 		  struct iattr *, struct inode **);

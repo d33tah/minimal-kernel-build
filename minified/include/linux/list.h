@@ -111,19 +111,6 @@ static inline void list_replace_init(struct list_head *old,
 }
 
  
-static inline void list_swap(struct list_head *entry1,
-			     struct list_head *entry2)
-{
-	struct list_head *pos = entry2->prev;
-
-	list_del(entry2);
-	list_replace(entry1, entry2);
-	if (pos == entry1)
-		pos = entry2;
-	list_add(entry1, pos);
-}
-
- 
 static inline void list_del_init(struct list_head *entry)
 {
 	__list_del_entry(entry);
@@ -145,12 +132,6 @@ static inline void list_move_tail(struct list_head *list,
 	list_add_tail(list, head);
 }
 
-static inline int list_is_first(const struct list_head *list, const struct list_head *head)
-{
-	return list->prev == head;
-}
-
- 
 static inline int list_is_last(const struct list_head *list, const struct list_head *head)
 {
 	return list->next == head;
@@ -459,12 +440,6 @@ static inline void hlist_add_behind(struct hlist_node *n,
 
 	if (n->next)
 		WRITE_ONCE(n->next->pprev, &n->next);
-}
-
- 
-static inline void hlist_add_fake(struct hlist_node *n)
-{
-	n->pprev = &n->next;
 }
 
  

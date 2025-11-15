@@ -482,16 +482,6 @@ int __sched mutex_lock_killable(struct mutex *lock)
 	return __mutex_lock_killable_slowpath(lock);
 }
 
- 
-void __sched mutex_lock_io(struct mutex *lock)
-{
-	int token;
-
-	token = io_schedule_prepare();
-	mutex_lock(lock);
-	io_schedule_finish(token);
-}
-
 static noinline void __sched
 __mutex_lock_slowpath(struct mutex *lock)
 {
@@ -566,22 +556,4 @@ ww_mutex_lock_interruptible(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
 	}
 
 	return __ww_mutex_lock_interruptible_slowpath(lock, ctx);
-}
-
-
- 
-int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock)
-{
-	 
-	if (atomic_add_unless(cnt, -1, 1))
-		return 0;
-	 
-	mutex_lock(lock);
-	if (!atomic_dec_and_test(cnt)) {
-		 
-		mutex_unlock(lock);
-		return 0;
-	}
-	 
-	return 1;
 }

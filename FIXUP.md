@@ -43,9 +43,23 @@ Progress (22:40-22:50):
    - Verified unused via grep - only in implementation, never called
    - make vm: PASSES ✓, prints "Hello World" ✓
    - Binary: 372KB (unchanged) ✓
+   - Commit: 7c1d7ce, pushed to remote
+
+4. mutex.h & mutex.c cleanup (22:53):
+   - Removed from mutex.h (3 LOC):
+     * mutex_lock_io - extern declaration
+     * mutex_lock_io_nested - macro definition
+     * atomic_dec_and_mutex_lock - extern declaration
+   - Removed from mutex.c (21 LOC):
+     * mutex_lock_io implementation (9 LOC)
+     * atomic_dec_and_mutex_lock implementation (12 LOC)
+   - Total: 24 LOC removed
+   - Verified unused via grep - only in implementation, never called
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
    - Ready to commit
 
-Session total: 68 LOC removed (16 + 52)
+Session total: 92 LOC removed (16 + 52 + 24)
 Next: Commit and continue searching for more unused code.
 
 --- 2025-11-15 22:04 ---

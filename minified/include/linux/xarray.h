@@ -36,37 +36,16 @@ static inline bool xa_is_value(const void *entry)
 	return (unsigned long)entry & 1;
 }
 
- 
-static inline void *xa_tag_pointer(void *p, unsigned long tag)
-{
-	return (void *)((unsigned long)p | tag);
-}
-
- 
-static inline void *xa_untag_pointer(void *entry)
-{
-	return (void *)((unsigned long)entry & ~3UL);
-}
-
- 
-static inline unsigned int xa_pointer_tag(void *entry)
-{
-	return (unsigned long)entry & 3UL;
-}
-
- 
 static inline void *xa_mk_internal(unsigned long v)
 {
 	return (void *)((v << 2) | 2);
 }
 
- 
 static inline unsigned long xa_to_internal(const void *entry)
 {
 	return (unsigned long)entry >> 2;
 }
 
- 
 static inline bool xa_is_internal(const void *entry)
 {
 	return ((unsigned long)entry & 3) == 2;
@@ -80,23 +59,20 @@ static inline bool xa_is_zero(const void *entry)
 	return unlikely(entry == XA_ZERO_ENTRY);
 }
 
- 
 static inline bool xa_is_err(const void *entry)
 {
 	return unlikely(xa_is_internal(entry) &&
 			entry >= xa_mk_internal(-MAX_ERRNO));
 }
 
- 
 static inline int xa_err(void *entry)
 {
-	 
+
 	if (xa_is_err(entry))
 		return (long)entry >> 2;
 	return 0;
 }
 
- 
 struct xa_limit {
 	u32 max;
 	u32 min;
@@ -259,55 +235,6 @@ int __must_check __xa_alloc_cyclic(struct xarray *, u32 *id, void *entry,
 void __xa_set_mark(struct xarray *, unsigned long index, xa_mark_t);
 void __xa_clear_mark(struct xarray *, unsigned long index, xa_mark_t);
 
- 
-static inline void *xa_store_bh(struct xarray *xa, unsigned long index,
-		void *entry, gfp_t gfp)
-{
-	void *curr;
-
-	xa_lock_bh(xa);
-	curr = __xa_store(xa, index, entry, gfp);
-	xa_unlock_bh(xa);
-
-	return curr;
-}
-
- 
-static inline void *xa_store_irq(struct xarray *xa, unsigned long index,
-		void *entry, gfp_t gfp)
-{
-	void *curr;
-
-	xa_lock_irq(xa);
-	curr = __xa_store(xa, index, entry, gfp);
-	xa_unlock_irq(xa);
-
-	return curr;
-}
-
- 
-static inline void *xa_erase_bh(struct xarray *xa, unsigned long index)
-{
-	void *entry;
-
-	xa_lock_bh(xa);
-	entry = __xa_erase(xa, index);
-	xa_unlock_bh(xa);
-
-	return entry;
-}
-
- 
-static inline void *xa_erase_irq(struct xarray *xa, unsigned long index)
-{
-	void *entry;
-
-	xa_lock_irq(xa);
-	entry = __xa_erase(xa, index);
-	xa_unlock_irq(xa);
-
-	return entry;
-}
 
  
 static inline void *xa_cmpxchg(struct xarray *xa, unsigned long index,
@@ -322,33 +249,6 @@ static inline void *xa_cmpxchg(struct xarray *xa, unsigned long index,
 	return curr;
 }
 
- 
-static inline void *xa_cmpxchg_bh(struct xarray *xa, unsigned long index,
-			void *old, void *entry, gfp_t gfp)
-{
-	void *curr;
-
-	xa_lock_bh(xa);
-	curr = __xa_cmpxchg(xa, index, old, entry, gfp);
-	xa_unlock_bh(xa);
-
-	return curr;
-}
-
- 
-static inline void *xa_cmpxchg_irq(struct xarray *xa, unsigned long index,
-			void *old, void *entry, gfp_t gfp)
-{
-	void *curr;
-
-	xa_lock_irq(xa);
-	curr = __xa_cmpxchg(xa, index, old, entry, gfp);
-	xa_unlock_irq(xa);
-
-	return curr;
-}
-
- 
 static inline int __must_check xa_insert(struct xarray *xa,
 		unsigned long index, void *entry, gfp_t gfp)
 {
@@ -361,33 +261,6 @@ static inline int __must_check xa_insert(struct xarray *xa,
 	return err;
 }
 
- 
-static inline int __must_check xa_insert_bh(struct xarray *xa,
-		unsigned long index, void *entry, gfp_t gfp)
-{
-	int err;
-
-	xa_lock_bh(xa);
-	err = __xa_insert(xa, index, entry, gfp);
-	xa_unlock_bh(xa);
-
-	return err;
-}
-
- 
-static inline int __must_check xa_insert_irq(struct xarray *xa,
-		unsigned long index, void *entry, gfp_t gfp)
-{
-	int err;
-
-	xa_lock_irq(xa);
-	err = __xa_insert(xa, index, entry, gfp);
-	xa_unlock_irq(xa);
-
-	return err;
-}
-
- 
 static inline __must_check int xa_alloc(struct xarray *xa, u32 *id,
 		void *entry, struct xa_limit limit, gfp_t gfp)
 {
@@ -400,93 +273,6 @@ static inline __must_check int xa_alloc(struct xarray *xa, u32 *id,
 	return err;
 }
 
- 
-static inline int __must_check xa_alloc_bh(struct xarray *xa, u32 *id,
-		void *entry, struct xa_limit limit, gfp_t gfp)
-{
-	int err;
-
-	xa_lock_bh(xa);
-	err = __xa_alloc(xa, id, entry, limit, gfp);
-	xa_unlock_bh(xa);
-
-	return err;
-}
-
- 
-static inline int __must_check xa_alloc_irq(struct xarray *xa, u32 *id,
-		void *entry, struct xa_limit limit, gfp_t gfp)
-{
-	int err;
-
-	xa_lock_irq(xa);
-	err = __xa_alloc(xa, id, entry, limit, gfp);
-	xa_unlock_irq(xa);
-
-	return err;
-}
-
- 
-static inline int xa_alloc_cyclic(struct xarray *xa, u32 *id, void *entry,
-		struct xa_limit limit, u32 *next, gfp_t gfp)
-{
-	int err;
-
-	xa_lock(xa);
-	err = __xa_alloc_cyclic(xa, id, entry, limit, next, gfp);
-	xa_unlock(xa);
-
-	return err;
-}
-
- 
-static inline int xa_alloc_cyclic_bh(struct xarray *xa, u32 *id, void *entry,
-		struct xa_limit limit, u32 *next, gfp_t gfp)
-{
-	int err;
-
-	xa_lock_bh(xa);
-	err = __xa_alloc_cyclic(xa, id, entry, limit, next, gfp);
-	xa_unlock_bh(xa);
-
-	return err;
-}
-
- 
-static inline int xa_alloc_cyclic_irq(struct xarray *xa, u32 *id, void *entry,
-		struct xa_limit limit, u32 *next, gfp_t gfp)
-{
-	int err;
-
-	xa_lock_irq(xa);
-	err = __xa_alloc_cyclic(xa, id, entry, limit, next, gfp);
-	xa_unlock_irq(xa);
-
-	return err;
-}
-
- 
-static inline __must_check
-int xa_reserve(struct xarray *xa, unsigned long index, gfp_t gfp)
-{
-	return xa_err(xa_cmpxchg(xa, index, NULL, XA_ZERO_ENTRY, gfp));
-}
-
- 
-static inline __must_check
-int xa_reserve_bh(struct xarray *xa, unsigned long index, gfp_t gfp)
-{
-	return xa_err(xa_cmpxchg_bh(xa, index, NULL, XA_ZERO_ENTRY, gfp));
-}
-
- 
-static inline __must_check
-int xa_reserve_irq(struct xarray *xa, unsigned long index, gfp_t gfp)
-{
-	return xa_err(xa_cmpxchg_irq(xa, index, NULL, XA_ZERO_ENTRY, gfp));
-}
-
- 
 static inline void xa_release(struct xarray *xa, unsigned long index)
 {
 	xa_cmpxchg(xa, index, XA_ZERO_ENTRY, NULL, 0);

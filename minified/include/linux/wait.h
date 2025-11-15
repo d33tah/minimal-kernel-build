@@ -210,21 +210,6 @@ do {										\
 	__wait_event(wq_head, condition);					\
 } while (0)
 
-#define __wait_event_timeout(wq_head, condition, timeout)			\
-	___wait_event(wq_head, ___wait_cond_timeout(condition),			\
-		      TASK_UNINTERRUPTIBLE, 0, timeout,				\
-		      __ret = schedule_timeout(__ret))
-
- 
-#define wait_event_timeout(wq_head, condition, timeout)				\
-({										\
-	long __ret = timeout;							\
-	might_sleep();								\
-	if (!___wait_cond_timeout(condition))					\
-		__ret = __wait_event_timeout(wq_head, condition, timeout);	\
-	__ret;									\
-})
-
 #define __wait_event_interruptible(wq_head, condition)				\
 	___wait_event(wq_head, condition, TASK_INTERRUPTIBLE, 0, 0,		\
 		      schedule())
@@ -236,22 +221,6 @@ do {										\
 	might_sleep();								\
 	if (!(condition))							\
 		__ret = __wait_event_interruptible(wq_head, condition);		\
-	__ret;									\
-})
-
-#define __wait_event_interruptible_timeout(wq_head, condition, timeout)		\
-	___wait_event(wq_head, ___wait_cond_timeout(condition),			\
-		      TASK_INTERRUPTIBLE, 0, timeout,				\
-		      __ret = schedule_timeout(__ret))
-
- 
-#define wait_event_interruptible_timeout(wq_head, condition, timeout)		\
-({										\
-	long __ret = timeout;							\
-	might_sleep();								\
-	if (!___wait_cond_timeout(condition))					\
-		__ret = __wait_event_interruptible_timeout(wq_head,		\
-						condition, timeout);		\
 	__ret;									\
 })
 
@@ -279,120 +248,6 @@ do {										\
 	__ret;									\
 })
 
-#define wait_event_idle(wq_head, condition)					\
-do {										\
-	might_sleep();								\
-	if (!(condition))							\
-		___wait_event(wq_head, condition, TASK_IDLE, 0, 0, schedule());	\
-} while (0)
-
-extern int do_wait_intr(wait_queue_head_t *, wait_queue_entry_t *);
-extern int do_wait_intr_irq(wait_queue_head_t *, wait_queue_entry_t *);
-
-#define __wait_event_interruptible_locked(wq, condition, exclusive, fn)		\
-({										\
-	int __ret;								\
-	DEFINE_WAIT(__wait);							\
-	if (exclusive)								\
-		__wait.flags |= WQ_FLAG_EXCLUSIVE;				\
-	do {									\
-		__ret = fn(&(wq), &__wait);					\
-		if (__ret)							\
-			break;							\
-	} while (!(condition));							\
-	__remove_wait_queue(&(wq), &__wait);					\
-	__set_current_state(TASK_RUNNING);					\
-	__ret;									\
-})
-
-
- 
-#define wait_event_interruptible_locked(wq, condition)				\
-	((condition)								\
-	 ? 0 : __wait_event_interruptible_locked(wq, condition, 0, do_wait_intr))
-
- 
-#define wait_event_interruptible_locked_irq(wq, condition)			\
-	((condition)								\
-	 ? 0 : __wait_event_interruptible_locked(wq, condition, 0, do_wait_intr_irq))
-
-
-#define __wait_event_killable(wq, condition)					\
-	___wait_event(wq, condition, TASK_KILLABLE, 0, 0, schedule())
-
- 
-#define wait_event_killable(wq_head, condition)					\
-({										\
-	int __ret = 0;								\
-	might_sleep();								\
-	if (!(condition))							\
-		__ret = __wait_event_killable(wq_head, condition);		\
-	__ret;									\
-})
-
-#define __wait_event_lock_irq(wq_head, condition, lock, cmd)			\
-	(void)___wait_event(wq_head, condition, TASK_UNINTERRUPTIBLE, 0, 0,	\
-			    spin_unlock_irq(&lock);				\
-			    cmd;						\
-			    schedule();						\
-			    spin_lock_irq(&lock))
-
-
-#define wait_event_lock_irq(wq_head, condition, lock)				\
-do {										\
-	if (condition)								\
-		break;								\
-	__wait_event_lock_irq(wq_head, condition, lock, );			\
-} while (0)
-
-
-#define __wait_event_interruptible_lock_irq(wq_head, condition, lock, cmd)	\
-	___wait_event(wq_head, condition, TASK_INTERRUPTIBLE, 0, 0,		\
-		      spin_unlock_irq(&lock);					\
-		      cmd;							\
-		      schedule();						\
-		      spin_lock_irq(&lock))
-
-
-#define wait_event_interruptible_lock_irq(wq_head, condition, lock)		\
-({										\
-	int __ret = 0;								\
-	if (!(condition))							\
-		__ret = __wait_event_interruptible_lock_irq(wq_head,		\
-						condition, lock,);		\
-	__ret;									\
-})
-
-#define __wait_event_lock_irq_timeout(wq_head, condition, lock, timeout, state)	\
-	___wait_event(wq_head, ___wait_cond_timeout(condition),			\
-		      state, 0, timeout,					\
-		      spin_unlock_irq(&lock);					\
-		      __ret = schedule_timeout(__ret);				\
-		      spin_lock_irq(&lock));
-
- 
-#define wait_event_interruptible_lock_irq_timeout(wq_head, condition, lock,	\
-						  timeout)			\
-({										\
-	long __ret = timeout;							\
-	if (!___wait_cond_timeout(condition))					\
-		__ret = __wait_event_lock_irq_timeout(				\
-					wq_head, condition, lock, timeout,	\
-					TASK_INTERRUPTIBLE);			\
-	__ret;									\
-})
-
-#define wait_event_lock_irq_timeout(wq_head, condition, lock, timeout)		\
-({										\
-	long __ret = timeout;							\
-	if (!___wait_cond_timeout(condition))					\
-		__ret = __wait_event_lock_irq_timeout(				\
-					wq_head, condition, lock, timeout,	\
-					TASK_UNINTERRUPTIBLE);			\
-	__ret;									\
-})
-
- 
 void prepare_to_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);
 bool prepare_to_wait_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);
 long prepare_to_wait_event(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);

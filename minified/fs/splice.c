@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/* Stubbed splice.c */
+ 
+ 
 #include <linux/fs.h>
 #include <linux/splice.h>
 #include <linux/pipe_fs_i.h>

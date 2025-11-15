@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Stubbed select.c */
+ 
+ 
 #include <linux/poll.h>
 #include <linux/export.h>
 #include <linux/syscalls.h>

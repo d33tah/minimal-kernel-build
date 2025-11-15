@@ -1,16 +1,11 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- *  include/linux/userfaultfd_k.h
- *
- *  Copyright (C) 2015  Red Hat, Inc.
- *
- */
+ 
+ 
 
 #ifndef _LINUX_USERFAULTFD_K_H
 #define _LINUX_USERFAULTFD_K_H
 
 
-/* mm helpers */
+ 
 static inline vm_fault_t handle_userfault(struct vm_fault *vmf,
 				unsigned long reason)
 {
@@ -113,13 +108,10 @@ static inline bool pte_marker_uffd_wp(pte_t pte)
 	return false;
 }
 
-/*
- * Returns true if this is a swap pte and was uffd-wp wr-protected in either
- * forms (pte marker or a normal swap pte), false otherwise.
- */
+ 
 static inline bool pte_swp_uffd_wp_any(pte_t pte)
 {
 	return false;
 }
 
-#endif /* _LINUX_USERFAULTFD_K_H */
+#endif  

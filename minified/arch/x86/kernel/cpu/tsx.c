@@ -1,7 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Minimal stub - TSX not needed
- */
+ 
+ 
 #include <linux/cpu.h>
 #include <asm/processor.h>
 

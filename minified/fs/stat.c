@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Stubbed stat.c */
+ 
+ 
 #include <linux/fs.h>
 #include <linux/stat.h>
 #include <linux/syscalls.h>

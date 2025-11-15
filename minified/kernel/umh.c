@@ -1,8 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/*
- * Minimal usermode helper stub for minimal kernel
- * Original: 554 LOC - all usermode helper functionality disabled
- */
+ 
+ 
 #include <linux/module.h>
 #include <linux/sched.h>
 #include <linux/sched/task.h>
@@ -29,29 +26,29 @@
 #include <linux/uaccess.h>
 #include <linux/initrd.h>
 
-/* Stub: always succeed (no-op) */
+ 
 int usermodehelper_read_trylock(void)
 {
 	return 0;
 }
 
-/* Stub: no-op */
+ 
 void usermodehelper_read_unlock(void)
 {
 }
 
-/* Stub: no-op */
+ 
 void __usermodehelper_set_disable_depth(enum umh_disable_depth depth)
 {
 }
 
-/* Stub: always fail */
+ 
 int __usermodehelper_disable(enum umh_disable_depth depth)
 {
 	return 0;
 }
 
-/* Stub: never executes usermode helpers */
+ 
 int call_usermodehelper_exec(struct subprocess_info *sub_info, int wait)
 {
 	if (sub_info->cleanup)
@@ -59,13 +56,13 @@ int call_usermodehelper_exec(struct subprocess_info *sub_info, int wait)
 	return -ENOENT;
 }
 
-/* Stub: never executes usermode helpers */
+ 
 int call_usermodehelper(const char *path, char **argv, char **envp, int wait)
 {
 	return -ENOENT;
 }
 
-/* Stub: never executes usermode helpers */
+ 
 struct subprocess_info *call_usermodehelper_setup(const char *path, char **argv,
 		char **envp, gfp_t gfp_mask,
 		int (*init)(struct subprocess_info *info, struct cred *new),
@@ -74,7 +71,7 @@ struct subprocess_info *call_usermodehelper_setup(const char *path, char **argv,
 	return NULL;
 }
 
-/* Stub: no-op init */
+ 
 void __init usermodehelper_init(void)
 {
 }

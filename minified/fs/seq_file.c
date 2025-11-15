@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Stubbed seq_file.c */
+ 
+ 
 #include <linux/seq_file.h>
 #include <linux/fs.h>
 #include <linux/export.h>

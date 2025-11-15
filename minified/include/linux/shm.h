@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_SHM_H_
 #define _LINUX_SHM_H_
 
@@ -10,7 +10,7 @@
 struct file;
 
 struct sysv_shm {
-	/* empty */
+	 
 };
 
 static inline long do_shmat(int shmid, char __user *shmaddr,
@@ -30,4 +30,4 @@ static inline void shm_init_task(struct task_struct *task)
 {
 }
 
-#endif /* _LINUX_SHM_H_ */
+#endif  

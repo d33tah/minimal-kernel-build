@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_SWAPOPS_H
 #define _LINUX_SWAPOPS_H
 
@@ -7,22 +7,11 @@
 #include <linux/mm_types.h>
 
 
-/*
- * swapcache pages are stored in the swapper_space radix tree.  We want to
- * get good packing density in that tree, so the index should be dense in
- * the low-order bits.
- *
- * We arrange the `type' and `offset' fields so that `type' is at the six
- * high-order bits of the swp_entry_t and `offset' is right-aligned in the
- * remaining bits.  Although `type' itself needs only five bits, we allow for
- * shmem/tmpfs to shift it all up a further one bit: see swp_to_radix_entry().
- *
- * swp_entry_t's are *never* stored anywhere in their arch-dependent format.
- */
+ 
 #define SWP_TYPE_SHIFT	(BITS_PER_XA_VALUE - MAX_SWAPFILES_SHIFT)
 #define SWP_OFFSET_MASK	((1UL << SWP_TYPE_SHIFT) - 1)
 
-/* Clear all flags but only keep swp_entry_t related information */
+ 
 static inline pte_t pte_swp_clear_flags(pte_t pte)
 {
 	if (pte_swp_exclusive(pte))
@@ -34,9 +23,7 @@ static inline pte_t pte_swp_clear_flags(pte_t pte)
 	return pte;
 }
 
-/*
- * Store a type+offset into a swp_entry_t in an arch-independent format
- */
+ 
 static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset)
 {
 	swp_entry_t ret;
@@ -45,34 +32,25 @@ static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset)
 	return ret;
 }
 
-/*
- * Extract the `type' field from a swp_entry_t.  The swp_entry_t is in
- * arch-independent format
- */
+ 
 static inline unsigned swp_type(swp_entry_t entry)
 {
 	return (entry.val >> SWP_TYPE_SHIFT);
 }
 
-/*
- * Extract the `offset' field from a swp_entry_t.  The swp_entry_t is in
- * arch-independent format
- */
+ 
 static inline pgoff_t swp_offset(swp_entry_t entry)
 {
 	return entry.val & SWP_OFFSET_MASK;
 }
 
-/* check whether a pte points to a swap entry */
+ 
 static inline int is_swap_pte(pte_t pte)
 {
 	return !pte_none(pte) && !pte_present(pte);
 }
 
-/*
- * Convert the arch-dependent pte representation of a swp_entry_t into an
- * arch-independent swp_entry_t.
- */
+ 
 static inline swp_entry_t pte_to_swp_entry(pte_t pte)
 {
 	swp_entry_t arch_entry;
@@ -82,10 +60,7 @@ static inline swp_entry_t pte_to_swp_entry(pte_t pte)
 	return swp_entry(__swp_type(arch_entry), __swp_offset(arch_entry));
 }
 
-/*
- * Convert the arch-independent representation of a swp_entry_t into the
- * arch-dependent pte representation.
- */
+ 
 static inline pte_t swp_entry_to_pte(swp_entry_t entry)
 {
 	swp_entry_t arch_entry;
@@ -159,7 +134,7 @@ static inline bool is_writable_device_exclusive_entry(swp_entry_t entry)
 {
 	return unlikely(swp_type(entry) == SWP_DEVICE_EXCLUSIVE_WRITE);
 }
-#else /* CONFIG_DEVICE_PRIVATE */
+#else  
 static inline swp_entry_t make_readable_device_private_entry(pgoff_t offset)
 {
 	return swp_entry(0, 0);
@@ -199,7 +174,7 @@ static inline bool is_writable_device_exclusive_entry(swp_entry_t entry)
 {
 	return false;
 }
-#endif /* CONFIG_DEVICE_PRIVATE */
+#endif  
 
 static inline swp_entry_t make_readable_migration_entry(pgoff_t offset)
 {
@@ -245,7 +220,7 @@ typedef unsigned long pte_marker;
 
 static inline swp_entry_t make_pte_marker_entry(pte_marker marker)
 {
-	/* This should never be called if !CONFIG_PTE_MARKER */
+	 
 	WARN_ON_ONCE(1);
 	return swp_entry(0, 0);
 }
@@ -271,22 +246,7 @@ static inline pte_t make_pte_marker(pte_marker marker)
 	return swp_entry_to_pte(make_pte_marker_entry(marker));
 }
 
-/*
- * This is a special version to check pte_none() just to cover the case when
- * the pte is a pte marker.  It existed because in many cases the pte marker
- * should be seen as a none pte; it's just that we have stored some information
- * onto the none pte so it becomes not-none any more.
- *
- * It should be used when the pte is file-backed, ram-based and backing
- * userspace pages, like shmem.  It is not needed upon pgtables that do not
- * support pte markers at all.  For example, it's not needed on anonymous
- * memory, kernel-only memory (including when the system is during-boot),
- * non-ram based generic file-system.  It's fine to be used even there, but the
- * extra pte marker check will be pure overhead.
- *
- * For systems configured with !CONFIG_PTE_MARKER this will be automatically
- * optimized to pte_none().
- */
+ 
 static inline int pte_none_mostly(pte_t pte)
 {
 	return pte_none(pte) || is_pte_marker(pte);
@@ -296,20 +256,13 @@ static inline struct page *pfn_swap_entry_to_page(swp_entry_t entry)
 {
 	struct page *p = pfn_to_page(swp_offset(entry));
 
-	/*
-	 * Any use of migration entries may only occur while the
-	 * corresponding page is locked
-	 */
+	 
 	BUG_ON(is_migration_entry(entry) && !PageLocked(p));
 
 	return p;
 }
 
-/*
- * A pfn swap entry is a special type of swap entry that always has a pfn stored
- * in the swap offset. They are used to represent unaddressable device memory
- * and to restrict access to a page undergoing migration.
- */
+ 
 static inline bool is_pfn_swap_entry(swp_entry_t entry)
 {
 	return is_migration_entry(entry) || is_device_private_entry(entry) ||
@@ -367,4 +320,4 @@ static inline int non_swap_entry(swp_entry_t entry)
 	return swp_type(entry) >= MAX_SWAPFILES;
 }
 
-#endif /* _LINUX_SWAPOPS_H */
+#endif  

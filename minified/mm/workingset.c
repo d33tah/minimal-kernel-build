@@ -1,11 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Workingset detection
- *
- * Copyright (C) 2013 Red Hat, Inc., Johannes Weiner
- *
- * STUBBED: Minimal implementation for tiny kernel
- */
+ 
+ 
 
 #include <linux/memcontrol.h>
 #include <linux/mm_inline.h>
@@ -20,10 +14,10 @@
 #include <linux/mm.h>
 #include <linux/list_lru.h>
 
-/* Stub: No-op working set tracking */
+ 
 void workingset_age_nonresident(struct lruvec *lruvec, unsigned long nr_pages)
 {
-	/* Do nothing */
+	 
 }
 
 void *workingset_eviction(struct folio *folio, struct mem_cgroup *target_memcg)
@@ -33,20 +27,20 @@ void *workingset_eviction(struct folio *folio, struct mem_cgroup *target_memcg)
 
 void workingset_refault(struct folio *folio, void *shadow)
 {
-	/* Do nothing */
+	 
 }
 
 void workingset_activation(struct folio *folio)
 {
-	/* Do nothing */
+	 
 }
 
 void workingset_update_node(struct xa_node *node)
 {
-	/* Do nothing */
+	 
 }
 
-/* Global shadow nodes list - referenced by mm/filemap.c */
+ 
 struct list_lru shadow_nodes;
 
 static int __init workingset_init(void)

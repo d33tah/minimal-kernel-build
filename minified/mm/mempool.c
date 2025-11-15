@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Stubbed - mempools unused in minimal kernel */
+ 
+ 
 #include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/export.h>

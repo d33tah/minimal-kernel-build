@@ -1,11 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- *  linux/fs/filesystems.c
- *
- *  Copyright (C) 1991, 1992  Linus Torvalds
- *
- *  table of configured filesystems
- */
+ 
+ 
 
 #include <linux/syscalls.h>
 #include <linux/fs.h>
@@ -18,23 +12,12 @@
 #include <linux/uaccess.h>
 #include <linux/fs_parser.h>
 
-/*
- * Handling of filesystem drivers list.
- * Rules:
- *	Inclusion to/removals from/scanning of list are protected by spinlock.
- *	During the unload module must call unregister_filesystem().
- *	We can access the fields of list element if:
- *		1) spinlock is held or
- *		2) we hold the reference to the module.
- *	The latter can be guaranteed by call of try_module_get(); if it
- *	returned 0 we must skip the element, otherwise we got the reference.
- *	Once the reference is obtained we can drop the spinlock.
- */
+ 
 
 static struct file_system_type *file_systems;
 static DEFINE_RWLOCK(file_systems_lock);
 
-/* WARNING: This can be used only if we _already_ own a reference */
+ 
 struct file_system_type *get_filesystem(struct file_system_type *fs)
 {
 	__module_get(fs->owner);
@@ -56,18 +39,7 @@ static struct file_system_type **find_filesystem(const char *name, unsigned len)
 	return p;
 }
 
-/**
- *	register_filesystem - register a new filesystem
- *	@fs: the file system structure
- *
- *	Adds the file system passed to the list of file systems the kernel
- *	is aware of for mount and other syscalls. Returns 0 on success,
- *	or a negative errno code on an error.
- *
- *	The &struct file_system_type that is passed is linked into the kernel 
- *	structures and must not be freed until the file system has been
- *	unregistered.
- */
+ 
  
 int register_filesystem(struct file_system_type * fs)
 {
@@ -92,17 +64,7 @@ int register_filesystem(struct file_system_type * fs)
 }
 
 
-/**
- *	unregister_filesystem - unregister a file system
- *	@fs: filesystem to unregister
- *
- *	Remove a file system that was previously successfully registered
- *	with the kernel. An error is returned if the file system is not found.
- *	Zero is returned on a success.
- *	
- *	Once this function has returned the &struct file_system_type structure
- *	may be freed or reused.
- */
+ 
  
 int unregister_filesystem(struct file_system_type * fs)
 {

@@ -1,10 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * devres.c - device managed resources (STUBBED)
- *
- * Minimal stub - device managed resource tracking not needed for minimal kernel
- * with basic TTY console support. All devm_* functions stubbed.
- */
+ 
+ 
 
 #include <linux/device.h>
 #include <linux/kernel.h>
@@ -172,8 +167,7 @@ void devm_free_percpu(struct device *dev, void __percpu *pdata)
 	free_percpu(pdata);
 }
 
-/* Note: devm_ioremap*, __devm_request_region, __devm_release_region
- * are defined in lib/devres.c and kernel/resource.c, not stubbed here */
+ 
 
 void *devm_krealloc(struct device *dev, void *ptr, size_t new_size, gfp_t gfp)
 {

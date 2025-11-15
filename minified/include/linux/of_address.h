@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef __OF_ADDRESS_H
 #define __OF_ADDRESS_H
 #include <linux/ioport.h>
@@ -35,7 +35,7 @@ struct of_pci_range {
 	for (; of_pci_range_parser_one(parser, range);)
 #define for_each_of_range for_each_of_pci_range
 
-/* Translate a DMA address from device space to CPU space */
+ 
 extern u64 of_translate_dma_address(struct device_node *dev,
 				    const __be32 *in_addr);
 
@@ -118,4 +118,4 @@ static inline const __be32 *of_get_pci_address(struct device_node *dev, int bar_
 	return __of_get_address(dev, -1, bar_no, size, flags);
 }
 
-#endif /* __OF_ADDRESS_H */
+#endif  

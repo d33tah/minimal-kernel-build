@@ -1,10 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/*
- *  Copyright (C) 1995  Linus Torvalds
- *
- * This file contains the setup_arch() code, which handles the architecture-dependent
- * parts of early kernel initialization.
- */
+ 
+ 
 #include <linux/acpi.h>
 #include <linux/console.h>
 #include <linux/crash_dump.h>
@@ -48,13 +43,7 @@
 #include <asm/vsyscall.h>
 #include <linux/vmalloc.h>
 
-/*
- * max_low_pfn_mapped: highest directly mapped pfn < 4 GB
- * max_pfn_mapped:     highest directly mapped pfn > 4 GB
- *
- * The direct mapping only covers E820_TYPE_RAM regions, so the ranges and gaps are
- * represented by pfn_mapped[].
- */
+ 
 unsigned long max_low_pfn_mapped;
 unsigned long max_pfn_mapped;
 
@@ -65,11 +54,7 @@ unsigned long _brk_end   = (unsigned long)__brk_base;
 
 struct boot_params boot_params;
 
-/*
- * These are the four main kernel memory regions, we put them into
- * the resource tree so that kdump tools and other debugging tools
- * recover it:
- */
+ 
 
 static struct resource rodata_resource = {
 	.name	= "Kernel rodata",
@@ -100,10 +85,10 @@ static struct resource bss_resource = {
 };
 
 
-/* CPU data as detected by the assembly code in head_32.S */
+ 
 struct cpuinfo_x86 new_cpu_data;
 
-/* Common CPU data for all CPUs */
+ 
 struct cpuinfo_x86 boot_cpu_data __read_mostly;
 
 unsigned int def_to_bigsmp;
@@ -121,12 +106,10 @@ struct ist_info ist_info;
 
 __visible unsigned long mmu_cr4_features __ro_after_init;
 
-/* Boot loader ID and version as integers, for the benefit of proc_dointvec */
+ 
 int bootloader_type, bootloader_version;
 
-/*
- * Setup options
- */
+ 
 struct screen_info screen_info;
 struct edid_info edid_info;
 
@@ -173,8 +156,7 @@ static void __init reserve_brk(void)
 		memblock_reserve(__pa_symbol(_brk_start),
 				 _brk_end - _brk_start);
 
-	/* Mark brk area as locked down and no longer taking any
-	   new allocations */
+	 
 	_brk_start = 0;
 }
 
@@ -206,12 +188,12 @@ static u64 __init get_ramdisk_size(void)
 
 static void __init relocate_initrd(void)
 {
-	/* Assume only end is not page aligned */
+	 
 	u64 ramdisk_image = get_ramdisk_image();
 	u64 ramdisk_size  = get_ramdisk_size();
 	u64 area_size     = PAGE_ALIGN(ramdisk_size);
 
-	/* We need to move the initrd down into directly mapped mem */
+	 
 	relocated_ramdisk = memblock_phys_alloc_range(area_size, PAGE_SIZE, 0,
 						      PFN_PHYS(max_pfn_mapped));
 	if (!relocated_ramdisk)
@@ -233,28 +215,28 @@ static void __init relocate_initrd(void)
 
 static void __init early_reserve_initrd(void)
 {
-	/* Assume only end is not page aligned */
+	 
 	u64 ramdisk_image = get_ramdisk_image();
 	u64 ramdisk_size  = get_ramdisk_size();
 	u64 ramdisk_end   = PAGE_ALIGN(ramdisk_image + ramdisk_size);
 
 	if (!boot_params.hdr.type_of_loader ||
 	    !ramdisk_image || !ramdisk_size)
-		return;		/* No initrd provided by bootloader */
+		return;		 
 
 	memblock_reserve(ramdisk_image, ramdisk_end - ramdisk_image);
 }
 
 static void __init reserve_initrd(void)
 {
-	/* Assume only end is not page aligned */
+	 
 	u64 ramdisk_image = get_ramdisk_image();
 	u64 ramdisk_size  = get_ramdisk_size();
 	u64 ramdisk_end   = PAGE_ALIGN(ramdisk_image + ramdisk_size);
 
 	if (!boot_params.hdr.type_of_loader ||
 	    !ramdisk_image || !ramdisk_size)
-		return;		/* No initrd provided by bootloader */
+		return;		 
 
 	initrd_start = 0;
 
@@ -263,7 +245,7 @@ static void __init reserve_initrd(void)
 
 	if (pfn_range_is_mapped(PFN_DOWN(ramdisk_image),
 				PFN_DOWN(ramdisk_end))) {
-		/* All are mapped, easy case */
+		 
 		initrd_start = ramdisk_image + PAGE_OFFSET;
 		initrd_end = initrd_start + ramdisk_size;
 		return;
@@ -347,26 +329,12 @@ static void __init memblock_x86_reserve_range_setup_data(void)
 	}
 }
 
-/*
- * --------- Crashkernel reservation ------------------------------
- */
+ 
 
-/* 16M alignment for crash kernel regions */
+ 
 #define CRASH_ALIGN		SZ_16M
 
-/*
- * Keep the crash kernel below this limit.
- *
- * Earlier 32-bits kernels would limit the kernel to the low 512 MB range
- * due to mapping restrictions.
- *
- * 64-bit kdump kernels need to be restricted to be under 64 TB, which is
- * the upper limit of system RAM in 4-level paging mode. Since the kdump
- * jump could be from 5-level paging to 4-level paging, the jump will fail if
- * the kernel is put above 64 TB, and during the 1st kernel bootup there's
- * no good way to detect the paging mode of the target kernel which will be
- * loaded for dumping.
- */
+ 
 # define CRASH_ADDR_LOW_MAX	SZ_512M
 # define CRASH_ADDR_HIGH_MAX	SZ_512M
 
@@ -386,10 +354,10 @@ static void __init reserve_crashkernel(void)
 
 	total_mem = memblock_phys_mem_size();
 
-	/* crashkernel=XM */
+	 
 	ret = parse_crashkernel(boot_command_line, total_mem, &crash_size, &crash_base);
 	if (ret != 0 || crash_size <= 0) {
-		/* crashkernel=X,high */
+		 
 		ret = parse_crashkernel_high(boot_command_line, total_mem,
 					     &crash_size, &crash_base);
 		if (ret != 0 || crash_size <= 0)
@@ -397,16 +365,9 @@ static void __init reserve_crashkernel(void)
 		high = true;
 	}
 
-	/* 0 means: find the address automatically */
+	 
 	if (!crash_base) {
-		/*
-		 * Set CRASH_ADDR_LOW_MAX upper bound for crash memory,
-		 * crashkernel=x,high reserves memory over 4G, also allocates
-		 * 256M extra low memory for DMA buffers and swiotlb.
-		 * But the extra memory is not required for all machines.
-		 * So try low memory first and fall back to high memory
-		 * unless "crashkernel=size[KMG],high" is specified.
-		 */
+		 
 		if (!high)
 			crash_base = memblock_phys_alloc_range(crash_size,
 						CRASH_ALIGN, CRASH_ALIGN,
@@ -472,7 +433,7 @@ void __init reserve_standard_io_resources(void)
 {
 	int i;
 
-	/* request I/O space for devices used on all i[345]86 PCs */
+	 
 	for (i = 0; i < ARRAY_SIZE(standard_io_resources); i++)
 		request_resource(&ioport_resource, &standard_io_resources[i]);
 
@@ -484,10 +445,7 @@ static bool __init snb_gfx_workaround_needed(void)
 	return false;
 }
 
-/*
- * Sandy Bridge graphics has trouble with certain ranges, exclude
- * them from allocation.
- */
+ 
 static void __init trim_snb_memory(void)
 {
 	static const __initconst unsigned long bad_pages[] = {
@@ -502,16 +460,7 @@ static void __init trim_snb_memory(void)
 	if (!snb_gfx_workaround_needed())
 		return;
 
-	/*
-	 * SandyBridge integrated graphics devices have a bug that prevents
-	 * them from accessing certain memory ranges, namely anything below
-	 * 1M and in the pages listed in bad_pages[] above.
-	 *
-	 * To avoid these pages being ever accessed by SNB gfx devices reserve
-	 * bad_pages that have not already been reserved at boot time.
-	 * All memory below the 1 MB mark is anyway reserved later during
-	 * setup_arch(), so there is no need to reserve it here.
-	 */
+	 
 
 	for (i = 0; i < ARRAY_SIZE(bad_pages); i++) {
 		if (memblock_reserve(bad_pages[i], PAGE_SIZE))
@@ -522,40 +471,22 @@ static void __init trim_snb_memory(void)
 
 static void __init trim_bios_range(void)
 {
-	/*
-	 * A special case is the first 4Kb of memory;
-	 * This is a BIOS owned area, not kernel ram, but generally
-	 * not listed as such in the E820 table.
-	 *
-	 * This typically reserves additional memory (64KiB by default)
-	 * since some BIOSes are known to corrupt low memory.  See the
-	 * Kconfig help text for X86_RESERVE_LOW.
-	 */
+	 
 	e820__range_update(0, PAGE_SIZE, E820_TYPE_RAM, E820_TYPE_RESERVED);
 
-	/*
-	 * special case: Some BIOSes report the PC BIOS
-	 * area (640Kb -> 1Mb) as RAM even though it is not.
-	 * take them out.
-	 */
+	 
 	e820__range_remove(BIOS_BEGIN, BIOS_END - BIOS_BEGIN, E820_TYPE_RAM, 1);
 
 	e820__update_table(e820_table);
 }
 
-/* called before trim_bios_range() to spare extra sanitize */
+ 
 static void __init e820_add_kernel_range(void)
 {
 	u64 start = __pa_symbol(_text);
 	u64 size = __pa_symbol(_end) - start;
 
-	/*
-	 * Complain if .text .data and .bss are not marked as E820_TYPE_RAM and
-	 * attempt to fix it by adding the range. We may have a confused BIOS,
-	 * or the user may have used memmap=exactmap or memmap=xxM$yyM to
-	 * exclude kernel range. If we really are running on top non-RAM,
-	 * we will crash later anyways.
-	 */
+	 
 	if (e820__mapped_all(start, start + size, E820_TYPE_RAM))
 		return;
 
@@ -566,26 +497,11 @@ static void __init e820_add_kernel_range(void)
 
 static void __init early_reserve_memory(void)
 {
-	/*
-	 * Reserve the memory occupied by the kernel between _text and
-	 * __end_of_kernel_reserve symbols. Any kernel sections after the
-	 * __end_of_kernel_reserve symbol must be explicitly reserved with a
-	 * separate memblock_reserve() or they will be discarded.
-	 */
+	 
 	memblock_reserve(__pa_symbol(_text),
 			 (unsigned long)__end_of_kernel_reserve - (unsigned long)_text);
 
-	/*
-	 * The first 4Kb of memory is a BIOS owned area, but generally it is
-	 * not listed as such in the E820 table.
-	 *
-	 * Reserve the first 64K of memory since some BIOSes are known to
-	 * corrupt low memory. After the real mode trampoline is allocated the
-	 * rest of the memory below 640k is reserved.
-	 *
-	 * In addition, make sure page 0 is always reserved because on
-	 * systems with L1TF its contents can be leaked to user processes.
-	 */
+	 
 	memblock_reserve(0, SZ_64K);
 
 	early_reserve_initrd();
@@ -597,9 +513,7 @@ static void __init early_reserve_memory(void)
 	trim_snb_memory();
 }
 
-/*
- * Dump out kernel offset information on panic.
- */
+ 
 static int
 dump_kernel_offset(struct notifier_block *self, unsigned long v, void *p)
 {
@@ -630,53 +544,29 @@ static void __init x86_report_nx(void)
 		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
 		       "missing in CPU!\n");
 	} else {
-		/* 32bit non-PAE kernel, NX cannot be used */
+		 
 		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
 		       "cannot be enabled: non-PAE kernel!\n");
 	}
 }
 
-/*
- * Determine if we were loaded by an EFI loader.  If so, then we have also been
- * passed the efi memmap, systab, etc., so we should use these data structures
- * for initialization.  Note, the efi init code path is determined by the
- * global efi_enabled. This allows the same kernel image to be used on existing
- * systems (with a traditional BIOS) as well as on EFI systems.
- */
-/*
- * setup_arch - architecture-specific boot-time initializations
- *
- * Note: On x86_64, fixmaps are ready for use even before this is called.
- */
+ 
+ 
 
 void __init setup_arch(char **cmdline_p)
 {
 	memcpy(&boot_cpu_data, &new_cpu_data, sizeof(new_cpu_data));
 
-	/*
-	 * copy kernel address range established so far and switch
-	 * to the proper swapper page table
-	 */
+	 
 	clone_pgd_range(swapper_pg_dir     + KERNEL_PGD_BOUNDARY,
 			initial_page_table + KERNEL_PGD_BOUNDARY,
 			KERNEL_PGD_PTRS);
 
 	load_cr3(swapper_pg_dir);
-	/*
-	 * Note: Quark X1000 CPUs advertise PGE incorrectly and require
-	 * a cr3 based tlb flush, so the following __flush_tlb_all()
-	 * will not flush anything because the CPU quirk which clears
-	 * X86_FEATURE_PGE has not been invoked yet. Though due to the
-	 * load_cr3() above the TLB has been flushed already. The
-	 * quirk is invoked before subsequent calls to __flush_tlb_all()
-	 * so proper operation is guaranteed.
-	 */
+	 
 	__flush_tlb_all();
 
-	/*
-	 * If we have OLPC OFW, we might end up relocating the fixmap due to
-	 * reserve_top(), so do this before touching the ioremap area.
-	 */
+	 
 	olpc_ofw_detect();
 
 	idt_setup_early_traps();
@@ -704,18 +594,7 @@ void __init setup_arch(char **cmdline_p)
 
 	x86_init.oem.arch_setup();
 
-	/*
-	 * Do some memory reservations *before* memory is added to memblock, so
-	 * memblock allocations won't overwrite it.
-	 *
-	 * After this point, everything still needed from the boot loader or
-	 * firmware or kernel text should be early reserved or marked not RAM in
-	 * e820. All other memory is free game.
-	 *
-	 * This call needs to happen before e820__memory_setup() which calls the
-	 * xen_memory_setup() on Xen dom0 which relies on the fact that those
-	 * early reservations have happened already.
-	 */
+	 
 	early_reserve_memory();
 
 	iomem_resource.end = (1ULL << boot_cpu_data.x86_phys_bits) - 1;
@@ -741,11 +620,7 @@ void __init setup_arch(char **cmdline_p)
 	strscpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
 	*cmdline_p = command_line;
 
-	/*
-	 * x86_configure_nx() is called before parse_early_param() to detect
-	 * whether hardware doesn't support NX (so that the early EHCI debug
-	 * console setup can safely call set_fixmap()).
-	 */
+	 
 	x86_configure_nx();
 
 	parse_early_param();
@@ -768,16 +643,13 @@ void __init setup_arch(char **cmdline_p)
 
 	dmi_setup();
 
-	/*
-	 * VMware detection requires dmi to be available, so this
-	 * needs to be done after dmi_setup(), for the boot CPU.
-	 */
+	 
 	init_hypervisor_platform();
 
 	tsc_early_init();
 	x86_init.resources.probe_roms();
 
-	/* after parse_early_param, so could debug it */
+	 
 	insert_resource(&iomem_resource, &code_resource);
 	insert_resource(&iomem_resource, &rodata_resource);
 	insert_resource(&iomem_resource, &data_resource);
@@ -793,13 +665,10 @@ void __init setup_arch(char **cmdline_p)
 		e820__print_table("bad_ppro");
 	}
 
-	/*
-	 * partially used pages are not usable - thus
-	 * we are rounding upwards:
-	 */
+	 
 	max_pfn = e820__end_of_ram_pfn();
 
-	/* update e820 for memory not covered by WB MTRRs */
+	 
 	if (IS_ENABLED(CONFIG_MTRR))
 		mtrr_bp_init();
 	else
@@ -810,34 +679,21 @@ void __init setup_arch(char **cmdline_p)
 
 	max_possible_pfn = max_pfn;
 
-	/*
-	 * This call is required when the CPU does not support PAT. If
-	 * mtrr_bp_init() invoked it already via pat_init() the call has no
-	 * effect.
-	 */
+	 
 	init_cache_modes();
 
-	/*
-	 * Define random base addresses for memory sections after max_pfn is
-	 * defined and before each memory section base is used.
-	 */
+	 
 	kernel_randomize_memory();
 
-	/* max_low_pfn get updated here */
+	 
 	find_low_pfn_range();
 
-	/*
-	 * Find and reserve possible boot-time SMP configuration:
-	 */
+	 
 	find_smp_config();
 
 	early_alloc_pgt_buf();
 
-	/*
-	 * Need to conclude brk, before e820__memblock_setup()
-	 * it could use memblock_find_in_range, could overlap with
-	 * brk area.
-	 */
+	 
 	reserve_brk();
 
 	cleanup_highmap();
@@ -845,10 +701,7 @@ void __init setup_arch(char **cmdline_p)
 	memblock_set_current_limit(ISA_END_ADDRESS);
 	e820__memblock_setup();
 
-	/*
-	 * Needs to run after memblock setup because it needs the physical
-	 * memory size.
-	 */
+	 
 	sev_setup_arch();
 
 	efi_fake_memmap();
@@ -856,57 +709,31 @@ void __init setup_arch(char **cmdline_p)
 	efi_esrt_init();
 	efi_mokvar_table_init();
 
-	/*
-	 * The EFI specification says that boot service code won't be
-	 * called after ExitBootServices(). This is, in fact, a lie.
-	 */
+	 
 	efi_reserve_boot_services();
 
-	/* preallocate 4k for mptable mpc */
+	 
 	e820__memblock_alloc_reserved_mpc_new();
 
 
 	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
 			(max_pfn_mapped<<PAGE_SHIFT) - 1);
 
-	/*
-	 * Find free memory for the real mode trampoline and place it there. If
-	 * there is not enough free memory under 1M, on EFI-enabled systems
-	 * there will be additional attempt to reclaim the memory for the real
-	 * mode trampoline at efi_free_boot_services().
-	 *
-	 * Unconditionally reserve the entire first 1M of RAM because BIOSes
-	 * are known to corrupt low memory and several hundred kilobytes are not
-	 * worth complex detection what memory gets clobbered. Windows does the
-	 * same thing for very similar reasons.
-	 *
-	 * Moreover, on machines with SandyBridge graphics or in setups that use
-	 * crashkernel the entire 1M is reserved anyway.
-	 */
+	 
 	reserve_real_mode();
 
 	init_mem_mapping();
 
 	idt_setup_early_pf();
 
-	/*
-	 * Update mmu_cr4_features (and, indirectly, trampoline_cr4_features)
-	 * with the current CR4 value.  This may not be necessary, but
-	 * auditing all the early-boot CR4 manipulation would be needed to
-	 * rule it out.
-	 *
-	 * Mask off features that don't work outside long mode (just
-	 * PCIDE for now).
-	 */
+	 
 	mmu_cr4_features = __read_cr4() & ~X86_CR4_PCIDE;
 
 	memblock_set_current_limit(get_max_mapped());
 
-	/*
-	 * NOTE: On x86-32, only from this point on, fixmaps are ready for use.
-	 */
+	 
 
-	/* Allocate bigger log buffer */
+	 
 	setup_log_buf(1);
 
 	if (efi_enabled(EFI_BOOT)) {
@@ -926,7 +753,7 @@ void __init setup_arch(char **cmdline_p)
 	reserve_initrd();
 
 	acpi_table_upgrade();
-	/* Look for ACPI tables and reserve memory occupied by them. */
+	 
 	acpi_boot_table_init();
 
 	vsmp_init();
@@ -943,10 +770,7 @@ void __init setup_arch(char **cmdline_p)
 	if (boot_cpu_has(X86_FEATURE_GBPAGES))
 		hugetlb_cma_reserve(PUD_SHIFT - PAGE_SHIFT);
 
-	/*
-	 * Reserve memory for crash kernel after SRAT is parsed so that it
-	 * won't consume hotpluggable memory.
-	 */
+	 
 	reserve_crashkernel();
 
 	memblock_find_dma_reserve();
@@ -955,12 +779,7 @@ void __init setup_arch(char **cmdline_p)
 
 	kasan_init();
 
-	/*
-	 * Sync back kernel address range.
-	 *
-	 * FIXME: Can the later sync in setup_cpu_entry_areas() replace
-	 * this call?
-	 */
+	 
 	sync_initial_page_table();
 
 	tboot_probe();
@@ -971,21 +790,14 @@ void __init setup_arch(char **cmdline_p)
 
 	early_quirks();
 
-	/*
-	 * Read APIC and some other early information from ACPI tables.
-	 */
+	 
 	acpi_boot_init();
 	x86_dtb_init();
 
-	/*
-	 * get boot-time SMP configuration:
-	 */
+	 
 	get_smp_config();
 
-	/*
-	 * Systems w/o ACPI and mptables might not have it mapped the local
-	 * APIC yet, but prefill_possible_map() might need to access it.
-	 */
+	 
 	init_apic_mappings();
 
 	prefill_possible_map();
@@ -1010,12 +822,7 @@ void __init setup_arch(char **cmdline_p)
 
 	x86_init.timers.wallclock_init();
 
-	/*
-	 * This needs to run before setup_local_APIC() which soft-disables the
-	 * local APIC temporarily and that masks the thermal LVT interrupt,
-	 * leading to softlockups on machines which have configured SMI
-	 * interrupt delivery.
-	 */
+	 
 
 	mcheck_init();
 

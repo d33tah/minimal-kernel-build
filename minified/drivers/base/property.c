@@ -1,10 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * property.c - Unified device property interface (STUBBED)
- *
- * Minimal stub - device property/firmware node functionality not needed
- * for minimal kernel with basic TTY console support.
- */
+ 
+ 
 
 #include <linux/export.h>
 #include <linux/kernel.h>

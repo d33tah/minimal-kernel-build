@@ -1,11 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
+ 
 #ifndef _ASM_X86_ACPI_H
 #define _ASM_X86_ACPI_H
 
-/*
- *  Copyright (C) 2001 Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>
- *  Copyright (C) 2001 Patrick Mochel <mochel@osdl.org>
- */
+ 
 
 
 #include <asm/numa.h>
@@ -47,4 +44,4 @@ static inline int arch_apei_report_x86_error(struct cper_ia_proc_ctx *ctx_info,
 
 #define ACPI_TABLE_UPGRADE_MAX_PHYS (max_low_pfn_mapped << PAGE_SHIFT)
 
-#endif /* _ASM_X86_ACPI_H */
+#endif  

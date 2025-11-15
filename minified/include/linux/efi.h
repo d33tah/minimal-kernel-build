@@ -1,11 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_EFI_H
 #define _LINUX_EFI_H
 
-/*
- * Minimal EFI stub header - CONFIG_EFI is disabled
- * All EFI functionality is stubbed out to eliminate dead code
- */
+ 
 
 #include <linux/init.h>
 #include <linux/string.h>
@@ -15,7 +12,7 @@
 #include <linux/reboot.h>
 #include <asm/page.h>
 
-/* Basic EFI types */
+ 
 typedef unsigned long efi_status_t;
 typedef u8 efi_bool_t;
 typedef u16 efi_char16_t;
@@ -23,14 +20,14 @@ typedef u64 efi_physical_addr_t;
 typedef void *efi_handle_t;
 typedef guid_t efi_guid_t __aligned(__alignof__(u32));
 
-/* EFI status codes */
+ 
 #define EFI_SUCCESS		0
 #define EFI_LOAD_ERROR		( 1 | (1UL << (BITS_PER_LONG-1)))
 #define EFI_INVALID_PARAMETER	( 2 | (1UL << (BITS_PER_LONG-1)))
 #define EFI_UNSUPPORTED		( 3 | (1UL << (BITS_PER_LONG-1)))
 #define EFI_NOT_FOUND		(14 | (1UL << (BITS_PER_LONG-1)))
 
-/* EFI memory types - needed by setup.c */
+ 
 #define EFI_RESERVED_TYPE		 0
 #define EFI_LOADER_CODE			 1
 #define EFI_LOADER_DATA			 2
@@ -48,10 +45,10 @@ typedef guid_t efi_guid_t __aligned(__alignof__(u32));
 #define EFI_PERSISTENT_MEMORY		14
 #define EFI_MAX_MEMORY_TYPE		15
 
-/* EFI memory attributes */
+ 
 #define EFI_MEMORY_RUNTIME		(1UL << 63)
 
-/* Memory descriptor */
+ 
 typedef struct {
 	u32 type;
 	u32 pad;
@@ -61,7 +58,7 @@ typedef struct {
 	u64 attribute;
 } efi_memory_desc_t;
 
-/* EFI feature flags for efi_enabled() */
+ 
 #define EFI_BOOT		0
 #define EFI_CONFIG_TABLES	2
 #define EFI_RUNTIME_SERVICES	3
@@ -75,7 +72,7 @@ typedef struct {
 #define EFI_MEM_NO_SOFT_RESERVE	11
 #define EFI_PRESERVE_BS_REGIONS	12
 
-/* Secure boot modes */
+ 
 enum efi_secureboot_mode {
 	efi_secureboot_mode_unset,
 	efi_secureboot_mode_unknown,
@@ -83,7 +80,7 @@ enum efi_secureboot_mode {
 	efi_secureboot_mode_enabled,
 };
 
-/* Minimal runtime services structure - only used for offsetof in asm-offsets_32.c */
+ 
 typedef struct {
 	u32 get_time;
 	u32 set_time;
@@ -103,7 +100,7 @@ typedef struct {
 
 typedef efi_runtime_services_32_t efi_runtime_services_t;
 
-/* Stub functions - all return false/NULL/do nothing since CONFIG_EFI is disabled */
+ 
 static inline bool efi_enabled(int feature)
 {
 	return false;
@@ -154,10 +151,10 @@ static inline bool efi_capsule_pending(int *reset_type)
 
 static inline void efi_crash_gracefully_on_page_fault(unsigned long phys_addr) {}
 
-/* Stub for parse_efi_setup - used in setup.c */
+ 
 static inline void parse_efi_setup(u64 phys_addr, u32 data_len) {}
 
-/* Stub for efifb_setup_from_dmi */
+ 
 static inline void efifb_setup_from_dmi(struct screen_info *si, const char *opt) {}
 
-#endif /* _LINUX_EFI_H */
+#endif  

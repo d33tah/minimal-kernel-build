@@ -1,10 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/*
- *  linux/fs/file_table.c
- *
- *  Copyright (C) 1991, 1992  Linus Torvalds
- *  Copyright (C) 1997 David S. Miller (davem@caip.rutgers.edu)
- */
+ 
+ 
 
 #include <linux/string.h>
 #include <linux/slab.h>
@@ -33,12 +28,12 @@
 
 #include "internal.h"
 
-/* sysctl tunables... */
+ 
 static struct files_stat_struct files_stat = {
 	.max_files = NR_FILE
 };
 
-/* SLAB cache for file structures */
+ 
 static struct kmem_cache *filp_cachep __read_mostly;
 
 static struct percpu_counter nr_files __cacheline_aligned_in_smp;
@@ -59,17 +54,13 @@ static inline void file_free(struct file *f)
 	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
 }
 
-/*
- * Return the total number of open files in the system
- */
+ 
 static long get_nr_files(void)
 {
 	return percpu_counter_read_positive(&nr_files);
 }
 
-/*
- * Return the maximum number of open files in the system
- */
+ 
 unsigned long get_max_files(void)
 {
 	return files_stat.max_files;
@@ -98,34 +89,20 @@ static struct file *__alloc_file(int flags, const struct cred *cred)
 	mutex_init(&f->f_pos_lock);
 	f->f_flags = flags;
 	f->f_mode = OPEN_FMODE(flags);
-	/* f->f_version: 0 */
+	 
 
 	return f;
 }
 
-/* Find an unused file structure and return a pointer to it.
- * Returns an error pointer if some error happend e.g. we over file
- * structures limit, run out of memory or operation is not permitted.
- *
- * Be very careful using this.  You are responsible for
- * getting write access to any mount that you might assign
- * to this filp, if it is opened for write.  If this is not
- * done, you will imbalance int the mount's writer count
- * and a warning at __fput() time.
- */
+ 
 struct file *alloc_empty_file(int flags, const struct cred *cred)
 {
 	static long old_max;
 	struct file *f;
 
-	/*
-	 * Privileged users can go above max_files
-	 */
+	 
 	if (get_nr_files() >= files_stat.max_files && !capable(CAP_SYS_ADMIN)) {
-		/*
-		 * percpu_counters are inaccurate.  Do an expensive check before
-		 * we go and fail.
-		 */
+		 
 		if (percpu_counter_sum_positive(&nr_files) >= files_stat.max_files)
 			goto over;
 	}
@@ -143,11 +120,7 @@ over:
 	return ERR_PTR(-ENFILE);
 }
 
-/*
- * Variant of alloc_empty_file() that doesn't check and modify nr_files.
- *
- * Should not be used unless there's a very good reason to do so.
- */
+ 
 struct file *alloc_empty_file_noaccount(int flags, const struct cred *cred)
 {
 	struct file *f = __alloc_file(flags, cred);
@@ -158,13 +131,7 @@ struct file *alloc_empty_file_noaccount(int flags, const struct cred *cred)
 	return f;
 }
 
-/**
- * alloc_file - allocate and initialize a 'struct file'
- *
- * @path: the (dentry, vfsmount) pair for the new file
- * @flags: O_... flags with which the new file will be opened
- * @fop: the 'struct file_operations' for the new file
- */
+ 
 static struct file *alloc_file(const struct path *path, int flags,
 		const struct file_operations *fop)
 {
@@ -229,8 +196,7 @@ struct file *alloc_file_clone(struct file *base, int flags,
 	return f;
 }
 
-/* the real guts of fput() - releasing the last reference to file
- */
+ 
 static void __fput(struct file *file)
 {
 	struct dentry *dentry = file->f_path.dentry;
@@ -244,10 +210,7 @@ static void __fput(struct file *file)
 	might_sleep();
 
 	fsnotify_close(file);
-	/*
-	 * The function eventpoll_release() should be the first called
-	 * in the file cleanup chain.
-	 */
+	 
 	eventpoll_release(file);
 	locks_remove_file(file);
 
@@ -293,16 +256,7 @@ static void ____fput(struct callback_head *work)
 	__fput(container_of(work, struct file, f_u.fu_rcuhead));
 }
 
-/*
- * If kernel thread really needs to have the final fput() it has done
- * to complete, call this.  The only user right now is the boot - we
- * *do* need to make sure our writes to binaries on initramfs has
- * not left us with opened struct file waiting for __fput() - execve()
- * won't work without that.  Please, don't add more callers without
- * very good reasons; in particular, never call that with locks
- * held and never call that from a thread that might need to do
- * some work on any kind of umount.
- */
+ 
 void flush_delayed_fput(void)
 {
 	delayed_fput(NULL);
@@ -319,11 +273,7 @@ void fput(struct file *file)
 			init_task_work(&file->f_u.fu_rcuhead, ____fput);
 			if (!task_work_add(task, &file->f_u.fu_rcuhead, TWA_RESUME))
 				return;
-			/*
-			 * After this task has run exit_task_work(),
-			 * task_work_add() will fail.  Fall through to delayed
-			 * fput to avoid leaking *file.
-			 */
+			 
 		}
 
 		if (llist_add(&file->f_u.fu_llist, &delayed_fput_list))
@@ -331,14 +281,7 @@ void fput(struct file *file)
 	}
 }
 
-/*
- * synchronous analog of fput(); for kernel threads that might be needed
- * in some umount() (and thus can't use flush_delayed_fput() without
- * risking deadlocks), need to wait for completion of __fput() and know
- * for this specific struct file it won't involve anything that would
- * need them.  Use only if you really need it - at the very least,
- * don't blindly convert fput() by kernel thread to that.
- */
+ 
 void __fput_sync(struct file *file)
 {
 	if (atomic_long_dec_and_test(&file->f_count)) {
@@ -356,10 +299,7 @@ void __init files_init(void)
 	percpu_counter_init(&nr_files, 0, GFP_KERNEL);
 }
 
-/*
- * One file with associated inode and dcache is very roughly 1K. Per default
- * do not use more than 10% of our memory for files.
- */
+ 
 void __init files_maxfiles_init(void)
 {
 	unsigned long n;

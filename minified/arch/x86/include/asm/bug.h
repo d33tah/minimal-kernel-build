@@ -1,13 +1,11 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_BUG_H
 #define _ASM_X86_BUG_H
 
 #include <linux/stringify.h>
 #include <linux/objtool.h>
 
-/*
- * Despite that some emulators terminate on UD2, we use it for WARN().
- */
+ 
 #define ASM_UD2		".byte 0x0f, 0x0b"
 #define INSN_UD2	0x0b0f
 #define LEN_UD2		2
@@ -31,4 +29,4 @@ do {								\
 
 #include <asm-generic/bug.h>
 
-#endif /* _ASM_X86_BUG_H */
+#endif  

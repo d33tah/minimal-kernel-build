@@ -1,7 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * Portions Copyright (C) 1992 Drew Eckhardt
- */
+ 
+ 
 #ifndef _LINUX_BLKDEV_H
 #define _LINUX_BLKDEV_H
 
@@ -45,26 +43,20 @@ extern const struct device_type disk_type;
 extern struct device_type part_type;
 extern struct class block_class;
 
-/* Must be consistent with blk_mq_poll_stats_bkt() */
+ 
 #define BLK_MQ_POLL_STATS_BKTS 16
 
-/* Doing classic polling */
+ 
 #define BLK_MQ_POLL_CLASSIC -1
 
-/*
- * Maximum number of blkcg policies allowed to be registered concurrently.
- * Defined here to simplify include dependency.
- */
+ 
 #define BLKCG_MAX_POLS		6
 
 #define DISK_MAX_PARTS			256
 #define DISK_NAME_LEN			32
 
 #define PARTITION_META_INFO_VOLNAMELTH	64
-/*
- * Enough for the string representation of any kind of UUID plus NULL.
- * EFI UUID is 36 characters. MSDOS UUID is 11 characters.
- */
+ 
 #define PARTITION_META_INFO_UUIDLTH	(UUID_STRING_LEN + 1)
 
 struct partition_meta_info {
@@ -72,22 +64,7 @@ struct partition_meta_info {
 	u8 volname[PARTITION_META_INFO_VOLNAMELTH];
 };
 
-/**
- * DOC: genhd capability flags
- *
- * ``GENHD_FL_REMOVABLE``: indicates that the block device gives access to
- * removable media.  When set, the device remains present even when media is not
- * inserted.  Shall not be set for devices which are removed entirely when the
- * media is removed.
- *
- * ``GENHD_FL_HIDDEN``: the block device is hidden; it doesn't produce events,
- * doesn't appear in sysfs, and can't be opened from userspace or using
- * blkdev_get*. Used for the underlying components of multipath devices.
- *
- * ``GENHD_FL_NO_PART``: partition support is disabled.  The kernel will not
- * scan for partitions from add_disk, and users can't add partitions manually.
- *
- */
+ 
 enum {
 	GENHD_FL_REMOVABLE			= 1 << 0,
 	GENHD_FL_HIDDEN				= 1 << 1,
@@ -95,16 +72,16 @@ enum {
 };
 
 enum {
-	DISK_EVENT_MEDIA_CHANGE			= 1 << 0, /* media changed */
-	DISK_EVENT_EJECT_REQUEST		= 1 << 1, /* eject requested */
+	DISK_EVENT_MEDIA_CHANGE			= 1 << 0,  
+	DISK_EVENT_EJECT_REQUEST		= 1 << 1,  
 };
 
 enum {
-	/* Poll even if events_poll_msecs is unset */
+	 
 	DISK_EVENT_FLAG_POLL			= 1 << 0,
-	/* Forward events to udev */
+	 
 	DISK_EVENT_FLAG_UEVENT			= 1 << 1,
-	/* Block event polling when open for exclusive write */
+	 
 	DISK_EVENT_FLAG_BLOCK_ON_EXCL_WRITE	= 1 << 2,
 };
 
@@ -120,18 +97,15 @@ struct blk_integrity {
 };
 
 struct gendisk {
-	/*
-	 * major/first_minor/minors should not be set by any new driver, the
-	 * block core will take care of allocating them automatically.
-	 */
+	 
 	int major;
 	int first_minor;
 	int minors;
 
-	char disk_name[DISK_NAME_LEN];	/* name of major driver */
+	char disk_name[DISK_NAME_LEN];	 
 
-	unsigned short events;		/* supported events */
-	unsigned short event_flags;	/* flags related to event processing */
+	unsigned short events;		 
+	unsigned short event_flags;	 
 
 	struct xarray part_tbl;
 	struct block_device *part0;
@@ -149,17 +123,17 @@ struct gendisk {
 #define GD_ADDED			4
 #define GD_SUPPRESS_PART_SCAN		5
 
-	struct mutex open_mutex;	/* open/close mutex */
-	unsigned open_partitions;	/* number of open partitions */
+	struct mutex open_mutex;	 
+	unsigned open_partitions;	 
 
 	struct backing_dev_info	*bdi;
 	struct kobject *slave_dir;
 	struct timer_rand_state *random;
-	atomic_t sync_io;		/* RAID */
+	atomic_t sync_io;		 
 	struct disk_events *ev;
 #ifdef  CONFIG_BLK_DEV_INTEGRITY
 	struct kobject integrity_kobj;
-#endif	/* CONFIG_BLK_DEV_INTEGRITY */
+#endif	 
 #if IS_ENABLED(CONFIG_CDROM)
 	struct cdrom_device_info *cdi;
 #endif
@@ -169,25 +143,13 @@ struct gendisk {
 	u64 diskseq;
 };
 
-/**
- * disk_openers - returns how many openers are there for a disk
- * @disk: disk to check
- *
- * This returns the number of openers for a disk.  Note that this value is only
- * stable if disk->open_mutex is held.
- *
- * Note: Due to a quirk in the block layer open code, each open partition is
- * only counted once even if there are multiple openers.
- */
+ 
 static inline unsigned int disk_openers(struct gendisk *disk)
 {
 	return atomic_read(&disk->part0->bd_openers);
 }
 
-/*
- * The gendisk is refcounted by the part0 block_device, and the bd_device
- * therein is also used for device model presentation in sysfs.
- */
+ 
 #define dev_to_disk(device) \
 	(dev_to_bdev(device)->bd_disk)
 #define disk_to_dev(disk) \
@@ -204,22 +166,14 @@ static inline dev_t disk_devt(struct gendisk *disk)
 	return MKDEV(disk->major, disk->first_minor);
 }
 
-/*
- * Zoned block device models (zoned limit).
- *
- * Note: This needs to be ordered from the least to the most severe
- * restrictions for the inheritance in blk_stack_limits() to work.
- */
+ 
 enum blk_zoned_model {
-	BLK_ZONED_NONE = 0,	/* Regular block device */
-	BLK_ZONED_HA,		/* Host-aware zoned block device */
-	BLK_ZONED_HM,		/* Host-managed zoned block device */
+	BLK_ZONED_NONE = 0,	 
+	BLK_ZONED_HA,		 
+	BLK_ZONED_HM,		 
 };
 
-/*
- * BLK_BOUNCE_NONE:	never bounce (default)
- * BLK_BOUNCE_HIGH:	bounce all highmem pages
- */
+ 
 enum blk_bounce {
 	BLK_BOUNCE_NONE,
 	BLK_BOUNCE_HIGH,
@@ -265,20 +219,7 @@ typedef int (*report_zones_cb)(struct blk_zone *zone, unsigned int idx,
 void blk_queue_set_zoned(struct gendisk *disk, enum blk_zoned_model model);
 
 
-/*
- * Independent access ranges: struct blk_independent_access_range describes
- * a range of contiguous sectors that can be accessed using device command
- * execution resources that are independent from the resources used for
- * other access ranges. This is typically found with single-LUN multi-actuator
- * HDDs where each access range is served by a different set of heads.
- * The set of independent ranges supported by the device is defined using
- * struct blk_independent_access_ranges. The independent ranges must not overlap
- * and must include all sectors within the disk capacity (no sector holes
- * allowed).
- * For a device with multiple ranges, requests targeting sectors in different
- * ranges can be executed in parallel. A request can straddle an access range
- * boundary.
- */
+ 
 struct blk_independent_access_range {
 	struct kobject		kobj;
 	sector_t		sector;
@@ -303,60 +244,43 @@ struct request_queue {
 
 	const struct blk_mq_ops	*mq_ops;
 
-	/* sw queues */
+	 
 	struct blk_mq_ctx __percpu	*queue_ctx;
 
 	unsigned int		queue_depth;
 
-	/* hw dispatch queues */
+	 
 	struct xarray		hctx_table;
 	unsigned int		nr_hw_queues;
 
-	/*
-	 * The queue owner gets to use this for whatever they like.
-	 * ll_rw_blk doesn't touch it.
-	 */
+	 
 	void			*queuedata;
 
-	/*
-	 * various queue flags, see QUEUE_* below
-	 */
+	 
 	unsigned long		queue_flags;
-	/*
-	 * Number of contexts that have called blk_set_pm_only(). If this
-	 * counter is above zero then only RQF_PM requests are processed.
-	 */
+	 
 	atomic_t		pm_only;
 
-	/*
-	 * ida allocated id for this queue.  Used to index queues from
-	 * ioctx.
-	 */
+	 
 	int			id;
 
 	spinlock_t		queue_lock;
 
 	struct gendisk		*disk;
 
-	/*
-	 * queue kobject
-	 */
+	 
 	struct kobject kobj;
 
-	/*
-	 * mq queue kobject
-	 */
+	 
 	struct kobject *mq_kobj;
 
 #ifdef  CONFIG_BLK_DEV_INTEGRITY
 	struct blk_integrity integrity;
-#endif	/* CONFIG_BLK_DEV_INTEGRITY */
+#endif	 
 
 
-	/*
-	 * queue settings
-	 */
-	unsigned long		nr_requests;	/* Max # of requests */
+	 
+	unsigned long		nr_requests;	 
 
 	unsigned int		dma_pad_mask;
 	unsigned int		dma_alignment;
@@ -383,9 +307,7 @@ struct request_queue {
 
 
 	int			node;
-	/*
-	 * for flush operations
-	 */
+	 
 	struct blk_flush_queue	*fq;
 
 	struct list_head	requeue_list;
@@ -395,10 +317,7 @@ struct request_queue {
 	struct mutex		sysfs_lock;
 	struct mutex		sysfs_dir_lock;
 
-	/*
-	 * for reusing dead hctx instance in case of updating
-	 * nr_hw_queues
-	 */
+	 
 	struct list_head	unused_hctx_list;
 	spinlock_t		unused_hctx_lock;
 
@@ -406,10 +325,7 @@ struct request_queue {
 
 	struct rcu_head		rcu_head;
 	wait_queue_head_t	mq_freeze_wq;
-	/*
-	 * Protect concurrent access to q_usage_counter by
-	 * percpu_ref_kill() and percpu_ref_reinit().
-	 */
+	 
 	struct mutex		mq_freeze_lock;
 
 	int			quiesce_depth;
@@ -421,55 +337,47 @@ struct request_queue {
 	struct dentry		*debugfs_dir;
 	struct dentry		*sched_debugfs_dir;
 	struct dentry		*rqos_debugfs_dir;
-	/*
-	 * Serializes all debugfs metadata operations using the above dentries.
-	 */
+	 
 	struct mutex		debugfs_mutex;
 
 	bool			mq_sysfs_init_done;
 
-	/*
-	 * Independent sector access ranges. This is always NULL for
-	 * devices that do not have multiple independent access ranges.
-	 */
+	 
 	struct blk_independent_access_ranges *ia_ranges;
 
-	/**
-	 * @srcu: Sleepable RCU. Use as lock when type of the request queue
-	 * is blocking (BLK_MQ_F_BLOCKING). Must be the last member
-	 */
+	 
 	struct srcu_struct	srcu[];
 };
 
-/* Keep blk_queue_flag_name[] in sync with the definitions below */
-#define QUEUE_FLAG_STOPPED	0	/* queue is stopped */
-#define QUEUE_FLAG_DYING	1	/* queue being torn down */
-#define QUEUE_FLAG_HAS_SRCU	2	/* SRCU is allocated */
-#define QUEUE_FLAG_NOMERGES     3	/* disable merge attempts */
-#define QUEUE_FLAG_SAME_COMP	4	/* complete on same CPU-group */
-#define QUEUE_FLAG_FAIL_IO	5	/* fake timeout */
-#define QUEUE_FLAG_NONROT	6	/* non-rotational device (SSD) */
-#define QUEUE_FLAG_VIRT		QUEUE_FLAG_NONROT /* paravirt device */
-#define QUEUE_FLAG_IO_STAT	7	/* do disk/partitions IO accounting */
-#define QUEUE_FLAG_NOXMERGES	9	/* No extended merges */
-#define QUEUE_FLAG_ADD_RANDOM	10	/* Contributes to random pool */
-#define QUEUE_FLAG_SAME_FORCE	12	/* force complete on same CPU */
-#define QUEUE_FLAG_DEAD		13	/* queue tear-down finished */
-#define QUEUE_FLAG_INIT_DONE	14	/* queue is initialized */
-#define QUEUE_FLAG_STABLE_WRITES 15	/* don't modify blks until WB is done */
-#define QUEUE_FLAG_POLL		16	/* IO polling enabled if set */
-#define QUEUE_FLAG_WC		17	/* Write back caching */
-#define QUEUE_FLAG_FUA		18	/* device supports FUA writes */
-#define QUEUE_FLAG_DAX		19	/* device supports DAX */
-#define QUEUE_FLAG_STATS	20	/* track IO start and completion times */
-#define QUEUE_FLAG_REGISTERED	22	/* queue has been registered to a disk */
-#define QUEUE_FLAG_QUIESCED	24	/* queue has been quiesced */
-#define QUEUE_FLAG_PCI_P2PDMA	25	/* device supports PCI p2p requests */
-#define QUEUE_FLAG_ZONE_RESETALL 26	/* supports Zone Reset All */
-#define QUEUE_FLAG_RQ_ALLOC_TIME 27	/* record rq->alloc_time_ns */
-#define QUEUE_FLAG_HCTX_ACTIVE	28	/* at least one blk-mq hctx is active */
-#define QUEUE_FLAG_NOWAIT       29	/* device supports NOWAIT */
-#define QUEUE_FLAG_SQ_SCHED     30	/* single queue style io dispatch */
+ 
+#define QUEUE_FLAG_STOPPED	0	 
+#define QUEUE_FLAG_DYING	1	 
+#define QUEUE_FLAG_HAS_SRCU	2	 
+#define QUEUE_FLAG_NOMERGES     3	 
+#define QUEUE_FLAG_SAME_COMP	4	 
+#define QUEUE_FLAG_FAIL_IO	5	 
+#define QUEUE_FLAG_NONROT	6	 
+#define QUEUE_FLAG_VIRT		QUEUE_FLAG_NONROT  
+#define QUEUE_FLAG_IO_STAT	7	 
+#define QUEUE_FLAG_NOXMERGES	9	 
+#define QUEUE_FLAG_ADD_RANDOM	10	 
+#define QUEUE_FLAG_SAME_FORCE	12	 
+#define QUEUE_FLAG_DEAD		13	 
+#define QUEUE_FLAG_INIT_DONE	14	 
+#define QUEUE_FLAG_STABLE_WRITES 15	 
+#define QUEUE_FLAG_POLL		16	 
+#define QUEUE_FLAG_WC		17	 
+#define QUEUE_FLAG_FUA		18	 
+#define QUEUE_FLAG_DAX		19	 
+#define QUEUE_FLAG_STATS	20	 
+#define QUEUE_FLAG_REGISTERED	22	 
+#define QUEUE_FLAG_QUIESCED	24	 
+#define QUEUE_FLAG_PCI_P2PDMA	25	 
+#define QUEUE_FLAG_ZONE_RESETALL 26	 
+#define QUEUE_FLAG_RQ_ALLOC_TIME 27	 
+#define QUEUE_FLAG_HCTX_ACTIVE	28	 
+#define QUEUE_FLAG_NOWAIT       29	 
+#define QUEUE_FLAG_SQ_SCHED     30	 
 
 #define QUEUE_FLAG_MQ_DEFAULT	((1 << QUEUE_FLAG_IO_STAT) |		\
 				 (1 << QUEUE_FLAG_SAME_COMP) |		\
@@ -550,13 +458,11 @@ static inline unsigned int queue_max_active_zones(const struct request_queue *q)
 	return 0;
 }
 
-/*
- * default timeout for SG_IO if none specified
- */
+ 
 #define BLK_DEFAULT_SG_TIMEOUT	(60 * HZ)
 #define BLK_MIN_SG_TIMEOUT	(7 * HZ)
 
-/* This should not be used directly - use rq_for_each_segment */
+ 
 #define for_each_bio(_bio)		\
 	for (; _bio; _bio = _bio->bi_next)
 
@@ -600,15 +506,7 @@ struct gendisk *__alloc_disk_node(struct request_queue *q, int node_id,
 void put_disk(struct gendisk *disk);
 struct gendisk *__blk_alloc_disk(int node, struct lock_class_key *lkclass);
 
-/**
- * blk_alloc_disk - allocate a gendisk structure
- * @node_id: numa node to allocate on
- *
- * Allocate and pre-initialize a gendisk structure for use with BIO based
- * drivers.
- *
- * Context: can sleep
- */
+ 
 #define blk_alloc_disk(node_id)						\
 ({									\
 	static struct lock_class_key __key;				\
@@ -642,15 +540,15 @@ extern int blk_queue_enter(struct request_queue *q, blk_mq_req_flags_t flags);
 extern void blk_queue_exit(struct request_queue *q);
 extern void blk_sync_queue(struct request_queue *q);
 
-/* Helper to convert REQ_OP_XXX to its string format XXX */
+ 
 extern const char *blk_op_str(unsigned int op);
 
 int blk_status_to_errno(blk_status_t status);
 blk_status_t errno_to_blk_status(int errno);
 
-/* only poll the hardware once, don't continue until a completion was found */
+ 
 #define BLK_POLL_ONESHOT		(1 << 0)
-/* do not sleep to wait for the expected completion time */
+ 
 #define BLK_POLL_NOSLEEP		(1 << 1)
 int bio_poll(struct bio *bio, struct io_comp_batch *iob, unsigned int flags);
 int iocb_bio_iopoll(struct kiocb *kiocb, struct io_comp_batch *iob,
@@ -658,17 +556,12 @@ int iocb_bio_iopoll(struct kiocb *kiocb, struct io_comp_batch *iob,
 
 static inline struct request_queue *bdev_get_queue(struct block_device *bdev)
 {
-	return bdev->bd_queue;	/* this is never NULL */
+	return bdev->bd_queue;	 
 }
 
 
-/*
- * Return maximum size of a request at given offset. Only valid for
- * file system requests.
- */
-/*
- * Access functions for manipulating queue properties
- */
+ 
+ 
 extern void blk_cleanup_queue(struct request_queue *);
 void blk_queue_bounce_limit(struct request_queue *q, enum blk_bounce limit);
 extern void blk_queue_max_hw_sectors(struct request_queue *, unsigned int);
@@ -716,10 +609,8 @@ disk_alloc_independent_access_ranges(struct gendisk *disk, int nr_ia_ranges);
 void disk_set_independent_access_ranges(struct gendisk *disk,
 				struct blk_independent_access_ranges *iars);
 
-/*
- * Elevator features for blk_queue_required_elevator_features:
- */
-/* Supports zoned block devices sequential write constraint */
+ 
+ 
 #define ELEVATOR_F_ZBD_SEQ_WRITE	(1U << 0)
 
 extern void blk_queue_required_elevator_features(struct request_queue *q,
@@ -766,8 +657,8 @@ int __blkdev_issue_discard(struct block_device *bdev, sector_t sector,
 int blkdev_issue_secure_erase(struct block_device *bdev, sector_t sector,
 		sector_t nr_sects, gfp_t gfp);
 
-#define BLKDEV_ZERO_NOUNMAP	(1 << 0)  /* do not free blocks */
-#define BLKDEV_ZERO_NOFALLBACK	(1 << 1)  /* don't write explicit zeroes */
+#define BLKDEV_ZERO_NOUNMAP	(1 << 0)   
+#define BLKDEV_ZERO_NOFALLBACK	(1 << 1)   
 
 extern int __blkdev_issue_zeroout(struct block_device *bdev, sector_t sector,
 		sector_t nr_sects, gfp_t gfp_mask, struct bio **biop,
@@ -853,7 +744,7 @@ static inline int queue_dma_alignment(const struct request_queue *q)
 	return q ? q->dma_alignment : 511;
 }
 
-/* assumes size > 256 */
+ 
 int kblockd_schedule_work(struct work_struct *work);
 int kblockd_mod_delayed_work_on(int cpu, struct delayed_work *dwork, unsigned long delay);
 
@@ -864,7 +755,7 @@ int kblockd_mod_delayed_work_on(int cpu, struct delayed_work *dwork, unsigned lo
 
 
 enum blk_unique_id {
-	/* these match the Designator Types specified in SPC */
+	 
 	BLK_UID_T10	= 1,
 	BLK_UID_EUI64	= 2,
 	BLK_UID_NAA	= 3,
@@ -887,22 +778,18 @@ struct block_device_operations {
 	int (*getgeo)(struct block_device *, struct hd_geometry *);
 	int (*set_read_only)(struct block_device *bdev, bool ro);
 	void (*free_disk)(struct gendisk *disk);
-	/* this callback is with swap_lock and sometimes page table lock held */
+	 
 	void (*swap_slot_free_notify) (struct block_device *, unsigned long);
 	int (*report_zones)(struct gendisk *, sector_t sector,
 			unsigned int nr_zones, report_zones_cb cb, void *data);
 	char *(*devnode)(struct gendisk *disk, umode_t *mode);
-	/* returns the length of the identifier or a negative errno: */
+	 
 	int (*get_unique_id)(struct gendisk *disk, u8 id[16],
 			enum blk_unique_id id_type);
 	struct module *owner;
 	const struct pr_ops *pr_ops;
 
-	/*
-	 * Special callback for probing GPT entry at a given sector.
-	 * Needed by Android devices, used by GPT scanner and MMC blk
-	 * driver.
-	 */
+	 
 	int (*alternative_gpt_sector)(struct gendisk *disk, sector_t *sector);
 };
 
@@ -923,11 +810,7 @@ unsigned long bio_start_io_acct(struct bio *bio);
 void bio_end_io_acct_remapped(struct bio *bio, unsigned long start_time,
 		struct block_device *orig_bdev);
 
-/**
- * bio_end_io_acct - end I/O accounting for bio based drivers
- * @bio:	bio to end account for
- * @start_time:	start time returned by bio_start_io_acct()
- */
+ 
 static inline void bio_end_io_acct(struct bio *bio, unsigned long start_time)
 {
 	return bio_end_io_acct_remapped(bio, start_time, bio->bi_bdev);
@@ -941,8 +824,8 @@ int lookup_bdev(const char *pathname, dev_t *dev);
 
 void blkdev_show(struct seq_file *seqf, off_t offset);
 
-#define BDEVNAME_SIZE	32	/* Largest string for a blockdev identifier */
-#define BDEVT_SIZE	10	/* Largest string for MAJ:MIN for blkdev */
+#define BDEVNAME_SIZE	32	 
+#define BDEVT_SIZE	10	 
 #define BLKDEV_MAJOR_MAX	0
 
 struct block_device *blkdev_get_by_path(const char *path, fmode_t mode,
@@ -952,7 +835,7 @@ int bd_prepare_to_claim(struct block_device *bdev, void *holder);
 void bd_abort_claiming(struct block_device *bdev, void *holder);
 void blkdev_put(struct block_device *bdev, fmode_t mode);
 
-/* just for blk-cgroup, don't use elsewhere */
+ 
 struct block_device *blkdev_get_no_open(dev_t dev);
 void blkdev_put_no_open(struct block_device *bdev);
 
@@ -982,4 +865,4 @@ struct io_comp_batch {
 
 #define DEFINE_IO_COMP_BATCH(name)	struct io_comp_batch name = { }
 
-#endif /* _LINUX_BLKDEV_H */
+#endif  

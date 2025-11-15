@@ -1,11 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
-/* audit.h -- Auditing support
- *
- * Copyright 2003-2004 Red Hat Inc., Durham, North Carolina.
- * All Rights Reserved.
- *
- * Written by Rickard E. (Rik) Faith <faith@redhat.com>
- */
+ 
+ 
 #ifndef _LINUX_AUDIT_H_
 #define _LINUX_AUDIT_H_
 
@@ -42,21 +36,21 @@ struct audit_krule {
 	u32			listnr;
 	u32			action;
 	u32			mask[AUDIT_BITMASK_SIZE];
-	u32			buflen; /* for data alloc on list rules */
+	u32			buflen;  
 	u32			field_count;
-	char			*filterkey; /* ties events to rules */
+	char			*filterkey;  
 	struct audit_field	*fields;
-	struct audit_field	*arch_f; /* quick access to arch field */
-	struct audit_field	*inode_f; /* quick access to an inode field */
-	struct audit_watch	*watch;	/* associated watch */
-	struct audit_tree	*tree;	/* associated watched tree */
+	struct audit_field	*arch_f;  
+	struct audit_field	*inode_f;  
+	struct audit_watch	*watch;	 
+	struct audit_tree	*tree;	 
 	struct audit_fsnotify_mark	*exe;
-	struct list_head	rlist;	/* entry in audit_{watch,tree}.rules list */
-	struct list_head	list;	/* for AUDIT_LIST* purposes only */
+	struct list_head	rlist;	 
+	struct list_head	list;	 
 	u64			prio;
 };
 
-/* Flag to indicate legacy AUDIT_LOGINUID unset usage */
+ 
 #define AUDIT_LOGINUID_LEGACY		0x1
 
 struct audit_field {
@@ -81,7 +75,7 @@ enum audit_ntp_type {
 	AUDIT_NTP_TICK,
 	AUDIT_NTP_ADJUST,
 
-	AUDIT_NTP_NVALS /* count */
+	AUDIT_NTP_NVALS  
 };
 
 struct audit_ntp_data {};
@@ -114,7 +108,7 @@ extern int is_audit_feature_set(int which);
 extern int __init audit_register_class(int class, unsigned *list);
 extern int audit_classify_syscall(int abi, unsigned syscall);
 extern int audit_classify_arch(int arch);
-/* only for compat system calls */
+ 
 extern unsigned compat_write_class[];
 extern unsigned compat_read_class[];
 extern unsigned compat_dir_class[];
@@ -123,17 +117,17 @@ extern unsigned compat_signal_class[];
 
 extern int audit_classify_compat_syscall(int abi, unsigned syscall);
 
-/* audit_names->type values */
-#define	AUDIT_TYPE_UNKNOWN	0	/* we don't know yet */
-#define	AUDIT_TYPE_NORMAL	1	/* a "normal" audit record */
-#define	AUDIT_TYPE_PARENT	2	/* a parent audit record */
-#define	AUDIT_TYPE_CHILD_DELETE 3	/* a child being deleted */
-#define	AUDIT_TYPE_CHILD_CREATE 4	/* a child being created */
+ 
+#define	AUDIT_TYPE_UNKNOWN	0	 
+#define	AUDIT_TYPE_NORMAL	1	 
+#define	AUDIT_TYPE_PARENT	2	 
+#define	AUDIT_TYPE_CHILD_DELETE 3	 
+#define	AUDIT_TYPE_CHILD_CREATE 4	 
 
-/* maximized args number that audit_socketcall can process */
+ 
 #define AUDITSC_ARGS		6
 
-/* bit values for ->signal->audit_tty */
+ 
 #define AUDIT_TTY_ENABLE	BIT(0)
 #define AUDIT_TTY_LOG_PASSWD	BIT(1)
 
@@ -203,9 +197,9 @@ static inline int audit_signal_info(int sig, struct task_struct *t)
 
 #define audit_is_compat(arch)  false
 
-#define AUDIT_INODE_PARENT	1	/* dentry represents the parent */
-#define AUDIT_INODE_HIDDEN	2	/* audit record should be hidden */
-#define AUDIT_INODE_NOEVAL	4	/* audit record incomplete */
+#define AUDIT_INODE_PARENT	1	 
+#define AUDIT_INODE_HIDDEN	2	 
+#define AUDIT_INODE_NOEVAL	4	 
 
 static inline int audit_alloc(struct task_struct *task)
 {

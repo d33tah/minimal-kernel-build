@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_PID_NS_H
 #define _LINUX_PID_NS_H
 
@@ -11,7 +11,7 @@
 #include <linux/ns_common.h>
 #include <linux/idr.h>
 
-/* MAX_PID_NS_LEVEL is needed for limiting size of 'struct pid' */
+ 
 #define MAX_PID_NS_LEVEL 32
 
 struct fs_pin;
@@ -26,7 +26,7 @@ struct pid_namespace {
 	struct pid_namespace *parent;
 	struct user_namespace *user_ns;
 	struct ucounts *ucounts;
-	int reboot;	/* group exit code if this pidns was rebooted */
+	int reboot;	 
 	struct ns_common ns;
 } __randomize_layout;
 
@@ -72,4 +72,4 @@ static inline bool task_is_in_init_pid_ns(struct task_struct *tsk)
 	return task_active_pid_ns(tsk) == &init_pid_ns;
 }
 
-#endif /* _LINUX_PID_NS_H */
+#endif  

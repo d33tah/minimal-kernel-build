@@ -1,10 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- * Copyright (c) 2020 Christoph Hellwig.
- *
- * Support for "universal" pointers that can point to either kernel or userspace
- * memory.
- */
+ 
+ 
 #ifndef _LINUX_SOCKPTR_H
 #define _LINUX_SOCKPTR_H
 
@@ -102,4 +97,4 @@ static inline long strncpy_from_sockptr(char *dst, sockptr_t src, size_t count)
 	return strncpy_from_user(dst, src.user, count);
 }
 
-#endif /* _LINUX_SOCKPTR_H */
+#endif  

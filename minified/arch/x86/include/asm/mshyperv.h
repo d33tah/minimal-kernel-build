@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_MSHYPER_H
 #define _ASM_X86_MSHYPER_H
 
@@ -61,7 +61,7 @@ static inline u64 hv_do_hypercall(u64 control, void *input, void *output)
 	return hv_status;
 }
 
-/* Fast hypercall with 8 bytes of input and no output */
+ 
 static inline u64 hv_do_fast_hypercall8(u16 code, u64 input1)
 {
 	u64 hv_status, control = (u64)code | HV_HYPERCALL_FAST_BIT;
@@ -82,7 +82,7 @@ static inline u64 hv_do_fast_hypercall8(u16 code, u64 input1)
 		return hv_status;
 }
 
-/* Fast hypercall with 16 bytes of input */
+ 
 static inline u64 hv_do_fast_hypercall16(u16 code, u64 input1, u64 input2)
 {
 	u64 hv_status, control = (u64)code | HV_HYPERCALL_FAST_BIT;
@@ -166,7 +166,7 @@ static inline void hv_set_register(unsigned int reg, u64 value)
 	if (hv_is_synic_reg(reg) && hv_isolation_type_snp()) {
 		hv_ghcb_msr_write(reg, value);
 
-		/* Write proxy bit via wrmsl instruction */
+		 
 		if (reg >= HV_REGISTER_SINT0 &&
 		    reg <= HV_REGISTER_SINT15)
 			wrmsrl(reg, value | 1 << 20);
@@ -175,7 +175,7 @@ static inline void hv_set_register(unsigned int reg, u64 value)
 	}
 }
 
-#else /* CONFIG_HYPERV */
+#else  
 static inline void hyperv_init(void) {}
 static inline void hyperv_setup_mmu_ops(void) {}
 static inline void set_hv_tscchange_cb(void (*cb)(void)) {}
@@ -198,7 +198,7 @@ static inline int hv_set_mem_host_visibility(unsigned long addr, int numpages,
 {
 	return -1;
 }
-#endif /* CONFIG_HYPERV */
+#endif  
 
 
 #include <asm-generic/mshyperv.h>

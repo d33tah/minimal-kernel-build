@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 #include <linux/mount.h>
 #include <linux/pseudo_fs.h>
 #include <linux/file.h>
@@ -14,7 +14,7 @@
 
 #include "internal.h"
 
-/* Minimal stub for nsfs - namespace operations not used in minimal kernel */
+ 
 
 const struct dentry_operations ns_dentry_operations = {
 	.d_delete	= always_delete_dentry,
@@ -61,5 +61,5 @@ bool ns_match(const struct ns_common *ns, dev_t dev, ino_t ino)
 
 void __init nsfs_init(void)
 {
-	/* Stubbed - namespace filesystem not needed for minimal kernel */
+	 
 }

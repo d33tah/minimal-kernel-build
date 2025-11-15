@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_PROFILE_H
 #define _LINUX_PROFILE_H
 
@@ -51,4 +51,4 @@ static inline void profile_hit(int type, void *ip)
 
 
 
-#endif /* _LINUX_PROFILE_H */
+#endif  

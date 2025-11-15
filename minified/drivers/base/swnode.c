@@ -1,10 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * swnode.c - Software nodes for the firmware node framework (STUBBED)
- *
- * Minimal stub - software node functionality not needed for minimal kernel
- * with basic TTY console support.
- */
+ 
+ 
 
 #include <linux/device.h>
 #include <linux/kernel.h>

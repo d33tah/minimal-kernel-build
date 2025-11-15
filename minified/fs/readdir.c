@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Stubbed readdir.c */
+ 
+ 
 #include <linux/fs.h>
 #include <linux/syscalls.h>
 #include <linux/export.h>

@@ -1,8 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Minimal stub implementation of random.c for Hello World kernel
- * All functions are no-ops or return deterministic values
- */
+ 
+ 
 
 #include <linux/kernel.h>
 #include <linux/random.h>
@@ -12,7 +9,7 @@
 #include <linux/syscalls.h>
 #include <linux/uaccess.h>
 
-/* Stub implementations */
+ 
 
 int wait_for_random_bytes(void)
 {
@@ -64,7 +61,7 @@ bool rng_is_initialized(void)
 	return true;
 }
 
-/* Stub file operations for /dev/random and /dev/urandom */
+ 
 
 static ssize_t random_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
 {
@@ -103,7 +100,7 @@ const struct file_operations urandom_fops = {
 	.llseek = noop_llseek,
 };
 
-/* Stub syscall */
+ 
 
 SYSCALL_DEFINE3(getrandom, char __user *, buf, size_t, count, unsigned int, flags)
 {

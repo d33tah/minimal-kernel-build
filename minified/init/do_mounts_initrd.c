@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-// Stubbed - deprecated initrd support not needed for minimal kernel
+ 
+ 
 #include <linux/unistd.h>
 #include <linux/kernel.h>
 #include <linux/fs.h>
@@ -33,6 +33,6 @@ early_param("initrd", early_initrd);
 
 bool __init initrd_load(void)
 {
-	/* Stubbed - deprecated initrd not supported */
+	 
 	return false;
 }

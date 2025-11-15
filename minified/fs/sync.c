@@ -1,12 +1,10 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * High-level sync()-related operations - Stubbed minimal implementation
- */
+ 
+ 
 #include <linux/fs.h>
 #include <linux/export.h>
 #include <linux/syscalls.h>
 
-/* Stubbed sync functions - not needed for minimal boot */
+ 
 int sync_filesystem(struct super_block *sb) { return 0; }
 
 void ksys_sync(void) { }

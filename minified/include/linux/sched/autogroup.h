@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_SCHED_AUTOGROUP_H
 #define _LINUX_SCHED_AUTOGROUP_H
 
@@ -14,4 +14,4 @@ static inline void sched_autogroup_exit(struct signal_struct *sig) { }
 static inline void sched_autogroup_exit_task(struct task_struct *p) { }
 
 
-#endif /* _LINUX_SCHED_AUTOGROUP_H */
+#endif  

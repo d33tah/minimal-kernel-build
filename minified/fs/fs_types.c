@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 #include <linux/fs.h>
 #include <linux/export.h>
 
-/* Minimal stub - file type conversions not used in minimal kernel */
+ 
 
 unsigned char fs_ftype_to_dtype(unsigned int filetype)
 {

@@ -1,11 +1,11 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Stubbed - uevents not needed for minimal kernel */
+ 
+ 
 #include <linux/kobject.h>
 #include <linux/export.h>
 
 u64 uevent_seqnum;
 
-/* Stub implementation - uevents not needed for minimal "Hello World" kernel */
+ 
 int kobject_synth_uevent(struct kobject *kobj, const char *buf, size_t count)
 {
 	return 0;
@@ -14,7 +14,7 @@ int kobject_synth_uevent(struct kobject *kobj, const char *buf, size_t count)
 int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		       char *envp_ext[])
 {
-	/* Mark KOBJ_REMOVE as sent to avoid warnings */
+	 
 	if (action == KOBJ_REMOVE)
 		kobj->state_remove_uevent_sent = 1;
 	if (action == KOBJ_ADD)

@@ -1,9 +1,9 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_PGALLOC_H
 #define _ASM_X86_PGALLOC_H
 
 #include <linux/threads.h>
-#include <linux/mm.h>		/* for struct page */
+#include <linux/mm.h>		 
 #include <linux/pagemap.h>
 
 #define __HAVE_ARCH_PTE_ALLOC_ONE
@@ -25,16 +25,12 @@ static inline void paravirt_release_pmd(unsigned long pfn) {}
 static inline void paravirt_release_pud(unsigned long pfn) {}
 static inline void paravirt_release_p4d(unsigned long pfn) {}
 
-/*
- * Flags to use when allocating a user page table page.
- */
+ 
 extern gfp_t __userpte_alloc_gfp;
 
 #define PGD_ALLOCATION_ORDER 0
 
-/*
- * Allocate and free page tables.
- */
+ 
 extern pgd_t *pgd_alloc(struct mm_struct *);
 extern void pgd_free(struct mm_struct *mm, pgd_t *pgd);
 
@@ -157,8 +153,8 @@ static inline void __p4d_free_tlb(struct mmu_gather *tlb, p4d_t *p4d,
 		___p4d_free_tlb(tlb, p4d);
 }
 
-#endif	/* CONFIG_PGTABLE_LEVELS > 4 */
-#endif	/* CONFIG_PGTABLE_LEVELS > 3 */
-#endif	/* CONFIG_PGTABLE_LEVELS > 2 */
+#endif	 
+#endif	 
+#endif	 
 
-#endif /* _ASM_X86_PGALLOC_H */
+#endif  

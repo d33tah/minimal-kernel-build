@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/* Minimal stub for fs-writeback.c - writeback not needed for read-only minimal kernel */
+ 
+ 
 #include <linux/kernel.h>
 #include <linux/export.h>
 #include <linux/fs.h>

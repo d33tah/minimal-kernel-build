@@ -1,7 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Minimal stub - ROM probing not needed
- */
+ 
+ 
 #include <linux/init.h>
 #include <linux/export.h>
 #include <linux/pci.h>

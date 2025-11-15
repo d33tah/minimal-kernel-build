@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Stubbed d_path.c */
+ 
+ 
 #include <linux/fs.h>
 #include <linux/export.h>
 #include <linux/dcache.h>

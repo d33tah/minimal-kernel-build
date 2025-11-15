@@ -1,7 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Componentized device handling - STUBBED for minimal kernel
- */
+ 
+ 
 
 #include <linux/component.h>
 #include <linux/device.h>
@@ -10,7 +8,7 @@
 #include <linux/slab.h>
 #include <linux/debugfs.h>
 
-/* Stub functions - all return success or NULL */
+ 
 int component_compare_of(struct device *dev, void *data)
 {
 	return 0;

@@ -1,26 +1,23 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- * linux/include/linux/cpufreq.h - MINIMAL STUB VERSION
- * CPU frequency scaling not enabled, minimal declarations only
- */
+ 
+ 
 #ifndef _LINUX_CPUFREQ_H
 #define _LINUX_CPUFREQ_H
 
-/* Minimal includes */
+ 
 #include <linux/types.h>
 #include <linux/cpumask.h>
 #include <linux/errno.h>
 
-/* Minimal type declarations - just enough to compile */
+ 
 struct cpufreq_policy;
 struct cpufreq_governor;
 struct cpufreq_policy_data;
 struct cpufreq_frequency_table;
 
-/* Minimal constants */
+ 
 #define CPUFREQ_NAME_LEN		16
 
-/* Minimal inline stubs */
+ 
 static inline unsigned int cpufreq_get(unsigned int cpu) { return 0; }
 static inline unsigned int cpufreq_quick_get(unsigned int cpu) { return 0; }
 static inline unsigned int cpufreq_quick_get_max(unsigned int cpu) { return 0; }
@@ -54,7 +51,7 @@ void arch_set_freq_scale(const struct cpumask *cpus,
 }
 #endif
 
-/* Minimal externs for linking */
+ 
 extern unsigned int arch_freq_get_on_cpu(int cpu);
 
-#endif /* _LINUX_CPUFREQ_H */
+#endif  

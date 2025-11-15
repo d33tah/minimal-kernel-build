@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef __LINUX_SWIOTLB_H
 #define __LINUX_SWIOTLB_H
 
@@ -13,25 +13,18 @@ struct device;
 struct page;
 struct scatterlist;
 
-#define SWIOTLB_VERBOSE	(1 << 0) /* verbose initialization */
-#define SWIOTLB_FORCE	(1 << 1) /* force bounce buffering */
-#define SWIOTLB_ANY	(1 << 2) /* allow any memory for the buffer */
+#define SWIOTLB_VERBOSE	(1 << 0)  
+#define SWIOTLB_FORCE	(1 << 1)  
+#define SWIOTLB_ANY	(1 << 2)  
 
-/*
- * Maximum allowable number of contiguous slabs to map,
- * must be a power of 2.  What is the appropriate value ?
- * The complexity of {map,unmap}_single is linearly dependent on this value.
- */
+ 
 #define IO_TLB_SEGSIZE	128
 
-/*
- * log of the size of each IO TLB slab.  The number of slabs is command line
- * controllable.
- */
+ 
 #define IO_TLB_SHIFT 11
 #define IO_TLB_SIZE (1 << IO_TLB_SHIFT)
 
-/* default to 64MB */
+ 
 #define IO_TLB_DEFAULT_SIZE (64UL<<20)
 
 unsigned long swiotlb_size_or_default(void);
@@ -109,4 +102,4 @@ static inline bool is_swiotlb_for_alloc(struct device *dev)
 
 extern phys_addr_t swiotlb_unencrypted_base;
 
-#endif /* __LINUX_SWIOTLB_H */
+#endif  

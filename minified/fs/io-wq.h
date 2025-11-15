@@ -11,13 +11,13 @@ enum {
 	IO_WQ_WORK_UNBOUND	= 4,
 	IO_WQ_WORK_CONCURRENT	= 16,
 
-	IO_WQ_HASH_SHIFT	= 24,	/* upper 8 bits are used for hash key */
+	IO_WQ_HASH_SHIFT	= 24,	 
 };
 
 enum io_wq_cancel {
-	IO_WQ_CANCEL_OK,	/* cancelled before started */
-	IO_WQ_CANCEL_RUNNING,	/* found, running, and attempted cancelled */
-	IO_WQ_CANCEL_NOTFOUND,	/* work not found */
+	IO_WQ_CANCEL_OK,	 
+	IO_WQ_CANCEL_RUNNING,	 
+	IO_WQ_CANCEL_NOTFOUND,	 
 };
 
 struct io_wq_work_node {
@@ -52,12 +52,7 @@ static inline void wq_list_add_after(struct io_wq_work_node *node,
 		list->last = node;
 }
 
-/**
- * wq_list_merge - merge the second list to the first one.
- * @list0: the first list
- * @list1: the second list
- * Return the first node after mergence.
- */
+ 
 static inline struct io_wq_work_node *wq_list_merge(struct io_wq_work_list *list0,
 						    struct io_wq_work_list *list1)
 {
@@ -100,7 +95,7 @@ static inline void wq_list_cut(struct io_wq_work_list *list,
 			       struct io_wq_work_node *last,
 			       struct io_wq_work_node *prev)
 {
-	/* first in the list, if prev==NULL */
+	 
 	if (!prev)
 		WRITE_ONCE(list->first, last->next);
 	else

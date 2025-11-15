@@ -1,9 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_UACCESS_H
 #define _ASM_X86_UACCESS_H
-/*
- * User space memory access functions
- */
+ 
 #include <linux/compiler.h>
 #include <linux/kasan-checks.h>
 #include <linux/string.h>
@@ -14,23 +12,7 @@
 
 # define WARN_ON_IN_IRQ()
 
-/**
- * access_ok - Checks if a user space pointer is valid
- * @addr: User space pointer to start of block to check
- * @size: Size of block to check
- *
- * Context: User context only. This function may sleep if pagefaults are
- *          enabled.
- *
- * Checks if a pointer to a block of memory in user space is valid.
- *
- * Note that, depending on architecture, this function probably just
- * checks that the pointer is in the user space range - after calling
- * this function, memory access functions may still return -EFAULT.
- *
- * Return: true (nonzero) if the memory block may be valid, false (zero)
- * if it is definitely invalid.
- */
+ 
 #define access_ok(addr, size)					\
 ({									\
 	WARN_ON_IN_IRQ();						\
@@ -57,10 +39,7 @@ extern int __get_user_bad(void);
 	barrier_nospec();		\
 })
 
-/*
- * This is the smallest unsigned integer type that can fit a value
- * (up to 'long long')
- */
+ 
 #define __inttype(x) __typeof__(		\
 	__typefits(x,char,			\
 	  __typefits(x,short,			\
@@ -70,24 +49,7 @@ extern int __get_user_bad(void);
 #define __typefits(x,type,not) \
 	__builtin_choose_expr(sizeof(x)<=sizeof(type),(unsigned type)0,not)
 
-/*
- * This is used for both get_user() and __get_user() to expand to
- * the proper special function call that has odd calling conventions
- * due to returning both a value and an error, and that depends on
- * the size of the pointer passed in.
- *
- * Careful: we have to cast the result to the type of the pointer
- * for sign reasons.
- *
- * The use of _ASM_DX as the register specifier is a bit of a
- * simplification, as gcc only cares about it as the starting point
- * and not size: for a 64-bit value it will use %ecx:%edx on 32 bits
- * (%ecx being the next register in gcc's x86 register sequence), and
- * %rdx on 64 bits.
- *
- * Clang/LLVM cares about the size of the register, but still wants
- * the base register for something that ends up being a pair.
- */
+ 
 #define do_get_user_call(fn,x,ptr)					\
 ({									\
 	int __ret_gu;							\
@@ -101,47 +63,10 @@ extern int __get_user_bad(void);
 	__builtin_expect(__ret_gu, 0);					\
 })
 
-/**
- * get_user - Get a simple variable from user space.
- * @x:   Variable to store result.
- * @ptr: Source address, in user space.
- *
- * Context: User context only. This function may sleep if pagefaults are
- *          enabled.
- *
- * This macro copies a single simple variable from user space to kernel
- * space.  It supports simple types like char and int, but not larger
- * data types like structures or arrays.
- *
- * @ptr must have pointer-to-simple-variable type, and the result of
- * dereferencing @ptr must be assignable to @x without a cast.
- *
- * Return: zero on success, or -EFAULT on error.
- * On error, the variable @x is set to zero.
- */
+ 
 #define get_user(x,ptr) ({ might_fault(); do_get_user_call(get_user,x,ptr); })
 
-/**
- * __get_user - Get a simple variable from user space, with less checking.
- * @x:   Variable to store result.
- * @ptr: Source address, in user space.
- *
- * Context: User context only. This function may sleep if pagefaults are
- *          enabled.
- *
- * This macro copies a single simple variable from user space to kernel
- * space.  It supports simple types like char and int, but not larger
- * data types like structures or arrays.
- *
- * @ptr must have pointer-to-simple-variable type, and the result of
- * dereferencing @ptr must be assignable to @x without a cast.
- *
- * Caller must check the pointer with access_ok() before calling this
- * function.
- *
- * Return: zero on success, or -EFAULT on error.
- * On error, the variable @x is set to zero.
- */
+ 
 #define __get_user(x,ptr) do_get_user_call(get_user_nocheck,x,ptr)
 
 
@@ -157,10 +82,7 @@ extern int __get_user_bad(void);
 
 extern void __put_user_bad(void);
 
-/*
- * Strange magic calling convention: pointer in %ecx,
- * value in %eax(:%edx), return value in %ecx. clobbers %rbx
- */
+ 
 extern void __put_user_1(void);
 extern void __put_user_2(void);
 extern void __put_user_4(void);
@@ -170,12 +92,7 @@ extern void __put_user_nocheck_2(void);
 extern void __put_user_nocheck_4(void);
 extern void __put_user_nocheck_8(void);
 
-/*
- * ptr must be evaluated and assigned to the temporary __ptr_pu before
- * the assignment of x to __val_pu, to avoid any function calls
- * involved in the ptr expression (possibly implicitly generated due
- * to KASAN) from clobbering %ax.
- */
+ 
 #define do_put_user_call(fn,x,ptr)					\
 ({									\
 	int __ret_pu;							\
@@ -194,45 +111,10 @@ extern void __put_user_nocheck_8(void);
 	__builtin_expect(__ret_pu, 0);					\
 })
 
-/**
- * put_user - Write a simple value into user space.
- * @x:   Value to copy to user space.
- * @ptr: Destination address, in user space.
- *
- * Context: User context only. This function may sleep if pagefaults are
- *          enabled.
- *
- * This macro copies a single simple value from kernel space to user
- * space.  It supports simple types like char and int, but not larger
- * data types like structures or arrays.
- *
- * @ptr must have pointer-to-simple-variable type, and @x must be assignable
- * to the result of dereferencing @ptr.
- *
- * Return: zero on success, or -EFAULT on error.
- */
+ 
 #define put_user(x, ptr) ({ might_fault(); do_put_user_call(put_user,x,ptr); })
 
-/**
- * __put_user - Write a simple value into user space, with less checking.
- * @x:   Value to copy to user space.
- * @ptr: Destination address, in user space.
- *
- * Context: User context only. This function may sleep if pagefaults are
- *          enabled.
- *
- * This macro copies a single simple value from kernel space to user
- * space.  It supports simple types like char and int, but not larger
- * data types like structures or arrays.
- *
- * @ptr must have pointer-to-simple-variable type, and @x must be assignable
- * to the result of dereferencing @ptr.
- *
- * Caller must check the pointer with access_ok() before calling this
- * function.
- *
- * Return: zero on success, or -EFAULT on error.
- */
+ 
 #define __put_user(x, ptr) do_put_user_call(put_user_nocheck,x,ptr)
 
 #define __put_user_size(x, ptr, size, label)				\
@@ -323,13 +205,7 @@ do {									\
 		*_old = __old;						\
 	likely(success);					})
 
-/*
- * Unlike the normal CMPXCHG, hardcode ECX for both success/fail and error.
- * There are only six GPRs available and four (EAX, EBX, ECX, and EDX) are
- * hardcoded by CMPXCHG8B, leaving only ESI and EDI.  If the compiler uses
- * both ESI and EDI for the memory operand, compilation will fail if the error
- * is an input+output as there will be no register available for input.
- */
+ 
 #define __try_cmpxchg64_user_asm(_ptr, _pold, _new, label)	({	\
 	int __result;							\
 	__typeof__(_ptr) _old = (__typeof__(_ptr))(_pold);		\
@@ -353,15 +229,11 @@ do {									\
 		*_old = __old;						\
 	likely(__result);					})
 
-/* FIXME: this hack is definitely wrong -AK */
+ 
 struct __large_struct { unsigned long buf[100]; };
 #define __m(x) (*(struct __large_struct __user *)(x))
 
-/*
- * Tell gcc we read from memory instead of writing: this is because
- * we do not write to any memory gcc knows about, so there are no
- * aliasing issues.
- */
+ 
 #define __put_user_goto(x, addr, itype, ltype, label)			\
 	asm_volatile_goto("\n"						\
 		"1:	mov"itype" %0,%1\n"				\
@@ -380,20 +252,13 @@ unsigned long __must_check clear_user(void __user *mem, unsigned long len);
 unsigned long __must_check __clear_user(void __user *mem, unsigned long len);
 
 
-/*
- * movsl can be slow when source and dest are not both 8-byte aligned
- */
+ 
 
 #define ARCH_HAS_NOCACHE_UACCESS 1
 
 # include <asm/uaccess_32.h>
 
-/*
- * The "unsafe" user accesses aren't really "unsafe", but the naming
- * is a big fat warning: you have to not only do the access_ok()
- * checking before using them, but you have to surround them with the
- * user_access_begin/end() pair.
- */
+ 
 static __must_check __always_inline bool user_access_begin(const void __user *ptr, size_t len)
 {
 	if (unlikely(!access_ok(ptr,len)))
@@ -420,11 +285,7 @@ do {										\
 extern void __try_cmpxchg_user_wrong_size(void);
 
 
-/*
- * Force the pointer to u<size> to match the size expected by the asm helper.
- * clang/LLVM compiles all cases and only discards the unused paths after
- * processing errors, which breaks i386 if the pointer is an 8-byte value.
- */
+ 
 #define unsafe_try_cmpxchg_user(_ptr, _oldp, _nval, _label) ({			\
 	bool __ret;								\
 	__chk_user_ptr(_ptr);							\
@@ -448,7 +309,7 @@ extern void __try_cmpxchg_user_wrong_size(void);
 	}									\
 	__ret;						})
 
-/* "Returns" 0 on success, 1 on failure, -EFAULT if the access faults. */
+ 
 #define __try_cmpxchg_user(_ptr, _oldp, _nval, _label)	({		\
 	int __ret = -EFAULT;						\
 	__uaccess_begin_nospec();					\
@@ -458,10 +319,7 @@ _label:									\
 	__ret;								\
 							})
 
-/*
- * We want the unsafe accessors to always be inlined and use
- * the error labels - thus the macro games.
- */
+ 
 #define unsafe_copy_loop(dst, src, len, type, label)				\
 	while (len >= sizeof(type)) {						\
 		unsafe_put_user(*(type *)(src),(type __user *)(dst),label);	\
@@ -489,5 +347,5 @@ do {									\
 	__put_user_size(*((type *)(src)), (__force type __user *)(dst),	\
 			sizeof(type), err_label)
 
-#endif /* _ASM_X86_UACCESS_H */
+#endif  
 

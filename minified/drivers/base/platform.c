@@ -1,13 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * platform.c - platform 'pseudo' bus for legacy devices
- *
- * Copyright (c) 2002-3 Patrick Mochel
- * Copyright (c) 2002-3 Open Source Development Labs
- *
- * Please see Documentation/driver-api/driver-model/platform.rst for more
- * information.
- */
+ 
+ 
 
 #include <linux/string.h>
 #include <linux/platform_device.h>
@@ -36,21 +28,14 @@
 #include "base.h"
 #include "power/power.h"
 
-/* For automatically allocated device IDs */
+ 
 static DEFINE_IDA(platform_devid_ida);
 
 struct device platform_bus = {
 	.init_name	= "platform",
 };
 
-/**
- * platform_get_resource - get a resource for a device
- * @dev: platform device
- * @type: resource type
- * @num: resource index
- *
- * Return: a pointer to the resource or NULL on failure.
- */
+ 
 struct resource *platform_get_resource(struct platform_device *dev,
 				       unsigned int type, unsigned int num)
 {
@@ -79,18 +64,7 @@ struct resource *platform_get_mem_or_io(struct platform_device *dev,
 	return NULL;
 }
 
-/**
- * devm_platform_get_and_ioremap_resource - call devm_ioremap_resource() for a
- *					    platform device and get resource
- *
- * @pdev: platform device to use both for memory resource lookup as well as
- *        resource management
- * @index: resource index
- * @res: optional output parameter to store a pointer to the obtained resource.
- *
- * Return: a pointer to the remapped memory or an ERR_PTR() encoded error code
- * on failure.
- */
+ 
 void __iomem *
 devm_platform_get_and_ioremap_resource(struct platform_device *pdev,
 				unsigned int index, struct resource **res)
@@ -103,35 +77,14 @@ devm_platform_get_and_ioremap_resource(struct platform_device *pdev,
 	return devm_ioremap_resource(&pdev->dev, r);
 }
 
-/**
- * devm_platform_ioremap_resource - call devm_ioremap_resource() for a platform
- *				    device
- *
- * @pdev: platform device to use both for memory resource lookup as well as
- *        resource management
- * @index: resource index
- *
- * Return: a pointer to the remapped memory or an ERR_PTR() encoded error code
- * on failure.
- */
+ 
 void __iomem *devm_platform_ioremap_resource(struct platform_device *pdev,
 					     unsigned int index)
 {
 	return devm_platform_get_and_ioremap_resource(pdev, index, NULL);
 }
 
-/**
- * devm_platform_ioremap_resource_byname - call devm_ioremap_resource for
- *					   a platform device, retrieve the
- *					   resource by name
- *
- * @pdev: platform device to use both for memory resource lookup as well as
- *	  resource management
- * @name: name of the resource
- *
- * Return: a pointer to the remapped memory or an ERR_PTR() encoded error code
- * on failure.
- */
+ 
 void __iomem *
 devm_platform_ioremap_resource_byname(struct platform_device *pdev,
 				      const char *name)
@@ -142,24 +95,7 @@ devm_platform_ioremap_resource_byname(struct platform_device *pdev,
 	return devm_ioremap_resource(&pdev->dev, res);
 }
 
-/**
- * platform_get_irq_optional - get an optional IRQ for a device
- * @dev: platform device
- * @num: IRQ number index
- *
- * Gets an IRQ for a platform device. Device drivers should check the return
- * value for errors so as to not pass a negative integer value to the
- * request_irq() APIs. This is the same as platform_get_irq(), except that it
- * does not print an error message if an IRQ can not be obtained.
- *
- * For example::
- *
- *		int irq = platform_get_irq_optional(pdev, 0);
- *		if (irq < 0)
- *			return irq;
- *
- * Return: non-zero IRQ number on success, negative error number on failure.
- */
+ 
 int platform_get_irq_optional(struct platform_device *dev, unsigned int num)
 {
 	int ret;
@@ -180,12 +116,7 @@ int platform_get_irq_optional(struct platform_device *dev, unsigned int num)
 		}
 	}
 
-	/*
-	 * The resources may pass trigger flags to the irqs that need
-	 * to be set up. It so happens that the trigger flags for
-	 * IORESOURCE_BITS correspond 1-to-1 to the IRQF_TRIGGER*
-	 * settings.
-	 */
+	 
 	if (r && r->flags & IORESOURCE_BITS) {
 		struct irq_data *irqd;
 
@@ -200,16 +131,10 @@ int platform_get_irq_optional(struct platform_device *dev, unsigned int num)
 		goto out;
 	}
 
-	/*
-	 * For the index 0 interrupt, allow falling back to GpioInt
-	 * resources. While a device could have both Interrupt and GpioInt
-	 * resources, making this fallback ambiguous, in many common cases
-	 * the device will only expose one IRQ, and this fallback
-	 * allows a common code path across either kind of resource.
-	 */
+	 
 	if (num == 0 && has_acpi_companion(&dev->dev)) {
 		ret = acpi_dev_gpio_irq_get(ACPI_COMPANION(&dev->dev), num);
-		/* Our callers expect -ENXIO for missing IRQs. */
+		 
 		if (ret >= 0 || ret == -EPROBE_DEFER)
 			goto out;
 	}
@@ -222,23 +147,7 @@ out:
 	return ret;
 }
 
-/**
- * platform_get_irq - get an IRQ for a device
- * @dev: platform device
- * @num: IRQ number index
- *
- * Gets an IRQ for a platform device and prints an error message if finding the
- * IRQ fails. Device drivers should check the return value for errors so as to
- * not pass a negative integer value to the request_irq() APIs.
- *
- * For example::
- *
- *		int irq = platform_get_irq(pdev, 0);
- *		if (irq < 0)
- *			return irq;
- *
- * Return: non-zero IRQ number on success, negative error number on failure.
- */
+ 
 int platform_get_irq(struct platform_device *dev, unsigned int num)
 {
 	int ret;
@@ -251,12 +160,7 @@ int platform_get_irq(struct platform_device *dev, unsigned int num)
 	return ret;
 }
 
-/**
- * platform_irq_count - Count the number of IRQs a platform device uses
- * @dev: platform device
- *
- * Return: Number of IRQs a platform device uses or EPROBE_DEFER
- */
+ 
 int platform_irq_count(struct platform_device *dev)
 {
 	int ret, nr = 0;
@@ -298,20 +202,7 @@ static void devm_platform_get_irqs_affinity_release(struct device *dev,
 	}
 }
 
-/**
- * devm_platform_get_irqs_affinity - devm method to get a set of IRQs for a
- *				device using an interrupt affinity descriptor
- * @dev: platform device pointer
- * @affd: affinity descriptor
- * @minvec: minimum count of interrupt vectors
- * @maxvec: maximum count of interrupt vectors
- * @irqs: pointer holder for IRQ numbers
- *
- * Gets a set of IRQs for a platform device, and updates IRQ afffinty according
- * to the passed affinity descriptor
- *
- * Return: Number of vectors on success, negative error number on failure.
- */
+ 
 int devm_platform_get_irqs_affinity(struct platform_device *dev,
 				    struct irq_affinity *affd,
 				    unsigned int minvec,
@@ -390,12 +281,7 @@ err_free_devres:
 	return ret;
 }
 
-/**
- * platform_get_resource_byname - get a resource for a device by name
- * @dev: platform device
- * @type: resource type
- * @name: resource name
- */
+ 
 struct resource *platform_get_resource_byname(struct platform_device *dev,
 					      unsigned int type,
 					      const char *name)
@@ -436,15 +322,7 @@ static int __platform_get_irq_byname(struct platform_device *dev,
 	return -ENXIO;
 }
 
-/**
- * platform_get_irq_byname - get an IRQ for a device by name
- * @dev: platform device
- * @name: IRQ name
- *
- * Get an IRQ like platform_get_irq(), but then by name rather then by index.
- *
- * Return: non-zero IRQ number on success, negative error number on failure.
- */
+ 
 int platform_get_irq_byname(struct platform_device *dev, const char *name)
 {
 	int ret;
@@ -456,27 +334,14 @@ int platform_get_irq_byname(struct platform_device *dev, const char *name)
 	return ret;
 }
 
-/**
- * platform_get_irq_byname_optional - get an optional IRQ for a device by name
- * @dev: platform device
- * @name: IRQ name
- *
- * Get an optional IRQ by name like platform_get_irq_byname(). Except that it
- * does not print an error message if an IRQ can not be obtained.
- *
- * Return: non-zero IRQ number on success, negative error number on failure.
- */
+ 
 int platform_get_irq_byname_optional(struct platform_device *dev,
 				     const char *name)
 {
 	return __platform_get_irq_byname(dev, name);
 }
 
-/**
- * platform_add_devices - add a numbers of platform devices
- * @devs: array of platform devices to add
- * @num: number of platform devices in array
- */
+ 
 int platform_add_devices(struct platform_device **devs, int num)
 {
 	int i, ret = 0;
@@ -498,10 +363,7 @@ struct platform_object {
 	char name[];
 };
 
-/*
- * Set up default DMA mask for platform devices if the they weren't
- * previously set by the architecture / DT.
- */
+ 
 static void setup_pdev_dma_masks(struct platform_device *pdev)
 {
 	pdev->dev.dma_parms = &pdev->dma_parms;
@@ -514,13 +376,7 @@ static void setup_pdev_dma_masks(struct platform_device *pdev)
 	}
 };
 
-/**
- * platform_device_put - destroy a platform device
- * @pdev: platform device to free
- *
- * Free all memory associated with a platform device.  This function must
- * _only_ be externally called in error cases.  All other usage is a bug.
- */
+ 
 void platform_device_put(struct platform_device *pdev)
 {
 	if (!IS_ERR_OR_NULL(pdev))
@@ -540,14 +396,7 @@ static void platform_device_release(struct device *dev)
 	kfree(pa);
 }
 
-/**
- * platform_device_alloc - create a platform device
- * @name: base name of the device we're adding
- * @id: instance id
- *
- * Create a platform device object which can have other objects attached
- * to it, and which will have attached objects freed when it is released.
- */
+ 
 struct platform_device *platform_device_alloc(const char *name, int id)
 {
 	struct platform_object *pa;
@@ -565,16 +414,7 @@ struct platform_device *platform_device_alloc(const char *name, int id)
 	return pa ? &pa->pdev : NULL;
 }
 
-/**
- * platform_device_add_resources - add resources to a platform device
- * @pdev: platform device allocated by platform_device_alloc to add resources to
- * @res: set of resources that needs to be allocated for the device
- * @num: number of resources
- *
- * Add a copy of the resources to the platform device.  The memory
- * associated with the resources will be freed when the platform device is
- * released.
- */
+ 
 int platform_device_add_resources(struct platform_device *pdev,
 				  const struct resource *res, unsigned int num)
 {
@@ -592,16 +432,7 @@ int platform_device_add_resources(struct platform_device *pdev,
 	return 0;
 }
 
-/**
- * platform_device_add_data - add platform-specific data to a platform device
- * @pdev: platform device allocated by platform_device_alloc to add resources to
- * @data: platform specific data for this platform device
- * @size: size of platform specific data
- *
- * Add a copy of platform specific data to the platform device's
- * platform_data pointer.  The memory associated with the platform data
- * will be freed when the platform device is released.
- */
+ 
 int platform_device_add_data(struct platform_device *pdev, const void *data,
 			     size_t size)
 {
@@ -618,13 +449,7 @@ int platform_device_add_data(struct platform_device *pdev, const void *data,
 	return 0;
 }
 
-/**
- * platform_device_add - add a platform device to device hierarchy
- * @pdev: platform device we're adding
- *
- * This is part 2 of platform_device_register(), though may be called
- * separately _iff_ pdev was allocated by platform_device_alloc().
- */
+ 
 int platform_device_add(struct platform_device *pdev)
 {
 	u32 i;
@@ -646,11 +471,7 @@ int platform_device_add(struct platform_device *pdev)
 		dev_set_name(&pdev->dev, "%s", pdev->name);
 		break;
 	case PLATFORM_DEVID_AUTO:
-		/*
-		 * Automatically allocated device ID. We mark it as such so
-		 * that we remember it must be freed, and we append a suffix
-		 * to avoid namespace collision with explicit IDs.
-		 */
+		 
 		ret = ida_alloc(&platform_devid_ida, GFP_KERNEL);
 		if (ret < 0)
 			goto err_out;
@@ -703,14 +524,7 @@ int platform_device_add(struct platform_device *pdev)
 	return ret;
 }
 
-/**
- * platform_device_del - remove a platform-level device
- * @pdev: platform device we're removing
- *
- * Note that this function will also release all memory- and port-based
- * resources owned by the device (@dev->resource).  This function must
- * _only_ be externally called in error cases.  All other usage is a bug.
- */
+ 
 void platform_device_del(struct platform_device *pdev)
 {
 	u32 i;
@@ -731,14 +545,7 @@ void platform_device_del(struct platform_device *pdev)
 	}
 }
 
-/**
- * platform_device_register - add a platform-level device
- * @pdev: platform device we're adding
- *
- * NOTE: _Never_ directly free @pdev after calling this function, even if it
- * returned an error! Always use platform_device_put() to give up the
- * reference initialised in this function instead.
- */
+ 
 int platform_device_register(struct platform_device *pdev)
 {
 	device_initialize(&pdev->dev);
@@ -746,28 +553,14 @@ int platform_device_register(struct platform_device *pdev)
 	return platform_device_add(pdev);
 }
 
-/**
- * platform_device_unregister - unregister a platform-level device
- * @pdev: platform device we're unregistering
- *
- * Unregistration is done in 2 steps. First we release all resources
- * and remove it from the subsystem, then we drop reference count by
- * calling platform_device_put().
- */
+ 
 void platform_device_unregister(struct platform_device *pdev)
 {
 	platform_device_del(pdev);
 	platform_device_put(pdev);
 }
 
-/**
- * platform_device_register_full - add a platform-level device with
- * resources and platform-specific data
- *
- * @pdevinfo: data used to create device
- *
- * Returns &struct platform_device pointer on success, or ERR_PTR() on error.
- */
+ 
 struct platform_device *platform_device_register_full(
 		const struct platform_device_info *pdevinfo)
 {
@@ -817,11 +610,7 @@ err:
 	return pdev;
 }
 
-/**
- * __platform_driver_register - register a driver for platform-level devices
- * @drv: platform driver structure
- * @owner: owning module/driver
- */
+ 
 int __platform_driver_register(struct platform_driver *drv,
 				struct module *owner)
 {
@@ -831,10 +620,7 @@ int __platform_driver_register(struct platform_driver *drv,
 	return driver_register(&drv->driver);
 }
 
-/**
- * platform_driver_unregister - unregister a driver for platform-level devices
- * @drv: platform driver structure
- */
+ 
 void platform_driver_unregister(struct platform_driver *drv)
 {
 	driver_unregister(&drv->driver);
@@ -845,26 +631,7 @@ static int platform_probe_fail(struct platform_device *pdev)
 	return -ENXIO;
 }
 
-/**
- * __platform_driver_probe - register driver for non-hotpluggable device
- * @drv: platform driver structure
- * @probe: the driver probe routine, probably from an __init section
- * @module: module which will be the owner of the driver
- *
- * Use this instead of platform_driver_register() when you know the device
- * is not hotpluggable and has already been registered, and you want to
- * remove its run-once probe() infrastructure from memory after the driver
- * has bound to the device.
- *
- * One typical use for this would be with drivers for controllers integrated
- * into system-on-chip processors, where the controller devices have been
- * configured as part of board setup.
- *
- * Note that this is incompatible with deferred probing.
- *
- * Returns zero if the driver registered and bound to a device, else returns
- * a negative error code and with the driver not registered.
- */
+ 
 int __init_or_module __platform_driver_probe(struct platform_driver *drv,
 		int (*probe)(struct platform_device *), struct module *module)
 {
@@ -876,34 +643,22 @@ int __init_or_module __platform_driver_probe(struct platform_driver *drv,
 		return -EINVAL;
 	}
 
-	/*
-	 * We have to run our probes synchronously because we check if
-	 * we find any devices to bind to and exit with error if there
-	 * are any.
-	 */
+	 
 	drv->driver.probe_type = PROBE_FORCE_SYNCHRONOUS;
 
-	/*
-	 * Prevent driver from requesting probe deferral to avoid further
-	 * futile probe attempts.
-	 */
+	 
 	drv->prevent_deferred_probe = true;
 
-	/* make sure driver won't have bind/unbind attributes */
+	 
 	drv->driver.suppress_bind_attrs = true;
 
-	/* temporary section violation during probe() */
+	 
 	drv->probe = probe;
 	retval = code = __platform_driver_register(drv, module);
 	if (retval)
 		return retval;
 
-	/*
-	 * Fixup that section violation, being paranoid about code scanning
-	 * the list of drivers in order to probe new devices.  Check to see
-	 * if the probe was successful, and make sure any forced probes of
-	 * new devices fail.
-	 */
+	 
 	spin_lock(&drv->driver.bus->p->klist_drivers.k_lock);
 	drv->probe = platform_probe_fail;
 	if (code == 0 && list_empty(&drv->driver.p->klist_devices.k_list))
@@ -915,21 +670,7 @@ int __init_or_module __platform_driver_probe(struct platform_driver *drv,
 	return retval;
 }
 
-/**
- * __platform_create_bundle - register driver and create corresponding device
- * @driver: platform driver structure
- * @probe: the driver probe routine, probably from an __init section
- * @res: set of resources that needs to be allocated for the device
- * @n_res: number of resources
- * @data: platform specific data for this platform device
- * @size: size of platform specific data
- * @module: module which will be the owner of the driver
- *
- * Use this in legacy-style modules that probe hardware directly and
- * register a single platform device and corresponding platform driver.
- *
- * Returns &struct platform_device pointer on success, or ERR_PTR() on error.
- */
+ 
 struct platform_device * __init_or_module __platform_create_bundle(
 			struct platform_driver *driver,
 			int (*probe)(struct platform_device *),
@@ -971,19 +712,7 @@ err_out:
 	return ERR_PTR(error);
 }
 
-/**
- * __platform_register_drivers - register an array of platform drivers
- * @drivers: an array of drivers to register
- * @count: the number of drivers to register
- * @owner: module owning the drivers
- *
- * Registers platform drivers specified by an array. On failure to register a
- * driver, all previously registered drivers will be unregistered. Callers of
- * this API should use platform_unregister_drivers() to unregister drivers in
- * the reverse order.
- *
- * Returns: 0 on success or a negative error code on failure.
- */
+ 
 int __platform_register_drivers(struct platform_driver * const *drivers,
 				unsigned int count, struct module *owner)
 {
@@ -1009,15 +738,7 @@ error:
 	return err;
 }
 
-/**
- * platform_unregister_drivers - unregister an array of platform drivers
- * @drivers: an array of drivers to unregister
- * @count: the number of drivers to unregister
- *
- * Unregisters platform drivers specified by an array. This is typically used
- * to complement an earlier call to platform_register_drivers(). Drivers are
- * unregistered in the reverse order in which they were registered.
- */
+ 
 void platform_unregister_drivers(struct platform_driver * const *drivers,
 				 unsigned int count)
 {
@@ -1043,12 +764,7 @@ static const struct platform_device_id *platform_match_id(
 
 
 
-/* modalias support enables more hands-off userspace setup:
- * (a) environment variable lets new-style hotplug events work once system is
- *     fully running:  "modprobe $MODALIAS"
- * (b) sysfs attribute lets new-style coldplug recover from hotplug events
- *     mishandled before system is fully running:  "modprobe $(cat modalias)"
- */
+ 
 static ssize_t modalias_show(struct device *dev,
 			     struct device_attribute *attr, char *buf)
 {
@@ -1128,41 +844,29 @@ static const struct attribute_group platform_dev_group = {
 __ATTRIBUTE_GROUPS(platform_dev);
 
 
-/**
- * platform_match - bind platform device to platform driver.
- * @dev: device.
- * @drv: driver.
- *
- * Platform device IDs are assumed to be encoded like this:
- * "<name><instance>", where <name> is a short description of the type of
- * device, like "pci" or "floppy", and <instance> is the enumerated
- * instance of the device, like '0' or '42'.  Driver IDs are simply
- * "<name>".  So, extract the <name> from the platform_device structure,
- * and compare it against the name of the driver. Return whether they match
- * or not.
- */
+ 
 static int platform_match(struct device *dev, struct device_driver *drv)
 {
 	struct platform_device *pdev = to_platform_device(dev);
 	struct platform_driver *pdrv = to_platform_driver(drv);
 
-	/* When driver_override is set, only bind to the matching driver */
+	 
 	if (pdev->driver_override)
 		return !strcmp(pdev->driver_override, drv->name);
 
-	/* Attempt an OF style match first */
+	 
 	if (of_driver_match_device(dev, drv))
 		return 1;
 
-	/* Then try ACPI style match */
+	 
 	if (acpi_driver_match_device(dev, drv))
 		return 1;
 
-	/* Then try to match against the id table */
+	 
 	if (pdrv->id_table)
 		return platform_match_id(pdrv->id_table, pdev) != NULL;
 
-	/* fall-back to driver name match */
+	 
 	return (strcmp(pdev->name, drv->name) == 0);
 }
 
@@ -1171,7 +875,7 @@ static int platform_uevent(struct device *dev, struct kobj_uevent_env *env)
 	struct platform_device	*pdev = to_platform_device(dev);
 	int rc;
 
-	/* Some devices have extra OF data and an OF-style MODALIAS */
+	 
 	rc = of_device_uevent_modalias(dev, env);
 	if (rc != -ENODEV)
 		return rc;
@@ -1191,13 +895,7 @@ static int platform_probe(struct device *_dev)
 	struct platform_device *dev = to_platform_device(_dev);
 	int ret;
 
-	/*
-	 * A driver registered using platform_driver_probe() cannot be bound
-	 * again later because the probe function usually lives in __init code
-	 * and so is gone. For these drivers .probe is set to
-	 * platform_probe_fail in __platform_driver_probe(). Don't even prepare
-	 * clocks and PM domains for these to match the traditional behaviour.
-	 */
+	 
 	if (unlikely(drv->probe == platform_probe_fail))
 		return -ENXIO;
 
@@ -1304,12 +1002,7 @@ static inline int __platform_match(struct device *dev, const void *drv)
 	return platform_match(dev, (struct device_driver *)drv);
 }
 
-/**
- * platform_find_device_by_driver - Find a platform device with a given
- * driver.
- * @start: The device to start the search from.
- * @drv: The device driver to look for.
- */
+ 
 struct device *platform_find_device_by_driver(struct device *start,
 					      const struct device_driver *drv)
 {

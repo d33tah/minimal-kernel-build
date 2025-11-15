@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 #include <linux/mnt_namespace.h>
 #include <linux/mount.h>
 #include <linux/fs.h>
@@ -7,7 +7,7 @@
 #include "internal.h"
 #include "pnode.h"
 
-/* Stubbed mount propagation - not needed for minimal kernel */
+ 
 
 int get_dominating_id(struct mount *mnt, const struct path *root)
 {

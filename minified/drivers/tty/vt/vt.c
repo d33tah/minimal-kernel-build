@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 
 #include <linux/module.h>
 #include <linux/types.h>
@@ -203,7 +203,7 @@ struct uni_screen {
 
 static struct uni_screen *vc_uniscr_alloc(unsigned int cols, unsigned int rows)
 {
-	/* Stubbed: unicode screen buffer disabled to save memory/code */
+	 
 	return NULL;
 }
 
@@ -2801,8 +2801,8 @@ static void con_cleanup(struct tty_struct *tty)
 }
 
 static int default_color           = 7; 
-static int default_italic_color    = 2; // green (ASCII)
-static int default_underline_color = 3; // cyan (ASCII)
+static int default_italic_color    = 2;  
+static int default_underline_color = 3;  
 module_param_named(color, default_color, int, S_IRUGO | S_IWUSR);
 module_param_named(italic, default_italic_color, int, S_IRUGO | S_IWUSR);
 module_param_named(underline, default_underline_color, int, S_IRUGO | S_IWUSR);

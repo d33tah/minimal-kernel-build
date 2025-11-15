@@ -1,14 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0+
-/*
- * Read-Copy Update mechanism for mutual exclusion, the Bloatwatch edition.
- *
- * Copyright IBM Corporation, 2008
- *
- * Author: Paul E. McKenney <paulmck@linux.ibm.com>
- *
- * For detailed explanation of Read-Copy Update mechanism see -
- *		Documentation/RCU
- */
+ 
+ 
 #include <linux/completion.h>
 #include <linux/interrupt.h>
 #include <linux/notifier.h>
@@ -27,15 +18,15 @@
 
 #include "rcu.h"
 
-/* Global control variables for rcupdate callback mechanism. */
+ 
 struct rcu_ctrlblk {
-	struct rcu_head *rcucblist;	/* List of pending callbacks (CBs). */
-	struct rcu_head **donetail;	/* ->next pointer of last "done" CB. */
-	struct rcu_head **curtail;	/* ->next pointer of last CB. */
-	unsigned long gp_seq;		/* Grace-period counter. */
+	struct rcu_head *rcucblist;	 
+	struct rcu_head **donetail;	 
+	struct rcu_head **curtail;	 
+	unsigned long gp_seq;		 
 };
 
-/* Definition for rcupdate control block. */
+ 
 static struct rcu_ctrlblk rcu_ctrlblk = {
 	.donetail	= &rcu_ctrlblk.rcucblist,
 	.curtail	= &rcu_ctrlblk.rcucblist,
@@ -47,7 +38,7 @@ void rcu_barrier(void)
 	wait_rcu_gp(call_rcu);
 }
 
-/* Record an rcu quiescent state.  */
+ 
 void rcu_qs(void)
 {
 	unsigned long flags;
@@ -61,12 +52,7 @@ void rcu_qs(void)
 	local_irq_restore(flags);
 }
 
-/*
- * Check to see if the scheduling-clock interrupt came from an extended
- * quiescent state, and, if so, tell RCU about it.  This function must
- * be called from hardirq context.  It is normally called from the
- * scheduling-clock interrupt.
- */
+ 
 void rcu_sched_clock_irq(int user)
 {
 	if (user) {
@@ -77,10 +63,7 @@ void rcu_sched_clock_irq(int user)
 	}
 }
 
-/*
- * Reclaim the specified callback, either by invoking it for non-kfree cases or
- * freeing it directly (for kfree). Return true if kfreeing, false otherwise.
- */
+ 
 static inline bool rcu_reclaim_tiny(struct rcu_head *head)
 {
 	rcu_callback_t f;
@@ -88,13 +71,13 @@ static inline bool rcu_reclaim_tiny(struct rcu_head *head)
 
 	rcu_lock_acquire(&rcu_callback_map);
 	if (__is_kvfree_rcu_offset(offset)) {
-		/* trace_rcu_invoke_kvfree_callback("", head, offset); */
+		 
 		kvfree((void *)head - offset);
 		rcu_lock_release(&rcu_callback_map);
 		return true;
 	}
 
-	/* trace_rcu_invoke_callback("", head); */
+	 
 	f = head->func;
 	WRITE_ONCE(head->func, (rcu_callback_t)0L);
 	f(head);
@@ -102,16 +85,16 @@ static inline bool rcu_reclaim_tiny(struct rcu_head *head)
 	return false;
 }
 
-/* Invoke the RCU callbacks whose grace period has elapsed.  */
+ 
 static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused)
 {
 	struct rcu_head *next, *list;
 	unsigned long flags;
 
-	/* Move the ready-to-invoke callbacks to a local list. */
+	 
 	local_irq_save(flags);
 	if (rcu_ctrlblk.donetail == &rcu_ctrlblk.rcucblist) {
-		/* No callbacks ready, so just leave. */
+		 
 		local_irq_restore(flags);
 		return;
 	}
@@ -123,7 +106,7 @@ static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused
 	rcu_ctrlblk.donetail = &rcu_ctrlblk.rcucblist;
 	local_irq_restore(flags);
 
-	/* Invoke the callbacks on the local list. */
+	 
 	while (list) {
 		next = list->next;
 		prefetch(next);
@@ -135,16 +118,7 @@ static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused
 	}
 }
 
-/*
- * Wait for a grace period to elapse.  But it is illegal to invoke
- * synchronize_rcu() from within an RCU read-side critical section.
- * Therefore, any legal call to synchronize_rcu() is a quiescent
- * state, and so on a UP system, synchronize_rcu() need do nothing.
- * (But Lai Jiangshan points out the benefits of doing might_sleep()
- * to reduce latency.)
- *
- * Cool, huh?  (Due to Josh Triplett.)
- */
+ 
 void synchronize_rcu(void)
 {
 	RCU_LOCKDEP_WARN(lock_is_held(&rcu_bh_lock_map) ||
@@ -153,11 +127,7 @@ void synchronize_rcu(void)
 			 "Illegal synchronize_rcu() in RCU read-side critical section");
 }
 
-/*
- * Post an RCU callback to be invoked after the end of an RCU grace
- * period.  But since we have but one CPU, that would be after any
- * quiescent state.
- */
+ 
 void call_rcu(struct rcu_head *head, rcu_callback_t func)
 {
 	unsigned long flags;
@@ -172,40 +142,30 @@ void call_rcu(struct rcu_head *head, rcu_callback_t func)
 	local_irq_restore(flags);
 
 	if (unlikely(is_idle_task(current))) {
-		/* force scheduling for rcu_qs() */
+		 
 		resched_cpu(0);
 	}
 }
 
-/*
- * Return a grace-period-counter "cookie".  For more information,
- * see the Tree RCU header comment.
- */
+ 
 unsigned long get_state_synchronize_rcu(void)
 {
 	return READ_ONCE(rcu_ctrlblk.gp_seq);
 }
 
-/*
- * Return a grace-period-counter "cookie" and ensure that a future grace
- * period completes.  For more information, see the Tree RCU header comment.
- */
+ 
 unsigned long start_poll_synchronize_rcu(void)
 {
 	unsigned long gp_seq = get_state_synchronize_rcu();
 
 	if (unlikely(is_idle_task(current))) {
-		/* force scheduling for rcu_qs() */
+		 
 		resched_cpu(0);
 	}
 	return gp_seq;
 }
 
-/*
- * Return true if the grace period corresponding to oldstate has completed
- * and false otherwise.  For more information, see the Tree RCU header
- * comment.
- */
+ 
 bool poll_state_synchronize_rcu(unsigned long oldstate)
 {
 	return READ_ONCE(rcu_ctrlblk.gp_seq) != oldstate;

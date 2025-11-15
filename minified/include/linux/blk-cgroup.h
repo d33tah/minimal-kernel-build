@@ -1,18 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _BLK_CGROUP_H
 #define _BLK_CGROUP_H
-/*
- * Common Block IO controller cgroup interface
- *
- * Based on ideas and code from CFQ, CFS and BFQ:
- * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
- *
- * Copyright (C) 2008 Fabio Checconi <fabio@gandalf.sssup.it>
- *		      Paolo Valente <paolo.valente@unimore.it>
- *
- * Copyright (C) 2009 Vivek Goyal <vgoyal@redhat.com>
- * 	              Nauman Rafique <nauman@google.com>
- */
+ 
 
 #include <linux/types.h>
 
@@ -36,4 +25,4 @@ static inline struct cgroup_subsys_state *bio_blkcg_css(struct bio *bio)
 int blkcg_set_fc_appid(char *app_id, u64 cgrp_id, size_t app_id_len);
 char *blkcg_get_fc_appid(struct bio *bio);
 
-#endif	/* _BLK_CGROUP_H */
+#endif	 

@@ -1,12 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * mm/fadvise.c
- *
- * Copyright (C) 2002, Linus Torvalds
- *
- * 11Jan2003	Andrew Morton
- *		Initial version.
- */
+ 
+ 
 
 #include <linux/kernel.h>
 #include <linux/file.h>
@@ -24,14 +17,11 @@
 
 #include "internal.h"
 
-/*
- * POSIX_FADV_WILLNEED could set PG_Referenced, and POSIX_FADV_NOREUSE could
- * deactivate the pages and clear PG_Referenced.
- */
+ 
 
 int generic_fadvise(struct file *file, loff_t offset, loff_t len, int advice)
 {
-	/* Stubbed for minimization - just validate advice and return success */
+	 
 	switch (advice) {
 	case POSIX_FADV_NORMAL:
 	case POSIX_FADV_RANDOM:

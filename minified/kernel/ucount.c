@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
 #include <linux/stat.h>
 #include <linux/sysctl.h>
@@ -56,7 +56,7 @@ static void hlist_add_ucounts(struct ucounts *ucounts)
 
 static inline bool get_ucounts_or_wrap(struct ucounts *ucounts)
 {
-	/* Returns true on a successful get, false if the count wraps. */
+	 
 	return !atomic_add_negative(1, &ucounts->count);
 }
 
@@ -187,7 +187,7 @@ long inc_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v)
 bool dec_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v)
 {
 	struct ucounts *iter;
-	long new = -1; /* Silence compiler warning */
+	long new = -1;  
 	for (iter = ucounts; iter; iter = iter->ns->ucounts) {
 		long dec = atomic_long_sub_return(v, &iter->ucount[type]);
 		WARN_ON_ONCE(dec < 0);
@@ -217,7 +217,7 @@ void dec_rlimit_put_ucounts(struct ucounts *ucounts, enum ucount_type type)
 
 long inc_rlimit_get_ucounts(struct ucounts *ucounts, enum ucount_type type)
 {
-	/* Caller must hold a reference to ucounts */
+	 
 	struct ucounts *iter;
 	long max = LONG_MAX;
 	long dec, ret = 0;
@@ -229,10 +229,7 @@ long inc_rlimit_get_ucounts(struct ucounts *ucounts, enum ucount_type type)
 		if (iter == ucounts)
 			ret = new;
 		max = READ_ONCE(iter->ns->ucount_max[type]);
-		/*
-		 * Grab an extra ucount reference for the caller when
-		 * the rlimit count was previously 0.
-		 */
+		 
 		if (new != 1)
 			continue;
 		if (!get_ucounts(iter))

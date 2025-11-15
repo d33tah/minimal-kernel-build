@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_TTY_FLIP_H
 #define _LINUX_TTY_FLIP_H
 
@@ -47,4 +47,4 @@ int tty_ldisc_receive_buf(struct tty_ldisc *ld, const unsigned char *p,
 void tty_buffer_lock_exclusive(struct tty_port *port);
 void tty_buffer_unlock_exclusive(struct tty_port *port);
 
-#endif /* _LINUX_TTY_FLIP_H */
+#endif  

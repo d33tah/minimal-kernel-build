@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Stubbed ioctl.c */
+ 
+ 
 #include <linux/fs.h>
 #include <linux/fiemap.h>
 #include <linux/export.h>

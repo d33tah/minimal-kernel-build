@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef __MEMTYPE_H_
 #define __MEMTYPE_H_
 
@@ -38,4 +38,4 @@ static inline struct memtype *memtype_lookup(u64 addr)
 static inline int memtype_copy_nth_element(struct memtype *out, loff_t pos)
 { return 0; }
 
-#endif /* __MEMTYPE_H_ */
+#endif  

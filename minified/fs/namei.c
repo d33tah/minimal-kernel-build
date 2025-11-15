@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 
 #include <linux/init.h>
 #include <linux/export.h>
@@ -847,15 +847,15 @@ static int __traverse_mounts(struct path *path, unsigned flags, bool *jumped,
 				break;
 		}
 
-		if (flags & DCACHE_MOUNTED) {	// something's mounted on it..
+		if (flags & DCACHE_MOUNTED) {	 
 			struct vfsmount *mounted = lookup_mnt(path);
-			if (mounted) {		// ... in our namespace
+			if (mounted) {		 
 				dput(path->dentry);
 				if (need_mntput)
 					mntput(path->mnt);
 				path->mnt = mounted;
 				path->dentry = dget(mounted->mnt_root);
-				// here we know it's positive
+				 
 				flags = path->dentry->d_flags;
 				need_mntput = true;
 				continue;
@@ -865,7 +865,7 @@ static int __traverse_mounts(struct path *path, unsigned flags, bool *jumped,
 		if (!(flags & DCACHE_NEED_AUTOMOUNT))
 			break;
 
-		// uncovered automount point
+		 
 		ret = follow_automount(path, count, lookup_flags);
 		flags = smp_load_acquire(&path->dentry->d_flags);
 		if (ret < 0)
@@ -874,7 +874,7 @@ static int __traverse_mounts(struct path *path, unsigned flags, bool *jumped,
 
 	if (ret == -EISDIR)
 		ret = 0;
-	// possible if you race with several mount --move
+	 
 	if (need_mntput && path->mnt == mnt)
 		mntput(path->mnt);
 	if (!ret && unlikely(d_flags_negative(flags)))
@@ -981,7 +981,7 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 			return 0;
 		if (!try_to_unlazy_next(nd, dentry, seq))
 			return -ECHILD;
-		// *path might've been clobbered by __follow_mount_rcu()
+		 
 		path->mnt = nd->path.mnt;
 		path->dentry = dentry;
 	}
@@ -1169,8 +1169,8 @@ static int reserve_stack(struct nameidata *nd, struct path *link, unsigned seq)
 		return 0;
 
 	if (nd->flags & LOOKUP_RCU) {
-		// we need to grab link before we do unlazy.  And we can't skip
-		// unlazy even if we fail to grab the link - cleanup needs it
+		 
+		 
 		bool grabbed_link = legitimize_path(nd, link, seq);
 
 		if (!try_to_unlazy(nd) || !grabbed_link)
@@ -1251,7 +1251,7 @@ static const char *pick_link(struct nameidata *nd, struct path *link,
 	}
 	if (*res)
 		return res;
-all_done: // pure jump
+all_done:  
 	put_link(nd);
 	return NULL;
 }
@@ -1519,7 +1519,7 @@ inside:
 
 static int link_path_walk(const char *name, struct nameidata *nd)
 {
-	int depth = 0; // depth <= nd->depth
+	int depth = 0;  
 	int err;
 
 	nd->last_type = LAST_ROOT;
@@ -1529,7 +1529,7 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 	while (*name=='/')
 		name++;
 	if (!*name) {
-		nd->dir_mode = 0; // short-circuit the 'hardening' idiocy
+		nd->dir_mode = 0;  
 		return 0;
 	}
 
@@ -1750,7 +1750,7 @@ static int path_lookupat(struct nameidata *nd, unsigned flags, struct path *path
 		;
 	if (!err && unlikely(nd->flags & LOOKUP_MOUNTPOINT)) {
 		err = handle_lookup_down(nd);
-		nd->state &= ~ND_JUMPED; // no d_weak_revalidate(), please...
+		nd->state &= ~ND_JUMPED;  
 	}
 	if (!err)
 		err = complete_walk(nd);

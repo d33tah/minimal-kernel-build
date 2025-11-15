@@ -1,12 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * driver.c - centralized device driver management
- *
- * Copyright (c) 2002-3 Patrick Mochel
- * Copyright (c) 2002-3 Open Source Development Labs
- * Copyright (c) 2007 Greg Kroah-Hartman <gregkh@suse.de>
- * Copyright (c) 2007 Novell Inc.
- */
+ 
+ 
 
 #include <linux/device/driver.h>
 #include <linux/device.h>
@@ -30,21 +23,7 @@ static struct device *next_device(struct klist_iter *i)
 	return dev;
 }
 
-/**
- * driver_set_override() - Helper to set or clear driver override.
- * @dev: Device to change
- * @override: Address of string to change (e.g. &device->driver_override);
- *            The contents will be freed and hold newly allocated override.
- * @s: NUL-terminated string, new driver name to force a match, pass empty
- *     string to clear it ("" or "\n", where the latter is only for sysfs
- *     interface).
- * @len: length of @s
- *
- * Helper to set or clear driver override in a device, intended for the cases
- * when the driver_override field is allocated by driver/bus code.
- *
- * Returns: 0 on success or a negative error code on failure.
- */
+ 
 int driver_set_override(struct device *dev, const char **override,
 			const char *s, size_t len)
 {
@@ -54,17 +33,12 @@ int driver_set_override(struct device *dev, const char **override,
 	if (!override || !s)
 		return -EINVAL;
 
-	/*
-	 * The stored value will be used in sysfs show callback (sysfs_emit()),
-	 * which has a length limit of PAGE_SIZE and adds a trailing newline.
-	 * Thus we can store one character less to avoid truncation during sysfs
-	 * show.
-	 */
+	 
 	if (len >= (PAGE_SIZE - 1))
 		return -EINVAL;
 
 	if (!len) {
-		/* Empty string passed - clear override */
+		 
 		device_lock(dev);
 		old = *override;
 		*override = NULL;
@@ -87,7 +61,7 @@ int driver_set_override(struct device *dev, const char **override,
 	if (cp != s) {
 		*override = new;
 	} else {
-		/* "\n" passed - clear override */
+		 
 		kfree(new);
 		*override = NULL;
 	}
@@ -98,15 +72,7 @@ int driver_set_override(struct device *dev, const char **override,
 	return 0;
 }
 
-/**
- * driver_for_each_device - Iterator for devices bound to a driver.
- * @drv: Driver we're iterating.
- * @start: Device to begin with
- * @data: Data to pass to the callback.
- * @fn: Function to call for each device.
- *
- * Iterate over the @drv's list of devices calling @fn for each one.
- */
+ 
 int driver_for_each_device(struct device_driver *drv, struct device *start,
 			   void *data, int (*fn)(struct device *, void *))
 {
@@ -125,21 +91,7 @@ int driver_for_each_device(struct device_driver *drv, struct device *start,
 	return error;
 }
 
-/**
- * driver_find_device - device iterator for locating a particular device.
- * @drv: The device's driver
- * @start: Device to begin with
- * @data: Data to pass to match function
- * @match: Callback function to check device
- *
- * This is similar to the driver_for_each_device() function above, but
- * it returns a reference to a device that is 'found' for later use, as
- * determined by the @match callback.
- *
- * The callback should return 0 if the device doesn't match and non-zero
- * if it does.  If the callback returns non-zero, this function will
- * return to the caller and not iterate over any more devices.
- */
+ 
 struct device *driver_find_device(struct device_driver *drv,
 				  struct device *start, const void *data,
 				  int (*match)(struct device *dev, const void *data))
@@ -159,11 +111,7 @@ struct device *driver_find_device(struct device_driver *drv,
 	return dev;
 }
 
-/**
- * driver_create_file - create sysfs file for driver.
- * @drv: driver.
- * @attr: driver attribute descriptor.
- */
+ 
 int driver_create_file(struct device_driver *drv,
 		       const struct driver_attribute *attr)
 {
@@ -176,11 +124,7 @@ int driver_create_file(struct device_driver *drv,
 	return error;
 }
 
-/**
- * driver_remove_file - remove sysfs file for driver.
- * @drv: driver.
- * @attr: driver attribute descriptor.
- */
+ 
 void driver_remove_file(struct device_driver *drv,
 			const struct driver_attribute *attr)
 {
@@ -200,14 +144,7 @@ void driver_remove_groups(struct device_driver *drv,
 	sysfs_remove_groups(&drv->p->kobj, groups);
 }
 
-/**
- * driver_register - register driver with bus
- * @drv: driver to register
- *
- * We pass off most of the work to the bus_add_driver() call,
- * since most of the things we have to do deal with the bus
- * structures.
- */
+ 
 int driver_register(struct device_driver *drv)
 {
 	int ret;
@@ -240,12 +177,7 @@ int driver_register(struct device_driver *drv)
 	return ret;
 }
 
-/**
- * driver_unregister - remove driver from system.
- * @drv: driver.
- *
- * Again, we pass off most of the work to the bus-level call.
- */
+ 
 void driver_unregister(struct device_driver *drv)
 {
 	if (!drv || !drv->p) {
@@ -256,25 +188,14 @@ void driver_unregister(struct device_driver *drv)
 	bus_remove_driver(drv);
 }
 
-/**
- * driver_find - locate driver on a bus by its name.
- * @name: name of the driver.
- * @bus: bus to scan for the driver.
- *
- * Call kset_find_obj() to iterate over list of drivers on
- * a bus to find driver by name. Return driver if found.
- *
- * This routine provides no locking to prevent the driver it returns
- * from being unregistered or unloaded while the caller is using it.
- * The caller is responsible for preventing this.
- */
+ 
 struct device_driver *driver_find(const char *name, struct bus_type *bus)
 {
 	struct kobject *k = kset_find_obj(bus->p->drivers_kset, name);
 	struct driver_private *priv;
 
 	if (k) {
-		/* Drop reference added by kset_find_obj() */
+		 
 		kobject_put(k);
 		priv = to_driver(k);
 		return priv->driver;

@@ -1,9 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- *  linux/kernel/sys.c
- *
- *  Copyright (C) 1991, 1992  Linus Torvalds
- */
+ 
+ 
 
 #include <linux/export.h>
 #include <linux/mm.h>
@@ -60,7 +56,7 @@
 #include <linux/nospec.h>
 
 #include <linux/kmsg_dump.h>
-/* Move somewhere else to avoid recompiling? */
+ 
 #include <generated/utsrelease.h>
 
 #include <linux/uaccess.h>
@@ -133,25 +129,19 @@
 # define GET_TAGGED_ADDR_CTRL()		(-EINVAL)
 #endif
 
-/*
- * this is where the system-wide overflow UID and GID are defined, for
- * architectures that now have 32-bit UID/GID but didn't in the past
- */
+ 
 
 int overflowuid = DEFAULT_OVERFLOWUID;
 int overflowgid = DEFAULT_OVERFLOWGID;
 
 
-/*
- * the same as above, but for filesystems which can only store a 16-bit
- * UID and GID. as such, this is needed on all architectures
- */
+ 
 
 int fs_overflowuid = DEFAULT_FS_OVERFLOWUID;
 int fs_overflowgid = DEFAULT_FS_OVERFLOWGID;
 
 
-/* Stubbed priority syscalls - not needed for minimal kernel */
+ 
 SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)
 {
 	return -ENOSYS;
@@ -159,54 +149,24 @@ SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)
 
 SYSCALL_DEFINE2(getpriority, int, which, int, who)
 {
-	return 20; /* Return default priority */
+	return 20;  
 }
 
-/*
- * Unprivileged users may change the real gid to the effective gid
- * or vice versa.  (BSD-style)
- *
- * If you set the real gid at all, or set the effective gid to a value not
- * equal to the real gid, then the saved gid is set to the new effective gid.
- *
- * This makes it possible for a setgid program to completely drop its
- * privileges, which is often a useful assertion to make when you are doing
- * a security audit over a program.
- *
- * The general idea is that a program which uses just setregid() will be
- * 100% compatible with BSD.  A program which uses just setgid() will be
- * 100% compatible with POSIX with saved IDs.
- *
- * SMP: There are not races, the GIDs are checked only by filesystem
- *      operations (as far as semantic preservation is concerned).
- */
+ 
 
-/**
- * sys_getpid - return the thread group id of the current process
- *
- * Note, despite the name, this returns the tgid not the pid.  The tgid and
- * the pid are identical unless CLONE_THREAD was specified on clone() in
- * which case the tgid is the same in all threads of the same group.
- *
- * This is SMP safe as current->tgid does not change.
- */
+ 
 SYSCALL_DEFINE0(getpid)
 {
 	return task_tgid_vnr(current);
 }
 
-/* Thread ID - the internal kernel "pid" */
+ 
 SYSCALL_DEFINE0(gettid)
 {
 	return task_pid_vnr(current);
 }
 
-/*
- * Accessing ->real_parent is not SMP-safe, it could
- * change from under us. However, we can use a stale
- * value of ->real_parent under rcu_read_lock(), see
- * release_task()->call_rcu(delayed_put_task_struct).
- */
+ 
 SYSCALL_DEFINE0(getppid)
 {
 	int pid;
@@ -220,32 +180,32 @@ SYSCALL_DEFINE0(getppid)
 
 SYSCALL_DEFINE0(getuid)
 {
-	/* Only we change this so SMP safe */
+	 
 	return from_kuid_munged(current_user_ns(), current_uid());
 }
 
 SYSCALL_DEFINE0(geteuid)
 {
-	/* Only we change this so SMP safe */
+	 
 	return from_kuid_munged(current_user_ns(), current_euid());
 }
 
 SYSCALL_DEFINE0(getgid)
 {
-	/* Only we change this so SMP safe */
+	 
 	return from_kgid_munged(current_user_ns(), current_gid());
 }
 
 SYSCALL_DEFINE0(getegid)
 {
-	/* Only we change this so SMP safe */
+	 
 	return from_kgid_munged(current_user_ns(), current_egid());
 }
 
-/* Stubbed times syscall - not needed for minimal kernel */
+ 
 SYSCALL_DEFINE1(times, struct tms __user *, tbuf)
 {
-	/* Return all zeros for CPU times */
+	 
 	if (tbuf) {
 		struct tms tmp = {0};
 		if (copy_to_user(tbuf, &tmp, sizeof(struct tms)))
@@ -255,43 +215,33 @@ SYSCALL_DEFINE1(times, struct tms __user *, tbuf)
 }
 
 
-/*
- * This needs some heavy checking ...
- * I just haven't the stomach for it. I also don't fully
- * understand sessions/pgrp etc. Let somebody who does explain it.
- *
- * OK, I think I have the protection semantics right.... this is really
- * only important on a multi-user system anyway, to make sure one user
- * can't send a signal to a process owned by another.  -TYT, 12/12/91
- *
- * !PF_FORKNOEXEC check to conform completely to POSIX.
- */
-/* Stubbed process group and session management - not needed for minimal kernel */
+ 
+ 
 SYSCALL_DEFINE2(setpgid, pid_t, pid, pid_t, pgid)
 {
-	return 0; /* Pretend success */
+	return 0;  
 }
 
 SYSCALL_DEFINE1(getpgid, pid_t, pid)
 {
-	return 1; /* Return a dummy process group ID */
+	return 1;  
 }
 
 #ifdef __ARCH_WANT_SYS_GETPGRP
 SYSCALL_DEFINE0(getpgrp)
 {
-	return 1; /* Return a dummy process group ID */
+	return 1;  
 }
 #endif
 
 SYSCALL_DEFINE1(getsid, pid_t, pid)
 {
-	return 1; /* Return a dummy session ID */
+	return 1;  
 }
 
 int ksys_setsid(void)
 {
-	return 1; /* Return a dummy session ID */
+	return 1;  
 }
 
 SYSCALL_DEFINE0(setsid)
@@ -301,7 +251,7 @@ SYSCALL_DEFINE0(setsid)
 
 DECLARE_RWSEM(uts_sem);
 
-/* Simplified uname syscalls - removed backwards compatibility cruft */
+ 
 SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 {
 	struct new_utsname tmp;
@@ -352,7 +302,7 @@ SYSCALL_DEFINE1(olduname, struct oldold_utsname __user *, name)
 }
 #endif
 
-/* Stubbed sethostname - not needed for minimal kernel */
+ 
 SYSCALL_DEFINE2(sethostname, char __user *, name, int, len)
 {
 	return -EPERM;
@@ -382,14 +332,14 @@ SYSCALL_DEFINE2(gethostname, char __user *, name, int, len)
 
 #endif
 
-/* Stubbed setdomainname - not needed for minimal kernel */
+ 
 SYSCALL_DEFINE2(setdomainname, char __user *, name, int, len)
 {
 	return -EPERM;
 }
 
-/* make sure you are allowed to change @tsk limits before calling this */
-/* Stubbed: Resource limits not needed for minimal "Hello World" system */
+ 
+ 
 SYSCALL_DEFINE2(getrlimit, unsigned int, resource, struct rlimit __user *, rlim)
 {
 	struct rlimit value = { .rlim_cur = RLIM_INFINITY, .rlim_max = RLIM_INFINITY };
@@ -404,7 +354,7 @@ SYSCALL_DEFINE2(old_getrlimit, unsigned int, resource, struct rlimit __user *, r
 }
 #endif
 
-/* Stubbed: prlimit64 and setrlimit - not needed for minimal system */
+ 
 SYSCALL_DEFINE4(prlimit64, pid_t, pid, unsigned int, resource,
 		const struct rlimit64 __user *, new_rlim,
 		struct rlimit64 __user *, old_rlim)
@@ -417,10 +367,10 @@ SYSCALL_DEFINE4(prlimit64, pid_t, pid, unsigned int, resource,
 
 SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
 {
-	return 0; /* Silently ignore - not needed for "Hello World" */
+	return 0;  
 }
 
-/* Stubbed: rusage simplified for minimal system */
+ 
 void getrusage(struct task_struct *p, int who, struct rusage *r)
 {
 	memset(r, 0, sizeof(*r));
@@ -470,16 +420,13 @@ SYSCALL_DEFINE3(getcpu, unsigned __user *, cpup, unsigned __user *, nodep,
 	return err ? -EFAULT : 0;
 }
 
-/**
- * do_sysinfo - fill in sysinfo struct
- * @info: pointer to buffer to fill
- */
-/* Stubbed sysinfo syscall - not needed for minimal kernel */
+ 
+ 
 SYSCALL_DEFINE1(sysinfo, struct sysinfo __user *, info)
 {
 	struct sysinfo val = {0};
 
-	/* Return minimal stub data */
+	 
 	val.uptime = 1;
 	val.procs = 1;
 	val.mem_unit = 1;

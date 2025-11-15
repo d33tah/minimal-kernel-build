@@ -1,10 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-/* Provide a way to create a superblock configuration context within the kernel
- * that allows a superblock to be set up prior to mounting.
- *
- * Copyright (C) 2017 Red Hat, Inc. All Rights Reserved.
- * Written by David Howells (dhowells@redhat.com)
- */
+ 
+ 
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 #include <linux/module.h>
@@ -31,7 +26,7 @@ enum legacy_fs_param {
 };
 
 struct legacy_fs_context {
-	char			*legacy_data;	/* Data page for legacy filesystems */
+	char			*legacy_data;	 
 	size_t			data_size;
 	enum legacy_fs_param	param_type;
 };
@@ -55,9 +50,7 @@ static const struct constant_table common_clear_sb_flag[] = {
 	{ },
 };
 
-/*
- * Check for a common mount option that manipulates s_flags.
- */
+ 
 static int vfs_parse_sb_flag(struct fs_context *fc, const char *key)
 {
 	unsigned int token;
@@ -79,18 +72,7 @@ static int vfs_parse_sb_flag(struct fs_context *fc, const char *key)
 	return -ENOPARAM;
 }
 
-/**
- * vfs_parse_fs_param_source - Handle setting "source" via parameter
- * @fc: The filesystem context to modify
- * @param: The parameter
- *
- * This is a simple helper for filesystems to verify that the "source" they
- * accept is sane.
- *
- * Returns 0 on success, -ENOPARAM if this is not  "source" parameter, and
- * -EINVAL otherwise. In the event of failure, supplementary error information
- *  is logged.
- */
+ 
 int vfs_parse_fs_param_source(struct fs_context *fc, struct fs_parameter *param)
 {
 	if (strcmp(param->key, "source") != 0)
@@ -107,22 +89,7 @@ int vfs_parse_fs_param_source(struct fs_context *fc, struct fs_parameter *param)
 	return 0;
 }
 
-/**
- * vfs_parse_fs_param - Add a single parameter to a superblock config
- * @fc: The filesystem context to modify
- * @param: The parameter
- *
- * A single mount option in string form is applied to the filesystem context
- * being set up.  Certain standard options (for example "ro") are translated
- * into flag bits without going to the filesystem.  The active security module
- * is allowed to observe and poach options.  Any other options are passed over
- * to the filesystem to parse.
- *
- * This may be called multiple times for a context.
- *
- * Returns 0 on success and a negative error code on failure.  In the event of
- * failure, supplementary error information may have been set.
- */
+ 
 int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
 {
 	int ret;
@@ -136,9 +103,7 @@ int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
 
 	ret = security_fs_context_parse_param(fc, param);
 	if (ret != -ENOPARAM)
-		/* Param belongs to the LSM or is disallowed by the LSM; so
-		 * don't pass to the FS.
-		 */
+		 
 		return ret;
 
 	if (fc->ops->parse_param) {
@@ -147,9 +112,7 @@ int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
 			return ret;
 	}
 
-	/* If the filesystem doesn't take any arguments, give it the
-	 * default handling of source.
-	 */
+	 
 	ret = vfs_parse_fs_param_source(fc, param);
 	if (ret != -ENOPARAM)
 		return ret;
@@ -158,9 +121,7 @@ int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
 		      fc->fs_type->name, param->key);
 }
 
-/**
- * vfs_parse_fs_string - Convenience function to just parse a string.
- */
+ 
 int vfs_parse_fs_string(struct fs_context *fc, const char *key,
 			const char *value, size_t v_size)
 {
@@ -184,17 +145,7 @@ int vfs_parse_fs_string(struct fs_context *fc, const char *key,
 	return ret;
 }
 
-/**
- * generic_parse_monolithic - Parse key[=val][,key[=val]]* mount data
- * @ctx: The superblock configuration to fill in.
- * @data: The data to parse
- *
- * Parse a blob of data that's in key[=val][,key[=val]]* form.  This can be
- * called from the ->monolithic_mount_data() fs_context operation.
- *
- * Returns 0 on success or the error returned by the ->parse_option() fs_context
- * operation on failure.
- */
+ 
 int generic_parse_monolithic(struct fs_context *fc, void *data)
 {
 	char *options = data, *key;
@@ -227,19 +178,7 @@ int generic_parse_monolithic(struct fs_context *fc, void *data)
 	return ret;
 }
 
-/**
- * alloc_fs_context - Create a filesystem context.
- * @fs_type: The filesystem type.
- * @reference: The dentry from which this one derives (or NULL)
- * @sb_flags: Filesystem/superblock flags (SB_*)
- * @sb_flags_mask: Applicable members of @sb_flags
- * @purpose: The purpose that this configuration shall be used for.
- *
- * Open a filesystem and create a mount context.  The mount context is
- * initialised with the supplied flags and, if a submount/automount from
- * another superblock (referred to by @reference) is supplied, may have
- * parameters such as namespaces copied across from that superblock.
- */
+ 
 static struct fs_context *alloc_fs_context(struct file_system_type *fs_type,
 				      struct dentry *reference,
 				      unsigned int sb_flags,
@@ -278,7 +217,7 @@ static struct fs_context *alloc_fs_context(struct file_system_type *fs_type,
 		break;
 	}
 
-	/* TODO: Make all filesystems support this unconditionally */
+	 
 	init_fs_context = fc->fs_type->init_fs_context;
 	if (!init_fs_context)
 		init_fs_context = legacy_init_fs_context;
@@ -325,10 +264,7 @@ void fc_drop_locked(struct fs_context *fc)
 
 static void legacy_fs_context_free(struct fs_context *fc);
 
-/**
- * vfs_dup_fc_config: Duplicate a filesystem context.
- * @src_fc: The context to copy.
- */
+ 
 struct fs_context *vfs_dup_fs_context(struct fs_context *src_fc)
 {
 	struct fs_context *fc;
@@ -354,7 +290,7 @@ struct fs_context *vfs_dup_fs_context(struct fs_context *src_fc)
 	if (fc->log.log)
 		refcount_inc(&fc->log.log->usage);
 
-	/* Can't call put until we've called ->dup */
+	 
 	ret = fc->ops->dup(fc, src_fc);
 	if (ret < 0)
 		goto err_fc;
@@ -369,11 +305,7 @@ err_fc:
 	return ERR_PTR(ret);
 }
 
-/**
- * logfc - Log a message to a filesystem context
- * @fc: The filesystem context to log to.
- * @fmt: The format of the buffer.
- */
+ 
 void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, ...)
 {
 	va_list va;
@@ -406,7 +338,7 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 		BUILD_BUG_ON(sizeof(log->head) != sizeof(u8) ||
 			     sizeof(log->tail) != sizeof(u8));
 		if ((u8)(log->head - log->tail) == logsize) {
-			/* The buffer is full, discard the oldest message */
+			 
 			if (log->need_free & (1 << index))
 				kfree(log->buffer[index]);
 			log->tail++;
@@ -422,9 +354,7 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 	va_end(va);
 }
 
-/*
- * Free a logging structure.
- */
+ 
 static void put_fc_log(struct fs_context *fc)
 {
 	struct fc_log *log = fc->log.log;
@@ -441,10 +371,7 @@ static void put_fc_log(struct fs_context *fc)
 	}
 }
 
-/**
- * put_fs_context - Dispose of a superblock configuration context.
- * @fc: The context to dispose of.
- */
+ 
 void put_fs_context(struct fs_context *fc)
 {
 	struct super_block *sb;
@@ -469,9 +396,7 @@ void put_fs_context(struct fs_context *fc)
 	kfree(fc);
 }
 
-/*
- * Free the config for a filesystem that doesn't support fs_context.
- */
+ 
 static void legacy_fs_context_free(struct fs_context *fc)
 {
 	struct legacy_fs_context *ctx = fc->fs_private;
@@ -483,9 +408,7 @@ static void legacy_fs_context_free(struct fs_context *fc)
 	}
 }
 
-/*
- * Duplicate a legacy config.
- */
+ 
 static int legacy_fs_context_dup(struct fs_context *fc, struct fs_context *src_fc)
 {
 	struct legacy_fs_context *ctx;
@@ -508,10 +431,7 @@ static int legacy_fs_context_dup(struct fs_context *fc, struct fs_context *src_f
 	return 0;
 }
 
-/*
- * Add a parameter to a legacy config.  We build up a comma-separated list of
- * options.
- */
+ 
 static int legacy_parse_param(struct fs_context *fc, struct fs_parameter *param)
 {
 	struct legacy_fs_context *ctx = fc->fs_private;
@@ -566,9 +486,7 @@ static int legacy_parse_param(struct fs_context *fc, struct fs_parameter *param)
 	return 0;
 }
 
-/*
- * Add monolithic mount data.
- */
+ 
 static int legacy_parse_monolithic(struct fs_context *fc, void *data)
 {
 	struct legacy_fs_context *ctx = fc->fs_private;
@@ -588,9 +506,7 @@ static int legacy_parse_monolithic(struct fs_context *fc, void *data)
 	return security_sb_eat_lsm_opts(ctx->legacy_data, &fc->security);
 }
 
-/*
- * Get a mountable root with the legacy mount command.
- */
+ 
 static int legacy_get_tree(struct fs_context *fc)
 {
 	struct legacy_fs_context *ctx = fc->fs_private;
@@ -609,9 +525,7 @@ static int legacy_get_tree(struct fs_context *fc)
 	return 0;
 }
 
-/*
- * Handle remount.
- */
+ 
 static int legacy_reconfigure(struct fs_context *fc)
 {
 	struct legacy_fs_context *ctx = fc->fs_private;
@@ -633,10 +547,7 @@ const struct fs_context_operations legacy_fs_context_ops = {
 	.reconfigure		= legacy_reconfigure,
 };
 
-/*
- * Initialise a legacy context for a filesystem that doesn't support
- * fs_context.
- */
+ 
 static int legacy_init_fs_context(struct fs_context *fc)
 {
 	fc->fs_private = kzalloc(sizeof(struct legacy_fs_context), GFP_KERNEL_ACCOUNT);
@@ -657,19 +568,7 @@ int parse_monolithic_mount_data(struct fs_context *fc, void *data)
 	return monolithic_mount_data(fc, data);
 }
 
-/*
- * Clean up a context after performing an action on it and put it into a state
- * from where it can be used to reconfigure a superblock.
- *
- * Note that here we do only the parts that can't fail; the rest is in
- * finish_clean_context() below and in between those fs_context is marked
- * FS_CONTEXT_AWAITING_RECONF.  The reason for splitup is that after
- * successful mount or remount we need to report success to userland.
- * Trying to do full reinit (for the sake of possible subsequent remount)
- * and failing to allocate memory would've put us into a nasty situation.
- * So here we only discard the old state and reinitialization is left
- * until we actually try to reconfigure.
- */
+ 
 void vfs_clean_context(struct fs_context *fc)
 {
 	if (fc->need_free && fc->ops && fc->ops->free)

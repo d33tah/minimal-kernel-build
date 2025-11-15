@@ -1,11 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * IRQ subsystem internal functions and variables:
- *
- * Do not ever include this file from anything else than
- * kernel/irq/. Do not even think about using any information outside
- * of this file for your non core code.
- */
+ 
+ 
 #include <linux/irqdesc.h>
 #include <linux/kernel_stat.h>
 #include <linux/pm_runtime.h>
@@ -19,14 +13,7 @@ extern bool noirqdebug;
 
 extern struct irqaction chained_action;
 
-/*
- * Bits used by threaded handlers:
- * IRQTF_RUNTHREAD - signals that the interrupt handler thread should run
- * IRQTF_WARNED    - warning "IRQ_WAKE_THREAD w/o thread_fn" has been printed
- * IRQTF_AFFINITY  - irq thread is requested to adjust affinity
- * IRQTF_FORCED_THREAD  - irq action is force threaded
- * IRQTF_READY     - signals that irq thread is ready
- */
+ 
 enum {
 	IRQTF_RUNTHREAD,
 	IRQTF_WARNED,
@@ -35,20 +22,7 @@ enum {
 	IRQTF_READY,
 };
 
-/*
- * Bit masks for desc->core_internal_state__do_not_mess_with_it
- *
- * IRQS_AUTODETECT		- autodetection in progress
- * IRQS_SPURIOUS_DISABLED	- was disabled due to spurious interrupt
- *				  detection
- * IRQS_POLL_INPROGRESS		- polling in progress
- * IRQS_ONESHOT			- irq is not unmasked in primary handler
- * IRQS_REPLAY			- irq is replayed
- * IRQS_WAITING			- irq is waiting
- * IRQS_PENDING			- irq is pending and replayed later
- * IRQS_SUSPENDED		- irq is suspended
- * IRQS_NMI			- irq line is used to deliver NMIs
- */
+ 
 enum {
 	IRQS_AUTODETECT		= 0x00000001,
 	IRQS_SPURIOUS_DISABLED	= 0x00000002,
@@ -101,7 +75,7 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc);
 irqreturn_t handle_irq_event_percpu(struct irq_desc *desc);
 irqreturn_t handle_irq_event(struct irq_desc *desc);
 
-/* Resending of interrupts :*/
+ 
 int check_irq_resend(struct irq_desc *desc, bool inject);
 bool irq_wait_for_poll(struct irq_desc *desc);
 void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action);
@@ -122,7 +96,7 @@ extern int irq_do_set_affinity(struct irq_data *data,
 
 static inline int irq_setup_affinity(struct irq_desc *desc) { return 0; }
 
-/* Inline functions for support of irq chips on slow busses */
+ 
 static inline void chip_bus_lock(struct irq_desc *desc)
 {
 	if (unlikely(desc->irq_data.chip->irq_bus_lock))
@@ -180,9 +154,7 @@ static inline unsigned int irqd_get(struct irq_data *d)
 	return __irqd_to_state(d);
 }
 
-/*
- * Manipulation functions for irq_data.state
- */
+ 
 static inline void irqd_set_move_pending(struct irq_data *d)
 {
 	__irqd_to_state(d) |= IRQD_SETAFFINITY_PENDING;

@@ -1,8 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-/* Helpers for initial module or kernel cmdline parsing
-   Copyright (C) 2001 Rusty Russell.
-
-*/
+ 
+ 
 #include <linux/kernel.h>
 #include <linux/string.h>
 #include <linux/errno.h>
@@ -18,7 +15,7 @@ static inline void check_kparam_locked(struct module *mod)
 {
 }
 
-/* This just allows us to keep track of which parameters are kmalloced. */
+ 
 struct kmalloced_param {
 	struct list_head list;
 	char val[];
@@ -41,7 +38,7 @@ static void *kmalloc_parameter(unsigned int size)
 	return p->val;
 }
 
-/* Does nothing if parameter wasn't kmalloced above. */
+ 
 static void maybe_kfree_parameter(void *param)
 {
 	struct kmalloced_param *p;
@@ -107,13 +104,13 @@ static int parse_one(char *param,
 	unsigned int i;
 	int err;
 
-	/* Find parameter */
+	 
 	for (i = 0; i < num_params; i++) {
 		if (parameq(param, params[i].name)) {
 			if (params[i].level < min_level
 			    || params[i].level > max_level)
 				return 0;
-			/* No one handled NULL, so do it here. */
+			 
 			if (!val &&
 			    !(params[i].ops->flags & KERNEL_PARAM_OPS_FL_NOARG))
 				return -EINVAL;
@@ -134,7 +131,7 @@ static int parse_one(char *param,
 	return -ENOENT;
 }
 
-/* Args looks like "foo=bar,bar2 baz=fuz wiz". */
+ 
 char *parse_args(const char *doing,
 		 char *args,
 		 const struct kernel_param *params,
@@ -147,7 +144,7 @@ char *parse_args(const char *doing,
 {
 	char *param, *val, *err = NULL;
 
-	/* Chew leading spaces */
+	 
 	args = skip_spaces(args);
 
 	if (*args)
@@ -156,7 +153,7 @@ char *parse_args(const char *doing,
 		int irq_was_disabled;
 
 		args = next_arg(args, &param, &val);
-		/* Stop at -- */
+		 
 		if (!val && strcmp(param, "--") == 0)
 			return err ?: args;
 		irq_was_disabled = irqs_disabled();
@@ -184,7 +181,7 @@ char *parse_args(const char *doing,
 	return err;
 }
 
-/* Lazy bastard, eh? */
+ 
 #define STANDARD_PARAM_DEF(name, type, format, strtolfn)      		\
 	int param_set_##name(const char *val, const struct kernel_param *kp) \
 	{								\
@@ -240,8 +237,7 @@ int param_set_charp(const char *val, const struct kernel_param *kp)
 
 	maybe_kfree_parameter(*(char **)kp->arg);
 
-	/* This is a hack.  We can't kmalloc in early boot, and we
-	 * don't need to; this mangled commandline is preserved. */
+	 
 	if (slab_is_available()) {
 		*(char **)kp->arg = kmalloc_parameter(strlen(val)+1);
 		if (!*(char **)kp->arg)
@@ -269,19 +265,19 @@ const struct kernel_param_ops param_ops_charp = {
 	.free = param_free_charp,
 };
 
-/* Actually could be a bool or an int, for historical reasons. */
+ 
 int param_set_bool(const char *val, const struct kernel_param *kp)
 {
-	/* No equals means "set"... */
+	 
 	if (!val) val = "1";
 
-	/* One of =[yYnN01] */
+	 
 	return strtobool(val, kp->arg);
 }
 
 int param_get_bool(char *buffer, const struct kernel_param *kp)
 {
-	/* Y and N chosen as being relatively non-coder friendly */
+	 
 	return sprintf(buffer, "%c\n", *(bool *)kp->arg ? 'Y' : 'N');
 }
 
@@ -304,7 +300,7 @@ int param_set_bool_enable_only(const char *val, const struct kernel_param *kp)
 	if (err)
 		return err;
 
-	/* Don't let them unset it once it's set! */
+	 
 	if (!new_value && orig_value)
 		return -EROFS;
 
@@ -320,7 +316,7 @@ const struct kernel_param_ops param_ops_bool_enable_only = {
 	.get = param_get_bool,
 };
 
-/* This one must be bool. */
+ 
 int param_set_invbool(const char *val, const struct kernel_param *kp)
 {
 	int ret;
@@ -346,7 +342,7 @@ const struct kernel_param_ops param_ops_invbool = {
 
 int param_set_bint(const char *val, const struct kernel_param *kp)
 {
-	/* Match bool exactly, by re-using it. */
+	 
 	struct kernel_param boolkp = *kp;
 	bool v;
 	int ret;
@@ -365,7 +361,7 @@ const struct kernel_param_ops param_ops_bint = {
 	.get = param_get_int,
 };
 
-/* We break the rule and mangle the string. */
+ 
 static int param_array(struct module *mod,
 		       const char *name,
 		       const char *val,
@@ -379,13 +375,13 @@ static int param_array(struct module *mod,
 	struct kernel_param kp;
 	char save;
 
-	/* Get the name right for errors. */
+	 
 	kp.name = name;
 	kp.arg = elem;
 	kp.level = level;
 
 	*num = 0;
-	/* We expect a comma-separated list of values. */
+	 
 	do {
 		int len;
 
@@ -395,7 +391,7 @@ static int param_array(struct module *mod,
 		}
 		len = strcspn(val, ",");
 
-		/* nul-terminate and parse */
+		 
 		save = val[len];
 		((char *)val)[len] = '\0';
 		check_kparam_locked(mod);
@@ -432,7 +428,7 @@ static int param_array_get(char *buffer, const struct kernel_param *kp)
 	struct kernel_param p = *kp;
 
 	for (i = off = 0; i < (arr->num ? *arr->num : arr->max); i++) {
-		/* Replace \n with comma */
+		 
 		if (i)
 			buffer[off - 1] = ',';
 		p.arg = arr->elem + arr->elemsize * i;
@@ -486,7 +482,7 @@ const struct kernel_param_ops param_ops_string = {
 	.get = param_get_string,
 };
 
-/* sysfs output in /sys/modules/XYZ/parameters/ */
+ 
 #define to_module_attr(n) container_of(n, struct module_attribute, attr)
 #define to_module_kobject(n) container_of(n, struct module_kobject, kobj)
 

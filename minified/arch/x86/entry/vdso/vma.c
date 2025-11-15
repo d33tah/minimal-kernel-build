@@ -1,9 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/*
- * Copyright 2007 Andi Kleen, SUSE Labs.
- *
- * This contains most of the x86 vDSO kernel-side code.
- */
+ 
+ 
 #include <linux/mm.h>
 #include <linux/err.h>
 #include <linux/sched.h>
@@ -74,7 +70,7 @@ static void vdso_fix_landing(const struct vdso_image *image,
 		unsigned long old_land_addr = vdso_land +
 			(unsigned long)current->mm->context.vdso;
 
-		/* Fixing userspace landing - look at do_fast_syscall_32 */
+		 
 		if (regs->ip == old_land_addr)
 			regs->ip = new_vma->vm_start + vdso_land;
 	}
@@ -109,13 +105,7 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 	sym_offset = (long)(vmf->pgoff << PAGE_SHIFT) +
 		image->sym_vvar_start;
 
-	/*
-	 * Sanity check: a symbol offset of zero means that the page
-	 * does not exist for this vdso image, not that the page is at
-	 * offset zero relative to the text mapping.  This should be
-	 * impossible here, because sym_offset should only be zero for
-	 * the page past the end of the vvar mapping.
-	 */
+	 
 	if (sym_offset == 0)
 		return VM_FAULT_SIGBUS;
 
@@ -124,23 +114,12 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 
 		pfn = __pa_symbol(&__vvar_page) >> PAGE_SHIFT;
 
-		/*
-		 * If a task belongs to a time namespace then a namespace
-		 * specific VVAR is mapped with the sym_vvar_page offset and
-		 * the real VVAR page is mapped with the sym_timens_page
-		 * offset.
-		 * See also the comment near timens_setup_vdso_data().
-		 */
+		 
 		if (timens_page) {
 			unsigned long addr;
 			vm_fault_t err;
 
-			/*
-			 * Optimization: inside time namespace pre-fault
-			 * VVAR page too. As on timens page there are only
-			 * offsets for clocks on VVAR, it'll be faulted
-			 * shortly by VDSO code.
-			 */
+			 
 			addr = vmf->address + (image->sym_timens_page - sym_offset);
 			err = vmf_insert_pfn(vma, addr, pfn);
 			if (unlikely(err & VM_FAULT_ERROR))
@@ -187,11 +166,7 @@ static const struct vm_special_mapping vvar_mapping = {
 	.fault = vvar_fault,
 };
 
-/*
- * Add vdso and vvar mappings to current process.
- * @image          - blob to map
- * @addr           - request a specific address (zero to map at free addr)
- */
+ 
 static int map_vdso(const struct vdso_image *image, unsigned long addr)
 {
 	struct mm_struct *mm = current->mm;
@@ -211,9 +186,7 @@ static int map_vdso(const struct vdso_image *image, unsigned long addr)
 
 	text_start = addr - image->sym_vvar_start;
 
-	/*
-	 * MAYWRITE to allow gdb to COW and set breakpoints
-	 */
+	 
 	vma = _install_special_mapping(mm,
 				       text_start,
 				       image->size,
@@ -253,13 +226,7 @@ int map_vdso_once(const struct vdso_image *image, unsigned long addr)
 	struct vm_area_struct *vma;
 
 	mmap_write_lock(mm);
-	/*
-	 * Check if we have already mapped vdso blob - fail to prevent
-	 * abusing from userspace install_special_mapping, which may
-	 * not do accounting and rlimit right.
-	 * We could search vma near context.vdso, but it's a slowpath,
-	 * so let's explicitly check all VMAs to be completely sure.
-	 */
+	 
 	for (vma = mm->mmap; vma; vma = vma->vm_next) {
 		if (vma_is_special_mapping(vma, &vdso_mapping) ||
 				vma_is_special_mapping(vma, &vvar_mapping)) {
@@ -274,7 +241,7 @@ int map_vdso_once(const struct vdso_image *image, unsigned long addr)
 
 static int load_vdso32(void)
 {
-	if (vdso32_enabled != 1)  /* Other values all mean "disabled" */
+	if (vdso32_enabled != 1)   
 		return 0;
 
 	return map_vdso(&vdso_image_32, 0);

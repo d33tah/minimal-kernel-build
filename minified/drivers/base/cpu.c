@@ -1,7 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * CPU subsystem support
- */
+ 
+ 
 
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -27,7 +25,7 @@ static DEFINE_PER_CPU(struct device *, cpu_sys_devices);
 
 static int cpu_subsys_match(struct device *dev, struct device_driver *drv)
 {
-	/* ACPI style match is the only one that may succeed. */
+	 
 	if (acpi_driver_match_device(dev, drv))
 		return 1;
 
@@ -50,9 +48,7 @@ static const struct attribute_group *hotplugable_cpu_attr_groups[] = {
 	NULL
 };
 
-/*
- * Print cpu online, possible, present, and system maps
- */
+ 
 
 struct cpu_attr {
 	struct device_attribute attr;
@@ -71,16 +67,14 @@ static ssize_t show_cpus_attr(struct device *dev,
 #define _CPU_ATTR(name, map) \
 	{ __ATTR(name, 0444, show_cpus_attr, NULL), map }
 
-/* Keep in sync with cpu_subsys_attrs */
+ 
 static struct cpu_attr cpu_attrs[] = {
 	_CPU_ATTR(online, &__cpu_online_mask),
 	_CPU_ATTR(possible, &__cpu_possible_mask),
 	_CPU_ATTR(present, &__cpu_present_mask),
 };
 
-/*
- * Print values for NR_CPUS and offlined cpus
- */
+ 
 static ssize_t print_cpus_kernel_max(struct device *dev,
 				     struct device_attribute *attr, char *buf)
 {
@@ -88,7 +82,7 @@ static ssize_t print_cpus_kernel_max(struct device *dev,
 }
 static DEVICE_ATTR(kernel_max, 0444, print_cpus_kernel_max, NULL);
 
-/* arch-optional setting to enable display of offline cpus >= nr_cpu_ids */
+ 
 unsigned int total_cpus;
 
 static ssize_t print_cpus_offline(struct device *dev,
@@ -97,14 +91,14 @@ static ssize_t print_cpus_offline(struct device *dev,
 	int len = 0;
 	cpumask_var_t offline;
 
-	/* display offline cpus < nr_cpu_ids */
+	 
 	if (!alloc_cpumask_var(&offline, GFP_KERNEL))
 		return -ENOMEM;
 	cpumask_andnot(offline, cpu_possible_mask, cpu_online_mask);
 	len += sysfs_emit_at(buf, len, "%*pbl", cpumask_pr_args(offline));
 	free_cpumask_var(offline);
 
-	/* display offline cpus >= nr_cpu_ids */
+	 
 	if (total_cpus && nr_cpu_ids < total_cpus) {
 		len += sysfs_emit_at(buf, len, ",");
 
@@ -143,21 +137,7 @@ static DEVICE_ATTR(isolated, 0444, print_cpus_isolated, NULL);
 
 static void cpu_device_release(struct device *dev)
 {
-	/*
-	 * This is an empty function to prevent the driver core from spitting a
-	 * warning at us.  Yes, I know this is directly opposite of what the
-	 * documentation for the driver core and kobjects say, and the author
-	 * of this code has already been publically ridiculed for doing
-	 * something as foolish as this.  However, at this point in time, it is
-	 * the only way to handle the issue of statically allocated cpu
-	 * devices.  The different architectures will have their cpu device
-	 * code reworked to properly handle this in the near future, so this
-	 * function will then be changed to correctly free up the memory held
-	 * by the cpu device.
-	 *
-	 * Never copy this way of doing things, or you too will be made fun of
-	 * on the linux-kernel list, you have been warned.
-	 */
+	 
 }
 
 static ssize_t print_cpu_modalias(struct device *dev,
@@ -194,14 +174,7 @@ static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
 	return 0;
 }
 
-/*
- * register_cpu - Setup a sysfs device for a CPU.
- * @cpu - cpu->hotpluggable field set to 1 will generate a control file in
- *	  sysfs for this CPU.
- * @num - CPU number to use when creating the device.
- *
- * Initialize and register the CPU device.
- */
+ 
 int register_cpu(struct cpu *cpu, int num)
 {
 	int error;

@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_SIGHANDLING_H
 #define _ASM_X86_SIGHANDLING_H
 
@@ -15,4 +15,4 @@
 
 void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
 
-#endif /* _ASM_X86_SIGHANDLING_H */
+#endif  

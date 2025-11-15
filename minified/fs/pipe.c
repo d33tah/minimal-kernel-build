@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Minimal stub for pipe.c - pipes not used by minimal kernel */
+ 
+ 
 #include <linux/fs.h>
 #include <linux/pipe_fs_i.h>
 #include <linux/export.h>

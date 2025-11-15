@@ -1,7 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * Operations on the network namespace - minimal stub for minimal kernel
- */
+ 
+ 
 #ifndef __NET_NET_NAMESPACE_H
 #define __NET_NET_NAMESPACE_H
 
@@ -88,4 +86,4 @@ static inline struct net *copy_net_ns(unsigned long flags,
 
 extern struct net init_net;
 
-#endif /* __NET_NET_NAMESPACE_H */
+#endif  

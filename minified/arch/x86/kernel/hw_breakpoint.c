@@ -1,19 +1,17 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-/*
- * Minimal stub - hardware breakpoints not needed for minimal kernel
- */
+ 
+ 
 #include <linux/perf_event.h>
 #include <linux/hw_breakpoint.h>
 #include <linux/percpu.h>
 #include <linux/kernel.h>
 #include <linux/export.h>
 
-/* Per cpu debug control register value */
+ 
 DEFINE_PER_CPU(unsigned long, cpu_dr7);
 
 void hw_breakpoint_restore(void)
 {
-	/* Stubbed */
+	 
 }
 
 int arch_install_hw_breakpoint(struct perf_event *bp)

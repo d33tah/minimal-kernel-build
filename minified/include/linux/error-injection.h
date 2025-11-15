@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_ERROR_INJECTION_H
 #define _LINUX_ERROR_INJECTION_H
 
@@ -17,4 +17,4 @@ static inline int get_injectable_error_type(unsigned long addr)
 }
 
 
-#endif /* _LINUX_ERROR_INJECTION_H */
+#endif  

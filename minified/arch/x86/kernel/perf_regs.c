@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Minimal stub - perf events not needed for Hello World */
+ 
+ 
 #include <linux/errno.h>
 #include <linux/kernel.h>
 #include <linux/sched.h>

@@ -1,13 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/*
- * Fast user context implementation of clock_gettime, gettimeofday, and time.
- *
- * Copyright 2006 Andi Kleen, SUSE Labs.
- * Copyright 2019 ARM Limited
- *
- * 32 Bit compat layer by Stefani Seibold <stefani@seibold.net>
- *  sponsored by Rohde & Schwarz GmbH & Co. KG Munich/Germany
- */
+ 
+ 
 #include <linux/time.h>
 #include <linux/kernel.h>
 #include <linux/types.h>
@@ -33,7 +25,7 @@ __kernel_old_time_t __vdso_time(__kernel_old_time_t *t)
 __kernel_old_time_t time(__kernel_old_time_t *t)	__attribute__((weak, alias("__vdso_time")));
 
 
-/* i386 only */
+ 
 extern int __vdso_clock_gettime(clockid_t clock, struct old_timespec32 *ts);
 extern int __vdso_clock_getres(clockid_t clock, struct old_timespec32 *res);
 

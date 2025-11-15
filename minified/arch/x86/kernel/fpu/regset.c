@@ -1,7 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * FPU register's regset abstraction, for ptrace, core dumps, etc.
- */
+ 
+ 
 #include <linux/sched/task_stack.h>
 #include <linux/vmalloc.h>
 
@@ -14,11 +12,7 @@
 #include "legacy.h"
 #include "xstate.h"
 
-/*
- * The xstateregs_active() routine is the same as the regset_fpregs_active() routine,
- * as the "regset->n" for the xstate regset will be updated based on the feature
- * capabilities supported by the xsave.
- */
+ 
 int regset_fpregs_active(struct task_struct *target, const struct user_regset *regset)
 {
 	return regset->n;
@@ -32,36 +26,17 @@ int regset_xregset_fpregs_active(struct task_struct *target, const struct user_r
 		return 0;
 }
 
-/*
- * The regset get() functions are invoked from:
- *
- *   - coredump to dump the current task's fpstate. If the current task
- *     owns the FPU then the memory state has to be synchronized and the
- *     FPU register state preserved. Otherwise fpstate is already in sync.
- *
- *   - ptrace to dump fpstate of a stopped task, in which case the registers
- *     have already been saved to fpstate on context switch.
- */
+ 
 static void sync_fpstate(struct fpu *fpu)
 {
 	if (fpu == &current->thread.fpu)
 		fpu_sync_fpstate(fpu);
 }
 
-/*
- * Invalidate cached FPU registers before modifying the stopped target
- * task's fpstate.
- *
- * This forces the target task on resume to restore the FPU registers from
- * modified fpstate. Otherwise the task might skip the restore and operate
- * with the cached FPU registers which discards the modifications.
- */
+ 
 static void fpu_force_restore(struct fpu *fpu)
 {
-	/*
-	 * Only stopped child tasks can be used to modify the FPU
-	 * state in the fpstate buffer:
-	 */
+	 
 	WARN_ON_FPU(fpu == &current->thread.fpu);
 
 	__fpu_invalidate_fpregs_state(fpu);
@@ -97,7 +72,7 @@ int xfpregs_set(struct task_struct *target, const struct user_regset *regset,
 	if (!cpu_feature_enabled(X86_FEATURE_FXSR))
 		return -ENODEV;
 
-	/* No funny business with partial or oversized writes is permitted. */
+	 
 	if (pos != 0 || count != sizeof(newstate))
 		return -EINVAL;
 
@@ -105,21 +80,21 @@ int xfpregs_set(struct task_struct *target, const struct user_regset *regset,
 	if (ret)
 		return ret;
 
-	/* Do not allow an invalid MXCSR value. */
+	 
 	if (newstate.mxcsr & ~mxcsr_feature_mask)
 		return -EINVAL;
 
 	fpu_force_restore(fpu);
 
-	/* Copy the state  */
+	 
 	memcpy(&fpu->fpstate->regs.fxsave, &newstate, sizeof(newstate));
 
-	/* Clear xmm8..15 for 32-bit callers */
+	 
 	BUILD_BUG_ON(sizeof(fpu->__fpstate.regs.fxsave.xmm_space) != 16 * 16);
 	if (in_ia32_syscall())
 		memset(&fpu->fpstate->regs.fxsave.xmm_space[8*4], 0, 8 * 16);
 
-	/* Mark FP and SSE as in use when XSAVE is enabled */
+	 
 	if (use_xsave())
 		fpu->fpstate->regs.xsave.header.xfeatures |= XFEATURE_MASK_FPSSE;
 
@@ -149,9 +124,7 @@ int xstateregs_set(struct task_struct *target, const struct user_regset *regset,
 	if (!cpu_feature_enabled(X86_FEATURE_XSAVE))
 		return -ENODEV;
 
-	/*
-	 * A whole standard-format XSAVE buffer is needed:
-	 */
+	 
 	if (pos != 0 || count != fpu_user_cfg.max_size)
 		return -EFAULT;
 
@@ -175,21 +148,19 @@ out:
 }
 
 
-/*
- * FPU tag word conversions.
- */
+ 
 
 static inline unsigned short twd_i387_to_fxsr(unsigned short twd)
 {
-	unsigned int tmp; /* to avoid 16 bit prefixes in the code */
+	unsigned int tmp;  
 
-	/* Transform each pair of bits into 01 (valid) or 00 (empty) */
+	 
 	tmp = ~twd;
-	tmp = (tmp | (tmp>>1)) & 0x5555; /* 0V0V0V0V0V0V0V0V */
-	/* and move the valid bits to the lower byte. */
-	tmp = (tmp | (tmp >> 1)) & 0x3333; /* 00VV00VV00VV00VV */
-	tmp = (tmp | (tmp >> 2)) & 0x0f0f; /* 0000VVVV0000VVVV */
-	tmp = (tmp | (tmp >> 4)) & 0x00ff; /* 00000000VVVVVVVV */
+	tmp = (tmp | (tmp>>1)) & 0x5555;  
+	 
+	tmp = (tmp | (tmp >> 1)) & 0x3333;  
+	tmp = (tmp | (tmp >> 2)) & 0x0f0f;  
+	tmp = (tmp | (tmp >> 4)) & 0x00ff;  
 
 	return tmp;
 }
@@ -241,9 +212,7 @@ static inline u32 twd_fxsr_to_i387(struct fxregs_state *fxsave)
 	return ret;
 }
 
-/*
- * FXSR floating point environment conversions.
- */
+ 
 
 static void __convert_from_fxsr(struct user_i387_ia32_struct *env,
 				struct task_struct *tsk,
@@ -313,7 +282,7 @@ int fpregs_get(struct task_struct *target, const struct user_regset *regset,
 	if (use_xsave()) {
 		struct membuf mb = { .p = &fxsave, .left = sizeof(fxsave) };
 
-		/* Handle init state optimized xstate correctly */
+		 
 		copy_xstate_to_uabi_buf(mb, target, XSTATE_COPY_FP);
 		fx = &fxsave;
 	} else {
@@ -332,7 +301,7 @@ int fpregs_set(struct task_struct *target, const struct user_regset *regset,
 	struct user_i387_ia32_struct env;
 	int ret;
 
-	/* No funny business with partial or oversized writes is permitted. */
+	 
 	if (pos != 0 || count != sizeof(struct user_i387_ia32_struct))
 		return -EINVAL;
 
@@ -350,10 +319,7 @@ int fpregs_set(struct task_struct *target, const struct user_regset *regset,
 	else
 		memcpy(&fpu->fpstate->regs.fsave, &env, sizeof(env));
 
-	/*
-	 * Update the header bit in the xsave header, indicating the
-	 * presence of FP.
-	 */
+	 
 	if (cpu_feature_enabled(X86_FEATURE_XSAVE))
 		fpu->fpstate->regs.xsave.header.xfeatures |= XFEATURE_MASK_FP;
 

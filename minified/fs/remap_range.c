@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/* Stubbed remap_range.c */
+ 
+ 
 #include <linux/fs.h>
 #include <linux/export.h>
 

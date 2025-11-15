@@ -1,15 +1,11 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
-/*
- * acpi.h - ACPI Interface
- *
- * Copyright (C) 2001 Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>
- */
+ 
+ 
 
 #ifndef _LINUX_ACPI_H
 #define _LINUX_ACPI_H
 
 #include <linux/errno.h>
-#include <linux/ioport.h>	/* for struct resource */
+#include <linux/ioport.h>	 
 #include <linux/irqdomain.h>
 #include <linux/resource_ext.h>
 #include <linux/device.h>
@@ -19,9 +15,9 @@
 #ifndef _LINUX
 #define _LINUX
 #endif
-// #include <acpi/acpi.h>  // Removed - not needed since ACPI is disabled
+ 
 
-// Define minimal ACPI types needed for stub functions
+ 
 typedef void *acpi_handle;
 typedef u32 acpi_status;
 typedef u32 acpi_object_type;
@@ -174,12 +170,7 @@ struct acpi_osc_context;
 
 static inline __printf(3, 4) void
 acpi_handle_printk(const char *level, void *handle, const char *fmt, ...) {}
-/*
- * acpi_handle_<level>: Print message with ACPI prefix and object path
- *
- * These interfaces acquire the global namespace mutex to obtain an object
- * path.  In interrupt context, it shows the object path as <n/a>.
- */
+ 
 #define acpi_handle_emerg(handle, fmt, ...)				\
 	acpi_handle_printk(KERN_EMERG, handle, fmt, ##__VA_ARGS__)
 #define acpi_handle_alert(handle, fmt, ...)				\
@@ -218,7 +209,7 @@ static inline int acpi_dev_gpio_irq_get(struct acpi_device *adev, int index)
 	return acpi_dev_gpio_irq_get_by(adev, NULL, index);
 }
 
-/* Device properties */
+ 
 
 static inline int
 __acpi_node_get_property_reference(const struct fwnode_handle *fwnode,
@@ -285,4 +276,4 @@ int acpi_irq_get(acpi_handle handle, unsigned int index, struct resource *res)
 static inline void acpi_device_notify(struct device *dev) { }
 static inline void acpi_device_notify_remove(struct device *dev) { }
 
-#endif	/*_LINUX_ACPI_H*/
+#endif	 

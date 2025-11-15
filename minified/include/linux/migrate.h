@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_MIGRATE_H
 #define _LINUX_MIGRATE_H
 
@@ -12,14 +12,10 @@ typedef void free_page_t(struct page *page, unsigned long private);
 
 struct migration_target_control;
 
-/*
- * Return values from addresss_space_operations.migratepage():
- * - negative errno on page migration failure;
- * - zero on page migration success;
- */
+ 
 #define MIGRATEPAGE_SUCCESS		0
 
-/* Defined in mm/debug.c: */
+ 
 extern const char *migrate_reason_names[MR_TYPES];
 
 
@@ -73,8 +69,8 @@ static inline bool folio_test_movable(struct folio *folio)
 static inline int migrate_misplaced_page(struct page *page,
 					 struct vm_area_struct *vma, int node)
 {
-	return -EAGAIN; /* can't migrate now */
+	return -EAGAIN;  
 }
 
 
-#endif /* _LINUX_MIGRATE_H */
+#endif  

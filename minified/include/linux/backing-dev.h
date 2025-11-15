@@ -1,10 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * include/linux/backing-dev.h
- *
- * low-level device information and state which is propagated up through
- * to high-level code.
- */
+ 
+ 
 
 #ifndef _LINUX_BACKING_DEV_H
 #define _LINUX_BACKING_DEV_H
@@ -55,10 +50,7 @@ static inline bool wb_has_dirty_io(struct bdi_writeback *wb)
 
 static inline bool bdi_has_dirty_io(struct backing_dev_info *bdi)
 {
-	/*
-	 * @bdi->tot_write_bandwidth is guaranteed to be > 0 if there are
-	 * any dirty wbs.  See wb_update_write_bandwidth().
-	 */
+	 
 	return atomic_long_read(&bdi->tot_write_bandwidth);
 }
 
@@ -90,9 +82,7 @@ static inline s64 wb_stat_sum(struct bdi_writeback *wb, enum wb_stat_item item)
 
 extern void wb_writeout_inc(struct bdi_writeback *wb);
 
-/*
- * maximal error of a stat counter.
- */
+ 
 static inline unsigned long wb_stat_error(void)
 {
 	return 1;
@@ -101,14 +91,7 @@ static inline unsigned long wb_stat_error(void)
 int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio);
 int bdi_set_max_ratio(struct backing_dev_info *bdi, unsigned int max_ratio);
 
-/*
- * Flags in backing_dev_info::capability
- *
- * BDI_CAP_WRITEBACK:		Supports dirty page writeback, and dirty pages
- *				should contribute to accounting
- * BDI_CAP_WRITEBACK_ACCT:	Automatically account writeback pages
- * BDI_CAP_STRICTLIMIT:		Keep number of dirty pages below bdi threshold
- */
+ 
 #define BDI_CAP_WRITEBACK		(1 << 0)
 #define BDI_CAP_WRITEBACK_ACCT		(1 << 1)
 #define BDI_CAP_STRICTLIMIT		(1 << 2)
@@ -117,13 +100,7 @@ extern struct backing_dev_info noop_backing_dev_info;
 
 int bdi_init(struct backing_dev_info *bdi);
 
-/**
- * writeback_in_progress - determine whether there is writeback in progress
- * @wb: bdi_writeback of interest
- *
- * Determine whether there is writeback waiting to be handled against a
- * bdi_writeback.
- */
+ 
 static inline bool writeback_in_progress(struct bdi_writeback *wb)
 {
 	return test_bit(WB_writeback_running, &wb->state);
@@ -199,4 +176,4 @@ static inline void wb_blkcg_offline(struct cgroup_subsys_state *css)
 
 const char *bdi_dev_name(struct backing_dev_info *bdi);
 
-#endif	/* _LINUX_BACKING_DEV_H */
+#endif	 

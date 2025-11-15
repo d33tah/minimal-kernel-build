@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Minimal VT ioctl stubs for hello world kernel */
+ 
+ 
 
 #include <linux/types.h>
 #include <linux/errno.h>

@@ -1,10 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- * syscalls.h - Linux syscall interfaces (non-arch-specific)
- *
- * Copyright (c) 2004 Randy Dunlap
- * Copyright (c) 2004 Open Source Development Labs
- */
+ 
+ 
 
 #ifndef _LINUX_SYSCALLS_H
 #define _LINUX_SYSCALLS_H
@@ -88,25 +83,11 @@ enum landlock_rule_type;
 #include <linux/fcntl.h>
 #include <trace/syscall.h>
 
-/*
- * It may be useful for an architecture to override the definitions of the
- * SYSCALL_DEFINE0() and __SYSCALL_DEFINEx() macros, in particular to use a
- * different calling convention for syscalls. To allow for that, the prototypes
- * for the sys_*() functions below will *not* be included if
- * CONFIG_ARCH_HAS_SYSCALL_WRAPPER is enabled.
- */
+ 
 #include <asm/syscall_wrapper.h>
 #include <asm/syscall.h>
 
-/*
- * __MAP - apply a macro to syscall arguments
- * __MAP(n, m, t1, a1, t2, a2, ..., tn, an) will expand to
- *    m(t1, a1), m(t2, a2), ..., m(tn, an)
- * The first argument must be equal to the amount of type/name
- * pairs given.  Note that this list of pairs (i.e. the arguments
- * of __MAP starting at the third one) is in the same format as
- * for SYSCALL_DEFINE<n>/COMPAT_SYSCALL_DEFINE<n>
- */
+ 
 #define __MAP0(m,...)
 #define __MAP1(m,t,a,...) m(t,a)
 #define __MAP2(m,t,a,...) m(t,a), __MAP1(m,__VA_ARGS__)
@@ -126,7 +107,7 @@ enum landlock_rule_type;
 #define __SC_ARGS(t, a)	a
 #define __SC_TEST(t, a) (void)BUILD_BUG_ON_ZERO(!__TYPE_IS_LL(t) && sizeof(t) > sizeof(long))
 
-#define SYSCALL_METADATA(sname, nb, ...) /* disabled for size reduction */
+#define SYSCALL_METADATA(sname, nb, ...)  
 
 static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 {
@@ -151,7 +132,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 	asmlinkage long sys_##sname(void);			\
 	ALLOW_ERROR_INJECTION(sys_##sname, ERRNO);		\
 	asmlinkage long sys_##sname(void)
-#endif /* SYSCALL_DEFINE0 */
+#endif  
 
 #define SYSCALL_DEFINE1(name, ...) SYSCALL_DEFINEx(1, _##name, __VA_ARGS__)
 #define SYSCALL_DEFINE2(name, ...) SYSCALL_DEFINEx(2, _##name, __VA_ARGS__)
@@ -168,11 +149,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 
 #define __PROTECT(...) asmlinkage_protect(__VA_ARGS__)
 
-/*
- * The asmlinkage stub is aliased to a function named __se_sys_*() which
- * sign-extends 32-bit ints to longs whenever needed. The actual work is
- * done within __do_sys_*().
- */
+ 
 #ifndef __SYSCALL_DEFINEx
 #define __SYSCALL_DEFINEx(x, name, ...)					\
 	__diag_push();							\
@@ -192,9 +169,9 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 	}								\
 	__diag_pop();							\
 	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
-#endif /* __SYSCALL_DEFINEx */
+#endif  
 
-/* For split 64-bit arguments on 32-bit architectures */
+ 
 #ifdef __LITTLE_ENDIAN
 #define SC_ARG64(name) u32, name##_lo, u32, name##_hi
 #else
@@ -209,10 +186,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 #define SYSCALL32_DEFINE5 SYSCALL_DEFINE5
 #define SYSCALL32_DEFINE6 SYSCALL_DEFINE6
 
-/*
- * Called before coming back to user-mode. Returning to user-mode with an
- * address limit different than USER_DS can allow to overwrite kernel memory.
- */
+ 
 static inline void addr_limit_user_check(void)
 {
 #ifdef TIF_FSCHECK
@@ -225,26 +199,10 @@ static inline void addr_limit_user_check(void)
 #endif
 }
 
-/*
- * These syscall function prototypes are kept in the same order as
- * include/uapi/asm-generic/unistd.h. Architecture specific entries go below,
- * followed by deprecated or obsolete system calls.
- *
- * Please note that these prototypes here are only provided for information
- * purposes, for static analysis, and for linking from the syscall table.
- * These functions should not be called elsewhere from kernel code.
- *
- * As the syscall calling convention may be different from the default
- * for architectures overriding the syscall calling convention, do not
- * include the prototypes if CONFIG_ARCH_HAS_SYSCALL_WRAPPER is enabled.
- */
+ 
 
 
-/*
- * Kernel code should not call syscalls (i.e., sys_xyzyyz()) directly.
- * Instead, use one of the functions which work equivalently, such as
- * the ksys_xyzyyz() functions prototyped below.
- */
+ 
 ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count);
 int ksys_fchown(unsigned int fd, uid_t user, gid_t group);
 ssize_t ksys_read(unsigned int fd, char __user *buf, size_t count);
@@ -272,10 +230,7 @@ int ksys_ipc(unsigned int call, int first, unsigned long second,
 int compat_ksys_ipc(u32 call, int first, int second,
 	u32 third, u32 ptr, u32 fifth);
 
-/*
- * The following kernel syscall equivalents are just wrappers to fs-internal
- * functions. Therefore, provide stubs to be inlined at the callsites.
- */
+ 
 extern int do_fchownat(int dfd, const char __user *filename, uid_t user,
 		       gid_t group, int flag);
 
@@ -316,7 +271,7 @@ static inline unsigned int ksys_personality(unsigned int personality)
 	return old;
 }
 
-/* for __ARCH_WANT_SYS_IPC */
+ 
 long ksys_semtimedop(int semid, struct sembuf __user *tsops,
 		     unsigned int nsops,
 		     const struct __kernel_timespec __user *timeout);

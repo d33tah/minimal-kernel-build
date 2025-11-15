@@ -1,9 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0+
-/*
- * Copyright (C) 2017 HiSilicon Limited, All Rights Reserved.
- * Author: Gabriele Paoloni <gabriele.paoloni@huawei.com>
- * Author: Zhichang Yuan <yuanzhichang@hisilicon.com>
- */
+ 
+ 
 
 #ifndef __LINUX_LOGIC_PIO_H
 #define __LINUX_LOGIC_PIO_H
@@ -11,8 +7,8 @@
 #include <linux/fwnode.h>
 
 enum {
-	LOGIC_PIO_INDIRECT,		/* Indirect IO flag */
-	LOGIC_PIO_CPU_MMIO,		/* Memory-mapped IO flag */
+	LOGIC_PIO_INDIRECT,		 
+	LOGIC_PIO_CPU_MMIO,		 
 };
 
 struct logic_pio_hwaddr {
@@ -20,7 +16,7 @@ struct logic_pio_hwaddr {
 	struct fwnode_handle *fwnode;
 	resource_size_t hw_start;
 	resource_size_t io_start;
-	resource_size_t size; /* range size populated */
+	resource_size_t size;  
 	unsigned long flags;
 
 	void *hostdata;
@@ -48,4 +44,4 @@ void logic_pio_unregister_range(struct logic_pio_hwaddr *range);
 resource_size_t logic_pio_to_hwaddr(unsigned long pio);
 unsigned long logic_pio_trans_cpuaddr(resource_size_t hw_addr);
 
-#endif /* __LINUX_LOGIC_PIO_H */
+#endif  

@@ -1,16 +1,11 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 #include <linux/bcd.h>
 #include <linux/delay.h>
 #include <linux/export.h>
 #include <linux/mc146818rtc.h>
 
 
-/*
- * Execute a function while the UIP (Update-in-progress) bit of the RTC is
- * unset.
- *
- * Warning: callback may be executed more then once.
- */
+ 
 bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
 			void *param)
 {
@@ -21,15 +16,7 @@ bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
 	for (i = 0; i < 10; i++) {
 		spin_lock_irqsave(&rtc_lock, flags);
 
-		/*
-		 * Check whether there is an update in progress during which the
-		 * readout is unspecified. The maximum update time is ~2ms. Poll
-		 * every msec for completion.
-		 *
-		 * Store the second value before checking UIP so a long lasting
-		 * NMI which happens to hit after the UIP check cannot make
-		 * an update cycle invisible.
-		 */
+		 
 		seconds = CMOS_READ(RTC_SECONDS);
 
 		if (CMOS_READ(RTC_FREQ_SELECT) & RTC_UIP) {
@@ -38,7 +25,7 @@ bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
 			continue;
 		}
 
-		/* Revalidate the above readout */
+		 
 		if (seconds != CMOS_READ(RTC_SECONDS)) {
 			spin_unlock_irqrestore(&rtc_lock, flags);
 			continue;
@@ -47,22 +34,14 @@ bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
 		if (callback)
 			callback(seconds, param);
 
-		/*
-		 * Check for the UIP bit again. If it is set now then
-		 * the above values may contain garbage.
-		 */
+		 
 		if (CMOS_READ(RTC_FREQ_SELECT) & RTC_UIP) {
 			spin_unlock_irqrestore(&rtc_lock, flags);
 			mdelay(1);
 			continue;
 		}
 
-		/*
-		 * A NMI might have interrupted the above sequence so check
-		 * whether the seconds value has changed which indicates that
-		 * the NMI took longer than the UIP bit was set. Unlikely, but
-		 * possible and there is also virt...
-		 */
+		 
 		if (seconds != CMOS_READ(RTC_SECONDS)) {
 			spin_unlock_irqrestore(&rtc_lock, flags);
 			continue;
@@ -74,10 +53,7 @@ bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
 	return false;
 }
 
-/*
- * If the UIP (Update-in-progress) bit of the RTC is set for more then
- * 10ms, the RTC is apparently broken or not present.
- */
+ 
 bool mc146818_does_rtc_work(void)
 {
 	return mc146818_avoid_UIP(NULL, NULL);
@@ -92,12 +68,7 @@ static void mc146818_get_time_callback(unsigned char seconds, void *param_in)
 {
 	struct mc146818_get_time_callback_param *p = param_in;
 
-	/*
-	 * Only the values that we read from the RTC are set. We leave
-	 * tm_wday, tm_yday and tm_isdst untouched. Even though the
-	 * RTC has RTC_DAY_OF_WEEK, we ignore it, as it is only updated
-	 * by the RTC when initially set to a non-zero value.
-	 */
+	 
 	p->time->tm_sec = seconds;
 	p->time->tm_min = CMOS_READ(RTC_MINUTES);
 	p->time->tm_hour = CMOS_READ(RTC_HOURS);
@@ -131,10 +102,7 @@ int mc146818_get_time(struct rtc_time *time)
 
 
 
-	/*
-	 * Account for differences between how the RTC uses the values
-	 * and how they are defined in a struct rtc_time;
-	 */
+	 
 	if (time->tm_year <= 69)
 		time->tm_year += 100;
 
@@ -143,7 +111,7 @@ int mc146818_get_time(struct rtc_time *time)
 	return 0;
 }
 
-/* AMD systems don't allow access to AltCentury with DV1 */
+ 
 static bool apply_amd_register_a_behavior(void)
 {
 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD ||
@@ -152,7 +120,7 @@ static bool apply_amd_register_a_behavior(void)
 	return false;
 }
 
-/* Set the current date and time in the real time clock. */
+ 
 int mc146818_set_time(struct rtc_time *time)
 {
 	unsigned long flags;
@@ -162,20 +130,18 @@ int mc146818_set_time(struct rtc_time *time)
 	unsigned char century = 0;
 
 	yrs = time->tm_year;
-	mon = time->tm_mon + 1;   /* tm_mon starts at zero */
+	mon = time->tm_mon + 1;    
 	day = time->tm_mday;
 	hrs = time->tm_hour;
 	min = time->tm_min;
 	sec = time->tm_sec;
 
-	if (yrs > 255)	/* They are unsigned */
+	if (yrs > 255)	 
 		return -EINVAL;
 
 
 
-	/* These limits and adjustments are independent of
-	 * whether the chip is in binary mode or not.
-	 */
+	 
 	if (yrs > 169)
 		return -EINVAL;
 

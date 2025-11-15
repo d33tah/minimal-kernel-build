@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_KASAN_H
 #define _LINUX_KASAN_H
 
@@ -146,21 +146,17 @@ static inline void kasan_poison_vmalloc(const void *start, unsigned long size)
 #if (defined(CONFIG_KASAN_GENERIC) || defined(CONFIG_KASAN_SW_TAGS)) && \
 		!defined(CONFIG_KASAN_VMALLOC)
 
-/*
- * These functions allocate and free shadow memory for kernel modules.
- * They are only required when KASAN_VMALLOC is not supported, as otherwise
- * shadow memory is allocated by the generic vmalloc handlers.
- */
+ 
 int kasan_alloc_module_shadow(void *addr, size_t size, gfp_t gfp_mask);
 void kasan_free_module_shadow(const struct vm_struct *vm);
 
-#else /* (CONFIG_KASAN_GENERIC || CONFIG_KASAN_SW_TAGS) && !CONFIG_KASAN_VMALLOC */
+#else  
 
 static inline int kasan_alloc_module_shadow(void *addr, size_t size, gfp_t gfp_mask) { return 0; }
 static inline void kasan_free_module_shadow(const struct vm_struct *vm) {}
 
-#endif /* (CONFIG_KASAN_GENERIC || CONFIG_KASAN_SW_TAGS) && !CONFIG_KASAN_VMALLOC */
+#endif  
 
 static inline void kasan_non_canonical_hook(unsigned long addr) { }
 
-#endif /* LINUX_KASAN_H */
+#endif  

@@ -1,7 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef LINUX_PCI_H
 #define LINUX_PCI_H
-/* Minimal stub version for x86 without CONFIG_PCI */
+ 
 
 #include <linux/mod_devicetable.h>
 #include <linux/types.h>
@@ -18,16 +18,16 @@
 #include <linux/resource_ext.h>
 #include <uapi/linux/pci.h>
 
-/* Include arch-specific definitions */
+ 
 #ifdef CONFIG_X86
 #include <asm/pci.h>
 #endif
 
-/* Basic PCI defines */
+ 
 #define PCI_DEVID(bus, devfn)	((((u16)(bus)) << 8) | (devfn))
 #define PCI_BUS_NUM(x) (((x) >> 8) & 0xff)
 
-/* Stub structures */
+ 
 struct pci_slot;
 struct pci_bus;
 struct pci_dev;
@@ -52,7 +52,7 @@ enum pcie_link_width {
 
 typedef unsigned int pci_power_t;
 
-/* Stub inline functions */
+ 
 static inline void *pci_get_drvdata(struct pci_dev *pdev) { return NULL; }
 static inline void pci_set_drvdata(struct pci_dev *pdev, void *data) { }
 static inline const char *pci_name(const struct pci_dev *pdev) { return ""; }
@@ -69,7 +69,7 @@ static inline void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar) { ret
 static inline void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen) { return NULL; }
 static inline void pci_iounmap(struct pci_dev *dev, void __iomem *addr) { }
 
-/* Stub functions for OF/ACPI */
+ 
 static inline struct irq_domain *pci_host_bridge_of_msi_domain(struct pci_bus *bus) { return NULL; }
 static inline bool pci_host_of_has_msi_map(struct device *dev) { return false; }
 static inline struct device_node *pci_device_to_OF_node(const struct pci_dev *pdev) { return NULL; }
@@ -77,24 +77,24 @@ static inline struct device_node *pci_bus_to_OF_node(struct pci_bus *bus) { retu
 static inline struct irq_domain *pci_host_bridge_acpi_msi_domain(struct pci_bus *bus) { return NULL; }
 static inline bool pci_pr3_present(struct pci_dev *pdev) { return false; }
 
-/* Speed/width capability stubs */
+ 
 static inline enum pci_bus_speed pcie_get_speed_cap(struct pci_dev *dev) { return PCI_SPEED_UNKNOWN; }
 static inline enum pcie_link_width pcie_get_width_cap(struct pci_dev *dev) { return PCIE_LNK_WIDTH_UNKNOWN; }
 
-/* MSI stubs */
+ 
 static inline int pci_enable_msi(struct pci_dev *dev) { return -ENOSYS; }
 static inline void pci_disable_msi(struct pci_dev *dev) { }
 static inline int pci_alloc_irq_vectors(struct pci_dev *dev, unsigned int min_vecs,
 		unsigned int max_vecs, unsigned int flags) { return -ENOSYS; }
 static inline void pci_free_irq_vectors(struct pci_dev *dev) { }
 
-/* DMA alias stubs */
+ 
 static inline void pci_add_dma_alias(struct pci_dev *dev, u8 devfn_from, unsigned nr_devfns) { }
 static inline bool pci_devs_are_dma_aliases(struct pci_dev *dev1, struct pci_dev *dev2) { return false; }
 static inline int pci_for_each_dma_alias(struct pci_dev *pdev,
 			   int (*fn)(struct pci_dev *pdev, u16 alias, void *data), void *data) { return 0; }
 
-/* Config space access stubs */
+ 
 static inline int pci_read_config_byte(const struct pci_dev *dev, int where, u8 *val) { *val = 0; return -ENODEV; }
 static inline int pci_read_config_word(const struct pci_dev *dev, int where, u16 *val) { *val = 0; return -ENODEV; }
 static inline int pci_read_config_dword(const struct pci_dev *dev, int where, u32 *val) { *val = 0; return -ENODEV; }
@@ -116,4 +116,4 @@ static inline int pci_write_config_dword(const struct pci_dev *dev, int where, u
 #define pci_info(pdev, fmt, arg...)	dev_info(&(pdev)->dev, fmt, ##arg)
 #define pci_dbg(pdev, fmt, arg...)	dev_dbg(&(pdev)->dev, fmt, ##arg)
 
-#endif /* LINUX_PCI_H */
+#endif  

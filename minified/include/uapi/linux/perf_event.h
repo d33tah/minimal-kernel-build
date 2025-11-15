@@ -1,7 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
-/*
- * Minimal stub for perf events uapi - perf completely disabled
- */
+ 
+ 
 #ifndef _UAPI_LINUX_PERF_EVENT_H
 #define _UAPI_LINUX_PERF_EVENT_H
 
@@ -9,7 +7,7 @@
 #include <linux/ioctl.h>
 #include <asm/byteorder.h>
 
-/* Minimal enums for perf_event_attr struct */
+ 
 enum perf_type_id {
 	PERF_TYPE_HARDWARE = 0,
 	PERF_TYPE_SOFTWARE = 1,
@@ -36,7 +34,7 @@ enum perf_sw_ids {
 	PERF_COUNT_SW_MAX,
 };
 
-/* perf_event_attr structure - needed for struct perf_event in kernel */
+ 
 struct perf_event_attr {
 	__u32 type;
 	__u32 size;
@@ -120,7 +118,7 @@ struct perf_event_attr {
 	__u64 sig_data;
 };
 
-/* Minimal defines that might be referenced */
+ 
 #define PERF_ATTR_SIZE_VER0	64
 #define PERF_ATTR_SIZE_VER1	72
 #define PERF_ATTR_SIZE_VER2	80
@@ -130,4 +128,4 @@ struct perf_event_attr {
 #define PERF_ATTR_SIZE_VER6	120
 #define PERF_ATTR_SIZE_VER7	128
 
-#endif /* _UAPI_LINUX_PERF_EVENT_H */
+#endif  

@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _linux_POSIX_TIMERS_H
 #define _linux_POSIX_TIMERS_H
 
@@ -10,17 +10,7 @@
 struct kernel_siginfo;
 struct task_struct;
 
-/*
- * Bit fields within a clockid:
- *
- * The most significant 29 bits hold either a pid or a file descriptor.
- *
- * Bit 2 indicates whether a cpu clock refers to a thread or a process.
- *
- * Bits 1 and 0 give the type: PROF=0, VIRT=1, SCHED=2, or FD=3.
- *
- * A clockid is invalid if bits 2, 1, and 0 are all set.
- */
+ 
 #define CPUCLOCK_PID(clock)		((pid_t) ~((clock) >> 3))
 #define CPUCLOCK_PERTHREAD(clock) \
 	(((clock) & (clockid_t) CPUCLOCK_PERTHREAD_MASK) != 0)
@@ -68,29 +58,7 @@ static inline void posix_cputimers_init_work(void) { }
 
 #define REQUEUE_PENDING 1
 
-/**
- * struct k_itimer - POSIX.1b interval timer structure.
- * @list:		List head for binding the timer to signals->posix_timers
- * @t_hash:		Entry in the posix timer hash table
- * @it_lock:		Lock protecting the timer
- * @kclock:		Pointer to the k_clock struct handling this timer
- * @it_clock:		The posix timer clock id
- * @it_id:		The posix timer id for identifying the timer
- * @it_active:		Marker that timer is active
- * @it_overrun:		The overrun counter for pending signals
- * @it_overrun_last:	The overrun at the time of the last delivered signal
- * @it_requeue_pending:	Indicator that timer waits for being requeued on
- *			signal delivery
- * @it_sigev_notify:	The notify word of sigevent struct for signal delivery
- * @it_interval:	The interval for periodic timers
- * @it_signal:		Pointer to the creators signal struct
- * @it_pid:		The pid of the process/task targeted by the signal
- * @it_process:		The task to wakeup on clock_nanosleep (CPU timers)
- * @sigq:		Pointer to preallocated sigqueue
- * @it:			Union representing the various posix timer type
- *			internals.
- * @rcu:		RCU head for freeing the timer.
- */
+ 
 struct k_itimer {
 	struct list_head	list;
 	struct hlist_node	t_hash;

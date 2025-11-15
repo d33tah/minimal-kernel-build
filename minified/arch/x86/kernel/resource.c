@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 #include <linux/ioport.h>
 #include <linux/printk.h>
 #include <asm/e820/api.h>
@@ -10,7 +10,7 @@ static void resource_clip(struct resource *res, resource_size_t start,
 	resource_size_t low = 0, high = 0;
 
 	if (res->end < start || res->start > end)
-		return;		/* no conflict */
+		return;		 
 
 	if (res->start < start)
 		low = start - res->start;
@@ -18,7 +18,7 @@ static void resource_clip(struct resource *res, resource_size_t start,
 	if (res->end > end)
 		high = res->end - end;
 
-	/* Keep the area above or below the conflict, whichever is larger */
+	 
 	if (low > high)
 		res->end = start - 1;
 	else
@@ -51,11 +51,7 @@ static void remove_e820_regions(struct resource *avail)
 
 void arch_remove_reservations(struct resource *avail)
 {
-	/*
-	 * Trim out BIOS area (high 2MB) and E820 regions. We do not remove
-	 * the low 1MB unconditionally, as this area is needed for some ISA
-	 * cards requiring a memory range, e.g. the i82365 PCMCIA controller.
-	 */
+	 
 	if (avail->flags & IORESOURCE_MEM) {
 		resource_clip(avail, BIOS_ROM_BASE, BIOS_ROM_END);
 

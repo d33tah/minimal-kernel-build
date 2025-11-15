@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_STRING_HELPERS_H_
 #define _LINUX_STRING_HELPERS_H_
 
@@ -11,11 +11,10 @@ struct device;
 struct file;
 struct task_struct;
 
-/* Descriptions of the types of units to
- * print in */
+ 
 enum string_size_units {
-	STRING_UNITS_10,	/* use powers of 10^3 (standard SI) */
-	STRING_UNITS_2,		/* use binary powers of 2^10 */
+	STRING_UNITS_10,	 
+	STRING_UNITS_2,		 
 };
 
 void string_get_size(u64 size, u64 blk_size, enum string_size_units units,

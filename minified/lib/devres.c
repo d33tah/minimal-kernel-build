@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 #include <linux/err.h>
 #include <linux/pci.h>
 #include <linux/io.h>
@@ -57,69 +57,35 @@ static void __iomem *__devm_ioremap(struct device *dev, resource_size_t offset,
 	return addr;
 }
 
-/**
- * devm_ioremap - Managed ioremap()
- * @dev: Generic device to remap IO address for
- * @offset: Resource address to map
- * @size: Size of map
- *
- * Managed ioremap().  Map is automatically unmapped on driver detach.
- */
+ 
 void __iomem *devm_ioremap(struct device *dev, resource_size_t offset,
 			   resource_size_t size)
 {
 	return __devm_ioremap(dev, offset, size, DEVM_IOREMAP);
 }
 
-/**
- * devm_ioremap_uc - Managed ioremap_uc()
- * @dev: Generic device to remap IO address for
- * @offset: Resource address to map
- * @size: Size of map
- *
- * Managed ioremap_uc().  Map is automatically unmapped on driver detach.
- */
+ 
 void __iomem *devm_ioremap_uc(struct device *dev, resource_size_t offset,
 			      resource_size_t size)
 {
 	return __devm_ioremap(dev, offset, size, DEVM_IOREMAP_UC);
 }
 
-/**
- * devm_ioremap_wc - Managed ioremap_wc()
- * @dev: Generic device to remap IO address for
- * @offset: Resource address to map
- * @size: Size of map
- *
- * Managed ioremap_wc().  Map is automatically unmapped on driver detach.
- */
+ 
 void __iomem *devm_ioremap_wc(struct device *dev, resource_size_t offset,
 			      resource_size_t size)
 {
 	return __devm_ioremap(dev, offset, size, DEVM_IOREMAP_WC);
 }
 
-/**
- * devm_ioremap_np - Managed ioremap_np()
- * @dev: Generic device to remap IO address for
- * @offset: Resource address to map
- * @size: Size of map
- *
- * Managed ioremap_np().  Map is automatically unmapped on driver detach.
- */
+ 
 void __iomem *devm_ioremap_np(struct device *dev, resource_size_t offset,
 			      resource_size_t size)
 {
 	return __devm_ioremap(dev, offset, size, DEVM_IOREMAP_NP);
 }
 
-/**
- * devm_iounmap - Managed iounmap()
- * @dev: Generic device to unmap for
- * @addr: Address to unmap
- *
- * Managed iounmap().  @addr must have been mapped using devm_ioremap*().
- */
+ 
 void devm_iounmap(struct device *dev, void __iomem *addr)
 {
 	WARN_ON(devres_destroy(dev, devm_ioremap_release, devm_ioremap_match,
@@ -172,76 +138,21 @@ __devm_ioremap_resource(struct device *dev, const struct resource *res,
 	return dest_ptr;
 }
 
-/**
- * devm_ioremap_resource() - check, request region, and ioremap resource
- * @dev: generic device to handle the resource for
- * @res: resource to be handled
- *
- * Checks that a resource is a valid memory region, requests the memory
- * region and ioremaps it. All operations are managed and will be undone
- * on driver detach.
- *
- * Usage example:
- *
- *	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- *	base = devm_ioremap_resource(&pdev->dev, res);
- *	if (IS_ERR(base))
- *		return PTR_ERR(base);
- *
- * Return: a pointer to the remapped memory or an ERR_PTR() encoded error code
- * on failure.
- */
+ 
 void __iomem *devm_ioremap_resource(struct device *dev,
 				    const struct resource *res)
 {
 	return __devm_ioremap_resource(dev, res, DEVM_IOREMAP);
 }
 
-/**
- * devm_ioremap_resource_wc() - write-combined variant of
- *				devm_ioremap_resource()
- * @dev: generic device to handle the resource for
- * @res: resource to be handled
- *
- * Return: a pointer to the remapped memory or an ERR_PTR() encoded error code
- * on failure.
- */
+ 
 void __iomem *devm_ioremap_resource_wc(struct device *dev,
 				       const struct resource *res)
 {
 	return __devm_ioremap_resource(dev, res, DEVM_IOREMAP_WC);
 }
 
-/*
- * devm_of_iomap - Requests a resource and maps the memory mapped IO
- *		   for a given device_node managed by a given device
- *
- * Checks that a resource is a valid memory region, requests the memory
- * region and ioremaps it. All operations are managed and will be undone
- * on driver detach of the device.
- *
- * This is to be used when a device requests/maps resources described
- * by other device tree nodes (children or otherwise).
- *
- * @dev:	The device "managing" the resource
- * @node:       The device-tree node where the resource resides
- * @index:	index of the MMIO range in the "reg" property
- * @size:	Returns the size of the resource (pass NULL if not needed)
- *
- * Usage example:
- *
- *	base = devm_of_iomap(&pdev->dev, node, 0, NULL);
- *	if (IS_ERR(base))
- *		return PTR_ERR(base);
- *
- * Please Note: This is not a one-to-one replacement for of_iomap() because the
- * of_iomap() function does not track whether the region is already mapped.  If
- * two drivers try to map the same memory, the of_iomap() function will succeed
- * but the devm_of_iomap() function will return -EBUSY.
- *
- * Return: a pointer to the requested and mapped memory or an ERR_PTR() encoded
- * error code on failure.
- */
+ 
 void __iomem *devm_of_iomap(struct device *dev, struct device_node *node, int index,
 			    resource_size_t *size)
 {
@@ -254,9 +165,7 @@ void __iomem *devm_of_iomap(struct device *dev, struct device_node *node, int in
 	return devm_ioremap_resource(dev, &res);
 }
 
-/*
- * Generic iomap devres
- */
+ 
 static void devm_ioport_map_release(struct device *dev, void *res)
 {
 	ioport_unmap(*(void __iomem **)res);
@@ -268,17 +177,7 @@ static int devm_ioport_map_match(struct device *dev, void *res,
 	return *(void **)res == match_data;
 }
 
-/**
- * devm_ioport_map - Managed ioport_map()
- * @dev: Generic device to map ioport for
- * @port: Port to map
- * @nr: Number of ports to map
- *
- * Managed ioport_map().  Map is automatically unmapped on driver
- * detach.
- *
- * Return: a pointer to the remapped memory or NULL on failure.
- */
+ 
 void __iomem *devm_ioport_map(struct device *dev, unsigned long port,
 			       unsigned int nr)
 {
@@ -298,14 +197,7 @@ void __iomem *devm_ioport_map(struct device *dev, unsigned long port,
 	return addr;
 }
 
-/**
- * devm_ioport_unmap - Managed ioport_unmap()
- * @dev: Generic device to unmap for
- * @addr: Address to unmap
- *
- * Managed ioport_unmap().  @addr must have been mapped using
- * devm_ioport_map().
- */
+ 
 void devm_ioport_unmap(struct device *dev, void __iomem *addr)
 {
 	ioport_unmap(addr);
@@ -319,15 +211,7 @@ static void devm_arch_phys_ac_add_release(struct device *dev, void *res)
 	arch_phys_wc_del(*((int *)res));
 }
 
-/**
- * devm_arch_phys_wc_add - Managed arch_phys_wc_add()
- * @dev: Managed device
- * @base: Memory base address
- * @size: Size of memory range
- *
- * Adds a WC MTRR using arch_phys_wc_add() and sets up a release callback.
- * See arch_phys_wc_add() for more information.
- */
+ 
 int devm_arch_phys_wc_add(struct device *dev, unsigned long base, unsigned long size)
 {
 	int *mtrr;
@@ -361,16 +245,7 @@ static void devm_arch_io_free_memtype_wc_release(struct device *dev, void *res)
 	arch_io_free_memtype_wc(this->start, this->size);
 }
 
-/**
- * devm_arch_io_reserve_memtype_wc - Managed arch_io_reserve_memtype_wc()
- * @dev: Managed device
- * @start: Memory base address
- * @size: Size of memory range
- *
- * Reserves a memory range with WC caching using arch_io_reserve_memtype_wc()
- * and sets up a release callback See arch_io_reserve_memtype_wc() for more
- * information.
- */
+ 
 int devm_arch_io_reserve_memtype_wc(struct device *dev, resource_size_t start,
 				    resource_size_t size)
 {

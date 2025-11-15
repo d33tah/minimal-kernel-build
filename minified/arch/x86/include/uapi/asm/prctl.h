@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+ 
 #ifndef _ASM_X86_PRCTL_H
 #define _ASM_X86_PRCTL_H
 
@@ -20,4 +20,4 @@
 #define ARCH_MAP_VDSO_32		0x2002
 #define ARCH_MAP_VDSO_64		0x2003
 
-#endif /* _ASM_X86_PRCTL_H */
+#endif  

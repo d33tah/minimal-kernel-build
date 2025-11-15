@@ -1,16 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * This module exports the functions:
- *
- *     'int set_selection_user(struct tiocl_selection __user *,
- *			       struct tty_struct *)'
- *     'int set_selection_kernel(struct tiocl_selection *, struct tty_struct *)'
- *     'void clear_selection(void)'
- *     'int paste_selection(struct tty_struct *)'
- *     'int sel_loadlut(char __user *)'
- *
- * Now that /dev/vcs exists, most of this can disappear again.
- */
+ 
+ 
 
 #include <linux/module.h>
 #include <linux/tty.h>
@@ -32,11 +21,11 @@
 
 #include <linux/sched/signal.h>
 
-/* Stubbed for minification - console selection not needed for minimal boot */
+ 
 
 void clear_selection(void)
 {
-	/* Stubbed */
+	 
 }
 
 bool vc_is_sel(struct vc_data *vc)

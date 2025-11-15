@@ -1,9 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- *  linux/fs/pnode.h
- *
- * (C) Copyright IBM Corporation 2005.
- */
+ 
+ 
 #ifndef _LINUX_PNODE_H
 #define _LINUX_PNODE_H
 
@@ -53,4 +49,4 @@ struct mount *copy_tree(struct mount *, struct dentry *, int);
 bool is_path_reachable(struct mount *, struct dentry *,
 			 const struct path *root);
 int count_mounts(struct mnt_namespace *ns, struct mount *mnt);
-#endif /* _LINUX_PNODE_H */
+#endif  

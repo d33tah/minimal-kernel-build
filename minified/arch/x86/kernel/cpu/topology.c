@@ -1,9 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Check for extended topology enumeration cpuid leaf 0xb and if it
- * exists, use it for populating initial_apicid and cpu topology
- * detection.
- */
+ 
+ 
 
 #include <linux/cpu.h>
 #include <asm/apic.h>
@@ -12,10 +8,10 @@
 
 #include "cpu.h"
 
-/* leaf 0xb SMT level */
+ 
 #define SMT_LEVEL	0
 
-/* extended topology sub-leaf types */
+ 
 #define INVALID_TYPE	0
 #define SMT_TYPE	1
 #define CORE_TYPE	2
@@ -33,11 +29,7 @@ int detect_extended_topology_early(struct cpuinfo_x86 *c)
 	return 0;
 }
 
-/*
- * Check for extended topology enumeration cpuid leaf, and if it
- * exists, use it for populating initial_apicid and cpu topology
- * detection.
- */
+ 
 int detect_extended_topology(struct cpuinfo_x86 *c)
 {
 	return 0;

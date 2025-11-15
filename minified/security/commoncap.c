@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-/* Common capabilities, needed by capability.o - STUBBED */
+ 
+ 
 
 #include <linux/capability.h>
 #include <linux/audit.h>
@@ -23,12 +23,12 @@
 #include <linux/personality.h>
 #include <linux/mnt_idmapping.h>
 
-/* Stub implementations - all capability checks return success/allowed */
+ 
 
 int cap_capable(const struct cred *cred, struct user_namespace *targ_ns,
 		int cap, unsigned int opts)
 {
-	return 0; /* Always allowed */
+	return 0;  
 }
 
 int cap_settime(const struct timespec64 *ts, const struct timezone *tz)
@@ -135,7 +135,7 @@ int cap_task_prctl(int option, unsigned long arg2, unsigned long arg3,
 
 int cap_vm_enough_memory(struct mm_struct *mm, long pages)
 {
-	return 1; /* Always enough memory for cap check */
+	return 1;  
 }
 
 int cap_mmap_addr(unsigned long addr)

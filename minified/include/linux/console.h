@@ -1,15 +1,4 @@
-/*
- *  linux/include/linux/console.h
- *
- *  Copyright (C) 1993        Hamish Macdonald
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License.  See the file COPYING in the main directory of this archive
- * for more details.
- *
- * Changed:
- * 10-Mar-94: Arno Griffioen: Conversion for vt100 emulator port from PC LINUX
- */
+ 
 
 #ifndef _LINUX_CONSOLE_H_
 #define _LINUX_CONSOLE_H_ 1
@@ -31,16 +20,7 @@ enum con_scroll {
 
 enum vc_intensity;
 
-/**
- * struct consw - callbacks for consoles
- *
- * @con_scroll: move lines from @top to @bottom in direction @dir by @lines.
- *		Return true if no generic handling should be done.
- *		Invoked by csi_M and printing to the console.
- * @con_set_palette: sets the palette of the console to @table (optional)
- * @con_scrolldelta: the contents of the console should be scrolled by @lines.
- *		     Invoked by user. (optional)
- */
+ 
 struct consw {
 	struct module *owner;
 	const char *(*con_startup)(void);
@@ -76,27 +56,19 @@ struct consw {
 	u16    *(*con_screen_pos)(const struct vc_data *vc, int offset);
 	unsigned long (*con_getxy)(struct vc_data *vc, unsigned long position,
 			int *px, int *py);
-	/*
-	 * Flush the video console driver's scrollback buffer
-	 */
+	 
 	void	(*con_flush_scrollback)(struct vc_data *vc);
-	/*
-	 * Prepare the console for the debugger.  This includes, but is not
-	 * limited to, unblanking the console, loading an appropriate
-	 * palette, and allowing debugger generated output.
-	 */
+	 
 	int	(*con_debug_enter)(struct vc_data *vc);
-	/*
-	 * Restore the console to its pre-debug state as closely as possible.
-	 */
+	 
 	int	(*con_debug_leave)(struct vc_data *vc);
 };
 
 extern const struct consw *conswitchp;
 
-extern const struct consw dummy_con;	/* dummy console buffer */
-extern const struct consw vga_con;	/* VGA text console */
-extern const struct consw newport_con;	/* SGI Newport console  */
+extern const struct consw dummy_con;	 
+extern const struct consw vga_con;	 
+extern const struct consw newport_con;	 
 
 int con_is_bound(const struct consw *csw);
 int do_unregister_con_driver(const struct consw *csw);
@@ -105,26 +77,20 @@ void give_up_console(const struct consw *sw);
 int con_debug_enter(struct vc_data *vc);
 int con_debug_leave(void);
 
-/* cursor */
+ 
 #define CM_DRAW     (1)
 #define CM_ERASE    (2)
 #define CM_MOVE     (3)
 
-/*
- * The interface for a console, or any other device that wants to capture
- * console messages (printer driver?)
- *
- * If a console driver is marked CON_BOOT then it will be auto-unregistered
- * when the first real console is registered.  This is for early-printk drivers.
- */
+ 
 
 #define CON_PRINTBUFFER	(1)
-#define CON_CONSDEV	(2) /* Preferred console, /dev/console */
+#define CON_CONSDEV	(2)  
 #define CON_ENABLED	(4)
 #define CON_BOOT	(8)
-#define CON_ANYTIME	(16) /* Safe to call when cpu is offline */
-#define CON_BRL		(32) /* Used for a braille device */
-#define CON_EXTENDED	(64) /* Use the extended output format a la /dev/kmsg */
+#define CON_ANYTIME	(16)  
+#define CON_BRL		(32)  
+#define CON_EXTENDED	(64)  
 
 struct console {
 	char	name[16];
@@ -146,9 +112,7 @@ struct console {
 	struct	 console *next;
 };
 
-/*
- * for_each_console() allows you to iterate on each console
- */
+ 
 #define for_each_console(con) \
 	for (con = console_drivers; con != NULL; con = con->next)
 
@@ -180,7 +144,7 @@ extern int braille_unregister_console(struct console *);
 extern void console_sysfs_notify(void);
 extern bool console_suspend_enabled;
 
-/* Suspend and resume console messages over PM events */
+ 
 extern void suspend_console(void);
 extern void resume_console(void);
 
@@ -189,17 +153,14 @@ int mda_console_init(void);
 void vcs_make_sysfs(int index);
 void vcs_remove_sysfs(int index);
 
-/* Some debug stub to catch some of the obvious races in the VT code */
+ 
 #define WARN_CONSOLE_UNLOCKED()						\
 	WARN_ON(!atomic_read(&ignore_console_lock_warning) &&		\
 		!is_console_locked() && !oops_in_progress)
-/*
- * Increment ignore_console_lock_warning if you need to quiet
- * WARN_CONSOLE_UNLOCKED() for debugging purposes.
- */
+ 
 extern atomic_t ignore_console_lock_warning;
 
-/* VESA Blanking Levels */
+ 
 #define VESA_NO_BLANKING        0
 #define VESA_VSYNC_SUSPEND      1
 #define VESA_HSYNC_SUSPEND      2
@@ -207,8 +168,8 @@ extern atomic_t ignore_console_lock_warning;
 
 extern void console_init(void);
 
-/* For deferred console takeover */
+ 
 void dummycon_register_output_notifier(struct notifier_block *nb);
 void dummycon_unregister_output_notifier(struct notifier_block *nb);
 
-#endif /* _LINUX_CONSOLE_H */
+#endif  

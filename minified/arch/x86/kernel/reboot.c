@@ -1,7 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Minimal stub - reboot/shutdown not needed for minimal kernel
- */
+ 
+ 
 #include <linux/export.h>
 #include <linux/reboot.h>
 #include <linux/kernel.h>

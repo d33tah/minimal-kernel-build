@@ -1,7 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * attribute_container.c - stub implementation
- */
+ 
+ 
 
 #include <linux/attribute_container.h>
 #include <linux/device.h>

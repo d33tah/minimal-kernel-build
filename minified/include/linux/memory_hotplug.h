@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef __LINUX_MEMORY_HOTPLUG_H
 #define __LINUX_MEMORY_HOTPLUG_H
 
@@ -21,7 +21,7 @@ struct dev_pagemap;
 #define arch_alloc_nodedata(nid)	generic_alloc_nodedata(nid)
 
 
-/* never called */
+ 
 static inline pg_data_t *generic_alloc_nodedata(int nid)
 {
 	BUG();
@@ -70,16 +70,10 @@ static inline bool movable_node_is_enabled(void)
 	return false;
 }
 
-/*
- * Keep this declaration outside CONFIG_MEMORY_HOTPLUG as some
- * platforms might override and use arch_get_mappable_range()
- * for internal non memory hotplug purposes.
- */
+ 
 struct range arch_get_mappable_range(void);
 
-/*
- * Stub functions for when hotplug is off
- */
+ 
 static inline void pgdat_resize_lock(struct pglist_data *p, unsigned long *f) {}
 static inline void pgdat_resize_unlock(struct pglist_data *p, unsigned long *f) {}
 static inline void pgdat_resize_init(struct pglist_data *pgdat) {}
@@ -108,4 +102,4 @@ static inline bool mhp_memmap_on_memory(void)
 	return false;
 }
 
-#endif /* __LINUX_MEMORY_HOTPLUG_H */
+#endif  

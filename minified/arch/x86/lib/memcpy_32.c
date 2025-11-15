@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 #include <linux/string.h>
 #include <linux/export.h>
 
@@ -22,23 +22,18 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 	char *ret = dest;
 
 	__asm__ __volatile__(
-		/* Handle more 16 bytes in loop */
+		 
 		"cmp $0x10, %0\n\t"
 		"jb	1f\n\t"
 
-		/* Decide forward/backward copy mode */
+		 
 		"cmp %2, %1\n\t"
 		"jb	2f\n\t"
 
-		/*
-		 * movs instruction have many startup latency
-		 * so we handle small size by general register.
-		 */
+		 
 		"cmp  $680, %0\n\t"
 		"jb 3f\n\t"
-		/*
-		 * movs instruction is only good for aligned case.
-		 */
+		 
 		"mov %1, %3\n\t"
 		"xor %2, %3\n\t"
 		"and $0xff, %3\n\t"
@@ -46,9 +41,7 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"3:\n\t"
 		"sub $0x10, %0\n\t"
 
-		/*
-		 * We gobble 16 bytes forward in each loop.
-		 */
+		 
 		"3:\n\t"
 		"sub $0x10, %0\n\t"
 		"mov 0*4(%1), %3\n\t"
@@ -65,9 +58,7 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"add $0x10, %0\n\t"
 		"jmp 1f\n\t"
 
-		/*
-		 * Handle data forward by movs.
-		 */
+		 
 		".p2align 4\n\t"
 		"4:\n\t"
 		"mov -4(%1, %0), %3\n\t"
@@ -76,9 +67,7 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"rep movsl\n\t"
 		"mov %3, (%4)\n\t"
 		"jmp 11f\n\t"
-		/*
-		 * Handle data backward by movs.
-		 */
+		 
 		".p2align 4\n\t"
 		"6:\n\t"
 		"mov (%1), %3\n\t"
@@ -92,9 +81,7 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"cld\n\t"
 		"jmp 11f\n\t"
 
-		/*
-		 * Start to prepare for backward copy.
-		 */
+		 
 		".p2align 4\n\t"
 		"2:\n\t"
 		"cmp  $680, %0\n\t"
@@ -104,17 +91,13 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"and $0xff, %3\n\t"
 		"jz 6b\n\t"
 
-		/*
-		 * Calculate copy position to tail.
-		 */
+		 
 		"5:\n\t"
 		"add %0, %1\n\t"
 		"add %0, %2\n\t"
 		"sub $0x10, %0\n\t"
 
-		/*
-		 * We gobble 16 bytes backward in each loop.
-		 */
+		 
 		"7:\n\t"
 		"sub $0x10, %0\n\t"
 
@@ -129,16 +112,12 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"lea  -0x10(%1), %1\n\t"
 		"lea  -0x10(%2), %2\n\t"
 		"jae 7b\n\t"
-		/*
-		 * Calculate copy position to head.
-		 */
+		 
 		"add $0x10, %0\n\t"
 		"sub %0, %1\n\t"
 		"sub %0, %2\n\t"
 
-		/*
-		 * Move data from 8 bytes to 15 bytes.
-		 */
+		 
 		".p2align 4\n\t"
 		"1:\n\t"
 		"cmp $8, %0\n\t"
@@ -154,9 +133,7 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"mov  %1, -1*4(%2, %0)\n\t"
 		"jmp 11f\n\t"
 
-		/*
-		 * Move data from 4 bytes to 7 bytes.
-		 */
+		 
 		".p2align 4\n\t"
 		"8:\n\t"
 		"cmp $4, %0\n\t"
@@ -167,9 +144,7 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"mov  %4, -1*4(%2, %0)\n\t"
 		"jmp 11f\n\t"
 
-		/*
-		 * Move data from 2 bytes to 3 bytes.
-		 */
+		 
 		".p2align 4\n\t"
 		"9:\n\t"
 		"cmp $2, %0\n\t"
@@ -180,9 +155,7 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"movw %%bx, -1*2(%2, %0)\n\t"
 		"jmp 11f\n\t"
 
-		/*
-		 * Move data for 1 byte.
-		 */
+		 
 		".p2align 4\n\t"
 		"10:\n\t"
 		"cmp $1, %0\n\t"

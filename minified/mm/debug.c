@@ -1,10 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * mm/debug.c
- *
- * mm/ specific debug routines.
- *
- */
+ 
+ 
 
 #include <linux/kernel.h>
 #include <linux/mm.h>
@@ -16,10 +11,7 @@
 
 #include "internal.h"
 
-/*
- * Define EM() and EMe() so that MIGRATE_REASON from trace/events/migrate.h can
- * be used to populate migrate_reason_names[].
- */
+ 
 #undef EM
 #undef EMe
 #define EM(a, b)	b,
@@ -55,6 +47,6 @@ const struct trace_print_flags vmaflag_names[] = {
 
 void dump_page(struct page *page, const char *reason)
 {
-	/* Stubbed for minimization */
+	 
 }
 

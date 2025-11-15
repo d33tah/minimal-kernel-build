@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
 #include <linux/blkdev.h>
 #include <linux/wait.h>
@@ -21,16 +21,13 @@ struct backing_dev_info noop_backing_dev_info;
 static struct class *bdi_class;
 static const char *bdi_unknown_name = "(unknown)";
 
-/*
- * bdi_lock protects bdi_tree and updates to bdi_list. bdi_list has RCU
- * reader side locking.
- */
+ 
 DEFINE_SPINLOCK(bdi_lock);
 static u64 bdi_id_cursor;
 static struct rb_root bdi_tree = RB_ROOT;
 LIST_HEAD(bdi_list);
 
-/* bdi_wq serves all asynchronous writeback tasks */
+ 
 struct workqueue_struct *bdi_wq;
 
 #define K(x) ((x) << (PAGE_SHIFT - 10))
@@ -155,20 +152,7 @@ static int __init default_bdi_init(void)
 }
 subsys_initcall(default_bdi_init);
 
-/*
- * This function is used when the first inode for this wb is marked dirty. It
- * wakes-up the corresponding bdi thread which should then take care of the
- * periodic background write-out of dirty inodes. Since the write-out would
- * starts only 'dirty_writeback_interval' centisecs from now anyway, we just
- * set up a timer which wakes the bdi thread up later.
- *
- * Note, we wouldn't bother setting up the timer, but this function is on the
- * fast-path (used by '__mark_inode_dirty()'), so we save few context switches
- * by delaying the wake-up.
- *
- * We have to be careful not to postpone flush work if it is scheduled for
- * earlier. Thus we use queue_delayed_work().
- */
+ 
 void wb_wakeup_delayed(struct bdi_writeback *wb)
 {
 	unsigned long timeout;
@@ -188,9 +172,7 @@ static void wb_update_bandwidth_workfn(struct work_struct *work)
 	wb_update_bandwidth(wb);
 }
 
-/*
- * Initial write bandwidth: 100 MB/s
- */
+ 
 #define INIT_BW		(100 << (20 - PAGE_SHIFT))
 
 static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
@@ -242,12 +224,10 @@ out_destroy_stat:
 
 static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb);
 
-/*
- * Remove bdi from the global list and shutdown any threads we have running
- */
+ 
 static void wb_shutdown(struct bdi_writeback *wb)
 {
-	/* Make sure nobody queues further work */
+	 
 	spin_lock_bh(&wb->work_lock);
 	if (!test_and_clear_bit(WB_registered, &wb->state)) {
 		spin_unlock_bh(&wb->work_lock);
@@ -256,11 +236,7 @@ static void wb_shutdown(struct bdi_writeback *wb)
 	spin_unlock_bh(&wb->work_lock);
 
 	cgwb_remove_from_bdi_list(wb);
-	/*
-	 * Drain work list and shutdown the delayed_work.  !WB_registered
-	 * tells wb_workfn() that @wb is dying and its work_list needs to
-	 * be drained no matter what.
-	 */
+	 
 	mod_delayed_work(bdi_wq, &wb->dwork, 0);
 	flush_delayed_work(&wb->dwork);
 	WARN_ON(!list_empty(&wb->work_list));
@@ -361,13 +337,7 @@ static struct rb_node **bdi_lookup_rb_node(u64 id, struct rb_node **parentp)
 	return p;
 }
 
-/**
- * bdi_get_by_id - lookup and get bdi from its id
- * @id: bdi id to lookup
- *
- * Find bdi matching @id and get it.  Returns NULL if the matching bdi
- * doesn't exist or is already unregistered.
- */
+ 
 struct backing_dev_info *bdi_get_by_id(u64 id)
 {
 	struct backing_dev_info *bdi = NULL;
@@ -389,7 +359,7 @@ int bdi_register_va(struct backing_dev_info *bdi, const char *fmt, va_list args)
 	struct device *dev;
 	struct rb_node *parent, **p;
 
-	if (bdi->dev)	/* The driver needs to use separate queues per device */
+	if (bdi->dev)	 
 		return 0;
 
 	vsnprintf(bdi->dev_name, sizeof(bdi->dev_name), fmt, args);
@@ -436,9 +406,7 @@ void bdi_set_owner(struct backing_dev_info *bdi, struct device *owner)
 	get_device(owner);
 }
 
-/*
- * Remove bdi from bdi_list, and ensure that it is no longer visible
- */
+ 
 static void bdi_remove_from_list(struct backing_dev_info *bdi)
 {
 	spin_lock_bh(&bdi_lock);
@@ -453,15 +421,12 @@ void bdi_unregister(struct backing_dev_info *bdi)
 {
 	del_timer_sync(&bdi->laptop_mode_wb_timer);
 
-	/* make sure nobody finds us on the bdi_list anymore */
+	 
 	bdi_remove_from_list(bdi);
 	wb_shutdown(&bdi->wb);
 	cgwb_bdi_unregister(bdi);
 
-	/*
-	 * If this BDI's min ratio has been set, use bdi_set_min_ratio() to
-	 * update the global bdi_min_ratio.
-	 */
+	 
 	if (bdi->min_ratio)
 		bdi_set_min_ratio(bdi, 0);
 

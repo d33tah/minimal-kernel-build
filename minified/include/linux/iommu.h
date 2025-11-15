@@ -1,8 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- * Copyright (C) 2007-2008 Advanced Micro Devices, Inc.
- * Author: Joerg Roedel <joerg.roedel@amd.com>
- */
+ 
+ 
 
 #ifndef __LINUX_IOMMU_H
 #define __LINUX_IOMMU_H
@@ -18,18 +15,10 @@
 
 #define IOMMU_READ	(1 << 0)
 #define IOMMU_WRITE	(1 << 1)
-#define IOMMU_CACHE	(1 << 2) /* DMA cache coherency */
+#define IOMMU_CACHE	(1 << 2)  
 #define IOMMU_NOEXEC	(1 << 3)
-#define IOMMU_MMIO	(1 << 4) /* e.g. things like MSI doorbells */
-/*
- * Where the bus hardware includes a privilege level as part of its access type
- * markings, and certain devices are capable of issuing transactions marked as
- * either 'supervisor' or 'user', the IOMMU_PRIV flag requests that the other
- * given permission flags only apply to accesses at the higher privilege level,
- * and that unprivileged transactions should have as little access as possible.
- * This would usually imply the same permissions as kernel mappings on the CPU,
- * if the IOMMU page table format is equivalent.
- */
+#define IOMMU_MMIO	(1 << 4)  
+ 
 #define IOMMU_PRIV	(1 << 5)
 
 struct iommu_ops;
@@ -43,7 +32,7 @@ struct iommu_sva;
 struct iommu_fault_event;
 struct iommu_dma_cookie;
 
-/* iommu fault flags */
+ 
 #define IOMMU_FAULT_READ	0x0
 #define IOMMU_FAULT_WRITE	0x1
 
@@ -52,32 +41,18 @@ typedef int (*iommu_fault_handler_t)(struct iommu_domain *,
 typedef int (*iommu_dev_fault_handler_t)(struct iommu_fault *, void *);
 
 struct iommu_domain_geometry {
-	dma_addr_t aperture_start; /* First address that can be mapped    */
-	dma_addr_t aperture_end;   /* Last address that can be mapped     */
-	bool force_aperture;       /* DMA only allowed in mappable range? */
+	dma_addr_t aperture_start;  
+	dma_addr_t aperture_end;    
+	bool force_aperture;        
 };
 
-/* Domain feature flags */
-#define __IOMMU_DOMAIN_PAGING	(1U << 0)  /* Support for iommu_map/unmap */
-#define __IOMMU_DOMAIN_DMA_API	(1U << 1)  /* Domain for use in DMA-API
-					      implementation              */
-#define __IOMMU_DOMAIN_PT	(1U << 2)  /* Domain is identity mapped   */
-#define __IOMMU_DOMAIN_DMA_FQ	(1U << 3)  /* DMA-API uses flush queue    */
+ 
+#define __IOMMU_DOMAIN_PAGING	(1U << 0)   
+#define __IOMMU_DOMAIN_DMA_API	(1U << 1)   
+#define __IOMMU_DOMAIN_PT	(1U << 2)   
+#define __IOMMU_DOMAIN_DMA_FQ	(1U << 3)   
 
-/*
- * This are the possible domain-types
- *
- *	IOMMU_DOMAIN_BLOCKED	- All DMA is blocked, can be used to isolate
- *				  devices
- *	IOMMU_DOMAIN_IDENTITY	- DMA addresses are system physical addresses
- *	IOMMU_DOMAIN_UNMANAGED	- DMA mappings managed by IOMMU-API user, used
- *				  for VMs
- *	IOMMU_DOMAIN_DMA	- Internally used for DMA-API implementations.
- *				  This flag allows IOMMU drivers to implement
- *				  certain optimizations for these domains
- *	IOMMU_DOMAIN_DMA_FQ	- As above, but definitely using batched TLB
- *				  invalidation.
- */
+ 
 #define IOMMU_DOMAIN_BLOCKED	(0U)
 #define IOMMU_DOMAIN_IDENTITY	(__IOMMU_DOMAIN_PT)
 #define IOMMU_DOMAIN_UNMANAGED	(__IOMMU_DOMAIN_PAGING)
@@ -90,7 +65,7 @@ struct iommu_domain_geometry {
 struct iommu_domain {
 	unsigned type;
 	const struct iommu_domain_ops *ops;
-	unsigned long pgsize_bitmap;	/* Bitmap of page sizes in use */
+	unsigned long pgsize_bitmap;	 
 	iommu_fault_handler_t handler;
 	void *handler_token;
 	struct iommu_domain_geometry geometry;
@@ -103,39 +78,27 @@ static inline bool iommu_is_dma_domain(struct iommu_domain *domain)
 }
 
 enum iommu_cap {
-	IOMMU_CAP_CACHE_COHERENCY,	/* IOMMU_CACHE is supported */
-	IOMMU_CAP_INTR_REMAP,		/* IOMMU supports interrupt isolation */
-	IOMMU_CAP_NOEXEC,		/* IOMMU_NOEXEC flag */
-	IOMMU_CAP_PRE_BOOT_PROTECTION,	/* Firmware says it used the IOMMU for
-					   DMA protection and we should too */
+	IOMMU_CAP_CACHE_COHERENCY,	 
+	IOMMU_CAP_INTR_REMAP,		 
+	IOMMU_CAP_NOEXEC,		 
+	IOMMU_CAP_PRE_BOOT_PROTECTION,	 
 };
 
-/* These are the possible reserved region types */
+ 
 enum iommu_resv_type {
-	/* Memory regions which must be mapped 1:1 at all times */
+	 
 	IOMMU_RESV_DIRECT,
-	/*
-	 * Memory regions which are advertised to be 1:1 but are
-	 * commonly considered relaxable in some conditions,
-	 * for instance in device assignment use case (USB, Graphics)
-	 */
+	 
 	IOMMU_RESV_DIRECT_RELAXABLE,
-	/* Arbitrary "never map this or give it to a device" address ranges */
+	 
 	IOMMU_RESV_RESERVED,
-	/* Hardware MSI region (untranslated) */
+	 
 	IOMMU_RESV_MSI,
-	/* Software-managed MSI translation window */
+	 
 	IOMMU_RESV_SW_MSI,
 };
 
-/**
- * struct iommu_resv_region - descriptor for a reserved memory region
- * @list: Linked list pointers
- * @start: System physical start address of the region
- * @length: Length of the region in bytes
- * @prot: IOMMU Protection flags (READ/WRITE/...)
- * @type: Type of the reserved region
- */
+ 
 struct iommu_resv_region {
 	struct list_head	list;
 	phys_addr_t		start;
@@ -144,19 +107,7 @@ struct iommu_resv_region {
 	enum iommu_resv_type	type;
 };
 
-/**
- * enum iommu_dev_features - Per device IOMMU features
- * @IOMMU_DEV_FEAT_SVA: Shared Virtual Addresses
- * @IOMMU_DEV_FEAT_IOPF: I/O Page Faults such as PRI or Stall. Generally
- *			 enabling %IOMMU_DEV_FEAT_SVA requires
- *			 %IOMMU_DEV_FEAT_IOPF, but some devices manage I/O Page
- *			 Faults themselves instead of relying on the IOMMU. When
- *			 supported, this feature must be enabled before and
- *			 disabled after %IOMMU_DEV_FEAT_SVA.
- *
- * Device drivers query whether a feature is supported using
- * iommu_dev_has_feature(), and enable it using iommu_dev_enable_feature().
- */
+ 
 enum iommu_dev_features {
 	IOMMU_DEV_FEAT_SVA,
 	IOMMU_DEV_FEAT_IOPF,
@@ -537,16 +488,7 @@ static inline bool iommu_group_dma_owner_claimed(struct iommu_group *group)
 	return false;
 }
 
-/**
- * iommu_map_sgtable - Map the given buffer to the IOMMU domain
- * @domain:	The IOMMU domain to perform the mapping
- * @iova:	The start address to map the buffer
- * @sgt:	The sg_table object describing the buffer
- * @prot:	IOMMU protection bits
- *
- * Creates a mapping at @iova for the buffer described by a scatterlist
- * stored in the given sg_table object in the provided IOMMU domain.
- */
+ 
 static inline size_t iommu_map_sgtable(struct iommu_domain *domain,
 			unsigned long iova, struct sg_table *sgt, int prot)
 {
@@ -555,4 +497,4 @@ static inline size_t iommu_map_sgtable(struct iommu_domain *domain,
 
 static inline void iommu_debugfs_setup(void) {}
 
-#endif /* __LINUX_IOMMU_H */
+#endif  

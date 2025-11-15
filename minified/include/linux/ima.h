@@ -1,8 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- * Copyright (C) 2008 IBM Corporation
- * Author: Mimi Zohar <zohar@us.ibm.com>
- */
+ 
+ 
 
 #ifndef _LINUX_IMA_H
 #define _LINUX_IMA_H
@@ -11,7 +8,7 @@
 #include <linux/fs.h>
 #include <linux/security.h>
 #include <linux/kexec.h>
-// #include <crypto/hash_info.h>
+ 
 #include <uapi/linux/hash_info.h>
 struct linux_binprm;
 
@@ -154,4 +151,4 @@ static inline bool ima_appraise_signature(enum kernel_read_file_id func)
 {
 	return false;
 }
-#endif /* _LINUX_IMA_H */
+#endif  

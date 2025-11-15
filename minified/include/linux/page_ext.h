@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef __LINUX_PAGE_EXT_H
 #define __LINUX_PAGE_EXT_H
 
@@ -36,4 +36,4 @@ static inline void page_ext_init_flatmem_late(void)
 static inline void page_ext_init_flatmem(void)
 {
 }
-#endif /* __LINUX_PAGE_EXT_H */
+#endif  

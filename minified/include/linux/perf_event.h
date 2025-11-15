@@ -1,6 +1,4 @@
-/*
- * Minimal stub - Performance events disabled for Hello World kernel
- */
+ 
 #ifndef _LINUX_PERF_EVENT_H
 #define _LINUX_PERF_EVENT_H
 
@@ -19,7 +17,7 @@ struct perf_event;
 struct perf_event_context;
 struct vm_area_struct;
 
-/* Minimal stubs for structures that might be referenced */
+ 
 struct perf_callchain_entry {
 	__u64 nr;
 	__u64 ip[];
@@ -41,7 +39,7 @@ typedef void (*perf_overflow_handler_t)(struct perf_event *,
 struct hw_perf_event {
 	u64 config;
 	union {
-		struct { /* breakpoint */
+		struct {  
 			struct arch_hw_breakpoint info;
 		};
 	};
@@ -63,7 +61,7 @@ struct perf_event_context {
 	struct list_head event_list;
 };
 
-/* These are implemented in kernel/events/stubs.c - not inline */
+ 
 extern void perf_event_task_tick(void);
 extern void perf_event_fork(struct task_struct *tsk);
 extern void perf_event_init(void);
@@ -87,7 +85,7 @@ extern void __perf_sw_event(u32 event_id, u64 nr, struct pt_regs *regs, u64 addr
 extern void perf_tp_event(u64 addr, u64 count, void *record, int entry_size,
 			  struct pt_regs *regs, void *head, int rctx, void *task_ctx);
 
-/* These can remain as trivial inline stubs */
+ 
 static inline void perf_event_print_debug(void) { }
 static inline int perf_register_guest_info_callbacks(void *cbs) { return 0; }
 static inline int perf_unregister_guest_info_callbacks(void *cbs) { return 0; }
@@ -99,4 +97,4 @@ static inline void perf_sw_event(u32 event_id, u64 nr, struct pt_regs *regs, u64
 	__perf_sw_event(event_id, nr, regs, addr);
 }
 
-#endif /* _LINUX_PERF_EVENT_H */
+#endif  

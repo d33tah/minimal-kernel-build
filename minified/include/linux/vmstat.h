@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_VMSTAT_H
 #define _LINUX_VMSTAT_H
 
@@ -33,7 +33,7 @@ enum writeback_stat_item {
 };
 
 
-/* Disable counters */
+ 
 static inline void count_vm_event(enum vm_event_item item)
 {
 }
@@ -65,9 +65,7 @@ static inline void vm_events_fold_cpu(int cpu)
 #define __count_zid_vm_events(item, zid, delta) \
 	__count_vm_events(item##_NORMAL - ZONE_NORMAL + zid, delta)
 
-/*
- * Zone and node-based page accounting with per cpu differentials.
- */
+ 
 extern atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS];
 extern atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS];
 extern atomic_long_t vm_numa_event[NR_VM_NUMA_EVENT_ITEMS];
@@ -114,12 +112,7 @@ static inline unsigned long zone_page_state(struct zone *zone,
 	return x;
 }
 
-/*
- * More accurate version that also considers the currently pending
- * deltas. For that we need to loop over all cpus to find the current
- * deltas. There is no synchronization so the result cannot be
- * exactly accurate either.
- */
+ 
 static inline unsigned long zone_page_state_snapshot(struct zone *zone,
 					enum zone_stat_item item)
 {
@@ -136,10 +129,7 @@ static inline void fold_vm_numa_events(void)
 }
 
 
-/*
- * We do not maintain differentials in a single processor configuration.
- * The functions directly modify the zone and global counters.
- */
+ 
 static inline void __mod_zone_page_state(struct zone *zone,
 			enum zone_stat_item item, long delta)
 {
@@ -150,12 +140,7 @@ static inline void __mod_node_page_state(struct pglist_data *pgdat,
 			enum node_stat_item item, int delta)
 {
 	if (vmstat_item_in_bytes(item)) {
-		/*
-		 * Only cgroups use subpage accounting right now; at
-		 * the global level, these items still change in
-		 * multiples of whole pages. Store them as pages
-		 * internally to keep the per-cpu counters compact.
-		 */
+		 
 		VM_WARN_ON_ONCE(delta & (PAGE_SIZE - 1));
 		delta >>= PAGE_SHIFT;
 	}
@@ -213,10 +198,7 @@ static inline void __dec_node_page_state(struct page *page,
 }
 
 
-/*
- * We only use atomic operations to update counters. So there is no need to
- * disable interrupts.
- */
+ 
 #define inc_zone_page_state __inc_zone_page_state
 #define dec_zone_page_state __dec_zone_page_state
 #define mod_zone_page_state __mod_zone_page_state
@@ -335,7 +317,7 @@ static inline const char *node_stat_name(enum node_stat_item item)
 
 static inline const char *lru_list_name(enum lru_list lru)
 {
-	return node_stat_name(NR_LRU_BASE + lru) + 3; // skip "nr_"
+	return node_stat_name(NR_LRU_BASE + lru) + 3;  
 }
 
 static inline const char *writeback_stat_name(enum writeback_stat_item item)
@@ -432,4 +414,4 @@ static inline void lruvec_stat_sub_folio(struct folio *folio,
 {
 	lruvec_stat_mod_folio(folio, idx, -folio_nr_pages(folio));
 }
-#endif /* _LINUX_VMSTAT_H */
+#endif  

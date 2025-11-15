@@ -1,10 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/*
- * Copyright (c) 2013 Red Hat, Inc. and Parallels Inc. All rights reserved.
- * Authors: David Chinner and Glauber Costa
- *
- * Generic LRU infrastructure
- */
+ 
+ 
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/mm.h>
@@ -59,7 +54,7 @@ bool list_lru_add(struct list_lru *lru, struct list_head *item)
 	if (list_empty(item)) {
 		l = list_lru_from_kmem(lru, nid, item, &memcg);
 		list_add_tail(item, &l->list);
-		/* Set shrinker bit if the first element was added */
+		 
 		if (!l->nr_items++)
 			set_shrinker_bit(memcg, nid,
 					 lru_shrinker_id(lru));
@@ -146,10 +141,7 @@ restart:
 	list_for_each_safe(item, n, &l->list) {
 		enum lru_status ret;
 
-		/*
-		 * decrement nr_to_walk first so that we don't livelock if we
-		 * get stuck on large numbers of LRU_RETRY items
-		 */
+		 
 		if (!*nr_to_walk)
 			break;
 		--*nr_to_walk;
@@ -162,11 +154,7 @@ restart:
 		case LRU_REMOVED:
 			isolated++;
 			nlru->nr_items--;
-			/*
-			 * If the lru lock has been dropped, our list
-			 * traversal is now invalid and so we have to
-			 * restart from scratch.
-			 */
+			 
 			if (ret == LRU_REMOVED_RETRY)
 				goto restart;
 			break;
@@ -176,10 +164,7 @@ restart:
 		case LRU_SKIP:
 			break;
 		case LRU_RETRY:
-			/*
-			 * The lru lock has been dropped, our list traversal is
-			 * now invalid and so we have to restart from scratch.
-			 */
+			 
 			assert_spin_locked(&nlru->lock);
 			goto restart;
 		default:
@@ -272,7 +257,7 @@ int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 
 void list_lru_destroy(struct list_lru *lru)
 {
-	/* Already destroyed or not yet initialized? */
+	 
 	if (!lru->node)
 		return;
 

@@ -1,9 +1,6 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 
-/*
- * Copyright (c) 2021, Google LLC.
- * Pasha Tatashin <pasha.tatashin@soleen.com>
- */
+ 
 #ifndef __LINUX_PAGE_TABLE_CHECK_H
 #define __LINUX_PAGE_TABLE_CHECK_H
 
@@ -55,4 +52,4 @@ static inline void page_table_check_pte_clear_range(struct mm_struct *mm,
 {
 }
 
-#endif /* __LINUX_PAGE_TABLE_CHECK_H */
+#endif  

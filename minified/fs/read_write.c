@@ -1,9 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- *  linux/fs/read_write.c
- *
- *  Copyright (C) 1991, 1992  Linus Torvalds
- */
+ 
+ 
 
 #include <linux/slab.h>
 #include <linux/stat.h>
@@ -37,18 +33,7 @@ static inline bool unsigned_offsets(struct file *file)
 	return file->f_mode & FMODE_UNSIGNED_OFFSET;
 }
 
-/**
- * vfs_setpos - update the file offset for lseek
- * @file:	file structure in question
- * @offset:	file offset to seek to
- * @maxsize:	maximum file size
- *
- * This is a low-level filesystem helper for updating the file offset to
- * the value specified by @offset if the given offset is valid and it is
- * not equal to the current file offset.
- *
- * Return the specified offset on success and -EINVAL on invalid offset.
- */
+ 
 loff_t vfs_setpos(struct file *file, loff_t offset, loff_t maxsize)
 {
 	if (offset < 0 && !unsigned_offsets(file))
@@ -63,22 +48,7 @@ loff_t vfs_setpos(struct file *file, loff_t offset, loff_t maxsize)
 	return offset;
 }
 
-/**
- * generic_file_llseek_size - generic llseek implementation for regular files
- * @file:	file structure to seek on
- * @offset:	file offset to seek to
- * @whence:	type of seek
- * @size:	max size of this file in file system
- * @eof:	offset used for SEEK_END position
- *
- * This is a variant of generic_file_llseek that allows passing in a custom
- * maximum file size and a custom EOF position, for e.g. hashed directories
- *
- * Synchronization:
- * SEEK_SET and SEEK_END are unsynchronized (but atomic on 64bit platforms)
- * SEEK_CUR is synchronized against other SEEK_CURs, but not read/writes.
- * read/writes behave like SEEK_SET against seeks.
- */
+ 
 loff_t
 generic_file_llseek_size(struct file *file, loff_t offset, int whence,
 		loff_t maxsize, loff_t eof)
@@ -88,36 +58,21 @@ generic_file_llseek_size(struct file *file, loff_t offset, int whence,
 		offset += eof;
 		break;
 	case SEEK_CUR:
-		/*
-		 * Here we special-case the lseek(fd, 0, SEEK_CUR)
-		 * position-querying operation.  Avoid rewriting the "same"
-		 * f_pos value back to the file because a concurrent read(),
-		 * write() or lseek() might have altered it
-		 */
+		 
 		if (offset == 0)
 			return file->f_pos;
-		/*
-		 * f_lock protects against read/modify/write race with other
-		 * SEEK_CURs. Note that parallel writes and reads behave
-		 * like SEEK_SET.
-		 */
+		 
 		spin_lock(&file->f_lock);
 		offset = vfs_setpos(file, file->f_pos + offset, maxsize);
 		spin_unlock(&file->f_lock);
 		return offset;
 	case SEEK_DATA:
-		/*
-		 * In the generic case the entire file is data, so as long as
-		 * offset isn't at the end of the file then the offset is data.
-		 */
+		 
 		if ((unsigned long long)offset >= eof)
 			return -ENXIO;
 		break;
 	case SEEK_HOLE:
-		/*
-		 * There is a virtual hole at the end of the file, so as long as
-		 * offset isn't i_size or larger, return i_size.
-		 */
+		 
 		if ((unsigned long long)offset >= eof)
 			return -ENXIO;
 		offset = eof;
@@ -127,16 +82,7 @@ generic_file_llseek_size(struct file *file, loff_t offset, int whence,
 	return vfs_setpos(file, offset, maxsize);
 }
 
-/**
- * generic_file_llseek - generic llseek implementation for regular files
- * @file:	file structure to seek on
- * @offset:	file offset to seek to
- * @whence:	type of seek
- *
- * This is a generic implemenation of ->llseek useable for all normal local
- * filesystems.  It just updates the file offset to the value specified by
- * @offset and @whence.
- */
+ 
 loff_t generic_file_llseek(struct file *file, loff_t offset, int whence)
 {
 	struct inode *inode = file->f_mapping->host;
@@ -146,14 +92,7 @@ loff_t generic_file_llseek(struct file *file, loff_t offset, int whence)
 					i_size_read(inode));
 }
 
-/**
- * fixed_size_llseek - llseek implementation for fixed-sized devices
- * @file:	file structure to seek on
- * @offset:	file offset to seek to
- * @whence:	type of seek
- * @size:	size of the file
- *
- */
+ 
 loff_t fixed_size_llseek(struct file *file, loff_t offset, int whence, loff_t size)
 {
 	switch (whence) {
@@ -165,13 +104,7 @@ loff_t fixed_size_llseek(struct file *file, loff_t offset, int whence, loff_t si
 	}
 }
 
-/**
- * no_seek_end_llseek - llseek implementation for fixed-sized devices
- * @file:	file structure to seek on
- * @offset:	file offset to seek to
- * @whence:	type of seek
- *
- */
+ 
 loff_t no_seek_end_llseek(struct file *file, loff_t offset, int whence)
 {
 	switch (whence) {
@@ -183,14 +116,7 @@ loff_t no_seek_end_llseek(struct file *file, loff_t offset, int whence)
 	}
 }
 
-/**
- * no_seek_end_llseek_size - llseek implementation for fixed-sized devices
- * @file:	file structure to seek on
- * @offset:	file offset to seek to
- * @whence:	type of seek
- * @size:	maximal offset allowed
- *
- */
+ 
 loff_t no_seek_end_llseek_size(struct file *file, loff_t offset, int whence, loff_t size)
 {
 	switch (whence) {
@@ -202,17 +128,7 @@ loff_t no_seek_end_llseek_size(struct file *file, loff_t offset, int whence, lof
 	}
 }
 
-/**
- * noop_llseek - No Operation Performed llseek implementation
- * @file:	file structure to seek on
- * @offset:	file offset to seek to
- * @whence:	type of seek
- *
- * This is an implementation of ->llseek useable for the rare special case when
- * userspace expects the seek to succeed but the (device) file is actually not
- * able to perform the seek. In this case you use noop_llseek() instead of
- * falling back to the default implementation of ->llseek.
- */
+ 
 loff_t noop_llseek(struct file *file, loff_t offset, int whence)
 {
 	return file->f_pos;
@@ -241,22 +157,14 @@ loff_t default_llseek(struct file *file, loff_t offset, int whence)
 			offset += file->f_pos;
 			break;
 		case SEEK_DATA:
-			/*
-			 * In the generic case the entire file is data, so as
-			 * long as offset isn't at the end of the file then the
-			 * offset is data.
-			 */
+			 
 			if (offset >= inode->i_size) {
 				retval = -ENXIO;
 				goto out;
 			}
 			break;
 		case SEEK_HOLE:
-			/*
-			 * There is a virtual hole at the end of the file, so
-			 * as long as offset isn't i_size or larger, return
-			 * i_size.
-			 */
+			 
 			if (offset >= inode->i_size) {
 				retval = -ENXIO;
 				goto out;
@@ -301,7 +209,7 @@ static off_t ksys_lseek(unsigned int fd, off_t offset, unsigned int whence)
 		loff_t res = vfs_llseek(f.file, offset, whence);
 		retval = res;
 		if (res != (loff_t)retval)
-			retval = -EOVERFLOW;	/* LFS: should only happen on 32 bit platforms */
+			retval = -EOVERFLOW;	 
 	}
 	fdput_pos(f);
 	return retval;
@@ -347,7 +255,7 @@ out_putf:
 
 int rw_verify_area(int read_write, struct file *file, const loff_t *ppos, size_t count)
 {
-	/* Stubbed for minimal kernel */
+	 
 	return 0;
 }
 
@@ -391,10 +299,7 @@ ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 		return -EINVAL;
 	if (!(file->f_mode & FMODE_CAN_READ))
 		return -EINVAL;
-	/*
-	 * Also fail if ->read_iter and ->read are both wired up as that
-	 * implies very convoluted semantics.
-	 */
+	 
 	if (unlikely(!file->f_op->read_iter || file->f_op->read))
 		return warn_unsupported(file, "read");
 
@@ -471,7 +376,7 @@ static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t 
 	return ret;
 }
 
-/* caller is responsible for file_start_write/file_end_write */
+ 
 ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t *pos)
 {
 	struct kvec iov = {
@@ -486,10 +391,7 @@ ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t 
 		return -EBADF;
 	if (!(file->f_mode & FMODE_CAN_WRITE))
 		return -EINVAL;
-	/*
-	 * Also fail if ->write_iter and ->write are both wired up as that
-	 * implies very convoluted semantics.
-	 */
+	 
 	if (unlikely(!file->f_op->write_iter || file->f_op->write))
 		return warn_unsupported(file, "write");
 
@@ -506,13 +408,7 @@ ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t 
 	inc_syscw(current);
 	return ret;
 }
-/*
- * This "EXPORT_SYMBOL_GPL()" is more of a "EXPORT_SYMBOL_DONTUSE()",
- * but autofs is one of the few internal kernel users that actually
- * wants this _and_ can be built as a module. So we need to export
- * this symbol for autofs, even though it really isn't appropriate
- * for any other kernel modules.
- */
+ 
 
 ssize_t kernel_write(struct file *file, const void *buf, size_t count,
 			    loff_t *pos)
@@ -561,7 +457,7 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 	return ret;
 }
 
-/* file_ppos returns &file->f_pos or NULL if file is stream */
+ 
 static inline loff_t *file_ppos(struct file *file)
 {
 	return file->f_mode & FMODE_STREAM ? NULL : &file->f_pos;
@@ -693,7 +589,7 @@ static ssize_t do_iter_readv_writev(struct file *filp, struct iov_iter *iter,
 	return ret;
 }
 
-/* Do it by hand, with file-ops */
+ 
 static ssize_t do_loop_readv_writev(struct file *filp, struct iov_iter *iter,
 		loff_t *ppos, int type, rwf_t flags)
 {
@@ -1040,11 +936,7 @@ SYSCALL_DEFINE6(pwritev2, unsigned long, fd, const struct iovec __user *, vec,
 	return do_pwritev(fd, vec, vlen, pos, flags);
 }
 
-/*
- * Various compat syscalls.  Note that they all pretend to take a native
- * iovec - import_iovec will properly treat those as compat_iovecs based on
- * in_compat_syscall().
- */
+ 
 
 static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
 		  	   size_t count, loff_t max)
@@ -1057,9 +949,7 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
 	ssize_t retval;
 	int fl;
 
-	/*
-	 * Get input file, and verify that it is ok..
-	 */
+	 
 	retval = -EBADF;
 	in = fdget(in_fd);
 	if (!in.file)
@@ -1080,9 +970,7 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
 	if (count > MAX_RW_COUNT)
 		count =  MAX_RW_COUNT;
 
-	/*
-	 * Get output file, and verify that it is ok..
-	 */
+	 
 	retval = -EBADF;
 	out = fdget(out_fd);
 	if (!out.file)
@@ -1179,26 +1067,7 @@ SYSCALL_DEFINE4(sendfile64, int, out_fd, int, in_fd, loff_t __user *, offset, si
 }
 
 
-/**
- * generic_copy_file_range - copy data between two files
- * @file_in:	file structure to read from
- * @pos_in:	file offset to read from
- * @file_out:	file structure to write data to
- * @pos_out:	file offset to write data to
- * @len:	amount of data to copy
- * @flags:	copy flags
- *
- * This is a generic filesystem helper to copy data from one file to another.
- * It has no constraints on the source or destination file owners - the files
- * can belong to different superblocks and different filesystem types. Short
- * copies are allowed.
- *
- * This should be called from the @file_out filesystem, as per the
- * ->copy_file_range() method.
- *
- * Returns the number of bytes copied or a negative error indicating the
- * failure.
- */
+ 
 
 ssize_t generic_copy_file_range(struct file *file_in, loff_t pos_in,
 				struct file *file_out, loff_t pos_out,
@@ -1208,13 +1077,7 @@ ssize_t generic_copy_file_range(struct file *file_in, loff_t pos_in,
 				len > MAX_RW_COUNT ? MAX_RW_COUNT : len, 0);
 }
 
-/*
- * Performs necessary checks before doing a file copy
- *
- * Can adjust amount of bytes to copy via @req_count argument.
- * Returns appropriate error code that caller should return or
- * zero in case the copy should be allowed.
- */
+ 
 static int generic_copy_file_checks(struct file *file_in, loff_t pos_in,
 				    struct file *file_out, loff_t pos_out,
 				    size_t *req_count, unsigned int flags)
@@ -1229,16 +1092,7 @@ static int generic_copy_file_checks(struct file *file_in, loff_t pos_in,
 	if (ret)
 		return ret;
 
-	/*
-	 * We allow some filesystems to handle cross sb copy, but passing
-	 * a file of the wrong filesystem type to filesystem driver can result
-	 * in an attempt to dereference the wrong type of ->private_data, so
-	 * avoid doing that until we really have a good reason.
-	 *
-	 * nfs and cifs define several different file_system_type structures
-	 * and several different sets of file_operations, but they all end up
-	 * using the same ->copy_file_range() function pointer.
-	 */
+	 
 	if (file_out->f_op->copy_file_range) {
 		if (file_in->f_op->copy_file_range !=
 		    file_out->f_op->copy_file_range)
@@ -1247,18 +1101,18 @@ static int generic_copy_file_checks(struct file *file_in, loff_t pos_in,
 		return -EXDEV;
 	}
 
-	/* Don't touch certain kinds of inodes */
+	 
 	if (IS_IMMUTABLE(inode_out))
 		return -EPERM;
 
 	if (IS_SWAPFILE(inode_in) || IS_SWAPFILE(inode_out))
 		return -ETXTBSY;
 
-	/* Ensure offsets don't wrap. */
+	 
 	if (pos_in + count < pos_in || pos_out + count < pos_out)
 		return -EOVERFLOW;
 
-	/* Shorten the copy to EOF */
+	 
 	size_in = i_size_read(inode_in);
 	if (pos_in >= size_in)
 		count = 0;
@@ -1269,7 +1123,7 @@ static int generic_copy_file_checks(struct file *file_in, loff_t pos_in,
 	if (ret)
 		return ret;
 
-	/* Don't allow overlapped copying within the same file. */
+	 
 	if (inode_in == inode_out &&
 	    pos_out + count > pos_in &&
 	    pos_out < pos_in + count)
@@ -1279,11 +1133,7 @@ static int generic_copy_file_checks(struct file *file_in, loff_t pos_in,
 	return 0;
 }
 
-/*
- * copy_file_range() differs from regular file read and write in that it
- * specifically allows return partial success.  When it does so is up to
- * the copy_file_range method.
- */
+ 
 ssize_t vfs_copy_file_range(struct file *file_in, loff_t pos_in,
 			    struct file *file_out, loff_t pos_out,
 			    size_t len, unsigned int flags)
@@ -1311,11 +1161,7 @@ ssize_t vfs_copy_file_range(struct file *file_in, loff_t pos_in,
 
 	file_start_write(file_out);
 
-	/*
-	 * Cloning is supported by more file systems, so we implement copy on
-	 * same sb using clone, but for filesystems where both clone and copy
-	 * are supported (e.g. nfs,cifs), we only call the copy method.
-	 */
+	 
 	if (file_out->f_op->copy_file_range) {
 		ret = file_out->f_op->copy_file_range(file_in, pos_in,
 						      file_out, pos_out,
@@ -1333,17 +1179,7 @@ ssize_t vfs_copy_file_range(struct file *file_in, loff_t pos_in,
 			goto done;
 	}
 
-	/*
-	 * We can get here for same sb copy of filesystems that do not implement
-	 * ->copy_file_range() in case filesystem does not support clone or in
-	 * case filesystem supports clone but rejected the clone request (e.g.
-	 * because it was not block aligned).
-	 *
-	 * In both cases, fall back to kernel copy so we are able to maintain a
-	 * consistent story about which filesystems support copy_file_range()
-	 * and which filesystems do not, that will allow userspace tools to
-	 * make consistent desicions w.r.t using copy_file_range().
-	 */
+	 
 	ret = generic_copy_file_range(file_in, pos_in, file_out, pos_out, len,
 				      flags);
 
@@ -1425,11 +1261,7 @@ out2:
 	return ret;
 }
 
-/*
- * Don't operate on ranges the page cache doesn't support, and don't exceed the
- * LFS limits.  If pos is under the limit it becomes a short access.  If it
- * exceeds the limit we return -EFBIG.
- */
+ 
 int generic_write_check_limits(struct file *file, loff_t pos, loff_t *count)
 {
 	struct inode *inode = file->f_mapping->host;
@@ -1455,7 +1287,7 @@ int generic_write_check_limits(struct file *file, loff_t pos, loff_t *count)
 	return 0;
 }
 
-/* Like generic_write_checks(), but takes size of write instead of iter. */
+ 
 int generic_write_checks_count(struct kiocb *iocb, loff_t *count)
 {
 	struct file *file = iocb->ki_filp;
@@ -1476,13 +1308,7 @@ int generic_write_checks_count(struct kiocb *iocb, loff_t *count)
 	return generic_write_check_limits(iocb->ki_filp, iocb->ki_pos, count);
 }
 
-/*
- * Performs necessary checks before doing a write
- *
- * Can adjust writing position or amount of bytes to write.
- * Returns appropriate error code that caller should return or
- * zero in case that write should be allowed.
- */
+ 
 ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from)
 {
 	loff_t count = iov_iter_count(from);
@@ -1496,16 +1322,13 @@ ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from)
 	return iov_iter_count(from);
 }
 
-/*
- * Performs common checks before doing a file copy/clone
- * from @file_in to @file_out.
- */
+ 
 int generic_file_rw_checks(struct file *file_in, struct file *file_out)
 {
 	struct inode *inode_in = file_inode(file_in);
 	struct inode *inode_out = file_inode(file_out);
 
-	/* Don't copy dirs, pipes, sockets... */
+	 
 	if (S_ISDIR(inode_in->i_mode) || S_ISDIR(inode_out->i_mode))
 		return -EISDIR;
 	if (!S_ISREG(inode_in->i_mode) || !S_ISREG(inode_out->i_mode))

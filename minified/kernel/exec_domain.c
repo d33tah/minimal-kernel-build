@@ -1,7 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Handling of different ABIs (personalities) - STUBBED
- */
+ 
+ 
 
 #include <linux/init.h>
 #include <linux/kernel.h>

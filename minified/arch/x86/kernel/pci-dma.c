@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 #include <linux/dma-map-ops.h>
 #include <linux/dma-direct.h>
 #include <linux/iommu.h>
@@ -25,7 +25,7 @@ int force_iommu __read_mostly = 0;
 int iommu_merge __read_mostly = 0;
 
 int no_iommu __read_mostly;
-/* Set this to 1 if there is a HW IOMMU in the system */
+ 
 int iommu_detected __read_mostly = 0;
 
 static inline void __init pci_swiotlb_detect(void)
@@ -46,10 +46,7 @@ void __init pci_iommu_alloc(void)
 	swiotlb_init(x86_swiotlb_enable, x86_swiotlb_flags);
 }
 
-/*
- * See <Documentation/x86/x86_64/boot-options.rst> for the iommu kernel
- * parameter documentation.
- */
+ 
 static __init int iommu_setup(char *p)
 {
 	iommu_merge = 1;
@@ -60,7 +57,7 @@ static __init int iommu_setup(char *p)
 	while (*p) {
 		if (!strncmp(p, "off", 3))
 			no_iommu = 1;
-		/* gart_parse_options has more force support */
+		 
 		if (!strncmp(p, "force", 5))
 			force_iommu = 1;
 		if (!strncmp(p, "noforce", 7)) {
@@ -114,6 +111,6 @@ static int __init pci_iommu_init(void)
 
 	return 0;
 }
-/* Must execute after PCI subsystem */
+ 
 rootfs_initcall(pci_iommu_init);
 

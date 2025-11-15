@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
 #include <linux/anon_inodes.h>
 #include <linux/slab.h>

@@ -1,10 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/*
- * kernel/ksysfs.c - sysfs attributes in /sys/kernel, which
- * 		     are not related to any other subsystem
- *
- * Copyright (C) 2004 Kay Sievers <kay.sievers@vrfy.org>
- */
+ 
+ 
 
 #include <linux/kobject.h>
 #include <linux/string.h>
@@ -17,7 +12,7 @@
 #include <linux/capability.h>
 #include <linux/compiler.h>
 
-#include <linux/rcupdate.h>	/* rcu_expedited and rcu_normal */
+#include <linux/rcupdate.h>	 
 
 #define KERNEL_ATTR_RO(_name) \
 static struct kobj_attribute _name##_attr = __ATTR_RO(_name)
@@ -25,7 +20,7 @@ static struct kobj_attribute _name##_attr = __ATTR_RO(_name)
 #define KERNEL_ATTR_RW(_name) \
 static struct kobj_attribute _name##_attr = __ATTR_RW(_name)
 
-/* current uevent sequence number */
+ 
 static ssize_t uevent_seqnum_show(struct kobject *kobj,
 				  struct kobj_attribute *attr, char *buf)
 {
@@ -37,7 +32,7 @@ KERNEL_ATTR_RO(uevent_seqnum);
 
 
 
-/* whether file capabilities are enabled */
+ 
 static ssize_t fscaps_show(struct kobject *kobj,
 				  struct kobj_attribute *attr, char *buf)
 {
@@ -46,9 +41,7 @@ static ssize_t fscaps_show(struct kobject *kobj,
 KERNEL_ATTR_RO(fscaps);
 
 
-/*
- * Make /sys/kernel/notes give the raw contents of our kernel .notes section.
- */
+ 
 extern const void __start_notes __weak;
 extern const void __stop_notes __weak;
 #define	notes_size (&__stop_notes - &__start_notes)

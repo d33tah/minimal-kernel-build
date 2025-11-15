@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_KASAN_ENABLED_H
 #define _LINUX_KASAN_ENABLED_H
 
@@ -16,4 +16,4 @@ static inline bool kasan_hw_tags_enabled(void)
 }
 
 
-#endif /* LINUX_KASAN_ENABLED_H */
+#endif  

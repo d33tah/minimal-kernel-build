@@ -1,4 +1,4 @@
-/* Minimal n_tty line discipline for basic console output */
+ 
 
 #include <linux/types.h>
 #include <linux/major.h>
@@ -33,14 +33,14 @@ struct n_tty_data {
 	char read_buf[N_TTY_BUF_SIZE];
 };
 
-/* Stub: Minimal write wakeup */
+ 
 static void n_tty_write_wakeup(struct tty_struct *tty)
 {
 	if (tty->fasync && test_and_clear_bit(TTY_DO_WRITE_WAKEUP, &tty->flags))
 		kill_fasync(&tty->fasync, SIGIO, POLL_OUT);
 }
 
-/* Stub: Minimal flush buffer */
+ 
 static void n_tty_flush_buffer(struct tty_struct *tty)
 {
 	struct n_tty_data *ldata = tty->disc_data;
@@ -53,13 +53,13 @@ static void n_tty_flush_buffer(struct tty_struct *tty)
 		n_tty_flush_buffer(tty->link);
 }
 
-/* Stub: Minimal set termios */
+ 
 static void n_tty_set_termios(struct tty_struct *tty, struct ktermios *old)
 {
-	/* Nothing to do for basic console */
+	 
 }
 
-/* Stub: Minimal close */
+ 
 static void n_tty_close(struct tty_struct *tty)
 {
 	struct n_tty_data *ldata = tty->disc_data;
@@ -70,7 +70,7 @@ static void n_tty_close(struct tty_struct *tty)
 	}
 }
 
-/* Stub: Minimal open */
+ 
 static int n_tty_open(struct tty_struct *tty)
 {
 	struct n_tty_data *ldata;
@@ -86,16 +86,16 @@ static int n_tty_open(struct tty_struct *tty)
 	return 0;
 }
 
-/* Stub: Minimal read - return 0 (no input available) */
+ 
 static ssize_t n_tty_read(struct tty_struct *tty, struct file *file,
 			 unsigned char *buf, size_t nr,
 			 void **cookie, unsigned long offset)
 {
-	/* For write-only console, no read support needed */
+	 
 	return 0;
 }
 
-/* Simplified write function - essential for console output */
+ 
 static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 			   const unsigned char *buf, size_t nr)
 {
@@ -112,7 +112,7 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 
 	down_read(&tty->termios_rwsem);
 
-	/* Simple pass-through write */
+	 
 	while (nr > 0) {
 		mutex_lock(&ldata->output_lock);
 		c = tty->ops->write(tty, b, nr);
@@ -140,7 +140,7 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 	return retval;
 }
 
-/* Stub: Minimal poll */
+ 
 static __poll_t n_tty_poll(struct tty_struct *tty, struct file *file,
 			  poll_table *wait)
 {
@@ -149,13 +149,13 @@ static __poll_t n_tty_poll(struct tty_struct *tty, struct file *file,
 	poll_wait(file, &tty->read_wait, wait);
 	poll_wait(file, &tty->write_wait, wait);
 
-	/* Always writable for console output */
+	 
 	mask |= EPOLLOUT | EPOLLWRNORM;
 
 	return mask;
 }
 
-/* Stub: Minimal ioctl */
+ 
 static int n_tty_ioctl(struct tty_struct *tty, unsigned int cmd,
 		       unsigned long arg)
 {
@@ -169,18 +169,18 @@ static int n_tty_ioctl(struct tty_struct *tty, unsigned int cmd,
 	}
 }
 
-/* Stub: Minimal receive_buf - discard input */
+ 
 static void n_tty_receive_buf(struct tty_struct *tty, const unsigned char *cp,
 			      const char *fp, int count)
 {
-	/* For write-only console, discard input */
+	 
 }
 
-/* Stub: Minimal receive_buf2 */
+ 
 static int n_tty_receive_buf2(struct tty_struct *tty, const unsigned char *cp,
 			      const char *fp, int count)
 {
-	/* For write-only console, discard input */
+	 
 	return 0;
 }
 

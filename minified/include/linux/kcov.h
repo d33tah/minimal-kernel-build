@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_KCOV_H
 #define _LINUX_KCOV_H
 
@@ -23,4 +23,4 @@ static inline void kcov_remote_start_usb(u64 id) {}
 static inline void kcov_remote_start_usb_softirq(u64 id) {}
 static inline void kcov_remote_stop_softirq(void) {}
 
-#endif /* _LINUX_KCOV_H */
+#endif  

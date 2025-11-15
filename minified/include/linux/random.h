@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 
 #ifndef _LINUX_RANDOM_H
 #define _LINUX_RANDOM_H
@@ -53,10 +53,7 @@ static inline unsigned long get_random_long(void)
 #endif
 }
 
-/*
- * On 64-bit architectures, protect against non-terminated C string overflows
- * by zeroing out the first byte of the canary; this leaves 56 bits of entropy.
- */
+ 
 # define CANARY_MASK 0xffffffffUL
 
 static inline unsigned long get_random_canary(void)
@@ -68,8 +65,7 @@ int __init random_init(const char *command_line);
 bool rng_is_initialized(void);
 int wait_for_random_bytes(void);
 
-/* Calls wait_for_random_bytes() and then calls get_random_bytes(buf, nbytes).
- * Returns the result of the call to wait_for_random_bytes. */
+ 
 static inline int get_random_bytes_wait(void *buf, size_t nbytes)
 {
 	int ret = wait_for_random_bytes();
@@ -91,11 +87,7 @@ declare_get_random_var_wait(int, unsigned int)
 declare_get_random_var_wait(long, unsigned long)
 #undef declare_get_random_var
 
-/*
- * This is designed to be standalone for just prandom
- * users, but for now we include it from <linux/random.h>
- * for legacy reasons.
- */
+ 
 #include <linux/prandom.h>
 
 static inline bool __must_check arch_get_random_long(unsigned long *v) { return false; }
@@ -103,10 +95,7 @@ static inline bool __must_check arch_get_random_int(unsigned int *v) { return fa
 static inline bool __must_check arch_get_random_seed_long(unsigned long *v) { return false; }
 static inline bool __must_check arch_get_random_seed_int(unsigned int *v) { return false; }
 
-/*
- * Called from the boot CPU during startup; not valid to call once
- * secondary CPUs are up and preemption is possible.
- */
+ 
 #ifndef arch_get_random_seed_long_early
 static inline bool __init arch_get_random_seed_long_early(unsigned long *v)
 {
@@ -128,4 +117,4 @@ static inline bool __init arch_get_random_long_early(unsigned long *v)
 extern const struct file_operations random_fops, urandom_fops;
 #endif
 
-#endif /* _LINUX_RANDOM_H */
+#endif  

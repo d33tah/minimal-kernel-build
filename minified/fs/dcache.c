@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
 #include <linux/ratelimit.h>
 #include <linux/string.h>
@@ -680,8 +680,8 @@ struct dentry *d_find_alias_rcu(struct inode *inode)
 	struct dentry *de = NULL;
 
 	spin_lock(&inode->i_lock);
-	// ->i_dentry and ->i_rcu are colocated, but the latter won't be
-	// used without having I_FREEING set, which means no aliases left
+	 
+	 
 	if (likely(!(inode->i_state & I_FREEING) && !hlist_empty(l))) {
 		if (S_ISDIR(inode->i_mode)) {
 			de = hlist_entry(l->first, struct dentry, d_u.d_alias);

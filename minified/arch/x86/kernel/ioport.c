@@ -1,8 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * This contains the io-permission bitmap code - written by obz, with changes
- * by Linus. 32/64 bits code unification by Miguel Botón.
- */
+ 
+ 
 #include <linux/capability.h>
 #include <linux/security.h>
 #include <linux/syscalls.h>

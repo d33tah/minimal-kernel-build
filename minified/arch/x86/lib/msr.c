@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 #include <linux/export.h>
 #include <linux/percpu.h>
 #include <linux/preempt.h>
@@ -23,16 +23,7 @@ void msrs_free(struct msr *msrs)
 	free_percpu(msrs);
 }
 
-/**
- * Read an MSR with error handling
- *
- * @msr: MSR to read
- * @m: value to read into
- *
- * It returns read data only on success, otherwise it doesn't change the output
- * argument @m.
- *
- */
+ 
 static int msr_read(u32 msr, struct msr *m)
 {
 	int err;
@@ -45,12 +36,7 @@ static int msr_read(u32 msr, struct msr *m)
 	return err;
 }
 
-/**
- * Write an MSR with error handling
- *
- * @msr: MSR to write
- * @m: value to write
- */
+ 
 static int msr_write(u32 msr, struct msr *m)
 {
 	return wrmsrl_safe(msr, m->q);
@@ -84,27 +70,13 @@ static inline int __flip_bit(u32 msr, u8 bit, bool set)
 	return 1;
 }
 
-/**
- * Set @bit in a MSR @msr.
- *
- * Retval:
- * < 0: An error was encountered.
- * = 0: Bit was already set.
- * > 0: Hardware accepted the MSR write.
- */
+ 
 int msr_set_bit(u32 msr, u8 bit)
 {
 	return __flip_bit(msr, bit, true);
 }
 
-/**
- * Clear @bit in a MSR @msr.
- *
- * Retval:
- * < 0: An error was encountered.
- * = 0: Bit was already cleared.
- * > 0: Hardware accepted the MSR write.
- */
+ 
 int msr_clear_bit(u32 msr, u8 bit)
 {
 	return __flip_bit(msr, bit, false);

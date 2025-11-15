@@ -1,15 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/*
- *  linux/mm/vmstat.c
- *
- *  Manages VM statistics
- *  Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
- *
- *  zoned VM statistics
- *  Copyright (C) 2006 Silicon Graphics, Inc.,
- *		Christoph Lameter <christoph@lameter.com>
- *  Copyright (C) 2008-2014 Christoph Lameter
- */
+ 
+ 
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/err.h>
@@ -34,11 +24,7 @@
 
 
 
-/*
- * Manage combined zone based / global counters
- *
- * vm_stat contains the global counters
- */
+ 
 atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS] __cacheline_aligned_in_smp;
 atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS] __cacheline_aligned_in_smp;
 atomic_long_t vm_numa_event[NR_VM_NUMA_EVENT_ITEMS] __cacheline_aligned_in_smp;
@@ -59,7 +45,7 @@ atomic_long_t vm_numa_event[NR_VM_NUMA_EVENT_ITEMS] __cacheline_aligned_in_smp;
 					TEXT_FOR_HIGHMEM(xx) xx "_movable",
 
 const char * const vmstat_text[] = {
-	/* enum zone_stat_item counters */
+	 
 	"nr_free_pages",
 	"nr_zone_inactive_anon",
 	"nr_zone_active_anon",
@@ -74,9 +60,9 @@ const char * const vmstat_text[] = {
 #endif
 	"nr_free_cma",
 
-	/* enum numa_stat_item counters */
+	 
 
-	/* enum node_stat_item counters */
+	 
 	"nr_inactive_anon",
 	"nr_active_anon",
 	"nr_inactive_file",
@@ -120,12 +106,12 @@ const char * const vmstat_text[] = {
 #endif
 	"nr_page_table_pages",
 
-	/* enum writeback_stat_item counters */
+	 
 	"nr_dirty_threshold",
 	"nr_dirty_background_threshold",
 
 };
-#endif /* CONFIG_PROC_FS || CONFIG_SYSFS || CONFIG_NUMA || CONFIG_MEMCG */
+#endif  
 
 #if (defined(CONFIG_DEBUG_FS) && defined(CONFIG_COMPACTION)) || \
      defined(CONFIG_PROC_FS)
@@ -154,10 +140,7 @@ static void frag_stop(struct seq_file *m, void *arg)
 {
 }
 
-/*
- * Walk zones in a node and print using a callback.
- * If @assert_populated is true, only use callback for zones that are populated.
- */
+ 
 static void walk_zones_in_node(struct seq_file *m, pg_data_t *pgdat,
 		bool assert_populated, bool nolock,
 		void (*print)(struct seq_file *m, pg_data_t *, struct zone *))

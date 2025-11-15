@@ -1,21 +1,18 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_COMPAT_H
 #define _LINUX_COMPAT_H
-/*
- * These are the type definitions for the architecture specific
- * syscall compatibility layer.
- */
+ 
 
 #include <linux/types.h>
 #include <linux/time.h>
 
 #include <linux/stat.h>
-#include <linux/param.h>	/* for HZ */
+#include <linux/param.h>	 
 #include <linux/sem.h>
 #include <linux/socket.h>
 #include <linux/if.h>
 #include <linux/fs.h>
-#include <linux/aio_abi.h>	/* for aio_context_t */
+#include <linux/aio_abi.h>	 
 #include <linux/uaccess.h>
 #include <linux/unistd.h>
 
@@ -23,13 +20,7 @@
 #include <asm/siginfo.h>
 #include <asm/signal.h>
 
-/*
- * It may be useful for an architecture to override the definitions of the
- * COMPAT_SYSCALL_DEFINE0 and COMPAT_SYSCALL_DEFINEx() macros, in particular
- * to use a different calling convention for syscalls. To allow for that,
- + the prototypes for the compat_sys_*() functions below will *not* be included
- * if CONFIG_ARCH_HAS_SYSCALL_WRAPPER is enabled.
- */
+ 
 #include <asm/syscall_wrapper.h>
 
 #ifndef COMPAT_USE_64BIT_TIME
@@ -45,7 +36,7 @@
 	asmlinkage long compat_sys_##name(void); \
 	ALLOW_ERROR_INJECTION(compat_sys_##name, ERRNO); \
 	asmlinkage long compat_sys_##name(void)
-#endif /* COMPAT_SYSCALL_DEFINE0 */
+#endif  
 
 #define COMPAT_SYSCALL_DEFINE1(name, ...) \
         COMPAT_SYSCALL_DEFINEx(1, _##name, __VA_ARGS__)
@@ -60,11 +51,7 @@
 #define COMPAT_SYSCALL_DEFINE6(name, ...) \
 	COMPAT_SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)
 
-/*
- * The asmlinkage stub is aliased to a function named __se_compat_sys_*() which
- * sign-extends 32-bit ints to longs whenever needed. The actual work is
- * done within __do_compat_sys_*().
- */
+ 
 #ifndef COMPAT_SYSCALL_DEFINEx
 #define COMPAT_SYSCALL_DEFINEx(x, name, ...)					\
 	__diag_push();								\
@@ -83,7 +70,7 @@
 	}									\
 	__diag_pop();								\
 	static inline long __do_compat_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
-#endif /* COMPAT_SYSCALL_DEFINEx */
+#endif  
 
 struct compat_iovec {
 	compat_uptr_t	iov_base;
@@ -93,7 +80,7 @@ struct compat_iovec {
 #ifndef compat_user_stack_pointer
 #define compat_user_stack_pointer() current_user_stack_pointer()
 #endif
-#ifndef compat_sigaltstack	/* we'll need that for MIPS */
+#ifndef compat_sigaltstack	 
 typedef struct compat_sigaltstack {
 	compat_uptr_t			ss_sp;
 	int				ss_flags;
@@ -165,61 +152,58 @@ typedef struct compat_siginfo {
 	union {
 		int _pad[128/sizeof(int) - 3];
 
-		/* kill() */
+		 
 		struct {
-			compat_pid_t _pid;	/* sender's pid */
-			__compat_uid32_t _uid;	/* sender's uid */
+			compat_pid_t _pid;	 
+			__compat_uid32_t _uid;	 
 		} _kill;
 
-		/* POSIX.1b timers */
+		 
 		struct {
-			compat_timer_t _tid;	/* timer id */
-			int _overrun;		/* overrun count */
-			compat_sigval_t _sigval;	/* same as below */
+			compat_timer_t _tid;	 
+			int _overrun;		 
+			compat_sigval_t _sigval;	 
 		} _timer;
 
-		/* POSIX.1b signals */
+		 
 		struct {
-			compat_pid_t _pid;	/* sender's pid */
-			__compat_uid32_t _uid;	/* sender's uid */
+			compat_pid_t _pid;	 
+			__compat_uid32_t _uid;	 
 			compat_sigval_t _sigval;
 		} _rt;
 
-		/* SIGCHLD */
+		 
 		struct {
-			compat_pid_t _pid;	/* which child */
-			__compat_uid32_t _uid;	/* sender's uid */
-			int _status;		/* exit code */
+			compat_pid_t _pid;	 
+			__compat_uid32_t _uid;	 
+			int _status;		 
 			compat_clock_t _utime;
 			compat_clock_t _stime;
 		} _sigchld;
 
 
-		/* SIGILL, SIGFPE, SIGSEGV, SIGBUS, SIGTRAP, SIGEMT */
+		 
 		struct {
-			compat_uptr_t _addr;	/* faulting insn/memory ref. */
+			compat_uptr_t _addr;	 
 #define __COMPAT_ADDR_BND_PKEY_PAD  (__alignof__(compat_uptr_t) < sizeof(short) ? \
 				     sizeof(short) : __alignof__(compat_uptr_t))
 			union {
-				/* used on alpha and sparc */
-				int _trapno;	/* TRAP # which caused the signal */
-				/*
-				 * used when si_code=BUS_MCEERR_AR or
-				 * used when si_code=BUS_MCEERR_AO
-				 */
-				short int _addr_lsb;	/* Valid LSB of the reported address. */
-				/* used when si_code=SEGV_BNDERR */
+				 
+				int _trapno;	 
+				 
+				short int _addr_lsb;	 
+				 
 				struct {
 					char _dummy_bnd[__COMPAT_ADDR_BND_PKEY_PAD];
 					compat_uptr_t _lower;
 					compat_uptr_t _upper;
 				} _addr_bnd;
-				/* used when si_code=SEGV_PKUERR */
+				 
 				struct {
 					char _dummy_pkey[__COMPAT_ADDR_BND_PKEY_PAD];
 					u32 _pkey;
 				} _addr_pkey;
-				/* used when si_code=TRAP_PERF */
+				 
 				struct {
 					compat_ulong_t _data;
 					u32 _type;
@@ -228,16 +212,16 @@ typedef struct compat_siginfo {
 			};
 		} _sigfault;
 
-		/* SIGPOLL */
+		 
 		struct {
-			compat_long_t _band;	/* POLL_IN, POLL_OUT, POLL_MSG */
+			compat_long_t _band;	 
 			int _fd;
 		} _sigpoll;
 
 		struct {
-			compat_uptr_t _call_addr; /* calling user insn */
-			int _syscall;	/* triggering system call number */
-			unsigned int _arch;	/* AUDIT_ARCH_* of syscall */
+			compat_uptr_t _call_addr;  
+			int _syscall;	 
+			unsigned int _arch;	 
 		} _sigsys;
 	} _sifields;
 } compat_siginfo_t;
@@ -344,14 +328,14 @@ struct compat_ifmap {
 };
 
 struct compat_if_settings {
-	unsigned int type;	/* Type of physical device or protocol */
-	unsigned int size;	/* Size of the data allocated by the caller */
-	compat_uptr_t ifs_ifsu;	/* union of pointers */
+	unsigned int type;	 
+	unsigned int size;	 
+	compat_uptr_t ifs_ifsu;	 
 };
 
 struct compat_ifreq {
 	union {
-		char	ifrn_name[IFNAMSIZ];    /* if name, e.g. "en0" */
+		char	ifrn_name[IFNAMSIZ];     
 	} ifr_ifrn;
 	union {
 		struct	sockaddr ifru_addr;
@@ -363,7 +347,7 @@ struct compat_ifreq {
 		compat_int_t	ifru_ivalue;
 		compat_int_t	ifru_mtu;
 		struct	compat_ifmap ifru_map;
-		char	ifru_slave[IFNAMSIZ];   /* Just fits the size */
+		char	ifru_slave[IFNAMSIZ];    
 		char	ifru_newname[IFNAMSIZ];
 		compat_caddr_t	ifru_data;
 		struct	compat_if_settings ifru_settings;
@@ -371,7 +355,7 @@ struct compat_ifreq {
 };
 
 struct compat_ifconf {
-	compat_int_t	ifc_len;                /* size of buffer */
+	compat_int_t	ifc_len;                 
 	compat_caddr_t  ifcbuf;
 };
 
@@ -421,15 +405,12 @@ int get_compat_sigevent(struct sigevent *event,
 
 extern int get_compat_sigset(sigset_t *set, const compat_sigset_t __user *compat);
 
-/*
- * Defined inline such that size can be compile time constant, which avoids
- * CONFIG_HARDENED_USERCOPY complaining about copies from task_struct
- */
+ 
 static inline int
 put_compat_sigset(compat_sigset_t __user *compat, const sigset_t *set,
 		  unsigned int size)
 {
-	/* size <= sizeof(compat_sigset_t) <= sizeof(sigset_t) */
+	 
 	return copy_to_user(compat, set, size) ? -EFAULT : 0;
 }
 
@@ -454,7 +435,7 @@ extern int compat_ptrace_request(struct task_struct *child,
 extern long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
 			       compat_ulong_t addr, compat_ulong_t data);
 
-struct epoll_event;	/* fortunately, this one is fixed-layout */
+struct epoll_event;	 
 
 int compat_restore_altstack(const compat_stack_t __user *uss);
 int __compat_save_altstack(compat_stack_t __user *, unsigned long);
@@ -467,26 +448,9 @@ int __compat_save_altstack(compat_stack_t __user *, unsigned long);
 	unsafe_put_user(t->sas_ss_size, &__uss->ss_size, label); \
 } while (0);
 
-/*
- * These syscall function prototypes are kept in the same order as
- * include/uapi/asm-generic/unistd.h. Deprecated or obsolete system calls
- * go below.
- *
- * Please note that these prototypes here are only provided for information
- * purposes, for static analysis, and for linking from the syscall table.
- * These functions should not be called elsewhere from kernel code.
- *
- * As the syscall calling convention may be different from the default
- * for architectures overriding the syscall calling convention, do not
- * include the prototypes if CONFIG_ARCH_HAS_SYSCALL_WRAPPER is enabled.
- */
+ 
 
-/**
- * ns_to_old_timeval32 - Compat version of ns_to_timeval
- * @nsec:	the nanoseconds value to be converted
- *
- * Returns the old_timeval32 representation of the nsec parameter.
- */
+ 
 static inline struct old_timeval32 ns_to_old_timeval32(s64 nsec)
 {
 	struct __kernel_old_timeval tv;
@@ -499,11 +463,7 @@ static inline struct old_timeval32 ns_to_old_timeval32(s64 nsec)
 	return ctv;
 }
 
-/*
- * Kernel code should not call compat syscalls (i.e., compat_sys_xyzyyz())
- * directly.  Instead, use one of the functions which work equivalently, such
- * as the kcompat_sys_xyzyyz() functions prototyped below.
- */
+ 
 
 int kcompat_sys_statfs64(const char __user * pathname, compat_size_t sz,
 		     struct compat_statfs64 __user * buf);
@@ -512,7 +472,7 @@ int kcompat_sys_fstatfs64(unsigned int fd, compat_size_t sz,
 
 
 #define is_compat_task() (0)
-/* Ensure no one redefines in_compat_syscall() under !CONFIG_COMPAT */
+ 
 #define in_compat_syscall in_compat_syscall
 static inline bool in_compat_syscall(void) { return false; }
 
@@ -526,21 +486,12 @@ long compat_get_bitmap(unsigned long *mask, const compat_ulong_t __user *umask,
 long compat_put_bitmap(compat_ulong_t __user *umask, unsigned long *mask,
 		       unsigned long bitmap_size);
 
-/*
- * Some legacy ABIs like the i386 one use less than natural alignment for 64-bit
- * types, and will need special compat treatment for that.  Most architectures
- * don't need that special handling even for compat syscalls.
- */
+ 
 #ifndef compat_need_64bit_alignment_fixup
 #define compat_need_64bit_alignment_fixup()		false
 #endif
 
-/*
- * A pointer passed in from user mode. This should not
- * be used for syscall parameters, just declare them
- * as pointers because the syscall entry code will have
- * appropriately converted them already.
- */
+ 
 #ifndef compat_ptr
 static inline void __user *compat_ptr(compat_uptr_t uptr)
 {
@@ -553,4 +504,4 @@ static inline compat_uptr_t ptr_to_compat(void __user *uptr)
 	return (u32)(unsigned long)uptr;
 }
 
-#endif /* _LINUX_COMPAT_H */
+#endif  

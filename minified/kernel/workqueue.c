@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-// Stubbed workqueue.c for minimal kernel - execute work synchronously
+ 
+ 
 
 #include <linux/export.h>
 #include <linux/kernel.h>
@@ -29,16 +29,16 @@
 
 #include "workqueue_internal.h"
 
-// Define the workqueue structure
+ 
 struct workqueue_struct {
     unsigned int flags;
     const char *name;
 };
 
-// Stub: Execute work synchronously instead of queuing
+ 
 bool queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *work)
 {
-    // Execute work immediately if not already pending
+     
     if (test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work)))
         return false;
 
@@ -58,32 +58,32 @@ bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
     if (delay == 0)
         return queue_work_on(cpu, wq, &dwork->work);
 
-    // For delayed work, just execute immediately (ignore delay)
+     
     return queue_work_on(cpu, wq, &dwork->work);
 }
 
 bool mod_delayed_work_on(int cpu, struct workqueue_struct *wq,
                          struct delayed_work *dwork, unsigned long delay)
 {
-    // Cancel any pending work and queue new one
+     
     cancel_delayed_work(dwork);
     return queue_delayed_work_on(cpu, wq, dwork, delay);
 }
 
 void __flush_workqueue(struct workqueue_struct *wq)
 {
-    // Stub: Nothing to flush in synchronous execution
+     
 }
 
 bool flush_work(struct work_struct *work)
 {
-    // Stub: Work is already done synchronously
+     
     return false;
 }
 
 bool cancel_work_sync(struct work_struct *work)
 {
-    // Stub: Clear pending bit
+     
     return test_and_clear_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work));
 }
 
@@ -104,7 +104,7 @@ bool cancel_delayed_work_sync(struct delayed_work *dwork)
 
 void drain_workqueue(struct workqueue_struct *wq)
 {
-    // Stub: Nothing to drain
+     
 }
 
 __printf(1, 4) struct workqueue_struct *
@@ -129,12 +129,12 @@ void destroy_workqueue(struct workqueue_struct *wq)
 
 int execute_in_process_context(work_func_t fn, struct execute_work *ew)
 {
-    // Execute immediately
+     
     fn(&ew->work);
     return 0;
 }
 
-// System workqueues (allocated statically)
+ 
 static struct workqueue_struct system_wq_storage = { .name = "events" };
 static struct workqueue_struct system_highpri_wq_storage = { .name = "events_highpri" };
 static struct workqueue_struct system_long_wq_storage = { .name = "events_long" };
@@ -153,15 +153,15 @@ struct workqueue_struct *system_freezable_power_efficient_wq = &system_freezable
 
 void __init workqueue_init_early(void)
 {
-    // Stub: Minimal initialization
+     
 }
 
 void __init workqueue_init(void)
 {
-    // Stub: Minimal initialization
+     
 }
 
-// Dummy functions for compatibility
+ 
 void show_all_workqueues(void) {}
 void show_one_workqueue(struct workqueue_struct *wq) {}
 void wq_watchdog_set_thresh(unsigned long thresh) {}
@@ -179,12 +179,12 @@ void wq_worker_tick(struct task_struct *task) {}
 void delayed_work_timer_fn(struct timer_list *t)
 {
     struct delayed_work *dwork = from_timer(dwork, t, timer);
-    // Execute immediately in our stub implementation
+     
     queue_work(dwork->wq, &dwork->work);
 }
 
 int schedule_on_each_cpu(work_func_t func)
 {
-	/* Stubbed for minimal kernel - single CPU system */
+	 
 	return 0;
 }

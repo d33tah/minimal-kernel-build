@@ -1,10 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * linux/cgroup-defs.h - basic definitions for cgroup
- *
- * This file provides basic type and interface.  Include this file directly
- * only if necessary to avoid cyclic dependencies.
- */
+ 
+ 
 #ifndef _LINUX_CGROUP_DEFS_H
 #define _LINUX_CGROUP_DEFS_H
 
@@ -38,4 +33,4 @@ struct sock_cgroup_data {
 };
 
 
-#endif	/* _LINUX_CGROUP_DEFS_H */
+#endif	 

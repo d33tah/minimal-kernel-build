@@ -1,10 +1,10 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 #include <linux/fs.h>
 #include <linux/fs_struct.h>
 #include <linux/kernel_read_file.h>
 #include <linux/vmalloc.h>
 
-/* Minimal stub - kernel_read_file not used by minimal init */
+ 
 
 int kernel_read_file(struct file *file, loff_t offset, void **buf,
 		     size_t buf_size, size_t *file_size,

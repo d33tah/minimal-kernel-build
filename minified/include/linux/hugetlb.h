@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_HUGETLB_H
 #define _LINUX_HUGETLB_H
 
@@ -215,10 +215,7 @@ static inline vm_fault_t hugetlb_fault(struct mm_struct *mm,
 
 static inline void hugetlb_unshare_all_pmds(struct vm_area_struct *vma) { }
 
-/*
- * hugepages at page global directory. If arch support
- * hugepages at pgd level, they need to define this.
- */
+ 
 #ifndef pgd_huge
 #define pgd_huge(x)	0
 #endif
@@ -237,15 +234,9 @@ static inline int pgd_write(pgd_t pgd)
 #define HUGETLB_ANON_FILE "anon_hugepage"
 
 enum {
-	/*
-	 * The file will be used as an shm file so shmfs accounting rules
-	 * apply
-	 */
+	 
 	HUGETLB_SHMFS_INODE     = 1,
-	/*
-	 * The file is being created on the internal vfs mount and shmfs
-	 * accounting rules do not apply
-	 */
+	 
 	HUGETLB_ANONHUGE_INODE  = 2,
 };
 
@@ -267,41 +258,14 @@ static inline struct hstate *hstate_inode(struct inode *i)
 unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
 					unsigned long len, unsigned long pgoff,
 					unsigned long flags);
-#endif /* HAVE_ARCH_HUGETLB_UNMAPPED_AREA */
+#endif  
 
 unsigned long
 generic_hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
 				  unsigned long len, unsigned long pgoff,
 				  unsigned long flags);
 
-/*
- * huegtlb page specific state flags.  These flags are located in page.private
- * of the hugetlb head page.  Functions created via the below macros should be
- * used to manipulate these flags.
- *
- * HPG_restore_reserve - Set when a hugetlb page consumes a reservation at
- *	allocation time.  Cleared when page is fully instantiated.  Free
- *	routine checks flag to restore a reservation on error paths.
- *	Synchronization:  Examined or modified by code that knows it has
- *	the only reference to page.  i.e. After allocation but before use
- *	or when the page is being freed.
- * HPG_migratable  - Set after a newly allocated page is added to the page
- *	cache and/or page tables.  Indicates the page is a candidate for
- *	migration.
- *	Synchronization:  Initially set after new page allocation with no
- *	locking.  When examined and modified during migration processing
- *	(isolate, migrate, putback) the hugetlb_lock is held.
- * HPG_temporary - - Set on a page that is temporarily allocated from the buddy
- *	allocator.  Typically used for migration target pages when no pages
- *	are available in the pool.  The hugetlb free page path will
- *	immediately free pages with this flag set to the buddy allocator.
- *	Synchronization: Can be set after huge page allocation from buddy when
- *	code knows it has only reference.  All other examinations and
- *	modifications require hugetlb_lock.
- * HPG_freed - Set when page is on the free lists.
- *	Synchronization: hugetlb_lock held for examination and modification.
- * HPG_vmemmap_optimized - Set when the vmemmap pages of the page are freed.
- */
+ 
 enum hugetlb_page_flags {
 	HPG_restore_reserve = 0,
 	HPG_migratable,
@@ -311,10 +275,7 @@ enum hugetlb_page_flags {
 	__NR_HPAGEFLAGS,
 };
 
-/*
- * Macros to create test, set and clear function definitions for
- * hugetlb specific page flags.
- */
+ 
 #define TESTHPAGEFLAG(uname, flname)				\
 static inline int HPage##uname(struct page *page)		\
 	{ return 0; }
@@ -332,9 +293,7 @@ static inline void ClearHPage##uname(struct page *page)		\
 	SETHPAGEFLAG(uname, flname)				\
 	CLEARHPAGEFLAG(uname, flname)				\
 
-/*
- * Create functions associated with hugetlb page flags
- */
+ 
 HPAGEFLAG(RestoreReserve, restore_reserve)
 HPAGEFLAG(Migratable, migratable)
 HPAGEFLAG(Temporary, temporary)
@@ -540,11 +499,8 @@ static inline __init void hugetlb_cma_check(void)
 bool want_pmd_share(struct vm_area_struct *vma, unsigned long addr);
 
 #ifndef __HAVE_ARCH_FLUSH_HUGETLB_TLB_RANGE
-/*
- * ARCHes with special requirements for evicting HUGETLB backing TLB entries can
- * implement this.
- */
+ 
 #define flush_hugetlb_tlb_range(vma, addr, end)	flush_tlb_range(vma, addr, end)
 #endif
 
-#endif /* _LINUX_HUGETLB_H */
+#endif  

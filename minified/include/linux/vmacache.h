@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef __LINUX_VMACACHE_H
 #define __LINUX_VMACACHE_H
 
@@ -20,4 +20,4 @@ static inline void vmacache_invalidate(struct mm_struct *mm)
 	mm->vmacache_seqnum++;
 }
 
-#endif /* __LINUX_VMACACHE_H */
+#endif  

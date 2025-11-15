@@ -1,16 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * include/linux/cpu.h - generic cpu definition
- *
- * This is mainly for topological representation. We define the 
- * basic 'struct cpu' here, which can be embedded in per-arch 
- * definitions of processors.
- *
- * Basic handling of the devices is done in drivers/base/cpu.c
- *
- * CPUs are exported via sysfs in the devices/system/cpu
- * directory. 
- */
+ 
+ 
 #ifndef _LINUX_CPU_H_
 #define _LINUX_CPU_H_
 
@@ -24,8 +13,8 @@ struct device_node;
 struct attribute_group;
 
 struct cpu {
-	int node_id;		/* The node which contains the CPU */
-	int hotpluggable;	/* creates sysfs control file if hotpluggable */
+	int node_id;		 
+	int hotpluggable;	 
 	struct device dev;
 };
 
@@ -76,16 +65,13 @@ struct device *cpu_device_create(struct device *parent, void *drvdata,
 				 const struct attribute_group **groups,
 				 const char *fmt, ...);
 
-/*
- * These states are not related to the core CPU hotplug mechanism. They are
- * used by various (sub)architectures to track internal state
- */
-#define CPU_ONLINE		0x0002 /* CPU is up */
-#define CPU_UP_PREPARE		0x0003 /* CPU coming up */
-#define CPU_DEAD		0x0007 /* CPU dead */
-#define CPU_DEAD_FROZEN		0x0008 /* CPU timed out on unplug */
-#define CPU_POST_DEAD		0x0009 /* CPU successfully unplugged */
-#define CPU_BROKEN		0x000B /* CPU did not die properly */
+ 
+#define CPU_ONLINE		0x0002  
+#define CPU_UP_PREPARE		0x0003  
+#define CPU_DEAD		0x0007  
+#define CPU_DEAD_FROZEN		0x0008  
+#define CPU_POST_DEAD		0x0009  
+#define CPU_BROKEN		0x000B  
 
 #define cpuhp_tasks_frozen	0
 
@@ -123,7 +109,7 @@ void __noreturn cpu_startup_entry(enum cpuhp_state state);
 
 void cpu_idle_poll_ctrl(bool enable);
 
-/* Attach to any functions which should be considered cpuidle. */
+ 
 #define __cpuidle	__section(".cpuidle.text")
 
 bool cpu_in_idle(unsigned long pc);
@@ -164,4 +150,4 @@ static inline int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval) { return 0; 
 extern bool cpu_mitigations_off(void);
 extern bool cpu_mitigations_auto_nosmt(void);
 
-#endif /* _LINUX_CPU_H_ */
+#endif  

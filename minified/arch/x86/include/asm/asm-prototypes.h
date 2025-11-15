@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #include <linux/uaccess.h>
 #include <linux/pgtable.h>
 #include <asm/string.h>

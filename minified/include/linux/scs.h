@@ -1,9 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * Shadow Call Stack support.
- *
- * Copyright (C) 2019 Google LLC
- */
+ 
+ 
 
 #ifndef _LINUX_SCS_H
 #define _LINUX_SCS_H
@@ -23,4 +19,4 @@ static inline void scs_release(struct task_struct *tsk) {}
 static inline bool task_scs_end_corrupted(struct task_struct *tsk) { return false; }
 
 
-#endif /* _LINUX_SCS_H */
+#endif  

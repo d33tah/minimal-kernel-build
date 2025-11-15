@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Stubbed fcntl.c */
+ 
+ 
 #include <linux/fs.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>

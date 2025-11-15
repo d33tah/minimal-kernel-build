@@ -1,11 +1,9 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _TOOLS_LINUX_COMPILER_H_
 #error "Please don't include <linux/compiler-gcc.h> directly, include <linux/compiler.h> instead."
 #endif
 
-/*
- * Common definitions for all gcc versions go here.
- */
+ 
 #ifndef GCC_VERSION
 #define GCC_VERSION (__GNUC__ * 10000		\
 		     + __GNUC_MINOR__ * 100	\
@@ -20,7 +18,7 @@
 # define __compiletime_error(message) __attribute__((error(message)))
 #endif
 
-/* &a[0] degrades to a pointer: a different type from an array */
+ 
 #define __must_be_array(a)	BUILD_BUG_ON_ZERO(__same_type((a), &(a)[0]))
 
 #ifndef __pure

@@ -1,16 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
+ 
 #ifndef _LINUX_TRACEPOINT_H
 #define _LINUX_TRACEPOINT_H
 
-/*
- * Kernel Tracepoint API.
- *
- * See Documentation/trace/tracepoints.rst.
- *
- * Copyright (C) 2008-2014 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
- *
- * Heavily inspired from the Linux Kernel Markers.
- */
+ 
 
 #include <linux/smp.h>
 #include <linux/srcu.h>
@@ -71,11 +63,7 @@ int unregister_tracepoint_module_notifier(struct notifier_block *nb)
 	return 0;
 }
 
-/*
- * tracepoint_synchronize_unregister must be called between the last tracepoint
- * probe unregistration and the end of module exit to make sure there is no
- * caller executing a probe when it is freed.
- */
+ 
 static inline void tracepoint_synchronize_unregister(void)
 { }
 
@@ -100,15 +88,9 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 	    "	.long 	__tracepoint_" #name " - .		\n"	\
 	    "	.previous					\n")
 
-#endif /* _LINUX_TRACEPOINT_H */
+#endif  
 
-/*
- * Note: we keep the TRACE_EVENT and DECLARE_TRACE outside the include
- *  file ifdef protection.
- *  This is due to the way trace events work. If a file includes two
- *  trace event headers under one "CREATE_TRACE_POINTS" the first include
- *  will override the TRACE_EVENT and break the second include.
- */
+ 
 
 #ifndef DECLARE_TRACE
 
@@ -116,13 +98,7 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 #define TP_ARGS(args...)	args
 #define TP_CONDITION(args...)	args
 
-/*
- * Individual subsystem my have a separate configuration to
- * enable their tracepoints. By default, this file will create
- * the tracepoints if CONFIG_TRACEPOINT is defined. If a subsystem
- * wants to be able to disable its tracepoints from being created
- * it can define NOTRACE before including the tracepoint headers.
- */
+ 
 
 #ifdef TRACEPOINTS_ENABLED
 
@@ -138,10 +114,7 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 		}							\
 	} while (0)
 
-/*
- * it_func[0] is never NULL because there is at least one element in the array
- * when the array itself is non NULL.
- */
+ 
 #define __DO_TRACE(name, args, cond, rcuidle)				\
 	do {								\
 		int __maybe_unused __idx = 0;				\
@@ -149,16 +122,13 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 		if (!(cond))						\
 			return;						\
 									\
-		/* srcu can't be used from NMI */			\
+		 			\
 		WARN_ON_ONCE(rcuidle && in_nmi());			\
 									\
-		/* keep srcu and sched-rcu usage consistent */		\
+		 		\
 		preempt_disable_notrace();				\
 									\
-		/*							\
-		 * For rcuidle callers, use srcu since sched-rcu	\
-		 * doesn't work from the idle path.			\
-		 */							\
+		 							\
 		if (rcuidle) {						\
 			__idx = srcu_read_lock_notrace(&tracepoint_srcu);\
 			rcu_irq_enter_irqson();				\
@@ -187,18 +157,7 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 #define __DECLARE_TRACE_RCU(name, proto, args, cond)
 #endif
 
-/*
- * Make sure the alignment of the structure in the __tracepoints section will
- * not add unwanted padding between the beginning of the section and the
- * structure. Force alignment to the same alignment as the section start.
- *
- * When lockdep is enabled, we make sure to always do the RCU portions of
- * the tracepoint code, regardless of whether tracing is on. However,
- * don't check if the condition is false, due to interaction with idle
- * instrumentation. This lets us find RCU issues triggered with tracepoints
- * even when this tracepoint is off. This code has no purpose other than
- * poking RCU a bit.
- */
+ 
 #define __DECLARE_TRACE(name, proto, args, cond, data_proto)		\
 	extern int __traceiter_##name(data_proto);			\
 	DECLARE_STATIC_CALL(tp_func_##name, __traceiter_##name);	\
@@ -246,11 +205,7 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 		return static_key_false(&__tracepoint_##name.key);	\
 	}
 
-/*
- * We have no guarantee that gcc and the linker won't up-align the tracepoint
- * structures, so we create an array of pointers that will be used for iteration
- * on the tracepoints.
- */
+ 
 #define DEFINE_TRACE_FN(_name, _reg, _unreg, proto, args)		\
 	static const char __tpstrtab_##_name[]				\
 	__section("__tracepoints_strings") = #_name;			\
@@ -296,7 +251,7 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 	EXPORT_STATIC_CALL(tp_func_##name)
 
 
-#else /* !TRACEPOINTS_ENABLED */
+#else  
 #define __DECLARE_TRACE(name, proto, args, cond, data_proto)		\
 	static inline void trace_##name(proto)				\
 	{ }								\
@@ -326,13 +281,9 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 #define DEFINE_TRACE_FN(name, reg, unreg, proto, args)
 #define DEFINE_TRACE(name, proto, args)
 
-#endif /* TRACEPOINTS_ENABLED */
+#endif  
 
-/*
- * tracepoint_string() is used to save the string address for userspace
- * tracing tools. When tracing isn't configured, there's no need to save
- * anything.
- */
+ 
 # define tracepoint_string(str) str
 # define __tracepoint_string
 
@@ -350,113 +301,10 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 
 #define TRACE_EVENT_PERF_PERM(event, expr...)
 
-#endif /* DECLARE_TRACE */
+#endif  
 
 #ifndef TRACE_EVENT
-/*
- * For use with the TRACE_EVENT macro:
- *
- * We define a tracepoint, its arguments, its printk format
- * and its 'fast binary record' layout.
- *
- * Firstly, name your tracepoint via TRACE_EVENT(name : the
- * 'subsystem_event' notation is fine.
- *
- * Think about this whole construct as the
- * 'trace_sched_switch() function' from now on.
- *
- *
- *  TRACE_EVENT(sched_switch,
- *
- *	*
- *	* A function has a regular function arguments
- *	* prototype, declare it via TP_PROTO():
- *	*
- *
- *	TP_PROTO(struct rq *rq, struct task_struct *prev,
- *		 struct task_struct *next),
- *
- *	*
- *	* Define the call signature of the 'function'.
- *	* (Design sidenote: we use this instead of a
- *	*  TP_PROTO1/TP_PROTO2/TP_PROTO3 ugliness.)
- *	*
- *
- *	TP_ARGS(rq, prev, next),
- *
- *	*
- *	* Fast binary tracing: define the trace record via
- *	* TP_STRUCT__entry(). You can think about it like a
- *	* regular C structure local variable definition.
- *	*
- *	* This is how the trace record is structured and will
- *	* be saved into the ring buffer. These are the fields
- *	* that will be exposed to user-space in
- *	* /sys/kernel/debug/tracing/events/<*>/format.
- *	*
- *	* The declared 'local variable' is called '__entry'
- *	*
- *	* __field(pid_t, prev_pid) is equivalent to a standard declaration:
- *	*
- *	*	pid_t	prev_pid;
- *	*
- *	* __array(char, prev_comm, TASK_COMM_LEN) is equivalent to:
- *	*
- *	*	char	prev_comm[TASK_COMM_LEN];
- *	*
- *
- *	TP_STRUCT__entry(
- *		__array(	char,	prev_comm,	TASK_COMM_LEN	)
- *		__field(	pid_t,	prev_pid			)
- *		__field(	int,	prev_prio			)
- *		__array(	char,	next_comm,	TASK_COMM_LEN	)
- *		__field(	pid_t,	next_pid			)
- *		__field(	int,	next_prio			)
- *	),
- *
- *	*
- *	* Assign the entry into the trace record, by embedding
- *	* a full C statement block into TP_fast_assign(). You
- *	* can refer to the trace record as '__entry' -
- *	* otherwise you can put arbitrary C code in here.
- *	*
- *	* Note: this C code will execute every time a trace event
- *	* happens, on an active tracepoint.
- *	*
- *
- *	TP_fast_assign(
- *		memcpy(__entry->next_comm, next->comm, TASK_COMM_LEN);
- *		__entry->prev_pid	= prev->pid;
- *		__entry->prev_prio	= prev->prio;
- *		memcpy(__entry->prev_comm, prev->comm, TASK_COMM_LEN);
- *		__entry->next_pid	= next->pid;
- *		__entry->next_prio	= next->prio;
- *	),
- *
- *	*
- *	* Formatted output of a trace record via TP_printk().
- *	* This is how the tracepoint will appear under ftrace
- *	* plugins that make use of this tracepoint.
- *	*
- *	* (raw-binary tracing wont actually perform this step.)
- *	*
- *
- *	TP_printk("task %s:%d [%d] ==> %s:%d [%d]",
- *		__entry->prev_comm, __entry->prev_pid, __entry->prev_prio,
- *		__entry->next_comm, __entry->next_pid, __entry->next_prio),
- *
- * );
- *
- * This macro construct is thus used for the regular printk format
- * tracing setup, it is used to construct a function pointer based
- * tracepoint callback (this is used by programmatic plugins and
- * can also by used by generic instrumentation like SystemTap), and
- * it is also used to expose a structured trace record in
- * /sys/kernel/debug/tracing/events/.
- *
- * A set of (un)registration functions can be passed to the variant
- * TRACE_EVENT_FN to perform any (un)registration work.
- */
+ 
 
 #define DECLARE_EVENT_CLASS(name, proto, args, tstruct, assign, print)
 #define DEFINE_EVENT(template, name, proto, args)		\
@@ -503,9 +351,9 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 #define DEFINE_EVENT_NOP(template, name, proto, args)			\
 	DECLARE_EVENT_NOP(name, PARAMS(proto), PARAMS(args))
 
-#endif /* ifdef TRACE_EVENT (see note above) */
+#endif  
 
-/* Stub trace functions for minimal kernel - removed trace events */
+ 
 static inline void trace_sys_exit(struct pt_regs *regs, long ret) {}
 static inline void trace_alarmtimer_fired(void *alarm, ktime_t now) {}
 static inline void trace_alarmtimer_start(void *alarm, ktime_t now) {}

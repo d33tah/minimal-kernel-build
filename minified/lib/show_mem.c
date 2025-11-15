@@ -1,9 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/*
- * Generic show_mem() implementation
- *
- * Copyright (C) 2008 Johannes Weiner <hannes@saeurebad.de>
- */
+ 
+ 
 
 #include <linux/mm.h>
 

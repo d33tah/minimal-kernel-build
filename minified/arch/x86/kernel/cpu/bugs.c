@@ -1,7 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Minimal stub - CPU vulnerability mitigations not needed
- */
+ 
+ 
 #include <linux/init.h>
 #include <linux/cpu.h>
 #include <linux/module.h>
@@ -14,7 +12,7 @@
 #include <asm/vmx.h>
 #include <asm/nospec-branch.h>
 
-/* Exported symbols that are referenced by other code */
+ 
 u64 x86_spec_ctrl_base;
 
 DEFINE_PER_CPU(u64, x86_spec_ctrl_current);

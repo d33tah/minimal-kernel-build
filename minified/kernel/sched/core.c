@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
 #include <linux/highmem.h>
 
@@ -970,20 +970,20 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	arch_start_context_switch(prev);
 
 	
-	if (!next->mm) {                                // to kernel
+	if (!next->mm) {                                 
 		enter_lazy_tlb(prev->active_mm, next);
 
 		next->active_mm = prev->active_mm;
-		if (prev->mm)                           // from user
+		if (prev->mm)                            
 			mmgrab(prev->active_mm);
 		else
 			prev->active_mm = NULL;
-	} else {                                        // to user
+	} else {                                         
 		membarrier_switch_mm(rq, prev->active_mm, next->mm);
 		
 		switch_mm_irqs_off(prev->active_mm, next->mm, next);
 
-		if (!prev->mm) {                        // from kernel
+		if (!prev->mm) {                         
 			
 			rq->prev_mm = prev->active_mm;
 			prev->active_mm = NULL;

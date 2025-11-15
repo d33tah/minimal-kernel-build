@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX__INIT_TASK_H
 #define _LINUX__INIT_TASK_H
 
@@ -32,10 +32,10 @@ extern struct cred init_cred;
 
 #define INIT_TASK_COMM "swapper"
 
-/* Attach to the init_task data structure for proper alignment */
-#define __init_task_data /**/
+ 
+#define __init_task_data  
 
-/* Attach to the thread_info data structure for proper alignment */
+ 
 #define __init_thread_info __section(".data..init_thread_info")
 
 #endif

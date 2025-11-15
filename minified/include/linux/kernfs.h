@@ -1,7 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- * kernfs.h - pseudo filesystem decoupled from vfs locking
- */
+ 
+ 
 
 #ifndef __LINUX_KERNFS_H
 #define __LINUX_KERNFS_H
@@ -57,54 +55,30 @@ enum kernfs_node_flag {
 	KERNFS_HAS_RELEASE	= 0x2000,
 };
 
-/* @flags for kernfs_create_root() */
+ 
 enum kernfs_root_flag {
-	/*
-	 * kernfs_nodes are created in the deactivated state and invisible.
-	 * They require explicit kernfs_activate() to become visible.  This
-	 * can be used to make related nodes become visible atomically
-	 * after all nodes are created successfully.
-	 */
+	 
 	KERNFS_ROOT_CREATE_DEACTIVATED		= 0x0001,
 
-	/*
-	 * For regular files, if the opener has CAP_DAC_OVERRIDE, open(2)
-	 * succeeds regardless of the RW permissions.  sysfs had an extra
-	 * layer of enforcement where open(2) fails with -EACCES regardless
-	 * of CAP_DAC_OVERRIDE if the permission doesn't have the
-	 * respective read or write access at all (none of S_IRUGO or
-	 * S_IWUGO) or the respective operation isn't implemented.  The
-	 * following flag enables that behavior.
-	 */
+	 
 	KERNFS_ROOT_EXTRA_OPEN_PERM_CHECK	= 0x0002,
 
-	/*
-	 * The filesystem supports exportfs operation, so userspace can use
-	 * fhandle to access nodes of the fs.
-	 */
+	 
 	KERNFS_ROOT_SUPPORT_EXPORTOP		= 0x0004,
 
-	/*
-	 * Support user xattrs to be written to nodes rooted at this root.
-	 */
+	 
 	KERNFS_ROOT_SUPPORT_USER_XATTR		= 0x0008,
 };
 
-/* type-specific structures for kernfs_node union members */
+ 
 struct kernfs_elem_dir {
 	unsigned long		subdirs;
-	/* children rbtree starts here and goes through kn->rb */
+	 
 	struct rb_root		children;
 
-	/*
-	 * The kernfs hierarchy this directory belongs to.  This fits
-	 * better directly in kernfs_node but is here to save space.
-	 */
+	 
 	struct kernfs_root	*root;
-	/*
-	 * Monotonic revision counter, used to identify if a directory
-	 * node has changed during negative dentry revalidation.
-	 */
+	 
 	unsigned long		rev;
 };
 
@@ -116,34 +90,21 @@ struct kernfs_elem_attr {
 	const struct kernfs_ops	*ops;
 	struct kernfs_open_node	*open;
 	loff_t			size;
-	struct kernfs_node	*notify_next;	/* for kernfs_notify() */
+	struct kernfs_node	*notify_next;	 
 };
 
-/*
- * kernfs_node - the building block of kernfs hierarchy.  Each and every
- * kernfs node is represented by single kernfs_node.  Most fields are
- * private to kernfs and shouldn't be accessed directly by kernfs users.
- *
- * As long as count reference is held, the kernfs_node itself is
- * accessible.  Dereferencing elem or any other outer entity requires
- * active reference.
- */
+ 
 struct kernfs_node {
 	atomic_t		count;
 	atomic_t		active;
-	/*
-	 * Use kernfs_get_parent() and kernfs_name/path() instead of
-	 * accessing the following two fields directly.  If the node is
-	 * never moved to a different parent, it is safe to access the
-	 * parent directly.
-	 */
+	 
 	struct kernfs_node	*parent;
 	const char		*name;
 
 	struct rb_node		rb;
 
-	const void		*ns;	/* namespace tag */
-	unsigned int		hash;	/* ns + name hash */
+	const void		*ns;	 
+	unsigned int		hash;	 
 	union {
 		struct kernfs_elem_dir		dir;
 		struct kernfs_elem_symlink	symlink;
@@ -152,10 +113,7 @@ struct kernfs_node {
 
 	void			*priv;
 
-	/*
-	 * 64bit unique ID.  On 64bit ino setups, id is the ino.  On 32bit,
-	 * the low 32bits are ino and upper generation.
-	 */
+	 
 	u64			id;
 
 	unsigned short		flags;
@@ -163,13 +121,7 @@ struct kernfs_node {
 	struct kernfs_iattrs	*iattr;
 };
 
-/*
- * kernfs_syscall_ops may be specified on kernfs_create_root() to support
- * syscalls.  These optional callbacks are invoked on the matching syscalls
- * and can perform any kernfs operations which don't necessarily have to be
- * the exact operation requested.  An active reference is held for each
- * kernfs_node parameter.
- */
+ 
 struct kernfs_syscall_ops {
 	int (*show_options)(struct seq_file *sf, struct kernfs_root *root);
 
@@ -185,13 +137,13 @@ struct kernfs_syscall_ops {
 struct kernfs_node *kernfs_root_to_node(struct kernfs_root *root);
 
 struct kernfs_open_file {
-	/* published fields */
+	 
 	struct kernfs_node	*kn;
 	struct file		*file;
 	struct seq_file		*seq_file;
 	void			*priv;
 
-	/* private fields, do not use outside kernfs proper */
+	 
 	struct mutex		mutex;
 	struct mutex		prealloc_mutex;
 	int			event;
@@ -205,24 +157,11 @@ struct kernfs_open_file {
 };
 
 struct kernfs_ops {
-	/*
-	 * Optional open/release methods.  Both are called with
-	 * @of->seq_file populated.
-	 */
+	 
 	int (*open)(struct kernfs_open_file *of);
 	void (*release)(struct kernfs_open_file *of);
 
-	/*
-	 * Read is handled by either seq_file or raw_read().
-	 *
-	 * If seq_show() is present, seq_file path is active.  Other seq
-	 * operations are optional and if not implemented, the behavior is
-	 * equivalent to single_open().  @sf->private points to the
-	 * associated kernfs_open_file.
-	 *
-	 * read() is bounced through kernel buffer and a read larger than
-	 * PAGE_SIZE results in partial operation of PAGE_SIZE.
-	 */
+	 
 	int (*seq_show)(struct seq_file *sf, void *v);
 
 	void *(*seq_start)(struct seq_file *sf, loff_t *ppos);
@@ -232,20 +171,9 @@ struct kernfs_ops {
 	ssize_t (*read)(struct kernfs_open_file *of, char *buf, size_t bytes,
 			loff_t off);
 
-	/*
-	 * write() is bounced through kernel buffer.  If atomic_write_len
-	 * is not set, a write larger than PAGE_SIZE results in partial
-	 * operations of PAGE_SIZE chunks.  If atomic_write_len is set,
-	 * writes upto the specified size are executed atomically but
-	 * larger ones are rejected with -E2BIG.
-	 */
+	 
 	size_t atomic_write_len;
-	/*
-	 * "prealloc" causes a buffer to be allocated at open for
-	 * all read/write requests.  As ->seq_show uses seq_read()
-	 * which does its own allocation, it is incompatible with
-	 * ->prealloc.  Provide ->read and ->write with ->prealloc.
-	 */
+	 
 	bool prealloc;
 	ssize_t (*write)(struct kernfs_open_file *of, char *buf, size_t bytes,
 			 loff_t off);
@@ -256,21 +184,19 @@ struct kernfs_ops {
 	int (*mmap)(struct kernfs_open_file *of, struct vm_area_struct *vma);
 };
 
-/*
- * The kernfs superblock creation/mount parameter context.
- */
+ 
 struct kernfs_fs_context {
-	struct kernfs_root	*root;		/* Root of the hierarchy being mounted */
-	void			*ns_tag;	/* Namespace tag of the mount (or NULL) */
-	unsigned long		magic;		/* File system specific magic number */
+	struct kernfs_root	*root;		 
+	void			*ns_tag;	 
+	unsigned long		magic;		 
 
-	/* The following are set/used by kernfs_mount() */
-	bool			new_sb_created;	/* Set to T if we allocated a new sb */
+	 
+	bool			new_sb_created;	 
 };
 
 
 static inline enum kernfs_node_type kernfs_type(struct kernfs_node *kn)
-{ return 0; }	/* whatever */
+{ return 0; }	 
 
 static inline void kernfs_enable_ns(struct kernfs_node *kn) { }
 
@@ -381,18 +307,7 @@ static inline void kernfs_kill_sb(struct super_block *sb) { }
 static inline void kernfs_init(void) { }
 
 
-/**
- * kernfs_path - build full path of a given node
- * @kn: kernfs_node of interest
- * @buf: buffer to copy @kn's name into
- * @buflen: size of @buf
- *
- * If @kn is NULL result will be "(null)".
- *
- * Returns the length of the full path.  If the full length is equal to or
- * greater than @buflen, @buf contains the truncated path with the trailing
- * '\0'.  On error, -errno is returned.
- */
+ 
 static inline int kernfs_path(struct kernfs_node *kn, char *buf, size_t buflen)
 {
 	return kernfs_path_from_node(kn, NULL, buf, buflen);
@@ -432,4 +347,4 @@ static inline int kernfs_rename(struct kernfs_node *kn,
 	return kernfs_rename_ns(kn, new_parent, new_name, NULL);
 }
 
-#endif	/* __LINUX_KERNFS_H */
+#endif	 

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
 #include <linux/stdarg.h>
 #include <linux/build_bug.h>
@@ -19,17 +19,17 @@
 #include <linux/time.h>
 #include <linux/uuid.h>
 #include <linux/of.h>
-// #include <net/addrconf.h>
+ 
 #include <linux/in.h>
 #include <linux/in6.h>
 #include <linux/netdev_features.h>
 #include <linux/random.h>
 #include <linux/siphash.h>
 
-/* Stubbed IPv6 definitions to avoid net/addrconf.h and net/ipv6.h dependency */
+ 
 #define IPV6_FLOWINFO_MASK		cpu_to_be32(0x0FFFFFFF)
 
-/* Stubbed IPv6 functions to avoid net/addrconf.h dependency */
+ 
 static inline bool ipv6_addr_v4mapped(const struct in6_addr *a)
 {
 	return (
@@ -755,7 +755,7 @@ static noinline_for_stack
 char *dentry_name(char *buf, char *end, const struct dentry *d, struct printf_spec spec,
 		  const char *fmt)
 {
-	/* Stubbed: dentry formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(dentry)", spec);
 }
 
@@ -763,7 +763,7 @@ static noinline_for_stack
 char *file_dentry_name(char *buf, char *end, const struct file *f,
 			struct printf_spec spec, const char *fmt)
 {
-	/* Stubbed: file dentry formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(file)", spec);
 }
 
@@ -814,7 +814,7 @@ static noinline_for_stack
 char *resource_string(char *buf, char *end, struct resource *res,
 		      struct printf_spec spec, const char *fmt)
 {
-	/* Stubbed: resource formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(rsrc)", spec);
 }
 
@@ -822,7 +822,7 @@ static noinline_for_stack
 char *hex_string(char *buf, char *end, u8 *addr, struct printf_spec spec,
 		 const char *fmt)
 {
-	/* Stubbed: hex dump formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(hex)", spec);
 }
 
@@ -830,7 +830,7 @@ static noinline_for_stack
 char *bitmap_string(char *buf, char *end, unsigned long *bitmap,
 		    struct printf_spec spec, const char *fmt)
 {
-	/* Stubbed: bitmap formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(bitmap)", spec);
 }
 
@@ -838,7 +838,7 @@ static noinline_for_stack
 char *bitmap_list_string(char *buf, char *end, unsigned long *bitmap,
 			 struct printf_spec spec, const char *fmt)
 {
-	/* Stubbed: bitmap list formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(blist)", spec);
 }
 
@@ -846,23 +846,17 @@ static noinline_for_stack
 char *mac_address_string(char *buf, char *end, u8 *addr,
 			 struct printf_spec spec, const char *fmt)
 {
-	/* Stubbed: MAC address formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(mac)", spec);
 }
 
-/* Removed: ip4/ip6 socket address formatting functions not needed for minimal kernel
- * Deleted functions (143 lines):
- * - ip4_string, ip6_compressed_string, ip6_string
- * - ip6_addr_string, ip4_addr_string
- * - ip6_addr_string_sa, ip4_addr_string_sa
- * These were only used for network address formatting which is unnecessary for Hello World
- */
+ 
 
 static noinline_for_stack
 char *ip_addr_string(char *buf, char *end, const void *ptr,
 		     struct printf_spec spec, const char *fmt)
 {
-	/* Stubbed: IP address formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(ip)", spec);
 }
 
@@ -870,7 +864,7 @@ static noinline_for_stack
 char *escaped_string(char *buf, char *end, u8 *addr, struct printf_spec spec,
 		     const char *fmt)
 {
-	/* Stubbed: string escaping not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(esc)", spec);
 }
 
@@ -893,7 +887,7 @@ static noinline_for_stack
 char *uuid_string(char *buf, char *end, const u8 *addr,
 		  struct printf_spec spec, const char *fmt)
 {
-	/* Stubbed: UUID formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(uuid)", spec);
 }
 
@@ -901,7 +895,7 @@ static noinline_for_stack
 char *netdev_bits(char *buf, char *end, const void *addr,
 		  struct printf_spec spec,  const char *fmt)
 {
-	/* Stubbed: netdev formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(netdev)", spec);
 }
 
@@ -909,7 +903,7 @@ static noinline_for_stack
 char *fourcc_string(char *buf, char *end, const u32 *fourcc,
 		    struct printf_spec spec, const char *fmt)
 {
-	/* Stubbed: fourcc formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(fourcc)", spec);
 }
 
@@ -942,7 +936,7 @@ static noinline_for_stack
 char *time_and_date(char *buf, char *end, void *ptr, struct printf_spec spec,
 		    const char *fmt)
 {
-	/* Stubbed: time/date formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(time)", spec);
 }
 
@@ -950,7 +944,7 @@ static noinline_for_stack
 char *clock(char *buf, char *end, struct clk *clk, struct printf_spec spec,
 	    const char *fmt)
 {
-	/* Stubbed: clock formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(clock)", spec);
 }
 
@@ -958,7 +952,7 @@ static noinline_for_stack
 char *flags_string(char *buf, char *end, void *flags_ptr,
 		   struct printf_spec spec, const char *fmt)
 {
-	/* Stubbed: flags formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(flags)", spec);
 }
 
@@ -966,7 +960,7 @@ static noinline_for_stack
 char *device_node_string(char *buf, char *end, struct device_node *dn,
 			 struct printf_spec spec, const char *fmt)
 {
-	/* Stubbed: device node formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(devnode)", spec);
 }
 
@@ -974,7 +968,7 @@ static noinline_for_stack
 char *fwnode_string(char *buf, char *end, struct fwnode_handle *fwnode,
 		    struct printf_spec spec, const char *fmt)
 {
-	/* Stubbed: fwnode formatting not needed for minimal kernel */
+	 
 	return error_string(buf, end, "(fwnode)", spec);
 }
 
@@ -1465,10 +1459,10 @@ int sprintf(char *buf, const char *fmt, ...)
 
 int vsscanf(const char *buf, const char *fmt, va_list args)
 {
-	return 0; // Stubbed - not needed for minimal kernel
+	return 0;  
 }
 
 int sscanf(const char *buf, const char *fmt, ...)
 {
-	return 0; // Stubbed - not needed for minimal kernel
+	return 0;  
 }

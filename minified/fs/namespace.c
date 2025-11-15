@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
 #include <linux/syscalls.h>
 #include <linux/export.h>
@@ -397,7 +397,7 @@ int __legitimize_mnt(struct vfsmount *bastard, unsigned seq)
 		return 0;
 	mnt = real_mount(bastard);
 	mnt_add_count(mnt, 1);
-	smp_mb();			// see mntput_no_expire()
+	smp_mb();			 
 	if (likely(!read_seqretry(&mount_lock, seq)))
 		return 0;
 	if (bastard->mnt_flags & MNT_SYNC_UMOUNT) {
@@ -1287,7 +1287,7 @@ static int can_umount(const struct path *path, int flags)
 	return 0;
 }
 
-// caller is responsible for flags being sane
+ 
 int path_umount(struct path *path, int flags)
 {
 	struct mount *mnt = real_mount(path->mnt);
@@ -1309,7 +1309,7 @@ static int ksys_umount(char __user *name, int flags)
 	struct path path;
 	int ret;
 
-	// basic validity checks done first
+	 
 	if (flags & ~(MNT_FORCE | MNT_DETACH | MNT_EXPIRE | UMOUNT_NOFOLLOW))
 		return -EINVAL;
 

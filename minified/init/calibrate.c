@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/* calibrate.c: stubbed delay calibration for minimal kernel */
+ 
+ 
 
 #include <linux/jiffies.h>
 #include <linux/delay.h>
@@ -32,7 +32,7 @@ void __attribute__((weak)) calibration_delay_done(void)
 
 void calibrate_delay(void)
 {
-	/* Fixed value for QEMU - approximately 2.5 GHz CPU at HZ=100 */
+	 
 	unsigned long lpj = 12500000;
 	int this_cpu = smp_processor_id();
 

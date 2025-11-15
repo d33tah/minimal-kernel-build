@@ -1,8 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/* Rewritten and vastly simplified by Rusty Russell for in-kernel
- * module loader:
- *   Copyright 2002 Rusty Russell <rusty@rustcorp.com.au> IBM Corporation
- */
+ 
+ 
 #ifndef _LINUX_KALLSYMS_H
 #define _LINUX_KALLSYMS_H
 
@@ -128,4 +125,4 @@ static inline void print_ip_sym(const char *loglvl, unsigned long ip)
 	printk("%s[<%px>] %pS\n", loglvl, (void *) ip, (void *) ip);
 }
 
-#endif /*_LINUX_KALLSYMS_H*/
+#endif  

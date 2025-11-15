@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/* Stubbed xattr.c */
+ 
+ 
 #include <linux/fs.h>
 #include <linux/xattr.h>
 #include <linux/export.h>

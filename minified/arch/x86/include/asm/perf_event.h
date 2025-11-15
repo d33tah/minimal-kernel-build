@@ -1,13 +1,13 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_PERF_EVENT_H
 #define _ASM_X86_PERF_EVENT_H
 
-/* Minimal stub for perf events - all functionality stubbed */
+ 
 
 #include <linux/static_call.h>
 #include <asm/stacktrace.h>
 
-/* Minimal structures needed for compilation */
+ 
 struct perf_guest_switch_msr {
 	unsigned msr;
 	u64 host, guest;
@@ -35,10 +35,10 @@ struct x86_perf_regs {
 	u64 *xmm_regs;
 };
 
-/* Function declarations - implemented as stubs in kernel/events/stubs.c */
+ 
 extern void perf_clear_dirty_counters(void);
 
-/* Inline stubs */
+ 
 static inline void perf_get_x86_pmu_capability(struct x86_pmu_capability *cap) { }
 static inline void perf_check_microcode(void) { }
 static inline int x86_perf_rdpmc_index(struct perf_event *event) { return -ENOSYS; }
@@ -52,7 +52,7 @@ static inline unsigned long perf_misc_flags(struct pt_regs *regs) { return 0; }
 
 #define perf_misc_flags(regs) perf_misc_flags(regs)
 
-/* Minimal arch-specific macros */
+ 
 #define perf_arch_fetch_caller_regs(regs, __ip) do { \
 	(regs)->ip = (__ip); \
 	(regs)->sp = (unsigned long)__builtin_frame_address(0); \
@@ -62,4 +62,4 @@ static inline unsigned long perf_misc_flags(struct pt_regs *regs) { return 0; }
 
 #define arch_perf_out_copy_user copy_from_user_nmi
 
-#endif /* _ASM_X86_PERF_EVENT_H */
+#endif  

@@ -75,14 +75,6 @@ static inline void __nodes_or(nodemask_t *dstp, const nodemask_t *src1p,
 	bitmap_or(dstp->bits, src1p->bits, src2p->bits, nbits);
 }
 
-#define nodes_xor(dst, src1, src2) \
-			__nodes_xor(&(dst), &(src1), &(src2), MAX_NUMNODES)
-static inline void __nodes_xor(nodemask_t *dstp, const nodemask_t *src1p,
-					const nodemask_t *src2p, unsigned int nbits)
-{
-	bitmap_xor(dstp->bits, src1p->bits, src2p->bits, nbits);
-}
-
 #define nodes_andnot(dst, src1, src2) \
 			__nodes_andnot(&(dst), &(src1), &(src2), MAX_NUMNODES)
 static inline void __nodes_andnot(nodemask_t *dstp, const nodemask_t *src1p,
@@ -119,12 +111,6 @@ static inline bool __nodes_subset(const nodemask_t *src1p,
 static inline bool __nodes_empty(const nodemask_t *srcp, unsigned int nbits)
 {
 	return bitmap_empty(srcp->bits, nbits);
-}
-
-#define nodes_full(nodemask) __nodes_full(&(nodemask), MAX_NUMNODES)
-static inline bool __nodes_full(const nodemask_t *srcp, unsigned int nbits)
-{
-	return bitmap_full(srcp->bits, nbits);
 }
 
 #define nodes_weight(nodemask) __nodes_weight(&(nodemask), MAX_NUMNODES)
@@ -167,13 +153,6 @@ static inline void init_nodemask_of_node(nodemask_t *mask, int node)
 	}								\
 	m;								\
 })
-
-#define first_unset_node(mask) __first_unset_node(&(mask))
-static inline unsigned int __first_unset_node(const nodemask_t *maskp)
-{
-	return min_t(unsigned int, MAX_NUMNODES,
-			find_first_zero_bit(maskp->bits, MAX_NUMNODES));
-}
 
 #define NODE_MASK_LAST_WORD BITMAP_LAST_WORD_MASK(MAX_NUMNODES)
 

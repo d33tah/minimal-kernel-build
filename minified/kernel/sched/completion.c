@@ -97,20 +97,7 @@ wait_for_completion_timeout(struct completion *x, unsigned long timeout)
 	return wait_for_common(x, timeout, TASK_UNINTERRUPTIBLE);
 }
 
- 
-void __sched wait_for_completion_io(struct completion *x)
-{
-	wait_for_common_io(x, MAX_SCHEDULE_TIMEOUT, TASK_UNINTERRUPTIBLE);
-}
 
- 
-unsigned long __sched
-wait_for_completion_io_timeout(struct completion *x, unsigned long timeout)
-{
-	return wait_for_common_io(x, timeout, TASK_UNINTERRUPTIBLE);
-}
-
- 
 int __sched wait_for_completion_interruptible(struct completion *x)
 {
 	long t = wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_INTERRUPTIBLE);
@@ -119,15 +106,7 @@ int __sched wait_for_completion_interruptible(struct completion *x)
 	return 0;
 }
 
- 
-long __sched
-wait_for_completion_interruptible_timeout(struct completion *x,
-					  unsigned long timeout)
-{
-	return wait_for_common(x, timeout, TASK_INTERRUPTIBLE);
-}
 
- 
 int __sched wait_for_completion_killable(struct completion *x)
 {
 	long t = wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_KILLABLE);
@@ -136,34 +115,7 @@ int __sched wait_for_completion_killable(struct completion *x)
 	return 0;
 }
 
- 
-long __sched
-wait_for_completion_killable_timeout(struct completion *x,
-				     unsigned long timeout)
-{
-	return wait_for_common(x, timeout, TASK_KILLABLE);
-}
 
- 
-bool try_wait_for_completion(struct completion *x)
-{
-	unsigned long flags;
-	bool ret = true;
-
-	 
-	if (!READ_ONCE(x->done))
-		return false;
-
-	raw_spin_lock_irqsave(&x->wait.lock, flags);
-	if (!x->done)
-		ret = false;
-	else if (x->done != UINT_MAX)
-		x->done--;
-	raw_spin_unlock_irqrestore(&x->wait.lock, flags);
-	return ret;
-}
-
- 
 bool completion_done(struct completion *x)
 {
 	unsigned long flags;

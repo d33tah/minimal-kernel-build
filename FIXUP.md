@@ -1,3 +1,78 @@
+--- 2025-11-15 20:28 ---
+
+Work completed (20:04-20:28):
+
+1. wait.h cleanup (20:04-20:12):
+   - Removed 3 unused inline functions (21 LOC total)
+   - Functions removed:
+     * wq_has_single_sleeper (5 LOC)
+     * __add_wait_queue_entry_tail_exclusive (6 LOC)
+     * wake_up_pollfree (7 LOC)
+   - 666 LOC → 645 LOC (21 LOC reduction)
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
+   - Commit: e671b39, pushed to remote
+
+2. nodemask.h cleanup (20:12-20:22):
+   - Removed 3 unused node functions + macros (21 LOC total)
+   - Functions removed:
+     * nodes_xor / __nodes_xor (7 LOC)
+     * nodes_full / __nodes_full (5 LOC)
+     * first_unset_node / __first_unset_node (6 LOC)
+   - 355 LOC → 334 LOC (21 LOC reduction)
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
+   - Commit: 5b154bf, pushed to remote
+
+3. jiffies.h cleanup (20:22-20:28):
+   - Removed 2 unused inline functions (10 LOC total)
+   - Functions removed:
+     * jiffies_delta_to_clock_t (4 LOC)
+     * jiffies_delta_to_msecs (4 LOC)
+   - 261 LOC → 251 LOC (10 LOC reduction)
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
+   - Commit: f9ca866, pushed to remote
+
+Total session progress: 52 LOC removed (21 + 21 + 10 from three headers)
+Estimated LOC remaining: ~260,122
+Gap to 200K goal: ~60,122 LOC (23.1% reduction needed)
+
+Next steps:
+- Continue systematic header analysis for unused inline functions
+- Consider cpumask.h, spinlock.h, or other medium-sized headers
+- Maintain careful verification (both .c and .h files) before removing
+
+--- 2025-11-15 20:04 ---
+
+SESSION START (20:04):
+
+Initial status:
+- make vm: PASSES ✓, prints "Hello World" ✓
+- Binary: 372KB (under 400KB goal ✓)
+- Total LOC (cloc): 260,174
+- Gap to 200K goal: 60,174 LOC (23.1% reduction needed)
+
+Strategy:
+Attempted to remove entire kernel .o files (regset, async, range, smpboot) but all had
+dependencies. These files are small but tightly integrated:
+- regset.o (66 LOC): used by ptrace.c (copy_regset_to_user)
+- async.o (42 LOC): async_synchronize_cookie_domain, async_schedule_node, etc.
+- range.o (163 LOC): add_range_with_merge, clean_sort_range
+- smpboot.o (80 LOC): smpboot_register_percpu_thread
+
+Removing schedulers (rt.c 980 LOC, deadline.c 1279 LOC) also failed - core depends on
+rt_sched_class, dl_sched_class, and many init functions.
+
+Current approach: Continue with safe inline function removal from headers. Analyzed:
+- xarray.h (765 LOC, 55 inline): heavily used
+- seqlock.h (563 LOC, 40 inline): complex dependencies
+- wait.h (666 LOC, 11 inline): potential target
+- page-flags.h (612 LOC, 26 inline): potential target
+- msr.h (302 LOC, 25 inline): core x86 functions
+
+Will focus on finding less-used inline functions in medium-sized headers.
+
 --- 2025-11-15 19:29 ---
 
 SESSION START (19:29):

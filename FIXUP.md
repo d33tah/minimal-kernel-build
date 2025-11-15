@@ -8,12 +8,26 @@ Initial status:
 - Total LOC: 259,308 (C: 146,784 + Headers: 99,302)
 - Gap to 200K goal: 59,308 LOC (22.9% reduction needed)
 
-Note: LOC count is now 259,308 (7,308 more than previous session's 252K).
-This is due to cloc variance with build artifacts. Will proceed with removing unused inline functions.
-
 Strategy:
 Continue systematic removal of unused inline functions from CONFIG-disabled headers.
-Starting with bio.h (49 functions), hugetlb.h (46 functions), cpumask.h (29 functions), kernfs.h (29 functions).
+Starting with bio.h, hugetlb.h, cpumask.h, kernfs.h.
+
+Work completed (16:33-16:48):
+
+1. bio.h cleanup (16:33-16:38):
+   - Removed 41 unused inline functions
+   - 653 LOC → 324 LOC (329 LOC reduction, -206 net lines)
+   - Kept: bio_advance_iter_single, bio_set_flag, bio_clear_flag (used by macros)
+   - Commit: a61c8fa
+
+2. hugetlb.h cleanup (16:38-16:48):
+   - Removed 35 unused stub functions (CONFIG_HUGETLB_PAGE disabled)
+   - 406 LOC → 260 LOC (146 LOC reduction, -172 net lines)
+   - Kept: huge_page_shift, pgd_write (used by arch/x86 macros)
+   - Commit: 76bece5
+
+Total progress: 378 LOC saved (206 + 172), build passes, "Hello World" works.
+Continuing with more headers...
 
 --- 2025-11-15 16:11 ---
 

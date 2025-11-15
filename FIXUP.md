@@ -9,7 +9,7 @@ New session starting:
 
 Strategy: Continue systematic removal of unused functions from headers and identify larger subsystems for reduction.
 
-Progress (23:58-00:05):
+Progress (23:58-00:10):
 
 1. list.h cleanup - circular macros (00:05):
    - Removed from list.h (8 LOC):
@@ -21,6 +21,20 @@ Progress (23:58-00:05):
    - Note: Attempted to remove hlist_fake/hlist_add_behind but hlist_fake is used in fs.h
    - make vm: PASSES ✓, prints "Hello World" ✓
    - Binary: 371KB (down from 372KB, 1KB reduction) ✓
+   - Committed: 3b91f12
+
+2. wait.h cleanup - unused wait_event variants (00:10):
+   - Removed from wait.h (41 LOC):
+     * io_wait_event and __io_wait_event macros (13 LOC)
+     * wait_event_freezable and __wait_event_freezable macros (13 LOC)
+     * wait_event_freezable_timeout and __wait_event_freezable_timeout macros (15 LOC)
+     * wait_event_exclusive_cmd and __wait_event_exclusive_cmd macros (10 LOC)
+     * wait_event_cmd and __wait_event_cmd macros (11 LOC)
+     * Blank lines (counted in above)
+   - Total: ~41 LOC removed
+   - Verified unused via grep in .c files
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 371KB (unchanged) ✓
 
 --- 2025-11-15 23:57 ---
 

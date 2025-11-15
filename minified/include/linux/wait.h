@@ -210,33 +210,6 @@ do {										\
 	__wait_event(wq_head, condition);					\
 } while (0)
 
-#define __io_wait_event(wq_head, condition)					\
-	(void)___wait_event(wq_head, condition, TASK_UNINTERRUPTIBLE, 0, 0,	\
-			    io_schedule())
-
- 
-#define io_wait_event(wq_head, condition)					\
-do {										\
-	might_sleep();								\
-	if (condition)								\
-		break;								\
-	__io_wait_event(wq_head, condition);					\
-} while (0)
-
-#define __wait_event_freezable(wq_head, condition)				\
-	___wait_event(wq_head, condition, TASK_INTERRUPTIBLE, 0, 0,		\
-			    freezable_schedule())
-
- 
-#define wait_event_freezable(wq_head, condition)				\
-({										\
-	int __ret = 0;								\
-	might_sleep();								\
-	if (!(condition))							\
-		__ret = __wait_event_freezable(wq_head, condition);		\
-	__ret;									\
-})
-
 #define __wait_event_timeout(wq_head, condition, timeout)			\
 	___wait_event(wq_head, ___wait_cond_timeout(condition),			\
 		      TASK_UNINTERRUPTIBLE, 0, timeout,				\
@@ -251,44 +224,6 @@ do {										\
 		__ret = __wait_event_timeout(wq_head, condition, timeout);	\
 	__ret;									\
 })
-
-#define __wait_event_freezable_timeout(wq_head, condition, timeout)		\
-	___wait_event(wq_head, ___wait_cond_timeout(condition),			\
-		      TASK_INTERRUPTIBLE, 0, timeout,				\
-		      __ret = freezable_schedule_timeout(__ret))
-
- 
-#define wait_event_freezable_timeout(wq_head, condition, timeout)		\
-({										\
-	long __ret = timeout;							\
-	might_sleep();								\
-	if (!___wait_cond_timeout(condition))					\
-		__ret = __wait_event_freezable_timeout(wq_head, condition, timeout); \
-	__ret;									\
-})
-
-#define __wait_event_exclusive_cmd(wq_head, condition, cmd1, cmd2)		\
-	(void)___wait_event(wq_head, condition, TASK_UNINTERRUPTIBLE, 1, 0,	\
-			    cmd1; schedule(); cmd2)
- 
-#define wait_event_exclusive_cmd(wq_head, condition, cmd1, cmd2)		\
-do {										\
-	if (condition)								\
-		break;								\
-	__wait_event_exclusive_cmd(wq_head, condition, cmd1, cmd2);		\
-} while (0)
-
-#define __wait_event_cmd(wq_head, condition, cmd1, cmd2)			\
-	(void)___wait_event(wq_head, condition, TASK_UNINTERRUPTIBLE, 0, 0,	\
-			    cmd1; schedule(); cmd2)
-
- 
-#define wait_event_cmd(wq_head, condition, cmd1, cmd2)				\
-do {										\
-	if (condition)								\
-		break;								\
-	__wait_event_cmd(wq_head, condition, cmd1, cmd2);			\
-} while (0)
 
 #define __wait_event_interruptible(wq_head, condition)				\
 	___wait_event(wq_head, condition, TASK_INTERRUPTIBLE, 0, 0,		\

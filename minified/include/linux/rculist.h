@@ -15,7 +15,7 @@ static inline void INIT_LIST_HEAD_RCU(struct list_head *list)
 	WRITE_ONCE(list->prev, list);
 }
 
- 
+
 #define list_next_rcu(list)	(*((struct list_head __rcu **)(&(list)->next)))
 
  
@@ -239,44 +239,6 @@ static inline void hlist_add_head_rcu(struct hlist_node *n,
 }
 
  
-static inline void hlist_add_tail_rcu(struct hlist_node *n,
-				      struct hlist_head *h)
-{
-	struct hlist_node *i, *last = NULL;
-
-	 
-	for (i = h->first; i; i = i->next)
-		last = i;
-
-	if (last) {
-		n->next = last->next;
-		WRITE_ONCE(n->pprev, &last->next);
-		rcu_assign_pointer(hlist_next_rcu(last), n);
-	} else {
-		hlist_add_head_rcu(n, h);
-	}
-}
-
- 
-static inline void hlist_add_before_rcu(struct hlist_node *n,
-					struct hlist_node *next)
-{
-	WRITE_ONCE(n->pprev, next->pprev);
-	n->next = next;
-	rcu_assign_pointer(hlist_pprev_rcu(n), n);
-	WRITE_ONCE(next->pprev, &n->next);
-}
-
- 
-static inline void hlist_add_behind_rcu(struct hlist_node *n,
-					struct hlist_node *prev)
-{
-	n->next = prev->next;
-	WRITE_ONCE(n->pprev, &prev->next);
-	rcu_assign_pointer(hlist_next_rcu(prev), n);
-	if (n->next)
-		WRITE_ONCE(n->next->pprev, &n->next);
-}
 
 #define __hlist_for_each_rcu(pos, head)				\
 	for (pos = rcu_dereference(hlist_first_rcu(head));	\

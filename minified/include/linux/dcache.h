@@ -301,11 +301,6 @@ static inline void d_lookup_done(struct dentry *dentry)
 
 extern void dput(struct dentry *);
 
-static inline bool d_managed(const struct dentry *dentry)
-{
-	return dentry->d_flags & DCACHE_MANAGED_DENTRY;
-}
-
 static inline bool d_mountpoint(const struct dentry *dentry)
 {
 	return dentry->d_flags & DCACHE_MOUNTED;
@@ -320,11 +315,6 @@ static inline unsigned __d_entry_type(const struct dentry *dentry)
 static inline bool d_is_miss(const struct dentry *dentry)
 {
 	return __d_entry_type(dentry) == DCACHE_MISS_TYPE;
-}
-
-static inline bool d_is_whiteout(const struct dentry *dentry)
-{
-	return __d_entry_type(dentry) == DCACHE_WHITEOUT_TYPE;
 }
 
 static inline bool d_can_lookup(const struct dentry *dentry)
@@ -352,16 +342,6 @@ static inline bool d_is_reg(const struct dentry *dentry)
 	return __d_entry_type(dentry) == DCACHE_REGULAR_TYPE;
 }
 
-static inline bool d_is_special(const struct dentry *dentry)
-{
-	return __d_entry_type(dentry) == DCACHE_SPECIAL_TYPE;
-}
-
-static inline bool d_is_file(const struct dentry *dentry)
-{
-	return d_is_reg(dentry) || d_is_special(dentry);
-}
-
 static inline bool d_is_negative(const struct dentry *dentry)
 {
 	 
@@ -378,13 +358,6 @@ static inline bool d_is_positive(const struct dentry *dentry)
 	return !d_is_negative(dentry);
 }
 
- 
-static inline bool d_really_is_negative(const struct dentry *dentry)
-{
-	return dentry->d_inode == NULL;
-}
-
- 
 static inline bool d_really_is_positive(const struct dentry *dentry)
 {
 	return dentry->d_inode != NULL;
@@ -396,12 +369,6 @@ static inline int simple_positive(const struct dentry *dentry)
 }
 
 extern void d_set_fallthru(struct dentry *dentry);
-
-static inline bool d_is_fallthru(const struct dentry *dentry)
-{
-	return dentry->d_flags & DCACHE_FALLTHRU;
-}
-
 
 extern int sysctl_vfs_cache_pressure;
 
@@ -430,13 +397,6 @@ static inline struct inode *d_backing_inode(const struct dentry *upper)
 	return inode;
 }
 
- 
-static inline struct dentry *d_backing_dentry(struct dentry *upper)
-{
-	return upper;
-}
-
- 
 static inline struct dentry *d_real(struct dentry *dentry,
 				    const struct inode *inode)
 {
@@ -444,13 +404,6 @@ static inline struct dentry *d_real(struct dentry *dentry,
 		return dentry->d_op->d_real(dentry, inode);
 	else
 		return dentry;
-}
-
- 
-static inline struct inode *d_real_inode(const struct dentry *dentry)
-{
-	 
-	return d_backing_inode(d_real((struct dentry *) dentry, NULL));
 }
 
 struct name_snapshot {

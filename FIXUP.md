@@ -14,14 +14,22 @@ Strategy: Focus on high-impact targets identified in previous sessions:
 3. TTY/VT subsystem simplification (currently very complex for just output)
 4. Scheduler simplification (only need minimal scheduling for single-purpose kernel)
 
-Action: Removed defkeymap.c (-165 LOC)
-- File: minified/drivers/tty/vt/defkeymap.c
-- Contains keyboard mapping tables (plain_map, shift_map, altgr_map, ctrl_map, etc.)
-- Not needed for output-only "Hello World" system
-- Build: SUCCESS
-- Test: SUCCESS (Hello World still prints)
-- Net reduction: -165 LOC
-- Binary size: 372KB (unchanged)
+Exploration (06:18-06:30):
+- Investigated defkeymap.c deletion - discovered it's auto-generated during build from Makefile
+- Cannot remove by deleting file; would need Makefile modification (risky)
+- Explored other reduction opportunities:
+  * RTC drivers: 412 LOC total, needed for timer functions
+  * Security subsystem: only 156 LOC, already minimal
+  * Driver subsystems: mostly essential (base, tty, video console)
+  * Lib files: vsprintf (1474), iov_iter (1431), bitmap (1350) - all likely needed
+
+Analysis: Need to focus on structural simplification rather than file deletion.
+Best candidates remain:
+1. Large mm/ files (page_alloc 5K, memory 4K - but risky)
+2. Large fs/ files (namei 3.8K, namespace 3.8K - also risky)
+3. Header stubbing (requires careful dependency analysis)
+
+Next: Will attempt to find and stub unused functions in large files
 
 --- 2025-11-15 06:17 ---
 

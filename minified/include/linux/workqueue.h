@@ -274,7 +274,6 @@ extern bool mod_delayed_work_on(int cpu, struct workqueue_struct *wq,
 extern bool queue_rcu_work(struct workqueue_struct *wq, struct rcu_work *rwork);
 
 extern void __flush_workqueue(struct workqueue_struct *wq);
-extern void drain_workqueue(struct workqueue_struct *wq);
 
 extern int schedule_on_each_cpu(work_func_t func);
 
@@ -286,20 +285,6 @@ extern bool cancel_work_sync(struct work_struct *work);
 extern bool flush_delayed_work(struct delayed_work *dwork);
 extern bool cancel_delayed_work(struct delayed_work *dwork);
 extern bool cancel_delayed_work_sync(struct delayed_work *dwork);
-
-extern bool flush_rcu_work(struct rcu_work *rwork);
-
-extern void workqueue_set_max_active(struct workqueue_struct *wq,
-				     int max_active);
-extern struct work_struct *current_work(void);
-extern bool current_is_workqueue_rescuer(void);
-extern bool workqueue_congested(int cpu, struct workqueue_struct *wq);
-extern unsigned int work_busy(struct work_struct *work);
-extern __printf(1, 2) void set_worker_desc(const char *fmt, ...);
-extern void print_worker_info(const char *log_lvl, struct task_struct *task);
-extern void show_all_workqueues(void);
-extern void show_one_workqueue(struct workqueue_struct *wq);
-extern void wq_worker_comm(char *buf, size_t size, struct task_struct *task);
 
  
 static inline bool queue_work(struct workqueue_struct *wq,

@@ -102,11 +102,6 @@ bool cancel_delayed_work_sync(struct delayed_work *dwork)
     return cancel_work_sync(&dwork->work);
 }
 
-void drain_workqueue(struct workqueue_struct *wq)
-{
-     
-}
-
 __printf(1, 4) struct workqueue_struct *
 alloc_workqueue(const char *fmt, unsigned int flags, int max_active, ...)
 {
@@ -161,16 +156,12 @@ void __init workqueue_init(void)
      
 }
 
- 
-void show_all_workqueues(void) {}
-void show_one_workqueue(struct workqueue_struct *wq) {}
+
 void wq_watchdog_set_thresh(unsigned long thresh) {}
 
 int workqueue_prepare_cpu(unsigned int cpu) { return 0; }
 int workqueue_online_cpu(unsigned int cpu) { return 0; }
 int workqueue_offline_cpu(unsigned int cpu) { return 0; }
-
-void print_worker_info(const char *log_lvl, struct task_struct *task) {}
 
 void wq_worker_running(struct task_struct *task) {}
 void wq_worker_sleeping(struct task_struct *task) {}
@@ -179,12 +170,12 @@ void wq_worker_tick(struct task_struct *task) {}
 void delayed_work_timer_fn(struct timer_list *t)
 {
     struct delayed_work *dwork = from_timer(dwork, t, timer);
-     
+
     queue_work(dwork->wq, &dwork->work);
 }
 
 int schedule_on_each_cpu(work_func_t func)
 {
-	 
+
 	return 0;
 }

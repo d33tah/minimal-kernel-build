@@ -11,9 +11,10 @@ This might be due to cloc not running after mrproper (no mrproper target exists)
 
 Strategy: Continue systematic removal of unused functions from headers. Focus on finding larger opportunities.
 
-Progress (22:59-23:15):
+Progress (22:59-23:30):
 
 1. rbtree.h & rbtree.c cleanup (23:15):
+
    - Removed from rbtree.h (13 LOC):
      * rb_first_postorder - extern declaration (2 LOC)
      * rb_next_postorder - extern declaration (removed with above)
@@ -30,9 +31,37 @@ Progress (22:59-23:15):
    - Verified unused via grep in .c and .h files
    - make vm: PASSES ✓, prints "Hello World" ✓
    - Binary: 372KB (unchanged) ✓
+   - Committed: 35bbc41
+
+2. workqueue.h & workqueue.c cleanup (23:30):
+   - Removed from workqueue.h (12 LOC):
+     * drain_workqueue - extern declaration
+     * flush_rcu_work - extern declaration
+     * workqueue_set_max_active - extern declaration (multiline)
+     * current_work - extern declaration
+     * current_is_workqueue_rescuer - extern declaration
+     * workqueue_congested - extern declaration
+     * work_busy - extern declaration
+     * set_worker_desc - extern declaration
+     * print_worker_info - extern declaration
+     * show_all_workqueues - extern declaration
+     * show_one_workqueue - extern declaration
+     * wq_worker_comm - extern declaration
+   - Removed from workqueue.c (15 LOC):
+     * drain_workqueue implementation (4 LOC stub)
+     * show_all_workqueues implementation (1 LOC stub)
+     * show_one_workqueue implementation (1 LOC stub)
+     * print_worker_info implementation (1 LOC stub)
+     * Blank lines and spacing (8 LOC)
+   - Total: 27 LOC removed (12 + 15)
+   - Note: Initially removed schedule_on_each_cpu but it's used in mm/util.c
+   - Note: flush_rcu_work, workqueue_set_max_active, current_work, etc. not in .c (already removed)
+   - Verified unused via grep in .c files
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
    - Ready to commit
 
-Session total so far: 69 LOC removed
+Session total so far: 96 LOC removed (69 + 27)
 Next: Commit and continue searching for more unused code in other headers.
 
 --- 2025-11-15 22:40 ---

@@ -396,20 +396,7 @@ static inline bool zone_is_empty(struct zone *zone)
 	return zone->spanned_pages == 0;
 }
 
- 
-static inline bool zone_intersects(struct zone *zone,
-		unsigned long start_pfn, unsigned long nr_pages)
-{
-	if (zone_is_empty(zone))
-		return false;
-	if (start_pfn >= zone_end_pfn(zone) ||
-	    start_pfn + nr_pages <= zone->zone_start_pfn)
-		return false;
 
-	return true;
-}
-
- 
 #define DEF_PRIORITY 12
 
  
@@ -497,11 +484,6 @@ static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat)
 	return pgdat->node_start_pfn + pgdat->node_spanned_pages;
 }
 
-static inline bool pgdat_is_empty(pg_data_t *pgdat)
-{
-	return !pgdat->node_start_pfn && !pgdat->node_spanned_pages;
-}
-
 #include <linux/memory_hotplug.h>
 
 void build_all_zonelists(pg_data_t *pgdat);
@@ -530,8 +512,6 @@ static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec)
 {
 	return container_of(lruvec, struct pglist_data, __lruvec);
 }
-
-static inline int local_memory_node(int node_id) { return node_id; };
 
 
 #define zone_idx(zone)		((zone) - (zone)->zone_pgdat->node_zones)
@@ -634,11 +614,6 @@ static inline struct zone *zonelist_zone(struct zoneref *zoneref)
 static inline int zonelist_zone_idx(struct zoneref *zoneref)
 {
 	return zoneref->zone_idx;
-}
-
-static inline int zonelist_node_idx(struct zoneref *zoneref)
-{
-	return zone_to_nid(zoneref->zone);
 }
 
 struct zoneref *__next_zones_zonelist(struct zoneref *z,

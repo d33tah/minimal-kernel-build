@@ -33,7 +33,6 @@ lib-y := ctype.o string.o vsprintf.o cmdline.o \
 	 flex_proportions.o ratelimit.o show_mem.o \
 	 decompress.o kobject_uevent.o \
 	 siphash.o dec_and_lock.o \
-	 nmi_backtrace.o \
 	 buildid.o
 
 lib-$(CONFIG_PRINTK) += dump_stack.o

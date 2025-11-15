@@ -40,29 +40,7 @@ static inline int kref_put(struct kref *kref, void (*release)(struct kref *kref)
 	return 0;
 }
 
-static inline int kref_put_mutex(struct kref *kref,
-				 void (*release)(struct kref *kref),
-				 struct mutex *lock)
-{
-	if (refcount_dec_and_mutex_lock(&kref->refcount, lock)) {
-		release(kref);
-		return 1;
-	}
-	return 0;
-}
 
-static inline int kref_put_lock(struct kref *kref,
-				void (*release)(struct kref *kref),
-				spinlock_t *lock)
-{
-	if (refcount_dec_and_lock(&kref->refcount, lock)) {
-		release(kref);
-		return 1;
-	}
-	return 0;
-}
-
- 
 static inline int __must_check kref_get_unless_zero(struct kref *kref)
 {
 	return refcount_inc_not_zero(&kref->refcount);

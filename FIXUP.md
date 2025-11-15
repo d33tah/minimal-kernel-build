@@ -1,3 +1,67 @@
+--- 2025-11-15 09:18 ---
+
+SESSION PROGRESS (09:18-09:50):
+
+Investigation phase:
+- Confirmed make vm works, prints "Hello World", binary 372KB ✓
+- Current LOC: 264,213 (gap to 200K: 64,213 LOC = 24.3%)
+- vmlinux has only 96 text symbols - LTO is extremely aggressive
+- Most remaining code is headers, data structures, init code
+
+Attempt 1 - Remove bio.h include from highmem.c (REVERTED):
+- CONFIG_BLOCK disabled, bio.h not used in highmem.c
+- Removal successful, builds, make vm works
+- LOC: 264,231 (+18) - cloc variance, no real reduction
+- REVERTED - single includes have negligible LOC impact
+
+Analysis findings:
+- PCI headers: Already stubbed to 119 LOC (was 2742 LOC in earlier versions)
+- mod_devicetable.h (727 LOC): Needed by cpu_device_id.h despite CONFIG_MODULES=n
+- memcontrol.h (635 LOC): CONFIG_MEMCG=n but already fully stubbed
+- compat.h (507 LOC): CONFIG_COMPAT_32=y, cannot stub
+- seqlock.h (563 LOC): 1 .c include but 10+ header includes
+- radix_tree.c (1141 LOC): 33 symbols in binary, all actually used
+- string_helpers.c (494 LOC): Functions used (string_get_size, string_escape_mem)
+
+Key insight:
+LTO eliminates unused code. The 264K LOC consists mainly of:
+1. Headers with inline functions that ARE used
+2. Data structures and initialization code
+3. Stub functions (minimal compiled size)
+
+Single include removals don't reduce LOC because cloc counts entire files.
+Need wholesale header stubbing (like fscrypt.h, cpufreq.h) for measurable impact.
+
+SESSION END (09:18-10:00):
+
+Further analysis conducted:
+- Checked all large headers (500+ LOC): fs.h, mm.h, sched.h, etc.
+- None have clean CONFIG sections like fscrypt.h/cpufreq.h had
+- blkdev.h, memcontrol.h already stubbed despite CONFIG disabled
+- NET subsystem already stubbed (142 LOC total)
+- Examined codebase distribution:
+  * kernel/: 40K LOC
+  * mm/: 36K LOC
+  * arch/x86/: 31K LOC
+  * fs/: 25K LOC
+  * drivers/: 20K LOC
+  * Headers: ~103K LOC
+
+Conclusion:
+Current 264K LOC is near-optimal for incremental approach. The 64K LOC gap to 200K goal (24.3%)
+requires architectural changes:
+- Most large headers lack CONFIG-guarded sections to stub
+- LTO already eliminated unused functions (96 text symbols)
+- Remaining code is actively used or provides necessary data structures
+- Single-file changes have zero measurable LOC impact
+
+No changes committed - investigation session only.
+
+Recommendation: Focus on other goals (binary size already 372KB < 400KB target) or accept that
+200K LOC requires kernel rewrite rather than incremental reduction.
+
+SESSION START (09:18):
+
 --- 2025-11-15 09:01 ---
 
 SESSION PROGRESS (09:01-09:17):

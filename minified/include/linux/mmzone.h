@@ -376,11 +376,6 @@ static inline unsigned long zone_managed_pages(struct zone *zone)
 	return (unsigned long)atomic_long_read(&zone->managed_pages);
 }
 
-static inline unsigned long zone_cma_pages(struct zone *zone)
-{
-	return 0;
-}
-
 static inline unsigned long zone_end_pfn(const struct zone *zone)
 {
 	return zone->zone_start_pfn + zone->spanned_pages;
@@ -538,15 +533,10 @@ static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec)
 
 static inline int local_memory_node(int node_id) { return node_id; };
 
- 
+
 #define zone_idx(zone)		((zone) - (zone)->zone_pgdat->node_zones)
 
-static inline bool zone_is_zone_device(struct zone *zone)
-{
-	return false;
-}
 
- 
 static inline bool managed_zone(struct zone *zone)
 {
 	return zone_managed_pages(zone);

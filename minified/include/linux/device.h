@@ -449,11 +449,6 @@ static inline void set_dev_node(struct device *dev, int node)
 {
 }
 
-static inline struct irq_domain *dev_get_msi_domain(const struct device *dev)
-{
-	return NULL;
-}
-
 static inline void dev_set_msi_domain(struct device *dev, struct irq_domain *d)
 {
 }
@@ -513,10 +508,6 @@ static inline bool device_pm_not_required(struct device *dev)
 static inline void device_set_pm_not_required(struct device *dev)
 {
 	dev->power.no_pm = true;
-}
-
-static inline void dev_pm_syscore_device(struct device *dev, bool val)
-{
 }
 
 static inline void dev_pm_set_driver_flags(struct device *dev, u32 flags)

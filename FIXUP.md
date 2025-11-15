@@ -14,6 +14,36 @@ Strategy:
 Continue systematic reduction. Headers are 96,432 LOC (40.7% of total) - still the biggest opportunity.
 Will search for more unused inline functions, CONFIG-disabled headers, and large subsystems.
 
+Attempt 1 (13:30): Stub cpuhotplug.h (SUCCESS):
+- cpuhotplug.h: 345 -> 165 LOC (181 LOC saved)
+- Massive enum with 200+ CPU hotplug states reduced to only 10 actually used
+- CONFIG_HOTPLUG_CPU functionality not used in minimal kernel
+- Build: PASSES ✓, make vm: PASSES ✓, prints "Hello World" ✓
+- Binary: 372KB (unchanged)
+- Committed and pushed: a2707c6
+
+Investigation (13:35-13:40):
+Agent found candidates but many heavily used:
+- syscalls.h (300 LOC): 60 files include it - too heavily used
+- ptrace.h (280 LOC): 48 files include it - too heavily used
+- scatterlist.h (307 LOC): 5 files, but complex inline functions likely all used
+Need different approach - look for truly unused code or large removable sections.
+
+Attempt 2 (13:42): Remove unused inline functions (SUCCESS):
+- Removed 4 unused inline functions from headers (15 LOC saved)
+- zone_cma_pages() from mmzone.h (4 LOC) - CONFIG_CMA disabled
+- zone_is_zone_device() from mmzone.h (4 LOC) - CONFIG_ZONE_DEVICE disabled
+- dev_get_msi_domain() from device.h (4 LOC) - MSI disabled
+- dev_pm_syscore_device() from device.h (3 LOC) - empty stub
+- Build: PASSES ✓, make vm: PASSES ✓, prints "Hello World" ✓
+- Binary: 372KB (unchanged)
+- Note: Agent claimed 56 LOC removable but most were actually used (verified by build failure)
+
+Current status after Attempt 2:
+- Total LOC saved this session: 196 LOC (181 from cpuhotplug.h + 15 from unused functions)
+- Estimated LOC: ~236,460 (down from 236,656 at session start)
+- Gap to 200K goal: ~36,460 LOC (15.6% reduction needed)
+
 --- 2025-11-15 12:47 ---
 
 SESSION START (12:47):

@@ -330,20 +330,6 @@ extern void
 __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 		  const char *name);
 
-static inline void
-irq_set_handler(unsigned int irq, irq_flow_handler_t handle)
-{
-	__irq_set_handler(irq, handle, 0, NULL);
-}
-
- 
-static inline void
-irq_set_chained_handler(unsigned int irq, irq_flow_handler_t handle)
-{
-	__irq_set_handler(irq, handle, 1, NULL);
-}
-
- 
 void
 irq_set_chained_handler_and_data(unsigned int irq, irq_flow_handler_t handle,
 				 void *data);
@@ -353,11 +339,6 @@ void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set);
 static inline void irq_set_status_flags(unsigned int irq, unsigned long set)
 {
 	irq_modify_status(irq, 0, set);
-}
-
-static inline void irq_clear_status_flags(unsigned int irq, unsigned long clr)
-{
-	irq_modify_status(irq, clr, 0);
 }
 
 static inline void irq_set_percpu_devid_flags(unsigned int irq)
@@ -377,48 +358,9 @@ extern int irq_set_msi_desc_off(unsigned int irq_base, unsigned int irq_offset,
 				struct msi_desc *entry);
 extern struct irq_data *irq_get_irq_data(unsigned int irq);
 
-static inline struct irq_chip *irq_get_chip(unsigned int irq)
-{
-	struct irq_data *d = irq_get_irq_data(irq);
-	return d ? d->chip : NULL;
-}
-
 static inline struct irq_chip *irq_data_get_irq_chip(struct irq_data *d)
 {
 	return d->chip;
-}
-
-static inline void *irq_get_chip_data(unsigned int irq)
-{
-	struct irq_data *d = irq_get_irq_data(irq);
-	return d ? d->chip_data : NULL;
-}
-
-static inline void *irq_data_get_irq_chip_data(struct irq_data *d)
-{
-	return d->chip_data;
-}
-
-static inline void *irq_get_handler_data(unsigned int irq)
-{
-	struct irq_data *d = irq_get_irq_data(irq);
-	return d ? d->common->handler_data : NULL;
-}
-
-static inline void *irq_data_get_irq_handler_data(struct irq_data *d)
-{
-	return d->common->handler_data;
-}
-
-static inline struct msi_desc *irq_get_msi_desc(unsigned int irq)
-{
-	struct irq_data *d = irq_get_irq_data(irq);
-	return d ? d->common->msi_desc : NULL;
-}
-
-static inline struct msi_desc *irq_data_get_msi_desc(struct irq_data *d)
-{
-	return d->common->msi_desc;
 }
 
 static inline int irq_common_data_get_node(struct irq_common_data *d)
@@ -426,30 +368,11 @@ static inline int irq_common_data_get_node(struct irq_common_data *d)
 	return 0;
 }
 
-static inline struct cpumask *irq_get_affinity_mask(int irq)
-{
-	struct irq_data *d = irq_get_irq_data(irq);
-
-	return d ? d->common->affinity : NULL;
-}
-
 static inline struct cpumask *irq_data_get_affinity_mask(struct irq_data *d)
 {
 	return d->common->affinity;
 }
 
-static inline
-struct cpumask *irq_data_get_effective_affinity_mask(struct irq_data *d)
-{
-	return d->common->affinity;
-}
-
-static inline struct cpumask *irq_get_effective_affinity_mask(unsigned int irq)
-{
-	struct irq_data *d = irq_get_irq_data(irq);
-
-	return d ? irq_data_get_effective_affinity_mask(d) : NULL;
-}
 
 unsigned int arch_dynirq_lower_bound(unsigned int from);
 
@@ -606,20 +529,10 @@ int __irq_alloc_domain_generic_chips(struct irq_domain *d, int irqs_per_chip,
 					 handler, clr, set, flags);	\
 })
 
-static inline void irq_free_generic_chip(struct irq_chip_generic *gc)
-{
-	kfree(gc);
-}
-
-static inline struct irq_chip_type *irq_data_get_chip_type(struct irq_data *d)
-{
-	return container_of(d->chip, struct irq_chip_type, chip);
-}
 
 #define IRQ_MSK(n) (u32)((n) < 32 ? ((1 << (n)) - 1) : UINT_MAX)
 
-static inline void irq_gc_lock(struct irq_chip_generic *gc) { }
- 
+
 #define irq_gc_lock_irqsave(gc, flags)	\
 	raw_spin_lock_irqsave(&(gc)->lock, flags)
 

@@ -1,3 +1,65 @@
+--- 2025-11-15 08:41 ---
+
+SESSION PROGRESS (08:41-09:00):
+
+Attempt 1 - Remove redundant hyperv-tlfs.h include (FAILED):
+- Removed #include <asm/hyperv-tlfs.h> from arch/x86/mm/pat/set_memory.c
+- It's already included transitively through mshyperv.h
+- CONFIG_HYPERVISOR_GUEST=n, functions already stubbed
+- Build: PASSES ✓, make vm: PASSES ✓, Hello World: PRINTS ✓
+- LOC impact: 254,989 (only ~15 LOC saved - negligible)
+- Reverted change - not worth the effort
+
+Investigation findings:
+- hyperv-tlfs.h (704 LOC) cannot be easily stubbed because:
+  - mshyperv.h uses many types from it (hv_ghcb, hv_guest_mapping_flush_list, hv_vp_assist_page)
+  - Would require moving all type definitions or extensive refactoring
+  - Complex dependency chain between arch-specific and generic headers
+- audit.h (350 LOC): CONFIG_AUDIT disabled, but 19 files include it, 20+ functions called
+- mod_devicetable.h (727 LOC): CONFIG_MODULES=n, but used by scripts and core headers (cpu_device_id.h)
+- socket.h (407 LOC): CONFIG_NET=n, 0 .c files include it directly
+- Single include removals have minimal LOC impact (~15 LOC)
+
+Key insight:
+The successful fscrypt.h stubbing (486 LOC saved, ~7,500 total) worked because:
+1. CONFIG_FS_ENCRYPTION was disabled
+2. Only 2 functions actually used
+3. Clean separation - could replace entire file with stubs
+4. No complex type dependencies in other headers
+
+Most large headers (bio.h, audit.h, mod_devicetable.h, hyperv-tlfs.h) have:
+- Inline functions that can't be stubbed without affecting callers
+- Types/structs used by other headers
+- Complex dependency chains
+
+Remaining opportunities:
+- Look for headers included in few files that might be removable entirely
+- Try reducing large .c files by stubbing unused functions
+- Consider simplifying VT/TTY code (3600+ LOC)
+- Check for other CONFIG-disabled features with clean boundaries
+
+No code changes committed this session - documentation only.
+
+SESSION START (08:41):
+
+Initial status:
+- make vm: PASSES ✓
+- Hello World: PRINTS ✓
+- Binary: 372KB (under 400KB goal ✓)
+- Total LOC: 254,974 (down from 264,051)
+- Gap to 200K goal: 54,974 LOC (21.6% reduction needed)
+
+Major improvement: ~9K LOC reduction since last session!
+This appears to be from cleanup/optimization rather than active reduction.
+
+Next targets to investigate:
+1. Large headers that might be stubbable like fscrypt.h was
+2. TTY/VT subsystem (vt.c: 3631 LOC)
+3. Signal handling (signal.c: 3099 LOC)
+4. lib/ files (iov_iter.c, bitmap.c, xarray.c)
+
+Strategy: Continue looking for CONFIG-disabled features that can be aggressively stubbed.
+
 --- 2025-11-15 08:24 ---
 
 SESSION PROGRESS (08:24-08:42):

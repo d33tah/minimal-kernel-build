@@ -60,15 +60,6 @@ static inline struct dax_device *alloc_dax(void *private,
 	 
 	return NULL;
 }
-static inline void put_dax(struct dax_device *dax_dev)
-{
-}
-static inline void kill_dax(struct dax_device *dax_dev)
-{
-}
-static inline void dax_write_cache(struct dax_device *dax_dev, bool wc)
-{
-}
 static inline bool dax_write_cache_enabled(struct dax_device *dax_dev)
 {
 	return false;
@@ -77,18 +68,10 @@ static inline bool dax_synchronous(struct dax_device *dax_dev)
 {
 	return true;
 }
-static inline void set_dax_synchronous(struct dax_device *dax_dev)
-{
-}
 static inline bool daxdev_mapping_supported(struct vm_area_struct *vma,
 				struct dax_device *dax_dev)
 {
 	return !(vma->vm_flags & VM_SYNC);
-}
-static inline size_t dax_recovery_write(struct dax_device *dax_dev,
-		pgoff_t pgoff, void *addr, size_t bytes, struct iov_iter *i)
-{
-	return 0;
 }
 #endif
 

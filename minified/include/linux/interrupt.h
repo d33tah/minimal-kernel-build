@@ -104,13 +104,6 @@ extern int __must_check
 request_nmi(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	    const char *name, void *dev);
 
-static inline int __must_check
-request_percpu_irq(unsigned int irq, irq_handler_t handler,
-		   const char *devname, void __percpu *percpu_dev_id)
-{
-	return __request_percpu_irq(irq, handler, 0,
-				    devname, percpu_dev_id);
-}
 
 extern int __must_check
 request_percpu_nmi(unsigned int irq, irq_handler_t handler,
@@ -130,13 +123,6 @@ devm_request_threaded_irq(struct device *dev, unsigned int irq,
 			  unsigned long irqflags, const char *devname,
 			  void *dev_id);
 
-static inline int __must_check
-devm_request_irq(struct device *dev, unsigned int irq, irq_handler_t handler,
-		 unsigned long irqflags, const char *devname, void *dev_id)
-{
-	return devm_request_threaded_irq(dev, irq, handler, NULL, irqflags,
-					 devname, dev_id);
-}
 
 extern int __must_check
 devm_request_any_context_irq(struct device *dev, unsigned int irq,
@@ -202,34 +188,9 @@ static inline int irq_set_affinity(unsigned int irq, const struct cpumask *m)
 	return -EINVAL;
 }
 
-static inline int irq_force_affinity(unsigned int irq, const struct cpumask *cpumask)
-{
-	return 0;
-}
-
 static inline int irq_can_set_affinity(unsigned int irq)
 {
 	return 0;
-}
-
-static inline int irq_select_affinity(unsigned int irq)  { return 0; }
-
-static inline int irq_update_affinity_hint(unsigned int irq,
-					   const struct cpumask *m)
-{
-	return -EINVAL;
-}
-
-static inline int irq_set_affinity_and_hint(unsigned int irq,
-					    const struct cpumask *m)
-{
-	return -EINVAL;
-}
-
-static inline int irq_set_affinity_hint(unsigned int irq,
-					const struct cpumask *m)
-{
-	return -EINVAL;
 }
 
 static inline int irq_update_affinity_desc(unsigned int irq,
@@ -238,11 +199,6 @@ static inline int irq_update_affinity_desc(unsigned int irq,
 	return -EINVAL;
 }
 
-static inline int
-irq_set_affinity_notifier(unsigned int irq, struct irq_affinity_notify *notify)
-{
-	return 0;
-}
 
 static inline struct irq_affinity_desc *
 irq_create_affinity_masks(unsigned int nvec, struct irq_affinity *affd)
@@ -258,44 +214,10 @@ irq_calc_affinity_vectors(unsigned int minvec, unsigned int maxvec,
 }
 
 
- 
-static inline void disable_irq_nosync_lockdep(unsigned int irq)
-{
-	disable_irq_nosync(irq);
-}
 
-static inline void disable_irq_nosync_lockdep_irqsave(unsigned int irq, unsigned long *flags)
-{
-	disable_irq_nosync(irq);
-}
 
-static inline void disable_irq_lockdep(unsigned int irq)
-{
-	disable_irq(irq);
-}
-
-static inline void enable_irq_lockdep(unsigned int irq)
-{
-	enable_irq(irq);
-}
-
-static inline void enable_irq_lockdep_irqrestore(unsigned int irq, unsigned long *flags)
-{
-	enable_irq(irq);
-}
-
- 
 extern int irq_set_irq_wake(unsigned int irq, unsigned int on);
 
-static inline int enable_irq_wake(unsigned int irq)
-{
-	return irq_set_irq_wake(irq, 1);
-}
-
-static inline int disable_irq_wake(unsigned int irq)
-{
-	return irq_set_irq_wake(irq, 0);
-}
 
  
 enum irqchip_irq_state {
@@ -364,11 +286,6 @@ struct softirq_action
 asmlinkage void do_softirq(void);
 asmlinkage void __do_softirq(void);
 
-static inline void do_softirq_post_smp_call_flush(unsigned int unused)
-{
-	do_softirq();
-}
-
 extern void open_softirq(int nr, void (*action)(struct softirq_action *));
 extern void softirq_init(void);
 extern void __raise_softirq_irqoff(unsigned int nr);
@@ -377,11 +294,6 @@ extern void raise_softirq_irqoff(unsigned int nr);
 extern void raise_softirq(unsigned int nr);
 
 DECLARE_PER_CPU(struct task_struct *, ksoftirqd);
-
-static inline struct task_struct *this_cpu_ksoftirqd(void)
-{
-	return this_cpu_read(ksoftirqd);
-}
 
  
 
@@ -436,7 +348,6 @@ enum
 static inline int tasklet_trylock(struct tasklet_struct *t) { return 1; }
 static inline void tasklet_unlock(struct tasklet_struct *t) { }
 static inline void tasklet_unlock_wait(struct tasklet_struct *t) { }
-static inline void tasklet_unlock_spin_wait(struct tasklet_struct *t) { }
 
 extern void __tasklet_schedule(struct tasklet_struct *t);
 
@@ -448,38 +359,6 @@ static inline void tasklet_schedule(struct tasklet_struct *t)
 
 extern void __tasklet_hi_schedule(struct tasklet_struct *t);
 
-static inline void tasklet_hi_schedule(struct tasklet_struct *t)
-{
-	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
-		__tasklet_hi_schedule(t);
-}
-
-static inline void tasklet_disable_nosync(struct tasklet_struct *t)
-{
-	atomic_inc(&t->count);
-	smp_mb__after_atomic();
-}
-
- 
-static inline void tasklet_disable_in_atomic(struct tasklet_struct *t)
-{
-	tasklet_disable_nosync(t);
-	tasklet_unlock_spin_wait(t);
-	smp_mb();
-}
-
-static inline void tasklet_disable(struct tasklet_struct *t)
-{
-	tasklet_disable_nosync(t);
-	tasklet_unlock_wait(t);
-	smp_mb();
-}
-
-static inline void tasklet_enable(struct tasklet_struct *t)
-{
-	smp_mb__before_atomic();
-	atomic_dec(&t->count);
-}
 
 extern void tasklet_kill(struct tasklet_struct *t);
 extern void tasklet_init(struct tasklet_struct *t,

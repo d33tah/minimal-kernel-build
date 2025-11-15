@@ -31,14 +31,25 @@ Attempt 2 (12:41): Stub dev_printk.h (SUCCESS):
 - Had to make dev_WARN_ONCE return (0) instead of do{}while(0) for use in if statements
 - Build: PASSES ✓, make vm: PASSES ✓, prints "Hello World" ✓
 - Binary: 372KB (unchanged)
-- LOC saved: ~154 LOC
+- LOC saved: ~112 LOC (actual)
 
-Current status after Attempt 2:
+Current status after Attempt 2 (12:50):
 - make vm: PASSES ✓, prints "Hello World" ✓
 - Binary: 372KB (unchanged)
-- Total LOC: ~236,606 (estimated)
-- Gap to 200K goal: ~36,606 LOC (15.4% reduction needed)
-- Progress this session: 237 LOC saved (83 + 154)
+- Total LOC: 236,648 (confirmed by cloc after mrproper)
+- Gap to 200K goal: 36,648 LOC (15.5% reduction needed)
+- Progress this session: 195 LOC saved (bootconfig.h: 83, dev_printk.h: 112)
+
+Investigation (12:50-13:00):
+Searched for more reduction candidates. Analyzed top headers:
+- kernfs.h (350 LOC): SYSFS enabled, actually used - cannot reduce
+- find.h (280 LOC): Only in bitmap.h, core bit ops - risky
+- socket.h (407 LOC): CONFIG_NET disabled, but 5 header dependencies - complex
+- blk_types.h (404 LOC): CONFIG_BLOCK disabled, 3 headers, complex types - complex
+- page_ref.h (258 LOC): Core MM infrastructure - cannot reduce
+- compiler_types.h (291 LOC): Core compiler attributes - cannot reduce
+
+Continuing investigation for CONFIG-disabled subsystems or simpler wins.
 
 --- 2025-11-15 11:56 ---
 

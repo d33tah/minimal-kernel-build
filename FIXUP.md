@@ -12,7 +12,7 @@ Strategy:
 Continue systematic removal of unused inline functions from large headers.
 Focus on: device.h, interrupt.h, irq.h, dcache.h, bitmap.h.
 
-Work completed (17:22-17:41):
+Work completed (17:22-17:50):
 
 1. device.h cleanup (17:22-17:32):
    - Removed 15 unused inline functions out of 18 identified
@@ -42,10 +42,26 @@ Work completed (17:22-17:41):
    - Commit: 19fb81d
    - Binary: 372KB (unchanged) ✓
 
-Total session progress: 210 LOC saved (89 + 121)
-Remaining gap to 200K goal: ~49,384 LOC (after next cloc measurement)
+3. irq.h cleanup (17:41-17:50):
+   - Removed 13 unused inline functions out of 20 identified
+   - 668 LOC → 581 LOC (87 LOC reduction)
+   - Removed: irq_set_handler, irq_set_chained_handler, irq_clear_status_flags,
+     irq_get_chip, irq_get_chip_data, irq_data_get_irq_chip_data,
+     irq_get_handler_data, irq_data_get_irq_handler_data,
+     irq_get_msi_desc, irq_data_get_msi_desc, irq_get_affinity_mask,
+     irq_data_get_effective_affinity_mask, irq_get_effective_affinity_mask,
+     irq_free_generic_chip, irq_data_get_chip_type, irq_gc_lock
+   - Kept: irqd_set_activated, irqd_clr_activated (used by kernel/irq/internals.h)
+   - Kept: irq_common_data_get_node (used by kernel/irq/internals.h)
+   - Kept: irq_data_get_irq_chip (used by kernel/irq/manage.c)
+   - Kept: irq_set_status_flags (used by irq_set_percpu_devid_flags)
+   - Commit: 645035f
+   - Binary: 372KB (unchanged) ✓
 
-Next targets: irq.h (668 LOC, 19 unused), dcache.h (463 LOC, 18 unused), bitmap.h (401 LOC, 17 unused)
+Total session progress: 297 LOC saved (89 + 121 + 87)
+Estimated remaining gap to 200K goal: ~49,297 LOC
+
+Next targets: dcache.h (463 LOC, 18 unused), bitmap.h (401 LOC, 17 unused), fs.h (2192 LOC, 17 unused)
 
 --- 2025-11-15 16:49 ---
 

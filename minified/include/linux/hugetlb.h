@@ -37,11 +37,6 @@ static inline unsigned long hugetlb_total_pages(void)
 	return 0;
 }
 
-static inline struct address_space *hugetlb_page_mapping_lock_write(
-							struct page *hpage)
-{
-	return NULL;
-}
 
 static inline int huge_pmd_unshare(struct mm_struct *mm,
 					struct vm_area_struct *vma,
@@ -91,18 +86,6 @@ static inline int move_hugetlb_page_tables(struct vm_area_struct *vma,
 	return 0;
 }
 
-static inline void hugetlb_report_meminfo(struct seq_file *m)
-{
-}
-
-static inline int hugetlb_report_node_meminfo(char *buf, int len, int nid)
-{
-	return 0;
-}
-
-static inline void hugetlb_show_meminfo(void)
-{
-}
 
 static inline struct page *follow_huge_pd(struct vm_area_struct *vma,
 				unsigned long address, hugepd_t hpd, int flags,
@@ -129,11 +112,6 @@ static inline struct page *follow_huge_pgd(struct mm_struct *mm,
 	return NULL;
 }
 
-static inline int prepare_hugepage_range(struct file *file,
-				unsigned long addr, unsigned long len)
-{
-	return -EINVAL;
-}
 
 static inline int pmd_huge(pmd_t pmd)
 {
@@ -165,29 +143,6 @@ static inline pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr,
 	return NULL;
 }
 
-static inline bool isolate_huge_page(struct page *page, struct list_head *list)
-{
-	return false;
-}
-
-static inline int get_hwpoison_huge_page(struct page *page, bool *hugetlb)
-{
-	return 0;
-}
-
-static inline int get_huge_page_for_hwpoison(unsigned long pfn, int flags)
-{
-	return 0;
-}
-
-static inline void putback_active_hugepage(struct page *page)
-{
-}
-
-static inline void move_hugetlb_state(struct page *oldpage,
-					struct page *newpage, int reason)
-{
-}
 
 static inline unsigned long hugetlb_change_protection(
 			struct vm_area_struct *vma, unsigned long address,
@@ -213,7 +168,6 @@ static inline vm_fault_t hugetlb_fault(struct mm_struct *mm,
 	return 0;
 }
 
-static inline void hugetlb_unshare_all_pmds(struct vm_area_struct *vma) { }
 
  
 #ifndef pgd_huge
@@ -249,10 +203,6 @@ hugetlb_file_setup(const char *name, size_t size, vm_flags_t acctflag,
 	return ERR_PTR(-ENOSYS);
 }
 
-static inline struct hstate *hstate_inode(struct inode *i)
-{
-	return NULL;
-}
 
 #ifdef HAVE_ARCH_HUGETLB_UNMAPPED_AREA
 unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
@@ -302,43 +252,6 @@ HPAGEFLAG(VmemmapOptimized, vmemmap_optimized)
 
 struct hstate {};
 
-static inline struct hugepage_subpool *hugetlb_page_subpool(struct page *hpage)
-{
-	return NULL;
-}
-
-static inline int isolate_or_dissolve_huge_page(struct page *page,
-						struct list_head *list)
-{
-	return -ENOMEM;
-}
-
-static inline struct page *alloc_huge_page(struct vm_area_struct *vma,
-					   unsigned long addr,
-					   int avoid_reserve)
-{
-	return NULL;
-}
-
-static inline struct page *
-alloc_huge_page_nodemask(struct hstate *h, int preferred_nid,
-			nodemask_t *nmask, gfp_t gfp_mask)
-{
-	return NULL;
-}
-
-static inline struct page *alloc_huge_page_vma(struct hstate *h,
-					       struct vm_area_struct *vma,
-					       unsigned long address)
-{
-	return NULL;
-}
-
-static inline int __alloc_bootmem_huge_page(struct hstate *h)
-{
-	return 0;
-}
-
 static inline struct hstate *hstate_file(struct file *f)
 {
 	return NULL;
@@ -354,15 +267,6 @@ static inline struct hstate *hstate_vma(struct vm_area_struct *vma)
 	return NULL;
 }
 
-static inline struct hstate *page_hstate(struct page *page)
-{
-	return NULL;
-}
-
-static inline struct hstate *size_to_hstate(unsigned long size)
-{
-	return NULL;
-}
 
 static inline unsigned long huge_page_size(struct hstate *h)
 {
@@ -374,75 +278,15 @@ static inline unsigned long huge_page_mask(struct hstate *h)
 	return PAGE_MASK;
 }
 
-static inline unsigned long vma_kernel_pagesize(struct vm_area_struct *vma)
-{
-	return PAGE_SIZE;
-}
 
 static inline unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
 {
 	return PAGE_SIZE;
 }
 
-static inline unsigned int huge_page_order(struct hstate *h)
-{
-	return 0;
-}
-
 static inline unsigned int huge_page_shift(struct hstate *h)
 {
 	return PAGE_SHIFT;
-}
-
-static inline bool hstate_is_gigantic(struct hstate *h)
-{
-	return false;
-}
-
-static inline unsigned int pages_per_huge_page(struct hstate *h)
-{
-	return 1;
-}
-
-static inline unsigned hstate_index_to_shift(unsigned index)
-{
-	return 0;
-}
-
-static inline int hstate_index(struct hstate *h)
-{
-	return 0;
-}
-
-static inline int dissolve_free_huge_page(struct page *page)
-{
-	return 0;
-}
-
-static inline int dissolve_free_huge_pages(unsigned long start_pfn,
-					   unsigned long end_pfn)
-{
-	return 0;
-}
-
-static inline bool hugepage_migration_supported(struct hstate *h)
-{
-	return false;
-}
-
-static inline bool hugepage_movable_supported(struct hstate *h)
-{
-	return false;
-}
-
-static inline gfp_t htlb_alloc_mask(struct hstate *h)
-{
-	return 0;
-}
-
-static inline gfp_t htlb_modify_alloc_mask(struct hstate *h, gfp_t gfp_mask)
-{
-	return 0;
 }
 
 static inline spinlock_t *huge_pte_lockptr(struct hstate *h,
@@ -455,9 +299,6 @@ static inline void hugetlb_count_init(struct mm_struct *mm)
 {
 }
 
-static inline void hugetlb_report_usage(struct seq_file *f, struct mm_struct *m)
-{
-}
 
 static inline void hugetlb_count_sub(long l, struct mm_struct *mm)
 {
@@ -479,20 +320,7 @@ static inline void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
 {
 }
 
-static inline spinlock_t *huge_pte_lock(struct hstate *h,
-					struct mm_struct *mm, pte_t *pte)
-{
-	spinlock_t *ptl;
-
-	ptl = huge_pte_lockptr(h, mm, pte);
-	spin_lock(ptl);
-	return ptl;
-}
-
 static inline __init void hugetlb_cma_reserve(int order)
-{
-}
-static inline __init void hugetlb_cma_check(void)
 {
 }
 

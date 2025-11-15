@@ -12,6 +12,18 @@ Strategy:
 Previous session identified unused functions in sched.h (10 funcs, ~60 LOC) and pgtable.h (16 funcs, ~91 LOC).
 Will start by removing these, then continue with other large headers.
 
+Work completed (18:20-18:32):
+
+1. sched.h cleanup (18:20-18:32):
+   - Removed 10 unused inline functions identified by previous session
+   - 1145 LOC → 1071 LOC (74 LOC reduction)
+   - Removed: scheduler_ipi, preempt_model_full, preempt_model_rt, is_percpu_thread,
+     task_index_to_char, task_state_index, __task_state_index, task_ppid_nr_ns,
+     task_pgrp_nr_ns, pid_alive, plus TASK_REPORT defines
+   - All verified as unused by grep searches
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
+
 --- 2025-11-15 17:52 ---
 
 SESSION START (17:52):

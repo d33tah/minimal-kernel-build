@@ -681,16 +681,6 @@ static inline pid_t task_tgid_nr(struct task_struct *tsk)
 	return tsk->tgid;
 }
 
- 
-static inline int pid_alive(const struct task_struct *p)
-{
-	return p->thread_pid != NULL;
-}
-
-static inline pid_t task_pgrp_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
-{
-	return __task_pid_nr_ns(tsk, PIDTYPE_PGID, ns);
-}
 
 static inline pid_t task_tgid_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
 {
@@ -702,54 +692,7 @@ static inline pid_t task_tgid_vnr(struct task_struct *tsk)
 	return __task_pid_nr_ns(tsk, PIDTYPE_TGID, NULL);
 }
 
-static inline pid_t task_ppid_nr_ns(const struct task_struct *tsk, struct pid_namespace *ns)
-{
-	pid_t pid = 0;
 
-	rcu_read_lock();
-	if (pid_alive(tsk))
-		pid = task_tgid_nr_ns(rcu_dereference(tsk->real_parent), ns);
-	rcu_read_unlock();
-
-	return pid;
-}
-
- 
-#define TASK_REPORT_IDLE	(TASK_REPORT + 1)
-#define TASK_REPORT_MAX		(TASK_REPORT_IDLE << 1)
-
-static inline unsigned int __task_state_index(unsigned int tsk_state,
-					      unsigned int tsk_exit_state)
-{
-	unsigned int state = (tsk_state | tsk_exit_state) & TASK_REPORT;
-
-	BUILD_BUG_ON_NOT_POWER_OF_2(TASK_REPORT_MAX);
-
-	if (tsk_state == TASK_IDLE)
-		state = TASK_REPORT_IDLE;
-
-	 
-	if (tsk_state == TASK_RTLOCK_WAIT)
-		state = TASK_UNINTERRUPTIBLE;
-
-	return fls(state);
-}
-
-static inline unsigned int task_state_index(struct task_struct *tsk)
-{
-	return __task_state_index(READ_ONCE(tsk->__state), tsk->exit_state);
-}
-
-static inline char task_index_to_char(unsigned int state)
-{
-	static const char state_char[] = "RSDTtXZPI";
-
-	BUILD_BUG_ON(1 + ilog2(TASK_REPORT_MAX) != sizeof(state_char) - 1);
-
-	return state_char[state];
-}
-
- 
 static inline int is_global_init(struct task_struct *tsk)
 {
 	return task_tgid_nr(tsk) == 1;
@@ -804,13 +747,8 @@ extern struct pid *cad_pid;
 #define tsk_used_math(p)			((p)->flags & PF_USED_MATH)
 #define used_math()				tsk_used_math(current)
 
-static __always_inline bool is_percpu_thread(void)
-{
-	return true;
-}
 
- 
-#define PFA_NO_NEW_PRIVS		0	 
+#define PFA_NO_NEW_PRIVS		0
 #define PFA_SPREAD_PAGE			1	 
 #define PFA_SPREAD_SLAB			2	 
 #define PFA_SPEC_SSB_DISABLE		3	 
@@ -965,7 +903,6 @@ extern char *__get_task_comm(char *to, size_t len, struct task_struct *tsk);
 	__get_task_comm(buf, sizeof(buf), tsk);		\
 })
 
-static inline void scheduler_ipi(void) { }
 static inline unsigned long wait_task_inactive(struct task_struct *p, unsigned int match_state)
 {
 	return 1;
@@ -1053,18 +990,7 @@ extern int __cond_resched_rwlock_write(rwlock_t *lock);
 	__cond_resched_rwlock_write(lock);					\
 })
 
-static inline bool preempt_model_full(void)
-{
-	return IS_ENABLED(CONFIG_PREEMPT);
-}
 
-
-static inline bool preempt_model_rt(void)
-{
-	return IS_ENABLED(CONFIG_PREEMPT_RT);
-}
-
- 
  
 static inline int spin_needbreak(spinlock_t *lock)
 {

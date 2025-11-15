@@ -1,5 +1,5 @@
- 
- 
+
+
 #ifndef _LINUX_AUDIT_H_
 #define _LINUX_AUDIT_H_
 
@@ -8,64 +8,9 @@
 
 #include <uapi/linux/audit.h>
 
-
-#define AUDIT_INO_UNSET ((unsigned long)-1)
-#define AUDIT_DEV_UNSET ((dev_t)-1)
-
-struct audit_sig_info {
-	uid_t		uid;
-	pid_t		pid;
-	char		ctx[];
-};
-
 struct audit_buffer;
 struct audit_context;
-struct inode;
-struct netlink_skb_parms;
-struct path;
-struct linux_binprm;
-struct mq_attr;
-struct mqstat;
-struct audit_watch;
-struct audit_tree;
-struct sk_buff;
-
-struct audit_krule {
-	u32			pflags;
-	u32			flags;
-	u32			listnr;
-	u32			action;
-	u32			mask[AUDIT_BITMASK_SIZE];
-	u32			buflen;  
-	u32			field_count;
-	char			*filterkey;  
-	struct audit_field	*fields;
-	struct audit_field	*arch_f;  
-	struct audit_field	*inode_f;  
-	struct audit_watch	*watch;	 
-	struct audit_tree	*tree;	 
-	struct audit_fsnotify_mark	*exe;
-	struct list_head	rlist;	 
-	struct list_head	list;	 
-	u64			prio;
-};
-
- 
-#define AUDIT_LOGINUID_LEGACY		0x1
-
-struct audit_field {
-	u32				type;
-	union {
-		u32			val;
-		kuid_t			uid;
-		kgid_t			gid;
-		struct {
-			char		*lsm_str;
-			void		*lsm_rule;
-		};
-	};
-	u32				op;
-};
+struct kern_ipc_perm;
 
 enum audit_ntp_type {
 	AUDIT_NTP_OFFSET,
@@ -75,7 +20,7 @@ enum audit_ntp_type {
 	AUDIT_NTP_TICK,
 	AUDIT_NTP_ADJUST,
 
-	AUDIT_NTP_NVALS  
+	AUDIT_NTP_NVALS
 };
 
 struct audit_ntp_data {};
@@ -103,39 +48,22 @@ enum audit_nfcfgop {
 	AUDIT_NFT_OP_INVALID,
 };
 
-extern int is_audit_feature_set(int which);
-
-extern int __init audit_register_class(int class, unsigned *list);
-extern int audit_classify_syscall(int abi, unsigned syscall);
-extern int audit_classify_arch(int arch);
- 
-extern unsigned compat_write_class[];
-extern unsigned compat_read_class[];
-extern unsigned compat_dir_class[];
-extern unsigned compat_chattr_class[];
-extern unsigned compat_signal_class[];
-
-extern int audit_classify_compat_syscall(int abi, unsigned syscall);
-
- 
-#define	AUDIT_TYPE_UNKNOWN	0	 
-#define	AUDIT_TYPE_NORMAL	1	 
-#define	AUDIT_TYPE_PARENT	2	 
-#define	AUDIT_TYPE_CHILD_DELETE 3	 
-#define	AUDIT_TYPE_CHILD_CREATE 4	 
-
- 
-#define AUDITSC_ARGS		6
-
- 
-#define AUDIT_TTY_ENABLE	BIT(0)
-#define AUDIT_TTY_LOG_PASSWD	BIT(1)
-
 struct filename;
+
+#define	AUDIT_TYPE_UNKNOWN	0
+#define	AUDIT_TYPE_NORMAL	1
+#define	AUDIT_TYPE_PARENT	2
+#define	AUDIT_TYPE_CHILD_DELETE 3
+#define	AUDIT_TYPE_CHILD_CREATE 4
+
+#define AUDIT_INODE_PARENT	1
+#define AUDIT_INODE_HIDDEN	2
+#define AUDIT_INODE_NOEVAL	4
 
 #define AUDIT_OFF	0
 #define AUDIT_ON	1
 #define AUDIT_LOCKED	2
+
 static inline __printf(4, 5)
 void audit_log(struct audit_context *ctx, gfp_t gfp_mask, int type,
 	       const char *fmt, ...)
@@ -194,12 +122,7 @@ static inline int audit_signal_info(int sig, struct task_struct *t)
 	return 0;
 }
 
-
 #define audit_is_compat(arch)  false
-
-#define AUDIT_INODE_PARENT	1	 
-#define AUDIT_INODE_HIDDEN	2	 
-#define AUDIT_INODE_NOEVAL	4	 
 
 static inline int audit_alloc(struct task_struct *task)
 {

@@ -53,6 +53,17 @@ Next steps:
 - Look for other headers with unused inline functions that can be safely removed
 - Focus on careful, one-at-a-time removals with full build testing
 
+Session outcome: 109 LOC removed across 2 headers (list.h and bitmap.h).
+All changes committed and pushed. Build clean, make vm passes, binary 372KB.
+
+Key lesson: Must check BOTH .c and .h files when verifying if functions are unused.
+Functions like bitmap_xor appeared unused in .c files but were used in other headers.
+
+Next session should:
+- Continue with safe, verified function removals from other headers
+- Consider looking at rbtree.h, workqueue.h, or other medium-sized headers
+- Remember to verify usage in both .c and .h files before removing
+
 Work in progress:
 
 --- 2025-11-15 19:30 ---

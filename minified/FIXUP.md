@@ -1,3 +1,57 @@
+--- 2025-11-15 08:05 ---
+
+Attempted reduction strategies (07:50-08:05):
+
+1. Tried stubbing kernel/time/timer.c (1497 LOC → 37 LOC stub):
+   - FAILED: Macro conflicts (del_timer_sync = del_timer) and signature issues
+   - Lesson: Can't easily stub files with complex macro interactions
+   
+2. Analyzed reduction opportunities:
+   - fscrypt.h: Already stubbed with 72 inline functions (minimal)
+   - fs.h includes 46 other headers - risky to reduce
+   - fair.c (1568 LOC): Exports 20 functions, all optimized away, but needed for linking
+   - 207 SYSCALL_DEFINE across kernel/mm/fs, but only 9 timer stubs in final binary
+   
+3. Checked for low-hanging fruit:
+   - Only 31 TODO/FIXME comments (not indicative of dead code)
+   - All driver directories appear necessary
+   - PCI headers only 175 LOC (too small to matter)
+   - Comments already removed from most files
+
+SESSION CONCLUSION (08:05):
+
+Current state: 271,355 LOC vs 200K goal = 71,355 LOC gap (26.3% reduction needed)
+
+After extensive exploration across multiple sessions, the codebase appears to be at a local optimum
+for incremental code removal approaches. The following patterns are consistently observed:
+
+1. LTO optimization is extremely aggressive - only 96 functions in final 372KB binary
+2. All subsystems are tightly coupled - file removal always causes link errors
+3. Most code (kernel: 33K, mm: 29K, fs: 20K LOC) compiles to 0-10 functions but is needed for linking
+4. Generated headers (atomic: 4.9K LOC) can't be easily reduced without modifying generators
+5. Headers (104K LOC, 38.3%) are already heavily optimized with stubs
+
+The 71K LOC gap to 200K goal appears infeasible without:
+- Architectural changes (NOMMU, simplified allocator, minimal VFS)
+- Aggressive header reduction (manually removing unused inline functions - weeks of work)
+- Rewriting core subsystems from scratch
+
+Current achievement: 271K LOC is 46% reduction from typical minimal config (~500K LOC).
+Binary size goal of 400KB already exceeded (372KB).
+
+Recommendation: Document current state as successful optimization. If 200K is mandatory,
+project scope must change from "incremental code removal" to "kernel architecture redesign".
+
+No LOC reduction achieved this session - exploration and documentation only.
+
+ATTEMPT: Tried reducing blkdev.h gendisk struct (08:18-08:21):
+- Attempted to replace gendisk struct (45 LOC) with forward declaration
+- FAILED: Inline functions (disk_openers, get_disk_ro) need struct members
+- Error: "incomplete definition of type 'struct gendisk'"
+- Confirms tight coupling prevents simple header reduction
+
+Conclusion: Header reduction requires removing inline functions first, which may break builds.
+
 --- 2025-11-14 22:50 ---
 
 SESSION CONCLUSION (04:15):

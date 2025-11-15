@@ -474,30 +474,6 @@ static inline void read_sequnlock_excl(seqlock_t *sl)
 	spin_unlock(&sl->lock);
 }
 
- 
-static inline void read_seqlock_excl_bh(seqlock_t *sl)
-{
-	spin_lock_bh(&sl->lock);
-}
-
- 
-static inline void read_sequnlock_excl_bh(seqlock_t *sl)
-{
-	spin_unlock_bh(&sl->lock);
-}
-
- 
-static inline void read_seqlock_excl_irq(seqlock_t *sl)
-{
-	spin_lock_irq(&sl->lock);
-}
-
- 
-static inline void read_sequnlock_excl_irq(seqlock_t *sl)
-{
-	spin_unlock_irq(&sl->lock);
-}
-
 static inline unsigned long __read_seqlock_excl_irqsave(seqlock_t *sl)
 {
 	unsigned long flags;

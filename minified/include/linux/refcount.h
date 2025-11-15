@@ -61,12 +61,6 @@ static inline __must_check bool __refcount_add_not_zero(int i, refcount_t *r, in
 	return old;
 }
 
- 
-static inline __must_check bool refcount_add_not_zero(int i, refcount_t *r)
-{
-	return __refcount_add_not_zero(i, r, NULL);
-}
-
 static inline void __refcount_add(int i, refcount_t *r, int *oldp)
 {
 	int old = atomic_fetch_add_relaxed(i, &r->refs);
@@ -80,18 +74,12 @@ static inline void __refcount_add(int i, refcount_t *r, int *oldp)
 		refcount_warn_saturate(r, REFCOUNT_ADD_OVF);
 }
 
- 
-static inline void refcount_add(int i, refcount_t *r)
-{
-	__refcount_add(i, r, NULL);
-}
-
 static inline __must_check bool __refcount_inc_not_zero(refcount_t *r, int *oldp)
 {
 	return __refcount_add_not_zero(1, r, oldp);
 }
 
- 
+
 static inline __must_check bool refcount_inc_not_zero(refcount_t *r)
 {
 	return __refcount_inc_not_zero(r, NULL);

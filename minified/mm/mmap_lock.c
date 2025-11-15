@@ -9,7 +9,6 @@
 #include <linux/percpu.h>
 #include <linux/rcupdate.h>
 #include <linux/smp.h>
-#include <linux/trace_events.h>
 #include <linux/local_lock.h>
 
 

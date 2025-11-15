@@ -3,7 +3,7 @@
 
 #include <linux/kernel.h>
 #include <linux/mm.h>
-#include <linux/trace_events.h>
+#include <linux/tracepoint-defs.h>
 #include <linux/memcontrol.h>
 #include <linux/migrate.h>
 #include <linux/page_owner.h>

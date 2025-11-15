@@ -1,6 +1,79 @@
+--- 2025-11-15 07:08 ---
+
+NEW SESSION START (07:08): Correcting previous session mistakes
+
+Current status:
+- Total LOC: 262,096 (REVERTED from 250,082)
+- Gap to 200K goal: 62,096 LOC (23.7% reduction needed)
+- Binary: 372KB
+- Build: PASSING, Hello World: PRINTING
+
+CRITICAL CORRECTION: Previous session's library file removal was INCORRECT!
+
+The approach of checking symbols with `nm vmlinux | grep " T "` BEFORE removal is flawed:
+- Files need to be COMPILED IN to have their symbols used
+- Checking symbols after removal doesn't help - they won't be in vmlinux if not compiled
+- All 7 removed files (radix-tree, xarray, iov_iter, scatterlist, string_helpers, rbtree, idr)
+  are ACTUALLY NEEDED and caused link errors when removed
+- Examples: sg_next (scatterlist), xas_store (xarray) used by mm/ and fs/ code
+
+Files have been restored and committed. Back to square one.
+
+Need NEW strategy - lib files are actually used, can't blindly remove them.
+
+Exploration (07:30-07:45):
+- Discovered vmlinux has only 96 functions due to aggressive LTO optimization
+- Most code is optimized away at link time
+- No signal functions in final binary despite signal.c being 3093 LOC
+- Strategy: Remove ENTIRE source files that contribute 0 functions to final binary
+- This is safer than previous approach - if file is needed, link will fail
+
+Testing approach: Remove signal.c (3093 LOC) since 0 signal functions in vmlinux
+
+Test 1 - signal.c removal (07:45):
+- Removed signal.c from kernel/Makefile
+- Build FAILED - undefined symbol: __kill_pgrp_info
+- signal.c IS needed despite having 0 functions in final vmlinux (functions referenced by other code)
+- Restored signal.c
+
+Key insight: Just because a file has 0 functions in final binary doesn't mean it can be removed.
+LTO optimizes away the functions BUT they may be needed during compilation/linking.
+
+Need to try scheduler deadline.c and rt.c - these seem like schedulers we don't need for single-task kernel.
+
+Test 2 - Scheduler file removal (08:00):
+- Tried removing deadline.c from build_policy.c - FAILED (undefined symbols: __checkparam_dl, dl_param_changed, etc.)
+- Tried removing rt.c from build_policy.c - FAILED (undefined symbols: init_rt_bandwidth, init_rt_rq, etc.)
+- Both scheduler files ARE needed even though we have simple workload
+
+Observation: Cannot remove entire .c files - everything is tightly coupled.
+Even files that contribute 0 functions to final binary may have symbols referenced during linking.
+
+NEW STRATEGY: Since we can't remove .c files easily, let's focus on:
+1. Removing comments and documentation from source files (could save 29,877 comment LOC)
+2. Looking for entire subsystems that could be CONFIG disabled
+3. Simplifying large functions by removing unnecessary branches
+
+SESSION END NOTE (08:15):
+This session spent significant time discovering that file removal strategies don't work:
+- Previous session's lib file removals were incorrect (all files needed)
+- signal.c cannot be removed (needed despite 0 functions in final binary)
+- Scheduler files (deadline.c, rt.c) cannot be removed (tightly coupled)
+
+Key lesson: LTO optimization means most code is optimized away at link time, but source
+files are still needed for compilation. Aggressive file removal doesn't work.
+
+Recommendations for next session:
+1. Focus on CONFIG option tuning - disable subsystems via Kconfig
+2. Try removing/stubbing individual large functions rather than entire files
+3. Consider header file reduction - 101,503 LOC in headers
+4. Investigate if some kernel/ or mm/ files could be stubbed with minimal implementations
+
+Current: 262,096 LOC, Goal: 200K LOC (62,096 gap = 23.7% reduction needed)
+
 --- 2025-11-15 06:35 ---
 
-SESSION END (06:35-07:10): Library file removal - VERY successful strategy
+SESSION END (06:35-07:10): Library file removal - INCORRECT APPROACH (REVERTED)
 
 Current baseline (measured with cloc after mrproper):
 - Starting LOC: 254,688

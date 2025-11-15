@@ -284,15 +284,6 @@ PAGEFLAG(Workingset, workingset, PF_HEAD)
 	TESTCLEARFLAG(Workingset, workingset, PF_HEAD)
 __PAGEFLAG(Slab, slab, PF_NO_TAIL)
 __PAGEFLAG(SlobFree, slob_free, PF_NO_TAIL)
-PAGEFLAG(Checked, checked, PF_NO_COMPOUND)	    
-
- 
-PAGEFLAG(Pinned, pinned, PF_NO_COMPOUND)
-	TESTSCFLAG(Pinned, pinned, PF_NO_COMPOUND)
-PAGEFLAG(SavePinned, savepinned, PF_NO_COMPOUND);
-PAGEFLAG(Foreign, foreign, PF_NO_COMPOUND);
-PAGEFLAG(XenRemapped, xen_remapped, PF_NO_COMPOUND)
-	TESTCLEARFLAG(XenRemapped, xen_remapped, PF_NO_COMPOUND)
 
 PAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 	__CLEARPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)

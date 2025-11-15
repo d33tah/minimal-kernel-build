@@ -353,15 +353,6 @@ static inline void bitmap_replace(unsigned long *dst,
 		__bitmap_replace(dst, old, new, mask, nbits);
 }
 
-static inline void bitmap_next_set_region(unsigned long *bitmap,
-					  unsigned int *rs, unsigned int *re,
-					  unsigned int end)
-{
-	*rs = find_next_bit(bitmap, end, *rs);
-	*re = find_next_zero_bit(bitmap, end, *rs + 1);
-}
-
- 
 #if __BITS_PER_LONG == 64
 #define BITMAP_FROM_U64(n) (n)
 #else
@@ -369,13 +360,6 @@ static inline void bitmap_next_set_region(unsigned long *bitmap,
 				((unsigned long) ((u64)(n) >> 32))
 #endif
 
- 
-static inline void bitmap_from_u64(unsigned long *dst, u64 mask)
-{
-	bitmap_from_arr64(dst, &mask, 64);
-}
-
- 
 static inline unsigned long bitmap_get_value8(const unsigned long *map,
 					      unsigned long start)
 {
@@ -386,16 +370,6 @@ static inline unsigned long bitmap_get_value8(const unsigned long *map,
 }
 
  
-static inline void bitmap_set_value8(unsigned long *map, unsigned long value,
-				     unsigned long start)
-{
-	const size_t index = BIT_WORD(start);
-	const unsigned long offset = start % BITS_PER_LONG;
-
-	map[index] &= ~(0xFFUL << offset);
-	map[index] |= value << offset;
-}
-
-#endif  
+#endif
 
 #endif  

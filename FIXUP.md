@@ -1,3 +1,67 @@
+--- 2025-11-15 03:51 ---
+
+Attempt 2 - Switch to GZIP compression (04:05-04:11):
+- Switched CONFIG_KERNEL_XZ to CONFIG_KERNEL_GZIP
+- Build succeeded
+- Binary grew from 375KB to 442KB - WORSE
+- LOC unchanged: 244,189 (compression doesn't affect source LOC)
+- Reverted to XZ
+- FAILED: Wrong approach
+
+Finding: Changing build options doesn't reduce LOC count. Need to DELETE actual source code.
+
+New strategy (04:11):
+Focus on deleting entire functions or subsystems that aren't used.
+Target: Find 44K LOC to delete from .c and .h files.
+
+Candidates for mass deletion:
+1. Scanner functions in vsprintf.c (vsscanf, sscanf) - not in final binary
+2. Entire subsystems that might be removable
+3. Large functions in big files that have minimal dependencies
+
+
+Attempt 2 - Switch to GZIP compression (04:05-04:11):
+- Switched CONFIG_KERNEL_XZ to CONFIG_KERNEL_GZIP
+- Build succeeded
+- Binary grew from 375KB to 442KB - WORSE
+- LOC unchanged: 244,189 (compression doesn't affect source LOC)
+- Reverted to XZ
+- FAILED: Wrong approach
+
+Finding: Changing build options doesn't reduce LOC count. Need to DELETE actual source code.
+
+New strategy (04:11):
+Focus on deleting entire functions or subsystems that aren't used.
+Target: Find 44K LOC to delete from .c and .h files.
+
+Candidates for mass deletion:
+1. Scanner functions in vsprintf.c (vsscanf, sscanf) - not in final binary
+2. Entire subsystems that might be removable
+3. Large functions in big files that have minimal dependencies
+
+
+SESSION (03:51-ongoing):
+
+Current status (verified):
+- make vm: PASSES ✓
+- Hello World: PRINTS ✓  
+- Binary: 375KB (meets 400KB goal ✓)
+- Total LOC: 244,189 (C: 142,330, Headers: 101,859)
+- Gap to 200K goal: 44,189 LOC (18.1% reduction needed)
+
+Strategy: Shift to large C file reduction. Header stubbing exhausted.
+
+Top candidates (largest C files):
+1. mm/page_alloc.c (5,081 LOC) - memory allocator, likely over-featured
+2. mm/memory.c (4,055 LOC) - core memory management
+3. fs/namei.c (3,853 LOC) - path resolution, complex
+4. fs/namespace.c (3,838 LOC) - mount namespace
+5. drivers/tty/vt/vt.c (3,610 LOC) - VT console, only need basic output
+6. drivers/base/core.c (3,387 LOC) - device driver core
+7. kernel/signal.c (3,093 LOC) - signal handling, init doesn't use signals
+
+Starting with vt.c - simplifying VT console code since we only print "Hello, World!"
+
 --- 2025-11-15 03:33 ---
 
 SESSION (03:33-ongoing):

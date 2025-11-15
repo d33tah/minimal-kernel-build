@@ -112,14 +112,7 @@ static inline void validate_process_creds(void)
 {
 }
 
-static inline bool cap_ambient_invariant_ok(const struct cred *cred)
-{
-	return cap_issubset(cred->cap_ambient,
-			    cap_intersect(cred->cap_permitted,
-					  cred->cap_inheritable));
-}
 
- 
 static inline struct cred *get_new_cred(struct cred *cred)
 {
 	atomic_inc(&cred->usage);

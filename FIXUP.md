@@ -1,6 +1,6 @@
---- 2025-11-15 05:17 ---
+--- 2025-11-15 05:20 ---
 
-SESSION (05:01-05:17):
+SESSION (05:01-05:20):
 
 Current status (after nmi_backtrace removal):
 - make vm: PASSES ✓
@@ -25,7 +25,20 @@ Exploration findings:
 - tools/usr/elo: 1,387 LOC (build tools, not runtime)
 - Total "false positive" LOC: ~21,318 (counted but not in kernel)
 
-Strategy: Look for more dead code in lib/ that's in lib-y but not in vmlinux.
+Further exploration (05:17-05:20):
+- Checked all lib-y and obj-y files in lib/Makefile for dead code
+- parser.c (151 LOC), random32.c (125 LOC): Both in obj-y and in vmlinux (local symbols)
+- buildid.c (34 LOC): In lib-y, 0 vmlinux matches but too small to be worth it
+- Most lib files are actively used (parser, random32, show_mem all have vmlinux refs)
+
+Conclusion: Found one piece of dead code (nmi_backtrace) and removed it (-23 LOC).
+The 63,909 LOC gap includes ~21K false positives (build tools, unbuilt xz code).
+Real runtime code gap to 200K: ~43K LOC. This requires more aggressive reduction strategies.
+
+Next session should focus on:
+1. Larger C files that can be significantly trimmed (page_alloc, memory, namei, signal)
+2. Header reduction (103,852 LOC in headers - 39% of codebase)
+3. Subsystem simplification rather than incremental file removal
 
 --- 2025-11-15 05:01 ---
 

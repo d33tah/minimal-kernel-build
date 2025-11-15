@@ -28,6 +28,53 @@ Previous sessions identified key findings:
 
 Will investigate if we can reduce large subsystems by stubbing or simplifying.
 
+Attempt 1 (09:50): Stub quota.h (SUCCESS):
+- quota.h: 439 LOC, no .c files include it directly
+- CONFIG_QUOTA is disabled
+- Only quota_info struct needed (embedded in super_block)
+- Only super.c initializes s_dquot.dqio_sem
+- Reduced from 439 to 35 lines
+- Build: PASSES ✓, make vm: PASSES ✓, prints "Hello World" ✓
+- Binary: 372KB (unchanged)
+- LOC: 243,239 -> 242,923 (316 LOC saved)
+- Committed: 7e33eb5
+
+Investigation (09:54):
+Other large header candidates checked:
+- fsnotify_backend.h: 434 LOC, 0 .c includes, but fsnotify.h includes it and uses its functions
+- trace_events.h: 781 LOC, 0 .c includes, 0 header includes, but defines many structs - complex
+- iommu.h: 500 LOC, 5 .c includes, CONFIG_IOMMU disabled, no CONFIG guards in header
+- hugetlb.h: 506 LOC, 23 .c includes, CONFIG_HUGETLB disabled, no CONFIG guards
+
+Next: Look for other CONFIG-disabled features with clean boundaries like quota.h
+
+SESSION END (09:44-09:57):
+
+Summary:
+- Successfully stubbed quota.h: 439 -> 35 LOC (404 lines removed)
+- Net LOC reduction: ~316 LOC (after cloc variance)
+- Build: PASSES ✓, make vm: PASSES ✓, prints "Hello World" ✓
+- Binary: 372KB (unchanged)
+- Committed and pushed: 7e33eb5
+
+Investigated but did not reduce:
+- fsnotify_backend.h: 434 LOC - complex, included by fsnotify.h which uses functions
+- trace_events.h: 781 LOC - defines many structs, complex dependencies
+- bio.h: 697 LOC - only included by highmem.c, CONFIG_BLOCK disabled, but previous attempts showed no LOC reduction
+- Various large .c files: LTO eliminates unused code but LOC still counts
+
+Current status:
+- LOC: ~242,950 (variance in cloc counts)
+- Gap to 200K goal: ~42,950 LOC (17.6% reduction needed)
+- Binary: 372KB (well under 400KB goal)
+- Progress this session: 316 LOC saved
+
+Next session recommendations:
+- Continue looking for CONFIG-disabled headers with clean boundaries
+- Consider attempting to reduce large subsystems (VT, scheduler, time)
+- Look for more headers like quota.h that can be stubbed to minimal structs
+- Target: Find 2-3 more quota.h-sized wins (400-500 LOC each) to make meaningful progress
+
 --- 2025-11-15 09:33 ---
 
 SESSION START (09:33):

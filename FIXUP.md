@@ -9,6 +9,40 @@ New session starting:
 
 Strategy: Continue systematic removal focusing on larger wins. Headers are too slow (~77 LOC/session). Need to identify entire subsystems or .c files to remove.
 
+Progress (00:19-00:30):
+
+1. page-flags.h cleanup - unused Xen PAGEFLAG macros (00:30):
+   - Removed from page-flags.h (9 LOC):
+     * PAGEFLAG(Checked, checked, PF_NO_COMPOUND)
+     * PAGEFLAG(Pinned, pinned, PF_NO_COMPOUND) + TESTSCFLAG
+     * PAGEFLAG(SavePinned, savepinned, PF_NO_COMPOUND)
+     * PAGEFLAG(Foreign, foreign, PF_NO_COMPOUND)
+     * PAGEFLAG(XenRemapped, xen_remapped, PF_NO_COMPOUND) + TESTCLEARFLAG
+     * Blank lines
+   - Total: 9 LOC removed
+   - Verified unused via grep in .c files
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 371KB (unchanged) ✓
+   - Committed: 9686b1d
+
+2. wait.h cleanup - more unused wait_event variants (00:34):
+   - Removed from wait.h (103 LOC):
+     * wait_event_hrtimeout + wait_event_interruptible_hrtimeout (22 LOC)
+     * wait_event_interruptible_exclusive + helper (14 LOC)
+     * wait_event_killable_exclusive + helper (14 LOC)
+     * wait_event_freezable_exclusive + helper (14 LOC)
+     * wait_event_idle_exclusive (9 LOC)
+     * wait_event_idle_timeout + helper (16 LOC)
+     * wait_event_killable_timeout + helper (14 LOC)
+   - Total: 103 LOC removed
+   - Verified unused via grep in .c files
+   - wait.h: 527 → 424 lines (19.5% reduction)
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (up 1KB - within noise) ✓
+   - Committed: 9a347be
+
+Session total: 112 LOC removed (9 + 103)
+
 --- 2025-11-15 23:58 ---
 
 New session starting:

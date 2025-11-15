@@ -150,9 +150,6 @@ struct execute_work {
 	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, TIMER_DEFERRABLE)
 
 static inline void __init_work(struct work_struct *work, int onstack) { }
-static inline void destroy_work_on_stack(struct work_struct *work) { }
-static inline void destroy_delayed_work_on_stack(struct delayed_work *work) { }
-static inline unsigned int work_static(struct work_struct *work) { return 0; }
 
  
 #define __INIT_WORK(_work, _func, _onstack)				\
@@ -393,22 +390,6 @@ static inline bool schedule_delayed_work(struct delayed_work *dwork,
 {
 	return queue_delayed_work(system_wq, dwork, delay);
 }
-
-static inline long work_on_cpu(int cpu, long (*fn)(void *), void *arg)
-{
-	return fn(arg);
-}
-static inline long work_on_cpu_safe(int cpu, long (*fn)(void *), void *arg)
-{
-	return fn(arg);
-}
-
-
-static inline int workqueue_sysfs_register(struct workqueue_struct *wq)
-{ return 0; }
-
-static inline void wq_watchdog_touch(int cpu) { }
-
 
 void __init workqueue_init_early(void);
 void __init workqueue_init(void);

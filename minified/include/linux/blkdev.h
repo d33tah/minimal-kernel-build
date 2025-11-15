@@ -433,32 +433,8 @@ blk_queue_zoned_model(struct request_queue *q)
 	return BLK_ZONED_NONE;
 }
 
-static inline bool blk_queue_is_zoned(struct request_queue *q)
-{
-	switch (blk_queue_zoned_model(q)) {
-	case BLK_ZONED_HA:
-	case BLK_ZONED_HM:
-		return true;
-	default:
-		return false;
-	}
-}
 
-static inline sector_t blk_queue_zone_sectors(struct request_queue *q)
-{
-	return blk_queue_is_zoned(q) ? q->limits.chunk_sectors : 0;
-}
 
-static inline unsigned int queue_max_open_zones(const struct request_queue *q)
-{
-	return 0;
-}
-static inline unsigned int queue_max_active_zones(const struct request_queue *q)
-{
-	return 0;
-}
-
- 
 #define BLK_DEFAULT_SG_TIMEOUT	(60 * HZ)
 #define BLK_MIN_SG_TIMEOUT	(7 * HZ)
 

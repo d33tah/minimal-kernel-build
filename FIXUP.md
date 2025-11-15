@@ -14,6 +14,21 @@ Strategy:
 Continue systematic header reduction. Headers are 98,605 LOC (41.0% of total) - still the biggest opportunity.
 Will search for more CONFIG-disabled headers and large unused headers with light usage.
 
+Investigation (12:47-13:15):
+Used Task agent to analyze header reduction opportunities. Key findings:
+- Most large headers (mmzone.h, rmap.h, page-flags.h) are already heavily stubbed
+- Headers with many inline functions (mm.h: 168 inlines, memcontrol.h: 96 inlines) are risky to stub
+- Most CONFIG-disabled features already optimized in previous sessions
+- Remaining headers either provide core functionality or have complex type dependencies
+
+Attempt 1 (13:15): Remove unused vmstat_item_print_in_thp() from mmzone.h (SUCCESS):
+- mmzone.h: 736 -> 723 LOC (13 LOC saved, function was 11 LOC + blank line)
+- Function always returns false since CONFIG_TRANSPARENT_HUGEPAGE disabled
+- Confirmed unused by grepping codebase
+- Build: PASSES ✓, make vm: PASSES ✓, prints "Hello World" ✓
+- Binary: 372KB (unchanged)
+- Committed and pushed: 2641962
+
 --- 2025-11-15 12:16 ---
 
 SESSION START (12:16):

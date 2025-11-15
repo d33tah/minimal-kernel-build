@@ -692,24 +692,6 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 #define for_each_zone_zonelist(zone, z, zlist, highidx) \
 	for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, NULL)
 
- 
-static inline bool movable_only_nodes(nodemask_t *nodes)
-{
-	struct zonelist *zonelist;
-	struct zoneref *z;
-	int nid;
-
-	if (nodes_empty(*nodes))
-		return false;
-
-	 
-	nid = first_node(*nodes);
-	zonelist = &NODE_DATA(nid)->node_zonelists[ZONELIST_FALLBACK];
-	z = first_zones_zonelist(zonelist, ZONE_NORMAL,	nodes);
-	return (!z->zone) ? true : false;
-}
-
-
 
 #define pfn_to_nid(pfn)		(0)
 

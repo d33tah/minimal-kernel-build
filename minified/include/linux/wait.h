@@ -88,12 +88,6 @@ static inline int waitqueue_active(struct wait_queue_head *wq_head)
 }
 
  
-static inline bool wq_has_single_sleeper(struct wait_queue_head *wq_head)
-{
-	return list_is_singular(&wq_head->head);
-}
-
- 
 static inline bool wq_has_sleeper(struct wait_queue_head *wq_head)
 {
 	 
@@ -130,13 +124,6 @@ __add_wait_queue_exclusive(struct wait_queue_head *wq_head, struct wait_queue_en
 static inline void __add_wait_queue_entry_tail(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
 	list_add_tail(&wq_entry->entry, &wq_head->head);
-}
-
-static inline void
-__add_wait_queue_entry_tail_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
-{
-	wq_entry->flags |= WQ_FLAG_EXCLUSIVE;
-	__add_wait_queue_entry_tail(wq_head, wq_entry);
 }
 
 static inline void
@@ -179,14 +166,6 @@ void __wake_up_pollfree(struct wait_queue_head *wq_head);
 	__wake_up_sync_key((x), TASK_INTERRUPTIBLE, poll_to_key(m))
 #define wake_up_interruptible_sync_poll_locked(x, m)				\
 	__wake_up_locked_sync_key((x), TASK_INTERRUPTIBLE, poll_to_key(m))
-
- 
-static inline void wake_up_pollfree(struct wait_queue_head *wq_head)
-{
-	 
-	if (waitqueue_active(wq_head))
-		__wake_up_pollfree(wq_head);
-}
 
 #define ___wait_cond_timeout(condition)						\
 ({										\

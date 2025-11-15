@@ -195,123 +195,17 @@ struct kernfs_fs_context {
 };
 
 
-static inline enum kernfs_node_type kernfs_type(struct kernfs_node *kn)
-{ return 0; }	 
-
-static inline void kernfs_enable_ns(struct kernfs_node *kn) { }
-
-static inline bool kernfs_ns_enabled(struct kernfs_node *kn)
-{ return false; }
-
-static inline int kernfs_name(struct kernfs_node *kn, char *buf, size_t buflen)
-{ return -ENOSYS; }
-
-static inline int kernfs_path_from_node(struct kernfs_node *root_kn,
-					struct kernfs_node *kn,
-					char *buf, size_t buflen)
-{ return -ENOSYS; }
-
-static inline void pr_cont_kernfs_name(struct kernfs_node *kn) { }
-static inline void pr_cont_kernfs_path(struct kernfs_node *kn) { }
-
-static inline struct kernfs_node *kernfs_get_parent(struct kernfs_node *kn)
-{ return NULL; }
-
 static inline struct kernfs_node *
 kernfs_find_and_get_ns(struct kernfs_node *parent, const char *name,
-		       const void *ns)
-{ return NULL; }
-static inline struct kernfs_node *
-kernfs_walk_and_get_ns(struct kernfs_node *parent, const char *path,
 		       const void *ns)
 { return NULL; }
 
 static inline void kernfs_get(struct kernfs_node *kn) { }
 static inline void kernfs_put(struct kernfs_node *kn) { }
 
-static inline struct kernfs_node *kernfs_node_from_dentry(struct dentry *dentry)
-{ return NULL; }
-
-static inline struct kernfs_root *kernfs_root_from_sb(struct super_block *sb)
-{ return NULL; }
-
-static inline struct inode *
-kernfs_get_inode(struct super_block *sb, struct kernfs_node *kn)
-{ return NULL; }
-
-static inline struct kernfs_root *
-kernfs_create_root(struct kernfs_syscall_ops *scops, unsigned int flags,
-		   void *priv)
-{ return ERR_PTR(-ENOSYS); }
-
-static inline void kernfs_destroy_root(struct kernfs_root *root) { }
-
-static inline struct kernfs_node *
-kernfs_create_dir_ns(struct kernfs_node *parent, const char *name,
-		     umode_t mode, kuid_t uid, kgid_t gid,
-		     void *priv, const void *ns)
-{ return ERR_PTR(-ENOSYS); }
-
-static inline struct kernfs_node *
-__kernfs_create_file(struct kernfs_node *parent, const char *name,
-		     umode_t mode, kuid_t uid, kgid_t gid,
-		     loff_t size, const struct kernfs_ops *ops,
-		     void *priv, const void *ns, struct lock_class_key *key)
-{ return ERR_PTR(-ENOSYS); }
-
-static inline struct kernfs_node *
-kernfs_create_link(struct kernfs_node *parent, const char *name,
-		   struct kernfs_node *target)
-{ return ERR_PTR(-ENOSYS); }
-
-static inline void kernfs_activate(struct kernfs_node *kn) { }
-
-static inline void kernfs_remove(struct kernfs_node *kn) { }
-
-static inline bool kernfs_remove_self(struct kernfs_node *kn)
-{ return false; }
-
-static inline int kernfs_remove_by_name_ns(struct kernfs_node *kn,
-					   const char *name, const void *ns)
-{ return -ENOSYS; }
-
-static inline int kernfs_rename_ns(struct kernfs_node *kn,
-				   struct kernfs_node *new_parent,
-				   const char *new_name, const void *new_ns)
-{ return -ENOSYS; }
-
-static inline int kernfs_setattr(struct kernfs_node *kn,
-				 const struct iattr *iattr)
-{ return -ENOSYS; }
-
 static inline void kernfs_notify(struct kernfs_node *kn) { }
 
-static inline int kernfs_xattr_get(struct kernfs_node *kn, const char *name,
-				   void *value, size_t size)
-{ return -ENOSYS; }
-
-static inline int kernfs_xattr_set(struct kernfs_node *kn, const char *name,
-				   const void *value, size_t size, int flags)
-{ return -ENOSYS; }
-
-static inline const void *kernfs_super_ns(struct super_block *sb)
-{ return NULL; }
-
-static inline int kernfs_get_tree(struct fs_context *fc)
-{ return -ENOSYS; }
-
-static inline void kernfs_free_fs_context(struct fs_context *fc) { }
-
-static inline void kernfs_kill_sb(struct super_block *sb) { }
-
 static inline void kernfs_init(void) { }
-
-
- 
-static inline int kernfs_path(struct kernfs_node *kn, char *buf, size_t buflen)
-{
-	return kernfs_path_from_node(kn, NULL, buf, buflen);
-}
 
 static inline struct kernfs_node *
 kernfs_find_and_get(struct kernfs_node *kn, const char *name)
@@ -319,32 +213,4 @@ kernfs_find_and_get(struct kernfs_node *kn, const char *name)
 	return kernfs_find_and_get_ns(kn, name, NULL);
 }
 
-static inline struct kernfs_node *
-kernfs_walk_and_get(struct kernfs_node *kn, const char *path)
-{
-	return kernfs_walk_and_get_ns(kn, path, NULL);
-}
-
-static inline struct kernfs_node *
-kernfs_create_dir(struct kernfs_node *parent, const char *name, umode_t mode,
-		  void *priv)
-{
-	return kernfs_create_dir_ns(parent, name, mode,
-				    GLOBAL_ROOT_UID, GLOBAL_ROOT_GID,
-				    priv, NULL);
-}
-
-static inline int kernfs_remove_by_name(struct kernfs_node *parent,
-					const char *name)
-{
-	return kernfs_remove_by_name_ns(parent, name, NULL);
-}
-
-static inline int kernfs_rename(struct kernfs_node *kn,
-				struct kernfs_node *new_parent,
-				const char *new_name)
-{
-	return kernfs_rename_ns(kn, new_parent, new_name, NULL);
-}
-
-#endif	 
+#endif

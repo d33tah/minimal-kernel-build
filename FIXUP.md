@@ -1,3 +1,27 @@
+--- 2025-11-15 23:58 ---
+
+New session starting:
+- make vm: PASSES ✓, prints "Hello World" ✓
+- Binary: 372KB (under 400KB goal ✓)
+- Total LOC (cloc after mrproper): 248,043
+- Gap to 200K goal: 48,043 LOC (19% reduction needed)
+- Note: LOC dropped from ~260K due to mrproper removing generated files
+
+Strategy: Continue systematic removal of unused functions from headers and identify larger subsystems for reduction.
+
+Progress (23:58-00:05):
+
+1. list.h cleanup - circular macros (00:05):
+   - Removed from list.h (8 LOC):
+     * list_next_entry_circular macro (3 LOC)
+     * list_prev_entry_circular macro (3 LOC)
+     * Blank lines (2 LOC)
+   - Total: 8 LOC removed
+   - Verified unused via grep in .c files
+   - Note: Attempted to remove hlist_fake/hlist_add_behind but hlist_fake is used in fs.h
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 371KB (down from 372KB, 1KB reduction) ✓
+
 --- 2025-11-15 23:57 ---
 
 New session starting:

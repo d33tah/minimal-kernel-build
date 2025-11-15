@@ -236,19 +236,9 @@ static inline void list_splice_tail_init(struct list_head *list,
 #define list_next_entry(pos, member) \
 	list_entry((pos)->member.next, typeof(*(pos)), member)
 
- 
-#define list_next_entry_circular(pos, head, member) \
-	(list_is_last(&(pos)->member, head) ? \
-	list_first_entry(head, typeof(*(pos)), member) : list_next_entry(pos, member))
 
- 
 #define list_prev_entry(pos, member) \
 	list_entry((pos)->member.prev, typeof(*(pos)), member)
-
- 
-#define list_prev_entry_circular(pos, head, member) \
-	(list_is_first(&(pos)->member, head) ? \
-	list_last_entry(head, typeof(*(pos)), member) : list_prev_entry(pos, member))
 
  
 #define list_for_each(pos, head) \
@@ -430,7 +420,7 @@ static inline void hlist_add_before(struct hlist_node *n,
 	WRITE_ONCE(*(n->pprev), n);
 }
 
- 
+
 static inline void hlist_add_behind(struct hlist_node *n,
 				    struct hlist_node *prev)
 {
@@ -442,13 +432,13 @@ static inline void hlist_add_behind(struct hlist_node *n,
 		WRITE_ONCE(n->next->pprev, &n->next);
 }
 
- 
+
 static inline bool hlist_fake(struct hlist_node *h)
 {
 	return h->pprev == &h->next;
 }
 
- 
+
 static inline bool
 hlist_is_singular_node(struct hlist_node *n, struct hlist_head *h)
 {

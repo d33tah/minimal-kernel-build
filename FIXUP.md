@@ -12,6 +12,59 @@ Still have 1155 header files to analyze for unused code.
 
 Looking for more large headers with potentially unused inline functions or entire unused files.
 
+Progress (21:13-21:25):
+
+1. mm/highmem.c cleanup (21:17):
+   - Removed unused #include <linux/bio.h> (1 LOC)
+   - Verified bio.h functions not used in highmem.c
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
+   - Commit: 82c2ca3, pushed to remote
+
+2. seqlock.h cleanup (21:23):
+   - Removed 4 unused inline functions (24 LOC total):
+     * read_seqlock_excl_bh (4 LOC)
+     * read_sequnlock_excl_bh (4 LOC)
+     * read_seqlock_excl_irq (4 LOC)
+     * read_sequnlock_excl_irq (4 LOC)
+   - Verified unused via grep in .c and .h files
+   - irqsave/restore variants still used in kernel/sched/cputime.c
+   - 563 LOC → 539 LOC (24 LOC reduction)
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
+   - Commit: fda45f1, pushed to remote
+
+3. pagemap.h cleanup (21:28):
+   - Removed 9 unused inline functions (85 LOC total):
+     * readahead_pos (4 LOC)
+     * readahead_length (4 LOC)
+     * readahead_index (4 LOC)
+     * readahead_count (4 LOC)
+     * readahead_batch_length (4 LOC)
+     * folio_mkwrite_check_truncate (19 LOC)
+     * page_mkwrite_check_truncate (16 LOC)
+     * i_blocks_per_folio (4 LOC)
+     * i_blocks_per_page (4 LOC)
+   - Verified unused via grep in .c files
+   - These were dead code - readahead helpers and page mkwrite functions
+   - 839 LOC → 754 LOC (85 LOC reduction)
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
+   - Commit: fe6ed44, pushed to remote
+
+Session progress: 110 LOC removed (1 + 24 + 85)
+Estimated LOC remaining: ~248,512
+Gap to 200K goal: ~48,512 LOC (19.5% reduction needed)
+
+Analysis: Checked many headers for unused functions but most are heavily used:
+- list.h: list_is_singular, hlist functions - all used
+- xarray.h: xas_* functions - all used
+- pgtable.h: soft_dirty, track_pfn, huge page functions - all used
+- device.h, memcontrol.h, sched/signal.h - heavily used
+
+Next steps: Continue systematic search for unused inline functions in other headers.
+Consider looking at arch-specific headers or less common subsystem headers.
+
 --- 2025-11-15 20:46 ---
 
 Starting new session:

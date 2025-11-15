@@ -241,18 +241,6 @@ static inline bool bitmap_equal(const unsigned long *src1,
 	return __bitmap_equal(src1, src2, nbits);
 }
 
- 
-static inline bool bitmap_or_equal(const unsigned long *src1,
-				   const unsigned long *src2,
-				   const unsigned long *src3,
-				   unsigned int nbits)
-{
-	if (!small_const_nbits(nbits))
-		return __bitmap_or_equal(src1, src2, src3, nbits);
-
-	return !(((*src1 | *src2) ^ *src3) & BITMAP_LAST_WORD_MASK(nbits));
-}
-
 static inline bool bitmap_intersects(const unsigned long *src1,
 				     const unsigned long *src2,
 				     unsigned int nbits)
@@ -339,18 +327,6 @@ static inline void bitmap_shift_left(unsigned long *dst, const unsigned long *sr
 		*dst = (*src << shift) & BITMAP_LAST_WORD_MASK(nbits);
 	else
 		__bitmap_shift_left(dst, src, shift, nbits);
-}
-
-static inline void bitmap_replace(unsigned long *dst,
-				  const unsigned long *old,
-				  const unsigned long *new,
-				  const unsigned long *mask,
-				  unsigned int nbits)
-{
-	if (small_const_nbits(nbits))
-		*dst = (*old & ~(*mask)) | (*new & *mask);
-	else
-		__bitmap_replace(dst, old, new, mask, nbits);
 }
 
 #if __BITS_PER_LONG == 64

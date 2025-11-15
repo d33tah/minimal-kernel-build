@@ -122,18 +122,6 @@ static inline ktime_t ktime_add_us(const ktime_t kt, const u64 usec)
 
 extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);
 
- 
-static inline __must_check bool ktime_to_timespec64_cond(const ktime_t kt,
-						       struct timespec64 *ts)
-{
-	if (kt) {
-		*ts = ktime_to_timespec64(kt);
-		return true;
-	} else {
-		return false;
-	}
-}
-
 #include <vdso/ktime.h>
 
 static inline ktime_t ns_to_ktime(u64 ns)

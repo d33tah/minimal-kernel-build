@@ -6,7 +6,7 @@ New session starting:
 - Total LOC (cloc): 248,395
 - Gap to 200K goal: 48,395 LOC (19.5% reduction needed)
 
-Progress (22:40):
+Progress (22:40-22:50):
 
 1. rculist.h cleanup (previous session continuation):
    - Removed 3 unused RCU hlist functions (34 LOC total):
@@ -16,24 +16,37 @@ Progress (22:40):
    - Verified unused via grep in .c and .h files
    - Commit: 9549203, already pushed
 
-2. signal.h cleanup (22:42):
-   - Removed 2 unused signal functions (11 LOC total):
+2. signal.h & workqueue.h cleanup (22:43):
+   - Removed 2 unused signal functions (11 LOC):
      * sigtestsetmask (5 LOC)
      * allow_kernel_signal (6 LOC)
-   - Verified unused via grep in .c and .h files
-   - make vm: PASSES ✓, prints "Hello World" ✓
-   - Binary: 372KB (unchanged) ✓
-   - Ready to commit
-
-3. workqueue.h cleanup (22:42):
    - Removed 1 unused workqueue function (5 LOC):
      * to_rcu_work (5 LOC)
    - Verified unused via grep in .c and .h files
    - make vm: PASSES ✓, prints "Hello World" ✓
    - Binary: 372KB (unchanged) ✓
+   - Commit: c27b086, pushed to remote
+
+3. ktime.h & semaphore cleanup (22:50):
+   - Removed from ktime.h (10 LOC):
+     * ktime_to_timespec64_cond - unused conditional conversion function
+   - Removed from semaphore.h (2 LOC):
+     * down_killable - extern declaration
+     * down_timeout - extern declaration
+   - Removed from semaphore.c (40 LOC):
+     * Forward declarations (2 LOC)
+     * down_killable implementation (15 LOC)
+     * down_timeout implementation (15 LOC)
+     * __down_killable helper (4 LOC)
+     * __down_timeout helper (4 LOC)
+   - Total: 52 LOC removed
+   - Verified unused via grep - only in implementation, never called
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
    - Ready to commit
 
-Next: Commit these changes and continue searching for more unused code.
+Session total: 68 LOC removed (16 + 52)
+Next: Commit and continue searching for more unused code.
 
 --- 2025-11-15 22:04 ---
 

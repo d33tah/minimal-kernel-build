@@ -17,7 +17,7 @@ Will continue searching for unused inline functions, CONFIG-disabled headers, an
 
 Attempt 1 (14:44): Remove unused inline functions from sysfs.h (SUCCESS):
 - sysfs.h: 465 -> 409 LOC (56 LOC saved)
-- Removed 8 unused stub functions:
+- Removed 10 unused stub functions:
   * sysfs_create_mount_point() (5 LOC)
   * sysfs_remove_mount_point() (4 LOC)
   * sysfs_create_files() (5 LOC)
@@ -31,6 +31,22 @@ Attempt 1 (14:44): Remove unused inline functions from sysfs.h (SUCCESS):
 - All functions verified unused via grep -rw across codebase
 - Build: PASSES ✓, make vm: PASSES ✓, prints "Hello World" ✓
 - Binary: 372KB (unchanged)
+- Committed and pushed: 2f64a8a
+
+Attempt 2 (14:48): Remove more unused sysfs functions (SUCCESS):
+- sysfs.h: 409 -> 370 LOC (39 more LOC saved)
+- Removed 7 additional unused stub functions:
+  * sysfs_remove_file_from_group() (4 LOC)
+  * sysfs_merge_group() (6 LOC)
+  * sysfs_unmerge_group() (5 LOC)
+  * sysfs_add_link_to_group() (6 LOC)
+  * sysfs_remove_link_from_group() (4 LOC)
+  * compat_only_sysfs_link_entry_to_kobj() (8 LOC)
+  * sysfs_enable_ns() (3 LOC)
+- All functions verified unused via grep
+- Build: PASSES ✓, make vm: PASSES ✓, prints "Hello World" ✓
+- Binary: 372KB (unchanged)
+- Total sysfs.h reduction: 95 LOC (465 -> 370)
 
 --- 2025-11-15 14:14 ---
 

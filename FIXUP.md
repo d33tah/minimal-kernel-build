@@ -57,6 +57,40 @@ Time subsystem analysis:
 For minimal "Hello World" kernel, sophisticated timer infrastructure might be over-featured.
 Will investigate if we can stub portions of time subsystem.
 
+SESSION END (09:33-09:50):
+
+Investigation completed with following findings:
+
+Block subsystem headers (CONFIG_BLOCK=n):
+- blkdev.h: 868 LOC
+- bio.h: 697 LOC
+- blk_types.h: 404 LOC
+- Total: 1,969 LOC
+- Previous attempt to stub blkdev.h failed (inline functions need full implementation)
+
+Conclusion:
+Current 239K LOC represents near-optimal state for incremental reduction approach.
+The 39K LOC gap to 200K goal (16.4%) is difficult because:
+
+1. Most "low-hanging fruit" already picked:
+   - Comments removed: 77K lines
+   - Large headers stubbed: fscrypt.h, cpufreq.h, PCI, EFI, OF
+   - Unused code eliminated by LTO (only 96 text symbols in binary)
+
+2. Remaining code is actively used or structurally necessary:
+   - Headers with inline functions can't be stubbed without breaking callers
+   - lib/ files previously removed but reverted as needed
+   - Most large C files are core kernel functionality
+
+3. To reach 200K LOC would likely require architectural changes:
+   - Remove or drastically simplify VT subsystem (4.2K LOC)
+   - Replace sophisticated schedulers with minimal scheduler
+   - Simplify or remove advanced MM features
+   - Replace large headers with custom minimal implementations
+
+No code changes this session - investigation and documentation only.
+Recommendation: Continue with careful, targeted attempts at large subsystem reduction.
+
 --- 2025-11-15 09:18 ---
 
 SESSION PROGRESS (09:18-09:50):

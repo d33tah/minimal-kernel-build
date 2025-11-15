@@ -14,22 +14,33 @@ Strategy: Focus on high-impact targets identified in previous sessions:
 3. TTY/VT subsystem simplification (currently very complex for just output)
 4. Scheduler simplification (only need minimal scheduling for single-purpose kernel)
 
-Exploration (06:18-06:30):
+Exploration (06:18-06:34):
 - Investigated defkeymap.c deletion - discovered it's auto-generated during build from Makefile
-- Cannot remove by deleting file; would need Makefile modification (risky)
+  * File WAS deleted from git repo (commit 4cc587f)
+  * Gets regenerated during build, so doesn't count toward mrproper LOC count
+  * Net effect: cleaner repo, but no LOC reduction in measurements
 - Explored other reduction opportunities:
   * RTC drivers: 412 LOC total, needed for timer functions
   * Security subsystem: only 156 LOC, already minimal
   * Driver subsystems: mostly essential (base, tty, video console)
   * Lib files: vsprintf (1474), iov_iter (1431), bitmap (1350) - all likely needed
+  * Config options: PROC, SYSFS, cgroups, namespaces all already disabled
+  * Headers contain 5,062 static inline functions (many likely unused but hard to identify)
 
 Analysis: Need to focus on structural simplification rather than file deletion.
 Best candidates remain:
 1. Large mm/ files (page_alloc 5K, memory 4K - but risky)
 2. Large fs/ files (namei 3.8K, namespace 3.8K - also risky)
 3. Header stubbing (requires careful dependency analysis)
+4. Inline function pruning (needs automated analysis tool)
 
-Next: Will attempt to find and stub unused functions in large files
+Recommendation for next session:
+- Try building with additional -Wunused-* flags to identify dead code
+- Consider using bloat-o-meter or similar tools to find large unused symbols
+- Attempt targeted reduction in one large file (e.g., vt.c simplification)
+- Explore if any entire subsystems can be CONFIG-disabled
+
+Current status: LOC = 254,688, no net reduction this session (exploration only)
 
 --- 2025-11-15 06:17 ---
 

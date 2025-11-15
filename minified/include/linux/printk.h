@@ -120,14 +120,6 @@ int _printk_deferred(const char *s, ...)
 	return 0;
 }
 
-static inline void printk_deferred_enter(void)
-{
-}
-
-static inline void printk_deferred_exit(void)
-{
-}
-
 static inline bool pr_flush(int timeout_ms, bool reset_on_progress)
 {
 	return true;
@@ -147,25 +139,7 @@ static inline void wake_up_klogd(void)
 {
 }
 
-static inline char *log_buf_addr_get(void)
-{
-	return NULL;
-}
-
-static inline u32 log_buf_len_get(void)
-{
-	return 0;
-}
-
-static inline void log_buf_vmcoreinfo_setup(void)
-{
-}
-
 static inline void setup_log_buf(int early)
-{
-}
-
-static inline __printf(1, 2) void dump_stack_set_arch_desc(const char *fmt, ...)
 {
 }
 
@@ -182,9 +156,6 @@ static inline void dump_stack_lvl(const char *log_lvl)
 }
 
 static inline void dump_stack(void)
-{
-}
-static inline void printk_trigger_flush(void)
 {
 }
 

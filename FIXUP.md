@@ -41,7 +41,29 @@ Attempt 1 (15:35): Remove unused inline functions from moduleparam.h and workque
 - Build: PASSES ✓, make vm: PASSES ✓, prints "Hello World" ✓
 - Binary: 372KB (unchanged)
 - LOC: 234,397 -> 234,375 (22 LOC saved total)
-- Committed: (pending)
+- Committed and pushed: fcd3524
+
+Investigation (15:45): Found 50 more LOC of unused inline functions via Task agent:
+- bio.h: 2 functions (5 LOC) - CONFIG_BLK_CGROUP disabled
+  * bio_associate_blkg_from_css (3 LOC)
+  * bio_clone_blkg_association (2 LOC)
+- dax.h: 5 functions (12 LOC) - CONFIG_DAX disabled
+  * put_dax, kill_dax, dax_write_cache, set_dax_synchronous, dax_recovery_write
+- cpu.h: 9 functions (9 LOC) - CONFIG_HOTPLUG_CPU disabled
+  * cpus_write_lock, cpus_write_unlock, cpu_hotplug_enable, smp_shutdown_nonboot_cpus,
+    thaw_secondary_cpus, suspend_enable_secondary_cpus, cpuhp_report_idle_dead,
+    cpu_smt_disable, cpu_smt_check_topology
+- suspend.h: 21 functions (24 LOC) - CONFIG_SUSPEND/CONFIG_HIBERNATION disabled
+  * pm_set_suspend_via_firmware, pm_set_resume_via_firmware, pm_suspend_via_firmware,
+    pm_resume_via_firmware, pm_suspend_no_platform, pm_suspend_default_s2idle,
+    suspend_set_ops, pm_states_init, s2idle_set_ops, s2idle_wake,
+    register_nosave_region, swsusp_page_is_forbidden, swsusp_set_page_free,
+    swsusp_unset_page_free, hibernation_set_ops, hibernate_quiet_exec,
+    is_hibernate_resume_dev, ksys_sync_helper, pm_system_wakeup, pm_wakeup_clear,
+    pm_system_irq_wakeup
+
+Total identified: 36 functions, 50 LOC
+All verified as unused via grep - no calls in any .c files
 
 --- 2025-11-15 15:14 ---
 

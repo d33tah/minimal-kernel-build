@@ -56,67 +56,6 @@ bool __bitmap_or_equal(const unsigned long *bitmap1,
 	return (tmp & BITMAP_LAST_WORD_MASK(bits)) == 0;
 }
 
-void __bitmap_complement(unsigned long *dst, const unsigned long *src, unsigned int bits)
-{
-	unsigned int k, lim = BITS_TO_LONGS(bits);
-	for (k = 0; k < lim; ++k)
-		dst[k] = ~src[k];
-}
-
- 
-void __bitmap_shift_right(unsigned long *dst, const unsigned long *src,
-			unsigned shift, unsigned nbits)
-{
-	unsigned k, lim = BITS_TO_LONGS(nbits);
-	unsigned off = shift/BITS_PER_LONG, rem = shift % BITS_PER_LONG;
-	unsigned long mask = BITMAP_LAST_WORD_MASK(nbits);
-	for (k = 0; off + k < lim; ++k) {
-		unsigned long upper, lower;
-
-		 
-		if (!rem || off + k + 1 >= lim)
-			upper = 0;
-		else {
-			upper = src[off + k + 1];
-			if (off + k + 1 == lim - 1)
-				upper &= mask;
-			upper <<= (BITS_PER_LONG - rem);
-		}
-		lower = src[off + k];
-		if (off + k == lim - 1)
-			lower &= mask;
-		lower >>= rem;
-		dst[k] = lower | upper;
-	}
-	if (off)
-		memset(&dst[lim - off], 0, off*sizeof(unsigned long));
-}
-
-
- 
-
-void __bitmap_shift_left(unsigned long *dst, const unsigned long *src,
-			unsigned int shift, unsigned int nbits)
-{
-	int k;
-	unsigned int lim = BITS_TO_LONGS(nbits);
-	unsigned int off = shift/BITS_PER_LONG, rem = shift % BITS_PER_LONG;
-	for (k = lim - off - 1; k >= 0; --k) {
-		unsigned long upper, lower;
-
-		 
-		if (rem && k > 0)
-			lower = src[k - 1] >> (BITS_PER_LONG - rem);
-		else
-			lower = 0;
-		upper = src[k] << rem;
-		dst[k + off] = lower | upper;
-	}
-	if (off)
-		memset(dst, 0, off*sizeof(unsigned long));
-}
-
- 
 void bitmap_cut(unsigned long *dst, const unsigned long *src,
 		unsigned int first, unsigned int cut, unsigned int nbits)
 {

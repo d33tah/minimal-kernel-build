@@ -42,12 +42,6 @@ bool __pure __bitmap_or_equal(const unsigned long *src1,
 			      const unsigned long *src2,
 			      const unsigned long *src3,
 			      unsigned int nbits);
-void __bitmap_complement(unsigned long *dst, const unsigned long *src,
-			 unsigned int nbits);
-void __bitmap_shift_right(unsigned long *dst, const unsigned long *src,
-			  unsigned int shift, unsigned int nbits);
-void __bitmap_shift_left(unsigned long *dst, const unsigned long *src,
-			 unsigned int shift, unsigned int nbits);
 void bitmap_cut(unsigned long *dst, const unsigned long *src,
 		unsigned int first, unsigned int cut, unsigned int nbits);
 int __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
@@ -214,14 +208,6 @@ static inline int bitmap_andnot(unsigned long *dst, const unsigned long *src1,
 	return __bitmap_andnot(dst, src1, src2, nbits);
 }
 
-static inline void bitmap_complement(unsigned long *dst, const unsigned long *src,
-			unsigned int nbits)
-{
-	if (small_const_nbits(nbits))
-		*dst = ~(*src);
-	else
-		__bitmap_complement(dst, src, nbits);
-}
 
 #ifdef __LITTLE_ENDIAN
 #define BITMAP_MEM_ALIGNMENT 8
@@ -311,23 +297,7 @@ static __always_inline void bitmap_clear(unsigned long *map, unsigned int start,
 		__bitmap_clear(map, start, nbits);
 }
 
-static inline void bitmap_shift_right(unsigned long *dst, const unsigned long *src,
-				unsigned int shift, unsigned int nbits)
-{
-	if (small_const_nbits(nbits))
-		*dst = (*src & BITMAP_LAST_WORD_MASK(nbits)) >> shift;
-	else
-		__bitmap_shift_right(dst, src, shift, nbits);
-}
 
-static inline void bitmap_shift_left(unsigned long *dst, const unsigned long *src,
-				unsigned int shift, unsigned int nbits)
-{
-	if (small_const_nbits(nbits))
-		*dst = (*src << shift) & BITMAP_LAST_WORD_MASK(nbits);
-	else
-		__bitmap_shift_left(dst, src, shift, nbits);
-}
 
 #if __BITS_PER_LONG == 64
 #define BITMAP_FROM_U64(n) (n)

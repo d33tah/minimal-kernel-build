@@ -145,22 +145,6 @@ static inline void list_move_tail(struct list_head *list,
 	list_add_tail(list, head);
 }
 
- 
-static inline void list_bulk_move_tail(struct list_head *head,
-				       struct list_head *first,
-				       struct list_head *last)
-{
-	first->prev->next = last->next;
-	last->next->prev = first->prev;
-
-	head->prev->next = first;
-	first->prev = head->prev;
-
-	last->next = head;
-	head->prev = last;
-}
-
- 
 static inline int list_is_first(const struct list_head *list, const struct list_head *head)
 {
 	return list->prev == head;
@@ -199,72 +183,10 @@ static inline int list_empty_careful(const struct list_head *head)
 	return list_is_head(next, head) && (next == READ_ONCE(head->prev));
 }
 
- 
-static inline void list_rotate_left(struct list_head *head)
-{
-	struct list_head *first;
 
-	if (!list_empty(head)) {
-		first = head->next;
-		list_move_tail(first, head);
-	}
-}
-
- 
-static inline void list_rotate_to_front(struct list_head *list,
-					struct list_head *head)
-{
-	 
-	list_move_tail(head, list);
-}
-
- 
 static inline int list_is_singular(const struct list_head *head)
 {
 	return !list_empty(head) && (head->next == head->prev);
-}
-
-static inline void __list_cut_position(struct list_head *list,
-		struct list_head *head, struct list_head *entry)
-{
-	struct list_head *new_first = entry->next;
-	list->next = head->next;
-	list->next->prev = list;
-	list->prev = entry;
-	entry->next = list;
-	head->next = new_first;
-	new_first->prev = head;
-}
-
- 
-static inline void list_cut_position(struct list_head *list,
-		struct list_head *head, struct list_head *entry)
-{
-	if (list_empty(head))
-		return;
-	if (list_is_singular(head) && !list_is_head(entry, head) && (entry != head->next))
-		return;
-	if (list_is_head(entry, head))
-		INIT_LIST_HEAD(list);
-	else
-		__list_cut_position(list, head, entry);
-}
-
- 
-static inline void list_cut_before(struct list_head *list,
-				   struct list_head *head,
-				   struct list_head *entry)
-{
-	if (head->next == entry) {
-		INIT_LIST_HEAD(list);
-		return;
-	}
-	list->next = head->next;
-	list->next->prev = list;
-	list->prev = entry->prev;
-	list->prev->next = list;
-	head->next = entry;
-	entry->prev = head;
 }
 
 static inline void __list_splice(const struct list_head *list,
@@ -289,15 +211,8 @@ static inline void list_splice(const struct list_head *list,
 		__list_splice(list, head, head->next);
 }
 
- 
-static inline void list_splice_tail(struct list_head *list,
-				struct list_head *head)
-{
-	if (!list_empty(list))
-		__list_splice(list, head->prev, head);
-}
 
- 
+
 static inline void list_splice_init(struct list_head *list,
 				    struct list_head *head)
 {

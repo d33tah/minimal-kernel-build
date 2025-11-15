@@ -143,11 +143,6 @@ struct gendisk {
 	u64 diskseq;
 };
 
- 
-static inline unsigned int disk_openers(struct gendisk *disk)
-{
-	return atomic_read(&disk->part0->bd_openers);
-}
 
  
 #define dev_to_disk(device) \
@@ -425,15 +420,6 @@ extern void blk_clear_pm_only(struct request_queue *q);
 	dma_map_page_attrs(dev, (bv)->bv_page, (bv)->bv_offset, (bv)->bv_len, \
 	(dir), (attrs))
 
-static inline enum blk_zoned_model
-blk_queue_zoned_model(struct request_queue *q)
-{
-	if (IS_ENABLED(CONFIG_BLK_DEV_ZONED))
-		return q->limits.zoned;
-	return BLK_ZONED_NONE;
-}
-
-
 
 #define BLK_DEFAULT_SG_TIMEOUT	(60 * HZ)
 #define BLK_MIN_SG_TIMEOUT	(7 * HZ)
@@ -444,36 +430,16 @@ blk_queue_zoned_model(struct request_queue *q)
 
 int __must_check device_add_disk(struct device *parent, struct gendisk *disk,
 				 const struct attribute_group **groups);
-static inline int __must_check add_disk(struct gendisk *disk)
-{
-	return device_add_disk(NULL, disk, NULL);
-}
 void del_gendisk(struct gendisk *gp);
 void invalidate_disk(struct gendisk *disk);
 void set_disk_ro(struct gendisk *disk, bool read_only);
 void disk_uevent(struct gendisk *disk, enum kobject_action action);
-
-static inline int get_disk_ro(struct gendisk *disk)
-{
-	return disk->part0->bd_read_only ||
-		test_bit(GD_READ_ONLY, &disk->state);
-}
-
-static inline int bdev_read_only(struct block_device *bdev)
-{
-	return bdev->bd_read_only || get_disk_ro(bdev->bd_disk);
-}
 
 bool set_capacity_and_notify(struct gendisk *disk, sector_t size);
 bool disk_force_media_change(struct gendisk *disk, unsigned int events);
 
 void add_disk_randomness(struct gendisk *disk) __latent_entropy;
 void rand_initialize_disk(struct gendisk *disk);
-
-static inline sector_t bdev_nr_sectors(struct block_device *bdev)
-{
-	return bdev->bd_nr_sectors;
-}
 
 int bdev_disk_changed(struct gendisk *disk, bool invalidate);
 
@@ -529,12 +495,6 @@ blk_status_t errno_to_blk_status(int errno);
 int bio_poll(struct bio *bio, struct io_comp_batch *iob, unsigned int flags);
 int iocb_bio_iopoll(struct kiocb *kiocb, struct io_comp_batch *iob,
 			unsigned int flags);
-
-static inline struct request_queue *bdev_get_queue(struct block_device *bdev)
-{
-	return bdev->bd_queue;	 
-}
-
 
  
  
@@ -650,75 +610,8 @@ enum blk_default_limits {
 	BLK_SEG_BOUNDARY_MASK	= 0xFFFFFFFFUL,
 };
 
-static inline unsigned int queue_max_sectors(const struct request_queue *q)
-{
-	return q->limits.max_sectors;
-}
-
-static inline unsigned int queue_max_zone_append_sectors(const struct request_queue *q)
-{
-
-	const struct queue_limits *l = &q->limits;
-
-	return min(l->max_zone_append_sectors, l->max_sectors);
-}
-
-static inline unsigned int
-bdev_max_zone_append_sectors(struct block_device *bdev)
-{
-	return queue_max_zone_append_sectors(bdev_get_queue(bdev));
-}
-
-static inline unsigned queue_logical_block_size(const struct request_queue *q)
-{
-	int retval = 512;
-
-	if (q && q->limits.logical_block_size)
-		retval = q->limits.logical_block_size;
-
-	return retval;
-}
-
-static inline unsigned int queue_physical_block_size(const struct request_queue *q)
-{
-	return q->limits.physical_block_size;
-}
-
-static inline unsigned int queue_io_min(const struct request_queue *q)
-{
-	return q->limits.io_min;
-}
-
-static inline unsigned int queue_io_opt(const struct request_queue *q)
-{
-	return q->limits.io_opt;
-}
-
-static inline unsigned int
-queue_zone_write_granularity(const struct request_queue *q)
-{
-	return q->limits.zone_write_granularity;
-}
-
-static inline unsigned int
-bdev_zone_write_granularity(struct block_device *bdev)
-{
-	return queue_zone_write_granularity(bdev_get_queue(bdev));
-}
-
 int bdev_alignment_offset(struct block_device *bdev);
 unsigned int bdev_discard_alignment(struct block_device *bdev);
-
-static inline unsigned int
-bdev_max_secure_erase_sectors(struct block_device *bdev)
-{
-	return bdev_get_queue(bdev)->limits.max_secure_erase_sectors;
-}
-
-static inline int queue_dma_alignment(const struct request_queue *q)
-{
-	return q ? q->dma_alignment : 511;
-}
 
  
 int kblockd_schedule_work(struct work_struct *work);
@@ -785,12 +678,6 @@ void bio_start_io_acct_time(struct bio *bio, unsigned long start_time);
 unsigned long bio_start_io_acct(struct bio *bio);
 void bio_end_io_acct_remapped(struct bio *bio, unsigned long start_time,
 		struct block_device *orig_bdev);
-
- 
-static inline void bio_end_io_acct(struct bio *bio, unsigned long start_time)
-{
-	return bio_end_io_acct_remapped(bio, start_time, bio->bi_bdev);
-}
 
 int bdev_read_only(struct block_device *bdev);
 int set_blocksize(struct block_device *bdev, int size);

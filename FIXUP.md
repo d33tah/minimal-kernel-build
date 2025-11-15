@@ -15,6 +15,34 @@ Strategy:
 Continue systematic header reduction. Look for unused inline functions, CONFIG-disabled code,
 and large reducible subsystems. Previous recommendations: swapops.h, moduleparam.h, workqueue.h.
 
+Attempt 1 (15:28): Remove 19 unused inline functions from blkdev.h (SUCCESS):
+- blkdev.h: 844 -> 731 LOC (113 LOC saved in file)
+- Removed 19 unused inline functions (CONFIG_BLOCK disabled):
+  * disk_openers (4 LOC) - get disk opener count
+  * blk_queue_zoned_model (7 LOC) - get zoned model
+  * add_disk (4 LOC) - add disk wrapper
+  * get_disk_ro (5 LOC) - check read-only status
+  * bdev_read_only (4 LOC) - check block device read-only
+  * bdev_nr_sectors (4 LOC) - get block device sectors
+  * bdev_get_queue (4 LOC) - get request queue
+  * queue_max_sectors (4 LOC) - get max sectors
+  * queue_max_zone_append_sectors (7 LOC) - get max zone append
+  * bdev_max_zone_append_sectors (5 LOC) - block device max zone append
+  * queue_logical_block_size (9 LOC) - get logical block size
+  * queue_physical_block_size (4 LOC) - get physical block size
+  * queue_io_min (4 LOC) - get min IO size
+  * queue_io_opt (4 LOC) - get optimal IO size
+  * queue_zone_write_granularity (5 LOC) - get zone write granularity
+  * bdev_zone_write_granularity (5 LOC) - block device zone write granularity
+  * bdev_max_secure_erase_sectors (5 LOC) - get max secure erase sectors
+  * queue_dma_alignment (4 LOC) - get DMA alignment
+  * bio_end_io_acct (4 LOC) - end IO accounting
+- All functions verified unused via Task agent (Explore)
+- Build: PASSES ✓, make vm: PASSES ✓, prints "Hello World" ✓
+- Binary: 372KB (unchanged)
+- LOC: 250,373 -> 250,285 (88 LOC saved total)
+- Committed: (pending)
+
 --- 2025-11-15 14:52 ---
 
 SESSION START (14:52):

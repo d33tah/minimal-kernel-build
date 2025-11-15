@@ -116,11 +116,6 @@ static inline struct delayed_work *to_delayed_work(struct work_struct *work)
 	return container_of(work, struct delayed_work, work);
 }
 
-static inline struct rcu_work *to_rcu_work(struct work_struct *work)
-{
-	return container_of(work, struct rcu_work, work);
-}
-
 struct execute_work {
 	struct work_struct work;
 };

@@ -223,11 +223,6 @@ static inline void sigdelsetmask(sigset_t *set, unsigned long mask)
 	set->sig[0] &= ~mask;
 }
 
-static inline int sigtestsetmask(sigset_t *set, unsigned long mask)
-{
-	return (set->sig[0] & mask) != 0;
-}
-
 static inline void siginitset(sigset_t *set, unsigned long mask)
 {
 	set->sig[0] = mask;
@@ -298,12 +293,6 @@ static inline void allow_signal(int sig)
 {
 	 
 	kernel_sigaction(sig, SIG_KTHREAD);
-}
-
-static inline void allow_kernel_signal(int sig)
-{
-	 
-	kernel_sigaction(sig, SIG_KTHREAD_KERNEL);
 }
 
 static inline void disallow_signal(int sig)

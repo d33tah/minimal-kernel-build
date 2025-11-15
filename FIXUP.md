@@ -33,12 +33,57 @@ Current status (02:10):
 - Total LOC: 273,371
 - Progress: Reduced by 837 LOC in this session (cloc count)
 - Remaining: Need 73,371 more LOC reduction
+- COMMITTED and PUSHED ✓
 
-Next targets to investigate:
-- PCI headers: pci.h (1,636 lines) - might be reducible
-- blkdev.h/bio.h: Block layer supposedly removed but headers still large
-- Auto-generated atomic headers: May be hard to reduce but worth investigating
-- More aggressive header pruning
+Investigation (02:10-02:14):
+Explored several reduction candidates:
+- PCI headers: pci.h (1,636 lines) - complex, has CONFIG_PCI ifdefs
+- Block layer: blkdev.h (985), bio.h (787), blk_types.h (521) = 2,293 lines
+  * CONFIG_BLOCK is disabled but headers are NOT conditionally compiled
+  * Only blk_flush_plug() function actually used from these headers
+  * Good candidate but complex dependencies (device.h includes it)
+- TTY subsystem: 7,530 LOC total (drivers/tty)
+  * vt.c alone is 3,610 lines, tty_io.c is 2,352 lines
+  * Needed for console output but probably over-featured
+
+Strategy change (02:14):
+Looking for simpler header reduction opportunities like EFI. Need to find
+headers with disabled CONFIG options that can be easily stubbed out.
+
+Investigation results (02:14-02:18):
+Searched for more stub-out opportunities:
+- CONFIG_PM is not set: pm.h (726 lines) + pm_runtime.h/pm_wakeup.h/suspend.h (937 total)
+  BUT pm.h doesn't have CONFIG_PM ifdefs - always compiled
+- CONFIG_PERF_EVENTS not set: perf_event.h only 102 lines - already minimal
+- CONFIG_SMP not set: might be opportunities here
+- mod_devicetable.h: 914 lines, 51 different device ID structures
+  Most probably not needed but tightly integrated with driver infrastructure
+- Block layer headers (blkdev.h 985, bio.h 787, blk_types.h 521 = 2,293 lines)
+  CONFIG_BLOCK not set but headers always compiled, complex dependencies
+- TTY subsystem: 7,530 LOC but needed for console output
+
+Key insight: Most low-hanging fruit already picked by previous sessions.
+Remaining headers either:
+1. Don't have CONFIG ifdefs even when feature is disabled (pm.h, blkdev.h)
+2. Are already minimal (perf_event.h 102 lines)
+3. Are core infrastructure (fs.h 2,192 lines, mm.h 2,033 lines, sched.h 1,512 lines)
+
+Need new approach - perhaps focus on C file reduction or more aggressive
+refactoring of core headers.
+
+SESSION SUMMARY (02:03-02:18):
+Time: 15 minutes
+LOC reduction achieved: 837 (EFI headers stubbed)
+Commits: 1
+Status: make vm PASSES, Hello World PRINTS, 375KB binary ✓
+Remaining gap: 73,371 LOC to reach 200K goal
+
+Achievement: Reduced EFI headers by 84.9% (1,406 -> 213 lines). Attempted to
+find similar opportunities but discovered that most easily-stubbed headers
+have already been reduced in previous sessions. Next session should either:
+1. Focus on C file reduction (mm, fs, drivers subsystems)
+2. Attempt more aggressive header refactoring
+3. Consider TTY subsystem simplification (7,530 LOC total)
 
 --- 2025-11-15 01:45 ---
 

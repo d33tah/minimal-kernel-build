@@ -1,3 +1,51 @@
+
+Attempt 2 - Stub Hyper-V header (03:20-03:25):
+Tried stubbing asm-generic/hyperv-tlfs.h (784 lines).
+FAILED: mshyperv.h depends on many Hyper-V defines from hyperv-tlfs.h.
+Too interdependent to stub safely. Reverted.
+
+Attempt 3 - Stub audit header (03:26-03:32):
+Tried stubbing uapi/linux/audit.h (522 lines).
+FAILED: Needs AUDIT_BITMASK_SIZE, AUDIT_SID_UNSET, AUDIT_ARCH_I386, etc.
+Too many dependencies (needs EM_386 from elf.h, etc.). Reverted.
+
+SESSION CONCLUSION (03:32):
+Successfully stubbed 1 header:
+- uapi/linux/pci_regs.h: 1,106 → 14 lines (-1,092 LOC reduction on disk, -918 net LOC after mrproper)
+
+Failed to stub 2 headers due to interdependencies:
+- asm-generic/hyperv-tlfs.h (784 lines) - mshyperv.h depends on it
+- uapi/linux/audit.h (522 lines) - too many arch-specific dependencies
+
+Time spent: 23 minutes (03:09-03:32)
+LOC reduced: 918 lines (0.36% of total)
+Commits: 1 (pci_regs.h stubbing)
+
+Current status:
+- make vm: PASSES ✓
+- Hello World: PRINTS ✓
+- Binary: 375KB (meets 400KB goal ✓)
+- Total LOC: 255,741 (down from 256,659)
+- Gap to 200K goal: 55,741 LOC (21.8% reduction needed)
+
+KEY LEARNING:
+Header stubbing is showing severe diminishing returns. Many headers are
+heavily interdependent even when the underlying feature is disabled.
+Need to shift strategy to:
+1. Analyzing and removing unused C source files
+2. Simplifying large subsystems (signal.c, vt.c, namespace/namei)
+3. More aggressive config tuning to disable entire subsystems
+4. Possibly removing entire driver/subsystem directories
+
+RECOMMENDATIONS FOR NEXT SESSION:
+Time to abandon incremental header stubbing. Focus on:
+1. Identify C files that compile but don't contribute to final binary
+2. Consider stubbing signal.c (3,093 LOC) - init doesn't handle signals
+3. Simplify TTY/VT code (vt.c: 3,610 LOC) - we only need basic console output
+4. Review filesystem code (namei.c: 3,853 LOC, namespace.c: 3,838 LOC)
+5. Check if any drivers can be completely removed
+
+
 --- 2025-11-15 03:09 ---
 
 SESSION (03:09-ongoing):

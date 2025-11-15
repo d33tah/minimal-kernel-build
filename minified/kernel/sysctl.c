@@ -18,7 +18,6 @@
 #include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/kobject.h>
-#include <linux/net.h>
 
 #include <linux/highuid.h>
 #include <linux/writeback.h>

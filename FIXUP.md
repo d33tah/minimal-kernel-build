@@ -29,6 +29,42 @@ Attempt 1 (13:15): Remove unused vmstat_item_print_in_thp() from mmzone.h (SUCCE
 - Binary: 372KB (unchanged)
 - Committed and pushed: 2641962
 
+Investigation (13:20-13:25):
+Used Task agent (haiku) to systematically find unused inline functions in large headers.
+Found 8 unused functions totaling 48 LOC across 3 headers.
+
+Attempt 2 (13:25): Remove 48 LOC of unused inline functions (SUCCESS):
+Removed functions:
+- mmzone.h: movable_only_nodes() (15 LOC)
+- blkdev.h: 4 zoned device stubs (21 LOC total)
+  * blk_queue_is_zoned(), blk_queue_zone_sectors()
+  * queue_max_open_zones(), queue_max_active_zones()
+- cpumask.h: 3 distribution functions (12 LOC total)
+  * cpumask_local_spread(), cpumask_any_and_distribute(), cpumask_any_distribute()
+- All functions confirmed unused by grepping codebase
+- Build: PASSES ✓, make vm: PASSES ✓, prints "Hello World" ✓
+- Binary: 372KB (unchanged)
+- Committed and pushed: b4ca266
+
+Current status after Attempt 2:
+- make vm: PASSES ✓, prints "Hello World" ✓
+- Binary: 372KB (unchanged)
+- Total LOC reduction this session: 61 LOC (13 + 48)
+- Estimated LOC: ~240,521 (down from 240,582)
+- Gap to 200K goal: ~40,521 LOC (16.8% reduction needed)
+
+SESSION SUMMARY (12:47-13:30):
+- Successfully removed 61 LOC through systematic identification of unused functions
+- Used Task agent to find unused inline functions in headers
+- All changes tested and verified to work
+- 2 commits pushed: 2641962, b4ca266
+
+Key learnings:
+- Systematic agent-based analysis effective for finding unused functions
+- Headers with CONFIG-disabled features (zoned devices, THP) good targets
+- Small incremental wins (48-61 LOC) still valuable and safer than large refactors
+- Current approach: focus on unused code rather than stubbing used code
+
 --- 2025-11-15 12:16 ---
 
 SESSION START (12:16):

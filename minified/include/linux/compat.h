@@ -405,15 +405,6 @@ int get_compat_sigevent(struct sigevent *event,
 
 extern int get_compat_sigset(sigset_t *set, const compat_sigset_t __user *compat);
 
- 
-static inline int
-put_compat_sigset(compat_sigset_t __user *compat, const sigset_t *set,
-		  unsigned int size)
-{
-	 
-	return copy_to_user(compat, set, size) ? -EFAULT : 0;
-}
-
 #define unsafe_put_compat_sigset(compat, set, label) do {		\
 	compat_sigset_t __user *__c = compat;				\
 	const sigset_t *__s = set;					\
@@ -448,22 +439,7 @@ int __compat_save_altstack(compat_stack_t __user *, unsigned long);
 	unsafe_put_user(t->sas_ss_size, &__uss->ss_size, label); \
 } while (0);
 
- 
 
- 
-static inline struct old_timeval32 ns_to_old_timeval32(s64 nsec)
-{
-	struct __kernel_old_timeval tv;
-	struct old_timeval32 ctv;
-
-	tv = ns_to_kernel_old_timeval(nsec);
-	ctv.tv_sec = tv.tv_sec;
-	ctv.tv_usec = tv.tv_usec;
-
-	return ctv;
-}
-
- 
 
 int kcompat_sys_statfs64(const char __user * pathname, compat_size_t sz,
 		     struct compat_statfs64 __user * buf);

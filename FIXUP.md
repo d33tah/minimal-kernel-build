@@ -15,6 +15,44 @@ is unreliable due to complex dependencies. New approach:
 2. Find larger subsystems that can be stubbed or removed
 3. Only do very careful, one-at-a-time inline function removals with full verification
 
+Work completed (19:29-19:42):
+
+1. list.h cleanup (19:29-19:42):
+   - Removed 6 unused inline functions (85 LOC total)
+   - Functions removed:
+     * list_bulk_move_tail (13 LOC)
+     * list_rotate_left (8 LOC)
+     * list_rotate_to_front (6 LOC)
+     * __list_cut_position (11 LOC)
+     * list_cut_position (12 LOC)
+     * list_cut_before (14 LOC)
+     * list_splice_tail (7 LOC)
+   - 615 LOC → 530 LOC (85 LOC reduction)
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
+   - Commit: 1a74262, pushed to remote
+
+2. bitmap.h cleanup (19:42-19:54):
+   - Removed 2 unused inline functions (24 LOC total)
+   - Functions removed:
+     * bitmap_or_equal (12 LOC)
+     * bitmap_replace (11 LOC)
+   - Note: bitmap_xor, bitmap_complement, bitmap_shift_right, bitmap_shift_left
+     still needed (used in nodemask.h and arch/x86/include/asm/mpspec.h)
+   - 375 LOC → 351 LOC (24 LOC reduction)
+   - make vm: PASSES ✓, prints "Hello World" ✓
+   - Binary: 372KB (unchanged) ✓
+   - Commit: c50b689, pushed to remote
+
+Total session progress: 109 LOC removed (85 from list.h + 24 from bitmap.h)
+Estimated LOC remaining: ~260,098 (109 lines saved from headers)
+Gap to 200K goal: ~60,098 LOC (23.1% reduction needed)
+
+Next steps:
+- Continue with more safe, verified function removals
+- Look for other headers with unused inline functions that can be safely removed
+- Focus on careful, one-at-a-time removals with full build testing
+
 Work in progress:
 
 --- 2025-11-15 19:30 ---

@@ -164,20 +164,7 @@ enum node_stat_item {
 	NR_VM_NODE_STAT_ITEMS
 };
 
- 
-static __always_inline bool vmstat_item_print_in_thp(enum node_stat_item item)
-{
-	if (!IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE))
-		return false;
 
-	return item == NR_ANON_THPS ||
-	       item == NR_FILE_THPS ||
-	       item == NR_SHMEM_THPS ||
-	       item == NR_SHMEM_PMDMAPPED ||
-	       item == NR_FILE_PMDMAPPED;
-}
-
- 
 static __always_inline bool vmstat_item_in_bytes(int idx)
 {
 	 

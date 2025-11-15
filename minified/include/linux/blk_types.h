@@ -342,56 +342,12 @@ enum stat_group {
 #define bio_op(bio) \
 	((bio)->bi_opf & REQ_OP_MASK)
 
- 
-static inline void bio_set_op_attrs(struct bio *bio, unsigned op,
-		unsigned op_flags)
-{
-	bio->bi_opf = op | op_flags;
-}
 
 static inline bool op_is_write(unsigned int op)
 {
 	return (op & 1);
 }
 
- 
-static inline bool op_is_flush(unsigned int op)
-{
-	return op & (REQ_FUA | REQ_PREFLUSH);
-}
-
- 
-static inline bool op_is_sync(unsigned int op)
-{
-	return (op & REQ_OP_MASK) == REQ_OP_READ ||
-		(op & (REQ_SYNC | REQ_FUA | REQ_PREFLUSH));
-}
-
-static inline bool op_is_discard(unsigned int op)
-{
-	return (op & REQ_OP_MASK) == REQ_OP_DISCARD;
-}
-
- 
-static inline bool op_is_zone_mgmt(enum req_opf op)
-{
-	switch (op & REQ_OP_MASK) {
-	case REQ_OP_ZONE_RESET:
-	case REQ_OP_ZONE_OPEN:
-	case REQ_OP_ZONE_CLOSE:
-	case REQ_OP_ZONE_FINISH:
-		return true;
-	default:
-		return false;
-	}
-}
-
-static inline int op_stat_group(unsigned int op)
-{
-	if (op_is_discard(op))
-		return STAT_DISCARD;
-	return op_is_write(op);
-}
 
 struct blk_rq_stat {
 	u64 mean;

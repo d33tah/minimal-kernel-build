@@ -1,6 +1,6 @@
 --- 2025-11-15 04:37 ---
 
-SESSION (04:37-TBD):
+SESSION (04:37-04:58):
 
 Current status (after kfifo stubbing):
 - make vm: PASSES ✓
@@ -19,7 +19,13 @@ Change 1: Stubbed out kfifo subsystem (-847 LOC net, -2KB binary)
 - Savings: 570 + 893 - 54 = 1,409 raw LOC, ~847 net after cloc adjustments
 - Binary: 372KB (was 374KB, -2KB)
 
-Strategy: Continue finding more unused subsystems/files to stub or remove.
+Exploration attempts (failed):
+- bitmap.c, scatterlist.c: Both export no symbols but have undefined symbol errors when removed
+  (bitmap: __bitmap_set, bitmap_find_next_zero_area_off, __bitmap_clear, bitmap_print_to_pagebuf)
+  (scatterlist: sg_alloc_table, sg_free_table, sg_next)
+  These are likely used by inline functions in headers, making removal risky.
+
+Next strategy: Look for larger subsystems or header bloat to reduce.
 
 --- 2025-11-15 04:26 ---
 

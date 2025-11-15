@@ -254,17 +254,6 @@ static inline void bio_list_init(struct bio_list *bl)
 #define bio_list_for_each(bio, bl) \
 	for (bio = (bl)->head; bio; bio = bio->bi_next)
 
-static inline unsigned bio_list_size(const struct bio_list *bl)
-{
-	unsigned sz = 0;
-	struct bio *bio;
-
-	bio_list_for_each(bio, bl)
-		sz++;
-
-	return sz;
-}
-
 static inline void bio_list_add(struct bio_list *bl, struct bio *bio)
 {
 	bio->bi_next = NULL;
@@ -300,25 +289,6 @@ static inline void bio_list_merge(struct bio_list *bl, struct bio_list *bl2)
 	bl->tail = bl2->tail;
 }
 
-static inline void bio_list_merge_head(struct bio_list *bl,
-				       struct bio_list *bl2)
-{
-	if (!bl2->head)
-		return;
-
-	if (bl->head)
-		bl2->tail->bi_next = bl->head;
-	else
-		bl->tail = bl2->tail;
-
-	bl->head = bl2->head;
-}
-
-static inline struct bio *bio_list_peek(struct bio_list *bl)
-{
-	return bl->head;
-}
-
 static inline struct bio *bio_list_pop(struct bio_list *bl)
 {
 	struct bio *bio = bl->head;
@@ -334,16 +304,6 @@ static inline struct bio *bio_list_pop(struct bio_list *bl)
 	return bio;
 }
 
-static inline struct bio *bio_list_get(struct bio_list *bl)
-{
-	struct bio *bio = bl->head;
-
-	bl->head = bl->tail = NULL;
-
-	return bio;
-}
-
- 
 static inline void bio_inc_remaining(struct bio *bio)
 {
 	bio_set_flag(bio, BIO_CHAIN);

@@ -23,12 +23,22 @@ Attempt 1 (12:28): Stub bootconfig.h (SUCCESS):
 - Binary: 372KB (unchanged)
 - LOC: 236,843 -> 236,760 (83 LOC saved)
 
-Current status after Attempt 1:
+Attempt 2 (12:41): Stub dev_printk.h (SUCCESS):
+- dev_printk.h: 210 LOC, only included by device.h
+- All device print functions already stubbed to empty inline functions
+- Reduced from 210 to 56 lines (kept dev_printk_info struct, stubbed all macros to no-ops)
+- Had to keep struct dev_printk_info (used by printk_ringbuffer.h)
+- Had to make dev_WARN_ONCE return (0) instead of do{}while(0) for use in if statements
+- Build: PASSES ✓, make vm: PASSES ✓, prints "Hello World" ✓
+- Binary: 372KB (unchanged)
+- LOC saved: ~154 LOC
+
+Current status after Attempt 2:
 - make vm: PASSES ✓, prints "Hello World" ✓
 - Binary: 372KB (unchanged)
-- Total LOC: 236,760
-- Gap to 200K goal: 36,760 LOC (15.5% reduction needed)
-- Progress this session: 83 LOC saved
+- Total LOC: ~236,606 (estimated)
+- Gap to 200K goal: ~36,606 LOC (15.4% reduction needed)
+- Progress this session: 237 LOC saved (83 + 154)
 
 --- 2025-11-15 11:56 ---
 

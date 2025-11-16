@@ -1,3 +1,69 @@
+--- 2025-11-16 02:16 ---
+
+New session starting:
+- make vm: PASSES ✓, prints "Hello World" ✓
+- Binary: 372KB (under 400KB goal ✓)
+- Total LOC (cloc after mrproper): 247,747 (C: 141,418, Headers: 94,656)
+- Gap to 200K goal: 47,747 LOC over (need 19.3% reduction)
+- C files: 444 total
+- Headers: 1155 total
+
+Strategy: Previous session found most low-hanging fruit removed. Need ~48K LOC reduction.
+Focus areas from previous notes:
+1. Large MM files (page_alloc.c: 5081, memory.c: 4055)
+2. Large FS files (namei.c: 3853, namespace.c: 3838)
+3. TTY complexity (vt.c: 3610, tty_io.c: 2352)
+4. Debug/stats functions that can be stubbed
+5. Unused syscalls in sys_ni.c (462 LOC)
+
+Progress:
+
+1. Analyzed codebase structure (02:19-02:24):
+   - Built kernel and captured compiled files: 403 .o files from C sources
+   - Found 35 uncompiled C files (8,914 LOC total)
+   - HOWEVER: Most "uncompiled" files are actually #included:
+     * All kernel/sched/*.c files (4,130 LOC) are #included by build_policy.c/build_utility.c
+     * lib/decompress_unxz.c and lib/xz/*.c (2,317 LOC) #included by arch/x86/boot/compressed/misc.c
+     * lib/vdso/gettimeofday.c (329 LOC) probably #included
+   - Actually removable uncompiled files: ~2,000 LOC (tools, stubs, etc.)
+
+2. Largest compiled files analysis:
+   - Top 10 files: 30,435 LOC (18% of C code)
+     * mm/page_alloc.c: 5,081 LOC
+     * mm/memory.c: 4,055 LOC
+     * fs/namei.c: 3,853 LOC
+     * fs/namespace.c: 3,838 LOC
+     * drivers/tty/vt/vt.c: 3,610 LOC
+     * drivers/base/core.c: 3,387 LOC
+     * kernel/signal.c: 3,093 LOC
+     * kernel/sched/core.c: 2,695 LOC
+     * mm/mmap.c: 2,681 LOC
+     * mm/vmalloc.c: 2,673 LOC
+   - Reducing these requires careful simplification, not deletion
+
+3. Explored reduction opportunities (02:24-02:30):
+   - Checked for debug/printk statements: minimal (14 in page_alloc.c)
+   - Checked for ifdef branches: minimal (9-12 per large file)
+   - Checked for compat syscalls: only 5 found
+   - Checked CONFIG options: 266 enabled, most major subsystems already disabled
+   - Conclusion: Codebase is already highly optimized
+
+Analysis summary (02:30):
+- Removable uncompiled files: ~2K LOC (insufficient)
+- Large files need simplification: but functions are interdependent
+- Headers are risky to touch: 94K LOC but unclear what's used
+- CONFIG-based reduction: limited opportunities, already minimal
+
+Challenge: To reach 200K LOC goal (48K reduction), need to either:
+1. Aggressively stub large subsystems (MM, FS, TTY) - HIGH RISK
+2. Manually reduce headers by removing unused definitions - VERY TIME CONSUMING
+3. Accept that 247K LOC might be near-minimal for a bootable kernel with current approach
+
+Next steps to try:
+- Look for specific large functions that can be stubbed (e.g., signal handling complexity)
+- Try removing entire .c files from middle-size range (500-1000 LOC) to test dependencies
+- Consider if switching to NOMMU or even simpler architectures might help
+
 --- 2025-11-16 01:58 ---
 
 New session starting:

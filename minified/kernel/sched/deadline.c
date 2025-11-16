@@ -78,6 +78,7 @@ int sched_dl_overflow(struct task_struct *p, int policy, const struct sched_attr
 void __setparam_dl(struct task_struct *p, const struct sched_attr *attr) { }
 void __getparam_dl(struct task_struct *p, struct sched_attr *attr) { }
 bool __checkparam_dl(const struct sched_attr *attr) { return false; }
+bool dl_param_changed(struct task_struct *p, const struct sched_attr *attr) { return false; }
 
 void __dl_clear_params(struct task_struct *p)
 {

@@ -2813,74 +2813,19 @@ int numa_migrate_prep(struct page *page, struct vm_area_struct *vma,
 
 static vm_fault_t do_numa_page(struct vm_fault *vmf)
 {
+	/* Minimal stub - NUMA balancing not needed for minimal kernel */
 	struct vm_area_struct *vma = vmf->vma;
-	struct page *page = NULL;
-	int page_nid = NUMA_NO_NODE;
-	int last_cpupid;
-	int target_nid;
 	pte_t pte, old_pte;
 	bool was_writable = pte_savedwrite(vmf->orig_pte);
-	int flags = 0;
 
-	
 	vmf->ptl = pte_lockptr(vma->vm_mm, vmf->pmd);
 	spin_lock(vmf->ptl);
 	if (unlikely(!pte_same(*vmf->pte, vmf->orig_pte))) {
 		pte_unmap_unlock(vmf->pte, vmf->ptl);
-		goto out;
+		return 0;
 	}
 
-	
-	old_pte = ptep_get(vmf->pte);
-	pte = pte_modify(old_pte, vma->vm_page_prot);
-
-	page = vm_normal_page(vma, vmf->address, pte);
-	if (!page)
-		goto out_map;
-
-	
-	if (PageCompound(page))
-		goto out_map;
-
-	
-	if (!was_writable)
-		flags |= TNF_NO_GROUP;
-
-	
-	if (page_mapcount(page) > 1 && (vma->vm_flags & VM_SHARED))
-		flags |= TNF_SHARED;
-
-	last_cpupid = page_cpupid_last(page);
-	page_nid = page_to_nid(page);
-	target_nid = numa_migrate_prep(page, vma, vmf->address, page_nid,
-			&flags);
-	if (target_nid == NUMA_NO_NODE) {
-		put_page(page);
-		goto out_map;
-	}
-	pte_unmap_unlock(vmf->pte, vmf->ptl);
-
-	
-	if (migrate_misplaced_page(page, vma, target_nid)) {
-		page_nid = target_nid;
-		flags |= TNF_MIGRATED;
-	} else {
-		flags |= TNF_MIGRATE_FAIL;
-		vmf->pte = pte_offset_map(vmf->pmd, vmf->address);
-		spin_lock(vmf->ptl);
-		if (unlikely(!pte_same(*vmf->pte, vmf->orig_pte))) {
-			pte_unmap_unlock(vmf->pte, vmf->ptl);
-			goto out;
-		}
-		goto out_map;
-	}
-
-out:
-	if (page_nid != NUMA_NO_NODE)
-		task_numa_fault(last_cpupid, page_nid, 1, flags);
-	return 0;
-out_map:
-	
+	/* Just restore the PTE and return */
 	old_pte = ptep_modify_prot_start(vma, vmf->address, vmf->pte);
 	pte = pte_modify(old_pte, vma->vm_page_prot);
 	pte = pte_mkyoung(pte);
@@ -2889,7 +2834,7 @@ out_map:
 	ptep_modify_prot_commit(vma, vmf->address, vmf->pte, old_pte, pte);
 	update_mmu_cache(vma, vmf->address, vmf->pte);
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
-	goto out;
+	return 0;
 }
 
 static inline vm_fault_t create_huge_pmd(struct vm_fault *vmf)

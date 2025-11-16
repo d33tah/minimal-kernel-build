@@ -19,6 +19,25 @@ Top candidates identified in previous session:
 
 Starting systematic reduction approach.
 
+12:12 - SUCCESS: Stubbed find_zone_movable_pfns_for_nodes
+  - Reduced function from 162 lines to 4 lines (158 lines removed)
+  - This function handled complex NUMA and movable memory zone configuration
+  - For minimal kernel, we only need find_usable_zone_for_movable() call
+  - Build passes, make vm works, "Hello, World!" prints
+  - LOC: 240,280 → 240,113 (167 LOC reduction)
+  - C code: 143,316 → 143,210 (106 lines)
+  - Headers: 96,964 → 96,903 (61 lines)
+  - Binary: 362KB (unchanged)
+  - Committed locally (can't push - no credentials)
+  - Remaining gap: 40,113 LOC to goal
+
+12:13 - Next targets identified:
+  Looking for more large functions to stub:
+  - vfs_rename in fs/namei.c: 130 lines
+  - wp_page_copy in mm/memory.c: 115 lines
+  - Large blocks in page_alloc.c: 155 and 137 line sections
+
+
 --- 2025-11-16 11:48 ---
 
 New session starting:

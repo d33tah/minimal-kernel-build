@@ -1,3 +1,55 @@
+--- 2025-11-16 11:48 ---
+
+New session starting:
+- make vm: PASSES ✓, prints "Hello, World!" ✓
+- Binary: 365KB
+- Current LOC: 245,040
+- Goal: 200,000 LOC
+- Gap: 45,040 LOC to remove (18.4% reduction needed)
+
+11:52 - Analysis of reduction opportunities:
+
+Top candidates for reduction:
+1. Auto-generated atomic headers: 4,804 LOC total
+   - atomic-arch-fallback.h: 2,352 LOC
+   - atomic-instrumented.h: 1,941 LOC
+   - atomic-long.h: 511 LOC
+   These are likely over-generated for our simple needs.
+
+2. Large filesystem code (only need minimal initramfs support):
+   - fs/namei.c: 3,853 LOC (complex path lookup)
+   - fs/namespace.c: 3,838 LOC (mount/namespace handling)
+   - fs/dcache.c: 2,326 LOC (dentry cache)
+
+3. Large memory management:
+   - mm/page_alloc.c: 5,081 LOC
+   - mm/memory.c: 4,055 LOC
+   - mm/mmap.c: 2,681 LOC
+
+4. TTY/VT complexity:
+   - drivers/tty/vt/vt.c: 3,610 LOC (complex VT not needed)
+   - drivers/tty/tty_io.c: 2,352 LOC
+
+Strategy: Start with reducing header overhead, then move to subsystems.
+Will try trimming auto-generated atomic headers first.
+
+11:58 - Found dead swap code:
+  - do_swap_page() in mm/memory.c: 234 LOC
+  - Function is in vmlinux even though CONFIG_SWAP is not set
+  - This is low-hanging fruit - can be stubbed
+
+Attempting to stub do_swap_page.
+
+12:02 - SUCCESS: Stubbed do_swap_page
+  - Reduced function from 234 lines to 32 lines (202 lines removed)
+  - Kept essential non-swap entries handling (migration, device exclusive, etc)
+  - Build passes, make vm works, "Hello, World!" prints
+  - LOC: 245,040 → 244,880 (160 LOC reduction)
+  - C code: 138,858 → 138,698
+  - Remaining gap: 44,880 LOC to goal
+
+Next: Look for more large functions that can be stubbed similarly.
+
 --- 2025-11-16 11:29 ---
 
 New session starting:

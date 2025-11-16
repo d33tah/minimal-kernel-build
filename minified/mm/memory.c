@@ -2715,238 +2715,36 @@ static vm_fault_t handle_pte_marker(struct vm_fault *vmf)
 
 vm_fault_t do_swap_page(struct vm_fault *vmf)
 {
+	/* Stub: swap not configured, should never be called */
 	struct vm_area_struct *vma = vmf->vma;
-	struct page *page = NULL, *swapcache;
-	struct swap_info_struct *si = NULL;
-	rmap_t rmap_flags = RMAP_NONE;
-	bool exclusive = false;
 	swp_entry_t entry;
-	pte_t pte;
-	int locked;
-	vm_fault_t ret = 0;
-	void *shadow = NULL;
 
 	if (!pte_unmap_same(vmf))
-		goto out;
+		return 0;
 
 	entry = pte_to_swp_entry(vmf->orig_pte);
+
+	/* Handle special non-swap entries that can still occur */
 	if (unlikely(non_swap_entry(entry))) {
 		if (is_migration_entry(entry)) {
-			migration_entry_wait(vma->vm_mm, vmf->pmd,
-					     vmf->address);
+			migration_entry_wait(vma->vm_mm, vmf->pmd, vmf->address);
+			return 0;
 		} else if (is_device_exclusive_entry(entry)) {
 			vmf->page = pfn_swap_entry_to_page(entry);
-			ret = remove_device_exclusive_entry(vmf);
+			return remove_device_exclusive_entry(vmf);
 		} else if (is_device_private_entry(entry)) {
 			vmf->page = pfn_swap_entry_to_page(entry);
-			ret = vmf->page->pgmap->ops->migrate_to_ram(vmf);
+			return vmf->page->pgmap->ops->migrate_to_ram(vmf);
 		} else if (is_hwpoison_entry(entry)) {
-			ret = VM_FAULT_HWPOISON;
-		} else if (is_swapin_error_entry(entry)) {
-			ret = VM_FAULT_SIGBUS;
+			return VM_FAULT_HWPOISON;
 		} else if (is_pte_marker_entry(entry)) {
-			ret = handle_pte_marker(vmf);
-		} else {
-			print_bad_pte(vma, vmf->address, vmf->orig_pte, NULL);
-			ret = VM_FAULT_SIGBUS;
-		}
-		goto out;
-	}
-
-	
-	si = get_swap_device(entry);
-	if (unlikely(!si))
-		goto out;
-
-	page = lookup_swap_cache(entry, vma, vmf->address);
-	swapcache = page;
-
-	if (!page) {
-		if (data_race(si->flags & SWP_SYNCHRONOUS_IO) &&
-		    __swap_count(entry) == 1) {
-			
-			page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma,
-							vmf->address);
-			if (page) {
-				__SetPageLocked(page);
-				__SetPageSwapBacked(page);
-
-				if (mem_cgroup_swapin_charge_page(page,
-					vma->vm_mm, GFP_KERNEL, entry)) {
-					ret = VM_FAULT_OOM;
-					goto out_page;
-				}
-				mem_cgroup_swapin_uncharge_swap(entry);
-
-				shadow = get_shadow_from_swap_cache(entry);
-				if (shadow)
-					workingset_refault(page_folio(page),
-								shadow);
-
-				lru_cache_add(page);
-
-				
-				set_page_private(page, entry.val);
-				swap_readpage(page, true, NULL);
-				set_page_private(page, 0);
-			}
-		} else {
-			page = swapin_readahead(entry, GFP_HIGHUSER_MOVABLE,
-						vmf);
-			swapcache = page;
-		}
-
-		if (!page) {
-			
-			vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd,
-					vmf->address, &vmf->ptl);
-			if (likely(pte_same(*vmf->pte, vmf->orig_pte)))
-				ret = VM_FAULT_OOM;
-			goto unlock;
-		}
-
-		
-		ret = VM_FAULT_MAJOR;
-		count_vm_event(PGMAJFAULT);
-		count_memcg_event_mm(vma->vm_mm, PGMAJFAULT);
-	} else if (PageHWPoison(page)) {
-		
-		ret = VM_FAULT_HWPOISON;
-		goto out_release;
-	}
-
-	locked = lock_page_or_retry(page, vma->vm_mm, vmf->flags);
-
-	if (!locked) {
-		ret |= VM_FAULT_RETRY;
-		goto out_release;
-	}
-
-	if (swapcache) {
-		
-		if (unlikely(!PageSwapCache(page) ||
-			     page_private(page) != entry.val))
-			goto out_page;
-
-		
-		page = ksm_might_need_to_copy(page, vma, vmf->address);
-		if (unlikely(!page)) {
-			ret = VM_FAULT_OOM;
-			page = swapcache;
-			goto out_page;
-		}
-
-		
-		if ((vmf->flags & FAULT_FLAG_WRITE) && page == swapcache &&
-		    !PageKsm(page) && !PageLRU(page))
-			lru_add_drain();
-	}
-
-	cgroup_throttle_swaprate(page, GFP_KERNEL);
-
-	
-	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
-			&vmf->ptl);
-	if (unlikely(!pte_same(*vmf->pte, vmf->orig_pte)))
-		goto out_nomap;
-
-	if (unlikely(!PageUptodate(page))) {
-		ret = VM_FAULT_SIGBUS;
-		goto out_nomap;
-	}
-
-	
-	BUG_ON(!PageAnon(page) && PageMappedToDisk(page));
-	BUG_ON(PageAnon(page) && PageAnonExclusive(page));
-
-	
-	if (!PageKsm(page)) {
-		
-		exclusive = pte_swp_exclusive(vmf->orig_pte);
-		if (page != swapcache) {
-			
-			exclusive = true;
-		} else if (exclusive && PageWriteback(page) &&
-			  data_race(si->flags & SWP_STABLE_WRITES)) {
-			
-			exclusive = false;
+			return handle_pte_marker(vmf);
 		}
 	}
 
-	
-	swap_free(entry);
-	if (should_try_to_free_swap(page, vma, vmf->flags))
-		try_to_free_swap(page);
-
-	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
-	dec_mm_counter_fast(vma->vm_mm, MM_SWAPENTS);
-	pte = mk_pte(page, vma->vm_page_prot);
-
-	
-	if (!PageKsm(page) && (exclusive || page_count(page) == 1)) {
-		if (vmf->flags & FAULT_FLAG_WRITE) {
-			pte = maybe_mkwrite(pte_mkdirty(pte), vma);
-			vmf->flags &= ~FAULT_FLAG_WRITE;
-			ret |= VM_FAULT_WRITE;
-		}
-		rmap_flags |= RMAP_EXCLUSIVE;
-	}
-	flush_icache_page(vma, page);
-	if (pte_swp_soft_dirty(vmf->orig_pte))
-		pte = pte_mksoft_dirty(pte);
-	if (pte_swp_uffd_wp(vmf->orig_pte)) {
-		pte = pte_mkuffd_wp(pte);
-		pte = pte_wrprotect(pte);
-	}
-	vmf->orig_pte = pte;
-
-	
-	if (unlikely(page != swapcache && swapcache)) {
-		page_add_new_anon_rmap(page, vma, vmf->address);
-		lru_cache_add_inactive_or_unevictable(page, vma);
-	} else {
-		page_add_anon_rmap(page, vma, vmf->address, rmap_flags);
-	}
-
-	VM_BUG_ON(!PageAnon(page) || (pte_write(pte) && !PageAnonExclusive(page)));
-	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, pte);
-	arch_do_swap_page(vma->vm_mm, vma, vmf->address, pte, vmf->orig_pte);
-
-	unlock_page(page);
-	if (page != swapcache && swapcache) {
-		
-		unlock_page(swapcache);
-		put_page(swapcache);
-	}
-
-	if (vmf->flags & FAULT_FLAG_WRITE) {
-		ret |= do_wp_page(vmf);
-		if (ret & VM_FAULT_ERROR)
-			ret &= VM_FAULT_ERROR;
-		goto out;
-	}
-
-	
-	update_mmu_cache(vma, vmf->address, vmf->pte);
-unlock:
-	pte_unmap_unlock(vmf->pte, vmf->ptl);
-out:
-	if (si)
-		put_swap_device(si);
-	return ret;
-out_nomap:
-	pte_unmap_unlock(vmf->pte, vmf->ptl);
-out_page:
-	unlock_page(page);
-out_release:
-	put_page(page);
-	if (page != swapcache && swapcache) {
-		unlock_page(swapcache);
-		put_page(swapcache);
-	}
-	if (si)
-		put_swap_device(si);
-	return ret;
+	/* Should not reach here - swap not configured */
+	print_bad_pte(vma, vmf->address, vmf->orig_pte, NULL);
+	return VM_FAULT_SIGBUS;
 }
 
 static vm_fault_t do_anonymous_page(struct vm_fault *vmf)

@@ -22,6 +22,19 @@ Progress:
 05:21 - Successfully removed fadvise.o from mm/ (45 LOC saved).
   File advisory system calls not needed for minimal kernel.
   make vm: passing, prints "Hello World", binary: 370KB.
+  Committed and pushed.
+
+05:24 - Investigating other small file removal opportunities:
+  - bcd.o (13 LOC): FAILED - used by CMOS time functions (mach_get_cmos_time)
+  - Most lib/ and kernel/ unconditionally compiled files are essential
+  - probe_roms.c, async.c already stubbed to minimal implementations
+
+  Finding: Incremental file removal is reaching limits. Most remaining
+  unconditional builds are tightly coupled core infrastructure.
+
+05:28 - Successfully removed stack.o from fs/ (15 LOC saved).
+  Filesystem stack helper functions - already stubbed, not used anywhere.
+  make vm: passing, prints "Hello World", binary: 370KB.
   Will commit and continue.
 
 --- 2025-11-16 05:03 ---

@@ -1168,68 +1168,22 @@ static int do_umount_root(struct super_block *sb)
 
 static int do_umount(struct mount *mnt, int flags)
 {
-	struct super_block *sb = mnt->mnt.mnt_sb;
-	int retval;
-
-	retval = security_sb_umount(&mnt->mnt, flags);
+	int retval = security_sb_umount(&mnt->mnt, flags);
 	if (retval)
 		return retval;
 
-	
-	if (flags & MNT_EXPIRE) {
-		if (&mnt->mnt == current->fs->root.mnt ||
-		    flags & (MNT_FORCE | MNT_DETACH))
-			return -EINVAL;
-
-		
-		lock_mount_hash();
-		if (mnt_get_count(mnt) != 2) {
-			unlock_mount_hash();
-			return -EBUSY;
-		}
-		unlock_mount_hash();
-
-		if (!xchg(&mnt->mnt_expiry_mark, 1))
-			return -EAGAIN;
-	}
-
-	
-
-	if (flags & MNT_FORCE && sb->s_op->umount_begin) {
-		sb->s_op->umount_begin(sb);
-	}
-
-	
-	if (&mnt->mnt == current->fs->root.mnt && !(flags & MNT_DETACH)) {
-		
-		if (!ns_capable(sb->s_user_ns, CAP_SYS_ADMIN))
-			return -EPERM;
-		return do_umount_root(sb);
-	}
+	if (&mnt->mnt == current->fs->root.mnt)
+		return (flags & MNT_DETACH) ? 0 : -EINVAL;
 
 	namespace_lock();
 	lock_mount_hash();
-
-	
-	retval = -EINVAL;
 	if (mnt->mnt.mnt_flags & MNT_LOCKED)
-		goto out;
-
-	event++;
-	if (flags & MNT_DETACH) {
+		retval = -EINVAL;
+	else {
 		if (!list_empty(&mnt->mnt_list))
 			umount_tree(mnt, UMOUNT_PROPAGATE);
 		retval = 0;
-	} else {
-		shrink_submounts(mnt);
-		retval = -EBUSY;
-		if (!propagate_mount_busy(mnt, 2)) {
-			if (!list_empty(&mnt->mnt_list))
-				umount_tree(mnt, UMOUNT_PROPAGATE|UMOUNT_SYNC);
-			retval = 0;
-		}
 	}
-out:
 	unlock_mount_hash();
 	namespace_unlock();
 	return retval;
@@ -2201,9 +2155,7 @@ static int do_new_mount(struct path *path, const char *fstype, int sb_flags,
 
 int finish_automount(struct vfsmount *m, const struct path *path)
 {
-	struct dentry *dentry = path->dentry;
 	struct mountpoint *mp;
-	struct mount *mnt;
 	int err;
 
 	if (!m)
@@ -2211,55 +2163,24 @@ int finish_automount(struct vfsmount *m, const struct path *path)
 	if (IS_ERR(m))
 		return PTR_ERR(m);
 
-	mnt = real_mount(m);
-	
-	BUG_ON(mnt_get_count(mnt) < 2);
-
-	if (m->mnt_sb == path->mnt->mnt_sb &&
-	    m->mnt_root == dentry) {
-		err = -ELOOP;
-		goto discard;
-	}
-
-	
-	inode_lock(dentry->d_inode);
+	inode_lock(path->dentry->d_inode);
 	namespace_lock();
-	if (unlikely(cant_mount(dentry))) {
-		err = -ENOENT;
-		goto discard_locked;
-	}
-	rcu_read_lock();
-	if (unlikely(__lookup_mnt(path->mnt, dentry))) {
-		rcu_read_unlock();
-		err = 0;
-		goto discard_locked;
-	}
-	rcu_read_unlock();
-	mp = get_mountpoint(dentry);
+	mp = get_mountpoint(path->dentry);
 	if (IS_ERR(mp)) {
 		err = PTR_ERR(mp);
-		goto discard_locked;
-	}
-
-	err = do_add_mount(mnt, mp, path, path->mnt->mnt_flags | MNT_SHRINKABLE);
-	unlock_mount(mp);
-	if (unlikely(err))
-		goto discard;
-	mntput(m);
-	return 0;
-
-discard_locked:
-	namespace_unlock();
-	inode_unlock(dentry->d_inode);
-discard:
-	
-	if (!list_empty(&mnt->mnt_expire)) {
-		namespace_lock();
-		list_del_init(&mnt->mnt_expire);
 		namespace_unlock();
+		inode_unlock(path->dentry->d_inode);
+	} else {
+		err = do_add_mount(real_mount(m), mp, path, path->mnt->mnt_flags | MNT_SHRINKABLE);
+		unlock_mount(mp);
 	}
-	mntput(m);
-	mntput(m);
+
+	if (err) {
+		mntput(m);
+		mntput(m);
+	} else {
+		mntput(m);
+	}
 	return err;
 }
 

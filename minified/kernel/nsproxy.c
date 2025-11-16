@@ -355,44 +355,8 @@ static void commit_nsset(struct nsset *nsset)
 
 SYSCALL_DEFINE2(setns, int, fd, int, flags)
 {
-	struct file *file;
-	struct ns_common *ns = NULL;
-	struct nsset nsset = {};
-	int err = 0;
-
-	file = fget(fd);
-	if (!file)
-		return -EBADF;
-
-	if (proc_ns_file(file)) {
-		ns = get_proc_ns(file_inode(file));
-		if (flags && (ns->ops->type != flags))
-			err = -EINVAL;
-		flags = ns->ops->type;
-	} else if (!IS_ERR(pidfd_pid(file))) {
-		err = check_setns_flags(flags);
-	} else {
-		err = -EINVAL;
-	}
-	if (err)
-		goto out;
-
-	err = prepare_nsset(flags, &nsset);
-	if (err)
-		goto out;
-
-	if (proc_ns_file(file))
-		err = validate_ns(&nsset, ns);
-	else
-		err = validate_nsset(&nsset, file->private_data);
-	if (!err) {
-		commit_nsset(&nsset);
-		perf_event_namespaces(current);
-	}
-	put_nsset(&nsset);
-out:
-	fput(file);
-	return err;
+	/* Stubbed: setns not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 int __init nsproxy_cache_init(void)

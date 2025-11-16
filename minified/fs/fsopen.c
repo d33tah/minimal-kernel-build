@@ -100,42 +100,8 @@ static int fscontext_alloc_log(struct fs_context *fc)
  
 SYSCALL_DEFINE2(fsopen, const char __user *, _fs_name, unsigned int, flags)
 {
-	struct file_system_type *fs_type;
-	struct fs_context *fc;
-	const char *fs_name;
-	int ret;
-
-	if (!may_mount())
-		return -EPERM;
-
-	if (flags & ~FSOPEN_CLOEXEC)
-		return -EINVAL;
-
-	fs_name = strndup_user(_fs_name, PAGE_SIZE);
-	if (IS_ERR(fs_name))
-		return PTR_ERR(fs_name);
-
-	fs_type = get_fs_type(fs_name);
-	kfree(fs_name);
-	if (!fs_type)
-		return -ENODEV;
-
-	fc = fs_context_for_mount(fs_type, 0);
-	put_filesystem(fs_type);
-	if (IS_ERR(fc))
-		return PTR_ERR(fc);
-
-	fc->phase = FS_CONTEXT_CREATE_PARAMS;
-
-	ret = fscontext_alloc_log(fc);
-	if (ret < 0)
-		goto err_fc;
-
-	return fscontext_create_fd(fc, flags & FSOPEN_CLOEXEC ? O_CLOEXEC : 0);
-
-err_fc:
-	put_fs_context(fc);
-	return ret;
+	/* Stubbed: fsopen not needed for minimal kernel */
+	return -ENOSYS;
 }
 
  

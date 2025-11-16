@@ -1950,37 +1950,8 @@ SYSCALL_DEFINE2(sched_setparam, pid_t, pid, struct sched_param __user *, param)
 SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
 			       unsigned int, flags)
 {
-	struct sched_attr attr;
-	struct task_struct *p;
-	int retval;
-
-	if (!uattr || pid < 0 || flags)
-		return -EINVAL;
-
-	retval = sched_copy_attr(uattr, &attr);
-	if (retval)
-		return retval;
-
-	if ((int)attr.sched_policy < 0)
-		return -EINVAL;
-	if (attr.sched_flags & SCHED_FLAG_KEEP_POLICY)
-		attr.sched_policy = SETPARAM_POLICY;
-
-	rcu_read_lock();
-	retval = -ESRCH;
-	p = find_process_by_pid(pid);
-	if (likely(p))
-		get_task_struct(p);
-	rcu_read_unlock();
-
-	if (likely(p)) {
-		if (attr.sched_flags & SCHED_FLAG_KEEP_PARAMS)
-			get_params(p, &attr);
-		retval = sched_setattr(p, &attr);
-		put_task_struct(p);
-	}
-
-	return retval;
+	/* Stubbed: sched_setattr not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
@@ -2059,37 +2030,8 @@ sched_attr_copy_to_user(struct sched_attr __user *uattr,
 SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
 		unsigned int, usize, unsigned int, flags)
 {
-	struct sched_attr kattr = { };
-	struct task_struct *p;
-	int retval;
-
-	if (!uattr || pid < 0 || usize > PAGE_SIZE ||
-	    usize < SCHED_ATTR_SIZE_VER0 || flags)
-		return -EINVAL;
-
-	rcu_read_lock();
-	p = find_process_by_pid(pid);
-	retval = -ESRCH;
-	if (!p)
-		goto out_unlock;
-
-	retval = security_task_getscheduler(p);
-	if (retval)
-		goto out_unlock;
-
-	kattr.sched_policy = p->policy;
-	if (p->sched_reset_on_fork)
-		kattr.sched_flags |= SCHED_FLAG_RESET_ON_FORK;
-	get_params(p, &kattr);
-	kattr.sched_flags &= SCHED_FLAG_ALL;
-
-	rcu_read_unlock();
-
-	return sched_attr_copy_to_user(uattr, &kattr, usize);
-
-out_unlock:
-	rcu_read_unlock();
-	return retval;
+	/* Stubbed: sched_getattr not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 static int

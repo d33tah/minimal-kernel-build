@@ -2755,122 +2755,20 @@ unsigned long __alloc_pages_bulk(gfp_t gfp, int preferred_nid,
 			struct page **page_array)
 {
 	struct page *page;
-	unsigned long flags;
-	struct zone *zone;
-	struct zoneref *z;
-	struct per_cpu_pages *pcp;
-	struct list_head *pcp_list;
-	struct alloc_context ac;
-	gfp_t alloc_gfp;
-	unsigned int alloc_flags = ALLOC_WMARK_LOW;
-	int nr_populated = 0, nr_account = 0;
+	int nr_populated = 0;
 
-	
-	while (page_array && nr_populated < nr_pages && page_array[nr_populated])
-		nr_populated++;
-
-	
-	if (unlikely(nr_pages <= 0))
-		goto out;
-
-	
-	if (unlikely(page_array && nr_pages - nr_populated == 0))
-		goto out;
-
-	
-	if (memcg_kmem_enabled() && (gfp & __GFP_ACCOUNT))
-		goto failed;
-
-	
-	if (nr_pages - nr_populated == 1)
-		goto failed;
-
-	
-	gfp &= gfp_allowed_mask;
-	alloc_gfp = gfp;
-	if (!prepare_alloc_pages(gfp, 0, preferred_nid, nodemask, &ac, &alloc_gfp, &alloc_flags))
-		goto out;
-	gfp = alloc_gfp;
-
-	
-	for_each_zone_zonelist_nodemask(zone, z, ac.zonelist, ac.highest_zoneidx, ac.nodemask) {
-		unsigned long mark;
-
-		if (cpusets_enabled() && (alloc_flags & ALLOC_CPUSET) &&
-		    !__cpuset_zone_allowed(zone, gfp)) {
-			continue;
-		}
-
-		if (nr_online_nodes > 1 && zone != ac.preferred_zoneref->zone &&
-		    zone_to_nid(zone) != zone_to_nid(ac.preferred_zoneref->zone)) {
-			goto failed;
-		}
-
-		mark = wmark_pages(zone, alloc_flags & ALLOC_WMARK_MASK) + nr_pages;
-		if (zone_watermark_fast(zone, 0,  mark,
-				zonelist_zone_idx(ac.preferred_zoneref),
-				alloc_flags, gfp)) {
-			break;
-		}
-	}
-
-	
-	if (unlikely(!zone))
-		goto failed;
-
-	
-	local_lock_irqsave(&pagesets.lock, flags);
-	pcp = this_cpu_ptr(zone->per_cpu_pageset);
-	pcp_list = &pcp->lists[order_to_pindex(ac.migratetype, 0)];
-
+	/* Minimal stub: just allocate pages one at a time */
 	while (nr_populated < nr_pages) {
-
-		
-		if (page_array && page_array[nr_populated]) {
-			nr_populated++;
-			continue;
-		}
-
-		page = __rmqueue_pcplist(zone, 0, ac.migratetype, alloc_flags,
-								pcp, pcp_list);
-		if (unlikely(!page)) {
-			
-			if (!nr_account)
-				goto failed_irq;
+		page = __alloc_pages(gfp, 0, preferred_nid, nodemask);
+		if (!page)
 			break;
-		}
-		nr_account++;
-
-		prep_new_page(page, 0, gfp, 0);
 		if (page_list)
 			list_add(&page->lru, page_list);
 		else
 			page_array[nr_populated] = page;
 		nr_populated++;
 	}
-
-	local_unlock_irqrestore(&pagesets.lock, flags);
-
-	__count_zid_vm_events(PGALLOC, zone_idx(zone), nr_account);
-	zone_statistics(ac.preferred_zoneref->zone, zone, nr_account);
-
-out:
 	return nr_populated;
-
-failed_irq:
-	local_unlock_irqrestore(&pagesets.lock, flags);
-
-failed:
-	page = __alloc_pages(gfp, 0, preferred_nid, nodemask);
-	if (page) {
-		if (page_list)
-			list_add(&page->lru, page_list);
-		else
-			page_array[nr_populated] = page;
-		nr_populated++;
-	}
-
-	goto out;
 }
 
 struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
@@ -4590,87 +4488,22 @@ void *__init alloc_large_system_hash(const char *tablename,
 				     unsigned long low_limit,
 				     unsigned long high_limit)
 {
-	unsigned long long max = high_limit;
 	unsigned long log2qty, size;
-	void *table = NULL;
+	void *table;
 	gfp_t gfp_flags;
-	bool virt;
-	bool huge;
 
-	
-	if (!numentries) {
-		
-		numentries = nr_kernel_pages;
-		numentries -= arch_reserved_kernel_pages();
-
-		
-		if (PAGE_SHIFT < 20)
-			numentries = round_up(numentries, (1<<20)/PAGE_SIZE);
-
-#if __BITS_PER_LONG > 32
-		if (!high_limit) {
-			unsigned long adapt;
-
-			for (adapt = ADAPT_SCALE_NPAGES; adapt < numentries;
-			     adapt <<= ADAPT_SCALE_SHIFT)
-				scale++;
-		}
-#endif
-
-		
-		if (scale > PAGE_SHIFT)
-			numentries >>= (scale - PAGE_SHIFT);
-		else
-			numentries <<= (PAGE_SHIFT - scale);
-
-		
-		if (unlikely(flags & HASH_SMALL)) {
-			
-			WARN_ON(!(flags & HASH_EARLY));
-			if (!(numentries >> *_hash_shift)) {
-				numentries = 1UL << *_hash_shift;
-				BUG_ON(!numentries);
-			}
-		} else if (unlikely((numentries * bucketsize) < PAGE_SIZE))
-			numentries = PAGE_SIZE / bucketsize;
-	}
+	/* Minimal stub: simple hash table allocation */
+	if (!numentries)
+		numentries = 256; /* Small default */
 	numentries = roundup_pow_of_two(numentries);
-
-	
-	if (max == 0) {
-		max = ((unsigned long long)nr_all_pages << PAGE_SHIFT) >> 4;
-		do_div(max, bucketsize);
-	}
-	max = min(max, 0x80000000ULL);
-
-	if (numentries < low_limit)
-		numentries = low_limit;
-	if (numentries > max)
-		numentries = max;
-
 	log2qty = ilog2(numentries);
+	size = bucketsize << log2qty;
 
 	gfp_flags = (flags & HASH_ZERO) ? GFP_ATOMIC | __GFP_ZERO : GFP_ATOMIC;
-	do {
-		virt = false;
-		size = bucketsize << log2qty;
-		if (flags & HASH_EARLY) {
-			if (flags & HASH_ZERO)
-				table = memblock_alloc(size, SMP_CACHE_BYTES);
-			else
-				table = memblock_alloc_raw(size,
-							   SMP_CACHE_BYTES);
-		} else if (get_order(size) >= MAX_ORDER || hashdist) {
-			table = vmalloc_huge(size, gfp_flags);
-			virt = true;
-			if (table)
-				huge = is_vm_area_hugepages(table);
-		} else {
-			
-			table = alloc_pages_exact(size, gfp_flags);
-			kmemleak_alloc(table, size, 1, gfp_flags);
-		}
-	} while (!table && size > PAGE_SIZE && --log2qty);
+	if (flags & HASH_EARLY)
+		table = memblock_alloc(size, SMP_CACHE_BYTES);
+	else
+		table = alloc_pages_exact(size, gfp_flags);
 
 	if (!table)
 		panic("Failed to allocate %s hash table\n", tablename);

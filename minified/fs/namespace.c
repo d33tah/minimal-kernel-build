@@ -1906,53 +1906,8 @@ static struct file *open_detached_copy(struct path *path, bool recursive)
 
 SYSCALL_DEFINE3(open_tree, int, dfd, const char __user *, filename, unsigned, flags)
 {
-	struct file *file;
-	struct path path;
-	int lookup_flags = LOOKUP_AUTOMOUNT | LOOKUP_FOLLOW;
-	bool detached = flags & OPEN_TREE_CLONE;
-	int error;
-	int fd;
-
-	BUILD_BUG_ON(OPEN_TREE_CLOEXEC != O_CLOEXEC);
-
-	if (flags & ~(AT_EMPTY_PATH | AT_NO_AUTOMOUNT | AT_RECURSIVE |
-		      AT_SYMLINK_NOFOLLOW | OPEN_TREE_CLONE |
-		      OPEN_TREE_CLOEXEC))
-		return -EINVAL;
-
-	if ((flags & (AT_RECURSIVE | OPEN_TREE_CLONE)) == AT_RECURSIVE)
-		return -EINVAL;
-
-	if (flags & AT_NO_AUTOMOUNT)
-		lookup_flags &= ~LOOKUP_AUTOMOUNT;
-	if (flags & AT_SYMLINK_NOFOLLOW)
-		lookup_flags &= ~LOOKUP_FOLLOW;
-	if (flags & AT_EMPTY_PATH)
-		lookup_flags |= LOOKUP_EMPTY;
-
-	if (detached && !may_mount())
-		return -EPERM;
-
-	fd = get_unused_fd_flags(flags & O_CLOEXEC);
-	if (fd < 0)
-		return fd;
-
-	error = user_path_at(dfd, filename, lookup_flags, &path);
-	if (unlikely(error)) {
-		file = ERR_PTR(error);
-	} else {
-		if (detached)
-			file = open_detached_copy(&path, flags & AT_RECURSIVE);
-		else
-			file = dentry_open(&path, O_PATH, current_cred());
-		path_put(&path);
-	}
-	if (IS_ERR(file)) {
-		put_unused_fd(fd);
-		return PTR_ERR(file);
-	}
-	fd_install(fd, file);
-	return fd;
+	/* Stubbed: open_tree not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 static bool can_change_locked_flags(struct mount *mnt, unsigned int mnt_flags)
@@ -2912,115 +2867,8 @@ static unsigned int attr_flags_to_mnt_flags(u64 attr_flags)
 SYSCALL_DEFINE3(fsmount, int, fs_fd, unsigned int, flags,
 		unsigned int, attr_flags)
 {
-	struct mnt_namespace *ns;
-	struct fs_context *fc;
-	struct file *file;
-	struct path newmount;
-	struct mount *mnt;
-	struct fd f;
-	unsigned int mnt_flags = 0;
-	long ret;
-
-	if (!may_mount())
-		return -EPERM;
-
-	if ((flags & ~(FSMOUNT_CLOEXEC)) != 0)
-		return -EINVAL;
-
-	if (attr_flags & ~FSMOUNT_VALID_FLAGS)
-		return -EINVAL;
-
-	mnt_flags = attr_flags_to_mnt_flags(attr_flags);
-
-	switch (attr_flags & MOUNT_ATTR__ATIME) {
-	case MOUNT_ATTR_STRICTATIME:
-		break;
-	case MOUNT_ATTR_NOATIME:
-		mnt_flags |= MNT_NOATIME;
-		break;
-	case MOUNT_ATTR_RELATIME:
-		mnt_flags |= MNT_RELATIME;
-		break;
-	default:
-		return -EINVAL;
-	}
-
-	f = fdget(fs_fd);
-	if (!f.file)
-		return -EBADF;
-
-	ret = -EINVAL;
-	if (f.file->f_op != &fscontext_fops)
-		goto err_fsfd;
-
-	fc = f.file->private_data;
-
-	ret = mutex_lock_interruptible(&fc->uapi_mutex);
-	if (ret < 0)
-		goto err_fsfd;
-
-	
-	ret = -EINVAL;
-	if (!fc->root)
-		goto err_unlock;
-
-	ret = -EPERM;
-	if (mount_too_revealing(fc->root->d_sb, &mnt_flags)) {
-		goto err_unlock;
-	}
-
-	ret = -EBUSY;
-	if (fc->phase != FS_CONTEXT_AWAITING_MOUNT)
-		goto err_unlock;
-
-	if (fc->sb_flags & SB_MANDLOCK)
-		warn_mandlock();
-
-	newmount.mnt = vfs_create_mount(fc);
-	if (IS_ERR(newmount.mnt)) {
-		ret = PTR_ERR(newmount.mnt);
-		goto err_unlock;
-	}
-	newmount.dentry = dget(fc->root);
-	newmount.mnt->mnt_flags = mnt_flags;
-
-	
-	vfs_clean_context(fc);
-
-	ns = alloc_mnt_ns(current->nsproxy->mnt_ns->user_ns, true);
-	if (IS_ERR(ns)) {
-		ret = PTR_ERR(ns);
-		goto err_path;
-	}
-	mnt = real_mount(newmount.mnt);
-	mnt->mnt_ns = ns;
-	ns->root = mnt;
-	ns->mounts = 1;
-	list_add(&mnt->mnt_list, &ns->list);
-	mntget(newmount.mnt);
-
-	
-	file = dentry_open(&newmount, O_PATH, fc->cred);
-	if (IS_ERR(file)) {
-		dissolve_on_fput(newmount.mnt);
-		ret = PTR_ERR(file);
-		goto err_path;
-	}
-	file->f_mode |= FMODE_NEED_UNMOUNT;
-
-	ret = get_unused_fd_flags((flags & FSMOUNT_CLOEXEC) ? O_CLOEXEC : 0);
-	if (ret >= 0)
-		fd_install(ret, file);
-	else
-		fput(file);
-
-err_path:
-	path_put(&newmount);
-err_unlock:
-	mutex_unlock(&fc->uapi_mutex);
-err_fsfd:
-	fdput(f);
-	return ret;
+	/* Stubbed: fsmount not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE5(move_mount,
@@ -3028,49 +2876,8 @@ SYSCALL_DEFINE5(move_mount,
 		int, to_dfd, const char __user *, to_pathname,
 		unsigned int, flags)
 {
-	struct path from_path, to_path;
-	unsigned int lflags;
-	int ret = 0;
-
-	if (!may_mount())
-		return -EPERM;
-
-	if (flags & ~MOVE_MOUNT__MASK)
-		return -EINVAL;
-
-	
-	lflags = 0;
-	if (flags & MOVE_MOUNT_F_SYMLINKS)	lflags |= LOOKUP_FOLLOW;
-	if (flags & MOVE_MOUNT_F_AUTOMOUNTS)	lflags |= LOOKUP_AUTOMOUNT;
-	if (flags & MOVE_MOUNT_F_EMPTY_PATH)	lflags |= LOOKUP_EMPTY;
-
-	ret = user_path_at(from_dfd, from_pathname, lflags, &from_path);
-	if (ret < 0)
-		return ret;
-
-	lflags = 0;
-	if (flags & MOVE_MOUNT_T_SYMLINKS)	lflags |= LOOKUP_FOLLOW;
-	if (flags & MOVE_MOUNT_T_AUTOMOUNTS)	lflags |= LOOKUP_AUTOMOUNT;
-	if (flags & MOVE_MOUNT_T_EMPTY_PATH)	lflags |= LOOKUP_EMPTY;
-
-	ret = user_path_at(to_dfd, to_pathname, lflags, &to_path);
-	if (ret < 0)
-		goto out_from;
-
-	ret = security_move_mount(&from_path, &to_path);
-	if (ret < 0)
-		goto out_to;
-
-	if (flags & MOVE_MOUNT_SET_GROUP)
-		ret = do_set_group(&from_path, &to_path);
-	else
-		ret = do_move_mount(&from_path, &to_path);
-
-out_to:
-	path_put(&to_path);
-out_from:
-	path_put(&from_path);
-	return ret;
+	/* Stubbed: move_mount not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 bool is_path_reachable(struct mount *mnt, struct dentry *dentry,
@@ -3095,100 +2902,8 @@ bool path_is_under(const struct path *path1, const struct path *path2)
 SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
 		const char __user *, put_old)
 {
-	struct path new, old, root;
-	struct mount *new_mnt, *root_mnt, *old_mnt, *root_parent, *ex_parent;
-	struct mountpoint *old_mp, *root_mp;
-	int error;
-
-	if (!may_mount())
-		return -EPERM;
-
-	error = user_path_at(AT_FDCWD, new_root,
-			     LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &new);
-	if (error)
-		goto out0;
-
-	error = user_path_at(AT_FDCWD, put_old,
-			     LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &old);
-	if (error)
-		goto out1;
-
-	error = security_sb_pivotroot(&old, &new);
-	if (error)
-		goto out2;
-
-	get_fs_root(current->fs, &root);
-	old_mp = lock_mount(&old);
-	error = PTR_ERR(old_mp);
-	if (IS_ERR(old_mp))
-		goto out3;
-
-	error = -EINVAL;
-	new_mnt = real_mount(new.mnt);
-	root_mnt = real_mount(root.mnt);
-	old_mnt = real_mount(old.mnt);
-	ex_parent = new_mnt->mnt_parent;
-	root_parent = root_mnt->mnt_parent;
-	if (IS_MNT_SHARED(old_mnt) ||
-		IS_MNT_SHARED(ex_parent) ||
-		IS_MNT_SHARED(root_parent))
-		goto out4;
-	if (!check_mnt(root_mnt) || !check_mnt(new_mnt))
-		goto out4;
-	if (new_mnt->mnt.mnt_flags & MNT_LOCKED)
-		goto out4;
-	error = -ENOENT;
-	if (d_unlinked(new.dentry))
-		goto out4;
-	error = -EBUSY;
-	if (new_mnt == root_mnt || old_mnt == root_mnt)
-		goto out4; 
-	error = -EINVAL;
-	if (root.mnt->mnt_root != root.dentry)
-		goto out4; 
-	if (!mnt_has_parent(root_mnt))
-		goto out4; 
-	if (new.mnt->mnt_root != new.dentry)
-		goto out4; 
-	if (!mnt_has_parent(new_mnt))
-		goto out4; 
-	
-	if (!is_path_reachable(old_mnt, old.dentry, &new))
-		goto out4;
-	
-	if (!is_path_reachable(new_mnt, new.dentry, &root))
-		goto out4;
-	lock_mount_hash();
-	umount_mnt(new_mnt);
-	root_mp = unhash_mnt(root_mnt);  
-	if (root_mnt->mnt.mnt_flags & MNT_LOCKED) {
-		new_mnt->mnt.mnt_flags |= MNT_LOCKED;
-		root_mnt->mnt.mnt_flags &= ~MNT_LOCKED;
-	}
-	
-	attach_mnt(root_mnt, old_mnt, old_mp);
-	
-	attach_mnt(new_mnt, root_parent, root_mp);
-	mnt_add_count(root_parent, -1);
-	touch_mnt_namespace(current->nsproxy->mnt_ns);
-	
-	list_del_init(&new_mnt->mnt_expire);
-	put_mountpoint(root_mp);
-	unlock_mount_hash();
-	chroot_fs_refs(&root, &new);
-	error = 0;
-out4:
-	unlock_mount(old_mp);
-	if (!error)
-		mntput_no_expire(ex_parent);
-out3:
-	path_put(&root);
-out2:
-	path_put(&old);
-out1:
-	path_put(&new);
-out0:
-	return error;
+	/* Stubbed: pivot_root not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 static unsigned int recalc_flags(struct mount_kattr *kattr, struct mount *mnt)
@@ -3486,48 +3201,8 @@ SYSCALL_DEFINE5(mount_setattr, int, dfd, const char __user *, path,
 		unsigned int, flags, struct mount_attr __user *, uattr,
 		size_t, usize)
 {
-	int err;
-	struct path target;
-	struct mount_attr attr;
-	struct mount_kattr kattr;
-
-	BUILD_BUG_ON(sizeof(struct mount_attr) != MOUNT_ATTR_SIZE_VER0);
-
-	if (flags & ~(AT_EMPTY_PATH |
-		      AT_RECURSIVE |
-		      AT_SYMLINK_NOFOLLOW |
-		      AT_NO_AUTOMOUNT))
-		return -EINVAL;
-
-	if (unlikely(usize > PAGE_SIZE))
-		return -E2BIG;
-	if (unlikely(usize < MOUNT_ATTR_SIZE_VER0))
-		return -EINVAL;
-
-	if (!may_mount())
-		return -EPERM;
-
-	err = copy_struct_from_user(&attr, sizeof(attr), uattr, usize);
-	if (err)
-		return err;
-
-	
-	if (attr.attr_set == 0 &&
-	    attr.attr_clr == 0 &&
-	    attr.propagation == 0)
-		return 0;
-
-	err = build_mount_kattr(&attr, usize, &kattr, flags);
-	if (err)
-		return err;
-
-	err = user_path_at(dfd, path, kattr.lookup_flags, &target);
-	if (!err) {
-		err = do_mount_setattr(&target, &kattr);
-		path_put(&target);
-	}
-	finish_mount_kattr(&kattr);
-	return err;
+	/* Stubbed: mount_setattr not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 static void __init init_mount_tree(void)

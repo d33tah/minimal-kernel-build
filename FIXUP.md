@@ -3080,3 +3080,14 @@ Comprehensive codebase analysis:
 Session total so far: 39 LOC removed (19 + 20)
 Remaining to 200K goal: ~59,851 LOC
 
+
+3. Removed unused bio iteration macros from include/linux/bio.h (8 LOC)
+   - bio_for_each_bvec_all (3 LOC)
+   - bip_for_each_vec (2 LOC)
+   - bio_for_each_integrity_vec (3 LOC)
+   - Verified unused with grep across codebase
+   - make vm: PASSES ✓
+   - Committed: 3b45451, Pushed ✓
+
+Session total so far: 47 LOC removed (19 + 20 + 8)
+Remaining to 200K goal: ~59,843 LOC

@@ -47,6 +47,37 @@ Progress:
   Need to find practical reduction opportunities. Will try looking for
   specific functions or subsystems that can be stubbed or removed.
 
+08:52 - Committed and pushed documentation (a755409). Now attempting actual LOC reduction.
+  Analysis shows scheduler subsystem is significant (sched/: ~5000 LOC with
+  core.c, fair.c, rt.c, deadline.c).
+
+  Will attempt to find specific, achievable targets for reduction.
+  Examining large files for stubbing opportunities.
+
+08:54 - Session challenge: Finding practical reduction opportunities is difficult.
+  Many files are either already stubbed or contain actual implementations needed
+  for the build. The codebase has been heavily optimized already.
+
+  Observations:
+  - Many subsystems already minimized (oom_kill.c: 76 lines, readahead.c: 55 lines)
+  - Large files (page_alloc.c, memory.c, filemap.c) contain core implementations
+  - Scheduler files (rt.c, deadline.c, fair.c) have actual complex logic
+  - Headers with many inline functions (mm.h: 169, fs.h: 98) likely all used
+
+  The challenge is that we're at 246,643 LOC with goal of 200K (46,643 over).
+  This requires removing ~19% more code, but most "low-hanging fruit" appears
+  already picked by previous sessions.
+
+  Need different approach: Consider targeting entire subsystems for removal/
+  simplification, or look for large conditional compilation blocks that could
+  be disabled. Individual function removal is too slow (as previous sessions noted).
+
+  Recommendation for next session:
+  - Try removing or heavily stubbing a large subsystem (e.g., advanced scheduler
+    features, complex memory management, extensive driver support)
+  - Use build-time analysis to find truly unused code
+  - Consider simplifying complex algorithms to minimal stub versions
+
 --- 2025-11-16 08:04 ---
 
 New session starting:

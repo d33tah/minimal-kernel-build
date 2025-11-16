@@ -33,6 +33,25 @@ Starting systematic reduction approach.
 
 12:13 - Next targets identified:
   Looking for more large functions to stub:
+
+12:15 - SUCCESS: Stubbed 5 mount-related syscalls
+  - fsmount: 113 lines → 4 lines (109 saved)
+  - pivot_root: 97 lines → 4 lines (93 saved)
+  - open_tree: 49 lines → 4 lines (45 saved)
+  - move_mount: 48 lines → 4 lines (44 saved)
+  - mount_setattr: 46 lines → 4 lines (42 saved)
+  - Total: 333 lines of complex mount logic removed
+  - Build passes, make vm works, "Hello, World!" prints
+  - LOC: 240,000 → 239,729 (271 LOC reduction)
+  - Binary: 361KB → 359KB (2KB smaller)
+  - Cumulative: 551 LOC reduced this session
+  - Remaining gap: 39,729 LOC to goal
+
+12:16 - Looking for more reduction opportunities:
+  Need to reduce another 39,729 LOC (19.9% of current size).
+  
+  Strategy: Continue stubbing unused syscalls and large functions.
+
   - vfs_rename in fs/namei.c: 130 lines
   - wp_page_copy in mm/memory.c: 115 lines
   - Large blocks in page_alloc.c: 155 and 137 line sections

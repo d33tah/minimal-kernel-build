@@ -49,12 +49,7 @@ extern const char * const migratetype_names[MIGRATE_TYPES];
 #  define is_migrate_cma(migratetype) false
 #  define is_migrate_cma_page(_page) false
 
-static inline bool is_migrate_movable(int mt)
-{
-	return is_migrate_cma(mt) || mt == MIGRATE_MOVABLE;
-}
 
- 
 static inline bool migratetype_is_mergeable(int mt)
 {
 	return mt < MIGRATE_PCPTYPES;
@@ -388,12 +383,6 @@ static inline bool zone_is_initialized(struct zone *zone)
 {
 	return zone->initialized;
 }
-
-static inline bool zone_is_empty(struct zone *zone)
-{
-	return zone->spanned_pages == 0;
-}
-
 
 #define DEF_PRIORITY 12
 

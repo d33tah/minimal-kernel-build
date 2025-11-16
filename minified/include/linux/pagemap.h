@@ -167,13 +167,7 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
 	m->gfp_mask = mask;
 }
 
- 
-static inline void mapping_set_large_folios(struct address_space *mapping)
-{
-	__set_bit(AS_LARGE_FOLIO_SUPPORT, &mapping->flags);
-}
 
- 
 static inline bool mapping_large_folio_support(struct address_space *mapping)
 {
 	return IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE) &&
@@ -305,13 +299,7 @@ static inline pgoff_t folio_index(struct folio *folio)
         return folio->index;
 }
 
- 
-static inline pgoff_t folio_next_index(struct folio *folio)
-{
-	return folio->index + folio_nr_pages(folio);
-}
 
- 
 static inline struct page *folio_file_page(struct folio *folio, pgoff_t index)
 {
 	 

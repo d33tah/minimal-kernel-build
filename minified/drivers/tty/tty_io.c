@@ -1774,134 +1774,35 @@ static struct tty_struct *tty_pair_get_tty(struct tty_struct *tty)
 
 long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
+	/* Minimal stub: handle only essential ioctl operations */
 	struct tty_struct *tty = file_tty(file);
 	struct tty_struct *real_tty;
 	void __user *p = (void __user *)arg;
 	int retval;
-	struct tty_ldisc *ld;
 
 	if (tty_paranoia_check(tty, file_inode(file), "tty_ioctl"))
 		return -EINVAL;
 
 	real_tty = tty_pair_get_tty(tty);
 
-	
+	/* Handle minimal set of ioctls needed for basic console */
 	switch (cmd) {
-	case TIOCSETD:
-	case TIOCSBRK:
-	case TIOCCBRK:
-	case TCSBRK:
-	case TCSBRKP:
-		retval = tty_check_change(tty);
-		if (retval)
-			return retval;
-		if (cmd != TIOCCBRK) {
-			tty_wait_until_sent(tty, 0);
-			if (signal_pending(current))
-				return -EINTR;
-		}
-		break;
-	}
-
-	
-	switch (cmd) {
-	case TIOCSTI:
-		return tiocsti(tty, p);
 	case TIOCGWINSZ:
 		return tiocgwinsz(real_tty, p);
 	case TIOCSWINSZ:
 		return tiocswinsz(real_tty, p);
-	case TIOCCONS:
-		return real_tty != tty ? -EINVAL : tioccons(file);
-	case TIOCEXCL:
-		set_bit(TTY_EXCLUSIVE, &tty->flags);
-		return 0;
-	case TIOCNXCL:
-		clear_bit(TTY_EXCLUSIVE, &tty->flags);
-		return 0;
-	case TIOCGEXCL:
-	{
-		int excl = test_bit(TTY_EXCLUSIVE, &tty->flags);
-
-		return put_user(excl, (int __user *)p);
-	}
-	case TIOCGETD:
-		return tiocgetd(tty, p);
-	case TIOCSETD:
-		return tiocsetd(tty, p);
-	case TIOCVHANGUP:
-		if (!capable(CAP_SYS_ADMIN))
-			return -EPERM;
-		tty_vhangup(tty);
-		return 0;
-	case TIOCGDEV:
-	{
-		unsigned int ret = new_encode_dev(tty_devnum(real_tty));
-
-		return put_user(ret, (unsigned int __user *)p);
-	}
-	
-	case TIOCSBRK:	
-		if (tty->ops->break_ctl)
-			return tty->ops->break_ctl(tty, -1);
-		return 0;
-	case TIOCCBRK:	
-		if (tty->ops->break_ctl)
-			return tty->ops->break_ctl(tty, 0);
-		return 0;
-	case TCSBRK:   
-		
-		if (!arg)
-			return send_break(tty, 250);
-		return 0;
-	case TCSBRKP:	
-		return send_break(tty, arg ? arg*100 : 250);
-
-	case TIOCMGET:
-		return tty_tiocmget(tty, p);
-	case TIOCMSET:
-	case TIOCMBIC:
-	case TIOCMBIS:
-		return tty_tiocmset(tty, cmd, p);
-	case TIOCGICOUNT:
-		return tty_tiocgicount(tty, p);
-	case TCFLSH:
-		switch (arg) {
-		case TCIFLUSH:
-		case TCIOFLUSH:
-		
-			tty_buffer_flush(tty, NULL);
-			break;
-		}
-		break;
-	case TIOCSSERIAL:
-		return tty_tiocsserial(tty, p);
-	case TIOCGSERIAL:
-		return tty_tiocgserial(tty, p);
-	case TIOCGPTPEER:
-		
-		return ptm_open_peer(file, tty, (int)arg);
 	default:
-		retval = tty_jobctrl_ioctl(tty, real_tty, file, cmd, arg);
-		if (retval != -ENOIOCTLCMD)
-			return retval;
+		break;
 	}
+
+	/* Delegate to driver-specific ioctl if available */
 	if (tty->ops->ioctl) {
 		retval = tty->ops->ioctl(tty, cmd, arg);
 		if (retval != -ENOIOCTLCMD)
 			return retval;
 	}
-	ld = tty_ldisc_ref_wait(tty);
-	if (!ld)
-		return hung_up_tty_ioctl(file, cmd, arg);
-	retval = -EINVAL;
-	if (ld->ops->ioctl) {
-		retval = ld->ops->ioctl(tty, cmd, arg);
-		if (retval == -ENOIOCTLCMD)
-			retval = -ENOTTY;
-	}
-	tty_ldisc_deref(ld);
-	return retval;
+
+	return -ENOTTY;
 }
 
 void __do_SAK(struct tty_struct *tty)

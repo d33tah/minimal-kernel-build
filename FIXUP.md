@@ -70,6 +70,43 @@ Attempting to stub do_con_trol to minimal implementation.
 
 This was a huge win! Next: Look for more large functions.
 
+12:17 - Analysis of codebase distribution:
+  C code by directory (lines):
+  - kernel/: 38,118 LOC
+  - mm/: 35,593 LOC
+  - arch/: 30,432 LOC
+  - fs/: 24,490 LOC
+  - drivers/: 19,316 LOC (reduced from ~19,692 after vt.c stub)
+  - lib/: 16,212 LOC
+
+  Remaining large function opportunities (~100+ lines each):
+  - find_zone_movable_pfns_for_nodes: 162 lines (memory zones)
+  - wp_page_copy: 115 lines (copy-on-write)
+  - filemap_fault: 113 lines (file page faults)
+  - tty_ioctl: 130 lines (TTY ioctl - risky)
+
+  Most of these are core functionality that's likely needed.
+
+  Strategy going forward:
+  - Continue looking for large simplifiable functions
+  - Consider stubbing less-critical syscalls
+  - Look for CONFIG-dependent code that can be removed
+
+12:21 - Session summary:
+  Achieved: 536 LOC reduction (160 + 376)
+  Binary size reduced: 365KB → 362KB
+  Remaining to goal: 44,504 LOC
+
+  Successful reductions:
+  1. do_swap_page (mm/memory.c): 234 → 32 lines
+  2. do_con_trol (drivers/tty/vt/vt.c): 403 → 27 lines
+
+  Both changes maintain full functionality for "Hello, World!" output.
+
+  Next session should continue with function-level stubbing strategy,
+  focusing on TTY, VT, and other subsystems that have oversized
+  functionality for minimal use case.
+
 --- 2025-11-16 11:29 ---
 
 New session starting:

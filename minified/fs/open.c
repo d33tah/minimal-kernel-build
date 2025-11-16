@@ -113,24 +113,7 @@ out:
 
 long do_sys_truncate(const char __user *pathname, loff_t length)
 {
-	unsigned int lookup_flags = LOOKUP_FOLLOW;
-	struct path path;
-	int error;
-
-	if (length < 0)	 
-		return -EINVAL;
-
-retry:
-	error = user_path_at(AT_FDCWD, pathname, lookup_flags, &path);
-	if (!error) {
-		error = vfs_truncate(&path, length);
-		path_put(&path);
-	}
-	if (retry_estale(error, lookup_flags)) {
-		lookup_flags |= LOOKUP_REVAL;
-		goto retry;
-	}
-	return error;
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE2(truncate, const char __user *, path, long, length)
@@ -343,62 +326,7 @@ static const struct cred *access_override_creds(void)
 
 static long do_faccessat(int dfd, const char __user *filename, int mode, int flags)
 {
-	struct path path;
-	struct inode *inode;
-	int res;
-	unsigned int lookup_flags = LOOKUP_FOLLOW;
-	const struct cred *old_cred = NULL;
-
-	if (mode & ~S_IRWXO)	 
-		return -EINVAL;
-
-	if (flags & ~(AT_EACCESS | AT_SYMLINK_NOFOLLOW | AT_EMPTY_PATH))
-		return -EINVAL;
-
-	if (flags & AT_SYMLINK_NOFOLLOW)
-		lookup_flags &= ~LOOKUP_FOLLOW;
-	if (flags & AT_EMPTY_PATH)
-		lookup_flags |= LOOKUP_EMPTY;
-
-	if (!(flags & AT_EACCESS)) {
-		old_cred = access_override_creds();
-		if (!old_cred)
-			return -ENOMEM;
-	}
-
-retry:
-	res = user_path_at(dfd, filename, lookup_flags, &path);
-	if (res)
-		goto out;
-
-	inode = d_backing_inode(path.dentry);
-
-	if ((mode & MAY_EXEC) && S_ISREG(inode->i_mode)) {
-		 
-		res = -EACCES;
-		if (path_noexec(&path))
-			goto out_path_release;
-	}
-
-	res = inode_permission(mnt_user_ns(path.mnt), inode, mode | MAY_ACCESS);
-	 
-	if (res || !(mode & S_IWOTH) || special_file(inode->i_mode))
-		goto out_path_release;
-	 
-	if (__mnt_is_readonly(path.mnt))
-		res = -EROFS;
-
-out_path_release:
-	path_put(&path);
-	if (retry_estale(res, lookup_flags)) {
-		lookup_flags |= LOOKUP_REVAL;
-		goto retry;
-	}
-out:
-	if (old_cred)
-		revert_creds(old_cred);
-
-	return res;
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
@@ -521,20 +449,7 @@ SYSCALL_DEFINE2(fchmod, unsigned int, fd, umode_t, mode)
 
 static int do_fchmodat(int dfd, const char __user *filename, umode_t mode)
 {
-	struct path path;
-	int error;
-	unsigned int lookup_flags = LOOKUP_FOLLOW;
-retry:
-	error = user_path_at(dfd, filename, lookup_flags, &path);
-	if (!error) {
-		error = chmod_common(&path, mode);
-		path_put(&path);
-		if (retry_estale(error, lookup_flags)) {
-			lookup_flags |= LOOKUP_REVAL;
-			goto retry;
-		}
-	}
-	return error;
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE3(fchmodat, int, dfd, const char __user *, filename,
@@ -600,33 +515,7 @@ retry_deleg:
 int do_fchownat(int dfd, const char __user *filename, uid_t user, gid_t group,
 		int flag)
 {
-	struct path path;
-	int error = -EINVAL;
-	int lookup_flags;
-
-	if ((flag & ~(AT_SYMLINK_NOFOLLOW | AT_EMPTY_PATH)) != 0)
-		goto out;
-
-	lookup_flags = (flag & AT_SYMLINK_NOFOLLOW) ? 0 : LOOKUP_FOLLOW;
-	if (flag & AT_EMPTY_PATH)
-		lookup_flags |= LOOKUP_EMPTY;
-retry:
-	error = user_path_at(dfd, filename, lookup_flags, &path);
-	if (error)
-		goto out;
-	error = mnt_want_write(path.mnt);
-	if (error)
-		goto out_release;
-	error = chown_common(&path, user, group);
-	mnt_drop_write(path.mnt);
-out_release:
-	path_put(&path);
-	if (retry_estale(error, lookup_flags)) {
-		lookup_flags |= LOOKUP_REVAL;
-		goto retry;
-	}
-out:
-	return error;
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE5(fchownat, int, dfd, const char __user *, filename, uid_t, user,

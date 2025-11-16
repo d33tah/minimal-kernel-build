@@ -1,3 +1,30 @@
+--- 2025-11-16 12:33 ---
+
+New session starting:
+- make vm: PASSES ✓, prints "Hello, World!" ✓, "Still alive" ✓
+- Binary: 355KB (under 400KB goal ✓)
+- Total LOC: 243,153 (before new changes)
+- Goal: 200K LOC total
+- Gap: 43,153 LOC to remove (17.7% reduction needed)
+
+12:35 - SUCCESS: Stubbed 4 filesystem syscalls in fs/open.c
+  Functions stubbed (all replaced with return -ENOSYS):
+  - do_sys_truncate: 21 lines → 1 line (20 saved)
+  - do_faccessat: 55 lines → 1 line (54 saved)
+  - do_fchmodat: 14 lines → 1 line (13 saved)
+  - do_fchownat: 27 lines → 1 line (26 saved)
+
+  Total reduction: ~113 lines in open.c
+  These syscalls (truncate, faccessat, fchmodat, fchownat)
+  are not needed for a minimal "Hello World" kernel.
+
+  Build: PASSES ✓
+  make vm: prints "Hello, World!" ✓
+  Binary: 355KB (unchanged)
+  Total LOC: 243,153 → ~243,040 (estimated 113 LOC reduction)
+
+  Remaining gap: ~43,040 LOC to 200K goal (17.7% reduction needed)
+
 --- 2025-11-16 12:30 ---
 
 New session starting:

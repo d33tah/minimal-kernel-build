@@ -32,6 +32,35 @@ Session notes:
 
   Next: Will try to identify lower-hanging fruit or partial reductions.
 
+09:35 - Continued exploration. Additional findings:
+  - init program only uses syscalls 1 (exit) and 4 (write)
+  - Kernel needs other syscalls for booting (execve, etc.)
+  - Syscall table reduction won't save much LOC (real code is in implementations)
+  - radix-tree.c: 1,141 lines, but 225 usages in codebase - actively used
+  - wait/completion subsystem: 776 lines total (wait.c, wait_bit.c, swait.c, completion.c)
+  - kobject.c: 806 lines - device model, heavily used
+  - printk.c: 961 lines - needed for output
+
+  Observation: Codebase is highly optimized. Most remaining code is essential.
+  Previous sessions have already removed low-hanging fruit.
+
+  Challenge: Need 45K LOC reduction but most files are core functionality.
+
+  Recommendations for next session:
+  1. Try partial stubbing of complex MM subsystems (page_alloc, vmalloc, filemap)
+  2. Look for opportunities to simplify (not remove) large VFS files
+  3. Consider if any header files can be trimmed
+  4. Investigate if wait/completion can be minimally stubbed
+  5. Check if time subsystem (6.4K LOC) has simplification opportunities
+  6. Look for data structure code that might have simpler implementations
+
+  Session summary:
+  - make vm: PASSES ✓
+  - Binary: 365KB ✓
+  - LOC: 245,091 (unchanged from session start)
+  - No LOC reduction achieved this session
+  - Extensive analysis completed, targets identified for next attempt
+
 --- 2025-11-16 08:52 ---
 
 New session starting:

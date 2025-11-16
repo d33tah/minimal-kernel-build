@@ -48,6 +48,15 @@ Progress:
 
   Will try finding more unused code systematically.
 
+06:27 - Successfully removed 27 unused macros (27 LOC).
+  Removed for_each_bio, for_each_bvec, for_each_clear_bit, and 12 OF macros.
+  Binary still 370KB, make vm passing. Committed and pushed.
+
+06:29 - Continuing macro removal. Removed 6 more lines so far:
+  - for_each_evictable_lru (2 LOC from mmzone.h)
+  - for_each_process_thread (4 LOC from sched/signal.h)
+  Testing build...
+
 --- 2025-11-16 05:52 ---
 
 New session starting:

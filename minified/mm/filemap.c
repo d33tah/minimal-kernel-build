@@ -1937,117 +1937,20 @@ static struct file *do_async_mmap_readahead(struct vm_fault *vmf,
 
 vm_fault_t filemap_fault(struct vm_fault *vmf)
 {
-	int error;
 	struct file *file = vmf->vma->vm_file;
-	struct file *fpin = NULL;
 	struct address_space *mapping = file->f_mapping;
-	struct inode *inode = mapping->host;
-	pgoff_t max_idx, index = vmf->pgoff;
+	pgoff_t index = vmf->pgoff;
 	struct folio *folio;
-	vm_fault_t ret = 0;
-	bool mapping_locked = false;
 
-	max_idx = DIV_ROUND_UP(i_size_read(inode), PAGE_SIZE);
-	if (unlikely(index >= max_idx))
-		return VM_FAULT_SIGBUS;
+	folio = __filemap_get_folio(mapping, index, FGP_CREAT|FGP_FOR_MMAP, vmf->gfp_mask);
+	if (!folio)
+		return VM_FAULT_OOM;
 
-	
-	folio = filemap_get_folio(mapping, index);
-	if (likely(folio)) {
-		
-		if (!(vmf->flags & FAULT_FLAG_TRIED))
-			fpin = do_async_mmap_readahead(vmf, folio);
-		if (unlikely(!folio_test_uptodate(folio))) {
-			filemap_invalidate_lock_shared(mapping);
-			mapping_locked = true;
-		}
-	} else {
-		
-		count_vm_event(PGMAJFAULT);
-		count_memcg_event_mm(vmf->vma->vm_mm, PGMAJFAULT);
-		ret = VM_FAULT_MAJOR;
-		fpin = do_sync_mmap_readahead(vmf);
-retry_find:
-		
-		if (!mapping_locked) {
-			filemap_invalidate_lock_shared(mapping);
-			mapping_locked = true;
-		}
-		folio = __filemap_get_folio(mapping, index,
-					  FGP_CREAT|FGP_FOR_MMAP,
-					  vmf->gfp_mask);
-		if (!folio) {
-			if (fpin)
-				goto out_retry;
-			filemap_invalidate_unlock_shared(mapping);
-			return VM_FAULT_OOM;
-		}
-	}
-
-	if (!lock_folio_maybe_drop_mmap(vmf, folio, &fpin))
-		goto out_retry;
-
-	
-	if (unlikely(folio->mapping != mapping)) {
-		folio_unlock(folio);
-		folio_put(folio);
-		goto retry_find;
-	}
-	VM_BUG_ON_FOLIO(!folio_contains(folio, index), folio);
-
-	
-	if (unlikely(!folio_test_uptodate(folio))) {
-		
-		if (!mapping_locked) {
-			folio_unlock(folio);
-			folio_put(folio);
-			goto retry_find;
-		}
-		goto page_not_uptodate;
-	}
-
-	
-	if (fpin) {
-		folio_unlock(folio);
-		goto out_retry;
-	}
-	if (mapping_locked)
-		filemap_invalidate_unlock_shared(mapping);
-
-	
-	max_idx = DIV_ROUND_UP(i_size_read(inode), PAGE_SIZE);
-	if (unlikely(index >= max_idx)) {
-		folio_unlock(folio);
-		folio_put(folio);
-		return VM_FAULT_SIGBUS;
-	}
+	if (!folio_test_locked(folio))
+		folio_lock(folio);
 
 	vmf->page = folio_file_page(folio, index);
-	return ret | VM_FAULT_LOCKED;
-
-page_not_uptodate:
-	
-	fpin = maybe_unlock_mmap_for_io(vmf, fpin);
-	error = filemap_read_folio(file, mapping, folio);
-	if (fpin)
-		goto out_retry;
-	folio_put(folio);
-
-	if (!error || error == AOP_TRUNCATED_PAGE)
-		goto retry_find;
-	filemap_invalidate_unlock_shared(mapping);
-
-	return VM_FAULT_SIGBUS;
-
-out_retry:
-	
-	if (folio)
-		folio_put(folio);
-	if (mapping_locked)
-		filemap_invalidate_unlock_shared(mapping);
-	if (fpin)
-		fput(fpin);
-	return ret | VM_FAULT_RETRY;
+	return VM_FAULT_LOCKED;
 }
 
 static bool filemap_map_pmd(struct vm_fault *vmf, struct page *page)
@@ -2437,68 +2340,18 @@ out:
 ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
 {
 	struct file *file = iocb->ki_filp;
-	loff_t pos = iocb->ki_pos;
 	struct address_space *mapping = file->f_mapping;
 	const struct address_space_operations *a_ops = mapping->a_ops;
-	long status = 0;
+	struct page *page;
+	void *fsdata;
 	ssize_t written = 0;
+	size_t bytes = iov_iter_count(i);
 
-	do {
-		struct page *page;
-		unsigned long offset;	
-		unsigned long bytes;	
-		size_t copied;		
-		void *fsdata;
-
-		offset = (pos & (PAGE_SIZE - 1));
-		bytes = min_t(unsigned long, PAGE_SIZE - offset,
-						iov_iter_count(i));
-
-again:
-		
-		if (unlikely(fault_in_iov_iter_readable(i, bytes) == bytes)) {
-			status = -EFAULT;
-			break;
-		}
-
-		if (fatal_signal_pending(current)) {
-			status = -EINTR;
-			break;
-		}
-
-		status = a_ops->write_begin(file, mapping, pos, bytes,
-						&page, &fsdata);
-		if (unlikely(status < 0))
-			break;
-
-		if (mapping_writably_mapped(mapping))
-			flush_dcache_page(page);
-
-		copied = copy_page_from_iter_atomic(page, offset, bytes, i);
-		flush_dcache_page(page);
-
-		status = a_ops->write_end(file, mapping, pos, bytes, copied,
-						page, fsdata);
-		if (unlikely(status != copied)) {
-			iov_iter_revert(i, copied - max(status, 0L));
-			if (unlikely(status < 0))
-				break;
-		}
-		cond_resched();
-
-		if (unlikely(status == 0)) {
-			
-			if (copied)
-				bytes = copied;
-			goto again;
-		}
-		pos += status;
-		written += status;
-
-		balance_dirty_pages_ratelimited(mapping);
-	} while (iov_iter_count(i));
-
-	return written ? written : status;
+	if (a_ops->write_begin(file, mapping, iocb->ki_pos, bytes, &page, &fsdata) < 0)
+		return -EIO;
+	written = copy_page_from_iter_atomic(page, 0, bytes, i);
+	a_ops->write_end(file, mapping, iocb->ki_pos, bytes, written, page, fsdata);
+	return written;
 }
 
 ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)

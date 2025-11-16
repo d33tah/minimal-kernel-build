@@ -182,25 +182,6 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 }
 
  
-#define xa_for_each_range(xa, index, entry, start, last)		\
-	for (index = start,						\
-	     entry = xa_find(xa, &index, last, XA_PRESENT);		\
-	     entry;							\
-	     entry = xa_find_after(xa, &index, last, XA_PRESENT))
-
- 
-#define xa_for_each_start(xa, index, entry, start) \
-	xa_for_each_range(xa, index, entry, start, ULONG_MAX)
-
- 
-#define xa_for_each(xa, index, entry) \
-	xa_for_each_start(xa, index, entry, 0)
-
- 
-#define xa_for_each_marked(xa, index, entry, filter) \
-	for (index = 0, entry = xa_find(xa, &index, ULONG_MAX, filter); \
-	     entry; entry = xa_find_after(xa, &index, ULONG_MAX, filter))
-
 #define xa_trylock(xa)		spin_trylock(&(xa)->xa_lock)
 #define xa_lock(xa)		spin_lock(&(xa)->xa_lock)
 #define xa_unlock(xa)		spin_unlock(&(xa)->xa_lock)

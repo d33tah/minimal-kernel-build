@@ -25,6 +25,28 @@ New session starting:
 
   Remaining gap: ~43,040 LOC to 200K goal (17.7% reduction needed)
 
+12:39 - SUCCESS: Stubbed 5 more syscall-related functions in fs/open.c
+  Functions stubbed (all replaced with return -ENOSYS):
+  - SYSCALL_DEFINE1(chdir): 24 lines → 3 lines (21 saved)
+  - SYSCALL_DEFINE1(fchdir): 21 lines → 3 lines (18 saved)
+  - ksys_fallocate: 9 lines → 3 lines (6 saved)
+  - vfs_fchown: 10 lines → 3 lines (7 saved)
+  - ksys_fchown: 9 lines → 3 lines (6 saved)
+
+  Total reduction: ~58 lines in open.c
+  These syscalls (chdir, fchdir, fallocate, fchown)
+  are not needed for a minimal "Hello World" kernel.
+
+  Build: PASSES ✓
+  make vm: prints "Hello, World!" ✓
+  Binary: 355KB → 354KB (1KB smaller)
+  Total LOC: 243,174 → 243,123 (51 LOC reduction)
+  C code: 136,934 → 136,883 (51 lines)
+
+  Cumulative session reduction: 164 LOC (243,153 → 243,123 + metadata)
+
+  Remaining gap: ~43,123 LOC to 200K goal (17.7% reduction needed)
+
 --- 2025-11-16 12:30 ---
 
 New session starting:

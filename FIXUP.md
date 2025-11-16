@@ -3066,3 +3066,17 @@ Attempt 1 - Remove RT and deadline schedulers (FAILED):
 - REVERTED
 
 Comprehensive codebase analysis:
+
+2. Removed unused list iteration macros from include/linux/list.h (20 LOC)
+   - list_for_each_prev (3 LOC)
+   - list_for_each_prev_safe (4 LOC)
+   - list_for_each_entry_continue_reverse (4 LOC)
+   - list_for_each_entry_from_reverse (4 LOC)
+   - list_for_each_entry_safe_continue (5 LOC)
+   - Verified unused with grep across codebase
+   - make vm: PASSES ✓
+   - Committed: 1cc2f9b, Pushed ✓
+
+Session total so far: 39 LOC removed (19 + 20)
+Remaining to 200K goal: ~59,851 LOC
+

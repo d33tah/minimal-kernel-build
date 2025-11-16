@@ -77,9 +77,6 @@ static inline void bio_advance_iter_single(const struct bio *bio,
 	__bio_for_each_bvec(bvl, bio, iter, (bio)->bi_iter)
 
  
-#define bio_for_each_bvec_all(bvl, bio, i)		\
-	for (i = 0, bvl = bio_first_bvec_all(bio);	\
-	     i < (bio)->bi_vcnt; i++, bvl++)
 
 #define bio_iter_last(bvec, iter) ((iter).bi_size == (bvec).bv_len)
 
@@ -346,12 +343,7 @@ static inline bool bioset_initialized(struct bio_set *bs)
 
 #if defined(CONFIG_BLK_DEV_INTEGRITY)
 
-#define bip_for_each_vec(bvl, bip, iter)				\
-	for_each_bvec(bvl, (bip)->bip_vec, iter, (bip)->bip_iter)
 
-#define bio_for_each_integrity_vec(_bvl, _bio, _iter)			\
-	for_each_bio(_bio)						\
-		bip_for_each_vec(_bvl, _bio->bi_integrity, _iter)
 
 extern struct bio_integrity_payload *bio_integrity_alloc(struct bio *, gfp_t, unsigned int);
 extern int bio_integrity_add_page(struct bio *, struct page *, unsigned int, unsigned int);

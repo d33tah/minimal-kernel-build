@@ -214,39 +214,6 @@ do {										\
 	___wait_event(wq_head, condition, TASK_INTERRUPTIBLE, 0, 0,		\
 		      schedule())
 
- 
-#define wait_event_interruptible(wq_head, condition)				\
-({										\
-	int __ret = 0;								\
-	might_sleep();								\
-	if (!(condition))							\
-		__ret = __wait_event_interruptible(wq_head, condition);		\
-	__ret;									\
-})
-
-#define __wait_event_hrtimeout(wq_head, condition, timeout, state)		\
-({										\
-	int __ret = 0;								\
-	struct hrtimer_sleeper __t;						\
-										\
-	hrtimer_init_sleeper_on_stack(&__t, CLOCK_MONOTONIC,			\
-				      HRTIMER_MODE_REL);			\
-	if ((timeout) != KTIME_MAX)						\
-		hrtimer_start_range_ns(&__t.timer, timeout,			\
-				       current->timer_slack_ns,			\
-				       HRTIMER_MODE_REL);			\
-										\
-	__ret = ___wait_event(wq_head, condition, state, 0, 0,			\
-		if (!__t.task) {						\
-			__ret = -ETIME;						\
-			break;							\
-		}								\
-		schedule());							\
-										\
-	hrtimer_cancel(&__t.timer);						\
-	destroy_hrtimer_on_stack(&__t.timer);					\
-	__ret;									\
-})
 
 void prepare_to_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);
 bool prepare_to_wait_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);

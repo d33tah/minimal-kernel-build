@@ -26,6 +26,14 @@ Progress:
   - hlist_for_each_entry_from (5 LOC)
   Build tested: passing, "Hello World" works, binary: 370KB.
 
+06:46 - Removed 2 unused wait macros from wait.h (31 LOC saved).
+  Removed macros that were only defined but never used:
+  - wait_event_interruptible (8 LOC)
+  - __wait_event_hrtimeout (23 LOC)
+  Build tested: passing, "Hello World" works, binary: 370KB.
+
+  Session total so far: 53 LOC removed (22 + 31)
+
 --- 2025-11-16 06:12 ---
 
 New session starting:

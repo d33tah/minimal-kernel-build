@@ -41,7 +41,7 @@ lib-$(CONFIG_SMP) += cpumask.o
 lib-y	+= kobject.o klist.o
 obj-y	+= lockref.o
 
-obj-y += bcd.o sort.o parser.o debug_locks.o random32.o \
+obj-y += bcd.o sort.o parser.o debug_locks.o \
 	 bust_spinlocks.o kasprintf.o bitmap.o scatterlist.o \
 	 iov_iter.o clz_ctz.o \
 	 bsearch.o find_bit.o llist.o \

@@ -40,7 +40,24 @@ Progress:
 05:31 - Successfully removed fs_types.o from fs/ (20 LOC saved).
   File type conversion helpers - stubbed and unused.
   make vm: passing, prints "Hello World", binary: 370KB.
-  Will commit and continue.
+  Committed and pushed.
+
+05:33 - Session summary:
+  Total LOC saved this session: 80 (fadvise 45 + stack 15 + fs_types 20)
+  All changes committed and pushed successfully.
+  Binary remains at 370KB (under 400KB goal).
+
+  Findings from exploration:
+  - Many small files are syscall stubs (readdir, utimes, fcntl, exec_domain)
+  - Most small kernel/ files are essential (bounds.c for build constants)
+  - static_call.c (7 LOC) is used in headers
+  - drivers/base/init.c is core initialization code
+  - Most remaining unconditionally compiled code is tightly coupled
+
+  Next session could focus on:
+  - Header trimming (still 94K+ LOC in headers = 38% of codebase)
+  - Internal simplification of large files (page_alloc, signal, vt)
+  - Checking for more stubbed helper functions across subsystems
 
 --- 2025-11-16 05:03 ---
 

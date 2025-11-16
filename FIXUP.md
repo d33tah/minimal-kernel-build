@@ -4691,3 +4691,76 @@ Remaining to 200K goal: ~59,851 LOC
 
 Session total so far: 47 LOC removed (19 + 20 + 8)
 Remaining to 200K goal: ~59,843 LOC
+10:50 - Detailed reduction analysis and strategy:
+
+  Challenge: Need to reduce 45,021 LOC (18.4% of 245,021 total)
+  
+  What DOESN'T work (verified):
+  - Removing entire subsystems (e.g., RTC): Creates linkage errors
+  - Unused headers: Only ~461 LOC available (15 headers)
+  - Small incremental changes: Too slow for 45K LOC goal
+  
+  Top reduction targets by size (C code only):
+  1. mm/page_alloc.c: 5,081 LOC - Core memory allocator
+  2. mm/memory.c: 4,055 LOC - Page fault handling, memory operations
+  3. fs/namei.c: 3,853 LOC - Path name resolution  
+  4. fs/namespace.c: 3,838 LOC - Mount/namespace operations
+  5. drivers/tty/vt/vt.c: 3,610 LOC - VT console driver
+  6. drivers/base/core.c: 3,387 LOC - Device model core
+  7. kernel/signal.c: 3,093 LOC - Signal handling (149 functions!)
+  8. kernel/sched/core.c: 2,695 LOC - Scheduler core
+  9. mm/mmap.c: 2,681 LOC - Memory mapping
+  10. mm/vmalloc.c: 2,673 LOC - Virtual memory allocation
+  
+  Medium files (500-2000 LOC each) - ~40 files totaling ~50K LOC:
+  - mm/gup.c: 1,919 LOC - Get user pages
+  - mm/percpu.c: 1,856 LOC - Per-CPU memory
+  - mm/page-writeback.c: 1,714 LOC - Page writeback
+  - mm/rmap.c: 1,544 LOC - Reverse mapping
+  - fs/exec.c: 1,482 LOC - Program execution
+  - lib/vsprintf.c: 1,467 LOC - String formatting
+  - And 30+ more...
+  
+  Promising reduction strategies:
+  
+  A. Simplify memory management (potential: ~15K LOC):
+     - mm/gup.c: Stub complex GUP operations → ~1.5K
+     - mm/page-writeback.c: Simplify writeback logic → ~1K
+     - mm/rmap.c: Stub reverse mapping → ~1K
+     - mm/vmalloc.c: Reduce vmalloc complexity → ~1K
+     - mm/page_alloc.c: Simplify allocation paths → ~2K
+     
+  B. Reduce filesystem complexity (potential: ~10K LOC):
+     - fs/namei.c: Stub advanced path operations → ~2K
+     - fs/namespace.c: Simplify mount operations → ~2K
+     - fs/exec.c: Stub less common exec features → ~500
+     - fs/dcache.c: Reduce dentry cache complexity → ~1K
+     
+  C. Simplify drivers (potential: ~5K LOC):
+     - drivers/tty/vt/vt.c: Simplify VT console → ~2K
+     - drivers/base/core.c: Stub device model features → ~1K
+     
+  D. Reduce kernel core (potential: ~8K LOC):
+     - kernel/signal.c: Stub uncommon signals → ~1.5K
+     - lib/vsprintf.c: Remove format specifiers → ~500
+     - kernel/sched/fair.c: Simplify fair scheduler → ~500
+     
+  E. Header consolidation (potential: ~10K LOC):
+     - 769 headers with 94,493 LOC
+     - Goal is 20% = ~154 headers
+     - Need to remove 615 headers
+     - Challenge: Headers are interconnected
+     - Approach: Start with least-included headers
+     
+  RECOMMENDED NEXT STEPS:
+  1. Start with category A (memory management simplification)
+  2. Focus on files that are clearly optional for "Hello World"
+  3. Work incrementally: stub → test → commit → repeat
+  4. Use git to manage risk: one change at a time
+  5. Prioritize high LOC-to-risk ratio changes
+
+  Specific first targets to try:
+  - mm/page-writeback.c: Writeback is for persistence, not needed for RAM-only Hello World
+  - mm/rmap.c: Reverse mapping for swap/migration, not needed
+  - lib/vsprintf.c: Can stub fancy format specifiers, keep basics
+  

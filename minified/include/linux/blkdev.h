@@ -424,10 +424,6 @@ extern void blk_clear_pm_only(struct request_queue *q);
 #define BLK_DEFAULT_SG_TIMEOUT	(60 * HZ)
 #define BLK_MIN_SG_TIMEOUT	(7 * HZ)
 
- 
-#define for_each_bio(_bio)		\
-	for (; _bio; _bio = _bio->bi_next)
-
 int __must_check device_add_disk(struct device *parent, struct gendisk *disk,
 				 const struct attribute_group **groups);
 void del_gendisk(struct gendisk *gp);

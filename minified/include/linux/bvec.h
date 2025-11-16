@@ -116,13 +116,6 @@ static inline void bvec_iter_advance_single(const struct bio_vec *bv,
 	iter->bi_size -= bytes;
 }
 
-#define for_each_bvec(bvl, bio_vec, iter, start)			\
-	for (iter = (start);						\
-	     (iter).bi_size &&						\
-		((bvl = bvec_iter_bvec((bio_vec), (iter))), 1);	\
-	     bvec_iter_advance_single((bio_vec), &(iter), (bvl).bv_len))
-
- 
 #define BVEC_ITER_ALL_INIT (struct bvec_iter)				\
 {									\
 	.bi_sector	= 0,						\

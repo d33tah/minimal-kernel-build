@@ -22,6 +22,32 @@ Still need 50K LOC reduction (20%). Will continue the successful approach:
 
 Progress:
 
+06:16 - Fixed build issue from previous session.
+  The 9c54884 commit removed empty stub files that were actually required:
+  - scripts/mod/empty.c (needed by build system)
+  - arch/x86/events/**/stubs.c (needed by Makefiles)
+  Restored all 5 files. Build and make vm passing again.
+
+06:19 - Investigating reduction opportunities.
+  Analyzed codebase structure:
+  - 6285 text symbols in final vmlinux (seems high for "Hello World")
+  - Largest C files: page_alloc.c (5081), memory.c (4055), namei.c (3853),
+    namespace.c (3838), vt.c (3610), core.c (3387), signal.c (3093)
+  - Largest headers: atomic-arch-fallback.h (2352), fs.h (2172), mm.h (2033),
+    atomic-instrumented.h (1941), sched.h (1066)
+  - xarray.h has 79 xa_* functions, many likely unused
+
+  Directory sizes:
+  - arch/: 11M, kernel/: 4.4M, mm/: 2.9M, fs/: 2.4M, drivers/: 2.2M
+
+  Strategy options:
+  1. Continue header trimming (remove unused macros/inline functions)
+  2. Find and stub out large subsystem functions not needed for basic boot
+  3. Reduce TTY code complexity (vt.c is 3610 LOC but needed for console)
+  4. Look for completely unused .c files
+
+  Will try finding more unused code systematically.
+
 --- 2025-11-16 05:52 ---
 
 New session starting:

@@ -228,12 +228,6 @@ unsigned long find_next_bit_le(const void *addr, unsigned
 	     (bit) < (size);					\
 	     (bit) = find_next_bit((addr), (size), (bit) + 1))
 
-#define for_each_clear_bit(bit, addr, size) \
-	for ((bit) = find_next_zero_bit((addr), (size), 0);	\
-	     (bit) < (size);					\
-	     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
-
- 
 #define for_each_clear_bit_from(bit, addr, size) \
 	for ((bit) = find_next_zero_bit((addr), (size), (bit));	\
 	     (bit) < (size);					\

@@ -112,17 +112,4 @@ static inline int of_property_read_u16(const struct device_node *np, const char 
 static inline int of_property_read_u32(const struct device_node *np, const char *propname, u32 *out_value) { return -ENOSYS; }
 static inline int of_property_read_s32(const struct device_node *np, const char *propname, s32 *out_value) { return -ENOSYS; }
 static inline struct device_node *of_get_cpu_node(int cpu, unsigned int *thread) { return NULL; }
-#define for_each_property_of_node(dn, pp) while (0)
-#define for_each_node_by_name(dn, name) while (0)
-#define for_each_node_by_type(dn, type) while (0)
-#define for_each_compatible_node(dn, type, compatible) while (0)
-#define for_each_matching_node(dn, matches) while (0)
-#define for_each_matching_node_and_match(dn, matches, match) while (0)
-#define for_each_child_of_node(parent, child) while (0)
-#define for_each_available_child_of_node(parent, child) while (0)
-#define for_each_of_cpu_node(cpu) while (0)
-#define for_each_node_with_property(dn, prop_name) while (0)
-#define for_each_of_allnodes_from(from, dn) while (0)
-#define for_each_of_allnodes(dn) while (0)
-
 #endif  

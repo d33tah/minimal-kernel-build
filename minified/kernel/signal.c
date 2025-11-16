@@ -586,50 +586,6 @@ static void ptrace_trap_notify(struct task_struct *t)
 
 static bool prepare_signal(int sig, struct task_struct *p, bool force)
 {
-	struct signal_struct *signal = p->signal;
-	struct task_struct *t;
-	sigset_t flush;
-
-	if (signal->flags & SIGNAL_GROUP_EXIT) {
-		if (signal->core_state)
-			return sig == SIGKILL;
-		
-	} else if (sig_kernel_stop(sig)) {
-		
-		siginitset(&flush, sigmask(SIGCONT));
-		flush_sigqueue_mask(&flush, &signal->shared_pending);
-		for_each_thread(p, t)
-			flush_sigqueue_mask(&flush, &t->pending);
-	} else if (sig == SIGCONT) {
-		unsigned int why;
-		
-		siginitset(&flush, SIG_KERNEL_STOP_MASK);
-		flush_sigqueue_mask(&flush, &signal->shared_pending);
-		for_each_thread(p, t) {
-			flush_sigqueue_mask(&flush, &t->pending);
-			task_clear_jobctl_pending(t, JOBCTL_STOP_PENDING);
-			if (likely(!(t->ptrace & PT_SEIZED))) {
-				t->jobctl &= ~JOBCTL_STOPPED;
-				wake_up_state(t, __TASK_STOPPED);
-			} else
-				ptrace_trap_notify(t);
-		}
-
-		
-		why = 0;
-		if (signal->flags & SIGNAL_STOP_STOPPED)
-			why |= SIGNAL_CLD_CONTINUED;
-		else if (signal->group_stop_count)
-			why |= SIGNAL_CLD_STOPPED;
-
-		if (why) {
-			
-			signal_set_stop_flags(signal, why | SIGNAL_STOP_CONTINUED);
-			signal->group_stop_count = 0;
-			signal->group_exit_code = 0;
-		}
-	}
-
 	return !sig_ignored(p, sig, force);
 }
 
@@ -652,50 +608,6 @@ static inline bool wants_signal(int sig, struct task_struct *p)
 
 static void complete_signal(int sig, struct task_struct *p, enum pid_type type)
 {
-	struct signal_struct *signal = p->signal;
-	struct task_struct *t;
-
-	
-	if (wants_signal(sig, p))
-		t = p;
-	else if ((type == PIDTYPE_PID) || thread_group_empty(p))
-		
-		return;
-	else {
-		
-		t = signal->curr_target;
-		while (!wants_signal(sig, t)) {
-			t = next_thread(t);
-			if (t == signal->curr_target)
-				
-				return;
-		}
-		signal->curr_target = t;
-	}
-
-	
-	if (sig_fatal(p, sig) &&
-	    (signal->core_state || !(signal->flags & SIGNAL_GROUP_EXIT)) &&
-	    !sigismember(&t->real_blocked, sig) &&
-	    (sig == SIGKILL || !p->ptrace)) {
-		
-		if (!sig_kernel_coredump(sig)) {
-			
-			signal->flags = SIGNAL_GROUP_EXIT;
-			signal->group_exit_code = sig;
-			signal->group_stop_count = 0;
-			t = p;
-			do {
-				task_clear_jobctl_pending(t, JOBCTL_PENDING_MASK);
-				sigaddset(&t->pending.signal, SIGKILL);
-				signal_wake_up(t, 1);
-			} while_each_thread(p, t);
-			return;
-		}
-	}
-
-	
-	signal_wake_up(t, sig == SIGKILL);
 	return;
 }
 
@@ -1399,70 +1311,7 @@ static void do_notify_pidfd(struct task_struct *task)
 
 bool do_notify_parent(struct task_struct *tsk, int sig)
 {
-	struct kernel_siginfo info;
-	unsigned long flags;
-	struct sighand_struct *psig;
-	bool autoreap = false;
-	u64 utime, stime;
-
-	WARN_ON_ONCE(sig == -1);
-
-	
-	WARN_ON_ONCE(task_is_stopped_or_traced(tsk));
-
-	WARN_ON_ONCE(!tsk->ptrace &&
-	       (tsk->group_leader != tsk || !thread_group_empty(tsk)));
-
-	
-	do_notify_pidfd(tsk);
-
-	if (sig != SIGCHLD) {
-		
-		if (tsk->parent_exec_id != READ_ONCE(tsk->parent->self_exec_id))
-			sig = SIGCHLD;
-	}
-
-	clear_siginfo(&info);
-	info.si_signo = sig;
-	info.si_errno = 0;
-	
-	rcu_read_lock();
-	info.si_pid = task_pid_nr_ns(tsk, task_active_pid_ns(tsk->parent));
-	info.si_uid = from_kuid_munged(task_cred_xxx(tsk->parent, user_ns),
-				       task_uid(tsk));
-	rcu_read_unlock();
-
-	task_cputime(tsk, &utime, &stime);
-	info.si_utime = nsec_to_clock_t(utime + tsk->signal->utime);
-	info.si_stime = nsec_to_clock_t(stime + tsk->signal->stime);
-
-	info.si_status = tsk->exit_code & 0x7f;
-	if (tsk->exit_code & 0x80)
-		info.si_code = CLD_DUMPED;
-	else if (tsk->exit_code & 0x7f)
-		info.si_code = CLD_KILLED;
-	else {
-		info.si_code = CLD_EXITED;
-		info.si_status = tsk->exit_code >> 8;
-	}
-
-	psig = tsk->parent->sighand;
-	spin_lock_irqsave(&psig->siglock, flags);
-	if (!tsk->ptrace && sig == SIGCHLD &&
-	    (psig->action[SIGCHLD-1].sa.sa_handler == SIG_IGN ||
-	     (psig->action[SIGCHLD-1].sa.sa_flags & SA_NOCLDWAIT))) {
-		
-		autoreap = true;
-		if (psig->action[SIGCHLD-1].sa.sa_handler == SIG_IGN)
-			sig = 0;
-	}
-	
-	if (valid_signal(sig) && sig)
-		__send_signal_locked(sig, &info, tsk->parent, PIDTYPE_TGID, false);
-	__wake_up_parent(tsk, tsk->parent);
-	spin_unlock_irqrestore(&psig->siglock, flags);
-
-	return autoreap;
+	return false;
 }
 
 static void do_notify_parent_cldstop(struct task_struct *tsk,
@@ -1621,69 +1470,8 @@ int ptrace_notify(int exit_code, unsigned long message)
 static bool do_signal_stop(int signr)
 	__releases(&current->sighand->siglock)
 {
-	struct signal_struct *sig = current->signal;
-
-	if (!(current->jobctl & JOBCTL_STOP_PENDING)) {
-		unsigned long gstop = JOBCTL_STOP_PENDING | JOBCTL_STOP_CONSUME;
-		struct task_struct *t;
-
-		
-		WARN_ON_ONCE(signr & ~JOBCTL_STOP_SIGMASK);
-
-		if (!likely(current->jobctl & JOBCTL_STOP_DEQUEUED) ||
-		    unlikely(sig->flags & SIGNAL_GROUP_EXIT) ||
-		    unlikely(sig->group_exec_task))
-			return false;
-		
-		if (!(sig->flags & SIGNAL_STOP_STOPPED))
-			sig->group_exit_code = signr;
-
-		sig->group_stop_count = 0;
-
-		if (task_set_jobctl_pending(current, signr | gstop))
-			sig->group_stop_count++;
-
-		t = current;
-		while_each_thread(current, t) {
-			
-			if (!task_is_stopped(t) &&
-			    task_set_jobctl_pending(t, signr | gstop)) {
-				sig->group_stop_count++;
-				if (likely(!(t->ptrace & PT_SEIZED)))
-					signal_wake_up(t, 0);
-				else
-					ptrace_trap_notify(t);
-			}
-		}
-	}
-
-	if (likely(!current->ptrace)) {
-		int notify = 0;
-
-		
-		if (task_participate_group_stop(current))
-			notify = CLD_STOPPED;
-
-		current->jobctl |= JOBCTL_STOPPED;
-		set_special_state(TASK_STOPPED);
-		spin_unlock_irq(&current->sighand->siglock);
-
-		
-		if (notify) {
-			read_lock(&tasklist_lock);
-			do_notify_parent_cldstop(current, false, notify);
-			read_unlock(&tasklist_lock);
-		}
-
-		
-		cgroup_enter_frozen();
-		freezable_schedule();
-		return true;
-	} else {
-		
-		task_set_jobctl_pending(current, JOBCTL_TRAP_STOP);
-		return false;
-	}
+	spin_unlock_irq(&current->sighand->siglock);
+	return false;
 }
 
 static void do_jobctl_trap(void)

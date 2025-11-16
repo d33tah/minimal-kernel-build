@@ -17,6 +17,15 @@ Session notes:
 
 Progress:
 
+06:39 - Removed 5 unused list macros from list.h (22 LOC saved).
+  Removed macros that were only defined but never used in .c files:
+  - list_for_each_rcu (4 LOC)
+  - list_for_each_continue (4 LOC)
+  - hlist_for_each_safe (4 LOC)
+  - hlist_for_each_entry_continue (5 LOC)
+  - hlist_for_each_entry_from (5 LOC)
+  Build tested: passing, "Hello World" works, binary: 370KB.
+
 --- 2025-11-16 06:12 ---
 
 New session starting:

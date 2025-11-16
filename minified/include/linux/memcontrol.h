@@ -96,37 +96,12 @@ static inline bool mem_cgroup_disabled(void)
 	return true;
 }
 
-static inline void memcg_memory_event(struct mem_cgroup *memcg,
-				      enum memcg_memory_event event)
-{
-}
-
-static inline void memcg_memory_event_mm(struct mm_struct *mm,
-					 enum memcg_memory_event event)
-{
-}
-
 static inline void mem_cgroup_protection(struct mem_cgroup *root,
 					 struct mem_cgroup *memcg,
 					 unsigned long *min,
 					 unsigned long *low)
 {
 	*min = *low = 0;
-}
-
-static inline void mem_cgroup_calculate_protection(struct mem_cgroup *root,
-						   struct mem_cgroup *memcg)
-{
-}
-
-static inline bool mem_cgroup_below_low(struct mem_cgroup *memcg)
-{
-	return false;
-}
-
-static inline bool mem_cgroup_below_min(struct mem_cgroup *memcg)
-{
-	return false;
 }
 
 static inline int mem_cgroup_charge(struct folio *folio,

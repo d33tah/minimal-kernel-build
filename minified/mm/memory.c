@@ -3028,6 +3028,7 @@ unlock:
 static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 		unsigned long address, unsigned int flags)
 {
+	/* Minimal stub: simplified page fault handling without huge pages */
 	struct vm_fault vmf = {
 		.vma = vma,
 		.address = address & PAGE_MASK,
@@ -3039,7 +3040,6 @@ static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 	struct mm_struct *mm = vma->vm_mm;
 	pgd_t *pgd;
 	p4d_t *p4d;
-	vm_fault_t ret;
 
 	pgd = pgd_offset(mm, address);
 	p4d = p4d_alloc(mm, pgd, address);
@@ -3049,67 +3049,10 @@ static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 	vmf.pud = pud_alloc(mm, p4d, address);
 	if (!vmf.pud)
 		return VM_FAULT_OOM;
-retry_pud:
-	if (pud_none(*vmf.pud) && __transparent_hugepage_enabled(vma)) {
-		ret = create_huge_pud(&vmf);
-		if (!(ret & VM_FAULT_FALLBACK))
-			return ret;
-	} else {
-		pud_t orig_pud = *vmf.pud;
-
-		barrier();
-		if (pud_trans_huge(orig_pud) || pud_devmap(orig_pud)) {
-
-			
-			if ((flags & FAULT_FLAG_WRITE) && !pud_write(orig_pud)) {
-				ret = wp_huge_pud(&vmf, orig_pud);
-				if (!(ret & VM_FAULT_FALLBACK))
-					return ret;
-			} else {
-				huge_pud_set_accessed(&vmf, orig_pud);
-				return 0;
-			}
-		}
-	}
 
 	vmf.pmd = pmd_alloc(mm, vmf.pud, address);
 	if (!vmf.pmd)
 		return VM_FAULT_OOM;
-
-	
-	if (pud_trans_unstable(vmf.pud))
-		goto retry_pud;
-
-	if (pmd_none(*vmf.pmd) && __transparent_hugepage_enabled(vma)) {
-		ret = create_huge_pmd(&vmf);
-		if (!(ret & VM_FAULT_FALLBACK))
-			return ret;
-	} else {
-		vmf.orig_pmd = *vmf.pmd;
-
-		barrier();
-		if (unlikely(is_swap_pmd(vmf.orig_pmd))) {
-			VM_BUG_ON(thp_migration_supported() &&
-					  !is_pmd_migration_entry(vmf.orig_pmd));
-			if (is_pmd_migration_entry(vmf.orig_pmd))
-				pmd_migration_entry_wait(mm, vmf.pmd);
-			return 0;
-		}
-		if (pmd_trans_huge(vmf.orig_pmd) || pmd_devmap(vmf.orig_pmd)) {
-			if (pmd_protnone(vmf.orig_pmd) && vma_is_accessible(vma))
-				return do_huge_pmd_numa_page(&vmf);
-
-			if ((flags & (FAULT_FLAG_WRITE|FAULT_FLAG_UNSHARE)) &&
-			    !pmd_write(vmf.orig_pmd)) {
-				ret = wp_huge_pmd(&vmf);
-				if (!(ret & VM_FAULT_FALLBACK))
-					return ret;
-			} else {
-				huge_pmd_set_accessed(&vmf);
-				return 0;
-			}
-		}
-	}
 
 	return handle_pte_fault(&vmf);
 }

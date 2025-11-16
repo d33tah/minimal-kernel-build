@@ -1765,88 +1765,38 @@ static bool vc_is_control(struct vc_data *vc, int tc, int c)
 static int vc_con_write_normal(struct vc_data *vc, int tc, int c,
 		struct vc_draw_region *draw)
 {
-	int next_c;
-	unsigned char vc_attr = vc->vc_attr;
-	u16 himask = vc->vc_hi_font_mask, charmask = himask ? 0x1ff : 0xff;
-	u8 width = 1;
-	bool inverse = false;
+	/* Minimal stub: simplified character output without UTF-8/double-width support */
+	u16 himask = vc->vc_hi_font_mask;
 
-	if (vc->vc_utf && !vc->vc_disp_ctrl) {
-		if (is_double_width(c))
-			width = 2;
+	if (vc->vc_need_wrap) {
+		cr(vc);
+		lf(vc);
 	}
 
-	
 	tc = conv_uni_to_pc(vc, tc);
-	if (tc & ~charmask) {
-		if (tc == -1 || tc == -2)
-			return -1; 
+	if (tc < 0)
+		tc = c;
 
-		
-		if ((!vc->vc_utf || vc->vc_disp_ctrl || c < 128) &&
-				!(c & ~charmask)) {
-			
-			tc = c;
-		} else {
-			
-			tc = conv_uni_to_pc(vc, 0xfffd);
-			if (tc < 0) {
-				inverse = true;
-				tc = conv_uni_to_pc(vc, '?');
-				if (tc < 0)
-					tc = '?';
+	if (himask)
+		tc = ((tc & 0x100) ? himask : 0) | (tc & 0xff);
+	tc |= (vc->vc_attr << 8) & ~himask;
 
-				vc_attr = vc_invert_attr(vc);
-				con_flush(vc, draw);
-			}
-		}
+	scr_writew(tc, (u16 *)vc->vc_pos);
+
+	if (con_should_update(vc) && draw->x < 0) {
+		draw->x = vc->state.x;
+		draw->from = vc->vc_pos;
 	}
 
-	next_c = c;
-	while (1) {
-		if (vc->vc_need_wrap || vc->vc_decim)
-			con_flush(vc, draw);
-		if (vc->vc_need_wrap) {
-			cr(vc);
-			lf(vc);
-		}
-		if (vc->vc_decim)
-			insert_char(vc, 1);
-		vc_uniscr_putc(vc, next_c);
-
-		if (himask)
-			tc = ((tc & 0x100) ? himask : 0) |
-			      (tc &  0xff);
-		tc |= (vc_attr << 8) & ~himask;
-
-		scr_writew(tc, (u16 *)vc->vc_pos);
-
-		if (con_should_update(vc) && draw->x < 0) {
-			draw->x = vc->state.x;
-			draw->from = vc->vc_pos;
-		}
-		if (vc->state.x == vc->vc_cols - 1) {
-			vc->vc_need_wrap = vc->vc_decawm;
-			draw->to = vc->vc_pos + 2;
-		} else {
-			vc->state.x++;
-			draw->to = (vc->vc_pos += 2);
-		}
-
-		if (!--width)
-			break;
-
-		
-		tc = conv_uni_to_pc(vc, ' ');
-		if (tc < 0)
-			tc = ' ';
-		next_c = ' ';
+	if (vc->state.x == vc->vc_cols - 1) {
+		vc->vc_need_wrap = vc->vc_decawm;
+		draw->to = vc->vc_pos + 2;
+	} else {
+		vc->state.x++;
+		draw->to = (vc->vc_pos += 2);
 	}
+
 	notify_write(vc, c);
-
-	if (inverse)
-		con_flush(vc, draw);
-
 	return 0;
 }
 

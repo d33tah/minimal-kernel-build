@@ -34,7 +34,35 @@ Progress:
   used in mm/internal.h (grep -r only checked .c files, missed .h usage).
 
   Build tested: passing, binary: 370KB.
-  About to commit and test VM.
+  Committed: f67e918, pushed successfully.
+
+07:42 - Session analysis and learnings:
+  Successfully removed 13 LOC this session through careful function removal.
+
+  Key finding: The search script that only checked .c files was flawed - many
+  "unused" functions are actually used in other .h files. For example:
+  - mapping_unevictable: used in mm/internal.h
+  - imajor: used in device_cgroup.h
+  - Many mm.h functions: used within mm.h itself
+
+  This explains why progress is slow - must verify each function carefully by
+  checking both .c AND .h files before removal.
+
+  Rate: ~13 LOC in 30 minutes = ~0.43 LOC/minute (slower than previous sessions)
+  At this rate, removing 50,441 LOC would take ~117,300 minutes (81 days!)
+
+  CONCLUSION: Individual function removal is NOT a viable strategy for reaching
+  the 200K LOC goal. Need to identify and remove/simplify entire subsystems:
+
+  Potential high-impact targets:
+  1. Entire driver subsystems (drivers/video, drivers/char, etc.)
+  2. Large C files that could be stubbed (vt.c: 3610 lines, page_alloc.c: 5081 lines)
+  3. Auto-generated headers (atomic-*: 4293 lines combined)
+  4. Unnecessary syscall implementations
+  5. Complex memory management features (THP, CMA, etc.)
+
+  Next session should focus on ONE large subsystem removal rather than
+  incremental function cleanup.
 
 --- 2025-11-16 06:50 ---
 

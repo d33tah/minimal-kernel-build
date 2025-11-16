@@ -78,15 +78,6 @@ void audit_log_format(struct audit_buffer *ab, const char *fmt, ...)
 { }
 static inline void audit_log_end(struct audit_buffer *ab)
 { }
-static inline void audit_log_n_hex(struct audit_buffer *ab,
-				   const unsigned char *buf, size_t len)
-{ }
-static inline void audit_log_n_string(struct audit_buffer *ab,
-				      const char *buf, size_t n)
-{ }
-static inline void  audit_log_n_untrustedstring(struct audit_buffer *ab,
-						const char *string, size_t n)
-{ }
 static inline void audit_log_untrustedstring(struct audit_buffer *ab,
 					     const char *string)
 { }
@@ -94,16 +85,12 @@ static inline void audit_log_d_path(struct audit_buffer *ab,
 				    const char *prefix,
 				    const struct path *path)
 { }
-static inline void audit_log_key(struct audit_buffer *ab, char *key)
-{ }
 static inline void audit_log_path_denied(int type, const char *operation)
 { }
 static inline int audit_log_task_context(struct audit_buffer *ab)
 {
 	return 0;
 }
-static inline void audit_log_task_info(struct audit_buffer *ab)
-{ }
 
 static inline kuid_t audit_get_loginuid(struct task_struct *tsk)
 {

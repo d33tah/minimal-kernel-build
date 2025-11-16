@@ -52,10 +52,29 @@ Progress:
   Removed for_each_bio, for_each_bvec, for_each_clear_bit, and 12 OF macros.
   Binary still 370KB, make vm passing. Committed and pushed.
 
-06:29 - Continuing macro removal. Removed 6 more lines so far:
+06:29 - Continuing macro removal. Removed 6 more lines:
   - for_each_evictable_lru (2 LOC from mmzone.h)
   - for_each_process_thread (4 LOC from sched/signal.h)
-  Testing build...
+  Build tested and passed. Committed and pushed.
+
+Session summary:
+Successfully removed 33 unused macros/lines from headers (33 LOC total).
+- 27 LOC: for_each_bio, for_each_bvec, for_each_clear_bit, 12 OF macros
+- 6 LOC: for_each_evictable_lru, for_each_process_thread
+
+Progress: 33 LOC removed this session
+Estimated current total: ~250,354 LOC (250,387 - 33)
+Gap to 200K goal: ~50,354 LOC (need 20% reduction)
+
+Strategy that worked:
+- Find all for_each_* macros in headers
+- Use grep to verify unused in .c files
+- Remove carefully, test build, commit incrementally
+
+Next session should:
+- Continue this approach with remaining ~27 unused macros found
+- Look for unused static inline functions in large headers
+- Consider removing/stubbing more substantial code sections
 
 --- 2025-11-16 05:52 ---
 

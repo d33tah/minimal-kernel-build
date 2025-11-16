@@ -759,49 +759,13 @@ static ssize_t vfs_writev(struct file *file, const struct iovec __user *vec,
 static ssize_t do_readv(unsigned long fd, const struct iovec __user *vec,
 			unsigned long vlen, rwf_t flags)
 {
-	struct fd f = fdget_pos(fd);
-	ssize_t ret = -EBADF;
-
-	if (f.file) {
-		loff_t pos, *ppos = file_ppos(f.file);
-		if (ppos) {
-			pos = *ppos;
-			ppos = &pos;
-		}
-		ret = vfs_readv(f.file, vec, vlen, ppos, flags);
-		if (ret >= 0 && ppos)
-			f.file->f_pos = pos;
-		fdput_pos(f);
-	}
-
-	if (ret > 0)
-		add_rchar(current, ret);
-	inc_syscr(current);
-	return ret;
+	return -ENOSYS;
 }
 
 static ssize_t do_writev(unsigned long fd, const struct iovec __user *vec,
 			 unsigned long vlen, rwf_t flags)
 {
-	struct fd f = fdget_pos(fd);
-	ssize_t ret = -EBADF;
-
-	if (f.file) {
-		loff_t pos, *ppos = file_ppos(f.file);
-		if (ppos) {
-			pos = *ppos;
-			ppos = &pos;
-		}
-		ret = vfs_writev(f.file, vec, vlen, ppos, flags);
-		if (ret >= 0 && ppos)
-			f.file->f_pos = pos;
-		fdput_pos(f);
-	}
-
-	if (ret > 0)
-		add_wchar(current, ret);
-	inc_syscw(current);
-	return ret;
+	return -ENOSYS;
 }
 
 static inline loff_t pos_from_hilo(unsigned long high, unsigned long low)
@@ -813,47 +777,13 @@ static inline loff_t pos_from_hilo(unsigned long high, unsigned long low)
 static ssize_t do_preadv(unsigned long fd, const struct iovec __user *vec,
 			 unsigned long vlen, loff_t pos, rwf_t flags)
 {
-	struct fd f;
-	ssize_t ret = -EBADF;
-
-	if (pos < 0)
-		return -EINVAL;
-
-	f = fdget(fd);
-	if (f.file) {
-		ret = -ESPIPE;
-		if (f.file->f_mode & FMODE_PREAD)
-			ret = vfs_readv(f.file, vec, vlen, &pos, flags);
-		fdput(f);
-	}
-
-	if (ret > 0)
-		add_rchar(current, ret);
-	inc_syscr(current);
-	return ret;
+	return -ENOSYS;
 }
 
 static ssize_t do_pwritev(unsigned long fd, const struct iovec __user *vec,
 			  unsigned long vlen, loff_t pos, rwf_t flags)
 {
-	struct fd f;
-	ssize_t ret = -EBADF;
-
-	if (pos < 0)
-		return -EINVAL;
-
-	f = fdget(fd);
-	if (f.file) {
-		ret = -ESPIPE;
-		if (f.file->f_mode & FMODE_PWRITE)
-			ret = vfs_writev(f.file, vec, vlen, &pos, flags);
-		fdput(f);
-	}
-
-	if (ret > 0)
-		add_wchar(current, ret);
-	inc_syscw(current);
-	return ret;
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE3(readv, unsigned long, fd, const struct iovec __user *, vec,

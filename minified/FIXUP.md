@@ -86,6 +86,27 @@ New session starting:
 
   Remaining gap: ~43,039 LOC to 200K goal (17.7% reduction needed)
 
+12:45 - SUCCESS: Stubbed 4 vector I/O functions in fs/read_write.c
+  Functions stubbed (all replaced with return -ENOSYS):
+  - do_readv: 23 lines → 3 lines (20 saved)
+  - do_writev: 23 lines → 3 lines (20 saved)
+  - do_preadv: 21 lines → 3 lines (18 saved)
+  - do_pwritev: 21 lines → 3 lines (18 saved)
+
+  Total reduction: ~76 lines in read_write.c
+  These vector I/O syscalls (readv, writev, preadv, pwritev)
+  are not needed for a minimal "Hello World" kernel.
+
+  Build: PASSES ✓
+  make vm: prints "Hello, World!" ✓
+  Binary: 354KB (unchanged)
+  Total LOC: 243,039 → 242,994 (45 LOC reduction)
+  C code: 136,768 → 136,708 (60 lines)
+
+  Cumulative session reduction: ~295 LOC
+
+  Remaining gap: ~42,994 LOC to 200K goal (17.7% reduction needed)
+
 --- 2025-11-16 12:30 ---
 
 New session starting:

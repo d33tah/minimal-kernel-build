@@ -489,172 +489,11 @@ postcore_initcall(devlink_class_init);
 struct device_link *device_link_add(struct device *consumer,
 				    struct device *supplier, u32 flags)
 {
-	struct device_link *link;
-
-	if (!consumer || !supplier || consumer == supplier ||
-	    flags & ~DL_ADD_VALID_FLAGS ||
-	    (flags & DL_FLAG_STATELESS && flags & DL_MANAGED_LINK_FLAGS) ||
-	    (flags & DL_FLAG_SYNC_STATE_ONLY &&
-	     (flags & ~DL_FLAG_INFERRED) != DL_FLAG_SYNC_STATE_ONLY) ||
-	    (flags & DL_FLAG_AUTOPROBE_CONSUMER &&
-	     flags & (DL_FLAG_AUTOREMOVE_CONSUMER |
-		      DL_FLAG_AUTOREMOVE_SUPPLIER)))
-		return NULL;
-
-	if (flags & DL_FLAG_PM_RUNTIME && flags & DL_FLAG_RPM_ACTIVE) {
-		if (pm_runtime_get_sync(supplier) < 0) {
-			pm_runtime_put_noidle(supplier);
-			return NULL;
-		}
-	}
-
-	if (!(flags & DL_FLAG_STATELESS))
-		flags |= DL_FLAG_MANAGED;
-
-	device_links_write_lock();
-	device_pm_lock();
-
-	
-	if (!device_pm_initialized(supplier)
-	    || (!(flags & DL_FLAG_SYNC_STATE_ONLY) &&
-		  device_is_dependent(consumer, supplier))) {
-		link = NULL;
-		goto out;
-	}
-
-	
-	if (flags & DL_FLAG_SYNC_STATE_ONLY &&
-	    consumer->links.status != DL_DEV_NO_DRIVER &&
-	    consumer->links.status != DL_DEV_PROBING) {
-		link = NULL;
-		goto out;
-	}
-
-	
-	if (flags & DL_FLAG_AUTOREMOVE_SUPPLIER)
-		flags &= ~DL_FLAG_AUTOREMOVE_CONSUMER;
-
-	list_for_each_entry(link, &supplier->links.consumers, s_node) {
-		if (link->consumer != consumer)
-			continue;
-
-		if (link->flags & DL_FLAG_INFERRED &&
-		    !(flags & DL_FLAG_INFERRED))
-			link->flags &= ~DL_FLAG_INFERRED;
-
-		if (flags & DL_FLAG_PM_RUNTIME) {
-			if (!(link->flags & DL_FLAG_PM_RUNTIME)) {
-				pm_runtime_new_link(consumer);
-				link->flags |= DL_FLAG_PM_RUNTIME;
-			}
-			if (flags & DL_FLAG_RPM_ACTIVE)
-				refcount_inc(&link->rpm_active);
-		}
-
-		if (flags & DL_FLAG_STATELESS) {
-			kref_get(&link->kref);
-			if (link->flags & DL_FLAG_SYNC_STATE_ONLY &&
-			    !(link->flags & DL_FLAG_STATELESS)) {
-				link->flags |= DL_FLAG_STATELESS;
-				goto reorder;
-			} else {
-				link->flags |= DL_FLAG_STATELESS;
-				goto out;
-			}
-		}
-
-		
-		if (flags & DL_FLAG_AUTOREMOVE_SUPPLIER) {
-			if (link->flags & DL_FLAG_AUTOREMOVE_CONSUMER) {
-				link->flags &= ~DL_FLAG_AUTOREMOVE_CONSUMER;
-				link->flags |= DL_FLAG_AUTOREMOVE_SUPPLIER;
-			}
-		} else if (!(flags & DL_FLAG_AUTOREMOVE_CONSUMER)) {
-			link->flags &= ~(DL_FLAG_AUTOREMOVE_CONSUMER |
-					 DL_FLAG_AUTOREMOVE_SUPPLIER);
-		}
-		if (!(link->flags & DL_FLAG_MANAGED)) {
-			kref_get(&link->kref);
-			link->flags |= DL_FLAG_MANAGED;
-			device_link_init_status(link, consumer, supplier);
-		}
-		if (link->flags & DL_FLAG_SYNC_STATE_ONLY &&
-		    !(flags & DL_FLAG_SYNC_STATE_ONLY)) {
-			link->flags &= ~DL_FLAG_SYNC_STATE_ONLY;
-			goto reorder;
-		}
-
-		goto out;
-	}
-
-	link = kzalloc(sizeof(*link), GFP_KERNEL);
-	if (!link)
-		goto out;
-
-	refcount_set(&link->rpm_active, 1);
-
-	get_device(supplier);
-	link->supplier = supplier;
-	INIT_LIST_HEAD(&link->s_node);
-	get_device(consumer);
-	link->consumer = consumer;
-	INIT_LIST_HEAD(&link->c_node);
-	link->flags = flags;
-	kref_init(&link->kref);
-
-	link->link_dev.class = &devlink_class;
-	device_set_pm_not_required(&link->link_dev);
-	dev_set_name(&link->link_dev, "%s:%s--%s:%s",
-		     dev_bus_name(supplier), dev_name(supplier),
-		     dev_bus_name(consumer), dev_name(consumer));
-	if (device_register(&link->link_dev)) {
-		put_device(&link->link_dev);
-		link = NULL;
-		goto out;
-	}
-
-	if (flags & DL_FLAG_PM_RUNTIME) {
-		if (flags & DL_FLAG_RPM_ACTIVE)
-			refcount_inc(&link->rpm_active);
-
-		pm_runtime_new_link(consumer);
-	}
-
-	
-	if (flags & DL_FLAG_STATELESS)
-		link->status = DL_STATE_NONE;
-	else
-		device_link_init_status(link, consumer, supplier);
-
-	
-	if (link->status == DL_STATE_CONSUMER_PROBE &&
-	    flags & DL_FLAG_PM_RUNTIME)
-		pm_runtime_resume(supplier);
-
-	list_add_tail_rcu(&link->s_node, &supplier->links.consumers);
-	list_add_tail_rcu(&link->c_node, &consumer->links.suppliers);
-
-	if (flags & DL_FLAG_SYNC_STATE_ONLY) {
-		dev_dbg(consumer,
-			"Linked as a sync state only consumer to %s\n",
-			dev_name(supplier));
-		goto out;
-	}
-
-reorder:
-	
-	device_reorder_to_tail(consumer, NULL);
-
-	dev_dbg(consumer, "Linked as a consumer to %s\n", dev_name(supplier));
-
-out:
-	device_pm_unlock();
-	device_links_write_unlock();
-
-	if ((flags & DL_FLAG_PM_RUNTIME && flags & DL_FLAG_RPM_ACTIVE) && !link)
-		pm_runtime_put(supplier);
-
-	return link;
+	/* Minimal stub: no device links for minimal kernel */
+	(void)consumer;
+	(void)supplier;
+	(void)flags;
+	return NULL;
 }
 
 static void __device_link_del(struct kref *kref)
@@ -2417,14 +2256,12 @@ static int device_private_init(struct device *dev)
 int device_add(struct device *dev)
 {
 	struct device *parent;
-	struct kobject *kobj;
-	struct class_interface *class_intf;
 	int error = -EINVAL;
-	struct kobject *glue_dir = NULL;
 
+	/* Minimal stub: simplified device registration */
 	dev = get_device(dev);
 	if (!dev)
-		goto done;
+		return error;
 
 	if (!dev->p) {
 		error = device_private_init(dev);
@@ -2432,13 +2269,11 @@ int device_add(struct device *dev)
 			goto done;
 	}
 
-	
 	if (dev->init_name) {
 		dev_set_name(dev, "%s", dev->init_name);
 		dev->init_name = NULL;
 	}
 
-	
 	if (!dev_name(dev) && dev->bus && dev->bus->dev_name)
 		dev_set_name(dev, "%s%u", dev->bus->dev_name, dev->id);
 
@@ -2448,125 +2283,28 @@ int device_add(struct device *dev)
 	}
 
 	parent = get_device(dev->parent);
-	kobj = get_device_parent(dev, parent);
-	if (IS_ERR(kobj)) {
-		error = PTR_ERR(kobj);
-		goto parent_error;
-	}
-	if (kobj)
-		dev->kobj.parent = kobj;
-
-	
 	if (parent && (dev_to_node(dev) == NUMA_NO_NODE))
 		set_dev_node(dev, dev_to_node(parent));
 
-	
-	
 	error = kobject_add(&dev->kobj, dev->kobj.parent, NULL);
-	if (error) {
-		glue_dir = get_glue_dir(dev);
-		goto Error;
-	}
+	if (error)
+		goto parent_error;
 
-	
-	device_platform_notify(dev);
-
-	error = device_create_file(dev, &dev_attr_uevent);
-	if (error)
-		goto attrError;
-
-	error = device_add_class_symlinks(dev);
-	if (error)
-		goto SymlinkError;
-	error = device_add_attrs(dev);
-	if (error)
-		goto AttrsError;
-	error = bus_add_device(dev);
-	if (error)
-		goto BusError;
-	error = dpm_sysfs_add(dev);
-	if (error)
-		goto DPMError;
 	device_pm_add(dev);
-
-	if (MAJOR(dev->devt)) {
-		error = device_create_file(dev, &dev_attr_dev);
-		if (error)
-			goto DevAttrError;
-
-		error = device_create_sys_dev_entry(dev);
-		if (error)
-			goto SysEntryError;
-
-		devtmpfs_create_node(dev);
-	}
-
-	
-	if (dev->bus)
-		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-					     BUS_NOTIFY_ADD_DEVICE, dev);
-
-	kobject_uevent(&dev->kobj, KOBJ_ADD);
-
-	
-	if (dev->fwnode && !dev->fwnode->dev) {
-		dev->fwnode->dev = dev;
-		fw_devlink_link_device(dev);
-	}
-
 	bus_probe_device(dev);
 
-	
-	if (dev->fwnode && fw_devlink_drv_reg_done && !dev->can_match)
-		fw_devlink_unblock_consumers(dev);
-
-	if (parent)
-		klist_add_tail(&dev->p->knode_parent,
-			       &parent->p->klist_children);
-
-	if (dev->class) {
-		mutex_lock(&dev->class->p->mutex);
-		
-		klist_add_tail(&dev->p->knode_class,
-			       &dev->class->p->klist_devices);
-
-		
-		list_for_each_entry(class_intf,
-				    &dev->class->p->interfaces, node)
-			if (class_intf->add_dev)
-				class_intf->add_dev(dev, class_intf);
-		mutex_unlock(&dev->class->p->mutex);
-	}
-done:
+	error = 0;
 	put_device(dev);
 	return error;
- SysEntryError:
-	if (MAJOR(dev->devt))
-		device_remove_file(dev, &dev_attr_dev);
- DevAttrError:
-	device_pm_remove(dev);
-	dpm_sysfs_remove(dev);
- DPMError:
-	bus_remove_device(dev);
- BusError:
-	device_remove_attrs(dev);
- AttrsError:
-	device_remove_class_symlinks(dev);
- SymlinkError:
-	device_remove_file(dev, &dev_attr_uevent);
- attrError:
-	device_platform_notify_remove(dev);
-	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
-	glue_dir = get_glue_dir(dev);
-	kobject_del(&dev->kobj);
- Error:
-	cleanup_glue_dir(dev, glue_dir);
+
 parent_error:
 	put_device(parent);
 name_error:
 	kfree(dev->p);
 	dev->p = NULL;
-	goto done;
+done:
+	put_device(dev);
+	return error;
 }
 
 int device_register(struct device *dev)

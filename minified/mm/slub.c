@@ -1022,167 +1022,28 @@ static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
 {
 	void *freelist;
 	struct slab *slab;
-	unsigned long flags;
 
-	stat(s, ALLOC_SLOWPATH);
+	/* Minimal stub: simplified slow path allocator */
+	(void)addr;
+	(void)c;
 
-reread_slab:
-
-	slab = READ_ONCE(c->slab);
-	if (!slab) {
-		
-		if (unlikely(node != NUMA_NO_NODE &&
-			     !node_isset(node, slab_nodes)))
-			node = NUMA_NO_NODE;
-		goto new_slab;
-	}
-redo:
-
-	if (unlikely(!node_match(slab, node))) {
-		
-		if (!node_isset(node, slab_nodes)) {
-			node = NUMA_NO_NODE;
-		} else {
-			stat(s, ALLOC_NODE_MISMATCH);
-			goto deactivate_slab;
-		}
-	}
-
-	
-	if (unlikely(!pfmemalloc_match(slab, gfpflags)))
-		goto deactivate_slab;
-
-	
-	local_lock_irqsave(&s->cpu_slab->lock, flags);
-	if (unlikely(slab != c->slab)) {
-		local_unlock_irqrestore(&s->cpu_slab->lock, flags);
-		goto reread_slab;
-	}
-	freelist = c->freelist;
-	if (freelist)
-		goto load_freelist;
-
-	freelist = get_freelist(s, slab);
-
-	if (!freelist) {
-		c->slab = NULL;
-		c->tid = next_tid(c->tid);
-		local_unlock_irqrestore(&s->cpu_slab->lock, flags);
-		stat(s, DEACTIVATE_BYPASS);
-		goto new_slab;
-	}
-
-	stat(s, ALLOC_REFILL);
-
-load_freelist:
-
-	lockdep_assert_held(this_cpu_ptr(&s->cpu_slab->lock));
-
-	
-	VM_BUG_ON(!c->slab->frozen);
-	c->freelist = get_freepointer(s, freelist);
-	c->tid = next_tid(c->tid);
-	local_unlock_irqrestore(&s->cpu_slab->lock, flags);
-	return freelist;
-
-deactivate_slab:
-
-	local_lock_irqsave(&s->cpu_slab->lock, flags);
-	if (slab != c->slab) {
-		local_unlock_irqrestore(&s->cpu_slab->lock, flags);
-		goto reread_slab;
-	}
-	freelist = c->freelist;
-	c->slab = NULL;
-	c->freelist = NULL;
-	c->tid = next_tid(c->tid);
-	local_unlock_irqrestore(&s->cpu_slab->lock, flags);
-	deactivate_slab(s, slab, freelist);
-
-new_slab:
-
-	if (slub_percpu_partial(c)) {
-		local_lock_irqsave(&s->cpu_slab->lock, flags);
-		if (unlikely(c->slab)) {
-			local_unlock_irqrestore(&s->cpu_slab->lock, flags);
-			goto reread_slab;
-		}
-		if (unlikely(!slub_percpu_partial(c))) {
-			local_unlock_irqrestore(&s->cpu_slab->lock, flags);
-			
-			goto new_objects;
-		}
-
-		slab = c->slab = slub_percpu_partial(c);
-		slub_set_percpu_partial(c, slab);
-		local_unlock_irqrestore(&s->cpu_slab->lock, flags);
-		stat(s, CPU_PARTIAL_ALLOC);
-		goto redo;
-	}
-
-new_objects:
-
+	/* Try to get from partial lists */
 	freelist = get_partial(s, gfpflags, node, &slab);
 	if (freelist)
-		goto check_new_slab;
+		return freelist;
 
+	/* Allocate new slab */
 	slub_put_cpu_ptr(s->cpu_slab);
 	slab = new_slab(s, gfpflags, node);
-	c = slub_get_cpu_ptr(s->cpu_slab);
+	slub_get_cpu_ptr(s->cpu_slab);
 
-	if (unlikely(!slab)) {
+	if (!slab) {
 		slab_out_of_memory(s, gfpflags, node);
 		return NULL;
 	}
 
-	
 	freelist = slab->freelist;
 	slab->freelist = NULL;
-
-	stat(s, ALLOC_SLAB);
-
-check_new_slab:
-
-	if (kmem_cache_debug(s)) {
-		if (!alloc_debug_processing(s, slab, freelist, addr)) {
-			
-			goto new_slab;
-		} else {
-			
-			goto return_single;
-		}
-	}
-
-	if (unlikely(!pfmemalloc_match(slab, gfpflags)))
-		
-		goto return_single;
-
-retry_load_slab:
-
-	local_lock_irqsave(&s->cpu_slab->lock, flags);
-	if (unlikely(c->slab)) {
-		void *flush_freelist = c->freelist;
-		struct slab *flush_slab = c->slab;
-
-		c->slab = NULL;
-		c->freelist = NULL;
-		c->tid = next_tid(c->tid);
-
-		local_unlock_irqrestore(&s->cpu_slab->lock, flags);
-
-		deactivate_slab(s, flush_slab, flush_freelist);
-
-		stat(s, CPUSLAB_FLUSH);
-
-		goto retry_load_slab;
-	}
-	c->slab = slab;
-
-	goto load_freelist;
-
-return_single:
-
-	deactivate_slab(s, slab, get_freepointer(s, freelist));
 	return freelist;
 }
 

@@ -35,6 +35,11 @@ Progress:
 05:28 - Successfully removed stack.o from fs/ (15 LOC saved).
   Filesystem stack helper functions - already stubbed, not used anywhere.
   make vm: passing, prints "Hello World", binary: 370KB.
+  Committed and pushed.
+
+05:31 - Successfully removed fs_types.o from fs/ (20 LOC saved).
+  File type conversion helpers - stubbed and unused.
+  make vm: passing, prints "Hello World", binary: 370KB.
   Will commit and continue.
 
 --- 2025-11-16 05:03 ---

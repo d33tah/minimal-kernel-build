@@ -34,6 +34,22 @@ Progress:
 
   Session total so far: 53 LOC removed (22 + 31)
 
+06:47 - Analysis: Need bigger wins.
+  Current approach (finding individual unused macros) is too slow.
+  Removed 53 LOC but need ~46,718 more to reach 200K goal.
+
+  Strategy shift needed: Look for larger subsystems to simplify/remove:
+  - Current: 246,771 LOC (cloc), 422 C files compiled
+  - Largest files: page_alloc.c (3810), memory.c (3301), namei.c (3260),
+    namespace.c (3077), vt.c (3015), core.c (2679)
+  - Largest headers: fs.h (2172), mm.h (2033), atomic-arch-fallback.h (2034),
+    atomic-instrumented.h (1660), xarray.h (765)
+
+  Need to identify:
+  1. Entire C files that could be removed (if not actually needed)
+  2. Large functions/sections that could be stubbed
+  3. Auto-generated headers that could be regenerated with less code
+
 --- 2025-11-16 06:12 ---
 
 New session starting:

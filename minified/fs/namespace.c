@@ -1305,20 +1305,7 @@ int path_umount(struct path *path, int flags)
 
 static int ksys_umount(char __user *name, int flags)
 {
-	int lookup_flags = LOOKUP_MOUNTPOINT;
-	struct path path;
-	int ret;
-
-	 
-	if (flags & ~(MNT_FORCE | MNT_DETACH | MNT_EXPIRE | UMOUNT_NOFOLLOW))
-		return -EINVAL;
-
-	if (!(flags & UMOUNT_NOFOLLOW))
-		lookup_flags |= LOOKUP_FOLLOW;
-	ret = user_path_at(AT_FDCWD, name, lookup_flags, &path);
-	if (ret)
-		return ret;
-	return path_umount(&path, flags);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
@@ -2621,15 +2608,7 @@ int path_mount(const char *dev_name, struct path *path,
 long do_mount(const char *dev_name, const char __user *dir_name,
 		const char *type_page, unsigned long flags, void *data_page)
 {
-	struct path path;
-	int ret;
-
-	ret = user_path_at(AT_FDCWD, dir_name, LOOKUP_FOLLOW, &path);
-	if (ret)
-		return ret;
-	ret = path_mount(dev_name, &path, type_page, flags, data_page);
-	path_put(&path);
-	return ret;
+	return -ENOSYS;
 }
 
 static struct ucounts *inc_mnt_namespaces(struct user_namespace *ns)

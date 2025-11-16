@@ -47,6 +47,25 @@ New session starting:
 
   Remaining gap: ~43,123 LOC to 200K goal (17.7% reduction needed)
 
+12:40 - SUCCESS: Stubbed 2 mount/umount functions in fs/namespace.c
+  Functions stubbed (all replaced with return -ENOSYS):
+  - do_mount: 13 lines → 3 lines (10 saved)
+  - ksys_umount: 17 lines → 3 lines (14 saved)
+
+  Total reduction: ~24 lines in namespace.c
+  These operations (mount, umount) are not needed for a minimal
+  "Hello World" kernel.
+
+  Build: PASSES ✓
+  make vm: prints "Hello, World!" ✓
+  Binary: 354KB (unchanged)
+  Total LOC: 243,123 → 243,106 (estimated 17 C LOC reduction)
+  C code: 136,883 → 136,866 (17 lines)
+
+  Cumulative session reduction: ~180 LOC
+
+  Remaining gap: ~43,106 LOC to 200K goal (17.7% reduction needed)
+
 --- 2025-11-16 12:30 ---
 
 New session starting:

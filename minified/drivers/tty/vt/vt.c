@@ -1802,72 +1802,28 @@ static int vc_con_write_normal(struct vc_data *vc, int tc, int c,
 
 static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int count)
 {
-	struct vc_draw_region draw = {
-		.x = -1,
-	};
-	int c, tc, n = 0;
-	unsigned int currcons;
+	struct vc_draw_region draw = { .x = -1 };
 	struct vc_data *vc;
-	struct vt_notifier_param param;
-	bool rescan;
+	int c, tc, n = 0;
 
 	if (in_interrupt())
 		return count;
 
 	console_lock();
 	vc = tty->driver_data;
-	if (vc == NULL) {
-		pr_err("vt: argh, driver_data is NULL !\n");
+	if (!vc || !vc_cons_allocated(vc->vc_num)) {
 		console_unlock();
 		return 0;
 	}
 
-	currcons = vc->vc_num;
-	if (!vc_cons_allocated(currcons)) {
-		console_unlock();
-		return 0;
-	}
-
-	
-	if (con_is_fg(vc))
-		hide_cursor(vc);
-
-	param.vc = vc;
-
-	while (!tty->flow.stopped && count) {
-		int orig = *buf;
-		buf++;
+	while (!tty->flow.stopped && count--) {
+		c = *buf++;
 		n++;
-		count--;
-rescan_last_byte:
-		c = orig;
-		rescan = false;
-
-		tc = vc_translate(vc, &c, &rescan);
-		if (tc == -1)
-			continue;
-
-		param.c = tc;
-		if (atomic_notifier_call_chain(&vt_notifier_list, VT_PREWRITE,
-					&param) == NOTIFY_STOP)
-			continue;
-
-		if (vc_is_control(vc, tc, c)) {
-			con_flush(vc, &draw);
-			do_con_trol(tty, vc, orig);
-			continue;
-		}
-
-		if (vc_con_write_normal(vc, tc, c, &draw) < 0)
-			continue;
-
-		if (rescan)
-			goto rescan_last_byte;
+		tc = vc_translate(vc, &c, NULL);
+		if (tc != -1 && !vc_is_control(vc, tc, c))
+			vc_con_write_normal(vc, tc, c, &draw);
 	}
 	con_flush(vc, &draw);
-	vc_uniscr_debug_check(vc);
-	console_conditional_schedule();
-	notify_update(vc);
 	console_unlock();
 	return n;
 }
@@ -1937,73 +1893,32 @@ int vt_kmsg_redirect(int new)
 static void vt_console_print(struct console *co, const char *b, unsigned count)
 {
 	struct vc_data *vc = vc_cons[fg_console].d;
-	unsigned char c;
 	static DEFINE_SPINLOCK(printing_lock);
 	const ushort *start;
-	ushort start_x, cnt;
-	int kmsg_console;
+	ushort start_x;
 
-	
-	if (!printable)
-		return;
-	if (!spin_trylock(&printing_lock))
+	if (!printable || !spin_trylock(&printing_lock))
 		return;
 
-	kmsg_console = vt_get_kmsg_redirect();
-	if (kmsg_console && vc_cons_allocated(kmsg_console - 1))
-		vc = vc_cons[kmsg_console - 1].d;
-
-	if (!vc_cons_allocated(fg_console)) {
-		
-		
+	if (!vc_cons_allocated(fg_console))
 		goto quit;
-	}
-
-	if (vc->vc_mode != KD_TEXT)
-		goto quit;
-
-	
-	if (con_is_fg(vc))
-		hide_cursor(vc);
 
 	start = (ushort *)vc->vc_pos;
 	start_x = vc->state.x;
-	cnt = 0;
+
 	while (count--) {
-		c = *b++;
-		if (c == 10 || c == 13 || c == 8 || vc->vc_need_wrap) {
-			if (cnt && con_is_visible(vc))
-				vc->vc_sw->con_putcs(vc, start, cnt, vc->state.y, start_x);
-			cnt = 0;
-			if (c == 8) {		
-				bs(vc);
-				start = (ushort *)vc->vc_pos;
-				start_x = vc->state.x;
-				continue;
-			}
-			if (c != 13)
-				lf(vc);
+		unsigned char c = *b++;
+		if (c == '\n') {
+			lf(vc);
 			cr(vc);
-			start = (ushort *)vc->vc_pos;
-			start_x = vc->state.x;
-			if (c == 10 || c == 13)
-				continue;
-		}
-		vc_uniscr_putc(vc, c);
-		scr_writew((vc->vc_attr << 8) + c, (unsigned short *)vc->vc_pos);
-		notify_write(vc, c);
-		cnt++;
-		if (vc->state.x == vc->vc_cols - 1) {
-			vc->vc_need_wrap = 1;
 		} else {
+			scr_writew((vc->vc_attr << 8) + c, (unsigned short *)vc->vc_pos);
 			vc->vc_pos += 2;
 			vc->state.x++;
 		}
 	}
-	if (cnt && con_is_visible(vc))
-		vc->vc_sw->con_putcs(vc, start, cnt, vc->state.y, start_x);
-	set_cursor(vc);
-	notify_update(vc);
+	if (con_is_visible(vc))
+		vc->vc_sw->con_putcs(vc, start, count, vc->state.y, start_x);
 
 quit:
 	spin_unlock(&printing_lock);

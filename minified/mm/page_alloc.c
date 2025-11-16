@@ -1369,56 +1369,8 @@ static inline bool boost_watermark(struct zone *zone)
 static void steal_suitable_fallback(struct zone *zone, struct page *page,
 		unsigned int alloc_flags, int start_type, bool whole_block)
 {
+	/* Minimal stub: just move page to target type */
 	unsigned int current_order = buddy_order(page);
-	int free_pages, movable_pages, alike_pages;
-	int old_block_type;
-
-	old_block_type = get_pageblock_migratetype(page);
-
-	
-	if (is_migrate_highatomic(old_block_type))
-		goto single_page;
-
-	
-	if (current_order >= pageblock_order) {
-		change_pageblock_range(page, current_order, start_type);
-		goto single_page;
-	}
-
-	
-	if (boost_watermark(zone) && (alloc_flags & ALLOC_KSWAPD))
-		set_bit(ZONE_BOOSTED_WATERMARK, &zone->flags);
-
-	
-	if (!whole_block)
-		goto single_page;
-
-	free_pages = move_freepages_block(zone, page, start_type,
-						&movable_pages);
-	
-	if (start_type == MIGRATE_MOVABLE) {
-		alike_pages = movable_pages;
-	} else {
-		
-		if (old_block_type == MIGRATE_MOVABLE)
-			alike_pages = pageblock_nr_pages
-						- (free_pages + movable_pages);
-		else
-			alike_pages = 0;
-	}
-
-	
-	if (!free_pages)
-		goto single_page;
-
-	
-	if (free_pages + alike_pages >= (1 << (pageblock_order-1)) ||
-			page_group_by_mobility_disabled)
-		set_pageblock_migratetype(page, start_type);
-
-	return;
-
-single_page:
 	move_to_free_list(page, zone, current_order, start_type);
 }
 
@@ -1697,62 +1649,9 @@ static void drain_local_pages_wq(struct work_struct *work)
 
 static void __drain_all_pages(struct zone *zone, bool force_all_cpus)
 {
-	int cpu;
-
-	
-	static cpumask_t cpus_with_pcps;
-
-	
-	if (WARN_ON_ONCE(!mm_percpu_wq))
+	/* Minimal stub: skip complex per-CPU draining */
+	if (!mm_percpu_wq)
 		return;
-
-	
-	if (unlikely(!mutex_trylock(&pcpu_drain_mutex))) {
-		if (!zone)
-			return;
-		mutex_lock(&pcpu_drain_mutex);
-	}
-
-	
-	for_each_online_cpu(cpu) {
-		struct per_cpu_pages *pcp;
-		struct zone *z;
-		bool has_pcps = false;
-
-		if (force_all_cpus) {
-			
-			has_pcps = true;
-		} else if (zone) {
-			pcp = per_cpu_ptr(zone->per_cpu_pageset, cpu);
-			if (pcp->count)
-				has_pcps = true;
-		} else {
-			for_each_populated_zone(z) {
-				pcp = per_cpu_ptr(z->per_cpu_pageset, cpu);
-				if (pcp->count) {
-					has_pcps = true;
-					break;
-				}
-			}
-		}
-
-		if (has_pcps)
-			cpumask_set_cpu(cpu, &cpus_with_pcps);
-		else
-			cpumask_clear_cpu(cpu, &cpus_with_pcps);
-	}
-
-	for_each_cpu(cpu, &cpus_with_pcps) {
-		struct pcpu_drain *drain = per_cpu_ptr(&pcpu_drain, cpu);
-
-		drain->zone = zone;
-		INIT_WORK(&drain->work, drain_local_pages_wq);
-		queue_work_on(cpu, mm_percpu_wq, &drain->work);
-	}
-	for_each_cpu(cpu, &cpus_with_pcps)
-		flush_work(&per_cpu_ptr(&pcpu_drain, cpu)->work);
-
-	mutex_unlock(&pcpu_drain_mutex);
 }
 
 void drain_all_pages(struct zone *zone)
@@ -2241,100 +2140,26 @@ static struct page *
 get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
 						const struct alloc_context *ac)
 {
+	/* Minimal stub: simplified zone iteration */
 	struct zoneref *z;
 	struct zone *zone;
-	struct pglist_data *last_pgdat = NULL;
-	bool last_pgdat_dirty_ok = false;
-	bool no_fallback;
+	struct page *page;
 
-retry:
-	
-	no_fallback = alloc_flags & ALLOC_NOFRAGMENT;
 	z = ac->preferred_zoneref;
-	for_next_zone_zonelist_nodemask(zone, z, ac->highest_zoneidx,
-					ac->nodemask) {
-		struct page *page;
-		unsigned long mark;
+	for_next_zone_zonelist_nodemask(zone, z, ac->highest_zoneidx, ac->nodemask) {
+		unsigned long mark = wmark_pages(zone, alloc_flags & ALLOC_WMARK_MASK);
 
-		if (cpusets_enabled() &&
-			(alloc_flags & ALLOC_CPUSET) &&
-			!__cpuset_zone_allowed(zone, gfp_mask))
-				continue;
-		
-		if (ac->spread_dirty_pages) {
-			if (last_pgdat != zone->zone_pgdat) {
-				last_pgdat = zone->zone_pgdat;
-				last_pgdat_dirty_ok = node_dirty_ok(zone->zone_pgdat);
-			}
+		/* Skip watermark check if NO_WATERMARKS flag set */
+		if (!(alloc_flags & ALLOC_NO_WATERMARKS) &&
+		    !zone_watermark_fast(zone, order, mark, ac->highest_zoneidx, alloc_flags, gfp_mask))
+			continue;
 
-			if (!last_pgdat_dirty_ok)
-				continue;
-		}
-
-		if (no_fallback && nr_online_nodes > 1 &&
-		    zone != ac->preferred_zoneref->zone) {
-			int local_nid;
-
-			
-			local_nid = zone_to_nid(ac->preferred_zoneref->zone);
-			if (zone_to_nid(zone) != local_nid) {
-				alloc_flags &= ~ALLOC_NOFRAGMENT;
-				goto retry;
-			}
-		}
-
-		mark = wmark_pages(zone, alloc_flags & ALLOC_WMARK_MASK);
-		if (!zone_watermark_fast(zone, order, mark,
-				       ac->highest_zoneidx, alloc_flags,
-				       gfp_mask)) {
-			int ret;
-
-			
-			BUILD_BUG_ON(ALLOC_NO_WATERMARKS < NR_WMARK);
-			if (alloc_flags & ALLOC_NO_WATERMARKS)
-				goto try_this_zone;
-
-			if (!node_reclaim_enabled() ||
-			    !zone_allows_reclaim(ac->preferred_zoneref->zone, zone))
-				continue;
-
-			ret = node_reclaim(zone->zone_pgdat, gfp_mask, order);
-			switch (ret) {
-			case NODE_RECLAIM_NOSCAN:
-				
-				continue;
-			case NODE_RECLAIM_FULL:
-				
-				continue;
-			default:
-				
-				if (zone_watermark_ok(zone, order, mark,
-					ac->highest_zoneidx, alloc_flags))
-					goto try_this_zone;
-
-				continue;
-			}
-		}
-
-try_this_zone:
 		page = rmqueue(ac->preferred_zoneref->zone, zone, order,
 				gfp_mask, alloc_flags, ac->migratetype);
 		if (page) {
 			prep_new_page(page, order, gfp_mask, alloc_flags);
-
-			
-			if (unlikely(order && (alloc_flags & ALLOC_HARDER)))
-				reserve_highatomic_pageblock(page, zone, order);
-
 			return page;
-		} else {
 		}
-	}
-
-	
-	if (no_fallback) {
-		alloc_flags &= ~ALLOC_NOFRAGMENT;
-		goto retry;
 	}
 
 	return NULL;

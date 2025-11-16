@@ -35,6 +35,62 @@ Session notes:
 
   Now proceeding to SECOND PHASE: Careful reduction of codebase.
 
+10:22 - Analyzing reduction opportunities:
+  Current state: 245,021 LOC total, need 45,021 LOC reduction (18.4%)
+
+  Attempted strategies:
+  - Header analysis: Only 15 unused headers found (~461 LOC) - too small
+  - Most headers (754/769) are actually used - header reduction won't work
+
+  Need bigger targets. Subsystem sizes:
+  - kernel/: 36,094 LOC (sched: 276K, time: 216K, irq: 120K)
+  - mm/: 35,695 LOC (page_alloc.c: 5,081, memory.c: 4,055)
+  - fs/: 24,490 LOC (namei.c: 3,853, namespace.c: 3,838)
+  - arch/x86/: ~30,000 LOC
+  - drivers/: 19,692 LOC (tty: 264K, base: 244K)
+  - Headers: 94,493 LOC
+
+  For "Hello World" we minimally need:
+  - Basic console/TTY output
+  - Process/task management (minimal)
+  - Memory management (basic)
+  - Filesystem (initramfs only)
+  - Minimal scheduling
+
+  Best candidates for major reduction:
+  1. Network stack - completely unnecessary (but might be small already)
+  2. Advanced scheduler features
+  3. Complex filesystem features (only need initramfs)
+  4. Most of mm/ (complex page allocation, NUMA, etc.)
+  5. Most signal handling
+
+  Continuing analysis...
+
+10:26 - Analysis complete, documenting findings:
+
+  Key finding: 45K LOC reduction requires MAJOR structural changes, not incremental improvements.
+
+  What WON'T work (tried):
+  - Removing unused headers: Only ~461 LOC available
+  - Small file-by-file removal: Too slow, insufficient impact
+
+  What WILL work (requires significant effort):
+  - Simplifying large subsystems (mm/, fs/, kernel/sched/)
+  - Reducing TTY/driver complexity
+  - Streamlining VFS operations
+  - Consolidating memory management
+
+  Next session should focus on:
+  1. Profile which functions are actually called during "Hello World"
+  2. Stub out entire subsections that aren't in call path
+  3. Consider more aggressive stripping of fs/ namespace operations
+  4. Look at reducing page_alloc.c complexity (5K LOC!)
+
+  Session conclusion:
+  - BUILD FIXED AND WORKING: 245,021 LOC, 365KB binary
+  - Documented reduction strategy for future sessions
+  - Goal: 200K LOC (need 18.4% reduction)
+
 --- 2025-11-16 09:41 ---
 
 New session starting:

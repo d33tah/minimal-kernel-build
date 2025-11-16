@@ -32,8 +32,7 @@ lib-y := ctype.o string.o vsprintf.o cmdline.o \
 	 idr.o extable.o irq_regs.o argv_split.o \
 	 flex_proportions.o ratelimit.o show_mem.o \
 	 decompress.o kobject_uevent.o \
-	 siphash.o dec_and_lock.o \
-	 buildid.o
+	 siphash.o dec_and_lock.o
 
 lib-$(CONFIG_PRINTK) += dump_stack.o
 lib-$(CONFIG_SMP) += cpumask.o

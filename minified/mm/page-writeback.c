@@ -440,84 +440,20 @@ static long long pos_ratio_polynom(unsigned long setpoint,
 
 static void wb_position_ratio(struct dirty_throttle_control *dtc)
 {
-	struct bdi_writeback *wb = dtc->wb;
-	unsigned long write_bw = READ_ONCE(wb->avg_write_bandwidth);
+	/* Minimal stub - simple throttling without complex calculations */
 	unsigned long freerun = dirty_freerun_ceiling(dtc->thresh, dtc->bg_thresh);
 	unsigned long limit = hard_dirty_limit(dtc_dom(dtc), dtc->thresh);
-	unsigned long wb_thresh = dtc->wb_thresh;
-	unsigned long x_intercept;
-	unsigned long setpoint;		
-	unsigned long wb_setpoint;
-	unsigned long span;
-	long long pos_ratio;		
-	long x;
+	unsigned long setpoint;
+	long long pos_ratio;
 
 	dtc->pos_ratio = 0;
 
 	if (unlikely(dtc->dirty >= limit))
 		return;
 
-	
+	/* Simple linear throttling instead of complex polynomial */
 	setpoint = (freerun + limit) / 2;
 	pos_ratio = pos_ratio_polynom(setpoint, dtc->dirty, limit);
-
-	
-	if (unlikely(wb->bdi->capabilities & BDI_CAP_STRICTLIMIT)) {
-		long long wb_pos_ratio;
-
-		if (dtc->wb_dirty < 8) {
-			dtc->pos_ratio = min_t(long long, pos_ratio * 2,
-					   2 << RATELIMIT_CALC_SHIFT);
-			return;
-		}
-
-		if (dtc->wb_dirty >= wb_thresh)
-			return;
-
-		wb_setpoint = dirty_freerun_ceiling(wb_thresh,
-						    dtc->wb_bg_thresh);
-
-		if (wb_setpoint == 0 || wb_setpoint == wb_thresh)
-			return;
-
-		wb_pos_ratio = pos_ratio_polynom(wb_setpoint, dtc->wb_dirty,
-						 wb_thresh);
-
-		
-		dtc->pos_ratio = min(pos_ratio, wb_pos_ratio);
-		return;
-	}
-
-	
-
-	
-	if (unlikely(wb_thresh > dtc->thresh))
-		wb_thresh = dtc->thresh;
-	
-	wb_thresh = max(wb_thresh, (limit - dtc->dirty) / 8);
-	
-	x = div_u64((u64)wb_thresh << 16, dtc->thresh | 1);
-	wb_setpoint = setpoint * (u64)x >> 16;
-	
-	span = (dtc->thresh - wb_thresh + 8 * write_bw) * (u64)x >> 16;
-	x_intercept = wb_setpoint + span;
-
-	if (dtc->wb_dirty < x_intercept - span / 4) {
-		pos_ratio = div64_u64(pos_ratio * (x_intercept - dtc->wb_dirty),
-				      (x_intercept - wb_setpoint) | 1);
-	} else
-		pos_ratio /= 4;
-
-	
-	x_intercept = wb_thresh / 2;
-	if (dtc->wb_dirty < x_intercept) {
-		if (dtc->wb_dirty > x_intercept / 8)
-			pos_ratio = div_u64(pos_ratio * x_intercept,
-					    dtc->wb_dirty);
-		else
-			pos_ratio *= 8;
-	}
-
 	dtc->pos_ratio = pos_ratio;
 }
 

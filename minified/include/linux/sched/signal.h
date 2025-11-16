@@ -353,22 +353,9 @@ static inline void set_restore_sigmask(void)
 	set_thread_flag(TIF_RESTORE_SIGMASK);
 }
 
-static inline void clear_tsk_restore_sigmask(struct task_struct *task)
-{
-	clear_tsk_thread_flag(task, TIF_RESTORE_SIGMASK);
-}
-
 static inline void clear_restore_sigmask(void)
 {
 	clear_thread_flag(TIF_RESTORE_SIGMASK);
-}
-static inline bool test_tsk_restore_sigmask(struct task_struct *task)
-{
-	return test_tsk_thread_flag(task, TIF_RESTORE_SIGMASK);
-}
-static inline bool test_restore_sigmask(void)
-{
-	return test_thread_flag(TIF_RESTORE_SIGMASK);
 }
 static inline bool test_and_clear_restore_sigmask(void)
 {

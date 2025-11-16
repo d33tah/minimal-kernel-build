@@ -43,12 +43,33 @@ Progress:
   Most code is either:
   1. Core MM/FS/TTY functionality for basic boot and console
   2. Tightly integrated with other subsystems
-  3. Already stubbed (like random_stub.c)
+  3. Already stubbed (like random_stub.c, tsc_sync.c)
 
   Need to explore larger architectural changes:
   - Header file reduction (97K LOC in headers = 40% of codebase)
   - Large subsystem simplification (vt.c: 3610 LOC, signal.c: 3093 LOC)
   - Function stubbing within large files (not file removal)
+
+05:05 - Investigated additional removal candidates (ALL FAILED or already done):
+  - no-block.o (15 LOC): Required when CONFIG_BLOCK is not set
+  - hexdump, debug_locks: Already tried, too integrated
+  - Most small arch/x86 files: Either needed or already stubbed
+  - Time subsystem (clockevents.c 451 LOC): All compiled, core functionality
+
+  Progress this session: 79 LOC saved (random32.o only)
+  Gap to goal: Still 43,137 LOC (17.7% reduction needed)
+
+  Conclusion: Current incremental file removal approach has hit diminishing returns.
+  Most remaining files are either:
+  - Core infrastructure (MM, FS, sched, signal, fork, TTY)
+  - Already minimally stubbed
+  - Tightly coupled (removal causes link errors)
+
+  Next session should try completely different approaches:
+  1. Identify large functions within big files that can be stubbed
+  2. Look for subsystem-wide simplification (e.g., TTY reduction)
+  3. Consider header trimming (slow but steady progress)
+  4. Profile what's actually used at runtime vs compiled in
 
 --- 2025-11-16 04:24 ---
 

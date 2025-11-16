@@ -743,68 +743,22 @@ void device_links_force_bind(struct device *dev)
 
 void device_links_driver_bound(struct device *dev)
 {
-	struct device_link *link, *ln;
-	LIST_HEAD(sync_list);
-
-	
-	if (dev->fwnode && dev->fwnode->dev == dev) {
-		struct fwnode_handle *child;
-		fwnode_links_purge_suppliers(dev->fwnode);
-		fwnode_for_each_available_child_node(dev->fwnode, child)
-			fw_devlink_purge_absent_suppliers(child);
-	}
-	device_remove_file(dev, &dev_attr_waiting_for_supplier);
+	struct device_link *link;
 
 	device_links_write_lock();
 
 	list_for_each_entry(link, &dev->links.consumers, s_node) {
-		if (!(link->flags & DL_FLAG_MANAGED))
-			continue;
-
-		
-		if (link->status == DL_STATE_CONSUMER_PROBE ||
-		    link->status == DL_STATE_ACTIVE)
-			continue;
-
-		WARN_ON(link->status != DL_STATE_DORMANT);
-		WRITE_ONCE(link->status, DL_STATE_AVAILABLE);
-
-		if (link->flags & DL_FLAG_AUTOPROBE_CONSUMER)
-			driver_deferred_probe_add(link->consumer);
+		if ((link->flags & DL_FLAG_MANAGED) && link->status == DL_STATE_DORMANT)
+			WRITE_ONCE(link->status, DL_STATE_AVAILABLE);
 	}
 
-	if (defer_sync_state_count)
-		__device_links_supplier_defer_sync(dev);
-	else
-		__device_links_queue_sync_state(dev, &sync_list);
-
-	list_for_each_entry_safe(link, ln, &dev->links.suppliers, c_node) {
-		struct device *supplier;
-
-		if (!(link->flags & DL_FLAG_MANAGED))
-			continue;
-
-		supplier = link->supplier;
-		if (link->flags & DL_FLAG_SYNC_STATE_ONLY) {
-			
-			device_link_drop_managed(link);
-		} else {
-			WARN_ON(link->status != DL_STATE_CONSUMER_PROBE);
+	list_for_each_entry(link, &dev->links.suppliers, c_node) {
+		if ((link->flags & DL_FLAG_MANAGED) && !(link->flags & DL_FLAG_SYNC_STATE_ONLY))
 			WRITE_ONCE(link->status, DL_STATE_ACTIVE);
-		}
-
-		
-		if (defer_sync_state_count)
-			__device_links_supplier_defer_sync(supplier);
-		else
-			__device_links_queue_sync_state(supplier, &sync_list);
 	}
 
 	dev->links.status = DL_DEV_DRIVER_BOUND;
-
 	device_links_write_unlock();
-
-	device_links_flush_sync_list(&sync_list, dev);
 }
 
 static void __device_links_no_driver(struct device *dev)
@@ -1775,67 +1729,14 @@ void devm_device_remove_groups(struct device *dev,
 
 static int device_add_attrs(struct device *dev)
 {
-	struct class *class = dev->class;
-	const struct device_type *type = dev->type;
-	int error;
+	int error = 0;
 
-	if (class) {
-		error = device_add_groups(dev, class->dev_groups);
-		if (error)
-			return error;
-	}
-
-	if (type) {
-		error = device_add_groups(dev, type->groups);
-		if (error)
-			goto err_remove_class_groups;
-	}
-
-	error = device_add_groups(dev, dev->groups);
-	if (error)
-		goto err_remove_type_groups;
-
-	if (device_supports_offline(dev) && !dev->offline_disabled) {
-		error = device_create_file(dev, &dev_attr_online);
-		if (error)
-			goto err_remove_dev_groups;
-	}
-
-	if (fw_devlink_flags && !fw_devlink_is_permissive() && dev->fwnode) {
-		error = device_create_file(dev, &dev_attr_waiting_for_supplier);
-		if (error)
-			goto err_remove_dev_online;
-	}
-
-	if (dev_removable_is_valid(dev)) {
-		error = device_create_file(dev, &dev_attr_removable);
-		if (error)
-			goto err_remove_dev_waiting_for_supplier;
-	}
-
-	if (dev_add_physical_location(dev)) {
-		error = device_add_group(dev,
-			&dev_attr_physical_location_group);
-		if (error)
-			goto err_remove_dev_removable;
-	}
-
-	return 0;
-
- err_remove_dev_removable:
-	device_remove_file(dev, &dev_attr_removable);
- err_remove_dev_waiting_for_supplier:
-	device_remove_file(dev, &dev_attr_waiting_for_supplier);
- err_remove_dev_online:
-	device_remove_file(dev, &dev_attr_online);
- err_remove_dev_groups:
-	device_remove_groups(dev, dev->groups);
- err_remove_type_groups:
-	if (type)
-		device_remove_groups(dev, type->groups);
- err_remove_class_groups:
-	if (class)
-		device_remove_groups(dev, class->dev_groups);
+	if (dev->class)
+		error = device_add_groups(dev, dev->class->dev_groups);
+	if (!error && dev->type)
+		error = device_add_groups(dev, dev->type->groups);
+	if (!error)
+		error = device_add_groups(dev, dev->groups);
 
 	return error;
 }

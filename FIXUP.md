@@ -25,6 +25,19 @@ Session notes:
 
   make vm still passes, prints "Hello World" and "Still alive" correctly.
 
+09:04 - Exploring next reduction targets. Reviewed multiple subsystems:
+  - IRQ: kernel/irq/manage.c (1583 lines) - likely needed
+  - Time: kernel/time/ (~6400 LOC) - core functionality
+  - FS: exec.c (1482), namei.c (3853), namespace.c (3838) - complex, risky
+  - TTY: vt.c (3610), tty_io.c (2352) - needed for console output
+  - Drivers/base: core.c (74K) - device model, large but likely needed
+  - Arch/x86: cpu/intel.c (1107), setup code - CPU-specific init
+
+  Looking for next opportunity. Auto-generated atomic headers noted (4KB+)
+  but risky to modify. Fair scheduler needs to work so can't stub it.
+
+  Will try examining larger subsystems for partial reduction opportunities.
+
 Progress:
 
 --- 2025-11-16 08:35 ---

@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 
 #ifndef _ASM_X86_CPU_ENTRY_AREA_H
 #define _ASM_X86_CPU_ENTRY_AREA_H
@@ -14,50 +14,30 @@ struct doublefault_stack {
 	struct x86_hw_tss tss;
 } __aligned(PAGE_SIZE);
 
-/*
- * cpu_entry_area is a percpu region that contains things needed by the CPU
- * and early entry/exit code.  Real types aren't used for all fields here
- * to avoid circular header dependencies.
- *
- * Every field is a virtual alias of some other allocated backing store.
- * There is no direct allocation of a struct cpu_entry_area.
- */
+ 
 struct cpu_entry_area {
 	char gdt[PAGE_SIZE];
 
-	/*
-	 * The GDT is just below entry_stack and thus serves (on x86_64) as
-	 * a read-only guard page. On 32-bit the GDT must be writeable, so
-	 * it needs an extra guard page.
-	 */
+	 
 	char guard_entry_stack[PAGE_SIZE];
 	struct entry_stack_page entry_stack_page;
 
 	char guard_doublefault_stack[PAGE_SIZE];
 	struct doublefault_stack doublefault_stack;
 
-	/*
-	 * On x86_64, the TSS is mapped RO.  On x86_32, it's mapped RW because
-	 * we need task switches to work, and task switches write to the TSS.
-	 */
+	 
 	struct tss_struct tss;
 
-	/*
-	 * Per CPU debug store for Intel performance monitoring. Wastes a
-	 * full page at the moment.
-	 */
+	 
 	struct debug_store cpu_debug_store;
-	/*
-	 * The actual PEBS/BTS buffers must be mapped to user space
-	 * Reserve enough fixmap PTEs.
-	 */
+	 
 	struct debug_store_buffers cpu_debug_buffers;
 };
 
 #define CPU_ENTRY_AREA_SIZE		(sizeof(struct cpu_entry_area))
 #define CPU_ENTRY_AREA_ARRAY_SIZE	(CPU_ENTRY_AREA_SIZE * NR_CPUS)
 
-/* Total size includes the readonly IDT mapping page as well: */
+ 
 #define CPU_ENTRY_AREA_TOTAL_SIZE	(CPU_ENTRY_AREA_ARRAY_SIZE + PAGE_SIZE)
 
 DECLARE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);

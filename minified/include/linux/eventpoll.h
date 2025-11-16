@@ -1,10 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
-/*
- *  include/linux/eventpoll.h ( Efficient event polling implementation )
- *  Copyright (C) 2001,...,2006	 Davide Libenzi
- *
- *  Davide Libenzi <davidel@xmailserver.org>
- */
+ 
+ 
 #ifndef _LINUX_EVENTPOLL_H
 #define _LINUX_EVENTPOLL_H
 
@@ -12,7 +7,7 @@
 
 
 
-/* Forward declarations to avoid compiler errors */
+ 
 struct file;
 
 
@@ -31,4 +26,4 @@ epoll_put_uevent(__poll_t revents, __u64 data,
 	return uevent+1;
 }
 
-#endif /* #ifndef _LINUX_EVENTPOLL_H */
+#endif  

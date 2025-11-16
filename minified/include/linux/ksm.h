@@ -1,12 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef __LINUX_KSM_H
 #define __LINUX_KSM_H
-/*
- * Memory merging support.
- *
- * This code enables dynamic sharing of identical pages found in different
- * memory areas, even if they are not shared by fork().
- */
+ 
 
 #include <linux/bitops.h>
 #include <linux/mm.h>
@@ -49,4 +44,4 @@ static inline void folio_migrate_ksm(struct folio *newfolio, struct folio *old)
 {
 }
 
-#endif /* __LINUX_KSM_H */
+#endif  

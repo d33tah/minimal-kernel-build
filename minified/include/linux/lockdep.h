@@ -1,12 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * Runtime locking correctness validator
- *
- *  Copyright (C) 2006,2007 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
- *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra
- *
- * see Documentation/locking/lockdep-design.rst for more details.
- */
+ 
+ 
 #ifndef __LINUX_LOCKDEP_H
 #define __LINUX_LOCKDEP_H
 
@@ -57,11 +50,7 @@ static inline void lockdep_set_selftest_task(struct task_struct *task)
 
 #define lockdep_set_novalidate_class(lock) do { } while (0)
 
-/*
- * We don't define lockdep_match_class() and lockdep_match_key() for !LOCKDEP
- * case since the result is not well defined and the caller should rather
- * #ifdef the call himself.
- */
+ 
 
 # define lockdep_reset()		do { debug_locks = 1; } while (0)
 # define lockdep_free_key_range(start, size)	do { } while (0)
@@ -77,10 +66,7 @@ static inline void lockdep_unregister_key(struct lock_class_key *key)
 
 #define lockdep_depth(tsk)	(0)
 
-/*
- * Dummy forward declarations, allow users to write less ifdef-y code
- * and depend on dead code elimination.
- */
+ 
 extern int lock_is_held(const void *);
 extern int lockdep_is_held(const void *);
 #define lockdep_is_held_type(l, r)		(1)
@@ -111,10 +97,7 @@ enum xhlock_context_t {
 };
 
 #define lockdep_init_map_crosslock(m, n, k, s) do {} while (0)
-/*
- * To initialize a lockdep_map statically use this macro.
- * Note that _name must not be NULL.
- */
+ 
 #define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
 	{ .name = (_name), .key = (void *)(_key), }
 
@@ -136,23 +119,16 @@ static inline void print_irqtrace_events(struct task_struct *curr)
 {
 }
 
-/* Variable used to make lockdep treat read_lock() as recursive in selftests */
+ 
 #define force_read_lock_recursive 0
 
-/* If !LOCKDEP, the value is meaningless */
+ 
 #define read_lock_is_recursive() 0
 
-/*
- * For trivial one-depth nesting of a lock-class, the following
- * global define can be used. (Subsystems with multiple levels
- * of nesting should define their own lock-nesting subclasses.)
- */
+ 
 #define SINGLE_DEPTH_NESTING			1
 
-/*
- * Map the dependency ops to NOP or to real lockdep ops, depending
- * on the per lock-class debug mode:
- */
+ 
 
 #define lock_acquire_exclusive(l, s, t, n, i)		lock_acquire(l, s, t, 0, 1, n, i)
 #define lock_acquire_shared(l, s, t, n, i)		lock_acquire(l, s, t, 1, 1, n, i)
@@ -212,4 +188,4 @@ lockdep_rcu_suspicious(const char *file, const int line, const char *s)
 {
 }
 
-#endif /* __LINUX_LOCKDEP_H */
+#endif  

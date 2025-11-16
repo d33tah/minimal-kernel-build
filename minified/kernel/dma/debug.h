@@ -1,9 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- * Copyright (C) 2008 Advanced Micro Devices, Inc.
- *
- * Author: Joerg Roedel <joerg.roedel@amd.com>
- */
+ 
+ 
 
 #ifndef _KERNEL_DMA_DEBUG_H
 #define _KERNEL_DMA_DEBUG_H
@@ -79,4 +75,4 @@ static inline void debug_dma_sync_sg_for_device(struct device *dev,
 						int nelems, int direction)
 {
 }
-#endif /* _KERNEL_DMA_DEBUG_H */
+#endif  

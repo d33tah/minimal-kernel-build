@@ -1,8 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * NUMA memory policies for Linux.
- * Copyright 2003,2004 Andi Kleen SuSE Labs
- */
+ 
+ 
 #ifndef _LINUX_MEMPOLICY_H
 #define _LINUX_MEMPOLICY_H 1
 
@@ -107,7 +104,7 @@ static inline void check_highest_zone(int k)
 static inline int mpol_misplaced(struct page *page, struct vm_area_struct *vma,
 				 unsigned long address)
 {
-	return -1; /* no node preference */
+	return -1;  
 }
 
 static inline void mpol_put_task_policy(struct task_struct *task)

@@ -1,29 +1,4 @@
-/*
- * include/linux/topology.h
- *
- * Written by: Matthew Dobson, IBM Corporation
- *
- * Copyright (C) 2002, IBM Corp.
- *
- * All rights reserved.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
- * NON INFRINGEMENT.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * Send feedback to <colpatch@us.ibm.com>
- */
+ 
 #ifndef _LINUX_TOPOLOGY_H
 #define _LINUX_TOPOLOGY_H
 
@@ -45,7 +20,7 @@
 
 int arch_update_cpu_topology(void);
 
-/* Conform to ACPI 2.0 SLIT distance definitions */
+ 
 #define LOCAL_DISTANCE		10
 #define REMOTE_DISTANCE		20
 #define DISTANCE_BITS           8
@@ -53,26 +28,11 @@ int arch_update_cpu_topology(void);
 #define node_distance(from,to)	((from) == (to) ? LOCAL_DISTANCE : REMOTE_DISTANCE)
 #endif
 #ifndef RECLAIM_DISTANCE
-/*
- * If the distance between nodes in a system is larger than RECLAIM_DISTANCE
- * (in whatever arch specific measurement units returned by node_distance())
- * and node_reclaim_mode is enabled then the VM will only call node_reclaim()
- * on nodes within this distance.
- */
+ 
 #define RECLAIM_DISTANCE 30
 #endif
 
-/*
- * The following tunable allows platforms to override the default node
- * reclaim distance (RECLAIM_DISTANCE) if remote memory accesses are
- * sufficiently fast that the default value actually hurts
- * performance.
- *
- * AMD EPYC machines use this because even though the 2-hop distance
- * is 32 (3.2x slower than a local memory access) performance actually
- * *improves* if allowed to reclaim memory and load balance tasks
- * between NUMA nodes 2-hops apart.
- */
+ 
 extern int __read_mostly node_reclaim_distance;
 
 #ifndef PENALTY_FOR_NODE_WITH_CPUS
@@ -80,7 +40,7 @@ extern int __read_mostly node_reclaim_distance;
 #endif
 
 
-/* Returns the number of the current Node. */
+ 
 #ifndef numa_node_id
 static inline int numa_node_id(void)
 {
@@ -91,7 +51,7 @@ static inline int numa_node_id(void)
 
 
 #ifndef numa_mem_id
-/* Returns the number of the nearest Node with memory */
+ 
 static inline int numa_mem_id(void)
 {
 	return numa_node_id();
@@ -166,4 +126,4 @@ static inline const struct cpumask *cpu_cpu_mask(int cpu)
 }
 
 
-#endif /* _LINUX_TOPOLOGY_H */
+#endif  

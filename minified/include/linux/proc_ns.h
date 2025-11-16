@@ -1,7 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * procfs namespace bits
- */
+ 
+ 
 #ifndef _LINUX_PROC_NS_H
 #define _LINUX_PROC_NS_H
 
@@ -35,9 +33,7 @@ extern const struct proc_ns_operations cgroupns_operations;
 extern const struct proc_ns_operations timens_operations;
 extern const struct proc_ns_operations timens_for_children_operations;
 
-/*
- * We always define these enumerators
- */
+ 
 enum {
 	PROC_ROOT_INO		= 1,
 	PROC_IPC_INIT_INO	= 0xEFFFFFFFU,
@@ -79,4 +75,4 @@ extern int ns_get_name(char *buf, size_t size, struct task_struct *task,
 			const struct proc_ns_operations *ns_ops);
 extern void nsfs_init(void);
 
-#endif /* _LINUX_PROC_NS_H */
+#endif  

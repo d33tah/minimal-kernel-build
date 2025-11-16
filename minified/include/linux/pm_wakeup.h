@@ -1,10 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
-/*
- *  pm_wakeup.h - Power management wakeup interface
- *
- *  Copyright (C) 2008 Alan Stern
- *  Copyright (C) 2010 Rafael J. Wysocki, Novell Inc.
- */
+ 
+ 
 
 #ifndef _LINUX_PM_WAKEUP_H
 #define _LINUX_PM_WAKEUP_H
@@ -17,29 +12,7 @@
 
 struct wake_irq;
 
-/**
- * struct wakeup_source - Representation of wakeup sources
- *
- * @name: Name of the wakeup source
- * @id: Wakeup source id
- * @entry: Wakeup source list entry
- * @lock: Wakeup source lock
- * @wakeirq: Optional device specific wakeirq
- * @timer: Wakeup timer list
- * @timer_expires: Wakeup timer expiration
- * @total_time: Total time this wakeup source has been active.
- * @max_time: Maximum time this wakeup source has been continuously active.
- * @last_time: Monotonic clock when the wakeup source's was touched last time.
- * @prevent_sleep_time: Total time this source has been preventing autosleep.
- * @event_count: Number of signaled wakeup events.
- * @active_count: Number of times the wakeup source was activated.
- * @relax_count: Number of times the wakeup source was deactivated.
- * @expire_count: Number of times the wakeup source's timeout has expired.
- * @wakeup_count: Number of times the wakeup source might abort suspend.
- * @dev: Struct device for sysfs statistics about the wakeup source.
- * @active: Status of the wakeup source.
- * @autosleep_enabled: Autosleep is active, so update @prevent_sleep_time.
- */
+ 
 struct wakeup_source {
 	const char 		*name;
 	int			id;
@@ -165,4 +138,4 @@ static inline void pm_wakeup_hard_event(struct device *dev)
 	return pm_wakeup_dev_event(dev, 0, true);
 }
 
-#endif /* _LINUX_PM_WAKEUP_H */
+#endif  

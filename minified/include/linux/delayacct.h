@@ -1,8 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
-/* delayacct.h - per-task delay accounting
- *
- * Copyright (C) Shailabh Nagar, IBM Corp. 2006
- */
+ 
+ 
 
 #ifndef _LINUX_DELAYACCT_H
 #define _LINUX_DELAYACCT_H

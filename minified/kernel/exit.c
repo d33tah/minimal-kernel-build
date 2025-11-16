@@ -25,7 +25,6 @@
 #include <linux/nsproxy.h>
 #include <linux/pid_namespace.h>
 #include <linux/ptrace.h>
-#include <linux/profile.h>
 #include <linux/mount.h>
 #include <linux/proc_fs.h>
 #include <linux/kthread.h>
@@ -210,7 +209,6 @@ int rcuwait_wake_up(struct rcuwait *w)
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(rcuwait_wake_up);
 
 static int will_become_orphaned_pgrp(struct pid *pgrp,
 					struct task_struct *ignored_task)
@@ -599,9 +597,6 @@ void __noreturn make_task_dead(int signr)
 		panic("Attempted to kill the idle task!");
 
 	if (unlikely(in_atomic())) {
-		pr_info("note: %s[%d] exited with preempt_count %d\n",
-			current->comm, task_pid_nr(current),
-			preempt_count());
 		preempt_count_set(PREEMPT_ENABLED);
 	}
 
@@ -1293,7 +1288,6 @@ bool thread_group_exited(struct pid *pid)
 
 	return exited;
 }
-EXPORT_SYMBOL(thread_group_exited);
 
 __weak void abort(void)
 {
@@ -1301,4 +1295,3 @@ __weak void abort(void)
 
 	panic("Oops failed to kill thread");
 }
-EXPORT_SYMBOL(abort);

@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM irq_vectors
 
@@ -13,7 +13,7 @@
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_PATH .
 #define TRACE_INCLUDE_FILE irq_vectors
-#endif /*  _TRACE_IRQ_VECTORS_H */
+#endif  
 
-/* This part must be outside protection */
+ 
 

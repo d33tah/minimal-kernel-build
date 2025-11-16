@@ -1,7 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Minimal stub - performance frequency scaling not needed
- */
+ 
+ 
 #include <linux/cpufreq.h>
 
 void arch_scale_freq_tick(void)

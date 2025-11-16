@@ -1,8 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_KHUGEPAGED_H
 #define _LINUX_KHUGEPAGED_H
 
-#include <linux/sched/coredump.h> /* MMF_VM_HUGEPAGE */
+#include <linux/sched/coredump.h>  
 
 static inline void khugepaged_fork(struct mm_struct *mm, struct mm_struct *oldmm)
 {
@@ -27,4 +27,4 @@ static inline void khugepaged_min_free_kbytes_update(void)
 {
 }
 
-#endif /* _LINUX_KHUGEPAGED_H */
+#endif  

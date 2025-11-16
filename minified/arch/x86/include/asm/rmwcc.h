@@ -1,8 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_RMWcc
 #define _ASM_X86_RMWcc
 
-/* This counts to 12. Any more, it will return 13th argument. */
+ 
 #define __RMWcc_ARGS(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _n, X...) _n
 #define RMWcc_ARGS(X...) __RMWcc_ARGS(, ##X, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
 
@@ -13,7 +13,7 @@
 
 #if !defined(__GCC_ASM_FLAG_OUTPUTS__) && defined(CONFIG_CC_HAS_ASM_GOTO)
 
-/* Use asm goto */
+ 
 
 #define __GEN_RMWcc(fullop, _var, cc, clobbers, ...)			\
 ({									\
@@ -27,9 +27,9 @@ cc_label:	c = true;						\
 	c;								\
 })
 
-#else /* defined(__GCC_ASM_FLAG_OUTPUTS__) || !defined(CONFIG_CC_HAS_ASM_GOTO) */
+#else  
 
-/* Use flags output or a set instruction */
+ 
 
 #define __GEN_RMWcc(fullop, _var, cc, clobbers, ...)			\
 ({									\
@@ -40,7 +40,7 @@ cc_label:	c = true;						\
 	c;								\
 })
 
-#endif /* defined(__GCC_ASM_FLAG_OUTPUTS__) || !defined(CONFIG_CC_HAS_ASM_GOTO) */
+#endif  
 
 #define GEN_UNARY_RMWcc_4(op, var, cc, arg0)				\
 	__GEN_RMWcc(op " " arg0, var, cc, __CLOBBERS_MEM())
@@ -67,4 +67,4 @@ cc_label:	c = true;						\
 	__GEN_RMWcc(op " %[val], %[var]\n\t" suffix, var, cc,		\
 		    __CLOBBERS_MEM(clobbers), [val] vcon (_val))
 
-#endif /* _ASM_X86_RMWcc */
+#endif  

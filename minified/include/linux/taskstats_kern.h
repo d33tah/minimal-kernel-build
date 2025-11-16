@@ -1,9 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/* taskstats_kern.h - kernel header for per-task statistics interface
- *
- * Copyright (C) Shailabh Nagar, IBM Corp. 2006
- *           (C) Balbir Singh,   IBM Corp. 2006
- */
+ 
+ 
 
 #ifndef _LINUX_TASKSTATS_KERN_H
 #define _LINUX_TASKSTATS_KERN_H

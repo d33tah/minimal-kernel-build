@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -21,7 +21,6 @@
 #include <linux/security.h>
 #include <linux/hugetlb.h>
 #include <linux/shmem_fs.h>
-#include <linux/profile.h>
 #include <linux/export.h>
 #include <linux/mount.h>
 #include <linux/mempolicy.h>
@@ -41,7 +40,6 @@
 #include <linux/pkeys.h>
 #include <linux/oom.h>
 #include <linux/sched/mm.h>
-#include <linux/trace_stubs.h>
 
 #include <linux/uaccess.h>
 #include <asm/cacheflush.h>
@@ -1520,7 +1518,6 @@ unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
 	else
 		addr = unmapped_area(info);
 
-	trace_vm_unmapped_area(addr, info);
 	return addr;
 }
 
@@ -1663,7 +1660,6 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 	return error ? error : addr;
 }
 
-EXPORT_SYMBOL(get_unmapped_area);
 
 struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 {
@@ -1697,7 +1693,6 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 	return vma;
 }
 
-EXPORT_SYMBOL(find_vma);
 
 struct vm_area_struct *
 find_vma_prev(struct mm_struct *mm, unsigned long addr,
@@ -1849,7 +1844,6 @@ find_extend_vma(struct mm_struct *mm, unsigned long addr)
 	return vma;
 }
 
-EXPORT_SYMBOL_GPL(find_extend_vma);
 
 static void remove_vma_list(struct mm_struct *mm, struct vm_area_struct *vma)
 {
@@ -2089,7 +2083,6 @@ int vm_munmap(unsigned long start, size_t len)
 {
 	return __vm_munmap(start, len, false);
 }
-EXPORT_SYMBOL(vm_munmap);
 
 SYSCALL_DEFINE2(munmap, unsigned long, addr, size_t, len)
 {
@@ -2100,78 +2093,7 @@ SYSCALL_DEFINE2(munmap, unsigned long, addr, size_t, len)
 SYSCALL_DEFINE5(remap_file_pages, unsigned long, start, unsigned long, size,
 		unsigned long, prot, unsigned long, pgoff, unsigned long, flags)
 {
-
-	struct mm_struct *mm = current->mm;
-	struct vm_area_struct *vma;
-	unsigned long populate = 0;
-	unsigned long ret = -EINVAL;
-	struct file *file;
-
-	pr_warn_once("%s (%d) uses deprecated remap_file_pages() syscall. See Documentation/vm/remap_file_pages.rst.\n",
-		     current->comm, current->pid);
-
-	if (prot)
-		return ret;
-	start = start & PAGE_MASK;
-	size = size & PAGE_MASK;
-
-	if (start + size <= start)
-		return ret;
-
-	
-	if (pgoff + (size >> PAGE_SHIFT) < pgoff)
-		return ret;
-
-	if (mmap_write_lock_killable(mm))
-		return -EINTR;
-
-	vma = vma_lookup(mm, start);
-
-	if (!vma || !(vma->vm_flags & VM_SHARED))
-		goto out;
-
-	if (start + size > vma->vm_end) {
-		struct vm_area_struct *next;
-
-		for (next = vma->vm_next; next; next = next->vm_next) {
-			
-			if (next->vm_start != next->vm_prev->vm_end)
-				goto out;
-
-			if (next->vm_file != vma->vm_file)
-				goto out;
-
-			if (next->vm_flags != vma->vm_flags)
-				goto out;
-
-			if (start + size <= next->vm_end)
-				break;
-		}
-
-		if (!next)
-			goto out;
-	}
-
-	prot |= vma->vm_flags & VM_READ ? PROT_READ : 0;
-	prot |= vma->vm_flags & VM_WRITE ? PROT_WRITE : 0;
-	prot |= vma->vm_flags & VM_EXEC ? PROT_EXEC : 0;
-
-	flags &= MAP_NONBLOCK;
-	flags |= MAP_SHARED | MAP_FIXED | MAP_POPULATE;
-	if (vma->vm_flags & VM_LOCKED)
-		flags |= MAP_LOCKED;
-
-	file = get_file(vma->vm_file);
-	ret = do_mmap(vma->vm_file, start, size,
-			prot, flags, pgoff, &populate, NULL);
-	fput(file);
-out:
-	mmap_write_unlock(mm);
-	if (populate)
-		mm_populate(ret, populate);
-	if (!IS_ERR_VALUE(ret))
-		ret = 0;
-	return ret;
+	return -ENOSYS;
 }
 
 static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long flags, struct list_head *uf)
@@ -2265,13 +2187,11 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 		mm_populate(addr, len);
 	return ret;
 }
-EXPORT_SYMBOL(vm_brk_flags);
 
 int vm_brk(unsigned long addr, unsigned long len)
 {
 	return vm_brk_flags(addr, len, 0);
 }
-EXPORT_SYMBOL(vm_brk);
 
 void exit_mmap(struct mm_struct *mm)
 {
@@ -2412,11 +2332,6 @@ bool may_expand_vm(struct mm_struct *mm, vm_flags_t flags, unsigned long npages)
 		    mm->data_vm + npages <= rlimit_max(RLIMIT_DATA) >> PAGE_SHIFT)
 			return true;
 
-		pr_warn_once("%s (%d): VmData %lu exceed data ulimit %lu. Update limits%s.\n",
-			     current->comm, current->pid,
-			     (mm->data_vm + npages) << PAGE_SHIFT,
-			     rlimit(RLIMIT_DATA),
-			     ignore_rlimit_data ? "" : " or use boot option ignore_rlimit_data");
 
 		if (!ignore_rlimit_data)
 			return false;

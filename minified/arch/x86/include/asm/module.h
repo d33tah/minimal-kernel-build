@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_MODULE_H
 #define _ASM_X86_MODULE_H
 
@@ -8,4 +8,4 @@
 struct mod_arch_specific {
 };
 
-#endif /* _ASM_X86_MODULE_H */
+#endif  

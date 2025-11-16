@@ -1,15 +1,10 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-/* Filesystem parameter parser.
- *
- * Copyright (C) 2018 Red Hat, Inc. All Rights Reserved.
- * Written by David Howells (dhowells@redhat.com)
- */
+ 
+ 
 
 #include <linux/export.h>
 #include <linux/fs_context.h>
 #include <linux/fs_parser.h>
 #include <linux/slab.h>
-#include <linux/security.h>
 #include <linux/namei.h>
 #include "internal.h"
 
@@ -32,19 +27,13 @@ __lookup_constant(const struct constant_table *tbl, const char *name)
 	return NULL;
 }
 
-/**
- * lookup_constant - Look up a constant by name in an ordered table
- * @tbl: The table of constants to search.
- * @name: The name to look up.
- * @not_found: The value to return if the name is not found.
- */
+ 
 int lookup_constant(const struct constant_table *tbl, const char *name, int not_found)
 {
 	const struct constant_table *p = __lookup_constant(tbl, name);
 
 	return p ? p->value : not_found;
 }
-EXPORT_SYMBOL(lookup_constant);
 
 static inline bool is_flag(const struct fs_parameter_spec *p)
 {
@@ -82,24 +71,7 @@ static const struct fs_parameter_spec *fs_lookup_key(
 	return other;
 }
 
-/*
- * fs_parse - Parse a filesystem configuration parameter
- * @fc: The filesystem context to log errors through.
- * @desc: The parameter description to use.
- * @param: The parameter.
- * @result: Where to place the result of the parse
- *
- * Parse a filesystem configuration parameter and attempt a conversion for a
- * simple parameter for which this is requested.  If successful, the determined
- * parameter ID is placed into @result->key, the desired type is indicated in
- * @result->t and any converted value is placed into an appropriate member of
- * the union in @result.
- *
- * The function returns the parameter number if the parameter was matched,
- * -ENOPARAM if it wasn't matched and @desc->ignore_unknown indicated that
- * unknown parameters are okay and -EINVAL if there was a conversion issue or
- * the parameter wasn't recognised and unknowns aren't okay.
- */
+ 
 int __fs_parse(struct p_log *log,
 	     const struct fs_parameter_spec *desc,
 	     struct fs_parameter *param,
@@ -116,9 +88,7 @@ int __fs_parse(struct p_log *log,
 	if (p->flags & fs_param_deprecated)
 		warn_plog(log, "Deprecated parameter '%s'", param->key);
 
-	/* Try to turn the type we were given into the type desired by the
-	 * parameter and give an error if we can't.
-	 */
+	 
 	if (is_flag(p)) {
 		if (param->type != fs_value_is_flag)
 			return inval_plog(log, "Unexpected value for '%s'",
@@ -131,15 +101,8 @@ int __fs_parse(struct p_log *log,
 	}
 	return p->opt;
 }
-EXPORT_SYMBOL(__fs_parse);
 
-/**
- * fs_lookup_param - Look up a path referred to by a parameter
- * @fc: The filesystem context to log errors through.
- * @param: The parameter.
- * @want_bdev: T if want a blockdev
- * @_path: The result of the lookup
- */
+ 
 int fs_lookup_param(struct fs_context *fc,
 		    struct fs_parameter *param,
 		    bool want_bdev,
@@ -186,7 +149,6 @@ out:
 		putname(f);
 	return ret;
 }
-EXPORT_SYMBOL(fs_lookup_param);
 
 static int fs_param_bad_value(struct p_log *log, struct fs_parameter *param)
 {
@@ -207,7 +169,6 @@ int fs_param_is_bool(struct p_log *log, const struct fs_parameter_spec *p,
 	result->boolean = b;
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_bool);
 
 int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p,
 		    struct fs_parameter *param, struct fs_parse_result *result)
@@ -221,7 +182,6 @@ int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p,
 		return fs_param_bad_value(log, param);
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_u32);
 
 int fs_param_is_s32(struct p_log *log, const struct fs_parameter_spec *p,
 		    struct fs_parameter *param, struct fs_parse_result *result)
@@ -234,7 +194,6 @@ int fs_param_is_s32(struct p_log *log, const struct fs_parameter_spec *p,
 		return fs_param_bad_value(log, param);
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_s32);
 
 int fs_param_is_u64(struct p_log *log, const struct fs_parameter_spec *p,
 		    struct fs_parameter *param, struct fs_parse_result *result)
@@ -247,7 +206,6 @@ int fs_param_is_u64(struct p_log *log, const struct fs_parameter_spec *p,
 		return fs_param_bad_value(log, param);
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_u64);
 
 int fs_param_is_enum(struct p_log *log, const struct fs_parameter_spec *p,
 		     struct fs_parameter *param, struct fs_parse_result *result)
@@ -263,7 +221,6 @@ int fs_param_is_enum(struct p_log *log, const struct fs_parameter_spec *p,
 	result->uint_32 = c->value;
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_enum);
 
 int fs_param_is_string(struct p_log *log, const struct fs_parameter_spec *p,
 		       struct fs_parameter *param, struct fs_parse_result *result)
@@ -273,7 +230,6 @@ int fs_param_is_string(struct p_log *log, const struct fs_parameter_spec *p,
 		return fs_param_bad_value(log, param);
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_string);
 
 int fs_param_is_blob(struct p_log *log, const struct fs_parameter_spec *p,
 		     struct fs_parameter *param, struct fs_parse_result *result)
@@ -282,7 +238,6 @@ int fs_param_is_blob(struct p_log *log, const struct fs_parameter_spec *p,
 		return fs_param_bad_value(log, param);
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_blob);
 
 int fs_param_is_fd(struct p_log *log, const struct fs_parameter_spec *p,
 		  struct fs_parameter *param, struct fs_parse_result *result)
@@ -305,19 +260,16 @@ int fs_param_is_fd(struct p_log *log, const struct fs_parameter_spec *p,
 	}
 	return fs_param_bad_value(log, param);
 }
-EXPORT_SYMBOL(fs_param_is_fd);
 
 int fs_param_is_blockdev(struct p_log *log, const struct fs_parameter_spec *p,
 		  struct fs_parameter *param, struct fs_parse_result *result)
 {
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_blockdev);
 
 int fs_param_is_path(struct p_log *log, const struct fs_parameter_spec *p,
 		     struct fs_parameter *param, struct fs_parse_result *result)
 {
 	return 0;
 }
-EXPORT_SYMBOL(fs_param_is_path);
 

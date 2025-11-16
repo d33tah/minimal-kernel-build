@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_CPU_H
 #define _ASM_X86_CPU_H
 
@@ -48,12 +48,12 @@ static inline bool intel_cpu_signatures_match(unsigned int s1, unsigned int p1,
 	if (s1 != s2)
 		return false;
 
-	/* Processor flags are either both 0 ... */
+	 
 	if (!p1 && !p2)
 		return true;
 
-	/* ... or they intersect. */
+	 
 	return p1 & p2;
 }
 
-#endif /* _ASM_X86_CPU_H */
+#endif  

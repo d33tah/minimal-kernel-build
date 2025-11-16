@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_USER_NAMESPACE_H
 #define _LINUX_USER_NAMESPACE_H
 
@@ -20,7 +20,7 @@ struct uid_gid_extent {
 	u32 count;
 };
 
-struct uid_gid_map { /* 64 bytes -- 1 cache line */
+struct uid_gid_map {  
 	u32 nr_extents;
 	union {
 		struct uid_gid_extent extent[UID_GID_MAP_MAX_BASE_EXTENTS];
@@ -65,12 +65,11 @@ struct user_namespace {
 	kgid_t			group;
 	struct ns_common	ns;
 	unsigned long		flags;
-	/* parent_could_setfcap: true if the creator if this ns had CAP_SETFCAP
-	 * in its effective capability set at the child ns creation time. */
+	 
 	bool			parent_could_setfcap;
 
 
-	/* Register of per-UID persistent keyrings for this namespace */
+	 
 	struct work_struct	work;
 	struct ucounts		*ucounts;
 	long ucount_max[UCOUNT_COUNTS];
@@ -156,4 +155,4 @@ static inline struct ns_common *ns_get_owner(struct ns_common *ns)
 	return ERR_PTR(-EPERM);
 }
 
-#endif /* _LINUX_USER_H */
+#endif  

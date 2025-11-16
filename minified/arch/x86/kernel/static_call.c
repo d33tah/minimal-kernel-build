@@ -1,26 +1,20 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 #include <linux/static_call.h>
 #include <linux/memory.h>
 #include <linux/bug.h>
 #include <asm/text-patching.h>
 
 enum insn_type {
-	CALL = 0, /* site call */
-	NOP = 1,  /* site cond-call */
-	JMP = 2,  /* tramp / site tail-call */
-	RET = 3,  /* tramp / site cond-tail-call */
+	CALL = 0,  
+	NOP = 1,   
+	JMP = 2,   
+	RET = 3,   
 };
 
-/*
- * ud1 %esp, %ecx - a 3 byte #UD that is unique to trampolines, chosen such
- * that there is no false-positive trampoline identification while also being a
- * speculation stop.
- */
+ 
 static const u8 tramp_ud[] = { 0x0f, 0xb9, 0xcc };
 
-/*
- * cs cs cs xorl %eax, %eax - a single 5 byte instruction that clears %[er]ax
- */
+ 
 static const u8 xor5rax[] = { 0x2e, 0x2e, 0x2e, 0x31, 0xc0 };
 
 static const u8 retinsn[] = { RET_INSN_OPCODE, 0xcc, 0xcc, 0xcc, 0xcc };
@@ -87,25 +81,14 @@ static void __static_call_validate(void *insn, bool tail, bool tramp)
 			return;
 	}
 
-	/*
-	 * If we ever trigger this, our text is corrupt, we'll probably not live long.
-	 */
+	 
 	pr_err("unexpected static_call insn opcode 0x%x at %pS\n", opcode, insn);
 	BUG();
 }
 
 static inline enum insn_type __sc_insn(bool null, bool tail)
 {
-	/*
-	 * Encode the following table without branches:
-	 *
-	 *	tail	null	insn
-	 *	-----+-------+------
-	 *	  0  |   0   |  CALL
-	 *	  0  |   1   |  NOP
-	 *	  1  |   0   |  JMP
-	 *	  1  |   1   |  RET
-	 */
+	 
 	return 2*tail + null;
 }
 
@@ -125,5 +108,4 @@ void arch_static_call_transform(void *site, void *tramp, void *func, bool tail)
 
 	mutex_unlock(&text_mutex);
 }
-EXPORT_SYMBOL_GPL(arch_static_call_transform);
 

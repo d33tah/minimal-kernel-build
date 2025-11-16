@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_SCHED_TOPOLOGY_H
 #define _LINUX_SCHED_TOPOLOGY_H
 
@@ -6,9 +6,7 @@
 
 #include <linux/sched/idle.h>
 
-/*
- * sched-domains (multiprocessor balancing) declarations:
- */
+ 
 
 struct sched_domain_attr;
 
@@ -35,16 +33,7 @@ static inline void rebuild_sched_domains_energy(void)
 }
 
 #ifndef arch_scale_cpu_capacity
-/**
- * arch_scale_cpu_capacity - get the capacity scale factor of a given CPU.
- * @cpu: the CPU in question.
- *
- * Return: the CPU scale factor normalized against SCHED_CAPACITY_SCALE, i.e.
- *
- *             max_perf(cpu)
- *      ----------------------------- * SCHED_CAPACITY_SCALE
- *      max(max_perf(c) : c \in CPUs)
- */
+ 
 static __always_inline
 unsigned long arch_scale_cpu_capacity(int cpu)
 {
@@ -72,4 +61,4 @@ static inline int task_node(const struct task_struct *p)
 	return cpu_to_node(task_cpu(p));
 }
 
-#endif /* _LINUX_SCHED_TOPOLOGY_H */
+#endif  

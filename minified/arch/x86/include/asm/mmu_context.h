@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_MMU_CONTEXT_H
 #define _ASM_X86_MMU_CONTEXT_H
 
@@ -45,10 +45,7 @@ static inline void switch_ldt(struct mm_struct *prev, struct mm_struct *next)
 #define enter_lazy_tlb enter_lazy_tlb
 extern void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk);
 
-/*
- * Init a new mm.  Used on mm copies, like at fork()
- * and on mm's that are brand-new, like at execve().
- */
+ 
 #define init_new_context init_new_context
 static inline int init_new_context(struct task_struct *tsk,
 				   struct mm_struct *mm)
@@ -114,22 +111,14 @@ static inline void arch_unmap(struct mm_struct *mm, unsigned long start,
 {
 }
 
-/*
- * We only want to enforce protection keys on the current process
- * because we effectively have no access to PKRU for other
- * processes or any way to tell *which * PKRU in a threaded
- * process we could use.
- *
- * So do not enforce things if the VMA is not from the current
- * mm, or if we are in a kernel thread.
- */
+ 
 static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
 		bool write, bool execute, bool foreign)
 {
-	/* pkeys never affect instruction fetches */
+	 
 	if (execute)
 		return true;
-	/* allow access if the VMA is not one from this process */
+	 
 	if (foreign || vma_is_foreign(vma))
 		return true;
 	return __pkru_allows_pkey(vma_pkey(vma), write);
@@ -139,4 +128,4 @@ unsigned long __get_current_cr3_fast(void);
 
 
 
-#endif /* _ASM_X86_MMU_CONTEXT_H */
+#endif  

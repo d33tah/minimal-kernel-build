@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_COREDUMP_H
 #define _LINUX_COREDUMP_H
 
@@ -11,4 +11,4 @@ static inline void do_coredump(const kernel_siginfo_t *siginfo) {}
 
 static inline void validate_coredump_safety(void) {}
 
-#endif /* _LINUX_COREDUMP_H */
+#endif  

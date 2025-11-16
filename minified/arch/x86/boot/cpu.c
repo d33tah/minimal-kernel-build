@@ -1,17 +1,7 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/* -*- linux-c -*- ------------------------------------------------------- *
- *
- *   Copyright (C) 1991, 1992 Linus Torvalds
- *   Copyright 2007-2008 rPath, Inc. - All Rights Reserved
- *
- * ----------------------------------------------------------------------- */
+ 
+ 
 
-/*
- * arch/x86/boot/cpu.c
- *
- * Check for obligatory CPU features and abort if the features are not
- * present.
- */
+ 
 
 #include "boot.h"
 
@@ -31,7 +21,7 @@ static char *cpu_name(int level)
 
 static void show_cap_strs(u32 *err_flags)
 {
-	/* Stubbed for minimal kernel */
+	 
 }
 
 int validate_cpu(void)

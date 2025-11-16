@@ -1,14 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
+ 
 #ifndef __ASM_GENERIC_EXPORT_H
 #define __ASM_GENERIC_EXPORT_H
 
-/*
- * This comment block is used by fixdep. Please do not remove.
- *
- * When CONFIG_MODVERSIONS is changed from n to y, all source files having
- * EXPORT_SYMBOL variants must be re-compiled because genksyms is run as a
- * side effect of the *.o build rule.
- */
+ 
 
 #ifndef KSYM_FUNC
 #define KSYM_FUNC(x) x
@@ -19,11 +13,7 @@
 	.long	\val - ., \name - ., 0
 .endm
 
-/*
- * note on .section use: we specify progbits since usage of the "M" (SHF_MERGE)
- * section flag requires it. Use '%progbits' instead of '@progbits' since the
- * former apparently works on all arches according to the binutils source.
- */
+ 
 
 .macro ___EXPORT_SYMBOL name,val,sec
 .endm
@@ -47,7 +37,7 @@ __ksym_marker_\sym:
 #define ___cond_export_sym(sym, val, sec, enabled)		\
 	__cond_export_sym_##enabled(sym, val, sec)
 #define __cond_export_sym_1(sym, val, sec) ___EXPORT_SYMBOL sym, val, sec
-#define __cond_export_sym_0(sym, val, sec) /* nothing */
+#define __cond_export_sym_0(sym, val, sec)  
 
 #else
 #define __EXPORT_SYMBOL(sym, val, sec) ___EXPORT_SYMBOL sym, val, sec

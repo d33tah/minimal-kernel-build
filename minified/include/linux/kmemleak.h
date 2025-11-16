@@ -1,10 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- * include/linux/kmemleak.h
- *
- * Copyright (C) 2008 ARM Limited
- * Written by Catalin Marinas <catalin.marinas@arm.com>
- */
+ 
+ 
 
 #ifndef __KMEMLEAK_H
 #define __KMEMLEAK_H
@@ -78,4 +73,4 @@ static inline void kmemleak_ignore_phys(phys_addr_t phys)
 }
 
 
-#endif	/* __KMEMLEAK_H */
+#endif	 

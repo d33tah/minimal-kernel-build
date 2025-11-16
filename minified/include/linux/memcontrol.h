@@ -1,12 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
-/* memcontrol.h - Memory Controller
- *
- * Copyright IBM Corporation, 2007
- * Author Balbir Singh <balbir@linux.vnet.ibm.com>
- *
- * Copyright 2007 OpenVZ SWsoft Inc
- * Author: Pavel Emelianov <xemul@openvz.org>
- */
+ 
+ 
 
 #ifndef _LINUX_MEMCONTROL_H
 #define _LINUX_MEMCONTROL_H
@@ -28,7 +21,7 @@ struct page;
 struct mm_struct;
 struct kmem_cache;
 
-/* Cgroup-specific page state, on top of universal node page state */
+ 
 enum memcg_stat_item {
 	MEMCG_SWAP = NR_VM_NODE_STAT_ITEMS,
 	MEMCG_SOCK,
@@ -103,37 +96,12 @@ static inline bool mem_cgroup_disabled(void)
 	return true;
 }
 
-static inline void memcg_memory_event(struct mem_cgroup *memcg,
-				      enum memcg_memory_event event)
-{
-}
-
-static inline void memcg_memory_event_mm(struct mm_struct *mm,
-					 enum memcg_memory_event event)
-{
-}
-
 static inline void mem_cgroup_protection(struct mem_cgroup *root,
 					 struct mem_cgroup *memcg,
 					 unsigned long *min,
 					 unsigned long *low)
 {
 	*min = *low = 0;
-}
-
-static inline void mem_cgroup_calculate_protection(struct mem_cgroup *root,
-						   struct mem_cgroup *memcg)
-{
-}
-
-static inline bool mem_cgroup_below_low(struct mem_cgroup *memcg)
-{
-	return false;
-}
-
-static inline bool mem_cgroup_below_min(struct mem_cgroup *memcg)
-{
-	return false;
 }
 
 static inline int mem_cgroup_charge(struct folio *folio,
@@ -263,7 +231,7 @@ static inline unsigned short mem_cgroup_id(struct mem_cgroup *memcg)
 static inline struct mem_cgroup *mem_cgroup_from_id(unsigned short id)
 {
 	WARN_ON_ONCE(id);
-	/* XXX: This should always return root_mem_cgroup */
+	 
 	return NULL;
 }
 
@@ -498,7 +466,7 @@ static inline void unlock_page_lruvec_irqrestore(struct lruvec *lruvec,
 	spin_unlock_irqrestore(&lruvec->lru_lock, flags);
 }
 
-/* Test requires a stable page->memcg binding, see page_memcg() */
+ 
 static inline bool folio_matches_lruvec(struct folio *folio,
 		struct lruvec *lruvec)
 {
@@ -506,7 +474,7 @@ static inline bool folio_matches_lruvec(struct folio *folio,
 	       lruvec_memcg(lruvec) == folio_memcg(folio);
 }
 
-/* Don't lock again iff page's lruvec locked */
+ 
 static inline struct lruvec *folio_lruvec_relock_irq(struct folio *folio,
 		struct lruvec *locked_lruvec)
 {
@@ -520,7 +488,7 @@ static inline struct lruvec *folio_lruvec_relock_irq(struct folio *folio,
 	return folio_lruvec_lock_irq(folio);
 }
 
-/* Don't lock again iff page's lruvec locked */
+ 
 static inline struct lruvec *folio_lruvec_relock_irqsave(struct folio *folio,
 		struct lruvec *locked_lruvec, unsigned long *flags)
 {
@@ -639,4 +607,4 @@ static inline void obj_cgroup_uncharge_zswap(struct obj_cgroup *objcg,
 {
 }
 
-#endif /* _LINUX_MEMCONTROL_H */
+#endif  

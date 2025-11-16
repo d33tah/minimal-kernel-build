@@ -1,11 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_PERCPU_COUNTER_H
 #define _LINUX_PERCPU_COUNTER_H
-/*
- * A simple "approximate counter" for use in ext2 and ext3 superblocks.
- *
- * WARNING: these things are HUGE.  4 kbytes per counter on 32-way P4.
- */
+ 
 
 #include <linux/spinlock.h>
 #include <linux/smp.h>
@@ -71,10 +67,7 @@ static inline s64 percpu_counter_read(struct percpu_counter *fbc)
 	return fbc->count;
 }
 
-/*
- * percpu_counter is intended to track positive numbers. In the UP case the
- * number should never be negative.
- */
+ 
 static inline s64 percpu_counter_read_positive(struct percpu_counter *fbc)
 {
 	return fbc->count;
@@ -114,4 +107,4 @@ static inline void percpu_counter_sub(struct percpu_counter *fbc, s64 amount)
 	percpu_counter_add(fbc, -amount);
 }
 
-#endif /* _LINUX_PERCPU_COUNTER_H */
+#endif  

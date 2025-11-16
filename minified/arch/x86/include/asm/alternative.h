@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_ALTERNATIVE_H
 #define _ASM_X86_ALTERNATIVE_H
 
@@ -13,34 +13,12 @@
 
 #include <linux/stddef.h>
 
-/*
- * Alternative inline assembly for SMP.
- *
- * The LOCK_PREFIX macro defined here replaces the LOCK and
- * LOCK_PREFIX macros used everywhere in the source tree.
- *
- * SMP alternatives use the same data structures as the other
- * alternatives and the X86_FEATURE_UP flag to indicate the case of a
- * UP system running a SMP kernel.  The existing apply_alternatives()
- * works fine for patching a SMP kernel for UP.
- *
- * The SMP alternative tables can be kept after boot and contain both
- * UP and SMP versions of the instructions to allow switching back to
- * SMP at runtime, when hotplugging in a new CPU, which is especially
- * useful in virtualized environments.
- *
- * The very common lock prefix is handled as special case in a
- * separate table which is a pure address list without replacement ptr
- * and size information.  That keeps the table sizes small.
- */
+ 
 
 #define LOCK_PREFIX_HERE ""
 #define LOCK_PREFIX ""
 
-/*
- * objtool annotation to ignore the alternatives and only consider the original
- * instruction(s).
- */
+ 
 #define ANNOTATE_IGNORE_ALTERNATIVE				\
 	"999:\n\t"						\
 	".pushsection .discard.ignore_alts\n\t"			\
@@ -48,17 +26,14 @@
 	".popsection\n\t"
 
 struct alt_instr {
-	s32 instr_offset;	/* original instruction */
-	s32 repl_offset;	/* offset to replacement instruction */
-	u16 cpuid;		/* cpuid bit set for replacement */
-	u8  instrlen;		/* length of original instruction */
-	u8  replacementlen;	/* length of new instruction */
+	s32 instr_offset;	 
+	s32 repl_offset;	 
+	u16 cpuid;		 
+	u8  instrlen;		 
+	u8  replacementlen;	 
 } __packed;
 
-/*
- * Debug flag that can be tested to see whether alternative
- * instructions were patched in already:
- */
+ 
 extern int alternatives_patched;
 
 extern void alternative_instructions(void);
@@ -95,18 +70,10 @@ static inline int alternatives_text_reserved(void *start, void *end)
 		"((" alt_rlen(num) ")-(" alt_slen ")),0x90\n"		\
 	alt_end_marker ":\n"
 
-/*
- * gas compatible max based on the idea from:
- * http://graphics.stanford.edu/~seander/bithacks.html#IntegerMinOrMax
- *
- * The additional "-" is needed because gas uses a "true" value of -1.
- */
+ 
 #define alt_max_short(a, b)	"((" a ") ^ (((" a ") ^ (" b ")) & -(-((" a ") < (" b ")))))"
 
-/*
- * Pad the second replacement alternative with additional NOPs if it is
- * additionally longer than the first replacement alternative.
- */
+ 
 #define OLDINSTR_2(oldinstr, num1, num2) \
 	"# ALT: oldinstr2\n"									\
 	"661:\n\t" oldinstr "\n662:\n"								\
@@ -126,17 +93,17 @@ static inline int alternatives_text_reserved(void *start, void *end)
 	alt_end_marker ":\n"
 
 #define ALTINSTR_ENTRY(feature, num)					      \
-	" .long 661b - .\n"				/* label           */ \
-	" .long " b_replacement(num)"f - .\n"		/* new instruction */ \
-	" .word " __stringify(feature) "\n"		/* feature bit     */ \
-	" .byte " alt_total_slen "\n"			/* source len      */ \
-	" .byte " alt_rlen(num) "\n"			/* replacement len */
+	" .long 661b - .\n"				  \
+	" .long " b_replacement(num)"f - .\n"		  \
+	" .word " __stringify(feature) "\n"		  \
+	" .byte " alt_total_slen "\n"			  \
+	" .byte " alt_rlen(num) "\n"			 
 
-#define ALTINSTR_REPLACEMENT(newinstr, num)		/* replacement */	\
+#define ALTINSTR_REPLACEMENT(newinstr, num)		 	\
 	"# ALT: replacement " #num "\n"						\
 	b_replacement(num)":\n\t" newinstr "\n" e_replacement(num) ":\n"
 
-/* alternative assembly primitive: */
+ 
 #define ALTERNATIVE(oldinstr, newinstr, feature)			\
 	OLDINSTR(oldinstr, 1)						\
 	".pushsection .altinstructions,\"a\"\n"				\
@@ -157,7 +124,7 @@ static inline int alternatives_text_reserved(void *start, void *end)
 	ALTINSTR_REPLACEMENT(newinstr2, 2)				\
 	".popsection\n"
 
-/* If @feature is set, patch in @newinstr_yes, otherwise @newinstr_no. */
+ 
 #define ALTERNATIVE_TERNARY(oldinstr, feature, newinstr_yes, newinstr_no) \
 	ALTERNATIVE_2(oldinstr, newinstr_no, X86_FEATURE_ALWAYS,	\
 		      newinstr_yes, feature)
@@ -175,18 +142,7 @@ static inline int alternatives_text_reserved(void *start, void *end)
 	ALTINSTR_REPLACEMENT(newinsn3, 3)					\
 	".popsection\n"
 
-/*
- * Alternative instructions for different CPU types or capabilities.
- *
- * This allows to use optimized instructions even on generic binary
- * kernels.
- *
- * length of oldinstr must be longer or equal the length of newinstr
- * It can be padded with nops as needed.
- *
- * For non barrier like inlines please define new variants
- * without volatile and memory clobber.
- */
+ 
 #define alternative(oldinstr, newinstr, feature)			\
 	asm_inline volatile (ALTERNATIVE(oldinstr, newinstr, feature) : : : "memory")
 
@@ -196,48 +152,29 @@ static inline int alternatives_text_reserved(void *start, void *end)
 #define alternative_ternary(oldinstr, feature, newinstr_yes, newinstr_no) \
 	asm_inline volatile(ALTERNATIVE_TERNARY(oldinstr, feature, newinstr_yes, newinstr_no) ::: "memory")
 
-/*
- * Alternative inline assembly with input.
- *
- * Peculiarities:
- * No memory clobber here.
- * Argument numbers start with 1.
- * Leaving an unused argument 0 to keep API compatibility.
- */
+ 
 #define alternative_input(oldinstr, newinstr, feature, input...)	\
 	asm_inline volatile (ALTERNATIVE(oldinstr, newinstr, feature)	\
 		: : "i" (0), ## input)
 
-/*
- * This is similar to alternative_input. But it has two features and
- * respective instructions.
- *
- * If CPU has feature2, newinstr2 is used.
- * Otherwise, if CPU has feature1, newinstr1 is used.
- * Otherwise, oldinstr is used.
- */
+ 
 #define alternative_input_2(oldinstr, newinstr1, feature1, newinstr2,	     \
 			   feature2, input...)				     \
 	asm_inline volatile(ALTERNATIVE_2(oldinstr, newinstr1, feature1,     \
 		newinstr2, feature2)					     \
 		: : "i" (0), ## input)
 
-/* Like alternative_input, but with a single output argument */
+ 
 #define alternative_io(oldinstr, newinstr, feature, output, input...)	\
 	asm_inline volatile (ALTERNATIVE(oldinstr, newinstr, feature)	\
 		: output : "i" (0), ## input)
 
-/* Like alternative_io, but for replacing a direct call with another one. */
+ 
 #define alternative_call(oldfunc, newfunc, feature, output, input...)	\
 	asm_inline volatile (ALTERNATIVE("call %P[old]", "call %P[new]", feature) \
 		: output : [old] "i" (oldfunc), [new] "i" (newfunc), ## input)
 
-/*
- * Like alternative_call, but there are two features and respective functions.
- * If CPU has feature2, function2 is used.
- * Otherwise, if CPU has feature1, function1 is used.
- * Otherwise, old function is used.
- */
+ 
 #define alternative_call_2(oldfunc, newfunc1, feature1, newfunc2, feature2,   \
 			   output, input...)				      \
 	asm_inline volatile (ALTERNATIVE_2("call %P[old]", "call %P[new1]", feature1,\
@@ -246,27 +183,18 @@ static inline int alternatives_text_reserved(void *start, void *end)
 		: [old] "i" (oldfunc), [new1] "i" (newfunc1),		      \
 		  [new2] "i" (newfunc2), ## input)
 
-/*
- * use this macro(s) if you need more than one output parameter
- * in alternative_io
- */
+ 
 #define ASM_OUTPUT2(a...) a
 
-/*
- * use this macro if you need clobbers but no inputs in
- * alternative_{input,io,call}()
- */
+ 
 #define ASM_NO_INPUT_CLOBBER(clbr...) "i" (0) : clbr
 
-#else /* __ASSEMBLY__ */
+#else  
 
 	.macro LOCK_PREFIX
 	.endm
 
-/*
- * objtool annotation to ignore the alternatives and only consider the original
- * instruction(s).
- */
+ 
 .macro ANNOTATE_IGNORE_ALTERNATIVE
 	.Lannotate_\@:
 	.pushsection .discard.ignore_alts
@@ -274,12 +202,7 @@ static inline int alternatives_text_reserved(void *start, void *end)
 	.popsection
 .endm
 
-/*
- * Issue one struct alt_instr descriptor entry (need to put it into
- * the section .altinstructions, see below). This entry contains
- * enough information for the alternatives patching code to patch an
- * instruction. See apply_alternatives().
- */
+ 
 .macro altinstruction_entry orig alt feature orig_len alt_len
 	.long \orig - .
 	.long \alt - .
@@ -288,12 +211,7 @@ static inline int alternatives_text_reserved(void *start, void *end)
 	.byte \alt_len
 .endm
 
-/*
- * Define an alternative between two instructions. If @feature is
- * present, early code in apply_alternatives() replaces @oldinstr with
- * @newinstr. ".skip" directive takes care of proper instruction padding
- * in case @newinstr is longer than @oldinstr.
- */
+ 
 .macro ALTERNATIVE oldinstr, newinstr, feature
 140:
 	\oldinstr
@@ -316,20 +234,11 @@ static inline int alternatives_text_reserved(void *start, void *end)
 #define new_len1		144f-143f
 #define new_len2		145f-144f
 
-/*
- * gas compatible max based on the idea from:
- * http://graphics.stanford.edu/~seander/bithacks.html#IntegerMinOrMax
- *
- * The additional "-" is needed because gas uses a "true" value of -1.
- */
+ 
 #define alt_max_short(a, b)	((a) ^ (((a) ^ (b)) & -(-((a) < (b)))))
 
 
-/*
- * Same as ALTERNATIVE macro above but for two alternatives. If CPU
- * has @feature1, it replaces @oldinstr with @newinstr1. If CPU has
- * @feature2, it replaces @oldinstr with @feature2.
- */
+ 
 .macro ALTERNATIVE_2 oldinstr, newinstr1, feature1, newinstr2, feature2
 140:
 	\oldinstr
@@ -352,11 +261,11 @@ static inline int alternatives_text_reserved(void *start, void *end)
 	.popsection
 .endm
 
-/* If @feature is set, patch in @newinstr_yes, otherwise @newinstr_no. */
+ 
 #define ALTERNATIVE_TERNARY(oldinstr, feature, newinstr_yes, newinstr_no) \
 	ALTERNATIVE_2 oldinstr, newinstr_no, X86_FEATURE_ALWAYS,	\
 	newinstr_yes, feature
 
-#endif /* __ASSEMBLY__ */
+#endif  
 
-#endif /* _ASM_X86_ALTERNATIVE_H */
+#endif  

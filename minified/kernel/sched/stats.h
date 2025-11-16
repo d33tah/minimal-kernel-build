@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _KERNEL_STATS_H
 #define _KERNEL_STATS_H
 
@@ -40,4 +40,4 @@ static inline void psi_sched_switch(struct task_struct *prev,
 # define sched_info_dequeue(rq, t)	do { } while (0)
 # define sched_info_switch(rq, t, next)	do { } while (0)
 
-#endif /* _KERNEL_STATS_H */
+#endif  

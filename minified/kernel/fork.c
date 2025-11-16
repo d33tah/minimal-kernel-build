@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
 #include <linux/anon_inodes.h>
 #include <linux/slab.h>
@@ -52,9 +52,7 @@
 #include <linux/mount.h>
 #include <linux/audit.h>
 #include <linux/memcontrol.h>
-#include <linux/ftrace.h>
 #include <linux/proc_fs.h>
-#include <linux/profile.h>
 #include <linux/rmap.h>
 #include <linux/ksm.h>
 #include <linux/acct.h>
@@ -73,19 +71,15 @@
 #include <linux/user-return-notifier.h>
 #include <linux/oom.h>
 #include <linux/khugepaged.h>
-#include <linux/signalfd.h>
 #include <linux/uprobes.h>
-#include <linux/aio.h>
 #include <linux/compiler.h>
 #include <linux/sysctl.h>
 #include <linux/kcov.h>
 #include <linux/livepatch.h>
 #include <linux/thread_info.h>
-#include <linux/stackleak.h>
 #include <linux/kasan.h>
 #include <linux/scs.h>
 #include <linux/io_uring.h>
-#include <linux/sched/mm.h>
 
 #include <asm/pgalloc.h>
 #include <linux/uaccess.h>
@@ -332,16 +326,14 @@ void free_task(struct task_struct *tsk)
 	release_user_cpus_ptr(tsk);
 	scs_release(tsk);
 
-	
+
 	WARN_ON_ONCE(refcount_read(&tsk->stack_refcount) != 0);
 	rt_mutex_debug_task_free(tsk);
-	ftrace_graph_exit_task(tsk);
 	arch_release_task_struct(tsk);
 	if (tsk->flags & PF_KTHREAD)
 		free_kthread_struct(tsk);
 	free_task_struct(tsk);
 }
-EXPORT_SYMBOL(free_task);
 
 static void dup_mm_exe_file(struct mm_struct *mm, struct mm_struct *oldmm)
 {
@@ -349,9 +341,9 @@ static void dup_mm_exe_file(struct mm_struct *mm, struct mm_struct *oldmm)
 
 	exe_file = get_mm_exe_file(oldmm);
 	RCU_INIT_POINTER(mm->exe_file, exe_file);
-	
-	if (exe_file && deny_write_access(exe_file))
-		pr_warn_once("deny_write_access() failed in %s\n", __func__);
+
+	if (exe_file)
+		deny_write_access(exe_file);
 }
 
 static __latent_entropy int dup_mmap(struct mm_struct *mm,
@@ -536,7 +528,6 @@ void __mmdrop(struct mm_struct *mm)
 	mm_pasid_drop(mm);
 	free_mm(mm);
 }
-EXPORT_SYMBOL_GPL(__mmdrop);
 
 static void mmdrop_async_fn(struct work_struct *work)
 {
@@ -587,7 +578,6 @@ void __put_task_struct(struct task_struct *tsk)
 	sched_core_free(tsk);
 	free_task(tsk);
 }
-EXPORT_SYMBOL_GPL(__put_task_struct);
 
 void __init __weak arch_task_cache_init(void) { }
 
@@ -844,7 +834,6 @@ static inline void __mmput(struct mm_struct *mm)
 	VM_BUG_ON(atomic_read(&mm->mm_users));
 
 	uprobe_clear_state(mm);
-	exit_aio(mm);
 	ksm_exit(mm);
 	khugepaged_exit(mm); 
 	exit_mmap(mm);
@@ -867,7 +856,6 @@ void mmput(struct mm_struct *mm)
 	if (atomic_dec_and_test(&mm->mm_users))
 		__mmput(mm);
 }
-EXPORT_SYMBOL_GPL(mmput);
 
 static void mmput_async_fn(struct work_struct *work)
 {
@@ -988,7 +976,6 @@ struct mm_struct *get_task_mm(struct task_struct *task)
 	task_unlock(task);
 	return mm;
 }
-EXPORT_SYMBOL_GPL(get_task_mm);
 
 struct mm_struct *mm_access(struct task_struct *task, unsigned int mode)
 {
@@ -1221,8 +1208,6 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
 void __cleanup_sighand(struct sighand_struct *sighand)
 {
 	if (refcount_dec_and_test(&sighand->count)) {
-		signalfd_cleanup(sighand);
-		
 		kmem_cache_free(sighand_cachep, sighand);
 	}
 }
@@ -1467,10 +1452,8 @@ static __latent_entropy struct task_struct *copy_process(
 	}
 
 	p->set_child_tid = (clone_flags & CLONE_CHILD_SETTID) ? args->child_tid : NULL;
-	
-	p->clear_child_tid = (clone_flags & CLONE_CHILD_CLEARTID) ? args->child_tid : NULL;
 
-	ftrace_graph_init_task(p);
+	p->clear_child_tid = (clone_flags & CLONE_CHILD_CLEARTID) ? args->child_tid : NULL;
 
 	rt_mutex_init_task(p);
 
@@ -1570,8 +1553,6 @@ static __latent_entropy struct task_struct *copy_process(
 	retval = copy_thread(p, args);
 	if (retval)
 		goto bad_fork_cleanup_io;
-
-	stackleak_task_init(p);
 
 	if (pid != &init_struct_pid) {
 		pid = alloc_pid(p->nsproxy->pid_ns_for_children, args->set_tid,

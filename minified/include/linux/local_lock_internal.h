@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_LOCAL_LOCK_H
 # error "Do not include directly, include linux/local_lock.h"
 #endif

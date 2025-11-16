@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _TOOLS_LINUX_TYPES_H_
 #define _TOOLS_LINUX_TYPES_H_
 
@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #ifndef __SANE_USERSPACE_TYPES__
-#define __SANE_USERSPACE_TYPES__	/* For PPC64, to get LL64 types */
+#define __SANE_USERSPACE_TYPES__	 
 #endif
 
 #include <asm/types.h>
@@ -23,13 +23,7 @@ typedef enum {
 	__GFP_HIGH
 } gfp_t;
 
-/*
- * We define u64 as uint64_t for every architecture
- * so that we can print it with "%"PRIx64 without getting warnings.
- *
- * typedef __u64 u64;
- * typedef __s64 s64;
- */
+ 
 typedef uint64_t u64;
 typedef int64_t s64;
 
@@ -89,4 +83,4 @@ struct hlist_node {
 	struct hlist_node *next, **pprev;
 };
 
-#endif /* _TOOLS_LINUX_TYPES_H_ */
+#endif  

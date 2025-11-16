@@ -1,93 +1,4 @@
-/*
- * "Optimize" a list of dependencies as spit out by gcc -MD
- * for the kernel build
- * ===========================================================================
- *
- * Author       Kai Germaschewski
- * Copyright    2002 by Kai Germaschewski  <kai.germaschewski@gmx.de>
- *
- * This software may be used and distributed according to the terms
- * of the GNU General Public License, incorporated herein by reference.
- *
- *
- * Introduction:
- *
- * gcc produces a very nice and correct list of dependencies which
- * tells make when to remake a file.
- *
- * To use this list as-is however has the drawback that virtually
- * every file in the kernel includes autoconf.h.
- *
- * If the user re-runs make *config, autoconf.h will be
- * regenerated.  make notices that and will rebuild every file which
- * includes autoconf.h, i.e. basically all files. This is extremely
- * annoying if the user just changed CONFIG_HIS_DRIVER from n to m.
- *
- * So we play the same trick that "mkdep" played before. We replace
- * the dependency on autoconf.h by a dependency on every config
- * option which is mentioned in any of the listed prerequisites.
- *
- * kconfig populates a tree in include/config/ with an empty file
- * for each config symbol and when the configuration is updated
- * the files representing changed config options are touched
- * which then let make pick up the changes and the files that use
- * the config symbols are rebuilt.
- *
- * So if the user changes his CONFIG_HIS_DRIVER option, only the objects
- * which depend on "include/config/HIS_DRIVER" will be rebuilt,
- * so most likely only his driver ;-)
- *
- * The idea above dates, by the way, back to Michael E Chastain, AFAIK.
- *
- * So to get dependencies right, there are two issues:
- * o if any of the files the compiler read changed, we need to rebuild
- * o if the command line given to the compile the file changed, we
- *   better rebuild as well.
- *
- * The former is handled by using the -MD output, the later by saving
- * the command line used to compile the old object and comparing it
- * to the one we would now use.
- *
- * Again, also this idea is pretty old and has been discussed on
- * kbuild-devel a long time ago. I don't have a sensibly working
- * internet connection right now, so I rather don't mention names
- * without double checking.
- *
- * This code here has been based partially based on mkdep.c, which
- * says the following about its history:
- *
- *   Copyright abandoned, Michael Chastain, <mailto:mec@shout.net>.
- *   This is a C version of syncdep.pl by Werner Almesberger.
- *
- *
- * It is invoked as
- *
- *   fixdep <depfile> <target> <cmdline>
- *
- * and will read the dependency file <depfile>
- *
- * The transformed dependency snipped is written to stdout.
- *
- * It first generates a line
- *
- *   cmd_<target> = <cmdline>
- *
- * and then basically copies the .<target>.d file to stdout, in the
- * process filtering out the dependency on autoconf.h and adding
- * dependencies on include/config/MY_OPTION for every
- * CONFIG_MY_OPTION encountered in any of the prerequisites.
- *
- * We don't even try to really parse the header files, but
- * merely grep, i.e. if CONFIG_FOO is mentioned in a comment, it will
- * be picked up as well. It's not a problem with respect to
- * correctness, since that can only give too many dependencies, thus
- * we cannot miss a rebuild. Since people tend to not mention totally
- * unrelated CONFIG_ options all over the place, it's not an
- * efficiency problem either.
- *
- * (Note: it'd be easy to port over the complete mkdep state machine,
- *  but I don't think the added complexity is worth it)
- */
+ 
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -117,7 +28,7 @@ static struct item *hashtab[HASHSZ];
 
 static unsigned int strhash(const char *str, unsigned int sz)
 {
-	/* fnv32 hash */
+	 
 	unsigned int i, hash = 2166136261U;
 
 	for (i = 0; i < sz; i++)
@@ -125,9 +36,7 @@ static unsigned int strhash(const char *str, unsigned int sz)
 	return hash;
 }
 
-/*
- * Lookup a value in the configuration string.
- */
+ 
 static int is_defined_config(const char *name, int len, unsigned int hash)
 {
 	struct item *aux;
@@ -140,9 +49,7 @@ static int is_defined_config(const char *name, int len, unsigned int hash)
 	return 0;
 }
 
-/*
- * Add a new value to the configuration string.
- */
+ 
 static void define_config(const char *name, int len, unsigned int hash)
 {
 	struct item *aux = malloc(sizeof(*aux) + len);
@@ -158,9 +65,7 @@ static void define_config(const char *name, int len, unsigned int hash)
 	hashtab[hash % HASHSZ] = aux;
 }
 
-/*
- * Record the use of a CONFIG_* word.
- */
+ 
 static void use_config(const char *m, int slen)
 {
 	unsigned int hash = strhash(m, slen);
@@ -169,11 +74,11 @@ static void use_config(const char *m, int slen)
 	    return;
 
 	define_config(m, slen, hash);
-	/* Print out a dependency path from a symbol name. */
+	 
 	printf("    $(wildcard include/config/%.*s) \\\n", slen, m);
 }
 
-/* test if s ends in sub */
+ 
 static int str_ends_with(const char *s, int slen, const char *sub)
 {
 	int sublen = strlen(sub);
@@ -240,18 +145,14 @@ static void *read_file(const char *filename)
 	return buf;
 }
 
-/* Ignore certain dependencies */
+ 
 static int is_ignored_file(const char *s, int len)
 {
 	return str_ends_with(s, len, "include/generated/autoconf.h") ||
 	       str_ends_with(s, len, "include/generated/autoksyms.h");
 }
 
-/*
- * Important: The below generated source_foo.o and deps_foo.o variable
- * assignments are parsed not only by make, but also by the rather simple
- * parser in scripts/mod/sumversion.c.
- */
+ 
 static void parse_dep_file(char *m, const char *target)
 {
 	char *p;
@@ -261,42 +162,30 @@ static void parse_dep_file(char *m, const char *target)
 	void *buf;
 
 	while (1) {
-		/* Skip any "white space" */
+		 
 		while (*m == ' ' || *m == '\\' || *m == '\n')
 			m++;
 
 		if (!*m)
 			break;
 
-		/* Find next "white space" */
+		 
 		p = m;
 		while (*p && *p != ' ' && *p != '\\' && *p != '\n')
 			p++;
 		is_last = (*p == '\0');
-		/* Is the token we found a target name? */
+		 
 		is_target = (*(p-1) == ':');
-		/* Don't write any target names into the dependency file */
+		 
 		if (is_target) {
-			/* The /next/ file is the first dependency */
+			 
 			is_first_dep = 1;
 		} else if (!is_ignored_file(m, p - m)) {
 			*p = '\0';
 
-			/*
-			 * Do not list the source file as dependency, so that
-			 * kbuild is not confused if a .c file is rewritten
-			 * into .S or vice versa. Storing it in source_* is
-			 * needed for modpost to compute srcversions.
-			 */
+			 
 			if (is_first_dep) {
-				/*
-				 * If processing the concatenation of multiple
-				 * dependency files, only process the first
-				 * target name, which will be the original
-				 * source name, and ignore any other target
-				 * names, which will be intermediate temporary
-				 * files.
-				 */
+				 
 				if (!saw_any_target) {
 					saw_any_target = 1;
 					printf("source_%s := %s\n\n",
@@ -316,10 +205,7 @@ static void parse_dep_file(char *m, const char *target)
 		if (is_last)
 			break;
 
-		/*
-		 * Start searching for next token immediately after the first
-		 * "whitespace" character that follows this token.
-		 */
+		 
 		m = p + 1;
 	}
 
@@ -352,10 +238,7 @@ int main(int argc, char *argv[])
 
 	fflush(stdout);
 
-	/*
-	 * In the intended usage, the stdout is redirected to .*.cmd files.
-	 * Call ferror() to catch errors such as "No space left on device".
-	 */
+	 
 	if (ferror(stdout)) {
 		fprintf(stderr, "fixdep: not all data was written to the output\n");
 		exit(1);

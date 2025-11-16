@@ -1,42 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * Copyright (c) 2001-2003 Patrick Mochel <mochel@osdl.org>
- * Copyright (c) 2004-2009 Greg Kroah-Hartman <gregkh@suse.de>
- * Copyright (c) 2008-2012 Novell Inc.
- * Copyright (c) 2012-2019 Greg Kroah-Hartman <gregkh@linuxfoundation.org>
- * Copyright (c) 2012-2019 Linux Foundation
- *
- * Core driver model functions and structures that should not be
- * shared outside of the drivers/base/ directory.
- *
- */
+ 
+ 
 #include <linux/notifier.h>
 
-/**
- * struct subsys_private - structure to hold the private to the driver core portions of the bus_type/class structure.
- *
- * @subsys - the struct kset that defines this subsystem
- * @devices_kset - the subsystem's 'devices' directory
- * @interfaces - list of subsystem interfaces associated
- * @mutex - protect the devices, and interfaces lists.
- *
- * @drivers_kset - the list of drivers associated
- * @klist_devices - the klist to iterate over the @devices_kset
- * @klist_drivers - the klist to iterate over the @drivers_kset
- * @bus_notifier - the bus notifier list for anything that cares about things
- *                 on this bus.
- * @bus - pointer back to the struct bus_type that this structure is associated
- *        with.
- *
- * @glue_dirs - "glue" directory to put in-between the parent device to
- *              avoid namespace conflicts
- * @class - pointer back to the struct class that this structure is associated
- *          with.
- *
- * This structure is the one that is the actual kobject allowing struct
- * bus_type/class to be statically allocated safely.  Nothing outside of the
- * driver core should ever touch these fields.
- */
+ 
 struct subsys_private {
 	struct kset subsys;
 	struct kset *devices_kset;
@@ -64,27 +30,7 @@ struct driver_private {
 };
 #define to_driver(obj) container_of(obj, struct driver_private, kobj)
 
-/**
- * struct device_private - structure to hold the private to the driver core portions of the device structure.
- *
- * @klist_children - klist containing all children of this device
- * @knode_parent - node in sibling list
- * @knode_driver - node in driver list
- * @knode_bus - node in bus list
- * @knode_class - node in class list
- * @deferred_probe - entry in deferred_probe_list which is used to retry the
- *	binding of drivers which were unable to get all the resources needed by
- *	the device; typically because it depends on another driver getting
- *	probed first.
- * @async_driver - pointer to device driver awaiting probe via async_probe
- * @device - pointer back to the struct device that this structure is
- * associated with.
- * @dead - This device is currently either in the process of or has been
- *	removed from the system. Any asynchronous events scheduled for this
- *	device should exit without taking any action.
- *
- * Nothing outside of the driver core should ever touch these fields.
- */
+ 
 struct device_private {
 	struct klist klist_children;
 	struct klist_node knode_parent;
@@ -106,15 +52,15 @@ struct device_private {
 #define to_device_private_class(obj)	\
 	container_of(obj, struct device_private, knode_class)
 
-/* initialisation functions */
+ 
 extern int devices_init(void);
 extern int buses_init(void);
 extern int classes_init(void);
-extern int firmware_init(void);
+static inline int firmware_init(void) { return 0; }
 static inline int hypervisor_init(void) { return 0; }
 extern int platform_bus_init(void);
 extern void cpu_dev_init(void);
-extern void container_dev_init(void);
+static inline void container_dev_init(void) { }
 static inline void auxiliary_bus_init(void) { }
 
 struct kobject *virtual_device_parent(struct device *dev);
@@ -153,7 +99,7 @@ extern void device_block_probing(void);
 extern void device_unblock_probing(void);
 extern void deferred_probe_extend_timeout(void);
 
-/* /sys/devices directory */
+ 
 extern struct kset *devices_kset;
 extern void devices_kset_move_last(struct device *dev);
 
@@ -163,7 +109,7 @@ static inline void module_remove_driver(struct device_driver *drv) { }
 
 static inline int devtmpfs_init(void) { return 0; }
 
-/* Device links support */
+ 
 extern int device_links_read_lock(void);
 extern void device_links_read_unlock(int idx);
 extern int device_links_read_lock_held(void);
@@ -176,7 +122,7 @@ extern bool device_links_busy(struct device *dev);
 extern void device_links_unbind_consumers(struct device *dev);
 extern void fw_devlink_drivers_done(void);
 
-/* device pm support */
+ 
 void device_pm_move_to_tail(struct device *dev);
 
 static inline int devtmpfs_create_node(struct device *dev) { return 0; }

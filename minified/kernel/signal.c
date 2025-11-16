@@ -1,9 +1,8 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
 #include <linux/slab.h>
 #include <linux/syscalls.h>
 #include <linux/security.h>
-#include <linux/signalfd.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
 #include <linux/file.h>
@@ -131,7 +130,6 @@ void recalc_sigpending(void)
 		clear_thread_flag(TIF_SIGPENDING);
 
 }
-EXPORT_SYMBOL(recalc_sigpending);
 
 void calculate_sigpending(void)
 {
@@ -198,9 +196,6 @@ static inline void print_dropped_signal(int sig)
 
 	if (!__ratelimit(&ratelimit_state))
 		return;
-
-	pr_info("%s/%d: reached RLIMIT_SIGPENDING, dropped signal %d\n",
-				current->comm, current->pid, sig);
 }
 
 bool task_set_jobctl_pending(struct task_struct *task, unsigned long mask)
@@ -344,7 +339,6 @@ void flush_signals(struct task_struct *t)
 	flush_sigqueue(&t->signal->shared_pending);
 	spin_unlock_irqrestore(&t->sighand->siglock, flags);
 }
-EXPORT_SYMBOL(flush_signals);
 
 void ignore_signals(struct task_struct *t)
 {
@@ -459,7 +453,6 @@ int dequeue_signal(struct task_struct *tsk, sigset_t *mask,
 	}
 	return signr;
 }
-EXPORT_SYMBOL_GPL(dequeue_signal);
 
 static int dequeue_synchronous_signal(kernel_siginfo_t *info)
 {
@@ -784,7 +777,6 @@ static int __send_signal_locked(int sig, struct kernel_siginfo *info,
 	}
 
 out_set:
-	signalfd_notify(t, sig);
 	sigaddset(&pending->signal, sig);
 
 	
@@ -1091,7 +1083,6 @@ out_unlock:
 	rcu_read_unlock();
 	return ret;
 }
-EXPORT_SYMBOL_GPL(kill_pid_usb_asyncio);
 
 static int kill_something_info(int sig, struct kernel_siginfo *info, pid_t pid)
 {
@@ -1137,7 +1128,6 @@ int send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p)
 
 	return do_send_sig_info(sig, info, p, PIDTYPE_PID);
 }
-EXPORT_SYMBOL(send_sig_info);
 
 #define __si_special(priv) \
 	((priv) ? SEND_SIG_PRIV : SEND_SIG_NOINFO)
@@ -1147,7 +1137,6 @@ send_sig(int sig, struct task_struct *p, int priv)
 {
 	return send_sig_info(sig, __si_special(priv), p);
 }
-EXPORT_SYMBOL(send_sig);
 
 void force_sig(int sig)
 {
@@ -1161,7 +1150,6 @@ void force_sig(int sig)
 	info.si_uid = 0;
 	force_sig_info(&info);
 }
-EXPORT_SYMBOL(force_sig);
 
 void force_fatal_sig(int sig)
 {
@@ -1269,7 +1257,6 @@ int send_sig_mceerr(int code, void __user *addr, short lsb, struct task_struct *
 	info.si_addr_lsb = lsb;
 	return send_sig_info(info.si_signo, &info, t);
 }
-EXPORT_SYMBOL(send_sig_mceerr);
 
 int force_sig_bnderr(void __user *addr, void __user *lower, void __user *upper)
 {
@@ -1384,13 +1371,11 @@ int kill_pgrp(struct pid *pid, int sig, int priv)
 
 	return ret;
 }
-EXPORT_SYMBOL(kill_pgrp);
 
 int kill_pid(struct pid *pid, int sig, int priv)
 {
 	return kill_pid_info(sig, __si_special(priv), pid);
 }
-EXPORT_SYMBOL(kill_pid);
 
 struct sigqueue *sigqueue_alloc(void)
 {
@@ -1446,7 +1431,6 @@ int send_sigqueue(struct sigqueue *q, struct pid *pid, enum pid_type type)
 	}
 	q->info.si_overrun = 0;
 
-	signalfd_notify(t, sig);
 	pending = (type != PIDTYPE_PID) ? &t->signal->shared_pending : &t->pending;
 	list_add_tail(&q->list, &pending->list);
 	sigaddset(&pending->signal, sig);
@@ -2192,7 +2176,6 @@ int sigprocmask(int how, sigset_t *set, sigset_t *oldset)
 	__set_current_blocked(&newset);
 	return 0;
 }
-EXPORT_SYMBOL(sigprocmask);
 
 int set_user_sigmask(const sigset_t __user *umask, size_t sigsetsize)
 {
@@ -2688,7 +2671,6 @@ void kernel_sigaction(int sig, __sighandler_t action)
 	}
 	spin_unlock_irq(&current->sighand->siglock);
 }
-EXPORT_SYMBOL(kernel_sigaction);
 
 void __weak sigaction_compat_abi(struct k_sigaction *act,
 		struct k_sigaction *oact)

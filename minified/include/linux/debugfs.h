@@ -1,13 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- *  debugfs.h - a tiny little debug file system
- *
- *  Copyright (C) 2004 Greg Kroah-Hartman <greg@kroah.com>
- *  Copyright (C) 2004 IBM Inc.
- *
- *  debugfs is for people to use instead of /proc or /sys.
- *  See Documentation/filesystems/ for more details.
- */
+ 
+ 
 
 #ifndef _DEBUGFS_H_
 #define _DEBUGFS_H_
@@ -35,7 +27,7 @@ struct debugfs_regset32 {
 	const struct debugfs_reg32 *regs;
 	int nregs;
 	void __iomem *base;
-	struct device *dev;	/* Optional device for Runtime PM */
+	struct device *dev;	 
 };
 
 struct debugfs_u32_array {
@@ -65,11 +57,7 @@ typedef struct vfsmount *(*debugfs_automount_t)(struct dentry *, void *);
 
 #include <linux/err.h>
 
-/*
- * We do not return NULL from these functions if CONFIG_DEBUG_FS is not enabled
- * so users have a chance to detect if there was a real error or not.  We don't
- * want to duplicate the design decision mistakes of procfs and devfs again.
- */
+ 
 
 static inline struct dentry *debugfs_lookup(const char *name,
 					    struct dentry *parent)
@@ -258,17 +246,7 @@ static inline ssize_t debugfs_read_file_str(struct file *file,
 }
 
 
-/**
- * debugfs_create_xul - create a debugfs file that is used to read and write an
- * unsigned long value, formatted in hexadecimal
- * @name: a pointer to a string containing the name of the file to create.
- * @mode: the permission that the file should have
- * @parent: a pointer to the parent dentry for this file.  This should be a
- *          directory dentry if set.  If this parameter is %NULL, then the
- *          file will be created in the root of the debugfs filesystem.
- * @value: a pointer to the variable that the file should read to and write
- *         from.
- */
+ 
 static inline void debugfs_create_xul(const char *name, umode_t mode,
 				      struct dentry *parent,
 				      unsigned long *value)

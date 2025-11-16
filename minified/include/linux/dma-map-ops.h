@@ -1,8 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * This header is for implementations of dma_map_ops and related code.
- * It should not be included in drivers just using the DMA API.
- */
+ 
+ 
 #ifndef _LINUX_DMA_MAP_OPS_H
 #define _LINUX_DMA_MAP_OPS_H
 
@@ -40,11 +37,7 @@ struct dma_map_ops {
 	void (*unmap_page)(struct device *dev, dma_addr_t dma_handle,
 			size_t size, enum dma_data_direction dir,
 			unsigned long attrs);
-	/*
-	 * map_sg should return a negative error code on error. See
-	 * dma_map_sgtable() for a list of appropriate error codes
-	 * and their meanings.
-	 */
+	 
 	int (*map_sg)(struct device *dev, struct scatterlist *sg, int nents,
 			enum dma_data_direction dir, unsigned long attrs);
 	void (*unmap_sg)(struct device *dev, struct scatterlist *sg, int nents,
@@ -104,7 +97,7 @@ static inline bool dma_release_from_contiguous(struct device *dev,
 {
 	return false;
 }
-/* Use fallback alloc() and free() when CONFIG_DMA_CMA=n */
+ 
 static inline struct page *dma_alloc_contiguous(struct device *dev, size_t size,
 		gfp_t gfp)
 {
@@ -142,13 +135,7 @@ static inline int dma_mmap_from_global_coherent(struct vm_area_struct *vma,
 	return 0;
 }
 
-/*
- * This is the actual return value from the ->alloc_noncontiguous method.
- * The users of the DMA API should only care about the sg_table, but to make
- * the DMA-API internal vmaping and freeing easier we stash away the page
- * array as well (except for the fallback case).  This can go away any time,
- * e.g. when a vmap-variant that takes a scatterlist comes along.
- */
+ 
 struct dma_sgt_handle {
 	struct sg_table sgt;
 	struct page **pages;
@@ -195,19 +182,14 @@ static inline bool dev_is_dma_coherent(struct device *dev)
 {
 	return true;
 }
-#endif /* CONFIG_ARCH_HAS_DMA_COHERENCE_H */
+#endif  
 
 void *arch_dma_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 		gfp_t gfp, unsigned long attrs);
 void arch_dma_free(struct device *dev, size_t size, void *cpu_addr,
 		dma_addr_t dma_addr, unsigned long attrs);
 
-/*
- * Page protection so that devices that can't snoop CPU caches can use the
- * memory coherently.  We default to pgprot_noncached which is usually used
- * for ioremap as a safe bet, but architectures can override this with less
- * strict semantics if possible.
- */
+ 
 #ifndef pgprot_dmacoherent
 #define pgprot_dmacoherent(prot)	pgprot_noncached(prot)
 #endif
@@ -262,4 +244,4 @@ static inline void debug_dma_dump_mappings(struct device *dev)
 
 extern const struct dma_map_ops dma_dummy_ops;
 
-#endif /* _LINUX_DMA_MAP_OPS_H */
+#endif  

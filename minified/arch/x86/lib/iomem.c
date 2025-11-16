@@ -5,7 +5,7 @@
 #define movs(type,to,from) \
 	asm volatile("movs" type:"=&D" (to), "=&S" (from):"0" (to), "1" (from):"memory")
 
-/* Originally from i386/string.h */
+ 
 static __always_inline void rep_movs(void *to, const void *from, size_t n)
 {
 	unsigned long d0, d1, d2;
@@ -27,7 +27,7 @@ static void string_memcpy_fromio(void *to, const volatile void __iomem *from, si
 	if (unlikely(!n))
 		return;
 
-	/* Align any unaligned source IO */
+	 
 	if (unlikely(1 & (unsigned long)from)) {
 		movs("b", to, from);
 		n--;
@@ -44,7 +44,7 @@ static void string_memcpy_toio(volatile void __iomem *to, const void *from, size
 	if (unlikely(!n))
 		return;
 
-	/* Align any unaligned destination IO */
+	 
 	if (unlikely(1 & (unsigned long)to)) {
 		movs("b", to, from);
 		n--;
@@ -92,7 +92,6 @@ void memcpy_fromio(void *to, const volatile void __iomem *from, size_t n)
 	else
 		string_memcpy_fromio(to, from, n);
 }
-EXPORT_SYMBOL(memcpy_fromio);
 
 void memcpy_toio(volatile void __iomem *to, const void *from, size_t n)
 {
@@ -101,18 +100,13 @@ void memcpy_toio(volatile void __iomem *to, const void *from, size_t n)
 	else
 		string_memcpy_toio(to, from, n);
 }
-EXPORT_SYMBOL(memcpy_toio);
 
 void memset_io(volatile void __iomem *a, int b, size_t c)
 {
 	if (cc_platform_has(CC_ATTR_GUEST_UNROLL_STRING_IO)) {
 		unrolled_memset_io(a, b, c);
 	} else {
-		/*
-		 * TODO: memset can mangle the IO patterns quite a bit.
-		 * perhaps it would be better to use a dumb one:
-		 */
+		 
 		memset((void *)a, b, c);
 	}
 }
-EXPORT_SYMBOL(memset_io);

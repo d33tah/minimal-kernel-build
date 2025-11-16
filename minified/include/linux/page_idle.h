@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_MM_PAGE_IDLE_H
 #define _LINUX_MM_PAGE_IDLE_H
 
@@ -64,4 +64,4 @@ static inline void clear_page_idle(struct page *page)
 {
 	folio_clear_idle(page_folio(page));
 }
-#endif /* _LINUX_MM_PAGE_IDLE_H */
+#endif  

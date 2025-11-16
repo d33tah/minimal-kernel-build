@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_MMAN_H
 #define _LINUX_MMAN_H
 
@@ -8,10 +8,7 @@
 #include <linux/atomic.h>
 #include <uapi/linux/mman.h>
 
-/*
- * Arrange for legacy / undefined architecture specific flags to be
- * ignored by mmap handling code.
- */
+ 
 #ifndef MAP_32BIT
 #define MAP_32BIT 0
 #endif
@@ -28,13 +25,7 @@
 #define MAP_SYNC 0
 #endif
 
-/*
- * The historical set of flags that all mmap implementations implicitly
- * support when a ->mmap_validate() op is not provided in file_operations.
- *
- * MAP_EXECUTABLE and MAP_DENYWRITE are completely ignored throughout the
- * kernel.
- */
+ 
 #define LEGACY_MAP_MASK (MAP_SHARED \
 		| MAP_PRIVATE \
 		| MAP_FIXED \
@@ -75,10 +66,7 @@ static inline void vm_unacct_memory(long pages)
 	vm_acct_memory(-pages);
 }
 
-/*
- * Allow architectures to handle additional protection and flag bits. The
- * overriding macros must be defined in the arch-specific asm/mman.h file.
- */
+ 
 
 #ifndef arch_calc_vm_prot_bits
 #define arch_calc_vm_prot_bits(prot, pkey) 0
@@ -89,12 +77,7 @@ static inline void vm_unacct_memory(long pages)
 #endif
 
 #ifndef arch_validate_prot
-/*
- * This is called from mprotect().  PROT_GROWSDOWN and PROT_GROWSUP have
- * already been masked out.
- *
- * Returns true if the prot flags are valid
- */
+ 
 static inline bool arch_validate_prot(unsigned long prot, unsigned long addr)
 {
 	return (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM)) == 0;
@@ -103,11 +86,7 @@ static inline bool arch_validate_prot(unsigned long prot, unsigned long addr)
 #endif
 
 #ifndef arch_validate_flags
-/*
- * This is called from mmap() and mprotect() with the updated vma->vm_flags.
- *
- * Returns true if the VM_* flags are valid.
- */
+ 
 static inline bool arch_validate_flags(unsigned long flags)
 {
 	return true;
@@ -115,20 +94,13 @@ static inline bool arch_validate_flags(unsigned long flags)
 #define arch_validate_flags arch_validate_flags
 #endif
 
-/*
- * Optimisation macro.  It is equivalent to:
- *      (x & bit1) ? bit2 : 0
- * but this version is faster.
- * ("bit1" and "bit2" must be single bits)
- */
+ 
 #define _calc_vm_trans(x, bit1, bit2) \
   ((!(bit1) || !(bit2)) ? 0 : \
   ((bit1) <= (bit2) ? ((x) & (bit1)) * ((bit2) / (bit1)) \
    : ((x) & (bit1)) / ((bit1) / (bit2))))
 
-/*
- * Combine the mmap "prot" argument into "vm_flags" used internally.
- */
+ 
 static inline unsigned long
 calc_vm_prot_bits(unsigned long prot, unsigned long pkey)
 {
@@ -138,9 +110,7 @@ calc_vm_prot_bits(unsigned long prot, unsigned long pkey)
 	       arch_calc_vm_prot_bits(prot, pkey);
 }
 
-/*
- * Combine the mmap "flags" argument into "vm_flags" used internally.
- */
+ 
 static inline unsigned long
 calc_vm_flag_bits(unsigned long flags)
 {
@@ -151,4 +121,4 @@ calc_vm_flag_bits(unsigned long flags)
 }
 
 unsigned long vm_commit_limit(void);
-#endif /* _LINUX_MMAN_H */
+#endif  

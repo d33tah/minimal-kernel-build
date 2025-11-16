@@ -1,9 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- * Intel MID specific setup code
- *
- * (C) Copyright 2009, 2021 Intel Corporation
- */
+ 
+ 
 #ifndef _ASM_X86_INTEL_MID_H
 #define _ASM_X86_INTEL_MID_H
 
@@ -25,13 +21,13 @@ static inline void intel_scu_devices_create(void) { }
 static inline void intel_scu_devices_destroy(void) { }
 
 
-/* Bus Select SoC Fuse value */
+ 
 #define BSEL_SOC_FUSE_MASK		0x7
-/* FSB 133MHz */
+ 
 #define BSEL_SOC_FUSE_001		0x1
-/* FSB 100MHz */
+ 
 #define BSEL_SOC_FUSE_101		0x5
-/* FSB 83MHz */
+ 
 #define BSEL_SOC_FUSE_111		0x7
 
-#endif /* _ASM_X86_INTEL_MID_H */
+#endif  

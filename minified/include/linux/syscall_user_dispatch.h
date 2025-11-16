@@ -1,7 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * Copyright (C) 2020 Collabora Ltd.
- */
+ 
+ 
 #ifndef _SYSCALL_USER_DISPATCH_H
 #define _SYSCALL_USER_DISPATCH_H
 
@@ -22,4 +20,4 @@ int set_syscall_user_dispatch(unsigned long mode, unsigned long offset,
 	clear_task_syscall_work(tsk, SYSCALL_USER_DISPATCH)
 
 
-#endif /* _SYSCALL_USER_DISPATCH_H */
+#endif  

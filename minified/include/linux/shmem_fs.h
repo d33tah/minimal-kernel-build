@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef __SHMEM_FS_H
 #define __SHMEM_FS_H
 
@@ -10,41 +10,41 @@
 #include <linux/xattr.h>
 #include <linux/fs_parser.h>
 
-/* inode in-kernel data */
+ 
 
 struct shmem_inode_info {
 	spinlock_t		lock;
-	unsigned int		seals;		/* shmem seals */
+	unsigned int		seals;		 
 	unsigned long		flags;
-	unsigned long		alloced;	/* data pages alloced to file */
-	unsigned long		swapped;	/* subtotal assigned to swap */
-	pgoff_t			fallocend;	/* highest fallocate endindex */
-	struct list_head        shrinklist;     /* shrinkable hpage inodes */
-	struct list_head	swaplist;	/* chain of maybes on swap */
-	struct shared_policy	policy;		/* NUMA memory alloc policy */
-	struct simple_xattrs	xattrs;		/* list of xattrs */
-	atomic_t		stop_eviction;	/* hold when working on inode */
-	struct timespec64	i_crtime;	/* file creation time */
+	unsigned long		alloced;	 
+	unsigned long		swapped;	 
+	pgoff_t			fallocend;	 
+	struct list_head        shrinklist;      
+	struct list_head	swaplist;	 
+	struct shared_policy	policy;		 
+	struct simple_xattrs	xattrs;		 
+	atomic_t		stop_eviction;	 
+	struct timespec64	i_crtime;	 
 	struct inode		vfs_inode;
 };
 
 struct shmem_sb_info {
-	unsigned long max_blocks;   /* How many blocks are allowed */
-	struct percpu_counter used_blocks;  /* How many are allocated */
-	unsigned long max_inodes;   /* How many inodes are allowed */
-	unsigned long free_inodes;  /* How many are left for allocation */
-	raw_spinlock_t stat_lock;   /* Serialize shmem_sb_info changes */
-	umode_t mode;		    /* Mount mode for root directory */
-	unsigned char huge;	    /* Whether to try for hugepages */
-	kuid_t uid;		    /* Mount uid for root directory */
-	kgid_t gid;		    /* Mount gid for root directory */
-	bool full_inums;	    /* If i_ino should be uint or ino_t */
-	ino_t next_ino;		    /* The next per-sb inode number to use */
-	ino_t __percpu *ino_batch;  /* The next per-cpu inode number to use */
-	struct mempolicy *mpol;     /* default memory policy for mappings */
-	spinlock_t shrinklist_lock;   /* Protects shrinklist */
-	struct list_head shrinklist;  /* List of shinkable inodes */
-	unsigned long shrinklist_len; /* Length of shrinklist */
+	unsigned long max_blocks;    
+	struct percpu_counter used_blocks;   
+	unsigned long max_inodes;    
+	unsigned long free_inodes;   
+	raw_spinlock_t stat_lock;    
+	umode_t mode;		     
+	unsigned char huge;	     
+	kuid_t uid;		     
+	kgid_t gid;		     
+	bool full_inums;	     
+	ino_t next_ino;		     
+	ino_t __percpu *ino_batch;   
+	struct mempolicy *mpol;      
+	spinlock_t shrinklist_lock;    
+	struct list_head shrinklist;   
+	unsigned long shrinklist_len;  
 };
 
 static inline struct shmem_inode_info *SHMEM_I(struct inode *inode)
@@ -52,9 +52,7 @@ static inline struct shmem_inode_info *SHMEM_I(struct inode *inode)
 	return container_of(inode, struct shmem_inode_info, vfs_inode);
 }
 
-/*
- * Functions in mm/shmem.c called directly from elsewhere:
- */
+ 
 extern const struct fs_parameter_spec shmem_fs_parameters[];
 extern void shmem_init(void);
 extern int shmem_init_fs_context(struct fs_context *fc);
@@ -88,13 +86,13 @@ extern unsigned long shmem_swap_usage(struct vm_area_struct *vma);
 extern unsigned long shmem_partial_swap_usage(struct address_space *mapping,
 						pgoff_t start, pgoff_t end);
 
-/* Flag allocation requirements to shmem_getpage */
+ 
 enum sgp_type {
-	SGP_READ,	/* don't exceed i_size, don't allocate page */
-	SGP_NOALLOC,	/* similar, but fail on hole or use fallocated page */
-	SGP_CACHE,	/* don't exceed i_size, may allocate page */
-	SGP_WRITE,	/* may exceed i_size, may allocate !Uptodate page */
-	SGP_FALLOC,	/* like SGP_WRITE, but make existing page Uptodate */
+	SGP_READ,	 
+	SGP_NOALLOC,	 
+	SGP_CACHE,	 
+	SGP_WRITE,	 
+	SGP_FALLOC,	 
 };
 
 extern int shmem_getpage(struct inode *inode, pgoff_t index,
@@ -116,13 +114,7 @@ static inline bool shmem_file(struct file *file)
 	return shmem_mapping(file->f_mapping);
 }
 
-/*
- * If fallocate(FALLOC_FL_KEEP_SIZE) has been used, there may be pages
- * beyond i_size's notion of EOF, which fallocate has committed to reserving:
- * which split_huge_page() must therefore not delete.  This use of a single
- * "fallocend" per inode errs on the side of not deleting a reservation when
- * in doubt: there are plenty of cases when it preserves unreserved pages.
- */
+ 
 static inline pgoff_t shmem_fallocend(struct inode *inode, pgoff_t eof)
 {
 	return max(eof, SHMEM_I(inode)->fallocend);

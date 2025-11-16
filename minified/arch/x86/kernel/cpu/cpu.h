@@ -1,12 +1,12 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef ARCH_X86_CPU_H
 #define ARCH_X86_CPU_H
 
-/* attempt to consolidate cpu attributes */
+ 
 struct cpu_dev {
 	const char	*c_vendor;
 
-	/* some have two possibilities for cpuid string */
+	 
 	const char	*c_ident[2];
 
 	void            (*c_early_init)(struct cpuinfo_x86 *);
@@ -15,11 +15,11 @@ struct cpu_dev {
 	void		(*c_identify)(struct cpuinfo_x86 *);
 	void		(*c_detect_tlb)(struct cpuinfo_x86 *);
 	int		c_x86_vendor;
-	/* Optional vendor specific routine to obtain the cache size. */
+	 
 	unsigned int	(*legacy_cache_size)(struct cpuinfo_x86 *,
 					     unsigned int);
 
-	/* Family/stepping-based lookup table for model names. */
+	 
 	struct legacy_cpu_model_info {
 		int		family;
 		const char	*model_names[16];
@@ -30,7 +30,7 @@ struct _tlb_table {
 	unsigned char descriptor;
 	char tlb_type;
 	unsigned int entries;
-	/* unsigned int ways; */
+	 
 	char info[128];
 };
 
@@ -78,4 +78,4 @@ extern void update_srbds_msr(void);
 
 extern u64 x86_read_arch_cap_msr(void);
 
-#endif /* ARCH_X86_CPU_H */
+#endif  

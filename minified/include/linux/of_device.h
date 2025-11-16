@@ -1,10 +1,10 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_OF_DEVICE_H
 #define _LINUX_OF_DEVICE_H
 
 #include <linux/cpu.h>
 #include <linux/platform_device.h>
-#include <linux/of_platform.h> /* temporary until merge */
+#include <linux/of_platform.h>  
 
 #include <linux/of.h>
 #include <linux/mod_devicetable.h>
@@ -67,4 +67,4 @@ static inline int of_dma_configure(struct device *dev,
 	return 0;
 }
 
-#endif /* _LINUX_OF_DEVICE_H */
+#endif  

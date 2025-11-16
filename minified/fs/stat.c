@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Stubbed stat.c */
+ 
+ 
 #include <linux/fs.h>
 #include <linux/stat.h>
 #include <linux/syscalls.h>
@@ -7,36 +7,26 @@
 
 void generic_fillattr(struct user_namespace *mnt_userns, struct inode *inode,
 		      struct kstat *stat) { }
-EXPORT_SYMBOL(generic_fillattr);
 
 void generic_fill_statx_attr(struct inode *inode, struct kstat *stat) { }
-EXPORT_SYMBOL(generic_fill_statx_attr);
 
 int vfs_getattr_nosec(const struct path *path, struct kstat *stat,
 		      u32 request_mask, unsigned int query_flags) { return 0; }
-EXPORT_SYMBOL(vfs_getattr_nosec);
 
 int vfs_getattr(const struct path *path, struct kstat *stat,
 		u32 request_mask, unsigned int query_flags) { return 0; }
-EXPORT_SYMBOL(vfs_getattr);
 
 void __inode_add_bytes(struct inode *inode, loff_t bytes) { }
-EXPORT_SYMBOL(__inode_add_bytes);
 
 void inode_add_bytes(struct inode *inode, loff_t bytes) { }
-EXPORT_SYMBOL(inode_add_bytes);
 
 void __inode_sub_bytes(struct inode *inode, loff_t bytes) { }
-EXPORT_SYMBOL(__inode_sub_bytes);
 
 void inode_sub_bytes(struct inode *inode, loff_t bytes) { }
-EXPORT_SYMBOL(inode_sub_bytes);
 
 loff_t inode_get_bytes(struct inode *inode) { return 0; }
-EXPORT_SYMBOL(inode_get_bytes);
 
 void inode_set_bytes(struct inode *inode, loff_t bytes) { }
-EXPORT_SYMBOL(inode_set_bytes);
 
 SYSCALL_DEFINE2(stat, const char __user *, filename,
 		struct __old_kernel_stat __user *, statbuf) { return -ENOSYS; }

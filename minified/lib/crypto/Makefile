@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 
 # chacha is used by the /dev/random driver which is always builtin
-obj-y						+= chacha.o
+# obj-y						+= chacha.o  # deleted
 obj-$(CONFIG_CRYPTO_LIB_CHACHA_GENERIC)		+= libchacha.o
 
 obj-$(CONFIG_CRYPTO_LIB_AES)			+= libaes.o
@@ -11,9 +11,10 @@ obj-$(CONFIG_CRYPTO_LIB_ARC4)			+= libarc4.o
 libarc4-y					:= arc4.o
 
 # blake2s is used by the /dev/random driver which is always builtin
-obj-y						+= libblake2s.o
-libblake2s-y					:= blake2s.o
-libblake2s-$(CONFIG_CRYPTO_LIB_BLAKE2S_GENERIC)	+= blake2s-generic.o
+# STUBBED: random.c is now stubbed, blake2s not needed
+# obj-y						+= libblake2s.o
+# libblake2s-y					:= blake2s.o
+# libblake2s-$(CONFIG_CRYPTO_LIB_BLAKE2S_GENERIC)	+= blake2s-generic.o
 
 obj-$(CONFIG_CRYPTO_LIB_CHACHA20POLY1305)	+= libchacha20poly1305.o
 libchacha20poly1305-y				+= chacha20poly1305.o
@@ -38,7 +39,7 @@ obj-$(CONFIG_CRYPTO_LIB_SHA256)			+= libsha256.o
 libsha256-y					:= sha256.o
 
 ifneq ($(CONFIG_CRYPTO_MANAGER_DISABLE_TESTS),y)
-libblake2s-y					+= blake2s-selftest.o
+# libblake2s-y					+= blake2s-selftest.o
 libchacha20poly1305-y				+= chacha20poly1305-selftest.o
 libcurve25519-y					+= curve25519-selftest.o
 endif

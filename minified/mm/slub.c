@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 
 #include <linux/mm.h>
 #include <linux/swap.h> 
@@ -17,7 +17,6 @@
 #include <linux/mempolicy.h>
 #include <linux/ctype.h>
 #include <linux/stackdepot.h>
-#include <linux/debugobjects.h>
 #include <linux/kallsyms.h>
 #include <linux/kfence.h>
 #include <linux/memory.h>
@@ -28,7 +27,6 @@
 #include <linux/memcontrol.h>
 #include <linux/random.h>
 #include <linux/sort.h>
-#include <linux/trace_stubs.h>
 
 #include <linux/debugfs.h>
 
@@ -356,15 +354,6 @@ static __always_inline bool slab_free_hook(struct kmem_cache *s,
 
 	debug_check_no_locks_freed(x, s->object_size);
 
-	if (!(s->flags & SLAB_DEBUG_OBJECTS))
-		debug_check_no_obj_freed(x, s->object_size);
-
-	
-	if (!(s->flags & SLAB_TYPESAFE_BY_RCU))
-		__kcsan_check_access(x, s->object_size,
-				     KCSAN_ACCESS_WRITE | KCSAN_ACCESS_ASSERT);
-
-	
 	if (init) {
 		int rsize;
 
@@ -1285,8 +1274,6 @@ void *__kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru,
 {
 	void *ret = slab_alloc(s, lru, gfpflags, _RET_IP_, s->object_size);
 
-	trace_kmem_cache_alloc(_RET_IP_, ret, s->object_size,
-				s->size, gfpflags);
 
 	return ret;
 }
@@ -1295,14 +1282,12 @@ void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
 {
 	return __kmem_cache_alloc_lru(s, NULL, gfpflags);
 }
-EXPORT_SYMBOL(kmem_cache_alloc);
 
 void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru,
 			   gfp_t gfpflags)
 {
 	return __kmem_cache_alloc_lru(s, lru, gfpflags);
 }
-EXPORT_SYMBOL(kmem_cache_alloc_lru);
 
 static void __slab_free(struct kmem_cache *s, struct slab *slab,
 			void *head, void *tail, int cnt,
@@ -1450,10 +1435,8 @@ void kmem_cache_free(struct kmem_cache *s, void *x)
 	s = cache_from_obj(s, x);
 	if (!s)
 		return;
-	trace_kmem_cache_free(_RET_IP_, x, s->name);
 	slab_free(s, virt_to_slab(x), x, NULL, 1, _RET_IP_);
 }
-EXPORT_SYMBOL(kmem_cache_free);
 
 struct detached_freelist {
 	struct slab *slab;
@@ -1571,7 +1554,6 @@ void kmem_cache_free_bulk(struct kmem_cache *s, size_t size, void **p)
 		slab_free(df.s, df.slab, df.freelist, df.tail, df.cnt, _RET_IP_);
 	} while (likely(size));
 }
-EXPORT_SYMBOL(kmem_cache_free_bulk);
 
 int kmem_cache_alloc_bulk(struct kmem_cache *s, gfp_t flags, size_t size,
 			  void **p)
@@ -1634,7 +1616,6 @@ error:
 	__kmem_cache_free_bulk(s, i, p);
 	return 0;
 }
-EXPORT_SYMBOL(kmem_cache_alloc_bulk);
 
 static unsigned int slub_min_order;
 static unsigned int slub_max_order = PAGE_ALLOC_COSTLY_ORDER;
@@ -2009,13 +1990,11 @@ void *__kmalloc(size_t size, gfp_t flags)
 
 	ret = slab_alloc(s, NULL, flags, _RET_IP_, size);
 
-	trace_kmalloc(_RET_IP_, ret, size, s->size, flags);
 
 	ret = kasan_kmalloc(s, ret, size, flags);
 
 	return ret;
 }
-EXPORT_SYMBOL(__kmalloc);
 
 size_t __ksize(const void *object)
 {
@@ -2031,7 +2010,6 @@ size_t __ksize(const void *object)
 
 	return slab_ksize(folio_slab(folio)->slab_cache);
 }
-EXPORT_SYMBOL(__ksize);
 
 void kfree(const void *x)
 {
@@ -2039,7 +2017,6 @@ void kfree(const void *x)
 	struct slab *slab;
 	void *object = (void *)x;
 
-	trace_kfree(_RET_IP_, x);
 
 	if (unlikely(ZERO_OR_NULL_PTR(x)))
 		return;
@@ -2052,7 +2029,6 @@ void kfree(const void *x)
 	slab = folio_slab(folio);
 	slab_free(slab->slab_cache, slab, object, NULL, 1, _RET_IP_);
 }
-EXPORT_SYMBOL(kfree);
 
 #define SHRINK_PROMOTE_MAX 32
 
@@ -2278,11 +2254,6 @@ void __init kmem_cache_init(void)
 
 	cpuhp_setup_state_nocalls(CPUHP_SLUB_DEAD, "slub:dead", NULL,
 				  slub_cpu_dead);
-
-	pr_info("SLUB: HWalign=%d, Order=%u-%u, MinObjects=%u, CPUs=%u, Nodes=%u\n",
-		cache_line_size(),
-		slub_min_order, slub_max_order, slub_min_objects,
-		nr_cpu_ids, nr_node_ids);
 }
 
 void __init kmem_cache_init_late(void)
@@ -2352,9 +2323,7 @@ void *__kmalloc_track_caller(size_t size, gfp_t gfpflags, unsigned long caller)
 	ret = slab_alloc(s, NULL, gfpflags, caller, size);
 
 	
-	trace_kmalloc(caller, ret, size, s->size, gfpflags);
 
 	return ret;
 }
-EXPORT_SYMBOL(__kmalloc_track_caller);
 

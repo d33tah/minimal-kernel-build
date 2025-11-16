@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
+ 
 #ifndef _LINUX_IO_URING_H
 #define _LINUX_IO_URING_H
 
@@ -8,10 +8,10 @@
 enum io_uring_cmd_flags {
 	IO_URING_F_COMPLETE_DEFER	= 1,
 	IO_URING_F_UNLOCKED		= 2,
-	/* int's last bit, sign checks are usually faster than a bit test */
+	 
 	IO_URING_F_NONBLOCK		= INT_MIN,
 
-	/* ctx state flags, for URING_CMD */
+	 
 	IO_URING_F_SQE128		= 4,
 	IO_URING_F_CQE32		= 8,
 	IO_URING_F_IOPOLL		= 16,
@@ -20,11 +20,11 @@ enum io_uring_cmd_flags {
 struct io_uring_cmd {
 	struct file	*file;
 	const void	*cmd;
-	/* callback to defer completions to task context */
+	 
 	void (*task_work_cb)(struct io_uring_cmd *cmd);
 	u32		cmd_op;
 	u32		pad;
-	u8		pdu[32]; /* available inline for free use */
+	u8		pdu[32];  
 };
 
 static inline void io_uring_cmd_done(struct io_uring_cmd *cmd, ssize_t ret,

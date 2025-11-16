@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_COCO_H
 #define _ASM_X86_COCO_H
 
@@ -24,4 +24,4 @@ static inline u64 cc_mkdec(u64 val)
 	return val;
 }
 
-#endif /* _ASM_X86_COCO_H */
+#endif  

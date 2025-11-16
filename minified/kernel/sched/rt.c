@@ -1,27 +1,18 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Real-Time Scheduling Class (mapped to the SCHED_FIFO and SCHED_RR
- * policies)
- */
+ 
+ 
 
 int sched_rr_timeslice = RR_TIMESLICE;
-/* More than 4 hours if BW_SHIFT equals 20. */
+ 
 static const u64 max_rt_runtime = MAX_BW;
 
 static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun);
 
 struct rt_bandwidth def_rt_bandwidth;
 
-/*
- * period over which we measure -rt task CPU usage in us.
- * default: 1s
- */
+ 
 unsigned int sysctl_sched_rt_period = 1000000;
 
-/*
- * part of the period that we allow rt tasks to run in us.
- * default: 0.95s
- */
+ 
 int sysctl_sched_rt_runtime = 950000;
 
 
@@ -66,14 +57,7 @@ static inline void do_start_rt_bandwidth(struct rt_bandwidth *rt_b)
 	raw_spin_lock(&rt_b->rt_runtime_lock);
 	if (!rt_b->rt_period_active) {
 		rt_b->rt_period_active = 1;
-		/*
-		 * SCHED_DEADLINE updates the bandwidth, as a run away
-		 * RT task with a DL task could hog a CPU. But DL does
-		 * not reset the period. If a deadline task was running
-		 * without an RT task running, it can cause RT tasks to
-		 * throttle when they start up. Kick the timer right away
-		 * to update the period.
-		 */
+		 
 		hrtimer_forward_now(&rt_b->rt_period_timer, ns_to_ktime(0));
 		hrtimer_start_expires(&rt_b->rt_period_timer,
 				      HRTIMER_MODE_ABS_PINNED_HARD);
@@ -99,10 +83,10 @@ void init_rt_rq(struct rt_rq *rt_rq)
 		INIT_LIST_HEAD(array->queue + i);
 		__clear_bit(i, array->bitmap);
 	}
-	/* delimiter for bitsearch: */
+	 
 	__set_bit(MAX_RT_PRIO, array->bitmap);
 
-	/* We start is dequeued state, because no RT tasks are queued */
+	 
 	rt_rq->rt_queued = 0;
 
 	rt_rq->rt_time = 0;
@@ -268,10 +252,7 @@ static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun)
 		struct rq_flags rf;
 		int skip;
 
-		/*
-		 * When span == cpu_online_mask, taking each rq->lock
-		 * can be time-consuming. Try to avoid it when possible.
-		 */
+		 
 		raw_spin_lock(&rt_rq->rt_runtime_lock);
 		if (!sched_feat(RT_RUNTIME_SHARE) && rt_rq->rt_runtime != RUNTIME_INF)
 			rt_rq->rt_runtime = rt_b->rt_runtime;
@@ -295,13 +276,7 @@ static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun)
 				rt_rq->rt_throttled = 0;
 				enqueue = 1;
 
-				/*
-				 * When we're idle and a woken (rt) task is
-				 * throttled check_preempt_curr() will set
-				 * skip_update and the time between the wakeup
-				 * and this unthrottle will get accounted as
-				 * 'runtime'.
-				 */
+				 
 				if (rt_rq->rt_nr_running && rq->curr == rq->idle)
 					rq_clock_cancel_skipupdate(rq);
 			}
@@ -351,19 +326,12 @@ static int sched_rt_runtime_exceeded(struct rt_rq *rt_rq)
 	if (rt_rq->rt_time > runtime) {
 		struct rt_bandwidth *rt_b = sched_rt_bandwidth(rt_rq);
 
-		/*
-		 * Don't actually throttle groups that have no runtime assigned
-		 * but accrue some time due to boosting.
-		 */
+		 
 		if (likely(rt_b->rt_runtime)) {
 			rt_rq->rt_throttled = 1;
 			printk_deferred_once("sched: RT throttling activated\n");
 		} else {
-			/*
-			 * In case we did anyway, make it go away,
-			 * replenishment is a joke, since it will replenish us
-			 * with exactly 0 ns.
-			 */
+			 
 			rt_rq->rt_time = 0;
 		}
 
@@ -376,10 +344,7 @@ static int sched_rt_runtime_exceeded(struct rt_rq *rt_rq)
 	return 0;
 }
 
-/*
- * Update the current task's runtime statistics. Skip current tasks that
- * are not in our scheduling class.
- */
+ 
 static void update_curr_rt(struct rq *rq)
 {
 	struct task_struct *curr = rq->curr;
@@ -398,7 +363,7 @@ static void update_curr_rt(struct rq *rq)
 	schedstat_set(curr->stats.exec_max,
 		      max(curr->stats.exec_max, delta_exec));
 
-	/* trace_sched_stat_runtime(curr, delta_exec, 0); */
+	 
 
 	curr->se.sum_exec_runtime += delta_exec;
 	account_group_exec_runtime(curr, delta_exec);
@@ -461,7 +426,7 @@ enqueue_top_rt_rq(struct rt_rq *rt_rq)
 		rt_rq->rt_queued = 1;
 	}
 
-	/* Kick cpufreq (see the comment in kernel/sched/sched.h). */
+	 
 	cpufreq_update_util(rq, 0);
 }
 
@@ -540,11 +505,7 @@ void dec_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
 	dec_rt_group(rt_se, rt_rq);
 }
 
-/*
- * Change rt_se->run_list location unless SAVE && !MOVE
- *
- * assumes ENQUEUE/DEQUEUE flags match
- */
+ 
 static inline bool move_entity(unsigned int flags)
 {
 	if ((flags & (DEQUEUE_SAVE | DEQUEUE_MOVE)) == DEQUEUE_SAVE)
@@ -671,12 +632,7 @@ static void __enqueue_rt_entity(struct sched_rt_entity *rt_se, unsigned int flag
 	struct rt_rq *group_rq = group_rt_rq(rt_se);
 	struct list_head *queue = array->queue + rt_se_prio(rt_se);
 
-	/*
-	 * Don't enqueue the group if its throttled, or when empty.
-	 * The latter is a consequence of the former when a child group
-	 * get throttled and the current group doesn't have any other
-	 * active members.
-	 */
+	 
 	if (group_rq && (rt_rq_throttled(group_rq) || !group_rq->rt_nr_running)) {
 		if (rt_se->on_list)
 			__delist_rt_entity(rt_se, array);
@@ -712,10 +668,7 @@ static void __dequeue_rt_entity(struct sched_rt_entity *rt_se, unsigned int flag
 	dec_rt_tasks(rt_se, rt_rq);
 }
 
-/*
- * Because the prio of an upper entry depends on the lower
- * entries, we must remove entries top - down.
- */
+ 
 static void dequeue_rt_stack(struct sched_rt_entity *rt_se, unsigned int flags)
 {
 	struct sched_rt_entity *back = NULL;
@@ -762,9 +715,7 @@ static void dequeue_rt_entity(struct sched_rt_entity *rt_se, unsigned int flags)
 	enqueue_top_rt_rq(&rq->rt);
 }
 
-/*
- * Adding/removing a task to/from a priority array:
- */
+ 
 static void
 enqueue_task_rt(struct rq *rq, struct task_struct *p, int flags)
 {
@@ -792,10 +743,7 @@ static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int flags)
 	dequeue_pushable_task(rq, p);
 }
 
-/*
- * Put task to the head or the end of the run list without the overhead of
- * dequeue followed by enqueue.
- */
+ 
 static void
 requeue_rt_entity(struct rt_rq *rt_rq, struct sched_rt_entity *rt_se, int head)
 {
@@ -827,9 +775,7 @@ static void yield_task_rt(struct rq *rq)
 }
 
 
-/*
- * Preempt the current task with a newly woken task if needed:
- */
+ 
 static void check_preempt_curr_rt(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (p->prio < rq->curr->prio) {
@@ -848,17 +794,13 @@ static inline void set_next_task_rt(struct rq *rq, struct task_struct *p, bool f
 	if (on_rt_rq(&p->rt))
 		update_stats_wait_end_rt(rt_rq, rt_se);
 
-	/* The running task is never eligible for pushing */
+	 
 	dequeue_pushable_task(rq, p);
 
 	if (!first)
 		return;
 
-	/*
-	 * If prev task was rt, put_prev_task() has already updated the
-	 * utilization. We only care of the case where we start to schedule a
-	 * rt task
-	 */
+	 
 	if (rq->curr->sched_class != &rt_sched_class)
 		update_rt_rq_load_avg(rq_clock_pelt(rq), rq, 0);
 
@@ -929,46 +871,29 @@ static void put_prev_task_rt(struct rq *rq, struct task_struct *p)
 
 	update_rt_rq_load_avg(rq_clock_pelt(rq), rq, 1);
 
-	/*
-	 * The previous task needs to be made eligible for pushing
-	 * if it is still active
-	 */
+	 
 	if (on_rt_rq(&p->rt) && p->nr_cpus_allowed > 1)
 		enqueue_pushable_task(rq, p);
 }
 
 
-/*
- * When switching a task to RT, we may overload the runqueue
- * with RT tasks. In this case we try to push them off to
- * other runqueues.
- */
+ 
 static void switched_to_rt(struct rq *rq, struct task_struct *p)
 {
-	/*
-	 * If we are running, update the avg_rt tracking, as the running time
-	 * will now on be accounted into the latter.
-	 */
+	 
 	if (task_current(rq, p)) {
 		update_rt_rq_load_avg(rq_clock_pelt(rq), rq, 0);
 		return;
 	}
 
-	/*
-	 * If we are not running we may need to preempt the current
-	 * running task. If that current running task is also an RT task
-	 * then see if we can move to another run queue.
-	 */
+	 
 	if (task_on_rq_queued(p)) {
 		if (p->prio < rq->curr->prio && cpu_online(cpu_of(rq)))
 			resched_curr(rq);
 	}
 }
 
-/*
- * Priority of the task has changed. This may cause
- * us to initiate a push or pull.
- */
+ 
 static void
 prio_changed_rt(struct rq *rq, struct task_struct *p, int oldprio)
 {
@@ -976,15 +901,11 @@ prio_changed_rt(struct rq *rq, struct task_struct *p, int oldprio)
 		return;
 
 	if (task_current(rq, p)) {
-		/* For UP simply resched on drop of prio */
+		 
 		if (oldprio < p->prio)
 			resched_curr(rq);
 	} else {
-		/*
-		 * This task is not running, but if it is
-		 * greater than the current running task
-		 * then reschedule.
-		 */
+		 
 		if (p->prio < rq->curr->prio)
 			resched_curr(rq);
 	}
@@ -992,14 +913,7 @@ prio_changed_rt(struct rq *rq, struct task_struct *p, int oldprio)
 
 static inline void watchdog(struct rq *rq, struct task_struct *p) { }
 
-/*
- * scheduler tick hitting a task of our scheduling class.
- *
- * NOTE: This function can be called remotely by the tick offload that
- * goes along full dynticks. Therefore no local assumption can be made
- * and everything must be accessed through the @rq and @curr passed in
- * parameters.
- */
+ 
 static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
 {
 	struct sched_rt_entity *rt_se = &p->rt;
@@ -1009,10 +923,7 @@ static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
 
 	watchdog(rq, p);
 
-	/*
-	 * RR tasks need a special form of timeslice management.
-	 * FIFO tasks have no timeslices.
-	 */
+	 
 	if (p->policy != SCHED_RR)
 		return;
 
@@ -1021,10 +932,7 @@ static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
 
 	p->rt.time_slice = sched_rr_timeslice;
 
-	/*
-	 * Requeue to the end of queue if we (and all of our ancestors) are not
-	 * the only element on the queue
-	 */
+	 
 	for_each_sched_rt_entity(rt_se) {
 		if (rt_se->run_list.prev != rt_se->run_list.next) {
 			requeue_task_rt(rq, p, 0);
@@ -1036,9 +944,7 @@ static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
 
 static unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *task)
 {
-	/*
-	 * Time slice is 0 for SCHED_FIFO tasks
-	 */
+	 
 	if (task->policy == SCHED_RR)
 		return sched_rr_timeslice;
 	else

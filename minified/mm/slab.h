@@ -1,11 +1,9 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef MM_SLAB_H
 #define MM_SLAB_H
-/*
- * Internal slab definitions
- */
+ 
 
-/* Reuses the bits in struct page */
+ 
 struct slab {
 	unsigned long __page_flags;
 
@@ -15,8 +13,8 @@ struct slab {
 		struct rcu_head rcu_head;
 	};
 	struct kmem_cache *slab_cache;
-	/* Double-word boundary */
-	void *freelist;		/* first free object */
+	 
+	void *freelist;		 
 	union {
 		unsigned long counters;
 		struct {
@@ -34,70 +32,31 @@ struct slab {
 #define SLAB_MATCH(pg, sl)						\
 	static_assert(offsetof(struct page, pg) == offsetof(struct slab, sl))
 SLAB_MATCH(flags, __page_flags);
-SLAB_MATCH(compound_head, slab_list);	/* Ensure bit 0 is clear */
+SLAB_MATCH(compound_head, slab_list);	 
 SLAB_MATCH(rcu_head, rcu_head);
 SLAB_MATCH(_refcount, __page_refcount);
 #undef SLAB_MATCH
 static_assert(sizeof(struct slab) <= sizeof(struct page));
 
-/**
- * folio_slab - Converts from folio to slab.
- * @folio: The folio.
- *
- * Currently struct slab is a different representation of a folio where
- * folio_test_slab() is true.
- *
- * Return: The slab which contains this folio.
- */
+ 
 #define folio_slab(folio)	(_Generic((folio),			\
 	const struct folio *:	(const struct slab *)(folio),		\
 	struct folio *:		(struct slab *)(folio)))
 
-/**
- * slab_folio - The folio allocated for a slab
- * @slab: The slab.
- *
- * Slabs are allocated as folios that contain the individual objects and are
- * using some fields in the first struct page of the folio - those fields are
- * now accessed by struct slab. It is occasionally necessary to convert back to
- * a folio in order to communicate with the rest of the mm.  Please use this
- * helper function instead of casting yourself, as the implementation may change
- * in the future.
- */
+ 
 #define slab_folio(s)		(_Generic((s),				\
 	const struct slab *:	(const struct folio *)s,		\
 	struct slab *:		(struct folio *)s))
 
-/**
- * page_slab - Converts from first struct page to slab.
- * @p: The first (either head of compound or single) page of slab.
- *
- * A temporary wrapper to convert struct page to struct slab in situations where
- * we know the page is the compound head, or single order-0 page.
- *
- * Long-term ideally everything would work with struct slab directly or go
- * through folio to struct slab.
- *
- * Return: The slab which contains this page
- */
+ 
 #define page_slab(p)		(_Generic((p),				\
 	const struct page *:	(const struct slab *)(p),		\
 	struct page *:		(struct slab *)(p)))
 
-/**
- * slab_page - The first struct page allocated for a slab
- * @slab: The slab.
- *
- * A convenience wrapper for converting slab to the first struct page of the
- * underlying folio, to communicate with code not yet converted to folio or
- * struct slab.
- */
+ 
 #define slab_page(s) folio_page(slab_folio(s), 0)
 
-/*
- * If network-based swap is enabled, sl*b must keep track of whether pages
- * were allocated from pfmemalloc reserves.
- */
+ 
 static inline bool slab_test_pfmemalloc(const struct slab *slab)
 {
 	return folio_test_active((struct folio *)slab_folio(slab));
@@ -165,49 +124,42 @@ static inline size_t slab_size(const struct slab *slab)
 #include <linux/sched/mm.h>
 #include <linux/list_lru.h>
 
-/*
- * State of the slab allocator.
- *
- * This is used to describe the states of the allocator during bootup.
- * Allocators use this to gradually bootstrap themselves. Most allocators
- * have the problem that the structures used for managing slab caches are
- * allocated from slab caches themselves.
- */
+ 
 enum slab_state {
-	DOWN,			/* No slab functionality yet */
-	PARTIAL,		/* SLUB: kmem_cache_node available */
-	PARTIAL_NODE,		/* SLAB: kmalloc size for node struct available */
-	UP,			/* Slab caches usable but not all extras yet */
-	FULL			/* Everything is working */
+	DOWN,			 
+	PARTIAL,		 
+	PARTIAL_NODE,		 
+	UP,			 
+	FULL			 
 };
 
 extern enum slab_state slab_state;
 
-/* The slab cache mutex protects the management structures during changes */
+ 
 extern struct mutex slab_mutex;
 
-/* The list of all slab caches on the system */
+ 
 extern struct list_head slab_caches;
 
-/* The slab cache that manages slab cache information */
+ 
 extern struct kmem_cache *kmem_cache;
 
-/* A table of kmalloc cache names and sizes */
+ 
 extern const struct kmalloc_info_struct {
 	const char *name[NR_KMALLOC_TYPES];
 	unsigned int size;
 } kmalloc_info[];
 
-/* Kmalloc array related functions */
+ 
 void setup_kmalloc_cache_index_table(void);
 void create_kmalloc_caches(slab_flags_t);
 
-/* Find the kmalloc slab corresponding for a certain size */
+ 
 struct kmem_cache *kmalloc_slab(size_t, gfp_t);
 
 gfp_t kmalloc_fix_flags(gfp_t flags);
 
-/* Functions provided by the slab allocators */
+ 
 int __kmem_cache_create(struct kmem_cache *, slab_flags_t flags);
 
 struct kmem_cache *create_kmalloc_cache(const char *name, unsigned int size,
@@ -228,7 +180,7 @@ slab_flags_t kmem_cache_flags(unsigned int object_size,
 	slab_flags_t flags, const char *name);
 
 
-/* Legal flag mask for kmem_cache_create(), for various configurations */
+ 
 #define SLAB_CORE_FLAGS (SLAB_HWCACHE_ALIGN | SLAB_CACHE_DMA | \
 			 SLAB_CACHE_DMA32 | SLAB_PANIC | \
 			 SLAB_TYPESAFE_BY_RCU | SLAB_DEBUG_OBJECTS )
@@ -238,10 +190,10 @@ slab_flags_t kmem_cache_flags(unsigned int object_size,
 #define SLAB_CACHE_FLAGS (SLAB_NOLEAKTRACE | SLAB_RECLAIM_ACCOUNT | \
 			  SLAB_TEMPORARY | SLAB_ACCOUNT | SLAB_NO_USER_FLAGS)
 
-/* Common flags available with current configuration */
+ 
 #define CACHE_CREATE_MASK (SLAB_CORE_FLAGS | SLAB_DEBUG_FLAGS | SLAB_CACHE_FLAGS)
 
-/* Common flags permitted for kmem_cache_create */
+ 
 #define SLAB_FLAGS_PERMITTED (SLAB_CORE_FLAGS | \
 			      SLAB_RED_ZONE | \
 			      SLAB_POISON | \
@@ -282,12 +234,7 @@ void slabinfo_show_stats(struct seq_file *m, struct kmem_cache *s);
 ssize_t slabinfo_write(struct file *file, const char __user *buffer,
 		       size_t count, loff_t *ppos);
 
-/*
- * Generic implementation of bulk operations
- * These are useful for situations in which the allocator cannot
- * perform optimizations. In that case segments of the object listed
- * may be allocated or freed using these operations.
- */
+ 
 void __kmem_cache_free_bulk(struct kmem_cache *, size_t, void **);
 int __kmem_cache_alloc_bulk(struct kmem_cache *, gfp_t, size_t, void **);
 
@@ -305,11 +252,7 @@ static inline bool __slub_debug_enabled(void)
 	return false;
 }
 
-/*
- * Returns true if any of the specified slub_debug flags is enabled for the
- * cache. Use only for flags parsed by setup_slub_debug() as it also enables
- * the static key.
- */
+ 
 static inline bool kmem_cache_debug_flags(struct kmem_cache *s, slab_flags_t flags)
 {
 	if (IS_ENABLED(CONFIG_SLUB_DEBUG))
@@ -411,16 +354,10 @@ static inline size_t slab_ksize(const struct kmem_cache *s)
 {
 	if (s->flags & SLAB_KASAN)
 		return s->object_size;
-	/*
-	 * If we have the need to store the freelist pointer
-	 * back there or track user information then we can
-	 * only use the space before that information.
-	 */
+	 
 	if (s->flags & (SLAB_TYPESAFE_BY_RCU | SLAB_STORE_USER))
 		return s->inuse;
-	/*
-	 * Else we can use all the padding etc for the allocation
-	 */
+	 
 	return s->size;
 }
 
@@ -450,13 +387,7 @@ static inline void slab_post_alloc_hook(struct kmem_cache *s,
 
 	flags &= gfp_allowed_mask;
 
-	/*
-	 * As memory initialization might be integrated into KASAN,
-	 * kasan_slab_alloc and initialization memset must be
-	 * kept together to avoid discrepancies in behavior.
-	 *
-	 * As p[i] might get tagged, memset and kmemleak hook come after KASAN.
-	 */
+	 
 	for (i = 0; i < size; i++) {
 		p[i] = kasan_slab_alloc(s, p[i], flags, init);
 		if (p[i] && init && !kasan_has_integrated_init())
@@ -468,9 +399,7 @@ static inline void slab_post_alloc_hook(struct kmem_cache *s,
 	memcg_slab_post_alloc_hook(s, objcg, flags, size, p);
 }
 
-/*
- * The slab lists for all objects.
- */
+ 
 struct kmem_cache_node {
 	spinlock_t list_lock;
 
@@ -485,10 +414,7 @@ static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
 	return s->node[node];
 }
 
-/*
- * Iterator over all nodes. The body will be executed for each node that has
- * a kmem_cache_node structure allocated (which is true for all online nodes)
- */
+ 
 #define for_each_kmem_cache_node(__s, __node, __n) \
 	for (__node = 0; __node < nr_node_ids; __node++) \
 		 if ((__n = get_node(__s, __node)))
@@ -535,4 +461,4 @@ static inline void debugfs_slab_release(struct kmem_cache *s) { }
 void __check_heap_object(const void *ptr, unsigned long n,
 			 const struct slab *slab, bool to_user);
 
-#endif /* MM_SLAB_H */
+#endif  

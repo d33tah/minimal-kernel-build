@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
 #include <linux/kernel_stat.h>
 #include <linux/mm.h>
@@ -31,11 +31,11 @@
 #include <linux/userfaultfd_k.h>
 #include <linux/dax.h>
 #include <linux/oom.h>
+#include <linux/file.h>
 #include <linux/numa.h>
 #include <linux/perf_event.h>
 #include <linux/ptrace.h>
 #include <linux/vmalloc.h>
-#include <linux/trace_stubs.h>
 
 #include <asm/io.h>
 #include <asm/mmu_context.h>
@@ -53,15 +53,12 @@
 #endif
 
 unsigned long max_mapnr;
-EXPORT_SYMBOL(max_mapnr);
 
 struct page *mem_map;
-EXPORT_SYMBOL(mem_map);
 
 static vm_fault_t do_fault(struct vm_fault *vmf);
 
 void *high_memory;
-EXPORT_SYMBOL(high_memory);
 
 int randomize_va_space __read_mostly =
 					2;
@@ -90,7 +87,6 @@ static int __init disable_randmaps(char *s)
 __setup("norandmaps", disable_randmaps);
 
 unsigned long zero_pfn __read_mostly;
-EXPORT_SYMBOL(zero_pfn);
 
 unsigned long highest_memmap_pfn __read_mostly;
 
@@ -100,11 +96,6 @@ static int __init init_zero_pfn(void)
 	return 0;
 }
 early_initcall(init_zero_pfn);
-
-void mm_trace_rss_stat(struct mm_struct *mm, int member, long count)
-{
-	trace_rss_stat(mm, member, count);
-}
 
 #if defined(SPLIT_RSS_COUNTING)
 
@@ -1373,7 +1364,6 @@ void zap_vma_ptes(struct vm_area_struct *vma, unsigned long address,
 
 	zap_page_range_single(vma, address, size, NULL);
 }
-EXPORT_SYMBOL_GPL(zap_vma_ptes);
 
 static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)
 {
@@ -1545,7 +1535,6 @@ int vm_insert_pages(struct vm_area_struct *vma, unsigned long addr,
 	return err;
 #endif  
 }
-EXPORT_SYMBOL(vm_insert_pages);
 
 int vm_insert_page(struct vm_area_struct *vma, unsigned long addr,
 			struct page *page)
@@ -1561,7 +1550,6 @@ int vm_insert_page(struct vm_area_struct *vma, unsigned long addr,
 	}
 	return insert_page(vma, addr, page, vma->vm_page_prot);
 }
-EXPORT_SYMBOL(vm_insert_page);
 
 static int __vm_map_pages(struct vm_area_struct *vma, struct page **pages,
 				unsigned long num, unsigned long offset)
@@ -1593,14 +1581,12 @@ int vm_map_pages(struct vm_area_struct *vma, struct page **pages,
 {
 	return __vm_map_pages(vma, pages, num, vma->vm_pgoff);
 }
-EXPORT_SYMBOL(vm_map_pages);
 
 int vm_map_pages_zero(struct vm_area_struct *vma, struct page **pages,
 				unsigned long num)
 {
 	return __vm_map_pages(vma, pages, num, 0);
 }
-EXPORT_SYMBOL(vm_map_pages_zero);
 
 static vm_fault_t insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 			pfn_t pfn, pgprot_t prot, bool mkwrite)
@@ -1667,14 +1653,12 @@ vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
 	return insert_pfn(vma, addr, __pfn_to_pfn_t(pfn, PFN_DEV), pgprot,
 			false);
 }
-EXPORT_SYMBOL(vmf_insert_pfn_prot);
 
 vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 			unsigned long pfn)
 {
 	return vmf_insert_pfn_prot(vma, addr, pfn, vma->vm_page_prot);
 }
-EXPORT_SYMBOL(vmf_insert_pfn);
 
 static bool vm_mixed_ok(struct vm_area_struct *vma, pfn_t pfn)
 {
@@ -1731,21 +1715,18 @@ vm_fault_t vmf_insert_mixed_prot(struct vm_area_struct *vma, unsigned long addr,
 {
 	return __vm_insert_mixed(vma, addr, pfn, pgprot, false);
 }
-EXPORT_SYMBOL(vmf_insert_mixed_prot);
 
 vm_fault_t vmf_insert_mixed(struct vm_area_struct *vma, unsigned long addr,
 		pfn_t pfn)
 {
 	return __vm_insert_mixed(vma, addr, pfn, vma->vm_page_prot, false);
 }
-EXPORT_SYMBOL(vmf_insert_mixed);
 
 vm_fault_t vmf_insert_mixed_mkwrite(struct vm_area_struct *vma,
 		unsigned long addr, pfn_t pfn)
 {
 	return __vm_insert_mixed(vma, addr, pfn, vma->vm_page_prot, true);
 }
-EXPORT_SYMBOL(vmf_insert_mixed_mkwrite);
 
 static int remap_pte_range(struct mm_struct *mm, pmd_t *pmd,
 			unsigned long addr, unsigned long end,
@@ -1890,7 +1871,6 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
 		untrack_pfn(vma, pfn, PAGE_ALIGN(size));
 	return err;
 }
-EXPORT_SYMBOL(remap_pfn_range);
 
 int vm_iomap_memory(struct vm_area_struct *vma, phys_addr_t start, unsigned long len)
 {
@@ -1920,7 +1900,6 @@ int vm_iomap_memory(struct vm_area_struct *vma, phys_addr_t start, unsigned long
 	
 	return io_remap_pfn_range(vma, vma->vm_start, pfn, vm_len, vma->vm_page_prot);
 }
-EXPORT_SYMBOL(vm_iomap_memory);
 
 static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
 				     unsigned long addr, unsigned long end,
@@ -2117,14 +2096,12 @@ int apply_to_page_range(struct mm_struct *mm, unsigned long addr,
 {
 	return __apply_to_page_range(mm, addr, size, fn, data, true);
 }
-EXPORT_SYMBOL_GPL(apply_to_page_range);
 
 int apply_to_existing_page_range(struct mm_struct *mm, unsigned long addr,
 				 unsigned long size, pte_fn_t fn, void *data)
 {
 	return __apply_to_page_range(mm, addr, size, fn, data, false);
 }
-EXPORT_SYMBOL_GPL(apply_to_existing_page_range);
 
 static inline int pte_unmap_same(struct vm_fault *vmf)
 {
@@ -2642,7 +2619,6 @@ void unmap_mapping_pages(struct address_space *mapping, pgoff_t start,
 					 last_index, &details);
 	i_mmap_unlock_read(mapping);
 }
-EXPORT_SYMBOL_GPL(unmap_mapping_pages);
 
 void unmap_mapping_range(struct address_space *mapping,
 		loff_t const holebegin, loff_t const holelen, int even_cows)
@@ -2660,7 +2636,6 @@ void unmap_mapping_range(struct address_space *mapping,
 
 	unmap_mapping_pages(mapping, hba, hlen, even_cows);
 }
-EXPORT_SYMBOL(unmap_mapping_range);
 
 static vm_fault_t remove_device_exclusive_entry(struct vm_fault *vmf)
 {
@@ -3769,7 +3744,6 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(handle_mm_fault);
 
 #ifndef __PAGETABLE_P4D_FOLDED
 
@@ -3870,7 +3844,6 @@ unlock:
 out:
 	return -EINVAL;
 }
-EXPORT_SYMBOL_GPL(follow_pte);
 
 int follow_pfn(struct vm_area_struct *vma, unsigned long address,
 	unsigned long *pfn)
@@ -3889,7 +3862,6 @@ int follow_pfn(struct vm_area_struct *vma, unsigned long address,
 	pte_unmap_unlock(ptep, ptl);
 	return 0;
 }
-EXPORT_SYMBOL(follow_pfn);
 
 int follow_phys(struct vm_area_struct *vma,
 		unsigned long address, unsigned int flags,
@@ -3970,7 +3942,6 @@ out_unmap:
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(generic_access_phys);
 
 int __access_remote_vm(struct mm_struct *mm, unsigned long addr, void *buf,
 		       int len, unsigned int gup_flags)
@@ -4050,7 +4021,6 @@ int access_process_vm(struct task_struct *tsk, unsigned long addr,
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(access_process_vm);
 
 void print_vma_addr(char *prefix, unsigned long ip)
 {

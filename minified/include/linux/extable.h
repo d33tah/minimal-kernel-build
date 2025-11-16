@@ -1,8 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_EXTABLE_H
 #define _LINUX_EXTABLE_H
 
-#include <linux/stddef.h>	/* for NULL */
+#include <linux/stddef.h>	 
 #include <linux/types.h>
 
 struct module;
@@ -17,7 +17,7 @@ void sort_extable(struct exception_table_entry *start,
 void sort_main_extable(void);
 void trim_init_extable(struct module *m);
 
-/* Given an address, look for it in the exception tables */
+ 
 const struct exception_table_entry *search_exception_tables(unsigned long add);
 const struct exception_table_entry *
 search_kernel_exception_table(unsigned long addr);
@@ -34,4 +34,4 @@ search_bpf_extables(unsigned long addr)
 	return NULL;
 }
 
-#endif /* _LINUX_EXTABLE_H */
+#endif  

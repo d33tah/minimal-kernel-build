@@ -1,13 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_CPUSET_H
 #define _LINUX_CPUSET_H
-/*
- *  cpuset interface
- *
- *  Copyright (C) 2003 BULL SA
- *  Copyright (C) 2004-2006 Silicon Graphics, Inc.
- *
- */
+ 
 
 #include <linux/sched.h>
 #include <linux/sched/topology.h>
@@ -139,4 +133,4 @@ static inline bool read_mems_allowed_retry(unsigned int seq)
 }
 
 
-#endif /* _LINUX_CPUSET_H */
+#endif  

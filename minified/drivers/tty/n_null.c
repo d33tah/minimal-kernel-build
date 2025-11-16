@@ -1,14 +1,10 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 #include <linux/types.h>
 #include <linux/errno.h>
 #include <linux/tty.h>
 #include <linux/module.h>
 
-/*
- *  n_null.c - Null line discipline used in the failure path
- *
- *  Copyright (C) Intel 2017
- */
+ 
 
 static int n_null_open(struct tty_struct *tty)
 {

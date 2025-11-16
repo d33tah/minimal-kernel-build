@@ -1,13 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_CGROUP_H
 #define _LINUX_CGROUP_H
-/*
- *  cgroup interface
- *
- *  Copyright (C) 2003 BULL SA
- *  Copyright (C) 2004-2006 Silicon Graphics, Inc.
- *
- */
+ 
 
 #include <linux/sched.h>
 #include <linux/cpumask.h>
@@ -94,10 +88,7 @@ static inline void cgroup_account_cputime_field(struct task_struct *task,
 						u64 delta_exec) {}
 
 
-/*
- * sock->sk_cgrp_data handling.  For more info, see sock_cgroup_data
- * definition in cgroup-defs.h.
- */
+ 
 
 static inline void cgroup_sk_alloc(struct sock_cgroup_data *skcd) {}
 static inline void cgroup_sk_clone(struct sock_cgroup_data *skcd) {}
@@ -149,4 +140,4 @@ static inline void cgroup_bpf_get(struct cgroup *cgrp) {}
 static inline void cgroup_bpf_put(struct cgroup *cgrp) {}
 
 
-#endif /* _LINUX_CGROUP_H */
+#endif  

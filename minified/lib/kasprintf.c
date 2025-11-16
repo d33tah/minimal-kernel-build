@@ -1,9 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- *  linux/lib/kasprintf.c
- *
- *  Copyright (C) 1991, 1992  Linus Torvalds
- */
+ 
+ 
 
 #include <linux/stdarg.h>
 #include <linux/export.h>
@@ -11,7 +7,7 @@
 #include <linux/types.h>
 #include <linux/string.h>
 
-/* Simplified asprintf. */
+ 
 char *kvasprintf(gfp_t gfp, const char *fmt, va_list ap)
 {
 	unsigned int first, second;
@@ -32,14 +28,8 @@ char *kvasprintf(gfp_t gfp, const char *fmt, va_list ap)
 
 	return p;
 }
-EXPORT_SYMBOL(kvasprintf);
 
-/*
- * If fmt contains no % (or is exactly %s), use kstrdup_const. If fmt
- * (or the sole vararg) points to rodata, we will then save a memory
- * allocation and string copy. In any case, the return value should be
- * freed using kfree_const().
- */
+ 
 const char *kvasprintf_const(gfp_t gfp, const char *fmt, va_list ap)
 {
 	if (!strchr(fmt, '%'))
@@ -48,7 +38,6 @@ const char *kvasprintf_const(gfp_t gfp, const char *fmt, va_list ap)
 		return kstrdup_const(va_arg(ap, const char*), gfp);
 	return kvasprintf(gfp, fmt, ap);
 }
-EXPORT_SYMBOL(kvasprintf_const);
 
 char *kasprintf(gfp_t gfp, const char *fmt, ...)
 {
@@ -61,4 +50,3 @@ char *kasprintf(gfp_t gfp, const char *fmt, ...)
 
 	return p;
 }
-EXPORT_SYMBOL(kasprintf);

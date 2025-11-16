@@ -1,5 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/* Freezer declarations */
+ 
+ 
 
 #ifndef FREEZER_H_INCLUDED
 #define FREEZER_H_INCLUDED
@@ -51,4 +51,4 @@ static inline void set_freezable(void) {}
 		wait_event_killable(wq, condition)
 
 
-#endif	/* FREEZER_H_INCLUDED */
+#endif	 

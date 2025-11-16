@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_KERNEL_VTIME_H
 #define _LINUX_KERNEL_VTIME_H
 
@@ -6,9 +6,7 @@
 #include <linux/sched.h>
 
 
-/*
- * Common vtime APIs
- */
+ 
 
 static inline void vtime_user_enter(struct task_struct *tsk) { }
 static inline void vtime_user_exit(struct task_struct *tsk) { }
@@ -21,9 +19,7 @@ static inline void vtime_account_softirq(struct task_struct *tsk) { }
 static inline void vtime_account_hardirq(struct task_struct *tsk) { }
 static inline void vtime_flush(struct task_struct *tsk) { }
 
-/*
- * vtime_accounting_enabled_this_cpu() definitions/declarations
- */
+ 
 
 static inline bool vtime_accounting_enabled_this_cpu(void) { return false; }
 static inline void vtime_task_switch(struct task_struct *prev) { }
@@ -66,4 +62,4 @@ static inline void account_hardirq_exit(struct task_struct *tsk)
 	irqtime_account_irq(tsk, 0);
 }
 
-#endif /* _LINUX_KERNEL_VTIME_H */
+#endif  

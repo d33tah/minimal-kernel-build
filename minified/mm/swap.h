@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _MM_SWAP_H
 #define _MM_SWAP_H
 
@@ -89,4 +89,4 @@ static inline unsigned int page_swap_flags(struct page *page)
 {
 	return 0;
 }
-#endif /* _MM_SWAP_H */
+#endif  

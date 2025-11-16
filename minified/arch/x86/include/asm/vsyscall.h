@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_VSYSCALL_H
 #define _ASM_X86_VSYSCALL_H
 
@@ -12,4 +12,4 @@ static inline bool emulate_vsyscall(unsigned long error_code,
 	return false;
 }
 
-#endif /* _ASM_X86_VSYSCALL_H */
+#endif  

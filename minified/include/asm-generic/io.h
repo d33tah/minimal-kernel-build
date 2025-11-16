@@ -1,14 +1,10 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
-/* Generic I/O port emulation.
- *
- * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
- * Written by David Howells (dhowells@redhat.com)
- */
+ 
+ 
 #ifndef __ASM_GENERIC_IO_H
 #define __ASM_GENERIC_IO_H
 
-#include <asm/page.h> /* I/O is all done through memory accesses */
-#include <linux/string.h> /* for memset() and memcpy() */
+#include <asm/page.h>  
+#include <linux/string.h>  
 #include <linux/types.h>
 
 
@@ -20,7 +16,7 @@
 #define __io_br()      barrier()
 #endif
 
-/* prevent prefetching of coherent DMA data ahead of a dma-complete */
+ 
 #ifndef __io_ar
 #ifdef rmb
 #define __io_ar(v)      rmb()
@@ -29,7 +25,7 @@
 #endif
 #endif
 
-/* flush writes to coherent DMA data before possibly triggering a DMA read */
+ 
 #ifndef __io_bw
 #ifdef wmb
 #define __io_bw()      wmb()
@@ -38,7 +34,7 @@
 #endif
 #endif
 
-/* serialize device access against a spin_unlock, usually handled there. */
+ 
 #ifndef __io_aw
 #define __io_aw()      mmiowb_set_pending()
 #endif
@@ -60,13 +56,7 @@
 #endif
 
 
-/*
- * __raw_{read,write}{b,w,l,q}() access memory in native endianness.
- *
- * On some architectures memory mapped IO needs to be accessed differently.
- * On the simple architectures, we just read/write the memory location
- * directly.
- */
+ 
 
 #ifndef __raw_readb
 #define __raw_readb __raw_readb
@@ -118,10 +108,7 @@ static inline void __raw_writel(u32 value, volatile void __iomem *addr)
 #endif
 
 
-/*
- * {read,write}{b,w,l,q}() access little endian memory and return result in
- * native endianness.
- */
+ 
 
 #ifndef readb
 #define readb readb
@@ -194,11 +181,7 @@ static inline void writel(u32 value, volatile void __iomem *addr)
 #endif
 
 
-/*
- * {read,write}{b,w,l,q}_relaxed() are like the regular version, but
- * are not guaranteed to provide ordering against spinlocks or memory
- * accesses.
- */
+ 
 #ifndef readb_relaxed
 #define readb_relaxed readb_relaxed
 static inline u8 readb_relaxed(const volatile void __iomem *addr)
@@ -263,10 +246,7 @@ static inline void writeq_relaxed(u64 value, volatile void __iomem *addr)
 }
 #endif
 
-/*
- * {read,write}s{b,w,l,q}() repeatedly access the same memory address in
- * native endianness in 8-, 16-, 32- or 64-bit chunks (@count times).
- */
+ 
 #ifndef readsb
 #define readsb readsb
 static inline void readsb(const volatile void __iomem *addr, void *buffer,
@@ -370,11 +350,7 @@ static inline void writesl(volatile void __iomem *addr, const void *buffer,
 #define IO_SPACE_LIMIT 0xffff
 #endif
 
-/*
- * {in,out}{b,w,l}() access little endian I/O. {in,out}{b,w,l}_p() can be
- * implemented on hardware that needs an additional delay for I/O accesses to
- * take effect.
- */
+ 
 
 #if !defined(inb) && !defined(_inb)
 #define _inb _inb
@@ -519,10 +495,7 @@ static inline void outl_p(u32 value, unsigned long addr)
 }
 #endif
 
-/*
- * {in,out}s{b,w,l}{,_p}() are variants of the above that repeatedly access a
- * single I/O port multiple times.
- */
+ 
 
 #ifndef insb
 #define insb insb
@@ -632,10 +605,7 @@ static inline void outsl_p(unsigned long addr, const void *buffer,
 #include <linux/vmalloc.h>
 #define __io_virt(x) ((void __force *)(x))
 
-/*
- * Change virtual addresses to physical addresses and vv.
- * These are pretty trivial
- */
+ 
 #ifndef virt_to_phys
 #define virt_to_phys virt_to_phys
 static inline unsigned long virt_to_phys(volatile void *address)
@@ -652,21 +622,7 @@ static inline void *phys_to_virt(unsigned long address)
 }
 #endif
 
-/**
- * DOC: ioremap() and ioremap_*() variants
- *
- * Architectures with an MMU are expected to provide ioremap() and iounmap()
- * themselves or rely on GENERIC_IOREMAP.  For NOMMU architectures we provide
- * a default nop-op implementation that expect that the physical address used
- * for MMIO are already marked as uncached, and can be used as kernel virtual
- * addresses.
- *
- * ioremap_wc() and ioremap_wt() can provide more relaxed caching attributes
- * for specific drivers if the architecture choses to implement them.  If they
- * are not implemented we fall back to plain ioremap. Conversely, ioremap_np()
- * can provide stricter non-posted write semantics if the architecture
- * implements them.
- */
+ 
 #if   defined(CONFIG_GENERIC_IOREMAP)
 #include <linux/pgtable.h>
 
@@ -675,10 +631,10 @@ void iounmap(volatile void __iomem *addr);
 
 static inline void __iomem *ioremap(phys_addr_t addr, size_t size)
 {
-	/* _PAGE_IOREMAP needs to be supplied by the architecture */
+	 
 	return ioremap_prot(addr, size, _PAGE_IOREMAP);
 }
-#endif /* !CONFIG_MMU || CONFIG_GENERIC_IOREMAP */
+#endif  
 
 #ifndef ioremap_wc
 #define ioremap_wc ioremap
@@ -688,13 +644,7 @@ static inline void __iomem *ioremap(phys_addr_t addr, size_t size)
 #define ioremap_wt ioremap
 #endif
 
-/*
- * ioremap_uc is special in that we do require an explicit architecture
- * implementation.  In general you do not want to use this function in a
- * driver and use plain ioremap, which is uncached by default.  Similarly
- * architectures should not implement it unless they have a very good
- * reason.
- */
+ 
 #ifndef ioremap_uc
 #define ioremap_uc ioremap_uc
 static inline void __iomem *ioremap_uc(phys_addr_t offset, size_t size)
@@ -703,15 +653,7 @@ static inline void __iomem *ioremap_uc(phys_addr_t offset, size_t size)
 }
 #endif
 
-/*
- * ioremap_np needs an explicit architecture implementation, as it
- * requests stronger semantics than regular ioremap(). Portable drivers
- * should instead use one of the higher-level abstractions, like
- * devm_ioremap_resource(), to choose the correct variant for any given
- * device and bus. Portable drivers with a good reason to want non-posted
- * write semantics should always provide an ioremap() fallback in case
- * ioremap_np() is not available.
- */
+ 
 #ifndef ioremap_np
 #define ioremap_np ioremap_np
 static inline void __iomem *ioremap_np(phys_addr_t offset, size_t size)
@@ -753,14 +695,7 @@ static inline void *bus_to_virt(unsigned long address)
 
 #ifndef memset_io
 #define memset_io memset_io
-/**
- * memset_io	Set a range of I/O memory to a constant value
- * @addr:	The beginning of the I/O-memory range to set
- * @val:	The value to set the memory to
- * @count:	The number of bytes to set
- *
- * Set a range of I/O memory to a given value.
- */
+ 
 static inline void memset_io(volatile void __iomem *addr, int value,
 			     size_t size)
 {
@@ -770,14 +705,7 @@ static inline void memset_io(volatile void __iomem *addr, int value,
 
 #ifndef memcpy_fromio
 #define memcpy_fromio memcpy_fromio
-/**
- * memcpy_fromio	Copy a block of data from I/O memory
- * @dst:		The (RAM) destination for the copy
- * @src:		The (I/O memory) source for the data
- * @count:		The number of bytes to copy
- *
- * Copy a block of data from I/O memory.
- */
+ 
 static inline void memcpy_fromio(void *buffer,
 				 const volatile void __iomem *addr,
 				 size_t size)
@@ -788,14 +716,7 @@ static inline void memcpy_fromio(void *buffer,
 
 #ifndef memcpy_toio
 #define memcpy_toio memcpy_toio
-/**
- * memcpy_toio		Copy a block of data into I/O memory
- * @dst:		The (I/O memory) destination for the copy
- * @src:		The (RAM) source for the data
- * @count:		The number of bytes to copy
- *
- * Copy a block of data to I/O memory.
- */
+ 
 static inline void memcpy_toio(volatile void __iomem *addr, const void *buffer,
 			       size_t size)
 {
@@ -807,6 +728,6 @@ static inline void memcpy_toio(volatile void __iomem *addr, const void *buffer,
 extern int devmem_is_allowed(unsigned long pfn);
 #endif
 
-#endif /* __KERNEL__ */
+#endif  
 
-#endif /* __ASM_GENERIC_IO_H */
+#endif  

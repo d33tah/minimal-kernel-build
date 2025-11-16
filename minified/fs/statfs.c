@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 #include <linux/syscalls.h>
 #include <linux/export.h>
 #include <linux/fs.h>
@@ -11,7 +11,7 @@
 #include <linux/compat.h>
 #include "internal.h"
 
-/* Minimal stub for statfs - syscalls not used in minimal kernel */
+ 
 
 static int flags_by_mnt(int mnt_flags)
 {
@@ -83,7 +83,6 @@ int vfs_get_fsid(struct dentry *dentry, __kernel_fsid_t *fsid)
 	*fsid = st.f_fsid;
 	return 0;
 }
-EXPORT_SYMBOL(vfs_get_fsid);
 
 int vfs_statfs(const struct path *path, struct kstatfs *buf)
 {
@@ -94,9 +93,8 @@ int vfs_statfs(const struct path *path, struct kstatfs *buf)
 		buf->f_flags = calculate_f_flags(path->mnt);
 	return error;
 }
-EXPORT_SYMBOL(vfs_statfs);
 
-/* Syscalls stubbed - not used by minimal init */
+ 
 
 SYSCALL_DEFINE2(statfs, const char __user *, pathname, struct statfs __user *, buf)
 {

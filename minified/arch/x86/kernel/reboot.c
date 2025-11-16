@@ -1,7 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Minimal stub - reboot/shutdown not needed for minimal kernel
- */
+ 
+ 
 #include <linux/export.h>
 #include <linux/reboot.h>
 #include <linux/kernel.h>
@@ -10,7 +8,6 @@
 #include <asm/io.h>
 
 void (*pm_power_off)(void);
-EXPORT_SYMBOL(pm_power_off);
 
 bool port_cf9_safe = false;
 

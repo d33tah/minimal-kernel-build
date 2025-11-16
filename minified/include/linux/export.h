@@ -1,25 +1,12 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
+ 
 #ifndef _LINUX_EXPORT_H
 #define _LINUX_EXPORT_H
 
 #include <linux/stringify.h>
 
-/*
- * Export symbols from the kernel to modules.  Forked from module.h
- * to reduce the amount of pointless cruft we feed to gcc when only
- * exporting a simple symbol or two.
- *
- * Try not to add #includes here.  It slows compilation and makes kernel
- * hackers place grumpy comments in header files.
- */
+ 
 
-/*
- * This comment block is used by fixdep. Please do not remove.
- *
- * When CONFIG_MODVERSIONS is changed from n to y, all source files having
- * EXPORT_SYMBOL variants must be re-compiled because genksyms is run as a
- * side effect of the *.o build rule.
- */
+ 
 
 #ifndef __ASSEMBLY__
 #ifdef MODULE
@@ -30,12 +17,7 @@ extern struct module __this_module;
 #endif
 
 #include <linux/compiler.h>
-/*
- * Emit the ksymtab entry as a pair of relative references: this reduces
- * the size by half on 64-bit architectures, and eliminates the need for
- * absolute relocations that require runtime processing on relocatable
- * kernels.
- */
+ 
 #define __KSYMTAB_ENTRY(sym, sec)					\
 	__ADDRESSABLE(sym)						\
 	asm("	.section \"___ksymtab" sec "+" #sym "\", \"a\"	\n"	\
@@ -58,17 +40,7 @@ struct kernel_symbol {
 
 #else
 
-/*
- * For every exported symbol, do the following:
- *
- * - Put the name of the symbol and namespace (empty string "" for none) in
- *   __ksymtab_strings.
- * - Place a struct kernel_symbol entry in the __ksymtab section.
- *
- * note on .section use: we specify progbits since usage of the "M" (SHF_MERGE)
- * section flag requires it. Use '%progbits' instead of '@progbits' since the
- * former apparently works on all arches according to the binutils source.
- */
+ 
 #define ___EXPORT_SYMBOL(sym, sec, ns)						\
 	extern typeof(sym) sym;							\
 	extern const char __kstrtab_##sym[];					\
@@ -84,11 +56,7 @@ struct kernel_symbol {
 #endif
 
 
-/*
- * Allow symbol exports to be disabled completely so that C code may
- * be reused in other execution contexts such as the UEFI stub or the
- * decompressor.
- */
+ 
 #define __EXPORT_SYMBOL(sym, sec, ns)
 
 
@@ -103,6 +71,6 @@ struct kernel_symbol {
 #define EXPORT_SYMBOL_NS(sym, ns)	__EXPORT_SYMBOL(sym, "", __stringify(ns))
 #define EXPORT_SYMBOL_NS_GPL(sym, ns)	__EXPORT_SYMBOL(sym, "_gpl", __stringify(ns))
 
-#endif /* !__ASSEMBLY__ */
+#endif  
 
-#endif /* _LINUX_EXPORT_H */
+#endif  

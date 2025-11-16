@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 #include <linux/memblock.h>
 #include <linux/mmdebug.h>
 #include <linux/export.h>
@@ -21,5 +21,4 @@ bool __virt_addr_valid(unsigned long x)
 		return false;
 	return pfn_valid((x - PAGE_OFFSET) >> PAGE_SHIFT);
 }
-EXPORT_SYMBOL(__virt_addr_valid);
 

@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_MICROCODE_INTEL_H
 #define _ASM_X86_MICROCODE_INTEL_H
 
@@ -22,7 +22,7 @@ struct microcode_intel {
 	unsigned int            bits[];
 };
 
-/* microcode format is extended from prescott processors */
+ 
 struct extended_signature {
 	unsigned int            sig;
 	unsigned int            pf;
@@ -59,10 +59,10 @@ static inline u32 intel_get_microcode_revision(void)
 
 	native_wrmsrl(MSR_IA32_UCODE_REV, 0);
 
-	/* As documented in the SDM: Do a CPUID 1 here */
+	 
 	native_cpuid_eax(1);
 
-	/* get the current revision from MSR 0x8B */
+	 
 	native_rdmsr(MSR_IA32_UCODE_REV, dummy, rev);
 
 	return rev;
@@ -74,4 +74,4 @@ static inline void show_ucode_info_early(void) {}
 static inline int __init save_microcode_in_initrd_intel(void) { return -EINVAL; }
 static inline void reload_ucode_intel(void) {}
 
-#endif /* _ASM_X86_MICROCODE_INTEL_H */
+#endif  

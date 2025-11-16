@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef __IPC_NAMESPACE_H__
 #define __IPC_NAMESPACE_H__
 
@@ -20,7 +20,7 @@ struct ipc_ids {
 	struct rw_semaphore rwsem;
 	struct idr ipcs_idr;
 	int max_idx;
-	int last_idx;	/* For wrap around detection */
+	int last_idx;	 
 	struct rhashtable key_ht;
 };
 
@@ -40,24 +40,21 @@ struct ipc_namespace {
 	size_t		shm_ctlall;
 	unsigned long	shm_tot;
 	int		shm_ctlmni;
-	/*
-	 * Defines whether IPC_RMID is forced for _all_ shm segments regardless
-	 * of shmctl()
-	 */
+	 
 	int		shm_rmid_forced;
 
 	struct notifier_block ipcns_nb;
 
-	/* The kern_mount of the mqueuefs sb.  We take a ref on it */
+	 
 	struct vfsmount	*mq_mnt;
 
-	/* # queues in this ns, protected by mq_lock */
+	 
 	unsigned int    mq_queues_count;
 
-	/* next fields are set through sysctl */
-	unsigned int    mq_queues_max;   /* initialized to DFLT_QUEUESMAX */
-	unsigned int    mq_msg_max;      /* initialized to DFLT_MSGMAX */
-	unsigned int    mq_msgsize_max;  /* initialized to DFLT_MSGSIZEMAX */
+	 
+	unsigned int    mq_queues_max;    
+	unsigned int    mq_msg_max;       
+	unsigned int    mq_msgsize_max;   
 	unsigned int    mq_msg_default;
 	unsigned int    mq_msgsize_default;
 
@@ -67,7 +64,7 @@ struct ipc_namespace {
 	struct ctl_table_set	ipc_set;
 	struct ctl_table_header	*ipc_sysctls;
 
-	/* user_ns which owns the ipc ns */
+	 
 	struct user_namespace *user_ns;
 	struct ucounts *ucounts;
 

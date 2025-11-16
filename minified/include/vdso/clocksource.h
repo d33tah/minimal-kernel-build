@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef __VDSO_CLOCKSOURCE_H
 #define __VDSO_CLOCKSOURCE_H
 
@@ -11,8 +11,8 @@ enum vdso_clock_mode {
 	VDSO_ARCH_CLOCKMODES,
 	VDSO_CLOCKMODE_MAX,
 
-	/* Indicator for time namespace VDSO */
+	 
 	VDSO_CLOCKMODE_TIMENS = INT_MAX
 };
 
-#endif /* __VDSO_CLOCKSOURCE_H */
+#endif  

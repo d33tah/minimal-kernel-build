@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_TRAPS_H
 #define _ASM_X86_TRAPS_H
 
@@ -7,7 +7,7 @@
 
 #include <asm/debugreg.h>
 #include <asm/idtentry.h>
-#include <asm/siginfo.h>			/* TRAP_TRACE, ... */
+#include <asm/siginfo.h>			 
 #include <asm/trap_pf.h>
 
 
@@ -31,4 +31,4 @@ void math_emulate(struct math_emu_info *);
 bool fault_in_kernel_space(unsigned long address);
 
 
-#endif /* _ASM_X86_TRAPS_H */
+#endif  

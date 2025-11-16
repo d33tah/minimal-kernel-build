@@ -1,11 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
-/* Authentication token and access key management
- *
- * Copyright (C) 2004, 2007 Red Hat, Inc. All Rights Reserved.
- * Written by David Howells (dhowells@redhat.com)
- *
- * See Documentation/security/keys/core.rst for information on keys/keyrings.
- */
+ 
+ 
 
 #ifndef _LINUX_KEY_H
 #define _LINUX_KEY_H
@@ -24,10 +18,10 @@
 #ifdef __KERNEL__
 #include <linux/uidgid.h>
 
-/* key handle serial number */
+ 
 typedef int32_t key_serial_t;
 
-/* key handle permissions mask */
+ 
 typedef uint32_t key_perm_t;
 
 struct key;
@@ -50,5 +44,5 @@ struct net;
 #define key_free_user_ns(ns)		do { } while(0)
 #define key_remove_domain(d)		do { } while(0)
 
-#endif /* __KERNEL__ */
-#endif /* _LINUX_KEY_H */
+#endif  
+#endif  

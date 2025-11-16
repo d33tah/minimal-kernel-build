@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_INTERVAL_TREE_H
 #define _LINUX_INTERVAL_TREE_H
 
@@ -6,8 +6,8 @@
 
 struct interval_tree_node {
 	struct rb_node rb;
-	unsigned long start;	/* Start of interval */
-	unsigned long last;	/* Last location _in_ interval */
+	unsigned long start;	 
+	unsigned long last;	 
 	unsigned long __subtree_last;
 };
 
@@ -27,4 +27,4 @@ extern struct interval_tree_node *
 interval_tree_iter_next(struct interval_tree_node *node,
 			unsigned long start, unsigned long last);
 
-#endif	/* _LINUX_INTERVAL_TREE_H */
+#endif	 

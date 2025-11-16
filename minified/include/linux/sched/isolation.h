@@ -43,4 +43,4 @@ static inline bool housekeeping_cpu(int cpu, enum hk_type type)
 	return true;
 }
 
-#endif /* _LINUX_SCHED_ISOLATION_H */
+#endif  

@@ -1,10 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_UACCESS_32_H
 #define _ASM_X86_UACCESS_32_H
 
-/*
- * User space memory access functions
- */
+ 
 #include <linux/string.h>
 #include <asm/asm.h>
 #include <asm/page.h>
@@ -33,4 +31,4 @@ __copy_from_user_inatomic_nocache(void *to, const void __user *from,
        return __copy_from_user_ll_nocache_nozero(to, from, n);
 }
 
-#endif /* _ASM_X86_UACCESS_32_H */
+#endif  

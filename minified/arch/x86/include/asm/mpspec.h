@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_MPSPEC_H
 #define _ASM_X86_MPSPEC_H
 
@@ -10,10 +10,7 @@
 extern int pic_mode;
 
 
-/*
- * Summit or generic (i.e. installer) kernels need lots of bus entries.
- * Maximum 256 PCI busses, plus 1 ISA bus in each of 4 cabinets.
- */
+ 
 #if CONFIG_BASE_SMALL == 0
 # define MAX_MP_BUSSES		260
 #else
@@ -119,4 +116,4 @@ static inline void physid_set_mask_of_physid(int physid, physid_mask_t *map)
 
 extern physid_mask_t phys_cpu_present_map;
 
-#endif /* _ASM_X86_MPSPEC_H */
+#endif  

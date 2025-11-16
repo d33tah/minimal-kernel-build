@@ -1,11 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_SCHED_NUMA_BALANCING_H
 #define _LINUX_SCHED_NUMA_BALANCING_H
 
-/*
- * This is the interface between the scheduler and the MM that
- * implements memory access pattern based NUMA-balancing:
- */
+ 
 
 #include <linux/sched.h>
 
@@ -35,4 +32,4 @@ static inline bool should_numa_migrate_memory(struct task_struct *p,
 	return true;
 }
 
-#endif /* _LINUX_SCHED_NUMA_BALANCING_H */
+#endif  

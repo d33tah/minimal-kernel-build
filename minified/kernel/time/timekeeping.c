@@ -284,13 +284,11 @@ u64 notrace ktime_get_mono_fast_ns(void)
 {
 	return __ktime_get_fast_ns(&tk_fast_mono);
 }
-EXPORT_SYMBOL_GPL(ktime_get_mono_fast_ns);
 
 u64 notrace ktime_get_raw_fast_ns(void)
 {
 	return __ktime_get_fast_ns(&tk_fast_raw);
 }
-EXPORT_SYMBOL_GPL(ktime_get_raw_fast_ns);
 
 u64 notrace ktime_get_boot_fast_ns(void)
 {
@@ -298,7 +296,6 @@ u64 notrace ktime_get_boot_fast_ns(void)
 
 	return (ktime_get_mono_fast_ns() + ktime_to_ns(data_race(tk->offs_boot)));
 }
-EXPORT_SYMBOL_GPL(ktime_get_boot_fast_ns);
 
 u64 notrace ktime_get_tai_fast_ns(void)
 {
@@ -306,7 +303,6 @@ u64 notrace ktime_get_tai_fast_ns(void)
 
 	return (ktime_get_mono_fast_ns() + ktime_to_ns(data_race(tk->offs_tai)));
 }
-EXPORT_SYMBOL_GPL(ktime_get_tai_fast_ns);
 
 static __always_inline u64 __ktime_get_real_fast(struct tk_fast *tkf, u64 *mono)
 {
@@ -331,7 +327,6 @@ u64 ktime_get_real_fast_ns(void)
 {
 	return __ktime_get_real_fast(&tk_fast_mono, NULL);
 }
-EXPORT_SYMBOL_GPL(ktime_get_real_fast_ns);
 
 void ktime_get_fast_timestamps(struct ktime_timestamps *snapshot)
 {
@@ -378,7 +373,6 @@ int pvclock_gtod_register_notifier(struct notifier_block *nb)
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(pvclock_gtod_register_notifier);
 
 int pvclock_gtod_unregister_notifier(struct notifier_block *nb)
 {
@@ -391,7 +385,6 @@ int pvclock_gtod_unregister_notifier(struct notifier_block *nb)
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(pvclock_gtod_unregister_notifier);
 
 static inline void tk_update_leap_state(struct timekeeper *tk)
 {
@@ -477,7 +470,6 @@ void ktime_get_real_ts64(struct timespec64 *ts)
 	ts->tv_nsec = 0;
 	timespec64_add_ns(ts, nsecs);
 }
-EXPORT_SYMBOL(ktime_get_real_ts64);
 
 ktime_t ktime_get(void)
 {
@@ -497,7 +489,6 @@ ktime_t ktime_get(void)
 
 	return ktime_add_ns(base, nsecs);
 }
-EXPORT_SYMBOL_GPL(ktime_get);
 
 u32 ktime_get_resolution_ns(void)
 {
@@ -514,7 +505,6 @@ u32 ktime_get_resolution_ns(void)
 
 	return nsecs;
 }
-EXPORT_SYMBOL_GPL(ktime_get_resolution_ns);
 
 static ktime_t *offsets[TK_OFFS_MAX] = {
 	[TK_OFFS_REAL]	= &tk_core.timekeeper.offs_real,
@@ -541,7 +531,6 @@ ktime_t ktime_get_with_offset(enum tk_offsets offs)
 	return ktime_add_ns(base, nsecs);
 
 }
-EXPORT_SYMBOL_GPL(ktime_get_with_offset);
 
 ktime_t ktime_get_coarse_with_offset(enum tk_offsets offs)
 {
@@ -561,7 +550,6 @@ ktime_t ktime_get_coarse_with_offset(enum tk_offsets offs)
 
 	return ktime_add_ns(base, nsecs);
 }
-EXPORT_SYMBOL_GPL(ktime_get_coarse_with_offset);
 
 ktime_t ktime_mono_to_any(ktime_t tmono, enum tk_offsets offs)
 {
@@ -576,7 +564,6 @@ ktime_t ktime_mono_to_any(ktime_t tmono, enum tk_offsets offs)
 
 	return tconv;
 }
-EXPORT_SYMBOL_GPL(ktime_mono_to_any);
 
 ktime_t ktime_get_raw(void)
 {
@@ -594,7 +581,6 @@ ktime_t ktime_get_raw(void)
 
 	return ktime_add_ns(base, nsecs);
 }
-EXPORT_SYMBOL_GPL(ktime_get_raw);
 
 void ktime_get_ts64(struct timespec64 *ts)
 {
@@ -617,7 +603,6 @@ void ktime_get_ts64(struct timespec64 *ts)
 	ts->tv_nsec = 0;
 	timespec64_add_ns(ts, nsec + tomono.tv_nsec);
 }
-EXPORT_SYMBOL_GPL(ktime_get_ts64);
 
 time64_t ktime_get_seconds(void)
 {
@@ -626,7 +611,6 @@ time64_t ktime_get_seconds(void)
 	WARN_ON(timekeeping_suspended);
 	return tk->ktime_sec;
 }
-EXPORT_SYMBOL_GPL(ktime_get_seconds);
 
 time64_t ktime_get_real_seconds(void)
 {
@@ -645,7 +629,6 @@ time64_t ktime_get_real_seconds(void)
 
 	return seconds;
 }
-EXPORT_SYMBOL_GPL(ktime_get_real_seconds);
 
 noinstr time64_t __ktime_get_real_seconds(void)
 {
@@ -683,7 +666,6 @@ void ktime_get_snapshot(struct system_time_snapshot *systime_snapshot)
 	systime_snapshot->real = ktime_add_ns(base_real, nsec_real);
 	systime_snapshot->raw = ktime_add_ns(base_raw, nsec_raw);
 }
-EXPORT_SYMBOL_GPL(ktime_get_snapshot);
 
 static int scale64_check_overflow(u64 mult, u64 div, u64 *base)
 {
@@ -837,7 +819,6 @@ int get_device_system_crosststamp(int (*get_time_fn)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(get_device_system_crosststamp);
 
 int do_settimeofday64(const struct timespec64 *ts)
 {
@@ -878,7 +859,6 @@ out:
 
 	return ret;
 }
-EXPORT_SYMBOL(do_settimeofday64);
 
 static int timekeeping_inject_offset(const struct timespec64 *ts)
 {
@@ -1004,7 +984,6 @@ void ktime_get_raw_ts64(struct timespec64 *ts)
 	ts->tv_nsec = 0;
 	timespec64_add_ns(ts, nsecs);
 }
-EXPORT_SYMBOL(ktime_get_raw_ts64);
 
 int timekeeping_valid_for_hres(void)
 {
@@ -1414,7 +1393,6 @@ void getboottime64(struct timespec64 *ts)
 
 	*ts = ktime_to_timespec64(t);
 }
-EXPORT_SYMBOL_GPL(getboottime64);
 
 void ktime_get_coarse_real_ts64(struct timespec64 *ts)
 {
@@ -1427,7 +1405,6 @@ void ktime_get_coarse_real_ts64(struct timespec64 *ts)
 		*ts = tk_xtime(tk);
 	} while (read_seqcount_retry(&tk_core.seq, seq));
 }
-EXPORT_SYMBOL(ktime_get_coarse_real_ts64);
 
 void ktime_get_coarse_ts64(struct timespec64 *ts)
 {
@@ -1445,7 +1422,6 @@ void ktime_get_coarse_ts64(struct timespec64 *ts)
 	set_normalized_timespec64(ts, now.tv_sec + mono.tv_sec,
 				now.tv_nsec + mono.tv_nsec);
 }
-EXPORT_SYMBOL(ktime_get_coarse_ts64);
 
 void do_timer(unsigned long ticks)
 {
@@ -1539,7 +1515,6 @@ unsigned long random_get_entropy_fallback(void)
 		return 0;
 	return clock->read(clock);
 }
-EXPORT_SYMBOL_GPL(random_get_entropy_fallback);
 
 int do_adjtimex(struct __kernel_timex *txc)
 {

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
 #include <linux/highmem.h>
 
@@ -45,7 +45,6 @@
 #include <linux/nmi.h>
 #include <linux/nospec.h>
 
-#include <linux/profile.h>
 #include <linux/psi.h>
 
 #include <linux/sched/wake_q.h>
@@ -62,11 +61,8 @@
 #include "sched.h"
 #include "stats.h"
 #include "autogroup.h"
-
-#include "autogroup.h"
 #include "pelt.h"
 #include "smp.h"
-#include "stats.h"
 
 #include "../workqueue_internal.h"
 #include "../../fs/io-wq.h"
@@ -633,37 +629,34 @@ bool ttwu_state_match(struct task_struct *p, unsigned int state, int *success)
 static int
 try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 {
-	unsigned long flags;
 	int cpu, success = 0;
 
 	preempt_disable();
 	if (p == current) {
-		
+
 		if (!ttwu_state_match(p, state, &success))
 			goto out;
 
-		
+
 		WRITE_ONCE(p->__state, TASK_RUNNING);
-		
+
 		goto out;
 	}
 
-	
+
 	if (READ_ONCE(p->__state) == TASK_RUNNING)
 		goto out;
 
-	
 
-	
+
+
 	smp_rmb();
 	if (READ_ONCE(p->on_rq) && ttwu_runnable(p, wake_flags))
-		goto unlock;
+		goto out;
 
 	cpu = task_cpu(p);
 
 	ttwu_queue(p, cpu, wake_flags);
-unlock:
-	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 out:
 	if (success)
 		ttwu_stat(p, task_cpu(p), wake_flags);
@@ -704,7 +697,6 @@ int wake_up_process(struct task_struct *p)
 {
 	return try_to_wake_up(p, TASK_NORMAL, 0);
 }
-EXPORT_SYMBOL(wake_up_process);
 
 int wake_up_state(struct task_struct *p, unsigned int state)
 {
@@ -978,20 +970,20 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	arch_start_context_switch(prev);
 
 	
-	if (!next->mm) {                                // to kernel
+	if (!next->mm) {                                 
 		enter_lazy_tlb(prev->active_mm, next);
 
 		next->active_mm = prev->active_mm;
-		if (prev->mm)                           // from user
+		if (prev->mm)                            
 			mmgrab(prev->active_mm);
 		else
 			prev->active_mm = NULL;
-	} else {                                        // to user
+	} else {                                         
 		membarrier_switch_mm(rq, prev->active_mm, next->mm);
 		
 		switch_mm_irqs_off(prev->active_mm, next->mm, next);
 
-		if (!prev->mm) {                        // from kernel
+		if (!prev->mm) {                         
 			
 			rq->prev_mm = prev->active_mm;
 			prev->active_mm = NULL;
@@ -1023,7 +1015,6 @@ bool single_task_running(void)
 {
 	return raw_rq()->nr_running == 1;
 }
-EXPORT_SYMBOL(single_task_running);
 
 unsigned long long nr_context_switches(void)
 {
@@ -1054,8 +1045,6 @@ unsigned int nr_iowait(void)
 DEFINE_PER_CPU(struct kernel_stat, kstat);
 DEFINE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
 
-EXPORT_PER_CPU_SYMBOL(kstat);
-EXPORT_PER_CPU_SYMBOL(kernel_cpustat);
 
 static inline void prefetch_curr_exec_start(struct task_struct *p)
 {
@@ -1125,10 +1114,6 @@ static inline void sched_tick_stop(int cpu) { }
 
 static inline void preempt_latency_start(int val)
 {
-	if (preempt_count() == val) {
-		unsigned long ip = get_lock_parent_ip();
-		
-	}
 }
 
 void preempt_count_add(int val)
@@ -1136,13 +1121,10 @@ void preempt_count_add(int val)
 	__preempt_count_add(val);
 	preempt_latency_start(val);
 }
-EXPORT_SYMBOL(preempt_count_add);
 NOKPROBE_SYMBOL(preempt_count_add);
 
 static inline void preempt_latency_stop(int val)
 {
-	if (preempt_count() == val)
-		trace_preempt_on(CALLER_ADDR0, get_lock_parent_ip());
 }
 
 void preempt_count_sub(int val)
@@ -1151,7 +1133,6 @@ void preempt_count_sub(int val)
 	preempt_latency_stop(val);
 	__preempt_count_sub(val);
 }
-EXPORT_SYMBOL(preempt_count_sub);
 NOKPROBE_SYMBOL(preempt_count_sub);
 
 #else
@@ -1201,7 +1182,6 @@ static inline void schedule_debug(struct task_struct *prev, bool preempt)
 	rcu_sleep_check();
 	SCHED_WARN_ON(ct_state() == CONTEXT_USER);
 
-	profile_hit(SCHED_PROFILING, __builtin_return_address(0));
 
 	schedstat_inc(this_rq()->sched_count);
 }
@@ -1408,7 +1388,6 @@ asmlinkage __visible void __sched schedule(void)
 	} while (need_resched());
 	sched_update_worker(tsk);
 }
-EXPORT_SYMBOL(schedule);
 
 void __sched schedule_idle(void)
 {
@@ -1466,7 +1445,6 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flag
 	WARN_ON_ONCE(IS_ENABLED(CONFIG_SCHED_DEBUG) && wake_flags & ~WF_SYNC);
 	return try_to_wake_up(curr->private, mode, wake_flags);
 }
-EXPORT_SYMBOL(default_wake_function);
 
 static void __setscheduler_prio(struct task_struct *p, int prio)
 {
@@ -1526,7 +1504,6 @@ void set_user_nice(struct task_struct *p, long nice)
 out_unlock:
 	task_rq_unlock(rq, p, &rf);
 }
-EXPORT_SYMBOL(set_user_nice);
 
 int can_nice(const struct task_struct *p, const int nice)
 {
@@ -1574,17 +1551,6 @@ int idle_cpu(int cpu)
 		return 0;
 
 	if (rq->nr_running)
-		return 0;
-
-	return 1;
-}
-
-int available_idle_cpu(int cpu)
-{
-	if (!idle_cpu(cpu))
-		return 0;
-
-	if (vcpu_is_preempted(cpu))
 		return 0;
 
 	return 1;
@@ -1873,7 +1839,6 @@ int sched_setattr_nocheck(struct task_struct *p, const struct sched_attr *attr)
 {
 	return __sched_setscheduler(p, attr, false, true);
 }
-EXPORT_SYMBOL_GPL(sched_setattr_nocheck);
 
 int sched_setscheduler_nocheck(struct task_struct *p, int policy,
 			       const struct sched_param *param)
@@ -1886,24 +1851,12 @@ void sched_set_fifo(struct task_struct *p)
 	struct sched_param sp = { .sched_priority = MAX_RT_PRIO / 2 };
 	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
 }
-EXPORT_SYMBOL_GPL(sched_set_fifo);
 
 void sched_set_fifo_low(struct task_struct *p)
 {
 	struct sched_param sp = { .sched_priority = 1 };
 	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
 }
-EXPORT_SYMBOL_GPL(sched_set_fifo_low);
-
-void sched_set_normal(struct task_struct *p, int nice)
-{
-	struct sched_attr attr = {
-		.sched_policy = SCHED_NORMAL,
-		.sched_nice = nice,
-	};
-	WARN_ON_ONCE(sched_setattr_nocheck(p, &attr) != 0);
-}
-EXPORT_SYMBOL_GPL(sched_set_normal);
 
 static int
 do_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
@@ -2335,7 +2288,6 @@ int __sched __cond_resched(void)
 	rcu_all_qs();
 	return 0;
 }
-EXPORT_SYMBOL(__cond_resched);
 
 int __cond_resched_lock(spinlock_t *lock)
 {
@@ -2353,7 +2305,6 @@ int __cond_resched_lock(spinlock_t *lock)
 	}
 	return ret;
 }
-EXPORT_SYMBOL(__cond_resched_lock);
 
 int __cond_resched_rwlock_read(rwlock_t *lock)
 {
@@ -2371,7 +2322,6 @@ int __cond_resched_rwlock_read(rwlock_t *lock)
 	}
 	return ret;
 }
-EXPORT_SYMBOL(__cond_resched_rwlock_read);
 
 int __cond_resched_rwlock_write(rwlock_t *lock)
 {
@@ -2389,7 +2339,6 @@ int __cond_resched_rwlock_write(rwlock_t *lock)
 	}
 	return ret;
 }
-EXPORT_SYMBOL(__cond_resched_rwlock_write);
 
 static inline void preempt_dynamic_init(void) { }
 
@@ -2398,7 +2347,6 @@ void __sched yield(void)
 	set_current_state(TASK_RUNNING);
 	do_sched_yield();
 }
-EXPORT_SYMBOL(yield);
 
 int __sched yield_to(struct task_struct *p, bool preempt)
 {
@@ -2451,7 +2399,6 @@ out_irq:
 
 	return yielded;
 }
-EXPORT_SYMBOL_GPL(yield_to);
 
 int io_schedule_prepare(void)
 {
@@ -2478,7 +2425,6 @@ long __sched io_schedule_timeout(long timeout)
 
 	return ret;
 }
-EXPORT_SYMBOL(io_schedule_timeout);
 
 void __sched io_schedule(void)
 {
@@ -2488,7 +2434,6 @@ void __sched io_schedule(void)
 	schedule();
 	io_schedule_finish(token);
 }
-EXPORT_SYMBOL(io_schedule);
 
 SYSCALL_DEFINE1(sched_get_priority_max, int, policy)
 {
@@ -2579,7 +2524,6 @@ void sched_show_task(struct task_struct *p)
 {
 	
 }
-EXPORT_SYMBOL_GPL(sched_show_task);
 
 static inline bool
 state_filter_match(unsigned long state_filter, struct task_struct *p)
@@ -2636,9 +2580,8 @@ void __init init_idle(struct task_struct *idle, int cpu)
 	
 	init_idle_preempt_count(idle, cpu);
 
-	
+
 	idle->sched_class = &idle_sched_class;
-	ftrace_graph_init_idle_task(idle, cpu);
 	vtime_init_idle(idle, cpu);
 }
 

@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_PSI_H
 #define _LINUX_PSI_H
 
@@ -19,4 +19,4 @@ static inline void psi_memstall_leave(unsigned long *flags) {}
 
 
 
-#endif /* _LINUX_PSI_H */
+#endif  

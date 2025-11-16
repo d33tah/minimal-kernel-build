@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 #include <linux/bitops.h>
 #include <linux/bug.h>
 #include <linux/export.h>
@@ -9,10 +9,7 @@
 
 #include <linux/reciprocal_div.h>
 
-/*
- * For a description of the algorithm please have a look at
- * include/linux/reciprocal_div.h
- */
+ 
 
 struct reciprocal_value reciprocal_value(u32 d)
 {
@@ -30,7 +27,6 @@ struct reciprocal_value reciprocal_value(u32 d)
 
 	return R;
 }
-EXPORT_SYMBOL(reciprocal_value);
 
 struct reciprocal_value_adv reciprocal_value_adv(u32 d, u8 prec)
 {
@@ -38,12 +34,9 @@ struct reciprocal_value_adv reciprocal_value_adv(u32 d, u8 prec)
 	u32 l, post_shift;
 	u64 mhigh, mlow;
 
-	/* ceil(log2(d)) */
+	 
 	l = fls(d - 1);
-	/* NOTE: mlow/mhigh could overflow u64 when l == 32. This case needs to
-	 * be handled before calling "reciprocal_value_adv", please see the
-	 * comment at include/linux/reciprocal_div.h.
-	 */
+	 
 	WARN(l == 32,
 	     "ceil(log2(0x%08x)) == 32, %s doesn't support such divisor",
 	     d, __func__);
@@ -70,4 +63,3 @@ struct reciprocal_value_adv reciprocal_value_adv(u32 d, u8 prec)
 
 	return R;
 }
-EXPORT_SYMBOL(reciprocal_value_adv);

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 
 #include <linux/module.h>
 #include <linux/types.h>
@@ -73,7 +73,6 @@ static void gotoxy(struct vc_data *vc, int new_x, int new_y);
 static void save_cur(struct vc_data *vc);
 static void reset_terminal(struct vc_data *vc, int do_clear);
 static void con_flush_chars(struct tty_struct *tty);
-static int set_vesa_blanking(char __user *p);
 static void set_cursor(struct vc_data *vc);
 static void hide_cursor(struct vc_data *vc);
 static void console_callback(struct work_struct *ignored);
@@ -108,11 +107,6 @@ static DECLARE_WORK(con_driver_unregister_work, con_driver_unregister_callback);
 int fg_console;
 int last_console;
 int want_console = -1;
-static int saved_fg_console;
-static int saved_last_console;
-static int saved_want_console;
-static int saved_vc_mode;
-static int saved_console_blanked;
 
 static struct vc_data *master_display_fg;
 
@@ -137,13 +131,11 @@ int register_vt_notifier(struct notifier_block *nb)
 {
 	return atomic_notifier_chain_register(&vt_notifier_list, nb);
 }
-EXPORT_SYMBOL_GPL(register_vt_notifier);
 
 int unregister_vt_notifier(struct notifier_block *nb)
 {
 	return atomic_notifier_chain_unregister(&vt_notifier_list, nb);
 }
-EXPORT_SYMBOL_GPL(unregister_vt_notifier);
 
 static void notify_write(struct vc_data *vc, unsigned int unicode)
 {
@@ -211,25 +203,8 @@ struct uni_screen {
 
 static struct uni_screen *vc_uniscr_alloc(unsigned int cols, unsigned int rows)
 {
-	struct uni_screen *uniscr;
-	void *p;
-	unsigned int memsize, i;
-
-	
-	memsize = cols * rows * sizeof(char32_t);
-	memsize += rows * sizeof(char32_t *);
-	p = vmalloc(memsize);
-	if (!p)
-		return NULL;
-
-	
-	uniscr = p;
-	p = uniscr->lines + rows;
-	for (i = 0; i < rows; i++) {
-		uniscr->lines[i] = p;
-		p += cols * sizeof(char32_t);
-	}
-	return uniscr;
+	 
+	return NULL;
 }
 
 static void vc_uniscr_free(struct uni_screen *uniscr)
@@ -1521,11 +1496,7 @@ static void set_mode(struct vc_data *vc, int on_off)
 				else
 					clr_kbd(vc, decckm);
 				break;
-			case 3:	
-#if 0
-				vc_resize(deccolm ? 132 : 80, vc->vc_rows);
-				
-#endif
+			case 3:
 				break;
 			case 5:			
 				if (vc->vc_decscnm != on_off) {
@@ -2487,8 +2458,6 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int co
 
 	currcons = vc->vc_num;
 	if (!vc_cons_allocated(currcons)) {
-		
-		pr_warn_once("con_write: tty %d not allocated\n", currcons+1);
 		console_unlock();
 		return 0;
 	}
@@ -2691,96 +2660,7 @@ static struct console vt_console_driver = {
 
 int tioclinux(struct tty_struct *tty, unsigned long arg)
 {
-	char type, data;
-	char __user *p = (char __user *)arg;
-	int lines;
-	int ret;
-
-	if (current->signal->tty != tty && !capable(CAP_SYS_ADMIN))
-		return -EPERM;
-	if (get_user(type, p))
-		return -EFAULT;
-	ret = 0;
-
-	switch (type)
-	{
-		case TIOCL_SETSEL:
-			ret = set_selection_user((struct tiocl_selection
-						 __user *)(p+1), tty);
-			break;
-		case TIOCL_PASTESEL:
-			ret = paste_selection(tty);
-			break;
-		case TIOCL_UNBLANKSCREEN:
-			console_lock();
-			unblank_screen();
-			console_unlock();
-			break;
-		case TIOCL_SELLOADLUT:
-			console_lock();
-			ret = sel_loadlut(p);
-			console_unlock();
-			break;
-		case TIOCL_GETSHIFTSTATE:
-
-	
-			data = vt_get_shift_state();
-			ret = put_user(data, p);
-			break;
-		case TIOCL_GETMOUSEREPORTING:
-			console_lock();	
-			data = mouse_reporting();
-			console_unlock();
-			ret = put_user(data, p);
-			break;
-		case TIOCL_SETVESABLANK:
-			console_lock();
-			ret = set_vesa_blanking(p);
-			console_unlock();
-			break;
-		case TIOCL_GETKMSGREDIRECT:
-			data = vt_get_kmsg_redirect();
-			ret = put_user(data, p);
-			break;
-		case TIOCL_SETKMSGREDIRECT:
-			if (!capable(CAP_SYS_ADMIN)) {
-				ret = -EPERM;
-			} else {
-				if (get_user(data, p+1))
-					ret = -EFAULT;
-				else
-					vt_kmsg_redirect(data);
-			}
-			break;
-		case TIOCL_GETFGCONSOLE:
-			
-			ret = fg_console;
-			break;
-		case TIOCL_SCROLLCONSOLE:
-			if (get_user(lines, (s32 __user *)(p+4))) {
-				ret = -EFAULT;
-			} else {
-				
-				console_lock();
-				scrollfront(vc_cons[fg_console].d, lines);
-				console_unlock();
-				ret = 0;
-			}
-			break;
-		case TIOCL_BLANKSCREEN:	
-			console_lock();
-			ignore_poke = 1;
-			do_blank_screen(0);
-			console_unlock();
-			break;
-		case TIOCL_BLANKEDSCREEN:
-			ret = console_blanked;
-			break;
-		default:
-			ret = -EINVAL;
-			break;
-	}
-	return ret;
+	return -EINVAL;
 }
 
 static int con_write(struct tty_struct *tty, const unsigned char *buf, int count)
@@ -2921,8 +2801,8 @@ static void con_cleanup(struct tty_struct *tty)
 }
 
 static int default_color           = 7; 
-static int default_italic_color    = 2; // green (ASCII)
-static int default_underline_color = 3; // cyan (ASCII)
+static int default_italic_color    = 2;  
+static int default_underline_color = 3;  
 module_param_named(color, default_color, int, S_IRUGO | S_IWUSR);
 module_param_named(italic, default_italic_color, int, S_IRUGO | S_IWUSR);
 module_param_named(underline, default_underline_color, int, S_IRUGO | S_IWUSR);
@@ -3008,9 +2888,6 @@ static int __init con_init(void)
 	gotoxy(vc, vc->state.x, vc->state.y);
 	csi_J(vc, 0);
 	update_screen(vc);
-	pr_info("Console: %s %s %dx%d\n",
-		vc->vc_can_do_color ? "colour" : "mono",
-		display_desc, vc->vc_cols, vc->vc_rows);
 	printable = 1;
 
 	console_unlock();
@@ -3167,15 +3044,8 @@ static int do_bind_con_driver(const struct consw *csw, int first, int last,
 			clear_buffer_attributes(vc);
 	}
 
-	pr_info("Console: switching ");
-	if (!deflt)
-		pr_cont("consoles %d-%d ", first + 1, last + 1);
 	if (j >= 0) {
 		struct vc_data *vc = vc_cons[j].d;
-
-		pr_cont("to %s %s %dx%d\n",
-			vc->vc_can_do_color ? "colour" : "mono",
-			desc, vc->vc_cols, vc->vc_rows);
 
 		if (k >= 0) {
 			vc = vc_cons[k].d;
@@ -3279,7 +3149,6 @@ int con_is_bound(const struct consw *csw)
 
 	return bound;
 }
-EXPORT_SYMBOL(con_is_bound);
 
 bool con_is_visible(const struct vc_data *vc)
 {
@@ -3287,19 +3156,16 @@ bool con_is_visible(const struct vc_data *vc)
 
 	return *vc->vc_display_fg == vc;
 }
-EXPORT_SYMBOL(con_is_visible);
 
 int con_debug_enter(struct vc_data *vc)
 {
 	return 0;
 }
-EXPORT_SYMBOL_GPL(con_debug_enter);
 
 int con_debug_leave(void)
 {
 	return 0;
 }
-EXPORT_SYMBOL_GPL(con_debug_leave);
 
 static int do_register_con_driver(const struct consw *csw, int first, int last)
 {
@@ -3357,8 +3223,6 @@ static int do_register_con_driver(const struct consw *csw, int first, int last)
 					  con_driver, con_dev_groups,
 					  "vtcon%i", con_driver->node);
 	if (IS_ERR(con_driver->dev)) {
-		pr_warn("Unable to create device for %s; errno = %ld\n",
-			con_driver->desc, PTR_ERR(con_driver->dev));
 		con_driver->dev = NULL;
 	} else {
 		vtconsole_init_device(con_driver);
@@ -3395,7 +3259,6 @@ int do_unregister_con_driver(const struct consw *csw)
 
 	return -ENODEV;
 }
-EXPORT_SYMBOL_GPL(do_unregister_con_driver);
 
 static void con_driver_unregister_callback(struct work_struct *ignored)
 {
@@ -3443,7 +3306,6 @@ int do_take_over_console(const struct consw *csw, int first, int last, int deflt
 
 	return err;
 }
-EXPORT_SYMBOL_GPL(do_take_over_console);
 
 void give_up_console(const struct consw *csw)
 {
@@ -3458,8 +3320,6 @@ static int __init vtconsole_class_init(void)
 
 	vtconsole_class = class_create(THIS_MODULE, "vtconsole");
 	if (IS_ERR(vtconsole_class)) {
-		pr_warn("Unable to create vt console class; errno = %ld\n",
-			PTR_ERR(vtconsole_class));
 		vtconsole_class = NULL;
 	}
 
@@ -3475,8 +3335,6 @@ static int __init vtconsole_class_init(void)
 							  "vtcon%i", con->node);
 
 			if (IS_ERR(con->dev)) {
-				pr_warn("Unable to create device for %s; errno = %ld\n",
-					con->desc, PTR_ERR(con->dev));
 				con->dev = NULL;
 			} else {
 				vtconsole_init_device(con);
@@ -3490,16 +3348,6 @@ postcore_initcall(vtconsole_class_init);
 
 #endif
 
-static int set_vesa_blanking(char __user *p)
-{
-	unsigned int mode;
-
-	if (get_user(mode, p + 1))
-		return -EFAULT;
-
-	vesa_blank_mode = (mode < 4) ? mode : 0;
-	return 0;
-}
 
 void do_blank_screen(int entering_gfx)
 {
@@ -3557,7 +3405,6 @@ void do_blank_screen(int entering_gfx)
 	}
 	vt_event_post(VT_EVENT_BLANK, vc->vc_num, vc->vc_num);
 }
-EXPORT_SYMBOL(do_blank_screen);
 
 void do_unblank_screen(int leaving_gfx)
 {
@@ -3573,9 +3420,6 @@ void do_unblank_screen(int leaving_gfx)
 	if (!console_blanked)
 		return;
 	if (!vc_cons_allocated(fg_console)) {
-		
-		pr_warn("unblank_screen: tty %d not allocated ??\n",
-			fg_console + 1);
 		return;
 	}
 	vc = vc_cons[fg_console].d;
@@ -3597,7 +3441,6 @@ void do_unblank_screen(int leaving_gfx)
 	set_cursor(vc);
 	vt_event_post(VT_EVENT_UNBLANK, vc->vc_num, vc->vc_num);
 }
-EXPORT_SYMBOL(do_unblank_screen);
 
 void unblank_screen(void)
 {
@@ -3641,50 +3484,12 @@ static void set_palette(struct vc_data *vc)
 
 int con_set_cmap(unsigned char __user *arg)
 {
-	int i, j, k;
-	unsigned char colormap[3*16];
-
-	if (copy_from_user(colormap, arg, sizeof(colormap)))
-		return -EFAULT;
-
-	console_lock();
-	for (i = k = 0; i < 16; i++) {
-		default_red[i] = colormap[k++];
-		default_grn[i] = colormap[k++];
-		default_blu[i] = colormap[k++];
-	}
-	for (i = 0; i < MAX_NR_CONSOLES; i++) {
-		if (!vc_cons_allocated(i))
-			continue;
-		for (j = k = 0; j < 16; j++) {
-			vc_cons[i].d->vc_palette[k++] = default_red[j];
-			vc_cons[i].d->vc_palette[k++] = default_grn[j];
-			vc_cons[i].d->vc_palette[k++] = default_blu[j];
-		}
-		set_palette(vc_cons[i].d);
-	}
-	console_unlock();
-
-	return 0;
+	return -EINVAL;
 }
 
 int con_get_cmap(unsigned char __user *arg)
 {
-	int i, k;
-	unsigned char colormap[3*16];
-
-	console_lock();
-	for (i = k = 0; i < 16; i++) {
-		colormap[k++] = default_red[i];
-		colormap[k++] = default_grn[i];
-		colormap[k++] = default_blu[i];
-	}
-	console_unlock();
-
-	if (copy_to_user(arg, colormap, sizeof(colormap)))
-		return -EFAULT;
-
-	return 0;
+	return -EINVAL;
 }
 
 void reset_palette(struct vc_data *vc)
@@ -3698,136 +3503,8 @@ void reset_palette(struct vc_data *vc)
 	set_palette(vc);
 }
 
-#define max_font_size 65536
-
-static int con_font_get(struct vc_data *vc, struct console_font_op *op)
-{
-	struct console_font font;
-	int rc = -EINVAL;
-	int c;
-
-	if (op->data) {
-		font.data = kmalloc(max_font_size, GFP_KERNEL);
-		if (!font.data)
-			return -ENOMEM;
-	} else
-		font.data = NULL;
-
-	console_lock();
-	if (vc->vc_mode != KD_TEXT)
-		rc = -EINVAL;
-	else if (vc->vc_sw->con_font_get)
-		rc = vc->vc_sw->con_font_get(vc, &font);
-	else
-		rc = -ENOSYS;
-	console_unlock();
-
-	if (rc)
-		goto out;
-
-	c = (font.width+7)/8 * 32 * font.charcount;
-
-	if (op->data && font.charcount > op->charcount)
-		rc = -ENOSPC;
-	if (font.width > op->width || font.height > op->height)
-		rc = -ENOSPC;
-	if (rc)
-		goto out;
-
-	op->height = font.height;
-	op->width = font.width;
-	op->charcount = font.charcount;
-
-	if (op->data && copy_to_user(op->data, font.data, c))
-		rc = -EFAULT;
-
-out:
-	kfree(font.data);
-	return rc;
-}
-
-static int con_font_set(struct vc_data *vc, struct console_font_op *op)
-{
-	struct console_font font;
-	int rc = -EINVAL;
-	int size;
-
-	if (vc->vc_mode != KD_TEXT)
-		return -EINVAL;
-	if (!op->data)
-		return -EINVAL;
-	if (op->charcount > 512)
-		return -EINVAL;
-	if (op->width <= 0 || op->width > 32 || !op->height || op->height > 32)
-		return -EINVAL;
-	size = (op->width+7)/8 * 32 * op->charcount;
-	if (size > max_font_size)
-		return -ENOSPC;
-
-	font.data = memdup_user(op->data, size);
-	if (IS_ERR(font.data))
-		return PTR_ERR(font.data);
-
-	font.charcount = op->charcount;
-	font.width = op->width;
-	font.height = op->height;
-
-	console_lock();
-	if (vc->vc_mode != KD_TEXT)
-		rc = -EINVAL;
-	else if (vc->vc_sw->con_font_set)
-		rc = vc->vc_sw->con_font_set(vc, &font, op->flags);
-	else
-		rc = -ENOSYS;
-	console_unlock();
-	kfree(font.data);
-	return rc;
-}
-
-static int con_font_default(struct vc_data *vc, struct console_font_op *op)
-{
-	struct console_font font = {.width = op->width, .height = op->height};
-	char name[MAX_FONT_NAME];
-	char *s = name;
-	int rc;
-
-	if (!op->data)
-		s = NULL;
-	else if (strncpy_from_user(name, op->data, MAX_FONT_NAME - 1) < 0)
-		return -EFAULT;
-	else
-		name[MAX_FONT_NAME - 1] = 0;
-
-	console_lock();
-	if (vc->vc_mode != KD_TEXT) {
-		console_unlock();
-		return -EINVAL;
-	}
-	if (vc->vc_sw->con_font_default)
-		rc = vc->vc_sw->con_font_default(vc, &font, s);
-	else
-		rc = -ENOSYS;
-	console_unlock();
-	if (!rc) {
-		op->width = font.width;
-		op->height = font.height;
-	}
-	return rc;
-}
-
 int con_font_op(struct vc_data *vc, struct console_font_op *op)
 {
-	switch (op->op) {
-	case KD_FONT_OP_SET:
-		return con_font_set(vc, op);
-	case KD_FONT_OP_GET:
-		return con_font_get(vc, op);
-	case KD_FONT_OP_SET_DEFAULT:
-		return con_font_default(vc, op);
-	case KD_FONT_OP_COPY:
-		
-		return -EINVAL;
-	}
 	return -ENOSYS;
 }
 
@@ -3840,7 +3517,6 @@ u16 screen_glyph(const struct vc_data *vc, int offset)
 		c |= 0x100;
 	return c;
 }
-EXPORT_SYMBOL_GPL(screen_glyph);
 
 u32 screen_glyph_unicode(const struct vc_data *vc, int n)
 {
@@ -3850,13 +3526,11 @@ u32 screen_glyph_unicode(const struct vc_data *vc, int n)
 		return uniscr->lines[n / vc->vc_cols][n % vc->vc_cols];
 	return inverse_translate(vc, screen_glyph(vc, n * 2), 1);
 }
-EXPORT_SYMBOL_GPL(screen_glyph_unicode);
 
 unsigned short *screen_pos(const struct vc_data *vc, int w_offset, bool viewed)
 {
 	return screenpos(vc, 2 * w_offset, viewed);
 }
-EXPORT_SYMBOL_GPL(screen_pos);
 
 void getconsxy(const struct vc_data *vc, unsigned char xy[static 2])
 {
@@ -3931,20 +3605,6 @@ void vc_scrolldelta_helper(struct vc_data *c, int lines,
 
 	c->vc_visible_origin = ubase + (from + from_off) % wrap;
 }
-EXPORT_SYMBOL_GPL(vc_scrolldelta_helper);
 
-EXPORT_SYMBOL(color_table);
-EXPORT_SYMBOL(default_red);
-EXPORT_SYMBOL(default_grn);
-EXPORT_SYMBOL(default_blu);
-EXPORT_SYMBOL(update_region);
-EXPORT_SYMBOL(redraw_screen);
-EXPORT_SYMBOL(vc_resize);
-EXPORT_SYMBOL(fg_console);
-EXPORT_SYMBOL(console_blank_hook);
-EXPORT_SYMBOL(console_blanked);
-EXPORT_SYMBOL(vc_cons);
-EXPORT_SYMBOL(global_cursor_default);
 #ifndef VT_SINGLE_DRIVER
-EXPORT_SYMBOL(give_up_console);
 #endif

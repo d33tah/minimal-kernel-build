@@ -1,11 +1,11 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_STRING_H_
 #define _LINUX_STRING_H_
 
-#include <linux/compiler.h>	/* for inline */
-#include <linux/types.h>	/* for size_t */
-#include <linux/stddef.h>	/* for NULL */
-#include <linux/errno.h>	/* for E2BIG */
+#include <linux/compiler.h>	 
+#include <linux/types.h>	 
+#include <linux/stddef.h>	 
+#include <linux/errno.h>	 
 #include <linux/stdarg.h>
 
 
@@ -14,9 +14,7 @@ extern void *memdup_user(const void __user *, size_t);
 extern void *vmemdup_user(const void __user *, size_t);
 extern void *memdup_user_nul(const void __user *, size_t);
 
-/*
- * Include machine specific inline routines
- */
+ 
 #include <asm/string.h>
 
 #ifndef __HAVE_ARCH_STRCPY
@@ -32,7 +30,7 @@ size_t strlcpy(char *, const char *, size_t);
 ssize_t strscpy(char *, const char *, size_t);
 #endif
 
-/* Wraps calls to strscpy()/memset(), no arch specific code required */
+ 
 ssize_t strscpy_pad(char *dest, const char *src, size_t count);
 
 #ifndef __HAVE_ARCH_STRCAT
@@ -186,13 +184,7 @@ extern bool sysfs_streq(const char *s1, const char *s2);
 int match_string(const char * const *array, size_t n, const char *string);
 int __sysfs_match_string(const char * const *array, size_t n, const char *s);
 
-/**
- * sysfs_match_string - matches given string in an array
- * @_a: array of strings
- * @_s: string to match with
- *
- * Helper for __sysfs_match_string(). Calculates the size of @a automatically.
- */
+ 
 #define sysfs_match_string(_a, _s) __sysfs_match_string(_a, ARRAY_SIZE(_a), _s)
 
 
@@ -201,11 +193,7 @@ extern ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
 
 int ptr_to_hashval(const void *ptr, unsigned long *hashval_out);
 
-/**
- * strstarts - does @str start with @prefix?
- * @str: string to examine
- * @prefix: prefix to look for.
- */
+ 
 static inline bool strstarts(const char *str, const char *prefix)
 {
 	return strncmp(str, prefix, strlen(prefix)) == 0;
@@ -213,31 +201,14 @@ static inline bool strstarts(const char *str, const char *prefix)
 
 size_t memweight(const void *ptr, size_t bytes);
 
-/**
- * memzero_explicit - Fill a region of memory (e.g. sensitive
- *		      keying data) with 0s.
- * @s: Pointer to the start of the area.
- * @count: The size of the area.
- *
- * Note: usually using memset() is just fine (!), but in cases
- * where clearing out _local_ data at the end of a scope is
- * necessary, memzero_explicit() should be used instead in
- * order to prevent the compiler from optimising away zeroing.
- *
- * memzero_explicit() doesn't need an arch-specific version as
- * it just invokes the one of memset() implicitly.
- */
+ 
 static inline void memzero_explicit(void *s, size_t count)
 {
 	memset(s, 0, count);
 	barrier_data(s);
 }
 
-/**
- * kbasename - return the last part of a pathname.
- *
- * @path: path to extract the filename from.
- */
+ 
 static inline const char *kbasename(const char *path)
 {
 	const char *tail = strrchr(path, '/');
@@ -252,15 +223,7 @@ static inline const char *kbasename(const char *path)
 void memcpy_and_pad(void *dest, size_t dest_len, const void *src, size_t count,
 		    int pad);
 
-/**
- * memset_after - Set a value after a struct member to the end of a struct
- *
- * @obj: Address of target struct instance
- * @v: Byte value to repeatedly write
- * @member: after which struct member to start writing bytes
- *
- * This is good for clearing padding following the given member.
- */
+ 
 #define memset_after(obj, v, member)					\
 ({									\
 	u8 *__ptr = (u8 *)(obj);					\
@@ -269,16 +232,7 @@ void memcpy_and_pad(void *dest, size_t dest_len, const void *src, size_t count,
 	       sizeof(*(obj)) - offsetofend(typeof(*(obj)), member));	\
 })
 
-/**
- * memset_startat - Set a value starting at a member to the end of a struct
- *
- * @obj: Address of target struct instance
- * @v: Byte value to repeatedly write
- * @member: struct member to start writing at
- *
- * Note that if there is padding between the prior member and the target
- * member, memset_after() should be used to clear the prior padding.
- */
+ 
 #define memset_startat(obj, v, member)					\
 ({									\
 	u8 *__ptr = (u8 *)(obj);					\
@@ -287,25 +241,11 @@ void memcpy_and_pad(void *dest, size_t dest_len, const void *src, size_t count,
 	       sizeof(*(obj)) - offsetof(typeof(*(obj)), member));	\
 })
 
-/**
- * str_has_prefix - Test if a string has a given prefix
- * @str: The string to test
- * @prefix: The string to see if @str starts with
- *
- * A common way to test a prefix of a string is to do:
- *  strncmp(str, prefix, sizeof(prefix) - 1)
- *
- * But this can lead to bugs due to typos, or if prefix is a pointer
- * and not a constant. Instead use str_has_prefix().
- *
- * Returns:
- * * strlen(@prefix) if @str starts with @prefix
- * * 0 if @str does not start with @prefix
- */
+ 
 static __always_inline size_t str_has_prefix(const char *str, const char *prefix)
 {
 	size_t len = strlen(prefix);
 	return strncmp(str, prefix, len) == 0 ? len : 0;
 }
 
-#endif /* _LINUX_STRING_H_ */
+#endif  

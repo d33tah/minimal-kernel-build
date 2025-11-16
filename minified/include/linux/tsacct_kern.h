@@ -1,9 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * tsacct_kern.h - kernel header for system accounting over taskstats interface
- *
- * Copyright (C) Jay Lan	SGI
- */
+ 
+ 
 
 #ifndef _LINUX_TSACCT_KERN_H
 #define _LINUX_TSACCT_KERN_H

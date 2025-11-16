@@ -1,16 +1,10 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- * tboot.h: shared data structure with tboot and kernel and functions
- *          used by kernel for runtime support of Intel(R) Trusted
- *          Execution Technology
- *
- * Copyright (c) 2006-2009, Intel Corporation
- */
+ 
+ 
 
 #ifndef _LINUX_TBOOT_H
 #define _LINUX_TBOOT_H
 
-/* these must have the values from 0-5 in this order */
+ 
 enum {
 	TB_SHUTDOWN_REBOOT = 0,
 	TB_SHUTDOWN_S5,
@@ -30,4 +24,4 @@ enum {
 #define tboot_force_iommu()		0
 
 
-#endif /* _LINUX_TBOOT_H */
+#endif  

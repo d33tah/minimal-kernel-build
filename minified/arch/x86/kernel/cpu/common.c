@@ -72,7 +72,6 @@ cpumask_var_t cpu_callin_mask;
 cpumask_var_t cpu_sibling_setup_mask;
 
 int smp_num_siblings = 1;
-EXPORT_SYMBOL(smp_num_siblings);
 
 DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_llc_id) = BAD_APICID;
 
@@ -80,7 +79,6 @@ u16 get_llc_id(unsigned int cpu)
 {
 	return per_cpu(cpu_llc_id, cpu);
 }
-EXPORT_SYMBOL_GPL(get_llc_id);
 
 DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_l2c_id) = BAD_APICID;
 
@@ -210,7 +208,6 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
 	[GDT_ENTRY_ESPFIX_SS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
 	[GDT_ENTRY_PERCPU]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
 } };
-EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
 
 static int __init x86_noinvpcid_setup(char *s)
 {
@@ -346,7 +343,6 @@ set_register:
 		WARN_ONCE(bits_missing, "CR0 WP bit went missing!?\n");
 	}
 }
-EXPORT_SYMBOL(native_write_cr0);
 
 void __no_profile native_write_cr4(unsigned long val)
 {
@@ -367,7 +363,6 @@ set_register:
 	}
 }
 #if IS_MODULE(CONFIG_LKDTM)
-EXPORT_SYMBOL_GPL(native_write_cr4);
 #endif
 
 void cr4_update_irqsoff(unsigned long set, unsigned long clear)
@@ -382,13 +377,11 @@ void cr4_update_irqsoff(unsigned long set, unsigned long clear)
 		__write_cr4(newval);
 	}
 }
-EXPORT_SYMBOL(cr4_update_irqsoff);
 
 unsigned long cr4_read_shadow(void)
 {
 	return this_cpu_read(cpu_tlbstate.cr4);
 }
-EXPORT_SYMBOL_GPL(cr4_read_shadow);
 
 void cr4_init(void)
 {
@@ -542,7 +535,6 @@ void load_direct_gdt(int cpu)
 	gdt_descr.size = GDT_SIZE - 1;
 	load_gdt(&gdt_descr);
 }
-EXPORT_SYMBOL_GPL(load_direct_gdt);
 
 void load_fixmap_gdt(int cpu)
 {
@@ -552,7 +544,6 @@ void load_fixmap_gdt(int cpu)
 	gdt_descr.size = GDT_SIZE - 1;
 	load_gdt(&gdt_descr);
 }
-EXPORT_SYMBOL_GPL(load_fixmap_gdt);
 
 void switch_to_new_gdt(int cpu)
 {
@@ -1410,13 +1401,10 @@ static __init int setup_clearcpuid(char *arg)
 __setup("clearcpuid=", setup_clearcpuid);
 
 DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;
-EXPORT_PER_CPU_SYMBOL(current_task);
 DEFINE_PER_CPU(int, __preempt_count) = INIT_PREEMPT_COUNT;
-EXPORT_PER_CPU_SYMBOL(__preempt_count);
 
 DEFINE_PER_CPU(unsigned long, cpu_current_top_of_stack) =
 	(unsigned long)&init_thread_union + THREAD_SIZE;
-EXPORT_PER_CPU_SYMBOL(cpu_current_top_of_stack);
 
 static void clear_all_debug_regs(void)
 {
@@ -1478,8 +1466,6 @@ void cpu_init(void)
 	wait_for_master_cpu(cpu);
 
 	ucode_cpu_init(cpu);
-
-	pr_debug("Initializing CPU#%d\n", cpu);
 
 	if (IS_ENABLED(CONFIG_X86_64) || cpu_feature_enabled(X86_FEATURE_VME) ||
 	    boot_cpu_has(X86_FEATURE_TSC) || boot_cpu_has(X86_FEATURE_DE))

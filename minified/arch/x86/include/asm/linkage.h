@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_LINKAGE_H
 #define _ASM_X86_LINKAGE_H
 
@@ -19,41 +19,41 @@
 
 #define RET	ret
 
-#else /* __ASSEMBLY__ */
+#else  
 
 #define ASM_RET	"ret\n\t"
 
-#endif /* __ASSEMBLY__ */
+#endif  
 
-/* SYM_FUNC_START -- use for global functions */
+ 
 #define SYM_FUNC_START(name)				\
 	SYM_START(name, SYM_L_GLOBAL, SYM_A_ALIGN)	\
 	ENDBR
 
-/* SYM_FUNC_START_NOALIGN -- use for global functions, w/o alignment */
+ 
 #define SYM_FUNC_START_NOALIGN(name)			\
 	SYM_START(name, SYM_L_GLOBAL, SYM_A_NONE)	\
 	ENDBR
 
-/* SYM_FUNC_START_LOCAL -- use for local functions */
+ 
 #define SYM_FUNC_START_LOCAL(name)			\
 	SYM_START(name, SYM_L_LOCAL, SYM_A_ALIGN)	\
 	ENDBR
 
-/* SYM_FUNC_START_LOCAL_NOALIGN -- use for local functions, w/o alignment */
+ 
 #define SYM_FUNC_START_LOCAL_NOALIGN(name)		\
 	SYM_START(name, SYM_L_LOCAL, SYM_A_NONE)	\
 	ENDBR
 
-/* SYM_FUNC_START_WEAK -- use for weak functions */
+ 
 #define SYM_FUNC_START_WEAK(name)			\
 	SYM_START(name, SYM_L_WEAK, SYM_A_ALIGN)	\
 	ENDBR
 
-/* SYM_FUNC_START_WEAK_NOALIGN -- use for weak functions, w/o alignment */
+ 
 #define SYM_FUNC_START_WEAK_NOALIGN(name)		\
 	SYM_START(name, SYM_L_WEAK, SYM_A_NONE)		\
 	ENDBR
 
-#endif /* _ASM_X86_LINKAGE_H */
+#endif  
 

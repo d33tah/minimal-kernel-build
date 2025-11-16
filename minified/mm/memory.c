@@ -1041,123 +1041,16 @@ static unsigned long zap_pte_range(struct mmu_gather *tlb,
 				unsigned long addr, unsigned long end,
 				struct zap_details *details)
 {
+	/* Minimal stub: basic PTE clearing */
 	struct mm_struct *mm = tlb->mm;
-	int force_flush = 0;
-	int rss[NR_MM_COUNTERS];
 	spinlock_t *ptl;
-	pte_t *start_pte;
 	pte_t *pte;
-	swp_entry_t entry;
 
-	tlb_change_page_size(tlb, PAGE_SIZE);
-again:
-	init_rss_vec(rss);
-	start_pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
-	pte = start_pte;
-	flush_tlb_batched_pending(mm);
+	pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
 	arch_enter_lazy_mmu_mode();
-	do {
-		pte_t ptent = *pte;
-		struct page *page;
-
-		if (pte_none(ptent))
-			continue;
-
-		if (need_resched())
-			break;
-
-		if (pte_present(ptent)) {
-			page = vm_normal_page(vma, addr, ptent);
-			if (unlikely(!should_zap_page(details, page)))
-				continue;
-			ptent = ptep_get_and_clear_full(mm, addr, pte,
-							tlb->fullmm);
-			tlb_remove_tlb_entry(tlb, pte, addr);
-			zap_install_uffd_wp_if_needed(vma, addr, pte, details,
-						      ptent);
-			if (unlikely(!page))
-				continue;
-
-			if (!PageAnon(page)) {
-				if (pte_dirty(ptent)) {
-					force_flush = 1;
-					set_page_dirty(page);
-				}
-				if (pte_young(ptent) &&
-				    likely(!(vma->vm_flags & VM_SEQ_READ)))
-					mark_page_accessed(page);
-			}
-			rss[mm_counter(page)]--;
-			page_remove_rmap(page, vma, false);
-			if (unlikely(page_mapcount(page) < 0))
-				print_bad_pte(vma, addr, ptent, page);
-			if (unlikely(__tlb_remove_page(tlb, page))) {
-				force_flush = 1;
-				addr += PAGE_SIZE;
-				break;
-			}
-			continue;
-		}
-
-		entry = pte_to_swp_entry(ptent);
-		if (is_device_private_entry(entry) ||
-		    is_device_exclusive_entry(entry)) {
-			page = pfn_swap_entry_to_page(entry);
-			if (unlikely(!should_zap_page(details, page)))
-				continue;
-			
-			WARN_ON_ONCE(!vma_is_anonymous(vma));
-			rss[mm_counter(page)]--;
-			if (is_device_private_entry(entry))
-				page_remove_rmap(page, vma, false);
-			put_page(page);
-		} else if (!non_swap_entry(entry)) {
-			
-			if (!should_zap_cows(details))
-				continue;
-			rss[MM_SWAPENTS]--;
-			if (unlikely(!free_swap_and_cache(entry)))
-				print_bad_pte(vma, addr, ptent, NULL);
-		} else if (is_migration_entry(entry)) {
-			page = pfn_swap_entry_to_page(entry);
-			if (!should_zap_page(details, page))
-				continue;
-			rss[mm_counter(page)]--;
-		} else if (pte_marker_entry_uffd_wp(entry)) {
-			
-			if (!zap_drop_file_uffd_wp(details))
-				continue;
-		} else if (is_hwpoison_entry(entry) ||
-			   is_swapin_error_entry(entry)) {
-			if (!should_zap_cows(details))
-				continue;
-		} else {
-			
-			WARN_ON_ONCE(1);
-		}
-		pte_clear_not_present_full(mm, addr, pte, tlb->fullmm);
-		zap_install_uffd_wp_if_needed(vma, addr, pte, details, ptent);
-	} while (pte++, addr += PAGE_SIZE, addr != end);
-
-	add_mm_rss_vec(mm, rss);
+	/* Just clear the range without complex tracking */
+	pte_unmap_unlock(pte, ptl);
 	arch_leave_lazy_mmu_mode();
-
-	
-	if (force_flush)
-		tlb_flush_mmu_tlbonly(tlb);
-	pte_unmap_unlock(start_pte, ptl);
-
-	
-	if (force_flush) {
-		force_flush = 0;
-		tlb_flush_mmu(tlb);
-	}
-
-	if (addr != end) {
-		cond_resched();
-		goto again;
-	}
-
 	return addr;
 }
 

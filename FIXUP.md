@@ -50,6 +50,26 @@ Attempting to stub do_swap_page.
 
 Next: Look for more large functions that can be stubbed similarly.
 
+12:08 - Found massive VT control function:
+  - do_con_trol() in drivers/tty/vt/vt.c: 403 lines (1751-2154)
+  - Handles complex ANSI escape codes, tabs, cursor movement, etc
+  - For "Hello, World!" we only need basic character + newline
+  - This is the largest reduction opportunity found so far!
+
+Attempting to stub do_con_trol to minimal implementation.
+
+12:11 - SUCCESS: Stubbed do_con_trol
+  - Reduced function from 403 lines to 27 lines (376 lines removed!)
+  - Kept only essential: null, LF, CR, ESC state
+  - Build passes, make vm works, "Hello, World!" prints
+  - LOC: 244,880 → 244,504 (376 LOC reduction)
+  - Binary: 365KB → 362KB (3KB smaller!)
+  - C code: 138,698 → 138,322
+  - Cumulative reduction: 536 LOC
+  - Remaining gap: 44,504 LOC to goal
+
+This was a huge win! Next: Look for more large functions.
+
 --- 2025-11-16 11:29 ---
 
 New session starting:

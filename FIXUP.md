@@ -26,6 +26,36 @@ Will focus on careful, incremental reductions:
 
 Progress:
 
+06:04 - Investigation of reduction opportunities.
+  Created script to find truly unused files (not in Makefiles AND not #include'd).
+  Found many candidates but need careful analysis:
+  - Many large files (page_alloc.c 5081 LOC, memory.c 4055 LOC) appear unused
+    but are likely conditionally compiled based on config
+  - Small stub files found: empty.c, events/**/stubs.c (all 1 LOC each)
+  - kdebugfs.c (26 LOC) - not in Makefile, creates debugfs dir
+  - probe_roms.c (19 LOC) - in Makefile but already stubbed
+
+  Header analysis shows largest headers:
+  - atomic-arch-fallback.h (2352 LOC) - auto-generated
+  - atomic-instrumented.h (1941 LOC) - auto-generated
+  - fs.h (2172 LOC), mm.h (2033 LOC), sched.h (1066 LOC)
+
+  Next steps: Need more conservative approach - look at what's actually
+  compiled vs what config enables.
+
+06:08 - Successfully removed 10 unused files (454 LOC saved).
+  Found files with no .o output and not #include'd by other files:
+  - lib/uuid.c (100), lib/random32.c (79), drivers/base/component.c (77)
+  - mm/debug.c (52), mm/fadvise.c (45), arch/x86/kernel/perf_regs.c (29)
+  - arch/x86/kernel/kdebugfs.c (26), arch/x86/kernel/stacktrace.c (25)
+  - arch/x86/kernel/irq_work.c (11), init/noinitramfs.c (10)
+  make vm: passing, prints "Hello World", binary: 370KB.
+  Committed and pushed.
+
+  Session progress: 454 LOC removed
+  Current estimate: ~234,573 LOC (235,027 - 454)
+  Gap to 200K goal: ~34,573 LOC (need 14.7% reduction)
+
 --- 2025-11-16 05:34 ---
 
 New session starting (REVERTED):

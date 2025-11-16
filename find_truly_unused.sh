@@ -1,18 +1,16 @@
 #!/bin/bash
-cd /home/user/minimal-kernel-build/minified
-
-# Find headers that have NO references in the codebase (except self)
-for h in $(find include -name "*.h" -type f | sort); do
-    base=$(basename "$h" .h)
-
-    # Count all references to this base name
-    count=$(grep -r "$base" . --include="*.c" --include="*.h" --include="*.S" 2>/dev/null | wc -l)
-
-    # If only 1 reference (self-reference), it's truly unused
-    if [ "$count" -eq 1 ]; then
-        loc=$(cat "$h" | wc -l)
-        if [ "$loc" -gt 15 ]; then
-            echo "$loc $h"
-        fi
-    fi
-done | sort -rn | head -30
+cd minified
+find . -name "*.c" -type f | while read f; do
+  base=$(basename "$f")
+  # Check if in any Makefile
+  if grep -q "$base" $(find . -name "Makefile" -o -name "Makefile.*") 2>/dev/null; then
+    continue
+  fi
+  # Check if included by any .c file
+  if grep -rq "#include \"$base\"" --include="*.c" . 2>/dev/null; then
+    continue
+  fi
+  # Count lines
+  lines=$(wc -l < "$f")
+  echo "$lines $f"
+done | sort -rn

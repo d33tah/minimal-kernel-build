@@ -810,3 +810,15 @@ Next session should:
 3. Consider careful TTY keyboard code removal if needed
 4. Commit progress frequently
 
+
+Progress (01:25-01:31):
+1. Removed unused cpumask macros from include/linux/cpumask.h (19 LOC)
+   - for_each_cpu_not (both UP and SMP versions)
+   - for_each_cpu_wrap (both UP and SMP versions)
+   - for_each_cpu_and (both UP and SMP versions)
+   - cpumask_next_wrap declaration
+   - Verified unused with grep across codebase
+   - make vm: PASSES ✓
+   - Committed: 0a59927, Pushed ✓
+   
+Continuing search for more unused macros...

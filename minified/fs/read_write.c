@@ -516,21 +516,7 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
 ssize_t ksys_pread64(unsigned int fd, char __user *buf, size_t count,
 		     loff_t pos)
 {
-	struct fd f;
-	ssize_t ret = -EBADF;
-
-	if (pos < 0)
-		return -EINVAL;
-
-	f = fdget(fd);
-	if (f.file) {
-		ret = -ESPIPE;
-		if (f.file->f_mode & FMODE_PREAD)
-			ret = vfs_read(f.file, buf, count, &pos);
-		fdput(f);
-	}
-
-	return ret;
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE4(pread64, unsigned int, fd, char __user *, buf,
@@ -543,21 +529,7 @@ SYSCALL_DEFINE4(pread64, unsigned int, fd, char __user *, buf,
 ssize_t ksys_pwrite64(unsigned int fd, const char __user *buf,
 		      size_t count, loff_t pos)
 {
-	struct fd f;
-	ssize_t ret = -EBADF;
-
-	if (pos < 0)
-		return -EINVAL;
-
-	f = fdget(fd);
-	if (f.file) {
-		ret = -ESPIPE;
-		if (f.file->f_mode & FMODE_PWRITE)  
-			ret = vfs_write(f.file, buf, count, &pos);
-		fdput(f);
-	}
-
-	return ret;
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE4(pwrite64, unsigned int, fd, const char __user *, buf,
@@ -941,93 +913,7 @@ SYSCALL_DEFINE6(pwritev2, unsigned long, fd, const struct iovec __user *, vec,
 static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
 		  	   size_t count, loff_t max)
 {
-	struct fd in, out;
-	struct inode *in_inode, *out_inode;
-	struct pipe_inode_info *opipe;
-	loff_t pos;
-	loff_t out_pos;
-	ssize_t retval;
-	int fl;
-
-	 
-	retval = -EBADF;
-	in = fdget(in_fd);
-	if (!in.file)
-		goto out;
-	if (!(in.file->f_mode & FMODE_READ))
-		goto fput_in;
-	retval = -ESPIPE;
-	if (!ppos) {
-		pos = in.file->f_pos;
-	} else {
-		pos = *ppos;
-		if (!(in.file->f_mode & FMODE_PREAD))
-			goto fput_in;
-	}
-	retval = rw_verify_area(READ, in.file, &pos, count);
-	if (retval < 0)
-		goto fput_in;
-	if (count > MAX_RW_COUNT)
-		count =  MAX_RW_COUNT;
-
-	 
-	retval = -EBADF;
-	out = fdget(out_fd);
-	if (!out.file)
-		goto fput_in;
-	if (!(out.file->f_mode & FMODE_WRITE))
-		goto fput_out;
-	in_inode = file_inode(in.file);
-	out_inode = file_inode(out.file);
-	out_pos = out.file->f_pos;
-
-	if (!max)
-		max = min(in_inode->i_sb->s_maxbytes, out_inode->i_sb->s_maxbytes);
-
-	if (unlikely(pos + count > max)) {
-		retval = -EOVERFLOW;
-		if (pos >= max)
-			goto fput_out;
-		count = max - pos;
-	}
-
-	fl = 0;
-	opipe = get_pipe_info(out.file, true);
-	if (!opipe) {
-		retval = rw_verify_area(WRITE, out.file, &out_pos, count);
-		if (retval < 0)
-			goto fput_out;
-		file_start_write(out.file);
-		retval = do_splice_direct(in.file, &pos, out.file, &out_pos,
-					  count, fl);
-		file_end_write(out.file);
-	} else {
-		retval = splice_file_to_pipe(in.file, opipe, &pos, count, fl);
-	}
-
-	if (retval > 0) {
-		add_rchar(current, retval);
-		add_wchar(current, retval);
-		fsnotify_access(in.file);
-		fsnotify_modify(out.file);
-		out.file->f_pos = out_pos;
-		if (ppos)
-			*ppos = pos;
-		else
-			in.file->f_pos = pos;
-	}
-
-	inc_syscr(current);
-	inc_syscw(current);
-	if (pos > max)
-		retval = -EOVERFLOW;
-
-fput_out:
-	fdput(out);
-fput_in:
-	fdput(in);
-out:
-	return retval;
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE4(sendfile, int, out_fd, int, in_fd, off_t __user *, offset, size_t, count)

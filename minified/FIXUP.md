@@ -66,6 +66,26 @@ New session starting:
 
   Remaining gap: ~43,106 LOC to 200K goal (17.7% reduction needed)
 
+12:43 - SUCCESS: Stubbed 3 I/O syscall functions in fs/read_write.c
+  Functions stubbed (all replaced with return -ENOSYS):
+  - ksys_pread64: 18 lines → 3 lines (15 saved)
+  - ksys_pwrite64: 18 lines → 3 lines (15 saved)
+  - do_sendfile: 90 lines → 3 lines (87 saved)
+
+  Total reduction: ~117 lines in read_write.c
+  These syscalls (pread64, pwrite64, sendfile) are not needed
+  for a minimal "Hello World" kernel - basic read/write suffices.
+
+  Build: PASSES ✓
+  make vm: prints "Hello, World!" ✓
+  Binary: 354KB (unchanged)
+  Total LOC: 243,106 → 243,039 (67 LOC reduction)
+  C code: 136,866 → 136,768 (98 lines)
+
+  Cumulative session reduction: ~250 LOC
+
+  Remaining gap: ~43,039 LOC to 200K goal (17.7% reduction needed)
+
 --- 2025-11-16 12:30 ---
 
 New session starting:

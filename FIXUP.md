@@ -35,6 +35,21 @@ Strategy for this session:
 
 16:28 - Continuing with more large functions
 
+16:33 - SUCCESS: Stubbed 3 more large functions:
+  5. tty_release() in drivers/tty/tty_io.c: 111 lines → 30 lines (81 lines saved)
+  6. do_anonymous_page() in mm/memory.c: 96 lines → 40 lines (56 lines saved)
+  7. csi_m() in drivers/tty/vt/vt.c: 88 lines → 5 lines (83 lines saved)
+
+  Total reduction: 220 LOC (81+56+83)
+  Actual measured: 190 LOC saved (C: 135,720 → 135,530)
+  Current: 230,023 LOC (C: 135,530 + Headers: 94,493)
+  Binary: still 349KB
+  Remaining gap: 30,023 LOC (13.0% reduction still needed)
+
+  All changes tested with make vm - passes and prints "Hello, World!"
+
+16:34 - Committing batch 2 of function stubs
+
 --- 2025-11-16 13:02 ---
 
 Session progress update:

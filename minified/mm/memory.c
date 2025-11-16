@@ -2443,100 +2443,44 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)
 
 static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 {
+	/* Minimal stub: simplified anonymous page fault handling */
 	struct vm_area_struct *vma = vmf->vma;
 	struct page *page;
-	vm_fault_t ret = 0;
 	pte_t entry;
 
-	
 	if (vma->vm_flags & VM_SHARED)
 		return VM_FAULT_SIGBUS;
 
-	
 	if (pte_alloc(vma->vm_mm, vmf->pmd))
 		return VM_FAULT_OOM;
 
-	
-	if (unlikely(pmd_trans_unstable(vmf->pmd)))
-		return 0;
-
-	
-	if (!(vmf->flags & FAULT_FLAG_WRITE) &&
-			!mm_forbids_zeropage(vma->vm_mm)) {
-		entry = pte_mkspecial(pfn_pte(my_zero_pfn(vmf->address),
-						vma->vm_page_prot));
-		vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd,
-				vmf->address, &vmf->ptl);
-		if (!pte_none(*vmf->pte)) {
-			update_mmu_tlb(vma, vmf->address, vmf->pte);
-			goto unlock;
-		}
-		ret = check_stable_address_space(vma->vm_mm);
-		if (ret)
-			goto unlock;
-		
-		if (userfaultfd_missing(vma)) {
-			pte_unmap_unlock(vmf->pte, vmf->ptl);
-			return handle_userfault(vmf, VM_UFFD_MISSING);
-		}
-		goto setpte;
-	}
-
-	
 	if (unlikely(anon_vma_prepare(vma)))
-		goto oom;
+		return VM_FAULT_OOM;
+
 	page = alloc_zeroed_user_highpage_movable(vma, vmf->address);
 	if (!page)
-		goto oom;
+		return VM_FAULT_OOM;
 
-	if (mem_cgroup_charge(page_folio(page), vma->vm_mm, GFP_KERNEL))
-		goto oom_free_page;
-	cgroup_throttle_swaprate(page, GFP_KERNEL);
-
-	
 	__SetPageUptodate(page);
-
 	entry = mk_pte(page, vma->vm_page_prot);
-	entry = pte_sw_mkyoung(entry);
 	if (vma->vm_flags & VM_WRITE)
 		entry = pte_mkwrite(pte_mkdirty(entry));
 
-	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
-			&vmf->ptl);
+	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address, &vmf->ptl);
 	if (!pte_none(*vmf->pte)) {
-		update_mmu_cache(vma, vmf->address, vmf->pte);
-		goto release;
-	}
-
-	ret = check_stable_address_space(vma->vm_mm);
-	if (ret)
-		goto release;
-
-	
-	if (userfaultfd_missing(vma)) {
-		pte_unmap_unlock(vmf->pte, vmf->ptl);
 		put_page(page);
-		return handle_userfault(vmf, VM_UFFD_MISSING);
+		goto unlock;
 	}
 
 	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
 	page_add_new_anon_rmap(page, vma, vmf->address);
 	lru_cache_add_inactive_or_unevictable(page, vma);
-setpte:
 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
-
-	
 	update_mmu_cache(vma, vmf->address, vmf->pte);
+
 unlock:
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
-	return ret;
-release:
-	put_page(page);
-	goto unlock;
-oom_free_page:
-	put_page(page);
-oom:
-	return VM_FAULT_OOM;
+	return 0;
 }
 
 static vm_fault_t __do_fault(struct vm_fault *vmf)

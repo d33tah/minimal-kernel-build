@@ -2160,87 +2160,18 @@ static vm_fault_t wp_page_shared(struct vm_fault *vmf)
 static vm_fault_t do_wp_page(struct vm_fault *vmf)
 	__releases(vmf->ptl)
 {
-	const bool unshare = vmf->flags & FAULT_FLAG_UNSHARE;
-	struct vm_area_struct *vma = vmf->vma;
-
-	VM_BUG_ON(unshare && (vmf->flags & FAULT_FLAG_WRITE));
-	VM_BUG_ON(!unshare && !(vmf->flags & FAULT_FLAG_WRITE));
-
-	if (likely(!unshare)) {
-		if (userfaultfd_pte_wp(vma, *vmf->pte)) {
-			pte_unmap_unlock(vmf->pte, vmf->ptl);
-			return handle_userfault(vmf, VM_UFFD_WP);
-		}
-
-		
-		if (unlikely(userfaultfd_wp(vmf->vma) &&
-			     mm_tlb_flush_pending(vmf->vma->vm_mm)))
-			flush_tlb_page(vmf->vma, vmf->address);
-	}
-
-	vmf->page = vm_normal_page(vma, vmf->address, vmf->orig_pte);
+	vmf->page = vm_normal_page(vmf->vma, vmf->address, vmf->orig_pte);
 	if (!vmf->page) {
-		if (unlikely(unshare)) {
-			
-			pte_unmap_unlock(vmf->pte, vmf->ptl);
-			return 0;
-		}
-
-		
-		if ((vma->vm_flags & (VM_WRITE|VM_SHARED)) ==
-				     (VM_WRITE|VM_SHARED))
-			return wp_pfn_shared(vmf);
-
 		pte_unmap_unlock(vmf->pte, vmf->ptl);
 		return wp_page_copy(vmf);
 	}
 
-	
-	if (PageAnon(vmf->page)) {
-		struct page *page = vmf->page;
-
-		
-		if (PageAnonExclusive(page))
-			goto reuse;
-
-		
-		if (PageKsm(page) || page_count(page) > 3)
-			goto copy;
-		if (!PageLRU(page))
-			
-			lru_add_drain();
-		if (page_count(page) > 1 + PageSwapCache(page))
-			goto copy;
-		if (!trylock_page(page))
-			goto copy;
-		if (PageSwapCache(page))
-			try_to_free_swap(page);
-		if (PageKsm(page) || page_count(page) != 1) {
-			unlock_page(page);
-			goto copy;
-		}
-		
-		page_move_anon_rmap(page, vma);
-		unlock_page(page);
-reuse:
-		if (unlikely(unshare)) {
-			pte_unmap_unlock(vmf->pte, vmf->ptl);
-			return 0;
-		}
+	if (PageAnon(vmf->page) && PageAnonExclusive(vmf->page)) {
 		wp_page_reuse(vmf);
 		return VM_FAULT_WRITE;
-	} else if (unshare) {
-		
-		pte_unmap_unlock(vmf->pte, vmf->ptl);
-		return 0;
-	} else if (unlikely((vma->vm_flags & (VM_WRITE|VM_SHARED)) ==
-					(VM_WRITE|VM_SHARED))) {
-		return wp_page_shared(vmf);
 	}
-copy:
-	
-	get_page(vmf->page);
 
+	get_page(vmf->page);
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
 	return wp_page_copy(vmf);
 }
@@ -2904,68 +2835,28 @@ split:
 
 static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 {
-	pte_t entry;
-
 	if (unlikely(pmd_none(*vmf->pmd))) {
-		
 		vmf->pte = NULL;
-		vmf->flags &= ~FAULT_FLAG_ORIG_PTE_VALID;
 	} else {
-		
-		if (pmd_devmap_trans_unstable(vmf->pmd))
-			return 0;
-		
 		vmf->pte = pte_offset_map(vmf->pmd, vmf->address);
 		vmf->orig_pte = *vmf->pte;
-		vmf->flags |= FAULT_FLAG_ORIG_PTE_VALID;
-
-		
-		barrier();
 		if (pte_none(vmf->orig_pte)) {
 			pte_unmap(vmf->pte);
 			vmf->pte = NULL;
 		}
 	}
 
-	if (!vmf->pte) {
-		if (vma_is_anonymous(vmf->vma))
-			return do_anonymous_page(vmf);
-		else
-			return do_fault(vmf);
-	}
+	if (!vmf->pte)
+		return vma_is_anonymous(vmf->vma) ? do_anonymous_page(vmf) : do_fault(vmf);
 
 	if (!pte_present(vmf->orig_pte))
 		return do_swap_page(vmf);
 
-	if (pte_protnone(vmf->orig_pte) && vma_is_accessible(vmf->vma))
-		return do_numa_page(vmf);
-
 	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
 	spin_lock(vmf->ptl);
-	entry = vmf->orig_pte;
-	if (unlikely(!pte_same(*vmf->pte, entry))) {
-		update_mmu_tlb(vmf->vma, vmf->address, vmf->pte);
-		goto unlock;
-	}
-	if (vmf->flags & (FAULT_FLAG_WRITE|FAULT_FLAG_UNSHARE)) {
-		if (!pte_write(entry))
-			return do_wp_page(vmf);
-		else if (likely(vmf->flags & FAULT_FLAG_WRITE))
-			entry = pte_mkdirty(entry);
-	}
-	entry = pte_mkyoung(entry);
-	if (ptep_set_access_flags(vmf->vma, vmf->address, vmf->pte, entry,
-				vmf->flags & FAULT_FLAG_WRITE)) {
-		update_mmu_cache(vmf->vma, vmf->address, vmf->pte);
-	} else {
-		
-		if (vmf->flags & FAULT_FLAG_TRIED)
-			goto unlock;
-		
-		if (vmf->flags & FAULT_FLAG_WRITE)
-			flush_tlb_fix_spurious_fault(vmf->vma, vmf->address);
-	}
-unlock:
+	if ((vmf->flags & (FAULT_FLAG_WRITE|FAULT_FLAG_UNSHARE)) && !pte_write(vmf->orig_pte))
+		return do_wp_page(vmf);
+
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
 	return 0;
 }

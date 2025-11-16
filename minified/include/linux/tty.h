@@ -231,7 +231,7 @@ int tty_dev_name_to_number(const char *name, dev_t *number);
 
 extern struct ktermios tty_std_termios;
 
-int vcs_init(void);
+static inline int vcs_init(void) { return 0; }
 
 extern struct class *tty_class;
 

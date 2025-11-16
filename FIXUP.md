@@ -20,19 +20,22 @@ Strategy: Need aggressive reduction. Focus on:
 
 Progress:
 
-Session 03:19-03:32 (13 mins):
-1. Successfully removed from build (146 LOC total):
+Session 03:19-03:40 (21 mins):
+1. Successfully removed from build (387 LOC total):
    - kdebugfs.c: 26 LOC (debugfs dir creation)
    - stacktrace.c: 25 LOC (stack trace utils)
    - firmware.c: 14 LOC (stub firmware kobject)
    - container.c: 11 LOC (stub container device)
    - attribute_container.c: 30 LOC (generic container model)
    - transport_class.c: 45 LOC (transport class infrastructure)
+   - defkeymap.c: 165 LOC (keyboard mapping data tables)
+   - vc_screen.c: 21 LOC (VT screen sysfs, already stubbed)
+   - selection.c: 55 LOC (VT text selection, already stubbed)
    All tested with make vm ✓
 
-2. Current status (03:32):
-   - Removed: 146 LOC this session
-   - Still need: ~55,854 LOC to reach 200K goal
+2. Current status (03:40):
+   - Removed: 387 LOC this session
+   - Still need: ~55,613 LOC to reach 200K goal
    - These are very small removals - need bigger targets
 
 3. Next opportunities to explore:

@@ -3836,69 +3836,32 @@ bool __weak arch_has_descending_max_zone_pfns(void)
 void __init free_area_init(unsigned long *max_zone_pfn)
 {
 	unsigned long start_pfn, end_pfn;
-	int i, nid, zone;
-	bool descending;
+	int i, nid;
 
-	
+	/* Minimal zone setup - just set up basic pfn ranges */
 	memset(arch_zone_lowest_possible_pfn, 0,
 				sizeof(arch_zone_lowest_possible_pfn));
 	memset(arch_zone_highest_possible_pfn, 0,
 				sizeof(arch_zone_highest_possible_pfn));
 
 	start_pfn = find_min_pfn_with_active_regions();
-	descending = arch_has_descending_max_zone_pfns();
 
+	/* Simple linear zone setup without movable zones */
 	for (i = 0; i < MAX_NR_ZONES; i++) {
-		if (descending)
-			zone = MAX_NR_ZONES - i - 1;
-		else
-			zone = i;
-
-		if (zone == ZONE_MOVABLE)
+		if (i == ZONE_MOVABLE)
 			continue;
-
-		end_pfn = max(max_zone_pfn[zone], start_pfn);
-		arch_zone_lowest_possible_pfn[zone] = start_pfn;
-		arch_zone_highest_possible_pfn[zone] = end_pfn;
-
+		end_pfn = max(max_zone_pfn[i], start_pfn);
+		arch_zone_lowest_possible_pfn[i] = start_pfn;
+		arch_zone_highest_possible_pfn[i] = end_pfn;
 		start_pfn = end_pfn;
 	}
 
-	
-	memset(zone_movable_pfn, 0, sizeof(zone_movable_pfn));
-	find_zone_movable_pfns_for_nodes();
-
-	for_each_mem_pfn_range(i, MAX_NUMNODES, &start_pfn, &end_pfn, &nid) {
-		subsection_map_init(start_pfn, end_pfn - start_pfn);
-	}
-
-	
-	mminit_verify_pageflags_layout();
+	/* Basic node initialization */
 	setup_nr_node_ids();
 	for_each_node(nid) {
-		pg_data_t *pgdat;
-
-		if (!node_online(nid)) {
-			pgdat = arch_alloc_nodedata(nid);
-			if (!pgdat) {
-				pr_err("Cannot allocate %zuB for node %d.\n",
-						sizeof(*pgdat), nid);
-				continue;
-			}
-			arch_refresh_nodedata(nid, pgdat);
-			free_area_init_memoryless_node(nid);
-
-			
-			continue;
+		if (node_online(nid)) {
+			free_area_init_node(nid);
 		}
-
-		pgdat = NODE_DATA(nid);
-		free_area_init_node(nid);
-
-		
-		if (pgdat->node_present_pages)
-			node_set_state(nid, N_MEMORY);
-		check_for_memory(pgdat, nid);
 	}
 
 	memmap_init();

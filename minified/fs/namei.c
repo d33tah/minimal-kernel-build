@@ -2795,41 +2795,8 @@ SYSCALL_DEFINE2(mkdir, const char __user *, pathname, umode_t, mode)
 int vfs_rmdir(struct user_namespace *mnt_userns, struct inode *dir,
 		     struct dentry *dentry)
 {
-	int error = may_delete(mnt_userns, dir, dentry, 1);
-
-	if (error)
-		return error;
-
-	if (!dir->i_op->rmdir)
-		return -EPERM;
-
-	dget(dentry);
-	inode_lock(dentry->d_inode);
-
-	error = -EBUSY;
-	if (is_local_mountpoint(dentry) ||
-	    (dentry->d_inode->i_flags & S_KERNEL_FILE))
-		goto out;
-
-	error = security_inode_rmdir(dir, dentry);
-	if (error)
-		goto out;
-
-	error = dir->i_op->rmdir(dir, dentry);
-	if (error)
-		goto out;
-
-	shrink_dcache_parent(dentry);
-	dentry->d_inode->i_flags |= S_DEAD;
-	dont_mount(dentry);
-	detach_mounts(dentry);
-
-out:
-	inode_unlock(dentry->d_inode);
-	dput(dentry);
-	if (!error)
-		d_delete_notify(dir, dentry);
-	return error;
+	/* Stub: directory removal not needed for minimal kernel */
+	return -EPERM;
 }
 
 int do_rmdir(int dfd, struct filename *name)
@@ -2846,45 +2813,8 @@ SYSCALL_DEFINE1(rmdir, const char __user *, pathname)
 int vfs_unlink(struct user_namespace *mnt_userns, struct inode *dir,
 	       struct dentry *dentry, struct inode **delegated_inode)
 {
-	struct inode *target = dentry->d_inode;
-	int error = may_delete(mnt_userns, dir, dentry, 0);
-
-	if (error)
-		return error;
-
-	if (!dir->i_op->unlink)
-		return -EPERM;
-
-	inode_lock(target);
-	if (IS_SWAPFILE(target))
-		error = -EPERM;
-	else if (is_local_mountpoint(dentry))
-		error = -EBUSY;
-	else {
-		error = security_inode_unlink(dir, dentry);
-		if (!error) {
-			error = try_break_deleg(target, delegated_inode);
-			if (error)
-				goto out;
-			error = dir->i_op->unlink(dir, dentry);
-			if (!error) {
-				dont_mount(dentry);
-				detach_mounts(dentry);
-			}
-		}
-	}
-out:
-	inode_unlock(target);
-
-	
-	if (!error && dentry->d_flags & DCACHE_NFSFS_RENAMED) {
-		fsnotify_unlink(dir, dentry);
-	} else if (!error) {
-		fsnotify_link_count(target);
-		d_delete_notify(dir, dentry);
-	}
-
-	return error;
+	/* Stub: file unlinking not needed for minimal kernel */
+	return -EPERM;
 }
 
 int do_unlinkat(int dfd, struct filename *name)
@@ -2951,56 +2881,8 @@ int vfs_link(struct dentry *old_dentry, struct user_namespace *mnt_userns,
 	     struct inode *dir, struct dentry *new_dentry,
 	     struct inode **delegated_inode)
 {
-	struct inode *inode = old_dentry->d_inode;
-	unsigned max_links = dir->i_sb->s_max_links;
-	int error;
-
-	if (!inode)
-		return -ENOENT;
-
-	error = may_create(mnt_userns, dir, new_dentry);
-	if (error)
-		return error;
-
-	if (dir->i_sb != inode->i_sb)
-		return -EXDEV;
-
-	
-	if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
-		return -EPERM;
-	
-	if (HAS_UNMAPPED_ID(mnt_userns, inode))
-		return -EPERM;
-	if (!dir->i_op->link)
-		return -EPERM;
-	if (S_ISDIR(inode->i_mode))
-		return -EPERM;
-
-	error = security_inode_link(old_dentry, dir, new_dentry);
-	if (error)
-		return error;
-
-	inode_lock(inode);
-	
-	if (inode->i_nlink == 0 && !(inode->i_state & I_LINKABLE))
-		error =  -ENOENT;
-	else if (max_links && inode->i_nlink >= max_links)
-		error = -EMLINK;
-	else {
-		error = try_break_deleg(inode, delegated_inode);
-		if (!error)
-			error = dir->i_op->link(old_dentry, dir, new_dentry);
-	}
-
-	if (!error && (inode->i_state & I_LINKABLE)) {
-		spin_lock(&inode->i_lock);
-		inode->i_state &= ~I_LINKABLE;
-		spin_unlock(&inode->i_lock);
-	}
-	inode_unlock(inode);
-	if (!error)
-		fsnotify_link(dir, inode, new_dentry);
-	return error;
+	/* Stub: hard link creation not needed for minimal kernel */
+	return -EPERM;
 }
 
 int do_linkat(int olddfd, struct filename *old, int newdfd,
@@ -3160,36 +3042,8 @@ int page_readlink(struct dentry *dentry, char __user *buffer, int buflen)
 
 int page_symlink(struct inode *inode, const char *symname, int len)
 {
-	struct address_space *mapping = inode->i_mapping;
-	const struct address_space_operations *aops = mapping->a_ops;
-	bool nofs = !mapping_gfp_constraint(mapping, __GFP_FS);
-	struct page *page;
-	void *fsdata;
-	int err;
-	unsigned int flags;
-
-retry:
-	if (nofs)
-		flags = memalloc_nofs_save();
-	err = aops->write_begin(NULL, mapping, 0, len-1, &page, &fsdata);
-	if (nofs)
-		memalloc_nofs_restore(flags);
-	if (err)
-		goto fail;
-
-	memcpy(page_address(page), symname, len-1);
-
-	err = aops->write_end(NULL, mapping, 0, len-1, len-1,
-							page, fsdata);
-	if (err < 0)
-		goto fail;
-	if (err < len-1)
-		goto retry;
-
-	mark_inode_dirty(inode);
-	return 0;
-fail:
-	return err;
+	/* Stub: symlink creation not needed for minimal kernel */
+	return -EPERM;
 }
 
 const struct inode_operations page_symlink_inode_operations = {

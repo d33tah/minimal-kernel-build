@@ -2391,94 +2391,13 @@ int con_debug_leave(void)
 
 static int do_register_con_driver(const struct consw *csw, int first, int last)
 {
-	struct module *owner = csw->owner;
-	struct con_driver *con_driver;
-	const char *desc;
-	int i, retval;
-
-	WARN_CONSOLE_UNLOCKED();
-
-	if (!try_module_get(owner))
-		return -ENODEV;
-
-	for (i = 0; i < MAX_NR_CON_DRIVER; i++) {
-		con_driver = &registered_con_driver[i];
-
-		
-		if (con_driver->con == csw) {
-			retval = -EBUSY;
-			goto err;
-		}
-	}
-
-	desc = csw->con_startup();
-	if (!desc) {
-		retval = -ENODEV;
-		goto err;
-	}
-
-	retval = -EINVAL;
-
-	for (i = 0; i < MAX_NR_CON_DRIVER; i++) {
-		con_driver = &registered_con_driver[i];
-
-		if (con_driver->con == NULL &&
-		    !(con_driver->flag & CON_DRIVER_FLAG_ZOMBIE)) {
-			con_driver->con = csw;
-			con_driver->desc = desc;
-			con_driver->node = i;
-			con_driver->flag = CON_DRIVER_FLAG_MODULE |
-			                   CON_DRIVER_FLAG_INIT;
-			con_driver->first = first;
-			con_driver->last = last;
-			retval = 0;
-			break;
-		}
-	}
-
-	if (retval)
-		goto err;
-
-	con_driver->dev =
-		device_create_with_groups(vtconsole_class, NULL,
-					  MKDEV(0, con_driver->node),
-					  con_driver, con_dev_groups,
-					  "vtcon%i", con_driver->node);
-	if (IS_ERR(con_driver->dev)) {
-		con_driver->dev = NULL;
-	} else {
-		vtconsole_init_device(con_driver);
-	}
-
-err:
-	module_put(owner);
-	return retval;
+	/* Stub: console driver registration not needed for minimal kernel */
+	return -ENODEV;
 }
 
 int do_unregister_con_driver(const struct consw *csw)
 {
-	int i;
-
-	
-	if (con_is_bound(csw))
-		return -EBUSY;
-
-	if (csw == conswitchp)
-		return -EINVAL;
-
-	for (i = 0; i < MAX_NR_CON_DRIVER; i++) {
-		struct con_driver *con_driver = &registered_con_driver[i];
-
-		if (con_driver->con == csw) {
-			
-			con_driver->con = NULL;
-			con_driver->flag = CON_DRIVER_FLAG_ZOMBIE;
-			schedule_work(&con_driver_unregister_work);
-
-			return 0;
-		}
-	}
-
+	/* Stub: console driver unregistration not needed for minimal kernel */
 	return -ENODEV;
 }
 

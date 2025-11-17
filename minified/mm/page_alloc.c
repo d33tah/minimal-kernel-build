@@ -1343,27 +1343,8 @@ static bool can_steal_fallback(unsigned int order, int start_mt)
 
 static inline bool boost_watermark(struct zone *zone)
 {
-	unsigned long max_boost;
-
-	if (!watermark_boost_factor)
-		return false;
-	
-	if ((pageblock_nr_pages * 4) > zone_managed_pages(zone))
-		return false;
-
-	max_boost = mult_frac(zone->_watermark[WMARK_HIGH],
-			watermark_boost_factor, 10000);
-
-	
-	if (!max_boost)
-		return false;
-
-	max_boost = max(pageblock_nr_pages, max_boost);
-
-	zone->watermark_boost = min(zone->watermark_boost + pageblock_nr_pages,
-		max_boost);
-
-	return true;
+	/* Stub: no watermark boosting */
+	return false;
 }
 
 static void steal_suitable_fallback(struct zone *zone, struct page *page,
@@ -1408,79 +1389,13 @@ int find_suitable_fallback(struct free_area *area, unsigned int order,
 static void reserve_highatomic_pageblock(struct page *page, struct zone *zone,
 				unsigned int alloc_order)
 {
-	int mt;
-	unsigned long max_managed, flags;
-
-	
-	max_managed = (zone_managed_pages(zone) / 100) + pageblock_nr_pages;
-	if (zone->nr_reserved_highatomic >= max_managed)
-		return;
-
-	spin_lock_irqsave(&zone->lock, flags);
-
-	
-	if (zone->nr_reserved_highatomic >= max_managed)
-		goto out_unlock;
-
-	
-	mt = get_pageblock_migratetype(page);
-	
-	if (migratetype_is_mergeable(mt)) {
-		zone->nr_reserved_highatomic += pageblock_nr_pages;
-		set_pageblock_migratetype(page, MIGRATE_HIGHATOMIC);
-		move_freepages_block(zone, page, MIGRATE_HIGHATOMIC, NULL);
-	}
-
-out_unlock:
-	spin_unlock_irqrestore(&zone->lock, flags);
+	/* Stub: no highatomic reservation */
 }
 
 static bool unreserve_highatomic_pageblock(const struct alloc_context *ac,
 						bool force)
 {
-	struct zonelist *zonelist = ac->zonelist;
-	unsigned long flags;
-	struct zoneref *z;
-	struct zone *zone;
-	struct page *page;
-	int order;
-	bool ret;
-
-	for_each_zone_zonelist_nodemask(zone, z, zonelist, ac->highest_zoneidx,
-								ac->nodemask) {
-		
-		if (!force && zone->nr_reserved_highatomic <=
-					pageblock_nr_pages)
-			continue;
-
-		spin_lock_irqsave(&zone->lock, flags);
-		for (order = 0; order < MAX_ORDER; order++) {
-			struct free_area *area = &(zone->free_area[order]);
-
-			page = get_page_from_free_area(area, MIGRATE_HIGHATOMIC);
-			if (!page)
-				continue;
-
-			
-			if (is_migrate_highatomic_page(page)) {
-				
-				zone->nr_reserved_highatomic -= min(
-						pageblock_nr_pages,
-						zone->nr_reserved_highatomic);
-			}
-
-			
-			set_pageblock_migratetype(page, ac->migratetype);
-			ret = move_freepages_block(zone, page, ac->migratetype,
-									NULL);
-			if (ret) {
-				spin_unlock_irqrestore(&zone->lock, flags);
-				return ret;
-			}
-		}
-		spin_unlock_irqrestore(&zone->lock, flags);
-	}
-
+	/* Stub: no highatomic unreservation */
 	return false;
 }
 
@@ -2299,19 +2214,7 @@ should_compact_retry(struct alloc_context *ac, unsigned int order, int alloc_fla
 		     enum compact_priority *compact_priority,
 		     int *compaction_retries)
 {
-	struct zone *zone;
-	struct zoneref *z;
-
-	if (!order || order > PAGE_ALLOC_COSTLY_ORDER)
-		return false;
-
-	
-	for_each_zone_zonelist_nodemask(zone, z, ac->zonelist,
-				ac->highest_zoneidx, ac->nodemask) {
-		if (zone_watermark_ok(zone, 0, min_wmark_pages(zone),
-					ac->highest_zoneidx, alloc_flags))
-			return true;
-	}
+	/* Stub: no compaction retry */
 	return false;
 }
 
@@ -2319,25 +2222,8 @@ static unsigned long
 __perform_reclaim(gfp_t gfp_mask, unsigned int order,
 					const struct alloc_context *ac)
 {
-	unsigned int noreclaim_flag;
-	unsigned long progress;
-
-	cond_resched();
-
-	
-	cpuset_memory_pressure_bump();
-	fs_reclaim_acquire(gfp_mask);
-	noreclaim_flag = memalloc_noreclaim_save();
-
-	progress = try_to_free_pages(ac->zonelist, order, gfp_mask,
-								ac->nodemask);
-
-	memalloc_noreclaim_restore(noreclaim_flag);
-	fs_reclaim_release(gfp_mask);
-
-	cond_resched();
-
-	return progress;
+	/* Stub: minimal reclaim attempt */
+	return try_to_free_pages(ac->zonelist, order, gfp_mask, ac->nodemask);
 }
 
 static inline struct page *
@@ -2456,48 +2342,13 @@ should_reclaim_retry(gfp_t gfp_mask, unsigned order,
 		     struct alloc_context *ac, int alloc_flags,
 		     bool did_some_progress, int *no_progress_loops)
 {
-	struct zone *zone;
-	struct zoneref *z;
-	bool ret = false;
-
-	
+	/* Stub: minimal retry logic */
 	if (did_some_progress && order <= PAGE_ALLOC_COSTLY_ORDER)
 		*no_progress_loops = 0;
 	else
 		(*no_progress_loops)++;
 
-	
-	if (*no_progress_loops > MAX_RECLAIM_RETRIES) {
-		
-		return unreserve_highatomic_pageblock(ac, true);
-	}
-
-	
-	for_each_zone_zonelist_nodemask(zone, z, ac->zonelist,
-				ac->highest_zoneidx, ac->nodemask) {
-		unsigned long available;
-		unsigned long reclaimable;
-		unsigned long min_wmark = min_wmark_pages(zone);
-		bool wmark;
-
-		available = reclaimable = zone_reclaimable_pages(zone);
-		available += zone_page_state_snapshot(zone, NR_FREE_PAGES);
-
-		
-		wmark = __zone_watermark_ok(zone, order, min_wmark,
-				ac->highest_zoneidx, alloc_flags, available);
-		if (wmark) {
-			ret = true;
-			break;
-		}
-	}
-
-	
-	if (current->flags & PF_WQ_WORKER)
-		schedule_timeout_uninterruptible(1);
-	else
-		cond_resched();
-	return ret;
+	return *no_progress_loops <= MAX_RECLAIM_RETRIES;
 }
 
 static inline bool

@@ -530,18 +530,7 @@ static inline bool rq_has_pinned_tasks(struct rq *rq)
 static void
 ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 {
-	struct rq *rq;
-
-	if (!schedstat_enabled())
-		return;
-
-	rq = this_rq();
-
-	__schedstat_inc(rq->ttwu_count);
-	__schedstat_inc(p->stats.nr_wakeups);
-
-	if (wake_flags & WF_SYNC)
-		__schedstat_inc(p->stats.nr_wakeups_sync);
+	/* Stub: wake-up statistics not needed for minimal kernel */
 }
 
 static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,

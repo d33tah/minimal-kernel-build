@@ -29,7 +29,15 @@ Approach: Target debug/error reporting, advanced features, and rarely-used sysca
   Binary: 329KB (stable)
   make vm: PASSES ✓, prints "Hello, World!" ✓
 
-  Session total: 27 LOC across 2 commits
+16:08 - Third commit: kernel/sched/core.c ttwu_stat (11 LOC reduction)
+  Stubbed function:
+  1. ttwu_stat - 11 LOC (wake-up statistics)
+
+  sched/core.c: 2573 → 2562 LOC
+  Binary: 329KB (stable)
+  make vm: PASSES ✓, prints "Hello, World!" ✓
+
+  Session total: 38 LOC across 3 commits
 
 --- 2025-11-17 12:27 ---
 

@@ -1326,53 +1326,11 @@ int request_percpu_nmi(unsigned int irq, irq_handler_t handler,
 
 int prepare_percpu_nmi(unsigned int irq)
 {
-	unsigned long flags;
-	struct irq_desc *desc;
-	int ret = 0;
-
-	WARN_ON(preemptible());
-
-	desc = irq_get_desc_lock(irq, &flags,
-				 IRQ_GET_DESC_CHECK_PERCPU);
-	if (!desc)
-		return -EINVAL;
-
-	if (WARN(!(desc->istate & IRQS_NMI),
-		 KERN_ERR "prepare_percpu_nmi called for a non-NMI interrupt: irq %u\n",
-		 irq)) {
-		ret = -EINVAL;
-		goto out;
-	}
-
-	ret = irq_nmi_setup(desc);
-	if (ret) {
-		pr_err("Failed to setup NMI delivery: irq %u\n", irq);
-		goto out;
-	}
-
-out:
-	irq_put_desc_unlock(desc, flags);
-	return ret;
+	return -ENODEV;
 }
 
 void teardown_percpu_nmi(unsigned int irq)
 {
-	unsigned long flags;
-	struct irq_desc *desc;
-
-	WARN_ON(preemptible());
-
-	desc = irq_get_desc_lock(irq, &flags,
-				 IRQ_GET_DESC_CHECK_PERCPU);
-	if (!desc)
-		return;
-
-	if (WARN_ON(!(desc->istate & IRQS_NMI)))
-		goto out;
-
-	irq_nmi_teardown(desc);
-out:
-	irq_put_desc_unlock(desc, flags);
 }
 
 int __irq_get_irqchip_state(struct irq_data *data, enum irqchip_irq_state which,

@@ -1341,7 +1341,7 @@ out:
 
 static void shrink_readahead_size_eio(struct file_ra_state *ra)
 {
-	ra->ra_pages /= 4;
+	/* Stub: readahead optimization not needed */
 }
 
 static void filemap_get_read_batch(struct address_space *mapping,
@@ -1515,11 +1515,7 @@ static int filemap_readahead(struct kiocb *iocb, struct file *file,
 		struct address_space *mapping, struct folio *folio,
 		pgoff_t last_index)
 {
-	DEFINE_READAHEAD(ractl, file, &file->f_ra, mapping, folio->index);
-
-	if (iocb->ki_flags & IOCB_NOIO)
-		return -EAGAIN;
-	page_cache_async_ra(&ractl, folio, last_index - folio->index);
+	/* Stub: readahead optimization not needed */
 	return 0;
 }
 
@@ -1804,25 +1800,8 @@ static struct file *do_sync_mmap_readahead(struct vm_fault *vmf)
 static struct file *do_async_mmap_readahead(struct vm_fault *vmf,
 					    struct folio *folio)
 {
-	struct file *file = vmf->vma->vm_file;
-	struct file_ra_state *ra = &file->f_ra;
-	DEFINE_READAHEAD(ractl, file, ra, file->f_mapping, vmf->pgoff);
-	struct file *fpin = NULL;
-	unsigned int mmap_miss;
-
-	
-	if (vmf->vma->vm_flags & VM_RAND_READ || !ra->ra_pages)
-		return fpin;
-
-	mmap_miss = READ_ONCE(ra->mmap_miss);
-	if (mmap_miss)
-		WRITE_ONCE(ra->mmap_miss, --mmap_miss);
-
-	if (folio_test_readahead(folio)) {
-		fpin = maybe_unlock_mmap_for_io(vmf, fpin);
-		page_cache_async_ra(&ractl, folio, ra->ra_pages);
-	}
-	return fpin;
+	/* Stub: async readahead optimization not needed */
+	return NULL;
 }
 
 vm_fault_t filemap_fault(struct vm_fault *vmf)

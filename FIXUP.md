@@ -37,7 +37,15 @@ Approach: Target debug/error reporting, advanced features, and rarely-used sysca
   Binary: 329KB (stable)
   make vm: PASSES ✓, prints "Hello, World!" ✓
 
-  Session total: 38 LOC across 3 commits
+16:10 - Fourth commit: mm/filemap.c dio_warn_stale_pagecache (11 LOC reduction)
+  Stubbed function:
+  1. dio_warn_stale_pagecache - 11 LOC (direct I/O warning)
+
+  filemap.c: 2310 → 2299 LOC
+  Binary: 329KB (stable)
+  make vm: PASSES ✓, prints "Hello, World!" ✓
+
+  Session total: 49 LOC across 4 commits
 
 --- 2025-11-17 12:27 ---
 

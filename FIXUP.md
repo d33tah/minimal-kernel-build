@@ -26,7 +26,21 @@ New session starting:
   Binary: 337KB (down from 338KB, -1KB)
   make vm: PASSES ✓, prints "Hello, World!" ✓
 
-  Will continue with more aggressive stubbing in mm/ and fs/ subsystems
+00:43 - Second commit: 19 additional LOC reduced
+  Stubbed optimization function in mm/memory.c:
+  1. do_fault_around(): 28 lines → 3 lines (25 lines saved, net 19 LOC reduction)
+
+  Result: 238,733 LOC (down from 238,752)
+  Binary: 337KB (stable)
+  make vm: PASSES ✓, prints "Hello, World!" ✓
+
+  Session total: 193 LOC reduced (238,926 → 238,733)
+  Remaining to goal: 38,733 LOC (16.2% reduction needed)
+
+  Note: Attempted to stub fault handlers (do_read_fault, do_cow_fault, do_shared_fault)
+  but they were too critical - kernel failed to boot. Reverted those changes.
+
+  Strategy for next session: Continue with safe stubbing in fs/ and drivers/ subsystems
 
 --- 2025-11-16 23:52 ---
 

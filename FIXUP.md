@@ -1,5 +1,15 @@
 --- 2025-11-17 08:43 ---
 
+08:52 - Second commit: More mm/page_alloc.c stubbing (85 LOC reduction)
+  Stubbed 3 more functions:
+  1. si_mem_available - 29 LOC (memory info reporting)
+  2. split_free_page - 41 LOC (page splitting)
+  3. free_tail_pages_check - 39 LOC (debug tail page checking)
+
+  page_alloc.c: 3062 → 2977 LOC
+  Binary: 333KB (stable)
+  make vm: PASSES ✓, prints "Hello, World!" ✓
+
 08:48 - First commit: mm/page_alloc.c stubbing (114 LOC reduction)
   Stubbed 3 functions:
   1. page_frag_alloc_align - 51 LOC (fragment allocation optimization)

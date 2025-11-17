@@ -571,47 +571,8 @@ done_merging:
 int split_free_page(struct page *free_page,
 			unsigned int order, unsigned long split_pfn_offset)
 {
-	struct zone *zone = page_zone(free_page);
-	unsigned long free_page_pfn = page_to_pfn(free_page);
-	unsigned long pfn;
-	unsigned long flags;
-	int free_page_order;
-	int mt;
-	int ret = 0;
-
-	if (split_pfn_offset == 0)
-		return ret;
-
-	spin_lock_irqsave(&zone->lock, flags);
-
-	if (!PageBuddy(free_page) || buddy_order(free_page) != order) {
-		ret = -ENOENT;
-		goto out;
-	}
-
-	mt = get_pageblock_migratetype(free_page);
-	if (likely(!is_migrate_isolate(mt)))
-		__mod_zone_freepage_state(zone, -(1UL << order), mt);
-
-	del_page_from_free_list(free_page, zone, order);
-	for (pfn = free_page_pfn;
-	     pfn < free_page_pfn + (1UL << order);) {
-		int mt = get_pfnblock_migratetype(pfn_to_page(pfn), pfn);
-
-		free_page_order = min_t(unsigned int,
-					pfn ? __ffs(pfn) : order,
-					__fls(split_pfn_offset));
-		__free_one_page(pfn_to_page(pfn), pfn, zone, free_page_order,
-				mt, FPI_NONE);
-		pfn += 1UL << free_page_order;
-		split_pfn_offset -= (1UL << free_page_order);
-		
-		if (split_pfn_offset == 0)
-			split_pfn_offset = (1UL << order) - (pfn - free_page_pfn);
-	}
-out:
-	spin_unlock_irqrestore(&zone->lock, flags);
-	return ret;
+	/* Stub: free page splitting not needed for minimal kernel */
+	return -ENOENT;
 }
 
 static inline bool page_expected_state(struct page *page,
@@ -665,46 +626,10 @@ static inline int check_free_page(struct page *page)
 
 static int free_tail_pages_check(struct page *head_page, struct page *page)
 {
-	int ret = 1;
-
-	
-	BUILD_BUG_ON((unsigned long)LIST_POISON1 & 1);
-
-	if (!IS_ENABLED(CONFIG_DEBUG_VM)) {
-		ret = 0;
-		goto out;
-	}
-	switch (page - head_page) {
-	case 1:
-		
-		if (unlikely(compound_mapcount(page))) {
-			bad_page(page, "nonzero compound_mapcount");
-			goto out;
-		}
-		break;
-	case 2:
-		
-		break;
-	default:
-		if (page->mapping != TAIL_MAPPING) {
-			bad_page(page, "corrupted mapping in tail page");
-			goto out;
-		}
-		break;
-	}
-	if (unlikely(!PageTail(page))) {
-		bad_page(page, "PageTail not set");
-		goto out;
-	}
-	if (unlikely(compound_head(page) != head_page)) {
-		bad_page(page, "compound_head not consistent");
-		goto out;
-	}
-	ret = 0;
-out:
+	/* Stub: debug tail page checking not needed for minimal kernel */
 	page->mapping = NULL;
 	clear_compound_head(page);
-	return ret;
+	return 0;
 }
 
 static inline bool should_skip_kasan_poison(struct page *page, fpi_t fpi_flags)
@@ -2557,36 +2482,8 @@ static inline void show_node(struct zone *zone)
 
 long si_mem_available(void)
 {
-	long available;
-	unsigned long pagecache;
-	unsigned long wmark_low = 0;
-	unsigned long pages[NR_LRU_LISTS];
-	unsigned long reclaimable;
-	struct zone *zone;
-	int lru;
-
-	for (lru = LRU_BASE; lru < NR_LRU_LISTS; lru++)
-		pages[lru] = global_node_page_state(NR_LRU_BASE + lru);
-
-	for_each_zone(zone)
-		wmark_low += low_wmark_pages(zone);
-
-	
-	available = global_zone_page_state(NR_FREE_PAGES) - totalreserve_pages;
-
-	
-	pagecache = pages[LRU_ACTIVE_FILE] + pages[LRU_INACTIVE_FILE];
-	pagecache -= min(pagecache / 2, wmark_low);
-	available += pagecache;
-
-	
-	reclaimable = global_node_page_state_pages(NR_SLAB_RECLAIMABLE_B) +
-		global_node_page_state(NR_KERNEL_MISC_RECLAIMABLE);
-	available += reclaimable - min(reclaimable / 2, wmark_low);
-
-	if (available < 0)
-		available = 0;
-	return available;
+	/* Stub: memory info reporting not needed for minimal kernel */
+	return global_zone_page_state(NR_FREE_PAGES);
 }
 
 void si_meminfo(struct sysinfo *val)

@@ -226,28 +226,6 @@ static bool low_pfn(unsigned long pfn)
 
 static void dump_pagetable(unsigned long address)
 {
-	pgd_t *base = __va(read_cr3_pa());
-	pgd_t *pgd = &base[pgd_index(address)];
-	p4d_t *p4d;
-	pud_t *pud;
-	pmd_t *pmd;
-	pte_t *pte;
-
-#define pr_pde pr_info
-	p4d = p4d_offset(pgd, address);
-	pud = pud_offset(p4d, address);
-	pmd = pmd_offset(pud, address);
-	pr_pde("*pde = %0*Lx ", sizeof(*pmd) * 2, (u64)pmd_val(*pmd));
-#undef pr_pde
-
-	 
-	if (!low_pfn(pmd_pfn(*pmd)) || !pmd_present(*pmd) || pmd_large(*pmd))
-		goto out;
-
-	pte = pte_offset_kernel(pmd, address);
-	pr_cont("*pte = %0*Lx ", sizeof(*pte) * 2, (u64)pte_val(*pte));
-out:
-	pr_cont("\n");
 }
 
 
@@ -272,98 +250,11 @@ static int is_f00f_bug(struct pt_regs *regs, unsigned long error_code,
 
 static void show_ldttss(const struct desc_ptr *gdt, const char *name, u16 index)
 {
-	u32 offset = (index >> 3) * sizeof(struct desc_struct);
-	unsigned long addr;
-	struct ldttss_desc desc;
-
-	if (index == 0) {
-		pr_alert("%s: NULL\n", name);
-		return;
-	}
-
-	if (offset + sizeof(struct ldttss_desc) >= gdt->size) {
-		pr_alert("%s: 0x%hx -- out of bounds\n", name, index);
-		return;
-	}
-
-	if (copy_from_kernel_nofault(&desc, (void *)(gdt->address + offset),
-			      sizeof(struct ldttss_desc))) {
-		pr_alert("%s: 0x%hx -- GDT entry is not readable\n",
-			 name, index);
-		return;
-	}
-
-	addr = desc.base0 | (desc.base1 << 16) | ((unsigned long)desc.base2 << 24);
-	pr_alert("%s: 0x%hx -- base=0x%lx limit=0x%x\n",
-		 name, index, addr, (desc.limit0 | (desc.limit1 << 16)));
 }
 
 static void
 show_fault_oops(struct pt_regs *regs, unsigned long error_code, unsigned long address)
 {
-	if (!oops_may_print())
-		return;
-
-	if (error_code & X86_PF_INSTR) {
-		unsigned int level;
-		pgd_t *pgd;
-		pte_t *pte;
-
-		pgd = __va(read_cr3_pa());
-		pgd += pgd_index(address);
-
-		pte = lookup_address_in_pgd(pgd, address, &level);
-
-		if (pte && pte_present(*pte) && !pte_exec(*pte))
-			pr_crit("kernel tried to execute NX-protected page - exploit attempt? (uid: %d)\n",
-				from_kuid(&init_user_ns, current_uid()));
-		if (pte && pte_present(*pte) && pte_exec(*pte) &&
-				(pgd_flags(*pgd) & _PAGE_USER) &&
-				(__read_cr4() & X86_CR4_SMEP))
-			pr_crit("unable to execute userspace code (SMEP?) (uid: %d)\n",
-				from_kuid(&init_user_ns, current_uid()));
-	}
-
-	if (address < PAGE_SIZE && !user_mode(regs))
-		pr_alert("BUG: kernel NULL pointer dereference, address: %px\n",
-			(void *)address);
-	else
-		pr_alert("BUG: unable to handle page fault for address: %px\n",
-			(void *)address);
-
-	pr_alert("#PF: %s %s in %s mode\n",
-		 (error_code & X86_PF_USER)  ? "user" : "supervisor",
-		 (error_code & X86_PF_INSTR) ? "instruction fetch" :
-		 (error_code & X86_PF_WRITE) ? "write access" :
-					       "read access",
-			     user_mode(regs) ? "user" : "kernel");
-	pr_alert("#PF: error_code(0x%04lx) - %s\n", error_code,
-		 !(error_code & X86_PF_PROT) ? "not-present page" :
-		 (error_code & X86_PF_RSVD)  ? "reserved bit violation" :
-		 (error_code & X86_PF_PK)    ? "protection keys violation" :
-					       "permissions violation");
-
-	if (!(error_code & X86_PF_USER) && user_mode(regs)) {
-		struct desc_ptr idt, gdt;
-		u16 ldtr, tr;
-
-		 
-		store_idt(&idt);
-
-		 
-		native_store_gdt(&gdt);
-
-		pr_alert("IDT: 0x%lx (limit=0x%hx) GDT: 0x%lx (limit=0x%hx)\n",
-			 idt.address, idt.size, gdt.address, gdt.size);
-
-		store_ldt(ldtr);
-		show_ldttss(&gdt, "LDTR", ldtr);
-
-		store_tr(tr);
-		show_ldttss(&gdt, "TR", tr);
-	}
-
-	dump_pagetable(address);
 }
 
 static noinline void

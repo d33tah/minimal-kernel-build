@@ -817,42 +817,8 @@ int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 
 int replace_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 {
-	struct vm_area_struct *vma;
-	struct file *old_exe_file;
-	int ret = 0;
-
-	
-	old_exe_file = get_mm_exe_file(mm);
-	if (old_exe_file) {
-		mmap_read_lock(mm);
-		for (vma = mm->mmap; vma && !ret; vma = vma->vm_next) {
-			if (!vma->vm_file)
-				continue;
-			if (path_equal(&vma->vm_file->f_path,
-				       &old_exe_file->f_path))
-				ret = -EBUSY;
-		}
-		mmap_read_unlock(mm);
-		fput(old_exe_file);
-		if (ret)
-			return ret;
-	}
-
-	
-	ret = deny_write_access(new_exe_file);
-	if (ret)
-		return -EACCES;
-	get_file(new_exe_file);
-
-	old_exe_file = xchg(&mm->exe_file, new_exe_file);
-	if (old_exe_file) {
-		
-		mmap_read_lock(mm);
-		allow_write_access(old_exe_file);
-		fput(old_exe_file);
-		mmap_read_unlock(mm);
-	}
-	return 0;
+	/* Stubbed: exe file replacement not needed for minimal boot */
+	return -EINVAL;
 }
 
 struct file *get_mm_exe_file(struct mm_struct *mm)
@@ -2153,106 +2119,8 @@ int unshare_fd(unsigned long unshare_flags, unsigned int max_fds,
 
 int ksys_unshare(unsigned long unshare_flags)
 {
-	struct fs_struct *fs, *new_fs = NULL;
-	struct files_struct *new_fd = NULL;
-	struct cred *new_cred = NULL;
-	struct nsproxy *new_nsproxy = NULL;
-	int do_sysvsem = 0;
-	int err;
-
-	
-	if (unshare_flags & CLONE_NEWUSER)
-		unshare_flags |= CLONE_THREAD | CLONE_FS;
-	
-	if (unshare_flags & CLONE_VM)
-		unshare_flags |= CLONE_SIGHAND;
-	
-	if (unshare_flags & CLONE_SIGHAND)
-		unshare_flags |= CLONE_THREAD;
-	
-	if (unshare_flags & CLONE_NEWNS)
-		unshare_flags |= CLONE_FS;
-
-	err = check_unshare_flags(unshare_flags);
-	if (err)
-		goto bad_unshare_out;
-	
-	if (unshare_flags & (CLONE_NEWIPC|CLONE_SYSVSEM))
-		do_sysvsem = 1;
-	err = unshare_fs(unshare_flags, &new_fs);
-	if (err)
-		goto bad_unshare_out;
-	err = unshare_fd(unshare_flags, NR_OPEN_MAX, &new_fd);
-	if (err)
-		goto bad_unshare_cleanup_fs;
-	err = unshare_userns(unshare_flags, &new_cred);
-	if (err)
-		goto bad_unshare_cleanup_fd;
-	err = unshare_nsproxy_namespaces(unshare_flags, &new_nsproxy,
-					 new_cred, new_fs);
-	if (err)
-		goto bad_unshare_cleanup_cred;
-
-	if (new_cred) {
-		err = set_cred_ucounts(new_cred);
-		if (err)
-			goto bad_unshare_cleanup_cred;
-	}
-
-	if (new_fs || new_fd || do_sysvsem || new_cred || new_nsproxy) {
-		if (do_sysvsem) {
-			
-			exit_sem(current);
-		}
-		if (unshare_flags & CLONE_NEWIPC) {
-			
-			exit_shm(current);
-			shm_init_task(current);
-		}
-
-		if (new_nsproxy)
-			switch_task_namespaces(current, new_nsproxy);
-
-		task_lock(current);
-
-		if (new_fs) {
-			fs = current->fs;
-			spin_lock(&fs->lock);
-			current->fs = new_fs;
-			if (--fs->users)
-				new_fs = NULL;
-			else
-				new_fs = fs;
-			spin_unlock(&fs->lock);
-		}
-
-		if (new_fd)
-			swap(current->files, new_fd);
-
-		task_unlock(current);
-
-		if (new_cred) {
-			
-			commit_creds(new_cred);
-			new_cred = NULL;
-		}
-	}
-
-	perf_event_namespaces(current);
-
-bad_unshare_cleanup_cred:
-	if (new_cred)
-		put_cred(new_cred);
-bad_unshare_cleanup_fd:
-	if (new_fd)
-		put_files_struct(new_fd);
-
-bad_unshare_cleanup_fs:
-	if (new_fs)
-		free_fs_struct(new_fs);
-
-bad_unshare_out:
-	return err;
+	/* Stubbed: namespace unsharing not needed for minimal boot */
+	return -EINVAL;
 }
 
 SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)

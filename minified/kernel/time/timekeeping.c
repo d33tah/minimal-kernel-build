@@ -689,46 +689,6 @@ static int adjust_historical_crosststamp(struct system_time_snapshot *history,
 					 bool discontinuity,
 					 struct system_device_crosststamp *ts)
 {
-	struct timekeeper *tk = &tk_core.timekeeper;
-	u64 corr_raw, corr_real;
-	bool interp_forward;
-	int ret;
-
-	if (total_history_cycles == 0 || partial_history_cycles == 0)
-		return 0;
-
-	interp_forward = partial_history_cycles > total_history_cycles / 2;
-	partial_history_cycles = interp_forward ?
-		total_history_cycles - partial_history_cycles :
-		partial_history_cycles;
-
-	corr_raw = (u64)ktime_to_ns(
-		ktime_sub(ts->sys_monoraw, history->raw));
-	ret = scale64_check_overflow(partial_history_cycles,
-				     total_history_cycles, &corr_raw);
-	if (ret)
-		return ret;
-
-	if (discontinuity) {
-		corr_real = mul_u64_u32_div
-			(corr_raw, tk->tkr_mono.mult, tk->tkr_raw.mult);
-	} else {
-		corr_real = (u64)ktime_to_ns(
-			ktime_sub(ts->sys_realtime, history->real));
-		ret = scale64_check_overflow(partial_history_cycles,
-					     total_history_cycles, &corr_real);
-		if (ret)
-			return ret;
-	}
-
-	if (interp_forward) {
-		ts->sys_monoraw = ktime_add_ns(history->raw, corr_raw);
-		ts->sys_realtime = ktime_add_ns(history->real, corr_real);
-	} else {
-		ts->sys_monoraw = ktime_sub_ns(ts->sys_monoraw, corr_raw);
-		ts->sys_realtime = ktime_sub_ns(ts->sys_realtime, corr_real);
-	}
-
 	return 0;
 }
 
@@ -749,75 +709,7 @@ int get_device_system_crosststamp(int (*get_time_fn)
 				  struct system_time_snapshot *history_begin,
 				  struct system_device_crosststamp *xtstamp)
 {
-	struct system_counterval_t system_counterval;
-	struct timekeeper *tk = &tk_core.timekeeper;
-	u64 cycles, now, interval_start;
-	unsigned int clock_was_set_seq = 0;
-	ktime_t base_real, base_raw;
-	u64 nsec_real, nsec_raw;
-	u8 cs_was_changed_seq;
-	unsigned int seq;
-	bool do_interp;
-	int ret;
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-		
-		ret = get_time_fn(&xtstamp->device, &system_counterval, ctx);
-		if (ret)
-			return ret;
-
-		if (tk->tkr_mono.clock != system_counterval.cs)
-			return -ENODEV;
-		cycles = system_counterval.cycles;
-
-		now = tk_clock_read(&tk->tkr_mono);
-		interval_start = tk->tkr_mono.cycle_last;
-		if (!cycle_between(interval_start, cycles, now)) {
-			clock_was_set_seq = tk->clock_was_set_seq;
-			cs_was_changed_seq = tk->cs_was_changed_seq;
-			cycles = interval_start;
-			do_interp = true;
-		} else {
-			do_interp = false;
-		}
-
-		base_real = ktime_add(tk->tkr_mono.base,
-				      tk_core.timekeeper.offs_real);
-		base_raw = tk->tkr_raw.base;
-
-		nsec_real = timekeeping_cycles_to_ns(&tk->tkr_mono,
-						     system_counterval.cycles);
-		nsec_raw = timekeeping_cycles_to_ns(&tk->tkr_raw,
-						    system_counterval.cycles);
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	xtstamp->sys_realtime = ktime_add_ns(base_real, nsec_real);
-	xtstamp->sys_monoraw = ktime_add_ns(base_raw, nsec_raw);
-
-	if (do_interp) {
-		u64 partial_history_cycles, total_history_cycles;
-		bool discontinuity;
-
-		if (!history_begin ||
-		    !cycle_between(history_begin->cycles,
-				   system_counterval.cycles, cycles) ||
-		    history_begin->cs_was_changed_seq != cs_was_changed_seq)
-			return -EINVAL;
-		partial_history_cycles = cycles - system_counterval.cycles;
-		total_history_cycles = cycles - history_begin->cycles;
-		discontinuity =
-			history_begin->clock_was_set_seq != clock_was_set_seq;
-
-		ret = adjust_historical_crosststamp(history_begin,
-						    partial_history_cycles,
-						    total_history_cycles,
-						    discontinuity, xtstamp);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
+	return -ENODEV;
 }
 
 int do_settimeofday64(const struct timespec64 *ts)
@@ -1095,100 +987,10 @@ static void __timekeeping_inject_sleeptime(struct timekeeper *tk,
 
 void timekeeping_resume(void)
 {
-	struct timekeeper *tk = &tk_core.timekeeper;
-	struct clocksource *clock = tk->tkr_mono.clock;
-	unsigned long flags;
-	struct timespec64 ts_new, ts_delta;
-	u64 cycle_now, nsec;
-	bool inject_sleeptime = false;
-
-	read_persistent_clock64(&ts_new);
-
-	clockevents_resume();
-	clocksource_resume();
-
-	raw_spin_lock_irqsave(&timekeeper_lock, flags);
-	write_seqcount_begin(&tk_core.seq);
-
-	cycle_now = tk_clock_read(&tk->tkr_mono);
-	nsec = clocksource_stop_suspend_timing(clock, cycle_now);
-	if (nsec > 0) {
-		ts_delta = ns_to_timespec64(nsec);
-		inject_sleeptime = true;
-	} else if (timespec64_compare(&ts_new, &timekeeping_suspend_time) > 0) {
-		ts_delta = timespec64_sub(ts_new, timekeeping_suspend_time);
-		inject_sleeptime = true;
-	}
-
-	if (inject_sleeptime) {
-		suspend_timing_needed = false;
-		__timekeeping_inject_sleeptime(tk, &ts_delta);
-	}
-
-	tk->tkr_mono.cycle_last = cycle_now;
-	tk->tkr_raw.cycle_last  = cycle_now;
-
-	tk->ntp_error = 0;
-	timekeeping_suspended = 0;
-	timekeeping_update(tk, TK_MIRROR | TK_CLOCK_WAS_SET);
-	write_seqcount_end(&tk_core.seq);
-	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
-
-	touch_softlockup_watchdog();
-
-	tick_resume();
-	
-	timerfd_resume();
 }
 
 int timekeeping_suspend(void)
 {
-	struct timekeeper *tk = &tk_core.timekeeper;
-	unsigned long flags;
-	struct timespec64		delta, delta_delta;
-	static struct timespec64	old_delta;
-	struct clocksource *curr_clock;
-	u64 cycle_now;
-
-	read_persistent_clock64(&timekeeping_suspend_time);
-
-	if (timekeeping_suspend_time.tv_sec || timekeeping_suspend_time.tv_nsec)
-		persistent_clock_exists = true;
-
-	suspend_timing_needed = true;
-
-	raw_spin_lock_irqsave(&timekeeper_lock, flags);
-	write_seqcount_begin(&tk_core.seq);
-	timekeeping_forward_now(tk);
-	timekeeping_suspended = 1;
-
-	curr_clock = tk->tkr_mono.clock;
-	cycle_now = tk->tkr_mono.cycle_last;
-	clocksource_start_suspend_timing(curr_clock, cycle_now);
-
-	if (persistent_clock_exists) {
-		
-		delta = timespec64_sub(tk_xtime(tk), timekeeping_suspend_time);
-		delta_delta = timespec64_sub(delta, old_delta);
-		if (abs(delta_delta.tv_sec) >= 2) {
-			
-			old_delta = delta;
-		} else {
-			
-			timekeeping_suspend_time =
-				timespec64_add(timekeeping_suspend_time, delta_delta);
-		}
-	}
-
-	timekeeping_update(tk, TK_MIRROR);
-	halt_fast_timekeeper(tk);
-	write_seqcount_end(&tk_core.seq);
-	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
-
-	tick_suspend();
-	clocksource_suspend();
-	clockevents_suspend();
-
 	return 0;
 }
 

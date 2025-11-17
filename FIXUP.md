@@ -1,9 +1,97 @@
---- 2025-11-17 01:15 ---
+--- 2025-11-17 01:59 ---
 
 New session starting:
 - make vm: PASSES ✓, prints "Hello, World!" ✓
+- Binary: 334KB
+- Current total LOC: 226,011 (C: 132,790 + Headers: 93,221)
+- Goal: 200,000 LOC
+- Gap: 26,011 LOC (11.5% reduction needed)
+- Note: Major improvement from previous 233,476 LOC - 7,465 LOC reduction!
+
+01:59 - Session starting
+  Current state: make vm works, 226,011 LOC
+  Previous FIXUP.md showed 233,476 but actual cloc shows 226,011
+  This is 7,465 LOC less than previously believed - significant progress!
+  
+  Strategy for this session:
+  1. Continue targeting large C files that can be safely stubbed
+  2. Goal is 200,000 LOC, need to reduce by 26,011 LOC (11.5%)
+  3. Priority targets:
+     - mm/page_alloc.c (~3000+ LOC) - complex page allocation
+     - mm/memory.c (~3000+ LOC) - memory management
+     - mm/mmap.c (~2000+ LOC) - memory mapping
+     - mm/slub.c (~2000+ LOC) - SLUB allocator
+     - drivers/tty/tty_io.c (~2000+ LOC) - TTY operations
+     - kernel/signal.c (~2000+ LOC) - signal handling
+  4. Headers: 93,221 LOC (41.2% of total) - still too risky
+  5. Focus on advanced features, optimizations, debugging code
+
+--- 2025-11-17 01:15 ---
+
+New session starting:
+
+02:03 - First commit: 30 LOC reduced
+  Stubbed fragmented block purging in mm/vmalloc.c:
+  1. purge_fragmented_blocks(): 34 lines → 3 lines (31 lines saved)
+  2. purge_fragmented_blocks_allcpus(): 6 lines → 3 lines (3 lines saved)
+  
+  These functions optimize vmap memory by purging fragmented blocks.
+  Result: 225,981 LOC (C: 132,760 + Headers: 93,221)
+  Binary: 334KB (stable)
+  make vm: PASSES ✓, prints "Hello, World!" ✓
+  
+  Remaining to goal: 25,981 LOC (11.5% reduction needed)
+
+- make vm: PASSES ✓, prints "Hello, World!" ✓
 - Binary: 337KB
 - Current total LOC: 234,233 (C: 138,541 + Headers: 95,692)
+
+02:07 - Second commit: 19 LOC reduced
+  Stubbed readahead optimizations in mm/filemap.c:
+  1. shrink_readahead_size_eio(): 3 lines → 3 lines (stubbed body)
+  2. do_async_mmap_readahead(): 23 lines → 5 lines (18 lines saved)
+  3. filemap_readahead(): 11 lines → 6 lines (5 lines saved)
+  
+  These functions optimize read-ahead behavior.
+  Result: 225,962 LOC (C: 132,741 + Headers: 93,221)
+  Binary: 334KB (stable)
+  make vm: PASSES ✓, prints "Hello, World!" ✓
+  
+  Session total: 49 LOC reduced (226,011 → 225,962)
+  Remaining to goal: 25,962 LOC (11.5% reduction needed)
+
+
+02:08 - Session progress summary
+  Two commits completed:
+  1. mm/vmalloc.c: 30 LOC reduced (purge_fragmented_blocks functions)
+  2. mm/filemap.c: 19 LOC reduced (readahead optimizations)
+  
+  Total session reduction: 49 LOC (226,011 → 225,962)
+  Current state: 225,962 LOC (C: 132,741 + Headers: 93,221)
+  Goal: 200,000 LOC
+  Remaining: 25,962 LOC (11.5% reduction still needed)
+  Binary: 334KB (stable throughout session)
+  make vm: PASSES ✓ on all tests
+  
+  Observations:
+  - Stubbing individual functions is very slow progress
+  - Need ~530 similar reductions to reach goal
+  - May need to look at removing entire subsystems or files
+  - Headers are 41.2% of total LOC (93,221) - major opportunity but risky
+  - Largest remaining C files:
+    * mm/page_alloc.c (4372 LOC)
+    * fs/namei.c (3253 LOC) 
+    * mm/memory.c (3245 LOC)
+    * fs/namespace.c (3030 LOC) - already has many stubs
+    * drivers/base/core.c (2779 LOC) - already partially stubbed
+    * drivers/tty/vt/vt.c (2718 LOC) - already partially stubbed
+  
+  Next session strategy:
+  - Consider more aggressive approaches (entire file removal/replacement)
+  - Focus on subsystems not needed for "Hello World" boot
+  - Possible targets: advanced scheduler features, NUMA, some syscalls
+  - Header trimming may be necessary but requires careful testing
+
 - Goal: 200,000 LOC
 - Gap: 34,233 LOC (14.6% reduction needed)
 - Note: LOC measurement improved - previous count was inflated

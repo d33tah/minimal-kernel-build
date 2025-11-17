@@ -826,68 +826,7 @@ static void free_pcppages_bulk(struct zone *zone, int count,
 					struct per_cpu_pages *pcp,
 					int pindex)
 {
-	int min_pindex = 0;
-	int max_pindex = NR_PCP_LISTS - 1;
-	unsigned int order;
-	bool isolated_pageblocks;
-	struct page *page;
-
-	
-	count = min(pcp->count, count);
-
-	
-	pindex = pindex - 1;
-
-	
-	spin_lock(&zone->lock);
-	isolated_pageblocks = has_isolate_pageblock(zone);
-
-	while (count > 0) {
-		struct list_head *list;
-		int nr_pages;
-
-		
-		do {
-			if (++pindex > max_pindex)
-				pindex = min_pindex;
-			list = &pcp->lists[pindex];
-			if (!list_empty(list))
-				break;
-
-			if (pindex == max_pindex)
-				max_pindex--;
-			if (pindex == min_pindex)
-				min_pindex++;
-		} while (1);
-
-		order = pindex_to_order(pindex);
-		nr_pages = 1 << order;
-		BUILD_BUG_ON(MAX_ORDER >= (1<<NR_PCP_ORDER_WIDTH));
-		do {
-			int mt;
-
-			page = list_last_entry(list, struct page, lru);
-			mt = get_pcppage_migratetype(page);
-
-			
-			list_del(&page->lru);
-			count -= nr_pages;
-			pcp->count -= nr_pages;
-
-			if (bulkfree_pcp_prepare(page))
-				continue;
-
-			
-			VM_BUG_ON_PAGE(is_migrate_isolate(mt), page);
-			
-			if (unlikely(isolated_pageblocks))
-				mt = get_pageblock_migratetype(page);
-
-			__free_one_page(page, page_to_pfn(page), zone, order, mt, FPI_NONE);
-		} while (count > 0 && !list_empty(list));
-	}
-
-	spin_unlock(&zone->lock);
+	/* Stub: per-CPU page caching optimization not needed for minimal kernel */
 }
 
 static void free_one_page(struct zone *zone,
@@ -2141,60 +2080,9 @@ static inline struct page *
 __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
 	const struct alloc_context *ac, unsigned long *did_some_progress)
 {
-	struct oom_control oc = {
-		.zonelist = ac->zonelist,
-		.nodemask = ac->nodemask,
-		.memcg = NULL,
-		.gfp_mask = gfp_mask,
-		.order = order,
-	};
-	struct page *page;
-
+	/* Stub: OOM handling not needed for minimal kernel */
 	*did_some_progress = 0;
-
-	
-	if (!mutex_trylock(&oom_lock)) {
-		*did_some_progress = 1;
-		schedule_timeout_uninterruptible(1);
-		return NULL;
-	}
-
-	
-	page = get_page_from_freelist((gfp_mask | __GFP_HARDWALL) &
-				      ~__GFP_DIRECT_RECLAIM, order,
-				      ALLOC_WMARK_HIGH|ALLOC_CPUSET, ac);
-	if (page)
-		goto out;
-
-	
-	if (current->flags & PF_DUMPCORE)
-		goto out;
-	
-	if (order > PAGE_ALLOC_COSTLY_ORDER)
-		goto out;
-	
-	if (gfp_mask & (__GFP_RETRY_MAYFAIL | __GFP_THISNODE))
-		goto out;
-	
-	if (ac->highest_zoneidx < ZONE_NORMAL)
-		goto out;
-	if (pm_suspended_storage())
-		goto out;
-	
-
-	
-	if (out_of_memory(&oc) ||
-	    WARN_ON_ONCE_GFP(gfp_mask & __GFP_NOFAIL, gfp_mask)) {
-		*did_some_progress = 1;
-
-		
-		if (gfp_mask & __GFP_NOFAIL)
-			page = __alloc_pages_cpuset_fallback(gfp_mask, order,
-					ALLOC_NO_WATERMARKS, ac);
-	}
-out:
-	mutex_unlock(&oom_lock);
-	return page;
+	return NULL;
 }
 
 #define MAX_COMPACT_RETRIES 16
@@ -2571,58 +2459,8 @@ void *page_frag_alloc_align(struct page_frag_cache *nc,
 		      unsigned int fragsz, gfp_t gfp_mask,
 		      unsigned int align_mask)
 {
-	unsigned int size = PAGE_SIZE;
-	struct page *page;
-	int offset;
-
-	if (unlikely(!nc->va)) {
-refill:
-		page = __page_frag_cache_refill(nc, gfp_mask);
-		if (!page)
-			return NULL;
-
-#if (PAGE_SIZE < PAGE_FRAG_CACHE_MAX_SIZE)
-		
-		size = nc->size;
-#endif
-		
-		page_ref_add(page, PAGE_FRAG_CACHE_MAX_SIZE);
-
-		
-		nc->pfmemalloc = page_is_pfmemalloc(page);
-		nc->pagecnt_bias = PAGE_FRAG_CACHE_MAX_SIZE + 1;
-		nc->offset = size;
-	}
-
-	offset = nc->offset - fragsz;
-	if (unlikely(offset < 0)) {
-		page = virt_to_page(nc->va);
-
-		if (!page_ref_sub_and_test(page, nc->pagecnt_bias))
-			goto refill;
-
-		if (unlikely(nc->pfmemalloc)) {
-			free_the_page(page, compound_order(page));
-			goto refill;
-		}
-
-#if (PAGE_SIZE < PAGE_FRAG_CACHE_MAX_SIZE)
-		
-		size = nc->size;
-#endif
-		
-		set_page_count(page, PAGE_FRAG_CACHE_MAX_SIZE + 1);
-
-		
-		nc->pagecnt_bias = PAGE_FRAG_CACHE_MAX_SIZE + 1;
-		offset = size - fragsz;
-	}
-
-	nc->pagecnt_bias--;
-	offset &= align_mask;
-	nc->offset = offset;
-
-	return nc->va + offset;
+	/* Stub: page fragment allocation not needed for minimal kernel */
+	return NULL;
 }
 
 void page_frag_free(void *addr)

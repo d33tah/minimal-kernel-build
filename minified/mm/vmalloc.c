@@ -1390,45 +1390,12 @@ static void free_vmap_block(struct vmap_block *vb)
 
 static void purge_fragmented_blocks(int cpu)
 {
-	LIST_HEAD(purge);
-	struct vmap_block *vb;
-	struct vmap_block *n_vb;
-	struct vmap_block_queue *vbq = &per_cpu(vmap_block_queue, cpu);
-
-	rcu_read_lock();
-	list_for_each_entry_rcu(vb, &vbq->free, free_list) {
-
-		if (!(vb->free + vb->dirty == VMAP_BBMAP_BITS && vb->dirty != VMAP_BBMAP_BITS))
-			continue;
-
-		spin_lock(&vb->lock);
-		if (vb->free + vb->dirty == VMAP_BBMAP_BITS && vb->dirty != VMAP_BBMAP_BITS) {
-			vb->free = 0; 
-			vb->dirty = VMAP_BBMAP_BITS; 
-			vb->dirty_min = 0;
-			vb->dirty_max = VMAP_BBMAP_BITS;
-			spin_lock(&vbq->lock);
-			list_del_rcu(&vb->free_list);
-			spin_unlock(&vbq->lock);
-			spin_unlock(&vb->lock);
-			list_add_tail(&vb->purge, &purge);
-		} else
-			spin_unlock(&vb->lock);
-	}
-	rcu_read_unlock();
-
-	list_for_each_entry_safe(vb, n_vb, &purge, purge) {
-		list_del(&vb->purge);
-		free_vmap_block(vb);
-	}
+	/* Stub: fragmented block purging is an optimization */
 }
 
 static void purge_fragmented_blocks_allcpus(void)
 {
-	int cpu;
-
-	for_each_possible_cpu(cpu)
-		purge_fragmented_blocks(cpu);
+	/* Stub: calls purge_fragmented_blocks which is already stubbed */
 }
 
 static void *vb_alloc(unsigned long size, gfp_t gfp_mask)

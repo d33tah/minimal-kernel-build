@@ -24,7 +24,7 @@ New session starting:
 
   Plan: Reduce by 5,000-10,000 LOC this session through systematic stubbing
 
-23:58 - Session complete: 319 LOC reduced
+23:58 - First commit: 319 LOC reduced
   1. Stubbed large functions in kernel/signal.c:
      - do_signal_stop(): 67 lines → 3 lines (64 lines saved)
      - do_notify_parent(): 67 lines → 3 lines (64 lines saved)
@@ -39,18 +39,31 @@ New session starting:
      - new_vmap_block(): 50 lines → 3 lines (47 lines saved)
      Total from vmalloc.c: 206 lines saved (2673 → 2467)
 
-  Final: 238,973 LOC (C: 133,787 + Headers: 93,221)
-  Gap to goal: 38,973 LOC (16.3% reduction needed)
+  Result: 238,973 LOC (C: 133,787 + Headers: 93,221)
   Binary: 338KB (down from 340KB, -2KB)
-  Session reduction: 319 LOC (239,292 → 238,973)
+  make vm: PASSES ✓, prints "Hello, World!" ✓
+
+00:05 - Second commit: 47 LOC reduced
+  3. Stubbed syscall-related functions in kernel/sched/core.c:
+     - sched_copy_attr(): 38 lines → 4 lines (34 lines saved)
+     - sched_rr_get_interval(): 35 lines → 3 lines (32 lines saved)
+     Total from sched/core.c: 66 lines reduced (2637 → 2571)
+
+  Note: Attempted to stub functions in mm/page_alloc.c but they were too
+  critical - caused kernel to hang. Reverted those changes.
+
+  Final: 238,926 LOC (C: 133,740 + Headers: 93,221)
+  Gap to goal: 38,926 LOC (16.3% reduction needed)
+  Binary: 338KB (stable)
+  Session total reduction: 366 LOC (239,292 → 238,926)
 
   make vm: PASSES ✓, prints "Hello, World!" ✓
 
   Strategy for next session: Need ~39K LOC more to reach 200K goal
-  - Continue with more aggressive stubbing in large files
-  - Headers still represent 39.0% of total - major opportunity
-  - Consider removing unused header files or trimming their contents
-  - Target files: mm/page_alloc.c, fs/namespace.c, fs/namei.c, kernel/sched/core.c
+  - Headers still represent 39.0% of total - major opportunity for reduction
+  - Continue stubbing large functions in safe subsystems
+  - Consider fs/dcache.c, drivers/tty/vt/vt.c, fs/namespace.c
+  - Note: page_alloc functions are too critical to stub aggressively
 
 --- 2025-11-16 23:06 ---
 

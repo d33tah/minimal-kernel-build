@@ -1887,41 +1887,8 @@ do_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
 
 static int sched_copy_attr(struct sched_attr __user *uattr, struct sched_attr *attr)
 {
-	u32 size;
-	int ret;
-
-	
 	memset(attr, 0, sizeof(*attr));
-
-	ret = get_user(size, &uattr->size);
-	if (ret)
-		return ret;
-
-	
-	if (!size)
-		size = SCHED_ATTR_SIZE_VER0;
-	if (size < SCHED_ATTR_SIZE_VER0 || size > PAGE_SIZE)
-		goto err_size;
-
-	ret = copy_struct_from_user(attr, sizeof(*attr), uattr, size);
-	if (ret) {
-		if (ret == -E2BIG)
-			goto err_size;
-		return ret;
-	}
-
-	if ((attr->sched_flags & SCHED_FLAG_UTIL_CLAMP) &&
-	    size < SCHED_ATTR_SIZE_VER1)
-		return -EINVAL;
-
-	
-	attr->sched_nice = clamp(attr->sched_nice, MIN_NICE, MAX_NICE);
-
 	return 0;
-
-err_size:
-	put_user(sizeof(*attr), &uattr->size);
-	return -E2BIG;
 }
 
 static void get_params(struct task_struct *p, struct sched_attr *attr)
@@ -2416,38 +2383,7 @@ SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
 
 static int sched_rr_get_interval(pid_t pid, struct timespec64 *t)
 {
-	struct task_struct *p;
-	unsigned int time_slice;
-	struct rq_flags rf;
-	struct rq *rq;
-	int retval;
-
-	if (pid < 0)
-		return -EINVAL;
-
-	retval = -ESRCH;
-	rcu_read_lock();
-	p = find_process_by_pid(pid);
-	if (!p)
-		goto out_unlock;
-
-	retval = security_task_getscheduler(p);
-	if (retval)
-		goto out_unlock;
-
-	rq = task_rq_lock(p, &rf);
-	time_slice = 0;
-	if (p->sched_class->get_rr_interval)
-		time_slice = p->sched_class->get_rr_interval(rq, p);
-	task_rq_unlock(rq, p, &rf);
-
-	rcu_read_unlock();
-	jiffies_to_timespec64(time_slice, t);
-	return 0;
-
-out_unlock:
-	rcu_read_unlock();
-	return retval;
+	return -EINVAL;
 }
 
 SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,

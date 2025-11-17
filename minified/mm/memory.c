@@ -491,80 +491,7 @@ copy_nonpresent_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		pte_t *dst_pte, pte_t *src_pte, struct vm_area_struct *dst_vma,
 		struct vm_area_struct *src_vma, unsigned long addr, int *rss)
 {
-	unsigned long vm_flags = dst_vma->vm_flags;
-	pte_t pte = *src_pte;
-	struct page *page;
-	swp_entry_t entry = pte_to_swp_entry(pte);
-
-	if (likely(!non_swap_entry(entry))) {
-		if (swap_duplicate(entry) < 0)
-			return -EIO;
-
-		
-		if (unlikely(list_empty(&dst_mm->mmlist))) {
-			spin_lock(&mmlist_lock);
-			if (list_empty(&dst_mm->mmlist))
-				list_add(&dst_mm->mmlist,
-						&src_mm->mmlist);
-			spin_unlock(&mmlist_lock);
-		}
-		
-		if (pte_swp_exclusive(*src_pte)) {
-			pte = pte_swp_clear_exclusive(*src_pte);
-			set_pte_at(src_mm, addr, src_pte, pte);
-		}
-		rss[MM_SWAPENTS]++;
-	} else if (is_migration_entry(entry)) {
-		page = pfn_swap_entry_to_page(entry);
-
-		rss[mm_counter(page)]++;
-
-		if (!is_readable_migration_entry(entry) &&
-				is_cow_mapping(vm_flags)) {
-			
-			entry = make_readable_migration_entry(
-							swp_offset(entry));
-			pte = swp_entry_to_pte(entry);
-			if (pte_swp_soft_dirty(*src_pte))
-				pte = pte_swp_mksoft_dirty(pte);
-			if (pte_swp_uffd_wp(*src_pte))
-				pte = pte_swp_mkuffd_wp(pte);
-			set_pte_at(src_mm, addr, src_pte, pte);
-		}
-	} else if (is_device_private_entry(entry)) {
-		page = pfn_swap_entry_to_page(entry);
-
-		
-		get_page(page);
-		rss[mm_counter(page)]++;
-		
-		BUG_ON(page_try_dup_anon_rmap(page, false, src_vma));
-
-		
-		if (is_writable_device_private_entry(entry) &&
-		    is_cow_mapping(vm_flags)) {
-			entry = make_readable_device_private_entry(
-							swp_offset(entry));
-			pte = swp_entry_to_pte(entry);
-			if (pte_swp_uffd_wp(*src_pte))
-				pte = pte_swp_mkuffd_wp(pte);
-			set_pte_at(src_mm, addr, src_pte, pte);
-		}
-	} else if (is_device_exclusive_entry(entry)) {
-		
-		VM_BUG_ON(!is_cow_mapping(src_vma->vm_flags));
-		if (try_restore_exclusive_pte(src_pte, src_vma, addr))
-			return -EBUSY;
-		return -ENOENT;
-	} else if (is_pte_marker_entry(entry)) {
-		
-		WARN_ON_ONCE(!userfaultfd_wp(dst_vma));
-		set_pte_at(dst_mm, addr, dst_pte, pte);
-		return 0;
-	}
-	if (!userfaultfd_wp(dst_vma))
-		pte = pte_swp_clear_uffd_wp(pte);
-	set_pte_at(dst_mm, addr, dst_pte, pte);
+	/* Stub: swap/migration handling not needed for minimal kernel */
 	return 0;
 }
 
@@ -3044,53 +2971,8 @@ out:
 int generic_access_phys(struct vm_area_struct *vma, unsigned long addr,
 			void *buf, int len, int write)
 {
-	resource_size_t phys_addr;
-	unsigned long prot = 0;
-	void __iomem *maddr;
-	pte_t *ptep, pte;
-	spinlock_t *ptl;
-	int offset = offset_in_page(addr);
-	int ret = -EINVAL;
-
-	if (!(vma->vm_flags & (VM_IO | VM_PFNMAP)))
-		return -EINVAL;
-
-retry:
-	if (follow_pte(vma->vm_mm, addr, &ptep, &ptl))
-		return -EINVAL;
-	pte = *ptep;
-	pte_unmap_unlock(ptep, ptl);
-
-	prot = pgprot_val(pte_pgprot(pte));
-	phys_addr = (resource_size_t)pte_pfn(pte) << PAGE_SHIFT;
-
-	if ((write & FOLL_WRITE) && !pte_write(pte))
-		return -EINVAL;
-
-	maddr = ioremap_prot(phys_addr, PAGE_ALIGN(len + offset), prot);
-	if (!maddr)
-		return -ENOMEM;
-
-	if (follow_pte(vma->vm_mm, addr, &ptep, &ptl))
-		goto out_unmap;
-
-	if (!pte_same(pte, *ptep)) {
-		pte_unmap_unlock(ptep, ptl);
-		iounmap(maddr);
-
-		goto retry;
-	}
-
-	if (write)
-		memcpy_toio(maddr + offset, buf, len);
-	else
-		memcpy_fromio(buf, maddr + offset, len);
-	ret = len;
-	pte_unmap_unlock(ptep, ptl);
-out_unmap:
-	iounmap(maddr);
-
-	return ret;
+	/* Stub: physical memory access not needed for minimal kernel */
+	return -EINVAL;
 }
 
 int __access_remote_vm(struct mm_struct *mm, unsigned long addr, void *buf,

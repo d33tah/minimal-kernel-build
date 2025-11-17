@@ -1157,35 +1157,17 @@ phys_addr_t __init_memblock memblock_get_current_limit(void)
 
 static void __init_memblock memblock_dump(struct memblock_type *type)
 {
-	phys_addr_t base, end, size;
-	enum memblock_flags flags;
-	int idx;
-	struct memblock_region *rgn;
-
-	pr_info(" %s.cnt  = 0x%lx\n", type->name, type->cnt);
-
-	for_each_memblock_type(idx, type, rgn) {
-		char nid_buf[32] = "";
-
-		base = rgn->base;
-		size = rgn->size;
-		end = base + size - 1;
-		flags = rgn->flags;
-		pr_info(" %s[%#x]\t[%pa-%pa], %pa bytes%s flags: %#x\n",
-			type->name, idx, &base, &end, &size, nid_buf, flags);
-	}
+	/* Stub: memblock debug dump not needed for minimal kernel */
 }
 
 static void __init_memblock __memblock_dump_all(void)
 {
-	memblock_dump(&memblock.memory);
-	memblock_dump(&memblock.reserved);
+	/* Stub: memblock debug dump not needed for minimal kernel */
 }
 
 void __init_memblock memblock_dump_all(void)
 {
-	if (memblock_debug)
-		__memblock_dump_all();
+	/* Stub: memblock debug dump not needed for minimal kernel */
 }
 
 void __init memblock_allow_resize(void)

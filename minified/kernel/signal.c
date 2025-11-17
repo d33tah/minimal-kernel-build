@@ -1476,38 +1476,14 @@ static bool do_signal_stop(int signr)
 
 static void do_jobctl_trap(void)
 {
-	struct signal_struct *signal = current->signal;
-	int signr = current->jobctl & JOBCTL_STOP_SIGMASK;
-
-	if (current->ptrace & PT_SEIZED) {
-		if (!signal->group_stop_count &&
-		    !(signal->flags & SIGNAL_STOP_STOPPED))
-			signr = SIGTRAP;
-		WARN_ON_ONCE(!signr);
-		ptrace_do_notify(signr, signr | (PTRACE_EVENT_STOP << 8),
-				 CLD_STOPPED, 0);
-	} else {
-		WARN_ON_ONCE(!signr);
-		ptrace_stop(signr, CLD_STOPPED, 0, NULL);
-	}
+	/* Stub: no job control trap handling */
 }
 
 static void do_freezer_trap(void)
 	__releases(&current->sighand->siglock)
 {
-	
-	if ((current->jobctl & (JOBCTL_PENDING_MASK | JOBCTL_TRAP_FREEZE)) !=
-	     JOBCTL_TRAP_FREEZE) {
-		spin_unlock_irq(&current->sighand->siglock);
-		return;
-	}
-
-	
-	__set_current_state(TASK_INTERRUPTIBLE);
-	clear_thread_flag(TIF_SIGPENDING);
+	/* Stub: no freezer trap handling */
 	spin_unlock_irq(&current->sighand->siglock);
-	cgroup_enter_frozen();
-	freezable_schedule();
 }
 
 static int ptrace_signal(int signr, kernel_siginfo_t *info, enum pid_type type)

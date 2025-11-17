@@ -49,6 +49,21 @@ New session starting:
   Binary: 335KB (down from 336KB, -1KB)
   make vm: PASSES ✓, prints "Hello, World!" ✓
 
+01:24 - Third commit: 149 LOC reduced
+  Stubbed large functions in drivers/tty/vt/vt.c:
+  1. setterm_command(): 62 lines → 3 lines (59 lines saved)
+  2. do_blank_screen(): 55 lines → 3 lines (52 lines saved)
+  3. vc_scrolldelta_helper(): 36 lines → 6 lines (30 lines saved)
+  4. do_unblank_screen(): 34 lines → 3 lines (31 lines saved)
+
+  Total from vt.c: ~172 lines saved (code only, cloc reports 149)
+  Result: 233,676 LOC (C: 137,984 + Headers: 95,692)
+  Binary: 335KB (stable)
+  make vm: PASSES ✓, prints "Hello, World!" ✓
+
+  Session total so far: 557 LOC reduced (234,233 → 233,676)
+  Remaining to goal: 33,676 LOC (14.4% reduction needed)
+
 --- 2025-11-17 00:39 ---
 
 New session starting:

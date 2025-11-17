@@ -1342,66 +1342,7 @@ static void set_mode(struct vc_data *vc, int on_off)
 
 static void setterm_command(struct vc_data *vc)
 {
-	switch (vc->vc_par[0]) {
-	case 1:	
-		if (vc->vc_can_do_color && vc->vc_par[1] < 16) {
-			vc->vc_ulcolor = color_table[vc->vc_par[1]];
-			if (vc->state.underline)
-				update_attr(vc);
-		}
-		break;
-	case 2:	
-		if (vc->vc_can_do_color && vc->vc_par[1] < 16) {
-			vc->vc_halfcolor = color_table[vc->vc_par[1]];
-			if (vc->state.intensity == VCI_HALF_BRIGHT)
-				update_attr(vc);
-		}
-		break;
-	case 8:	
-		vc->vc_def_color = vc->vc_attr;
-		if (vc->vc_hi_font_mask == 0x100)
-			vc->vc_def_color >>= 1;
-		default_attr(vc);
-		update_attr(vc);
-		break;
-	case 9:	
-		blankinterval = min(vc->vc_par[1], 60U) * 60;
-		poke_blanked_console();
-		break;
-	case 10: 
-		if (vc->vc_npar >= 1)
-			vc->vc_bell_pitch = vc->vc_par[1];
-		else
-			vc->vc_bell_pitch = DEFAULT_BELL_PITCH;
-		break;
-	case 11: 
-		if (vc->vc_npar >= 1)
-			vc->vc_bell_duration = (vc->vc_par[1] < 2000) ?
-				msecs_to_jiffies(vc->vc_par[1]) : 0;
-		else
-			vc->vc_bell_duration = DEFAULT_BELL_DURATION;
-		break;
-	case 12: 
-		if (vc->vc_par[1] >= 1 && vc_cons_allocated(vc->vc_par[1] - 1))
-			set_console(vc->vc_par[1] - 1);
-		break;
-	case 13: 
-		poke_blanked_console();
-		break;
-	case 14: 
-		vesa_off_interval = min(vc->vc_par[1], 60U) * 60 * HZ;
-		break;
-	case 15: 
-		set_console(last_console);
-		break;
-	case 16: 
-		if (vc->vc_npar >= 1 && vc->vc_par[1] >= 50 &&
-				vc->vc_par[1] <= USHRT_MAX)
-			vc->vc_cur_blink_ms = vc->vc_par[1];
-		else
-			vc->vc_cur_blink_ms = DEFAULT_CURSOR_BLINK_MS;
-		break;
-	}
+	/* Stubbed: terminal settings not needed for minimal boot */
 }
 
 static void csi_at(struct vc_data *vc, unsigned int nr)
@@ -2632,95 +2573,12 @@ postcore_initcall(vtconsole_class_init);
 
 void do_blank_screen(int entering_gfx)
 {
-	struct vc_data *vc = vc_cons[fg_console].d;
-	int i;
-
-	might_sleep();
-
-	WARN_CONSOLE_UNLOCKED();
-
-	if (console_blanked) {
-		if (blank_state == blank_vesa_wait) {
-			blank_state = blank_off;
-			vc->vc_sw->con_blank(vc, vesa_blank_mode + 1, 0);
-		}
-		return;
-	}
-
-	
-	if (entering_gfx) {
-		hide_cursor(vc);
-		save_screen(vc);
-		vc->vc_sw->con_blank(vc, -1, 1);
-		console_blanked = fg_console + 1;
-		blank_state = blank_off;
-		set_origin(vc);
-		return;
-	}
-
-	blank_state = blank_off;
-
-	
-	if (vc->vc_mode != KD_TEXT) {
-		console_blanked = fg_console + 1;
-		return;
-	}
-
-	hide_cursor(vc);
-	del_timer_sync(&console_timer);
-	blank_timer_expired = 0;
-
-	save_screen(vc);
-	
-	i = vc->vc_sw->con_blank(vc, vesa_off_interval ? 1 : (vesa_blank_mode + 1), 0);
-	console_blanked = fg_console + 1;
-	if (i)
-		set_origin(vc);
-
-	if (console_blank_hook && console_blank_hook(1))
-		return;
-
-	if (vesa_off_interval && vesa_blank_mode) {
-		blank_state = blank_vesa_wait;
-		mod_timer(&console_timer, jiffies + vesa_off_interval);
-	}
-	vt_event_post(VT_EVENT_BLANK, vc->vc_num, vc->vc_num);
+	/* Stubbed: screen blanking not needed for minimal boot */
 }
 
 void do_unblank_screen(int leaving_gfx)
 {
-	struct vc_data *vc;
-
-	
-	if (!oops_in_progress)
-		might_sleep();
-
-	WARN_CONSOLE_UNLOCKED();
-
-	ignore_poke = 0;
-	if (!console_blanked)
-		return;
-	if (!vc_cons_allocated(fg_console)) {
-		return;
-	}
-	vc = vc_cons[fg_console].d;
-	if (vc->vc_mode != KD_TEXT)
-		return; 
-
-	if (blankinterval) {
-		mod_timer(&console_timer, jiffies + (blankinterval * HZ));
-		blank_state = blank_normal_wait;
-	}
-
-	console_blanked = 0;
-	if (vc->vc_sw->con_blank(vc, 0, leaving_gfx))
-		
-		update_screen(vc);
-	if (console_blank_hook)
-		console_blank_hook(0);
-	set_palette(vc);
-	set_cursor(vc);
-	vt_event_post(VT_EVENT_UNBLANK, vc->vc_num, vc->vc_num);
+	/* Stubbed: screen unblanking not needed for minimal boot */
 }
 
 void unblank_screen(void)
@@ -2851,40 +2709,9 @@ void vcs_scr_updated(struct vc_data *vc)
 void vc_scrolldelta_helper(struct vc_data *c, int lines,
 		unsigned int rolled_over, void *base, unsigned int size)
 {
-	unsigned long ubase = (unsigned long)base;
-	ptrdiff_t scr_end = (void *)c->vc_scr_end - base;
-	ptrdiff_t vorigin = (void *)c->vc_visible_origin - base;
-	ptrdiff_t origin = (void *)c->vc_origin - base;
-	int margin = c->vc_size_row * 4;
-	int from, wrap, from_off, avail;
-
-	
-	if (!lines) {
+	/* Stubbed: scrollback not needed for minimal boot */
+	if (!lines)
 		c->vc_visible_origin = c->vc_origin;
-		return;
-	}
-
-	
-	if (rolled_over > scr_end + margin) {
-		from = scr_end;
-		wrap = rolled_over + c->vc_size_row;
-	} else {
-		from = 0;
-		wrap = size;
-	}
-
-	from_off = (vorigin - from + wrap) % wrap + lines * c->vc_size_row;
-	avail = (origin - from + wrap) % wrap;
-
-	
-	if (avail < 2 * margin)
-		margin = 0;
-	if (from_off < margin)
-		from_off = 0;
-	if (from_off > avail - margin)
-		from_off = avail;
-
-	c->vc_visible_origin = ubase + (from + from_off) % wrap;
 }
 
 #ifndef VT_SINGLE_DRIVER

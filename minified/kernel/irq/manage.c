@@ -1107,69 +1107,7 @@ int request_any_context_irq(unsigned int irq, irq_handler_t handler,
 int request_nmi(unsigned int irq, irq_handler_t handler,
 		unsigned long irqflags, const char *name, void *dev_id)
 {
-	struct irqaction *action;
-	struct irq_desc *desc;
-	unsigned long flags;
-	int retval;
-
-	if (irq == IRQ_NOTCONNECTED)
-		return -ENOTCONN;
-
-	if (irqflags & (IRQF_SHARED | IRQF_COND_SUSPEND | IRQF_IRQPOLL))
-		return -EINVAL;
-
-	if (!(irqflags & IRQF_PERCPU))
-		return -EINVAL;
-
-	if (!handler)
-		return -EINVAL;
-
-	desc = irq_to_desc(irq);
-
-	if (!desc || (irq_settings_can_autoenable(desc) &&
-	    !(irqflags & IRQF_NO_AUTOEN)) ||
-	    !irq_settings_can_request(desc) ||
-	    WARN_ON(irq_settings_is_per_cpu_devid(desc)) ||
-	    !irq_supports_nmi(desc))
-		return -EINVAL;
-
-	action = kzalloc(sizeof(struct irqaction), GFP_KERNEL);
-	if (!action)
-		return -ENOMEM;
-
-	action->handler = handler;
-	action->flags = irqflags | IRQF_NO_THREAD | IRQF_NOBALANCING;
-	action->name = name;
-	action->dev_id = dev_id;
-
-	retval = irq_chip_pm_get(&desc->irq_data);
-	if (retval < 0)
-		goto err_out;
-
-	retval = __setup_irq(irq, desc, action);
-	if (retval)
-		goto err_irq_setup;
-
-	raw_spin_lock_irqsave(&desc->lock, flags);
-
-	desc->istate |= IRQS_NMI;
-	retval = irq_nmi_setup(desc);
-	if (retval) {
-		__cleanup_nmi(irq, desc);
-		raw_spin_unlock_irqrestore(&desc->lock, flags);
-		return -EINVAL;
-	}
-
-	raw_spin_unlock_irqrestore(&desc->lock, flags);
-
-	return 0;
-
-err_irq_setup:
-	irq_chip_pm_put(&desc->irq_data);
-err_out:
-	kfree(action);
-
-	return retval;
+	return -ENODEV;
 }
 
 void enable_percpu_irq(unsigned int irq, unsigned int type)
@@ -1383,55 +1321,7 @@ int __request_percpu_irq(unsigned int irq, irq_handler_t handler,
 int request_percpu_nmi(unsigned int irq, irq_handler_t handler,
 		       const char *name, void __percpu *dev_id)
 {
-	struct irqaction *action;
-	struct irq_desc *desc;
-	unsigned long flags;
-	int retval;
-
-	if (!handler)
-		return -EINVAL;
-
-	desc = irq_to_desc(irq);
-
-	if (!desc || !irq_settings_can_request(desc) ||
-	    !irq_settings_is_per_cpu_devid(desc) ||
-	    irq_settings_can_autoenable(desc) ||
-	    !irq_supports_nmi(desc))
-		return -EINVAL;
-
-	if (desc->istate & IRQS_NMI)
-		return -EINVAL;
-
-	action = kzalloc(sizeof(struct irqaction), GFP_KERNEL);
-	if (!action)
-		return -ENOMEM;
-
-	action->handler = handler;
-	action->flags = IRQF_PERCPU | IRQF_NO_SUSPEND | IRQF_NO_THREAD
-		| IRQF_NOBALANCING;
-	action->name = name;
-	action->percpu_dev_id = dev_id;
-
-	retval = irq_chip_pm_get(&desc->irq_data);
-	if (retval < 0)
-		goto err_out;
-
-	retval = __setup_irq(irq, desc, action);
-	if (retval)
-		goto err_irq_setup;
-
-	raw_spin_lock_irqsave(&desc->lock, flags);
-	desc->istate |= IRQS_NMI;
-	raw_spin_unlock_irqrestore(&desc->lock, flags);
-
-	return 0;
-
-err_irq_setup:
-	irq_chip_pm_put(&desc->irq_data);
-err_out:
-	kfree(action);
-
-	return retval;
+	return -ENODEV;
 }
 
 int prepare_percpu_nmi(unsigned int irq)

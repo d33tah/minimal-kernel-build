@@ -1307,66 +1307,8 @@ static bool mnt_ns_loop(struct dentry *dentry)
 struct mount *copy_tree(struct mount *mnt, struct dentry *dentry,
 					int flag)
 {
-	struct mount *res, *p, *q, *r, *parent;
-
-	if (!(flag & CL_COPY_UNBINDABLE) && IS_MNT_UNBINDABLE(mnt))
-		return ERR_PTR(-EINVAL);
-
-	if (!(flag & CL_COPY_MNT_NS_FILE) && is_mnt_ns_file(dentry))
-		return ERR_PTR(-EINVAL);
-
-	res = q = clone_mnt(mnt, dentry, flag);
-	if (IS_ERR(q))
-		return q;
-
-	q->mnt_mountpoint = mnt->mnt_mountpoint;
-
-	p = mnt;
-	list_for_each_entry(r, &mnt->mnt_mounts, mnt_child) {
-		struct mount *s;
-		if (!is_subdir(r->mnt_mountpoint, dentry))
-			continue;
-
-		for (s = r; s; s = next_mnt(s, r)) {
-			if (!(flag & CL_COPY_UNBINDABLE) &&
-			    IS_MNT_UNBINDABLE(s)) {
-				if (s->mnt.mnt_flags & MNT_LOCKED) {
-					
-					q = ERR_PTR(-EPERM);
-					goto out;
-				} else {
-					s = skip_mnt_tree(s);
-					continue;
-				}
-			}
-			if (!(flag & CL_COPY_MNT_NS_FILE) &&
-			    is_mnt_ns_file(s->mnt.mnt_root)) {
-				s = skip_mnt_tree(s);
-				continue;
-			}
-			while (p != s->mnt_parent) {
-				p = p->mnt_parent;
-				q = q->mnt_parent;
-			}
-			p = s;
-			parent = q;
-			q = clone_mnt(p, p->mnt.mnt_root, flag);
-			if (IS_ERR(q))
-				goto out;
-			lock_mount_hash();
-			list_add_tail(&q->mnt_list, &res->mnt_list);
-			attach_mnt(q, parent, p->mnt_mp);
-			unlock_mount_hash();
-		}
-	}
-	return res;
-out:
-	if (res) {
-		lock_mount_hash();
-		umount_tree(res, UMOUNT_SYNC);
-		unlock_mount_hash();
-	}
-	return q;
+	/* Stubbed: mount tree copying not needed for minimal boot */
+	return clone_mnt(mnt, dentry, flag);
 }
 
 struct vfsmount *collect_mounts(const struct path *path)
@@ -1763,47 +1705,8 @@ static struct mount *__do_loopback(struct path *old_path, int recurse)
 static int do_loopback(struct path *path, const char *old_name,
 				int recurse)
 {
-	struct path old_path;
-	struct mount *mnt = NULL, *parent;
-	struct mountpoint *mp;
-	int err;
-	if (!old_name || !*old_name)
-		return -EINVAL;
-	err = kern_path(old_name, LOOKUP_FOLLOW|LOOKUP_AUTOMOUNT, &old_path);
-	if (err)
-		return err;
-
-	err = -EINVAL;
-	if (mnt_ns_loop(old_path.dentry))
-		goto out;
-
-	mp = lock_mount(path);
-	if (IS_ERR(mp)) {
-		err = PTR_ERR(mp);
-		goto out;
-	}
-
-	parent = real_mount(path->mnt);
-	if (!check_mnt(parent))
-		goto out2;
-
-	mnt = __do_loopback(&old_path, recurse);
-	if (IS_ERR(mnt)) {
-		err = PTR_ERR(mnt);
-		goto out2;
-	}
-
-	err = graft_tree(mnt, parent, mp);
-	if (err) {
-		lock_mount_hash();
-		umount_tree(mnt, UMOUNT_SYNC);
-		unlock_mount_hash();
-	}
-out2:
-	unlock_mount(mp);
-out:
-	path_put(&old_path);
-	return err;
+	/* Stubbed: loopback mounts not needed for minimal boot */
+	return -EINVAL;
 }
 
 static struct file *open_detached_copy(struct path *path, bool recursive)
@@ -2456,76 +2359,12 @@ __latent_entropy
 struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
 		struct user_namespace *user_ns, struct fs_struct *new_fs)
 {
-	struct mnt_namespace *new_ns;
-	struct vfsmount *rootmnt = NULL, *pwdmnt = NULL;
-	struct mount *p, *q;
-	struct mount *old;
-	struct mount *new;
-	int copy_flags;
-
-	BUG_ON(!ns);
-
+	/* Stubbed: namespace cloning not needed for minimal boot */
 	if (likely(!(flags & CLONE_NEWNS))) {
 		get_mnt_ns(ns);
 		return ns;
 	}
-
-	old = ns->root;
-
-	new_ns = alloc_mnt_ns(user_ns, false);
-	if (IS_ERR(new_ns))
-		return new_ns;
-
-	namespace_lock();
-	
-	copy_flags = CL_COPY_UNBINDABLE | CL_EXPIRE;
-	if (user_ns != ns->user_ns)
-		copy_flags |= CL_SHARED_TO_SLAVE;
-	new = copy_tree(old, old->mnt.mnt_root, copy_flags);
-	if (IS_ERR(new)) {
-		namespace_unlock();
-		free_mnt_ns(new_ns);
-		return ERR_CAST(new);
-	}
-	if (user_ns != ns->user_ns) {
-		lock_mount_hash();
-		lock_mnt_tree(new);
-		unlock_mount_hash();
-	}
-	new_ns->root = new;
-	list_add_tail(&new_ns->list, &new->mnt_list);
-
-	
-	p = old;
-	q = new;
-	while (p) {
-		q->mnt_ns = new_ns;
-		new_ns->mounts++;
-		if (new_fs) {
-			if (&p->mnt == new_fs->root.mnt) {
-				new_fs->root.mnt = mntget(&q->mnt);
-				rootmnt = &p->mnt;
-			}
-			if (&p->mnt == new_fs->pwd.mnt) {
-				new_fs->pwd.mnt = mntget(&q->mnt);
-				pwdmnt = &p->mnt;
-			}
-		}
-		p = next_mnt(p, old);
-		q = next_mnt(q, new);
-		if (!q)
-			break;
-		while (p->mnt.mnt_root != q->mnt.mnt_root)
-			p = next_mnt(p, old);
-	}
-	namespace_unlock();
-
-	if (rootmnt)
-		mntput(rootmnt);
-	if (pwdmnt)
-		mntput(pwdmnt);
-
-	return new_ns;
+	return ERR_PTR(-EINVAL);
 }
 
 struct dentry *mount_subtree(struct vfsmount *m, const char *name)
@@ -2856,103 +2695,17 @@ out:
 static int build_mount_idmapped(const struct mount_attr *attr, size_t usize,
 				struct mount_kattr *kattr, unsigned int flags)
 {
-	int err = 0;
-	struct ns_common *ns;
-	struct user_namespace *mnt_userns;
-	struct file *file;
-
+	/* Stubbed: ID mapping not needed for minimal boot */
 	if (!((attr->attr_set | attr->attr_clr) & MOUNT_ATTR_IDMAP))
 		return 0;
-
-	
-	if (attr->attr_clr & MOUNT_ATTR_IDMAP)
-		return -EINVAL;
-
-	if (attr->userns_fd > INT_MAX)
-		return -EINVAL;
-
-	file = fget(attr->userns_fd);
-	if (!file)
-		return -EBADF;
-
-	if (!proc_ns_file(file)) {
-		err = -EINVAL;
-		goto out_fput;
-	}
-
-	ns = get_proc_ns(file_inode(file));
-	if (ns->ops->type != CLONE_NEWUSER) {
-		err = -EINVAL;
-		goto out_fput;
-	}
-
-	
-	mnt_userns = container_of(ns, struct user_namespace, ns);
-	if (initial_idmapping(mnt_userns)) {
-		err = -EPERM;
-		goto out_fput;
-	}
-	kattr->mnt_userns = get_user_ns(mnt_userns);
-
-out_fput:
-	fput(file);
-	return err;
+	return -EINVAL;
 }
 
 static int build_mount_kattr(const struct mount_attr *attr, size_t usize,
 			     struct mount_kattr *kattr, unsigned int flags)
 {
-	unsigned int lookup_flags = LOOKUP_AUTOMOUNT | LOOKUP_FOLLOW;
-
-	if (flags & AT_NO_AUTOMOUNT)
-		lookup_flags &= ~LOOKUP_AUTOMOUNT;
-	if (flags & AT_SYMLINK_NOFOLLOW)
-		lookup_flags &= ~LOOKUP_FOLLOW;
-	if (flags & AT_EMPTY_PATH)
-		lookup_flags |= LOOKUP_EMPTY;
-
-	*kattr = (struct mount_kattr) {
-		.lookup_flags	= lookup_flags,
-		.recurse	= !!(flags & AT_RECURSIVE),
-	};
-
-	if (attr->propagation & ~MOUNT_SETATTR_PROPAGATION_FLAGS)
-		return -EINVAL;
-	if (hweight32(attr->propagation & MOUNT_SETATTR_PROPAGATION_FLAGS) > 1)
-		return -EINVAL;
-	kattr->propagation = attr->propagation;
-
-	if ((attr->attr_set | attr->attr_clr) & ~MOUNT_SETATTR_VALID_FLAGS)
-		return -EINVAL;
-
-	kattr->attr_set = attr_flags_to_mnt_flags(attr->attr_set);
-	kattr->attr_clr = attr_flags_to_mnt_flags(attr->attr_clr);
-
-	
-	if (attr->attr_clr & MOUNT_ATTR__ATIME) {
-		if ((attr->attr_clr & MOUNT_ATTR__ATIME) != MOUNT_ATTR__ATIME)
-			return -EINVAL;
-
-		
-		kattr->attr_clr |= MNT_RELATIME | MNT_NOATIME;
-		switch (attr->attr_set & MOUNT_ATTR__ATIME) {
-		case MOUNT_ATTR_RELATIME:
-			kattr->attr_set |= MNT_RELATIME;
-			break;
-		case MOUNT_ATTR_NOATIME:
-			kattr->attr_set |= MNT_NOATIME;
-			break;
-		case MOUNT_ATTR_STRICTATIME:
-			break;
-		default:
-			return -EINVAL;
-		}
-	} else {
-		if (attr->attr_set & MOUNT_ATTR__ATIME)
-			return -EINVAL;
-	}
-
-	return build_mount_idmapped(attr, usize, kattr, flags);
+	/* Stubbed: mount attribute handling not needed for minimal boot */
+	return -EINVAL;
 }
 
 static void finish_mount_kattr(struct mount_kattr *kattr)

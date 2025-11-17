@@ -64,6 +64,20 @@ New session starting:
   Session total so far: 557 LOC reduced (234,233 → 233,676)
   Remaining to goal: 33,676 LOC (14.4% reduction needed)
 
+01:26 - Fourth commit: 94 LOC reduced
+  Stubbed large functions in mm/filemap.c:
+  1. mapping_seek_hole_data(): 43 lines → 5 lines (38 lines saved)
+  2. find_get_pages_contig(): 40 lines → 5 lines (35 lines saved)
+  3. do_sync_mmap_readahead(): 39 lines → 5 lines (34 lines saved)
+
+  Total from filemap.c: ~107 lines saved (code only, cloc reports 94)
+  Result: 233,582 LOC (C: 137,890 + Headers: 95,692)
+  Binary: 334KB (down from 335KB, -1KB)
+  make vm: PASSES ✓, prints "Hello, World!" ✓
+
+  Session total: 651 LOC reduced (234,233 → 233,582)
+  Remaining to goal: 33,582 LOC (14.4% reduction needed)
+
 --- 2025-11-17 00:39 ---
 
 New session starting:

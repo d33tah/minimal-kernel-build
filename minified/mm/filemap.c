@@ -1300,44 +1300,8 @@ out:
 unsigned find_get_pages_contig(struct address_space *mapping, pgoff_t index,
 			       unsigned int nr_pages, struct page **pages)
 {
-	XA_STATE(xas, &mapping->i_pages, index);
-	struct folio *folio;
-	unsigned int ret = 0;
-
-	if (unlikely(!nr_pages))
-		return 0;
-
-	rcu_read_lock();
-	for (folio = xas_load(&xas); folio; folio = xas_next(&xas)) {
-		if (xas_retry(&xas, folio))
-			continue;
-		
-		if (xa_is_value(folio))
-			break;
-
-		if (!folio_try_get_rcu(folio))
-			goto retry;
-
-		if (unlikely(folio != xas_reload(&xas)))
-			goto put_page;
-
-again:
-		pages[ret] = folio_file_page(folio, xas.xa_index);
-		if (++ret == nr_pages)
-			break;
-		if (folio_more_pages(folio, xas.xa_index, ULONG_MAX)) {
-			xas.xa_index++;
-			folio_ref_inc(folio);
-			goto again;
-		}
-		continue;
-put_page:
-		folio_put(folio);
-retry:
-		xas_reset(&xas);
-	}
-	rcu_read_unlock();
-	return ret;
+	/* Stubbed: contiguous page finding not needed for minimal boot */
+	return 0;
 }
 
 unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
@@ -1801,47 +1765,8 @@ static inline size_t seek_folio_size(struct xa_state *xas, struct folio *folio)
 loff_t mapping_seek_hole_data(struct address_space *mapping, loff_t start,
 		loff_t end, int whence)
 {
-	XA_STATE(xas, &mapping->i_pages, start >> PAGE_SHIFT);
-	pgoff_t max = (end - 1) >> PAGE_SHIFT;
-	bool seek_data = (whence == SEEK_DATA);
-	struct folio *folio;
-
-	if (end <= start)
-		return -ENXIO;
-
-	rcu_read_lock();
-	while ((folio = find_get_entry(&xas, max, XA_PRESENT))) {
-		loff_t pos = (u64)xas.xa_index << PAGE_SHIFT;
-		size_t seek_size;
-
-		if (start < pos) {
-			if (!seek_data)
-				goto unlock;
-			start = pos;
-		}
-
-		seek_size = seek_folio_size(&xas, folio);
-		pos = round_up((u64)pos + 1, seek_size);
-		start = folio_seek_hole_data(&xas, mapping, folio, start, pos,
-				seek_data);
-		if (start < pos)
-			goto unlock;
-		if (start >= end)
-			break;
-		if (seek_size > PAGE_SIZE)
-			xas_set(&xas, pos >> PAGE_SHIFT);
-		if (!xa_is_value(folio))
-			folio_put(folio);
-	}
-	if (seek_data)
-		start = -ENXIO;
-unlock:
-	rcu_read_unlock();
-	if (folio && !xa_is_value(folio))
-		folio_put(folio);
-	if (start > end)
-		return end;
-	return start;
+	/* Stubbed: SEEK_HOLE/SEEK_DATA not needed for minimal boot */
+	return -ENXIO;
 }
 
 #define MMAP_LOTSAMISS  (100)
@@ -1872,43 +1797,8 @@ static int lock_folio_maybe_drop_mmap(struct vm_fault *vmf, struct folio *folio,
 
 static struct file *do_sync_mmap_readahead(struct vm_fault *vmf)
 {
-	struct file *file = vmf->vma->vm_file;
-	struct file_ra_state *ra = &file->f_ra;
-	struct address_space *mapping = file->f_mapping;
-	DEFINE_READAHEAD(ractl, file, ra, mapping, vmf->pgoff);
-	struct file *fpin = NULL;
-	unsigned long vm_flags = vmf->vma->vm_flags;
-	unsigned int mmap_miss;
-
-	
-	if (vm_flags & VM_RAND_READ)
-		return fpin;
-	if (!ra->ra_pages)
-		return fpin;
-
-	if (vm_flags & VM_SEQ_READ) {
-		fpin = maybe_unlock_mmap_for_io(vmf, fpin);
-		page_cache_sync_ra(&ractl, ra->ra_pages);
-		return fpin;
-	}
-
-	
-	mmap_miss = READ_ONCE(ra->mmap_miss);
-	if (mmap_miss < MMAP_LOTSAMISS * 10)
-		WRITE_ONCE(ra->mmap_miss, ++mmap_miss);
-
-	
-	if (mmap_miss > MMAP_LOTSAMISS)
-		return fpin;
-
-	
-	fpin = maybe_unlock_mmap_for_io(vmf, fpin);
-	ra->start = max_t(long, 0, vmf->pgoff - ra->ra_pages / 2);
-	ra->size = ra->ra_pages;
-	ra->async_size = ra->ra_pages / 4;
-	ractl._index = ra->start;
-	page_cache_ra_order(&ractl, ra, 0);
-	return fpin;
+	/* Stubbed: mmap readahead not needed for minimal boot */
+	return NULL;
 }
 
 static struct file *do_async_mmap_readahead(struct vm_fault *vmf,

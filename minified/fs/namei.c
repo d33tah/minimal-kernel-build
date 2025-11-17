@@ -2479,32 +2479,7 @@ static int do_tmpfile(struct nameidata *nd, unsigned flags,
 		const struct open_flags *op,
 		struct file *file)
 {
-	struct user_namespace *mnt_userns;
-	struct dentry *child;
-	struct path path;
-	int error = path_lookupat(nd, flags | LOOKUP_DIRECTORY, &path);
-	if (unlikely(error))
-		return error;
-	error = mnt_want_write(path.mnt);
-	if (unlikely(error))
-		goto out;
-	mnt_userns = mnt_user_ns(path.mnt);
-	child = vfs_tmpfile(mnt_userns, path.dentry, op->mode, op->open_flag);
-	error = PTR_ERR(child);
-	if (IS_ERR(child))
-		goto out2;
-	dput(path.dentry);
-	path.dentry = child;
-	audit_inode(nd->name, child, 0);
-	
-	error = may_open(mnt_userns, &path, 0, op->open_flag);
-	if (!error)
-		error = vfs_open(&path, file);
-out2:
-	mnt_drop_write(path.mnt);
-out:
-	path_put(&path);
-	return error;
+	return -EOPNOTSUPP;
 }
 
 static int do_o_path(struct nameidata *nd, unsigned flags, struct file *file)

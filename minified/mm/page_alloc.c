@@ -2894,21 +2894,7 @@ void __ref build_all_zonelists(pg_data_t *pgdat)
 static bool __meminit
 overlap_memmap_init(unsigned long zone, unsigned long *pfn)
 {
-	static struct memblock_region *r;
-
-	if (mirrored_kernelcore && zone == ZONE_MOVABLE) {
-		if (!r || *pfn >= memblock_region_memory_end_pfn(r)) {
-			for_each_mem_region(r) {
-				if (*pfn < memblock_region_memory_end_pfn(r))
-					break;
-			}
-		}
-		if (*pfn >= memblock_region_memory_base_pfn(r) &&
-		    memblock_is_mirror(r)) {
-			*pfn = memblock_region_memory_end_pfn(r);
-			return true;
-		}
-	}
+	/* Stub: no mirrored kernel core support */
 	return false;
 }
 
@@ -4073,34 +4059,8 @@ int lowmem_reserve_ratio_sysctl_handler(struct ctl_table *table, int write,
 int percpu_pagelist_high_fraction_sysctl_handler(struct ctl_table *table,
 		int write, void *buffer, size_t *length, loff_t *ppos)
 {
-	struct zone *zone;
-	int old_percpu_pagelist_high_fraction;
-	int ret;
-
-	mutex_lock(&pcp_batch_high_lock);
-	old_percpu_pagelist_high_fraction = percpu_pagelist_high_fraction;
-
-	ret = proc_dointvec_minmax(table, write, buffer, length, ppos);
-	if (!write || ret < 0)
-		goto out;
-
-	
-	if (percpu_pagelist_high_fraction &&
-	    percpu_pagelist_high_fraction < MIN_PERCPU_PAGELIST_HIGH_FRACTION) {
-		percpu_pagelist_high_fraction = old_percpu_pagelist_high_fraction;
-		ret = -EINVAL;
-		goto out;
-	}
-
-	
-	if (percpu_pagelist_high_fraction == old_percpu_pagelist_high_fraction)
-		goto out;
-
-	for_each_populated_zone(zone)
-		zone_set_pageset_high_and_batch(zone, 0);
-out:
-	mutex_unlock(&pcp_batch_high_lock);
-	return ret;
+	/* Stub: minimal sysctl handler */
+	return proc_dointvec_minmax(table, write, buffer, length, ppos);
 }
 
 #ifndef __HAVE_ARCH_RESERVED_KERNEL_PAGES

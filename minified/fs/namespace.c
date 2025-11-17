@@ -1680,26 +1680,7 @@ static int do_change_type(struct path *path, int ms_flags)
 
 static struct mount *__do_loopback(struct path *old_path, int recurse)
 {
-	struct mount *mnt = ERR_PTR(-EINVAL), *old = real_mount(old_path->mnt);
-
-	if (IS_MNT_UNBINDABLE(old))
-		return mnt;
-
-	if (!check_mnt(old) && old_path->dentry->d_op != &ns_dentry_operations)
-		return mnt;
-
-	if (!recurse && has_locked_children(old, old_path->dentry))
-		return mnt;
-
-	if (recurse)
-		mnt = copy_tree(old, old_path->dentry, CL_COPY_MNT_NS_FILE);
-	else
-		mnt = clone_mnt(old, old_path->dentry, 0);
-
-	if (!IS_ERR(mnt))
-		mnt->mnt.mnt_flags &= ~MNT_LOCKED;
-
-	return mnt;
+	return ERR_PTR(-EINVAL);
 }
 
 static int do_loopback(struct path *path, const char *old_name,
@@ -1711,41 +1692,7 @@ static int do_loopback(struct path *path, const char *old_name,
 
 static struct file *open_detached_copy(struct path *path, bool recursive)
 {
-	struct user_namespace *user_ns = current->nsproxy->mnt_ns->user_ns;
-	struct mnt_namespace *ns = alloc_mnt_ns(user_ns, true);
-	struct mount *mnt, *p;
-	struct file *file;
-
-	if (IS_ERR(ns))
-		return ERR_CAST(ns);
-
-	namespace_lock();
-	mnt = __do_loopback(path, recursive);
-	if (IS_ERR(mnt)) {
-		namespace_unlock();
-		free_mnt_ns(ns);
-		return ERR_CAST(mnt);
-	}
-
-	lock_mount_hash();
-	for (p = mnt; p; p = next_mnt(p, mnt)) {
-		p->mnt_ns = ns;
-		ns->mounts++;
-	}
-	ns->root = mnt;
-	list_add_tail(&ns->list, &mnt->mnt_list);
-	mntget(&mnt->mnt);
-	unlock_mount_hash();
-	namespace_unlock();
-
-	mntput(path->mnt);
-	path->mnt = &mnt->mnt;
-	file = dentry_open(path, O_PATH, current_cred());
-	if (IS_ERR(file))
-		dissolve_on_fput(path->mnt);
-	else
-		file->f_mode |= FMODE_NEED_UNMOUNT;
-	return file;
+	return ERR_PTR(-EINVAL);
 }
 
 SYSCALL_DEFINE3(open_tree, int, dfd, const char __user *, filename, unsigned, flags)
@@ -1815,74 +1762,13 @@ static void mnt_warn_timestamp_expiry(struct path *mountpoint, struct vfsmount *
 
 static int do_reconfigure_mnt(struct path *path, unsigned int mnt_flags)
 {
-	struct super_block *sb = path->mnt->mnt_sb;
-	struct mount *mnt = real_mount(path->mnt);
-	int ret;
-
-	if (!check_mnt(mnt))
-		return -EINVAL;
-
-	if (path->dentry != mnt->mnt.mnt_root)
-		return -EINVAL;
-
-	if (!can_change_locked_flags(mnt, mnt_flags))
-		return -EPERM;
-
-	
-	down_read(&sb->s_umount);
-	lock_mount_hash();
-	ret = change_mount_ro_state(mnt, mnt_flags);
-	if (ret == 0)
-		set_mount_attributes(mnt, mnt_flags);
-	unlock_mount_hash();
-	up_read(&sb->s_umount);
-
-	mnt_warn_timestamp_expiry(path, &mnt->mnt);
-
-	return ret;
+	return -ENOSYS;
 }
 
 static int do_remount(struct path *path, int ms_flags, int sb_flags,
 		      int mnt_flags, void *data)
 {
-	int err;
-	struct super_block *sb = path->mnt->mnt_sb;
-	struct mount *mnt = real_mount(path->mnt);
-	struct fs_context *fc;
-
-	if (!check_mnt(mnt))
-		return -EINVAL;
-
-	if (path->dentry != path->mnt->mnt_root)
-		return -EINVAL;
-
-	if (!can_change_locked_flags(mnt, mnt_flags))
-		return -EPERM;
-
-	fc = fs_context_for_reconfigure(path->dentry, sb_flags, MS_RMT_MASK);
-	if (IS_ERR(fc))
-		return PTR_ERR(fc);
-
-	fc->oldapi = true;
-	err = parse_monolithic_mount_data(fc, data);
-	if (!err) {
-		down_write(&sb->s_umount);
-		err = -EPERM;
-		if (ns_capable(sb->s_user_ns, CAP_SYS_ADMIN)) {
-			err = reconfigure_super(fc);
-			if (!err) {
-				lock_mount_hash();
-				set_mount_attributes(mnt, mnt_flags);
-				unlock_mount_hash();
-			}
-		}
-		up_write(&sb->s_umount);
-	}
-
-	mnt_warn_timestamp_expiry(path, &mnt->mnt);
-
-	put_fs_context(fc);
-	return err;
+	return -ENOSYS;
 }
 
 static inline int tree_contains_unbindable(struct mount *mnt)

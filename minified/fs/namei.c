@@ -817,70 +817,14 @@ static bool choose_mountpoint(struct mount *m, const struct path *root,
 
 static int follow_automount(struct path *path, int *count, unsigned lookup_flags)
 {
-	struct dentry *dentry = path->dentry;
-
-	
-	if (!(lookup_flags & (LOOKUP_PARENT | LOOKUP_DIRECTORY |
-			   LOOKUP_OPEN | LOOKUP_CREATE | LOOKUP_AUTOMOUNT)) &&
-	    dentry->d_inode)
-		return -EISDIR;
-
-	if (count && (*count)++ >= MAXSYMLINKS)
-		return -ELOOP;
-
-	return finish_automount(dentry->d_op->d_automount(path), path);
+	return -EISDIR; /* Stub */
 }
 
 static int __traverse_mounts(struct path *path, unsigned flags, bool *jumped,
 			     int *count, unsigned lookup_flags)
 {
-	struct vfsmount *mnt = path->mnt;
-	bool need_mntput = false;
-	int ret = 0;
-
-	while (flags & DCACHE_MANAGED_DENTRY) {
-		
-		if (flags & DCACHE_MANAGE_TRANSIT) {
-			ret = path->dentry->d_op->d_manage(path, false);
-			flags = smp_load_acquire(&path->dentry->d_flags);
-			if (ret < 0)
-				break;
-		}
-
-		if (flags & DCACHE_MOUNTED) {	 
-			struct vfsmount *mounted = lookup_mnt(path);
-			if (mounted) {		 
-				dput(path->dentry);
-				if (need_mntput)
-					mntput(path->mnt);
-				path->mnt = mounted;
-				path->dentry = dget(mounted->mnt_root);
-				 
-				flags = path->dentry->d_flags;
-				need_mntput = true;
-				continue;
-			}
-		}
-
-		if (!(flags & DCACHE_NEED_AUTOMOUNT))
-			break;
-
-		 
-		ret = follow_automount(path, count, lookup_flags);
-		flags = smp_load_acquire(&path->dentry->d_flags);
-		if (ret < 0)
-			break;
-	}
-
-	if (ret == -EISDIR)
-		ret = 0;
-	 
-	if (need_mntput && path->mnt == mnt)
-		mntput(path->mnt);
-	if (!ret && unlikely(d_flags_negative(flags)))
-		ret = -ENOENT;
-	*jumped = need_mntput;
-	return ret;
+	*jumped = false;
+	return 0; /* Stub */
 }
 
 static inline int traverse_mounts(struct path *path, bool *jumped,

@@ -760,61 +760,13 @@ out:
 
 void shrink_dentry_list(struct list_head *list)
 {
-	while (!list_empty(list)) {
-		struct dentry *dentry, *parent;
-
-		dentry = list_entry(list->prev, struct dentry, d_lru);
-		spin_lock(&dentry->d_lock);
-		rcu_read_lock();
-		if (!shrink_lock_dentry(dentry)) {
-			bool can_free = false;
-			rcu_read_unlock();
-			d_shrink_del(dentry);
-			if (dentry->d_lockref.count < 0)
-				can_free = dentry->d_flags & DCACHE_MAY_FREE;
-			spin_unlock(&dentry->d_lock);
-			if (can_free)
-				dentry_free(dentry);
-			continue;
-		}
-		rcu_read_unlock();
-		d_shrink_del(dentry);
-		parent = dentry->d_parent;
-		if (parent != dentry)
-			__dput_to_list(parent, list);
-		__dentry_kill(dentry);
-	}
+	/* Stub: not needed for minimal boot */
 }
 
 static enum lru_status dentry_lru_isolate(struct list_head *item,
 		struct list_lru_one *lru, spinlock_t *lru_lock, void *arg)
 {
-	struct list_head *freeable = arg;
-	struct dentry	*dentry = container_of(item, struct dentry, d_lru);
-
-	
-	if (!spin_trylock(&dentry->d_lock))
-		return LRU_SKIP;
-
-	
-	if (dentry->d_lockref.count) {
-		d_lru_isolate(lru, dentry);
-		spin_unlock(&dentry->d_lock);
-		return LRU_REMOVED;
-	}
-
-	if (dentry->d_flags & DCACHE_REFERENCED) {
-		dentry->d_flags &= ~DCACHE_REFERENCED;
-		spin_unlock(&dentry->d_lock);
-
-		
-		return LRU_ROTATE;
-	}
-
-	d_lru_shrink_move(lru, dentry, freeable);
-	spin_unlock(&dentry->d_lock);
-
-	return LRU_REMOVED;
+	return LRU_SKIP; /* Stub */
 }
 
 long prune_dcache_sb(struct super_block *sb, struct shrink_control *sc)
@@ -831,17 +783,7 @@ long prune_dcache_sb(struct super_block *sb, struct shrink_control *sc)
 static enum lru_status dentry_lru_isolate_shrink(struct list_head *item,
 		struct list_lru_one *lru, spinlock_t *lru_lock, void *arg)
 {
-	struct list_head *freeable = arg;
-	struct dentry	*dentry = container_of(item, struct dentry, d_lru);
-
-	
-	if (!spin_trylock(&dentry->d_lock))
-		return LRU_SKIP;
-
-	d_lru_shrink_move(lru, dentry, freeable);
-	spin_unlock(&dentry->d_lock);
-
-	return LRU_REMOVED;
+	return LRU_SKIP; /* Stub */
 }
 
 void shrink_dcache_sb(struct super_block *sb)
@@ -865,105 +807,7 @@ enum d_walk_ret {
 static void d_walk(struct dentry *parent, void *data,
 		   enum d_walk_ret (*enter)(void *, struct dentry *))
 {
-	struct dentry *this_parent;
-	struct list_head *next;
-	unsigned seq = 0;
-	enum d_walk_ret ret;
-	bool retry = true;
-
-again:
-	read_seqbegin_or_lock(&rename_lock, &seq);
-	this_parent = parent;
-	spin_lock(&this_parent->d_lock);
-
-	ret = enter(data, this_parent);
-	switch (ret) {
-	case D_WALK_CONTINUE:
-		break;
-	case D_WALK_QUIT:
-	case D_WALK_SKIP:
-		goto out_unlock;
-	case D_WALK_NORETRY:
-		retry = false;
-		break;
-	}
-repeat:
-	next = this_parent->d_subdirs.next;
-resume:
-	while (next != &this_parent->d_subdirs) {
-		struct list_head *tmp = next;
-		struct dentry *dentry = list_entry(tmp, struct dentry, d_child);
-		next = tmp->next;
-
-		if (unlikely(dentry->d_flags & DCACHE_DENTRY_CURSOR))
-			continue;
-
-		spin_lock_nested(&dentry->d_lock, DENTRY_D_LOCK_NESTED);
-
-		ret = enter(data, dentry);
-		switch (ret) {
-		case D_WALK_CONTINUE:
-			break;
-		case D_WALK_QUIT:
-			spin_unlock(&dentry->d_lock);
-			goto out_unlock;
-		case D_WALK_NORETRY:
-			retry = false;
-			break;
-		case D_WALK_SKIP:
-			spin_unlock(&dentry->d_lock);
-			continue;
-		}
-
-		if (!list_empty(&dentry->d_subdirs)) {
-			spin_unlock(&this_parent->d_lock);
-			spin_release(&dentry->d_lock.dep_map, _RET_IP_);
-			this_parent = dentry;
-			spin_acquire(&this_parent->d_lock.dep_map, 0, 1, _RET_IP_);
-			goto repeat;
-		}
-		spin_unlock(&dentry->d_lock);
-	}
-	
-	rcu_read_lock();
-ascend:
-	if (this_parent != parent) {
-		struct dentry *child = this_parent;
-		this_parent = child->d_parent;
-
-		spin_unlock(&child->d_lock);
-		spin_lock(&this_parent->d_lock);
-
-		
-		if (need_seqretry(&rename_lock, seq))
-			goto rename_retry;
-		
-		do {
-			next = child->d_child.next;
-			if (next == &this_parent->d_subdirs)
-				goto ascend;
-			child = list_entry(next, struct dentry, d_child);
-		} while (unlikely(child->d_flags & DCACHE_DENTRY_KILLED));
-		rcu_read_unlock();
-		goto resume;
-	}
-	if (need_seqretry(&rename_lock, seq))
-		goto rename_retry;
-	rcu_read_unlock();
-
-out_unlock:
-	spin_unlock(&this_parent->d_lock);
-	done_seqretry(&rename_lock, seq);
-	return;
-
-rename_retry:
-	spin_unlock(&this_parent->d_lock);
-	rcu_read_unlock();
-	BUG_ON(seq & 1);
-	if (!retry)
-		return;
-	seq = 1;
-	goto again;
+	/* Stub: not needed for minimal boot */
 }
 
 struct check_mount {

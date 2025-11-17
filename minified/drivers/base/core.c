@@ -377,51 +377,8 @@ static struct class devlink_class = {
 static int devlink_add_symlinks(struct device *dev,
 				struct class_interface *class_intf)
 {
-	int ret;
-	size_t len;
-	struct device_link *link = to_devlink(dev);
-	struct device *sup = link->supplier;
-	struct device *con = link->consumer;
-	char *buf;
-
-	len = max(strlen(dev_bus_name(sup)) + strlen(dev_name(sup)),
-		  strlen(dev_bus_name(con)) + strlen(dev_name(con)));
-	len += strlen(":");
-	len += strlen("supplier:") + 1;
-	buf = kzalloc(len, GFP_KERNEL);
-	if (!buf)
-		return -ENOMEM;
-
-	ret = sysfs_create_link(&link->link_dev.kobj, &sup->kobj, "supplier");
-	if (ret)
-		goto out;
-
-	ret = sysfs_create_link(&link->link_dev.kobj, &con->kobj, "consumer");
-	if (ret)
-		goto err_con;
-
-	snprintf(buf, len, "consumer:%s:%s", dev_bus_name(con), dev_name(con));
-	ret = sysfs_create_link(&sup->kobj, &link->link_dev.kobj, buf);
-	if (ret)
-		goto err_con_dev;
-
-	snprintf(buf, len, "supplier:%s:%s", dev_bus_name(sup), dev_name(sup));
-	ret = sysfs_create_link(&con->kobj, &link->link_dev.kobj, buf);
-	if (ret)
-		goto err_sup_dev;
-
-	goto out;
-
-err_sup_dev:
-	snprintf(buf, len, "consumer:%s:%s", dev_bus_name(con), dev_name(con));
-	sysfs_remove_link(&sup->kobj, buf);
-err_con_dev:
-	sysfs_remove_link(&link->link_dev.kobj, "consumer");
-err_con:
-	sysfs_remove_link(&link->link_dev.kobj, "supplier");
-out:
-	kfree(buf);
-	return ret;
+	/* Stubbed: device link symlinks not needed for minimal boot */
+	return 0;
 }
 
 static void devlink_remove_symlinks(struct device *dev,
@@ -1068,60 +1025,8 @@ static int fw_devlink_relax_cycle(struct device *con, void *sup)
 static int fw_devlink_create_devlink(struct device *con,
 				     struct fwnode_handle *sup_handle, u32 flags)
 {
-	struct device *sup_dev;
-	int ret = 0;
-
-	
-	if (sup_handle->flags & FWNODE_FLAG_NEEDS_CHILD_BOUND_ON_ADD &&
-	    fwnode_is_ancestor_of(sup_handle, con->fwnode))
-		return -EINVAL;
-
-	sup_dev = get_dev_from_fwnode(sup_handle);
-	if (sup_dev) {
-		
-		if (sup_dev->links.status == DL_DEV_NO_DRIVER &&
-		    sup_handle->flags & FWNODE_FLAG_INITIALIZED) {
-			ret = -EINVAL;
-			goto out;
-		}
-
-		
-		if (!device_link_add(con, sup_dev, flags) &&
-		    !(flags & DL_FLAG_SYNC_STATE_ONLY)) {
-			device_links_write_lock();
-			fw_devlink_relax_cycle(con, sup_dev);
-			device_links_write_unlock();
-			device_link_add(con, sup_dev,
-					FW_DEVLINK_FLAGS_PERMISSIVE);
-			ret = -EINVAL;
-		}
-
-		goto out;
-	}
-
-	
-	if (sup_handle->flags & FWNODE_FLAG_INITIALIZED)
-		return -EINVAL;
-
-	
-	if (flags & DL_FLAG_SYNC_STATE_ONLY)
-		return -EAGAIN;
-
-	
-	sup_dev = fwnode_get_next_parent_dev(sup_handle);
-	if (sup_dev && device_is_dependent(con, sup_dev)) {
-		device_links_write_lock();
-		fw_devlink_relax_cycle(con, sup_dev);
-		device_links_write_unlock();
-		ret = -EINVAL;
-	} else {
-
-		ret = -EAGAIN;
-	}
-
-out:
-	put_device(sup_dev);
-	return ret;
+	/* Stubbed: firmware device linking not needed for minimal boot */
+	return -EINVAL;
 }
 
 static void __fw_devlink_link_to_consumers(struct device *dev)
@@ -2707,81 +2612,8 @@ static int device_move_class_links(struct device *dev,
 int device_move(struct device *dev, struct device *new_parent,
 		enum dpm_order dpm_order)
 {
-	int error;
-	struct device *old_parent;
-	struct kobject *new_parent_kobj;
-
-	dev = get_device(dev);
-	if (!dev)
-		return -EINVAL;
-
-	device_pm_lock();
-	new_parent = get_device(new_parent);
-	new_parent_kobj = get_device_parent(dev, new_parent);
-	if (IS_ERR(new_parent_kobj)) {
-		error = PTR_ERR(new_parent_kobj);
-		put_device(new_parent);
-		goto out;
-	}
-
-	error = kobject_move(&dev->kobj, new_parent_kobj);
-	if (error) {
-		cleanup_glue_dir(dev, new_parent_kobj);
-		put_device(new_parent);
-		goto out;
-	}
-	old_parent = dev->parent;
-	dev->parent = new_parent;
-	if (old_parent)
-		klist_remove(&dev->p->knode_parent);
-	if (new_parent) {
-		klist_add_tail(&dev->p->knode_parent,
-			       &new_parent->p->klist_children);
-		set_dev_node(dev, dev_to_node(new_parent));
-	}
-
-	if (dev->class) {
-		error = device_move_class_links(dev, old_parent, new_parent);
-		if (error) {
-			
-			device_move_class_links(dev, new_parent, old_parent);
-			if (!kobject_move(&dev->kobj, &old_parent->kobj)) {
-				if (new_parent)
-					klist_remove(&dev->p->knode_parent);
-				dev->parent = old_parent;
-				if (old_parent) {
-					klist_add_tail(&dev->p->knode_parent,
-						       &old_parent->p->klist_children);
-					set_dev_node(dev, dev_to_node(old_parent));
-				}
-			}
-			cleanup_glue_dir(dev, new_parent_kobj);
-			put_device(new_parent);
-			goto out;
-		}
-	}
-	switch (dpm_order) {
-	case DPM_ORDER_NONE:
-		break;
-	case DPM_ORDER_DEV_AFTER_PARENT:
-		device_pm_move_after(dev, new_parent);
-		devices_kset_move_after(dev, new_parent);
-		break;
-	case DPM_ORDER_PARENT_BEFORE_DEV:
-		device_pm_move_before(new_parent, dev);
-		devices_kset_move_before(new_parent, dev);
-		break;
-	case DPM_ORDER_DEV_LAST:
-		device_pm_move_last(dev);
-		devices_kset_move_last(dev);
-		break;
-	}
-
-	put_device(old_parent);
-out:
-	device_pm_unlock();
-	put_device(dev);
-	return error;
+	/* Stubbed: device moving not needed for minimal boot */
+	return -EINVAL;
 }
 
 static int device_attrs_change_owner(struct device *dev, kuid_t kuid,
@@ -2826,92 +2658,13 @@ static int device_attrs_change_owner(struct device *dev, kuid_t kuid,
 
 int device_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid)
 {
-	int error;
-	struct kobject *kobj = &dev->kobj;
-
-	dev = get_device(dev);
-	if (!dev)
-		return -EINVAL;
-
-	
-	error = sysfs_change_owner(kobj, kuid, kgid);
-	if (error)
-		goto out;
-
-	
-	error = sysfs_file_change_owner(kobj, dev_attr_uevent.attr.name, kuid,
-					kgid);
-	if (error)
-		goto out;
-
-	
-	error = device_attrs_change_owner(dev, kuid, kgid);
-	if (error)
-		goto out;
-
-	error = dpm_sysfs_change_owner(dev, kuid, kgid);
-	if (error)
-		goto out;
-
-	
-	error = sysfs_link_change_owner(&dev->class->p->subsys.kobj, &dev->kobj,
-					dev_name(dev), kuid, kgid);
-	if (error)
-		goto out;
-
-out:
-	put_device(dev);
-	return error;
+	/* Stubbed: device ownership changes not needed for minimal boot */
+	return -EINVAL;
 }
 
 void device_shutdown(void)
 {
-	struct device *dev, *parent;
-
-	wait_for_device_probe();
-	device_block_probing();
-
-	cpufreq_suspend();
-
-	spin_lock(&devices_kset->list_lock);
-	
-	while (!list_empty(&devices_kset->list)) {
-		dev = list_entry(devices_kset->list.prev, struct device,
-				kobj.entry);
-
-		
-		parent = get_device(dev->parent);
-		get_device(dev);
-		
-		list_del_init(&dev->kobj.entry);
-		spin_unlock(&devices_kset->list_lock);
-
-		
-		if (parent)
-			device_lock(parent);
-		device_lock(dev);
-
-		
-		pm_runtime_get_noresume(dev);
-		pm_runtime_barrier(dev);
-
-		if (dev->class && dev->class->shutdown_pre)
-			dev->class->shutdown_pre(dev);
-		if (dev->bus && dev->bus->shutdown)
-			dev->bus->shutdown(dev);
-		else if (dev->driver && dev->driver->shutdown)
-			dev->driver->shutdown(dev);
-
-		device_unlock(dev);
-		if (parent)
-			device_unlock(parent);
-
-		put_device(dev);
-		put_device(parent);
-
-		spin_lock(&devices_kset->list_lock);
-	}
-	spin_unlock(&devices_kset->list_lock);
+	/* Stubbed: device shutdown not needed for minimal boot */
 }
 
 int dev_err_probe(const struct device *dev, int err, const char *fmt, ...)

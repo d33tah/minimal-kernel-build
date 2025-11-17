@@ -36,6 +36,19 @@ New session starting:
   Binary: 336KB (down from 337KB, -1KB)
   make vm: PASSES ✓, prints "Hello, World!" ✓
 
+01:21 - Second commit: 198 LOC reduced
+  Stubbed large functions in drivers/base/core.c:
+  1. device_move(): 77 lines → 5 lines (72 lines saved)
+  2. fw_devlink_create_devlink(): 56 lines → 5 lines (51 lines saved)
+  3. device_shutdown(): 48 lines → 3 lines (45 lines saved)
+  4. devlink_add_symlinks(): 47 lines → 5 lines (42 lines saved)
+  5. device_change_owner(): 38 lines → 5 lines (33 lines saved)
+
+  Total from core.c: ~243 lines saved (code only, cloc reports 198)
+  Result: 233,825 LOC (C: 138,133 + Headers: 95,692)
+  Binary: 335KB (down from 336KB, -1KB)
+  make vm: PASSES ✓, prints "Hello, World!" ✓
+
 --- 2025-11-17 00:39 ---
 
 New session starting:

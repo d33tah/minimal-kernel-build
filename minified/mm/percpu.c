@@ -1599,51 +1599,7 @@ void __init pcpu_free_alloc_info(struct pcpu_alloc_info *ai)
 static void pcpu_dump_alloc_info(const char *lvl,
 				 const struct pcpu_alloc_info *ai)
 {
-	int group_width = 1, cpu_width = 1, width;
-	char empty_str[] = "--------";
-	int alloc = 0, alloc_end = 0;
-	int group, v;
-	int upa, apl;	
-
-	v = ai->nr_groups;
-	while (v /= 10)
-		group_width++;
-
-	v = num_possible_cpus();
-	while (v /= 10)
-		cpu_width++;
-	empty_str[min_t(int, cpu_width, sizeof(empty_str) - 1)] = '\0';
-
-	upa = ai->alloc_size / ai->unit_size;
-	width = upa * (cpu_width + 1) + group_width + 3;
-	apl = rounddown_pow_of_two(max(60 / width, 1));
-
-	printk("%spcpu-alloc: s%zu r%zu d%zu u%zu alloc=%zu*%zu",
-	       lvl, ai->static_size, ai->reserved_size, ai->dyn_size,
-	       ai->unit_size, ai->alloc_size / ai->atom_size, ai->atom_size);
-
-	for (group = 0; group < ai->nr_groups; group++) {
-		const struct pcpu_group_info *gi = &ai->groups[group];
-		int unit = 0, unit_end = 0;
-
-		BUG_ON(gi->nr_units % upa);
-		for (alloc_end += gi->nr_units / upa;
-		     alloc < alloc_end; alloc++) {
-			if (!(alloc % apl)) {
-				pr_cont("\n");
-				printk("%spcpu-alloc: ", lvl);
-			}
-			pr_cont("[%0*d] ", group_width, group);
-
-			for (unit_end += upa; unit < unit_end; unit++)
-				if (gi->cpu_map[unit] != NR_CPUS)
-					pr_cont("%0*d ",
-						cpu_width, gi->cpu_map[unit]);
-				else
-					pr_cont("%s ", empty_str);
-		}
-	}
-	pr_cont("\n");
+	/* Stub: per-CPU allocation info dump not needed for minimal kernel */
 }
 
 void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,

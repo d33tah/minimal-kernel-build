@@ -40,7 +40,16 @@ New session starting:
   Note: Attempted to stub fault handlers (do_read_fault, do_cow_fault, do_shared_fault)
   but they were too critical - kernel failed to boot. Reverted those changes.
 
-  Strategy for next session: Continue with safe stubbing in fs/ and drivers/ subsystems
+  Strategy for next session:
+  1. Headers are 93,221 LOC (39% of total) - major opportunity but risky to trim
+     - Largest headers: atomic-arch-fallback.h (2034), fs.h (1782), atomic-instrumented.h (1660), mm.h (1626)
+  2. Continue safe stubbing in large C files:
+     - mm/page_alloc.c (3317 LOC) - but careful, many functions are critical
+     - fs/namespace.c (2630 LOC) - clone_mnt and other mount operations
+     - drivers/base/core.c (2396 LOC) - device link management
+     - drivers/tty/vt/vt.c (2345 LOC)
+     - kernel/signal.c (2089 LOC)
+  3. Focus on safe optimizations and non-critical subsystems
 
 --- 2025-11-16 23:52 ---
 

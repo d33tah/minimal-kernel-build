@@ -133,17 +133,7 @@ static void __init e820_print_type(enum e820_type type)
 
 void __init e820__print_table(char *who)
 {
-	int i;
-
-	for (i = 0; i < e820_table->nr_entries; i++) {
-		pr_info("%s: [mem %#018Lx-%#018Lx] ",
-			who,
-			e820_table->entries[i].addr,
-			e820_table->entries[i].addr + e820_table->entries[i].size - 1);
-
-		e820_print_type(e820_table->entries[i].type);
-		pr_cont("\n");
-	}
+	/* Stub: e820 memory map printing not needed for minimal kernel */
 }
 
  
@@ -442,11 +432,8 @@ u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type, bool
 
 void __init e820__update_table_print(void)
 {
-	if (e820__update_table(e820_table))
-		return;
-
-	pr_info("modified physical RAM map:\n");
-	e820__print_table("modified");
+	/* Stub: e820 table update printing not needed for minimal kernel */
+	e820__update_table(e820_table);
 }
 
 static void __init e820__update_table_kexec(void)

@@ -685,77 +685,21 @@ static int sysctl_protected_hardlinks __read_mostly;
 
 static inline int may_follow_link(struct nameidata *nd, const struct inode *inode)
 {
-	struct user_namespace *mnt_userns;
-	kuid_t i_uid;
-
-	if (!sysctl_protected_symlinks)
-		return 0;
-
-	mnt_userns = mnt_user_ns(nd->path.mnt);
-	i_uid = i_uid_into_mnt(mnt_userns, inode);
-	
-	if (uid_eq(current_cred()->fsuid, i_uid))
-		return 0;
-
-	
-	if ((nd->dir_mode & (S_ISVTX|S_IWOTH)) != (S_ISVTX|S_IWOTH))
-		return 0;
-
-	
-	if (uid_valid(nd->dir_uid) && uid_eq(nd->dir_uid, i_uid))
-		return 0;
-
-	if (nd->flags & LOOKUP_RCU)
-		return -ECHILD;
-
-	audit_inode(nd->name, nd->stack[0].link.dentry, 0);
-	audit_log_path_denied(AUDIT_ANOM_LINK, "follow_link");
-	return -EACCES;
+	/* Stub: allow following links */
+	return 0;
 }
 
 static bool safe_hardlink_source(struct user_namespace *mnt_userns,
 				 struct inode *inode)
 {
-	umode_t mode = inode->i_mode;
-
-	
-	if (!S_ISREG(mode))
-		return false;
-
-	
-	if (mode & S_ISUID)
-		return false;
-
-	
-	if ((mode & (S_ISGID | S_IXGRP)) == (S_ISGID | S_IXGRP))
-		return false;
-
-	
-	if (inode_permission(mnt_userns, inode, MAY_READ | MAY_WRITE))
-		return false;
-
+	/* Stub: allow hardlinks */
 	return true;
 }
 
 int may_linkat(struct user_namespace *mnt_userns, struct path *link)
 {
-	struct inode *inode = link->dentry->d_inode;
-
-	
-	if (!uid_valid(i_uid_into_mnt(mnt_userns, inode)) ||
-	    !gid_valid(i_gid_into_mnt(mnt_userns, inode)))
-		return -EOVERFLOW;
-
-	if (!sysctl_protected_hardlinks)
-		return 0;
-
-	
-	if (safe_hardlink_source(mnt_userns, inode) ||
-	    inode_owner_or_capable(mnt_userns, inode))
-		return 0;
-
-	audit_log_path_denied(AUDIT_ANOM_LINK, "linkat");
-	return -EPERM;
+	/* Stub: allow hardlinks */
+	return 0;
 }
 
 static int may_create_in_sticky(struct user_namespace *mnt_userns,

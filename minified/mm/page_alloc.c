@@ -1946,42 +1946,12 @@ get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
 
 static void warn_alloc_show_mem(gfp_t gfp_mask, nodemask_t *nodemask)
 {
-	unsigned int filter = SHOW_MEM_FILTER_NODES;
-
-	
-	if (!(gfp_mask & __GFP_NOMEMALLOC))
-		if (tsk_is_oom_victim(current) ||
-		    (current->flags & (PF_MEMALLOC | PF_EXITING)))
-			filter &= ~SHOW_MEM_FILTER_NODES;
-	if (!in_task() || !(gfp_mask & __GFP_DIRECT_RECLAIM))
-		filter &= ~SHOW_MEM_FILTER_NODES;
-
-	show_mem(filter, nodemask);
+	/* Stub: memory diagnostic not needed for minimal kernel */
 }
 
 void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...)
 {
-	struct va_format vaf;
-	va_list args;
-	static DEFINE_RATELIMIT_STATE(nopage_rs, 10*HZ, 1);
-
-	if ((gfp_mask & __GFP_NOWARN) ||
-	     !__ratelimit(&nopage_rs) ||
-	     ((gfp_mask & __GFP_DMA) && !has_managed_dma()))
-		return;
-
-	va_start(args, fmt);
-	vaf.fmt = fmt;
-	vaf.va = &args;
-	pr_warn("%s: %pV, mode:%#x(%pGg), nodemask=%*pbl",
-			current->comm, &vaf, gfp_mask, &gfp_mask,
-			nodemask_pr_args(nodemask));
-	va_end(args);
-
-	cpuset_print_current_mems_allowed();
-	pr_cont("\n");
-	dump_stack();
-	warn_alloc_show_mem(gfp_mask, nodemask);
+	/* Stub: allocation warning not needed for minimal kernel */
 }
 
 static inline struct page *

@@ -2513,23 +2513,7 @@ static void blank_screen_t(struct timer_list *unused)
 
 void poke_blanked_console(void)
 {
-	WARN_CONSOLE_UNLOCKED();
-
-	
-	might_sleep();
-
-	
-	del_timer(&console_timer);
-	blank_timer_expired = 0;
-
-	if (ignore_poke || !vc_cons[fg_console].d || vc_cons[fg_console].d->vc_mode == KD_GRAPHICS)
-		return;
-	if (console_blanked)
-		unblank_screen();
-	else if (blankinterval) {
-		mod_timer(&console_timer, jiffies + (blankinterval * HZ));
-		blank_state = blank_normal_wait;
-	}
+	/* Stub: console blanking poke not needed for minimal kernel */
 }
 
 static void set_palette(struct vc_data *vc)
@@ -2599,9 +2583,7 @@ void getconsxy(const struct vc_data *vc, unsigned char xy[static 2])
 
 void putconsxy(struct vc_data *vc, unsigned char xy[static const 2])
 {
-	hide_cursor(vc);
-	gotoxy(vc, xy[0], xy[1]);
-	set_cursor(vc);
+	/* Stub: cursor positioning not needed for minimal kernel */
 }
 
 u16 vcs_scr_readw(const struct vc_data *vc, const u16 *org)
@@ -2613,11 +2595,8 @@ u16 vcs_scr_readw(const struct vc_data *vc, const u16 *org)
 
 void vcs_scr_writew(struct vc_data *vc, u16 val, u16 *org)
 {
+	/* Stub: VCS screen write not needed for minimal kernel */
 	scr_writew(val, org);
-	if ((unsigned long)org == vc->vc_pos) {
-		softcursor_original = -1;
-		add_softcursor(vc);
-	}
 }
 
 void vcs_scr_updated(struct vc_data *vc)

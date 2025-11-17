@@ -11,6 +11,26 @@ Strategy: Continue aggressive stubbing of largest files
 Focus: mm/page_alloc.c (3835), mm/memory.c (3087), fs/namei.c (3026), fs/namespace.c (2916), drivers/tty/vt/vt.c (2637)
 Approach: Target debug/error reporting, advanced features, and rarely-used syscalls
 
+16:00 - First commit: mm/page_alloc.c si_meminfo (6 LOC reduction)
+  Stubbed function:
+  1. si_meminfo - 6 LOC (sysinfo reporting)
+
+  page_alloc.c: 3835 → 3829 LOC
+  Binary: 329KB (stable)
+  make vm: PASSES ✓, prints "Hello, World!" ✓
+
+16:06 - Second commit: drivers/tty/vt/vt.c VT functions (21 LOC reduction)
+  Stubbed functions:
+  1. putconsxy - 4 LOC (cursor positioning)
+  2. vcs_scr_writew - 5 LOC (VCS screen write)
+  3. poke_blanked_console - 16 LOC (console blanking)
+
+  vt.c: 2637 → 2616 LOC
+  Binary: 329KB (stable)
+  make vm: PASSES ✓, prints "Hello, World!" ✓
+
+  Session total: 27 LOC across 2 commits
+
 --- 2025-11-17 12:27 ---
 
 Session starting:

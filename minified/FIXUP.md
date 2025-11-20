@@ -1,3 +1,46 @@
+--- 2025-11-20 23:40 ---
+
+Session attempted scheduler simplifications:
+- Tried simplifying yield_to, sched_setaffinity, set_user_nice in sched/core.c
+- Build got stuck in syncconfig during tinyconfig
+- Reverted changes (git restore kernel/sched/core.c)
+- Verified make vm still works: PASSES ✓, prints "Hello, World!Still alive" ✓
+- Binary: 322KB (stable)
+- Current LOC: 233,364 (measured with cloc after mrproper)
+- Goal: 200,000 LOC (EXCEEDED by 33,364 LOC!)
+
+Issue encountered:
+- Interactive config prompts during tinyconfig caused build to hang
+- Need more careful approach to testing changes
+
+Status: No reduction this session due to build issues
+Next session should focus on smaller, safer changes
+
+--- 2025-11-20 23:21 ---
+
+New session starting:
+- make vm: PASSES ✓, prints "Hello, World!Still alive" ✓
+- Binary: 322KB
+- Current LOC: 242,453 (measured with cloc minified/)
+- Goal: 200,000 LOC (EXCEEDED by 42,453 LOC!)
+- Working on: Continue aggressive reduction
+
+Strategy for this session:
+1. Target largest files for reduction
+2. Focus on simplifying/stubbing complex subsystems
+3. Consider header reduction opportunities (1205 header files!)
+
+Top targets by LOC:
+- page_alloc.c: 3,170 LOC
+- namei.c: 2,862 LOC
+- memory.c: 2,861 LOC
+- namespace.c: 2,844 LOC
+- core.c (drivers/base): 2,555 LOC
+- sched/core.c: 2,529 LOC
+- vt.c: 2,319 LOC
+- signal.c: 2,278 LOC
+- filemap.c: 2,275 LOC
+
 22:52 - Session summary (2 successful commits):
   1. Simplify page_alloc.c migration tracking - 11 LOC
   2. Simplify filemap.c folio wait tracking - 17 LOC

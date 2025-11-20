@@ -1,4 +1,38 @@
+--- 2025-11-20 23:40 ---
+
+Session attempted scheduler simplifications:
+- Tried simplifying yield_to, sched_setaffinity, set_user_nice in sched/core.c
+- Build got stuck in syncconfig during tinyconfig
+- Reverted changes (git restore kernel/sched/core.c)
+- Verified make vm still works: PASSES ✓, prints "Hello, World!Still alive" ✓
+- Binary: 322KB (stable)
+- Current LOC: 233,364 (measured with cloc after mrproper)
+- Goal: 200,000 LOC (EXCEEDED by 33,364 LOC!)
+
+Issue encountered:
+- Interactive config prompts during tinyconfig caused build to hang
+- Need more careful approach to testing changes
+
+Status: No reduction this session due to build issues
+Next session should focus on smaller, safer changes
+
 --- 2025-11-20 23:20 ---
+
+23:37 - Session in progress (2 commits so far):
+  1. Simplify scheduler parameter setting (__sched_setscheduler) - 120 LOC
+  2. Simplify signal permission checking (send_signal_locked, check_kill_permission) - 45 LOC
+
+  Total reduction this session: 165 LOC
+  Binary: 322KB (stable)
+  Estimated current LOC: ~242,288 (from 242,453)
+  Gap remaining: ~42,288 LOC to 200,000 goal
+
+  Changes made:
+  - sched/core.c: removed permission checks, cpuset locking, security hooks, uclamp validation
+  - signal.c: removed namespace/uid handling, session/cred checks
+
+  All changes verified with "Hello, World!Still alive" output
+  
 
 Session complete (3 commits total):
 1. Fix vmtest.tcl timeout (5s -> 10s) - prevents spurious failures

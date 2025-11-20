@@ -759,19 +759,8 @@ static inline int folio_wait_bit_common(struct folio *folio, int bit_nr,
 	int unfairness = sysctl_page_lock_unfairness;
 	struct wait_page_queue wait_page;
 	wait_queue_entry_t *wait = &wait_page.wait;
-	bool thrashing = false;
-	bool delayacct = false;
-	unsigned long pflags;
 
-	if (bit_nr == PG_locked &&
-	    !folio_test_uptodate(folio) && folio_test_workingset(folio)) {
-		if (!folio_test_swapbacked(folio)) {
-			delayacct_thrashing_start();
-			delayacct = true;
-		}
-		psi_memstall_enter(&pflags);
-		thrashing = true;
-	}
+	/* Stub: skip thrashing/delayacct tracking for minimal kernel */
 
 	init_wait(wait);
 	wait->func = wake_page_function;
@@ -786,24 +775,20 @@ repeat:
 			wait->flags |= WQ_FLAG_CUSTOM;
 	}
 
-	
 	spin_lock_irq(&q->lock);
 	folio_set_waiters(folio);
 	if (!folio_trylock_flag(folio, bit_nr, wait))
 		__add_wait_queue_entry_tail(q, wait);
 	spin_unlock_irq(&q->lock);
 
-	
 	if (behavior == DROP)
 		folio_put(folio);
 
-	
 	for (;;) {
 		unsigned int flags;
 
 		set_current_state(state);
 
-		
 		flags = smp_load_acquire(&wait->flags);
 		if (!(flags & WQ_FLAG_WOKEN)) {
 			if (signal_pending_state(state, current))
@@ -813,15 +798,12 @@ repeat:
 			continue;
 		}
 
-		
 		if (behavior != EXCLUSIVE)
 			break;
 
-		
 		if (flags & WQ_FLAG_DONE)
 			break;
 
-		
 		if (unlikely(test_and_set_bit(bit_nr, folio_flags(folio, 0))))
 			goto repeat;
 
@@ -829,16 +811,10 @@ repeat:
 		break;
 	}
 
-	
 	finish_wait(q, wait);
 
-	if (thrashing) {
-		if (delayacct)
-			delayacct_thrashing_end();
-		psi_memstall_leave(&pflags);
-	}
+	/* Stub: skip thrashing/delayacct cleanup for minimal kernel */
 
-	
 	if (behavior == EXCLUSIVE)
 		return wait->flags & WQ_FLAG_DONE ? 0 : -EINTR;
 

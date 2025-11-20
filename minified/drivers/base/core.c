@@ -1856,62 +1856,13 @@ static void cleanup_glue_dir(struct device *dev, struct kobject *glue_dir)
 
 static int device_add_class_symlinks(struct device *dev)
 {
-	struct device_node *of_node = dev_of_node(dev);
-	int error;
-
-	if (of_node) {
-		error = sysfs_create_link(&dev->kobj, of_node_kobj(of_node), "of_node");
-		if (error)
-			dev_warn(dev, "Error %d creating of_node link\n",error);
-		
-	}
-
-	if (!dev->class)
-		return 0;
-
-	error = sysfs_create_link(&dev->kobj,
-				  &dev->class->p->subsys.kobj,
-				  "subsystem");
-	if (error)
-		goto out_devnode;
-
-	if (dev->parent && device_is_not_partition(dev)) {
-		error = sysfs_create_link(&dev->kobj, &dev->parent->kobj,
-					  "device");
-		if (error)
-			goto out_subsys;
-	}
-
-	
-	error = sysfs_create_link(&dev->class->p->subsys.kobj,
-				  &dev->kobj, dev_name(dev));
-	if (error)
-		goto out_device;
-
+	/* Stub: sysfs class symlinks not needed for minimal kernel */
 	return 0;
-
-out_device:
-	sysfs_remove_link(&dev->kobj, "device");
-
-out_subsys:
-	sysfs_remove_link(&dev->kobj, "subsystem");
-out_devnode:
-	sysfs_remove_link(&dev->kobj, "of_node");
-	return error;
 }
 
 static void device_remove_class_symlinks(struct device *dev)
 {
-	if (dev_of_node(dev))
-		sysfs_remove_link(&dev->kobj, "of_node");
-
-	if (!dev->class)
-		return;
-
-	if (dev->parent && device_is_not_partition(dev))
-		sysfs_remove_link(&dev->kobj, "device");
-	sysfs_remove_link(&dev->kobj, "subsystem");
-	sysfs_delete_link(&dev->class->p->subsys.kobj, &dev->kobj, dev_name(dev));
+	/* Stub: sysfs class symlinks not needed for minimal kernel */
 }
 
 int dev_set_name(struct device *dev, const char *fmt, ...)

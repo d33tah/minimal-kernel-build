@@ -1123,29 +1123,9 @@ static inline unsigned long get_preempt_disable_ip(struct task_struct *p)
 
 static noinline void __schedule_bug(struct task_struct *prev)
 {
-	
-	unsigned long preempt_disable_ip = get_preempt_disable_ip(current);
-
-	if (oops_in_progress)
-		return;
-
-	printk(KERN_ERR "BUG: scheduling while atomic: %s/%d/0x%08x\n",
-		prev->comm, prev->pid, preempt_count());
-
-	debug_show_held_locks(prev);
-	print_modules();
-	if (irqs_disabled())
-		print_irqtrace_events(prev);
-	if (IS_ENABLED(CONFIG_DEBUG_PREEMPT)
-	    && in_atomic_preempt_off()) {
-		pr_err("Preemption disabled at:");
-		print_ip_sym(KERN_ERR, preempt_disable_ip);
-	}
+	/* Stub: skip detailed scheduling bug reporting for minimal kernel */
 	if (panic_on_warn)
 		panic("scheduling while atomic\n");
-
-	dump_stack();
-	add_taint(TAINT_WARN, LOCKDEP_STILL_OK);
 }
 
 static inline void schedule_debug(struct task_struct *prev, bool preempt)

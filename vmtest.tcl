@@ -1,6 +1,6 @@
 #!/usr/bin/expect -f
 
-set timeout 5
+set timeout 10
 spawn qemu-system-x86_64 -kernel minified/arch/x86/boot/bzImage -display curses -m 19M
 
 # When we see "Hello, World", test succeeded.

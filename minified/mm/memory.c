@@ -703,8 +703,6 @@ copy_page_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma)
 	unsigned long end = src_vma->vm_end;
 	struct mm_struct *dst_mm = dst_vma->vm_mm;
 	struct mm_struct *src_mm = src_vma->vm_mm;
-	struct mmu_notifier_range range;
-	bool is_cow;
 	int ret;
 
 	if (!vma_needs_copy(dst_vma, src_vma))
@@ -714,24 +712,12 @@ copy_page_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma)
 		return copy_hugetlb_page_range(dst_mm, src_mm, dst_vma, src_vma);
 
 	if (unlikely(src_vma->vm_flags & VM_PFNMAP)) {
-		
 		ret = track_pfn_copy(src_vma);
 		if (ret)
 			return ret;
 	}
 
-	
-	is_cow = is_cow_mapping(src_vma->vm_flags);
-
-	if (is_cow) {
-		mmu_notifier_range_init(&range, MMU_NOTIFY_PROTECTION_PAGE,
-					0, src_vma, src_mm, addr, end);
-		mmu_notifier_invalidate_range_start(&range);
-		
-		mmap_assert_write_locked(src_mm);
-		raw_write_seqcount_begin(&src_mm->write_protect_seq);
-	}
-
+	/* Simplified: skip COW notifier logic */
 	ret = 0;
 	dst_pgd = pgd_offset(dst_mm, addr);
 	src_pgd = pgd_offset(src_mm, addr);
@@ -746,10 +732,6 @@ copy_page_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma)
 		}
 	} while (dst_pgd++, src_pgd++, addr = next, addr != end);
 
-	if (is_cow) {
-		raw_write_seqcount_end(&src_mm->write_protect_seq);
-		mmu_notifier_invalidate_range_end(&range);
-	}
 	return ret;
 }
 
@@ -1114,55 +1096,34 @@ static int insert_page_in_batch_locked(struct vm_area_struct *vma, pte_t *pte,
 static int insert_pages(struct vm_area_struct *vma, unsigned long addr,
 			struct page **pages, unsigned long *num, pgprot_t prot)
 {
-	pmd_t *pmd = NULL;
-	pte_t *start_pte, *pte;
-	spinlock_t *pte_lock;
-	struct mm_struct *const mm = vma->vm_mm;
-	unsigned long curr_page_idx = 0;
-	unsigned long remaining_pages_total = *num;
-	unsigned long pages_to_write_in_pmd;
+	/* Simplified: sequential insertion without batching */
+	pmd_t *pmd;
+	pte_t *pte;
+	spinlock_t *ptl;
+	struct mm_struct *mm = vma->vm_mm;
+	unsigned long i;
 	int ret;
-more:
-	ret = -EFAULT;
-	pmd = walk_to_pmd(mm, addr);
-	if (!pmd)
-		goto out;
 
-	pages_to_write_in_pmd = min_t(unsigned long,
-		remaining_pages_total, PTRS_PER_PTE - pte_index(addr));
+	for (i = 0; i < *num; i++) {
+		pmd = walk_to_pmd(mm, addr);
+		if (!pmd)
+			return -EFAULT;
 
-	
-	ret = -ENOMEM;
-	if (pte_alloc(mm, pmd))
-		goto out;
+		if (pte_alloc(mm, pmd))
+			return -ENOMEM;
 
-	while (pages_to_write_in_pmd) {
-		int pte_idx = 0;
-		const int batch_size = min_t(int, pages_to_write_in_pmd, 8);
+		pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
+		ret = insert_page_in_batch_locked(vma, pte, addr, pages[i], prot);
+		pte_unmap_unlock(pte, ptl);
 
-		start_pte = pte_offset_map_lock(mm, pmd, addr, &pte_lock);
-		for (pte = start_pte; pte_idx < batch_size; ++pte, ++pte_idx) {
-			int err = insert_page_in_batch_locked(vma, pte,
-				addr, pages[curr_page_idx], prot);
-			if (unlikely(err)) {
-				pte_unmap_unlock(start_pte, pte_lock);
-				ret = err;
-				remaining_pages_total -= pte_idx;
-				goto out;
-			}
-			addr += PAGE_SIZE;
-			++curr_page_idx;
+		if (ret) {
+			*num = *num - i;
+			return ret;
 		}
-		pte_unmap_unlock(start_pte, pte_lock);
-		pages_to_write_in_pmd -= batch_size;
-		remaining_pages_total -= batch_size;
+		addr += PAGE_SIZE;
 	}
-	if (remaining_pages_total)
-		goto more;
-	ret = 0;
-out:
-	*num = remaining_pages_total;
-	return ret;
+	*num = 0;
+	return 0;
 }
 #endif  
 
@@ -1773,74 +1734,15 @@ static inline int pte_unmap_same(struct vm_fault *vmf)
 static inline bool __wp_page_copy_user(struct page *dst, struct page *src,
 				       struct vm_fault *vmf)
 {
-	bool ret;
-	void *kaddr;
-	void __user *uaddr;
-	bool locked = false;
-	struct vm_area_struct *vma = vmf->vma;
-	struct mm_struct *mm = vma->vm_mm;
-	unsigned long addr = vmf->address;
-
+	/* Simplified: just copy from source page if available */
 	if (likely(src)) {
-		copy_user_highpage(dst, src, addr, vma);
+		copy_user_highpage(dst, src, vmf->address, vmf->vma);
 		return true;
 	}
 
-	
-	kaddr = kmap_atomic(dst);
-	uaddr = (void __user *)(addr & PAGE_MASK);
-
-	
-	if (arch_faults_on_old_pte() && !pte_young(vmf->orig_pte)) {
-		pte_t entry;
-
-		vmf->pte = pte_offset_map_lock(mm, vmf->pmd, addr, &vmf->ptl);
-		locked = true;
-		if (!likely(pte_same(*vmf->pte, vmf->orig_pte))) {
-			
-			update_mmu_tlb(vma, addr, vmf->pte);
-			ret = false;
-			goto pte_unlock;
-		}
-
-		entry = pte_mkyoung(vmf->orig_pte);
-		if (ptep_set_access_flags(vma, addr, vmf->pte, entry, 0))
-			update_mmu_cache(vma, addr, vmf->pte);
-	}
-
-	
-	if (__copy_from_user_inatomic(kaddr, uaddr, PAGE_SIZE)) {
-		if (locked)
-			goto warn;
-
-		
-		vmf->pte = pte_offset_map_lock(mm, vmf->pmd, addr, &vmf->ptl);
-		locked = true;
-		if (!likely(pte_same(*vmf->pte, vmf->orig_pte))) {
-			
-			update_mmu_tlb(vma, addr, vmf->pte);
-			ret = false;
-			goto pte_unlock;
-		}
-
-		
-		if (__copy_from_user_inatomic(kaddr, uaddr, PAGE_SIZE)) {
-			
-warn:
-			WARN_ON_ONCE(1);
-			clear_page(kaddr);
-		}
-	}
-
-	ret = true;
-
-pte_unlock:
-	if (locked)
-		pte_unmap_unlock(vmf->pte, vmf->ptl);
-	kunmap_atomic(kaddr);
-	flush_dcache_page(dst);
-
-	return ret;
+	/* No source - clear the page */
+	clear_highpage(dst);
+	return true;
 }
 
 static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)

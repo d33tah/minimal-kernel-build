@@ -1680,64 +1680,23 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int co
 
 static void console_callback(struct work_struct *ignored)
 {
+	/* Stub: minimal console callback for simple kernel */
 	console_lock();
-
-	if (want_console >= 0) {
-		if (want_console != fg_console &&
-		    vc_cons_allocated(want_console)) {
-			hide_cursor(vc_cons[fg_console].d);
-			change_console(vc_cons[want_console].d);
-			
-		}
-		want_console = -1;
-	}
-	if (do_poke_blanked_console) { 
-		do_poke_blanked_console = 0;
-		poke_blanked_console();
-	}
-	if (scrollback_delta) {
-		struct vc_data *vc = vc_cons[fg_console].d;
-		clear_selection();
-		if (vc->vc_mode == KD_TEXT && vc->vc_sw->con_scrolldelta)
-			vc->vc_sw->con_scrolldelta(vc, scrollback_delta);
-		scrollback_delta = 0;
-	}
-	if (blank_timer_expired) {
-		do_blank_screen(0);
-		blank_timer_expired = 0;
-	}
-	notify_update(vc_cons[fg_console].d);
-
 	console_unlock();
 }
 
 int set_console(int nr)
 {
-	struct vc_data *vc = vc_cons[fg_console].d;
-
-	if (!vc_cons_allocated(nr) || vt_dont_switch ||
-		(vc->vt_mode.mode == VT_AUTO && vc->vc_mode == KD_GRAPHICS)) {
-
-		
-		return -EINVAL;
-	}
-
-	want_console = nr;
-	schedule_console_callback();
-
-	return 0;
+	/* Stub: no console switching in minimal kernel */
+	return -EINVAL;
 }
 
 struct tty_driver *console_driver;
 
 int vt_kmsg_redirect(int new)
 {
-	static int kmsg_con;
-
-	if (new != -1)
-		return xchg(&kmsg_con, new);
-	else
-		return kmsg_con;
+	/* Stub: no kmsg redirection */
+	return 0;
 }
 
 static void vt_console_print(struct console *co, const char *b, unsigned count)
@@ -2312,35 +2271,7 @@ int do_unregister_con_driver(const struct consw *csw)
 
 static void con_driver_unregister_callback(struct work_struct *ignored)
 {
-	int i;
-
-	console_lock();
-
-	for (i = 0; i < MAX_NR_CON_DRIVER; i++) {
-		struct con_driver *con_driver = &registered_con_driver[i];
-
-		if (!(con_driver->flag & CON_DRIVER_FLAG_ZOMBIE))
-			continue;
-
-		console_unlock();
-
-		vtconsole_deinit_device(con_driver);
-		device_destroy(vtconsole_class, MKDEV(0, con_driver->node));
-
-		console_lock();
-
-		if (WARN_ON_ONCE(con_driver->con))
-			con_driver->con = NULL;
-		con_driver->desc = NULL;
-		con_driver->dev = NULL;
-		con_driver->node = 0;
-		WARN_ON_ONCE(con_driver->flag != CON_DRIVER_FLAG_ZOMBIE);
-		con_driver->flag = 0;
-		con_driver->first = 0;
-		con_driver->last = 0;
-	}
-
-	console_unlock();
+	/* Stub: no console driver unregistration in minimal kernel */
 }
 
 int do_take_over_console(const struct consw *csw, int first, int last, int deflt)
@@ -2416,8 +2347,7 @@ void unblank_screen(void)
 
 static void blank_screen_t(struct timer_list *unused)
 {
-	blank_timer_expired = 1;
-	schedule_work(&console_work);
+	/* Stub: no screen blanking in minimal kernel */
 }
 
 void poke_blanked_console(void)
@@ -2427,10 +2357,7 @@ void poke_blanked_console(void)
 
 static void set_palette(struct vc_data *vc)
 {
-	WARN_CONSOLE_UNLOCKED();
-
-	if (vc->vc_mode != KD_GRAPHICS && vc->vc_sw->con_set_palette)
-		vc->vc_sw->con_set_palette(vc, color_table);
+	/* Stub: no palette setting in minimal kernel */
 }
 
 int con_set_cmap(unsigned char __user *arg)

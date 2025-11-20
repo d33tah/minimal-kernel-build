@@ -139,14 +139,12 @@ int unregister_vt_notifier(struct notifier_block *nb)
 
 static void notify_write(struct vc_data *vc, unsigned int unicode)
 {
-	struct vt_notifier_param param = { .vc = vc, .c = unicode };
-	atomic_notifier_call_chain(&vt_notifier_list, VT_WRITE, &param);
+	/* Stub: skip VT notifications for minimal kernel */
 }
 
 static void notify_update(struct vc_data *vc)
 {
-	struct vt_notifier_param param = { .vc = vc };
-	atomic_notifier_call_chain(&vt_notifier_list, VT_UPDATE, &param);
+	/* Stub: skip VT notifications for minimal kernel */
 }
 
 static inline bool con_is_fg(const struct vc_data *vc)
@@ -220,94 +218,35 @@ static void vc_uniscr_set(struct vc_data *vc, struct uni_screen *new_uniscr)
 
 static void vc_uniscr_putc(struct vc_data *vc, char32_t uc)
 {
-	struct uni_screen *uniscr = get_vc_uniscr(vc);
-
-	if (uniscr)
-		uniscr->lines[vc->state.y][vc->state.x] = uc;
+	/* Stub: skip unicode screen buffer update for minimal kernel */
 }
 
 static void vc_uniscr_insert(struct vc_data *vc, unsigned int nr)
 {
-	struct uni_screen *uniscr = get_vc_uniscr(vc);
-
-	if (uniscr) {
-		char32_t *ln = uniscr->lines[vc->state.y];
-		unsigned int x = vc->state.x, cols = vc->vc_cols;
-
-		memmove(&ln[x + nr], &ln[x], (cols - x - nr) * sizeof(*ln));
-		memset32(&ln[x], ' ', nr);
-	}
+	/* Stub: skip unicode screen buffer insert for minimal kernel */
 }
 
 static void vc_uniscr_delete(struct vc_data *vc, unsigned int nr)
 {
-	struct uni_screen *uniscr = get_vc_uniscr(vc);
-
-	if (uniscr) {
-		char32_t *ln = uniscr->lines[vc->state.y];
-		unsigned int x = vc->state.x, cols = vc->vc_cols;
-
-		memcpy(&ln[x], &ln[x + nr], (cols - x - nr) * sizeof(*ln));
-		memset32(&ln[cols - nr], ' ', nr);
-	}
+	/* Stub: skip unicode screen buffer delete for minimal kernel */
 }
 
 static void vc_uniscr_clear_line(struct vc_data *vc, unsigned int x,
 				 unsigned int nr)
 {
-	struct uni_screen *uniscr = get_vc_uniscr(vc);
-
-	if (uniscr) {
-		char32_t *ln = uniscr->lines[vc->state.y];
-
-		memset32(&ln[x], ' ', nr);
-	}
+	/* Stub: skip unicode screen buffer clear for minimal kernel */
 }
 
 static void vc_uniscr_clear_lines(struct vc_data *vc, unsigned int y,
 				  unsigned int nr)
 {
-	struct uni_screen *uniscr = get_vc_uniscr(vc);
-
-	if (uniscr) {
-		unsigned int cols = vc->vc_cols;
-
-		while (nr--)
-			memset32(uniscr->lines[y++], ' ', cols);
-	}
+	/* Stub: skip unicode screen buffer clear for minimal kernel */
 }
 
 static void vc_uniscr_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 			     enum con_scroll dir, unsigned int nr)
 {
-	struct uni_screen *uniscr = get_vc_uniscr(vc);
-
-	if (uniscr) {
-		unsigned int i, j, k, sz, d, clear;
-
-		sz = b - t;
-		clear = b - nr;
-		d = nr;
-		if (dir == SM_DOWN) {
-			clear = t;
-			d = sz - nr;
-		}
-		for (i = 0; i < gcd(d, sz); i++) {
-			char32_t *tmp = uniscr->lines[t + i];
-			j = i;
-			while (1) {
-				k = j + d;
-				if (k >= sz)
-					k -= sz;
-				if (k == i)
-					break;
-				uniscr->lines[t + j] = uniscr->lines[t + k];
-				j = k;
-			}
-			uniscr->lines[t + j] = tmp;
-		}
-		vc_uniscr_clear_lines(vc, clear, nr);
-	}
+	/* Stub: skip unicode screen buffer scroll for minimal kernel */
 }
 
 static void vc_uniscr_copy_area(struct uni_screen *dst,
@@ -318,27 +257,7 @@ static void vc_uniscr_copy_area(struct uni_screen *dst,
 				unsigned int src_top_row,
 				unsigned int src_bot_row)
 {
-	unsigned int dst_row = 0;
-
-	if (!dst)
-		return;
-
-	while (src_top_row < src_bot_row) {
-		char32_t *src_line = src->lines[src_top_row];
-		char32_t *dst_line = dst->lines[dst_row];
-
-		memcpy(dst_line, src_line, src_cols * sizeof(char32_t));
-		if (dst_cols - src_cols)
-			memset32(dst_line + src_cols, ' ', dst_cols - src_cols);
-		src_top_row++;
-		dst_row++;
-	}
-	while (dst_row < dst_rows) {
-		char32_t *dst_line = dst->lines[dst_row];
-
-		memset32(dst_line, ' ', dst_cols);
-		dst_row++;
-	}
+	/* Stub: skip unicode screen buffer copy for minimal kernel */
 }
 
 int vc_uniscr_check(struct vc_data *vc)

@@ -1,3 +1,17 @@
+--- 2025-11-21 00:54 ---
+
+Simplify multiple scheduler functions - 83 LOC reduction
+Binary: 321KB (stable)
+make vm: PASSES ✓, prints "Hello, World!" ✓
+
+Changes made to kernel/sched/core.c:
+- sched_getaffinity(): Removed security check, simplified error handling
+- yield_to(): Removed double runqueue locking, retry logic, just calls yield()
+- set_user_nice(): Removed queue manipulation, just sets priority directly
+
+Estimated current LOC: ~233,106 (from 233,189)
+Gap remaining: ~33,106 LOC to 200,000 goal
+
 --- 2025-11-21 00:51 ---
 
 Simplify scheduler CPU affinity setting - 32 LOC reduction

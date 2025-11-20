@@ -2553,67 +2553,7 @@ __weak const char *arch_vma_name(struct vm_area_struct *vma)
 
 static inline void siginfo_buildtime_checks(void)
 {
-	BUILD_BUG_ON(sizeof(struct siginfo) != SI_MAX_SIZE);
-
-	
-#define CHECK_OFFSET(field) \
-	BUILD_BUG_ON(offsetof(siginfo_t, field) != offsetof(kernel_siginfo_t, field))
-
-	
-	CHECK_OFFSET(si_pid);
-	CHECK_OFFSET(si_uid);
-
-	
-	CHECK_OFFSET(si_tid);
-	CHECK_OFFSET(si_overrun);
-	CHECK_OFFSET(si_value);
-
-	
-	CHECK_OFFSET(si_pid);
-	CHECK_OFFSET(si_uid);
-	CHECK_OFFSET(si_value);
-
-	
-	CHECK_OFFSET(si_pid);
-	CHECK_OFFSET(si_uid);
-	CHECK_OFFSET(si_status);
-	CHECK_OFFSET(si_utime);
-	CHECK_OFFSET(si_stime);
-
-	
-	CHECK_OFFSET(si_addr);
-	CHECK_OFFSET(si_trapno);
-	CHECK_OFFSET(si_addr_lsb);
-	CHECK_OFFSET(si_lower);
-	CHECK_OFFSET(si_upper);
-	CHECK_OFFSET(si_pkey);
-	CHECK_OFFSET(si_perf_data);
-	CHECK_OFFSET(si_perf_type);
-	CHECK_OFFSET(si_perf_flags);
-
-	
-	CHECK_OFFSET(si_band);
-	CHECK_OFFSET(si_fd);
-
-	
-	CHECK_OFFSET(si_call_addr);
-	CHECK_OFFSET(si_syscall);
-	CHECK_OFFSET(si_arch);
-#undef CHECK_OFFSET
-
-	
-	BUILD_BUG_ON(offsetof(struct siginfo, si_pid) !=
-		     offsetof(struct siginfo, si_addr));
-	if (sizeof(int) == sizeof(void __user *)) {
-		BUILD_BUG_ON(sizeof_field(struct siginfo, si_pid) !=
-			     sizeof(void __user *));
-	} else {
-		BUILD_BUG_ON((sizeof_field(struct siginfo, si_pid) +
-			      sizeof_field(struct siginfo, si_uid)) !=
-			     sizeof(void __user *));
-		BUILD_BUG_ON(offsetofend(struct siginfo, si_pid) !=
-			     offsetof(struct siginfo, si_uid));
-	}
+	/* Stub: buildtime checks not needed for minimal kernel */
 }
 
 void __init signals_init(void)

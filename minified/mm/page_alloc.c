@@ -3658,47 +3658,22 @@ postcore_initcall(init_per_zone_wmark_min)
 int min_free_kbytes_sysctl_handler(struct ctl_table *table, int write,
 		void *buffer, size_t *length, loff_t *ppos)
 {
-	int rc;
-
-	rc = proc_dointvec_minmax(table, write, buffer, length, ppos);
-	if (rc)
-		return rc;
-
-	if (write) {
-		user_min_free_kbytes = min_free_kbytes;
-		setup_per_zone_wmarks();
-	}
-	return 0;
+	/* Stub: minimal sysctl handler */
+	return proc_dointvec_minmax(table, write, buffer, length, ppos);
 }
 
 int watermark_scale_factor_sysctl_handler(struct ctl_table *table, int write,
 		void *buffer, size_t *length, loff_t *ppos)
 {
-	int rc;
-
-	rc = proc_dointvec_minmax(table, write, buffer, length, ppos);
-	if (rc)
-		return rc;
-
-	if (write)
-		setup_per_zone_wmarks();
-
-	return 0;
+	/* Stub: minimal sysctl handler */
+	return proc_dointvec_minmax(table, write, buffer, length, ppos);
 }
 
 int lowmem_reserve_ratio_sysctl_handler(struct ctl_table *table, int write,
 		void *buffer, size_t *length, loff_t *ppos)
 {
-	int i;
-
+	/* Stub: minimal sysctl handler */
 	proc_dointvec_minmax(table, write, buffer, length, ppos);
-
-	for (i = 0; i < MAX_NR_ZONES; i++) {
-		if (sysctl_lowmem_reserve_ratio[i] < 1)
-			sysctl_lowmem_reserve_ratio[i] = 0;
-	}
-
-	setup_per_zone_lowmem_reserve();
 	return 0;
 }
 

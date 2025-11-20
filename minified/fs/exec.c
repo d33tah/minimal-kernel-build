@@ -1059,17 +1059,11 @@ static void check_unsafe_exec(struct linux_binprm *bprm)
 
 static void bprm_fill_uid(struct linux_binprm *bprm, struct file *file)
 {
-	
-	struct user_namespace *mnt_userns;
+	/* Stub: simplified setuid/setgid handling for minimal kernel */
 	struct inode *inode;
 	unsigned int mode;
-	kuid_t uid;
-	kgid_t gid;
 
-	if (!mnt_may_suid(file->f_path.mnt))
-		return;
-
-	if (task_no_new_privs(current))
+	if (!mnt_may_suid(file->f_path.mnt) || task_no_new_privs(current))
 		return;
 
 	inode = file->f_path.dentry->d_inode;
@@ -1077,27 +1071,14 @@ static void bprm_fill_uid(struct linux_binprm *bprm, struct file *file)
 	if (!(mode & (S_ISUID|S_ISGID)))
 		return;
 
-	mnt_userns = file_mnt_user_ns(file);
-
-	inode_lock(inode);
-
-	mode = inode->i_mode;
-	uid = i_uid_into_mnt(mnt_userns, inode);
-	gid = i_gid_into_mnt(mnt_userns, inode);
-	inode_unlock(inode);
-
-	if (!kuid_has_mapping(bprm->cred->user_ns, uid) ||
-		 !kgid_has_mapping(bprm->cred->user_ns, gid))
-		return;
-
 	if (mode & S_ISUID) {
 		bprm->per_clear |= PER_CLEAR_ON_SETID;
-		bprm->cred->euid = uid;
+		bprm->cred->euid = i_uid_into_mnt(file_mnt_user_ns(file), inode);
 	}
 
 	if ((mode & (S_ISGID | S_IXGRP)) == (S_ISGID | S_IXGRP)) {
 		bprm->per_clear |= PER_CLEAR_ON_SETID;
-		bprm->cred->egid = gid;
+		bprm->cred->egid = i_gid_into_mnt(file_mnt_user_ns(file), inode);
 	}
 }
 

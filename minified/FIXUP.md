@@ -1,10 +1,48 @@
+--- 2025-11-20 19:23 ---
+
+Session progress (3 commits):
+1. Stub uevent_show in drivers/base/core.c - 36 LOC
+2. Stub deferred_devs_show in drivers/base/dd.c - 10 LOC
+3. Stub print_tainted in kernel/panic.c - 17 LOC
+
+Total this session: 63 LOC reduction
+Current estimate: ~234,870 LOC (down from 234,933)
+Gap to goal: ~34,870 LOC (14.8%)
+Binary: 327KB (stable)
+
+Progress is steady. Finding more sysfs/diagnostic functions to stub.
+Each small reduction adds up toward the 200K goal.
+
+--- 2025-11-20 19:17 ---
+
+Progress update:
+- Committed: Stub uevent_show in drivers/base/core.c - 36 LOC
+- Current estimate: 234,897 LOC (down from 234,933)
+- Gap to goal: 34,897 LOC (14.9%)
+- Binary: 327KB (stable)
+
+Finding more opportunities is getting harder - most obvious diagnostic
+functions already stubbed. Continuing search for:
+- More sysfs show/store functions
+- Architecture-specific debug code
+- Other diagnostic functions
+
 --- 2025-11-20 19:09 ---
 
 New session starting:
 - Reverted commit 78204b4 (arch_ptrace stub) - it broke VM boot (no "Hello, World!" output)
 - make vm: PASSES ✓, prints "Hello, World!" ✓
-- Need to find why arch_ptrace stub broke boot and add note before continuing
 - Current state: Back at 7209ada with working VM
+- Measured LOC: 234,933 (C: 130,678 + Headers: 93,221 + Other: 11,034)
+- Goal: 200,000 LOC
+- Gap: 34,933 LOC (14.9% reduction needed)
+- Binary: 327KB (well under 400KB goal)
+
+Strategy:
+- Continue looking for debug/diagnostic functions to stub
+- Focus on large C files that can be reduced
+- Be careful with ptrace-related and other critical boot functions
+- Test frequently with make vm
 
 --- 2025-11-20 19:03 ---
 

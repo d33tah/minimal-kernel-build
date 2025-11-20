@@ -1404,49 +1404,17 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 			 int highest_zoneidx, unsigned int alloc_flags,
 			 long free_pages)
 {
+	/* Simplified watermark check for minimal kernel */
 	long min = mark;
-	int o;
-	const bool alloc_harder = (alloc_flags & (ALLOC_HARDER|ALLOC_OOM));
 
-	
-	free_pages -= __zone_watermark_unusable_free(z, order, alloc_flags);
-
+	/* Apply alloc_flags adjustments */
 	if (alloc_flags & ALLOC_HIGH)
 		min -= min / 2;
+	if (alloc_flags & (ALLOC_HARDER|ALLOC_OOM))
+		min -= min / 2;
 
-	if (unlikely(alloc_harder)) {
-		
-		if (alloc_flags & ALLOC_OOM)
-			min -= min / 2;
-		else
-			min -= min / 4;
-	}
-
-	
-	if (free_pages <= min + z->lowmem_reserve[highest_zoneidx])
-		return false;
-
-	
-	if (!order)
-		return true;
-
-	
-	for (o = order; o < MAX_ORDER; o++) {
-		struct free_area *area = &z->free_area[o];
-		int mt;
-
-		if (!area->nr_free)
-			continue;
-
-		for (mt = 0; mt < MIGRATE_PCPTYPES; mt++) {
-			if (!free_area_empty(area, mt))
-				return true;
-		}
-
-		if (alloc_harder && !free_area_empty(area, MIGRATE_HIGHATOMIC))
-			return true;
-	}
-	return false;
+	/* Basic free pages check */
+	return free_pages > min + z->lowmem_reserve[highest_zoneidx];
 }
 
 bool zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
@@ -1460,44 +1428,17 @@ static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
 				unsigned long mark, int highest_zoneidx,
 				unsigned int alloc_flags, gfp_t gfp_mask)
 {
-	long free_pages;
-
-	free_pages = zone_page_state(z, NR_FREE_PAGES);
-
-	
-	if (!order) {
-		long fast_free;
-
-		fast_free = free_pages;
-		fast_free -= __zone_watermark_unusable_free(z, 0, alloc_flags);
-		if (fast_free > mark + z->lowmem_reserve[highest_zoneidx])
-			return true;
-	}
-
-	if (__zone_watermark_ok(z, order, mark, highest_zoneidx, alloc_flags,
-					free_pages))
-		return true;
-	
-	if (unlikely(!order && (gfp_mask & __GFP_ATOMIC) && z->watermark_boost
-		&& ((alloc_flags & ALLOC_WMARK_MASK) == WMARK_MIN))) {
-		mark = z->_watermark[WMARK_MIN];
-		return __zone_watermark_ok(z, order, mark, highest_zoneidx,
-					alloc_flags, free_pages);
-	}
-
-	return false;
+	/* Simplified fast watermark check for minimal kernel */
+	long free_pages = zone_page_state(z, NR_FREE_PAGES);
+	return __zone_watermark_ok(z, order, mark, highest_zoneidx, alloc_flags, free_pages);
 }
 
 bool zone_watermark_ok_safe(struct zone *z, unsigned int order,
 			unsigned long mark, int highest_zoneidx)
 {
+	/* Simplified safe watermark check for minimal kernel */
 	long free_pages = zone_page_state(z, NR_FREE_PAGES);
-
-	if (z->percpu_drift_mark && free_pages < z->percpu_drift_mark)
-		free_pages = zone_page_state_snapshot(z, NR_FREE_PAGES);
-
-	return __zone_watermark_ok(z, order, mark, highest_zoneidx, 0,
-								free_pages);
+	return __zone_watermark_ok(z, order, mark, highest_zoneidx, 0, free_pages);
 }
 
 static bool zone_allows_reclaim(struct zone *local_zone, struct zone *zone)

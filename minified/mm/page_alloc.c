@@ -2428,29 +2428,13 @@ static int build_zonerefs_node(pg_data_t *pgdat, struct zoneref *zonerefs)
 
 static void build_zonelists(pg_data_t *pgdat)
 {
-	int node, local_node;
 	struct zoneref *zonerefs;
 	int nr_zones;
 
-	local_node = pgdat->node_id;
-
+	/* Simplified: single-node system, just build local node zonelist */
 	zonerefs = pgdat->node_zonelists[ZONELIST_FALLBACK]._zonerefs;
 	nr_zones = build_zonerefs_node(pgdat, zonerefs);
 	zonerefs += nr_zones;
-
-	
-	for (node = local_node + 1; node < MAX_NUMNODES; node++) {
-		if (!node_online(node))
-			continue;
-		nr_zones = build_zonerefs_node(NODE_DATA(node), zonerefs);
-		zonerefs += nr_zones;
-	}
-	for (node = 0; node < local_node; node++) {
-		if (!node_online(node))
-			continue;
-		nr_zones = build_zonerefs_node(NODE_DATA(node), zonerefs);
-		zonerefs += nr_zones;
-	}
 
 	zonerefs->zone = NULL;
 	zonerefs->zone_idx = 0;
@@ -3210,29 +3194,8 @@ void __init setup_nr_node_ids(void)
 
 unsigned long __init node_map_pfn_alignment(void)
 {
-	unsigned long accl_mask = 0, last_end = 0;
-	unsigned long start, end, mask;
-	int last_nid = NUMA_NO_NODE;
-	int i, nid;
-
-	for_each_mem_pfn_range(i, MAX_NUMNODES, &start, &end, &nid) {
-		if (!start || last_nid < 0 || last_nid == nid) {
-			last_nid = nid;
-			last_end = end;
-			continue;
-		}
-
-		
-		mask = ~((1 << __ffs(start)) - 1);
-		while (mask && last_end <= (start & (mask << 1)))
-			mask <<= 1;
-
-		
-		accl_mask |= mask;
-	}
-
-	
-	return ~accl_mask + 1;
+	/* Stub: minimal single-node system doesn't need alignment calculation */
+	return PAGE_SIZE;
 }
 
 unsigned long __init find_min_pfn_with_active_regions(void)
@@ -3246,12 +3209,13 @@ static unsigned long __init early_calculate_totalpages(void)
 	unsigned long start_pfn, end_pfn;
 	int i, nid;
 
+	/* Calculate total pages and mark nodes with memory */
 	for_each_mem_pfn_range(i, MAX_NUMNODES, &start_pfn, &end_pfn, &nid) {
 		unsigned long pages = end_pfn - start_pfn;
-
-		totalpages += pages;
-		if (pages)
+		if (pages) {
+			totalpages += pages;
 			node_set_state(nid, N_MEMORY);
+		}
 	}
 	return totalpages;
 }

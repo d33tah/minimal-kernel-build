@@ -1487,43 +1487,10 @@ static void retarget_shared_pending(struct task_struct *tsk, sigset_t *which)
 
 void exit_signals(struct task_struct *tsk)
 {
-	int group_stop = 0;
-	sigset_t unblocked;
-
-	
+	/* Minimal stub: just mark as exiting */
 	cgroup_threadgroup_change_begin(tsk);
-
-	if (thread_group_empty(tsk) || (tsk->signal->flags & SIGNAL_GROUP_EXIT)) {
-		tsk->flags |= PF_EXITING;
-		cgroup_threadgroup_change_end(tsk);
-		return;
-	}
-
-	spin_lock_irq(&tsk->sighand->siglock);
-	
 	tsk->flags |= PF_EXITING;
-
 	cgroup_threadgroup_change_end(tsk);
-
-	if (!task_sigpending(tsk))
-		goto out;
-
-	unblocked = tsk->blocked;
-	signotset(&unblocked);
-	retarget_shared_pending(tsk, &unblocked);
-
-	if (unlikely(tsk->jobctl & JOBCTL_STOP_PENDING) &&
-	    task_participate_group_stop(tsk))
-		group_stop = CLD_STOPPED;
-out:
-	spin_unlock_irq(&tsk->sighand->siglock);
-
-	
-	if (unlikely(group_stop)) {
-		read_lock(&tasklist_lock);
-		do_notify_parent_cldstop(tsk, false, group_stop);
-		read_unlock(&tasklist_lock);
-	}
 }
 
 SYSCALL_DEFINE0(restart_syscall)
@@ -1772,45 +1739,8 @@ int copy_siginfo_from_user(kernel_siginfo_t *to, const siginfo_t __user *from)
 static int do_sigtimedwait(const sigset_t *which, kernel_siginfo_t *info,
 		    const struct timespec64 *ts)
 {
-	ktime_t *to = NULL, timeout = KTIME_MAX;
-	struct task_struct *tsk = current;
-	sigset_t mask = *which;
-	enum pid_type type;
-	int sig, ret = 0;
-
-	if (ts) {
-		if (!timespec64_valid(ts))
-			return -EINVAL;
-		timeout = timespec64_to_ktime(*ts);
-		to = &timeout;
-	}
-
-	
-	sigdelsetmask(&mask, sigmask(SIGKILL) | sigmask(SIGSTOP));
-	signotset(&mask);
-
-	spin_lock_irq(&tsk->sighand->siglock);
-	sig = dequeue_signal(tsk, &mask, info, &type);
-	if (!sig && timeout) {
-		
-		tsk->real_blocked = tsk->blocked;
-		sigandsets(&tsk->blocked, &tsk->blocked, &mask);
-		recalc_sigpending();
-		spin_unlock_irq(&tsk->sighand->siglock);
-
-		__set_current_state(TASK_INTERRUPTIBLE);
-		ret = freezable_schedule_hrtimeout_range(to, tsk->timer_slack_ns,
-							 HRTIMER_MODE_REL);
-		spin_lock_irq(&tsk->sighand->siglock);
-		__set_task_blocked(tsk, &tsk->real_blocked);
-		sigemptyset(&tsk->real_blocked);
-		sig = dequeue_signal(tsk, &mask, info, &type);
-	}
-	spin_unlock_irq(&tsk->sighand->siglock);
-
-	if (sig)
-		return sig;
-	return ret ? -EINTR : -EAGAIN;
+	/* Minimal stub: just return no signal available */
+	return -EAGAIN;
 }
 
 SYSCALL_DEFINE4(rt_sigtimedwait, const sigset_t __user *, uthese,
@@ -1900,12 +1830,12 @@ static struct pid *pidfd_to_pid(const struct file *file)
 SYSCALL_DEFINE4(pidfd_send_signal, int, pidfd, int, sig,
 		siginfo_t __user *, info, unsigned int, flags)
 {
-	int ret;
+	/* Minimal stub: basic pidfd signal sending */
 	struct fd f;
 	struct pid *pid;
 	kernel_siginfo_t kinfo;
+	int ret;
 
-	
 	if (flags)
 		return -EINVAL;
 
@@ -1913,38 +1843,23 @@ SYSCALL_DEFINE4(pidfd_send_signal, int, pidfd, int, sig,
 	if (!f.file)
 		return -EBADF;
 
-	
 	pid = pidfd_to_pid(f.file);
 	if (IS_ERR(pid)) {
-		ret = PTR_ERR(pid);
-		goto err;
+		fdput(f);
+		return PTR_ERR(pid);
 	}
-
-	ret = -EINVAL;
-	if (!access_pidfd_pidns(pid))
-		goto err;
 
 	if (info) {
 		ret = copy_siginfo_from_user_any(&kinfo, info);
-		if (unlikely(ret))
-			goto err;
-
-		ret = -EINVAL;
-		if (unlikely(sig != kinfo.si_signo))
-			goto err;
-
-		
-		ret = -EPERM;
-		if ((task_pid(current) != pid) &&
-		    (kinfo.si_code >= 0 || kinfo.si_code == SI_TKILL))
-			goto err;
+		if (ret) {
+			fdput(f);
+			return ret;
+		}
 	} else {
 		prepare_kill_siginfo(sig, &kinfo);
 	}
 
 	ret = kill_pid_info(sig, &kinfo, pid);
-
-err:
 	fdput(f);
 	return ret;
 }
@@ -2073,49 +1988,28 @@ void __weak sigaction_compat_abi(struct k_sigaction *act,
 
 int do_sigaction(int sig, struct k_sigaction *act, struct k_sigaction *oact)
 {
-	struct task_struct *p = current, *t;
 	struct k_sigaction *k;
-	sigset_t mask;
 
 	if (!valid_signal(sig) || sig < 1 || (act && sig_kernel_only(sig)))
 		return -EINVAL;
 
-	k = &p->sighand->action[sig-1];
+	k = &current->sighand->action[sig-1];
 
-	spin_lock_irq(&p->sighand->siglock);
+	spin_lock_irq(&current->sighand->siglock);
 	if (k->sa.sa_flags & SA_IMMUTABLE) {
-		spin_unlock_irq(&p->sighand->siglock);
+		spin_unlock_irq(&current->sighand->siglock);
 		return -EINVAL;
 	}
 	if (oact)
 		*oact = *k;
 
-	
-	BUILD_BUG_ON(UAPI_SA_FLAGS & SA_UNSUPPORTED);
-
-	
-	if (act)
-		act->sa.sa_flags &= UAPI_SA_FLAGS;
-	if (oact)
-		oact->sa.sa_flags &= UAPI_SA_FLAGS;
-
-	sigaction_compat_abi(act, oact);
-
 	if (act) {
-		sigdelsetmask(&act->sa.sa_mask,
-			      sigmask(SIGKILL) | sigmask(SIGSTOP));
+		act->sa.sa_flags &= UAPI_SA_FLAGS;
+		sigdelsetmask(&act->sa.sa_mask, sigmask(SIGKILL) | sigmask(SIGSTOP));
 		*k = *act;
-		
-		if (sig_handler_ignored(sig_handler(p, sig), sig)) {
-			sigemptyset(&mask);
-			sigaddset(&mask, sig);
-			flush_sigqueue_mask(&mask, &p->signal->shared_pending);
-			for_each_thread(p, t)
-				flush_sigqueue_mask(&mask, &t->pending);
-		}
 	}
 
-	spin_unlock_irq(&p->sighand->siglock);
+	spin_unlock_irq(&current->sighand->siglock);
 	return 0;
 }
 
@@ -2135,55 +2029,12 @@ static int
 do_sigaltstack (const stack_t *ss, stack_t *oss, unsigned long sp,
 		size_t min_ss_size)
 {
-	struct task_struct *t = current;
-	int ret = 0;
-
+	/* Minimal stub: just handle reads */
 	if (oss) {
 		memset(oss, 0, sizeof(stack_t));
-		oss->ss_sp = (void __user *) t->sas_ss_sp;
-		oss->ss_size = t->sas_ss_size;
-		oss->ss_flags = sas_ss_flags(sp) |
-			(current->sas_ss_flags & SS_FLAG_BITS);
+		oss->ss_flags = SS_DISABLE;
 	}
-
-	if (ss) {
-		void __user *ss_sp = ss->ss_sp;
-		size_t ss_size = ss->ss_size;
-		unsigned ss_flags = ss->ss_flags;
-		int ss_mode;
-
-		if (unlikely(on_sig_stack(sp)))
-			return -EPERM;
-
-		ss_mode = ss_flags & ~SS_FLAG_BITS;
-		if (unlikely(ss_mode != SS_DISABLE && ss_mode != SS_ONSTACK &&
-				ss_mode != 0))
-			return -EINVAL;
-
-		
-		if (t->sas_ss_sp == (unsigned long)ss_sp &&
-		    t->sas_ss_size == ss_size &&
-		    t->sas_ss_flags == ss_flags)
-			return 0;
-
-		sigaltstack_lock();
-		if (ss_mode == SS_DISABLE) {
-			ss_size = 0;
-			ss_sp = NULL;
-		} else {
-			if (unlikely(ss_size < min_ss_size))
-				ret = -ENOMEM;
-			if (!sigaltstack_size_valid(ss_size))
-				ret = -ENOMEM;
-		}
-		if (!ret) {
-			t->sas_ss_sp = (unsigned long) ss_sp;
-			t->sas_ss_size = ss_size;
-			t->sas_ss_flags = ss_flags;
-		}
-		sigaltstack_unlock();
-	}
-	return ret;
+	return 0;
 }
 
 SYSCALL_DEFINE2(sigaltstack,const stack_t __user *,uss, stack_t __user *,uoss)

@@ -570,25 +570,13 @@ static int free_tail_pages_check(struct page *head_page, struct page *page)
 
 static inline bool should_skip_kasan_poison(struct page *page, fpi_t fpi_flags)
 {
-	return deferred_pages_enabled() ||
-	       (!IS_ENABLED(CONFIG_KASAN_GENERIC) &&
-		(fpi_flags & FPI_SKIP_KASAN_POISON)) ||
-	       PageSkipKASanPoison(page);
+	/* Stub: KASAN not needed for minimal kernel */
+	return true;
 }
 
 static void kernel_init_free_pages(struct page *page, int numpages)
 {
-	int i;
-
-	
-	kasan_disable_current();
-	for (i = 0; i < numpages; i++) {
-		u8 tag = page_kasan_tag(page + i);
-		page_kasan_tag_reset(page + i);
-		clear_highpage(page + i);
-		page_kasan_tag_set(page + i, tag);
-	}
-	kasan_enable_current();
+	/* Stub: KASAN and page initialization not needed for minimal kernel */
 }
 
 static __always_inline bool free_pages_prepare(struct page *page,
@@ -843,27 +831,14 @@ static inline bool check_new_pcp(struct page *page, unsigned int order)
 
 static inline bool should_skip_kasan_unpoison(gfp_t flags, bool init_tags)
 {
-	
-	if (IS_ENABLED(CONFIG_KASAN_GENERIC) ||
-	    IS_ENABLED(CONFIG_KASAN_SW_TAGS))
-		return false;
-
-	
-	if (!kasan_hw_tags_enabled())
-		return true;
-
-	
-	return init_tags || (flags & __GFP_SKIP_KASAN_UNPOISON);
+	/* Stub: KASAN not needed for minimal kernel */
+	return true;
 }
 
 static inline bool should_skip_init(gfp_t flags)
 {
-	
-	if (!kasan_hw_tags_enabled())
-		return false;
-
-	
-	return (flags & __GFP_SKIP_ZERO);
+	/* Stub: advanced initialization not needed for minimal kernel */
+	return false;
 }
 
 inline void post_alloc_hook(struct page *page, unsigned int order,
@@ -1220,42 +1195,15 @@ static bool free_unref_page_prepare(struct page *page, unsigned long pfn,
 static int nr_pcp_free(struct per_cpu_pages *pcp, int high, int batch,
 		       bool free_high)
 {
-	int min_nr_free, max_nr_free;
-
-	
-	if (unlikely(free_high))
-		return pcp->count;
-
-	
-	if (unlikely(high < batch))
-		return 1;
-
-	
-	min_nr_free = batch;
-	max_nr_free = high - batch;
-
-	
-	batch <<= pcp->free_factor;
-	if (batch < max_nr_free)
-		pcp->free_factor++;
-	batch = clamp(batch, min_nr_free, max_nr_free);
-
-	return batch;
+	/* Stub: simple PCP freeing for minimal kernel */
+	return free_high ? pcp->count : batch;
 }
 
 static int nr_pcp_high(struct per_cpu_pages *pcp, struct zone *zone,
 		       bool free_high)
 {
-	int high = READ_ONCE(pcp->high);
-
-	if (unlikely(!high || free_high))
-		return 0;
-
-	if (!test_bit(ZONE_RECLAIM_ACTIVE, &zone->flags))
-		return high;
-
-	
-	return min(READ_ONCE(pcp->batch) << 2, high);
+	/* Stub: simple PCP high watermark for minimal kernel */
+	return free_high ? 0 : READ_ONCE(pcp->high);
 }
 
 static void free_unref_page_commit(struct page *page, int migratetype,
@@ -1464,18 +1412,12 @@ static struct page *rmqueue_pcplist(struct zone *preferred_zone,
 	struct page *page;
 	unsigned long flags;
 
+	/* Stub: simplified PCP allocation for minimal kernel */
 	local_lock_irqsave(&pagesets.lock, flags);
-
-	
 	pcp = this_cpu_ptr(zone->per_cpu_pageset);
-	pcp->free_factor >>= 1;
 	list = &pcp->lists[order_to_pindex(migratetype, order)];
 	page = __rmqueue_pcplist(zone, order, migratetype, alloc_flags, pcp, list);
 	local_unlock_irqrestore(&pagesets.lock, flags);
-	if (page) {
-		__count_zid_vm_events(PGALLOC, page_zonenum(page), 1);
-		zone_statistics(preferred_zone, zone, 1);
-	}
 	return page;
 }
 

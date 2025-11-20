@@ -517,16 +517,7 @@ static void __init early_reserve_memory(void)
 static int
 dump_kernel_offset(struct notifier_block *self, unsigned long v, void *p)
 {
-	if (kaslr_enabled()) {
-		pr_emerg("Kernel Offset: 0x%lx from 0x%lx (relocation range: 0x%lx-0x%lx)\n",
-			 kaslr_offset(),
-			 __START_KERNEL,
-			 __START_KERNEL_map,
-			 MODULES_VADDR-1);
-	} else {
-		pr_emerg("Kernel Offset: disabled\n");
-	}
-
+	/* Stub: kernel offset dumping not needed for minimal kernel */
 	return 0;
 }
 
@@ -540,14 +531,7 @@ void x86_configure_nx(void)
 
 static void __init x86_report_nx(void)
 {
-	if (!boot_cpu_has(X86_FEATURE_NX)) {
-		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
-		       "missing in CPU!\n");
-	} else {
-		 
-		printk(KERN_NOTICE "Notice: NX (Execute Disable) protection "
-		       "cannot be enabled: non-PAE kernel!\n");
-	}
+	/* Stub: NX reporting not needed for minimal kernel */
 }
 
  

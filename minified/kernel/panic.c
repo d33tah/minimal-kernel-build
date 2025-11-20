@@ -279,25 +279,8 @@ const struct taint_flag taint_flags[TAINT_FLAGS_COUNT] = {
  
 const char *print_tainted(void)
 {
-	static char buf[TAINT_FLAGS_COUNT + sizeof("Tainted: ")];
-
-	BUILD_BUG_ON(ARRAY_SIZE(taint_flags) != TAINT_FLAGS_COUNT);
-
-	if (tainted_mask) {
-		char *s;
-		int i;
-
-		s = buf + sprintf(buf, "Tainted: ");
-		for (i = 0; i < TAINT_FLAGS_COUNT; i++) {
-			const struct taint_flag *t = &taint_flags[i];
-			*s++ = test_bit(i, &tainted_mask) ?
-					t->c_true : t->c_false;
-		}
-		*s = 0;
-	} else
-		snprintf(buf, sizeof(buf), "Not tainted");
-
-	return buf;
+	/* Stub: taint flag printing not needed for minimal kernel */
+	return "";
 }
 
 int test_taint(unsigned flag)

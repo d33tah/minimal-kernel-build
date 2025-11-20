@@ -855,18 +855,17 @@ static int move_freepages(struct zone *zone,
 	unsigned int order;
 	int pages_moved = 0;
 
+	/* Stub: skip num_movable tracking for minimal kernel */
+	if (num_movable)
+		*num_movable = 0;
+
 	for (pfn = start_pfn; pfn <= end_pfn;) {
 		page = pfn_to_page(pfn);
 		if (!PageBuddy(page)) {
-			
-			if (num_movable &&
-					(PageLRU(page) || __PageMovable(page)))
-				(*num_movable)++;
 			pfn++;
 			continue;
 		}
 
-		
 		VM_BUG_ON_PAGE(page_to_nid(page) != zone_to_nid(zone), page);
 		VM_BUG_ON_PAGE(page_zone(page) != zone, page);
 
@@ -1229,7 +1228,6 @@ void split_page(struct page *page, unsigned int order)
 
 int __isolate_free_page(struct page *page, unsigned int order)
 {
-	unsigned long watermark;
 	struct zone *zone;
 	int mt;
 
@@ -1239,29 +1237,15 @@ int __isolate_free_page(struct page *page, unsigned int order)
 	mt = get_pageblock_migratetype(page);
 
 	if (!is_migrate_isolate(mt)) {
-		
-		watermark = zone->_watermark[WMARK_MIN] + (1UL << order);
+		unsigned long watermark = zone->_watermark[WMARK_MIN] + (1UL << order);
 		if (!zone_watermark_ok(zone, 0, watermark, 0, ALLOC_CMA))
 			return 0;
-
 		__mod_zone_freepage_state(zone, -(1UL << order), mt);
 	}
 
-	
-
 	del_page_from_free_list(page, zone, order);
 
-	
-	if (order >= pageblock_order - 1) {
-		struct page *endpage = page + (1 << order) - 1;
-		for (; page < endpage; page += pageblock_nr_pages) {
-			int mt = get_pageblock_migratetype(page);
-			
-			if (migratetype_is_mergeable(mt))
-				set_pageblock_migratetype(page,
-							  MIGRATE_MOVABLE);
-		}
-	}
+	/* Stub: skip pageblock migratetype conversion for minimal kernel */
 
 	return 1UL << order;
 }

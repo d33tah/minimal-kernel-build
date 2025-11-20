@@ -3459,49 +3459,19 @@ static void setup_per_zone_lowmem_reserve(void)
 
 static void __setup_per_zone_wmarks(void)
 {
-	unsigned long pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
-	unsigned long lowmem_pages = 0;
+	/* Minimal stub: set basic watermarks without complex calculations */
 	struct zone *zone;
 	unsigned long flags;
 
-	
 	for_each_zone(zone) {
-		if (!is_highmem(zone))
-			lowmem_pages += zone_managed_pages(zone);
-	}
-
-	for_each_zone(zone) {
-		u64 tmp;
-
 		spin_lock_irqsave(&zone->lock, flags);
-		tmp = (u64)pages_min * zone_managed_pages(zone);
-		do_div(tmp, lowmem_pages);
-		if (is_highmem(zone)) {
-			
-			unsigned long min_pages;
-
-			min_pages = zone_managed_pages(zone) / 1024;
-			min_pages = clamp(min_pages, SWAP_CLUSTER_MAX, 128UL);
-			zone->_watermark[WMARK_MIN] = min_pages;
-		} else {
-			
-			zone->_watermark[WMARK_MIN] = tmp;
-		}
-
-		
-		tmp = max_t(u64, tmp >> 2,
-			    mult_frac(zone_managed_pages(zone),
-				      watermark_scale_factor, 10000));
-
+		zone->_watermark[WMARK_MIN] = 128;
+		zone->_watermark[WMARK_LOW] = 256;
+		zone->_watermark[WMARK_HIGH] = 512;
+		zone->_watermark[WMARK_PROMO] = 768;
 		zone->watermark_boost = 0;
-		zone->_watermark[WMARK_LOW]  = min_wmark_pages(zone) + tmp;
-		zone->_watermark[WMARK_HIGH] = low_wmark_pages(zone) + tmp;
-		zone->_watermark[WMARK_PROMO] = high_wmark_pages(zone) + tmp;
-
 		spin_unlock_irqrestore(&zone->lock, flags);
 	}
-
-	
 	calculate_totalreserve_pages();
 }
 

@@ -2422,45 +2422,14 @@ void __init *memmap_alloc(phys_addr_t size, phys_addr_t align,
 
 static int zone_batchsize(struct zone *zone)
 {
-	int batch;
-
-	
-	batch = min(zone_managed_pages(zone) >> 10, (1024 * 1024) / PAGE_SIZE);
-	batch /= 4;		
-	if (batch < 1)
-		batch = 1;
-
-	
-	batch = rounddown_pow_of_two(batch + batch/2) - 1;
-
-	return batch;
-
+	/* Stub: simplified batch size for minimal kernel */
+	return 1;
 }
 
 static int zone_highsize(struct zone *zone, int batch, int cpu_online)
 {
-	int high;
-	int nr_split_cpus;
-	unsigned long total_pages;
-
-	if (!percpu_pagelist_high_fraction) {
-		
-		total_pages = low_wmark_pages(zone);
-	} else {
-		
-		total_pages = zone_managed_pages(zone) / percpu_pagelist_high_fraction;
-	}
-
-	
-	nr_split_cpus = cpumask_weight(cpumask_of_node(zone_to_nid(zone))) + cpu_online;
-	if (!nr_split_cpus)
-		nr_split_cpus = num_online_cpus();
-	high = total_pages / nr_split_cpus;
-
-	
-	high = max(high, batch << 2);
-
-	return high;
+	/* Stub: simplified high watermark for minimal kernel */
+	return batch << 2;
 }
 
 static void pageset_update(struct per_cpu_pages *pcp, unsigned long high,

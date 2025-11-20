@@ -533,11 +533,8 @@ static inline int d_revalidate(struct dentry *dentry, unsigned int flags)
 
 static int complete_walk(struct nameidata *nd)
 {
-	struct dentry *dentry = nd->path.dentry;
-	int status;
-
+	/* Stub: simplified walk completion for minimal kernel */
 	if (nd->flags & LOOKUP_RCU) {
-		
 		if (!(nd->state & ND_ROOT_PRESET))
 			if (!(nd->flags & LOOKUP_IS_SCOPED))
 				nd->root.mnt = NULL;
@@ -545,27 +542,7 @@ static int complete_walk(struct nameidata *nd)
 		if (!try_to_unlazy(nd))
 			return -ECHILD;
 	}
-
-	if (unlikely(nd->flags & LOOKUP_IS_SCOPED)) {
-		
-		if (!path_is_under(&nd->path, &nd->root))
-			return -EXDEV;
-	}
-
-	if (likely(!(nd->state & ND_JUMPED)))
-		return 0;
-
-	if (likely(!(dentry->d_flags & DCACHE_OP_WEAK_REVALIDATE)))
-		return 0;
-
-	status = dentry->d_op->d_weak_revalidate(dentry, nd->flags);
-	if (status > 0)
-		return 0;
-
-	if (!status)
-		status = -ESTALE;
-
-	return status;
+	return 0;
 }
 
 static int set_root(struct nameidata *nd)

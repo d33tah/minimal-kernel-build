@@ -127,10 +127,7 @@ static void add_mm_counter_fast(struct mm_struct *mm, int member, int val)
 #define TASK_RSS_EVENTS_THRESH	(64)
 static void check_sync_rss_stat(struct task_struct *task)
 {
-	if (unlikely(task != current))
-		return;
-	if (unlikely(task->rss_stat.events++ > TASK_RSS_EVENTS_THRESH))
-		sync_mm_rss(task->mm);
+	/* Stub: skip RSS stat syncing for minimal kernel */
 }
 #else 
 
@@ -381,9 +378,7 @@ static inline void add_mm_rss_vec(struct mm_struct *mm, int *rss)
 static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
 			  pte_t pte, struct page *page)
 {
-	/* Stub: minimal bad PTE reporting */
-	pr_alert("BUG: Bad page map\n");
-	add_taint(TAINT_BAD_PAGE, LOCKDEP_NOW_UNRELIABLE);
+	/* Stub: skip bad PTE reporting for minimal kernel */
 }
 
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,

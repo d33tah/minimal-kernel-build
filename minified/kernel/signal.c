@@ -189,13 +189,7 @@ int next_signal(struct sigpending *pending, sigset_t *mask)
 
 static inline void print_dropped_signal(int sig)
 {
-	static DEFINE_RATELIMIT_STATE(ratelimit_state, 5 * HZ, 10);
-
-	if (!print_fatal_signals)
-		return;
-
-	if (!__ratelimit(&ratelimit_state))
-		return;
+	/* Stub: skip signal drop reporting for minimal kernel */
 }
 
 bool task_set_jobctl_pending(struct task_struct *task, unsigned long mask)
@@ -722,8 +716,7 @@ static void print_fatal_signal(int signr)
 
 static int __init setup_print_fatal_signals(char *str)
 {
-	get_option (&str, &print_fatal_signals);
-
+	/* Stub: skip setup for minimal kernel */
 	return 1;
 }
 
@@ -1317,55 +1310,7 @@ bool do_notify_parent(struct task_struct *tsk, int sig)
 static void do_notify_parent_cldstop(struct task_struct *tsk,
 				     bool for_ptracer, int why)
 {
-	struct kernel_siginfo info;
-	unsigned long flags;
-	struct task_struct *parent;
-	struct sighand_struct *sighand;
-	u64 utime, stime;
-
-	if (for_ptracer) {
-		parent = tsk->parent;
-	} else {
-		tsk = tsk->group_leader;
-		parent = tsk->real_parent;
-	}
-
-	clear_siginfo(&info);
-	info.si_signo = SIGCHLD;
-	info.si_errno = 0;
-	
-	rcu_read_lock();
-	info.si_pid = task_pid_nr_ns(tsk, task_active_pid_ns(parent));
-	info.si_uid = from_kuid_munged(task_cred_xxx(parent, user_ns), task_uid(tsk));
-	rcu_read_unlock();
-
-	task_cputime(tsk, &utime, &stime);
-	info.si_utime = nsec_to_clock_t(utime);
-	info.si_stime = nsec_to_clock_t(stime);
-
- 	info.si_code = why;
- 	switch (why) {
- 	case CLD_CONTINUED:
- 		info.si_status = SIGCONT;
- 		break;
- 	case CLD_STOPPED:
- 		info.si_status = tsk->signal->group_exit_code & 0x7f;
- 		break;
- 	case CLD_TRAPPED:
- 		info.si_status = tsk->exit_code & 0x7f;
- 		break;
- 	default:
- 		BUG();
- 	}
-
-	sighand = parent->sighand;
-	spin_lock_irqsave(&sighand->siglock, flags);
-	if (sighand->action[SIGCHLD-1].sa.sa_handler != SIG_IGN &&
-	    !(sighand->action[SIGCHLD-1].sa.sa_flags & SA_NOCLDSTOP))
-		send_signal_locked(SIGCHLD, &info, parent, PIDTYPE_TGID);
-	
-	__wake_up_parent(tsk, parent);
-	spin_unlock_irqrestore(&sighand->siglock, flags);
+	/* Stub: skip parent notification for minimal kernel */
 }
 
 static int ptrace_stop(int exit_code, int why, unsigned long message,

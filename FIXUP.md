@@ -6282,3 +6282,11 @@ Next approach recommendations:
 - Focus on entire file removal rather than function stubbing
 - Check if advanced features (NUMA, CPU hotplug, namespaces) can be more aggressively stubbed
 
+
+16:57 - Second commit: drivers/base/core.c dev_err_probe (16 LOC reduction)
+  Stubbed function:
+  1. dev_err_probe - 16 LOC (error probe reporting)
+
+  core.c: 2779 → 2763 LOC
+  Binary: 328KB (stable)
+  make vm: PASSES ✓, prints "Hello, World!" ✓

@@ -1366,57 +1366,8 @@ static const char *dev_uevent_name(struct kobject *kobj)
 
 static int dev_uevent(struct kobject *kobj, struct kobj_uevent_env *env)
 {
-	struct device *dev = kobj_to_dev(kobj);
-	int retval = 0;
-
-	
-	if (MAJOR(dev->devt)) {
-		const char *tmp;
-		const char *name;
-		umode_t mode = 0;
-		kuid_t uid = GLOBAL_ROOT_UID;
-		kgid_t gid = GLOBAL_ROOT_GID;
-
-		add_uevent_var(env, "MAJOR=%u", MAJOR(dev->devt));
-		add_uevent_var(env, "MINOR=%u", MINOR(dev->devt));
-		name = device_get_devnode(dev, &mode, &uid, &gid, &tmp);
-		if (name) {
-			add_uevent_var(env, "DEVNAME=%s", name);
-			if (mode)
-				add_uevent_var(env, "DEVMODE=%#o", mode & 0777);
-			if (!uid_eq(uid, GLOBAL_ROOT_UID))
-				add_uevent_var(env, "DEVUID=%u", from_kuid(&init_user_ns, uid));
-			if (!gid_eq(gid, GLOBAL_ROOT_GID))
-				add_uevent_var(env, "DEVGID=%u", from_kgid(&init_user_ns, gid));
-			kfree(tmp);
-		}
-	}
-
-	if (dev->type && dev->type->name)
-		add_uevent_var(env, "DEVTYPE=%s", dev->type->name);
-
-	if (dev->driver)
-		add_uevent_var(env, "DRIVER=%s", dev->driver->name);
-
-	
-	of_device_uevent(dev, env);
-
-	
-	if (dev->bus && dev->bus->uevent) {
-		dev->bus->uevent(dev, env);
-	}
-
-	
-	if (dev->class && dev->class->dev_uevent) {
-		dev->class->dev_uevent(dev, env);
-	}
-
-	
-	if (dev->type && dev->type->uevent) {
-		retval = dev->type->uevent(dev, env);
-	}
-
-	return retval;
+	/* Stub: uevent environment setup not needed for minimal kernel */
+	return 0;
 }
 
 static const struct kset_uevent_ops device_uevent_ops = {

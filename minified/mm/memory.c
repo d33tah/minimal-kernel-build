@@ -2925,47 +2925,16 @@ out:
 int follow_pfn(struct vm_area_struct *vma, unsigned long address,
 	unsigned long *pfn)
 {
-	int ret = -EINVAL;
-	spinlock_t *ptl;
-	pte_t *ptep;
-
-	if (!(vma->vm_flags & (VM_IO | VM_PFNMAP)))
-		return ret;
-
-	ret = follow_pte(vma->vm_mm, address, &ptep, &ptl);
-	if (ret)
-		return ret;
-	*pfn = pte_pfn(*ptep);
-	pte_unmap_unlock(ptep, ptl);
-	return 0;
+	/* Stub: PFN following not needed for minimal kernel */
+	return -EINVAL;
 }
 
 int follow_phys(struct vm_area_struct *vma,
 		unsigned long address, unsigned int flags,
 		unsigned long *prot, resource_size_t *phys)
 {
-	int ret = -EINVAL;
-	pte_t *ptep, pte;
-	spinlock_t *ptl;
-
-	if (!(vma->vm_flags & (VM_IO | VM_PFNMAP)))
-		goto out;
-
-	if (follow_pte(vma->vm_mm, address, &ptep, &ptl))
-		goto out;
-	pte = *ptep;
-
-	if ((flags & FOLL_WRITE) && !pte_write(pte))
-		goto unlock;
-
-	*prot = pgprot_val(pte_pgprot(pte));
-	*phys = (resource_size_t)pte_pfn(pte) << PAGE_SHIFT;
-
-	ret = 0;
-unlock:
-	pte_unmap_unlock(ptep, ptl);
-out:
-	return ret;
+	/* Stub: physical address following not needed for minimal kernel */
+	return -EINVAL;
 }
 
 int generic_access_phys(struct vm_area_struct *vma, unsigned long addr,
@@ -2978,80 +2947,22 @@ int generic_access_phys(struct vm_area_struct *vma, unsigned long addr,
 int __access_remote_vm(struct mm_struct *mm, unsigned long addr, void *buf,
 		       int len, unsigned int gup_flags)
 {
-	struct vm_area_struct *vma;
-	void *old_buf = buf;
-	int write = gup_flags & FOLL_WRITE;
-
-	if (mmap_read_lock_killable(mm))
-		return 0;
-
-	
-	while (len) {
-		int bytes, ret, offset;
-		void *maddr;
-		struct page *page = NULL;
-
-		ret = get_user_pages_remote(mm, addr, 1,
-				gup_flags, &page, &vma, NULL);
-		if (ret <= 0) {
-			
-			vma = vma_lookup(mm, addr);
-			if (!vma)
-				break;
-			if (vma->vm_ops && vma->vm_ops->access)
-				ret = vma->vm_ops->access(vma, addr, buf,
-							  len, write);
-			if (ret <= 0)
-				break;
-			bytes = ret;
-		} else {
-			bytes = len;
-			offset = addr & (PAGE_SIZE-1);
-			if (bytes > PAGE_SIZE-offset)
-				bytes = PAGE_SIZE-offset;
-
-			maddr = kmap(page);
-			if (write) {
-				copy_to_user_page(vma, page, addr,
-						  maddr + offset, buf, bytes);
-				set_page_dirty_lock(page);
-			} else {
-				copy_from_user_page(vma, page, addr,
-						    buf, maddr + offset, bytes);
-			}
-			kunmap(page);
-			put_page(page);
-		}
-		len -= bytes;
-		buf += bytes;
-		addr += bytes;
-	}
-	mmap_read_unlock(mm);
-
-	return buf - old_buf;
+	/* Stub: remote VM access not needed for minimal kernel */
+	return 0;
 }
 
 int access_remote_vm(struct mm_struct *mm, unsigned long addr,
 		void *buf, int len, unsigned int gup_flags)
 {
-	return __access_remote_vm(mm, addr, buf, len, gup_flags);
+	/* Stub: remote VM access not needed for minimal kernel */
+	return 0;
 }
 
 int access_process_vm(struct task_struct *tsk, unsigned long addr,
 		void *buf, int len, unsigned int gup_flags)
 {
-	struct mm_struct *mm;
-	int ret;
-
-	mm = get_task_mm(tsk);
-	if (!mm)
-		return 0;
-
-	ret = __access_remote_vm(mm, addr, buf, len, gup_flags);
-
-	mmput(mm);
-
-	return ret;
+	/* Stub: process VM access not needed for minimal kernel */
+	return 0;
 }
 
 void print_vma_addr(char *prefix, unsigned long ip)

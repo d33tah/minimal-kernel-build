@@ -145,16 +145,7 @@ void device_set_deferred_probe_reason(const struct device *dev, struct va_format
  
 static int deferred_devs_show(struct seq_file *s, void *data)
 {
-	struct device_private *curr;
-
-	mutex_lock(&deferred_probe_mutex);
-
-	list_for_each_entry(curr, &deferred_probe_pending_list, deferred_probe)
-		seq_printf(s, "%s\t%s", dev_name(curr->device),
-			   curr->device->p->deferred_probe_reason ?: "\n");
-
-	mutex_unlock(&deferred_probe_mutex);
-
+	/* Stub: deferred probe debug info not needed for minimal kernel */
 	return 0;
 }
 DEFINE_SHOW_ATTRIBUTE(deferred_devs);

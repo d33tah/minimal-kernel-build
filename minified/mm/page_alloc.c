@@ -3281,49 +3281,16 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	memmap_init();
 }
 
-static int __init cmdline_parse_core(char *p, unsigned long *core,
-				     unsigned long *percent)
-{
-	unsigned long long coremem;
-	char *endptr;
-
-	if (!p)
-		return -EINVAL;
-
-	
-	coremem = simple_strtoull(p, &endptr, 0);
-	if (*endptr == '%') {
-		
-		WARN_ON(coremem > 100);
-
-		*percent = coremem;
-	} else {
-		coremem = memparse(p, &p);
-		
-		WARN_ON((coremem >> PAGE_SHIFT) > ULONG_MAX);
-
-		*core = coremem >> PAGE_SHIFT;
-		*percent = 0UL;
-	}
-	return 0;
-}
-
 static int __init cmdline_parse_kernelcore(char *p)
 {
-	
-	if (parse_option_str(p, "mirror")) {
-		mirrored_kernelcore = true;
-		return 0;
-	}
-
-	return cmdline_parse_core(p, &required_kernelcore,
-				  &required_kernelcore_percent);
+	/* Stub: kernelcore parameter not needed for minimal system */
+	return 0;
 }
 
 static int __init cmdline_parse_movablecore(char *p)
 {
-	return cmdline_parse_core(p, &required_movablecore,
-				  &required_movablecore_percent);
+	/* Stub: movablecore parameter not needed for minimal system */
+	return 0;
 }
 
 early_param("kernelcore", cmdline_parse_kernelcore);
@@ -3340,20 +3307,11 @@ unsigned long free_reserved_area(void *start, void *end, int poison, const char 
 	void *pos;
 	unsigned long pages = 0;
 
+	/* Simplified: skip poisoning for minimal system */
 	start = (void *)PAGE_ALIGN((unsigned long)start);
 	end = (void *)((unsigned long)end & PAGE_MASK);
 	for (pos = start; pos < end; pos += PAGE_SIZE, pages++) {
-		struct page *page = virt_to_page(pos);
-		void *direct_map_addr;
-
-		
-		direct_map_addr = page_address(page);
-		
-		direct_map_addr = kasan_reset_tag(direct_map_addr);
-		if ((unsigned int)poison <= 0xFF)
-			memset(direct_map_addr, poison, PAGE_SIZE);
-
-		free_reserved_page(page);
+		free_reserved_page(virt_to_page(pos));
 	}
 
 	return pages;

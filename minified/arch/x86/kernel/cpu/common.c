@@ -262,19 +262,7 @@ int have_cpuid_p(void)
 
 static void squash_the_stupid_serial_number(struct cpuinfo_x86 *c)
 {
-	unsigned long lo, hi;
-
-	if (!cpu_has(c, X86_FEATURE_PN) || !disable_x86_serial_nr)
-		return;
-
-	rdmsr(MSR_IA32_BBL_CR_CTL, lo, hi);
-	lo |= 0x200000;
-	wrmsr(MSR_IA32_BBL_CR_CTL, lo, hi);
-
-	pr_notice("CPU serial number disabled.\n");
-	clear_cpu_cap(c, X86_FEATURE_PN);
-
-	c->cpuid_level = cpuid_eax(0);
+	/* Stub: CPU serial number feature not relevant for minimal kernel */
 }
 
 static int __init x86_serial_nr_setup(char *s)

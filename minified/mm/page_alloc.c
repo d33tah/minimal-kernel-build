@@ -113,19 +113,12 @@ DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_FREE_DEFAULT_ON, init_on_free);
 
 static bool _init_on_alloc_enabled_early __read_mostly
 				= IS_ENABLED(CONFIG_INIT_ON_ALLOC_DEFAULT_ON);
-static int __init early_init_on_alloc(char *buf)
-{
-
-	return kstrtobool(buf, &_init_on_alloc_enabled_early);
-}
+static int __init early_init_on_alloc(char *buf) { return 0; }
 early_param("init_on_alloc", early_init_on_alloc);
 
 static bool _init_on_free_enabled_early __read_mostly
 				= IS_ENABLED(CONFIG_INIT_ON_FREE_DEFAULT_ON);
-static int __init early_init_on_free(char *buf)
-{
-	return kstrtobool(buf, &_init_on_free_enabled_early);
-}
+static int __init early_init_on_free(char *buf) { return 0; }
 early_param("init_on_free", early_init_on_free);
 
 static inline int get_pcppage_migratetype(struct page *page)
@@ -373,24 +366,9 @@ static inline void clear_page_guard(struct zone *zone, struct page *page,
 
 void init_mem_debugging_and_hardening(void)
 {
-	bool page_poisoning_requested = false;
-
-	if ((_init_on_alloc_enabled_early || _init_on_free_enabled_early) &&
-	    page_poisoning_requested) {
-		_init_on_alloc_enabled_early = false;
-		_init_on_free_enabled_early = false;
-	}
-
-	if (_init_on_alloc_enabled_early)
-		static_branch_enable(&init_on_alloc);
-	else
-		static_branch_disable(&init_on_alloc);
-
-	if (_init_on_free_enabled_early)
-		static_branch_enable(&init_on_free);
-	else
-		static_branch_disable(&init_on_free);
-
+	/* Stub: memory debugging/hardening not needed for minimal kernel */
+	static_branch_disable(&init_on_alloc);
+	static_branch_disable(&init_on_free);
 }
 
 static inline void set_buddy_order(struct page *page, unsigned int order)
@@ -835,9 +813,6 @@ static inline void expand(struct zone *zone, struct page *page,
 static void check_new_page_bad(struct page *page)
 {
 	/* Stub: page validation not needed for minimal kernel */
-	if (unlikely(page->flags & __PG_HWPOISON)) {
-		page_mapcount_reset(page);
-	}
 }
 
 static inline int check_new_page(struct page *page)
@@ -852,14 +827,7 @@ static inline int check_new_page(struct page *page)
 
 static bool check_new_pages(struct page *page, unsigned int order)
 {
-	int i;
-	for (i = 0; i < (1 << order); i++) {
-		struct page *p = page + i;
-
-		if (unlikely(check_new_page(p)))
-			return true;
-	}
-
+	/* Stub: skip page checking for minimal kernel */
 	return false;
 }
 
@@ -869,10 +837,8 @@ static inline bool check_pcp_refill(struct page *page, unsigned int order)
 }
 static inline bool check_new_pcp(struct page *page, unsigned int order)
 {
-	if (debug_pagealloc_enabled_static())
-		return check_new_pages(page, order);
-	else
-		return false;
+	/* Stub: skip page checking for minimal kernel */
+	return false;
 }
 
 static inline bool should_skip_kasan_unpoison(gfp_t flags, bool init_tags)
@@ -1026,17 +992,8 @@ static void change_pageblock_range(struct page *pageblock_page,
 
 static bool can_steal_fallback(unsigned int order, int start_mt)
 {
-	
-	if (order >= pageblock_order)
-		return true;
-
-	if (order >= pageblock_order / 2 ||
-		start_mt == MIGRATE_RECLAIMABLE ||
-		start_mt == MIGRATE_UNMOVABLE ||
-		page_group_by_mobility_disabled)
-		return true;
-
-	return false;
+	/* Stub: always allow fallback for minimal kernel */
+	return true;
 }
 
 static inline bool boost_watermark(struct zone *zone)
@@ -1217,47 +1174,22 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
 
 static void drain_pages_zone(unsigned int cpu, struct zone *zone)
 {
-	unsigned long flags;
-	struct per_cpu_pages *pcp;
-
-	local_lock_irqsave(&pagesets.lock, flags);
-
-	pcp = per_cpu_ptr(zone->per_cpu_pageset, cpu);
-	if (pcp->count)
-		free_pcppages_bulk(zone, pcp->count, pcp, 0);
-
-	local_unlock_irqrestore(&pagesets.lock, flags);
+	/* Stub: skip per-CPU page draining for minimal kernel */
 }
 
 static void drain_pages(unsigned int cpu)
 {
-	struct zone *zone;
-
-	for_each_populated_zone(zone) {
-		drain_pages_zone(cpu, zone);
-	}
+	/* Stub: skip per-CPU page draining for minimal kernel */
 }
 
 void drain_local_pages(struct zone *zone)
 {
-	int cpu = smp_processor_id();
-
-	if (zone)
-		drain_pages_zone(cpu, zone);
-	else
-		drain_pages(cpu);
+	/* Stub: skip page draining for minimal kernel */
 }
 
 static void drain_local_pages_wq(struct work_struct *work)
 {
-	struct pcpu_drain *drain;
-
-	drain = container_of(work, struct pcpu_drain, work);
-
-	
-	migrate_disable();
-	drain_local_pages(drain->zone);
-	migrate_enable();
+	/* Stub: skip complex work queue draining for minimal kernel */
 }
 
 static void __drain_all_pages(struct zone *zone, bool force_all_cpus)

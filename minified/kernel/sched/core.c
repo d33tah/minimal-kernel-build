@@ -1839,40 +1839,8 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
 static int
 __sched_setaffinity(struct task_struct *p, const struct cpumask *mask)
 {
-	int retval;
-	cpumask_var_t cpus_allowed, new_mask;
-
-	if (!alloc_cpumask_var(&cpus_allowed, GFP_KERNEL))
-		return -ENOMEM;
-
-	if (!alloc_cpumask_var(&new_mask, GFP_KERNEL)) {
-		retval = -ENOMEM;
-		goto out_free_cpus_allowed;
-	}
-
-	cpuset_cpus_allowed(p, cpus_allowed);
-	cpumask_and(new_mask, mask, cpus_allowed);
-
-	retval = dl_task_check_affinity(p, new_mask);
-	if (retval)
-		goto out_free_new_mask;
-again:
-	retval = __set_cpus_allowed_ptr(p, new_mask, SCA_CHECK | SCA_USER);
-	if (retval)
-		goto out_free_new_mask;
-
-	cpuset_cpus_allowed(p, cpus_allowed);
-	if (!cpumask_subset(new_mask, cpus_allowed)) {
-		
-		cpumask_copy(new_mask, cpus_allowed);
-		goto again;
-	}
-
-out_free_new_mask:
-	free_cpumask_var(new_mask);
-out_free_cpus_allowed:
-	free_cpumask_var(cpus_allowed);
-	return retval;
+	/* Simplified: single CPU system, just accept the affinity */
+	return __set_cpus_allowed_ptr(p, mask, SCA_CHECK | SCA_USER);
 }
 
 long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)

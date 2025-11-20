@@ -1,3 +1,16 @@
+--- 2025-11-21 00:51 ---
+
+Simplify scheduler CPU affinity setting - 32 LOC reduction
+Binary: 321KB (stable)
+make vm: PASSES ✓, prints "Hello, World!Still alive" ✓
+
+Changes made to kernel/sched/core.c:
+- __sched_setaffinity(): Removed cpumask allocation, cpuset checking, retry loop
+  Now just calls __set_cpus_allowed_ptr directly
+
+Estimated current LOC: ~233,189 (from 233,221)
+Gap remaining: ~33,189 LOC to 200,000 goal
+
 --- 2025-11-21 00:45 ---
 
 Session summary (2 commits):

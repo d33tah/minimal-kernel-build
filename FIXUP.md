@@ -1,3 +1,17 @@
+--- 2025-11-21 00:57 ---
+
+Simplify signal handling functions - 36 LOC reduction
+Binary: 321KB (stable)
+make vm: PASSES ✓, prints "Hello, World!Still alive" ✓
+
+Changes made to kernel/signal.c:
+- kill_pid_info(): Removed infinite retry loop
+- __lock_task_sighand(): Removed retry loop with RCU dereference checking
+- kill_something_info(): Removed process group and broadcast logic, only handle pid > 0
+
+Estimated current LOC: ~233,070 (from 233,106)
+Gap remaining: ~33,070 LOC to 200,000 goal
+
 --- 2025-11-21 00:54 ---
 
 Simplify multiple scheduler functions - 83 LOC reduction

@@ -765,17 +765,9 @@ struct sighand_struct *__lock_task_sighand(struct task_struct *tsk,
 	struct sighand_struct *sighand;
 
 	rcu_read_lock();
-	for (;;) {
-		sighand = rcu_dereference(tsk->sighand);
-		if (unlikely(sighand == NULL))
-			break;
-
-		
+	sighand = rcu_dereference(tsk->sighand);
+	if (sighand)
 		spin_lock_irqsave(&sighand->siglock, *flags);
-		if (likely(sighand == rcu_access_pointer(tsk->sighand)))
-			break;
-		spin_unlock_irqrestore(&sighand->siglock, *flags);
-	}
 	rcu_read_unlock();
 
 	return sighand;
@@ -813,20 +805,18 @@ int __kill_pgrp_info(int sig, struct kernel_siginfo *info, struct pid *pgrp)
 
 int kill_pid_info(int sig, struct kernel_siginfo *info, struct pid *pid)
 {
-	int error = -ESRCH;
 	struct task_struct *p;
+	int error;
 
-	for (;;) {
-		rcu_read_lock();
-		p = pid_task(pid, PIDTYPE_PID);
-		if (p)
-			error = group_send_sig_info(sig, info, p, PIDTYPE_TGID);
-		rcu_read_unlock();
-		if (likely(!p || error != -ESRCH))
-			return error;
+	rcu_read_lock();
+	p = pid_task(pid, PIDTYPE_PID);
+	if (p)
+		error = group_send_sig_info(sig, info, p, PIDTYPE_TGID);
+	else
+		error = -ESRCH;
+	rcu_read_unlock();
 
-		
-	}
+	return error;
 }
 
 static int kill_proc_info(int sig, struct kernel_siginfo *info, pid_t pid)
@@ -894,38 +884,12 @@ out_unlock:
 
 static int kill_something_info(int sig, struct kernel_siginfo *info, pid_t pid)
 {
-	int ret;
-
+	/* Simplified: only handle simple pid > 0 case */
 	if (pid > 0)
 		return kill_proc_info(sig, info, pid);
 
-	
-	if (pid == INT_MIN)
-		return -ESRCH;
-
-	read_lock(&tasklist_lock);
-	if (pid != -1) {
-		ret = __kill_pgrp_info(sig, info,
-				pid ? find_vpid(-pid) : task_pgrp(current));
-	} else {
-		int retval = 0, count = 0;
-		struct task_struct * p;
-
-		for_each_process(p) {
-			if (task_pid_vnr(p) > 1 &&
-					!same_thread_group(p, current)) {
-				int err = group_send_sig_info(sig, info, p,
-							      PIDTYPE_MAX);
-				++count;
-				if (err != -EPERM)
-					retval = err;
-			}
-		}
-		ret = count ? retval : -ESRCH;
-	}
-	read_unlock(&tasklist_lock);
-
-	return ret;
+	/* For process groups and broadcast, just return error */
+	return -ESRCH;
 }
 
 int send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p)

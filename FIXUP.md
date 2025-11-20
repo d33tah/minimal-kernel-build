@@ -14,6 +14,24 @@ Will look for opportunities to stub or simplify large functions in:
 - drivers/tty/vt/vt.c
 - kernel/signal.c, kernel/sched/core.c
 
+20:06 - Session progress after 4 commits:
+  1. __setup_per_zone_wmarks in mm/page_alloc.c - 23 LOC
+  2. choose_mountpoint functions in fs/namei.c - 28 LOC
+  3. siginfo_layout in kernel/signal.c - 24 LOC
+  4. set_mode in drivers/tty/vt/vt.c - 46 LOC
+
+  Total reduction this session: 121 LOC
+  Starting LOC: 249,550
+  Estimated current LOC: ~249,429
+  Gap remaining: ~49,429 LOC to 200,000 goal (19.7% reduction)
+  Binary: 326KB (stable)
+
+  Notes:
+  - Simplified watermark calculations, mountpoint selection, signal layout
+  - Removed non-essential terminal modes (kept only auto-wrap and cursor visibility)
+  - All changes tested and verified working with "Hello, World!" output
+  - Continued incremental progress toward goal
+
 --- 2025-11-20 19:27 ---
 
 New session starting:

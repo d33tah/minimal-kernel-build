@@ -717,46 +717,15 @@ int follow_up(struct path *path)
 static bool choose_mountpoint_rcu(struct mount *m, const struct path *root,
 				  struct path *path, unsigned *seqp)
 {
-	while (mnt_has_parent(m)) {
-		struct dentry *mountpoint = m->mnt_mountpoint;
-
-		m = m->mnt_parent;
-		if (unlikely(root->dentry == mountpoint &&
-			     root->mnt == &m->mnt))
-			break;
-		if (mountpoint != m->mnt.mnt_root) {
-			path->mnt = &m->mnt;
-			path->dentry = mountpoint;
-			*seqp = read_seqcount_begin(&mountpoint->d_seq);
-			return true;
-		}
-	}
+	/* Stub: minimal system doesn't need mountpoint selection */
 	return false;
 }
 
 static bool choose_mountpoint(struct mount *m, const struct path *root,
 			      struct path *path)
 {
-	bool found;
-
-	rcu_read_lock();
-	while (1) {
-		unsigned seq, mseq = read_seqbegin(&mount_lock);
-
-		found = choose_mountpoint_rcu(m, root, path, &seq);
-		if (unlikely(!found)) {
-			if (!read_seqretry(&mount_lock, mseq))
-				break;
-		} else {
-			if (likely(__legitimize_path(path, seq, mseq)))
-				break;
-			rcu_read_unlock();
-			path_put(path);
-			rcu_read_lock();
-		}
-	}
-	rcu_read_unlock();
-	return found;
+	/* Stub: minimal system doesn't need mountpoint selection */
+	return false;
 }
 
 static int follow_automount(struct path *path, int *count, unsigned lookup_flags)

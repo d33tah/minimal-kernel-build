@@ -903,47 +903,10 @@ static inline bool should_skip_init(gfp_t flags)
 inline void post_alloc_hook(struct page *page, unsigned int order,
 				gfp_t gfp_flags)
 {
-	bool init = !want_init_on_free() && want_init_on_alloc(gfp_flags) &&
-			!should_skip_init(gfp_flags);
-	bool init_tags = init && (gfp_flags & __GFP_ZEROTAGS);
-
+	/* Stub: minimal post-allocation setup */
 	set_page_private(page, 0);
 	set_page_refcounted(page);
-
 	arch_alloc_page(page, order);
-	debug_pagealloc_map_pages(page, 1 << order);
-
-	
-	kernel_unpoison_pages(page, 1 << order);
-
-	
-
-	
-	if (init_tags) {
-		int i;
-
-		
-		for (i = 0; i != 1 << order; ++i)
-			tag_clear_highpage(page + i);
-
-		
-		init = false;
-	}
-	if (!should_skip_kasan_unpoison(gfp_flags, init_tags)) {
-		
-		kasan_unpoison_pages(page, order, init);
-
-		
-		if (kasan_has_integrated_init())
-			init = false;
-	}
-	
-	if (init)
-		kernel_init_free_pages(page, 1 << order);
-	
-	if (kasan_hw_tags_enabled() && (gfp_flags & __GFP_SKIP_KASAN_POISON))
-		SetPageSkipKASanPoison(page);
-
 	set_page_owner(page, order, gfp_flags);
 	page_table_check_alloc(page, order);
 }

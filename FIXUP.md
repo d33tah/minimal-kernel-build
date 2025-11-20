@@ -6290,3 +6290,11 @@ Next approach recommendations:
   core.c: 2779 → 2763 LOC
   Binary: 328KB (stable)
   make vm: PASSES ✓, prints "Hello, World!" ✓
+
+17:06 - Third commit: kernel/panic.c __warn (19 LOC reduction)
+  Stubbed function:
+  1. __warn - 19 LOC (warning handling)
+
+  panic.c: 475 → 456 LOC
+  Binary: 328KB (stable)
+  make vm: PASSES ✓, prints "Hello, World!" ✓

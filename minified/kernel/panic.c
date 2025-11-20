@@ -408,28 +408,9 @@ struct warn_args {
 void __warn(const char *file, int line, void *caller, unsigned taint,
 	    struct pt_regs *regs, struct warn_args *args)
 {
-	disable_trace_on_warning();
-
-	if (args)
-		vprintk(args->fmt, args->args);
-
-	print_modules();
-
-	if (regs)
-		show_regs(regs);
-
+	/* Stub: minimal warning for tiny kernel */
 	if (panic_on_warn)
 		panic("panic_on_warn set ...\n");
-
-	if (!regs)
-		dump_stack();
-
-	print_irqtrace_events(current);
-
-	print_oops_end_marker();
-	 
-
-	 
 	add_taint(taint, LOCKDEP_STILL_OK);
 }
 

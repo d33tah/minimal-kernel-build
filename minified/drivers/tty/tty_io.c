@@ -354,75 +354,15 @@ static struct file *tty_release_redirect(struct tty_struct *tty)
 
 static void __tty_hangup(struct tty_struct *tty, int exit_session)
 {
-	struct file *cons_filp = NULL;
-	struct file *filp, *f;
-	struct tty_file_private *priv;
-	int    closecount = 0, n;
-	int refs;
-
+	/* Stub: minimal TTY hangup for simple kernel */
 	if (!tty)
 		return;
 
-	f = tty_release_redirect(tty);
-
 	tty_lock(tty);
-
-	if (test_bit(TTY_HUPPED, &tty->flags)) {
-		tty_unlock(tty);
-		return;
-	}
-
-	
-	set_bit(TTY_HUPPING, &tty->flags);
-
-	
-	check_tty_count(tty, "tty_hangup");
-
-	spin_lock(&tty->files_lock);
-	
-	list_for_each_entry(priv, &tty->tty_files, list) {
-		filp = priv->file;
-		if (filp->f_op->write_iter == redirected_tty_write)
-			cons_filp = filp;
-		if (filp->f_op->write_iter != tty_write)
-			continue;
-		closecount++;
-		__tty_fasync(-1, filp, 0);	
-		filp->f_op = &hung_up_tty_fops;
-	}
-	spin_unlock(&tty->files_lock);
-
-	refs = tty_signal_session_leader(tty, exit_session);
-	
-	while (refs--)
-		tty_kref_put(tty);
-
-	tty_ldisc_hangup(tty, cons_filp != NULL);
-
-	spin_lock_irq(&tty->ctrl.lock);
-	clear_bit(TTY_THROTTLED, &tty->flags);
-	clear_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
-	put_pid(tty->ctrl.session);
-	put_pid(tty->ctrl.pgrp);
-	tty->ctrl.session = NULL;
-	tty->ctrl.pgrp = NULL;
-	tty->ctrl.pktstatus = 0;
-	spin_unlock_irq(&tty->ctrl.lock);
-
-	
-	if (cons_filp) {
-		if (tty->ops->close)
-			for (n = 0; n < closecount; n++)
-				tty->ops->close(tty, cons_filp);
-	} else if (tty->ops->hangup)
-		tty->ops->hangup(tty);
-	
 	set_bit(TTY_HUPPED, &tty->flags);
-	clear_bit(TTY_HUPPING, &tty->flags);
+	if (tty->ops->hangup)
+		tty->ops->hangup(tty);
 	tty_unlock(tty);
-
-	if (f)
-		fput(f);
 }
 
 static void do_tty_hangup(struct work_struct *work)

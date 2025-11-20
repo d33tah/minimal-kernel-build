@@ -931,39 +931,13 @@ out:
 
 void shrink_dcache_parent(struct dentry *parent)
 {
-	for (;;) {
-		struct select_data data = {.start = parent};
+	/* Stub: minimal dcache shrinking for simple kernel */
+	struct select_data data = {.start = parent};
 
-		INIT_LIST_HEAD(&data.dispose);
-		d_walk(parent, &data, select_collect);
-
-		if (!list_empty(&data.dispose)) {
-			shrink_dentry_list(&data.dispose);
-			continue;
-		}
-
-		cond_resched();
-		if (!data.found)
-			break;
-		data.victim = NULL;
-		d_walk(parent, &data, select_collect2);
-		if (data.victim) {
-			struct dentry *parent;
-			spin_lock(&data.victim->d_lock);
-			if (!shrink_lock_dentry(data.victim)) {
-				spin_unlock(&data.victim->d_lock);
-				rcu_read_unlock();
-			} else {
-				rcu_read_unlock();
-				parent = data.victim->d_parent;
-				if (parent != data.victim)
-					__dput_to_list(parent, &data.dispose);
-				__dentry_kill(data.victim);
-			}
-		}
-		if (!list_empty(&data.dispose))
-			shrink_dentry_list(&data.dispose);
-	}
+	INIT_LIST_HEAD(&data.dispose);
+	d_walk(parent, &data, select_collect);
+	if (!list_empty(&data.dispose))
+		shrink_dentry_list(&data.dispose);
 }
 
 static enum d_walk_ret umount_check(void *_data, struct dentry *dentry)

@@ -563,21 +563,8 @@ static inline bool page_expected_state(struct page *page,
 
 static const char *page_bad_reason(struct page *page, unsigned long flags)
 {
-	const char *bad_reason = NULL;
-
-	if (unlikely(atomic_read(&page->_mapcount) != -1))
-		bad_reason = "nonzero mapcount";
-	if (unlikely(page->mapping != NULL))
-		bad_reason = "non-NULL mapping";
-	if (unlikely(page_ref_count(page) != 0))
-		bad_reason = "nonzero _refcount";
-	if (unlikely(page->flags & flags)) {
-		if (flags == PAGE_FLAGS_CHECK_AT_PREP)
-			bad_reason = "PAGE_FLAGS_CHECK_AT_PREP flag(s) set";
-		else
-			bad_reason = "PAGE_FLAGS_CHECK_AT_FREE flag(s) set";
-	}
-	return bad_reason;
+	/* Stub: detailed page error reporting not needed for minimal kernel */
+	return NULL;
 }
 
 static void check_free_page_bad(struct page *page)

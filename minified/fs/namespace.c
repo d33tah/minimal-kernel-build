@@ -1751,13 +1751,7 @@ static void set_mount_attributes(struct mount *mnt, unsigned int mnt_flags)
 
 static void mnt_warn_timestamp_expiry(struct path *mountpoint, struct vfsmount *mnt)
 {
-	struct super_block *sb = mnt->mnt_sb;
-
-	if (!__mnt_is_readonly(mnt) &&
-	   (!(sb->s_iflags & SB_I_TS_EXPIRY_WARNED)) &&
-	   (ktime_get_real_seconds() + TIME_UPTIME_SEC_MAX > sb->s_time_max)) {
-		sb->s_iflags |= SB_I_TS_EXPIRY_WARNED;
-	}
+	/* Stub: timestamp expiry warning not needed for minimal kernel */
 }
 
 static int do_reconfigure_mnt(struct path *path, unsigned int mnt_flags)

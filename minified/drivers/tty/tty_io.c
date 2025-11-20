@@ -277,10 +277,7 @@ static int hung_up_tty_fasync(int fd, struct file *file, int on)
 
 static void tty_show_fdinfo(struct seq_file *m, struct file *file)
 {
-	struct tty_struct *tty = file_tty(file);
-
-	if (tty && tty->ops && tty->ops->show_fdinfo)
-		tty->ops->show_fdinfo(tty, m);
+	/* Stub: TTY fdinfo not needed for minimal kernel */
 }
 
 static const struct file_operations tty_fops = {

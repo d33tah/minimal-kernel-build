@@ -3487,65 +3487,13 @@ void __init page_alloc_init(void)
 
 static void calculate_totalreserve_pages(void)
 {
-	struct pglist_data *pgdat;
-	unsigned long reserve_pages = 0;
-	enum zone_type i, j;
-
-	for_each_online_pgdat(pgdat) {
-
-		pgdat->totalreserve_pages = 0;
-
-		for (i = 0; i < MAX_NR_ZONES; i++) {
-			struct zone *zone = pgdat->node_zones + i;
-			long max = 0;
-			unsigned long managed_pages = zone_managed_pages(zone);
-
-			
-			for (j = i; j < MAX_NR_ZONES; j++) {
-				if (zone->lowmem_reserve[j] > max)
-					max = zone->lowmem_reserve[j];
-			}
-
-			
-			max += high_wmark_pages(zone);
-
-			if (max > managed_pages)
-				max = managed_pages;
-
-			pgdat->totalreserve_pages += max;
-
-			reserve_pages += max;
-		}
-	}
-	totalreserve_pages = reserve_pages;
+	/* Stub: skip complex reserve calculation for minimal system */
+	totalreserve_pages = 0;
 }
 
 static void setup_per_zone_lowmem_reserve(void)
 {
-	struct pglist_data *pgdat;
-	enum zone_type i, j;
-
-	for_each_online_pgdat(pgdat) {
-		for (i = 0; i < MAX_NR_ZONES - 1; i++) {
-			struct zone *zone = &pgdat->node_zones[i];
-			int ratio = sysctl_lowmem_reserve_ratio[i];
-			bool clear = !ratio || !zone_managed_pages(zone);
-			unsigned long managed_pages = 0;
-
-			for (j = i + 1; j < MAX_NR_ZONES; j++) {
-				struct zone *upper_zone = &pgdat->node_zones[j];
-
-				managed_pages += zone_managed_pages(upper_zone);
-
-				if (clear)
-					zone->lowmem_reserve[j] = 0;
-				else
-					zone->lowmem_reserve[j] = managed_pages / ratio;
-			}
-		}
-	}
-
-	
+	/* Stub: skip lowmem reserve setup for minimal system */
 	calculate_totalreserve_pages();
 }
 

@@ -2378,46 +2378,8 @@ int remap_vmalloc_range_partial(struct vm_area_struct *vma, unsigned long uaddr,
 				void *kaddr, unsigned long pgoff,
 				unsigned long size)
 {
-	struct vm_struct *area;
-	unsigned long off;
-	unsigned long end_index;
-
-	if (check_shl_overflow(pgoff, PAGE_SHIFT, &off))
-		return -EINVAL;
-
-	size = PAGE_ALIGN(size);
-
-	if (!PAGE_ALIGNED(uaddr) || !PAGE_ALIGNED(kaddr))
-		return -EINVAL;
-
-	area = find_vm_area(kaddr);
-	if (!area)
-		return -EINVAL;
-
-	if (!(area->flags & (VM_USERMAP | VM_DMA_COHERENT)))
-		return -EINVAL;
-
-	if (check_add_overflow(size, off, &end_index) ||
-	    end_index > get_vm_area_size(area))
-		return -EINVAL;
-	kaddr += off;
-
-	do {
-		struct page *page = vmalloc_to_page(kaddr);
-		int ret;
-
-		ret = vm_insert_page(vma, uaddr, page);
-		if (ret)
-			return ret;
-
-		uaddr += PAGE_SIZE;
-		kaddr += PAGE_SIZE;
-		size -= PAGE_SIZE;
-	} while (size > 0);
-
-	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;
-
-	return 0;
+	/* Stub: vmalloc remapping not needed for minimal kernel */
+	return -EINVAL;
 }
 
 int remap_vmalloc_range(struct vm_area_struct *vma, void *addr,

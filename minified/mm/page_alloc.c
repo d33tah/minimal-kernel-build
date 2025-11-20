@@ -616,79 +616,17 @@ static void kernel_init_free_pages(struct page *page, int numpages)
 static __always_inline bool free_pages_prepare(struct page *page,
 			unsigned int order, bool check_free, fpi_t fpi_flags)
 {
-	int bad = 0;
-	bool init = want_init_on_free();
-
-	VM_BUG_ON_PAGE(PageTail(page), page);
-
-
-	if (unlikely(PageHWPoison(page)) && !order) {
-		
-		if (memcg_kmem_enabled() && PageMemcgKmem(page))
-			__memcg_kmem_uncharge_page(page, order);
-		reset_page_owner(page, order);
-		page_table_check_free(page, order);
-		return false;
-	}
-
-	
-	if (unlikely(order)) {
-		bool compound = PageCompound(page);
-		int i;
-
-		VM_BUG_ON_PAGE(compound && compound_order(page) != order, page);
-
-		if (compound) {
-			ClearPageDoubleMap(page);
-			ClearPageHasHWPoisoned(page);
-		}
-		for (i = 1; i < (1 << order); i++) {
-			if (compound)
-				bad += free_tail_pages_check(page, page + i);
-			if (unlikely(check_free_page(page + i))) {
-				bad++;
-				continue;
-			}
-			(page + i)->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
-		}
-	}
+	/* Stub: minimal page freeing for simple system */
 	if (PageMappingFlags(page))
 		page->mapping = NULL;
 	if (memcg_kmem_enabled() && PageMemcgKmem(page))
 		__memcg_kmem_uncharge_page(page, order);
-	if (check_free)
-		bad += check_free_page(page);
-	if (bad)
-		return false;
 
-	page_cpupid_reset_last(page);
 	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
 	reset_page_owner(page, order);
 	page_table_check_free(page, order);
 
-	if (!PageHighMem(page)) {
-		debug_check_no_locks_freed(page_address(page),
-					   PAGE_SIZE << order);
-	}
-
-	kernel_poison_pages(page, 1 << order);
-
-	
-	if (!should_skip_kasan_poison(page, fpi_flags)) {
-		kasan_poison_pages(page, order, init);
-
-		
-		if (kasan_has_integrated_init())
-			init = false;
-	}
-	if (init)
-		kernel_init_free_pages(page, 1 << order);
-
-	
 	arch_free_page(page, order);
-
-	debug_pagealloc_unmap_pages(page, 1 << order);
-
 	return true;
 }
 

@@ -2559,54 +2559,16 @@ void device_destroy(struct class *class, dev_t devt)
 
 int device_rename(struct device *dev, const char *new_name)
 {
-	struct kobject *kobj = &dev->kobj;
-	char *old_device_name = NULL;
-	int error;
-
-	dev = get_device(dev);
-	if (!dev)
-		return -EINVAL;
-
-	dev_dbg(dev, "renaming to %s\n", new_name);
-
-	old_device_name = kstrdup(dev_name(dev), GFP_KERNEL);
-	if (!old_device_name) {
-		error = -ENOMEM;
-		goto out;
-	}
-
-	if (dev->class) {
-		error = sysfs_rename_link_ns(&dev->class->p->subsys.kobj,
-					     kobj, old_device_name,
-					     new_name, kobject_namespace(kobj));
-		if (error)
-			goto out;
-	}
-
-	error = kobject_rename(kobj, new_name);
-	if (error)
-		goto out;
-
-out:
-	put_device(dev);
-
-	kfree(old_device_name);
-
-	return error;
+	/* Stub: device renaming not needed for minimal kernel */
+	return -EINVAL;
 }
 
 static int device_move_class_links(struct device *dev,
 				   struct device *old_parent,
 				   struct device *new_parent)
 {
-	int error = 0;
-
-	if (old_parent)
-		sysfs_remove_link(&dev->kobj, "device");
-	if (new_parent)
-		error = sysfs_create_link(&dev->kobj, &new_parent->kobj,
-					  "device");
-	return error;
+	/* Stub: device class link moving not needed */
+	return 0;
 }
 
 int device_move(struct device *dev, struct device *new_parent,

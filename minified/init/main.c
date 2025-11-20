@@ -584,42 +584,7 @@ void __init __weak arch_call_rest_init(void)
 
 static void __init print_unknown_bootoptions(void)
 {
-	char *unknown_options;
-	char *end;
-	const char *const *p;
-	size_t len;
-
-	if (panic_later || (!argv_init[1] && !envp_init[2]))
-		return;
-
-	 
-	len = 1;  
-	for (p = &argv_init[1]; *p; p++) {
-		len++;
-		len += strlen(*p);
-	}
-	for (p = &envp_init[2]; *p; p++) {
-		len++;
-		len += strlen(*p);
-	}
-
-	unknown_options = memblock_alloc(len, SMP_CACHE_BYTES);
-	if (!unknown_options) {
-		pr_err("%s: Failed to allocate %zu bytes\n",
-			__func__, len);
-		return;
-	}
-	end = unknown_options;
-
-	for (p = &argv_init[1]; *p; p++)
-		end += sprintf(end, " %s", *p);
-	for (p = &envp_init[2]; *p; p++)
-		end += sprintf(end, " %s", *p);
-
-	 
-	pr_notice("Unknown kernel command line parameters \"%s\", will be passed to user space.\n",
-		&unknown_options[1]);
-	memblock_free(unknown_options, len);
+	/* Stub: boot option reporting not needed for minimal kernel */
 }
 
 asmlinkage __visible void __init __no_sanitize_address start_kernel(void)

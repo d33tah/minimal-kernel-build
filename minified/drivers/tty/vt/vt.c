@@ -1173,28 +1173,8 @@ static void rgb_background(struct vc_data *vc, const struct rgb *c)
 static int vc_t416_color(struct vc_data *vc, int i,
 		void(*set_color)(struct vc_data *vc, const struct rgb *c))
 {
-	struct rgb c;
-
-	i++;
-	if (i > vc->vc_npar)
-		return i;
-
-	if (vc->vc_par[i] == 5 && i + 1 <= vc->vc_npar) {
-		
-		i++;
-		rgb_from_256(vc->vc_par[i], &c);
-	} else if (vc->vc_par[i] == 2 && i + 3 <= vc->vc_npar) {
-		
-		c.r = vc->vc_par[i + 1];
-		c.g = vc->vc_par[i + 2];
-		c.b = vc->vc_par[i + 3];
-		i += 3;
-	} else
-		return i;
-
-	set_color(vc, &c);
-
-	return i;
+	/* Stub: 256/RGB color not needed for minimal system */
+	return i + 1;
 }
 
 static void csi_m(struct vc_data *vc)

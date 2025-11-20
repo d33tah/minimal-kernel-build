@@ -1193,16 +1193,8 @@ static int pidfd_release(struct inode *inode, struct file *file)
 
 static __poll_t pidfd_poll(struct file *file, struct poll_table_struct *pts)
 {
-	struct pid *pid = file->private_data;
-	__poll_t poll_flags = 0;
-
-	poll_wait(file, &pid->wait_pidfd, pts);
-
-	
-	if (thread_group_exited(pid))
-		poll_flags = EPOLLIN | EPOLLRDNORM;
-
-	return poll_flags;
+	/* Stub: minimal pidfd polling */
+	return 0;
 }
 
 const struct file_operations pidfd_fops = {
@@ -1227,21 +1219,7 @@ static __always_inline void delayed_free_task(struct task_struct *tsk)
 
 static void copy_oom_score_adj(u64 clone_flags, struct task_struct *tsk)
 {
-	
-	if (!tsk->mm)
-		return;
-
-	
-	if ((clone_flags & (CLONE_VM | CLONE_THREAD | CLONE_VFORK)) != CLONE_VM)
-		return;
-
-	
-	mutex_lock(&oom_adj_mutex);
-	set_bit(MMF_MULTIPROCESS, &tsk->mm->flags);
-	
-	tsk->signal->oom_score_adj = current->signal->oom_score_adj;
-	tsk->signal->oom_score_adj_min = current->signal->oom_score_adj_min;
-	mutex_unlock(&oom_adj_mutex);
+	/* Stub: OOM score adjustment not needed for minimal kernel */
 }
 
 static __latent_entropy struct task_struct *copy_process(

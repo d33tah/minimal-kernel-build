@@ -450,70 +450,17 @@ static inline void __free_one_page(struct page *page,
 		struct zone *zone, unsigned int order,
 		int migratetype, fpi_t fpi_flags)
 {
-	struct capture_control *capc = task_capc(zone);
-	unsigned long buddy_pfn;
-	unsigned long combined_pfn;
-	struct page *buddy;
-	bool to_tail;
-
-	VM_BUG_ON(!zone_is_initialized(zone));
-	VM_BUG_ON_PAGE(page->flags & PAGE_FLAGS_CHECK_AT_PREP, page);
-
-	VM_BUG_ON(migratetype == -1);
+	/* Simplified buddy allocator: just add to free list without merging */
 	if (likely(!is_migrate_isolate(migratetype)))
 		__mod_zone_freepage_state(zone, 1 << order, migratetype);
 
-	VM_BUG_ON_PAGE(pfn & ((1 << order) - 1), page);
-	VM_BUG_ON_PAGE(bad_range(zone, page), page);
-
-	while (order < MAX_ORDER - 1) {
-		if (compaction_capture(capc, page, order, migratetype)) {
-			__mod_zone_freepage_state(zone, -(1 << order),
-								migratetype);
-			return;
-		}
-
-		buddy = find_buddy_page_pfn(page, pfn, order, &buddy_pfn);
-		if (!buddy)
-			goto done_merging;
-
-		if (unlikely(order >= pageblock_order)) {
-			
-			int buddy_mt = get_pageblock_migratetype(buddy);
-
-			if (migratetype != buddy_mt
-					&& (!migratetype_is_mergeable(migratetype) ||
-						!migratetype_is_mergeable(buddy_mt)))
-				goto done_merging;
-		}
-
-		
-		if (page_is_guard(buddy))
-			clear_page_guard(zone, buddy, order, migratetype);
-		else
-			del_page_from_free_list(buddy, zone, order);
-		combined_pfn = buddy_pfn & pfn;
-		page = page + (combined_pfn - pfn);
-		pfn = combined_pfn;
-		order++;
-	}
-
-done_merging:
 	set_buddy_order(page, order);
 
 	if (fpi_flags & FPI_TO_TAIL)
-		to_tail = true;
-	else if (is_shuffle_order(order))
-		to_tail = shuffle_pick_tail();
-	else
-		to_tail = buddy_merge_likely(pfn, buddy_pfn, page, order);
-
-	if (to_tail)
 		add_to_free_list_tail(page, zone, order, migratetype);
 	else
 		add_to_free_list(page, zone, order, migratetype);
 
-	
 	if (!(fpi_flags & FPI_SKIP_REPORT_NOTIFY))
 		page_reporting_notify_free(order);
 }
@@ -1033,58 +980,26 @@ static __always_inline bool
 __rmqueue_fallback(struct zone *zone, int order, int start_migratetype,
 						unsigned int alloc_flags)
 {
+	/* Simplified fallback: try all orders, take first match */
 	struct free_area *area;
 	int current_order;
-	int min_order = order;
-	struct page *page;
 	int fallback_mt;
 	bool can_steal;
+	struct page *page;
 
-	
-	if (alloc_flags & ALLOC_NOFRAGMENT)
-		min_order = pageblock_order;
-
-	
-	for (current_order = MAX_ORDER - 1; current_order >= min_order;
-				--current_order) {
+	for (current_order = MAX_ORDER - 1; current_order >= order; --current_order) {
 		area = &(zone->free_area[current_order]);
 		fallback_mt = find_suitable_fallback(area, current_order,
 				start_migratetype, false, &can_steal);
 		if (fallback_mt == -1)
 			continue;
 
-		
-		if (!can_steal && start_migratetype == MIGRATE_MOVABLE
-					&& current_order > order)
-			goto find_smallest;
-
-		goto do_steal;
+		page = get_page_from_free_area(area, fallback_mt);
+		steal_suitable_fallback(zone, page, alloc_flags, start_migratetype, can_steal);
+		return true;
 	}
 
 	return false;
-
-find_smallest:
-	for (current_order = order; current_order < MAX_ORDER;
-							current_order++) {
-		area = &(zone->free_area[current_order]);
-		fallback_mt = find_suitable_fallback(area, current_order,
-				start_migratetype, false, &can_steal);
-		if (fallback_mt != -1)
-			break;
-	}
-
-	
-	VM_BUG_ON(current_order == MAX_ORDER);
-
-do_steal:
-	page = get_page_from_free_area(area, fallback_mt);
-
-	steal_suitable_fallback(zone, page, alloc_flags, start_migratetype,
-								can_steal);
-
-
-	return true;
-
 }
 
 static __always_inline struct page *

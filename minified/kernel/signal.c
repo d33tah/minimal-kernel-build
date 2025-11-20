@@ -1373,69 +1373,10 @@ static int ptrace_stop(int exit_code, int why, unsigned long message,
 	__releases(&current->sighand->siglock)
 	__acquires(&current->sighand->siglock)
 {
-	bool gstop_done = false;
-
-	if (arch_ptrace_stop_needed()) {
-		
-		spin_unlock_irq(&current->sighand->siglock);
-		arch_ptrace_stop();
-		spin_lock_irq(&current->sighand->siglock);
-	}
-
-	
+	/* Stub: ptrace not needed for minimal boot */
 	if (!current->ptrace || __fatal_signal_pending(current))
 		return exit_code;
 
-	set_special_state(TASK_TRACED);
-	current->jobctl |= JOBCTL_TRACED;
-
-	
-	smp_wmb();
-
-	current->ptrace_message = message;
-	current->last_siginfo = info;
-	current->exit_code = exit_code;
-
-	
-	if (why == CLD_STOPPED && (current->jobctl & JOBCTL_STOP_PENDING))
-		gstop_done = task_participate_group_stop(current);
-
-	
-	task_clear_jobctl_pending(current, JOBCTL_TRAP_STOP);
-	if (info && info->si_code >> 8 == PTRACE_EVENT_STOP)
-		task_clear_jobctl_pending(current, JOBCTL_TRAP_NOTIFY);
-
-	
-	task_clear_jobctl_trapping(current);
-
-	spin_unlock_irq(&current->sighand->siglock);
-	read_lock(&tasklist_lock);
-	
-	if (current->ptrace)
-		do_notify_parent_cldstop(current, true, why);
-	if (gstop_done && (!current->ptrace || ptrace_reparented(current)))
-		do_notify_parent_cldstop(current, false, why);
-
-	
-	preempt_disable();
-	read_unlock(&tasklist_lock);
-	cgroup_enter_frozen();
-	preempt_enable_no_resched();
-	freezable_schedule();
-	cgroup_leave_frozen(true);
-
-	
-	spin_lock_irq(&current->sighand->siglock);
-	exit_code = current->exit_code;
-	current->last_siginfo = NULL;
-	current->ptrace_message = 0;
-	current->exit_code = 0;
-
-	
-	current->jobctl &= ~(JOBCTL_LISTENING | JOBCTL_PTRACE_FROZEN);
-
-	
-	recalc_sigpending_tsk(current);
 	return exit_code;
 }
 

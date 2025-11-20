@@ -1562,154 +1562,44 @@ static int __sched_setscheduler(struct task_struct *p,
 				const struct sched_attr *attr,
 				bool user, bool pi)
 {
-	int oldpolicy = -1, policy = attr->sched_policy;
+	/* Minimal stub: simplified scheduler parameter setting */
+	int policy = attr->sched_policy;
 	int retval, oldprio, newprio, queued, running;
 	const struct sched_class *prev_class;
 	struct callback_head *head;
 	struct rq_flags rf;
-	int reset_on_fork;
 	int queue_flags = DEQUEUE_SAVE | DEQUEUE_MOVE | DEQUEUE_NOCLOCK;
 	struct rq *rq;
 
-	
-	BUG_ON(pi && in_interrupt());
-recheck:
-	
-	if (policy < 0) {
-		reset_on_fork = p->sched_reset_on_fork;
-		policy = oldpolicy = p->policy;
-	} else {
-		reset_on_fork = !!(attr->sched_flags & SCHED_FLAG_RESET_ON_FORK);
-
-		if (!valid_policy(policy))
-			return -EINVAL;
-	}
-
-	if (attr->sched_flags & ~(SCHED_FLAG_ALL | SCHED_FLAG_SUGOV))
+	/* Basic validation only */
+	if (policy < 0)
+		policy = p->policy;
+	else if (!valid_policy(policy))
 		return -EINVAL;
 
-	
 	if (attr->sched_priority > MAX_RT_PRIO-1)
 		return -EINVAL;
-	if ((dl_policy(policy) && !__checkparam_dl(attr)) ||
-	    (rt_policy(policy) != (attr->sched_priority != 0)))
-		return -EINVAL;
 
-	
-	if (user && !capable(CAP_SYS_NICE)) {
-		if (fair_policy(policy)) {
-			if (attr->sched_nice < task_nice(p) &&
-			    !can_nice(p, attr->sched_nice))
-				return -EPERM;
-		}
+	/* Skip all permission checks for minimal kernel */
 
-		if (rt_policy(policy)) {
-			unsigned long rlim_rtprio =
-					task_rlimit(p, RLIMIT_RTPRIO);
-
-			
-			if (policy != p->policy && !rlim_rtprio)
-				return -EPERM;
-
-			
-			if (attr->sched_priority > p->rt_priority &&
-			    attr->sched_priority > rlim_rtprio)
-				return -EPERM;
-		}
-
-		 
-		if (dl_policy(policy))
-			return -EPERM;
-
-		
-		if (task_has_idle_policy(p) && !idle_policy(policy)) {
-			if (!can_nice(p, task_nice(p)))
-				return -EPERM;
-		}
-
-		
-		if (!check_same_owner(p))
-			return -EPERM;
-
-		
-		if (p->sched_reset_on_fork && !reset_on_fork)
-			return -EPERM;
-	}
-
-	if (user) {
-		if (attr->sched_flags & SCHED_FLAG_SUGOV)
-			return -EINVAL;
-
-		retval = security_task_setscheduler(p);
-		if (retval)
-			return retval;
-	}
-
-	
-	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP) {
-		retval = uclamp_validate(p, attr);
-		if (retval)
-			return retval;
-	}
-
-	if (pi)
-		cpuset_read_lock();
-
-	
 	rq = task_rq_lock(p, &rf);
 	update_rq_clock(rq);
 
-	
 	if (p == rq->stop) {
 		retval = -EINVAL;
 		goto unlock;
 	}
 
-	
-	if (unlikely(policy == p->policy)) {
-		if (fair_policy(policy) && attr->sched_nice != task_nice(p))
-			goto change;
-		if (rt_policy(policy) && attr->sched_priority != p->rt_priority)
-			goto change;
-		if (dl_policy(policy) && dl_param_changed(p, attr))
-			goto change;
-		if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP)
-			goto change;
-
-		p->sched_reset_on_fork = reset_on_fork;
+	/* Check if already set */
+	if (policy == p->policy &&
+	    (!fair_policy(policy) || attr->sched_nice == task_nice(p)) &&
+	    (!rt_policy(policy) || attr->sched_priority == p->rt_priority)) {
 		retval = 0;
 		goto unlock;
 	}
-change:
 
-	if (user) {
-	}
-
-	
-	if (unlikely(oldpolicy != -1 && oldpolicy != p->policy)) {
-		policy = oldpolicy = -1;
-		task_rq_unlock(rq, p, &rf);
-		if (pi)
-			cpuset_read_unlock();
-		goto recheck;
-	}
-
-	
-	if ((dl_policy(policy) || dl_task(p)) && sched_dl_overflow(p, policy, attr)) {
-		retval = -EBUSY;
-		goto unlock;
-	}
-
-	p->sched_reset_on_fork = reset_on_fork;
 	oldprio = p->prio;
-
 	newprio = __normal_prio(policy, attr->sched_priority, attr->sched_nice);
-	if (pi) {
-		
-		newprio = rt_effective_prio(p, newprio);
-		if (newprio == oldprio)
-			queue_flags &= ~DEQUEUE_MOVE;
-	}
 
 	queued = task_on_rq_queued(p);
 	running = task_current(rq, p);
@@ -1727,10 +1617,8 @@ change:
 	__setscheduler_uclamp(p, attr);
 
 	if (queued) {
-		
 		if (oldprio < p->prio)
 			queue_flags |= ENQUEUE_HEAD;
-
 		enqueue_task(rq, p, queue_flags);
 	}
 	if (running)
@@ -1738,17 +1626,10 @@ change:
 
 	check_class_changed(rq, p, prev_class, oldprio);
 
-	
 	preempt_disable();
 	head = splice_balance_callbacks(rq);
 	task_rq_unlock(rq, p, &rf);
 
-	if (pi) {
-		cpuset_read_unlock();
-		rt_mutex_adjust_pi(p);
-	}
-
-	
 	balance_callbacks(rq, head);
 	preempt_enable();
 
@@ -1756,8 +1637,6 @@ change:
 
 unlock:
 	task_rq_unlock(rq, p, &rf);
-	if (pi)
-		cpuset_read_unlock();
 	return retval;
 }
 

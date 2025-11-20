@@ -1428,44 +1428,8 @@ static const struct kset_uevent_ops device_uevent_ops = {
 static ssize_t uevent_show(struct device *dev, struct device_attribute *attr,
 			   char *buf)
 {
-	struct kobject *top_kobj;
-	struct kset *kset;
-	struct kobj_uevent_env *env = NULL;
-	int i;
-	int len = 0;
-	int retval;
-
-	
-	top_kobj = &dev->kobj;
-	while (!top_kobj->kset && top_kobj->parent)
-		top_kobj = top_kobj->parent;
-	if (!top_kobj->kset)
-		goto out;
-
-	kset = top_kobj->kset;
-	if (!kset->uevent_ops || !kset->uevent_ops->uevent)
-		goto out;
-
-	
-	if (kset->uevent_ops && kset->uevent_ops->filter)
-		if (!kset->uevent_ops->filter(&dev->kobj))
-			goto out;
-
-	env = kzalloc(sizeof(struct kobj_uevent_env), GFP_KERNEL);
-	if (!env)
-		return -ENOMEM;
-
-	
-	retval = kset->uevent_ops->uevent(&dev->kobj, env);
-	if (retval)
-		goto out;
-
-	
-	for (i = 0; i < env->envp_idx; i++)
-		len += sysfs_emit_at(buf, len, "%s\n", env->envp[i]);
-out:
-	kfree(env);
-	return len;
+	/* Stub: sysfs uevent display not needed for minimal kernel */
+	return 0;
 }
 
 static ssize_t uevent_store(struct device *dev, struct device_attribute *attr,

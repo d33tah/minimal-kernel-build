@@ -442,31 +442,11 @@ static void restore_exclusive_pte(struct vm_area_struct *vma,
 				  struct page *page, unsigned long address,
 				  pte_t *ptep)
 {
-	pte_t pte;
-	swp_entry_t entry;
-
-	pte = pte_mkold(mk_pte(page, READ_ONCE(vma->vm_page_prot)));
-	if (pte_swp_soft_dirty(*ptep))
-		pte = pte_mksoft_dirty(pte);
-
-	entry = pte_to_swp_entry(*ptep);
-	if (pte_swp_uffd_wp(*ptep))
-		pte = pte_mkuffd_wp(pte);
-	else if (is_writable_device_exclusive_entry(entry))
-		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
-
-	VM_BUG_ON(pte_write(pte) && !(PageAnon(page) && PageAnonExclusive(page)));
-
-	
+	/* Stub: device exclusivity not needed for minimal system */
+	pte_t pte = mk_pte(page, READ_ONCE(vma->vm_page_prot));
 	if (PageAnon(page))
 		page_add_anon_rmap(page, vma, address, RMAP_NONE);
-	else
-		
-		WARN_ON_ONCE(!PageAnon(page));
-
 	set_pte_at(vma->vm_mm, address, ptep, pte);
-
-	
 	update_mmu_cache(vma, address, ptep);
 }
 
@@ -474,15 +454,7 @@ static int
 try_restore_exclusive_pte(pte_t *src_pte, struct vm_area_struct *vma,
 			unsigned long addr)
 {
-	swp_entry_t entry = pte_to_swp_entry(*src_pte);
-	struct page *page = pfn_swap_entry_to_page(entry);
-
-	if (trylock_page(page)) {
-		restore_exclusive_pte(vma, page, addr, src_pte);
-		unlock_page(page);
-		return 0;
-	}
-
+	/* Stub: simplified device exclusivity handling */
 	return -EBUSY;
 }
 

@@ -580,183 +580,45 @@ static DEVICE_ATTR_RO(waiting_for_supplier);
 
 void device_links_force_bind(struct device *dev)
 {
-	struct device_link *link, *ln;
-
-	device_links_write_lock();
-
-	list_for_each_entry_safe(link, ln, &dev->links.suppliers, c_node) {
-		if (!(link->flags & DL_FLAG_MANAGED))
-			continue;
-
-		if (link->status != DL_STATE_AVAILABLE) {
-			device_link_drop_managed(link);
-			continue;
-		}
-		WRITE_ONCE(link->status, DL_STATE_CONSUMER_PROBE);
-	}
-	dev->links.status = DL_DEV_PROBING;
-
-	device_links_write_unlock();
+	/* Minimal stub */
+	(void)dev;
 }
 
 void device_links_driver_bound(struct device *dev)
 {
-	struct device_link *link;
-
-	device_links_write_lock();
-
-	list_for_each_entry(link, &dev->links.consumers, s_node) {
-		if ((link->flags & DL_FLAG_MANAGED) && link->status == DL_STATE_DORMANT)
-			WRITE_ONCE(link->status, DL_STATE_AVAILABLE);
-	}
-
-	list_for_each_entry(link, &dev->links.suppliers, c_node) {
-		if ((link->flags & DL_FLAG_MANAGED) && !(link->flags & DL_FLAG_SYNC_STATE_ONLY))
-			WRITE_ONCE(link->status, DL_STATE_ACTIVE);
-	}
-
-	dev->links.status = DL_DEV_DRIVER_BOUND;
-	device_links_write_unlock();
+	/* Minimal stub */
+	(void)dev;
 }
 
 static void __device_links_no_driver(struct device *dev)
 {
-	struct device_link *link, *ln;
-
-	list_for_each_entry_safe_reverse(link, ln, &dev->links.suppliers, c_node) {
-		if (!(link->flags & DL_FLAG_MANAGED))
-			continue;
-
-		if (link->flags & DL_FLAG_AUTOREMOVE_CONSUMER) {
-			device_link_drop_managed(link);
-			continue;
-		}
-
-		if (link->status != DL_STATE_CONSUMER_PROBE &&
-		    link->status != DL_STATE_ACTIVE)
-			continue;
-
-		if (link->supplier->links.status == DL_DEV_DRIVER_BOUND) {
-			WRITE_ONCE(link->status, DL_STATE_AVAILABLE);
-		} else {
-			WARN_ON(!(link->flags & DL_FLAG_SYNC_STATE_ONLY));
-			WRITE_ONCE(link->status, DL_STATE_DORMANT);
-		}
-	}
-
-	dev->links.status = DL_DEV_NO_DRIVER;
+	/* Minimal stub */
+	(void)dev;
 }
 
 void device_links_no_driver(struct device *dev)
 {
-	struct device_link *link;
-
-	device_links_write_lock();
-
-	list_for_each_entry(link, &dev->links.consumers, s_node) {
-		if (!(link->flags & DL_FLAG_MANAGED))
-			continue;
-
-		
-		if (link->status == DL_STATE_CONSUMER_PROBE ||
-		    link->status == DL_STATE_ACTIVE)
-			WRITE_ONCE(link->status, DL_STATE_DORMANT);
-	}
-
-	__device_links_no_driver(dev);
-
-	device_links_write_unlock();
+	/* Minimal stub */
+	(void)dev;
 }
 
 void device_links_driver_cleanup(struct device *dev)
 {
-	struct device_link *link, *ln;
-
-	device_links_write_lock();
-
-	list_for_each_entry_safe(link, ln, &dev->links.consumers, s_node) {
-		if (!(link->flags & DL_FLAG_MANAGED))
-			continue;
-
-		WARN_ON(link->flags & DL_FLAG_AUTOREMOVE_CONSUMER);
-		WARN_ON(link->status != DL_STATE_SUPPLIER_UNBIND);
-
-		
-		if (link->status == DL_STATE_SUPPLIER_UNBIND &&
-		    link->flags & DL_FLAG_AUTOREMOVE_SUPPLIER)
-			device_link_drop_managed(link);
-
-		WRITE_ONCE(link->status, DL_STATE_DORMANT);
-	}
-
-	list_del_init(&dev->links.defer_sync);
-	__device_links_no_driver(dev);
-
-	device_links_write_unlock();
+	/* Minimal stub */
+	(void)dev;
 }
 
 bool device_links_busy(struct device *dev)
 {
-	struct device_link *link;
-	bool ret = false;
-
-	device_links_write_lock();
-
-	list_for_each_entry(link, &dev->links.consumers, s_node) {
-		if (!(link->flags & DL_FLAG_MANAGED))
-			continue;
-
-		if (link->status == DL_STATE_CONSUMER_PROBE
-		    || link->status == DL_STATE_ACTIVE) {
-			ret = true;
-			break;
-		}
-		WRITE_ONCE(link->status, DL_STATE_SUPPLIER_UNBIND);
-	}
-
-	dev->links.status = DL_DEV_UNBINDING;
-
-	device_links_write_unlock();
-	return ret;
+	/* Minimal stub: never busy */
+	(void)dev;
+	return false;
 }
 
 void device_links_unbind_consumers(struct device *dev)
 {
-	struct device_link *link;
-
- start:
-	device_links_write_lock();
-
-	list_for_each_entry(link, &dev->links.consumers, s_node) {
-		enum device_link_state status;
-
-		if (!(link->flags & DL_FLAG_MANAGED) ||
-		    link->flags & DL_FLAG_SYNC_STATE_ONLY)
-			continue;
-
-		status = link->status;
-		if (status == DL_STATE_CONSUMER_PROBE) {
-			device_links_write_unlock();
-
-			wait_for_device_probe();
-			goto start;
-		}
-		WRITE_ONCE(link->status, DL_STATE_SUPPLIER_UNBIND);
-		if (status == DL_STATE_ACTIVE) {
-			struct device *consumer = link->consumer;
-
-			get_device(consumer);
-
-			device_links_write_unlock();
-
-			device_release_driver_internal(consumer, NULL,
-						       consumer->parent);
-			put_device(consumer);
-			goto start;
-		}
-	}
-
-	device_links_write_unlock();
+	/* Minimal stub */
+	(void)dev;
 }
 
 static void device_links_purge(struct device *dev)

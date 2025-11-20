@@ -582,8 +582,7 @@ static const char *page_bad_reason(struct page *page, unsigned long flags)
 
 static void check_free_page_bad(struct page *page)
 {
-	bad_page(page,
-		 page_bad_reason(page, PAGE_FLAGS_CHECK_AT_FREE));
+	/* Stub: page validation not needed for minimal kernel */
 }
 
 static inline int check_free_page(struct page *page)
@@ -931,14 +930,10 @@ static inline void expand(struct zone *zone, struct page *page,
 
 static void check_new_page_bad(struct page *page)
 {
+	/* Stub: page validation not needed for minimal kernel */
 	if (unlikely(page->flags & __PG_HWPOISON)) {
-		
-		page_mapcount_reset(page); 
-		return;
+		page_mapcount_reset(page);
 	}
-
-	bad_page(page,
-		 page_bad_reason(page, PAGE_FLAGS_CHECK_AT_PREP));
 }
 
 static inline int check_new_page(struct page *page)

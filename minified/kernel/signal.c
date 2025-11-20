@@ -539,33 +539,14 @@ static bool kill_ok_by_cred(struct task_struct *t)
 static int check_kill_permission(int sig, struct kernel_siginfo *info,
 				 struct task_struct *t)
 {
-	struct pid *sid;
-	int error;
-
+	/* Minimal stub: simplified signal permission checking */
 	if (!valid_signal(sig))
 		return -EINVAL;
 
 	if (!si_fromuser(info))
 		return 0;
 
-	error = audit_signal_info(sig, t); 
-	if (error)
-		return error;
-
-	if (!same_thread_group(current, t) &&
-	    !kill_ok_by_cred(t)) {
-		switch (sig) {
-		case SIGCONT:
-			sid = task_session(t);
-			
-			if (!sid || sid == task_session(current))
-				break;
-			fallthrough;
-		default:
-			return -EPERM;
-		}
-	}
-
+	/* Skip session/cred checks for minimal kernel */
 	return security_task_kill(t, info, sig, NULL);
 }
 
@@ -676,36 +657,14 @@ static inline bool has_si_pid_and_uid(struct kernel_siginfo *info)
 int send_signal_locked(int sig, struct kernel_siginfo *info,
 		       struct task_struct *t, enum pid_type type)
 {
-	
+	/* Minimal stub: simplified signal permission handling */
 	bool force = false;
 
-	if (info == SEND_SIG_NOINFO) {
-		
-		force = !task_pid_nr_ns(current, task_active_pid_ns(t));
-	} else if (info == SEND_SIG_PRIV) {
-		
+	if (info == SEND_SIG_PRIV)
 		force = true;
-	} else if (has_si_pid_and_uid(info)) {
-		
-		struct user_namespace *t_user_ns;
+	else if (info != SEND_SIG_NOINFO && info->si_code == SI_KERNEL)
+		force = true;
 
-		rcu_read_lock();
-		t_user_ns = task_cred_xxx(t, user_ns);
-		if (current_user_ns() != t_user_ns) {
-			kuid_t uid = make_kuid(current_user_ns(), info->si_uid);
-			info->si_uid = from_kuid_munged(t_user_ns, uid);
-		}
-		rcu_read_unlock();
-
-		
-		force = (info->si_code == SI_KERNEL);
-
-		
-		if (!task_pid_nr_ns(current, task_active_pid_ns(t))) {
-			info->si_pid = 0;
-			force = true;
-		}
-	}
 	return __send_signal_locked(sig, info, t, type, force);
 }
 

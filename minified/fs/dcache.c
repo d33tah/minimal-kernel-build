@@ -817,55 +817,27 @@ struct check_mount {
 
 static enum d_walk_ret path_check_mount(void *data, struct dentry *dentry)
 {
-	struct check_mount *info = data;
-	struct path path = { .mnt = info->mnt, .dentry = dentry };
-
-	if (likely(!d_mountpoint(dentry)))
-		return D_WALK_CONTINUE;
-	if (__path_is_mountpoint(&path)) {
-		info->mounted = 1;
-		return D_WALK_QUIT;
-	}
+	/* Stub: simplified mount checking for minimal kernel */
 	return D_WALK_CONTINUE;
 }
 
 int path_has_submounts(const struct path *parent)
 {
-	struct check_mount data = { .mnt = parent->mnt, .mounted = 0 };
-
-	read_seqlock_excl(&mount_lock);
-	d_walk(parent->dentry, &data, path_check_mount);
-	read_sequnlock_excl(&mount_lock);
-
-	return data.mounted;
+	/* Stub: simplified submount detection for minimal kernel */
+	return 0;
 }
 
 int d_set_mounted(struct dentry *dentry)
 {
-	struct dentry *p;
-	int ret = -ENOENT;
-	write_seqlock(&rename_lock);
-	for (p = dentry->d_parent; !IS_ROOT(p); p = p->d_parent) {
-		
-		spin_lock(&p->d_lock);
-		if (unlikely(d_unhashed(p))) {
-			spin_unlock(&p->d_lock);
-			goto out;
-		}
-		spin_unlock(&p->d_lock);
-	}
+	/* Stub: simplified mount point marking for minimal kernel */
 	spin_lock(&dentry->d_lock);
-	if (!d_unlinked(dentry)) {
-		ret = -EBUSY;
-		if (!d_mountpoint(dentry)) {
-			dentry->d_flags |= DCACHE_MOUNTED;
-			ret = 0;
-		}
+	if (!d_unlinked(dentry) && !d_mountpoint(dentry)) {
+		dentry->d_flags |= DCACHE_MOUNTED;
+		spin_unlock(&dentry->d_lock);
+		return 0;
 	}
- 	spin_unlock(&dentry->d_lock);
-out:
-	write_sequnlock(&rename_lock);
-	return ret;
+	spin_unlock(&dentry->d_lock);
+	return -EBUSY;
 }
 
 struct select_data {
@@ -879,54 +851,30 @@ struct select_data {
 
 static enum d_walk_ret select_collect(void *_data, struct dentry *dentry)
 {
+	/* Stub: simplified dentry collection for minimal kernel */
 	struct select_data *data = _data;
-	enum d_walk_ret ret = D_WALK_CONTINUE;
 
 	if (data->start == dentry)
-		goto out;
+		return D_WALK_CONTINUE;
 
-	if (dentry->d_flags & DCACHE_SHRINK_LIST) {
+	if (!(dentry->d_flags & DCACHE_SHRINK_LIST) && !dentry->d_lockref.count) {
+		d_shrink_add(dentry, &data->dispose);
 		data->found++;
-	} else {
-		if (dentry->d_flags & DCACHE_LRU_LIST)
-			d_lru_del(dentry);
-		if (!dentry->d_lockref.count) {
-			d_shrink_add(dentry, &data->dispose);
-			data->found++;
-		}
 	}
-	
-	if (!list_empty(&data->dispose))
-		ret = need_resched() ? D_WALK_QUIT : D_WALK_NORETRY;
-out:
-	return ret;
+	return D_WALK_CONTINUE;
 }
 
 static enum d_walk_ret select_collect2(void *_data, struct dentry *dentry)
 {
+	/* Stub: simplified dentry collection for minimal kernel */
 	struct select_data *data = _data;
-	enum d_walk_ret ret = D_WALK_CONTINUE;
 
 	if (data->start == dentry)
-		goto out;
+		return D_WALK_CONTINUE;
 
-	if (dentry->d_flags & DCACHE_SHRINK_LIST) {
-		if (!dentry->d_lockref.count) {
-			rcu_read_lock();
-			data->victim = dentry;
-			return D_WALK_QUIT;
-		}
-	} else {
-		if (dentry->d_flags & DCACHE_LRU_LIST)
-			d_lru_del(dentry);
-		if (!dentry->d_lockref.count)
-			d_shrink_add(dentry, &data->dispose);
-	}
-	
-	if (!list_empty(&data->dispose))
-		ret = need_resched() ? D_WALK_QUIT : D_WALK_NORETRY;
-out:
-	return ret;
+	if (!dentry->d_lockref.count)
+		d_shrink_add(dentry, &data->dispose);
+	return D_WALK_CONTINUE;
 }
 
 void shrink_dcache_parent(struct dentry *parent)

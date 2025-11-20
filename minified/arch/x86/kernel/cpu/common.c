@@ -225,7 +225,6 @@ static int __init x86_noinvpcid_setup(char *s)
 early_param("noinvpcid", x86_noinvpcid_setup);
 
 static int cachesize_override = -1;
-static int disable_x86_serial_nr = 1;
 
 static int __init cachesize_setup(char *str)
 {
@@ -264,13 +263,6 @@ static void squash_the_stupid_serial_number(struct cpuinfo_x86 *c)
 {
 	/* Stub: CPU serial number feature not relevant for minimal kernel */
 }
-
-static int __init x86_serial_nr_setup(char *s)
-{
-	disable_x86_serial_nr = 0;
-	return 1;
-}
-__setup("serialnumber", x86_serial_nr_setup);
 
 static __always_inline void setup_smep(struct cpuinfo_x86 *c)
 {

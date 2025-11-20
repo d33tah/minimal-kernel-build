@@ -1065,32 +1065,7 @@ static void default_attr(struct vc_data *vc)
 	vc->state.color = vc->vc_def_color;
 }
 
-struct rgb { u8 r; u8 g; u8 b; };
-
-static void rgb_from_256(int i, struct rgb *c)
-{
-	/* Stub: use simple 16-color mapping */
-	c->r = i & 1 ? 0xaa : 0x00;
-	c->g = i & 2 ? 0xaa : 0x00;
-	c->b = i & 4 ? 0xaa : 0x00;
-}
-
-static void rgb_foreground(struct vc_data *vc, const struct rgb *c)
-{
-	/* Stub: minimal color support */
-	u8 hue = (c->r & 0x80 ? 4 : 0) | (c->g & 0x80 ? 2 : 0) | (c->b & 0x80 ? 1 : 0);
-	vc->state.color = (vc->state.color & 0xf0) | hue;
-}
-
-static void rgb_background(struct vc_data *vc, const struct rgb *c)
-{
-	/* Stub: minimal color support */
-	vc->state.color = (vc->state.color & 0x0f)
-		| (c->r & 0x80) >> 1 | (c->g & 0x80) >> 2 | (c->b & 0x80) >> 3;
-}
-
-static int vc_t416_color(struct vc_data *vc, int i,
-		void(*set_color)(struct vc_data *vc, const struct rgb *c))
+static int vc_t416_color(struct vc_data *vc, int i, void *unused)
 {
 	/* Stub: 256/RGB color not needed for minimal system */
 	return i + 1;

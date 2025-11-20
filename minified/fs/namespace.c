@@ -341,35 +341,11 @@ static int mnt_make_readonly(struct mount *mnt)
 
 int sb_prepare_remount_readonly(struct super_block *sb)
 {
-	struct mount *mnt;
-	int err = 0;
-
-	
+	/* Stub: minimal remount handling for simple system */
 	if (atomic_long_read(&sb->s_remove_count))
 		return -EBUSY;
-
-	lock_mount_hash();
-	list_for_each_entry(mnt, &sb->s_mounts, mnt_instance) {
-		if (!(mnt->mnt.mnt_flags & MNT_READONLY)) {
-			err = mnt_hold_writers(mnt);
-			if (err)
-				break;
-		}
-	}
-	if (!err && atomic_long_read(&sb->s_remove_count))
-		err = -EBUSY;
-
-	if (!err) {
-		sb->s_readonly_remount = 1;
-		smp_wmb();
-	}
-	list_for_each_entry(mnt, &sb->s_mounts, mnt_instance) {
-		if (mnt->mnt.mnt_flags & MNT_WRITE_HOLD)
-			mnt->mnt.mnt_flags &= ~MNT_WRITE_HOLD;
-	}
-	unlock_mount_hash();
-
-	return err;
+	sb->s_readonly_remount = 1;
+	return 0;
 }
 
 static void free_vfsmnt(struct mount *mnt)

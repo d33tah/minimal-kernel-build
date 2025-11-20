@@ -1761,42 +1761,18 @@ static bool known_siginfo_layout(unsigned sig, int si_code)
 
 enum siginfo_layout siginfo_layout(unsigned sig, int si_code)
 {
-	enum siginfo_layout layout = SIL_KILL;
-	if ((si_code > SI_USER) && (si_code < SI_KERNEL)) {
-		if ((sig < ARRAY_SIZE(sig_sicodes)) &&
-		    (si_code <= sig_sicodes[sig].limit)) {
-			layout = sig_sicodes[sig].layout;
-			
-			if ((sig == SIGBUS) &&
-			    (si_code >= BUS_MCEERR_AR) && (si_code <= BUS_MCEERR_AO))
-				layout = SIL_FAULT_MCEERR;
-			else if ((sig == SIGSEGV) && (si_code == SEGV_BNDERR))
-				layout = SIL_FAULT_BNDERR;
-#ifdef SEGV_PKUERR
-			else if ((sig == SIGSEGV) && (si_code == SEGV_PKUERR))
-				layout = SIL_FAULT_PKUERR;
-#endif
-			else if ((sig == SIGTRAP) && (si_code == TRAP_PERF))
-				layout = SIL_FAULT_PERF_EVENT;
-			else if (IS_ENABLED(CONFIG_SPARC) &&
-				 (sig == SIGILL) && (si_code == ILL_ILLTRP))
-				layout = SIL_FAULT_TRAPNO;
-			else if (IS_ENABLED(CONFIG_ALPHA) &&
-				 ((sig == SIGFPE) ||
-				  ((sig == SIGTRAP) && (si_code == TRAP_UNK))))
-				layout = SIL_FAULT_TRAPNO;
-		}
-		else if (si_code <= NSIGPOLL)
-			layout = SIL_POLL;
-	} else {
-		if (si_code == SI_TIMER)
-			layout = SIL_TIMER;
-		else if (si_code == SI_SIGIO)
-			layout = SIL_POLL;
-		else if (si_code < 0)
-			layout = SIL_RT;
-	}
-	return layout;
+	/* Simplified layout determination for minimal system */
+	if (si_code == SI_TIMER)
+		return SIL_TIMER;
+	else if (si_code == SI_SIGIO || si_code <= NSIGPOLL)
+		return SIL_POLL;
+	else if (si_code < 0)
+		return SIL_RT;
+	else if ((si_code > SI_USER) && (si_code < SI_KERNEL) &&
+		 (sig < ARRAY_SIZE(sig_sicodes)) &&
+		 (si_code <= sig_sicodes[sig].limit))
+		return sig_sicodes[sig].layout;
+	return SIL_KILL;
 }
 
 static inline char __user *si_expansion(const siginfo_t __user *info)

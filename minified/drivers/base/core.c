@@ -264,69 +264,32 @@ void device_pm_move_to_tail(struct device *dev)
 static ssize_t status_show(struct device *dev,
 			   struct device_attribute *attr, char *buf)
 {
-	const char *output;
-
-	switch (to_devlink(dev)->status) {
-	case DL_STATE_NONE:
-		output = "not tracked";
-		break;
-	case DL_STATE_DORMANT:
-		output = "dormant";
-		break;
-	case DL_STATE_AVAILABLE:
-		output = "available";
-		break;
-	case DL_STATE_CONSUMER_PROBE:
-		output = "consumer probing";
-		break;
-	case DL_STATE_ACTIVE:
-		output = "active";
-		break;
-	case DL_STATE_SUPPLIER_UNBIND:
-		output = "supplier unbinding";
-		break;
-	default:
-		output = "unknown";
-		break;
-	}
-
-	return sysfs_emit(buf, "%s\n", output);
+	/* Stub: device link status not needed for minimal kernel */
+	return sysfs_emit(buf, "unknown\n");
 }
 static DEVICE_ATTR_RO(status);
 
 static ssize_t auto_remove_on_show(struct device *dev,
 				   struct device_attribute *attr, char *buf)
 {
-	struct device_link *link = to_devlink(dev);
-	const char *output;
-
-	if (link->flags & DL_FLAG_AUTOREMOVE_SUPPLIER)
-		output = "supplier unbind";
-	else if (link->flags & DL_FLAG_AUTOREMOVE_CONSUMER)
-		output = "consumer unbind";
-	else
-		output = "never";
-
-	return sysfs_emit(buf, "%s\n", output);
+	/* Stub: device link auto-remove status not needed for minimal kernel */
+	return sysfs_emit(buf, "never\n");
 }
 static DEVICE_ATTR_RO(auto_remove_on);
 
 static ssize_t runtime_pm_show(struct device *dev,
 			       struct device_attribute *attr, char *buf)
 {
-	struct device_link *link = to_devlink(dev);
-
-	return sysfs_emit(buf, "%d\n", !!(link->flags & DL_FLAG_PM_RUNTIME));
+	/* Stub: device link runtime PM status not needed for minimal kernel */
+	return sysfs_emit(buf, "0\n");
 }
 static DEVICE_ATTR_RO(runtime_pm);
 
 static ssize_t sync_state_only_show(struct device *dev,
 				    struct device_attribute *attr, char *buf)
 {
-	struct device_link *link = to_devlink(dev);
-
-	return sysfs_emit(buf, "%d\n",
-			  !!(link->flags & DL_FLAG_SYNC_STATE_ONLY));
+	/* Stub: device link sync state status not needed for minimal kernel */
+	return sysfs_emit(buf, "0\n");
 }
 static DEVICE_ATTR_RO(sync_state_only);
 

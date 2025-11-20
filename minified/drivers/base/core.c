@@ -162,89 +162,27 @@ static bool device_is_ancestor(struct device *dev, struct device *target)
 
 int device_is_dependent(struct device *dev, void *target)
 {
-	struct device_link *link;
-	int ret;
-
-	
-	if (dev == target || device_is_ancestor(dev, target))
-		return 1;
-
-	ret = device_for_each_child(dev, target, device_is_dependent);
-	if (ret)
-		return ret;
-
-	list_for_each_entry(link, &dev->links.consumers, s_node) {
-		if ((link->flags & ~DL_FLAG_INFERRED) ==
-		    (DL_FLAG_SYNC_STATE_ONLY | DL_FLAG_MANAGED))
-			continue;
-
-		if (link->consumer == target)
-			return 1;
-
-		ret = device_is_dependent(link->consumer, target);
-		if (ret)
-			break;
-	}
-	return ret;
+	/* Minimal stub: no dependency tracking */
+	(void)dev;
+	(void)target;
+	return 0;
 }
 
 static void device_link_init_status(struct device_link *link,
 				    struct device *consumer,
 				    struct device *supplier)
 {
-	switch (supplier->links.status) {
-	case DL_DEV_PROBING:
-		switch (consumer->links.status) {
-		case DL_DEV_PROBING:
-			
-			link->status = DL_STATE_CONSUMER_PROBE;
-			break;
-		default:
-			link->status = DL_STATE_DORMANT;
-			break;
-		}
-		break;
-	case DL_DEV_DRIVER_BOUND:
-		switch (consumer->links.status) {
-		case DL_DEV_PROBING:
-			link->status = DL_STATE_CONSUMER_PROBE;
-			break;
-		case DL_DEV_DRIVER_BOUND:
-			link->status = DL_STATE_ACTIVE;
-			break;
-		default:
-			link->status = DL_STATE_AVAILABLE;
-			break;
-		}
-		break;
-	case DL_DEV_UNBINDING:
-		link->status = DL_STATE_SUPPLIER_UNBIND;
-		break;
-	default:
-		link->status = DL_STATE_DORMANT;
-		break;
-	}
+	/* Minimal stub */
+	(void)consumer;
+	(void)supplier;
+	link->status = DL_STATE_DORMANT;
 }
 
 static int device_reorder_to_tail(struct device *dev, void *not_used)
 {
-	struct device_link *link;
-
-	
-	if (device_is_registered(dev))
-		devices_kset_move_last(dev);
-
-	if (device_pm_initialized(dev))
-		device_pm_move_last(dev);
-
-	device_for_each_child(dev, NULL, device_reorder_to_tail);
-	list_for_each_entry(link, &dev->links.consumers, s_node) {
-		if ((link->flags & ~DL_FLAG_INFERRED) ==
-		    (DL_FLAG_SYNC_STATE_ONLY | DL_FLAG_MANAGED))
-			continue;
-		device_reorder_to_tail(link->consumer, NULL);
-	}
-
+	/* Minimal stub */
+	(void)dev;
+	(void)not_used;
 	return 0;
 }
 

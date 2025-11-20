@@ -1434,7 +1434,6 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	int error;
 	const char *s = nd->name->name;
 
-	
 	if ((flags & (LOOKUP_RCU | LOOKUP_CACHED)) == LOOKUP_CACHED)
 		return ERR_PTR(-EAGAIN);
 
@@ -1451,24 +1450,18 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	smp_rmb();
 
 	if (nd->state & ND_ROOT_PRESET) {
-		struct dentry *root = nd->root.dentry;
-		struct inode *inode = root->d_inode;
-		if (*s && unlikely(!d_can_lookup(root)))
+		if (*s && unlikely(!d_can_lookup(nd->root.dentry)))
 			return ERR_PTR(-ENOTDIR);
 		nd->path = nd->root;
-		nd->inode = inode;
-		if (flags & LOOKUP_RCU) {
-			nd->seq = read_seqcount_begin(&nd->path.dentry->d_seq);
-			nd->root_seq = nd->seq;
-		} else {
+		nd->inode = nd->root.dentry->d_inode;
+		if (!(flags & LOOKUP_RCU))
 			path_get(&nd->path);
-		}
 		return s;
 	}
 
 	nd->root.mnt = NULL;
 
-	
+	/* Simplified: handle absolute/relative paths without seqcount retries */
 	if (*s == '/' && !(flags & LOOKUP_IN_ROOT)) {
 		error = nd_jump_root(nd);
 		if (unlikely(error))
@@ -1476,57 +1469,29 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 		return s;
 	}
 
-	
 	if (nd->dfd == AT_FDCWD) {
-		if (flags & LOOKUP_RCU) {
-			struct fs_struct *fs = current->fs;
-			unsigned seq;
-
-			do {
-				seq = read_seqcount_begin(&fs->seq);
-				nd->path = fs->pwd;
-				nd->inode = nd->path.dentry->d_inode;
-				nd->seq = __read_seqcount_begin(&nd->path.dentry->d_seq);
-			} while (read_seqcount_retry(&fs->seq, seq));
-		} else {
-			get_fs_pwd(current->fs, &nd->path);
-			nd->inode = nd->path.dentry->d_inode;
-		}
+		get_fs_pwd(current->fs, &nd->path);
+		nd->inode = nd->path.dentry->d_inode;
 	} else {
-		
 		struct fd f = fdget_raw(nd->dfd);
-		struct dentry *dentry;
-
 		if (!f.file)
 			return ERR_PTR(-EBADF);
 
-		dentry = f.file->f_path.dentry;
-
-		if (*s && unlikely(!d_can_lookup(dentry))) {
+		if (*s && unlikely(!d_can_lookup(f.file->f_path.dentry))) {
 			fdput(f);
 			return ERR_PTR(-ENOTDIR);
 		}
 
 		nd->path = f.file->f_path;
-		if (flags & LOOKUP_RCU) {
-			nd->inode = nd->path.dentry->d_inode;
-			nd->seq = read_seqcount_begin(&nd->path.dentry->d_seq);
-		} else {
-			path_get(&nd->path);
-			nd->inode = nd->path.dentry->d_inode;
-		}
+		path_get(&nd->path);
+		nd->inode = nd->path.dentry->d_inode;
 		fdput(f);
 	}
 
-	
 	if (flags & LOOKUP_IS_SCOPED) {
 		nd->root = nd->path;
-		if (flags & LOOKUP_RCU) {
-			nd->root_seq = nd->seq;
-		} else {
-			path_get(&nd->root);
-			nd->state |= ND_ROOT_GRABBED;
-		}
+		path_get(&nd->root);
+		nd->state |= ND_ROOT_GRABBED;
 	}
 	return s;
 }
@@ -2108,12 +2073,13 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 				  const struct open_flags *op,
 				  bool got_write)
 {
+	/* Simplified: basic lookup with minimal revalidation */
 	struct user_namespace *mnt_userns;
 	struct dentry *dir = nd->path.dentry;
 	struct inode *dir_inode = dir->d_inode;
 	int open_flag = op->open_flag;
 	struct dentry *dentry;
-	int error, create_error = 0;
+	int error;
 	umode_t mode = op->mode;
 	DECLARE_WAIT_QUEUE_HEAD_ONSTACK(wq);
 
@@ -2122,90 +2088,51 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 
 	file->f_mode &= ~FMODE_CREATED;
 	dentry = d_lookup(dir, &nd->last);
-	for (;;) {
-		if (!dentry) {
-			dentry = d_alloc_parallel(dir, &nd->last, &wq);
-			if (IS_ERR(dentry))
-				return dentry;
-		}
-		if (d_in_lookup(dentry))
-			break;
-
-		error = d_revalidate(dentry, nd->flags);
-		if (likely(error > 0))
-			break;
-		if (error)
-			goto out_dput;
-		d_invalidate(dentry);
-		dput(dentry);
-		dentry = NULL;
+	if (!dentry) {
+		dentry = d_alloc_parallel(dir, &nd->last, &wq);
+		if (IS_ERR(dentry))
+			return dentry;
 	}
-	if (dentry->d_inode) {
-		
+
+	if (dentry->d_inode)
 		return dentry;
-	}
 
-	
-	if (unlikely(!got_write))
-		open_flag &= ~O_TRUNC;
+	/* Simplified creation logic */
 	mnt_userns = mnt_user_ns(nd->path.mnt);
 	if (open_flag & O_CREAT) {
-		if (open_flag & O_EXCL)
-			open_flag &= ~O_TRUNC;
 		if (!IS_POSIXACL(dir->d_inode))
 			mode &= ~current_umask();
-		if (likely(got_write))
-			create_error = may_o_create(mnt_userns, &nd->path,
-						    dentry, mode);
-		else
-			create_error = -EROFS;
-	}
-	if (create_error)
-		open_flag &= ~O_CREAT;
-	if (dir_inode->i_op->atomic_open) {
-		dentry = atomic_open(nd, dentry, file, open_flag, mode);
-		if (unlikely(create_error) && dentry == ERR_PTR(-ENOENT))
-			dentry = ERR_PTR(create_error);
-		return dentry;
-	}
 
-	if (d_in_lookup(dentry)) {
-		struct dentry *res = dir_inode->i_op->lookup(dir_inode, dentry,
-							     nd->flags);
-		d_lookup_done(dentry);
-		if (unlikely(res)) {
+		if (dir_inode->i_op->atomic_open) {
+			dentry = atomic_open(nd, dentry, file, open_flag, mode);
+			return dentry;
+		}
+
+		if (d_in_lookup(dentry)) {
+			struct dentry *res = dir_inode->i_op->lookup(dir_inode, dentry, nd->flags);
+			d_lookup_done(dentry);
 			if (IS_ERR(res)) {
-				error = PTR_ERR(res);
-				goto out_dput;
+				dput(dentry);
+				return res;
 			}
-			dput(dentry);
-			dentry = res;
+			if (res) {
+				dput(dentry);
+				dentry = res;
+			}
+		}
+
+		if (!dentry->d_inode && dir_inode->i_op->create) {
+			file->f_mode |= FMODE_CREATED;
+			error = dir_inode->i_op->create(mnt_userns, dir_inode, dentry,
+							mode, open_flag & O_EXCL);
+			if (error) {
+				dput(dentry);
+				return ERR_PTR(error);
+			}
 		}
 	}
 
-	
-	if (!dentry->d_inode && (open_flag & O_CREAT)) {
-		file->f_mode |= FMODE_CREATED;
-		audit_inode_child(dir_inode, dentry, AUDIT_TYPE_CHILD_CREATE);
-		if (!dir_inode->i_op->create) {
-			error = -EACCES;
-			goto out_dput;
-		}
-
-		error = dir_inode->i_op->create(mnt_userns, dir_inode, dentry,
-						mode, open_flag & O_EXCL);
-		if (error)
-			goto out_dput;
-	}
-	if (unlikely(create_error) && !dentry->d_inode) {
-		error = create_error;
-		goto out_dput;
-	}
 	return dentry;
-
-out_dput:
-	dput(dentry);
-	return ERR_PTR(error);
 }
 
 static const char *open_last_lookups(struct nameidata *nd,

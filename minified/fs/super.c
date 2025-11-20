@@ -1054,100 +1054,15 @@ static void sb_freeze_unlock(struct super_block *sb, int level)
 
 int freeze_super(struct super_block *sb)
 {
-	int ret;
-
-	atomic_inc(&sb->s_active);
-	down_write(&sb->s_umount);
-	if (sb->s_writers.frozen != SB_UNFROZEN) {
-		deactivate_locked_super(sb);
-		return -EBUSY;
-	}
-
-	if (!(sb->s_flags & SB_BORN)) {
-		up_write(&sb->s_umount);
-		return 0;	
-	}
-
-	if (sb_rdonly(sb)) {
-		
-		sb->s_writers.frozen = SB_FREEZE_COMPLETE;
-		up_write(&sb->s_umount);
-		return 0;
-	}
-
-	sb->s_writers.frozen = SB_FREEZE_WRITE;
-	
-	up_write(&sb->s_umount);
-	sb_wait_write(sb, SB_FREEZE_WRITE);
-	down_write(&sb->s_umount);
-
-	sb->s_writers.frozen = SB_FREEZE_PAGEFAULT;
-	sb_wait_write(sb, SB_FREEZE_PAGEFAULT);
-
-	ret = sync_filesystem(sb);
-	if (ret) {
-		sb->s_writers.frozen = SB_UNFROZEN;
-		sb_freeze_unlock(sb, SB_FREEZE_PAGEFAULT);
-		wake_up(&sb->s_writers.wait_unfrozen);
-		deactivate_locked_super(sb);
-		return ret;
-	}
-
-	sb->s_writers.frozen = SB_FREEZE_FS;
-	sb_wait_write(sb, SB_FREEZE_FS);
-
-	if (sb->s_op->freeze_fs) {
-		ret = sb->s_op->freeze_fs(sb);
-		if (ret) {
-			printk(KERN_ERR
-				"VFS:Filesystem freeze failed\n");
-			sb->s_writers.frozen = SB_UNFROZEN;
-			sb_freeze_unlock(sb, SB_FREEZE_FS);
-			wake_up(&sb->s_writers.wait_unfrozen);
-			deactivate_locked_super(sb);
-			return ret;
-		}
-	}
-	
-	sb->s_writers.frozen = SB_FREEZE_COMPLETE;
-	lockdep_sb_freeze_release(sb);
-	up_write(&sb->s_umount);
-	return 0;
+	/* Stub: filesystem freezing not needed for minimal kernel */
+	return -EOPNOTSUPP;
 }
 
 static int thaw_super_locked(struct super_block *sb)
 {
-	int error;
-
-	if (sb->s_writers.frozen != SB_FREEZE_COMPLETE) {
-		up_write(&sb->s_umount);
-		return -EINVAL;
-	}
-
-	if (sb_rdonly(sb)) {
-		sb->s_writers.frozen = SB_UNFROZEN;
-		goto out;
-	}
-
-	lockdep_sb_freeze_acquire(sb);
-
-	if (sb->s_op->unfreeze_fs) {
-		error = sb->s_op->unfreeze_fs(sb);
-		if (error) {
-			printk(KERN_ERR
-				"VFS:Filesystem thaw failed\n");
-			lockdep_sb_freeze_release(sb);
-			up_write(&sb->s_umount);
-			return error;
-		}
-	}
-
-	sb->s_writers.frozen = SB_UNFROZEN;
-	sb_freeze_unlock(sb, SB_FREEZE_FS);
-out:
-	wake_up(&sb->s_writers.wait_unfrozen);
-	deactivate_locked_super(sb);
-	return 0;
+	/* Stub: filesystem thawing not needed for minimal kernel */
+	up_write(&sb->s_umount);
+	return -EINVAL;
 }
 
 int thaw_super(struct super_block *sb)

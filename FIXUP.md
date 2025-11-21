@@ -1,3 +1,31 @@
+--- 2025-11-21 03:58 ---
+
+Session complete (3 commits):
+1. Remove unused dl_task_check_affinity and vcpu_is_preempted from sched.h - 10 LOC
+2. Remove 6 unused security functions from security.h - 36 LOC
+3. Remove thp_order and thp_size from mm.h - 8 LOC
+
+Total reduction: 54 LOC
+Binary: 320KB (stable throughout)
+Estimated current: ~232,165 LOC (down from 232,219)
+Gap to goal: ~32,165 LOC (13.9% remaining)
+
+All changes tested with make vm - PASSES, prints "Hello, World!Still alive"
+Strategy: Systematically checking large headers for unused inline functions.
+
+Checked files this session:
+- sched.h: found 2 unused (dl_task_check_affinity, vcpu_is_preempted)
+- security.h: found 6 unused (security_sb_pivotroot, security_move_mount, 4 securityfs_* functions)
+- mm.h: found 2 unused (thp_order, thp_size); vma_is_foreign is used in arch/x86/include/asm/mmu_context.h
+- memcontrol.h: all functions appeared to be in use (not fully checked)
+- page-flags.h: mostly macros, not checked
+
+Next session opportunities:
+- Continue checking other large headers
+- Consider examining fs.h (2172 lines), pgtable.h (1052 lines)
+- Look for unused macros and defines
+- Safe, systematic approach with good results
+
 --- 2025-11-21 03:43 ---
 
 New session starting:

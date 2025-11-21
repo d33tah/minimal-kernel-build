@@ -1,3 +1,25 @@
+--- 2025-11-21 07:11 ---
+
+Session analysis - subsystem sizes and reduction opportunities:
+
+Subsystem breakdown:
+- kernel/: 29,772 LOC (sched, fork, signal, sys, etc.)
+- mm/: 24,728 LOC (page_alloc, memory, vmalloc, filemap, mmap, slub, etc.)
+- fs/: 17,302 LOC (namei, namespace, dcache, inode, exec, etc.)
+- drivers/base: 5,528 LOC (device core infrastructure)
+- drivers/tty: 5,563 LOC (TTY/VT subsystem)
+- lib/: 12,674 LOC (vsprintf, iov_iter, xarray, radix-tree, xz, etc.)
+
+Largest files: mm/page_alloc.c (2,983), fs/namei.c (2,771), mm/memory.c (2,637)
+Syscalls: 233 total (116 in fs/) - most unnecessary for "Hello World"
+Headers: 1,153 total
+
+Next session targets for 30K LOC reduction:
+1. Stub out non-essential syscall groups (stat/statfs/IPC/etc)
+2. Simplify memory management (remove swap/hugepages/NUMA)
+3. Reduce filesystem complexity
+4. Consider TTY simplification (noted as over-sophisticated)
+
 --- 2025-11-21 06:58 ---
 
 Session progress (1 commit, pushed):

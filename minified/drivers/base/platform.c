@@ -793,27 +793,15 @@ static DEVICE_ATTR_RO(numa_node);
 static ssize_t driver_override_show(struct device *dev,
 				    struct device_attribute *attr, char *buf)
 {
-	struct platform_device *pdev = to_platform_device(dev);
-	ssize_t len;
-
-	device_lock(dev);
-	len = sysfs_emit(buf, "%s\n", pdev->driver_override);
-	device_unlock(dev);
-
-	return len;
+	/* Stub: driver override not needed for minimal kernel */
+	return sysfs_emit(buf, "\n");
 }
 
 static ssize_t driver_override_store(struct device *dev,
 				     struct device_attribute *attr,
 				     const char *buf, size_t count)
 {
-	struct platform_device *pdev = to_platform_device(dev);
-	int ret;
-
-	ret = driver_set_override(dev, &pdev->driver_override, buf, count);
-	if (ret)
-		return ret;
-
+	/* Stub: driver override not needed for minimal kernel */
 	return count;
 }
 static DEVICE_ATTR_RW(driver_override);

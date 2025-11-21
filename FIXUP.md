@@ -1,6 +1,32 @@
+--- 2025-11-21 09:09 ---
+
+Session analysis - reduction challenges (44 min analysis):
+
+Committed: 7 headers removed (249 LOC), pushed
+Current: 230,148 LOC, need 30,148 more (13.1% reduction)
+
+Header removal approach (tried):
+- Found 71 headers never directly #included
+- Attempted removal, restored 64 (build system wrappers need them)
+- Result: Only 7 removable (249 LOC) - insufficient
+
+Analysis of larger opportunities:
+- 4,185 static inline functions in include/linux/*.h
+- TTY: 6,984 LOC (vt.c 1,977 + tty_io.c 1,835 + others)
+- MM: page_alloc.c 2,983, memory.c 2,637, vmalloc.c 2,290
+- FS: namei.c 2,771, namespace.c 2,472, dcache.c 2,004
+- 246 syscalls (many unnecessary for "Hello World")
+- Small files already stubbed (oom_kill.c, workingset.c, etc)
+
+Next session should try:
+1. Large subsystem reduction (not individual files)
+2. Inline function removal from headers
+3. Bulk syscall stubbing
+4. TTY/VT simplification (over-sophisticated per instructions)
+
 --- 2025-11-21 09:04 ---
 
-Session progress (1 commit, ready to push):
+Session progress (1 commit, pushed):
 Removed 7 unused headers (249 LOC):
 - asm-generic/hyperv-tlfs.h, asm-generic/mshyperv.h
 - linux/attribute_container.h

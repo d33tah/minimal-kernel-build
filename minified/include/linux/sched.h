@@ -824,11 +824,6 @@ static inline void release_user_cpus_ptr(struct task_struct *p)
 	WARN_ON(p->user_cpus_ptr);
 }
 
-static inline int dl_task_check_affinity(struct task_struct *p, const struct cpumask *mask)
-{
-	return 0;
-}
-
 extern int yield_to(struct task_struct *p, bool preempt);
 extern void set_user_nice(struct task_struct *p, long nice);
 extern int task_prio(const struct task_struct *p);
@@ -1012,14 +1007,6 @@ static inline unsigned int task_cpu(const struct task_struct *p)
 
 extern bool sched_task_on_rq(struct task_struct *p);
 extern unsigned long get_wchan(struct task_struct *p);
-
- 
-#ifndef vcpu_is_preempted
-static inline bool vcpu_is_preempted(int cpu)
-{
-	return false;
-}
-#endif
 
 extern long sched_setaffinity(pid_t pid, const struct cpumask *new_mask);
 extern long sched_getaffinity(pid_t pid, struct cpumask *mask);

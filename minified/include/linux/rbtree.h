@@ -223,9 +223,4 @@ rb_next_match(const void *key, struct rb_node *node,
 	return node;
 }
 
- 
-#define rb_for_each(node, key, tree, cmp) \
-	for ((node) = rb_find_first((key), (tree), (cmp)); \
-	     (node); (node) = rb_next_match((key), (node), (cmp)))
-
 #endif	 

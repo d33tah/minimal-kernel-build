@@ -217,11 +217,6 @@ void exit_task_namespaces(struct task_struct *p)
 	switch_task_namespaces(p, NULL);
 }
 
-static int check_setns_flags(unsigned long flags)
-{
-	 
-	return 0;
-}
 
 static void put_nsset(struct nsset *nsset)
 {
@@ -236,37 +231,6 @@ static void put_nsset(struct nsset *nsset)
 		free_nsproxy(nsset->nsproxy);
 }
 
-static int prepare_nsset(unsigned flags, struct nsset *nsset)
-{
-	struct task_struct *me = current;
-
-	nsset->nsproxy = create_new_namespaces(0, me, current_user_ns(), me->fs);
-	if (IS_ERR(nsset->nsproxy))
-		return PTR_ERR(nsset->nsproxy);
-
-	if (flags & CLONE_NEWUSER)
-		nsset->cred = prepare_creds();
-	else
-		nsset->cred = current_cred();
-	if (!nsset->cred)
-		goto out;
-
-	 
-	if (flags == CLONE_NEWNS) {
-		nsset->fs = me->fs;
-	} else if (flags & CLONE_NEWNS) {
-		nsset->fs = copy_fs_struct(me->fs);
-		if (!nsset->fs)
-			goto out;
-	}
-
-	nsset->flags = flags;
-	return 0;
-
-out:
-	put_nsset(nsset);
-	return -ENOMEM;
-}
 
 static inline int validate_ns(struct nsset *nsset, struct ns_common *ns)
 {
@@ -274,84 +238,8 @@ static inline int validate_ns(struct nsset *nsset, struct ns_common *ns)
 }
 
  
-static int validate_nsset(struct nsset *nsset, struct pid *pid)
-{
-	int ret = 0;
-	unsigned flags = nsset->flags;
-	struct user_namespace *user_ns = NULL;
-	struct pid_namespace *pid_ns = NULL;
-	struct nsproxy *nsp;
-	struct task_struct *tsk;
-
-	 
-	rcu_read_lock();
-	tsk = pid_task(pid, PIDTYPE_PID);
-	if (!tsk) {
-		rcu_read_unlock();
-		return -ESRCH;
-	}
-
-	if (!ptrace_may_access(tsk, PTRACE_MODE_READ_REALCREDS)) {
-		rcu_read_unlock();
-		return -EPERM;
-	}
-
-	task_lock(tsk);
-	nsp = tsk->nsproxy;
-	if (nsp)
-		get_nsproxy(nsp);
-	task_unlock(tsk);
-	if (!nsp) {
-		rcu_read_unlock();
-		return -ESRCH;
-	}
-
-
-	rcu_read_unlock();
-
-	 
-
-	if (flags & CLONE_NEWNS) {
-		ret = validate_ns(nsset, from_mnt_ns(nsp->mnt_ns));
-		if (ret)
-			goto out;
-	}
-
-
-
-
-
-
-
-out:
-	if (pid_ns)
-		put_pid_ns(pid_ns);
-	if (nsp)
-		put_nsproxy(nsp);
-	put_user_ns(user_ns);
-
-	return ret;
-}
 
  
-static void commit_nsset(struct nsset *nsset)
-{
-	unsigned flags = nsset->flags;
-	struct task_struct *me = current;
-
-
-	 
-	if ((flags & CLONE_NEWNS) && (flags & ~CLONE_NEWNS)) {
-		set_fs_root(me->fs, &nsset->fs->root);
-		set_fs_pwd(me->fs, &nsset->fs->pwd);
-	}
-
-
-
-	 
-	switch_task_namespaces(me, nsset->nsproxy);
-	nsset->nsproxy = NULL;
-}
 
 SYSCALL_DEFINE2(setns, int, fd, int, flags)
 {

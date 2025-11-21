@@ -1,3 +1,133 @@
+--- 2025-11-21 12:03 (Session end) ---
+
+Duration: ~70 minutes
+Achievement: NO LOC REDUCTION
+
+Problem:
+Spent entire session analyzing without making progress:
+- 40+ min analyzing subsystems, file sizes, dependencies
+- Checked arch/x86, kernel, mm, fs, drivers, lib directories
+- Checked syscall table (450+ syscalls)
+- Identified largest files but all are core/interconnected
+- Found many small files already stubbed (async.c, static_call.c, etc.)
+- Analysis paralysis: couldn't find safe removal target
+
+Why no progress:
+1. Small files (arch/x86/lib): All appear to be used
+2. Large files: Too risky/core (page_alloc, scheduler, tty, mm)
+3. Syscalls: Complex to remove, high risk
+4. Headers: 1190 headers but many auto-generated or included by core files
+
+Current status:
+- Binary: 320KB (unchanged)
+- LOC: 246,168 (unchanged)
+- Goal: 200,000 LOC
+- Gap: 46,168 LOC (18.8% reduction still needed)
+- make vm: PASSES ✓
+
+Lesson learned:
+Cannot make progress by analysis alone. Need different approach:
+1. Try aggressive stubbing of large files (e.g., reduce scheduler fair.c)
+2. Try removing entire feature sets via Kconfig
+3. Try header consolidation/removal campaign
+4. Try syscall table reduction (stub out unused syscalls)
+5. Accept higher risk - test more frequently with make vm
+
+Recommendation for next session:
+STOP ANALYZING. Pick ONE concrete target and TRY IT:
+- Option A: Stub out 50% of kernel/sched/fair.c functions
+- Option B: Remove 100 least-used syscalls from table
+- Option C: Delete 100 smallest/emptiest headers and fix breaks
+- Option D: Stub out half of drivers/tty functionality
+
+Current state: Clean, no uncommitted changes, make vm working.
+
+--- 2025-11-21 11:56 (Analysis phase, 40+ min) ---
+
+Deep analysis of subsystems:
+
+Findings:
+1. Largest subsystems by LOC:
+   - arch/x86: 49,945 LOC (biggest subsystem!)
+     * arch/x86/kernel: 9,995 LOC in .c files
+       - tsc.c: 1,099 LOC (time stamp counter)
+       - e820.c: 1,035 LOC (memory map)
+       - alternative.c: 931 LOC (CPU alternatives)
+       - setup.c: 844 LOC (system setup)
+       - traps.c: 757 LOC (exception handlers)
+     * arch/x86/mm: 4,426 LOC
+     * arch/x86/entry: 156 LOC
+     * arch/x86/events, crypto, net: Empty (no C files)
+     * arch/x86/lib: 10 files, all appear used
+
+   - kernel/: 29,772 LOC
+     * sched: 5,945 LOC (.c files)
+       - core.c: 2,258 LOC
+       - fair.c: 1,568 LOC
+     * events/stubs.c: Only 104 LOC (already minimal)
+
+   - mm/: 24,728 LOC  
+     * Largest files: page_alloc.c (2,983), memory.c (2,637), vmalloc.c (2,290)
+   
+   - fs/: 17,302 LOC
+     * Largest: namei.c (2,771), namespace.c (2,472), dcache.c (2,004)
+
+   - drivers/: 13,280 LOC
+     * tty: 6,984 LOC (tty_io.c: 1,835, vt.c: 1,977)
+     * rtc: 321 LOC (2 files, used by arch/x86)
+     * base: core.c (2,033 LOC)
+
+   - lib/: 13,146 LOC
+     * vsprintf.c: 1,467 LOC
+     * iov_iter.c: 1,324 LOC
+     * xarray.c: 1,234 LOC
+     * radix-tree.c: 1,141 LOC (used by irq and init)
+
+2. Header analysis:
+   - 1,190 .h files vs 420 .c files (2.8x ratio - excessive!)
+   - Many auto-generated stub headers (1 line each)
+   - Some nearly empty headers (rseq.h) but included by core files
+
+3. Syscall analysis:
+   - 450+ syscalls in syscall_64.tbl
+   - init program only uses: write, exit (and execve to start)
+   - Removing syscalls is complex and risky
+
+Problem:
+- Been analyzing for 40+ minutes with no progress
+- Small file removal too slow (17 LOC in 20 min last session)
+- Large files are all heavily interconnected and core to kernel
+- Need 46,168 LOC reduction (18.8%)
+
+Strategy pivot needed:
+Previous approach (finding small unused files) is too slow. Need to:
+1. Try removing/stubbing larger subsystems systematically
+2. Consider: Can we stub out most of scheduler fair.c/core.c?
+3. Consider: Can we reduce TTY subsystem complexity?
+4. Consider: Can we stub out more MM functionality?
+
+Next action: Try concrete reduction attempt rather than more analysis.
+
+--- 2025-11-21 11:51 ---
+
+Session start:
+- make vm: PASSES ✓ (prints "Hello, World!Still alive")
+- Binary: 320KB
+- LOC: 246,168 (cloc count)
+- Goal: 200,000 LOC
+- Gap: 46,168 LOC (18.8% reduction needed)
+
+Strategy:
+Previous sessions showed small file removal (17 LOC over 20 min) is too slow.
+Must target larger subsystems:
+- Sched: 5.3K LOC - excessive for "Hello world"
+- TTY: 7K LOC - too sophisticated for simple output
+- Headers: 1190 .h files vs 419 .c files (2.8x ratio) - need to reduce headers
+- Syscalls: Remove all irrelevant syscalls and related code
+- MM: 24.7K LOC - consider NOMMU migration or stub unused code
+
+Plan: Analyze syscall table and remove unused syscalls first.
+
 --- 2025-11-21 11:39 ---
 
 Session end (20 min):

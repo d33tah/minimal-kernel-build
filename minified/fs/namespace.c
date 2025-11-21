@@ -668,16 +668,6 @@ static struct mount *next_mnt(struct mount *p, struct mount *root)
 	return list_entry(next, struct mount, mnt_child);
 }
 
-static struct mount *skip_mnt_tree(struct mount *p)
-{
-	struct list_head *prev = p->mnt_mounts.prev;
-	while (prev != &p->mnt_mounts) {
-		p = list_entry(prev, struct mount, mnt_child);
-		prev = p->mnt_mounts.prev;
-	}
-	return p;
-}
-
 struct vfsmount *vfs_create_mount(struct fs_context *fc)
 {
 	struct mount *mnt;
@@ -1118,29 +1108,6 @@ static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 }
 
 static void shrink_submounts(struct mount *mnt);
-
-static int do_umount_root(struct super_block *sb)
-{
-	int ret = 0;
-
-	down_write(&sb->s_umount);
-	if (!sb_rdonly(sb)) {
-		struct fs_context *fc;
-
-		fc = fs_context_for_reconfigure(sb->s_root, SB_RDONLY,
-						SB_RDONLY);
-		if (IS_ERR(fc)) {
-			ret = PTR_ERR(fc);
-		} else {
-			ret = parse_monolithic_mount_data(fc, NULL);
-			if (!ret)
-				ret = reconfigure_super(fc);
-			put_fs_context(fc);
-		}
-	}
-	up_write(&sb->s_umount);
-	return ret;
-}
 
 static int do_umount(struct mount *mnt, int flags)
 {
@@ -1654,21 +1621,11 @@ static int do_change_type(struct path *path, int ms_flags)
 	return err;
 }
 
-static struct mount *__do_loopback(struct path *old_path, int recurse)
-{
-	return ERR_PTR(-EINVAL);
-}
-
 static int do_loopback(struct path *path, const char *old_name,
 				int recurse)
 {
 	/* Stubbed: loopback mounts not needed for minimal boot */
 	return -EINVAL;
-}
-
-static struct file *open_detached_copy(struct path *path, bool recursive)
-{
-	return ERR_PTR(-EINVAL);
 }
 
 SYSCALL_DEFINE3(open_tree, int, dfd, const char __user *, filename, unsigned, flags)
@@ -1704,27 +1661,6 @@ static bool can_change_locked_flags(struct mount *mnt, unsigned int mnt_flags)
 	return true;
 }
 
-static int change_mount_ro_state(struct mount *mnt, unsigned int mnt_flags)
-{
-	bool readonly_request = (mnt_flags & MNT_READONLY);
-
-	if (readonly_request == __mnt_is_readonly(&mnt->mnt))
-		return 0;
-
-	if (readonly_request)
-		return mnt_make_readonly(mnt);
-
-	mnt->mnt.mnt_flags &= ~MNT_READONLY;
-	return 0;
-}
-
-static void set_mount_attributes(struct mount *mnt, unsigned int mnt_flags)
-{
-	mnt_flags |= mnt->mnt.mnt_flags & ~MNT_USER_SETTABLE_MASK;
-	mnt->mnt.mnt_flags = mnt_flags;
-	touch_mnt_namespace(mnt->mnt_ns);
-}
-
 static void mnt_warn_timestamp_expiry(struct path *mountpoint, struct vfsmount *mnt)
 {
 	/* Stub: timestamp expiry warning not needed for minimal kernel */
@@ -1749,28 +1685,6 @@ static inline int tree_contains_unbindable(struct mount *mnt)
 			return 1;
 	}
 	return 0;
-}
-
-static bool check_for_nsfs_mounts(struct mount *subtree)
-{
-	struct mount *p;
-	bool ret = false;
-
-	lock_mount_hash();
-	for (p = subtree; p; p = next_mnt(p, subtree))
-		if (mnt_ns_loop(p->mnt.mnt_root))
-			goto out;
-
-	ret = true;
-out:
-	unlock_mount_hash();
-	return ret;
-}
-
-static int do_set_group(struct path *from_path, struct path *to_path)
-{
-	/* Stub: mount group operations not needed for minimal kernel */
-	return -EINVAL;
 }
 
 static int do_move_mount(struct path *old_path, struct path *new_path)
@@ -2014,22 +1928,6 @@ resume:
 		goto resume;
 	}
 	return found;
-}
-
-static void shrink_submounts(struct mount *mnt)
-{
-	LIST_HEAD(graveyard);
-	struct mount *m;
-
-	
-	while (select_submounts(mnt, &graveyard)) {
-		while (!list_empty(&graveyard)) {
-			m = list_first_entry(&graveyard, struct mount,
-						mnt_expire);
-			touch_mnt_namespace(m->mnt_ns);
-			umount_tree(m, UMOUNT_PROPAGATE|UMOUNT_SYNC);
-		}
-	}
 }
 
 static void *copy_mount_options(const void __user * data)
@@ -2303,26 +2201,6 @@ out_type:
 #define MOUNT_SETATTR_PROPAGATION_FLAGS \
 	(MS_UNBINDABLE | MS_PRIVATE | MS_SLAVE | MS_SHARED)
 
-static unsigned int attr_flags_to_mnt_flags(u64 attr_flags)
-{
-	unsigned int mnt_flags = 0;
-
-	if (attr_flags & MOUNT_ATTR_RDONLY)
-		mnt_flags |= MNT_READONLY;
-	if (attr_flags & MOUNT_ATTR_NOSUID)
-		mnt_flags |= MNT_NOSUID;
-	if (attr_flags & MOUNT_ATTR_NODEV)
-		mnt_flags |= MNT_NODEV;
-	if (attr_flags & MOUNT_ATTR_NOEXEC)
-		mnt_flags |= MNT_NOEXEC;
-	if (attr_flags & MOUNT_ATTR_NODIRATIME)
-		mnt_flags |= MNT_NODIRATIME;
-	if (attr_flags & MOUNT_ATTR_NOSYMFOLLOW)
-		mnt_flags |= MNT_NOSYMFOLLOW;
-
-	return mnt_flags;
-}
-
 SYSCALL_DEFINE3(fsmount, int, fs_fd, unsigned int, flags,
 		unsigned int, attr_flags)
 {
@@ -2416,48 +2294,6 @@ static inline bool mnt_allow_writers(const struct mount_kattr *kattr,
 	       !kattr->mnt_userns;
 }
 
-static int mount_setattr_prepare(struct mount_kattr *kattr, struct mount *mnt)
-{
-	struct mount *m;
-	int err;
-
-	for (m = mnt; m; m = next_mnt(m, mnt)) {
-		if (!can_change_locked_flags(m, recalc_flags(kattr, m))) {
-			err = -EPERM;
-			break;
-		}
-
-		err = can_idmap_mount(kattr, m);
-		if (err)
-			break;
-
-		if (!mnt_allow_writers(kattr, m)) {
-			err = mnt_hold_writers(m);
-			if (err)
-				break;
-		}
-
-		if (!kattr->recurse)
-			return 0;
-	}
-
-	if (err) {
-		struct mount *p;
-
-		
-		for (p = mnt; p; p = next_mnt(p, mnt)) {
-			
-			if (p->mnt.mnt_flags & MNT_WRITE_HOLD)
-				mnt_unhold_writers(p);
-
-			
-			if (p == m)
-				break;
-		}
-	}
-	return err;
-}
-
 static void do_idmap_mount(const struct mount_kattr *kattr, struct mount *mnt)
 {
 	struct user_namespace *mnt_userns, *old_mnt_userns;
@@ -2475,57 +2311,6 @@ static void do_idmap_mount(const struct mount_kattr *kattr, struct mount *mnt)
 	
 	if (!initial_idmapping(old_mnt_userns))
 		put_user_ns(old_mnt_userns);
-}
-
-static void mount_setattr_commit(struct mount_kattr *kattr, struct mount *mnt)
-{
-	struct mount *m;
-
-	for (m = mnt; m; m = next_mnt(m, mnt)) {
-		unsigned int flags;
-
-		do_idmap_mount(kattr, m);
-		flags = recalc_flags(kattr, m);
-		WRITE_ONCE(m->mnt.mnt_flags, flags);
-
-		
-		if (m->mnt.mnt_flags & MNT_WRITE_HOLD)
-			mnt_unhold_writers(m);
-
-		if (kattr->propagation)
-			change_mnt_propagation(m, kattr->propagation);
-		if (!kattr->recurse)
-			break;
-	}
-	touch_mnt_namespace(mnt->mnt_ns);
-}
-
-static int do_mount_setattr(struct path *path, struct mount_kattr *kattr)
-{
-	/* Stub: mount attributes not needed for minimal kernel */
-	return -EINVAL;
-}
-
-static int build_mount_idmapped(const struct mount_attr *attr, size_t usize,
-				struct mount_kattr *kattr, unsigned int flags)
-{
-	/* Stubbed: ID mapping not needed for minimal boot */
-	if (!((attr->attr_set | attr->attr_clr) & MOUNT_ATTR_IDMAP))
-		return 0;
-	return -EINVAL;
-}
-
-static int build_mount_kattr(const struct mount_attr *attr, size_t usize,
-			     struct mount_kattr *kattr, unsigned int flags)
-{
-	/* Stubbed: mount attribute handling not needed for minimal boot */
-	return -EINVAL;
-}
-
-static void finish_mount_kattr(struct mount_kattr *kattr)
-{
-	put_user_ns(kattr->mnt_userns);
-	kattr->mnt_userns = NULL;
 }
 
 SYSCALL_DEFINE5(mount_setattr, int, dfd, const char __user *, path,

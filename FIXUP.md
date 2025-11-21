@@ -1,15 +1,24 @@
---- 2025-11-21 04:14 ---
+--- 2025-11-21 04:21 ---
 
-Session in progress - removing unused functions found via compiler warnings (129 total):
+Session complete (2 commits):
+1. Remove 5 unused signal functions - 88 LOC
+2. Remove 7 more unused signal functions - 89 LOC
 
-kernel/signal.c complete: 12 unused functions removed (177 LOC)
-- Batch 1 (5 functions, 88 LOC): task_participate_group_stop, dequeue_synchronous_signal, kill_ok_by_cred, ptrace_trap_notify, print_fatal_signal, do_notify_pidfd
-- Batch 2 (7 functions, 89 LOC): do_notify_parent_cldstop, do_signal_stop, do_jobctl_trap, do_freezer_trap, ptrace_signal, hide_si_addr_tag_bits, access_pidfd_pidns
+Total kernel/signal.c reduction: 177 LOC (12 unused functions removed)
+Binary: 320KB (stable throughout)
+Estimated current: ~231,991 LOC (down from 232,168)
+Gap to goal: ~31,991 LOC (13.8% reduction needed)
 
-Binary: 320KB (stable)
-make vm: PASSES, prints "Hello, World!Still alive"
+All changes tested with make vm - PASSES, prints "Hello, World!Still alive"
+Strategy: Used compiler -Wunused-function warnings to identify dead code (found 129 total warnings)
+Completed kernel/signal.c, ~117 warnings remaining in other files
 
-Remaining: ~117 unused functions in other files (kernel/fork.c, kernel/time/timekeeping.c, arch/x86/kernel/*)
+Next session opportunities:
+- Continue with kernel/fork.c (2 unused: check_unshare_flags, unshare_fs)
+- kernel/time/timekeeping.c (7+ unused functions)
+- arch/x86/kernel/dumpstack.c (2 unused)
+- arch/x86/kernel/ptrace.c (2 unused)
+This approach is very effective - pure dead code removal
 
 --- 2025-11-21 03:58 ---
 

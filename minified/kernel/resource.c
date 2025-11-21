@@ -781,9 +781,6 @@ reserve_region_with_split(struct resource *root, resource_size_t start,
 
 	write_lock(&resource_lock);
 	if (root->start > start || root->end < end) {
-		pr_err("requested range [0x%llx-0x%llx] not in root %pr\n",
-		       (unsigned long long)start, (unsigned long long)end,
-		       root);
 		if (start > root->end || end < root->start)
 			abort = 1;
 		else {
@@ -791,11 +788,7 @@ reserve_region_with_split(struct resource *root, resource_size_t start,
 				end = root->end;
 			if (start < root->start)
 				start = root->start;
-			pr_err("fixing request to [0x%llx-0x%llx]\n",
-			       (unsigned long long)start,
-			       (unsigned long long)end);
 		}
-		dump_stack();
 	}
 	if (!abort)
 		__reserve_region_with_split(root, start, end, name);

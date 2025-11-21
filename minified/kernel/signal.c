@@ -1136,12 +1136,6 @@ bool do_notify_parent(struct task_struct *tsk, int sig)
 	return false;
 }
 
-static void do_notify_parent_cldstop(struct task_struct *tsk,
-				     bool for_ptracer, int why)
-{
-	/* Stub: skip parent notification for minimal kernel */
-}
-
 static int ptrace_stop(int exit_code, int why, unsigned long message,
 		       kernel_siginfo_t *info)
 	__releases(&current->sighand->siglock)
@@ -1180,80 +1174,6 @@ int ptrace_notify(int exit_code, unsigned long message)
 	signr = ptrace_do_notify(SIGTRAP, exit_code, CLD_TRAPPED, message);
 	spin_unlock_irq(&current->sighand->siglock);
 	return signr;
-}
-
-static bool do_signal_stop(int signr)
-	__releases(&current->sighand->siglock)
-{
-	spin_unlock_irq(&current->sighand->siglock);
-	return false;
-}
-
-static void do_jobctl_trap(void)
-{
-	/* Stub: no job control trap handling */
-}
-
-static void do_freezer_trap(void)
-	__releases(&current->sighand->siglock)
-{
-	/* Stub: no freezer trap handling */
-	spin_unlock_irq(&current->sighand->siglock);
-}
-
-static int ptrace_signal(int signr, kernel_siginfo_t *info, enum pid_type type)
-{
-	
-	current->jobctl |= JOBCTL_STOP_DEQUEUED;
-	signr = ptrace_stop(signr, CLD_TRAPPED, 0, info);
-
-	
-	if (signr == 0)
-		return signr;
-
-	
-	if (signr != info->si_signo) {
-		clear_siginfo(info);
-		info->si_signo = signr;
-		info->si_errno = 0;
-		info->si_code = SI_USER;
-		rcu_read_lock();
-		info->si_pid = task_pid_vnr(current->parent);
-		info->si_uid = from_kuid_munged(current_user_ns(),
-						task_uid(current->parent));
-		rcu_read_unlock();
-	}
-
-	
-	if (sigismember(&current->blocked, signr) ||
-	    fatal_signal_pending(current)) {
-		send_signal_locked(signr, info, current, type);
-		signr = 0;
-	}
-
-	return signr;
-}
-
-static void hide_si_addr_tag_bits(struct ksignal *ksig)
-{
-	switch (siginfo_layout(ksig->sig, ksig->info.si_code)) {
-	case SIL_FAULT:
-	case SIL_FAULT_TRAPNO:
-	case SIL_FAULT_MCEERR:
-	case SIL_FAULT_BNDERR:
-	case SIL_FAULT_PKUERR:
-	case SIL_FAULT_PERF_EVENT:
-		ksig->info.si_addr = arch_untagged_si_addr(
-			ksig->info.si_addr, ksig->sig, ksig->info.si_code);
-		break;
-	case SIL_KILL:
-	case SIL_TIMER:
-	case SIL_POLL:
-	case SIL_CHLD:
-	case SIL_RT:
-	case SIL_SYS:
-		break;
-	}
 }
 
 bool get_signal(struct ksignal *ksig)
@@ -1621,22 +1541,6 @@ SYSCALL_DEFINE2(kill, pid_t, pid, int, sig)
 	prepare_kill_siginfo(sig, &info);
 
 	return kill_something_info(sig, &info, pid);
-}
-
-static bool access_pidfd_pidns(struct pid *pid)
-{
-	struct pid_namespace *active = task_active_pid_ns(current);
-	struct pid_namespace *p = ns_of_pid(pid);
-
-	for (;;) {
-		if (!p)
-			return false;
-		if (p == active)
-			break;
-		p = p->parent;
-	}
-
-	return true;
 }
 
 static int copy_siginfo_from_user_any(kernel_siginfo_t *kinfo,

@@ -1,14 +1,15 @@
 --- 2025-11-21 04:14 ---
 
-New session starting:
-- make vm: PASSES ✓, prints "Hello, World!Still alive" ✓
-- Binary: 320KB
-- Current LOC: 232,168 (measured with cloc after mrproper)
-- Goal: 200,000 LOC
-- Gap: 32,168 LOC (13.9% reduction needed)
+Session in progress - removing unused functions found via compiler warnings (129 total):
 
-Strategy: Found 129 unused function warnings from build. Removing them systematically.
-Starting with kernel/signal.c: 5 unused functions (88 LOC total)
+kernel/signal.c complete: 12 unused functions removed (177 LOC)
+- Batch 1 (5 functions, 88 LOC): task_participate_group_stop, dequeue_synchronous_signal, kill_ok_by_cred, ptrace_trap_notify, print_fatal_signal, do_notify_pidfd
+- Batch 2 (7 functions, 89 LOC): do_notify_parent_cldstop, do_signal_stop, do_jobctl_trap, do_freezer_trap, ptrace_signal, hide_si_addr_tag_bits, access_pidfd_pidns
+
+Binary: 320KB (stable)
+make vm: PASSES, prints "Hello, World!Still alive"
+
+Remaining: ~117 unused functions in other files (kernel/fork.c, kernel/time/timekeeping.c, arch/x86/kernel/*)
 
 --- 2025-11-21 03:58 ---
 

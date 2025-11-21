@@ -2,18 +2,24 @@
 --- 2025-11-21 12:49 (Session in progress) ---
 
 Starting LOC: 228,895
-Current LOC: 228,168
+Current LOC: 227,503
 Goal: 200,000 LOC
-Needed reduction: 28,168 LOC (12.3%)
+Needed reduction: 27,503 LOC (12.1%)
 Binary: 317KB
 make vm: PASSES ✓
 
-Progress so far: 727 LOC reduction (0.3%)
+Progress so far: 1,392 LOC reduction (0.6%)
 
 Changes:
-1. ✓ Stubbed arch/x86/mm/pat/set_memory.c: 1,618 → ~84 LOC
+1. ✓ Stubbed arch/x86/mm/pat/set_memory.c: 1,618 → ~84 LOC (-727 LOC)
    - All memory attribute functions (set_memory_uc/wc/wb/ro/rw/etc) now return 0
    - Direct map functions stubbed
+   - make vm still works
+
+2. ✓ Stubbed arch/x86/kernel/fpu/xstate.c: 1,026 → ~90 LOC (-665 LOC)
+   - Extended FPU state handling stubbed
+   - cpu_has_xfeatures, xsaves, xrstors all stubbed
+   - fpu_xstate_prctl returns 0
    - make vm still works
 
 Strategy: Continue aggressive stubbing approach from last session

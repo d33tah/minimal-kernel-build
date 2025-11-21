@@ -1,13 +1,20 @@
 --- 2025-11-21 11:19 ---
 
-Successfully removed 2 tiny files (8 LOC total):
+Successfully removed 4 files (17 LOC total):
+
+First batch:
 - arch/x86/lib/atomic64_32.c (4 LOC) - just header includes for EXPORT_SYMBOL
 - arch/x86/lib/msr-reg-export.c (4 LOC) - just header includes for EXPORT_SYMBOL
 
-Both files only contained header includes with no actual code. They were used to
-export symbols via macros in the headers, but those exports are not needed for
-our minimal kernel. Build passed, VM prints "Hello, World!Still alive".
+Second batch:
+- arch/x86/lib/pc-conf-reg.c (8 LOC) - defines pc_conf_lock spinlock
+- arch/x86/include/asm/pc-conf-reg.h (1 LOC) - declares the spinlock
 
+The first two files only contained header includes with no actual code. They were
+used to export symbols via macros in the headers, but those exports are not needed.
+The pc-conf-reg files define a spinlock that is never used anywhere in the codebase.
+
+All removals tested: Build passed, VM prints "Hello, World!Still alive"
 Binary: 320KB (stable)
 
 Session start:

@@ -7082,3 +7082,64 @@ Next approach recommendations:
   Remaining gap: ~50,900 LOC to 200K goal
   
   Session ended successfully.
+
+Progress so far:
+- Removed rb_for_each macro (4 LOC) - committed and pushed
+- Attempted rb_link_node_rcu removal - failed (causes build error)
+- Current LOC: ~236,390
+
+Looking for larger opportunities:
+- TTY subsystem: vt.c (1850 LOC), tty_io.c (1694 LOC) - complex, risky to simplify
+- Filesystem: namei.c (2405 LOC), namespace.c (2274 LOC) - path resolution, complex
+- Memory: page_alloc.c (3139 LOC), memory.c (2861 LOC) - many already stubbed
+
+Need to find 36K+ LOC to remove. Small individual function removals won't be enough.
+Should look for:
+1. Entire subsystems that can be stubbed
+2. Large header files with many unused macros
+3. Syscalls that can be stubbed (already many stubs exist)
+
+
+Attempted VM macro removal from mm.h - FAILED
+- Tried removing VM_RAND_READ, VM_UFFD_MISSING, VM_HUGEPAGE, VM_NOHUGEPAGE, VM_MERGEABLE, VM_WIPEONFORK
+- grep showed them unused in .c files
+- But build failed with errors in asm-offsets.s
+- These macros must be used in preprocessor/generated code
+- Reverted changes
+
+Alternative approach needed:
+- Small removals (1-4 LOC) won't achieve 36K LOC goal
+- Need to find entire subsystems or large code blocks
+- Should focus on syscall stubs, large function simplifications
+
+--- 2025-11-21 01:27 ---
+
+Session end summary (started 01:05, ~22 minutes):
+
+Commits this session: 1
+- Remove unused rb_for_each macro: 4 LOC
+
+Failed attempts:
+1. rb_link_node_rcu removal - caused build errors (RCU infrastructure needed)
+2. VM_ macro removal (VM_RAND_READ, VM_HUGEPAGE, etc) - caused build errors despite grep showing unused
+
+Current status:
+- Binary: 321KB (stable)
+- make vm: PASSES ✓, prints "Hello, World!Still alive" ✓  
+- Current LOC: ~236,390 (4 LOC reduction from 236,394)
+- Gap to goal: ~36,390 LOC
+
+Key learnings:
+- Small macro/function removals (1-5 LOC) are too slow - would need 7,000+ such changes
+- grep -rn for usage is insufficient - macros may be used in generated/preprocessed code
+- Need to find 100+ LOC targets minimum to make meaningful progress
+- Header trimming is difficult - too many hidden dependencies
+
+Next session should focus on:
+1. Identifying and stubbing entire subsystem functions (50-200 LOC each)
+2. Looking at largest .c files for complex functions that can be simplified
+3. Finding syscalls that are full implementations (not stubs) and can be stubbed
+4. Consider more aggressive file-level removals
+
+The 200K LOC goal requires removing 15% of the codebase - this needs major subsystem simplification, not individual macro removal.
+

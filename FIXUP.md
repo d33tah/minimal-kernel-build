@@ -1,7 +1,54 @@
+--- 2025-11-21 14:07 (Session challenges) ---
+
+Starting LOC: 226,781
+Goal: 200,000 LOC
+Remaining: 26,781 LOC (11.8%)
+Binary: 309KB
+make vm: PASSES ✓
+
+Attempted stubbing:
+1. lib/radix-tree.c (1,141 LOC) - FAILED (VM hung, critical for PID/IRQ)
+2. lib/scatterlist.c (620 LOC) - FAILED (struct member errors, complex dependencies)
+
+Key learnings:
+- Core data structures (radix tree, sg lists) are tightly integrated
+- Stubbing requires matching internal struct layouts
+- Need simpler targets with fewer dependencies
+
+The 20x cascading effect from alternative.c was exceptional. Most targets won't have
+such dramatic effects. Need to identify:
+1. Large standalone files with minimal cross-dependencies
+2. Optional features/drivers not used in minimal boot
+3. Architecture-specific optimizations
+
+Next strategy: Focus on removing/stubbing larger, more isolated subsystems rather
+than core library functions.
+
+--- 2025-11-21 13:53 (New session start) ---
+
+Starting LOC: 226,781
+Goal: 200,000 LOC
+Remaining: 26,781 LOC (11.8%)
+Binary: 309KB
+make vm: PASSES ✓
+
+Strategy: Continue aggressive stubbing to achieve 200K LOC goal. Previous success
+with alternative.c (20x cascading effect) shows infrastructure stubbing is highly
+effective. Will target:
+
+Priority targets (likely to have cascading effects):
+1. Device driver infrastructure (dd.c, bus.c, platform.c) - ~2.9K LOC direct
+2. Advanced filesystem features (namespace.c, namei.c paths) - ~5K LOC
+3. Library functions (vsprintf.c, iov_iter.c) - ~2.8K LOC
+4. Scheduler features (fair.c advanced features) - selective stubbing
+5. Header file cleanup - many unused headers
+
+Will test each change with make vm and commit working progress.
+
 --- 2025-11-21 13:37 (Progress update 2) ---
 
 Current LOC: 226,759
-Goal: 200,000 LOC  
+Goal: 200,000 LOC
 Remaining: 26,759 LOC (11.8%)
 Binary: 309KB
 make vm: PASSES ✓

@@ -168,18 +168,8 @@ static struct kset *bus_kset;
 static ssize_t unbind_store(struct device_driver *drv, const char *buf,
 			    size_t count)
 {
-	struct bus_type *bus = bus_get(drv->bus);
-	struct device *dev;
-	int err = -ENODEV;
-
-	dev = bus_find_device_by_name(bus, NULL, buf);
-	if (dev && dev->driver == drv) {
-		device_driver_detach(dev);
-		err = count;
-	}
-	put_device(dev);
-	bus_put(bus);
-	return err;
+	/* Stub: sysfs driver unbind not needed for minimal kernel */
+	return -ENOSYS;
 }
 static DRIVER_ATTR_IGNORE_LOCKDEP(unbind, 0200, NULL, unbind_store);
 
@@ -187,21 +177,8 @@ static DRIVER_ATTR_IGNORE_LOCKDEP(unbind, 0200, NULL, unbind_store);
 static ssize_t bind_store(struct device_driver *drv, const char *buf,
 			  size_t count)
 {
-	struct bus_type *bus = bus_get(drv->bus);
-	struct device *dev;
-	int err = -ENODEV;
-
-	dev = bus_find_device_by_name(bus, NULL, buf);
-	if (dev && driver_match_device(drv, dev)) {
-		err = device_driver_attach(drv, dev);
-		if (!err) {
-			 
-			err = count;
-		}
-	}
-	put_device(dev);
-	bus_put(bus);
-	return err;
+	/* Stub: sysfs driver bind not needed for minimal kernel */
+	return -ENOSYS;
 }
 static DRIVER_ATTR_IGNORE_LOCKDEP(bind, 0200, NULL, bind_store);
 

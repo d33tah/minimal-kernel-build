@@ -1,3 +1,22 @@
+--- 2025-11-21 06:23 ---
+
+Session progress (3 commits so far):
+1. Remove lib/show_mem.c - stub-only file (13 lines total reduction)
+2. Remove unused iterate_dir() function (4 lines)
+3. Remove 4 unused functions from fs/namespace.c and arch/x86/kernel/ptrace.c (51 lines)
+
+Total git diff so far: 68 lines removed
+Current LOC: 219,198 (down from 219,248)
+Binary: 320KB (stable)
+Gap to goal: 19,198 LOC (8.8% reduction needed)
+
+All changes tested with make vm - PASSES, prints "Hello, World!Still alive"
+
+Strategy: Finding and removing unused code using -Wunused-function warnings
+- Found 4 unused functions in current build
+- Removed all of them successfully
+- Continuing to search for more opportunities
+
 --- 2025-11-21 06:08 ---
 
 New session starting:

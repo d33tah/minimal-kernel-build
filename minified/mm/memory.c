@@ -2097,34 +2097,6 @@ static vm_fault_t handle_pte_marker(struct vm_fault *vmf)
 vm_fault_t do_swap_page(struct vm_fault *vmf)
 {
 	/* Stub: swap not configured, should never be called */
-	struct vm_area_struct *vma = vmf->vma;
-	swp_entry_t entry;
-
-	if (!pte_unmap_same(vmf))
-		return 0;
-
-	entry = pte_to_swp_entry(vmf->orig_pte);
-
-	/* Handle special non-swap entries that can still occur */
-	if (unlikely(non_swap_entry(entry))) {
-		if (is_migration_entry(entry)) {
-			migration_entry_wait(vma->vm_mm, vmf->pmd, vmf->address);
-			return 0;
-		} else if (is_device_exclusive_entry(entry)) {
-			vmf->page = pfn_swap_entry_to_page(entry);
-			return remove_device_exclusive_entry(vmf);
-		} else if (is_device_private_entry(entry)) {
-			vmf->page = pfn_swap_entry_to_page(entry);
-			return vmf->page->pgmap->ops->migrate_to_ram(vmf);
-		} else if (is_hwpoison_entry(entry)) {
-			return VM_FAULT_HWPOISON;
-		} else if (is_pte_marker_entry(entry)) {
-			return handle_pte_marker(vmf);
-		}
-	}
-
-	/* Should not reach here - swap not configured */
-	print_bad_pte(vma, vmf->address, vmf->orig_pte, NULL);
 	return VM_FAULT_SIGBUS;
 }
 

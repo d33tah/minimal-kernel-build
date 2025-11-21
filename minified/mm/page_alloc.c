@@ -285,12 +285,6 @@ static inline int __maybe_unused bad_range(struct zone *zone, struct page *page)
 	return 0;
 }
 
-static void bad_page(struct page *page, const char *reason)
-{
-	/* Stub: skip error reporting for minimal system */
-	page_mapcount_reset(page);
-	add_taint(TAINT_BAD_PAGE, LOCKDEP_NOW_UNRELIABLE);
-}
 
 static inline unsigned int order_to_pindex(int migratetype, int order)
 {
@@ -486,11 +480,6 @@ static inline bool page_expected_state(struct page *page,
 	return true;
 }
 
-static const char *page_bad_reason(struct page *page, unsigned long flags)
-{
-	/* Stub: detailed page error reporting not needed for minimal kernel */
-	return NULL;
-}
 
 static void check_free_page_bad(struct page *page)
 {
@@ -507,13 +496,6 @@ static inline int check_free_page(struct page *page)
 	return 1;
 }
 
-static int free_tail_pages_check(struct page *head_page, struct page *page)
-{
-	/* Stub: debug tail page checking not needed for minimal kernel */
-	page->mapping = NULL;
-	clear_compound_head(page);
-	return 0;
-}
 
 static inline bool should_skip_kasan_poison(struct page *page, fpi_t fpi_flags)
 {
@@ -521,10 +503,6 @@ static inline bool should_skip_kasan_poison(struct page *page, fpi_t fpi_flags)
 	return true;
 }
 
-static void kernel_init_free_pages(struct page *page, int numpages)
-{
-	/* Stub: KASAN and page initialization not needed for minimal kernel */
-}
 
 static __always_inline bool free_pages_prepare(struct page *page,
 			unsigned int order, bool check_free, fpi_t fpi_flags)
@@ -551,10 +529,6 @@ static bool free_pcp_prepare(struct page *page, unsigned int order)
 		return free_pages_prepare(page, order, false, FPI_NONE);
 }
 
-static bool bulkfree_pcp_prepare(struct page *page)
-{
-	return check_free_page(page);
-}
 
 static void free_pcppages_bulk(struct zone *zone, int count,
 					struct per_cpu_pages *pcp,
@@ -900,16 +874,6 @@ int move_freepages_block(struct zone *zone, struct page *page,
 								num_movable);
 }
 
-static void change_pageblock_range(struct page *pageblock_page,
-					int start_order, int migratetype)
-{
-	int nr_pageblocks = 1 << (start_order - pageblock_order);
-
-	while (nr_pageblocks--) {
-		set_pageblock_migratetype(pageblock_page, migratetype);
-		pageblock_page += pageblock_nr_pages;
-	}
-}
 
 static bool can_steal_fallback(unsigned int order, int start_mt)
 {
@@ -962,18 +926,7 @@ int find_suitable_fallback(struct free_area *area, unsigned int order,
 	return -1;
 }
 
-static void reserve_highatomic_pageblock(struct page *page, struct zone *zone,
-				unsigned int alloc_order)
-{
-	/* Stub: no highatomic reservation */
-}
 
-static bool unreserve_highatomic_pageblock(const struct alloc_context *ac,
-						bool force)
-{
-	/* Stub: no highatomic unreservation */
-	return false;
-}
 
 static __always_inline bool
 __rmqueue_fallback(struct zone *zone, int order, int start_migratetype,
@@ -1061,10 +1014,6 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
 	return allocated;
 }
 
-static void drain_pages_zone(unsigned int cpu, struct zone *zone)
-{
-	/* Stub: skip per-CPU page draining for minimal kernel */
-}
 
 static void drain_pages(unsigned int cpu)
 {
@@ -1076,10 +1025,6 @@ void drain_local_pages(struct zone *zone)
 	/* Stub: skip page draining for minimal kernel */
 }
 
-static void drain_local_pages_wq(struct work_struct *work)
-{
-	/* Stub: skip complex work queue draining for minimal kernel */
-}
 
 static void __drain_all_pages(struct zone *zone, bool force_all_cpus)
 {
@@ -1441,10 +1386,6 @@ bool zone_watermark_ok_safe(struct zone *z, unsigned int order,
 	return __zone_watermark_ok(z, order, mark, highest_zoneidx, 0, free_pages);
 }
 
-static bool zone_allows_reclaim(struct zone *local_zone, struct zone *zone)
-{
-	return true;
-}
 
 static inline unsigned int
 alloc_flags_nofragment(struct zone *zone, gfp_t gfp_mask)
@@ -1492,10 +1433,6 @@ get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
 	return NULL;
 }
 
-static void warn_alloc_show_mem(gfp_t gfp_mask, nodemask_t *nodemask)
-{
-	/* Stub: memory diagnostic not needed for minimal kernel */
-}
 
 void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...)
 {
@@ -1569,11 +1506,6 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
 	return NULL;
 }
 
-static void wake_all_kswapds(unsigned int order, gfp_t gfp_mask,
-			     const struct alloc_context *ac)
-{
-	/* Stub: kswapd wakeup not needed for minimal kernel */
-}
 
 static inline unsigned int
 gfp_to_alloc_flags(gfp_t gfp_mask)
@@ -1838,26 +1770,6 @@ void free_pages(unsigned long addr, unsigned int order)
 }
 
 
-static struct page *__page_frag_cache_refill(struct page_frag_cache *nc,
-					     gfp_t gfp_mask)
-{
-	struct page *page = NULL;
-	gfp_t gfp = gfp_mask;
-
-#if (PAGE_SIZE < PAGE_FRAG_CACHE_MAX_SIZE)
-	gfp_mask |= __GFP_COMP | __GFP_NOWARN | __GFP_NORETRY |
-		    __GFP_NOMEMALLOC;
-	page = alloc_pages_node(NUMA_NO_NODE, gfp_mask,
-				PAGE_FRAG_CACHE_MAX_ORDER);
-	nc->size = page ? PAGE_FRAG_CACHE_MAX_SIZE : PAGE_SIZE;
-#endif
-	if (unlikely(!page))
-		page = alloc_pages_node(NUMA_NO_NODE, gfp, 0);
-
-	nc->va = page ? page_address(page) : NULL;
-
-	return page;
-}
 
 void __page_frag_cache_drain(struct page *page, unsigned int count)
 {
@@ -2721,10 +2633,6 @@ static void __init free_area_init_node(int nid)
 	free_area_init_core(pgdat);
 }
 
-static void __init free_area_init_memoryless_node(int nid)
-{
-	free_area_init_node(nid);
-}
 
 #if MAX_NUMNODES > 1
 
@@ -2748,44 +2656,8 @@ unsigned long __init find_min_pfn_with_active_regions(void)
 	return PHYS_PFN(memblock_start_of_DRAM());
 }
 
-static unsigned long __init early_calculate_totalpages(void)
-{
-	unsigned long totalpages = 0;
-	unsigned long start_pfn, end_pfn;
-	int i, nid;
 
-	/* Calculate total pages and mark nodes with memory */
-	for_each_mem_pfn_range(i, MAX_NUMNODES, &start_pfn, &end_pfn, &nid) {
-		unsigned long pages = end_pfn - start_pfn;
-		if (pages) {
-			totalpages += pages;
-			node_set_state(nid, N_MEMORY);
-		}
-	}
-	return totalpages;
-}
 
-static void __init find_zone_movable_pfns_for_nodes(void)
-{
-	/* Stubbed: movable zones not needed for minimal kernel */
-	find_usable_zone_for_movable();
-}
-
-static void check_for_memory(pg_data_t *pgdat, int nid)
-{
-	enum zone_type zone_type;
-
-	for (zone_type = 0; zone_type <= ZONE_MOVABLE - 1; zone_type++) {
-		struct zone *zone = &pgdat->node_zones[zone_type];
-		if (populated_zone(zone)) {
-			if (IS_ENABLED(CONFIG_HIGHMEM))
-				node_set_state(nid, N_HIGH_MEMORY);
-			if (zone_type <= ZONE_NORMAL)
-				node_set_state(nid, N_NORMAL_MEMORY);
-			break;
-		}
-	}
-}
 
 bool __weak arch_has_descending_max_zone_pfns(void)
 {
@@ -3013,10 +2885,6 @@ int percpu_pagelist_high_fraction_sysctl_handler(struct ctl_table *table,
 
 #ifndef __HAVE_ARCH_RESERVED_KERNEL_PAGES
 
-static unsigned long __init arch_reserved_kernel_pages(void)
-{
-	return 0;
-}
 #endif
 
 #if __BITS_PER_LONG > 32

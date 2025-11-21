@@ -43,7 +43,7 @@ obj-y	+= lockref.o
 
 obj-y += bcd.o sort.o parser.o debug_locks.o \
 	 bust_spinlocks.o kasprintf.o bitmap.o scatterlist.o \
-	 iov_iter.o clz_ctz.o \
+	 iov_iter.o \
 	 bsearch.o find_bit.o llist.o \
 	 refcount.o usercopy.o errseq.o
 obj-$(CONFIG_STRING_SELFTEST) += test_string.o

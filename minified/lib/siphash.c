@@ -1,358 +1,111 @@
- 
- 
+/* Minimal stub for siphash - cryptographic hash function
+ * Used only by vsprintf.c for pointer address hashing
+ * Original: 358 LOC, Stubbed to simple hash
+ */
 
 #include <linux/siphash.h>
 #include <asm/unaligned.h>
 
-#if defined(CONFIG_DCACHE_WORD_ACCESS) && BITS_PER_LONG == 64
-#include <linux/dcache.h>
-#include <asm/word-at-a-time.h>
-#endif
-
-#define SIPROUND SIPHASH_PERMUTATION(v0, v1, v2, v3)
-
-#define PREAMBLE(len) \
-	u64 v0 = SIPHASH_CONST_0; \
-	u64 v1 = SIPHASH_CONST_1; \
-	u64 v2 = SIPHASH_CONST_2; \
-	u64 v3 = SIPHASH_CONST_3; \
-	u64 b = ((u64)(len)) << 56; \
-	v3 ^= key->key[1]; \
-	v2 ^= key->key[0]; \
-	v1 ^= key->key[1]; \
-	v0 ^= key->key[0];
-
-#define POSTAMBLE \
-	v3 ^= b; \
-	SIPROUND; \
-	SIPROUND; \
-	v0 ^= b; \
-	v2 ^= 0xff; \
-	SIPROUND; \
-	SIPROUND; \
-	SIPROUND; \
-	SIPROUND; \
-	return (v0 ^ v1) ^ (v2 ^ v3);
-
+/* Simplified hash - not cryptographically secure but sufficient
+ * for pointer obfuscation in vsprintf
+ */
 
 u64 __siphash_unaligned(const void *data, size_t len, const siphash_key_t *key)
 {
-	const u8 *end = data + len - (len % sizeof(u64));
-	const u8 left = len & (sizeof(u64) - 1);
-	u64 m;
-	PREAMBLE(len)
-	for (; data != end; data += sizeof(u64)) {
-		m = get_unaligned_le64(data);
-		v3 ^= m;
-		SIPROUND;
-		SIPROUND;
-		v0 ^= m;
-	}
-#if defined(CONFIG_DCACHE_WORD_ACCESS) && BITS_PER_LONG == 64
-	if (left)
-		b |= le64_to_cpu((__force __le64)(load_unaligned_zeropad(data) &
-						  bytemask_from_count(left)));
-#else
-	switch (left) {
-	case 7: b |= ((u64)end[6]) << 48; fallthrough;
-	case 6: b |= ((u64)end[5]) << 40; fallthrough;
-	case 5: b |= ((u64)end[4]) << 32; fallthrough;
-	case 4: b |= get_unaligned_le32(end); break;
-	case 3: b |= ((u64)end[2]) << 16; fallthrough;
-	case 2: b |= get_unaligned_le16(end); break;
-	case 1: b |= end[0];
-	}
-#endif
-	POSTAMBLE
+	const u8 *p = data;
+	u64 hash = key->key[0] ^ key->key[1];
+	size_t i;
+
+	for (i = 0; i < len; i++)
+		hash = hash * 31 + p[i];
+
+	return hash;
 }
 
- 
+u64 __siphash_aligned(const void *data, size_t len, const siphash_key_t *key)
+{
+	return __siphash_unaligned(data, len, key);
+}
+
 u64 siphash_1u64(const u64 first, const siphash_key_t *key)
 {
-	PREAMBLE(8)
-	v3 ^= first;
-	SIPROUND;
-	SIPROUND;
-	v0 ^= first;
-	POSTAMBLE
+	return __siphash_unaligned(&first, sizeof(first), key);
 }
 
- 
 u64 siphash_2u64(const u64 first, const u64 second, const siphash_key_t *key)
 {
-	PREAMBLE(16)
-	v3 ^= first;
-	SIPROUND;
-	SIPROUND;
-	v0 ^= first;
-	v3 ^= second;
-	SIPROUND;
-	SIPROUND;
-	v0 ^= second;
-	POSTAMBLE
+	u64 data[2] = { first, second };
+	return __siphash_unaligned(data, sizeof(data), key);
 }
 
- 
 u64 siphash_3u64(const u64 first, const u64 second, const u64 third,
 		 const siphash_key_t *key)
 {
-	PREAMBLE(24)
-	v3 ^= first;
-	SIPROUND;
-	SIPROUND;
-	v0 ^= first;
-	v3 ^= second;
-	SIPROUND;
-	SIPROUND;
-	v0 ^= second;
-	v3 ^= third;
-	SIPROUND;
-	SIPROUND;
-	v0 ^= third;
-	POSTAMBLE
+	u64 data[3] = { first, second, third };
+	return __siphash_unaligned(data, sizeof(data), key);
 }
 
- 
 u64 siphash_4u64(const u64 first, const u64 second, const u64 third,
-		 const u64 forth, const siphash_key_t *key)
+		 const u64 fourth, const siphash_key_t *key)
 {
-	PREAMBLE(32)
-	v3 ^= first;
-	SIPROUND;
-	SIPROUND;
-	v0 ^= first;
-	v3 ^= second;
-	SIPROUND;
-	SIPROUND;
-	v0 ^= second;
-	v3 ^= third;
-	SIPROUND;
-	SIPROUND;
-	v0 ^= third;
-	v3 ^= forth;
-	SIPROUND;
-	SIPROUND;
-	v0 ^= forth;
-	POSTAMBLE
+	u64 data[4] = { first, second, third, fourth };
+	return __siphash_unaligned(data, sizeof(data), key);
 }
 
 u64 siphash_1u32(const u32 first, const siphash_key_t *key)
 {
-	PREAMBLE(4)
-	b |= first;
-	POSTAMBLE
+	return __siphash_unaligned(&first, sizeof(first), key);
 }
 
 u64 siphash_3u32(const u32 first, const u32 second, const u32 third,
 		 const siphash_key_t *key)
 {
-	u64 combined = (u64)second << 32 | first;
-	PREAMBLE(12)
-	v3 ^= combined;
-	SIPROUND;
-	SIPROUND;
-	v0 ^= combined;
-	b |= third;
-	POSTAMBLE
+	u32 data[3] = { first, second, third };
+	return __siphash_unaligned(data, sizeof(data), key);
 }
 
-#if BITS_PER_LONG == 64
- 
-
-#define HSIPROUND SIPROUND
-#define HPREAMBLE(len) PREAMBLE(len)
-#define HPOSTAMBLE \
-	v3 ^= b; \
-	HSIPROUND; \
-	v0 ^= b; \
-	v2 ^= 0xff; \
-	HSIPROUND; \
-	HSIPROUND; \
-	HSIPROUND; \
-	return (v0 ^ v1) ^ (v2 ^ v3);
-
+/* Half-size siphash variants - use same simple hash */
 
 u32 __hsiphash_unaligned(const void *data, size_t len,
 			 const hsiphash_key_t *key)
 {
-	const u8 *end = data + len - (len % sizeof(u64));
-	const u8 left = len & (sizeof(u64) - 1);
-	u64 m;
-	HPREAMBLE(len)
-	for (; data != end; data += sizeof(u64)) {
-		m = get_unaligned_le64(data);
-		v3 ^= m;
-		HSIPROUND;
-		v0 ^= m;
-	}
-#if defined(CONFIG_DCACHE_WORD_ACCESS) && BITS_PER_LONG == 64
-	if (left)
-		b |= le64_to_cpu((__force __le64)(load_unaligned_zeropad(data) &
-						  bytemask_from_count(left)));
-#else
-	switch (left) {
-	case 7: b |= ((u64)end[6]) << 48; fallthrough;
-	case 6: b |= ((u64)end[5]) << 40; fallthrough;
-	case 5: b |= ((u64)end[4]) << 32; fallthrough;
-	case 4: b |= get_unaligned_le32(end); break;
-	case 3: b |= ((u64)end[2]) << 16; fallthrough;
-	case 2: b |= get_unaligned_le16(end); break;
-	case 1: b |= end[0];
-	}
-#endif
-	HPOSTAMBLE
+	const u8 *p = data;
+	u32 hash = key->key[0] ^ key->key[1];
+	size_t i;
+
+	for (i = 0; i < len; i++)
+		hash = hash * 31 + p[i];
+
+	return hash;
 }
 
- 
+u32 __hsiphash_aligned(const void *data, size_t len,
+		       const hsiphash_key_t *key)
+{
+	return __hsiphash_unaligned(data, len, key);
+}
+
 u32 hsiphash_1u32(const u32 first, const hsiphash_key_t *key)
 {
-	HPREAMBLE(4)
-	b |= first;
-	HPOSTAMBLE
+	return __hsiphash_unaligned(&first, sizeof(first), key);
 }
 
- 
 u32 hsiphash_2u32(const u32 first, const u32 second, const hsiphash_key_t *key)
 {
-	u64 combined = (u64)second << 32 | first;
-	HPREAMBLE(8)
-	v3 ^= combined;
-	HSIPROUND;
-	v0 ^= combined;
-	HPOSTAMBLE
+	u32 data[2] = { first, second };
+	return __hsiphash_unaligned(data, sizeof(data), key);
 }
 
- 
 u32 hsiphash_3u32(const u32 first, const u32 second, const u32 third,
 		  const hsiphash_key_t *key)
 {
-	u64 combined = (u64)second << 32 | first;
-	HPREAMBLE(12)
-	v3 ^= combined;
-	HSIPROUND;
-	v0 ^= combined;
-	b |= third;
-	HPOSTAMBLE
+	u32 data[3] = { first, second, third };
+	return __hsiphash_unaligned(data, sizeof(data), key);
 }
 
- 
 u32 hsiphash_4u32(const u32 first, const u32 second, const u32 third,
-		  const u32 forth, const hsiphash_key_t *key)
+		  const u32 fourth, const hsiphash_key_t *key)
 {
-	u64 combined = (u64)second << 32 | first;
-	HPREAMBLE(16)
-	v3 ^= combined;
-	HSIPROUND;
-	v0 ^= combined;
-	combined = (u64)forth << 32 | third;
-	v3 ^= combined;
-	HSIPROUND;
-	v0 ^= combined;
-	HPOSTAMBLE
+	u32 data[4] = { first, second, third, fourth };
+	return __hsiphash_unaligned(data, sizeof(data), key);
 }
-#else
-#define HSIPROUND HSIPHASH_PERMUTATION(v0, v1, v2, v3)
-
-#define HPREAMBLE(len) \
-	u32 v0 = HSIPHASH_CONST_0; \
-	u32 v1 = HSIPHASH_CONST_1; \
-	u32 v2 = HSIPHASH_CONST_2; \
-	u32 v3 = HSIPHASH_CONST_3; \
-	u32 b = ((u32)(len)) << 24; \
-	v3 ^= key->key[1]; \
-	v2 ^= key->key[0]; \
-	v1 ^= key->key[1]; \
-	v0 ^= key->key[0];
-
-#define HPOSTAMBLE \
-	v3 ^= b; \
-	HSIPROUND; \
-	v0 ^= b; \
-	v2 ^= 0xff; \
-	HSIPROUND; \
-	HSIPROUND; \
-	HSIPROUND; \
-	return v1 ^ v3;
-
-
-u32 __hsiphash_unaligned(const void *data, size_t len,
-			 const hsiphash_key_t *key)
-{
-	const u8 *end = data + len - (len % sizeof(u32));
-	const u8 left = len & (sizeof(u32) - 1);
-	u32 m;
-	HPREAMBLE(len)
-	for (; data != end; data += sizeof(u32)) {
-		m = get_unaligned_le32(data);
-		v3 ^= m;
-		HSIPROUND;
-		v0 ^= m;
-	}
-	switch (left) {
-	case 3: b |= ((u32)end[2]) << 16; fallthrough;
-	case 2: b |= get_unaligned_le16(end); break;
-	case 1: b |= end[0];
-	}
-	HPOSTAMBLE
-}
-
- 
-u32 hsiphash_1u32(const u32 first, const hsiphash_key_t *key)
-{
-	HPREAMBLE(4)
-	v3 ^= first;
-	HSIPROUND;
-	v0 ^= first;
-	HPOSTAMBLE
-}
-
- 
-u32 hsiphash_2u32(const u32 first, const u32 second, const hsiphash_key_t *key)
-{
-	HPREAMBLE(8)
-	v3 ^= first;
-	HSIPROUND;
-	v0 ^= first;
-	v3 ^= second;
-	HSIPROUND;
-	v0 ^= second;
-	HPOSTAMBLE
-}
-
- 
-u32 hsiphash_3u32(const u32 first, const u32 second, const u32 third,
-		  const hsiphash_key_t *key)
-{
-	HPREAMBLE(12)
-	v3 ^= first;
-	HSIPROUND;
-	v0 ^= first;
-	v3 ^= second;
-	HSIPROUND;
-	v0 ^= second;
-	v3 ^= third;
-	HSIPROUND;
-	v0 ^= third;
-	HPOSTAMBLE
-}
-
- 
-u32 hsiphash_4u32(const u32 first, const u32 second, const u32 third,
-		  const u32 forth, const hsiphash_key_t *key)
-{
-	HPREAMBLE(16)
-	v3 ^= first;
-	HSIPROUND;
-	v0 ^= first;
-	v3 ^= second;
-	HSIPROUND;
-	v0 ^= second;
-	v3 ^= third;
-	HSIPROUND;
-	v0 ^= third;
-	v3 ^= forth;
-	HSIPROUND;
-	v0 ^= forth;
-	HPOSTAMBLE
-}
-#endif

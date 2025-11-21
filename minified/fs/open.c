@@ -191,85 +191,7 @@ SYSCALL_DEFINE2(ftruncate64, unsigned int, fd, loff_t, length)
 
 int vfs_fallocate(struct file *file, int mode, loff_t offset, loff_t len)
 {
-	struct inode *inode = file_inode(file);
-	long ret;
-
-	if (offset < 0 || len <= 0)
-		return -EINVAL;
-
-	 
-	if (mode & ~FALLOC_FL_SUPPORTED_MASK)
-		return -EOPNOTSUPP;
-
-	 
-	if ((mode & (FALLOC_FL_PUNCH_HOLE | FALLOC_FL_ZERO_RANGE)) ==
-	    (FALLOC_FL_PUNCH_HOLE | FALLOC_FL_ZERO_RANGE))
-		return -EOPNOTSUPP;
-
-	 
-	if ((mode & FALLOC_FL_PUNCH_HOLE) &&
-	    !(mode & FALLOC_FL_KEEP_SIZE))
-		return -EOPNOTSUPP;
-
-	 
-	if ((mode & FALLOC_FL_COLLAPSE_RANGE) &&
-	    (mode & ~FALLOC_FL_COLLAPSE_RANGE))
-		return -EINVAL;
-
-	 
-	if ((mode & FALLOC_FL_INSERT_RANGE) &&
-	    (mode & ~FALLOC_FL_INSERT_RANGE))
-		return -EINVAL;
-
-	 
-	if ((mode & FALLOC_FL_UNSHARE_RANGE) &&
-	    (mode & ~(FALLOC_FL_UNSHARE_RANGE | FALLOC_FL_KEEP_SIZE)))
-		return -EINVAL;
-
-	if (!(file->f_mode & FMODE_WRITE))
-		return -EBADF;
-
-	 
-	if ((mode & ~FALLOC_FL_KEEP_SIZE) && IS_APPEND(inode))
-		return -EPERM;
-
-	if (IS_IMMUTABLE(inode))
-		return -EPERM;
-
-	 
-	if (IS_SWAPFILE(inode))
-		return -ETXTBSY;
-
-	 
-	ret = security_file_permission(file, MAY_WRITE);
-	if (ret)
-		return ret;
-
-	if (S_ISFIFO(inode->i_mode))
-		return -ESPIPE;
-
-	if (S_ISDIR(inode->i_mode))
-		return -EISDIR;
-
-	if (!S_ISREG(inode->i_mode) && !S_ISBLK(inode->i_mode))
-		return -ENODEV;
-
-	 
-	if (((offset + len) > inode->i_sb->s_maxbytes) || ((offset + len) < 0))
-		return -EFBIG;
-
-	if (!file->f_op->fallocate)
-		return -EOPNOTSUPP;
-
-	file_start_write(file);
-	ret = file->f_op->fallocate(file, mode, offset, len);
-
-	 
-	if (ret == 0)
-		fsnotify_modify(file);
-
-	file_end_write(file);
-	return ret;
+	return -EOPNOTSUPP;
 }
 
 int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len)
@@ -592,10 +514,9 @@ int finish_open(struct file *file, struct dentry *dentry,
 	return do_dentry_open(file, d_backing_inode(dentry), open);
 }
 
- 
+
 int finish_no_open(struct file *file, struct dentry *dentry)
 {
-	file->f_path.dentry = dentry;
 	return 0;
 }
 

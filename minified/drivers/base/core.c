@@ -2002,51 +2002,14 @@ static int device_check_offline(struct device *dev, void *not_used)
 
 int device_offline(struct device *dev)
 {
-	int ret;
-
-	if (dev->offline_disabled)
-		return -EPERM;
-
-	ret = device_for_each_child(dev, NULL, device_check_offline);
-	if (ret)
-		return ret;
-
-	device_lock(dev);
-	if (device_supports_offline(dev)) {
-		if (dev->offline) {
-			ret = 1;
-		} else {
-			ret = dev->bus->offline(dev);
-			if (!ret) {
-				kobject_uevent(&dev->kobj, KOBJ_OFFLINE);
-				dev->offline = true;
-			}
-		}
-	}
-	device_unlock(dev);
-
-	return ret;
+	/* Stub: device offline not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 int device_online(struct device *dev)
 {
-	int ret = 0;
-
-	device_lock(dev);
-	if (device_supports_offline(dev)) {
-		if (dev->offline) {
-			ret = dev->bus->online(dev);
-			if (!ret) {
-				kobject_uevent(&dev->kobj, KOBJ_ONLINE);
-				dev->offline = false;
-			}
-		} else {
-			ret = 1;
-		}
-	}
-	device_unlock(dev);
-
-	return ret;
+	/* Stub: device online not needed for minimal kernel */
+	return 0;
 }
 
 struct root_device {

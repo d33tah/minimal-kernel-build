@@ -1743,43 +1743,6 @@ loff_t mapping_seek_hole_data(struct address_space *mapping, loff_t start,
 
 #define MMAP_LOTSAMISS  (100)
 
-static int lock_folio_maybe_drop_mmap(struct vm_fault *vmf, struct folio *folio,
-				     struct file **fpin)
-{
-	if (folio_trylock(folio))
-		return 1;
-
-	
-	if (vmf->flags & FAULT_FLAG_RETRY_NOWAIT)
-		return 0;
-
-	*fpin = maybe_unlock_mmap_for_io(vmf, *fpin);
-	if (vmf->flags & FAULT_FLAG_KILLABLE) {
-		if (__folio_lock_killable(folio)) {
-			
-			if (*fpin == NULL)
-				mmap_read_unlock(vmf->vma->vm_mm);
-			return 0;
-		}
-	} else
-		__folio_lock(folio);
-
-	return 1;
-}
-
-static struct file *do_sync_mmap_readahead(struct vm_fault *vmf)
-{
-	/* Stubbed: mmap readahead not needed for minimal boot */
-	return NULL;
-}
-
-static struct file *do_async_mmap_readahead(struct vm_fault *vmf,
-					    struct folio *folio)
-{
-	/* Stub: async readahead optimization not needed */
-	return NULL;
-}
-
 vm_fault_t filemap_fault(struct vm_fault *vmf)
 {
 	struct file *file = vmf->vma->vm_file;

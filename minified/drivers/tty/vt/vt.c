@@ -91,13 +91,9 @@ module_param(global_cursor_default, int, S_IRUGO | S_IWUSR);
 static int cur_default = CUR_UNDERLINE;
 module_param(cur_default, int, S_IRUGO | S_IWUSR);
 
-static int ignore_poke;
-
 int do_poke_blanked_console;
 int console_blanked;
 
-static int vesa_blank_mode; 
-static int vesa_off_interval;
 static int blankinterval;
 core_param(consoleblank, blankinterval, int, 0444);
 
@@ -116,7 +112,6 @@ int (*console_blank_hook)(int);
 
 static DEFINE_TIMER(console_timer, blank_screen_t);
 static int blank_state;
-static int blank_timer_expired;
 enum {
 	blank_off = 0,
 	blank_normal_wait,
@@ -216,11 +211,6 @@ static void vc_uniscr_set(struct vc_data *vc, struct uni_screen *new_uniscr)
 	vc->vc_uni_screen = new_uniscr;
 }
 
-static void vc_uniscr_putc(struct vc_data *vc, char32_t uc)
-{
-	/* Stub: skip unicode screen buffer update for minimal kernel */
-}
-
 static void vc_uniscr_insert(struct vc_data *vc, unsigned int nr)
 {
 	/* Stub: skip unicode screen buffer insert for minimal kernel */
@@ -247,17 +237,6 @@ static void vc_uniscr_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 			     enum con_scroll dir, unsigned int nr)
 {
 	/* Stub: skip unicode screen buffer scroll for minimal kernel */
-}
-
-static void vc_uniscr_copy_area(struct uni_screen *dst,
-				unsigned int dst_cols,
-				unsigned int dst_rows,
-				struct uni_screen *src,
-				unsigned int src_cols,
-				unsigned int src_top_row,
-				unsigned int src_bot_row)
-{
-	/* Stub: skip unicode screen buffer copy for minimal kernel */
 }
 
 int vc_uniscr_check(struct vc_data *vc)
@@ -321,11 +300,6 @@ void vc_uniscr_copy_line(const struct vc_data *vc, void *dest, bool viewed,
 			*uni_buf++ = inverse_translate(vc, glyph, true);
 		}
 	}
-}
-
-static void vc_uniscr_debug_check(struct vc_data *vc)
-{
-	return;
 }
 
 static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
@@ -909,11 +883,6 @@ static void gotoxy(struct vc_data *vc, int new_x, int new_y)
 	vc->vc_need_wrap = 0;
 }
 
-static void gotoxay(struct vc_data *vc, int new_x, int new_y)
-{
-	gotoxy(vc, new_x, vc->vc_decom ? (vc->vc_top + new_y) : new_y);
-}
-
 void scrollback(struct vc_data *vc)
 {
 	scrolldelta(-(vc->vc_rows / 2));
@@ -937,18 +906,6 @@ static void lf(struct vc_data *vc)
 	}
 	vc->vc_need_wrap = 0;
 	notify_write(vc, '\n');
-}
-
-static void ri(struct vc_data *vc)
-{
-    	
-	if (vc->state.y == vc->vc_top)
-		con_scroll(vc, vc->vc_top, vc->vc_bottom, SM_DOWN, 1);
-	else if (vc->state.y > 0) {
-		vc->state.y--;
-		vc->vc_pos -= vc->vc_size_row;
-	}
-	vc->vc_need_wrap = 0;
 }
 
 static inline void cr(struct vc_data *vc)
@@ -1007,51 +964,6 @@ static void csi_J(struct vc_data *vc, int vpar)
 	scr_memsetw(start, vc->vc_video_erase_char, 2 * count);
 	if (con_should_update(vc))
 		do_update_region(vc, (unsigned long) start, count);
-	vc->vc_need_wrap = 0;
-}
-
-static void csi_K(struct vc_data *vc, int vpar)
-{
-	unsigned int count;
-	unsigned short *start = (unsigned short *)vc->vc_pos;
-	int offset;
-
-	switch (vpar) {
-		case 0:	
-			offset = 0;
-			count = vc->vc_cols - vc->state.x;
-			break;
-		case 1:	
-			offset = -vc->state.x;
-			count = vc->state.x + 1;
-			break;
-		case 2: 
-			offset = -vc->state.x;
-			count = vc->vc_cols;
-			break;
-		default:
-			return;
-	}
-	vc_uniscr_clear_line(vc, vc->state.x + offset, count);
-	scr_memsetw(start + offset, vc->vc_video_erase_char, 2 * count);
-	vc->vc_need_wrap = 0;
-	if (con_should_update(vc))
-		do_update_region(vc, (unsigned long)(start + offset), count);
-}
-
-static void csi_X(struct vc_data *vc, unsigned int vpar)
-{					  
-	unsigned int count;
-
-	if (!vpar)
-		vpar++;
-
-	count = min(vpar, vc->vc_cols - vc->state.x);
-
-	vc_uniscr_clear_line(vc, vc->state.x, count);
-	scr_memsetw((unsigned short *)vc->vc_pos, vc->vc_video_erase_char, 2 * count);
-	if (con_should_update(vc))
-		vc->vc_sw->con_clear(vc, vc->state.y, vc->state.x, 1, count);
 	vc->vc_need_wrap = 0;
 }
 

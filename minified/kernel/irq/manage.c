@@ -589,24 +589,6 @@ static void irq_release_resources(struct irq_desc *desc)
 		c->irq_release_resources(d);
 }
 
-static bool irq_supports_nmi(struct irq_desc *desc)
-{
-	struct irq_data *d = irq_desc_get_irq_data(desc);
-
-	if (d->chip->irq_bus_lock || d->chip->irq_bus_sync_unlock)
-		return false;
-
-	return d->chip->flags & IRQCHIP_SUPPORTS_NMI;
-}
-
-static int irq_nmi_setup(struct irq_desc *desc)
-{
-	struct irq_data *d = irq_desc_get_irq_data(desc);
-	struct irq_chip *c = d->chip;
-
-	return c->irq_nmi_setup ? c->irq_nmi_setup(d) : -EINVAL;
-}
-
 static void irq_nmi_teardown(struct irq_desc *desc)
 {
 	struct irq_data *d = irq_desc_get_irq_data(desc);

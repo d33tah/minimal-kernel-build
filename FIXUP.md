@@ -1,3 +1,36 @@
+--- 2025-11-21 02:19 ---
+
+Progress: Removed unused functions/variables - 2,612 LOC reduction
+- vt.c: 4 unused variables, 6 unused functions (gotoxay, ri, csi_K, csi_X, vc_uniscr_*)
+- kernel/sched/core.c: 3 unused functions (sched_copy_attr, get_params, sched_attr_copy_to_user)
+- kernel/sched/completion.c: wait_for_common_io
+- mm/filemap.c: 3 unused functions (lock_folio_maybe_drop_mmap, do_sync/async_mmap_readahead)
+- fs/open.c: access_override_creds
+- kernel/irq/manage.c: irq_supports_nmi, irq_nmi_setup
+- fs/read_write.c: vfs_readv, vfs_writev
+- fs/super.c: 4 freeze-related functions
+- arch/x86/mm/fault.c: low_pfn, show_ldttss
+- mm/page-writeback.c: unused start_time variable
+
+From: 235,266 LOC → 232,654 LOC (2,612 LOC removed)
+Binary: 320KB (down from 321KB)
+Gap to goal: 32,654 LOC (14.0% reduction needed)
+
+--- 2025-11-21 02:10 ---
+
+New session starting:
+- make vm: PASSES ✓, prints "Hello, World!Still alive" ✓
+- Binary: 321KB
+- Current LOC: 235,266 (measured with cloc after mrproper)
+- Goal: 200,000 LOC
+- Gap: 35,266 LOC (15.0% reduction needed)
+
+Strategy:
+1. Look for large subsystems that can be simplified/stubbed
+2. Focus on headers - 1201 header files vs 421 C files is excessive
+3. Target syscall code, scheduling, TTY complexity
+4. Check for largest files and reduce them
+
 --- 2025-11-21 02:02 ---
 
 Session summary (3 commits):

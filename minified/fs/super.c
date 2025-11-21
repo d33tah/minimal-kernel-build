@@ -1025,33 +1025,6 @@ int super_setup_bdi(struct super_block *sb)
 				    atomic_long_inc_return(&bdi_seq));
 }
 
-static void sb_wait_write(struct super_block *sb, int level)
-{
-	percpu_down_write(sb->s_writers.rw_sem + level-1);
-}
-
-static void lockdep_sb_freeze_release(struct super_block *sb)
-{
-	int level;
-
-	for (level = SB_FREEZE_LEVELS - 1; level >= 0; level--)
-		percpu_rwsem_release(sb->s_writers.rw_sem + level, 0, _THIS_IP_);
-}
-
-static void lockdep_sb_freeze_acquire(struct super_block *sb)
-{
-	int level;
-
-	for (level = 0; level < SB_FREEZE_LEVELS; ++level)
-		percpu_rwsem_acquire(sb->s_writers.rw_sem + level, 0, _THIS_IP_);
-}
-
-static void sb_freeze_unlock(struct super_block *sb, int level)
-{
-	for (level--; level >= 0; level--)
-		percpu_up_write(sb->s_writers.rw_sem + level);
-}
-
 int freeze_super(struct super_block *sb)
 {
 	/* Stub: filesystem freezing not needed for minimal kernel */

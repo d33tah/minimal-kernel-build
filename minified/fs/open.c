@@ -284,39 +284,6 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
 
 
  
-static const struct cred *access_override_creds(void)
-{
-	const struct cred *old_cred;
-	struct cred *override_cred;
-
-	override_cred = prepare_creds();
-	if (!override_cred)
-		return NULL;
-
-	override_cred->fsuid = override_cred->uid;
-	override_cred->fsgid = override_cred->gid;
-
-	if (!issecure(SECURE_NO_SETUID_FIXUP)) {
-		 
-		kuid_t root_uid = make_kuid(override_cred->user_ns, 0);
-		if (!uid_eq(override_cred->uid, root_uid))
-			cap_clear(override_cred->cap_effective);
-		else
-			override_cred->cap_effective =
-				override_cred->cap_permitted;
-	}
-
-	 
-	override_cred->non_rcu = 1;
-
-	old_cred = override_creds(override_cred);
-
-	 
-	put_cred(override_cred);
-
-	return old_cred;
-}
-
 static long do_faccessat(int dfd, const char __user *filename, int mode, int flags)
 {
 	return -ENOSYS;

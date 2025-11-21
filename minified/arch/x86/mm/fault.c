@@ -219,11 +219,6 @@ void arch_sync_kernel_mappings(unsigned long start, unsigned long end)
 	}
 }
 
-static bool low_pfn(unsigned long pfn)
-{
-	return pfn < max_low_pfn;
-}
-
 static void dump_pagetable(unsigned long address)
 {
 }
@@ -246,10 +241,6 @@ static int is_f00f_bug(struct pt_regs *regs, unsigned long error_code,
 		       unsigned long address)
 {
 	return 0;
-}
-
-static void show_ldttss(const struct desc_ptr *gdt, const char *name, u16 index)
-{
 }
 
 static void

@@ -1689,22 +1689,6 @@ do_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
 	return retval;
 }
 
-static int sched_copy_attr(struct sched_attr __user *uattr, struct sched_attr *attr)
-{
-	memset(attr, 0, sizeof(*attr));
-	return 0;
-}
-
-static void get_params(struct task_struct *p, struct sched_attr *attr)
-{
-	if (task_has_dl_policy(p))
-		__getparam_dl(p, attr);
-	else if (task_has_rt_policy(p))
-		attr->sched_priority = p->rt_priority;
-	else
-		attr->sched_nice = task_nice(p);
-}
-
 SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param __user *, param)
 {
 	if (policy < 0)
@@ -1777,25 +1761,6 @@ SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
 out_unlock:
 	rcu_read_unlock();
 	return retval;
-}
-
-static int
-sched_attr_copy_to_user(struct sched_attr __user *uattr,
-			struct sched_attr *kattr,
-			unsigned int usize)
-{
-	unsigned int ksize = sizeof(*kattr);
-
-	if (!access_ok(uattr, usize))
-		return -EFAULT;
-
-	
-	kattr->size = min(usize, ksize);
-
-	if (copy_to_user(uattr, kattr, kattr->size))
-		return -EFAULT;
-
-	return 0;
 }
 
 SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,

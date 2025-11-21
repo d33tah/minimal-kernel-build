@@ -777,7 +777,6 @@ static void balance_dirty_pages(struct bdi_writeback *wb,
 	unsigned long dirty_ratelimit;
 	struct backing_dev_info *bdi = wb->bdi;
 	bool strictlimit = bdi->capabilities & BDI_CAP_STRICTLIMIT;
-	unsigned long start_time = jiffies;
 
 	for (;;) {
 		unsigned long now = jiffies;

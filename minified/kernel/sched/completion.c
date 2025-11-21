@@ -78,13 +78,6 @@ wait_for_common(struct completion *x, long timeout, int state)
 	return __wait_for_common(x, schedule_timeout, timeout, state);
 }
 
-static long __sched
-wait_for_common_io(struct completion *x, long timeout, int state)
-{
-	return __wait_for_common(x, io_schedule_timeout, timeout, state);
-}
-
- 
 void __sched wait_for_completion(struct completion *x)
 {
 	wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_UNINTERRUPTIBLE);

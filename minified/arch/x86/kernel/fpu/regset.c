@@ -1,5 +1,7 @@
- 
- 
+// Stubbed FPU register set operations for ptrace
+// Original: 242 LOC
+// Not needed for minimal boot without ptrace
+
 #include <linux/sched/task_stack.h>
 #include <linux/vmalloc.h>
 
@@ -12,317 +14,64 @@
 #include "legacy.h"
 #include "xstate.h"
 
- 
+// Stub: no regsets active
 int regset_fpregs_active(struct task_struct *target, const struct user_regset *regset)
 {
-	return regset->n;
+	return 0;
 }
 
 int regset_xregset_fpregs_active(struct task_struct *target, const struct user_regset *regset)
 {
-	if (boot_cpu_has(X86_FEATURE_FXSR))
-		return regset->n;
-	else
-		return 0;
+	return 0;
 }
 
- 
-static void sync_fpstate(struct fpu *fpu)
-{
-	if (fpu == &current->thread.fpu)
-		fpu_sync_fpstate(fpu);
-}
-
- 
-static void fpu_force_restore(struct fpu *fpu)
-{
-	 
-	WARN_ON_FPU(fpu == &current->thread.fpu);
-
-	__fpu_invalidate_fpregs_state(fpu);
-}
-
+// Stub: FPU state get/set operations not supported
 int xfpregs_get(struct task_struct *target, const struct user_regset *regset,
 		struct membuf to)
 {
-	struct fpu *fpu = &target->thread.fpu;
-
-	if (!cpu_feature_enabled(X86_FEATURE_FXSR))
-		return -ENODEV;
-
-	sync_fpstate(fpu);
-
-	if (!use_xsave()) {
-		return membuf_write(&to, &fpu->fpstate->regs.fxsave,
-				    sizeof(fpu->fpstate->regs.fxsave));
-	}
-
-	copy_xstate_to_uabi_buf(to, target, XSTATE_COPY_FX);
-	return 0;
+	return -ENODEV;
 }
 
 int xfpregs_set(struct task_struct *target, const struct user_regset *regset,
 		unsigned int pos, unsigned int count,
 		const void *kbuf, const void __user *ubuf)
 {
-	struct fpu *fpu = &target->thread.fpu;
-	struct fxregs_state newstate;
-	int ret;
-
-	if (!cpu_feature_enabled(X86_FEATURE_FXSR))
-		return -ENODEV;
-
-	 
-	if (pos != 0 || count != sizeof(newstate))
-		return -EINVAL;
-
-	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &newstate, 0, -1);
-	if (ret)
-		return ret;
-
-	 
-	if (newstate.mxcsr & ~mxcsr_feature_mask)
-		return -EINVAL;
-
-	fpu_force_restore(fpu);
-
-	 
-	memcpy(&fpu->fpstate->regs.fxsave, &newstate, sizeof(newstate));
-
-	 
-	BUILD_BUG_ON(sizeof(fpu->__fpstate.regs.fxsave.xmm_space) != 16 * 16);
-	if (in_ia32_syscall())
-		memset(&fpu->fpstate->regs.fxsave.xmm_space[8*4], 0, 8 * 16);
-
-	 
-	if (use_xsave())
-		fpu->fpstate->regs.xsave.header.xfeatures |= XFEATURE_MASK_FPSSE;
-
-	return 0;
+	return -ENODEV;
 }
 
 int xstateregs_get(struct task_struct *target, const struct user_regset *regset,
-		struct membuf to)
+		   struct membuf to)
 {
-	if (!cpu_feature_enabled(X86_FEATURE_XSAVE))
-		return -ENODEV;
-
-	sync_fpstate(&target->thread.fpu);
-
-	copy_xstate_to_uabi_buf(to, target, XSTATE_COPY_XSAVE);
-	return 0;
+	return -ENODEV;
 }
 
 int xstateregs_set(struct task_struct *target, const struct user_regset *regset,
-		  unsigned int pos, unsigned int count,
-		  const void *kbuf, const void __user *ubuf)
+		   unsigned int pos, unsigned int count,
+		   const void *kbuf, const void __user *ubuf)
 {
-	struct fpu *fpu = &target->thread.fpu;
-	struct xregs_state *tmpbuf = NULL;
-	int ret;
-
-	if (!cpu_feature_enabled(X86_FEATURE_XSAVE))
-		return -ENODEV;
-
-	 
-	if (pos != 0 || count != fpu_user_cfg.max_size)
-		return -EFAULT;
-
-	if (!kbuf) {
-		tmpbuf = vmalloc(count);
-		if (!tmpbuf)
-			return -ENOMEM;
-
-		if (copy_from_user(tmpbuf, ubuf, count)) {
-			ret = -EFAULT;
-			goto out;
-		}
-	}
-
-	fpu_force_restore(fpu);
-	ret = copy_uabi_from_kernel_to_xstate(fpu->fpstate, kbuf ?: tmpbuf);
-
-out:
-	vfree(tmpbuf);
-	return ret;
+	return -ENODEV;
 }
 
-
- 
-
-static inline unsigned short twd_i387_to_fxsr(unsigned short twd)
+void convert_from_fxsr(struct user_i387_ia32_struct *env, struct task_struct *tsk)
 {
-	unsigned int tmp;  
-
-	 
-	tmp = ~twd;
-	tmp = (tmp | (tmp>>1)) & 0x5555;  
-	 
-	tmp = (tmp | (tmp >> 1)) & 0x3333;  
-	tmp = (tmp | (tmp >> 2)) & 0x0f0f;  
-	tmp = (tmp | (tmp >> 4)) & 0x00ff;  
-
-	return tmp;
-}
-
-#define FPREG_ADDR(f, n)	((void *)&(f)->st_space + (n) * 16)
-#define FP_EXP_TAG_VALID	0
-#define FP_EXP_TAG_ZERO		1
-#define FP_EXP_TAG_SPECIAL	2
-#define FP_EXP_TAG_EMPTY	3
-
-static inline u32 twd_fxsr_to_i387(struct fxregs_state *fxsave)
-{
-	struct _fpxreg *st;
-	u32 tos = (fxsave->swd >> 11) & 7;
-	u32 twd = (unsigned long) fxsave->twd;
-	u32 tag;
-	u32 ret = 0xffff0000u;
-	int i;
-
-	for (i = 0; i < 8; i++, twd >>= 1) {
-		if (twd & 0x1) {
-			st = FPREG_ADDR(fxsave, (i - tos) & 7);
-
-			switch (st->exponent & 0x7fff) {
-			case 0x7fff:
-				tag = FP_EXP_TAG_SPECIAL;
-				break;
-			case 0x0000:
-				if (!st->significand[0] &&
-				    !st->significand[1] &&
-				    !st->significand[2] &&
-				    !st->significand[3])
-					tag = FP_EXP_TAG_ZERO;
-				else
-					tag = FP_EXP_TAG_SPECIAL;
-				break;
-			default:
-				if (st->significand[3] & 0x8000)
-					tag = FP_EXP_TAG_VALID;
-				else
-					tag = FP_EXP_TAG_SPECIAL;
-				break;
-			}
-		} else {
-			tag = FP_EXP_TAG_EMPTY;
-		}
-		ret |= tag << (2 * i);
-	}
-	return ret;
-}
-
- 
-
-static void __convert_from_fxsr(struct user_i387_ia32_struct *env,
-				struct task_struct *tsk,
-				struct fxregs_state *fxsave)
-{
-	struct _fpreg *to = (struct _fpreg *) &env->st_space[0];
-	struct _fpxreg *from = (struct _fpxreg *) &fxsave->st_space[0];
-	int i;
-
-	env->cwd = fxsave->cwd | 0xffff0000u;
-	env->swd = fxsave->swd | 0xffff0000u;
-	env->twd = twd_fxsr_to_i387(fxsave);
-
-	env->fip = fxsave->fip;
-	env->fcs = (u16) fxsave->fcs | ((u32) fxsave->fop << 16);
-	env->foo = fxsave->foo;
-	env->fos = fxsave->fos;
-
-	for (i = 0; i < 8; ++i)
-		memcpy(&to[i], &from[i], sizeof(to[0]));
-}
-
-void
-convert_from_fxsr(struct user_i387_ia32_struct *env, struct task_struct *tsk)
-{
-	__convert_from_fxsr(env, tsk, &tsk->thread.fpu.fpstate->regs.fxsave);
+	// Stub: no conversion
 }
 
 void convert_to_fxsr(struct fxregs_state *fxsave,
 		     const struct user_i387_ia32_struct *env)
-
 {
-	struct _fpreg *from = (struct _fpreg *) &env->st_space[0];
-	struct _fpxreg *to = (struct _fpxreg *) &fxsave->st_space[0];
-	int i;
-
-	fxsave->cwd = env->cwd;
-	fxsave->swd = env->swd;
-	fxsave->twd = twd_i387_to_fxsr(env->twd);
-	fxsave->fop = (u16) ((u32) env->fcs >> 16);
-	fxsave->fip = env->fip;
-	fxsave->fcs = (env->fcs & 0xffff);
-	fxsave->foo = env->foo;
-	fxsave->fos = env->fos;
-
-	for (i = 0; i < 8; ++i)
-		memcpy(&to[i], &from[i], sizeof(from[0]));
+	// Stub: no conversion
 }
 
 int fpregs_get(struct task_struct *target, const struct user_regset *regset,
 	       struct membuf to)
 {
-	struct fpu *fpu = &target->thread.fpu;
-	struct user_i387_ia32_struct env;
-	struct fxregs_state fxsave, *fx;
-
-	sync_fpstate(fpu);
-
-	if (!cpu_feature_enabled(X86_FEATURE_FPU))
-		return fpregs_soft_get(target, regset, to);
-
-	if (!cpu_feature_enabled(X86_FEATURE_FXSR)) {
-		return membuf_write(&to, &fpu->fpstate->regs.fsave,
-				    sizeof(struct fregs_state));
-	}
-
-	if (use_xsave()) {
-		struct membuf mb = { .p = &fxsave, .left = sizeof(fxsave) };
-
-		 
-		copy_xstate_to_uabi_buf(mb, target, XSTATE_COPY_FP);
-		fx = &fxsave;
-	} else {
-		fx = &fpu->fpstate->regs.fxsave;
-	}
-
-	__convert_from_fxsr(&env, target, fx);
-	return membuf_write(&to, &env, sizeof(env));
+	return -ENODEV;
 }
 
 int fpregs_set(struct task_struct *target, const struct user_regset *regset,
 	       unsigned int pos, unsigned int count,
 	       const void *kbuf, const void __user *ubuf)
 {
-	struct fpu *fpu = &target->thread.fpu;
-	struct user_i387_ia32_struct env;
-	int ret;
-
-	 
-	if (pos != 0 || count != sizeof(struct user_i387_ia32_struct))
-		return -EINVAL;
-
-	if (!cpu_feature_enabled(X86_FEATURE_FPU))
-		return fpregs_soft_set(target, regset, pos, count, kbuf, ubuf);
-
-	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &env, 0, -1);
-	if (ret)
-		return ret;
-
-	fpu_force_restore(fpu);
-
-	if (cpu_feature_enabled(X86_FEATURE_FXSR))
-		convert_to_fxsr(&fpu->fpstate->regs.fxsave, &env);
-	else
-		memcpy(&fpu->fpstate->regs.fsave, &env, sizeof(env));
-
-	 
-	if (cpu_feature_enabled(X86_FEATURE_XSAVE))
-		fpu->fpstate->regs.xsave.header.xfeatures |= XFEATURE_MASK_FP;
-
-	return 0;
+	return -ENODEV;
 }
-

@@ -1,3 +1,19 @@
+--- 2025-11-21 15:06 (FPU regset stub) ---
+
+Stubbed arch/x86/kernel/fpu/regset.c (242 → 78 LOC)
+- FPU register set operations for ptrace
+- Direct reduction: 164 LOC
+- Measured total: 170 LOC reduction
+- Binary: 307KB (down from 308KB)
+- make vm: PASSES ✓
+
+Current LOC: 226,178 (down from 226,348)
+Goal: 200,000 LOC
+Remaining: 26,178 LOC (11.6%)
+Session total so far: 652 LOC reduction
+
+All ptrace FPU operations stubbed to return -ENODEV.
+
 --- 2025-11-21 14:57 (Successful PAT stub) ---
 
 Stubbed arch/x86/mm/pat/memtype.c (591 → 125 LOC)

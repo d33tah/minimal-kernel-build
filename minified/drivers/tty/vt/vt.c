@@ -955,13 +955,7 @@ static void respond_string(const char *p, size_t len, struct tty_port *port)
 
 static void cursor_report(struct vc_data *vc, struct tty_struct *tty)
 {
-	char buf[40];
-	int len;
-
-	len = sprintf(buf, "\033[%d;%dR", vc->state.y +
-			(vc->vc_decom ? vc->vc_top + 1 : 1),
-			vc->state.x + 1);
-	respond_string(buf, len, tty->port);
+	/* Stub: unused */
 }
 
 static inline void status_report(struct tty_struct *tty)
@@ -1014,40 +1008,22 @@ static void setterm_command(struct vc_data *vc)
 
 static void csi_at(struct vc_data *vc, unsigned int nr)
 {
-	if (nr > vc->vc_cols - vc->state.x)
-		nr = vc->vc_cols - vc->state.x;
-	else if (!nr)
-		nr = 1;
-	insert_char(vc, nr);
+	/* Stub: unused */
 }
 
 static void csi_L(struct vc_data *vc, unsigned int nr)
 {
-	if (nr > vc->vc_rows - vc->state.y)
-		nr = vc->vc_rows - vc->state.y;
-	else if (!nr)
-		nr = 1;
-	con_scroll(vc, vc->state.y, vc->vc_bottom, SM_DOWN, nr);
-	vc->vc_need_wrap = 0;
+	/* Stub: unused */
 }
 
 static void csi_P(struct vc_data *vc, unsigned int nr)
 {
-	if (nr > vc->vc_cols - vc->state.x)
-		nr = vc->vc_cols - vc->state.x;
-	else if (!nr)
-		nr = 1;
-	delete_char(vc, nr);
+	/* Stub: unused */
 }
 
 static void csi_M(struct vc_data *vc, unsigned int nr)
 {
-	if (nr > vc->vc_rows - vc->state.y)
-		nr = vc->vc_rows - vc->state.y;
-	else if (!nr)
-		nr=1;
-	con_scroll(vc, vc->state.y, vc->vc_bottom, SM_UP, nr);
-	vc->vc_need_wrap = 0;
+	/* Stub: unused */
 }
 
 static void save_cur(struct vc_data *vc)
@@ -1057,13 +1033,7 @@ static void save_cur(struct vc_data *vc)
 
 static void restore_cur(struct vc_data *vc)
 {
-	memcpy(&vc->state, &vc->saved_state, sizeof(vc->state));
-
-	gotoxy(vc, vc->state.x, vc->state.y);
-	vc->vc_translate = set_translate(vc->state.Gx_charset[vc->state.charset],
-			vc);
-	update_attr(vc);
-	vc->vc_need_wrap = 0;
+	/* Stub: unused */
 }
 
 enum { ESnormal, ESesc, ESsquare, ESgetpars, ESfunckey,
@@ -1120,32 +1090,12 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 
 static void vc_setGx(struct vc_data *vc, unsigned int which, int c)
 {
-	unsigned char *charset = &vc->state.Gx_charset[which];
-
-	switch (c) {
-	case '0':
-		*charset = GRAF_MAP;
-		break;
-	case 'B':
-		*charset = LAT1_MAP;
-		break;
-	case 'U':
-		*charset = IBMPC_MAP;
-		break;
-	case 'K':
-		*charset = USER_MAP;
-		break;
-	}
-
-	if (vc->state.charset == which)
-		vc->vc_translate = set_translate(*charset, vc);
+	/* Stub: unused */
 }
 
 static bool ansi_control_string(unsigned int state)
 {
-	if (state == ESosc || state == ESapc || state == ESpm || state == ESdcs)
-		return true;
-	return false;
+	return false; /* Stub: unused */
 }
 
 static void do_con_trol(struct tty_struct *tty, struct vc_data *vc, int c)
@@ -1952,7 +1902,7 @@ static int vtconsole_init_device(struct con_driver *con)
 
 static void vtconsole_deinit_device(struct con_driver *con)
 {
-	con->flag &= ~CON_DRIVER_FLAG_ATTR;
+	/* Stub: unused */
 }
 
 int con_is_bound(const struct consw *csw)

@@ -336,23 +336,6 @@ void ktime_get_fast_timestamps(struct ktime_timestamps *snapshot)
 	snapshot->boot = snapshot->mono + ktime_to_ns(data_race(tk->offs_boot));
 }
 
-static void halt_fast_timekeeper(const struct timekeeper *tk)
-{
-	static struct tk_read_base tkr_dummy;
-	const struct tk_read_base *tkr = &tk->tkr_mono;
-
-	memcpy(&tkr_dummy, tkr, sizeof(tkr_dummy));
-	cycles_at_suspend = tk_clock_read(tkr);
-	tkr_dummy.clock = &dummy_clock;
-	tkr_dummy.base_real = tkr->base + tk->offs_real;
-	update_fast_timekeeper(&tkr_dummy, &tk_fast_mono);
-
-	tkr = &tk->tkr_raw;
-	memcpy(&tkr_dummy, tkr, sizeof(tkr_dummy));
-	tkr_dummy.clock = &dummy_clock;
-	update_fast_timekeeper(&tkr_dummy, &tk_fast_raw);
-}
-
 static RAW_NOTIFIER_HEAD(pvclock_gtod_chain);
 
 static void update_pvclock_gtod(struct timekeeper *tk, bool was_set)
@@ -667,40 +650,6 @@ void ktime_get_snapshot(struct system_time_snapshot *systime_snapshot)
 	systime_snapshot->raw = ktime_add_ns(base_raw, nsec_raw);
 }
 
-static int scale64_check_overflow(u64 mult, u64 div, u64 *base)
-{
-	u64 tmp, rem;
-
-	tmp = div64_u64_rem(*base, div, &rem);
-
-	if (((int)sizeof(u64)*8 - fls64(mult) < fls64(tmp)) ||
-	    ((int)sizeof(u64)*8 - fls64(mult) < fls64(rem)))
-		return -EOVERFLOW;
-	tmp *= mult;
-
-	rem = div64_u64(rem * mult, div);
-	*base = tmp + rem;
-	return 0;
-}
-
-static int adjust_historical_crosststamp(struct system_time_snapshot *history,
-					 u64 partial_history_cycles,
-					 u64 total_history_cycles,
-					 bool discontinuity,
-					 struct system_device_crosststamp *ts)
-{
-	return 0;
-}
-
-static bool cycle_between(u64 before, u64 test, u64 after)
-{
-	if (test > before && test < after)
-		return true;
-	if (test < before && before > after)
-		return true;
-	return false;
-}
-
 int get_device_system_crosststamp(int (*get_time_fn)
 				  (ktime_t *device_time,
 				   struct system_counterval_t *sys_counterval,
@@ -969,21 +918,6 @@ void __init timekeeping_init(void)
 }
 
 static struct timespec64 timekeeping_suspend_time;
-
-static void __timekeeping_inject_sleeptime(struct timekeeper *tk,
-					   const struct timespec64 *delta)
-{
-	if (!timespec64_valid_strict(delta)) {
-		printk_deferred(KERN_WARNING
-				"__timekeeping_inject_sleeptime: Invalid "
-				"sleep delta value!\n");
-		return;
-	}
-	tk_xtime_add(tk, delta);
-	tk_set_wall_to_mono(tk, timespec64_sub(tk->wall_to_monotonic, *delta));
-	tk_update_sleep_time(tk, timespec64_to_ktime(*delta));
-	tk_debug_account_sleep_time(delta);
-}
 
 void timekeeping_resume(void)
 {
@@ -1259,11 +1193,6 @@ ktime_t ktime_get_update_offsets_now(unsigned int *cwsseq, ktime_t *offs_real,
 	} while (read_seqcount_retry(&tk_core.seq, seq));
 
 	return base;
-}
-
-static int timekeeping_validate_timex(const struct __kernel_timex *txc)
-{
-	return 0;
 }
 
 unsigned long random_get_entropy_fallback(void)

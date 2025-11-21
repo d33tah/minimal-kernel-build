@@ -645,13 +645,6 @@ static inline int may_follow_link(struct nameidata *nd, const struct inode *inod
 	return 0;
 }
 
-static bool safe_hardlink_source(struct user_namespace *mnt_userns,
-				 struct inode *inode)
-{
-	/* Stub: allow hardlinks */
-	return true;
-}
-
 int may_linkat(struct user_namespace *mnt_userns, struct path *link)
 {
 	/* Stub: allow hardlinks */
@@ -682,11 +675,6 @@ static bool choose_mountpoint(struct mount *m, const struct path *root,
 {
 	/* Stub: minimal system doesn't need mountpoint selection */
 	return false;
-}
-
-static int follow_automount(struct path *path, int *count, unsigned lookup_flags)
-{
-	return -EISDIR; /* Stub */
 }
 
 static int __traverse_mounts(struct path *path, unsigned flags, bool *jumped,
@@ -1804,49 +1792,6 @@ int __check_sticky(struct user_namespace *mnt_userns, struct inode *dir,
 	return !capable_wrt_inode_uidgid(mnt_userns, inode, CAP_FOWNER);
 }
 
-static int may_delete(struct user_namespace *mnt_userns, struct inode *dir,
-		      struct dentry *victim, bool isdir)
-{
-	struct inode *inode = d_backing_inode(victim);
-	int error;
-
-	if (d_is_negative(victim))
-		return -ENOENT;
-	BUG_ON(!inode);
-
-	BUG_ON(victim->d_parent->d_inode != dir);
-
-	
-	if (!uid_valid(i_uid_into_mnt(mnt_userns, inode)) ||
-	    !gid_valid(i_gid_into_mnt(mnt_userns, inode)))
-		return -EOVERFLOW;
-
-	audit_inode_child(dir, victim, AUDIT_TYPE_CHILD_DELETE);
-
-	error = inode_permission(mnt_userns, dir, MAY_WRITE | MAY_EXEC);
-	if (error)
-		return error;
-	if (IS_APPEND(dir))
-		return -EPERM;
-
-	if (check_sticky(mnt_userns, dir, inode) || IS_APPEND(inode) ||
-	    IS_IMMUTABLE(inode) || IS_SWAPFILE(inode) ||
-	    HAS_UNMAPPED_ID(mnt_userns, inode))
-		return -EPERM;
-	if (isdir) {
-		if (!d_is_dir(victim))
-			return -ENOTDIR;
-		if (IS_ROOT(victim))
-			return -EBUSY;
-	} else if (d_is_dir(victim))
-		return -EISDIR;
-	if (IS_DEADDIR(dir))
-		return -ENOENT;
-	if (victim->d_flags & DCACHE_NFSFS_RENAMED)
-		return -EBUSY;
-	return 0;
-}
-
 static inline int may_create(struct user_namespace *mnt_userns,
 			     struct inode *dir, struct dentry *child)
 {
@@ -2008,25 +1953,6 @@ static inline int open_to_namei_flags(int flag)
 	if ((flag & O_ACCMODE) == 3)
 		flag--;
 	return flag;
-}
-
-static int may_o_create(struct user_namespace *mnt_userns,
-			const struct path *dir, struct dentry *dentry,
-			umode_t mode)
-{
-	int error = security_path_mknod(dir, dentry, mode, 0);
-	if (error)
-		return error;
-
-	if (!fsuidgid_has_mapping(dir->dentry->d_sb, mnt_userns))
-		return -EOVERFLOW;
-
-	error = inode_permission(mnt_userns, dir->dentry->d_inode,
-				 MAY_WRITE | MAY_EXEC);
-	if (error)
-		return error;
-
-	return security_inode_create(dir->dentry->d_inode, dentry, mode);
 }
 
 static struct dentry *atomic_open(struct nameidata *nd, struct dentry *dentry,
@@ -2524,23 +2450,6 @@ int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 	if (!error)
 		fsnotify_create(dir, dentry);
 	return error;
-}
-
-static int may_mknod(umode_t mode)
-{
-	switch (mode & S_IFMT) {
-	case S_IFREG:
-	case S_IFCHR:
-	case S_IFBLK:
-	case S_IFIFO:
-	case S_IFSOCK:
-	case 0: 
-		return 0;
-	case S_IFDIR:
-		return -EPERM;
-	default:
-		return -EINVAL;
-	}
 }
 
 static int do_mknodat(int dfd, struct filename *name, umode_t mode,

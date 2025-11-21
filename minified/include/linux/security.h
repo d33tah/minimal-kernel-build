@@ -302,22 +302,10 @@ static inline int security_sb_umount(struct vfsmount *mnt, int flags)
 	return 0;
 }
 
-static inline int security_sb_pivotroot(const struct path *old_path,
-					const struct path *new_path)
-{
-	return 0;
-}
-
 static inline int security_sb_set_mnt_opts(struct super_block *sb,
 					   void *mnt_opts,
 					   unsigned long kern_flags,
 					   unsigned long *set_kern_flags)
-{
-	return 0;
-}
-
-static inline int security_move_mount(const struct path *from_path,
-				      const struct path *to_path)
 {
 	return 0;
 }
@@ -606,33 +594,6 @@ static inline int security_path_chroot(const struct path *path)
 }
 
 
-
-
-static inline struct dentry *securityfs_create_dir(const char *name,
-						   struct dentry *parent)
-{
-	return ERR_PTR(-ENODEV);
-}
-
-static inline struct dentry *securityfs_create_file(const char *name,
-						    umode_t mode,
-						    struct dentry *parent,
-						    void *data,
-						    const struct file_operations *fops)
-{
-	return ERR_PTR(-ENODEV);
-}
-
-static inline struct dentry *securityfs_create_symlink(const char *name,
-					struct dentry *parent,
-					const char *target,
-					const struct inode_operations *iops)
-{
-	return ERR_PTR(-ENODEV);
-}
-
-static inline void securityfs_remove(struct dentry *dentry)
-{}
 
 
 

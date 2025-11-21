@@ -1,3 +1,19 @@
+--- 2025-11-21 08:34 ---
+
+FIXUP: Build broken after recent header removal commits. Fixed by:
+1. Adding #include <linux/stddef.h> to 4 headers (kasan-checks.h, capability.h, fault-inject-usercopy.h, bsearch.h)
+   - These use true/false/NULL which are defined in stddef.h
+2. Restoring 38 headers that were removed but are still needed:
+   - license.h (used by scripts/mod/modpost.c)
+   - sysinfo.h, time_types.h, signal-defs.h, highmem-internal.h
+   - And 33 other uapi headers needed by the build
+
+Build now works: 320KB, prints "Hello, World!Still alive"
+
+Note: The recent commits d56c603..a53f24a removed ~3658 LOC of headers, but many were
+still needed. This fixup restores most of them (~40 files). Net reduction after fixup
+is likely close to zero, but build is working again.
+
 --- 2025-11-21 07:11 ---
 
 Session analysis - subsystem sizes and reduction opportunities:

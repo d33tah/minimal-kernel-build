@@ -3,10 +3,11 @@
 #define _LINUX_KASAN_CHECKS_H
 
 #include <linux/types.h>
+#include <linux/stddef.h>
 
- 
 
- 
+
+
 static inline bool __kasan_check_read(const volatile void *p, unsigned int size)
 {
 	return true;

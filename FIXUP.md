@@ -1,24 +1,41 @@
 --- 2025-11-21 09:39 ---
 
-New session started. Current state:
-- make vm: PASSES ✓, prints "Hello, World!Still alive" ✓
-- Binary: 320KB
-- Current LOC: 246,073 (cloc with ailogs excluded)
-- Goal: 200,000 LOC
-- Gap: 46,073 LOC (18.7% reduction needed)
+Session end (80 min total):
 
-Exploration (50 min):
+Achievement:
+- Removed 2 unused functions from arch/x86/kernel/ptrace.c (35 LOC)
+- Binary: 320KB (stable)
+- LOC: 246,066 (down from 246,073, reduced by 7)
+- Goal: 200,000 LOC
+- Gap: 46,066 LOC (18.7% reduction needed)
+- Committed and pushed: d201b83
+
+Exploration (75 min):
 - Checked for unused .c files: lib/decompress_unxz.c appeared unused but is actually #included by arch/x86/boot/compressed/misc.c
 - Found small stub-heavy files: fs/sync.c (26 lines), fs/select.c (23 lines), but functions are called
-- Looked for unreferenced headers: only found small ones (xz.h 101 lines, spinlock_api_up.h 80 lines) but both are used
+- Looked for unreferenced headers: only found small ones but all are actually used
 - Identified 228 syscalls defined but only write() actually used by init
+- Used compiler -Wunused-function: only found 2 unused functions (removed them)
+- Checked for EXPORT_SYMBOL: none left (all already removed in previous sessions)
 
-Challenge: Most obvious reduction targets already exploited. Need more aggressive approach:
-1. Stub out entire syscalls that aren't used (e.g., all mlock/munlock in mm/mlock.c)
-2. Find and remove large unused functions in big files (namei.c 2771, namespace.c 2472)
-3. Use compiler-based dead code detection
+Challenge: Most obvious reduction targets already exploited:
+- Previous sessions removed 687 LOC using -Wunused-function (56 functions)
+- Header removal yields minimal LOC (previous: 249 LOC from 7 headers)
+- Compiler warnings now find very few unused functions
+- EXPORT_SYMBOL cleanup already done
 
-Next approach: Look for specific large functions in VFS/MM that can be stubbed
+Findings:
+- Large files: namei.c (2771), namespace.c (2472), signal.c (2011), dcache.c (2004)
+- Many syscalls in namei.c (mkdir, rmdir, unlink, etc.) not used but hard to remove
+- scheduler classes (dl.c, rt.c) define DEFINE_SCHED_CLASS, needed by build
+- XZ library (1836 LOC) needed for kernel decompression
+- Most large files are interconnected VFS/MM code, stubbing risky
+
+Next approach needed:
+- More aggressive function-by-function analysis in large files
+- Consider LTO-based dead code elimination
+- Look at call graphs to find truly unused code paths
+- May need to accept diminishing returns at this level of reduction
 
 --- 2025-11-21 10:34 ---
 

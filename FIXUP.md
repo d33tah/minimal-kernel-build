@@ -1,3 +1,23 @@
+--- 2025-11-21 16:42 (Failed gup.c stubbing attempt) ---
+
+Attempted to stub mm/gup.c (1919 lines) to reduce LOC.
+Created minimal stubs for:
+- get_user_pages_remote
+- __mm_populate
+- populate_vma_page_range
+- fault_in_readable
+- fault_in_safe_writeable
+- unpin_user_page(s)
+
+Result: Kernel built but hung during boot - didn't print "Hello world".
+The get_user_pages functionality is apparently critical for exec/binary loading.
+Reverted changes.
+
+Conclusion: get_user_pages cannot be stubbed even minimally, as it's needed for
+loading the init binary. The page table walking logic must work properly.
+
+Continuing to search for better reduction targets...
+
 --- 2025-11-21 16:06 (Session summary) ---
 
 Session results:

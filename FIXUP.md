@@ -1,3 +1,16 @@
+--- 2025-11-21 01:00 ---
+
+Simplify memory allocation functions - 31 LOC reduction
+Binary: 321KB (stable)
+make vm: PASSES ✓, prints "Hello, World!Still alive" ✓
+
+Changes made to mm/page_alloc.c:
+- __alloc_pages_direct_reclaim(): Removed PSI tracking, drain retry loop
+- wake_all_kswapds(): Stubbed out (kswapd wakeup not needed)
+
+Estimated current LOC: ~233,039 (from 233,070)
+Gap remaining: ~33,039 LOC to 200,000 goal
+
 --- 2025-11-21 00:57 ---
 
 Simplify signal handling functions - 36 LOC reduction

@@ -1562,48 +1562,17 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
 		unsigned int alloc_flags, const struct alloc_context *ac,
 		unsigned long *did_some_progress)
 {
-	struct page *page = NULL;
-	unsigned long pflags;
-	bool drained = false;
-
-	psi_memstall_enter(&pflags);
+	/* Simplified: single reclaim attempt without retry */
 	*did_some_progress = __perform_reclaim(gfp_mask, order, ac);
-	if (unlikely(!(*did_some_progress)))
-		goto out;
-
-retry:
-	page = get_page_from_freelist(gfp_mask, order, alloc_flags, ac);
-
-	
-	if (!page && !drained) {
-		unreserve_highatomic_pageblock(ac, false);
-		drain_all_pages(NULL);
-		drained = true;
-		goto retry;
-	}
-out:
-	psi_memstall_leave(&pflags);
-
-	return page;
+	if (*did_some_progress)
+		return get_page_from_freelist(gfp_mask, order, alloc_flags, ac);
+	return NULL;
 }
 
 static void wake_all_kswapds(unsigned int order, gfp_t gfp_mask,
 			     const struct alloc_context *ac)
 {
-	struct zoneref *z;
-	struct zone *zone;
-	pg_data_t *last_pgdat = NULL;
-	enum zone_type highest_zoneidx = ac->highest_zoneidx;
-
-	for_each_zone_zonelist_nodemask(zone, z, ac->zonelist, highest_zoneidx,
-					ac->nodemask) {
-		if (!managed_zone(zone))
-			continue;
-		if (last_pgdat != zone->zone_pgdat) {
-			wakeup_kswapd(zone, gfp_mask, order, highest_zoneidx);
-			last_pgdat = zone->zone_pgdat;
-		}
-	}
+	/* Stub: kswapd wakeup not needed for minimal kernel */
 }
 
 static inline unsigned int

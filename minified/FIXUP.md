@@ -1,3 +1,63 @@
+--- 2025-11-21 14:35 (Session end - iov_iter stub failed) ---
+
+Starting LOC: 243,183
+Ending LOC: 243,183
+Goal: 200,000 LOC
+Remaining: 43,183 LOC (17.8%)
+Binary: 309KB
+make vm: PASSES ✓
+Progress this session: 0 LOC
+
+Attempted:
+1. lib/iov_iter.c (1324 LOC) - FAILED
+   - Stubbed all I/O vector operations
+   - Build succeeded but VM failed to boot
+   - No "Hello World" output, VM hung/crashed
+   - Reverted immediately
+
+Key learnings:
+- iov_iter is critical for file I/O operations, even for minimal boot
+- Stubbing core I/O infrastructure breaks boot process
+- Need to find more isolated, optional subsystems
+
+Session spent mostly on exploration and analysis of potential targets.
+Multiple candidates evaluated but deemed too risky:
+- signal.c (2011 LOC) - complex syscalls
+- page-writeback.c (1649 LOC) - writeback machinery  
+- fair.c (1568 LOC) - CFS scheduler
+- vsprintf.c (1467 LOC) - formatting for printk
+- gup.c (1919 LOC) - get_user_pages
+
+Challenge: Most large files (>1000 LOC) are core infrastructure with deep
+dependencies. alternative.c's 20x effect was exceptional. Need new strategy.
+
+Next session suggestions:
+1. Try reducing filesystem code (namei.c, namespace.c - 5K LOC combined)
+2. Look for cascading effects in device infrastructure
+3. Consider aggressive header cleanup despite risks
+4. Try stubbing multiple small optional files for cumulative effect
+5. Investigate removing entire driver subsystems (RTC, video console simplification)
+
+--- 2025-11-21 14:26 (Exploration) ---
+
+Explored multiple stubbing targets:
+1. signal.c (2011 LOC) - complex syscalls, might break init
+2. page-writeback.c (1649 LOC) - writeback machinery, might be needed
+3. traps.c (757 LOC) - exception handling, too critical
+4. kobject.c (806 LOC) - device model infrastructure
+5. vsprintf.c (1467 LOC) - formatting, might break printk
+6. gup.c (1919 LOC) - get_user_pages, likely needed
+7. fair.c (1568 LOC) - CFS scheduler, too risky
+
+Key findings:
+- 67K LOC in headers (potential target but risky per DIARY.md)
+- keyboard.c already stubbed
+- Many large files are core infrastructure
+- Need safer, more isolated targets
+
+Next approach: Try lib/iov_iter.c (1324 LOC) - I/O vector operations that might
+not be critical for minimal boot.
+
 --- 2025-11-21 13:42 (Session end summary) ---
 
 Starting LOC: 243,649

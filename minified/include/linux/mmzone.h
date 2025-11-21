@@ -529,12 +529,6 @@ static inline int is_highmem_idx(enum zone_type idx)
 	return 0;
 }
 
-static inline bool has_managed_dma(void)
-{
-	return false;
-}
-
- 
 static inline int is_highmem(struct zone *zone)
 {
 	return 0;

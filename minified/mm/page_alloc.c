@@ -1861,10 +1861,6 @@ static struct page *__page_frag_cache_refill(struct page_frag_cache *nc,
 
 void __page_frag_cache_drain(struct page *page, unsigned int count)
 {
-	VM_BUG_ON_PAGE(page_ref_count(page) == 0, page);
-
-	if (page_ref_sub_and_test(page, count))
-		free_the_page(page, compound_order(page));
 }
 
 void *page_frag_alloc_align(struct page_frag_cache *nc,
@@ -1877,10 +1873,6 @@ void *page_frag_alloc_align(struct page_frag_cache *nc,
 
 void page_frag_free(void *addr)
 {
-	struct page *page = virt_to_head_page(addr);
-
-	if (unlikely(put_page_testzero(page)))
-		free_the_page(page, compound_order(page));
 }
 
 static void *make_alloc_exact(unsigned long addr, unsigned int order,

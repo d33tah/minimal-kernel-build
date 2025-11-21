@@ -328,17 +328,6 @@ static inline void mnt_unhold_writers(struct mount *mnt)
 	mnt->mnt.mnt_flags &= ~MNT_WRITE_HOLD;
 }
 
-static int mnt_make_readonly(struct mount *mnt)
-{
-	int ret;
-
-	ret = mnt_hold_writers(mnt);
-	if (!ret)
-		mnt->mnt.mnt_flags |= MNT_READONLY;
-	mnt_unhold_writers(mnt);
-	return ret;
-}
-
 int sb_prepare_remount_readonly(struct super_block *sb)
 {
 	/* Stub: minimal remount handling for simple system */
@@ -1107,8 +1096,6 @@ static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 	}
 }
 
-static void shrink_submounts(struct mount *mnt);
-
 static int do_umount(struct mount *mnt, int flags)
 {
 	int retval = security_sb_umount(&mnt->mnt, flags);
@@ -1234,17 +1221,6 @@ static struct mnt_namespace *to_mnt_ns(struct ns_common *ns)
 struct ns_common *from_mnt_ns(struct mnt_namespace *mnt)
 {
 	return &mnt->ns;
-}
-
-static bool mnt_ns_loop(struct dentry *dentry)
-{
-	
-	struct mnt_namespace *mnt_ns;
-	if (!is_mnt_ns_file(dentry))
-		return false;
-
-	mnt_ns = to_mnt_ns(get_proc_ns(dentry->d_inode));
-	return current->nsproxy->mnt_ns->seq >= mnt_ns->seq;
 }
 
 struct mount *copy_tree(struct mount *mnt, struct dentry *dentry,
@@ -1634,33 +1610,6 @@ SYSCALL_DEFINE3(open_tree, int, dfd, const char __user *, filename, unsigned, fl
 	return -ENOSYS;
 }
 
-static bool can_change_locked_flags(struct mount *mnt, unsigned int mnt_flags)
-{
-	unsigned int fl = mnt->mnt.mnt_flags;
-
-	if ((fl & MNT_LOCK_READONLY) &&
-	    !(mnt_flags & MNT_READONLY))
-		return false;
-
-	if ((fl & MNT_LOCK_NODEV) &&
-	    !(mnt_flags & MNT_NODEV))
-		return false;
-
-	if ((fl & MNT_LOCK_NOSUID) &&
-	    !(mnt_flags & MNT_NOSUID))
-		return false;
-
-	if ((fl & MNT_LOCK_NOEXEC) &&
-	    !(mnt_flags & MNT_NOEXEC))
-		return false;
-
-	if ((fl & MNT_LOCK_ATIME) &&
-	    ((fl & MNT_ATIME_MASK) != (mnt_flags & MNT_ATIME_MASK)))
-		return false;
-
-	return true;
-}
-
 static void mnt_warn_timestamp_expiry(struct path *mountpoint, struct vfsmount *mnt)
 {
 	/* Stub: timestamp expiry warning not needed for minimal kernel */
@@ -1891,43 +1840,6 @@ void mark_mounts_for_expiry(struct list_head *mounts)
 	}
 	unlock_mount_hash();
 	namespace_unlock();
-}
-
-
-static int select_submounts(struct mount *parent, struct list_head *graveyard)
-{
-	struct mount *this_parent = parent;
-	struct list_head *next;
-	int found = 0;
-
-repeat:
-	next = this_parent->mnt_mounts.next;
-resume:
-	while (next != &this_parent->mnt_mounts) {
-		struct list_head *tmp = next;
-		struct mount *mnt = list_entry(tmp, struct mount, mnt_child);
-
-		next = tmp->next;
-		if (!(mnt->mnt.mnt_flags & MNT_SHRINKABLE))
-			continue;
-		
-		if (!list_empty(&mnt->mnt_mounts)) {
-			this_parent = mnt;
-			goto repeat;
-		}
-
-		if (!propagate_mount_busy(mnt, 1)) {
-			list_move_tail(&mnt->mnt_expire, graveyard);
-			found++;
-		}
-	}
-	
-	if (this_parent != parent) {
-		next = this_parent->mnt_child.next;
-		this_parent = this_parent->mnt_parent;
-		goto resume;
-	}
-	return found;
 }
 
 static void *copy_mount_options(const void __user * data)
@@ -2243,74 +2155,12 @@ SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
 	return -ENOSYS;
 }
 
-static unsigned int recalc_flags(struct mount_kattr *kattr, struct mount *mnt)
-{
-	unsigned int flags = mnt->mnt.mnt_flags;
-
-	
-	flags &= ~kattr->attr_clr;
-	
-	flags |= kattr->attr_set;
-
-	return flags;
-}
-
-static int can_idmap_mount(const struct mount_kattr *kattr, struct mount *mnt)
-{
-	struct vfsmount *m = &mnt->mnt;
-	struct user_namespace *fs_userns = m->mnt_sb->s_user_ns;
-
-	if (!kattr->mnt_userns)
-		return 0;
-
-	
-	if (kattr->mnt_userns == fs_userns)
-		return -EINVAL;
-
-	
-	if (is_idmapped_mnt(m))
-		return -EPERM;
-
-	
-	if (!(m->mnt_sb->s_type->fs_flags & FS_ALLOW_IDMAP))
-		return -EINVAL;
-
-	
-	if (!ns_capable(fs_userns, CAP_SYS_ADMIN))
-		return -EPERM;
-
-	
-	if (!is_anon_ns(mnt->mnt_ns))
-		return -EINVAL;
-
-	return 0;
-}
-
 static inline bool mnt_allow_writers(const struct mount_kattr *kattr,
 				     const struct mount *mnt)
 {
 	return (!(kattr->attr_set & MNT_READONLY) ||
 		(mnt->mnt.mnt_flags & MNT_READONLY)) &&
 	       !kattr->mnt_userns;
-}
-
-static void do_idmap_mount(const struct mount_kattr *kattr, struct mount *mnt)
-{
-	struct user_namespace *mnt_userns, *old_mnt_userns;
-
-	if (!kattr->mnt_userns)
-		return;
-
-	
-	old_mnt_userns = mnt->mnt.mnt_userns;
-
-	mnt_userns = get_user_ns(kattr->mnt_userns);
-	
-	smp_store_release(&mnt->mnt.mnt_userns, mnt_userns);
-
-	
-	if (!initial_idmapping(old_mnt_userns))
-		put_user_ns(old_mnt_userns);
 }
 
 SYSCALL_DEFINE5(mount_setattr, int, dfd, const char __user *, path,

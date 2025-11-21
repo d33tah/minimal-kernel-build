@@ -445,23 +445,6 @@ static void restore_exclusive_pte(struct vm_area_struct *vma,
 	update_mmu_cache(vma, address, ptep);
 }
 
-static int
-try_restore_exclusive_pte(pte_t *src_pte, struct vm_area_struct *vma,
-			unsigned long addr)
-{
-	/* Stub: simplified device exclusivity handling */
-	return -EBUSY;
-}
-
-static unsigned long
-copy_nonpresent_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
-		pte_t *dst_pte, pte_t *src_pte, struct vm_area_struct *dst_vma,
-		struct vm_area_struct *src_vma, unsigned long addr, int *rss)
-{
-	/* Stub: swap/migration handling not needed for minimal kernel */
-	return 0;
-}
-
 static inline int
 copy_present_page(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
 		  pte_t *dst_pte, pte_t *src_pte, unsigned long addr, int *rss,
@@ -1861,57 +1844,7 @@ vm_fault_t finish_mkwrite_fault(struct vm_fault *vmf)
 	return 0;
 }
 
-static vm_fault_t wp_pfn_shared(struct vm_fault *vmf)
-{
-	struct vm_area_struct *vma = vmf->vma;
 
-	if (vma->vm_ops && vma->vm_ops->pfn_mkwrite) {
-		vm_fault_t ret;
-
-		pte_unmap_unlock(vmf->pte, vmf->ptl);
-		vmf->flags |= FAULT_FLAG_MKWRITE;
-		ret = vma->vm_ops->pfn_mkwrite(vmf);
-		if (ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE))
-			return ret;
-		return finish_mkwrite_fault(vmf);
-	}
-	wp_page_reuse(vmf);
-	return VM_FAULT_WRITE;
-}
-
-static vm_fault_t wp_page_shared(struct vm_fault *vmf)
-	__releases(vmf->ptl)
-{
-	struct vm_area_struct *vma = vmf->vma;
-	vm_fault_t ret = VM_FAULT_WRITE;
-
-	get_page(vmf->page);
-
-	if (vma->vm_ops && vma->vm_ops->page_mkwrite) {
-		vm_fault_t tmp;
-
-		pte_unmap_unlock(vmf->pte, vmf->ptl);
-		tmp = do_page_mkwrite(vmf);
-		if (unlikely(!tmp || (tmp &
-				      (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))) {
-			put_page(vmf->page);
-			return tmp;
-		}
-		tmp = finish_mkwrite_fault(vmf);
-		if (unlikely(tmp & (VM_FAULT_ERROR | VM_FAULT_NOPAGE))) {
-			unlock_page(vmf->page);
-			put_page(vmf->page);
-			return tmp;
-		}
-	} else {
-		wp_page_reuse(vmf);
-		lock_page(vmf->page);
-	}
-	ret |= fault_dirty_shared_page(vmf);
-	put_page(vmf->page);
-
-	return ret;
-}
 
 static vm_fault_t do_wp_page(struct vm_fault *vmf)
 	__releases(vmf->ptl)
@@ -2018,30 +1951,6 @@ void unmap_mapping_range(struct address_space *mapping,
 	unmap_mapping_pages(mapping, hba, hlen, even_cows);
 }
 
-static vm_fault_t remove_device_exclusive_entry(struct vm_fault *vmf)
-{
-	struct page *page = vmf->page;
-	struct vm_area_struct *vma = vmf->vma;
-	struct mmu_notifier_range range;
-
-	if (!lock_page_or_retry(page, vma->vm_mm, vmf->flags))
-		return VM_FAULT_RETRY;
-	mmu_notifier_range_init_owner(&range, MMU_NOTIFY_EXCLUSIVE, 0, vma,
-				vma->vm_mm, vmf->address & PAGE_MASK,
-				(vmf->address & PAGE_MASK) + PAGE_SIZE, NULL);
-	mmu_notifier_invalidate_range_start(&range);
-
-	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
-				&vmf->ptl);
-	if (likely(pte_same(*vmf->pte, vmf->orig_pte)))
-		restore_exclusive_pte(vma, page, vmf->address, vmf->pte);
-
-	pte_unmap_unlock(vmf->pte, vmf->ptl);
-	unlock_page(page);
-
-	mmu_notifier_invalidate_range_end(&range);
-	return 0;
-}
 
 static inline bool should_try_to_free_swap(struct page *page,
 					   struct vm_area_struct *vma,
@@ -2078,21 +1987,6 @@ static vm_fault_t pte_marker_handle_uffd_wp(struct vm_fault *vmf)
 	return do_fault(vmf);
 }
 
-static vm_fault_t handle_pte_marker(struct vm_fault *vmf)
-{
-	swp_entry_t entry = pte_to_swp_entry(vmf->orig_pte);
-	unsigned long marker = pte_marker_get(entry);
-
-	
-	if (WARN_ON_ONCE(vma_is_anonymous(vmf->vma) || !marker))
-		return VM_FAULT_SIGBUS;
-
-	if (pte_marker_entry_uffd_wp(entry))
-		return pte_marker_handle_uffd_wp(vmf);
-
-	
-	return VM_FAULT_SIGBUS;
-}
 
 vm_fault_t do_swap_page(struct vm_fault *vmf)
 {
@@ -2439,31 +2333,6 @@ int numa_migrate_prep(struct page *page, struct vm_area_struct *vma,
 	return -1;
 }
 
-static vm_fault_t do_numa_page(struct vm_fault *vmf)
-{
-	/* Minimal stub - NUMA balancing not needed for minimal kernel */
-	struct vm_area_struct *vma = vmf->vma;
-	pte_t pte, old_pte;
-	bool was_writable = pte_savedwrite(vmf->orig_pte);
-
-	vmf->ptl = pte_lockptr(vma->vm_mm, vmf->pmd);
-	spin_lock(vmf->ptl);
-	if (unlikely(!pte_same(*vmf->pte, vmf->orig_pte))) {
-		pte_unmap_unlock(vmf->pte, vmf->ptl);
-		return 0;
-	}
-
-	/* Just restore the PTE and return */
-	old_pte = ptep_modify_prot_start(vma, vmf->address, vmf->pte);
-	pte = pte_modify(old_pte, vma->vm_page_prot);
-	pte = pte_mkyoung(pte);
-	if (was_writable)
-		pte = pte_mkwrite(pte);
-	ptep_modify_prot_commit(vma, vmf->address, vmf->pte, old_pte, pte);
-	update_mmu_cache(vma, vmf->address, vmf->pte);
-	pte_unmap_unlock(vmf->pte, vmf->ptl);
-	return 0;
-}
 
 static inline vm_fault_t create_huge_pmd(struct vm_fault *vmf)
 {
@@ -2497,38 +2366,7 @@ static inline vm_fault_t wp_huge_pmd(struct vm_fault *vmf)
 	return VM_FAULT_FALLBACK;
 }
 
-static vm_fault_t create_huge_pud(struct vm_fault *vmf)
-{
-#if defined(CONFIG_TRANSPARENT_HUGEPAGE) &&			\
-	defined(CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD)
-	
-	if (vma_is_anonymous(vmf->vma))
-		return VM_FAULT_FALLBACK;
-	if (vmf->vma->vm_ops->huge_fault)
-		return vmf->vma->vm_ops->huge_fault(vmf, PE_SIZE_PUD);
-#endif 
-	return VM_FAULT_FALLBACK;
-}
 
-static vm_fault_t wp_huge_pud(struct vm_fault *vmf, pud_t orig_pud)
-{
-#if defined(CONFIG_TRANSPARENT_HUGEPAGE) &&			\
-	defined(CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD)
-	
-	if (vma_is_anonymous(vmf->vma))
-		goto split;
-	if (vmf->vma->vm_ops->huge_fault) {
-		vm_fault_t ret = vmf->vma->vm_ops->huge_fault(vmf, PE_SIZE_PUD);
-
-		if (!(ret & VM_FAULT_FALLBACK))
-			return ret;
-	}
-split:
-	
-	__split_huge_pud(vmf->vma, vmf->pud, vmf->address);
-#endif 
-	return VM_FAULT_FALLBACK;
-}
 
 static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 {

@@ -433,18 +433,6 @@ out:
 	return pfn_to_page(pfn);
 }
 
-static void restore_exclusive_pte(struct vm_area_struct *vma,
-				  struct page *page, unsigned long address,
-				  pte_t *ptep)
-{
-	/* Stub: device exclusivity not needed for minimal system */
-	pte_t pte = mk_pte(page, READ_ONCE(vma->vm_page_prot));
-	if (PageAnon(page))
-		page_add_anon_rmap(page, vma, address, RMAP_NONE);
-	set_pte_at(vma->vm_mm, address, ptep, pte);
-	update_mmu_cache(vma, address, ptep);
-}
-
 static inline int
 copy_present_page(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
 		  pte_t *dst_pte, pte_t *src_pte, unsigned long addr, int *rss,
@@ -1975,16 +1963,6 @@ static vm_fault_t pte_marker_clear(struct vm_fault *vmf)
 		pte_clear(vmf->vma->vm_mm, vmf->address, vmf->pte);
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
 	return 0;
-}
-
-static vm_fault_t pte_marker_handle_uffd_wp(struct vm_fault *vmf)
-{
-	
-	if (unlikely(!userfaultfd_wp(vmf->vma) || vma_is_anonymous(vmf->vma)))
-		return pte_marker_clear(vmf);
-
-	
-	return do_fault(vmf);
 }
 
 

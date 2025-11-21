@@ -347,33 +347,6 @@ munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len,
 
 	return 0;
 }
-static unsigned long count_vma_pages_range(struct mm_struct *mm,
-		unsigned long addr, unsigned long end)
-{
-	unsigned long nr_pages = 0;
-	struct vm_area_struct *vma;
-
-	
-	vma = find_vma_intersection(mm, addr, end);
-	if (!vma)
-		return 0;
-
-	nr_pages = (min(end, vma->vm_end) -
-		max(addr, vma->vm_start)) >> PAGE_SHIFT;
-
-	
-	for (vma = vma->vm_next; vma; vma = vma->vm_next) {
-		unsigned long overlap_len;
-
-		if (vma->vm_start > end)
-			break;
-
-		overlap_len = min(end, vma->vm_end) - vma->vm_start;
-		nr_pages += overlap_len >> PAGE_SHIFT;
-	}
-
-	return nr_pages;
-}
 
 void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct rb_node **rb_link, struct rb_node *rb_parent)
@@ -436,18 +409,6 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 
 	mm->map_count++;
 	validate_mm(mm);
-}
-
-static void __insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
-{
-	struct vm_area_struct *prev;
-	struct rb_node **rb_link, *rb_parent;
-
-	if (find_vma_links(mm, vma->vm_start, vma->vm_end,
-			   &prev, &rb_link, &rb_parent))
-		BUG();
-	__vma_link(mm, vma, prev, rb_link, rb_parent);
-	mm->map_count++;
 }
 
 static __always_inline void __vma_unlink(struct mm_struct *mm,

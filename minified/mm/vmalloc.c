@@ -551,30 +551,6 @@ unsigned long vmalloc_nr_pages(void)
 	return atomic_long_read(&nr_vmalloc_pages);
 }
 
-static struct vmap_area *find_vmap_area_exceed_addr(unsigned long addr)
-{
-	struct vmap_area *va = NULL;
-	struct rb_node *n = vmap_area_root.rb_node;
-
-	addr = (unsigned long)kasan_reset_tag((void *)addr);
-
-	while (n) {
-		struct vmap_area *tmp;
-
-		tmp = rb_entry(n, struct vmap_area, rb_node);
-		if (tmp->va_end > addr) {
-			va = tmp;
-			if (tmp->va_start <= addr)
-				break;
-
-			n = n->rb_left;
-		} else
-			n = n->rb_right;
-	}
-
-	return va;
-}
-
 static struct vmap_area *__find_vmap_area(unsigned long addr)
 {
 	struct rb_node *n = vmap_area_root.rb_node;
@@ -1335,11 +1311,6 @@ static void free_vmap_block(struct vmap_block *vb)
 
 	free_vmap_area_noflush(vb->va);
 	kfree_rcu(vb, rcu_head);
-}
-
-static void purge_fragmented_blocks(int cpu)
-{
-	/* Stub: fragmented block purging is an optimization */
 }
 
 static void purge_fragmented_blocks_allcpus(void)
@@ -2286,36 +2257,6 @@ void *vmalloc_32_user(unsigned long size)
 				    GFP_VMALLOC32 | __GFP_ZERO, PAGE_KERNEL,
 				    VM_USERMAP, NUMA_NO_NODE,
 				    __builtin_return_address(0));
-}
-
-static int aligned_vread(char *buf, char *addr, unsigned long count)
-{
-	struct page *p;
-	int copied = 0;
-
-	while (count) {
-		unsigned long offset, length;
-
-		offset = offset_in_page(addr);
-		length = PAGE_SIZE - offset;
-		if (length > count)
-			length = count;
-		p = vmalloc_to_page(addr);
-		
-		if (p) {
-			
-			void *map = kmap_atomic(p);
-			memcpy(buf, map + offset, length);
-			kunmap_atomic(map);
-		} else
-			memset(buf, 0, length);
-
-		addr += length;
-		buf += length;
-		copied += length;
-		count -= length;
-	}
-	return copied;
 }
 
 long vread(char *buf, char *addr, unsigned long count)

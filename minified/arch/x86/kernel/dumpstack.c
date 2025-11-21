@@ -61,13 +61,6 @@ bool noinstr in_entry_stack(unsigned long *stack, struct stack_info *info)
 	return true;
 }
 
-static void printk_stack_address(unsigned long address, int reliable,
-				 const char *log_lvl)
-{
-	touch_nmi_watchdog();
-	printk("%s %s%pBb\n", log_lvl, reliable ? "" : "? ", (void *)address);
-}
-
  
 void show_opcodes(struct pt_regs *regs, const char *loglvl)
 {
@@ -84,20 +77,6 @@ void show_ip(struct pt_regs *regs, const char *loglvl)
 void show_iret_regs(struct pt_regs *regs, const char *log_lvl)
 {
 	 
-}
-
-static void show_regs_if_on_stack(struct stack_info *info, struct pt_regs *regs,
-				  bool partial, const char *log_lvl)
-{
-	 
-	if (!partial && on_stack(info, regs, sizeof(*regs))) {
-		__show_regs(regs, SHOW_REGS_SHORT, log_lvl);
-
-	} else if (partial && on_stack(info, (void *)regs + IRET_FRAME_OFFSET,
-				       IRET_FRAME_SIZE)) {
-		 
-		show_iret_regs(regs, log_lvl);
-	}
 }
 
 static void show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,

@@ -1155,16 +1155,6 @@ phys_addr_t __init_memblock memblock_get_current_limit(void)
 	return memblock.current_limit;
 }
 
-static void __init_memblock memblock_dump(struct memblock_type *type)
-{
-	/* Stub: memblock debug dump not needed for minimal kernel */
-}
-
-static void __init_memblock __memblock_dump_all(void)
-{
-	/* Stub: memblock debug dump not needed for minimal kernel */
-}
-
 void __init_memblock memblock_dump_all(void)
 {
 	/* Stub: memblock debug dump not needed for minimal kernel */

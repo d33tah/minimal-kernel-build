@@ -211,16 +211,6 @@ static void vc_uniscr_set(struct vc_data *vc, struct uni_screen *new_uniscr)
 	vc->vc_uni_screen = new_uniscr;
 }
 
-static void vc_uniscr_insert(struct vc_data *vc, unsigned int nr)
-{
-	/* Stub: skip unicode screen buffer insert for minimal kernel */
-}
-
-static void vc_uniscr_delete(struct vc_data *vc, unsigned int nr)
-{
-	/* Stub: skip unicode screen buffer delete for minimal kernel */
-}
-
 static void vc_uniscr_clear_line(struct vc_data *vc, unsigned int x,
 				 unsigned int nr)
 {

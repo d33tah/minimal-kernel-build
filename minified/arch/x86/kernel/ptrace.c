@@ -403,26 +403,6 @@ restore:
 	return ret;
 }
 
- 
-static unsigned long ptrace_get_debugreg(struct task_struct *tsk, int n)
-{
-	struct thread_struct *thread = &tsk->thread;
-	unsigned long val = 0;
-
-	if (n < HBP_NUM) {
-		int index = array_index_nospec(n, HBP_NUM);
-		struct perf_event *bp = thread->ptrace_bps[index];
-
-		if (bp)
-			val = bp->hw.info.address;
-	} else if (n == 6) {
-		val = thread->virtual_dr6 ^ DR6_RESERVED;  
-	} else if (n == 7) {
-		val = thread->ptrace_dr7;
-	}
-	return val;
-}
-
 static int ptrace_set_breakpoint_addr(struct task_struct *tsk, int nr,
 				      unsigned long addr)
 {
@@ -447,27 +427,6 @@ static int ptrace_set_breakpoint_addr(struct task_struct *tsk, int nr,
 	}
 
 	return err;
-}
-
- 
-static int ptrace_set_debugreg(struct task_struct *tsk, int n,
-			       unsigned long val)
-{
-	struct thread_struct *thread = &tsk->thread;
-	 
-	int rc = -EIO;
-
-	if (n < HBP_NUM) {
-		rc = ptrace_set_breakpoint_addr(tsk, n, val);
-	} else if (n == 6) {
-		thread->virtual_dr6 = val ^ DR6_RESERVED;  
-		rc = 0;
-	} else if (n == 7) {
-		rc = ptrace_write_dr7(tsk, val);
-		if (!rc)
-			thread->ptrace_dr7 = val;
-	}
-	return rc;
 }
 
  

@@ -218,20 +218,6 @@ void exit_task_namespaces(struct task_struct *p)
 }
 
 
-static void put_nsset(struct nsset *nsset)
-{
-	unsigned flags = nsset->flags;
-
-	if (flags & CLONE_NEWUSER)
-		put_cred(nsset_cred(nsset));
-	 
-	if (nsset->fs && (flags & CLONE_NEWNS) && (flags & ~CLONE_NEWNS))
-		free_fs_struct(nsset->fs);
-	if (nsset->nsproxy)
-		free_nsproxy(nsset->nsproxy);
-}
-
-
 static inline int validate_ns(struct nsset *nsset, struct ns_common *ns)
 {
 	return ns->ops->install(nsset, ns);

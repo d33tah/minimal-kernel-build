@@ -150,27 +150,12 @@ static void device_link_remove_from_lists(struct device_link *link)
 	list_del_rcu(&link->c_node);
 }
 
-static bool device_is_ancestor(struct device *dev, struct device *target)
-{
-	return false; /* Stub: unused */
-}
-
 int device_is_dependent(struct device *dev, void *target)
 {
 	/* Minimal stub: no dependency tracking */
 	(void)dev;
 	(void)target;
 	return 0;
-}
-
-static void device_link_init_status(struct device_link *link,
-				    struct device *consumer,
-				    struct device *supplier)
-{
-	/* Minimal stub */
-	(void)consumer;
-	(void)supplier;
-	link->status = DL_STATE_DORMANT;
 }
 
 static int device_reorder_to_tail(struct device *dev, void *not_used)
@@ -547,16 +532,6 @@ static int sync_state_resume_initcall(void)
 }
 late_initcall(sync_state_resume_initcall);
 
-static void __device_links_supplier_defer_sync(struct device *sup)
-{
-	/* Stub: unused */
-}
-
-static void device_link_drop_managed(struct device_link *link)
-{
-	/* Stub: unused */
-}
-
 static ssize_t waiting_for_supplier_show(struct device *dev,
 					 struct device_attribute *attr,
 					 char *buf)
@@ -577,12 +552,6 @@ void device_links_force_bind(struct device *dev)
 }
 
 void device_links_driver_bound(struct device *dev)
-{
-	/* Minimal stub */
-	(void)dev;
-}
-
-static void __device_links_no_driver(struct device *dev)
 {
 	/* Minimal stub */
 	(void)dev;
@@ -737,11 +706,6 @@ void fw_devlink_drivers_done(void)
 	device_links_write_unlock();
 }
 
-static void fw_devlink_unblock_consumers(struct device *dev)
-{
-	/* Stub: unused */
-}
-
 static int fw_devlink_relax_cycle(struct device *con, void *sup)
 {
 	struct device_link *link;
@@ -774,44 +738,6 @@ static int fw_devlink_create_devlink(struct device *con,
 {
 	/* Stubbed: firmware device linking not needed for minimal boot */
 	return -EINVAL;
-}
-
-static void __fw_devlink_link_to_consumers(struct device *dev)
-{
-	struct fwnode_handle *fwnode = dev->fwnode;
-	struct fwnode_link *link, *tmp;
-
-	list_for_each_entry_safe(link, tmp, &fwnode->consumers, s_hook) {
-		u32 dl_flags = fw_devlink_get_flags();
-		struct device *con_dev;
-		bool own_link = true;
-		int ret;
-
-		con_dev = get_dev_from_fwnode(link->consumer);
-		
-		if (!con_dev) {
-			con_dev = fwnode_get_next_parent_dev(link->consumer);
-			
-			if (con_dev &&
-			    fwnode_is_ancestor_of(con_dev->fwnode, fwnode)) {
-				put_device(con_dev);
-				con_dev = NULL;
-			} else {
-				own_link = false;
-				dl_flags = FW_DEVLINK_FLAGS_PERMISSIVE;
-			}
-		}
-
-		if (!con_dev)
-			continue;
-
-		ret = fw_devlink_create_devlink(con_dev, fwnode, dl_flags);
-		put_device(con_dev);
-		if (!own_link || ret == -EAGAIN)
-			continue;
-
-		__fwnode_link_del(link);
-	}
 }
 
 static void __fw_devlink_link_to_suppliers(struct device *dev,
@@ -853,11 +779,6 @@ static void __fw_devlink_link_to_suppliers(struct device *dev,
 		__fw_devlink_link_to_suppliers(dev, child);
 }
 
-static void fw_devlink_link_device(struct device *dev)
-{
-	/* Stub: unused */
-}
-
 int (*platform_notify)(struct device *dev) = NULL;
 int (*platform_notify_remove)(struct device *dev) = NULL;
 static struct kobject *dev_kobj;
@@ -889,11 +810,6 @@ int lock_device_hotplug_sysfs(void)
 static inline int device_is_not_partition(struct device *dev)
 {
 	return 1;
-}
-
-static void device_platform_notify(struct device *dev)
-{
-	/* Stub: unused */
 }
 
 static void device_platform_notify_remove(struct device *dev)
@@ -1279,11 +1195,6 @@ void devm_device_remove_groups(struct device *dev,
 			        (void *)groups));
 }
 
-static int device_add_attrs(struct device *dev)
-{
-	return 0; /* Stub: unused */
-}
-
 static void device_remove_attrs(struct device *dev)
 {
 	struct class *class = dev->class;
@@ -1314,16 +1225,6 @@ static ssize_t dev_show(struct device *dev, struct device_attribute *attr,
 static DEVICE_ATTR_RO(dev);
 
 struct kset *devices_kset;
-
-static void devices_kset_move_before(struct device *deva, struct device *devb)
-{
-	/* Stub: unused */
-}
-
-static void devices_kset_move_after(struct device *deva, struct device *devb)
-{
-	/* Stub: unused */
-}
 
 void devices_kset_move_last(struct device *dev)
 {
@@ -1459,38 +1360,7 @@ static struct kobj_type class_dir_ktype = {
 	.child_ns_type	= class_dir_child_ns_type
 };
 
-static struct kobject *
-class_dir_create_and_add(struct class *class, struct kobject *parent_kobj)
-{
-	struct class_dir *dir;
-	int retval;
-
-	dir = kzalloc(sizeof(*dir), GFP_KERNEL);
-	if (!dir)
-		return ERR_PTR(-ENOMEM);
-
-	dir->class = class;
-	kobject_init(&dir->kobj, &class_dir_ktype);
-
-	dir->kobj.kset = &class->p->glue_dirs;
-
-	retval = kobject_add(&dir->kobj, parent_kobj, "%s", class->name);
-	if (retval < 0) {
-		kobject_put(&dir->kobj);
-		return ERR_PTR(retval);
-	}
-	return &dir->kobj;
-}
-
 static DEFINE_MUTEX(gdp_mutex);
-
-static struct kobject *get_device_parent(struct device *dev,
-					 struct device *parent)
-{
-	if (parent)
-		return &parent->kobj;
-	return NULL; /* Stub: simplified */
-}
 
 static inline bool live_in_glue_dir(struct kobject *kobj,
 				    struct device *dev)
@@ -1530,12 +1400,6 @@ static void cleanup_glue_dir(struct device *dev, struct kobject *glue_dir)
 	mutex_unlock(&gdp_mutex);
 }
 
-static int device_add_class_symlinks(struct device *dev)
-{
-	/* Stub: sysfs class symlinks not needed for minimal kernel */
-	return 0;
-}
-
 static void device_remove_class_symlinks(struct device *dev)
 {
 	/* Stub: sysfs class symlinks not needed for minimal kernel */
@@ -1562,11 +1426,6 @@ static struct kobject *device_to_dev_kobj(struct device *dev)
 		kobj = sysfs_dev_char_kobj;
 
 	return kobj;
-}
-
-static int device_create_sys_dev_entry(struct device *dev)
-{
-	return 0; /* Stub: unused */
 }
 
 static void device_remove_sys_dev_entry(struct device *dev)
@@ -2059,25 +1918,11 @@ int device_rename(struct device *dev, const char *new_name)
 	return -EINVAL;
 }
 
-static int device_move_class_links(struct device *dev,
-				   struct device *old_parent,
-				   struct device *new_parent)
-{
-	/* Stub: device class link moving not needed */
-	return 0;
-}
-
 int device_move(struct device *dev, struct device *new_parent,
 		enum dpm_order dpm_order)
 {
 	/* Stubbed: device moving not needed for minimal boot */
 	return -EINVAL;
-}
-
-static int device_attrs_change_owner(struct device *dev, kuid_t kuid,
-				     kgid_t kgid)
-{
-	return 0; /* Stub: unused */
 }
 
 int device_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid)

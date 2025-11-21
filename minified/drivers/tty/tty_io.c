@@ -338,11 +338,6 @@ void tty_wakeup(struct tty_struct *tty)
 	wake_up_interruptible_poll(&tty->write_wait, EPOLLOUT);
 }
 
-static struct file *tty_release_redirect(struct tty_struct *tty)
-{
-	return NULL; /* Stub: unused */
-}
-
 static void __tty_hangup(struct tty_struct *tty, int exit_session)
 {
 	/* Stub: minimal TTY hangup for simple kernel */
@@ -1326,11 +1321,6 @@ static int tty_fasync(int fd, struct file *filp, int on)
 	return retval;
 }
 
-static int tiocsti(struct tty_struct *tty, char __user *p)
-{
-	return -EINVAL; /* Stub: unused */
-}
-
 static int tiocgwinsz(struct tty_struct *tty, struct winsize __user *arg)
 {
 	int err;
@@ -1376,37 +1366,6 @@ static int tiocswinsz(struct tty_struct *tty, struct winsize __user *arg)
 		return tty_do_resize(tty, &tmp_ws);
 }
 
-static int tioccons(struct file *file)
-{
-	return -EINVAL; /* Stub: unused */
-}
-
-static int tiocsetd(struct tty_struct *tty, int __user *p)
-{
-	return -EINVAL; /* Stub: unused */
-}
-
-static int tiocgetd(struct tty_struct *tty, int __user *p)
-{
-	return -EINVAL; /* Stub: unused */
-}
-
-static int send_break(struct tty_struct *tty, unsigned int duration)
-{
-	return 0; /* Stub: unused */
-}
-
-static int tty_tiocmget(struct tty_struct *tty, int __user *p)
-{
-	return -ENOTTY; /* Stub: unused */
-}
-
-static int tty_tiocmset(struct tty_struct *tty, unsigned int cmd,
-	     unsigned __user *p)
-{
-	return -ENOTTY; /* Stub: unused */
-}
-
 int tty_get_icount(struct tty_struct *tty,
 		   struct serial_icounter_struct *icount)
 {
@@ -1416,34 +1375,6 @@ int tty_get_icount(struct tty_struct *tty,
 		return tty->ops->get_icount(tty, icount);
 	else
 		return -ENOTTY;
-}
-
-static int tty_tiocgicount(struct tty_struct *tty, void __user *arg)
-{
-	return -ENOTTY; /* Stub: unused */
-}
-
-static int tty_set_serial(struct tty_struct *tty, struct serial_struct *ss)
-{
-	char comm[TASK_COMM_LEN];
-	int flags;
-
-	flags = ss->flags & ASYNC_DEPRECATED;
-
-	if (!tty->ops->set_serial)
-		return -ENOTTY;
-
-	return tty->ops->set_serial(tty, ss);
-}
-
-static int tty_tiocsserial(struct tty_struct *tty, struct serial_struct __user *ss)
-{
-	return -ENOTTY; /* Stub: unused */
-}
-
-static int tty_tiocgserial(struct tty_struct *tty, struct serial_struct __user *ss)
-{
-	return -ENOTTY; /* Stub: unused */
 }
 
 static struct tty_struct *tty_pair_get_tty(struct tty_struct *tty)

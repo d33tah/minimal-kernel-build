@@ -1206,13 +1206,6 @@ SYSCALL_DEFINE1(oldumount, char __user *, name)
 
 #endif
 
-static bool is_mnt_ns_file(struct dentry *dentry)
-{
-	
-	return dentry->d_op == &ns_dentry_operations &&
-	       dentry->d_fsdata == &mntns_operations;
-}
-
 static struct mnt_namespace *to_mnt_ns(struct ns_common *ns)
 {
 	return container_of(ns, struct mnt_namespace, ns);

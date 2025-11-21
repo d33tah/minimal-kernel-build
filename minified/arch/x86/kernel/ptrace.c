@@ -292,21 +292,6 @@ static void ptrace_triggered(struct perf_event *bp,
 }
 
  
-static unsigned long ptrace_get_dr7(struct perf_event *bp[])
-{
-	int i;
-	int dr7 = 0;
-	struct arch_hw_breakpoint *info;
-
-	for (i = 0; i < HBP_NUM; i++) {
-		if (bp[i] && !bp[i]->attr.disabled) {
-			info = counter_arch_bp(bp[i]);
-			dr7 |= encode_dr7(i, info->len, info->type);
-		}
-	}
-
-	return dr7;
-}
 
 static int ptrace_fill_bp_fields(struct perf_event_attr *attr,
 					int len, int type, bool disabled)
@@ -323,36 +308,7 @@ static int ptrace_fill_bp_fields(struct perf_event_attr *attr,
 	return err;
 }
 
-static struct perf_event *
-ptrace_register_breakpoint(struct task_struct *tsk, int len, int type,
-				unsigned long addr, bool disabled)
-{
-	struct perf_event_attr attr;
-	int err;
 
-	ptrace_breakpoint_init(&attr);
-	attr.bp_addr = addr;
-
-	err = ptrace_fill_bp_fields(&attr, len, type, disabled);
-	if (err)
-		return ERR_PTR(err);
-
-	return register_user_hw_breakpoint(&attr, ptrace_triggered,
-						 NULL, tsk);
-}
-
-static int ptrace_modify_breakpoint(struct perf_event *bp, int len, int type,
-					int disabled)
-{
-	struct perf_event_attr attr = bp->attr;
-	int err;
-
-	err = ptrace_fill_bp_fields(&attr, len, type, disabled);
-	if (err)
-		return err;
-
-	return modify_user_hw_breakpoint(bp, &attr);
-}
 
 
 static int ioperm_active(struct task_struct *target,

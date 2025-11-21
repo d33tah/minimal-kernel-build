@@ -1,3 +1,38 @@
+--- 2025-11-21 11:07 ---
+
+Session end (17 min):
+
+Achievement:
+- Fixed previous session's incorrect removal of lib/bcd.c (restored, 13 LOC)
+- Successfully removed lib/clz_ctz.c (47 LOC) - compiler builtins
+- Fixed Makefile references for misc.c and int_pow.c from previous session
+- Commits: 3 (all passing make vm, all pushed)
+
+Details:
+- lib/bcd.c was incorrectly removed - it's used by mc146818 RTC code
+  Functions _bcd2bin and _bin2bcd called by mach_get_cmos_time and mc146818_set_time
+  Build failed with linker errors, had to restore from previous commit
+
+- lib/clz_ctz.c successfully removed - contains __ctzsi2, __clzsi2, __ctzdi2, __clzdi2
+  These are compiler built-in functions for count trailing/leading zeros
+  Build passed, VM prints "Hello, World!Still alive"
+
+- Investigated other candidates but all were actually used:
+  security/min_addr.c (mmap_min_addr used 12 places)
+  kernel/regset.c (regset functions used 10 places)
+  lib/argv_split.c (argv_split used 4 places)
+
+Current metrics:
+- Binary: 320KB (stable)
+- LOC: ~230,039 (reduced by 47 from clz_ctz removal)
+- Goal: 200,000 LOC
+- Gap: ~30,039 LOC (13.0% reduction still needed)
+
+Lesson reinforced:
+- Build testing is essential - grep search can miss macro/inline usage
+- Linker will catch truly unused code more reliably than text search
+- Need to try more files from the candidate list systematically
+
 --- 2025-11-21 10:50 ---
 
 Session start:

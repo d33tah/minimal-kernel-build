@@ -1,3 +1,41 @@
+--- 2025-11-21 15:57 (Attempted rmap stubbing - FAILED) ---
+
+Tried to stub mm/rmap.c (1544 lines) but kernel hung - it didn't print "Hello world".
+Reverse mapping is apparently needed for basic memory management even in minimal system.
+Reverted the change.
+
+Looking for other targets that are truly optional.
+
+--- 2025-11-21 15:54 (Progress update) ---
+
+Successfully stubbed mm/page-writeback.c!
+- Reduced from 1649 lines to 69 lines
+- LOC: 226,190 → 224,971 (-1,219 LOC)
+- Binary: 307KB → 303KB (-4KB)
+- Committed and pushed
+
+Continuing with more mm/ file stubbing. Next targets:
+- mm/gup.c (1919 lines) - get_user_pages, not needed for hello world
+- mm/rmap.c (1544 lines) - reverse mapping, also not needed
+
+--- 2025-11-21 15:41 (New session start) ---
+
+Starting LOC: 226,190
+Goal: 200,000 LOC
+Remaining: 26,190 LOC (11.6%)
+Binary: 307KB
+make vm: PASSES ✓
+
+Strategy for this session:
+- Focus on finding and removing/stubbing larger files and subsystems
+- Previous sessions showed core lib functions (radix-tree, scatterlist) are too integrated
+- Will look for largest files that can be reduced
+- Target unused drivers, optional features, or architecture-specific code
+- Consider TTY simplification (just need basic console output)
+- Look for syscalls that can be removed
+
+Will proceed methodically, testing make vm after each change.
+
 --- 2025-11-21 14:21 (New session start) ---
 
 Starting LOC: 243,183 (increased from last session's 226,781)

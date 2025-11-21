@@ -1,3 +1,33 @@
+--- 2025-11-21 10:12 ---
+
+Progress (25 min):
+- Removed lib/bcd.c (13 LOC, unused BCD conversion functions)
+- Binary: 320KB (stable)
+- LOC: 246,071 (down from 246,081, reduced by 10)
+- Goal: 200,000 LOC
+- Gap: 46,071 LOC (18.7% reduction needed)
+
+Analysis approach:
+- Compiled with -Wunused-function: no warnings (clean build)
+- Searched for unused headers: found 7 but all were actually used conditionally
+- Searched for stub-only files: most are called despite being stubs
+- Found unused file by checking function references across codebase
+
+Next: Continue checking small files for unused code
+
+Session start:
+- make vm: PASSES ✓ (prints "Hello, World!Still alive")
+- Binary: 320KB
+- LOC: 246,081 (cloc count)
+- Goal: 200,000 LOC
+- Gap: 46,081 LOC (18.7% reduction needed)
+
+Strategy for this session:
+- Try building with -Wunused-* flags to find more unused code
+- Focus on header reduction (1191 headers is excessive)
+- Look for unused syscalls and stubs
+- Check for dead code in large files
+
 --- 2025-11-21 09:39 ---
 
 Session end (80 min total):

@@ -1,3 +1,20 @@
+--- 2025-11-21 18:43 (lib/iomap.c stub) ---
+
+Stubbed lib/iomap.c (319 → 77 LOC)
+- I/O port mapping functions for PCI and memory-mapped I/O
+- Direct reduction: 242 LOC
+- Binary: 301KB (unchanged)
+- make vm: PASSES ✓
+
+Current LOC: ~223,748 (estimated)
+Goal: 200,000 LOC
+Remaining: ~23,748 LOC (10.6%)
+
+All I/O functions stubbed to safe defaults:
+- ioread*/iowrite*: return 0xff.../no-ops
+- PCI mapping functions: return NULL
+- Functions not actually used in minimal kernel build
+
 --- 2025-11-21 18:39 (lib/string_helpers.c stub) ---
 
 Stubbed lib/string_helpers.c (494 → 130 LOC)

@@ -1954,18 +1954,6 @@ static inline bool should_try_to_free_swap(struct page *page,
 		page_count(page) == 2;
 }
 
-static vm_fault_t pte_marker_clear(struct vm_fault *vmf)
-{
-	vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd,
-				       vmf->address, &vmf->ptl);
-	
-	if (is_pte_marker(*vmf->pte))
-		pte_clear(vmf->vma->vm_mm, vmf->address, vmf->pte);
-	pte_unmap_unlock(vmf->pte, vmf->ptl);
-	return 0;
-}
-
-
 vm_fault_t do_swap_page(struct vm_fault *vmf)
 {
 	/* Stub: swap not configured, should never be called */

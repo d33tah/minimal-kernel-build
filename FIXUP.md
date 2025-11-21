@@ -1,3 +1,44 @@
+--- 2025-11-21 06:45 ---
+
+Session status (2 commits, pushed):
+1. Remove kernel/ptrace.c - entirely stub-only (114 lines)
+2. Remove fs/xattr.c - entirely stub-only (62 lines)
+
+Total removed this session: 176 lines (git diff)
+Current LOC: 245,895 (down from 246,001)
+Gap to 200K goal: 45,895 LOC (18.7% reduction still needed)
+
+Files checked but not removable (have callers):
+- fs/sync.c (vfs_fsync used in 3 places)
+- mm/readahead.c (file_ra_state_init called from fs/open.c)
+- mm/workingset.c (functions called in 3 places)
+- lib/bcd.c (used by RTC driver)
+- Various other small lib files (all have callers)
+
+Analysis:
+- Core subsystems: kernel=29K, mm=24K, fs=17K, lib=many small files
+- 116 syscalls defined in fs/ alone
+- Biggest files: page_alloc (2983), namei (2771), memory (2637), namespace (2472)
+- Hard to find more fully-stub files - most have at least some callers
+
+Next approach needed: Look for entire features/subsystems to stub out or simplify
+rather than individual files. The 46K LOC reduction is substantial and requires
+bigger targets.
+
+--- 2025-11-21 06:41 ---
+
+Progress so far (2 commits):
+1. Remove kernel/ptrace.c - entirely stub-only file (114 lines)
+2. Remove fs/xattr.c - entirely stub-only file (62 lines)
+
+Total removed: 176 lines (2 files)
+Binary: 320KB (stable)
+make vm: PASSES, prints "Hello, World!Still alive"
+
+Strategy: Looking for more stub-only files that can be entirely removed.
+Checked several candidates (sync.c, readahead.c, workingset.c) but they have callers.
+Will continue searching for removable files.
+
 --- 2025-11-21 06:31 ---
 
 New session starting:

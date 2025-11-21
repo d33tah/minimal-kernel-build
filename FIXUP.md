@@ -1,3 +1,21 @@
+--- 2025-11-21 10:34 ---
+
+Session end (90 min total):
+
+Attempted path_mount() removal from namespace.c (78 LOC) but discovered it's called by
+init_mount() in fs/init.c:22. Reverted. This highlights the difficulty of identifying
+truly unused code - function appears unused in its own file but is called from init code.
+
+Total commits: 1 (FIXUP.md documentation only)
+LOC reduction: 0
+
+Time breakdown:
+- 60min: broad exploration and analysis
+- 30min: attempted removal of path_mount (unsuccessful)
+
+The challenge remains: need compiler/linker-based dead code detection or very careful
+call graph analysis to identify truly unused functions. Manual inspection is too error-prone.
+
 --- 2025-11-21 10:14 ---
 
 Session end - analysis complete, no LOC reduction (60+ min exploration):

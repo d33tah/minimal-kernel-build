@@ -1,3 +1,30 @@
+--- 2025-11-21 16:51 (Session strategy notes) ---
+
+Current status:
+- LOC: ~225,000 (goal: 200,000 - need 25,000 reduction / 11%)
+- Binary: 303KB
+- make vm: PASSING ✓
+
+Key learnings from failed attempts:
+1. Core MM functions (rmap.c, gup.c) cannot be stubbed - needed for basic execution
+2. Page writeback can be stubbed (successful in previous session)
+3. Need to target truly optional features, not core infrastructure
+
+Better reduction strategies to explore:
+1. Simplify or stub optional syscalls (signals, IPC, etc.)
+2. Reduce driver complexity (VT console emulation - 1977 lines, just need basic output)
+3. Simplify filesystem path resolution (namei.c 2771 lines, namespace.c 2472 lines)
+4. Remove optional scheduler features
+5. Header file cleanup (1139 headers for 415 C files is excessive)
+6. Look for CONFIG options that can disable entire subsystems
+
+Most promising next targets based on size and optionality:
+- drivers/tty/vt/vt.c (1977 lines) - complex VT emulation, need basic console
+- fs/namei.c (2771 lines) - complex path lookup, we use minimal paths
+- fs/namespace.c (2472 lines) - mount namespaces, not needed
+- lib/vsprintf.c (1467 lines) - complex printf formatting
+- Multiple scheduler files in kernel/sched/ (~6000 lines total, much optional)
+
 --- 2025-11-21 16:42 (Failed gup.c stubbing attempt) ---
 
 Attempted to stub mm/gup.c (1919 lines) to reduce LOC.

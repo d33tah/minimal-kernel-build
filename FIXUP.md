@@ -1,24 +1,40 @@
 --- 2025-11-21 10:12 ---
 
-Progress (45 min):
-- Removed lib/bcd.c (13 LOC, unused BCD conversion functions)
-- Removed arch/x86/lib/misc.c (18 LOC, unused num_digits function)
-- Removed lib/math/int_pow.c (22 LOC, unused int_pow function)
+Session end (60 min total):
+
+Achievement:
+- Removed 3 files: lib/bcd.c (13 LOC), arch/x86/lib/misc.c (18 LOC), lib/math/int_pow.c (22 LOC)
 - Binary: 320KB (stable)
 - C code: 130,990 (down from 131,028, reduced by 38)
 - Total LOC: ~246,067 (reduced by ~38 actual)
 - Goal: 200,000 LOC
 - Gap: ~46,067 LOC (18.7% reduction needed)
+- Commits: 3 (all passing make vm)
 
 Analysis approach:
-- Compiled with -Wunused-function: no warnings (clean build)
-- Searched for unused headers: found 7 but all were actually used conditionally
+- Compiled with -Wunused-function: no warnings (clean build is very clean)
+- Searched for unused headers: found 7 candidates but all were actually used conditionally
 - Searched for stub-only files: most are called despite being stubs
 - Found unused files by checking function references across codebase
 - Systematically checked small C files for unreferenced functions
-- Verified functions not only declared but actually called
+- Verified functions not only declared in headers but actually called in .c files
 
-Next: Continue checking more files for unused code
+Investigation findings:
+- Scanned lib/*.c files: found many appear unused but are actually data arrays or used via macros/inlines
+- False positives: ctype.c (_ctype array), irq_regs.c (per-CPU variable), etc.
+- All math library functions except int_pow are used (int_sqrt, lcm, gcd, reciprocal_div)
+- Most small kernel files have syscalls or are called from core code
+
+Challenge:
+- Diminishing returns: easy targets (completely unused files) are rare
+- Most code is either: (1) used, (2) stub but called, or (3) used via macros/inline functions
+- Need more sophisticated analysis: static analysis tools, LTO-based dead code detection, or manual function-by-function analysis of large files
+
+Next session ideas:
+- Try removing individual stub functions from files (not whole files)
+- Look for unused functions within large files (namei.c, namespace.c, dcache.c)
+- Consider using static analysis to build call graphs
+- Focus on reducing header bloat (1191 headers, many with unused inline functions)
 
 Session start:
 - make vm: PASSES ✓ (prints "Hello, World!Still alive")

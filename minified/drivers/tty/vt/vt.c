@@ -434,33 +434,6 @@ void complement_pos(struct vc_data *vc, int offset)
 {
 }
 
-static void insert_char(struct vc_data *vc, unsigned int nr)
-{
-	unsigned short *p = (unsigned short *) vc->vc_pos;
-
-	vc_uniscr_insert(vc, nr);
-	scr_memmovew(p + nr, p, (vc->vc_cols - vc->state.x - nr) * 2);
-	scr_memsetw(p, vc->vc_video_erase_char, nr * 2);
-	vc->vc_need_wrap = 0;
-	if (con_should_update(vc))
-		do_update_region(vc, (unsigned long) p,
-			vc->vc_cols - vc->state.x);
-}
-
-static void delete_char(struct vc_data *vc, unsigned int nr)
-{
-	unsigned short *p = (unsigned short *) vc->vc_pos;
-
-	vc_uniscr_delete(vc, nr);
-	scr_memmovew(p, p + nr, (vc->vc_cols - vc->state.x - nr) * 2);
-	scr_memsetw(p + vc->vc_cols - vc->state.x - nr, vc->vc_video_erase_char,
-			nr * 2);
-	vc->vc_need_wrap = 0;
-	if (con_should_update(vc))
-		do_update_region(vc, (unsigned long) p,
-			vc->vc_cols - vc->state.x);
-}
-
 static int softcursor_original = -1;
 
 static void add_softcursor(struct vc_data *vc)
@@ -935,27 +908,10 @@ static void default_attr(struct vc_data *vc)
 	vc->state.color = vc->vc_def_color;
 }
 
-static int vc_t416_color(struct vc_data *vc, int i, void *unused)
-{
-	/* Stub: 256/RGB color not needed for minimal system */
-	return i + 1;
-}
-
-static void csi_m(struct vc_data *vc)
-{
-	/* Minimal stub: ignore ANSI color/attribute codes */
-	update_attr(vc);
-}
-
 static void respond_string(const char *p, size_t len, struct tty_port *port)
 {
 	tty_insert_flip_string(port, p, len);
 	tty_flip_buffer_push(port);
-}
-
-static void cursor_report(struct vc_data *vc, struct tty_struct *tty)
-{
-	/* Stub: unused */
 }
 
 static inline void status_report(struct tty_struct *tty)
@@ -982,58 +938,9 @@ int mouse_reporting(void)
 	return 0;
 }
 
-static void set_mode(struct vc_data *vc, int on_off)
-{
-	/* Simplified mode setting for minimal system - only essential modes */
-	int i;
-
-	for (i = 0; i <= vc->vc_npar; i++) {
-		if (vc->vc_priv == EPdec) {
-			switch(vc->vc_par[i]) {
-			case 7:	/* Auto wrap */
-				vc->vc_decawm = on_off;
-				break;
-			case 25: /* Cursor visibility */
-				vc->vc_deccm = on_off;
-				break;
-			}
-		}
-	}
-}
-
-static void setterm_command(struct vc_data *vc)
-{
-	/* Stubbed: terminal settings not needed for minimal boot */
-}
-
-static void csi_at(struct vc_data *vc, unsigned int nr)
-{
-	/* Stub: unused */
-}
-
-static void csi_L(struct vc_data *vc, unsigned int nr)
-{
-	/* Stub: unused */
-}
-
-static void csi_P(struct vc_data *vc, unsigned int nr)
-{
-	/* Stub: unused */
-}
-
-static void csi_M(struct vc_data *vc, unsigned int nr)
-{
-	/* Stub: unused */
-}
-
 static void save_cur(struct vc_data *vc)
 {
 	memcpy(&vc->saved_state, &vc->state, sizeof(vc->state));
-}
-
-static void restore_cur(struct vc_data *vc)
-{
-	/* Stub: unused */
 }
 
 enum { ESnormal, ESesc, ESsquare, ESgetpars, ESfunckey,
@@ -1086,51 +993,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	save_cur(vc);
 	if (do_clear)
 	    csi_J(vc, 2);
-}
-
-static void vc_setGx(struct vc_data *vc, unsigned int which, int c)
-{
-	/* Stub: unused */
-}
-
-static bool ansi_control_string(unsigned int state)
-{
-	return false; /* Stub: unused */
-}
-
-static void do_con_trol(struct tty_struct *tty, struct vc_data *vc, int c)
-{
-	/* Minimal stub - only handle essential control characters for basic output */
-	switch (c) {
-	case 0:
-		/* Null - ignore */
-		return;
-	case 10: case 11: case 12:
-		/* Line feed */
-		lf(vc);
-		if (!is_kbd(vc, lnm))
-			return;
-		fallthrough;
-	case 13:
-		/* Carriage return */
-		cr(vc);
-		return;
-	case 27:
-		/* ESC - ignore escape sequences for minimal implementation */
-		vc->vc_state = ESesc;
-		return;
-	default:
-		/* Ignore all other control characters and ANSI sequences */
-		if (vc->vc_state != ESnormal)
-			vc->vc_state = ESnormal;
-		return;
-	}
-}
-
-static int is_double_width(uint32_t ucs)
-{
-	/* Stub: assume all characters are single-width for minimal system */
-	return 0;
 }
 
 struct vc_draw_region {
@@ -1898,11 +1760,6 @@ static int vtconsole_init_device(struct con_driver *con)
 {
 	con->flag |= CON_DRIVER_FLAG_ATTR;
 	return 0;
-}
-
-static void vtconsole_deinit_device(struct con_driver *con)
-{
-	/* Stub: unused */
 }
 
 int con_is_bound(const struct consw *csw)

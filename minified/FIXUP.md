@@ -1,3 +1,23 @@
+--- 2025-11-21 04:48 ---
+
+Removed 17 unused terminal control functions from drivers/tty/vt/vt.c:
+- insert_char, delete_char (character editing)
+- vc_t416_color, csi_m (color/attribute control)
+- cursor_report (cursor position reporting)
+- set_mode, setterm_command (terminal mode setting)
+- csi_at, csi_L, csi_P, csi_M (CSI control sequences)
+- restore_cur (cursor state restoration)
+- vc_setGx, ansi_control_string (character set control)
+- do_con_trol (main control character handler - was minimal stub)
+- is_double_width (character width detection)
+- vtconsole_deinit_device (console cleanup)
+
+Total reduction: ~145 LOC
+Binary: 320KB (stable)
+Build tested - PASSES, prints "Hello, World!Still alive"
+
+Most of these were ANSI terminal control features not needed for minimal "Hello World" output.
+
 --- 2025-11-21 04:44 ---
 
 Batch commit - removed 11 unused functions across 3 files:

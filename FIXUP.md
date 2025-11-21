@@ -1,3 +1,35 @@
+--- 2025-11-21 11:19 ---
+
+Successfully removed 2 tiny files (8 LOC total):
+- arch/x86/lib/atomic64_32.c (4 LOC) - just header includes for EXPORT_SYMBOL
+- arch/x86/lib/msr-reg-export.c (4 LOC) - just header includes for EXPORT_SYMBOL
+
+Both files only contained header includes with no actual code. They were used to
+export symbols via macros in the headers, but those exports are not needed for
+our minimal kernel. Build passed, VM prints "Hello, World!Still alive".
+
+Binary: 320KB (stable)
+
+Session start:
+- make vm: PASSES ✓ (prints "Hello, World!Still alive")
+- Binary: 320KB
+- LOC: 245,697 (cloc count after mrproper)
+- Goal: 200,000 LOC
+- Gap: 45,697 LOC (18.6% reduction needed)
+
+IMPORTANT NOTE:
+- The previous LOC count of ~230k was WRONG - didn't include all files
+- Correct count after full mrproper: 245,697 LOC
+- This matches the baseline better (246,067 from earlier session)
+- Previous session removed 47 LOC (lib/clz_ctz.c), so 246,067 - 47 = 246,020
+- Small discrepancy due to counting method differences
+
+Strategy for this session:
+- Continue systematic search for unused files
+- Focus on lib/ and arch/x86/lib/ small files
+- Remove one file at a time, test build each time
+- Look for stub-only implementations that can be removed
+
 --- 2025-11-21 11:07 ---
 
 Session end (17 min):

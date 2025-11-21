@@ -248,10 +248,7 @@ static void driver_bound(struct device *dev)
 static ssize_t coredump_store(struct device *dev, struct device_attribute *attr,
 			    const char *buf, size_t count)
 {
-	device_lock(dev);
-	dev->driver->coredump(dev);
-	device_unlock(dev);
-
+	/* Stub: device coredump not needed for minimal kernel */
 	return count;
 }
 static DEVICE_ATTR_WO(coredump);

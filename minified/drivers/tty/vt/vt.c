@@ -432,37 +432,6 @@ void invert_screen(struct vc_data *vc, int offset, int count, bool viewed)
 
 void complement_pos(struct vc_data *vc, int offset)
 {
-	static int old_offset = -1;
-	static unsigned short old;
-	static unsigned short oldx, oldy;
-
-	WARN_CONSOLE_UNLOCKED();
-
-	if (old_offset != -1 && old_offset >= 0 &&
-	    old_offset < vc->vc_screenbuf_size) {
-		scr_writew(old, screenpos(vc, old_offset, true));
-		if (con_should_update(vc))
-			vc->vc_sw->con_putc(vc, old, oldy, oldx);
-		notify_update(vc);
-	}
-
-	old_offset = offset;
-
-	if (offset != -1 && offset >= 0 &&
-	    offset < vc->vc_screenbuf_size) {
-		unsigned short new;
-		unsigned short *p;
-		p = screenpos(vc, offset, true);
-		old = scr_readw(p);
-		new = old ^ vc->vc_complement_mask;
-		scr_writew(new, p);
-		if (con_should_update(vc)) {
-			oldx = (offset >> 1) % vc->vc_cols;
-			oldy = (offset >> 1) / vc->vc_cols;
-			vc->vc_sw->con_putc(vc, new, oldy, oldx);
-		}
-		notify_update(vc);
-	}
 }
 
 static void insert_char(struct vc_data *vc, unsigned int nr)
@@ -589,13 +558,6 @@ static void flush_scrollback(struct vc_data *vc)
 
 void clear_buffer_attributes(struct vc_data *vc)
 {
-	unsigned short *p = (unsigned short *)vc->vc_origin;
-	int count = vc->vc_screenbuf_size / 2;
-	int mask = vc->vc_hi_font_mask | 0xff;
-
-	for (; count > 0; count--, p++) {
-		scr_writew((scr_readw(p)&mask) | (vc->vc_video_erase_char & ~mask), p);
-	}
 }
 
 void redraw_screen(struct vc_data *vc, int is_switch)
@@ -2059,9 +2021,6 @@ int do_take_over_console(const struct consw *csw, int first, int last, int deflt
 
 void give_up_console(const struct consw *csw)
 {
-	console_lock();
-	do_unregister_con_driver(csw);
-	console_unlock();
 }
 
 static int __init vtconsole_class_init(void)

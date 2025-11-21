@@ -1,3 +1,44 @@
+--- 2025-11-21 02:26 ---
+
+Session note: Successfully removed all unused function/variable warnings (2,612 LOC).
+Analyzed large subsystems for further reduction opportunities.
+
+Key findings:
+- 182 stub functions remain in codebase
+- 4,655 inline functions in headers
+- Scheduler has 6K LOC in fair.c (1568), core.c (2293) - complex for minimal boot
+- 769 header files vs 421 C files (ratio suggests header bloat)
+- Most stubs already well-minimized
+- Debug code already minimal (CONFIG_DEBUG_KERNEL=y but minimal)
+
+Next opportunities to explore:
+- Scheduler simplification (CFS might be overkill)
+- Header consolidation/removal
+- Large mm/ functions (page_alloc, memory, vmalloc)
+- TTY subsystem (~7.5K lines for "Hello World" output)
+
+--- 2025-11-21 02:23 ---
+
+Current state analysis:
+- LOC: 232,654 (down from 235,266)
+- Gap to goal: 32,654 LOC (14.0% reduction needed)
+- Binary: 320KB
+- All unused code warnings eliminated ✓
+
+Largest subsystems remaining:
+- mm/: page_alloc (3139), memory (2833), vmalloc (2349), filemap (2275), mmap (2232), slub (2190)
+- drivers/tty: vt.c (2231), tty_io (2078), total ~7.5K lines
+- fs/: namei (2862), namespace (2844), dcache (2092)
+- kernel/: signal (2201), fork (2089), sched/core (2293)
+- drivers/base/: core (2318), total ~7K lines
+- lib/: vsprintf (1467), iov_iter (1324), xarray (1234), radix-tree (1141)
+
+Strategy for next reduction:
+1. Look at large complex functions that might be simplifiable
+2. Consider removing/stubbing entire optional subsystems
+3. Focus on headers (769 files vs 421 C files - excessive)
+4. Simplify large files in mm/, fs/, kernel/
+
 --- 2025-11-21 02:19 ---
 
 Progress: Removed unused functions/variables - 2,612 LOC reduction

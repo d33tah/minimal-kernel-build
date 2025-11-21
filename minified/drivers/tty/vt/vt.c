@@ -885,14 +885,10 @@ static void gotoxy(struct vc_data *vc, int new_x, int new_y)
 
 void scrollback(struct vc_data *vc)
 {
-	scrolldelta(-(vc->vc_rows / 2));
 }
 
 void scrollfront(struct vc_data *vc, int lines)
 {
-	if (!lines)
-		lines = vc->vc_rows / 2;
-	scrolldelta(lines);
 }
 
 static void lf(struct vc_data *vc)
@@ -1023,17 +1019,11 @@ static inline void respond_ID(struct tty_struct *tty)
 
 void mouse_report(struct tty_struct *tty, int butt, int mrx, int mry)
 {
-	char buf[8];
-	int len;
-
-	len = sprintf(buf, "\033[M%c%c%c", (char)(' ' + butt),
-			(char)('!' + mrx), (char)('!' + mry));
-	respond_string(buf, len, tty->port);
 }
 
 int mouse_reporting(void)
 {
-	return vc_cons[fg_console].d->vc_report_mouse;
+	return 0;
 }
 
 static void set_mode(struct vc_data *vc, int on_off)

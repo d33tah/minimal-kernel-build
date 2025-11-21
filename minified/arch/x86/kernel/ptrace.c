@@ -275,41 +275,6 @@ static int genregs_set(struct task_struct *target,
 	return ret;
 }
 
-static void ptrace_triggered(struct perf_event *bp,
-			     struct perf_sample_data *data,
-			     struct pt_regs *regs)
-{
-	int i;
-	struct thread_struct *thread = &(current->thread);
-
-	 
-	for (i = 0; i < HBP_NUM; i++) {
-		if (thread->ptrace_bps[i] == bp)
-			break;
-	}
-
-	thread->virtual_dr6 |= (DR_TRAP0 << i);
-}
-
- 
-
-static int ptrace_fill_bp_fields(struct perf_event_attr *attr,
-					int len, int type, bool disabled)
-{
-	int err, bp_len, bp_type;
-
-	err = arch_bp_generic_fields(len, type, &bp_len, &bp_type);
-	if (!err) {
-		attr->bp_len = bp_len;
-		attr->bp_type = bp_type;
-		attr->disabled = disabled;
-	}
-
-	return err;
-}
-
-
-
 
 static int ioperm_active(struct task_struct *target,
 			 const struct user_regset *regset)

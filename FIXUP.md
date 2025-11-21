@@ -1,3 +1,25 @@
+--- 2025-11-21 09:39 ---
+
+New session started. Current state:
+- make vm: PASSES ✓, prints "Hello, World!Still alive" ✓
+- Binary: 320KB
+- Current LOC: 246,073 (cloc with ailogs excluded)
+- Goal: 200,000 LOC
+- Gap: 46,073 LOC (18.7% reduction needed)
+
+Exploration (50 min):
+- Checked for unused .c files: lib/decompress_unxz.c appeared unused but is actually #included by arch/x86/boot/compressed/misc.c
+- Found small stub-heavy files: fs/sync.c (26 lines), fs/select.c (23 lines), but functions are called
+- Looked for unreferenced headers: only found small ones (xz.h 101 lines, spinlock_api_up.h 80 lines) but both are used
+- Identified 228 syscalls defined but only write() actually used by init
+
+Challenge: Most obvious reduction targets already exploited. Need more aggressive approach:
+1. Stub out entire syscalls that aren't used (e.g., all mlock/munlock in mm/mlock.c)
+2. Find and remove large unused functions in big files (namei.c 2771, namespace.c 2472)
+3. Use compiler-based dead code detection
+
+Next approach: Look for specific large functions in VFS/MM that can be stubbed
+
 --- 2025-11-21 10:34 ---
 
 Session end (90 min total):

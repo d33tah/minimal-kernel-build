@@ -152,12 +152,7 @@ static void device_link_remove_from_lists(struct device_link *link)
 
 static bool device_is_ancestor(struct device *dev, struct device *target)
 {
-	while (target->parent) {
-		target = target->parent;
-		if (dev == target)
-			return true;
-	}
-	return false;
+	return false; /* Stub: unused */
 }
 
 int device_is_dependent(struct device *dev, void *target)
@@ -554,15 +549,12 @@ late_initcall(sync_state_resume_initcall);
 
 static void __device_links_supplier_defer_sync(struct device *sup)
 {
-	if (list_empty(&sup->links.defer_sync) && dev_has_sync_state(sup))
-		list_add_tail(&sup->links.defer_sync, &deferred_sync);
+	/* Stub: unused */
 }
 
 static void device_link_drop_managed(struct device_link *link)
 {
-	link->flags &= ~DL_FLAG_MANAGED;
-	WRITE_ONCE(link->status, DL_STATE_NONE);
-	kref_put(&link->kref, __device_link_del);
+	/* Stub: unused */
 }
 
 static ssize_t waiting_for_supplier_show(struct device *dev,
@@ -747,15 +739,7 @@ void fw_devlink_drivers_done(void)
 
 static void fw_devlink_unblock_consumers(struct device *dev)
 {
-	struct device_link *link;
-
-	if (!fw_devlink_flags || fw_devlink_is_permissive())
-		return;
-
-	device_links_write_lock();
-	list_for_each_entry(link, &dev->links.consumers, s_node)
-		fw_devlink_relax_link(link);
-	device_links_write_unlock();
+	/* Stub: unused */
 }
 
 static int fw_devlink_relax_cycle(struct device *con, void *sup)
@@ -871,17 +855,7 @@ static void __fw_devlink_link_to_suppliers(struct device *dev,
 
 static void fw_devlink_link_device(struct device *dev)
 {
-	struct fwnode_handle *fwnode = dev->fwnode;
-
-	if (!fw_devlink_flags)
-		return;
-
-	fw_devlink_parse_fwtree(fwnode);
-
-	mutex_lock(&fwnode_link_lock);
-	__fw_devlink_link_to_consumers(dev);
-	__fw_devlink_link_to_suppliers(dev, fwnode);
-	mutex_unlock(&fwnode_link_lock);
+	/* Stub: unused */
 }
 
 int (*platform_notify)(struct device *dev) = NULL;
@@ -919,12 +893,7 @@ static inline int device_is_not_partition(struct device *dev)
 
 static void device_platform_notify(struct device *dev)
 {
-	acpi_device_notify(dev);
-
-	software_node_notify(dev);
-
-	if (platform_notify)
-		platform_notify(dev);
+	/* Stub: unused */
 }
 
 static void device_platform_notify_remove(struct device *dev)
@@ -1312,16 +1281,7 @@ void devm_device_remove_groups(struct device *dev,
 
 static int device_add_attrs(struct device *dev)
 {
-	int error = 0;
-
-	if (dev->class)
-		error = device_add_groups(dev, dev->class->dev_groups);
-	if (!error && dev->type)
-		error = device_add_groups(dev, dev->type->groups);
-	if (!error)
-		error = device_add_groups(dev, dev->groups);
-
-	return error;
+	return 0; /* Stub: unused */
 }
 
 static void device_remove_attrs(struct device *dev)
@@ -1357,20 +1317,12 @@ struct kset *devices_kset;
 
 static void devices_kset_move_before(struct device *deva, struct device *devb)
 {
-	if (!devices_kset)
-		return;
-	spin_lock(&devices_kset->list_lock);
-	list_move_tail(&deva->kobj.entry, &devb->kobj.entry);
-	spin_unlock(&devices_kset->list_lock);
+	/* Stub: unused */
 }
 
 static void devices_kset_move_after(struct device *deva, struct device *devb)
 {
-	if (!devices_kset)
-		return;
-	spin_lock(&devices_kset->list_lock);
-	list_move(&deva->kobj.entry, &devb->kobj.entry);
-	spin_unlock(&devices_kset->list_lock);
+	/* Stub: unused */
 }
 
 void devices_kset_move_last(struct device *dev)
@@ -1535,48 +1487,9 @@ static DEFINE_MUTEX(gdp_mutex);
 static struct kobject *get_device_parent(struct device *dev,
 					 struct device *parent)
 {
-	if (dev->class) {
-		struct kobject *kobj = NULL;
-		struct kobject *parent_kobj;
-		struct kobject *k;
-
-		
-		if (parent == NULL)
-			parent_kobj = virtual_device_parent(dev);
-		else if (parent->class && !dev->class->ns_type)
-			return &parent->kobj;
-		else
-			parent_kobj = &parent->kobj;
-
-		mutex_lock(&gdp_mutex);
-
-		
-		spin_lock(&dev->class->p->glue_dirs.list_lock);
-		list_for_each_entry(k, &dev->class->p->glue_dirs.list, entry)
-			if (k->parent == parent_kobj) {
-				kobj = kobject_get(k);
-				break;
-			}
-		spin_unlock(&dev->class->p->glue_dirs.list_lock);
-		if (kobj) {
-			mutex_unlock(&gdp_mutex);
-			return kobj;
-		}
-
-		
-		k = class_dir_create_and_add(dev->class, parent_kobj);
-		
-		mutex_unlock(&gdp_mutex);
-		return k;
-	}
-
-	
-	if (!parent && dev->bus && dev->bus->dev_root)
-		return &dev->bus->dev_root->kobj;
-
 	if (parent)
 		return &parent->kobj;
-	return NULL;
+	return NULL; /* Stub: simplified */
 }
 
 static inline bool live_in_glue_dir(struct kobject *kobj,
@@ -1653,16 +1566,7 @@ static struct kobject *device_to_dev_kobj(struct device *dev)
 
 static int device_create_sys_dev_entry(struct device *dev)
 {
-	struct kobject *kobj = device_to_dev_kobj(dev);
-	int error = 0;
-	char devt_str[15];
-
-	if (kobj) {
-		format_dev_t(devt_str, dev->devt);
-		error = sysfs_create_link(kobj, &dev->kobj, devt_str);
-	}
-
-	return error;
+	return 0; /* Stub: unused */
 }
 
 static void device_remove_sys_dev_entry(struct device *dev)
@@ -2173,41 +2077,7 @@ int device_move(struct device *dev, struct device *new_parent,
 static int device_attrs_change_owner(struct device *dev, kuid_t kuid,
 				     kgid_t kgid)
 {
-	struct kobject *kobj = &dev->kobj;
-	struct class *class = dev->class;
-	const struct device_type *type = dev->type;
-	int error;
-
-	if (class) {
-		
-		error = sysfs_groups_change_owner(kobj, class->dev_groups, kuid,
-						  kgid);
-		if (error)
-			return error;
-	}
-
-	if (type) {
-		
-		error = sysfs_groups_change_owner(kobj, type->groups, kuid,
-						  kgid);
-		if (error)
-			return error;
-	}
-
-	
-	error = sysfs_groups_change_owner(kobj, dev->groups, kuid, kgid);
-	if (error)
-		return error;
-
-	if (device_supports_offline(dev) && !dev->offline_disabled) {
-		
-		error = sysfs_file_change_owner(kobj, dev_attr_online.attr.name,
-						kuid, kgid);
-		if (error)
-			return error;
-	}
-
-	return 0;
+	return 0; /* Stub: unused */
 }
 
 int device_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid)

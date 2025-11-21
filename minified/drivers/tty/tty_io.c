@@ -340,16 +340,7 @@ void tty_wakeup(struct tty_struct *tty)
 
 static struct file *tty_release_redirect(struct tty_struct *tty)
 {
-	struct file *f = NULL;
-
-	spin_lock(&redirect_lock);
-	if (redirect && file_tty(redirect) == tty) {
-		f = redirect;
-		redirect = NULL;
-	}
-	spin_unlock(&redirect_lock);
-
-	return f;
+	return NULL; /* Stub: unused */
 }
 
 static void __tty_hangup(struct tty_struct *tty, int exit_session)
@@ -1337,23 +1328,7 @@ static int tty_fasync(int fd, struct file *filp, int on)
 
 static int tiocsti(struct tty_struct *tty, char __user *p)
 {
-	char ch, mbz = 0;
-	struct tty_ldisc *ld;
-
-	if ((current->signal->tty != tty) && !capable(CAP_SYS_ADMIN))
-		return -EPERM;
-	if (get_user(ch, p))
-		return -EFAULT;
-	tty_audit_tiocsti(tty, ch);
-	ld = tty_ldisc_ref_wait(tty);
-	if (!ld)
-		return -EIO;
-	tty_buffer_lock_exclusive(tty->port);
-	if (ld->ops->receive_buf)
-		ld->ops->receive_buf(tty, &ch, &mbz, 1);
-	tty_buffer_unlock_exclusive(tty->port);
-	tty_ldisc_deref(ld);
-	return 0;
+	return -EINVAL; /* Stub: unused */
 }
 
 static int tiocgwinsz(struct tty_struct *tty, struct winsize __user *arg)
@@ -1403,129 +1378,33 @@ static int tiocswinsz(struct tty_struct *tty, struct winsize __user *arg)
 
 static int tioccons(struct file *file)
 {
-	if (!capable(CAP_SYS_ADMIN))
-		return -EPERM;
-	if (file->f_op->write_iter == redirected_tty_write) {
-		struct file *f;
-
-		spin_lock(&redirect_lock);
-		f = redirect;
-		redirect = NULL;
-		spin_unlock(&redirect_lock);
-		if (f)
-			fput(f);
-		return 0;
-	}
-	if (file->f_op->write_iter != tty_write)
-		return -ENOTTY;
-	if (!(file->f_mode & FMODE_WRITE))
-		return -EBADF;
-	if (!(file->f_mode & FMODE_CAN_WRITE))
-		return -EINVAL;
-	spin_lock(&redirect_lock);
-	if (redirect) {
-		spin_unlock(&redirect_lock);
-		return -EBUSY;
-	}
-	redirect = get_file(file);
-	spin_unlock(&redirect_lock);
-	return 0;
+	return -EINVAL; /* Stub: unused */
 }
 
 static int tiocsetd(struct tty_struct *tty, int __user *p)
 {
-	int disc;
-	int ret;
-
-	if (get_user(disc, p))
-		return -EFAULT;
-
-	ret = tty_set_ldisc(tty, disc);
-
-	return ret;
+	return -EINVAL; /* Stub: unused */
 }
 
 static int tiocgetd(struct tty_struct *tty, int __user *p)
 {
-	struct tty_ldisc *ld;
-	int ret;
-
-	ld = tty_ldisc_ref_wait(tty);
-	if (!ld)
-		return -EIO;
-	ret = put_user(ld->ops->num, p);
-	tty_ldisc_deref(ld);
-	return ret;
+	return -EINVAL; /* Stub: unused */
 }
 
 static int send_break(struct tty_struct *tty, unsigned int duration)
 {
-	int retval;
-
-	if (tty->ops->break_ctl == NULL)
-		return 0;
-
-	if (tty->driver->flags & TTY_DRIVER_HARDWARE_BREAK)
-		retval = tty->ops->break_ctl(tty, duration);
-	else {
-		
-		if (tty_write_lock(tty, 0) < 0)
-			return -EINTR;
-		retval = tty->ops->break_ctl(tty, -1);
-		if (retval)
-			goto out;
-		if (!signal_pending(current))
-			msleep_interruptible(duration);
-		retval = tty->ops->break_ctl(tty, 0);
-out:
-		tty_write_unlock(tty);
-		if (signal_pending(current))
-			retval = -EINTR;
-	}
-	return retval;
+	return 0; /* Stub: unused */
 }
 
 static int tty_tiocmget(struct tty_struct *tty, int __user *p)
 {
-	int retval = -ENOTTY;
-
-	if (tty->ops->tiocmget) {
-		retval = tty->ops->tiocmget(tty);
-
-		if (retval >= 0)
-			retval = put_user(retval, p);
-	}
-	return retval;
+	return -ENOTTY; /* Stub: unused */
 }
 
 static int tty_tiocmset(struct tty_struct *tty, unsigned int cmd,
 	     unsigned __user *p)
 {
-	int retval;
-	unsigned int set, clear, val;
-
-	if (tty->ops->tiocmset == NULL)
-		return -ENOTTY;
-
-	retval = get_user(val, p);
-	if (retval)
-		return retval;
-	set = clear = 0;
-	switch (cmd) {
-	case TIOCMBIS:
-		set = val;
-		break;
-	case TIOCMBIC:
-		clear = val;
-		break;
-	case TIOCMSET:
-		set = val;
-		clear = ~val;
-		break;
-	}
-	set &= TIOCM_DTR|TIOCM_RTS|TIOCM_OUT1|TIOCM_OUT2|TIOCM_LOOP;
-	clear &= TIOCM_DTR|TIOCM_RTS|TIOCM_OUT1|TIOCM_OUT2|TIOCM_LOOP;
-	return tty->ops->tiocmset(tty, set, clear);
+	return -ENOTTY; /* Stub: unused */
 }
 
 int tty_get_icount(struct tty_struct *tty,
@@ -1541,16 +1420,7 @@ int tty_get_icount(struct tty_struct *tty,
 
 static int tty_tiocgicount(struct tty_struct *tty, void __user *arg)
 {
-	struct serial_icounter_struct icount;
-	int retval;
-
-	retval = tty_get_icount(tty, &icount);
-	if (retval != 0)
-		return retval;
-
-	if (copy_to_user(arg, &icount, sizeof(icount)))
-		return -EFAULT;
-	return 0;
+	return -ENOTTY; /* Stub: unused */
 }
 
 static int tty_set_serial(struct tty_struct *tty, struct serial_struct *ss)
@@ -1568,26 +1438,12 @@ static int tty_set_serial(struct tty_struct *tty, struct serial_struct *ss)
 
 static int tty_tiocsserial(struct tty_struct *tty, struct serial_struct __user *ss)
 {
-	struct serial_struct v;
-
-	if (copy_from_user(&v, ss, sizeof(*ss)))
-		return -EFAULT;
-
-	return tty_set_serial(tty, &v);
+	return -ENOTTY; /* Stub: unused */
 }
 
 static int tty_tiocgserial(struct tty_struct *tty, struct serial_struct __user *ss)
 {
-	struct serial_struct v;
-	int err;
-
-	memset(&v, 0, sizeof(v));
-	if (!tty->ops->get_serial)
-		return -ENOTTY;
-	err = tty->ops->get_serial(tty, &v);
-	if (!err && copy_to_user(ss, &v, sizeof(v)))
-		err = -EFAULT;
-	return err;
+	return -ENOTTY; /* Stub: unused */
 }
 
 static struct tty_struct *tty_pair_get_tty(struct tty_struct *tty)

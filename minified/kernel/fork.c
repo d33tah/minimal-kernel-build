@@ -2012,30 +2012,6 @@ void __init proc_caches_init(void)
 	nsproxy_cache_init();
 }
 
-static int check_unshare_flags(unsigned long unshare_flags)
-{
-	
-	return 0;
-}
-
-static int unshare_fs(unsigned long unshare_flags, struct fs_struct **new_fsp)
-{
-	struct fs_struct *fs = current->fs;
-
-	if (!(unshare_flags & CLONE_FS) || !fs)
-		return 0;
-
-	
-	if (fs->users == 1)
-		return 0;
-
-	*new_fsp = copy_fs_struct(fs);
-	if (!*new_fsp)
-		return -ENOMEM;
-
-	return 0;
-}
-
 int unshare_fd(unsigned long unshare_flags, unsigned int max_fds,
 	       struct files_struct **new_fdp)
 {

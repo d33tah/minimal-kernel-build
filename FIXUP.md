@@ -1,13 +1,14 @@
 --- 2025-11-21 10:12 ---
 
-Progress (35 min):
+Progress (45 min):
 - Removed lib/bcd.c (13 LOC, unused BCD conversion functions)
 - Removed arch/x86/lib/misc.c (18 LOC, unused num_digits function)
+- Removed lib/math/int_pow.c (22 LOC, unused int_pow function)
 - Binary: 320KB (stable)
-- C code: 131,004 (down from 131,028, reduced by 24)
-- Total LOC: 246,081 (down from 246,081+24=246,105, reduced by 24 actual)
+- C code: 130,990 (down from 131,028, reduced by 38)
+- Total LOC: ~246,067 (reduced by ~38 actual)
 - Goal: 200,000 LOC
-- Gap: 46,081 LOC (18.7% reduction needed)
+- Gap: ~46,067 LOC (18.7% reduction needed)
 
 Analysis approach:
 - Compiled with -Wunused-function: no warnings (clean build)
@@ -15,8 +16,9 @@ Analysis approach:
 - Searched for stub-only files: most are called despite being stubs
 - Found unused files by checking function references across codebase
 - Systematically checked small C files for unreferenced functions
+- Verified functions not only declared but actually called
 
-Next: Continue checking more small files
+Next: Continue checking more files for unused code
 
 Session start:
 - make vm: PASSES ✓ (prints "Hello, World!Still alive")

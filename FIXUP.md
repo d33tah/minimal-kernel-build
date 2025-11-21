@@ -1,3 +1,45 @@
+--- 2025-11-21 11:39 ---
+
+Session end (20 min):
+
+Achievement:
+- Removed 4 files (17 LOC)
+- All builds passed, VM working correctly
+- Commits: 2 (all passing make vm, all pushed)
+
+Details of files removed:
+- arch/x86/lib/atomic64_32.c (4 LOC)
+- arch/x86/lib/msr-reg-export.c (4 LOC)
+- arch/x86/lib/pc-conf-reg.c (8 LOC)
+- arch/x86/include/asm/pc-conf-reg.h (1 LOC)
+
+Current metrics:
+- Binary: 320KB (stable)
+- LOC: 245,680 (down from 245,697)
+- Goal: 200,000 LOC
+- Gap: 45,680 LOC (18.6% reduction needed)
+
+Findings - Small file removal strategy:
+- Systematically checked lib/, arch/x86/lib/, kernel/, arch/x86/kernel/ small files
+- Most small files are actually used despite being tiny
+- Only found 4 truly unused files (17 LOC)
+- This approach is too slow for 45K LOC gap
+
+Findings - Large subsystem analysis:
+- kernel/: 29,772 LOC (sched: 5,304 LOC)
+- mm/: 24,728 LOC
+- fs/: 17,302 LOC
+- drivers/: 13,280 LOC (tty: ~7,000 LOC)
+- events/: 67 LOC (already just stubs)
+
+Next session strategy:
+- Must target larger subsystems
+- Header reduction: Too many headers (3x as many .h as .c per instructions)
+- Sched simplification: 5.3K LOC is excessive for "Hello world"
+- TTY reduction: 7K LOC too sophisticated for simple output
+- Syscall removal: Remove all irrelevant syscalls
+- Consider: Can we migrate to NOMMU? Stub out unused MM code?
+
 --- 2025-11-21 11:19 ---
 
 Successfully removed 4 files (17 LOC total):
@@ -16,6 +58,24 @@ The pc-conf-reg files define a spinlock that is never used anywhere in the codeb
 
 All removals tested: Build passed, VM prints "Hello, World!Still alive"
 Binary: 320KB (stable)
+
+Current status after removals:
+- LOC: 245,680 (down from 245,697, reduced by 17)
+- Goal: 200,000 LOC
+- Gap: 45,680 LOC (18.6% reduction still needed)
+
+Analysis of largest subsystems:
+- kernel/: 29,772 LOC (sched: 5,304 LOC)
+- mm/: 24,728 LOC
+- fs/: 17,302 LOC
+- drivers/: 13,280 LOC (tty: ~7,000 LOC)
+- events/: 67 LOC (already minimal - just stubs)
+
+Strategy:
+- Small file removal is safe but slow - only 17 LOC removed so far
+- Need to target larger subsystems for meaningful progress
+- Candidates: simplify sched, reduce tty complexity, remove unused syscalls
+- For now, continue with small file approach for safety
 
 Session start:
 - make vm: PASSES ✓ (prints "Hello, World!Still alive")

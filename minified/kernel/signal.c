@@ -230,29 +230,6 @@ void task_clear_jobctl_pending(struct task_struct *task, unsigned long mask)
 		task_clear_jobctl_trapping(task);
 }
 
-static bool task_participate_group_stop(struct task_struct *task)
-{
-	struct signal_struct *sig = task->signal;
-	bool consume = task->jobctl & JOBCTL_STOP_CONSUME;
-
-	WARN_ON_ONCE(!(task->jobctl & JOBCTL_STOP_PENDING));
-
-	task_clear_jobctl_pending(task, JOBCTL_STOP_PENDING);
-
-	if (!consume)
-		return false;
-
-	if (!WARN_ON_ONCE(sig->group_stop_count == 0))
-		sig->group_stop_count--;
-
-	
-	if (!sig->group_stop_count && !(sig->flags & SIGNAL_STOP_STOPPED)) {
-		signal_set_stop_flags(sig, SIGNAL_STOP_STOPPED);
-		return true;
-	}
-	return false;
-}
-
 void task_join_group_stop(struct task_struct *task)
 {
 	unsigned long mask = current->jobctl & JOBCTL_STOP_SIGMASK;
@@ -448,42 +425,6 @@ int dequeue_signal(struct task_struct *tsk, sigset_t *mask,
 	return signr;
 }
 
-static int dequeue_synchronous_signal(kernel_siginfo_t *info)
-{
-	struct task_struct *tsk = current;
-	struct sigpending *pending = &tsk->pending;
-	struct sigqueue *q, *sync = NULL;
-
-	
-	if (!((pending->signal.sig[0] & ~tsk->blocked.sig[0]) & SYNCHRONOUS_MASK))
-		return 0;
-
-	
-	list_for_each_entry(q, &pending->list, list) {
-		
-		if ((q->info.si_code > SI_USER) &&
-		    (sigmask(q->info.si_signo) & SYNCHRONOUS_MASK)) {
-			sync = q;
-			goto next;
-		}
-	}
-	return 0;
-next:
-	
-	list_for_each_entry_continue(q, &pending->list, list) {
-		if (q->info.si_signo == sync->info.si_signo)
-			goto still_pending;
-	}
-
-	sigdelset(&pending->signal, sync->info.si_signo);
-	recalc_sigpending();
-still_pending:
-	list_del_init(&sync->list);
-	copy_siginfo(info, &sync->info);
-	__sigqueue_free(sync);
-	return info->si_signo;
-}
-
 void signal_wake_up_state(struct task_struct *t, unsigned int state)
 {
 	lockdep_assert_held(&t->sighand->siglock);
@@ -524,18 +465,6 @@ static inline bool si_fromuser(const struct kernel_siginfo *info)
 		(!is_si_special(info) && SI_FROMUSER(info));
 }
 
-static bool kill_ok_by_cred(struct task_struct *t)
-{
-	const struct cred *cred = current_cred();
-	const struct cred *tcred = __task_cred(t);
-
-	return uid_eq(cred->euid, tcred->suid) ||
-	       uid_eq(cred->euid, tcred->uid) ||
-	       uid_eq(cred->uid, tcred->suid) ||
-	       uid_eq(cred->uid, tcred->uid) ||
-	       ns_capable(tcred->user_ns, CAP_KILL);
-}
-
 static int check_kill_permission(int sig, struct kernel_siginfo *info,
 				 struct task_struct *t)
 {
@@ -548,15 +477,6 @@ static int check_kill_permission(int sig, struct kernel_siginfo *info,
 
 	/* Skip session/cred checks for minimal kernel */
 	return security_task_kill(t, info, sig, NULL);
-}
-
-static void ptrace_trap_notify(struct task_struct *t)
-{
-	WARN_ON_ONCE(!(t->ptrace & PT_SEIZED));
-	lockdep_assert_held(&t->sighand->siglock);
-
-	task_set_jobctl_pending(t, JOBCTL_TRAP_NOTIFY);
-	ptrace_signal_wake_up(t, t->jobctl & JOBCTL_LISTENING);
 }
 
 static bool prepare_signal(int sig, struct task_struct *p, bool force)
@@ -666,11 +586,6 @@ int send_signal_locked(int sig, struct kernel_siginfo *info,
 		force = true;
 
 	return __send_signal_locked(sig, info, t, type, force);
-}
-
-static void print_fatal_signal(int signr)
-{
-	
 }
 
 static int __init setup_print_fatal_signals(char *str)
@@ -1214,15 +1129,6 @@ out:
 ret:
 	rcu_read_unlock();
 	return ret;
-}
-
-static void do_notify_pidfd(struct task_struct *task)
-{
-	struct pid *pid;
-
-	WARN_ON(task->exit_state == 0);
-	pid = task_pid(task);
-	wake_up_all(&pid->wait_pidfd);
 }
 
 bool do_notify_parent(struct task_struct *tsk, int sig)

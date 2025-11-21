@@ -398,8 +398,6 @@ void tty_vhangup_self(void)
 
 void tty_vhangup_session(struct tty_struct *tty)
 {
-	tty_debug_hangup(tty, "session hangup\n");
-	__tty_hangup(tty, 1);
 }
 
 int tty_hung_up_p(struct file *filp)
@@ -623,14 +621,6 @@ out:
 
 void tty_write_message(struct tty_struct *tty, char *msg)
 {
-	if (tty) {
-		mutex_lock(&tty->atomic_write_lock);
-		tty_lock(tty);
-		if (tty->ops->write && tty->count > 0)
-			tty->ops->write(tty, msg, strlen(msg));
-		tty_unlock(tty);
-		tty_write_unlock(tty);
-	}
 }
 
 static ssize_t file_tty_write(struct file *file, struct kiocb *iocb, struct iov_iter *from)
@@ -684,26 +674,6 @@ ssize_t redirected_tty_write(struct kiocb *iocb, struct iov_iter *iter)
 
 int tty_send_xchar(struct tty_struct *tty, char ch)
 {
-	bool was_stopped = tty->flow.stopped;
-
-	if (tty->ops->send_xchar) {
-		down_read(&tty->termios_rwsem);
-		tty->ops->send_xchar(tty, ch);
-		up_read(&tty->termios_rwsem);
-		return 0;
-	}
-
-	if (tty_write_lock(tty, 0) < 0)
-		return -ERESTARTSYS;
-
-	down_read(&tty->termios_rwsem);
-	if (was_stopped)
-		start_tty(tty);
-	tty->ops->write(tty, &ch, 1);
-	if (was_stopped)
-		stop_tty(tty);
-	up_read(&tty->termios_rwsem);
-	tty_write_unlock(tty);
 	return 0;
 }
 

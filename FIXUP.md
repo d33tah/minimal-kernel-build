@@ -24,6 +24,21 @@ Next session opportunities:
 - Continue with other approaches: check for unused headers, unused macros, or stub out more subsystems
 - Consider focusing on the large header file count (1154 headers vs 421 .c files - ratio suggests many might be removable)
 
+Analysis of codebase distribution:
+- mm: 24,728 LOC (largest subsystem)
+- kernel: 29,772 LOC
+- fs: 17,308 LOC
+- drivers: 13,280 LOC
+- Found 152 "Stub:" comments indicating heavily stubbed functions
+- Many small files are almost entirely stubs (e.g., mm/vmscan.c is 88 lines, all stubs)
+- Largest .c files: mm/page_alloc.c (2983), fs/namei.c (2771), mm/memory.c (2637)
+
+Potential approaches for next session:
+1. Look for entire stub-only files that might be removable
+2. Check if any syscalls are completely unused and removable
+3. Examine large mm/ files for further reduction opportunities
+4. Consider more aggressive header removal
+
 --- 2025-11-21 04:21 ---
 
 Session complete (2 commits):

@@ -1,4 +1,37 @@
---- 2025-11-21 17:28 (New session start) ---
+--- 2025-11-21 17:58 (Session progress update) ---
+
+Current status:
+- Starting LOC: 224,971
+- Current LOC: 224,354
+- Reduction: 617 LOC (0.27%)
+- Goal: 200,000 LOC
+- Remaining: 24,354 LOC (10.8%)
+- Binary: 302KB (was 303KB, -1KB)
+- make vm: PASSES ✓
+
+Work completed:
+1. mm/mprotect.c: 658→40 lines (-618 raw, -494 actual LOC)
+   - Stubbed memory protection change syscall and functions
+   - Only 12 external references, safe to stub
+   - Committed and pushed: e346e3e1
+
+2. fs/fsopen.c: 172→25 lines (-147 raw, -123 actual LOC)
+   - Stubbed new mount API syscalls (fsopen, fspick, fsconfig)
+   - Zero external references, completely safe
+   - Committed and pushed: 2d78adff
+
+Strategy working well:
+- Find files with few external references (<15)
+- Check for truly optional functionality
+- Stub carefully, test thoroughly
+- Both changes successful - kernel boots and prints "Hello, World!"
+
+Next targets to investigate:
+- More optional syscalls
+- Unused FS features
+- Optional MM features
+
+--- 2025-11-21 17:28 (Session start) ---
 
 Starting LOC: 224,971
 Goal: 200,000 LOC

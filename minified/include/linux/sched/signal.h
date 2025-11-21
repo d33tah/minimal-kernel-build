@@ -174,31 +174,6 @@ extern void flush_signal_handlers(struct task_struct *, int force_default);
 extern int dequeue_signal(struct task_struct *task, sigset_t *mask,
 			  kernel_siginfo_t *info, enum pid_type *type);
 
-static inline int kernel_dequeue_signal(void)
-{
-	struct task_struct *task = current;
-	kernel_siginfo_t __info;
-	enum pid_type __type;
-	int ret;
-
-	spin_lock_irq(&task->sighand->siglock);
-	ret = dequeue_signal(task, &task->blocked, &__info, &__type);
-	spin_unlock_irq(&task->sighand->siglock);
-
-	return ret;
-}
-
-static inline void kernel_signal_stop(void)
-{
-	spin_lock_irq(&current->sighand->siglock);
-	if (current->jobctl & JOBCTL_STOP_DEQUEUED) {
-		current->jobctl |= JOBCTL_STOPPED;
-		set_special_state(TASK_STOPPED);
-	}
-	spin_unlock_irq(&current->sighand->siglock);
-
-	schedule();
-}
 #ifdef __ia64__
 # define ___ARCH_SI_IA64(_a1, _a2, _a3) , _a1, _a2, _a3
 #else

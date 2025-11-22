@@ -2019,43 +2019,11 @@ static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
 	}
 }
 
-static void vm_lock_mapping(struct mm_struct *mm, struct address_space *mapping)
-{
-	if (!test_bit(AS_MM_ALL_LOCKS, &mapping->flags)) {
-		
-		if (test_and_set_bit(AS_MM_ALL_LOCKS, &mapping->flags))
-			BUG();
-		down_write_nest_lock(&mapping->i_mmap_rwsem, &mm->mmap_lock);
-	}
-}
-
 int mm_take_all_locks(struct mm_struct *mm)
 {
 	/* Stub: mm_take_all_locks not needed for minimal kernel */
 	mutex_lock(&mm_all_locks_mutex);
 	return 0;
-}
-
-static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
-{
-	if (test_bit(0, (unsigned long *) &anon_vma->root->rb_root.rb_root.rb_node)) {
-		
-		if (!__test_and_clear_bit(0, (unsigned long *)
-					  &anon_vma->root->rb_root.rb_root.rb_node))
-			BUG();
-		anon_vma_unlock_write(anon_vma);
-	}
-}
-
-static void vm_unlock_mapping(struct address_space *mapping)
-{
-	if (test_bit(AS_MM_ALL_LOCKS, &mapping->flags)) {
-		
-		i_mmap_unlock_write(mapping);
-		if (!test_and_clear_bit(AS_MM_ALL_LOCKS,
-					&mapping->flags))
-			BUG();
-	}
 }
 
 void mm_drop_all_locks(struct mm_struct *mm)

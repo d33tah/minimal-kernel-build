@@ -523,25 +523,6 @@ void __init pid_idr_init(void)
 			SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT);
 }
 
-static struct file *__pidfd_fget(struct task_struct *task, int fd)
-{
-	struct file *file;
-	int ret;
-
-	ret = down_read_killable(&task->signal->exec_update_lock);
-	if (ret)
-		return ERR_PTR(ret);
-
-	if (ptrace_may_access(task, PTRACE_MODE_ATTACH_REALCREDS))
-		file = fget_task(task, fd);
-	else
-		file = ERR_PTR(-EPERM);
-
-	up_read(&task->signal->exec_update_lock);
-
-	return file ?: ERR_PTR(-EBADF);
-}
-
 SYSCALL_DEFINE3(pidfd_getfd, int, pidfd, int, fd,
 		unsigned int, flags)
 {

@@ -1469,15 +1469,6 @@ static int post_copy_siginfo_from_user(kernel_siginfo_t *info,
 	return 0;
 }
 
-static int __copy_siginfo_from_user(int signo, kernel_siginfo_t *to,
-				    const siginfo_t __user *from)
-{
-	if (copy_from_user(to, from, sizeof(struct kernel_siginfo)))
-		return -EFAULT;
-	to->si_signo = signo;
-	return post_copy_siginfo_from_user(to, from);
-}
-
 int copy_siginfo_from_user(kernel_siginfo_t *to, const siginfo_t __user *from)
 {
 	if (copy_from_user(to, from, sizeof(struct kernel_siginfo)))
@@ -1541,23 +1532,6 @@ SYSCALL_DEFINE2(kill, pid_t, pid, int, sig)
 	prepare_kill_siginfo(sig, &info);
 
 	return kill_something_info(sig, &info, pid);
-}
-
-static int copy_siginfo_from_user_any(kernel_siginfo_t *kinfo,
-		siginfo_t __user *info)
-{
-	return copy_siginfo_from_user(kinfo, info);
-}
-
-static struct pid *pidfd_to_pid(const struct file *file)
-{
-	struct pid *pid;
-
-	pid = pidfd_pid(file);
-	if (!IS_ERR(pid))
-		return pid;
-
-	return tgid_pidfd_to_pid(file);
 }
 
 SYSCALL_DEFINE4(pidfd_send_signal, int, pidfd, int, sig,

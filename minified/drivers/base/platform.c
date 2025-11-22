@@ -869,34 +869,14 @@ static void platform_shutdown(struct device *_dev)
 		drv->shutdown(dev);
 }
 
+/* Stub: DMA configure/cleanup not needed for minimal kernel */
 static int platform_dma_configure(struct device *dev)
 {
-	struct platform_driver *drv = to_platform_driver(dev->driver);
-	enum dev_dma_attr attr;
-	int ret = 0;
-
-	if (dev->of_node) {
-		ret = of_dma_configure(dev, dev->of_node, true);
-	} else if (has_acpi_companion(dev)) {
-		attr = acpi_get_dma_attr(to_acpi_device_node(dev->fwnode));
-		ret = acpi_dma_configure(dev, attr);
-	}
-
-	if (!ret && !drv->driver_managed_dma) {
-		ret = iommu_device_use_default_domain(dev);
-		if (ret)
-			arch_teardown_dma_ops(dev);
-	}
-
-	return ret;
+	return 0;
 }
 
 static void platform_dma_cleanup(struct device *dev)
 {
-	struct platform_driver *drv = to_platform_driver(dev->driver);
-
-	if (!drv->driver_managed_dma)
-		iommu_device_unuse_default_domain(dev);
 }
 
 static const struct dev_pm_ops platform_dev_pm_ops = {

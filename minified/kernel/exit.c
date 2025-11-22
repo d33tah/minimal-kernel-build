@@ -276,32 +276,10 @@ kill_orphaned_pgrp(struct task_struct *tsk, struct task_struct *parent)
 
 static void coredump_task_exit(struct task_struct *tsk)
 {
-	struct core_state *core_state;
-
+	/* Stub: coredumps not needed for minimal kernel */
 	spin_lock_irq(&tsk->sighand->siglock);
 	tsk->flags |= PF_POSTCOREDUMP;
-	core_state = tsk->signal->core_state;
 	spin_unlock_irq(&tsk->sighand->siglock);
-	if (core_state) {
-		struct core_thread self;
-
-		self.task = current;
-		if (self.task->flags & PF_SIGNALED)
-			self.next = xchg(&core_state->dumper.next, &self);
-		else
-			self.task = NULL;
-		
-		if (atomic_dec_and_test(&core_state->nr_threads))
-			complete(&core_state->startup);
-
-		for (;;) {
-			set_current_state(TASK_UNINTERRUPTIBLE);
-			if (!self.task) 
-				break;
-			freezable_schedule();
-		}
-		__set_current_state(TASK_RUNNING);
-	}
 }
 
 static void exit_mm(void)

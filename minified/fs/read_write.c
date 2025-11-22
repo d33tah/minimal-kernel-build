@@ -828,8 +828,8 @@ ssize_t generic_copy_file_range(struct file *file_in, loff_t pos_in,
 				struct file *file_out, loff_t pos_out,
 				size_t len, unsigned int flags)
 {
-	return do_splice_direct(file_in, &pos_in, file_out, &pos_out,
-				len > MAX_RW_COUNT ? MAX_RW_COUNT : len, 0);
+	/* Stub: generic_copy_file_range not needed for minimal kernel */
+	return -EOPNOTSUPP;
 }
 
  
@@ -837,55 +837,8 @@ static int generic_copy_file_checks(struct file *file_in, loff_t pos_in,
 				    struct file *file_out, loff_t pos_out,
 				    size_t *req_count, unsigned int flags)
 {
-	struct inode *inode_in = file_inode(file_in);
-	struct inode *inode_out = file_inode(file_out);
-	uint64_t count = *req_count;
-	loff_t size_in;
-	int ret;
-
-	ret = generic_file_rw_checks(file_in, file_out);
-	if (ret)
-		return ret;
-
-	 
-	if (file_out->f_op->copy_file_range) {
-		if (file_in->f_op->copy_file_range !=
-		    file_out->f_op->copy_file_range)
-			return -EXDEV;
-	} else if (file_inode(file_in)->i_sb != file_inode(file_out)->i_sb) {
-		return -EXDEV;
-	}
-
-	 
-	if (IS_IMMUTABLE(inode_out))
-		return -EPERM;
-
-	if (IS_SWAPFILE(inode_in) || IS_SWAPFILE(inode_out))
-		return -ETXTBSY;
-
-	 
-	if (pos_in + count < pos_in || pos_out + count < pos_out)
-		return -EOVERFLOW;
-
-	 
-	size_in = i_size_read(inode_in);
-	if (pos_in >= size_in)
-		count = 0;
-	else
-		count = min(count, size_in - (uint64_t)pos_in);
-
-	ret = generic_write_check_limits(file_out, pos_out, &count);
-	if (ret)
-		return ret;
-
-	 
-	if (inode_in == inode_out &&
-	    pos_out + count > pos_in &&
-	    pos_out < pos_in + count)
-		return -EINVAL;
-
-	*req_count = count;
-	return 0;
+	/* Stub: generic_copy_file_checks not needed for minimal kernel */
+	return -EOPNOTSUPP;
 }
 
  
@@ -893,65 +846,8 @@ ssize_t vfs_copy_file_range(struct file *file_in, loff_t pos_in,
 			    struct file *file_out, loff_t pos_out,
 			    size_t len, unsigned int flags)
 {
-	ssize_t ret;
-
-	if (flags != 0)
-		return -EINVAL;
-
-	ret = generic_copy_file_checks(file_in, pos_in, file_out, pos_out, &len,
-				       flags);
-	if (unlikely(ret))
-		return ret;
-
-	ret = rw_verify_area(READ, file_in, &pos_in, len);
-	if (unlikely(ret))
-		return ret;
-
-	ret = rw_verify_area(WRITE, file_out, &pos_out, len);
-	if (unlikely(ret))
-		return ret;
-
-	if (len == 0)
-		return 0;
-
-	file_start_write(file_out);
-
-	 
-	if (file_out->f_op->copy_file_range) {
-		ret = file_out->f_op->copy_file_range(file_in, pos_in,
-						      file_out, pos_out,
-						      len, flags);
-		goto done;
-	}
-
-	if (file_in->f_op->remap_file_range &&
-	    file_inode(file_in)->i_sb == file_inode(file_out)->i_sb) {
-		ret = file_in->f_op->remap_file_range(file_in, pos_in,
-				file_out, pos_out,
-				min_t(loff_t, MAX_RW_COUNT, len),
-				REMAP_FILE_CAN_SHORTEN);
-		if (ret > 0)
-			goto done;
-	}
-
-	 
-	ret = generic_copy_file_range(file_in, pos_in, file_out, pos_out, len,
-				      flags);
-
-done:
-	if (ret > 0) {
-		fsnotify_access(file_in);
-		add_rchar(current, ret);
-		fsnotify_modify(file_out);
-		add_wchar(current, ret);
-	}
-
-	inc_syscr(current);
-	inc_syscw(current);
-
-	file_end_write(file_out);
-
-	return ret;
+	/* Stub: vfs_copy_file_range not needed for minimal kernel */
+	return -EOPNOTSUPP;
 }
 
 SYSCALL_DEFINE6(copy_file_range, int, fd_in, loff_t __user *, off_in,

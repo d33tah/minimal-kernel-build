@@ -265,41 +265,9 @@ SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 }
 
 #ifdef __ARCH_WANT_SYS_OLD_UNAME
-SYSCALL_DEFINE1(uname, struct old_utsname __user *, name)
-{
-	struct old_utsname tmp;
-
-	if (!name)
-		return -EFAULT;
-
-	down_read(&uts_sem);
-	memcpy(&tmp, utsname(), sizeof(tmp));
-	up_read(&uts_sem);
-	if (copy_to_user(name, &tmp, sizeof(tmp)))
-		return -EFAULT;
-	return 0;
-}
-
-SYSCALL_DEFINE1(olduname, struct oldold_utsname __user *, name)
-{
-	struct oldold_utsname tmp;
-
-	if (!name)
-		return -EFAULT;
-
-	memset(&tmp, 0, sizeof(tmp));
-
-	down_read(&uts_sem);
-	memcpy(&tmp.sysname, &utsname()->sysname, __OLD_UTS_LEN);
-	memcpy(&tmp.nodename, &utsname()->nodename, __OLD_UTS_LEN);
-	memcpy(&tmp.release, &utsname()->release, __OLD_UTS_LEN);
-	memcpy(&tmp.version, &utsname()->version, __OLD_UTS_LEN);
-	memcpy(&tmp.machine, &utsname()->machine, __OLD_UTS_LEN);
-	up_read(&uts_sem);
-	if (copy_to_user(name, &tmp, sizeof(tmp)))
-		return -EFAULT;
-	return 0;
-}
+/* Stub: old uname syscalls not needed for minimal kernel */
+SYSCALL_DEFINE1(uname, struct old_utsname __user *, name) { return -ENOSYS; }
+SYSCALL_DEFINE1(olduname, struct oldold_utsname __user *, name) { return -ENOSYS; }
 #endif
 
  
@@ -309,27 +277,8 @@ SYSCALL_DEFINE2(sethostname, char __user *, name, int, len)
 }
 
 #ifdef __ARCH_WANT_SYS_GETHOSTNAME
-
-SYSCALL_DEFINE2(gethostname, char __user *, name, int, len)
-{
-	int i;
-	struct new_utsname *u;
-	char tmp[__NEW_UTS_LEN + 1];
-
-	if (len < 0)
-		return -EINVAL;
-	down_read(&uts_sem);
-	u = utsname();
-	i = 1 + strlen(u->nodename);
-	if (i > len)
-		i = len;
-	memcpy(tmp, u->nodename, i);
-	up_read(&uts_sem);
-	if (copy_to_user(name, tmp, i))
-		return -EFAULT;
-	return 0;
-}
-
+/* Stub: gethostname syscall not needed for minimal kernel */
+SYSCALL_DEFINE2(gethostname, char __user *, name, int, len) { return -ENOSYS; }
 #endif
 
  

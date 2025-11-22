@@ -768,48 +768,4 @@ bool nmi_uaccess_okay(void)
 	return true;
 }
 
-static ssize_t tlbflush_read_file(struct file *file, char __user *user_buf,
-			     size_t count, loff_t *ppos)
-{
-	char buf[32];
-	unsigned int len;
-
-	len = sprintf(buf, "%ld\n", tlb_single_page_flush_ceiling);
-	return simple_read_from_buffer(user_buf, count, ppos, buf, len);
-}
-
-static ssize_t tlbflush_write_file(struct file *file,
-		 const char __user *user_buf, size_t count, loff_t *ppos)
-{
-	char buf[32];
-	ssize_t len;
-	int ceiling;
-
-	len = min(count, sizeof(buf) - 1);
-	if (copy_from_user(buf, user_buf, len))
-		return -EFAULT;
-
-	buf[len] = '\0';
-	if (kstrtoint(buf, 0, &ceiling))
-		return -EINVAL;
-
-	if (ceiling < 0)
-		return -EINVAL;
-
-	tlb_single_page_flush_ceiling = ceiling;
-	return count;
-}
-
-static const struct file_operations fops_tlbflush = {
-	.read = tlbflush_read_file,
-	.write = tlbflush_write_file,
-	.llseek = default_llseek,
-};
-
-static int __init create_tlb_single_page_flush_ceiling(void)
-{
-	debugfs_create_file("tlb_single_page_flush_ceiling", S_IRUSR | S_IWUSR,
-			    arch_debugfs_dir, NULL, &fops_tlbflush);
-	return 0;
-}
-late_initcall(create_tlb_single_page_flush_ceiling);
+/* Stub: TLB flush debugfs tuning not needed for minimal kernel */

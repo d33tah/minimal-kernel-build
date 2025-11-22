@@ -1830,39 +1830,18 @@ static int get_user_cpu_mask(unsigned long __user *user_mask_ptr, unsigned len,
 	return copy_from_user(new_mask, user_mask_ptr, len) ? -EFAULT : 0;
 }
 
+/* Stub: setaffinity not needed for single-CPU minimal kernel */
 SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
 		unsigned long __user *, user_mask_ptr)
 {
-	cpumask_var_t new_mask;
-	int retval;
-
-	if (!alloc_cpumask_var(&new_mask, GFP_KERNEL))
-		return -ENOMEM;
-
-	retval = get_user_cpu_mask(user_mask_ptr, len, new_mask);
-	if (retval == 0)
-		retval = sched_setaffinity(pid, new_mask);
-	free_cpumask_var(new_mask);
-	return retval;
+	return 0;
 }
 
+/* Simplified: single-CPU kernel just returns CPU 0 */
 long sched_getaffinity(pid_t pid, struct cpumask *mask)
 {
-	struct task_struct *p;
-	unsigned long flags;
-
-	rcu_read_lock();
-	p = find_process_by_pid(pid);
-	if (!p) {
-		rcu_read_unlock();
-		return -ESRCH;
-	}
-
-	raw_spin_lock_irqsave(&p->pi_lock, flags);
-	cpumask_and(mask, &p->cpus_mask, cpu_active_mask);
-	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
-	rcu_read_unlock();
-
+	cpumask_clear(mask);
+	cpumask_set_cpu(0, mask);
 	return 0;
 }
 

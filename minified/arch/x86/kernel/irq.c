@@ -39,28 +39,7 @@ void ack_bad_irq(unsigned int irq)
  
 int arch_show_interrupts(struct seq_file *p, int prec)
 {
-	int j;
-
-	seq_printf(p, "%*s: ", prec, "NMI");
-	for_each_online_cpu(j)
-		seq_printf(p, "%10u ", irq_stats(j)->__nmi_count);
-	seq_puts(p, "  Non-maskable interrupts\n");
-#if IS_ENABLED(CONFIG_HYPERV)
-	if (test_bit(HYPERV_REENLIGHTENMENT_VECTOR, system_vectors)) {
-		seq_printf(p, "%*s: ", prec, "HRE");
-		for_each_online_cpu(j)
-			seq_printf(p, "%10u ",
-				   irq_stats(j)->irq_hv_reenlightenment_count);
-		seq_puts(p, "  Hyper-V reenlightenment interrupts\n");
-	}
-	if (test_bit(HYPERV_STIMER0_VECTOR, system_vectors)) {
-		seq_printf(p, "%*s: ", prec, "HVS");
-		for_each_online_cpu(j)
-			seq_printf(p, "%10u ",
-				   irq_stats(j)->hyperv_stimer0_count);
-		seq_puts(p, "  Hyper-V stimer0 interrupts\n");
-	}
-#endif
+	/* Stub: detailed interrupt stats not needed for minimal kernel */
 	seq_printf(p, "%*s: %10u\n", prec, "ERR", atomic_read(&irq_err_count));
 	return 0;
 }

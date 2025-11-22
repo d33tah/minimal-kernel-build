@@ -465,9 +465,7 @@ void clock_was_set_delayed(void)
 
 void hrtimers_resume_local(void)
 {
-	lockdep_assert_irqs_disabled();
-	
-	retrigger_next_event(NULL);
+	/* Stub: resume not needed for minimal kernel */
 }
 
 static inline

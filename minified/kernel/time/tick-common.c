@@ -255,44 +255,28 @@ int tick_broadcast_oneshot_control(enum tick_broadcast_state state)
 }
 
 
- 
+
 void tick_suspend_local(void)
 {
-	struct tick_device *td = this_cpu_ptr(&tick_cpu_device);
-
-	clockevents_shutdown(td->evtdev);
+	/* Stub: suspend not needed for minimal kernel */
 }
 
- 
+
 void tick_resume_local(void)
 {
-	struct tick_device *td = this_cpu_ptr(&tick_cpu_device);
-	bool broadcast = tick_resume_check_broadcast();
-
-	clockevents_tick_resume(td->evtdev);
-	if (!broadcast) {
-		if (td->mode == TICKDEV_MODE_PERIODIC)
-			tick_setup_periodic(td->evtdev, 0);
-		else
-			tick_resume_oneshot();
-	}
-
-	 
-	hrtimers_resume_local();
+	/* Stub: resume not needed for minimal kernel */
 }
 
- 
+
 void tick_suspend(void)
 {
-	tick_suspend_local();
-	tick_suspend_broadcast();
+	/* Stub: suspend not needed for minimal kernel */
 }
 
- 
+
 void tick_resume(void)
 {
-	tick_resume_broadcast();
-	tick_resume_local();
+	/* Stub: resume not needed for minimal kernel */
 }
 
 

@@ -1563,38 +1563,7 @@ static struct pid *pidfd_to_pid(const struct file *file)
 SYSCALL_DEFINE4(pidfd_send_signal, int, pidfd, int, sig,
 		siginfo_t __user *, info, unsigned int, flags)
 {
-	/* Minimal stub: basic pidfd signal sending */
-	struct fd f;
-	struct pid *pid;
-	kernel_siginfo_t kinfo;
-	int ret;
-
-	if (flags)
-		return -EINVAL;
-
-	f = fdget(pidfd);
-	if (!f.file)
-		return -EBADF;
-
-	pid = pidfd_to_pid(f.file);
-	if (IS_ERR(pid)) {
-		fdput(f);
-		return PTR_ERR(pid);
-	}
-
-	if (info) {
-		ret = copy_siginfo_from_user_any(&kinfo, info);
-		if (ret) {
-			fdput(f);
-			return ret;
-		}
-	} else {
-		prepare_kill_siginfo(sig, &kinfo);
-	}
-
-	ret = kill_pid_info(sig, &kinfo, pid);
-	fdput(f);
-	return ret;
+	return -ENOSYS;
 }
 
 static int
@@ -1652,49 +1621,16 @@ SYSCALL_DEFINE2(tkill, pid_t, pid, int, sig)
 	return do_tkill(0, pid, sig);
 }
 
-static int do_rt_sigqueueinfo(pid_t pid, int sig, kernel_siginfo_t *info)
-{
-	
-	if ((info->si_code >= 0 || info->si_code == SI_TKILL) &&
-	    (task_pid_vnr(current) != pid))
-		return -EPERM;
-
-	
-	return kill_proc_info(sig, info, pid);
-}
-
 SYSCALL_DEFINE3(rt_sigqueueinfo, pid_t, pid, int, sig,
 		siginfo_t __user *, uinfo)
 {
-	kernel_siginfo_t info;
-	int ret = __copy_siginfo_from_user(sig, &info, uinfo);
-	if (unlikely(ret))
-		return ret;
-	return do_rt_sigqueueinfo(pid, sig, &info);
-}
-
-static int do_rt_tgsigqueueinfo(pid_t tgid, pid_t pid, int sig, kernel_siginfo_t *info)
-{
-	
-	if (pid <= 0 || tgid <= 0)
-		return -EINVAL;
-
-	
-	if ((info->si_code >= 0 || info->si_code == SI_TKILL) &&
-	    (task_pid_vnr(current) != pid))
-		return -EPERM;
-
-	return do_send_specific(tgid, pid, sig, info);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE4(rt_tgsigqueueinfo, pid_t, tgid, pid_t, pid, int, sig,
 		siginfo_t __user *, uinfo)
 {
-	kernel_siginfo_t info;
-	int ret = __copy_siginfo_from_user(sig, &info, uinfo);
-	if (unlikely(ret))
-		return ret;
-	return do_rt_tgsigqueueinfo(tgid, pid, sig, &info);
+	return -ENOSYS;
 }
 
 void kernel_sigaction(int sig, __sighandler_t action)

@@ -749,24 +749,12 @@ static bool __init_or_module initcall_blacklisted(initcall_t fn)
 }
 __setup("initcall_blacklist=", initcall_blacklist);
 
+/* Stub: initcall debug tracing not needed for minimal kernel */
 static __init_or_module void
-trace_initcall_start_cb(void *data, initcall_t fn)
-{
-	ktime_t *calltime = (ktime_t *)data;
-
-	printk(KERN_DEBUG "calling  %pS @ %i\n", fn, task_pid_nr(current));
-	*calltime = ktime_get();
-}
+trace_initcall_start_cb(void *data, initcall_t fn) { }
 
 static __init_or_module void
-trace_initcall_finish_cb(void *data, initcall_t fn, int ret)
-{
-	ktime_t rettime, *calltime = (ktime_t *)data;
-
-	rettime = ktime_get();
-	printk(KERN_DEBUG "initcall %pS returned %d after %lld usecs\n",
-		 fn, ret, (unsigned long long)ktime_us_delta(rettime, *calltime));
-}
+trace_initcall_finish_cb(void *data, initcall_t fn, int ret) { }
 
 static ktime_t initcall_calltime;
 

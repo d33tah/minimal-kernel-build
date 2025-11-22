@@ -349,49 +349,8 @@ out:
  
 int kobject_move(struct kobject *kobj, struct kobject *new_parent)
 {
-	int error;
-	struct kobject *old_parent;
-	const char *devpath = NULL;
-	char *devpath_string = NULL;
-	char *envp[2];
-
-	kobj = kobject_get(kobj);
-	if (!kobj)
-		return -EINVAL;
-	new_parent = kobject_get(new_parent);
-	if (!new_parent) {
-		if (kobj->kset)
-			new_parent = kobject_get(&kobj->kset->kobj);
-	}
-
-	 
-	devpath = kobject_get_path(kobj, GFP_KERNEL);
-	if (!devpath) {
-		error = -ENOMEM;
-		goto out;
-	}
-	devpath_string = kmalloc(strlen(devpath) + 15, GFP_KERNEL);
-	if (!devpath_string) {
-		error = -ENOMEM;
-		goto out;
-	}
-	sprintf(devpath_string, "DEVPATH_OLD=%s", devpath);
-	envp[0] = devpath_string;
-	envp[1] = NULL;
-	error = sysfs_move_dir_ns(kobj, new_parent, kobject_namespace(kobj));
-	if (error)
-		goto out;
-	old_parent = kobj->parent;
-	kobj->parent = new_parent;
-	new_parent = NULL;
-	kobject_put(old_parent);
-	kobject_uevent_env(kobj, KOBJ_MOVE, envp);
-out:
-	kobject_put(new_parent);
-	kobject_put(kobj);
-	kfree(devpath_string);
-	kfree(devpath);
-	return error;
+	/* Stub: kobject move not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 static void __kobject_del(struct kobject *kobj)

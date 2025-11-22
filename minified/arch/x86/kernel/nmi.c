@@ -77,20 +77,7 @@ __setup("unknown_nmi_panic", setup_unknown_nmi_panic);
 
 #define nmi_to_desc(type) (&nmi_desc[type])
 
-static u64 nmi_longest_ns = 1 * NSEC_PER_MSEC;
-
-static int __init nmi_warning_debugfs(void)
-{
-	debugfs_create_u64("nmi_longest_ns", 0644,
-			arch_debugfs_dir, &nmi_longest_ns);
-	return 0;
-}
-fs_initcall(nmi_warning_debugfs);
-
-static void nmi_check_duration(struct nmiaction *action, u64 duration)
-{
-	/* Stub: NMI duration warning not needed for minimal kernel */
-}
+/* Stub: nmi_warning_debugfs and nmi_check_duration not needed for minimal kernel */
 
 static int nmi_handle(unsigned int type, struct pt_regs *regs)
 {
@@ -100,23 +87,12 @@ static int nmi_handle(unsigned int type, struct pt_regs *regs)
 
 	rcu_read_lock();
 
-	 
-	list_for_each_entry_rcu(a, &desc->head, list) {
-		int thishandled;
-		u64 delta;
-
-		delta = sched_clock();
-		thishandled = a->handler(type, regs);
-		handled += thishandled;
-		delta = sched_clock() - delta;
-		 
-
-		nmi_check_duration(a, delta);
-	}
+	/* Simplified: no timing check for minimal kernel */
+	list_for_each_entry_rcu(a, &desc->head, list)
+		handled += a->handler(type, regs);
 
 	rcu_read_unlock();
 
-	 
 	return handled;
 }
 NOKPROBE_SYMBOL(nmi_handle);

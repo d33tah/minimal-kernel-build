@@ -634,26 +634,16 @@ u64 clocksource_stop_suspend_timing(struct clocksource *cs, u64 cycle_now)
 	return nsec;
 }
 
- 
+
 void clocksource_suspend(void)
 {
-	struct clocksource *cs;
-
-	list_for_each_entry_reverse(cs, &clocksource_list, list)
-		if (cs->suspend)
-			cs->suspend(cs);
+	/* Stub: suspend not needed for minimal kernel */
 }
 
- 
+
 void clocksource_resume(void)
 {
-	struct clocksource *cs;
-
-	list_for_each_entry(cs, &clocksource_list, list)
-		if (cs->resume)
-			cs->resume(cs);
-
-	clocksource_resume_watchdog();
+	/* Stub: resume not needed for minimal kernel */
 }
 
  

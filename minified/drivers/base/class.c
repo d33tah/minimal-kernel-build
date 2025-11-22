@@ -401,30 +401,15 @@ void class_compat_unregister(struct class_compat *cls)
 int class_compat_create_link(struct class_compat *cls, struct device *dev,
 			     struct device *device_link)
 {
-	int error;
-
-	error = sysfs_create_link(cls->kobj, &dev->kobj, dev_name(dev));
-	if (error)
-		return error;
-
-	 
-	if (device_link) {
-		error = sysfs_create_link(&dev->kobj, &device_link->kobj,
-					  "device");
-		if (error)
-			sysfs_remove_link(cls->kobj, dev_name(dev));
-	}
-
-	return error;
+	/* Stub: compat links not needed for minimal kernel */
+	return 0;
 }
 
  
 void class_compat_remove_link(struct class_compat *cls, struct device *dev,
 			      struct device *device_link)
 {
-	if (device_link)
-		sysfs_remove_link(&dev->kobj, "device");
-	sysfs_remove_link(cls->kobj, dev_name(dev));
+	/* Stub: compat links not needed for minimal kernel */
 }
 
 int __init classes_init(void)

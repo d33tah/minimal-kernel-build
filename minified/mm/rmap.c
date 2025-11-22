@@ -1378,27 +1378,7 @@ static bool try_to_migrate_one(struct folio *folio, struct vm_area_struct *vma,
 
 void try_to_migrate(struct folio *folio, enum ttu_flags flags)
 {
-	struct rmap_walk_control rwc = {
-		.rmap_one = try_to_migrate_one,
-		.arg = (void *)flags,
-		.done = page_not_mapped,
-		.anon_lock = folio_lock_anon_vma_read,
-	};
-
-	if (WARN_ON_ONCE(flags & ~(TTU_RMAP_LOCKED | TTU_SPLIT_HUGE_PMD |
-					TTU_SYNC)))
-		return;
-
-	if (folio_is_zone_device(folio) && !folio_is_device_private(folio))
-		return;
-
-	if (!folio_test_ksm(folio) && folio_test_anon(folio))
-		rwc.invalid_vma = invalid_migration_vma;
-
-	if (flags & TTU_RMAP_LOCKED)
-		rmap_walk_locked(folio, &rwc);
-	else
-		rmap_walk(folio, &rwc);
+	/* Stubbed: page migration not needed for minimal kernel */
 }
 
 void __put_anon_vma(struct anon_vma *anon_vma)

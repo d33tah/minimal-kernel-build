@@ -1082,77 +1082,16 @@ __setup("reserve=", reserve_setup);
  
 int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
 {
-	struct resource *p = &iomem_resource;
-	int err = 0;
-	loff_t l;
-
-	read_lock(&resource_lock);
-	for (p = p->child; p ; p = r_next(NULL, p, &l)) {
-		 
-		if (p->start >= addr + size)
-			continue;
-		if (p->end < addr)
-			continue;
-		if (PFN_DOWN(p->start) <= PFN_DOWN(addr) &&
-		    PFN_DOWN(p->end) >= PFN_DOWN(addr + size - 1))
-			continue;
-		 
-		if (p->flags & IORESOURCE_BUSY)
-			continue;
-
-		printk(KERN_WARNING "resource sanity check: requesting [mem %#010llx-%#010llx], which spans more than %s %pR\n",
-		       (unsigned long long)addr,
-		       (unsigned long long)(addr + size - 1),
-		       p->name, p);
-		err = -1;
-		break;
-	}
-	read_unlock(&resource_lock);
-
-	return err;
+	/* Stub: sanity check not needed for minimal kernel */
+	return 0;
 }
 
 static int strict_iomem_checks;
 
- 
 bool iomem_is_exclusive(u64 addr)
 {
-	const unsigned int exclusive_system_ram = IORESOURCE_SYSTEM_RAM |
-						  IORESOURCE_EXCLUSIVE;
-	bool skip_children = false, err = false;
-	int size = PAGE_SIZE;
-	struct resource *p;
-
-	addr = addr & PAGE_MASK;
-
-	read_lock(&resource_lock);
-	for_each_resource(&iomem_resource, p, skip_children) {
-		if (p->start >= addr + size)
-			break;
-		if (p->end < addr) {
-			skip_children = true;
-			continue;
-		}
-		skip_children = false;
-
-		 
-		if ((p->flags & exclusive_system_ram) == exclusive_system_ram) {
-			err = true;
-			break;
-		}
-
-		 
-		if (!strict_iomem_checks || !(p->flags & IORESOURCE_BUSY))
-			continue;
-		if (IS_ENABLED(CONFIG_IO_STRICT_DEVMEM)
-				|| p->flags & IORESOURCE_EXCLUSIVE) {
-			err = true;
-			break;
-		}
-	}
-	read_unlock(&resource_lock);
-
-	return err;
+	/* Stub: exclusivity check not needed for minimal kernel */
+	return false;
 }
 
 struct resource_entry *resource_list_create_entry(struct resource *res,

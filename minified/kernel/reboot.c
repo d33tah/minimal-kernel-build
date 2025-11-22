@@ -306,88 +306,38 @@ void unregister_sys_off_handler(struct sys_off_handler *handler)
 	free_sys_off_handler(handler);
 }
 
-static void devm_unregister_sys_off_handler(void *data)
-{
-	struct sys_off_handler *handler = data;
-
-	unregister_sys_off_handler(handler);
-}
-
- 
+/* Stub: devm_register_* not needed for minimal kernel */
 int devm_register_sys_off_handler(struct device *dev,
 				  enum sys_off_mode mode,
 				  int priority,
 				  int (*callback)(struct sys_off_data *data),
 				  void *cb_data)
 {
-	struct sys_off_handler *handler;
-
-	handler = register_sys_off_handler(mode, priority, callback, cb_data);
-	if (IS_ERR(handler))
-		return PTR_ERR(handler);
-
-	return devm_add_action_or_reset(dev, devm_unregister_sys_off_handler,
-					handler);
+	return -ENOSYS;
 }
 
- 
 int devm_register_power_off_handler(struct device *dev,
 				    int (*callback)(struct sys_off_data *data),
 				    void *cb_data)
 {
-	return devm_register_sys_off_handler(dev,
-					     SYS_OFF_MODE_POWER_OFF,
-					     SYS_OFF_PRIO_DEFAULT,
-					     callback, cb_data);
+	return -ENOSYS;
 }
 
- 
 int devm_register_restart_handler(struct device *dev,
 				  int (*callback)(struct sys_off_data *data),
 				  void *cb_data)
 {
-	return devm_register_sys_off_handler(dev,
-					     SYS_OFF_MODE_RESTART,
-					     SYS_OFF_PRIO_DEFAULT,
-					     callback, cb_data);
+	return -ENOSYS;
 }
 
-static struct sys_off_handler *platform_power_off_handler;
-
-static int platform_power_off_notify(struct sys_off_data *data)
-{
-	void (*platform_power_power_off_cb)(void) = data->cb_data;
-
-	platform_power_power_off_cb();
-
-	return NOTIFY_DONE;
-}
-
- 
+/* Stub: platform_power_off not needed for minimal kernel */
 int register_platform_power_off(void (*power_off)(void))
 {
-	struct sys_off_handler *handler;
-
-	handler = register_sys_off_handler(SYS_OFF_MODE_POWER_OFF,
-					   SYS_OFF_PRIO_PLATFORM,
-					   platform_power_off_notify,
-					   power_off);
-	if (IS_ERR(handler))
-		return PTR_ERR(handler);
-
-	platform_power_off_handler = handler;
-
-	return 0;
+	return -ENOSYS;
 }
 
- 
 void unregister_platform_power_off(void (*power_off)(void))
 {
-	if (platform_power_off_handler &&
-	    platform_power_off_handler->cb_data == power_off) {
-		unregister_sys_off_handler(platform_power_off_handler);
-		platform_power_off_handler = NULL;
-	}
 }
 
 static int legacy_pm_power_off(struct sys_off_data *data)

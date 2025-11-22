@@ -1,12 +1,12 @@
---- 2025-11-22 22:16 ---
+--- 2025-11-22 22:22 ---
 
-Session progress:
+Session progress (final update):
 - make vm: PASSES ✓, prints "Hello, World!" ✓
 - Binary: 288KB
-- Current total LOC: 229,800 (measured with cloc)
+- Current total LOC: 229,761 (measured with cloc)
 - Goal: 200,000 LOC
-- Gap: 29,800 LOC (12.9% reduction needed)
-- Session reduction: ~300+ LOC
+- Gap: 29,761 LOC (12.9% reduction needed)
+- Session reduction: ~400+ LOC
 
 Commits this session:
 1. minified/arch/x86/kernel/nmi.c - ~25 LOC reduction
@@ -35,10 +35,19 @@ Commits this session:
    - Simplified sched_setaffinity (stub for single-CPU)
    - Simplified sched_getaffinity (always returns CPU 0)
 
+7. init/main.c - ~15 LOC reduction
+   - Stubbed trace_initcall_start_cb
+   - Stubbed trace_initcall_finish_cb
+
+8. fs/file.c - ~85 LOC reduction
+   - Stubbed __close_range
+   - Removed unused __range_cloexec and __range_close
+
 Analysis:
 - Many large functions already stubbed by previous sessions
 - Core memory management, scheduling, VFS are essential
 - Headers still contribute ~89K LOC (significant reduction target)
+- Most remaining code is tightly integrated with kernel core
 
 --- 2025-11-21 15:06 (FPU regset stub) ---
 

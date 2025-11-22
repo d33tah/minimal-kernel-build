@@ -76,28 +76,8 @@ void synchronize_irq(unsigned int irq)
 
 int irq_set_vcpu_affinity(unsigned int irq, void *vcpu_info)
 {
-	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_lock(irq, &flags, 0);
-	struct irq_data *data;
-	struct irq_chip *chip;
-	int ret = -ENOSYS;
-
-	if (!desc)
-		return -EINVAL;
-
-	data = irq_desc_get_irq_data(desc);
-	do {
-		chip = irq_data_get_irq_chip(data);
-		if (chip && chip->irq_set_vcpu_affinity)
-			break;
-		data = NULL;
-	} while (data);
-
-	if (data)
-		ret = chip->irq_set_vcpu_affinity(data, vcpu_info);
-	irq_put_desc_unlock(desc, flags);
-
-	return ret;
+	/* Stub: VCPU affinity not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 void __disable_irq(struct irq_desc *desc)
@@ -201,41 +181,8 @@ static int set_irq_wake_real(unsigned int irq, unsigned int on)
 
 int irq_set_irq_wake(unsigned int irq, unsigned int on)
 {
-	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_buslock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
-	int ret = 0;
-
-	if (!desc)
-		return -EINVAL;
-
-	if (desc->istate & IRQS_NMI) {
-		ret = -EINVAL;
-		goto out_unlock;
-	}
-
-	if (on) {
-		if (desc->wake_depth++ == 0) {
-			ret = set_irq_wake_real(irq, on);
-			if (ret)
-				desc->wake_depth = 0;
-			else
-				irqd_set(&desc->irq_data, IRQD_WAKEUP_STATE);
-		}
-	} else {
-		if (desc->wake_depth == 0) {
-			WARN(1, "Unbalanced IRQ %d wake disable\n", irq);
-		} else if (--desc->wake_depth == 0) {
-			ret = set_irq_wake_real(irq, on);
-			if (ret)
-				desc->wake_depth = 1;
-			else
-				irqd_clear(&desc->irq_data, IRQD_WAKEUP_STATE);
-		}
-	}
-
-out_unlock:
-	irq_put_desc_busunlock(desc, flags);
-	return ret;
+	/* Stub: IRQ wakeup not needed for minimal kernel */
+	return 0;
 }
 
 int can_request_irq(unsigned int irq, unsigned long irqflags)

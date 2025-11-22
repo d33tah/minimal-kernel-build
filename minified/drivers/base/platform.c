@@ -209,76 +209,8 @@ int devm_platform_get_irqs_affinity(struct platform_device *dev,
 				    unsigned int maxvec,
 				    int **irqs)
 {
-	struct irq_affinity_devres *ptr;
-	struct irq_affinity_desc *desc;
-	size_t size;
-	int i, ret, nvec;
-
-	if (!affd)
-		return -EPERM;
-
-	if (maxvec < minvec)
-		return -ERANGE;
-
-	nvec = platform_irq_count(dev);
-	if (nvec < 0)
-		return nvec;
-
-	if (nvec < minvec)
-		return -ENOSPC;
-
-	nvec = irq_calc_affinity_vectors(minvec, nvec, affd);
-	if (nvec < minvec)
-		return -ENOSPC;
-
-	if (nvec > maxvec)
-		nvec = maxvec;
-
-	size = sizeof(*ptr) + sizeof(unsigned int) * nvec;
-	ptr = devres_alloc(devm_platform_get_irqs_affinity_release, size,
-			   GFP_KERNEL);
-	if (!ptr)
-		return -ENOMEM;
-
-	ptr->count = nvec;
-
-	for (i = 0; i < nvec; i++) {
-		int irq = platform_get_irq(dev, i);
-		if (irq < 0) {
-			ret = irq;
-			goto err_free_devres;
-		}
-		ptr->irq[i] = irq;
-	}
-
-	desc = irq_create_affinity_masks(nvec, affd);
-	if (!desc) {
-		ret = -ENOMEM;
-		goto err_free_devres;
-	}
-
-	for (i = 0; i < nvec; i++) {
-		ret = irq_update_affinity_desc(ptr->irq[i], &desc[i]);
-		if (ret) {
-			dev_err(&dev->dev, "failed to update irq%d affinity descriptor (%d)\n",
-				ptr->irq[i], ret);
-			goto err_free_desc;
-		}
-	}
-
-	devres_add(&dev->dev, ptr);
-
-	kfree(desc);
-
-	*irqs = ptr->irq;
-
-	return nvec;
-
-err_free_desc:
-	kfree(desc);
-err_free_devres:
-	devres_free(ptr);
-	return ret;
+	/* Stub: IRQ affinity not needed for minimal kernel */
+	return -ENOSYS;
 }
 
  

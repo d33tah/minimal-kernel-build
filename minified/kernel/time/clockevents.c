@@ -428,24 +428,16 @@ void clockevents_exchange_device(struct clock_event_device *old,
 	}
 }
 
- 
+
 void clockevents_suspend(void)
 {
-	struct clock_event_device *dev;
-
-	list_for_each_entry_reverse(dev, &clockevent_devices, list)
-		if (dev->suspend && !clockevent_state_detached(dev))
-			dev->suspend(dev);
+	/* Stub: suspend not needed for minimal kernel */
 }
 
- 
+
 void clockevents_resume(void)
 {
-	struct clock_event_device *dev;
-
-	list_for_each_entry(dev, &clockevent_devices, list)
-		if (dev->resume && !clockevent_state_detached(dev))
-			dev->resume(dev);
+	/* Stub: resume not needed for minimal kernel */
 }
 
 

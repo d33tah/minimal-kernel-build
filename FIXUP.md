@@ -1,3 +1,47 @@
+--- 2025-11-22 09:00 ---
+
+Session summary:
+- make vm: PASSES ✓, prints "Hello, World!" ✓
+- Binary: 294KB (stable)
+- Current total LOC: 237,348 (measured with cloc after mrproper)
+- Goal: 200,000 LOC
+- Gap: 37,348 LOC (15.7% reduction needed)
+
+Session commits:
+1. kernel/signal.c - 79 LOC reduction (pidfd_send_signal, rt_sigqueueinfo, rt_tgsigqueueinfo)
+2. mm/rmap.c - 20 LOC reduction (try_to_migrate)
+3. fs/namei.c - 14 LOC reduction (vfs_symlink)
+
+Total session reduction: ~113 LOC in code changes
+Note: Much of today's reduction was achieved through merging with remote changes
+
+Notes:
+- vfs_mkdir cannot be stubbed (needed for boot)
+- Many VFS functions already stubbed (vfs_rmdir, vfs_unlink, vfs_link, vfs_rename)
+- Many syscalls already stubbed (sched_setattr, sched_getattr, open_tree, fsmount, etc.)
+- Page migration (try_to_migrate) can be safely stubbed
+
+--- 2025-11-22 08:51 ---
+
+Session progress:
+- make vm: PASSES ✓, prints "Hello, World!" ✓
+- Binary: 294KB (from 329KB)
+- Current total LOC: 237,359 (measured with cloc after mrproper)
+- Goal: 200,000 LOC
+- Gap: 37,359 LOC (15.7% reduction needed)
+
+08:51 - First commit: kernel/signal.c syscall stubbing (79 LOC reduction)
+  Stubbed functions:
+  1. pidfd_send_signal - 47 LOC (pidfd signal)
+  2. rt_sigqueueinfo - 7 LOC (signal queue)
+  3. rt_tgsigqueueinfo - 8 LOC (thread group signal queue)
+  4. do_rt_sigqueueinfo - 9 LOC (helper)
+  5. do_rt_tgsigqueueinfo - 13 LOC (helper)
+
+  signal.c: 2625 → 2546 LOC
+  Binary: 329KB → 294KB (combined with remote changes)
+  make vm: PASSES ✓, prints "Hello, World!" ✓
+
 --- 2025-11-22 08:46 ---
 
 Session starting:

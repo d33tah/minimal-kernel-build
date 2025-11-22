@@ -364,22 +364,12 @@ MODULE_PARM_DESC(console_no_auto_verbose, "Disable console loglevel raise to hig
  
 void suspend_console(void)
 {
-	if (!console_suspend_enabled)
-		return;
-	pr_flush(1000, true);
-	console_lock();
-	console_suspended = 1;
-	up_console_sem();
+	/* Stub: console suspend not needed for minimal kernel */
 }
 
 void resume_console(void)
 {
-	if (!console_suspend_enabled)
-		return;
-	down_console_sem();
-	console_suspended = 0;
-	console_unlock();
-	pr_flush(1000, true);
+	/* Stub: console resume not needed for minimal kernel */
 }
 
  

@@ -719,33 +719,9 @@ void emergency_remount(void)
 	}
 }
 
-static void do_thaw_all_callback(struct super_block *sb)
-{
-	down_write(&sb->s_umount);
-	if (sb->s_root && sb->s_flags & SB_BORN) {
-		emergency_thaw_bdev(sb);
-		thaw_super_locked(sb);
-	} else {
-		up_write(&sb->s_umount);
-	}
-}
-
-static void do_thaw_all(struct work_struct *work)
-{
-	__iterate_supers(do_thaw_all_callback);
-	kfree(work);
-	printk(KERN_WARNING "Emergency Thaw complete\n");
-}
-
+/* Stub: emergency thaw not needed for minimal kernel */
 void emergency_thaw_all(void)
 {
-	struct work_struct *work;
-
-	work = kmalloc(sizeof(*work), GFP_ATOMIC);
-	if (work) {
-		INIT_WORK(work, do_thaw_all);
-		schedule_work(work);
-	}
 }
 
 static DEFINE_IDA(unnamed_dev_ida);

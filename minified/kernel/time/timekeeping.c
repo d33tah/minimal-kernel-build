@@ -663,78 +663,14 @@ int get_device_system_crosststamp(int (*get_time_fn)
 
 int do_settimeofday64(const struct timespec64 *ts)
 {
-	struct timekeeper *tk = &tk_core.timekeeper;
-	struct timespec64 ts_delta, xt;
-	unsigned long flags;
-	int ret = 0;
-
-	if (!timespec64_valid_settod(ts))
-		return -EINVAL;
-
-	raw_spin_lock_irqsave(&timekeeper_lock, flags);
-	write_seqcount_begin(&tk_core.seq);
-
-	timekeeping_forward_now(tk);
-
-	xt = tk_xtime(tk);
-	ts_delta = timespec64_sub(*ts, xt);
-
-	if (timespec64_compare(&tk->wall_to_monotonic, &ts_delta) > 0) {
-		ret = -EINVAL;
-		goto out;
-	}
-
-	tk_set_wall_to_mono(tk, timespec64_sub(tk->wall_to_monotonic, ts_delta));
-
-	tk_set_xtime(tk, ts);
-out:
-	timekeeping_update(tk, TK_CLEAR_NTP | TK_MIRROR | TK_CLOCK_WAS_SET);
-
-	write_seqcount_end(&tk_core.seq);
-	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
-
-	clock_was_set(CLOCK_SET_WALL);
-
-	if (!ret)
-		audit_tk_injoffset(ts_delta);
-
-	return ret;
+	/* Stub: setting time not needed for minimal kernel */
+	return -EPERM;
 }
 
 static int timekeeping_inject_offset(const struct timespec64 *ts)
 {
-	struct timekeeper *tk = &tk_core.timekeeper;
-	unsigned long flags;
-	struct timespec64 tmp;
-	int ret = 0;
-
-	if (ts->tv_nsec < 0 || ts->tv_nsec >= NSEC_PER_SEC)
-		return -EINVAL;
-
-	raw_spin_lock_irqsave(&timekeeper_lock, flags);
-	write_seqcount_begin(&tk_core.seq);
-
-	timekeeping_forward_now(tk);
-
-	tmp = timespec64_add(tk_xtime(tk), *ts);
-	if (timespec64_compare(&tk->wall_to_monotonic, ts) > 0 ||
-	    !timespec64_valid_settod(&tmp)) {
-		ret = -EINVAL;
-		goto error;
-	}
-
-	tk_xtime_add(tk, ts);
-	tk_set_wall_to_mono(tk, timespec64_sub(tk->wall_to_monotonic, *ts));
-
-error: 
-	timekeeping_update(tk, TK_CLEAR_NTP | TK_MIRROR | TK_CLOCK_WAS_SET);
-
-	write_seqcount_end(&tk_core.seq);
-	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
-
-	clock_was_set(CLOCK_SET_WALL);
-
-	return ret;
+	/* Stub: time offset injection not needed for minimal kernel */
+	return -EPERM;
 }
 
 int persistent_clock_is_local;

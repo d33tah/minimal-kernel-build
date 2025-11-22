@@ -43,20 +43,8 @@ SYSCALL_DEFINE1(time, __kernel_old_time_t __user *, tloc)
 
 SYSCALL_DEFINE1(stime, __kernel_old_time_t __user *, tptr)
 {
-	struct timespec64 tv;
-	int err;
-
-	if (get_user(tv.tv_sec, tptr))
-		return -EFAULT;
-
-	tv.tv_nsec = 0;
-
-	err = security_settime64(&tv, NULL);
-	if (err)
-		return err;
-
-	do_settimeofday64(&tv);
-	return 0;
+	/* Stub: setting time not needed for minimal kernel */
+	return -EPERM;
 }
 
 #endif  
@@ -84,56 +72,15 @@ SYSCALL_DEFINE2(gettimeofday, struct __kernel_old_timeval __user *, tv,
 
 int do_sys_settimeofday64(const struct timespec64 *tv, const struct timezone *tz)
 {
-	static int firsttime = 1;
-	int error = 0;
-
-	if (tv && !timespec64_valid_settod(tv))
-		return -EINVAL;
-
-	error = security_settime64(tv, tz);
-	if (error)
-		return error;
-
-	if (tz) {
-		 
-		if (tz->tz_minuteswest > 15*60 || tz->tz_minuteswest < -15*60)
-			return -EINVAL;
-
-		sys_tz = *tz;
-		update_vsyscall_tz();
-		if (firsttime) {
-			firsttime = 0;
-			if (!tv)
-				timekeeping_warp_clock();
-		}
-	}
-	if (tv)
-		return do_settimeofday64(tv);
-	return 0;
+	/* Stub: setting time not needed for minimal kernel */
+	return -EPERM;
 }
 
 SYSCALL_DEFINE2(settimeofday, struct __kernel_old_timeval __user *, tv,
 		struct timezone __user *, tz)
 {
-	struct timespec64 new_ts;
-	struct timezone new_tz;
-
-	if (tv) {
-		if (get_user(new_ts.tv_sec, &tv->tv_sec) ||
-		    get_user(new_ts.tv_nsec, &tv->tv_usec))
-			return -EFAULT;
-
-		if (new_ts.tv_nsec > USEC_PER_SEC || new_ts.tv_nsec < 0)
-			return -EINVAL;
-
-		new_ts.tv_nsec *= NSEC_PER_USEC;
-	}
-	if (tz) {
-		if (copy_from_user(&new_tz, tz, sizeof(*tz)))
-			return -EFAULT;
-	}
-
-	return do_sys_settimeofday64(tv ? &new_ts : NULL, tz ? &new_tz : NULL);
+	/* Stub: setting time not needed for minimal kernel */
+	return -EPERM;
 }
 
 

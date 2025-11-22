@@ -813,38 +813,12 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
 
 SYSCALL_DEFINE4(sendfile, int, out_fd, int, in_fd, off_t __user *, offset, size_t, count)
 {
-	loff_t pos;
-	off_t off;
-	ssize_t ret;
-
-	if (offset) {
-		if (unlikely(get_user(off, offset)))
-			return -EFAULT;
-		pos = off;
-		ret = do_sendfile(out_fd, in_fd, &pos, count, MAX_NON_LFS);
-		if (unlikely(put_user(pos, offset)))
-			return -EFAULT;
-		return ret;
-	}
-
-	return do_sendfile(out_fd, in_fd, NULL, count, 0);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE4(sendfile64, int, out_fd, int, in_fd, loff_t __user *, offset, size_t, count)
 {
-	loff_t pos;
-	ssize_t ret;
-
-	if (offset) {
-		if (unlikely(copy_from_user(&pos, offset, sizeof(loff_t))))
-			return -EFAULT;
-		ret = do_sendfile(out_fd, in_fd, &pos, count, 0);
-		if (unlikely(put_user(pos, offset)))
-			return -EFAULT;
-		return ret;
-	}
-
-	return do_sendfile(out_fd, in_fd, NULL, count, 0);
+	return -ENOSYS;
 }
 
 

@@ -2917,15 +2917,7 @@ void *__init alloc_large_system_hash(const char *tablename,
 
 void free_contig_range(unsigned long pfn, unsigned long nr_pages)
 {
-	unsigned long count = 0;
-
-	for (; nr_pages--; pfn++) {
-		struct page *page = pfn_to_page(pfn);
-
-		count += page_count(page) != 1;
-		__free_page(page);
-	}
-	WARN(count != 0, "%lu pages are still in use!\n", count);
+	/* Stub: contiguous allocation not needed for minimal kernel */
 }
 
 void zone_pcp_update(struct zone *zone, int cpu_online)
@@ -2950,34 +2942,12 @@ void zone_pcp_enable(struct zone *zone)
 
 void zone_pcp_reset(struct zone *zone)
 {
-	int cpu;
-	struct per_cpu_zonestat *pzstats;
-
-	if (zone->per_cpu_pageset != &boot_pageset) {
-		for_each_online_cpu(cpu) {
-			pzstats = per_cpu_ptr(zone->per_cpu_zonestats, cpu);
-			drain_zonestat(zone, pzstats);
-		}
-		free_percpu(zone->per_cpu_pageset);
-		free_percpu(zone->per_cpu_zonestats);
-		zone->per_cpu_pageset = &boot_pageset;
-		zone->per_cpu_zonestats = &boot_zonestats;
-	}
+	/* Stub: PCP reset not needed for minimal single-CPU kernel */
 }
 
 bool is_free_buddy_page(struct page *page)
 {
-	unsigned long pfn = page_to_pfn(page);
-	unsigned int order;
-
-	for (order = 0; order < MAX_ORDER; order++) {
-		struct page *page_head = page - (pfn & ((1 << order) - 1));
-
-		if (PageBuddy(page_head) &&
-		    buddy_order_unsafe(page_head) >= order)
-			break;
-	}
-
-	return order < MAX_ORDER;
+	/* Stub: buddy page check not needed for minimal kernel */
+	return false;
 }
 

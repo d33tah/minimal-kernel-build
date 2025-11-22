@@ -245,32 +245,8 @@ SYSCALL_DEFINE1(chroot, const char __user *, filename)
 
 int chmod_common(const struct path *path, umode_t mode)
 {
-	struct inode *inode = path->dentry->d_inode;
-	struct inode *delegated_inode = NULL;
-	struct iattr newattrs;
-	int error;
-
-	error = mnt_want_write(path->mnt);
-	if (error)
-		return error;
-retry_deleg:
-	inode_lock(inode);
-	error = security_path_chmod(path, mode);
-	if (error)
-		goto out_unlock;
-	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
-	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
-	error = notify_change(mnt_user_ns(path->mnt), path->dentry,
-			      &newattrs, &delegated_inode);
-out_unlock:
-	inode_unlock(inode);
-	if (delegated_inode) {
-		error = break_deleg_wait(&delegated_inode);
-		if (!error)
-			goto retry_deleg;
-	}
-	mnt_drop_write(path->mnt);
-	return error;
+	/* Stub: chmod not needed for minimal kernel */
+	return -EOPNOTSUPP;
 }
 
 int vfs_fchmod(struct file *file, umode_t mode)
@@ -309,51 +285,8 @@ SYSCALL_DEFINE2(chmod, const char __user *, filename, umode_t, mode)
 
 int chown_common(const struct path *path, uid_t user, gid_t group)
 {
-	struct user_namespace *mnt_userns, *fs_userns;
-	struct inode *inode = path->dentry->d_inode;
-	struct inode *delegated_inode = NULL;
-	int error;
-	struct iattr newattrs;
-	kuid_t uid;
-	kgid_t gid;
-
-	uid = make_kuid(current_user_ns(), user);
-	gid = make_kgid(current_user_ns(), group);
-
-	mnt_userns = mnt_user_ns(path->mnt);
-	fs_userns = i_user_ns(inode);
-	uid = mapped_kuid_user(mnt_userns, fs_userns, uid);
-	gid = mapped_kgid_user(mnt_userns, fs_userns, gid);
-
-retry_deleg:
-	newattrs.ia_valid =  ATTR_CTIME;
-	if (user != (uid_t) -1) {
-		if (!uid_valid(uid))
-			return -EINVAL;
-		newattrs.ia_valid |= ATTR_UID;
-		newattrs.ia_uid = uid;
-	}
-	if (group != (gid_t) -1) {
-		if (!gid_valid(gid))
-			return -EINVAL;
-		newattrs.ia_valid |= ATTR_GID;
-		newattrs.ia_gid = gid;
-	}
-	if (!S_ISDIR(inode->i_mode))
-		newattrs.ia_valid |=
-			ATTR_KILL_SUID | ATTR_KILL_SGID | ATTR_KILL_PRIV;
-	inode_lock(inode);
-	error = security_path_chown(path, uid, gid);
-	if (!error)
-		error = notify_change(mnt_userns, path->dentry, &newattrs,
-				      &delegated_inode);
-	inode_unlock(inode);
-	if (delegated_inode) {
-		error = break_deleg_wait(&delegated_inode);
-		if (!error)
-			goto retry_deleg;
-	}
-	return error;
+	/* Stub: chown not needed for minimal kernel */
+	return -EOPNOTSUPP;
 }
 
 int do_fchownat(int dfd, const char __user *filename, uid_t user, gid_t group,

@@ -2561,22 +2561,8 @@ SYSCALL_DEFINE1(unlink, const char __user *, pathname)
 int vfs_symlink(struct user_namespace *mnt_userns, struct inode *dir,
 		struct dentry *dentry, const char *oldname)
 {
-	int error = may_create(mnt_userns, dir, dentry);
-
-	if (error)
-		return error;
-
-	if (!dir->i_op->symlink)
-		return -EPERM;
-
-	error = security_inode_symlink(dir, dentry, oldname);
-	if (error)
-		return error;
-
-	error = dir->i_op->symlink(mnt_userns, dir, dentry, oldname);
-	if (!error)
-		fsnotify_create(dir, dentry);
-	return error;
+	/* Stub: symlink creation not needed for minimal kernel */
+	return -EPERM;
 }
 
 int do_symlinkat(struct filename *from, int newdfd, struct filename *to)

@@ -875,19 +875,8 @@ struct dentry *generic_fh_to_dentry(struct super_block *sb, struct fid *fid,
 		int fh_len, int fh_type, struct inode *(*get_inode)
 			(struct super_block *sb, u64 ino, u32 gen))
 {
-	struct inode *inode = NULL;
-
-	if (fh_len < 2)
-		return NULL;
-
-	switch (fh_type) {
-	case FILEID_INO32_GEN:
-	case FILEID_INO32_GEN_PARENT:
-		inode = get_inode(sb, fid->i32.ino, fid->i32.gen);
-		break;
-	}
-
-	return d_obtain_alias(inode);
+	/* Stub: NFS export not needed for minimal kernel */
+	return ERR_PTR(-ESTALE);
 }
 
  
@@ -895,19 +884,8 @@ struct dentry *generic_fh_to_parent(struct super_block *sb, struct fid *fid,
 		int fh_len, int fh_type, struct inode *(*get_inode)
 			(struct super_block *sb, u64 ino, u32 gen))
 {
-	struct inode *inode = NULL;
-
-	if (fh_len <= 2)
-		return NULL;
-
-	switch (fh_type) {
-	case FILEID_INO32_GEN_PARENT:
-		inode = get_inode(sb, fid->i32.parent_ino,
-				  (fh_len > 3 ? fid->i32.parent_gen : 0));
-		break;
-	}
-
-	return d_obtain_alias(inode);
+	/* Stub: NFS export not needed for minimal kernel */
+	return ERR_PTR(-ESTALE);
 }
 
  

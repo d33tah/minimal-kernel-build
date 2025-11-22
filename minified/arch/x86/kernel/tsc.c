@@ -894,67 +894,10 @@ static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);
  
 static void tsc_refine_calibration_work(struct work_struct *work)
 {
-	static u64 tsc_start = ULLONG_MAX, ref_start;
-	static int hpet;
-	u64 tsc_stop, ref_stop, delta;
-	unsigned long freq;
-	int cpu;
-
-	 
-	if (tsc_unstable)
-		goto unreg;
-
-	 
-	if (tsc_start == ULLONG_MAX) {
-restart:
-		 
-		hpet = is_hpet_enabled();
-		tsc_start = tsc_read_refs(&ref_start, hpet);
-		schedule_delayed_work(&tsc_irqwork, HZ);
-		return;
-	}
-
-	tsc_stop = tsc_read_refs(&ref_stop, hpet);
-
-	 
-	if (ref_start == ref_stop)
-		goto out;
-
-	 
-	if (tsc_stop == ULLONG_MAX)
-		goto restart;
-
-	delta = tsc_stop - tsc_start;
-	delta *= 1000000LL;
-	if (hpet)
-		freq = calc_hpet_ref(delta, ref_start, ref_stop);
-	else
-		freq = calc_pmtimer_ref(delta, ref_start, ref_stop);
-
-	 
-	if (abs(tsc_khz - freq) > tsc_khz/100)
-		goto out;
-
-	tsc_khz = freq;
-	pr_info("Refined TSC clocksource calibration: %lu.%03lu MHz\n",
-		(unsigned long)tsc_khz / 1000,
-		(unsigned long)tsc_khz % 1000);
-
-	 
-	lapic_update_tsc_freq();
-
-	 
-	for_each_possible_cpu(cpu)
-		set_cyc2ns_scale(tsc_khz, cpu, tsc_stop);
-
-out:
-	if (tsc_unstable)
-		goto unreg;
-
+	/* Stub: TSC refinement not needed for minimal kernel */
 	if (boot_cpu_has(X86_FEATURE_ART))
 		art_related_clocksource = &clocksource_tsc;
 	clocksource_register_khz(&clocksource_tsc, tsc_khz);
-unreg:
 	clocksource_unregister(&clocksource_tsc_early);
 }
 

@@ -51,47 +51,7 @@
 void __show_regs(struct pt_regs *regs, enum show_regs_mode mode,
 		 const char *log_lvl)
 {
-	unsigned long cr0 = 0L, cr2 = 0L, cr3 = 0L, cr4 = 0L;
-	unsigned long d0, d1, d2, d3, d6, d7;
-	unsigned short gs;
-
-	savesegment(gs, gs);
-
-
-
-	printk("%sEAX: %08lx EBX: %08lx ECX: %08lx EDX: %08lx\n",
-		log_lvl, regs->ax, regs->bx, regs->cx, regs->dx);
-	printk("%sESI: %08lx EDI: %08lx EBP: %08lx ESP: %08lx\n",
-		log_lvl, regs->si, regs->di, regs->bp, regs->sp);
-	printk("%sDS: %04x ES: %04x FS: %04x GS: %04x SS: %04x EFLAGS: %08lx\n",
-	       log_lvl, (u16)regs->ds, (u16)regs->es, (u16)regs->fs, gs, regs->ss, regs->flags);
-
-	if (mode != SHOW_REGS_ALL)
-		return;
-
-	cr0 = read_cr0();
-	cr2 = read_cr2();
-	cr3 = __read_cr3();
-	cr4 = __read_cr4();
-	printk("%sCR0: %08lx CR2: %08lx CR3: %08lx CR4: %08lx\n",
-		log_lvl, cr0, cr2, cr3, cr4);
-
-	get_debugreg(d0, 0);
-	get_debugreg(d1, 1);
-	get_debugreg(d2, 2);
-	get_debugreg(d3, 3);
-	get_debugreg(d6, 6);
-	get_debugreg(d7, 7);
-
-	 
-	if ((d0 == 0) && (d1 == 0) && (d2 == 0) && (d3 == 0) &&
-	    (d6 == DR6_RESERVED) && (d7 == 0x400))
-		return;
-
-	printk("%sDR0: %08lx DR1: %08lx DR2: %08lx DR3: %08lx\n",
-		log_lvl, d0, d1, d2, d3);
-	printk("%sDR6: %08lx DR7: %08lx\n",
-		log_lvl, d6, d7);
+	/* Stub: register dump not needed for minimal kernel */
 }
 
 void release_thread(struct task_struct *dead_task)

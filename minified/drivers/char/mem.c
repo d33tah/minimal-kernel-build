@@ -76,153 +76,15 @@ static inline bool should_stop_iteration(void)
 static ssize_t read_mem(struct file *file, char __user *buf,
 			size_t count, loff_t *ppos)
 {
-	phys_addr_t p = *ppos;
-	ssize_t read, sz;
-	void *ptr;
-	char *bounce;
-	int err;
-
-	if (p != *ppos)
-		return 0;
-
-	if (!valid_phys_addr_range(p, count))
-		return -EFAULT;
-	read = 0;
-#ifdef __ARCH_HAS_NO_PAGE_ZERO_MAPPED
-	 
-	if (p < PAGE_SIZE) {
-		sz = size_inside_page(p, count);
-		if (sz > 0) {
-			if (clear_user(buf, sz))
-				return -EFAULT;
-			buf += sz;
-			p += sz;
-			count -= sz;
-			read += sz;
-		}
-	}
-#endif
-
-	bounce = kmalloc(PAGE_SIZE, GFP_KERNEL);
-	if (!bounce)
-		return -ENOMEM;
-
-	while (count > 0) {
-		unsigned long remaining;
-		int allowed, probe;
-
-		sz = size_inside_page(p, count);
-
-		err = -EPERM;
-		allowed = page_is_allowed(p >> PAGE_SHIFT);
-		if (!allowed)
-			goto failed;
-
-		err = -EFAULT;
-		if (allowed == 2) {
-			 
-			remaining = clear_user(buf, sz);
-		} else {
-			 
-			ptr = xlate_dev_mem_ptr(p);
-			if (!ptr)
-				goto failed;
-
-			probe = copy_from_kernel_nofault(bounce, ptr, sz);
-			unxlate_dev_mem_ptr(p, ptr);
-			if (probe)
-				goto failed;
-
-			remaining = copy_to_user(buf, bounce, sz);
-		}
-
-		if (remaining)
-			goto failed;
-
-		buf += sz;
-		p += sz;
-		count -= sz;
-		read += sz;
-		if (should_stop_iteration())
-			break;
-	}
-	kfree(bounce);
-
-	*ppos += read;
-	return read;
-
-failed:
-	kfree(bounce);
-	return err;
+	/* Stub: /dev/mem not needed for minimal kernel */
+	return -EIO;
 }
 
 static ssize_t write_mem(struct file *file, const char __user *buf,
 			 size_t count, loff_t *ppos)
 {
-	phys_addr_t p = *ppos;
-	ssize_t written, sz;
-	unsigned long copied;
-	void *ptr;
-
-	if (p != *ppos)
-		return -EFBIG;
-
-	if (!valid_phys_addr_range(p, count))
-		return -EFAULT;
-
-	written = 0;
-
-#ifdef __ARCH_HAS_NO_PAGE_ZERO_MAPPED
-	 
-	if (p < PAGE_SIZE) {
-		sz = size_inside_page(p, count);
-		 
-		buf += sz;
-		p += sz;
-		count -= sz;
-		written += sz;
-	}
-#endif
-
-	while (count > 0) {
-		int allowed;
-
-		sz = size_inside_page(p, count);
-
-		allowed = page_is_allowed(p >> PAGE_SHIFT);
-		if (!allowed)
-			return -EPERM;
-
-		 
-		if (allowed == 1) {
-			 
-			ptr = xlate_dev_mem_ptr(p);
-			if (!ptr) {
-				if (written)
-					break;
-				return -EFAULT;
-			}
-
-			copied = copy_from_user(ptr, buf, sz);
-			unxlate_dev_mem_ptr(p, ptr);
-			if (copied) {
-				written += sz - copied;
-				if (written)
-					break;
-				return -EFAULT;
-			}
-		}
-
-		buf += sz;
-		p += sz;
-		count -= sz;
-		written += sz;
-		if (should_stop_iteration())
-			break;
-	}
-
-	*ppos += written;
-	return written;
+	/* Stub: /dev/mem not needed for minimal kernel */
+	return -EIO;
 }
 
 int __weak phys_mem_access_prot_allowed(struct file *file,
@@ -269,45 +131,8 @@ static const struct vm_operations_struct mmap_mem_ops = {
 
 static int mmap_mem(struct file *file, struct vm_area_struct *vma)
 {
-	size_t size = vma->vm_end - vma->vm_start;
-	phys_addr_t offset = (phys_addr_t)vma->vm_pgoff << PAGE_SHIFT;
-
-	 
-	if (offset >> PAGE_SHIFT != vma->vm_pgoff)
-		return -EINVAL;
-
-	 
-	if (offset + (phys_addr_t)size - 1 < offset)
-		return -EINVAL;
-
-	if (!valid_mmap_phys_addr_range(vma->vm_pgoff, size))
-		return -EINVAL;
-
-	if (!private_mapping_ok(vma))
-		return -ENOSYS;
-
-	if (!range_is_allowed(vma->vm_pgoff, size))
-		return -EPERM;
-
-	if (!phys_mem_access_prot_allowed(file, vma->vm_pgoff, size,
-						&vma->vm_page_prot))
-		return -EINVAL;
-
-	vma->vm_page_prot = phys_mem_access_prot(file, vma->vm_pgoff,
-						 size,
-						 vma->vm_page_prot);
-
-	vma->vm_ops = &mmap_mem_ops;
-
-	 
-	if (remap_pfn_range(vma,
-			    vma->vm_start,
-			    vma->vm_pgoff,
-			    size,
-			    vma->vm_page_prot)) {
-		return -EAGAIN;
-	}
-	return 0;
+	/* Stub: /dev/mem mmap not needed for minimal kernel */
+	return -EIO;
 }
 
 static ssize_t read_port(struct file *file, char __user *buf,

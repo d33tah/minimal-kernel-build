@@ -313,43 +313,15 @@ static int mmap_mem(struct file *file, struct vm_area_struct *vma)
 static ssize_t read_port(struct file *file, char __user *buf,
 			 size_t count, loff_t *ppos)
 {
-	unsigned long i = *ppos;
-	char __user *tmp = buf;
-
-	if (!access_ok(buf, count))
-		return -EFAULT;
-	while (count-- > 0 && i < 65536) {
-		if (__put_user(inb(i), tmp) < 0)
-			return -EFAULT;
-		i++;
-		tmp++;
-	}
-	*ppos = i;
-	return tmp-buf;
+	/* Stub: /dev/port not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 static ssize_t write_port(struct file *file, const char __user *buf,
 			  size_t count, loff_t *ppos)
 {
-	unsigned long i = *ppos;
-	const char __user *tmp = buf;
-
-	if (!access_ok(buf, count))
-		return -EFAULT;
-	while (count-- > 0 && i < 65536) {
-		char c;
-
-		if (__get_user(c, tmp)) {
-			if (tmp > buf)
-				break;
-			return -EFAULT;
-		}
-		outb(c, i);
-		i++;
-		tmp++;
-	}
-	*ppos = i;
-	return tmp-buf;
+	/* Stub: /dev/port not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 static ssize_t read_null(struct file *file, char __user *buf,

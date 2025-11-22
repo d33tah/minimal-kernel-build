@@ -334,54 +334,9 @@ struct device_link *device_link_add(struct device *consumer,
 	return NULL;
 }
 
-static void __device_link_del(struct kref *kref)
-{
-	struct device_link *link = container_of(kref, struct device_link, kref);
-
-	dev_dbg(link->consumer, "Dropping the link to %s\n",
-		dev_name(link->supplier));
-
-	pm_runtime_drop_link(link);
-
-	device_link_remove_from_lists(link);
-	device_unregister(&link->link_dev);
-}
-
-static void device_link_put_kref(struct device_link *link)
-{
-	if (link->flags & DL_FLAG_STATELESS)
-		kref_put(&link->kref, __device_link_del);
-	else if (!device_is_registered(link->consumer))
-		__device_link_del(&link->kref);
-	else
-		WARN(1, "Unable to drop a managed device link reference\n");
-}
-
-void device_link_del(struct device_link *link)
-{
-	device_links_write_lock();
-	device_link_put_kref(link);
-	device_links_write_unlock();
-}
-
-void device_link_remove(void *consumer, struct device *supplier)
-{
-	struct device_link *link;
-
-	if (WARN_ON(consumer == supplier))
-		return;
-
-	device_links_write_lock();
-
-	list_for_each_entry(link, &supplier->links.consumers, s_node) {
-		if (link->consumer == consumer) {
-			device_link_put_kref(link);
-			break;
-		}
-	}
-
-	device_links_write_unlock();
-}
+/* Stub: device link operations not needed since device_link_add returns NULL */
+void device_link_del(struct device_link *link) { }
+void device_link_remove(void *consumer, struct device *supplier) { }
 
 static void device_links_missing_supplier(struct device *dev)
 {
@@ -584,26 +539,7 @@ void device_links_unbind_consumers(struct device *dev)
 
 static void device_links_purge(struct device *dev)
 {
-	struct device_link *link, *ln;
-
-	if (dev->class == &devlink_class)
-		return;
-
-	
-	device_links_write_lock();
-
-	list_for_each_entry_safe_reverse(link, ln, &dev->links.suppliers, c_node) {
-		WARN_ON(link->status == DL_STATE_ACTIVE);
-		__device_link_del(&link->kref);
-	}
-
-	list_for_each_entry_safe_reverse(link, ln, &dev->links.consumers, s_node) {
-		WARN_ON(link->status != DL_STATE_DORMANT &&
-			link->status != DL_STATE_NONE);
-		__device_link_del(&link->kref);
-	}
-
-	device_links_write_unlock();
+	/* Stub: no device links to purge since device_link_add returns NULL */
 }
 
 #define FW_DEVLINK_FLAGS_PERMISSIVE	(DL_FLAG_INFERRED | \

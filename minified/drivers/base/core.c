@@ -338,154 +338,16 @@ struct device_link *device_link_add(struct device *consumer,
 void device_link_del(struct device_link *link) { }
 void device_link_remove(void *consumer, struct device *supplier) { }
 
-static void device_links_missing_supplier(struct device *dev)
-{
-	struct device_link *link;
-
-	list_for_each_entry(link, &dev->links.suppliers, c_node) {
-		if (link->status != DL_STATE_CONSUMER_PROBE)
-			continue;
-
-		if (link->supplier->links.status == DL_DEV_DRIVER_BOUND) {
-			WRITE_ONCE(link->status, DL_STATE_AVAILABLE);
-		} else {
-			WARN_ON(!(link->flags & DL_FLAG_SYNC_STATE_ONLY));
-			WRITE_ONCE(link->status, DL_STATE_DORMANT);
-		}
-	}
-}
-
+/* Stub: no device links since device_link_add returns NULL */
 int device_links_check_suppliers(struct device *dev)
 {
-	struct device_link *link;
-	int ret = 0;
-	struct fwnode_handle *sup_fw;
-
-	
-	mutex_lock(&fwnode_link_lock);
-	if (dev->fwnode && !list_empty(&dev->fwnode->suppliers) &&
-	    !fw_devlink_is_permissive()) {
-		sup_fw = list_first_entry(&dev->fwnode->suppliers,
-					  struct fwnode_link,
-					  c_hook)->supplier;
-		dev_err_probe(dev, -EPROBE_DEFER, "wait for supplier %pfwP\n",
-			      sup_fw);
-		mutex_unlock(&fwnode_link_lock);
-		return -EPROBE_DEFER;
-	}
-	mutex_unlock(&fwnode_link_lock);
-
-	device_links_write_lock();
-
-	list_for_each_entry(link, &dev->links.suppliers, c_node) {
-		if (!(link->flags & DL_FLAG_MANAGED))
-			continue;
-
-		if (link->status != DL_STATE_AVAILABLE &&
-		    !(link->flags & DL_FLAG_SYNC_STATE_ONLY)) {
-			device_links_missing_supplier(dev);
-			dev_err_probe(dev, -EPROBE_DEFER,
-				      "supplier %s not ready\n",
-				      dev_name(link->supplier));
-			ret = -EPROBE_DEFER;
-			break;
-		}
-		WRITE_ONCE(link->status, DL_STATE_CONSUMER_PROBE);
-	}
 	dev->links.status = DL_DEV_PROBING;
-
-	device_links_write_unlock();
-	return ret;
-}
-
-static void __device_links_queue_sync_state(struct device *dev,
-					    struct list_head *list)
-{
-	struct device_link *link;
-
-	if (!dev_has_sync_state(dev))
-		return;
-	if (dev->state_synced)
-		return;
-
-	list_for_each_entry(link, &dev->links.consumers, s_node) {
-		if (!(link->flags & DL_FLAG_MANAGED))
-			continue;
-		if (link->status != DL_STATE_ACTIVE)
-			return;
-	}
-
-	
-	dev->state_synced = true;
-
-	if (WARN_ON(!list_empty(&dev->links.defer_sync)))
-		return;
-
-	get_device(dev);
-	list_add_tail(&dev->links.defer_sync, list);
-}
-
-static void device_links_flush_sync_list(struct list_head *list,
-					 struct device *dont_lock_dev)
-{
-	struct device *dev, *tmp;
-
-	list_for_each_entry_safe(dev, tmp, list, links.defer_sync) {
-		list_del_init(&dev->links.defer_sync);
-
-		if (dev != dont_lock_dev)
-			device_lock(dev);
-
-		if (dev->bus->sync_state)
-			dev->bus->sync_state(dev);
-		else if (dev->driver && dev->driver->sync_state)
-			dev->driver->sync_state(dev);
-
-		if (dev != dont_lock_dev)
-			device_unlock(dev);
-
-		put_device(dev);
-	}
-}
-
-void device_links_supplier_sync_state_pause(void)
-{
-	device_links_write_lock();
-	defer_sync_state_count++;
-	device_links_write_unlock();
-}
-
-void device_links_supplier_sync_state_resume(void)
-{
-	struct device *dev, *tmp;
-	LIST_HEAD(sync_list);
-
-	device_links_write_lock();
-	if (!defer_sync_state_count) {
-		WARN(true, "Unmatched sync_state pause/resume!");
-		goto out;
-	}
-	defer_sync_state_count--;
-	if (defer_sync_state_count)
-		goto out;
-
-	list_for_each_entry_safe(dev, tmp, &deferred_sync, links.defer_sync) {
-		
-		list_del_init(&dev->links.defer_sync);
-		__device_links_queue_sync_state(dev, &sync_list);
-	}
-out:
-	device_links_write_unlock();
-
-	device_links_flush_sync_list(&sync_list, NULL);
-}
-
-static int sync_state_resume_initcall(void)
-{
-	device_links_supplier_sync_state_resume();
 	return 0;
 }
-late_initcall(sync_state_resume_initcall);
+
+/* Stub: sync state functions not needed since no device links */
+void device_links_supplier_sync_state_pause(void) { }
+void device_links_supplier_sync_state_resume(void) { }
 
 static ssize_t waiting_for_supplier_show(struct device *dev,
 					 struct device_attribute *attr,

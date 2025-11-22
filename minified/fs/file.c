@@ -552,46 +552,6 @@ static inline unsigned last_fd(struct fdtable *fdt)
 	return fdt->max_fds - 1;
 }
 
-static inline void __range_cloexec(struct files_struct *cur_fds,
-				   unsigned int fd, unsigned int max_fd)
-{
-	struct fdtable *fdt;
-
-	 
-	spin_lock(&cur_fds->file_lock);
-	fdt = files_fdtable(cur_fds);
-	max_fd = min(last_fd(fdt), max_fd);
-	if (fd <= max_fd)
-		bitmap_set(fdt->close_on_exec, fd, max_fd - fd + 1);
-	spin_unlock(&cur_fds->file_lock);
-}
-
-static inline void __range_close(struct files_struct *cur_fds, unsigned int fd,
-				 unsigned int max_fd)
-{
-	unsigned n;
-
-	rcu_read_lock();
-	n = last_fd(files_fdtable(cur_fds));
-	rcu_read_unlock();
-	max_fd = min(max_fd, n);
-
-	while (fd <= max_fd) {
-		struct file *file;
-
-		spin_lock(&cur_fds->file_lock);
-		file = pick_file(cur_fds, fd++);
-		spin_unlock(&cur_fds->file_lock);
-
-		if (file) {
-			 
-			filp_close(file, cur_fds);
-			cond_resched();
-		}
-	}
-}
-
- 
 /* Stub: close_range not needed for minimal kernel */
 int __close_range(unsigned fd, unsigned max_fd, unsigned int flags)
 {

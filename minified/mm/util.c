@@ -737,27 +737,11 @@ int __weak memcmp_pages(struct page *page1, struct page *page2)
 
 
  
-static DECLARE_RWSEM(page_offline_rwsem);
-
-void page_offline_freeze(void)
-{
-	down_read(&page_offline_rwsem);
-}
-
-void page_offline_thaw(void)
-{
-	up_read(&page_offline_rwsem);
-}
-
-void page_offline_begin(void)
-{
-	down_write(&page_offline_rwsem);
-}
-
-void page_offline_end(void)
-{
-	up_write(&page_offline_rwsem);
-}
+/* Stub: page_offline functions not needed for minimal kernel without memory hotplug */
+void page_offline_freeze(void) { }
+void page_offline_thaw(void) { }
+void page_offline_begin(void) { }
+void page_offline_end(void) { }
 
 #ifndef ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO
 void flush_dcache_folio(struct folio *folio)

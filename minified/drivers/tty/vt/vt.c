@@ -231,65 +231,14 @@ static void vc_uniscr_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 
 int vc_uniscr_check(struct vc_data *vc)
 {
-	struct uni_screen *uniscr;
-	unsigned short *p;
-	int x, y, mask;
-
-	if (__is_defined(NO_VC_UNI_SCREEN))
-		return -EOPNOTSUPP;
-
-	WARN_CONSOLE_UNLOCKED();
-
-	if (!vc->vc_utf)
-		return -ENODATA;
-
-	if (vc->vc_uni_screen)
-		return 0;
-
-	uniscr = vc_uniscr_alloc(vc->vc_cols, vc->vc_rows);
-	if (!uniscr)
-		return -ENOMEM;
-
-	
-	p = (unsigned short *)vc->vc_origin;
-	mask = vc->vc_hi_font_mask | 0xff;
-	for (y = 0; y < vc->vc_rows; y++) {
-		char32_t *line = uniscr->lines[y];
-		for (x = 0; x < vc->vc_cols; x++) {
-			u16 glyph = scr_readw(p++) & mask;
-			line[x] = inverse_translate(vc, glyph, true);
-		}
-	}
-
-	vc->vc_uni_screen = uniscr;
-	return 0;
+	/* Stub: unicode screen not needed for minimal kernel */
+	return -ENOMEM;
 }
 
 void vc_uniscr_copy_line(const struct vc_data *vc, void *dest, bool viewed,
 			 unsigned int row, unsigned int col, unsigned int nr)
 {
-	struct uni_screen *uniscr = get_vc_uniscr(vc);
-	int offset = row * vc->vc_size_row + col * 2;
-	unsigned long pos;
-
-	BUG_ON(!uniscr);
-
-	pos = (unsigned long)screenpos(vc, offset, viewed);
-	if (pos >= vc->vc_origin && pos < vc->vc_scr_end) {
-		
-		row = (pos - vc->vc_origin) / vc->vc_size_row;
-		col = ((pos - vc->vc_origin) % vc->vc_size_row) / 2;
-		memcpy(dest, &uniscr->lines[row][col], nr * sizeof(char32_t));
-	} else {
-		
-		u16 *p = (u16 *)pos;
-		int mask = vc->vc_hi_font_mask | 0xff;
-		char32_t *uni_buf = dest;
-		while (nr--) {
-			u16 glyph = scr_readw(p++) & mask;
-			*uni_buf++ = inverse_translate(vc, glyph, true);
-		}
-	}
+	/* Stub: unicode screen copy not needed for minimal kernel */
 }
 
 static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,

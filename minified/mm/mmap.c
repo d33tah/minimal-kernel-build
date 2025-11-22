@@ -2031,42 +2031,9 @@ static void vm_lock_mapping(struct mm_struct *mm, struct address_space *mapping)
 
 int mm_take_all_locks(struct mm_struct *mm)
 {
-	struct vm_area_struct *vma;
-	struct anon_vma_chain *avc;
-
-	mmap_assert_write_locked(mm);
-
+	/* Stub: mm_take_all_locks not needed for minimal kernel */
 	mutex_lock(&mm_all_locks_mutex);
-
-	for (vma = mm->mmap; vma; vma = vma->vm_next) {
-		if (signal_pending(current))
-			goto out_unlock;
-		if (vma->vm_file && vma->vm_file->f_mapping &&
-				is_vm_hugetlb_page(vma))
-			vm_lock_mapping(mm, vma->vm_file->f_mapping);
-	}
-
-	for (vma = mm->mmap; vma; vma = vma->vm_next) {
-		if (signal_pending(current))
-			goto out_unlock;
-		if (vma->vm_file && vma->vm_file->f_mapping &&
-				!is_vm_hugetlb_page(vma))
-			vm_lock_mapping(mm, vma->vm_file->f_mapping);
-	}
-
-	for (vma = mm->mmap; vma; vma = vma->vm_next) {
-		if (signal_pending(current))
-			goto out_unlock;
-		if (vma->anon_vma)
-			list_for_each_entry(avc, &vma->anon_vma_chain, same_vma)
-				vm_lock_anon_vma(mm, avc->anon_vma);
-	}
-
 	return 0;
-
-out_unlock:
-	mm_drop_all_locks(mm);
-	return -EINTR;
 }
 
 static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
@@ -2093,20 +2060,7 @@ static void vm_unlock_mapping(struct address_space *mapping)
 
 void mm_drop_all_locks(struct mm_struct *mm)
 {
-	struct vm_area_struct *vma;
-	struct anon_vma_chain *avc;
-
-	mmap_assert_write_locked(mm);
-	BUG_ON(!mutex_is_locked(&mm_all_locks_mutex));
-
-	for (vma = mm->mmap; vma; vma = vma->vm_next) {
-		if (vma->anon_vma)
-			list_for_each_entry(avc, &vma->anon_vma_chain, same_vma)
-				vm_unlock_anon_vma(avc->anon_vma);
-		if (vma->vm_file && vma->vm_file->f_mapping)
-			vm_unlock_mapping(vma->vm_file->f_mapping);
-	}
-
+	/* Stub: mm_drop_all_locks not needed for minimal kernel */
 	mutex_unlock(&mm_all_locks_mutex);
 }
 

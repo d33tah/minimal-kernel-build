@@ -82,74 +82,9 @@ u16 get_llc_id(unsigned int cpu)
 
 DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_l2c_id) = BAD_APICID;
 
-static struct ppin_info {
-	int	feature;
-	int	msr_ppin_ctl;
-	int	msr_ppin;
-} ppin_info[] = {
-	[X86_VENDOR_INTEL] = {
-		.feature = X86_FEATURE_INTEL_PPIN,
-		.msr_ppin_ctl = MSR_PPIN_CTL,
-		.msr_ppin = MSR_PPIN
-	},
-	[X86_VENDOR_AMD] = {
-		.feature = X86_FEATURE_AMD_PPIN,
-		.msr_ppin_ctl = MSR_AMD_PPIN_CTL,
-		.msr_ppin = MSR_AMD_PPIN
-	},
-};
-
-static const struct x86_cpu_id ppin_cpuids[] = {
-	X86_MATCH_FEATURE(X86_FEATURE_AMD_PPIN, &ppin_info[X86_VENDOR_AMD]),
-	X86_MATCH_FEATURE(X86_FEATURE_INTEL_PPIN, &ppin_info[X86_VENDOR_INTEL]),
-
-	X86_MATCH_INTEL_FAM6_MODEL(IVYBRIDGE_X, &ppin_info[X86_VENDOR_INTEL]),
-	X86_MATCH_INTEL_FAM6_MODEL(HASWELL_X, &ppin_info[X86_VENDOR_INTEL]),
-	X86_MATCH_INTEL_FAM6_MODEL(BROADWELL_D, &ppin_info[X86_VENDOR_INTEL]),
-	X86_MATCH_INTEL_FAM6_MODEL(BROADWELL_X, &ppin_info[X86_VENDOR_INTEL]),
-	X86_MATCH_INTEL_FAM6_MODEL(SKYLAKE_X, &ppin_info[X86_VENDOR_INTEL]),
-	X86_MATCH_INTEL_FAM6_MODEL(ICELAKE_X, &ppin_info[X86_VENDOR_INTEL]),
-	X86_MATCH_INTEL_FAM6_MODEL(ICELAKE_D, &ppin_info[X86_VENDOR_INTEL]),
-	X86_MATCH_INTEL_FAM6_MODEL(SAPPHIRERAPIDS_X, &ppin_info[X86_VENDOR_INTEL]),
-	X86_MATCH_INTEL_FAM6_MODEL(XEON_PHI_KNL, &ppin_info[X86_VENDOR_INTEL]),
-	X86_MATCH_INTEL_FAM6_MODEL(XEON_PHI_KNM, &ppin_info[X86_VENDOR_INTEL]),
-
-	{}
-};
-
+/* Stub: PPIN (Protected Processor Inventory Number) not needed for minimal kernel */
 static void ppin_init(struct cpuinfo_x86 *c)
 {
-	const struct x86_cpu_id *id;
-	unsigned long long val;
-	struct ppin_info *info;
-
-	id = x86_match_cpu(ppin_cpuids);
-	if (!id)
-		return;
-
-	info = (struct ppin_info *)id->driver_data;
-
-	if (rdmsrl_safe(info->msr_ppin_ctl, &val))
-		goto clear_ppin;
-
-	if ((val & 3UL) == 1UL) {
-		
-		goto clear_ppin;
-	}
-
-	if (!(val & 2UL)) {
-		wrmsrl_safe(info->msr_ppin_ctl,  val | 2UL);
-		rdmsrl_safe(info->msr_ppin_ctl, &val);
-	}
-
-	if (val & 2UL) {
-		c->ppin = __rdmsr(info->msr_ppin);
-		set_cpu_cap(c, info->feature);
-		return;
-	}
-
-clear_ppin:
-	clear_cpu_cap(c, info->feature);
 }
 
 void __init setup_cpu_local_masks(void)

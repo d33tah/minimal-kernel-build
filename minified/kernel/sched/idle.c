@@ -247,35 +247,7 @@ static enum hrtimer_restart idle_inject_timer_fn(struct hrtimer *timer)
 
 void play_idle_precise(u64 duration_ns, u64 latency_ns)
 {
-	struct idle_timer it;
-
-	 
-	WARN_ON_ONCE(current->policy != SCHED_FIFO);
-	WARN_ON_ONCE(current->nr_cpus_allowed != 1);
-	WARN_ON_ONCE(!(current->flags & PF_KTHREAD));
-	WARN_ON_ONCE(!(current->flags & PF_NO_SETAFFINITY));
-	WARN_ON_ONCE(!duration_ns);
-	WARN_ON_ONCE(current->mm);
-
-	rcu_sleep_check();
-	preempt_disable();
-	current->flags |= PF_IDLE;
-	cpuidle_use_deepest_state(latency_ns);
-
-	it.done = 0;
-	hrtimer_init_on_stack(&it.timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL_HARD);
-	it.timer.function = idle_inject_timer_fn;
-	hrtimer_start(&it.timer, ns_to_ktime(duration_ns),
-		      HRTIMER_MODE_REL_PINNED_HARD);
-
-	while (!READ_ONCE(it.done))
-		do_idle();
-
-	cpuidle_use_deepest_state(0);
-	current->flags &= ~PF_IDLE;
-
-	preempt_fold_need_resched();
-	preempt_enable();
+	/* Stub: idle injection not needed for minimal kernel */
 }
 
 void cpu_startup_entry(enum cpuhp_state state)

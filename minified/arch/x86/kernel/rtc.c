@@ -120,35 +120,9 @@ void read_persistent_clock64(struct timespec64 *ts)
 }
 
 
-static struct resource rtc_resources[] = {
-	[0] = {
-		.start	= RTC_PORT(0),
-		.end	= RTC_PORT(1),
-		.flags	= IORESOURCE_IO,
-	},
-	[1] = {
-		.start	= RTC_IRQ,
-		.end	= RTC_IRQ,
-		.flags	= IORESOURCE_IRQ,
-	}
-};
-
-static struct platform_device rtc_device = {
-	.name		= "rtc_cmos",
-	.id		= -1,
-	.resource	= rtc_resources,
-	.num_resources	= ARRAY_SIZE(rtc_resources),
-};
-
+/* Stub: RTC platform device registration not needed for minimal kernel */
 static __init int add_rtc_cmos(void)
 {
-	if (!x86_platform.legacy.rtc)
-		return -ENODEV;
-
-	platform_device_register(&rtc_device);
-	dev_info(&rtc_device.dev,
-		 "registered platform RTC device (no PNP device found)\n");
-
 	return 0;
 }
 device_initcall(add_rtc_cmos);

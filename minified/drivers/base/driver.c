@@ -27,49 +27,8 @@ static struct device *next_device(struct klist_iter *i)
 int driver_set_override(struct device *dev, const char **override,
 			const char *s, size_t len)
 {
-	const char *new, *old;
-	char *cp;
-
-	if (!override || !s)
-		return -EINVAL;
-
-	 
-	if (len >= (PAGE_SIZE - 1))
-		return -EINVAL;
-
-	if (!len) {
-		 
-		device_lock(dev);
-		old = *override;
-		*override = NULL;
-		device_unlock(dev);
-		kfree(old);
-
-		return 0;
-	}
-
-	cp = strnchr(s, len, '\n');
-	if (cp)
-		len = cp - s;
-
-	new = kstrndup(s, len, GFP_KERNEL);
-	if (!new)
-		return -ENOMEM;
-
-	device_lock(dev);
-	old = *override;
-	if (cp != s) {
-		*override = new;
-	} else {
-		 
-		kfree(new);
-		*override = NULL;
-	}
-	device_unlock(dev);
-
-	kfree(old);
-
-	return 0;
+	/* Stub: driver override not needed for minimal kernel */
+	return -ENOSYS;
 }
 
  

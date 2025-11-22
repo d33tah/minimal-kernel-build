@@ -471,110 +471,16 @@ static void fw_devlink_parse_fwtree(struct fwnode_handle *fwnode)
 		fw_devlink_parse_fwtree(child);
 }
 
-static void fw_devlink_relax_link(struct device_link *link)
-{
-	if (!(link->flags & DL_FLAG_INFERRED))
-		return;
-
-	if (link->flags == (DL_FLAG_MANAGED | FW_DEVLINK_FLAGS_PERMISSIVE))
-		return;
-
-	pm_runtime_drop_link(link);
-	link->flags = DL_FLAG_MANAGED | FW_DEVLINK_FLAGS_PERMISSIVE;
-	dev_dbg(link->consumer, "Relaxing link with %s\n",
-		dev_name(link->supplier));
-}
-
-static int fw_devlink_no_driver(struct device *dev, void *data)
-{
-	struct device_link *link = to_devlink(dev);
-
-	if (!link->supplier->can_match)
-		fw_devlink_relax_link(link);
-
-	return 0;
-}
-
+/* Stub: firmware device link functions not needed for minimal kernel */
 void fw_devlink_drivers_done(void)
 {
 	fw_devlink_drv_reg_done = true;
-	device_links_write_lock();
-	class_for_each_device(&devlink_class, NULL, NULL,
-			      fw_devlink_no_driver);
-	device_links_write_unlock();
-}
-
-static int fw_devlink_relax_cycle(struct device *con, void *sup)
-{
-	struct device_link *link;
-	int ret;
-
-	if (con == sup)
-		return 1;
-
-	ret = device_for_each_child(con, sup, fw_devlink_relax_cycle);
-	if (ret)
-		return ret;
-
-	list_for_each_entry(link, &con->links.consumers, s_node) {
-		if ((link->flags & ~DL_FLAG_INFERRED) ==
-		    (DL_FLAG_SYNC_STATE_ONLY | DL_FLAG_MANAGED))
-			continue;
-
-		if (!fw_devlink_relax_cycle(link->consumer, sup))
-			continue;
-
-		ret = 1;
-
-		fw_devlink_relax_link(link);
-	}
-	return ret;
-}
-
-static int fw_devlink_create_devlink(struct device *con,
-				     struct fwnode_handle *sup_handle, u32 flags)
-{
-	/* Stubbed: firmware device linking not needed for minimal boot */
-	return -EINVAL;
 }
 
 static void __fw_devlink_link_to_suppliers(struct device *dev,
 					   struct fwnode_handle *fwnode)
 {
-	bool own_link = (dev->fwnode == fwnode);
-	struct fwnode_link *link, *tmp;
-	struct fwnode_handle *child = NULL;
-	u32 dl_flags;
-
-	if (own_link)
-		dl_flags = fw_devlink_get_flags();
-	else
-		dl_flags = FW_DEVLINK_FLAGS_PERMISSIVE;
-
-	list_for_each_entry_safe(link, tmp, &fwnode->suppliers, c_hook) {
-		int ret;
-		struct device *sup_dev;
-		struct fwnode_handle *sup = link->supplier;
-
-		ret = fw_devlink_create_devlink(dev, sup, dl_flags);
-		if (!own_link || ret == -EAGAIN)
-			continue;
-
-		__fwnode_link_del(link);
-
-		
-		if (ret)
-			continue;
-
-		
-		sup_dev = get_dev_from_fwnode(sup);
-		__fw_devlink_link_to_suppliers(sup_dev, sup_dev->fwnode);
-		put_device(sup_dev);
-	}
-
-	
-	while ((child = fwnode_get_next_available_child_node(fwnode, child)))
-		__fw_devlink_link_to_suppliers(dev, child);
+	/* Stub: firmware device linking not needed for minimal kernel */
 }
 
 int (*platform_notify)(struct device *dev) = NULL;

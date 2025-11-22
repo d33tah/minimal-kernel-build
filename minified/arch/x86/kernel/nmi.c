@@ -89,19 +89,7 @@ fs_initcall(nmi_warning_debugfs);
 
 static void nmi_check_duration(struct nmiaction *action, u64 duration)
 {
-	int remainder_ns, decimal_msecs;
-
-	if (duration < nmi_longest_ns || duration < action->max_duration)
-		return;
-
-	action->max_duration = duration;
-
-	remainder_ns = do_div(duration, (1000 * 1000));
-	decimal_msecs = remainder_ns / 1000;
-
-	printk_ratelimited(KERN_INFO
-		"INFO: NMI handler (%ps) took too long to run: %lld.%03d msecs\n",
-		action->handler, duration, decimal_msecs);
+	/* Stub: NMI duration warning not needed for minimal kernel */
 }
 
 static int nmi_handle(unsigned int type, struct pt_regs *regs)

@@ -887,10 +887,7 @@ SYSCALL_DEFINE3(close_range, unsigned int, fd, unsigned int, max_fd,
  
 SYSCALL_DEFINE0(vhangup)
 {
-	if (capable(CAP_SYS_TTY_CONFIG)) {
-		tty_vhangup_self();
-		return 0;
-	}
+	/* Stub: vhangup not needed for minimal kernel */
 	return -EPERM;
 }
 

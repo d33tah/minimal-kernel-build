@@ -230,21 +230,6 @@ bool cpu_in_idle(unsigned long pc)
 		pc < (unsigned long)__cpuidle_text_end;
 }
 
-struct idle_timer {
-	struct hrtimer timer;
-	int done;
-};
-
-static enum hrtimer_restart idle_inject_timer_fn(struct hrtimer *timer)
-{
-	struct idle_timer *it = container_of(timer, struct idle_timer, timer);
-
-	WRITE_ONCE(it->done, 1);
-	set_tsk_need_resched(current);
-
-	return HRTIMER_NORESTART;
-}
-
 void play_idle_precise(u64 duration_ns, u64 latency_ns)
 {
 	/* Stub: idle injection not needed for minimal kernel */

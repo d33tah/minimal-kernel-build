@@ -113,13 +113,6 @@ static void tk_set_xtime(struct timekeeper *tk, const struct timespec64 *ts)
 	tk->tkr_mono.xtime_nsec = (u64)ts->tv_nsec << tk->tkr_mono.shift;
 }
 
-static void tk_xtime_add(struct timekeeper *tk, const struct timespec64 *ts)
-{
-	tk->xtime_sec += ts->tv_sec;
-	tk->tkr_mono.xtime_nsec += (u64)ts->tv_nsec << tk->tkr_mono.shift;
-	tk_normalize_xtime(tk);
-}
-
 static void tk_set_wall_to_mono(struct timekeeper *tk, struct timespec64 wtm)
 {
 	struct timespec64 tmp;
@@ -808,8 +801,6 @@ read_persistent_wall_and_boot_offset(struct timespec64 *wall_time,
 	*boot_offset = ns_to_timespec64(local_clock());
 }
 
-static bool suspend_timing_needed;
-
 static bool persistent_clock_exists;
 
 void __init timekeeping_init(void)
@@ -852,8 +843,6 @@ void __init timekeeping_init(void)
 	write_seqcount_end(&tk_core.seq);
 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
 }
-
-static struct timespec64 timekeeping_suspend_time;
 
 void timekeeping_resume(void)
 {

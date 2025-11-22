@@ -292,58 +292,8 @@ int kobject_init_and_add(struct kobject *kobj, const struct kobj_type *ktype,
  
 int kobject_rename(struct kobject *kobj, const char *new_name)
 {
-	int error = 0;
-	const char *devpath = NULL;
-	const char *dup_name = NULL, *name;
-	char *devpath_string = NULL;
-	char *envp[2];
-
-	kobj = kobject_get(kobj);
-	if (!kobj)
-		return -EINVAL;
-	if (!kobj->parent) {
-		kobject_put(kobj);
-		return -EINVAL;
-	}
-
-	devpath = kobject_get_path(kobj, GFP_KERNEL);
-	if (!devpath) {
-		error = -ENOMEM;
-		goto out;
-	}
-	devpath_string = kmalloc(strlen(devpath) + 15, GFP_KERNEL);
-	if (!devpath_string) {
-		error = -ENOMEM;
-		goto out;
-	}
-	sprintf(devpath_string, "DEVPATH_OLD=%s", devpath);
-	envp[0] = devpath_string;
-	envp[1] = NULL;
-
-	name = dup_name = kstrdup_const(new_name, GFP_KERNEL);
-	if (!name) {
-		error = -ENOMEM;
-		goto out;
-	}
-
-	error = sysfs_rename_dir_ns(kobj, new_name, kobject_namespace(kobj));
-	if (error)
-		goto out;
-
-	 
-	dup_name = kobj->name;
-	kobj->name = name;
-
-	 
-	kobject_uevent_env(kobj, KOBJ_MOVE, envp);
-
-out:
-	kfree_const(dup_name);
-	kfree(devpath_string);
-	kfree(devpath);
-	kobject_put(kobj);
-
-	return error;
+	/* Stub: kobject rename not needed for minimal kernel */
+	return -ENOSYS;
 }
 
  

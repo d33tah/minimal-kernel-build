@@ -542,49 +542,9 @@ static struct file *__pidfd_fget(struct task_struct *task, int fd)
 	return file ?: ERR_PTR(-EBADF);
 }
 
-static int pidfd_getfd(struct pid *pid, int fd)
-{
-	struct task_struct *task;
-	struct file *file;
-	int ret;
-
-	task = get_pid_task(pid, PIDTYPE_PID);
-	if (!task)
-		return -ESRCH;
-
-	file = __pidfd_fget(task, fd);
-	put_task_struct(task);
-	if (IS_ERR(file))
-		return PTR_ERR(file);
-
-	ret = receive_fd(file, O_CLOEXEC);
-	fput(file);
-
-	return ret;
-}
-
- 
 SYSCALL_DEFINE3(pidfd_getfd, int, pidfd, int, fd,
 		unsigned int, flags)
 {
-	struct pid *pid;
-	struct fd f;
-	int ret;
-
-	 
-	if (flags)
-		return -EINVAL;
-
-	f = fdget(pidfd);
-	if (!f.file)
-		return -EBADF;
-
-	pid = pidfd_pid(f.file);
-	if (IS_ERR(pid))
-		ret = PTR_ERR(pid);
-	else
-		ret = pidfd_getfd(pid, fd);
-
-	fdput(f);
-	return ret;
+	/* Stub: pidfd_getfd not needed for minimal kernel */
+	return -ENOSYS;
 }

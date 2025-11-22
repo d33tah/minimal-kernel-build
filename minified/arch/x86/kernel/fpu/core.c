@@ -139,145 +139,40 @@ static void fpu_init_guest_permissions(struct fpu_guest *gfpu)
 
 bool fpu_alloc_guest_fpstate(struct fpu_guest *gfpu)
 {
-	struct fpstate *fpstate;
-	unsigned int size;
-
-	size = fpu_user_cfg.default_size + ALIGN(offsetof(struct fpstate, regs), 64);
-	fpstate = vzalloc(size);
-	if (!fpstate)
-		return false;
-
-	 
-	__fpstate_reset(fpstate, 0);
-	fpstate_init_user(fpstate);
-	fpstate->is_valloc	= true;
-	fpstate->is_guest	= true;
-
-	gfpu->fpstate		= fpstate;
-	gfpu->xfeatures		= fpu_user_cfg.default_features;
-	gfpu->perm		= fpu_user_cfg.default_features;
-
-	 
-	gfpu->uabi_size		= sizeof(struct kvm_xsave);
-	if (WARN_ON_ONCE(fpu_user_cfg.default_size > gfpu->uabi_size))
-		gfpu->uabi_size = fpu_user_cfg.default_size;
-
-	fpu_init_guest_permissions(gfpu);
-
-	return true;
+	/* Stub: KVM guest FPU not needed for minimal kernel */
+	return false;
 }
 
 void fpu_free_guest_fpstate(struct fpu_guest *gfpu)
 {
-	struct fpstate *fps = gfpu->fpstate;
-
-	if (!fps)
-		return;
-
-	if (WARN_ON_ONCE(!fps->is_valloc || !fps->is_guest || fps->in_use))
-		return;
-
-	gfpu->fpstate = NULL;
-	vfree(fps);
+	/* Stub: KVM guest FPU not needed for minimal kernel */
 }
 
  
 int fpu_enable_guest_xfd_features(struct fpu_guest *guest_fpu, u64 xfeatures)
 {
-	lockdep_assert_preemption_enabled();
-
-	 
-	xfeatures &= ~guest_fpu->xfeatures;
-	if (!xfeatures)
-		return 0;
-
-	return __xfd_enable_feature(xfeatures, guest_fpu);
+	/* Stub: KVM guest FPU not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 
 int fpu_swap_kvm_fpstate(struct fpu_guest *guest_fpu, bool enter_guest)
 {
-	struct fpstate *guest_fps = guest_fpu->fpstate;
-	struct fpu *fpu = &current->thread.fpu;
-	struct fpstate *cur_fps = fpu->fpstate;
-
-	fpregs_lock();
-	if (!cur_fps->is_confidential && !test_thread_flag(TIF_NEED_FPU_LOAD))
-		save_fpregs_to_fpstate(fpu);
-
-	 
-	if (enter_guest) {
-		fpu->__task_fpstate = cur_fps;
-		fpu->fpstate = guest_fps;
-		guest_fps->in_use = true;
-	} else {
-		guest_fps->in_use = false;
-		fpu->fpstate = fpu->__task_fpstate;
-		fpu->__task_fpstate = NULL;
-	}
-
-	cur_fps = fpu->fpstate;
-
-	if (!cur_fps->is_confidential) {
-		 
-		restore_fpregs_from_fpstate(cur_fps, XFEATURE_MASK_FPSTATE);
-	} else {
-		 
-		xfd_update_state(cur_fps);
-	}
-
-	fpregs_mark_activate();
-	fpregs_unlock();
-	return 0;
+	/* Stub: KVM guest FPU not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 void fpu_copy_guest_fpstate_to_uabi(struct fpu_guest *gfpu, void *buf,
 				    unsigned int size, u32 pkru)
 {
-	struct fpstate *kstate = gfpu->fpstate;
-	union fpregs_state *ustate = buf;
-	struct membuf mb = { .p = buf, .left = size };
-
-	if (cpu_feature_enabled(X86_FEATURE_XSAVE)) {
-		__copy_xstate_to_uabi_buf(mb, kstate, pkru, XSTATE_COPY_XSAVE);
-	} else {
-		memcpy(&ustate->fxsave, &kstate->regs.fxsave,
-		       sizeof(ustate->fxsave));
-		 
-		ustate->xsave.header.xfeatures = XFEATURE_MASK_FPSSE;
-	}
+	/* Stub: KVM guest FPU not needed for minimal kernel */
 }
 
 int fpu_copy_uabi_to_guest_fpstate(struct fpu_guest *gfpu, const void *buf,
 				   u64 xcr0, u32 *vpkru)
 {
-	struct fpstate *kstate = gfpu->fpstate;
-	const union fpregs_state *ustate = buf;
-	struct pkru_state *xpkru;
-	int ret;
-
-	if (!cpu_feature_enabled(X86_FEATURE_XSAVE)) {
-		if (ustate->xsave.header.xfeatures & ~XFEATURE_MASK_FPSSE)
-			return -EINVAL;
-		if (ustate->fxsave.mxcsr & ~mxcsr_feature_mask)
-			return -EINVAL;
-		memcpy(&kstate->regs.fxsave, &ustate->fxsave, sizeof(ustate->fxsave));
-		return 0;
-	}
-
-	if (ustate->xsave.header.xfeatures & ~xcr0)
-		return -EINVAL;
-
-	ret = copy_uabi_from_kernel_to_xstate(kstate, ustate);
-	if (ret)
-		return ret;
-
-	 
-	if (kstate->regs.xsave.header.xfeatures & XFEATURE_MASK_PKRU) {
-		xpkru = get_xsave_addr(&kstate->regs.xsave, XFEATURE_PKRU);
-		*vpkru = xpkru->pkru;
-	}
-	return 0;
+	/* Stub: KVM guest FPU not needed for minimal kernel */
+	return -ENOSYS;
 }
 #endif  
 

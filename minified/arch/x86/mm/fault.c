@@ -252,22 +252,8 @@ static noinline void
 pgtable_bad(struct pt_regs *regs, unsigned long error_code,
 	    unsigned long address)
 {
-	struct task_struct *tsk;
-	unsigned long flags;
-	int sig;
-
-	flags = oops_begin();
-	tsk = current;
-	sig = SIGKILL;
-
-	printk(KERN_ALERT "%s: Corrupted page table at address %lx\n",
-	       tsk->comm, address);
-	dump_pagetable(address);
-
-	if (__die("Bad pagetable", regs, error_code))
-		sig = 0;
-
-	oops_end(flags, regs, sig);
+	/* Simplified: just die without verbose output */
+	oops_end(oops_begin(), regs, SIGKILL);
 }
 
 static void sanitize_error_code(unsigned long address,
@@ -372,23 +358,7 @@ static inline void
 show_signal_msg(struct pt_regs *regs, unsigned long error_code,
 		unsigned long address, struct task_struct *tsk)
 {
-	const char *loglvl = task_pid_nr(tsk) > 1 ? KERN_INFO : KERN_EMERG;
-
-	if (!unhandled_signal(tsk, SIGSEGV))
-		return;
-
-	if (!printk_ratelimit())
-		return;
-
-	printk("%s%s[%d]: segfault at %lx ip %px sp %px error %lx",
-		loglvl, tsk->comm, task_pid_nr(tsk), address,
-		(void *)regs->ip, (void *)regs->sp, error_code);
-
-	print_vma_addr(KERN_CONT " in ", regs->ip);
-
-	printk(KERN_CONT "\n");
-
-	show_opcodes(regs, loglvl);
+	/* Stub: verbose segfault messages not needed for minimal kernel */
 }
 
  

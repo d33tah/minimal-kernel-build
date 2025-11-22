@@ -702,172 +702,49 @@ ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
 
  
 
-void simple_transaction_set(struct file *file, size_t n)
-{
-	struct simple_transaction_argresp *ar = file->private_data;
-
-	BUG_ON(n > SIMPLE_TRANSACTION_LIMIT);
-
-	 
-	smp_mb();
-	ar->size = n;
-}
+/* Stub: simple_transaction_* not needed for minimal kernel */
+void simple_transaction_set(struct file *file, size_t n) { }
 
 char *simple_transaction_get(struct file *file, const char __user *buf, size_t size)
 {
-	struct simple_transaction_argresp *ar;
-	static DEFINE_SPINLOCK(simple_transaction_lock);
-
-	if (size > SIMPLE_TRANSACTION_LIMIT - 1)
-		return ERR_PTR(-EFBIG);
-
-	ar = (struct simple_transaction_argresp *)get_zeroed_page(GFP_KERNEL);
-	if (!ar)
-		return ERR_PTR(-ENOMEM);
-
-	spin_lock(&simple_transaction_lock);
-
-	 
-	if (file->private_data) {
-		spin_unlock(&simple_transaction_lock);
-		free_page((unsigned long)ar);
-		return ERR_PTR(-EBUSY);
-	}
-
-	file->private_data = ar;
-
-	spin_unlock(&simple_transaction_lock);
-
-	if (copy_from_user(ar->data, buf, size))
-		return ERR_PTR(-EFAULT);
-
-	return ar->data;
+	return ERR_PTR(-ENOSYS);
 }
 
 ssize_t simple_transaction_read(struct file *file, char __user *buf, size_t size, loff_t *pos)
 {
-	struct simple_transaction_argresp *ar = file->private_data;
-
-	if (!ar)
-		return 0;
-	return simple_read_from_buffer(buf, size, pos, ar->data, ar->size);
+	return 0;
 }
 
 int simple_transaction_release(struct inode *inode, struct file *file)
 {
-	free_page((unsigned long)file->private_data);
 	return 0;
 }
 
  
 
-struct simple_attr {
-	int (*get)(void *, u64 *);
-	int (*set)(void *, u64);
-	char get_buf[24];	 
-	char set_buf[24];
-	void *data;
-	const char *fmt;	 
-	struct mutex mutex;	 
-};
-
- 
+/* Stub: simple_attr_* not needed for minimal kernel */
 int simple_attr_open(struct inode *inode, struct file *file,
 		     int (*get)(void *, u64 *), int (*set)(void *, u64),
 		     const char *fmt)
 {
-	struct simple_attr *attr;
-
-	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
-	if (!attr)
-		return -ENOMEM;
-
-	attr->get = get;
-	attr->set = set;
-	attr->data = inode->i_private;
-	attr->fmt = fmt;
-	mutex_init(&attr->mutex);
-
-	file->private_data = attr;
-
-	return nonseekable_open(inode, file);
+	return -ENOSYS;
 }
 
 int simple_attr_release(struct inode *inode, struct file *file)
 {
-	kfree(file->private_data);
 	return 0;
 }
 
- 
 ssize_t simple_attr_read(struct file *file, char __user *buf,
 			 size_t len, loff_t *ppos)
 {
-	struct simple_attr *attr;
-	size_t size;
-	ssize_t ret;
-
-	attr = file->private_data;
-
-	if (!attr->get)
-		return -EACCES;
-
-	ret = mutex_lock_interruptible(&attr->mutex);
-	if (ret)
-		return ret;
-
-	if (*ppos && attr->get_buf[0]) {
-		 
-		size = strlen(attr->get_buf);
-	} else {
-		 
-		u64 val;
-		ret = attr->get(attr->data, &val);
-		if (ret)
-			goto out;
-
-		size = scnprintf(attr->get_buf, sizeof(attr->get_buf),
-				 attr->fmt, (unsigned long long)val);
-	}
-
-	ret = simple_read_from_buffer(buf, len, ppos, attr->get_buf, size);
-out:
-	mutex_unlock(&attr->mutex);
-	return ret;
+	return -ENOSYS;
 }
 
- 
 ssize_t simple_attr_write(struct file *file, const char __user *buf,
 			  size_t len, loff_t *ppos)
 {
-	struct simple_attr *attr;
-	unsigned long long val;
-	size_t size;
-	ssize_t ret;
-
-	attr = file->private_data;
-	if (!attr->set)
-		return -EACCES;
-
-	ret = mutex_lock_interruptible(&attr->mutex);
-	if (ret)
-		return ret;
-
-	ret = -EFAULT;
-	size = min(sizeof(attr->set_buf) - 1, len);
-	if (copy_from_user(attr->set_buf, buf, size))
-		goto out;
-
-	attr->set_buf[size] = '\0';
-	ret = kstrtoull(attr->set_buf, 0, &val);
-	if (ret)
-		goto out;
-	ret = attr->set(attr->data, val);
-	if (ret == 0)
-		ret = len;  
-out:
-	mutex_unlock(&attr->mutex);
-	return ret;
+	return -ENOSYS;
 }
 
  

@@ -118,21 +118,6 @@ static __always_inline u64 steal_account_process_time(u64 maxtime)
 	return 0;
 }
 
- 
-static inline u64 account_other_time(u64 max)
-{
-	u64 accounted;
-
-	lockdep_assert_irqs_disabled();
-
-	accounted = steal_account_process_time(max);
-
-	if (accounted < max)
-		accounted += irqtime_tick_accounted(max - accounted);
-
-	return accounted;
-}
-
 static u64 read_sum_exec_runtime(struct task_struct *t)
 {
 	u64 ns;

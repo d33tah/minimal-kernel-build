@@ -49,11 +49,6 @@ static DEFINE_PER_CPU(struct cpuhp_cpu_state, cpuhp_state) = {
 
 
 
-static inline void cpuhp_lock_acquire(bool bringup) { }
-static inline void cpuhp_lock_release(bool bringup) { }
-
-
- 
 struct cpuhp_step {
 	const char		*name;
 	union {

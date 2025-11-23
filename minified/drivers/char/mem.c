@@ -37,18 +37,6 @@ static inline unsigned long size_inside_page(unsigned long start,
 	return min(sz, size);
 }
 
-#ifndef ARCH_HAS_VALID_PHYS_ADDR_RANGE
-static inline int valid_phys_addr_range(phys_addr_t addr, size_t count)
-{
-	return addr + count <= __pa(high_memory);
-}
-
-static inline int valid_mmap_phys_addr_range(unsigned long pfn, size_t size)
-{
-	return 1;
-}
-#endif
-
 #ifndef unxlate_dev_mem_ptr
 #define unxlate_dev_mem_ptr unxlate_dev_mem_ptr
 void __weak unxlate_dev_mem_ptr(phys_addr_t phys, void *addr)

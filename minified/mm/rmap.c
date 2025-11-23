@@ -562,163 +562,20 @@ static bool folio_referenced_one(struct folio *folio,
 	return true;
 }
 
-static bool invalid_folio_referenced_vma(struct vm_area_struct *vma, void *arg)
-{
-	struct folio_referenced_arg *pra = arg;
-	struct mem_cgroup *memcg = pra->memcg;
-
-	if (!mm_match_cgroup(vma->vm_mm, memcg))
-		return true;
-
-	return false;
-}
-
+/* Stubbed: folio_referenced not used externally */
 int folio_referenced(struct folio *folio, int is_locked,
 		     struct mem_cgroup *memcg, unsigned long *vm_flags)
 {
-	int we_locked = 0;
-	struct folio_referenced_arg pra = {
-		.mapcount = folio_mapcount(folio),
-		.memcg = memcg,
-	};
-	struct rmap_walk_control rwc = {
-		.rmap_one = folio_referenced_one,
-		.arg = (void *)&pra,
-		.anon_lock = folio_lock_anon_vma_read,
-		.try_lock = true,
-	};
-
 	*vm_flags = 0;
-	if (!pra.mapcount)
-		return 0;
-
-	if (!folio_raw_mapping(folio))
-		return 0;
-
-	if (!is_locked && (!folio_test_anon(folio) || folio_test_ksm(folio))) {
-		we_locked = folio_trylock(folio);
-		if (!we_locked)
-			return 1;
-	}
-
-	if (memcg) {
-		rwc.invalid_vma = invalid_folio_referenced_vma;
-	}
-
-	rmap_walk(folio, &rwc);
-	*vm_flags = pra.vm_flags;
-
-	if (we_locked)
-		folio_unlock(folio);
-
-	return rwc.contended ? -1 : pra.referenced;
+	return 0;
 }
 
-static int page_vma_mkclean_one(struct page_vma_mapped_walk *pvmw)
-{
-	int cleaned = 0;
-	struct vm_area_struct *vma = pvmw->vma;
-	struct mmu_notifier_range range;
-	unsigned long address = pvmw->address;
+/* Stubbed: folio_mkclean not used externally */
+int folio_mkclean(struct folio *folio) { return 0; }
 
-	mmu_notifier_range_init(&range, MMU_NOTIFY_PROTECTION_PAGE,
-				0, vma, vma->vm_mm, address,
-				vma_address_end(pvmw));
-	mmu_notifier_invalidate_range_start(&range);
-
-	while (page_vma_mapped_walk(pvmw)) {
-		int ret = 0;
-
-		address = pvmw->address;
-		if (pvmw->pte) {
-			pte_t entry;
-			pte_t *pte = pvmw->pte;
-
-			if (!pte_dirty(*pte) && !pte_write(*pte))
-				continue;
-
-			flush_cache_page(vma, address, pte_pfn(*pte));
-			entry = ptep_clear_flush(vma, address, pte);
-			entry = pte_wrprotect(entry);
-			entry = pte_mkclean(entry);
-			set_pte_at(vma->vm_mm, address, pte, entry);
-			ret = 1;
-		} else {
-			
-			WARN_ON_ONCE(1);
-		}
-
-		if (ret)
-			cleaned++;
-	}
-
-	mmu_notifier_invalidate_range_end(&range);
-
-	return cleaned;
-}
-
-static bool page_mkclean_one(struct folio *folio, struct vm_area_struct *vma,
-			     unsigned long address, void *arg)
-{
-	DEFINE_FOLIO_VMA_WALK(pvmw, folio, vma, address, PVMW_SYNC);
-	int *cleaned = arg;
-
-	*cleaned += page_vma_mkclean_one(&pvmw);
-
-	return true;
-}
-
-static bool invalid_mkclean_vma(struct vm_area_struct *vma, void *arg)
-{
-	if (vma->vm_flags & VM_SHARED)
-		return false;
-
-	return true;
-}
-
-int folio_mkclean(struct folio *folio)
-{
-	int cleaned = 0;
-	struct address_space *mapping;
-	struct rmap_walk_control rwc = {
-		.arg = (void *)&cleaned,
-		.rmap_one = page_mkclean_one,
-		.invalid_vma = invalid_mkclean_vma,
-	};
-
-	BUG_ON(!folio_test_locked(folio));
-
-	if (!folio_mapped(folio))
-		return 0;
-
-	mapping = folio_mapping(folio);
-	if (!mapping)
-		return 0;
-
-	rmap_walk(folio, &rwc);
-
-	return cleaned;
-}
-
+/* Stubbed: pfn_mkclean_range not used externally */
 int pfn_mkclean_range(unsigned long pfn, unsigned long nr_pages, pgoff_t pgoff,
-		      struct vm_area_struct *vma)
-{
-	struct page_vma_mapped_walk pvmw = {
-		.pfn		= pfn,
-		.nr_pages	= nr_pages,
-		.pgoff		= pgoff,
-		.vma		= vma,
-		.flags		= PVMW_SYNC,
-	};
-
-	if (invalid_mkclean_vma(vma, NULL))
-		return 0;
-
-	pvmw.address = vma_pgoff_address(pgoff, nr_pages, vma);
-	VM_BUG_ON_VMA(pvmw.address == -EFAULT, vma);
-
-	return page_vma_mkclean_one(&pvmw);
-}
+		      struct vm_area_struct *vma) { return 0; }
 
 void page_move_anon_rmap(struct page *page, struct vm_area_struct *vma)
 {

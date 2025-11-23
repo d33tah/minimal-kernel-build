@@ -521,18 +521,6 @@ static void task_tick_numa(struct rq *rq, struct task_struct *curr)
 {
 }
 
-static inline void account_numa_enqueue(struct rq *rq, struct task_struct *p)
-{
-}
-
-static inline void account_numa_dequeue(struct rq *rq, struct task_struct *p)
-{
-}
-
-static inline void update_scan_period(struct task_struct *p, int new_cpu)
-{
-}
-
 static void
 account_entity_enqueue(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
@@ -628,11 +616,6 @@ static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq, int flags)
 	}
 }
 
-static inline bool cfs_rq_is_decayed(struct cfs_rq *cfs_rq)
-{
-	return true;
-}
-
 #define UPDATE_TG	0x0
 #define SKIP_AGE_LOAD	0x0
 #define DO_ATTACH	0x0
@@ -641,8 +624,6 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
 {
 	cfs_rq_util_change(cfs_rq, 0);
 }
-
-static inline void remove_entity_load_avg(struct sched_entity *se) {}
 
 static inline void
 attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se) {}

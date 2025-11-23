@@ -1,3 +1,32 @@
+--- 2025-11-23 03:38 ---
+
+Session progress:
+- make vm: PASSES ✓, prints "Hello, World!" ✓
+- Binary: 287KB
+- Current total LOC: 229,246 (measured with cloc)
+- Goal: 200,000 LOC
+- Gap: 29,246 LOC (12.8% reduction needed)
+- Session reduction so far: ~60 LOC (6 commits)
+
+Commits this session:
+1. fs/read_write.c, mm/page_alloc.c - 19 LOC reduction
+   - Removed unused do_sendfile stub, pcpu_drain struct
+
+2. mm/page_alloc.c - 15 LOC reduction
+   - Removed unused pindex_to_order, boost_watermark
+
+3. kernel/sched/core.c - 8 LOC reduction
+   - Removed sched_tick_start/stop, rq_has_pinned_tasks
+
+4. kernel/signal.c - 12 LOC reduction
+   - Removed sigaltstack_lock/unlock
+
+5. kernel/cpu.c - 5 LOC reduction
+   - Removed cpuhp_lock_acquire/release
+
+Strategy: systematically finding and removing unused static functions.
+Still searching for more unused code.
+
 --- 2025-11-22 22:38 ---
 
 Session progress (continuing):

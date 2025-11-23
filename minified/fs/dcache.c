@@ -126,28 +126,14 @@ static inline int dname_external(const struct dentry *dentry)
 	return dentry->d_name.name != dentry->d_iname;
 }
 
+/* Stubbed - not used externally */
 void take_dentry_name_snapshot(struct name_snapshot *name, struct dentry *dentry)
 {
-	spin_lock(&dentry->d_lock);
-	name->name = dentry->d_name;
-	if (unlikely(dname_external(dentry))) {
-		atomic_inc(&external_name(dentry)->u.count);
-	} else {
-		memcpy(name->inline_name, dentry->d_iname,
-		       dentry->d_name.len + 1);
-		name->name.name = name->inline_name;
-	}
-	spin_unlock(&dentry->d_lock);
 }
 
+/* Stubbed - not used externally */
 void release_dentry_name_snapshot(struct name_snapshot *name)
 {
-	if (unlikely(name->name.name != name->inline_name)) {
-		struct external_name *p;
-		p = container_of(name->name.name, struct external_name, name[0]);
-		if (unlikely(atomic_dec_and_test(&p->u.count)))
-			kfree_rcu(p, u.head);
-	}
 }
 
 static inline void __d_set_inode_and_type(struct dentry *dentry,
@@ -388,18 +374,9 @@ static inline bool retain_dentry(struct dentry *dentry)
 	return true;
 }
 
+/* Stubbed - not used externally */
 void d_mark_dontcache(struct inode *inode)
 {
-	struct dentry *de;
-
-	spin_lock(&inode->i_lock);
-	hlist_for_each_entry(de, &inode->i_dentry, d_u.d_alias) {
-		spin_lock(&de->d_lock);
-		de->d_flags |= DCACHE_DONTCACHE;
-		spin_unlock(&de->d_lock);
-	}
-	inode->i_state |= I_DONTCACHE;
-	spin_unlock(&inode->i_lock);
 }
 
 static struct dentry *dentry_kill(struct dentry *dentry)
@@ -605,14 +582,10 @@ static struct dentry * __d_find_any_alias(struct inode *inode)
 	return alias;
 }
 
+/* Stubbed - not used externally */
 struct dentry *d_find_any_alias(struct inode *inode)
 {
-	struct dentry *de;
-
-	spin_lock(&inode->i_lock);
-	de = __d_find_any_alias(inode);
-	spin_unlock(&inode->i_lock);
-	return de;
+	return NULL;
 }
 
 static struct dentry *__d_find_alias(struct inode *inode)

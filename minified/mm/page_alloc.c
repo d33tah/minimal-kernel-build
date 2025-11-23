@@ -282,15 +282,6 @@ static inline unsigned int order_to_pindex(int migratetype, int order)
 	return (MIGRATE_PCPTYPES * base) + migratetype;
 }
 
-static inline int pindex_to_order(unsigned int pindex)
-{
-	int order = pindex / MIGRATE_PCPTYPES;
-
-	VM_BUG_ON(order > PAGE_ALLOC_COSTLY_ORDER);
-
-	return order;
-}
-
 static inline bool pcp_allowed_order(unsigned int order)
 {
 	if (order <= PAGE_ALLOC_COSTLY_ORDER)
@@ -866,12 +857,6 @@ static bool can_steal_fallback(unsigned int order, int start_mt)
 {
 	/* Stub: always allow fallback for minimal kernel */
 	return true;
-}
-
-static inline bool boost_watermark(struct zone *zone)
-{
-	/* Stub: no watermark boosting */
-	return false;
 }
 
 static void steal_suitable_fallback(struct zone *zone, struct page *page,

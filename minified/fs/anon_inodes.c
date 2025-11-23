@@ -45,31 +45,10 @@ static struct file_system_type anon_inode_fs_type = {
 	.kill_sb	= kill_anon_super,
 };
 
-static struct inode *anon_inode_make_secure_inode(
-	const char *name,
-	const struct inode *context_inode)
-{
-	struct inode *inode;
-	const struct qstr qname = QSTR_INIT(name, strlen(name));
-	int error;
-
-	inode = alloc_anon_inode(anon_inode_mnt->mnt_sb);
-	if (IS_ERR(inode))
-		return inode;
-	inode->i_flags &= ~S_PRIVATE;
-	error =	security_inode_init_security_anon(inode, &qname, context_inode);
-	if (error) {
-		iput(inode);
-		return ERR_PTR(error);
-	}
-	return inode;
-}
-
+/* Simplified: only non-secure anon inodes used */
 static struct file *__anon_inode_getfile(const char *name,
 					 const struct file_operations *fops,
-					 void *priv, int flags,
-					 const struct inode *context_inode,
-					 bool secure)
+					 void *priv, int flags)
 {
 	struct inode *inode;
 	struct file *file;
@@ -77,21 +56,12 @@ static struct file *__anon_inode_getfile(const char *name,
 	if (fops->owner && !try_module_get(fops->owner))
 		return ERR_PTR(-ENOENT);
 
-	if (secure) {
-		inode =	anon_inode_make_secure_inode(name, context_inode);
-		if (IS_ERR(inode)) {
-			file = ERR_CAST(inode);
-			goto err;
-		}
-	} else {
-		inode =	anon_inode_inode;
-		if (IS_ERR(inode)) {
-			file = ERR_PTR(-ENODEV);
-			goto err;
-		}
-		 
-		ihold(inode);
+	inode = anon_inode_inode;
+	if (IS_ERR(inode)) {
+		file = ERR_PTR(-ENODEV);
+		goto err;
 	}
+	ihold(inode);
 
 	file = alloc_file_pseudo(inode, anon_inode_mnt, name,
 				 flags & (O_ACCMODE | O_NONBLOCK), fops);
@@ -99,9 +69,7 @@ static struct file *__anon_inode_getfile(const char *name,
 		goto err_iput;
 
 	file->f_mapping = inode->i_mapping;
-
 	file->private_data = priv;
-
 	return file;
 
 err_iput:
@@ -111,29 +79,24 @@ err:
 	return file;
 }
 
- 
 struct file *anon_inode_getfile(const char *name,
 				const struct file_operations *fops,
 				void *priv, int flags)
 {
-	return __anon_inode_getfile(name, fops, priv, flags, NULL, false);
+	return __anon_inode_getfile(name, fops, priv, flags);
 }
 
- 
+/* Stubbed: anon_inode_getfile_secure not used */
 struct file *anon_inode_getfile_secure(const char *name,
 				       const struct file_operations *fops,
 				       void *priv, int flags,
 				       const struct inode *context_inode)
 {
-	return __anon_inode_getfile(name, fops, priv, flags,
-				    context_inode, true);
+	return ERR_PTR(-ENOSYS);
 }
 
-static int __anon_inode_getfd(const char *name,
-			      const struct file_operations *fops,
-			      void *priv, int flags,
-			      const struct inode *context_inode,
-			      bool secure)
+int anon_inode_getfd(const char *name, const struct file_operations *fops,
+		     void *priv, int flags)
 {
 	int error, fd;
 	struct file *file;
@@ -143,34 +106,22 @@ static int __anon_inode_getfd(const char *name,
 		return error;
 	fd = error;
 
-	file = __anon_inode_getfile(name, fops, priv, flags, context_inode,
-				    secure);
+	file = __anon_inode_getfile(name, fops, priv, flags);
 	if (IS_ERR(file)) {
 		error = PTR_ERR(file);
-		goto err_put_unused_fd;
+		put_unused_fd(fd);
+		return error;
 	}
 	fd_install(fd, file);
-
 	return fd;
-
-err_put_unused_fd:
-	put_unused_fd(fd);
-	return error;
 }
 
- 
-int anon_inode_getfd(const char *name, const struct file_operations *fops,
-		     void *priv, int flags)
-{
-	return __anon_inode_getfd(name, fops, priv, flags, NULL, false);
-}
-
- 
+/* Stubbed: anon_inode_getfd_secure not used */
 int anon_inode_getfd_secure(const char *name, const struct file_operations *fops,
 			    void *priv, int flags,
 			    const struct inode *context_inode)
 {
-	return __anon_inode_getfd(name, fops, priv, flags, context_inode, true);
+	return -ENOSYS;
 }
 
 static int __init anon_inode_init(void)

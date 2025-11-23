@@ -1599,15 +1599,6 @@ static int do_remount(struct path *path, int ms_flags, int sb_flags,
 	return -ENOSYS;
 }
 
-static inline int tree_contains_unbindable(struct mount *mnt)
-{
-	struct mount *p;
-	for (p = mnt; p; p = next_mnt(p, mnt)) {
-		if (IS_MNT_UNBINDABLE(p))
-			return 1;
-	}
-	return 0;
-}
 
 static int do_move_mount(struct path *old_path, struct path *new_path)
 {
@@ -2128,13 +2119,6 @@ SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
 	return -ENOSYS;
 }
 
-static inline bool mnt_allow_writers(const struct mount_kattr *kattr,
-				     const struct mount *mnt)
-{
-	return (!(kattr->attr_set & MNT_READONLY) ||
-		(mnt->mnt.mnt_flags & MNT_READONLY)) &&
-	       !kattr->mnt_userns;
-}
 
 SYSCALL_DEFINE5(mount_setattr, int, dfd, const char __user *, path,
 		unsigned int, flags, struct mount_attr __user *, uattr,

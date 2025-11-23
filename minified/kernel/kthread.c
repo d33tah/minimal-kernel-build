@@ -136,19 +136,11 @@ bool kthread_should_park(void)
 	return __kthread_should_park(current);
 }
 
- 
+/* Stubbed: kthread_freezable_should_stop not used externally */
 bool kthread_freezable_should_stop(bool *was_frozen)
 {
-	bool frozen = false;
-
-	might_sleep();
-
-	if (unlikely(freezing(current)))
-		frozen = __refrigerator(true);
-
 	if (was_frozen)
-		*was_frozen = frozen;
-
+		*was_frozen = false;
 	return kthread_should_stop();
 }
 
@@ -167,16 +159,8 @@ void *kthread_data(struct task_struct *task)
 	return to_kthread(task)->data;
 }
 
- 
-void *kthread_probe_data(struct task_struct *task)
-{
-	struct kthread *kthread = __to_kthread(task);
-	void *data = NULL;
-
-	if (kthread)
-		copy_from_kernel_nofault(&data, &kthread->data, sizeof(data));
-	return data;
-}
+/* Stubbed: kthread_probe_data not used externally */
+void *kthread_probe_data(struct task_struct *task) { return NULL; }
 
 static void __kthread_parkme(struct kthread *self)
 {
@@ -377,33 +361,16 @@ static void __kthread_bind(struct task_struct *p, unsigned int cpu, unsigned int
 	__kthread_bind_mask(p, cpumask_of(cpu), state);
 }
 
-void kthread_bind_mask(struct task_struct *p, const struct cpumask *mask)
-{
-	__kthread_bind_mask(p, mask, TASK_UNINTERRUPTIBLE);
-}
+/* Stubbed: kthread_bind_mask not used externally */
+void kthread_bind_mask(struct task_struct *p, const struct cpumask *mask) { }
 
- 
-void kthread_bind(struct task_struct *p, unsigned int cpu)
-{
-	__kthread_bind(p, cpu, TASK_UNINTERRUPTIBLE);
-}
+/* Stubbed: kthread_bind not used externally */
+void kthread_bind(struct task_struct *p, unsigned int cpu) { }
 
- 
+/* Stubbed: kthread_create_on_cpu not used externally */
 struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
 					  void *data, unsigned int cpu,
-					  const char *namefmt)
-{
-	struct task_struct *p;
-
-	p = kthread_create_on_node(threadfn, data, cpu_to_node(cpu), namefmt,
-				   cpu);
-	if (IS_ERR(p))
-		return p;
-	kthread_bind(p, cpu);
-	 
-	to_kthread(p)->cpu = cpu;
-	return p;
-}
+					  const char *namefmt) { return ERR_PTR(-ENOSYS); }
 
 void kthread_set_per_cpu(struct task_struct *k, int cpu)
 {

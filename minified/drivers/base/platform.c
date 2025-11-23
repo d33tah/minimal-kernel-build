@@ -258,22 +258,8 @@ int platform_get_irq_byname_optional(struct platform_device *dev,
 	return __platform_get_irq_byname(dev, name);
 }
 
- 
-int platform_add_devices(struct platform_device **devs, int num)
-{
-	int i, ret = 0;
-
-	for (i = 0; i < num; i++) {
-		ret = platform_device_register(devs[i]);
-		if (ret) {
-			while (--i >= 0)
-				platform_device_unregister(devs[i]);
-			break;
-		}
-	}
-
-	return ret;
-}
+/* Stubbed: platform_add_devices not used externally */
+int platform_add_devices(struct platform_device **devs, int num) { return 0; }
 
 struct platform_object {
 	struct platform_device pdev;
@@ -331,201 +317,29 @@ struct platform_device *platform_device_alloc(const char *name, int id)
 	return pa ? &pa->pdev : NULL;
 }
 
- 
+/* Stubbed: platform_device_add_resources not used externally */
 int platform_device_add_resources(struct platform_device *pdev,
-				  const struct resource *res, unsigned int num)
-{
-	struct resource *r = NULL;
+				  const struct resource *res, unsigned int num) { return 0; }
 
-	if (res) {
-		r = kmemdup(res, sizeof(struct resource) * num, GFP_KERNEL);
-		if (!r)
-			return -ENOMEM;
-	}
-
-	kfree(pdev->resource);
-	pdev->resource = r;
-	pdev->num_resources = num;
-	return 0;
-}
-
- 
+/* Stubbed: platform_device_add_data not used externally */
 int platform_device_add_data(struct platform_device *pdev, const void *data,
-			     size_t size)
-{
-	void *d = NULL;
+			     size_t size) { return 0; }
 
-	if (data) {
-		d = kmemdup(data, size, GFP_KERNEL);
-		if (!d)
-			return -ENOMEM;
-	}
+/* Stubbed: platform_device_add not used externally */
+int platform_device_add(struct platform_device *pdev) { return -ENOSYS; }
 
-	kfree(pdev->dev.platform_data);
-	pdev->dev.platform_data = d;
-	return 0;
-}
+/* Stubbed: platform_device_del not used externally */
+void platform_device_del(struct platform_device *pdev) { }
 
- 
-int platform_device_add(struct platform_device *pdev)
-{
-	u32 i;
-	int ret;
+/* Stubbed: platform_device_register not used externally */
+int platform_device_register(struct platform_device *pdev) { return -ENOSYS; }
 
-	if (!pdev)
-		return -EINVAL;
+/* Stubbed: platform_device_unregister not used externally */
+void platform_device_unregister(struct platform_device *pdev) { }
 
-	if (!pdev->dev.parent)
-		pdev->dev.parent = &platform_bus;
-
-	pdev->dev.bus = &platform_bus_type;
-
-	switch (pdev->id) {
-	default:
-		dev_set_name(&pdev->dev, "%s.%d", pdev->name,  pdev->id);
-		break;
-	case PLATFORM_DEVID_NONE:
-		dev_set_name(&pdev->dev, "%s", pdev->name);
-		break;
-	case PLATFORM_DEVID_AUTO:
-		 
-		ret = ida_alloc(&platform_devid_ida, GFP_KERNEL);
-		if (ret < 0)
-			goto err_out;
-		pdev->id = ret;
-		pdev->id_auto = true;
-		dev_set_name(&pdev->dev, "%s.%d.auto", pdev->name, pdev->id);
-		break;
-	}
-
-	for (i = 0; i < pdev->num_resources; i++) {
-		struct resource *p, *r = &pdev->resource[i];
-
-		if (r->name == NULL)
-			r->name = dev_name(&pdev->dev);
-
-		p = r->parent;
-		if (!p) {
-			if (resource_type(r) == IORESOURCE_MEM)
-				p = &iomem_resource;
-			else if (resource_type(r) == IORESOURCE_IO)
-				p = &ioport_resource;
-		}
-
-		if (p) {
-			ret = insert_resource(p, r);
-			if (ret) {
-				dev_err(&pdev->dev, "failed to claim resource %d: %pR\n", i, r);
-				goto failed;
-			}
-		}
-	}
-
-	ret = device_add(&pdev->dev);
-	if (ret == 0)
-		return ret;
-
- failed:
-	if (pdev->id_auto) {
-		ida_free(&platform_devid_ida, pdev->id);
-		pdev->id = PLATFORM_DEVID_AUTO;
-	}
-
-	while (i--) {
-		struct resource *r = &pdev->resource[i];
-		if (r->parent)
-			release_resource(r);
-	}
-
- err_out:
-	return ret;
-}
-
- 
-void platform_device_del(struct platform_device *pdev)
-{
-	u32 i;
-
-	if (!IS_ERR_OR_NULL(pdev)) {
-		device_del(&pdev->dev);
-
-		if (pdev->id_auto) {
-			ida_free(&platform_devid_ida, pdev->id);
-			pdev->id = PLATFORM_DEVID_AUTO;
-		}
-
-		for (i = 0; i < pdev->num_resources; i++) {
-			struct resource *r = &pdev->resource[i];
-			if (r->parent)
-				release_resource(r);
-		}
-	}
-}
-
- 
-int platform_device_register(struct platform_device *pdev)
-{
-	device_initialize(&pdev->dev);
-	setup_pdev_dma_masks(pdev);
-	return platform_device_add(pdev);
-}
-
- 
-void platform_device_unregister(struct platform_device *pdev)
-{
-	platform_device_del(pdev);
-	platform_device_put(pdev);
-}
-
- 
+/* Stubbed: platform_device_register_full not used externally */
 struct platform_device *platform_device_register_full(
-		const struct platform_device_info *pdevinfo)
-{
-	int ret;
-	struct platform_device *pdev;
-
-	pdev = platform_device_alloc(pdevinfo->name, pdevinfo->id);
-	if (!pdev)
-		return ERR_PTR(-ENOMEM);
-
-	pdev->dev.parent = pdevinfo->parent;
-	pdev->dev.fwnode = pdevinfo->fwnode;
-	pdev->dev.of_node = of_node_get(to_of_node(pdev->dev.fwnode));
-	pdev->dev.of_node_reused = pdevinfo->of_node_reused;
-
-	if (pdevinfo->dma_mask) {
-		pdev->platform_dma_mask = pdevinfo->dma_mask;
-		pdev->dev.dma_mask = &pdev->platform_dma_mask;
-		pdev->dev.coherent_dma_mask = pdevinfo->dma_mask;
-	}
-
-	ret = platform_device_add_resources(pdev,
-			pdevinfo->res, pdevinfo->num_res);
-	if (ret)
-		goto err;
-
-	ret = platform_device_add_data(pdev,
-			pdevinfo->data, pdevinfo->size_data);
-	if (ret)
-		goto err;
-
-	if (pdevinfo->properties) {
-		ret = device_create_managed_software_node(&pdev->dev,
-							  pdevinfo->properties, NULL);
-		if (ret)
-			goto err;
-	}
-
-	ret = platform_device_add(pdev);
-	if (ret) {
-err:
-		ACPI_COMPANION_SET(&pdev->dev, NULL);
-		platform_device_put(pdev);
-		return ERR_PTR(ret);
-	}
-
-	return pdev;
-}
+		const struct platform_device_info *pdevinfo) { return ERR_PTR(-ENOSYS); }
 
  
 int __platform_driver_register(struct platform_driver *drv,
@@ -543,126 +357,24 @@ void platform_driver_unregister(struct platform_driver *drv)
 	driver_unregister(&drv->driver);
 }
 
-static int platform_probe_fail(struct platform_device *pdev)
-{
-	return -ENXIO;
-}
-
- 
+/* Stubbed: __platform_driver_probe not used externally */
 int __init_or_module __platform_driver_probe(struct platform_driver *drv,
-		int (*probe)(struct platform_device *), struct module *module)
-{
-	int retval, code;
+		int (*probe)(struct platform_device *), struct module *module) { return -ENOSYS; }
 
-	if (drv->driver.probe_type == PROBE_PREFER_ASYNCHRONOUS) {
-		pr_err("%s: drivers registered with %s can not be probed asynchronously\n",
-			 drv->driver.name, __func__);
-		return -EINVAL;
-	}
-
-	 
-	drv->driver.probe_type = PROBE_FORCE_SYNCHRONOUS;
-
-	 
-	drv->prevent_deferred_probe = true;
-
-	 
-	drv->driver.suppress_bind_attrs = true;
-
-	 
-	drv->probe = probe;
-	retval = code = __platform_driver_register(drv, module);
-	if (retval)
-		return retval;
-
-	 
-	spin_lock(&drv->driver.bus->p->klist_drivers.k_lock);
-	drv->probe = platform_probe_fail;
-	if (code == 0 && list_empty(&drv->driver.p->klist_devices.k_list))
-		retval = -ENODEV;
-	spin_unlock(&drv->driver.bus->p->klist_drivers.k_lock);
-
-	if (code != retval)
-		platform_driver_unregister(drv);
-	return retval;
-}
-
- 
+/* Stubbed: __platform_create_bundle not used externally */
 struct platform_device * __init_or_module __platform_create_bundle(
 			struct platform_driver *driver,
 			int (*probe)(struct platform_device *),
 			struct resource *res, unsigned int n_res,
-			const void *data, size_t size, struct module *module)
-{
-	struct platform_device *pdev;
-	int error;
+			const void *data, size_t size, struct module *module) { return ERR_PTR(-ENOSYS); }
 
-	pdev = platform_device_alloc(driver->driver.name, -1);
-	if (!pdev) {
-		error = -ENOMEM;
-		goto err_out;
-	}
-
-	error = platform_device_add_resources(pdev, res, n_res);
-	if (error)
-		goto err_pdev_put;
-
-	error = platform_device_add_data(pdev, data, size);
-	if (error)
-		goto err_pdev_put;
-
-	error = platform_device_add(pdev);
-	if (error)
-		goto err_pdev_put;
-
-	error = __platform_driver_probe(driver, probe, module);
-	if (error)
-		goto err_pdev_del;
-
-	return pdev;
-
-err_pdev_del:
-	platform_device_del(pdev);
-err_pdev_put:
-	platform_device_put(pdev);
-err_out:
-	return ERR_PTR(error);
-}
-
- 
+/* Stubbed: __platform_register_drivers not used externally */
 int __platform_register_drivers(struct platform_driver * const *drivers,
-				unsigned int count, struct module *owner)
-{
-	unsigned int i;
-	int err;
+				unsigned int count, struct module *owner) { return 0; }
 
-	for (i = 0; i < count; i++) {
-		err = __platform_driver_register(drivers[i], owner);
-		if (err < 0) {
-			pr_err("failed to register platform driver %ps: %d\n",
-			       drivers[i], err);
-			goto error;
-		}
-	}
-
-	return 0;
-
-error:
-	while (i--) {
-		platform_driver_unregister(drivers[i]);
-	}
-
-	return err;
-}
-
- 
+/* Stubbed: platform_unregister_drivers not used externally */
 void platform_unregister_drivers(struct platform_driver * const *drivers,
-				 unsigned int count)
-{
-	while (count--) {
-		platform_driver_unregister(drivers[count]);
-	}
-}
+				 unsigned int count) { }
 
 static const struct platform_device_id *platform_match_id(
 			const struct platform_device_id *id,
@@ -799,10 +511,6 @@ static int platform_probe(struct device *_dev)
 	struct platform_driver *drv = to_platform_driver(_dev->driver);
 	struct platform_device *dev = to_platform_device(_dev);
 	int ret;
-
-	 
-	if (unlikely(drv->probe == platform_probe_fail))
-		return -ENXIO;
 
 	ret = of_clk_set_defaults(_dev->of_node, false);
 	if (ret < 0)

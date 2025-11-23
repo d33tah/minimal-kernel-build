@@ -28,23 +28,6 @@
  
 #define IPV6_FLOWINFO_MASK		cpu_to_be32(0x0FFFFFFF)
 
- 
-static inline bool ipv6_addr_v4mapped(const struct in6_addr *a)
-{
-	return (
-#if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && BITS_PER_LONG == 64
-		*(unsigned long *)a |
-#else
-		(__force unsigned long)(a->s6_addr32[0] | a->s6_addr32[1]) |
-#endif
-		(__force unsigned long)(a->s6_addr32[2] ^
-					cpu_to_be32(0x0000ffff))) == 0UL;
-}
-
-static inline bool ipv6_addr_is_isatap(const struct in6_addr *addr)
-{
-	return (addr->s6_addr32[2] | htonl(0x02000000)) == htonl(0x02005EFE);
-}
 #include <linux/compiler.h>
 #include <linux/property.h>
 

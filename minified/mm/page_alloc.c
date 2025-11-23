@@ -170,11 +170,6 @@ unsigned int nr_online_nodes __read_mostly = 1;
 
 int page_group_by_mobility_disabled __read_mostly;
 
-static inline bool deferred_pages_enabled(void)
-{
-	return false;
-}
-
 static inline bool early_page_uninitialised(unsigned long pfn)
 {
 	return false;
@@ -333,8 +328,6 @@ void prep_compound_page(struct page *page, unsigned int order)
 
 static inline bool set_page_guard(struct zone *zone, struct page *page,
 			unsigned int order, int migratetype) { return false; }
-static inline void clear_page_guard(struct zone *zone, struct page *page,
-				unsigned int order, int migratetype) {}
 
 void init_mem_debugging_and_hardening(void)
 {
@@ -455,29 +448,6 @@ static inline bool page_expected_state(struct page *page,
 			(page->flags & check_flags)))
 		return false;
 
-	return true;
-}
-
-
-static void check_free_page_bad(struct page *page)
-{
-	/* Stub: page validation not needed for minimal kernel */
-}
-
-static inline int check_free_page(struct page *page)
-{
-	if (likely(page_expected_state(page, PAGE_FLAGS_CHECK_AT_FREE)))
-		return 0;
-
-	
-	check_free_page_bad(page);
-	return 1;
-}
-
-
-static inline bool should_skip_kasan_poison(struct page *page, fpi_t fpi_flags)
-{
-	/* Stub: KASAN not needed for minimal kernel */
 	return true;
 }
 

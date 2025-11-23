@@ -166,36 +166,18 @@ NOKPROBE_SYMBOL(oops_end);
 
 static void __die_header(const char *str, struct pt_regs *regs, long err)
 {
-	const char *pr = "";
-
-	 
+	/* Stub: minimal header for crash report */
 	if (!die_counter)
 		exec_summary_regs = *regs;
-
-	if (IS_ENABLED(CONFIG_PREEMPTION))
-		pr = IS_ENABLED(CONFIG_PREEMPT_RT) ? " PREEMPT_RT" : " PREEMPT";
-
-	printk(KERN_DEFAULT
-	       "%s: %04lx [#%d]%s%s%s%s%s\n", str, err & 0xffff, ++die_counter,
-	       pr,
-	       IS_ENABLED(CONFIG_SMP)     ? " SMP"             : "",
-	       debug_pagealloc_enabled()  ? " DEBUG_PAGEALLOC" : "",
-	       IS_ENABLED(CONFIG_KASAN)   ? " KASAN"           : "",
-	       IS_ENABLED(CONFIG_PAGE_TABLE_ISOLATION) ?
-	       (boot_cpu_has(X86_FEATURE_PTI) ? " PTI" : " NOPTI") : "");
+	printk(KERN_DEFAULT "%s [#%d]\n", str, ++die_counter);
 }
 NOKPROBE_SYMBOL(__die_header);
 
 static int __die_body(const char *str, struct pt_regs *regs, long err)
 {
-	show_regs(regs);
-	print_modules();
-
-	if (notify_die(DIE_OOPS, str, regs, err,
-			current->thread.trap_nr, SIGSEGV) == NOTIFY_STOP)
-		return 1;
-
-	return 0;
+	/* Stub: minimal crash info */
+	return notify_die(DIE_OOPS, str, regs, err,
+			current->thread.trap_nr, SIGSEGV) == NOTIFY_STOP;
 }
 NOKPROBE_SYMBOL(__die_body);
 
@@ -232,14 +214,6 @@ void die_addr(const char *str, struct pt_regs *regs, long err, long gp_addr)
 
 void show_regs(struct pt_regs *regs)
 {
-	enum show_regs_mode print_kernel_regs;
-
-	show_regs_print_info(KERN_DEFAULT);
-
-	print_kernel_regs = user_mode(regs) ? SHOW_REGS_USER : SHOW_REGS_ALL;
-	__show_regs(regs, print_kernel_regs, KERN_DEFAULT);
-
-	 
-	if (!user_mode(regs))
-		show_trace_log_lvl(current, regs, NULL, KERN_DEFAULT);
+	/* Stub: minimal register display for crash */
+	__show_regs(regs, SHOW_REGS_ALL, KERN_DEFAULT);
 }

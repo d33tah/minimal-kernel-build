@@ -49,11 +49,10 @@ static inline long get_nr_inodes_unused(void)
 	return sum < 0 ? 0 : sum;
 }
 
+/* Stubbed - not used externally */
 long get_nr_dirty_inodes(void)
 {
-	
-	long nr_dirty = get_nr_inodes() - get_nr_inodes_unused();
-	return nr_dirty > 0 ? nr_dirty : 0;
+	return 0;
 }
 
 static int no_open(struct inode *inode, struct file *file)
@@ -247,10 +246,9 @@ static void __address_space_init_once(struct address_space *mapping)
 	mapping->i_mmap = RB_ROOT_CACHED;
 }
 
+/* Stubbed - not used externally */
 void address_space_init_once(struct address_space *mapping)
 {
-	memset(mapping, 0, sizeof(*mapping));
-	__address_space_init_once(mapping);
 }
 
 void inode_init_once(struct inode *inode)
@@ -456,47 +454,10 @@ again:
 	dispose_list(&dispose);
 }
 
+/* Stubbed - not used externally */
 int invalidate_inodes(struct super_block *sb, bool kill_dirty)
 {
-	int busy = 0;
-	struct inode *inode, *next;
-	LIST_HEAD(dispose);
-
-again:
-	spin_lock(&sb->s_inode_list_lock);
-	list_for_each_entry_safe(inode, next, &sb->s_inodes, i_sb_list) {
-		spin_lock(&inode->i_lock);
-		if (inode->i_state & (I_NEW | I_FREEING | I_WILL_FREE)) {
-			spin_unlock(&inode->i_lock);
-			continue;
-		}
-		if (inode->i_state & I_DIRTY_ALL && !kill_dirty) {
-			spin_unlock(&inode->i_lock);
-			busy = 1;
-			continue;
-		}
-		if (atomic_read(&inode->i_count)) {
-			spin_unlock(&inode->i_lock);
-			busy = 1;
-			continue;
-		}
-
-		inode->i_state |= I_FREEING;
-		inode_lru_list_del(inode);
-		spin_unlock(&inode->i_lock);
-		list_add(&inode->i_lru, &dispose);
-		if (need_resched()) {
-			spin_unlock(&sb->s_inode_list_lock);
-			cond_resched();
-			dispose_list(&dispose);
-			goto again;
-		}
-	}
-	spin_unlock(&sb->s_inode_list_lock);
-
-	dispose_list(&dispose);
-
-	return busy;
+	return 0;
 }
 
 static enum lru_status inode_lru_isolate(struct list_head *item,

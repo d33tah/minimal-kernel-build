@@ -94,16 +94,7 @@
 unsigned long total_forks;	
 int nr_threads;			
 
-static int max_threads;		
-
-#define NAMED_ARRAY_INDEX(x)	[x] = __stringify(x)
-
-static const char * const resident_page_types[] = {
-	NAMED_ARRAY_INDEX(MM_FILEPAGES),
-	NAMED_ARRAY_INDEX(MM_ANONPAGES),
-	NAMED_ARRAY_INDEX(MM_SWAPENTS),
-	NAMED_ARRAY_INDEX(MM_SHMEMPAGES),
-};
+static int max_threads;
 
 DEFINE_PER_CPU(unsigned long, process_counts) = 0;
 

@@ -112,53 +112,12 @@ static __always_inline u64 steal_account_process_time(u64 maxtime)
 	return 0;
 }
 
-static u64 read_sum_exec_runtime(struct task_struct *t)
-{
-	u64 ns;
-	struct rq_flags rf;
-	struct rq *rq;
-
-	rq = task_rq_lock(t, &rf);
-	ns = t->se.sum_exec_runtime;
-	task_rq_unlock(rq, t, &rf);
-
-	return ns;
-}
-
- 
+/* Stubbed: thread_group_cputime not used externally */
 void thread_group_cputime(struct task_struct *tsk, struct task_cputime *times)
 {
-	struct signal_struct *sig = tsk->signal;
-	u64 utime, stime;
-	struct task_struct *t;
-	unsigned int seq, nextseq;
-	unsigned long flags;
-
-	 
-	if (same_thread_group(current, tsk))
-		(void) task_sched_runtime(current);
-
-	rcu_read_lock();
-	 
-	nextseq = 0;
-	do {
-		seq = nextseq;
-		flags = read_seqbegin_or_lock_irqsave(&sig->stats_lock, &seq);
-		times->utime = sig->utime;
-		times->stime = sig->stime;
-		times->sum_exec_runtime = sig->sum_sched_runtime;
-
-		for_each_thread(tsk, t) {
-			task_cputime(t, &utime, &stime);
-			times->utime += utime;
-			times->stime += stime;
-			times->sum_exec_runtime += read_sum_exec_runtime(t);
-		}
-		 
-		nextseq = 1;
-	} while (need_seqretry(&sig->stats_lock, seq));
-	done_seqretry_irqrestore(&sig->stats_lock, seq, flags);
-	rcu_read_unlock();
+	times->utime = 0;
+	times->stime = 0;
+	times->sum_exec_runtime = 0;
 }
 
 static inline void irqtime_account_idle_ticks(int ticks) { }
@@ -216,73 +175,25 @@ void account_idle_ticks(unsigned long ticks)
 	account_idle_time(cputime);
 }
 
- 
+/* Stubbed: cputime_adjust not used externally */
 void cputime_adjust(struct task_cputime *curr, struct prev_cputime *prev,
 		    u64 *ut, u64 *st)
 {
-	u64 rtime, stime, utime;
-	unsigned long flags;
-
-	 
-	raw_spin_lock_irqsave(&prev->lock, flags);
-	rtime = curr->sum_exec_runtime;
-
-	 
-	if (prev->stime + prev->utime >= rtime)
-		goto out;
-
-	stime = curr->stime;
-	utime = curr->utime;
-
-	 
-	if (stime == 0) {
-		utime = rtime;
-		goto update;
-	}
-
-	if (utime == 0) {
-		stime = rtime;
-		goto update;
-	}
-
-	stime = mul_u64_u64_div_u64(stime, rtime, stime + utime);
-
-update:
-	 
-	if (stime < prev->stime)
-		stime = prev->stime;
-	utime = rtime - stime;
-
-	 
-	if (utime < prev->utime) {
-		utime = prev->utime;
-		stime = rtime - utime;
-	}
-
-	prev->stime = stime;
-	prev->utime = utime;
-out:
-	*ut = prev->utime;
-	*st = prev->stime;
-	raw_spin_unlock_irqrestore(&prev->lock, flags);
+	*ut = 0;
+	*st = 0;
 }
 
+/* Stubbed: task_cputime_adjusted not used externally */
 void task_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st)
 {
-	struct task_cputime cputime = {
-		.sum_exec_runtime = p->se.sum_exec_runtime,
-	};
-
-	if (task_cputime(p, &cputime.utime, &cputime.stime))
-		cputime.sum_exec_runtime = task_sched_runtime(p);
-	cputime_adjust(&cputime, &p->prev_cputime, ut, st);
+	*ut = 0;
+	*st = 0;
 }
 
+/* Stubbed: thread_group_cputime_adjusted not used externally */
 void thread_group_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st)
 {
-	struct task_cputime cputime;
-
-	thread_group_cputime(p, &cputime);
-	cputime_adjust(&cputime, &p->signal->prev_cputime, ut, st);
+	*ut = 0;
+	*st = 0;
 }
 

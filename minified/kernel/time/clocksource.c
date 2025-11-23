@@ -482,53 +482,14 @@ static void clocksource_suspend_select(bool fallback)
 	}
 }
 
- 
+/* Stubbed - suspend timing not needed for minimal kernel */
 void clocksource_start_suspend_timing(struct clocksource *cs, u64 start_cycles)
 {
-	if (!suspend_clocksource)
-		return;
-
-	 
-	if (clocksource_is_suspend(cs)) {
-		suspend_start = start_cycles;
-		return;
-	}
-
-	if (suspend_clocksource->enable &&
-	    suspend_clocksource->enable(suspend_clocksource)) {
-		pr_warn_once("Failed to enable the non-suspend-able clocksource.\n");
-		return;
-	}
-
-	suspend_start = suspend_clocksource->read(suspend_clocksource);
 }
 
- 
 u64 clocksource_stop_suspend_timing(struct clocksource *cs, u64 cycle_now)
 {
-	u64 now, delta, nsec = 0;
-
-	if (!suspend_clocksource)
-		return 0;
-
-	 
-	if (clocksource_is_suspend(cs))
-		now = cycle_now;
-	else
-		now = suspend_clocksource->read(suspend_clocksource);
-
-	if (now > suspend_start) {
-		delta = clocksource_delta(now, suspend_start,
-					  suspend_clocksource->mask);
-		nsec = mul_u64_u32_shr(delta, suspend_clocksource->mult,
-				       suspend_clocksource->shift);
-	}
-
-	 
-	if (!clocksource_is_suspend(cs) && suspend_clocksource->disable)
-		suspend_clocksource->disable(suspend_clocksource);
-
-	return nsec;
+	return 0;
 }
 
 

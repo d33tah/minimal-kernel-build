@@ -171,10 +171,6 @@ static inline bool list_add_leaf_cfs_rq(struct cfs_rq *cfs_rq)
 	return true;
 }
 
-static inline void list_del_leaf_cfs_rq(struct cfs_rq *cfs_rq)
-{
-}
-
 static inline void assert_list_leaf_cfs_rq(struct rq *rq)
 {
 }
@@ -190,11 +186,6 @@ static inline struct sched_entity *parent_entity(struct sched_entity *se)
 static inline void
 find_matching_se(struct sched_entity **se, struct sched_entity **pse)
 {
-}
-
-static inline int tg_is_idle(struct task_group *tg)
-{
-	return 0;
 }
 
 static int cfs_rq_is_idle(struct cfs_rq *cfs_rq)
@@ -931,7 +922,6 @@ static inline bool cfs_bandwidth_used(void)
 static void account_cfs_rq_runtime(struct cfs_rq *cfs_rq, u64 delta_exec) {}
 static bool check_cfs_rq_runtime(struct cfs_rq *cfs_rq) { return false; }
 static void check_enqueue_throttle(struct cfs_rq *cfs_rq) {}
-static inline void sync_throttle(struct task_group *tg, int cpu) {}
 static __always_inline void return_cfs_rq_runtime(struct cfs_rq *cfs_rq) {}
 
 static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
@@ -944,21 +934,12 @@ static inline int throttled_hierarchy(struct cfs_rq *cfs_rq)
 	return 0;
 }
 
-static inline int throttled_lb_pair(struct task_group *tg,
-				    int src_cpu, int dest_cpu)
-{
-	return 0;
-}
-
 void init_cfs_bandwidth(struct cfs_bandwidth *cfs_b) {}
 
 static inline struct cfs_bandwidth *tg_cfs_bandwidth(struct task_group *tg)
 {
 	return NULL;
 }
-static inline void destroy_cfs_bandwidth(struct cfs_bandwidth *cfs_b) {}
-static inline void update_runtime_enabled(struct rq *rq) {}
-static inline void unthrottle_offline_cfs_rqs(struct rq *rq) {}
 
 static inline void
 hrtick_start_fair(struct rq *rq, struct task_struct *p)

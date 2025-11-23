@@ -1,12 +1,12 @@
---- 2025-11-23 03:38 ---
+--- 2025-11-23 03:50 ---
 
-Session progress:
+Session progress (continuing):
 - make vm: PASSES ✓, prints "Hello, World!" ✓
 - Binary: 287KB
 - Current total LOC: 229,246 (measured with cloc)
 - Goal: 200,000 LOC
 - Gap: 29,246 LOC (12.8% reduction needed)
-- Session reduction so far: ~60 LOC (6 commits)
+- Session reduction so far: ~88 LOC (8 commits)
 
 Commits this session:
 1. fs/read_write.c, mm/page_alloc.c - 19 LOC reduction
@@ -24,8 +24,15 @@ Commits this session:
 5. kernel/cpu.c - 5 LOC reduction
    - Removed cpuhp_lock_acquire/release
 
+6. kernel/sched/fair.c - 19 LOC reduction
+   - Removed unused NUMA-related stubs and cfs_rq_is_decayed
+
+7. kernel/fork.c - 10 LOC reduction
+   - Removed unused resident_page_types array
+
 Strategy: systematically finding and removing unused static functions.
-Still searching for more unused code.
+Tried to remove pcpu_set_page_chunk from percpu.c but it's used in percpu-km.c.
+Continuing to search for more unused code.
 
 --- 2025-11-22 22:38 ---
 

@@ -2,122 +2,23 @@
 
  
 
- 
-void complete(struct completion *x)
-{
-	unsigned long flags;
+/* Stubbed: complete not used */
+void complete(struct completion *x) { }
 
-	raw_spin_lock_irqsave(&x->wait.lock, flags);
+/* Stubbed: complete_all not used */
+void complete_all(struct completion *x) { }
 
-	if (x->done != UINT_MAX)
-		x->done++;
-	swake_up_locked(&x->wait);
-	raw_spin_unlock_irqrestore(&x->wait.lock, flags);
-}
+/* Stubbed: wait_for_completion not used */
+void __sched wait_for_completion(struct completion *x) { }
 
- 
-void complete_all(struct completion *x)
-{
-	unsigned long flags;
+/* Stubbed: wait_for_completion_timeout not used */
+unsigned long __sched wait_for_completion_timeout(struct completion *x, unsigned long timeout) { return timeout; }
 
-	lockdep_assert_RT_in_threaded_ctx();
+/* Stubbed: wait_for_completion_interruptible not used */
+int __sched wait_for_completion_interruptible(struct completion *x) { return 0; }
 
-	raw_spin_lock_irqsave(&x->wait.lock, flags);
-	x->done = UINT_MAX;
-	swake_up_all_locked(&x->wait);
-	raw_spin_unlock_irqrestore(&x->wait.lock, flags);
-}
+/* Stubbed: wait_for_completion_killable not used */
+int __sched wait_for_completion_killable(struct completion *x) { return 0; }
 
-static inline long __sched
-do_wait_for_common(struct completion *x,
-		   long (*action)(long), long timeout, int state)
-{
-	if (!x->done) {
-		DECLARE_SWAITQUEUE(wait);
-
-		do {
-			if (signal_pending_state(state, current)) {
-				timeout = -ERESTARTSYS;
-				break;
-			}
-			__prepare_to_swait(&x->wait, &wait);
-			__set_current_state(state);
-			raw_spin_unlock_irq(&x->wait.lock);
-			timeout = action(timeout);
-			raw_spin_lock_irq(&x->wait.lock);
-		} while (!x->done && timeout);
-		__finish_swait(&x->wait, &wait);
-		if (!x->done)
-			return timeout;
-	}
-	if (x->done != UINT_MAX)
-		x->done--;
-	return timeout ?: 1;
-}
-
-static inline long __sched
-__wait_for_common(struct completion *x,
-		  long (*action)(long), long timeout, int state)
-{
-	might_sleep();
-
-	complete_acquire(x);
-
-	raw_spin_lock_irq(&x->wait.lock);
-	timeout = do_wait_for_common(x, action, timeout, state);
-	raw_spin_unlock_irq(&x->wait.lock);
-
-	complete_release(x);
-
-	return timeout;
-}
-
-static long __sched
-wait_for_common(struct completion *x, long timeout, int state)
-{
-	return __wait_for_common(x, schedule_timeout, timeout, state);
-}
-
-void __sched wait_for_completion(struct completion *x)
-{
-	wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_UNINTERRUPTIBLE);
-}
-
- 
-unsigned long __sched
-wait_for_completion_timeout(struct completion *x, unsigned long timeout)
-{
-	return wait_for_common(x, timeout, TASK_UNINTERRUPTIBLE);
-}
-
-
-int __sched wait_for_completion_interruptible(struct completion *x)
-{
-	long t = wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_INTERRUPTIBLE);
-	if (t == -ERESTARTSYS)
-		return t;
-	return 0;
-}
-
-
-int __sched wait_for_completion_killable(struct completion *x)
-{
-	long t = wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_KILLABLE);
-	if (t == -ERESTARTSYS)
-		return t;
-	return 0;
-}
-
-
-bool completion_done(struct completion *x)
-{
-	unsigned long flags;
-
-	if (!READ_ONCE(x->done))
-		return false;
-
-	 
-	raw_spin_lock_irqsave(&x->wait.lock, flags);
-	raw_spin_unlock_irqrestore(&x->wait.lock, flags);
-	return true;
-}
+/* Stubbed: completion_done not used */
+bool completion_done(struct completion *x) { return true; }

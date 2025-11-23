@@ -294,9 +294,6 @@ static inline void setup_object_debug(struct kmem_cache *s, void *object) {}
 static inline
 void setup_slab_debug(struct kmem_cache *s, struct slab *slab, void *addr) {}
 
-static inline int alloc_debug_processing(struct kmem_cache *s,
-	struct slab *slab, void *object, unsigned long addr) { return 0; }
-
 static inline int free_debug_processing(
 	struct kmem_cache *s, struct slab *slab,
 	void *head, void *tail, int bulk_cnt,
@@ -331,14 +328,6 @@ static bool freelist_corrupted(struct kmem_cache *s, struct slab *slab,
 			       void **freelist, void *nextfree)
 {
 	return false;
-}
-
-static inline void *kmalloc_large_node_hook(void *ptr, size_t size, gfp_t flags)
-{
-	ptr = kasan_kmalloc_large(ptr, size, flags);
-	
-	kmemleak_alloc(ptr, size, 1, flags);
-	return ptr;
 }
 
 static __always_inline void kfree_hook(void *x)

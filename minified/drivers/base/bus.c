@@ -27,8 +27,6 @@ static struct kset *system_kset;
 	struct driver_attribute driver_attr_##_name =		\
 		__ATTR_IGNORE_LOCKDEP(_name, _mode, _show, _store)
 
-static int __must_check bus_rescan_devices_helper(struct device *dev,
-						void *data);
 
 static struct bus_type *bus_get(struct bus_type *bus)
 {
@@ -116,24 +114,11 @@ static const struct sysfs_ops bus_sysfs_ops = {
 	.store	= bus_attr_store,
 };
 
-int bus_create_file(struct bus_type *bus, struct bus_attribute *attr)
-{
-	int error;
-	if (bus_get(bus)) {
-		error = sysfs_create_file(&bus->p->subsys.kobj, &attr->attr);
-		bus_put(bus);
-	} else
-		error = -EINVAL;
-	return error;
-}
+/* Stubbed: bus_create_file not used externally */
+int bus_create_file(struct bus_type *bus, struct bus_attribute *attr) { return 0; }
 
-void bus_remove_file(struct bus_type *bus, struct bus_attribute *attr)
-{
-	if (bus_get(bus)) {
-		sysfs_remove_file(&bus->p->subsys.kobj, &attr->attr);
-		bus_put(bus);
-	}
-}
+/* Stubbed: bus_remove_file not used externally */
+void bus_remove_file(struct bus_type *bus, struct bus_attribute *attr) { }
 
 static void bus_release(struct kobject *kobj)
 {
@@ -197,19 +182,11 @@ static ssize_t drivers_autoprobe_store(struct bus_type *bus,
 	return count;
 }
 
+/* Stubbed: drivers_probe_store relies on bus_rescan_devices_helper */
 static ssize_t drivers_probe_store(struct bus_type *bus,
 				   const char *buf, size_t count)
 {
-	struct device *dev;
-	int err = -EINVAL;
-
-	dev = bus_find_device_by_name(bus, NULL, buf);
-	if (!dev)
-		return -ENODEV;
-	if (bus_rescan_devices_helper(dev, NULL) == 0)
-		err = count;
-	put_device(dev);
-	return err;
+	return -ENOSYS;
 }
 
 static struct device *next_device(struct klist_iter *i)
@@ -264,36 +241,9 @@ struct device *bus_find_device(struct bus_type *bus,
 	return dev;
 }
 
- 
+/* Stubbed: subsys_find_device_by_id not used externally */
 struct device *subsys_find_device_by_id(struct bus_type *subsys, unsigned int id,
-					struct device *hint)
-{
-	struct klist_iter i;
-	struct device *dev;
-
-	if (!subsys)
-		return NULL;
-
-	if (hint) {
-		klist_iter_init_node(&subsys->p->klist_devices, &i, &hint->p->knode_bus);
-		dev = next_device(&i);
-		if (dev && dev->id == id && get_device(dev)) {
-			klist_iter_exit(&i);
-			return dev;
-		}
-		klist_iter_exit(&i);
-	}
-
-	klist_iter_init_node(&subsys->p->klist_devices, &i, NULL);
-	while ((dev = next_device(&i))) {
-		if (dev->id == id && get_device(dev)) {
-			klist_iter_exit(&i);
-			return dev;
-		}
-	}
-	klist_iter_exit(&i);
-	return NULL;
-}
+					struct device *hint) { return NULL; }
 
 static struct device_driver *next_driver(struct klist_iter *i)
 {
@@ -539,35 +489,11 @@ void bus_remove_driver(struct device_driver *drv)
 	bus_put(drv->bus);
 }
 
- 
-static int __must_check bus_rescan_devices_helper(struct device *dev,
-						  void *data)
-{
-	int ret = 0;
+/* Stubbed: bus_rescan_devices not used externally */
+int bus_rescan_devices(struct bus_type *bus) { return 0; }
 
-	if (!dev->driver) {
-		if (dev->parent && dev->bus->need_parent_lock)
-			device_lock(dev->parent);
-		ret = device_attach(dev);
-		if (dev->parent && dev->bus->need_parent_lock)
-			device_unlock(dev->parent);
-	}
-	return ret < 0 ? ret : 0;
-}
-
- 
-int bus_rescan_devices(struct bus_type *bus)
-{
-	return bus_for_each_dev(bus, NULL, NULL, bus_rescan_devices_helper);
-}
-
- 
-int device_reprobe(struct device *dev)
-{
-	if (dev->driver)
-		device_driver_detach(dev);
-	return bus_rescan_devices_helper(dev, NULL);
-}
+/* Stubbed: device_reprobe not used externally */
+int device_reprobe(struct device *dev) { return 0; }
 
 static int bus_add_groups(struct bus_type *bus,
 			  const struct attribute_group **groups)

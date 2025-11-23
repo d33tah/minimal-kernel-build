@@ -263,21 +263,17 @@ static int __walk_iomem_res_desc(resource_size_t start, resource_size_t end,
 	return ret;
 }
 
- 
+/* Stubbed - not used externally */
 int walk_iomem_res_desc(unsigned long desc, unsigned long flags, u64 start,
 		u64 end, void *arg, int (*func)(struct resource *, void *))
 {
-	return __walk_iomem_res_desc(start, end, flags, desc, arg, func);
+	return -EINVAL;
 }
 
- 
 int walk_system_ram_res(u64 start, u64 end, void *arg,
 			int (*func)(struct resource *, void *))
 {
-	unsigned long flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
-
-	return __walk_iomem_res_desc(start, end, flags, IORES_DESC_NONE, arg,
-				     func);
+	return -EINVAL;
 }
 
  
@@ -290,30 +286,11 @@ int walk_mem_res(u64 start, u64 end, void *arg,
 				     func);
 }
 
- 
+/* Stubbed - not used externally */
 int walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
 			  void *arg, int (*func)(unsigned long, unsigned long, void *))
 {
-	resource_size_t start, end;
-	unsigned long flags;
-	struct resource res;
-	unsigned long pfn, end_pfn;
-	int ret = -EINVAL;
-
-	start = (u64) start_pfn << PAGE_SHIFT;
-	end = ((u64)(start_pfn + nr_pages) << PAGE_SHIFT) - 1;
-	flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
-	while (start < end &&
-	       !find_next_iomem_res(start, end, flags, IORES_DESC_NONE, &res)) {
-		pfn = PFN_UP(res.start);
-		end_pfn = PFN_DOWN(res.end + 1);
-		if (end_pfn > pfn)
-			ret = (*func)(pfn, end_pfn - pfn, arg);
-		if (ret)
-			break;
-		start = res.end + 1;
-	}
-	return ret;
+	return -EINVAL;
 }
 
 static int __is_ram(unsigned long pfn, unsigned long nr_pages, void *arg)
@@ -960,11 +937,9 @@ static int devm_resource_match(struct device *dev, void *res, void *data)
 	return *ptr == data;
 }
 
- 
+/* Stubbed - not used externally */
 void devm_release_resource(struct device *dev, struct resource *new)
 {
-	WARN_ON(devres_release(dev, devm_resource_release, devm_resource_match,
-			       new));
 }
 
 struct region_devres {

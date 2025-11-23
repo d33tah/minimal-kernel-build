@@ -174,136 +174,18 @@ static BLOCKING_NOTIFIER_HEAD(power_off_prep_handler_list);
  
 static ATOMIC_NOTIFIER_HEAD(power_off_handler_list);
 
-static int sys_off_notify(struct notifier_block *nb,
-			  unsigned long mode, void *cmd)
-{
-	struct sys_off_handler *handler;
-	struct sys_off_data data = {};
-
-	handler = container_of(nb, struct sys_off_handler, nb);
-	data.cb_data = handler->cb_data;
-	data.mode = mode;
-	data.cmd = cmd;
-
-	return handler->sys_off_cb(&data);
-}
-
-static struct sys_off_handler platform_sys_off_handler;
-
-static struct sys_off_handler *alloc_sys_off_handler(int priority)
-{
-	struct sys_off_handler *handler;
-	gfp_t flags;
-
-	 
-	if (priority == SYS_OFF_PRIO_PLATFORM) {
-		handler = &platform_sys_off_handler;
-		if (handler->cb_data)
-			return ERR_PTR(-EBUSY);
-	} else {
-		if (system_state > SYSTEM_RUNNING)
-			flags = GFP_ATOMIC;
-		else
-			flags = GFP_KERNEL;
-
-		handler = kzalloc(sizeof(*handler), flags);
-		if (!handler)
-			return ERR_PTR(-ENOMEM);
-	}
-
-	return handler;
-}
-
-static void free_sys_off_handler(struct sys_off_handler *handler)
-{
-	if (handler == &platform_sys_off_handler)
-		memset(handler, 0, sizeof(*handler));
-	else
-		kfree(handler);
-}
-
- 
+/* Stubbed sys_off_handler infrastructure - not used externally */
 struct sys_off_handler *
 register_sys_off_handler(enum sys_off_mode mode,
 			 int priority,
 			 int (*callback)(struct sys_off_data *data),
 			 void *cb_data)
 {
-	struct sys_off_handler *handler;
-	int err;
-
-	handler = alloc_sys_off_handler(priority);
-	if (IS_ERR(handler))
-		return handler;
-
-	switch (mode) {
-	case SYS_OFF_MODE_POWER_OFF_PREPARE:
-		handler->list = &power_off_prep_handler_list;
-		handler->blocking = true;
-		break;
-
-	case SYS_OFF_MODE_POWER_OFF:
-		handler->list = &power_off_handler_list;
-		break;
-
-	case SYS_OFF_MODE_RESTART:
-		handler->list = &restart_handler_list;
-		break;
-
-	default:
-		free_sys_off_handler(handler);
-		return ERR_PTR(-EINVAL);
-	}
-
-	handler->nb.notifier_call = sys_off_notify;
-	handler->nb.priority = priority;
-	handler->sys_off_cb = callback;
-	handler->cb_data = cb_data;
-	handler->mode = mode;
-
-	if (handler->blocking) {
-		if (priority == SYS_OFF_PRIO_DEFAULT)
-			err = blocking_notifier_chain_register(handler->list,
-							       &handler->nb);
-		else
-			err = blocking_notifier_chain_register_unique_prio(handler->list,
-									   &handler->nb);
-	} else {
-		if (priority == SYS_OFF_PRIO_DEFAULT)
-			err = atomic_notifier_chain_register(handler->list,
-							     &handler->nb);
-		else
-			err = atomic_notifier_chain_register_unique_prio(handler->list,
-									 &handler->nb);
-	}
-
-	if (err) {
-		free_sys_off_handler(handler);
-		return ERR_PTR(err);
-	}
-
-	return handler;
+	return NULL;
 }
 
- 
 void unregister_sys_off_handler(struct sys_off_handler *handler)
 {
-	int err;
-
-	if (IS_ERR_OR_NULL(handler))
-		return;
-
-	if (handler->blocking)
-		err = blocking_notifier_chain_unregister(handler->list,
-							 &handler->nb);
-	else
-		err = atomic_notifier_chain_unregister(handler->list,
-						       &handler->nb);
-
-	 
-	WARN_ON(err);
-
-	free_sys_off_handler(handler);
 }
 
 /* Stub: devm_register_* not needed for minimal kernel */

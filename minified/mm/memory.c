@@ -718,22 +718,8 @@ static inline bool should_zap_cows(struct zap_details *details)
 	if (!details)
 		return true;
 
-	
+
 	return details->even_cows;
-}
-
-static inline bool should_zap_page(struct zap_details *details, struct page *page)
-{
-	
-	if (should_zap_cows(details))
-		return true;
-
-	
-	if (!page)
-		return true;
-
-	
-	return !PageAnon(page);
 }
 
 static inline bool zap_drop_file_uffd_wp(struct zap_details *details)

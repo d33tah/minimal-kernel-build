@@ -342,17 +342,6 @@ static inline void set_buddy_order(struct page *page, unsigned int order)
 	__SetPageBuddy(page);
 }
 
-static inline struct capture_control *task_capc(struct zone *zone)
-{
-	return NULL;
-}
-
-static inline bool
-compaction_capture(struct capture_control *capc, struct page *page,
-		   int order, int migratetype)
-{
-	return false;
-}
 
 static inline void add_to_free_list(struct page *page, struct zone *zone,
 				    unsigned int order, int migratetype)

@@ -1,3 +1,41 @@
+--- 2025-11-23 14:25 ---
+
+Session progress (continuation):
+- make vm: PASSES, prints "Hello, World!"
+- Binary: 279KB
+- Current total LOC: 217,401 (measured with cloc --vcs=git --exclude-ext=md)
+- Goal: 200,000 LOC
+- Gap: 17,401 LOC (8.0% reduction needed)
+- Session reduction: 729 LOC so far (this continuation)
+
+Additional commits this session:
+5. Stub unused timekeeping.c functions - 111 LOC reduction
+   - ktime_get_boot_fast_ns, ktime_get_tai_fast_ns
+   - ktime_get_real_fast_ns, ktime_get_fast_timestamps
+   - pvclock_gtod_register/unregister_notifier
+   - ktime_get_coarse_with_offset, ktime_mono_to_any
+   - ktime_get_raw, ktime_get_snapshot, timekeeping_warp_clock
+
+6. Stub unused rmap.c functions - 98 LOC reduction
+   - folio_referenced, folio_mkclean, pfn_mkclean_range
+
+7. Stub unused bus.c functions - 57 LOC reduction
+   - bus_create_file, bus_remove_file, subsys_find_device_by_id
+   - bus_rescan_devices, device_reprobe, drivers_probe_store
+
+8. Stub unused platform.c functions - 188 LOC reduction
+   - platform_add_devices
+   - platform_device_add_resources, platform_device_add_data
+   - platform_device_add, platform_device_del
+   - platform_device_register, platform_device_unregister
+   - platform_device_register_full
+   - __platform_driver_probe, __platform_create_bundle
+   - __platform_register_drivers, platform_unregister_drivers
+
+9. Stub unused kthread.c functions - 33 LOC reduction
+   - kthread_freezable_should_stop, kthread_probe_data
+   - kthread_bind_mask, kthread_bind, kthread_create_on_cpu
+
 --- 2025-11-23 14:06 ---
 
 Session progress:

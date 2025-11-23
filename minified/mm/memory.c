@@ -712,16 +712,6 @@ struct zap_details {
 	zap_flags_t zap_flags;		
 };
 
-static inline bool should_zap_cows(struct zap_details *details)
-{
-	
-	if (!details)
-		return true;
-
-
-	return details->even_cows;
-}
-
 static inline bool zap_drop_file_uffd_wp(struct zap_details *details)
 {
 	if (!details)
@@ -1680,28 +1670,6 @@ int apply_to_existing_page_range(struct mm_struct *mm, unsigned long addr,
 	return __apply_to_page_range(mm, addr, size, fn, data, false);
 }
 
-static inline int pte_unmap_same(struct vm_fault *vmf)
-{
-	int same = 1;
-	pte_unmap(vmf->pte);
-	vmf->pte = NULL;
-	return same;
-}
-
-static inline bool __wp_page_copy_user(struct page *dst, struct page *src,
-				       struct vm_fault *vmf)
-{
-	/* Simplified: just copy from source page if available */
-	if (likely(src)) {
-		copy_user_highpage(dst, src, vmf->address, vmf->vma);
-		return true;
-	}
-
-	/* No source - clear the page */
-	clear_highpage(dst);
-	return true;
-}
-
 static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)
 {
 	struct file *vm_file = vma->vm_file;
@@ -1923,21 +1891,6 @@ void unmap_mapping_range(struct address_space *mapping,
 	}
 
 	unmap_mapping_pages(mapping, hba, hlen, even_cows);
-}
-
-
-static inline bool should_try_to_free_swap(struct page *page,
-					   struct vm_area_struct *vma,
-					   unsigned int fault_flags)
-{
-	if (!PageSwapCache(page))
-		return false;
-	if (mem_cgroup_swap_full(page) || (vma->vm_flags & VM_LOCKED) ||
-	    PageMlocked(page))
-		return true;
-	
-	return (fault_flags & FAULT_FLAG_WRITE) && !PageKsm(page) &&
-		page_count(page) == 2;
 }
 
 vm_fault_t do_swap_page(struct vm_fault *vmf)
@@ -2284,41 +2237,6 @@ int numa_migrate_prep(struct page *page, struct vm_area_struct *vma,
 	get_page(page);
 	return -1;
 }
-
-
-static inline vm_fault_t create_huge_pmd(struct vm_fault *vmf)
-{
-	if (vma_is_anonymous(vmf->vma))
-		return do_huge_pmd_anonymous_page(vmf);
-	if (vmf->vma->vm_ops->huge_fault)
-		return vmf->vma->vm_ops->huge_fault(vmf, PE_SIZE_PMD);
-	return VM_FAULT_FALLBACK;
-}
-
-static inline vm_fault_t wp_huge_pmd(struct vm_fault *vmf)
-{
-	const bool unshare = vmf->flags & FAULT_FLAG_UNSHARE;
-
-	if (vma_is_anonymous(vmf->vma)) {
-		if (likely(!unshare) &&
-		    userfaultfd_huge_pmd_wp(vmf->vma, vmf->orig_pmd))
-			return handle_userfault(vmf, VM_UFFD_WP);
-		return do_huge_pmd_wp_page(vmf);
-	}
-	if (vmf->vma->vm_ops->huge_fault) {
-		vm_fault_t ret = vmf->vma->vm_ops->huge_fault(vmf, PE_SIZE_PMD);
-
-		if (!(ret & VM_FAULT_FALLBACK))
-			return ret;
-	}
-
-	
-	__split_huge_pmd(vmf->vma, vmf->pmd, vmf->address, false, NULL);
-
-	return VM_FAULT_FALLBACK;
-}
-
-
 
 static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 {

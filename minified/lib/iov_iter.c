@@ -938,19 +938,11 @@ void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 	};
 }
 
+/* Stubbed - not used externally */
 void iov_iter_bvec(struct iov_iter *i, unsigned int direction,
 			const struct bio_vec *bvec, unsigned long nr_segs,
 			size_t count)
 {
-	WARN_ON(direction & ~(READ | WRITE));
-	*i = (struct iov_iter){
-		.iter_type = ITER_BVEC,
-		.data_source = direction,
-		.bvec = bvec,
-		.nr_segs = nr_segs,
-		.iov_offset = 0,
-		.count = count
-	};
 }
 
 /* Stubbed iov_iter init functions - not used externally */
@@ -1035,28 +1027,10 @@ unsigned long iov_iter_alignment(const struct iov_iter *i)
 	return 0;
 }
 
+/* Stubbed - not used externally */
 unsigned long iov_iter_gap_alignment(const struct iov_iter *i)
 {
-	unsigned long res = 0;
-	unsigned long v = 0;
-	size_t size = i->count;
-	unsigned k;
-
-	if (WARN_ON(!iter_is_iovec(i)))
-		return ~0U;
-
-	for (k = 0; k < i->nr_segs; k++) {
-		if (i->iov[k].iov_len) {
-			unsigned long base = (unsigned long)i->iov[k].iov_base;
-			if (v)  
-				res |= base | v;  
-			v = base + i->iov[k].iov_len;
-			if (size <= i->iov[k].iov_len)
-				break;
-			size -= i->iov[k].iov_len;
-		}
-	}
-	return res;
+	return 0;
 }
 
 ssize_t iov_iter_get_pages(struct iov_iter *i,

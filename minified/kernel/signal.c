@@ -484,23 +484,6 @@ static bool prepare_signal(int sig, struct task_struct *p, bool force)
 	return !sig_ignored(p, sig, force);
 }
 
-static inline bool wants_signal(int sig, struct task_struct *p)
-{
-	if (sigismember(&p->blocked, sig))
-		return false;
-
-	if (p->flags & PF_EXITING)
-		return false;
-
-	if (sig == SIGKILL)
-		return true;
-
-	if (task_is_stopped_or_traced(p))
-		return false;
-
-	return task_curr(p) || !task_sigpending(p);
-}
-
 static void complete_signal(int sig, struct task_struct *p, enum pid_type type)
 {
 	return;
@@ -548,30 +531,6 @@ out_set:
 	sigaddset(&pending->signal, sig);
 	complete_signal(sig, t, type);
 	return 0;
-}
-
-static inline bool has_si_pid_and_uid(struct kernel_siginfo *info)
-{
-	bool ret = false;
-	switch (siginfo_layout(info->si_signo, info->si_code)) {
-	case SIL_KILL:
-	case SIL_CHLD:
-	case SIL_RT:
-		ret = true;
-		break;
-	case SIL_TIMER:
-	case SIL_POLL:
-	case SIL_FAULT:
-	case SIL_FAULT_TRAPNO:
-	case SIL_FAULT_MCEERR:
-	case SIL_FAULT_BNDERR:
-	case SIL_FAULT_PKUERR:
-	case SIL_FAULT_PERF_EVENT:
-	case SIL_SYS:
-		ret = false;
-		break;
-	}
-	return ret;
 }
 
 int send_signal_locked(int sig, struct kernel_siginfo *info,

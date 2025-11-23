@@ -926,15 +926,6 @@ int vma_wants_writenotify(struct vm_area_struct *vma, pgprot_t vm_page_prot)
 		mapping_can_writeback(vma->vm_file->f_mapping);
 }
 
-static inline int accountable_mapping(struct file *file, vm_flags_t vm_flags)
-{
-	
-	if (file && is_file_hugepages(file))
-		return 0;
-
-	return (vm_flags & (VM_NORESERVE | VM_SHARED | VM_WRITE)) == VM_WRITE;
-}
-
 unsigned long mmap_region(struct file *file, unsigned long addr,
 		unsigned long len, vm_flags_t vm_flags, unsigned long pgoff,
 		struct list_head *uf)

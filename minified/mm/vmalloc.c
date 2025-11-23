@@ -1148,14 +1148,15 @@ overflow:
 	return ERR_PTR(-EBUSY);
 }
 
+/* Stubbed - not used externally */
 int register_vmap_purge_notifier(struct notifier_block *nb)
 {
-	return blocking_notifier_chain_register(&vmap_notify_list, nb);
+	return 0;
 }
 
 int unregister_vmap_purge_notifier(struct notifier_block *nb)
 {
-	return blocking_notifier_chain_unregister(&vmap_notify_list, nb);
+	return 0;
 }
 
 static unsigned long lazy_max_pages(void)
@@ -1441,12 +1442,9 @@ static void _vm_unmap_aliases(unsigned long start, unsigned long end, int flush)
 	mutex_unlock(&vmap_purge_lock);
 }
 
+/* Stubbed - not used externally */
 void vm_unmap_aliases(void)
 {
-	unsigned long start = ULONG_MAX, end = 0;
-	int flush = 0;
-
-	_vm_unmap_aliases(start, end, flush);
 }
 
 void vm_unmap_ram(const void *mem, unsigned int count)

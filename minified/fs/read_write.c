@@ -775,12 +775,8 @@ SYSCALL_DEFINE6(preadv2, unsigned long, fd, const struct iovec __user *, vec,
 		unsigned long, vlen, unsigned long, pos_l, unsigned long, pos_h,
 		rwf_t, flags)
 {
-	loff_t pos = pos_from_hilo(pos_h, pos_l);
-
-	if (pos == -1)
-		return do_readv(fd, vec, vlen, flags);
-
-	return do_preadv(fd, vec, vlen, pos, flags);
+	/* Stub: preadv2 not needed for minimal kernel, preadv suffices */
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE5(pwritev, unsigned long, fd, const struct iovec __user *, vec,
@@ -795,12 +791,8 @@ SYSCALL_DEFINE6(pwritev2, unsigned long, fd, const struct iovec __user *, vec,
 		unsigned long, vlen, unsigned long, pos_l, unsigned long, pos_h,
 		rwf_t, flags)
 {
-	loff_t pos = pos_from_hilo(pos_h, pos_l);
-
-	if (pos == -1)
-		return do_writev(fd, vec, vlen, flags);
-
-	return do_pwritev(fd, vec, vlen, pos, flags);
+	/* Stub: pwritev2 not needed for minimal kernel, pwritev suffices */
+	return -ENOSYS;
 }
 
  

@@ -468,42 +468,14 @@ struct task_struct *pidfd_get_task(int pidfd, unsigned int *flags)
  
 int pidfd_create(struct pid *pid, unsigned int flags)
 {
-	int fd;
-
-	if (!pid || !pid_has_task(pid, PIDTYPE_TGID))
-		return -EINVAL;
-
-	if (flags & ~(O_NONBLOCK | O_RDWR | O_CLOEXEC))
-		return -EINVAL;
-
-	fd = anon_inode_getfd("[pidfd]", &pidfd_fops, get_pid(pid),
-			      flags | O_RDWR | O_CLOEXEC);
-	if (fd < 0)
-		put_pid(pid);
-
-	return fd;
+	/* Stub: not needed for minimal kernel */
+	return -ENOSYS;
 }
 
- 
 SYSCALL_DEFINE2(pidfd_open, pid_t, pid, unsigned int, flags)
 {
-	int fd;
-	struct pid *p;
-
-	if (flags & ~PIDFD_NONBLOCK)
-		return -EINVAL;
-
-	if (pid <= 0)
-		return -EINVAL;
-
-	p = find_get_pid(pid);
-	if (!p)
-		return -ESRCH;
-
-	fd = pidfd_create(p, flags);
-
-	put_pid(p);
-	return fd;
+	/* Stub: pidfd_open not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 void __init pid_idr_init(void)

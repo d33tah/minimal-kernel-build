@@ -1397,17 +1397,6 @@ static int do_execve(struct filename *filename,
 	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
 }
 
-static int do_execveat(int fd, struct filename *filename,
-		const char __user *const __user *__argv,
-		const char __user *const __user *__envp,
-		int flags)
-{
-	struct user_arg_ptr argv = { .ptr.native = __argv };
-	struct user_arg_ptr envp = { .ptr.native = __envp };
-
-	return do_execveat_common(fd, filename, argv, envp, flags);
-}
-
 void set_binfmt(struct linux_binfmt *new)
 {
 	struct mm_struct *mm = current->mm;
@@ -1442,7 +1431,6 @@ SYSCALL_DEFINE5(execveat,
 		const char __user *const __user *, envp,
 		int, flags)
 {
-	return do_execveat(fd,
-			   getname_uflags(filename, flags),
-			   argv, envp, flags);
+	/* Stub: execveat not needed for minimal kernel, execve suffices */
+	return -ENOSYS;
 }

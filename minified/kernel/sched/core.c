@@ -1421,21 +1421,7 @@ int can_nice(const struct task_struct *p, const int nice)
 
 SYSCALL_DEFINE1(nice, int, increment)
 {
-	long nice, retval;
-
-	
-	increment = clamp(increment, -NICE_WIDTH, NICE_WIDTH);
-	nice = task_nice(current) + increment;
-
-	nice = clamp_val(nice, MIN_NICE, MAX_NICE);
-	if (increment < 0 && !can_nice(current, nice))
-		return -EPERM;
-
-	retval = security_task_setnice(current, nice);
-	if (retval)
-		return retval;
-
-	set_user_nice(current, nice);
+	/* Stub: nice not needed for minimal kernel */
 	return 0;
 }
 

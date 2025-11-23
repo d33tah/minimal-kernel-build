@@ -308,26 +308,6 @@ void mnt_drop_write_file(struct file *file)
 	sb_end_write(file_inode(file)->i_sb);
 }
 
-static inline int mnt_hold_writers(struct mount *mnt)
-{
-	mnt->mnt.mnt_flags |= MNT_WRITE_HOLD;
-	
-	smp_mb();
-
-	
-	if (mnt_get_writers(mnt) > 0)
-		return -EBUSY;
-
-	return 0;
-}
-
-static inline void mnt_unhold_writers(struct mount *mnt)
-{
-	
-	smp_wmb();
-	mnt->mnt.mnt_flags &= ~MNT_WRITE_HOLD;
-}
-
 int sb_prepare_remount_readonly(struct super_block *sb)
 {
 	/* Stub: minimal remount handling for simple system */

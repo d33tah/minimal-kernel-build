@@ -58,64 +58,23 @@ void kernel_restart_prepare(char *cmd)
 	device_shutdown();
 }
 
- 
-int register_reboot_notifier(struct notifier_block *nb)
-{
-	return blocking_notifier_chain_register(&reboot_notifier_list, nb);
-}
+/* Stubbed: register_reboot_notifier not used externally */
+int register_reboot_notifier(struct notifier_block *nb) { return 0; }
 
- 
-int unregister_reboot_notifier(struct notifier_block *nb)
-{
-	return blocking_notifier_chain_unregister(&reboot_notifier_list, nb);
-}
+/* Stubbed: unregister_reboot_notifier not used externally */
+int unregister_reboot_notifier(struct notifier_block *nb) { return 0; }
 
-static void devm_unregister_reboot_notifier(struct device *dev, void *res)
-{
-	WARN_ON(unregister_reboot_notifier(*(struct notifier_block **)res));
-}
+/* Stubbed: devm_register_reboot_notifier not used */
+int devm_register_reboot_notifier(struct device *dev, struct notifier_block *nb) { return 0; }
 
-int devm_register_reboot_notifier(struct device *dev, struct notifier_block *nb)
-{
-	struct notifier_block **rcnb;
-	int ret;
+/* Stubbed: register_restart_handler not used */
+int register_restart_handler(struct notifier_block *nb) { return 0; }
 
-	rcnb = devres_alloc(devm_unregister_reboot_notifier,
-			    sizeof(*rcnb), GFP_KERNEL);
-	if (!rcnb)
-		return -ENOMEM;
+/* Stubbed: unregister_restart_handler not used */
+int unregister_restart_handler(struct notifier_block *nb) { return 0; }
 
-	ret = register_reboot_notifier(nb);
-	if (!ret) {
-		*rcnb = nb;
-		devres_add(dev, rcnb);
-	} else {
-		devres_free(rcnb);
-	}
-
-	return ret;
-}
-
- 
-static ATOMIC_NOTIFIER_HEAD(restart_handler_list);
-
- 
-int register_restart_handler(struct notifier_block *nb)
-{
-	return atomic_notifier_chain_register(&restart_handler_list, nb);
-}
-
- 
-int unregister_restart_handler(struct notifier_block *nb)
-{
-	return atomic_notifier_chain_unregister(&restart_handler_list, nb);
-}
-
- 
-void do_kernel_restart(char *cmd)
-{
-	atomic_notifier_call_chain(&restart_handler_list, reboot_mode, cmd);
-}
+/* Stubbed: do_kernel_restart not used */
+void do_kernel_restart(char *cmd) { }
 
 void migrate_to_reboot_cpu(void)
 {

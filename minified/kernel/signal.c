@@ -1344,87 +1344,15 @@ SYSCALL_DEFINE2(rt_sigpending, sigset_t __user *, uset, size_t, sigsetsize)
 	return 0;
 }
 
-static const struct {
-	unsigned char limit, layout;
-} sig_sicodes[] = {
-	[SIGILL]  = { NSIGILL,  SIL_FAULT },
-	[SIGFPE]  = { NSIGFPE,  SIL_FAULT },
-	[SIGSEGV] = { NSIGSEGV, SIL_FAULT },
-	[SIGBUS]  = { NSIGBUS,  SIL_FAULT },
-	[SIGTRAP] = { NSIGTRAP, SIL_FAULT },
-#if defined(SIGEMT)
-	[SIGEMT]  = { NSIGEMT,  SIL_FAULT },
-#endif
-	[SIGCHLD] = { NSIGCHLD, SIL_CHLD },
-	[SIGPOLL] = { NSIGPOLL, SIL_POLL },
-	[SIGSYS]  = { NSIGSYS,  SIL_SYS },
-};
-
-static bool known_siginfo_layout(unsigned sig, int si_code)
-{
-	if (si_code == SI_KERNEL)
-		return true;
-	else if ((si_code > SI_USER)) {
-		if (sig_specific_sicodes(sig)) {
-			if (si_code <= sig_sicodes[sig].limit)
-				return true;
-		}
-		else if (si_code <= NSIGPOLL)
-			return true;
-	}
-	else if (si_code >= SI_DETHREAD)
-		return true;
-	else if (si_code == SI_ASYNCNL)
-		return true;
-	return false;
-}
-
 enum siginfo_layout siginfo_layout(unsigned sig, int si_code)
 {
-	/* Simplified layout determination for minimal system */
-	if (si_code == SI_TIMER)
-		return SIL_TIMER;
-	else if (si_code == SI_SIGIO || si_code <= NSIGPOLL)
-		return SIL_POLL;
-	else if (si_code < 0)
-		return SIL_RT;
-	else if ((si_code > SI_USER) && (si_code < SI_KERNEL) &&
-		 (sig < ARRAY_SIZE(sig_sicodes)) &&
-		 (si_code <= sig_sicodes[sig].limit))
-		return sig_sicodes[sig].layout;
 	return SIL_KILL;
-}
-
-static inline char __user *si_expansion(const siginfo_t __user *info)
-{
-	return ((char __user *)info) + sizeof(struct kernel_siginfo);
 }
 
 int copy_siginfo_to_user(siginfo_t __user *to, const kernel_siginfo_t *from)
 {
-	char __user *expansion = si_expansion(to);
-	if (copy_to_user(to, from , sizeof(struct kernel_siginfo)))
+	if (copy_to_user(to, from, sizeof(struct kernel_siginfo)))
 		return -EFAULT;
-	if (clear_user(expansion, SI_EXPANSION_SIZE))
-		return -EFAULT;
-	return 0;
-}
-
-static int post_copy_siginfo_from_user(kernel_siginfo_t *info,
-				       const siginfo_t __user *from)
-{
-	if (unlikely(!known_siginfo_layout(info->si_signo, info->si_code))) {
-		char __user *expansion = si_expansion(from);
-		char buf[SI_EXPANSION_SIZE];
-		int i;
-		
-		if (copy_from_user(&buf, expansion, SI_EXPANSION_SIZE))
-			return -EFAULT;
-		for (i = 0; i < SI_EXPANSION_SIZE; i++) {
-			if (buf[i] != 0)
-				return -E2BIG;
-		}
-	}
 	return 0;
 }
 
@@ -1432,14 +1360,7 @@ int copy_siginfo_from_user(kernel_siginfo_t *to, const siginfo_t __user *from)
 {
 	if (copy_from_user(to, from, sizeof(struct kernel_siginfo)))
 		return -EFAULT;
-	return post_copy_siginfo_from_user(to, from);
-}
-
-static int do_sigtimedwait(const sigset_t *which, kernel_siginfo_t *info,
-		    const struct timespec64 *ts)
-{
-	/* Minimal stub: just return no signal available */
-	return -EAGAIN;
+	return 0;
 }
 
 SYSCALL_DEFINE4(rt_sigtimedwait, const sigset_t __user *, uthese,
@@ -1447,31 +1368,7 @@ SYSCALL_DEFINE4(rt_sigtimedwait, const sigset_t __user *, uthese,
 		const struct __kernel_timespec __user *, uts,
 		size_t, sigsetsize)
 {
-	sigset_t these;
-	struct timespec64 ts;
-	kernel_siginfo_t info;
-	int ret;
-
-	
-	if (sigsetsize != sizeof(sigset_t))
-		return -EINVAL;
-
-	if (copy_from_user(&these, uthese, sizeof(these)))
-		return -EFAULT;
-
-	if (uts) {
-		if (get_timespec64(&ts, uts))
-			return -EFAULT;
-	}
-
-	ret = do_sigtimedwait(&these, &info, uts ? &ts : NULL);
-
-	if (ret > 0 && uinfo) {
-		if (copy_siginfo_to_user(uinfo, &info))
-			ret = -EFAULT;
-	}
-
-	return ret;
+	return -ENOSYS;
 }
 
 static inline void prepare_kill_siginfo(int sig, struct kernel_siginfo *info)
@@ -1499,59 +1396,14 @@ SYSCALL_DEFINE4(pidfd_send_signal, int, pidfd, int, sig,
 	return -ENOSYS;
 }
 
-static int
-do_send_specific(pid_t tgid, pid_t pid, int sig, struct kernel_siginfo *info)
-{
-	struct task_struct *p;
-	int error = -ESRCH;
-
-	rcu_read_lock();
-	p = find_task_by_vpid(pid);
-	if (p && (tgid <= 0 || task_tgid_vnr(p) == tgid)) {
-		error = check_kill_permission(sig, info, p);
-		
-		if (!error && sig) {
-			error = do_send_sig_info(sig, info, p, PIDTYPE_PID);
-			
-			if (unlikely(error == -ESRCH))
-				error = 0;
-		}
-	}
-	rcu_read_unlock();
-
-	return error;
-}
-
-static int do_tkill(pid_t tgid, pid_t pid, int sig)
-{
-	struct kernel_siginfo info;
-
-	clear_siginfo(&info);
-	info.si_signo = sig;
-	info.si_errno = 0;
-	info.si_code = SI_TKILL;
-	info.si_pid = task_tgid_vnr(current);
-	info.si_uid = from_kuid_munged(current_user_ns(), current_uid());
-
-	return do_send_specific(tgid, pid, sig, &info);
-}
-
 SYSCALL_DEFINE3(tgkill, pid_t, tgid, pid_t, pid, int, sig)
 {
-	
-	if (pid <= 0 || tgid <= 0)
-		return -EINVAL;
-
-	return do_tkill(tgid, pid, sig);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE2(tkill, pid_t, pid, int, sig)
 {
-	
-	if (pid <= 0)
-		return -EINVAL;
-
-	return do_tkill(0, pid, sig);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE3(rt_sigqueueinfo, pid_t, pid, int, sig,

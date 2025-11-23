@@ -898,105 +898,22 @@ void __release_region(struct resource *parent, resource_size_t start,
 
 
 
- 
-static void devm_resource_release(struct device *dev, void *ptr)
-{
-	struct resource **r = ptr;
-
-	release_resource(*r);
-}
-
- 
+/* Stubbed: devm_request_resource not used externally */
 int devm_request_resource(struct device *dev, struct resource *root,
-			  struct resource *new)
-{
-	struct resource *conflict, **ptr;
+			  struct resource *new) { return -ENOSYS; }
 
-	ptr = devres_alloc(devm_resource_release, sizeof(*ptr), GFP_KERNEL);
-	if (!ptr)
-		return -ENOMEM;
+/* Stubbed: devm_release_resource not used externally */
+void devm_release_resource(struct device *dev, struct resource *new) { }
 
-	*ptr = new;
-
-	conflict = request_resource_conflict(root, new);
-	if (conflict) {
-		dev_err(dev, "resource collision: %pR conflicts with %s %pR\n",
-			new, conflict->name, conflict);
-		devres_free(ptr);
-		return -EBUSY;
-	}
-
-	devres_add(dev, ptr);
-	return 0;
-}
-
-static int devm_resource_match(struct device *dev, void *res, void *data)
-{
-	struct resource **ptr = res;
-
-	return *ptr == data;
-}
-
-/* Stubbed - not used externally */
-void devm_release_resource(struct device *dev, struct resource *new)
-{
-}
-
-struct region_devres {
-	struct resource *parent;
-	resource_size_t start;
-	resource_size_t n;
-};
-
-static void devm_region_release(struct device *dev, void *res)
-{
-	struct region_devres *this = res;
-
-	__release_region(this->parent, this->start, this->n);
-}
-
-static int devm_region_match(struct device *dev, void *res, void *match_data)
-{
-	struct region_devres *this = res, *match = match_data;
-
-	return this->parent == match->parent &&
-		this->start == match->start && this->n == match->n;
-}
-
+/* Stubbed: __devm_request_region not used externally */
 struct resource *
 __devm_request_region(struct device *dev, struct resource *parent,
 		      resource_size_t start, resource_size_t n, const char *name)
-{
-	struct region_devres *dr = NULL;
-	struct resource *res;
+{ return NULL; }
 
-	dr = devres_alloc(devm_region_release, sizeof(struct region_devres),
-			  GFP_KERNEL);
-	if (!dr)
-		return NULL;
-
-	dr->parent = parent;
-	dr->start = start;
-	dr->n = n;
-
-	res = __request_region(parent, start, n, name, 0);
-	if (res)
-		devres_add(dev, dr);
-	else
-		devres_free(dr);
-
-	return res;
-}
-
+/* Stubbed: __devm_release_region not used externally */
 void __devm_release_region(struct device *dev, struct resource *parent,
-			   resource_size_t start, resource_size_t n)
-{
-	struct region_devres match_data = { parent, start, n };
-
-	__release_region(parent, start, n);
-	WARN_ON(devres_destroy(dev, devm_region_release, devm_region_match,
-			       &match_data));
-}
+			   resource_size_t start, resource_size_t n) { }
 
  
 #define MAXRESERVE 4

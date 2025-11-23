@@ -1656,18 +1656,6 @@ int do_sigaction(int sig, struct k_sigaction *act, struct k_sigaction *oact)
 	return 0;
 }
 
-static inline void sigaltstack_lock(void)
-	__acquires(&current->sighand->siglock)
-{
-	spin_lock_irq(&current->sighand->siglock);
-}
-
-static inline void sigaltstack_unlock(void)
-	__releases(&current->sighand->siglock)
-{
-	spin_unlock_irq(&current->sighand->siglock);
-}
-
 static int
 do_sigaltstack (const stack_t *ss, stack_t *oss, unsigned long sp,
 		size_t min_ss_size)

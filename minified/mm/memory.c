@@ -1077,30 +1077,8 @@ static int insert_pages(struct vm_area_struct *vma, unsigned long addr,
 int vm_insert_pages(struct vm_area_struct *vma, unsigned long addr,
 			struct page **pages, unsigned long *num)
 {
-#ifdef pte_index
-	const unsigned long end_addr = addr + (*num * PAGE_SIZE) - 1;
-
-	if (addr < vma->vm_start || end_addr >= vma->vm_end)
-		return -EFAULT;
-	if (!(vma->vm_flags & VM_MIXEDMAP)) {
-		BUG_ON(mmap_read_trylock(vma->vm_mm));
-		BUG_ON(vma->vm_flags & VM_PFNMAP);
-		vma->vm_flags |= VM_MIXEDMAP;
-	}
-	
-	return insert_pages(vma, addr, pages, num, vma->vm_page_prot);
-#else
-	unsigned long idx = 0, pgcount = *num;
-	int err = -EINVAL;
-
-	for (; idx < pgcount; ++idx) {
-		err = vm_insert_page(vma, addr + (PAGE_SIZE * idx), pages[idx]);
-		if (err)
-			break;
-	}
-	*num = pgcount - idx;
-	return err;
-#endif  
+	/* Stub: vm_insert_pages not used in minimal kernel */
+	return -EINVAL;
 }
 
 int vm_insert_page(struct vm_area_struct *vma, unsigned long addr,
@@ -1152,7 +1130,8 @@ int vm_map_pages(struct vm_area_struct *vma, struct page **pages,
 int vm_map_pages_zero(struct vm_area_struct *vma, struct page **pages,
 				unsigned long num)
 {
-	return __vm_map_pages(vma, pages, num, 0);
+	/* Stub: vm_map_pages_zero not used in minimal kernel */
+	return -EINVAL;
 }
 
 static vm_fault_t insert_pfn(struct vm_area_struct *vma, unsigned long addr,
@@ -1468,206 +1447,20 @@ int vm_iomap_memory(struct vm_area_struct *vma, phys_addr_t start, unsigned long
 	return io_remap_pfn_range(vma, vma->vm_start, pfn, vm_len, vma->vm_page_prot);
 }
 
-static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
-				     unsigned long addr, unsigned long end,
-				     pte_fn_t fn, void *data, bool create,
-				     pgtbl_mod_mask *mask)
-{
-	pte_t *pte, *mapped_pte;
-	int err = 0;
-	spinlock_t *ptl;
-
-	if (create) {
-		mapped_pte = pte = (mm == &init_mm) ?
-			pte_alloc_kernel_track(pmd, addr, mask) :
-			pte_alloc_map_lock(mm, pmd, addr, &ptl);
-		if (!pte)
-			return -ENOMEM;
-	} else {
-		mapped_pte = pte = (mm == &init_mm) ?
-			pte_offset_kernel(pmd, addr) :
-			pte_offset_map_lock(mm, pmd, addr, &ptl);
-	}
-
-	BUG_ON(pmd_huge(*pmd));
-
-	arch_enter_lazy_mmu_mode();
-
-	if (fn) {
-		do {
-			if (create || !pte_none(*pte)) {
-				err = fn(pte++, addr, data);
-				if (err)
-					break;
-			}
-		} while (addr += PAGE_SIZE, addr != end);
-	}
-	*mask |= PGTBL_PTE_MODIFIED;
-
-	arch_leave_lazy_mmu_mode();
-
-	if (mm != &init_mm)
-		pte_unmap_unlock(mapped_pte, ptl);
-	return err;
-}
-
-static int apply_to_pmd_range(struct mm_struct *mm, pud_t *pud,
-				     unsigned long addr, unsigned long end,
-				     pte_fn_t fn, void *data, bool create,
-				     pgtbl_mod_mask *mask)
-{
-	pmd_t *pmd;
-	unsigned long next;
-	int err = 0;
-
-	BUG_ON(pud_huge(*pud));
-
-	if (create) {
-		pmd = pmd_alloc_track(mm, pud, addr, mask);
-		if (!pmd)
-			return -ENOMEM;
-	} else {
-		pmd = pmd_offset(pud, addr);
-	}
-	do {
-		next = pmd_addr_end(addr, end);
-		if (pmd_none(*pmd) && !create)
-			continue;
-		if (WARN_ON_ONCE(pmd_leaf(*pmd)))
-			return -EINVAL;
-		if (!pmd_none(*pmd) && WARN_ON_ONCE(pmd_bad(*pmd))) {
-			if (!create)
-				continue;
-			pmd_clear_bad(pmd);
-		}
-		err = apply_to_pte_range(mm, pmd, addr, next,
-					 fn, data, create, mask);
-		if (err)
-			break;
-	} while (pmd++, addr = next, addr != end);
-
-	return err;
-}
-
-static int apply_to_pud_range(struct mm_struct *mm, p4d_t *p4d,
-				     unsigned long addr, unsigned long end,
-				     pte_fn_t fn, void *data, bool create,
-				     pgtbl_mod_mask *mask)
-{
-	pud_t *pud;
-	unsigned long next;
-	int err = 0;
-
-	if (create) {
-		pud = pud_alloc_track(mm, p4d, addr, mask);
-		if (!pud)
-			return -ENOMEM;
-	} else {
-		pud = pud_offset(p4d, addr);
-	}
-	do {
-		next = pud_addr_end(addr, end);
-		if (pud_none(*pud) && !create)
-			continue;
-		if (WARN_ON_ONCE(pud_leaf(*pud)))
-			return -EINVAL;
-		if (!pud_none(*pud) && WARN_ON_ONCE(pud_bad(*pud))) {
-			if (!create)
-				continue;
-			pud_clear_bad(pud);
-		}
-		err = apply_to_pmd_range(mm, pud, addr, next,
-					 fn, data, create, mask);
-		if (err)
-			break;
-	} while (pud++, addr = next, addr != end);
-
-	return err;
-}
-
-static int apply_to_p4d_range(struct mm_struct *mm, pgd_t *pgd,
-				     unsigned long addr, unsigned long end,
-				     pte_fn_t fn, void *data, bool create,
-				     pgtbl_mod_mask *mask)
-{
-	p4d_t *p4d;
-	unsigned long next;
-	int err = 0;
-
-	if (create) {
-		p4d = p4d_alloc_track(mm, pgd, addr, mask);
-		if (!p4d)
-			return -ENOMEM;
-	} else {
-		p4d = p4d_offset(pgd, addr);
-	}
-	do {
-		next = p4d_addr_end(addr, end);
-		if (p4d_none(*p4d) && !create)
-			continue;
-		if (WARN_ON_ONCE(p4d_leaf(*p4d)))
-			return -EINVAL;
-		if (!p4d_none(*p4d) && WARN_ON_ONCE(p4d_bad(*p4d))) {
-			if (!create)
-				continue;
-			p4d_clear_bad(p4d);
-		}
-		err = apply_to_pud_range(mm, p4d, addr, next,
-					 fn, data, create, mask);
-		if (err)
-			break;
-	} while (p4d++, addr = next, addr != end);
-
-	return err;
-}
-
-static int __apply_to_page_range(struct mm_struct *mm, unsigned long addr,
-				 unsigned long size, pte_fn_t fn,
-				 void *data, bool create)
-{
-	pgd_t *pgd;
-	unsigned long start = addr, next;
-	unsigned long end = addr + size;
-	pgtbl_mod_mask mask = 0;
-	int err = 0;
-
-	if (WARN_ON(addr >= end))
-		return -EINVAL;
-
-	pgd = pgd_offset(mm, addr);
-	do {
-		next = pgd_addr_end(addr, end);
-		if (pgd_none(*pgd) && !create)
-			continue;
-		if (WARN_ON_ONCE(pgd_leaf(*pgd)))
-			return -EINVAL;
-		if (!pgd_none(*pgd) && WARN_ON_ONCE(pgd_bad(*pgd))) {
-			if (!create)
-				continue;
-			pgd_clear_bad(pgd);
-		}
-		err = apply_to_p4d_range(mm, pgd, addr, next,
-					 fn, data, create, &mask);
-		if (err)
-			break;
-	} while (pgd++, addr = next, addr != end);
-
-	if (mask & ARCH_PAGE_TABLE_SYNC_MASK)
-		arch_sync_kernel_mappings(start, start + size);
-
-	return err;
-}
+/* apply_to_pte/pmd/pud/p4d_range functions removed - only used by stubbed apply_to_page_range */
 
 int apply_to_page_range(struct mm_struct *mm, unsigned long addr,
 			unsigned long size, pte_fn_t fn, void *data)
 {
-	return __apply_to_page_range(mm, addr, size, fn, data, true);
+	/* Stub: apply_to_page_range not used in minimal kernel */
+	return 0;
 }
 
 int apply_to_existing_page_range(struct mm_struct *mm, unsigned long addr,
 				 unsigned long size, pte_fn_t fn, void *data)
 {
-	return __apply_to_page_range(mm, addr, size, fn, data, false);
+	/* Stub: not used in minimal kernel */
+	return 0;
 }
 
 static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)
@@ -2430,38 +2223,7 @@ int __pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
 int follow_pte(struct mm_struct *mm, unsigned long address,
 	       pte_t **ptepp, spinlock_t **ptlp)
 {
-	pgd_t *pgd;
-	p4d_t *p4d;
-	pud_t *pud;
-	pmd_t *pmd;
-	pte_t *ptep;
-
-	pgd = pgd_offset(mm, address);
-	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
-		goto out;
-
-	p4d = p4d_offset(pgd, address);
-	if (p4d_none(*p4d) || unlikely(p4d_bad(*p4d)))
-		goto out;
-
-	pud = pud_offset(p4d, address);
-	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
-		goto out;
-
-	pmd = pmd_offset(pud, address);
-	VM_BUG_ON(pmd_trans_huge(*pmd));
-
-	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
-		goto out;
-
-	ptep = pte_offset_map_lock(mm, pmd, address, ptlp);
-	if (!pte_present(*ptep))
-		goto unlock;
-	*ptepp = ptep;
-	return 0;
-unlock:
-	pte_unmap_unlock(ptep, *ptlp);
-out:
+	/* Stub: PTE following not needed for minimal kernel */
 	return -EINVAL;
 }
 

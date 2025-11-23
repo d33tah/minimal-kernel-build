@@ -372,11 +372,6 @@ static void set_load_weight(struct task_struct *p, bool update_load)
 
 static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p) { }
 static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p) { }
-static inline int uclamp_validate(struct task_struct *p,
-				  const struct sched_attr *attr)
-{
-	return -EOPNOTSUPP;
-}
 static void __setscheduler_uclamp(struct task_struct *p,
 				  const struct sched_attr *attr) { }
 static inline void uclamp_fork(struct task_struct *p) { }
@@ -1173,12 +1168,8 @@ restart:
 			return p;
 	}
 
-	BUG(); 
+	BUG();
 }
-
-static inline void sched_core_cpu_starting(unsigned int cpu) {}
-static inline void sched_core_cpu_deactivate(unsigned int cpu) {}
-static inline void sched_core_cpu_dying(unsigned int cpu) {}
 
 static struct task_struct *
 pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
@@ -1404,11 +1395,6 @@ static void __setscheduler_prio(struct task_struct *p, int prio)
 		p->sched_class = &fair_sched_class;
 
 	p->prio = prio;
-}
-
-static inline int rt_effective_prio(struct task_struct *p, int prio)
-{
-	return prio;
 }
 
 void set_user_nice(struct task_struct *p, long nice)
@@ -1809,17 +1795,6 @@ long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 out_put_task:
 	put_task_struct(p);
 	return retval;
-}
-
-static int get_user_cpu_mask(unsigned long __user *user_mask_ptr, unsigned len,
-			     struct cpumask *new_mask)
-{
-	if (len < cpumask_size())
-		cpumask_clear(new_mask);
-	else if (len > cpumask_size())
-		len = cpumask_size();
-
-	return copy_from_user(new_mask, user_mask_ptr, len) ? -EFAULT : 0;
 }
 
 /* Stub: setaffinity not needed for single-CPU minimal kernel */

@@ -65,14 +65,6 @@ void __weak unxlate_dev_mem_ptr(phys_addr_t phys, void *addr)
 }
 #endif
 
-static inline bool should_stop_iteration(void)
-{
-	if (need_resched())
-		cond_resched();
-	return signal_pending(current);
-}
-
- 
 static ssize_t read_mem(struct file *file, char __user *buf,
 			size_t count, loff_t *ppos)
 {

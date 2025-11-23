@@ -428,53 +428,14 @@ out:
 	return bytes;
 }
 
- 
+/* Stubbed fault_in functions - not used externally */
 size_t fault_in_iov_iter_readable(const struct iov_iter *i, size_t size)
 {
-	if (iter_is_iovec(i)) {
-		size_t count = min(size, iov_iter_count(i));
-		const struct iovec *p;
-		size_t skip;
-
-		size -= count;
-		for (p = i->iov, skip = i->iov_offset; count; p++, skip = 0) {
-			size_t len = min(count, p->iov_len - skip);
-			size_t ret;
-
-			if (unlikely(!len))
-				continue;
-			ret = fault_in_readable(p->iov_base + skip, len);
-			count -= len - ret;
-			if (ret)
-				break;
-		}
-		return count + size;
-	}
 	return 0;
 }
 
- 
 size_t fault_in_iov_iter_writeable(const struct iov_iter *i, size_t size)
 {
-	if (iter_is_iovec(i)) {
-		size_t count = min(size, iov_iter_count(i));
-		const struct iovec *p;
-		size_t skip;
-
-		size -= count;
-		for (p = i->iov, skip = i->iov_offset; count; p++, skip = 0) {
-			size_t len = min(count, p->iov_len - skip);
-			size_t ret;
-
-			if (unlikely(!len))
-				continue;
-			ret = fault_in_safe_writeable(p->iov_base + skip, len);
-			count -= len - ret;
-			if (ret)
-				break;
-		}
-		return count + size;
-	}
 	return 0;
 }
 
@@ -956,15 +917,9 @@ void iov_iter_revert(struct iov_iter *i, size_t unroll)
 	}
 }
 
- 
+/* Stubbed - not used externally */
 size_t iov_iter_single_seg_count(const struct iov_iter *i)
 {
-	if (i->nr_segs > 1) {
-		if (likely(iter_is_iovec(i) || iov_iter_is_kvec(i)))
-			return min(i->count, i->iov->iov_len - i->iov_offset);
-		if (iov_iter_is_bvec(i))
-			return min(i->count, i->bvec->bv_len - i->iov_offset);
-	}
 	return i->count;
 }
 
@@ -998,48 +953,20 @@ void iov_iter_bvec(struct iov_iter *i, unsigned int direction,
 	};
 }
 
+/* Stubbed iov_iter init functions - not used externally */
 void iov_iter_pipe(struct iov_iter *i, unsigned int direction,
 			struct pipe_inode_info *pipe,
 			size_t count)
 {
-	BUG_ON(direction != READ);
-	WARN_ON(pipe_full(pipe->head, pipe->tail, pipe->ring_size));
-	*i = (struct iov_iter){
-		.iter_type = ITER_PIPE,
-		.data_source = false,
-		.pipe = pipe,
-		.head = pipe->head,
-		.start_head = pipe->head,
-		.iov_offset = 0,
-		.count = count
-	};
 }
 
- 
 void iov_iter_xarray(struct iov_iter *i, unsigned int direction,
 		     struct xarray *xarray, loff_t start, size_t count)
 {
-	BUG_ON(direction & ~1);
-	*i = (struct iov_iter) {
-		.iter_type = ITER_XARRAY,
-		.data_source = direction,
-		.xarray = xarray,
-		.xarray_start = start,
-		.count = count,
-		.iov_offset = 0
-	};
 }
 
- 
 void iov_iter_discard(struct iov_iter *i, unsigned int direction, size_t count)
 {
-	BUG_ON(direction != READ);
-	*i = (struct iov_iter){
-		.iter_type = ITER_DISCARD,
-		.data_source = false,
-		.count = count,
-		.iov_offset = 0
-	};
 }
 
 static unsigned long iov_iter_alignment_iovec(const struct iov_iter *i)

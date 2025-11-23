@@ -100,15 +100,10 @@ DEFINE_PER_CPU(unsigned long, process_counts) = 0;
 
 __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);  
 
+/* Stubbed - not used externally */
 int nr_processes(void)
 {
-	int cpu;
-	int total = 0;
-
-	for_each_possible_cpu(cpu)
-		total += per_cpu(process_counts, cpu);
-
-	return total;
+	return 0;
 }
 
 void __weak arch_release_task_struct(struct task_struct *tsk)

@@ -177,47 +177,16 @@ static inline struct folio *gup_folio_next(struct page **list,
 	return folio;
 }
 
+/* Stubbed - not used externally */
 void unpin_user_pages_dirty_lock(struct page **pages, unsigned long npages,
 				 bool make_dirty)
 {
-	unsigned long i;
-	struct folio *folio;
-	unsigned int nr;
-
-	if (!make_dirty) {
-		unpin_user_pages(pages, npages);
-		return;
-	}
-
-	sanity_check_pinned_pages(pages, npages);
-	for (i = 0; i < npages; i += nr) {
-		folio = gup_folio_next(pages, npages, i, &nr);
-		
-		if (!folio_test_dirty(folio)) {
-			folio_lock(folio);
-			folio_mark_dirty(folio);
-			folio_unlock(folio);
-		}
-		gup_put_folio(folio, nr, FOLL_PIN);
-	}
 }
 
+/* Stubbed - not used externally */
 void unpin_user_page_range_dirty_lock(struct page *page, unsigned long npages,
 				      bool make_dirty)
 {
-	unsigned long i;
-	struct folio *folio;
-	unsigned int nr;
-
-	for (i = 0; i < npages; i += nr) {
-		folio = gup_folio_range_next(page, npages, i, &nr);
-		if (make_dirty && !folio_test_dirty(folio)) {
-			folio_lock(folio);
-			folio_mark_dirty(folio);
-			folio_unlock(folio);
-		}
-		gup_put_folio(folio, nr, FOLL_PIN);
-	}
 }
 
 static void unpin_user_pages_lockless(struct page **pages, unsigned long npages)
@@ -894,47 +863,12 @@ static bool vma_permits_fault(struct vm_area_struct *vma,
 	return true;
 }
 
+/* Stubbed - not used externally */
 int fixup_user_fault(struct mm_struct *mm,
 		     unsigned long address, unsigned int fault_flags,
 		     bool *unlocked)
 {
-	struct vm_area_struct *vma;
-	vm_fault_t ret;
-
-	address = untagged_addr(address);
-
-	if (unlocked)
-		fault_flags |= FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
-
-retry:
-	vma = find_extend_vma(mm, address);
-	if (!vma || address < vma->vm_start)
-		return -EFAULT;
-
-	if (!vma_permits_fault(vma, fault_flags))
-		return -EFAULT;
-
-	if ((fault_flags & FAULT_FLAG_KILLABLE) &&
-	    fatal_signal_pending(current))
-		return -EINTR;
-
-	ret = handle_mm_fault(vma, address, fault_flags, NULL);
-	if (ret & VM_FAULT_ERROR) {
-		int err = vm_fault_to_errno(ret, 0);
-
-		if (err)
-			return err;
-		BUG();
-	}
-
-	if (ret & VM_FAULT_RETRY) {
-		mmap_read_lock(mm);
-		*unlocked = true;
-		fault_flags |= FAULT_FLAG_TRIED;
-		goto retry;
-	}
-
-	return 0;
+	return -EFAULT;
 }
 
 static __always_inline long __get_user_pages_locked(struct mm_struct *mm,
@@ -1175,41 +1109,16 @@ out:
 	return 0;
 }
 
+/* Stubbed - not used externally */
 size_t fault_in_subpage_writeable(char __user *uaddr, size_t size)
 {
-	size_t faulted_in;
-
-	
-	faulted_in = size - fault_in_writeable(uaddr, size);
-	if (faulted_in)
-		faulted_in -= probe_subpage_writeable(uaddr, faulted_in);
-
-	return size - faulted_in;
+	return size;
 }
 
+/* Stubbed - not used externally */
 size_t fault_in_safe_writeable(const char __user *uaddr, size_t size)
 {
-	unsigned long start = (unsigned long)uaddr, end;
-	struct mm_struct *mm = current->mm;
-	bool unlocked = false;
-
-	if (unlikely(size == 0))
-		return 0;
-	end = PAGE_ALIGN(start + size);
-	if (end < start)
-		end = 0;
-
-	mmap_read_lock(mm);
-	do {
-		if (fixup_user_fault(mm, start, FAULT_FLAG_WRITE, &unlocked))
-			break;
-		start = (start + PAGE_SIZE) & PAGE_MASK;
-	} while (start != end);
-	mmap_read_unlock(mm);
-
-	if (size > (unsigned long)uaddr - start)
-		return size - ((unsigned long)uaddr - start);
-	return 0;
+	return size;
 }
 
 size_t fault_in_readable(const char __user *uaddr, size_t size)

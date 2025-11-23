@@ -219,12 +219,6 @@ void arch_sync_kernel_mappings(unsigned long start, unsigned long end)
 	}
 }
 
-static void dump_pagetable(unsigned long address)
-{
-}
-
-
- 
 static int is_errata93(struct pt_regs *regs, unsigned long address)
 {
 	return 0;

@@ -509,11 +509,6 @@ static inline int __set_cpus_allowed_ptr(struct task_struct *p,
 
 static inline void migrate_disable_switch(struct rq *rq, struct task_struct *p) { }
 
-static inline bool rq_has_pinned_tasks(struct rq *rq)
-{
-	return false;
-}
-
 static void
 ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 {
@@ -1081,9 +1076,6 @@ void scheduler_tick(void)
 	
 
 }
-
-static inline void sched_tick_start(int cpu) { }
-static inline void sched_tick_stop(int cpu) { }
 
 #if defined(CONFIG_PREEMPTION) && (defined(CONFIG_DEBUG_PREEMPT) || \
 				defined(CONFIG_TRACE_PREEMPT_TOGGLE))

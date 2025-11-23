@@ -4,12 +4,6 @@
 
 #define sched_clock_irqtime	(0)
 
-static u64 irqtime_tick_accounted(u64 dummy)
-{
-	return 0;
-}
-
-
 static inline void task_group_account_field(struct task_struct *p, int index,
 					    u64 tmp)
 {

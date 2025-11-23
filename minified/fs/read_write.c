@@ -818,16 +818,6 @@ ssize_t generic_copy_file_range(struct file *file_in, loff_t pos_in,
 	return -EOPNOTSUPP;
 }
 
- 
-static int generic_copy_file_checks(struct file *file_in, loff_t pos_in,
-				    struct file *file_out, loff_t pos_out,
-				    size_t *req_count, unsigned int flags)
-{
-	/* Stub: generic_copy_file_checks not needed for minimal kernel */
-	return -EOPNOTSUPP;
-}
-
- 
 ssize_t vfs_copy_file_range(struct file *file_in, loff_t pos_in,
 			    struct file *file_out, loff_t pos_out,
 			    size_t len, unsigned int flags)

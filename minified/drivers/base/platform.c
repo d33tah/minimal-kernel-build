@@ -188,21 +188,6 @@ static void platform_disable_acpi_irq(struct platform_device *pdev, int index)
 		irqresource_disabled(r, 0);
 }
 
-static void devm_platform_get_irqs_affinity_release(struct device *dev,
-						    void *res)
-{
-	struct irq_affinity_devres *ptr = res;
-	int i;
-
-	for (i = 0; i < ptr->count; i++) {
-		irq_dispose_mapping(ptr->irq[i]);
-
-		if (has_acpi_companion(dev))
-			platform_disable_acpi_irq(to_platform_device(dev), i);
-	}
-}
-
- 
 int devm_platform_get_irqs_affinity(struct platform_device *dev,
 				    struct irq_affinity *affd,
 				    unsigned int minvec,

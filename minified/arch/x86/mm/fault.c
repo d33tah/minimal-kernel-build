@@ -237,11 +237,6 @@ static int is_f00f_bug(struct pt_regs *regs, unsigned long error_code,
 	return 0;
 }
 
-static void
-show_fault_oops(struct pt_regs *regs, unsigned long error_code, unsigned long address)
-{
-}
-
 static noinline void
 pgtable_bad(struct pt_regs *regs, unsigned long error_code,
 	    unsigned long address)

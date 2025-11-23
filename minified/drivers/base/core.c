@@ -28,7 +28,6 @@
 #include "power/power.h"
 
 static LIST_HEAD(deferred_sync);
-static unsigned int defer_sync_state_count = 1;
 static DEFINE_MUTEX(fwnode_link_lock);
 static bool fw_devlink_is_permissive(void);
 static bool fw_devlink_drv_reg_done;
@@ -142,12 +141,6 @@ int device_links_read_lock_held(void)
 static void device_link_synchronize_removal(void)
 {
 	synchronize_srcu(&device_links_srcu);
-}
-
-static void device_link_remove_from_lists(struct device_link *link)
-{
-	list_del_rcu(&link->s_node);
-	list_del_rcu(&link->c_node);
 }
 
 int device_is_dependent(struct device *dev, void *target)
@@ -475,12 +468,6 @@ static void fw_devlink_parse_fwtree(struct fwnode_handle *fwnode)
 void fw_devlink_drivers_done(void)
 {
 	fw_devlink_drv_reg_done = true;
-}
-
-static void __fw_devlink_link_to_suppliers(struct device *dev,
-					   struct fwnode_handle *fwnode)
-{
-	/* Stub: firmware device linking not needed for minimal kernel */
 }
 
 int (*platform_notify)(struct device *dev) = NULL;

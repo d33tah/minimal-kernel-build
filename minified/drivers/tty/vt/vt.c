@@ -106,8 +106,6 @@ int want_console = -1;
 
 static struct vc_data *master_display_fg;
 
-static int scrollback_delta;
-
 int (*console_blank_hook)(int);
 
 static DEFINE_TIMER(console_timer, blank_screen_t);
@@ -185,12 +183,6 @@ typedef uint32_t char32_t;
 struct uni_screen {
 	char32_t *lines[0];
 };
-
-static struct uni_screen *vc_uniscr_alloc(unsigned int cols, unsigned int rows)
-{
-	 
-	return NULL;
-}
 
 static void vc_uniscr_free(struct uni_screen *uniscr)
 {
@@ -822,13 +814,6 @@ static void default_attr(struct vc_data *vc)
 	vc->state.blink = false;
 	vc->state.color = vc->vc_def_color;
 }
-
-static void respond_string(const char *p, size_t len, struct tty_port *port)
-{
-	tty_insert_flip_string(port, p, len);
-	tty_flip_buffer_push(port);
-}
-
 
 void mouse_report(struct tty_struct *tty, int butt, int mrx, int mry)
 {

@@ -30,8 +30,6 @@
 #undef pr_fmt
 #define pr_fmt(fmt) "" fmt
 
-static bool __read_mostly pat_disabled = true;
-
 void pat_disable(const char *msg_reason) { }
 
 static int __init nopat(char *str)

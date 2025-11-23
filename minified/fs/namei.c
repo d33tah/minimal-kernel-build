@@ -1850,26 +1850,14 @@ int vfs_mkobj(struct dentry *dentry, umode_t mode,
 		int (*f)(struct dentry *, umode_t, void *),
 		void *arg)
 {
-	struct inode *dir = dentry->d_parent->d_inode;
-	int error = may_create(&init_user_ns, dir, dentry);
-	if (error)
-		return error;
-
-	mode &= S_IALLUGO;
-	mode |= S_IFREG;
-	error = security_inode_create(dir, dentry, mode);
-	if (error)
-		return error;
-	error = f(dentry, mode, arg);
-	if (!error)
-		fsnotify_create(dir, dentry);
-	return error;
+	/* Stub: vfs_mkobj not used in minimal kernel */
+	return -ENOENT;
 }
 
 bool may_open_dev(const struct path *path)
 {
-	return !(path->mnt->mnt_flags & MNT_NODEV) &&
-		!(path->mnt->mnt_sb->s_iflags & SB_I_NODEV);
+	/* Stub: device opening check not used in minimal kernel */
+	return true;
 }
 
 static int may_open(struct user_namespace *mnt_userns, const struct path *path,
@@ -2735,12 +2723,8 @@ void page_put_link(void *arg)
 
 int page_readlink(struct dentry *dentry, char __user *buffer, int buflen)
 {
-	DEFINE_DELAYED_CALL(done);
-	int res = readlink_copy(buffer, buflen,
-				page_get_link(dentry, d_inode(dentry),
-					      &done));
-	do_delayed_call(&done);
-	return res;
+	/* Stub: page readlink not used in minimal kernel */
+	return -EINVAL;
 }
 
 int page_symlink(struct inode *inode, const char *symname, int len)

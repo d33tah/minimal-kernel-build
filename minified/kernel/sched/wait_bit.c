@@ -55,50 +55,17 @@ int __sched out_of_line_wait_on_bit(void *word, int bit,
 	return __wait_on_bit(wq_head, &wq_entry, action, mode);
 }
 
-int __sched out_of_line_wait_on_bit_timeout(
-	void *word, int bit, wait_bit_action_f *action,
-	unsigned mode, unsigned long timeout)
-{
-	struct wait_queue_head *wq_head = bit_waitqueue(word, bit);
-	DEFINE_WAIT_BIT(wq_entry, word, bit);
+/* Stubbed: out_of_line_wait_on_bit_timeout not used */
+int __sched out_of_line_wait_on_bit_timeout(void *word, int bit, wait_bit_action_f *action,
+	unsigned mode, unsigned long timeout) { return 0; }
 
-	wq_entry.key.timeout = jiffies + timeout;
+/* Stubbed: __wait_on_bit_lock not used */
+int __sched __wait_on_bit_lock(struct wait_queue_head *wq_head, struct wait_bit_queue_entry *wbq_entry,
+			wait_bit_action_f *action, unsigned mode) { return 0; }
 
-	return __wait_on_bit(wq_head, &wq_entry, action, mode);
-}
-
-int __sched
-__wait_on_bit_lock(struct wait_queue_head *wq_head, struct wait_bit_queue_entry *wbq_entry,
-			wait_bit_action_f *action, unsigned mode)
-{
-	int ret = 0;
-
-	for (;;) {
-		prepare_to_wait_exclusive(wq_head, &wbq_entry->wq_entry, mode);
-		if (test_bit(wbq_entry->key.bit_nr, wbq_entry->key.flags)) {
-			ret = action(&wbq_entry->key, mode);
-			 
-			if (ret)
-				finish_wait(wq_head, &wbq_entry->wq_entry);
-		}
-		if (!test_and_set_bit(wbq_entry->key.bit_nr, wbq_entry->key.flags)) {
-			if (!ret)
-				finish_wait(wq_head, &wbq_entry->wq_entry);
-			return 0;
-		} else if (ret) {
-			return ret;
-		}
-	}
-}
-
+/* Stubbed: out_of_line_wait_on_bit_lock not used */
 int __sched out_of_line_wait_on_bit_lock(void *word, int bit,
-					 wait_bit_action_f *action, unsigned mode)
-{
-	struct wait_queue_head *wq_head = bit_waitqueue(word, bit);
-	DEFINE_WAIT_BIT(wq_entry, word, bit);
-
-	return __wait_on_bit_lock(wq_head, &wq_entry, action, mode);
-}
+					 wait_bit_action_f *action, unsigned mode) { return 0; }
 
 void __wake_up_bit(struct wait_queue_head *wq_head, void *word, int bit)
 {
@@ -119,41 +86,11 @@ wait_queue_head_t *__var_waitqueue(void *p)
 	return bit_wait_table + hash_ptr(p, WAIT_TABLE_BITS);
 }
 
-static int
-var_wake_function(struct wait_queue_entry *wq_entry, unsigned int mode,
-		  int sync, void *arg)
-{
-	struct wait_bit_key *key = arg;
-	struct wait_bit_queue_entry *wbq_entry =
-		container_of(wq_entry, struct wait_bit_queue_entry, wq_entry);
+/* Stubbed: init_wait_var_entry not used */
+void init_wait_var_entry(struct wait_bit_queue_entry *wbq_entry, void *var, int flags) { }
 
-	if (wbq_entry->key.flags != key->flags ||
-	    wbq_entry->key.bit_nr != key->bit_nr)
-		return 0;
-
-	return autoremove_wake_function(wq_entry, mode, sync, key);
-}
-
-void init_wait_var_entry(struct wait_bit_queue_entry *wbq_entry, void *var, int flags)
-{
-	*wbq_entry = (struct wait_bit_queue_entry){
-		.key = {
-			.flags	= (var),
-			.bit_nr = -1,
-		},
-		.wq_entry = {
-			.flags	 = flags,
-			.private = current,
-			.func	 = var_wake_function,
-			.entry	 = LIST_HEAD_INIT(wbq_entry->wq_entry.entry),
-		},
-	};
-}
-
-void wake_up_var(void *var)
-{
-	__wake_up_bit(__var_waitqueue(var), var, -1);
-}
+/* Stubbed: wake_up_var not used */
+void wake_up_var(void *var) { }
 
 __sched int bit_wait(struct wait_bit_key *word, int mode)
 {
@@ -164,40 +101,14 @@ __sched int bit_wait(struct wait_bit_key *word, int mode)
 	return 0;
 }
 
-__sched int bit_wait_io(struct wait_bit_key *word, int mode)
-{
-	io_schedule();
-	if (signal_pending_state(mode, current))
-		return -EINTR;
+/* Stubbed: bit_wait_io not used */
+__sched int bit_wait_io(struct wait_bit_key *word, int mode) { return 0; }
 
-	return 0;
-}
+/* Stubbed: bit_wait_timeout not used */
+__sched int bit_wait_timeout(struct wait_bit_key *word, int mode) { return 0; }
 
-__sched int bit_wait_timeout(struct wait_bit_key *word, int mode)
-{
-	unsigned long now = READ_ONCE(jiffies);
-
-	if (time_after_eq(now, word->timeout))
-		return -EAGAIN;
-	schedule_timeout(word->timeout - now);
-	if (signal_pending_state(mode, current))
-		return -EINTR;
-
-	return 0;
-}
-
-__sched int bit_wait_io_timeout(struct wait_bit_key *word, int mode)
-{
-	unsigned long now = READ_ONCE(jiffies);
-
-	if (time_after_eq(now, word->timeout))
-		return -EAGAIN;
-	io_schedule_timeout(word->timeout - now);
-	if (signal_pending_state(mode, current))
-		return -EINTR;
-
-	return 0;
-}
+/* Stubbed: bit_wait_io_timeout not used */
+__sched int bit_wait_io_timeout(struct wait_bit_key *word, int mode) { return 0; }
 
 void __init wait_bit_init(void)
 {

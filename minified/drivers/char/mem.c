@@ -102,12 +102,6 @@ static pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
 }
 #endif
 
-
-static inline int private_mapping_ok(struct vm_area_struct *vma)
-{
-	return 1;
-}
-
 static const struct vm_operations_struct mmap_mem_ops = {
 	.access = generic_access_phys
 };

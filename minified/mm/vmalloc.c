@@ -494,9 +494,10 @@ struct page *vmalloc_to_page(const void *vmalloc_addr)
 	return NULL;
 }
 
+/* Stubbed - not used externally */
 unsigned long vmalloc_to_pfn(const void *vmalloc_addr)
 {
-	return page_to_pfn(vmalloc_to_page(vmalloc_addr));
+	return 0;
 }
 
 #define DEBUG_AUGMENT_PROPAGATE_CHECK 0
@@ -1447,65 +1448,15 @@ void vm_unmap_aliases(void)
 {
 }
 
+/* Stubbed - not used externally */
 void vm_unmap_ram(const void *mem, unsigned int count)
 {
-	unsigned long size = (unsigned long)count << PAGE_SHIFT;
-	unsigned long addr = (unsigned long)kasan_reset_tag(mem);
-	struct vmap_area *va;
-
-	might_sleep();
-	BUG_ON(!addr);
-	BUG_ON(addr < VMALLOC_START);
-	BUG_ON(addr > VMALLOC_END);
-	BUG_ON(!PAGE_ALIGNED(addr));
-
-	kasan_poison_vmalloc(mem, size);
-
-	if (likely(count <= VMAP_MAX_ALLOC)) {
-		debug_check_no_locks_freed(mem, size);
-		vb_free(addr, size);
-		return;
-	}
-
-	va = find_vmap_area(addr);
-	BUG_ON(!va);
-	debug_check_no_locks_freed((void *)va->va_start,
-				    (va->va_end - va->va_start));
-	free_unmap_vmap_area(va);
 }
 
+/* Stubbed - not used externally */
 void *vm_map_ram(struct page **pages, unsigned int count, int node)
 {
-	unsigned long size = (unsigned long)count << PAGE_SHIFT;
-	unsigned long addr;
-	void *mem;
-
-	if (likely(count <= VMAP_MAX_ALLOC)) {
-		mem = vb_alloc(size, GFP_KERNEL);
-		if (IS_ERR(mem))
-			return NULL;
-		addr = (unsigned long)mem;
-	} else {
-		struct vmap_area *va;
-		va = alloc_vmap_area(size, PAGE_SIZE,
-				VMALLOC_START, VMALLOC_END, node, GFP_KERNEL);
-		if (IS_ERR(va))
-			return NULL;
-
-		addr = va->va_start;
-		mem = (void *)addr;
-	}
-
-	if (vmap_pages_range(addr, addr + size, PAGE_KERNEL,
-				pages, PAGE_SHIFT) < 0) {
-		vm_unmap_ram(mem, count);
-		return NULL;
-	}
-
-	
-	mem = kasan_unpoison_vmalloc(mem, size, KASAN_VMALLOC_PROT_NORMAL);
-
-	return mem;
+	return NULL;
 }
 
 static struct vm_struct *vmlist __initdata;
@@ -1858,15 +1809,9 @@ static inline void __vfree_deferred(const void *addr)
 		schedule_work(&p->wq);
 }
 
+/* Stubbed - not used externally */
 void vfree_atomic(const void *addr)
 {
-	BUG_ON(in_nmi());
-
-	kmemleak_free(addr);
-
-	if (!addr)
-		return;
-	__vfree_deferred(addr);
 }
 
 static void __vfree(const void *addr)
@@ -2208,11 +2153,10 @@ void *vmalloc(unsigned long size)
 				__builtin_return_address(0));
 }
 
+/* Stubbed - not used externally */
 void *vmalloc_huge(unsigned long size, gfp_t gfp_mask)
 {
-	return __vmalloc_node_range(size, 1, VMALLOC_START, VMALLOC_END,
-				    gfp_mask, PAGE_KERNEL, VM_ALLOW_HUGE_VMAP,
-				    NUMA_NO_NODE, __builtin_return_address(0));
+	return NULL;
 }
 
 void *vzalloc(unsigned long size)
@@ -2221,40 +2165,34 @@ void *vzalloc(unsigned long size)
 				__builtin_return_address(0));
 }
 
+/* Stubbed - not used externally */
 void *vmalloc_user(unsigned long size)
 {
-	return __vmalloc_node_range(size, SHMLBA,  VMALLOC_START, VMALLOC_END,
-				    GFP_KERNEL | __GFP_ZERO, PAGE_KERNEL,
-				    VM_USERMAP, NUMA_NO_NODE,
-				    __builtin_return_address(0));
+	return NULL;
 }
 
+/* Stubbed - not used externally */
 void *vmalloc_node(unsigned long size, int node)
 {
-	return __vmalloc_node(size, 1, GFP_KERNEL, node,
-			__builtin_return_address(0));
+	return NULL;
 }
 
+/* Stubbed - not used externally */
 void *vzalloc_node(unsigned long size, int node)
 {
-	return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_ZERO, node,
-				__builtin_return_address(0));
+	return NULL;
 }
 
-#define GFP_VMALLOC32 (GFP_DMA32 | GFP_KERNEL)
-
+/* Stubbed - not used externally */
 void *vmalloc_32(unsigned long size)
 {
-	return __vmalloc_node(size, 1, GFP_VMALLOC32, NUMA_NO_NODE,
-			__builtin_return_address(0));
+	return NULL;
 }
 
+/* Stubbed - not used externally */
 void *vmalloc_32_user(unsigned long size)
 {
-	return __vmalloc_node_range(size, SHMLBA,  VMALLOC_START, VMALLOC_END,
-				    GFP_VMALLOC32 | __GFP_ZERO, PAGE_KERNEL,
-				    VM_USERMAP, NUMA_NO_NODE,
-				    __builtin_return_address(0));
+	return NULL;
 }
 
 long vread(char *buf, char *addr, unsigned long count)

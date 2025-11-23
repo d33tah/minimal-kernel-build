@@ -1694,46 +1694,6 @@ generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 	return filemap_read(iocb, iter, retval);
 }
 
-static inline loff_t folio_seek_hole_data(struct xa_state *xas,
-		struct address_space *mapping, struct folio *folio,
-		loff_t start, loff_t end, bool seek_data)
-{
-	const struct address_space_operations *ops = mapping->a_ops;
-	size_t offset, bsz = i_blocksize(mapping->host);
-
-	if (xa_is_value(folio) || folio_test_uptodate(folio))
-		return seek_data ? start : end;
-	if (!ops->is_partially_uptodate)
-		return seek_data ? end : start;
-
-	xas_pause(xas);
-	rcu_read_unlock();
-	folio_lock(folio);
-	if (unlikely(folio->mapping != mapping))
-		goto unlock;
-
-	offset = offset_in_folio(folio, start) & ~(bsz - 1);
-
-	do {
-		if (ops->is_partially_uptodate(folio, offset, bsz) ==
-							seek_data)
-			break;
-		start = (start + bsz) & ~(bsz - 1);
-		offset += bsz;
-	} while (offset < folio_size(folio));
-unlock:
-	folio_unlock(folio);
-	rcu_read_lock();
-	return start;
-}
-
-static inline size_t seek_folio_size(struct xa_state *xas, struct folio *folio)
-{
-	if (xa_is_value(folio))
-		return PAGE_SIZE << xa_get_order(xas->xa, xas->xa_index);
-	return folio_size(folio);
-}
-
 loff_t mapping_seek_hole_data(struct address_space *mapping, loff_t start,
 		loff_t end, int whence)
 {

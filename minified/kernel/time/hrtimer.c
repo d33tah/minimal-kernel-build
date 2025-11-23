@@ -839,8 +839,6 @@ static __latent_entropy void hrtimer_run_softirq(struct softirq_action *h)
 	hrtimer_cpu_base_unlock_expiry(cpu_base);
 }
 
-static inline void __hrtimer_peek_ahead_timers(void) { }
-
 void hrtimer_run_queues(void)
 {
 	struct hrtimer_cpu_base *cpu_base = this_cpu_ptr(&hrtimer_bases);

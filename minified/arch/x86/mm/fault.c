@@ -272,40 +272,11 @@ static noinline void
 page_fault_oops(struct pt_regs *regs, unsigned long error_code,
 		unsigned long address)
 {
-	unsigned long flags;
-	int sig;
-
-	if (user_mode(regs)) {
-		 
-		goto oops;
-	}
-
-
-	 
-	if (IS_ENABLED(CONFIG_EFI))
-		efi_crash_gracefully_on_page_fault(address);
-
-	 
-	if (!(error_code & X86_PF_PROT) &&
-	    kfence_handle_page_fault(address, error_code & X86_PF_WRITE, regs))
-		return;
-
-oops:
-	 
-	flags = oops_begin();
-
-	show_fault_oops(regs, error_code, address);
-
-	if (task_stack_end_corrupted(current))
-		printk(KERN_EMERG "Thread overran stack, or stack corrupted\n");
-
-	sig = SIGKILL;
+	/* Simplified: just die with minimal output */
+	unsigned long flags = oops_begin();
+	int sig = SIGKILL;
 	if (__die("Oops", regs, error_code))
 		sig = 0;
-
-	 
-	printk(KERN_DEFAULT "CR2: %016lx\n", address);
-
 	oops_end(flags, regs, sig);
 }
 

@@ -1,3 +1,77 @@
+--- 2025-11-23 12:08 ---
+
+Session progress:
+- make vm: PASSES, prints "Hello, World!"
+- Binary: 283KB
+- Current total LOC: 218,660 (measured with cloc --vcs=git --exclude-ext=md)
+- Goal: 200,000 LOC
+- Gap: 18,660 LOC (8.5% reduction needed)
+- Session reduction: ~530 LOC total (this continuation)
+
+Commits this session:
+1. Stub unused bitmap functions - 372 LOC reduction
+   - Stubbed bitmap_parse_user, bitmap_parselist, bitmap_parse
+   - Stubbed bitmap_remap, bitmap_bitremap, bitmap_ord_to_pos
+   - Stubbed bitmap_find_free_region, bitmap_allocate_region, bitmap_free
+   - Stubbed devm_bitmap_alloc, devm_bitmap_zalloc
+
+2. Stub unused iov_iter functions - 73 LOC reduction
+   - Stubbed fault_in_iov_iter_readable/writeable
+   - Stubbed iov_iter_pipe, iov_iter_xarray, iov_iter_discard
+   - Stubbed iov_iter_single_seg_count
+
+3. Stub unused e820 query functions - 19 LOC reduction
+   - Stubbed e820__mapped_raw_any, e820__mapped_any
+   - Stubbed e820__get_entry_type
+
+4. Stub unused clocksource suspend timing - 39 LOC reduction
+   - Stubbed clocksource_start_suspend_timing
+   - Stubbed clocksource_stop_suspend_timing
+
+5. Stub unused vmalloc notifier functions - 2 LOC reduction
+   - Stubbed register_vmap_purge_notifier, unregister_vmap_purge_notifier
+   - Stubbed vm_unmap_aliases
+
+6. Stub unused resource walk functions - 25 LOC reduction
+   - Stubbed walk_iomem_res_desc, walk_system_ram_res
+   - Stubbed walk_system_ram_range, devm_release_resource
+
+Analysis:
+- Systematic search for unused exported functions continues to yield results
+- Many subsystems have query/walk/enumerate functions that aren't used
+- Focus: continue finding internal functions not called externally
+- Still need ~18,660 LOC reduction to reach goal
+
+--- 2025-11-23 11:53 ---
+
+Session progress:
+- make vm: PASSES, prints "Hello, World!"
+- Binary: 285KB
+- Current total LOC: 219,073 (measured with cloc --vcs=git --exclude-ext=md)
+- Goal: 200,000 LOC
+- Gap: 19,073 LOC (8.7% reduction needed)
+- Session reduction: 606 LOC total
+
+Commits this session:
+1. Stub unused signal and kthread worker code - 393 LOC reduction
+   - Stubbed tkill, tgkill, rt_sigtimedwait syscalls
+   - Removed sig_sicodes, known_siginfo_layout, siginfo helpers
+   - Stubbed entire kthread worker infrastructure (~377 LOC)
+
+2. Stub unused sys_off_handler infrastructure - 93 LOC reduction
+   - Stubbed register_sys_off_handler, unregister_sys_off_handler
+   - Removed alloc_sys_off_handler, free_sys_off_handler, sys_off_notify
+
+3. Stub unused percpu IRQ functions - 120 LOC reduction
+   - Stubbed enable/disable_percpu_irq/nmi
+   - Stubbed remove/free_percpu_irq/nmi, setup_percpu_irq
+   - Removed __free_percpu_irq, __request_percpu_irq
+
+Analysis:
+- Good progress finding unused internal functions
+- Many kernel subsystems have substantial unused code
+- Focus: find more internal functions that are not called externally
+
 --- 2025-11-23 11:35 ---
 
 Session progress:

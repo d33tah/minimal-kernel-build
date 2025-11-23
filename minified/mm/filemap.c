@@ -266,46 +266,30 @@ static inline int __filemap_fdatawrite(struct address_space *mapping,
 	return __filemap_fdatawrite_range(mapping, 0, LLONG_MAX, sync_mode);
 }
 
+/* Stubbed - not used externally */
 int filemap_fdatawrite(struct address_space *mapping)
 {
-	return __filemap_fdatawrite(mapping, WB_SYNC_ALL);
+	return 0;
 }
 
+/* Stubbed - not used externally */
 int filemap_fdatawrite_range(struct address_space *mapping, loff_t start,
 				loff_t end)
 {
-	return __filemap_fdatawrite_range(mapping, start, end, WB_SYNC_ALL);
+	return 0;
 }
 
+/* Stubbed - not used externally */
 int filemap_flush(struct address_space *mapping)
 {
-	return __filemap_fdatawrite(mapping, WB_SYNC_NONE);
+	return 0;
 }
 
+/* Stubbed - not used externally */
 bool filemap_range_has_page(struct address_space *mapping,
 			   loff_t start_byte, loff_t end_byte)
 {
-	struct page *page;
-	XA_STATE(xas, &mapping->i_pages, start_byte >> PAGE_SHIFT);
-	pgoff_t max = end_byte >> PAGE_SHIFT;
-
-	if (end_byte < start_byte)
-		return false;
-
-	rcu_read_lock();
-	for (;;) {
-		page = xas_find(&xas, max);
-		if (xas_retry(&xas, page))
-			continue;
-		
-		if (xa_is_value(page))
-			continue;
-		
-		break;
-	}
-	rcu_read_unlock();
-
-	return page != NULL;
+	return false;
 }
 
 static void __filemap_fdatawait_range(struct address_space *mapping,
@@ -620,24 +604,16 @@ int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 	return ret;
 }
 
+/* Stubbed - not used externally */
 void filemap_invalidate_lock_two(struct address_space *mapping1,
 				 struct address_space *mapping2)
 {
-	if (mapping1 > mapping2)
-		swap(mapping1, mapping2);
-	if (mapping1)
-		down_write(&mapping1->invalidate_lock);
-	if (mapping2 && mapping1 != mapping2)
-		down_write_nested(&mapping2->invalidate_lock, 1);
 }
 
+/* Stubbed - not used externally */
 void filemap_invalidate_unlock_two(struct address_space *mapping1,
 				   struct address_space *mapping2)
 {
-	if (mapping1)
-		up_write(&mapping1->invalidate_lock);
-	if (mapping2 && mapping1 != mapping2)
-		up_write(&mapping2->invalidate_lock);
 }
 
 #define PAGE_WAIT_TABLE_BITS 8
@@ -831,20 +807,15 @@ int folio_wait_bit_killable(struct folio *folio, int bit_nr)
 	return folio_wait_bit_common(folio, bit_nr, TASK_KILLABLE, SHARED);
 }
 
+/* Stubbed - not used externally */
 int folio_put_wait_locked(struct folio *folio, int state)
 {
-	return folio_wait_bit_common(folio, PG_locked, state, DROP);
+	return 0;
 }
 
+/* Stubbed - not used externally */
 void folio_add_wait_queue(struct folio *folio, wait_queue_entry_t *waiter)
 {
-	wait_queue_head_t *q = folio_waitqueue(folio);
-	unsigned long flags;
-
-	spin_lock_irqsave(&q->lock, flags);
-	__add_wait_queue_entry_tail(q, waiter);
-	folio_set_waiters(folio);
-	spin_unlock_irqrestore(&q->lock, flags);
 }
 
 #ifndef clear_bit_unlock_is_negative_byte

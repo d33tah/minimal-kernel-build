@@ -131,21 +131,6 @@ static void __set_cyc2ns_scale(unsigned long khz, int cpu, unsigned long long ts
 	c2n->data[1] = data;
 }
 
-static void set_cyc2ns_scale(unsigned long khz, int cpu, unsigned long long tsc_now)
-{
-	unsigned long flags;
-
-	local_irq_save(flags);
-	sched_clock_idle_sleep_event();
-
-	if (khz)
-		__set_cyc2ns_scale(khz, cpu, tsc_now);
-
-	sched_clock_idle_wakeup_event();
-	local_irq_restore(flags);
-}
-
- 
 static void __init cyc2ns_init_boot_cpu(void)
 {
 	struct cyc2ns *c2n = this_cpu_ptr(&cyc2ns);

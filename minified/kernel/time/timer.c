@@ -605,8 +605,6 @@ static inline void timer_base_init_expiry_lock(struct timer_base *base) { }
 static inline void timer_base_lock_expiry(struct timer_base *base) { }
 static inline void timer_base_unlock_expiry(struct timer_base *base) { }
 static inline void timer_sync_wait_running(struct timer_base *base) { }
-static inline void del_timer_wait_running(struct timer_list *timer) { }
-
 
 static void call_timer_fn(struct timer_list *timer,
 			  void (*fn)(struct timer_list *),

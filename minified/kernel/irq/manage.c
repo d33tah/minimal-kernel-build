@@ -50,17 +50,8 @@ static void __synchronize_hardirq(struct irq_desc *desc, bool sync_chip)
 	} while (inprogress);
 }
 
-bool synchronize_hardirq(unsigned int irq)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-
-	if (desc) {
-		__synchronize_hardirq(desc, false);
-		return !atomic_read(&desc->threads_active);
-	}
-
-	return true;
-}
+/* Stubbed: synchronize_hardirq not used externally */
+bool synchronize_hardirq(unsigned int irq) { return true; }
 
 void synchronize_irq(unsigned int irq)
 {
@@ -109,18 +100,11 @@ void disable_irq(unsigned int irq)
 		synchronize_irq(irq);
 }
 
-bool disable_hardirq(unsigned int irq)
-{
-	if (!__disable_irq_nosync(irq))
-		return synchronize_hardirq(irq);
+/* Stubbed: disable_hardirq not used externally */
+bool disable_hardirq(unsigned int irq) { return false; }
 
-	return false;
-}
-
-void disable_nmi_nosync(unsigned int irq)
-{
-	disable_irq_nosync(irq);
-}
+/* Stubbed: disable_nmi_nosync not used externally */
+void disable_nmi_nosync(unsigned int irq) { }
 
 void __enable_irq(struct irq_desc *desc)
 {
@@ -160,10 +144,8 @@ out:
 	irq_put_desc_busunlock(desc, flags);
 }
 
-void enable_nmi(unsigned int irq)
-{
-	enable_irq(irq);
-}
+/* Stubbed: enable_nmi not used externally */
+void enable_nmi(unsigned int irq) { }
 
 int irq_set_irq_wake(unsigned int irq, unsigned int on)
 {
@@ -171,23 +153,8 @@ int irq_set_irq_wake(unsigned int irq, unsigned int on)
 	return 0;
 }
 
-int can_request_irq(unsigned int irq, unsigned long irqflags)
-{
-	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_lock(irq, &flags, 0);
-	int canrequest = 0;
-
-	if (!desc)
-		return 0;
-
-	if (irq_settings_can_request(desc)) {
-		if (!desc->action ||
-		    irqflags & desc->action->flags & IRQF_SHARED)
-			canrequest = 1;
-	}
-	irq_put_desc_unlock(desc, flags);
-	return canrequest;
-}
+/* Stubbed: can_request_irq not used externally */
+int can_request_irq(unsigned int irq, unsigned long irqflags) { return 0; }
 
 int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 {

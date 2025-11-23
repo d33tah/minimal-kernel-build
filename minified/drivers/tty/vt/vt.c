@@ -166,14 +166,6 @@ static inline unsigned short *screenpos(const struct vc_data *vc, int offset,
 	return p;
 }
 
-static inline void scrolldelta(int lines)
-{
-	
-	
-	scrollback_delta += lines;
-	schedule_console_callback();
-}
-
 void schedule_console_callback(void)
 {
 	schedule_work(&console_work);
@@ -637,18 +629,6 @@ err_free:
 	return err;
 }
 
-static inline int resize_screen(struct vc_data *vc, int width, int height,
-				int user)
-{
-	
-	int err = 0;
-
-	if (vc->vc_sw->con_resize)
-		err = vc->vc_sw->con_resize(vc, width, height, user);
-
-	return err;
-}
-
 static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
 				unsigned int cols, unsigned int lines)
 {
@@ -795,10 +775,6 @@ static inline void bs(struct vc_data *vc)
 	}
 }
 
-static inline void del(struct vc_data *vc)
-{
-	
-}
 
 static void csi_J(struct vc_data *vc, int vpar)
 {
@@ -853,20 +829,6 @@ static void respond_string(const char *p, size_t len, struct tty_port *port)
 	tty_flip_buffer_push(port);
 }
 
-static inline void status_report(struct tty_struct *tty)
-{
-	static const char teminal_ok[] = "\033[0n";
-
-	respond_string(teminal_ok, strlen(teminal_ok), tty->port);
-}
-
-static inline void respond_ID(struct tty_struct *tty)
-{
-	
-	static const char vt102_id[] = "\033[?6c";
-
-	respond_string(vt102_id, strlen(vt102_id), tty->port);
-}
 
 void mouse_report(struct tty_struct *tty, int butt, int mrx, int mry)
 {

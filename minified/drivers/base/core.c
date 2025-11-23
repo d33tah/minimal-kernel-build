@@ -32,34 +32,10 @@ static DEFINE_MUTEX(fwnode_link_lock);
 static bool fw_devlink_is_permissive(void);
 static bool fw_devlink_drv_reg_done;
 
+/* Stubbed - not used externally */
 int fwnode_link_add(struct fwnode_handle *con, struct fwnode_handle *sup)
 {
-	struct fwnode_link *link;
-	int ret = 0;
-
-	mutex_lock(&fwnode_link_lock);
-
-	list_for_each_entry(link, &sup->consumers, s_hook)
-		if (link->consumer == con)
-			goto out;
-
-	link = kzalloc(sizeof(*link), GFP_KERNEL);
-	if (!link) {
-		ret = -ENOMEM;
-		goto out;
-	}
-
-	link->supplier = sup;
-	INIT_LIST_HEAD(&link->s_hook);
-	link->consumer = con;
-	INIT_LIST_HEAD(&link->c_hook);
-
-	list_add(&link->s_hook, &sup->consumers);
-	list_add(&link->c_hook, &con->suppliers);
-out:
-	mutex_unlock(&fwnode_link_lock);
-
-	return ret;
+	return 0;
 }
 
 static void __fwnode_link_del(struct fwnode_link *link)
@@ -89,25 +65,14 @@ static void fwnode_links_purge_consumers(struct fwnode_handle *fwnode)
 	mutex_unlock(&fwnode_link_lock);
 }
 
+/* Stubbed - not used externally */
 void fwnode_links_purge(struct fwnode_handle *fwnode)
 {
-	fwnode_links_purge_suppliers(fwnode);
-	fwnode_links_purge_consumers(fwnode);
 }
 
+/* Stubbed - not used externally */
 void fw_devlink_purge_absent_suppliers(struct fwnode_handle *fwnode)
 {
-	struct fwnode_handle *child;
-
-	
-	if (fwnode->dev)
-		return;
-
-	fwnode->flags |= FWNODE_FLAG_NOT_DEVICE;
-	fwnode_links_purge_consumers(fwnode);
-
-	fwnode_for_each_available_child_node(fwnode, child)
-		fw_devlink_purge_absent_suppliers(child);
 }
 
 static DEFINE_MUTEX(device_links_lock);
@@ -440,9 +405,10 @@ static bool fw_devlink_is_permissive(void)
 	return fw_devlink_flags == FW_DEVLINK_FLAGS_PERMISSIVE;
 }
 
+/* Stubbed - not used externally */
 bool fw_devlink_is_strict(void)
 {
-	return fw_devlink_strict && !fw_devlink_is_permissive();
+	return false;
 }
 
 static void fw_devlink_parse_fwnode(struct fwnode_handle *fwnode)
@@ -478,24 +444,20 @@ struct kobject *sysfs_dev_block_kobj;
 
 static DEFINE_MUTEX(device_hotplug_lock);
 
+/* Stubbed - not used externally */
 void lock_device_hotplug(void)
 {
-	mutex_lock(&device_hotplug_lock);
 }
 
+/* Stubbed - not used externally */
 void unlock_device_hotplug(void)
 {
-	mutex_unlock(&device_hotplug_lock);
 }
 
+/* Stubbed - not used externally */
 int lock_device_hotplug_sysfs(void)
 {
-	if (mutex_trylock(&device_hotplug_lock))
-		return 0;
-
-	
-	msleep(5);
-	return restart_syscall();
+	return 0;
 }
 
 static inline int device_is_not_partition(struct device *dev)

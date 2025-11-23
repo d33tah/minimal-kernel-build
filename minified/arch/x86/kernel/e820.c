@@ -23,32 +23,15 @@ struct e820_table *e820_table_firmware __refdata	= &e820_table_firmware_init;
  
 unsigned long pci_mem_start = 0xaeedbabe;
 
- 
-static bool _e820__mapped_any(struct e820_table *table,
-			      u64 start, u64 end, enum e820_type type)
-{
-	int i;
-
-	for (i = 0; i < table->nr_entries; i++) {
-		struct e820_entry *entry = &table->entries[i];
-
-		if (type && entry->type != type)
-			continue;
-		if (entry->addr >= end || entry->addr + entry->size <= start)
-			continue;
-		return true;
-	}
-	return false;
-}
-
+/* Stubbed - not used externally */
 bool e820__mapped_raw_any(u64 start, u64 end, enum e820_type type)
 {
-	return _e820__mapped_any(e820_table_firmware, start, end, type);
+	return false;
 }
 
 bool e820__mapped_any(u64 start, u64 end, enum e820_type type)
 {
-	return _e820__mapped_any(e820_table, start, end, type);
+	return false;
 }
 
  
@@ -85,12 +68,10 @@ bool __init e820__mapped_all(u64 start, u64 end, enum e820_type type)
 	return __e820__mapped_all(start, end, type);
 }
 
- 
+/* Stubbed - not used externally */
 int e820__get_entry_type(u64 start, u64 end)
 {
-	struct e820_entry *entry = __e820__mapped_all(start, end, 0);
-
-	return entry ? entry->type : -EINVAL;
+	return -EINVAL;
 }
 
  

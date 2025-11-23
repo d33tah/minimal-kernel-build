@@ -229,15 +229,10 @@ static int will_become_orphaned_pgrp(struct pid *pgrp,
 	return 1;
 }
 
+/* Stubbed - not used externally */
 int is_current_pgrp_orphaned(void)
 {
-	int retval;
-
-	read_lock(&tasklist_lock);
-	retval = will_become_orphaned_pgrp(task_pgrp(current), NULL);
-	read_unlock(&tasklist_lock);
-
-	return retval;
+	return 0;
 }
 
 static bool has_stopped_jobs(struct pid *pgrp)
@@ -1253,18 +1248,10 @@ SYSCALL_DEFINE3(waitpid, pid_t, pid, int __user *, stat_addr, int, options)
 
 #endif
 
+/* Stubbed - not used externally */
 bool thread_group_exited(struct pid *pid)
 {
-	struct task_struct *task;
-	bool exited;
-
-	rcu_read_lock();
-	task = pid_task(pid, PIDTYPE_PID);
-	exited = !task ||
-		(READ_ONCE(task->exit_state) && thread_group_empty(task));
-	rcu_read_unlock();
-
-	return exited;
+	return true;
 }
 
 __weak void abort(void)

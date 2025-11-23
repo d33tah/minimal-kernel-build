@@ -792,23 +792,10 @@ static int move_freepages(struct zone *zone,
 int move_freepages_block(struct zone *zone, struct page *page,
 				int migratetype, int *num_movable)
 {
-	unsigned long start_pfn, end_pfn, pfn;
-
+	/* Stub: freepage block moving not used in minimal kernel */
 	if (num_movable)
 		*num_movable = 0;
-
-	pfn = page_to_pfn(page);
-	start_pfn = pfn & ~(pageblock_nr_pages - 1);
-	end_pfn = start_pfn + pageblock_nr_pages - 1;
-
-	
-	if (!zone_spans_pfn(zone, start_pfn))
-		start_pfn = pfn;
-	if (!zone_spans_pfn(zone, end_pfn))
-		return 0;
-
-	return move_freepages(zone, start_pfn, end_pfn, migratetype,
-								num_movable);
+	return 0;
 }
 
 
@@ -1104,38 +1091,13 @@ void split_page(struct page *page, unsigned int order)
 
 int __isolate_free_page(struct page *page, unsigned int order)
 {
-	struct zone *zone;
-	int mt;
-
-	BUG_ON(!PageBuddy(page));
-
-	zone = page_zone(page);
-	mt = get_pageblock_migratetype(page);
-
-	if (!is_migrate_isolate(mt)) {
-		unsigned long watermark = zone->_watermark[WMARK_MIN] + (1UL << order);
-		if (!zone_watermark_ok(zone, 0, watermark, 0, ALLOC_CMA))
-			return 0;
-		__mod_zone_freepage_state(zone, -(1UL << order), mt);
-	}
-
-	del_page_from_free_list(page, zone, order);
-
-	/* Stub: skip pageblock migratetype conversion for minimal kernel */
-
-	return 1UL << order;
+	/* Stub: page isolation not used in minimal kernel */
+	return 0;
 }
 
 void __putback_isolated_page(struct page *page, unsigned int order, int mt)
 {
-	struct zone *zone = page_zone(page);
-
-	
-	lockdep_assert_held(&zone->lock);
-
-	
-	__free_one_page(page, page_to_pfn(page), zone, order, mt,
-			FPI_SKIP_REPORT_NOTIFY | FPI_TO_TAIL);
+	/* Stub: page isolation not used in minimal kernel */
 }
 
 static inline void zone_statistics(struct zone *preferred_zone, struct zone *z,
@@ -1312,9 +1274,8 @@ static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
 bool zone_watermark_ok_safe(struct zone *z, unsigned int order,
 			unsigned long mark, int highest_zoneidx)
 {
-	/* Simplified safe watermark check for minimal kernel */
-	long free_pages = zone_page_state(z, NR_FREE_PAGES);
-	return __zone_watermark_ok(z, order, mark, highest_zoneidx, 0, free_pages);
+	/* Stub: safe watermark check not used in minimal kernel */
+	return true;
 }
 
 
@@ -1762,13 +1723,7 @@ void * __meminit alloc_pages_exact_nid(int nid, size_t size, gfp_t gfp_mask)
 
 void free_pages_exact(void *virt, size_t size)
 {
-	unsigned long addr = (unsigned long)virt;
-	unsigned long end = addr + PAGE_ALIGN(size);
-
-	while (addr < end) {
-		free_page(addr);
-		addr += PAGE_SIZE;
-	}
+	/* Stub: exact page freeing not used in minimal kernel */
 }
 
 static unsigned long nr_free_zone_pages(int offset)
@@ -2860,15 +2815,12 @@ void zone_pcp_update(struct zone *zone, int cpu_online)
 
 void zone_pcp_disable(struct zone *zone)
 {
-	mutex_lock(&pcp_batch_high_lock);
-	__zone_set_pageset_high_and_batch(zone, 0, 1);
-	__drain_all_pages(zone, true);
+	/* Stub: PCP disable not used in minimal kernel */
 }
 
 void zone_pcp_enable(struct zone *zone)
 {
-	__zone_set_pageset_high_and_batch(zone, zone->pageset_high, zone->pageset_batch);
-	mutex_unlock(&pcp_batch_high_lock);
+	/* Stub: PCP enable not used in minimal kernel */
 }
 
 void zone_pcp_reset(struct zone *zone)

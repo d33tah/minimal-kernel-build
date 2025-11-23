@@ -118,10 +118,9 @@ static bool recalc_sigpending_tsk(struct task_struct *t)
 	return false;
 }
 
+/* Stubbed - not used externally */
 void recalc_sigpending_and_wake(struct task_struct *t)
 {
-	if (recalc_sigpending_tsk(t))
-		signal_wake_up(t, 0);
 }
 
 void recalc_sigpending(void)
@@ -192,57 +191,25 @@ static inline void print_dropped_signal(int sig)
 	/* Stub: skip signal drop reporting for minimal kernel */
 }
 
+/* Stubbed - not used externally */
 bool task_set_jobctl_pending(struct task_struct *task, unsigned long mask)
 {
-	BUG_ON(mask & ~(JOBCTL_PENDING_MASK | JOBCTL_STOP_CONSUME |
-			JOBCTL_STOP_SIGMASK | JOBCTL_TRAPPING));
-	BUG_ON((mask & JOBCTL_TRAPPING) && !(mask & JOBCTL_PENDING_MASK));
-
-	if (unlikely(fatal_signal_pending(task) || (task->flags & PF_EXITING)))
-		return false;
-
-	if (mask & JOBCTL_STOP_SIGMASK)
-		task->jobctl &= ~JOBCTL_STOP_SIGMASK;
-
-	task->jobctl |= mask;
-	return true;
+	return false;
 }
 
+/* Stubbed - not used externally */
 void task_clear_jobctl_trapping(struct task_struct *task)
 {
-	if (unlikely(task->jobctl & JOBCTL_TRAPPING)) {
-		task->jobctl &= ~JOBCTL_TRAPPING;
-		smp_mb();	
-		wake_up_bit(&task->jobctl, JOBCTL_TRAPPING_BIT);
-	}
 }
 
+/* Stubbed - not used externally */
 void task_clear_jobctl_pending(struct task_struct *task, unsigned long mask)
 {
-	BUG_ON(mask & ~JOBCTL_PENDING_MASK);
-
-	if (mask & JOBCTL_STOP_PENDING)
-		mask |= JOBCTL_STOP_CONSUME | JOBCTL_STOP_DEQUEUED;
-
-	task->jobctl &= ~mask;
-
-	if (!(task->jobctl & JOBCTL_PENDING_MASK))
-		task_clear_jobctl_trapping(task);
 }
 
+/* Stubbed - not used externally */
 void task_join_group_stop(struct task_struct *task)
 {
-	unsigned long mask = current->jobctl & JOBCTL_STOP_SIGMASK;
-	struct signal_struct *sig = current->signal;
-
-	if (sig->group_stop_count) {
-		sig->group_stop_count++;
-		mask |= JOBCTL_STOP_CONSUME;
-	} else if (!(sig->flags & SIGNAL_STOP_STOPPED))
-		return;
-
-	
-	task_set_jobctl_pending(task, mask | JOBCTL_STOP_PENDING);
 }
 
 static struct sigqueue *
@@ -300,15 +267,9 @@ void flush_sigqueue(struct sigpending *queue)
 	}
 }
 
+/* Stubbed - not used externally */
 void flush_signals(struct task_struct *t)
 {
-	unsigned long flags;
-
-	spin_lock_irqsave(&t->sighand->siglock, flags);
-	clear_tsk_thread_flag(t, TIF_SIGPENDING);
-	flush_sigqueue(&t->pending);
-	flush_sigqueue(&t->signal->shared_pending);
-	spin_unlock_irqrestore(&t->sighand->siglock, flags);
 }
 
 void ignore_signals(struct task_struct *t)
@@ -317,8 +278,6 @@ void ignore_signals(struct task_struct *t)
 
 	for (i = 0; i < _NSIG; ++i)
 		t->sighand->action[i].sa.sa_handler = SIG_IGN;
-
-	flush_signals(t);
 }
 
 void
@@ -713,47 +672,11 @@ static inline bool kill_as_cred_perm(const struct cred *cred,
 	       uid_eq(cred->uid, pcred->uid);
 }
 
+/* Stubbed - not used externally */
 int kill_pid_usb_asyncio(int sig, int errno, sigval_t addr,
 			 struct pid *pid, const struct cred *cred)
 {
-	struct kernel_siginfo info;
-	struct task_struct *p;
-	unsigned long flags;
-	int ret = -EINVAL;
-
-	if (!valid_signal(sig))
-		return ret;
-
-	clear_siginfo(&info);
-	info.si_signo = sig;
-	info.si_errno = errno;
-	info.si_code = SI_ASYNCIO;
-	*((sigval_t *)&info.si_pid) = addr;
-
-	rcu_read_lock();
-	p = pid_task(pid, PIDTYPE_PID);
-	if (!p) {
-		ret = -ESRCH;
-		goto out_unlock;
-	}
-	if (!kill_as_cred_perm(cred, p)) {
-		ret = -EPERM;
-		goto out_unlock;
-	}
-	ret = security_task_kill(p, &info, sig, cred);
-	if (ret)
-		goto out_unlock;
-
-	if (sig) {
-		if (lock_task_sighand(p, &flags)) {
-			ret = __send_signal_locked(sig, &info, p, PIDTYPE_TGID, false);
-			unlock_task_sighand(p, &flags);
-		} else
-			ret = -ESRCH;
-	}
-out_unlock:
-	rcu_read_unlock();
-	return ret;
+	return -ENOSYS;
 }
 
 static int kill_something_info(int sig, struct kernel_siginfo *info, pid_t pid)
@@ -823,12 +746,9 @@ void force_exit_sig(int sig)
 	force_sig_info_to_task(&info, current, HANDLER_EXIT);
 }
 
+/* Stubbed - not used externally */
 void force_sigsegv(int sig)
 {
-	if (sig == SIGSEGV)
-		force_fatal_sig(SIGSEGV);
-	else
-		force_sig(SIGSEGV);
 }
 
 int force_sig_fault_to_task(int sig, int code, void __user *addr

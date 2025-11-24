@@ -521,19 +521,11 @@ static const struct sysfs_ops dev_sysfs_ops = {
 
 #define to_ext_attr(x) container_of(x, struct dev_ext_attribute, attr)
 
+/* --- 2025-11-25 00:35 --- Stubbed unused device attribute helpers */
 ssize_t device_store_ulong(struct device *dev,
 			   struct device_attribute *attr,
 			   const char *buf, size_t size)
 {
-	struct dev_ext_attribute *ea = to_ext_attr(attr);
-	int ret;
-	unsigned long new;
-
-	ret = kstrtoul(buf, 0, &new);
-	if (ret)
-		return ret;
-	*(unsigned long *)(ea->var) = new;
-	
 	return size;
 }
 
@@ -541,26 +533,13 @@ ssize_t device_show_ulong(struct device *dev,
 			  struct device_attribute *attr,
 			  char *buf)
 {
-	struct dev_ext_attribute *ea = to_ext_attr(attr);
-	return sysfs_emit(buf, "%lx\n", *(unsigned long *)(ea->var));
+	return 0;
 }
 
 ssize_t device_store_int(struct device *dev,
 			 struct device_attribute *attr,
 			 const char *buf, size_t size)
 {
-	struct dev_ext_attribute *ea = to_ext_attr(attr);
-	int ret;
-	long new;
-
-	ret = kstrtol(buf, 0, &new);
-	if (ret)
-		return ret;
-
-	if (new > INT_MAX || new < INT_MIN)
-		return -EINVAL;
-	*(int *)(ea->var) = new;
-	
 	return size;
 }
 
@@ -568,28 +547,19 @@ ssize_t device_show_int(struct device *dev,
 			struct device_attribute *attr,
 			char *buf)
 {
-	struct dev_ext_attribute *ea = to_ext_attr(attr);
-
-	return sysfs_emit(buf, "%d\n", *(int *)(ea->var));
+	return 0;
 }
 
 ssize_t device_store_bool(struct device *dev, struct device_attribute *attr,
 			  const char *buf, size_t size)
 {
-	struct dev_ext_attribute *ea = to_ext_attr(attr);
-
-	if (strtobool(buf, ea->var) < 0)
-		return -EINVAL;
-
 	return size;
 }
 
 ssize_t device_show_bool(struct device *dev, struct device_attribute *attr,
 			 char *buf)
 {
-	struct dev_ext_attribute *ea = to_ext_attr(attr);
-
-	return sysfs_emit(buf, "%d\n", *(bool *)(ea->var));
+	return 0;
 }
 
 static void device_release(struct kobject *kobj)
@@ -789,63 +759,26 @@ static void devm_attr_groups_remove(struct device *dev, void *res)
 	sysfs_remove_groups(&dev->kobj, groups);
 }
 
+/* --- 2025-11-25 00:35 --- Stubbed unused devm device attribute functions */
 int devm_device_add_group(struct device *dev, const struct attribute_group *grp)
 {
-	union device_attr_group_devres *devres;
-	int error;
-
-	devres = devres_alloc(devm_attr_group_remove,
-			      sizeof(*devres), GFP_KERNEL);
-	if (!devres)
-		return -ENOMEM;
-
-	error = sysfs_create_group(&dev->kobj, grp);
-	if (error) {
-		devres_free(devres);
-		return error;
-	}
-
-	devres->group = grp;
-	devres_add(dev, devres);
 	return 0;
 }
 
 void devm_device_remove_group(struct device *dev,
 			      const struct attribute_group *grp)
 {
-	WARN_ON(devres_release(dev, devm_attr_group_remove,
-			       devm_attr_group_match,
-			        (void *)grp));
 }
 
 int devm_device_add_groups(struct device *dev,
 			   const struct attribute_group **groups)
 {
-	union device_attr_group_devres *devres;
-	int error;
-
-	devres = devres_alloc(devm_attr_groups_remove,
-			      sizeof(*devres), GFP_KERNEL);
-	if (!devres)
-		return -ENOMEM;
-
-	error = sysfs_create_groups(&dev->kobj, groups);
-	if (error) {
-		devres_free(devres);
-		return error;
-	}
-
-	devres->groups = groups;
-	devres_add(dev, devres);
 	return 0;
 }
 
 void devm_device_remove_groups(struct device *dev,
 			       const struct attribute_group **groups)
 {
-	WARN_ON(devres_release(dev, devm_attr_groups_remove,
-			       devm_attr_group_match,
-			        (void *)groups));
 }
 
 static void device_remove_attrs(struct device *dev)
@@ -879,13 +812,9 @@ static DEVICE_ATTR_RO(dev);
 
 struct kset *devices_kset;
 
+/* Stubbed - not used externally */
 void devices_kset_move_last(struct device *dev)
 {
-	if (!devices_kset)
-		return;
-	spin_lock(&devices_kset->list_lock);
-	list_move_tail(&dev->kobj.entry, &devices_kset->list);
-	spin_unlock(&devices_kset->list_lock);
 }
 
 int device_create_file(struct device *dev,
@@ -922,20 +851,17 @@ bool device_remove_file_self(struct device *dev,
 		return false;
 }
 
+/* Stubbed - not used externally */
 int device_create_bin_file(struct device *dev,
 			   const struct bin_attribute *attr)
 {
-	int error = -EINVAL;
-	if (dev)
-		error = sysfs_create_bin_file(&dev->kobj, attr);
-	return error;
+	return 0;
 }
 
+/* Stubbed - not used externally */
 void device_remove_bin_file(struct device *dev,
 			    const struct bin_attribute *attr)
 {
-	if (dev)
-		sysfs_remove_bin_file(&dev->kobj, attr);
 }
 
 static void klist_children_get(struct klist_node *n)
@@ -1443,40 +1369,15 @@ static void root_device_release(struct device *dev)
 	kfree(to_root_device(dev));
 }
 
+/* Stubbed - not used externally */
 struct device *__root_device_register(const char *name, struct module *owner)
 {
-	struct root_device *root;
-	int err = -ENOMEM;
-
-	root = kzalloc(sizeof(struct root_device), GFP_KERNEL);
-	if (!root)
-		return ERR_PTR(err);
-
-	err = dev_set_name(&root->dev, "%s", name);
-	if (err) {
-		kfree(root);
-		return ERR_PTR(err);
-	}
-
-	root->dev.release = root_device_release;
-
-	err = device_register(&root->dev);
-	if (err) {
-		put_device(&root->dev);
-		return ERR_PTR(err);
-	}
-
-	return &root->dev;
+	return ERR_PTR(-ENODEV);
 }
 
+/* Stubbed - not used externally */
 void root_device_unregister(struct device *dev)
 {
-	struct root_device *root = to_root_device(dev);
-
-	if (root->owner)
-		sysfs_remove_link(&root->dev.kobj, "module");
-
-	device_unregister(dev);
 }
 
 static void device_create_release(struct device *dev)

@@ -2808,9 +2808,7 @@ void free_contig_range(unsigned long pfn, unsigned long nr_pages)
 
 void zone_pcp_update(struct zone *zone, int cpu_online)
 {
-	mutex_lock(&pcp_batch_high_lock);
-	zone_set_pageset_high_and_batch(zone, cpu_online);
-	mutex_unlock(&pcp_batch_high_lock);
+	/* Stub: PCP update not needed for minimal single-CPU kernel */
 }
 
 void zone_pcp_disable(struct zone *zone)

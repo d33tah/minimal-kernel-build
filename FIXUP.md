@@ -1,3 +1,31 @@
+--- 2025-11-24 23:33 ---
+
+Session progress:
+- make vm: PASSES ✓, prints "Hello, World!" ✓
+- Binary: 277KB
+- Current total LOC: 225,761 (measured with cloc)
+- Goal: 200,000 LOC
+- Gap: 25,761 LOC (11.4% reduction needed)
+
+Note: Session started on top of remote changes that added significant LOC
+reduction (commits for iov_iter.c, inode.c, exit.c stubs)
+
+Commits this session:
+1. kernel/sched/core.c - ~48 LOC reduction
+   - Stubbed __sched_setaffinity, sched_setaffinity
+   - Stubbed sched_getaffinity syscall wrapper
+   - Stubbed sched_getaffinity internal function
+
+2. mm/mmap.c - 33 LOC reduction
+   - Stubbed reserve_mem_notifier (hotmemory notifier not needed)
+
+Total session reduction: ~81 LOC (code changes)
+
+Analysis:
+- Many scheduler syscalls and functions already stubbed in prior sessions
+- Memory hotplug notifiers are safe to stub
+- Further reduction requires examining more subsystems
+
 --- 2025-11-23 14:25 ---
 
 Session progress (continuation):

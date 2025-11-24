@@ -137,13 +137,13 @@ static void tty_ldisc_put(struct tty_ldisc *ld)
 
 static void *tty_ldiscs_seq_start(struct seq_file *m, loff_t *pos)
 {
-	return (*pos < NR_LDISCS) ? pos : NULL;
+	/* Stub: /proc/tty/ldiscs not needed for minimal kernel */
+	return NULL;
 }
 
 static void *tty_ldiscs_seq_next(struct seq_file *m, void *v, loff_t *pos)
 {
-	(*pos)++;
-	return (*pos < NR_LDISCS) ? pos : NULL;
+	return NULL;
 }
 
 static void tty_ldiscs_seq_stop(struct seq_file *m, void *v)
@@ -152,14 +152,6 @@ static void tty_ldiscs_seq_stop(struct seq_file *m, void *v)
 
 static int tty_ldiscs_seq_show(struct seq_file *m, void *v)
 {
-	int i = *(loff_t *)v;
-	struct tty_ldisc_ops *ldops;
-
-	ldops = get_ldops(i);
-	if (IS_ERR(ldops))
-		return 0;
-	seq_printf(m, "%-10s %2d\n", ldops->name ? ldops->name : "???", i);
-	put_ldops(ldops);
 	return 0;
 }
 

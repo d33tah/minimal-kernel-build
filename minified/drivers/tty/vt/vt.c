@@ -122,12 +122,14 @@ static ATOMIC_NOTIFIER_HEAD(vt_notifier_list);
 
 int register_vt_notifier(struct notifier_block *nb)
 {
-	return atomic_notifier_chain_register(&vt_notifier_list, nb);
+	/* Stub: VT notifiers not needed for minimal kernel */
+	return 0;
 }
 
 int unregister_vt_notifier(struct notifier_block *nb)
 {
-	return atomic_notifier_chain_unregister(&vt_notifier_list, nb);
+	/* Stub: VT notifiers not needed for minimal kernel */
+	return 0;
 }
 
 static void notify_write(struct vc_data *vc, unsigned int unicode)

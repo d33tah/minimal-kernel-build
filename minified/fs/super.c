@@ -525,89 +525,21 @@ void iterate_supers_type(struct file_system_type *type,
 }
 
 
+/* Stubbed - not used in minimal kernel (no block device) */
 struct super_block *get_super(struct block_device *bdev)
 {
-	struct super_block *sb;
-
-	if (!bdev)
-		return NULL;
-
-	spin_lock(&sb_lock);
-rescan:
-	list_for_each_entry(sb, &super_blocks, s_list) {
-		if (hlist_unhashed(&sb->s_instances))
-			continue;
-		if (sb->s_bdev == bdev) {
-			sb->s_count++;
-			spin_unlock(&sb_lock);
-			down_read(&sb->s_umount);
-			
-			if (sb->s_root && (sb->s_flags & SB_BORN))
-				return sb;
-			up_read(&sb->s_umount);
-			
-			spin_lock(&sb_lock);
-			__put_super(sb);
-			goto rescan;
-		}
-	}
-	spin_unlock(&sb_lock);
 	return NULL;
 }
 
+/* Stubbed - not used in minimal kernel (no block device) */
 struct super_block *get_active_super(struct block_device *bdev)
 {
-	struct super_block *sb;
-
-	if (!bdev)
-		return NULL;
-
-restart:
-	spin_lock(&sb_lock);
-	list_for_each_entry(sb, &super_blocks, s_list) {
-		if (hlist_unhashed(&sb->s_instances))
-			continue;
-		if (sb->s_bdev == bdev) {
-			if (!grab_super(sb))
-				goto restart;
-			up_write(&sb->s_umount);
-			return sb;
-		}
-	}
-	spin_unlock(&sb_lock);
 	return NULL;
 }
 
+/* Stubbed - not used in minimal kernel */
 struct super_block *user_get_super(dev_t dev, bool excl)
 {
-	struct super_block *sb;
-
-	spin_lock(&sb_lock);
-rescan:
-	list_for_each_entry(sb, &super_blocks, s_list) {
-		if (hlist_unhashed(&sb->s_instances))
-			continue;
-		if (sb->s_dev ==  dev) {
-			sb->s_count++;
-			spin_unlock(&sb_lock);
-			if (excl)
-				down_write(&sb->s_umount);
-			else
-				down_read(&sb->s_umount);
-			
-			if (sb->s_root && (sb->s_flags & SB_BORN))
-				return sb;
-			if (excl)
-				up_write(&sb->s_umount);
-			else
-				up_read(&sb->s_umount);
-			
-			spin_lock(&sb_lock);
-			__put_super(sb);
-			goto rescan;
-		}
-	}
-	spin_unlock(&sb_lock);
 	return NULL;
 }
 

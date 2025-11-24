@@ -280,33 +280,10 @@ void __init anon_vma_init(void)
 			SLAB_PANIC|SLAB_ACCOUNT);
 }
 
+/* Stubbed - not used in minimal kernel */
 struct anon_vma *page_get_anon_vma(struct page *page)
 {
-	struct anon_vma *anon_vma = NULL;
-	unsigned long anon_mapping;
-
-	rcu_read_lock();
-	anon_mapping = (unsigned long)READ_ONCE(page->mapping);
-	if ((anon_mapping & PAGE_MAPPING_FLAGS) != PAGE_MAPPING_ANON)
-		goto out;
-	if (!page_mapped(page))
-		goto out;
-
-	anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
-	if (!atomic_inc_not_zero(&anon_vma->refcount)) {
-		anon_vma = NULL;
-		goto out;
-	}
-
-	if (!page_mapped(page)) {
-		rcu_read_unlock();
-		put_anon_vma(anon_vma);
-		return NULL;
-	}
-out:
-	rcu_read_unlock();
-
-	return anon_vma;
+	return NULL;
 }
 
 struct anon_vma *folio_lock_anon_vma_read(struct folio *folio,

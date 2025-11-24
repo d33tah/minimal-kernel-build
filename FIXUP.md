@@ -1,3 +1,24 @@
+--- 2025-11-25 00:52 ---
+
+Session progress update:
+- make vm: PASSES ✓, prints "Hello, World!" ✓
+- Binary: 276KB
+- Current total LOC: 207,406 (measured with cloc)
+- Goal: 200,000 LOC
+- Gap: 7,406 LOC (3.6% reduction needed)
+
+Additional commits since last update:
+4. Stub unused super_block lookup functions (~55 LOC)
+
+Notes:
+- Tried stubbing expand_downwards in mm/mmap.c but it broke VM execution
+- Many tsc.c functions already stubbed
+- Many iov_iter.c functions already stubbed
+- Most filesystem functions are used via VFS
+- Scheduler functions in fair.c are all used
+
+Continuing to search for more stubbing opportunities.
+
 --- 2025-11-25 00:44 ---
 
 Session progress:

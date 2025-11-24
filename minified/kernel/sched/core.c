@@ -1670,50 +1670,14 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
 static int
 __sched_setaffinity(struct task_struct *p, const struct cpumask *mask)
 {
-	/* Simplified: single CPU system, just accept the affinity */
-	return __set_cpus_allowed_ptr(p, mask, SCA_CHECK | SCA_USER);
+	/* Stub: not needed for minimal kernel */
+	return 0;
 }
 
 long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 {
-	struct task_struct *p;
-	int retval;
-
-	rcu_read_lock();
-
-	p = find_process_by_pid(pid);
-	if (!p) {
-		rcu_read_unlock();
-		return -ESRCH;
-	}
-
-	
-	get_task_struct(p);
-	rcu_read_unlock();
-
-	if (p->flags & PF_NO_SETAFFINITY) {
-		retval = -EINVAL;
-		goto out_put_task;
-	}
-
-	if (!check_same_owner(p)) {
-		rcu_read_lock();
-		if (!ns_capable(__task_cred(p)->user_ns, CAP_SYS_NICE)) {
-			rcu_read_unlock();
-			retval = -EPERM;
-			goto out_put_task;
-		}
-		rcu_read_unlock();
-	}
-
-	retval = security_task_setscheduler(p);
-	if (retval)
-		goto out_put_task;
-
-	retval = __sched_setaffinity(p, in_mask);
-out_put_task:
-	put_task_struct(p);
-	return retval;
+	/* Stub: not needed for minimal kernel */
+	return 0;
 }
 
 /* Stub: setaffinity not needed for single-CPU minimal kernel */
@@ -1723,40 +1687,17 @@ SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
 	return 0;
 }
 
-/* Simplified: single-CPU kernel just returns CPU 0 */
 long sched_getaffinity(pid_t pid, struct cpumask *mask)
 {
-	cpumask_clear(mask);
-	cpumask_set_cpu(0, mask);
-	return 0;
+	/* Stub: not needed for minimal kernel */
+	return -ESRCH;
 }
 
 SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
 		unsigned long __user *, user_mask_ptr)
 {
-	int ret;
-	cpumask_var_t mask;
-
-	if ((len * BITS_PER_BYTE) < nr_cpu_ids)
-		return -EINVAL;
-	if (len & (sizeof(unsigned long)-1))
-		return -EINVAL;
-
-	if (!alloc_cpumask_var(&mask, GFP_KERNEL))
-		return -ENOMEM;
-
-	ret = sched_getaffinity(pid, mask);
-	if (ret == 0) {
-		unsigned int retlen = min(len, cpumask_size());
-
-		if (copy_to_user(user_mask_ptr, mask, retlen))
-			ret = -EFAULT;
-		else
-			ret = retlen;
-	}
-	free_cpumask_var(mask);
-
-	return ret;
+	/* Stub: just return success for minimal kernel */
+	return -ENOSYS;
 }
 
 static void do_sched_yield(void)

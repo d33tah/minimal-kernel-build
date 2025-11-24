@@ -1180,9 +1180,10 @@ out_iput:
 	return res;
 }
 
+/* Stubbed - not used in minimal kernel */
 struct dentry *d_obtain_alias(struct inode *inode)
 {
-	return __d_obtain_alias(inode, true);
+	return ERR_PTR(-ESTALE);
 }
 
 struct dentry *d_obtain_root(struct inode *inode)
@@ -1190,37 +1191,12 @@ struct dentry *d_obtain_root(struct inode *inode)
 	return __d_obtain_alias(inode, false);
 }
 
+/* Stubbed - not used in minimal kernel (case-insensitive fs) */
 struct dentry *d_add_ci(struct dentry *dentry, struct inode *inode,
 			struct qstr *name)
 {
-	struct dentry *found, *res;
-
-	
-	found = d_hash_and_lookup(dentry->d_parent, name);
-	if (found) {
-		iput(inode);
-		return found;
-	}
-	if (d_in_lookup(dentry)) {
-		found = d_alloc_parallel(dentry->d_parent, name,
-					dentry->d_wait);
-		if (IS_ERR(found) || !d_in_lookup(found)) {
-			iput(inode);
-			return found;
-		}
-	} else {
-		found = d_alloc(dentry->d_parent, name);
-		if (!found) {
-			iput(inode);
-			return ERR_PTR(-ENOMEM);
-		} 
-	}
-	res = d_splice_alias(inode, found);
-	if (res) {
-		dput(found);
-		return res;
-	}
-	return found;
+	iput(inode);
+	return ERR_PTR(-ENOENT);
 }
 
 static inline bool d_same_name(const struct dentry *dentry,
@@ -1746,14 +1722,9 @@ void d_exchange(struct dentry *dentry1, struct dentry *dentry2)
 	write_sequnlock(&rename_lock);
 }
 
+/* Stubbed - not used in minimal kernel */
 struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)
 {
-	struct dentry *p;
-
-	for (p = p2; !IS_ROOT(p); p = p->d_parent) {
-		if (p->d_parent == p1)
-			return p;
-	}
 	return NULL;
 }
 
@@ -1786,6 +1757,7 @@ out_err:
 	return ret;
 }
 
+/* Simplified - minimal kernel doesn't need complex aliasing */
 struct dentry *d_splice_alias(struct inode *inode, struct dentry *dentry)
 {
 	if (IS_ERR(inode))
@@ -1793,45 +1765,12 @@ struct dentry *d_splice_alias(struct inode *inode, struct dentry *dentry)
 
 	BUG_ON(!d_unhashed(dentry));
 
-	if (!inode)
-		goto out;
+	if (!inode) {
+		__d_add(dentry, inode);
+		return NULL;
+	}
 
 	security_d_instantiate(dentry, inode);
-	spin_lock(&inode->i_lock);
-	if (S_ISDIR(inode->i_mode)) {
-		struct dentry *new = __d_find_any_alias(inode);
-		if (unlikely(new)) {
-			
-			spin_unlock(&inode->i_lock);
-			write_seqlock(&rename_lock);
-			if (unlikely(d_ancestor(new, dentry))) {
-				write_sequnlock(&rename_lock);
-				dput(new);
-				new = ERR_PTR(-ELOOP);
-				pr_warn_ratelimited(
-					"VFS: Lookup of '%s' in %s %s"
-					" would have caused loop\n",
-					dentry->d_name.name,
-					inode->i_sb->s_type->name,
-					inode->i_sb->s_id);
-			} else if (!IS_ROOT(new)) {
-				struct dentry *old_parent = dget(new->d_parent);
-				int err = __d_unalias(inode, dentry, new);
-				write_sequnlock(&rename_lock);
-				if (err) {
-					dput(new);
-					new = ERR_PTR(err);
-				}
-				dput(old_parent);
-			} else {
-				__d_move(new, dentry, false);
-				write_sequnlock(&rename_lock);
-			}
-			iput(inode);
-			return new;
-		}
-	}
-out:
 	__d_add(dentry, inode);
 	return NULL;
 }

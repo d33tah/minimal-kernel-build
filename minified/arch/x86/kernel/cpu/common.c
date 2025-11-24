@@ -1291,17 +1291,9 @@ void __init identify_boot_cpu(void)
 	tsx_init();
 }
 
+/* Stubbed - no SMP in minimal kernel */
 void identify_secondary_cpu(struct cpuinfo_x86 *c)
 {
-	BUG_ON(c == &boot_cpu_data);
-	identify_cpu(c);
-	enable_sep_cpu();
-	mtrr_ap_init();
-	validate_apic_and_package_id(c);
-	x86_spec_ctrl_setup_ap();
-	update_srbds_msr();
-
-	tsx_ap_init();
 }
 
 void print_cpu_info(struct cpuinfo_x86 *c)

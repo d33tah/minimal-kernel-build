@@ -640,37 +640,12 @@ static unsigned long long cyc2ns_suspend;
 
 void tsc_save_sched_clock_state(void)
 {
-	if (!sched_clock_stable())
-		return;
-
-	cyc2ns_suspend = sched_clock();
+	/* Stub: suspend/resume not needed for minimal kernel */
 }
 
- 
 void tsc_restore_sched_clock_state(void)
 {
-	unsigned long long offset;
-	unsigned long flags;
-	int cpu;
-
-	if (!sched_clock_stable())
-		return;
-
-	local_irq_save(flags);
-
-	 
-
-	this_cpu_write(cyc2ns.data[0].cyc2ns_offset, 0);
-	this_cpu_write(cyc2ns.data[1].cyc2ns_offset, 0);
-
-	offset = cyc2ns_suspend - sched_clock();
-
-	for_each_possible_cpu(cpu) {
-		per_cpu(cyc2ns.data[0].cyc2ns_offset, cpu) = offset;
-		per_cpu(cyc2ns.data[1].cyc2ns_offset, cpu) = offset;
-	}
-
-	local_irq_restore(flags);
+	/* Stub: suspend/resume not needed for minimal kernel */
 }
 
 
@@ -841,36 +816,14 @@ int unsynchronized_tsc(void)
  
 struct system_counterval_t convert_art_to_tsc(u64 art)
 {
-	u64 tmp, res, rem;
-
-	rem = do_div(art, art_to_tsc_denominator);
-
-	res = art * art_to_tsc_numerator;
-	tmp = rem * art_to_tsc_numerator;
-
-	do_div(tmp, art_to_tsc_denominator);
-	res += tmp + art_to_tsc_offset;
-
-	return (struct system_counterval_t) {.cs = art_related_clocksource,
-			.cycles = res};
+	/* Stub: ART conversion not needed for minimal kernel */
+	return (struct system_counterval_t) {.cs = NULL, .cycles = 0};
 }
-
- 
 
 struct system_counterval_t convert_art_ns_to_tsc(u64 art_ns)
 {
-	u64 tmp, res, rem;
-
-	rem = do_div(art_ns, USEC_PER_SEC);
-
-	res = art_ns * tsc_khz;
-	tmp = rem * tsc_khz;
-
-	do_div(tmp, USEC_PER_SEC);
-	res += tmp;
-
-	return (struct system_counterval_t) { .cs = art_related_clocksource,
-					      .cycles = res};
+	/* Stub: ART conversion not needed for minimal kernel */
+	return (struct system_counterval_t) {.cs = NULL, .cycles = 0};
 }
 
 

@@ -153,13 +153,11 @@ ssize_t strscpy(char *dest, const char *src, size_t count)
 }
 #endif
 
- 
+/* Stub: stpcpy not used in minimal kernel */
 char *stpcpy(char *__restrict__ dest, const char *__restrict__ src);
 char *stpcpy(char *__restrict__ dest, const char *__restrict__ src)
 {
-	while ((*dest++ = *src++) != '\0')
-		 ;
-	return --dest;
+	return dest;
 }
 
 #ifndef __HAVE_ARCH_STRCAT

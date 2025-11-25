@@ -1501,55 +1501,15 @@ static inline bool fwnode_is_primary(struct fwnode_handle *fwnode)
 	return fwnode && !IS_ERR(fwnode->secondary);
 }
 
-void set_primary_fwnode(struct device *dev, struct fwnode_handle *fwnode)
-{
-	struct device *parent = dev->parent;
-	struct fwnode_handle *fn = dev->fwnode;
+/* STUB: set_primary_fwnode not used externally */
+void set_primary_fwnode(struct device *dev, struct fwnode_handle *fwnode) { }
+/* STUB: set_secondary_fwnode not used externally */
+void set_secondary_fwnode(struct device *dev, struct fwnode_handle *fwnode) { }
 
-	if (fwnode) {
-		if (fwnode_is_primary(fn))
-			fn = fn->secondary;
-
-		if (fn) {
-			WARN_ON(fwnode->secondary);
-			fwnode->secondary = fn;
-		}
-		dev->fwnode = fwnode;
-	} else {
-		if (fwnode_is_primary(fn)) {
-			dev->fwnode = fn->secondary;
-			
-			if (!(parent && fn == parent->fwnode))
-				fn->secondary = NULL;
-		} else {
-			dev->fwnode = NULL;
-		}
-	}
-}
-
-void set_secondary_fwnode(struct device *dev, struct fwnode_handle *fwnode)
-{
-	if (fwnode)
-		fwnode->secondary = ERR_PTR(-ENODEV);
-
-	if (fwnode_is_primary(dev->fwnode))
-		dev->fwnode->secondary = fwnode;
-	else
-		dev->fwnode = fwnode;
-}
-
-void device_set_of_node_from_dev(struct device *dev, const struct device *dev2)
-{
-	of_node_put(dev->of_node);
-	dev->of_node = of_node_get(dev2->of_node);
-	dev->of_node_reused = true;
-}
-
-void device_set_node(struct device *dev, struct fwnode_handle *fwnode)
-{
-	dev->fwnode = fwnode;
-	dev->of_node = to_of_node(fwnode);
-}
+/* STUB: device_set_of_node_from_dev not used externally */
+void device_set_of_node_from_dev(struct device *dev, const struct device *dev2) { }
+/* STUB: device_set_node not used externally */
+void device_set_node(struct device *dev, struct fwnode_handle *fwnode) { }
 
 int device_match_name(struct device *dev, const void *name)
 {

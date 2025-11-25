@@ -398,43 +398,9 @@ void revert_creds(const struct cred *old)
 	put_cred(override);
 }
 
- 
+/* Stub: cred_fscmp not used in minimal kernel */
 int cred_fscmp(const struct cred *a, const struct cred *b)
 {
-	struct group_info *ga, *gb;
-	int g;
-
-	if (a == b)
-		return 0;
-	if (uid_lt(a->fsuid, b->fsuid))
-		return -1;
-	if (uid_gt(a->fsuid, b->fsuid))
-		return 1;
-
-	if (gid_lt(a->fsgid, b->fsgid))
-		return -1;
-	if (gid_gt(a->fsgid, b->fsgid))
-		return 1;
-
-	ga = a->group_info;
-	gb = b->group_info;
-	if (ga == gb)
-		return 0;
-	if (ga == NULL)
-		return -1;
-	if (gb == NULL)
-		return 1;
-	if (ga->ngroups < gb->ngroups)
-		return -1;
-	if (ga->ngroups > gb->ngroups)
-		return 1;
-
-	for (g = 0; g < ga->ngroups; g++) {
-		if (gid_lt(ga->gid[g], gb->gid[g]))
-			return -1;
-		if (gid_gt(ga->gid[g], gb->gid[g]))
-			return 1;
-	}
 	return 0;
 }
 
@@ -508,32 +474,21 @@ error:
 	return NULL;
 }
 
- 
+/* Stub: set_security_override not used in minimal kernel */
 int set_security_override(struct cred *new, u32 secid)
 {
-	return security_kernel_act_as(new, secid);
+	return 0;
 }
 
- 
+/* Stub: set_security_override_from_ctx not used in minimal kernel */
 int set_security_override_from_ctx(struct cred *new, const char *secctx)
 {
-	u32 secid;
-	int ret;
-
-	ret = security_secctx_to_secid(secctx, strlen(secctx), &secid);
-	if (ret < 0)
-		return ret;
-
-	return set_security_override(new, secid);
+	return 0;
 }
 
- 
+/* Stub: set_create_files_as not used in minimal kernel */
 int set_create_files_as(struct cred *new, struct inode *inode)
 {
-	if (!uid_valid(inode->i_uid) || !gid_valid(inode->i_gid))
-		return -EINVAL;
-	new->fsuid = inode->i_uid;
-	new->fsgid = inode->i_gid;
-	return security_kernel_create_files_as(new, inode);
+	return 0;
 }
 

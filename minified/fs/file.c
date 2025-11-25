@@ -702,25 +702,10 @@ struct file *task_lookup_fd_rcu(struct task_struct *task, unsigned int fd)
 	return file;
 }
 
+/* Stub: task_lookup_next_fd_rcu not used externally */
 struct file *task_lookup_next_fd_rcu(struct task_struct *task, unsigned int *ret_fd)
 {
-	 
-	struct files_struct *files;
-	unsigned int fd = *ret_fd;
-	struct file *file = NULL;
-
-	task_lock(task);
-	files = task->files;
-	if (files) {
-		for (; fd < files_fdtable(files)->max_fds; fd++) {
-			file = files_lookup_fd_rcu(files, fd);
-			if (file)
-				break;
-		}
-	}
-	task_unlock(task);
-	*ret_fd = fd;
-	return file;
+	return NULL;
 }
 
  
@@ -877,23 +862,16 @@ int __receive_fd(struct file *file, int __user *ufd, unsigned int o_flags)
 	return new_fd;
 }
 
+/* Stub: receive_fd_replace not used externally */
 int receive_fd_replace(int new_fd, struct file *file, unsigned int o_flags)
 {
-	int error;
-
-	error = security_file_receive(file);
-	if (error)
-		return error;
-	error = replace_fd(new_fd, file, o_flags);
-	if (error)
-		return error;
-	__receive_sock(file);
-	return new_fd;
+	return -ENOSYS;
 }
 
+/* Stub: receive_fd not used externally */
 int receive_fd(struct file *file, unsigned int o_flags)
 {
-	return __receive_fd(file, NULL, o_flags);
+	return -ENOSYS;
 }
 
 static int ksys_dup3(unsigned int oldfd, unsigned int newfd, int flags)
@@ -965,18 +943,10 @@ SYSCALL_DEFINE1(dup, unsigned int, fildes)
 	return ret;
 }
 
+/* Stub: f_dupfd not used externally */
 int f_dupfd(unsigned int from, struct file *file, unsigned flags)
 {
-	unsigned long nofile = rlimit(RLIMIT_NOFILE);
-	int err;
-	if (from >= nofile)
-		return -EINVAL;
-	err = alloc_fd(from, nofile, flags);
-	if (err >= 0) {
-		get_file(file);
-		fd_install(err, file);
-	}
-	return err;
+	return -ENOSYS;
 }
 
 /* Stubbed - not used externally */

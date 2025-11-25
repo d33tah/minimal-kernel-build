@@ -137,25 +137,9 @@ unsigned char tty_get_frame_size(unsigned int cflag)
 }
 
  
+/* Stub: tty_set_termios not used externally */
 int tty_set_termios(struct tty_struct *tty, struct ktermios *new_termios)
 {
-	struct ktermios old_termios;
-	struct tty_ldisc *ld;
-
-	down_write(&tty->termios_rwsem);
-	old_termios = tty->termios;
-	tty->termios = *new_termios;
-
-	if (tty->ops->set_termios)
-		tty->ops->set_termios(tty, &old_termios);
-
-	ld = tty_ldisc_ref(tty);
-	if (ld) {
-		if (ld->ops->set_termios)
-			ld->ops->set_termios(tty, &old_termios);
-		tty_ldisc_deref(ld);
-	}
-	up_write(&tty->termios_rwsem);
 	return 0;
 }
 
@@ -167,16 +151,9 @@ int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 }
 
  
+/* Stub: tty_perform_flush not used externally */
 int tty_perform_flush(struct tty_struct *tty, unsigned long arg)
 {
-	int retval = tty_check_change(tty);
-	if (retval)
-		return retval;
-
-	 
-	if (arg == TCOFLUSH || arg == TCIOFLUSH)
-		tty_driver_flush_buffer(tty);
-
 	return 0;
 }
 

@@ -358,30 +358,12 @@ static int __dequeue_signal(struct sigpending *pending, sigset_t *mask,
 	return sig;
 }
 
+/* Stub: dequeue_signal not used externally */
 int dequeue_signal(struct task_struct *tsk, sigset_t *mask,
 		   kernel_siginfo_t *info, enum pid_type *type)
 {
-	bool resched_timer = false;
-	int signr;
-
-	
 	*type = PIDTYPE_PID;
-	signr = __dequeue_signal(&tsk->pending, mask, info, &resched_timer);
-	if (!signr) {
-		*type = PIDTYPE_TGID;
-		signr = __dequeue_signal(&tsk->signal->shared_pending,
-					 mask, info, &resched_timer);
-	}
-
-	recalc_sigpending();
-	if (!signr)
-		return 0;
-
-	if (unlikely(sig_kernel_stop(signr))) {
-		
-		current->jobctl |= JOBCTL_STOP_DEQUEUED;
-	}
-	return signr;
+	return 0;
 }
 
 void signal_wake_up_state(struct task_struct *t, unsigned int state)

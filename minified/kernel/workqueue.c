@@ -47,9 +47,10 @@ bool queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *wor
     return true;
 }
 
+/* Stub: queue_work_node not used in minimal kernel */
 bool queue_work_node(int node, struct workqueue_struct *wq, struct work_struct *work)
 {
-    return queue_work_on(WORK_CPU_UNBOUND, wq, work);
+    return false;
 }
 
 bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
@@ -122,10 +123,9 @@ void destroy_workqueue(struct workqueue_struct *wq)
         kfree(wq);
 }
 
+/* Stub: execute_in_process_context not used in minimal kernel */
 int execute_in_process_context(work_func_t fn, struct execute_work *ew)
 {
-     
-    fn(&ew->work);
     return 0;
 }
 

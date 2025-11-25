@@ -1,3 +1,42 @@
+--- 2025-11-25 18:47 ---
+
+Session progress:
+- make vm: PASSES ✓, prints "Hello, World!" ✓
+- Binary: 264KB
+- Current: 213,312 LOC (109,025 C + 92,809 headers)
+- Started: 213,417 LOC this session
+- Reduced: ~105 LOC this session
+- Goal: 200,000 LOC - need ~13.3K reduction
+
+Commits this session:
+1. Stub unused dcache, namei, and fork functions (~35 LOC)
+   - d_find_alias, getname_uflags simplification, mmput_async_fn removal
+2. Stub unused exit.c functions (~65 LOC)
+   - kill_orphaned_pgrp, has_stopped_jobs, wait_task_continued
+3. Remove unused fwnode link functions (~25 LOC)
+   - __fwnode_link_del, fwnode_links_purge_suppliers/consumers
+
+Notes:
+- Many functions already stubbed in previous sessions
+- Looking for larger reductions but most big files well-optimized
+- Headers still 43% of codebase - opportunity here
+
+--- 2025-11-25 18:26 ---
+
+Session start:
+- make vm: PASSES ✓, prints "Hello, World!" ✓
+- Binary: 264KB
+- Current: 213,417 LOC (109,130 C + 92,809 headers)
+- Goal: 200,000 LOC - need ~13.4K reduction
+
+Note: Previous sessions may have had wrong count. Using consistent method now.
+cloc after mrproper in minified/ dir.
+
+Plan:
+- Continue stubbing unused functions
+- Focus on larger chunks - headers are 43% of codebase
+- Look for big files that can be further reduced
+
 --- 2025-11-25 17:48 ---
 
 Session summary:

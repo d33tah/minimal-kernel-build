@@ -993,19 +993,9 @@ static int page_not_mapped(struct folio *folio)
 	return !folio_mapped(folio);
 }
 
+/* Stub: try_to_unmap not used externally */
 void try_to_unmap(struct folio *folio, enum ttu_flags flags)
 {
-	struct rmap_walk_control rwc = {
-		.rmap_one = try_to_unmap_one,
-		.arg = (void *)flags,
-		.done = page_not_mapped,
-		.anon_lock = folio_lock_anon_vma_read,
-	};
-
-	if (flags & TTU_RMAP_LOCKED)
-		rmap_walk_locked(folio, &rwc);
-	else
-		rmap_walk(folio, &rwc);
 }
 
 void try_to_migrate(struct folio *folio, enum ttu_flags flags)

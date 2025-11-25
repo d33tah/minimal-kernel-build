@@ -1075,122 +1075,20 @@ const void *dup_iter(struct iov_iter *new, struct iov_iter *old, gfp_t flags)
 	return NULL;
 }
 
-static int copy_compat_iovec_from_user(struct iovec *iov,
-		const struct iovec __user *uvec, unsigned long nr_segs)
-{
-	const struct compat_iovec __user *uiov =
-		(const struct compat_iovec __user *)uvec;
-	int ret = -EFAULT, i;
-
-	if (!user_access_begin(uiov, nr_segs * sizeof(*uiov)))
-		return -EFAULT;
-
-	for (i = 0; i < nr_segs; i++) {
-		compat_uptr_t buf;
-		compat_ssize_t len;
-
-		unsafe_get_user(len, &uiov[i].iov_len, uaccess_end);
-		unsafe_get_user(buf, &uiov[i].iov_base, uaccess_end);
-
-		 
-		if (len < 0) {
-			ret = -EINVAL;
-			goto uaccess_end;
-		}
-		iov[i].iov_base = compat_ptr(buf);
-		iov[i].iov_len = len;
-	}
-
-	ret = 0;
-uaccess_end:
-	user_access_end();
-	return ret;
-}
-
-static int copy_iovec_from_user(struct iovec *iov,
-		const struct iovec __user *uvec, unsigned long nr_segs)
-{
-	unsigned long seg;
-
-	if (copy_from_user(iov, uvec, nr_segs * sizeof(*uvec)))
-		return -EFAULT;
-	for (seg = 0; seg < nr_segs; seg++) {
-		if ((ssize_t)iov[seg].iov_len < 0)
-			return -EINVAL;
-	}
-
-	return 0;
-}
-
+/* Stub: iovec_from_user not used externally */
 struct iovec *iovec_from_user(const struct iovec __user *uvec,
 		unsigned long nr_segs, unsigned long fast_segs,
 		struct iovec *fast_iov, bool compat)
 {
-	struct iovec *iov = fast_iov;
-	int ret;
-
-	 
-	if (nr_segs == 0)
-		return iov;
-	if (nr_segs > UIO_MAXIOV)
-		return ERR_PTR(-EINVAL);
-	if (nr_segs > fast_segs) {
-		iov = kmalloc_array(nr_segs, sizeof(struct iovec), GFP_KERNEL);
-		if (!iov)
-			return ERR_PTR(-ENOMEM);
-	}
-
-	if (compat)
-		ret = copy_compat_iovec_from_user(iov, uvec, nr_segs);
-	else
-		ret = copy_iovec_from_user(iov, uvec, nr_segs);
-	if (ret) {
-		if (iov != fast_iov)
-			kfree(iov);
-		return ERR_PTR(ret);
-	}
-
-	return iov;
+	return ERR_PTR(-EFAULT);
 }
 
+/* Stub: __import_iovec not used externally */
 ssize_t __import_iovec(int type, const struct iovec __user *uvec,
 		 unsigned nr_segs, unsigned fast_segs, struct iovec **iovp,
 		 struct iov_iter *i, bool compat)
 {
-	ssize_t total_len = 0;
-	unsigned long seg;
-	struct iovec *iov;
-
-	iov = iovec_from_user(uvec, nr_segs, fast_segs, *iovp, compat);
-	if (IS_ERR(iov)) {
-		*iovp = NULL;
-		return PTR_ERR(iov);
-	}
-
-	 
-	for (seg = 0; seg < nr_segs; seg++) {
-		ssize_t len = (ssize_t)iov[seg].iov_len;
-
-		if (!access_ok(iov[seg].iov_base, len)) {
-			if (iov != *iovp)
-				kfree(iov);
-			*iovp = NULL;
-			return -EFAULT;
-		}
-
-		if (len > MAX_RW_COUNT - total_len) {
-			len = MAX_RW_COUNT - total_len;
-			iov[seg].iov_len = len;
-		}
-		total_len += len;
-	}
-
-	iov_iter_init(i, type, iov, nr_segs, total_len);
-	if (iov == *iovp)
-		*iovp = NULL;
-	else
-		*iovp = iov;
-	return total_len;
+	return -EFAULT;
 }
 
  
@@ -1207,19 +1105,7 @@ int import_single_range(int rw, void __user *buf, size_t len,
 	return -EFAULT;
 }
 
- 
+/* Stub: iov_iter_restore not used externally */
 void iov_iter_restore(struct iov_iter *i, struct iov_iter_state *state)
 {
-	if (WARN_ON_ONCE(!iov_iter_is_bvec(i) && !iter_is_iovec(i)) &&
-			 !iov_iter_is_kvec(i))
-		return;
-	i->iov_offset = state->iov_offset;
-	i->count = state->count;
-	 
-	BUILD_BUG_ON(sizeof(struct iovec) != sizeof(struct kvec));
-	if (iov_iter_is_bvec(i))
-		i->bvec -= state->nr_segs - i->nr_segs;
-	else
-		i->iov -= state->nr_segs - i->nr_segs;
-	i->nr_segs = state->nr_segs;
 }

@@ -378,9 +378,10 @@ static inline void uclamp_fork(struct task_struct *p) { }
 static inline void uclamp_post_fork(struct task_struct *p) { }
 static inline void init_uclamp(void) { }
 
+/* Stub: sched_task_on_rq not used externally */
 bool sched_task_on_rq(struct task_struct *p)
 {
-	return task_on_rq_queued(p);
+	return false;
 }
 
 unsigned long get_wchan(struct task_struct *p)
@@ -977,20 +978,16 @@ unsigned int nr_running(void)
 	return sum;
 }
 
+/* Stub: single_task_running not used externally */
 bool single_task_running(void)
 {
-	return raw_rq()->nr_running == 1;
+	return true;
 }
 
+/* Stub: nr_context_switches not used externally */
 unsigned long long nr_context_switches(void)
 {
-	int i;
-	unsigned long long sum = 0;
-
-	for_each_possible_cpu(i)
-		sum += cpu_rq(i)->nr_switches;
-
-	return sum;
+	return 0;
 }
 
 unsigned int nr_iowait_cpu(int cpu)

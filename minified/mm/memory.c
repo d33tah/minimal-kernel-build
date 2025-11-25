@@ -908,22 +908,10 @@ void unmap_vmas(struct mmu_gather *tlb,
 	mmu_notifier_invalidate_range_end(&range);
 }
 
+/* Stub: zap_page_range not used in minimal kernel */
 void zap_page_range(struct vm_area_struct *vma, unsigned long start,
 		unsigned long size)
 {
-	struct mmu_notifier_range range;
-	struct mmu_gather tlb;
-
-	lru_add_drain();
-	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, vma, vma->vm_mm,
-				start, start + size);
-	tlb_gather_mmu(&tlb, vma->vm_mm);
-	update_hiwater_rss(vma->vm_mm);
-	mmu_notifier_invalidate_range_start(&range);
-	for ( ; vma && vma->vm_start < range.end; vma = vma->vm_next)
-		unmap_single_vma(&tlb, vma, start, range.end, NULL);
-	mmu_notifier_invalidate_range_end(&range);
-	tlb_finish_mmu(&tlb);
 }
 
 static void zap_page_range_single(struct vm_area_struct *vma, unsigned long address,

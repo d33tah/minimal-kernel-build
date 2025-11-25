@@ -756,22 +756,9 @@ static void __device_driver_unlock(struct device *dev, struct device *parent)
 		device_unlock(parent);
 }
 
- 
+/* STUB: device_driver_attach not used externally */
 int device_driver_attach(struct device_driver *drv, struct device *dev)
-{
-	int ret;
-
-	__device_driver_lock(dev, dev->parent);
-	ret = __driver_probe_device(drv, dev);
-	__device_driver_unlock(dev, dev->parent);
-
-	 
-	if (ret > 0)
-		ret = -ret;
-	if (ret == -EPROBE_DEFER)
-		return -EAGAIN;
-	return ret;
-}
+{ return -ENODEV; }
 
 static void __driver_attach_async_helper(void *_dev, async_cookie_t cookie)
 {

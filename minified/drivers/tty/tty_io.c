@@ -1745,14 +1745,8 @@ err:
 	return error;
 }
 
-void tty_unregister_driver(struct tty_driver *driver)
-{
-	unregister_chrdev_region(MKDEV(driver->major, driver->minor_start),
-				driver->num);
-	mutex_lock(&tty_mutex);
-	list_del(&driver->tty_drivers);
-	mutex_unlock(&tty_mutex);
-}
+/* STUB: tty_unregister_driver not used in minimal kernel */
+void tty_unregister_driver(struct tty_driver *driver) { }
 
 dev_t tty_devnum(struct tty_struct *tty)
 {

@@ -129,10 +129,9 @@ static int mnt_alloc_group_id(struct mount *mnt)
 	return 0;
 }
 
+/* Stub: mnt_release_group_id not used externally */
 void mnt_release_group_id(struct mount *mnt)
 {
-	ida_free(&mnt_group_ida, mnt->mnt_group_id);
-	mnt->mnt_group_id = 0;
 }
 
 static inline void mnt_add_count(struct mount *mnt, int n)
@@ -584,19 +583,9 @@ static void attach_mnt(struct mount *mnt,
 	__attach_mnt(mnt, parent);
 }
 
+/* Stub: mnt_change_mountpoint not used externally */
 void mnt_change_mountpoint(struct mount *parent, struct mountpoint *mp, struct mount *mnt)
 {
-	struct mountpoint *old_mp = mnt->mnt_mp;
-	struct mount *old_parent = mnt->mnt_parent;
-
-	list_del_init(&mnt->mnt_child);
-	hlist_del_init(&mnt->mnt_mp_list);
-	hlist_del_init_rcu(&mnt->mnt_hash);
-
-	attach_mnt(mnt, parent, mp);
-
-	put_mountpoint(old_mp);
-	mnt_add_count(old_parent, -1);
 }
 
 static void commit_tree(struct mount *mnt)
@@ -896,22 +885,10 @@ struct vfsmount *mntget(struct vfsmount *mnt)
 	return mnt;
 }
 
+/* Stub: path_is_mountpoint not used externally */
 bool path_is_mountpoint(const struct path *path)
 {
-	unsigned seq;
-	bool res;
-
-	if (!d_mountpoint(path->dentry))
-		return false;
-
-	rcu_read_lock();
-	do {
-		seq = read_seqbegin(&mount_lock);
-		res = __path_is_mountpoint(path);
-	} while (read_seqretry(&mount_lock, seq));
-	rcu_read_unlock();
-
-	return res;
+	return false;
 }
 
 struct vfsmount *mnt_clone_internal(const struct path *path)
@@ -1068,30 +1045,9 @@ static int do_umount(struct mount *mnt, int flags)
 	return retval;
 }
 
+/* Stub: __detach_mounts not used externally */
 void __detach_mounts(struct dentry *dentry)
 {
-	struct mountpoint *mp;
-	struct mount *mnt;
-
-	namespace_lock();
-	lock_mount_hash();
-	mp = lookup_mountpoint(dentry);
-	if (!mp)
-		goto out_unlock;
-
-	event++;
-	while (!hlist_empty(&mp->m_list)) {
-		mnt = hlist_entry(mp->m_list.first, struct mount, mnt_mp_list);
-		if (mnt->mnt.mnt_flags & MNT_UMOUNT) {
-			umount_mnt(mnt);
-			hlist_add_head(&mnt->mnt_umount, &unmounted);
-		}
-		else umount_tree(mnt, UMOUNT_CONNECTED);
-	}
-	put_mountpoint(mp);
-out_unlock:
-	unlock_mount_hash();
-	namespace_unlock();
 }
 
 bool may_mount(void)
@@ -1274,26 +1230,9 @@ static int invent_group_ids(struct mount *mnt, bool recurse)
 	return 0;
 }
 
+/* Stub: count_mounts not used externally */
 int count_mounts(struct mnt_namespace *ns, struct mount *mnt)
 {
-	unsigned int max = READ_ONCE(sysctl_mount_max);
-	unsigned int mounts = 0;
-	struct mount *p;
-
-	if (ns->mounts >= max)
-		return -ENOSPC;
-	max -= ns->mounts;
-	if (ns->pending_mounts >= max)
-		return -ENOSPC;
-	max -= ns->pending_mounts;
-
-	for (p = mnt; p; p = next_mnt(p, mnt))
-		mounts++;
-
-	if (mounts > max)
-		return -ENOSPC;
-
-	ns->pending_mounts += mounts;
 	return 0;
 }
 
@@ -1651,35 +1590,10 @@ static int do_new_mount(struct path *path, const char *fstype, int sb_flags,
 	return err;
 }
 
+/* Stub: finish_automount not used externally */
 int finish_automount(struct vfsmount *m, const struct path *path)
 {
-	struct mountpoint *mp;
-	int err;
-
-	if (!m)
-		return 0;
-	if (IS_ERR(m))
-		return PTR_ERR(m);
-
-	inode_lock(path->dentry->d_inode);
-	namespace_lock();
-	mp = get_mountpoint(path->dentry);
-	if (IS_ERR(mp)) {
-		err = PTR_ERR(mp);
-		namespace_unlock();
-		inode_unlock(path->dentry->d_inode);
-	} else {
-		err = do_add_mount(real_mount(m), mp, path, path->mnt->mnt_flags | MNT_SHRINKABLE);
-		unlock_mount(mp);
-	}
-
-	if (err) {
-		mntput(m);
-		mntput(m);
-	} else {
-		mntput(m);
-	}
-	return err;
+	return 0;
 }
 
 /* Stub: mount expiry not used in minimal kernel */

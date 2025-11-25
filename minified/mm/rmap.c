@@ -350,24 +350,14 @@ void page_unlock_anon_vma_read(struct anon_vma *anon_vma)
 	anon_vma_unlock_read(anon_vma);
 }
 
+/* Stub: try_to_unmap_flush not used externally */
 void try_to_unmap_flush(void)
 {
-	struct tlbflush_unmap_batch *tlb_ubc = &current->tlb_ubc;
-
-	if (!tlb_ubc->flush_required)
-		return;
-
-	arch_tlbbatch_flush(&tlb_ubc->arch);
-	tlb_ubc->flush_required = false;
-	tlb_ubc->writable = false;
 }
 
+/* Stub: try_to_unmap_flush_dirty not used externally */
 void try_to_unmap_flush_dirty(void)
 {
-	struct tlbflush_unmap_batch *tlb_ubc = &current->tlb_ubc;
-
-	if (tlb_ubc->writable)
-		try_to_unmap_flush();
 }
 
 #define TLB_FLUSH_BATCH_FLUSHED_SHIFT	16
@@ -1168,12 +1158,7 @@ void rmap_walk(struct folio *folio, struct rmap_walk_control *rwc)
 		rmap_walk_file(folio, rwc, false);
 }
 
+/* Stub: rmap_walk_locked not used externally */
 void rmap_walk_locked(struct folio *folio, struct rmap_walk_control *rwc)
 {
-	
-	VM_BUG_ON_FOLIO(folio_test_ksm(folio), folio);
-	if (folio_test_anon(folio))
-		rmap_walk_anon(folio, rwc, true);
-	else
-		rmap_walk_file(folio, rwc, true);
 }

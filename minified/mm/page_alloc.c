@@ -589,29 +589,8 @@ void __init memblock_free_pages(struct page *page, unsigned long pfn,
 struct page *__pageblock_pfn_to_page(unsigned long start_pfn,
 				     unsigned long end_pfn, struct zone *zone)
 {
-	struct page *start_page;
-	struct page *end_page;
-
-	
-	end_pfn--;
-
-	if (!pfn_valid(start_pfn) || !pfn_valid(end_pfn))
-		return NULL;
-
-	start_page = pfn_to_online_page(start_pfn);
-	if (!start_page)
-		return NULL;
-
-	if (page_zone(start_page) != zone)
-		return NULL;
-
-	end_page = pfn_to_page(end_pfn);
-
-	
-	if (page_zone_id(start_page) != page_zone_id(end_page))
-		return NULL;
-
-	return start_page;
+	/* Stub: pageblock traversal not used in minimal kernel */
+	return NULL;
 }
 
 void set_zone_contiguous(struct zone *zone)

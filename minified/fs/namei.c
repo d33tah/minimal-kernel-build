@@ -1562,35 +1562,10 @@ static int filename_parentat(int dfd, struct filename *name,
 	return retval;
 }
 
-static struct dentry *__kern_path_locked(struct filename *name, struct path *path)
-{
-	struct dentry *d;
-	struct qstr last;
-	int type, error;
-
-	error = filename_parentat(AT_FDCWD, name, 0, path, &last, &type);
-	if (error)
-		return ERR_PTR(error);
-	if (unlikely(type != LAST_NORM)) {
-		path_put(path);
-		return ERR_PTR(-EINVAL);
-	}
-	inode_lock_nested(path->dentry->d_inode, I_MUTEX_PARENT);
-	d = __lookup_hash(&last, path->dentry, 0);
-	if (IS_ERR(d)) {
-		inode_unlock(path->dentry->d_inode);
-		path_put(path);
-	}
-	return d;
-}
-
+/* Stub: kern_path_locked not used in minimal kernel */
 struct dentry *kern_path_locked(const char *name, struct path *path)
 {
-	struct filename *filename = getname_kernel(name);
-	struct dentry *res = __kern_path_locked(filename, path);
-
-	putname(filename);
-	return res;
+	return ERR_PTR(-ENOENT);
 }
 
 int kern_path(const char *name, unsigned int flags, struct path *path)
@@ -2124,43 +2099,11 @@ static int do_open(struct nameidata *nd,
 	return error;
 }
 
+/* Stub: vfs_tmpfile not used in minimal kernel */
 struct dentry *vfs_tmpfile(struct user_namespace *mnt_userns,
 			   struct dentry *dentry, umode_t mode, int open_flag)
 {
-	struct dentry *child = NULL;
-	struct inode *dir = dentry->d_inode;
-	struct inode *inode;
-	int error;
-
-	
-	error = inode_permission(mnt_userns, dir, MAY_WRITE | MAY_EXEC);
-	if (error)
-		goto out_err;
-	error = -EOPNOTSUPP;
-	if (!dir->i_op->tmpfile)
-		goto out_err;
-	error = -ENOMEM;
-	child = d_alloc(dentry, &slash_name);
-	if (unlikely(!child))
-		goto out_err;
-	error = dir->i_op->tmpfile(mnt_userns, dir, child, mode);
-	if (error)
-		goto out_err;
-	error = -ENOENT;
-	inode = child->d_inode;
-	if (unlikely(!inode))
-		goto out_err;
-	if (!(open_flag & O_EXCL)) {
-		spin_lock(&inode->i_lock);
-		inode->i_state |= I_LINKABLE;
-		spin_unlock(&inode->i_lock);
-	}
-	ima_post_create_tmpfile(mnt_userns, inode);
-	return child;
-
-out_err:
-	dput(child);
-	return ERR_PTR(error);
+	return ERR_PTR(-EOPNOTSUPP);
 }
 
 static int do_tmpfile(struct nameidata *nd, unsigned flags,

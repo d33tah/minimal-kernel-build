@@ -153,11 +153,9 @@ static void __release_child_resources(struct resource *r)
 	}
 }
 
+/* Stub: release_child_resources not used in minimal kernel */
 void release_child_resources(struct resource *r)
 {
-	write_lock(&resource_lock);
-	__release_child_resources(r);
-	write_unlock(&resource_lock);
 }
 
  
@@ -626,16 +624,10 @@ reserve_region_with_split(struct resource *root, resource_size_t start,
 }
 
  
+/* Stub: resource_alignment not used in minimal kernel */
 resource_size_t resource_alignment(struct resource *res)
 {
-	switch (res->flags & (IORESOURCE_SIZEALIGN | IORESOURCE_STARTALIGN)) {
-	case IORESOURCE_SIZEALIGN:
-		return resource_size(res);
-	case IORESOURCE_STARTALIGN:
-		return res->start;
-	default:
-		return 0;
-	}
+	return 0;
 }
 
  

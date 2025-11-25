@@ -837,10 +837,10 @@ phys_addr_t __init memblock_phys_alloc_range(phys_addr_t size,
 					false);
 }
 
+/* Stub: memblock_phys_alloc_try_nid not used in minimal kernel */
 phys_addr_t __init memblock_phys_alloc_try_nid(phys_addr_t size, phys_addr_t align, int nid)
 {
-	return memblock_alloc_range_nid(size, align, 0,
-					MEMBLOCK_ALLOC_ACCESSIBLE, nid, false);
+	return 0;
 }
 
 static void * __init memblock_alloc_internal(
@@ -1206,17 +1206,9 @@ void reset_node_managed_pages(pg_data_t *pgdat)
 		atomic_long_set(&z->managed_pages, 0);
 }
 
+/* Stub: reset_all_zones_managed_pages not used in minimal kernel */
 void __init reset_all_zones_managed_pages(void)
 {
-	struct pglist_data *pgdat;
-
-	if (reset_managed_pages_done)
-		return;
-
-	for_each_online_pgdat(pgdat)
-		reset_node_managed_pages(pgdat);
-
-	reset_managed_pages_done = 1;
 }
 
 void __init memblock_free_all(void)

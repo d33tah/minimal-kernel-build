@@ -92,41 +92,17 @@ loff_t generic_file_llseek(struct file *file, loff_t offset, int whence)
 					i_size_read(inode));
 }
 
- 
+/* Stub: fixed_size_llseek not used in minimal kernel */
 loff_t fixed_size_llseek(struct file *file, loff_t offset, int whence, loff_t size)
-{
-	switch (whence) {
-	case SEEK_SET: case SEEK_CUR: case SEEK_END:
-		return generic_file_llseek_size(file, offset, whence,
-						size, size);
-	default:
-		return -EINVAL;
-	}
-}
+{ return -EINVAL; }
 
- 
+/* Stub: no_seek_end_llseek not used in minimal kernel */
 loff_t no_seek_end_llseek(struct file *file, loff_t offset, int whence)
-{
-	switch (whence) {
-	case SEEK_SET: case SEEK_CUR:
-		return generic_file_llseek_size(file, offset, whence,
-						OFFSET_MAX, 0);
-	default:
-		return -EINVAL;
-	}
-}
+{ return -EINVAL; }
 
- 
+/* Stub: no_seek_end_llseek_size not used in minimal kernel */
 loff_t no_seek_end_llseek_size(struct file *file, loff_t offset, int whence, loff_t size)
-{
-	switch (whence) {
-	case SEEK_SET: case SEEK_CUR:
-		return generic_file_llseek_size(file, offset, whence,
-						size, 0);
-	default:
-		return -EINVAL;
-	}
-}
+{ return -EINVAL; }
 
  
 loff_t noop_llseek(struct file *file, loff_t offset, int whence)
@@ -624,40 +600,15 @@ out:
 	return ret;
 }
 
+/* Stub: vfs_iocb_iter_read not used in minimal kernel */
 ssize_t vfs_iocb_iter_read(struct file *file, struct kiocb *iocb,
 			   struct iov_iter *iter)
-{
-	size_t tot_len;
-	ssize_t ret = 0;
+{ return -EINVAL; }
 
-	if (!file->f_op->read_iter)
-		return -EINVAL;
-	if (!(file->f_mode & FMODE_READ))
-		return -EBADF;
-	if (!(file->f_mode & FMODE_CAN_READ))
-		return -EINVAL;
-
-	tot_len = iov_iter_count(iter);
-	if (!tot_len)
-		goto out;
-	ret = rw_verify_area(READ, file, &iocb->ki_pos, tot_len);
-	if (ret < 0)
-		return ret;
-
-	ret = call_read_iter(file, iocb, iter);
-out:
-	if (ret >= 0)
-		fsnotify_access(file);
-	return ret;
-}
-
+/* Stub: vfs_iter_read not used in minimal kernel */
 ssize_t vfs_iter_read(struct file *file, struct iov_iter *iter, loff_t *ppos,
 		rwf_t flags)
-{
-	if (!file->f_op->read_iter)
-		return -EINVAL;
-	return do_iter_read(file, iter, ppos, flags);
-}
+{ return -EINVAL; }
 
 static ssize_t do_iter_write(struct file *file, struct iov_iter *iter,
 		loff_t *pos, rwf_t flags)
@@ -686,40 +637,15 @@ static ssize_t do_iter_write(struct file *file, struct iov_iter *iter,
 	return ret;
 }
 
+/* Stub: vfs_iocb_iter_write not used in minimal kernel */
 ssize_t vfs_iocb_iter_write(struct file *file, struct kiocb *iocb,
 			    struct iov_iter *iter)
-{
-	size_t tot_len;
-	ssize_t ret = 0;
+{ return -EINVAL; }
 
-	if (!file->f_op->write_iter)
-		return -EINVAL;
-	if (!(file->f_mode & FMODE_WRITE))
-		return -EBADF;
-	if (!(file->f_mode & FMODE_CAN_WRITE))
-		return -EINVAL;
-
-	tot_len = iov_iter_count(iter);
-	if (!tot_len)
-		return 0;
-	ret = rw_verify_area(WRITE, file, &iocb->ki_pos, tot_len);
-	if (ret < 0)
-		return ret;
-
-	ret = call_write_iter(file, iocb, iter);
-	if (ret > 0)
-		fsnotify_modify(file);
-
-	return ret;
-}
-
+/* Stub: vfs_iter_write not used in minimal kernel */
 ssize_t vfs_iter_write(struct file *file, struct iov_iter *iter, loff_t *ppos,
 		rwf_t flags)
-{
-	if (!file->f_op->write_iter)
-		return -EINVAL;
-	return do_iter_write(file, iter, ppos, flags);
-}
+{ return -EINVAL; }
 
 static ssize_t do_readv(unsigned long fd, const struct iovec __user *vec,
 			unsigned long vlen, rwf_t flags)

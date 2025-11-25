@@ -630,14 +630,16 @@ int bus_register_notifier(struct bus_type *bus, struct notifier_block *nb)
 	return blocking_notifier_chain_register(&bus->p->bus_notifier, nb);
 }
 
+/* Stub: bus_unregister_notifier not used externally */
 int bus_unregister_notifier(struct bus_type *bus, struct notifier_block *nb)
 {
-	return blocking_notifier_chain_unregister(&bus->p->bus_notifier, nb);
+	return 0;
 }
 
+/* Stub: bus_get_kset not used externally */
 struct kset *bus_get_kset(struct bus_type *bus)
 {
-	return &bus->p->subsys;
+	return NULL;
 }
 
 struct klist *bus_get_device_klist(struct bus_type *bus)
@@ -666,26 +668,11 @@ static void device_insertion_sort_klist(struct device *a, struct list_head *list
 	list_move_tail(&a->p->knode_bus.n_node, list);
 }
 
+/* Stub: bus_sort_breadthfirst not used externally */
 void bus_sort_breadthfirst(struct bus_type *bus,
 			   int (*compare)(const struct device *a,
 					  const struct device *b))
 {
-	LIST_HEAD(sorted_devices);
-	struct klist_node *n, *tmp;
-	struct device_private *dev_prv;
-	struct device *dev;
-	struct klist *device_klist;
-
-	device_klist = bus_get_device_klist(bus);
-
-	spin_lock(&device_klist->k_lock);
-	list_for_each_entry_safe(n, tmp, &device_klist->k_list, n_node) {
-		dev_prv = to_device_private_bus(n);
-		dev = dev_prv->device;
-		device_insertion_sort_klist(dev, &sorted_devices, compare);
-	}
-	list_splice(&sorted_devices, &device_klist->k_list);
-	spin_unlock(&device_klist->k_lock);
 }
 
  

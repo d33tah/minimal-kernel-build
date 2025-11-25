@@ -1003,16 +1003,9 @@ out:
 	return ERR_PTR(retval);
 }
 
+/* STUB: bprm_change_interp not used (no script interpreters) */
 int bprm_change_interp(const char *interp, struct linux_binprm *bprm)
-{
-	
-	if (bprm->interp != bprm->filename)
-		kfree(bprm->interp);
-	bprm->interp = kstrdup(interp, GFP_KERNEL);
-	if (!bprm->interp)
-		return -ENOMEM;
-	return 0;
-}
+{ return -ENOEXEC; }
 
 static void check_unsafe_exec(struct linux_binprm *bprm)
 {

@@ -600,32 +600,11 @@ static int nd_jump_root(struct nameidata *nd)
 	return 0;
 }
 
+/* STUB: nd_jump_link not used externally */
 int nd_jump_link(struct path *path)
 {
-	int error = -ELOOP;
-	struct nameidata *nd = current->nameidata;
-
-	if (unlikely(nd->flags & LOOKUP_NO_MAGICLINKS))
-		goto err;
-
-	error = -EXDEV;
-	if (unlikely(nd->flags & LOOKUP_NO_XDEV)) {
-		if (nd->path.mnt != path->mnt)
-			goto err;
-	}
-	
-	if (unlikely(nd->flags & LOOKUP_IS_SCOPED))
-		goto err;
-
-	path_put(&nd->path);
-	nd->path = *path;
-	nd->inode = nd->path.dentry->d_inode;
-	nd->state |= ND_JUMPED;
-	return 0;
-
-err:
 	path_put(path);
-	return error;
+	return -ELOOP;
 }
 
 static inline void put_link(struct nameidata *nd)
@@ -711,16 +690,8 @@ int follow_down_one(struct path *path)
 	return 0;
 }
 
-int follow_down(struct path *path)
-{
-	struct vfsmount *mnt = path->mnt;
-	bool jumped;
-	int ret = traverse_mounts(path, &jumped, NULL, 0);
-
-	if (path->mnt != mnt)
-		mntput(mnt);
-	return ret;
-}
+/* STUB: follow_down not used externally */
+int follow_down(struct path *path) { return 0; }
 
 static bool __follow_mount_rcu(struct nameidata *nd, struct path *path,
 			       struct inode **inode, unsigned *seqp)

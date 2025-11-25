@@ -262,17 +262,8 @@ static int grab_super(struct super_block *s) __releases(sb_lock)
 	return 0;
 }
 
-bool trylock_super(struct super_block *sb)
-{
-	if (down_read_trylock(&sb->s_umount)) {
-		if (!hlist_unhashed(&sb->s_instances) &&
-		    sb->s_root && (sb->s_flags & SB_BORN))
-			return true;
-		up_read(&sb->s_umount);
-	}
-
-	return false;
-}
+/* Stub: trylock_super not used in minimal kernel */
+bool trylock_super(struct super_block *sb) { return false; }
 
 void generic_shutdown_super(struct super_block *sb)
 {

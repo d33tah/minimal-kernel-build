@@ -341,28 +341,9 @@ int simple_rmdir(struct inode *dir, struct dentry *dentry)
 	return 0;
 }
 
+/* Stub: simple_rename_exchange not used in minimal kernel */
 int simple_rename_exchange(struct inode *old_dir, struct dentry *old_dentry,
-			   struct inode *new_dir, struct dentry *new_dentry)
-{
-	bool old_is_dir = d_is_dir(old_dentry);
-	bool new_is_dir = d_is_dir(new_dentry);
-
-	if (old_dir != new_dir && old_is_dir != new_is_dir) {
-		if (old_is_dir) {
-			drop_nlink(old_dir);
-			inc_nlink(new_dir);
-		} else {
-			drop_nlink(new_dir);
-			inc_nlink(old_dir);
-		}
-	}
-	old_dir->i_ctime = old_dir->i_mtime =
-	new_dir->i_ctime = new_dir->i_mtime =
-	d_inode(old_dentry)->i_ctime =
-	d_inode(new_dentry)->i_ctime = current_time(old_dir);
-
-	return 0;
-}
+			   struct inode *new_dir, struct dentry *new_dentry) { return -EINVAL; }
 
 int simple_rename(struct user_namespace *mnt_userns, struct inode *old_dir,
 		  struct dentry *old_dentry, struct inode *new_dir,
@@ -882,21 +863,8 @@ static const struct file_operations empty_dir_operations = {
 };
 
 
-void make_empty_dir_inode(struct inode *inode)
-{
-	set_nlink(inode, 2);
-	inode->i_mode = S_IFDIR | S_IRUGO | S_IXUGO;
-	inode->i_uid = GLOBAL_ROOT_UID;
-	inode->i_gid = GLOBAL_ROOT_GID;
-	inode->i_rdev = 0;
-	inode->i_size = 0;
-	inode->i_blkbits = PAGE_SHIFT;
-	inode->i_blocks = 0;
-
-	inode->i_op = &empty_dir_inode_operations;
-	inode->i_opflags &= ~IOP_XATTR;
-	inode->i_fop = &empty_dir_operations;
-}
+/* Stub: make_empty_dir_inode not used in minimal kernel */
+void make_empty_dir_inode(struct inode *inode) { }
 
 bool is_empty_dir_inode(struct inode *inode)
 {

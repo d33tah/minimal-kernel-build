@@ -1,14 +1,14 @@
---- 2025-11-25 16:43 ---
+--- 2025-11-25 16:50 ---
 
-Session progress update:
+Session summary:
 - make vm: PASSES ✓, prints "Hello, World!" ✓
 - Binary: 265KB
-- Current: 222,617 LOC
+- Current: 222,607 LOC
 - Started: 222,748 LOC
-- Reduced: 131 LOC this session
+- Reduced: 141 LOC this session
 - Goal: 200,000 LOC - need ~23K more reduction
 
-Commits this session (9 total):
+Commits this session (11 total):
 1. Stub unused zap_page_range (~13 LOC)
 2. Stub unused locking functions (~24 LOC) - percpu_up_write, ww_mutex_trylock
 3. Stub unused bitmap_cut and stpcpy functions (~28 LOC)
@@ -16,14 +16,16 @@ Commits this session (9 total):
 5. Stub unused workqueue and timer functions (~4 LOC) - queue_work_node, execute_in_process_context, mod_timer_pending, timer_reduce
 6. Stub unused wait queue functions (~5 LOC) - __wake_up_locked_sync_key, __wake_up_pollfree
 7. Stub unused credential functions (~48 LOC) - cred_fscmp, set_security_override, set_security_override_from_ctx, set_create_files_as
-8. Stub unused notifier functions (~16 LOC) - atomic_notifier_chain_register_unique_prio, blocking_notifier_chain_register_unique_prio, blocking_notifier_call_chain_robust, raw_notifier_call_chain_robust
+8. Stub unused notifier functions (~16 LOC)
+9. Stub unused func_ptr_is_kernel_text (~5 LOC)
+10. Stub unused tasklet functions (~9 LOC) - __tasklet_hi_schedule, tasklet_kill
 
 Notes:
 - Most functions already stubbed from previous sessions
-- cred.c yielded ~48 LOC reduction (good find)
-- Searching for remaining unused functions is yielding diminishing returns
+- cred.c yielded ~48 LOC reduction (best find)
+- Searching for remaining unused functions is yielding diminishing returns (~5-10 LOC per function)
 - Headers still ~57% of codebase - would need different approach for major reduction
-- Continuing to search for more stubs...
+- Need to look at larger subsystems or more aggressive header trimming for bigger gains
 
 --- 2025-11-25 15:24 ---
 

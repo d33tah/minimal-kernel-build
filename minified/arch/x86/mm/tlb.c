@@ -281,9 +281,9 @@ static inline void cr4_update_pce_mm(struct mm_struct *mm)
 		cr4_clear_bits_irqsoff(X86_CR4_PCE);
 }
 
+/* Stub: cr4_update_pce not used in minimal kernel */
 void cr4_update_pce(void *ignored)
 {
-	cr4_update_pce_mm(this_cpu_read(cpu_tlbstate.loaded_mm));
 }
 
 
@@ -728,27 +728,9 @@ void __flush_tlb_all(void)
 	}
 }
 
+/* Stub: arch_tlbbatch_flush not used in minimal kernel */
 void arch_tlbbatch_flush(struct arch_tlbflush_unmap_batch *batch)
 {
-	struct flush_tlb_info *info;
-
-	int cpu = get_cpu();
-
-	info = get_flush_tlb_info(NULL, 0, TLB_FLUSH_ALL, 0, false, 0);
-	 
-	if (cpumask_any_but(&batch->cpumask, cpu) < nr_cpu_ids) {
-		flush_tlb_multi(&batch->cpumask, info);
-	} else if (cpumask_test_cpu(cpu, &batch->cpumask)) {
-		lockdep_assert_irqs_enabled();
-		local_irq_disable();
-		flush_tlb_func(info);
-		local_irq_enable();
-	}
-
-	cpumask_clear(&batch->cpumask);
-
-	put_flush_tlb_info();
-	put_cpu();
 }
 
  

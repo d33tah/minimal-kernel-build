@@ -28,30 +28,11 @@ struct ioremap_desc {
 	unsigned int flags;
 };
 
- 
+/* Stub: ioremap_change_attr not used in minimal kernel */
 int ioremap_change_attr(unsigned long vaddr, unsigned long size,
 			enum page_cache_mode pcm)
 {
-	unsigned long nrpages = size >> PAGE_SHIFT;
-	int err;
-
-	switch (pcm) {
-	case _PAGE_CACHE_MODE_UC:
-	default:
-		err = _set_memory_uc(vaddr, nrpages);
-		break;
-	case _PAGE_CACHE_MODE_WC:
-		err = _set_memory_wc(vaddr, nrpages);
-		break;
-	case _PAGE_CACHE_MODE_WT:
-		err = _set_memory_wt(vaddr, nrpages);
-		break;
-	case _PAGE_CACHE_MODE_WB:
-		err = _set_memory_wb(vaddr, nrpages);
-		break;
-	}
-
-	return err;
+	return 0;
 }
 
  

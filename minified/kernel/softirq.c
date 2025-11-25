@@ -355,10 +355,9 @@ void __tasklet_schedule(struct tasklet_struct *t)
 				  TASKLET_SOFTIRQ);
 }
 
+/* Stub: __tasklet_hi_schedule not used in minimal kernel */
 void __tasklet_hi_schedule(struct tasklet_struct *t)
 {
-	__tasklet_schedule_common(t, &tasklet_hi_vec,
-				  HI_SOFTIRQ);
 }
 
 static bool tasklet_clear_sched(struct tasklet_struct *t)
@@ -448,13 +447,9 @@ void tasklet_init(struct tasklet_struct *t,
 }
 
 
+/* Stub: tasklet_kill not used in minimal kernel */
 void tasklet_kill(struct tasklet_struct *t)
 {
-	while (test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
-		wait_var_event(&t->state, !test_bit(TASKLET_STATE_SCHED, &t->state));
-
-	tasklet_unlock_wait(t);
-	tasklet_clear_sched(t);
 }
 
 

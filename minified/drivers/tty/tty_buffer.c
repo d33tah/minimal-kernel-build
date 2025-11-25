@@ -390,18 +390,16 @@ void tty_buffer_init(struct tty_port *port)
 }
 
  
+/* Stub: tty_buffer_set_limit not used externally */
 int tty_buffer_set_limit(struct tty_port *port, int limit)
 {
-	if (limit < MIN_TTYB_SIZE)
-		return -EINVAL;
-	port->buf.mem_limit = limit;
 	return 0;
 }
 
  
+/* Stub: tty_buffer_set_lock_subclass not used externally */
 void tty_buffer_set_lock_subclass(struct tty_port *port)
 {
-	lockdep_set_subclass(&port->buf.lock, TTY_LOCK_SLAVE);
 }
 
 bool tty_buffer_restart_work(struct tty_port *port)

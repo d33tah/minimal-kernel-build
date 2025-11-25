@@ -1079,14 +1079,10 @@ out_unlock:
 	return err;
 }
 
+/* Stub: not used in minimal kernel */
 bool irq_has_action(unsigned int irq)
 {
-	bool res;
-
-	rcu_read_lock();
-	res = irq_desc_has_action(irq_to_desc(irq));
-	rcu_read_unlock();
-	return res;
+	return false;
 }
 
 bool irq_check_status_bit(unsigned int irq, unsigned int bitmask)

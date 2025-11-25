@@ -1,3 +1,19 @@
+--- 2025-11-25 19:26 ---
+
+Session start:
+- make vm: PASSES ✓, prints "Hello, World!" ✓
+- Binary: 264KB
+- Current: 222,299 LOC (cloc after mrproper on minified/)
+- Goal: 200,000 LOC - need ~22K reduction
+
+Note: LOC count higher than some previous sessions - different counting methods.
+Previous sessions may have counted only C+headers, cloc counts all files.
+
+Plan:
+- Continue stubbing unused functions
+- Focus on larger chunks that can be safely removed
+- Headers are a major opportunity
+
 --- 2025-11-25 18:53 ---
 
 Session final:

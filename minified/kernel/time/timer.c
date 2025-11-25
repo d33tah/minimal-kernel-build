@@ -868,10 +868,10 @@ signed long __sched schedule_timeout_interruptible(signed long timeout)
 	return schedule_timeout(timeout);
 }
 
+/* Stub: not used in minimal kernel */
 signed long __sched schedule_timeout_killable(signed long timeout)
 {
-	__set_current_state(TASK_KILLABLE);
-	return schedule_timeout(timeout);
+	return schedule_timeout_interruptible(timeout);
 }
 
 signed long __sched schedule_timeout_uninterruptible(signed long timeout)

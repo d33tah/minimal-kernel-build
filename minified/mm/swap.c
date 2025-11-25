@@ -129,17 +129,7 @@ void put_pages_list(struct list_head *pages)
 int get_kernel_pages(const struct kvec *kiov, int nr_segs, int write,
 		struct page **pages)
 {
-	int seg;
-
-	for (seg = 0; seg < nr_segs; seg++) {
-		if (WARN_ON(kiov[seg].iov_len != PAGE_SIZE))
-			return seg;
-
-		pages[seg] = kmap_to_page(kiov[seg].iov_base);
-		get_page(pages[seg]);
-	}
-
-	return seg;
+	return 0;
 }
 
 static void pagevec_lru_move_fn(struct pagevec *pvec,
@@ -236,11 +226,7 @@ void lru_note_cost(struct lruvec *lruvec, bool file, unsigned int nr_pages)
 	} while ((lruvec = parent_lruvec(lruvec)));
 }
 
-void lru_note_cost_folio(struct folio *folio)
-{
-	lru_note_cost(folio_lruvec(folio), folio_is_file_lru(folio),
-			folio_nr_pages(folio));
-}
+void lru_note_cost_folio(struct folio *folio) { }
 
 static void __folio_activate(struct folio *folio, struct lruvec *lruvec)
 {
@@ -512,14 +498,7 @@ static void lru_add_and_bh_lrus_drain(void)
 	mlock_page_drain_local();
 }
 
-void lru_add_drain_cpu_zone(struct zone *zone)
-{
-	local_lock(&lru_pvecs.lock);
-	lru_add_drain_cpu(smp_processor_id());
-	drain_local_pages(zone);
-	local_unlock(&lru_pvecs.lock);
-	mlock_page_drain_local();
-}
+void lru_add_drain_cpu_zone(struct zone *zone) { }
 
 void lru_add_drain_all(void)
 {
@@ -527,15 +506,7 @@ void lru_add_drain_all(void)
 }
 
 atomic_t lru_disable_count = ATOMIC_INIT(0);
-
- 
-void lru_cache_disable(void)
-{
-	atomic_inc(&lru_disable_count);
-	 
-	synchronize_rcu_expedited();
-	lru_add_and_bh_lrus_drain();
-}
+void lru_cache_disable(void) { }
 
  
 void release_pages(struct page **pages, int nr)

@@ -971,12 +971,7 @@ void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
 
 }
 
-void d_set_fallthru(struct dentry *dentry)
-{
-	spin_lock(&dentry->d_lock);
-	dentry->d_flags |= DCACHE_FALLTHRU;
-	spin_unlock(&dentry->d_lock);
-}
+void d_set_fallthru(struct dentry *dentry) { }
 
 static unsigned d_flags_for_inode(struct inode *inode)
 {
@@ -1671,19 +1666,7 @@ void d_move(struct dentry *dentry, struct dentry *target)
 	write_sequnlock(&rename_lock);
 }
 
-void d_exchange(struct dentry *dentry1, struct dentry *dentry2)
-{
-	write_seqlock(&rename_lock);
-
-	WARN_ON(!dentry1->d_inode);
-	WARN_ON(!dentry2->d_inode);
-	WARN_ON(IS_ROOT(dentry1));
-	WARN_ON(IS_ROOT(dentry2));
-
-	__d_move(dentry1, dentry2, true);
-
-	write_sequnlock(&rename_lock);
-}
+void d_exchange(struct dentry *dentry1, struct dentry *dentry2) { }
 
 /* Stubbed - not used in minimal kernel */
 struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)

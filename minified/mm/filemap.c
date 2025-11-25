@@ -333,8 +333,7 @@ int filemap_fdatawait_range(struct address_space *mapping, loff_t start_byte,
 int filemap_fdatawait_range_keep_errors(struct address_space *mapping,
 		loff_t start_byte, loff_t end_byte)
 {
-	__filemap_fdatawait_range(mapping, start_byte, end_byte);
-	return filemap_check_and_keep_errors(mapping);
+	return 0;
 }
 
 int file_fdatawait_range(struct file *file, loff_t start_byte, loff_t end_byte)
@@ -347,8 +346,7 @@ int file_fdatawait_range(struct file *file, loff_t start_byte, loff_t end_byte)
 
 int filemap_fdatawait_keep_errors(struct address_space *mapping)
 {
-	__filemap_fdatawait_range(mapping, 0, LLONG_MAX);
-	return filemap_check_and_keep_errors(mapping);
+	return 0;
 }
 
 static bool mapping_needs_writeback(struct address_space *mapping)
@@ -359,24 +357,7 @@ static bool mapping_needs_writeback(struct address_space *mapping)
 bool filemap_range_has_writeback(struct address_space *mapping,
 				 loff_t start_byte, loff_t end_byte)
 {
-	XA_STATE(xas, &mapping->i_pages, start_byte >> PAGE_SHIFT);
-	pgoff_t max = end_byte >> PAGE_SHIFT;
-	struct page *page;
-
-	if (end_byte < start_byte)
-		return false;
-
-	rcu_read_lock();
-	xas_for_each(&xas, page, max) {
-		if (xas_retry(&xas, page))
-			continue;
-		if (xa_is_value(page))
-			continue;
-		if (PageDirty(page) || PageLocked(page) || PageWriteback(page))
-			break;
-	}
-	rcu_read_unlock();
-	return page != NULL;
+	return false;
 }
 
 int filemap_write_and_wait_range(struct address_space *mapping,
@@ -804,32 +785,9 @@ void folio_unlock(struct folio *folio)
 		folio_wake_bit(folio, PG_locked);
 }
 
-void folio_end_private_2(struct folio *folio)
-{
-	VM_BUG_ON_FOLIO(!folio_test_private_2(folio), folio);
-	clear_bit_unlock(PG_private_2, folio_flags(folio, 0));
-	folio_wake_bit(folio, PG_private_2);
-	folio_put(folio);
-}
-
-void folio_wait_private_2(struct folio *folio)
-{
-	while (folio_test_private_2(folio))
-		folio_wait_bit(folio, PG_private_2);
-}
-
-int folio_wait_private_2_killable(struct folio *folio)
-{
-	int ret = 0;
-
-	while (folio_test_private_2(folio)) {
-		ret = folio_wait_bit_killable(folio, PG_private_2);
-		if (ret < 0)
-			break;
-	}
-
-	return ret;
-}
+void folio_end_private_2(struct folio *folio) { }
+void folio_wait_private_2(struct folio *folio) { }
+int folio_wait_private_2_killable(struct folio *folio) { return 0; }
 
 void folio_end_writeback(struct folio *folio)
 {

@@ -599,43 +599,16 @@ struct kset *kset_create_and_add(const char *name,
 static DEFINE_SPINLOCK(kobj_ns_type_lock);
 static const struct kobj_ns_type_operations *kobj_ns_ops_tbl[KOBJ_NS_TYPES];
 
+/* Stub: kobj_ns_type_register not used in minimal kernel */
 int kobj_ns_type_register(const struct kobj_ns_type_operations *ops)
 {
-	enum kobj_ns_type type = ops->type;
-	int error;
-
-	spin_lock(&kobj_ns_type_lock);
-
-	error = -EINVAL;
-	if (type >= KOBJ_NS_TYPES)
-		goto out;
-
-	error = -EINVAL;
-	if (type <= KOBJ_NS_TYPE_NONE)
-		goto out;
-
-	error = -EBUSY;
-	if (kobj_ns_ops_tbl[type])
-		goto out;
-
-	error = 0;
-	kobj_ns_ops_tbl[type] = ops;
-
-out:
-	spin_unlock(&kobj_ns_type_lock);
-	return error;
+	return 0;
 }
 
+/* Stub: kobj_ns_type_registered not used in minimal kernel */
 int kobj_ns_type_registered(enum kobj_ns_type type)
 {
-	int registered = 0;
-
-	spin_lock(&kobj_ns_type_lock);
-	if ((type > KOBJ_NS_TYPE_NONE) && (type < KOBJ_NS_TYPES))
-		registered = kobj_ns_ops_tbl[type] != NULL;
-	spin_unlock(&kobj_ns_type_lock);
-
-	return registered;
+	return 0;
 }
 
 const struct kobj_ns_type_operations *kobj_child_ns_ops(struct kobject *parent)
@@ -653,63 +626,31 @@ const struct kobj_ns_type_operations *kobj_ns_ops(struct kobject *kobj)
 	return kobj_child_ns_ops(kobj->parent);
 }
 
+/* Stub: kobj_ns_current_may_mount not used in minimal kernel */
 bool kobj_ns_current_may_mount(enum kobj_ns_type type)
 {
-	bool may_mount = true;
-
-	spin_lock(&kobj_ns_type_lock);
-	if ((type > KOBJ_NS_TYPE_NONE) && (type < KOBJ_NS_TYPES) &&
-	    kobj_ns_ops_tbl[type])
-		may_mount = kobj_ns_ops_tbl[type]->current_may_mount();
-	spin_unlock(&kobj_ns_type_lock);
-
-	return may_mount;
+	return true;
 }
 
+/* Stub: kobj_ns_grab_current not used in minimal kernel */
 void *kobj_ns_grab_current(enum kobj_ns_type type)
 {
-	void *ns = NULL;
-
-	spin_lock(&kobj_ns_type_lock);
-	if ((type > KOBJ_NS_TYPE_NONE) && (type < KOBJ_NS_TYPES) &&
-	    kobj_ns_ops_tbl[type])
-		ns = kobj_ns_ops_tbl[type]->grab_current_ns();
-	spin_unlock(&kobj_ns_type_lock);
-
-	return ns;
+	return NULL;
 }
 
+/* Stub: kobj_ns_netlink not used in minimal kernel */
 const void *kobj_ns_netlink(enum kobj_ns_type type, struct sock *sk)
 {
-	const void *ns = NULL;
-
-	spin_lock(&kobj_ns_type_lock);
-	if ((type > KOBJ_NS_TYPE_NONE) && (type < KOBJ_NS_TYPES) &&
-	    kobj_ns_ops_tbl[type])
-		ns = kobj_ns_ops_tbl[type]->netlink_ns(sk);
-	spin_unlock(&kobj_ns_type_lock);
-
-	return ns;
+	return NULL;
 }
 
+/* Stub: kobj_ns_initial not used in minimal kernel */
 const void *kobj_ns_initial(enum kobj_ns_type type)
 {
-	const void *ns = NULL;
-
-	spin_lock(&kobj_ns_type_lock);
-	if ((type > KOBJ_NS_TYPE_NONE) && (type < KOBJ_NS_TYPES) &&
-	    kobj_ns_ops_tbl[type])
-		ns = kobj_ns_ops_tbl[type]->initial_ns();
-	spin_unlock(&kobj_ns_type_lock);
-
-	return ns;
+	return NULL;
 }
 
+/* Stub: kobj_ns_drop not used in minimal kernel */
 void kobj_ns_drop(enum kobj_ns_type type, void *ns)
 {
-	spin_lock(&kobj_ns_type_lock);
-	if ((type > KOBJ_NS_TYPE_NONE) && (type < KOBJ_NS_TYPES) &&
-	    kobj_ns_ops_tbl[type] && kobj_ns_ops_tbl[type]->drop_ns)
-		kobj_ns_ops_tbl[type]->drop_ns(ns);
-	spin_unlock(&kobj_ns_type_lock);
 }

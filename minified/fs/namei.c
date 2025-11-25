@@ -1648,19 +1648,8 @@ static int lookup_one_common(struct user_namespace *mnt_userns,
 	return inode_permission(mnt_userns, base->d_inode, MAY_EXEC);
 }
 
-struct dentry *try_lookup_one_len(const char *name, struct dentry *base, int len)
-{
-	struct qstr this;
-	int err;
-
-	WARN_ON_ONCE(!inode_is_locked(base->d_inode));
-
-	err = lookup_one_common(&init_user_ns, name, base, len, &this);
-	if (err)
-		return ERR_PTR(err);
-
-	return lookup_dcache(&this, base, 0);
-}
+/* Stub: not used in minimal kernel */
+struct dentry *try_lookup_one_len(const char *name, struct dentry *base, int len) { return ERR_PTR(-ENOENT); }
 
 struct dentry *lookup_one_len(const char *name, struct dentry *base, int len)
 {
@@ -1774,28 +1763,9 @@ static inline int may_create(struct user_namespace *mnt_userns,
 	return inode_permission(mnt_userns, dir, MAY_WRITE | MAY_EXEC);
 }
 
-struct dentry *lock_rename(struct dentry *p1, struct dentry *p2)
-{
-	/* Simplified: rename is stubbed, just lock without ancestor check */
-	if (p1 == p2) {
-		inode_lock_nested(p1->d_inode, I_MUTEX_PARENT);
-		return NULL;
-	}
-
-	mutex_lock(&p1->d_sb->s_vfs_rename_mutex);
-	inode_lock_nested(p1->d_inode, I_MUTEX_PARENT);
-	inode_lock_nested(p2->d_inode, I_MUTEX_PARENT2);
-	return NULL;
-}
-
-void unlock_rename(struct dentry *p1, struct dentry *p2)
-{
-	inode_unlock(p1->d_inode);
-	if (p1 != p2) {
-		inode_unlock(p2->d_inode);
-		mutex_unlock(&p1->d_sb->s_vfs_rename_mutex);
-	}
-}
+/* Stub: rename operations not used in minimal kernel */
+struct dentry *lock_rename(struct dentry *p1, struct dentry *p2) { return NULL; }
+void unlock_rename(struct dentry *p1, struct dentry *p2) { }
 
 int vfs_create(struct user_namespace *mnt_userns, struct inode *dir,
 	       struct dentry *dentry, umode_t mode, bool want_excl)
@@ -2616,48 +2586,11 @@ out:
 	return len;
 }
 
-int vfs_readlink(struct dentry *dentry, char __user *buffer, int buflen)
-{
-	struct inode *inode = d_inode(dentry);
-	DEFINE_DELAYED_CALL(done);
-	const char *link;
-	int res;
+/* Stub: readlink not used in minimal kernel */
+int vfs_readlink(struct dentry *dentry, char __user *buffer, int buflen) { return -EINVAL; }
 
-	if (unlikely(!(inode->i_opflags & IOP_DEFAULT_READLINK))) {
-		if (unlikely(inode->i_op->readlink))
-			return inode->i_op->readlink(dentry, buffer, buflen);
-
-		if (!d_is_symlink(dentry))
-			return -EINVAL;
-
-		spin_lock(&inode->i_lock);
-		inode->i_opflags |= IOP_DEFAULT_READLINK;
-		spin_unlock(&inode->i_lock);
-	}
-
-	link = READ_ONCE(inode->i_link);
-	if (!link) {
-		link = inode->i_op->get_link(dentry, inode, &done);
-		if (IS_ERR(link))
-			return PTR_ERR(link);
-	}
-	res = readlink_copy(buffer, buflen, link);
-	do_delayed_call(&done);
-	return res;
-}
-
-const char *vfs_get_link(struct dentry *dentry, struct delayed_call *done)
-{
-	const char *res = ERR_PTR(-EINVAL);
-	struct inode *inode = d_inode(dentry);
-
-	if (d_is_symlink(dentry)) {
-		res = ERR_PTR(security_inode_readlink(dentry));
-		if (!res)
-			res = inode->i_op->get_link(dentry, inode, done);
-	}
-	return res;
-}
+/* Stub: not used in minimal kernel */
+const char *vfs_get_link(struct dentry *dentry, struct delayed_call *done) { return ERR_PTR(-EINVAL); }
 
 const char *page_get_link(struct dentry *dentry, struct inode *inode,
 			  struct delayed_call *callback)

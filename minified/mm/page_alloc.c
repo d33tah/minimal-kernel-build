@@ -1707,19 +1707,8 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
 	return make_alloc_exact(addr, order, size);
 }
 
-void * __meminit alloc_pages_exact_nid(int nid, size_t size, gfp_t gfp_mask)
-{
-	unsigned int order = get_order(size);
-	struct page *p;
-
-	if (WARN_ON_ONCE(gfp_mask & (__GFP_COMP | __GFP_HIGHMEM)))
-		gfp_mask &= ~(__GFP_COMP | __GFP_HIGHMEM);
-
-	p = alloc_pages_node(nid, gfp_mask, order);
-	if (!p)
-		return NULL;
-	return make_alloc_exact((unsigned long)page_address(p), order, size);
-}
+/* Stub: not used in minimal kernel */
+void * __meminit alloc_pages_exact_nid(int nid, size_t size, gfp_t gfp_mask) { return NULL; }
 
 void free_pages_exact(void *virt, size_t size)
 {

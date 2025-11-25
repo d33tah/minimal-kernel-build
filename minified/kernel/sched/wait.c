@@ -135,21 +135,18 @@ void __wake_up_sync_key(struct wait_queue_head *wq_head, unsigned int mode,
 	__wake_up_common_lock(wq_head, mode, 1, WF_SYNC, key);
 }
 
- 
+/* Stub: __wake_up_locked_sync_key not used in minimal kernel */
 void __wake_up_locked_sync_key(struct wait_queue_head *wq_head,
 			       unsigned int mode, void *key)
 {
-        __wake_up_common(wq_head, mode, 1, WF_SYNC, key, NULL);
 }
 
 /* Stubbed: __wake_up_sync not used */
 void __wake_up_sync(struct wait_queue_head *wq_head, unsigned int mode) { }
 
+/* Stub: __wake_up_pollfree not used in minimal kernel */
 void __wake_up_pollfree(struct wait_queue_head *wq_head)
 {
-	__wake_up(wq_head, TASK_NORMAL, 0, poll_to_key(EPOLLHUP | POLLFREE));
-	 
-	WARN_ON_ONCE(waitqueue_active(wq_head));
 }
 
  

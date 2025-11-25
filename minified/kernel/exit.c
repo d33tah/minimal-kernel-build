@@ -235,38 +235,10 @@ int is_current_pgrp_orphaned(void)
 	return 0;
 }
 
-static bool has_stopped_jobs(struct pid *pgrp)
-{
-	struct task_struct *p;
-
-	do_each_pid_task(pgrp, PIDTYPE_PGID, p) {
-		if (p->signal->flags & SIGNAL_STOP_STOPPED)
-			return true;
-	} while_each_pid_task(pgrp, PIDTYPE_PGID, p);
-
-	return false;
-}
-
+/* Stub: orphaned pgrp handling not needed for minimal kernel */
 static void
 kill_orphaned_pgrp(struct task_struct *tsk, struct task_struct *parent)
 {
-	struct pid *pgrp = task_pgrp(tsk);
-	struct task_struct *ignored_task = tsk;
-
-	if (!parent)
-		
-		parent = tsk->real_parent;
-	else
-		
-		ignored_task = NULL;
-
-	if (task_pgrp(parent) != pgrp &&
-	    task_session(parent) == task_session(tsk) &&
-	    will_become_orphaned_pgrp(pgrp, ignored_task) &&
-	    has_stopped_jobs(pgrp)) {
-		__kill_pgrp_info(SIGHUP, SEND_SIG_PRIV, pgrp);
-		__kill_pgrp_info(SIGCONT, SEND_SIG_PRIV, pgrp);
-	}
 }
 
 static void coredump_task_exit(struct task_struct *tsk)
@@ -837,47 +809,10 @@ unlock_sig:
 	return pid;
 }
 
+/* Stub: job control continued wait not needed for minimal kernel */
 static int wait_task_continued(struct wait_opts *wo, struct task_struct *p)
 {
-	struct waitid_info *infop;
-	pid_t pid;
-	uid_t uid;
-
-	if (!unlikely(wo->wo_flags & WCONTINUED))
-		return 0;
-
-	if (!(p->signal->flags & SIGNAL_STOP_CONTINUED))
-		return 0;
-
-	spin_lock_irq(&p->sighand->siglock);
-	
-	if (!(p->signal->flags & SIGNAL_STOP_CONTINUED)) {
-		spin_unlock_irq(&p->sighand->siglock);
-		return 0;
-	}
-	if (!unlikely(wo->wo_flags & WNOWAIT))
-		p->signal->flags &= ~SIGNAL_STOP_CONTINUED;
-	uid = from_kuid_munged(current_user_ns(), task_uid(p));
-	spin_unlock_irq(&p->sighand->siglock);
-
-	pid = task_pid_vnr(p);
-	get_task_struct(p);
-	read_unlock(&tasklist_lock);
-	sched_annotate_sleep();
-	if (wo->wo_rusage)
-		getrusage(p, RUSAGE_BOTH, wo->wo_rusage);
-	put_task_struct(p);
-
-	infop = wo->wo_info;
-	if (!infop) {
-		wo->wo_stat = 0xffff;
-	} else {
-		infop->cause = CLD_CONTINUED;
-		infop->pid = pid;
-		infop->uid = uid;
-		infop->status = SIGCONT;
-	}
-	return pid;
+	return 0;
 }
 
 static int wait_consider_task(struct wait_opts *wo, int ptrace,

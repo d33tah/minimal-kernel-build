@@ -429,48 +429,9 @@ void __init cred_init(void)
 			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
 }
 
- 
+/* Stub: prepare_kernel_cred not used externally in minimal kernel */
 struct cred *prepare_kernel_cred(struct task_struct *daemon)
 {
-	const struct cred *old;
-	struct cred *new;
-
-	new = kmem_cache_alloc(cred_jar, GFP_KERNEL);
-	if (!new)
-		return NULL;
-
-	kdebug("prepare_kernel_cred() alloc %p", new);
-
-	if (daemon)
-		old = get_task_cred(daemon);
-	else
-		old = get_cred(&init_cred);
-
-	validate_creds(old);
-
-	*new = *old;
-	new->non_rcu = 0;
-	atomic_set(&new->usage, 1);
-	set_cred_subscribers(new, 0);
-	get_uid(new->user);
-	get_user_ns(new->user_ns);
-	get_group_info(new->group_info);
-
-
-	new->ucounts = get_ucounts(new->ucounts);
-	if (!new->ucounts)
-		goto error;
-
-	if (security_prepare_creds(new, old, GFP_KERNEL_ACCOUNT) < 0)
-		goto error;
-
-	put_cred(old);
-	validate_creds(new);
-	return new;
-
-error:
-	put_cred(new);
-	put_cred(old);
 	return NULL;
 }
 

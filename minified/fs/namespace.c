@@ -924,40 +924,9 @@ struct vfsmount *mnt_clone_internal(const struct path *path)
 	return &p->mnt;
 }
 
-int may_umount_tree(struct vfsmount *m)
-{
-	struct mount *mnt = real_mount(m);
-	int actual_refs = 0;
-	int minimum_refs = 0;
-	struct mount *p;
-	BUG_ON(!m);
-
-	
-	lock_mount_hash();
-	for (p = mnt; p; p = next_mnt(p, mnt)) {
-		actual_refs += mnt_get_count(p);
-		minimum_refs += 2;
-	}
-	unlock_mount_hash();
-
-	if (actual_refs > minimum_refs)
-		return 0;
-
-	return 1;
-}
-
-
-int may_umount(struct vfsmount *mnt)
-{
-	int ret = 1;
-	down_read(&namespace_sem);
-	lock_mount_hash();
-	if (propagate_mount_busy(real_mount(mnt), 2))
-		ret = 0;
-	unlock_mount_hash();
-	up_read(&namespace_sem);
-	return ret;
-}
+/* Stub: not used in minimal kernel */
+int may_umount_tree(struct vfsmount *m) { return 1; }
+int may_umount(struct vfsmount *mnt) { return 1; }
 
 
 static void namespace_unlock(void)
@@ -1227,14 +1196,8 @@ void dissolve_on_fput(struct vfsmount *mnt)
 		free_mnt_ns(ns);
 }
 
-void drop_collected_mounts(struct vfsmount *mnt)
-{
-	namespace_lock();
-	lock_mount_hash();
-	umount_tree(real_mount(mnt), 0);
-	unlock_mount_hash();
-	namespace_unlock();
-}
+/* Stub: not used in minimal kernel */
+void drop_collected_mounts(struct vfsmount *mnt) { }
 
 static bool has_locked_children(struct mount *mnt, struct dentry *dentry)
 {
@@ -1253,20 +1216,9 @@ static bool has_locked_children(struct mount *mnt, struct dentry *dentry)
 /* Stub: not used in minimal kernel */
 struct vfsmount *clone_private_mount(const struct path *path) { return ERR_PTR(-EINVAL); }
 
+/* Stub: not used in minimal kernel */
 int iterate_mounts(int (*f)(struct vfsmount *, void *), void *arg,
-		   struct vfsmount *root)
-{
-	struct mount *mnt;
-	int res = f(root, arg);
-	if (res)
-		return res;
-	list_for_each_entry(mnt, &real_mount(root)->mnt_list, mnt_list) {
-		res = f(&mnt->mnt, arg);
-		if (res)
-			return res;
-	}
-	return 0;
-}
+		   struct vfsmount *root) { return 0; }
 
 static void lock_mnt_tree(struct mount *mnt)
 {
@@ -1730,41 +1682,9 @@ int finish_automount(struct vfsmount *m, const struct path *path)
 	return err;
 }
 
-void mnt_set_expiry(struct vfsmount *mnt, struct list_head *expiry_list)
-{
-	namespace_lock();
-
-	list_add_tail(&real_mount(mnt)->mnt_expire, expiry_list);
-
-	namespace_unlock();
-}
-
-void mark_mounts_for_expiry(struct list_head *mounts)
-{
-	struct mount *mnt, *next;
-	LIST_HEAD(graveyard);
-
-	if (list_empty(mounts))
-		return;
-
-	namespace_lock();
-	lock_mount_hash();
-
-	
-	list_for_each_entry_safe(mnt, next, mounts, mnt_expire) {
-		if (!xchg(&mnt->mnt_expiry_mark, 1) ||
-			propagate_mount_busy(mnt, 1))
-			continue;
-		list_move(&mnt->mnt_expire, &graveyard);
-	}
-	while (!list_empty(&graveyard)) {
-		mnt = list_first_entry(&graveyard, struct mount, mnt_expire);
-		touch_mnt_namespace(mnt->mnt_ns);
-		umount_tree(mnt, UMOUNT_PROPAGATE|UMOUNT_SYNC);
-	}
-	unlock_mount_hash();
-	namespace_unlock();
-}
+/* Stub: mount expiry not used in minimal kernel */
+void mnt_set_expiry(struct vfsmount *mnt, struct list_head *expiry_list) { }
+void mark_mounts_for_expiry(struct list_head *mounts) { }
 
 static void *copy_mount_options(const void __user * data)
 {
@@ -2169,56 +2089,11 @@ struct vfsmount *kern_mount(struct file_system_type *type)
 	return mnt;
 }
 
-void kern_unmount(struct vfsmount *mnt)
-{
-	
-	if (!IS_ERR_OR_NULL(mnt)) {
-		real_mount(mnt)->mnt_ns = NULL;
-		synchronize_rcu();	
-		mntput(mnt);
-	}
-}
-
-void kern_unmount_array(struct vfsmount *mnt[], unsigned int num)
-{
-	unsigned int i;
-
-	for (i = 0; i < num; i++)
-		if (mnt[i])
-			real_mount(mnt[i])->mnt_ns = NULL;
-	synchronize_rcu_expedited();
-	for (i = 0; i < num; i++)
-		mntput(mnt[i]);
-}
-
-bool our_mnt(struct vfsmount *mnt)
-{
-	return check_mnt(real_mount(mnt));
-}
-
-bool current_chrooted(void)
-{
-	
-	struct path ns_root;
-	struct path fs_root;
-	bool chrooted;
-
-	
-	ns_root.mnt = &current->nsproxy->mnt_ns->root->mnt;
-	ns_root.dentry = ns_root.mnt->mnt_root;
-	path_get(&ns_root);
-	while (d_mountpoint(ns_root.dentry) && follow_down_one(&ns_root))
-		;
-
-	get_fs_root(current->fs, &fs_root);
-
-	chrooted = !path_equal(&fs_root, &ns_root);
-
-	path_put(&fs_root);
-	path_put(&ns_root);
-
-	return chrooted;
-}
+/* Stub: kernel unmount not used in minimal kernel */
+void kern_unmount(struct vfsmount *mnt) { }
+void kern_unmount_array(struct vfsmount *mnt[], unsigned int num) { }
+bool our_mnt(struct vfsmount *mnt) { return false; }
+bool current_chrooted(void) { return false; }
 
 static bool mnt_already_visible(struct mnt_namespace *ns,
 				const struct super_block *sb,

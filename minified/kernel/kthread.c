@@ -193,11 +193,9 @@ void __noreturn kthread_exit(long result)
 }
 
  
+/* Stub: kthread_complete_and_exit not used externally */
 void __noreturn kthread_complete_and_exit(struct completion *comp, long code)
 {
-	if (comp)
-		complete(comp);
-
 	kthread_exit(code);
 }
 

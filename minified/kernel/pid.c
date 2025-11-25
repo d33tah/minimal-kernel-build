@@ -416,10 +416,10 @@ struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 	return ns_of_pid(task_pid(tsk));
 }
 
- 
+/* Stub: find_ge_pid not used externally in minimal kernel */
 struct pid *find_ge_pid(int nr, struct pid_namespace *ns)
 {
-	return idr_get_next(&ns->idr, &nr);
+	return NULL;
 }
 
 struct pid *pidfd_get_pid(unsigned int fd, unsigned int *flags)
@@ -441,24 +441,10 @@ struct pid *pidfd_get_pid(unsigned int fd, unsigned int *flags)
 	return pid;
 }
 
- 
+/* Stub: pidfd_get_task not used externally in minimal kernel */
 struct task_struct *pidfd_get_task(int pidfd, unsigned int *flags)
 {
-	unsigned int f_flags;
-	struct pid *pid;
-	struct task_struct *task;
-
-	pid = pidfd_get_pid(pidfd, &f_flags);
-	if (IS_ERR(pid))
-		return ERR_CAST(pid);
-
-	task = get_pid_task(pid, PIDTYPE_TGID);
-	put_pid(pid);
-	if (!task)
-		return ERR_PTR(-ESRCH);
-
-	*flags = f_flags;
-	return task;
+	return ERR_PTR(-ENOSYS);
 }
 
  

@@ -38,33 +38,6 @@ int fwnode_link_add(struct fwnode_handle *con, struct fwnode_handle *sup)
 	return 0;
 }
 
-static void __fwnode_link_del(struct fwnode_link *link)
-{
-	list_del(&link->s_hook);
-	list_del(&link->c_hook);
-	kfree(link);
-}
-
-static void fwnode_links_purge_suppliers(struct fwnode_handle *fwnode)
-{
-	struct fwnode_link *link, *tmp;
-
-	mutex_lock(&fwnode_link_lock);
-	list_for_each_entry_safe(link, tmp, &fwnode->suppliers, c_hook)
-		__fwnode_link_del(link);
-	mutex_unlock(&fwnode_link_lock);
-}
-
-static void fwnode_links_purge_consumers(struct fwnode_handle *fwnode)
-{
-	struct fwnode_link *link, *tmp;
-
-	mutex_lock(&fwnode_link_lock);
-	list_for_each_entry_safe(link, tmp, &fwnode->consumers, s_hook)
-		__fwnode_link_del(link);
-	mutex_unlock(&fwnode_link_lock);
-}
-
 /* Stubbed - not used externally */
 void fwnode_links_purge(struct fwnode_handle *fwnode)
 {

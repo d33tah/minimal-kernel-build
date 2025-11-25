@@ -192,12 +192,8 @@ void __vma_unlink_list(struct mm_struct *mm, struct vm_area_struct *vma)
 }
 
  
-int vma_is_stack_for_current(struct vm_area_struct *vma)
-{
-	struct task_struct * __maybe_unused t = current;
-
-	return (vma->vm_start <= KSTK_ESP(t) && vma->vm_end >= KSTK_ESP(t));
-}
+/* Stub: vma_is_stack_for_current not used in minimal kernel */
+int vma_is_stack_for_current(struct vm_area_struct *vma) { return 0; }
 
  
 void vma_set_file(struct vm_area_struct *vma, struct file *file)
@@ -478,58 +474,13 @@ int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
 unsigned long sysctl_user_reserve_kbytes __read_mostly = 1UL << 17;  
 unsigned long sysctl_admin_reserve_kbytes __read_mostly = 1UL << 13;  
 
+/* Stub: overcommit handlers not used in minimal kernel */
 int overcommit_ratio_handler(struct ctl_table *table, int write, void *buffer,
-		size_t *lenp, loff_t *ppos)
-{
-	int ret;
-
-	ret = proc_dointvec(table, write, buffer, lenp, ppos);
-	if (ret == 0 && write)
-		sysctl_overcommit_kbytes = 0;
-	return ret;
-}
-
-static void sync_overcommit_as(struct work_struct *dummy)
-{
-	percpu_counter_sync(&vm_committed_as);
-}
-
+		size_t *lenp, loff_t *ppos) { return 0; }
 int overcommit_policy_handler(struct ctl_table *table, int write, void *buffer,
-		size_t *lenp, loff_t *ppos)
-{
-	struct ctl_table t;
-	int new_policy = -1;
-	int ret;
-
-	 
-	if (write) {
-		t = *table;
-		t.data = &new_policy;
-		ret = proc_dointvec_minmax(&t, write, buffer, lenp, ppos);
-		if (ret || new_policy == -1)
-			return ret;
-
-		mm_compute_batch(new_policy);
-		if (new_policy == OVERCOMMIT_NEVER)
-			schedule_on_each_cpu(sync_overcommit_as);
-		sysctl_overcommit_memory = new_policy;
-	} else {
-		ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
-	}
-
-	return ret;
-}
-
+		size_t *lenp, loff_t *ppos) { return 0; }
 int overcommit_kbytes_handler(struct ctl_table *table, int write, void *buffer,
-		size_t *lenp, loff_t *ppos)
-{
-	int ret;
-
-	ret = proc_doulongvec_minmax(table, write, buffer, lenp, ppos);
-	if (ret == 0 && write)
-		sysctl_overcommit_ratio = 0;
-	return ret;
-}
+		size_t *lenp, loff_t *ppos) { return 0; }
 
  
 unsigned long vm_commit_limit(void)
@@ -593,51 +544,8 @@ error:
 }
 
  
-int get_cmdline(struct task_struct *task, char *buffer, int buflen)
-{
-	int res = 0;
-	unsigned int len;
-	struct mm_struct *mm = get_task_mm(task);
-	unsigned long arg_start, arg_end, env_start, env_end;
-	if (!mm)
-		goto out;
-	if (!mm->arg_end)
-		goto out_mm;	 
-
-	spin_lock(&mm->arg_lock);
-	arg_start = mm->arg_start;
-	arg_end = mm->arg_end;
-	env_start = mm->env_start;
-	env_end = mm->env_end;
-	spin_unlock(&mm->arg_lock);
-
-	len = arg_end - arg_start;
-
-	if (len > buflen)
-		len = buflen;
-
-	res = access_process_vm(task, arg_start, buffer, len, FOLL_FORCE);
-
-	 
-	if (res > 0 && buffer[res-1] != '\0' && len < buflen) {
-		len = strnlen(buffer, res);
-		if (len < res) {
-			res = len;
-		} else {
-			len = env_end - env_start;
-			if (len > buflen - res)
-				len = buflen - res;
-			res += access_process_vm(task, env_start,
-						 buffer+res, len,
-						 FOLL_FORCE);
-			res = strnlen(buffer, res);
-		}
-	}
-out_mm:
-	mmput(mm);
-out:
-	return res;
-}
+/* Stub: get_cmdline not used in minimal kernel */
+int get_cmdline(struct task_struct *task, char *buffer, int buflen) { return 0; }
 
 int __weak memcmp_pages(struct page *page1, struct page *page2)
 {

@@ -1394,25 +1394,9 @@ static void __setscheduler_prio(struct task_struct *p, int prio)
 	p->prio = prio;
 }
 
-void set_user_nice(struct task_struct *p, long nice)
-{
-	/* Simplified: just set priority without queue manipulation */
-	if (task_nice(p) == nice || nice < MIN_NICE || nice > MAX_NICE)
-		return;
-
-	p->static_prio = NICE_TO_PRIO(nice);
-	p->prio = effective_prio(p);
-	set_load_weight(p, true);
-}
-
-int can_nice(const struct task_struct *p, const int nice)
-{
-	
-	int nice_rlim = nice_to_rlimit(nice);
-
-	return (nice_rlim <= task_rlimit(p, RLIMIT_NICE) ||
-		capable(CAP_SYS_NICE));
-}
+/* Stub: set_user_nice not used in minimal kernel */
+void set_user_nice(struct task_struct *p, long nice) { }
+int can_nice(const struct task_struct *p, const int nice) { return 0; }
 
 #ifdef __ARCH_WANT_SYS_NICE
 
@@ -1617,11 +1601,8 @@ void sched_set_fifo(struct task_struct *p)
 	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
 }
 
-void sched_set_fifo_low(struct task_struct *p)
-{
-	struct sched_param sp = { .sched_priority = 1 };
-	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
-}
+/* Stub: sched_set_fifo_low not used in minimal kernel */
+void sched_set_fifo_low(struct task_struct *p) { }
 
 SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param __user *, param)
 {

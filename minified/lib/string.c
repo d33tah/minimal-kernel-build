@@ -275,11 +275,9 @@ char *strchrnul(const char *s, int c)
 }
 #endif
 
- 
+/* Stub: strnchrnul not used externally */
 char *strnchrnul(const char *s, size_t count, int c)
 {
-	while (count-- && *s && *s != (char)c)
-		s++;
 	return (char *)s;
 }
 

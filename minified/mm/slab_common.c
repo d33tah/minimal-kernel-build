@@ -66,10 +66,10 @@ __setup_param("slub_merge", slub_merge, setup_slab_merge, 0);
 __setup("slab_nomerge", setup_slab_nomerge);
 __setup("slab_merge", setup_slab_merge);
 
- 
+/* Stub: kmem_cache_size not used externally */
 unsigned int kmem_cache_size(struct kmem_cache *s)
 {
-	return s->object_size;
+	return 0;
 }
 
 static inline int kmem_cache_sanity_check(const char *name, unsigned int size)
@@ -715,16 +715,10 @@ void *krealloc(const void *p, size_t new_size, gfp_t flags)
 	return ret;
 }
 
- 
+/* Stub: kfree_sensitive not used externally */
 void kfree_sensitive(const void *p)
 {
-	size_t ks;
-	void *mem = (void *)p;
-
-	ks = ksize(mem);
-	if (ks)
-		memzero_explicit(mem, ks);
-	kfree(mem);
+	kfree(p);
 }
 
  

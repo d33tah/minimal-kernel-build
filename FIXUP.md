@@ -1,3 +1,24 @@
+--- 2025-11-25 06:06 ---
+
+Session progress:
+- make vm: PASSES ✓, prints "Hello, World!" ✓
+- Binary: 268KB (down from 269KB)
+- Current: 208,144 LOC (113,883 C + 94,261 headers)
+- Reduction: 120 LOC this session
+
+Commits this session:
+1. Stub unused page_alloc, namei, and rmap functions (~100 LOC)
+   - page_alloc.c: __pageblock_pfn_to_page
+   - namei.c: kern_path_locked, __kern_path_locked, vfs_tmpfile
+   - rmap.c: try_to_unmap_flush, try_to_unmap_flush_dirty, rmap_walk_locked
+2. Stub unused file descriptor functions (~38 LOC)
+   - task_lookup_next_fd_rcu, receive_fd_replace, receive_fd, f_dupfd
+3. Stub unused resource and percpu functions (~15 LOC)
+   - resource.c: resource_list_create_entry, resource_list_free
+   - percpu.c: __alloc_reserved_percpu, pcpu_nr_pages
+
+Continuing to search for more unused functions...
+
 --- 2025-11-25 05:47 ---
 
 Session start:

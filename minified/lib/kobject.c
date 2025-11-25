@@ -611,19 +611,16 @@ int kobj_ns_type_registered(enum kobj_ns_type type)
 	return 0;
 }
 
+/* Stub: kobj_child_ns_ops not used externally in minimal kernel */
 const struct kobj_ns_type_operations *kobj_child_ns_ops(struct kobject *parent)
 {
-	const struct kobj_ns_type_operations *ops = NULL;
-
-	if (parent && parent->ktype && parent->ktype->child_ns_type)
-		ops = parent->ktype->child_ns_type(parent);
-
-	return ops;
+	return NULL;
 }
 
+/* Stub: kobj_ns_ops not used externally in minimal kernel */
 const struct kobj_ns_type_operations *kobj_ns_ops(struct kobject *kobj)
 {
-	return kobj_child_ns_ops(kobj->parent);
+	return NULL;
 }
 
 /* Stub: kobj_ns_current_may_mount not used in minimal kernel */

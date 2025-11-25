@@ -1265,9 +1265,10 @@ void __percpu *__alloc_percpu(size_t size, size_t align)
 	return pcpu_alloc(size, align, false, GFP_KERNEL);
 }
 
+/* Stub: __alloc_reserved_percpu not used externally */
 void __percpu *__alloc_reserved_percpu(size_t size, size_t align)
 {
-	return pcpu_alloc(size, align, true, GFP_KERNEL);
+	return NULL;
 }
 
 static void pcpu_balance_free(bool empty_only)
@@ -1799,9 +1800,10 @@ void __init setup_per_cpu_areas(void)
 	pcpu_free_alloc_info(ai);
 }
 
+/* Stub: pcpu_nr_pages not used externally */
 unsigned long pcpu_nr_pages(void)
 {
-	return pcpu_nr_populated * pcpu_nr_units;
+	return 0;
 }
 
 static int __init percpu_enable_async(void)

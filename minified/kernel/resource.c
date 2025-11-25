@@ -839,26 +839,16 @@ bool iomem_is_exclusive(u64 addr)
 	return false;
 }
 
+/* Stub: resource_list_create_entry not used externally */
 struct resource_entry *resource_list_create_entry(struct resource *res,
 						  size_t extra_size)
 {
-	struct resource_entry *entry;
-
-	entry = kzalloc(sizeof(*entry) + extra_size, GFP_KERNEL);
-	if (entry) {
-		INIT_LIST_HEAD(&entry->node);
-		entry->res = res ? res : &entry->__res;
-	}
-
-	return entry;
+	return NULL;
 }
 
+/* Stub: resource_list_free not used externally */
 void resource_list_free(struct list_head *head)
 {
-	struct resource_entry *entry, *tmp;
-
-	list_for_each_entry_safe(entry, tmp, head, node)
-		resource_list_destroy_entry(entry);
 }
 
 

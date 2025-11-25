@@ -341,15 +341,9 @@ void tty_vhangup(struct tty_struct *tty)
 	__tty_hangup(tty, 0);
 }
 
+/* Stub: tty_vhangup_self not used externally */
 void tty_vhangup_self(void)
 {
-	struct tty_struct *tty;
-
-	tty = get_current_tty();
-	if (tty) {
-		tty_vhangup(tty);
-		tty_kref_put(tty);
-	}
 }
 
 void tty_vhangup_session(struct tty_struct *tty)

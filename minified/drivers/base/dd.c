@@ -114,33 +114,14 @@ static void driver_deferred_probe_trigger(void)
 }
 
  
-void device_block_probing(void)
-{
-	defer_all_probes = true;
-	 
-	wait_for_device_probe();
-}
+/* Stub: device_block_probing not used in minimal kernel */
+void device_block_probing(void) { }
 
- 
-void device_unblock_probing(void)
-{
-	defer_all_probes = false;
-	driver_deferred_probe_trigger();
-}
+/* Stub: device_unblock_probing not used in minimal kernel */
+void device_unblock_probing(void) { }
 
- 
-void device_set_deferred_probe_reason(const struct device *dev, struct va_format *vaf)
-{
-	const char *drv = dev_driver_string(dev);
-	char *reason;
-
-	mutex_lock(&deferred_probe_mutex);
-
-	reason = kasprintf(GFP_KERNEL, "%s: %pV", drv, vaf);
-	__device_set_deferred_probe_reason(dev, reason);
-
-	mutex_unlock(&deferred_probe_mutex);
-}
+/* Stub: device_set_deferred_probe_reason not used in minimal kernel */
+void device_set_deferred_probe_reason(const struct device *dev, struct va_format *vaf) { }
 
  
 static int deferred_devs_show(struct seq_file *s, void *data)

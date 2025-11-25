@@ -748,14 +748,6 @@ void mmput(struct mm_struct *mm)
 		__mmput(mm);
 }
 
-static void mmput_async_fn(struct work_struct *work)
-{
-	struct mm_struct *mm = container_of(work, struct mm_struct,
-					    async_put_work);
-
-	__mmput(mm);
-}
-
 /* Stub: mmput_async not used in minimal kernel */
 void mmput_async(struct mm_struct *mm) { mmput(mm); }
 

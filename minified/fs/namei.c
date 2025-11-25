@@ -80,9 +80,8 @@ getname_flags(const char __user *filename, int flags, int *empty)
 struct filename *
 getname_uflags(const char __user *filename, int uflags)
 {
-	int flags = (uflags & AT_EMPTY_PATH) ? LOOKUP_EMPTY : 0;
-
-	return getname_flags(filename, flags, NULL);
+	/* Stub: not used in minimal kernel */
+	return getname(filename);
 }
 
 struct filename *

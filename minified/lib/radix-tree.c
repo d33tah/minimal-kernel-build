@@ -669,30 +669,11 @@ static void node_tag_set(struct radix_tree_root *root,
 		root_tag_set(root, tag);
 }
 
+/* Stubbed - not used externally */
 void *radix_tree_tag_set(struct radix_tree_root *root,
 			unsigned long index, unsigned int tag)
 {
-	struct radix_tree_node *node, *parent;
-	unsigned long maxindex;
-
-	radix_tree_load_root(root, &node, &maxindex);
-	BUG_ON(index > maxindex);
-
-	while (radix_tree_is_internal_node(node)) {
-		unsigned offset;
-
-		parent = entry_to_node(node);
-		offset = radix_tree_descend(parent, &node, index);
-		BUG_ON(!node);
-
-		if (!tag_get(parent, tag, offset))
-			tag_set(parent, tag, offset);
-	}
-
-	if (!root_tag_get(root, tag))
-		root_tag_set(root, tag);
-
-	return node;
+	return NULL;
 }
 
 static void node_tag_clear(struct radix_tree_root *root,
@@ -882,78 +863,30 @@ void __rcu **radix_tree_next_chunk(const struct radix_tree_root *root,
 	return node->slots + offset;
 }
 
+/* Stubbed - not used externally */
 unsigned int
 radix_tree_gang_lookup(const struct radix_tree_root *root, void **results,
 			unsigned long first_index, unsigned int max_items)
 {
-	struct radix_tree_iter iter;
-	void __rcu **slot;
-	unsigned int ret = 0;
-
-	if (unlikely(!max_items))
-		return 0;
-
-	radix_tree_for_each_slot(slot, root, &iter, first_index) {
-		results[ret] = rcu_dereference_raw(*slot);
-		if (!results[ret])
-			continue;
-		if (radix_tree_is_internal_node(results[ret])) {
-			slot = radix_tree_iter_retry(&iter);
-			continue;
-		}
-		if (++ret == max_items)
-			break;
-	}
-
-	return ret;
+	return 0;
 }
 
+/* Stubbed - not used externally */
 unsigned int
 radix_tree_gang_lookup_tag(const struct radix_tree_root *root, void **results,
 		unsigned long first_index, unsigned int max_items,
 		unsigned int tag)
 {
-	struct radix_tree_iter iter;
-	void __rcu **slot;
-	unsigned int ret = 0;
-
-	if (unlikely(!max_items))
-		return 0;
-
-	radix_tree_for_each_tagged(slot, root, &iter, first_index, tag) {
-		results[ret] = rcu_dereference_raw(*slot);
-		if (!results[ret])
-			continue;
-		if (radix_tree_is_internal_node(results[ret])) {
-			slot = radix_tree_iter_retry(&iter);
-			continue;
-		}
-		if (++ret == max_items)
-			break;
-	}
-
-	return ret;
+	return 0;
 }
 
+/* Stubbed - not used externally */
 unsigned int
 radix_tree_gang_lookup_tag_slot(const struct radix_tree_root *root,
 		void __rcu ***results, unsigned long first_index,
 		unsigned int max_items, unsigned int tag)
 {
-	struct radix_tree_iter iter;
-	void __rcu **slot;
-	unsigned int ret = 0;
-
-	if (unlikely(!max_items))
-		return 0;
-
-	radix_tree_for_each_tagged(slot, root, &iter, first_index, tag) {
-		results[ret] = slot;
-		if (++ret == max_items)
-			break;
-	}
-
-	return ret;
+	return 0;
 }
 
 static bool __radix_tree_delete(struct radix_tree_root *root,

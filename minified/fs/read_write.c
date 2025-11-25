@@ -822,21 +822,5 @@ ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from)
 }
 
  
-int generic_file_rw_checks(struct file *file_in, struct file *file_out)
-{
-	struct inode *inode_in = file_inode(file_in);
-	struct inode *inode_out = file_inode(file_out);
-
-	 
-	if (S_ISDIR(inode_in->i_mode) || S_ISDIR(inode_out->i_mode))
-		return -EISDIR;
-	if (!S_ISREG(inode_in->i_mode) || !S_ISREG(inode_out->i_mode))
-		return -EINVAL;
-
-	if (!(file_in->f_mode & FMODE_READ) ||
-	    !(file_out->f_mode & FMODE_WRITE) ||
-	    (file_out->f_flags & O_APPEND))
-		return -EBADF;
-
-	return 0;
-}
+/* Stub: not used in minimal kernel */
+int generic_file_rw_checks(struct file *file_in, struct file *file_out) { return -EINVAL; }

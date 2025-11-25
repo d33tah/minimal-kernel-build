@@ -1203,20 +1203,8 @@ struct mount *copy_tree(struct mount *mnt, struct dentry *dentry,
 	return clone_mnt(mnt, dentry, flag);
 }
 
-struct vfsmount *collect_mounts(const struct path *path)
-{
-	struct mount *tree;
-	namespace_lock();
-	if (!check_mnt(real_mount(path->mnt)))
-		tree = ERR_PTR(-EINVAL);
-	else
-		tree = copy_tree(real_mount(path->mnt), path->dentry,
-				 CL_COPY_ALL | CL_PRIVATE);
-	namespace_unlock();
-	if (IS_ERR(tree))
-		return ERR_CAST(tree);
-	return &tree->mnt;
-}
+/* Stub: not used in minimal kernel */
+struct vfsmount *collect_mounts(const struct path *path) { return ERR_PTR(-EINVAL); }
 
 static void free_mnt_ns(struct mnt_namespace *);
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *, bool);
@@ -1262,36 +1250,8 @@ static bool has_locked_children(struct mount *mnt, struct dentry *dentry)
 	return false;
 }
 
-struct vfsmount *clone_private_mount(const struct path *path)
-{
-	struct mount *old_mnt = real_mount(path->mnt);
-	struct mount *new_mnt;
-
-	down_read(&namespace_sem);
-	if (IS_MNT_UNBINDABLE(old_mnt))
-		goto invalid;
-
-	if (!check_mnt(old_mnt))
-		goto invalid;
-
-	if (has_locked_children(old_mnt, path->dentry))
-		goto invalid;
-
-	new_mnt = clone_mnt(old_mnt, path->dentry, CL_PRIVATE);
-	up_read(&namespace_sem);
-
-	if (IS_ERR(new_mnt))
-		return ERR_CAST(new_mnt);
-
-	
-	new_mnt->mnt_ns = MNT_NS_INTERNAL;
-
-	return &new_mnt->mnt;
-
-invalid:
-	up_read(&namespace_sem);
-	return ERR_PTR(-EINVAL);
-}
+/* Stub: not used in minimal kernel */
+struct vfsmount *clone_private_mount(const struct path *path) { return ERR_PTR(-EINVAL); }
 
 int iterate_mounts(int (*f)(struct vfsmount *, void *), void *arg,
 		   struct vfsmount *root)

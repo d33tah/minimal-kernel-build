@@ -102,17 +102,11 @@ int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
 	return ret;
 }
 
- 
+/* Stub: atomic_notifier_chain_register_unique_prio not used in minimal kernel */
 int atomic_notifier_chain_register_unique_prio(struct atomic_notifier_head *nh,
 					       struct notifier_block *n)
 {
-	unsigned long flags;
-	int ret;
-
-	spin_lock_irqsave(&nh->lock, flags);
-	ret = notifier_chain_register(&nh->head, n, true);
-	spin_unlock_irqrestore(&nh->lock, flags);
-	return ret;
+	return 0;
 }
 
  
@@ -174,11 +168,11 @@ int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
 	return __blocking_notifier_chain_register(nh, n, false);
 }
 
- 
+/* Stub: blocking_notifier_chain_register_unique_prio not used in minimal kernel */
 int blocking_notifier_chain_register_unique_prio(struct blocking_notifier_head *nh,
 						 struct notifier_block *n)
 {
-	return __blocking_notifier_chain_register(nh, n, true);
+	return 0;
 }
 
  
@@ -197,18 +191,11 @@ int blocking_notifier_chain_unregister(struct blocking_notifier_head *nh,
 	return ret;
 }
 
+/* Stub: blocking_notifier_call_chain_robust not used in minimal kernel */
 int blocking_notifier_call_chain_robust(struct blocking_notifier_head *nh,
 		unsigned long val_up, unsigned long val_down, void *v)
 {
-	int ret = NOTIFY_DONE;
-
-	 
-	if (rcu_access_pointer(nh->head)) {
-		down_read(&nh->rwsem);
-		ret = notifier_call_chain_robust(&nh->head, val_up, val_down, v);
-		up_read(&nh->rwsem);
-	}
-	return ret;
+	return NOTIFY_DONE;
 }
 
  
@@ -242,10 +229,11 @@ int raw_notifier_chain_unregister(struct raw_notifier_head *nh,
 	return notifier_chain_unregister(&nh->head, n);
 }
 
+/* Stub: raw_notifier_call_chain_robust not used in minimal kernel */
 int raw_notifier_call_chain_robust(struct raw_notifier_head *nh,
 		unsigned long val_up, unsigned long val_down, void *v)
 {
-	return notifier_call_chain_robust(&nh->head, val_up, val_down, v);
+	return NOTIFY_DONE;
 }
 
  

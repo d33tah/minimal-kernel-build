@@ -492,18 +492,10 @@ __visible int memcmp(const void *cs, const void *ct, size_t count)
 int bcmp(const void *a, const void *b, size_t len) { return 0; }
 
 #ifndef __HAVE_ARCH_MEMSCAN
- 
+/* Stubbed - not used externally */
 void *memscan(void *addr, int c, size_t size)
 {
-	unsigned char *p = addr;
-
-	while (size) {
-		if (*p == (unsigned char)c)
-			return (void *)p;
-		p++;
-		size--;
-	}
-  	return (void *)p;
+	return addr;
 }
 #endif
 
@@ -528,20 +520,9 @@ char *strstr(const char *s1, const char *s2)
 #endif
 
 #ifndef __HAVE_ARCH_STRNSTR
- 
+/* Stubbed - not used externally */
 char *strnstr(const char *s1, const char *s2, size_t len)
 {
-	size_t l2;
-
-	l2 = strlen(s2);
-	if (!l2)
-		return (char *)s1;
-	while (len >= l2) {
-		len--;
-		if (!memcmp(s1, s2, l2))
-			return (char *)s1;
-		s1++;
-	}
 	return NULL;
 }
 #endif

@@ -609,32 +609,10 @@ out:
 	return success;
 }
 
+/* Stub: task_call_func not used externally */
 int task_call_func(struct task_struct *p, task_call_f func, void *arg)
 {
-	struct rq *rq = NULL;
-	unsigned int state;
-	struct rq_flags rf;
-	int ret;
-
-	raw_spin_lock_irqsave(&p->pi_lock, rf.flags);
-
-	state = READ_ONCE(p->__state);
-
-	
-	smp_rmb();
-
-	
-	if (state == TASK_RUNNING || state == TASK_WAKING || p->on_rq)
-		rq = __task_rq_lock(p, &rf);
-
-	
-	ret = func(p, arg);
-
-	if (rq)
-		rq_unlock(rq, &rf);
-
-	raw_spin_unlock_irqrestore(&p->pi_lock, rf.flags);
-	return ret;
+	return -ENOSYS;
 }
 
 int wake_up_process(struct task_struct *p)

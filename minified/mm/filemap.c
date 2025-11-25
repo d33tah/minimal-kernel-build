@@ -336,12 +336,10 @@ int filemap_fdatawait_range_keep_errors(struct address_space *mapping,
 	return 0;
 }
 
+/* Stub: file_fdatawait_range not used externally */
 int file_fdatawait_range(struct file *file, loff_t start_byte, loff_t end_byte)
 {
-	struct address_space *mapping = file->f_mapping;
-
-	__filemap_fdatawait_range(mapping, start_byte, end_byte);
-	return file_check_and_advance_wb_err(file);
+	return 0;
 }
 
 int filemap_fdatawait_keep_errors(struct address_space *mapping)

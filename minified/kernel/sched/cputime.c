@@ -87,12 +87,8 @@ void account_system_time(struct task_struct *p, int hardirq_offset, u64 cputime)
 }
 
  
-void account_steal_time(u64 cputime)
-{
-	u64 *cpustat = kcpustat_this_cpu->cpustat;
-
-	cpustat[CPUTIME_STEAL] += cputime;
-}
+/* Stub: account_steal_time not used in minimal kernel */
+void account_steal_time(u64 cputime) { }
 
  
 void account_idle_time(u64 cputime)

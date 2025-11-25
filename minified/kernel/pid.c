@@ -223,12 +223,8 @@ out_free:
 	return ERR_PTR(retval);
 }
 
-void disable_pid_allocation(struct pid_namespace *ns)
-{
-	spin_lock_irq(&pidmap_lock);
-	ns->pid_allocated &= ~PIDNS_ADDING;
-	spin_unlock_irq(&pidmap_lock);
-}
+/* Stub: disable_pid_allocation not used in minimal kernel */
+void disable_pid_allocation(struct pid_namespace *ns) { }
 
 struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
 {

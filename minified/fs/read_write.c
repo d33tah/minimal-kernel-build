@@ -760,51 +760,16 @@ SYSCALL_DEFINE6(copy_file_range, int, fd_in, loff_t __user *, off_in,
 	return -ENOSYS;
 }
 
- 
+/* Stub: generic_write_check_limits not used externally in minimal kernel */
 int generic_write_check_limits(struct file *file, loff_t pos, loff_t *count)
 {
-	struct inode *inode = file->f_mapping->host;
-	loff_t max_size = inode->i_sb->s_maxbytes;
-	loff_t limit = rlimit(RLIMIT_FSIZE);
-
-	if (limit != RLIM_INFINITY) {
-		if (pos >= limit) {
-			send_sig(SIGXFSZ, current, 0);
-			return -EFBIG;
-		}
-		*count = min(*count, limit - pos);
-	}
-
-	if (!(file->f_flags & O_LARGEFILE))
-		max_size = MAX_NON_LFS;
-
-	if (unlikely(pos >= max_size))
-		return -EFBIG;
-
-	*count = min(*count, max_size - pos);
-
 	return 0;
 }
 
- 
+/* Stub: generic_write_checks_count not used externally in minimal kernel */
 int generic_write_checks_count(struct kiocb *iocb, loff_t *count)
 {
-	struct file *file = iocb->ki_filp;
-	struct inode *inode = file->f_mapping->host;
-
-	if (IS_SWAPFILE(inode))
-		return -ETXTBSY;
-
-	if (!*count)
-		return 0;
-
-	if (iocb->ki_flags & IOCB_APPEND)
-		iocb->ki_pos = i_size_read(inode);
-
-	if ((iocb->ki_flags & IOCB_NOWAIT) && !(iocb->ki_flags & IOCB_DIRECT))
-		return -EINVAL;
-
-	return generic_write_check_limits(iocb->ki_filp, iocb->ki_pos, count);
+	return 0;
 }
 
  

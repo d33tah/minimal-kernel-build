@@ -448,10 +448,8 @@ int finish_open(struct file *file, struct dentry *dentry,
 }
 
 
-int finish_no_open(struct file *file, struct dentry *dentry)
-{
-	return 0;
-}
+/* Stub: finish_no_open not used in minimal kernel */
+int finish_no_open(struct file *file, struct dentry *dentry) { return 0; }
 
 char *file_path(struct file *filp, char *buf, int buflen)
 {
@@ -487,47 +485,15 @@ struct file *dentry_open(const struct path *path, int flags,
 	return f;
 }
 
- 
+/* Stub: dentry_create not used in minimal kernel */
 struct file *dentry_create(const struct path *path, int flags, umode_t mode,
 			   const struct cred *cred)
-{
-	struct file *f;
-	int error;
+{ return ERR_PTR(-EINVAL); }
 
-	validate_creds(cred);
-	f = alloc_empty_file(flags, cred);
-	if (IS_ERR(f))
-		return f;
-
-	error = vfs_create(mnt_user_ns(path->mnt),
-			   d_inode(path->dentry->d_parent),
-			   path->dentry, mode, true);
-	if (!error)
-		error = vfs_open(path, f);
-
-	if (unlikely(error)) {
-		fput(f);
-		return ERR_PTR(error);
-	}
-	return f;
-}
-
+/* Stub: open_with_fake_path not used in minimal kernel */
 struct file *open_with_fake_path(const struct path *path, int flags,
 				struct inode *inode, const struct cred *cred)
-{
-	struct file *f = alloc_empty_file_noaccount(flags, cred);
-	if (!IS_ERR(f)) {
-		int error;
-
-		f->f_path = *path;
-		error = do_dentry_open(f, inode, NULL);
-		if (error) {
-			fput(f);
-			f = ERR_PTR(error);
-		}
-	}
-	return f;
-}
+{ return ERR_PTR(-EINVAL); }
 
 #define WILL_CREATE(flags)	(flags & (O_CREAT | __O_TMPFILE))
 #define O_PATH_FLAGS		(O_DIRECTORY | O_NOFOLLOW | O_PATH | O_CLOEXEC)
@@ -672,16 +638,10 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 	return file;
 }
 
+/* Stub: file_open_root not used in minimal kernel */
 struct file *file_open_root(const struct path *root,
 			    const char *filename, int flags, umode_t mode)
-{
-	struct open_flags op;
-	struct open_how how = build_open_how(flags, mode);
-	int err = build_open_flags(&how, &op);
-	if (err)
-		return ERR_PTR(err);
-	return do_file_open_root(root, filename, &op);
-}
+{ return ERR_PTR(-EINVAL); }
 
 static long do_sys_openat2(int dfd, const char __user *filename,
 			   struct open_how *how)

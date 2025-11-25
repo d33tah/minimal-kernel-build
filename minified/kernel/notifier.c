@@ -222,11 +222,11 @@ int raw_notifier_chain_register(struct raw_notifier_head *nh,
 	return notifier_chain_register(&nh->head, n, false);
 }
 
- 
+/* Stub: raw_notifier_chain_unregister not used in minimal kernel */
 int raw_notifier_chain_unregister(struct raw_notifier_head *nh,
 		struct notifier_block *n)
 {
-	return notifier_chain_unregister(&nh->head, n);
+	return 0;
 }
 
 /* Stub: raw_notifier_call_chain_robust not used in minimal kernel */

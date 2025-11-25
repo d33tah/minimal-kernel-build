@@ -185,16 +185,7 @@ void __sched percpu_down_write(struct percpu_rw_semaphore *sem)
 	 
 }
 
+/* Stub: percpu_up_write not used in minimal kernel */
 void percpu_up_write(struct percpu_rw_semaphore *sem)
 {
-	rwsem_release(&sem->dep_map, _RET_IP_);
-
-	 
-	atomic_set_release(&sem->block, 0);
-
-	 
-	__wake_up(&sem->waiters, TASK_NORMAL, 1, sem);
-
-	 
-	rcu_sync_exit(&sem->rss);
 }

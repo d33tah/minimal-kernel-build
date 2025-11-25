@@ -382,24 +382,11 @@ __ww_mutex_lock(struct mutex *lock, unsigned int state, unsigned int subclass,
 	return __mutex_lock_common(lock, state, subclass, NULL, ip, ww_ctx, true);
 }
 
- 
+/* Stub: ww_mutex_trylock not used in minimal kernel */
 int ww_mutex_trylock(struct ww_mutex *ww, struct ww_acquire_ctx *ww_ctx)
 {
 	if (!ww_ctx)
 		return mutex_trylock(&ww->base);
-
-	MUTEX_WARN_ON(ww->base.magic != &ww->base);
-
-	 
-	if (ww_ctx->acquired == 0)
-		ww_ctx->wounded = 0;
-
-	if (__mutex_trylock(&ww->base)) {
-		ww_mutex_set_context_fastpath(ww, ww_ctx);
-		mutex_acquire_nest(&ww->base.dep_map, 0, 1, &ww_ctx->dep_map, _RET_IP_);
-		return 1;
-	}
-
 	return 0;
 }
 

@@ -943,15 +943,9 @@ static void zap_page_range_single(struct vm_area_struct *vma, unsigned long addr
 	tlb_finish_mmu(&tlb);
 }
 
+/* Stub: zap_vma_ptes not used in minimal kernel */
 void zap_vma_ptes(struct vm_area_struct *vma, unsigned long address,
-		unsigned long size)
-{
-	if (!range_in_vma(vma, address, address + size) ||
-	    		!(vma->vm_flags & VM_PFNMAP))
-		return;
-
-	zap_page_range_single(vma, address, size, NULL);
-}
+		unsigned long size) { }
 
 static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)
 {
@@ -1081,51 +1075,15 @@ int vm_insert_pages(struct vm_area_struct *vma, unsigned long addr,
 	return -EINVAL;
 }
 
+/* Stub: vm_insert_page not used in minimal kernel */
 int vm_insert_page(struct vm_area_struct *vma, unsigned long addr,
 			struct page *page)
-{
-	if (addr < vma->vm_start || addr >= vma->vm_end)
-		return -EFAULT;
-	if (!page_count(page))
-		return -EINVAL;
-	if (!(vma->vm_flags & VM_MIXEDMAP)) {
-		BUG_ON(mmap_read_trylock(vma->vm_mm));
-		BUG_ON(vma->vm_flags & VM_PFNMAP);
-		vma->vm_flags |= VM_MIXEDMAP;
-	}
-	return insert_page(vma, addr, page, vma->vm_page_prot);
-}
+{ return -EINVAL; }
 
-static int __vm_map_pages(struct vm_area_struct *vma, struct page **pages,
-				unsigned long num, unsigned long offset)
-{
-	unsigned long count = vma_pages(vma);
-	unsigned long uaddr = vma->vm_start;
-	int ret, i;
-
-	
-	if (offset >= num)
-		return -ENXIO;
-
-	
-	if (count > num - offset)
-		return -ENXIO;
-
-	for (i = 0; i < count; i++) {
-		ret = vm_insert_page(vma, uaddr, pages[offset + i]);
-		if (ret < 0)
-			return ret;
-		uaddr += PAGE_SIZE;
-	}
-
-	return 0;
-}
-
+/* Stub: vm_map_pages not used in minimal kernel */
 int vm_map_pages(struct vm_area_struct *vma, struct page **pages,
 				unsigned long num)
-{
-	return __vm_map_pages(vma, pages, num, vma->vm_pgoff);
-}
+{ return -EINVAL; }
 
 int vm_map_pages_zero(struct vm_area_struct *vma, struct page **pages,
 				unsigned long num)

@@ -559,32 +559,12 @@ static int __init_memblock memblock_setclr_flag(phys_addr_t base,
 	return 0;
 }
 
-int __init_memblock memblock_mark_hotplug(phys_addr_t base, phys_addr_t size)
-{
-	return memblock_setclr_flag(base, size, 1, MEMBLOCK_HOTPLUG);
-}
-
-int __init_memblock memblock_clear_hotplug(phys_addr_t base, phys_addr_t size)
-{
-	return memblock_setclr_flag(base, size, 0, MEMBLOCK_HOTPLUG);
-}
-
-int __init_memblock memblock_mark_mirror(phys_addr_t base, phys_addr_t size)
-{
-	system_has_some_mirror = true;
-
-	return memblock_setclr_flag(base, size, 1, MEMBLOCK_MIRROR);
-}
-
-int __init_memblock memblock_mark_nomap(phys_addr_t base, phys_addr_t size)
-{
-	return memblock_setclr_flag(base, size, 1, MEMBLOCK_NOMAP);
-}
-
-int __init_memblock memblock_clear_nomap(phys_addr_t base, phys_addr_t size)
-{
-	return memblock_setclr_flag(base, size, 0, MEMBLOCK_NOMAP);
-}
+/* STUB: unused memblock mark/clear functions */
+int __init_memblock memblock_mark_hotplug(phys_addr_t base, phys_addr_t size) { return 0; }
+int __init_memblock memblock_clear_hotplug(phys_addr_t base, phys_addr_t size) { return 0; }
+int __init_memblock memblock_mark_mirror(phys_addr_t base, phys_addr_t size) { return 0; }
+int __init_memblock memblock_mark_nomap(phys_addr_t base, phys_addr_t size) { return 0; }
+int __init_memblock memblock_clear_nomap(phys_addr_t base, phys_addr_t size) { return 0; }
 
 static bool should_skip_region(struct memblock_type *type,
 			       struct memblock_region *m,
@@ -988,69 +968,10 @@ static phys_addr_t __init_memblock __find_max_addr(phys_addr_t limit)
 	return max_addr;
 }
 
-void __init memblock_enforce_memory_limit(phys_addr_t limit)
-{
-	phys_addr_t max_addr;
-
-	if (!limit)
-		return;
-
-	max_addr = __find_max_addr(limit);
-
-	if (max_addr == PHYS_ADDR_MAX)
-		return;
-
-	memblock_remove_range(&memblock.memory, max_addr,
-			      PHYS_ADDR_MAX);
-	memblock_remove_range(&memblock.reserved, max_addr,
-			      PHYS_ADDR_MAX);
-}
-
-void __init memblock_cap_memory_range(phys_addr_t base, phys_addr_t size)
-{
-	int start_rgn, end_rgn;
-	int i, ret;
-
-	if (!size)
-		return;
-
-	if (!memblock_memory->total_size) {
-		pr_warn("%s: No memory registered yet\n", __func__);
-		return;
-	}
-
-	ret = memblock_isolate_range(&memblock.memory, base, size,
-						&start_rgn, &end_rgn);
-	if (ret)
-		return;
-
-	for (i = memblock.memory.cnt - 1; i >= end_rgn; i--)
-		if (!memblock_is_nomap(&memblock.memory.regions[i]))
-			memblock_remove_region(&memblock.memory, i);
-
-	for (i = start_rgn - 1; i >= 0; i--)
-		if (!memblock_is_nomap(&memblock.memory.regions[i]))
-			memblock_remove_region(&memblock.memory, i);
-
-	memblock_remove_range(&memblock.reserved, 0, base);
-	memblock_remove_range(&memblock.reserved,
-			base + size, PHYS_ADDR_MAX);
-}
-
-void __init memblock_mem_limit_remove_map(phys_addr_t limit)
-{
-	phys_addr_t max_addr;
-
-	if (!limit)
-		return;
-
-	max_addr = __find_max_addr(limit);
-
-	if (max_addr == PHYS_ADDR_MAX)
-		return;
-
-	memblock_cap_memory_range(0, max_addr);
-}
+/* STUB: unused memory limit functions */
+void __init memblock_enforce_memory_limit(phys_addr_t limit) { }
+void __init memblock_cap_memory_range(phys_addr_t base, phys_addr_t size) { }
+void __init memblock_mem_limit_remove_map(phys_addr_t limit) { }
 
 static int __init_memblock memblock_search(struct memblock_type *type, phys_addr_t addr)
 {

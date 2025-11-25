@@ -428,47 +428,7 @@ static int find_resource(struct resource *root, struct resource *new,
 	return  __find_resource(root, NULL, new, size, constraint);
 }
 
- 
-static int reallocate_resource(struct resource *root, struct resource *old,
-			       resource_size_t newsize,
-			       struct resource_constraint *constraint)
-{
-	int err=0;
-	struct resource new = *old;
-	struct resource *conflict;
-
-	write_lock(&resource_lock);
-
-	if ((err = __find_resource(root, old, &new, newsize, constraint)))
-		goto out;
-
-	if (resource_contains(&new, old)) {
-		old->start = new.start;
-		old->end = new.end;
-		goto out;
-	}
-
-	if (old->child) {
-		err = -EBUSY;
-		goto out;
-	}
-
-	if (resource_contains(old, &new)) {
-		old->start = new.start;
-		old->end = new.end;
-	} else {
-		__release_resource(old, true);
-		*old = new;
-		conflict = __request_resource(root, old);
-		BUG_ON(conflict);
-	}
-out:
-	write_unlock(&resource_lock);
-	return err;
-}
-
-
- 
+/* STUB: unused resource allocation/lookup functions */
 int allocate_resource(struct resource *root, struct resource *new,
 		      resource_size_t size, resource_size_t min,
 		      resource_size_t max, resource_size_t align,
@@ -477,47 +437,10 @@ int allocate_resource(struct resource *root, struct resource *new,
 						resource_size_t,
 						resource_size_t),
 		      void *alignf_data)
-{
-	int err;
-	struct resource_constraint constraint;
+{ return -ENOMEM; }
 
-	if (!alignf)
-		alignf = simple_align_resource;
-
-	constraint.min = min;
-	constraint.max = max;
-	constraint.align = align;
-	constraint.alignf = alignf;
-	constraint.alignf_data = alignf_data;
-
-	if ( new->parent ) {
-		 
-		return reallocate_resource(root, new, size, &constraint);
-	}
-
-	write_lock(&resource_lock);
-	err = find_resource(root, new, size, &constraint);
-	if (err >= 0 && __request_resource(root, new))
-		err = -EBUSY;
-	write_unlock(&resource_lock);
-	return err;
-}
-
-
- 
 struct resource *lookup_resource(struct resource *root, resource_size_t start)
-{
-	struct resource *res;
-
-	read_lock(&resource_lock);
-	for (res = root->child; res; res = res->sibling) {
-		if (res->start == start)
-			break;
-	}
-	read_unlock(&resource_lock);
-
-	return res;
-}
+{ return NULL; }
 
  
 static struct resource * __insert_resource(struct resource *parent, struct resource *new)
@@ -614,65 +537,10 @@ void insert_resource_expand_to_fit(struct resource *root, struct resource *new)
 	write_unlock(&resource_lock);
 }
 
- 
-int remove_resource(struct resource *old)
-{
-	int retval;
-
-	write_lock(&resource_lock);
-	retval = __release_resource(old, false);
-	write_unlock(&resource_lock);
-	return retval;
-}
-
-static int __adjust_resource(struct resource *res, resource_size_t start,
-				resource_size_t size)
-{
-	struct resource *tmp, *parent = res->parent;
-	resource_size_t end = start + size - 1;
-	int result = -EBUSY;
-
-	if (!parent)
-		goto skip;
-
-	if ((start < parent->start) || (end > parent->end))
-		goto out;
-
-	if (res->sibling && (res->sibling->start <= end))
-		goto out;
-
-	tmp = parent->child;
-	if (tmp != res) {
-		while (tmp->sibling != res)
-			tmp = tmp->sibling;
-		if (start <= tmp->end)
-			goto out;
-	}
-
-skip:
-	for (tmp = res->child; tmp; tmp = tmp->sibling)
-		if ((tmp->start < start) || (tmp->end > end))
-			goto out;
-
-	res->start = start;
-	res->end = end;
-	result = 0;
-
- out:
-	return result;
-}
-
- 
+/* STUB: unused remove/adjust resource functions */
+int remove_resource(struct resource *old) { return -EINVAL; }
 int adjust_resource(struct resource *res, resource_size_t start,
-		    resource_size_t size)
-{
-	int result;
-
-	write_lock(&resource_lock);
-	result = __adjust_resource(res, start, size);
-	write_unlock(&resource_lock);
-	return result;
-}
+		    resource_size_t size) { return -EBUSY; }
 
 static void __init
 __reserve_region_with_split(struct resource *root, resource_size_t start,

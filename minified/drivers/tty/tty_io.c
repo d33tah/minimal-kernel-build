@@ -207,40 +207,10 @@ static struct tty_driver *get_tty_driver(dev_t device, int *index)
 	return NULL;
 }
 
+/* Stub: tty_dev_name_to_number not used externally */
 int tty_dev_name_to_number(const char *name, dev_t *number)
 {
-	struct tty_driver *p;
-	int ret;
-	int index, prefix_length = 0;
-	const char *str;
-
-	for (str = name; *str && !isdigit(*str); str++)
-		;
-
-	if (!*str)
-		return -EINVAL;
-
-	ret = kstrtoint(str, 10, &index);
-	if (ret)
-		return ret;
-
-	prefix_length = str - name;
-	mutex_lock(&tty_mutex);
-
-	list_for_each_entry(p, &tty_drivers, tty_drivers)
-		if (prefix_length == strlen(p->name) && strncmp(name,
-					p->name, prefix_length) == 0) {
-			if (index < p->num) {
-				*number = MKDEV(p->major, p->minor_start + index);
-				goto out;
-			}
-		}
-
-	
-	ret = -ENODEV;
-out:
-	mutex_unlock(&tty_mutex);
-	return ret;
+	return -ENODEV;
 }
 
 static ssize_t hung_up_tty_read(struct kiocb *iocb, struct iov_iter *to)
@@ -966,20 +936,9 @@ static int tty_release_checks(struct tty_struct *tty, int idx)
 	return 0;
 }
 
+/* Stub: tty_kclose not used externally */
 void tty_kclose(struct tty_struct *tty)
 {
-	
-	tty_ldisc_release(tty);
-
-	
-	tty_flush_works(tty);
-
-	tty_debug_hangup(tty, "freeing structure\n");
-	
-	mutex_lock(&tty_mutex);
-	tty_port_set_kopened(tty->port, 0);
-	release_tty(tty, tty->index);
-	mutex_unlock(&tty_mutex);
 }
 
 void tty_release_struct(struct tty_struct *tty, int idx)
@@ -1366,15 +1325,11 @@ static int tiocswinsz(struct tty_struct *tty, struct winsize __user *arg)
 		return tty_do_resize(tty, &tmp_ws);
 }
 
+/* Stub: tty_get_icount not used externally */
 int tty_get_icount(struct tty_struct *tty,
 		   struct serial_icounter_struct *icount)
 {
-	memset(icount, 0, sizeof(*icount));
-
-	if (tty->ops->get_icount)
-		return tty->ops->get_icount(tty, icount);
-	else
-		return -ENOTTY;
+	return -ENOTTY;
 }
 
 static struct tty_struct *tty_pair_get_tty(struct tty_struct *tty)

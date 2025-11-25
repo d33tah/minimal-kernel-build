@@ -179,17 +179,9 @@ void *memchr(const void *cs, int c, size_t count)
 #endif
 
 #ifdef __HAVE_ARCH_MEMSCAN
+/* Stub: memscan not used externally */
 void *memscan(void *addr, int c, size_t size)
 {
-	if (!size)
-		return addr;
-	asm volatile("repnz; scasb\n\t"
-	    "jnz 1f\n\t"
-	    "dec %%edi\n"
-	    "1:"
-	    : "=D" (addr), "=c" (size)
-	    : "0" (addr), "1" (size), "a" (c)
-	    : "memory");
 	return addr;
 }
 #endif

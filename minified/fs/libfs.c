@@ -281,10 +281,9 @@ struct pseudo_fs_context *init_pseudo(struct fs_context *fc,
 	return ctx;
 }
 
+/* Stub: simple_open not used externally */
 int simple_open(struct inode *inode, struct file *file)
 {
-	if (inode->i_private)
-		file->private_data = inode->i_private;
 	return 0;
 }
 

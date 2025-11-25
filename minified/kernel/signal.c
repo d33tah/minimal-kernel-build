@@ -841,71 +841,21 @@ int kill_pid(struct pid *pid, int sig, int priv)
 	return kill_pid_info(sig, __si_special(priv), pid);
 }
 
+/* Stub: sigqueue_alloc not used externally */
 struct sigqueue *sigqueue_alloc(void)
 {
-	return __sigqueue_alloc(-1, current, GFP_KERNEL, 0, SIGQUEUE_PREALLOC);
+	return NULL;
 }
 
+/* Stub: sigqueue_free not used externally */
 void sigqueue_free(struct sigqueue *q)
 {
-	unsigned long flags;
-	spinlock_t *lock = &current->sighand->siglock;
-
-	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
-	
-	spin_lock_irqsave(lock, flags);
-	q->flags &= ~SIGQUEUE_PREALLOC;
-	
-	if (!list_empty(&q->list))
-		q = NULL;
-	spin_unlock_irqrestore(lock, flags);
-
-	if (q)
-		__sigqueue_free(q);
 }
 
+/* Stub: send_sigqueue not used externally */
 int send_sigqueue(struct sigqueue *q, struct pid *pid, enum pid_type type)
 {
-	int sig = q->info.si_signo;
-	struct sigpending *pending;
-	struct task_struct *t;
-	unsigned long flags;
-	int ret, result;
-
-	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
-
-	ret = -1;
-	rcu_read_lock();
-	t = pid_task(pid, type);
-	if (!t || !likely(lock_task_sighand(t, &flags)))
-		goto ret;
-
-	ret = 1; 
-	result = TRACE_SIGNAL_IGNORED;
-	if (!prepare_signal(sig, t, false))
-		goto out;
-
-	ret = 0;
-	if (unlikely(!list_empty(&q->list))) {
-		
-		BUG_ON(q->info.si_code != SI_TIMER);
-		q->info.si_overrun++;
-		result = TRACE_SIGNAL_ALREADY_PENDING;
-		goto out;
-	}
-	q->info.si_overrun = 0;
-
-	pending = (type != PIDTYPE_PID) ? &t->signal->shared_pending : &t->pending;
-	list_add_tail(&q->list, &pending->list);
-	sigaddset(&pending->signal, sig);
-	complete_signal(sig, t, type);
-	result = TRACE_SIGNAL_DELIVERED;
-out:
-	
-	unlock_task_sighand(t, &flags);
-ret:
-	rcu_read_unlock();
-	return ret;
+	return -1;
 }
 
 bool do_notify_parent(struct task_struct *tsk, int sig)

@@ -815,36 +815,16 @@ int vfs_get_tree(struct fs_context *fc)
 	return 0;
 }
 
+/* Stub: super_setup_bdi_name not used externally */
 int super_setup_bdi_name(struct super_block *sb, char *fmt, ...)
 {
-	struct backing_dev_info *bdi;
-	int err;
-	va_list args;
-
-	bdi = bdi_alloc(NUMA_NO_NODE);
-	if (!bdi)
-		return -ENOMEM;
-
-	va_start(args, fmt);
-	err = bdi_register_va(bdi, fmt, args);
-	va_end(args);
-	if (err) {
-		bdi_put(bdi);
-		return err;
-	}
-	WARN_ON(sb->s_bdi != &noop_backing_dev_info);
-	sb->s_bdi = bdi;
-	sb->s_iflags |= SB_I_PERSB_BDI;
-
 	return 0;
 }
 
+/* Stub: super_setup_bdi not used externally */
 int super_setup_bdi(struct super_block *sb)
 {
-	static atomic_long_t bdi_seq = ATOMIC_LONG_INIT(0);
-
-	return super_setup_bdi_name(sb, "%.28s-%ld", sb->s_type->name,
-				    atomic_long_inc_return(&bdi_seq));
+	return 0;
 }
 
 int freeze_super(struct super_block *sb)

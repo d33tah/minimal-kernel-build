@@ -354,38 +354,14 @@ unsigned long *devm_bitmap_zalloc(struct device *dev,
 }
 
 #if BITS_PER_LONG == 64
- 
+/* Stub: bitmap_from_arr32 not used in minimal kernel */
 void bitmap_from_arr32(unsigned long *bitmap, const u32 *buf, unsigned int nbits)
 {
-	unsigned int i, halfwords;
-
-	halfwords = DIV_ROUND_UP(nbits, 32);
-	for (i = 0; i < halfwords; i++) {
-		bitmap[i/2] = (unsigned long) buf[i];
-		if (++i < halfwords)
-			bitmap[i/2] |= ((unsigned long) buf[i]) << 32;
-	}
-
-	 
-	if (nbits % BITS_PER_LONG)
-		bitmap[(halfwords - 1) / 2] &= BITMAP_LAST_WORD_MASK(nbits);
 }
 
- 
+/* Stub: bitmap_to_arr32 not used in minimal kernel */
 void bitmap_to_arr32(u32 *buf, const unsigned long *bitmap, unsigned int nbits)
 {
-	unsigned int i, halfwords;
-
-	halfwords = DIV_ROUND_UP(nbits, 32);
-	for (i = 0; i < halfwords; i++) {
-		buf[i] = (u32) (bitmap[i/2] & UINT_MAX);
-		if (++i < halfwords)
-			buf[i] = (u32) (bitmap[i/2] >> 32);
-	}
-
-	 
-	if (nbits % BITS_PER_LONG)
-		buf[halfwords - 1] &= (u32) (UINT_MAX >> ((-nbits) & 31));
 }
 #endif
 

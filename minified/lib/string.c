@@ -409,39 +409,18 @@ void *memset(void *s, int c, size_t count)
 #endif
 
 #ifndef __HAVE_ARCH_MEMSET16
- 
-void *memset16(uint16_t *s, uint16_t v, size_t count)
-{
-	uint16_t *xs = s;
-
-	while (count--)
-		*xs++ = v;
-	return s;
-}
+/* Stub: memset16 not used in minimal kernel */
+void *memset16(uint16_t *s, uint16_t v, size_t count) { return s; }
 #endif
 
 #ifndef __HAVE_ARCH_MEMSET32
- 
-void *memset32(uint32_t *s, uint32_t v, size_t count)
-{
-	uint32_t *xs = s;
-
-	while (count--)
-		*xs++ = v;
-	return s;
-}
+/* Stub: memset32 not used in minimal kernel */
+void *memset32(uint32_t *s, uint32_t v, size_t count) { return s; }
 #endif
 
 #ifndef __HAVE_ARCH_MEMSET64
- 
-void *memset64(uint64_t *s, uint64_t v, size_t count)
-{
-	uint64_t *xs = s;
-
-	while (count--)
-		*xs++ = v;
-	return s;
-}
+/* Stub: memset64 not used in minimal kernel */
+void *memset64(uint64_t *s, uint64_t v, size_t count) { return s; }
 #endif
 
 #ifndef __HAVE_ARCH_MEMCPY
@@ -509,13 +488,8 @@ __visible int memcmp(const void *cs, const void *ct, size_t count)
 }
 #endif
 
-#ifndef __HAVE_ARCH_BCMP
- 
-int bcmp(const void *a, const void *b, size_t len)
-{
-	return memcmp(a, b, len);
-}
-#endif
+/* Stub: bcmp not used in minimal kernel (except boot/kconfig which use their own) */
+int bcmp(const void *a, const void *b, size_t len) { return 0; }
 
 #ifndef __HAVE_ARCH_MEMSCAN
  
@@ -597,44 +571,8 @@ static void *check_bytes8(const u8 *start, u8 value, unsigned int bytes)
 	return NULL;
 }
 
- 
+/* Stub: memchr_inv not used in minimal kernel */
 void *memchr_inv(const void *start, int c, size_t bytes)
 {
-	u8 value = c;
-	u64 value64;
-	unsigned int words, prefix;
-
-	if (bytes <= 16)
-		return check_bytes8(start, value, bytes);
-
-	value64 = value;
-#if defined(CONFIG_ARCH_HAS_FAST_MULTIPLIER) && BITS_PER_LONG == 64
-	value64 *= 0x0101010101010101ULL;
-#else
-	value64 *= 0x01010101;
-	value64 |= value64 << 32;
-#endif
-
-	prefix = (unsigned long)start % 8;
-	if (prefix) {
-		u8 *r;
-
-		prefix = 8 - prefix;
-		r = check_bytes8(start, value, prefix);
-		if (r)
-			return r;
-		start += prefix;
-		bytes -= prefix;
-	}
-
-	words = bytes / 8;
-
-	while (words) {
-		if (*(u64 *)start != value64)
-			return check_bytes8(start, value, 8);
-		start += 8;
-		words--;
-	}
-
-	return check_bytes8(start, value, bytes % 8);
+	return NULL;
 }

@@ -309,15 +309,10 @@ static int clockevents_unbind(struct clock_event_device *ced, int cpu)
 	return cu.res;
 }
 
- 
+/* Stub: clockevents_unbind_device not used in minimal kernel */
 int clockevents_unbind_device(struct clock_event_device *ced, int cpu)
 {
-	int ret;
-
-	mutex_lock(&clockevents_mutex);
-	ret = clockevents_unbind(ced, cpu);
-	mutex_unlock(&clockevents_mutex);
-	return ret;
+	return -ENODEV;
 }
 
  
@@ -379,31 +374,16 @@ void clockevents_config_and_register(struct clock_event_device *dev,
 	clockevents_register_device(dev);
 }
 
+/* Stub: __clockevents_update_freq not used in minimal kernel */
 int __clockevents_update_freq(struct clock_event_device *dev, u32 freq)
 {
-	clockevents_config(dev, freq);
-
-	if (clockevent_state_oneshot(dev))
-		return clockevents_program_event(dev, dev->next_event, false);
-
-	if (clockevent_state_periodic(dev))
-		return __clockevents_switch_state(dev, CLOCK_EVT_STATE_PERIODIC);
-
 	return 0;
 }
 
- 
+/* Stub: clockevents_update_freq not used in minimal kernel */
 int clockevents_update_freq(struct clock_event_device *dev, u32 freq)
 {
-	unsigned long flags;
-	int ret;
-
-	local_irq_save(flags);
-	ret = tick_broadcast_update_freq(dev, freq);
-	if (ret == -ENODEV)
-		ret = __clockevents_update_freq(dev, freq);
-	local_irq_restore(flags);
-	return ret;
+	return 0;
 }
 
  

@@ -266,35 +266,10 @@ char *put_dec(char *buf, unsigned long long n)
 
 #endif
 
+/* Stub: num_to_str not used in minimal kernel */
 int num_to_str(char *buf, int size, unsigned long long num, unsigned int width)
 {
-	
-	char tmp[sizeof(num) * 3] __aligned(2);
-	int idx, len;
-
-	
-	if (num <= 9) {
-		tmp[0] = '0' + num;
-		len = 1;
-	} else {
-		len = put_dec(tmp, num) - tmp;
-	}
-
-	if (len > size || width > size)
-		return 0;
-
-	if (width > len) {
-		width = width - len;
-		for (idx = 0; idx < width; idx++)
-			buf[idx] = ' ';
-	} else {
-		width = 0;
-	}
-
-	for (idx = 0; idx < len; ++idx)
-		buf[idx + width] = tmp[len - idx - 1];
-
-	return len + width;
+	return 0;
 }
 
 #define SIGN	1		

@@ -618,24 +618,9 @@ void discard_new_inode(struct inode *inode)
 	iput(inode);
 }
 
-void lock_two_nondirectories(struct inode *inode1, struct inode *inode2)
-{
-	if (inode1 > inode2)
-		swap(inode1, inode2);
-
-	if (inode1 && !S_ISDIR(inode1->i_mode))
-		inode_lock(inode1);
-	if (inode2 && !S_ISDIR(inode2->i_mode) && inode2 != inode1)
-		inode_lock_nested(inode2, I_MUTEX_NONDIR2);
-}
-
-void unlock_two_nondirectories(struct inode *inode1, struct inode *inode2)
-{
-	if (inode1 && !S_ISDIR(inode1->i_mode))
-		inode_unlock(inode1);
-	if (inode2 && !S_ISDIR(inode2->i_mode) && inode2 != inode1)
-		inode_unlock(inode2);
-}
+/* Stub: not used in minimal kernel */
+void lock_two_nondirectories(struct inode *inode1, struct inode *inode2) { }
+void unlock_two_nondirectories(struct inode *inode1, struct inode *inode2) { }
 
 struct inode *inode_insert5(struct inode *inode, unsigned long hashval,
 			    int (*test)(struct inode *, void *),
@@ -761,25 +746,8 @@ static int test_inode_iunique(struct super_block *sb, unsigned long ino)
 	return 1;
 }
 
-ino_t iunique(struct super_block *sb, ino_t max_reserved)
-{
-	
-	static DEFINE_SPINLOCK(iunique_lock);
-	static unsigned int counter;
-	ino_t res;
-
-	rcu_read_lock();
-	spin_lock(&iunique_lock);
-	do {
-		if (counter <= max_reserved)
-			counter = max_reserved + 1;
-		res = counter++;
-	} while (!test_inode_iunique(sb, res));
-	spin_unlock(&iunique_lock);
-	rcu_read_unlock();
-
-	return res;
-}
+/* Stub: not used in minimal kernel */
+ino_t iunique(struct super_block *sb, ino_t max_reserved) { return 0; }
 
 struct inode *igrab(struct inode *inode)
 {
@@ -824,52 +792,12 @@ again:
 	return inode;
 }
 
-struct inode *ilookup(struct super_block *sb, unsigned long ino)
-{
-	struct hlist_head *head = inode_hashtable + hash(sb, ino);
-	struct inode *inode;
-again:
-	spin_lock(&inode_hash_lock);
-	inode = find_inode_fast(sb, head, ino);
-	spin_unlock(&inode_hash_lock);
+/* Stub: not used in minimal kernel */
+struct inode *ilookup(struct super_block *sb, unsigned long ino) { return NULL; }
 
-	if (inode) {
-		if (IS_ERR(inode))
-			return NULL;
-		wait_on_inode(inode);
-		if (unlikely(inode_unhashed(inode))) {
-			iput(inode);
-			goto again;
-		}
-	}
-	return inode;
-}
-
-struct inode *find_inode_nowait(struct super_block *sb,
-				unsigned long hashval,
-				int (*match)(struct inode *, unsigned long,
-					     void *),
-				void *data)
-{
-	struct hlist_head *head = inode_hashtable + hash(sb, hashval);
-	struct inode *inode, *ret_inode = NULL;
-	int mval;
-
-	spin_lock(&inode_hash_lock);
-	hlist_for_each_entry(inode, head, i_hash) {
-		if (inode->i_sb != sb)
-			continue;
-		mval = match(inode, hashval, data);
-		if (mval == 0)
-			continue;
-		if (mval == 1)
-			ret_inode = inode;
-		goto out;
-	}
-out:
-	spin_unlock(&inode_hash_lock);
-	return ret_inode;
-}
+/* Stub: not used in minimal kernel */
+struct inode *find_inode_nowait(struct super_block *sb, unsigned long hashval,
+		int (*match)(struct inode *, unsigned long, void *), void *data) { return NULL; }
 
 struct inode *find_inode_rcu(struct super_block *sb, unsigned long hashval,
 			     int (*test)(struct inode *, void *), void *data)

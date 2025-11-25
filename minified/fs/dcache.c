@@ -619,48 +619,11 @@ struct dentry *d_find_alias(struct inode *inode)
 	return de;
 }
 
-struct dentry *d_find_alias_rcu(struct inode *inode)
-{
-	struct hlist_head *l = &inode->i_dentry;
-	struct dentry *de = NULL;
+/* Stub: not used in minimal kernel */
+struct dentry *d_find_alias_rcu(struct inode *inode) { return NULL; }
 
-	spin_lock(&inode->i_lock);
-	 
-	 
-	if (likely(!(inode->i_state & I_FREEING) && !hlist_empty(l))) {
-		if (S_ISDIR(inode->i_mode)) {
-			de = hlist_entry(l->first, struct dentry, d_u.d_alias);
-		} else {
-			hlist_for_each_entry(de, l, d_u.d_alias)
-				if (!d_unhashed(de))
-					break;
-		}
-	}
-	spin_unlock(&inode->i_lock);
-	return de;
-}
-
-void d_prune_aliases(struct inode *inode)
-{
-	struct dentry *dentry;
-restart:
-	spin_lock(&inode->i_lock);
-	hlist_for_each_entry(dentry, &inode->i_dentry, d_u.d_alias) {
-		spin_lock(&dentry->d_lock);
-		if (!dentry->d_lockref.count) {
-			struct dentry *parent = lock_parent(dentry);
-			if (likely(!dentry->d_lockref.count)) {
-				__dentry_kill(dentry);
-				dput(parent);
-				goto restart;
-			}
-			if (parent)
-				spin_unlock(&parent->d_lock);
-		}
-		spin_unlock(&dentry->d_lock);
-	}
-	spin_unlock(&inode->i_lock);
-}
+/* Stub: not used in minimal kernel */
+void d_prune_aliases(struct inode *inode) { }
 
 void shrink_dentry_list(struct list_head *list)
 {

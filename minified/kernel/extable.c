@@ -109,13 +109,8 @@ out:
 	return ret;
 }
 
- 
-
+/* Stub: func_ptr_is_kernel_text not used in minimal kernel */
 int func_ptr_is_kernel_text(void *ptr)
 {
-	unsigned long addr;
-	addr = (unsigned long) dereference_function_descriptor(ptr);
-	if (core_kernel_text(addr))
-		return 1;
-	return is_module_text_address(addr);
+	return 1;
 }

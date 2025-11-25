@@ -258,59 +258,14 @@ int raw_notifier_call_chain(struct raw_notifier_head *nh,
  
 
  
+/* Stub: srcu notifier functions not used in minimal kernel */
 int srcu_notifier_chain_register(struct srcu_notifier_head *nh,
-		struct notifier_block *n)
-{
-	int ret;
-
-	 
-	if (unlikely(system_state == SYSTEM_BOOTING))
-		return notifier_chain_register(&nh->head, n, false);
-
-	mutex_lock(&nh->mutex);
-	ret = notifier_chain_register(&nh->head, n, false);
-	mutex_unlock(&nh->mutex);
-	return ret;
-}
-
- 
+		struct notifier_block *n) { return 0; }
 int srcu_notifier_chain_unregister(struct srcu_notifier_head *nh,
-		struct notifier_block *n)
-{
-	int ret;
-
-	 
-	if (unlikely(system_state == SYSTEM_BOOTING))
-		return notifier_chain_unregister(&nh->head, n);
-
-	mutex_lock(&nh->mutex);
-	ret = notifier_chain_unregister(&nh->head, n);
-	mutex_unlock(&nh->mutex);
-	synchronize_srcu(&nh->srcu);
-	return ret;
-}
-
- 
+		struct notifier_block *n) { return 0; }
 int srcu_notifier_call_chain(struct srcu_notifier_head *nh,
-		unsigned long val, void *v)
-{
-	int ret;
-	int idx;
-
-	idx = srcu_read_lock(&nh->srcu);
-	ret = notifier_call_chain(&nh->head, val, v, -1, NULL);
-	srcu_read_unlock(&nh->srcu, idx);
-	return ret;
-}
-
- 
-void srcu_init_notifier_head(struct srcu_notifier_head *nh)
-{
-	mutex_init(&nh->mutex);
-	if (init_srcu_struct(&nh->srcu) < 0)
-		BUG();
-	nh->head = NULL;
-}
+		unsigned long val, void *v) { return NOTIFY_DONE; }
+void srcu_init_notifier_head(struct srcu_notifier_head *nh) { }
 
 
 static ATOMIC_NOTIFIER_HEAD(die_chain);
@@ -332,12 +287,6 @@ int notrace notify_die(enum die_val val, const char *str,
 }
 NOKPROBE_SYMBOL(notify_die);
 
-int register_die_notifier(struct notifier_block *nb)
-{
-	return atomic_notifier_chain_register(&die_chain, nb);
-}
-
-int unregister_die_notifier(struct notifier_block *nb)
-{
-	return atomic_notifier_chain_unregister(&die_chain, nb);
-}
+/* Stub: die notifier functions not used in minimal kernel */
+int register_die_notifier(struct notifier_block *nb) { return 0; }
+int unregister_die_notifier(struct notifier_block *nb) { return 0; }

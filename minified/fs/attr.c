@@ -116,28 +116,8 @@ kill_priv:
 }
 
  
-int inode_newsize_ok(const struct inode *inode, loff_t offset)
-{
-	if (inode->i_size < offset) {
-		unsigned long limit;
-
-		limit = rlimit(RLIMIT_FSIZE);
-		if (limit != RLIM_INFINITY && offset > limit)
-			goto out_sig;
-		if (offset > inode->i_sb->s_maxbytes)
-			goto out_big;
-	} else {
-		 
-		if (IS_SWAPFILE(inode))
-			return -ETXTBSY;
-	}
-
-	return 0;
-out_sig:
-	send_sig(SIGXFSZ, current, 0);
-out_big:
-	return -EFBIG;
-}
+/* Stub: inode_newsize_ok not used in minimal kernel */
+int inode_newsize_ok(const struct inode *inode, loff_t offset) { return 0; }
 
  
 void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
@@ -165,29 +145,9 @@ void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 	}
 }
 
+/* Stub: may_setattr not used in minimal kernel */
 int may_setattr(struct user_namespace *mnt_userns, struct inode *inode,
-		unsigned int ia_valid)
-{
-	int error;
-
-	if (ia_valid & (ATTR_MODE | ATTR_UID | ATTR_GID | ATTR_TIMES_SET)) {
-		if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
-			return -EPERM;
-	}
-
-	 
-	if (ia_valid & ATTR_TOUCH) {
-		if (IS_IMMUTABLE(inode))
-			return -EPERM;
-
-		if (!inode_owner_or_capable(mnt_userns, inode)) {
-			error = inode_permission(mnt_userns, inode, MAY_WRITE);
-			if (error)
-				return error;
-		}
-	}
-	return 0;
-}
+		unsigned int ia_valid) { return 0; }
 
  
 int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,

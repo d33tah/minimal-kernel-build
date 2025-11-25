@@ -658,21 +658,11 @@ struct tty_driver *console_device(int *index)
 }
 
  
-void console_stop(struct console *console)
-{
-	__pr_flush(console, 1000, true);
-	console_lock();
-	console->flags &= ~CON_ENABLED;
-	console_unlock();
-}
+/* Stub: console_stop not used in minimal kernel */
+void console_stop(struct console *console) { }
 
-void console_start(struct console *console)
-{
-	console_lock();
-	console->flags |= CON_ENABLED;
-	console_unlock();
-	__pr_flush(console, 1000, true);
-}
+/* Stub: console_start not used in minimal kernel */
+void console_start(struct console *console) { }
 
 static int __read_mostly keep_bootcon;
 

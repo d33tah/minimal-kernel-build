@@ -544,21 +544,8 @@ int folio_mkclean(struct folio *folio) { return 0; }
 int pfn_mkclean_range(unsigned long pfn, unsigned long nr_pages, pgoff_t pgoff,
 		      struct vm_area_struct *vma) { return 0; }
 
-void page_move_anon_rmap(struct page *page, struct vm_area_struct *vma)
-{
-	struct anon_vma *anon_vma = vma->anon_vma;
-	struct page *subpage = page;
-
-	page = compound_head(page);
-
-	VM_BUG_ON_PAGE(!PageLocked(page), page);
-	VM_BUG_ON_VMA(!anon_vma, vma);
-
-	anon_vma = (void *) anon_vma + PAGE_MAPPING_ANON;
-	
-	WRITE_ONCE(page->mapping, (struct address_space *) anon_vma);
-	SetPageAnonExclusive(subpage);
-}
+/* Stub: page_move_anon_rmap not used in minimal kernel */
+void page_move_anon_rmap(struct page *page, struct vm_area_struct *vma) { }
 
 static void __page_set_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, int exclusive)

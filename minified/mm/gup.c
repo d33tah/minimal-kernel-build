@@ -980,34 +980,9 @@ long populate_vma_page_range(struct vm_area_struct *vma,
 	return ret;
 }
 
+/* Stub: faultin_vma_page_range not used in minimal kernel */
 long faultin_vma_page_range(struct vm_area_struct *vma, unsigned long start,
-			    unsigned long end, bool write, int *locked)
-{
-	struct mm_struct *mm = vma->vm_mm;
-	unsigned long nr_pages = (end - start) / PAGE_SIZE;
-	int gup_flags;
-	long ret;
-
-	VM_BUG_ON(!PAGE_ALIGNED(start));
-	VM_BUG_ON(!PAGE_ALIGNED(end));
-	VM_BUG_ON_VMA(start < vma->vm_start, vma);
-	VM_BUG_ON_VMA(end > vma->vm_end, vma);
-	mmap_assert_locked(mm);
-
-	
-	gup_flags = FOLL_TOUCH | FOLL_HWPOISON;
-	if (write)
-		gup_flags |= FOLL_WRITE;
-
-	
-	if (check_vma_flags(vma, gup_flags))
-		return -EINVAL;
-
-	ret = __get_user_pages(mm, start, nr_pages, gup_flags,
-				NULL, NULL, locked);
-	lru_add_drain();
-	return ret;
-}
+			    unsigned long end, bool write, int *locked) { return 0; }
 
 int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 {

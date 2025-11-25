@@ -123,21 +123,10 @@ void *memdup_user(const void __user *src, size_t len)
 	return p;
 }
 
- 
+/* Stub: vmemdup_user not used in minimal kernel */
 void *vmemdup_user(const void __user *src, size_t len)
 {
-	void *p;
-
-	p = kvmalloc(len, GFP_USER);
-	if (!p)
-		return ERR_PTR(-ENOMEM);
-
-	if (copy_from_user(p, src, len)) {
-		kvfree(p);
-		return ERR_PTR(-EFAULT);
-	}
-
-	return p;
+	return ERR_PTR(-ENOMEM);
 }
 
  
@@ -164,23 +153,10 @@ char *strndup_user(const char __user *s, long n)
 	return p;
 }
 
- 
+/* Stub: memdup_user_nul not used in minimal kernel */
 void *memdup_user_nul(const void __user *src, size_t len)
 {
-	char *p;
-
-	 
-	p = kmalloc_track_caller(len + 1, GFP_KERNEL);
-	if (!p)
-		return ERR_PTR(-ENOMEM);
-
-	if (copy_from_user(p, src, len)) {
-		kfree(p);
-		return ERR_PTR(-EFAULT);
-	}
-	p[len] = '\0';
-
-	return p;
+	return ERR_PTR(-ENOMEM);
 }
 
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
@@ -275,46 +251,17 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 }
 #endif
 
- 
+/* Stub: __account_locked_vm not used in minimal kernel */
 int __account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc,
 			struct task_struct *task, bool bypass_rlim)
 {
-	unsigned long locked_vm, limit;
-	int ret = 0;
-
-	mmap_assert_write_locked(mm);
-
-	locked_vm = mm->locked_vm;
-	if (inc) {
-		if (!bypass_rlim) {
-			limit = task_rlimit(task, RLIMIT_MEMLOCK) >> PAGE_SHIFT;
-			if (locked_vm + pages > limit)
-				ret = -ENOMEM;
-		}
-		if (!ret)
-			mm->locked_vm = locked_vm + pages;
-	} else {
-		WARN_ON_ONCE(pages > locked_vm);
-		mm->locked_vm = locked_vm - pages;
-	}
-
-	return ret;
+	return 0;
 }
 
- 
+/* Stub: account_locked_vm not used in minimal kernel */
 int account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc)
 {
-	int ret;
-
-	if (pages == 0 || !mm)
-		return 0;
-
-	mmap_write_lock(mm);
-	ret = __account_locked_vm(mm, pages, inc, current,
-				  capable(CAP_IPC_LOCK));
-	mmap_write_unlock(mm);
-
-	return ret;
+	return 0;
 }
 
 unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
@@ -396,56 +343,26 @@ void kvfree(const void *addr)
 		kfree(addr);
 }
 
- 
-void kvfree_sensitive(const void *addr, size_t len)
-{
-	if (likely(!ZERO_OR_NULL_PTR(addr))) {
-		memzero_explicit((void *)addr, len);
-		kvfree(addr);
-	}
-}
+/* Stub: kvfree_sensitive not used in minimal kernel */
+void kvfree_sensitive(const void *addr, size_t len) { }
 
+/* Stub: kvrealloc not used in minimal kernel */
 void *kvrealloc(const void *p, size_t oldsize, size_t newsize, gfp_t flags)
 {
-	void *newp;
-
-	if (oldsize >= newsize)
-		return (void *)p;
-	newp = kvmalloc(newsize, flags);
-	if (!newp)
-		return NULL;
-	memcpy(newp, p, oldsize);
-	kvfree(p);
-	return newp;
+	return NULL;
 }
 
- 
-void *__vmalloc_array(size_t n, size_t size, gfp_t flags)
-{
-	size_t bytes;
+/* Stub: __vmalloc_array not used in minimal kernel */
+void *__vmalloc_array(size_t n, size_t size, gfp_t flags) { return NULL; }
 
-	if (unlikely(check_mul_overflow(n, size, &bytes)))
-		return NULL;
-	return __vmalloc(bytes, flags);
-}
+/* Stub: vmalloc_array not used in minimal kernel */
+void *vmalloc_array(size_t n, size_t size) { return NULL; }
 
- 
-void *vmalloc_array(size_t n, size_t size)
-{
-	return __vmalloc_array(n, size, GFP_KERNEL);
-}
+/* Stub: __vcalloc not used in minimal kernel */
+void *__vcalloc(size_t n, size_t size, gfp_t flags) { return NULL; }
 
- 
-void *__vcalloc(size_t n, size_t size, gfp_t flags)
-{
-	return __vmalloc_array(n, size, flags | __GFP_ZERO);
-}
-
- 
-void *vcalloc(size_t n, size_t size)
-{
-	return __vmalloc_array(n, size, GFP_KERNEL | __GFP_ZERO);
-}
+/* Stub: vcalloc not used in minimal kernel */
+void *vcalloc(size_t n, size_t size) { return NULL; }
 
  
 void *page_rmapping(struct page *page)

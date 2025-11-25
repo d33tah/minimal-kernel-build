@@ -64,34 +64,23 @@ void __iomem *devm_ioremap(struct device *dev, resource_size_t offset,
 	return __devm_ioremap(dev, offset, size, DEVM_IOREMAP);
 }
 
- 
+/* Stub: devm_ioremap_uc not used in minimal kernel */
 void __iomem *devm_ioremap_uc(struct device *dev, resource_size_t offset,
 			      resource_size_t size)
-{
-	return __devm_ioremap(dev, offset, size, DEVM_IOREMAP_UC);
-}
+{ return NULL; }
 
- 
+/* Stub: devm_ioremap_wc not used in minimal kernel */
 void __iomem *devm_ioremap_wc(struct device *dev, resource_size_t offset,
 			      resource_size_t size)
-{
-	return __devm_ioremap(dev, offset, size, DEVM_IOREMAP_WC);
-}
+{ return NULL; }
 
- 
+/* Stub: devm_ioremap_np not used in minimal kernel */
 void __iomem *devm_ioremap_np(struct device *dev, resource_size_t offset,
 			      resource_size_t size)
-{
-	return __devm_ioremap(dev, offset, size, DEVM_IOREMAP_NP);
-}
+{ return NULL; }
 
- 
-void devm_iounmap(struct device *dev, void __iomem *addr)
-{
-	WARN_ON(devres_destroy(dev, devm_ioremap_release, devm_ioremap_match,
-			       (__force void *)addr));
-	iounmap(addr);
-}
+/* Stub: devm_iounmap not used in minimal kernel */
+void devm_iounmap(struct device *dev, void __iomem *addr) { }
 
 static void __iomem *
 __devm_ioremap_resource(struct device *dev, const struct resource *res,
@@ -145,126 +134,29 @@ void __iomem *devm_ioremap_resource(struct device *dev,
 	return __devm_ioremap_resource(dev, res, DEVM_IOREMAP);
 }
 
- 
+/* Stub: devm_ioremap_resource_wc not used in minimal kernel */
 void __iomem *devm_ioremap_resource_wc(struct device *dev,
 				       const struct resource *res)
-{
-	return __devm_ioremap_resource(dev, res, DEVM_IOREMAP_WC);
-}
+{ return NULL; }
 
- 
+/* Stub: devm_of_iomap not used in minimal kernel */
 void __iomem *devm_of_iomap(struct device *dev, struct device_node *node, int index,
 			    resource_size_t *size)
-{
-	struct resource res;
+{ return IOMEM_ERR_PTR(-EINVAL); }
 
-	if (of_address_to_resource(node, index, &res))
-		return IOMEM_ERR_PTR(-EINVAL);
-	if (size)
-		*size = resource_size(&res);
-	return devm_ioremap_resource(dev, &res);
-}
-
- 
-static void devm_ioport_map_release(struct device *dev, void *res)
-{
-	ioport_unmap(*(void __iomem **)res);
-}
-
-static int devm_ioport_map_match(struct device *dev, void *res,
-				 void *match_data)
-{
-	return *(void **)res == match_data;
-}
-
- 
+/* Stub: devm_ioport_map not used in minimal kernel */
 void __iomem *devm_ioport_map(struct device *dev, unsigned long port,
 			       unsigned int nr)
-{
-	void __iomem **ptr, *addr;
+{ return NULL; }
 
-	ptr = devres_alloc(devm_ioport_map_release, sizeof(*ptr), GFP_KERNEL);
-	if (!ptr)
-		return NULL;
+/* Stub: devm_ioport_unmap not used in minimal kernel */
+void devm_ioport_unmap(struct device *dev, void __iomem *addr) { }
 
-	addr = ioport_map(port, nr);
-	if (addr) {
-		*ptr = addr;
-		devres_add(dev, ptr);
-	} else
-		devres_free(ptr);
-
-	return addr;
-}
-
- 
-void devm_ioport_unmap(struct device *dev, void __iomem *addr)
-{
-	ioport_unmap(addr);
-	WARN_ON(devres_destroy(dev, devm_ioport_map_release,
-			       devm_ioport_map_match, (__force void *)addr));
-}
-
-
-static void devm_arch_phys_ac_add_release(struct device *dev, void *res)
-{
-	arch_phys_wc_del(*((int *)res));
-}
-
- 
+/* Stub: devm_arch_phys_wc_add not used in minimal kernel */
 int devm_arch_phys_wc_add(struct device *dev, unsigned long base, unsigned long size)
-{
-	int *mtrr;
-	int ret;
+{ return -ENODEV; }
 
-	mtrr = devres_alloc(devm_arch_phys_ac_add_release, sizeof(*mtrr), GFP_KERNEL);
-	if (!mtrr)
-		return -ENOMEM;
-
-	ret = arch_phys_wc_add(base, size);
-	if (ret < 0) {
-		devres_free(mtrr);
-		return ret;
-	}
-
-	*mtrr = ret;
-	devres_add(dev, mtrr);
-
-	return ret;
-}
-
-struct arch_io_reserve_memtype_wc_devres {
-	resource_size_t start;
-	resource_size_t size;
-};
-
-static void devm_arch_io_free_memtype_wc_release(struct device *dev, void *res)
-{
-	const struct arch_io_reserve_memtype_wc_devres *this = res;
-
-	arch_io_free_memtype_wc(this->start, this->size);
-}
-
- 
+/* Stub: devm_arch_io_reserve_memtype_wc not used in minimal kernel */
 int devm_arch_io_reserve_memtype_wc(struct device *dev, resource_size_t start,
 				    resource_size_t size)
-{
-	struct arch_io_reserve_memtype_wc_devres *dr;
-	int ret;
-
-	dr = devres_alloc(devm_arch_io_free_memtype_wc_release, sizeof(*dr), GFP_KERNEL);
-	if (!dr)
-		return -ENOMEM;
-
-	ret = arch_io_reserve_memtype_wc(start, size);
-	if (ret < 0) {
-		devres_free(dr);
-		return ret;
-	}
-
-	dr->start = start;
-	dr->size = size;
-	devres_add(dev, dr);
-
-	return ret;
-}
+{ return -ENODEV; }

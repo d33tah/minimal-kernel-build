@@ -808,25 +808,8 @@ struct mm_struct *get_task_mm(struct task_struct *task)
 	return mm;
 }
 
-struct mm_struct *mm_access(struct task_struct *task, unsigned int mode)
-{
-	struct mm_struct *mm;
-	int err;
-
-	err =  down_read_killable(&task->signal->exec_update_lock);
-	if (err)
-		return ERR_PTR(err);
-
-	mm = get_task_mm(task);
-	if (mm && mm != current->mm &&
-			!ptrace_may_access(task, mode)) {
-		mmput(mm);
-		mm = ERR_PTR(-EACCES);
-	}
-	up_read(&task->signal->exec_update_lock);
-
-	return mm;
-}
+/* Stub: mm_access not used in minimal kernel */
+struct mm_struct *mm_access(struct task_struct *task, unsigned int mode) { return ERR_PTR(-EACCES); }
 
 static void complete_vfork_done(struct task_struct *tsk)
 {

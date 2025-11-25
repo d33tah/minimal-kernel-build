@@ -203,19 +203,8 @@ int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 	return ret;
 }
 
-int irq_set_parent(int irq, int parent_irq)
-{
-	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_lock(irq, &flags, 0);
-
-	if (!desc)
-		return -EINVAL;
-
-	desc->parent_irq = parent_irq;
-
-	irq_put_desc_unlock(desc, flags);
-	return 0;
-}
+/* Stub: irq_set_parent not used in minimal kernel */
+int irq_set_parent(int irq, int parent_irq) { return -ENOSYS; }
 
 static irqreturn_t irq_default_primary_handler(int irq, void *dev_id)
 {
@@ -880,30 +869,8 @@ static const void *__cleanup_nmi(unsigned int irq, struct irq_desc *desc)
 	return devname;
 }
 
-const void *free_nmi(unsigned int irq, void *dev_id)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-	unsigned long flags;
-	const void *devname;
-
-	if (!desc || WARN_ON(!(desc->istate & IRQS_NMI)))
-		return NULL;
-
-	if (WARN_ON(irq_settings_is_per_cpu_devid(desc)))
-		return NULL;
-
-	if (WARN_ON(desc->depth == 0))
-		disable_nmi_nosync(irq);
-
-	raw_spin_lock_irqsave(&desc->lock, flags);
-
-	irq_nmi_teardown(desc);
-	devname = __cleanup_nmi(irq, desc);
-
-	raw_spin_unlock_irqrestore(&desc->lock, flags);
-
-	return devname;
-}
+/* Stub: free_nmi not used in minimal kernel */
+const void *free_nmi(unsigned int irq, void *dev_id) { return NULL; }
 
 int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 			 irq_handler_t thread_fn, unsigned long irqflags,
@@ -963,27 +930,11 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	return retval;
 }
 
+/* Stub: request_any_context_irq not used in minimal kernel */
 int request_any_context_irq(unsigned int irq, irq_handler_t handler,
 			    unsigned long flags, const char *name, void *dev_id)
 {
-	struct irq_desc *desc;
-	int ret;
-
-	if (irq == IRQ_NOTCONNECTED)
-		return -ENOTCONN;
-
-	desc = irq_to_desc(irq);
-	if (!desc)
-		return -EINVAL;
-
-	if (irq_settings_is_nested_thread(desc)) {
-		ret = request_threaded_irq(irq, NULL, handler,
-					   flags, name, dev_id);
-		return !ret ? IRQC_IS_NESTED : ret;
-	}
-
-	ret = request_irq(irq, handler, flags, name, dev_id);
-	return !ret ? IRQC_IS_HARDIRQ : ret;
+	return -ENODEV;
 }
 
 int request_nmi(unsigned int irq, irq_handler_t handler,

@@ -756,13 +756,8 @@ static void mmput_async_fn(struct work_struct *work)
 	__mmput(mm);
 }
 
-void mmput_async(struct mm_struct *mm)
-{
-	if (atomic_dec_and_test(&mm->mm_users)) {
-		INIT_WORK(&mm->async_put_work, mmput_async_fn);
-		schedule_work(&mm->async_put_work);
-	}
-}
+/* Stub: mmput_async not used in minimal kernel */
+void mmput_async(struct mm_struct *mm) { mmput(mm); }
 
 int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 {
@@ -791,32 +786,11 @@ int replace_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 	return -EINVAL;
 }
 
-struct file *get_mm_exe_file(struct mm_struct *mm)
-{
-	struct file *exe_file;
+/* Stub: get_mm_exe_file not used in minimal kernel */
+struct file *get_mm_exe_file(struct mm_struct *mm) { return NULL; }
 
-	rcu_read_lock();
-	exe_file = rcu_dereference(mm->exe_file);
-	if (exe_file && !get_file_rcu(exe_file))
-		exe_file = NULL;
-	rcu_read_unlock();
-	return exe_file;
-}
-
-struct file *get_task_exe_file(struct task_struct *task)
-{
-	struct file *exe_file = NULL;
-	struct mm_struct *mm;
-
-	task_lock(task);
-	mm = task->mm;
-	if (mm) {
-		if (!(task->flags & PF_KTHREAD))
-			exe_file = get_mm_exe_file(mm);
-	}
-	task_unlock(task);
-	return exe_file;
-}
+/* Stub: get_task_exe_file not used in minimal kernel */
+struct file *get_task_exe_file(struct task_struct *task) { return NULL; }
 
 struct mm_struct *get_task_mm(struct task_struct *task)
 {

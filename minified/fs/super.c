@@ -473,56 +473,12 @@ static void __iterate_supers(void (*f)(struct super_block *))
 	spin_unlock(&sb_lock);
 }
 
-void iterate_supers(void (*f)(struct super_block *, void *), void *arg)
-{
-	struct super_block *sb, *p = NULL;
+/* Stub: not used in minimal kernel */
+void iterate_supers(void (*f)(struct super_block *, void *), void *arg) { }
 
-	spin_lock(&sb_lock);
-	list_for_each_entry(sb, &super_blocks, s_list) {
-		if (hlist_unhashed(&sb->s_instances))
-			continue;
-		sb->s_count++;
-		spin_unlock(&sb_lock);
-
-		down_read(&sb->s_umount);
-		if (sb->s_root && (sb->s_flags & SB_BORN))
-			f(sb, arg);
-		up_read(&sb->s_umount);
-
-		spin_lock(&sb_lock);
-		if (p)
-			__put_super(p);
-		p = sb;
-	}
-	if (p)
-		__put_super(p);
-	spin_unlock(&sb_lock);
-}
-
+/* Stub: not used in minimal kernel */
 void iterate_supers_type(struct file_system_type *type,
-	void (*f)(struct super_block *, void *), void *arg)
-{
-	struct super_block *sb, *p = NULL;
-
-	spin_lock(&sb_lock);
-	hlist_for_each_entry(sb, &type->fs_supers, s_instances) {
-		sb->s_count++;
-		spin_unlock(&sb_lock);
-
-		down_read(&sb->s_umount);
-		if (sb->s_root && (sb->s_flags & SB_BORN))
-			f(sb, arg);
-		up_read(&sb->s_umount);
-
-		spin_lock(&sb_lock);
-		if (p)
-			__put_super(p);
-		p = sb;
-	}
-	if (p)
-		__put_super(p);
-	spin_unlock(&sb_lock);
-}
+	void (*f)(struct super_block *, void *), void *arg) { }
 
 
 /* Stubbed - not used in minimal kernel (no block device) */
@@ -615,41 +571,8 @@ cancel_readonly:
 	return retval;
 }
 
-static void do_emergency_remount_callback(struct super_block *sb)
-{
-	down_write(&sb->s_umount);
-	if (sb->s_root && sb->s_bdev && (sb->s_flags & SB_BORN) &&
-	    !sb_rdonly(sb)) {
-		struct fs_context *fc;
-
-		fc = fs_context_for_reconfigure(sb->s_root,
-					SB_RDONLY | SB_FORCE, SB_RDONLY);
-		if (!IS_ERR(fc)) {
-			if (parse_monolithic_mount_data(fc, NULL) == 0)
-				(void)reconfigure_super(fc);
-			put_fs_context(fc);
-		}
-	}
-	up_write(&sb->s_umount);
-}
-
-static void do_emergency_remount(struct work_struct *work)
-{
-	__iterate_supers(do_emergency_remount_callback);
-	kfree(work);
-	printk("Emergency Remount complete\n");
-}
-
-void emergency_remount(void)
-{
-	struct work_struct *work;
-
-	work = kmalloc(sizeof(*work), GFP_ATOMIC);
-	if (work) {
-		INIT_WORK(work, do_emergency_remount);
-		schedule_work(work);
-	}
-}
+/* Stub: emergency remount not needed for minimal kernel */
+void emergency_remount(void) { }
 
 /* Stub: emergency thaw not needed for minimal kernel */
 void emergency_thaw_all(void)

@@ -451,43 +451,8 @@ int file_write_and_wait_range(struct file *file, loff_t lstart, loff_t lend)
 	return err;
 }
 
-void replace_page_cache_page(struct page *old, struct page *new)
-{
-	struct folio *fold = page_folio(old);
-	struct folio *fnew = page_folio(new);
-	struct address_space *mapping = old->mapping;
-	void (*free_folio)(struct folio *) = mapping->a_ops->free_folio;
-	pgoff_t offset = old->index;
-	XA_STATE(xas, &mapping->i_pages, offset);
-
-	VM_BUG_ON_PAGE(!PageLocked(old), old);
-	VM_BUG_ON_PAGE(!PageLocked(new), new);
-	VM_BUG_ON_PAGE(new->mapping, new);
-
-	get_page(new);
-	new->mapping = mapping;
-	new->index = offset;
-
-	mem_cgroup_migrate(fold, fnew);
-
-	xas_lock_irq(&xas);
-	xas_store(&xas, new);
-
-	old->mapping = NULL;
-	
-	if (!PageHuge(old))
-		__dec_lruvec_page_state(old, NR_FILE_PAGES);
-	if (!PageHuge(new))
-		__inc_lruvec_page_state(new, NR_FILE_PAGES);
-	if (PageSwapBacked(old))
-		__dec_lruvec_page_state(old, NR_SHMEM);
-	if (PageSwapBacked(new))
-		__inc_lruvec_page_state(new, NR_SHMEM);
-	xas_unlock_irq(&xas);
-	if (free_folio)
-		free_folio(fold);
-	folio_put(fold);
-}
+/* Stub: not used in minimal kernel */
+void replace_page_cache_page(struct page *old, struct page *new) { }
 
 noinline int __filemap_add_folio(struct address_space *mapping,
 		struct folio *folio, pgoff_t index, gfp_t gfp, void **shadowp)

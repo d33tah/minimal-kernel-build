@@ -796,47 +796,10 @@ int send_sig_fault(int sig, int code, void __user *addr
 	return send_sig_info(info.si_signo, &info, t);
 }
 
-int force_sig_mceerr(int code, void __user *addr, short lsb)
-{
-	struct kernel_siginfo info;
-
-	WARN_ON((code != BUS_MCEERR_AO) && (code != BUS_MCEERR_AR));
-	clear_siginfo(&info);
-	info.si_signo = SIGBUS;
-	info.si_errno = 0;
-	info.si_code = code;
-	info.si_addr = addr;
-	info.si_addr_lsb = lsb;
-	return force_sig_info(&info);
-}
-
-int send_sig_mceerr(int code, void __user *addr, short lsb, struct task_struct *t)
-{
-	struct kernel_siginfo info;
-
-	WARN_ON((code != BUS_MCEERR_AO) && (code != BUS_MCEERR_AR));
-	clear_siginfo(&info);
-	info.si_signo = SIGBUS;
-	info.si_errno = 0;
-	info.si_code = code;
-	info.si_addr = addr;
-	info.si_addr_lsb = lsb;
-	return send_sig_info(info.si_signo, &info, t);
-}
-
-int force_sig_bnderr(void __user *addr, void __user *lower, void __user *upper)
-{
-	struct kernel_siginfo info;
-
-	clear_siginfo(&info);
-	info.si_signo = SIGSEGV;
-	info.si_errno = 0;
-	info.si_code  = SEGV_BNDERR;
-	info.si_addr  = addr;
-	info.si_lower = lower;
-	info.si_upper = upper;
-	return force_sig_info(&info);
-}
+/* Stub: memory corrected error signals not used in minimal kernel */
+int force_sig_mceerr(int code, void __user *addr, short lsb) { return 0; }
+int send_sig_mceerr(int code, void __user *addr, short lsb, struct task_struct *t) { return 0; }
+int force_sig_bnderr(void __user *addr, void __user *lower, void __user *upper) { return 0; }
 
 #ifdef SEGV_PKUERR
 int force_sig_pkuerr(void __user *addr, u32 pkey)
@@ -853,79 +816,14 @@ int force_sig_pkuerr(void __user *addr, u32 pkey)
 }
 #endif
 
-int send_sig_perf(void __user *addr, u32 type, u64 sig_data)
-{
-	struct kernel_siginfo info;
+/* Stub: perf/seccomp/ptrace signals not used in minimal kernel */
+int send_sig_perf(void __user *addr, u32 type, u64 sig_data) { return 0; }
+int force_sig_seccomp(int syscall, int reason, bool force_coredump) { return 0; }
+int force_sig_ptrace_errno_trap(int errno, void __user *addr) { return 0; }
 
-	clear_siginfo(&info);
-	info.si_signo     = SIGTRAP;
-	info.si_errno     = 0;
-	info.si_code      = TRAP_PERF;
-	info.si_addr      = addr;
-	info.si_perf_data = sig_data;
-	info.si_perf_type = type;
-
-	
-	info.si_perf_flags = sigismember(&current->blocked, info.si_signo) ?
-				     TRAP_PERF_FLAG_ASYNC :
-				     0;
-
-	return send_sig_info(info.si_signo, &info, current);
-}
-
-int force_sig_seccomp(int syscall, int reason, bool force_coredump)
-{
-	struct kernel_siginfo info;
-
-	clear_siginfo(&info);
-	info.si_signo = SIGSYS;
-	info.si_code = SYS_SECCOMP;
-	info.si_call_addr = (void __user *)KSTK_EIP(current);
-	info.si_errno = reason;
-	info.si_arch = syscall_get_arch(current);
-	info.si_syscall = syscall;
-	return force_sig_info_to_task(&info, current,
-		force_coredump ? HANDLER_EXIT : HANDLER_CURRENT);
-}
-
-int force_sig_ptrace_errno_trap(int errno, void __user *addr)
-{
-	struct kernel_siginfo info;
-
-	clear_siginfo(&info);
-	info.si_signo = SIGTRAP;
-	info.si_errno = errno;
-	info.si_code  = TRAP_HWBKPT;
-	info.si_addr  = addr;
-	return force_sig_info(&info);
-}
-
-int force_sig_fault_trapno(int sig, int code, void __user *addr, int trapno)
-{
-	struct kernel_siginfo info;
-
-	clear_siginfo(&info);
-	info.si_signo = sig;
-	info.si_errno = 0;
-	info.si_code  = code;
-	info.si_addr  = addr;
-	info.si_trapno = trapno;
-	return force_sig_info(&info);
-}
-
-int send_sig_fault_trapno(int sig, int code, void __user *addr, int trapno,
-			  struct task_struct *t)
-{
-	struct kernel_siginfo info;
-
-	clear_siginfo(&info);
-	info.si_signo = sig;
-	info.si_errno = 0;
-	info.si_code  = code;
-	info.si_addr  = addr;
-	info.si_trapno = trapno;
-	return send_sig_info(info.si_signo, &info, t);
-}
+/* Stub: trapno signals not used in minimal kernel */
+int force_sig_fault_trapno(int sig, int code, void __user *addr, int trapno) { return 0; }
+int send_sig_fault_trapno(int sig, int code, void __user *addr, int trapno, struct task_struct *t) { return 0; }
 
 int kill_pgrp(struct pid *pid, int sig, int priv)
 {

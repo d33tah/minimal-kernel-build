@@ -94,83 +94,15 @@ static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);
 
 static inline bool is_timers_nohz_active(void) { return false; }
 
-static unsigned long round_jiffies_common(unsigned long j, int cpu,
-		bool force_up)
-{
-	int rem;
-	unsigned long original = j;
-
-	 
-	j += cpu * 3;
-
-	rem = j % HZ;
-
-	 
-	if (rem < HZ/4 && !force_up)  
-		j = j - rem;
-	else  
-		j = j - rem + HZ;
-
-	 
-	j -= cpu * 3;
-
-	 
-	return time_is_after_jiffies(j) ? j : original;
-}
-
- 
-unsigned long __round_jiffies(unsigned long j, int cpu)
-{
-	return round_jiffies_common(j, cpu, false);
-}
-
- 
-unsigned long __round_jiffies_relative(unsigned long j, int cpu)
-{
-	unsigned long j0 = jiffies;
-
-	 
-	return round_jiffies_common(j + j0, cpu, false) - j0;
-}
-
- 
-unsigned long round_jiffies(unsigned long j)
-{
-	return round_jiffies_common(j, raw_smp_processor_id(), false);
-}
-
- 
-unsigned long round_jiffies_relative(unsigned long j)
-{
-	return __round_jiffies_relative(j, raw_smp_processor_id());
-}
-
- 
-unsigned long __round_jiffies_up(unsigned long j, int cpu)
-{
-	return round_jiffies_common(j, cpu, true);
-}
-
- 
-unsigned long __round_jiffies_up_relative(unsigned long j, int cpu)
-{
-	unsigned long j0 = jiffies;
-
-	 
-	return round_jiffies_common(j + j0, cpu, true) - j0;
-}
-
- 
-unsigned long round_jiffies_up(unsigned long j)
-{
-	return round_jiffies_common(j, raw_smp_processor_id(), true);
-}
-
- 
-unsigned long round_jiffies_up_relative(unsigned long j)
-{
-	return __round_jiffies_up_relative(j, raw_smp_processor_id());
-}
+/* Stubbed - round_jiffies functions not used externally in minimal kernel */
+unsigned long __round_jiffies(unsigned long j, int cpu) { return j; }
+unsigned long __round_jiffies_relative(unsigned long j, int cpu) { return j; }
+unsigned long round_jiffies(unsigned long j) { return j; }
+unsigned long round_jiffies_relative(unsigned long j) { return j; }
+unsigned long __round_jiffies_up(unsigned long j, int cpu) { return j; }
+unsigned long __round_jiffies_up_relative(unsigned long j, int cpu) { return j; }
+unsigned long round_jiffies_up(unsigned long j) { return j; }
+unsigned long round_jiffies_up_relative(unsigned long j) { return j; }
 
 
 static inline unsigned int timer_get_idx(struct timer_list *timer)

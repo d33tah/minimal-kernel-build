@@ -1,3 +1,20 @@
+--- 2025-11-26 13:12 ---
+
+Session progress:
+- make vm: PASSES ✓, prints "Hello, World!" ✓
+- Binary: 262KB
+- Current: 212,904 LOC (cloc after mrproper)
+- Started: 212,965 LOC
+- Reduced: ~61 LOC so far this session
+- Goal: 200,000 LOC - need ~13K more reduction
+
+Stubbed this session:
+1. vmalloc_nr_pages (~1 LOC) - mm/vmalloc.c
+2. is_vmalloc_or_module_addr (~1 LOC) - mm/vmalloc.c
+3. recalibrate_cpu_khz (~14 LOC) - arch/x86/kernel/tsc.c
+4. unsynchronized_tsc (~13 LOC) - arch/x86/kernel/tsc.c
+5. round_jiffies functions (8 funcs) + round_jiffies_common (~45 LOC) - kernel/time/timer.c
+
 --- 2025-11-26 12:39 ---
 
 Session start:

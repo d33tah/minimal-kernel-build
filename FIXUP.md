@@ -1,11 +1,11 @@
---- 2025-11-26 19:16 ---
+--- 2025-11-26 19:28 ---
 
 Session progress:
-- make vm: PASSES ✓, prints "Hello, World!" ✓
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
 - Binary: 260KB
-- Current: 204,156 LOC (cloc after mrproper)
+- Current: 204,126 LOC (cloc after mrproper)
 - Started: 204,202 LOC
-- Reduced: ~46 LOC this session
+- Reduced: ~76 LOC this session
 
 Stubbed functions this session:
 1. unshare_fd - kernel/fork.c (~10 LOC)
@@ -15,6 +15,9 @@ Stubbed functions this session:
 5. klist_add_before - lib/klist.c (~8 LOC)
 6. __bitmap_or_equal - lib/bitmap.c (~14 LOC)
 7. __bitmap_replace - lib/bitmap.c (~6 LOC)
+8. try_to_del_timer_sync - kernel/time/timer.c (~12 LOC)
+9. nanosleep_copyout - kernel/time/hrtimer.c (~8 LOC)
+10. __do_adjtimex - kernel/time/ntp.c (~14 LOC)
 
 Continue looking for more unused functions...
 

@@ -60,25 +60,10 @@ void __hardpps(const struct timespec64 *phase_ts, const struct timespec64 *raw_t
 {
 }
 
- 
+/* Stub: __do_adjtimex not called externally */
 int __do_adjtimex(struct __kernel_timex *txc, const struct timespec64 *ts,
 		  s32 *time_tai, struct audit_ntp_data *ad)
 {
-	 
-	if (txc) {
-		txc->time.tv_sec = ts->tv_sec;
-		txc->time.tv_usec = ts->tv_nsec / NSEC_PER_USEC;
-		txc->tai = *time_tai;
-		txc->offset = 0;
-		txc->freq = 0;
-		txc->maxerror = 0;
-		txc->esterror = 0;
-		txc->status = STA_UNSYNC;
-		txc->constant = 0;
-		txc->precision = 1;
-		txc->tolerance = 0;
-		txc->tick = USEC_PER_SEC / HZ;
-	}
 	return TIME_ERROR;
 }
 

@@ -514,23 +514,10 @@ int del_timer(struct timer_list *timer)
 	return ret;
 }
 
- 
+/* Stub: try_to_del_timer_sync not called externally */
 int try_to_del_timer_sync(struct timer_list *timer)
 {
-	struct timer_base *base;
-	unsigned long flags;
-	int ret = -1;
-
-	debug_assert_init(timer);
-
-	base = lock_timer_base(timer, &flags);
-
-	if (base->running_timer != timer)
-		ret = detach_if_pending(timer, base, true);
-
-	raw_spin_unlock_irqrestore(&base->lock, flags);
-
-	return ret;
+	return -1;
 }
 
 static inline void timer_base_init_expiry_lock(struct timer_base *base) { }

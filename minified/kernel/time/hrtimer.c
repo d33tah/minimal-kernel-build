@@ -911,16 +911,9 @@ void hrtimer_init_sleeper(struct hrtimer_sleeper *sl, clockid_t clock_id,
 
 }
 
+/* Stub: nanosleep_copyout not called externally */
 int nanosleep_copyout(struct restart_block *restart, struct timespec64 *ts)
 {
-	switch(restart->nanosleep.type) {
-	case TT_NATIVE:
-		if (put_timespec64(ts, restart->nanosleep.rmtp))
-			return -EFAULT;
-		break;
-	default:
-		BUG();
-	}
 	return -ERESTART_RESTARTBLOCK;
 }
 

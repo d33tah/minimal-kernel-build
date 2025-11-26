@@ -1214,10 +1214,11 @@ vm_fault_t vmf_insert_mixed(struct vm_area_struct *vma, unsigned long addr,
 	return __vm_insert_mixed(vma, addr, pfn, vma->vm_page_prot, false);
 }
 
+/* STUB: vmf_insert_mixed_mkwrite not used externally */
 vm_fault_t vmf_insert_mixed_mkwrite(struct vm_area_struct *vma,
 		unsigned long addr, pfn_t pfn)
 {
-	return __vm_insert_mixed(vma, addr, pfn, vma->vm_page_prot, true);
+	return VM_FAULT_SIGBUS;
 }
 
 static int remap_pte_range(struct mm_struct *mm, pmd_t *pmd,

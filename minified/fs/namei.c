@@ -674,20 +674,8 @@ static inline int traverse_mounts(struct path *path, bool *jumped,
 	return __traverse_mounts(path, flags, jumped, count, lookup_flags);
 }
 
-int follow_down_one(struct path *path)
-{
-	struct vfsmount *mounted;
-
-	mounted = lookup_mnt(path);
-	if (mounted) {
-		dput(path->dentry);
-		mntput(path->mnt);
-		path->mnt = mounted;
-		path->dentry = dget(mounted->mnt_root);
-		return 1;
-	}
-	return 0;
-}
+/* STUB: follow_down_one not used externally */
+int follow_down_one(struct path *path) { return 0; }
 
 /* STUB: follow_down not used externally */
 int follow_down(struct path *path) { return 0; }

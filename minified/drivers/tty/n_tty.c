@@ -201,11 +201,8 @@ static struct tty_ldisc_ops n_tty_ops = {
 	.receive_buf2	 = n_tty_receive_buf2,
 };
 
-void n_tty_inherit_ops(struct tty_ldisc_ops *ops)
-{
-	*ops = n_tty_ops;
-	ops->owner = NULL;
-}
+/* Stub: n_tty_inherit_ops not called externally */
+void n_tty_inherit_ops(struct tty_ldisc_ops *ops) { }
 
 void __init n_tty_init(void)
 {

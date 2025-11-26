@@ -1,11 +1,11 @@
---- 2025-11-26 19:28 ---
+--- 2025-11-26 19:35 ---
 
 Session progress:
 - make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
 - Binary: 260KB
-- Current: 204,126 LOC (cloc after mrproper)
+- Current: 204,100 LOC (cloc after mrproper)
 - Started: 204,202 LOC
-- Reduced: ~76 LOC this session
+- Reduced: ~102 LOC this session
 
 Stubbed functions this session:
 1. unshare_fd - kernel/fork.c (~10 LOC)
@@ -18,6 +18,10 @@ Stubbed functions this session:
 8. try_to_del_timer_sync - kernel/time/timer.c (~12 LOC)
 9. nanosleep_copyout - kernel/time/hrtimer.c (~8 LOC)
 10. __do_adjtimex - kernel/time/ntp.c (~14 LOC)
+11. cdev_set_parent - fs/char_dev.c (~3 LOC)
+12. cdev_device_add - fs/char_dev.c (~15 LOC)
+13. cdev_device_del - fs/char_dev.c (~5 LOC)
+14. n_tty_inherit_ops - drivers/tty/n_tty.c (~4 LOC)
 
 Continue looking for more unused functions...
 

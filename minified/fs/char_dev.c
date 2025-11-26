@@ -398,40 +398,14 @@ int cdev_add(struct cdev *p, dev_t dev, unsigned count)
 	return 0;
 }
 
- 
-void cdev_set_parent(struct cdev *p, struct kobject *kobj)
-{
-	WARN_ON(!kobj->state_initialized);
-	p->kobj.parent = kobj;
-}
+/* Stub: cdev_set_parent not called externally */
+void cdev_set_parent(struct cdev *p, struct kobject *kobj) { }
 
- 
-int cdev_device_add(struct cdev *cdev, struct device *dev)
-{
-	int rc = 0;
+/* Stub: cdev_device_add not called externally */
+int cdev_device_add(struct cdev *cdev, struct device *dev) { return 0; }
 
-	if (dev->devt) {
-		cdev_set_parent(cdev, &dev->kobj);
-
-		rc = cdev_add(cdev, dev->devt, 1);
-		if (rc)
-			return rc;
-	}
-
-	rc = device_add(dev);
-	if (rc)
-		cdev_del(cdev);
-
-	return rc;
-}
-
- 
-void cdev_device_del(struct cdev *cdev, struct device *dev)
-{
-	device_del(dev);
-	if (dev->devt)
-		cdev_del(cdev);
-}
+/* Stub: cdev_device_del not called externally */
+void cdev_device_del(struct cdev *cdev, struct device *dev) { }
 
 static void cdev_unmap(dev_t dev, unsigned count)
 {

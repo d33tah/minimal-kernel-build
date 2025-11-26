@@ -1,6 +1,7 @@
  
 #include <linux/export.h>
 #include <linux/lockref.h>
+#include <linux/bug.h>
 
 #if USE_CMPXCHG_LOCKREF
 
@@ -67,28 +68,8 @@ int lockref_get_not_zero(struct lockref *lockref)
 	return retval;
 }
 
- 
-int lockref_put_not_zero(struct lockref *lockref)
-{
-	int retval;
-
-	CMPXCHG_LOOP(
-		new.count--;
-		if (old.count <= 1)
-			return 0;
-	,
-		return 1;
-	);
-
-	spin_lock(&lockref->lock);
-	retval = 0;
-	if (lockref->count > 1) {
-		lockref->count--;
-		retval = 1;
-	}
-	spin_unlock(&lockref->lock);
-	return retval;
-}
+/* Stub: lockref_put_not_zero not used externally */
+int lockref_put_not_zero(struct lockref *lockref) { BUG(); }
 
  
 int lockref_put_return(struct lockref *lockref)

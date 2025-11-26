@@ -83,69 +83,9 @@ speed_t tty_termios_input_baud_rate(struct ktermios *termios)
 	return cbaud >= n_baud_table ? 0 : baud_table[cbaud];
 }
 
- 
-
+/* Stub: tty_termios_encode_baud_rate not used externally */
 void tty_termios_encode_baud_rate(struct ktermios *termios,
-				  speed_t ibaud, speed_t obaud)
-{
-	int i = 0;
-	int ifound = -1, ofound = -1;
-	int iclose = ibaud/50, oclose = obaud/50;
-	int ibinput = 0;
+				  speed_t ibaud, speed_t obaud) { }
 
-	if (obaud == 0)			 
-		ibaud = 0;		 
-
-	termios->c_ispeed = ibaud;
-	termios->c_ospeed = obaud;
-
-	if (((termios->c_cflag >> IBSHIFT) & CBAUD) != B0)
-		ibinput = 1;	 
-
-	 
-
-	if ((termios->c_cflag & CBAUD) == BOTHER) {
-		oclose = 0;
-		if (!ibinput)
-			iclose = 0;
-	}
-	if (((termios->c_cflag >> IBSHIFT) & CBAUD) == BOTHER)
-		iclose = 0;
-
-	termios->c_cflag &= ~CBAUD;
-	termios->c_cflag &= ~(CBAUD << IBSHIFT);
-
-	 
-
-	do {
-		if (obaud - oclose <= baud_table[i] &&
-		    obaud + oclose >= baud_table[i]) {
-			termios->c_cflag |= baud_bits[i];
-			ofound = i;
-		}
-		if (ibaud - iclose <= baud_table[i] &&
-		    ibaud + iclose >= baud_table[i]) {
-			 
-			if (ofound == i && !ibinput) {
-				ifound  = i;
-			} else {
-				ifound = i;
-				termios->c_cflag |= (baud_bits[i] << IBSHIFT);
-			}
-		}
-	} while (++i < n_baud_table);
-
-	 
-	if (ofound == -1)
-		termios->c_cflag |= BOTHER;
-	 
-	if (ifound == -1 && (ibaud != obaud || ibinput))
-		termios->c_cflag |= (BOTHER << IBSHIFT);
-}
-
- 
-
-void tty_encode_baud_rate(struct tty_struct *tty, speed_t ibaud, speed_t obaud)
-{
-	tty_termios_encode_baud_rate(&tty->termios, ibaud, obaud);
-}
+/* Stub: tty_encode_baud_rate not used externally */
+void tty_encode_baud_rate(struct tty_struct *tty, speed_t ibaud, speed_t obaud) { }

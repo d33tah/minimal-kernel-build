@@ -617,21 +617,9 @@ static unsigned long native_calibrate_cpu(void)
 	return tsc_freq;
 }
 
+/* Stubbed - not used externally */
 void recalibrate_cpu_khz(void)
 {
-	unsigned long cpu_khz_old = cpu_khz;
-
-	if (!boot_cpu_has(X86_FEATURE_TSC))
-		return;
-
-	cpu_khz = x86_platform.calibrate_cpu();
-	tsc_khz = x86_platform.calibrate_tsc();
-	if (tsc_khz == 0)
-		tsc_khz = cpu_khz;
-	else if (abs(cpu_khz - tsc_khz) * 10 > tsc_khz)
-		cpu_khz = tsc_khz;
-	cpu_data(0).loops_per_jiffy = cpufreq_scale(cpu_data(0).loops_per_jiffy,
-						    cpu_khz_old, cpu_khz);
 }
 
 
@@ -792,24 +780,9 @@ static void __init check_system_tsc_reliable(void)
 }
 
  
+/* Stubbed - minimal single-CPU kernel assumes synchronized TSC */
 int unsynchronized_tsc(void)
 {
-	if (!boot_cpu_has(X86_FEATURE_TSC) || tsc_unstable)
-		return 1;
-
-
-	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
-		return 0;
-
-	if (tsc_clocksource_reliable)
-		return 0;
-	 
-	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL) {
-		 
-		if (num_possible_cpus() > 1)
-			return 1;
-	}
-
 	return 0;
 }
 

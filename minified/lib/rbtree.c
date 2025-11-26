@@ -351,18 +351,8 @@ struct rb_node *rb_prev(const struct rb_node *node)
 	return parent;
 }
 
+/* Stub: rb_replace_node not called externally */
 void rb_replace_node(struct rb_node *victim, struct rb_node *new,
 		     struct rb_root *root)
 {
-	struct rb_node *parent = rb_parent(victim);
-
-	 
-	*new = *victim;
-
-	 
-	if (victim->rb_left)
-		rb_set_parent(victim->rb_left, new);
-	if (victim->rb_right)
-		rb_set_parent(victim->rb_right, new);
-	__rb_change_child(victim, new, parent, root);
 }

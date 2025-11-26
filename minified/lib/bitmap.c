@@ -36,24 +36,13 @@ bool __bitmap_equal(const unsigned long *bitmap1,
 	return true;
 }
 
+/* Stub: __bitmap_or_equal not called externally */
 bool __bitmap_or_equal(const unsigned long *bitmap1,
 		       const unsigned long *bitmap2,
 		       const unsigned long *bitmap3,
 		       unsigned int bits)
 {
-	unsigned int k, lim = bits / BITS_PER_LONG;
-	unsigned long tmp;
-
-	for (k = 0; k < lim; ++k) {
-		if ((bitmap1[k] | bitmap2[k]) != bitmap3[k])
-			return false;
-	}
-
-	if (!(bits % BITS_PER_LONG))
-		return true;
-
-	tmp = (bitmap1[k] | bitmap2[k]) ^ bitmap3[k];
-	return (tmp & BITMAP_LAST_WORD_MASK(bits)) == 0;
+	return false;
 }
 
 /* Stub: bitmap_cut not used in minimal kernel */
@@ -112,15 +101,11 @@ int __bitmap_andnot(unsigned long *dst, const unsigned long *bitmap1,
 	return result != 0;
 }
 
+/* Stub: __bitmap_replace not called externally */
 void __bitmap_replace(unsigned long *dst,
 		      const unsigned long *old, const unsigned long *new,
 		      const unsigned long *mask, unsigned int nbits)
 {
-	unsigned int k;
-	unsigned int nr = BITS_TO_LONGS(nbits);
-
-	for (k = 0; k < nr; k++)
-		dst[k] = (old[k] & ~mask[k]) | (new[k] & mask[k]);
 }
 
 bool __bitmap_intersects(const unsigned long *bitmap1,

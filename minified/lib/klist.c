@@ -67,12 +67,8 @@ static void klist_node_init(struct klist *k, struct klist_node *n)
 		k->get(n);
 }
 
- 
-void klist_add_head(struct klist_node *n, struct klist *k)
-{
-	klist_node_init(k, n);
-	add_head(k, n);
-}
+/* Stub: klist_add_head not called externally */
+void klist_add_head(struct klist_node *n, struct klist *k) { }
 
  
 void klist_add_tail(struct klist_node *n, struct klist *k)
@@ -81,27 +77,11 @@ void klist_add_tail(struct klist_node *n, struct klist *k)
 	add_tail(k, n);
 }
 
- 
-void klist_add_behind(struct klist_node *n, struct klist_node *pos)
-{
-	struct klist *k = knode_klist(pos);
+/* Stub: klist_add_behind not called externally */
+void klist_add_behind(struct klist_node *n, struct klist_node *pos) { }
 
-	klist_node_init(k, n);
-	spin_lock(&k->k_lock);
-	list_add(&n->n_node, &pos->n_node);
-	spin_unlock(&k->k_lock);
-}
-
- 
-void klist_add_before(struct klist_node *n, struct klist_node *pos)
-{
-	struct klist *k = knode_klist(pos);
-
-	klist_node_init(k, n);
-	spin_lock(&k->k_lock);
-	list_add_tail(&n->n_node, &pos->n_node);
-	spin_unlock(&k->k_lock);
-}
+/* Stub: klist_add_before not called externally */
+void klist_add_before(struct klist_node *n, struct klist_node *pos) { }
 
 struct klist_waiter {
 	struct list_head list;

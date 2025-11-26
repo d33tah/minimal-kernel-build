@@ -806,28 +806,8 @@ void folio_end_writeback(struct folio *folio)
 	folio_put(folio);
 }
 
-void page_endio(struct page *page, bool is_write, int err)
-{
-	if (!is_write) {
-		if (!err) {
-			SetPageUptodate(page);
-		} else {
-			ClearPageUptodate(page);
-			SetPageError(page);
-		}
-		unlock_page(page);
-	} else {
-		if (err) {
-			struct address_space *mapping;
-
-			SetPageError(page);
-			mapping = page_mapping(page);
-			if (mapping)
-				mapping_set_error(mapping, err);
-		}
-		end_page_writeback(page);
-	}
-}
+/* STUB: page_endio not used externally */
+void page_endio(struct page *page, bool is_write, int err) { }
 
 void __folio_lock(struct folio *folio)
 {

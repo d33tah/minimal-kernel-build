@@ -1078,15 +1078,11 @@ out:
 	return tty;
 }
 
-struct tty_struct *tty_kopen_exclusive(dev_t device)
-{
-	return tty_kopen(device, 0);
-}
+/* STUB: tty_kopen_exclusive not used externally */
+struct tty_struct *tty_kopen_exclusive(dev_t device) { return ERR_PTR(-EINVAL); }
 
-struct tty_struct *tty_kopen_shared(dev_t device)
-{
-	return tty_kopen(device, 1);
-}
+/* STUB: tty_kopen_shared not used externally */
+struct tty_struct *tty_kopen_shared(dev_t device) { return ERR_PTR(-EINVAL); }
 
 static struct tty_struct *tty_open_by_driver(dev_t device,
 					     struct file *filp)

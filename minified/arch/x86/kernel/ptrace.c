@@ -81,24 +81,11 @@ static const struct pt_regs_offset regoffset_table[] = {
 };
 
  
-int regs_query_register_offset(const char *name)
-{
-	const struct pt_regs_offset *roff;
-	for (roff = regoffset_table; roff->name != NULL; roff++)
-		if (!strcmp(roff->name, name))
-			return roff->offset;
-	return -EINVAL;
-}
+/* STUB: regs_query_register_offset not used externally */
+int regs_query_register_offset(const char *name) { return -EINVAL; }
 
- 
-const char *regs_query_register_name(unsigned int offset)
-{
-	const struct pt_regs_offset *roff;
-	for (roff = regoffset_table; roff->name != NULL; roff++)
-		if (roff->offset == offset)
-			return roff->name;
-	return NULL;
-}
+/* STUB: regs_query_register_name not used externally */
+const char *regs_query_register_name(unsigned int offset) { return NULL; }
 
  
 
@@ -369,11 +356,8 @@ static const struct user_regset_view user_x86_32_view = {
  
 u64 xstate_fx_sw_bytes[USER_XSTATE_FX_SW_WORDS];
 
-void __init update_regset_xstate_info(unsigned int size, u64 xstate_mask)
-{
-	x86_32_regsets[REGSET_XSTATE].n = size / sizeof(u64);
-	xstate_fx_sw_bytes[USER_XSTATE_XCR0_WORD] = xstate_mask;
-}
+/* STUB: update_regset_xstate_info not used externally */
+void __init update_regset_xstate_info(unsigned int size, u64 xstate_mask) { }
 
  
 const struct user_regset_view *task_user_regset_view(struct task_struct *task)

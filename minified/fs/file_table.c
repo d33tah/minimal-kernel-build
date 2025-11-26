@@ -121,14 +121,10 @@ over:
 }
 
  
+/* STUB: alloc_empty_file_noaccount not used externally */
 struct file *alloc_empty_file_noaccount(int flags, const struct cred *cred)
 {
-	struct file *f = __alloc_file(flags, cred);
-
-	if (!IS_ERR(f))
-		f->f_mode |= FMODE_NOACCOUNT;
-
-	return f;
+	return ERR_PTR(-ENOMEM);
 }
 
  
@@ -185,15 +181,11 @@ struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
 	return file;
 }
 
+/* STUB: alloc_file_clone not used externally */
 struct file *alloc_file_clone(struct file *base, int flags,
 				const struct file_operations *fops)
 {
-	struct file *f = alloc_file(&base->f_path, flags, fops);
-	if (!IS_ERR(f)) {
-		path_get(&f->f_path);
-		f->f_mapping = base->f_mapping;
-	}
-	return f;
+	return ERR_PTR(-ENOMEM);
 }
 
  

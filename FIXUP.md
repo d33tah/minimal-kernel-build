@@ -1,20 +1,26 @@
---- 2025-11-26 13:20 ---
+--- 2025-11-26 13:26 ---
 
-Session progress:
+Session final summary:
 - make vm: PASSES ✓, prints "Hello, World!" ✓
 - Binary: 261KB
-- Current: 212,886 LOC (cloc after mrproper)
+- Current: 212,873 LOC (cloc after mrproper)
 - Started: 212,965 LOC
-- Reduced: ~79 LOC so far this session
+- Reduced: ~92 LOC this session
 - Goal: 200,000 LOC - need ~13K more reduction
 
-Stubbed this session:
+All stubbed/removed this session:
 1. vmalloc_nr_pages (~1 LOC) - mm/vmalloc.c
 2. is_vmalloc_or_module_addr (~1 LOC) - mm/vmalloc.c
 3. recalibrate_cpu_khz (~14 LOC) - arch/x86/kernel/tsc.c
 4. unsynchronized_tsc (~13 LOC) - arch/x86/kernel/tsc.c
 5. round_jiffies functions (8 funcs) + round_jiffies_common (~45 LOC) - kernel/time/timer.c
 6. kstrto*_from_user functions (11 funcs) (~18 LOC) - lib/kstrtox.c
+7. buddy_merge_likely (~17 LOC) - mm/page_alloc.c
+
+Next session ideas:
+- Continue searching for unused functions in large files
+- Look for more static functions that are defined but unused after previous simplifications
+- Consider stubbing more syscall helper functions if not used
 
 --- 2025-11-26 12:39 ---
 

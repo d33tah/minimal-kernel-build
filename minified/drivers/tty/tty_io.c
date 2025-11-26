@@ -1374,11 +1374,9 @@ static void do_SAK_work(struct work_struct *work)
 	__do_SAK(tty);
 }
 
+/* Stubbed: do_SAK not used externally */
 void do_SAK(struct tty_struct *tty)
 {
-	if (!tty)
-		return;
-	schedule_work(&tty->SAK_work);
 }
 
 static struct device *tty_get_device(struct tty_struct *tty)

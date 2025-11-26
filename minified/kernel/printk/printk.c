@@ -592,11 +592,9 @@ void console_unlock(void)
 	} while (prb_read_valid(prb, next_seq, NULL) && console_trylock());
 }
 
- 
+/* Stubbed: console_conditional_schedule not used externally */
 void __sched console_conditional_schedule(void)
 {
-	if (console_may_schedule)
-		cond_resched();
 }
 
 void console_unblank(void)

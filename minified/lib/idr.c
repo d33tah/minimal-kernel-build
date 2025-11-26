@@ -89,43 +89,16 @@ int idr_for_each(const struct idr *idr,
 	return 0;
 }
 
- 
+/* Stub: idr_get_next_ul not used in minimal kernel */
 void *idr_get_next_ul(struct idr *idr, unsigned long *nextid)
 {
-	struct radix_tree_iter iter;
-	void __rcu **slot;
-	void *entry = NULL;
-	unsigned long base = idr->idr_base;
-	unsigned long id = *nextid;
-
-	id = (id < base) ? 0 : id - base;
-	radix_tree_for_each_slot(slot, &idr->idr_rt, &iter, id) {
-		entry = rcu_dereference_raw(*slot);
-		if (!entry)
-			continue;
-		if (!xa_is_internal(entry))
-			break;
-		if (slot != &idr->idr_rt.xa_head && !xa_is_retry(entry))
-			break;
-		slot = radix_tree_iter_retry(&iter);
-	}
-	if (!slot)
-		return NULL;
-
-	*nextid = iter.index + base;
-	return entry;
+	return NULL;
 }
 
- 
+/* Stub: idr_get_next not used in minimal kernel */
 void *idr_get_next(struct idr *idr, int *nextid)
 {
-	unsigned long id = *nextid;
-	void *entry = idr_get_next_ul(idr, &id);
-
-	if (WARN_ON_ONCE(id > INT_MAX))
-		return NULL;
-	*nextid = id;
-	return entry;
+	return NULL;
 }
 
  

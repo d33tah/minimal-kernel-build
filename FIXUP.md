@@ -1,12 +1,12 @@
---- 2025-11-26 11:18 ---
+--- 2025-11-26 11:30 ---
 
 Progress update:
 - make vm: PASSES ✓
-- Current: 212,988 LOC (cloc after mrproper)
-- Reduced: ~79 LOC this session so far
+- Current: 212,968 LOC (cloc after mrproper)
+- Reduced: ~99 LOC this session
 - Goal: 200,000 LOC - need ~13K more
 
-Stubbed this session:
+All stubs this session:
 1. follow_down_one (~12 LOC) - fs/namei.c
 2. vmf_insert_mixed_mkwrite (~1 LOC) - mm/memory.c
 3. __kmem_cache_empty (~6 LOC) - mm/slub.c
@@ -17,6 +17,10 @@ Stubbed this session:
 8. discard_new_inode (~7 LOC) - fs/inode.c
 9. read_code (~4 LOC) - fs/exec.c
 10. regs_query_register_offset, regs_query_register_name, update_regset_xstate_info (~16 LOC) - arch/x86/kernel/ptrace.c
+11. stop_nmi, restart_nmi (~4 LOC) - arch/x86/kernel/nmi.c
+12. alloc_empty_file_noaccount (~4 LOC) - fs/file_table.c
+13. alloc_file_clone (~4 LOC) - fs/file_table.c
+14. kmem_cache_shrink (~8 LOC) - mm/slab_common.c
 
 Continuing to search for more unused functions...
 

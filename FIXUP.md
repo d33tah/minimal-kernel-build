@@ -1,11 +1,11 @@
---- 2025-11-26 15:10 ---
+--- 2025-11-26 15:15 ---
 
 Session progress:
 - make vm: PASSES ✓, prints "Hello, World!" ✓
 - Binary: 261KB
-- Current: 204,346 LOC (cloc after mrproper)
+- Current: 204,324 LOC (cloc after mrproper)
 - Started: 204,382 LOC
-- Reduced: ~36 LOC this session
+- Reduced: ~58 LOC this session
 
 Stubbed functions this session:
 1. readlink_copy (~10 LOC) - fs/namei.c
@@ -18,6 +18,8 @@ Stubbed functions this session:
 8. put_itimerspec64 (~8 LOC) - kernel/time/time.c
 9. get_old_itimerspec32 (~5 LOC) - kernel/time/time.c
 10. put_old_itimerspec32 (~5 LOC) - kernel/time/time.c
+11. idr_for_each (~15 LOC) - lib/idr.c
+12. ida_destroy (~10 LOC) - lib/idr.c
 
 Continue searching for more unused functions...
 

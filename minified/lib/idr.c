@@ -82,25 +82,10 @@ void *idr_find(const struct idr *idr, unsigned long id)
 	return radix_tree_lookup(&idr->idr_rt, id - idr->idr_base);
 }
 
- 
+/* Stub: idr_for_each not used in minimal kernel */
 int idr_for_each(const struct idr *idr,
 		int (*fn)(int id, void *p, void *data), void *data)
 {
-	struct radix_tree_iter iter;
-	void __rcu **slot;
-	int base = idr->idr_base;
-
-	radix_tree_for_each_slot(slot, &idr->idr_rt, &iter, 0) {
-		int ret;
-		unsigned long id = iter.index + base;
-
-		if (WARN_ON_ONCE(id > INT_MAX))
-			break;
-		ret = fn(id, rcu_dereference_raw(*slot), data);
-		if (ret)
-			return ret;
-	}
-
 	return 0;
 }
 
@@ -306,20 +291,9 @@ delete:
 	WARN(1, "ida_free called for id=%d which is not allocated.\n", id);
 }
 
- 
+/* Stub: ida_destroy not used in minimal kernel */
 void ida_destroy(struct ida *ida)
 {
-	XA_STATE(xas, &ida->xa, 0);
-	struct ida_bitmap *bitmap;
-	unsigned long flags;
-
-	xas_lock_irqsave(&xas, flags);
-	xas_for_each(&xas, bitmap, ULONG_MAX) {
-		if (!xa_is_value(bitmap))
-			kfree(bitmap);
-		xas_store(&xas, NULL);
-	}
-	xas_unlock_irqrestore(&xas, flags);
 }
 
 #ifndef __KERNEL__

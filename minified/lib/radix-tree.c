@@ -467,29 +467,9 @@ static int __radix_tree_create(struct radix_tree_root *root,
 	return 0;
 }
 
+/* Stubbed - not used externally */
 static void radix_tree_free_nodes(struct radix_tree_node *node)
 {
-	unsigned offset = 0;
-	struct radix_tree_node *child = entry_to_node(node);
-
-	for (;;) {
-		void *entry = rcu_dereference_raw(child->slots[offset]);
-		if (xa_is_node(entry) && child->shift) {
-			child = entry_to_node(entry);
-			offset = 0;
-			continue;
-		}
-		offset++;
-		while (offset == RADIX_TREE_MAP_SIZE) {
-			struct radix_tree_node *old = child;
-			offset = child->offset + 1;
-			child = child->parent;
-			WARN_ON_ONCE(!list_empty(&old->private_list));
-			radix_tree_node_free(old);
-			if (old == entry_to_node(node))
-				return;
-		}
-	}
 }
 
 static inline int insert_entries(struct radix_tree_node *node,
@@ -637,10 +617,10 @@ void __radix_tree_replace(struct radix_tree_root *root,
 	delete_node(root, node);
 }
 
+/* Stubbed - not used externally */
 void radix_tree_replace_slot(struct radix_tree_root *root,
 			     void __rcu **slot, void *item)
 {
-	__radix_tree_replace(root, NULL, slot, item);
 }
 
 void radix_tree_iter_replace(struct radix_tree_root *root,
@@ -887,11 +867,10 @@ static bool __radix_tree_delete(struct radix_tree_root *root,
 	return node && delete_node(root, node);
 }
 
+/* Stubbed - not used externally */
 void radix_tree_iter_delete(struct radix_tree_root *root,
 				struct radix_tree_iter *iter, void __rcu **slot)
 {
-	if (__radix_tree_delete(root, iter->node, slot))
-		iter->index = iter->next_index;
 }
 
 void *radix_tree_delete_item(struct radix_tree_root *root,

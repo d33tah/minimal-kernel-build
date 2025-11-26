@@ -1,3 +1,18 @@
+--- 2025-11-27 00:39 ---
+
+Session start:
+- make vm: PASSES ✓, prints "Hello, World!" ✓
+- Binary: 257KB
+- Current: 228,317 LOC (cloc after mrproper)
+- Goal: Continue reducing LOC as much as possible
+
+Progress:
+1. Stub unused radix_tree_replace_slot (~4 LOC)
+2. Stub unused radix_tree_iter_delete (~5 LOC)
+3. Stub unused radix_tree_free_nodes (~20 LOC)
+
+Total reduction: ~29 LOC, from 228,340 to 228,317
+
 --- 2025-11-26 23:30 ---
 
 CI Status: PASSING ✓ (Docker Image CI succeeded in 3m 5s)

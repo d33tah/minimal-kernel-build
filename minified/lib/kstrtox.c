@@ -291,38 +291,20 @@ int kstrtobool(const char *s, bool *res)
 }
 
  
+/* Stubbed - not used externally */
 int kstrtobool_from_user(const char __user *s, size_t count, bool *res)
 {
-	 
-	char buf[4];
-
-	count = min(count, sizeof(buf) - 1);
-	if (copy_from_user(buf, s, count))
-		return -EFAULT;
-	buf[count] = '\0';
-	return kstrtobool(buf, res);
+	return -EINVAL;
 }
 
-#define kstrto_from_user(f, g, type)					\
-int f(const char __user *s, size_t count, unsigned int base, type *res)	\
-{									\
-	 		\
-	char buf[1 + sizeof(type) * 8 + 1 + 1];				\
-									\
-	count = min(count, sizeof(buf) - 1);				\
-	if (copy_from_user(buf, s, count))				\
-		return -EFAULT;						\
-	buf[count] = '\0';						\
-	return g(buf, base, res);					\
-}									\
-
-kstrto_from_user(kstrtoull_from_user,	kstrtoull,	unsigned long long);
-kstrto_from_user(kstrtoll_from_user,	kstrtoll,	long long);
-kstrto_from_user(kstrtoul_from_user,	kstrtoul,	unsigned long);
-kstrto_from_user(kstrtol_from_user,	kstrtol,	long);
-kstrto_from_user(kstrtouint_from_user,	kstrtouint,	unsigned int);
-kstrto_from_user(kstrtoint_from_user,	kstrtoint,	int);
-kstrto_from_user(kstrtou16_from_user,	kstrtou16,	u16);
-kstrto_from_user(kstrtos16_from_user,	kstrtos16,	s16);
-kstrto_from_user(kstrtou8_from_user,	kstrtou8,	u8);
-kstrto_from_user(kstrtos8_from_user,	kstrtos8,	s8);
+/* Stubbed - kstrto_from_user functions not used externally in minimal kernel */
+int kstrtoull_from_user(const char __user *s, size_t count, unsigned int base, unsigned long long *res) { return -EINVAL; }
+int kstrtoll_from_user(const char __user *s, size_t count, unsigned int base, long long *res) { return -EINVAL; }
+int kstrtoul_from_user(const char __user *s, size_t count, unsigned int base, unsigned long *res) { return -EINVAL; }
+int kstrtol_from_user(const char __user *s, size_t count, unsigned int base, long *res) { return -EINVAL; }
+int kstrtouint_from_user(const char __user *s, size_t count, unsigned int base, unsigned int *res) { return -EINVAL; }
+int kstrtoint_from_user(const char __user *s, size_t count, unsigned int base, int *res) { return -EINVAL; }
+int kstrtou16_from_user(const char __user *s, size_t count, unsigned int base, u16 *res) { return -EINVAL; }
+int kstrtos16_from_user(const char __user *s, size_t count, unsigned int base, s16 *res) { return -EINVAL; }
+int kstrtou8_from_user(const char __user *s, size_t count, unsigned int base, u8 *res) { return -EINVAL; }
+int kstrtos8_from_user(const char __user *s, size_t count, unsigned int base, s8 *res) { return -EINVAL; }

@@ -51,54 +51,30 @@ void bitmap_cut(unsigned long *dst, const unsigned long *src,
 {
 }
 
+/* Stub: __bitmap_and not used in minimal kernel */
 int __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
 				const unsigned long *bitmap2, unsigned int bits)
 {
-	unsigned int k;
-	unsigned int lim = bits/BITS_PER_LONG;
-	unsigned long result = 0;
-
-	for (k = 0; k < lim; k++)
-		result |= (dst[k] = bitmap1[k] & bitmap2[k]);
-	if (bits % BITS_PER_LONG)
-		result |= (dst[k] = bitmap1[k] & bitmap2[k] &
-			   BITMAP_LAST_WORD_MASK(bits));
-	return result != 0;
+	return 0;
 }
 
+/* Stub: __bitmap_or not used in minimal kernel */
 void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
 				const unsigned long *bitmap2, unsigned int bits)
 {
-	unsigned int k;
-	unsigned int nr = BITS_TO_LONGS(bits);
-
-	for (k = 0; k < nr; k++)
-		dst[k] = bitmap1[k] | bitmap2[k];
 }
 
+/* Stub: __bitmap_xor not used in minimal kernel */
 void __bitmap_xor(unsigned long *dst, const unsigned long *bitmap1,
 				const unsigned long *bitmap2, unsigned int bits)
 {
-	unsigned int k;
-	unsigned int nr = BITS_TO_LONGS(bits);
-
-	for (k = 0; k < nr; k++)
-		dst[k] = bitmap1[k] ^ bitmap2[k];
 }
 
+/* Stub: __bitmap_andnot not used in minimal kernel */
 int __bitmap_andnot(unsigned long *dst, const unsigned long *bitmap1,
 				const unsigned long *bitmap2, unsigned int bits)
 {
-	unsigned int k;
-	unsigned int lim = bits/BITS_PER_LONG;
-	unsigned long result = 0;
-
-	for (k = 0; k < lim; k++)
-		result |= (dst[k] = bitmap1[k] & ~bitmap2[k]);
-	if (bits % BITS_PER_LONG)
-		result |= (dst[k] = bitmap1[k] & ~bitmap2[k] &
-			   BITMAP_LAST_WORD_MASK(bits));
-	return result != 0;
+	return 0;
 }
 
 /* Stub: __bitmap_replace not called externally */
@@ -108,46 +84,24 @@ void __bitmap_replace(unsigned long *dst,
 {
 }
 
+/* Stub: __bitmap_intersects not used in minimal kernel */
 bool __bitmap_intersects(const unsigned long *bitmap1,
 			 const unsigned long *bitmap2, unsigned int bits)
 {
-	unsigned int k, lim = bits/BITS_PER_LONG;
-	for (k = 0; k < lim; ++k)
-		if (bitmap1[k] & bitmap2[k])
-			return true;
-
-	if (bits % BITS_PER_LONG)
-		if ((bitmap1[k] & bitmap2[k]) & BITMAP_LAST_WORD_MASK(bits))
-			return true;
 	return false;
 }
 
+/* Stub: __bitmap_subset not used in minimal kernel */
 bool __bitmap_subset(const unsigned long *bitmap1,
 		     const unsigned long *bitmap2, unsigned int bits)
 {
-	unsigned int k, lim = bits/BITS_PER_LONG;
-	for (k = 0; k < lim; ++k)
-		if (bitmap1[k] & ~bitmap2[k])
-			return false;
-
-	if (bits % BITS_PER_LONG)
-		if ((bitmap1[k] & ~bitmap2[k]) & BITMAP_LAST_WORD_MASK(bits))
-			return false;
 	return true;
 }
 
+/* Stub: __bitmap_weight not used in minimal kernel */
 int __bitmap_weight(const unsigned long *bitmap, unsigned int bits)
 {
-	unsigned int k, lim = bits/BITS_PER_LONG;
-	int w = 0;
-
-	for (k = 0; k < lim; k++)
-		w += hweight_long(bitmap[k]);
-
-	if (bits % BITS_PER_LONG)
-		w += hweight_long(bitmap[k] & BITMAP_LAST_WORD_MASK(bits));
-
-	return w;
+	return 0;
 }
 
 void __bitmap_set(unsigned long *map, unsigned int start, int len)

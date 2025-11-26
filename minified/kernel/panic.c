@@ -332,10 +332,8 @@ static void do_oops_enter_exit(void)
 }
 
  
-bool oops_may_print(void)
-{
-	return pause_on_oops_flag == 0;
-}
+/* STUB: oops_may_print not used externally */
+bool oops_may_print(void) { return true; }
 
  
 void oops_enter(void)

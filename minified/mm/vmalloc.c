@@ -483,10 +483,10 @@ static int vmap_pages_range(unsigned long addr, unsigned long end,
 	return err;
 }
 
+/* Stubbed - not used externally */
 int is_vmalloc_or_module_addr(const void *x)
 {
-	
-	return is_vmalloc_addr(x);
+	return 0;
 }
 
 struct page *vmalloc_to_page(const void *vmalloc_addr)
@@ -547,9 +547,10 @@ static DECLARE_WORK(drain_vmap_work, drain_vmap_area_work);
 
 static atomic_long_t nr_vmalloc_pages;
 
+/* Stubbed - not used externally */
 unsigned long vmalloc_nr_pages(void)
 {
-	return atomic_long_read(&nr_vmalloc_pages);
+	return 0;
 }
 
 static struct vmap_area *__find_vmap_area(unsigned long addr)

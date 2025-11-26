@@ -1,11 +1,11 @@
---- 2025-11-26 21:27 ---
+--- 2025-11-26 21:32 ---
 
-Progress:
+Session COMPLETE:
 - make vm: PASSES ✓, prints "Hello, World!" ✓
 - Binary: 258KB
-- Current: 203,819 LOC (cloc after mrproper)
+- Final: 203,772 LOC (cloc after mrproper)
 - Started: 204,100 LOC
-- Reduced: ~281 LOC this session
+- Reduced: ~328 LOC this session
 
 Commits this session:
 1. Stub more unused functions (~157 LOC) - string_helpers.c, iov_iter.c, timeconv.c, rtc/lib.c
@@ -13,11 +13,10 @@ Commits this session:
 3. Stub unused tty_baudrate functions (~64 LOC) - tty_baudrate.c
 4. Stub unused scatterlist functions (~29 LOC) - lib/scatterlist.c
 5. Stub unused lockref function (~22 LOC) - lib/lockref.c
+6. Stub unused siphash functions (~47 LOC) - lib/siphash.c
 
 Note: errseq functions (errseq_sample, errseq_check, errseq_check_and_advance) cannot be
 stubbed - they appear to be called via some indirect mechanism and stubbing breaks boot.
-
-Continuing to search for more unused functions to stub.
 
 --- 2025-11-26 21:16 ---
 

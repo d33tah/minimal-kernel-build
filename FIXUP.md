@@ -1,11 +1,14 @@
---- 2025-11-26 19:35 ---
+--- 2025-11-26 19:51 ---
 
-Session progress:
+Session COMPLETE:
 - make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
 - Binary: 260KB
 - Current: 204,100 LOC (cloc after mrproper)
 - Started: 204,202 LOC
 - Reduced: ~102 LOC this session
+
+Commits pushed to origin. PR #10 is ready for @d33tah review.
+PR: https://github.com/d33tah/minimal-kernel-build/pull/10
 
 Stubbed functions this session:
 1. unshare_fd - kernel/fork.c (~10 LOC)
@@ -22,8 +25,6 @@ Stubbed functions this session:
 12. cdev_device_add - fs/char_dev.c (~15 LOC)
 13. cdev_device_del - fs/char_dev.c (~5 LOC)
 14. n_tty_inherit_ops - drivers/tty/n_tty.c (~4 LOC)
-
-Continue looking for more unused functions...
 
 --- 2025-11-26 18:56 ---
 

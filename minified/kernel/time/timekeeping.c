@@ -615,21 +615,11 @@ int timekeeping_notify(struct clocksource *clock)
 	return tk->tkr_mono.clock == clock ? 0 : -1;
 }
 
+/* Stub: ktime_get_raw_ts64 not used in minimal kernel */
 void ktime_get_raw_ts64(struct timespec64 *ts)
 {
-	struct timekeeper *tk = &tk_core.timekeeper;
-	unsigned int seq;
-	u64 nsecs;
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-		ts->tv_sec = tk->raw_sec;
-		nsecs = timekeeping_get_ns(&tk->tkr_raw);
-
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
+	ts->tv_sec = 0;
 	ts->tv_nsec = 0;
-	timespec64_add_ns(ts, nsecs);
 }
 
 int timekeeping_valid_for_hres(void)

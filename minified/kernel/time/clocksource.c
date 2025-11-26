@@ -738,20 +738,9 @@ static void __clocksource_change_rating(struct clocksource *cs, int rating)
 	clocksource_enqueue(cs);
 }
 
- 
+/* Stub: clocksource_change_rating not used in minimal kernel */
 void clocksource_change_rating(struct clocksource *cs, int rating)
 {
-	unsigned long flags;
-
-	mutex_lock(&clocksource_mutex);
-	clocksource_watchdog_lock(&flags);
-	__clocksource_change_rating(cs, rating);
-	clocksource_watchdog_unlock(&flags);
-
-	clocksource_select();
-	clocksource_select_watchdog(false);
-	clocksource_suspend_select(false);
-	mutex_unlock(&clocksource_mutex);
 }
 
  

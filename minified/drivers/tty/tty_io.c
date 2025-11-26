@@ -337,8 +337,7 @@ void tty_hangup(struct tty_struct *tty)
 
 void tty_vhangup(struct tty_struct *tty)
 {
-	tty_debug_hangup(tty, "vhangup\n");
-	__tty_hangup(tty, 0);
+	/* Stub: tty_vhangup not used in minimal kernel */
 }
 
 /* Stub: tty_vhangup_self not used externally */

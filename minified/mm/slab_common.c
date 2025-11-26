@@ -389,16 +389,8 @@ out_unlock:
 }
 
  
-int kmem_cache_shrink(struct kmem_cache *cachep)
-{
-	int ret;
-
-
-	kasan_cache_shrink(cachep);
-	ret = __kmem_cache_shrink(cachep);
-
-	return ret;
-}
+/* STUB: kmem_cache_shrink not used externally */
+int kmem_cache_shrink(struct kmem_cache *cachep) { return 0; }
 
 bool slab_is_available(void)
 {

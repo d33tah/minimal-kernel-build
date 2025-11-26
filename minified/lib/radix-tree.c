@@ -268,13 +268,10 @@ int radix_tree_preload(gfp_t gfp_mask)
 	return __radix_tree_preload(gfp_mask, RADIX_TREE_PRELOAD_SIZE);
 }
 
+/* Stub: radix_tree_maybe_preload not used in minimal kernel */
 int radix_tree_maybe_preload(gfp_t gfp_mask)
 {
-	if (gfpflags_allow_blocking(gfp_mask))
-		return __radix_tree_preload(gfp_mask, RADIX_TREE_PRELOAD_SIZE);
-	
-	local_lock(&radix_tree_preloads.lock);
-	return 0;
+	return radix_tree_preload(gfp_mask);
 }
 
 static unsigned radix_tree_load_root(const struct radix_tree_root *root,
@@ -695,28 +692,11 @@ static void node_tag_clear(struct radix_tree_root *root,
 		root_tag_clear(root, tag);
 }
 
+/* Stub: radix_tree_tag_clear not used in minimal kernel */
 void *radix_tree_tag_clear(struct radix_tree_root *root,
 			unsigned long index, unsigned int tag)
 {
-	struct radix_tree_node *node, *parent;
-	unsigned long maxindex;
-	int offset;
-
-	radix_tree_load_root(root, &node, &maxindex);
-	if (index > maxindex)
-		return NULL;
-
-	parent = NULL;
-
-	while (radix_tree_is_internal_node(node)) {
-		parent = entry_to_node(node);
-		offset = radix_tree_descend(parent, &node, index);
-	}
-
-	if (node)
-		node_tag_clear(root, parent, tag, offset);
-
-	return node;
+	return NULL;
 }
 
 void radix_tree_iter_tag_clear(struct radix_tree_root *root,
@@ -1024,13 +1004,9 @@ void __rcu **idr_get_free(struct radix_tree_root *root,
 	return slot;
 }
 
+/* Stub: idr_destroy not used in minimal kernel */
 void idr_destroy(struct idr *idr)
 {
-	struct radix_tree_node *node = rcu_dereference_raw(idr->idr_rt.xa_head);
-	if (radix_tree_is_internal_node(node))
-		radix_tree_free_nodes(node);
-	idr->idr_rt.xa_head = NULL;
-	root_tag_set(&idr->idr_rt, IDR_FREE);
 }
 
 static void

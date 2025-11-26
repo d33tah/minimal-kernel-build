@@ -1,3 +1,25 @@
+--- 2025-11-26 11:18 ---
+
+Progress update:
+- make vm: PASSES ✓
+- Current: 212,988 LOC (cloc after mrproper)
+- Reduced: ~79 LOC this session so far
+- Goal: 200,000 LOC - need ~13K more
+
+Stubbed this session:
+1. follow_down_one (~12 LOC) - fs/namei.c
+2. vmf_insert_mixed_mkwrite (~1 LOC) - mm/memory.c
+3. __kmem_cache_empty (~6 LOC) - mm/slub.c
+4. mnt_clone_internal (~6 LOC) - fs/namespace.c
+5. page_endio (~21 LOC) - mm/filemap.c
+6. tty_kopen_exclusive, tty_kopen_shared (~3 LOC) - drivers/tty/tty_io.c
+7. simple_strtoll (~1 LOC) - lib/vsprintf.c
+8. discard_new_inode (~7 LOC) - fs/inode.c
+9. read_code (~4 LOC) - fs/exec.c
+10. regs_query_register_offset, regs_query_register_name, update_regset_xstate_info (~16 LOC) - arch/x86/kernel/ptrace.c
+
+Continuing to search for more unused functions...
+
 --- 2025-11-26 10:50 ---
 
 Session start:

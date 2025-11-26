@@ -1,3 +1,19 @@
+--- 2025-11-26 21:16 ---
+
+Progress:
+- make vm: PASSES ✓, prints "Hello, World!" ✓
+- Binary: 258KB (down from 260KB)
+- Current: ~203,857 LOC (cloc after mrproper)
+- Started: 204,100 LOC
+- Reduced: ~243 LOC so far this session
+
+Commits this session:
+1. Stub more unused functions (~157 LOC) - string_helpers.c, iov_iter.c, timeconv.c, rtc/lib.c
+2. Stub unused range functions (~53 LOC) - kernel/range.c
+3. Stub unused tty_baudrate functions (~64 LOC) - tty_baudrate.c
+
+Continuing to search for more unused functions to stub.
+
 --- 2025-11-26 20:54 ---
 
 Session start:

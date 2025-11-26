@@ -90,36 +90,11 @@ int sg_alloc_append_table_from_pages(struct sg_append_table *sgt_append,
 	return -EOPNOTSUPP;
 }
 
-/* Additional minimal stubs for exported functions */
-struct scatterlist *sg_last(struct scatterlist *sgl, unsigned int nents)
-{
-	struct scatterlist *sg, *ret = NULL;
-	unsigned int i;
+/* Stub: sg_last not used externally */
+struct scatterlist *sg_last(struct scatterlist *sgl, unsigned int nents) { BUG(); }
 
-	for_each_sg(sgl, sg, nents, i)
-		ret = sg;
-
-	BUG_ON(!sg_is_last(ret));
-	return ret;
-}
-
-int sg_nents_for_len(struct scatterlist *sg, u64 len)
-{
-	int nents;
-	u64 total;
-
-	if (!len)
-		return 0;
-
-	for (nents = 0, total = 0; sg; sg = sg_next(sg)) {
-		nents++;
-		total += sg->length;
-		if (total >= len)
-			return nents;
-	}
-
-	return -EINVAL;
-}
+/* Stub: sg_nents_for_len not used externally */
+int sg_nents_for_len(struct scatterlist *sg, u64 len) { BUG(); }
 
 size_t sg_copy_buffer(struct scatterlist *sgl, unsigned int nents, void *buf,
 		      size_t buflen, off_t skip, bool to_buffer)

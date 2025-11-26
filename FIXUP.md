@@ -1,11 +1,11 @@
---- 2025-11-26 13:12 ---
+--- 2025-11-26 13:20 ---
 
 Session progress:
 - make vm: PASSES ✓, prints "Hello, World!" ✓
-- Binary: 262KB
-- Current: 212,904 LOC (cloc after mrproper)
+- Binary: 261KB
+- Current: 212,886 LOC (cloc after mrproper)
 - Started: 212,965 LOC
-- Reduced: ~61 LOC so far this session
+- Reduced: ~79 LOC so far this session
 - Goal: 200,000 LOC - need ~13K more reduction
 
 Stubbed this session:
@@ -14,6 +14,7 @@ Stubbed this session:
 3. recalibrate_cpu_khz (~14 LOC) - arch/x86/kernel/tsc.c
 4. unsynchronized_tsc (~13 LOC) - arch/x86/kernel/tsc.c
 5. round_jiffies functions (8 funcs) + round_jiffies_common (~45 LOC) - kernel/time/timer.c
+6. kstrto*_from_user functions (11 funcs) (~18 LOC) - lib/kstrtox.c
 
 --- 2025-11-26 12:39 ---
 

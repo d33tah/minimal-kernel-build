@@ -1,30 +1,38 @@
---- 2025-11-26 15:18 ---
+--- 2025-11-26 15:22 ---
 
-Session progress:
+Session complete:
 - make vm: PASSES ✓, prints "Hello, World!" ✓
-- Binary: 260KB (1KB reduction!)
+- Binary: 260KB (1KB reduction from 261KB!)
 - Current: 204,303 LOC (cloc after mrproper)
 - Started: 204,382 LOC
-- Reduced: ~79 LOC this session
+- Total reduced this session: ~79 LOC
+
+Commits made this session:
+1. "Stub unused functions (~18 LOC reduction)" - 4 functions
+2. "Stub more unused functions (~7 LOC reduction)" - 2 functions
+3. "Stub itimerspec functions (~16 LOC reduction)" - 4 functions
+4. "Stub idr_for_each and ida_destroy (~22 LOC reduction)" - 2 functions
+5. "Stub radix-tree functions (~21 LOC reduction)" - 3 functions
 
 Stubbed functions this session:
-1. readlink_copy (~10 LOC) - fs/namei.c
-2. get_llc_id (~1 LOC) - arch/x86/kernel/cpu/common.c
-3. arch_smt_update (~4 LOC) - arch/x86/kernel/cpu/common.c
-4. inode_set_flags (~3 LOC) - fs/inode.c
-5. __fput_sync (~5 LOC) - fs/file_table.c
-6. reset_node_managed_pages (~4 LOC) - mm/memblock.c
-7. get_itimerspec64 (~8 LOC) - kernel/time/time.c
-8. put_itimerspec64 (~8 LOC) - kernel/time/time.c
-9. get_old_itimerspec32 (~5 LOC) - kernel/time/time.c
-10. put_old_itimerspec32 (~5 LOC) - kernel/time/time.c
-11. idr_for_each (~15 LOC) - lib/idr.c
-12. ida_destroy (~10 LOC) - lib/idr.c
-13. radix_tree_maybe_preload (~4 LOC) - lib/radix-tree.c
-14. radix_tree_tag_clear (~17 LOC) - lib/radix-tree.c
-15. idr_destroy (~5 LOC) - lib/radix-tree.c
+1. readlink_copy - fs/namei.c
+2. get_llc_id - arch/x86/kernel/cpu/common.c
+3. arch_smt_update - arch/x86/kernel/cpu/common.c
+4. inode_set_flags - fs/inode.c
+5. __fput_sync - fs/file_table.c
+6. reset_node_managed_pages - mm/memblock.c
+7. get_itimerspec64 - kernel/time/time.c
+8. put_itimerspec64 - kernel/time/time.c
+9. get_old_itimerspec32 - kernel/time/time.c
+10. put_old_itimerspec32 - kernel/time/time.c
+11. idr_for_each - lib/idr.c
+12. ida_destroy - lib/idr.c
+13. radix_tree_maybe_preload - lib/radix-tree.c
+14. radix_tree_tag_clear - lib/radix-tree.c
+15. idr_destroy - lib/radix-tree.c
 
-Continue searching for more unused functions...
+Note: Most remaining functions in lib/bitmap.c and lib/string.c are already
+stubbed from previous sessions. Focus future efforts on larger subsystems.
 
 --- 2025-11-26 14:45 ---
 

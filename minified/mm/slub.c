@@ -1408,63 +1408,17 @@ void kmem_cache_free_bulk(struct kmem_cache *s, size_t size, void **p)
 int kmem_cache_alloc_bulk(struct kmem_cache *s, gfp_t flags, size_t size,
 			  void **p)
 {
-	struct kmem_cache_cpu *c;
-	int i;
-	struct obj_cgroup *objcg = NULL;
-
-	
-	s = slab_pre_alloc_hook(s, NULL, &objcg, size, flags);
-	if (unlikely(!s))
-		return false;
-	
-	c = slub_get_cpu_ptr(s->cpu_slab);
-	local_lock_irq(&s->cpu_slab->lock);
-
+	/* Stub: bulk allocation not used in minimal kernel */
+	size_t i;
 	for (i = 0; i < size; i++) {
-		void *object = kfence_alloc(s, s->object_size, flags);
-
-		if (unlikely(object)) {
-			p[i] = object;
-			continue;
+		p[i] = kmem_cache_alloc(s, flags);
+		if (!p[i]) {
+			while (i--)
+				kmem_cache_free(s, p[i]);
+			return 0;
 		}
-
-		object = c->freelist;
-		if (unlikely(!object)) {
-			
-			c->tid = next_tid(c->tid);
-
-			local_unlock_irq(&s->cpu_slab->lock);
-
-			
-			p[i] = ___slab_alloc(s, flags, NUMA_NO_NODE,
-					    _RET_IP_, c);
-			if (unlikely(!p[i]))
-				goto error;
-
-			c = this_cpu_ptr(s->cpu_slab);
-			maybe_wipe_obj_freeptr(s, p[i]);
-
-			local_lock_irq(&s->cpu_slab->lock);
-
-			continue; 
-		}
-		c->freelist = get_freepointer(s, object);
-		p[i] = object;
-		maybe_wipe_obj_freeptr(s, p[i]);
 	}
-	c->tid = next_tid(c->tid);
-	local_unlock_irq(&s->cpu_slab->lock);
-	slub_put_cpu_ptr(s->cpu_slab);
-
-	
-	slab_post_alloc_hook(s, objcg, flags, size, p,
-				slab_want_init_on_alloc(flags, s));
-	return i;
-error:
-	slub_put_cpu_ptr(s->cpu_slab);
-	slab_post_alloc_hook(s, objcg, flags, i, p, false);
-	__kmem_cache_free_bulk(s, i, p);
-	return 0;
+	return size;
 }
 
 static unsigned int slub_min_order;

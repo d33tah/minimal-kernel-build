@@ -382,23 +382,6 @@ static inline void del_page_from_free_list(struct page *page, struct zone *zone,
 	zone->free_area[order].nr_free--;
 }
 
-static inline bool
-buddy_merge_likely(unsigned long pfn, unsigned long buddy_pfn,
-		   struct page *page, unsigned int order)
-{
-	unsigned long higher_page_pfn;
-	struct page *higher_page;
-
-	if (order >= MAX_ORDER - 2)
-		return false;
-
-	higher_page_pfn = buddy_pfn & pfn;
-	higher_page = page + (higher_page_pfn - pfn);
-
-	return find_buddy_page_pfn(higher_page, higher_page_pfn, order + 1,
-			NULL) != NULL;
-}
-
 static inline void __free_one_page(struct page *page,
 		unsigned long pfn,
 		struct zone *zone, unsigned int order,

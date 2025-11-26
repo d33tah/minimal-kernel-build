@@ -141,10 +141,9 @@ bool __must_check try_grab_page(struct page *page, unsigned int flags)
 	return true;
 }
 
+/* Stubbed - not used externally */
 void unpin_user_page(struct page *page)
 {
-	sanity_check_pinned_pages(&page, 1);
-	gup_put_folio(page_folio(page), 1, FOLL_PIN);
 }
 
 static inline struct folio *gup_folio_range_next(struct page *start,

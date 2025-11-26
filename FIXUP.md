@@ -1,11 +1,11 @@
---- 2025-11-26 15:06 ---
+--- 2025-11-26 15:10 ---
 
 Session progress:
 - make vm: PASSES ✓, prints "Hello, World!" ✓
 - Binary: 261KB
-- Current: 204,362 LOC (cloc after mrproper)
+- Current: 204,346 LOC (cloc after mrproper)
 - Started: 204,382 LOC
-- Reduced: ~20 LOC this session
+- Reduced: ~36 LOC this session
 
 Stubbed functions this session:
 1. readlink_copy (~10 LOC) - fs/namei.c
@@ -14,8 +14,12 @@ Stubbed functions this session:
 4. inode_set_flags (~3 LOC) - fs/inode.c
 5. __fput_sync (~5 LOC) - fs/file_table.c
 6. reset_node_managed_pages (~4 LOC) - mm/memblock.c
+7. get_itimerspec64 (~8 LOC) - kernel/time/time.c
+8. put_itimerspec64 (~8 LOC) - kernel/time/time.c
+9. get_old_itimerspec32 (~5 LOC) - kernel/time/time.c
+10. put_old_itimerspec32 (~5 LOC) - kernel/time/time.c
 
-Searching for more unused functions...
+Continue searching for more unused functions...
 
 --- 2025-11-26 14:45 ---
 

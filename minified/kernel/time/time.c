@@ -421,49 +421,30 @@ int put_old_timespec32(const struct timespec64 *ts, void __user *uts)
 		return __put_old_timespec32(ts, uts);
 }
 
+/* Stub: get_itimerspec64 not used in minimal kernel */
 int get_itimerspec64(struct itimerspec64 *it,
 			const struct __kernel_itimerspec __user *uit)
 {
-	int ret;
-
-	ret = get_timespec64(&it->it_interval, &uit->it_interval);
-	if (ret)
-		return ret;
-
-	ret = get_timespec64(&it->it_value, &uit->it_value);
-
-	return ret;
+	return -EINVAL;
 }
 
+/* Stub: put_itimerspec64 not used in minimal kernel */
 int put_itimerspec64(const struct itimerspec64 *it,
 			struct __kernel_itimerspec __user *uit)
 {
-	int ret;
-
-	ret = put_timespec64(&it->it_interval, &uit->it_interval);
-	if (ret)
-		return ret;
-
-	ret = put_timespec64(&it->it_value, &uit->it_value);
-
-	return ret;
+	return -EINVAL;
 }
 
+/* Stub: get_old_itimerspec32 not used in minimal kernel */
 int get_old_itimerspec32(struct itimerspec64 *its,
 			const struct old_itimerspec32 __user *uits)
 {
-
-	if (__get_old_timespec32(&its->it_interval, &uits->it_interval) ||
-	    __get_old_timespec32(&its->it_value, &uits->it_value))
-		return -EFAULT;
-	return 0;
+	return -EINVAL;
 }
 
+/* Stub: put_old_itimerspec32 not used in minimal kernel */
 int put_old_itimerspec32(const struct itimerspec64 *its,
 			struct old_itimerspec32 __user *uits)
 {
-	if (__put_old_timespec32(&its->it_interval, &uits->it_interval) ||
-	    __put_old_timespec32(&its->it_value, &uits->it_value))
-		return -EFAULT;
-	return 0;
+	return -EINVAL;
 }

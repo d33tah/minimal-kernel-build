@@ -1298,11 +1298,10 @@ void inode_dio_wait(struct inode *inode)
 {
 }
 
+/* Stub: inode_set_flags not used in minimal kernel */
 void inode_set_flags(struct inode *inode, unsigned int flags,
 		     unsigned int mask)
 {
-	WARN_ON_ONCE(flags & ~mask);
-	set_mask_bits(&inode->i_flags, mask, flags);
 }
 
 void inode_nohighmem(struct inode *inode)

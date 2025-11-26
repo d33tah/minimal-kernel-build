@@ -75,9 +75,10 @@ int smp_num_siblings = 1;
 
 DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_llc_id) = BAD_APICID;
 
+/* Stub: get_llc_id not used in minimal kernel */
 u16 get_llc_id(unsigned int cpu)
 {
-	return per_cpu(cpu_llc_id, cpu);
+	return 0;
 }
 
 DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_l2c_id) = BAD_APICID;
@@ -1415,10 +1416,7 @@ void cpu_init(void)
 	load_fixmap_gdt(cpu);
 }
 
+/* Stub: arch_smt_update not used in minimal kernel */
 void arch_smt_update(void)
 {
-	
-	cpu_bugs_smt_update();
-	
-	apic_smt_update();
 }

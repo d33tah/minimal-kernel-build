@@ -2503,19 +2503,10 @@ SYSCALL_DEFINE2(rename, const char __user *, oldname, const char __user *, newna
 				getname(newname), 0);
 }
 
+/* Stub: readlink_copy not used in minimal kernel */
 int readlink_copy(char __user *buffer, int buflen, const char *link)
 {
-	int len = PTR_ERR(link);
-	if (IS_ERR(link))
-		goto out;
-
-	len = strlen(link);
-	if (len > (unsigned) buflen)
-		len = buflen;
-	if (copy_to_user(buffer, link, len))
-		len = -EFAULT;
-out:
-	return len;
+	return -EINVAL;
 }
 
 /* Stub: readlink not used in minimal kernel */

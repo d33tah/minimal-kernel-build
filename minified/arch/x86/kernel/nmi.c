@@ -345,15 +345,11 @@ nmi_restart:
 #if IS_MODULE(CONFIG_KVM_INTEL)
 #endif
 
-void stop_nmi(void)
-{
-	ignore_nmis++;
-}
+/* STUB: stop_nmi not used externally */
+void stop_nmi(void) { }
 
-void restart_nmi(void)
-{
-	ignore_nmis--;
-}
+/* STUB: restart_nmi not used externally */
+void restart_nmi(void) { }
 
  
 void local_touch_nmi(void)

@@ -872,36 +872,18 @@ bool __folio_lock_or_retry(struct folio *folio, struct mm_struct *mm,
 	return true;
 }
 
+/* Stub: page_cache_next_miss not used in minimal kernel */
 pgoff_t page_cache_next_miss(struct address_space *mapping,
 			     pgoff_t index, unsigned long max_scan)
 {
-	XA_STATE(xas, &mapping->i_pages, index);
-
-	while (max_scan--) {
-		void *entry = xas_next(&xas);
-		if (!entry || xa_is_value(entry))
-			break;
-		if (xas.xa_index == 0)
-			break;
-	}
-
-	return xas.xa_index;
+	return index;
 }
 
+/* Stub: page_cache_prev_miss not used in minimal kernel */
 pgoff_t page_cache_prev_miss(struct address_space *mapping,
 			     pgoff_t index, unsigned long max_scan)
 {
-	XA_STATE(xas, &mapping->i_pages, index);
-
-	while (max_scan--) {
-		void *entry = xas_prev(&xas);
-		if (!entry || xa_is_value(entry))
-			break;
-		if (xas.xa_index == ULONG_MAX)
-			break;
-	}
-
-	return xas.xa_index;
+	return index;
 }
 
 static void *mapping_get_entry(struct address_space *mapping, pgoff_t index)

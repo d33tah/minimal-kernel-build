@@ -8,15 +8,10 @@
 #include <linux/slab.h>
 #include <linux/random.h>
 
- 
+/* Stub: kobject_namespace not used externally */
 const void *kobject_namespace(struct kobject *kobj)
 {
-	const struct kobj_ns_type_operations *ns_ops = kobj_ns_ops(kobj);
-
-	if (!ns_ops || ns_ops->type == KOBJ_NS_TYPE_NONE)
-		return NULL;
-
-	return kobj->ktype->namespace(kobj);
+	return NULL;
 }
 
  
@@ -35,50 +30,10 @@ static int create_dir(struct kobject *kobj)
 	return 0;
 }
 
-static int get_kobj_path_length(struct kobject *kobj)
-{
-	int length = 1;
-	struct kobject *parent = kobj;
-
-	 
-	do {
-		if (kobject_name(parent) == NULL)
-			return 0;
-		length += strlen(kobject_name(parent)) + 1;
-		parent = parent->parent;
-	} while (parent);
-	return length;
-}
-
-static void fill_kobj_path(struct kobject *kobj, char *path, int length)
-{
-	struct kobject *parent;
-
-	--length;
-	for (parent = kobj; parent; parent = parent->parent) {
-		int cur = strlen(kobject_name(parent));
-		 
-		length -= cur;
-		memcpy(path + length, kobject_name(parent), cur);
-		*(path + --length) = '/';
-	}
-}
-
- 
+/* Stub: kobject_get_path and helpers not used externally */
 char *kobject_get_path(struct kobject *kobj, gfp_t gfp_mask)
 {
-	char *path;
-	int len;
-
-	len = get_kobj_path_length(kobj);
-	if (len == 0)
-		return NULL;
-	path = kzalloc(len, gfp_mask);
-	if (!path)
-		return NULL;
-	fill_kobj_path(kobj, path, len);
-
-	return path;
+	return NULL;
 }
 
  
@@ -595,9 +550,6 @@ struct kset *kset_create_and_add(const char *name,
 	return kset;
 }
 
-
-static DEFINE_SPINLOCK(kobj_ns_type_lock);
-static const struct kobj_ns_type_operations *kobj_ns_ops_tbl[KOBJ_NS_TYPES];
 
 /* Stub: kobj_ns_type_register not used in minimal kernel */
 int kobj_ns_type_register(const struct kobj_ns_type_operations *ops)

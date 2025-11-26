@@ -95,9 +95,10 @@ static long long simple_strntoll(const char *cp, size_t max_chars, char **endp,
 	return simple_strntoull(cp, max_chars, endp, base);
 }
 
+/* STUB: simple_strtoll not used externally */
 long long simple_strtoll(const char *cp, char **endp, unsigned int base)
 {
-	return simple_strntoll(cp, INT_MAX, endp, base);
+	return 0;
 }
 
 static noinline_for_stack

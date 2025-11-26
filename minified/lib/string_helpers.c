@@ -9,44 +9,17 @@
 #include <linux/string_helpers.h>
 
 void string_get_size(u64 size, u64 blk_size, const enum string_size_units units,
-		     char *buf, int len)
-{
-	if (len > 0)
-		snprintf(buf, len, "%llu", (unsigned long long)size);
-}
+		     char *buf, int len) { BUG(); }
 EXPORT_SYMBOL(string_get_size);
 
-int string_unescape(char *src, char *dst, size_t size, unsigned int flags)
-{
-	if (size > 0 && src && dst) {
-		size_t len = strlen(src);
-		if (len >= size) len = size - 1;
-		memcpy(dst, src, len);
-		dst[len] = '\0';
-		return len;
-	}
-	return -EINVAL;
-}
+int string_unescape(char *src, char *dst, size_t size, unsigned int flags) { BUG(); }
 EXPORT_SYMBOL(string_unescape);
 
 int string_escape_mem(const char *src, size_t isz, char *dst, size_t osz,
-		      unsigned int flags, const char *only)
-{
-	if (osz > 0 && src && dst) {
-		size_t len = isz;
-		if (len >= osz) len = osz - 1;
-		memcpy(dst, src, len);
-		dst[len] = '\0';
-		return len;
-	}
-	return -EINVAL;
-}
+		      unsigned int flags, const char *only) { BUG(); }
 EXPORT_SYMBOL(string_escape_mem);
 
-void kfree_strarray(char **array, size_t n)
-{
-	/* Stub - do nothing */
-}
+void kfree_strarray(char **array, size_t n) { BUG(); }
 EXPORT_SYMBOL_GPL(kfree_strarray);
 
 ssize_t strscpy_pad(char *dest, const char *src, size_t count)
@@ -84,16 +57,7 @@ int __sysfs_match_string(const char * const *array, size_t n, const char *str)
 EXPORT_SYMBOL(__sysfs_match_string);
 
 void memcpy_and_pad(void *dest, size_t dest_len, const void *src, size_t count,
-		    int pad)
-{
-	if (!dest || !src)
-		return;
-	if (count > dest_len)
-		count = dest_len;
-	memcpy(dest, src, count);
-	if (count < dest_len)
-		memset(dest + count, pad, dest_len - count);
-}
+		    int pad) { BUG(); }
 EXPORT_SYMBOL(memcpy_and_pad);
 
 char *skip_spaces(const char *str)

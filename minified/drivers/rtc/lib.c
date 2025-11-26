@@ -3,29 +3,20 @@
 
 #include <linux/export.h>
 #include <linux/rtc.h>
+#include <linux/bug.h>
 
 static const unsigned char rtc_days_in_month[] = {
 	31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };
 
-static const unsigned short rtc_ydays[2][13] = {
-	 
-	{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
-	 
-	{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
-};
-
- 
+/* Stub: rtc_month_days not used externally */
 int rtc_month_days(unsigned int month, unsigned int year)
 {
 	return rtc_days_in_month[month] + (is_leap_year(year) && month == 1);
 }
 
- 
-int rtc_year_days(unsigned int day, unsigned int month, unsigned int year)
-{
-	return rtc_ydays[is_leap_year(year)][month] + day - 1;
-}
+/* Stub: rtc_year_days not used externally */
+int rtc_year_days(unsigned int day, unsigned int month, unsigned int year) { BUG(); }
 
  
 void rtc_time64_to_tm(time64_t time, struct rtc_time *tm)
@@ -114,22 +105,8 @@ time64_t rtc_tm_to_time64(struct rtc_time *tm)
 			tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
 
- 
-ktime_t rtc_tm_to_ktime(struct rtc_time tm)
-{
-	return ktime_set(rtc_tm_to_time64(&tm), 0);
-}
+/* Stub: rtc_tm_to_ktime not used externally */
+ktime_t rtc_tm_to_ktime(struct rtc_time tm) { BUG(); }
 
- 
-struct rtc_time rtc_ktime_to_tm(ktime_t kt)
-{
-	struct timespec64 ts;
-	struct rtc_time ret;
-
-	ts = ktime_to_timespec64(kt);
-	 
-	if (ts.tv_nsec)
-		ts.tv_sec++;
-	rtc_time64_to_tm(ts.tv_sec, &ret);
-	return ret;
-}
+/* Stub: rtc_ktime_to_tm not used externally */
+struct rtc_time rtc_ktime_to_tm(ktime_t kt) { BUG(); }

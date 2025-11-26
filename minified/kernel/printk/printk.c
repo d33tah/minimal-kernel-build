@@ -833,56 +833,8 @@ void register_console(struct console *newcon)
 
 int unregister_console(struct console *console)
 {
-	struct console *con;
-	int res;
-
-	con_printk(KERN_INFO, console, "disabled\n");
-
-	res = _braille_unregister_console(console);
-	if (res < 0)
-		return res;
-	if (res > 0)
-		return 0;
-
-	res = -ENODEV;
-	console_lock();
-	if (console_drivers == console) {
-		console_drivers=console->next;
-		res = 0;
-	} else {
-		for_each_console(con) {
-			if (con->next == console) {
-				con->next = console->next;
-				res = 0;
-				break;
-			}
-		}
-	}
-
-	if (res)
-		goto out_disable_unlock;
-
-	if (console->flags & CON_EXTENDED)
-		nr_ext_console_drivers--;
-
-	 
-	if (console_drivers != NULL && console->flags & CON_CONSDEV)
-		console_drivers->flags |= CON_CONSDEV;
-
-	console->flags &= ~CON_ENABLED;
-	console_unlock();
-	console_sysfs_notify();
-
-	if (console->exit)
-		res = console->exit(console);
-
-	return res;
-
-out_disable_unlock:
-	console->flags &= ~CON_ENABLED;
-	console_unlock();
-
-	return res;
+	/* Stub: console unregistration not needed for minimal kernel */
+	return 0;
 }
 
  

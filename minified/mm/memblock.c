@@ -1198,12 +1198,9 @@ static unsigned long __init free_low_memory_core_early(void)
 
 static int reset_managed_pages_done __initdata;
 
+/* Stub: reset_node_managed_pages not used in minimal kernel */
 void reset_node_managed_pages(pg_data_t *pgdat)
 {
-	struct zone *z;
-
-	for (z = pgdat->node_zones; z < pgdat->node_zones + MAX_NR_ZONES; z++)
-		atomic_long_set(&z->managed_pages, 0);
 }
 
 /* Stub: reset_all_zones_managed_pages not used in minimal kernel */

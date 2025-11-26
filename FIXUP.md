@@ -1,19 +1,21 @@
---- 2025-11-26 15:00 ---
+--- 2025-11-26 15:06 ---
 
 Session progress:
 - make vm: PASSES ✓, prints "Hello, World!" ✓
 - Binary: 261KB
-- Current: 204,369 LOC (cloc after mrproper)
+- Current: 204,362 LOC (cloc after mrproper)
 - Started: 204,382 LOC
-- Reduced: ~13 LOC this batch
+- Reduced: ~20 LOC this session
 
-Stubbed this batch:
+Stubbed functions this session:
 1. readlink_copy (~10 LOC) - fs/namei.c
 2. get_llc_id (~1 LOC) - arch/x86/kernel/cpu/common.c
 3. arch_smt_update (~4 LOC) - arch/x86/kernel/cpu/common.c
 4. inode_set_flags (~3 LOC) - fs/inode.c
+5. __fput_sync (~5 LOC) - fs/file_table.c
+6. reset_node_managed_pages (~4 LOC) - mm/memblock.c
 
-Continue searching for more unused functions...
+Searching for more unused functions...
 
 --- 2025-11-26 14:45 ---
 

@@ -288,10 +288,10 @@ static const struct attribute_group *cpu_root_attr_groups[] = {
 	NULL,
 };
 
+/* Stub: cpu_is_hotpluggable not used in minimal single-CPU kernel */
 bool cpu_is_hotpluggable(unsigned int cpu)
 {
-	struct device *dev = get_cpu_device(cpu);
-	return dev && container_of(dev, struct cpu, dev)->hotpluggable;
+	return false;
 }
 
 

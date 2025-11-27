@@ -1125,14 +1125,8 @@ int file_modified(struct file *file)
 	return file_update_time(file);
 }
 
-int inode_needs_sync(struct inode *inode)
-{
-	if (IS_SYNC(inode))
-		return 1;
-	if (S_ISDIR(inode->i_mode) && IS_DIRSYNC(inode))
-		return 1;
-	return 0;
-}
+/* Stub: inode_needs_sync not used externally */
+int inode_needs_sync(struct inode *inode) { return 0; }
 
 static void __wait_on_freeing_inode(struct inode *inode)
 {

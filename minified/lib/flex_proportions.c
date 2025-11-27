@@ -22,35 +22,14 @@ bool fprop_new_period(struct fprop_global *p, int periods)
 	return false;
 }
 
-int fprop_local_init_single(struct fprop_local_single *pl)
-{
-	pl->events = 0;
-	pl->period = 0;
-	raw_spin_lock_init(&pl->lock);
-	return 0;
-}
-
-void fprop_local_destroy_single(struct fprop_local_single *pl)
-{
-}
-
-void __fprop_inc_single(struct fprop_global *p, struct fprop_local_single *pl)
-{
-	pl->events++;
-	percpu_counter_add(&p->events, 1);
-}
-
+/* Stub: single-cpu variants not used in minimal kernel */
+int fprop_local_init_single(struct fprop_local_single *pl) { return 0; }
+void fprop_local_destroy_single(struct fprop_local_single *pl) { }
+void __fprop_inc_single(struct fprop_global *p, struct fprop_local_single *pl) { }
 void fprop_fraction_single(struct fprop_global *p,
 			   struct fprop_local_single *pl,
 			   unsigned long *numerator, unsigned long *denominator)
-{
-	*numerator = pl->events;
-	*denominator = percpu_counter_read_positive(&p->events);
-	if (*denominator <= *numerator && *numerator)
-		*denominator = *numerator;
-	else if (!*denominator)
-		*denominator = 1;
-}
+{ *numerator = 0; *denominator = 1; }
 
 int fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp)
 {

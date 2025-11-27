@@ -1,3 +1,16 @@
+--- 2025-11-27 18:46 ---
+
+Session progress (continued):
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 252KB (down from 253KB)
+
+Additional stubs this session:
+- mm/backing-dev.c: bdi_get_by_id (~14 LOC)
+- lib/flex_proportions.c: fprop_local_init_single, fprop_local_destroy_single,
+  __fprop_inc_single, fprop_fraction_single (~21 LOC)
+
+Continuing to scan for unused functions.
+
 --- 2025-11-27 18:40 ---
 
 Session progress:

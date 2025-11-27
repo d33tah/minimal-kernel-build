@@ -328,22 +328,8 @@ static struct rb_node **bdi_lookup_rb_node(u64 id, struct rb_node **parentp)
 	return p;
 }
 
- 
-struct backing_dev_info *bdi_get_by_id(u64 id)
-{
-	struct backing_dev_info *bdi = NULL;
-	struct rb_node **p;
-
-	spin_lock_bh(&bdi_lock);
-	p = bdi_lookup_rb_node(id, NULL);
-	if (*p) {
-		bdi = rb_entry(*p, struct backing_dev_info, rb_node);
-		bdi_get(bdi);
-	}
-	spin_unlock_bh(&bdi_lock);
-
-	return bdi;
-}
+/* Stub: bdi_get_by_id not used in minimal kernel */
+struct backing_dev_info *bdi_get_by_id(u64 id) { return NULL; }
 
 int bdi_register_va(struct backing_dev_info *bdi, const char *fmt, va_list args)
 {

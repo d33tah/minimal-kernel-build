@@ -1,16 +1,17 @@
---- 2025-11-27 00:57 ---
+--- 2025-11-27 01:03 ---
 
 Session progress:
 - make vm: PASSES ✓, prints "Hello, World!" ✓
 - Binary: 257KB
-- Current: 228,265 LOC (cloc after mrproper)
+- Current: 228,235 LOC (cloc after mrproper)
 - Started: 228,340 LOC
-- Reduced this session: 75 LOC
+- Reduced this session: 105 LOC
 
 Commits:
 1. Stub unused radix-tree functions (~29 LOC) - radix_tree_replace_slot, radix_tree_iter_delete, radix_tree_free_nodes
 2. Stub unused inode and filemap functions (~39 LOC) - insert_inode_locked, page_cache_next_miss, page_cache_prev_miss
 3. Stub unused time functions (~22 LOC) - ktime_get_raw_ts64, clocksource_change_rating
+4. Stub unused arch/x86 functions (~35 LOC) - unregister_nmi_handler, sigaltstack_size_valid
 
 --- 2025-11-27 00:39 ---
 

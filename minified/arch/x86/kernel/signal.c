@@ -576,28 +576,9 @@ static int __init strict_sas_size(char *arg)
 }
 __setup("strict_sas_size", strict_sas_size);
 
- 
+/* Stub: sigaltstack_size_valid not used in minimal kernel */
 bool sigaltstack_size_valid(size_t ss_size)
 {
-	unsigned long fsize = max_frame_size - fpu_default_state_size;
-	u64 mask;
-
-	lockdep_assert_held(&current->sighand->siglock);
-
-	if (!fpu_state_size_dynamic() && !strict_sigaltstack_size)
-		return true;
-
-	fsize += current->group_leader->thread.fpu.perm.__user_state_size;
-	if (likely(ss_size > fsize))
-		return true;
-
-	if (strict_sigaltstack_size)
-		return ss_size > fsize;
-
-	mask = current->group_leader->thread.fpu.perm.__state_perm;
-	if (mask & XFEATURE_MASK_USER_DYNAMIC)
-		return ss_size > fsize;
-
 	return true;
 }
 

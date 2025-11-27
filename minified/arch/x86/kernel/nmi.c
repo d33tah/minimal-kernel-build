@@ -121,30 +121,9 @@ int __register_nmi_handler(unsigned int type, struct nmiaction *action)
 	return 0;
 }
 
+/* Stub: unregister_nmi_handler not used in minimal kernel */
 void unregister_nmi_handler(unsigned int type, const char *name)
 {
-	struct nmi_desc *desc = nmi_to_desc(type);
-	struct nmiaction *n, *found = NULL;
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&desc->lock, flags);
-
-	list_for_each_entry_rcu(n, &desc->head, list) {
-		 
-		if (!strcmp(n->name, name)) {
-			WARN(in_nmi(),
-				"Trying to free NMI (%s) from NMI context!\n", n->name);
-			list_del_rcu(&n->list);
-			found = n;
-			break;
-		}
-	}
-
-	raw_spin_unlock_irqrestore(&desc->lock, flags);
-	if (found) {
-		synchronize_rcu();
-		INIT_LIST_HEAD(&found->list);
-	}
 }
 
 static void

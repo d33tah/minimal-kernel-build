@@ -891,37 +891,8 @@ static unsigned long __init ram_alignment(resource_size_t pos)
 
 #define MAX_RESOURCE_SIZE ((resource_size_t)-1)
 
-void __init e820__reserve_resources_late(void)
-{
-	int i;
-	struct resource *res;
-
-	res = e820_res;
-	for (i = 0; i < e820_table->nr_entries; i++) {
-		if (!res->parent && res->end)
-			insert_resource_expand_to_fit(&iomem_resource, res);
-		res++;
-	}
-
-	 
-	for (i = 0; i < e820_table->nr_entries; i++) {
-		struct e820_entry *entry = &e820_table->entries[i];
-		u64 start, end;
-
-		if (entry->type != E820_TYPE_RAM)
-			continue;
-
-		start = entry->addr + entry->size;
-		end = round_up(start, ram_alignment(start)) - 1;
-		if (end > MAX_RESOURCE_SIZE)
-			end = MAX_RESOURCE_SIZE;
-		if (start >= end)
-			continue;
-
-		printk(KERN_DEBUG "e820: reserve RAM buffer [mem %#010llx-%#010llx]\n", start, end);
-		reserve_region_with_split(&iomem_resource, start, end, "RAM buffer");
-	}
-}
+/* Stub: e820__reserve_resources_late not called in minimal kernel */
+void __init e820__reserve_resources_late(void) { }
 
  
 char *__init e820__memory_setup_default(void)

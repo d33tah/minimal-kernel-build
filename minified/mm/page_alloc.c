@@ -719,38 +719,6 @@ static int fallbacks[MIGRATE_TYPES][3] = {
 static inline struct page *__rmqueue_cma_fallback(struct zone *zone,
 					unsigned int order) { return NULL; }
 
-static int move_freepages(struct zone *zone,
-			  unsigned long start_pfn, unsigned long end_pfn,
-			  int migratetype, int *num_movable)
-{
-	struct page *page;
-	unsigned long pfn;
-	unsigned int order;
-	int pages_moved = 0;
-
-	/* Stub: skip num_movable tracking for minimal kernel */
-	if (num_movable)
-		*num_movable = 0;
-
-	for (pfn = start_pfn; pfn <= end_pfn;) {
-		page = pfn_to_page(pfn);
-		if (!PageBuddy(page)) {
-			pfn++;
-			continue;
-		}
-
-		VM_BUG_ON_PAGE(page_to_nid(page) != zone_to_nid(zone), page);
-		VM_BUG_ON_PAGE(page_zone(page) != zone, page);
-
-		order = buddy_order(page);
-		move_to_free_list(page, zone, order, migratetype);
-		pfn += 1 << order;
-		pages_moved += 1 << order;
-	}
-
-	return pages_moved;
-}
-
 int move_freepages_block(struct zone *zone, struct page *page,
 				int migratetype, int *num_movable)
 {

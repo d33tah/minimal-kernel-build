@@ -1,3 +1,39 @@
+--- 2025-11-28 00:29 ---
+
+Session progress:
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 251KB
+- Kernel-only LOC: 201,673 (down from 209,698)
+- Goal: 200K LOC (only 1.67K above target!)
+
+Removed unused static functions (identified via LLVM compiler warnings):
+1. arch/x86/kernel/process.c: enable_TSC, amd_e400_idle, prefer_mwait_c1_over_halt, mwait_idle (~50 LOC)
+2. kernel/sched/core.c: effective_prio, find_process_by_pid, check_same_owner, __sched_setaffinity (~30 LOC)
+3. arch/x86/lib/delay.c: delay_halt_mwaitx (~12 LOC)
+4. lib/vsprintf.c: simple_strntoll (~9 LOC)
+5. mm/page_alloc.c: move_freepages (~30 LOC)
+6. mm/vmalloc.c: vb_alloc, vb_free (~80 LOC)
+7. mm/slub.c: flush_all, __kmem_cache_do_shrink (~60 LOC)
+
+Total reduction this session: ~8K LOC (from 209,698 to 201,673)
+
+Technique: Used LLVM build with -Wunused-function warnings to identify dead code.
+
+--- 2025-11-28 00:01 ---
+
+Session start:
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 251KB
+- Kernel-only LOC: 209,698 (down from 210,330 - some reduction from previous session)
+- Total LOC: 227,179
+- Goal: 200K LOC (~9.7K above target)
+
+Plan:
+- Previous sessions have stubbed most obvious function opportunities
+- Need aggressive approach: target larger files/headers for reduction
+- Will search for unused .c files or large headers that can be trimmed
+- Consider removing entire unused subsystems
+
 --- 2025-11-27 23:10 ---
 
 Session end:

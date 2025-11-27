@@ -434,15 +434,6 @@ static inline int normal_prio(struct task_struct *p)
 	return __normal_prio(p->policy, p->rt_priority, PRIO_TO_NICE(p->static_prio));
 }
 
-static int effective_prio(struct task_struct *p)
-{
-	p->normal_prio = normal_prio(p);
-	
-	if (!rt_prio(p->prio))
-		return p->normal_prio;
-	return p->prio;
-}
-
 inline int task_curr(const struct task_struct *p)
 {
 	return cpu_curr(task_cpu(p)) == p;
@@ -1386,11 +1377,6 @@ struct task_struct *idle_task(int cpu)
 	return cpu_rq(cpu)->idle;
 }
 
-static struct task_struct *find_process_by_pid(pid_t pid)
-{
-	return pid ? find_task_by_vpid(pid) : current;
-}
-
 #define SETPARAM_POLICY	-1
 
 static void __setscheduler_params(struct task_struct *p,
@@ -1412,19 +1398,6 @@ static void __setscheduler_params(struct task_struct *p,
 	p->rt_priority = attr->sched_priority;
 	p->normal_prio = normal_prio(p);
 	set_load_weight(p, true);
-}
-
-static bool check_same_owner(struct task_struct *p)
-{
-	const struct cred *cred = current_cred(), *pcred;
-	bool match;
-
-	rcu_read_lock();
-	pcred = __task_cred(p);
-	match = (uid_eq(cred->euid, pcred->euid) ||
-		 uid_eq(cred->euid, pcred->uid));
-	rcu_read_unlock();
-	return match;
 }
 
 static int __sched_setscheduler(struct task_struct *p,
@@ -1598,13 +1571,6 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
 {
 	/* Stubbed: sched_getattr not needed for minimal kernel */
 	return -ENOSYS;
-}
-
-static int
-__sched_setaffinity(struct task_struct *p, const struct cpumask *mask)
-{
-	/* Stub: not needed for minimal kernel */
-	return 0;
 }
 
 long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)

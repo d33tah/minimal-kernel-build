@@ -189,15 +189,6 @@ void disable_TSC(void)
 	preempt_enable();
 }
 
-static void enable_TSC(void)
-{
-	preempt_disable();
-	if (test_and_clear_thread_flag(TIF_NOTSC))
-		 
-		cr4_clear_bits(X86_CR4_TSD);
-	preempt_enable();
-}
-
 /* Stub: get_tsc_mode not used externally */
 int get_tsc_mode(unsigned long adr)
 {
@@ -458,58 +449,6 @@ void __noreturn stop_this_cpu(void *dummy)
 		 
 		native_halt();
 	}
-}
-
- 
-static void amd_e400_idle(void)
-{
-	 
-	if (!boot_cpu_has_bug(X86_BUG_AMD_APIC_C1E)) {
-		default_idle();
-		return;
-	}
-
-	tick_broadcast_enter();
-
-	default_idle();
-
-	 
-	raw_local_irq_disable();
-	tick_broadcast_exit();
-	raw_local_irq_enable();
-}
-
- 
-static int prefer_mwait_c1_over_halt(const struct cpuinfo_x86 *c)
-{
-	if (c->x86_vendor != X86_VENDOR_INTEL)
-		return 0;
-
-	if (!cpu_has(c, X86_FEATURE_MWAIT) || boot_cpu_has_bug(X86_BUG_MONITOR))
-		return 0;
-
-	return 1;
-}
-
- 
-static __cpuidle void mwait_idle(void)
-{
-	if (!current_set_polling_and_test()) {
-		if (this_cpu_has(X86_BUG_CLFLUSH_MONITOR)) {
-			mb();  
-			clflush((void *)&current_thread_info()->flags);
-			mb();  
-		}
-
-		__monitor((void *)&current_thread_info()->flags, 0, 0);
-		if (!need_resched())
-			__sti_mwait(0, 0);
-		else
-			raw_local_irq_enable();
-	} else {
-		raw_local_irq_enable();
-	}
-	__current_clr_polling();
 }
 
 /* Simplified: just use default_idle for minimal kernel */

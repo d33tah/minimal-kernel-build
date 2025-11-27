@@ -944,13 +944,6 @@ static void flush_all_cpus_locked(struct kmem_cache *s)
 	mutex_unlock(&flush_lock);
 }
 
-static void flush_all(struct kmem_cache *s)
-{
-	cpus_read_lock();
-	flush_all_cpus_locked(s);
-	cpus_read_unlock();
-}
-
 static int slub_cpu_dead(unsigned int cpu)
 {
 	struct kmem_cache *s;
@@ -1732,61 +1725,6 @@ void kfree(const void *x)
 	}
 	slab = folio_slab(folio);
 	slab_free(slab->slab_cache, slab, object, NULL, 1, _RET_IP_);
-}
-
-#define SHRINK_PROMOTE_MAX 32
-
-static int __kmem_cache_do_shrink(struct kmem_cache *s)
-{
-	int node;
-	int i;
-	struct kmem_cache_node *n;
-	struct slab *slab;
-	struct slab *t;
-	struct list_head discard;
-	struct list_head promote[SHRINK_PROMOTE_MAX];
-	unsigned long flags;
-	int ret = 0;
-
-	for_each_kmem_cache_node(s, node, n) {
-		INIT_LIST_HEAD(&discard);
-		for (i = 0; i < SHRINK_PROMOTE_MAX; i++)
-			INIT_LIST_HEAD(promote + i);
-
-		spin_lock_irqsave(&n->list_lock, flags);
-
-		
-		list_for_each_entry_safe(slab, t, &n->partial, slab_list) {
-			int free = slab->objects - slab->inuse;
-
-			
-			barrier();
-
-			
-			BUG_ON(free <= 0);
-
-			if (free == slab->objects) {
-				list_move(&slab->slab_list, &discard);
-				n->nr_partial--;
-			} else if (free <= SHRINK_PROMOTE_MAX)
-				list_move(&slab->slab_list, promote + free - 1);
-		}
-
-		
-		for (i = SHRINK_PROMOTE_MAX - 1; i >= 0; i--)
-			list_splice(promote + i, &n->partial);
-
-		spin_unlock_irqrestore(&n->list_lock, flags);
-
-		
-		list_for_each_entry_safe(slab, t, &discard, slab_list)
-			discard_slab(s, slab);
-
-		if (slabs_node(s, node))
-			ret = 1;
-	}
-
-	return ret;
 }
 
 /* Stubbed - not used externally */

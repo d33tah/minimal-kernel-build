@@ -84,20 +84,6 @@ static void delay_halt_tpause(u64 start, u64 cycles)
 	__tpause(TPAUSE_C02_STATE, edx, eax);
 }
 
- 
-static void delay_halt_mwaitx(u64 unused, u64 cycles)
-{
-	u64 delay;
-
-	delay = min_t(u64, MWAITX_MAX_WAIT_CYCLES, cycles);
-	 
-	 __monitorx(raw_cpu_ptr(&cpu_tss_rw), 0, 0);
-
-	 
-	__mwaitx(MWAITX_DISABLE_CSTATES, delay, MWAITX_ECX_TIMER_ENABLE);
-}
-
- 
 static void delay_halt(u64 __cycles)
 {
 	u64 start, end, cycles = __cycles;

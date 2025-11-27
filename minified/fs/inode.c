@@ -795,10 +795,8 @@ int insert_inode_locked4(struct inode *inode, unsigned long hashval,
 	return -EBUSY;
 }
 
-int generic_delete_inode(struct inode *inode)
-{
-	return 1;
-}
+/* Stub: generic_delete_inode not used externally */
+int generic_delete_inode(struct inode *inode) { return 1; }
 
 static void iput_final(struct inode *inode)
 {

@@ -1884,108 +1884,14 @@ static int __kmem_cache_do_shrink(struct kmem_cache *s)
 	return ret;
 }
 
+/* Stubbed - not used externally */
 int __kmem_cache_shrink(struct kmem_cache *s)
 {
-	flush_all(s);
-	return __kmem_cache_do_shrink(s);
-}
-
-static int slab_mem_going_offline_callback(void *arg)
-{
-	struct kmem_cache *s;
-
-	mutex_lock(&slab_mutex);
-	list_for_each_entry(s, &slab_caches, list) {
-		flush_all_cpus_locked(s);
-		__kmem_cache_do_shrink(s);
-	}
-	mutex_unlock(&slab_mutex);
-
 	return 0;
 }
 
-static void slab_mem_offline_callback(void *arg)
-{
-	struct memory_notify *marg = arg;
-	int offline_node;
-
-	offline_node = marg->status_change_nid_normal;
-
-	
-	if (offline_node < 0)
-		return;
-
-	mutex_lock(&slab_mutex);
-	node_clear(offline_node, slab_nodes);
-	
-	mutex_unlock(&slab_mutex);
-}
-
-static int slab_mem_going_online_callback(void *arg)
-{
-	struct kmem_cache_node *n;
-	struct kmem_cache *s;
-	struct memory_notify *marg = arg;
-	int nid = marg->status_change_nid_normal;
-	int ret = 0;
-
-	
-	if (nid < 0)
-		return 0;
-
-	
-	mutex_lock(&slab_mutex);
-	list_for_each_entry(s, &slab_caches, list) {
-		
-		if (get_node(s, nid))
-			continue;
-		
-		n = kmem_cache_alloc(kmem_cache_node, GFP_KERNEL);
-		if (!n) {
-			ret = -ENOMEM;
-			goto out;
-		}
-		init_kmem_cache_node(n);
-		s->node[nid] = n;
-	}
-	
-	node_set(nid, slab_nodes);
-out:
-	mutex_unlock(&slab_mutex);
-	return ret;
-}
-
-static int slab_memory_callback(struct notifier_block *self,
-				unsigned long action, void *arg)
-{
-	int ret = 0;
-
-	switch (action) {
-	case MEM_GOING_ONLINE:
-		ret = slab_mem_going_online_callback(arg);
-		break;
-	case MEM_GOING_OFFLINE:
-		ret = slab_mem_going_offline_callback(arg);
-		break;
-	case MEM_OFFLINE:
-	case MEM_CANCEL_ONLINE:
-		slab_mem_offline_callback(arg);
-		break;
-	case MEM_ONLINE:
-	case MEM_CANCEL_OFFLINE:
-		break;
-	}
-	if (ret)
-		ret = notifier_from_errno(ret);
-	else
-		ret = NOTIFY_OK;
-	return ret;
-}
-
-static struct notifier_block slab_memory_callback_nb = {
-	.notifier_call = slab_memory_callback,
-	.priority = SLAB_CALLBACK_PRI,
-};
+/* Memory hotplug callbacks removed - not needed for minimal kernel
+ * (register_hotmemory_notifier is already a no-op) */
 
 static struct kmem_cache * __init bootstrap(struct kmem_cache *static_cache)
 {
@@ -2031,9 +1937,9 @@ void __init kmem_cache_init(void)
 	create_boot_cache(kmem_cache_node, "kmem_cache_node",
 		sizeof(struct kmem_cache_node), SLAB_HWCACHE_ALIGN, 0, 0);
 
-	register_hotmemory_notifier(&slab_memory_callback_nb);
+	/* Memory hotplug notifier removed - not needed for minimal kernel */
 
-	
+
 	slab_state = PARTIAL;
 
 	create_boot_cache(kmem_cache, "kmem_cache",

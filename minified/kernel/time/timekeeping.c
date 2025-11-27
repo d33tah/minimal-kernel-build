@@ -638,20 +638,10 @@ int timekeeping_valid_for_hres(void)
 	return ret;
 }
 
+/* Stub: timekeeping_max_deferment not used in minimal kernel */
 u64 timekeeping_max_deferment(void)
 {
-	struct timekeeper *tk = &tk_core.timekeeper;
-	unsigned int seq;
-	u64 ret;
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-
-		ret = tk->tkr_mono.clock->max_idle_ns;
-
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	return ret;
+	return NSEC_PER_SEC;
 }
 
 void __weak read_persistent_clock64(struct timespec64 *ts)

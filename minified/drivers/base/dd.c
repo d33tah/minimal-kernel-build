@@ -282,19 +282,10 @@ static void driver_sysfs_remove(struct device *dev)
 }
 
  
+/* Stub: device_bind_driver not used externally */
 int device_bind_driver(struct device *dev)
 {
-	int ret;
-
-	ret = driver_sysfs_add(dev);
-	if (!ret) {
-		device_links_force_bind(dev);
-		driver_bound(dev);
-	}
-	else if (dev->bus)
-		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-					     BUS_NOTIFY_DRIVER_NOT_BOUND, dev);
-	return ret;
+	return 0;
 }
 
 static atomic_t probe_count = ATOMIC_INIT(0);
@@ -860,9 +851,9 @@ void device_release_driver(struct device *dev)
 }
 
  
+/* Stub: device_driver_detach not used externally */
 void device_driver_detach(struct device *dev)
 {
-	device_release_driver_internal(dev, NULL, dev->parent);
 }
 
  

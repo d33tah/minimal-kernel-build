@@ -546,12 +546,6 @@ int do_settimeofday64(const struct timespec64 *ts)
 	return -EPERM;
 }
 
-static int timekeeping_inject_offset(const struct timespec64 *ts)
-{
-	/* Stub: time offset injection not needed for minimal kernel */
-	return -EPERM;
-}
-
 int persistent_clock_is_local;
 
 /* Stubbed: timekeeping_warp_clock not used externally */

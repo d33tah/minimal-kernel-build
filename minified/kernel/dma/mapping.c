@@ -290,24 +290,6 @@ void dma_free_attrs(struct device *dev, size_t size, void *cpu_addr,
 		ops->free(dev, size, cpu_addr, dma_handle, attrs);
 }
 
-static struct page *__dma_alloc_pages(struct device *dev, size_t size,
-		dma_addr_t *dma_handle, enum dma_data_direction dir, gfp_t gfp)
-{
-	const struct dma_map_ops *ops = get_dma_ops(dev);
-
-	if (WARN_ON_ONCE(!dev->coherent_dma_mask))
-		return NULL;
-	if (WARN_ON_ONCE(gfp & (__GFP_DMA | __GFP_DMA32 | __GFP_HIGHMEM)))
-		return NULL;
-
-	size = PAGE_ALIGN(size);
-	if (dma_alloc_direct(dev, ops))
-		return dma_direct_alloc_pages(dev, size, dma_handle, dir, gfp);
-	if (!ops->alloc_pages)
-		return NULL;
-	return ops->alloc_pages(dev, size, dma_handle, dir, gfp);
-}
-
 /* Stubbed: dma_alloc_pages not used externally */
 struct page *dma_alloc_pages(struct device *dev, size_t size,
 		dma_addr_t *dma_handle, enum dma_data_direction dir, gfp_t gfp)

@@ -478,15 +478,6 @@ static void irq_release_resources(struct irq_desc *desc)
 		c->irq_release_resources(d);
 }
 
-static void irq_nmi_teardown(struct irq_desc *desc)
-{
-	struct irq_data *d = irq_desc_get_irq_data(desc);
-	struct irq_chip *c = d->chip;
-
-	if (c->irq_nmi_teardown)
-		c->irq_nmi_teardown(d);
-}
-
 static int
 setup_irq_thread(struct irqaction *new, unsigned int irq, bool secondary)
 {
@@ -840,32 +831,6 @@ const void *free_irq(unsigned int irq, void *dev_id)
 
 	devname = action->name;
 	kfree(action);
-	return devname;
-}
-
-static const void *__cleanup_nmi(unsigned int irq, struct irq_desc *desc)
-{
-	const char *devname = NULL;
-
-	desc->istate &= ~IRQS_NMI;
-
-	if (!WARN_ON(desc->action == NULL)) {
-		irq_pm_remove_action(desc, desc->action);
-		devname = desc->action->name;
-		unregister_handler_proc(irq, desc->action);
-
-		kfree(desc->action);
-		desc->action = NULL;
-	}
-
-	irq_settings_clr_disable_unlazy(desc);
-	irq_shutdown_and_deactivate(desc);
-
-	irq_release_resources(desc);
-
-	irq_chip_pm_put(&desc->irq_data);
-	module_put(desc->owner);
-
 	return devname;
 }
 

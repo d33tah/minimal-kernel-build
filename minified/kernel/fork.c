@@ -1583,12 +1583,6 @@ static inline void init_idle_pids(struct task_struct *idle)
 	}
 }
 
-static int idle_dummy(void *dummy)
-{
-	
-	return 0;
-}
-
 /* Stub: fork_idle not used in minimal kernel (no SMP support) */
 struct task_struct * __init fork_idle(int cpu) { return ERR_PTR(-EINVAL); }
 

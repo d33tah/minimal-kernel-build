@@ -286,29 +286,6 @@ static int __clockevents_try_unbind(struct clock_event_device *ced, int cpu)
 	return ced == per_cpu(tick_cpu_device, cpu).evtdev ? -EAGAIN : -EBUSY;
 }
 
- 
-static void __clockevents_unbind(void *arg)
-{
-	struct ce_unbind *cu = arg;
-	int res;
-
-	raw_spin_lock(&clockevents_lock);
-	res = __clockevents_try_unbind(cu->ce, smp_processor_id());
-	if (res == -EAGAIN)
-		res = clockevents_replace(cu->ce);
-	cu->res = res;
-	raw_spin_unlock(&clockevents_lock);
-}
-
- 
-static int clockevents_unbind(struct clock_event_device *ced, int cpu)
-{
-	struct ce_unbind cu = { .ce = ced, .res = -ENODEV };
-
-	smp_call_function_single(cpu, __clockevents_unbind, &cu, 1);
-	return cu.res;
-}
-
 /* Stub: clockevents_unbind_device not used in minimal kernel */
 int clockevents_unbind_device(struct clock_event_device *ced, int cpu)
 {

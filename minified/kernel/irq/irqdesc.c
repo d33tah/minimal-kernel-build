@@ -428,25 +428,6 @@ static bool irq_is_nmi(struct irq_desc *desc)
 	return desc->istate & IRQS_NMI;
 }
 
-static unsigned int kstat_irqs(unsigned int irq)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-	unsigned int sum = 0;
-	int cpu;
-
-	if (!desc || !desc->kstat_irqs)
-		return 0;
-	if (!irq_settings_is_per_cpu_devid(desc) &&
-	    !irq_settings_is_per_cpu(desc) &&
-	    !irq_is_nmi(desc))
-		return data_race(desc->tot_count);
-
-	for_each_possible_cpu(cpu)
-		sum += data_race(*per_cpu_ptr(desc->kstat_irqs, cpu));
-	return sum;
-}
-
- 
 /* Stub: kstat_irqs_usr not used in minimal kernel */
 unsigned int kstat_irqs_usr(unsigned int irq) { return 0; }
 

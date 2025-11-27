@@ -1,3 +1,17 @@
+--- 2025-11-28 00:34 ---
+
+Continuing reduction:
+- Kernel-only LOC: 201,593 (down from 201,673)
+- Goal: 200K LOC (only 1.59K remaining!)
+
+Removed more unused static functions:
+- kernel/irq/irqdesc.c: kstat_irqs (~17 LOC)
+- kernel/irq/manage.c: irq_nmi_teardown, __cleanup_nmi (~35 LOC)
+- kernel/dma/mapping.c: __dma_alloc_pages (~17 LOC)
+- kernel/time/timekeeping.c: timekeeping_inject_offset (5 LOC)
+- kernel/time/clockevents.c: __clockevents_unbind, clockevents_unbind (~22 LOC)
+- kernel/fork.c: idle_dummy (5 LOC)
+
 --- 2025-11-28 00:29 ---
 
 Session progress:

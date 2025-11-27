@@ -405,18 +405,9 @@ int irq_set_percpu_devid(unsigned int irq)
 	return irq_set_percpu_devid_partition(irq, NULL);
 }
 
+/* Stub: irq_get_percpu_devid_partition not used in minimal kernel */
 int irq_get_percpu_devid_partition(unsigned int irq, struct cpumask *affinity)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-
-	if (!desc || !desc->percpu_enabled)
-		return -EINVAL;
-
-	if (affinity)
-		cpumask_copy(affinity, desc->percpu_affinity);
-
-	return 0;
-}
+{ return -EINVAL; }
 
 void kstat_incr_irq_this_cpu(unsigned int irq)
 {
@@ -456,13 +447,6 @@ static unsigned int kstat_irqs(unsigned int irq)
 }
 
  
-unsigned int kstat_irqs_usr(unsigned int irq)
-{
-	unsigned int sum;
-
-	rcu_read_lock();
-	sum = kstat_irqs(irq);
-	rcu_read_unlock();
-	return sum;
-}
+/* Stub: kstat_irqs_usr not used in minimal kernel */
+unsigned int kstat_irqs_usr(unsigned int irq) { return 0; }
 

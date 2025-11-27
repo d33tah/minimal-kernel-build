@@ -757,17 +757,9 @@ void __f_unlock_pos(struct file *f)
 
  
 
+/* Stub: set_close_on_exec not used in minimal kernel */
 void set_close_on_exec(unsigned int fd, int flag)
 {
-	struct files_struct *files = current->files;
-	struct fdtable *fdt;
-	spin_lock(&files->file_lock);
-	fdt = files_fdtable(files);
-	if (flag)
-		__set_close_on_exec(fd, fdt);
-	else
-		__clear_close_on_exec(fd, fdt);
-	spin_unlock(&files->file_lock);
 }
 
 bool get_close_on_exec(unsigned int fd)
@@ -813,26 +805,10 @@ Ebusy:
 	return -EBUSY;
 }
 
+/* Stub: replace_fd not used in minimal kernel */
 int replace_fd(unsigned fd, struct file *file, unsigned flags)
 {
-	int err;
-	struct files_struct *files = current->files;
-
-	if (!file)
-		return close_fd(fd);
-
-	if (fd >= rlimit(RLIMIT_NOFILE))
-		return -EBADF;
-
-	spin_lock(&files->file_lock);
-	err = expand_files(files, fd);
-	if (unlikely(err < 0))
-		goto out_unlock;
-	return do_dup2(files, file, fd, flags);
-
-out_unlock:
-	spin_unlock(&files->file_lock);
-	return err;
+	return -EBADF;
 }
 
  

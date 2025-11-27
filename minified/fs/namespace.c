@@ -414,25 +414,10 @@ static inline bool mnt_is_cursor(struct mount *mnt)
 	return mnt->mnt.mnt_flags & MNT_CURSOR;
 }
 
+/* Stub: __is_local_mountpoint not used in minimal kernel */
 bool __is_local_mountpoint(struct dentry *dentry)
 {
-	struct mnt_namespace *ns = current->nsproxy->mnt_ns;
-	struct mount *mnt;
-	bool is_covered = false;
-
-	down_read(&namespace_sem);
-	lock_ns_list(ns);
-	list_for_each_entry(mnt, &ns->list, mnt_list) {
-		if (mnt_is_cursor(mnt))
-			continue;
-		is_covered = (mnt->mnt_mountpoint == dentry);
-		if (is_covered)
-			break;
-	}
-	unlock_ns_list(ns);
-	up_read(&namespace_sem);
-
-	return is_covered;
+	return false;
 }
 
 static struct mountpoint *lookup_mountpoint(struct dentry *dentry)
@@ -1883,14 +1868,11 @@ SYSCALL_DEFINE5(move_mount,
 	return -ENOSYS;
 }
 
+/* Stub: is_path_reachable not used in minimal kernel */
 bool is_path_reachable(struct mount *mnt, struct dentry *dentry,
 			 const struct path *root)
 {
-	while (&mnt->mnt != root->mnt && mnt_has_parent(mnt)) {
-		dentry = mnt->mnt_mountpoint;
-		mnt = mnt->mnt_parent;
-	}
-	return &mnt->mnt == root->mnt && is_subdir(dentry, root->dentry);
+	return true;
 }
 
 /* Stubbed - not used externally */

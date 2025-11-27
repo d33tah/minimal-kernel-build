@@ -1,3 +1,15 @@
+--- 2025-11-28 00:44 ---
+
+Session status:
+- Kernel-only LOC: 201,487 (down from 209,698 at session start!)
+- Goal: 200K LOC (only 1.49K remaining!)
+- Total reduction this session: ~8.2K LOC
+
+Technique: Used LLVM build with -Wunused-function to identify dead code.
+
+Additional removal:
+- mm/filemap.c: filemap_check_and_keep_errors (~10 LOC)
+
 --- 2025-11-28 00:38 ---
 
 Continuing reduction:

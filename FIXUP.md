@@ -1,3 +1,20 @@
+--- 2025-11-27 08:20 ---
+
+Session progress:
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 256KB
+- Current: 228,158 LOC (cloc)
+- Reduction: 86 LOC this session
+
+Changes:
+- Stubbed mm/swap: put_pages_list, lru_note_cost, deactivate_page, mark_page_lazyfree
+- Stubbed mm/truncate: generic_error_remove_page
+- Stubbed mm/util: folio_copy
+- Stubbed mm/slab_common: kmem_cache_destroy
+- Stubbed fs/libfs: simple_write_to_buffer
+
+Continuing to search for more unused functions to stub.
+
 --- 2025-11-27 08:02 ---
 
 Session start:

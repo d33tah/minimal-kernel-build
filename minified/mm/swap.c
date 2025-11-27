@@ -104,24 +104,9 @@ void __put_page(struct page *page)
 }
 
  
+/* Stub: put_pages_list not used in minimal kernel */
 void put_pages_list(struct list_head *pages)
 {
-	struct page *page, *next;
-
-	list_for_each_entry_safe(page, next, pages, lru) {
-		if (!put_page_testzero(page)) {
-			list_del(&page->lru);
-			continue;
-		}
-		if (PageHead(page)) {
-			list_del(&page->lru);
-			__put_compound_page(page);
-			continue;
-		}
-		 
-	}
-
-	free_unref_page_list(pages);
 	INIT_LIST_HEAD(pages);
 }
 
@@ -199,31 +184,9 @@ void folio_rotate_reclaimable(struct folio *folio)
 	}
 }
 
+/* Stub: lru_note_cost not used externally in minimal kernel */
 void lru_note_cost(struct lruvec *lruvec, bool file, unsigned int nr_pages)
 {
-	do {
-		unsigned long lrusize;
-
-		 
-		spin_lock_irq(&lruvec->lru_lock);
-		 
-		if (file)
-			lruvec->file_cost += nr_pages;
-		else
-			lruvec->anon_cost += nr_pages;
-
-		 
-		lrusize = lruvec_page_state(lruvec, NR_INACTIVE_ANON) +
-			  lruvec_page_state(lruvec, NR_ACTIVE_ANON) +
-			  lruvec_page_state(lruvec, NR_INACTIVE_FILE) +
-			  lruvec_page_state(lruvec, NR_ACTIVE_FILE);
-
-		if (lruvec->file_cost + lruvec->anon_cost > lrusize / 4) {
-			lruvec->file_cost /= 2;
-			lruvec->anon_cost /= 2;
-		}
-		spin_unlock_irq(&lruvec->lru_lock);
-	} while ((lruvec = parent_lruvec(lruvec)));
 }
 
 void lru_note_cost_folio(struct folio *folio) { }
@@ -450,34 +413,15 @@ void deactivate_file_folio(struct folio *folio)
 }
 
  
+/* Stub: deactivate_page not used in minimal kernel */
 void deactivate_page(struct page *page)
 {
-	if (PageLRU(page) && PageActive(page) && !PageUnevictable(page)) {
-		struct pagevec *pvec;
-
-		local_lock(&lru_pvecs.lock);
-		pvec = this_cpu_ptr(&lru_pvecs.lru_deactivate);
-		get_page(page);
-		if (pagevec_add_and_need_flush(pvec, page))
-			pagevec_lru_move_fn(pvec, lru_deactivate_fn);
-		local_unlock(&lru_pvecs.lock);
-	}
 }
 
  
+/* Stub: mark_page_lazyfree not used in minimal kernel */
 void mark_page_lazyfree(struct page *page)
 {
-	if (PageLRU(page) && PageAnon(page) && PageSwapBacked(page) &&
-	    !PageSwapCache(page) && !PageUnevictable(page)) {
-		struct pagevec *pvec;
-
-		local_lock(&lru_pvecs.lock);
-		pvec = this_cpu_ptr(&lru_pvecs.lru_lazyfree);
-		get_page(page);
-		if (pagevec_add_and_need_flush(pvec, page))
-			pagevec_lru_move_fn(pvec, lru_lazyfree_fn);
-		local_unlock(&lru_pvecs.lock);
-	}
 }
 
 void lru_add_drain(void)
@@ -489,14 +433,7 @@ void lru_add_drain(void)
 }
 
  
-static void lru_add_and_bh_lrus_drain(void)
-{
-	local_lock(&lru_pvecs.lock);
-	lru_add_drain_cpu(smp_processor_id());
-	local_unlock(&lru_pvecs.lock);
-	invalidate_bh_lrus_cpu();
-	mlock_page_drain_local();
-}
+/* Stub: lru_add_and_bh_lrus_drain not used in minimal kernel */
 
 void lru_add_drain_cpu_zone(struct zone *zone) { }
 

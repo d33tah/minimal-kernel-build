@@ -676,87 +676,33 @@ void bus_sort_breadthfirst(struct bus_type *bus,
 }
 
  
+/* Stub: subsys_dev_iter_init not used externally */
 void subsys_dev_iter_init(struct subsys_dev_iter *iter, struct bus_type *subsys,
 			  struct device *start, const struct device_type *type)
 {
-	struct klist_node *start_knode = NULL;
-
-	if (start)
-		start_knode = &start->p->knode_bus;
-	klist_iter_init_node(&subsys->p->klist_devices, &iter->ki, start_knode);
-	iter->type = type;
 }
 
  
+/* Stub: subsys_dev_iter_next not used externally */
 struct device *subsys_dev_iter_next(struct subsys_dev_iter *iter)
 {
-	struct klist_node *knode;
-	struct device *dev;
-
-	for (;;) {
-		knode = klist_next(&iter->ki);
-		if (!knode)
-			return NULL;
-		dev = to_device_private_bus(knode)->device;
-		if (!iter->type || iter->type == dev->type)
-			return dev;
-	}
+	return NULL;
 }
 
- 
+/* Stub: subsys_dev_iter_exit not used externally */
 void subsys_dev_iter_exit(struct subsys_dev_iter *iter)
 {
-	klist_iter_exit(&iter->ki);
 }
 
+/* Stub: subsys_interface_register not used externally */
 int subsys_interface_register(struct subsys_interface *sif)
 {
-	struct bus_type *subsys;
-	struct subsys_dev_iter iter;
-	struct device *dev;
-
-	if (!sif || !sif->subsys)
-		return -ENODEV;
-
-	subsys = bus_get(sif->subsys);
-	if (!subsys)
-		return -EINVAL;
-
-	mutex_lock(&subsys->p->mutex);
-	list_add_tail(&sif->node, &subsys->p->interfaces);
-	if (sif->add_dev) {
-		subsys_dev_iter_init(&iter, subsys, NULL, NULL);
-		while ((dev = subsys_dev_iter_next(&iter)))
-			sif->add_dev(dev, sif);
-		subsys_dev_iter_exit(&iter);
-	}
-	mutex_unlock(&subsys->p->mutex);
-
 	return 0;
 }
 
+/* Stub: subsys_interface_unregister not used externally */
 void subsys_interface_unregister(struct subsys_interface *sif)
 {
-	struct bus_type *subsys;
-	struct subsys_dev_iter iter;
-	struct device *dev;
-
-	if (!sif || !sif->subsys)
-		return;
-
-	subsys = sif->subsys;
-
-	mutex_lock(&subsys->p->mutex);
-	list_del_init(&sif->node);
-	if (sif->remove_dev) {
-		subsys_dev_iter_init(&iter, subsys, NULL, NULL);
-		while ((dev = subsys_dev_iter_next(&iter)))
-			sif->remove_dev(dev, sif);
-		subsys_dev_iter_exit(&iter);
-	}
-	mutex_unlock(&subsys->p->mutex);
-
-	bus_put(subsys);
 }
 
 static void system_root_device_release(struct device *dev)
@@ -814,16 +760,11 @@ int subsys_system_register(struct bus_type *subsys,
 }
 
  
+/* Stub: subsys_virtual_register not used externally */
 int subsys_virtual_register(struct bus_type *subsys,
 			    const struct attribute_group **groups)
 {
-	struct kobject *virtual_dir;
-
-	virtual_dir = virtual_device_parent(NULL);
-	if (!virtual_dir)
-		return -ENOMEM;
-
-	return subsys_register(subsys, groups, virtual_dir);
+	return 0;
 }
 
 int __init buses_init(void)

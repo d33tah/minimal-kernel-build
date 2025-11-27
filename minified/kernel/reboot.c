@@ -304,144 +304,17 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 	return ret;
 }
 
-static void deferred_cad(struct work_struct *dummy)
-{
-	kernel_restart(NULL);
-}
+/* Stub: ctrl_alt_del not needed in minimal kernel */
+void ctrl_alt_del(void) { }
 
- 
-void ctrl_alt_del(void)
-{
-	static DECLARE_WORK(cad_work, deferred_cad);
+/* Stub: orderly_poweroff not needed in minimal kernel */
+void orderly_poweroff(bool force) { }
 
-	if (C_A_D)
-		schedule_work(&cad_work);
-	else
-		kill_cad_pid(SIGINT, 1);
-}
+/* Stub: orderly_reboot not needed in minimal kernel */
+void orderly_reboot(void) { }
 
-#define POWEROFF_CMD_PATH_LEN  256
-static char poweroff_cmd[POWEROFF_CMD_PATH_LEN] = "/sbin/poweroff";
-static const char reboot_cmd[] = "/sbin/reboot";
-
-static int run_cmd(const char *cmd)
-{
-	char **argv;
-	static char *envp[] = {
-		"HOME=/",
-		"PATH=/sbin:/bin:/usr/sbin:/usr/bin",
-		NULL
-	};
-	int ret;
-	argv = argv_split(GFP_KERNEL, cmd, NULL);
-	if (argv) {
-		ret = call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
-		argv_free(argv);
-	} else {
-		ret = -ENOMEM;
-	}
-
-	return ret;
-}
-
-static int __orderly_reboot(void)
-{
-	int ret;
-
-	ret = run_cmd(reboot_cmd);
-
-	if (ret) {
-		emergency_sync();
-		kernel_restart(NULL);
-	}
-
-	return ret;
-}
-
-static int __orderly_poweroff(bool force)
-{
-	int ret;
-
-	ret = run_cmd(poweroff_cmd);
-
-	if (ret && force) {
-		 
-		emergency_sync();
-		kernel_power_off();
-	}
-
-	return ret;
-}
-
-static bool poweroff_force;
-
-static void poweroff_work_func(struct work_struct *work)
-{
-	__orderly_poweroff(poweroff_force);
-}
-
-static DECLARE_WORK(poweroff_work, poweroff_work_func);
-
- 
-void orderly_poweroff(bool force)
-{
-	if (force)  
-		poweroff_force = true;
-	schedule_work(&poweroff_work);
-}
-
-static void reboot_work_func(struct work_struct *work)
-{
-	__orderly_reboot();
-}
-
-static DECLARE_WORK(reboot_work, reboot_work_func);
-
- 
-void orderly_reboot(void)
-{
-	schedule_work(&reboot_work);
-}
-
- 
-static void hw_failure_emergency_poweroff_func(struct work_struct *work)
-{
-	 
-	pr_emerg("Hardware protection timed-out. Trying forced poweroff\n");
-	kernel_power_off();
-
-	 
-	pr_emerg("Hardware protection shutdown failed. Trying emergency restart\n");
-	emergency_restart();
-}
-
-static DECLARE_DELAYED_WORK(hw_failure_emergency_poweroff_work,
-			    hw_failure_emergency_poweroff_func);
-
- 
-static void hw_failure_emergency_poweroff(int poweroff_delay_ms)
-{
-	if (poweroff_delay_ms <= 0)
-		return;
-	schedule_delayed_work(&hw_failure_emergency_poweroff_work,
-			      msecs_to_jiffies(poweroff_delay_ms));
-}
-
- 
-void hw_protection_shutdown(const char *reason, int ms_until_forced)
-{
-	static atomic_t allow_proceed = ATOMIC_INIT(1);
-
-	pr_emerg("HARDWARE PROTECTION shutdown (%s)\n", reason);
-
-	 
-	if (!atomic_dec_and_test(&allow_proceed))
-		return;
-
-	 
-	hw_failure_emergency_poweroff(ms_until_forced);
-	orderly_poweroff(true);
-}
+/* Stub: hw_protection_shutdown not needed in minimal kernel */
+void hw_protection_shutdown(const char *reason, int ms_until_forced) { }
 
 static int __init reboot_setup(char *str)
 {

@@ -1,3 +1,19 @@
+--- 2025-11-27 17:05 ---
+
+Session progress (continued):
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 253KB
+- Current: 219,854 LOC (cloc after make mrproper)
+- Without scripts: 201,764 LOC
+- Goal: 200K LOC (~1,764 LOC over target for kernel-only code)
+
+Reductions this session:
+- kernel/reboot.c: Stubbed ctrl_alt_del, orderly_poweroff, orderly_reboot,
+  hw_protection_shutdown and helper functions (~130 LOC)
+- mm/backing-dev.c: Stubbed wb_wakeup_delayed and bdi_set_owner (~17 LOC)
+
+Most functions already stubbed from previous sessions. The codebase is very lean.
+
 --- 2025-11-27 16:45 ---
 
 Session summary:

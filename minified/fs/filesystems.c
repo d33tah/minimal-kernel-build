@@ -66,25 +66,10 @@ int register_filesystem(struct file_system_type * fs)
 
  
  
+/* Stub: unregister_filesystem not used externally */
 int unregister_filesystem(struct file_system_type * fs)
 {
-	struct file_system_type ** tmp;
-
-	write_lock(&file_systems_lock);
-	tmp = &file_systems;
-	while (*tmp) {
-		if (fs == *tmp) {
-			*tmp = fs->next;
-			fs->next = NULL;
-			write_unlock(&file_systems_lock);
-			synchronize_rcu();
-			return 0;
-		}
-		tmp = &(*tmp)->next;
-	}
-	write_unlock(&file_systems_lock);
-
-	return -EINVAL;
+	return 0;
 }
 
 

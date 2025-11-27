@@ -261,10 +261,8 @@ const char *print_tainted(void)
 	return "";
 }
 
-int test_taint(unsigned flag)
-{
-	return test_bit(flag, &tainted_mask);
-}
+/* Stub: test_taint not used externally */
+int test_taint(unsigned flag) { return 0; }
 
 unsigned long get_taint(void)
 {

@@ -1,5 +1,19 @@
 # Doubts and Issues
 
+## 2025-11-27 23:00
+
+### GitLab Access Issue (confirmed)
+- glab api projects/d33tah%2Fminimal-kernel-build returns 404 Project Not Found
+- glab is configured for gitlab.profound.net with token
+- User is 'claude' but project d33tah/minimal-kernel-build doesn't exist or no access
+- All pushes going to GitHub only
+- CI verification blocked - cannot run glab ci status
+
+### Action taken
+- All changes committed to GitHub
+- Local make vm passes (Hello World! printed)
+- Waiting for instructions on GitLab access
+
 ## 2025-11-27 22:55
 
 ### GitLab Access Issue

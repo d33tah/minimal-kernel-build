@@ -1528,40 +1528,8 @@ bool is_kernel_percpu_address(unsigned long addr)
 	return __is_kernel_percpu_address(addr, NULL);
 }
 
-phys_addr_t per_cpu_ptr_to_phys(void *addr)
-{
-	void __percpu *base = __addr_to_pcpu_ptr(pcpu_base_addr);
-	bool in_first_chunk = false;
-	unsigned long first_low, first_high;
-	unsigned int cpu;
-
-	
-	first_low = (unsigned long)pcpu_base_addr +
-		    pcpu_unit_page_offset(pcpu_low_unit_cpu, 0);
-	first_high = (unsigned long)pcpu_base_addr +
-		     pcpu_unit_page_offset(pcpu_high_unit_cpu, pcpu_unit_pages);
-	if ((unsigned long)addr >= first_low &&
-	    (unsigned long)addr < first_high) {
-		for_each_possible_cpu(cpu) {
-			void *start = per_cpu_ptr(base, cpu);
-
-			if (addr >= start && addr < start + pcpu_unit_size) {
-				in_first_chunk = true;
-				break;
-			}
-		}
-	}
-
-	if (in_first_chunk) {
-		if (!is_vmalloc_addr(addr))
-			return __pa(addr);
-		else
-			return page_to_phys(vmalloc_to_page(addr)) +
-			       offset_in_page(addr);
-	} else
-		return page_to_phys(pcpu_addr_to_page(addr)) +
-		       offset_in_page(addr);
-}
+/* Stub: per_cpu_ptr_to_phys not used in minimal kernel */
+phys_addr_t per_cpu_ptr_to_phys(void *addr) { return __pa(addr); }
 
 struct pcpu_alloc_info * __init pcpu_alloc_alloc_info(int nr_groups,
 						      int nr_units)

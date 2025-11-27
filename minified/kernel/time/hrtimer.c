@@ -319,22 +319,6 @@ hrtimer_force_reprogram(struct hrtimer_cpu_base *cpu_base, int skip_equal)
 static inline int hrtimer_is_hres_enabled(void) { return 0; }
 static inline void hrtimer_switch_to_hres(void) { }
 
-static void retrigger_next_event(void *arg)
-{
-	struct hrtimer_cpu_base *base = this_cpu_ptr(&hrtimer_bases);
-
-	if (!__hrtimer_hres_active(base) && !tick_nohz_active)
-		return;
-
-	raw_spin_lock(&base->lock);
-	hrtimer_update_base(base);
-	if (__hrtimer_hres_active(base))
-		hrtimer_force_reprogram(base, 0);
-	else
-		hrtimer_update_next_event(base);
-	raw_spin_unlock(&base->lock);
-}
-
 static void hrtimer_reprogram(struct hrtimer *timer, bool reprogram)
 {
 	struct hrtimer_cpu_base *cpu_base = this_cpu_ptr(&hrtimer_bases);
@@ -378,76 +362,9 @@ static void hrtimer_reprogram(struct hrtimer *timer, bool reprogram)
 	__hrtimer_reprogram(cpu_base, timer, expires);
 }
 
-static bool update_needs_ipi(struct hrtimer_cpu_base *cpu_base,
-			     unsigned int active)
-{
-	struct hrtimer_clock_base *base;
-	unsigned int seq;
-	ktime_t expires;
-
-	seq = cpu_base->clock_was_set_seq;
-	hrtimer_update_base(cpu_base);
-
-	if (seq == cpu_base->clock_was_set_seq)
-		return false;
-
-	if (cpu_base->in_hrtirq)
-		return false;
-
-	active &= cpu_base->active_bases;
-
-	for_each_active_base(base, cpu_base, active) {
-		struct timerqueue_node *next;
-
-		next = timerqueue_getnext(&base->active);
-		expires = ktime_sub(next->expires, base->offset);
-		if (expires < cpu_base->expires_next)
-			return true;
-
-		if (base->clockid < HRTIMER_BASE_MONOTONIC_SOFT)
-			continue;
-		if (cpu_base->softirq_activated)
-			continue;
-		if (expires < cpu_base->softirq_expires_next)
-			return true;
-	}
-	return false;
-}
-
+/* Stub: clock_was_set simplified for minimal kernel */
 void clock_was_set(unsigned int bases)
 {
-	struct hrtimer_cpu_base *cpu_base = raw_cpu_ptr(&hrtimer_bases);
-	cpumask_var_t mask;
-	int cpu;
-
-	if (!__hrtimer_hres_active(cpu_base) && !tick_nohz_active)
-		goto out_timerfd;
-
-	if (!zalloc_cpumask_var(&mask, GFP_KERNEL)) {
-		on_each_cpu(retrigger_next_event, NULL, 1);
-		goto out_timerfd;
-	}
-
-	cpus_read_lock();
-	for_each_online_cpu(cpu) {
-		unsigned long flags;
-
-		cpu_base = &per_cpu(hrtimer_bases, cpu);
-		raw_spin_lock_irqsave(&cpu_base->lock, flags);
-
-		if (update_needs_ipi(cpu_base, bases))
-			cpumask_set_cpu(cpu, mask);
-
-		raw_spin_unlock_irqrestore(&cpu_base->lock, flags);
-	}
-
-	preempt_disable();
-	smp_call_function_many(mask, retrigger_next_event, NULL, 1);
-	preempt_enable();
-	cpus_read_unlock();
-	free_cpumask_var(mask);
-
-out_timerfd:
 	timerfd_clock_was_set();
 }
 

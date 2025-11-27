@@ -222,16 +222,6 @@ int filemap_check_errors(struct address_space *mapping)
 	return ret;
 }
 
-static int filemap_check_and_keep_errors(struct address_space *mapping)
-{
-	
-	if (test_bit(AS_EIO, &mapping->flags))
-		return -EIO;
-	if (test_bit(AS_ENOSPC, &mapping->flags))
-		return -ENOSPC;
-	return 0;
-}
-
 int filemap_fdatawrite_wbc(struct address_space *mapping,
 			   struct writeback_control *wbc)
 {

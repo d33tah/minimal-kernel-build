@@ -1,3 +1,12 @@
+--- 2025-11-27 18:51 ---
+
+Session progress (continued):
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 252KB
+
+Additional stubs:
+- mm/util.c: vm_memory_committed (~3 LOC)
+
 --- 2025-11-27 18:46 ---
 
 Session progress (continued):

@@ -492,11 +492,8 @@ unsigned long vm_commit_limit(void)
  
 struct percpu_counter vm_committed_as ____cacheline_aligned_in_smp;
 
- 
-unsigned long vm_memory_committed(void)
-{
-	return percpu_counter_sum_positive(&vm_committed_as);
-}
+/* Stub: vm_memory_committed not used in minimal kernel */
+unsigned long vm_memory_committed(void) { return 0; }
 
  
 int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)

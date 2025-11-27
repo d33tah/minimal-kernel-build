@@ -132,18 +132,14 @@ void __init use_tpause_delay(void)
 	delay_fn = delay_halt;
 }
 
+/* Stub: use_mwaitx_delay not used in minimal kernel */
 void use_mwaitx_delay(void)
 {
-	delay_halt_fn = delay_halt_mwaitx;
-	delay_fn = delay_halt;
 }
 
+/* Stub: read_current_timer not used in minimal kernel */
 int read_current_timer(unsigned long *timer_val)
 {
-	if (delay_fn == delay_tsc) {
-		*timer_val = rdtsc();
-		return 0;
-	}
 	return -1;
 }
 

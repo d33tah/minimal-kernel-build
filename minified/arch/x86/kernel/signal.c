@@ -551,20 +551,9 @@ void arch_do_signal_or_restart(struct pt_regs *regs)
 	restore_saved_sigmask();
 }
 
+/* Stub: signal_fault not used externally */
 void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
 {
-	struct task_struct *me = current;
-
-	if (show_unhandled_signals && printk_ratelimit()) {
-		printk("%s"
-		       "%s[%d] bad frame in %s frame:%p ip:%lx sp:%lx orax:%lx",
-		       task_pid_nr(current) > 1 ? KERN_INFO : KERN_EMERG,
-		       me->comm, me->pid, where, frame,
-		       regs->ip, regs->sp, regs->orig_ax);
-		print_vma_addr(KERN_CONT " in ", regs->ip);
-		pr_cont("\n");
-	}
-
 	force_sig(SIGSEGV);
 }
 

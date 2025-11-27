@@ -152,17 +152,8 @@ static int __init default_bdi_init(void)
 }
 subsys_initcall(default_bdi_init);
 
- 
-void wb_wakeup_delayed(struct bdi_writeback *wb)
-{
-	unsigned long timeout;
-
-	timeout = msecs_to_jiffies(dirty_writeback_interval * 10);
-	spin_lock_bh(&wb->work_lock);
-	if (test_bit(WB_registered, &wb->state))
-		queue_delayed_work(bdi_wq, &wb->dwork, timeout);
-	spin_unlock_bh(&wb->work_lock);
-}
+/* Stub: wb_wakeup_delayed not used in minimal kernel */
+void wb_wakeup_delayed(struct bdi_writeback *wb) { }
 
 static void wb_update_bandwidth_workfn(struct work_struct *work)
 {
@@ -399,12 +390,8 @@ int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...)
 	return ret;
 }
 
-void bdi_set_owner(struct backing_dev_info *bdi, struct device *owner)
-{
-	WARN_ON_ONCE(bdi->owner);
-	bdi->owner = owner;
-	get_device(owner);
-}
+/* Stub: bdi_set_owner not used in minimal kernel */
+void bdi_set_owner(struct backing_dev_info *bdi, struct device *owner) { }
 
  
 static void bdi_remove_from_list(struct backing_dev_info *bdi)

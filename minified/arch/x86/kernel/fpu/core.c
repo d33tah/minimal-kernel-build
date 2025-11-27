@@ -348,10 +348,11 @@ int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 }
 
  
+/* Stub: fpu_thread_struct_whitelist not used externally */
 void fpu_thread_struct_whitelist(unsigned long *offset, unsigned long *size)
 {
-	*offset = offsetof(struct thread_struct, fpu.__fpstate.regs);
-	*size = fpu_kernel_cfg.default_size;
+	*offset = 0;
+	*size = 0;
 }
 
  

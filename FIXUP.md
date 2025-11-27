@@ -1,3 +1,19 @@
+--- 2025-11-27 15:35 ---
+
+Session progress (continued):
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 253KB
+- Current: 210,969 LOC (cloc after make mrproper)
+- Reduction this session: 287 LOC (211,256 -> 210,969)
+- Goal: 200K LOC - ~11K LOC above target
+
+Additional reductions:
+- kernel/signal.c: __kill_pgrp_info stubbed (~10 LOC)
+- fs/inode.c: ilookup5 stubbed (~10 LOC)
+
+CI: PASSING on GitHub Actions (verified)
+PR #10 is open and ready for review (not a draft)
+
 --- 2025-11-27 15:10 ---
 
 Session summary:

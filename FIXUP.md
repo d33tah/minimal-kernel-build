@@ -1,3 +1,22 @@
+--- 2025-11-27 06:41 ---
+
+Session progress:
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 257KB
+- Current: 211,906 LOC (cloc after mrproper)
+- Started: 211,939 LOC
+- Reduction: 33 LOC
+
+Stubbed functions:
+- strspn (~5 LOC) - lib/string.c - only used in scripts/, not kernel
+- tasklet_setup, tasklet_init (~12 LOC) - kernel/softirq.c
+- kthread_is_per_cpu (~3 LOC) - kernel/kthread.c
+- cpu_mitigations_off, cpu_mitigations_auto_nosmt - kernel/cpu.c
+- tick_is_oneshot_available (~6 LOC) - kernel/time/tick-common.c
+- __hrtimer_get_remaining (~9 LOC) - kernel/time/hrtimer.c
+
+Continuing to search for more candidates...
+
 --- 2025-11-27 06:11 ---
 
 Session start:

@@ -469,23 +469,8 @@ void kset_unregister(struct kset *k)
 }
 
  
-struct kobject *kset_find_obj(struct kset *kset, const char *name)
-{
-	struct kobject *k;
-	struct kobject *ret = NULL;
-
-	spin_lock(&kset->list_lock);
-
-	list_for_each_entry(k, &kset->list, entry) {
-		if (kobject_name(k) && !strcmp(kobject_name(k), name)) {
-			ret = kobject_get_unless_zero(k);
-			break;
-		}
-	}
-
-	spin_unlock(&kset->list_lock);
-	return ret;
-}
+/* Stub: kset_find_obj not used in minimal kernel */
+struct kobject *kset_find_obj(struct kset *kset, const char *name) { return NULL; }
 
 static void kset_release(struct kobject *kobj)
 {

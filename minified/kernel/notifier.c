@@ -73,23 +73,6 @@ static int notifier_call_chain(struct notifier_block **nl,
 }
 NOKPROBE_SYMBOL(notifier_call_chain);
 
- 
-static int notifier_call_chain_robust(struct notifier_block **nl,
-				     unsigned long val_up, unsigned long val_down,
-				     void *v)
-{
-	int ret, nr = 0;
-
-	ret = notifier_call_chain(nl, val_up, v, -1, &nr);
-	if (ret & NOTIFY_STOP_MASK)
-		notifier_call_chain(nl, val_down, v, nr-1, NULL);
-
-	return ret;
-}
-
- 
-
- 
 int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
 		struct notifier_block *n)
 {

@@ -1,3 +1,15 @@
+--- 2025-11-28 00:38 ---
+
+Continuing reduction:
+- Kernel-only LOC: 201,495 (down from 201,593)
+- Goal: 200K LOC (only 1.5K remaining!)
+
+Removed more unused static functions:
+- kernel/exit.c: will_become_orphaned_pgrp (~18 LOC)
+- kernel/resource.c: simple_align_resource, __find_resource, find_resource (~80 LOC)
+- kernel/signal.c: __dequeue_signal (~10 LOC)
+- kernel/notifier.c: notifier_call_chain_robust (~14 LOC)
+
 --- 2025-11-28 00:34 ---
 
 Continuing reduction:

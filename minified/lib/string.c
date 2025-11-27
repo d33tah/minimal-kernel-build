@@ -308,16 +308,10 @@ size_t strnlen(const char *s, size_t count)
 #endif
 
 #ifndef __HAVE_ARCH_STRSPN
- 
+/* Stub: strspn not used in kernel proper (only in scripts/) */
 size_t strspn(const char *s, const char *accept)
 {
-	const char *p;
-
-	for (p = s; *p != '\0'; ++p) {
-		if (!strchr(accept, *p))
-			break;
-	}
-	return p - s;
+	return 0;
 }
 #endif
 

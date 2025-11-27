@@ -1,3 +1,24 @@
+--- 2025-11-27 22:35 ---
+
+Session progress:
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 251KB (down from 252KB)
+- Kernel-only LOC: 210,456 (after mrproper)
+- Total LOC: 227,242
+- Goal: 200K LOC (~10.4K above target)
+
+Commits this session:
+1. mm/memory.c: Stubbed vmf_insert_mixed and related page insert functions (~150 LOC)
+   - Removed: validate_page_before_insert, insert_page_into_pte_locked, insert_page,
+     insert_page_in_batch_locked, insert_pages, vm_mixed_ok, __vm_insert_mixed
+   - vmf_insert_pfn still present (used by vdso/vma.c)
+2. mm/slub.c: Stubbed bulk slab alloc/free (~95 LOC)
+   - Removed: build_detached_freelist function and detached_freelist struct
+   - kmem_cache_free_bulk simplified to loop calling kmem_cache_free
+
+Still searching for more reduction opportunities. Most obvious stubs already done.
+Next: Looking at larger subsystems for more aggressive reduction.
+
 --- 2025-11-27 22:22 ---
 
 New session start:

@@ -467,48 +467,21 @@ dma_addr_t dma_direct_map_resource(struct device *dev, phys_addr_t paddr,
 	return dma_addr;
 }
 
+/* Stub: dma_direct_get_sgtable not used in minimal kernel */
 int dma_direct_get_sgtable(struct device *dev, struct sg_table *sgt,
 		void *cpu_addr, dma_addr_t dma_addr, size_t size,
 		unsigned long attrs)
-{
-	struct page *page = dma_direct_to_page(dev, dma_addr);
-	int ret;
+{ return -ENXIO; }
 
-	ret = sg_alloc_table(sgt, 1, GFP_KERNEL);
-	if (!ret)
-		sg_set_page(sgt->sgl, page, PAGE_ALIGN(size), 0);
-	return ret;
-}
-
+/* Stub: dma_direct_can_mmap not used in minimal kernel */
 bool dma_direct_can_mmap(struct device *dev)
-{
-	return dev_is_dma_coherent(dev) ||
-		IS_ENABLED(CONFIG_DMA_NONCOHERENT_MMAP);
-}
+{ return false; }
 
+/* Stub: dma_direct_mmap not used in minimal kernel */
 int dma_direct_mmap(struct device *dev, struct vm_area_struct *vma,
 		void *cpu_addr, dma_addr_t dma_addr, size_t size,
 		unsigned long attrs)
-{
-	unsigned long user_count = vma_pages(vma);
-	unsigned long count = PAGE_ALIGN(size) >> PAGE_SHIFT;
-	unsigned long pfn = PHYS_PFN(dma_to_phys(dev, dma_addr));
-	int ret = -ENXIO;
-
-	vma->vm_page_prot = dma_pgprot(dev, vma->vm_page_prot, attrs);
-	if (force_dma_unencrypted(dev))
-		vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
-
-	if (dma_mmap_from_dev_coherent(dev, vma, cpu_addr, size, &ret))
-		return ret;
-	if (dma_mmap_from_global_coherent(vma, cpu_addr, size, &ret))
-		return ret;
-
-	if (vma->vm_pgoff >= count || user_count > count - vma->vm_pgoff)
-		return -ENXIO;
-	return remap_pfn_range(vma, vma->vm_start, pfn + vma->vm_pgoff,
-			user_count << PAGE_SHIFT, vma->vm_page_prot);
-}
+{ return -ENXIO; }
 
 int dma_direct_supported(struct device *dev, u64 mask)
 {
@@ -539,28 +512,7 @@ bool dma_direct_need_sync(struct device *dev, dma_addr_t dma_addr)
 	       is_swiotlb_buffer(dev, dma_to_phys(dev, dma_addr));
 }
 
- 
+/* Stub: dma_direct_set_offset not used in minimal kernel */
 int dma_direct_set_offset(struct device *dev, phys_addr_t cpu_start,
 			 dma_addr_t dma_start, u64 size)
-{
-	struct bus_dma_region *map;
-	u64 offset = (u64)cpu_start - (u64)dma_start;
-
-	if (dev->dma_range_map) {
-		dev_err(dev, "attempt to add DMA range to existing map\n");
-		return -EINVAL;
-	}
-
-	if (!offset)
-		return 0;
-
-	map = kcalloc(2, sizeof(*map), GFP_KERNEL);
-	if (!map)
-		return -ENOMEM;
-	map[0].cpu_start = cpu_start;
-	map[0].dma_start = dma_start;
-	map[0].offset = offset;
-	map[0].size = size;
-	dev->dma_range_map = map;
-	return 0;
-}
+{ return 0; }

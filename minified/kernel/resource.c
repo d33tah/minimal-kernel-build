@@ -510,30 +510,9 @@ int insert_resource(struct resource *parent, struct resource *new)
 	return conflict ? -EBUSY : 0;
 }
 
- 
+/* Stub: insert_resource_expand_to_fit not used in minimal kernel */
 void insert_resource_expand_to_fit(struct resource *root, struct resource *new)
-{
-	if (new->parent)
-		return;
-
-	write_lock(&resource_lock);
-	for (;;) {
-		struct resource *conflict;
-
-		conflict = __insert_resource(root, new);
-		if (!conflict)
-			break;
-		if (conflict == root)
-			break;
-
-		 
-		if (conflict->start < new->start)
-			new->start = conflict->start;
-		if (conflict->end > new->end)
-			new->end = conflict->end;
-	}
-	write_unlock(&resource_lock);
-}
+{ }
 
 /* STUB: unused remove/adjust resource functions */
 int remove_resource(struct resource *old) { return -EINVAL; }

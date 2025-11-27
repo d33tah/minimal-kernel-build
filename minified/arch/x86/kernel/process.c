@@ -366,13 +366,8 @@ void speculation_ctrl_update(unsigned long tif)
 	local_irq_restore(flags);
 }
 
- 
-void speculation_ctrl_update_current(void)
-{
-	preempt_disable();
-	speculation_ctrl_update(speculation_ctrl_update_tif(current));
-	preempt_enable();
-}
+/* Stub: speculation_ctrl_update_current not used externally */
+void speculation_ctrl_update_current(void) { }
 
 static inline void cr4_toggle_bits_irqsoff(unsigned long mask)
 {

@@ -1,3 +1,14 @@
+--- 2025-11-27 08:26 ---
+
+Session progress update:
+- make vm: PASSES ✓
+- Binary: 256KB
+- Additional stubs:
+  - arch/x86/lib/delay.c: use_mwaitx_delay, read_current_timer
+  - kernel/rcu/tiny.c: poll_state_synchronize_rcu
+
+Continuing to search for more unused functions.
+
 --- 2025-11-27 08:20 ---
 
 Session progress:

@@ -1,3 +1,22 @@
+--- 2025-11-27 02:50 ---
+
+Session progress:
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 257KB
+- Current: 211,972 LOC (cloc after mrproper)
+- Started: 212,012 LOC
+- Reduced this session: 40 LOC
+
+2 commits pushed stubbing unused functions:
+1. fs/namespace.c: __is_local_mountpoint, is_path_reachable (~18 LOC)
+2. fs/file.c: set_close_on_exec, replace_fd (~22 LOC)
+
+Most easy-to-stub functions have already been stubbed in previous sessions.
+The remaining functions are either:
+- Used internally (can't stub)
+- Already stubbed
+- Part of core functionality needed for boot
+
 --- 2025-11-27 02:25 ---
 
 Session start:

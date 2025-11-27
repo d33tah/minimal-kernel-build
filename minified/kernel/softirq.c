@@ -424,26 +424,16 @@ static __latent_entropy void tasklet_hi_action(struct softirq_action *a)
 	tasklet_action_common(a, this_cpu_ptr(&tasklet_hi_vec), HI_SOFTIRQ);
 }
 
+/* Stub: tasklet_setup not used in minimal kernel */
 void tasklet_setup(struct tasklet_struct *t,
 		   void (*callback)(struct tasklet_struct *))
 {
-	t->next = NULL;
-	t->state = 0;
-	atomic_set(&t->count, 0);
-	t->callback = callback;
-	t->use_callback = true;
-	t->data = 0;
 }
 
+/* Stub: tasklet_init not used in minimal kernel */
 void tasklet_init(struct tasklet_struct *t,
 		  void (*func)(unsigned long), unsigned long data)
 {
-	t->next = NULL;
-	t->state = 0;
-	atomic_set(&t->count, 0);
-	t->func = func;
-	t->use_callback = false;
-	t->data = data;
 }
 
 

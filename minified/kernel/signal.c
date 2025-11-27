@@ -603,19 +603,10 @@ int group_send_sig_info(int sig, struct kernel_siginfo *info,
 	return ret;
 }
 
+/* Stubbed - not used externally */
 int __kill_pgrp_info(int sig, struct kernel_siginfo *info, struct pid *pgrp)
 {
-	struct task_struct *p = NULL;
-	int retval, success;
-
-	success = 0;
-	retval = -ESRCH;
-	do_each_pid_task(pgrp, PIDTYPE_PGID, p) {
-		int err = group_send_sig_info(sig, info, p, PIDTYPE_PGID);
-		success |= !err;
-		retval = err;
-	} while_each_pid_task(pgrp, PIDTYPE_PGID, p);
-	return success ? 0 : retval;
+	return -ESRCH;
 }
 
 int kill_pid_info(int sig, struct kernel_siginfo *info, struct pid *pid)

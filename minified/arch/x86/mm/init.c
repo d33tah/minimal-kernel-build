@@ -553,29 +553,9 @@ void __init poking_init(void)
 }
 
  
+/* Stub: devmem_is_allowed not used in minimal kernel */
 int devmem_is_allowed(unsigned long pagenr)
-{
-	if (region_intersects(PFN_PHYS(pagenr), PAGE_SIZE,
-				IORESOURCE_SYSTEM_RAM, IORES_DESC_NONE)
-			!= REGION_DISJOINT) {
-		 
-		if (pagenr < 256)
-			return 2;
-
-		return 0;
-	}
-
-	 
-	if (iomem_is_exclusive(pagenr << PAGE_SHIFT)) {
-		 
-		if (pagenr < 256)
-			return 1;
-
-		return 0;
-	}
-
-	return 1;
-}
+{ return 1; }
 
 void free_init_pages(const char *what, unsigned long begin, unsigned long end)
 {
@@ -611,18 +591,8 @@ void free_init_pages(const char *what, unsigned long begin, unsigned long end)
 }
 
  
-void free_kernel_image_pages(const char *what, void *begin, void *end)
-{
-	unsigned long begin_ul = (unsigned long)begin;
-	unsigned long end_ul = (unsigned long)end;
-	unsigned long len_pages = (end_ul - begin_ul) >> PAGE_SHIFT;
-
-	free_init_pages(what, begin_ul, end_ul);
-
-	 
-	if (IS_ENABLED(CONFIG_X86_64) && cpu_feature_enabled(X86_FEATURE_PTI))
-		set_memory_np_noalias(begin_ul, len_pages);
-}
+/* Stub: free_kernel_image_pages not called in minimal kernel */
+void free_kernel_image_pages(const char *what, void *begin, void *end) { }
 
 void __ref free_initmem(void)
 {

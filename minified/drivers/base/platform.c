@@ -96,55 +96,10 @@ devm_platform_ioremap_resource_byname(struct platform_device *pdev,
 }
 
  
+/* Stub: platform_get_irq_optional not used externally */
 int platform_get_irq_optional(struct platform_device *dev, unsigned int num)
 {
-	int ret;
-	struct resource *r;
-
-	if (IS_ENABLED(CONFIG_OF_IRQ) && dev->dev.of_node) {
-		ret = of_irq_get(dev->dev.of_node, num);
-		if (ret > 0 || ret == -EPROBE_DEFER)
-			goto out;
-	}
-
-	r = platform_get_resource(dev, IORESOURCE_IRQ, num);
-	if (has_acpi_companion(&dev->dev)) {
-		if (r && r->flags & IORESOURCE_DISABLED) {
-			ret = acpi_irq_get(ACPI_HANDLE(&dev->dev), num, r);
-			if (ret)
-				goto out;
-		}
-	}
-
-	 
-	if (r && r->flags & IORESOURCE_BITS) {
-		struct irq_data *irqd;
-
-		irqd = irq_get_irq_data(r->start);
-		if (!irqd)
-			goto out_not_found;
-		irqd_set_trigger_type(irqd, r->flags & IORESOURCE_BITS);
-	}
-
-	if (r) {
-		ret = r->start;
-		goto out;
-	}
-
-	 
-	if (num == 0 && has_acpi_companion(&dev->dev)) {
-		ret = acpi_dev_gpio_irq_get(ACPI_COMPANION(&dev->dev), num);
-		 
-		if (ret >= 0 || ret == -EPROBE_DEFER)
-			goto out;
-	}
-
-out_not_found:
-	ret = -ENXIO;
-out:
-	if (WARN(!ret, "0 is an invalid IRQ number\n"))
-		return -EINVAL;
-	return ret;
+	return -ENXIO;
 }
 
  
@@ -161,31 +116,10 @@ int platform_get_irq(struct platform_device *dev, unsigned int num)
 }
 
  
+/* Stub: platform_irq_count not used externally */
 int platform_irq_count(struct platform_device *dev)
 {
-	int ret, nr = 0;
-
-	while ((ret = platform_get_irq_optional(dev, nr)) >= 0)
-		nr++;
-
-	if (ret == -EPROBE_DEFER)
-		return ret;
-
-	return nr;
-}
-
-struct irq_affinity_devres {
-	unsigned int count;
-	unsigned int irq[];
-};
-
-static void platform_disable_acpi_irq(struct platform_device *pdev, int index)
-{
-	struct resource *r;
-
-	r = platform_get_resource(pdev, IORESOURCE_IRQ, index);
-	if (r)
-		irqresource_disabled(r, 0);
+	return 0;
 }
 
 int devm_platform_get_irqs_affinity(struct platform_device *dev,
@@ -217,45 +151,17 @@ struct resource *platform_get_resource_byname(struct platform_device *dev,
 	return NULL;
 }
 
-static int __platform_get_irq_byname(struct platform_device *dev,
-				     const char *name)
+/* Stub: platform_get_irq_byname not used externally */
+int platform_get_irq_byname(struct platform_device *dev, const char *name)
 {
-	struct resource *r;
-	int ret;
-
-	if (IS_ENABLED(CONFIG_OF_IRQ) && dev->dev.of_node) {
-		ret = of_irq_get_byname(dev->dev.of_node, name);
-		if (ret > 0 || ret == -EPROBE_DEFER)
-			return ret;
-	}
-
-	r = platform_get_resource_byname(dev, IORESOURCE_IRQ, name);
-	if (r) {
-		if (WARN(!r->start, "0 is an invalid IRQ number\n"))
-			return -EINVAL;
-		return r->start;
-	}
-
 	return -ENXIO;
 }
 
- 
-int platform_get_irq_byname(struct platform_device *dev, const char *name)
-{
-	int ret;
-
-	ret = __platform_get_irq_byname(dev, name);
-	if (ret < 0)
-		return dev_err_probe(&dev->dev, ret, "IRQ %s not found\n",
-				     name);
-	return ret;
-}
-
- 
+/* Stub: platform_get_irq_byname_optional not used externally */
 int platform_get_irq_byname_optional(struct platform_device *dev,
 				     const char *name)
 {
-	return __platform_get_irq_byname(dev, name);
+	return -ENXIO;
 }
 
 /* Stubbed: platform_add_devices not used externally */
@@ -280,10 +186,9 @@ static void setup_pdev_dma_masks(struct platform_device *pdev)
 };
 
  
+/* Stub: platform_device_put not used externally */
 void platform_device_put(struct platform_device *pdev)
 {
-	if (!IS_ERR_OR_NULL(pdev))
-		put_device(&pdev->dev);
 }
 
 static void platform_device_release(struct device *dev)

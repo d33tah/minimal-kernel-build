@@ -152,23 +152,9 @@ void account_process_tick(struct task_struct *p, int user_tick)
 }
 
  
+/* Stub: account_idle_ticks not used in minimal kernel */
 void account_idle_ticks(unsigned long ticks)
 {
-	u64 cputime, steal;
-
-	if (sched_clock_irqtime) {
-		irqtime_account_idle_ticks(ticks);
-		return;
-	}
-
-	cputime = ticks * TICK_NSEC;
-	steal = steal_account_process_time(ULONG_MAX);
-
-	if (steal >= cputime)
-		return;
-
-	cputime -= steal;
-	account_idle_time(cputime);
 }
 
 /* Stubbed: cputime_adjust not used externally */

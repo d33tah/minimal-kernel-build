@@ -454,17 +454,9 @@ int folio_mapcount(struct folio *folio)
 }
 
  
+/* Stub: folio_copy not used in minimal kernel */
 void folio_copy(struct folio *dst, struct folio *src)
 {
-	long i = 0;
-	long nr = folio_nr_pages(src);
-
-	for (;;) {
-		copy_highpage(folio_page(dst, i), folio_page(src, i));
-		if (++i == nr)
-			break;
-		cond_resched();
-	}
 }
 
 int sysctl_overcommit_memory __read_mostly = OVERCOMMIT_GUESS;

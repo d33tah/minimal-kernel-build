@@ -186,16 +186,10 @@ bool truncate_inode_partial_folio(struct folio *folio, loff_t start, loff_t end)
 }
 
  
+/* Stub: generic_error_remove_page not used in minimal kernel */
 int generic_error_remove_page(struct address_space *mapping, struct page *page)
 {
-	VM_BUG_ON_PAGE(PageTail(page), page);
-
-	if (!mapping)
-		return -EINVAL;
-	 
-	if (!S_ISREG(mapping->host->i_mode))
-		return -EIO;
-	return truncate_inode_folio(mapping, page_folio(page));
+	return -EINVAL;
 }
 
 static long mapping_evict_folio(struct address_space *mapping,

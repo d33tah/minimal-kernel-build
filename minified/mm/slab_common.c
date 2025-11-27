@@ -368,24 +368,9 @@ void slab_kmem_cache_release(struct kmem_cache *s)
 	kmem_cache_free(kmem_cache, s);
 }
 
+/* Stub: kmem_cache_destroy not used in minimal kernel */
 void kmem_cache_destroy(struct kmem_cache *s)
 {
-	if (unlikely(!s) || !kasan_check_byte(s))
-		return;
-
-	cpus_read_lock();
-	mutex_lock(&slab_mutex);
-
-	s->refcount--;
-	if (s->refcount)
-		goto out_unlock;
-
-	WARN(shutdown_cache(s),
-	     "%s %s: Slab cache still has objects when called from %pS",
-	     __func__, s->name, (void *)_RET_IP_);
-out_unlock:
-	mutex_unlock(&slab_mutex);
-	cpus_read_unlock();
 }
 
  

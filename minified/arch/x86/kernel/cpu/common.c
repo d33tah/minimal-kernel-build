@@ -501,46 +501,16 @@ static void get_model_name(struct cpuinfo_x86 *c)
 	*(s + 1) = '\0';
 }
 
+/* Stub: detect_num_cpu_cores not called in minimal kernel */
 void detect_num_cpu_cores(struct cpuinfo_x86 *c)
 {
-	unsigned int eax, ebx, ecx, edx;
-
 	c->x86_max_cores = 1;
-	if (!IS_ENABLED(CONFIG_SMP) || c->cpuid_level < 4)
-		return;
-
-	cpuid_count(4, 0, &eax, &ebx, &ecx, &edx);
-	if (eax & 0x1f)
-		c->x86_max_cores = (eax >> 26) + 1;
 }
 
+/* Stub: cpu_detect_cache_sizes not called in minimal kernel */
 void cpu_detect_cache_sizes(struct cpuinfo_x86 *c)
 {
-	unsigned int n, dummy, ebx, ecx, edx, l2size;
-
-	n = c->extended_cpuid_level;
-
-	if (n >= 0x80000005) {
-		cpuid(0x80000005, &dummy, &ebx, &ecx, &edx);
-		c->x86_cache_size = (ecx>>24) + (edx>>24);
-	}
-
-	if (n < 0x80000006)	
-		return;
-
-	cpuid(0x80000006, &dummy, &ebx, &ecx, &edx);
-	l2size = ecx >> 16;
-
-	if (this_cpu->legacy_cache_size)
-		l2size = this_cpu->legacy_cache_size(c, l2size);
-
-	if (cachesize_override != -1)
-		l2size = cachesize_override;
-
-	if (l2size == 0)
-		return;		
-
-	c->x86_cache_size = l2size;
+	c->x86_cache_size = 0;
 }
 
 u16 __read_mostly tlb_lli_4k[NR_INFO];

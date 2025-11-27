@@ -579,24 +579,11 @@ ssize_t simple_read_from_buffer(void __user *to, size_t count, loff_t *ppos,
 }
 
  
+/* Stub: simple_write_to_buffer not used in minimal kernel */
 ssize_t simple_write_to_buffer(void *to, size_t available, loff_t *ppos,
 		const void __user *from, size_t count)
 {
-	loff_t pos = *ppos;
-	size_t res;
-
-	if (pos < 0)
-		return -EINVAL;
-	if (pos >= available || !count)
-		return 0;
-	if (count > available - pos)
-		count = available - pos;
-	res = copy_from_user(to + pos, from, count);
-	if (res == count)
-		return -EFAULT;
-	count -= res;
-	*ppos = pos + count;
-	return count;
+	return -EINVAL;
 }
 
  

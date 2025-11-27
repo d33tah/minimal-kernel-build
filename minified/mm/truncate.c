@@ -561,16 +561,5 @@ void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to)
 }
 
  
-void truncate_pagecache_range(struct inode *inode, loff_t lstart, loff_t lend)
-{
-	struct address_space *mapping = inode->i_mapping;
-	loff_t unmap_start = round_up(lstart, PAGE_SIZE);
-	loff_t unmap_end = round_down(1 + lend, PAGE_SIZE) - 1;
-	 
-
-	 
-	if ((u64)unmap_end > (u64)unmap_start)
-		unmap_mapping_range(mapping, unmap_start,
-				    1 + unmap_end - unmap_start, 0);
-	truncate_inode_pages_range(mapping, lstart, lend);
-}
+/* Stub: truncate_pagecache_range not used in minimal kernel */
+void truncate_pagecache_range(struct inode *inode, loff_t lstart, loff_t lend) { }

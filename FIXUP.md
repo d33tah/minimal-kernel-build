@@ -1,15 +1,17 @@
---- 2025-11-27 02:50 ---
+--- 2025-11-27 02:55 ---
 
-Session progress:
+Session complete - CI PASSING
 - make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
 - Binary: 257KB
-- Current: 211,972 LOC (cloc after mrproper)
+- Final: 211,954 LOC (cloc after mrproper)
 - Started: 212,012 LOC
-- Reduced this session: 40 LOC
+- Reduced this session: 58 LOC
 
-2 commits pushed stubbing unused functions:
+5 commits pushed stubbing unused functions:
 1. fs/namespace.c: __is_local_mountpoint, is_path_reachable (~18 LOC)
 2. fs/file.c: set_close_on_exec, replace_fd (~22 LOC)
+3. kernel/time/timekeeping.c: timekeeping_max_deferment (~10 LOC)
+4. kernel/sched/cputime.c: account_idle_ticks (~15 LOC)
 
 Most easy-to-stub functions have already been stubbed in previous sessions.
 The remaining functions are either:

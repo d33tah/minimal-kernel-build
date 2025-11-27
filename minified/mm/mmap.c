@@ -620,20 +620,10 @@ static inline unsigned long round_hint_to_min(unsigned long hint)
 	return hint;
 }
 
+/* Stub: mlock_future_check not used externally */
 int mlock_future_check(struct mm_struct *mm, unsigned long flags,
 		       unsigned long len)
 {
-	unsigned long locked, lock_limit;
-
-	
-	if (flags & VM_LOCKED) {
-		locked = len >> PAGE_SHIFT;
-		locked += mm->locked_vm;
-		lock_limit = rlimit(RLIMIT_MEMLOCK);
-		lock_limit >>= PAGE_SHIFT;
-		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
-			return -EAGAIN;
-	}
 	return 0;
 }
 
@@ -1744,36 +1734,15 @@ struct vm_area_struct *copy_vma(struct vm_area_struct **vmap,
 	unsigned long addr, unsigned long len, pgoff_t pgoff,
 	bool *need_rmap_locks) { return NULL; }
 
+/* Stub: may_expand_vm not used externally */
 bool may_expand_vm(struct mm_struct *mm, vm_flags_t flags, unsigned long npages)
 {
-	if (mm->total_vm + npages > rlimit(RLIMIT_AS) >> PAGE_SHIFT)
-		return false;
-
-	if (is_data_mapping(flags) &&
-	    mm->data_vm + npages > rlimit(RLIMIT_DATA) >> PAGE_SHIFT) {
-		
-		if (rlimit(RLIMIT_DATA) == 0 &&
-		    mm->data_vm + npages <= rlimit_max(RLIMIT_DATA) >> PAGE_SHIFT)
-			return true;
-
-
-		if (!ignore_rlimit_data)
-			return false;
-	}
-
 	return true;
 }
 
+/* Stub: vm_stat_account not used externally */
 void vm_stat_account(struct mm_struct *mm, vm_flags_t flags, long npages)
 {
-	WRITE_ONCE(mm->total_vm, READ_ONCE(mm->total_vm)+npages);
-
-	if (is_exec_mapping(flags))
-		mm->exec_vm += npages;
-	else if (is_stack_mapping(flags))
-		mm->stack_vm += npages;
-	else if (is_data_mapping(flags))
-		mm->data_vm += npages;
 }
 
 static vm_fault_t special_mapping_fault(struct vm_fault *vmf);

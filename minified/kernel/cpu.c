@@ -587,14 +587,14 @@ static int __init mitigations_parse_cmdline(char *arg)
 }
 early_param("mitigations", mitigations_parse_cmdline);
 
- 
+/* Stub: cpu_mitigations_off not used in minimal kernel */
 bool cpu_mitigations_off(void)
 {
-	return cpu_mitigations == CPU_MITIGATIONS_OFF;
+	return false;
 }
 
- 
+/* Stub: cpu_mitigations_auto_nosmt not used in minimal kernel */
 bool cpu_mitigations_auto_nosmt(void)
 {
-	return cpu_mitigations == CPU_MITIGATIONS_AUTO_NOSMT;
+	return false;
 }

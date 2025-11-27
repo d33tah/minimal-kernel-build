@@ -1,3 +1,36 @@
+--- 2025-11-27 18:40 ---
+
+Session progress:
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 253KB
+- Current: 227,600 LOC (cloc)
+- Kernel-only: 209,510 LOC
+- Session reduction: 21 LOC (227,621 -> 227,600)
+- Goal: 200K LOC - ~9.5K above target for kernel-only code
+
+Functions stubbed this session:
+- fs/file.c: task_lookup_fd_rcu (~10 LOC)
+- fs/file.c: fget_task (~6 LOC)
+- fs/file.c: __close_fd_get_file, close_fd_get_file (~12 LOC)
+- kernel/pid.c: find_get_task_by_vpid (~9 LOC)
+
+Most large functions already stubbed from previous sessions. Finding more opportunities
+is getting harder as low-hanging fruit has been picked.
+
+--- 2025-11-27 18:23 ---
+
+Session start:
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 253KB
+- Current: 227,621 LOC (cloc)
+- Kernel-only (excluding scripts/Documentation): 209,531 LOC
+- Goal: 200K LOC - ~9.5K above target for kernel-only code
+
+Plan:
+- Continue stubbing unused functions
+- Focus on larger subsystems that can be reduced
+- Target header files which are ~3x .c files in count
+
 --- 2025-11-27 17:05 ---
 
 Session progress (continued):

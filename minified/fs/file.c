@@ -558,24 +558,11 @@ int __close_range(unsigned fd, unsigned max_fd, unsigned int flags)
 	return -ENOSYS;
 }
 
- 
-struct file *__close_fd_get_file(unsigned int fd)
-{
-	return pick_file(current->files, fd);
-}
+/* Stub: __close_fd_get_file not used in minimal kernel */
+struct file *__close_fd_get_file(unsigned int fd) { return NULL; }
 
- 
-struct file *close_fd_get_file(unsigned int fd)
-{
-	struct files_struct *files = current->files;
-	struct file *file;
-
-	spin_lock(&files->file_lock);
-	file = pick_file(files, fd);
-	spin_unlock(&files->file_lock);
-
-	return file;
-}
+/* Stub: close_fd_get_file not used in minimal kernel */
+struct file *close_fd_get_file(unsigned int fd) { return NULL; }
 
 void do_close_on_exec(struct files_struct *files)
 {
@@ -675,31 +662,16 @@ struct file *fget_raw(unsigned int fd)
 	return __fget(fd, 0);
 }
 
+/* Stub: fget_task not used in minimal kernel */
 struct file *fget_task(struct task_struct *task, unsigned int fd)
 {
-	struct file *file = NULL;
-
-	task_lock(task);
-	if (task->files)
-		file = __fget_files(task->files, fd, 0);
-	task_unlock(task);
-
-	return file;
+	return NULL;
 }
 
+/* Stub: task_lookup_fd_rcu not used in minimal kernel */
 struct file *task_lookup_fd_rcu(struct task_struct *task, unsigned int fd)
 {
-	 
-	struct files_struct *files;
-	struct file *file = NULL;
-
-	task_lock(task);
-	files = task->files;
-	if (files)
-		file = files_lookup_fd_rcu(files, fd);
-	task_unlock(task);
-
-	return file;
+	return NULL;
 }
 
 /* Stub: task_lookup_next_fd_rcu not used externally */

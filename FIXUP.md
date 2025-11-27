@@ -1,3 +1,31 @@
+--- 2025-11-27 12:20 ---
+
+Session progress:
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 255KB
+- Current: 227,990 LOC (cloc)
+- Reduction: 4 LOC this session so far
+
+Functions stubbed:
+- drivers/base/core.c: device_remove_file_self
+- kernel/printk/printk.c: add_preferred_console
+- fs/super.c: reconfigure_single
+
+Continuing to search for more unused functions.
+
+--- 2025-11-27 12:00 ---
+
+Session start:
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 255KB
+- Current: 227,994 LOC (cloc)
+- Goal: 200K LOC - still ~28K LOC above target
+
+Plan:
+- Continue searching for unused functions to stub
+- Consider more aggressive header trimming or subsystem removal
+- Target larger subsystems
+
 --- 2025-11-27 10:50 ---
 
 Session progress update:

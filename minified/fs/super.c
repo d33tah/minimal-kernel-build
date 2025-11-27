@@ -729,24 +729,11 @@ struct dentry *mount_nodev(struct file_system_type *fs_type,
 	return dget(s->s_root);
 }
 
+/* Stub: reconfigure_single not used externally */
 int reconfigure_single(struct super_block *s,
 		       int flags, void *data)
 {
-	struct fs_context *fc;
-	int ret;
-
-	fc = fs_context_for_reconfigure(s->s_root, flags, MS_RMT_MASK);
-	if (IS_ERR(fc))
-		return PTR_ERR(fc);
-
-	ret = parse_monolithic_mount_data(fc, data);
-	if (ret < 0)
-		goto out;
-
-	ret = reconfigure_super(fc);
-out:
-	put_fs_context(fc);
-	return ret;
+	return 0;
 }
 
 static int compare_single(struct super_block *s, void *p)

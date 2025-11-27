@@ -815,13 +815,11 @@ void device_remove_file(struct device *dev,
 		sysfs_remove_file(&dev->kobj, &attr->attr);
 }
 
+/* Stubbed - not used externally */
 bool device_remove_file_self(struct device *dev,
 			     const struct device_attribute *attr)
 {
-	if (dev)
-		return sysfs_remove_file_self(&dev->kobj, &attr->attr);
-	else
-		return false;
+	return false;
 }
 
 /* Stubbed - not used externally */

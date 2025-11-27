@@ -287,27 +287,10 @@ const struct kernel_param_ops param_ops_bool = {
 	.get = param_get_bool,
 };
 
+/* Stub: param_set_bool_enable_only not used externally */
 int param_set_bool_enable_only(const char *val, const struct kernel_param *kp)
 {
-	int err = 0;
-	bool new_value;
-	bool orig_value = *(bool *)kp->arg;
-	struct kernel_param dummy_kp = *kp;
-
-	dummy_kp.arg = &new_value;
-
-	err = param_set_bool(val, &dummy_kp);
-	if (err)
-		return err;
-
-	 
-	if (!new_value && orig_value)
-		return -EROFS;
-
-	if (new_value)
-		err = param_set_bool(val, kp);
-
-	return err;
+	return param_set_bool(val, kp);
 }
 
 const struct kernel_param_ops param_ops_bool_enable_only = {
@@ -317,22 +300,16 @@ const struct kernel_param_ops param_ops_bool_enable_only = {
 };
 
  
+/* Stub: param_set_invbool not used externally */
 int param_set_invbool(const char *val, const struct kernel_param *kp)
 {
-	int ret;
-	bool boolval;
-	struct kernel_param dummy;
-
-	dummy.arg = &boolval;
-	ret = param_set_bool(val, &dummy);
-	if (ret == 0)
-		*(bool *)kp->arg = !boolval;
-	return ret;
+	return 0;
 }
 
+/* Stub: param_get_invbool not used externally */
 int param_get_invbool(char *buffer, const struct kernel_param *kp)
 {
-	return sprintf(buffer, "%c\n", (*(bool *)kp->arg) ? 'N' : 'Y');
+	return sprintf(buffer, "N\n");
 }
 
 const struct kernel_param_ops param_ops_invbool = {
@@ -340,19 +317,10 @@ const struct kernel_param_ops param_ops_invbool = {
 	.get = param_get_invbool,
 };
 
+/* Stub: param_set_bint not used externally */
 int param_set_bint(const char *val, const struct kernel_param *kp)
 {
-	 
-	struct kernel_param boolkp = *kp;
-	bool v;
-	int ret;
-
-	boolkp.arg = &v;
-
-	ret = param_set_bool(val, &boolkp);
-	if (ret == 0)
-		*(int *)kp->arg = v;
-	return ret;
+	return param_set_bool(val, kp);
 }
 
 const struct kernel_param_ops param_ops_bint = {

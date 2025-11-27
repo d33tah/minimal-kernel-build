@@ -338,26 +338,9 @@ int class_interface_register(struct class_interface *class_intf)
 	return 0;
 }
 
+/* Stub: class_interface_unregister not used externally */
 void class_interface_unregister(struct class_interface *class_intf)
 {
-	struct class *parent = class_intf->class;
-	struct class_dev_iter iter;
-	struct device *dev;
-
-	if (!parent)
-		return;
-
-	mutex_lock(&parent->p->mutex);
-	list_del_init(&class_intf->node);
-	if (class_intf->remove_dev) {
-		class_dev_iter_init(&iter, parent, NULL, NULL);
-		while ((dev = class_dev_iter_next(&iter)))
-			class_intf->remove_dev(dev, class_intf);
-		class_dev_iter_exit(&iter);
-	}
-	mutex_unlock(&parent->p->mutex);
-
-	class_put(parent);
 }
 
 ssize_t show_class_attr_string(struct class *class,
@@ -391,10 +374,9 @@ struct class_compat *class_compat_register(const char *name)
 }
 
  
+/* Stub: class_compat_unregister not used externally */
 void class_compat_unregister(struct class_compat *cls)
 {
-	kobject_put(cls->kobj);
-	kfree(cls);
 }
 
  

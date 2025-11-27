@@ -1288,14 +1288,6 @@ void kmem_cache_free(struct kmem_cache *s, void *x)
 	slab_free(s, virt_to_slab(x), x, NULL, 1, _RET_IP_);
 }
 
-struct detached_freelist {
-	struct slab *slab;
-	void *tail;
-	void *freelist;
-	int cnt;
-	struct kmem_cache *s;
-};
-
 static inline void free_large_kmalloc(struct folio *folio, void *object)
 {
 	unsigned int order = folio_order(folio);
@@ -1309,100 +1301,13 @@ static inline void free_large_kmalloc(struct folio *folio, void *object)
 	__free_pages(folio_page(folio, 0), order);
 }
 
-static inline
-int build_detached_freelist(struct kmem_cache *s, size_t size,
-			    void **p, struct detached_freelist *df)
-{
-	size_t first_skipped_index = 0;
-	int lookahead = 3;
-	void *object;
-	struct folio *folio;
-	struct slab *slab;
-
-	
-	df->slab = NULL;
-
-	do {
-		object = p[--size];
-		
-	} while (!object && size);
-
-	if (!object)
-		return 0;
-
-	folio = virt_to_folio(object);
-	if (!s) {
-		
-		if (unlikely(!folio_test_slab(folio))) {
-			free_large_kmalloc(folio, object);
-			p[size] = NULL; 
-			return size;
-		}
-		
-		slab = folio_slab(folio);
-		df->s = slab->slab_cache;
-	} else {
-		slab = folio_slab(folio);
-		df->s = cache_from_obj(s, object); 
-	}
-
-	if (is_kfence_address(object)) {
-		slab_free_hook(df->s, object, false);
-		__kfence_free(object);
-		p[size] = NULL; 
-		return size;
-	}
-
-	
-	df->slab = slab;
-	set_freepointer(df->s, object, NULL);
-	df->tail = object;
-	df->freelist = object;
-	p[size] = NULL; 
-	df->cnt = 1;
-
-	while (size) {
-		object = p[--size];
-		if (!object)
-			continue; 
-
-		
-		if (df->slab == virt_to_slab(object)) {
-			
-			set_freepointer(df->s, object, df->freelist);
-			df->freelist = object;
-			df->cnt++;
-			p[size] = NULL; 
-
-			continue;
-		}
-
-		
-		if (!--lookahead)
-			break;
-
-		if (!first_skipped_index)
-			first_skipped_index = size + 1;
-	}
-
-	return first_skipped_index;
-}
-
+/* Stub: bulk free not used in minimal kernel */
 void kmem_cache_free_bulk(struct kmem_cache *s, size_t size, void **p)
 {
-	if (WARN_ON(!size))
-		return;
-
-	memcg_slab_free_hook(s, p, size);
-	do {
-		struct detached_freelist df;
-
-		size = build_detached_freelist(s, size, p, &df);
-		if (!df.slab)
-			continue;
-
-		slab_free(df.s, df.slab, df.freelist, df.tail, df.cnt, _RET_IP_);
-	} while (likely(size));
+	size_t i;
+	for (i = 0; i < size; i++)
+		if (p[i])
+			kmem_cache_free(s, p[i]);
 }
 
 int kmem_cache_alloc_bulk(struct kmem_cache *s, gfp_t flags, size_t size,

@@ -967,118 +967,22 @@ pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
 	return pte_alloc_map_lock(mm, pmd, addr, ptl);
 }
 
-static int validate_page_before_insert(struct page *page)
-{
-	if (PageAnon(page) || PageSlab(page) || page_has_type(page))
-		return -EINVAL;
-	flush_dcache_page(page);
-	return 0;
-}
-
-static int insert_page_into_pte_locked(struct vm_area_struct *vma, pte_t *pte,
-			unsigned long addr, struct page *page, pgprot_t prot)
-{
-	if (!pte_none(*pte))
-		return -EBUSY;
-	
-	get_page(page);
-	inc_mm_counter_fast(vma->vm_mm, mm_counter_file(page));
-	page_add_file_rmap(page, vma, false);
-	set_pte_at(vma->vm_mm, addr, pte, mk_pte(page, prot));
-	return 0;
-}
-
-static int insert_page(struct vm_area_struct *vma, unsigned long addr,
-			struct page *page, pgprot_t prot)
-{
-	int retval;
-	pte_t *pte;
-	spinlock_t *ptl;
-
-	retval = validate_page_before_insert(page);
-	if (retval)
-		goto out;
-	retval = -ENOMEM;
-	pte = get_locked_pte(vma->vm_mm, addr, &ptl);
-	if (!pte)
-		goto out;
-	retval = insert_page_into_pte_locked(vma, pte, addr, page, prot);
-	pte_unmap_unlock(pte, ptl);
-out:
-	return retval;
-}
-
-#ifdef pte_index
-static int insert_page_in_batch_locked(struct vm_area_struct *vma, pte_t *pte,
-			unsigned long addr, struct page *page, pgprot_t prot)
-{
-	int err;
-
-	if (!page_count(page))
-		return -EINVAL;
-	err = validate_page_before_insert(page);
-	if (err)
-		return err;
-	return insert_page_into_pte_locked(vma, pte, addr, page, prot);
-}
-
-static int insert_pages(struct vm_area_struct *vma, unsigned long addr,
-			struct page **pages, unsigned long *num, pgprot_t prot)
-{
-	/* Simplified: sequential insertion without batching */
-	pmd_t *pmd;
-	pte_t *pte;
-	spinlock_t *ptl;
-	struct mm_struct *mm = vma->vm_mm;
-	unsigned long i;
-	int ret;
-
-	for (i = 0; i < *num; i++) {
-		pmd = walk_to_pmd(mm, addr);
-		if (!pmd)
-			return -EFAULT;
-
-		if (pte_alloc(mm, pmd))
-			return -ENOMEM;
-
-		pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
-		ret = insert_page_in_batch_locked(vma, pte, addr, pages[i], prot);
-		pte_unmap_unlock(pte, ptl);
-
-		if (ret) {
-			*num = *num - i;
-			return ret;
-		}
-		addr += PAGE_SIZE;
-	}
-	*num = 0;
-	return 0;
-}
-#endif  
-
+/* Stub: insert_page functions not used in minimal kernel */
 int vm_insert_pages(struct vm_area_struct *vma, unsigned long addr,
 			struct page **pages, unsigned long *num)
-{
-	/* Stub: vm_insert_pages not used in minimal kernel */
-	return -EINVAL;
-}
+{ return -EINVAL; }
 
-/* Stub: vm_insert_page not used in minimal kernel */
 int vm_insert_page(struct vm_area_struct *vma, unsigned long addr,
 			struct page *page)
 { return -EINVAL; }
 
-/* Stub: vm_map_pages not used in minimal kernel */
 int vm_map_pages(struct vm_area_struct *vma, struct page **pages,
 				unsigned long num)
 { return -EINVAL; }
 
 int vm_map_pages_zero(struct vm_area_struct *vma, struct page **pages,
 				unsigned long num)
-{
-	/* Stub: vm_map_pages_zero not used in minimal kernel */
-	return -EINVAL;
-}
+{ return -EINVAL; }
 
 static vm_fault_t insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 			pfn_t pfn, pgprot_t prot, bool mkwrite)
@@ -1152,74 +1056,18 @@ vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 	return vmf_insert_pfn_prot(vma, addr, pfn, vma->vm_page_prot);
 }
 
-static bool vm_mixed_ok(struct vm_area_struct *vma, pfn_t pfn)
-{
-	
-	if (vma->vm_flags & VM_MIXEDMAP)
-		return true;
-	if (pfn_t_devmap(pfn))
-		return true;
-	if (pfn_t_special(pfn))
-		return true;
-	if (is_zero_pfn(pfn_t_to_pfn(pfn)))
-		return true;
-	return false;
-}
-
-static vm_fault_t __vm_insert_mixed(struct vm_area_struct *vma,
-		unsigned long addr, pfn_t pfn, pgprot_t pgprot,
-		bool mkwrite)
-{
-	int err;
-
-	BUG_ON(!vm_mixed_ok(vma, pfn));
-
-	if (addr < vma->vm_start || addr >= vma->vm_end)
-		return VM_FAULT_SIGBUS;
-
-	track_pfn_insert(vma, &pgprot, pfn);
-
-	if (!pfn_modify_allowed(pfn_t_to_pfn(pfn), pgprot))
-		return VM_FAULT_SIGBUS;
-
-	
-	if (!IS_ENABLED(CONFIG_ARCH_HAS_PTE_SPECIAL) &&
-	    !pfn_t_devmap(pfn) && pfn_t_valid(pfn)) {
-		struct page *page;
-
-		
-		page = pfn_to_page(pfn_t_to_pfn(pfn));
-		err = insert_page(vma, addr, page, pgprot);
-	} else {
-		return insert_pfn(vma, addr, pfn, pgprot, mkwrite);
-	}
-
-	if (err == -ENOMEM)
-		return VM_FAULT_OOM;
-	if (err < 0 && err != -EBUSY)
-		return VM_FAULT_SIGBUS;
-
-	return VM_FAULT_NOPAGE;
-}
-
+/* Stub: vmf_insert_mixed functions not used in minimal kernel */
 vm_fault_t vmf_insert_mixed_prot(struct vm_area_struct *vma, unsigned long addr,
 				 pfn_t pfn, pgprot_t pgprot)
-{
-	return __vm_insert_mixed(vma, addr, pfn, pgprot, false);
-}
+{ return VM_FAULT_SIGBUS; }
 
 vm_fault_t vmf_insert_mixed(struct vm_area_struct *vma, unsigned long addr,
 		pfn_t pfn)
-{
-	return __vm_insert_mixed(vma, addr, pfn, vma->vm_page_prot, false);
-}
+{ return VM_FAULT_SIGBUS; }
 
-/* STUB: vmf_insert_mixed_mkwrite not used externally */
 vm_fault_t vmf_insert_mixed_mkwrite(struct vm_area_struct *vma,
 		unsigned long addr, pfn_t pfn)
-{
-	return VM_FAULT_SIGBUS;
-}
+{ return VM_FAULT_SIGBUS; }
 
 static int remap_pte_range(struct mm_struct *mm, pmd_t *pmd,
 			unsigned long addr, unsigned long end,

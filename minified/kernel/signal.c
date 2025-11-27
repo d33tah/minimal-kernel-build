@@ -783,19 +783,9 @@ int force_sig_mceerr(int code, void __user *addr, short lsb) { return 0; }
 int send_sig_mceerr(int code, void __user *addr, short lsb, struct task_struct *t) { return 0; }
 int force_sig_bnderr(void __user *addr, void __user *lower, void __user *upper) { return 0; }
 
+/* Stub: PKU signal not used in minimal kernel */
 #ifdef SEGV_PKUERR
-int force_sig_pkuerr(void __user *addr, u32 pkey)
-{
-	struct kernel_siginfo info;
-
-	clear_siginfo(&info);
-	info.si_signo = SIGSEGV;
-	info.si_errno = 0;
-	info.si_code  = SEGV_PKUERR;
-	info.si_addr  = addr;
-	info.si_pkey  = pkey;
-	return force_sig_info(&info);
-}
+int force_sig_pkuerr(void __user *addr, u32 pkey) { return 0; }
 #endif
 
 /* Stub: perf/seccomp/ptrace signals not used in minimal kernel */

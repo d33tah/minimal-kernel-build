@@ -1589,46 +1589,16 @@ static int idle_dummy(void *dummy)
 	return 0;
 }
 
-struct task_struct * __init fork_idle(int cpu)
-{
-	struct task_struct *task;
-	struct kernel_clone_args args = {
-		.flags		= CLONE_VM,
-		.fn		= &idle_dummy,
-		.fn_arg		= NULL,
-		.kthread	= 1,
-		.idle		= 1,
-	};
-
-	task = copy_process(&init_struct_pid, 0, cpu_to_node(cpu), &args);
-	if (!IS_ERR(task)) {
-		init_idle_pids(task);
-		init_idle(task, cpu);
-	}
-
-	return task;
-}
+/* Stub: fork_idle not used in minimal kernel (no SMP support) */
+struct task_struct * __init fork_idle(int cpu) { return ERR_PTR(-EINVAL); }
 
 struct mm_struct *copy_init_mm(void)
 {
 	return dup_mm(NULL, &init_mm);
 }
 
-struct task_struct *create_io_thread(int (*fn)(void *), void *arg, int node)
-{
-	unsigned long flags = CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|
-				CLONE_IO;
-	struct kernel_clone_args args = {
-		.flags		= ((lower_32_bits(flags) | CLONE_VM |
-				    CLONE_UNTRACED) & ~CSIGNAL),
-		.exit_signal	= (lower_32_bits(flags) & CSIGNAL),
-		.fn		= fn,
-		.fn_arg		= arg,
-		.io_thread	= 1,
-	};
-
-	return copy_process(NULL, 0, node, &args);
-}
+/* Stub: create_io_thread not used in minimal kernel */
+struct task_struct *create_io_thread(int (*fn)(void *), void *arg, int node) { return NULL; }
 
 pid_t kernel_clone(struct kernel_clone_args *args)
 {

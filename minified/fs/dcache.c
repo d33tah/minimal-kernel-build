@@ -890,15 +890,8 @@ struct dentry *d_alloc_anon(struct super_block *sb)
 	return __d_alloc(sb, NULL);
 }
 
-struct dentry *d_alloc_cursor(struct dentry * parent)
-{
-	struct dentry *dentry = d_alloc_anon(parent->d_sb);
-	if (dentry) {
-		dentry->d_flags |= DCACHE_DENTRY_CURSOR;
-		dentry->d_parent = dget(parent);
-	}
-	return dentry;
-}
+/* Stub: d_alloc_cursor not used in minimal kernel */
+struct dentry *d_alloc_cursor(struct dentry *parent) { return NULL; }
 
 struct dentry *d_alloc_pseudo(struct super_block *sb, const struct qstr *name)
 {
@@ -908,14 +901,8 @@ struct dentry *d_alloc_pseudo(struct super_block *sb, const struct qstr *name)
 	return dentry;
 }
 
-struct dentry *d_alloc_name(struct dentry *parent, const char *name)
-{
-	struct qstr q;
-
-	q.name = name;
-	q.hash_len = hashlen_string(parent, name);
-	return d_alloc(parent, &q);
-}
+/* Stub: d_alloc_name not used in minimal kernel */
+struct dentry *d_alloc_name(struct dentry *parent, const char *name) { return NULL; }
 
 void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
 {
@@ -1464,35 +1451,8 @@ void d_add(struct dentry *entry, struct inode *inode)
 	__d_add(entry, inode);
 }
 
-struct dentry *d_exact_alias(struct dentry *entry, struct inode *inode)
-{
-	struct dentry *alias;
-	unsigned int hash = entry->d_name.hash;
-
-	spin_lock(&inode->i_lock);
-	hlist_for_each_entry(alias, &inode->i_dentry, d_u.d_alias) {
-		
-		if (alias->d_name.hash != hash)
-			continue;
-		if (alias->d_parent != entry->d_parent)
-			continue;
-		if (!d_same_name(alias, entry->d_parent, &entry->d_name))
-			continue;
-		spin_lock(&alias->d_lock);
-		if (!d_unhashed(alias)) {
-			spin_unlock(&alias->d_lock);
-			alias = NULL;
-		} else {
-			__dget_dlock(alias);
-			__d_rehash(alias);
-			spin_unlock(&alias->d_lock);
-		}
-		spin_unlock(&inode->i_lock);
-		return alias;
-	}
-	spin_unlock(&inode->i_lock);
-	return NULL;
-}
+/* Stub: d_exact_alias not used in minimal kernel */
+struct dentry *d_exact_alias(struct dentry *entry, struct inode *inode) { return NULL; }
 
 static void swap_names(struct dentry *dentry, struct dentry *target)
 {
@@ -1711,25 +1671,8 @@ bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
 	return result;
 }
 
-static enum d_walk_ret d_genocide_kill(void *data, struct dentry *dentry)
-{
-	struct dentry *root = data;
-	if (dentry != root) {
-		if (d_unhashed(dentry) || !dentry->d_inode)
-			return D_WALK_SKIP;
-
-		if (!(dentry->d_flags & DCACHE_GENOCIDE)) {
-			dentry->d_flags |= DCACHE_GENOCIDE;
-			dentry->d_lockref.count--;
-		}
-	}
-	return D_WALK_CONTINUE;
-}
-
-void d_genocide(struct dentry *parent)
-{
-	d_walk(parent, parent, d_genocide_kill);
-}
+/* Stub: d_genocide not used in minimal kernel */
+void d_genocide(struct dentry *parent) { }
 
 
 void d_tmpfile(struct dentry *dentry, struct inode *inode)

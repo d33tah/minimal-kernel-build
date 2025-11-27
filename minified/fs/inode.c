@@ -743,19 +743,8 @@ static int test_inode_iunique(struct super_block *sb, unsigned long ino)
 /* Stub: not used in minimal kernel */
 ino_t iunique(struct super_block *sb, ino_t max_reserved) { return 0; }
 
-struct inode *igrab(struct inode *inode)
-{
-	spin_lock(&inode->i_lock);
-	if (!(inode->i_state & (I_FREEING|I_WILL_FREE))) {
-		__iget(inode);
-		spin_unlock(&inode->i_lock);
-	} else {
-		spin_unlock(&inode->i_lock);
-		
-		inode = NULL;
-	}
-	return inode;
-}
+/* Stub: igrab not used in minimal kernel */
+struct inode *igrab(struct inode *inode) { return inode ? __iget(inode), inode : NULL; }
 
 struct inode *ilookup5_nowait(struct super_block *sb, unsigned long hashval,
 		int (*test)(struct inode *, void *), void *data)
@@ -793,40 +782,13 @@ struct inode *ilookup(struct super_block *sb, unsigned long ino) { return NULL; 
 struct inode *find_inode_nowait(struct super_block *sb, unsigned long hashval,
 		int (*match)(struct inode *, unsigned long, void *), void *data) { return NULL; }
 
+/* Stub: not used in minimal kernel */
 struct inode *find_inode_rcu(struct super_block *sb, unsigned long hashval,
-			     int (*test)(struct inode *, void *), void *data)
-{
-	struct hlist_head *head = inode_hashtable + hash(sb, hashval);
-	struct inode *inode;
+			     int (*test)(struct inode *, void *), void *data) { return NULL; }
 
-	RCU_LOCKDEP_WARN(!rcu_read_lock_held(),
-			 "suspicious find_inode_rcu() usage");
-
-	hlist_for_each_entry_rcu(inode, head, i_hash) {
-		if (inode->i_sb == sb &&
-		    !(READ_ONCE(inode->i_state) & (I_FREEING | I_WILL_FREE)) &&
-		    test(inode, data))
-			return inode;
-	}
-	return NULL;
-}
-
+/* Stub: not used in minimal kernel */
 struct inode *find_inode_by_ino_rcu(struct super_block *sb,
-				    unsigned long ino)
-{
-	struct hlist_head *head = inode_hashtable + hash(sb, ino);
-	struct inode *inode;
-
-	RCU_LOCKDEP_WARN(!rcu_read_lock_held(),
-			 "suspicious find_inode_by_ino_rcu() usage");
-
-	hlist_for_each_entry_rcu(inode, head, i_hash) {
-		if (inode->i_ino == ino &&
-		    inode->i_sb == sb &&
-		    !(READ_ONCE(inode->i_state) & (I_FREEING | I_WILL_FREE)))
-		    return inode;
-	}
-	return NULL;
+				    unsigned long ino) { return NULL;
 }
 
 /* Stub: insert_inode_locked not used in minimal kernel */

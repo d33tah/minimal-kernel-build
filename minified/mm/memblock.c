@@ -1010,19 +1010,11 @@ bool __init_memblock memblock_is_map_memory(phys_addr_t addr)
 	return !memblock_is_nomap(&memblock.memory.regions[i]);
 }
 
+/* Stub: memblock_search_pfn_nid not used in minimal kernel */
 int __init_memblock memblock_search_pfn_nid(unsigned long pfn,
 			 unsigned long *start_pfn, unsigned long *end_pfn)
 {
-	struct memblock_type *type = &memblock.memory;
-	int mid = memblock_search(type, PFN_PHYS(pfn));
-
-	if (mid == -1)
-		return -1;
-
-	*start_pfn = PFN_DOWN(type->regions[mid].base);
-	*end_pfn = PFN_DOWN(type->regions[mid].base + type->regions[mid].size);
-
-	return memblock_get_region_node(&type->regions[mid]);
+	return -1;
 }
 
 bool __init_memblock memblock_is_region_memory(phys_addr_t base, phys_addr_t size)

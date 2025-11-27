@@ -1118,11 +1118,6 @@ static void generic_identify(struct cpuinfo_x86 *c)
 	set_cpu_bug(c, X86_BUG_ESPFIX);
 }
 
-static void validate_apic_and_package_id(struct cpuinfo_x86 *c)
-{
-	c->logical_proc_id = 0;
-}
-
 static void identify_cpu(struct cpuinfo_x86 *c)
 {
 	int i;

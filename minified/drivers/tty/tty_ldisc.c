@@ -351,21 +351,6 @@ static int tty_ldisc_failto(struct tty_struct *tty, int ld)
 	return r;
 }
 
- 
-static void tty_ldisc_restore(struct tty_struct *tty, struct tty_ldisc *old)
-{
-	const char *name = tty_name(tty);
-
-	 
-	if (tty_ldisc_failto(tty, old->ops->num) < 0) {
-		 
-		if (tty_ldisc_failto(tty, N_TTY) < 0 &&
-		    tty_ldisc_failto(tty, N_NULL) < 0)
-			panic("Couldn't open N_NULL ldisc for %s.", name);
-	}
-}
-
- 
 /* Stubbed - ldisc switching not needed for minimal kernel */
 int tty_set_ldisc(struct tty_struct *tty, int disc)
 {

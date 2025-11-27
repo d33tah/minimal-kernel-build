@@ -508,17 +508,6 @@ void *memchr(const void *s, int c, size_t n)
 }
 #endif
 
-static void *check_bytes8(const u8 *start, u8 value, unsigned int bytes)
-{
-	while (bytes) {
-		if (*start != value)
-			return (void *)start;
-		start++;
-		bytes--;
-	}
-	return NULL;
-}
-
 /* Stub: memchr_inv not used in minimal kernel */
 void *memchr_inv(const void *start, int c, size_t bytes)
 {

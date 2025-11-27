@@ -232,7 +232,6 @@ static void call_console_driver(struct console *con, const char *text, size_t le
 {
 }
 static bool suppress_message_printing(int level) { return false; }
-static bool __pr_flush(struct console *con, int timeout_ms, bool reset_on_progress) { return true; }
 
 
 

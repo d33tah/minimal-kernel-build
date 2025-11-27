@@ -467,11 +467,6 @@ static int __radix_tree_create(struct radix_tree_root *root,
 	return 0;
 }
 
-/* Stubbed - not used externally */
-static void radix_tree_free_nodes(struct radix_tree_node *node)
-{
-}
-
 static inline int insert_entries(struct radix_tree_node *node,
 		void __rcu **slot, void *item, bool replace)
 {

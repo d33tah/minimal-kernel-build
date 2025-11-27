@@ -571,17 +571,6 @@ repeat:
 	return ret;
 }
 
-static struct dentry * __d_find_any_alias(struct inode *inode)
-{
-	struct dentry *alias;
-
-	if (hlist_empty(&inode->i_dentry))
-		return NULL;
-	alias = hlist_entry(inode->i_dentry.first, struct dentry, d_u.d_alias);
-	__dget(alias);
-	return alias;
-}
-
 /* Stub: d_find_any_alias not used externally */
 struct dentry *d_find_any_alias(struct inode *inode)
 {
@@ -1536,35 +1525,6 @@ void d_exchange(struct dentry *dentry1, struct dentry *dentry2) { }
 struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)
 {
 	return NULL;
-}
-
-static int __d_unalias(struct inode *inode,
-		struct dentry *dentry, struct dentry *alias)
-{
-	struct mutex *m1 = NULL;
-	struct rw_semaphore *m2 = NULL;
-	int ret = -ESTALE;
-
-	
-	if (alias->d_parent == dentry->d_parent)
-		goto out_unalias;
-
-	
-	if (!mutex_trylock(&dentry->d_sb->s_vfs_rename_mutex))
-		goto out_err;
-	m1 = &dentry->d_sb->s_vfs_rename_mutex;
-	if (!inode_trylock_shared(alias->d_parent->d_inode))
-		goto out_err;
-	m2 = &alias->d_parent->d_inode->i_rwsem;
-out_unalias:
-	__d_move(alias, dentry, false);
-	ret = 0;
-out_err:
-	if (m2)
-		up_read(m2);
-	if (m1)
-		mutex_unlock(m1);
-	return ret;
 }
 
 /* Simplified - minimal kernel doesn't need complex aliasing */

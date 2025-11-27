@@ -373,11 +373,6 @@ u32 fw_devlink_get_flags(void)
 	return fw_devlink_flags;
 }
 
-static bool fw_devlink_is_permissive(void)
-{
-	return fw_devlink_flags == FW_DEVLINK_FLAGS_PERMISSIVE;
-}
-
 /* Stubbed - not used externally */
 bool fw_devlink_is_strict(void)
 {
@@ -701,34 +696,6 @@ int device_add_groups(struct device *dev, const struct attribute_group **groups)
 void device_remove_groups(struct device *dev,
 			  const struct attribute_group **groups)
 {
-	sysfs_remove_groups(&dev->kobj, groups);
-}
-
-union device_attr_group_devres {
-	const struct attribute_group *group;
-	const struct attribute_group **groups;
-};
-
-static int devm_attr_group_match(struct device *dev, void *res, void *data)
-{
-	return ((union device_attr_group_devres *)res)->group == data;
-}
-
-static void devm_attr_group_remove(struct device *dev, void *res)
-{
-	union device_attr_group_devres *devres = res;
-	const struct attribute_group *group = devres->group;
-
-	dev_dbg(dev, "%s: removing group %p\n", __func__, group);
-	sysfs_remove_group(&dev->kobj, group);
-}
-
-static void devm_attr_groups_remove(struct device *dev, void *res)
-{
-	union device_attr_group_devres *devres = res;
-	const struct attribute_group **groups = devres->groups;
-
-	dev_dbg(dev, "%s: removing groups %p\n", __func__, groups);
 	sysfs_remove_groups(&dev->kobj, groups);
 }
 
@@ -1333,11 +1300,6 @@ struct root_device {
 static inline struct root_device *to_root_device(struct device *d)
 {
 	return container_of(d, struct root_device, dev);
-}
-
-static void root_device_release(struct device *dev)
-{
-	kfree(to_root_device(dev));
 }
 
 /* Stubbed - not used externally */

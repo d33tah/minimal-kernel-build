@@ -872,23 +872,6 @@ void __init e820__reserve_resources(void)
 	}
 }
 
- 
-static unsigned long __init ram_alignment(resource_size_t pos)
-{
-	unsigned long mb = pos >> 20;
-
-	 
-	if (!mb)
-		return 64*1024;
-
-	 
-	if (mb < 16)
-		return 1024*1024;
-
-	 
-	return 64*1024*1024;
-}
-
 #define MAX_RESOURCE_SIZE ((resource_size_t)-1)
 
 /* Stub: e820__reserve_resources_late not called in minimal kernel */

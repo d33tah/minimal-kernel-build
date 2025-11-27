@@ -1133,20 +1133,6 @@ void dissolve_on_fput(struct vfsmount *mnt)
 /* Stub: not used in minimal kernel */
 void drop_collected_mounts(struct vfsmount *mnt) { }
 
-static bool has_locked_children(struct mount *mnt, struct dentry *dentry)
-{
-	struct mount *child;
-
-	list_for_each_entry(child, &mnt->mnt_mounts, mnt_child) {
-		if (!is_subdir(child->mnt_mountpoint, dentry))
-			continue;
-
-		if (child->mnt.mnt_flags & MNT_LOCKED)
-			return true;
-	}
-	return false;
-}
-
 /* Stub: not used in minimal kernel */
 struct vfsmount *clone_private_mount(const struct path *path) { return ERR_PTR(-EINVAL); }
 

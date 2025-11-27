@@ -248,44 +248,6 @@ static void clockevents_notify_released(void)
 	}
 }
 
- 
-static int clockevents_replace(struct clock_event_device *ced)
-{
-	struct clock_event_device *dev, *newdev = NULL;
-
-	list_for_each_entry(dev, &clockevent_devices, list) {
-		if (dev == ced || !clockevent_state_detached(dev))
-			continue;
-
-		if (!tick_check_replacement(newdev, dev))
-			continue;
-
-		if (!try_module_get(dev->owner))
-			continue;
-
-		if (newdev)
-			module_put(newdev->owner);
-		newdev = dev;
-	}
-	if (newdev) {
-		tick_install_replacement(newdev);
-		list_del_init(&ced->list);
-	}
-	return newdev ? 0 : -EBUSY;
-}
-
- 
-static int __clockevents_try_unbind(struct clock_event_device *ced, int cpu)
-{
-	 
-	if (clockevent_state_detached(ced)) {
-		list_del_init(&ced->list);
-		return 0;
-	}
-
-	return ced == per_cpu(tick_cpu_device, cpu).evtdev ? -EAGAIN : -EBUSY;
-}
-
 /* Stub: clockevents_unbind_device not used in minimal kernel */
 int clockevents_unbind_device(struct clock_event_device *ced, int cpu)
 {

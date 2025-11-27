@@ -31,23 +31,8 @@ static DEFINE_PER_CPU(unsigned long, nr_unused);
 
 static struct kmem_cache *inode_cachep __read_mostly;
 
-static long get_nr_inodes(void)
-{
-	int i;
-	long sum = 0;
-	for_each_possible_cpu(i)
-		sum += per_cpu(nr_inodes, i);
-	return sum < 0 ? 0 : sum;
-}
-
-static inline long get_nr_inodes_unused(void)
-{
-	int i;
-	long sum = 0;
-	for_each_possible_cpu(i)
-		sum += per_cpu(nr_unused, i);
-	return sum < 0 ? 0 : sum;
-}
+static long get_nr_inodes(void) { return 0; }
+static inline long get_nr_inodes_unused(void) { return 0; }
 
 /* Stubbed - not used externally */
 long get_nr_dirty_inodes(void)
@@ -726,18 +711,6 @@ again:
 		}
 	}
 	return inode;
-}
-
-static int test_inode_iunique(struct super_block *sb, unsigned long ino)
-{
-	struct hlist_head *b = inode_hashtable + hash(sb, ino);
-	struct inode *inode;
-
-	hlist_for_each_entry_rcu(inode, b, i_hash) {
-		if (inode->i_ino == ino && inode->i_sb == sb)
-			return 0;
-	}
-	return 1;
 }
 
 /* Stub: not used in minimal kernel */

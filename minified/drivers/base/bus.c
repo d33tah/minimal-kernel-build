@@ -647,27 +647,6 @@ struct klist *bus_get_device_klist(struct bus_type *bus)
 	return &bus->p->klist_devices;
 }
 
- 
-static void device_insertion_sort_klist(struct device *a, struct list_head *list,
-					int (*compare)(const struct device *a,
-							const struct device *b))
-{
-	struct klist_node *n;
-	struct device_private *dev_prv;
-	struct device *b;
-
-	list_for_each_entry(n, list, n_node) {
-		dev_prv = to_device_private_bus(n);
-		b = dev_prv->device;
-		if (compare(a, b) <= 0) {
-			list_move_tail(&a->p->knode_bus.n_node,
-				       &b->p->knode_bus.n_node);
-			return;
-		}
-	}
-	list_move_tail(&a->p->knode_bus.n_node, list);
-}
-
 /* Stub: bus_sort_breadthfirst not used externally */
 void bus_sort_breadthfirst(struct bus_type *bus,
 			   int (*compare)(const struct device *a,

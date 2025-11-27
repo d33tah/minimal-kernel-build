@@ -423,11 +423,6 @@ unsigned int kstat_irqs_cpu(unsigned int irq, int cpu)
 			*per_cpu_ptr(desc->kstat_irqs, cpu) : 0;
 }
 
-static bool irq_is_nmi(struct irq_desc *desc)
-{
-	return desc->istate & IRQS_NMI;
-}
-
 /* Stub: kstat_irqs_usr not used in minimal kernel */
 unsigned int kstat_irqs_usr(unsigned int irq) { return 0; }
 

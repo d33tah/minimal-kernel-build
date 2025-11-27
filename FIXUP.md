@@ -1,18 +1,24 @@
---- 2025-11-27 01:09 ---
+--- 2025-11-27 01:14 ---
 
-Session progress:
+Session complete:
 - make vm: PASSES ✓, prints "Hello, World!" ✓
 - Binary: 257KB
-- Current: 228,224 LOC (cloc after mrproper)
+- Final: 228,224 LOC (cloc after mrproper)
 - Started: 228,340 LOC
 - Reduced this session: 116 LOC
 
-Commits:
-1. Stub unused radix-tree functions (~29 LOC) - radix_tree_replace_slot, radix_tree_iter_delete, radix_tree_free_nodes
-2. Stub unused inode and filemap functions (~39 LOC) - insert_inode_locked, page_cache_next_miss, page_cache_prev_miss
-3. Stub unused time functions (~22 LOC) - ktime_get_raw_ts64, clocksource_change_rating
-4. Stub unused arch/x86 functions (~35 LOC) - unregister_nmi_handler, sigaltstack_size_valid
-5. Stub unused drivers/base functions (~15 LOC) - cpu_is_hotpluggable, driver_allows_async_probing
+5 commits pushed stubbing unused functions:
+1. radix-tree: radix_tree_replace_slot, radix_tree_iter_delete, radix_tree_free_nodes
+2. fs/inode+mm/filemap: insert_inode_locked, page_cache_next_miss, page_cache_prev_miss
+3. kernel/time: ktime_get_raw_ts64, clocksource_change_rating
+4. arch/x86: unregister_nmi_handler, sigaltstack_size_valid
+5. drivers/base: cpu_is_hotpluggable, driver_allows_async_probing
+
+Approach: Searching for functions only declared in headers and defined in .c files
+with no other callers. These functions are export but unused - stubbing them saves LOC.
+
+Many functions already stubbed in previous sessions - the remaining unused functions
+tend to be smaller (5-20 LOC each).
 
 --- 2025-11-27 00:39 ---
 

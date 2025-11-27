@@ -166,9 +166,10 @@ unsigned long start_poll_synchronize_rcu(void)
 }
 
  
+/* Stub: poll_state_synchronize_rcu not used in minimal kernel */
 bool poll_state_synchronize_rcu(unsigned long oldstate)
 {
-	return READ_ONCE(rcu_ctrlblk.gp_seq) != oldstate;
+	return true;
 }
 
 void __init rcu_init(void)

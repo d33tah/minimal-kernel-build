@@ -198,28 +198,16 @@ static void enable_TSC(void)
 	preempt_enable();
 }
 
+/* Stub: get_tsc_mode not used externally */
 int get_tsc_mode(unsigned long adr)
 {
-	unsigned int val;
-
-	if (test_thread_flag(TIF_NOTSC))
-		val = PR_TSC_SIGSEGV;
-	else
-		val = PR_TSC_ENABLE;
-
-	return put_user(val, (unsigned int __user *)adr);
+	return -EINVAL;
 }
 
+/* Stub: set_tsc_mode not used externally */
 int set_tsc_mode(unsigned int val)
 {
-	if (val == PR_TSC_SIGSEGV)
-		disable_TSC();
-	else if (val == PR_TSC_ENABLE)
-		enable_TSC();
-	else
-		return -EINVAL;
-
-	return 0;
+	return -EINVAL;
 }
 
 DEFINE_PER_CPU(u64, msr_misc_features_shadow);
@@ -542,14 +530,9 @@ void select_idle_routine(const struct cpuinfo_x86 *c)
 		x86_idle = default_idle;
 }
 
+/* Stub: amd_e400_c1e_apic_setup not used externally */
 void amd_e400_c1e_apic_setup(void)
 {
-	if (boot_cpu_has_bug(X86_BUG_AMD_APIC_C1E)) {
-		pr_info("Switch to broadcast mode on CPU%d\n", smp_processor_id());
-		local_irq_disable();
-		tick_broadcast_force();
-		local_irq_enable();
-	}
 }
 
 void __init arch_post_acpi_subsys_init(void)

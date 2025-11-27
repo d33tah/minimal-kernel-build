@@ -1019,87 +1019,25 @@ struct dentry *d_make_root(struct inode *root_inode)
 	return res;
 }
 
-static struct dentry *__d_instantiate_anon(struct dentry *dentry,
-					   struct inode *inode,
-					   bool disconnected)
-{
-	struct dentry *res;
-	unsigned add_flags;
-
-	security_d_instantiate(dentry, inode);
-	spin_lock(&inode->i_lock);
-	res = __d_find_any_alias(inode);
-	if (res) {
-		spin_unlock(&inode->i_lock);
-		dput(dentry);
-		goto out_iput;
-	}
-
-	
-	add_flags = d_flags_for_inode(inode);
-
-	if (disconnected)
-		add_flags |= DCACHE_DISCONNECTED;
-
-	spin_lock(&dentry->d_lock);
-	__d_set_inode_and_type(dentry, inode, add_flags);
-	hlist_add_head(&dentry->d_u.d_alias, &inode->i_dentry);
-	if (!disconnected) {
-		hlist_bl_lock(&dentry->d_sb->s_roots);
-		hlist_bl_add_head(&dentry->d_hash, &dentry->d_sb->s_roots);
-		hlist_bl_unlock(&dentry->d_sb->s_roots);
-	}
-	spin_unlock(&dentry->d_lock);
-	spin_unlock(&inode->i_lock);
-
-	return dentry;
-
- out_iput:
-	iput(inode);
-	return res;
-}
-
+/* Stubbed - not used in minimal kernel (anonymous dentries for NFS etc) */
 struct dentry *d_instantiate_anon(struct dentry *dentry, struct inode *inode)
 {
-	return __d_instantiate_anon(dentry, inode, true);
-}
-
-static struct dentry *__d_obtain_alias(struct inode *inode, bool disconnected)
-{
-	struct dentry *tmp;
-	struct dentry *res;
-
-	if (!inode)
-		return ERR_PTR(-ESTALE);
-	if (IS_ERR(inode))
-		return ERR_CAST(inode);
-
-	res = d_find_any_alias(inode);
-	if (res)
-		goto out_iput;
-
-	tmp = d_alloc_anon(inode->i_sb);
-	if (!tmp) {
-		res = ERR_PTR(-ENOMEM);
-		goto out_iput;
-	}
-
-	return __d_instantiate_anon(tmp, inode, disconnected);
-
-out_iput:
 	iput(inode);
-	return res;
+	dput(dentry);
+	return ERR_PTR(-ESTALE);
 }
 
 /* Stubbed - not used in minimal kernel */
 struct dentry *d_obtain_alias(struct inode *inode)
 {
+	iput(inode);
 	return ERR_PTR(-ESTALE);
 }
 
 struct dentry *d_obtain_root(struct inode *inode)
 {
-	return __d_obtain_alias(inode, false);
+	iput(inode);
+	return ERR_PTR(-ESTALE);
 }
 
 /* Stubbed - not used in minimal kernel (case-insensitive fs) */

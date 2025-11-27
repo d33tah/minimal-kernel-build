@@ -1114,39 +1114,9 @@ void __init early_cpu_init(void)
 	early_identify_cpu(&boot_cpu_data);
 }
 
-static bool detect_null_seg_behavior(void)
-{
-	
-
-	unsigned long old_base, tmp;
-	rdmsrl(MSR_FS_BASE, old_base);
-	wrmsrl(MSR_FS_BASE, 1);
-	loadsegment(fs, 0);
-	rdmsrl(MSR_FS_BASE, tmp);
-	wrmsrl(MSR_FS_BASE, old_base);
-	return tmp == 0;
-}
-
+/* Stubbed - not used in minimal kernel */
 void check_null_seg_clears_base(struct cpuinfo_x86 *c)
 {
-	
-	if (!IS_ENABLED(CONFIG_X86_64))
-		return;
-
-	if (c->extended_cpuid_level >= 0x80000021 &&
-	    cpuid_eax(0x80000021) & BIT(6))
-		return;
-
-	if (cpu_has(c, X86_FEATURE_HYPERVISOR)) {
-		set_cpu_bug(c, X86_BUG_NULL_SEG);
-		return;
-	}
-
-	if ((c->x86 == 0x17 || c->x86 == 0x18) &&
-	    detect_null_seg_behavior())
-		return;
-
-	set_cpu_bug(c, X86_BUG_NULL_SEG);
 }
 
 static void generic_identify(struct cpuinfo_x86 *c)

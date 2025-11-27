@@ -1,3 +1,32 @@
+--- 2025-11-27 14:45 ---
+
+Session progress:
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 254KB
+- Current: 211,184 LOC (cloc after make mrproper)
+- Reduction this session: 72 LOC (211,256 -> 211,184)
+- Goal: 200K LOC - ~11K LOC above target
+
+Functions stubbed:
+- fs/dcache.c: d_instantiate_anon, d_obtain_alias, d_obtain_root (previously had full implementations)
+- arch/x86/kernel/cpu/common.c: check_null_seg_clears_base (removed detect_null_seg_behavior helper)
+
+Continuing to search for more opportunities.
+
+--- 2025-11-27 14:33 ---
+
+Session start:
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Binary: 254KB
+- Current: 211,256 LOC (cloc after make mrproper)
+- Goal: 200K LOC - ~11K LOC above target
+- NOTE: Previous sessions measured LOC without make mrproper first, inflating counts
+
+Plan:
+- Continue stubbing unused functions
+- Look for larger opportunities like header trimming or subsystem removal
+- Target ~11K more LOC reduction to reach goal
+
 --- 2025-11-27 13:23 ---
 
 Session progress summary:

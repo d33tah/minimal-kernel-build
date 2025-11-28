@@ -1,10 +1,10 @@
---- 2025-11-28 08:14 ---
+--- 2025-11-28 08:19 ---
 
 Session progress:
 - make vm: PASSES, prints "Hello, World!" and "Still alive"
-- Kernel-only LOC: 196,290 (down from 196,561 at session start)
+- Kernel-only LOC: 196,271 (down from 196,561 at session start)
 - Binary size: 249KB
-- Total reduction this session: ~270 LOC
+- Total reduction this session: ~290 LOC
 
 Commits this session:
 1. Remove CPU vuln tables and dead code (~200 LOC):
@@ -18,6 +18,8 @@ Commits this session:
 2. Stub VGA VESA and palette blanking (~100 LOC):
    - drivers/video/console/vgacon.c: vga_state struct,
      vga_vesa_blank, vga_vesa_unblank, vga_pal_blank stubbed
+3. Stub Sandy Bridge graphics workaround (~25 LOC):
+   - arch/x86/kernel/setup.c: snb_gfx_workaround_needed, trim_snb_memory
 
 All commits passed make vm test. Continuing to look for reduction opportunities.
 No more unused function warnings from LLVM build.

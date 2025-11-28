@@ -1,5 +1,30 @@
 # Doubts and Issues
 
+## 2025-11-28 04:48
+
+### Session Progress
+- Kernel-only LOC: 189,742 (reduced from 190,098 at session start)
+- Binary size: 250KB (down from 251KB)
+- make vm passes with "Hello, World!" and "Still alive"
+
+### Commits this session
+1. lib/vsprintf.c: Stubbed restricted_pointer and address_val (~48 LOC)
+2. arch/x86/kernel/cpu/common.c: Stubbed cpu_set_bug_bits and cpu_parse_early_param (~111 LOC)
+3. arch/x86/kernel/cpu/common.c: Stubbed init_speculation_control and cpu_detect_tlb (~42 LOC)
+4. fs/binfmt_elf.c: Stubbed parse_elf_property and parse_elf_properties (~91 LOC)
+5. arch/x86/kernel/e820.c: Stubbed parse_memmap_one (~53 LOC)
+6. arch/x86/kernel/io_delay.c: Simplified to minimal implementation (~111 LOC)
+
+### GitLab Access Issue (still exists)
+- Cannot push to gitlab remote - project not found
+- Cannot use glab for CI checks
+- All changes on GitHub only
+
+### Next Steps
+- CI should run on GitHub Actions
+- Need to check GitHub Actions status for PR #10
+- Goal already achieved: 189,742 LOC (goal was 200K)
+
 ## 2025-11-28 02:54
 
 ### CI PASSED! ✅

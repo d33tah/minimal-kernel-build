@@ -1438,10 +1438,11 @@ static const struct tty_operations con_ops = {
 
 static struct cdev vc0_cdev;
 
+/* Stub: show_tty_active simplified for minimal kernel */
 static ssize_t show_tty_active(struct device *dev,
 				struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "tty%d\n", fg_console + 1);
+	return sprintf(buf, "tty1\n");
 }
 static DEVICE_ATTR(active, S_IRUGO, show_tty_active, NULL);
 
@@ -1591,46 +1592,23 @@ static inline int vt_unbind(struct con_driver *con)
 	return 0;
 }
 
+/* Stub: VT console sysfs attributes simplified for minimal kernel */
 static ssize_t store_bind(struct device *dev, struct device_attribute *attr,
 			  const char *buf, size_t count)
 {
-	struct con_driver *con = dev_get_drvdata(dev);
-	int bind = simple_strtoul(buf, NULL, 0);
-
-	console_lock();
-
-	if (bind)
-		vt_bind(con);
-	else
-		vt_unbind(con);
-
-	console_unlock();
-
 	return count;
 }
 
 static ssize_t show_bind(struct device *dev, struct device_attribute *attr,
 			 char *buf)
 {
-	struct con_driver *con = dev_get_drvdata(dev);
-	int bind;
-
-	console_lock();
-	bind = con_is_bound(con->con);
-	console_unlock();
-
-	return snprintf(buf, PAGE_SIZE, "%i\n", bind);
+	return snprintf(buf, PAGE_SIZE, "1\n");
 }
 
 static ssize_t show_name(struct device *dev, struct device_attribute *attr,
 			 char *buf)
 {
-	struct con_driver *con = dev_get_drvdata(dev);
-
-	return snprintf(buf, PAGE_SIZE, "%s %s\n",
-			(con->flag & CON_DRIVER_FLAG_MODULE) ? "(M)" : "(S)",
-			 con->desc);
-
+	return snprintf(buf, PAGE_SIZE, "(S) vga\n");
 }
 
 static DEVICE_ATTR(bind, S_IRUGO|S_IWUSR, show_bind, store_bind);

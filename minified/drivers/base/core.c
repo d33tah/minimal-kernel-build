@@ -280,16 +280,12 @@ int device_links_check_suppliers(struct device *dev)
 void device_links_supplier_sync_state_pause(void) { }
 void device_links_supplier_sync_state_resume(void) { }
 
+/* Stub: waiting_for_supplier sysfs attribute simplified for minimal kernel */
 static ssize_t waiting_for_supplier_show(struct device *dev,
 					 struct device_attribute *attr,
 					 char *buf)
 {
-	bool val;
-
-	device_lock(dev);
-	val = !list_empty(&dev->fwnode->suppliers);
-	device_unlock(dev);
-	return sysfs_emit(buf, "%u\n", val);
+	return sysfs_emit(buf, "0\n");
 }
 static DEVICE_ATTR_RO(waiting_for_supplier);
 
@@ -589,69 +585,33 @@ static ssize_t uevent_show(struct device *dev, struct device_attribute *attr,
 	return 0;
 }
 
+/* Stub: uevent_store simplified for minimal kernel */
 static ssize_t uevent_store(struct device *dev, struct device_attribute *attr,
 			    const char *buf, size_t count)
 {
-	int rc;
-
-	rc = kobject_synth_uevent(&dev->kobj, buf, count);
-
-	if (rc) {
-		dev_err(dev, "uevent: failed to send synthetic uevent\n");
-		return rc;
-	}
-
 	return count;
 }
 static DEVICE_ATTR_RW(uevent);
 
+/* Stub: online sysfs attributes simplified for minimal kernel */
 static ssize_t online_show(struct device *dev, struct device_attribute *attr,
 			   char *buf)
 {
-	bool val;
-
-	device_lock(dev);
-	val = !dev->offline;
-	device_unlock(dev);
-	return sysfs_emit(buf, "%u\n", val);
+	return sysfs_emit(buf, "1\n");
 }
 
 static ssize_t online_store(struct device *dev, struct device_attribute *attr,
 			    const char *buf, size_t count)
 {
-	bool val;
-	int ret;
-
-	ret = strtobool(buf, &val);
-	if (ret < 0)
-		return ret;
-
-	ret = lock_device_hotplug_sysfs();
-	if (ret)
-		return ret;
-
-	ret = val ? device_online(dev) : device_offline(dev);
-	unlock_device_hotplug();
-	return ret < 0 ? ret : count;
+	return count;
 }
 static DEVICE_ATTR_RW(online);
 
+/* Stub: removable sysfs attribute simplified for minimal kernel */
 static ssize_t removable_show(struct device *dev, struct device_attribute *attr,
 			      char *buf)
 {
-	const char *loc;
-
-	switch (dev->removable) {
-	case DEVICE_REMOVABLE:
-		loc = "removable";
-		break;
-	case DEVICE_FIXED:
-		loc = "fixed";
-		break;
-	default:
-		loc = "unknown";
-	}
-	return sysfs_emit(buf, "%s\n", loc);
+	return sysfs_emit(buf, "unknown\n");
 }
 static DEVICE_ATTR_RO(removable);
 

@@ -25,7 +25,7 @@ struct vm86;
 #include <asm/special_insns.h>
 #include <asm/fpu/types.h>
 #include <asm/unwind_hints.h>
-#include <asm/vmxfeatures.h>
+/* Removed: #include <asm/vmxfeatures.h> - not needed for minimal kernel */
 #include <asm/vdso/processor.h>
 
 #include <linux/personality.h>

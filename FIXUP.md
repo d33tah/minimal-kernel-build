@@ -1,3 +1,37 @@
+--- 2025-11-28 22:55 ---
+
+Progress update:
+- make vm: PASSES (Hello, World! + Still alive)
+- LOC: 205,449 (down from 205,514)
+- Binary size: 245KB
+
+Changes:
+1. Stubbed i8237.c DMA controller init (~45 LOC removed)
+   - Removed i8237A_resume function
+   - Removed syscore_ops registration
+   - Kept only minimal stub init function
+2. Stubbed i8259.c PIC syscore ops (~20 LOC removed)
+   - Removed save_ELCR/restore_ELCR
+   - Removed suspend/resume/shutdown handlers
+   - Kept core PIC functionality needed for interrupts
+
+Total reduction: ~65 LOC
+
+--- 2025-11-28 22:48 ---
+
+Session start:
+- make vm: PASSES (Hello, World! + Still alive)
+- LOC: 205,514 (after make mrproper in minified dir)
+- Note: Previous LOC count of 194,036 was incorrect - different measurement approach?
+- Binary size: 245KB
+
+Goal: Get below 200K LOC. Need to reduce ~5,514 lines.
+
+Plan:
+- Look for large files with stubs/unused code
+- Continue removing EXPORT_SYMBOL where not needed
+- Look for more late_initcall/initcall functions that can be stubbed
+
 --- 2025-11-28 22:22 ---
 
 Final session summary:

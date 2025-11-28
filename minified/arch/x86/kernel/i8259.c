@@ -10,7 +10,6 @@
 #include <linux/random.h>
 #include <linux/init.h>
 #include <linux/kernel_stat.h>
-#include <linux/syscore_ops.h>
 #include <linux/bitops.h>
 #include <linux/acpi.h>
 #include <linux/io.h>
@@ -176,45 +175,7 @@ struct irq_chip i8259A_chip = {
 	.irq_mask_ack	= mask_and_ack_8259A,
 };
 
-static char irq_trigger[2];
- 
-static void restore_ELCR(char *trigger)
-{
-	outb(trigger[0], PIC_ELCR1);
-	outb(trigger[1], PIC_ELCR2);
-}
-
-static void save_ELCR(char *trigger)
-{
-	 
-	trigger[0] = inb(PIC_ELCR1) & 0xF8;
-	trigger[1] = inb(PIC_ELCR2) & 0xDE;
-}
-
-static void i8259A_resume(void)
-{
-	init_8259A(i8259A_auto_eoi);
-	restore_ELCR(irq_trigger);
-}
-
-static int i8259A_suspend(void)
-{
-	save_ELCR(irq_trigger);
-	return 0;
-}
-
-static void i8259A_shutdown(void)
-{
-	 
-	outb(0xff, PIC_MASTER_IMR);	 
-	outb(0xff, PIC_SLAVE_IMR);	 
-}
-
-static struct syscore_ops i8259_syscore_ops = {
-	.suspend = i8259A_suspend,
-	.resume = i8259A_resume,
-	.shutdown = i8259A_shutdown,
-};
+/* Stub: ELCR save/restore and syscore ops removed - not needed for minimal kernel */
 
 static void mask_8259A(void)
 {
@@ -349,12 +310,6 @@ struct legacy_pic default_legacy_pic = {
 
 struct legacy_pic *legacy_pic = &default_legacy_pic;
 
-static int __init i8259A_init_ops(void)
-{
-	if (legacy_pic == &default_legacy_pic)
-		register_syscore_ops(&i8259_syscore_ops);
-
-	return 0;
-}
-
+/* Stub: PIC syscore ops registration not needed for minimal kernel */
+static int __init i8259A_init_ops(void) { return 0; }
 device_initcall(i8259A_init_ops);

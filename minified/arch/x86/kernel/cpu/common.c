@@ -319,17 +319,9 @@ static void __init setup_cr_pinning(void)
 	static_key_enable(&cr_pinning.key);
 }
 
+/* Stub: nofsgsbase cmdline option not needed for minimal kernel */
 static __init int x86_nofsgsbase_setup(char *arg)
 {
-	
-	if (strlen(arg))
-		return 0;
-
-	if (!boot_cpu_has(X86_FEATURE_FSGSBASE))
-		return 1;
-
-	setup_clear_cpu_cap(X86_FEATURE_FSGSBASE);
-	pr_info("FSGSBASE disabled via kernel command line\n");
 	return 1;
 }
 __setup("nofsgsbase", x86_nofsgsbase_setup);

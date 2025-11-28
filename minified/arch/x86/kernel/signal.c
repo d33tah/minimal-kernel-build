@@ -559,9 +559,10 @@ void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
 
 static bool strict_sigaltstack_size __ro_after_init = false;
 
+/* Stub: strict_sas_size cmdline option not needed for minimal kernel */
 static int __init strict_sas_size(char *arg)
 {
-	return kstrtobool(arg, &strict_sigaltstack_size);
+	return 1;
 }
 __setup("strict_sas_size", strict_sas_size);
 

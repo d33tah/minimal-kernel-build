@@ -223,56 +223,22 @@ static void driver_bound(struct device *dev)
 	 
 }
 
-static ssize_t coredump_store(struct device *dev, struct device_attribute *attr,
-			    const char *buf, size_t count)
-{
-	/* Stub: device coredump not needed for minimal kernel */
-	return count;
-}
-static DEVICE_ATTR_WO(coredump);
 
+/* Stub: driver_sysfs_add/remove simplified for minimal kernel */
 static int driver_sysfs_add(struct device *dev)
 {
-	int ret;
-
 	if (dev->bus)
 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
 					     BUS_NOTIFY_BIND_DRIVER, dev);
-
-	ret = sysfs_create_link(&dev->driver->p->kobj, &dev->kobj,
-				kobject_name(&dev->kobj));
-	if (ret)
-		goto fail;
-
-	ret = sysfs_create_link(&dev->kobj, &dev->driver->p->kobj,
-				"driver");
-	if (ret)
-		goto rm_dev;
-
-	if (!IS_ENABLED(CONFIG_DEV_COREDUMP) || !dev->driver->coredump)
-		return 0;
-
-	ret = device_create_file(dev, &dev_attr_coredump);
-	if (!ret)
-		return 0;
-
-	sysfs_remove_link(&dev->kobj, "driver");
-
-rm_dev:
-	sysfs_remove_link(&dev->driver->p->kobj,
-			  kobject_name(&dev->kobj));
-
-fail:
-	return ret;
+	sysfs_create_link(&dev->driver->p->kobj, &dev->kobj, kobject_name(&dev->kobj));
+	sysfs_create_link(&dev->kobj, &dev->driver->p->kobj, "driver");
+	return 0;
 }
 
 static void driver_sysfs_remove(struct device *dev)
 {
 	struct device_driver *drv = dev->driver;
-
 	if (drv) {
-		if (drv->coredump)
-			device_remove_file(dev, &dev_attr_coredump);
 		sysfs_remove_link(&drv->p->kobj, kobject_name(&dev->kobj));
 		sysfs_remove_link(&dev->kobj, "driver");
 	}
@@ -288,18 +254,7 @@ int device_bind_driver(struct device *dev)
 static atomic_t probe_count = ATOMIC_INIT(0);
 static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
 
-static ssize_t state_synced_show(struct device *dev,
-				 struct device_attribute *attr, char *buf)
-{
-	bool val;
-
-	device_lock(dev);
-	val = dev->state_synced;
-	device_unlock(dev);
-
-	return sysfs_emit(buf, "%u\n", val);
-}
-static DEVICE_ATTR_RO(state_synced);
+/* Stub: state_synced_show not needed for minimal kernel */
 
 static void device_unbind_cleanup(struct device *dev)
 {
@@ -317,7 +272,6 @@ static void device_unbind_cleanup(struct device *dev)
 
 static void device_remove(struct device *dev)
 {
-	device_remove_file(dev, &dev_attr_state_synced);
 	device_remove_groups(dev, dev->driver->dev_groups);
 
 	if (dev->bus && dev->bus->remove)
@@ -414,13 +368,7 @@ re_probe:
 		goto dev_groups_failed;
 	}
 
-	if (dev_has_sync_state(dev)) {
-		ret = device_create_file(dev, &dev_attr_state_synced);
-		if (ret) {
-			dev_err(dev, "state_synced sysfs add failed\n");
-			goto dev_sysfs_state_synced_failed;
-		}
-	}
+	/* Stub: state_synced sysfs attribute not created for minimal kernel */
 
 	if (test_remove) {
 		test_remove = false;
@@ -440,7 +388,6 @@ re_probe:
 	driver_bound(dev);
 	goto done;
 
-dev_sysfs_state_synced_failed:
 dev_groups_failed:
 	device_remove(dev);
 probe_failed:

@@ -1291,30 +1291,7 @@ static unsigned long addr_to_vb_idx(unsigned long addr)
 	return addr;
 }
 
-static void *vmap_block_vaddr(unsigned long va_start, unsigned long pages_off)
-{
-	unsigned long addr;
-
-	addr = va_start + (pages_off << PAGE_SHIFT);
-	BUG_ON(addr_to_vb_idx(addr) != addr_to_vb_idx(va_start));
-	return (void *)addr;
-}
-
-static void *new_vmap_block(unsigned int order, gfp_t gfp_mask)
-{
-	return ERR_PTR(-ENOMEM);
-}
-
-static void free_vmap_block(struct vmap_block *vb)
-{
-	struct vmap_block *tmp;
-
-	tmp = xa_erase(&vmap_blocks, addr_to_vb_idx(vb->va->va_start));
-	BUG_ON(tmp != vb);
-
-	free_vmap_area_noflush(vb->va);
-	kfree_rcu(vb, rcu_head);
-}
+/* vmap_block_vaddr, new_vmap_block, free_vmap_block removed - unused */
 
 static void purge_fragmented_blocks_allcpus(void)
 {

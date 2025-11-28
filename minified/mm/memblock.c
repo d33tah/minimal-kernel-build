@@ -536,28 +536,7 @@ int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
 	return memblock_add_range(&memblock.reserved, base, size, MAX_NUMNODES, 0);
 }
 
-static int __init_memblock memblock_setclr_flag(phys_addr_t base,
-				phys_addr_t size, int set, int flag)
-{
-	struct memblock_type *type = &memblock.memory;
-	int i, ret, start_rgn, end_rgn;
-
-	ret = memblock_isolate_range(type, base, size, &start_rgn, &end_rgn);
-	if (ret)
-		return ret;
-
-	for (i = start_rgn; i < end_rgn; i++) {
-		struct memblock_region *r = &type->regions[i];
-
-		if (set)
-			r->flags |= flag;
-		else
-			r->flags &= ~flag;
-	}
-
-	memblock_merge_regions(type);
-	return 0;
-}
+/* memblock_setclr_flag removed - unused */
 
 /* STUB: unused memblock mark/clear functions */
 int __init_memblock memblock_mark_hotplug(phys_addr_t base, phys_addr_t size) { return 0; }
@@ -952,21 +931,7 @@ phys_addr_t __init_memblock memblock_end_of_DRAM(void)
 	return (memblock.memory.regions[idx].base + memblock.memory.regions[idx].size);
 }
 
-static phys_addr_t __init_memblock __find_max_addr(phys_addr_t limit)
-{
-	phys_addr_t max_addr = PHYS_ADDR_MAX;
-	struct memblock_region *r;
-
-	for_each_mem_region(r) {
-		if (limit <= r->size) {
-			max_addr = r->base + limit;
-			break;
-		}
-		limit -= r->size;
-	}
-
-	return max_addr;
-}
+/* __find_max_addr removed - unused */
 
 /* STUB: unused memory limit functions */
 void __init memblock_enforce_memory_limit(phys_addr_t limit) { }

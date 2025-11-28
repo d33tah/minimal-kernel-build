@@ -29,7 +29,7 @@
 
 static LIST_HEAD(deferred_sync);
 static DEFINE_MUTEX(fwnode_link_lock);
-static bool fw_devlink_is_permissive(void);
+/* fw_devlink_is_permissive forward decl removed - unused */
 static bool fw_devlink_drv_reg_done;
 
 /* Stubbed - not used externally */

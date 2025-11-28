@@ -18,10 +18,7 @@ void devm_ioremap_release(struct device *dev, void *res)
 	iounmap(*(void __iomem **)res);
 }
 
-static int devm_ioremap_match(struct device *dev, void *res, void *match_data)
-{
-	return *(void **)res == match_data;
-}
+/* devm_ioremap_match removed - unused */
 
 static void __iomem *__devm_ioremap(struct device *dev, resource_size_t offset,
 				    resource_size_t size,

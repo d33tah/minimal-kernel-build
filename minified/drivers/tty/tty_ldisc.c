@@ -334,22 +334,7 @@ static void tty_ldisc_close(struct tty_struct *tty, struct tty_ldisc *ld)
 	tty_ldisc_debug(tty, "%p: closed\n", ld);
 }
 
- 
-static int tty_ldisc_failto(struct tty_struct *tty, int ld)
-{
-	struct tty_ldisc *disc = tty_ldisc_get(tty, ld);
-	int r;
-
-	lockdep_assert_held_write(&tty->ldisc_sem);
-	if (IS_ERR(disc))
-		return PTR_ERR(disc);
-	tty->ldisc = disc;
-	tty_set_termios_ldisc(tty, ld);
-	r = tty_ldisc_open(tty, disc);
-	if (r < 0)
-		tty_ldisc_put(disc);
-	return r;
-}
+/* tty_ldisc_failto removed - unused */
 
 /* Stubbed - ldisc switching not needed for minimal kernel */
 int tty_set_ldisc(struct tty_struct *tty, int disc)

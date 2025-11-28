@@ -360,51 +360,10 @@ void try_to_unmap_flush_dirty(void)
 {
 }
 
+/* set_tlb_ubc_flush_pending, should_defer_flush removed - unused */
 #define TLB_FLUSH_BATCH_FLUSHED_SHIFT	16
 #define TLB_FLUSH_BATCH_PENDING_MASK			\
 	((1 << (TLB_FLUSH_BATCH_FLUSHED_SHIFT - 1)) - 1)
-#define TLB_FLUSH_BATCH_PENDING_LARGE			\
-	(TLB_FLUSH_BATCH_PENDING_MASK / 2)
-
-static void set_tlb_ubc_flush_pending(struct mm_struct *mm, bool writable)
-{
-	struct tlbflush_unmap_batch *tlb_ubc = &current->tlb_ubc;
-	int batch, nbatch;
-
-	arch_tlbbatch_add_mm(&tlb_ubc->arch, mm);
-	tlb_ubc->flush_required = true;
-
-	barrier();
-	batch = atomic_read(&mm->tlb_flush_batched);
-retry:
-	if ((batch & TLB_FLUSH_BATCH_PENDING_MASK) > TLB_FLUSH_BATCH_PENDING_LARGE) {
-		
-		nbatch = atomic_cmpxchg(&mm->tlb_flush_batched, batch, 1);
-		if (nbatch != batch) {
-			batch = nbatch;
-			goto retry;
-		}
-	} else {
-		atomic_inc(&mm->tlb_flush_batched);
-	}
-
-	if (writable)
-		tlb_ubc->writable = true;
-}
-
-static bool should_defer_flush(struct mm_struct *mm, enum ttu_flags flags)
-{
-	bool should_defer = false;
-
-	if (!(flags & TTU_BATCH_FLUSH))
-		return false;
-
-	if (cpumask_any_but(mm_cpumask(mm), get_cpu()) < nr_cpu_ids)
-		should_defer = true;
-	put_cpu();
-
-	return should_defer;
-}
 
 void flush_tlb_batched_pending(struct mm_struct *mm)
 {

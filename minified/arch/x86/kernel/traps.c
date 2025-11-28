@@ -298,56 +298,16 @@ enum kernel_gp_hint {
 static enum kernel_gp_hint get_kernel_gp_address(struct pt_regs *regs,
 						 unsigned long *addr)
 {
-	u8 insn_buf[MAX_INSN_SIZE];
-	struct insn insn;
-	int ret;
-
-	if (copy_from_kernel_nofault(insn_buf, (void *)regs->ip,
-			MAX_INSN_SIZE))
-		return GP_NO_HINT;
-
-	ret = insn_decode_kernel(&insn, insn_buf);
-	if (ret < 0)
-		return GP_NO_HINT;
-
-	*addr = (unsigned long)insn_get_addr_ref(&insn, regs);
-	if (*addr == -1UL)
-		return GP_NO_HINT;
-
-
-	return GP_CANONICAL;
+	/* Stub: GP address hint not needed for minimal kernel */
+	return GP_NO_HINT;
 }
 
 #define GPFSTR "general protection fault"
 
 static bool fixup_iopl_exception(struct pt_regs *regs)
 {
-	struct thread_struct *t = &current->thread;
-	unsigned char byte;
-	unsigned long ip;
-
-	if (!IS_ENABLED(CONFIG_X86_IOPL_IOPERM) || t->iopl_emul != 3)
-		return false;
-
-	if (insn_get_effective_ip(regs, &ip))
-		return false;
-
-	if (get_user(byte, (const char __user *)ip))
-		return false;
-
-	if (byte != 0xfa && byte != 0xfb)
-		return false;
-
-	if (!t->iopl_warn && printk_ratelimit()) {
-		pr_err("%s[%d] attempts to use CLI/STI, pretending it's a NOP, ip:%lx",
-		       current->comm, task_pid_nr(current), ip);
-		print_vma_addr(KERN_CONT " in ", ip);
-		pr_cont("\n");
-		t->iopl_warn = 1;
-	}
-
-	regs->ip += 1;
-	return true;
+	/* Stub: IOPL emulation not needed for minimal kernel */
+	return false;
 }
 
  
@@ -678,37 +638,8 @@ DEFINE_IDTENTRY(exc_spurious_interrupt_bug)
 
 static bool handle_xfd_event(struct pt_regs *regs)
 {
-	u64 xfd_err;
-	int err;
-
-	if (!IS_ENABLED(CONFIG_X86_64) || !cpu_feature_enabled(X86_FEATURE_XFD))
-		return false;
-
-	rdmsrl(MSR_IA32_XFD_ERR, xfd_err);
-	if (!xfd_err)
-		return false;
-
-	wrmsrl(MSR_IA32_XFD_ERR, 0);
-
-	 
-	if (WARN_ON(!user_mode(regs)))
-		return false;
-
-	local_irq_enable();
-
-	err = xfd_enable_feature(xfd_err);
-
-	switch (err) {
-	case -EPERM:
-		force_sig_fault(SIGILL, ILL_ILLOPC, error_get_trap_addr(regs));
-		break;
-	case -EFAULT:
-		force_sig(SIGSEGV);
-		break;
-	}
-
-	local_irq_disable();
-	return true;
+	/* Stub: XFD (Extended Feature Disable) not needed for minimal kernel */
+	return false;
 }
 
 DEFINE_IDTENTRY(exc_device_not_available)

@@ -48,12 +48,7 @@ const_debug unsigned int sysctl_sched_migration_cost	= 500000UL;
 int sched_thermal_decay_shift;
 static int __init setup_sched_thermal_decay_shift(char *str)
 {
-	int _shift = 0;
-
-	if (kstrtoint(str, 0, &_shift))
-		pr_warn("Unable to set scheduler thermal pressure decay shift parameter\n");
-
-	sched_thermal_decay_shift = clamp(_shift, 0, 10);
+	/* Stub: thermal pressure scheduling not needed for minimal kernel */
 	return 1;
 }
 __setup("sched_thermal_decay_shift=", setup_sched_thermal_decay_shift);
@@ -78,23 +73,8 @@ static inline void update_load_set(struct load_weight *lw, unsigned long w)
 
 static unsigned int get_update_sysctl_factor(void)
 {
-	unsigned int cpus = min_t(unsigned int, num_online_cpus(), 8);
-	unsigned int factor;
-
-	switch (sysctl_sched_tunable_scaling) {
-	case SCHED_TUNABLESCALING_NONE:
-		factor = 1;
-		break;
-	case SCHED_TUNABLESCALING_LINEAR:
-		factor = cpus;
-		break;
-	case SCHED_TUNABLESCALING_LOG:
-	default:
-		factor = 1 + ilog2(cpus);
-		break;
-	}
-
-	return factor;
+	/* Stub: single CPU in minimal system, factor = 1 */
+	return 1;
 }
 
 static void update_sysctl(void)

@@ -1,3 +1,13 @@
+--- 2025-11-29 00:52 ---
+Progress: Kconfig reductions (batch 6)
+
+Additional changes:
+- Reduced kernel/irq/Kconfig from 150 to 73 lines (51% reduction)
+
+Total Kconfig LOC removed this session: ~5,600+ lines
+
+Build: PASSES, make vm: PASSES, Hello World: PRINTS
+
 --- 2025-11-29 00:48 ---
 Progress: Kconfig reductions (batch 5)
 

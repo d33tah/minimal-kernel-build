@@ -260,14 +260,8 @@ static int __add_preferred_console(char *name, int idx, char *options,
 	return 0;
 }
 
-static int __init console_msg_format_setup(char *str)
-{
-	if (!strcmp(str, "syslog"))
-		console_msg_format = MSG_FORMAT_SYSLOG;
-	if (!strcmp(str, "default"))
-		console_msg_format = MSG_FORMAT_DEFAULT;
-	return 1;
-}
+/* Stub: console_msg_format= option not needed for minimal kernel */
+static int __init console_msg_format_setup(char *str) { return 1; }
 __setup("console_msg_format=", console_msg_format_setup);
 
  

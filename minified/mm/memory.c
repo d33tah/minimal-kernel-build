@@ -81,7 +81,7 @@ static inline bool arch_wants_old_prefaulted_pte(void)
 
 static int __init disable_randmaps(char *s)
 {
-	randomize_va_space = 0;
+	/* Stub: ASLR config not needed for minimal kernel */
 	return 1;
 }
 __setup("norandmaps", disable_randmaps);

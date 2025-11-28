@@ -1646,8 +1646,7 @@ int __kmem_cache_shutdown(struct kmem_cache *s)
 
 static int __init setup_slub_min_order(char *str)
 {
-	get_option(&str, (int *)&slub_min_order);
-
+	/* Stub: slub order config not needed for minimal kernel */
 	return 1;
 }
 
@@ -1655,9 +1654,7 @@ __setup("slub_min_order=", setup_slub_min_order);
 
 static int __init setup_slub_max_order(char *str)
 {
-	get_option(&str, (int *)&slub_max_order);
-	slub_max_order = min(slub_max_order, (unsigned int)MAX_ORDER - 1);
-
+	/* Stub: slub order config not needed for minimal kernel */
 	return 1;
 }
 
@@ -1665,8 +1662,7 @@ __setup("slub_max_order=", setup_slub_max_order);
 
 static int __init setup_slub_min_objects(char *str)
 {
-	get_option(&str, (int *)&slub_min_objects);
-
+	/* Stub: slub objects config not needed for minimal kernel */
 	return 1;
 }
 

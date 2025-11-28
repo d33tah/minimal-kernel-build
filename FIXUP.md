@@ -1,3 +1,18 @@
+--- 2025-11-28 06:11 ---
+
+Session progress:
+- make vm: PASSES, prints "Hello, World!" and "Still alive"
+- Kernel-only LOC: 190,260 (down from 190,405 at session start)
+- Binary size: 249KB (down from 250KB)
+
+Stubbed boot-time __setup functions:
+1. kernel/sched/fair.c: setup_sched_thermal_decay_shift, get_update_sysctl_factor
+2. arch/x86/kernel/traps.c: get_kernel_gp_address, fixup_iopl_exception, handle_xfd_event
+3. mm/slub.c: setup_slub_min_order, setup_slub_max_order, setup_slub_min_objects
+4. mm/slab_common.c: setup_slab_nomerge, setup_slab_merge
+5. mm/mmap.c: cmdline_parse_stack_guard_gap
+6. mm/memory.c: disable_randmaps
+
 --- 2025-11-28 05:54 ---
 
 New session start:

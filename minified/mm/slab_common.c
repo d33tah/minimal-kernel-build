@@ -50,13 +50,13 @@ static bool slab_nomerge = !IS_ENABLED(CONFIG_SLAB_MERGE_DEFAULT);
 
 static int __init setup_slab_nomerge(char *str)
 {
-	slab_nomerge = true;
+	/* Stub: slab merge config not needed for minimal kernel */
 	return 1;
 }
 
 static int __init setup_slab_merge(char *str)
 {
-	slab_nomerge = false;
+	/* Stub: slab merge config not needed for minimal kernel */
 	return 1;
 }
 

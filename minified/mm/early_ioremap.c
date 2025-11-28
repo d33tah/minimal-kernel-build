@@ -63,22 +63,8 @@ void __init early_ioremap_setup(void)
 		slot_virt[i] = __fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i);
 }
 
-static int __init check_early_ioremap_leak(void)
-{
-	int count = 0;
-	int i;
-
-	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)
-		if (prev_map[i])
-			count++;
-
-	if (WARN(count, KERN_WARNING
-		 "Debug warning: early ioremap leak of %d areas detected.\n"
-		 "please boot with early_ioremap_debug and report the dmesg.\n",
-		 count))
-		return 1;
-	return 0;
-}
+/* Stub: early ioremap leak check not needed for minimal kernel */
+static int __init check_early_ioremap_leak(void) { return 0; }
 late_initcall(check_early_ioremap_leak);
 
 static void __init __iomem *

@@ -1895,44 +1895,12 @@ void __init mmap_init(void)
 	VM_BUG_ON(ret);
 }
 
-static int init_user_reserve(void)
-{
-	unsigned long free_kbytes;
-
-	free_kbytes = global_zone_page_state(NR_FREE_PAGES) << (PAGE_SHIFT - 10);
-
-	sysctl_user_reserve_kbytes = min(free_kbytes / 32, 1UL << 17);
-	return 0;
-}
+/* Stub: reserve init functions not needed for minimal kernel - use defaults */
+static int init_user_reserve(void) { return 0; }
 subsys_initcall(init_user_reserve);
 
-static int init_admin_reserve(void)
-{
-	unsigned long free_kbytes;
-
-	free_kbytes = global_zone_page_state(NR_FREE_PAGES) << (PAGE_SHIFT - 10);
-
-	sysctl_admin_reserve_kbytes = min(free_kbytes / 32, 1UL << 13);
-	return 0;
-}
+static int init_admin_reserve(void) { return 0; }
 subsys_initcall(init_admin_reserve);
 
-static int reserve_mem_notifier(struct notifier_block *nb,
-			     unsigned long action, void *data)
-{
-	/* Stub: hotmemory reserve notifier not needed for minimal kernel */
-	return NOTIFY_OK;
-}
-
-static struct notifier_block reserve_mem_nb = {
-	.notifier_call = reserve_mem_notifier,
-};
-
-static int __meminit init_reserve_notifier(void)
-{
-	if (register_hotmemory_notifier(&reserve_mem_nb))
-		pr_err("Failed registering memory add/remove notifier for admin reserve\n");
-
-	return 0;
-}
+static int __meminit init_reserve_notifier(void) { return 0; }
 subsys_initcall(init_reserve_notifier);

@@ -1,3 +1,23 @@
+--- 2025-11-28 15:41 ---
+
+Session final notes:
+- make vm: PASSES
+- Kernel-only LOC: ~197K
+- Binary size: 246KB
+- Commits: 2 (backup file removal + session notes)
+
+Further investigation findings:
+- Small C files (< 20 lines) already reduced to minimal stubs
+- BCD functions used by RTC, cannot remove
+- irq_regs used by tick and IRQ systems
+- mm/Makefile already uses conditional compilation
+- 403 total C files, most already optimized
+
+The codebase is at a highly optimized state. Further reduction requires:
+1. Architectural changes (e.g., simplifying page table handling)
+2. Header file restructuring (high risk)
+3. Removing features that might break exec/boot
+
 --- 2025-11-28 15:38 ---
 
 Session update:

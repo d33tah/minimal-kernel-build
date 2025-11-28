@@ -401,15 +401,7 @@ void __warn_printk(const char *fmt, ...)
 
 
 
-core_param(panic, panic_timeout, int, 0644);
-core_param(panic_print, panic_print, ulong, 0644);
-core_param(pause_on_oops, pause_on_oops, int, 0644);
-core_param(panic_on_warn, panic_on_warn, int, 0644);
-core_param(crash_kexec_post_notifiers, crash_kexec_post_notifiers, bool, 0644);
-
-/* Stub: oops= cmdline option not needed for minimal kernel */
-static int __init oops_setup(char *s) { return 0; }
-early_param("oops", oops_setup);
+/* core_param stubs removed for minimal kernel */
 
 /* Stub: panic_on_taint= cmdline option not needed for minimal kernel */
 static int __init panic_on_taint_setup(char *s) { return 0; }

@@ -142,8 +142,7 @@ long rcutorture_sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 
  
  
-int rcu_cpu_stall_suppress_at_boot __read_mostly;  
-module_param(rcu_cpu_stall_suppress_at_boot, int, 0444);
+int rcu_cpu_stall_suppress_at_boot __read_mostly;
 
 void rcu_early_boot_tests(void) {}
 

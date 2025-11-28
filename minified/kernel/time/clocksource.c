@@ -126,9 +126,7 @@ void clocksource_mark_unstable(struct clocksource *cs)
 }
 
 ulong max_cswd_read_retries = 2;
-module_param(max_cswd_read_retries, ulong, 0644);
 static int verify_n_cpus = 8;
-module_param(verify_n_cpus, int, 0644);
 
 enum wd_read_status {
 	WD_READ_SUCCESS,

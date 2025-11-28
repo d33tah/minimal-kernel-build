@@ -248,15 +248,6 @@ int add_preferred_console(char *name, int idx, char *options)
 }
 
 bool console_suspend_enabled = true;
-
-/* Stub: no_console_suspend cmdline option not needed */
-static int __init console_suspend_disable(char *str) { return 1; }
-__setup("no_console_suspend", console_suspend_disable);
-module_param_named(console_suspend, console_suspend_enabled,
-		bool, S_IRUGO | S_IWUSR);
-MODULE_PARM_DESC(console_suspend, "suspend console during suspend"
-	" and hibernate operations");
-
 static bool printk_console_no_auto_verbose;
 
 void console_verbose(void)
@@ -264,9 +255,6 @@ void console_verbose(void)
 	if (console_loglevel && !printk_console_no_auto_verbose)
 		console_loglevel = CONSOLE_LOGLEVEL_MOTORMOUTH;
 }
-
-module_param_named(console_no_auto_verbose, printk_console_no_auto_verbose, bool, 0644);
-MODULE_PARM_DESC(console_no_auto_verbose, "Disable console loglevel raise to highest on oops/panic/etc");
 
  
 void suspend_console(void)

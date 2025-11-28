@@ -82,20 +82,13 @@ static void set_palette(struct vc_data *vc);
 
 #define vt_get_kmsg_redirect() vt_kmsg_redirect(-1)
 
-static int printable;		
+static int printable;
 int default_utf8 = true;
-module_param(default_utf8, int, S_IRUGO | S_IWUSR);
 int global_cursor_default = -1;
-module_param(global_cursor_default, int, S_IRUGO | S_IWUSR);
-
 static int cur_default = CUR_UNDERLINE;
-module_param(cur_default, int, S_IRUGO | S_IWUSR);
-
 int do_poke_blanked_console;
 int console_blanked;
-
 static int blankinterval;
-core_param(consoleblank, blankinterval, int, 0444);
 
 static DECLARE_WORK(console_work, console_callback);
 static DECLARE_WORK(con_driver_unregister_work, con_driver_unregister_callback);
@@ -682,23 +675,9 @@ enum { EPecma = 0, EPdec, EPeq, EPgt, EPlt};
 const unsigned char color_table[] = { 0, 4, 2, 6, 1, 5, 3, 7,
 				       8,12,10,14, 9,13,11,15 };
 
-unsigned char default_red[] = {
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0
-};
-module_param_array(default_red, byte, NULL, S_IRUGO | S_IWUSR);
-
-unsigned char default_grn[] = {
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0
-};
-module_param_array(default_grn, byte, NULL, S_IRUGO | S_IWUSR);
-
-unsigned char default_blu[] = {
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0
-};
-module_param_array(default_blu, byte, NULL, S_IRUGO | S_IWUSR);
+unsigned char default_red[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+unsigned char default_grn[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+unsigned char default_blu[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 static void gotoxy(struct vc_data *vc, int new_x, int new_y)
 {
@@ -1321,12 +1300,9 @@ static void con_cleanup(struct tty_struct *tty)
 	tty_port_put(&vc->port);
 }
 
-static int default_color           = 7; 
-static int default_italic_color    = 2;  
-static int default_underline_color = 3;  
-module_param_named(color, default_color, int, S_IRUGO | S_IWUSR);
-module_param_named(italic, default_italic_color, int, S_IRUGO | S_IWUSR);
-module_param_named(underline, default_underline_color, int, S_IRUGO | S_IWUSR);
+static int default_color = 7;
+static int default_italic_color = 2;
+static int default_underline_color = 3;
 
 static void vc_init(struct vc_data *vc, unsigned int rows,
 		    unsigned int cols, int do_clear)

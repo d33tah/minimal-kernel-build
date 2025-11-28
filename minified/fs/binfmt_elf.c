@@ -559,48 +559,12 @@ out:
 
  
 
-static int parse_elf_property(const char *data, size_t *off, size_t datasz,
+static int __maybe_unused parse_elf_property(const char *data, size_t *off, size_t datasz,
 			      struct arch_elf_state *arch,
 			      bool have_prev_type, u32 *prev_type)
 {
-	size_t o, step;
-	const struct gnu_property *pr;
-	int ret;
-
-	if (*off == datasz)
-		return -ENOENT;
-
-	if (WARN_ON_ONCE(*off > datasz || *off % ELF_GNU_PROPERTY_ALIGN))
-		return -EIO;
-	o = *off;
-	datasz -= *off;
-
-	if (datasz < sizeof(*pr))
-		return -ENOEXEC;
-	pr = (const struct gnu_property *)(data + o);
-	o += sizeof(*pr);
-	datasz -= sizeof(*pr);
-
-	if (pr->pr_datasz > datasz)
-		return -ENOEXEC;
-
-	WARN_ON_ONCE(o % ELF_GNU_PROPERTY_ALIGN);
-	step = round_up(pr->pr_datasz, ELF_GNU_PROPERTY_ALIGN);
-	if (step > datasz)
-		return -ENOEXEC;
-
-	 
-	if (have_prev_type && pr->pr_type <= *prev_type)
-		return -ENOEXEC;
-	*prev_type = pr->pr_type;
-
-	ret = arch_parse_elf_property(pr->pr_type, data + o,
-				      pr->pr_datasz, ELF_COMPAT, arch);
-	if (ret)
-		return ret;
-
-	*off = o + step;
-	return 0;
+	/* Stub: parse_elf_property not used when parse_elf_properties is stubbed */
+	return -ENOENT;
 }
 
 #define NOTE_DATA_SZ SZ_1K
@@ -610,58 +574,8 @@ static int parse_elf_property(const char *data, size_t *off, size_t datasz,
 static int parse_elf_properties(struct file *f, const struct elf_phdr *phdr,
 				struct arch_elf_state *arch)
 {
-	union {
-		struct elf_note nhdr;
-		char data[NOTE_DATA_SZ];
-	} note;
-	loff_t pos;
-	ssize_t n;
-	size_t off, datasz;
-	int ret;
-	bool have_prev_type;
-	u32 prev_type;
-
-	if (!IS_ENABLED(CONFIG_ARCH_USE_GNU_PROPERTY) || !phdr)
-		return 0;
-
-	 
-	if (WARN_ON_ONCE(phdr->p_type != PT_GNU_PROPERTY))
-		return -ENOEXEC;
-
-	 
-	if (phdr->p_filesz > sizeof(note))
-		return -ENOEXEC;
-
-	pos = phdr->p_offset;
-	n = kernel_read(f, &note, phdr->p_filesz, &pos);
-
-	BUILD_BUG_ON(sizeof(note) < sizeof(note.nhdr) + NOTE_NAME_SZ);
-	if (n < 0 || n < sizeof(note.nhdr) + NOTE_NAME_SZ)
-		return -EIO;
-
-	if (note.nhdr.n_type != NT_GNU_PROPERTY_TYPE_0 ||
-	    note.nhdr.n_namesz != NOTE_NAME_SZ ||
-	    strncmp(note.data + sizeof(note.nhdr),
-		    GNU_PROPERTY_TYPE_0_NAME, n - sizeof(note.nhdr)))
-		return -ENOEXEC;
-
-	off = round_up(sizeof(note.nhdr) + NOTE_NAME_SZ,
-		       ELF_GNU_PROPERTY_ALIGN);
-	if (off > n)
-		return -ENOEXEC;
-
-	if (note.nhdr.n_descsz > n - off)
-		return -ENOEXEC;
-	datasz = off + note.nhdr.n_descsz;
-
-	have_prev_type = false;
-	do {
-		ret = parse_elf_property(note.data, &off, datasz, arch,
-					 have_prev_type, &prev_type);
-		have_prev_type = true;
-	} while (!ret);
-
-	return ret == -ENOENT ? 0 : ret;
+	/* Stub: GNU properties not needed for minimal kernel */
+	return 0;
 }
 
 static int load_elf_binary(struct linux_binprm *bprm)

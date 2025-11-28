@@ -131,27 +131,7 @@ static int __release_resource(struct resource *old, bool release_child)
 	return -EINVAL;
 }
 
-static void __release_child_resources(struct resource *r)
-{
-	struct resource *tmp, *p;
-	resource_size_t size;
-
-	p = r->child;
-	r->child = NULL;
-	while (p) {
-		tmp = p;
-		p = p->sibling;
-
-		tmp->parent = NULL;
-		tmp->sibling = NULL;
-		__release_child_resources(tmp);
-
-		 
-		size = resource_size(tmp);
-		tmp->start = 0;
-		tmp->end = size - 1;
-	}
-}
+/* __release_child_resources removed - only called from stubbed release_child_resources */
 
 /* Stub: release_child_resources not used in minimal kernel */
 void release_child_resources(struct resource *r)

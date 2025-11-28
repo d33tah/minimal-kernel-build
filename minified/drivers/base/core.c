@@ -379,24 +379,7 @@ bool fw_devlink_is_strict(void)
 	return false;
 }
 
-static void fw_devlink_parse_fwnode(struct fwnode_handle *fwnode)
-{
-	if (fwnode->flags & FWNODE_FLAG_LINKS_ADDED)
-		return;
-
-	fwnode_call_int_op(fwnode, add_links);
-	fwnode->flags |= FWNODE_FLAG_LINKS_ADDED;
-}
-
-static void fw_devlink_parse_fwtree(struct fwnode_handle *fwnode)
-{
-	struct fwnode_handle *child = NULL;
-
-	fw_devlink_parse_fwnode(fwnode);
-
-	while ((child = fwnode_get_next_available_child_node(fwnode, child)))
-		fw_devlink_parse_fwtree(child);
-}
+/* fw_devlink_parse_fwnode, fw_devlink_parse_fwtree removed - unused */
 
 /* Stub: firmware device link functions not needed for minimal kernel */
 void fw_devlink_drivers_done(void)
@@ -1245,16 +1228,7 @@ int __init devices_init(void)
 	return -ENOMEM;
 }
 
-static int device_check_offline(struct device *dev, void *not_used)
-{
-	int ret;
-
-	ret = device_for_each_child(dev, NULL, device_check_offline);
-	if (ret)
-		return ret;
-
-	return device_supports_offline(dev) && !dev->offline ? -EBUSY : 0;
-}
+/* device_check_offline removed - only called from stubbed device_offline */
 
 int device_offline(struct device *dev)
 {

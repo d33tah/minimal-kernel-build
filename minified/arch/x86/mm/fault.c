@@ -25,9 +25,15 @@
 #include <asm/efi.h>			 
 #include <asm/desc.h>			 
 #include <asm/cpu_entry_area.h>		 
-#include <asm/pgtable_areas.h>		 
-#include <asm/kvm_para.h>		 
-#include <asm/vdso.h>			 
+#include <asm/pgtable_areas.h>
+/* Removed: #include <asm/kvm_para.h> - stub below */
+#include <asm/vdso.h>
+
+/* Minimal stub for kvm_handle_async_pf - not running under KVM */
+static __always_inline bool kvm_handle_async_pf(struct pt_regs *regs, u32 token)
+{
+	return false;
+}			 
 #include <asm/irq_stack.h>
 
 #include <asm/trace/exceptions.h>

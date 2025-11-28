@@ -42,87 +42,19 @@ kmmio_fault(struct pt_regs *regs, unsigned long addr)
 	return 0;
 }
 
- 
-static inline int
-check_prefetch_opcode(struct pt_regs *regs, unsigned char *instr,
-		      unsigned char opcode, int *prefetch)
-{
-	unsigned char instr_hi = opcode & 0xf0;
-	unsigned char instr_lo = opcode & 0x0f;
-
-	switch (instr_hi) {
-	case 0x20:
-	case 0x30:
-		 
-		return ((instr_lo & 7) == 0x6);
-	case 0x60:
-		 
-		return (instr_lo & 0xC) == 0x4;
-	case 0xF0:
-		 
-		return !instr_lo || (instr_lo>>1) == 1;
-	case 0x00:
-		 
-		if (get_kernel_nofault(opcode, instr))
-			return 0;
-
-		*prefetch = (instr_lo == 0xF) &&
-			(opcode == 0x0D || opcode == 0x18);
-		return 0;
-	default:
-		return 0;
-	}
-}
+/* check_prefetch_opcode removed: not needed since is_prefetch is stubbed */
 
 static bool is_amd_k8_pre_npt(void)
 {
-	struct cpuinfo_x86 *c = &boot_cpu_data;
-
-	return unlikely(IS_ENABLED(CONFIG_CPU_SUP_AMD) &&
-			c->x86_vendor == X86_VENDOR_AMD &&
-			c->x86 == 0xf && c->x86_model < 0x40);
+	/* Stub: AMD K8 not supported in minimal kernel */
+	return false;
 }
 
 static int
 is_prefetch(struct pt_regs *regs, unsigned long error_code, unsigned long addr)
 {
-	unsigned char *max_instr;
-	unsigned char *instr;
-	int prefetch = 0;
-
-	 
-	if (!is_amd_k8_pre_npt())
-		return 0;
-
-	 
-	if (error_code & X86_PF_INSTR)
-		return 0;
-
-	instr = (void *)convert_ip_to_linear(current, regs);
-	max_instr = instr + 15;
-
-	 
-	pagefault_disable();
-
-	while (instr < max_instr) {
-		unsigned char opcode;
-
-		if (user_mode(regs)) {
-			if (get_user(opcode, (unsigned char __user *) instr))
-				break;
-		} else {
-			if (get_kernel_nofault(opcode, instr))
-				break;
-		}
-
-		instr++;
-
-		if (!check_prefetch_opcode(regs, instr, opcode, &prefetch))
-			break;
-	}
-
-	pagefault_enable();
-	return prefetch;
+	/* Stub: AMD K8 prefetch quirk not needed for minimal kernel */
+	return 0;
 }
 
 DEFINE_SPINLOCK(pgd_lock);

@@ -22,17 +22,7 @@ static const speed_t baud_table[] = {
 #endif
 };
 
-static const tcflag_t baud_bits[] = {
-	B0, B50, B75, B110, B134, B150, B200, B300, B600, B1200, B1800, B2400,
-	B4800, B9600, B19200, B38400, B57600, B115200, B230400, B460800,
-#ifdef __sparc__
-	B76800, B153600, B307200, B614400, B921600, B500000, B576000,
-	B1000000, B1152000, B1500000, B2000000
-#else
-	B500000, B576000, B921600, B1000000, B1152000, B1500000, B2000000,
-	B2500000, B3000000, B3500000, B4000000
-#endif
-};
+/* baud_bits[] removed: unused */
 
 static int n_baud_table = ARRAY_SIZE(baud_table);
 

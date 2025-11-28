@@ -42,13 +42,7 @@ kmmio_fault(struct pt_regs *regs, unsigned long addr)
 	return 0;
 }
 
-/* check_prefetch_opcode removed: not needed since is_prefetch is stubbed */
-
-static bool is_amd_k8_pre_npt(void)
-{
-	/* Stub: AMD K8 not supported in minimal kernel */
-	return false;
-}
+/* check_prefetch_opcode and is_amd_k8_pre_npt removed: not needed since is_prefetch is stubbed */
 
 static int
 is_prefetch(struct pt_regs *regs, unsigned long error_code, unsigned long addr)

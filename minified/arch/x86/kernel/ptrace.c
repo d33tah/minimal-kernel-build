@@ -51,36 +51,8 @@ enum x86_regset {
 	REGSET_IOPERM32,
 };
 
-struct pt_regs_offset {
-	const char *name;
-	int offset;
-};
+/* regoffset_table removed: unused since regs_query_register_* are stubbed */
 
-#define REG_OFFSET_NAME(r) {.name = #r, .offset = offsetof(struct pt_regs, r)}
-#define REG_OFFSET_END {.name = NULL, .offset = 0}
-
-static const struct pt_regs_offset regoffset_table[] = {
-	REG_OFFSET_NAME(bx),
-	REG_OFFSET_NAME(cx),
-	REG_OFFSET_NAME(dx),
-	REG_OFFSET_NAME(si),
-	REG_OFFSET_NAME(di),
-	REG_OFFSET_NAME(bp),
-	REG_OFFSET_NAME(ax),
-	REG_OFFSET_NAME(ds),
-	REG_OFFSET_NAME(es),
-	REG_OFFSET_NAME(fs),
-	REG_OFFSET_NAME(gs),
-	REG_OFFSET_NAME(orig_ax),
-	REG_OFFSET_NAME(ip),
-	REG_OFFSET_NAME(cs),
-	REG_OFFSET_NAME(flags),
-	REG_OFFSET_NAME(sp),
-	REG_OFFSET_NAME(ss),
-	REG_OFFSET_END,
-};
-
- 
 /* STUB: regs_query_register_offset not used externally */
 int regs_query_register_offset(const char *name) { return -EINVAL; }
 

@@ -700,35 +700,7 @@ char *symbol_string(char *buf, char *end, void *ptr,
 	return special_hex_number(buf, end, value, sizeof(void *));
 }
 
-static const struct printf_spec default_str_spec = {
-	.field_width = -1,
-	.precision = -1,
-};
-
-static const struct printf_spec default_flag_spec = {
-	.base = 16,
-	.precision = -1,
-	.flags = SPECIAL | SMALL,
-};
-
-static const struct printf_spec default_dec_spec = {
-	.base = 10,
-	.precision = -1,
-};
-
-static const struct printf_spec default_dec02_spec = {
-	.base = 10,
-	.field_width = 2,
-	.precision = -1,
-	.flags = ZEROPAD,
-};
-
-static const struct printf_spec default_dec04_spec = {
-	.base = 10,
-	.field_width = 4,
-	.precision = -1,
-	.flags = ZEROPAD,
-};
+/* default_*_spec variables removed: unused in minimal kernel */
 
 static noinline_for_stack
 char *resource_string(char *buf, char *end, struct resource *res,

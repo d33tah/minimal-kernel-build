@@ -90,9 +90,7 @@ static pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
 }
 #endif
 
-static const struct vm_operations_struct mmap_mem_ops = {
-	.access = generic_access_phys
-};
+/* mmap_mem_ops removed: unused since mmap_mem is stubbed */
 
 static int mmap_mem(struct file *file, struct vm_area_struct *vma)
 {

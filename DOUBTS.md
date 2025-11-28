@@ -1,5 +1,23 @@
 # Doubts and Issues
 
+## 2025-11-28 08:26
+
+### Session Progress
+
+Current state:
+- **LOC (cloc):** 196,271 ✅ (target was ≤200,000)
+- **bzImage Size:** 249KB ✅
+- **make vm:** PASSES ✅ - kernel boots and prints "Hello, World!Still alive"
+
+This session reduced LOC by ~290 (from 196,561 to 196,271).
+
+Commits this session:
+1. Remove unused CPU vuln tables and dead code (~200 LOC)
+2. Stub VGA VESA and palette blanking (~100 LOC)
+3. Stub Sandy Bridge graphics workaround (~25 LOC)
+
+Everything is committed and pushed. Will wait 9 minutes for CI to complete.
+
 ## 2025-11-28 06:53
 
 ### ✅ CI VERIFIED PASSING AFTER 9 MINUTE WAIT

@@ -1,41 +1,14 @@
- 
+/* Stub: mmap_min_addr handling simplified for minimal kernel */
 #include <linux/init.h>
 #include <linux/mm.h>
 #include <linux/security.h>
 #include <linux/sysctl.h>
 
- 
-unsigned long mmap_min_addr;
- 
+unsigned long mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
 unsigned long dac_mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
- 
 
- 
-static void update_mmap_min_addr(void)
-{
-	mmap_min_addr = dac_mmap_min_addr;
-}
-
- 
 int mmap_min_addr_handler(struct ctl_table *table, int write,
-			  void *buffer, size_t *lenp, loff_t *ppos)
-{
-	int ret;
+			  void *buffer, size_t *lenp, loff_t *ppos) { return 0; }
 
-	if (write && !capable(CAP_SYS_RAWIO))
-		return -EPERM;
-
-	ret = proc_doulongvec_minmax(table, write, buffer, lenp, ppos);
-
-	update_mmap_min_addr();
-
-	return ret;
-}
-
-static int __init init_mmap_min_addr(void)
-{
-	update_mmap_min_addr();
-
-	return 0;
-}
+static int __init init_mmap_min_addr(void) { return 0; }
 pure_initcall(init_mmap_min_addr);

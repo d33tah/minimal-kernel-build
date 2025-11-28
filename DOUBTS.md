@@ -1,5 +1,24 @@
 # Doubts and Issues
 
+## 2025-11-28 02:44
+
+### Session Progress
+- Kernel-only LOC: 197,683 (further reduced from 200,926!)
+- Binary size: 251KB
+- make vm passes with "Hello, World!" and "Still alive"
+
+### GitLab Access Issue (persists)
+- Cannot push to gitlab remote: "The project you were looking for could not be found or you don't have permission to view it"
+- glab mr list returns 404 Not Found
+- All changes pushed to GitHub origin only
+- Cannot verify CI status via glab
+
+### Action taken
+- ~270 LOC removed this session through unused function/variable removal
+- Build is clean - no more unused function warnings
+- Commits pushed to GitHub
+- Sleeping to wait for any CI that might be running
+
 ## 2025-11-28 01:01
 
 ### Goal ACHIEVED!

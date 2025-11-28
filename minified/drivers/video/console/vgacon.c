@@ -581,125 +581,21 @@ static void vgacon_set_palette(struct vc_data *vc, const unsigned char *table)
 }
 
  
-static struct {
-	unsigned char SeqCtrlIndex;	 
-	unsigned char CrtCtrlIndex;	 
-	unsigned char CrtMiscIO;	 
-	unsigned char HorizontalTotal;	 
-	unsigned char HorizDisplayEnd;	 
-	unsigned char StartHorizRetrace;	 
-	unsigned char EndHorizRetrace;	 
-	unsigned char Overflow;	 
-	unsigned char StartVertRetrace;	 
-	unsigned char EndVertRetrace;	 
-	unsigned char ModeControl;	 
-	unsigned char ClockingMode;	 
-} vga_state;
+/* vga_state struct and vga_vesa_blank/unblank removed: VESA power saving not needed */
 
 static void vga_vesa_blank(struct vgastate *state, int mode)
 {
-	 
-	if (!vga_vesa_blanked) {
-		raw_spin_lock_irq(&vga_lock);
-		vga_state.SeqCtrlIndex = vga_r(state->vgabase, VGA_SEQ_I);
-		vga_state.CrtCtrlIndex = inb_p(vga_video_port_reg);
-		vga_state.CrtMiscIO = vga_r(state->vgabase, VGA_MIS_R);
-		raw_spin_unlock_irq(&vga_lock);
-
-		outb_p(0x00, vga_video_port_reg);	 
-		vga_state.HorizontalTotal = inb_p(vga_video_port_val);
-		outb_p(0x01, vga_video_port_reg);	 
-		vga_state.HorizDisplayEnd = inb_p(vga_video_port_val);
-		outb_p(0x04, vga_video_port_reg);	 
-		vga_state.StartHorizRetrace = inb_p(vga_video_port_val);
-		outb_p(0x05, vga_video_port_reg);	 
-		vga_state.EndHorizRetrace = inb_p(vga_video_port_val);
-		outb_p(0x07, vga_video_port_reg);	 
-		vga_state.Overflow = inb_p(vga_video_port_val);
-		outb_p(0x10, vga_video_port_reg);	 
-		vga_state.StartVertRetrace = inb_p(vga_video_port_val);
-		outb_p(0x11, vga_video_port_reg);	 
-		vga_state.EndVertRetrace = inb_p(vga_video_port_val);
-		outb_p(0x17, vga_video_port_reg);	 
-		vga_state.ModeControl = inb_p(vga_video_port_val);
-		vga_state.ClockingMode = vga_rseq(state->vgabase, VGA_SEQ_CLOCK_MODE);
-	}
-
-	 
-	 
-	raw_spin_lock_irq(&vga_lock);
-	vga_wseq(state->vgabase, VGA_SEQ_CLOCK_MODE, vga_state.ClockingMode | 0x20);
-
-	 
-	if ((vga_state.CrtMiscIO & 0x80) == 0x80)
-		vga_w(state->vgabase, VGA_MIS_W, vga_state.CrtMiscIO & 0xEF);
-
-	 
-	if (mode & VESA_VSYNC_SUSPEND) {
-		outb_p(0x10, vga_video_port_reg);	 
-		outb_p(0xff, vga_video_port_val);	 
-		outb_p(0x11, vga_video_port_reg);	 
-		outb_p(0x40, vga_video_port_val);	 
-		outb_p(0x07, vga_video_port_reg);	 
-		outb_p(vga_state.Overflow | 0x84, vga_video_port_val);	 
-	}
-
-	if (mode & VESA_HSYNC_SUSPEND) {
-		 
-		outb_p(0x04, vga_video_port_reg);	 
-		outb_p(0xff, vga_video_port_val);	 
-		outb_p(0x05, vga_video_port_reg);	 
-		outb_p(0x00, vga_video_port_val);	 
-	}
-
-	 
-	vga_w(state->vgabase, VGA_SEQ_I, vga_state.SeqCtrlIndex);
-	outb_p(vga_state.CrtCtrlIndex, vga_video_port_reg);
-	raw_spin_unlock_irq(&vga_lock);
+	/* Stub: VESA blanking not needed for minimal kernel */
 }
 
 static void vga_vesa_unblank(struct vgastate *state)
 {
-	 
-	raw_spin_lock_irq(&vga_lock);
-	vga_w(state->vgabase, VGA_MIS_W, vga_state.CrtMiscIO);
-
-	outb_p(0x00, vga_video_port_reg);	 
-	outb_p(vga_state.HorizontalTotal, vga_video_port_val);
-	outb_p(0x01, vga_video_port_reg);	 
-	outb_p(vga_state.HorizDisplayEnd, vga_video_port_val);
-	outb_p(0x04, vga_video_port_reg);	 
-	outb_p(vga_state.StartHorizRetrace, vga_video_port_val);
-	outb_p(0x05, vga_video_port_reg);	 
-	outb_p(vga_state.EndHorizRetrace, vga_video_port_val);
-	outb_p(0x07, vga_video_port_reg);	 
-	outb_p(vga_state.Overflow, vga_video_port_val);
-	outb_p(0x10, vga_video_port_reg);	 
-	outb_p(vga_state.StartVertRetrace, vga_video_port_val);
-	outb_p(0x11, vga_video_port_reg);	 
-	outb_p(vga_state.EndVertRetrace, vga_video_port_val);
-	outb_p(0x17, vga_video_port_reg);	 
-	outb_p(vga_state.ModeControl, vga_video_port_val);
-	 
-	vga_wseq(state->vgabase, VGA_SEQ_CLOCK_MODE, vga_state.ClockingMode);
-
-	 
-	vga_w(state->vgabase, VGA_SEQ_I, vga_state.SeqCtrlIndex);
-	outb_p(vga_state.CrtCtrlIndex, vga_video_port_reg);
-	raw_spin_unlock_irq(&vga_lock);
+	/* Stub: VESA unblanking not needed for minimal kernel */
 }
 
 static void vga_pal_blank(struct vgastate *state)
 {
-	int i;
-
-	vga_w(state->vgabase, VGA_PEL_MSK, 0xff);
-	for (i = 0; i < 16; i++) {
-		vga_w(state->vgabase, VGA_PEL_IW, i);
-		vga_w(state->vgabase, VGA_PEL_D, 0);
-		vga_w(state->vgabase, VGA_PEL_D, 0);
-		vga_w(state->vgabase, VGA_PEL_D, 0);
-	}
+	/* Stub: palette blanking not needed for minimal kernel */
 }
 
 static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)

@@ -894,69 +894,7 @@ static bool arch_cap_mmio_immune(u64 ia32_cap)
 
 static void __init cpu_set_bug_bits(struct cpuinfo_x86 *c)
 {
-	u64 ia32_cap = x86_read_arch_cap_msr();
-
-	if (!cpu_matches(cpu_vuln_whitelist, NO_ITLB_MULTIHIT) &&
-	    !(ia32_cap & ARCH_CAP_PSCHANGE_MC_NO))
-		setup_force_cpu_bug(X86_BUG_ITLB_MULTIHIT);
-
-	if (cpu_matches(cpu_vuln_whitelist, NO_SPECULATION))
-		return;
-
-	setup_force_cpu_bug(X86_BUG_SPECTRE_V1);
-
-	if (!cpu_matches(cpu_vuln_whitelist, NO_SPECTRE_V2))
-		setup_force_cpu_bug(X86_BUG_SPECTRE_V2);
-
-	if (!cpu_matches(cpu_vuln_whitelist, NO_SSB) &&
-	    !(ia32_cap & ARCH_CAP_SSB_NO) &&
-	   !cpu_has(c, X86_FEATURE_AMD_SSB_NO))
-		setup_force_cpu_bug(X86_BUG_SPEC_STORE_BYPASS);
-
-	if (ia32_cap & ARCH_CAP_IBRS_ALL)
-		setup_force_cpu_cap(X86_FEATURE_IBRS_ENHANCED);
-
-	if (!cpu_matches(cpu_vuln_whitelist, NO_MDS) &&
-	    !(ia32_cap & ARCH_CAP_MDS_NO)) {
-		setup_force_cpu_bug(X86_BUG_MDS);
-		if (cpu_matches(cpu_vuln_whitelist, MSBDS_ONLY))
-			setup_force_cpu_bug(X86_BUG_MSBDS_ONLY);
-	}
-
-	if (!cpu_matches(cpu_vuln_whitelist, NO_SWAPGS))
-		setup_force_cpu_bug(X86_BUG_SWAPGS);
-
-	if (!(ia32_cap & ARCH_CAP_TAA_NO) &&
-	    (cpu_has(c, X86_FEATURE_RTM) ||
-	     (ia32_cap & ARCH_CAP_TSX_CTRL_MSR)))
-		setup_force_cpu_bug(X86_BUG_TAA);
-
-	if ((cpu_has(c, X86_FEATURE_RDRAND) ||
-	     cpu_has(c, X86_FEATURE_RDSEED)) &&
-	    cpu_matches(cpu_vuln_blacklist, SRBDS | MMIO_SBDS))
-		    setup_force_cpu_bug(X86_BUG_SRBDS);
-
-	if (cpu_matches(cpu_vuln_blacklist, MMIO) &&
-	    !arch_cap_mmio_immune(ia32_cap))
-		setup_force_cpu_bug(X86_BUG_MMIO_STALE_DATA);
-
-	if (!cpu_has(c, X86_FEATURE_BTC_NO)) {
-		if (cpu_matches(cpu_vuln_blacklist, RETBLEED) || (ia32_cap & ARCH_CAP_RSBA))
-			setup_force_cpu_bug(X86_BUG_RETBLEED);
-	}
-
-	if (cpu_matches(cpu_vuln_whitelist, NO_MELTDOWN))
-		return;
-
-	if (ia32_cap & ARCH_CAP_RDCL_NO)
-		return;
-
-	setup_force_cpu_bug(X86_BUG_CPU_MELTDOWN);
-
-	if (cpu_matches(cpu_vuln_whitelist, NO_L1TF))
-		return;
-
-	setup_force_cpu_bug(X86_BUG_L1TF);
+	/* Stub: CPU bug detection not needed for minimal kernel */
 }
 
 static void detect_nopl(void)
@@ -966,54 +904,7 @@ static void detect_nopl(void)
 
 static void __init cpu_parse_early_param(void)
 {
-	char arg[128];
-	char *argptr = arg, *opt;
-	int arglen, taint = 0;
-
-	if (cmdline_find_option_bool(boot_command_line, "no387"))
-		pr_err("Option 'no387' required CONFIG_MATH_EMULATION enabled.\n");
-
-	if (cmdline_find_option_bool(boot_command_line, "nofxsr"))
-		setup_clear_cpu_cap(X86_FEATURE_FXSR);
-
-	if (cmdline_find_option_bool(boot_command_line, "noxsave"))
-		setup_clear_cpu_cap(X86_FEATURE_XSAVE);
-
-	if (cmdline_find_option_bool(boot_command_line, "noxsaveopt"))
-		setup_clear_cpu_cap(X86_FEATURE_XSAVEOPT);
-
-	if (cmdline_find_option_bool(boot_command_line, "noxsaves"))
-		setup_clear_cpu_cap(X86_FEATURE_XSAVES);
-
-	arglen = cmdline_find_option(boot_command_line, "clearcpuid", arg, sizeof(arg));
-	if (arglen <= 0)
-		return;
-
-	pr_info("Clearing CPUID bits:");
-
-	while (argptr) {
-		bool found __maybe_unused = false;
-		unsigned int bit;
-
-		opt = strsep(&argptr, ",");
-
-		if (!kstrtouint(opt, 10, &bit)) {
-			if (bit < NCAPINTS * 32) {
-
-					pr_cont(" " X86_CAP_FMT, x86_cap_flag(bit));
-
-				setup_clear_cpu_cap(bit);
-				taint++;
-			}
-			
-			continue;
-		}
-
-	}
-	pr_cont("\n");
-
-	if (taint)
-		add_taint(TAINT_CPU_OUT_OF_SPEC, LOCKDEP_STILL_OK);
+	/* Stub: CPU early param parsing not needed for minimal kernel */
 }
 
 static void __init early_identify_cpu(struct cpuinfo_x86 *c)

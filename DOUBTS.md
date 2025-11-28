@@ -1,5 +1,27 @@
 # Doubts and Issues
 
+## 2025-11-28 06:35
+
+### Session Summary
+- Kernel-only LOC: 190,204 (goal was 200K - still exceeding!)
+- Binary size: 249KB
+- make vm: "Hello, World!" and "Still alive" printed
+
+### Commits this session
+1. Stub scheduler and trap functions (~130 LOC)
+2. Stub MM boot-time __setup functions (~10 LOC)
+3. Stub more boot-time __setup functions (~5 LOC)
+4. Remove AMD K8 prefetch quirk code (~50 LOC)
+
+### GitLab Access Issue
+- Cannot push to gitlab remote - project not found / no permissions
+- Cannot use glab for CI checks
+- Need to check GitHub PR #10 for CI status
+
+### TODO
+- Check GitHub PR #10 CI status
+- Ping @d33tah if CI passes
+
 ## 2025-11-28 04:52
 
 ### CI STATUS: ✅ PASSED

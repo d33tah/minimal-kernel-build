@@ -1065,13 +1065,8 @@ static void __wait_on_freeing_inode(struct inode *inode)
 }
 
 static __initdata unsigned long ihash_entries;
-static int __init set_ihash_entries(char *str)
-{
-	if (!str)
-		return 0;
-	ihash_entries = simple_strtoul(str, &str, 0);
-	return 1;
-}
+/* Stub: ihash_entries= option not needed for minimal kernel */
+static int __init set_ihash_entries(char *str) { return 1; }
 __setup("ihash_entries=", set_ihash_entries);
 
 void __init inode_init_early(void)

@@ -1589,13 +1589,8 @@ void d_tmpfile(struct dentry *dentry, struct inode *inode)
 }
 
 static __initdata unsigned long dhash_entries;
-static int __init set_dhash_entries(char *str)
-{
-	if (!str)
-		return 0;
-	dhash_entries = simple_strtoul(str, &str, 0);
-	return 1;
-}
+/* Stub: dhash_entries= option not needed for minimal kernel */
+static int __init set_dhash_entries(char *str) { return 1; }
 __setup("dhash_entries=", set_dhash_entries);
 
 static void __init dcache_init_early(void)

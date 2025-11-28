@@ -657,41 +657,9 @@ void __devm_release_region(struct device *dev, struct resource *parent,
 
  
 #define MAXRESERVE 4
+/* Stub: reserve= cmdline option not needed for minimal kernel */
 static int __init reserve_setup(char *str)
 {
-	static int reserved;
-	static struct resource reserve[MAXRESERVE];
-
-	for (;;) {
-		unsigned int io_start, io_num;
-		int x = reserved;
-		struct resource *parent;
-
-		if (get_option(&str, &io_start) != 2)
-			break;
-		if (get_option(&str, &io_num) == 0)
-			break;
-		if (x < MAXRESERVE) {
-			struct resource *res = reserve + x;
-
-			 
-			if (io_start < 0x10000) {
-				res->flags = IORESOURCE_IO;
-				parent = &ioport_resource;
-			} else {
-				res->flags = IORESOURCE_MEM;
-				parent = &iomem_resource;
-			}
-			res->name = "reserved";
-			res->start = io_start;
-			res->end = io_start + io_num - 1;
-			res->flags |= IORESOURCE_BUSY;
-			res->desc = IORES_DESC_NONE;
-			res->child = NULL;
-			if (request_resource(parent, res) == 0)
-				reserved = x+1;
-		}
-	}
 	return 1;
 }
 __setup("reserve=", reserve_setup);

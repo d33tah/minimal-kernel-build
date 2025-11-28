@@ -482,27 +482,8 @@ void __init arch_post_acpi_subsys_init(void)
 	pr_info("System has AMD C1E enabled\n");
 }
 
-static int __init idle_setup(char *str)
-{
-	if (!str)
-		return -EINVAL;
-
-	if (!strcmp(str, "poll")) {
-		pr_info("using polling idle threads\n");
-		boot_option_idle_override = IDLE_POLL;
-		cpu_idle_poll_ctrl(true);
-	} else if (!strcmp(str, "halt")) {
-		 
-		x86_idle = default_idle;
-		boot_option_idle_override = IDLE_HALT;
-	} else if (!strcmp(str, "nomwait")) {
-		 
-		boot_option_idle_override = IDLE_NOMWAIT;
-	} else
-		return -1;
-
-	return 0;
-}
+/* Stub: idle= cmdline option not needed for minimal kernel */
+static int __init idle_setup(char *str) { return 0; }
 early_param("idle", idle_setup);
 
 unsigned long arch_align_stack(unsigned long sp)

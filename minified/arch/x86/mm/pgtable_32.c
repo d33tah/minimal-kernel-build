@@ -62,28 +62,10 @@ void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
 unsigned long __FIXADDR_TOP = 0xfffff000;
 
  
-static int __init parse_vmalloc(char *arg)
-{
-	if (!arg)
-		return -EINVAL;
-
-	 
-	__VMALLOC_RESERVE = memparse(arg, &arg) + VMALLOC_OFFSET;
-	return 0;
-}
+/* Stub: vmalloc= cmdline option not needed for minimal kernel */
+static int __init parse_vmalloc(char *arg) { return 0; }
 early_param("vmalloc", parse_vmalloc);
 
- 
-static int __init parse_reservetop(char *arg)
-{
-	unsigned long address;
-
-	if (!arg)
-		return -EINVAL;
-
-	address = memparse(arg, &arg);
-	reserve_top_address(address);
-	early_ioremap_init();
-	return 0;
-}
+/* Stub: reservetop= cmdline option not needed for minimal kernel */
+static int __init parse_reservetop(char *arg) { return 0; }
 early_param("reservetop", parse_reservetop);

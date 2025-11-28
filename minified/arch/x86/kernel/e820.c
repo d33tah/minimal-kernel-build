@@ -582,53 +582,12 @@ static void __init early_panic(char *msg)
 
 static int userdef __initdata;
 
- 
-static int __init parse_memopt(char *p)
-{
-	u64 mem_size;
-
-	if (!p)
-		return -EINVAL;
-
-	if (!strcmp(p, "nopentium")) {
-		setup_clear_cpu_cap(X86_FEATURE_PSE);
-		return 0;
-	}
-
-	userdef = 1;
-	mem_size = memparse(p, &p);
-
-	 
-	if (mem_size == 0)
-		return -EINVAL;
-
-	e820__range_remove(mem_size, ULLONG_MAX - mem_size, E820_TYPE_RAM, 1);
-
-
-	return 0;
-}
+/* Stub: mem= cmdline option not needed for minimal kernel */
+static int __init parse_memopt(char *p) { return 0; }
 early_param("mem", parse_memopt);
 
-static int __init parse_memmap_one(char *p)
-{
-	/* Stub: memmap command line parsing not needed for minimal kernel */
-	return 0;
-}
-
-static int __init parse_memmap_opt(char *str)
-{
-	while (str) {
-		char *k = strchr(str, ',');
-
-		if (k)
-			*k++ = 0;
-
-		parse_memmap_one(str);
-		str = k;
-	}
-
-	return 0;
-}
+/* Stub: memmap= cmdline option not needed for minimal kernel */
+static int __init parse_memmap_opt(char *str) { return 0; }
 early_param("memmap", parse_memmap_opt);
 
  

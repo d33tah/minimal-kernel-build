@@ -692,14 +692,8 @@ void resource_list_free(struct list_head *head)
 }
 
 
-static int __init strict_iomem(char *str)
-{
-	if (strstr(str, "relaxed"))
-		strict_iomem_checks = 0;
-	if (strstr(str, "strict"))
-		strict_iomem_checks = 1;
-	return 1;
-}
+/* Stub: iomem= cmdline option not needed for minimal kernel */
+static int __init strict_iomem(char *str) { return 1; }
 
 static int iomem_fs_init_fs_context(struct fs_context *fc)
 {

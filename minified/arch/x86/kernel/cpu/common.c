@@ -145,28 +145,14 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
 	[GDT_ENTRY_PERCPU]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
 } };
 
-static int __init x86_noinvpcid_setup(char *s)
-{
-	
-	if (s)
-		return -EINVAL;
-
-	if (!boot_cpu_has(X86_FEATURE_INVPCID))
-		return 0;
-
-	setup_clear_cpu_cap(X86_FEATURE_INVPCID);
-	pr_info("noinvpcid: INVPCID feature disabled\n");
-	return 0;
-}
+/* Stub: noinvpcid cmdline option not needed for minimal kernel */
+static int __init x86_noinvpcid_setup(char *s) { return 0; }
 early_param("noinvpcid", x86_noinvpcid_setup);
 
 static int cachesize_override = -1;
 
-static int __init cachesize_setup(char *str)
-{
-	get_option(&str, &cachesize_override);
-	return 1;
-}
+/* Stub: cachesize= cmdline option not needed for minimal kernel */
+static int __init cachesize_setup(char *str) { return 1; }
 __setup("cachesize=", cachesize_setup);
 
 static inline int flag_is_changeable_p(u32 flag)

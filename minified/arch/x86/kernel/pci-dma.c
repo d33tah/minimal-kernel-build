@@ -46,62 +46,8 @@ void __init pci_iommu_alloc(void)
 	swiotlb_init(x86_swiotlb_enable, x86_swiotlb_flags);
 }
 
- 
-static __init int iommu_setup(char *p)
-{
-	iommu_merge = 1;
-
-	if (!p)
-		return -EINVAL;
-
-	while (*p) {
-		if (!strncmp(p, "off", 3))
-			no_iommu = 1;
-		 
-		if (!strncmp(p, "force", 5))
-			force_iommu = 1;
-		if (!strncmp(p, "noforce", 7)) {
-			iommu_merge = 0;
-			force_iommu = 0;
-		}
-
-		if (!strncmp(p, "biomerge", 8)) {
-			iommu_merge = 1;
-			force_iommu = 1;
-		}
-		if (!strncmp(p, "panic", 5))
-			panic_on_overflow = 1;
-		if (!strncmp(p, "nopanic", 7))
-			panic_on_overflow = 0;
-		if (!strncmp(p, "merge", 5)) {
-			iommu_merge = 1;
-			force_iommu = 1;
-		}
-		if (!strncmp(p, "nomerge", 7))
-			iommu_merge = 0;
-		if (!strncmp(p, "forcesac", 8))
-			pr_warn("forcesac option ignored.\n");
-		if (!strncmp(p, "allowdac", 8))
-			pr_warn("allowdac option ignored.\n");
-		if (!strncmp(p, "nodac", 5))
-			pr_warn("nodac option ignored.\n");
-		if (!strncmp(p, "usedac", 6)) {
-			disable_dac_quirk = true;
-			return 1;
-		}
-		if (!strncmp(p, "pt", 2))
-			iommu_set_default_passthrough(true);
-		if (!strncmp(p, "nopt", 4))
-			iommu_set_default_translated(true);
-
-		gart_parse_options(p);
-
-		p += strcspn(p, ",");
-		if (*p == ',')
-			++p;
-	}
-	return 0;
-}
+/* Stub: iommu= cmdline option not needed for minimal kernel */
+static __init int iommu_setup(char *p) { return 0; }
 early_param("iommu", iommu_setup);
 
 static int __init pci_iommu_init(void)

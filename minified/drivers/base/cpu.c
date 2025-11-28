@@ -74,29 +74,7 @@ static struct cpu_attr cpu_attrs[] = {
 	_CPU_ATTR(present, &__cpu_present_mask),
 };
 
-/* Stub: CPU sysfs attributes simplified for minimal kernel */
-static ssize_t print_cpus_kernel_max(struct device *dev,
-				     struct device_attribute *attr, char *buf)
-{
-	return sysfs_emit(buf, "0\n");
-}
-static DEVICE_ATTR(kernel_max, 0444, print_cpus_kernel_max, NULL);
-
 unsigned int total_cpus;
-
-static ssize_t print_cpus_offline(struct device *dev,
-				  struct device_attribute *attr, char *buf)
-{
-	return sysfs_emit(buf, "\n");
-}
-static DEVICE_ATTR(offline, 0444, print_cpus_offline, NULL);
-
-static ssize_t print_cpus_isolated(struct device *dev,
-				  struct device_attribute *attr, char *buf)
-{
-	return sysfs_emit(buf, "\n");
-}
-static DEVICE_ATTR(isolated, 0444, print_cpus_isolated, NULL);
 
 
 static void cpu_device_release(struct device *dev)
@@ -104,13 +82,6 @@ static void cpu_device_release(struct device *dev)
 	 
 }
 
-/* Stub: CPU modalias simplified for minimal kernel */
-static ssize_t print_cpu_modalias(struct device *dev,
-				  struct device_attribute *attr,
-				  char *buf)
-{
-	return sysfs_emit(buf, "cpu:type:x86:feature:\n");
-}
 
 static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
 {
@@ -209,16 +180,11 @@ struct device *cpu_device_create(struct device *parent, void *drvdata,
 	return dev;
 }
 
-static DEVICE_ATTR(modalias, 0444, print_cpu_modalias, NULL);
-
+/* Stub: CPU sysfs attributes minimized */
 static struct attribute *cpu_root_attrs[] = {
 	&cpu_attrs[0].attr.attr,
 	&cpu_attrs[1].attr.attr,
 	&cpu_attrs[2].attr.attr,
-	&dev_attr_kernel_max.attr,
-	&dev_attr_offline.attr,
-	&dev_attr_isolated.attr,
-	&dev_attr_modalias.attr,
 	NULL
 };
 

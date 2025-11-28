@@ -110,45 +110,8 @@ void device_pm_move_to_tail(struct device *dev)
 
 #define to_devlink(dev)	container_of((dev), struct device_link, link_dev)
 
-static ssize_t status_show(struct device *dev,
-			   struct device_attribute *attr, char *buf)
-{
-	/* Stub: device link status not needed for minimal kernel */
-	return sysfs_emit(buf, "unknown\n");
-}
-static DEVICE_ATTR_RO(status);
-
-static ssize_t auto_remove_on_show(struct device *dev,
-				   struct device_attribute *attr, char *buf)
-{
-	/* Stub: device link auto-remove status not needed for minimal kernel */
-	return sysfs_emit(buf, "never\n");
-}
-static DEVICE_ATTR_RO(auto_remove_on);
-
-static ssize_t runtime_pm_show(struct device *dev,
-			       struct device_attribute *attr, char *buf)
-{
-	/* Stub: device link runtime PM status not needed for minimal kernel */
-	return sysfs_emit(buf, "0\n");
-}
-static DEVICE_ATTR_RO(runtime_pm);
-
-static ssize_t sync_state_only_show(struct device *dev,
-				    struct device_attribute *attr, char *buf)
-{
-	/* Stub: device link sync state status not needed for minimal kernel */
-	return sysfs_emit(buf, "0\n");
-}
-static DEVICE_ATTR_RO(sync_state_only);
-
-static struct attribute *devlink_attrs[] = {
-	&dev_attr_status.attr,
-	&dev_attr_auto_remove_on.attr,
-	&dev_attr_runtime_pm.attr,
-	&dev_attr_sync_state_only.attr,
-	NULL,
-};
+/* Stub: device link sysfs attributes not needed for minimal kernel */
+static struct attribute *devlink_attrs[] = { NULL };
 ATTRIBUTE_GROUPS(devlink);
 
 static void device_link_release_fn(struct work_struct *work)

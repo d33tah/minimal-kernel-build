@@ -297,60 +297,9 @@ static const struct platform_device_id *platform_match_id(
 
 
 
-/* Stub: modalias/numa_node sysfs attributes simplified for minimal kernel */
-static ssize_t modalias_show(struct device *dev,
-			     struct device_attribute *attr, char *buf)
-{
-	return sysfs_emit(buf, "platform:\n");
-}
-static DEVICE_ATTR_RO(modalias);
-
-static ssize_t numa_node_show(struct device *dev,
-			      struct device_attribute *attr, char *buf)
-{
-	return sysfs_emit(buf, "-1\n");
-}
-static DEVICE_ATTR_RO(numa_node);
-
-static ssize_t driver_override_show(struct device *dev,
-				    struct device_attribute *attr, char *buf)
-{
-	/* Stub: driver override not needed for minimal kernel */
-	return sysfs_emit(buf, "\n");
-}
-
-static ssize_t driver_override_store(struct device *dev,
-				     struct device_attribute *attr,
-				     const char *buf, size_t count)
-{
-	/* Stub: driver override not needed for minimal kernel */
-	return count;
-}
-static DEVICE_ATTR_RW(driver_override);
-
-static struct attribute *platform_dev_attrs[] = {
-	&dev_attr_modalias.attr,
-	&dev_attr_numa_node.attr,
-	&dev_attr_driver_override.attr,
-	NULL,
-};
-
-static umode_t platform_dev_attrs_visible(struct kobject *kobj, struct attribute *a,
-		int n)
-{
-	struct device *dev = container_of(kobj, typeof(*dev), kobj);
-
-	if (a == &dev_attr_numa_node.attr &&
-			dev_to_node(dev) == NUMA_NO_NODE)
-		return 0;
-
-	return a->mode;
-}
-
-static const struct attribute_group platform_dev_group = {
-	.attrs = platform_dev_attrs,
-	.is_visible = platform_dev_attrs_visible,
-};
+/* Stub: platform device sysfs attributes not needed for minimal kernel */
+static struct attribute *platform_dev_attrs[] = { NULL };
+static const struct attribute_group platform_dev_group = { .attrs = platform_dev_attrs };
 __ATTRIBUTE_GROUPS(platform_dev);
 
 

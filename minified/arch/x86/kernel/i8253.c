@@ -33,13 +33,6 @@ bool __init pit_timer_init(void)
 	return true;
 }
 
-static int __init init_pit_clocksource(void)
-{
-	  
-	if (num_possible_cpus() > 1 || is_hpet_enabled() ||
-	    !clockevent_state_periodic(&i8253_clockevent))
-		return 0;
-
-	return clocksource_i8253_init();
-}
+/* Stub: PIT clocksource init - not needed for minimal kernel */
+static int __init init_pit_clocksource(void) { return 0; }
 arch_initcall(init_pit_clocksource);

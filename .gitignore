@@ -10,3 +10,4 @@ FIXUP.md
 .tmp.*
 *.tmp
 *.backup
+ailogs/

@@ -45,33 +45,4 @@ void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int bar, unsigned long off
 				 unsigned long maxlen) { return NULL; }
 void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long maxlen) { return NULL; }
 /* Note: pci_iomap and pci_iounmap already defined as static inline in pci.h */
-
-EXPORT_SYMBOL(ioread8);
-EXPORT_SYMBOL(ioread16);
-EXPORT_SYMBOL(ioread16be);
-EXPORT_SYMBOL(ioread32);
-EXPORT_SYMBOL(ioread32be);
-EXPORT_SYMBOL(ioread64_lo_hi);
-EXPORT_SYMBOL(ioread64_hi_lo);
-EXPORT_SYMBOL(ioread64be_lo_hi);
-EXPORT_SYMBOL(ioread64be_hi_lo);
-EXPORT_SYMBOL(iowrite8);
-EXPORT_SYMBOL(iowrite16);
-EXPORT_SYMBOL(iowrite16be);
-EXPORT_SYMBOL(iowrite32);
-EXPORT_SYMBOL(iowrite32be);
-EXPORT_SYMBOL(iowrite64_lo_hi);
-EXPORT_SYMBOL(iowrite64_hi_lo);
-EXPORT_SYMBOL(iowrite64be_lo_hi);
-EXPORT_SYMBOL(iowrite64be_hi_lo);
-EXPORT_SYMBOL(ioread8_rep);
-EXPORT_SYMBOL(ioread16_rep);
-EXPORT_SYMBOL(ioread32_rep);
-EXPORT_SYMBOL(iowrite8_rep);
-EXPORT_SYMBOL(iowrite16_rep);
-EXPORT_SYMBOL(iowrite32_rep);
-EXPORT_SYMBOL(ioport_map);
-EXPORT_SYMBOL(ioport_unmap);
-EXPORT_SYMBOL(pci_iomap_range);
-EXPORT_SYMBOL(pci_iomap_wc_range);
-EXPORT_SYMBOL(pci_iomap_wc);
+/* EXPORT_SYMBOL removed - monolithic kernel without modules */

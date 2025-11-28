@@ -10,17 +10,10 @@
 
 void string_get_size(u64 size, u64 blk_size, const enum string_size_units units,
 		     char *buf, int len) { BUG(); }
-EXPORT_SYMBOL(string_get_size);
-
 int string_unescape(char *src, char *dst, size_t size, unsigned int flags) { BUG(); }
-EXPORT_SYMBOL(string_unescape);
-
 int string_escape_mem(const char *src, size_t isz, char *dst, size_t osz,
 		      unsigned int flags, const char *only) { BUG(); }
-EXPORT_SYMBOL(string_escape_mem);
-
 void kfree_strarray(char **array, size_t n) { BUG(); }
-EXPORT_SYMBOL_GPL(kfree_strarray);
 
 ssize_t strscpy_pad(char *dest, const char *src, size_t count)
 {
@@ -33,7 +26,6 @@ ssize_t strscpy_pad(char *dest, const char *src, size_t count)
 	memset(dest + len, 0, count - len);
 	return len;
 }
-EXPORT_SYMBOL(strscpy_pad);
 
 int match_string(const char * const *array, size_t n, const char *string)
 {
@@ -48,17 +40,14 @@ int match_string(const char * const *array, size_t n, const char *string)
 	}
 	return -EINVAL;
 }
-EXPORT_SYMBOL(match_string);
 
 int __sysfs_match_string(const char * const *array, size_t n, const char *str)
 {
 	return match_string(array, n, str);
 }
-EXPORT_SYMBOL(__sysfs_match_string);
 
 void memcpy_and_pad(void *dest, size_t dest_len, const void *src, size_t count,
 		    int pad) { BUG(); }
-EXPORT_SYMBOL(memcpy_and_pad);
 
 char *skip_spaces(const char *str)
 {
@@ -66,7 +55,6 @@ char *skip_spaces(const char *str)
 		++str;
 	return (char *)str;
 }
-EXPORT_SYMBOL(skip_spaces);
 
 char *strreplace(char *s, char old, char new)
 {
@@ -75,7 +63,6 @@ char *strreplace(char *s, char old, char new)
 			*s = new;
 	return s;
 }
-EXPORT_SYMBOL(strreplace);
 
 bool sysfs_streq(const char *s1, const char *s2)
 {
@@ -91,4 +78,4 @@ bool sysfs_streq(const char *s1, const char *s2)
 		return true;
 	return false;
 }
-EXPORT_SYMBOL(sysfs_streq);
+/* EXPORT_SYMBOL removed - monolithic kernel without modules */

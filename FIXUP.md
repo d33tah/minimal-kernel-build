@@ -1,10 +1,10 @@
---- 2025-11-28 06:15 ---
+--- 2025-11-28 06:21 ---
 
-Session summary:
+Session final summary:
 - make vm: PASSES, prints "Hello, World!" and "Still alive"
-- Kernel-only LOC: 190,255 (down from 190,405 at session start)
+- Kernel-only LOC: 190,204 (down from 190,405 at session start)
 - Binary size: 249KB (down from 250KB)
-- Total reduction this session: ~150 LOC
+- Total reduction this session: ~200 LOC
 
 Commits this session:
 1. Stub scheduler and trap functions (~130 LOC):
@@ -19,6 +19,8 @@ Commits this session:
    - drivers/video/console/vgacon.c: no_scroll
    - init/calibrate.c: lpj_setup
    - kernel/fork.c: coredump_filter_setup
+4. Remove AMD K8 prefetch quirk code (~50 LOC):
+   - arch/x86/mm/fault.c: is_prefetch, is_amd_k8_pre_npt, check_prefetch_opcode
 
 All commits passed make vm test.
 

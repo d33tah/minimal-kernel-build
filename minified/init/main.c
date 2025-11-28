@@ -656,16 +656,9 @@ static void __init do_ctors(void)
  
 }
 
-static int __init initcall_blacklist(char *str)
-{
-	pr_warn("initcall_blacklist requires CONFIG_KALLSYMS\n");
-	return 0;
-}
-
-static bool __init_or_module initcall_blacklisted(initcall_t fn)
-{
-	return false;
-}
+/* Stub: initcall_blacklist not needed for minimal kernel */
+static int __init initcall_blacklist(char *str) { return 0; }
+static bool __init_or_module initcall_blacklisted(initcall_t fn) { return false; }
 __setup("initcall_blacklist=", initcall_blacklist);
 
 /* Stub: initcall debug tracing not needed for minimal kernel */

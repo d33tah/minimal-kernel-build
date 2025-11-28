@@ -1,3 +1,13 @@
+--- 2025-11-28 20:52 ---
+
+Session start:
+- make vm: PASSES, prints "Hello, World!" and "Still alive"
+- LOC after mrproper: 214,890 (down from 215,007 last session)
+- Binary size: 246KB
+
+Goal: Continue aggressive reduction. Target <200K LOC.
+Focus: Identify large subsystems to stub/remove.
+
 --- 2025-11-28 19:43 ---
 
 Session summary - continuing reductions:

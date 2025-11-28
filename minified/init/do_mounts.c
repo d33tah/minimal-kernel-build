@@ -33,29 +33,13 @@ static int root_wait;
 
 dev_t ROOT_DEV;
 
-static int __init load_ramdisk(char *str)
-{
-	pr_warn("ignoring the deprecated load_ramdisk= option\n");
-	return 1;
-}
+/* Stub: load_ramdisk deprecated, not needed for minimal kernel */
+static int __init load_ramdisk(char *str) { return 1; }
 __setup("load_ramdisk=", load_ramdisk);
 
-static int __init readonly(char *str)
-{
-	if (*str)
-		return 0;
-	root_mountflags |= MS_RDONLY;
-	return 1;
-}
-
-static int __init readwrite(char *str)
-{
-	if (*str)
-		return 0;
-	root_mountflags &= ~MS_RDONLY;
-	return 1;
-}
-
+/* Stub: ro/rw cmdline not needed for minimal kernel */
+static int __init readonly(char *str) { return 1; }
+static int __init readwrite(char *str) { return 1; }
 __setup("ro", readonly);
 __setup("rw", readwrite);
 
@@ -92,44 +76,25 @@ dev_t name_to_dev_t(const char *name)
 	return devt_from_devnum(name);
 }
 
-static int __init root_dev_setup(char *line)
-{
-	strlcpy(saved_root_name, line, sizeof(saved_root_name));
-	return 1;
-}
-
+/* Stub: root= cmdline not needed for minimal kernel */
+static int __init root_dev_setup(char *line) { return 1; }
 __setup("root=", root_dev_setup);
 
-static int __init rootwait_setup(char *str)
-{
-	if (*str)
-		return 0;
-	root_wait = 1;
-	return 1;
-}
-
+/* Stub: rootwait cmdline not needed for minimal kernel */
+static int __init rootwait_setup(char *str) { return 1; }
 __setup("rootwait", rootwait_setup);
 
 static char * __initdata root_mount_data;
-static int __init root_data_setup(char *str)
-{
-	root_mount_data = str;
-	return 1;
-}
+/* Stub: rootflags= not needed for minimal kernel */
+static int __init root_data_setup(char *str) { return 1; }
 
 static char * __initdata root_fs_names;
-static int __init fs_names_setup(char *str)
-{
-	root_fs_names = str;
-	return 1;
-}
+/* Stub: rootfstype= not needed for minimal kernel */
+static int __init fs_names_setup(char *str) { return 1; }
 
 static unsigned int __initdata root_delay;
-static int __init root_delay_setup(char *str)
-{
-	root_delay = simple_strtoul(str, NULL, 0);
-	return 1;
-}
+/* Stub: rootdelay= not needed for minimal kernel */
+static int __init root_delay_setup(char *str) { return 1; }
 
 __setup("rootflags=", root_data_setup);
 __setup("rootfstype=", fs_names_setup);

@@ -15,17 +15,8 @@
  
 unsigned int __read_mostly vdso32_enabled = VDSO_DEFAULT;
 
-static int __init vdso32_setup(char *s)
-{
-	vdso32_enabled = simple_strtoul(s, NULL, 0);
-
-	if (vdso32_enabled > 1) {
-		pr_warn("vdso32 values other than 0 and 1 are no longer allowed; vdso disabled\n");
-		vdso32_enabled = 0;
-	}
-
-	return 1;
-}
+/* Stub: vdso32= option not needed for minimal kernel */
+static int __init vdso32_setup(char *s) { return 1; }
 
  
 __setup("vdso32=", vdso32_setup);

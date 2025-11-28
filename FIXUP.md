@@ -1,3 +1,27 @@
+--- 2025-11-28 08:14 ---
+
+Session progress:
+- make vm: PASSES, prints "Hello, World!" and "Still alive"
+- Kernel-only LOC: 196,290 (down from 196,561 at session start)
+- Binary size: 249KB
+- Total reduction this session: ~270 LOC
+
+Commits this session:
+1. Remove CPU vuln tables and dead code (~200 LOC):
+   - arch/x86/kernel/cpu/common.c: cpu_vuln_whitelist, cpu_vuln_blacklist,
+     cpu_matches(), arch_cap_mmio_immune(), x86_read_arch_cap_msr stubbed
+   - arch/x86/mm/fault.c: is_amd_k8_pre_npt removed
+   - arch/x86/kernel/ptrace.c: regoffset_table removed
+   - lib/vsprintf.c: default_*_spec variables removed
+   - drivers/char/mem.c: mmap_mem_ops removed
+   - drivers/tty/tty_baudrate.c: baud_bits[] removed
+2. Stub VGA VESA and palette blanking (~100 LOC):
+   - drivers/video/console/vgacon.c: vga_state struct,
+     vga_vesa_blank, vga_vesa_unblank, vga_pal_blank stubbed
+
+All commits passed make vm test. Continuing to look for reduction opportunities.
+No more unused function warnings from LLVM build.
+
 --- 2025-11-28 07:58 ---
 
 New session start:

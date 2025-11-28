@@ -316,76 +316,9 @@ void orderly_reboot(void) { }
 /* Stub: hw_protection_shutdown not needed in minimal kernel */
 void hw_protection_shutdown(const char *reason, int ms_until_forced) { }
 
+/* Stub: reboot= cmdline parsing not needed for minimal kernel */
 static int __init reboot_setup(char *str)
 {
-	for (;;) {
-		enum reboot_mode *mode;
-
-		 
-		reboot_default = 0;
-
-		if (!strncmp(str, "panic_", 6)) {
-			mode = &panic_reboot_mode;
-			str += 6;
-		} else {
-			mode = &reboot_mode;
-		}
-
-		switch (*str) {
-		case 'w':
-			*mode = REBOOT_WARM;
-			break;
-
-		case 'c':
-			*mode = REBOOT_COLD;
-			break;
-
-		case 'h':
-			*mode = REBOOT_HARD;
-			break;
-
-		case 's':
-			 
-			str += str[1] == 'm' && str[2] == 'p' ? 3 : 1;
-
-			if (isdigit(str[0])) {
-				int cpu = simple_strtoul(str, NULL, 0);
-
-				if (cpu >= num_possible_cpus()) {
-					pr_err("Ignoring the CPU number in reboot= option. "
-					"CPU %d exceeds possible cpu number %d\n",
-					cpu, num_possible_cpus());
-					break;
-				}
-				reboot_cpu = cpu;
-			} else
-				*mode = REBOOT_SOFT;
-			break;
-
-		case 'g':
-			*mode = REBOOT_GPIO;
-			break;
-
-		case 'b':
-		case 'a':
-		case 'k':
-		case 't':
-		case 'e':
-		case 'p':
-			reboot_type = *str;
-			break;
-
-		case 'f':
-			reboot_force = 1;
-			break;
-		}
-
-		str = strchr(str, ',');
-		if (str)
-			str++;
-		else
-			break;
-	}
 	return 1;
 }
 __setup("reboot=", reboot_setup);

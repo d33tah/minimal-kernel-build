@@ -133,12 +133,8 @@ bool static_key_initialized __read_mostly;
  
 unsigned int reset_devices;
 
-static int __init set_reset_devices(char *str)
-{
-	reset_devices = 1;
-	return 1;
-}
-
+/* Stub: reset_devices cmdline not needed for minimal kernel */
+static int __init set_reset_devices(char *str) { return 1; }
 __setup("reset_devices", set_reset_devices);
 
 static const char *argv_init[MAX_INIT_ARGS+2] = { "init", NULL, };
@@ -176,96 +172,19 @@ static bool __init obsolete_checksetup(char *line)
  
 unsigned long loops_per_jiffy = (1<<12);
 
-static int __init debug_kernel(char *str)
-{
-	console_loglevel = CONSOLE_LOGLEVEL_DEBUG;
-	return 0;
-}
-
-static int __init quiet_kernel(char *str)
-{
-	console_loglevel = CONSOLE_LOGLEVEL_QUIET;
-	return 0;
-}
-
+/* Stub: debug/quiet/loglevel cmdline not needed for minimal kernel */
+static int __init debug_kernel(char *str) { return 0; }
+static int __init quiet_kernel(char *str) { return 0; }
 early_param("debug", debug_kernel);
 early_param("quiet", quiet_kernel);
 
-static int __init loglevel(char *str)
-{
-	int newlevel;
-
-	 
-	if (get_option(&str, &newlevel)) {
-		console_loglevel = newlevel;
-		return 0;
-	}
-
-	return -EINVAL;
-}
-
+static int __init loglevel(char *str) { return 0; }
 early_param("loglevel", loglevel);
 
-static void * __init get_boot_config_from_initrd(size_t *_size)
-{
-	u32 size, csum;
-	char *data;
-	u32 *hdr;
-	int i;
-
-	if (!initrd_end)
-		return NULL;
-
-	data = (char *)initrd_end - BOOTCONFIG_MAGIC_LEN;
-	 
-	for (i = 0; i < 4; i++) {
-		if (!memcmp(data, BOOTCONFIG_MAGIC, BOOTCONFIG_MAGIC_LEN))
-			goto found;
-		data--;
-	}
-	return NULL;
-
-found:
-	hdr = (u32 *)(data - 8);
-	size = le32_to_cpu(hdr[0]);
-	csum = le32_to_cpu(hdr[1]);
-
-	data = ((void *)hdr) - size;
-	if ((unsigned long)data < initrd_start) {
-		pr_err("bootconfig size %d is greater than initrd size %ld\n",
-			size, initrd_end - initrd_start);
-		return NULL;
-	}
-
-	if (xbc_calc_checksum(data, size) != csum) {
-		pr_err("bootconfig checksum failed\n");
-		return NULL;
-	}
-
-	 
-	initrd_end = (unsigned long)data;
-	if (_size)
-		*_size = size;
-
-	return data;
-}
-
-
-static void __init setup_boot_config(void)
-{
-	 
-	get_boot_config_from_initrd(NULL);
-}
-
-static int __init warn_bootconfig(char *str)
-{
-	pr_warn("WARNING: 'bootconfig' found on the kernel command line but CONFIG_BOOT_CONFIG is not set.\n");
-	return 0;
-}
-
+/* Stub: bootconfig not needed for minimal kernel */
+static void __init setup_boot_config(void) { }
+static int __init warn_bootconfig(char *str) { return 0; }
 #define exit_boot_config()	do {} while (0)
-
-
 early_param("bootconfig", warn_bootconfig);
 
  

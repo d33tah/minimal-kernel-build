@@ -1043,12 +1043,8 @@ void __init memblock_allow_resize(void)
 	memblock_can_resize = 1;
 }
 
-static int __init early_memblock(char *p)
-{
-	if (p && strstr(p, "debug"))
-		memblock_debug = 1;
-	return 0;
-}
+/* Stub: memblock= cmdline option not needed for minimal kernel */
+static int __init early_memblock(char *p) { return 0; }
 early_param("memblock", early_memblock);
 
 static void __init free_memmap(unsigned long start_pfn, unsigned long end_pfn)

@@ -576,12 +576,8 @@ static char *pointer_string(char *buf, char *end,
 
 static int debug_boot_weak_hash __ro_after_init;
 
-static int __init debug_boot_weak_hash_enable(char *str)
-{
-	debug_boot_weak_hash = 1;
-	pr_info("debug_boot_weak_hash enabled\n");
-	return 0;
-}
+/* Stub: debug_boot_weak_hash cmdline option not needed */
+static int __init debug_boot_weak_hash_enable(char *str) { return 0; }
 early_param("debug_boot_weak_hash", debug_boot_weak_hash_enable);
 
 static DEFINE_STATIC_KEY_FALSE(filled_random_ptr_key);
@@ -847,16 +843,8 @@ char *fwnode_string(char *buf, char *end, struct fwnode_handle *fwnode,
 	return error_string(buf, end, "(fwnode)", spec);
 }
 
-int __init no_hash_pointers_enable(char *str)
-{
-	if (no_hash_pointers)
-		return 0;
-
-	no_hash_pointers = true;
-	pr_warn("Kernel memory addresses will be shown unhashed\n");
-
-	return 0;
-}
+/* Stub: no_hash_pointers cmdline option not needed */
+int __init no_hash_pointers_enable(char *str) { return 0; }
 early_param("no_hash_pointers", no_hash_pointers_enable);
 
 static noinline_for_stack

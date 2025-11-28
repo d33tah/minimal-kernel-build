@@ -343,29 +343,13 @@ static void device_links_purge(struct device *dev)
 					 DL_FLAG_PM_RUNTIME)
 
 static u32 fw_devlink_flags = FW_DEVLINK_FLAGS_ON;
-static int __init fw_devlink_setup(char *arg)
-{
-	if (!arg)
-		return -EINVAL;
-
-	if (strcmp(arg, "off") == 0) {
-		fw_devlink_flags = 0;
-	} else if (strcmp(arg, "permissive") == 0) {
-		fw_devlink_flags = FW_DEVLINK_FLAGS_PERMISSIVE;
-	} else if (strcmp(arg, "on") == 0) {
-		fw_devlink_flags = FW_DEVLINK_FLAGS_ON;
-	} else if (strcmp(arg, "rpm") == 0) {
-		fw_devlink_flags = FW_DEVLINK_FLAGS_RPM;
-	}
-	return 0;
-}
+/* Stub: fw_devlink= cmdline option not needed for minimal kernel */
+static int __init fw_devlink_setup(char *arg) { return 0; }
 early_param("fw_devlink", fw_devlink_setup);
 
 static bool fw_devlink_strict;
-static int __init fw_devlink_strict_setup(char *arg)
-{
-	return strtobool(arg, &fw_devlink_strict);
-}
+/* Stub: fw_devlink.strict= cmdline option not needed for minimal kernel */
+static int __init fw_devlink_strict_setup(char *arg) { return 0; }
 early_param("fw_devlink.strict", fw_devlink_strict_setup);
 
 u32 fw_devlink_get_flags(void)

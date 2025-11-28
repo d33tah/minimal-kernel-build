@@ -1,3 +1,12 @@
+--- 2025-11-28 11:31 ---
+
+Session start:
+- make vm: PASSES, prints "Hello, World!" and "Still alive"
+- Kernel-only LOC: 195,958
+- Binary size: 248KB
+
+Goal: Continue reducing codebase. Looking for stub/simplification candidates.
+
 --- 2025-11-28 10:16 ---
 
 Session final summary:

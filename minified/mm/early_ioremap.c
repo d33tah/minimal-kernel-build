@@ -13,12 +13,8 @@
 
 static int early_ioremap_debug __initdata;
 
-static int __init early_ioremap_debug_setup(char *str)
-{
-	early_ioremap_debug = 1;
-
-	return 0;
-}
+/* Stub: early_ioremap_debug cmdline option not needed */
+static int __init early_ioremap_debug_setup(char *str) { return 0; }
 early_param("early_ioremap_debug", early_ioremap_debug_setup);
 
 static int after_paging_init __initdata;

@@ -571,20 +571,8 @@ enum cpu_mitigations {
 static enum cpu_mitigations cpu_mitigations __ro_after_init =
 	CPU_MITIGATIONS_AUTO;
 
-static int __init mitigations_parse_cmdline(char *arg)
-{
-	if (!strcmp(arg, "off"))
-		cpu_mitigations = CPU_MITIGATIONS_OFF;
-	else if (!strcmp(arg, "auto"))
-		cpu_mitigations = CPU_MITIGATIONS_AUTO;
-	else if (!strcmp(arg, "auto,nosmt"))
-		cpu_mitigations = CPU_MITIGATIONS_AUTO_NOSMT;
-	else
-		pr_crit("Unsupported mitigations=%s, system may still be vulnerable\n",
-			arg);
-
-	return 0;
-}
+/* Stub: mitigations= cmdline option not needed for minimal kernel */
+static int __init mitigations_parse_cmdline(char *arg) { return 0; }
 early_param("mitigations", mitigations_parse_cmdline);
 
 /* Stub: cpu_mitigations_off not used in minimal kernel */

@@ -407,35 +407,10 @@ core_param(pause_on_oops, pause_on_oops, int, 0644);
 core_param(panic_on_warn, panic_on_warn, int, 0644);
 core_param(crash_kexec_post_notifiers, crash_kexec_post_notifiers, bool, 0644);
 
-static int __init oops_setup(char *s)
-{
-	if (!s)
-		return -EINVAL;
-	if (!strcmp(s, "panic"))
-		panic_on_oops = 1;
-	return 0;
-}
+/* Stub: oops= cmdline option not needed for minimal kernel */
+static int __init oops_setup(char *s) { return 0; }
 early_param("oops", oops_setup);
 
-static int __init panic_on_taint_setup(char *s)
-{
-	char *taint_str;
-
-	if (!s)
-		return -EINVAL;
-
-	taint_str = strsep(&s, ",");
-	if (kstrtoul(taint_str, 16, &panic_on_taint))
-		return -EINVAL;
-
-	 
-	panic_on_taint &= TAINT_FLAGS_MAX;
-
-	if (!panic_on_taint)
-		return -EINVAL;
-
-	if (s && !strcmp(s, "nousertaint"))
-		panic_on_taint_nousertaint = true;
-	return 0;
-}
+/* Stub: panic_on_taint= cmdline option not needed for minimal kernel */
+static int __init panic_on_taint_setup(char *s) { return 0; }
 early_param("panic_on_taint", panic_on_taint_setup);

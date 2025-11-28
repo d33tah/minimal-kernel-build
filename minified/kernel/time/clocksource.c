@@ -788,25 +788,10 @@ int clocksource_unregister(struct clocksource *cs)
 }
 
 
- 
-static int __init boot_override_clocksource(char* str)
-{
-	mutex_lock(&clocksource_mutex);
-	if (str)
-		strlcpy(override_name, str, sizeof(override_name));
-	mutex_unlock(&clocksource_mutex);
-	return 1;
-}
-
+/* Stub: clocksource= cmdline option not needed for minimal kernel */
+static int __init boot_override_clocksource(char* str) { return 1; }
 __setup("clocksource=", boot_override_clocksource);
 
- 
-static int __init boot_override_clock(char* str)
-{
-	if (!strcmp(str, "pmtmr")) {
-		return boot_override_clocksource("acpi_pm");
-	}
-	return boot_override_clocksource(str);
-}
-
+/* Stub: clock= cmdline option not needed for minimal kernel */
+static int __init boot_override_clock(char* str) { return 1; }
 __setup("clock=", boot_override_clock);

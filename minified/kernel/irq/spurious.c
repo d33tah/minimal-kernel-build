@@ -21,12 +21,6 @@ void note_interrupt(struct irq_desc *desc, irqreturn_t action_ret)
 	/* Stub: no spurious IRQ tracking for minimal kernel */
 }
 
-int noirqdebug_setup(char *str)
-{
-	noirqdebug = 1;
-	return 1;
-}
-
+/* Stub: noirqdebug cmdline not needed for minimal kernel */
+int noirqdebug_setup(char *str) { return 1; }
 __setup("noirqdebug", noirqdebug_setup);
-module_param(noirqdebug, bool, 0644);
-MODULE_PARM_DESC(noirqdebug, "Disable irq lockup detection when true");

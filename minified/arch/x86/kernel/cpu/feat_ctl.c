@@ -9,12 +9,8 @@
 #undef pr_fmt
 #define pr_fmt(fmt)	"x86/cpu: " fmt
 
-static int __init nosgx(char *str)
-{
-	setup_clear_cpu_cap(X86_FEATURE_SGX);
-	return 0;
-}
-
+/* Stub: nosgx cmdline not needed for minimal kernel */
+static int __init nosgx(char *str) { return 0; }
 early_param("nosgx", nosgx);
 
  

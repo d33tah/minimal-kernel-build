@@ -1,3 +1,28 @@
+--- 2025-11-28 10:00 ---
+
+Session progress:
+- make vm: PASSES, prints "Hello, World!" and "Still alive"
+- Kernel-only LOC: 196,023 (down from 196,271 at session start)
+- Binary size: 249KB
+- Total reduction this session: ~248 LOC
+
+Commits this session:
+1. Reduce CPUID deps table (~54 LOC):
+   - arch/x86/kernel/cpu/cpuid-deps.c: Removed AVX, AVX512, SGX, AMX dependencies
+2. Remove vmstat_text and frag_* functions (~100 LOC):
+   - mm/vmstat.c: Reduced 60+ string entries to single entry
+3. Stub reboot= cmdline parser (~54 LOC):
+   - kernel/reboot.c: reboot_setup function simplified
+4. Stub reserve= cmdline parser (~29 LOC):
+   - kernel/resource.c: reserve_setup function simplified
+5. Stub driver probe timeout/async options (~5 LOC):
+   - drivers/base/dd.c: deferred_probe_timeout_setup, save_async_options
+6. Stub nofsgsbase and strict_sas_size (~6 LOC):
+   - arch/x86/kernel/cpu/common.c: x86_nofsgsbase_setup
+   - arch/x86/kernel/signal.c: strict_sas_size
+
+All commits passed make vm test. Continuing reduction...
+
 --- 2025-11-28 09:41 ---
 
 New session start:

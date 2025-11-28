@@ -36,23 +36,13 @@ static unsigned int mp_hash_mask __read_mostly;
 static unsigned int mp_hash_shift __read_mostly;
 
 static __initdata unsigned long mhash_entries;
-static int __init set_mhash_entries(char *str)
-{
-	if (!str)
-		return 0;
-	mhash_entries = simple_strtoul(str, &str, 0);
-	return 1;
-}
+/* Stub: mhash_entries= option not needed for minimal kernel */
+static int __init set_mhash_entries(char *str) { return 1; }
 __setup("mhash_entries=", set_mhash_entries);
 
 static __initdata unsigned long mphash_entries;
-static int __init set_mphash_entries(char *str)
-{
-	if (!str)
-		return 0;
-	mphash_entries = simple_strtoul(str, &str, 0);
-	return 1;
-}
+/* Stub: mphash_entries= option not needed for minimal kernel */
+static int __init set_mphash_entries(char *str) { return 1; }
 __setup("mphash_entries=", set_mphash_entries);
 
 static u64 event;

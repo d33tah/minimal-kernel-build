@@ -1,34 +1,29 @@
---- 2025-11-28 10:00 ---
+--- 2025-11-28 10:03 ---
 
-Session progress:
+Session final summary:
 - make vm: PASSES, prints "Hello, World!" and "Still alive"
-- Kernel-only LOC: 196,023 (down from 196,271 at session start)
+- Kernel-only LOC: 196,011 (down from 196,271 at session start)
 - Binary size: 249KB
-- Total reduction this session: ~248 LOC
+- Total reduction this session: ~260 LOC
 
 Commits this session:
 1. Reduce CPUID deps table (~54 LOC):
-   - arch/x86/kernel/cpu/cpuid-deps.c: Removed AVX, AVX512, SGX, AMX dependencies
-2. Remove vmstat_text and frag_* functions (~100 LOC):
+   - arch/x86/kernel/cpu/cpuid-deps.c: Removed AVX/AVX512/SGX/AMX dependencies
+2. Remove vmstat_text array and frag_* functions (~100 LOC):
    - mm/vmstat.c: Reduced 60+ string entries to single entry
 3. Stub reboot= cmdline parser (~54 LOC):
-   - kernel/reboot.c: reboot_setup function simplified
+   - kernel/reboot.c: reboot_setup simplified
 4. Stub reserve= cmdline parser (~29 LOC):
-   - kernel/resource.c: reserve_setup function simplified
+   - kernel/resource.c: reserve_setup simplified
 5. Stub driver probe timeout/async options (~5 LOC):
    - drivers/base/dd.c: deferred_probe_timeout_setup, save_async_options
 6. Stub nofsgsbase and strict_sas_size (~6 LOC):
-   - arch/x86/kernel/cpu/common.c: x86_nofsgsbase_setup
-   - arch/x86/kernel/signal.c: strict_sas_size
+   - arch/x86/kernel/cpu/common.c, arch/x86/kernel/signal.c
+7. Stub mount hash entries cmdline options (~12 LOC):
+   - fs/namespace.c: set_mhash_entries, set_mphash_entries
 
 All commits passed make vm test. Continuing reduction...
 
---- 2025-11-28 09:41 ---
-
-New session start:
-- make vm: PASSES, prints "Hello, World!" and "Still alive"
-- Kernel-only LOC: 196,271
-- Binary size: 249KB
 - Goal (200K LOC) already achieved, continuing aggressive reduction
 
 Plan:

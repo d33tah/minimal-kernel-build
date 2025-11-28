@@ -523,16 +523,7 @@ u16 __read_mostly tlb_lld_1g[NR_INFO];
 
 static void cpu_detect_tlb(struct cpuinfo_x86 *c)
 {
-	if (this_cpu->c_detect_tlb)
-		this_cpu->c_detect_tlb(c);
-
-	pr_info("Last level iTLB entries: 4KB %d, 2MB %d, 4MB %d\n",
-		tlb_lli_4k[ENTRIES], tlb_lli_2m[ENTRIES],
-		tlb_lli_4m[ENTRIES]);
-
-	pr_info("Last level dTLB entries: 4KB %d, 2MB %d, 4MB %d, 1GB %d\n",
-		tlb_lld_4k[ENTRIES], tlb_lld_2m[ENTRIES],
-		tlb_lld_4m[ENTRIES], tlb_lld_1g[ENTRIES]);
+	/* Stub: TLB detection not needed for minimal kernel */
 }
 
 int detect_ht_early(struct cpuinfo_x86 *c)
@@ -607,38 +598,7 @@ static void apply_forced_caps(struct cpuinfo_x86 *c)
 
 static void init_speculation_control(struct cpuinfo_x86 *c)
 {
-	
-	if (cpu_has(c, X86_FEATURE_SPEC_CTRL)) {
-		set_cpu_cap(c, X86_FEATURE_IBRS);
-		set_cpu_cap(c, X86_FEATURE_IBPB);
-		set_cpu_cap(c, X86_FEATURE_MSR_SPEC_CTRL);
-	}
-
-	if (cpu_has(c, X86_FEATURE_INTEL_STIBP))
-		set_cpu_cap(c, X86_FEATURE_STIBP);
-
-	if (cpu_has(c, X86_FEATURE_SPEC_CTRL_SSBD) ||
-	    cpu_has(c, X86_FEATURE_VIRT_SSBD))
-		set_cpu_cap(c, X86_FEATURE_SSBD);
-
-	if (cpu_has(c, X86_FEATURE_AMD_IBRS)) {
-		set_cpu_cap(c, X86_FEATURE_IBRS);
-		set_cpu_cap(c, X86_FEATURE_MSR_SPEC_CTRL);
-	}
-
-	if (cpu_has(c, X86_FEATURE_AMD_IBPB))
-		set_cpu_cap(c, X86_FEATURE_IBPB);
-
-	if (cpu_has(c, X86_FEATURE_AMD_STIBP)) {
-		set_cpu_cap(c, X86_FEATURE_STIBP);
-		set_cpu_cap(c, X86_FEATURE_MSR_SPEC_CTRL);
-	}
-
-	if (cpu_has(c, X86_FEATURE_AMD_SSBD)) {
-		set_cpu_cap(c, X86_FEATURE_SSBD);
-		set_cpu_cap(c, X86_FEATURE_MSR_SPEC_CTRL);
-		clear_cpu_cap(c, X86_FEATURE_VIRT_SSBD);
-	}
+	/* Stub: speculation control not needed for minimal kernel */
 }
 
 void get_cpu_cap(struct cpuinfo_x86 *c)

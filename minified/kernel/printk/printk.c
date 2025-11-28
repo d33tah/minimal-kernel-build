@@ -317,11 +317,8 @@ int add_preferred_console(char *name, int idx, char *options)
 
 bool console_suspend_enabled = true;
 
-static int __init console_suspend_disable(char *str)
-{
-	console_suspend_enabled = false;
-	return 1;
-}
+/* Stub: no_console_suspend cmdline option not needed */
+static int __init console_suspend_disable(char *str) { return 1; }
 __setup("no_console_suspend", console_suspend_disable);
 module_param_named(console_suspend, console_suspend_enabled,
 		bool, S_IRUGO | S_IWUSR);
@@ -642,12 +639,8 @@ void console_start(struct console *console) { }
 
 static int __read_mostly keep_bootcon;
 
-static int __init keep_bootcon_setup(char *str)
-{
-	keep_bootcon = 1;
-	return 0;
-}
-
+/* Stub: keep_bootcon cmdline option not needed */
+static int __init keep_bootcon_setup(char *str) { return 0; }
 early_param("keep_bootcon", keep_bootcon_setup);
 
  

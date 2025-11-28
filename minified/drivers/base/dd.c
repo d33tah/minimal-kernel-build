@@ -133,12 +133,9 @@ DEFINE_SHOW_ATTRIBUTE(deferred_devs);
 
 int driver_deferred_probe_timeout;
 
+/* Stub: deferred_probe_timeout not needed for minimal kernel */
 static int __init deferred_probe_timeout_setup(char *str)
 {
-	int timeout;
-
-	if (!kstrtoint(str, 10, &timeout))
-		driver_deferred_probe_timeout = timeout;
 	return 1;
 }
 __setup("deferred_probe_timeout=", deferred_probe_timeout_setup);
@@ -542,11 +539,9 @@ static inline bool cmdline_requested_async_probing(const char *drv_name)
 }
 
  
+/* Stub: driver_async_probe option not needed for minimal kernel */
 static int __init save_async_options(char *buf)
 {
-	strlcpy(async_probe_drv_names, buf, ASYNC_DRV_NAMES_MAX_LEN);
-	async_probe_default = parse_option_str(async_probe_drv_names, "*");
-
 	return 1;
 }
 __setup("driver_async_probe=", save_async_options);

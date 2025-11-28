@@ -81,34 +81,6 @@ enum devkmsg_log_masks {
 
 static unsigned int __read_mostly devkmsg_log = DEVKMSG_LOG_MASK_DEFAULT;
 
-static int __control_devkmsg(char *str)
-{
-	size_t len;
-
-	if (!str)
-		return -EINVAL;
-
-	len = str_has_prefix(str, "on");
-	if (len) {
-		devkmsg_log = DEVKMSG_LOG_MASK_ON;
-		return len;
-	}
-
-	len = str_has_prefix(str, "off");
-	if (len) {
-		devkmsg_log = DEVKMSG_LOG_MASK_OFF;
-		return len;
-	}
-
-	len = str_has_prefix(str, "ratelimit");
-	if (len) {
-		devkmsg_log = DEVKMSG_LOG_MASK_DEFAULT;
-		return len;
-	}
-
-	return -EINVAL;
-}
-
 /* Stub: printk.devkmsg= option not needed for minimal kernel */
 static int __init control_devkmsg(char *str) { return 1; }
 __setup("printk.devkmsg=", control_devkmsg);

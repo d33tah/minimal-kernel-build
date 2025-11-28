@@ -629,9 +629,7 @@ static unsigned long default_dump_filter = MMF_DUMP_FILTER_DEFAULT;
 
 static int __init coredump_filter_setup(char *s)
 {
-	default_dump_filter =
-		(simple_strtoul(s, NULL, 0) << MMF_DUMP_FILTER_SHIFT) &
-		MMF_DUMP_FILTER_MASK;
+	/* Stub: coredump filter config not needed for minimal kernel */
 	return 1;
 }
 

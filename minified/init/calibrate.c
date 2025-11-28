@@ -13,7 +13,7 @@ unsigned long preset_lpj;
 
 static int __init lpj_setup(char *str)
 {
-	preset_lpj = simple_strtoul(str, NULL, 0);
+	/* Stub: lpj config not needed for minimal kernel */
 	return 1;
 }
 

@@ -67,8 +67,7 @@ static bool vga_hardscroll_user_enable = true;
 
 static int __init no_scroll(char *str)
 {
-	 
-	vga_hardscroll_user_enable = vga_hardscroll_enabled = false;
+	/* Stub: scroll config not needed for minimal kernel */
 	return 1;
 }
 

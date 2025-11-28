@@ -180,37 +180,15 @@ void deferred_probe_extend_timeout(void)
 }
 
  
+/* Stub: simplified deferred probe for minimal kernel */
 static int deferred_probe_initcall(void)
 {
-	debugfs_create_file("devices_deferred", 0444, NULL, NULL,
-			    &deferred_devs_fops);
-
 	driver_deferred_probe_enable = true;
-	driver_deferred_probe_trigger();
-	 
-	flush_work(&deferred_probe_work);
 	initcalls_done = true;
-
-	if (!IS_ENABLED(CONFIG_MODULES))
-		fw_devlink_drivers_done();
-
-	 
-	driver_deferred_probe_trigger();
-	flush_work(&deferred_probe_work);
-
-	if (driver_deferred_probe_timeout > 0) {
-		schedule_delayed_work(&deferred_probe_timeout_work,
-			driver_deferred_probe_timeout * HZ);
-	}
+	fw_devlink_drivers_done();
 	return 0;
 }
 late_initcall(deferred_probe_initcall);
-
-static void __exit deferred_probe_exit(void)
-{
-	debugfs_remove_recursive(debugfs_lookup("devices_deferred", NULL));
-}
-__exitcall(deferred_probe_exit);
 
  
 bool device_is_bound(struct device *dev)

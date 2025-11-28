@@ -749,34 +749,8 @@ void __init console_init(void)
 }
 
  
-static int __init printk_late_init(void)
-{
-	struct console *con;
-	int ret;
-
-	for_each_console(con) {
-		if (!(con->flags & CON_BOOT))
-			continue;
-
-		 
-		if (init_section_intersects(con, sizeof(*con)) ||
-		    init_section_contains(con->write, 0) ||
-		    init_section_contains(con->read, 0) ||
-		    init_section_contains(con->device, 0) ||
-		    init_section_contains(con->unblank, 0) ||
-		    init_section_contains(con->data, 0)) {
-			unregister_console(con);
-		}
-	}
-	ret = cpuhp_setup_state_nocalls(CPUHP_PRINTK_DEAD, "printk:dead", NULL,
-					console_cpu_notify);
-	WARN_ON(ret < 0);
-	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN, "printk:online",
-					console_cpu_notify, NULL);
-	WARN_ON(ret < 0);
-	printk_sysctl_init();
-	return 0;
-}
+/* Stub: printk late init simplified for minimal single-CPU kernel */
+static int __init printk_late_init(void) { return 0; }
 late_initcall(printk_late_init);
 
 

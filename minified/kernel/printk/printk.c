@@ -109,24 +109,8 @@ static int __control_devkmsg(char *str)
 	return -EINVAL;
 }
 
-static int __init control_devkmsg(char *str)
-{
-	if (__control_devkmsg(str) < 0) {
-		return 1;
-	}
-
-	 
-	if (devkmsg_log == DEVKMSG_LOG_MASK_ON)
-		strcpy(devkmsg_log_str, "on");
-	else if (devkmsg_log == DEVKMSG_LOG_MASK_OFF)
-		strcpy(devkmsg_log_str, "off");
-	 
-
-	 
-	devkmsg_log |= DEVKMSG_LOG_MASK_LOCK;
-
-	return 1;
-}
+/* Stub: printk.devkmsg= option not needed for minimal kernel */
+static int __init control_devkmsg(char *str) { return 1; }
 __setup("printk.devkmsg=", control_devkmsg);
 
 char devkmsg_log_str[DEVKMSG_STR_MAX_SIZE] = "ratelimit";

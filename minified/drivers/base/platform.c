@@ -28,8 +28,7 @@
 #include "base.h"
 #include "power/power.h"
 
- 
-static DEFINE_IDA(platform_devid_ida);
+/* platform_devid_ida removed - unused */
 
 struct device platform_bus = {
 	.init_name	= "platform",

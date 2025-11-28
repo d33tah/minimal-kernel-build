@@ -851,31 +851,7 @@ struct kobject *virtual_device_parent(struct device *dev)
 	return virtual_dir;
 }
 
-struct class_dir {
-	struct kobject kobj;
-	struct class *class;
-};
-
-#define to_class_dir(obj) container_of(obj, struct class_dir, kobj)
-
-static void class_dir_release(struct kobject *kobj)
-{
-	struct class_dir *dir = to_class_dir(kobj);
-	kfree(dir);
-}
-
-static const
-struct kobj_ns_type_operations *class_dir_child_ns_type(struct kobject *kobj)
-{
-	struct class_dir *dir = to_class_dir(kobj);
-	return dir->class->ns_type;
-}
-
-static struct kobj_type class_dir_ktype = {
-	.release	= class_dir_release,
-	.sysfs_ops	= &kobj_sysfs_ops,
-	.child_ns_type	= class_dir_child_ns_type
-};
+/* class_dir struct and related functions removed - unused */
 
 static DEFINE_MUTEX(gdp_mutex);
 

@@ -1153,7 +1153,7 @@ static unsigned long __init free_low_memory_core_early(void)
 	return count;
 }
 
-static int reset_managed_pages_done __initdata;
+/* reset_managed_pages_done removed - unused */
 
 /* Stub: reset_node_managed_pages not used in minimal kernel */
 void reset_node_managed_pages(pg_data_t *pgdat)

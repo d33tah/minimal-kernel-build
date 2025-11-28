@@ -31,8 +31,7 @@ static DEFINE_PER_CPU(unsigned long, nr_unused);
 
 static struct kmem_cache *inode_cachep __read_mostly;
 
-static long get_nr_inodes(void) { return 0; }
-static inline long get_nr_inodes_unused(void) { return 0; }
+/* get_nr_inodes, get_nr_inodes_unused removed - unused */
 
 /* Stubbed - not used externally */
 long get_nr_dirty_inodes(void)

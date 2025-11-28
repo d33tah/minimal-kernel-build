@@ -49,7 +49,7 @@ static LIST_HEAD(clocksource_list);
 static DEFINE_MUTEX(clocksource_mutex);
 static char override_name[CS_NAME_LEN];
 static int finished_booting;
-static u64 suspend_start;
+/* suspend_start removed - unused */
 
  
 #define WATCHDOG_THRESHOLD (NSEC_PER_SEC >> 5)

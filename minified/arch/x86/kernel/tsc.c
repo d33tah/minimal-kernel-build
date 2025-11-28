@@ -623,8 +623,7 @@ void recalibrate_cpu_khz(void)
 }
 
 
-
-static unsigned long long cyc2ns_suspend;
+/* cyc2ns_suspend removed - unused */
 
 void tsc_save_sched_clock_state(void)
 {

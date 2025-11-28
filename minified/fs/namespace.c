@@ -28,7 +28,7 @@
 #include "pnode.h"
 #include "internal.h"
 
-static unsigned int sysctl_mount_max __read_mostly = 100000;
+/* sysctl_mount_max removed - unused */
 
 static unsigned int m_hash_mask __read_mostly;
 static unsigned int m_hash_shift __read_mostly;

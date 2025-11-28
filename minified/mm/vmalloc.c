@@ -1282,16 +1282,7 @@ struct vmap_block {
 
 static DEFINE_PER_CPU(struct vmap_block_queue, vmap_block_queue);
 
-static DEFINE_XARRAY(vmap_blocks);
-
-static unsigned long addr_to_vb_idx(unsigned long addr)
-{
-	addr -= VMALLOC_START & ~(VMAP_BLOCK_SIZE-1);
-	addr /= VMAP_BLOCK_SIZE;
-	return addr;
-}
-
-/* vmap_block_vaddr, new_vmap_block, free_vmap_block removed - unused */
+/* vmap_blocks, addr_to_vb_idx, vmap_block_vaddr, new_vmap_block, free_vmap_block removed - unused */
 
 static void purge_fragmented_blocks_allcpus(void)
 {

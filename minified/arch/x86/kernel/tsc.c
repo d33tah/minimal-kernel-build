@@ -189,29 +189,15 @@ int check_tsc_unstable(void)
 	return tsc_unstable;
 }
 
-int __init notsc_setup(char *str)
-{
-	mark_tsc_unstable("boot parameter notsc");
-	return 1;
-}
-
+/* Stub: notsc option not needed for minimal kernel */
+int __init notsc_setup(char *str) { return 1; }
 __setup("notsc", notsc_setup);
 
 static int no_sched_irq_time;
 static int no_tsc_watchdog;
 
-static int __init tsc_setup(char *str)
-{
-	if (!strcmp(str, "reliable"))
-		tsc_clocksource_reliable = 1;
-	if (!strncmp(str, "noirqtime", 9))
-		no_sched_irq_time = 1;
-	if (!strcmp(str, "unstable"))
-		mark_tsc_unstable("boot parameter");
-	if (!strcmp(str, "nowatchdog"))
-		no_tsc_watchdog = 1;
-	return 1;
-}
+/* Stub: tsc= options not needed for minimal kernel */
+static int __init tsc_setup(char *str) { return 1; }
 
 __setup("tsc=", tsc_setup);
 

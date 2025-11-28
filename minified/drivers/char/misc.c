@@ -9,8 +9,7 @@
 #include <linux/kernel.h>
 #include <linux/major.h>
 #include <linux/mutex.h>
-#include <linux/proc_fs.h>
-#include <linux/seq_file.h>
+/* Stub: proc_fs.h and seq_file.h not needed for minimal kernel */
 #include <linux/stat.h>
 #include <linux/init.h>
 #include <linux/device.h>
@@ -167,13 +166,12 @@ static char *misc_devnode(struct device *dev, umode_t *mode)
 static int __init misc_init(void)
 {
 	int err;
-	struct proc_dir_entry *ret;
 
-	ret = proc_create_seq("misc", 0, NULL, &misc_seq_ops);
+	/* Stub: proc entry not needed for minimal kernel */
 	misc_class = class_create(THIS_MODULE, "misc");
 	err = PTR_ERR(misc_class);
 	if (IS_ERR(misc_class))
-		goto fail_remove;
+		return err;
 
 	err = -EIO;
 	if (register_chrdev(MISC_MAJOR, "misc", &misc_fops))
@@ -184,9 +182,6 @@ static int __init misc_init(void)
 fail_printk:
 	pr_err("unable to get major %d for misc devices\n", MISC_MAJOR);
 	class_destroy(misc_class);
-fail_remove:
-	if (ret)
-		remove_proc_entry("misc", NULL);
 	return err;
 }
 subsys_initcall(misc_init);

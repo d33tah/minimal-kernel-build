@@ -492,38 +492,7 @@ void tty_ldisc_deinit(struct tty_struct *tty)
 	tty->ldisc = NULL;
 }
 
-static struct ctl_table tty_table[] = {
-	{
-		.procname	= "ldisc_autoload",
-		.data		= &tty_ldisc_autoload,
-		.maxlen		= sizeof(tty_ldisc_autoload),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec,
-		.extra1		= SYSCTL_ZERO,
-		.extra2		= SYSCTL_ONE,
-	},
-	{ }
-};
-
-static struct ctl_table tty_dir_table[] = {
-	{
-		.procname	= "tty",
-		.mode		= 0555,
-		.child		= tty_table,
-	},
-	{ }
-};
-
-static struct ctl_table tty_root_table[] = {
-	{
-		.procname	= "dev",
-		.mode		= 0555,
-		.child		= tty_dir_table,
-	},
-	{ }
-};
-
+/* Stub: tty sysctl entries not needed for minimal kernel */
 void tty_sysctl_init(void)
 {
-	register_sysctl_table(tty_root_table);
 }

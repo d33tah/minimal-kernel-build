@@ -667,35 +667,7 @@ static noinline_for_stack
 char *restricted_pointer(char *buf, char *end, const void *ptr,
 			 struct printf_spec spec)
 {
-	switch (kptr_restrict) {
-	case 0:
-		
-		return default_pointer(buf, end, ptr, spec);
-	case 1: {
-		const struct cred *cred;
-
-		
-		if (in_irq() || in_serving_softirq() || in_nmi()) {
-			if (spec.field_width == -1)
-				spec.field_width = 2 * sizeof(ptr);
-			return error_string(buf, end, "pK-error", spec);
-		}
-
-		
-		cred = current_cred();
-		if (!has_capability_noaudit(current, CAP_SYSLOG) ||
-		    !uid_eq(cred->euid, cred->uid) ||
-		    !gid_eq(cred->egid, cred->gid))
-			ptr = NULL;
-		break;
-	}
-	case 2:
-	default:
-		
-		ptr = NULL;
-		break;
-	}
-
+	/* Stub: pointer restriction not needed for minimal kernel */
 	return pointer_string(buf, end, ptr, spec);
 }
 
@@ -859,25 +831,8 @@ static noinline_for_stack
 char *address_val(char *buf, char *end, const void *addr,
 		  struct printf_spec spec, const char *fmt)
 {
-	unsigned long long num;
-	int size;
-
-	if (check_pointer(&buf, end, addr, spec))
-		return buf;
-
-	switch (fmt[1]) {
-	case 'd':
-		num = *(const dma_addr_t *)addr;
-		size = sizeof(dma_addr_t);
-		break;
-	case 'p':
-	default:
-		num = *(const phys_addr_t *)addr;
-		size = sizeof(phys_addr_t);
-		break;
-	}
-
-	return special_hex_number(buf, end, num, size);
+	/* Stub: address formatting not needed for minimal kernel */
+	return error_string(buf, end, "(addr)", spec);
 }
 
 static noinline_for_stack

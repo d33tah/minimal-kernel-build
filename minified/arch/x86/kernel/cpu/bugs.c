@@ -9,7 +9,15 @@
 #include <asm/fpu/api.h>
 #include <asm/msr.h>
 #include <asm/alternative.h>
-#include <asm/vmx.h>
+/* Removed: #include <asm/vmx.h> - only need vmx_l1d_flush_state enum */
+enum vmx_l1d_flush_state {
+	VMENTER_L1D_FLUSH_AUTO,
+	VMENTER_L1D_FLUSH_NEVER,
+	VMENTER_L1D_FLUSH_COND,
+	VMENTER_L1D_FLUSH_ALWAYS,
+	VMENTER_L1D_FLUSH_EPT_DISABLED,
+	VMENTER_L1D_FLUSH_NOT_REQUIRED,
+};
 #include <asm/nospec-branch.h>
 
  

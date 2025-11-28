@@ -8,7 +8,7 @@
 #include <asm/traps.h>
 #include <asm/irq_regs.h>
 
-#include <uapi/asm/kvm.h>
+/* Removed: #include <uapi/asm/kvm.h> - not needed for minimal kernel */
 
 #include <linux/hardirq.h>
 #include <linux/pkeys.h>

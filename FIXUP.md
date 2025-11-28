@@ -1,3 +1,28 @@
+--- 2025-11-28 02:37 ---
+
+Session progress:
+- make vm: PASSES ✓, prints "Hello, World!" and "Still alive" ✓
+- Kernel-only LOC: 197,683 (down from 197,952)
+- Binary size: 251KB
+
+Removed in this session:
+1. kernel/signal.c: collect_signal (~35 LOC)
+2. mm/rmap.c: set_tlb_ubc_flush_pending, should_defer_flush (~40 LOC)
+3. mm/vmalloc.c: vmap_blocks, addr_to_vb_idx, vmap_block_vaddr, new_vmap_block, free_vmap_block (~35 LOC)
+4. mm/memblock.c: memblock_setclr_flag, __find_max_addr, reset_managed_pages_done (~35 LOC)
+5. drivers/tty/tty_ldisc.c: tty_ldisc_failto (~15 LOC)
+6. drivers/base/core.c: fw_devlink_is_permissive decl, class_dir struct and functions (~30 LOC)
+7. drivers/base/core.c: fw_devlink_parse_fwnode, fw_devlink_parse_fwtree, device_check_offline (~30 LOC)
+8. drivers/base/platform.c: platform_devid_ida
+9. lib/devres.c: devm_ioremap_match
+10. fs/inode.c: get_nr_inodes, get_nr_inodes_unused
+11. fs/namespace.c: sysctl_mount_max
+12. kernel/time/clocksource.c: suspend_start
+13. arch/x86/kernel/tsc.c: cyc2ns_suspend
+14. kernel/resource.c: __release_child_resources (~20 LOC)
+
+Continuing to look for more opportunities.
+
 --- 2025-11-28 02:09 ---
 
 New session start:

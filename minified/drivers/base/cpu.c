@@ -74,63 +74,27 @@ static struct cpu_attr cpu_attrs[] = {
 	_CPU_ATTR(present, &__cpu_present_mask),
 };
 
- 
+/* Stub: CPU sysfs attributes simplified for minimal kernel */
 static ssize_t print_cpus_kernel_max(struct device *dev,
 				     struct device_attribute *attr, char *buf)
 {
-	return sysfs_emit(buf, "%d\n", NR_CPUS - 1);
+	return sysfs_emit(buf, "0\n");
 }
 static DEVICE_ATTR(kernel_max, 0444, print_cpus_kernel_max, NULL);
 
- 
 unsigned int total_cpus;
 
 static ssize_t print_cpus_offline(struct device *dev,
 				  struct device_attribute *attr, char *buf)
 {
-	int len = 0;
-	cpumask_var_t offline;
-
-	 
-	if (!alloc_cpumask_var(&offline, GFP_KERNEL))
-		return -ENOMEM;
-	cpumask_andnot(offline, cpu_possible_mask, cpu_online_mask);
-	len += sysfs_emit_at(buf, len, "%*pbl", cpumask_pr_args(offline));
-	free_cpumask_var(offline);
-
-	 
-	if (total_cpus && nr_cpu_ids < total_cpus) {
-		len += sysfs_emit_at(buf, len, ",");
-
-		if (nr_cpu_ids == total_cpus-1)
-			len += sysfs_emit_at(buf, len, "%u", nr_cpu_ids);
-		else
-			len += sysfs_emit_at(buf, len, "%u-%d",
-					     nr_cpu_ids, total_cpus - 1);
-	}
-
-	len += sysfs_emit_at(buf, len, "\n");
-
-	return len;
+	return sysfs_emit(buf, "\n");
 }
 static DEVICE_ATTR(offline, 0444, print_cpus_offline, NULL);
 
 static ssize_t print_cpus_isolated(struct device *dev,
 				  struct device_attribute *attr, char *buf)
 {
-	int len;
-	cpumask_var_t isolated;
-
-	if (!alloc_cpumask_var(&isolated, GFP_KERNEL))
-		return -ENOMEM;
-
-	cpumask_andnot(isolated, cpu_possible_mask,
-		       housekeeping_cpumask(HK_TYPE_DOMAIN));
-	len = sysfs_emit(buf, "%*pbl\n", cpumask_pr_args(isolated));
-
-	free_cpumask_var(isolated);
-
-	return len;
+	return sysfs_emit(buf, "\n");
 }
 static DEVICE_ATTR(isolated, 0444, print_cpus_isolated, NULL);
 
@@ -140,37 +104,16 @@ static void cpu_device_release(struct device *dev)
 	 
 }
 
+/* Stub: CPU modalias simplified for minimal kernel */
 static ssize_t print_cpu_modalias(struct device *dev,
 				  struct device_attribute *attr,
 				  char *buf)
 {
-	int len = 0;
-	u32 i;
-
-	len += sysfs_emit_at(buf, len,
-			     "cpu:type:" CPU_FEATURE_TYPEFMT ":feature:",
-			     CPU_FEATURE_TYPEVAL);
-
-	for (i = 0; i < MAX_CPU_FEATURES; i++)
-		if (cpu_have_feature(i)) {
-			if (len + sizeof(",XXXX\n") >= PAGE_SIZE) {
-				WARN(1, "CPU features overflow page\n");
-				break;
-			}
-			len += sysfs_emit_at(buf, len, ",%04X", i);
-		}
-	len += sysfs_emit_at(buf, len, "\n");
-	return len;
+	return sysfs_emit(buf, "cpu:type:x86:feature:\n");
 }
 
 static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
 {
-	char *buf = kzalloc(PAGE_SIZE, GFP_KERNEL);
-	if (buf) {
-		print_cpu_modalias(NULL, NULL, buf);
-		add_uevent_var(env, "MODALIAS=%s", buf);
-		kfree(buf);
-	}
 	return 0;
 }
 

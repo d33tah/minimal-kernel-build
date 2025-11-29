@@ -120,33 +120,14 @@ struct pbe {
  
 extern void mark_free_pages(struct zone *zone);
 
- 
-struct platform_hibernation_ops {
-	int (*begin)(pm_message_t stage);
-	void (*end)(void);
-	int (*pre_snapshot)(void);
-	void (*finish)(void);
-	int (*prepare)(void);
-	int (*enter)(void);
-	void (*leave)(void);
-	int (*pre_restore)(void);
-	void (*restore_cleanup)(void);
-	void (*recover)(void);
-};
+/* platform_hibernation_ops and PM_* defines - not used in minimal kernel */
+struct platform_hibernation_ops;
 
 static inline void register_nosave_region(unsigned long b, unsigned long e) {}
 
 static inline int hibernate(void) { return -ENOSYS; }
 static inline bool system_entering_hibernation(void) { return false; }
-static inline bool hibernation_available(void) { return false; }
-
-
-#define PM_HIBERNATION_PREPARE	0x0001  
-#define PM_POST_HIBERNATION	0x0002  
-#define PM_SUSPEND_PREPARE	0x0003  
-#define PM_POST_SUSPEND		0x0004  
-#define PM_RESTORE_PREPARE	0x0005  
-#define PM_POST_RESTORE		0x0006  
+static inline bool hibernation_available(void) { return false; }  
 
 extern struct mutex system_transition_mutex;
 

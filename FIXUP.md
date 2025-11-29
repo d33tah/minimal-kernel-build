@@ -1,10 +1,10 @@
---- 2025-11-29 12:30 ---
+--- 2025-11-29 12:42 ---
 SESSION IN PROGRESS: Continue LOC reduction
 
 **Status:**
 - Started: 214,087 LOC
-- Current: 211,745 LOC
-- Reduction so far: 2,342 LOC
+- Current: 211,697 LOC
+- Reduction so far: 2,390 LOC
 - Binary size: 245KB
 
 **Commits made so far:**
@@ -13,11 +13,14 @@ SESSION IN PROGRESS: Continue LOC reduction
 3. a8bf3d33 - Reduce unused enum values in fs.h (8 LOC)
 4. 10ffd095 - Reduce unused enum values in mm.h (32 LOC)
 5. 92bb0b5a - Remove unused defines from security.h and console.h (18 LOC)
+6. cd005827 - Remove unused defines from swiotlb.h and fs.h (6 LOC)
+7. 172edcac - Reduce unused node cache enums and struct (13 LOC)
+8. 1b508e91 - Reduce unused structs/enums in mmiotrace.h and io_uring.h (28 LOC)
 
 **Strategy working:**
-- Enum/define reduction continues to be effective
-- Memory failure enums, LSM_SETID/PRLIMIT defines, VESA defines all removed
-- Need about 11,745 more LOC to reach 200K target
+- Enum/define/struct reduction continues to be effective
+- Forward declarations replace unused struct definitions
+- Need about 11,697 more LOC to reach 200K target
 
 --- 2025-11-29 11:43 ---
 SESSION COMPLETE: Major reduction of unused code

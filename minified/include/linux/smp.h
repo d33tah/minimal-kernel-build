@@ -121,11 +121,6 @@ static inline int get_boot_cpu_id(void)
 #define get_cpu()		({ preempt_disable(); __smp_processor_id(); })
 #define put_cpu()		preempt_enable()
 
- 
-extern void arch_disable_smp_support(void);
-
-extern void arch_thaw_secondary_cpus_begin(void);
-extern void arch_thaw_secondary_cpus_end(void);
 
 void smp_setup_processor_id(void);
 

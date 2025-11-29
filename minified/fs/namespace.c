@@ -1745,13 +1745,6 @@ struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
 	return ERR_PTR(-EINVAL);
 }
 
-/* Stubbed - not used in minimal kernel */
-struct dentry *mount_subtree(struct vfsmount *m, const char *name)
-{
-	mntput(m);
-	return ERR_PTR(-ENOSYS);
-}
-
 SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
 		char __user *, type, unsigned long, flags, void __user *, data)
 {

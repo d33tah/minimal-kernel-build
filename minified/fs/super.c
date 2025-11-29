@@ -17,8 +17,6 @@
 #include <uapi/linux/mount.h>
 #include "internal.h"
 
-static int thaw_super_locked(struct super_block *sb);
-
 static LIST_HEAD(super_blocks);
 static DEFINE_SPINLOCK(sb_lock);
 
@@ -640,42 +638,6 @@ struct dentry *mount_nodev(struct file_system_type *fs_type,
 	return dget(s->s_root);
 }
 
-/* Stub: reconfigure_single not used externally */
-int reconfigure_single(struct super_block *s,
-		       int flags, void *data)
-{
-	return 0;
-}
-
-static int compare_single(struct super_block *s, void *p)
-{
-	return 1;
-}
-
-struct dentry *mount_single(struct file_system_type *fs_type,
-	int flags, void *data,
-	int (*fill_super)(struct super_block *, void *, int))
-{
-	struct super_block *s;
-	int error;
-
-	s = sget(fs_type, compare_single, set_anon_super, flags, NULL);
-	if (IS_ERR(s))
-		return ERR_CAST(s);
-	if (!s->s_root) {
-		error = fill_super(s, data, flags & SB_SILENT ? 1 : 0);
-		if (!error)
-			s->s_flags |= SB_ACTIVE;
-	} else {
-		error = reconfigure_single(s, flags, data);
-	}
-	if (unlikely(error)) {
-		deactivate_locked_super(s);
-		return ERR_PTR(error);
-	}
-	return dget(s->s_root);
-}
-
 int vfs_get_tree(struct fs_context *fc)
 {
 	struct super_block *sb;
@@ -723,23 +685,4 @@ int super_setup_bdi_name(struct super_block *sb, char *fmt, ...)
 int super_setup_bdi(struct super_block *sb)
 {
 	return 0;
-}
-
-int freeze_super(struct super_block *sb)
-{
-	/* Stub: filesystem freezing not needed for minimal kernel */
-	return -EOPNOTSUPP;
-}
-
-static int thaw_super_locked(struct super_block *sb)
-{
-	/* Stub: filesystem thawing not needed for minimal kernel */
-	up_write(&sb->s_umount);
-	return -EINVAL;
-}
-
-int thaw_super(struct super_block *sb)
-{
-	down_write(&sb->s_umount);
-	return thaw_super_locked(sb);
 }

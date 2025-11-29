@@ -1,5 +1,31 @@
 # Doubts and Notes
 
+## 2025-11-29 10:15
+
+**Session update - 2,104 LOC reduction through enum cleanup:**
+- Pushed 5 new commits to origin (GitHub)
+- PR #10: Should still be open (was ready for review in previous session)
+- LOC: 194,182 (was 196,286 at session start)
+- Binary size: 245KB
+- Build: PASSES, make vm prints "Hello, World!"
+
+**Commits this session:**
+1. f7913c44 - Reduce unused enum values in headers (55 LOC)
+2. ee0a61d9 - Reduce more unused enum values (38 LOC)
+3. 8355b630 - Reduce more unused enum values in headers (28 LOC)
+4. 2cad9016 - Reduce more unused enum values and stubs (27 LOC)
+5. add25e23 - Reduce tick_dep_bits and umh_disable_depth enums (6 LOC)
+6. 0ef3e81d - Update FIXUP.md with session summary
+
+**~30 enums reduced this session**
+
+**Unable to verify CI:**
+- glab is configured for gitlab.profound.net (not GitHub)
+- No GH_TOKEN available for gh CLI
+- CI runs on GitHub Actions for PRs to master
+
+**Waiting for CI to run, will check via web fetch...**
+
 ## 2025-11-29 09:12
 
 **Session update - 53 LOC reduction through enum cleanup:**

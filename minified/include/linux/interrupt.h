@@ -91,26 +91,7 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }
 
-extern int __must_check
-request_any_context_irq(unsigned int irq, irq_handler_t handler,
-			unsigned long flags, const char *name, void *dev_id);
-
-extern int __must_check
-__request_percpu_irq(unsigned int irq, irq_handler_t handler,
-		     unsigned long flags, const char *devname,
-		     void __percpu *percpu_dev_id);
-
-extern int __must_check
-request_nmi(unsigned int irq, irq_handler_t handler, unsigned long flags,
-	    const char *name, void *dev);
-
-
-extern int __must_check
-request_percpu_nmi(unsigned int irq, irq_handler_t handler,
-		   const char *devname, void __percpu *dev);
-
 extern const void *free_irq(unsigned int, void *);
-extern void free_percpu_irq(unsigned int, void __percpu *);
 
 struct device;
 
@@ -132,14 +113,7 @@ bool irq_has_action(unsigned int irq);
 extern void disable_irq_nosync(unsigned int irq);
 extern bool disable_hardirq(unsigned int irq);
 extern void disable_irq(unsigned int irq);
-extern void disable_percpu_irq(unsigned int irq);
 extern void enable_irq(unsigned int irq);
-extern void enable_percpu_irq(unsigned int irq, unsigned int type);
-extern void irq_wake_thread(unsigned int irq, void *dev_id);
-extern void disable_percpu_nmi(unsigned int irq);
-extern void enable_percpu_nmi(unsigned int irq, unsigned int type);
-
-extern void rearm_wake_irq(unsigned int irq);
 
  
 struct irq_affinity_notify;
@@ -194,12 +168,6 @@ irq_calc_affinity_vectors(unsigned int minvec, unsigned int maxvec,
 }
 
 
-
-
-extern int irq_set_irq_wake(unsigned int irq, unsigned int on);
-
-
- 
 enum irqchip_irq_state {
 	IRQCHIP_STATE_PENDING,
 	IRQCHIP_STATE_ACTIVE,

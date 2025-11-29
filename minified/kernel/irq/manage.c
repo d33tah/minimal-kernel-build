@@ -62,12 +62,6 @@ void synchronize_irq(unsigned int irq)
 	}
 }
 
-int irq_set_vcpu_affinity(unsigned int irq, void *vcpu_info)
-{
-	/* Stub: VCPU affinity not needed for minimal kernel */
-	return -ENOSYS;
-}
-
 void __disable_irq(struct irq_desc *desc)
 {
 	if (!desc->depth++)
@@ -144,12 +138,6 @@ out:
 /* Stubbed: enable_nmi not used externally */
 void enable_nmi(unsigned int irq) { }
 
-int irq_set_irq_wake(unsigned int irq, unsigned int on)
-{
-	/* Stub: IRQ wakeup not needed for minimal kernel */
-	return 0;
-}
-
 /* Stubbed: can_request_irq not used externally */
 int can_request_irq(unsigned int irq, unsigned long irqflags) { return 0; }
 
@@ -199,9 +187,6 @@ int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 		unmask_irq(desc);
 	return ret;
 }
-
-/* Stub: irq_set_parent not used in minimal kernel */
-int irq_set_parent(int irq, int parent_irq) { return -ENOSYS; }
 
 static irqreturn_t irq_default_primary_handler(int irq, void *dev_id)
 {
@@ -406,26 +391,6 @@ static int irq_thread(void *data)
 
 	task_work_cancel(current, irq_thread_dtor);
 	return 0;
-}
-
-void irq_wake_thread(unsigned int irq, void *dev_id)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-	struct irqaction *action;
-	unsigned long flags;
-
-	if (!desc || WARN_ON(irq_settings_is_per_cpu_devid(desc)))
-		return;
-
-	raw_spin_lock_irqsave(&desc->lock, flags);
-	for_each_action_of_desc(desc, action) {
-		if (action->dev_id == dev_id) {
-			if (action->thread)
-				__irq_wake_thread(desc, action);
-			break;
-		}
-	}
-	raw_spin_unlock_irqrestore(&desc->lock, flags);
 }
 
 static int irq_setup_forced_threading(struct irqaction *new)
@@ -892,80 +857,6 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	return retval;
 }
 
-/* Stub: request_any_context_irq not used in minimal kernel */
-int request_any_context_irq(unsigned int irq, irq_handler_t handler,
-			    unsigned long flags, const char *name, void *dev_id)
-{
-	return -ENODEV;
-}
-
-int request_nmi(unsigned int irq, irq_handler_t handler,
-		unsigned long irqflags, const char *name, void *dev_id)
-{
-	return -ENODEV;
-}
-
-/* Stubbed percpu IRQ functions - not used externally */
-void enable_percpu_irq(unsigned int irq, unsigned int type)
-{
-}
-
-void enable_percpu_nmi(unsigned int irq, unsigned int type)
-{
-}
-
-bool irq_percpu_is_enabled(unsigned int irq)
-{
-	return false;
-}
-
-void disable_percpu_irq(unsigned int irq)
-{
-}
-
-void disable_percpu_nmi(unsigned int irq)
-{
-}
-
-/* Stubbed percpu IRQ allocation functions - not used externally */
-void remove_percpu_irq(unsigned int irq, struct irqaction *act)
-{
-}
-
-void free_percpu_irq(unsigned int irq, void __percpu *dev_id)
-{
-}
-
-void free_percpu_nmi(unsigned int irq, void __percpu *dev_id)
-{
-}
-
-int setup_percpu_irq(unsigned int irq, struct irqaction *act)
-{
-	return -ENODEV;
-}
-
-int __request_percpu_irq(unsigned int irq, irq_handler_t handler,
-			 unsigned long flags, const char *devname,
-			 void __percpu *dev_id)
-{
-	return -ENODEV;
-}
-
-int request_percpu_nmi(unsigned int irq, irq_handler_t handler,
-		       const char *name, void __percpu *dev_id)
-{
-	return -ENODEV;
-}
-
-int prepare_percpu_nmi(unsigned int irq)
-{
-	return -ENODEV;
-}
-
-void teardown_percpu_nmi(unsigned int irq)
-{
-}
 
 int __irq_get_irqchip_state(struct irq_data *data, enum irqchip_irq_state which,
 			    bool *state)

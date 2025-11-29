@@ -412,18 +412,6 @@ void deactivate_file_folio(struct folio *folio)
 	local_unlock(&lru_pvecs.lock);
 }
 
- 
-/* Stub: deactivate_page not used in minimal kernel */
-void deactivate_page(struct page *page)
-{
-}
-
- 
-/* Stub: mark_page_lazyfree not used in minimal kernel */
-void mark_page_lazyfree(struct page *page)
-{
-}
-
 void lru_add_drain(void)
 {
 	local_lock(&lru_pvecs.lock);
@@ -432,18 +420,7 @@ void lru_add_drain(void)
 	mlock_page_drain_local();
 }
 
- 
-/* Stub: lru_add_and_bh_lrus_drain not used in minimal kernel */
-
-void lru_add_drain_cpu_zone(struct zone *zone) { }
-
-void lru_add_drain_all(void)
-{
-	lru_add_drain();
-}
-
 atomic_t lru_disable_count = ATOMIC_INIT(0);
-void lru_cache_disable(void) { }
 
  
 void release_pages(struct page **pages, int nr)

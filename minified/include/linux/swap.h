@@ -111,13 +111,8 @@ static inline void lru_cache_enable(void)
 	atomic_dec(&lru_disable_count);
 }
 
-extern void lru_cache_disable(void);
 extern void lru_add_drain(void);
 extern void lru_add_drain_cpu(int cpu);
-extern void lru_add_drain_cpu_zone(struct zone *zone);
-extern void lru_add_drain_all(void);
-extern void deactivate_page(struct page *page);
-extern void mark_page_lazyfree(struct page *page);
 extern void swap_setup(void);
 
 extern void lru_cache_add_inactive_or_unevictable(struct page *page,

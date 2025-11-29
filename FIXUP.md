@@ -15,8 +15,14 @@ NEW SESSION: Continue aggressive LOC reduction
 3. Focus on eliminating unused inline functions (often larger than externs)
 4. Consider stubbing out entire subsystems
 
-**Progress:**
-(to be updated)
+**Progress (23:00):**
+- f36c3a93: Remove unused security functions from security.h (~65 LOC)
+- 0e81491f: Remove more unused security functions (~74 LOC)
+- f33153bf: Remove unused functions from commoncap.c (~68 LOC)
+- a063a722: Remove unused audit functions from audit.h (~110 LOC)
+- c5118fb7: Remove unused timekeeping functions (~66 LOC)
+
+**Session Total:** 383 LOC removed (180,564 -> 180,181)
 
 ---
 

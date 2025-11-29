@@ -12,15 +12,9 @@ struct audit_buffer;
 struct audit_context;
 struct kern_ipc_perm;
 
+/* Reduced audit_ntp_type enum - NTP audit not used in minimal kernel */
 enum audit_ntp_type {
-	AUDIT_NTP_OFFSET,
-	AUDIT_NTP_FREQ,
-	AUDIT_NTP_STATUS,
-	AUDIT_NTP_TAI,
-	AUDIT_NTP_TICK,
-	AUDIT_NTP_ADJUST,
-
-	AUDIT_NTP_NVALS
+	AUDIT_NTP_NVALS,  /* Only value needed for stub function signature */
 };
 
 struct audit_ntp_data {};

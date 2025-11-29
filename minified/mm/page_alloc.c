@@ -1577,22 +1577,6 @@ void free_pages(unsigned long addr, unsigned int order)
 
 
 
-void __page_frag_cache_drain(struct page *page, unsigned int count)
-{
-}
-
-void *page_frag_alloc_align(struct page_frag_cache *nc,
-		      unsigned int fragsz, gfp_t gfp_mask,
-		      unsigned int align_mask)
-{
-	/* Stub: page fragment allocation not needed for minimal kernel */
-	return NULL;
-}
-
-void page_frag_free(void *addr)
-{
-}
-
 static void *make_alloc_exact(unsigned long addr, unsigned int order,
 		size_t size)
 {

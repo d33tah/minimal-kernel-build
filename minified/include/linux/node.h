@@ -8,29 +8,16 @@
 #include <linux/list.h>
 #include <linux/workqueue.h>
 
- 
-struct node_hmem_attrs {
-	unsigned int read_bandwidth;
-	unsigned int write_bandwidth;
-	unsigned int read_latency;
-	unsigned int write_latency;
-};
-
-/* cache_indexing, cache_write_policy, node_cache_attrs - not used in minimal kernel */
-enum cache_indexing { NODE_CACHE_OTHER };
-enum cache_write_policy { NODE_CACHE_WRITE_OTHER };
+/* Unused structs/enums node_hmem_attrs, cache_indexing, cache_write_policy removed */
+struct node_hmem_attrs;
 struct node_cache_attrs;
 
 static inline void node_add_cache(unsigned int nid,
-				  struct node_cache_attrs *cache_attrs)
-{
-}
+				  struct node_cache_attrs *cache_attrs) { }
 
 static inline void node_set_perf_attrs(unsigned int nid,
 				       struct node_hmem_attrs *hmem_attrs,
-				       unsigned access)
-{
-}
+				       unsigned access) { }
 
 struct node {
 	struct device	dev;

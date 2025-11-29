@@ -12,9 +12,6 @@
 extern int overflowuid;
 extern int overflowgid;
 
-extern void __bad_uid(void);
-extern void __bad_gid(void);
-
 #define DEFAULT_OVERFLOWUID	65534
 #define DEFAULT_OVERFLOWGID	65534
 

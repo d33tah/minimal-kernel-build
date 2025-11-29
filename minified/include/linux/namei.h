@@ -45,8 +45,6 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT};
  
 #define LOOKUP_IS_SCOPED (LOOKUP_BENEATH | LOOKUP_IN_ROOT)
 
-extern int path_pts(struct path *path);
-
 extern int user_path_at_empty(int, const char __user *, unsigned, struct path *, int *empty);
 
 static inline int user_path_at(int dfd, const char __user *name, unsigned flags,

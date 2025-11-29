@@ -959,20 +959,10 @@ int generic_error_remove_page(struct address_space *mapping, struct page *page);
 extern vm_fault_t handle_mm_fault(struct vm_area_struct *vma,
 				  unsigned long address, unsigned int flags,
 				  struct pt_regs *regs);
-extern int fixup_user_fault(struct mm_struct *mm,
-			    unsigned long address, unsigned int fault_flags,
-			    bool *unlocked);
 void unmap_mapping_pages(struct address_space *mapping,
 		pgoff_t start, pgoff_t nr, bool even_cows);
 void unmap_mapping_range(struct address_space *mapping,
 		loff_t const holebegin, loff_t const holelen, int even_cows);
-
-extern int access_process_vm(struct task_struct *tsk, unsigned long addr,
-		void *buf, int len, unsigned int gup_flags);
-extern int access_remote_vm(struct mm_struct *mm, unsigned long addr,
-		void *buf, int len, unsigned int gup_flags);
-extern int __access_remote_vm(struct mm_struct *mm, unsigned long addr,
-			      void *buf, int len, unsigned int gup_flags);
 
 long get_user_pages_remote(struct mm_struct *mm,
 			    unsigned long start, unsigned long nr_pages,
@@ -1590,9 +1580,7 @@ extern int mm_take_all_locks(struct mm_struct *mm);
 extern void mm_drop_all_locks(struct mm_struct *mm);
 
 extern int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);
-extern int replace_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);
 extern struct file *get_mm_exe_file(struct mm_struct *mm);
-extern struct file *get_task_exe_file(struct task_struct *task);
 
 extern bool may_expand_vm(struct mm_struct *, vm_flags_t, unsigned long npages);
 extern void vm_stat_account(struct mm_struct *, vm_flags_t, long npages);
@@ -1831,11 +1819,6 @@ static inline bool gup_must_unshare(unsigned int flags, struct page *page)
 }
 
 typedef int (*pte_fn_t)(pte_t *pte, unsigned long addr, void *data);
-extern int apply_to_page_range(struct mm_struct *mm, unsigned long address,
-			       unsigned long size, pte_fn_t fn, void *data);
-extern int apply_to_existing_page_range(struct mm_struct *mm,
-				   unsigned long address, unsigned long size,
-				   pte_fn_t fn, void *data);
 
 extern void init_mem_debugging_and_hardening(void);
 static inline void kernel_poison_pages(struct page *page, int numpages) { }
@@ -1891,9 +1874,7 @@ static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
 {
 	return 0;
 }
-#endif	
-
-extern bool process_shares_mm(struct task_struct *p, struct mm_struct *mm);
+#endif
 
 void drop_slab(void);
 
@@ -1948,10 +1929,6 @@ void __init setup_nr_node_ids(void);
 #else
 static inline void setup_nr_node_ids(void) {}
 #endif
-
-extern int memcmp_pages(struct page *page1, struct page *page2);
-
-extern int sysctl_nr_trim_pages;
 
 static inline int
 madvise_set_anon_name(struct mm_struct *mm, unsigned long start,

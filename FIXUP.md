@@ -1,3 +1,40 @@
+--- 2025-11-29 21:09 ---
+NEW SESSION: Continue aggressive LOC reduction
+
+**Status at session start:**
+- LOC (C+H only, no scripts): 180,647 (after mrproper)
+- Build: PASSES
+- make vm: PASSES, prints "Hello, World!"
+- Binary size: 245KB
+
+**Goal:** Continue reducing toward 100K LOC. Currently ~80K above target.
+
+**Strategy:**
+1. Look for large headers with lots of unused struct/function definitions
+2. Search for whole subsystems that can be stubbed out
+3. Focus on files with 500+ LOC that may have significant unused portions
+4. Consider removing entire files that aren't needed
+
+**Progress:**
+- Removed unused externs from fs.h (~14 LOC): simple_nosetlease, simple_fill_super,
+  simple_read_from_buffer, simple_write_to_buffer, __generic_file_fsync, generic_file_fsync,
+  generic_check_addressable, generic_set_encrypted_ci_d_ops
+- Removed unused externs from mm.h (~18 LOC): fixup_user_fault, access_process_vm,
+  access_remote_vm, __access_remote_vm, replace_mm_exe_file, get_task_exe_file,
+  apply_to_page_range, apply_to_existing_page_range, process_shares_mm, memcmp_pages,
+  sysctl_nr_trim_pages
+- Removed unused externs from sched.h (~4 LOC): sched_setattr, sched_setattr_nocheck,
+  sched_task_on_rq, get_wchan
+- Removed unused externs from workqueue.h (~7 LOC): system_highpri_wq, system_freezable_wq,
+  system_power_efficient_wq, system_freezable_power_efficient_wq, queue_work_node,
+  queue_rcu_work, schedule_on_each_cpu
+- Removed unused externs from dcache.h (~10 LOC): d_instantiate_unique, d_instantiate_anon,
+  d_add_ci, d_exact_alias, d_find_any_alias, d_obtain_alias, d_obtain_root, d_find_alias,
+  d_prune_aliases, d_find_alias_rcu
+- Current LOC: 180,595 (reduced by 52 LOC from session start)
+
+---
+
 --- 2025-11-29 20:40 ---
 NEW SESSION: Continue aggressive LOC reduction
 

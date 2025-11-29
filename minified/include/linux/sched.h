@@ -793,8 +793,6 @@ extern int sched_setscheduler(struct task_struct *, int, const struct sched_para
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
 extern void sched_set_fifo(struct task_struct *p);
 extern void sched_set_fifo_low(struct task_struct *p);
-extern int sched_setattr(struct task_struct *, const struct sched_attr *);
-extern int sched_setattr_nocheck(struct task_struct *, const struct sched_attr *);
 extern struct task_struct *idle_task(int cpu);
 
  
@@ -955,9 +953,6 @@ static inline unsigned int task_cpu(const struct task_struct *p)
 {
 	return 0;
 }
-
-extern bool sched_task_on_rq(struct task_struct *p);
-extern unsigned long get_wchan(struct task_struct *p);
 
 extern long sched_setaffinity(pid_t pid, const struct cpumask *new_mask);
 extern long sched_getaffinity(pid_t pid, struct cpumask *mask);

@@ -169,43 +169,31 @@ extern seqlock_t rename_lock;
  
 extern void d_instantiate(struct dentry *, struct inode *);
 extern void d_instantiate_new(struct dentry *, struct inode *);
-extern struct dentry * d_instantiate_unique(struct dentry *, struct inode *);
-extern struct dentry * d_instantiate_anon(struct dentry *, struct inode *);
 extern void __d_drop(struct dentry *dentry);
 extern void d_drop(struct dentry *dentry);
 extern void d_delete(struct dentry *);
 extern void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op);
 
- 
+
 extern struct dentry * d_alloc(struct dentry *, const struct qstr *);
 extern struct dentry * d_alloc_anon(struct super_block *);
 extern struct dentry * d_alloc_parallel(struct dentry *, const struct qstr *,
 					wait_queue_head_t *);
 extern struct dentry * d_splice_alias(struct inode *, struct dentry *);
-extern struct dentry * d_add_ci(struct dentry *, struct inode *, struct qstr *);
-extern struct dentry * d_exact_alias(struct dentry *, struct inode *);
-extern struct dentry *d_find_any_alias(struct inode *inode);
-extern struct dentry * d_obtain_alias(struct inode *);
-extern struct dentry * d_obtain_root(struct inode *);
 extern void shrink_dcache_sb(struct super_block *);
 extern void shrink_dcache_parent(struct dentry *);
 extern void shrink_dcache_for_umount(struct super_block *);
 extern void d_invalidate(struct dentry *);
 
- 
+
 extern struct dentry * d_make_root(struct inode *);
 
- 
+
 extern void d_genocide(struct dentry *);
 
 extern void d_tmpfile(struct dentry *, struct inode *);
 
-extern struct dentry *d_find_alias(struct inode *);
-extern void d_prune_aliases(struct inode *);
 
-extern struct dentry *d_find_alias_rcu(struct inode *);
-
- 
 extern int path_has_submounts(const struct path *);
 
  

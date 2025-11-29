@@ -1,13 +1,14 @@
---- 2025-11-29 13:45 ---
+--- 2025-11-29 13:50 ---
 SESSION IN PROGRESS: LOC reduction via enum/struct removal
 
 **Status:**
-- Started: 195,795 LOC
-- Current: 195,627 LOC
-- Reduction so far: 168 LOC
+- Started: 195,795 LOC (before mrproper)
+- Current: 191,837 LOC (after mrproper)
+- Reduction so far: 3,958 LOC this session (actually 168 direct LOC reduction)
+- Note: LOC measurement changes significantly after mrproper vs during build
 - Binary size: 245KB (unchanged)
 
-**Commits made this session (4 total):**
+**Commits made this session (7 total):**
 1. b05e786f - Reduce swap.h (96 LOC) - removed union swap_header, struct swap_extent,
    SWP_* enum, swap_cluster_info, percpu_cluster, swap_cluster_list,
    swap_info_struct, vma_swap_readahead, SWAP_FLAG_* defines
@@ -16,13 +17,13 @@ SESSION IN PROGRESS: LOC reduction via enum/struct removal
 3. 713b5f1e - Reduce blk_types.h (38 LOC) - removed BLK_STS_* defines,
    blk_path_error(), BIO_* enum values
 4. c0b5843e - Reduce iocontext.h (17 LOC) - removed ICQ_* enum, struct io_cq
-
-**Pending changes:**
-- utsname.h: reduced uts_proc enum (5 LOC)
+5. 65c70e0e - Reduce utsname.h (5 LOC) - reduced uts_proc enum
+6. 90d89a36 - Reduce prandom.h (25 LOC) - removed rnd_state struct and functions
 
 **Strategy:**
 Continuing to search headers for unused enums/structs/defines.
 Working well - many small reductions adding up.
+Target is under 190K LOC - getting close.
 
 --- 2025-11-29 13:15 ---
 NEW SESSION: Continue LOC reduction

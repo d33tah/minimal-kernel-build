@@ -75,52 +75,13 @@ struct blk_integrity {
 	unsigned char				tag_size;
 };
 
-struct gendisk {
-	 
-	int major;
-	int first_minor;
-	int minors;
-
-	char disk_name[DISK_NAME_LEN];	 
-
-	unsigned short events;		 
-	unsigned short event_flags;	 
-
-	struct xarray part_tbl;
-	struct block_device *part0;
-
-	const struct block_device_operations *fops;
-	struct request_queue *queue;
-	void *private_data;
-
-	int flags;
-	unsigned long state;
+struct gendisk;
 #define GD_NEED_PART_SCAN		0
 #define GD_READ_ONLY			1
 #define GD_DEAD				2
 #define GD_NATIVE_CAPACITY		3
 #define GD_ADDED			4
 #define GD_SUPPRESS_PART_SCAN		5
-
-	struct mutex open_mutex;	 
-	unsigned open_partitions;	 
-
-	struct backing_dev_info	*bdi;
-	struct kobject *slave_dir;
-	struct timer_rand_state *random;
-	atomic_t sync_io;		 
-	struct disk_events *ev;
-#ifdef  CONFIG_BLK_DEV_INTEGRITY
-	struct kobject integrity_kobj;
-#endif	 
-#if IS_ENABLED(CONFIG_CDROM)
-	struct cdrom_device_info *cdi;
-#endif
-	int node_id;
-	struct badblocks *bb;
-	struct lockdep_map lockdep_map;
-	u64 diskseq;
-};
 
 
  
@@ -137,45 +98,13 @@ struct gendisk {
 
 static inline dev_t disk_devt(struct gendisk *disk)
 {
-	return MKDEV(disk->major, disk->first_minor);
+	return 0;
 }
 
 enum blk_zoned_model { BLK_ZONED_NONE = 0 };
 enum blk_bounce { BLK_BOUNCE_NONE };
 
-struct queue_limits {
-	enum blk_bounce		bounce;
-	unsigned long		seg_boundary_mask;
-	unsigned long		virt_boundary_mask;
-
-	unsigned int		max_hw_sectors;
-	unsigned int		max_dev_sectors;
-	unsigned int		chunk_sectors;
-	unsigned int		max_sectors;
-	unsigned int		max_segment_size;
-	unsigned int		physical_block_size;
-	unsigned int		logical_block_size;
-	unsigned int		alignment_offset;
-	unsigned int		io_min;
-	unsigned int		io_opt;
-	unsigned int		max_discard_sectors;
-	unsigned int		max_hw_discard_sectors;
-	unsigned int		max_secure_erase_sectors;
-	unsigned int		max_write_zeroes_sectors;
-	unsigned int		max_zone_append_sectors;
-	unsigned int		discard_granularity;
-	unsigned int		discard_alignment;
-	unsigned int		zone_write_granularity;
-
-	unsigned short		max_segments;
-	unsigned short		max_integrity_segments;
-	unsigned short		max_discard_segments;
-
-	unsigned char		misaligned;
-	unsigned char		discard_misaligned;
-	unsigned char		raid_partial_stripes_expensive;
-	enum blk_zoned_model	zoned;
-};
+struct queue_limits;
 
 typedef int (*report_zones_cb)(struct blk_zone *zone, unsigned int idx,
 			       void *data);
@@ -183,135 +112,9 @@ typedef int (*report_zones_cb)(struct blk_zone *zone, unsigned int idx,
 void blk_queue_set_zoned(struct gendisk *disk, enum blk_zoned_model model);
 
 
- 
-struct blk_independent_access_range {
-	struct kobject		kobj;
-	sector_t		sector;
-	sector_t		nr_sectors;
-};
-
-struct blk_independent_access_ranges {
-	struct kobject				kobj;
-	bool					sysfs_registered;
-	unsigned int				nr_ia_ranges;
-	struct blk_independent_access_range	ia_range[];
-};
-
-struct request_queue {
-	struct request		*last_merge;
-	struct elevator_queue	*elevator;
-
-	struct percpu_ref	q_usage_counter;
-
-	struct blk_queue_stats	*stats;
-	struct rq_qos		*rq_qos;
-
-	const struct blk_mq_ops	*mq_ops;
-
-	 
-	struct blk_mq_ctx __percpu	*queue_ctx;
-
-	unsigned int		queue_depth;
-
-	 
-	struct xarray		hctx_table;
-	unsigned int		nr_hw_queues;
-
-	 
-	void			*queuedata;
-
-	 
-	unsigned long		queue_flags;
-	 
-	atomic_t		pm_only;
-
-	 
-	int			id;
-
-	spinlock_t		queue_lock;
-
-	struct gendisk		*disk;
-
-	 
-	struct kobject kobj;
-
-	 
-	struct kobject *mq_kobj;
-
-#ifdef  CONFIG_BLK_DEV_INTEGRITY
-	struct blk_integrity integrity;
-#endif	 
-
-
-	 
-	unsigned long		nr_requests;	 
-
-	unsigned int		dma_pad_mask;
-	unsigned int		dma_alignment;
-
-
-	unsigned int		rq_timeout;
-	int			poll_nsec;
-
-	struct blk_stat_callback	*poll_cb;
-	struct blk_rq_stat	*poll_stat;
-
-	struct timer_list	timeout;
-	struct work_struct	timeout_work;
-
-	atomic_t		nr_active_requests_shared_tags;
-
-	struct blk_mq_tags	*sched_shared_tags;
-
-	struct list_head	icq_list;
-
-	struct queue_limits	limits;
-
-	unsigned int		required_elevator_features;
-
-
-	int			node;
-	 
-	struct blk_flush_queue	*fq;
-
-	struct list_head	requeue_list;
-	spinlock_t		requeue_lock;
-	struct delayed_work	requeue_work;
-
-	struct mutex		sysfs_lock;
-	struct mutex		sysfs_dir_lock;
-
-	 
-	struct list_head	unused_hctx_list;
-	spinlock_t		unused_hctx_lock;
-
-	int			mq_freeze_depth;
-
-	struct rcu_head		rcu_head;
-	wait_queue_head_t	mq_freeze_wq;
-	 
-	struct mutex		mq_freeze_lock;
-
-	int			quiesce_depth;
-
-	struct blk_mq_tag_set	*tag_set;
-	struct list_head	tag_set_list;
-	struct bio_set		bio_split;
-
-	struct dentry		*debugfs_dir;
-	struct dentry		*sched_debugfs_dir;
-	struct dentry		*rqos_debugfs_dir;
-	 
-	struct mutex		debugfs_mutex;
-
-	bool			mq_sysfs_init_done;
-
-	 
-	struct blk_independent_access_ranges *ia_ranges;
-
-	 
-	struct srcu_struct	srcu[];
-};
+struct blk_independent_access_range;
+struct blk_independent_access_ranges;
+struct request_queue;
 
  
 #define QUEUE_FLAG_STOPPED	0	 
@@ -505,35 +308,7 @@ enum blk_unique_id { BLK_UID_LAST };
 
 #define NFL4_UFLG_MASK			0x0000003F
 
-struct block_device_operations {
-	void (*submit_bio)(struct bio *bio);
-	int (*poll_bio)(struct bio *bio, struct io_comp_batch *iob,
-			unsigned int flags);
-	int (*open) (struct block_device *, fmode_t);
-	void (*release) (struct gendisk *, fmode_t);
-	int (*rw_page)(struct block_device *, sector_t, struct page *, unsigned int);
-	int (*ioctl) (struct block_device *, fmode_t, unsigned, unsigned long);
-	int (*compat_ioctl) (struct block_device *, fmode_t, unsigned, unsigned long);
-	unsigned int (*check_events) (struct gendisk *disk,
-				      unsigned int clearing);
-	void (*unlock_native_capacity) (struct gendisk *);
-	int (*getgeo)(struct block_device *, struct hd_geometry *);
-	int (*set_read_only)(struct block_device *bdev, bool ro);
-	void (*free_disk)(struct gendisk *disk);
-	 
-	void (*swap_slot_free_notify) (struct block_device *, unsigned long);
-	int (*report_zones)(struct gendisk *, sector_t sector,
-			unsigned int nr_zones, report_zones_cb cb, void *data);
-	char *(*devnode)(struct gendisk *disk, umode_t *mode);
-	 
-	int (*get_unique_id)(struct gendisk *disk, u8 id[16],
-			enum blk_unique_id id_type);
-	struct module *owner;
-	const struct pr_ops *pr_ops;
-
-	 
-	int (*alternative_gpt_sector)(struct gendisk *disk, sector_t *sector);
-};
+struct block_device_operations;
 
 #define blkdev_compat_ptr_ioctl NULL
 
@@ -576,12 +351,6 @@ int fsync_bdev(struct block_device *bdev);
 int freeze_bdev(struct block_device *bdev);
 int thaw_bdev(struct block_device *bdev);
 
-struct io_comp_batch {
-	struct request *req_list;
-	bool need_ts;
-	void (*complete)(struct io_comp_batch *);
-};
-
-#define DEFINE_IO_COMP_BATCH(name)	struct io_comp_batch name = { }
+struct io_comp_batch;
 
 #endif  

@@ -1124,10 +1124,7 @@ struct dir_context {
 #define NOMMU_VMFLAGS \
 	(NOMMU_MAP_READ | NOMMU_MAP_WRITE | NOMMU_MAP_EXEC)
 
-#define REMAP_FILE_DEDUP		(1 << 0)
-#define REMAP_FILE_CAN_SHORTEN		(1 << 1)
-
-#define REMAP_FILE_ADVISORY		(REMAP_FILE_CAN_SHORTEN)
+/* REMAP_FILE_* defines removed - unused in minimal kernel */
 
 struct iov_iter;
 struct io_uring_cmd;

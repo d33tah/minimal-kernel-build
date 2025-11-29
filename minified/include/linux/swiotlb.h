@@ -13,9 +13,7 @@ struct device;
 struct page;
 struct scatterlist;
 
-#define SWIOTLB_VERBOSE	(1 << 0)  
-#define SWIOTLB_FORCE	(1 << 1)  
-#define SWIOTLB_ANY	(1 << 2)  
+/* SWIOTLB_* defines removed - unused in minimal kernel */
 
  
 #define IO_TLB_SEGSIZE	128

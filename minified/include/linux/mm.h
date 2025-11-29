@@ -303,11 +303,8 @@ struct vm_fault {
 	pgtable_t prealloc_pte;		
 };
 
-enum page_entry_size {
-	PE_SIZE_PTE = 0,
-	PE_SIZE_PMD,
-	PE_SIZE_PUD,
-};
+/* page_entry_size - reduced for minimal kernel */
+enum page_entry_size { PE_SIZE_LAST };
 
 struct vm_operations_struct {
 	void (*open)(struct vm_area_struct * area);
@@ -1930,14 +1927,8 @@ void vmemmap_populate_print_last(void);
 void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
 				  unsigned long nr_pages);
 
-enum mf_flags {
-	MF_COUNT_INCREASED = 1 << 0,
-	MF_ACTION_REQUIRED = 1 << 1,
-	MF_MUST_KILL = 1 << 2,
-	MF_SOFT_OFFLINE = 1 << 3,
-	MF_UNPOISON = 1 << 4,
-	MF_SW_SIMULATED = 1 << 5,
-};
+/* mf_flags - reduced for minimal kernel, memory failure not used */
+enum mf_flags { MF_FLAGS_LAST };
 extern int memory_failure(unsigned long pfn, int flags);
 extern void memory_failure_queue(unsigned long pfn, int flags);
 extern void memory_failure_queue_kick(int cpu);
@@ -1961,36 +1952,10 @@ static inline bool arch_is_platform_page(u64 paddr)
 }
 #endif
 
-enum mf_result {
-	MF_IGNORED,	
-	MF_FAILED,	
-	MF_DELAYED,	
-	MF_RECOVERED,	
-};
-
-enum mf_action_page_type {
-	MF_MSG_KERNEL,
-	MF_MSG_KERNEL_HIGH_ORDER,
-	MF_MSG_SLAB,
-	MF_MSG_DIFFERENT_COMPOUND,
-	MF_MSG_HUGE,
-	MF_MSG_FREE_HUGE,
-	MF_MSG_NON_PMD_HUGE,
-	MF_MSG_UNMAP_FAILED,
-	MF_MSG_DIRTY_SWAPCACHE,
-	MF_MSG_CLEAN_SWAPCACHE,
-	MF_MSG_DIRTY_MLOCKED_LRU,
-	MF_MSG_CLEAN_MLOCKED_LRU,
-	MF_MSG_DIRTY_UNEVICTABLE_LRU,
-	MF_MSG_CLEAN_UNEVICTABLE_LRU,
-	MF_MSG_DIRTY_LRU,
-	MF_MSG_CLEAN_LRU,
-	MF_MSG_TRUNCATED_LRU,
-	MF_MSG_BUDDY,
-	MF_MSG_DAX,
-	MF_MSG_UNSPLIT_THP,
-	MF_MSG_UNKNOWN,
-};
+/* mf_result - reduced for minimal kernel */
+enum mf_result { MF_RESULT_LAST };
+/* mf_action_page_type - reduced for minimal kernel */
+enum mf_action_page_type { MF_MSG_LAST };
 
 static inline unsigned int debug_guardpage_minorder(void) { return 0; }
 static inline bool page_is_guard(struct page *page) { return false; }

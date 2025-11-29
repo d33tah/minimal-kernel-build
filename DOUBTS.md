@@ -1,5 +1,30 @@
 # Doubts and Notes
 
+## 2025-11-29 16:15
+
+**New session - 66 LOC reduced via struct elimination:**
+- Started: 195,471 LOC
+- Current: 195,405 LOC
+- Reduction: ~66 LOC
+
+**Commits made this session (11 total):**
+1. Reduce unused declarations in blkdev.h and sched.h (37 LOC)
+2. Reduce unused structs in sched/signal.h (11 LOC)
+3. Reduce unused structs in fs.h (11 LOC)
+4. Update FIXUP.md
+5. Reduce k_itimer struct in posix-timers.h (30 LOC)
+6. Reduce alarm struct in alarmtimer.h (8 LOC)
+7. Reduce workqueue_attrs struct in workqueue.h (10 LOC)
+8. Reduce fwnode_link struct in fwnode.h (6 LOC)
+9. Reduce gnu_property struct in elf.h (4 LOC)
+10. Reduce csum_state struct in uio.h (4 LOC)
+11. Update FIXUP.md
+
+**CI Note:** All changes already committed with pre-commit hook (make vm).
+CI runs on GitHub Actions for PRs to master. PR #10 should be updated.
+
+Checking PR #10 status next...
+
 ## 2025-11-29 15:15
 
 **CI VERIFIED PASSING after 9 minute wait:**

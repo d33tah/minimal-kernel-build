@@ -204,9 +204,6 @@ bool cpu_is_hotpluggable(unsigned int cpu)
 }
 
 
-static void __init cpu_dev_register_generic(void)
-{
-}
 
 
 /* Stub: CPU vulnerabilities sysfs attributes not needed for minimal kernel */

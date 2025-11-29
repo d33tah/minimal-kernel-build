@@ -68,9 +68,6 @@ extern int console_printk[];
 
 extern void console_verbose(void);
 
- 
-#define DEVKMSG_STR_MAX_SIZE 10
-extern char devkmsg_log_str[];
 struct ctl_table;
 
 extern int suppress_printk;

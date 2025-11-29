@@ -306,7 +306,6 @@ static u32 fw_devlink_flags = FW_DEVLINK_FLAGS_ON;
 static int __init fw_devlink_setup(char *arg) { return 0; }
 early_param("fw_devlink", fw_devlink_setup);
 
-static bool fw_devlink_strict;
 /* Stub: fw_devlink.strict= cmdline option not needed for minimal kernel */
 static int __init fw_devlink_strict_setup(char *arg) { return 0; }
 early_param("fw_devlink.strict", fw_devlink_strict_setup);

@@ -63,29 +63,9 @@ int __read_mostly suppress_printk;
  
 static int __read_mostly suppress_panic_printk;
 
-
-enum devkmsg_log_bits {
-	__DEVKMSG_LOG_BIT_ON = 0,
-	__DEVKMSG_LOG_BIT_OFF,
-	__DEVKMSG_LOG_BIT_LOCK,
-};
-
-enum devkmsg_log_masks {
-	DEVKMSG_LOG_MASK_ON             = BIT(__DEVKMSG_LOG_BIT_ON),
-	DEVKMSG_LOG_MASK_OFF            = BIT(__DEVKMSG_LOG_BIT_OFF),
-	DEVKMSG_LOG_MASK_LOCK           = BIT(__DEVKMSG_LOG_BIT_LOCK),
-};
-
- 
-#define DEVKMSG_LOG_MASK_DEFAULT	0
-
-static unsigned int __read_mostly devkmsg_log = DEVKMSG_LOG_MASK_DEFAULT;
-
 /* Stub: printk.devkmsg= option not needed for minimal kernel */
 static int __init control_devkmsg(char *str) { return 1; }
 __setup("printk.devkmsg=", control_devkmsg);
-
-char devkmsg_log_str[DEVKMSG_STR_MAX_SIZE] = "ratelimit";
 
  
 static int nr_ext_console_drivers;
@@ -191,46 +171,6 @@ static bool suppress_message_printing(int level) { return false; }
 
 
 
-static void set_user_specified(struct console_cmdline *c, bool user_specified)
-{
-	if (!user_specified)
-		return;
-
-	 
-	c->user_specified = true;
-	 
-	console_set_on_cmdline = 1;
-}
-
-static int __add_preferred_console(char *name, int idx, char *options,
-				   char *brl_options, bool user_specified)
-{
-	struct console_cmdline *c;
-	int i;
-
-	 
-	for (i = 0, c = console_cmdline;
-	     i < MAX_CMDLINECONSOLES && c->name[0];
-	     i++, c++) {
-		if (strcmp(c->name, name) == 0 && c->index == idx) {
-			if (!brl_options)
-				preferred_console = i;
-			set_user_specified(c, user_specified);
-			return 0;
-		}
-	}
-	if (i == MAX_CMDLINECONSOLES)
-		return -E2BIG;
-	if (!brl_options)
-		preferred_console = i;
-	strlcpy(c->name, name, sizeof(c->name));
-	c->options = options;
-	set_user_specified(c, user_specified);
-	braille_set_options(c, brl_options);
-
-	c->index = idx;
-	return 0;
-}
 
 /* Stub: console_msg_format= option not needed for minimal kernel */
 static int __init console_msg_format_setup(char *str) { return 1; }
@@ -267,18 +207,6 @@ void resume_console(void)
 	/* Stub: console resume not needed for minimal kernel */
 }
 
- 
-static int console_cpu_notify(unsigned int cpu)
-{
-	if (!cpuhp_tasks_frozen) {
-		 
-		if (console_trylock())
-			console_unlock();
-	}
-	return 0;
-}
-
- 
 void console_lock(void)
 {
 	might_sleep();

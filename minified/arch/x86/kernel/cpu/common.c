@@ -149,8 +149,6 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
 static int __init x86_noinvpcid_setup(char *s) { return 0; }
 early_param("noinvpcid", x86_noinvpcid_setup);
 
-static int cachesize_override = -1;
-
 /* Stub: cachesize= cmdline option not needed for minimal kernel */
 static int __init cachesize_setup(char *str) { return 1; }
 __setup("cachesize=", cachesize_setup);

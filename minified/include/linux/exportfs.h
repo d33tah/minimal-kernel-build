@@ -16,50 +16,7 @@ struct vfsmount;
 
  
 enum fid_type {
-	 
 	FILEID_ROOT = 0,
-
-	 
-	FILEID_INO32_GEN = 1,
-
-	 
-	FILEID_INO32_GEN_PARENT = 2,
-
-	 
-	FILEID_BTRFS_WITHOUT_PARENT = 0x4d,
-
-	 
-	FILEID_BTRFS_WITH_PARENT = 0x4e,
-
-	 
-	FILEID_BTRFS_WITH_PARENT_ROOT = 0x4f,
-
-	 
-	FILEID_UDF_WITHOUT_PARENT = 0x51,
-
-	 
-	FILEID_UDF_WITH_PARENT = 0x52,
-
-	 
-	FILEID_NILFS_WITHOUT_PARENT = 0x61,
-
-	 
-	FILEID_NILFS_WITH_PARENT = 0x62,
-
-	 
-	FILEID_FAT_WITHOUT_PARENT = 0x71,
-
-	 
-	FILEID_FAT_WITH_PARENT = 0x72,
-
-	 
-	FILEID_LUSTRE = 0x97,
-
-	 
-	FILEID_KERNFS = 0xfe,
-
-	 
-	FILEID_INVALID = 0xff,
 };
 
 struct fid {

@@ -7,14 +7,6 @@
 
 enum io_uring_cmd_flags {
 	IO_URING_F_COMPLETE_DEFER	= 1,
-	IO_URING_F_UNLOCKED		= 2,
-	 
-	IO_URING_F_NONBLOCK		= INT_MIN,
-
-	 
-	IO_URING_F_SQE128		= 4,
-	IO_URING_F_CQE32		= 8,
-	IO_URING_F_IOPOLL		= 16,
 };
 
 struct io_uring_cmd {

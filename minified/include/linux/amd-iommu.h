@@ -7,16 +7,7 @@
 #include <linux/types.h>
 
 struct amd_iommu;
-
- 
-struct amd_iommu_pi_data {
-	u32 ga_tag;
-	u32 prev_ga_tag;
-	u64 base;
-	bool is_guest_mode;
-	struct vcpu_data *vcpu_data;
-	void *ir_data;
-};
+struct amd_iommu_pi_data;
 
 
 static inline int amd_iommu_detect(void) { return -ENODEV; }

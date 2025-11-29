@@ -114,13 +114,6 @@ int platform_get_irq(struct platform_device *dev, unsigned int num)
 	return ret;
 }
 
- 
-/* Stub: platform_irq_count not used externally */
-int platform_irq_count(struct platform_device *dev)
-{
-	return 0;
-}
-
 int devm_platform_get_irqs_affinity(struct platform_device *dev,
 				    struct irq_affinity *affd,
 				    unsigned int minvec,
@@ -150,22 +143,6 @@ struct resource *platform_get_resource_byname(struct platform_device *dev,
 	return NULL;
 }
 
-/* Stub: platform_get_irq_byname not used externally */
-int platform_get_irq_byname(struct platform_device *dev, const char *name)
-{
-	return -ENXIO;
-}
-
-/* Stub: platform_get_irq_byname_optional not used externally */
-int platform_get_irq_byname_optional(struct platform_device *dev,
-				     const char *name)
-{
-	return -ENXIO;
-}
-
-/* Stubbed: platform_add_devices not used externally */
-int platform_add_devices(struct platform_device **devs, int num) { return 0; }
-
 struct platform_object {
 	struct platform_device pdev;
 	char name[];
@@ -183,12 +160,6 @@ static void setup_pdev_dma_masks(struct platform_device *pdev)
 		pdev->dev.dma_mask = &pdev->platform_dma_mask;
 	}
 };
-
- 
-/* Stub: platform_device_put not used externally */
-void platform_device_put(struct platform_device *pdev)
-{
-}
 
 static void platform_device_release(struct device *dev)
 {

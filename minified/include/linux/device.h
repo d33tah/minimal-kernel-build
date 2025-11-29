@@ -266,29 +266,8 @@ struct dev_links_info {
 struct dev_msi_info {
 };
 
- 
-enum device_physical_location_panel {
-	DEVICE_PANEL_TOP,
-};
-
- 
-enum device_physical_location_vertical_position {
-	DEVICE_VERT_POS_UPPER,
-};
-
- 
-enum device_physical_location_horizontal_position {
-	DEVICE_HORI_POS_LEFT,
-};
-
- 
-struct device_physical_location {
-	enum device_physical_location_panel panel;
-	enum device_physical_location_vertical_position vertical_position;
-	enum device_physical_location_horizontal_position horizontal_position;
-	bool dock;
-	bool lid;
-};
+/* device_physical_location - not used in minimal kernel */
+struct device_physical_location;
 
  
 struct device {

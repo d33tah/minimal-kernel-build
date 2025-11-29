@@ -33,18 +33,8 @@ enum memcg_stat_item {
 	MEMCG_NR_STAT,
 };
 
-enum memcg_memory_event {
-	MEMCG_LOW,
-	MEMCG_HIGH,
-	MEMCG_MAX,
-	MEMCG_OOM,
-	MEMCG_OOM_KILL,
-	MEMCG_OOM_GROUP_KILL,
-	MEMCG_SWAP_HIGH,
-	MEMCG_SWAP_MAX,
-	MEMCG_SWAP_FAIL,
-	MEMCG_NR_MEMORY_EVENTS,
-};
+/* memcg_memory_event - reduced for minimal kernel */
+enum memcg_memory_event { MEMCG_NR_MEMORY_EVENTS };
 
 struct mem_cgroup_reclaim_cookie {
 	pg_data_t *pgdat;

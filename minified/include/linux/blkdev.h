@@ -64,26 +64,10 @@ struct partition_meta_info {
 	u8 volname[PARTITION_META_INFO_VOLNAMELTH];
 };
 
- 
-enum {
-	GENHD_FL_REMOVABLE			= 1 << 0,
-	GENHD_FL_HIDDEN				= 1 << 1,
-	GENHD_FL_NO_PART			= 1 << 2,
-};
-
-enum {
-	DISK_EVENT_MEDIA_CHANGE			= 1 << 0,  
-	DISK_EVENT_EJECT_REQUEST		= 1 << 1,  
-};
-
-enum {
-	 
-	DISK_EVENT_FLAG_POLL			= 1 << 0,
-	 
-	DISK_EVENT_FLAG_UEVENT			= 1 << 1,
-	 
-	DISK_EVENT_FLAG_BLOCK_ON_EXCL_WRITE	= 1 << 2,
-};
+/* Unused disk/genhd flags - reduced for minimal kernel */
+enum { GENHD_FL_LAST };
+enum { DISK_EVENT_LAST };
+enum { DISK_EVENT_FLAG_LAST };
 
 struct disk_events;
 struct badblocks;
@@ -474,10 +458,7 @@ extern const char *blk_op_str(unsigned int op);
 int blk_status_to_errno(blk_status_t status);
 blk_status_t errno_to_blk_status(int errno);
 
- 
-#define BLK_POLL_ONESHOT		(1 << 0)
- 
-#define BLK_POLL_NOSLEEP		(1 << 1)
+/* BLK_POLL defines removed - unused in minimal kernel */
 int bio_poll(struct bio *bio, struct io_comp_batch *iob, unsigned int flags);
 int iocb_bio_iopoll(struct kiocb *kiocb, struct io_comp_batch *iob,
 			unsigned int flags);

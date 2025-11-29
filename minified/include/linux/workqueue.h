@@ -100,16 +100,7 @@ struct rcu_work {
 };
 
  
-struct workqueue_attrs {
-	 
-	int nice;
-
-	 
-	cpumask_var_t cpumask;
-
-	 
-	bool no_numa;
-};
+struct workqueue_attrs;
 
 static inline struct delayed_work *to_delayed_work(struct work_struct *work)
 {

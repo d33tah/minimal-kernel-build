@@ -1,20 +1,23 @@
---- 2025-11-29 15:42 ---
+--- 2025-11-29 15:52 ---
 SESSION IN PROGRESS: LOC reduction via struct/enum elimination
 
 **Progress this session so far:**
 - Started: 195,471 LOC
-- Current: 195,439 LOC
-- Reduction: ~32 LOC
+- Current: 195,417 LOC
+- Reduction: ~54 LOC
 
-**Commits made this session (3 so far):**
+**Commits made this session (6 total):**
 1. 479ac284 - Reduce unused declarations in blkdev.h and sched.h (37 LOC)
 2. 67a125ea - Reduce unused structs in sched/signal.h (11 LOC)
 3. b5bb96b7 - Reduce unused structs in fs.h (11 LOC)
+4. 26a5703f - Update FIXUP.md
+5. f580470c - Reduce k_itimer struct in posix-timers.h (30 LOC)
+6. 3a8f7cf4 - Reduce alarm struct in alarmtimer.h (8 LOC)
 
 **Strategy being employed:**
 - Search for struct definitions that aren't used in .c files
 - Convert to forward declarations where the full struct body isn't needed
-- Focus on large headers: blkdev.h, fs.h, sched.h, signal.h
+- Focus on headers with large unused struct bodies
 
 --- 2025-11-29 15:22 ---
 NEW SESSION: Continue LOC reduction toward 190K

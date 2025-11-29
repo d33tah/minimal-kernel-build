@@ -22,66 +22,26 @@ struct bio;
 
 struct pagevec;
 
-#define SWAP_FLAG_PREFER	0x8000	 
-#define SWAP_FLAG_PRIO_MASK	0x7fff
-#define SWAP_FLAG_PRIO_SHIFT	0
-#define SWAP_FLAG_DISCARD	0x10000  
-#define SWAP_FLAG_DISCARD_ONCE	0x20000  
-#define SWAP_FLAG_DISCARD_PAGES 0x40000  
-
-#define SWAP_FLAGS_VALID	(SWAP_FLAG_PRIO_MASK | SWAP_FLAG_PREFER | \
-				 SWAP_FLAG_DISCARD | SWAP_FLAG_DISCARD_ONCE | \
-				 SWAP_FLAG_DISCARD_PAGES)
-#define SWAP_BATCH 64
+/* Unused SWAP_FLAG_* defines removed */
 
 static inline int current_is_kswapd(void)
 {
 	return current->flags & PF_KSWAPD;
 }
 
- 
 #define MAX_SWAPFILES_SHIFT	5
-
- 
-
 #define SWP_SWAPIN_ERROR_NUM 1
-#define SWP_SWAPIN_ERROR     (MAX_SWAPFILES + SWP_HWPOISON_NUM + \
-			     SWP_MIGRATION_NUM + SWP_DEVICE_NUM + \
-			     SWP_PTE_MARKER_NUM)
- 
 #define SWP_PTE_MARKER_NUM 0
-
- 
 #define SWP_DEVICE_NUM 0
-
- 
 #define SWP_MIGRATION_NUM 0
-
- 
 #define SWP_HWPOISON_NUM 0
-
 #define MAX_SWAPFILES \
 	((1 << MAX_SWAPFILES_SHIFT) - SWP_DEVICE_NUM - \
 	SWP_MIGRATION_NUM - SWP_HWPOISON_NUM - \
 	SWP_PTE_MARKER_NUM - SWP_SWAPIN_ERROR_NUM)
-
- 
-union swap_header {
-	struct {
-		char reserved[PAGE_SIZE - 10];
-		char magic[10];			 
-	} magic;
-	struct {
-		char		bootbits[1024];	 
-		__u32		version;
-		__u32		last_page;
-		__u32		nr_badpages;
-		unsigned char	sws_uuid[16];
-		unsigned char	sws_volume[16];
-		__u32		padding[117];
-		__u32		badpages[1];
-	} info;
-};
+#define SWP_SWAPIN_ERROR     (MAX_SWAPFILES + SWP_HWPOISON_NUM + \
+			     SWP_MIGRATION_NUM + SWP_DEVICE_NUM + \
+			     SWP_PTE_MARKER_NUM)
 
  
 struct reclaim_state {
@@ -95,114 +55,11 @@ struct sysinfo;
 struct writeback_control;
 struct zone;
 
- 
-struct swap_extent {
-	struct rb_node rb_node;
-	pgoff_t start_page;
-	pgoff_t nr_pages;
-	sector_t start_block;
-};
-
- 
-#define MAX_SWAP_BADPAGES \
-	((offsetof(union swap_header, magic.magic) - \
-	  offsetof(union swap_header, info.badpages)) / sizeof(int))
-
-enum {
-	SWP_USED	= (1 << 0),	 
-	SWP_WRITEOK	= (1 << 1),	 
-	SWP_DISCARDABLE = (1 << 2),	 
-	SWP_DISCARDING	= (1 << 3),	 
-	SWP_SOLIDSTATE	= (1 << 4),	 
-	SWP_CONTINUED	= (1 << 5),	 
-	SWP_BLKDEV	= (1 << 6),	 
-	SWP_ACTIVATED	= (1 << 7),	 
-	SWP_FS_OPS	= (1 << 8),	 
-	SWP_AREA_DISCARD = (1 << 9),	 
-	SWP_PAGE_DISCARD = (1 << 10),	 
-	SWP_STABLE_WRITES = (1 << 11),	 
-	SWP_SYNCHRONOUS_IO = (1 << 12),	 
-					 
-	SWP_SCANNING	= (1 << 14),	 
-};
+/* Unused swap structs/enums removed */
+struct swap_info_struct;
 
 #define SWAP_CLUSTER_MAX 32UL
 #define COMPACT_CLUSTER_MAX SWAP_CLUSTER_MAX
-
- 
-#define SWAP_HAS_CACHE	0x40	 
-#define COUNT_CONTINUED	0x80	 
-
- 
-#define SWAP_MAP_MAX	0x3e	 
-#define SWAP_MAP_BAD	0x3f	 
-#define SWAP_MAP_SHMEM	0xbf	 
-
- 
-#define SWAP_CONT_MAX	0x7f	 
-
- 
-struct swap_cluster_info {
-	spinlock_t lock;	 
-	unsigned int data:24;
-	unsigned int flags:8;
-};
-#define CLUSTER_FLAG_FREE 1  
-#define CLUSTER_FLAG_NEXT_NULL 2  
-#define CLUSTER_FLAG_HUGE 4  
-
- 
-struct percpu_cluster {
-	struct swap_cluster_info index;  
-	unsigned int next;  
-};
-
-struct swap_cluster_list {
-	struct swap_cluster_info head;
-	struct swap_cluster_info tail;
-};
-
- 
-struct swap_info_struct {
-	struct percpu_ref users;	 
-	unsigned long	flags;		 
-	signed short	prio;		 
-	struct plist_node list;		 
-	signed char	type;		 
-	unsigned int	max;		 
-	unsigned char *swap_map;	 
-	struct swap_cluster_info *cluster_info;  
-	struct swap_cluster_list free_clusters;  
-	unsigned int lowest_bit;	 
-	unsigned int highest_bit;	 
-	unsigned int pages;		 
-	unsigned int inuse_pages;	 
-	unsigned int cluster_next;	 
-	unsigned int cluster_nr;	 
-	unsigned int __percpu *cluster_next_cpu;  
-	struct percpu_cluster __percpu *percpu_cluster;  
-	struct rb_root swap_extent_root; 
-	struct block_device *bdev;	 
-	struct file *swap_file;		 
-	unsigned int old_block_size;	 
-	struct completion comp;		 
-	spinlock_t lock;		 
-	spinlock_t cont_lock;		 
-	struct work_struct discard_work;  
-	struct swap_cluster_list discard_clusters;  
-	struct plist_node avail_lists[];  
-};
-
- 
-#define SWAP_RA_ORDER_CEILING	3
-#define SWAP_RA_PTE_CACHE_SIZE	(1 << SWAP_RA_ORDER_CEILING)
-
-struct vma_swap_readahead {
-	unsigned short win;
-	unsigned short offset;
-	unsigned short nr_pte;
-	pte_t ptes[SWAP_RA_PTE_CACHE_SIZE];
-};
 
 static inline swp_entry_t folio_swap_entry(struct folio *folio)
 {

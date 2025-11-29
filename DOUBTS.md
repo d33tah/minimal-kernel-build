@@ -31,6 +31,7 @@
 - Current LOC: 195,405 (under 200K target)
 - Binary size: 245KB (under 400KB target)
 - Build: PASSES, make vm prints "Hello, World!"
+- Note: Could not post GitHub comment (no API token), but all work is pushed and CI passes
 
 ## 2025-11-29 15:15
 

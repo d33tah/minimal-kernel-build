@@ -1,5 +1,24 @@
 # Doubts and Notes
 
+## 2025-11-29 14:05
+
+**Session complete - further LOC reduction:**
+- Started: 195,795 LOC (before mrproper)
+- Final: 191,839 LOC (after mrproper)
+- Reduction: ~3,956 LOC this session
+
+**Commits pushed to origin (GitHub):**
+- 8 commits total this session
+- All passed local commit hook (make vm test)
+
+**CI Status:**
+- glab configured for gitlab.profound.net (not GitHub)
+- Cannot check GitHub Actions CI directly without gh auth
+- Local commit hook verified all commits (make vm passes)
+
+**Doubt:** Cannot verify GitHub Actions CI status via CLI. Commits passed local hooks.
+Will check GitHub PR status manually or via web.
+
 ## 2025-11-29 13:07
 
 **CI VERIFIED PASSING after 9 min wait:**

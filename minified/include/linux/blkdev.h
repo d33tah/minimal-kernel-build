@@ -161,18 +161,8 @@ static inline dev_t disk_devt(struct gendisk *disk)
 	return MKDEV(disk->major, disk->first_minor);
 }
 
- 
-enum blk_zoned_model {
-	BLK_ZONED_NONE = 0,	 
-	BLK_ZONED_HA,		 
-	BLK_ZONED_HM,		 
-};
-
- 
-enum blk_bounce {
-	BLK_BOUNCE_NONE,
-	BLK_BOUNCE_HIGH,
-};
+enum blk_zoned_model { BLK_ZONED_NONE = 0 };
+enum blk_bounce { BLK_BOUNCE_NONE };
 
 struct queue_limits {
 	enum blk_bounce		bounce;
@@ -598,13 +588,7 @@ extern int __blkdev_issue_zeroout(struct block_device *bdev, sector_t sector,
 extern int blkdev_issue_zeroout(struct block_device *bdev, sector_t sector,
 		sector_t nr_sects, gfp_t gfp_mask, unsigned flags);
 
-enum blk_default_limits {
-	BLK_MAX_SEGMENTS	= 128,
-	BLK_SAFE_MAX_SECTORS	= 255,
-	BLK_DEF_MAX_SECTORS	= 2560,
-	BLK_MAX_SEGMENT_SIZE	= 65536,
-	BLK_SEG_BOUNDARY_MASK	= 0xFFFFFFFFUL,
-};
+enum blk_default_limits { BLK_DEFAULT_LIMITS_LAST };
 
 int bdev_alignment_offset(struct block_device *bdev);
 unsigned int bdev_discard_alignment(struct block_device *bdev);
@@ -619,12 +603,7 @@ int kblockd_mod_delayed_work_on(int cpu, struct delayed_work *dwork, unsigned lo
 	MODULE_ALIAS("block-major-" __stringify(major) "-*")
 
 
-enum blk_unique_id {
-	 
-	BLK_UID_T10	= 1,
-	BLK_UID_EUI64	= 2,
-	BLK_UID_NAA	= 3,
-};
+enum blk_unique_id { BLK_UID_LAST };
 
 #define NFL4_UFLG_MASK			0x0000003F
 

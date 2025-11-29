@@ -1,3 +1,38 @@
+--- 2025-11-29 15:42 ---
+SESSION IN PROGRESS: LOC reduction via struct/enum elimination
+
+**Progress this session so far:**
+- Started: 195,471 LOC
+- Current: 195,439 LOC
+- Reduction: ~32 LOC
+
+**Commits made this session (3 so far):**
+1. 479ac284 - Reduce unused declarations in blkdev.h and sched.h (37 LOC)
+2. 67a125ea - Reduce unused structs in sched/signal.h (11 LOC)
+3. b5bb96b7 - Reduce unused structs in fs.h (11 LOC)
+
+**Strategy being employed:**
+- Search for struct definitions that aren't used in .c files
+- Convert to forward declarations where the full struct body isn't needed
+- Focus on large headers: blkdev.h, fs.h, sched.h, signal.h
+
+--- 2025-11-29 15:22 ---
+NEW SESSION: Continue LOC reduction toward 190K
+
+**Status at session start:**
+- LOC without scripts/: 195,471 (C: 93,178 + Headers: 91,330)
+- Build: PASSES
+- make vm: PASSES, prints "Hello, World!"
+- Binary size: 245KB
+
+**Goal:** Continue reducing toward 190K or lower.
+Currently 195,471 LOC - need ~5,471 to reach 190K.
+
+**Strategy for this session:**
+1. Continue enum/define/struct reduction (proven effective)
+2. Look for unused code sections in large headers
+3. Look for entire files that can be removed
+
 --- 2025-11-29 15:02 ---
 SESSION COMPLETE: LOC reduction via header cleanup
 

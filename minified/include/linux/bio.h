@@ -115,31 +115,9 @@ struct folio_iter {
 	int _i;
 };
 
-enum bip_flags {
-	BIP_BLOCK_INTEGRITY	= 1 << 0,  
-	BIP_MAPPED_INTEGRITY	= 1 << 1,  
-	BIP_CTRL_NOCHECK	= 1 << 2,  
-	BIP_DISK_NOCHECK	= 1 << 3,  
-	BIP_IP_CHECKSUM		= 1 << 4,  
-};
+enum bip_flags { BIP_LAST };
 
- 
-struct bio_integrity_payload {
-	struct bio		*bip_bio;	 
-
-	struct bvec_iter	bip_iter;
-
-	unsigned short		bip_vcnt;	 
-	unsigned short		bip_max_vcnt;	 
-	unsigned short		bip_flags;	 
-
-	struct bvec_iter	bio_iter;	 
-
-	struct work_struct	bip_work;	 
-
-	struct bio_vec		*bip_vec;
-	struct bio_vec		bip_inline_vecs[]; 
-};
+struct bio_integrity_payload;
 
 #if defined(CONFIG_BLK_DEV_INTEGRITY)
 

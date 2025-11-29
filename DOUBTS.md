@@ -12,6 +12,7 @@
 - Cannot access GitLab CI (permission denied to d33tah/minimal-kernel-build)
 - Cannot use gh CLI (no GH_TOKEN available)
 - Cannot verify CI status or ping @d33tah
+- No docker-compose.yml found in repo for local CI testing
 
 **This session:**
 - Removed argv_split.c (43 LOC reduction)

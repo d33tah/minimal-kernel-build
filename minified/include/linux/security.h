@@ -74,33 +74,16 @@ extern const char *const lockdown_reasons[LOCKDOWN_CONFIDENTIALITY_MAX+1];
 extern int cap_capable(const struct cred *cred, struct user_namespace *ns,
 		       int cap, unsigned int opts);
 extern int cap_settime(const struct timespec64 *ts, const struct timezone *tz);
-extern int cap_ptrace_access_check(struct task_struct *child, unsigned int mode);
-extern int cap_ptrace_traceme(struct task_struct *parent);
-extern int cap_capget(struct task_struct *target, kernel_cap_t *effective, kernel_cap_t *inheritable, kernel_cap_t *permitted);
-extern int cap_capset(struct cred *new, const struct cred *old,
-		      const kernel_cap_t *effective,
-		      const kernel_cap_t *inheritable,
-		      const kernel_cap_t *permitted);
+/* cap_ptrace_*, cap_capget, cap_capset removed - unused */
 extern int cap_bprm_creds_from_file(struct linux_binprm *bprm, struct file *file);
-int cap_inode_setxattr(struct dentry *dentry, const char *name,
-		       const void *value, size_t size, int flags);
-int cap_inode_removexattr(struct user_namespace *mnt_userns,
-			  struct dentry *dentry, const char *name);
+/* cap_inode_setxattr, cap_inode_removexattr, cap_inode_getsecurity removed - unused */
 int cap_inode_need_killpriv(struct dentry *dentry);
 int cap_inode_killpriv(struct user_namespace *mnt_userns,
 		       struct dentry *dentry);
-int cap_inode_getsecurity(struct user_namespace *mnt_userns,
-			  struct inode *inode, const char *name, void **buffer,
-			  bool alloc);
 extern int cap_mmap_addr(unsigned long addr);
 extern int cap_mmap_file(struct file *file, unsigned long reqprot,
 			 unsigned long prot, unsigned long flags);
-extern int cap_task_fix_setuid(struct cred *new, const struct cred *old, int flags);
-extern int cap_task_prctl(int option, unsigned long arg2, unsigned long arg3,
-			  unsigned long arg4, unsigned long arg5);
-extern int cap_task_setscheduler(struct task_struct *p);
-extern int cap_task_setioprio(struct task_struct *p, int ioprio);
-extern int cap_task_setnice(struct task_struct *p, int nice);
+/* cap_task_* externs removed - unused */
 extern int cap_vm_enough_memory(struct mm_struct *mm, long pages);
 
 struct msghdr;
@@ -441,31 +424,9 @@ static inline int security_prepare_creds(struct cred *new,
 	return 0;
 }
 
-static inline int security_kernel_act_as(struct cred *cred, u32 secid)
-{
-	return 0;
-}
+/* security_kernel_act_as and security_kernel_create_files_as removed - unused */
 
-static inline int security_kernel_create_files_as(struct cred *cred,
-						  struct inode *inode)
-{
-	return 0;
-}
-
-static inline int security_task_setnice(struct task_struct *p, int nice)
-{
-	return cap_task_setnice(p, nice);
-}
-
-static inline int security_task_setscheduler(struct task_struct *p)
-{
-	return cap_task_setscheduler(p);
-}
-
-static inline int security_task_getscheduler(struct task_struct *p)
-{
-	return 0;
-}
+/* security_task_setnice, security_task_setscheduler, security_task_getscheduler removed - unused */
 
 static inline int security_task_kill(struct task_struct *p,
 				     struct kernel_siginfo *info, int sig,
@@ -490,27 +451,7 @@ static inline int security_locked_down(enum lockdown_reason what)
 	return 0;
 }
 
-static inline int security_path_unlink(const struct path *dir, struct dentry *dentry)
-{
-	return 0;
-}
-
-static inline int security_path_mkdir(const struct path *dir, struct dentry *dentry,
-				      umode_t mode)
-{
-	return 0;
-}
-
-static inline int security_path_rmdir(const struct path *dir, struct dentry *dentry)
-{
-	return 0;
-}
-
-static inline int security_path_mknod(const struct path *dir, struct dentry *dentry,
-				      umode_t mode, unsigned int dev)
-{
-	return 0;
-}
+/* security_path_unlink, security_path_rmdir, security_path_chmod, security_path_chown removed - unused */
 
 static inline int security_path_truncate(const struct path *path)
 {
@@ -530,21 +471,14 @@ static inline int security_path_link(struct dentry *old_dentry,
 	return 0;
 }
 
-static inline int security_path_rename(const struct path *old_dir,
-				       struct dentry *old_dentry,
-				       const struct path *new_dir,
-				       struct dentry *new_dentry,
-				       unsigned int flags)
+static inline int security_path_mkdir(const struct path *dir, struct dentry *dentry,
+				      umode_t mode)
 {
 	return 0;
 }
 
-static inline int security_path_chmod(const struct path *path, umode_t mode)
-{
-	return 0;
-}
-
-static inline int security_path_chown(const struct path *path, kuid_t uid, kgid_t gid)
+static inline int security_path_mknod(const struct path *dir, struct dentry *dentry,
+				      umode_t mode, unsigned int dev)
 {
 	return 0;
 }

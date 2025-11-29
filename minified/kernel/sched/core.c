@@ -1641,40 +1641,6 @@ int __cond_resched_lock(spinlock_t *lock)
 	return ret;
 }
 
-int __cond_resched_rwlock_read(rwlock_t *lock)
-{
-	int resched = should_resched(PREEMPT_LOCK_OFFSET);
-	int ret = 0;
-
-	lockdep_assert_held_read(lock);
-
-	if (rwlock_needbreak(lock) || resched) {
-		read_unlock(lock);
-		if (!_cond_resched())
-			cpu_relax();
-		ret = 1;
-		read_lock(lock);
-	}
-	return ret;
-}
-
-int __cond_resched_rwlock_write(rwlock_t *lock)
-{
-	int resched = should_resched(PREEMPT_LOCK_OFFSET);
-	int ret = 0;
-
-	lockdep_assert_held_write(lock);
-
-	if (rwlock_needbreak(lock) || resched) {
-		write_unlock(lock);
-		if (!_cond_resched())
-			cpu_relax();
-		ret = 1;
-		write_lock(lock);
-	}
-	return ret;
-}
-
 static inline void preempt_dynamic_init(void) { }
 
 void __sched yield(void)

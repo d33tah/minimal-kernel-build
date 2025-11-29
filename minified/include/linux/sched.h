@@ -897,28 +897,16 @@ static inline int _cond_resched(void)
 })
 
 extern int __cond_resched_lock(spinlock_t *lock);
-extern int __cond_resched_rwlock_read(rwlock_t *lock);
-extern int __cond_resched_rwlock_write(rwlock_t *lock);
 
 #define MIGHT_RESCHED_RCU_SHIFT		8
 #define MIGHT_RESCHED_PREEMPT_MASK	((1U << MIGHT_RESCHED_RCU_SHIFT) - 1)
 
- 
+
 # define PREEMPT_LOCK_RESCHED_OFFSETS	PREEMPT_LOCK_OFFSET
 
 #define cond_resched_lock(lock) ({						\
 	__might_resched(__FILE__, __LINE__, PREEMPT_LOCK_RESCHED_OFFSETS);	\
 	__cond_resched_lock(lock);						\
-})
-
-#define cond_resched_rwlock_read(lock) ({					\
-	__might_resched(__FILE__, __LINE__, PREEMPT_LOCK_RESCHED_OFFSETS);	\
-	__cond_resched_rwlock_read(lock);					\
-})
-
-#define cond_resched_rwlock_write(lock) ({					\
-	__might_resched(__FILE__, __LINE__, PREEMPT_LOCK_RESCHED_OFFSETS);	\
-	__cond_resched_rwlock_write(lock);					\
 })
 
 
@@ -985,7 +973,5 @@ static inline void rseq_syscall(struct pt_regs *regs)
 
 static inline void sched_core_free(struct task_struct *tsk) { }
 static inline void sched_core_fork(struct task_struct *p) { }
-
-extern void sched_set_stop_task(int cpu, struct task_struct *stop);
 
 #endif

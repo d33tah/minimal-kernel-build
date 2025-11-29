@@ -237,145 +237,23 @@ struct compat_rlimit {
 #define __ARCH_COMPAT_FLOCK64_PACK
 #endif
 
-struct compat_flock {
-	short			l_type;
-	short			l_whence;
-	compat_off_t		l_start;
-	compat_off_t		l_len;
-#ifdef __ARCH_COMPAT_FLOCK_EXTRA_SYSID
-	__ARCH_COMPAT_FLOCK_EXTRA_SYSID
-#endif
-	compat_pid_t		l_pid;
-#ifdef __ARCH_COMPAT_FLOCK_PAD
-	__ARCH_COMPAT_FLOCK_PAD
-#endif
-};
-
-struct compat_flock64 {
-	short		l_type;
-	short		l_whence;
-	compat_loff_t	l_start;
-	compat_loff_t	l_len;
-	compat_pid_t	l_pid;
-#ifdef __ARCH_COMPAT_FLOCK64_PAD
-	__ARCH_COMPAT_FLOCK64_PAD
-#endif
-} __ARCH_COMPAT_FLOCK64_PACK;
-
-struct compat_rusage {
-	struct old_timeval32 ru_utime;
-	struct old_timeval32 ru_stime;
-	compat_long_t	ru_maxrss;
-	compat_long_t	ru_ixrss;
-	compat_long_t	ru_idrss;
-	compat_long_t	ru_isrss;
-	compat_long_t	ru_minflt;
-	compat_long_t	ru_majflt;
-	compat_long_t	ru_nswap;
-	compat_long_t	ru_inblock;
-	compat_long_t	ru_oublock;
-	compat_long_t	ru_msgsnd;
-	compat_long_t	ru_msgrcv;
-	compat_long_t	ru_nsignals;
-	compat_long_t	ru_nvcsw;
-	compat_long_t	ru_nivcsw;
-};
-
-extern int put_compat_rusage(const struct rusage *,
-			     struct compat_rusage __user *);
-
+struct compat_flock;
+struct compat_flock64;
+struct compat_rusage;
 struct compat_siginfo;
 struct __compat_aio_sigset;
+struct compat_dirent;
+struct compat_ustat;
 
-struct compat_dirent {
-	u32		d_ino;
-	compat_off_t	d_off;
-	u16		d_reclen;
-	char		d_name[256];
-};
-
-struct compat_ustat {
-	compat_daddr_t		f_tfree;
-	compat_ino_t		f_tinode;
-	char			f_fname[6];
-	char			f_fpack[6];
-};
-
-#define COMPAT_SIGEV_PAD_SIZE	((SIGEV_MAX_SIZE/sizeof(int)) - 3)
-
-typedef struct compat_sigevent {
-	compat_sigval_t sigev_value;
-	compat_int_t sigev_signo;
-	compat_int_t sigev_notify;
-	union {
-		compat_int_t _pad[COMPAT_SIGEV_PAD_SIZE];
-		compat_int_t _tid;
-
-		struct {
-			compat_uptr_t _function;
-			compat_uptr_t _attribute;
-		} _sigev_thread;
-	} _sigev_un;
-} compat_sigevent_t;
-
-struct compat_ifmap {
-	compat_ulong_t mem_start;
-	compat_ulong_t mem_end;
-	unsigned short base_addr;
-	unsigned char irq;
-	unsigned char dma;
-	unsigned char port;
-};
-
-struct compat_if_settings {
-	unsigned int type;	 
-	unsigned int size;	 
-	compat_uptr_t ifs_ifsu;	 
-};
-
-struct compat_ifreq {
-	union {
-		char	ifrn_name[IFNAMSIZ];     
-	} ifr_ifrn;
-	union {
-		struct	sockaddr ifru_addr;
-		struct	sockaddr ifru_dstaddr;
-		struct	sockaddr ifru_broadaddr;
-		struct	sockaddr ifru_netmask;
-		struct	sockaddr ifru_hwaddr;
-		short	ifru_flags;
-		compat_int_t	ifru_ivalue;
-		compat_int_t	ifru_mtu;
-		struct	compat_ifmap ifru_map;
-		char	ifru_slave[IFNAMSIZ];    
-		char	ifru_newname[IFNAMSIZ];
-		compat_caddr_t	ifru_data;
-		struct	compat_if_settings ifru_settings;
-	} ifr_ifru;
-};
-
-struct compat_ifconf {
-	compat_int_t	ifc_len;                 
-	compat_caddr_t  ifcbuf;
-};
-
-struct compat_robust_list {
-	compat_uptr_t			next;
-};
-
-struct compat_robust_list_head {
-	struct compat_robust_list	list;
-	compat_long_t			futex_offset;
-	compat_uptr_t			list_op_pending;
-};
-
-
-struct compat_keyctl_kdf_params {
-	compat_uptr_t hashname;
-	compat_uptr_t otherinfo;
-	__u32 otherinfolen;
-	__u32 __spare[8];
-};
+struct compat_sigevent;
+typedef struct compat_sigevent compat_sigevent_t;
+struct compat_ifmap;
+struct compat_if_settings;
+struct compat_ifreq;
+struct compat_ifconf;
+struct compat_robust_list;
+struct compat_robust_list_head;
+struct compat_keyctl_kdf_params;
 
 struct compat_stat;
 struct compat_statfs;

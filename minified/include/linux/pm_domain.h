@@ -14,26 +14,9 @@
 #include <linux/spinlock.h>
 #include <linux/cpumask.h>
 
- 
-#define GENPD_FLAG_PM_CLK	 (1U << 0)
-#define GENPD_FLAG_IRQ_SAFE	 (1U << 1)
-#define GENPD_FLAG_ALWAYS_ON	 (1U << 2)
-#define GENPD_FLAG_ACTIVE_WAKEUP (1U << 3)
-#define GENPD_FLAG_CPU_DOMAIN	 (1U << 4)
-#define GENPD_FLAG_RPM_ALWAYS_ON (1U << 5)
-#define GENPD_FLAG_MIN_RESIDENCY (1U << 6)
-
-enum gpd_status {
-	GENPD_STATE_ON = 0,	 
-	GENPD_STATE_OFF,	 
-};
-
-enum genpd_notication {
-	GENPD_NOTIFY_PRE_OFF = 0,
-	GENPD_NOTIFY_OFF,
-	GENPD_NOTIFY_PRE_ON,
-	GENPD_NOTIFY_ON,
-};
+/* GENPD_FLAG_*, gpd_status, genpd_notication - not used in minimal kernel */
+enum gpd_status { GENPD_STATE_OFF };
+enum genpd_notication { GENPD_NOTIFY_ON };
 
 struct dev_power_governor {
 	bool (*power_down_ok)(struct dev_pm_domain *domain);

@@ -54,29 +54,8 @@ void audit_log_format(struct audit_buffer *ab, const char *fmt, ...)
 { }
 static inline void audit_log_end(struct audit_buffer *ab)
 { }
-static inline void audit_log_untrustedstring(struct audit_buffer *ab,
-					     const char *string)
-{ }
-static inline void audit_log_d_path(struct audit_buffer *ab,
-				    const char *prefix,
-				    const struct path *path)
-{ }
-static inline void audit_log_path_denied(int type, const char *operation)
-{ }
-static inline int audit_log_task_context(struct audit_buffer *ab)
-{
-	return 0;
-}
-
-static inline kuid_t audit_get_loginuid(struct task_struct *tsk)
-{
-	return INVALID_UID;
-}
-
-static inline unsigned int audit_get_sessionid(struct task_struct *tsk)
-{
-	return AUDIT_SID_UNSET;
-}
+/* audit_log_untrustedstring, audit_log_d_path, audit_log_path_denied, audit_log_task_context removed - unused */
+/* audit_get_loginuid, audit_get_sessionid removed - unused */
 
 #define audit_enabled AUDIT_OFF
 
@@ -85,32 +64,23 @@ static inline int audit_signal_info(int sig, struct task_struct *t)
 	return 0;
 }
 
-#define audit_is_compat(arch)  false
+/* audit_is_compat removed - unused */
 
 static inline int audit_alloc(struct task_struct *task)
 {
 	return 0;
 }
-static inline int audit_alloc_kernel(struct task_struct *task)
-{
-	return 0;
-}
+/* audit_alloc_kernel removed - unused */
 static inline void audit_free(struct task_struct *task)
 { }
-static inline void audit_uring_entry(u8 op)
-{ }
-static inline void audit_uring_exit(int success, long code)
-{ }
+/* audit_uring_entry, audit_uring_exit removed - unused */
 static inline void audit_syscall_entry(int major, unsigned long a0,
 				       unsigned long a1, unsigned long a2,
 				       unsigned long a3)
 { }
 static inline void audit_syscall_exit(void *pt_regs)
 { }
-static inline bool audit_dummy_context(void)
-{
-	return true;
-}
+/* audit_dummy_context removed - unused */
 static inline void audit_set_context(struct task_struct *task, struct audit_context *ctx)
 { }
 static inline struct audit_context *audit_context(void)
@@ -130,107 +100,30 @@ static inline void audit_inode(struct filename *name,
 static inline void audit_file(struct file *file)
 {
 }
-static inline void audit_inode_parent_hidden(struct filename *name,
-				const struct dentry *dentry)
-{ }
+/* audit_inode_parent_hidden removed - unused */
 static inline void audit_inode_child(struct inode *parent,
 				     const struct dentry *dentry,
 				     const unsigned char type)
 { }
-static inline void audit_core_dumps(long signr)
-{ }
-static inline void audit_seccomp(unsigned long syscall, long signr, int code)
-{ }
-static inline void audit_seccomp_actions_logged(const char *names,
-						const char *old_names, int res)
-{ }
-static inline void audit_ipc_obj(struct kern_ipc_perm *ipcp)
-{ }
-static inline void audit_ipc_set_perm(unsigned long qbytes, uid_t uid,
-					gid_t gid, umode_t mode)
-{ }
+/* audit_core_dumps, audit_seccomp, audit_seccomp_actions_logged removed - unused */
+/* audit_ipc_obj, audit_ipc_set_perm removed - unused */
 static inline void audit_bprm(struct linux_binprm *bprm)
 { }
-static inline int audit_socketcall(int nargs, unsigned long *args)
-{
-	return 0;
-}
-
-static inline int audit_socketcall_compat(int nargs, u32 *args)
-{
-	return 0;
-}
-
-static inline void audit_fd_pair(int fd1, int fd2)
-{ }
-static inline int audit_sockaddr(int len, void *addr)
-{
-	return 0;
-}
-static inline void audit_mq_open(int oflag, umode_t mode, struct mq_attr *attr)
-{ }
-static inline void audit_mq_sendrecv(mqd_t mqdes, size_t msg_len,
-				     unsigned int msg_prio,
-				     const struct timespec64 *abs_timeout)
-{ }
-static inline void audit_mq_notify(mqd_t mqdes,
-				   const struct sigevent *notification)
-{ }
-static inline void audit_mq_getsetattr(mqd_t mqdes, struct mq_attr *mqstat)
-{ }
-static inline int audit_log_bprm_fcaps(struct linux_binprm *bprm,
-				       const struct cred *new,
-				       const struct cred *old)
-{
-	return 0;
-}
-static inline void audit_log_capset(const struct cred *new,
-				    const struct cred *old)
-{ }
+/* audit_socketcall, audit_socketcall_compat, audit_fd_pair, audit_sockaddr removed - unused */
+/* audit_mq_open, audit_mq_sendrecv, audit_mq_notify, audit_mq_getsetattr removed - unused */
+/* audit_log_bprm_fcaps, audit_log_capset removed - unused */
 static inline void audit_mmap_fd(int fd, int flags)
 { }
 
 static inline void audit_openat2_how(struct open_how *how)
 { }
 
-static inline void audit_log_kern_module(char *name)
-{
-}
-
-static inline void audit_fanotify(unsigned int response)
-{ }
-
-static inline void audit_tk_injoffset(struct timespec64 offset)
-{ }
-
-static inline void audit_ntp_init(struct audit_ntp_data *ad)
-{ }
-
-static inline void audit_ntp_set_old(struct audit_ntp_data *ad,
-				     enum audit_ntp_type type, long long val)
-{ }
-
-static inline void audit_ntp_set_new(struct audit_ntp_data *ad,
-				     enum audit_ntp_type type, long long val)
-{ }
-
-static inline void audit_ntp_log(const struct audit_ntp_data *ad)
-{ }
-
-static inline void audit_ptrace(struct task_struct *t)
-{ }
-
-static inline void audit_log_nfcfg(const char *name, u8 af,
-				   unsigned int nentries,
-				   enum audit_nfcfgop op, gfp_t gfp)
-{ }
+/* audit_log_kern_module, audit_fanotify, audit_tk_injoffset removed - unused */
+/* audit_ntp_*, audit_ptrace, audit_log_nfcfg removed - unused */
 
 #define audit_n_rules 0
 #define audit_signals 0
 
-static inline bool audit_loginuid_set(struct task_struct *tsk)
-{
-	return uid_valid(audit_get_loginuid(tsk));
-}
+/* audit_loginuid_set removed - unused */
 
 #endif

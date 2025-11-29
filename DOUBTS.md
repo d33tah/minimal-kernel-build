@@ -1,5 +1,26 @@
 # Doubts and Notes
 
+## 2025-11-29 15:05
+
+**SESSION COMPLETE - More LOC reduction:**
+- Started: 195,652 LOC
+- Final: 193,050 LOC
+- Reduction: ~2,602 LOC this session
+
+**Commits pushed (8 total this session):**
+1. Reduce unused structs/enums (50 LOC)
+2. Reduce unused structs/enums (32 LOC)
+3. Reduce amd-iommu.h (9 LOC)
+4. Remove FMODE defines from fs.h (8 LOC)
+5. Reduce acct.h (48 LOC)
+6. Reduce dmar.h (128 LOC)
+7. Reduce mmiotrace.h (59 LOC)
+8. Update FIXUP.md
+
+**All commits passed local commit hook (make vm test).**
+
+Waiting 9 minutes to verify CI passes...
+
 ## 2025-11-29 14:15
 
 **CI VERIFIED PASSING:**

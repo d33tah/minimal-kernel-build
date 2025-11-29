@@ -401,12 +401,6 @@ void set_disk_ro(struct gendisk *disk, bool read_only);
 void disk_uevent(struct gendisk *disk, enum kobject_action action);
 
 bool set_capacity_and_notify(struct gendisk *disk, sector_t size);
-bool disk_force_media_change(struct gendisk *disk, unsigned int events);
-
-void add_disk_randomness(struct gendisk *disk) __latent_entropy;
-void rand_initialize_disk(struct gendisk *disk);
-
-int bdev_disk_changed(struct gendisk *disk, bool invalidate);
 
 struct gendisk *__alloc_disk_node(struct request_queue *q, int node_id,
 		struct lock_class_key *lkclass);
@@ -420,7 +414,6 @@ struct gendisk *__blk_alloc_disk(int node, struct lock_class_key *lkclass);
 									\
 	__blk_alloc_disk(node_id, &__key);				\
 })
-void blk_cleanup_disk(struct gendisk *disk);
 
 int __register_blkdev(unsigned int major, const char *name,
 		void (*probe)(dev_t devt));
@@ -428,7 +421,6 @@ int __register_blkdev(unsigned int major, const char *name,
 	__register_blkdev(major, name, NULL)
 void unregister_blkdev(unsigned int major, const char *name);
 
-bool bdev_check_media_change(struct block_device *bdev);
 int __invalidate_device(struct block_device *bdev, bool kill_dirty);
 void set_capacity(struct gendisk *disk, sector_t size);
 
@@ -482,7 +474,6 @@ void blk_queue_zone_write_granularity(struct request_queue *q,
 				      unsigned int size);
 extern void blk_queue_alignment_offset(struct request_queue *q,
 				       unsigned int alignment);
-void disk_update_readahead(struct gendisk *disk);
 extern void blk_limits_io_min(struct queue_limits *limits, unsigned int min);
 extern void blk_queue_io_min(struct request_queue *q, unsigned int min);
 extern void blk_limits_io_opt(struct queue_limits *limits, unsigned int opt);
@@ -615,28 +606,11 @@ struct block_device_operations {
 
 #define blkdev_compat_ptr_ioctl NULL
 
-extern int bdev_read_page(struct block_device *, sector_t, struct page *);
-extern int bdev_write_page(struct block_device *, sector_t, struct page *,
-						struct writeback_control *);
-
-unsigned long bdev_start_io_acct(struct block_device *bdev,
-				 unsigned int sectors, unsigned int op,
-				 unsigned long start_time);
-void bdev_end_io_acct(struct block_device *bdev, unsigned int op,
-		unsigned long start_time);
-
-void bio_start_io_acct_time(struct bio *bio, unsigned long start_time);
-unsigned long bio_start_io_acct(struct bio *bio);
-void bio_end_io_acct_remapped(struct bio *bio, unsigned long start_time,
-		struct block_device *orig_bdev);
-
 int bdev_read_only(struct block_device *bdev);
 int set_blocksize(struct block_device *bdev, int size);
 
 const char *bdevname(struct block_device *bdev, char *buffer);
 int lookup_bdev(const char *pathname, dev_t *dev);
-
-void blkdev_show(struct seq_file *seqf, off_t offset);
 
 #define BDEVNAME_SIZE	32	 
 #define BDEVT_SIZE	10	 

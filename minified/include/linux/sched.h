@@ -197,11 +197,7 @@ struct prev_cputime {
 /* vtime structs removed - not used */
 
  
-enum uclamp_id {
-	UCLAMP_MIN = 0,
-	UCLAMP_MAX,
-	UCLAMP_CNT
-};
+enum uclamp_id { UCLAMP_CNT };
 
 
 struct sched_info {
@@ -312,12 +308,7 @@ union rcu_special {
 	u32 s;  
 };
 
-enum perf_event_task_context {
-	perf_invalid_context = -1,
-	perf_hw_context = 0,
-	perf_sw_context,
-	perf_nr_task_contexts,
-};
+enum perf_event_task_context { perf_nr_task_contexts };
 
 struct wake_q_node {
 	struct wake_q_node *next;

@@ -68,7 +68,7 @@ extern const struct consw *conswitchp;
 
 extern const struct consw dummy_con;	 
 extern const struct consw vga_con;	 
-extern const struct consw newport_con;	 
+/* newport_con removed - unused */
 
 int con_is_bound(const struct consw *csw);
 int do_unregister_con_driver(const struct consw *csw);

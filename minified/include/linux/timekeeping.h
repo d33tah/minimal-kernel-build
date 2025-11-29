@@ -11,7 +11,7 @@ void timekeeping_init(void);
 extern int timekeeping_suspended;
 
  
-extern void legacy_timer_tick(unsigned long ticks);
+/* legacy_timer_tick removed - unused */
 
  
 extern int do_settimeofday64(const struct timespec64 *ts);
@@ -49,7 +49,7 @@ extern ktime_t ktime_get_with_offset(enum tk_offsets offs);
 extern ktime_t ktime_get_coarse_with_offset(enum tk_offsets offs);
 extern ktime_t ktime_mono_to_any(ktime_t tmono, enum tk_offsets offs);
 extern ktime_t ktime_get_raw(void);
-extern u32 ktime_get_resolution_ns(void);
+/* ktime_get_resolution_ns removed - unused */
 
  
 static inline ktime_t ktime_get_real(void)
@@ -143,11 +143,7 @@ static inline u64 ktime_get_raw_ns(void)
 	return ktime_to_ns(ktime_get_raw());
 }
 
-extern u64 ktime_get_mono_fast_ns(void);
-extern u64 ktime_get_raw_fast_ns(void);
-extern u64 ktime_get_boot_fast_ns(void);
-extern u64 ktime_get_tai_fast_ns(void);
-extern u64 ktime_get_real_fast_ns(void);
+/* ktime_get_*_fast_ns removed - unused */
 
  
 static inline void ktime_get_boottime_ts64(struct timespec64 *ts)

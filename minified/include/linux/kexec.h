@@ -20,11 +20,6 @@
 
 
 
- 
-extern struct resource crashk_res;
-extern struct resource crashk_low_res;
-extern note_buf_t __percpu *crash_notes;
-
 struct pt_regs;
 struct task_struct;
 static inline void __crash_kexec(struct pt_regs *regs) { }

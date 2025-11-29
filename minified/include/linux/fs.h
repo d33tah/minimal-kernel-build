@@ -195,10 +195,8 @@ struct iattr {
 
 #define FILESYSTEM_MAX_STACK_DEPTH 2
 
-enum positive_aop_returns {
-	AOP_WRITEPAGE_ACTIVATE	= 0x80000,
-	AOP_TRUNCATED_PAGE	= 0x80001,
-};
+/* Reduced positive_aop_returns - only AOP_TRUNCATED_PAGE used */
+enum positive_aop_returns { AOP_TRUNCATED_PAGE = 0x80001 };
 
 struct page;
 struct address_space;
@@ -473,15 +471,8 @@ static inline int inode_unhashed(struct inode *inode)
 	return hlist_unhashed(&inode->i_hash);
 }
 
-enum inode_i_mutex_lock_class
-{
-	I_MUTEX_NORMAL,
-	I_MUTEX_PARENT,
-	I_MUTEX_CHILD,
-	I_MUTEX_XATTR,
-	I_MUTEX_NONDIR2,
-	I_MUTEX_PARENT2,
-};
+/* Reduced inode_i_mutex_lock_class - only I_MUTEX_PARENT used */
+enum inode_i_mutex_lock_class { I_MUTEX_NORMAL, I_MUTEX_PARENT };
 
 static inline void inode_lock(struct inode *inode)
 {

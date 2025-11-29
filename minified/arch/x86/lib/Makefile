@@ -55,8 +55,8 @@ obj-y += iomem.o
 
 ifeq ($(CONFIG_X86_32),y)
         lib-y += atomic64_cx8_32.o
-        lib-y += checksum_32.o
-        lib-y += strstr_32.o
+        #lib-y += checksum_32.o  # Removed: Not needed for minimal kernel
+        #lib-y += strstr_32.o  # Removed: Not needed for minimal kernel
         lib-y += string_32.o
 ifneq ($(CONFIG_X86_CMPXCHG64),y)
         lib-y += cmpxchg8b_emu.o atomic64_386_32.o

@@ -58,30 +58,10 @@ static inline __printf(1, 2) int mmiotrace_printk(const char *fmt, ...)
 	return 0;
 }
 
-enum mm_io_opcode {
-	MMIO_READ	= 0x1,	 
-	MMIO_WRITE	= 0x2,	 
-	MMIO_PROBE	= 0x3,	 
-	MMIO_UNPROBE	= 0x4,	 
-	MMIO_UNKNOWN_OP = 0x5,	 
-};
-
-struct mmiotrace_rw {
-	resource_size_t	phys;	 
-	unsigned long	value;
-	unsigned long	pc;	 
-	int		map_id;
-	unsigned char	opcode;	 
-	unsigned char	width;	 
-};
-
-struct mmiotrace_map {
-	resource_size_t	phys;	 
-	unsigned long	virt;	 
-	unsigned long	len;	 
-	int		map_id;
-	unsigned char	opcode;	 
-};
+/* mm_io_opcode, mmiotrace_rw, mmiotrace_map - not used in minimal kernel */
+enum mm_io_opcode { MMIO_UNKNOWN_OP = 0x5 };
+struct mmiotrace_rw;
+struct mmiotrace_map;
 
  
 extern void enable_mmiotrace(void);

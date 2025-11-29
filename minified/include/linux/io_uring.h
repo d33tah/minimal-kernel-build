@@ -5,19 +5,9 @@
 #include <linux/sched.h>
 #include <linux/xarray.h>
 
-enum io_uring_cmd_flags {
-	IO_URING_F_COMPLETE_DEFER	= 1,
-};
-
-struct io_uring_cmd {
-	struct file	*file;
-	const void	*cmd;
-	 
-	void (*task_work_cb)(struct io_uring_cmd *cmd);
-	u32		cmd_op;
-	u32		pad;
-	u8		pdu[32];  
-};
+/* io_uring_cmd_flags and io_uring_cmd struct - reduced for minimal kernel */
+enum io_uring_cmd_flags { IO_URING_F_LAST };
+struct io_uring_cmd;
 
 static inline void io_uring_cmd_done(struct io_uring_cmd *cmd, ssize_t ret,
 		ssize_t ret2)

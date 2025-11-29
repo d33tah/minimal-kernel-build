@@ -19,7 +19,8 @@ NEW SESSION: Continue aggressive LOC reduction
 - Removed unused externs from: timekeeping.h, console.h, swap.h
 - Removed unused externs from: cred.h, notifier.h
 - Removed unused RTC functions from rtc.h (~21 LOC)
-- Current LOC: 180,718 (reduced by ~85 LOC)
+- Removed unused externs from blkdev.h (~7 LOC)
+- Final LOC: 180,710 (reduced by ~93 LOC from session start)
 
 ---
 

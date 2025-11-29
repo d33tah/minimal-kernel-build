@@ -1,5 +1,28 @@
+--- 2025-11-29 04:15 ---
+FIX: Reverted XZ decompression removal - needed for boot!
+
+**CRITICAL LESSON LEARNED:**
+The XZ decompression code (lib/xz/*.c, lib/decompress_unxz.c, include/linux/xz.h)
+is REQUIRED for the boot decompressor to work! The kernel image is XZ-compressed
+and arch/x86/boot/compressed/misc.c includes "../../../../lib/decompress_unxz.c"
+to decompress it at boot time.
+
+This is SEPARATE from CONFIG_DECOMPRESS_XZ which controls runtime decompression.
+The boot decompressor always needs the XZ code when CONFIG_KERNEL_XZ is enabled.
+
+**Current LOC:**
+- WITHOUT scripts/: 197,843 LOC (still under 200K goal!)
+- Binary size: 245KB
+
+**Build:** PASSES (including Docker CI)
+**make vm:** PASSES, prints "Hello, World!"
+
+**Commits this session (net result):**
+- Attempted XZ removal → reverted due to CI failure
+- Net change: documentation updates only
+
 --- 2025-11-29 03:56 ---
-SESSION COMPLETE - XZ library and decompress removal
+SESSION COMPLETE - XZ library and decompress removal (REVERTED)
 
 **Final LOC:**
 - WITHOUT scripts/: 195,757 LOC
@@ -7,16 +30,12 @@ SESSION COMPLETE - XZ library and decompress removal
 - Binary size: 245KB
 
 **Commits this session:**
-1. cfa6e0c9 - Remove unused XZ decompression library (1,898 LOC)
-   - Removed lib/xz/*.c files (not compiled since CONFIG_DECOMPRESS_XZ not set)
-   - Removed lib/xz/*.h private headers
-   - Removed include/linux/xz.h
-   - Kept lib/xz/Kconfig (needed by build system)
-2. d48dc14e - Remove unused decompress_unxz.c (179 LOC)
+1. cfa6e0c9 - Remove unused XZ decompression library (1,898 LOC) **REVERTED**
+2. d48dc14e - Remove unused decompress_unxz.c (179 LOC) **REVERTED**
 3. 91685103 - Documentation update
 
-**Build:** PASSES
-**make vm:** PASSES, prints "Hello, World!"
+**Build:** PASSES locally but FAILS in Docker (clean build)
+**make vm:** PASSES locally (cached build)
 
 **Analysis done this session:**
 - Found and removed XZ decompression source (CONFIG_DECOMPRESS_XZ not set)
@@ -30,9 +49,10 @@ SESSION COMPLETE - XZ library and decompress removal
 - mod_devicetable.h - used by modpost build tool (211 references)
 - Stub files (random_stub.c, events/stubs.c, posix-stubs.c) already minimal
 - arch/x86 code - mostly essential for boot
+- **XZ decompression code - needed for boot decompressor!**
 
 **Goal Status:**
-- 200K goal: EXCEEDED by 4,243 LOC (195,757 vs 200,000)
+- 200K goal: MET (197,843 vs 200,000 = 2,157 LOC under target)
 - Further reduction requires more aggressive subsystem stubbing
 
 --- 2025-11-29 03:06 ---

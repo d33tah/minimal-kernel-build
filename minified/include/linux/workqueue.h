@@ -91,13 +91,7 @@ struct delayed_work {
 	int cpu;
 };
 
-struct rcu_work {
-	struct work_struct work;
-	struct rcu_head rcu;
-
-	 
-	struct workqueue_struct *wq;
-};
+struct rcu_work;
 
  
 struct workqueue_attrs;

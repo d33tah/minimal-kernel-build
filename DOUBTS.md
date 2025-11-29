@@ -1,5 +1,25 @@
 # Doubts and Notes
 
+## 2025-11-29 12:00
+
+**CI VERIFIED - PASSING:**
+- GitHub PR #10: OPEN (not draft)
+- Title: "400kb 200k loc goal" (no Draft prefix)
+- CI: PASSING (verified via WebFetch)
+- LOC: 189,969 (under 190K barrier!)
+- Binary: 245KB (well under 400KB target)
+- Build: PASSES, make vm prints "Hello, World!"
+
+**Unable to ping @d33tah via CLI:**
+- gh CLI: needs GH_TOKEN authentication
+- glab: configured for gitlab.profound.net, not GitHub
+- Cannot add comments to PR programmatically
+
+**@d33tah:** PR #10 is ready for your review!
+URL: https://github.com/d33tah/minimal-kernel-build/pull/10
+
+---
+
 ## 2025-11-29 11:57
 
 **Session complete - Major LOC reduction:**

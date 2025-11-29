@@ -308,11 +308,9 @@ static inline void dpm_for_each_dev(void *data, void (*fn)(struct device *, void
 #define pm_generic_complete		NULL
 
  
+/* Reduced dpm_order enum - only DPM_ORDER_NONE needed for stub function type */
 enum dpm_order {
 	DPM_ORDER_NONE,
-	DPM_ORDER_DEV_AFTER_PARENT,
-	DPM_ORDER_PARENT_BEFORE_DEV,
-	DPM_ORDER_DEV_LAST,
 };
 
 #endif  

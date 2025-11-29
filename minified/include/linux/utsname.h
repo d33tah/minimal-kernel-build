@@ -9,13 +9,8 @@
 #include <linux/err.h>
 #include <uapi/linux/utsname.h>
 
-enum uts_proc {
-	UTS_PROC_OSTYPE,
-	UTS_PROC_OSRELEASE,
-	UTS_PROC_VERSION,
-	UTS_PROC_HOSTNAME,
-	UTS_PROC_DOMAINNAME,
-};
+/* Unused enum uts_proc reduced */
+enum uts_proc { UTS_PROC_UNUSED };
 
 struct user_namespace;
 extern struct user_namespace init_user_ns;

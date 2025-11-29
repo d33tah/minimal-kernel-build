@@ -216,26 +216,8 @@ struct load_weight {
 	u32				inv_weight;
 };
 
- 
-struct util_est {
-	unsigned int			enqueued;
-	unsigned int			ewma;
-#define UTIL_EST_WEIGHT_SHIFT		2
-#define UTIL_AVG_UNCHANGED		0x80000000
-} __attribute__((__aligned__(sizeof(u64))));
-
- 
-struct sched_avg {
-	u64				last_update_time;
-	u64				load_sum;
-	u64				runnable_sum;
-	u32				util_sum;
-	u32				period_contrib;
-	unsigned long			load_avg;
-	unsigned long			runnable_avg;
-	unsigned long			util_avg;
-	struct util_est			util_est;
-} ____cacheline_aligned;
+struct util_est;
+struct sched_avg;
 
 struct sched_statistics {
 } ____cacheline_aligned;

@@ -138,37 +138,13 @@ char *stpcpy(char *__restrict__ dest, const char *__restrict__ src)
 }
 
 #ifndef __HAVE_ARCH_STRCAT
- 
-char *strcat(char *dest, const char *src)
-{
-	char *tmp = dest;
-
-	while (*dest)
-		dest++;
-	while ((*dest++ = *src++) != '\0')
-		;
-	return tmp;
-}
+/* Stub: strcat not used in kernel proper (only in scripts/) */
+char *strcat(char *dest, const char *src) { BUG(); }
 #endif
 
 #ifndef __HAVE_ARCH_STRNCAT
- 
-char *strncat(char *dest, const char *src, size_t count)
-{
-	char *tmp = dest;
-
-	if (count) {
-		while (*dest)
-			dest++;
-		while ((*dest++ = *src++) != 0) {
-			if (--count == 0) {
-				*dest = '\0';
-				break;
-			}
-		}
-	}
-	return tmp;
-}
+/* Stub: strncat not used in kernel proper (only in scripts/) */
+char *strncat(char *dest, const char *src, size_t count) { BUG(); }
 #endif
 
 #ifndef __HAVE_ARCH_STRLCAT

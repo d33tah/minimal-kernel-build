@@ -38,44 +38,15 @@ char *strncpy(char *dest, const char *src, size_t count)
 }
 #endif
 
+/* Stub: strcat not used in kernel proper (only in scripts/) */
 #ifdef __HAVE_ARCH_STRCAT
-char *strcat(char *dest, const char *src)
-{
-	int d0, d1, d2, d3;
-	asm volatile("repne\n\t"
-		"scasb\n\t"
-		"decl %1\n"
-		"1:\tlodsb\n\t"
-		"stosb\n\t"
-		"testb %%al,%%al\n\t"
-		"jne 1b"
-		: "=&S" (d0), "=&D" (d1), "=&a" (d2), "=&c" (d3)
-		: "0" (src), "1" (dest), "2" (0), "3" (0xffffffffu) : "memory");
-	return dest;
-}
+#include <linux/bug.h>
+char *strcat(char *dest, const char *src) { BUG(); }
 #endif
 
+/* Stub: strncat not used in kernel proper (only in scripts/) */
 #ifdef __HAVE_ARCH_STRNCAT
-char *strncat(char *dest, const char *src, size_t count)
-{
-	int d0, d1, d2, d3;
-	asm volatile("repne\n\t"
-		"scasb\n\t"
-		"decl %1\n\t"
-		"movl %8,%3\n"
-		"1:\tdecl %3\n\t"
-		"js 2f\n\t"
-		"lodsb\n\t"
-		"stosb\n\t"
-		"testb %%al,%%al\n\t"
-		"jne 1b\n"
-		"2:\txorl %2,%2\n\t"
-		"stosb"
-		: "=&S" (d0), "=&D" (d1), "=&a" (d2), "=&c" (d3)
-		: "0" (src), "1" (dest), "2" (0), "3" (0xffffffffu), "g" (count)
-		: "memory");
-	return dest;
-}
+char *strncat(char *dest, const char *src, size_t count) { BUG(); }
 #endif
 
 #ifdef __HAVE_ARCH_STRCMP

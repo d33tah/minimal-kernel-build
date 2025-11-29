@@ -360,9 +360,7 @@ extern void tasklet_setup(struct tasklet_struct *t,
 
  
 
-extern unsigned long probe_irq_on(void);	 
-extern int probe_irq_off(unsigned long);	 
-extern unsigned int probe_irq_mask(unsigned long);	 
+/* probe_irq_on, probe_irq_off, probe_irq_mask removed - unused */	 
 
 static inline void init_irq_proc(void)
 {

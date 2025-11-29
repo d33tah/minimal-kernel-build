@@ -10,7 +10,7 @@
 #include <linux/static_key.h>
 #include <linux/mmdebug.h>
 
-extern int sysctl_stat_interval;
+/* sysctl_stat_interval removed - unused */
 
 
 struct reclaim_stat;

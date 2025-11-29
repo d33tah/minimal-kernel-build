@@ -25,7 +25,7 @@ struct trace_eval_map {
 
 #define TRACEPOINT_DEFAULT_PRIO	10
 
-extern struct srcu_struct tracepoint_srcu;
+/* tracepoint_srcu removed - unused */
 
 extern int
 tracepoint_probe_register(struct tracepoint *tp, void *probe, void *data);
@@ -44,9 +44,7 @@ tracepoint_probe_register_may_exist(struct tracepoint *tp, void *probe,
 	return tracepoint_probe_register_prio_may_exist(tp, probe, data,
 							TRACEPOINT_DEFAULT_PRIO);
 }
-extern void
-for_each_kernel_tracepoint(void (*fct)(struct tracepoint *tp, void *priv),
-		void *priv);
+/* for_each_kernel_tracepoint removed - unused */
 
 static inline bool trace_module_has_bad_taint(struct module *mod)
 {
@@ -67,8 +65,7 @@ int unregister_tracepoint_module_notifier(struct notifier_block *nb)
 static inline void tracepoint_synchronize_unregister(void)
 { }
 
-extern int syscall_regfunc(void);
-extern void syscall_unregfunc(void);
+/* syscall_regfunc/syscall_unregfunc removed - unused */
 
 #ifndef PARAMS
 #define PARAMS(args...) args

@@ -342,10 +342,7 @@ extern gfp_t gfp_allowed_mask;
  
 bool gfp_pfmemalloc_allowed(gfp_t gfp_mask);
 
-extern void pm_restrict_gfp_mask(void);
-extern void pm_restore_gfp_mask(void);
-
-extern gfp_t vma_thp_gfp_mask(struct vm_area_struct *vma);
+/* pm_restrict_gfp_mask, pm_restore_gfp_mask, vma_thp_gfp_mask removed - unused */
 
 static inline bool pm_suspended_storage(void)
 {

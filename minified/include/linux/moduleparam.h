@@ -227,19 +227,9 @@ static inline void destroy_params(const struct kernel_param *params,
 #define __param_check(name, p, type) \
 	static inline type __always_unused *__check_##name(void) { return(p); }
 
-extern const struct kernel_param_ops param_ops_byte;
-extern int param_set_byte(const char *val, const struct kernel_param *kp);
-extern int param_get_byte(char *buffer, const struct kernel_param *kp);
+/* param_ops_byte, param_ops_short, param_ops_ushort removed - unused */
 #define param_check_byte(name, p) __param_check(name, p, unsigned char)
-
-extern const struct kernel_param_ops param_ops_short;
-extern int param_set_short(const char *val, const struct kernel_param *kp);
-extern int param_get_short(char *buffer, const struct kernel_param *kp);
 #define param_check_short(name, p) __param_check(name, p, short)
-
-extern const struct kernel_param_ops param_ops_ushort;
-extern int param_set_ushort(const char *val, const struct kernel_param *kp);
-extern int param_get_ushort(char *buffer, const struct kernel_param *kp);
 #define param_check_ushort(name, p) __param_check(name, p, unsigned short)
 
 extern const struct kernel_param_ops param_ops_int;
@@ -254,24 +244,10 @@ int param_set_uint_minmax(const char *val, const struct kernel_param *kp,
 		unsigned int min, unsigned int max);
 #define param_check_uint(name, p) __param_check(name, p, unsigned int)
 
-extern const struct kernel_param_ops param_ops_long;
-extern int param_set_long(const char *val, const struct kernel_param *kp);
-extern int param_get_long(char *buffer, const struct kernel_param *kp);
+/* param_ops_long, param_ops_ulong, param_ops_ullong, param_ops_hexint removed - unused */
 #define param_check_long(name, p) __param_check(name, p, long)
-
-extern const struct kernel_param_ops param_ops_ulong;
-extern int param_set_ulong(const char *val, const struct kernel_param *kp);
-extern int param_get_ulong(char *buffer, const struct kernel_param *kp);
 #define param_check_ulong(name, p) __param_check(name, p, unsigned long)
-
-extern const struct kernel_param_ops param_ops_ullong;
-extern int param_set_ullong(const char *val, const struct kernel_param *kp);
-extern int param_get_ullong(char *buffer, const struct kernel_param *kp);
 #define param_check_ullong(name, p) __param_check(name, p, unsigned long long)
-
-extern const struct kernel_param_ops param_ops_hexint;
-extern int param_set_hexint(const char *val, const struct kernel_param *kp);
-extern int param_get_hexint(char *buffer, const struct kernel_param *kp);
 #define param_check_hexint(name, p) param_check_uint(name, p)
 
 extern const struct kernel_param_ops param_ops_charp;

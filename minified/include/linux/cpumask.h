@@ -41,7 +41,7 @@ extern struct cpumask __cpu_dying_mask;
 
 extern atomic_t __num_online_cpus;
 
-extern cpumask_t cpus_booted_once_mask;
+/* cpus_booted_once_mask removed - unused */
 
 static __always_inline void cpu_max_bits_warn(unsigned int cpu, unsigned int bits)
 {

@@ -57,62 +57,20 @@ static inline ktime_t ktime_get_real(void)
 	return ktime_get_with_offset(TK_OFFS_REAL);
 }
 
-static inline ktime_t ktime_get_coarse_real(void)
-{
-	return ktime_get_coarse_with_offset(TK_OFFS_REAL);
-}
+/* ktime_get_coarse_real, ktime_get_coarse_boottime, ktime_get_coarse_clocktai removed - unused */
+/* ktime_get_coarse, ktime_get_coarse_ns, ktime_get_coarse_real_ns removed - unused */
+/* ktime_get_coarse_boottime_ns, ktime_get_coarse_clocktai_ns removed - unused */
 
- 
 static inline ktime_t ktime_get_boottime(void)
 {
 	return ktime_get_with_offset(TK_OFFS_BOOT);
 }
 
-static inline ktime_t ktime_get_coarse_boottime(void)
-{
-	return ktime_get_coarse_with_offset(TK_OFFS_BOOT);
-}
-
- 
 static inline ktime_t ktime_get_clocktai(void)
 {
 	return ktime_get_with_offset(TK_OFFS_TAI);
 }
 
-static inline ktime_t ktime_get_coarse_clocktai(void)
-{
-	return ktime_get_coarse_with_offset(TK_OFFS_TAI);
-}
-
-static inline ktime_t ktime_get_coarse(void)
-{
-	struct timespec64 ts;
-
-	ktime_get_coarse_ts64(&ts);
-	return timespec64_to_ktime(ts);
-}
-
-static inline u64 ktime_get_coarse_ns(void)
-{
-	return ktime_to_ns(ktime_get_coarse());
-}
-
-static inline u64 ktime_get_coarse_real_ns(void)
-{
-	return ktime_to_ns(ktime_get_coarse_real());
-}
-
-static inline u64 ktime_get_coarse_boottime_ns(void)
-{
-	return ktime_to_ns(ktime_get_coarse_boottime());
-}
-
-static inline u64 ktime_get_coarse_clocktai_ns(void)
-{
-	return ktime_to_ns(ktime_get_coarse_clocktai());
-}
-
- 
 static inline ktime_t ktime_mono_to_real(ktime_t mono)
 {
 	return ktime_mono_to_any(mono, TK_OFFS_REAL);
@@ -123,60 +81,20 @@ static inline u64 ktime_get_ns(void)
 	return ktime_to_ns(ktime_get());
 }
 
-static inline u64 ktime_get_real_ns(void)
-{
-	return ktime_to_ns(ktime_get_real());
-}
+/* ktime_get_real_ns, ktime_get_clocktai_ns, ktime_get_raw_ns removed - unused */
+/* ktime_get_coarse_boottime_ts64, ktime_get_boottime_seconds removed - unused */
+/* ktime_get_clocktai_ts64, ktime_get_coarse_clocktai_ts64, ktime_get_clocktai_seconds removed - unused */
 
 static inline u64 ktime_get_boottime_ns(void)
 {
 	return ktime_to_ns(ktime_get_boottime());
 }
 
-static inline u64 ktime_get_clocktai_ns(void)
-{
-	return ktime_to_ns(ktime_get_clocktai());
-}
-
-static inline u64 ktime_get_raw_ns(void)
-{
-	return ktime_to_ns(ktime_get_raw());
-}
-
-/* ktime_get_*_fast_ns removed - unused */
-
- 
 static inline void ktime_get_boottime_ts64(struct timespec64 *ts)
 {
 	*ts = ktime_to_timespec64(ktime_get_boottime());
 }
 
-static inline void ktime_get_coarse_boottime_ts64(struct timespec64 *ts)
-{
-	*ts = ktime_to_timespec64(ktime_get_coarse_boottime());
-}
-
-static inline time64_t ktime_get_boottime_seconds(void)
-{
-	return ktime_divns(ktime_get_coarse_boottime(), NSEC_PER_SEC);
-}
-
-static inline void ktime_get_clocktai_ts64(struct timespec64 *ts)
-{
-	*ts = ktime_to_timespec64(ktime_get_clocktai());
-}
-
-static inline void ktime_get_coarse_clocktai_ts64(struct timespec64 *ts)
-{
-	*ts = ktime_to_timespec64(ktime_get_coarse_clocktai());
-}
-
-static inline time64_t ktime_get_clocktai_seconds(void)
-{
-	return ktime_divns(ktime_get_coarse_clocktai(), NSEC_PER_SEC);
-}
-
- 
 extern bool timekeeping_rtc_skipsuspend(void);
 extern bool timekeeping_rtc_skipresume(void);
 

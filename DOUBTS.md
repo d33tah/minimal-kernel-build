@@ -1,5 +1,33 @@
 # Doubts and Notes
 
+## 2025-11-29 10:55
+
+**Session update - Further enum reduction:**
+- Pushed 7 new commits to origin (GitHub)
+- LOC in minified/: 194,060 (was 196,235 whole repo at session start)
+- Binary size: 245KB
+- Build: PASSES, make vm prints "Hello, World!"
+
+**Commits this session:**
+1. dcd65f62 - Reduce unused blk_types enums and defines (58 LOC)
+2. dc31f1af - Reduce unused bio_integrity types (22 LOC)
+3. 23085e17 - Reduce unused blkdev.h enums (21 LOC)
+4. 92ffe67e - Reduce unused migrate_mode.h enums (17 LOC)
+5. 4ad530d4 - Reduce unused pm_qos.h enums (19 LOC)
+6. bb2a0644 - Reduce irqchip_irq_state enum (2 LOC)
+7. 007bda48 - Reduce rw_hint enum (6 LOC)
+
+**17 more enums reduced this session**
+
+**CI Status:**
+- glab is configured for gitlab.profound.net (not GitHub)
+- This repo is GitHub-only
+- Need to check CI via GitHub PR #10
+
+**Next steps:**
+- Check PR #10 CI status
+- Continue enum reduction if time permits
+
 ## 2025-11-29 10:15
 
 **Session update - 2,104 LOC reduction through enum cleanup:**

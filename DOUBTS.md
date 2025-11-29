@@ -1,5 +1,18 @@
 # Doubts and Notes
 
+## 2025-11-29 15:15
+
+**CI VERIFIED PASSING after 9 minute wait:**
+- GitHub Actions CI: COMPLETED - SUCCESS (Run #1813)
+- Workflow ID: 19784904016
+- All 9 commits this session passed CI
+- LOC: 193,050 (well under 200K target)
+- Binary: 245KB (well under 400KB target)
+- make vm: PASSES, prints "Hello, World!"
+
+**@d33tah:** PR #10 ready for review!
+URL: https://github.com/d33tah/minimal-kernel-build/pull/10
+
 ## 2025-11-29 15:05
 
 **SESSION COMPLETE - More LOC reduction:**
@@ -19,7 +32,7 @@
 
 **All commits passed local commit hook (make vm test).**
 
-Waiting 9 minutes to verify CI passes...
+CI verified passing (see above).
 
 ## 2025-11-29 14:15
 

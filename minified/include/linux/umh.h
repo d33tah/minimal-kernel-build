@@ -45,7 +45,6 @@ extern struct ctl_table usermodehelper_table[];
 
 enum umh_disable_depth {
 	UMH_ENABLED = 0,
-	UMH_FREEZING,
 	UMH_DISABLED,
 };
 

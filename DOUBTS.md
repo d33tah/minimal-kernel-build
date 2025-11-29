@@ -1,5 +1,24 @@
 # Doubts and Notes
 
+## 2025-11-29 08:35
+
+**Status:**
+- Local Docker CI test: PASSED (docker build with Dockerfile-build-and-run)
+- Output: "Hello, World!Still alive" - kernel boots correctly
+- Binary size: 245KB
+- LOC: 194,349 (reduced ~1,960 from session start of 196,309)
+- All commits pushed to origin (GitHub)
+
+**Commits this session:**
+1. a375bfa8 - Stub unused cmdline functions (110 LOC reduction)
+2. 5fd7c028 - Stub unused strcat/strncat functions (56 LOC reduction)
+3. f7bdb659 - Update FIXUP.md with session progress notes
+4. a13b0f7e - Update FIXUP.md with complete session summary
+
+**PR #10 should still be open - GitHub Actions will run on push**
+
+Now sleeping for 9 minutes to wait for CI...
+
 ## 2025-11-29 07:47
 
 **Final Status:**

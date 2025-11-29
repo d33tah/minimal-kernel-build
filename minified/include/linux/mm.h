@@ -922,8 +922,6 @@ extern void pagefault_out_of_memory(void);
 extern void show_free_areas(unsigned int flags, nodemask_t *nodemask);
 
 extern bool can_do_mlock(void);
-extern int user_shm_lock(size_t, struct ucounts *);
-extern void user_shm_unlock(size_t, struct ucounts *);
 
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 			     pte_t pte);

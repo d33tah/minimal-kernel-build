@@ -604,12 +604,7 @@ struct file {
 } __randomize_layout
   __attribute__((aligned(4)));	
 
-struct file_handle {
-	__u32 handle_bytes;
-	int handle_type;
-	
-	unsigned char f_handle[];
-};
+struct file_handle;
 
 static inline struct file *get_file(struct file *f)
 {
@@ -669,11 +664,7 @@ struct lock_manager_operations {
 	void (*lm_expire_lock)(void);
 };
 
-struct lock_manager {
-	struct list_head list;
-	
-	bool block_opens;
-};
+struct lock_manager;
 
 struct net;
 void locks_start_grace(struct net *, struct lock_manager *);

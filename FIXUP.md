@@ -1,3 +1,30 @@
+--- 2025-11-29 06:42 ---
+SESSION SUMMARY: Modest LOC reduction achieved
+
+**Final commits this session:**
+1. 0496c7e3 - Remove unused x86 lib files: checksum_32.S (444 LOC), strstr_32.c (32 LOC)
+2. 3b0d4bfb - Remove unused buildid.c (32 LOC)
+
+**Final LOC:** ~196,260 (was 196,621 - reduced by ~361 lines)
+**Build:** PASSES
+**make vm:** PASSES, prints "Hello, World!"
+**Binary size:** 245KB
+
+**What was examined and why it couldn't be removed:**
+- mm/, fs/, kernel/ - all code paths are reachable
+- lib/ - flex_proportions needed despite not showing in nm (LTO inline)
+- drivers/base - platform bus, devres, property all used
+- kernel/time - hrtimer, timekeeping, timer all used
+- kernel/locking - semaphore, mutex, rwsem all used
+- kernel/dma - direct, mapping used for I/O
+- arch/x86/realmode - needed for boot
+- security/ - already minimal (164 LOC)
+- VDSO, TTY, VGA console - needed for Hello World output
+
+**Key insight:** The kernel has been aggressively minimized. Most remaining code
+is either directly used or provides essential stubs. The 200K goal is met and stable.
+Further reduction to 100K would require major architectural changes (e.g., NOMMU).
+
 --- 2025-11-29 06:38 ---
 PROGRESS: Removed more unused files
 

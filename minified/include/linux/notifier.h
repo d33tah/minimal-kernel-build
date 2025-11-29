@@ -54,7 +54,7 @@ struct srcu_notifier_head {
 	} while (0)
 
  
-extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
+/* srcu_init_notifier_head removed - unused */
 #define srcu_cleanup_notifier_head(name)	\
 		cleanup_srcu_struct(&(name)->srcu);
 
@@ -103,13 +103,7 @@ extern int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
 		struct notifier_block *nb);
 extern int raw_notifier_chain_register(struct raw_notifier_head *nh,
 		struct notifier_block *nb);
-extern int srcu_notifier_chain_register(struct srcu_notifier_head *nh,
-		struct notifier_block *nb);
-
-extern int atomic_notifier_chain_register_unique_prio(
-		struct atomic_notifier_head *nh, struct notifier_block *nb);
-extern int blocking_notifier_chain_register_unique_prio(
-		struct blocking_notifier_head *nh, struct notifier_block *nb);
+/* srcu_notifier_chain_register, *_unique_prio variants removed - unused */
 
 extern int atomic_notifier_chain_unregister(struct atomic_notifier_head *nh,
 		struct notifier_block *nb);
@@ -117,8 +111,7 @@ extern int blocking_notifier_chain_unregister(struct blocking_notifier_head *nh,
 		struct notifier_block *nb);
 extern int raw_notifier_chain_unregister(struct raw_notifier_head *nh,
 		struct notifier_block *nb);
-extern int srcu_notifier_chain_unregister(struct srcu_notifier_head *nh,
-		struct notifier_block *nb);
+/* srcu_notifier_chain_unregister removed - unused */
 
 extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 		unsigned long val, void *v);
@@ -126,8 +119,7 @@ extern int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 		unsigned long val, void *v);
 extern int raw_notifier_call_chain(struct raw_notifier_head *nh,
 		unsigned long val, void *v);
-extern int srcu_notifier_call_chain(struct srcu_notifier_head *nh,
-		unsigned long val, void *v);
+/* srcu_notifier_call_chain removed - unused */
 
 extern int blocking_notifier_call_chain_robust(struct blocking_notifier_head *nh,
 		unsigned long val_up, unsigned long val_down, void *v);

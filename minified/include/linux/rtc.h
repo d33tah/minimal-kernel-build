@@ -108,34 +108,13 @@ struct rtc_device {
 
 /* RTC_TIMESTAMP_* defines - not used in minimal kernel */  
 
-extern struct rtc_device *devm_rtc_device_register(struct device *dev,
-					const char *name,
-					const struct rtc_class_ops *ops,
-					struct module *owner);
-struct rtc_device *devm_rtc_allocate_device(struct device *dev);
-int __devm_rtc_register_device(struct module *owner, struct rtc_device *rtc);
-
+/* Most RTC functions removed - unused in minimal kernel */
 extern int rtc_read_time(struct rtc_device *rtc, struct rtc_time *tm);
 extern int rtc_set_time(struct rtc_device *rtc, struct rtc_time *tm);
-int __rtc_read_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm);
-extern int rtc_read_alarm(struct rtc_device *rtc,
-			struct rtc_wkalrm *alrm);
-extern int rtc_set_alarm(struct rtc_device *rtc,
-				struct rtc_wkalrm *alrm);
-extern int rtc_initialize_alarm(struct rtc_device *rtc,
-				struct rtc_wkalrm *alrm);
 extern void rtc_update_irq(struct rtc_device *rtc,
 			unsigned long num, unsigned long events);
-
-extern struct rtc_device *rtc_class_open(const char *name);
-extern void rtc_class_close(struct rtc_device *rtc);
-
-extern int rtc_irq_set_state(struct rtc_device *rtc, int enabled);
-extern int rtc_irq_set_freq(struct rtc_device *rtc, int freq);
 extern int rtc_update_irq_enable(struct rtc_device *rtc, unsigned int enabled);
 extern int rtc_alarm_irq_enable(struct rtc_device *rtc, unsigned int enabled);
-extern int rtc_dev_update_irq_enable_emul(struct rtc_device *rtc,
-						unsigned int enabled);
 
 void rtc_handle_legacy_irq(struct rtc_device *rtc, int num, int mode);
 void rtc_aie_update_irq(struct rtc_device *rtc);

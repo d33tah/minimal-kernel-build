@@ -55,6 +55,19 @@ Goal exceeded by 3,455 LOC.
 
 No commits this session - analysis only, no removable code found.
 
+**Further analysis (05:41):**
+- Object files are LLVM IR bitcode (LTO build)
+- Largest kernel/*.o: fork.o (51KB), signal.o (42KB), exit.o (36KB)
+- piggy.o is 216KB (compressed kernel image)
+- 575 total CONFIG entries (307 enabled, 268 disabled)
+- fs.h preprocesses to 26,561 lines (header transitivity)
+- Entry points: 24 in entry_32.S (needed for syscalls/interrupts)
+- Assembly files: 5,772 total lines across 34 files
+- Most enabled configs are x86-32 essentials (MMU, TSC, CMPXCHG, etc.)
+
+No viable quick reduction opportunities found in this session.
+The codebase appears near-optimal for its current configuration.
+
 --- 2025-11-29 05:15 ---
 CI PASSED - PR #10 ready for @d33tah review
 

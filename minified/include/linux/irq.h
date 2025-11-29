@@ -416,114 +416,12 @@ int __devm_irq_alloc_descs(struct device *dev, int irq, unsigned int from,
 	devm_irq_alloc_descs(dev, -1, from, cnt, node)
 
 void irq_free_descs(unsigned int irq, unsigned int cnt);
- 
-struct irq_chip_regs {
-	unsigned long		enable;
-	unsigned long		disable;
-	unsigned long		mask;
-	unsigned long		ack;
-	unsigned long		eoi;
-	unsigned long		type;
-	unsigned long		polarity;
-};
 
- 
-struct irq_chip_type {
-	struct irq_chip		chip;
-	struct irq_chip_regs	regs;
-	irq_flow_handler_t	handler;
-	u32			type;
-	u32			mask_cache_priv;
-	u32			*mask_cache;
-};
-
- 
-struct irq_chip_generic {
-	raw_spinlock_t		lock;
-	void __iomem		*reg_base;
-	u32			(*reg_readl)(void __iomem *addr);
-	void			(*reg_writel)(u32 val, void __iomem *addr);
-	void			(*suspend)(struct irq_chip_generic *gc);
-	void			(*resume)(struct irq_chip_generic *gc);
-	unsigned int		irq_base;
-	unsigned int		irq_cnt;
-	u32			mask_cache;
-	u32			type_cache;
-	u32			polarity_cache;
-	u32			wake_enabled;
-	u32			wake_active;
-	unsigned int		num_ct;
-	void			*private;
-	unsigned long		installed;
-	unsigned long		unused;
-	struct irq_domain	*domain;
-	struct list_head	list;
-	struct irq_chip_type	chip_types[];
-};
-
- 
-enum irq_gc_flags {
-	IRQ_GC_INIT_MASK_CACHE		= 1 << 0,
-};
-
- 
-struct irq_domain_chip_generic {
-	unsigned int		irqs_per_chip;
-	unsigned int		num_chips;
-	unsigned int		irq_flags_to_clear;
-	unsigned int		irq_flags_to_set;
-	enum irq_gc_flags	gc_flags;
-	struct irq_chip_generic	*gc[];
-};
-
- 
-void irq_gc_noop(struct irq_data *d);
-void irq_gc_mask_disable_reg(struct irq_data *d);
-void irq_gc_mask_set_bit(struct irq_data *d);
-void irq_gc_mask_clr_bit(struct irq_data *d);
-void irq_gc_unmask_enable_reg(struct irq_data *d);
-void irq_gc_ack_set_bit(struct irq_data *d);
-void irq_gc_ack_clr_bit(struct irq_data *d);
-void irq_gc_mask_disable_and_ack_set(struct irq_data *d);
-void irq_gc_eoi(struct irq_data *d);
-int irq_gc_set_wake(struct irq_data *d, unsigned int on);
-
- 
-int irq_map_generic_chip(struct irq_domain *d, unsigned int virq,
-			 irq_hw_number_t hw_irq);
-struct irq_chip_generic *
-irq_alloc_generic_chip(const char *name, int nr_ct, unsigned int irq_base,
-		       void __iomem *reg_base, irq_flow_handler_t handler);
-void irq_setup_generic_chip(struct irq_chip_generic *gc, u32 msk,
-			    enum irq_gc_flags flags, unsigned int clr,
-			    unsigned int set);
-int irq_setup_alt_chip(struct irq_data *d, unsigned int type);
-void irq_remove_generic_chip(struct irq_chip_generic *gc, u32 msk,
-			     unsigned int clr, unsigned int set);
-
-struct irq_chip_generic *
-devm_irq_alloc_generic_chip(struct device *dev, const char *name, int num_ct,
-			    unsigned int irq_base, void __iomem *reg_base,
-			    irq_flow_handler_t handler);
-int devm_irq_setup_generic_chip(struct device *dev, struct irq_chip_generic *gc,
-				u32 msk, enum irq_gc_flags flags,
-				unsigned int clr, unsigned int set);
-
-struct irq_chip_generic *irq_get_domain_generic_chip(struct irq_domain *d, unsigned int hw_irq);
-
-int __irq_alloc_domain_generic_chips(struct irq_domain *d, int irqs_per_chip,
-				     int num_ct, const char *name,
-				     irq_flow_handler_t handler,
-				     unsigned int clr, unsigned int set,
-				     enum irq_gc_flags flags);
-
-#define irq_alloc_domain_generic_chips(d, irqs_per_chip, num_ct, name,	\
-				       handler,	clr, set, flags)	\
-({									\
-	MAYBE_BUILD_BUG_ON(irqs_per_chip > 32);				\
-	__irq_alloc_domain_generic_chips(d, irqs_per_chip, num_ct, name,\
-					 handler, clr, set, flags);	\
-})
+struct irq_chip_generic;
+struct irq_chip_type;
+struct irq_chip_regs;
+struct irq_domain_chip_generic;
+enum irq_gc_flags { IRQ_GC_INIT_MASK_CACHE = 1 };
 
 
 #define IRQ_MSK(n) (u32)((n) < 32 ? ((1 << (n)) - 1) : UINT_MAX)

@@ -59,36 +59,7 @@ static inline void posix_cputimers_init_work(void) { }
 #define REQUEUE_PENDING 1
 
  
-struct k_itimer {
-	struct list_head	list;
-	struct hlist_node	t_hash;
-	spinlock_t		it_lock;
-	const struct k_clock	*kclock;
-	clockid_t		it_clock;
-	timer_t			it_id;
-	int			it_active;
-	s64			it_overrun;
-	s64			it_overrun_last;
-	int			it_requeue_pending;
-	int			it_sigev_notify;
-	ktime_t			it_interval;
-	struct signal_struct	*it_signal;
-	union {
-		struct pid		*it_pid;
-		struct task_struct	*it_process;
-	};
-	struct sigqueue		*sigq;
-	union {
-		struct {
-			struct hrtimer	timer;
-		} real;
-		struct cpu_timer	cpu;
-		struct {
-			struct alarm	alarmtimer;
-		} alarm;
-	} it;
-	struct rcu_head		rcu;
-};
+struct k_itimer;
 
 void run_posix_cpu_timers(void);
 void posix_cpu_timers_exit(struct task_struct *task);

@@ -69,6 +69,7 @@ struct block_device {
 	(&((_bdev)->bd_device.kobj))
 
  
+/* Reduced blk_status_t - only BLK_STS_OK needed in minimal kernel */
 #if defined(CONFIG_ALPHA) && !defined(__alpha_bwx__)
 typedef u32 __bitwise blk_status_t;
 typedef u32 blk_short_t;
@@ -77,54 +78,6 @@ typedef u8 __bitwise blk_status_t;
 typedef u16 blk_short_t;
 #endif
 #define	BLK_STS_OK 0
-#define BLK_STS_NOTSUPP		((__force blk_status_t)1)
-#define BLK_STS_TIMEOUT		((__force blk_status_t)2)
-#define BLK_STS_NOSPC		((__force blk_status_t)3)
-#define BLK_STS_TRANSPORT	((__force blk_status_t)4)
-#define BLK_STS_TARGET		((__force blk_status_t)5)
-#define BLK_STS_NEXUS		((__force blk_status_t)6)
-#define BLK_STS_MEDIUM		((__force blk_status_t)7)
-#define BLK_STS_PROTECTION	((__force blk_status_t)8)
-#define BLK_STS_RESOURCE	((__force blk_status_t)9)
-#define BLK_STS_IOERR		((__force blk_status_t)10)
-
- 
-#define BLK_STS_DM_REQUEUE    ((__force blk_status_t)11)
-
- 
-#define BLK_STS_AGAIN		((__force blk_status_t)12)
-
- 
-#define BLK_STS_DEV_RESOURCE	((__force blk_status_t)13)
-
- 
-#define BLK_STS_ZONE_RESOURCE	((__force blk_status_t)14)
-
- 
-#define BLK_STS_ZONE_OPEN_RESOURCE	((__force blk_status_t)15)
-
- 
-#define BLK_STS_ZONE_ACTIVE_RESOURCE	((__force blk_status_t)16)
-
- 
-#define BLK_STS_OFFLINE		((__force blk_status_t)17)
-
- 
-static inline bool blk_path_error(blk_status_t error)
-{
-	switch (error) {
-	case BLK_STS_NOTSUPP:
-	case BLK_STS_NOSPC:
-	case BLK_STS_TARGET:
-	case BLK_STS_NEXUS:
-	case BLK_STS_MEDIUM:
-	case BLK_STS_PROTECTION:
-		return false;
-	}
-
-	 
-	return true;
-}
 
  
 #define BIO_ISSUE_RES_BITS      1
@@ -212,22 +165,14 @@ struct bio {
 #define BIO_RESET_BYTES		offsetof(struct bio, bi_max_vecs)
 #define BIO_MAX_SECTORS		(UINT_MAX >> SECTOR_SHIFT)
 
- 
+/* Reduced BIO enum - only flags needed for bio.h */
 enum {
-	BIO_NO_PAGE_REF,	 
-	BIO_CLONED,		 
-	BIO_BOUNCED,		 
-	BIO_WORKINGSET,		 
-	BIO_QUIET,		 
-	BIO_CHAIN,		 
-	BIO_REFFED,		 
-	BIO_THROTTLED,		 
-	BIO_TRACE_COMPLETION,	 
-	BIO_CGROUP_ACCT,	 
-	BIO_QOS_THROTTLED,	 
-	BIO_QOS_MERGED,		 
+	BIO_NO_PAGE_REF,
+	BIO_CLONED,
+	BIO_REFFED,
+	BIO_THROTTLED,
+	BIO_CHAIN,
 	BIO_REMAPPED,
-	BIO_ZONE_WRITE_LOCKED,	 
 	BIO_FLAG_LAST
 };
 

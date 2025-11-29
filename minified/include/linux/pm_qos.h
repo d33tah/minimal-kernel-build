@@ -8,12 +8,7 @@
 #include <linux/notifier.h>
 #include <linux/device.h>
 
-enum pm_qos_flags_status {
-	PM_QOS_FLAGS_UNDEFINED = -1,
-	PM_QOS_FLAGS_NONE,
-	PM_QOS_FLAGS_SOME,
-	PM_QOS_FLAGS_ALL,
-};
+enum pm_qos_flags_status { PM_QOS_FLAGS_UNDEFINED = -1 };
 
 #define PM_QOS_DEFAULT_VALUE	(-1)
 #define PM_QOS_LATENCY_ANY	S32_MAX
@@ -30,11 +25,7 @@ enum pm_qos_flags_status {
 
 #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
 
-enum pm_qos_type {
-	PM_QOS_UNITIALIZED,
-	PM_QOS_MAX,		 
-	PM_QOS_MIN,		 
-};
+enum pm_qos_type { PM_QOS_UNITIALIZED };
 
  
 struct pm_qos_constraints {
@@ -65,10 +56,7 @@ struct pm_qos_flags {
 #define FREQ_QOS_MIN_DEFAULT_VALUE	0
 #define FREQ_QOS_MAX_DEFAULT_VALUE	S32_MAX
 
-enum freq_qos_req_type {
-	FREQ_QOS_MIN = 1,
-	FREQ_QOS_MAX,
-};
+enum freq_qos_req_type { FREQ_QOS_REQ_LAST };
 
 struct freq_constraints {
 	struct pm_qos_constraints min_freq;
@@ -86,10 +74,8 @@ struct freq_qos_request {
 
 enum dev_pm_qos_req_type {
 	DEV_PM_QOS_RESUME_LATENCY = 1,
-	DEV_PM_QOS_LATENCY_TOLERANCE,
 	DEV_PM_QOS_MIN_FREQUENCY,
 	DEV_PM_QOS_MAX_FREQUENCY,
-	DEV_PM_QOS_FLAGS,
 };
 
 struct dev_pm_qos_request {
@@ -112,12 +98,7 @@ struct dev_pm_qos {
 	struct dev_pm_qos_request *flags_req;
 };
 
- 
-enum pm_qos_req_action {
-	PM_QOS_ADD_REQ,		 
-	PM_QOS_UPDATE_REQ,	 
-	PM_QOS_REMOVE_REQ	 
-};
+enum pm_qos_req_action { PM_QOS_ADD_REQ };
 
 static inline int dev_pm_qos_request_active(struct dev_pm_qos_request *req)
 {

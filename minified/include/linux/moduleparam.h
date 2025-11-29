@@ -320,15 +320,7 @@ extern int param_set_bint(const char *val, const struct kernel_param *kp);
 			    perm, -1, 0);				\
 	__MODULE_PARM_TYPE(name, "array of " #type)
 
-enum hwparam_type {
-	hwparam_ioport,		 
-	hwparam_iomem,		 
-	hwparam_ioport_or_iomem,  
-	hwparam_irq,		 
-	hwparam_dma,		 
-	hwparam_dma_addr,	 
-	hwparam_other,		 
-};
+enum hwparam_type { hwparam_other };
 
  
 #define module_param_hw_named(name, value, type, hwtype, perm)		\

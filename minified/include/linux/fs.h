@@ -656,7 +656,6 @@ struct file_lock_context;
 #define OFFT_OFFSET_MAX	INT_LIMIT(off_t)
 #endif
 
-extern void send_sigio(struct fown_struct *fown, int fd, int band);
 
 #define locks_inode(f) file_inode(f)
 
@@ -700,18 +699,9 @@ struct fasync_struct {
 #define FASYNC_MAGIC 0x4601
 
 extern int fasync_helper(int, struct file *, int, struct fasync_struct **);
-extern struct fasync_struct *fasync_insert_entry(int, struct file *, struct fasync_struct **, struct fasync_struct *);
-extern int fasync_remove_entry(struct file *, struct fasync_struct **);
-extern struct fasync_struct *fasync_alloc(void);
-extern void fasync_free(struct fasync_struct *);
-
 extern void kill_fasync(struct fasync_struct **, int, int);
-
 extern void __f_setown(struct file *filp, struct pid *, enum pid_type, int force);
 extern int f_setown(struct file *filp, unsigned long arg, int force);
-extern void f_delown(struct file *filp);
-extern pid_t f_getown(struct file *filp);
-extern int send_sigurg(struct fown_struct *fown);
 
 #define SB_RDONLY	 1	
 #define SB_NOSUID	 2	
@@ -1369,9 +1359,6 @@ struct file_system_type {
 
 #define MODULE_ALIAS_FS(NAME) MODULE_ALIAS("fs-" NAME)
 
-extern struct dentry *mount_bdev(struct file_system_type *fs_type,
-	int flags, const char *dev_name, void *data,
-	int (*fill_super)(struct super_block *, void *, int));
 extern struct dentry *mount_single(struct file_system_type *fs_type,
 	int flags, void *data,
 	int (*fill_super)(struct super_block *, void *, int));
@@ -1412,8 +1399,6 @@ struct super_block *sget(struct file_system_type *type,
 extern int register_filesystem(struct file_system_type *);
 extern int unregister_filesystem(struct file_system_type *);
 extern int vfs_statfs(const struct path *, struct kstatfs *);
-extern int user_statfs(const char __user *, struct kstatfs *);
-extern int fd_statfs(int, struct kstatfs *);
 extern int freeze_super(struct super_block *super);
 extern int thaw_super(struct super_block *super);
 extern __printf(2, 3)
@@ -1523,7 +1508,6 @@ extern int __register_chrdev(unsigned int major, unsigned int baseminor,
 extern void __unregister_chrdev(unsigned int major, unsigned int baseminor,
 				unsigned int count, const char *name);
 extern void unregister_chrdev_region(dev_t, unsigned);
-extern void chrdev_show(struct seq_file *,off_t);
 
 static inline int register_chrdev(unsigned int major, const char *name,
 				  const struct file_operations *fops)
@@ -1622,8 +1606,6 @@ static inline void i_readcount_inc(struct inode *inode)
 {
 	return;
 }
-extern int do_pipe_flags(int *, int);
-
 extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
 ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos);
 extern ssize_t kernel_write(struct file *, const void *, size_t, loff_t *);
@@ -1711,9 +1693,6 @@ static inline void remove_inode_hash(struct inode *inode)
 
 extern void inode_sb_list_add(struct inode *inode);
 extern void inode_add_lru(struct inode *inode);
-
-extern int sb_set_blocksize(struct super_block *, int);
-extern int sb_min_blocksize(struct super_block *, int);
 
 extern int generic_file_mmap(struct file *, struct vm_area_struct *);
 extern int generic_file_readonly_mmap(struct file *, struct vm_area_struct *);
@@ -2062,9 +2041,4 @@ static inline bool dir_emit_dots(struct file *file, struct dir_context *ctx)
 extern bool path_noexec(const struct path *path);
 extern void inode_nohighmem(struct inode *inode);
 
-extern int vfs_fadvise(struct file *file, loff_t offset, loff_t len,
-		       int advice);
-extern int generic_fadvise(struct file *file, loff_t offset, loff_t len,
-			   int advice);
-
-#endif 
+#endif

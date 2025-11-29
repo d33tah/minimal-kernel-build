@@ -72,10 +72,7 @@ extern int elf_coredump_extra_notes_write(struct coredump_params *cprm);
 #endif
 
  
-struct gnu_property {
-	u32 pr_type;
-	u32 pr_datasz;
-};
+struct gnu_property;
 
 struct arch_elf_state;
 

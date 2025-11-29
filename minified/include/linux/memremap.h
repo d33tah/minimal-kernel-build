@@ -22,11 +22,7 @@ struct vmem_altmap {
 
  
 enum memory_type {
-	 
 	MEMORY_DEVICE_PRIVATE = 1,
-	MEMORY_DEVICE_FS_DAX,
-	MEMORY_DEVICE_GENERIC,
-	MEMORY_DEVICE_PCI_P2PDMA,
 };
 
 struct dev_pagemap_ops {
@@ -82,9 +78,7 @@ static inline bool folio_is_device_private(const struct folio *folio)
 
 static inline bool is_pci_p2pdma_page(const struct page *page)
 {
-	return IS_ENABLED(CONFIG_PCI_P2PDMA) &&
-		is_zone_device_page(page) &&
-		page->pgmap->type == MEMORY_DEVICE_PCI_P2PDMA;
+	return false;
 }
 
 static inline void *devm_memremap_pages(struct device *dev,

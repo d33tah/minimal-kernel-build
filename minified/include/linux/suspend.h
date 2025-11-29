@@ -31,13 +31,6 @@ typedef int __bitwise suspend_state_t;
 
 enum suspend_stat_step {
 	SUSPEND_FREEZE = 1,
-	SUSPEND_PREPARE,
-	SUSPEND_SUSPEND,
-	SUSPEND_SUSPEND_LATE,
-	SUSPEND_SUSPEND_NOIRQ,
-	SUSPEND_RESUME_NOIRQ,
-	SUSPEND_RESUME_EARLY,
-	SUSPEND_RESUME
 };
 
 struct suspend_stats {

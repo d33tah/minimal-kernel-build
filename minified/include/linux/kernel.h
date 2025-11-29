@@ -178,8 +178,6 @@ bool mac_pton(const char *s, u8 *mac);
 
 enum ftrace_dump_mode {
 	DUMP_NONE,
-	DUMP_ALL,
-	DUMP_ORIG,
 };
 
 static inline void tracing_start(void) { }

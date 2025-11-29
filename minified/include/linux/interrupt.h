@@ -221,10 +221,8 @@ extern int irq_set_irq_wake(unsigned int irq, unsigned int on);
 
  
 enum irqchip_irq_state {
-	IRQCHIP_STATE_PENDING,		 
-	IRQCHIP_STATE_ACTIVE,		 
-	IRQCHIP_STATE_MASKED,		 
-	IRQCHIP_STATE_LINE_LEVEL,	 
+	IRQCHIP_STATE_PENDING,
+	IRQCHIP_STATE_ACTIVE,
 };
 
 extern int irq_get_irqchip_state(unsigned int irq, enum irqchip_irq_state which,

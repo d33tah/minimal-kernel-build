@@ -100,12 +100,6 @@ DEFINE_PER_CPU(unsigned long, process_counts) = 0;
 
 __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);  
 
-/* Stubbed - not used externally */
-int nr_processes(void)
-{
-	return 0;
-}
-
 void __weak arch_release_task_struct(struct task_struct *tsk)
 {
 }
@@ -746,9 +740,6 @@ void mmput(struct mm_struct *mm)
 		__mmput(mm);
 }
 
-/* Stub: mmput_async not used in minimal kernel */
-void mmput_async(struct mm_struct *mm) { mmput(mm); }
-
 int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 {
 	struct file *old_exe_file;
@@ -797,9 +788,6 @@ struct mm_struct *get_task_mm(struct task_struct *task)
 	task_unlock(task);
 	return mm;
 }
-
-/* Stub: mm_access not used in minimal kernel */
-struct mm_struct *mm_access(struct task_struct *task, unsigned int mode) { return ERR_PTR(-EACCES); }
 
 static void complete_vfork_done(struct task_struct *tsk)
 {

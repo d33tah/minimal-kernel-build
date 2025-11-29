@@ -56,16 +56,7 @@ struct module_attribute {
 	void (*free)(struct module *);
 };
 
-struct module_version_attribute {
-	struct module_attribute mattr;
-	const char *module_name;
-	const char *version;
-};
-
-extern ssize_t __modver_version_show(struct module_attribute *,
-				     struct module_kobject *, char *);
-
-extern struct module_attribute module_uevent;
+struct module_version_attribute;
 
  
 extern int init_module(void);

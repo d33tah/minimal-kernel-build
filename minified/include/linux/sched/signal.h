@@ -23,18 +23,9 @@ struct sighand_struct {
 };
 
  
-struct pacct_struct {
-	int			ac_flag;
-	long			ac_exitcode;
-	unsigned long		ac_mem;
-	u64			ac_utime, ac_stime;
-	unsigned long		ac_minflt, ac_majflt;
-};
+struct pacct_struct;
 
-struct cpu_itimer {
-	u64 expires;
-	u64 incr;
-};
+struct cpu_itimer;
 
  
 struct task_cputime_atomic {

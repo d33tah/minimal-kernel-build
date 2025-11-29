@@ -98,9 +98,6 @@ nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
 
 atomic_long_t _totalram_pages __read_mostly;
 unsigned long totalreserve_pages __read_mostly;
-unsigned long totalcma_pages __read_mostly;
-
-int percpu_pagelist_high_fraction;
 gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
 DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
 
@@ -125,21 +122,9 @@ static inline void set_pcppage_migratetype(struct page *page, int migratetype)
 static void __free_pages_ok(struct page *page, unsigned int order,
 			    fpi_t fpi_flags);
 
-int sysctl_lowmem_reserve_ratio[MAX_NR_ZONES] = {
-	[ZONE_NORMAL] = 32,
-	[ZONE_MOVABLE] = 0,
-};
-
 static char * const zone_names[MAX_NR_ZONES] = {
 	 "Normal",
 	 "Movable",
-};
-
-const char * const migratetype_names[MIGRATE_TYPES] = {
-	"Unmovable",
-	"Movable",
-	"Reclaimable",
-	"HighAtomic",
 };
 
 compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS] = {
@@ -149,7 +134,6 @@ compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS] = {
 
 int min_free_kbytes = 1024;
 int user_min_free_kbytes = -1;
-int watermark_boost_factor __read_mostly = 15000;
 int watermark_scale_factor = 10;
 
 static unsigned long nr_kernel_pages __initdata;
@@ -2644,21 +2628,6 @@ int min_free_kbytes_sysctl_handler(struct ctl_table *table, int write,
 
 int watermark_scale_factor_sysctl_handler(struct ctl_table *table, int write,
 		void *buffer, size_t *length, loff_t *ppos)
-{
-	/* Stub: minimal sysctl handler */
-	return proc_dointvec_minmax(table, write, buffer, length, ppos);
-}
-
-int lowmem_reserve_ratio_sysctl_handler(struct ctl_table *table, int write,
-		void *buffer, size_t *length, loff_t *ppos)
-{
-	/* Stub: minimal sysctl handler */
-	proc_dointvec_minmax(table, write, buffer, length, ppos);
-	return 0;
-}
-
-int percpu_pagelist_high_fraction_sysctl_handler(struct ctl_table *table,
-		int write, void *buffer, size_t *length, loff_t *ppos)
 {
 	/* Stub: minimal sysctl handler */
 	return proc_dointvec_minmax(table, write, buffer, length, ppos);

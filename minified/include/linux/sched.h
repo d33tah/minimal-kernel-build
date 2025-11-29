@@ -776,23 +776,18 @@ static inline void release_user_cpus_ptr(struct task_struct *p)
 	WARN_ON(p->user_cpus_ptr);
 }
 
-extern int yield_to(struct task_struct *p, bool preempt);
 extern void set_user_nice(struct task_struct *p, long nice);
 extern int task_prio(const struct task_struct *p);
 
- 
 static inline int task_nice(const struct task_struct *p)
 {
 	return PRIO_TO_NICE((p)->static_prio);
 }
 
-extern int can_nice(const struct task_struct *p, const int nice);
-extern int task_curr(const struct task_struct *p);
 extern int idle_cpu(int cpu);
 extern int sched_setscheduler(struct task_struct *, int, const struct sched_param *);
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
 extern void sched_set_fifo(struct task_struct *p);
-extern void sched_set_fifo_low(struct task_struct *p);
 extern struct task_struct *idle_task(int cpu);
 
  

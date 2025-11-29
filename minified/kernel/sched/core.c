@@ -434,11 +434,6 @@ static inline int normal_prio(struct task_struct *p)
 	return __normal_prio(p->policy, p->rt_priority, PRIO_TO_NICE(p->static_prio));
 }
 
-inline int task_curr(const struct task_struct *p)
-{
-	return cpu_curr(task_cpu(p)) == p;
-}
-
 static inline void check_class_changed(struct rq *rq, struct task_struct *p,
 				       const struct sched_class *prev_class,
 				       int oldprio)
@@ -1342,7 +1337,6 @@ static void __setscheduler_prio(struct task_struct *p, int prio)
 
 /* Stub: set_user_nice not used in minimal kernel */
 void set_user_nice(struct task_struct *p, long nice) { }
-int can_nice(const struct task_struct *p, const int nice) { return 0; }
 
 #ifdef __ARCH_WANT_SYS_NICE
 
@@ -1529,9 +1523,6 @@ void sched_set_fifo(struct task_struct *p)
 	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
 }
 
-/* Stub: sched_set_fifo_low not used in minimal kernel */
-void sched_set_fifo_low(struct task_struct *p) { }
-
 SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param __user *, param)
 {
 	/* Stub: sched_setscheduler not needed for minimal kernel */
@@ -1690,13 +1681,6 @@ void __sched yield(void)
 {
 	set_current_state(TASK_RUNNING);
 	do_sched_yield();
-}
-
-int __sched yield_to(struct task_struct *p, bool preempt)
-{
-	/* Simplified: just yield CPU, no special priority boosting */
-	yield();
-	return 0;
 }
 
 int io_schedule_prepare(void)

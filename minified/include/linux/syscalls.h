@@ -225,12 +225,8 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 			      unsigned long prot, unsigned long flags,
 			      unsigned long fd, unsigned long pgoff);
 ssize_t ksys_readahead(int fd, loff_t offset, size_t count);
-int ksys_ipc(unsigned int call, int first, unsigned long second,
-	unsigned long third, void __user * ptr, long fifth);
-int compat_ksys_ipc(u32 call, int first, int second,
-	u32 third, u32 ptr, u32 fifth);
+/* ksys_ipc and compat_ksys_ipc removed - unused */
 
- 
 extern int do_fchownat(int dfd, const char __user *filename, uid_t user,
 		       gid_t group, int flag);
 
@@ -271,27 +267,7 @@ static inline unsigned int ksys_personality(unsigned int personality)
 	return old;
 }
 
- 
-long ksys_semtimedop(int semid, struct sembuf __user *tsops,
-		     unsigned int nsops,
-		     const struct __kernel_timespec __user *timeout);
-long ksys_semget(key_t key, int nsems, int semflg);
-long ksys_old_semctl(int semid, int semnum, int cmd, unsigned long arg);
-long ksys_msgget(key_t key, int msgflg);
-long ksys_old_msgctl(int msqid, int cmd, struct msqid_ds __user *buf);
-long ksys_msgrcv(int msqid, struct msgbuf __user *msgp, size_t msgsz,
-		 long msgtyp, int msgflg);
-long ksys_msgsnd(int msqid, struct msgbuf __user *msgp, size_t msgsz,
-		 int msgflg);
-long ksys_shmget(key_t key, size_t size, int shmflg);
-long ksys_shmdt(char __user *shmaddr);
-long ksys_old_shmctl(int shmid, int cmd, struct shmid_ds __user *buf);
-long compat_ksys_semtimedop(int semid, struct sembuf __user *tsems,
-			    unsigned int nsops,
-			    const struct old_timespec32 __user *timeout);
-long __do_semtimedop(int semid, struct sembuf *tsems, unsigned int nsops,
-		     const struct timespec64 *timeout,
-		     struct ipc_namespace *ns);
+/* IPC ksys_* declarations removed - unused */
 
 int __sys_getsockopt(int fd, int level, int optname, char __user *optval,
 		int __user *optlen);

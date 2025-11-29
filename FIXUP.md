@@ -1,3 +1,30 @@
+--- 2025-11-29 03:51 ---
+SESSION PROGRESS - XZ library removal
+
+**Current LOC:**
+- WITHOUT scripts/: 195,736 LOC
+- Reduction this session: ~2,077 LOC (from 197,813)
+
+**Commits this session:**
+1. cfa6e0c9 - Remove unused XZ decompression library (1,898 LOC)
+   - Removed lib/xz/*.c files (not compiled since CONFIG_DECOMPRESS_XZ not set)
+   - Removed lib/xz/*.h private headers
+   - Removed include/linux/xz.h
+   - Kept lib/xz/Kconfig (needed by build system)
+2. d48dc14e - Remove unused decompress_unxz.c (179 LOC)
+
+**Build:** PASSES
+**make vm:** PASSES, prints "Hello, World!"
+**Binary size:** 245KB
+
+**Key insight:** XZ source was NOT compiled (CONFIG_DECOMPRESS_XZ=n) but
+was still present. The lib/xz/Kconfig is required by Kconfig "source" but
+the actual .c and .h files can be safely removed.
+
+**Next opportunities being investigated:**
+- Looking for other disabled CONFIG options with uncompiled source files
+- All headers found to be transitively included (no orphans)
+
 --- 2025-11-29 03:06 ---
 SESSION SUMMARY
 

@@ -29,11 +29,6 @@ extern u64 uevent_seqnum;
 enum kobject_action {
 	KOBJ_ADD,
 	KOBJ_REMOVE,
-	KOBJ_CHANGE,
-	KOBJ_MOVE,
-	KOBJ_ONLINE,
-	KOBJ_OFFLINE,
-	KOBJ_BIND,
 	KOBJ_UNBIND,
 };
 

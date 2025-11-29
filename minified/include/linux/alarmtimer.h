@@ -10,14 +10,6 @@ struct rtc_device;
 
 enum alarmtimer_type {
 	ALARM_REALTIME,
-	ALARM_BOOTTIME,
-
-	 
-	ALARM_NUMTYPE,
-
-	 
-	ALARM_REALTIME_FREEZER,
-	ALARM_BOOTTIME_FREEZER,
 };
 
 enum alarmtimer_restart {

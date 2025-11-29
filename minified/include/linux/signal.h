@@ -37,17 +37,6 @@ int copy_siginfo_from_user(kernel_siginfo_t *to, const siginfo_t __user *from);
 
 enum siginfo_layout {
 	SIL_KILL,
-	SIL_TIMER,
-	SIL_POLL,
-	SIL_FAULT,
-	SIL_FAULT_TRAPNO,
-	SIL_FAULT_MCEERR,
-	SIL_FAULT_BNDERR,
-	SIL_FAULT_PKUERR,
-	SIL_FAULT_PERF_EVENT,
-	SIL_CHLD,
-	SIL_RT,
-	SIL_SYS,
 };
 
 enum siginfo_layout siginfo_layout(unsigned sig, int si_code);

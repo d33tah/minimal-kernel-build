@@ -230,11 +230,6 @@ struct device_dma_parameters {
  
 enum device_link_state {
 	DL_STATE_NONE = -1,
-	DL_STATE_DORMANT = 0,
-	DL_STATE_AVAILABLE,
-	DL_STATE_CONSUMER_PROBE,
-	DL_STATE_ACTIVE,
-	DL_STATE_SUPPLIER_UNBIND,
 };
 
  
@@ -252,16 +247,11 @@ enum device_link_state {
 enum dl_dev_state {
 	DL_DEV_NO_DRIVER = 0,
 	DL_DEV_PROBING,
-	DL_DEV_DRIVER_BOUND,
-	DL_DEV_UNBINDING,
 };
 
  
 enum device_removable {
-	DEVICE_REMOVABLE_NOT_SUPPORTED = 0,  
-	DEVICE_REMOVABLE_UNKNOWN,
-	DEVICE_FIXED,
-	DEVICE_REMOVABLE,
+	DEVICE_REMOVABLE_NOT_SUPPORTED = 0,
 };
 
  
@@ -279,26 +269,16 @@ struct dev_msi_info {
  
 enum device_physical_location_panel {
 	DEVICE_PANEL_TOP,
-	DEVICE_PANEL_BOTTOM,
-	DEVICE_PANEL_LEFT,
-	DEVICE_PANEL_RIGHT,
-	DEVICE_PANEL_FRONT,
-	DEVICE_PANEL_BACK,
-	DEVICE_PANEL_UNKNOWN,
 };
 
  
 enum device_physical_location_vertical_position {
 	DEVICE_VERT_POS_UPPER,
-	DEVICE_VERT_POS_CENTER,
-	DEVICE_VERT_POS_LOWER,
 };
 
  
 enum device_physical_location_horizontal_position {
 	DEVICE_HORI_POS_LEFT,
-	DEVICE_HORI_POS_CENTER,
-	DEVICE_HORI_POS_RIGHT,
 };
 
  

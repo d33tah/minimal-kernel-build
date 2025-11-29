@@ -16,7 +16,6 @@ struct iomap;
 
 enum dax_access_mode {
 	DAX_ACCESS,
-	DAX_RECOVERY_WRITE,
 };
 
 struct dax_operations {

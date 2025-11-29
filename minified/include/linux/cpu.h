@@ -127,10 +127,6 @@ static inline void play_idle(unsigned long duration_us)
 static inline void cpuhp_report_idle_dead(void) { }
 
 enum cpuhp_smt_control {
-	CPU_SMT_ENABLED,
-	CPU_SMT_DISABLED,
-	CPU_SMT_FORCE_DISABLED,
-	CPU_SMT_NOT_SUPPORTED,
 	CPU_SMT_NOT_IMPLEMENTED,
 };
 

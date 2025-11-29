@@ -1,5 +1,13 @@
 # Doubts and Notes
 
+## 2025-11-29 11:07
+
+**Unable to ping @d33tah via CLI:**
+- gh CLI is installed but not authenticated (needs `gh auth login`)
+- glab is configured for gitlab.profound.net, not GitHub
+- PR is already non-draft, CI passing
+- @d33tah can review PR #10 at: https://github.com/d33tah/minimal-kernel-build/pull/10
+
 ## 2025-11-29 11:05
 
 **CI Verified after 9 min sleep:**

@@ -27,12 +27,7 @@ struct fwnode_handle {
 	u8 flags;
 };
 
-struct fwnode_link {
-	struct fwnode_handle *supplier;
-	struct list_head s_hook;
-	struct fwnode_handle *consumer;
-	struct list_head c_hook;
-};
+struct fwnode_link;
 
  
 struct fwnode_endpoint {

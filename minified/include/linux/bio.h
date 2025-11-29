@@ -105,15 +105,7 @@ static inline unsigned bio_segments(struct bio *bio)
 
 
  
-struct folio_iter {
-	struct folio *folio;
-	size_t offset;
-	size_t length;
-	 
-	struct folio *_next;
-	size_t _seg_count;
-	int _i;
-};
+struct folio_iter;
 
 enum bip_flags { BIP_LAST };
 
@@ -208,83 +200,12 @@ static inline void bio_set_dev(struct bio *bio, struct block_device *bdev)
 	bio_associate_blkg(bio);
 }
 
- 
 struct bio_list {
 	struct bio *head;
 	struct bio *tail;
 };
 
-static inline int bio_list_empty(const struct bio_list *bl)
-{
-	return bl->head == NULL;
-}
-
-static inline void bio_list_init(struct bio_list *bl)
-{
-	bl->head = bl->tail = NULL;
-}
-
 #define BIO_EMPTY_LIST	{ NULL, NULL }
-
-#define bio_list_for_each(bio, bl) \
-	for (bio = (bl)->head; bio; bio = bio->bi_next)
-
-static inline void bio_list_add(struct bio_list *bl, struct bio *bio)
-{
-	bio->bi_next = NULL;
-
-	if (bl->tail)
-		bl->tail->bi_next = bio;
-	else
-		bl->head = bio;
-
-	bl->tail = bio;
-}
-
-static inline void bio_list_add_head(struct bio_list *bl, struct bio *bio)
-{
-	bio->bi_next = bl->head;
-
-	bl->head = bio;
-
-	if (!bl->tail)
-		bl->tail = bio;
-}
-
-static inline void bio_list_merge(struct bio_list *bl, struct bio_list *bl2)
-{
-	if (!bl2->head)
-		return;
-
-	if (bl->tail)
-		bl->tail->bi_next = bl2->head;
-	else
-		bl->head = bl2->head;
-
-	bl->tail = bl2->tail;
-}
-
-static inline struct bio *bio_list_pop(struct bio_list *bl)
-{
-	struct bio *bio = bl->head;
-
-	if (bio) {
-		bl->head = bl->head->bi_next;
-		if (!bl->head)
-			bl->tail = NULL;
-
-		bio->bi_next = NULL;
-	}
-
-	return bio;
-}
-
-static inline void bio_inc_remaining(struct bio *bio)
-{
-	bio_set_flag(bio, BIO_CHAIN);
-	smp_mb__before_atomic();
-	atomic_inc(&bio->__bi_remaining);
-}
 
  
 #define BIO_POOL_SIZE 2

@@ -1,3 +1,25 @@
+--- 2025-11-29 06:38 ---
+PROGRESS: Removed more unused files
+
+**Commits this session:**
+1. 0496c7e3 - Remove unused x86 lib files: checksum_32.S (444 LOC), strstr_32.c (32 LOC)
+2. 3b0d4bfb - Remove unused buildid.c (32 LOC)
+
+**Current LOC:** ~196,260 (was 196,621 - reduced by ~361 lines)
+**Build:** PASSES
+**make vm:** PASSES, prints "Hello, World!"
+**Binary size:** 245KB
+
+**Attempted but not removable:**
+- string_32.c provides memchr which is required
+- flex_proportions.c provides fprop_local_destroy_percpu which is required (despite not showing in nm)
+
+**Analysis:**
+- LTO (Link Time Optimization) makes nm unreliable for detecting unused code
+- Most drivers/base, lib, and kernel code is actually used
+- Platform bus, devres, property, RTC code all needed
+- vdso, TTY/VT, misc, mem code all needed
+
 --- 2025-11-29 06:30 ---
 PROGRESS: Removed unused x86 lib files
 

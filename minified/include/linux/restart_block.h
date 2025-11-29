@@ -14,7 +14,6 @@ struct pollfd;
 enum timespec_type {
 	TT_NONE		= 0,
 	TT_NATIVE	= 1,
-	TT_COMPAT	= 2,
 };
 
  

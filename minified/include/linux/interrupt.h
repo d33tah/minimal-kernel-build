@@ -112,9 +112,6 @@ request_percpu_nmi(unsigned int irq, irq_handler_t handler,
 extern const void *free_irq(unsigned int, void *);
 extern void free_percpu_irq(unsigned int, void __percpu *);
 
-extern const void *free_nmi(unsigned int irq, void *dev_id);
-extern void free_percpu_nmi(unsigned int irq, void __percpu *percpu_dev_id);
-
 struct device;
 
 extern int __must_check
@@ -138,21 +135,10 @@ extern void disable_irq(unsigned int irq);
 extern void disable_percpu_irq(unsigned int irq);
 extern void enable_irq(unsigned int irq);
 extern void enable_percpu_irq(unsigned int irq, unsigned int type);
-extern bool irq_percpu_is_enabled(unsigned int irq);
 extern void irq_wake_thread(unsigned int irq, void *dev_id);
-
-extern void disable_nmi_nosync(unsigned int irq);
 extern void disable_percpu_nmi(unsigned int irq);
-extern void enable_nmi(unsigned int irq);
 extern void enable_percpu_nmi(unsigned int irq, unsigned int type);
-extern int prepare_percpu_nmi(unsigned int irq);
-extern void teardown_percpu_nmi(unsigned int irq);
 
-extern int irq_inject_interrupt(unsigned int irq);
-
- 
-extern void suspend_device_irqs(void);
-extern void resume_device_irqs(void);
 extern void rearm_wake_irq(unsigned int irq);
 
  

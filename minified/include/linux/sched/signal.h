@@ -159,7 +159,6 @@ static inline void signal_set_stop_flags(struct signal_struct *sig,
 	sig->flags = (sig->flags & ~SIGNAL_STOP_MASK) | flags;
 }
 
-extern void flush_signals(struct task_struct *);
 extern void ignore_signals(struct task_struct *);
 extern void flush_signal_handlers(struct task_struct *, int force_default);
 extern int dequeue_signal(struct task_struct *task, sigset_t *mask,
@@ -198,8 +197,6 @@ extern void force_sigsegv(int sig);
 extern int force_sig_info(struct kernel_siginfo *);
 extern int __kill_pgrp_info(int sig, struct kernel_siginfo *info, struct pid *pgrp);
 extern int kill_pid_info(int sig, struct kernel_siginfo *info, struct pid *pid);
-extern int kill_pid_usb_asyncio(int sig, int errno, sigval_t addr, struct pid *,
-				const struct cred *);
 extern int kill_pgrp(struct pid *pid, int sig, int priv);
 extern int kill_pid(struct pid *pid, int sig, int priv);
 extern __must_check bool do_notify_parent(struct task_struct *, int);
@@ -209,9 +206,6 @@ extern void force_fatal_sig(int);
 extern void force_exit_sig(int);
 extern int send_sig(int, struct task_struct *, int);
 extern int zap_other_threads(struct task_struct *p);
-extern struct sigqueue *sigqueue_alloc(void);
-extern void sigqueue_free(struct sigqueue *);
-extern int send_sigqueue(struct sigqueue *, struct pid *, enum pid_type);
 extern int do_sigaction(int, struct k_sigaction *, struct k_sigaction *);
 
 static inline void clear_notify_signal(void)
@@ -366,8 +360,6 @@ static inline void restore_saved_sigmask(void)
 		__set_current_blocked(&current->saved_sigmask);
 }
 
-extern int set_user_sigmask(const sigset_t __user *umask, size_t sigsetsize);
-
 static inline void restore_saved_sigmask_unless(bool interrupted)
 {
 	if (interrupted)
@@ -432,7 +424,6 @@ static inline unsigned long sigsp(unsigned long sp, struct ksignal *ksig)
 }
 
 extern void __cleanup_sighand(struct sighand_struct *);
-extern void flush_itimer_signals(void);
 
 #define tasklist_empty() \
 	list_empty(&init_task.tasks)

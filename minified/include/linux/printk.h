@@ -10,7 +10,6 @@
 
 
 extern const char linux_banner[];
-extern const char linux_proc_banner[];
 
 extern int oops_in_progress;	 
 
@@ -347,16 +346,11 @@ do {									\
 	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
-extern const struct file_operations kmsg_fops;
-
 enum {
 	DUMP_PREFIX_NONE,
 	DUMP_PREFIX_ADDRESS,
 	DUMP_PREFIX_OFFSET
 };
-extern int hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
-			      int groupsize, char *linebuf, size_t linebuflen,
-			      bool ascii);
 static inline void print_hex_dump(const char *level, const char *prefix_str,
 				  int prefix_type, int rowsize, int groupsize,
 				  const void *buf, size_t len, bool ascii)

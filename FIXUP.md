@@ -31,7 +31,14 @@ NEW SESSION: Continue aggressive LOC reduction
 - Removed unused externs from dcache.h (~10 LOC): d_instantiate_unique, d_instantiate_anon,
   d_add_ci, d_exact_alias, d_find_any_alias, d_obtain_alias, d_obtain_root, d_find_alias,
   d_prune_aliases, d_find_alias_rcu
-- Current LOC: 180,595 (reduced by 52 LOC from session start)
+- Committed first batch: b1ca00ea (pushed)
+- Removed unused externs from printk.h (~5 LOC): linux_proc_banner, kmsg_fops, hex_dump_to_buffer
+- Removed unused externs from interrupt.h (~11 LOC): free_nmi, free_percpu_nmi, irq_percpu_is_enabled,
+  disable_nmi_nosync, enable_nmi, prepare_percpu_nmi, teardown_percpu_nmi, irq_inject_interrupt,
+  suspend_device_irqs, resume_device_irqs
+- Removed unused externs from sched/signal.h (~7 LOC): flush_signals, kill_pid_usb_asyncio,
+  sigqueue_alloc, sigqueue_free, send_sigqueue, set_user_sigmask, flush_itimer_signals
+- Final LOC: 180,572 (reduced by 75 LOC from session start)
 
 ---
 

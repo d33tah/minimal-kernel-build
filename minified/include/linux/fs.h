@@ -118,15 +118,8 @@ typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
 #define FMODE_EXCL		((__force fmode_t)0x80)
 
 #define FMODE_WRITE_IOCTL	((__force fmode_t)0x100)
-
-#define FMODE_32BITHASH         ((__force fmode_t)0x200)
-
-#define FMODE_64BITHASH         ((__force fmode_t)0x400)
-
+/* FMODE_32BITHASH, FMODE_64BITHASH, FMODE_RANDOM removed - unused */
 #define FMODE_NOCMTIME		((__force fmode_t)0x800)
-
-#define FMODE_RANDOM		((__force fmode_t)0x1000)
-
 #define FMODE_UNSIGNED_OFFSET	((__force fmode_t)0x2000)
 
 #define FMODE_PATH		((__force fmode_t)0x4000)

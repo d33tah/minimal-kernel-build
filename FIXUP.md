@@ -38,7 +38,11 @@ NEW SESSION: Continue aggressive LOC reduction
   suspend_device_irqs, resume_device_irqs
 - Removed unused externs from sched/signal.h (~7 LOC): flush_signals, kill_pid_usb_asyncio,
   sigqueue_alloc, sigqueue_free, send_sigqueue, set_user_sigmask, flush_itimer_signals
-- Final LOC: 180,572 (reduced by 75 LOC from session start)
+- Committed second batch: 27a083e1 (pushed)
+- Removed unused externs from kernel.h (~6 LOC): num_to_str, func_ptr_is_kernel_text,
+  hex2bin, bin2hex
+- Removed unused externs from timer.h (~3 LOC): mod_timer_pending, timer_reduce, try_to_del_timer_sync
+- Final LOC: 180,564 (reduced by 83 LOC from session start)
 
 ---
 

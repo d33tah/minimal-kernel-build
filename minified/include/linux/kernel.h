@@ -88,11 +88,6 @@ static inline void might_fault(void) { }
 
 void do_exit(long error_code) __noreturn;
 
-extern int num_to_str(char *buf, int size,
-		      unsigned long long num, unsigned int width);
-
- 
-
 extern __printf(2, 3) int sprintf(char *buf, const char * fmt, ...);
 extern __printf(2, 0) int vsprintf(char *buf, const char *, va_list);
 extern __printf(3, 4)
@@ -126,7 +121,6 @@ extern char *next_arg(char *args, char **param, char **val);
 extern int core_kernel_text(unsigned long addr);
 extern int __kernel_text_address(unsigned long addr);
 extern int kernel_text_address(unsigned long addr);
-extern int func_ptr_is_kernel_text(void *ptr);
 
 extern void bust_spinlocks(int yes);
 
@@ -169,8 +163,6 @@ static inline char *hex_byte_pack_upper(char *buf, u8 byte)
 }
 
 extern int hex_to_bin(unsigned char ch);
-extern int __must_check hex2bin(u8 *dst, const char *src, size_t count);
-extern char *bin2hex(char *dst, const void *src, size_t count);
 
 bool mac_pton(const char *s, u8 *mac);
 

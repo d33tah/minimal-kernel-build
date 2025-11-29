@@ -245,19 +245,6 @@ int kobject_init_and_add(struct kobject *kobj, const struct kobj_type *ktype,
 }
 
  
-int kobject_rename(struct kobject *kobj, const char *new_name)
-{
-	/* Stub: kobject rename not needed for minimal kernel */
-	return -ENOSYS;
-}
-
- 
-int kobject_move(struct kobject *kobj, struct kobject *new_parent)
-{
-	/* Stub: kobject move not needed for minimal kernel */
-	return -ENOSYS;
-}
-
 static void __kobject_del(struct kobject *kobj)
 {
 	struct kernfs_node *sd;

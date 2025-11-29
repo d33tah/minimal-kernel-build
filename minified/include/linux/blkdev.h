@@ -57,12 +57,7 @@ extern struct class block_class;
 
 #define PARTITION_META_INFO_VOLNAMELTH	64
  
-#define PARTITION_META_INFO_UUIDLTH	(UUID_STRING_LEN + 1)
-
-struct partition_meta_info {
-	char uuid[PARTITION_META_INFO_UUIDLTH];
-	u8 volname[PARTITION_META_INFO_VOLNAMELTH];
-};
+struct partition_meta_info;
 
 /* Unused disk/genhd flags - reduced for minimal kernel */
 enum { GENHD_FL_LAST };

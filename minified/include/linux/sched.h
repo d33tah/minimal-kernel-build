@@ -194,28 +194,7 @@ struct prev_cputime {
 	raw_spinlock_t			lock;
 };
 
-enum vtime_state {
-	 
-	VTIME_INACTIVE = 0,
-	 
-	VTIME_IDLE,
-	 
-	VTIME_SYS,
-	 
-	VTIME_USER,
-	 
-	VTIME_GUEST,
-};
-
-struct vtime {
-	seqcount_t		seqcount;
-	unsigned long long	starttime;
-	enum vtime_state	state;
-	unsigned int		cpu;
-	u64			utime;
-	u64			stime;
-	u64			gtime;
-};
+/* vtime structs removed - not used */
 
  
 enum uclamp_id {

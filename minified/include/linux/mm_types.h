@@ -453,14 +453,7 @@ struct vm_special_mapping {
 		     struct vm_area_struct *new_vma);
 };
 
-enum tlb_flush_reason {
-	TLB_FLUSH_ON_TASK_SWITCH,
-	TLB_REMOTE_SHOOTDOWN,
-	TLB_LOCAL_SHOOTDOWN,
-	TLB_LOCAL_MM_SHOOTDOWN,
-	TLB_REMOTE_SEND_IPI,
-	NR_TLB_FLUSH_REASONS,
-};
+enum tlb_flush_reason { NR_TLB_FLUSH_REASONS };
 
   
 typedef struct {

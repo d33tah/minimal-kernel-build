@@ -1,5 +1,19 @@
 # Doubts and Notes
 
+## 2025-11-29 11:05
+
+**CI Verified after 9 min sleep:**
+- Docker Image CI: succeeded (3m 7s)
+- PR #10: Open (not draft), title: "400kb 200k loc goal #10"
+- Build PASSES, make vm prints "Hello, World!"
+
+**Status:**
+- PR is already non-draft and CI is passing
+- glab cannot ping on GitHub (configured for gitlab.profound.net)
+- Need GitHub CLI (gh) to interact with PR, but not available
+
+**Ready for @d33tah review**
+
 ## 2025-11-29 10:55
 
 **Session update - Further enum reduction:**

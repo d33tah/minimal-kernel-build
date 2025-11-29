@@ -120,22 +120,7 @@ struct sctp_association;
 extern unsigned long mmap_min_addr;
 extern unsigned long dac_mmap_min_addr;
 
- 
- 
-#define LSM_SETID_ID	1
-
- 
-#define LSM_SETID_RE	2
-
- 
-#define LSM_SETID_RES	4
-
- 
-#define LSM_SETID_FS	8
-
- 
-#define LSM_PRLIMIT_READ  1
-#define LSM_PRLIMIT_WRITE 2
+/* LSM_SETID_* and LSM_PRLIMIT_* removed - unused in minimal kernel */
 
  
 struct sched_param;

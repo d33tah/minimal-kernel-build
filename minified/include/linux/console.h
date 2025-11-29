@@ -160,11 +160,7 @@ static inline void vcs_remove_sysfs(int index) { }
  
 extern atomic_t ignore_console_lock_warning;
 
- 
-#define VESA_NO_BLANKING        0
-#define VESA_VSYNC_SUSPEND      1
-#define VESA_HSYNC_SUSPEND      2
-#define VESA_POWERDOWN          3
+/* VESA_* defines removed - unused in minimal kernel */
 
 extern void console_init(void);
 

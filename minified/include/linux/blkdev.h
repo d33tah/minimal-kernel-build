@@ -39,9 +39,7 @@ struct blk_queue_stats;
 struct blk_stat_callback;
 struct blk_crypto_profile;
 
-extern const struct device_type disk_type;
-extern struct device_type part_type;
-extern struct class block_class;
+/* disk_type, part_type, block_class removed - unused */
 
  
 #define BLK_MQ_POLL_STATS_BKTS 16
@@ -283,11 +281,7 @@ int blkdev_issue_secure_erase(struct block_device *bdev, sector_t sector,
 #define BLKDEV_ZERO_NOUNMAP	(1 << 0)   
 #define BLKDEV_ZERO_NOFALLBACK	(1 << 1)   
 
-extern int __blkdev_issue_zeroout(struct block_device *bdev, sector_t sector,
-		sector_t nr_sects, gfp_t gfp_mask, struct bio **biop,
-		unsigned flags);
-extern int blkdev_issue_zeroout(struct block_device *bdev, sector_t sector,
-		sector_t nr_sects, gfp_t gfp_mask, unsigned flags);
+/* __blkdev_issue_zeroout, blkdev_issue_zeroout removed - unused */
 
 enum blk_default_limits { BLK_DEFAULT_LIMITS_LAST };
 

@@ -1,12 +1,12 @@
---- 2025-11-29 17:59 ---
-SESSION PROGRESS: Struct elimination continues
+--- 2025-11-29 18:10 ---
+SESSION COMPLETE: Struct and extern elimination
 
 **Progress this session:**
 - Started: 183,960 LOC
-- Current: 183,728 LOC
-- Total reduction: 232 LOC
+- Final: 183,692 LOC
+- Total reduction: 268 LOC
 
-**Commits made this session (4 total):**
+**Commits made this session (7 total):**
 1. fadeb010 - Reduce unused block device structs in blkdev.h (~231 LOC)
    - gendisk, queue_limits, request_queue, block_device_operations, io_comp_batch
 2. 9026414a - Reduce unused file lock structs in fs.h (~65 LOC)
@@ -14,17 +14,21 @@ SESSION PROGRESS: Struct elimination continues
 3. 1e93dbb2 - Reduce unused scheduler structs in sched.h (~18 LOC)
    - util_est, sched_avg
 4. ace37388 - Reduce unused rcu_work struct in workqueue.h (~6 LOC)
+5. 7fb4adb6 - Remove unused extern declarations from fs.h (~22 LOC)
+   - send_sigio, fasync_*, f_delown, f_getown, mount_bdev, etc.
+6. ceed0eaa - Remove unused memory failure code from mm.h (~15 LOC)
+   - memory_failure, soft_offline_page, shake_page, etc.
 
 **Strategy employed:**
-- Find struct definitions not used in C files
-- Convert to forward declarations (1 line instead of full body)
+- Find struct definitions not used in C files -> convert to forward declarations
+- Find extern function declarations not called in C files -> remove
 - Keep defines/enums that might be needed
 - Stub inline functions that access removed struct fields
 
 **Analysis findings:**
 - Many structs in mmzone.h (zone, lruvec, etc.) are used by inline functions
 - Most interrupt.h structs (irqaction, tasklet_struct, softirq_action) are used in C files
-- Continue searching for more unused structs in other headers
+- Continue searching for more unused structs/externs in other headers
 
 --- 2025-11-29 17:43 ---
 NEW SESSION: Continue aggressive LOC reduction

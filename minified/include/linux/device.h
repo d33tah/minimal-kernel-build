@@ -77,24 +77,6 @@ struct device_attribute {
 			 const char *buf, size_t count);
 };
 
-struct dev_ext_attribute {
-	struct device_attribute attr;
-	void *var;
-};
-
-ssize_t device_show_ulong(struct device *dev, struct device_attribute *attr,
-			  char *buf);
-ssize_t device_store_ulong(struct device *dev, struct device_attribute *attr,
-			   const char *buf, size_t count);
-ssize_t device_show_int(struct device *dev, struct device_attribute *attr,
-			char *buf);
-ssize_t device_store_int(struct device *dev, struct device_attribute *attr,
-			 const char *buf, size_t count);
-ssize_t device_show_bool(struct device *dev, struct device_attribute *attr,
-			char *buf);
-ssize_t device_store_bool(struct device *dev, struct device_attribute *attr,
-			 const char *buf, size_t count);
-
 #define DEVICE_ATTR(_name, _mode, _show, _store) \
 	struct device_attribute dev_attr_##_name = __ATTR(_name, _mode, _show, _store)
 #define DEVICE_ATTR_PREALLOC(_name, _mode, _show, _store) \
@@ -110,15 +92,6 @@ ssize_t device_store_bool(struct device *dev, struct device_attribute *attr,
 	struct device_attribute dev_attr_##_name = __ATTR_RO_MODE(_name, 0400)
 #define DEVICE_ATTR_WO(_name) \
 	struct device_attribute dev_attr_##_name = __ATTR_WO(_name)
-#define DEVICE_ULONG_ATTR(_name, _mode, _var) \
-	struct dev_ext_attribute dev_attr_##_name = \
-		{ __ATTR(_name, _mode, device_show_ulong, device_store_ulong), &(_var) }
-#define DEVICE_INT_ATTR(_name, _mode, _var) \
-	struct dev_ext_attribute dev_attr_##_name = \
-		{ __ATTR(_name, _mode, device_show_int, device_store_int), &(_var) }
-#define DEVICE_BOOL_ATTR(_name, _mode, _var) \
-	struct dev_ext_attribute dev_attr_##_name = \
-		{ __ATTR(_name, _mode, device_show_bool, device_store_bool), &(_var) }
 #define DEVICE_ATTR_IGNORE_LOCKDEP(_name, _mode, _show, _store) \
 	struct device_attribute dev_attr_##_name =		\
 		__ATTR_IGNORE_LOCKDEP(_name, _mode, _show, _store)
@@ -210,15 +183,6 @@ static inline int devm_add_action_or_reset(struct device *dev,
 
 	return ret;
 }
-
- 
-#define devm_alloc_percpu(dev, type)      \
-	((typeof(type) __percpu *)__devm_alloc_percpu((dev), sizeof(type), \
-						      __alignof__(type)))
-
-void __percpu *__devm_alloc_percpu(struct device *dev, size_t size,
-				   size_t align);
-void devm_free_percpu(struct device *dev, void __percpu *pdata);
 
 struct device_dma_parameters {
 	 

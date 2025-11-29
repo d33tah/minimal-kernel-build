@@ -412,49 +412,6 @@ static const struct sysfs_ops dev_sysfs_ops = {
 	.store	= dev_attr_store,
 };
 
-#define to_ext_attr(x) container_of(x, struct dev_ext_attribute, attr)
-
-/* --- 2025-11-25 00:35 --- Stubbed unused device attribute helpers */
-ssize_t device_store_ulong(struct device *dev,
-			   struct device_attribute *attr,
-			   const char *buf, size_t size)
-{
-	return size;
-}
-
-ssize_t device_show_ulong(struct device *dev,
-			  struct device_attribute *attr,
-			  char *buf)
-{
-	return 0;
-}
-
-ssize_t device_store_int(struct device *dev,
-			 struct device_attribute *attr,
-			 const char *buf, size_t size)
-{
-	return size;
-}
-
-ssize_t device_show_int(struct device *dev,
-			struct device_attribute *attr,
-			char *buf)
-{
-	return 0;
-}
-
-ssize_t device_store_bool(struct device *dev, struct device_attribute *attr,
-			  const char *buf, size_t size)
-{
-	return size;
-}
-
-ssize_t device_show_bool(struct device *dev, struct device_attribute *attr,
-			 char *buf)
-{
-	return 0;
-}
-
 static void device_release(struct kobject *kobj)
 {
 	struct device *dev = kobj_to_dev(kobj);

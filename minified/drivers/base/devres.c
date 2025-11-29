@@ -156,19 +156,6 @@ void devm_free_pages(struct device *dev, unsigned long addr)
 	free_pages(addr, 0);
 }
 
-void __percpu *__devm_alloc_percpu(struct device *dev, size_t size,
-				   size_t align)
-{
-	return __alloc_percpu(size, align);
-}
-
-void devm_free_percpu(struct device *dev, void __percpu *pdata)
-{
-	free_percpu(pdata);
-}
-
- 
-
 void *devm_krealloc(struct device *dev, void *ptr, size_t new_size, gfp_t gfp)
 {
 	return krealloc(ptr, new_size, gfp);

@@ -406,94 +406,26 @@ static inline void write_seqlock(seqlock_t *sl)
 	do_write_seqcount_begin(&sl->seqcount.seqcount);
 }
 
- 
+
 static inline void write_sequnlock(seqlock_t *sl)
 {
 	do_write_seqcount_end(&sl->seqcount.seqcount);
 	spin_unlock(&sl->lock);
 }
 
- 
-static inline void write_seqlock_bh(seqlock_t *sl)
-{
-	spin_lock_bh(&sl->lock);
-	do_write_seqcount_begin(&sl->seqcount.seqcount);
-}
 
- 
-static inline void write_sequnlock_bh(seqlock_t *sl)
-{
-	do_write_seqcount_end(&sl->seqcount.seqcount);
-	spin_unlock_bh(&sl->lock);
-}
-
- 
-static inline void write_seqlock_irq(seqlock_t *sl)
-{
-	spin_lock_irq(&sl->lock);
-	do_write_seqcount_begin(&sl->seqcount.seqcount);
-}
-
- 
-static inline void write_sequnlock_irq(seqlock_t *sl)
-{
-	do_write_seqcount_end(&sl->seqcount.seqcount);
-	spin_unlock_irq(&sl->lock);
-}
-
-static inline unsigned long __write_seqlock_irqsave(seqlock_t *sl)
-{
-	unsigned long flags;
-
-	spin_lock_irqsave(&sl->lock, flags);
-	do_write_seqcount_begin(&sl->seqcount.seqcount);
-	return flags;
-}
-
- 
-#define write_seqlock_irqsave(lock, flags)				\
-	do { flags = __write_seqlock_irqsave(lock); } while (0)
-
- 
-static inline void
-write_sequnlock_irqrestore(seqlock_t *sl, unsigned long flags)
-{
-	do_write_seqcount_end(&sl->seqcount.seqcount);
-	spin_unlock_irqrestore(&sl->lock, flags);
-}
-
- 
 static inline void read_seqlock_excl(seqlock_t *sl)
 {
 	spin_lock(&sl->lock);
 }
 
- 
+
 static inline void read_sequnlock_excl(seqlock_t *sl)
 {
 	spin_unlock(&sl->lock);
 }
 
-static inline unsigned long __read_seqlock_excl_irqsave(seqlock_t *sl)
-{
-	unsigned long flags;
 
-	spin_lock_irqsave(&sl->lock, flags);
-	return flags;
-}
-
- 
-#define read_seqlock_excl_irqsave(lock, flags)				\
-	do { flags = __read_seqlock_excl_irqsave(lock); } while (0)
-
- 
-static inline void
-read_sequnlock_excl_irqrestore(seqlock_t *sl, unsigned long flags)
-{
-	spin_unlock_irqrestore(&sl->lock, flags);
-}
-
- 
 static inline void read_seqbegin_or_lock(seqlock_t *lock, int *seq)
 {
 	if (!(*seq & 1))	 
@@ -508,32 +440,10 @@ static inline int need_seqretry(seqlock_t *lock, int seq)
 	return !(seq & 1) && read_seqretry(lock, seq);
 }
 
- 
+
 static inline void done_seqretry(seqlock_t *lock, int seq)
 {
 	if (seq & 1)
 		read_sequnlock_excl(lock);
-}
-
- 
-static inline unsigned long
-read_seqbegin_or_lock_irqsave(seqlock_t *lock, int *seq)
-{
-	unsigned long flags = 0;
-
-	if (!(*seq & 1))	 
-		*seq = read_seqbegin(lock);
-	else			 
-		read_seqlock_excl_irqsave(lock, flags);
-
-	return flags;
-}
-
- 
-static inline void
-done_seqretry_irqrestore(seqlock_t *lock, int seq, unsigned long flags)
-{
-	if (seq & 1)
-		read_sequnlock_excl_irqrestore(lock, flags);
 }
 #endif  

@@ -1,5 +1,27 @@
 # DOUBTS.md
 
+## 2025-11-29 02:10 - Session Update
+
+### New commits:
+- a6322ea6: Removed 99 LOC of unused variables/functions
+- 799bbde2, 76b4dab5, 4dec46cb: Documentation updates
+
+### Current LOC: 201,253
+- Kernel code (without scripts/): 186,274 LOC
+- The 1,253 LOC gap to 200K target is entirely from scripts/ (build tools)
+
+### CI Status: ✅ PASSED
+- All commits pass CI
+- make vm: PASSES, prints "Hello, World!"
+- Binary: 245KB
+
+### Doubts:
+1. Cannot ping @d33tah via GitHub - no API authentication
+2. PR #10 already not a draft, already ready for review
+3. glab configured for gitlab but project is on github
+
+---
+
 ## 2025-11-29 01:22 - FINAL STATUS - ALL GOALS ACHIEVED
 
 ### CI Status: ✅ PASSED

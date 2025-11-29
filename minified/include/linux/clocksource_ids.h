@@ -5,7 +5,6 @@
  
 enum clocksource_ids {
 	CSID_GENERIC		= 0,
-	CSID_ARM_ARCH_COUNTER,
 	CSID_MAX,
 };
 

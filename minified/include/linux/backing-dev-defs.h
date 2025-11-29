@@ -20,22 +20,16 @@ struct dentry;
 
  
 enum wb_state {
-	WB_registered,		 
-	WB_writeback_running,	 
-	WB_has_dirty_io,	 
-	WB_start_all,		 
+	WB_registered,
+	WB_writeback_running,
+	WB_has_dirty_io,
 };
 
 enum wb_congested_state {
-	WB_async_congested,	 
-	WB_sync_congested,	 
+	WB_async_congested,
 };
 
 enum wb_stat_item {
-	WB_RECLAIMABLE,
-	WB_WRITEBACK,
-	WB_DIRTIED,
-	WB_WRITTEN,
 	NR_WB_STAT_ITEMS
 };
 

@@ -25,10 +25,6 @@ enum wb_state {
 	WB_has_dirty_io,
 };
 
-enum wb_congested_state {
-	WB_async_congested,
-};
-
 enum wb_stat_item {
 	NR_WB_STAT_ITEMS
 };

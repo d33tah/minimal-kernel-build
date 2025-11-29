@@ -21,21 +21,11 @@ enum clock_event_state {
 	CLOCK_EVT_STATE_ONESHOT_STOPPED,
 };
 
- 
 # define CLOCK_EVT_FEAT_PERIODIC	0x000001
 # define CLOCK_EVT_FEAT_ONESHOT		0x000002
 # define CLOCK_EVT_FEAT_KTIME		0x000004
-
- 
 # define CLOCK_EVT_FEAT_C3STOP		0x000008
 # define CLOCK_EVT_FEAT_DUMMY		0x000010
-
- 
-# define CLOCK_EVT_FEAT_DYNIRQ		0x000020
-# define CLOCK_EVT_FEAT_PERCPU		0x000040
-
- 
-# define CLOCK_EVT_FEAT_HRTIMER		0x000080
 
  
 struct clock_event_device {

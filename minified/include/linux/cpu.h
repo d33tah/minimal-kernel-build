@@ -65,14 +65,6 @@ struct device *cpu_device_create(struct device *parent, void *drvdata,
 				 const struct attribute_group **groups,
 				 const char *fmt, ...);
 
- 
-#define CPU_ONLINE		0x0002  
-#define CPU_UP_PREPARE		0x0003  
-#define CPU_DEAD		0x0007  
-#define CPU_DEAD_FROZEN		0x0008  
-#define CPU_POST_DEAD		0x0009  
-#define CPU_BROKEN		0x000B  
-
 #define cpuhp_tasks_frozen	0
 
 static inline void cpu_maps_update_begin(void)

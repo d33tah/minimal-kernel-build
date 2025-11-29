@@ -29,10 +29,11 @@ endif
 
 lib-y := ctype.o string.o vsprintf.o cmdline.o \
 	 rbtree.o radix-tree.o timerqueue.o xarray.o \
-	 idr.o extable.o irq_regs.o argv_split.o \
+	 idr.o extable.o irq_regs.o \
 	 flex_proportions.o ratelimit.o \
 	 decompress.o kobject_uevent.o \
 	 siphash.o dec_and_lock.o
+	 # argv_split.o - Removed: not used
 	 # buildid.o - Removed: Not needed (stub functions)
 
 lib-$(CONFIG_PRINTK) += dump_stack.o

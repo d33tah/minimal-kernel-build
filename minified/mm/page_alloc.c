@@ -2445,14 +2445,6 @@ unsigned long __init find_min_pfn_with_active_regions(void)
 	return PHYS_PFN(memblock_start_of_DRAM());
 }
 
-
-
-
-bool __weak arch_has_descending_max_zone_pfns(void)
-{
-	return false;
-}
-
 void __init free_area_init(unsigned long *max_zone_pfn)
 {
 	unsigned long start_pfn, end_pfn;

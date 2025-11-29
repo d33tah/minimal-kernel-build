@@ -1139,26 +1139,6 @@ static inline int call_mmap(struct file *file, struct vm_area_struct *vma)
 
 extern ssize_t vfs_read(struct file *, char __user *, size_t, loff_t *);
 extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
-extern ssize_t vfs_copy_file_range(struct file *, loff_t , struct file *,
-				   loff_t, size_t, unsigned int);
-extern ssize_t generic_copy_file_range(struct file *file_in, loff_t pos_in,
-				       struct file *file_out, loff_t pos_out,
-				       size_t len, unsigned int flags);
-extern int generic_remap_file_range_prep(struct file *file_in, loff_t pos_in,
-					 struct file *file_out, loff_t pos_out,
-					 loff_t *count,
-					 unsigned int remap_flags);
-extern loff_t do_clone_file_range(struct file *file_in, loff_t pos_in,
-				  struct file *file_out, loff_t pos_out,
-				  loff_t len, unsigned int remap_flags);
-extern loff_t vfs_clone_file_range(struct file *file_in, loff_t pos_in,
-				   struct file *file_out, loff_t pos_out,
-				   loff_t len, unsigned int remap_flags);
-extern int vfs_dedupe_file_range(struct file *file,
-				 struct file_dedupe_range *same);
-extern loff_t vfs_dedupe_file_range_one(struct file *src_file, loff_t src_pos,
-					struct file *dst_file, loff_t dst_pos,
-					loff_t len, unsigned int remap_flags);
 
 struct super_operations {
    	struct inode *(*alloc_inode)(struct super_block *sb);

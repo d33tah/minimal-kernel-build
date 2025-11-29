@@ -621,56 +621,16 @@ SYSCALL_DEFINE4(sendfile64, int, out_fd, int, in_fd, loff_t __user *, offset, si
 	return -ENOSYS;
 }
 
-
- 
-
-ssize_t generic_copy_file_range(struct file *file_in, loff_t pos_in,
-				struct file *file_out, loff_t pos_out,
-				size_t len, unsigned int flags)
-{
-	/* Stub: generic_copy_file_range not needed for minimal kernel */
-	return -EOPNOTSUPP;
-}
-
-ssize_t vfs_copy_file_range(struct file *file_in, loff_t pos_in,
-			    struct file *file_out, loff_t pos_out,
-			    size_t len, unsigned int flags)
-{
-	/* Stub: vfs_copy_file_range not needed for minimal kernel */
-	return -EOPNOTSUPP;
-}
-
 SYSCALL_DEFINE6(copy_file_range, int, fd_in, loff_t __user *, off_in,
 		int, fd_out, loff_t __user *, off_out,
 		size_t, len, unsigned int, flags)
 {
-	/* Stubbed: copy_file_range not needed for minimal kernel */
 	return -ENOSYS;
 }
 
-/* Stub: generic_write_check_limits not used externally in minimal kernel */
-int generic_write_check_limits(struct file *file, loff_t pos, loff_t *count)
-{
-	return 0;
-}
-
-/* Stub: generic_write_checks_count not used externally in minimal kernel */
-int generic_write_checks_count(struct kiocb *iocb, loff_t *count)
-{
-	return 0;
-}
-
- 
 ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from)
 {
-	loff_t count = iov_iter_count(from);
-	int ret;
-
-	ret = generic_write_checks_count(iocb, &count);
-	if (ret)
-		return ret;
-
-	iov_iter_truncate(from, count);
+	iov_iter_truncate(from, iov_iter_count(from));
 	return iov_iter_count(from);
 }
 

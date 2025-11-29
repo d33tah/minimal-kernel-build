@@ -1869,21 +1869,6 @@ int install_special_mapping(struct mm_struct *mm,
 	return PTR_ERR_OR_ZERO(vma);
 }
 
-static DEFINE_MUTEX(mm_all_locks_mutex);
-
-int mm_take_all_locks(struct mm_struct *mm)
-{
-	/* Stub: mm_take_all_locks not needed for minimal kernel */
-	mutex_lock(&mm_all_locks_mutex);
-	return 0;
-}
-
-void mm_drop_all_locks(struct mm_struct *mm)
-{
-	/* Stub: mm_drop_all_locks not needed for minimal kernel */
-	mutex_unlock(&mm_all_locks_mutex);
-}
-
 void __init mmap_init(void)
 {
 	int ret;

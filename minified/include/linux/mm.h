@@ -1500,10 +1500,8 @@ extern void setup_per_cpu_pageset(void);
 extern int min_free_kbytes;
 extern int watermark_boost_factor;
 extern int watermark_scale_factor;
-extern bool arch_has_descending_max_zone_pfns(void);
 
 extern atomic_long_t mmap_pages_allocated;
-extern int nommu_shrink_inode_mappings(struct inode *, size_t, size_t);
 
 void vma_interval_tree_insert(struct vm_area_struct *node,
 			      struct rb_root_cached *root);
@@ -1576,9 +1574,6 @@ static inline int check_data_rlimit(unsigned long rlim,
 	return 0;
 }
 
-extern int mm_take_all_locks(struct mm_struct *mm);
-extern void mm_drop_all_locks(struct mm_struct *mm);
-
 extern int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);
 extern struct file *get_mm_exe_file(struct mm_struct *mm);
 
@@ -1611,7 +1606,6 @@ extern int __do_munmap(struct mm_struct *, unsigned long, size_t,
 		       struct list_head *uf, bool downgrade);
 extern int do_munmap(struct mm_struct *, unsigned long, size_t,
 		     struct list_head *uf);
-extern int do_madvise(struct mm_struct *mm, unsigned long start, size_t len_in, int behavior);
 
 extern int __mm_populate(unsigned long addr, unsigned long len,
 			 int ignore_errors);

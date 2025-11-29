@@ -28,74 +28,11 @@ enum mmu_notifier_event {
 
 #define MMU_NOTIFIER_RANGE_BLOCKABLE (1 << 0)
 
-struct mmu_notifier_ops {
-	 
-	void (*release)(struct mmu_notifier *subscription,
-			struct mm_struct *mm);
-
-	 
-	int (*clear_flush_young)(struct mmu_notifier *subscription,
-				 struct mm_struct *mm,
-				 unsigned long start,
-				 unsigned long end);
-
-	 
-	int (*clear_young)(struct mmu_notifier *subscription,
-			   struct mm_struct *mm,
-			   unsigned long start,
-			   unsigned long end);
-
-	 
-	int (*test_young)(struct mmu_notifier *subscription,
-			  struct mm_struct *mm,
-			  unsigned long address);
-
-	 
-	void (*change_pte)(struct mmu_notifier *subscription,
-			   struct mm_struct *mm,
-			   unsigned long address,
-			   pte_t pte);
-
-	 
-	int (*invalidate_range_start)(struct mmu_notifier *subscription,
-				      const struct mmu_notifier_range *range);
-	void (*invalidate_range_end)(struct mmu_notifier *subscription,
-				     const struct mmu_notifier_range *range);
-
-	 
-	void (*invalidate_range)(struct mmu_notifier *subscription,
-				 struct mm_struct *mm,
-				 unsigned long start,
-				 unsigned long end);
-
-	 
-	struct mmu_notifier *(*alloc_notifier)(struct mm_struct *mm);
-	void (*free_notifier)(struct mmu_notifier *subscription);
-};
-
- 
-struct mmu_notifier {
-	struct hlist_node hlist;
-	const struct mmu_notifier_ops *ops;
-	struct mm_struct *mm;
-	struct rcu_head rcu;
-	unsigned int users;
-};
-
- 
-struct mmu_interval_notifier_ops {
-	bool (*invalidate)(struct mmu_interval_notifier *interval_sub,
-			   const struct mmu_notifier_range *range,
-			   unsigned long cur_seq);
-};
-
-struct mmu_interval_notifier {
-	struct interval_tree_node interval_tree;
-	const struct mmu_interval_notifier_ops *ops;
-	struct mm_struct *mm;
-	struct hlist_node deferred_item;
-	unsigned long invalidate_seq;
-};
+/* mmu_notifier_ops, mmu_notifier, mmu_interval_notifier_ops, mmu_interval_notifier - not used in minimal kernel */
+struct mmu_notifier_ops;
+struct mmu_notifier;
+struct mmu_interval_notifier_ops;
+struct mmu_interval_notifier;
 
 
 struct mmu_notifier_range {

@@ -106,15 +106,7 @@ struct rtc_device {
 #define rtc_lock(d) mutex_lock(&d->ops_lock)
 #define rtc_unlock(d) mutex_unlock(&d->ops_lock)
 
- 
-#define RTC_TIMESTAMP_BEGIN_0000	-62167219200ULL  
-#define RTC_TIMESTAMP_BEGIN_1900	-2208988800LL  
-#define RTC_TIMESTAMP_BEGIN_2000	946684800LL  
-#define RTC_TIMESTAMP_END_2063		2966371199LL  
-#define RTC_TIMESTAMP_END_2079		3471292799LL  
-#define RTC_TIMESTAMP_END_2099		4102444799LL  
-#define RTC_TIMESTAMP_END_2199		7258118399LL  
-#define RTC_TIMESTAMP_END_9999		253402300799LL  
+/* RTC_TIMESTAMP_* defines - not used in minimal kernel */  
 
 extern struct rtc_device *devm_rtc_device_register(struct device *dev,
 					const char *name,

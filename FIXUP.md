@@ -1,10 +1,10 @@
---- 2025-11-29 12:42 ---
+--- 2025-11-29 12:46 ---
 SESSION IN PROGRESS: Continue LOC reduction
 
 **Status:**
 - Started: 214,087 LOC
-- Current: 211,697 LOC
-- Reduction so far: 2,390 LOC
+- Current: 211,660 LOC
+- Reduction so far: 2,427 LOC
 - Binary size: 245KB
 
 **Commits made so far:**
@@ -16,11 +16,13 @@ SESSION IN PROGRESS: Continue LOC reduction
 6. cd005827 - Remove unused defines from swiotlb.h and fs.h (6 LOC)
 7. 172edcac - Reduce unused node cache enums and struct (13 LOC)
 8. 1b508e91 - Reduce unused structs/enums in mmiotrace.h and io_uring.h (28 LOC)
+9. bf6c21d4 - Reduce unused hibernation struct and PM_* defines in suspend.h (18 LOC)
+10. 6a5a9eaf - Reduce unused logic_pio structs and enum in logic_pio.h (22 LOC)
 
 **Strategy working:**
 - Enum/define/struct reduction continues to be effective
 - Forward declarations replace unused struct definitions
-- Need about 11,697 more LOC to reach 200K target
+- Need about 11,660 more LOC to reach 200K target
 
 --- 2025-11-29 11:43 ---
 SESSION COMPLETE: Major reduction of unused code

@@ -197,17 +197,6 @@ static const struct attribute_group *cpu_root_attr_groups[] = {
 	NULL,
 };
 
-/* Stub: cpu_is_hotpluggable not used in minimal single-CPU kernel */
-bool cpu_is_hotpluggable(unsigned int cpu)
-{
-	return false;
-}
-
-
-
-
-/* Stub: CPU vulnerabilities sysfs attributes not needed for minimal kernel */
-
 void __init cpu_dev_init(void)
 {
 	if (subsys_system_register(&cpu_subsys, cpu_root_attr_groups))

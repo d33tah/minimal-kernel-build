@@ -319,16 +319,5 @@ static inline int num_node_state(enum node_states state)
 #define NODEMASK_FREE(m)			do {} while (0)
 #endif
 
- 
-struct nodemask_scratch {
-	nodemask_t	mask1;
-	nodemask_t	mask2;
-};
 
-#define NODEMASK_SCRATCH(x)						\
-			NODEMASK_ALLOC(struct nodemask_scratch, x,	\
-					GFP_KERNEL | __GFP_NORETRY)
-#define NODEMASK_SCRATCH_FREE(x)	NODEMASK_FREE(x)
-
-
-#endif  
+#endif

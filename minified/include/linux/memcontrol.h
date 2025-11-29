@@ -23,23 +23,14 @@ struct kmem_cache;
 
  
 enum memcg_stat_item {
-	MEMCG_SWAP = NR_VM_NODE_STAT_ITEMS,
-	MEMCG_SOCK,
-	MEMCG_PERCPU_B,
-	MEMCG_VMALLOC,
-	MEMCG_KMEM,
-	MEMCG_ZSWAP_B,
-	MEMCG_ZSWAPPED,
+	MEMCG_VMALLOC = NR_VM_NODE_STAT_ITEMS,
 	MEMCG_NR_STAT,
 };
 
 /* memcg_memory_event - reduced for minimal kernel */
 enum memcg_memory_event { MEMCG_NR_MEMORY_EVENTS };
 
-struct mem_cgroup_reclaim_cookie {
-	pg_data_t *pgdat;
-	unsigned int generation;
-};
+struct mem_cgroup_reclaim_cookie;
 
 
 #define MEM_CGROUP_ID_SHIFT	0

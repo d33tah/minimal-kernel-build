@@ -156,13 +156,7 @@ extern void resume_device_irqs(void);
 extern void rearm_wake_irq(unsigned int irq);
 
  
-struct irq_affinity_notify {
-	unsigned int irq;
-	struct kref kref;
-	struct work_struct work;
-	void (*notify)(struct irq_affinity_notify *, const cpumask_t *mask);
-	void (*release)(struct kref *ref);
-};
+struct irq_affinity_notify;
 
 #define	IRQ_AFFINITY_MAX_SETS  4
 

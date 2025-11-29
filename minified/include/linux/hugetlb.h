@@ -217,11 +217,6 @@ generic_hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
 
  
 enum hugetlb_page_flags {
-	HPG_restore_reserve = 0,
-	HPG_migratable,
-	HPG_temporary,
-	HPG_freed,
-	HPG_vmemmap_optimized,
 	__NR_HPAGEFLAGS,
 };
 

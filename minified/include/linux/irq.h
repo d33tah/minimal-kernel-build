@@ -464,10 +464,6 @@ struct irq_chip_generic {
  
 enum irq_gc_flags {
 	IRQ_GC_INIT_MASK_CACHE		= 1 << 0,
-	IRQ_GC_INIT_NESTED_LOCK		= 1 << 1,
-	IRQ_GC_MASK_CACHE_PER_TYPE	= 1 << 2,
-	IRQ_GC_NO_MASK			= 1 << 3,
-	IRQ_GC_BE_IO			= 1 << 4,
 };
 
  

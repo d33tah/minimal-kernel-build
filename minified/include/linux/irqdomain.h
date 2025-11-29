@@ -36,16 +36,6 @@ void of_phandle_args_to_fwspec(struct device_node *np, const u32 *args,
  
 enum irq_domain_bus_token {
 	DOMAIN_BUS_ANY		= 0,
-	DOMAIN_BUS_WIRED,
-	DOMAIN_BUS_GENERIC_MSI,
-	DOMAIN_BUS_PCI_MSI,
-	DOMAIN_BUS_PLATFORM_MSI,
-	DOMAIN_BUS_NEXUS,
-	DOMAIN_BUS_IPI,
-	DOMAIN_BUS_FSL_MC_MSI,
-	DOMAIN_BUS_TI_SCI_INTA_MSI,
-	DOMAIN_BUS_WAKEUP,
-	DOMAIN_BUS_VMD_MSI,
 };
 
  

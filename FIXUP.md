@@ -29,7 +29,11 @@ Commits made:
 
 4. 169d2372 - Remove unused user_shm_lock/unlock from mm.h (~2 LOC)
 
-Current LOC: 183,230 (reduced from 183,692 = 462 LOC this session)
+5. ab2bb9e7 - Update FIXUP.md
+
+6. 120e4ed8 - Remove unused ia64_set_curr_task from sched.h (~1 LOC)
+
+**Final LOC: 183,229 (reduced from 183,692 = 463 LOC this session)**
 
 **Attempted but rejected:**
 - mod_devicetable.h (727 lines): Can't reduce - all struct definitions needed by

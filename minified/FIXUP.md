@@ -1,3 +1,16 @@
+--- 2025-12-01 00:02 ---
+Progress: Remove network header includes and unused IPv6 code
+
+Changes:
+- Removed #include <linux/in.h> and <linux/in6.h> from lib/vsprintf.c
+- Removed #include <linux/in6.h> from arch/x86/include/asm/checksum_32.h
+- Removed unused csum_ipv6_magic() function from checksum_32.h
+- No network code is used in the minimal kernel
+
+LOC: ~195,000 total
+Binary: 244KB (unchanged)
+make vm: PASSES, prints "Hello, World!"
+
 --- 2025-11-30 23:57 ---
 Progress: Removed unused if.h include from compat.h
 

@@ -19,9 +19,7 @@
 #include <linux/time.h>
 #include <linux/uuid.h>
 #include <linux/of.h>
- 
-#include <linux/in.h>
-#include <linux/in6.h>
+
 #include <linux/random.h>
 #include <linux/siphash.h>
 

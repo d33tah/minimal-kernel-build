@@ -2,7 +2,6 @@
 #ifndef _ASM_X86_CHECKSUM_32_H
 #define _ASM_X86_CHECKSUM_32_H
 
-#include <linux/in6.h>
 #include <linux/uaccess.h>
 
  
@@ -102,29 +101,7 @@ static inline __sum16 ip_compute_csum(const void *buff, int len)
     return csum_fold(csum_partial(buff, len, 0));
 }
 
-#define _HAVE_ARCH_IPV6_CSUM
-static inline __sum16 csum_ipv6_magic(const struct in6_addr *saddr,
-				      const struct in6_addr *daddr,
-				      __u32 len, __u8 proto, __wsum sum)
-{
-	asm("addl 0(%1), %0	;\n"
-	    "adcl 4(%1), %0	;\n"
-	    "adcl 8(%1), %0	;\n"
-	    "adcl 12(%1), %0	;\n"
-	    "adcl 0(%2), %0	;\n"
-	    "adcl 4(%2), %0	;\n"
-	    "adcl 8(%2), %0	;\n"
-	    "adcl 12(%2), %0	;\n"
-	    "adcl %3, %0	;\n"
-	    "adcl %4, %0	;\n"
-	    "adcl $0, %0	;\n"
-	    : "=&r" (sum)
-	    : "r" (saddr), "r" (daddr),
-	      "r" (htonl(len)), "r" (htonl(proto)), "0" (sum)
-	    : "memory");
-
-	return csum_fold(sum);
-}
+/* csum_ipv6_magic removed - IPv6 not used in minimal kernel */
 
  
 static inline __wsum csum_and_copy_to_user(const void *src,

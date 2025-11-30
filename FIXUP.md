@@ -16,7 +16,22 @@ NEW SESSION: Continue LOC reduction toward 100K
 4. Focus on headers with high LOC counts
 
 **Progress:**
-(will be updated as work progresses)
+- 4d588043: Trim memcontrol.h from 591 to 399 LOC (~192 LOC removed in file, ~77 total)
+  - Removed 29 unused stub functions
+  - Keep only functions actually used in C files
+  - LOC: 189,082 -> 189,005
+
+**Current LOC:** 189,005 (after mrproper)
+
+**Explored but not actionable:**
+- cpufeatures.h: 336 defines, 56 used in C, but some used in S/headers
+- apicdef.h: 128 defines, 2 used in C but many in arch headers
+- Large headers (fs.h, mm.h, pgtable.h) - fundamental and heavily used
+- Sched files (deadline.c, rt.c) - already minimal stubs
+
+**Notes for future sessions:**
+- msr-index.h (989 LOC): 585 MSR defines - could be trimmed but complex
+- Many lib/*.c files checked but all are used
 
 ---
 

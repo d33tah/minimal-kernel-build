@@ -33,7 +33,13 @@ CONTINUING SESSION: LOC reduction
   - device_pm_not_required, dev_of_node, dev_has_sync_state
   - dev_removable_is_valid, device_supports_offline, device_add_group
 
-**Session Total:** ~154 LOC removed (197,095 -> 196,941)
+- 4e88766d: Remove unused cpumask.h and slab.h functions (~27 LOC)
+  - cpumask_andnot, cpumask_subset
+  - kfree_bulk, kmalloc_array_node
+
+- b89af662: Remove unused d_inode_rcu from dcache.h (~4 LOC)
+
+**Session Total:** ~185 LOC removed (197,095 -> 196,910)
 **Binary size:** 244KB
 
 ---

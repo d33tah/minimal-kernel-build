@@ -16,12 +16,20 @@ NEW SESSION: Continue LOC reduction toward 100K
 4. Focus on headers with high LOC counts
 
 **Progress:**
-- 4d588043: Trim memcontrol.h from 591 to 399 LOC (~192 LOC removed in file, ~77 total)
+- 4d588043: Trim memcontrol.h from 591 to 399 LOC (~192 LOC removed in file)
   - Removed 29 unused stub functions
-  - Keep only functions actually used in C files
   - LOC: 189,082 -> 189,005
+- aa22b1bf: Trim cgroup.h from 143 to 82 LOC (~61 LOC removed)
+  - Removed unused stubs: cgroup_id, css_get/put, cgroup_attach_task_all, etc
+  - LOC: 189,005 -> 188,967
+- ba54ce56: Trim delayacct.h from 53 to 23 LOC (~30 LOC removed)
+  - Removed unused: delayacct_blkio_ticks, delayacct_is_task_waiting_on_io, etc
+  - LOC: 188,967 -> 188,943
+- 9617fb31: Trim swap.h from 258 to 146 LOC (~112 LOC removed)
+  - Removed 20+ unused swap stubs (CONFIG_SWAP disabled)
+  - LOC: 188,943 -> 188,871
 
-**Current LOC:** 189,005 (after mrproper)
+**Current LOC:** 188,871 (after mrproper) - reduced 211 LOC this session
 
 **Explored but not actionable:**
 - cpufeatures.h: 336 defines, 56 used in C, but some used in S/headers

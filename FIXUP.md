@@ -39,7 +39,10 @@ CONTINUING SESSION: LOC reduction
 
 - b89af662: Remove unused d_inode_rcu from dcache.h (~4 LOC)
 
-**Session Total:** ~185 LOC removed (197,095 -> 196,910)
+- ade828cb: Remove unused seqlock functions (~16 LOC)
+  - read_seqbegin_or_lock, need_seqretry, done_seqretry
+
+**Session Total:** ~201 LOC removed (197,095 -> 196,894)
 **Binary size:** 244KB
 
 ---

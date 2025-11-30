@@ -1,4 +1,4 @@
- 
+/* Minimal swap.h - stubs for !CONFIG_SWAP */
 #ifndef _LINUX_SWAP_H
 #define _LINUX_SWAP_H
 
@@ -17,17 +17,8 @@
 #include <asm/page.h>
 
 struct notifier_block;
-
 struct bio;
-
 struct pagevec;
-
-/* Unused SWAP_FLAG_* defines removed */
-
-static inline int current_is_kswapd(void)
-{
-	return current->flags & PF_KSWAPD;
-}
 
 #define MAX_SWAPFILES_SHIFT	5
 #define SWP_SWAPIN_ERROR_NUM 1
@@ -43,7 +34,6 @@ static inline int current_is_kswapd(void)
 			     SWP_MIGRATION_NUM + SWP_DEVICE_NUM + \
 			     SWP_PTE_MARKER_NUM)
 
- 
 struct reclaim_state {
 	unsigned long reclaimed_slab;
 };
@@ -54,8 +44,6 @@ struct address_space;
 struct sysinfo;
 struct writeback_control;
 struct zone;
-
-/* Unused swap structs/enums removed */
 struct swap_info_struct;
 
 #define SWAP_CLUSTER_MAX 32UL
@@ -67,13 +55,11 @@ static inline swp_entry_t folio_swap_entry(struct folio *folio)
 	return entry;
 }
 
- 
 void workingset_age_nonresident(struct lruvec *lruvec, unsigned long nr_pages);
 void *workingset_eviction(struct folio *folio, struct mem_cgroup *target_memcg);
 void workingset_refault(struct folio *folio, void *shadow);
 void workingset_activation(struct folio *folio);
 
- 
 void workingset_update_node(struct xa_node *node);
 extern struct list_lru shadow_nodes;
 #define mapping_set_update(xas, mapping) do {				\
@@ -83,14 +69,9 @@ extern struct list_lru shadow_nodes;
 	}								\
 } while (0)
 
- 
 extern unsigned long totalreserve_pages;
-
- 
 #define nr_free_pages() global_zone_page_state(NR_FREE_PAGES)
 
-
- 
 extern void lru_note_cost(struct lruvec *lruvec, bool file,
 			  unsigned int nr_pages);
 extern void lru_note_cost_folio(struct folio *);
@@ -106,11 +87,6 @@ static inline bool lru_cache_disabled(void)
 	return atomic_read(&lru_disable_count);
 }
 
-static inline void lru_cache_enable(void)
-{
-	atomic_dec(&lru_disable_count);
-}
-
 extern void lru_add_drain(void);
 extern void lru_add_drain_cpu(int cpu);
 extern void swap_setup(void);
@@ -118,23 +94,15 @@ extern void swap_setup(void);
 extern void lru_cache_add_inactive_or_unevictable(struct page *page,
 						struct vm_area_struct *vma);
 
- 
 extern unsigned long zone_reclaimable_pages(struct zone *zone);
 extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 					gfp_t gfp_mask, nodemask_t *mask);
-/* try_to_free_mem_cgroup_pages, mem_cgroup_shrink_node removed - unused */
 extern unsigned long shrink_all_memory(unsigned long nr_pages);
 extern int vm_swappiness;
 long remove_mapping(struct address_space *mapping, struct folio *folio);
 
 extern unsigned long reclaim_pages(struct list_head *page_list);
 #define node_reclaim_mode 0
-
-static inline bool node_reclaim_enabled(void)
-{
-	 
-	return node_reclaim_mode & (RECLAIM_ZONE|RECLAIM_WRITE|RECLAIM_UNMAP);
-}
 
 extern void check_move_unevictable_pages(struct pagevec *pvec);
 
@@ -151,10 +119,6 @@ static inline struct swap_info_struct *get_swap_device(swp_entry_t entry)
 	return NULL;
 }
 
-static inline void put_swap_device(struct swap_info_struct *si)
-{
-}
-
 #define get_nr_swap_pages()			0L
 #define total_swap_pages			0L
 #define total_swapcache_pages()			0UL
@@ -162,62 +126,13 @@ static inline void put_swap_device(struct swap_info_struct *si)
 
 #define si_swapinfo(val) \
 	do { (val)->freeswap = (val)->totalswap = 0; } while (0)
- 
+
 #define free_page_and_swap_cache(page) \
 	put_page(page)
 #define free_pages_and_swap_cache(pages, nr) \
 	release_pages((pages), (nr));
 
- 
 #define free_swap_and_cache(e) is_pfn_swap_entry(e)
-
-static inline int add_swap_count_continuation(swp_entry_t swp, gfp_t gfp_mask)
-{
-	return 0;
-}
-
-static inline void swap_shmem_alloc(swp_entry_t swp)
-{
-}
-
-static inline int swap_duplicate(swp_entry_t swp)
-{
-	return 0;
-}
-
-static inline void swap_free(swp_entry_t swp)
-{
-}
-
-static inline void put_swap_page(struct page *page, swp_entry_t swp)
-{
-}
-
-static inline int __swap_count(swp_entry_t entry)
-{
-	return 0;
-}
-
-static inline int __swp_swapcount(swp_entry_t entry)
-{
-	return 0;
-}
-
-static inline int swp_swapcount(swp_entry_t entry)
-{
-	return 0;
-}
-
-static inline int try_to_free_swap(struct page *page)
-{
-	return 0;
-}
-
-static inline int mem_cgroup_swappiness(struct mem_cgroup *mem)
-{
-	return vm_swappiness;
-}
-
 
 static inline void cgroup_throttle_swaprate(struct page *page, gfp_t gfp_mask)
 {
@@ -227,32 +142,5 @@ static inline void folio_throttle_swaprate(struct folio *folio, gfp_t gfp)
 	cgroup_throttle_swaprate(&folio->page, gfp);
 }
 
-static inline void mem_cgroup_swapout(struct folio *folio, swp_entry_t entry)
-{
-}
-
-static inline int mem_cgroup_try_charge_swap(struct folio *folio,
-					     swp_entry_t entry)
-{
-	return 0;
-}
-
-static inline void mem_cgroup_uncharge_swap(swp_entry_t entry,
-					    unsigned int nr_pages)
-{
-}
-
-static inline long mem_cgroup_get_nr_swap_pages(struct mem_cgroup *memcg)
-{
-	return get_nr_swap_pages();
-}
-
-static inline bool mem_cgroup_swap_full(struct page *page)
-{
-	return vm_swap_full();
-}
-
-
-
-#endif  
-#endif  
+#endif /* __KERNEL__ */
+#endif /* _LINUX_SWAP_H */

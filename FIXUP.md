@@ -1,5 +1,33 @@
---- 2025-11-30 14:31 ---
+--- 2025-11-30 15:50 ---
 NEW SESSION: Continue LOC reduction toward 100K
+
+**Status at session start:**
+- LOC (C+H only): 188,096 (after mrproper)
+- Build: PASSES
+- make vm: PASSES, prints "Hello, World!Still alive"
+- Binary size: 244KB
+
+**Goal:** Reduce toward 100K LOC (~88K to go)
+
+**Strategy:**
+- Continue trimming headers with unused stub functions
+- Look for msr-index.h reductions (989 LOC, many unused MSR defines)
+- Check for unused defines in other large headers
+
+**Progress this session:**
+- Trimmed msr-index.h from 989 lines to 97 lines (~892 LOC removed in file)
+  - Identified only 23 MSR defines actually used in codebase
+  - Removed all unused: P4_*, F15H_*, F16H_*, AMD_CPPC_*, VMX_*, RAPL_*, etc.
+  - Kept: MSR_EFER, MSR_FS/GS_BASE, MSR_IA32_SPEC_CTRL, SPEC_CTRL_*, PRED_CMD_*,
+    MSR_IA32_SYSENTER_*, MSR_IA32_DEBUGCTLMSR, DEBUGCTLMSR_BTF*, MSR_IA32_MISC_ENABLE,
+    MSR_MISC_FEATURES_ENABLES*, MSR_IA32_S_CET/CET_*, MSR_AMD64_*, MSR_K7/K8_*, MSR_VIA_FCR
+
+**Current LOC:** 187,367 (after mrproper) - reduced ~729 LOC this session
+
+---
+
+--- 2025-11-30 14:31 ---
+PREVIOUS SESSION: Continue LOC reduction toward 100K
 
 **Status at session start:**
 - LOC (C+H only): 188,423 (after mrproper)

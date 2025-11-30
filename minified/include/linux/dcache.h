@@ -371,13 +371,6 @@ static inline struct inode *d_inode(const struct dentry *dentry)
 	return dentry->d_inode;
 }
 
- 
-static inline struct inode *d_inode_rcu(const struct dentry *dentry)
-{
-	return READ_ONCE(dentry->d_inode);
-}
-
- 
 static inline struct inode *d_backing_inode(const struct dentry *upper)
 {
 	struct inode *inode = upper->d_inode;

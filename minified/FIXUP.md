@@ -1,3 +1,24 @@
+--- 2025-12-01 00:11 ---
+Progress: Remove sockios.h include from socket.h
+
+Change:
+- Removed #include <linux/sockios.h> from include/linux/socket.h
+- Network socket ioctls (SIOC* defines) not used in minimal kernel
+- uapi/linux/sockios.h is 146 LOC that won't be transitively included
+
+LOC: ~195,000 total (stable)
+Binary: 244KB (unchanged)
+make vm: PASSES, prints "Hello, World!"
+
+--- 2025-12-01 00:08 ---
+Attempted: Remove lib/xz directory (2274 LOC total)
+
+FAILED: lib/xz is needed for boot compressed XZ decompression.
+The kernel is compressed with XZ (CONFIG_KERNEL_XZ) and the decompressor
+in arch/x86/boot/compressed/ uses lib/xz/xz_private.h.
+
+Cannot remove lib/xz - it's required for the boot process.
+
 --- 2025-12-01 00:02 ---
 Progress: Remove network header includes and unused IPv6 code
 

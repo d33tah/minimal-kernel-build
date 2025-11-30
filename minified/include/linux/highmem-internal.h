@@ -27,7 +27,7 @@ static inline void *kmap(struct page *page)
 }
 
 static inline void kunmap_high(struct page *page) { }
-static inline void kmap_flush_unused(void) { }
+/* kmap_flush_unused removed - unused */
 
 static inline void kunmap(struct page *page)
 {
@@ -73,15 +73,7 @@ static inline void *kmap_atomic(struct page *page)
 	return page_address(page);
 }
 
-static inline void *kmap_atomic_prot(struct page *page, pgprot_t prot)
-{
-	return kmap_atomic(page);
-}
-
-static inline void *kmap_atomic_pfn(unsigned long pfn)
-{
-	return kmap_atomic(pfn_to_page(pfn));
-}
+/* kmap_atomic_prot, kmap_atomic_pfn removed - unused */
 
 static inline void __kunmap_atomic(void *addr)
 {
@@ -95,13 +87,7 @@ static inline void __kunmap_atomic(void *addr)
 		preempt_enable();
 }
 
-static inline unsigned int nr_free_highpages(void) { return 0; }
-static inline unsigned long totalhigh_pages(void) { return 0UL; }
-
-static inline bool is_kmap_addr(const void *x)
-{
-	return false;
-}
+/* nr_free_highpages, totalhigh_pages, is_kmap_addr removed - unused */
 
 
  

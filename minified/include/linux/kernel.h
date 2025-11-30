@@ -168,31 +168,11 @@ bool mac_pton(const char *s, u8 *mac);
 
  
 
-enum ftrace_dump_mode {
-	DUMP_NONE,
-};
-
-static inline void tracing_start(void) { }
-static inline void tracing_stop(void) { }
-static inline void trace_dump_stack(int skip) { }
-
-static inline void tracing_on(void) { }
+/* tracing_start, tracing_stop, trace_dump_stack removed - unused */
+/* tracing_on removed - unused */
 static inline void tracing_off(void) { }
-static inline int tracing_is_on(void) { return 0; }
-static inline void tracing_snapshot(void) { }
-static inline void tracing_snapshot_alloc(void) { }
-
-static inline __printf(1, 2)
-int trace_printk(const char *fmt, ...)
-{
-	return 0;
-}
-static __printf(1, 0) inline int
-ftrace_vprintk(const char *fmt, va_list ap)
-{
-	return 0;
-}
-static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
+/* tracing_is_on, tracing_snapshot, tracing_snapshot_alloc removed - unused */
+/* trace_printk, ftrace_vprintk, ftrace_dump removed - unused */
 
  
 #define __COUNT_ARGS(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _n, X...) _n

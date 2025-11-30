@@ -25,6 +25,22 @@ NEW SESSION: Continue LOC reduction toward 100K
 
 **Current LOC:** 188,312 (after mrproper) - reduced ~111 LOC this session so far
 
+- e55a5d33: Trim more unused stub functions (~106 LOC):
+  - ipc_namespace.h: shm_destroy_orphaned, mq_init_ns, get_ipc_ns*, retire_*_sysctls
+  - kasan.h: kasan_add/remove_zero_shadow, kasan_init_*_tags, kasan_release_vmalloc, etc
+  - kexec.h: kexec_crash_loaded, kexec_in_progress, set_kexec_sig_enforced
+  - livepatch.h: klp_module_coming/going, klp_apply_section_relocs
+  - migrate.h: putback_movable_pages, alloc_migration_target, PageMovable, etc
+
+**Current LOC:** 188,206 (after mrproper) - reduced ~217 LOC total this session
+
+- Additional trimming (~45 LOC):
+  - kernel.h: tracing_start/stop, trace_dump_stack, tracing_on, tracing_snapshot*, trace_printk, etc
+  - freezer.h: __thaw_task, __refrigerator, freeze_processes, freeze_kernel_threads, etc
+  - highmem-internal.h: kmap_atomic_prot, kmap_atomic_pfn, nr_free_highpages, totalhigh_pages, etc
+
+**Current LOC:** 188,161 (after mrproper) - reduced ~262 LOC total this session
+
 ---
 
 --- 2025-11-30 07:16 ---

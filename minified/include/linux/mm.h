@@ -1739,13 +1739,6 @@ int remap_pfn_range(struct vm_area_struct *, unsigned long addr,
 			unsigned long pfn, unsigned long size, pgprot_t);
 int remap_pfn_range_notrack(struct vm_area_struct *vma, unsigned long addr,
 		unsigned long pfn, unsigned long size, pgprot_t prot);
-int vm_insert_page(struct vm_area_struct *, unsigned long addr, struct page *);
-int vm_insert_pages(struct vm_area_struct *vma, unsigned long addr,
-			struct page **pages, unsigned long *num);
-int vm_map_pages(struct vm_area_struct *vma, struct page **pages,
-				unsigned long num);
-int vm_map_pages_zero(struct vm_area_struct *vma, struct page **pages,
-				unsigned long num);
 vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 			unsigned long pfn);
 vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
@@ -1875,7 +1868,6 @@ void drop_slab(void);
 extern int randomize_va_space;
 
 const char * arch_vma_name(struct vm_area_struct *vma);
-void print_vma_addr(char *prefix, unsigned long rip);
 
 void *sparse_buffer_alloc(unsigned long size);
 struct page * __populate_section_memmap(unsigned long pfn,

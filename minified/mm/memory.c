@@ -967,23 +967,6 @@ pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
 	return pte_alloc_map_lock(mm, pmd, addr, ptl);
 }
 
-/* Stub: insert_page functions not used in minimal kernel */
-int vm_insert_pages(struct vm_area_struct *vma, unsigned long addr,
-			struct page **pages, unsigned long *num)
-{ return -EINVAL; }
-
-int vm_insert_page(struct vm_area_struct *vma, unsigned long addr,
-			struct page *page)
-{ return -EINVAL; }
-
-int vm_map_pages(struct vm_area_struct *vma, struct page **pages,
-				unsigned long num)
-{ return -EINVAL; }
-
-int vm_map_pages_zero(struct vm_area_struct *vma, struct page **pages,
-				unsigned long num)
-{ return -EINVAL; }
-
 static vm_fault_t insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 			pfn_t pfn, pgprot_t prot, bool mkwrite)
 {
@@ -1216,22 +1199,6 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
 int vm_iomap_memory(struct vm_area_struct *vma, phys_addr_t start, unsigned long len)
 {
 	return -EINVAL;
-}
-
-/* apply_to_pte/pmd/pud/p4d_range functions removed - only used by stubbed apply_to_page_range */
-
-int apply_to_page_range(struct mm_struct *mm, unsigned long addr,
-			unsigned long size, pte_fn_t fn, void *data)
-{
-	/* Stub: apply_to_page_range not used in minimal kernel */
-	return 0;
-}
-
-int apply_to_existing_page_range(struct mm_struct *mm, unsigned long addr,
-				 unsigned long size, pte_fn_t fn, void *data)
-{
-	/* Stub: not used in minimal kernel */
-	return 0;
 }
 
 static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)
@@ -2018,32 +1985,6 @@ int generic_access_phys(struct vm_area_struct *vma, unsigned long addr,
 {
 	/* Stub: physical memory access not needed for minimal kernel */
 	return -EINVAL;
-}
-
-int __access_remote_vm(struct mm_struct *mm, unsigned long addr, void *buf,
-		       int len, unsigned int gup_flags)
-{
-	/* Stub: remote VM access not needed for minimal kernel */
-	return 0;
-}
-
-int access_remote_vm(struct mm_struct *mm, unsigned long addr,
-		void *buf, int len, unsigned int gup_flags)
-{
-	/* Stub: remote VM access not needed for minimal kernel */
-	return 0;
-}
-
-int access_process_vm(struct task_struct *tsk, unsigned long addr,
-		void *buf, int len, unsigned int gup_flags)
-{
-	/* Stub: process VM access not needed for minimal kernel */
-	return 0;
-}
-
-void print_vma_addr(char *prefix, unsigned long ip)
-{
-	
 }
 
 #if USE_SPLIT_PTE_PTLOCKS && ALLOC_SPLIT_PTLOCKS

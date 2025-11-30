@@ -536,15 +536,6 @@ int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
 	return memblock_add_range(&memblock.reserved, base, size, MAX_NUMNODES, 0);
 }
 
-/* memblock_setclr_flag removed - unused */
-
-/* STUB: unused memblock mark/clear functions */
-int __init_memblock memblock_mark_hotplug(phys_addr_t base, phys_addr_t size) { return 0; }
-int __init_memblock memblock_clear_hotplug(phys_addr_t base, phys_addr_t size) { return 0; }
-int __init_memblock memblock_mark_mirror(phys_addr_t base, phys_addr_t size) { return 0; }
-int __init_memblock memblock_mark_nomap(phys_addr_t base, phys_addr_t size) { return 0; }
-int __init_memblock memblock_clear_nomap(phys_addr_t base, phys_addr_t size) { return 0; }
-
 static bool should_skip_region(struct memblock_type *type,
 			       struct memblock_region *m,
 			       int nid, int flags)
@@ -1137,8 +1128,6 @@ static unsigned long __init free_low_memory_core_early(void)
 	unsigned long count = 0;
 	phys_addr_t start, end;
 	u64 i;
-
-	memblock_clear_hotplug(0, -1);
 
 	memmap_init_reserved_pages();
 

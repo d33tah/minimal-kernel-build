@@ -1,3 +1,28 @@
+--- 2025-12-01 00:21 ---
+SESSION END SUMMARY
+
+This session accomplished:
+1. Reduced uapi/linux/audit.h from 447 to 17 LOC (-430)
+2. Removed if.h include from compat.h
+3. Removed in.h/in6.h includes from vsprintf.c and checksum_32.h
+4. Removed csum_ipv6_magic() function (unused)
+5. Removed sockios.h include from socket.h
+
+Net reduction: 195,378 -> 195,041 = ~340 LOC
+Still need: ~45,000 more LOC to reach 150K goal
+
+Approaches tried that failed:
+- XZ to GZIP switch (decompressor hardcoded)
+- lib/xz removal (needed for boot decompression)
+- Wholesale header deletion (too many transitive includes)
+
+The remaining 45K reduction requires more aggressive strategies:
+- Custom minimal versions of large core files (page_alloc, namei, etc.)
+- OR switching to a simpler boot architecture
+- OR finding and disabling more CONFIG options
+
+All commits tested with make vm - kernel boots and prints "Hello, World!"
+
 --- 2025-12-01 00:20 ---
 Attempted: Switch from XZ to GZIP compression
 

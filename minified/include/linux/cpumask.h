@@ -85,12 +85,8 @@ static inline unsigned int cpumask_first(const struct cpumask *srcp)
 
 unsigned int __pure cpumask_next(int n, const struct cpumask *srcp);
 
-int __pure cpumask_next_and(int n, const struct cpumask *, const struct cpumask *);
+/* cpumask_next_and, cpumask_local_spread, cpumask_any_*_distribute removed - unused */
 int __pure cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
-unsigned int cpumask_local_spread(unsigned int i, int node);
-int cpumask_any_and_distribute(const struct cpumask *src1p,
-			       const struct cpumask *src2p);
-int cpumask_any_distribute(const struct cpumask *srcp);
 
  
 #define for_each_cpu(cpu, mask)				\

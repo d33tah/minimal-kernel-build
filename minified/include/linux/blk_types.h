@@ -6,7 +6,6 @@
 #include <linux/types.h>
 #include <linux/bvec.h>
 #include <linux/device.h>
-#include <linux/ktime.h>
 
 struct bio_set;
 struct bio;
@@ -78,47 +77,6 @@ typedef u8 __bitwise blk_status_t;
 typedef u16 blk_short_t;
 #endif
 #define	BLK_STS_OK 0
-
- 
-#define BIO_ISSUE_RES_BITS      1
-#define BIO_ISSUE_SIZE_BITS     12
-#define BIO_ISSUE_RES_SHIFT     (64 - BIO_ISSUE_RES_BITS)
-#define BIO_ISSUE_SIZE_SHIFT    (BIO_ISSUE_RES_SHIFT - BIO_ISSUE_SIZE_BITS)
-#define BIO_ISSUE_TIME_MASK     ((1ULL << BIO_ISSUE_SIZE_SHIFT) - 1)
-#define BIO_ISSUE_SIZE_MASK     \
-	(((1ULL << BIO_ISSUE_SIZE_BITS) - 1) << BIO_ISSUE_SIZE_SHIFT)
-#define BIO_ISSUE_RES_MASK      (~((1ULL << BIO_ISSUE_RES_SHIFT) - 1))
-
- 
-#define BIO_ISSUE_THROTL_SKIP_LATENCY (1ULL << 63)
-
-struct bio_issue {
-	u64 value;
-};
-
-static inline u64 __bio_issue_time(u64 time)
-{
-	return time & BIO_ISSUE_TIME_MASK;
-}
-
-static inline u64 bio_issue_time(struct bio_issue *issue)
-{
-	return __bio_issue_time(issue->value);
-}
-
-static inline sector_t bio_issue_size(struct bio_issue *issue)
-{
-	return ((issue->value & BIO_ISSUE_SIZE_MASK) >> BIO_ISSUE_SIZE_SHIFT);
-}
-
-static inline void bio_issue_init(struct bio_issue *issue,
-				       sector_t size)
-{
-	size &= (1ULL << BIO_ISSUE_SIZE_BITS) - 1;
-	issue->value = ((issue->value & BIO_ISSUE_RES_MASK) |
-			(ktime_get_ns() & BIO_ISSUE_TIME_MASK) |
-			((u64)size << BIO_ISSUE_SIZE_SHIFT));
-}
 
 typedef unsigned int blk_qc_t;
 #define BLK_QC_T_NONE		-1U
@@ -221,14 +179,5 @@ static inline bool op_is_write(unsigned int op)
 {
 	return (op & 1);
 }
-
-
-struct blk_rq_stat {
-	u64 mean;
-	u64 min;
-	u64 max;
-	u32 nr_samples;
-	u64 batch;
-};
 
 #endif  

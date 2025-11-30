@@ -79,8 +79,6 @@ extern void __init inode_init(void);
 extern void __init inode_init_early(void);
 extern void __init files_init(void);
 extern void __init files_maxfiles_init(void);
-
-extern unsigned long get_max_files(void);
 extern unsigned int sysctl_nr_open;
 
 typedef __kernel_rwf_t rwf_t;
@@ -334,12 +332,6 @@ static inline void i_mmap_unlock_read(struct address_space *mapping)
 static inline int mapping_writably_mapped(struct address_space *mapping)
 {
 	return atomic_read(&mapping->i_mmap_writable) > 0;
-}
-
-static inline int mapping_map_writable(struct address_space *mapping)
-{
-	return atomic_inc_unless_negative(&mapping->i_mmap_writable) ?
-		0 : -EPERM;
 }
 
 static inline void mapping_unmap_writable(struct address_space *mapping)
@@ -1375,9 +1367,6 @@ struct super_block *sget(struct file_system_type *type,
 extern int register_filesystem(struct file_system_type *);
 extern int unregister_filesystem(struct file_system_type *);
 extern int vfs_statfs(const struct path *, struct kstatfs *);
-extern __printf(2, 3)
-int super_setup_bdi_name(struct super_block *sb, char *fmt, ...);
-extern int super_setup_bdi(struct super_block *sb);
 
 extern int current_umask(void);
 

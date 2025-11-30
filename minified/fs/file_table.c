@@ -60,13 +60,6 @@ static long get_nr_files(void)
 	return percpu_counter_read_positive(&nr_files);
 }
 
- 
-unsigned long get_max_files(void)
-{
-	return files_stat.max_files;
-}
-
-
 static struct file *__alloc_file(int flags, const struct cred *cred)
 {
 	struct file *f;

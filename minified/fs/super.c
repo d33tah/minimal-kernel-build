@@ -674,15 +674,3 @@ int vfs_get_tree(struct fs_context *fc)
 
 	return 0;
 }
-
-/* Stub: super_setup_bdi_name not used externally */
-int super_setup_bdi_name(struct super_block *sb, char *fmt, ...)
-{
-	return 0;
-}
-
-/* Stub: super_setup_bdi not used externally */
-int super_setup_bdi(struct super_block *sb)
-{
-	return 0;
-}

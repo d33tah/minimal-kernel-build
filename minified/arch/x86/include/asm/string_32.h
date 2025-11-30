@@ -1,10 +1,10 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_STRING_32_H
 #define _ASM_X86_STRING_32_H
 
 #ifdef __KERNEL__
 
-/* Let gcc decide whether to inline or use the out of line functions */
+ 
 
 #define __HAVE_ARCH_STRCPY
 extern char *strcpy(char *dest, const char *src);
@@ -45,10 +45,7 @@ static __always_inline void *__memcpy(void *to, const void *from, size_t n)
 	return to;
 }
 
-/*
- * This looks ugly, but the compiler can optimize it totally,
- * as the count is constant.
- */
+ 
 static __always_inline void *__constant_memcpy(void *to, const void *from,
 					       size_t n)
 {
@@ -87,7 +84,7 @@ static __always_inline void *__constant_memcpy(void *to, const void *from,
 	esi = (long)from;
 	edi = (long)to;
 	if (n >= 5 * 4) {
-		/* large block: use rep prefix */
+		 
 		int ecx;
 		asm volatile("rep ; movsl"
 			     : "=&c" (ecx), "=&D" (edi), "=&S" (esi)
@@ -95,7 +92,7 @@ static __always_inline void *__constant_memcpy(void *to, const void *from,
 			     : "memory"
 		);
 	} else {
-		/* small block: don't clobber ecx + smaller code */
+		 
 		if (n >= 4 * 4)
 			asm volatile("movsl"
 				     : "=&D"(edi), "=&S"(esi)
@@ -118,7 +115,7 @@ static __always_inline void *__constant_memcpy(void *to, const void *from,
 				     : "memory");
 	}
 	switch (n % 4) {
-		/* tail */
+		 
 	case 0:
 		return to;
 	case 1:
@@ -169,13 +166,13 @@ static inline void *__memset_generic(void *s, char c, size_t count)
 	return s;
 }
 
-/* we might want to write optimized versions of these later */
+ 
 #define __constant_count_memset(s, c, count) __memset_generic((s), (c), (count))
 
-/* Added by Gertjan van Wingerde to make minix and sysv module work */
+ 
 #define __HAVE_ARCH_STRNLEN
 extern size_t strnlen(const char *s, size_t count);
-/* end of additional stuff */
+ 
 
 #define __HAVE_ARCH_STRSTR
 extern char *strstr(const char *cs, const char *ct);
@@ -213,12 +210,10 @@ static inline void *memset32(uint32_t *s, uint32_t v, size_t n)
 	return s;
 }
 
-/*
- * find the first occurrence of byte 'c', or 1 past the area if none
- */
+ 
 #define __HAVE_ARCH_MEMSCAN
 extern void *memscan(void *addr, int c, size_t size);
 
-#endif /* __KERNEL__ */
+#endif  
 
-#endif /* _ASM_X86_STRING_32_H */
+#endif  

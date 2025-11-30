@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_FAULT_INJECT_H
 #define _LINUX_FAULT_INJECT_H
 
@@ -13,4 +13,4 @@ static inline bool __should_failslab(struct kmem_cache *s, gfp_t gfpflags)
 	return false;
 }
 
-#endif /* _LINUX_FAULT_INJECT_H */
+#endif  

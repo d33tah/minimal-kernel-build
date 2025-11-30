@@ -1,9 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * include/linux/buffer_head.h
- *
- * Everything to do with buffer_heads.
- */
+ 
+ 
 
 #ifndef _LINUX_BUFFER_HEAD_H
 #define _LINUX_BUFFER_HEAD_H
@@ -26,4 +22,4 @@ static inline void invalidate_bh_lrus_cpu(void) {}
 static inline bool has_bh_in_lru(int cpu, void *dummy) { return false; }
 #define buffer_heads_over_limit 0
 
-#endif /* _LINUX_BUFFER_HEAD_H */
+#endif  

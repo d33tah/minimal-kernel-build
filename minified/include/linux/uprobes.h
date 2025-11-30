@@ -1,15 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
+ 
 #ifndef _LINUX_UPROBES_H
 #define _LINUX_UPROBES_H
-/*
- * User-space Probes (UProbes)
- *
- * Copyright (C) IBM Corporation, 2008-2012
- * Authors:
- *	Srikar Dronamraju
- *	Jim Keniston
- * Copyright (C) 2011-2012 Red Hat, Inc., Peter Zijlstra
- */
+ 
 
 #include <linux/errno.h>
 #include <linux/rbtree.h>
@@ -106,4 +98,4 @@ static inline void uprobe_copy_process(struct task_struct *t, unsigned long flag
 static inline void uprobe_clear_state(struct mm_struct *mm)
 {
 }
-#endif	/* _LINUX_UPROBES_H */
+#endif	 

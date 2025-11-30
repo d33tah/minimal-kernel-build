@@ -1,13 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
-  File: linux/xattr.h
-
-  Extended attributes handling.
-
-  Copyright (C) 2001 by Andreas Gruenbacher <a.gruenbacher@computer.org>
-  Copyright (c) 2001-2002 Silicon Graphics, Inc.  All Rights Reserved.
-  Copyright (c) 2004 Red Hat, Inc., James Morris <jmorris@redhat.com>
-*/
+ 
+ 
 #ifndef _LINUX_XATTR_H
 #define _LINUX_XATTR_H
 
@@ -22,15 +14,11 @@
 struct inode;
 struct dentry;
 
-/*
- * struct xattr_handler: When @name is set, match attributes with exactly that
- * name.  When @prefix is set instead, match attributes with that prefix and
- * with a non-empty suffix.
- */
+ 
 struct xattr_handler {
 	const char *name;
 	const char *prefix;
-	int flags;      /* fs private flags */
+	int flags;       
 	bool (*list)(struct dentry *dentry);
 	int (*get)(const struct xattr_handler *, struct dentry *dentry,
 		   struct inode *inode, const char *name, void *buffer,
@@ -91,18 +79,14 @@ struct simple_xattr {
 	char value[];
 };
 
-/*
- * initialize the simple_xattrs structure
- */
+ 
 static inline void simple_xattrs_init(struct simple_xattrs *xattrs)
 {
 	INIT_LIST_HEAD(&xattrs->head);
 	spin_lock_init(&xattrs->lock);
 }
 
-/*
- * free all the xattrs
- */
+ 
 static inline void simple_xattrs_free(struct simple_xattrs *xattrs)
 {
 	struct simple_xattr *xattr, *node;
@@ -124,4 +108,4 @@ ssize_t simple_xattr_list(struct inode *inode, struct simple_xattrs *xattrs, cha
 void simple_xattr_list_add(struct simple_xattrs *xattrs,
 			   struct simple_xattr *new_xattr);
 
-#endif	/* _LINUX_XATTR_H */
+#endif	 

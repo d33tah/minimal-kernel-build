@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_TIMENS_H
 #define _LINUX_TIMENS_H
 
@@ -22,7 +22,7 @@ struct time_namespace {
 	struct ns_common	ns;
 	struct timens_offsets	offsets;
 	struct page		*vvar_page;
-	/* If set prevents changing offsets after any task joined namespace. */
+	 
 	bool			frozen_offsets;
 } __randomize_layout;
 
@@ -80,4 +80,4 @@ static inline ktime_t timens_ktime_to_host(clockid_t clockid, ktime_t tim)
 	return tim;
 }
 
-#endif /* _LINUX_TIMENS_H */
+#endif  

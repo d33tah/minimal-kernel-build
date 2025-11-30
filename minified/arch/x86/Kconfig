@@ -270,7 +270,7 @@ config X86
 	select NEED_SG_DMA_LENGTH
 	select PCI_DOMAINS			if PCI
 	select PCI_LOCKLESS_CONFIG		if PCI
-	select PERF_EVENTS
+	# select PERF_EVENTS  # Disabled for minimal kernel
 	select RTC_LIB
 	select RTC_MC146818_LIB
 	select SPARSE_IRQ
@@ -800,8 +800,6 @@ config PARAVIRT_SPINLOCKS
 
 config X86_HV_CALLBACK_VECTOR
 	def_bool n
-
-source "arch/x86/xen/Kconfig"
 
 config KVM_GUEST
 	bool "KVM Guest support (including kvmclock)"

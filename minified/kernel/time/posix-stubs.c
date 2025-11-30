@@ -1,10 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Dummy stubs used when CONFIG_POSIX_TIMERS=n
- *
- * Created by:  Nicolas Pitre, July 2016
- * Copyright:   (C) 2016 Linaro Limited
- */
+ 
+ 
 
 #include <linux/linkage.h>
 #include <linux/kernel.h>
@@ -17,14 +12,11 @@
 #include <linux/time_namespace.h>
 #include <linux/compat.h>
 
-/* Architectures may override SYS_NI and COMPAT_SYS_NI */
+ 
 #include <asm/syscall_wrapper.h>
 
 asmlinkage long sys_ni_posix_timers(void)
 {
-	pr_err_once("process %d (%s) attempted a POSIX timer syscall "
-		    "while CONFIG_POSIX_TIMERS is not set\n",
-		    current->pid, current->comm);
 	return -ENOSYS;
 }
 
@@ -49,11 +41,7 @@ SYS_NI(clock_adjtime32);
 SYS_NI(alarm);
 #endif
 
-/*
- * We preserve minimal support for CLOCK_REALTIME and CLOCK_MONOTONIC
- * as it is easy to remain compatible with little code. CLOCK_BOOTTIME
- * is also included for convenience as at least systemd uses it.
- */
+ 
 
 SYSCALL_DEFINE2(clock_settime, const clockid_t, which_clock,
 		const struct __kernel_timespec __user *, tp)

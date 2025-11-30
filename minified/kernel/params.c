@@ -1,8 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-/* Helpers for initial module or kernel cmdline parsing
-   Copyright (C) 2001 Rusty Russell.
-
-*/
+ 
+ 
 #include <linux/kernel.h>
 #include <linux/string.h>
 #include <linux/errno.h>
@@ -18,7 +15,7 @@ static inline void check_kparam_locked(struct module *mod)
 {
 }
 
-/* This just allows us to keep track of which parameters are kmalloced. */
+ 
 struct kmalloced_param {
 	struct list_head list;
 	char val[];
@@ -41,7 +38,7 @@ static void *kmalloc_parameter(unsigned int size)
 	return p->val;
 }
 
-/* Does nothing if parameter wasn't kmalloced above. */
+ 
 static void maybe_kfree_parameter(void *param)
 {
 	struct kmalloced_param *p;
@@ -87,8 +84,6 @@ static bool param_check_unsafe(const struct kernel_param *kp)
 		return false;
 
 	if (kp->flags & KERNEL_PARAM_FL_UNSAFE) {
-		pr_notice("Setting dangerous option %s - tainting kernel\n",
-			  kp->name);
 		add_taint(TAINT_USER, LOCKDEP_STILL_OK);
 	}
 
@@ -109,18 +104,16 @@ static int parse_one(char *param,
 	unsigned int i;
 	int err;
 
-	/* Find parameter */
+	 
 	for (i = 0; i < num_params; i++) {
 		if (parameq(param, params[i].name)) {
 			if (params[i].level < min_level
 			    || params[i].level > max_level)
 				return 0;
-			/* No one handled NULL, so do it here. */
+			 
 			if (!val &&
 			    !(params[i].ops->flags & KERNEL_PARAM_OPS_FL_NOARG))
 				return -EINVAL;
-			pr_debug("handling %s with %p\n", param,
-				params[i].ops->set);
 			kernel_param_lock(params[i].mod);
 			if (param_check_unsafe(&params[i]))
 				err = params[i].ops->set(val, &params[i]);
@@ -132,15 +125,13 @@ static int parse_one(char *param,
 	}
 
 	if (handle_unknown) {
-		pr_debug("doing %s: %s='%s'\n", doing, param, val);
 		return handle_unknown(param, val, doing, arg);
 	}
 
-	pr_debug("Unknown argument '%s'\n", param);
 	return -ENOENT;
 }
 
-/* Args looks like "foo=bar,bar2 baz=fuz wiz". */
+ 
 char *parse_args(const char *doing,
 		 char *args,
 		 const struct kernel_param *params,
@@ -153,27 +144,21 @@ char *parse_args(const char *doing,
 {
 	char *param, *val, *err = NULL;
 
-	/* Chew leading spaces */
+	 
 	args = skip_spaces(args);
 
 	if (*args)
-		pr_debug("doing %s, parsing ARGS: '%s'\n", doing, args);
-
-	while (*args) {
+		while (*args) {
 		int ret;
 		int irq_was_disabled;
 
 		args = next_arg(args, &param, &val);
-		/* Stop at -- */
+		 
 		if (!val && strcmp(param, "--") == 0)
 			return err ?: args;
 		irq_was_disabled = irqs_disabled();
 		ret = parse_one(param, val, doing, params, num,
 				min_level, max_level, arg, unknown);
-		if (irq_was_disabled && !irqs_disabled())
-			pr_warn("%s: option '%s' enabled irq's!\n",
-				doing, param);
-
 		switch (ret) {
 		case 0:
 			continue;
@@ -196,7 +181,7 @@ char *parse_args(const char *doing,
 	return err;
 }
 
-/* Lazy bastard, eh? */
+ 
 #define STANDARD_PARAM_DEF(name, type, format, strtolfn)      		\
 	int param_set_##name(const char *val, const struct kernel_param *kp) \
 	{								\
@@ -242,7 +227,6 @@ int param_set_uint_minmax(const char *val, const struct kernel_param *kp,
 	*((unsigned int *)kp->arg) = num;
 	return 0;
 }
-EXPORT_SYMBOL_GPL(param_set_uint_minmax);
 
 int param_set_charp(const char *val, const struct kernel_param *kp)
 {
@@ -253,8 +237,7 @@ int param_set_charp(const char *val, const struct kernel_param *kp)
 
 	maybe_kfree_parameter(*(char **)kp->arg);
 
-	/* This is a hack.  We can't kmalloc in early boot, and we
-	 * don't need to; this mangled commandline is preserved. */
+	 
 	if (slab_is_available()) {
 		*(char **)kp->arg = kmalloc_parameter(strlen(val)+1);
 		if (!*(char **)kp->arg)
@@ -265,134 +248,88 @@ int param_set_charp(const char *val, const struct kernel_param *kp)
 
 	return 0;
 }
-EXPORT_SYMBOL(param_set_charp);
 
 int param_get_charp(char *buffer, const struct kernel_param *kp)
 {
 	return scnprintf(buffer, PAGE_SIZE, "%s\n", *((char **)kp->arg));
 }
-EXPORT_SYMBOL(param_get_charp);
 
 void param_free_charp(void *arg)
 {
 	maybe_kfree_parameter(*((char **)arg));
 }
-EXPORT_SYMBOL(param_free_charp);
 
 const struct kernel_param_ops param_ops_charp = {
 	.set = param_set_charp,
 	.get = param_get_charp,
 	.free = param_free_charp,
 };
-EXPORT_SYMBOL(param_ops_charp);
 
-/* Actually could be a bool or an int, for historical reasons. */
+ 
 int param_set_bool(const char *val, const struct kernel_param *kp)
 {
-	/* No equals means "set"... */
+	 
 	if (!val) val = "1";
 
-	/* One of =[yYnN01] */
+	 
 	return strtobool(val, kp->arg);
 }
-EXPORT_SYMBOL(param_set_bool);
 
 int param_get_bool(char *buffer, const struct kernel_param *kp)
 {
-	/* Y and N chosen as being relatively non-coder friendly */
+	 
 	return sprintf(buffer, "%c\n", *(bool *)kp->arg ? 'Y' : 'N');
 }
-EXPORT_SYMBOL(param_get_bool);
 
 const struct kernel_param_ops param_ops_bool = {
 	.flags = KERNEL_PARAM_OPS_FL_NOARG,
 	.set = param_set_bool,
 	.get = param_get_bool,
 };
-EXPORT_SYMBOL(param_ops_bool);
 
+/* Stub: param_set_bool_enable_only not used externally */
 int param_set_bool_enable_only(const char *val, const struct kernel_param *kp)
 {
-	int err = 0;
-	bool new_value;
-	bool orig_value = *(bool *)kp->arg;
-	struct kernel_param dummy_kp = *kp;
-
-	dummy_kp.arg = &new_value;
-
-	err = param_set_bool(val, &dummy_kp);
-	if (err)
-		return err;
-
-	/* Don't let them unset it once it's set! */
-	if (!new_value && orig_value)
-		return -EROFS;
-
-	if (new_value)
-		err = param_set_bool(val, kp);
-
-	return err;
+	return param_set_bool(val, kp);
 }
-EXPORT_SYMBOL_GPL(param_set_bool_enable_only);
 
 const struct kernel_param_ops param_ops_bool_enable_only = {
 	.flags = KERNEL_PARAM_OPS_FL_NOARG,
 	.set = param_set_bool_enable_only,
 	.get = param_get_bool,
 };
-EXPORT_SYMBOL_GPL(param_ops_bool_enable_only);
 
-/* This one must be bool. */
+ 
+/* Stub: param_set_invbool not used externally */
 int param_set_invbool(const char *val, const struct kernel_param *kp)
 {
-	int ret;
-	bool boolval;
-	struct kernel_param dummy;
-
-	dummy.arg = &boolval;
-	ret = param_set_bool(val, &dummy);
-	if (ret == 0)
-		*(bool *)kp->arg = !boolval;
-	return ret;
+	return 0;
 }
-EXPORT_SYMBOL(param_set_invbool);
 
+/* Stub: param_get_invbool not used externally */
 int param_get_invbool(char *buffer, const struct kernel_param *kp)
 {
-	return sprintf(buffer, "%c\n", (*(bool *)kp->arg) ? 'N' : 'Y');
+	return sprintf(buffer, "N\n");
 }
-EXPORT_SYMBOL(param_get_invbool);
 
 const struct kernel_param_ops param_ops_invbool = {
 	.set = param_set_invbool,
 	.get = param_get_invbool,
 };
-EXPORT_SYMBOL(param_ops_invbool);
 
+/* Stub: param_set_bint not used externally */
 int param_set_bint(const char *val, const struct kernel_param *kp)
 {
-	/* Match bool exactly, by re-using it. */
-	struct kernel_param boolkp = *kp;
-	bool v;
-	int ret;
-
-	boolkp.arg = &v;
-
-	ret = param_set_bool(val, &boolkp);
-	if (ret == 0)
-		*(int *)kp->arg = v;
-	return ret;
+	return param_set_bool(val, kp);
 }
-EXPORT_SYMBOL(param_set_bint);
 
 const struct kernel_param_ops param_ops_bint = {
 	.flags = KERNEL_PARAM_OPS_FL_NOARG,
 	.set = param_set_bint,
 	.get = param_get_int,
 };
-EXPORT_SYMBOL(param_ops_bint);
 
-/* We break the rule and mangle the string. */
+ 
 static int param_array(struct module *mod,
 		       const char *name,
 		       const char *val,
@@ -406,13 +343,13 @@ static int param_array(struct module *mod,
 	struct kernel_param kp;
 	char save;
 
-	/* Get the name right for errors. */
+	 
 	kp.name = name;
 	kp.arg = elem;
 	kp.level = level;
 
 	*num = 0;
-	/* We expect a comma-separated list of values. */
+	 
 	do {
 		int len;
 
@@ -422,7 +359,7 @@ static int param_array(struct module *mod,
 		}
 		len = strcspn(val, ",");
 
-		/* nul-terminate and parse */
+		 
 		save = val[len];
 		((char *)val)[len] = '\0';
 		check_kparam_locked(mod);
@@ -459,7 +396,7 @@ static int param_array_get(char *buffer, const struct kernel_param *kp)
 	struct kernel_param p = *kp;
 
 	for (i = off = 0; i < (arr->num ? *arr->num : arr->max); i++) {
-		/* Replace \n with comma */
+		 
 		if (i)
 			buffer[off - 1] = ',';
 		p.arg = arr->elem + arr->elemsize * i;
@@ -488,7 +425,6 @@ const struct kernel_param_ops param_array_ops = {
 	.get = param_array_get,
 	.free = param_array_free,
 };
-EXPORT_SYMBOL(param_array_ops);
 
 int param_set_copystring(const char *val, const struct kernel_param *kp)
 {
@@ -502,22 +438,19 @@ int param_set_copystring(const char *val, const struct kernel_param *kp)
 	strcpy(kps->string, val);
 	return 0;
 }
-EXPORT_SYMBOL(param_set_copystring);
 
 int param_get_string(char *buffer, const struct kernel_param *kp)
 {
 	const struct kparam_string *kps = kp->str;
 	return scnprintf(buffer, PAGE_SIZE, "%s\n", kps->string);
 }
-EXPORT_SYMBOL(param_get_string);
 
 const struct kernel_param_ops param_ops_string = {
 	.set = param_set_copystring,
 	.get = param_get_string,
 };
-EXPORT_SYMBOL(param_ops_string);
 
-/* sysfs output in /sys/modules/XYZ/parameters/ */
+ 
 #define to_module_attr(n) container_of(n, struct module_attribute, attr)
 #define to_module_kobject(n) container_of(n, struct module_kobject, kobj)
 

@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef __ASM_GENERIC_COMPAT_H
 #define __ASM_GENERIC_COMPAT_H
 
@@ -21,7 +21,7 @@
 					 ((u64)name##_hi << 32))
 #endif
 
-/* These types are common across all compat ABIs */
+ 
 typedef u32 compat_size_t;
 typedef s32 compat_ssize_t;
 typedef s32 compat_clock_t;

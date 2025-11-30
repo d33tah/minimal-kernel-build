@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_SHARED_TDX_H
 #define _ASM_X86_SHARED_TDX_H
 
@@ -15,12 +15,7 @@
 
 #ifndef __ASSEMBLY__
 
-/*
- * Used in __tdx_hypercall() to pass down and get back registers' values of
- * the TDCALL instruction when requesting services from the VMM.
- *
- * This is a software only structure and not part of the TDX module/VMM ABI.
- */
+ 
 struct tdx_hypercall_args {
 	u64 r10;
 	u64 r11;
@@ -30,11 +25,11 @@ struct tdx_hypercall_args {
 	u64 r15;
 };
 
-/* Used to request services from the VMM */
+ 
 u64 __tdx_hypercall(struct tdx_hypercall_args *args, unsigned long flags);
 
-/* Called from __tdx_hypercall() for unrecoverable failure */
+ 
 void __tdx_hypercall_failed(void);
 
-#endif /* !__ASSEMBLY__ */
-#endif /* _ASM_X86_SHARED_TDX_H */
+#endif  
+#endif  

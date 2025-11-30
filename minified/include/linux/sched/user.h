@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_SCHED_USER_H
 #define _LINUX_SCHED_USER_H
 
@@ -8,15 +8,13 @@
 #include <linux/refcount.h>
 #include <linux/ratelimit.h>
 
-/*
- * Some day this will be a full-fledged user tracking system..
- */
+ 
 struct user_struct {
-	refcount_t __count;	/* reference count */
-	unsigned long unix_inflight;	/* How many files in flight in unix sockets */
-	atomic_long_t pipe_bufs;  /* how many pages are allocated in pipe buffers */
+	refcount_t __count;	 
+	unsigned long unix_inflight;	 
+	atomic_long_t pipe_bufs;   
 
-	/* Hash table maintenance information */
+	 
 	struct hlist_node uidhash_node;
 	kuid_t uid;
 
@@ -25,7 +23,7 @@ struct user_struct {
 	atomic_long_t locked_vm;
 #endif
 
-	/* Miscellaneous per-user rate limit */
+	 
 	struct ratelimit_state ratelimit;
 };
 
@@ -37,7 +35,7 @@ extern struct user_struct root_user;
 #define INIT_USER (&root_user)
 
 
-/* per-UID process charging. */
+ 
 extern struct user_struct * alloc_uid(kuid_t);
 static inline struct user_struct *get_uid(struct user_struct *u)
 {
@@ -46,4 +44,4 @@ static inline struct user_struct *get_uid(struct user_struct *u)
 }
 extern void free_uid(struct user_struct *);
 
-#endif /* _LINUX_SCHED_USER_H */
+#endif  

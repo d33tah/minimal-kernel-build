@@ -1,11 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- * property.h - Unified device property interface.
- *
- * Copyright (C) 2014, Intel Corporation
- * Authors: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
- *          Mika Westerberg <mika.westerberg@linux.intel.com>
- */
+ 
+ 
 
 #ifndef _LINUX_PROPERTY_H_
 #define _LINUX_PROPERTY_H_
@@ -129,131 +123,9 @@ int fwnode_irq_get_byname(const struct fwnode_handle *fwnode, const char *name);
 
 unsigned int device_get_child_node_count(struct device *dev);
 
-static inline bool device_property_read_bool(struct device *dev,
-					     const char *propname)
-{
-	return device_property_present(dev, propname);
-}
-
-static inline int device_property_read_u8(struct device *dev,
-					  const char *propname, u8 *val)
-{
-	return device_property_read_u8_array(dev, propname, val, 1);
-}
-
-static inline int device_property_read_u16(struct device *dev,
-					   const char *propname, u16 *val)
-{
-	return device_property_read_u16_array(dev, propname, val, 1);
-}
-
-static inline int device_property_read_u32(struct device *dev,
-					   const char *propname, u32 *val)
-{
-	return device_property_read_u32_array(dev, propname, val, 1);
-}
-
-static inline int device_property_read_u64(struct device *dev,
-					   const char *propname, u64 *val)
-{
-	return device_property_read_u64_array(dev, propname, val, 1);
-}
-
-static inline int device_property_count_u8(struct device *dev, const char *propname)
-{
-	return device_property_read_u8_array(dev, propname, NULL, 0);
-}
-
-static inline int device_property_count_u16(struct device *dev, const char *propname)
-{
-	return device_property_read_u16_array(dev, propname, NULL, 0);
-}
-
-static inline int device_property_count_u32(struct device *dev, const char *propname)
-{
-	return device_property_read_u32_array(dev, propname, NULL, 0);
-}
-
-static inline int device_property_count_u64(struct device *dev, const char *propname)
-{
-	return device_property_read_u64_array(dev, propname, NULL, 0);
-}
-
-static inline int device_property_string_array_count(struct device *dev,
-						     const char *propname)
-{
-	return device_property_read_string_array(dev, propname, NULL, 0);
-}
-
-static inline bool fwnode_property_read_bool(const struct fwnode_handle *fwnode,
-					     const char *propname)
-{
-	return fwnode_property_present(fwnode, propname);
-}
-
-static inline int fwnode_property_read_u8(const struct fwnode_handle *fwnode,
-					  const char *propname, u8 *val)
-{
-	return fwnode_property_read_u8_array(fwnode, propname, val, 1);
-}
-
-static inline int fwnode_property_read_u16(const struct fwnode_handle *fwnode,
-					   const char *propname, u16 *val)
-{
-	return fwnode_property_read_u16_array(fwnode, propname, val, 1);
-}
-
-static inline int fwnode_property_read_u32(const struct fwnode_handle *fwnode,
-					   const char *propname, u32 *val)
-{
-	return fwnode_property_read_u32_array(fwnode, propname, val, 1);
-}
-
-static inline int fwnode_property_read_u64(const struct fwnode_handle *fwnode,
-					   const char *propname, u64 *val)
-{
-	return fwnode_property_read_u64_array(fwnode, propname, val, 1);
-}
-
-static inline int fwnode_property_count_u8(const struct fwnode_handle *fwnode,
-					   const char *propname)
-{
-	return fwnode_property_read_u8_array(fwnode, propname, NULL, 0);
-}
-
-static inline int fwnode_property_count_u16(const struct fwnode_handle *fwnode,
-					    const char *propname)
-{
-	return fwnode_property_read_u16_array(fwnode, propname, NULL, 0);
-}
-
-static inline int fwnode_property_count_u32(const struct fwnode_handle *fwnode,
-					    const char *propname)
-{
-	return fwnode_property_read_u32_array(fwnode, propname, NULL, 0);
-}
-
-static inline int fwnode_property_count_u64(const struct fwnode_handle *fwnode,
-					    const char *propname)
-{
-	return fwnode_property_read_u64_array(fwnode, propname, NULL, 0);
-}
-
-static inline int
-fwnode_property_string_array_count(const struct fwnode_handle *fwnode,
-				   const char *propname)
-{
-	return fwnode_property_read_string_array(fwnode, propname, NULL, 0);
-}
-
 struct software_node;
 
-/**
- * struct software_node_ref_args - Reference property with additional arguments
- * @node: Reference to a software node
- * @nargs: Number of elements in @args array
- * @args: Integer arguments
- */
+ 
 struct software_node_ref_args {
 	const struct software_node *node;
 	unsigned int nargs;
@@ -267,15 +139,7 @@ struct software_node_ref_args {
 	.args = { __VA_ARGS__ },				\
 }
 
-/**
- * struct property_entry - "Built-in" device property representation.
- * @name: Name of the property.
- * @length: Length of data making up the value.
- * @is_inline: True when the property value is stored inline.
- * @type: Type of the data in unions.
- * @pointer: Pointer to the property when it is not stored inline.
- * @value: Value of the property when it is stored inline.
- */
+ 
 struct property_entry {
 	const char *name;
 	size_t length;
@@ -293,11 +157,7 @@ struct property_entry {
 	};
 };
 
-/*
- * Note: the below initializers for the anonymous union are carefully
- * crafted to avoid gcc-4.4.4's problems with initialization of anon unions
- * and structs.
- */
+ 
 
 #define __PROPERTY_ENTRY_ELEMENT_SIZE(_elem_)				\
 	sizeof(((struct property_entry *)NULL)->value._elem_[0])
@@ -405,22 +265,7 @@ struct fwnode_handle *fwnode_graph_get_remote_port(
 struct fwnode_handle *fwnode_graph_get_remote_endpoint(
 	const struct fwnode_handle *fwnode);
 
-static inline bool fwnode_graph_is_endpoint(struct fwnode_handle *fwnode)
-{
-	return fwnode_property_present(fwnode, "remote-endpoint");
-}
 
-/*
- * Fwnode lookup flags
- *
- * @FWNODE_GRAPH_ENDPOINT_NEXT: In the case of no exact match, look for the
- *				closest endpoint ID greater than the specified
- *				one.
- * @FWNODE_GRAPH_DEVICE_DISABLED: That the device to which the remote
- *				  endpoint of the given endpoint belongs to,
- *				  may be disabled, or that the endpoint is not
- *				  connected.
- */
 #define FWNODE_GRAPH_ENDPOINT_NEXT	BIT(0)
 #define FWNODE_GRAPH_DEVICE_DISABLED	BIT(1)
 
@@ -444,27 +289,15 @@ void *fwnode_connection_find_match(struct fwnode_handle *fwnode,
 				   const char *con_id, void *data,
 				   devcon_match_fn_t match);
 
-static inline void *device_connection_find_match(struct device *dev,
-						 const char *con_id, void *data,
-						 devcon_match_fn_t match)
-{
-	return fwnode_connection_find_match(dev_fwnode(dev), con_id, data, match);
-}
-
 int fwnode_connection_find_matches(struct fwnode_handle *fwnode,
 				   const char *con_id, void *data,
 				   devcon_match_fn_t match,
 				   void **matches, unsigned int matches_len);
 
-/* -------------------------------------------------------------------------- */
-/* Software fwnode support - when HW description is incomplete or missing */
+ 
+ 
 
-/**
- * struct software_node - Software node description
- * @name: Name of the software node
- * @parent: Parent of the software node
- * @properties: Array of device properties
- */
+ 
 struct software_node {
 	const char *name;
 	const struct software_node *parent;
@@ -501,4 +334,4 @@ int device_create_managed_software_node(struct device *dev,
 					const struct property_entry *properties,
 					const struct software_node *parent);
 
-#endif /* _LINUX_PROPERTY_H_ */
+#endif  

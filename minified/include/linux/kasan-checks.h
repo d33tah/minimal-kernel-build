@@ -1,20 +1,13 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_KASAN_CHECKS_H
 #define _LINUX_KASAN_CHECKS_H
 
 #include <linux/types.h>
+#include <linux/stddef.h>
 
-/*
- * The annotations present in this file are only relevant for the software
- * KASAN modes that rely on compiler instrumentation, and will be optimized
- * away for the hardware tag-based KASAN mode. Use kasan_check_byte() instead.
- */
 
-/*
- * __kasan_check_*: Always available when KASAN is enabled. This may be used
- * even in compilation units that selectively disable KASAN, but must use KASAN
- * to validate access to an address.   Never use these in header files!
- */
+
+
 static inline bool __kasan_check_read(const volatile void *p, unsigned int size)
 {
 	return true;
@@ -24,10 +17,7 @@ static inline bool __kasan_check_write(const volatile void *p, unsigned int size
 	return true;
 }
 
-/*
- * kasan_check_*: Only available when the particular compilation unit has KASAN
- * instrumentation enabled. May be used in header files.
- */
+ 
 #ifdef __SANITIZE_ADDRESS__
 #define kasan_check_read __kasan_check_read
 #define kasan_check_write __kasan_check_write

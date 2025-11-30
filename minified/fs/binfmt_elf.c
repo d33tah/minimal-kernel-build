@@ -1,14 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/*
- * linux/fs/binfmt_elf.c
- *
- * These are the functions used to load ELF format executables as used
- * on SVr4 machines.  Information on the format may be found in the book
- * "UNIX SYSTEM V RELEASE 4 Programmers Guide: Ansi C and Programming Support
- * Tools".
- *
- * Copyright 1993, 1994: Eric Youngdale (ericy@cais.com).
- */
+ 
+ 
 
 #include <linux/module.h>
 #include <linux/kernel.h>
@@ -31,7 +22,6 @@
 #include <linux/hugetlb.h>
 #include <linux/pagemap.h>
 #include <linux/vmalloc.h>
-#include <linux/security.h>
 #include <linux/random.h>
 #include <linux/elf.h>
 #include <linux/elf-randomize.h>
@@ -60,7 +50,7 @@
 #define user_siginfo_t siginfo_t
 #endif
 
-/* That's for binfmt_elf_fdpic to deal with */
+ 
 #ifndef elf_check_fdpic
 #define elf_check_fdpic(ex) false
 #endif
@@ -69,10 +59,7 @@ static int load_elf_binary(struct linux_binprm *bprm);
 
 #define load_elf_library NULL
 
-/*
- * If we don't support core dumping, then supply a NULL so we
- * don't even try.
- */
+ 
 #define elf_core_dump	NULL
 
 #if ELF_EXEC_PAGESIZE > PAGE_SIZE
@@ -102,11 +89,7 @@ static int set_brk(unsigned long start, unsigned long end, int prot)
 	start = ELF_PAGEALIGN(start);
 	end = ELF_PAGEALIGN(end);
 	if (end > start) {
-		/*
-		 * Map the last of the bss segment.
-		 * If the header is requesting these pages to be
-		 * executable, honour that (ppc32 needs this).
-		 */
+		 
 		int error = vm_brk_flags(start, end - start,
 				prot & PROT_EXEC ? VM_EXEC : 0);
 		if (error)
@@ -116,11 +99,7 @@ static int set_brk(unsigned long start, unsigned long end, int prot)
 	return 0;
 }
 
-/* We need to explicitly zero any fractional pages
-   after the data section (i.e. bss).  This would
-   contain the junk from the file that should not
-   be in memory
- */
+ 
 static int padzero(unsigned long elf_bss)
 {
 	unsigned long nbyte;
@@ -134,18 +113,14 @@ static int padzero(unsigned long elf_bss)
 	return 0;
 }
 
-/* Let's use some macros to make this stack manipulation a little clearer */
+ 
 #define STACK_ADD(sp, items) ((elf_addr_t __user *)(sp) - (items))
 #define STACK_ROUND(sp, items) \
 	(((unsigned long) (sp - items)) &~ 15UL)
 #define STACK_ALLOC(sp, len) (sp -= len)
 
 #ifndef ELF_BASE_PLATFORM
-/*
- * AT_BASE_PLATFORM indicates the "real" hardware/microarchitecture.
- * If the arch defines ELF_BASE_PLATFORM (in asm/elf.h), the value
- * will be copied to the user stack in the same manner as AT_PLATFORM.
- */
+ 
 #define ELF_BASE_PLATFORM NULL
 #endif
 
@@ -172,20 +147,11 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 	const struct cred *cred = current_cred();
 	struct vm_area_struct *vma;
 
-	/*
-	 * In some cases (e.g. Hyper-Threading), we want to avoid L1
-	 * evictions by the processes running on the same package. One
-	 * thing we can do is to shuffle the initial stack for them.
-	 */
+	 
 
 	p = arch_align_stack(p);
 
-	/*
-	 * If this architecture has a platform capability string, copy it
-	 * to userspace.  In some cases (Sparc), this info is impossible
-	 * for userspace to get any other way, in others (i386) it is
-	 * merely difficult.
-	 */
+	 
 	u_platform = NULL;
 	if (k_platform) {
 		size_t len = strlen(k_platform) + 1;
@@ -195,10 +161,7 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 			return -EFAULT;
 	}
 
-	/*
-	 * If this architecture has a "base" platform capability
-	 * string, copy it to userspace.
-	 */
+	 
 	u_base_platform = NULL;
 	if (k_base_platform) {
 		size_t len = strlen(k_base_platform) + 1;
@@ -208,18 +171,16 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 			return -EFAULT;
 	}
 
-	/*
-	 * Generate 16 random bytes for userspace PRNG seeding.
-	 */
+	 
 	get_random_bytes(k_rand_bytes, sizeof(k_rand_bytes));
 	u_rand_bytes = (elf_addr_t __user *)
 		       STACK_ALLOC(p, sizeof(k_rand_bytes));
 	if (copy_to_user(u_rand_bytes, k_rand_bytes, sizeof(k_rand_bytes)))
 		return -EFAULT;
 
-	/* Create the ELF interpreter info */
+	 
 	elf_info = (elf_addr_t *)mm->saved_auxv;
-	/* update AT_VECTOR_SIZE_BASE if the number of NEW_AUX_ENT() changes */
+	 
 #define NEW_AUX_ENT(id, val) \
 	do { \
 		*elf_info++ = id; \
@@ -227,12 +188,7 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 	} while (0)
 
 #ifdef ARCH_DLINFO
-	/* 
-	 * ARCH_DLINFO must come first so PPC can do its special alignment of
-	 * AUXV.
-	 * update AT_VECTOR_SIZE_ARCH if the number of NEW_AUX_ENT() in
-	 * ARCH_DLINFO changes
-	 */
+	 
 	ARCH_DLINFO;
 #endif
 	NEW_AUX_ENT(AT_HWCAP, ELF_HWCAP);
@@ -268,11 +224,11 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 		NEW_AUX_ENT(AT_EXECFD, bprm->execfd);
 	}
 #undef NEW_AUX_ENT
-	/* AT_NULL is zero; clear the rest too */
+	 
 	memset(elf_info, 0, (char *)mm->saved_auxv +
 			sizeof(mm->saved_auxv) - (char *)elf_info);
 
-	/* And advance past the AT_NULL entry.  */
+	 
 	elf_info += 2;
 
 	ei_index = elf_info - (elf_addr_t *)mm->saved_auxv;
@@ -281,14 +237,11 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 	items = (argc + 1) + (envc + 1) + 1;
 	bprm->p = STACK_ROUND(sp, items);
 
-	/* Point sp at the lowest address on the stack */
+	 
 	sp = (elf_addr_t __user *)bprm->p;
 
 
-	/*
-	 * Grow the stack manually; some architectures have a limit on how
-	 * far ahead a user-space access may be in order to grow the stack.
-	 */
+	 
 	if (mmap_read_lock_killable(mm))
 		return -EINTR;
 	vma = find_extend_vma(mm, bprm->p);
@@ -296,11 +249,11 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 	if (!vma)
 		return -EFAULT;
 
-	/* Now, let's put argc (and argv, envp if appropriate) on the stack */
+	 
 	if (put_user(argc, sp++))
 		return -EFAULT;
 
-	/* Populate list of argv pointers back to argv strings. */
+	 
 	p = mm->arg_end = mm->arg_start;
 	while (argc-- > 0) {
 		size_t len;
@@ -315,7 +268,7 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 		return -EFAULT;
 	mm->arg_end = p;
 
-	/* Populate list of envp pointers back to envp strings. */
+	 
 	mm->env_end = mm->env_start = p;
 	while (envc-- > 0) {
 		size_t len;
@@ -330,7 +283,7 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 		return -EFAULT;
 	mm->env_end = p;
 
-	/* Put the elf_info on the stack in the right place.  */
+	 
 	if (copy_to_user(sp, mm->saved_auxv, ei_index * sizeof(elf_addr_t)))
 		return -EFAULT;
 	return 0;
@@ -346,19 +299,11 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 	addr = ELF_PAGESTART(addr);
 	size = ELF_PAGEALIGN(size);
 
-	/* mmap() will return -EINVAL if given a zero size, but a
-	 * segment with zero filesize is perfectly valid */
+	 
 	if (!size)
 		return addr;
 
-	/*
-	* total_size is the size of the ELF (interpreter) image.
-	* The _first_ mmap needs to know the full size, otherwise
-	* randomization might put this image into an overlapping
-	* position with the ELF binary image. (since size < total_size)
-	* So we first map the 'big' image - and unmap the remainder at
-	* the end. (which unmap is needed for ELF images with holes.)
-	*/
+	 
 	if (total_size) {
 		total_size = ELF_PAGEALIGN(total_size);
 		map_addr = vm_mmap(filep, addr, total_size, prot, type, off);
@@ -412,26 +357,18 @@ static unsigned long maximum_alignment(struct elf_phdr *cmds, int nr)
 		if (cmds[i].p_type == PT_LOAD) {
 			unsigned long p_align = cmds[i].p_align;
 
-			/* skip non-power of two alignments as invalid */
+			 
 			if (!is_power_of_2(p_align))
 				continue;
 			alignment = max(alignment, p_align);
 		}
 	}
 
-	/* ensure we align to at least one page */
+	 
 	return ELF_PAGEALIGN(alignment);
 }
 
-/**
- * load_elf_phdrs() - load ELF program headers
- * @elf_ex:   ELF header of the binary whose program headers should be loaded
- * @elf_file: the opened ELF binary file
- *
- * Loads ELF program headers from the binary file elf_file, which has the ELF
- * header pointed to by elf_ex, into a newly allocated array. The caller is
- * responsible for freeing the allocated data. Returns an ERR_PTR upon failure.
- */
+ 
 static struct elf_phdr *load_elf_phdrs(const struct elfhdr *elf_ex,
 				       struct file *elf_file)
 {
@@ -439,15 +376,12 @@ static struct elf_phdr *load_elf_phdrs(const struct elfhdr *elf_ex,
 	int retval, err = -1;
 	unsigned int size;
 
-	/*
-	 * If the size of this structure has changed, then punt, since
-	 * we will be doing the wrong thing.
-	 */
+	 
 	if (elf_ex->e_phentsize != sizeof(struct elf_phdr))
 		goto out;
 
-	/* Sanity check the number of program headers... */
-	/* ...and their total size. */
+	 
+	 
 	size = sizeof(struct elf_phdr) * elf_ex->e_phnum;
 	if (size == 0 || size > 65536 || size > ELF_MIN_ALIGN)
 		goto out;
@@ -456,14 +390,14 @@ static struct elf_phdr *load_elf_phdrs(const struct elfhdr *elf_ex,
 	if (!elf_phdata)
 		goto out;
 
-	/* Read in the program headers */
+	 
 	retval = elf_read(elf_file, elf_phdata, size, elf_ex->e_phoff);
 	if (retval < 0) {
 		err = retval;
 		goto out;
 	}
 
-	/* Success! */
+	 
 	err = 0;
 out:
 	if (err) {
@@ -475,73 +409,32 @@ out:
 
 #ifndef CONFIG_ARCH_BINFMT_ELF_STATE
 
-/**
- * struct arch_elf_state - arch-specific ELF loading state
- *
- * This structure is used to preserve architecture specific data during
- * the loading of an ELF file, throughout the checking of architecture
- * specific ELF headers & through to the point where the ELF load is
- * known to be proceeding (ie. SET_PERSONALITY).
- *
- * This implementation is a dummy for architectures which require no
- * specific state.
- */
+ 
 struct arch_elf_state {
 };
 
 #define INIT_ARCH_ELF_STATE {}
 
-/**
- * arch_elf_pt_proc() - check a PT_LOPROC..PT_HIPROC ELF program header
- * @ehdr:	The main ELF header
- * @phdr:	The program header to check
- * @elf:	The open ELF file
- * @is_interp:	True if the phdr is from the interpreter of the ELF being
- *		loaded, else false.
- * @state:	Architecture-specific state preserved throughout the process
- *		of loading the ELF.
- *
- * Inspects the program header phdr to validate its correctness and/or
- * suitability for the system. Called once per ELF program header in the
- * range PT_LOPROC to PT_HIPROC, for both the ELF being loaded and its
- * interpreter.
- *
- * Return: Zero to proceed with the ELF load, non-zero to fail the ELF load
- *         with that return code.
- */
+ 
 static inline int arch_elf_pt_proc(struct elfhdr *ehdr,
 				   struct elf_phdr *phdr,
 				   struct file *elf, bool is_interp,
 				   struct arch_elf_state *state)
 {
-	/* Dummy implementation, always proceed */
+	 
 	return 0;
 }
 
-/**
- * arch_check_elf() - check an ELF executable
- * @ehdr:	The main ELF header
- * @has_interp:	True if the ELF has an interpreter, else false.
- * @interp_ehdr: The interpreter's ELF header
- * @state:	Architecture-specific state preserved throughout the process
- *		of loading the ELF.
- *
- * Provides a final opportunity for architecture code to reject the loading
- * of the ELF & cause an exec syscall to return an error. This is called after
- * all program headers to be checked by arch_elf_pt_proc have been.
- *
- * Return: Zero to proceed with the ELF load, non-zero to fail the ELF load
- *         with that return code.
- */
+ 
 static inline int arch_check_elf(struct elfhdr *ehdr, bool has_interp,
 				 struct elfhdr *interp_ehdr,
 				 struct arch_elf_state *state)
 {
-	/* Dummy implementation, always proceed */
+	 
 	return 0;
 }
 
-#endif /* !CONFIG_ARCH_BINFMT_ELF_STATE */
+#endif  
 
 static inline int make_prot(u32 p_flags, struct arch_elf_state *arch_state,
 			    bool has_interp, bool is_interp)
@@ -558,10 +451,7 @@ static inline int make_prot(u32 p_flags, struct arch_elf_state *arch_state,
 	return arch_elf_adjust_prot(prot, arch_state, has_interp, is_interp);
 }
 
-/* This is much more generalized than the library routine read function,
-   so we keep this separate.  Technically the library read function
-   is only provided so that we can read a.out libraries that have
-   an ELF header */
+ 
 
 static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
 		struct file *interpreter,
@@ -577,7 +467,7 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
 	unsigned long total_size;
 	int i;
 
-	/* First of all, some simple consistency checks */
+	 
 	if (interp_elf_ex->e_type != ET_EXEC &&
 	    interp_elf_ex->e_type != ET_DYN)
 		goto out;
@@ -622,11 +512,7 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
 				load_addr_set = 1;
 			}
 
-			/*
-			 * Check to see if the section's size will overflow the
-			 * allowed task size. Note that p_filesz must always be
-			 * <= p_memsize so it's only necessary to check p_memsz.
-			 */
+			 
 			k = load_addr + eppnt->p_vaddr;
 			if (BAD_ADDR(k) ||
 			    eppnt->p_filesz > eppnt->p_memsz ||
@@ -636,18 +522,12 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
 				goto out;
 			}
 
-			/*
-			 * Find the end of the file mapping for this phdr, and
-			 * keep track of the largest address we see for this.
-			 */
+			 
 			k = load_addr + eppnt->p_vaddr + eppnt->p_filesz;
 			if (k > elf_bss)
 				elf_bss = k;
 
-			/*
-			 * Do the same thing for the memory mapping - between
-			 * elf_bss and last_bss is the bss section.
-			 */
+			 
 			k = load_addr + eppnt->p_vaddr + eppnt->p_memsz;
 			if (k > last_bss) {
 				last_bss = k;
@@ -656,23 +536,15 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
 		}
 	}
 
-	/*
-	 * Now fill out the bss section: first pad the last page from
-	 * the file up to the page boundary, and zero it from elf_bss
-	 * up to the end of the page.
-	 */
+	 
 	if (padzero(elf_bss)) {
 		error = -EFAULT;
 		goto out;
 	}
-	/*
-	 * Next, align both the file and mem bss up to the page size,
-	 * since this is where elf_bss was just zeroed up to, and where
-	 * last_bss will end after the vm_brk_flags() below.
-	 */
+	 
 	elf_bss = ELF_PAGEALIGN(elf_bss);
 	last_bss = ELF_PAGEALIGN(last_bss);
-	/* Finally, if there is still more bss to allocate, do it. */
+	 
 	if (last_bss > elf_bss) {
 		error = vm_brk_flags(elf_bss, last_bss - elf_bss,
 				bss_prot & PROT_EXEC ? VM_EXEC : 0);
@@ -685,53 +557,14 @@ out:
 	return error;
 }
 
-/*
- * These are the functions used to load ELF style executables and shared
- * libraries.  There is no binary dependent code anywhere else.
- */
+ 
 
-static int parse_elf_property(const char *data, size_t *off, size_t datasz,
+static int __maybe_unused parse_elf_property(const char *data, size_t *off, size_t datasz,
 			      struct arch_elf_state *arch,
 			      bool have_prev_type, u32 *prev_type)
 {
-	size_t o, step;
-	const struct gnu_property *pr;
-	int ret;
-
-	if (*off == datasz)
-		return -ENOENT;
-
-	if (WARN_ON_ONCE(*off > datasz || *off % ELF_GNU_PROPERTY_ALIGN))
-		return -EIO;
-	o = *off;
-	datasz -= *off;
-
-	if (datasz < sizeof(*pr))
-		return -ENOEXEC;
-	pr = (const struct gnu_property *)(data + o);
-	o += sizeof(*pr);
-	datasz -= sizeof(*pr);
-
-	if (pr->pr_datasz > datasz)
-		return -ENOEXEC;
-
-	WARN_ON_ONCE(o % ELF_GNU_PROPERTY_ALIGN);
-	step = round_up(pr->pr_datasz, ELF_GNU_PROPERTY_ALIGN);
-	if (step > datasz)
-		return -ENOEXEC;
-
-	/* Properties are supposed to be unique and sorted on pr_type: */
-	if (have_prev_type && pr->pr_type <= *prev_type)
-		return -ENOEXEC;
-	*prev_type = pr->pr_type;
-
-	ret = arch_parse_elf_property(pr->pr_type, data + o,
-				      pr->pr_datasz, ELF_COMPAT, arch);
-	if (ret)
-		return ret;
-
-	*off = o + step;
-	return 0;
+	/* Stub: parse_elf_property not used when parse_elf_properties is stubbed */
+	return -ENOENT;
 }
 
 #define NOTE_DATA_SZ SZ_1K
@@ -741,63 +574,13 @@ static int parse_elf_property(const char *data, size_t *off, size_t datasz,
 static int parse_elf_properties(struct file *f, const struct elf_phdr *phdr,
 				struct arch_elf_state *arch)
 {
-	union {
-		struct elf_note nhdr;
-		char data[NOTE_DATA_SZ];
-	} note;
-	loff_t pos;
-	ssize_t n;
-	size_t off, datasz;
-	int ret;
-	bool have_prev_type;
-	u32 prev_type;
-
-	if (!IS_ENABLED(CONFIG_ARCH_USE_GNU_PROPERTY) || !phdr)
-		return 0;
-
-	/* load_elf_binary() shouldn't call us unless this is true... */
-	if (WARN_ON_ONCE(phdr->p_type != PT_GNU_PROPERTY))
-		return -ENOEXEC;
-
-	/* If the properties are crazy large, that's too bad (for now): */
-	if (phdr->p_filesz > sizeof(note))
-		return -ENOEXEC;
-
-	pos = phdr->p_offset;
-	n = kernel_read(f, &note, phdr->p_filesz, &pos);
-
-	BUILD_BUG_ON(sizeof(note) < sizeof(note.nhdr) + NOTE_NAME_SZ);
-	if (n < 0 || n < sizeof(note.nhdr) + NOTE_NAME_SZ)
-		return -EIO;
-
-	if (note.nhdr.n_type != NT_GNU_PROPERTY_TYPE_0 ||
-	    note.nhdr.n_namesz != NOTE_NAME_SZ ||
-	    strncmp(note.data + sizeof(note.nhdr),
-		    GNU_PROPERTY_TYPE_0_NAME, n - sizeof(note.nhdr)))
-		return -ENOEXEC;
-
-	off = round_up(sizeof(note.nhdr) + NOTE_NAME_SZ,
-		       ELF_GNU_PROPERTY_ALIGN);
-	if (off > n)
-		return -ENOEXEC;
-
-	if (note.nhdr.n_descsz > n - off)
-		return -ENOEXEC;
-	datasz = off + note.nhdr.n_descsz;
-
-	have_prev_type = false;
-	do {
-		ret = parse_elf_property(note.data, &off, datasz, arch,
-					 have_prev_type, &prev_type);
-		have_prev_type = true;
-	} while (!ret);
-
-	return ret == -ENOENT ? 0 : ret;
+	/* Stub: GNU properties not needed for minimal kernel */
+	return 0;
 }
 
 static int load_elf_binary(struct linux_binprm *bprm)
 {
-	struct file *interpreter = NULL; /* to shut gcc up */
+	struct file *interpreter = NULL;  
 	unsigned long load_bias = 0, phdr_addr = 0;
 	int first_pt_load = 1;
 	unsigned long error;
@@ -819,7 +602,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	struct pt_regs *regs;
 
 	retval = -ENOEXEC;
-	/* First of all, some simple consistency checks */
+	 
 	if (memcmp(elf_ex->e_ident, ELFMAG, SELFMAG) != 0)
 		goto out;
 
@@ -848,10 +631,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		if (elf_ppnt->p_type != PT_INTERP)
 			continue;
 
-		/*
-		 * This is the program interpreter used for shared libraries -
-		 * for now assume that this is an a.out format binary.
-		 */
+		 
 		retval = -ENOEXEC;
 		if (elf_ppnt->p_filesz > PATH_MAX || elf_ppnt->p_filesz < 2)
 			goto out_free_ph;
@@ -865,7 +645,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 				  elf_ppnt->p_offset);
 		if (retval < 0)
 			goto out_free_interp;
-		/* make sure path is NULL terminated */
+		 
 		retval = -ENOEXEC;
 		if (elf_interpreter[elf_ppnt->p_filesz - 1] != '\0')
 			goto out_free_interp;
@@ -876,10 +656,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		if (IS_ERR(interpreter))
 			goto out_free_ph;
 
-		/*
-		 * If the binary is not readable then enforce mm->dumpable = 0
-		 * regardless of the interpreter's permissions.
-		 */
+		 
 		would_dump(bprm, interpreter);
 
 		interp_elf_ex = kmalloc(sizeof(*interp_elf_ex), GFP_KERNEL);
@@ -888,7 +665,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			goto out_free_ph;
 		}
 
-		/* Get the exec headers */
+		 
 		retval = elf_read(interpreter, interp_elf_ex,
 				  sizeof(*interp_elf_ex), 0);
 		if (retval < 0)
@@ -920,24 +697,24 @@ out_free_interp:
 			break;
 		}
 
-	/* Some simple consistency checks for the interpreter */
+	 
 	if (interpreter) {
 		retval = -ELIBBAD;
-		/* Not an ELF interpreter */
+		 
 		if (memcmp(interp_elf_ex->e_ident, ELFMAG, SELFMAG) != 0)
 			goto out_free_dentry;
-		/* Verify the interpreter has a valid arch */
+		 
 		if (!elf_check_arch(interp_elf_ex) ||
 		    elf_check_fdpic(interp_elf_ex))
 			goto out_free_dentry;
 
-		/* Load the interpreter program headers */
+		 
 		interp_elf_phdata = load_elf_phdrs(interp_elf_ex,
 						   interpreter);
 		if (!interp_elf_phdata)
 			goto out_free_dentry;
 
-		/* Pass PT_LOPROC..PT_HIPROC headers to arch code */
+		 
 		elf_property_phdata = NULL;
 		elf_ppnt = interp_elf_phdata;
 		for (i = 0; i < interp_elf_ex->e_phnum; i++, elf_ppnt++)
@@ -961,24 +738,19 @@ out_free_interp:
 	if (retval)
 		goto out_free_dentry;
 
-	/*
-	 * Allow arch code to reject the ELF at this point, whilst it's
-	 * still possible to return an error to the code that invoked
-	 * the exec syscall.
-	 */
+	 
 	retval = arch_check_elf(elf_ex,
 				!!interpreter, interp_elf_ex,
 				&arch_state);
 	if (retval)
 		goto out_free_dentry;
 
-	/* Flush all traces of the currently running executable */
+	 
 	retval = begin_new_exec(bprm);
 	if (retval)
 		goto out_free_dentry;
 
-	/* Do this immediately, since STACK_TOP as used in setup_arg_pages
-	   may depend on the personality.  */
+	 
 	SET_PERSONALITY2(*elf_ex, &arch_state);
 	if (elf_read_implies_exec(*elf_ex, executable_stack))
 		current->personality |= READ_IMPLIES_EXEC;
@@ -988,8 +760,7 @@ out_free_interp:
 
 	setup_new_exec(bprm);
 
-	/* Do this so that we can load the interpreter, if need be.  We will
-	   change some of these later */
+	 
 	retval = setup_arg_pages(bprm, randomize_stack_top(STACK_TOP),
 				 executable_stack);
 	if (retval < 0)
@@ -1003,8 +774,7 @@ out_free_interp:
 	start_data = 0;
 	end_data = 0;
 
-	/* Now we do a little grungy work by mmapping the ELF image into
-	   the correct location in memory. */
+	 
 	for(i = 0, elf_ppnt = elf_phdata;
 	    i < elf_ex->e_phnum; i++, elf_ppnt++) {
 		int elf_prot, elf_flags;
@@ -1018,9 +788,7 @@ out_free_interp:
 		if (unlikely (elf_brk > elf_bss)) {
 			unsigned long nbyte;
 	            
-			/* There was a PT_LOAD segment with p_memsz > p_filesz
-			   before this one. Map anonymous pages, if needed,
-			   and clear the area.  */
+			 
 			retval = set_brk(elf_bss + load_bias,
 					 elf_brk + load_bias,
 					 bss_prot);
@@ -1033,11 +801,7 @@ out_free_interp:
 					nbyte = elf_brk - elf_bss;
 				if (clear_user((void __user *)elf_bss +
 							load_bias, nbyte)) {
-					/*
-					 * This bss-zeroing can fail if the ELF
-					 * file specifies odd protections. So
-					 * we don't check the return value
-					 */
+					 
 				}
 			}
 		}
@@ -1048,49 +812,14 @@ out_free_interp:
 		elf_flags = MAP_PRIVATE;
 
 		vaddr = elf_ppnt->p_vaddr;
-		/*
-		 * The first time through the loop, first_pt_load is true:
-		 * layout will be calculated. Once set, use MAP_FIXED since
-		 * we know we've already safely mapped the entire region with
-		 * MAP_FIXED_NOREPLACE in the once-per-binary logic following.
-		 */
+		 
 		if (!first_pt_load) {
 			elf_flags |= MAP_FIXED;
 		} else if (elf_ex->e_type == ET_EXEC) {
-			/*
-			 * This logic is run once for the first LOAD Program
-			 * Header for ET_EXEC binaries. No special handling
-			 * is needed.
-			 */
+			 
 			elf_flags |= MAP_FIXED_NOREPLACE;
 		} else if (elf_ex->e_type == ET_DYN) {
-			/*
-			 * This logic is run once for the first LOAD Program
-			 * Header for ET_DYN binaries to calculate the
-			 * randomization (load_bias) for all the LOAD
-			 * Program Headers.
-			 *
-			 * There are effectively two types of ET_DYN
-			 * binaries: programs (i.e. PIE: ET_DYN with INTERP)
-			 * and loaders (ET_DYN without INTERP, since they
-			 * _are_ the ELF interpreter). The loaders must
-			 * be loaded away from programs since the program
-			 * may otherwise collide with the loader (especially
-			 * for ET_EXEC which does not have a randomized
-			 * position). For example to handle invocations of
-			 * "./ld.so someprog" to test out a new version of
-			 * the loader, the subsequent program that the
-			 * loader loads must avoid the loader itself, so
-			 * they cannot share the same load range. Sufficient
-			 * room for the brk must be allocated with the
-			 * loader as well, since brk must be available with
-			 * the loader.
-			 *
-			 * Therefore, programs are loaded offset from
-			 * ELF_ET_DYN_BASE and loaders are loaded into the
-			 * independently randomized mmap region (0 load_bias
-			 * without MAP_FIXED nor MAP_FIXED_NOREPLACE).
-			 */
+			 
 			if (interpreter) {
 				load_bias = ELF_ET_DYN_BASE;
 				if (current->flags & PF_RANDOMIZE)
@@ -1102,33 +831,10 @@ out_free_interp:
 			} else
 				load_bias = 0;
 
-			/*
-			 * Since load_bias is used for all subsequent loading
-			 * calculations, we must lower it by the first vaddr
-			 * so that the remaining calculations based on the
-			 * ELF vaddrs will be correctly offset. The result
-			 * is then page aligned.
-			 */
+			 
 			load_bias = ELF_PAGESTART(load_bias - vaddr);
 
-			/*
-			 * Calculate the entire size of the ELF mapping
-			 * (total_size), used for the initial mapping,
-			 * due to load_addr_set which is set to true later
-			 * once the initial mapping is performed.
-			 *
-			 * Note that this is only sensible when the LOAD
-			 * segments are contiguous (or overlapping). If
-			 * used for LOADs that are far apart, this would
-			 * cause the holes between LOADs to be mapped,
-			 * running the risk of having the mapping fail,
-			 * as it would be larger than the ELF file itself.
-			 *
-			 * As a result, only ET_DYN does this, since
-			 * some ET_EXEC (e.g. ia64) may have large virtual
-			 * memory holes between LOADs.
-			 *
-			 */
+			 
 			total_size = total_mapping_size(elf_phdata,
 							elf_ex->e_phnum);
 			if (!total_size) {
@@ -1154,10 +860,7 @@ out_free_interp:
 			}
 		}
 
-		/*
-		 * Figure out which segment in the file contains the Program
-		 * Header table, and map to the associated memory address.
-		 */
+		 
 		if (elf_ppnt->p_offset <= elf_ex->e_phoff &&
 		    elf_ex->e_phoff < elf_ppnt->p_offset + elf_ppnt->p_filesz) {
 			phdr_addr = elf_ex->e_phoff - elf_ppnt->p_offset +
@@ -1170,15 +873,11 @@ out_free_interp:
 		if (start_data < k)
 			start_data = k;
 
-		/*
-		 * Check to see if the section's size will overflow the
-		 * allowed task size. Note that p_filesz must always be
-		 * <= p_memsz so it is only necessary to check p_memsz.
-		 */
+		 
 		if (BAD_ADDR(k) || elf_ppnt->p_filesz > elf_ppnt->p_memsz ||
 		    elf_ppnt->p_memsz > TASK_SIZE ||
 		    TASK_SIZE - elf_ppnt->p_memsz < k) {
-			/* set_brk can never work. Avoid overflows. */
+			 
 			retval = -EINVAL;
 			goto out_free_dentry;
 		}
@@ -1207,16 +906,12 @@ out_free_interp:
 	start_data += load_bias;
 	end_data += load_bias;
 
-	/* Calling set_brk effectively mmaps the pages that we need
-	 * for the bss and break sections.  We must do this before
-	 * mapping in the interpreter, to make sure it doesn't wind
-	 * up getting placed where the bss needs to go.
-	 */
+	 
 	retval = set_brk(elf_bss, elf_brk, bss_prot);
 	if (retval)
 		goto out_free_dentry;
 	if (likely(elf_bss != elf_brk) && unlikely(padzero(elf_bss))) {
-		retval = -EFAULT; /* Nobody gets to see this, but.. */
+		retval = -EFAULT;  
 		goto out_free_dentry;
 	}
 
@@ -1226,10 +921,7 @@ out_free_interp:
 					    load_bias, interp_elf_phdata,
 					    &arch_state);
 		if (!IS_ERR((void *)elf_entry)) {
-			/*
-			 * load_elf_interp() returns relocation
-			 * adjustment
-			 */
+			 
 			interp_load_addr = elf_entry;
 			elf_entry += interp_elf_ex->e_entry;
 		}
@@ -1261,7 +953,7 @@ out_free_interp:
 	retval = ARCH_SETUP_ADDITIONAL_PAGES(bprm, elf_ex, !!interpreter);
 	if (retval < 0)
 		goto out;
-#endif /* ARCH_HAS_SETUP_ADDITIONAL_PAGES */
+#endif  
 
 	retval = create_elf_tables(bprm, elf_ex, interp_load_addr,
 				   e_entry, phdr_addr);
@@ -1276,13 +968,7 @@ out_free_interp:
 	mm->start_stack = bprm->p;
 
 	if ((current->flags & PF_RANDOMIZE) && (randomize_va_space > 1)) {
-		/*
-		 * For architectures with ELF randomization, when executing
-		 * a loader directly (i.e. no interpreter listed in ELF
-		 * headers), move the brk area out of the mmap region
-		 * (since it grows up, and may collide early with the stack
-		 * growing down), and into the unused ELF_ET_DYN_BASE region.
-		 */
+		 
 		if (IS_ENABLED(CONFIG_ARCH_HAS_ELF_RANDOMIZE) &&
 		    elf_ex->e_type == ET_DYN && !interpreter) {
 			mm->brk = mm->start_brk = ELF_ET_DYN_BASE;
@@ -1295,26 +981,14 @@ out_free_interp:
 	}
 
 	if (current->personality & MMAP_PAGE_ZERO) {
-		/* Why this, you ask???  Well SVr4 maps page 0 as read-only,
-		   and some applications "depend" upon this behavior.
-		   Since we do not have the power to recompile these, we
-		   emulate the SVr4 behavior. Sigh. */
+		 
 		error = vm_mmap(NULL, 0, PAGE_SIZE, PROT_READ | PROT_EXEC,
 				MAP_FIXED | MAP_PRIVATE, 0);
 	}
 
 	regs = current_pt_regs();
 #ifdef ELF_PLAT_INIT
-	/*
-	 * The ABI may specify that certain registers be set up in special
-	 * ways (on i386 %edx is the address of a DT_FINI function, for
-	 * example.  In addition, it may also specify (eg, PowerPC64 ELF)
-	 * that the e_entry field is the address of the function descriptor
-	 * for the startup routine, rather than the address of the startup
-	 * routine itself.  This macro performs whatever initialization to
-	 * the regs structure is required as well as any relocations to the
-	 * function descriptor entries when executing dynamically links apps.
-	 */
+	 
 	ELF_PLAT_INIT(regs, reloc_func_desc);
 #endif
 
@@ -1324,7 +998,7 @@ out_free_interp:
 out:
 	return retval;
 
-	/* error cleanup */
+	 
 out_free_dentry:
 	kfree(interp_elf_ex);
 	kfree(interp_elf_phdata);
@@ -1346,7 +1020,7 @@ static int __init init_elf_binfmt(void)
 
 static void __exit exit_elf_binfmt(void)
 {
-	/* Remove the COFF and ELF loaders. */
+	 
 	unregister_binfmt(&elf_format);
 }
 

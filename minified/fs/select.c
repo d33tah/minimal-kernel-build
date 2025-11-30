@@ -1,15 +1,13 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Stubbed select.c */
+ 
+ 
 #include <linux/poll.h>
 #include <linux/export.h>
 #include <linux/syscalls.h>
 #include <linux/compat.h>
 
 void poll_initwait(struct poll_wqueues *pwq) { }
-EXPORT_SYMBOL(poll_initwait);
 
 void poll_freewait(struct poll_wqueues *pwq) { }
-EXPORT_SYMBOL(poll_freewait);
 
 struct sel_arg_struct { unsigned long n; fd_set __user *inp, *outp, *exp; struct timeval __user *tvp; };
 

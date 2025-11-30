@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
+ 
 #ifndef _ASM_X86_APIC_H
 #define _ASM_X86_APIC_H
 
@@ -15,24 +15,17 @@
 
 #define ARCH_APICTIMER_STOPS_ON_C3	1
 
-/*
- * Debugging macros
- */
+ 
 #define APIC_QUIET   0
 #define APIC_VERBOSE 1
 #define APIC_DEBUG   2
 
-/* Macros for apic_extnmi which controls external NMI masking */
-#define APIC_EXTNMI_BSP		0 /* Default */
+ 
+#define APIC_EXTNMI_BSP		0  
 #define APIC_EXTNMI_ALL		1
 #define APIC_EXTNMI_NONE	2
 
-/*
- * Define the default level of output to be very little
- * This can be turned up by using apic=verbose for more
- * information and apic=debug for _lots_ of information.
- * apic_verbosity is defined in apic.c
- */
+ 
 #define apic_printk(v, s, a...) do {       \
 		if ((v) <= apic_verbosity) \
 			printk(s, ##a);    \
@@ -66,23 +59,15 @@ static inline int x2apic_enabled(void) { return 0; }
 
 struct irq_data;
 
-/*
- * Copyright 2004 James Cleverdon, IBM.
- *
- * Generic APIC sub-arch data struct.
- *
- * Hacked for x86-64 by James Cleverdon from i386 architecture code by
- * Martin Bligh, Andi Kleen, James Bottomley, John Stultz, and
- * James Cleverdon.
- */
+ 
 struct apic {
-	/* Hotpath functions first */
+	 
 	void	(*eoi_write)(u32 reg, u32 v);
 	void	(*native_eoi_write)(u32 reg, u32 v);
 	void	(*write)(u32 reg, u32 v);
 	u32	(*read)(u32 reg);
 
-	/* IPI related functions */
+	 
 	void	(*wait_icr_idle)(void);
 	u32	(*safe_wait_icr_idle)(void);
 
@@ -100,11 +85,11 @@ struct apic {
 
 	u32	(*calc_dest_apicid)(unsigned int cpu);
 
-	/* ICR related functions */
+	 
 	u64	(*icr_read)(void);
 	void	(*icr_write)(u32 low, u32 high);
 
-	/* Probe, setup and smpboot functions */
+	 
 	int	(*probe)(void);
 	int	(*acpi_madt_oem_check)(char *oem_id, char *oem_table_id);
 	int	(*apic_id_valid)(u32 apicid);
@@ -122,42 +107,22 @@ struct apic {
 	u32	(*get_apic_id)(unsigned long x);
 	u32	(*set_apic_id)(unsigned int id);
 
-	/* wakeup_secondary_cpu */
+	 
 	int	(*wakeup_secondary_cpu)(int apicid, unsigned long start_eip);
-	/* wakeup secondary CPU using 64-bit wakeup point */
+	 
 	int	(*wakeup_secondary_cpu_64)(int apicid, unsigned long start_eip);
 
 	void	(*inquire_remote_apic)(int apicid);
 
-	/*
-	 * Called very early during boot from get_smp_config().  It should
-	 * return the logical apicid.  x86_[bios]_cpu_to_apicid is
-	 * initialized before this function is called.
-	 *
-	 * If logical apicid can't be determined that early, the function
-	 * may return BAD_APICID.  Logical apicid will be configured after
-	 * init_apic_ldr() while bringing up CPUs.  Note that NUMA affinity
-	 * won't be applied properly during early boot in this case.
-	 */
+	 
 	int (*x86_32_early_logical_apicid)(int cpu);
 	char	*name;
 };
 
-/*
- * Pointer to the local APIC driver in use on this system (there's
- * always just one such driver in use - the kernel decides via an
- * early probing process which one it picks - and then sticks to it):
- */
+ 
 extern struct apic *apic;
 
-/*
- * APIC drivers are probed based on how they are listed in the .apicdrivers
- * section. So the order is important and enforced by the ordering
- * of different apic driver files in the Makefile.
- *
- * For the files having two apic drivers, we use apic_drivers()
- * to enforce the order with in them.
- */
+ 
 #define apic_driver(sym)					\
 	static const struct apic *__apicdrivers_##sym __used		\
 	__aligned(sizeof(struct apic *))			\
@@ -170,9 +135,7 @@ extern struct apic *apic;
 
 extern struct apic *__apicdrivers[], *__apicdrivers_end[];
 
-/*
- * APIC functionality to boot other CPUs - only used on SMP:
- */
+ 
 
 
 static inline u32 apic_read(u32 reg) { return 0; }
@@ -189,10 +152,7 @@ extern void apic_ack_irq(struct irq_data *data);
 
 static inline void ack_APIC_irq(void)
 {
-	/*
-	 * ack_APIC_irq() actually gets compiled as a single instruction
-	 * ... yummie.
-	 */
+	 
 	apic_eoi();
 }
 
@@ -214,9 +174,7 @@ static inline unsigned default_get_apic_id(unsigned long x)
 		return (x >> 24) & 0x0F;
 }
 
-/*
- * Warm reset vector position:
- */
+ 
 #define TRAMPOLINE_PHYS_LOW		0x467
 #define TRAMPOLINE_PHYS_HIGH		0x469
 
@@ -234,4 +192,4 @@ extern void __irq_msi_compose_msg(struct irq_cfg *cfg, struct msi_msg *msg,
 
 extern void ioapic_zap_locks(void);
 
-#endif /* _ASM_X86_APIC_H */
+#endif  

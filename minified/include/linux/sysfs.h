@@ -1,14 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * sysfs.h - definitions for the device driver filesystem
- *
- * Copyright (c) 2001,2002 Patrick Mochel
- * Copyright (c) 2004 Silicon Graphics, Inc.
- * Copyright (c) 2007 SUSE Linux Products GmbH
- * Copyright (c) 2007 Tejun Heo <teheo@suse.de>
- *
- * Please see Documentation/filesystems/sysfs.rst for more information.
- */
+ 
+ 
 
 #ifndef _SYSFS_H_
 #define _SYSFS_H_
@@ -32,41 +23,10 @@ struct attribute {
 	umode_t			mode;
 };
 
-/**
- *	sysfs_attr_init - initialize a dynamically allocated sysfs attribute
- *	@attr: struct attribute to initialize
- *
- *	Initialize a dynamically allocated struct attribute so we can
- *	make lockdep happy.  This is a new requirement for attributes
- *	and initially this is only needed when lockdep is enabled.
- *	Lockdep gives a nice error when your attribute is added to
- *	sysfs if you don't have this.
- */
+ 
 #define sysfs_attr_init(attr) do {} while (0)
 
-/**
- * struct attribute_group - data structure used to declare an attribute group.
- * @name:	Optional: Attribute group name
- *		If specified, the attribute group will be created in
- *		a new subdirectory with this name.
- * @is_visible:	Optional: Function to return permissions associated with an
- *		attribute of the group. Will be called repeatedly for each
- *		non-binary attribute in the group. Only read/write
- *		permissions as well as SYSFS_PREALLOC are accepted. Must
- *		return 0 if an attribute is not visible. The returned value
- *		will replace static permissions defined in struct attribute.
- * @is_bin_visible:
- *		Optional: Function to return permissions associated with a
- *		binary attribute of the group. Will be called repeatedly
- *		for each binary attribute in the group. Only read/write
- *		permissions as well as SYSFS_PREALLOC are accepted. Must
- *		return 0 if a binary attribute is not visible. The returned
- *		value will replace static permissions defined in
- *		struct bin_attribute.
- * @attrs:	Pointer to NULL terminated list of attributes.
- * @bin_attrs:	Pointer to NULL terminated list of binary attributes.
- *		Either attrs or bin_attrs or both must be provided.
- */
+ 
 struct attribute_group {
 	const char		*name;
 	umode_t			(*is_visible)(struct kobject *,
@@ -77,10 +37,7 @@ struct attribute_group {
 	struct bin_attribute	**bin_attrs;
 };
 
-/*
- * Use these macros to make defining attributes easier.
- * See include/linux/device.h for examples..
- */
+ 
 
 #define SYSFS_PREALLOC 010000
 
@@ -162,19 +119,10 @@ struct bin_attribute {
 		    struct vm_area_struct *vma);
 };
 
-/**
- *	sysfs_bin_attr_init - initialize a dynamically allocated bin_attribute
- *	@attr: struct bin_attribute to initialize
- *
- *	Initialize a dynamically allocated struct bin_attribute so we
- *	can make lockdep happy.  This is a new requirement for
- *	attributes and initially this is only needed when lockdep is
- *	enabled.  Lockdep gives a nice error when your attribute is
- *	added to sysfs if you don't have this.
- */
+ 
 #define sysfs_bin_attr_init(bin_attr) sysfs_attr_init(&(bin_attr)->attr)
 
-/* macros to create static binary attributes easier */
+ 
 #define __BIN_ATTR(_name, _mode, _read, _write, _size) {		\
 	.attr = { .name = __stringify(_name), .mode = _mode },		\
 	.read	= _read,						\
@@ -240,32 +188,10 @@ static inline int sysfs_move_dir_ns(struct kobject *kobj,
 	return 0;
 }
 
-static inline int sysfs_create_mount_point(struct kobject *parent_kobj,
-					   const char *name)
-{
-	return 0;
-}
-
-static inline void sysfs_remove_mount_point(struct kobject *parent_kobj,
-					    const char *name)
-{
-}
 
 static inline int sysfs_create_file_ns(struct kobject *kobj,
 				       const struct attribute *attr,
 				       const void *ns)
-{
-	return 0;
-}
-
-static inline int sysfs_create_files(struct kobject *kobj,
-				    const struct attribute * const *attr)
-{
-	return 0;
-}
-
-static inline int sysfs_chmod_file(struct kobject *kobj,
-				   const struct attribute *attr, umode_t mode)
 {
 	return 0;
 }
@@ -275,10 +201,6 @@ sysfs_break_active_protection(struct kobject *kobj,
 			      const struct attribute *attr)
 {
 	return NULL;
-}
-
-static inline void sysfs_unbreak_active_protection(struct kernfs_node *kn)
-{
 }
 
 static inline void sysfs_remove_file_ns(struct kobject *kobj,
@@ -291,11 +213,6 @@ static inline bool sysfs_remove_file_self(struct kobject *kobj,
 					  const struct attribute *attr)
 {
 	return false;
-}
-
-static inline void sysfs_remove_files(struct kobject *kobj,
-				     const struct attribute * const *attr)
-{
 }
 
 static inline int sysfs_create_bin_file(struct kobject *kobj,
@@ -311,13 +228,6 @@ static inline void sysfs_remove_bin_file(struct kobject *kobj,
 
 static inline int sysfs_create_link(struct kobject *kobj,
 				    struct kobject *target, const char *name)
-{
-	return 0;
-}
-
-static inline int sysfs_create_link_nowarn(struct kobject *kobj,
-					   struct kobject *target,
-					   const char *name)
 {
 	return 0;
 }
@@ -350,18 +260,6 @@ static inline int sysfs_create_groups(struct kobject *kobj,
 	return 0;
 }
 
-static inline int sysfs_update_groups(struct kobject *kobj,
-				      const struct attribute_group **groups)
-{
-	return 0;
-}
-
-static inline int sysfs_update_group(struct kobject *kobj,
-				const struct attribute_group *grp)
-{
-	return 0;
-}
-
 static inline void sysfs_remove_group(struct kobject *kobj,
 				      const struct attribute_group *grp)
 {
@@ -370,48 +268,6 @@ static inline void sysfs_remove_group(struct kobject *kobj,
 static inline void sysfs_remove_groups(struct kobject *kobj,
 				       const struct attribute_group **groups)
 {
-}
-
-static inline int sysfs_add_file_to_group(struct kobject *kobj,
-		const struct attribute *attr, const char *group)
-{
-	return 0;
-}
-
-static inline void sysfs_remove_file_from_group(struct kobject *kobj,
-		const struct attribute *attr, const char *group)
-{
-}
-
-static inline int sysfs_merge_group(struct kobject *kobj,
-		       const struct attribute_group *grp)
-{
-	return 0;
-}
-
-static inline void sysfs_unmerge_group(struct kobject *kobj,
-		       const struct attribute_group *grp)
-{
-}
-
-static inline int sysfs_add_link_to_group(struct kobject *kobj,
-		const char *group_name, struct kobject *target,
-		const char *link_name)
-{
-	return 0;
-}
-
-static inline void sysfs_remove_link_from_group(struct kobject *kobj,
-		const char *group_name, const char *link_name)
-{
-}
-
-static inline int compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
-						       struct kobject *target_kobj,
-						       const char *target_name,
-						       const char *symlink_name)
-{
-	return 0;
 }
 
 static inline void sysfs_notify(struct kobject *kobj, const char *dir,
@@ -424,43 +280,7 @@ static inline int __must_check sysfs_init(void)
 	return 0;
 }
 
-static inline void sysfs_enable_ns(struct kernfs_node *kn)
-{
-}
 
-static inline int sysfs_file_change_owner(struct kobject *kobj,
-					  const char *name, kuid_t kuid,
-					  kgid_t kgid)
-{
-	return 0;
-}
-
-static inline int sysfs_link_change_owner(struct kobject *kobj,
-					  struct kobject *targ,
-					  const char *name, kuid_t kuid,
-					  kgid_t kgid)
-{
-	return 0;
-}
-
-static inline int sysfs_change_owner(struct kobject *kobj, kuid_t kuid, kgid_t kgid)
-{
-	return 0;
-}
-
-static inline int sysfs_groups_change_owner(struct kobject *kobj,
-			  const struct attribute_group **groups,
-			  kuid_t kuid, kgid_t kgid)
-{
-	return 0;
-}
-
-static inline int sysfs_group_change_owner(struct kobject *kobj,
-					   const struct attribute_group *groups,
-					   kuid_t kuid, kgid_t kgid)
-{
-	return 0;
-}
 
 __printf(2, 3)
 static inline int sysfs_emit(char *buf, const char *fmt, ...)
@@ -514,4 +334,4 @@ static inline void sysfs_put(struct kernfs_node *kn)
 	kernfs_put(kn);
 }
 
-#endif /* _SYSFS_H_ */
+#endif  

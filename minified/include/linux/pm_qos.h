@@ -1,13 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * Definitions related to Power Management Quality of Service (PM QoS).
- *
- * Copyright (C) 2020 Intel Corporation
- *
- * Authors:
- *	Mark Gross <mgross@linux.intel.com>
- *	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
- */
+ 
+ 
 
 #ifndef _LINUX_PM_QOS_H
 #define _LINUX_PM_QOS_H
@@ -16,12 +8,7 @@
 #include <linux/notifier.h>
 #include <linux/device.h>
 
-enum pm_qos_flags_status {
-	PM_QOS_FLAGS_UNDEFINED = -1,
-	PM_QOS_FLAGS_NONE,
-	PM_QOS_FLAGS_SOME,
-	PM_QOS_FLAGS_ALL,
-};
+enum pm_qos_flags_status { PM_QOS_FLAGS_UNDEFINED = -1 };
 
 #define PM_QOS_DEFAULT_VALUE	(-1)
 #define PM_QOS_LATENCY_ANY	S32_MAX
@@ -38,20 +25,12 @@ enum pm_qos_flags_status {
 
 #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
 
-enum pm_qos_type {
-	PM_QOS_UNITIALIZED,
-	PM_QOS_MAX,		/* return the largest value */
-	PM_QOS_MIN,		/* return the smallest value */
-};
+enum pm_qos_type { PM_QOS_UNITIALIZED };
 
-/*
- * Note: The lockless read path depends on the CPU accessing target_value
- * or effective_flags atomically.  Atomic access is only guaranteed on all CPU
- * types linux supports for 32 bit quantites
- */
+ 
 struct pm_qos_constraints {
 	struct plist_head list;
-	s32 target_value;	/* Do not change to 64 bit */
+	s32 target_value;	 
 	s32 default_value;
 	s32 no_constraint_value;
 	enum pm_qos_type type;
@@ -65,22 +44,19 @@ struct pm_qos_request {
 
 struct pm_qos_flags_request {
 	struct list_head node;
-	s32 flags;	/* Do not change to 64 bit */
+	s32 flags;	 
 };
 
 struct pm_qos_flags {
 	struct list_head list;
-	s32 effective_flags;	/* Do not change to 64 bit */
+	s32 effective_flags;	 
 };
 
 
 #define FREQ_QOS_MIN_DEFAULT_VALUE	0
 #define FREQ_QOS_MAX_DEFAULT_VALUE	S32_MAX
 
-enum freq_qos_req_type {
-	FREQ_QOS_MIN = 1,
-	FREQ_QOS_MAX,
-};
+enum freq_qos_req_type { FREQ_QOS_REQ_LAST };
 
 struct freq_constraints {
 	struct pm_qos_constraints min_freq;
@@ -98,10 +74,8 @@ struct freq_qos_request {
 
 enum dev_pm_qos_req_type {
 	DEV_PM_QOS_RESUME_LATENCY = 1,
-	DEV_PM_QOS_LATENCY_TOLERANCE,
 	DEV_PM_QOS_MIN_FREQUENCY,
 	DEV_PM_QOS_MAX_FREQUENCY,
-	DEV_PM_QOS_FLAGS,
 };
 
 struct dev_pm_qos_request {
@@ -124,12 +98,7 @@ struct dev_pm_qos {
 	struct dev_pm_qos_request *flags_req;
 };
 
-/* Action requested to pm_qos_update_target */
-enum pm_qos_req_action {
-	PM_QOS_ADD_REQ,		/* Add a new request */
-	PM_QOS_UPDATE_REQ,	/* Update an existing request */
-	PM_QOS_REMOVE_REQ	/* Remove an existing request */
-};
+enum pm_qos_req_action { PM_QOS_ADD_REQ };
 
 static inline int dev_pm_qos_request_active(struct dev_pm_qos_request *req)
 {

@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_IO_APIC_H
 #define _ASM_X86_IO_APIC_H
 
@@ -7,15 +7,9 @@
 #include <asm/apicdef.h>
 #include <asm/irq_vectors.h>
 #include <asm/x86_init.h>
-/*
- * Intel IO-APIC support for SMP and UP systems.
- *
- * Copyright (C) 1997, 1998, 1999, 2000 Ingo Molnar
- */
+ 
 
-/*
- * The structure of the IO-APIC:
- */
+ 
 union IO_APIC_reg_00 {
 	u32	raw;
 	struct {
@@ -132,4 +126,4 @@ static inline void enable_IO_APIC(void) { }
 static inline void restore_boot_irq_mode(void) { }
 
 
-#endif /* _ASM_X86_IO_APIC_H */
+#endif  

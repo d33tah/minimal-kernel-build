@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_TTY_BUFFER_H
 #define _LINUX_TTY_BUFFER_H
 
@@ -17,12 +17,12 @@ struct tty_buffer {
 	int commit;
 	int read;
 	int flags;
-	/* Data points here */
+	 
 	unsigned long data[];
 };
 
-/* Values for .flags field of tty_buffer */
-#define TTYB_NORMAL	1	/* buffer has no flags buffer */
+ 
+#define TTYB_NORMAL	1	 
 
 static inline unsigned char *char_buf_ptr(struct tty_buffer *b, int ofs)
 {
@@ -35,21 +35,18 @@ static inline char *flag_buf_ptr(struct tty_buffer *b, int ofs)
 }
 
 struct tty_bufhead {
-	struct tty_buffer *head;	/* Queue head */
+	struct tty_buffer *head;	 
 	struct work_struct work;
 	struct mutex	   lock;
 	atomic_t	   priority;
 	struct tty_buffer sentinel;
-	struct llist_head free;		/* Free queue head */
-	atomic_t	   mem_used;    /* In-use buffers excluding free list */
+	struct llist_head free;		 
+	atomic_t	   mem_used;     
 	int		   mem_limit;
-	struct tty_buffer *tail;	/* Active buffer */
+	struct tty_buffer *tail;	 
 };
 
-/*
- * When a break, frame error, or parity error happens, these codes are
- * stuffed into the flags buffer.
- */
+ 
 #define TTY_NORMAL	0
 #define TTY_BREAK	1
 #define TTY_FRAME	2

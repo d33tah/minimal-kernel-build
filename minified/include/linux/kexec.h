@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef LINUX_KEXEC_H
 #define LINUX_KEXEC_H
 
@@ -20,22 +20,13 @@
 
 
 
-/* Location of a reserved region to hold the crash kernel.
- */
-extern struct resource crashk_res;
-extern struct resource crashk_low_res;
-extern note_buf_t __percpu *crash_notes;
-
 struct pt_regs;
 struct task_struct;
 static inline void __crash_kexec(struct pt_regs *regs) { }
 static inline void crash_kexec(struct pt_regs *regs) { }
 static inline int kexec_should_crash(struct task_struct *p) { return 0; }
-static inline int kexec_crash_loaded(void) { return 0; }
-#define kexec_in_progress false
+/* kexec_crash_loaded, kexec_in_progress, set_kexec_sig_enforced removed - unused */
 
-static inline void set_kexec_sig_enforced(void) {}
+#endif  
 
-#endif /* !defined(__ASSEBMLY__) */
-
-#endif /* LINUX_KEXEC_H */
+#endif  

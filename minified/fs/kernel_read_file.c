@@ -1,11 +1,10 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 #include <linux/fs.h>
 #include <linux/fs_struct.h>
 #include <linux/kernel_read_file.h>
-#include <linux/security.h>
 #include <linux/vmalloc.h>
 
-/* Minimal stub - kernel_read_file not used by minimal init */
+ 
 
 int kernel_read_file(struct file *file, loff_t offset, void **buf,
 		     size_t buf_size, size_t *file_size,
@@ -13,7 +12,6 @@ int kernel_read_file(struct file *file, loff_t offset, void **buf,
 {
 	return -ENOSYS;
 }
-EXPORT_SYMBOL_GPL(kernel_read_file);
 
 int kernel_read_file_from_path(const char *path, loff_t offset, void **buf,
 			       size_t buf_size, size_t *file_size,
@@ -21,7 +19,6 @@ int kernel_read_file_from_path(const char *path, loff_t offset, void **buf,
 {
 	return -ENOSYS;
 }
-EXPORT_SYMBOL_GPL(kernel_read_file_from_path);
 
 int kernel_read_file_from_path_initns(const char *path, loff_t offset,
 				      void **buf, size_t buf_size,
@@ -30,7 +27,6 @@ int kernel_read_file_from_path_initns(const char *path, loff_t offset,
 {
 	return -ENOSYS;
 }
-EXPORT_SYMBOL_GPL(kernel_read_file_from_path_initns);
 
 int kernel_read_file_from_fd(int fd, loff_t offset, void **buf,
 			     size_t buf_size, size_t *file_size,
@@ -38,4 +34,3 @@ int kernel_read_file_from_fd(int fd, loff_t offset, void **buf,
 {
 	return -ENOSYS;
 }
-EXPORT_SYMBOL_GPL(kernel_read_file_from_fd);

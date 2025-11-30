@@ -1,15 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/*
- *  linux/mm/vmstat.c
- *
- *  Manages VM statistics
- *  Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
- *
- *  zoned VM statistics
- *  Copyright (C) 2006 Silicon Graphics, Inc.,
- *		Christoph Lameter <christoph@lameter.com>
- *  Copyright (C) 2008-2014 Christoph Lameter
- */
+ 
+ 
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/err.h>
@@ -34,151 +24,21 @@
 
 
 
-/*
- * Manage combined zone based / global counters
- *
- * vm_stat contains the global counters
- */
+ 
 atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS] __cacheline_aligned_in_smp;
 atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS] __cacheline_aligned_in_smp;
 atomic_long_t vm_numa_event[NR_VM_NUMA_EVENT_ITEMS] __cacheline_aligned_in_smp;
-EXPORT_SYMBOL(vm_zone_stat);
-EXPORT_SYMBOL(vm_node_stat);
 
 
 
 
 
+/* Minimal vmstat_text - only essential entries for basic kernel operation */
 #if defined(CONFIG_PROC_FS) || defined(CONFIG_SYSFS) || \
     defined(CONFIG_NUMA) || defined(CONFIG_MEMCG)
-#define TEXT_FOR_DMA(xx)
-
-#define TEXT_FOR_DMA32(xx)
-
-#define TEXT_FOR_HIGHMEM(xx)
-
-#define TEXTS_FOR_ZONES(xx) TEXT_FOR_DMA(xx) TEXT_FOR_DMA32(xx) xx "_normal", \
-					TEXT_FOR_HIGHMEM(xx) xx "_movable",
-
 const char * const vmstat_text[] = {
-	/* enum zone_stat_item counters */
 	"nr_free_pages",
-	"nr_zone_inactive_anon",
-	"nr_zone_active_anon",
-	"nr_zone_inactive_file",
-	"nr_zone_active_file",
-	"nr_zone_unevictable",
-	"nr_zone_write_pending",
-	"nr_mlock",
-	"nr_bounce",
-#if IS_ENABLED(CONFIG_ZSMALLOC)
-	"nr_zspages",
-#endif
-	"nr_free_cma",
-
-	/* enum numa_stat_item counters */
-
-	/* enum node_stat_item counters */
-	"nr_inactive_anon",
-	"nr_active_anon",
-	"nr_inactive_file",
-	"nr_active_file",
-	"nr_unevictable",
-	"nr_slab_reclaimable",
-	"nr_slab_unreclaimable",
-	"nr_isolated_anon",
-	"nr_isolated_file",
-	"workingset_nodes",
-	"workingset_refault_anon",
-	"workingset_refault_file",
-	"workingset_activate_anon",
-	"workingset_activate_file",
-	"workingset_restore_anon",
-	"workingset_restore_file",
-	"workingset_nodereclaim",
-	"nr_anon_pages",
-	"nr_mapped",
-	"nr_file_pages",
-	"nr_dirty",
-	"nr_writeback",
-	"nr_writeback_temp",
-	"nr_shmem",
-	"nr_shmem_hugepages",
-	"nr_shmem_pmdmapped",
-	"nr_file_hugepages",
-	"nr_file_pmdmapped",
-	"nr_anon_transparent_hugepages",
-	"nr_vmscan_write",
-	"nr_vmscan_immediate_reclaim",
-	"nr_dirtied",
-	"nr_written",
-	"nr_throttled_written",
-	"nr_kernel_misc_reclaimable",
-	"nr_foll_pin_acquired",
-	"nr_foll_pin_released",
-	"nr_kernel_stack",
-#if IS_ENABLED(CONFIG_SHADOW_CALL_STACK)
-	"nr_shadow_call_stack",
-#endif
-	"nr_page_table_pages",
-
-	/* enum writeback_stat_item counters */
-	"nr_dirty_threshold",
-	"nr_dirty_background_threshold",
-
 };
-#endif /* CONFIG_PROC_FS || CONFIG_SYSFS || CONFIG_NUMA || CONFIG_MEMCG */
-
-#if (defined(CONFIG_DEBUG_FS) && defined(CONFIG_COMPACTION)) || \
-     defined(CONFIG_PROC_FS)
-static void *frag_start(struct seq_file *m, loff_t *pos)
-{
-	pg_data_t *pgdat;
-	loff_t node = *pos;
-
-	for (pgdat = first_online_pgdat();
-	     pgdat && node;
-	     pgdat = next_online_pgdat(pgdat))
-		--node;
-
-	return pgdat;
-}
-
-static void *frag_next(struct seq_file *m, void *arg, loff_t *pos)
-{
-	pg_data_t *pgdat = (pg_data_t *)arg;
-
-	(*pos)++;
-	return next_online_pgdat(pgdat);
-}
-
-static void frag_stop(struct seq_file *m, void *arg)
-{
-}
-
-/*
- * Walk zones in a node and print using a callback.
- * If @assert_populated is true, only use callback for zones that are populated.
- */
-static void walk_zones_in_node(struct seq_file *m, pg_data_t *pgdat,
-		bool assert_populated, bool nolock,
-		void (*print)(struct seq_file *m, pg_data_t *, struct zone *))
-{
-	struct zone *zone;
-	struct zone *node_zones = pgdat->node_zones;
-	unsigned long flags;
-
-	for (zone = node_zones; zone - node_zones < MAX_NR_ZONES; ++zone) {
-		if (assert_populated && !populated_zone(zone))
-			continue;
-
-		if (!nolock)
-			spin_lock_irqsave(&zone->lock, flags);
-		print(m, pgdat, zone);
-		if (!nolock)
-			spin_unlock_irqrestore(&zone->lock, flags);
-	}
-}
 #endif
 
 

@@ -1,20 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
+ 
 #ifndef _LINUX_KPROBES_H
 #define _LINUX_KPROBES_H
-/*
- *  Kernel Probes (KProbes)
- *
- * Copyright (C) IBM Corporation, 2002, 2004
- *
- * 2002-Oct	Created by Vamsi Krishna S <vamsi_krishna@in.ibm.com> Kernel
- *		Probes initial implementation ( includes suggestions from
- *		Rusty Russell).
- * 2004-July	Suparna Bhattacharya <suparna@in.ibm.com> added jumper probes
- *		interface to access function arguments.
- * 2005-May	Hien Nguyen <hien@us.ibm.com> and Jim Keniston
- *		<jkenisto@us.ibm.com>  and Prasanna S Panchamukhi
- *		<prasanna@in.ibm.com> added function-return probes.
- */
+ 
 #include <linux/compiler.h>
 #include <linux/linkage.h>
 #include <linux/list.h>
@@ -25,7 +12,6 @@
 #include <linux/spinlock.h>
 #include <linux/rcupdate.h>
 #include <linux/mutex.h>
-#include <linux/ftrace.h>
 #include <linux/refcount.h>
 #include <linux/freelist.h>
 #include <linux/rethook.h>
@@ -50,84 +36,68 @@ typedef int (*kretprobe_handler_t) (struct kretprobe_instance *,
 struct kprobe {
 	struct hlist_node hlist;
 
-	/* list of kprobes for multi-handler support */
+	 
 	struct list_head list;
 
-	/*count the number of times this probe was temporarily disarmed */
+	 
 	unsigned long nmissed;
 
-	/* location of the probe point */
+	 
 	kprobe_opcode_t *addr;
 
-	/* Allow user to indicate symbol name of the probe point */
+	 
 	const char *symbol_name;
 
-	/* Offset into the symbol */
+	 
 	unsigned int offset;
 
-	/* Called before addr is executed. */
+	 
 	kprobe_pre_handler_t pre_handler;
 
-	/* Called after addr is executed, unless... */
+	 
 	kprobe_post_handler_t post_handler;
 
-	/* Saved opcode (which has been replaced with breakpoint) */
+	 
 	kprobe_opcode_t opcode;
 
-	/* copy of the original instruction */
+	 
 	struct arch_specific_insn ainsn;
 
-	/*
-	 * Indicates various status flags.
-	 * Protected by kprobe_mutex after this kprobe is registered.
-	 */
+	 
 	u32 flags;
 };
 
-/* Kprobe status flags */
-#define KPROBE_FLAG_GONE	1 /* breakpoint has already gone */
-#define KPROBE_FLAG_DISABLED	2 /* probe is temporarily disabled */
-#define KPROBE_FLAG_OPTIMIZED	4 /*
-				   * probe is really optimized.
-				   * NOTE:
-				   * this flag is only for optimized_kprobe.
-				   */
-#define KPROBE_FLAG_FTRACE	8 /* probe is using ftrace */
+ 
+#define KPROBE_FLAG_GONE	1  
+#define KPROBE_FLAG_DISABLED	2  
+#define KPROBE_FLAG_OPTIMIZED	4  
+#define KPROBE_FLAG_FTRACE	8  
 
-/* Has this kprobe gone ? */
+ 
 static inline bool kprobe_gone(struct kprobe *p)
 {
 	return p->flags & KPROBE_FLAG_GONE;
 }
 
-/* Is this kprobe disabled ? */
+ 
 static inline bool kprobe_disabled(struct kprobe *p)
 {
 	return p->flags & (KPROBE_FLAG_DISABLED | KPROBE_FLAG_GONE);
 }
 
-/* Is this kprobe really running optimized path ? */
+ 
 static inline bool kprobe_optimized(struct kprobe *p)
 {
 	return p->flags & KPROBE_FLAG_OPTIMIZED;
 }
 
-/* Is this kprobe uses ftrace ? */
+ 
 static inline bool kprobe_ftrace(struct kprobe *p)
 {
 	return p->flags & KPROBE_FLAG_FTRACE;
 }
 
-/*
- * Function-return probe -
- * Note:
- * User needs to provide a handler function, and initialize maxactive.
- * maxactive - The maximum number of instances of the probed function that
- * can be active concurrently.
- * nmissed - tracks the number of times the probed function's return was
- * ignored, due to maxactive being too low.
- *
- */
+ 
 struct kretprobe_holder {
 	struct kretprobe	*rp;
 	refcount_t		ref;
@@ -269,7 +239,7 @@ unsigned long kretprobe_find_ret_addr(struct task_struct *tsk, void *fp,
 	return 0;
 }
 
-/* Returns true if kprobes handled the fault */
+ 
 static nokprobe_inline bool kprobe_page_fault(struct pt_regs *regs,
 					      unsigned int trap)
 {
@@ -277,10 +247,7 @@ static nokprobe_inline bool kprobe_page_fault(struct pt_regs *regs,
 		return false;
 	if (user_mode(regs))
 		return false;
-	/*
-	 * To be potentially processing a kprobe fault and to be allowed
-	 * to call kprobe_running(), we have to be non-preemptible.
-	 */
+	 
 	if (preemptible())
 		return false;
 	if (!kprobe_running())
@@ -288,4 +255,4 @@ static nokprobe_inline bool kprobe_page_fault(struct pt_regs *regs,
 	return kprobe_fault_handler(regs, trap);
 }
 
-#endif /* _LINUX_KPROBES_H */
+#endif  

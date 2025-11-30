@@ -1,7 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * Tick related global functions
- */
+ 
+ 
 #ifndef _LINUX_TICK_H
 #define _LINUX_TICK_H
 
@@ -14,9 +12,9 @@
 #include <linux/rcupdate.h>
 
 extern void __init tick_init(void);
-/* Should be core only, but ARM BL switcher requires it */
+ 
 extern void tick_suspend_local(void);
-/* Should be core only, but XEN resume magic and ARM BL switcher require it */
+ 
 extern void tick_resume_local(void);
 extern void tick_handover_do_timer(void);
 extern void tick_cleanup_dead_cpu(int cpu);
@@ -67,14 +65,9 @@ static inline void tick_broadcast_exit(void)
 }
 
 enum tick_dep_bits {
-	TICK_DEP_BIT_POSIX_TIMER	= 0,
-	TICK_DEP_BIT_PERF_EVENTS	= 1,
-	TICK_DEP_BIT_SCHED		= 2,
 	TICK_DEP_BIT_CLOCK_UNSTABLE	= 3,
-	TICK_DEP_BIT_RCU		= 4,
-	TICK_DEP_BIT_RCU_EXP		= 5
 };
-#define TICK_DEP_BIT_MAX TICK_DEP_BIT_RCU_EXP
+#define TICK_DEP_BIT_MAX TICK_DEP_BIT_CLOCK_UNSTABLE
 
 #define TICK_DEP_MASK_NONE		0
 #define TICK_DEP_MASK_POSIX_TIMER	(1 << TICK_DEP_BIT_POSIX_TIMER)
@@ -95,7 +88,7 @@ static inline void tick_nohz_idle_exit(void) { }
 static inline bool tick_nohz_idle_got_tick(void) { return false; }
 static inline ktime_t tick_nohz_get_next_hrtimer(void)
 {
-	/* Next wake up is the tick period, assume it starts now */
+	 
 	return ktime_add(ktime_get(), TICK_NSEC);
 }
 static inline ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)

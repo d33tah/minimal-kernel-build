@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_UTSNAME_H
 #define _LINUX_UTSNAME_H
 
@@ -9,13 +9,8 @@
 #include <linux/err.h>
 #include <uapi/linux/utsname.h>
 
-enum uts_proc {
-	UTS_PROC_OSTYPE,
-	UTS_PROC_OSRELEASE,
-	UTS_PROC_VERSION,
-	UTS_PROC_HOSTNAME,
-	UTS_PROC_DOMAINNAME,
-};
+/* Unused enum uts_proc reduced */
+enum uts_proc { UTS_PROC_UNUSED };
 
 struct user_namespace;
 extern struct user_namespace init_user_ns;
@@ -65,4 +60,4 @@ static inline struct new_utsname *init_utsname(void)
 
 extern struct rw_semaphore uts_sem;
 
-#endif /* _LINUX_UTSNAME_H */
+#endif  

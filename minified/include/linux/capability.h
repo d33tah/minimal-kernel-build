@@ -1,20 +1,11 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * This is <linux/capability.h>
- *
- * Andrew G. Morgan <morgan@kernel.org>
- * Alexander Kjeldaas <astor@guardian.no>
- * with help from Aleph1, Roland Buresund and Andrew Main.
- *
- * See here for the libcap library ("POSIX draft" compliance):
- *
- * ftp://www.kernel.org/pub/linux/libs/security/linux-privs/kernel-2.6/
- */
+ 
+ 
 #ifndef _LINUX_CAPABILITY_H
 #define _LINUX_CAPABILITY_H
 
 #include <uapi/linux/capability.h>
 #include <linux/uidgid.h>
+#include <linux/stddef.h>
 
 #define _KERNEL_CAPABILITY_VERSION _LINUX_CAPABILITY_VERSION_3
 #define _KERNEL_CAPABILITY_U32S    _LINUX_CAPABILITY_U32S_3
@@ -25,7 +16,7 @@ typedef struct kernel_cap_struct {
 	__u32 cap[_KERNEL_CAPABILITY_U32S];
 } kernel_cap_t;
 
-/* same as vfs_ns_cap_data but in cpu endian and always filled completely */
+ 
 struct cpu_vfs_cap_data {
 	__u32 magic_etc;
 	kernel_cap_t permitted;
@@ -46,25 +37,12 @@ struct user_namespace;
 extern const kernel_cap_t __cap_empty_set;
 extern const kernel_cap_t __cap_init_eff_set;
 
-/*
- * Internal kernel functions only
- */
+ 
 
 #define CAP_FOR_EACH_U32(__capi)  \
 	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
 
-/*
- * CAP_FS_MASK and CAP_NFSD_MASKS:
- *
- * The fs mask is all the privileges that fsuid==0 historically meant.
- * At one time in the past, that included CAP_MKNOD and CAP_LINUX_IMMUTABLE.
- *
- * It has never meant setting security.* and trusted.* xattrs.
- *
- * We could also define fsmask as follows:
- *   1. CAP_FS_MASK is the privilege to bypass all fs-related DAC permissions
- *   2. The security.* and trusted.* xattrs are fs-related MAC permissions
- */
+ 
 
 # define CAP_FS_MASK_B0     (CAP_TO_MASK(CAP_CHOWN)		\
 			    | CAP_TO_MASK(CAP_MKNOD)		\
@@ -77,7 +55,7 @@ extern const kernel_cap_t __cap_init_eff_set;
 
 #if _KERNEL_CAPABILITY_U32S != 2
 # error Fix up hand-coded capability macro initializers
-#else /* HAND-CODED capability initializers */
+#else  
 
 #define CAP_LAST_U32			((_KERNEL_CAPABILITY_U32S) - 1)
 #define CAP_LAST_U32_VALID_MASK		(CAP_TO_MASK(CAP_LAST_CAP + 1) -1)
@@ -91,7 +69,7 @@ extern const kernel_cap_t __cap_init_eff_set;
 				    | CAP_TO_MASK(CAP_SYS_RESOURCE), \
 				    CAP_FS_MASK_B1 } })
 
-#endif /* _KERNEL_CAPABILITY_U32S != 2 */
+#endif  
 
 # define cap_clear(c)         do { (c) = __cap_empty_set; } while (0)
 
@@ -156,13 +134,7 @@ static inline bool cap_isclear(const kernel_cap_t a)
 	return true;
 }
 
-/*
- * Check if "a" is a subset of "set".
- * return true if ALL of the capabilities in "a" are also in "set"
- *	cap_issubset(0101, 1111) will return true
- * return false if ANY of the capabilities in "a" are not in "set"
- *	cap_issubset(1111, 0101) will return false
- */
+ 
 static inline bool cap_issubset(const kernel_cap_t a, const kernel_cap_t set)
 {
 	kernel_cap_t dest;
@@ -170,7 +142,7 @@ static inline bool cap_issubset(const kernel_cap_t a, const kernel_cap_t set)
 	return cap_isclear(dest);
 }
 
-/* Used to decide between falling back on the old suser() or fsuser(). */
+ 
 
 static inline kernel_cap_t cap_drop_fs_set(const kernel_cap_t a)
 {
@@ -257,7 +229,7 @@ static inline bool checkpoint_restore_ns_capable(struct user_namespace *ns)
 		ns_capable(ns, CAP_SYS_ADMIN);
 }
 
-/* audit system wants to get cap info from files as well */
+ 
 int get_vfs_caps_from_disk(struct user_namespace *mnt_userns,
 			   const struct dentry *dentry,
 			   struct cpu_vfs_cap_data *cpu_caps);
@@ -265,4 +237,4 @@ int get_vfs_caps_from_disk(struct user_namespace *mnt_userns,
 int cap_convert_nscap(struct user_namespace *mnt_userns, struct dentry *dentry,
 		      const void **ivalue, size_t size);
 
-#endif /* !_LINUX_CAPABILITY_H */
+#endif  

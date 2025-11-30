@@ -1,22 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0+
-/*
- * Read-Copy Update mechanism for mutual exclusion
- *
- * Copyright IBM Corporation, 2001
- *
- * Authors: Dipankar Sarma <dipankar@in.ibm.com>
- *	    Manfred Spraul <manfred@colorfullife.com>
- *
- * Based on the original work by Paul McKenney <paulmck@linux.ibm.com>
- * and inputs from Rusty Russell, Andrea Arcangeli and Andi Kleen.
- * Papers:
- * http://www.rdrop.com/users/paulmck/paper/rclockpdcsproof.pdf
- * http://lse.sourceforge.net/locking/rclock_OLS.2001.05.01c.sc.pdf (OLS2001)
- *
- * For detailed explanation of Read-Copy Update mechanism see -
- *		http://lse.sourceforge.net/locking/rcupdate.html
- *
- */
+ 
+ 
 #include <linux/types.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
@@ -55,11 +38,7 @@
 
 
 
-/*
- * Test each non-SRCU synchronous grace-period wait API.  This is
- * useful just after a change in mode for these primitives, and
- * during early boot.
- */
+ 
 void rcu_test_sync_prims(void)
 {
 	if (!IS_ENABLED(CONFIG_PROVE_RCU))
@@ -69,9 +48,7 @@ void rcu_test_sync_prims(void)
 }
 
 
-/*
- * Switch to run-time mode once RCU has fully initialized.
- */
+ 
 static int __init rcu_set_runtime_mode(void)
 {
 	rcu_test_sync_prims();
@@ -84,12 +61,7 @@ core_initcall(rcu_set_runtime_mode);
 
 
 
-/**
- * wakeme_after_rcu() - Callback function to awaken a task after grace period
- * @head: Pointer to rcu_head member within rcu_synchronize structure
- *
- * Awaken the corresponding task now that a grace period has elapsed.
- */
+ 
 void wakeme_after_rcu(struct rcu_head *head)
 {
 	struct rcu_synchronize *rcu;
@@ -97,7 +69,6 @@ void wakeme_after_rcu(struct rcu_head *head)
 	rcu = container_of(head, struct rcu_synchronize, head);
 	complete(&rcu->completion);
 }
-EXPORT_SYMBOL_GPL(wakeme_after_rcu);
 
 void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 		   struct rcu_synchronize *rs_array)
@@ -105,7 +76,7 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 	int i;
 	int j;
 
-	/* Initialize and register callbacks for each crcu_array element. */
+	 
 	for (i = 0; i < n; i++) {
 		if (checktiny &&
 		    (crcu_array[i] == call_rcu)) {
@@ -122,7 +93,7 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 		}
 	}
 
-	/* Wait for all callbacks to be invoked. */
+	 
 	for (i = 0; i < n; i++) {
 		if (checktiny &&
 		    (crcu_array[i] == call_rcu))
@@ -136,14 +107,12 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 		}
 	}
 }
-EXPORT_SYMBOL_GPL(__wait_rcu_gp);
 
 void finish_rcuwait(struct rcuwait *w)
 {
 	rcu_assign_pointer(w->task, NULL);
 	__set_current_state(TASK_RUNNING);
 }
-EXPORT_SYMBOL_GPL(finish_rcuwait);
 
 
 #if defined(CONFIG_TREE_RCU) || defined(CONFIG_RCU_TRACE)
@@ -151,16 +120,15 @@ void do_trace_rcu_torture_read(const char *rcutorturename, struct rcu_head *rhp,
 			       unsigned long secs,
 			       unsigned long c_old, unsigned long c)
 {
-	/* trace_rcu_torture_read(rcutorturename, rhp, secs, c_old, c); */
+	 
 }
-EXPORT_SYMBOL_GPL(do_trace_rcu_torture_read);
 #else
 #define do_trace_rcu_torture_read(rcutorturename, rhp, secs, c_old, c) \
 	do { } while (0)
 #endif
 
 #if IS_ENABLED(CONFIG_RCU_TORTURE_TEST) || IS_MODULE(CONFIG_RCU_TORTURE_TEST)
-/* Get rcutorture access to sched_setaffinity(). */
+ 
 long rcutorture_sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 {
 	int ret;
@@ -169,15 +137,12 @@ long rcutorture_sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 	WARN_ONCE(ret, "%s: sched_setaffinity() returned %d\n", __func__, ret);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(rcutorture_sched_setaffinity);
 #endif
 
 
-// Suppress boot-time RCU CPU stall warnings and rcutorture writer stall
-// warnings.  Also used by rcutorture even if stall warnings are excluded.
-int rcu_cpu_stall_suppress_at_boot __read_mostly; // !0 = suppress boot stalls.
-EXPORT_SYMBOL_GPL(rcu_cpu_stall_suppress_at_boot);
-module_param(rcu_cpu_stall_suppress_at_boot, int, 0444);
+ 
+ 
+int rcu_cpu_stall_suppress_at_boot __read_mostly;
 
 void rcu_early_boot_tests(void) {}
 

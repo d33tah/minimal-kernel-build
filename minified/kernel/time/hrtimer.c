@@ -8,7 +8,6 @@
 #include <linux/interrupt.h>
 #include <linux/tick.h>
 #include <linux/err.h>
-#include <linux/debugobjects.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/sysctl.h>
 #include <linux/sched/rt.h>
@@ -122,7 +121,6 @@ s64 __ktime_divns(const ktime_t kt, s64 div)
 	do_div(tmp, (u32) div);
 	return dclc < 0 ? -tmp : tmp;
 }
-EXPORT_SYMBOL_GPL(__ktime_divns);
 #endif 
 
 ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs)
@@ -135,7 +133,6 @@ ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs)
 	return res;
 }
 
-EXPORT_SYMBOL_GPL(ktime_add_safe);
 
 static inline void debug_hrtimer_init(struct hrtimer *timer) { }
 static inline void debug_hrtimer_activate(struct hrtimer *timer,
@@ -322,22 +319,6 @@ hrtimer_force_reprogram(struct hrtimer_cpu_base *cpu_base, int skip_equal)
 static inline int hrtimer_is_hres_enabled(void) { return 0; }
 static inline void hrtimer_switch_to_hres(void) { }
 
-static void retrigger_next_event(void *arg)
-{
-	struct hrtimer_cpu_base *base = this_cpu_ptr(&hrtimer_bases);
-
-	if (!__hrtimer_hres_active(base) && !tick_nohz_active)
-		return;
-
-	raw_spin_lock(&base->lock);
-	hrtimer_update_base(base);
-	if (__hrtimer_hres_active(base))
-		hrtimer_force_reprogram(base, 0);
-	else
-		hrtimer_update_next_event(base);
-	raw_spin_unlock(&base->lock);
-}
-
 static void hrtimer_reprogram(struct hrtimer *timer, bool reprogram)
 {
 	struct hrtimer_cpu_base *cpu_base = this_cpu_ptr(&hrtimer_bases);
@@ -381,76 +362,9 @@ static void hrtimer_reprogram(struct hrtimer *timer, bool reprogram)
 	__hrtimer_reprogram(cpu_base, timer, expires);
 }
 
-static bool update_needs_ipi(struct hrtimer_cpu_base *cpu_base,
-			     unsigned int active)
-{
-	struct hrtimer_clock_base *base;
-	unsigned int seq;
-	ktime_t expires;
-
-	seq = cpu_base->clock_was_set_seq;
-	hrtimer_update_base(cpu_base);
-
-	if (seq == cpu_base->clock_was_set_seq)
-		return false;
-
-	if (cpu_base->in_hrtirq)
-		return false;
-
-	active &= cpu_base->active_bases;
-
-	for_each_active_base(base, cpu_base, active) {
-		struct timerqueue_node *next;
-
-		next = timerqueue_getnext(&base->active);
-		expires = ktime_sub(next->expires, base->offset);
-		if (expires < cpu_base->expires_next)
-			return true;
-
-		if (base->clockid < HRTIMER_BASE_MONOTONIC_SOFT)
-			continue;
-		if (cpu_base->softirq_activated)
-			continue;
-		if (expires < cpu_base->softirq_expires_next)
-			return true;
-	}
-	return false;
-}
-
+/* Stub: clock_was_set simplified for minimal kernel */
 void clock_was_set(unsigned int bases)
 {
-	struct hrtimer_cpu_base *cpu_base = raw_cpu_ptr(&hrtimer_bases);
-	cpumask_var_t mask;
-	int cpu;
-
-	if (!__hrtimer_hres_active(cpu_base) && !tick_nohz_active)
-		goto out_timerfd;
-
-	if (!zalloc_cpumask_var(&mask, GFP_KERNEL)) {
-		on_each_cpu(retrigger_next_event, NULL, 1);
-		goto out_timerfd;
-	}
-
-	cpus_read_lock();
-	for_each_online_cpu(cpu) {
-		unsigned long flags;
-
-		cpu_base = &per_cpu(hrtimer_bases, cpu);
-		raw_spin_lock_irqsave(&cpu_base->lock, flags);
-
-		if (update_needs_ipi(cpu_base, bases))
-			cpumask_set_cpu(cpu, mask);
-
-		raw_spin_unlock_irqrestore(&cpu_base->lock, flags);
-	}
-
-	preempt_disable();
-	smp_call_function_many(mask, retrigger_next_event, NULL, 1);
-	preempt_enable();
-	cpus_read_unlock();
-	free_cpumask_var(mask);
-
-out_timerfd:
 	timerfd_clock_was_set();
 }
 
@@ -468,9 +382,7 @@ void clock_was_set_delayed(void)
 
 void hrtimers_resume_local(void)
 {
-	lockdep_assert_irqs_disabled();
-	
-	retrigger_next_event(NULL);
+	/* Stub: resume not needed for minimal kernel */
 }
 
 static inline
@@ -509,7 +421,6 @@ u64 hrtimer_forward(struct hrtimer *timer, ktime_t now, ktime_t interval)
 
 	return orun;
 }
-EXPORT_SYMBOL_GPL(hrtimer_forward);
 
 static int enqueue_hrtimer(struct hrtimer *timer,
 			   struct hrtimer_clock_base *base,
@@ -636,7 +547,6 @@ void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
 
 	unlock_hrtimer_base(timer, &flags);
 }
-EXPORT_SYMBOL_GPL(hrtimer_start_range_ns);
 
 int hrtimer_try_to_cancel(struct hrtimer *timer)
 {
@@ -657,7 +567,6 @@ int hrtimer_try_to_cancel(struct hrtimer *timer)
 	return ret;
 
 }
-EXPORT_SYMBOL_GPL(hrtimer_try_to_cancel);
 
 static inline void
 hrtimer_cpu_base_init_expiry_lock(struct hrtimer_cpu_base *base) { }
@@ -680,23 +589,12 @@ int hrtimer_cancel(struct hrtimer *timer)
 	} while (ret < 0);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(hrtimer_cancel);
 
+/* Stub: __hrtimer_get_remaining not used externally */
 ktime_t __hrtimer_get_remaining(const struct hrtimer *timer, bool adjust)
 {
-	unsigned long flags;
-	ktime_t rem;
-
-	lock_hrtimer_base(timer, &flags);
-	if (IS_ENABLED(CONFIG_TIME_LOW_RES) && adjust)
-		rem = hrtimer_expires_remaining_adjusted(timer);
-	else
-		rem = hrtimer_expires_remaining(timer);
-	unlock_hrtimer_base(timer, &flags);
-
-	return rem;
+	return 0;
 }
-EXPORT_SYMBOL_GPL(__hrtimer_get_remaining);
 
 static inline int hrtimer_clockid_to_base(clockid_t clock_id)
 {
@@ -741,7 +639,6 @@ void hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
 	debug_init(timer, clock_id, mode);
 	__hrtimer_init(timer, clock_id, mode);
 }
-EXPORT_SYMBOL_GPL(hrtimer_init);
 
 bool hrtimer_active(const struct hrtimer *timer)
 {
@@ -761,7 +658,6 @@ bool hrtimer_active(const struct hrtimer *timer)
 
 	return false;
 }
-EXPORT_SYMBOL_GPL(hrtimer_active);
 
 static void __run_hrtimer(struct hrtimer_cpu_base *cpu_base,
 			  struct hrtimer_clock_base *base,
@@ -851,8 +747,6 @@ static __latent_entropy void hrtimer_run_softirq(struct softirq_action *h)
 	hrtimer_cpu_base_unlock_expiry(cpu_base);
 }
 
-static inline void __hrtimer_peek_ahead_timers(void) { }
-
 void hrtimer_run_queues(void)
 {
 	struct hrtimer_cpu_base *cpu_base = this_cpu_ptr(&hrtimer_bases);
@@ -902,7 +796,6 @@ void hrtimer_sleeper_start_expires(struct hrtimer_sleeper *sl,
 
 	hrtimer_start_expires(&sl->timer, mode);
 }
-EXPORT_SYMBOL_GPL(hrtimer_sleeper_start_expires);
 
 static void __hrtimer_init_sleeper(struct hrtimer_sleeper *sl,
 				   clockid_t clock_id, enum hrtimer_mode mode)
@@ -925,18 +818,10 @@ void hrtimer_init_sleeper(struct hrtimer_sleeper *sl, clockid_t clock_id,
 	__hrtimer_init_sleeper(sl, clock_id, mode);
 
 }
-EXPORT_SYMBOL_GPL(hrtimer_init_sleeper);
 
+/* Stub: nanosleep_copyout not called externally */
 int nanosleep_copyout(struct restart_block *restart, struct timespec64 *ts)
 {
-	switch(restart->nanosleep.type) {
-	case TT_NATIVE:
-		if (put_timespec64(ts, restart->nanosleep.rmtp))
-			return -EFAULT;
-		break;
-	default:
-		BUG();
-	}
 	return -ERESTART_RESTARTBLOCK;
 }
 
@@ -1088,11 +973,9 @@ int __sched schedule_hrtimeout_range(ktime_t *expires, u64 delta,
 	return schedule_hrtimeout_range_clock(expires, delta, mode,
 					      CLOCK_MONOTONIC);
 }
-EXPORT_SYMBOL_GPL(schedule_hrtimeout_range);
 
 int __sched schedule_hrtimeout(ktime_t *expires,
 			       const enum hrtimer_mode mode)
 {
 	return schedule_hrtimeout_range(expires, 0, mode);
 }
-EXPORT_SYMBOL_GPL(schedule_hrtimeout);

@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_DAX_H
 #define _LINUX_DAX_H
 
@@ -16,29 +16,18 @@ struct iomap;
 
 enum dax_access_mode {
 	DAX_ACCESS,
-	DAX_RECOVERY_WRITE,
 };
 
 struct dax_operations {
-	/*
-	 * direct_access: translate a device-relative
-	 * logical-page-offset into an absolute physical pfn. Return the
-	 * number of pages available for DAX at that pfn.
-	 */
+	 
 	long (*direct_access)(struct dax_device *, pgoff_t, long,
 			enum dax_access_mode, void **, pfn_t *);
-	/*
-	 * Validate whether this device is usable as an fsdax backing
-	 * device.
-	 */
+	 
 	bool (*dax_supported)(struct dax_device *, struct block_device *, int,
 			sector_t, sector_t);
-	/* zero_page_range: required operation. Zero page range   */
+	 
 	int (*zero_page_range)(struct dax_device *, pgoff_t, size_t);
-	/*
-	 * recovery_write: recover a poisoned range by DAX device driver
-	 * capable of clearing poison.
-	 */
+	 
 	size_t (*recovery_write)(struct dax_device *dax_dev, pgoff_t pgoff,
 			void *addr, size_t bytes, struct iov_iter *iter);
 };
@@ -53,9 +42,7 @@ bool dax_synchronous(struct dax_device *dax_dev);
 void set_dax_synchronous(struct dax_device *dax_dev);
 size_t dax_recovery_write(struct dax_device *dax_dev, pgoff_t pgoff,
 		void *addr, size_t bytes, struct iov_iter *i);
-/*
- * Check if given mapping is supported by the file / underlying device.
- */
+ 
 static inline bool daxdev_mapping_supported(struct vm_area_struct *vma,
 					     struct dax_device *dax_dev)
 {
@@ -69,20 +56,8 @@ static inline bool daxdev_mapping_supported(struct vm_area_struct *vma,
 static inline struct dax_device *alloc_dax(void *private,
 		const struct dax_operations *ops)
 {
-	/*
-	 * Callers should check IS_ENABLED(CONFIG_DAX) to know if this
-	 * NULL is an error or expected.
-	 */
+	 
 	return NULL;
-}
-static inline void put_dax(struct dax_device *dax_dev)
-{
-}
-static inline void kill_dax(struct dax_device *dax_dev)
-{
-}
-static inline void dax_write_cache(struct dax_device *dax_dev, bool wc)
-{
 }
 static inline bool dax_write_cache_enabled(struct dax_device *dax_dev)
 {
@@ -92,18 +67,10 @@ static inline bool dax_synchronous(struct dax_device *dax_dev)
 {
 	return true;
 }
-static inline void set_dax_synchronous(struct dax_device *dax_dev)
-{
-}
 static inline bool daxdev_mapping_supported(struct vm_area_struct *vma,
 				struct dax_device *dax_dev)
 {
 	return !(vma->vm_flags & VM_SYNC);
-}
-static inline size_t dax_recovery_write(struct dax_device *dax_dev,
-		pgoff_t pgoff, void *addr, size_t bytes, struct iov_iter *i)
-{
-	return 0;
 }
 #endif
 
@@ -181,7 +148,7 @@ static inline int dax_read_lock(void)
 static inline void dax_read_unlock(int id)
 {
 }
-#endif /* CONFIG_DAX */
+#endif  
 bool dax_alive(struct dax_device *dax_dev);
 void *dax_get_private(struct dax_device *dax_dev);
 long dax_direct_access(struct dax_device *dax_dev, pgoff_t pgoff, long nr_pages,

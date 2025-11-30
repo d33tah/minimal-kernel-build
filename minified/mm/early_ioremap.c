@@ -1,13 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Provide common bits of early_ioremap() support for architectures needing
- * temporary mappings during boot before ioremap() is available.
- *
- * This is mostly a direct copy of the x86 early_ioremap implementation.
- *
- * (C) Copyright 1995 1996, 2014 Linus Torvalds
- *
- */
+ 
+ 
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/io.h>
@@ -21,12 +13,8 @@
 
 static int early_ioremap_debug __initdata;
 
-static int __init early_ioremap_debug_setup(char *str)
-{
-	early_ioremap_debug = 1;
-
-	return 0;
-}
+/* Stub: early_ioremap_debug cmdline option not needed */
+static int __init early_ioremap_debug_setup(char *str) { return 0; }
 early_param("early_ioremap_debug", early_ioremap_debug_setup);
 
 static int after_paging_init __initdata;
@@ -43,11 +31,7 @@ void __init early_ioremap_reset(void)
 	after_paging_init = 1;
 }
 
-/*
- * Generally, ioremap() is available after paging_init() has been called.
- * Architectures wanting to allow early_ioremap after paging_init() can
- * define __late_set_fixmap and __late_clear_fixmap to do the right thing.
- */
+ 
 #ifndef __late_set_fixmap
 static inline void __init __late_set_fixmap(enum fixed_addresses idx,
 					    phys_addr_t phys, pgprot_t prot)
@@ -79,22 +63,8 @@ void __init early_ioremap_setup(void)
 		slot_virt[i] = __fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i);
 }
 
-static int __init check_early_ioremap_leak(void)
-{
-	int count = 0;
-	int i;
-
-	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)
-		if (prev_map[i])
-			count++;
-
-	if (WARN(count, KERN_WARNING
-		 "Debug warning: early ioremap leak of %d areas detected.\n"
-		 "please boot with early_ioremap_debug and report the dmesg.\n",
-		 count))
-		return 1;
-	return 0;
-}
+/* Stub: early ioremap leak check not needed for minimal kernel */
+static int __init check_early_ioremap_leak(void) { return 0; }
 late_initcall(check_early_ioremap_leak);
 
 static void __init __iomem *
@@ -120,29 +90,23 @@ __early_ioremap(resource_size_t phys_addr, unsigned long size, pgprot_t prot)
 		 __func__, &phys_addr, size))
 		return NULL;
 
-	/* Don't allow wraparound or zero size */
+	 
 	last_addr = phys_addr + size - 1;
 	if (WARN_ON(!size || last_addr < phys_addr))
 		return NULL;
 
 	prev_size[slot] = size;
-	/*
-	 * Mappings have to be page-aligned
-	 */
+	 
 	offset = offset_in_page(phys_addr);
 	phys_addr &= PAGE_MASK;
 	size = PAGE_ALIGN(last_addr + 1) - phys_addr;
 
-	/*
-	 * Mappings have to fit in the FIX_BTMAP area.
-	 */
+	 
 	nrpages = size >> PAGE_SHIFT;
 	if (WARN_ON(nrpages > NR_FIX_BTMAPS))
 		return NULL;
 
-	/*
-	 * Ok, go for it..
-	 */
+	 
 	idx = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*slot;
 	while (nrpages > 0) {
 		if (after_paging_init)
@@ -207,14 +171,14 @@ void __init early_iounmap(void __iomem *addr, unsigned long size)
 	prev_map[slot] = NULL;
 }
 
-/* Remap an IO device */
+ 
 void __init __iomem *
 early_ioremap(resource_size_t phys_addr, unsigned long size)
 {
 	return __early_ioremap(phys_addr, size, FIXMAP_PAGE_IO);
 }
 
-/* Remap memory */
+ 
 void __init *
 early_memremap(resource_size_t phys_addr, unsigned long size)
 {

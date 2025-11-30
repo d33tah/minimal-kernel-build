@@ -1,11 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _VT_KERN_H
 #define _VT_KERN_H
 
-/*
- * this really is an extension of the vc_cons structure in console.c, but
- * with information needed by the vt package
- */
+ 
 
 #include <linux/vt.h>
 #include <linux/kd.h>
@@ -21,7 +18,7 @@ int kbd_rate(struct kbd_repeat *rep);
 
 extern int fg_console, last_console, want_console;
 
-/* console.c */
+ 
 
 int vc_allocate(unsigned int console);
 int vc_cons_allocated(unsigned int console);
@@ -46,7 +43,7 @@ void redraw_screen(struct vc_data *vc, int is_switch);
 struct tty_struct;
 int tioclinux(struct tty_struct *tty, unsigned long arg);
 
-/* consolemap.c */
+ 
 
 struct unipair;
 
@@ -62,7 +59,7 @@ void con_free_unimap(struct vc_data *vc);
 int con_copy_unimap(struct vc_data *dst_vc, struct vc_data *src_vc);
 
 
-/* vt.c */
+ 
 void vt_event_post(unsigned int event, unsigned int old, unsigned int new);
 int vt_waitactive(int n);
 void change_console(struct vc_data *new_vc);
@@ -84,11 +81,11 @@ extern struct vt_spawn_console vt_spawn_con;
 
 int vt_move_to_console(unsigned int vt, int alloc);
 
-/* Interfaces for VC notification of character events (for accessibility etc) */
+ 
 
 struct vt_notifier_param {
-	struct vc_data *vc;	/* VC on which the update happened */
-	unsigned int c;		/* Printed char */
+	struct vc_data *vc;	 
+	unsigned int c;		 
 };
 
 int register_vt_notifier(struct notifier_block *nb);
@@ -96,7 +93,7 @@ int unregister_vt_notifier(struct notifier_block *nb);
 
 void hide_boot_cursor(bool hide);
 
-/* keyboard  provided interfaces */
+ 
 int vt_do_diacrit(unsigned int cmd, void __user *up, int eperm);
 int vt_do_kdskbmode(unsigned int console, unsigned int arg);
 int vt_do_kdskbmeta(unsigned int console, unsigned int arg);
@@ -122,4 +119,4 @@ void vt_kbd_con_stop(unsigned int console);
 void vc_scrolldelta_helper(struct vc_data *c, int lines,
 		unsigned int rolled_over, void *_base, unsigned int size);
 
-#endif /* _VT_KERN_H */
+#endif  

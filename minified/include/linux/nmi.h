@@ -1,7 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- *  linux/include/linux/nmi.h
- */
+ 
+ 
 #ifndef LINUX_NMI_H
 #define LINUX_NMI_H
 
@@ -25,18 +23,7 @@ static inline void touch_all_softlockup_watchdogs(void) { }
 
 static inline void reset_hung_task_detector(void) { }
 
-/*
- * The run state of the lockup detectors is controlled by the content of the
- * 'watchdog_enabled' variable. Each lockup detector has its dedicated bit -
- * bit 0 for the hard lockup detector and bit 1 for the soft lockup detector.
- *
- * 'watchdog_user_enabled', 'nmi_watchdog_user_enabled' and
- * 'soft_watchdog_user_enabled' are variables that are only used as an
- * 'interface' between the parameters in /proc/sys/kernel and the internal
- * state bits in 'watchdog_enabled'. The 'watchdog_thresh' variable is
- * handled differently because its value is not boolean, and the lockup
- * detectors are 'suspended' while 'watchdog_thresh' is equal zero.
- */
+ 
 #define NMI_WATCHDOG_ENABLED_BIT   0
 #define SOFT_WATCHDOG_ENABLED_BIT  1
 #define NMI_WATCHDOG_ENABLED      (1 << NMI_WATCHDOG_ENABLED_BIT)
@@ -62,30 +49,15 @@ static inline void arch_touch_nmi_watchdog(void) {}
 static inline int hardlockup_detector_perf_init(void) { return 0; }
 # endif
 
-void watchdog_nmi_stop(void);
-void watchdog_nmi_start(void);
-int watchdog_nmi_probe(void);
-int watchdog_nmi_enable(unsigned int cpu);
-void watchdog_nmi_disable(unsigned int cpu);
 
-/**
- * touch_nmi_watchdog - restart NMI watchdog timeout.
- *
- * If the architecture supports the NMI watchdog, touch_nmi_watchdog()
- * may be used to reset the timeout - for code which intentionally
- * disables interrupts for a long time. This call is stateless.
- */
+ 
 static inline void touch_nmi_watchdog(void)
 {
 	arch_touch_nmi_watchdog();
 	touch_softlockup_watchdog();
 }
 
-/*
- * Create trigger_all_cpu_backtrace() out of the arch-provided
- * base function. Return whether such support was available,
- * to allow calling code to fall back to some other mechanism:
- */
+ 
 #ifdef arch_trigger_cpumask_backtrace
 static inline bool trigger_all_cpu_backtrace(void)
 {
@@ -111,7 +83,7 @@ static inline bool trigger_single_cpu_backtrace(int cpu)
 	return true;
 }
 
-/* generic implementation */
+ 
 void nmi_trigger_cpumask_backtrace(const cpumask_t *mask,
 				   bool exclude_self,
 				   void (*raise)(cpumask_t *mask));

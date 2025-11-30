@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
 #include <linux/highmem.h>
 
@@ -45,7 +45,6 @@
 #include <linux/nmi.h>
 #include <linux/nospec.h>
 
-#include <linux/profile.h>
 #include <linux/psi.h>
 
 #include <linux/sched/wake_q.h>
@@ -62,11 +61,8 @@
 #include "sched.h"
 #include "stats.h"
 #include "autogroup.h"
-
-#include "autogroup.h"
 #include "pelt.h"
 #include "smp.h"
-#include "stats.h"
 
 #include "../workqueue_internal.h"
 #include "../../fs/io-wq.h"
@@ -316,37 +312,14 @@ void resched_cpu(int cpu)
 #if defined(CONFIG_RT_GROUP_SCHED) || (defined(CONFIG_FAIR_GROUP_SCHED) && \
 			(defined(CONFIG_SMP) || defined(CONFIG_CFS_BANDWIDTH)))
 
+/* Stub: walk_tg_tree_from not used in minimal kernel */
 int walk_tg_tree_from(struct task_group *from,
 			     tg_visitor down, tg_visitor up, void *data)
 {
-	struct task_group *parent, *child;
-	int ret;
-
-	parent = from;
-
-down:
-	ret = (*down)(parent, data);
-	if (ret)
-		goto out;
-	list_for_each_entry_rcu(child, &parent->children, siblings) {
-		parent = child;
-		goto down;
-
-up:
-		continue;
-	}
-	ret = (*up)(parent, data);
-	if (ret || parent == from)
-		goto out;
-
-	child = parent;
-	parent = parent->parent;
-	if (parent)
-		goto up;
-out:
-	return ret;
+	return 0;
 }
 
+/* Stub: tg_nop not used in minimal kernel */
 int tg_nop(struct task_group *tg, void *data)
 {
 	return 0;
@@ -376,39 +349,22 @@ static void set_load_weight(struct task_struct *p, bool update_load)
 
 static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p) { }
 static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p) { }
-static inline int uclamp_validate(struct task_struct *p,
-				  const struct sched_attr *attr)
-{
-	return -EOPNOTSUPP;
-}
 static void __setscheduler_uclamp(struct task_struct *p,
 				  const struct sched_attr *attr) { }
 static inline void uclamp_fork(struct task_struct *p) { }
 static inline void uclamp_post_fork(struct task_struct *p) { }
 static inline void init_uclamp(void) { }
 
+/* Stub: sched_task_on_rq not used externally */
 bool sched_task_on_rq(struct task_struct *p)
 {
-	return task_on_rq_queued(p);
+	return false;
 }
 
 unsigned long get_wchan(struct task_struct *p)
 {
-	unsigned long ip = 0;
-	unsigned int state;
-
-	if (!p || p == current)
-		return 0;
-
-	
-	raw_spin_lock_irq(&p->pi_lock);
-	state = READ_ONCE(p->__state);
-	smp_rmb(); 
-	if (state != TASK_RUNNING && state != TASK_WAKING && !p->on_rq)
-		ip = __get_wchan(p);
-	raw_spin_unlock_irq(&p->pi_lock);
-
-	return ip;
+	/* Stub: wait channel inspection not needed for minimal kernel */
+	return 0;
 }
 
 static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
@@ -478,20 +434,6 @@ static inline int normal_prio(struct task_struct *p)
 	return __normal_prio(p->policy, p->rt_priority, PRIO_TO_NICE(p->static_prio));
 }
 
-static int effective_prio(struct task_struct *p)
-{
-	p->normal_prio = normal_prio(p);
-	
-	if (!rt_prio(p->prio))
-		return p->normal_prio;
-	return p->prio;
-}
-
-inline int task_curr(const struct task_struct *p)
-{
-	return cpu_curr(task_cpu(p)) == p;
-}
-
 static inline void check_class_changed(struct rq *rq, struct task_struct *p,
 				       const struct sched_class *prev_class,
 				       int oldprio)
@@ -526,26 +468,10 @@ static inline int __set_cpus_allowed_ptr(struct task_struct *p,
 
 static inline void migrate_disable_switch(struct rq *rq, struct task_struct *p) { }
 
-static inline bool rq_has_pinned_tasks(struct rq *rq)
-{
-	return false;
-}
-
 static void
 ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 {
-	struct rq *rq;
-
-	if (!schedstat_enabled())
-		return;
-
-	rq = this_rq();
-
-	__schedstat_inc(rq->ttwu_count);
-	__schedstat_inc(p->stats.nr_wakeups);
-
-	if (wake_flags & WF_SYNC)
-		__schedstat_inc(p->stats.nr_wakeups_sync);
+	/* Stub: wake-up statistics not needed for minimal kernel */
 }
 
 static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
@@ -633,37 +559,34 @@ bool ttwu_state_match(struct task_struct *p, unsigned int state, int *success)
 static int
 try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 {
-	unsigned long flags;
 	int cpu, success = 0;
 
 	preempt_disable();
 	if (p == current) {
-		
+
 		if (!ttwu_state_match(p, state, &success))
 			goto out;
 
-		
+
 		WRITE_ONCE(p->__state, TASK_RUNNING);
-		
+
 		goto out;
 	}
 
-	
+
 	if (READ_ONCE(p->__state) == TASK_RUNNING)
 		goto out;
 
-	
 
-	
+
+
 	smp_rmb();
 	if (READ_ONCE(p->on_rq) && ttwu_runnable(p, wake_flags))
-		goto unlock;
+		goto out;
 
 	cpu = task_cpu(p);
 
 	ttwu_queue(p, cpu, wake_flags);
-unlock:
-	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 out:
 	if (success)
 		ttwu_stat(p, task_cpu(p), wake_flags);
@@ -672,39 +595,16 @@ out:
 	return success;
 }
 
+/* Stub: task_call_func not used externally */
 int task_call_func(struct task_struct *p, task_call_f func, void *arg)
 {
-	struct rq *rq = NULL;
-	unsigned int state;
-	struct rq_flags rf;
-	int ret;
-
-	raw_spin_lock_irqsave(&p->pi_lock, rf.flags);
-
-	state = READ_ONCE(p->__state);
-
-	
-	smp_rmb();
-
-	
-	if (state == TASK_RUNNING || state == TASK_WAKING || p->on_rq)
-		rq = __task_rq_lock(p, &rf);
-
-	
-	ret = func(p, arg);
-
-	if (rq)
-		rq_unlock(rq, &rf);
-
-	raw_spin_unlock_irqrestore(&p->pi_lock, rf.flags);
-	return ret;
+	return -ENOSYS;
 }
 
 int wake_up_process(struct task_struct *p)
 {
 	return try_to_wake_up(p, TASK_NORMAL, 0);
 }
-EXPORT_SYMBOL(wake_up_process);
 
 int wake_up_state(struct task_struct *p, unsigned int state)
 {
@@ -978,20 +878,20 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	arch_start_context_switch(prev);
 
 	
-	if (!next->mm) {                                // to kernel
+	if (!next->mm) {                                 
 		enter_lazy_tlb(prev->active_mm, next);
 
 		next->active_mm = prev->active_mm;
-		if (prev->mm)                           // from user
+		if (prev->mm)                            
 			mmgrab(prev->active_mm);
 		else
 			prev->active_mm = NULL;
-	} else {                                        // to user
+	} else {                                         
 		membarrier_switch_mm(rq, prev->active_mm, next->mm);
 		
 		switch_mm_irqs_off(prev->active_mm, next->mm, next);
 
-		if (!prev->mm) {                        // from kernel
+		if (!prev->mm) {                         
 			
 			rq->prev_mm = prev->active_mm;
 			prev->active_mm = NULL;
@@ -1019,21 +919,16 @@ unsigned int nr_running(void)
 	return sum;
 }
 
+/* Stub: single_task_running not used externally */
 bool single_task_running(void)
 {
-	return raw_rq()->nr_running == 1;
+	return true;
 }
-EXPORT_SYMBOL(single_task_running);
 
+/* Stub: nr_context_switches not used externally */
 unsigned long long nr_context_switches(void)
 {
-	int i;
-	unsigned long long sum = 0;
-
-	for_each_possible_cpu(i)
-		sum += cpu_rq(i)->nr_switches;
-
-	return sum;
+	return 0;
 }
 
 unsigned int nr_iowait_cpu(int cpu)
@@ -1054,8 +949,6 @@ unsigned int nr_iowait(void)
 DEFINE_PER_CPU(struct kernel_stat, kstat);
 DEFINE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
 
-EXPORT_PER_CPU_SYMBOL(kstat);
-EXPORT_PER_CPU_SYMBOL(kernel_cpustat);
 
 static inline void prefetch_curr_exec_start(struct task_struct *p)
 {
@@ -1117,18 +1010,11 @@ void scheduler_tick(void)
 
 }
 
-static inline void sched_tick_start(int cpu) { }
-static inline void sched_tick_stop(int cpu) { }
-
 #if defined(CONFIG_PREEMPTION) && (defined(CONFIG_DEBUG_PREEMPT) || \
 				defined(CONFIG_TRACE_PREEMPT_TOGGLE))
 
 static inline void preempt_latency_start(int val)
 {
-	if (preempt_count() == val) {
-		unsigned long ip = get_lock_parent_ip();
-		
-	}
 }
 
 void preempt_count_add(int val)
@@ -1136,13 +1022,10 @@ void preempt_count_add(int val)
 	__preempt_count_add(val);
 	preempt_latency_start(val);
 }
-EXPORT_SYMBOL(preempt_count_add);
 NOKPROBE_SYMBOL(preempt_count_add);
 
 static inline void preempt_latency_stop(int val)
 {
-	if (preempt_count() == val)
-		trace_preempt_on(CALLER_ADDR0, get_lock_parent_ip());
 }
 
 void preempt_count_sub(int val)
@@ -1151,7 +1034,6 @@ void preempt_count_sub(int val)
 	preempt_latency_stop(val);
 	__preempt_count_sub(val);
 }
-EXPORT_SYMBOL(preempt_count_sub);
 NOKPROBE_SYMBOL(preempt_count_sub);
 
 #else
@@ -1166,29 +1048,9 @@ static inline unsigned long get_preempt_disable_ip(struct task_struct *p)
 
 static noinline void __schedule_bug(struct task_struct *prev)
 {
-	
-	unsigned long preempt_disable_ip = get_preempt_disable_ip(current);
-
-	if (oops_in_progress)
-		return;
-
-	printk(KERN_ERR "BUG: scheduling while atomic: %s/%d/0x%08x\n",
-		prev->comm, prev->pid, preempt_count());
-
-	debug_show_held_locks(prev);
-	print_modules();
-	if (irqs_disabled())
-		print_irqtrace_events(prev);
-	if (IS_ENABLED(CONFIG_DEBUG_PREEMPT)
-	    && in_atomic_preempt_off()) {
-		pr_err("Preemption disabled at:");
-		print_ip_sym(KERN_ERR, preempt_disable_ip);
-	}
+	/* Stub: skip detailed scheduling bug reporting for minimal kernel */
 	if (panic_on_warn)
 		panic("scheduling while atomic\n");
-
-	dump_stack();
-	add_taint(TAINT_WARN, LOCKDEP_STILL_OK);
 }
 
 static inline void schedule_debug(struct task_struct *prev, bool preempt)
@@ -1201,7 +1063,6 @@ static inline void schedule_debug(struct task_struct *prev, bool preempt)
 	rcu_sleep_check();
 	SCHED_WARN_ON(ct_state() == CONTEXT_USER);
 
-	profile_hit(SCHED_PROFILING, __builtin_return_address(0));
 
 	schedstat_inc(this_rq()->sched_count);
 }
@@ -1245,12 +1106,8 @@ restart:
 			return p;
 	}
 
-	BUG(); 
+	BUG();
 }
-
-static inline void sched_core_cpu_starting(unsigned int cpu) {}
-static inline void sched_core_cpu_deactivate(unsigned int cpu) {}
-static inline void sched_core_cpu_dying(unsigned int cpu) {}
 
 static struct task_struct *
 pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
@@ -1408,7 +1265,6 @@ asmlinkage __visible void __sched schedule(void)
 	} while (need_resched());
 	sched_update_worker(tsk);
 }
-EXPORT_SYMBOL(schedule);
 
 void __sched schedule_idle(void)
 {
@@ -1466,7 +1322,6 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flag
 	WARN_ON_ONCE(IS_ENABLED(CONFIG_SCHED_DEBUG) && wake_flags & ~WF_SYNC);
 	return try_to_wake_up(curr->private, mode, wake_flags);
 }
-EXPORT_SYMBOL(default_wake_function);
 
 static void __setscheduler_prio(struct task_struct *p, int prio)
 {
@@ -1480,82 +1335,14 @@ static void __setscheduler_prio(struct task_struct *p, int prio)
 	p->prio = prio;
 }
 
-static inline int rt_effective_prio(struct task_struct *p, int prio)
-{
-	return prio;
-}
-
-void set_user_nice(struct task_struct *p, long nice)
-{
-	bool queued, running;
-	int old_prio;
-	struct rq_flags rf;
-	struct rq *rq;
-
-	if (task_nice(p) == nice || nice < MIN_NICE || nice > MAX_NICE)
-		return;
-	
-	rq = task_rq_lock(p, &rf);
-	update_rq_clock(rq);
-
-	
-	if (task_has_dl_policy(p) || task_has_rt_policy(p)) {
-		p->static_prio = NICE_TO_PRIO(nice);
-		goto out_unlock;
-	}
-	queued = task_on_rq_queued(p);
-	running = task_current(rq, p);
-	if (queued)
-		dequeue_task(rq, p, DEQUEUE_SAVE | DEQUEUE_NOCLOCK);
-	if (running)
-		put_prev_task(rq, p);
-
-	p->static_prio = NICE_TO_PRIO(nice);
-	set_load_weight(p, true);
-	old_prio = p->prio;
-	p->prio = effective_prio(p);
-
-	if (queued)
-		enqueue_task(rq, p, ENQUEUE_RESTORE | ENQUEUE_NOCLOCK);
-	if (running)
-		set_next_task(rq, p);
-
-	
-	p->sched_class->prio_changed(rq, p, old_prio);
-
-out_unlock:
-	task_rq_unlock(rq, p, &rf);
-}
-EXPORT_SYMBOL(set_user_nice);
-
-int can_nice(const struct task_struct *p, const int nice)
-{
-	
-	int nice_rlim = nice_to_rlimit(nice);
-
-	return (nice_rlim <= task_rlimit(p, RLIMIT_NICE) ||
-		capable(CAP_SYS_NICE));
-}
+/* Stub: set_user_nice not used in minimal kernel */
+void set_user_nice(struct task_struct *p, long nice) { }
 
 #ifdef __ARCH_WANT_SYS_NICE
 
 SYSCALL_DEFINE1(nice, int, increment)
 {
-	long nice, retval;
-
-	
-	increment = clamp(increment, -NICE_WIDTH, NICE_WIDTH);
-	nice = task_nice(current) + increment;
-
-	nice = clamp_val(nice, MIN_NICE, MAX_NICE);
-	if (increment < 0 && !can_nice(current, nice))
-		return -EPERM;
-
-	retval = security_task_setnice(current, nice);
-	if (retval)
-		return retval;
-
-	set_user_nice(current, nice);
+	/* Stub: nice not needed for minimal kernel */
 	return 0;
 }
 
@@ -1579,25 +1366,9 @@ int idle_cpu(int cpu)
 	return 1;
 }
 
-int available_idle_cpu(int cpu)
-{
-	if (!idle_cpu(cpu))
-		return 0;
-
-	if (vcpu_is_preempted(cpu))
-		return 0;
-
-	return 1;
-}
-
 struct task_struct *idle_task(int cpu)
 {
 	return cpu_rq(cpu)->idle;
-}
-
-static struct task_struct *find_process_by_pid(pid_t pid)
-{
-	return pid ? find_task_by_vpid(pid) : current;
 }
 
 #define SETPARAM_POLICY	-1
@@ -1623,171 +1394,48 @@ static void __setscheduler_params(struct task_struct *p,
 	set_load_weight(p, true);
 }
 
-static bool check_same_owner(struct task_struct *p)
-{
-	const struct cred *cred = current_cred(), *pcred;
-	bool match;
-
-	rcu_read_lock();
-	pcred = __task_cred(p);
-	match = (uid_eq(cred->euid, pcred->euid) ||
-		 uid_eq(cred->euid, pcred->uid));
-	rcu_read_unlock();
-	return match;
-}
-
 static int __sched_setscheduler(struct task_struct *p,
 				const struct sched_attr *attr,
 				bool user, bool pi)
 {
-	int oldpolicy = -1, policy = attr->sched_policy;
+	/* Minimal stub: simplified scheduler parameter setting */
+	int policy = attr->sched_policy;
 	int retval, oldprio, newprio, queued, running;
 	const struct sched_class *prev_class;
 	struct callback_head *head;
 	struct rq_flags rf;
-	int reset_on_fork;
 	int queue_flags = DEQUEUE_SAVE | DEQUEUE_MOVE | DEQUEUE_NOCLOCK;
 	struct rq *rq;
 
-	
-	BUG_ON(pi && in_interrupt());
-recheck:
-	
-	if (policy < 0) {
-		reset_on_fork = p->sched_reset_on_fork;
-		policy = oldpolicy = p->policy;
-	} else {
-		reset_on_fork = !!(attr->sched_flags & SCHED_FLAG_RESET_ON_FORK);
-
-		if (!valid_policy(policy))
-			return -EINVAL;
-	}
-
-	if (attr->sched_flags & ~(SCHED_FLAG_ALL | SCHED_FLAG_SUGOV))
+	/* Basic validation only */
+	if (policy < 0)
+		policy = p->policy;
+	else if (!valid_policy(policy))
 		return -EINVAL;
 
-	
 	if (attr->sched_priority > MAX_RT_PRIO-1)
 		return -EINVAL;
-	if ((dl_policy(policy) && !__checkparam_dl(attr)) ||
-	    (rt_policy(policy) != (attr->sched_priority != 0)))
-		return -EINVAL;
 
-	
-	if (user && !capable(CAP_SYS_NICE)) {
-		if (fair_policy(policy)) {
-			if (attr->sched_nice < task_nice(p) &&
-			    !can_nice(p, attr->sched_nice))
-				return -EPERM;
-		}
+	/* Skip all permission checks for minimal kernel */
 
-		if (rt_policy(policy)) {
-			unsigned long rlim_rtprio =
-					task_rlimit(p, RLIMIT_RTPRIO);
-
-			
-			if (policy != p->policy && !rlim_rtprio)
-				return -EPERM;
-
-			
-			if (attr->sched_priority > p->rt_priority &&
-			    attr->sched_priority > rlim_rtprio)
-				return -EPERM;
-		}
-
-		 
-		if (dl_policy(policy))
-			return -EPERM;
-
-		
-		if (task_has_idle_policy(p) && !idle_policy(policy)) {
-			if (!can_nice(p, task_nice(p)))
-				return -EPERM;
-		}
-
-		
-		if (!check_same_owner(p))
-			return -EPERM;
-
-		
-		if (p->sched_reset_on_fork && !reset_on_fork)
-			return -EPERM;
-	}
-
-	if (user) {
-		if (attr->sched_flags & SCHED_FLAG_SUGOV)
-			return -EINVAL;
-
-		retval = security_task_setscheduler(p);
-		if (retval)
-			return retval;
-	}
-
-	
-	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP) {
-		retval = uclamp_validate(p, attr);
-		if (retval)
-			return retval;
-	}
-
-	if (pi)
-		cpuset_read_lock();
-
-	
 	rq = task_rq_lock(p, &rf);
 	update_rq_clock(rq);
 
-	
 	if (p == rq->stop) {
 		retval = -EINVAL;
 		goto unlock;
 	}
 
-	
-	if (unlikely(policy == p->policy)) {
-		if (fair_policy(policy) && attr->sched_nice != task_nice(p))
-			goto change;
-		if (rt_policy(policy) && attr->sched_priority != p->rt_priority)
-			goto change;
-		if (dl_policy(policy) && dl_param_changed(p, attr))
-			goto change;
-		if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP)
-			goto change;
-
-		p->sched_reset_on_fork = reset_on_fork;
+	/* Check if already set */
+	if (policy == p->policy &&
+	    (!fair_policy(policy) || attr->sched_nice == task_nice(p)) &&
+	    (!rt_policy(policy) || attr->sched_priority == p->rt_priority)) {
 		retval = 0;
 		goto unlock;
 	}
-change:
 
-	if (user) {
-	}
-
-	
-	if (unlikely(oldpolicy != -1 && oldpolicy != p->policy)) {
-		policy = oldpolicy = -1;
-		task_rq_unlock(rq, p, &rf);
-		if (pi)
-			cpuset_read_unlock();
-		goto recheck;
-	}
-
-	
-	if ((dl_policy(policy) || dl_task(p)) && sched_dl_overflow(p, policy, attr)) {
-		retval = -EBUSY;
-		goto unlock;
-	}
-
-	p->sched_reset_on_fork = reset_on_fork;
 	oldprio = p->prio;
-
 	newprio = __normal_prio(policy, attr->sched_priority, attr->sched_nice);
-	if (pi) {
-		
-		newprio = rt_effective_prio(p, newprio);
-		if (newprio == oldprio)
-			queue_flags &= ~DEQUEUE_MOVE;
-	}
 
 	queued = task_on_rq_queued(p);
 	running = task_current(rq, p);
@@ -1805,10 +1453,8 @@ change:
 	__setscheduler_uclamp(p, attr);
 
 	if (queued) {
-		
 		if (oldprio < p->prio)
 			queue_flags |= ENQUEUE_HEAD;
-
 		enqueue_task(rq, p, queue_flags);
 	}
 	if (running)
@@ -1816,17 +1462,10 @@ change:
 
 	check_class_changed(rq, p, prev_class, oldprio);
 
-	
 	preempt_disable();
 	head = splice_balance_callbacks(rq);
 	task_rq_unlock(rq, p, &rf);
 
-	if (pi) {
-		cpuset_read_unlock();
-		rt_mutex_adjust_pi(p);
-	}
-
-	
 	balance_callbacks(rq, head);
 	preempt_enable();
 
@@ -1834,8 +1473,6 @@ change:
 
 unlock:
 	task_rq_unlock(rq, p, &rf);
-	if (pi)
-		cpuset_read_unlock();
 	return retval;
 }
 
@@ -1873,7 +1510,6 @@ int sched_setattr_nocheck(struct task_struct *p, const struct sched_attr *attr)
 {
 	return __sched_setscheduler(p, attr, false, true);
 }
-EXPORT_SYMBOL_GPL(sched_setattr_nocheck);
 
 int sched_setscheduler_nocheck(struct task_struct *p, int policy,
 			       const struct sched_param *param)
@@ -1886,420 +1522,72 @@ void sched_set_fifo(struct task_struct *p)
 	struct sched_param sp = { .sched_priority = MAX_RT_PRIO / 2 };
 	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
 }
-EXPORT_SYMBOL_GPL(sched_set_fifo);
-
-void sched_set_fifo_low(struct task_struct *p)
-{
-	struct sched_param sp = { .sched_priority = 1 };
-	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
-}
-EXPORT_SYMBOL_GPL(sched_set_fifo_low);
-
-void sched_set_normal(struct task_struct *p, int nice)
-{
-	struct sched_attr attr = {
-		.sched_policy = SCHED_NORMAL,
-		.sched_nice = nice,
-	};
-	WARN_ON_ONCE(sched_setattr_nocheck(p, &attr) != 0);
-}
-EXPORT_SYMBOL_GPL(sched_set_normal);
-
-static int
-do_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
-{
-	struct sched_param lparam;
-	struct task_struct *p;
-	int retval;
-
-	if (!param || pid < 0)
-		return -EINVAL;
-	if (copy_from_user(&lparam, param, sizeof(struct sched_param)))
-		return -EFAULT;
-
-	rcu_read_lock();
-	retval = -ESRCH;
-	p = find_process_by_pid(pid);
-	if (likely(p))
-		get_task_struct(p);
-	rcu_read_unlock();
-
-	if (likely(p)) {
-		retval = sched_setscheduler(p, policy, &lparam);
-		put_task_struct(p);
-	}
-
-	return retval;
-}
-
-static int sched_copy_attr(struct sched_attr __user *uattr, struct sched_attr *attr)
-{
-	u32 size;
-	int ret;
-
-	
-	memset(attr, 0, sizeof(*attr));
-
-	ret = get_user(size, &uattr->size);
-	if (ret)
-		return ret;
-
-	
-	if (!size)
-		size = SCHED_ATTR_SIZE_VER0;
-	if (size < SCHED_ATTR_SIZE_VER0 || size > PAGE_SIZE)
-		goto err_size;
-
-	ret = copy_struct_from_user(attr, sizeof(*attr), uattr, size);
-	if (ret) {
-		if (ret == -E2BIG)
-			goto err_size;
-		return ret;
-	}
-
-	if ((attr->sched_flags & SCHED_FLAG_UTIL_CLAMP) &&
-	    size < SCHED_ATTR_SIZE_VER1)
-		return -EINVAL;
-
-	
-	attr->sched_nice = clamp(attr->sched_nice, MIN_NICE, MAX_NICE);
-
-	return 0;
-
-err_size:
-	put_user(sizeof(*attr), &uattr->size);
-	return -E2BIG;
-}
-
-static void get_params(struct task_struct *p, struct sched_attr *attr)
-{
-	if (task_has_dl_policy(p))
-		__getparam_dl(p, attr);
-	else if (task_has_rt_policy(p))
-		attr->sched_priority = p->rt_priority;
-	else
-		attr->sched_nice = task_nice(p);
-}
 
 SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param __user *, param)
 {
-	if (policy < 0)
-		return -EINVAL;
-
-	return do_sched_setscheduler(pid, policy, param);
+	/* Stub: sched_setscheduler not needed for minimal kernel */
+	return 0;
 }
 
 SYSCALL_DEFINE2(sched_setparam, pid_t, pid, struct sched_param __user *, param)
 {
-	return do_sched_setscheduler(pid, SETPARAM_POLICY, param);
+	/* Stub: sched_setparam not needed for minimal kernel */
+	return 0;
 }
 
 SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
 			       unsigned int, flags)
 {
-	struct sched_attr attr;
-	struct task_struct *p;
-	int retval;
-
-	if (!uattr || pid < 0 || flags)
-		return -EINVAL;
-
-	retval = sched_copy_attr(uattr, &attr);
-	if (retval)
-		return retval;
-
-	if ((int)attr.sched_policy < 0)
-		return -EINVAL;
-	if (attr.sched_flags & SCHED_FLAG_KEEP_POLICY)
-		attr.sched_policy = SETPARAM_POLICY;
-
-	rcu_read_lock();
-	retval = -ESRCH;
-	p = find_process_by_pid(pid);
-	if (likely(p))
-		get_task_struct(p);
-	rcu_read_unlock();
-
-	if (likely(p)) {
-		if (attr.sched_flags & SCHED_FLAG_KEEP_PARAMS)
-			get_params(p, &attr);
-		retval = sched_setattr(p, &attr);
-		put_task_struct(p);
-	}
-
-	return retval;
+	/* Stubbed: sched_setattr not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
 {
-	struct task_struct *p;
-	int retval;
-
-	if (pid < 0)
-		return -EINVAL;
-
-	retval = -ESRCH;
-	rcu_read_lock();
-	p = find_process_by_pid(pid);
-	if (p) {
-		retval = security_task_getscheduler(p);
-		if (!retval)
-			retval = p->policy
-				| (p->sched_reset_on_fork ? SCHED_RESET_ON_FORK : 0);
-	}
-	rcu_read_unlock();
-	return retval;
+	/* Stub: sched_getscheduler not needed for minimal kernel */
+	return SCHED_NORMAL;
 }
 
 SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
 {
+	/* Stub: sched_getparam not needed for minimal kernel */
 	struct sched_param lp = { .sched_priority = 0 };
-	struct task_struct *p;
-	int retval;
-
 	if (!param || pid < 0)
 		return -EINVAL;
-
-	rcu_read_lock();
-	p = find_process_by_pid(pid);
-	retval = -ESRCH;
-	if (!p)
-		goto out_unlock;
-
-	retval = security_task_getscheduler(p);
-	if (retval)
-		goto out_unlock;
-
-	if (task_has_rt_policy(p))
-		lp.sched_priority = p->rt_priority;
-	rcu_read_unlock();
-
-	
-	retval = copy_to_user(param, &lp, sizeof(*param)) ? -EFAULT : 0;
-
-	return retval;
-
-out_unlock:
-	rcu_read_unlock();
-	return retval;
-}
-
-static int
-sched_attr_copy_to_user(struct sched_attr __user *uattr,
-			struct sched_attr *kattr,
-			unsigned int usize)
-{
-	unsigned int ksize = sizeof(*kattr);
-
-	if (!access_ok(uattr, usize))
-		return -EFAULT;
-
-	
-	kattr->size = min(usize, ksize);
-
-	if (copy_to_user(uattr, kattr, kattr->size))
-		return -EFAULT;
-
-	return 0;
+	return copy_to_user(param, &lp, sizeof(*param)) ? -EFAULT : 0;
 }
 
 SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
 		unsigned int, usize, unsigned int, flags)
 {
-	struct sched_attr kattr = { };
-	struct task_struct *p;
-	int retval;
-
-	if (!uattr || pid < 0 || usize > PAGE_SIZE ||
-	    usize < SCHED_ATTR_SIZE_VER0 || flags)
-		return -EINVAL;
-
-	rcu_read_lock();
-	p = find_process_by_pid(pid);
-	retval = -ESRCH;
-	if (!p)
-		goto out_unlock;
-
-	retval = security_task_getscheduler(p);
-	if (retval)
-		goto out_unlock;
-
-	kattr.sched_policy = p->policy;
-	if (p->sched_reset_on_fork)
-		kattr.sched_flags |= SCHED_FLAG_RESET_ON_FORK;
-	get_params(p, &kattr);
-	kattr.sched_flags &= SCHED_FLAG_ALL;
-
-	rcu_read_unlock();
-
-	return sched_attr_copy_to_user(uattr, &kattr, usize);
-
-out_unlock:
-	rcu_read_unlock();
-	return retval;
-}
-
-static int
-__sched_setaffinity(struct task_struct *p, const struct cpumask *mask)
-{
-	int retval;
-	cpumask_var_t cpus_allowed, new_mask;
-
-	if (!alloc_cpumask_var(&cpus_allowed, GFP_KERNEL))
-		return -ENOMEM;
-
-	if (!alloc_cpumask_var(&new_mask, GFP_KERNEL)) {
-		retval = -ENOMEM;
-		goto out_free_cpus_allowed;
-	}
-
-	cpuset_cpus_allowed(p, cpus_allowed);
-	cpumask_and(new_mask, mask, cpus_allowed);
-
-	retval = dl_task_check_affinity(p, new_mask);
-	if (retval)
-		goto out_free_new_mask;
-again:
-	retval = __set_cpus_allowed_ptr(p, new_mask, SCA_CHECK | SCA_USER);
-	if (retval)
-		goto out_free_new_mask;
-
-	cpuset_cpus_allowed(p, cpus_allowed);
-	if (!cpumask_subset(new_mask, cpus_allowed)) {
-		
-		cpumask_copy(new_mask, cpus_allowed);
-		goto again;
-	}
-
-out_free_new_mask:
-	free_cpumask_var(new_mask);
-out_free_cpus_allowed:
-	free_cpumask_var(cpus_allowed);
-	return retval;
+	/* Stubbed: sched_getattr not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 {
-	struct task_struct *p;
-	int retval;
-
-	rcu_read_lock();
-
-	p = find_process_by_pid(pid);
-	if (!p) {
-		rcu_read_unlock();
-		return -ESRCH;
-	}
-
-	
-	get_task_struct(p);
-	rcu_read_unlock();
-
-	if (p->flags & PF_NO_SETAFFINITY) {
-		retval = -EINVAL;
-		goto out_put_task;
-	}
-
-	if (!check_same_owner(p)) {
-		rcu_read_lock();
-		if (!ns_capable(__task_cred(p)->user_ns, CAP_SYS_NICE)) {
-			rcu_read_unlock();
-			retval = -EPERM;
-			goto out_put_task;
-		}
-		rcu_read_unlock();
-	}
-
-	retval = security_task_setscheduler(p);
-	if (retval)
-		goto out_put_task;
-
-	retval = __sched_setaffinity(p, in_mask);
-out_put_task:
-	put_task_struct(p);
-	return retval;
+	/* Stub: not needed for minimal kernel */
+	return 0;
 }
 
-static int get_user_cpu_mask(unsigned long __user *user_mask_ptr, unsigned len,
-			     struct cpumask *new_mask)
-{
-	if (len < cpumask_size())
-		cpumask_clear(new_mask);
-	else if (len > cpumask_size())
-		len = cpumask_size();
-
-	return copy_from_user(new_mask, user_mask_ptr, len) ? -EFAULT : 0;
-}
-
+/* Stub: setaffinity not needed for single-CPU minimal kernel */
 SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
 		unsigned long __user *, user_mask_ptr)
 {
-	cpumask_var_t new_mask;
-	int retval;
-
-	if (!alloc_cpumask_var(&new_mask, GFP_KERNEL))
-		return -ENOMEM;
-
-	retval = get_user_cpu_mask(user_mask_ptr, len, new_mask);
-	if (retval == 0)
-		retval = sched_setaffinity(pid, new_mask);
-	free_cpumask_var(new_mask);
-	return retval;
+	return 0;
 }
 
 long sched_getaffinity(pid_t pid, struct cpumask *mask)
 {
-	struct task_struct *p;
-	unsigned long flags;
-	int retval;
-
-	rcu_read_lock();
-
-	retval = -ESRCH;
-	p = find_process_by_pid(pid);
-	if (!p)
-		goto out_unlock;
-
-	retval = security_task_getscheduler(p);
-	if (retval)
-		goto out_unlock;
-
-	raw_spin_lock_irqsave(&p->pi_lock, flags);
-	cpumask_and(mask, &p->cpus_mask, cpu_active_mask);
-	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
-
-out_unlock:
-	rcu_read_unlock();
-
-	return retval;
+	/* Stub: not needed for minimal kernel */
+	return -ESRCH;
 }
 
 SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
 		unsigned long __user *, user_mask_ptr)
 {
-	int ret;
-	cpumask_var_t mask;
-
-	if ((len * BITS_PER_BYTE) < nr_cpu_ids)
-		return -EINVAL;
-	if (len & (sizeof(unsigned long)-1))
-		return -EINVAL;
-
-	if (!alloc_cpumask_var(&mask, GFP_KERNEL))
-		return -ENOMEM;
-
-	ret = sched_getaffinity(pid, mask);
-	if (ret == 0) {
-		unsigned int retlen = min(len, cpumask_size());
-
-		if (copy_to_user(user_mask_ptr, mask, retlen))
-			ret = -EFAULT;
-		else
-			ret = retlen;
-	}
-	free_cpumask_var(mask);
-
-	return ret;
+	/* Stub: just return success for minimal kernel */
+	return -ENOSYS;
 }
 
 static void do_sched_yield(void)
@@ -2335,7 +1623,6 @@ int __sched __cond_resched(void)
 	rcu_all_qs();
 	return 0;
 }
-EXPORT_SYMBOL(__cond_resched);
 
 int __cond_resched_lock(spinlock_t *lock)
 {
@@ -2353,43 +1640,6 @@ int __cond_resched_lock(spinlock_t *lock)
 	}
 	return ret;
 }
-EXPORT_SYMBOL(__cond_resched_lock);
-
-int __cond_resched_rwlock_read(rwlock_t *lock)
-{
-	int resched = should_resched(PREEMPT_LOCK_OFFSET);
-	int ret = 0;
-
-	lockdep_assert_held_read(lock);
-
-	if (rwlock_needbreak(lock) || resched) {
-		read_unlock(lock);
-		if (!_cond_resched())
-			cpu_relax();
-		ret = 1;
-		read_lock(lock);
-	}
-	return ret;
-}
-EXPORT_SYMBOL(__cond_resched_rwlock_read);
-
-int __cond_resched_rwlock_write(rwlock_t *lock)
-{
-	int resched = should_resched(PREEMPT_LOCK_OFFSET);
-	int ret = 0;
-
-	lockdep_assert_held_write(lock);
-
-	if (rwlock_needbreak(lock) || resched) {
-		write_unlock(lock);
-		if (!_cond_resched())
-			cpu_relax();
-		ret = 1;
-		write_lock(lock);
-	}
-	return ret;
-}
-EXPORT_SYMBOL(__cond_resched_rwlock_write);
 
 static inline void preempt_dynamic_init(void) { }
 
@@ -2398,60 +1648,6 @@ void __sched yield(void)
 	set_current_state(TASK_RUNNING);
 	do_sched_yield();
 }
-EXPORT_SYMBOL(yield);
-
-int __sched yield_to(struct task_struct *p, bool preempt)
-{
-	struct task_struct *curr = current;
-	struct rq *rq, *p_rq;
-	unsigned long flags;
-	int yielded = 0;
-
-	local_irq_save(flags);
-	rq = this_rq();
-
-again:
-	p_rq = task_rq(p);
-	
-	if (rq->nr_running == 1 && p_rq->nr_running == 1) {
-		yielded = -ESRCH;
-		goto out_irq;
-	}
-
-	double_rq_lock(rq, p_rq);
-	if (task_rq(p) != p_rq) {
-		double_rq_unlock(rq, p_rq);
-		goto again;
-	}
-
-	if (!curr->sched_class->yield_to_task)
-		goto out_unlock;
-
-	if (curr->sched_class != p->sched_class)
-		goto out_unlock;
-
-	if (task_running(p_rq, p) || !task_is_running(p))
-		goto out_unlock;
-
-	yielded = curr->sched_class->yield_to_task(rq, p);
-	if (yielded) {
-		schedstat_inc(rq->yld_count);
-		
-		if (preempt && rq != p_rq)
-			resched_curr(p_rq);
-	}
-
-out_unlock:
-	double_rq_unlock(rq, p_rq);
-out_irq:
-	local_irq_restore(flags);
-
-	if (yielded > 0)
-		schedule();
-
-	return yielded;
-}
-EXPORT_SYMBOL_GPL(yield_to);
 
 int io_schedule_prepare(void)
 {
@@ -2478,7 +1674,6 @@ long __sched io_schedule_timeout(long timeout)
 
 	return ret;
 }
-EXPORT_SYMBOL(io_schedule_timeout);
 
 void __sched io_schedule(void)
 {
@@ -2488,79 +1683,22 @@ void __sched io_schedule(void)
 	schedule();
 	io_schedule_finish(token);
 }
-EXPORT_SYMBOL(io_schedule);
 
 SYSCALL_DEFINE1(sched_get_priority_max, int, policy)
 {
-	int ret = -EINVAL;
-
-	switch (policy) {
-	case SCHED_FIFO:
-	case SCHED_RR:
-		ret = MAX_RT_PRIO-1;
-		break;
-	case SCHED_DEADLINE:
-	case SCHED_NORMAL:
-	case SCHED_BATCH:
-	case SCHED_IDLE:
-		ret = 0;
-		break;
-	}
-	return ret;
+	/* Stub: just return 0 for minimal kernel */
+	return 0;
 }
 
 SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
 {
-	int ret = -EINVAL;
-
-	switch (policy) {
-	case SCHED_FIFO:
-	case SCHED_RR:
-		ret = 1;
-		break;
-	case SCHED_DEADLINE:
-	case SCHED_NORMAL:
-	case SCHED_BATCH:
-	case SCHED_IDLE:
-		ret = 0;
-	}
-	return ret;
+	/* Stub: just return 0 for minimal kernel */
+	return 0;
 }
 
 static int sched_rr_get_interval(pid_t pid, struct timespec64 *t)
 {
-	struct task_struct *p;
-	unsigned int time_slice;
-	struct rq_flags rf;
-	struct rq *rq;
-	int retval;
-
-	if (pid < 0)
-		return -EINVAL;
-
-	retval = -ESRCH;
-	rcu_read_lock();
-	p = find_process_by_pid(pid);
-	if (!p)
-		goto out_unlock;
-
-	retval = security_task_getscheduler(p);
-	if (retval)
-		goto out_unlock;
-
-	rq = task_rq_lock(p, &rf);
-	time_slice = 0;
-	if (p->sched_class->get_rr_interval)
-		time_slice = p->sched_class->get_rr_interval(rq, p);
-	task_rq_unlock(rq, p, &rf);
-
-	rcu_read_unlock();
-	jiffies_to_timespec64(time_slice, t);
-	return 0;
-
-out_unlock:
-	rcu_read_unlock();
-	return retval;
+	return -EINVAL;
 }
 
 SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
@@ -2579,7 +1717,6 @@ void sched_show_task(struct task_struct *p)
 {
 	
 }
-EXPORT_SYMBOL_GPL(sched_show_task);
 
 static inline bool
 state_filter_match(unsigned long state_filter, struct task_struct *p)
@@ -2636,9 +1773,8 @@ void __init init_idle(struct task_struct *idle, int cpu)
 	
 	init_idle_preempt_count(idle, cpu);
 
-	
+
 	idle->sched_class = &idle_sched_class;
-	ftrace_graph_init_idle_task(idle, cpu);
 	vtime_init_idle(idle, cpu);
 }
 

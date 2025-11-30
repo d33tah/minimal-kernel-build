@@ -1,10 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- * UUID/GUID definition
- *
- * Copyright (C) 2010, 2016 Intel Corp.
- *	Huang Ying <ying.huang@intel.com>
- */
+ 
+ 
 #ifndef _LINUX_UUID_H_
 #define _LINUX_UUID_H_
 
@@ -24,10 +19,7 @@ typedef struct {
    ((c) >> 8) & 0xff, (c) & 0xff,					\
    (d0), (d1), (d2), (d3), (d4), (d5), (d6), (d7) }})
 
-/*
- * The length of a UUID string ("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")
- * not including trailing NUL.
- */
+ 
 #define	UUID_STRING_LEN		36
 
 extern const guid_t guid_null;
@@ -97,7 +89,7 @@ extern const u8 uuid_index[16];
 int guid_parse(const char *uuid, guid_t *u);
 int uuid_parse(const char *uuid, uuid_t *u);
 
-/* backwards compatibility, don't use in new code */
+ 
 static inline int uuid_le_cmp(const guid_t u1, const guid_t u2)
 {
 	return memcmp(&u1, &u2, sizeof(guid_t));

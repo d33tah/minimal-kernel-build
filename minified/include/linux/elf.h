@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_ELF_H
 #define _LINUX_ELF_H
 
@@ -7,9 +7,7 @@
 #include <uapi/linux/elf.h>
 
 #ifndef elf_read_implies_exec
-  /* Executables for which elf_read_implies_exec() returns TRUE will
-     have the READ_IMPLIES_EXEC personality flag set automatically.
-     Override in asm/elf.h as needed.  */
+   
 # define elf_read_implies_exec(ex, have_pt_gnu_stack)	0
 #endif
 #ifndef SET_PERSONALITY
@@ -61,41 +59,9 @@ extern Elf64_Dyn _DYNAMIC [];
 
 #endif
 
-/* Optional callbacks to write extra ELF notes. */
-struct file;
-struct coredump_params;
-
-#ifndef ARCH_HAVE_EXTRA_ELF_NOTES
-static inline int elf_coredump_extra_notes_size(void) { return 0; }
-static inline int elf_coredump_extra_notes_write(struct coredump_params *cprm) { return 0; }
-#else
-extern int elf_coredump_extra_notes_size(void);
-extern int elf_coredump_extra_notes_write(struct coredump_params *cprm);
-#endif
-
-/*
- * NT_GNU_PROPERTY_TYPE_0 header:
- * Keep this internal until/unless there is an agreed UAPI definition.
- * pr_type values (GNU_PROPERTY_*) are public and defined in the UAPI header.
- */
-struct gnu_property {
-	u32 pr_type;
-	u32 pr_datasz;
-};
-
+/* elf_coredump_extra_notes_* removed - unused */
+/* arch_parse_elf_property removed - unused */
 struct arch_elf_state;
-
-#ifndef CONFIG_ARCH_USE_GNU_PROPERTY
-static inline int arch_parse_elf_property(u32 type, const void *data,
-					  size_t datasz, bool compat,
-					  struct arch_elf_state *arch)
-{
-	return 0;
-}
-#else
-extern int arch_parse_elf_property(u32 type, const void *data, size_t datasz,
-				   bool compat, struct arch_elf_state *arch);
-#endif
 
 static inline int arch_elf_adjust_prot(int prot,
 				       const struct arch_elf_state *state,
@@ -104,4 +70,4 @@ static inline int arch_elf_adjust_prot(int prot,
 	return prot;
 }
 
-#endif /* _LINUX_ELF_H */
+#endif  

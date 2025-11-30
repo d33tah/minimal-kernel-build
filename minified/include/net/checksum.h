@@ -1,4 +1,4 @@
-/* Minimal stub for checksum.h */
+ 
 #ifndef _NET_CHECKSUM_H
 #define _NET_CHECKSUM_H
 
@@ -52,4 +52,4 @@ static inline __wsum csum_partial_copy_nocheck(const void *src, void *dst, int l
 	return 0;
 }
 
-#endif /* _NET_CHECKSUM_H */
+#endif  

@@ -1,9 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * decompress.c
- *
- * Detect the decompression method based on magic number
- */
+ 
+ 
 
 #include <linux/decompress/generic.h>
 
@@ -68,10 +64,8 @@ decompress_fn __init decompress_method(const unsigned char *inbuf, long len,
 	if (len < 2) {
 		if (name)
 			*name = NULL;
-		return NULL;	/* Need at least this much... */
+		return NULL;	 
 	}
-
-	pr_debug("Compressed data magic: %#.2x %#.2x\n", inbuf[0], inbuf[1]);
 
 	for (cf = compressed_formats; cf->name; cf++) {
 		if (!memcmp(inbuf, cf->magic, 2))

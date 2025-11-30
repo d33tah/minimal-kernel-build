@@ -1,9 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * selection.h
- *
- * Interface between console.c, tty_io.c, vt.c, vc_screen.c and selection.c
- */
+ 
+ 
 
 #ifndef _LINUX_SELECTION_H_
 #define _LINUX_SELECTION_H_
@@ -14,7 +10,7 @@
 struct tty_struct;
 struct vc_data;
 
-extern void clear_selection(void);
+static inline void clear_selection(void) { }
 extern int set_selection_user(const struct tiocl_selection __user *sel,
 			      struct tty_struct *tty);
 extern int set_selection_kernel(struct tiocl_selection *v,
@@ -24,7 +20,7 @@ extern int sel_loadlut(char __user *p);
 extern int mouse_reporting(void);
 extern void mouse_report(struct tty_struct * tty, int butt, int mrx, int mry);
 
-bool vc_is_sel(struct vc_data *vc);
+static inline bool vc_is_sel(struct vc_data *vc) { return false; }
 
 extern int console_blanked;
 

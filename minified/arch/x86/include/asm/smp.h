@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_SMP_H
 #define _ASM_X86_SMP_H
 #ifndef __ASSEMBLY__
@@ -14,7 +14,7 @@ extern unsigned int num_processors;
 DECLARE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_sibling_map);
 DECLARE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_core_map);
 DECLARE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_die_map);
-/* cpus sharing the last level cache: */
+ 
 DECLARE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_llc_shared_map);
 DECLARE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_l2c_shared_map);
 DECLARE_PER_CPU_READ_MOSTLY(u16, cpu_llc_id);
@@ -55,7 +55,7 @@ struct smp_ops {
 	void (*send_call_func_single_ipi)(int cpu);
 };
 
-/* Globals due to paravirt */
+ 
 extern void set_cpu_sibling_map(int cpu);
 
 #define wbinvd_on_cpu(cpu)     wbinvd()
@@ -71,5 +71,5 @@ extern unsigned disabled_cpus;
 
 #define nmi_selftest() do { } while (0)
 
-#endif /* __ASSEMBLY__ */
-#endif /* _ASM_X86_SMP_H */
+#endif  
+#endif  

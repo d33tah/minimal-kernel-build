@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_NUMA_H
 #define _ASM_X86_NUMA_H
 
@@ -32,4 +32,4 @@ static inline int numa_emu_cmdline(char *str)
 	return -EINVAL;
 }
 
-#endif	/* _ASM_X86_NUMA_H */
+#endif	 

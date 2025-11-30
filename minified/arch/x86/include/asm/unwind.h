@@ -1,9 +1,8 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_UNWIND_H
 #define _ASM_X86_UNWIND_H
 
 #include <linux/sched.h>
-#include <linux/ftrace.h>
 #include <linux/rethook.h>
 #include <asm/ptrace.h>
 #include <asm/stacktrace.h>
@@ -63,7 +62,7 @@ unsigned long unwind_recover_rethook(struct unwind_state *state,
 	return addr;
 }
 
-/* Recover the return address modified by rethook and ftrace_graph. */
+ 
 static inline
 unsigned long unwind_recover_ret_addr(struct unwind_state *state,
 				     unsigned long addr, unsigned long *addr_p)
@@ -75,11 +74,7 @@ unsigned long unwind_recover_ret_addr(struct unwind_state *state,
 	return unwind_recover_rethook(state, ret, addr_p);
 }
 
-/*
- * This disables KASAN checking when reading a value from another task's stack,
- * since the other task could be running on another CPU and could have poisoned
- * the stack in the meantime.
- */
+ 
 #define READ_ONCE_TASK_STACK(task, x)			\
 ({							\
 	unsigned long val;				\
@@ -95,4 +90,4 @@ static inline bool task_on_another_cpu(struct task_struct *task)
 	return false;
 }
 
-#endif /* _ASM_X86_UNWIND_H */
+#endif  

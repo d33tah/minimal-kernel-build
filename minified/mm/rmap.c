@@ -21,7 +21,6 @@
 #include <linux/memremap.h>
 #include <linux/userfaultfd_k.h>
 #include <linux/mm_inline.h>
-#include <linux/trace_stubs.h>
 
 #include <asm/tlbflush.h>
 
@@ -281,33 +280,10 @@ void __init anon_vma_init(void)
 			SLAB_PANIC|SLAB_ACCOUNT);
 }
 
+/* Stubbed - not used in minimal kernel */
 struct anon_vma *page_get_anon_vma(struct page *page)
 {
-	struct anon_vma *anon_vma = NULL;
-	unsigned long anon_mapping;
-
-	rcu_read_lock();
-	anon_mapping = (unsigned long)READ_ONCE(page->mapping);
-	if ((anon_mapping & PAGE_MAPPING_FLAGS) != PAGE_MAPPING_ANON)
-		goto out;
-	if (!page_mapped(page))
-		goto out;
-
-	anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
-	if (!atomic_inc_not_zero(&anon_vma->refcount)) {
-		anon_vma = NULL;
-		goto out;
-	}
-
-	if (!page_mapped(page)) {
-		rcu_read_unlock();
-		put_anon_vma(anon_vma);
-		return NULL;
-	}
-out:
-	rcu_read_unlock();
-
-	return anon_vma;
+	return NULL;
 }
 
 struct anon_vma *folio_lock_anon_vma_read(struct folio *folio,
@@ -374,71 +350,20 @@ void page_unlock_anon_vma_read(struct anon_vma *anon_vma)
 	anon_vma_unlock_read(anon_vma);
 }
 
+/* Stub: try_to_unmap_flush not used externally */
 void try_to_unmap_flush(void)
 {
-	struct tlbflush_unmap_batch *tlb_ubc = &current->tlb_ubc;
-
-	if (!tlb_ubc->flush_required)
-		return;
-
-	arch_tlbbatch_flush(&tlb_ubc->arch);
-	tlb_ubc->flush_required = false;
-	tlb_ubc->writable = false;
 }
 
+/* Stub: try_to_unmap_flush_dirty not used externally */
 void try_to_unmap_flush_dirty(void)
 {
-	struct tlbflush_unmap_batch *tlb_ubc = &current->tlb_ubc;
-
-	if (tlb_ubc->writable)
-		try_to_unmap_flush();
 }
 
+/* set_tlb_ubc_flush_pending, should_defer_flush removed - unused */
 #define TLB_FLUSH_BATCH_FLUSHED_SHIFT	16
 #define TLB_FLUSH_BATCH_PENDING_MASK			\
 	((1 << (TLB_FLUSH_BATCH_FLUSHED_SHIFT - 1)) - 1)
-#define TLB_FLUSH_BATCH_PENDING_LARGE			\
-	(TLB_FLUSH_BATCH_PENDING_MASK / 2)
-
-static void set_tlb_ubc_flush_pending(struct mm_struct *mm, bool writable)
-{
-	struct tlbflush_unmap_batch *tlb_ubc = &current->tlb_ubc;
-	int batch, nbatch;
-
-	arch_tlbbatch_add_mm(&tlb_ubc->arch, mm);
-	tlb_ubc->flush_required = true;
-
-	barrier();
-	batch = atomic_read(&mm->tlb_flush_batched);
-retry:
-	if ((batch & TLB_FLUSH_BATCH_PENDING_MASK) > TLB_FLUSH_BATCH_PENDING_LARGE) {
-		
-		nbatch = atomic_cmpxchg(&mm->tlb_flush_batched, batch, 1);
-		if (nbatch != batch) {
-			batch = nbatch;
-			goto retry;
-		}
-	} else {
-		atomic_inc(&mm->tlb_flush_batched);
-	}
-
-	if (writable)
-		tlb_ubc->writable = true;
-}
-
-static bool should_defer_flush(struct mm_struct *mm, enum ttu_flags flags)
-{
-	bool should_defer = false;
-
-	if (!(flags & TTU_BATCH_FLUSH))
-		return false;
-
-	if (cpumask_any_but(mm_cpumask(mm), get_cpu()) < nr_cpu_ids)
-		should_defer = true;
-	put_cpu();
-
-	return should_defer;
-}
 
 void flush_tlb_batched_pending(struct mm_struct *mm)
 {
@@ -509,234 +434,23 @@ struct folio_referenced_arg {
 	struct mem_cgroup *memcg;
 };
 
-static bool folio_referenced_one(struct folio *folio,
-		struct vm_area_struct *vma, unsigned long address, void *arg)
-{
-	struct folio_referenced_arg *pra = arg;
-	DEFINE_FOLIO_VMA_WALK(pvmw, folio, vma, address, 0);
-	int referenced = 0;
-
-	while (page_vma_mapped_walk(&pvmw)) {
-		address = pvmw.address;
-
-		if ((vma->vm_flags & VM_LOCKED) &&
-		    (!folio_test_large(folio) || !pvmw.pte)) {
-			
-			mlock_vma_folio(folio, vma, !pvmw.pte);
-			page_vma_mapped_walk_done(&pvmw);
-			pra->vm_flags |= VM_LOCKED;
-			return false; 
-		}
-
-		if (pvmw.pte) {
-			if (ptep_clear_flush_young_notify(vma, address,
-						pvmw.pte)) {
-				
-				if (likely(!(vma->vm_flags & VM_SEQ_READ)))
-					referenced++;
-			}
-		} else if (IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE)) {
-			if (pmdp_clear_flush_young_notify(vma, address,
-						pvmw.pmd))
-				referenced++;
-		} else {
-			
-			WARN_ON_ONCE(1);
-		}
-
-		pra->mapcount--;
-	}
-
-	if (referenced)
-		folio_clear_idle(folio);
-	if (folio_test_clear_young(folio))
-		referenced++;
-
-	if (referenced) {
-		pra->referenced++;
-		pra->vm_flags |= vma->vm_flags & ~VM_LOCKED;
-	}
-
-	if (!pra->mapcount)
-		return false; 
-
-	return true;
-}
-
-static bool invalid_folio_referenced_vma(struct vm_area_struct *vma, void *arg)
-{
-	struct folio_referenced_arg *pra = arg;
-	struct mem_cgroup *memcg = pra->memcg;
-
-	if (!mm_match_cgroup(vma->vm_mm, memcg))
-		return true;
-
-	return false;
-}
-
+/* Stubbed: folio_referenced not used externally */
 int folio_referenced(struct folio *folio, int is_locked,
 		     struct mem_cgroup *memcg, unsigned long *vm_flags)
 {
-	int we_locked = 0;
-	struct folio_referenced_arg pra = {
-		.mapcount = folio_mapcount(folio),
-		.memcg = memcg,
-	};
-	struct rmap_walk_control rwc = {
-		.rmap_one = folio_referenced_one,
-		.arg = (void *)&pra,
-		.anon_lock = folio_lock_anon_vma_read,
-		.try_lock = true,
-	};
-
 	*vm_flags = 0;
-	if (!pra.mapcount)
-		return 0;
-
-	if (!folio_raw_mapping(folio))
-		return 0;
-
-	if (!is_locked && (!folio_test_anon(folio) || folio_test_ksm(folio))) {
-		we_locked = folio_trylock(folio);
-		if (!we_locked)
-			return 1;
-	}
-
-	if (memcg) {
-		rwc.invalid_vma = invalid_folio_referenced_vma;
-	}
-
-	rmap_walk(folio, &rwc);
-	*vm_flags = pra.vm_flags;
-
-	if (we_locked)
-		folio_unlock(folio);
-
-	return rwc.contended ? -1 : pra.referenced;
+	return 0;
 }
 
-static int page_vma_mkclean_one(struct page_vma_mapped_walk *pvmw)
-{
-	int cleaned = 0;
-	struct vm_area_struct *vma = pvmw->vma;
-	struct mmu_notifier_range range;
-	unsigned long address = pvmw->address;
+/* Stubbed: folio_mkclean not used externally */
+int folio_mkclean(struct folio *folio) { return 0; }
 
-	mmu_notifier_range_init(&range, MMU_NOTIFY_PROTECTION_PAGE,
-				0, vma, vma->vm_mm, address,
-				vma_address_end(pvmw));
-	mmu_notifier_invalidate_range_start(&range);
-
-	while (page_vma_mapped_walk(pvmw)) {
-		int ret = 0;
-
-		address = pvmw->address;
-		if (pvmw->pte) {
-			pte_t entry;
-			pte_t *pte = pvmw->pte;
-
-			if (!pte_dirty(*pte) && !pte_write(*pte))
-				continue;
-
-			flush_cache_page(vma, address, pte_pfn(*pte));
-			entry = ptep_clear_flush(vma, address, pte);
-			entry = pte_wrprotect(entry);
-			entry = pte_mkclean(entry);
-			set_pte_at(vma->vm_mm, address, pte, entry);
-			ret = 1;
-		} else {
-			
-			WARN_ON_ONCE(1);
-		}
-
-		if (ret)
-			cleaned++;
-	}
-
-	mmu_notifier_invalidate_range_end(&range);
-
-	return cleaned;
-}
-
-static bool page_mkclean_one(struct folio *folio, struct vm_area_struct *vma,
-			     unsigned long address, void *arg)
-{
-	DEFINE_FOLIO_VMA_WALK(pvmw, folio, vma, address, PVMW_SYNC);
-	int *cleaned = arg;
-
-	*cleaned += page_vma_mkclean_one(&pvmw);
-
-	return true;
-}
-
-static bool invalid_mkclean_vma(struct vm_area_struct *vma, void *arg)
-{
-	if (vma->vm_flags & VM_SHARED)
-		return false;
-
-	return true;
-}
-
-int folio_mkclean(struct folio *folio)
-{
-	int cleaned = 0;
-	struct address_space *mapping;
-	struct rmap_walk_control rwc = {
-		.arg = (void *)&cleaned,
-		.rmap_one = page_mkclean_one,
-		.invalid_vma = invalid_mkclean_vma,
-	};
-
-	BUG_ON(!folio_test_locked(folio));
-
-	if (!folio_mapped(folio))
-		return 0;
-
-	mapping = folio_mapping(folio);
-	if (!mapping)
-		return 0;
-
-	rmap_walk(folio, &rwc);
-
-	return cleaned;
-}
-EXPORT_SYMBOL_GPL(folio_mkclean);
-
+/* Stubbed: pfn_mkclean_range not used externally */
 int pfn_mkclean_range(unsigned long pfn, unsigned long nr_pages, pgoff_t pgoff,
-		      struct vm_area_struct *vma)
-{
-	struct page_vma_mapped_walk pvmw = {
-		.pfn		= pfn,
-		.nr_pages	= nr_pages,
-		.pgoff		= pgoff,
-		.vma		= vma,
-		.flags		= PVMW_SYNC,
-	};
+		      struct vm_area_struct *vma) { return 0; }
 
-	if (invalid_mkclean_vma(vma, NULL))
-		return 0;
-
-	pvmw.address = vma_pgoff_address(pgoff, nr_pages, vma);
-	VM_BUG_ON_VMA(pvmw.address == -EFAULT, vma);
-
-	return page_vma_mkclean_one(&pvmw);
-}
-
-void page_move_anon_rmap(struct page *page, struct vm_area_struct *vma)
-{
-	struct anon_vma *anon_vma = vma->anon_vma;
-	struct page *subpage = page;
-
-	page = compound_head(page);
-
-	VM_BUG_ON_PAGE(!PageLocked(page), page);
-	VM_BUG_ON_VMA(!anon_vma, vma);
-
-	anon_vma = (void *) anon_vma + PAGE_MAPPING_ANON;
-	
-	WRITE_ONCE(page->mapping, (struct address_space *) anon_vma);
-	SetPageAnonExclusive(subpage);
-}
+/* Stub: page_move_anon_rmap not used in minimal kernel */
+void page_move_anon_rmap(struct page *page, struct vm_area_struct *vma) { }
 
 static void __page_set_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, int exclusive)
@@ -976,435 +690,14 @@ out:
 	munlock_vma_page(page, vma, compound);
 }
 
-static bool try_to_unmap_one(struct folio *folio, struct vm_area_struct *vma,
-		     unsigned long address, void *arg)
-{
-	struct mm_struct *mm = vma->vm_mm;
-	DEFINE_FOLIO_VMA_WALK(pvmw, folio, vma, address, 0);
-	pte_t pteval;
-	struct page *subpage;
-	bool anon_exclusive, ret = true;
-	struct mmu_notifier_range range;
-	enum ttu_flags flags = (enum ttu_flags)(long)arg;
-
-	if (flags & TTU_SYNC)
-		pvmw.flags = PVMW_SYNC;
-
-	if (flags & TTU_SPLIT_HUGE_PMD)
-		split_huge_pmd_address(vma, address, false, folio);
-
-	range.end = vma_address_end(&pvmw);
-	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, vma, vma->vm_mm,
-				address, range.end);
-	if (folio_test_hugetlb(folio)) {
-		
-		adjust_range_if_pmd_sharing_possible(vma, &range.start,
-						     &range.end);
-	}
-	mmu_notifier_invalidate_range_start(&range);
-
-	while (page_vma_mapped_walk(&pvmw)) {
-		
-		VM_BUG_ON_FOLIO(!pvmw.pte, folio);
-
-		if (!(flags & TTU_IGNORE_MLOCK) &&
-		    (vma->vm_flags & VM_LOCKED)) {
-			
-			mlock_vma_folio(folio, vma, false);
-			page_vma_mapped_walk_done(&pvmw);
-			ret = false;
-			break;
-		}
-
-		subpage = folio_page(folio,
-					pte_pfn(*pvmw.pte) - folio_pfn(folio));
-		address = pvmw.address;
-		anon_exclusive = folio_test_anon(folio) &&
-				 PageAnonExclusive(subpage);
-
-		if (folio_test_hugetlb(folio)) {
-			
-			VM_BUG_ON_PAGE(!PageHWPoison(subpage), subpage);
-			
-			flush_cache_range(vma, range.start, range.end);
-
-			if (!folio_test_anon(folio)) {
-				
-				VM_BUG_ON(!(flags & TTU_RMAP_LOCKED));
-
-				if (huge_pmd_unshare(mm, vma, &address, pvmw.pte)) {
-					flush_tlb_range(vma, range.start, range.end);
-					mmu_notifier_invalidate_range(mm, range.start,
-								      range.end);
-
-					page_vma_mapped_walk_done(&pvmw);
-					break;
-				}
-			}
-			pteval = huge_ptep_clear_flush(vma, address, pvmw.pte);
-		} else {
-			flush_cache_page(vma, address, pte_pfn(*pvmw.pte));
-			
-			if (should_defer_flush(mm, flags) && !anon_exclusive) {
-				
-				pteval = ptep_get_and_clear(mm, address, pvmw.pte);
-
-				set_tlb_ubc_flush_pending(mm, pte_dirty(pteval));
-			} else {
-				pteval = ptep_clear_flush(vma, address, pvmw.pte);
-			}
-		}
-
-		pte_install_uffd_wp_if_needed(vma, address, pvmw.pte, pteval);
-
-		if (pte_dirty(pteval))
-			folio_mark_dirty(folio);
-
-		update_hiwater_rss(mm);
-
-		if (PageHWPoison(subpage) && !(flags & TTU_IGNORE_HWPOISON)) {
-			pteval = swp_entry_to_pte(make_hwpoison_entry(subpage));
-			if (folio_test_hugetlb(folio)) {
-				hugetlb_count_sub(folio_nr_pages(folio), mm);
-				set_huge_swap_pte_at(mm, address,
-						     pvmw.pte, pteval,
-						     vma_mmu_pagesize(vma));
-			} else {
-				dec_mm_counter(mm, mm_counter(&folio->page));
-				set_pte_at(mm, address, pvmw.pte, pteval);
-			}
-
-		} else if (pte_unused(pteval) && !userfaultfd_armed(vma)) {
-			
-			dec_mm_counter(mm, mm_counter(&folio->page));
-			
-			mmu_notifier_invalidate_range(mm, address,
-						      address + PAGE_SIZE);
-		} else if (folio_test_anon(folio)) {
-			swp_entry_t entry = { .val = page_private(subpage) };
-			pte_t swp_pte;
-			
-			if (unlikely(folio_test_swapbacked(folio) !=
-					folio_test_swapcache(folio))) {
-				WARN_ON_ONCE(1);
-				ret = false;
-				
-				mmu_notifier_invalidate_range(mm, address,
-							address + PAGE_SIZE);
-				page_vma_mapped_walk_done(&pvmw);
-				break;
-			}
-
-			if (!folio_test_swapbacked(folio)) {
-				int ref_count, map_count;
-
-				smp_mb();
-
-				ref_count = folio_ref_count(folio);
-				map_count = folio_mapcount(folio);
-
-				smp_rmb();
-
-				if (ref_count == 1 + map_count &&
-				    !folio_test_dirty(folio)) {
-					
-					mmu_notifier_invalidate_range(mm,
-						address, address + PAGE_SIZE);
-					dec_mm_counter(mm, MM_ANONPAGES);
-					goto discard;
-				}
-
-				set_pte_at(mm, address, pvmw.pte, pteval);
-				folio_set_swapbacked(folio);
-				ret = false;
-				page_vma_mapped_walk_done(&pvmw);
-				break;
-			}
-
-			if (swap_duplicate(entry) < 0) {
-				set_pte_at(mm, address, pvmw.pte, pteval);
-				ret = false;
-				page_vma_mapped_walk_done(&pvmw);
-				break;
-			}
-			if (arch_unmap_one(mm, vma, address, pteval) < 0) {
-				swap_free(entry);
-				set_pte_at(mm, address, pvmw.pte, pteval);
-				ret = false;
-				page_vma_mapped_walk_done(&pvmw);
-				break;
-			}
-			if (anon_exclusive &&
-			    page_try_share_anon_rmap(subpage)) {
-				swap_free(entry);
-				set_pte_at(mm, address, pvmw.pte, pteval);
-				ret = false;
-				page_vma_mapped_walk_done(&pvmw);
-				break;
-			}
-			
-			if (list_empty(&mm->mmlist)) {
-				spin_lock(&mmlist_lock);
-				if (list_empty(&mm->mmlist))
-					list_add(&mm->mmlist, &init_mm.mmlist);
-				spin_unlock(&mmlist_lock);
-			}
-			dec_mm_counter(mm, MM_ANONPAGES);
-			inc_mm_counter(mm, MM_SWAPENTS);
-			swp_pte = swp_entry_to_pte(entry);
-			if (anon_exclusive)
-				swp_pte = pte_swp_mkexclusive(swp_pte);
-			if (pte_soft_dirty(pteval))
-				swp_pte = pte_swp_mksoft_dirty(swp_pte);
-			if (pte_uffd_wp(pteval))
-				swp_pte = pte_swp_mkuffd_wp(swp_pte);
-			set_pte_at(mm, address, pvmw.pte, swp_pte);
-			
-			mmu_notifier_invalidate_range(mm, address,
-						      address + PAGE_SIZE);
-		} else {
-			
-			dec_mm_counter(mm, mm_counter_file(&folio->page));
-		}
-discard:
-		
-		page_remove_rmap(subpage, vma, folio_test_hugetlb(folio));
-		if (vma->vm_flags & VM_LOCKED)
-			mlock_page_drain_local();
-		folio_put(folio);
-	}
-
-	mmu_notifier_invalidate_range_end(&range);
-
-	return ret;
-}
-
-static bool invalid_migration_vma(struct vm_area_struct *vma, void *arg)
-{
-	return vma_is_temporary_stack(vma);
-}
-
-static int page_not_mapped(struct folio *folio)
-{
-	return !folio_mapped(folio);
-}
-
+/* Stub: try_to_unmap not used externally */
 void try_to_unmap(struct folio *folio, enum ttu_flags flags)
 {
-	struct rmap_walk_control rwc = {
-		.rmap_one = try_to_unmap_one,
-		.arg = (void *)flags,
-		.done = page_not_mapped,
-		.anon_lock = folio_lock_anon_vma_read,
-	};
-
-	if (flags & TTU_RMAP_LOCKED)
-		rmap_walk_locked(folio, &rwc);
-	else
-		rmap_walk(folio, &rwc);
-}
-
-static bool try_to_migrate_one(struct folio *folio, struct vm_area_struct *vma,
-		     unsigned long address, void *arg)
-{
-	struct mm_struct *mm = vma->vm_mm;
-	DEFINE_FOLIO_VMA_WALK(pvmw, folio, vma, address, 0);
-	pte_t pteval;
-	struct page *subpage;
-	bool anon_exclusive, ret = true;
-	struct mmu_notifier_range range;
-	enum ttu_flags flags = (enum ttu_flags)(long)arg;
-
-	if (flags & TTU_SYNC)
-		pvmw.flags = PVMW_SYNC;
-
-	if (flags & TTU_SPLIT_HUGE_PMD)
-		split_huge_pmd_address(vma, address, true, folio);
-
-	range.end = vma_address_end(&pvmw);
-	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, vma, vma->vm_mm,
-				address, range.end);
-	if (folio_test_hugetlb(folio)) {
-		
-		adjust_range_if_pmd_sharing_possible(vma, &range.start,
-						     &range.end);
-	}
-	mmu_notifier_invalidate_range_start(&range);
-
-	while (page_vma_mapped_walk(&pvmw)) {
-
-		VM_BUG_ON_FOLIO(!pvmw.pte, folio);
-
-		if (folio_is_zone_device(folio)) {
-			
-			VM_BUG_ON_FOLIO(folio_nr_pages(folio) > 1, folio);
-			subpage = &folio->page;
-		} else {
-			subpage = folio_page(folio,
-					pte_pfn(*pvmw.pte) - folio_pfn(folio));
-		}
-		address = pvmw.address;
-		anon_exclusive = folio_test_anon(folio) &&
-				 PageAnonExclusive(subpage);
-
-		if (folio_test_hugetlb(folio)) {
-			
-			flush_cache_range(vma, range.start, range.end);
-
-			if (!folio_test_anon(folio)) {
-				
-				VM_BUG_ON(!(flags & TTU_RMAP_LOCKED));
-
-				if (huge_pmd_unshare(mm, vma, &address, pvmw.pte)) {
-					flush_tlb_range(vma, range.start, range.end);
-					mmu_notifier_invalidate_range(mm, range.start,
-								      range.end);
-
-					page_vma_mapped_walk_done(&pvmw);
-					break;
-				}
-			}
-
-			pteval = huge_ptep_clear_flush(vma, address, pvmw.pte);
-		} else {
-			flush_cache_page(vma, address, pte_pfn(*pvmw.pte));
-			
-			pteval = ptep_clear_flush(vma, address, pvmw.pte);
-		}
-
-		if (pte_dirty(pteval))
-			folio_mark_dirty(folio);
-
-		update_hiwater_rss(mm);
-
-		if (folio_is_zone_device(folio)) {
-			unsigned long pfn = folio_pfn(folio);
-			swp_entry_t entry;
-			pte_t swp_pte;
-
-			if (anon_exclusive)
-				BUG_ON(page_try_share_anon_rmap(subpage));
-
-			entry = pte_to_swp_entry(pteval);
-			if (is_writable_device_private_entry(entry))
-				entry = make_writable_migration_entry(pfn);
-			else if (anon_exclusive)
-				entry = make_readable_exclusive_migration_entry(pfn);
-			else
-				entry = make_readable_migration_entry(pfn);
-			swp_pte = swp_entry_to_pte(entry);
-
-			if (pte_swp_soft_dirty(pteval))
-				swp_pte = pte_swp_mksoft_dirty(swp_pte);
-			if (pte_swp_uffd_wp(pteval))
-				swp_pte = pte_swp_mkuffd_wp(swp_pte);
-			set_pte_at(mm, pvmw.address, pvmw.pte, swp_pte);
-			trace_set_migration_pte(pvmw.address, pte_val(swp_pte),
-						compound_order(&folio->page));
-			
-		} else if (PageHWPoison(subpage)) {
-			pteval = swp_entry_to_pte(make_hwpoison_entry(subpage));
-			if (folio_test_hugetlb(folio)) {
-				hugetlb_count_sub(folio_nr_pages(folio), mm);
-				set_huge_swap_pte_at(mm, address,
-						     pvmw.pte, pteval,
-						     vma_mmu_pagesize(vma));
-			} else {
-				dec_mm_counter(mm, mm_counter(&folio->page));
-				set_pte_at(mm, address, pvmw.pte, pteval);
-			}
-
-		} else if (pte_unused(pteval) && !userfaultfd_armed(vma)) {
-			
-			dec_mm_counter(mm, mm_counter(&folio->page));
-			
-			mmu_notifier_invalidate_range(mm, address,
-						      address + PAGE_SIZE);
-		} else {
-			swp_entry_t entry;
-			pte_t swp_pte;
-
-			if (arch_unmap_one(mm, vma, address, pteval) < 0) {
-				if (folio_test_hugetlb(folio))
-					set_huge_pte_at(mm, address, pvmw.pte, pteval);
-				else
-					set_pte_at(mm, address, pvmw.pte, pteval);
-				ret = false;
-				page_vma_mapped_walk_done(&pvmw);
-				break;
-			}
-			VM_BUG_ON_PAGE(pte_write(pteval) && folio_test_anon(folio) &&
-				       !anon_exclusive, subpage);
-			if (anon_exclusive &&
-			    page_try_share_anon_rmap(subpage)) {
-				if (folio_test_hugetlb(folio))
-					set_huge_pte_at(mm, address, pvmw.pte, pteval);
-				else
-					set_pte_at(mm, address, pvmw.pte, pteval);
-				ret = false;
-				page_vma_mapped_walk_done(&pvmw);
-				break;
-			}
-
-			if (pte_write(pteval))
-				entry = make_writable_migration_entry(
-							page_to_pfn(subpage));
-			else if (anon_exclusive)
-				entry = make_readable_exclusive_migration_entry(
-							page_to_pfn(subpage));
-			else
-				entry = make_readable_migration_entry(
-							page_to_pfn(subpage));
-
-			swp_pte = swp_entry_to_pte(entry);
-			if (pte_soft_dirty(pteval))
-				swp_pte = pte_swp_mksoft_dirty(swp_pte);
-			if (pte_uffd_wp(pteval))
-				swp_pte = pte_swp_mkuffd_wp(swp_pte);
-			if (folio_test_hugetlb(folio))
-				set_huge_swap_pte_at(mm, address, pvmw.pte,
-						     swp_pte, vma_mmu_pagesize(vma));
-			else
-				set_pte_at(mm, address, pvmw.pte, swp_pte);
-			trace_set_migration_pte(address, pte_val(swp_pte),
-						compound_order(&folio->page));
-			
-		}
-
-		page_remove_rmap(subpage, vma, folio_test_hugetlb(folio));
-		if (vma->vm_flags & VM_LOCKED)
-			mlock_page_drain_local();
-		folio_put(folio);
-	}
-
-	mmu_notifier_invalidate_range_end(&range);
-
-	return ret;
 }
 
 void try_to_migrate(struct folio *folio, enum ttu_flags flags)
 {
-	struct rmap_walk_control rwc = {
-		.rmap_one = try_to_migrate_one,
-		.arg = (void *)flags,
-		.done = page_not_mapped,
-		.anon_lock = folio_lock_anon_vma_read,
-	};
-
-	if (WARN_ON_ONCE(flags & ~(TTU_RMAP_LOCKED | TTU_SPLIT_HUGE_PMD |
-					TTU_SYNC)))
-		return;
-
-	if (folio_is_zone_device(folio) && !folio_is_device_private(folio))
-		return;
-
-	if (!folio_test_ksm(folio) && folio_test_anon(folio))
-		rwc.invalid_vma = invalid_migration_vma;
-
-	if (flags & TTU_RMAP_LOCKED)
-		rmap_walk_locked(folio, &rwc);
-	else
-		rmap_walk(folio, &rwc);
+	/* Stubbed: page migration not needed for minimal kernel */
 }
 
 void __put_anon_vma(struct anon_vma *anon_vma)
@@ -1539,12 +832,7 @@ void rmap_walk(struct folio *folio, struct rmap_walk_control *rwc)
 		rmap_walk_file(folio, rwc, false);
 }
 
+/* Stub: rmap_walk_locked not used externally */
 void rmap_walk_locked(struct folio *folio, struct rmap_walk_control *rwc)
 {
-	
-	VM_BUG_ON_FOLIO(folio_test_ksm(folio), folio);
-	if (folio_test_anon(folio))
-		rmap_walk_anon(folio, rwc, true);
-	else
-		rmap_walk_file(folio, rwc, true);
 }

@@ -7,12 +7,7 @@
 
 # define RW_DEP_MAP_INIT(lockname)
 
-/*
- * generic rwlock type definitions and initializers
- *
- * portions Copyright 2005, Red Hat, Inc., Ingo Molnar
- * Released under the General Public License (GPL).
- */
+ 
 typedef struct {
 	arch_rwlock_t raw_lock;
 } rwlock_t;
@@ -26,4 +21,4 @@ typedef struct {
 #define DEFINE_RWLOCK(x)	rwlock_t x = __RW_LOCK_UNLOCKED(x)
 
 
-#endif /* __LINUX_RWLOCK_TYPES_H */
+#endif  

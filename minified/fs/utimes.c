@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/* Stubbed utimes.c */
+ 
+ 
 #include <linux/syscalls.h>
 #include <linux/utime.h>
 #include <linux/fs.h>

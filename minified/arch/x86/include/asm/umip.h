@@ -5,4 +5,4 @@
 #include <asm/ptrace.h>
 
 static inline bool fixup_umip_exception(struct pt_regs *regs) { return false; }
-#endif  /* _ASM_X86_UMIP_H */
+#endif   

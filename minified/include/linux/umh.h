@@ -11,10 +11,10 @@
 struct cred;
 struct file;
 
-#define UMH_NO_WAIT	0	/* don't wait at all */
-#define UMH_WAIT_EXEC	1	/* wait for the exec, but not the process */
-#define UMH_WAIT_PROC	2	/* wait for the process to complete */
-#define UMH_KILLABLE	4	/* wait for EXEC/PROC killable */
+#define UMH_NO_WAIT	0	 
+#define UMH_WAIT_EXEC	1	 
+#define UMH_WAIT_PROC	2	 
+#define UMH_KILLABLE	4	 
 
 struct subprocess_info {
 	struct work_struct work;
@@ -45,7 +45,6 @@ extern struct ctl_table usermodehelper_table[];
 
 enum umh_disable_depth {
 	UMH_ENABLED = 0,
-	UMH_FREEZING,
 	UMH_DISABLED,
 };
 
@@ -66,4 +65,4 @@ extern int usermodehelper_read_trylock(void);
 extern long usermodehelper_read_lock_wait(long timeout);
 extern void usermodehelper_read_unlock(void);
 
-#endif /* __LINUX_UMH_H__ */
+#endif  

@@ -23,7 +23,6 @@
 #endif
 
 struct pglist_data __refdata contig_page_data;
-EXPORT_SYMBOL(contig_page_data);
 
 unsigned long max_low_pfn;
 unsigned long min_low_pfn;
@@ -537,56 +536,6 @@ int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
 	return memblock_add_range(&memblock.reserved, base, size, MAX_NUMNODES, 0);
 }
 
-static int __init_memblock memblock_setclr_flag(phys_addr_t base,
-				phys_addr_t size, int set, int flag)
-{
-	struct memblock_type *type = &memblock.memory;
-	int i, ret, start_rgn, end_rgn;
-
-	ret = memblock_isolate_range(type, base, size, &start_rgn, &end_rgn);
-	if (ret)
-		return ret;
-
-	for (i = start_rgn; i < end_rgn; i++) {
-		struct memblock_region *r = &type->regions[i];
-
-		if (set)
-			r->flags |= flag;
-		else
-			r->flags &= ~flag;
-	}
-
-	memblock_merge_regions(type);
-	return 0;
-}
-
-int __init_memblock memblock_mark_hotplug(phys_addr_t base, phys_addr_t size)
-{
-	return memblock_setclr_flag(base, size, 1, MEMBLOCK_HOTPLUG);
-}
-
-int __init_memblock memblock_clear_hotplug(phys_addr_t base, phys_addr_t size)
-{
-	return memblock_setclr_flag(base, size, 0, MEMBLOCK_HOTPLUG);
-}
-
-int __init_memblock memblock_mark_mirror(phys_addr_t base, phys_addr_t size)
-{
-	system_has_some_mirror = true;
-
-	return memblock_setclr_flag(base, size, 1, MEMBLOCK_MIRROR);
-}
-
-int __init_memblock memblock_mark_nomap(phys_addr_t base, phys_addr_t size)
-{
-	return memblock_setclr_flag(base, size, 1, MEMBLOCK_NOMAP);
-}
-
-int __init_memblock memblock_clear_nomap(phys_addr_t base, phys_addr_t size)
-{
-	return memblock_setclr_flag(base, size, 0, MEMBLOCK_NOMAP);
-}
-
 static bool should_skip_region(struct memblock_type *type,
 			       struct memblock_region *m,
 			       int nid, int flags)
@@ -858,10 +807,10 @@ phys_addr_t __init memblock_phys_alloc_range(phys_addr_t size,
 					false);
 }
 
+/* Stub: memblock_phys_alloc_try_nid not used in minimal kernel */
 phys_addr_t __init memblock_phys_alloc_try_nid(phys_addr_t size, phys_addr_t align, int nid)
 {
-	return memblock_alloc_range_nid(size, align, 0,
-					MEMBLOCK_ALLOC_ACCESSIBLE, nid, false);
+	return 0;
 }
 
 static void * __init memblock_alloc_internal(
@@ -973,85 +922,12 @@ phys_addr_t __init_memblock memblock_end_of_DRAM(void)
 	return (memblock.memory.regions[idx].base + memblock.memory.regions[idx].size);
 }
 
-static phys_addr_t __init_memblock __find_max_addr(phys_addr_t limit)
-{
-	phys_addr_t max_addr = PHYS_ADDR_MAX;
-	struct memblock_region *r;
+/* __find_max_addr removed - unused */
 
-	for_each_mem_region(r) {
-		if (limit <= r->size) {
-			max_addr = r->base + limit;
-			break;
-		}
-		limit -= r->size;
-	}
-
-	return max_addr;
-}
-
-void __init memblock_enforce_memory_limit(phys_addr_t limit)
-{
-	phys_addr_t max_addr;
-
-	if (!limit)
-		return;
-
-	max_addr = __find_max_addr(limit);
-
-	if (max_addr == PHYS_ADDR_MAX)
-		return;
-
-	memblock_remove_range(&memblock.memory, max_addr,
-			      PHYS_ADDR_MAX);
-	memblock_remove_range(&memblock.reserved, max_addr,
-			      PHYS_ADDR_MAX);
-}
-
-void __init memblock_cap_memory_range(phys_addr_t base, phys_addr_t size)
-{
-	int start_rgn, end_rgn;
-	int i, ret;
-
-	if (!size)
-		return;
-
-	if (!memblock_memory->total_size) {
-		pr_warn("%s: No memory registered yet\n", __func__);
-		return;
-	}
-
-	ret = memblock_isolate_range(&memblock.memory, base, size,
-						&start_rgn, &end_rgn);
-	if (ret)
-		return;
-
-	for (i = memblock.memory.cnt - 1; i >= end_rgn; i--)
-		if (!memblock_is_nomap(&memblock.memory.regions[i]))
-			memblock_remove_region(&memblock.memory, i);
-
-	for (i = start_rgn - 1; i >= 0; i--)
-		if (!memblock_is_nomap(&memblock.memory.regions[i]))
-			memblock_remove_region(&memblock.memory, i);
-
-	memblock_remove_range(&memblock.reserved, 0, base);
-	memblock_remove_range(&memblock.reserved,
-			base + size, PHYS_ADDR_MAX);
-}
-
-void __init memblock_mem_limit_remove_map(phys_addr_t limit)
-{
-	phys_addr_t max_addr;
-
-	if (!limit)
-		return;
-
-	max_addr = __find_max_addr(limit);
-
-	if (max_addr == PHYS_ADDR_MAX)
-		return;
-
-	memblock_cap_memory_range(0, max_addr);
-}
+/* STUB: unused memory limit functions */
+void __init memblock_enforce_memory_limit(phys_addr_t limit) { }
+void __init memblock_cap_memory_range(phys_addr_t base, phys_addr_t size) { }
+void __init memblock_mem_limit_remove_map(phys_addr_t limit) { }
 
 static int __init_memblock memblock_search(struct memblock_type *type, phys_addr_t addr)
 {
@@ -1090,19 +966,11 @@ bool __init_memblock memblock_is_map_memory(phys_addr_t addr)
 	return !memblock_is_nomap(&memblock.memory.regions[i]);
 }
 
+/* Stub: memblock_search_pfn_nid not used in minimal kernel */
 int __init_memblock memblock_search_pfn_nid(unsigned long pfn,
 			 unsigned long *start_pfn, unsigned long *end_pfn)
 {
-	struct memblock_type *type = &memblock.memory;
-	int mid = memblock_search(type, PFN_PHYS(pfn));
-
-	if (mid == -1)
-		return -1;
-
-	*start_pfn = PFN_DOWN(type->regions[mid].base);
-	*end_pfn = PFN_DOWN(type->regions[mid].base + type->regions[mid].size);
-
-	return memblock_get_region_node(&type->regions[mid]);
+	return -1;
 }
 
 bool __init_memblock memblock_is_region_memory(phys_addr_t base, phys_addr_t size)
@@ -1156,42 +1024,9 @@ phys_addr_t __init_memblock memblock_get_current_limit(void)
 	return memblock.current_limit;
 }
 
-static void __init_memblock memblock_dump(struct memblock_type *type)
-{
-	phys_addr_t base, end, size;
-	enum memblock_flags flags;
-	int idx;
-	struct memblock_region *rgn;
-
-	pr_info(" %s.cnt  = 0x%lx\n", type->name, type->cnt);
-
-	for_each_memblock_type(idx, type, rgn) {
-		char nid_buf[32] = "";
-
-		base = rgn->base;
-		size = rgn->size;
-		end = base + size - 1;
-		flags = rgn->flags;
-		pr_info(" %s[%#x]\t[%pa-%pa], %pa bytes%s flags: %#x\n",
-			type->name, idx, &base, &end, &size, nid_buf, flags);
-	}
-}
-
-static void __init_memblock __memblock_dump_all(void)
-{
-	pr_info("MEMBLOCK configuration:\n");
-	pr_info(" memory size = %pa reserved size = %pa\n",
-		&memblock.memory.total_size,
-		&memblock.reserved.total_size);
-
-	memblock_dump(&memblock.memory);
-	memblock_dump(&memblock.reserved);
-}
-
 void __init_memblock memblock_dump_all(void)
 {
-	if (memblock_debug)
-		__memblock_dump_all();
+	/* Stub: memblock debug dump not needed for minimal kernel */
 }
 
 void __init memblock_allow_resize(void)
@@ -1199,12 +1034,8 @@ void __init memblock_allow_resize(void)
 	memblock_can_resize = 1;
 }
 
-static int __init early_memblock(char *p)
-{
-	if (p && strstr(p, "debug"))
-		memblock_debug = 1;
-	return 0;
-}
+/* Stub: memblock= cmdline option not needed for minimal kernel */
+static int __init early_memblock(char *p) { return 0; }
 early_param("memblock", early_memblock);
 
 static void __init free_memmap(unsigned long start_pfn, unsigned long end_pfn)
@@ -1298,8 +1129,6 @@ static unsigned long __init free_low_memory_core_early(void)
 	phys_addr_t start, end;
 	u64 i;
 
-	memblock_clear_hotplug(0, -1);
-
 	memmap_init_reserved_pages();
 
 	for_each_free_mem_range(i, NUMA_NO_NODE, MEMBLOCK_NONE, &start, &end,
@@ -1309,27 +1138,16 @@ static unsigned long __init free_low_memory_core_early(void)
 	return count;
 }
 
-static int reset_managed_pages_done __initdata;
+/* reset_managed_pages_done removed - unused */
 
+/* Stub: reset_node_managed_pages not used in minimal kernel */
 void reset_node_managed_pages(pg_data_t *pgdat)
 {
-	struct zone *z;
-
-	for (z = pgdat->node_zones; z < pgdat->node_zones + MAX_NR_ZONES; z++)
-		atomic_long_set(&z->managed_pages, 0);
 }
 
+/* Stub: reset_all_zones_managed_pages not used in minimal kernel */
 void __init reset_all_zones_managed_pages(void)
 {
-	struct pglist_data *pgdat;
-
-	if (reset_managed_pages_done)
-		return;
-
-	for_each_online_pgdat(pgdat)
-		reset_node_managed_pages(pgdat);
-
-	reset_managed_pages_done = 1;
 }
 
 void __init memblock_free_all(void)

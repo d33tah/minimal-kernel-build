@@ -25,7 +25,6 @@
 #include <linux/nsproxy.h>
 #include <linux/pid_namespace.h>
 #include <linux/ptrace.h>
-#include <linux/profile.h>
 #include <linux/mount.h>
 #include <linux/proc_fs.h>
 #include <linux/kthread.h>
@@ -210,100 +209,25 @@ int rcuwait_wake_up(struct rcuwait *w)
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(rcuwait_wake_up);
 
-static int will_become_orphaned_pgrp(struct pid *pgrp,
-					struct task_struct *ignored_task)
-{
-	struct task_struct *p;
-
-	do_each_pid_task(pgrp, PIDTYPE_PGID, p) {
-		if ((p == ignored_task) ||
-		    (p->exit_state && thread_group_empty(p)) ||
-		    is_global_init(p->real_parent))
-			continue;
-
-		if (task_pgrp(p->real_parent) != pgrp &&
-		    task_session(p->real_parent) == task_session(p))
-			return 0;
-	} while_each_pid_task(pgrp, PIDTYPE_PGID, p);
-
-	return 1;
-}
-
+/* Stubbed - not used externally */
 int is_current_pgrp_orphaned(void)
 {
-	int retval;
-
-	read_lock(&tasklist_lock);
-	retval = will_become_orphaned_pgrp(task_pgrp(current), NULL);
-	read_unlock(&tasklist_lock);
-
-	return retval;
+	return 0;
 }
 
-static bool has_stopped_jobs(struct pid *pgrp)
-{
-	struct task_struct *p;
-
-	do_each_pid_task(pgrp, PIDTYPE_PGID, p) {
-		if (p->signal->flags & SIGNAL_STOP_STOPPED)
-			return true;
-	} while_each_pid_task(pgrp, PIDTYPE_PGID, p);
-
-	return false;
-}
-
+/* Stub: orphaned pgrp handling not needed for minimal kernel */
 static void
 kill_orphaned_pgrp(struct task_struct *tsk, struct task_struct *parent)
 {
-	struct pid *pgrp = task_pgrp(tsk);
-	struct task_struct *ignored_task = tsk;
-
-	if (!parent)
-		
-		parent = tsk->real_parent;
-	else
-		
-		ignored_task = NULL;
-
-	if (task_pgrp(parent) != pgrp &&
-	    task_session(parent) == task_session(tsk) &&
-	    will_become_orphaned_pgrp(pgrp, ignored_task) &&
-	    has_stopped_jobs(pgrp)) {
-		__kill_pgrp_info(SIGHUP, SEND_SIG_PRIV, pgrp);
-		__kill_pgrp_info(SIGCONT, SEND_SIG_PRIV, pgrp);
-	}
 }
 
 static void coredump_task_exit(struct task_struct *tsk)
 {
-	struct core_state *core_state;
-
+	/* Stub: coredumps not needed for minimal kernel */
 	spin_lock_irq(&tsk->sighand->siglock);
 	tsk->flags |= PF_POSTCOREDUMP;
-	core_state = tsk->signal->core_state;
 	spin_unlock_irq(&tsk->sighand->siglock);
-	if (core_state) {
-		struct core_thread self;
-
-		self.task = current;
-		if (self.task->flags & PF_SIGNALED)
-			self.next = xchg(&core_state->dumper.next, &self);
-		else
-			self.task = NULL;
-		
-		if (atomic_dec_and_test(&core_state->nr_threads))
-			complete(&core_state->startup);
-
-		for (;;) {
-			set_current_state(TASK_UNINTERRUPTIBLE);
-			if (!self.task) 
-				break;
-			freezable_schedule();
-		}
-		__set_current_state(TASK_RUNNING);
-	}
 }
 
 static void exit_mm(void)
@@ -599,9 +523,6 @@ void __noreturn make_task_dead(int signr)
 		panic("Attempted to kill the idle task!");
 
 	if (unlikely(in_atomic())) {
-		pr_info("note: %s[%d] exited with preempt_count %d\n",
-			current->comm, task_pid_nr(current),
-			preempt_count());
 		preempt_count_set(PREEMPT_ENABLED);
 	}
 
@@ -869,47 +790,10 @@ unlock_sig:
 	return pid;
 }
 
+/* Stub: job control continued wait not needed for minimal kernel */
 static int wait_task_continued(struct wait_opts *wo, struct task_struct *p)
 {
-	struct waitid_info *infop;
-	pid_t pid;
-	uid_t uid;
-
-	if (!unlikely(wo->wo_flags & WCONTINUED))
-		return 0;
-
-	if (!(p->signal->flags & SIGNAL_STOP_CONTINUED))
-		return 0;
-
-	spin_lock_irq(&p->sighand->siglock);
-	
-	if (!(p->signal->flags & SIGNAL_STOP_CONTINUED)) {
-		spin_unlock_irq(&p->sighand->siglock);
-		return 0;
-	}
-	if (!unlikely(wo->wo_flags & WNOWAIT))
-		p->signal->flags &= ~SIGNAL_STOP_CONTINUED;
-	uid = from_kuid_munged(current_user_ns(), task_uid(p));
-	spin_unlock_irq(&p->sighand->siglock);
-
-	pid = task_pid_vnr(p);
-	get_task_struct(p);
-	read_unlock(&tasklist_lock);
-	sched_annotate_sleep();
-	if (wo->wo_rusage)
-		getrusage(p, RUSAGE_BOTH, wo->wo_rusage);
-	put_task_struct(p);
-
-	infop = wo->wo_info;
-	if (!infop) {
-		wo->wo_stat = 0xffff;
-	} else {
-		infop->cause = CLD_CONTINUED;
-		infop->pid = pid;
-		infop->uid = uid;
-		infop->status = SIGCONT;
-	}
-	return pid;
+	return 0;
 }
 
 static int wait_consider_task(struct wait_opts *wo, int ptrace,
@@ -1242,21 +1126,8 @@ long kernel_wait4(pid_t upid, int __user *stat_addr, int options,
 	return ret;
 }
 
-int kernel_wait(pid_t pid, int *stat)
-{
-	struct wait_opts wo = {
-		.wo_type	= PIDTYPE_PID,
-		.wo_pid		= find_get_pid(pid),
-		.wo_flags	= WEXITED,
-	};
-	int ret;
-
-	ret = do_wait(&wo);
-	if (ret > 0 && wo.wo_stat)
-		*stat = wo.wo_stat;
-	put_pid(wo.wo_pid);
-	return ret;
-}
+/* Stub: not used in minimal kernel */
+int kernel_wait(pid_t pid, int *stat) { return -ECHILD; }
 
 SYSCALL_DEFINE4(wait4, pid_t, upid, int __user *, stat_addr,
 		int, options, struct rusage __user *, ru)
@@ -1280,20 +1151,11 @@ SYSCALL_DEFINE3(waitpid, pid_t, pid, int __user *, stat_addr, int, options)
 
 #endif
 
+/* Stubbed - not used externally */
 bool thread_group_exited(struct pid *pid)
 {
-	struct task_struct *task;
-	bool exited;
-
-	rcu_read_lock();
-	task = pid_task(pid, PIDTYPE_PID);
-	exited = !task ||
-		(READ_ONCE(task->exit_state) && thread_group_empty(task));
-	rcu_read_unlock();
-
-	return exited;
+	return true;
 }
-EXPORT_SYMBOL(thread_group_exited);
 
 __weak void abort(void)
 {
@@ -1301,4 +1163,3 @@ __weak void abort(void)
 
 	panic("Oops failed to kill thread");
 }
-EXPORT_SYMBOL(abort);

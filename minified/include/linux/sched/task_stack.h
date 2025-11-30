@@ -1,20 +1,14 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _LINUX_SCHED_TASK_STACK_H
 #define _LINUX_SCHED_TASK_STACK_H
 
-/*
- * task->stack (kernel stack) handling interfaces:
- */
+ 
 
 #include <linux/sched.h>
 #include <linux/magic.h>
 
 
-/*
- * When accessing the stack of a non-current task that might exit, use
- * try_get_task_stack() instead.  task_stack_page will return a pointer
- * that could get freed out from under you.
- */
+ 
 static __always_inline void *task_stack_page(const struct task_struct *task)
 {
 	return task->stack;
@@ -55,11 +49,9 @@ extern void set_task_stack_end_magic(struct task_struct *tsk);
 #ifndef __HAVE_ARCH_KSTACK_END
 static inline int kstack_end(void *addr)
 {
-	/* Reliable end of stack detection:
-	 * Some APM bios versions misalign the stack
-	 */
+	 
 	return !(((unsigned long)addr+sizeof(void*)-1) & (THREAD_SIZE-sizeof(void*)));
 }
 #endif
 
-#endif /* _LINUX_SCHED_TASK_STACK_H */
+#endif  

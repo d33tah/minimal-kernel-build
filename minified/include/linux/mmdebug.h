@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef LINUX_MM_DEBUG_H
 #define LINUX_MM_DEBUG_H 1
 
@@ -9,7 +9,7 @@ struct page;
 struct vm_area_struct;
 struct mm_struct;
 
-void dump_page(struct page *page, const char *reason);
+static inline void dump_page(struct page *page, const char *reason) { }
 void dump_vma(const struct vm_area_struct *vma);
 void dump_mm(const struct mm_struct *mm);
 

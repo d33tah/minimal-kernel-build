@@ -16,7 +16,6 @@
 #include <linux/interrupt.h>
 #include <linux/mempolicy.h>
 
-#include <linux/profile.h>
 #include <linux/psi.h>
 #include <linux/ratelimit.h>
 #include <linux/task_work.h>
@@ -49,12 +48,7 @@ const_debug unsigned int sysctl_sched_migration_cost	= 500000UL;
 int sched_thermal_decay_shift;
 static int __init setup_sched_thermal_decay_shift(char *str)
 {
-	int _shift = 0;
-
-	if (kstrtoint(str, 0, &_shift))
-		pr_warn("Unable to set scheduler thermal pressure decay shift parameter\n");
-
-	sched_thermal_decay_shift = clamp(_shift, 0, 10);
+	/* Stub: thermal pressure scheduling not needed for minimal kernel */
 	return 1;
 }
 __setup("sched_thermal_decay_shift=", setup_sched_thermal_decay_shift);
@@ -79,23 +73,8 @@ static inline void update_load_set(struct load_weight *lw, unsigned long w)
 
 static unsigned int get_update_sysctl_factor(void)
 {
-	unsigned int cpus = min_t(unsigned int, num_online_cpus(), 8);
-	unsigned int factor;
-
-	switch (sysctl_sched_tunable_scaling) {
-	case SCHED_TUNABLESCALING_NONE:
-		factor = 1;
-		break;
-	case SCHED_TUNABLESCALING_LINEAR:
-		factor = cpus;
-		break;
-	case SCHED_TUNABLESCALING_LOG:
-	default:
-		factor = 1 + ilog2(cpus);
-		break;
-	}
-
-	return factor;
+	/* Stub: single CPU in minimal system, factor = 1 */
+	return 1;
 }
 
 static void update_sysctl(void)
@@ -172,10 +151,6 @@ static inline bool list_add_leaf_cfs_rq(struct cfs_rq *cfs_rq)
 	return true;
 }
 
-static inline void list_del_leaf_cfs_rq(struct cfs_rq *cfs_rq)
-{
-}
-
 static inline void assert_list_leaf_cfs_rq(struct rq *rq)
 {
 }
@@ -191,11 +166,6 @@ static inline struct sched_entity *parent_entity(struct sched_entity *se)
 static inline void
 find_matching_se(struct sched_entity **se, struct sched_entity **pse)
 {
-}
-
-static inline int tg_is_idle(struct task_group *tg)
-{
-	return 0;
 }
 
 static int cfs_rq_is_idle(struct cfs_rq *cfs_rq)
@@ -522,18 +492,6 @@ static void task_tick_numa(struct rq *rq, struct task_struct *curr)
 {
 }
 
-static inline void account_numa_enqueue(struct rq *rq, struct task_struct *p)
-{
-}
-
-static inline void account_numa_dequeue(struct rq *rq, struct task_struct *p)
-{
-}
-
-static inline void update_scan_period(struct task_struct *p, int new_cpu)
-{
-}
-
 static void
 account_entity_enqueue(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
@@ -629,11 +587,6 @@ static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq, int flags)
 	}
 }
 
-static inline bool cfs_rq_is_decayed(struct cfs_rq *cfs_rq)
-{
-	return true;
-}
-
 #define UPDATE_TG	0x0
 #define SKIP_AGE_LOAD	0x0
 #define DO_ATTACH	0x0
@@ -642,8 +595,6 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
 {
 	cfs_rq_util_change(cfs_rq, 0);
 }
-
-static inline void remove_entity_load_avg(struct sched_entity *se) {}
 
 static inline void
 attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se) {}
@@ -951,7 +902,6 @@ static inline bool cfs_bandwidth_used(void)
 static void account_cfs_rq_runtime(struct cfs_rq *cfs_rq, u64 delta_exec) {}
 static bool check_cfs_rq_runtime(struct cfs_rq *cfs_rq) { return false; }
 static void check_enqueue_throttle(struct cfs_rq *cfs_rq) {}
-static inline void sync_throttle(struct task_group *tg, int cpu) {}
 static __always_inline void return_cfs_rq_runtime(struct cfs_rq *cfs_rq) {}
 
 static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
@@ -964,21 +914,12 @@ static inline int throttled_hierarchy(struct cfs_rq *cfs_rq)
 	return 0;
 }
 
-static inline int throttled_lb_pair(struct task_group *tg,
-				    int src_cpu, int dest_cpu)
-{
-	return 0;
-}
-
 void init_cfs_bandwidth(struct cfs_bandwidth *cfs_b) {}
 
 static inline struct cfs_bandwidth *tg_cfs_bandwidth(struct task_group *tg)
 {
 	return NULL;
 }
-static inline void destroy_cfs_bandwidth(struct cfs_bandwidth *cfs_b) {}
-static inline void update_runtime_enabled(struct rq *rq) {}
-static inline void unthrottle_offline_cfs_rqs(struct rq *rq) {}
 
 static inline void
 hrtick_start_fair(struct rq *rq, struct task_struct *p)

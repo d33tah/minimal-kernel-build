@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
@@ -11,7 +11,6 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/set_memory.h>
-#include <linux/debugobjects.h>
 #include <linux/kallsyms.h>
 #include <linux/list.h>
 #include <linux/notifier.h>
@@ -48,7 +47,6 @@ bool is_vmalloc_addr(const void *x)
 
 	return addr >= VMALLOC_START && addr < VMALLOC_END;
 }
-EXPORT_SYMBOL(is_vmalloc_addr);
 
 struct vfree_deferred {
 	struct llist_head list;
@@ -93,25 +91,8 @@ static int vmap_try_huge_pmd(pmd_t *pmd, unsigned long addr, unsigned long end,
 			phys_addr_t phys_addr, pgprot_t prot,
 			unsigned int max_page_shift)
 {
-	if (max_page_shift < PMD_SHIFT)
-		return 0;
-
-	if (!arch_vmap_pmd_supported(prot))
-		return 0;
-
-	if ((end - addr) != PMD_SIZE)
-		return 0;
-
-	if (!IS_ALIGNED(addr, PMD_SIZE))
-		return 0;
-
-	if (!IS_ALIGNED(phys_addr, PMD_SIZE))
-		return 0;
-
-	if (pmd_present(*pmd) && !pmd_free_pte_page(pmd, addr))
-		return 0;
-
-	return pmd_set_huge(pmd, phys_addr, prot);
+	/* Stub: huge pages disabled (vmap_allow_huge = false) */
+	return 0;
 }
 
 static int vmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
@@ -143,25 +124,8 @@ static int vmap_try_huge_pud(pud_t *pud, unsigned long addr, unsigned long end,
 			phys_addr_t phys_addr, pgprot_t prot,
 			unsigned int max_page_shift)
 {
-	if (max_page_shift < PUD_SHIFT)
-		return 0;
-
-	if (!arch_vmap_pud_supported(prot))
-		return 0;
-
-	if ((end - addr) != PUD_SIZE)
-		return 0;
-
-	if (!IS_ALIGNED(addr, PUD_SIZE))
-		return 0;
-
-	if (!IS_ALIGNED(phys_addr, PUD_SIZE))
-		return 0;
-
-	if (pud_present(*pud) && !pud_free_pmd_page(pud, addr))
-		return 0;
-
-	return pud_set_huge(pud, phys_addr, prot);
+	/* Stub: huge pages disabled (vmap_allow_huge = false) */
+	return 0;
 }
 
 static int vmap_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
@@ -194,25 +158,8 @@ static int vmap_try_huge_p4d(p4d_t *p4d, unsigned long addr, unsigned long end,
 			phys_addr_t phys_addr, pgprot_t prot,
 			unsigned int max_page_shift)
 {
-	if (max_page_shift < P4D_SHIFT)
-		return 0;
-
-	if (!arch_vmap_p4d_supported(prot))
-		return 0;
-
-	if ((end - addr) != P4D_SIZE)
-		return 0;
-
-	if (!IS_ALIGNED(addr, P4D_SIZE))
-		return 0;
-
-	if (!IS_ALIGNED(phys_addr, P4D_SIZE))
-		return 0;
-
-	if (p4d_present(*p4d) && !p4d_free_pud_page(p4d, addr))
-		return 0;
-
-	return p4d_set_huge(p4d, phys_addr, prot);
+	/* Stub: huge pages disabled (vmap_allow_huge = false) */
+	return 0;
 }
 
 static int vmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
@@ -536,71 +483,22 @@ static int vmap_pages_range(unsigned long addr, unsigned long end,
 	return err;
 }
 
+/* Stubbed - not used externally */
 int is_vmalloc_or_module_addr(const void *x)
 {
-	
-	return is_vmalloc_addr(x);
+	return 0;
 }
 
 struct page *vmalloc_to_page(const void *vmalloc_addr)
 {
-	unsigned long addr = (unsigned long) vmalloc_addr;
-	struct page *page = NULL;
-	pgd_t *pgd = pgd_offset_k(addr);
-	p4d_t *p4d;
-	pud_t *pud;
-	pmd_t *pmd;
-	pte_t *ptep, pte;
-
-	
-	VIRTUAL_BUG_ON(!is_vmalloc_or_module_addr(vmalloc_addr));
-
-	if (pgd_none(*pgd))
-		return NULL;
-	if (WARN_ON_ONCE(pgd_leaf(*pgd)))
-		return NULL; 
-	if (WARN_ON_ONCE(pgd_bad(*pgd)))
-		return NULL;
-
-	p4d = p4d_offset(pgd, addr);
-	if (p4d_none(*p4d))
-		return NULL;
-	if (p4d_leaf(*p4d))
-		return p4d_page(*p4d) + ((addr & ~P4D_MASK) >> PAGE_SHIFT);
-	if (WARN_ON_ONCE(p4d_bad(*p4d)))
-		return NULL;
-
-	pud = pud_offset(p4d, addr);
-	if (pud_none(*pud))
-		return NULL;
-	if (pud_leaf(*pud))
-		return pud_page(*pud) + ((addr & ~PUD_MASK) >> PAGE_SHIFT);
-	if (WARN_ON_ONCE(pud_bad(*pud)))
-		return NULL;
-
-	pmd = pmd_offset(pud, addr);
-	if (pmd_none(*pmd))
-		return NULL;
-	if (pmd_leaf(*pmd))
-		return pmd_page(*pmd) + ((addr & ~PMD_MASK) >> PAGE_SHIFT);
-	if (WARN_ON_ONCE(pmd_bad(*pmd)))
-		return NULL;
-
-	ptep = pte_offset_map(pmd, addr);
-	pte = *ptep;
-	if (pte_present(pte))
-		page = pte_page(pte);
-	pte_unmap(ptep);
-
-	return page;
+	return NULL;
 }
-EXPORT_SYMBOL(vmalloc_to_page);
 
+/* Stubbed - not used externally */
 unsigned long vmalloc_to_pfn(const void *vmalloc_addr)
 {
-	return page_to_pfn(vmalloc_to_page(vmalloc_addr));
+	return 0;
 }
-EXPORT_SYMBOL(vmalloc_to_pfn);
 
 #define DEBUG_AUGMENT_PROPAGATE_CHECK 0
 #define DEBUG_AUGMENT_LOWEST_MATCH_CHECK 0
@@ -649,33 +547,10 @@ static DECLARE_WORK(drain_vmap_work, drain_vmap_area_work);
 
 static atomic_long_t nr_vmalloc_pages;
 
+/* Stubbed - not used externally */
 unsigned long vmalloc_nr_pages(void)
 {
-	return atomic_long_read(&nr_vmalloc_pages);
-}
-
-static struct vmap_area *find_vmap_area_exceed_addr(unsigned long addr)
-{
-	struct vmap_area *va = NULL;
-	struct rb_node *n = vmap_area_root.rb_node;
-
-	addr = (unsigned long)kasan_reset_tag((void *)addr);
-
-	while (n) {
-		struct vmap_area *tmp;
-
-		tmp = rb_entry(n, struct vmap_area, rb_node);
-		if (tmp->va_end > addr) {
-			va = tmp;
-			if (tmp->va_start <= addr)
-				break;
-
-			n = n->rb_left;
-		} else
-			n = n->rb_right;
-	}
-
-	return va;
+	return 0;
 }
 
 static struct vmap_area *__find_vmap_area(unsigned long addr)
@@ -1275,18 +1150,6 @@ overflow:
 	return ERR_PTR(-EBUSY);
 }
 
-int register_vmap_purge_notifier(struct notifier_block *nb)
-{
-	return blocking_notifier_chain_register(&vmap_notify_list, nb);
-}
-EXPORT_SYMBOL_GPL(register_vmap_purge_notifier);
-
-int unregister_vmap_purge_notifier(struct notifier_block *nb)
-{
-	return blocking_notifier_chain_unregister(&vmap_notify_list, nb);
-}
-EXPORT_SYMBOL_GPL(unregister_vmap_purge_notifier);
-
 static unsigned long lazy_max_pages(void)
 {
 	unsigned int log;
@@ -1304,55 +1167,7 @@ static void purge_fragmented_blocks_allcpus(void);
 
 static bool __purge_vmap_area_lazy(unsigned long start, unsigned long end)
 {
-	unsigned long resched_threshold;
-	struct list_head local_pure_list;
-	struct vmap_area *va, *n_va;
-
-	lockdep_assert_held(&vmap_purge_lock);
-
-	spin_lock(&purge_vmap_area_lock);
-	purge_vmap_area_root = RB_ROOT;
-	list_replace_init(&purge_vmap_area_list, &local_pure_list);
-	spin_unlock(&purge_vmap_area_lock);
-
-	if (unlikely(list_empty(&local_pure_list)))
-		return false;
-
-	start = min(start,
-		list_first_entry(&local_pure_list,
-			struct vmap_area, list)->va_start);
-
-	end = max(end,
-		list_last_entry(&local_pure_list,
-			struct vmap_area, list)->va_end);
-
-	flush_tlb_kernel_range(start, end);
-	resched_threshold = lazy_max_pages() << 1;
-
-	spin_lock(&free_vmap_area_lock);
-	list_for_each_entry_safe(va, n_va, &local_pure_list, list) {
-		unsigned long nr = (va->va_end - va->va_start) >> PAGE_SHIFT;
-		unsigned long orig_start = va->va_start;
-		unsigned long orig_end = va->va_end;
-
-		
-		va = merge_or_add_vmap_area_augment(va, &free_vmap_area_root,
-				&free_vmap_area_list);
-
-		if (!va)
-			continue;
-
-		if (is_vmalloc_or_module_addr((void *)orig_start))
-			kasan_release_vmalloc(orig_start, orig_end,
-					      va->va_start, va->va_end);
-
-		atomic_long_sub(nr, &vmap_lazy_nr);
-
-		if (atomic_long_read(&vmap_lazy_nr) < resched_threshold)
-			cond_resched_lock(&free_vmap_area_lock);
-	}
-	spin_unlock(&free_vmap_area_lock);
-	return true;
+	return false;
 }
 
 static void purge_vmap_area_lazy(void)
@@ -1456,210 +1271,11 @@ struct vmap_block {
 
 static DEFINE_PER_CPU(struct vmap_block_queue, vmap_block_queue);
 
-static DEFINE_XARRAY(vmap_blocks);
-
-static unsigned long addr_to_vb_idx(unsigned long addr)
-{
-	addr -= VMALLOC_START & ~(VMAP_BLOCK_SIZE-1);
-	addr /= VMAP_BLOCK_SIZE;
-	return addr;
-}
-
-static void *vmap_block_vaddr(unsigned long va_start, unsigned long pages_off)
-{
-	unsigned long addr;
-
-	addr = va_start + (pages_off << PAGE_SHIFT);
-	BUG_ON(addr_to_vb_idx(addr) != addr_to_vb_idx(va_start));
-	return (void *)addr;
-}
-
-static void *new_vmap_block(unsigned int order, gfp_t gfp_mask)
-{
-	struct vmap_block_queue *vbq;
-	struct vmap_block *vb;
-	struct vmap_area *va;
-	unsigned long vb_idx;
-	int node, err;
-	void *vaddr;
-
-	node = numa_node_id();
-
-	vb = kmalloc_node(sizeof(struct vmap_block),
-			gfp_mask & GFP_RECLAIM_MASK, node);
-	if (unlikely(!vb))
-		return ERR_PTR(-ENOMEM);
-
-	va = alloc_vmap_area(VMAP_BLOCK_SIZE, VMAP_BLOCK_SIZE,
-					VMALLOC_START, VMALLOC_END,
-					node, gfp_mask);
-	if (IS_ERR(va)) {
-		kfree(vb);
-		return ERR_CAST(va);
-	}
-
-	vaddr = vmap_block_vaddr(va->va_start, 0);
-	spin_lock_init(&vb->lock);
-	vb->va = va;
-	
-	BUG_ON(VMAP_BBMAP_BITS <= (1UL << order));
-	vb->free = VMAP_BBMAP_BITS - (1UL << order);
-	vb->dirty = 0;
-	vb->dirty_min = VMAP_BBMAP_BITS;
-	vb->dirty_max = 0;
-	INIT_LIST_HEAD(&vb->free_list);
-
-	vb_idx = addr_to_vb_idx(va->va_start);
-	err = xa_insert(&vmap_blocks, vb_idx, vb, gfp_mask);
-	if (err) {
-		kfree(vb);
-		free_vmap_area(va);
-		return ERR_PTR(err);
-	}
-
-	vbq = raw_cpu_ptr(&vmap_block_queue);
-	spin_lock(&vbq->lock);
-	list_add_tail_rcu(&vb->free_list, &vbq->free);
-	spin_unlock(&vbq->lock);
-
-	return vaddr;
-}
-
-static void free_vmap_block(struct vmap_block *vb)
-{
-	struct vmap_block *tmp;
-
-	tmp = xa_erase(&vmap_blocks, addr_to_vb_idx(vb->va->va_start));
-	BUG_ON(tmp != vb);
-
-	free_vmap_area_noflush(vb->va);
-	kfree_rcu(vb, rcu_head);
-}
-
-static void purge_fragmented_blocks(int cpu)
-{
-	LIST_HEAD(purge);
-	struct vmap_block *vb;
-	struct vmap_block *n_vb;
-	struct vmap_block_queue *vbq = &per_cpu(vmap_block_queue, cpu);
-
-	rcu_read_lock();
-	list_for_each_entry_rcu(vb, &vbq->free, free_list) {
-
-		if (!(vb->free + vb->dirty == VMAP_BBMAP_BITS && vb->dirty != VMAP_BBMAP_BITS))
-			continue;
-
-		spin_lock(&vb->lock);
-		if (vb->free + vb->dirty == VMAP_BBMAP_BITS && vb->dirty != VMAP_BBMAP_BITS) {
-			vb->free = 0; 
-			vb->dirty = VMAP_BBMAP_BITS; 
-			vb->dirty_min = 0;
-			vb->dirty_max = VMAP_BBMAP_BITS;
-			spin_lock(&vbq->lock);
-			list_del_rcu(&vb->free_list);
-			spin_unlock(&vbq->lock);
-			spin_unlock(&vb->lock);
-			list_add_tail(&vb->purge, &purge);
-		} else
-			spin_unlock(&vb->lock);
-	}
-	rcu_read_unlock();
-
-	list_for_each_entry_safe(vb, n_vb, &purge, purge) {
-		list_del(&vb->purge);
-		free_vmap_block(vb);
-	}
-}
+/* vmap_blocks, addr_to_vb_idx, vmap_block_vaddr, new_vmap_block, free_vmap_block removed - unused */
 
 static void purge_fragmented_blocks_allcpus(void)
 {
-	int cpu;
-
-	for_each_possible_cpu(cpu)
-		purge_fragmented_blocks(cpu);
-}
-
-static void *vb_alloc(unsigned long size, gfp_t gfp_mask)
-{
-	struct vmap_block_queue *vbq;
-	struct vmap_block *vb;
-	void *vaddr = NULL;
-	unsigned int order;
-
-	BUG_ON(offset_in_page(size));
-	BUG_ON(size > PAGE_SIZE*VMAP_MAX_ALLOC);
-	if (WARN_ON(size == 0)) {
-		
-		return NULL;
-	}
-	order = get_order(size);
-
-	rcu_read_lock();
-	vbq = raw_cpu_ptr(&vmap_block_queue);
-	list_for_each_entry_rcu(vb, &vbq->free, free_list) {
-		unsigned long pages_off;
-
-		spin_lock(&vb->lock);
-		if (vb->free < (1UL << order)) {
-			spin_unlock(&vb->lock);
-			continue;
-		}
-
-		pages_off = VMAP_BBMAP_BITS - vb->free;
-		vaddr = vmap_block_vaddr(vb->va->va_start, pages_off);
-		vb->free -= 1UL << order;
-		if (vb->free == 0) {
-			spin_lock(&vbq->lock);
-			list_del_rcu(&vb->free_list);
-			spin_unlock(&vbq->lock);
-		}
-
-		spin_unlock(&vb->lock);
-		break;
-	}
-
-	rcu_read_unlock();
-
-	
-	if (!vaddr)
-		vaddr = new_vmap_block(order, gfp_mask);
-
-	return vaddr;
-}
-
-static void vb_free(unsigned long addr, unsigned long size)
-{
-	unsigned long offset;
-	unsigned int order;
-	struct vmap_block *vb;
-
-	BUG_ON(offset_in_page(size));
-	BUG_ON(size > PAGE_SIZE*VMAP_MAX_ALLOC);
-
-	flush_cache_vunmap(addr, addr + size);
-
-	order = get_order(size);
-	offset = (addr & (VMAP_BLOCK_SIZE - 1)) >> PAGE_SHIFT;
-	vb = xa_load(&vmap_blocks, addr_to_vb_idx(addr));
-
-	vunmap_range_noflush(addr, addr + size);
-
-	if (debug_pagealloc_enabled_static())
-		flush_tlb_kernel_range(addr, addr + size);
-
-	spin_lock(&vb->lock);
-
-	
-	vb->dirty_min = min(vb->dirty_min, offset);
-	vb->dirty_max = max(vb->dirty_max, offset + (1UL << order));
-
-	vb->dirty += 1UL << order;
-	if (vb->dirty == VMAP_BBMAP_BITS) {
-		BUG_ON(vb->free);
-		spin_unlock(&vb->lock);
-		free_vmap_block(vb);
-	} else
-		spin_unlock(&vb->lock);
+	/* Stub: calls purge_fragmented_blocks which is already stubbed */
 }
 
 static void _vm_unmap_aliases(unsigned long start, unsigned long end, int flush)
@@ -1702,77 +1318,21 @@ static void _vm_unmap_aliases(unsigned long start, unsigned long end, int flush)
 	mutex_unlock(&vmap_purge_lock);
 }
 
+/* Stubbed - not used externally */
 void vm_unmap_aliases(void)
 {
-	unsigned long start = ULONG_MAX, end = 0;
-	int flush = 0;
-
-	_vm_unmap_aliases(start, end, flush);
 }
-EXPORT_SYMBOL_GPL(vm_unmap_aliases);
 
+/* Stubbed - not used externally */
 void vm_unmap_ram(const void *mem, unsigned int count)
 {
-	unsigned long size = (unsigned long)count << PAGE_SHIFT;
-	unsigned long addr = (unsigned long)kasan_reset_tag(mem);
-	struct vmap_area *va;
-
-	might_sleep();
-	BUG_ON(!addr);
-	BUG_ON(addr < VMALLOC_START);
-	BUG_ON(addr > VMALLOC_END);
-	BUG_ON(!PAGE_ALIGNED(addr));
-
-	kasan_poison_vmalloc(mem, size);
-
-	if (likely(count <= VMAP_MAX_ALLOC)) {
-		debug_check_no_locks_freed(mem, size);
-		vb_free(addr, size);
-		return;
-	}
-
-	va = find_vmap_area(addr);
-	BUG_ON(!va);
-	debug_check_no_locks_freed((void *)va->va_start,
-				    (va->va_end - va->va_start));
-	free_unmap_vmap_area(va);
 }
-EXPORT_SYMBOL(vm_unmap_ram);
 
+/* Stubbed - not used externally */
 void *vm_map_ram(struct page **pages, unsigned int count, int node)
 {
-	unsigned long size = (unsigned long)count << PAGE_SHIFT;
-	unsigned long addr;
-	void *mem;
-
-	if (likely(count <= VMAP_MAX_ALLOC)) {
-		mem = vb_alloc(size, GFP_KERNEL);
-		if (IS_ERR(mem))
-			return NULL;
-		addr = (unsigned long)mem;
-	} else {
-		struct vmap_area *va;
-		va = alloc_vmap_area(size, PAGE_SIZE,
-				VMALLOC_START, VMALLOC_END, node, GFP_KERNEL);
-		if (IS_ERR(va))
-			return NULL;
-
-		addr = va->va_start;
-		mem = (void *)addr;
-	}
-
-	if (vmap_pages_range(addr, addr + size, PAGE_KERNEL,
-				pages, PAGE_SHIFT) < 0) {
-		vm_unmap_ram(mem, count);
-		return NULL;
-	}
-
-	
-	mem = kasan_unpoison_vmalloc(mem, size, KASAN_VMALLOC_PROT_NORMAL);
-
-	return mem;
+	return NULL;
 }
-EXPORT_SYMBOL(vm_map_ram);
 
 static struct vm_struct *vmlist __initdata;
 
@@ -1970,12 +1530,10 @@ struct vm_struct *__get_vm_area_caller(unsigned long size, unsigned long flags,
 				  NUMA_NO_NODE, GFP_KERNEL, caller);
 }
 
+/* Stub: get_vm_area not used externally */
 struct vm_struct *get_vm_area(unsigned long size, unsigned long flags)
 {
-	return __get_vm_area_node(size, 1, PAGE_SHIFT, flags,
-				  VMALLOC_START, VMALLOC_END,
-				  NUMA_NO_NODE, GFP_KERNEL,
-				  __builtin_return_address(0));
+	return NULL;
 }
 
 struct vm_struct *get_vm_area_caller(unsigned long size, unsigned long flags,
@@ -2090,7 +1648,6 @@ static void __vunmap(const void *addr, int deallocate_pages)
 	}
 
 	debug_check_no_locks_freed(area->addr, get_vm_area_size(area));
-	debug_check_no_obj_freed(area->addr, get_vm_area_size(area));
 
 	kasan_poison_vmalloc(area->addr, get_vm_area_size(area));
 
@@ -2125,17 +1682,6 @@ static inline void __vfree_deferred(const void *addr)
 		schedule_work(&p->wq);
 }
 
-void vfree_atomic(const void *addr)
-{
-	BUG_ON(in_nmi());
-
-	kmemleak_free(addr);
-
-	if (!addr)
-		return;
-	__vfree_deferred(addr);
-}
-
 static void __vfree(const void *addr)
 {
 	if (unlikely(in_interrupt()))
@@ -2157,7 +1703,6 @@ void vfree(const void *addr)
 
 	__vfree(addr);
 }
-EXPORT_SYMBOL(vfree);
 
 void vunmap(const void *addr)
 {
@@ -2166,7 +1711,6 @@ void vunmap(const void *addr)
 	if (addr)
 		__vunmap(addr, 0);
 }
-EXPORT_SYMBOL(vunmap);
 
 void *vmap(struct page **pages, unsigned int count,
 	   unsigned long flags, pgprot_t prot)
@@ -2202,7 +1746,6 @@ void *vmap(struct page **pages, unsigned int count,
 	}
 	return area->addr;
 }
-EXPORT_SYMBOL(vmap);
 
 static inline unsigned int
 vm_area_alloc_pages(gfp_t gfp, int nid,
@@ -2471,220 +2014,18 @@ void *__vmalloc(unsigned long size, gfp_t gfp_mask)
 	return __vmalloc_node(size, 1, gfp_mask, NUMA_NO_NODE,
 				__builtin_return_address(0));
 }
-EXPORT_SYMBOL(__vmalloc);
 
 void *vmalloc(unsigned long size)
 {
 	return __vmalloc_node(size, 1, GFP_KERNEL, NUMA_NO_NODE,
 				__builtin_return_address(0));
 }
-EXPORT_SYMBOL(vmalloc);
-
-void *vmalloc_huge(unsigned long size, gfp_t gfp_mask)
-{
-	return __vmalloc_node_range(size, 1, VMALLOC_START, VMALLOC_END,
-				    gfp_mask, PAGE_KERNEL, VM_ALLOW_HUGE_VMAP,
-				    NUMA_NO_NODE, __builtin_return_address(0));
-}
-EXPORT_SYMBOL_GPL(vmalloc_huge);
 
 void *vzalloc(unsigned long size)
 {
 	return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_ZERO, NUMA_NO_NODE,
 				__builtin_return_address(0));
 }
-EXPORT_SYMBOL(vzalloc);
-
-void *vmalloc_user(unsigned long size)
-{
-	return __vmalloc_node_range(size, SHMLBA,  VMALLOC_START, VMALLOC_END,
-				    GFP_KERNEL | __GFP_ZERO, PAGE_KERNEL,
-				    VM_USERMAP, NUMA_NO_NODE,
-				    __builtin_return_address(0));
-}
-EXPORT_SYMBOL(vmalloc_user);
-
-void *vmalloc_node(unsigned long size, int node)
-{
-	return __vmalloc_node(size, 1, GFP_KERNEL, node,
-			__builtin_return_address(0));
-}
-EXPORT_SYMBOL(vmalloc_node);
-
-void *vzalloc_node(unsigned long size, int node)
-{
-	return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_ZERO, node,
-				__builtin_return_address(0));
-}
-EXPORT_SYMBOL(vzalloc_node);
-
-#define GFP_VMALLOC32 (GFP_DMA32 | GFP_KERNEL)
-
-void *vmalloc_32(unsigned long size)
-{
-	return __vmalloc_node(size, 1, GFP_VMALLOC32, NUMA_NO_NODE,
-			__builtin_return_address(0));
-}
-EXPORT_SYMBOL(vmalloc_32);
-
-void *vmalloc_32_user(unsigned long size)
-{
-	return __vmalloc_node_range(size, SHMLBA,  VMALLOC_START, VMALLOC_END,
-				    GFP_VMALLOC32 | __GFP_ZERO, PAGE_KERNEL,
-				    VM_USERMAP, NUMA_NO_NODE,
-				    __builtin_return_address(0));
-}
-EXPORT_SYMBOL(vmalloc_32_user);
-
-static int aligned_vread(char *buf, char *addr, unsigned long count)
-{
-	struct page *p;
-	int copied = 0;
-
-	while (count) {
-		unsigned long offset, length;
-
-		offset = offset_in_page(addr);
-		length = PAGE_SIZE - offset;
-		if (length > count)
-			length = count;
-		p = vmalloc_to_page(addr);
-		
-		if (p) {
-			
-			void *map = kmap_atomic(p);
-			memcpy(buf, map + offset, length);
-			kunmap_atomic(map);
-		} else
-			memset(buf, 0, length);
-
-		addr += length;
-		buf += length;
-		copied += length;
-		count -= length;
-	}
-	return copied;
-}
-
-long vread(char *buf, char *addr, unsigned long count)
-{
-	struct vmap_area *va;
-	struct vm_struct *vm;
-	char *vaddr, *buf_start = buf;
-	unsigned long buflen = count;
-	unsigned long n;
-
-	addr = kasan_reset_tag(addr);
-
-	
-	if ((unsigned long) addr + count < count)
-		count = -(unsigned long) addr;
-
-	spin_lock(&vmap_area_lock);
-	va = find_vmap_area_exceed_addr((unsigned long)addr);
-	if (!va)
-		goto finished;
-
-	
-	if ((unsigned long)addr + count <= va->va_start)
-		goto finished;
-
-	list_for_each_entry_from(va, &vmap_area_list, list) {
-		if (!count)
-			break;
-
-		if (!va->vm)
-			continue;
-
-		vm = va->vm;
-		vaddr = (char *) vm->addr;
-		if (addr >= vaddr + get_vm_area_size(vm))
-			continue;
-		while (addr < vaddr) {
-			if (count == 0)
-				goto finished;
-			*buf = '\0';
-			buf++;
-			addr++;
-			count--;
-		}
-		n = vaddr + get_vm_area_size(vm) - addr;
-		if (n > count)
-			n = count;
-		if (!(vm->flags & VM_IOREMAP))
-			aligned_vread(buf, addr, n);
-		else 
-			memset(buf, 0, n);
-		buf += n;
-		addr += n;
-		count -= n;
-	}
-finished:
-	spin_unlock(&vmap_area_lock);
-
-	if (buf == buf_start)
-		return 0;
-	
-	if (buf != buf_start + buflen)
-		memset(buf, 0, buflen - (buf - buf_start));
-
-	return buflen;
-}
-
-int remap_vmalloc_range_partial(struct vm_area_struct *vma, unsigned long uaddr,
-				void *kaddr, unsigned long pgoff,
-				unsigned long size)
-{
-	struct vm_struct *area;
-	unsigned long off;
-	unsigned long end_index;
-
-	if (check_shl_overflow(pgoff, PAGE_SHIFT, &off))
-		return -EINVAL;
-
-	size = PAGE_ALIGN(size);
-
-	if (!PAGE_ALIGNED(uaddr) || !PAGE_ALIGNED(kaddr))
-		return -EINVAL;
-
-	area = find_vm_area(kaddr);
-	if (!area)
-		return -EINVAL;
-
-	if (!(area->flags & (VM_USERMAP | VM_DMA_COHERENT)))
-		return -EINVAL;
-
-	if (check_add_overflow(size, off, &end_index) ||
-	    end_index > get_vm_area_size(area))
-		return -EINVAL;
-	kaddr += off;
-
-	do {
-		struct page *page = vmalloc_to_page(kaddr);
-		int ret;
-
-		ret = vm_insert_page(vma, uaddr, page);
-		if (ret)
-			return ret;
-
-		uaddr += PAGE_SIZE;
-		kaddr += PAGE_SIZE;
-		size -= PAGE_SIZE;
-	} while (size > 0);
-
-	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;
-
-	return 0;
-}
-
-int remap_vmalloc_range(struct vm_area_struct *vma, void *addr,
-						unsigned long pgoff)
-{
-	return remap_vmalloc_range_partial(vma, vma->vm_start,
-					   addr, pgoff,
-					   vma->vm_end - vma->vm_start);
-}
-EXPORT_SYMBOL(remap_vmalloc_range);
 
 void free_vm_area(struct vm_struct *area)
 {
@@ -2693,5 +2034,4 @@ void free_vm_area(struct vm_struct *area)
 	BUG_ON(ret != area);
 	kfree(area);
 }
-EXPORT_SYMBOL_GPL(free_vm_area);
 

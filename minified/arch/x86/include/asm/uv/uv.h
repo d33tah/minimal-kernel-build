@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_X86_UV_UV_H
 #define _ASM_X86_UV_UV_H
 
@@ -13,4 +13,4 @@ static inline void uv_cpu_init(void)	{ }
 static inline void uv_system_init(void)	{ }
 
 
-#endif	/* _ASM_X86_UV_UV_H */
+#endif	 

@@ -1,7 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * Minimal stub - single-step debugging minimized
- */
+ 
+ 
 #include <linux/sched.h>
 #include <linux/sched/task_stack.h>
 #include <linux/mm.h>
@@ -25,20 +23,20 @@ unsigned long convert_ip_to_linear(struct task_struct *child, struct pt_regs *re
 
 void set_task_blockstep(struct task_struct *task, bool on)
 {
-	/* Stubbed */
+	 
 }
 
 void user_enable_single_step(struct task_struct *child)
 {
-	/* Stubbed */
+	 
 }
 
 void user_enable_block_step(struct task_struct *child)
 {
-	/* Stubbed */
+	 
 }
 
 void user_disable_single_step(struct task_struct *child)
 {
-	/* Stubbed */
+	 
 }

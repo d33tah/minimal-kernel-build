@@ -1,9 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- * Copyright (C) 2007-2010 Advanced Micro Devices, Inc.
- * Author: Joerg Roedel <joerg.roedel@amd.com>
- *         Leo Duran <leo.duran@amd.com>
- */
+ 
+ 
 
 #ifndef _ASM_X86_AMD_IOMMU_H
 #define _ASM_X86_AMD_IOMMU_H
@@ -11,20 +7,7 @@
 #include <linux/types.h>
 
 struct amd_iommu;
-
-/*
- * This is mainly used to communicate information back-and-forth
- * between SVM and IOMMU for setting up and tearing down posted
- * interrupt
- */
-struct amd_iommu_pi_data {
-	u32 ga_tag;
-	u32 prev_ga_tag;
-	u64 base;
-	bool is_guest_mode;
-	struct vcpu_data *vcpu_data;
-	void *ir_data;
-};
+struct amd_iommu_pi_data;
 
 
 static inline int amd_iommu_detect(void) { return -ENODEV; }
@@ -63,4 +46,4 @@ int amd_iommu_pc_get_reg(struct amd_iommu *iommu, u8 bank, u8 cntr, u8 fxn,
 		u64 *value);
 struct amd_iommu *get_amd_iommu(unsigned int idx);
 
-#endif /* _ASM_X86_AMD_IOMMU_H */
+#endif  

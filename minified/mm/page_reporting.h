@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _MM_PAGE_REPORTING_H
 #define _MM_PAGE_REPORTING_H
 
@@ -15,4 +15,4 @@
 static inline void page_reporting_notify_free(unsigned int order)
 {
 }
-#endif /*_MM_PAGE_REPORTING_H */
+#endif  

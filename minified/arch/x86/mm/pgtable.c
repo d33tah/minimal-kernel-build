@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 #include <linux/mm.h>
 #include <linux/gfp.h>
 #include <linux/hugetlb.h>
@@ -23,21 +23,8 @@ pgtable_t pte_alloc_one(struct mm_struct *mm)
 	return __pte_alloc_one(mm, __userpte_alloc_gfp);
 }
 
-static int __init setup_userpte(char *arg)
-{
-	if (!arg)
-		return -EINVAL;
-
-	/*
-	 * "userpte=nohigh" disables allocation of user pagetables in
-	 * high memory.
-	 */
-	if (strcmp(arg, "nohigh") == 0)
-		__userpte_alloc_gfp &= ~__GFP_HIGHMEM;
-	else
-		return -EINVAL;
-	return 0;
-}
+/* Stub: userpte= cmdline option not needed for minimal kernel */
+static int __init setup_userpte(char *arg) { return 0; }
 early_param("userpte", setup_userpte);
 
 void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
@@ -52,10 +39,7 @@ void ___pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
 {
 	struct page *page = virt_to_page(pmd);
 	paravirt_release_pmd(__pa(pmd) >> PAGE_SHIFT);
-	/*
-	 * NOTE! For PAE, any changes to the top page-directory-pointer-table
-	 * entries need a full cr3 reload to flush.
-	 */
+	 
 	pgtable_pmd_page_dtor(page);
 	paravirt_tlb_remove_table(tlb, page);
 }
@@ -73,9 +57,9 @@ void ___p4d_free_tlb(struct mmu_gather *tlb, p4d_t *p4d)
 	paravirt_release_p4d(__pa(p4d) >> PAGE_SHIFT);
 	paravirt_tlb_remove_table(tlb, virt_to_page(p4d));
 }
-#endif	/* CONFIG_PGTABLE_LEVELS > 4 */
-#endif	/* CONFIG_PGTABLE_LEVELS > 3 */
-#endif	/* CONFIG_PGTABLE_LEVELS > 2 */
+#endif	 
+#endif	 
+#endif	 
 
 static inline void pgd_list_add(pgd_t *pgd)
 {
@@ -109,9 +93,7 @@ struct mm_struct *pgd_page_get_mm(struct page *page)
 
 static void pgd_ctor(struct mm_struct *mm, pgd_t *pgd)
 {
-	/* If the pgd points to a shared pagetable level (either the
-	   ptes in non-PAE, or shared PMD in PAE), then just copy the
-	   references from swapper_pg_dir. */
+	 
 	if (CONFIG_PGTABLE_LEVELS == 2 ||
 	    (CONFIG_PGTABLE_LEVELS == 3 && SHARED_KERNEL_PMD) ||
 	    CONFIG_PGTABLE_LEVELS >= 4) {
@@ -120,7 +102,7 @@ static void pgd_ctor(struct mm_struct *mm, pgd_t *pgd)
 				KERNEL_PGD_PTRS);
 	}
 
-	/* list required to sync kernel mapping updates */
+	 
 	if (!SHARED_KERNEL_PMD) {
 		pgd_set_mm(pgd, mm);
 		pgd_list_add(pgd);
@@ -137,19 +119,10 @@ static void pgd_dtor(pgd_t *pgd)
 	spin_unlock(&pgd_lock);
 }
 
-/*
- * List of all pgd's needed for non-PAE so it can invalidate entries
- * in both cached and uncached pgd's; not needed for PAE since the
- * kernel pmd is shared. If PAE were not to share the pmd a similar
- * tactic would be needed. This is essentially codepath-based locking
- * against pageattr.c; it is the unique case in which a valid change
- * of kernel pagetables can't be lazily synchronized by vmalloc faults.
- * vmalloc faults work because attached pagetables are never freed.
- * -- nyc
- */
+ 
 
 
-/* No need to prepopulate any pagetable entries in non-PAE modes. */
+ 
 #define PREALLOCATED_PMDS	0
 #define MAX_PREALLOCATED_PMDS	0
 #define PREALLOCATED_USER_PMDS	 0
@@ -198,12 +171,7 @@ static int preallocate_pmds(struct mm_struct *mm, pmd_t *pmds[], int count)
 	return 0;
 }
 
-/*
- * Mop up any pmd pages which may still be attached to the pgd.
- * Normally they will be freed by munmap/exit_mmap, but any pmd we
- * preallocate which never got a corresponding vma will need to be
- * freed manually.
- */
+ 
 static void mop_up_one_pmd(struct mm_struct *mm, pgd_t *pgdp)
 {
 	pgd_t pgd = *pgdp;
@@ -234,7 +202,7 @@ static void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmds[])
 	pud_t *pud;
 	int i;
 
-	if (PREALLOCATED_PMDS == 0) /* Work around gcc-3.4.x bug */
+	if (PREALLOCATED_PMDS == 0)  
 		return;
 
 	p4d = p4d_offset(pgd, 0);
@@ -255,13 +223,7 @@ static void pgd_prepopulate_user_pmd(struct mm_struct *mm,
 				     pgd_t *k_pgd, pmd_t *pmds[])
 {
 }
-/*
- * Xen paravirt assumes pgd table should be in one page. 64 bit kernel also
- * assumes that pgd should be in one page.
- *
- * But kernel with PAE paging that is not running as a Xen domain
- * only needs to allocate 32 bytes for pgd instead of one page.
- */
+ 
 
 static inline pgd_t *_pgd_alloc(void)
 {
@@ -296,11 +258,7 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 	if (paravirt_pgd_alloc(mm) != 0)
 		goto out_free_user_pmds;
 
-	/*
-	 * Make sure that pre-populating the pmds is atomic with
-	 * respect to anything walking the pgd_list, so that they
-	 * never see a partially populated pgd.
-	 */
+	 
 	spin_lock(&pgd_lock);
 
 	pgd_ctor(mm, pgd);
@@ -329,13 +287,7 @@ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 	_pgd_free(pgd);
 }
 
-/*
- * Used to set accessed or dirty bits in the page table entries
- * on other architectures. On x86, the accessed and dirty bits
- * are tracked by hardware. However, do_wp_page calls this function
- * to also make the pte writeable at the same time the dirty bit is
- * set. In that case we do actually need to write the PTE.
- */
+ 
 int ptep_set_access_flags(struct vm_area_struct *vma,
 			  unsigned long address, pte_t *ptep,
 			  pte_t entry, int dirty)
@@ -365,30 +317,12 @@ int ptep_test_and_clear_young(struct vm_area_struct *vma,
 int ptep_clear_flush_young(struct vm_area_struct *vma,
 			   unsigned long address, pte_t *ptep)
 {
-	/*
-	 * On x86 CPUs, clearing the accessed bit without a TLB flush
-	 * doesn't cause data corruption. [ It could cause incorrect
-	 * page aging and the (mistaken) reclaim of hot pages, but the
-	 * chance of that should be relatively low. ]
-	 *
-	 * So as a performance optimization don't flush the TLB when
-	 * clearing the accessed bit, it will eventually be flushed by
-	 * a context switch or a VM operation anyway. [ In the rare
-	 * event of it not getting flushed for a long time the delay
-	 * shouldn't really matter because there's no real memory
-	 * pressure for swapout to react to. ]
-	 */
+	 
 	return ptep_test_and_clear_young(vma, address, ptep);
 }
 
 
-/**
- * reserve_top_address - reserves a hole in the top of kernel address space
- * @reserve - size of hole to reserve
- *
- * Can be used to relocate the fixmap area and poke a hole in the top
- * of kernel address space to make room for a hypervisor.
- */
+ 
 void __init reserve_top_address(unsigned long reserve)
 {
 	BUG_ON(fixmaps_set > 0);
@@ -412,10 +346,10 @@ void __native_set_fixmap(enum fixed_addresses idx, pte_t pte)
 	fixmaps_set++;
 }
 
-void native_set_fixmap(unsigned /* enum fixed_addresses */ idx,
+void native_set_fixmap(unsigned   idx,
 		       phys_addr_t phys, pgprot_t flags)
 {
-	/* Sanitize 'prot' against any unsupported bits: */
+	 
 	pgprot_val(flags) &= __default_kernel_pte_mask;
 
 	__native_set_fixmap(idx, pfn_pte(phys >> PAGE_SHIFT, flags));

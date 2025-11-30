@@ -69,7 +69,6 @@ arch/x86/tools/relocs
 drivers/tty/vt/.conmakehash.cmd
 drivers/tty/vt/conmakehash
 drivers/tty/vt/consolemap_deftbl.c
-drivers/tty/vt/defkeymap.c
 include/config/
 include/generated/
 kernel/.bounds.s.cmd

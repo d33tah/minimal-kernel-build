@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -22,7 +22,6 @@
 #include <linux/sched.h>
 #include <linux/sched/mm.h>
 #include <linux/memcontrol.h>
-#include <linux/trace_stubs.h>
 
 #include <asm/cacheflush.h>
 #include <asm/sections.h>
@@ -1227,9 +1226,6 @@ area_found:
 	ptr = __addr_to_pcpu_ptr(chunk->base_addr + off);
 	kmemleak_alloc_percpu(ptr, size, gfp);
 
-	trace_percpu_alloc_percpu(_RET_IP_, reserved, is_atomic, size, align,
-				  chunk->base_addr, off, ptr,
-				  pcpu_obj_full_size(size), gfp);
 
 	pcpu_memcg_post_alloc_hook(objcg, chunk, off, size);
 
@@ -1238,7 +1234,6 @@ area_found:
 fail_unlock:
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 fail:
-	trace_percpu_alloc_percpu_fail(reserved, is_atomic, size, align);
 
 	if (!is_atomic && do_warn && warn_limit) {
 		pr_warn("allocation failed, size=%zu align=%zu atomic=%d, %s\n",
@@ -1264,17 +1259,16 @@ void __percpu *__alloc_percpu_gfp(size_t size, size_t align, gfp_t gfp)
 {
 	return pcpu_alloc(size, align, false, gfp);
 }
-EXPORT_SYMBOL_GPL(__alloc_percpu_gfp);
 
 void __percpu *__alloc_percpu(size_t size, size_t align)
 {
 	return pcpu_alloc(size, align, false, GFP_KERNEL);
 }
-EXPORT_SYMBOL_GPL(__alloc_percpu);
 
+/* Stub: __alloc_reserved_percpu not used externally */
 void __percpu *__alloc_reserved_percpu(size_t size, size_t align)
 {
-	return pcpu_alloc(size, align, true, GFP_KERNEL);
+	return NULL;
 }
 
 static void pcpu_balance_free(bool empty_only)
@@ -1516,14 +1510,12 @@ void free_percpu(void __percpu *ptr)
 		need_balance = true;
 	}
 
-	trace_percpu_free_percpu(chunk->base_addr, off, ptr);
 
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
 	if (need_balance)
 		pcpu_schedule_balance_work();
 }
-EXPORT_SYMBOL_GPL(free_percpu);
 
 bool __is_kernel_percpu_address(unsigned long addr, unsigned long *can_addr)
 {
@@ -1536,40 +1528,8 @@ bool is_kernel_percpu_address(unsigned long addr)
 	return __is_kernel_percpu_address(addr, NULL);
 }
 
-phys_addr_t per_cpu_ptr_to_phys(void *addr)
-{
-	void __percpu *base = __addr_to_pcpu_ptr(pcpu_base_addr);
-	bool in_first_chunk = false;
-	unsigned long first_low, first_high;
-	unsigned int cpu;
-
-	
-	first_low = (unsigned long)pcpu_base_addr +
-		    pcpu_unit_page_offset(pcpu_low_unit_cpu, 0);
-	first_high = (unsigned long)pcpu_base_addr +
-		     pcpu_unit_page_offset(pcpu_high_unit_cpu, pcpu_unit_pages);
-	if ((unsigned long)addr >= first_low &&
-	    (unsigned long)addr < first_high) {
-		for_each_possible_cpu(cpu) {
-			void *start = per_cpu_ptr(base, cpu);
-
-			if (addr >= start && addr < start + pcpu_unit_size) {
-				in_first_chunk = true;
-				break;
-			}
-		}
-	}
-
-	if (in_first_chunk) {
-		if (!is_vmalloc_addr(addr))
-			return __pa(addr);
-		else
-			return page_to_phys(vmalloc_to_page(addr)) +
-			       offset_in_page(addr);
-	} else
-		return page_to_phys(pcpu_addr_to_page(addr)) +
-		       offset_in_page(addr);
-}
+/* Stub: per_cpu_ptr_to_phys not used in minimal kernel */
+phys_addr_t per_cpu_ptr_to_phys(void *addr) { return __pa(addr); }
 
 struct pcpu_alloc_info * __init pcpu_alloc_alloc_info(int nr_groups,
 						      int nr_units)
@@ -1608,51 +1568,7 @@ void __init pcpu_free_alloc_info(struct pcpu_alloc_info *ai)
 static void pcpu_dump_alloc_info(const char *lvl,
 				 const struct pcpu_alloc_info *ai)
 {
-	int group_width = 1, cpu_width = 1, width;
-	char empty_str[] = "--------";
-	int alloc = 0, alloc_end = 0;
-	int group, v;
-	int upa, apl;	
-
-	v = ai->nr_groups;
-	while (v /= 10)
-		group_width++;
-
-	v = num_possible_cpus();
-	while (v /= 10)
-		cpu_width++;
-	empty_str[min_t(int, cpu_width, sizeof(empty_str) - 1)] = '\0';
-
-	upa = ai->alloc_size / ai->unit_size;
-	width = upa * (cpu_width + 1) + group_width + 3;
-	apl = rounddown_pow_of_two(max(60 / width, 1));
-
-	printk("%spcpu-alloc: s%zu r%zu d%zu u%zu alloc=%zu*%zu",
-	       lvl, ai->static_size, ai->reserved_size, ai->dyn_size,
-	       ai->unit_size, ai->alloc_size / ai->atom_size, ai->atom_size);
-
-	for (group = 0; group < ai->nr_groups; group++) {
-		const struct pcpu_group_info *gi = &ai->groups[group];
-		int unit = 0, unit_end = 0;
-
-		BUG_ON(gi->nr_units % upa);
-		for (alloc_end += gi->nr_units / upa;
-		     alloc < alloc_end; alloc++) {
-			if (!(alloc % apl)) {
-				pr_cont("\n");
-				printk("%spcpu-alloc: ", lvl);
-			}
-			pr_cont("[%0*d] ", group_width, group);
-
-			for (unit_end += upa; unit < unit_end; unit++)
-				if (gi->cpu_map[unit] != NR_CPUS)
-					pr_cont("%0*d ",
-						cpu_width, gi->cpu_map[unit]);
-				else
-					pr_cont("%s ", empty_str);
-		}
-	}
-	pr_cont("\n");
+	/* Stub: per-CPU allocation info dump not needed for minimal kernel */
 }
 
 void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
@@ -1821,7 +1737,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	pcpu_nr_populated += PFN_DOWN(size_sum);
 
 	pcpu_stats_chunk_alloc();
-	trace_percpu_create_chunk(base_addr);
 
 	
 	pcpu_base_addr = base_addr;
@@ -1853,9 +1768,10 @@ void __init setup_per_cpu_areas(void)
 	pcpu_free_alloc_info(ai);
 }
 
+/* Stub: pcpu_nr_pages not used externally */
 unsigned long pcpu_nr_pages(void)
 {
-	return pcpu_nr_populated * pcpu_nr_units;
+	return 0;
 }
 
 static int __init percpu_enable_async(void)

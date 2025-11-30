@@ -1,13 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- *  linux/drivers/char/mem.c
- *
- *  Copyright (C) 1991, 1992  Linus Torvalds
- *
- *  Added devfs support.
- *    Jan-11-1998, C. Scott Ananian <cananian@alumni.princeton.edu>
- *  Shared /dev/zero mmapping support, Feb 2000, Kanoj Sarcar <kanoj@sgi.com>
- */
+ 
+ 
 
 #include <linux/mm.h>
 #include <linux/miscdevice.h>
@@ -45,27 +37,6 @@ static inline unsigned long size_inside_page(unsigned long start,
 	return min(sz, size);
 }
 
-#ifndef ARCH_HAS_VALID_PHYS_ADDR_RANGE
-static inline int valid_phys_addr_range(phys_addr_t addr, size_t count)
-{
-	return addr + count <= __pa(high_memory);
-}
-
-static inline int valid_mmap_phys_addr_range(unsigned long pfn, size_t size)
-{
-	return 1;
-}
-#endif
-
-static inline int page_is_allowed(unsigned long pfn)
-{
-	return 1;
-}
-static inline int range_is_allowed(unsigned long pfn, unsigned long size)
-{
-	return 1;
-}
-
 #ifndef unxlate_dev_mem_ptr
 #define unxlate_dev_mem_ptr unxlate_dev_mem_ptr
 void __weak unxlate_dev_mem_ptr(phys_addr_t phys, void *addr)
@@ -73,175 +44,18 @@ void __weak unxlate_dev_mem_ptr(phys_addr_t phys, void *addr)
 }
 #endif
 
-static inline bool should_stop_iteration(void)
-{
-	if (need_resched())
-		cond_resched();
-	return signal_pending(current);
-}
-
-/*
- * This funcion reads the *physical* memory. The f_pos points directly to the
- * memory location.
- */
 static ssize_t read_mem(struct file *file, char __user *buf,
 			size_t count, loff_t *ppos)
 {
-	phys_addr_t p = *ppos;
-	ssize_t read, sz;
-	void *ptr;
-	char *bounce;
-	int err;
-
-	if (p != *ppos)
-		return 0;
-
-	if (!valid_phys_addr_range(p, count))
-		return -EFAULT;
-	read = 0;
-#ifdef __ARCH_HAS_NO_PAGE_ZERO_MAPPED
-	/* we don't have page 0 mapped on sparc and m68k.. */
-	if (p < PAGE_SIZE) {
-		sz = size_inside_page(p, count);
-		if (sz > 0) {
-			if (clear_user(buf, sz))
-				return -EFAULT;
-			buf += sz;
-			p += sz;
-			count -= sz;
-			read += sz;
-		}
-	}
-#endif
-
-	bounce = kmalloc(PAGE_SIZE, GFP_KERNEL);
-	if (!bounce)
-		return -ENOMEM;
-
-	while (count > 0) {
-		unsigned long remaining;
-		int allowed, probe;
-
-		sz = size_inside_page(p, count);
-
-		err = -EPERM;
-		allowed = page_is_allowed(p >> PAGE_SHIFT);
-		if (!allowed)
-			goto failed;
-
-		err = -EFAULT;
-		if (allowed == 2) {
-			/* Show zeros for restricted memory. */
-			remaining = clear_user(buf, sz);
-		} else {
-			/*
-			 * On ia64 if a page has been mapped somewhere as
-			 * uncached, then it must also be accessed uncached
-			 * by the kernel or data corruption may occur.
-			 */
-			ptr = xlate_dev_mem_ptr(p);
-			if (!ptr)
-				goto failed;
-
-			probe = copy_from_kernel_nofault(bounce, ptr, sz);
-			unxlate_dev_mem_ptr(p, ptr);
-			if (probe)
-				goto failed;
-
-			remaining = copy_to_user(buf, bounce, sz);
-		}
-
-		if (remaining)
-			goto failed;
-
-		buf += sz;
-		p += sz;
-		count -= sz;
-		read += sz;
-		if (should_stop_iteration())
-			break;
-	}
-	kfree(bounce);
-
-	*ppos += read;
-	return read;
-
-failed:
-	kfree(bounce);
-	return err;
+	/* Stub: /dev/mem not needed for minimal kernel */
+	return -EIO;
 }
 
 static ssize_t write_mem(struct file *file, const char __user *buf,
 			 size_t count, loff_t *ppos)
 {
-	phys_addr_t p = *ppos;
-	ssize_t written, sz;
-	unsigned long copied;
-	void *ptr;
-
-	if (p != *ppos)
-		return -EFBIG;
-
-	if (!valid_phys_addr_range(p, count))
-		return -EFAULT;
-
-	written = 0;
-
-#ifdef __ARCH_HAS_NO_PAGE_ZERO_MAPPED
-	/* we don't have page 0 mapped on sparc and m68k.. */
-	if (p < PAGE_SIZE) {
-		sz = size_inside_page(p, count);
-		/* Hmm. Do something? */
-		buf += sz;
-		p += sz;
-		count -= sz;
-		written += sz;
-	}
-#endif
-
-	while (count > 0) {
-		int allowed;
-
-		sz = size_inside_page(p, count);
-
-		allowed = page_is_allowed(p >> PAGE_SHIFT);
-		if (!allowed)
-			return -EPERM;
-
-		/* Skip actual writing when a page is marked as restricted. */
-		if (allowed == 1) {
-			/*
-			 * On ia64 if a page has been mapped somewhere as
-			 * uncached, then it must also be accessed uncached
-			 * by the kernel or data corruption may occur.
-			 */
-			ptr = xlate_dev_mem_ptr(p);
-			if (!ptr) {
-				if (written)
-					break;
-				return -EFAULT;
-			}
-
-			copied = copy_from_user(ptr, buf, sz);
-			unxlate_dev_mem_ptr(p, ptr);
-			if (copied) {
-				written += sz - copied;
-				if (written)
-					break;
-				return -EFAULT;
-			}
-		}
-
-		buf += sz;
-		p += sz;
-		count -= sz;
-		written += sz;
-		if (should_stop_iteration())
-			break;
-	}
-
-	*ppos += written;
-	return written;
+	/* Stub: /dev/mem not needed for minimal kernel */
+	return -EIO;
 }
 
 int __weak phys_mem_access_prot_allowed(struct file *file,
@@ -252,19 +66,11 @@ int __weak phys_mem_access_prot_allowed(struct file *file,
 
 #ifndef __HAVE_PHYS_MEM_ACCESS_PROT
 
-/*
- * Architectures vary in how they handle caching for addresses
- * outside of main memory.
- *
- */
+ 
 #ifdef pgprot_noncached
 static int uncached_access(struct file *file, phys_addr_t addr)
 {
-	/*
-	 * Accessing memory above the top the kernel knows about or through a
-	 * file pointer
-	 * that was marked O_DSYNC will be done non-cached.
-	 */
+	 
 	if (file->f_flags & O_DSYNC)
 		return 1;
 	return addr >= __pa(high_memory);
@@ -284,99 +90,26 @@ static pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
 }
 #endif
 
-
-static inline int private_mapping_ok(struct vm_area_struct *vma)
-{
-	return 1;
-}
-
-static const struct vm_operations_struct mmap_mem_ops = {
-	.access = generic_access_phys
-};
+/* mmap_mem_ops removed: unused since mmap_mem is stubbed */
 
 static int mmap_mem(struct file *file, struct vm_area_struct *vma)
 {
-	size_t size = vma->vm_end - vma->vm_start;
-	phys_addr_t offset = (phys_addr_t)vma->vm_pgoff << PAGE_SHIFT;
-
-	/* Does it even fit in phys_addr_t? */
-	if (offset >> PAGE_SHIFT != vma->vm_pgoff)
-		return -EINVAL;
-
-	/* It's illegal to wrap around the end of the physical address space. */
-	if (offset + (phys_addr_t)size - 1 < offset)
-		return -EINVAL;
-
-	if (!valid_mmap_phys_addr_range(vma->vm_pgoff, size))
-		return -EINVAL;
-
-	if (!private_mapping_ok(vma))
-		return -ENOSYS;
-
-	if (!range_is_allowed(vma->vm_pgoff, size))
-		return -EPERM;
-
-	if (!phys_mem_access_prot_allowed(file, vma->vm_pgoff, size,
-						&vma->vm_page_prot))
-		return -EINVAL;
-
-	vma->vm_page_prot = phys_mem_access_prot(file, vma->vm_pgoff,
-						 size,
-						 vma->vm_page_prot);
-
-	vma->vm_ops = &mmap_mem_ops;
-
-	/* Remap-pfn-range will mark the range VM_IO */
-	if (remap_pfn_range(vma,
-			    vma->vm_start,
-			    vma->vm_pgoff,
-			    size,
-			    vma->vm_page_prot)) {
-		return -EAGAIN;
-	}
-	return 0;
+	/* Stub: /dev/mem mmap not needed for minimal kernel */
+	return -EIO;
 }
 
 static ssize_t read_port(struct file *file, char __user *buf,
 			 size_t count, loff_t *ppos)
 {
-	unsigned long i = *ppos;
-	char __user *tmp = buf;
-
-	if (!access_ok(buf, count))
-		return -EFAULT;
-	while (count-- > 0 && i < 65536) {
-		if (__put_user(inb(i), tmp) < 0)
-			return -EFAULT;
-		i++;
-		tmp++;
-	}
-	*ppos = i;
-	return tmp-buf;
+	/* Stub: /dev/port not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 static ssize_t write_port(struct file *file, const char __user *buf,
 			  size_t count, loff_t *ppos)
 {
-	unsigned long i = *ppos;
-	const char __user *tmp = buf;
-
-	if (!access_ok(buf, count))
-		return -EFAULT;
-	while (count-- > 0 && i < 65536) {
-		char c;
-
-		if (__get_user(c, tmp)) {
-			if (tmp > buf)
-				break;
-			return -EFAULT;
-		}
-		outb(c, i);
-		i++;
-		tmp++;
-	}
-	*ppos = i;
-	return tmp-buf;
+	/* Stub: /dev/port not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 static ssize_t read_null(struct file *file, char __user *buf,
@@ -423,7 +156,7 @@ static ssize_t read_iter_zero(struct kiocb *iocb, struct iov_iter *iter)
 		size_t chunk = iov_iter_count(iter), n;
 
 		if (chunk > PAGE_SIZE)
-			chunk = PAGE_SIZE;	/* Just for latency reasons */
+			chunk = PAGE_SIZE;	 
 		n = iov_iter_zero(chunk, iter);
 		if (!n && iov_iter_count(iter))
 			return written ? written : -EFAULT;
@@ -479,16 +212,11 @@ static unsigned long get_unmapped_area_zero(struct file *file,
 				unsigned long pgoff, unsigned long flags)
 {
 	if (flags & MAP_SHARED) {
-		/*
-		 * mmap_zero() will call shmem_zero_setup() to create a file,
-		 * so use shmem's get_unmapped_area in case it can be huge;
-		 * and pass NULL for file as in mmap.c's get_unmapped_area(),
-		 * so as not to confuse shmem with our handle on "/dev/zero".
-		 */
+		 
 		return shmem_get_unmapped_area(NULL, addr, len, pgoff, flags);
 	}
 
-	/* Otherwise flags & MAP_PRIVATE: with no shmem object beneath it */
+	 
 	return current->mm->get_unmapped_area(file, addr, len, pgoff, flags);
 }
 
@@ -498,24 +226,13 @@ static ssize_t write_full(struct file *file, const char __user *buf,
 	return -ENOSPC;
 }
 
-/*
- * Special lseek() function for /dev/null and /dev/zero.  Most notably, you
- * can fopen() both devices with "a" now.  This was previously impossible.
- * -- SRB.
- */
+ 
 static loff_t null_lseek(struct file *file, loff_t offset, int orig)
 {
 	return file->f_pos = 0;
 }
 
-/*
- * The memory devices use the full 32/64 bits of the offset, and so we cannot
- * check against negative addresses: they are ok. The return value is weird,
- * though, in that case (0).
- *
- * also note that seeking relative to the "end of file" isn't supported:
- * it has no meaning, so it returns -EINVAL.
- */
+ 
 static loff_t memory_lseek(struct file *file, loff_t offset, int orig)
 {
 	loff_t ret;
@@ -526,7 +243,7 @@ static loff_t memory_lseek(struct file *file, loff_t offset, int orig)
 		offset += file->f_pos;
 		fallthrough;
 	case SEEK_SET:
-		/* to avoid userland mistaking f_pos=-9 as -EBADF=-9 */
+		 
 		if ((unsigned long long)offset >= -MAX_ERRNO) {
 			ret = -EOVERFLOW;
 			break;
@@ -556,11 +273,7 @@ static int open_port(struct inode *inode, struct file *filp)
 	if (iminor(inode) != DEVMEM_MINOR)
 		return 0;
 
-	/*
-	 * Use a unified address space to have a single point to manage
-	 * revocations when drivers want to take over a /dev/mem mapped
-	 * range.
-	 */
+	 
 	filp->f_mapping = iomem_get_mapping();
 
 	return 0;
@@ -677,9 +390,7 @@ static int __init chr_dev_init(void)
 		if (!devlist[minor].name)
 			continue;
 
-		/*
-		 * Create /dev/port?
-		 */
+		 
 		if ((minor == DEVPORT_MINOR) && !arch_has_dev_port())
 			continue;
 

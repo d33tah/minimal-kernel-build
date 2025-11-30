@@ -1,25 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * sys_ia32.c: Conversion between 32bit and 64bit native syscalls. Based on
- *             sys_sparc32
- *
- * Copyright (C) 2000		VA Linux Co
- * Copyright (C) 2000		Don Dugger <n0ano@valinux.com>
- * Copyright (C) 1999		Arun Sharma <arun.sharma@intel.com>
- * Copyright (C) 1997,1998	Jakub Jelinek (jj@sunsite.mff.cuni.cz)
- * Copyright (C) 1997		David S. Miller (davem@caip.rutgers.edu)
- * Copyright (C) 2000		Hewlett-Packard Co.
- * Copyright (C) 2000		David Mosberger-Tang <davidm@hpl.hp.com>
- * Copyright (C) 2000,2001,2002	Andi Kleen, SuSE Labs (x86-64 port)
- *
- * These routines maintain argument size conversion between 32bit and 64bit
- * environment. In 2.5 most of this should be moved to a generic directory.
- *
- * This file assumes that there is a hole at the end of user address space.
- *
- * Some of the functions are LE specific currently. These are
- * hopefully all marked.  This should be fixed.
- */
+ 
+ 
 
 #include <linux/kernel.h>
 #include <linux/sched.h>
@@ -51,11 +31,11 @@
 
 #define AA(__x)		((unsigned long)(__x))
 
-/* Stub ia32_truncate64 - 32-bit compatibility not needed for minimal kernel */
+ 
 SYSCALL_DEFINE3(ia32_truncate64, const char __user *, filename,
 		unsigned long, offset_low, unsigned long, offset_high)
 {
-	return -ENOSYS; /* Not implemented */
+	return -ENOSYS;  
 }
 
 SYSCALL_DEFINE3(ia32_ftruncate64, unsigned int, fd,
@@ -64,7 +44,7 @@ SYSCALL_DEFINE3(ia32_ftruncate64, unsigned int, fd,
 	return ksys_ftruncate(fd, ((loff_t) offset_high << 32) | offset_low);
 }
 
-/* warning: next two assume little endian */
+ 
 SYSCALL_DEFINE5(ia32_pread64, unsigned int, fd, char __user *, ubuf,
 		u32, count, u32, poslo, u32, poshi)
 {
@@ -80,10 +60,7 @@ SYSCALL_DEFINE5(ia32_pwrite64, unsigned int, fd, const char __user *, ubuf,
 }
 
 
-/*
- * Some system calls that need sign extended arguments. This could be
- * done by a generic wrapper.
- */
+ 
 SYSCALL_DEFINE6(ia32_fadvise64_64, int, fd, __u32, offset_low,
 		__u32, offset_high, __u32, len_low, __u32, len_high,
 		int, advice)

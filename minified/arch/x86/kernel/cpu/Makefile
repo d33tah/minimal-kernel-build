@@ -21,29 +21,27 @@ CFLAGS_common.o		:= -fno-stack-protector
 
 obj-y			:= cacheinfo.o scattered.o topology.o
 obj-y			+= common.o
-obj-y			+= rdrand.o
 obj-y			+= match.o
 obj-y			+= bugs.o
 obj-y			+= aperfmperf.o
 obj-y			+= cpuid-deps.o
-obj-y			+= umwait.o
 
 obj-$(CONFIG_PROC_FS)	+= proc.o
 obj-$(CONFIG_X86_FEATURE_NAMES) += capflags.o powerflags.o
 
 obj-$(CONFIG_IA32_FEAT_CTL) += feat_ctl.o
 ifdef CONFIG_CPU_SUP_INTEL
-obj-y			+= intel.o intel_pconfig.o tsx.o
+obj-y			+= intel.o tsx.o
 obj-$(CONFIG_PM)	+= intel_epb.o
 endif
 obj-$(CONFIG_CPU_SUP_AMD)		+= amd.o
 obj-$(CONFIG_CPU_SUP_HYGON)		+= hygon.o
-obj-$(CONFIG_CPU_SUP_CYRIX_32)		+= cyrix.o
-obj-$(CONFIG_CPU_SUP_CENTAUR)		+= centaur.o
-obj-$(CONFIG_CPU_SUP_TRANSMETA_32)	+= transmeta.o
-obj-$(CONFIG_CPU_SUP_UMC_32)		+= umc.o
-obj-$(CONFIG_CPU_SUP_ZHAOXIN)		+= zhaoxin.o
-obj-$(CONFIG_CPU_SUP_VORTEX_32)		+= vortex.o
+# obj-$(CONFIG_CPU_SUP_CYRIX_32)		+= cyrix.o  # deleted
+# obj-$(CONFIG_CPU_SUP_CENTAUR)		+= centaur.o  # deleted
+# obj-$(CONFIG_CPU_SUP_TRANSMETA_32)	+= transmeta.o  # deleted
+# obj-$(CONFIG_CPU_SUP_UMC_32)		+= umc.o  # deleted
+# obj-$(CONFIG_CPU_SUP_ZHAOXIN)		+= zhaoxin.o  # deleted
+# obj-$(CONFIG_CPU_SUP_VORTEX_32)		+= vortex.o  # deleted
 
 obj-$(CONFIG_X86_LOCAL_APIC)		+= perfctr-watchdog.o
 

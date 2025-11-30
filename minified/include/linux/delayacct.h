@@ -1,14 +1,6 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
-/* delayacct.h - per-task delay accounting
- *
- * Copyright (C) Shailabh Nagar, IBM Corp. 2006
- */
-
+/* Minimal delayacct.h - stubs for !CONFIG_TASK_DELAY_ACCT */
 #ifndef _LINUX_DELAYACCT_H
 #define _LINUX_DELAYACCT_H
-
-
-
 
 #include <linux/sched.h>
 #include <linux/slab.h>
@@ -24,33 +16,6 @@ static inline void delayacct_blkio_start(void)
 {}
 static inline void delayacct_blkio_end(struct task_struct *p)
 {}
-static inline int delayacct_add_tsk(struct taskstats *d,
-					struct task_struct *tsk)
-{ return 0; }
-static inline __u64 delayacct_blkio_ticks(struct task_struct *tsk)
-{ return 0; }
-static inline int delayacct_is_task_waiting_on_io(struct task_struct *p)
-{ return 0; }
-static inline void delayacct_freepages_start(void)
-{}
-static inline void delayacct_freepages_end(void)
-{}
-static inline void delayacct_thrashing_start(void)
-{}
-static inline void delayacct_thrashing_end(void)
-{}
-static inline void delayacct_swapin_start(void)
-{}
-static inline void delayacct_swapin_end(void)
-{}
-static inline void delayacct_compact_start(void)
-{}
-static inline void delayacct_compact_end(void)
-{}
-static inline void delayacct_wpcopy_start(void)
-{}
-static inline void delayacct_wpcopy_end(void)
-{}
-
+/* delayacct_add_tsk removed - unused */
 
 #endif

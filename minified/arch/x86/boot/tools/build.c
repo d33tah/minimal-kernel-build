@@ -1,29 +1,9 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- *  Copyright (C) 1991, 1992  Linus Torvalds
- *  Copyright (C) 1997 Martin Mares
- *  Copyright (C) 2007 H. Peter Anvin
- */
+ 
+ 
 
-/*
- * This file builds a disk-image from three different files:
- *
- * - setup: 8086 machine code, sets up system parm
- * - system: 80386 code for actual system
- * - zoffset.h: header with ZO_* defines
- *
- * It does some checking that all files are of the correct type, and writes
- * the result to the specified destination, removing headers and padding to
- * the right amount. It also writes some system data to stdout.
- */
+ 
 
-/*
- * Changes by tytso to allow root device specification
- * High loaded stuff by Hans Lermen & Werner Almesberger, Feb. 1996
- * Cross compiling fixes by Gertjan van Wingerde, July 1996
- * Rewritten by Martin Mares, April 1997
- * Substantially overhauled by H. Peter Anvin, April 2007
- */
+ 
 
 #include <stdio.h>
 #include <string.h>
@@ -44,11 +24,11 @@ typedef unsigned int   u32;
 #define DEFAULT_MINOR_ROOT 0
 #define DEFAULT_ROOT_DEV (DEFAULT_MAJOR_ROOT << 8 | DEFAULT_MINOR_ROOT)
 
-/* Minimal number of setup sectors */
+ 
 #define SETUP_SECT_MIN 5
 #define SETUP_SECT_MAX 64
 
-/* This must be large enough to hold the entire setup */
+ 
 u8 buf[SETUP_SECT_MAX*512];
 
 #define PECOFF_RELOC_RESERVE 0x20
@@ -64,7 +44,7 @@ static unsigned long startup_64;
 static unsigned long _ehead;
 static unsigned long _end;
 
-/*----------------------------------------------------------------------*/
+ 
 
 static const u32 crctab32[] = {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419,
@@ -163,16 +143,12 @@ static inline int reserve_pecoff_reloc_section(int c)
 
 static int reserve_pecoff_compat_section(int c)
 {
-	/* Reserve 0x20 bytes for .compat section */
+	 
 	memset(buf+c, 0, PECOFF_COMPAT_RESERVE);
 	return PECOFF_COMPAT_RESERVE;
 }
 
-/*
- * Parse zoffset.h and find the entry points. We could just #include zoffset.h
- * but that would mean tools/build would have to be rebuilt every time. It's
- * not as if parsing it is hard...
- */
+ 
 #define PARSE_ZOFS(p, sym) do { \
 	if (!strncmp(p, "#define ZO_" #sym " ", 11+sizeof(#sym)))	\
 		sym = strtoul(p + 11 + sizeof(#sym), NULL, 16);		\
@@ -232,7 +208,7 @@ int main(int argc, char ** argv)
 	if (!dest)
 		die("Unable to write `%s': %m", argv[4]);
 
-	/* Copy the setup code */
+	 
 	file = fopen(argv[1], "r");
 	if (!file)
 		die("Unable to open `%s': %m", argv[1]);
@@ -248,7 +224,7 @@ int main(int argc, char ** argv)
 	c += reserve_pecoff_compat_section(c);
 	c += reserve_pecoff_reloc_section(c);
 
-	/* Pad unused space with zeros */
+	 
 	setup_sectors = (c + 511) / 512;
 	if (setup_sectors < SETUP_SECT_MIN)
 		setup_sectors = SETUP_SECT_MIN;
@@ -257,10 +233,10 @@ int main(int argc, char ** argv)
 
 	update_pecoff_setup_and_reloc(i);
 
-	/* Set the default root device */
+	 
 	put_unaligned_le16(DEFAULT_ROOT_DEV, &buf[508]);
 
-	/* Open and stat the kernel file */
+	 
 	fd = open(argv[2], O_RDONLY);
 	if (fd < 0)
 		die("Unable to open `%s': %m", argv[2]);
@@ -270,10 +246,10 @@ int main(int argc, char ** argv)
 	kernel = mmap(NULL, sz, PROT_READ, MAP_SHARED, fd, 0);
 	if (kernel == MAP_FAILED)
 		die("Unable to mmap '%s': %m", argv[2]);
-	/* Number of 16-byte paragraphs, including space for a 4-byte CRC */
+	 
 	sys_size = (sz + 15 + 4) / 16;
 
-	/* Patch the setup code with the appropriate size parameters */
+	 
 	buf[0x1f1] = setup_sectors-1;
 	put_unaligned_le32(sys_size, &buf[0x1f4]);
 
@@ -282,36 +258,36 @@ int main(int argc, char ** argv)
 
 	efi_stub_entry_update();
 
-	/* Update kernel_info offset. */
+	 
 	put_unaligned_le32(kernel_info, &buf[0x268]);
 
 	crc = partial_crc32(buf, i, crc);
 	if (fwrite(buf, 1, i, dest) != i)
 		die("Writing setup failed");
 
-	/* Copy the kernel code */
+	 
 	crc = partial_crc32(kernel, sz, crc);
 	if (fwrite(kernel, 1, sz, dest) != sz)
 		die("Writing kernel failed");
 
-	/* Add padding leaving 4 bytes for the checksum */
+	 
 	while (sz++ < (sys_size*16) - 4) {
 		crc = partial_crc32_one('\0', crc);
 		if (fwrite("\0", 1, 1, dest) != 1)
 			die("Writing padding failed");
 	}
 
-	/* Write the CRC */
+	 
 	put_unaligned_le32(crc, buf);
 	if (fwrite(buf, 1, 4, dest) != 4)
 		die("Writing CRC failed");
 
-	/* Catch any delayed write failures */
+	 
 	if (fclose(dest))
 		die("Writing image failed");
 
 	close(fd);
 
-	/* Everything is OK */
+	 
 	return 0;
 }

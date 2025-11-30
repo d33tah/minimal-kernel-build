@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+ 
 #ifndef _ASM_GENERIC_CACHEFLUSH_H
 #define _ASM_GENERIC_CACHEFLUSH_H
 
@@ -7,10 +7,7 @@ struct vm_area_struct;
 struct page;
 struct address_space;
 
-/*
- * The cache doesn't need to be flushed when TLB entries change when
- * the cache is mapped to physical memory, not virtual memory
- */
+ 
 #ifndef flush_cache_all
 static inline void flush_cache_all(void)
 {
@@ -115,4 +112,4 @@ static inline void flush_cache_vunmap(unsigned long start, unsigned long end)
 	memcpy(dst, src, len)
 #endif
 
-#endif /* _ASM_GENERIC_CACHEFLUSH_H */
+#endif  

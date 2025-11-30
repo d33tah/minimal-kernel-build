@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 #include <linux/mount.h>
 #include <linux/pseudo_fs.h>
 #include <linux/file.h>
@@ -14,9 +14,7 @@
 
 #include "internal.h"
 
-/* Minimal stub for nsfs - namespace operations not used in minimal kernel */
-
-static struct vfsmount *nsfs_mnt;
+ 
 
 const struct dentry_operations ns_dentry_operations = {
 	.d_delete	= always_delete_dentry,
@@ -39,7 +37,6 @@ int open_related_ns(struct ns_common *ns,
 {
 	return -ENOSYS;
 }
-EXPORT_SYMBOL_GPL(open_related_ns);
 
 int ns_get_name(char *buf, size_t size, struct task_struct *task,
 			const struct proc_ns_operations *ns_ops)
@@ -64,5 +61,5 @@ bool ns_match(const struct ns_common *ns, dev_t dev, ino_t ino)
 
 void __init nsfs_init(void)
 {
-	/* Stubbed - namespace filesystem not needed for minimal kernel */
+	 
 }

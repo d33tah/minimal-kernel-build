@@ -1,0 +1,25 @@
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  image: debian:bookworm
+  before_script:
+    - apt-get update && apt-get install -y build-essential flex bison bc libelf-dev libssl-dev clang lld llvm xz-utils expect qemu-system-x86
+  script:
+    - cd minified && make LLVM=1 tinyconfig && yes "" | make LLVM=1 olddefconfig && make LLVM=1 -j$(nproc)
+  artifacts:
+    paths:
+      - minified/arch/x86/boot/bzImage
+    expire_in: 1 week
+
+test:
+  stage: test
+  image: debian:bookworm
+  needs:
+    - build
+  before_script:
+    - apt-get update && apt-get install -y expect qemu-system-x86
+  script:
+    - ./vmtest.tcl

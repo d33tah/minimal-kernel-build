@@ -1,13 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/*
- *  Copyright (C) 2006 IBM Corporation
- *
- *  Author: Serge Hallyn <serue@us.ibm.com>
- *
- *  Jun 2006 - namespaces support
- *             OpenVZ, SWsoft Inc.
- *             Pavel Emelianov <xemul@openvz.org>
- */
+ 
+ 
 
 #include <linux/slab.h>
 #include <linux/export.h>
@@ -46,11 +38,7 @@ static inline struct nsproxy *create_nsproxy(void)
 	return nsproxy;
 }
 
-/*
- * Create new nsproxy and all of its the associated namespaces.
- * Return the newly created nsproxy.  Do not attach this to the task,
- * leave it to the caller to do proper locking and attach it to task.
- */
+ 
 static struct nsproxy *create_new_namespaces(unsigned long flags,
 	struct task_struct *tsk, struct user_namespace *user_ns,
 	struct fs_struct *new_fs)
@@ -131,10 +119,7 @@ out_ns:
 	return ERR_PTR(err);
 }
 
-/*
- * called from clone.  This now handles copy for nsproxy and all
- * namespaces therein.
- */
+ 
 int copy_namespaces(unsigned long flags, struct task_struct *tsk)
 {
 	struct nsproxy *old_ns = tsk->nsproxy;
@@ -151,13 +136,7 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)
 	} else if (!ns_capable(user_ns, CAP_SYS_ADMIN))
 		return -EPERM;
 
-	/*
-	 * CLONE_NEWIPC must detach from the undolist: after switching
-	 * to a new ipc namespace, the semaphore arrays from the old
-	 * namespace are unreachable.  In clone parlance, CLONE_SYSVSEM
-	 * means share undolist with parent, so we must forbid using
-	 * it along with CLONE_NEWIPC.
-	 */
+	 
 	if ((flags & (CLONE_NEWIPC | CLONE_SYSVSEM)) ==
 		(CLONE_NEWIPC | CLONE_SYSVSEM))
 		return -EINVAL;
@@ -191,10 +170,7 @@ void free_nsproxy(struct nsproxy *ns)
 	kmem_cache_free(nsproxy_cachep, ns);
 }
 
-/*
- * Called from unshare. Unshare all the namespaces part of nsproxy.
- * On success, returns the new nsproxy.
- */
+ 
 int unshare_nsproxy_namespaces(unsigned long unshare_flags,
 	struct nsproxy **new_nsp, struct cred *new_cred, struct fs_struct *new_fs)
 {
@@ -241,204 +217,20 @@ void exit_task_namespaces(struct task_struct *p)
 	switch_task_namespaces(p, NULL);
 }
 
-static int check_setns_flags(unsigned long flags)
-{
-	/* Stubbed for minimal kernel */
-	return 0;
-}
-
-static void put_nsset(struct nsset *nsset)
-{
-	unsigned flags = nsset->flags;
-
-	if (flags & CLONE_NEWUSER)
-		put_cred(nsset_cred(nsset));
-	/*
-	 * We only created a temporary copy if we attached to more than just
-	 * the mount namespace.
-	 */
-	if (nsset->fs && (flags & CLONE_NEWNS) && (flags & ~CLONE_NEWNS))
-		free_fs_struct(nsset->fs);
-	if (nsset->nsproxy)
-		free_nsproxy(nsset->nsproxy);
-}
-
-static int prepare_nsset(unsigned flags, struct nsset *nsset)
-{
-	struct task_struct *me = current;
-
-	nsset->nsproxy = create_new_namespaces(0, me, current_user_ns(), me->fs);
-	if (IS_ERR(nsset->nsproxy))
-		return PTR_ERR(nsset->nsproxy);
-
-	if (flags & CLONE_NEWUSER)
-		nsset->cred = prepare_creds();
-	else
-		nsset->cred = current_cred();
-	if (!nsset->cred)
-		goto out;
-
-	/* Only create a temporary copy of fs_struct if we really need to. */
-	if (flags == CLONE_NEWNS) {
-		nsset->fs = me->fs;
-	} else if (flags & CLONE_NEWNS) {
-		nsset->fs = copy_fs_struct(me->fs);
-		if (!nsset->fs)
-			goto out;
-	}
-
-	nsset->flags = flags;
-	return 0;
-
-out:
-	put_nsset(nsset);
-	return -ENOMEM;
-}
 
 static inline int validate_ns(struct nsset *nsset, struct ns_common *ns)
 {
 	return ns->ops->install(nsset, ns);
 }
 
-/*
- * This is the inverse operation to unshare().
- * Ordering is equivalent to the standard ordering used everywhere else
- * during unshare and process creation. The switch to the new set of
- * namespaces occurs at the point of no return after installation of
- * all requested namespaces was successful in commit_nsset().
- */
-static int validate_nsset(struct nsset *nsset, struct pid *pid)
-{
-	int ret = 0;
-	unsigned flags = nsset->flags;
-	struct user_namespace *user_ns = NULL;
-	struct pid_namespace *pid_ns = NULL;
-	struct nsproxy *nsp;
-	struct task_struct *tsk;
+ 
 
-	/* Take a "snapshot" of the target task's namespaces. */
-	rcu_read_lock();
-	tsk = pid_task(pid, PIDTYPE_PID);
-	if (!tsk) {
-		rcu_read_unlock();
-		return -ESRCH;
-	}
-
-	if (!ptrace_may_access(tsk, PTRACE_MODE_READ_REALCREDS)) {
-		rcu_read_unlock();
-		return -EPERM;
-	}
-
-	task_lock(tsk);
-	nsp = tsk->nsproxy;
-	if (nsp)
-		get_nsproxy(nsp);
-	task_unlock(tsk);
-	if (!nsp) {
-		rcu_read_unlock();
-		return -ESRCH;
-	}
-
-
-	rcu_read_unlock();
-
-	/*
-	 * Install requested namespaces. The caller will have
-	 * verified earlier that the requested namespaces are
-	 * supported on this kernel. We don't report errors here
-	 * if a namespace is requested that isn't supported.
-	 */
-
-	if (flags & CLONE_NEWNS) {
-		ret = validate_ns(nsset, from_mnt_ns(nsp->mnt_ns));
-		if (ret)
-			goto out;
-	}
-
-
-
-
-
-
-
-out:
-	if (pid_ns)
-		put_pid_ns(pid_ns);
-	if (nsp)
-		put_nsproxy(nsp);
-	put_user_ns(user_ns);
-
-	return ret;
-}
-
-/*
- * This is the point of no return. There are just a few namespaces
- * that do some actual work here and it's sufficiently minimal that
- * a separate ns_common operation seems unnecessary for now.
- * Unshare is doing the same thing. If we'll end up needing to do
- * more in a given namespace or a helper here is ultimately not
- * exported anymore a simple commit handler for each namespace
- * should be added to ns_common.
- */
-static void commit_nsset(struct nsset *nsset)
-{
-	unsigned flags = nsset->flags;
-	struct task_struct *me = current;
-
-
-	/* We only need to commit if we have used a temporary fs_struct. */
-	if ((flags & CLONE_NEWNS) && (flags & ~CLONE_NEWNS)) {
-		set_fs_root(me->fs, &nsset->fs->root);
-		set_fs_pwd(me->fs, &nsset->fs->pwd);
-	}
-
-
-
-	/* transfer ownership */
-	switch_task_namespaces(me, nsset->nsproxy);
-	nsset->nsproxy = NULL;
-}
+ 
 
 SYSCALL_DEFINE2(setns, int, fd, int, flags)
 {
-	struct file *file;
-	struct ns_common *ns = NULL;
-	struct nsset nsset = {};
-	int err = 0;
-
-	file = fget(fd);
-	if (!file)
-		return -EBADF;
-
-	if (proc_ns_file(file)) {
-		ns = get_proc_ns(file_inode(file));
-		if (flags && (ns->ops->type != flags))
-			err = -EINVAL;
-		flags = ns->ops->type;
-	} else if (!IS_ERR(pidfd_pid(file))) {
-		err = check_setns_flags(flags);
-	} else {
-		err = -EINVAL;
-	}
-	if (err)
-		goto out;
-
-	err = prepare_nsset(flags, &nsset);
-	if (err)
-		goto out;
-
-	if (proc_ns_file(file))
-		err = validate_ns(&nsset, ns);
-	else
-		err = validate_nsset(&nsset, file->private_data);
-	if (!err) {
-		commit_nsset(&nsset);
-		perf_event_namespaces(current);
-	}
-	put_nsset(&nsset);
-out:
-	fput(file);
-	return err;
+	/* Stubbed: setns not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 int __init nsproxy_cache_init(void)

@@ -1,5 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/* Freezer declarations */
+ 
+ 
 
 #ifndef FREEZER_H_INCLUDED
 #define FREEZER_H_INCLUDED
@@ -11,20 +11,12 @@
 
 static inline bool frozen(struct task_struct *p) { return false; }
 static inline bool freezing(struct task_struct *p) { return false; }
-static inline void __thaw_task(struct task_struct *t) {}
-
-static inline bool __refrigerator(bool check_kthr_stop) { return false; }
-static inline int freeze_processes(void) { return -ENOSYS; }
-static inline int freeze_kernel_threads(void) { return -ENOSYS; }
-static inline void thaw_processes(void) {}
-static inline void thaw_kernel_threads(void) {}
-
-static inline bool try_to_freeze(void) { return false; }
+/* __thaw_task, __refrigerator, freeze_processes, freeze_kernel_threads removed - unused */
+/* thaw_processes, thaw_kernel_threads, try_to_freeze removed - unused */
 
 static inline void freezer_do_not_count(void) {}
 static inline void freezer_count(void) {}
-static inline int freezer_should_skip(struct task_struct *p) { return 0; }
-static inline void set_freezable(void) {}
+/* freezer_should_skip, set_freezable removed - unused */
 
 #define freezable_schedule()  schedule()
 
@@ -51,4 +43,4 @@ static inline void set_freezable(void) {}
 		wait_event_killable(wq, condition)
 
 
-#endif	/* FREEZER_H_INCLUDED */
+#endif	 

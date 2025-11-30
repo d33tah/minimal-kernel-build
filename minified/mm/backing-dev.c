@@ -1,6 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0-only
+ 
 
-#include <linux/trace_stubs.h>
 #include <linux/blkdev.h>
 #include <linux/wait.h>
 #include <linux/rbtree.h>
@@ -18,21 +17,17 @@
 #include <linux/device.h>
 
 struct backing_dev_info noop_backing_dev_info;
-EXPORT_SYMBOL_GPL(noop_backing_dev_info);
 
 static struct class *bdi_class;
 static const char *bdi_unknown_name = "(unknown)";
 
-/*
- * bdi_lock protects bdi_tree and updates to bdi_list. bdi_list has RCU
- * reader side locking.
- */
+ 
 DEFINE_SPINLOCK(bdi_lock);
 static u64 bdi_id_cursor;
 static struct rb_root bdi_tree = RB_ROOT;
 LIST_HEAD(bdi_list);
 
-/* bdi_wq serves all asynchronous writeback tasks */
+ 
 struct workqueue_struct *bdi_wq;
 
 #define K(x) ((x) << (PAGE_SHIFT - 10))
@@ -48,81 +43,27 @@ static inline void bdi_debug_unregister(struct backing_dev_info *bdi)
 {
 }
 
+/* Stub: BDI sysfs attributes simplified for minimal kernel */
 static ssize_t read_ahead_kb_store(struct device *dev,
-				  struct device_attribute *attr,
-				  const char *buf, size_t count)
-{
-	struct backing_dev_info *bdi = dev_get_drvdata(dev);
-	unsigned long read_ahead_kb;
-	ssize_t ret;
-
-	ret = kstrtoul(buf, 10, &read_ahead_kb);
-	if (ret < 0)
-		return ret;
-
-	bdi->ra_pages = read_ahead_kb >> (PAGE_SHIFT - 10);
-
-	return count;
-}
-
-#define BDI_SHOW(name, expr)						\
-static ssize_t name##_show(struct device *dev,				\
-			   struct device_attribute *attr, char *buf)	\
-{									\
-	struct backing_dev_info *bdi = dev_get_drvdata(dev);		\
-									\
-	return sysfs_emit(buf, "%lld\n", (long long)expr);		\
-}									\
-static DEVICE_ATTR_RW(name);
-
-BDI_SHOW(read_ahead_kb, K(bdi->ra_pages))
+		struct device_attribute *attr, const char *buf, size_t count) { return count; }
+static ssize_t read_ahead_kb_show(struct device *dev,
+		struct device_attribute *attr, char *buf) { return sysfs_emit(buf, "0\n"); }
+static DEVICE_ATTR_RW(read_ahead_kb);
 
 static ssize_t min_ratio_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count)
-{
-	struct backing_dev_info *bdi = dev_get_drvdata(dev);
-	unsigned int ratio;
-	ssize_t ret;
-
-	ret = kstrtouint(buf, 10, &ratio);
-	if (ret < 0)
-		return ret;
-
-	ret = bdi_set_min_ratio(bdi, ratio);
-	if (!ret)
-		ret = count;
-
-	return ret;
-}
-BDI_SHOW(min_ratio, bdi->min_ratio)
+		struct device_attribute *attr, const char *buf, size_t count) { return count; }
+static ssize_t min_ratio_show(struct device *dev,
+		struct device_attribute *attr, char *buf) { return sysfs_emit(buf, "0\n"); }
+static DEVICE_ATTR_RW(min_ratio);
 
 static ssize_t max_ratio_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count)
-{
-	struct backing_dev_info *bdi = dev_get_drvdata(dev);
-	unsigned int ratio;
-	ssize_t ret;
-
-	ret = kstrtouint(buf, 10, &ratio);
-	if (ret < 0)
-		return ret;
-
-	ret = bdi_set_max_ratio(bdi, ratio);
-	if (!ret)
-		ret = count;
-
-	return ret;
-}
-BDI_SHOW(max_ratio, bdi->max_ratio)
+		struct device_attribute *attr, const char *buf, size_t count) { return count; }
+static ssize_t max_ratio_show(struct device *dev,
+		struct device_attribute *attr, char *buf) { return sysfs_emit(buf, "0\n"); }
+static DEVICE_ATTR_RW(max_ratio);
 
 static ssize_t stable_pages_required_show(struct device *dev,
-					  struct device_attribute *attr,
-					  char *buf)
-{
-	dev_warn_once(dev,
-		"the stable_pages_required attribute has been removed. Use the stable_writes queue attribute instead.\n");
-	return sysfs_emit(buf, "%d\n", 0);
-}
+		struct device_attribute *attr, char *buf) { return sysfs_emit(buf, "0\n"); }
 static DEVICE_ATTR_RO(stable_pages_required);
 
 static struct attribute *bdi_dev_attrs[] = {
@@ -157,30 +98,8 @@ static int __init default_bdi_init(void)
 }
 subsys_initcall(default_bdi_init);
 
-/*
- * This function is used when the first inode for this wb is marked dirty. It
- * wakes-up the corresponding bdi thread which should then take care of the
- * periodic background write-out of dirty inodes. Since the write-out would
- * starts only 'dirty_writeback_interval' centisecs from now anyway, we just
- * set up a timer which wakes the bdi thread up later.
- *
- * Note, we wouldn't bother setting up the timer, but this function is on the
- * fast-path (used by '__mark_inode_dirty()'), so we save few context switches
- * by delaying the wake-up.
- *
- * We have to be careful not to postpone flush work if it is scheduled for
- * earlier. Thus we use queue_delayed_work().
- */
-void wb_wakeup_delayed(struct bdi_writeback *wb)
-{
-	unsigned long timeout;
-
-	timeout = msecs_to_jiffies(dirty_writeback_interval * 10);
-	spin_lock_bh(&wb->work_lock);
-	if (test_bit(WB_registered, &wb->state))
-		queue_delayed_work(bdi_wq, &wb->dwork, timeout);
-	spin_unlock_bh(&wb->work_lock);
-}
+/* Stub: wb_wakeup_delayed not used in minimal kernel */
+void wb_wakeup_delayed(struct bdi_writeback *wb) { }
 
 static void wb_update_bandwidth_workfn(struct work_struct *work)
 {
@@ -190,9 +109,7 @@ static void wb_update_bandwidth_workfn(struct work_struct *work)
 	wb_update_bandwidth(wb);
 }
 
-/*
- * Initial write bandwidth: 100 MB/s
- */
+ 
 #define INIT_BW		(100 << (20 - PAGE_SHIFT))
 
 static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
@@ -244,12 +161,10 @@ out_destroy_stat:
 
 static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb);
 
-/*
- * Remove bdi from the global list and shutdown any threads we have running
- */
+ 
 static void wb_shutdown(struct bdi_writeback *wb)
 {
-	/* Make sure nobody queues further work */
+	 
 	spin_lock_bh(&wb->work_lock);
 	if (!test_and_clear_bit(WB_registered, &wb->state)) {
 		spin_unlock_bh(&wb->work_lock);
@@ -258,11 +173,7 @@ static void wb_shutdown(struct bdi_writeback *wb)
 	spin_unlock_bh(&wb->work_lock);
 
 	cgwb_remove_from_bdi_list(wb);
-	/*
-	 * Drain work list and shutdown the delayed_work.  !WB_registered
-	 * tells wb_workfn() that @wb is dying and its work_list needs to
-	 * be drained no matter what.
-	 */
+	 
 	mod_delayed_work(bdi_wq, &wb->dwork, 0);
 	flush_delayed_work(&wb->dwork);
 	WARN_ON(!list_empty(&wb->work_list));
@@ -337,7 +248,6 @@ struct backing_dev_info *bdi_alloc(int node_id)
 	timer_setup(&bdi->laptop_mode_wb_timer, laptop_mode_timer_fn, 0);
 	return bdi;
 }
-EXPORT_SYMBOL(bdi_alloc);
 
 static struct rb_node **bdi_lookup_rb_node(u64 id, struct rb_node **parentp)
 {
@@ -364,35 +274,15 @@ static struct rb_node **bdi_lookup_rb_node(u64 id, struct rb_node **parentp)
 	return p;
 }
 
-/**
- * bdi_get_by_id - lookup and get bdi from its id
- * @id: bdi id to lookup
- *
- * Find bdi matching @id and get it.  Returns NULL if the matching bdi
- * doesn't exist or is already unregistered.
- */
-struct backing_dev_info *bdi_get_by_id(u64 id)
-{
-	struct backing_dev_info *bdi = NULL;
-	struct rb_node **p;
-
-	spin_lock_bh(&bdi_lock);
-	p = bdi_lookup_rb_node(id, NULL);
-	if (*p) {
-		bdi = rb_entry(*p, struct backing_dev_info, rb_node);
-		bdi_get(bdi);
-	}
-	spin_unlock_bh(&bdi_lock);
-
-	return bdi;
-}
+/* Stub: bdi_get_by_id not used in minimal kernel */
+struct backing_dev_info *bdi_get_by_id(u64 id) { return NULL; }
 
 int bdi_register_va(struct backing_dev_info *bdi, const char *fmt, va_list args)
 {
 	struct device *dev;
 	struct rb_node *parent, **p;
 
-	if (bdi->dev)	/* The driver needs to use separate queues per device */
+	if (bdi->dev)	 
 		return 0;
 
 	vsnprintf(bdi->dev_name, sizeof(bdi->dev_name), fmt, args);
@@ -418,7 +308,6 @@ int bdi_register_va(struct backing_dev_info *bdi, const char *fmt, va_list args)
 
 	spin_unlock_bh(&bdi_lock);
 
-	trace_writeback_bdi_register(bdi);
 	return 0;
 }
 
@@ -432,18 +321,11 @@ int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...)
 	va_end(args);
 	return ret;
 }
-EXPORT_SYMBOL(bdi_register);
 
-void bdi_set_owner(struct backing_dev_info *bdi, struct device *owner)
-{
-	WARN_ON_ONCE(bdi->owner);
-	bdi->owner = owner;
-	get_device(owner);
-}
+/* Stub: bdi_set_owner not used in minimal kernel */
+void bdi_set_owner(struct backing_dev_info *bdi, struct device *owner) { }
 
-/*
- * Remove bdi from bdi_list, and ensure that it is no longer visible
- */
+ 
 static void bdi_remove_from_list(struct backing_dev_info *bdi)
 {
 	spin_lock_bh(&bdi_lock);
@@ -458,15 +340,12 @@ void bdi_unregister(struct backing_dev_info *bdi)
 {
 	del_timer_sync(&bdi->laptop_mode_wb_timer);
 
-	/* make sure nobody finds us on the bdi_list anymore */
+	 
 	bdi_remove_from_list(bdi);
 	wb_shutdown(&bdi->wb);
 	cgwb_bdi_unregister(bdi);
 
-	/*
-	 * If this BDI's min ratio has been set, use bdi_set_min_ratio() to
-	 * update the global bdi_min_ratio.
-	 */
+	 
 	if (bdi->min_ratio)
 		bdi_set_min_ratio(bdi, 0);
 
@@ -481,7 +360,6 @@ void bdi_unregister(struct backing_dev_info *bdi)
 		bdi->owner = NULL;
 	}
 }
-EXPORT_SYMBOL(bdi_unregister);
 
 static void release_bdi(struct kref *ref)
 {
@@ -498,7 +376,6 @@ void bdi_put(struct backing_dev_info *bdi)
 {
 	kref_put(&bdi->refcnt, release_bdi);
 }
-EXPORT_SYMBOL(bdi_put);
 
 struct backing_dev_info *inode_to_bdi(struct inode *inode)
 {
@@ -510,7 +387,6 @@ struct backing_dev_info *inode_to_bdi(struct inode *inode)
 	sb = inode->i_sb;
 	return sb->s_bdi;
 }
-EXPORT_SYMBOL(inode_to_bdi);
 
 const char *bdi_dev_name(struct backing_dev_info *bdi)
 {
@@ -518,4 +394,3 @@ const char *bdi_dev_name(struct backing_dev_info *bdi)
 		return bdi_unknown_name;
 	return bdi->dev_name;
 }
-EXPORT_SYMBOL_GPL(bdi_dev_name);

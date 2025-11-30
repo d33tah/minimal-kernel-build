@@ -3,7 +3,7 @@
 
 # include <asm/pgtable_32_areas.h>
 
-/* Single page reserved for the readonly IDT mapping: */
+ 
 #define CPU_ENTRY_AREA_RO_IDT		CPU_ENTRY_AREA_BASE
 #define CPU_ENTRY_AREA_PER_CPU		(CPU_ENTRY_AREA_RO_IDT + PAGE_SIZE)
 
@@ -11,4 +11,4 @@
 
 #define CPU_ENTRY_AREA_MAP_SIZE		(CPU_ENTRY_AREA_PER_CPU + CPU_ENTRY_AREA_ARRAY_SIZE - CPU_ENTRY_AREA_BASE)
 
-#endif /* _ASM_X86_PGTABLE_AREAS_H */
+#endif  

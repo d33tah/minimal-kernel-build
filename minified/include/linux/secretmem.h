@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+ 
 #ifndef _LINUX_SECRETMEM_H
 #define _LINUX_SECRETMEM_H
 
@@ -19,4 +19,4 @@ static inline bool secretmem_active(void)
 }
 
 
-#endif /* _LINUX_SECRETMEM_H */
+#endif  

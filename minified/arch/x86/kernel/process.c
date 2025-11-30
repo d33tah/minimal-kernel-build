@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+ 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/errno.h>
@@ -49,21 +49,10 @@
 
 #include "process.h"
 
-/*
- * per-CPU TSS segments. Threads are completely 'soft' on Linux,
- * no more per-task TSS's. The TSS size is kept cacheline-aligned
- * so they are allowed to end up in the .data..cacheline_aligned
- * section. Since TSS's are completely CPU-local, we want them
- * on exact cacheline boundaries, to eliminate cacheline ping-pong.
- */
+ 
 __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
 	.x86_tss = {
-		/*
-		 * .sp0 is only used when entering ring 0 from a lower
-		 * privilege level.  Since the init task never runs anything
-		 * but ring 0 code, there is no need for a valid value here.
-		 * Poison it.
-		 */
+		 
 		.sp0 = (1UL << (BITS_PER_LONG-1)) + 1,
 
 		.sp1 = TOP_OF_INIT_STACK,
@@ -73,28 +62,21 @@ __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
 		.io_bitmap_base	= IO_BITMAP_OFFSET_INVALID,
 	 },
 };
-EXPORT_PER_CPU_SYMBOL(cpu_tss_rw);
 
 DEFINE_PER_CPU(bool, __tss_limit_invalid);
-EXPORT_PER_CPU_SYMBOL_GPL(__tss_limit_invalid);
 
-/*
- * this gets called so that we can store lazy state into memory and copy the
- * current task into the new thread.
- */
+ 
 int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
 {
 	memcpy(dst, src, arch_task_struct_size);
-	/* Drop the copied pointer to current's fpstate */
+	 
 	dst->thread.fpu.fpstate = NULL;
 
 	return 0;
 }
 
 
-/*
- * Free thread data structures etc..
- */
+ 
 void exit_thread(struct task_struct *tsk)
 {
 	struct thread_struct *t = &tsk->thread;
@@ -141,17 +123,12 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 
 	p->thread.sp0 = (unsigned long) (childregs + 1);
 	savesegment(gs, p->thread.gs);
-	/*
-	 * Clear all status flags including IF and set fixed bit. 64bit
-	 * does not have this initialization as the frame does not contain
-	 * flags. The flags consistency (especially vs. AC) is there
-	 * ensured via objtool, which lacks 32bit support.
-	 */
+	 
 	frame->flags = X86_EFLAGS_FIXED;
 
 	fpu_clone(p, clone_flags, args->fn);
 
-	/* Kernel thread ? */
+	 
 	if (unlikely(p->flags & PF_KTHREAD)) {
 		p->thread.pkru = pkru_get_init_value();
 		memset(childregs, 0, sizeof(struct pt_regs));
@@ -159,10 +136,7 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 		return 0;
 	}
 
-	/*
-	 * Clone current's PKRU value from hardware. tsk->thread.pkru
-	 * is only valid when scheduled out.
-	 */
+	 
 	p->thread.pkru = read_pkru();
 
 	frame->bx = 0;
@@ -172,23 +146,14 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 		childregs->sp = sp;
 
 	if (unlikely(args->fn)) {
-		/*
-		 * A user space thread, but it doesn't return to
-		 * ret_after_fork().
-		 *
-		 * In order to indicate that to tools like gdb,
-		 * we reset the stack and instruction pointers.
-		 *
-		 * It does the same kernel frame setup to return to a kernel
-		 * function that a kernel thread does.
-		 */
+		 
 		childregs->sp = 0;
 		childregs->ip = 0;
 		kthread_frame_init(frame, args->fn, args->fn_arg);
 		return 0;
 	}
 
-	/* Set a new TLS for the child thread? */
+	 
 	if (clone_flags & CLONE_SETTLS)
 		ret = set_new_tls(p, tls);
 
@@ -200,10 +165,7 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 
 static void pkru_flush_thread(void)
 {
-	/*
-	 * If PKRU is enabled the default PKRU value has to be loaded into
-	 * the hardware right here (similar to context switch).
-	 */
+	 
 	pkru_write_default();
 }
 
@@ -222,48 +184,21 @@ void disable_TSC(void)
 {
 	preempt_disable();
 	if (!test_and_set_thread_flag(TIF_NOTSC))
-		/*
-		 * Must flip the CPU state synchronously with
-		 * TIF_NOTSC in the current running context.
-		 */
+		 
 		cr4_set_bits(X86_CR4_TSD);
 	preempt_enable();
 }
 
-static void enable_TSC(void)
-{
-	preempt_disable();
-	if (test_and_clear_thread_flag(TIF_NOTSC))
-		/*
-		 * Must flip the CPU state synchronously with
-		 * TIF_NOTSC in the current running context.
-		 */
-		cr4_clear_bits(X86_CR4_TSD);
-	preempt_enable();
-}
-
+/* Stub: get_tsc_mode not used externally */
 int get_tsc_mode(unsigned long adr)
 {
-	unsigned int val;
-
-	if (test_thread_flag(TIF_NOTSC))
-		val = PR_TSC_SIGSEGV;
-	else
-		val = PR_TSC_ENABLE;
-
-	return put_user(val, (unsigned int __user *)adr);
+	return -EINVAL;
 }
 
+/* Stub: set_tsc_mode not used externally */
 int set_tsc_mode(unsigned int val)
 {
-	if (val == PR_TSC_SIGSEGV)
-		disable_TSC();
-	else if (val == PR_TSC_ENABLE)
-		enable_TSC();
-	else
-		return -EINVAL;
-
-	return 0;
+	return -EINVAL;
 }
 
 DEFINE_PER_CPU(u64, msr_misc_features_shadow);
@@ -283,10 +218,7 @@ static void disable_cpuid(void)
 {
 	preempt_disable();
 	if (!test_and_set_thread_flag(TIF_NOCPUID)) {
-		/*
-		 * Must flip the CPU state synchronously with
-		 * TIF_NOCPUID in the current running context.
-		 */
+		 
 		set_cpuid_faulting(true);
 	}
 	preempt_enable();
@@ -296,10 +228,7 @@ static void enable_cpuid(void)
 {
 	preempt_disable();
 	if (test_and_clear_thread_flag(TIF_NOCPUID)) {
-		/*
-		 * Must flip the CPU state synchronously with
-		 * TIF_NOCPUID in the current running context.
-		 */
+		 
 		set_cpuid_faulting(false);
 	}
 	preempt_enable();
@@ -323,19 +252,14 @@ static int set_cpuid_mode(unsigned long cpuid_enabled)
 	return 0;
 }
 
-/*
- * Called immediately after a successful exec.
- */
+ 
 void arch_setup_new_exec(void)
 {
-	/* If cpuid was previously disabled for this task, re-enable it. */
+	 
 	if (test_thread_flag(TIF_NOCPUID))
 		enable_cpuid();
 
-	/*
-	 * Don't inherit TIF_SSBD across exec boundary when
-	 * PR_SPEC_DISABLE_NOEXEC is used.
-	 */
+	 
 	if (test_thread_flag(TIF_SSBD) &&
 	    task_spec_ssb_noexec(current)) {
 		clear_thread_flag(TIF_SSBD);
@@ -356,19 +280,11 @@ static __always_inline void amd_set_core_ssb_state(unsigned long tifn)
 
 static __always_inline void amd_set_ssb_virt_state(unsigned long tifn)
 {
-	/*
-	 * SSBD has the same definition in SPEC_CTRL and VIRT_SPEC_CTRL,
-	 * so ssbd_tif_to_spec_ctrl() just works.
-	 */
+	 
 	wrmsrl(MSR_AMD64_VIRT_SPEC_CTRL, ssbd_tif_to_spec_ctrl(tifn));
 }
 
-/*
- * Update the MSRs managing speculation control, during context switch.
- *
- * tifp: Previous task's thread flags
- * tifn: Next task's thread flags
- */
+ 
 static __always_inline void __speculation_ctrl_update(unsigned long tifp,
 						      unsigned long tifn)
 {
@@ -378,7 +294,7 @@ static __always_inline void __speculation_ctrl_update(unsigned long tifp,
 
 	lockdep_assert_irqs_disabled();
 
-	/* Handle change of TIF_SSBD depending on the mitigation method. */
+	 
 	if (static_cpu_has(X86_FEATURE_VIRT_SSBD)) {
 		if (tif_diff & _TIF_SSBD)
 			amd_set_ssb_virt_state(tifn);
@@ -391,7 +307,7 @@ static __always_inline void __speculation_ctrl_update(unsigned long tifp,
 		msr |= ssbd_tif_to_spec_ctrl(tifn);
 	}
 
-	/* Only evaluate TIF_SPEC_IB if conditional STIBP is enabled. */
+	 
 	if (IS_ENABLED(CONFIG_SMP) &&
 	    static_branch_unlikely(&switch_to_cond_stibp)) {
 		updmsr |= !!(tif_diff & _TIF_SPEC_IB);
@@ -415,7 +331,7 @@ static unsigned long speculation_ctrl_update_tif(struct task_struct *tsk)
 		else
 			clear_tsk_thread_flag(tsk, TIF_SPEC_IB);
 	}
-	/* Return the updated threadinfo flags*/
+	 
 	return read_task_thread_flags(tsk);
 }
 
@@ -423,19 +339,14 @@ void speculation_ctrl_update(unsigned long tif)
 {
 	unsigned long flags;
 
-	/* Forced update. Make sure all relevant TIF flags are different */
+	 
 	local_irq_save(flags);
 	__speculation_ctrl_update(~tif, tif);
 	local_irq_restore(flags);
 }
 
-/* Called from seccomp/prctl update */
-void speculation_ctrl_update_current(void)
-{
-	preempt_disable();
-	speculation_ctrl_update(speculation_ctrl_update_tif(current));
-	preempt_enable();
-}
+/* Stub: speculation_ctrl_update_current not used externally */
+void speculation_ctrl_update_current(void) { }
 
 static inline void cr4_toggle_bits_irqsoff(unsigned long mask)
 {
@@ -482,16 +393,13 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 		speculation_ctrl_update_tif(prev_p);
 		tifn = speculation_ctrl_update_tif(next_p);
 
-		/* Enforce MSR update to ensure consistent state */
+		 
 		__speculation_ctrl_update(~tifn, tifn);
 	}
 }
 
-/*
- * Idle related variables and functions
- */
+ 
 unsigned long boot_option_idle_override = IDLE_NO_OVERRIDE;
-EXPORT_SYMBOL(boot_option_idle_override);
 
 static void (*x86_idle)(void);
 
@@ -511,163 +419,48 @@ void arch_cpu_idle_dead(void)
 	play_dead();
 }
 
-/*
- * Called from the generic idle code.
- */
+ 
 void arch_cpu_idle(void)
 {
 	x86_idle();
 }
 
-/*
- * We use this if we don't have any better idle routine..
- */
+ 
 void __cpuidle default_idle(void)
 {
 	raw_safe_halt();
 }
 #if defined(CONFIG_APM_MODULE) || defined(CONFIG_HALTPOLL_CPUIDLE_MODULE)
-EXPORT_SYMBOL(default_idle);
 #endif
 
 
 void __noreturn stop_this_cpu(void *dummy)
 {
 	local_irq_disable();
-	/*
-	 * Remove this CPU:
-	 */
+	 
 	set_cpu_online(smp_processor_id(), false);
 	disable_local_APIC();
 	mcheck_cpu_clear(this_cpu_ptr(&cpu_info));
 
-	/*
-	 * Use wbinvd on processors that support SME. This provides support
-	 * for performing a successful kexec when going from SME inactive
-	 * to SME active (or vice-versa). The cache must be cleared so that
-	 * if there are entries with the same physical address, both with and
-	 * without the encryption bit, they don't race each other when flushed
-	 * and potentially end up with the wrong entry being committed to
-	 * memory.
-	 *
-	 * Test the CPUID bit directly because the machine might've cleared
-	 * X86_FEATURE_SME due to cmdline options.
-	 */
+	 
 	if (cpuid_eax(0x8000001f) & BIT(0))
 		native_wbinvd();
 	for (;;) {
-		/*
-		 * Use native_halt() so that memory contents don't change
-		 * (stack usage and variables) after possibly issuing the
-		 * native_wbinvd() above.
-		 */
+		 
 		native_halt();
 	}
 }
 
-/*
- * AMD Erratum 400 aware idle routine. We handle it the same way as C3 power
- * states (local apic timer and TSC stop).
- *
- * XXX this function is completely buggered vs RCU and tracing.
- */
-static void amd_e400_idle(void)
-{
-	/*
-	 * We cannot use static_cpu_has_bug() here because X86_BUG_AMD_APIC_C1E
-	 * gets set after static_cpu_has() places have been converted via
-	 * alternatives.
-	 */
-	if (!boot_cpu_has_bug(X86_BUG_AMD_APIC_C1E)) {
-		default_idle();
-		return;
-	}
-
-	tick_broadcast_enter();
-
-	default_idle();
-
-	/*
-	 * The switch back from broadcast mode needs to be called with
-	 * interrupts disabled.
-	 */
-	raw_local_irq_disable();
-	tick_broadcast_exit();
-	raw_local_irq_enable();
-}
-
-/*
- * Intel Core2 and older machines prefer MWAIT over HALT for C1.
- * We can't rely on cpuidle installing MWAIT, because it will not load
- * on systems that support only C1 -- so the boot default must be MWAIT.
- *
- * Some AMD machines are the opposite, they depend on using HALT.
- *
- * So for default C1, which is used during boot until cpuidle loads,
- * use MWAIT-C1 on Intel HW that has it, else use HALT.
- */
-static int prefer_mwait_c1_over_halt(const struct cpuinfo_x86 *c)
-{
-	if (c->x86_vendor != X86_VENDOR_INTEL)
-		return 0;
-
-	if (!cpu_has(c, X86_FEATURE_MWAIT) || boot_cpu_has_bug(X86_BUG_MONITOR))
-		return 0;
-
-	return 1;
-}
-
-/*
- * MONITOR/MWAIT with no hints, used for default C1 state. This invokes MWAIT
- * with interrupts enabled and no flags, which is backwards compatible with the
- * original MWAIT implementation.
- */
-static __cpuidle void mwait_idle(void)
-{
-	if (!current_set_polling_and_test()) {
-		if (this_cpu_has(X86_BUG_CLFLUSH_MONITOR)) {
-			mb(); /* quirk */
-			clflush((void *)&current_thread_info()->flags);
-			mb(); /* quirk */
-		}
-
-		__monitor((void *)&current_thread_info()->flags, 0, 0);
-		if (!need_resched())
-			__sti_mwait(0, 0);
-		else
-			raw_local_irq_enable();
-	} else {
-		raw_local_irq_enable();
-	}
-	__current_clr_polling();
-}
-
+/* Simplified: just use default_idle for minimal kernel */
 void select_idle_routine(const struct cpuinfo_x86 *c)
 {
-	if (x86_idle || boot_option_idle_override == IDLE_POLL)
-		return;
-
-	if (boot_cpu_has_bug(X86_BUG_AMD_E400)) {
-		pr_info("using AMD E400 aware idle routine\n");
-		x86_idle = amd_e400_idle;
-	} else if (prefer_mwait_c1_over_halt(c)) {
-		pr_info("using mwait in idle threads\n");
-		x86_idle = mwait_idle;
-	} else if (cpu_feature_enabled(X86_FEATURE_TDX_GUEST)) {
-		pr_info("using TDX aware idle routine\n");
-		x86_idle = tdx_safe_halt;
-	} else
+	if (!x86_idle)
 		x86_idle = default_idle;
 }
 
+/* Stub: amd_e400_c1e_apic_setup not used externally */
 void amd_e400_c1e_apic_setup(void)
 {
-	if (boot_cpu_has_bug(X86_BUG_AMD_APIC_C1E)) {
-		pr_info("Switch to broadcast mode on CPU%d\n", smp_processor_id());
-		local_irq_disable();
-		tick_broadcast_force();
-		local_irq_enable();
-	}
 }
 
 void __init arch_post_acpi_subsys_init(void)
@@ -677,11 +470,7 @@ void __init arch_post_acpi_subsys_init(void)
 	if (!boot_cpu_has_bug(X86_BUG_AMD_E400))
 		return;
 
-	/*
-	 * AMD E400 detection needs to happen after ACPI has been enabled. If
-	 * the machine is affected K8_INTP_C1E_ACTIVE_MASK bits are set in
-	 * MSR_K8_INT_PENDING_MSG.
-	 */
+	 
 	rdmsr(MSR_K8_INT_PENDING_MSG, lo, hi);
 	if (!(lo & K8_INTP_C1E_ACTIVE_MASK))
 		return;
@@ -693,38 +482,8 @@ void __init arch_post_acpi_subsys_init(void)
 	pr_info("System has AMD C1E enabled\n");
 }
 
-static int __init idle_setup(char *str)
-{
-	if (!str)
-		return -EINVAL;
-
-	if (!strcmp(str, "poll")) {
-		pr_info("using polling idle threads\n");
-		boot_option_idle_override = IDLE_POLL;
-		cpu_idle_poll_ctrl(true);
-	} else if (!strcmp(str, "halt")) {
-		/*
-		 * When the boot option of idle=halt is added, halt is
-		 * forced to be used for CPU idle. In such case CPU C2/C3
-		 * won't be used again.
-		 * To continue to load the CPU idle driver, don't touch
-		 * the boot_option_idle_override.
-		 */
-		x86_idle = default_idle;
-		boot_option_idle_override = IDLE_HALT;
-	} else if (!strcmp(str, "nomwait")) {
-		/*
-		 * If the boot option of "idle=nomwait" is added,
-		 * it means that mwait will be disabled for CPU C2/C3
-		 * states. In such case it won't touch the variable
-		 * of boot_option_idle_override.
-		 */
-		boot_option_idle_override = IDLE_NOMWAIT;
-	} else
-		return -1;
-
-	return 0;
-}
+/* Stub: idle= cmdline option not needed for minimal kernel */
+static int __init idle_setup(char *str) { return 0; }
 early_param("idle", idle_setup);
 
 unsigned long arch_align_stack(unsigned long sp)
@@ -739,12 +498,7 @@ unsigned long arch_randomize_brk(struct mm_struct *mm)
 	return randomize_page(mm->brk, 0x02000000);
 }
 
-/*
- * Called from fs/proc with a reference on @p to find the function
- * which called into schedule(). This needs to be done carefully
- * because the task might wake up and we might look at a stack
- * changing under us.
- */
+ 
 unsigned long __get_wchan(struct task_struct *p)
 {
 	struct unwind_state state;

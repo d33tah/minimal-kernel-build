@@ -1,12 +1,5 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- *  Copyright (C) 1991, 1992  Linus Torvalds
- *  Copyright (C) 2000, 2001, 2002 Andi Kleen SuSE Labs
- *
- *  1997-11-28  Modified for POSIX.1b signals by Richard Henderson
- *  2000-06-20  Pentium III FXSR, SSE support by Gareth Hughes
- *  2000-2002   x86-64 support by Andi Kleen
- */
+ 
+ 
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -50,7 +43,7 @@ static bool restore_sigcontext(struct pt_regs *regs,
 {
 	struct sigcontext sc;
 
-	/* Always make any pending restarted system calls return -EINTR */
+	 
 	current->restart_block.fn = do_no_restart_syscall;
 
 	if (copy_from_user(&sc, usc, CONTEXT_COPY_SIZE))
@@ -72,12 +65,12 @@ static bool restore_sigcontext(struct pt_regs *regs,
 	regs->ip = sc.ip;
 
 
-	/* Get CS/SS and force CPL3 */
+	 
 	regs->cs = sc.cs | 0x03;
 	regs->ss = sc.ss | 0x03;
 
 	regs->flags = (regs->flags & ~FIX_EFLAGS) | (sc.flags & FIX_EFLAGS);
-	/* disable syscall checks */
+	 
 	regs->orig_ax = -1;
 
 
@@ -116,7 +109,7 @@ __unsafe_setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
 
 	unsafe_put_user(fpstate, (unsigned long __user *)&sc->fpstate, Efault);
 
-	/* non-iBCS2 extensions.. */
+	 
 	unsafe_put_user(mask, &sc->oldmask, Efault);
 	unsafe_put_user(current->thread.cr2, &sc->cr2, Efault);
 	return 0;
@@ -135,24 +128,17 @@ do {									\
 			(__u64 __user *)&(frame)->uc.uc_sigmask, \
 			label)
 
-/*
- * Set up a signal frame.
- */
+ 
 
-/* x86 ABI requires 16-byte alignment */
+ 
 #define FRAME_ALIGNMENT	16UL
 
 #define MAX_FRAME_PADDING	(FRAME_ALIGNMENT - 1)
 
-/*
- * Determine which stack to use..
- */
+ 
 static unsigned long align_sigframe(unsigned long sp)
 {
-	/*
-	 * Align the stack pointer according to the i386 ABI,
-	 * i.e. so that on function entry ((sp + 4) & 15) == 0.
-	 */
+	 
 	sp = ((sp + 4) & -FRAME_ALIGNMENT) - 4;
 	return sp;
 }
@@ -161,24 +147,20 @@ static void __user *
 get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size,
 	     void __user **fpstate)
 {
-	/* Default to using normal stack */
+	 
 	bool nested_altstack = on_sig_stack(regs->sp);
 	bool entering_altstack = false;
 	unsigned long math_size = 0;
 	unsigned long sp = regs->sp;
 	unsigned long buf_fx = 0;
 
-	/* redzone */
+	 
 	if (IS_ENABLED(CONFIG_X86_64))
 		sp -= 128;
 
-	/* This is the X/Open sanctioned signal stack switching.  */
+	 
 	if (ka->sa.sa_flags & SA_ONSTACK) {
-		/*
-		 * This checks nested_altstack via sas_ss_flags(). Sensible
-		 * programs use SS_AUTODISARM, which disables that check, and
-		 * programs that don't use SS_AUTODISARM get compatible.
-		 */
+		 
 		if (sas_ss_flags(sp) == 0) {
 			sp = current->sas_ss_sp + current->sas_ss_size;
 			entering_altstack = true;
@@ -188,7 +170,7 @@ get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size,
 		   regs->ss != __USER_DS &&
 		   !(ka->sa.sa_flags & SA_RESTORER) &&
 		   ka->sa.sa_restorer) {
-		/* This is the legacy signal stack switching. */
+		 
 		sp = (unsigned long) ka->sa.sa_restorer;
 		entering_altstack = true;
 	}
@@ -199,10 +181,7 @@ get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size,
 
 	sp = align_sigframe(sp - frame_size);
 
-	/*
-	 * If we are on the alternate signal stack and would overflow it, don't.
-	 * Return an always-bogus address instead so we will die with SIGSEGV.
-	 */
+	 
 	if (unlikely((nested_altstack || entering_altstack) &&
 		     !__on_sig_stack(sp))) {
 
@@ -213,7 +192,7 @@ get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size,
 		return (void __user *)-1L;
 	}
 
-	/* save i387 and extended state */
+	 
 	if (!copy_fpstate_to_sigframe(*fpstate, (void __user *)buf_fx, math_size))
 		return (void __user *)-1L;
 
@@ -225,9 +204,9 @@ static const struct {
 	u32 val;
 	u16 int80;
 } __attribute__((packed)) retcode = {
-	0xb858,		/* popl %eax; movl $..., %eax */
+	0xb858,		 
 	__NR_sigreturn,
-	0x80cd,		/* int $0x80 */
+	0x80cd,		 
 };
 
 static const struct {
@@ -236,9 +215,9 @@ static const struct {
 	u16 int80;
 	u8  pad;
 } __attribute__((packed)) rt_retcode = {
-	0xb8,		/* movl $..., %eax */
+	0xb8,		 
 	__NR_rt_sigreturn,
-	0x80cd,		/* int $0x80 */
+	0x80cd,		 
 	0
 };
 
@@ -266,20 +245,14 @@ __setup_frame(int sig, struct ksignal *ksig, sigset_t *set,
 	if (ksig->ka.sa.sa_flags & SA_RESTORER)
 		restorer = ksig->ka.sa.sa_restorer;
 
-	/* Set up to return from userspace.  */
+	 
 	unsafe_put_user(restorer, &frame->pretcode, Efault);
 
-	/*
-	 * This is popl %eax ; movl $__NR_sigreturn, %eax ; int $0x80
-	 *
-	 * WE DO NOT USE IT ANY MORE! It's only left here for historical
-	 * reasons and because gdb uses it as a signature to notice
-	 * signal handler stack frames.
-	 */
+	 
 	unsafe_put_user(*((u64 *)&retcode), (u64 *)frame->retcode, Efault);
 	user_access_end();
 
-	/* Set up registers for signal handler */
+	 
 	regs->sp = (unsigned long)frame;
 	regs->ip = (unsigned long)ksig->ka.sa.sa_handler;
 	regs->ax = (unsigned long)sig;
@@ -314,7 +287,7 @@ static int __setup_rt_frame(int sig, struct ksignal *ksig,
 	unsafe_put_user(&frame->info, &frame->pinfo, Efault);
 	unsafe_put_user(&frame->uc, &frame->puc, Efault);
 
-	/* Create the ucontext.  */
+	 
 	if (static_cpu_has(X86_FEATURE_XSAVE))
 		unsafe_put_user(UC_FP_XSTATE, &frame->uc.uc_flags, Efault);
 	else
@@ -322,20 +295,14 @@ static int __setup_rt_frame(int sig, struct ksignal *ksig,
 	unsafe_put_user(0, &frame->uc.uc_link, Efault);
 	unsafe_save_altstack(&frame->uc.uc_stack, regs->sp, Efault);
 
-	/* Set up to return from userspace.  */
+	 
 	restorer = current->mm->context.vdso +
 		vdso_image_32.sym___kernel_rt_sigreturn;
 	if (ksig->ka.sa.sa_flags & SA_RESTORER)
 		restorer = ksig->ka.sa.sa_restorer;
 	unsafe_put_user(restorer, &frame->pretcode, Efault);
 
-	/*
-	 * This is movl $__NR_rt_sigreturn, %ax ; int $0x80
-	 *
-	 * WE DO NOT USE IT ANY MORE! It's only left here for historical
-	 * reasons and because gdb uses it as a signature to notice
-	 * signal handler stack frames.
-	 */
+	 
 	unsafe_put_user(*((u64 *)&rt_retcode), (u64 *)frame->retcode, Efault);
 	unsafe_put_sigcontext(&frame->uc.uc_mcontext, fp, regs, set, Efault);
 	unsafe_put_sigmask(set, frame, Efault);
@@ -344,7 +311,7 @@ static int __setup_rt_frame(int sig, struct ksignal *ksig,
 	if (copy_siginfo_to_user(&frame->info, &ksig->info))
 		return -EFAULT;
 
-	/* Set up registers for signal handler */
+	 
 	regs->sp = (unsigned long)frame;
 	regs->ip = (unsigned long)ksig->ka.sa.sa_handler;
 	regs->ax = (unsigned long)sig;
@@ -371,9 +338,7 @@ static int x32_setup_rt_frame(struct ksignal *ksig,
 	return 0;
 }
 
-/*
- * Do a signal return; undo the signal stack.
- */
+ 
 SYSCALL_DEFINE0(sigreturn)
 {
 	struct pt_regs *regs = current_pt_regs();
@@ -390,10 +355,7 @@ SYSCALL_DEFINE0(sigreturn)
 
 	set_current_blocked(&set);
 
-	/*
-	 * x86_32 has no uc_flags bits relevant to restore_sigcontext.
-	 * Save a few cycles by skipping the __get_user.
-	 */
+	 
 	if (!restore_sigcontext(regs, &frame->sc, 0))
 		goto badframe;
 	return regs->ax;
@@ -434,38 +396,15 @@ badframe:
 	return 0;
 }
 
-/*
- * There are four different struct types for signal frame: sigframe_ia32,
- * rt_sigframe_ia32, rt_sigframe_x32, and rt_sigframe. Use the worst case
- * -- the largest size. It means the size for 64-bit apps is a bit more
- * than needed, but this keeps the code simple.
- */
+ 
 # define MAX_FRAME_SIGINFO_UCTXT_SIZE	sizeof(struct sigframe_ia32)
 
-/*
- * The FP state frame contains an XSAVE buffer which must be 64-byte aligned.
- * If a signal frame starts at an unaligned address, extra space is required.
- * This is the max alignment padding, conservatively.
- */
+ 
 #define MAX_XSAVE_PADDING	63UL
 
-/*
- * The frame data is composed of the following areas and laid out as:
- *
- * -------------------------
- * | alignment padding     |
- * -------------------------
- * | (f)xsave frame        |
- * -------------------------
- * | fsave header          |
- * -------------------------
- * | alignment padding     |
- * -------------------------
- * | siginfo + ucontext    |
- * -------------------------
- */
+ 
 
-/* max_frame_size tells userspace the worst case signal stack size. */
+ 
 static unsigned long __ro_after_init max_frame_size;
 static unsigned int __ro_after_init fpu_default_state_size;
 
@@ -477,7 +416,7 @@ void __init init_sigframe_size(void)
 
 	max_frame_size += fpu_default_state_size + MAX_XSAVE_PADDING;
 
-	/* Userspace expects an aligned size. */
+	 
 	max_frame_size = round_up(max_frame_size, FRAME_ALIGNMENT);
 
 	pr_info("max sigframe size: %lu\n", max_frame_size);
@@ -512,10 +451,10 @@ setup_rt_frame(struct ksignal *ksig, struct pt_regs *regs)
 	sigset_t *set = sigmask_to_save();
 	compat_sigset_t *cset = (compat_sigset_t *) set;
 
-	/* Perform fixup for the pre-signal frame. */
+	 
 	rseq_signal_deliver(ksig, regs);
 
-	/* Set up the stack frame */
+	 
 	if (is_ia32_frame(ksig)) {
 		if (ksig->ka.sa.sa_flags & SA_SIGINFO)
 			return ia32_setup_rt_frame(usig, ksig, cset, regs);
@@ -537,9 +476,9 @@ handle_signal(struct ksignal *ksig, struct pt_regs *regs)
 	if (v8086_mode(regs))
 		save_v86_state((struct kernel_vm86_regs *) regs, VM86_SIGNAL);
 
-	/* Are we from a system call? */
+	 
 	if (syscall_get_nr(current, regs) != -1) {
-		/* If so, check system call restarting.. */
+		 
 		switch (syscall_get_error(current, regs)) {
 		case -ERESTART_RESTARTBLOCK:
 		case -ERESTARTNOHAND:
@@ -559,31 +498,16 @@ handle_signal(struct ksignal *ksig, struct pt_regs *regs)
 		}
 	}
 
-	/*
-	 * If TF is set due to a debugger (TIF_FORCED_TF), clear TF now
-	 * so that register information in the sigcontext is correct and
-	 * then notify the tracer before entering the signal handler.
-	 */
+	 
 	stepping = test_thread_flag(TIF_SINGLESTEP);
 	if (stepping)
 		user_disable_single_step(current);
 
 	failed = (setup_rt_frame(ksig, regs) < 0);
 	if (!failed) {
-		/*
-		 * Clear the direction flag as per the ABI for function entry.
-		 *
-		 * Clear RF when entering the signal handler, because
-		 * it might disable possible debug exception from the
-		 * signal handler.
-		 *
-		 * Clear TF for the case when it wasn't set by debugger to
-		 * avoid the recursive send_sigtrap() in SIGTRAP handler.
-		 */
+		 
 		regs->flags &= ~(X86_EFLAGS_DF|X86_EFLAGS_RF|X86_EFLAGS_TF);
-		/*
-		 * Ensure the signal handler starts with the new fpu state.
-		 */
+		 
 		fpu__clear_user_states(fpu);
 	}
 	signal_setup_done(failed, ksig, stepping);
@@ -594,24 +518,20 @@ static inline unsigned long get_nr_restart_syscall(const struct pt_regs *regs)
 	return __NR_restart_syscall;
 }
 
-/*
- * Note that 'init' is a special process: it doesn't get signals it doesn't
- * want to handle. Thus you cannot kill init even with a SIGKILL even by
- * mistake.
- */
+ 
 void arch_do_signal_or_restart(struct pt_regs *regs)
 {
 	struct ksignal ksig;
 
 	if (get_signal(&ksig)) {
-		/* Whee! Actually deliver the signal.  */
+		 
 		handle_signal(&ksig, regs);
 		return;
 	}
 
-	/* Did we come from a system call? */
+	 
 	if (syscall_get_nr(current, regs) != -1) {
-		/* Restart the system call - no handlers present */
+		 
 		switch (syscall_get_error(current, regs)) {
 		case -ERESTARTNOHAND:
 		case -ERESTARTSYS:
@@ -627,77 +547,26 @@ void arch_do_signal_or_restart(struct pt_regs *regs)
 		}
 	}
 
-	/*
-	 * If there's no signal to deliver, we just put the saved sigmask
-	 * back.
-	 */
+	 
 	restore_saved_sigmask();
 }
 
+/* Stub: signal_fault not used externally */
 void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
 {
-	struct task_struct *me = current;
-
-	if (show_unhandled_signals && printk_ratelimit()) {
-		printk("%s"
-		       "%s[%d] bad frame in %s frame:%p ip:%lx sp:%lx orax:%lx",
-		       task_pid_nr(current) > 1 ? KERN_INFO : KERN_EMERG,
-		       me->comm, me->pid, where, frame,
-		       regs->ip, regs->sp, regs->orig_ax);
-		print_vma_addr(KERN_CONT " in ", regs->ip);
-		pr_cont("\n");
-	}
-
 	force_sig(SIGSEGV);
 }
 
-static bool strict_sigaltstack_size __ro_after_init = false;
-
+/* Stub: strict_sas_size cmdline option not needed for minimal kernel */
 static int __init strict_sas_size(char *arg)
 {
-	return kstrtobool(arg, &strict_sigaltstack_size);
+	return 1;
 }
 __setup("strict_sas_size", strict_sas_size);
 
-/*
- * MINSIGSTKSZ is 2048 and can't be changed despite the fact that AVX512
- * exceeds that size already. As such programs might never use the
- * sigaltstack they just continued to work. While always checking against
- * the real size would be correct, this might be considered a regression.
- *
- * Therefore avoid the sanity check, unless enforced by kernel
- * configuration or command line option.
- *
- * When dynamic FPU features are supported, the check is also enforced when
- * the task has permissions to use dynamic features. Tasks which have no
- * permission are checked against the size of the non-dynamic feature set
- * if strict checking is enabled. This avoids forcing all tasks on the
- * system to allocate large sigaltstacks even if they are never going
- * to use a dynamic feature. As this is serialized via sighand::siglock
- * any permission request for a dynamic feature either happened already
- * or will see the newly install sigaltstack size in the permission checks.
- */
+/* Stub: sigaltstack_size_valid not used in minimal kernel */
 bool sigaltstack_size_valid(size_t ss_size)
 {
-	unsigned long fsize = max_frame_size - fpu_default_state_size;
-	u64 mask;
-
-	lockdep_assert_held(&current->sighand->siglock);
-
-	if (!fpu_state_size_dynamic() && !strict_sigaltstack_size)
-		return true;
-
-	fsize += current->group_leader->thread.fpu.perm.__user_state_size;
-	if (likely(ss_size > fsize))
-		return true;
-
-	if (strict_sigaltstack_size)
-		return ss_size > fsize;
-
-	mask = current->group_leader->thread.fpu.perm.__state_perm;
-	if (mask & XFEATURE_MASK_USER_DYNAMIC)
-		return ss_size > fsize;
-
 	return true;
 }
 

@@ -1,3 +1,82 @@
+--- 2025-11-30 01:10 ---
+CONTINUING SESSION: LOC reduction
+
+**Progress (continued 3):**
+- 6067b528: Remove unused vmalloc functions (~52 LOC)
+  - register_vmap_purge_notifier, unregister_vmap_purge_notifier
+  - vfree_atomic, vmalloc_huge, vmalloc_user
+  - vmalloc_node, vzalloc_node, vmalloc_32, vmalloc_32_user
+  - vread, remap_vmalloc_range_partial, remap_vmalloc_range
+
+**Session Total:** 333 LOC removed (197,428 -> 197,095)
+**Binary size:** 244KB
+
+---
+
+--- 2025-11-30 01:05 ---
+CONTINUING SESSION: LOC reduction
+
+**Progress (continued 2):**
+- 6b5f90c8: Remove unused memory management functions (~48 LOC)
+  - vm_insert_pages, vm_insert_page, vm_map_pages, vm_map_pages_zero
+  - apply_to_page_range, apply_to_existing_page_range
+  - __access_remote_vm, access_remote_vm, access_process_vm
+  - print_vma_addr
+
+**Session Total:** 281 LOC removed (197,428 -> 197,147)
+**Binary size:** 244KB
+
+---
+
+--- 2025-11-30 01:00 ---
+CONTINUING SESSION: LOC reduction
+
+**Progress (continued):**
+- d3e3756b: Remove unused LRU and swap functions (~17 LOC)
+  - lru_cache_disable, lru_add_drain_cpu_zone, lru_add_drain_all
+  - deactivate_page, mark_page_lazyfree
+
+- 8c610eb6: Remove unused page_frag functions (~23 LOC)
+  - __page_frag_cache_drain, page_frag_alloc_align, page_frag_alloc, page_frag_free
+
+- ed5067de: Remove unused fork/mm functions (~9 LOC)
+  - nr_processes, mmput_async, mm_access
+
+**Session Total:** 233 LOC removed (197,428 -> 197,195)
+**Binary size:** 244KB
+
+---
+
+--- 2025-11-30 00:49 ---
+NEW SESSION: Continue LOC reduction
+
+**Status at session start:**
+- LOC (C+H only): 197,428
+- Build: PASSES
+- make vm: PASSES, prints "Hello, World!"
+- Binary size: 245KB
+
+**Progress:**
+- c78a8a96: Remove unused MM globals and sysctl handlers (~39 LOC)
+  - totalcma_pages, percpu_pagelist_high_fraction, sysctl_lowmem_reserve_ratio
+  - migratetype_names array, watermark_boost_factor
+  - Related sysctl handlers and extern declarations
+
+- 84aca641: Remove unused IRQ and RCU functions (~106 LOC)
+  - irq_set_vcpu_affinity, irq_set_irq_wake, irq_set_parent
+  - irq_wake_thread, request_any_context_irq, request_nmi
+  - All percpu NMI/IRQ functions (enable/disable/free/setup)
+  - rcu_expedited, rcu_normal extern declarations
+
+- 5531e829: Remove unused sched functions (~39 LOC)
+  - __cond_resched_rwlock_read/write functions and macros
+  - sched_set_stop_task extern declaration
+
+**Session Total:** 184 LOC removed (197,428 -> 197,244)
+**Binary size:** 244KB
+
+---
+
 --- 2025-11-29 23:29 ---
 NEW SESSION: Continue aggressive LOC reduction
 

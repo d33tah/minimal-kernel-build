@@ -154,16 +154,10 @@ static inline void cgroup_writeback_umount(void)
 }
 
 
- 
-void laptop_io_completion(struct backing_dev_info *info);
-void laptop_sync_completion(void);
-void laptop_mode_timer_fn(struct timer_list *t);
-bool node_dirty_ok(struct pglist_data *pgdat);
-int wb_domain_init(struct wb_domain *dom, gfp_t gfp);
-
 extern struct wb_domain global_wb_domain;
 
- 
+void laptop_mode_timer_fn(struct timer_list *t);
+
 extern unsigned int dirty_writeback_interval;
 extern unsigned int dirty_expire_interval;
 extern unsigned int dirtytime_expire_interval;
@@ -172,27 +166,13 @@ extern int laptop_mode;
 int dirtytime_interval_handler(struct ctl_table *table, int write,
 		void *buffer, size_t *lenp, loff_t *ppos);
 
-void global_dirty_limits(unsigned long *pbackground, unsigned long *pdirty);
-unsigned long wb_calc_thresh(struct bdi_writeback *wb, unsigned long thresh);
-
 void wb_update_bandwidth(struct bdi_writeback *wb);
 void balance_dirty_pages_ratelimited(struct address_space *mapping);
-bool wb_over_bg_thresh(struct bdi_writeback *wb);
 
 typedef int (*writepage_t)(struct page *page, struct writeback_control *wbc,
 				void *data);
 
-int generic_writepages(struct address_space *mapping,
-		       struct writeback_control *wbc);
-void tag_pages_for_writeback(struct address_space *mapping,
-			     pgoff_t start, pgoff_t end);
-int write_cache_pages(struct address_space *mapping,
-		      struct writeback_control *wbc, writepage_t writepage,
-		      void *data);
 int do_writepages(struct address_space *mapping, struct writeback_control *wbc);
-void writeback_set_ratelimit(void);
-void tag_pages_for_writeback(struct address_space *mapping,
-			     pgoff_t start, pgoff_t end);
 
 bool filemap_dirty_folio(struct address_space *mapping, struct folio *folio);
 void folio_account_redirty(struct folio *folio);

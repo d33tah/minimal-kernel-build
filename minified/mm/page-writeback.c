@@ -34,24 +34,13 @@ unsigned int dirty_writeback_interval = 5 * 100;
 bool __folio_end_writeback(struct folio *folio) { return true; }
 bool __folio_start_writeback(struct folio *folio, bool keep_write) { return true; }
 
-void global_dirty_limits(unsigned long *pbackground, unsigned long *pdirty) {}
-bool node_dirty_ok(struct pglist_data *pgdat) { return true; }
 void wb_writeout_inc(struct bdi_writeback *wb) {}
-int wb_domain_init(struct wb_domain *dom, gfp_t gfp) { return 0; }
 int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio) { return 0; }
 int bdi_set_max_ratio(struct backing_dev_info *bdi, unsigned max_ratio) { return 0; }
-unsigned long wb_calc_thresh(struct bdi_writeback *wb, unsigned long thresh) { return 0; }
 void wb_update_bandwidth(struct bdi_writeback *wb) {}
 void balance_dirty_pages_ratelimited(struct address_space *mapping) {}
-bool wb_over_bg_thresh(struct bdi_writeback *wb) { return false; }
-void laptop_mode_timer_fn(struct timer_list *t) {}
-void laptop_io_completion(struct backing_dev_info *info) {}
-void laptop_sync_completion(void) {}
-void writeback_set_ratelimit(void) {}
 void __init page_writeback_init(void) {}
-void tag_pages_for_writeback(struct address_space *mapping, pgoff_t start, pgoff_t end) {}
-int write_cache_pages(struct address_space *mapping, struct writeback_control *wbc, writepage_t writepage, void *data) { return 0; }
-int generic_writepages(struct address_space *mapping, struct writeback_control *wbc) { return 0; }
+void laptop_mode_timer_fn(struct timer_list *t) {}
 int do_writepages(struct address_space *mapping, struct writeback_control *wbc) { return 0; }
 int folio_write_one(struct folio *folio) { return 0; }
 bool noop_dirty_folio(struct address_space *mapping, struct folio *folio) { return true; }

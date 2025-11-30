@@ -1,5 +1,34 @@
---- 2025-11-30 07:16 ---
+--- 2025-11-30 14:31 ---
 NEW SESSION: Continue LOC reduction toward 100K
+
+**Status at session start:**
+- LOC (C+H only): 188,423 (after mrproper)
+- Build: PASSES
+- make vm: PASSES, prints "Hello, World!Still alive"
+- Binary size: 244KB
+
+**Goal:** Reduce toward 100K LOC (~88K to go)
+
+**Strategy:**
+- Target largest header files with unused code
+- Focus on msr-index.h (989 LOC) - only ~25 MSR defines used
+- Look for more stub functions that can be removed
+
+**Progress:**
+- Trim unused stub functions from multiple headers:
+  - dmi.h: 65->43 LOC (~22 LOC removed) - removed unused dmi_check_system, dmi_get_system_info, etc.
+  - cpufreq.h: 57->26 LOC (~31 LOC removed) - removed cpufreq_get, cpufreq_quick_get*, cpufreq_boost_*, etc.
+  - efi.h: 146->121 LOC (~25 LOC removed) - removed efi_soft_reserve_enabled, efi_reboot, etc.
+  - elf.h: 98->73 LOC (~25 LOC removed) - removed elf_coredump_extra_notes_*, arch_parse_elf_property
+  - dmar.h: 16->14 LOC (~2 LOC removed) - removed dmar_device_add/remove, dmar_platform_optin
+  - cpu.h: 99->89 LOC (~10 LOC removed) - removed add_cpu, remove_cpu, cpu_smt_*, cpuhp_smt_*
+
+**Current LOC:** 188,312 (after mrproper) - reduced ~111 LOC this session so far
+
+---
+
+--- 2025-11-30 07:16 ---
+PREVIOUS SESSION: Continue LOC reduction toward 100K
 
 **Status at session start:**
 - LOC (C+H only): 188,719 (after mrproper)

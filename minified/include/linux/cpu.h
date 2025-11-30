@@ -41,7 +41,7 @@ static inline void cpu_maps_update_done(void)
 {
 }
 
-static inline int add_cpu(unsigned int cpu) { return 0;}
+/* add_cpu removed - unused */
 
 extern struct bus_type cpu_subsys;
 
@@ -53,9 +53,7 @@ static inline void cpus_read_unlock(void) { }
 static inline int  cpus_read_trylock(void) { return true; }
 static inline void lockdep_assert_cpus_held(void) { }
 static inline void cpu_hotplug_disable(void) { }
-static inline int remove_cpu(unsigned int cpu) { return -EPERM; }
-
-static inline int suspend_disable_secondary_cpus(void) { return 0; }
+/* remove_cpu, suspend_disable_secondary_cpus removed - unused */
 
 void __noreturn cpu_startup_entry(enum cpuhp_state state);
 
@@ -84,14 +82,7 @@ static inline void play_idle(unsigned long duration_us)
 
 static inline void cpuhp_report_idle_dead(void) { }
 
-enum cpuhp_smt_control {
-	CPU_SMT_NOT_IMPLEMENTED,
-};
-
-# define cpu_smt_control		(CPU_SMT_NOT_IMPLEMENTED)
-static inline bool cpu_smt_possible(void) { return false; }
-static inline int cpuhp_smt_enable(void) { return 0; }
-static inline int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval) { return 0; }
+/* cpu_smt_control, cpu_smt_possible, cpuhp_smt_enable, cpuhp_smt_disable removed - unused */
 
 extern bool cpu_mitigations_off(void);
 extern bool cpu_mitigations_auto_nosmt(void);

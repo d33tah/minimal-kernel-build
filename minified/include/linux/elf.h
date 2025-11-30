@@ -59,34 +59,9 @@ extern Elf64_Dyn _DYNAMIC [];
 
 #endif
 
- 
-struct file;
-struct coredump_params;
-
-#ifndef ARCH_HAVE_EXTRA_ELF_NOTES
-static inline int elf_coredump_extra_notes_size(void) { return 0; }
-static inline int elf_coredump_extra_notes_write(struct coredump_params *cprm) { return 0; }
-#else
-extern int elf_coredump_extra_notes_size(void);
-extern int elf_coredump_extra_notes_write(struct coredump_params *cprm);
-#endif
-
- 
-struct gnu_property;
-
+/* elf_coredump_extra_notes_* removed - unused */
+/* arch_parse_elf_property removed - unused */
 struct arch_elf_state;
-
-#ifndef CONFIG_ARCH_USE_GNU_PROPERTY
-static inline int arch_parse_elf_property(u32 type, const void *data,
-					  size_t datasz, bool compat,
-					  struct arch_elf_state *arch)
-{
-	return 0;
-}
-#else
-extern int arch_parse_elf_property(u32 type, const void *data, size_t datasz,
-				   bool compat, struct arch_elf_state *arch);
-#endif
 
 static inline int arch_elf_adjust_prot(int prot,
 				       const struct arch_elf_state *state,

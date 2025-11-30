@@ -99,7 +99,7 @@ static inline void efi_find_mirror(void) {}
 static inline void efi_esrt_init(void) {}
 static inline void efi_mokvar_table_init(void) {}
 static inline void efi_reserve_boot_services(void) {}
-static inline void efi_free_boot_services(void) {}
+/* efi_free_boot_services removed - unused */
 static inline int efi_memblock_x86_reserve_range(void) { return 0; }
 
 static inline int efi_mem_type(unsigned long phys_addr)
@@ -112,35 +112,10 @@ static inline u64 efi_mem_attributes(unsigned long phys_addr)
 	return 0;
 }
 
-static inline bool efi_soft_reserve_enabled(void)
-{
-	return false;
-}
+/* efi_soft_reserve_enabled, efi_reboot, efi_poweroff_required removed - unused */
+/* efi_status_to_err, efi_capsule_pending, efi_crash_gracefully_on_page_fault removed - unused */
 
-static inline void
-efi_reboot(enum reboot_mode reboot_mode, const char *__unused) {}
-
-static inline bool efi_poweroff_required(void)
-{
-	return false;
-}
-
-static inline int efi_status_to_err(efi_status_t status)
-{
-	return -EIO;
-}
-
-static inline bool efi_capsule_pending(int *reset_type)
-{
-	return false;
-}
-
-static inline void efi_crash_gracefully_on_page_fault(unsigned long phys_addr) {}
-
- 
 static inline void parse_efi_setup(u64 phys_addr, u32 data_len) {}
-
- 
-static inline void efifb_setup_from_dmi(struct screen_info *si, const char *opt) {}
+/* efifb_setup_from_dmi removed - unused */
 
 #endif  

@@ -86,19 +86,6 @@ int devres_release_group(struct device *dev, void *id)
 	return 0;
 }
 
-int devm_add_action(struct device *dev, void (*action)(void *), void *data)
-{
-	return 0;
-}
-
-void devm_remove_action(struct device *dev, void (*action)(void *), void *data)
-{
-}
-
-void devm_release_action(struct device *dev, void (*action)(void *), void *data)
-{
-}
-
 void *devm_kmalloc(struct device *dev, size_t size, gfp_t gfp)
 {
 	return kmalloc(size, gfp);

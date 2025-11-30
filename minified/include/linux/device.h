@@ -167,23 +167,6 @@ void __iomem *devm_of_iomap(struct device *dev,
 			    struct device_node *node, int index,
 			    resource_size_t *size);
 
-
-int devm_add_action(struct device *dev, void (*action)(void *), void *data);
-void devm_remove_action(struct device *dev, void (*action)(void *), void *data);
-void devm_release_action(struct device *dev, void (*action)(void *), void *data);
-
-static inline int devm_add_action_or_reset(struct device *dev,
-					   void (*action)(void *), void *data)
-{
-	int ret;
-
-	ret = devm_add_action(dev, action, data);
-	if (ret)
-		action(data);
-
-	return ret;
-}
-
 struct device_dma_parameters {
 	 
 	unsigned int max_segment_size;

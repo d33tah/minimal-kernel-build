@@ -25,9 +25,17 @@ NEW SESSION: Continue aggressive LOC reduction
 - 44e12eb3: Remove unused memblock mark/clear stubs (~16 LOC)
 - 453d04e5: Remove unused page-writeback stubs (~31 LOC)
   - global_dirty_limits, node_dirty_ok, wb_domain_init, wb_calc_thresh, etc.
+- 9a271849: Remove unused cdev and close_fd stubs (~19 LOC)
+  - cdev_set_parent, cdev_device_add, cdev_device_del, close_fd_get_file
 
-**Session Total:** ~170 LOC removed (179,080 -> 178,948)
+**Session Total:** ~189 LOC removed (179,080 -> 178,938)
 **Binary size:** 244KB
+
+**Session End Notes:**
+- Strategy focused on removing small unused stub functions and their declarations
+- Still ~79K LOC to go before reaching 100K target
+- Many more stub functions remaining that may be unused
+- Consider looking at larger subsystem simplifications next
 
 ---
 

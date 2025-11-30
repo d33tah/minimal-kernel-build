@@ -23,8 +23,10 @@ NEW SESSION: Continue aggressive LOC reduction
 - 24e7a71b: Remove unused fs functions: mapping_map_writable, get_max_files, super_setup_bdi* (~30 LOC)
 - c18acf1c: Remove unused devm_*_action functions (~30 LOC)
 - 44e12eb3: Remove unused memblock mark/clear stubs (~16 LOC)
+- 453d04e5: Remove unused page-writeback stubs (~31 LOC)
+  - global_dirty_limits, node_dirty_ok, wb_domain_init, wb_calc_thresh, etc.
 
-**Session Total:** ~139 LOC removed (179,080 -> 178,976)
+**Session Total:** ~170 LOC removed (179,080 -> 178,948)
 **Binary size:** 244KB
 
 ---

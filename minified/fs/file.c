@@ -558,12 +558,6 @@ int __close_range(unsigned fd, unsigned max_fd, unsigned int flags)
 	return -ENOSYS;
 }
 
-/* Stub: __close_fd_get_file not used in minimal kernel */
-struct file *__close_fd_get_file(unsigned int fd) { return NULL; }
-
-/* Stub: close_fd_get_file not used in minimal kernel */
-struct file *close_fd_get_file(unsigned int fd) { return NULL; }
-
 void do_close_on_exec(struct files_struct *files)
 {
 	unsigned i;

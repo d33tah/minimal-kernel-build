@@ -398,15 +398,6 @@ int cdev_add(struct cdev *p, dev_t dev, unsigned count)
 	return 0;
 }
 
-/* Stub: cdev_set_parent not called externally */
-void cdev_set_parent(struct cdev *p, struct kobject *kobj) { }
-
-/* Stub: cdev_device_add not called externally */
-int cdev_device_add(struct cdev *cdev, struct device *dev) { return 0; }
-
-/* Stub: cdev_device_del not called externally */
-void cdev_device_del(struct cdev *cdev, struct device *dev) { }
-
 static void cdev_unmap(dev_t dev, unsigned count)
 {
 	kobj_unmap(cdev_map, dev, count);

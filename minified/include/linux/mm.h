@@ -361,20 +361,6 @@ static inline bool vma_is_anonymous(struct vm_area_struct *vma)
 	return !vma->vm_ops;
 }
 
-static inline bool vma_is_temporary_stack(struct vm_area_struct *vma)
-{
-	int maybe_stack = vma->vm_flags & (VM_GROWSDOWN | VM_GROWSUP);
-
-	if (!maybe_stack)
-		return false;
-
-	if ((vma->vm_flags & VM_STACK_INCOMPLETE_SETUP) ==
-						VM_STACK_INCOMPLETE_SETUP)
-		return true;
-
-	return false;
-}
-
 static inline bool vma_is_foreign(struct vm_area_struct *vma)
 {
 	if (!current->mm)
@@ -691,24 +677,13 @@ static inline int folio_nid(const struct folio *folio)
 
 static inline int page_cpupid_xchg_last(struct page *page, int cpupid)
 {
-	return page_to_nid(page); 
-}
-
-static inline int page_cpupid_last(struct page *page)
-{
-	return page_to_nid(page); 
+	return page_to_nid(page);
 }
 
 static inline void page_cpupid_reset_last(struct page *page)
 {
 }
 
-static inline u8 page_kasan_tag(const struct page *page)
-{
-	return 0xff;
-}
-
-static inline void page_kasan_tag_set(struct page *page, u8 tag) { }
 static inline void page_kasan_tag_reset(struct page *page) { }
 
 static inline struct zone *page_zone(const struct page *page)
@@ -830,21 +805,6 @@ static inline int arch_make_page_accessible(struct page *page)
 }
 #endif
 
-#ifndef HAVE_ARCH_MAKE_FOLIO_ACCESSIBLE
-static inline int arch_make_folio_accessible(struct folio *folio)
-{
-	int ret;
-	long i, nr = folio_nr_pages(folio);
-
-	for (i = 0; i < nr; i++) {
-		ret = arch_make_page_accessible(folio_page(folio, i));
-		if (ret)
-			break;
-	}
-
-	return ret;
-}
-#endif
 
 #include <linux/vmstat.h>
 
@@ -1723,12 +1683,6 @@ static inline struct vm_area_struct *find_exact_vma(struct mm_struct *mm,
 	return vma;
 }
 
-static inline bool range_in_vma(struct vm_area_struct *vma,
-				unsigned long start, unsigned long end)
-{
-	return (vma && vma->vm_start <= start && end <= vma->vm_end);
-}
-
 pgprot_t vm_get_page_prot(unsigned long vm_flags);
 void vma_set_page_prot(struct vm_area_struct *vma);
 
@@ -1750,15 +1704,6 @@ vm_fault_t vmf_insert_mixed_prot(struct vm_area_struct *vma, unsigned long addr,
 vm_fault_t vmf_insert_mixed_mkwrite(struct vm_area_struct *vma,
 		unsigned long addr, pfn_t pfn);
 int vm_iomap_memory(struct vm_area_struct *vma, phys_addr_t start, unsigned long len);
-
-#ifndef io_remap_pfn_range
-static inline int io_remap_pfn_range(struct vm_area_struct *vma,
-				     unsigned long addr, unsigned long pfn,
-				     unsigned long size, pgprot_t prot)
-{
-	return remap_pfn_range(vma, addr, pfn, size, pgprot_decrypted(prot));
-}
-#endif
 
 struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
 			 unsigned int foll_flags);
@@ -1808,8 +1753,6 @@ static inline bool gup_must_unshare(unsigned int flags, struct page *page)
 typedef int (*pte_fn_t)(pte_t *pte, unsigned long addr, void *data);
 
 extern void init_mem_debugging_and_hardening(void);
-static inline void kernel_poison_pages(struct page *page, int numpages) { }
-static inline void kernel_unpoison_pages(struct page *page, int numpages) { }
 
 DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
 static inline bool want_init_on_alloc(gfp_t flags)
@@ -1843,9 +1786,6 @@ static inline bool debug_pagealloc_enabled_static(void)
 
 	return static_branch_unlikely(&_debug_pagealloc_enabled);
 }
-
-static inline void debug_pagealloc_map_pages(struct page *page, int numpages) {}
-static inline void debug_pagealloc_unmap_pages(struct page *page, int numpages) {}
 
 #ifdef __HAVE_ARCH_GATE_AREA
 extern struct vm_area_struct *get_gate_vma(struct mm_struct *mm);
@@ -1894,13 +1834,6 @@ void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
 
 /* memory failure not used in minimal kernel */
 enum mf_flags { MF_FLAGS_LAST };
-
-#ifndef arch_is_platform_page
-static inline bool arch_is_platform_page(u64 paddr)
-{
-	return false;
-}
-#endif
 
 /* mf_result - reduced for minimal kernel */
 enum mf_result { MF_RESULT_LAST };

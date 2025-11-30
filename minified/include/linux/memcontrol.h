@@ -1,5 +1,4 @@
- 
- 
+/* Minimal memcontrol.h - stub for CONFIG_MEMCG disabled */
 
 #ifndef _LINUX_MEMCONTROL_H
 #define _LINUX_MEMCONTROL_H
@@ -7,9 +6,7 @@
 #include <linux/vm_event_item.h>
 #include <linux/hardirq.h>
 #include <linux/jump_label.h>
-
 #include <linux/vmpressure.h>
-
 #include <linux/mm.h>
 #include <linux/vmstat.h>
 #include <linux/writeback.h>
@@ -21,17 +18,14 @@ struct page;
 struct mm_struct;
 struct kmem_cache;
 
- 
 enum memcg_stat_item {
 	MEMCG_VMALLOC = NR_VM_NODE_STAT_ITEMS,
 	MEMCG_NR_STAT,
 };
 
-/* memcg_memory_event - reduced for minimal kernel */
 enum memcg_memory_event { MEMCG_NR_MEMORY_EVENTS };
 
 struct mem_cgroup_reclaim_cookie;
-
 
 #define MEM_CGROUP_ID_SHIFT	0
 #define MEM_CGROUP_ID_MAX	0
@@ -67,22 +61,9 @@ static inline bool PageMemcgKmem(struct page *page)
 	return false;
 }
 
-static inline bool mem_cgroup_is_root(struct mem_cgroup *memcg)
-{
-	return true;
-}
-
 static inline bool mem_cgroup_disabled(void)
 {
 	return true;
-}
-
-static inline void mem_cgroup_protection(struct mem_cgroup *root,
-					 struct mem_cgroup *memcg,
-					 unsigned long *min,
-					 unsigned long *low)
-{
-	*min = *low = 0;
 }
 
 static inline int mem_cgroup_charge(struct folio *folio,
@@ -91,25 +72,11 @@ static inline int mem_cgroup_charge(struct folio *folio,
 	return 0;
 }
 
-static inline int mem_cgroup_swapin_charge_page(struct page *page,
-			struct mm_struct *mm, gfp_t gfp, swp_entry_t entry)
-{
-	return 0;
-}
-
-static inline void mem_cgroup_swapin_uncharge_swap(swp_entry_t entry)
-{
-}
-
 static inline void mem_cgroup_uncharge(struct folio *folio)
 {
 }
 
 static inline void mem_cgroup_uncharge_list(struct list_head *page_list)
-{
-}
-
-static inline void mem_cgroup_migrate(struct folio *old, struct folio *new)
 {
 }
 
@@ -135,12 +102,6 @@ static inline struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *memcg)
 	return NULL;
 }
 
-static inline bool mm_match_cgroup(struct mm_struct *mm,
-		struct mem_cgroup *memcg)
-{
-	return true;
-}
-
 static inline struct mem_cgroup *get_mem_cgroup_from_mm(struct mm_struct *mm)
 {
 	return NULL;
@@ -152,18 +113,9 @@ struct mem_cgroup *mem_cgroup_from_css(struct cgroup_subsys_state *css)
 	return NULL;
 }
 
-static inline void obj_cgroup_put(struct obj_cgroup *objcg)
-{
-}
-
-static inline void mem_cgroup_put(struct mem_cgroup *memcg)
-{
-}
-
 static inline struct lruvec *folio_lruvec_lock(struct folio *folio)
 {
 	struct pglist_data *pgdat = folio_pgdat(folio);
-
 	spin_lock(&pgdat->__lruvec.lru_lock);
 	return &pgdat->__lruvec;
 }
@@ -171,7 +123,6 @@ static inline struct lruvec *folio_lruvec_lock(struct folio *folio)
 static inline struct lruvec *folio_lruvec_lock_irq(struct folio *folio)
 {
 	struct pglist_data *pgdat = folio_pgdat(folio);
-
 	spin_lock_irq(&pgdat->__lruvec.lru_lock);
 	return &pgdat->__lruvec;
 }
@@ -180,7 +131,6 @@ static inline struct lruvec *folio_lruvec_lock_irqsave(struct folio *folio,
 		unsigned long *flagsp)
 {
 	struct pglist_data *pgdat = folio_pgdat(folio);
-
 	spin_lock_irqsave(&pgdat->__lruvec.lru_lock, *flagsp);
 	return &pgdat->__lruvec;
 }
@@ -193,42 +143,9 @@ mem_cgroup_iter(struct mem_cgroup *root,
 	return NULL;
 }
 
-static inline void mem_cgroup_iter_break(struct mem_cgroup *root,
-					 struct mem_cgroup *prev)
-{
-}
-
-static inline int mem_cgroup_scan_tasks(struct mem_cgroup *memcg,
-		int (*fn)(struct task_struct *, void *), void *arg)
-{
-	return 0;
-}
-
-static inline unsigned short mem_cgroup_id(struct mem_cgroup *memcg)
-{
-	return 0;
-}
-
-static inline struct mem_cgroup *mem_cgroup_from_id(unsigned short id)
-{
-	WARN_ON_ONCE(id);
-	 
-	return NULL;
-}
-
-static inline struct mem_cgroup *mem_cgroup_from_seq(struct seq_file *m)
-{
-	return NULL;
-}
-
 static inline struct mem_cgroup *lruvec_memcg(struct lruvec *lruvec)
 {
 	return NULL;
-}
-
-static inline bool mem_cgroup_online(struct mem_cgroup *memcg)
-{
-	return true;
 }
 
 static inline
@@ -236,26 +153,6 @@ unsigned long mem_cgroup_get_zone_lru_size(struct lruvec *lruvec,
 		enum lru_list lru, int zone_idx)
 {
 	return 0;
-}
-
-static inline unsigned long mem_cgroup_get_max(struct mem_cgroup *memcg)
-{
-	return 0;
-}
-
-static inline unsigned long mem_cgroup_size(struct mem_cgroup *memcg)
-{
-	return 0;
-}
-
-static inline void
-mem_cgroup_print_oom_context(struct mem_cgroup *memcg, struct task_struct *p)
-{
-}
-
-static inline void
-mem_cgroup_print_oom_meminfo(struct mem_cgroup *memcg)
-{
 }
 
 static inline void lock_page_memcg(struct page *page)
@@ -286,11 +183,6 @@ static inline void mem_cgroup_exit_user_fault(void)
 {
 }
 
-static inline bool task_in_memcg_oom(struct task_struct *p)
-{
-	return false;
-}
-
 static inline bool mem_cgroup_oom_synchronize(bool wait)
 {
 	return false;
@@ -302,30 +194,16 @@ static inline struct mem_cgroup *mem_cgroup_get_oom_group(
 	return NULL;
 }
 
-static inline void mem_cgroup_print_oom_group(struct mem_cgroup *memcg)
+static inline void __mod_memcg_state(struct mem_cgroup *memcg, int idx, int nr)
 {
 }
 
-static inline void __mod_memcg_state(struct mem_cgroup *memcg,
-				     int idx,
-				     int nr)
+static inline void mod_memcg_state(struct mem_cgroup *memcg, int idx, int nr)
 {
 }
 
-static inline void mod_memcg_state(struct mem_cgroup *memcg,
-				   int idx,
-				   int nr)
+static inline void mod_memcg_page_state(struct page *page, int idx, int val)
 {
-}
-
-static inline void mod_memcg_page_state(struct page *page,
-					int idx, int val)
-{
-}
-
-static inline unsigned long memcg_page_state(struct mem_cgroup *memcg, int idx)
-{
-	return 0;
 }
 
 static inline unsigned long lruvec_page_state(struct lruvec *lruvec,
@@ -340,14 +218,6 @@ static inline unsigned long lruvec_page_state_local(struct lruvec *lruvec,
 	return node_page_state(lruvec_pgdat(lruvec), idx);
 }
 
-static inline void mem_cgroup_flush_stats(void)
-{
-}
-
-static inline void mem_cgroup_flush_stats_delayed(void)
-{
-}
-
 static inline void __mod_memcg_lruvec_state(struct lruvec *lruvec,
 					    enum node_stat_item idx, int val)
 {
@@ -357,7 +227,6 @@ static inline void __mod_lruvec_kmem_state(void *p, enum node_stat_item idx,
 					   int val)
 {
 	struct page *page = virt_to_head_page(p);
-
 	__mod_node_page_state(page_pgdat(page), idx, val);
 }
 
@@ -365,34 +234,16 @@ static inline void mod_lruvec_kmem_state(void *p, enum node_stat_item idx,
 					 int val)
 {
 	struct page *page = virt_to_head_page(p);
-
 	mod_node_page_state(page_pgdat(page), idx, val);
 }
 
 static inline void count_memcg_events(struct mem_cgroup *memcg,
-				      enum vm_event_item idx,
-				      unsigned long count)
+				      enum vm_event_item idx, unsigned long count)
 {
 }
 
 static inline void __count_memcg_events(struct mem_cgroup *memcg,
-					enum vm_event_item idx,
-					unsigned long count)
-{
-}
-
-static inline void count_memcg_page_event(struct page *page,
-					  int idx)
-{
-}
-
-static inline void count_memcg_folio_events(struct folio *folio,
-		enum vm_event_item idx, unsigned long nr)
-{
-}
-
-static inline
-void count_memcg_event_mm(struct mm_struct *mm, enum vm_event_item idx)
+					enum vm_event_item idx, unsigned long count)
 {
 }
 
@@ -421,7 +272,6 @@ static inline void __dec_lruvec_kmem_state(void *p, enum node_stat_item idx)
 static inline struct lruvec *parent_lruvec(struct lruvec *lruvec)
 {
 	struct mem_cgroup *memcg;
-
 	memcg = lruvec_memcg(lruvec);
 	if (!memcg)
 		return NULL;
@@ -447,7 +297,6 @@ static inline void unlock_page_lruvec_irqrestore(struct lruvec *lruvec,
 	spin_unlock_irqrestore(&lruvec->lru_lock, flags);
 }
 
- 
 static inline bool folio_matches_lruvec(struct folio *folio,
 		struct lruvec *lruvec)
 {
@@ -455,69 +304,38 @@ static inline bool folio_matches_lruvec(struct folio *folio,
 	       lruvec_memcg(lruvec) == folio_memcg(folio);
 }
 
- 
 static inline struct lruvec *folio_lruvec_relock_irq(struct folio *folio,
 		struct lruvec *locked_lruvec)
 {
 	if (locked_lruvec) {
 		if (folio_matches_lruvec(folio, locked_lruvec))
 			return locked_lruvec;
-
 		unlock_page_lruvec_irq(locked_lruvec);
 	}
-
 	return folio_lruvec_lock_irq(folio);
 }
 
- 
 static inline struct lruvec *folio_lruvec_relock_irqsave(struct folio *folio,
 		struct lruvec *locked_lruvec, unsigned long *flags)
 {
 	if (locked_lruvec) {
 		if (folio_matches_lruvec(folio, locked_lruvec))
 			return locked_lruvec;
-
 		unlock_page_lruvec_irqrestore(locked_lruvec, *flags);
 	}
-
 	return folio_lruvec_lock_irqsave(folio, flags);
 }
-
 
 static inline struct wb_domain *mem_cgroup_wb_domain(struct bdi_writeback *wb)
 {
 	return NULL;
 }
 
-static inline void mem_cgroup_wb_stats(struct bdi_writeback *wb,
-				       unsigned long *pfilepages,
-				       unsigned long *pheadroom,
-				       unsigned long *pdirty,
-				       unsigned long *pwriteback)
-{
-}
-
-static inline void mem_cgroup_track_foreign_dirty(struct folio *folio,
-						  struct bdi_writeback *wb)
-{
-}
-
-static inline void mem_cgroup_flush_foreign(struct bdi_writeback *wb)
-{
-}
-
-
 struct sock;
 bool mem_cgroup_charge_skmem(struct mem_cgroup *memcg, unsigned int nr_pages,
 			     gfp_t gfp_mask);
 void mem_cgroup_uncharge_skmem(struct mem_cgroup *memcg, unsigned int nr_pages);
 #define mem_cgroup_sockets_enabled 0
-static inline void mem_cgroup_sk_alloc(struct sock *sk) { };
-static inline void mem_cgroup_sk_free(struct sock *sk) { };
-static inline bool mem_cgroup_under_socket_pressure(struct mem_cgroup *memcg)
-{
-	return false;
-}
 
 static inline void set_shrinker_bit(struct mem_cgroup *memcg,
 				    int nid, int shrinker_id)
@@ -529,8 +347,7 @@ static inline bool mem_cgroup_kmem_disabled(void)
 	return true;
 }
 
-static inline int memcg_kmem_charge_page(struct page *page, gfp_t gfp,
-					 int order)
+static inline int memcg_kmem_charge_page(struct page *page, gfp_t gfp, int order)
 {
 	return 0;
 }
@@ -564,28 +381,19 @@ static inline int memcg_kmem_id(struct mem_cgroup *memcg)
 	return -1;
 }
 
+static inline
+void count_memcg_event_mm(struct mm_struct *mm, enum vm_event_item idx)
+{
+}
+
+static inline bool task_in_memcg_oom(struct task_struct *p)
+{
+	return false;
+}
+
 static inline struct mem_cgroup *mem_cgroup_from_obj(void *p)
 {
        return NULL;
 }
 
-static inline void count_objcg_event(struct obj_cgroup *objcg,
-				     enum vm_event_item idx)
-{
-}
-
-
-static inline bool obj_cgroup_may_zswap(struct obj_cgroup *objcg)
-{
-	return true;
-}
-static inline void obj_cgroup_charge_zswap(struct obj_cgroup *objcg,
-					   size_t size)
-{
-}
-static inline void obj_cgroup_uncharge_zswap(struct obj_cgroup *objcg,
-					     size_t size)
-{
-}
-
-#endif  
+#endif /* _LINUX_MEMCONTROL_H */

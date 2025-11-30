@@ -16,7 +16,16 @@ NEW SESSION: Continue aggressive LOC reduction
 4. Look at bio_issue in blk_types.h as noted
 
 **Progress:**
-(will be updated as work proceeds)
+- 18b4112a: Remove unused bio_issue code and blk_rq_stat from blk_types.h (~47 LOC)
+  - bio_issue struct, BIO_ISSUE_* macros, inline functions
+  - Removed ktime.h include from blk_types.h
+- 78f5cc1b: Remove unused mmap_rnd_bits_min/max and show_free_areas (~16 LOC)
+- 24e7a71b: Remove unused fs functions: mapping_map_writable, get_max_files, super_setup_bdi* (~30 LOC)
+- c18acf1c: Remove unused devm_*_action functions (~30 LOC)
+- 44e12eb3: Remove unused memblock mark/clear stubs (~16 LOC)
+
+**Session Total:** ~139 LOC removed (179,080 -> 178,976)
+**Binary size:** 244KB
 
 ---
 

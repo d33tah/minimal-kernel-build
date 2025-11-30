@@ -42,18 +42,6 @@ void __filemap_set_wb_err(struct address_space *mapping, int err);
 int filemap_fdatawrite_wbc(struct address_space *mapping,
 			   struct writeback_control *wbc);
 
-static inline int filemap_write_and_wait(struct address_space *mapping)
-{
-	return filemap_write_and_wait_range(mapping, 0, LLONG_MAX);
-}
-
-static inline int filemap_check_wb_err(struct address_space *mapping,
-					errseq_t since)
-{
-	return errseq_check(&mapping->wb_err, since);
-}
-
- 
 static inline errseq_t filemap_sample_wb_err(struct address_space *mapping)
 {
 	return errseq_sample(&mapping->wb_err);
@@ -104,26 +92,6 @@ enum mapping_flags {
 	AS_LARGE_FOLIO_SUPPORT = 6,
 };
 
- 
-static inline void mapping_set_error(struct address_space *mapping, int error)
-{
-	if (likely(!error))
-		return;
-
-	 
-	__filemap_set_wb_err(mapping, error);
-
-	 
-	if (mapping->host)
-		errseq_set(&mapping->host->i_sb->s_wb_err, error);
-
-	 
-	if (error == -ENOSPC)
-		set_bit(AS_ENOSPC, &mapping->flags);
-	else
-		set_bit(AS_EIO, &mapping->flags);
-}
-
 static inline void mapping_set_unevictable(struct address_space *mapping)
 {
 	set_bit(AS_UNEVICTABLE, &mapping->flags);
@@ -142,11 +110,6 @@ static inline void mapping_set_exiting(struct address_space *mapping)
 static inline int mapping_exiting(struct address_space *mapping)
 {
 	return test_bit(AS_EXITING, &mapping->flags);
-}
-
-static inline int mapping_use_writeback_tags(struct address_space *mapping)
-{
-	return !test_bit(AS_NO_WRITEBACK_TAGS, &mapping->flags);
 }
 
 static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
@@ -268,26 +231,10 @@ static inline struct page *find_get_page(struct address_space *mapping,
 	return pagecache_get_page(mapping, offset, 0, 0);
 }
 
-static inline struct page *find_get_page_flags(struct address_space *mapping,
-					pgoff_t offset, int fgp_flags)
-{
-	return pagecache_get_page(mapping, offset, fgp_flags, 0);
-}
-
- 
 static inline struct page *find_lock_page(struct address_space *mapping,
 					pgoff_t index)
 {
 	return pagecache_get_page(mapping, index, FGP_LOCK, 0);
-}
-
- 
-static inline struct page *find_or_create_page(struct address_space *mapping,
-					pgoff_t index, gfp_t gfp_mask)
-{
-	return pagecache_get_page(mapping, index,
-					FGP_LOCK|FGP_ACCESSED|FGP_CREAT,
-					gfp_mask);
 }
 
 #define swapcache_index(folio)	__page_file_index(&(folio)->page)
@@ -317,16 +264,6 @@ static inline bool folio_contains(struct folio *folio, pgoff_t index)
 	return index - folio_index(folio) < folio_nr_pages(folio);
 }
 
- 
-static inline struct page *find_subpage(struct page *head, pgoff_t index)
-{
-	 
-	if (PageHuge(head))
-		return head;
-
-	return head + (index & (thp_nr_pages(head) - 1));
-}
-
 unsigned find_get_pages_range(struct address_space *mapping, pgoff_t *start,
 			pgoff_t end, unsigned int nr_pages,
 			struct page **pages);
@@ -337,13 +274,6 @@ unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
 			struct page **pages);
 struct page *grab_cache_page_write_begin(struct address_space *mapping,
 			pgoff_t index);
-
- 
-static inline struct page *grab_cache_page(struct address_space *mapping,
-								pgoff_t index)
-{
-	return find_or_create_page(mapping, index, mapping_gfp_mask(mapping));
-}
 
 struct folio *read_cache_folio(struct address_space *, pgoff_t index,
 		filler_t *filler, struct file *file);
@@ -358,13 +288,6 @@ static inline struct page *read_mapping_page(struct address_space *mapping,
 	return read_cache_page(mapping, index, NULL, file);
 }
 
-static inline struct folio *read_mapping_folio(struct address_space *mapping,
-				pgoff_t index, struct file *file)
-{
-	return read_cache_folio(mapping, index, NULL, file);
-}
-
- 
 static inline pgoff_t page_to_index(struct page *page)
 {
 	struct page *head;
@@ -373,7 +296,6 @@ static inline pgoff_t page_to_index(struct page *page)
 		return page->index;
 
 	head = compound_head(page);
-	 
 	return head->index + page - head;
 }
 

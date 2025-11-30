@@ -632,12 +632,6 @@ static inline pid_t task_tgid_nr(struct task_struct *tsk)
 	return tsk->tgid;
 }
 
-
-static inline pid_t task_tgid_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
-{
-	return __task_pid_nr_ns(tsk, PIDTYPE_TGID, ns);
-}
-
 static inline pid_t task_tgid_vnr(struct task_struct *tsk)
 {
 	return __task_pid_nr_ns(tsk, PIDTYPE_TGID, NULL);
@@ -910,14 +904,7 @@ extern int __cond_resched_lock(spinlock_t *lock);
 })
 
 
- 
 static inline int spin_needbreak(spinlock_t *lock)
-{
-	return 0;
-}
-
- 
-static inline int rwlock_needbreak(rwlock_t *lock)
 {
 	return 0;
 }

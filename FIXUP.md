@@ -30,10 +30,23 @@ NEW SESSION: Continue LOC reduction toward 100K
 - capability.h, audit.h, elf.h - uapi headers, risky to modify
 - Most large headers (fs.h, mm.h, sched.h) contain essential kernel code
 
+**Additional exploration:**
+- Verified ipc/, net/, crypto/ directories already removed
+- security/ down to 88 LOC (just commoncap.c and min_addr.c stubs)
+- scripts/ has 17K LOC but needed for kconfig/modpost build tools
+- Most large .c files (page_alloc.c, namei.c, core.c) are essential
+- Comment ratio in large files already minimal (1-4%)
+- No obvious large tables or arrays to remove
+
+**Assessment:** The kernel has been trimmed aggressively. Further significant reductions
+would require removing whole subsystems (e.g. simplifying VFS, reducing scheduler
+complexity) which could break the init process. Small wins may still be possible
+through careful header trimming, but diminishing returns are setting in.
+
 **Next session ideas:**
 - Look for whole files that might be removable
-- Check for large comment blocks that can be stripped
-- Consider if we can simplify signal handling further
+- Consider simplifying VFS down to absolute minimum for ramfs
+- Try to reduce scheduler complexity if safe
 
 ---
 

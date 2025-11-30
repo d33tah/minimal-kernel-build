@@ -47,6 +47,22 @@ NEW SESSION: Continue LOC reduction toward 100K
 
 **Current LOC:** 188,142 (after mrproper) - reduced ~281 LOC total this session
 
+- 1ffa220f: Trim unused stub functions from of.h (~46 LOC):
+  - of_find_node_by_name/type/path/phandle
+  - of_get_parent/next_parent/next_child/next_available_child
+  - of_find_node_with_property/all_nodes/compatible_node
+  - of_property_read_* array and string functions
+  - of_device_is_compatible/big_endian
+  - of_find_property, of_console_check
+  - of_node_*_flag functions
+  - of_parse_phandle* functions
+  - of_alias_get_id/highest_id
+  - of_property_read_u8/u16/u32/s32
+
+**Final LOC this session:** 188,096 (after mrproper)
+**Total reduction:** ~327 LOC (188,423 -> 188,096)
+**Session complete:** make vm still passes
+
 ---
 
 --- 2025-11-30 07:16 ---

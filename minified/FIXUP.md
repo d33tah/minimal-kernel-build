@@ -1,3 +1,24 @@
+--- 2025-12-01 00:16 ---
+SESSION CONTINUING: Exploring reduction strategies
+
+Accomplished this session:
+1. Reduced uapi/linux/audit.h (447->17 LOC = -430 direct)
+2. Removed if.h include from compat.h
+3. Removed in.h/in6.h includes, removed csum_ipv6_magic() function
+4. Removed sockios.h include from socket.h
+
+Total impact: ~350 LOC (marginal, transitive includes not counted)
+Current: 195,041 LOC | Goal: 150,000 LOC | Need: -45,041 LOC
+
+Init program only uses syscalls: write(4), exit(1)
+However, removing syscalls is risky - kernel infrastructure depends on them.
+
+Next approach to try:
+- The scheduler (fair.c 1510 LOC) could potentially be simplified
+- Look for whole directories of generated files that can be regenerated smaller
+- Consider switching from XZ to GZIP compression to remove lib/xz dependency
+- Examine if CONFIG_MODULES=n truly removes all module-related code
+
 --- 2025-12-01 00:13 ---
 SESSION ANALYSIS: Need aggressive reduction strategy
 

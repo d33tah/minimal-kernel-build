@@ -28,8 +28,18 @@ NEW SESSION: Continue LOC reduction toward 100K
 - 9617fb31: Trim swap.h from 258 to 146 LOC (~112 LOC removed)
   - Removed 20+ unused swap stubs (CONFIG_SWAP disabled)
   - LOC: 188,943 -> 188,871
+- 62aa45cb: Trim suspend.h from 174 to 56 LOC (~118 LOC removed)
+  - Removed unused suspend/hibernate stubs
+  - LOC: 188,871 -> 188,782
 
-**Current LOC:** 188,871 (after mrproper) - reduced 211 LOC this session
+**Current LOC:** 188,782 (after mrproper) - reduced ~300 LOC this session
+
+**Session summary:**
+- memcontrol.h: 591->399 LOC
+- cgroup.h: 143->82 LOC
+- delayacct.h: 53->23 LOC
+- swap.h: 258->146 LOC
+- suspend.h: 174->56 LOC
 
 **Explored but not actionable:**
 - cpufeatures.h: 336 defines, 56 used in C, but some used in S/headers

@@ -168,29 +168,11 @@ static inline void cpumask_or(struct cpumask *dstp, const struct cpumask *src1p,
 				      cpumask_bits(src2p), nr_cpumask_bits);
 }
 
-static inline int cpumask_andnot(struct cpumask *dstp,
-				  const struct cpumask *src1p,
-				  const struct cpumask *src2p)
-{
-	return bitmap_andnot(cpumask_bits(dstp), cpumask_bits(src1p),
-					  cpumask_bits(src2p), nr_cpumask_bits);
-}
-
- 
 static inline bool cpumask_equal(const struct cpumask *src1p,
 				const struct cpumask *src2p)
 {
 	return bitmap_equal(cpumask_bits(src1p), cpumask_bits(src2p),
 						 nr_cpumask_bits);
-}
-
-
- 
-static inline int cpumask_subset(const struct cpumask *src1p,
-				 const struct cpumask *src2p)
-{
-	return bitmap_subset(cpumask_bits(src1p), cpumask_bits(src2p),
-						  nr_cpumask_bits);
 }
 
  

@@ -16,7 +16,25 @@ CONTINUING SESSION: LOC reduction
 4. Look for redundant declarations
 
 **Progress:**
-(starting work...)
+- 42d3d97b: Remove unused mm.h inline functions (~55 LOC)
+  - vma_is_temporary_stack, page_cpupid_last, page_kasan_tag, page_kasan_tag_set
+  - arch_make_folio_accessible, range_in_vma, io_remap_pfn_range
+  - kernel_poison_pages, kernel_unpoison_pages
+  - debug_pagealloc_map_pages, debug_pagealloc_unmap_pages, arch_is_platform_page
+
+- 53153c5d: Remove unused sched.h and pagemap.h functions (~61 LOC)
+  - task_tgid_nr_ns, rwlock_needbreak
+  - filemap_write_and_wait, filemap_check_wb_err, mapping_set_error
+  - mapping_use_writeback_tags, find_get_page_flags, find_or_create_page
+  - find_subpage, grab_cache_page, read_mapping_folio
+
+- 6ac931c5: Remove unused list.h and device.h functions (~38 LOC)
+  - list_is_last
+  - device_pm_not_required, dev_of_node, dev_has_sync_state
+  - dev_removable_is_valid, device_supports_offline, device_add_group
+
+**Session Total:** ~154 LOC removed (197,095 -> 196,941)
+**Binary size:** 244KB
 
 ---
 

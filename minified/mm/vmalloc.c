@@ -1150,17 +1150,6 @@ overflow:
 	return ERR_PTR(-EBUSY);
 }
 
-/* Stubbed - not used externally */
-int register_vmap_purge_notifier(struct notifier_block *nb)
-{
-	return 0;
-}
-
-int unregister_vmap_purge_notifier(struct notifier_block *nb)
-{
-	return 0;
-}
-
 static unsigned long lazy_max_pages(void)
 {
 	unsigned int log;
@@ -1693,11 +1682,6 @@ static inline void __vfree_deferred(const void *addr)
 		schedule_work(&p->wq);
 }
 
-/* Stubbed - not used externally */
-void vfree_atomic(const void *addr)
-{
-}
-
 static void __vfree(const void *addr)
 {
 	if (unlikely(in_interrupt()))
@@ -2037,67 +2021,10 @@ void *vmalloc(unsigned long size)
 				__builtin_return_address(0));
 }
 
-/* Stubbed - not used externally */
-void *vmalloc_huge(unsigned long size, gfp_t gfp_mask)
-{
-	return NULL;
-}
-
 void *vzalloc(unsigned long size)
 {
 	return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_ZERO, NUMA_NO_NODE,
 				__builtin_return_address(0));
-}
-
-/* Stubbed - not used externally */
-void *vmalloc_user(unsigned long size)
-{
-	return NULL;
-}
-
-/* Stubbed - not used externally */
-void *vmalloc_node(unsigned long size, int node)
-{
-	return NULL;
-}
-
-/* Stubbed - not used externally */
-void *vzalloc_node(unsigned long size, int node)
-{
-	return NULL;
-}
-
-/* Stubbed - not used externally */
-void *vmalloc_32(unsigned long size)
-{
-	return NULL;
-}
-
-/* Stubbed - not used externally */
-void *vmalloc_32_user(unsigned long size)
-{
-	return NULL;
-}
-
-long vread(char *buf, char *addr, unsigned long count)
-{
-	return 0;
-}
-
-int remap_vmalloc_range_partial(struct vm_area_struct *vma, unsigned long uaddr,
-				void *kaddr, unsigned long pgoff,
-				unsigned long size)
-{
-	/* Stub: vmalloc remapping not needed for minimal kernel */
-	return -EINVAL;
-}
-
-int remap_vmalloc_range(struct vm_area_struct *vma, void *addr,
-						unsigned long pgoff)
-{
-	return remap_vmalloc_range_partial(vma, vma->vm_start,
-					   addr, pgoff,
-					   vma->vm_end - vma->vm_start);
 }
 
 void free_vm_area(struct vm_struct *area)

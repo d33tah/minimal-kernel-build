@@ -1655,14 +1655,6 @@ void si_meminfo(struct sysinfo *val)
 	/* Stub: sysinfo not needed for minimal kernel */
 }
 
-
-#define K(x) ((x) << (PAGE_SHIFT-10))
-
-void show_free_areas(unsigned int filter, nodemask_t *nodemask)
-{
-	
-}
-
 static void zoneref_set_zone(struct zone *zone, struct zoneref *zoneref)
 {
 	zoneref->zone = zone;

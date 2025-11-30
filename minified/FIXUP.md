@@ -1,3 +1,14 @@
+--- 2025-12-01 00:20 ---
+Attempted: Switch from XZ to GZIP compression
+
+FAILED: Changed tiny.config to use CONFIG_KERNEL_GZIP=y instead of XZ.
+The boot decompressor code in arch/x86/boot/compressed/misc.c still
+used the XZ decompressor via lib/decompress_unxz.c which depends on lib/xz.
+Just changing config is not enough - would need to update the decompressor
+selection logic as well. Too complex for marginal gain.
+
+Reverted to XZ compression.
+
 --- 2025-12-01 00:16 ---
 SESSION CONTINUING: Exploring reduction strategies
 
@@ -16,7 +27,6 @@ However, removing syscalls is risky - kernel infrastructure depends on them.
 Next approach to try:
 - The scheduler (fair.c 1510 LOC) could potentially be simplified
 - Look for whole directories of generated files that can be regenerated smaller
-- Consider switching from XZ to GZIP compression to remove lib/xz dependency
 - Examine if CONFIG_MODULES=n truly removes all module-related code
 
 --- 2025-12-01 00:13 ---

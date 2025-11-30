@@ -1,4 +1,4 @@
---- 2025-11-30 02:40 ---
+--- 2025-11-30 02:55 ---
 CONTINUING SESSION: LOC reduction
 
 **Status at session start:**
@@ -16,6 +16,20 @@ CONTINUING SESSION: LOC reduction
 4. Look for big unused subsystems
 
 **Progress:**
+- 876acdb9: Trim blkdev.h to minimal stubs (~290 LOC removed)
+  - Removed unused: disk management, block I/O, queue management, device ops
+  - Kept only essential stubs: blk_plug, blk_start_plug, blk_finish_plug, etc.
+
+**Session Total:** ~214 LOC removed (189,438 -> 189,224)
+**Binary size:** 244KB
+
+**Attempted but reverted:**
+- mod_devicetable.h trimming - scripts/mod/file2alias.c needs all structs
+
+**Notes for future sessions:**
+- AUDIT defines: only 3 used in C files (AUDIT_INODE_NOEVAL, AUDIT_INODE_PARENT, AUDIT_TYPE_CHILD_CREATE)
+  but uapi/linux/audit.h is 447 LOC. Would need careful analysis of scripts.
+- msr-index.h (989 LOC): only ~25 MSR defines used in C/S files, but many referenced in headers
 
 ---
 

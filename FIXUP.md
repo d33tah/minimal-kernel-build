@@ -24,6 +24,17 @@ NEW SESSION: Continue LOC reduction toward 100K
 
 **Current LOC:** 187,367 (after mrproper) - reduced ~729 LOC this session
 
+**Explored other reduction opportunities:**
+- Checked cpufeatures.h (83 of 336 X86_FEATURE_ used) - complex to modify due to bit positions
+- pm_runtime.h, pm_domain.h, acpi.h, kasan.h, kcov.h - already stubbed
+- capability.h, audit.h, elf.h - uapi headers, risky to modify
+- Most large headers (fs.h, mm.h, sched.h) contain essential kernel code
+
+**Next session ideas:**
+- Look for whole files that might be removable
+- Check for large comment blocks that can be stripped
+- Consider if we can simplify signal handling further
+
 ---
 
 --- 2025-11-30 14:31 ---

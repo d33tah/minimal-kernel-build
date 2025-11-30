@@ -62,54 +62,24 @@ extern struct device_node *of_stdout;
  
 static inline void of_core_init(void) { }
 static inline struct device_node *to_of_node(const struct fwnode_handle *fwnode) { return NULL; }
-static inline struct device_node *of_find_node_by_name(struct device_node *from, const char *name) { return NULL; }
-static inline struct device_node *of_find_node_by_type(struct device_node *from, const char *type) { return NULL; }
-static inline struct device_node *of_find_matching_node_and_match(struct device_node *from, const struct of_device_id *matches, const struct of_device_id **match) { return NULL; }
+/* of_find_node_by_name, of_find_node_by_type removed - unused */
+/* of_find_matching_node_and_match removed - unused */
 static inline struct device_node *of_find_matching_node(struct device_node *from, const struct of_device_id *matches) { return NULL; }
-static inline struct device_node *of_find_node_by_path(const char *path) { return NULL; }
-static inline struct device_node *of_find_node_opts_by_path(const char *path, const char **opts) { return NULL; }
-static inline struct device_node *of_find_node_by_phandle(phandle handle) { return NULL; }
-static inline struct device_node *of_get_parent(const struct device_node *node) { return NULL; }
-static inline struct device_node *of_get_next_parent(struct device_node *node) { return NULL; }
-static inline struct device_node *of_get_next_child(const struct device_node *node, struct device_node *prev) { return NULL; }
-static inline struct device_node *of_get_next_available_child(const struct device_node *node, struct device_node *prev) { return NULL; }
-static inline struct device_node *of_find_node_with_property(struct device_node *from, const char *prop_name) { return NULL; }
-static inline bool of_node_is_root(const struct device_node *node) { return false; }
-static inline struct device_node *of_find_all_nodes(struct device_node *prev) { return NULL; }
+/* of_find_node_by_path, of_find_node_opts_by_path, of_find_node_by_phandle removed - unused */
+/* of_get_parent, of_get_next_parent, of_get_next_child, of_get_next_available_child removed - unused */
+/* of_find_node_with_property, of_node_is_root, of_find_all_nodes removed - unused */
 static inline const char *of_node_full_name(const struct device_node *np) { return "<no-node>"; }
-static inline struct device_node *of_find_compatible_node(struct device_node *from, const char *type, const char *compatible) { return NULL; }
-static inline int of_property_count_elems_of_size(const struct device_node *np, const char *propname, int elem_size) { return -ENOSYS; }
-static inline int of_property_read_u32_index(const struct device_node *np, const char *propname, u32 index, u32 *out_value) { return -ENOSYS; }
-static inline int of_property_read_u8_array(const struct device_node *np, const char *propname, u8 *out_values, size_t sz) { return -ENOSYS; }
-static inline int of_property_read_u16_array(const struct device_node *np, const char *propname, u16 *out_values, size_t sz) { return -ENOSYS; }
-static inline int of_property_read_u32_array(const struct device_node *np, const char *propname, u32 *out_values, size_t sz) { return -ENOSYS; }
-static inline int of_property_read_u64_array(const struct device_node *np, const char *propname, u64 *out_values, size_t sz) { return -ENOSYS; }
-static inline int of_property_read_string(const struct device_node *np, const char *propname, const char **out_string) { return -ENOSYS; }
-static inline int of_property_read_string_helper(const struct device_node *np, const char *propname, const char **out_strs, size_t sz, int skip) { return -ENOSYS; }
-static inline int of_device_is_compatible(const struct device_node *device, const char *compat) { return 0; }
+/* of_find_compatible_node removed - unused */
+/* of_property_count_elems_of_size, of_property_read_u32_index removed - unused */
+/* of_property_read_*_array, of_property_read_string* removed - unused */
+/* of_device_is_compatible removed - unused */
 static inline int of_device_is_available(const struct device_node *device) { return 0; }
-static inline bool of_device_is_big_endian(const struct device_node *device) { return false; }
-static inline struct property *of_find_property(const struct device_node *np, const char *name, int *lenp) { return NULL; }
-static inline bool of_console_check(struct device_node *dn, char *name, int index) { return false; }
-static inline const __be32 *of_prop_next_u32(struct property *prop, const __be32 *cur, u32 *pu) { return NULL; }
-static inline const char *of_prop_next_string(struct property *prop, const char *cur) { return NULL; }
-static inline int of_node_check_flag(struct device_node *n, unsigned long flag) { return 0; }
-static inline int of_node_test_and_set_flag(struct device_node *n, unsigned long flag) { return 0; }
-static inline void of_node_set_flag(struct device_node *n, unsigned long flag) { }
-static inline void of_node_clear_flag(struct device_node *n, unsigned long flag) { }
-static inline int of_property_read_u64(const struct device_node *np, const char *propname, u64 *out_value) { return -ENOSYS; }
-static inline int of_property_match_string(const struct device_node *np, const char *propname, const char *string) { return -ENOSYS; }
-static inline struct device_node *of_parse_phandle(const struct device_node *np, const char *phandle_name, int index) { return NULL; }
-static inline int of_parse_phandle_with_args(const struct device_node *np, const char *list_name, const char *cells_name, int cell_count, int index, struct of_phandle_args *out_args) { return -ENOSYS; }
-static inline int of_parse_phandle_with_fixed_args(const struct device_node *np, const char *list_name, int cell_count, int index, struct of_phandle_args *out_args) { return -ENOSYS; }
-static inline int of_count_phandle_with_args(const struct device_node *np, const char *list_name, const char *cells_name) { return -ENOSYS; }
-static inline int of_alias_get_id(struct device_node *np, const char *stem) { return -ENOSYS; }
-static inline int of_alias_get_highest_id(const char *stem) { return -ENOSYS; }
-static inline int of_machine_is_compatible(const char *compat) { return 0; }
-static inline bool of_property_read_bool(const struct device_node *np, const char *propname) { return false; }
-static inline int of_property_read_u8(const struct device_node *np, const char *propname, u8 *out_value) { return -ENOSYS; }
-static inline int of_property_read_u16(const struct device_node *np, const char *propname, u16 *out_value) { return -ENOSYS; }
-static inline int of_property_read_u32(const struct device_node *np, const char *propname, u32 *out_value) { return -ENOSYS; }
-static inline int of_property_read_s32(const struct device_node *np, const char *propname, s32 *out_value) { return -ENOSYS; }
+/* of_device_is_big_endian, of_find_property, of_console_check removed - unused */
+/* of_prop_next_*, of_node_*_flag removed - unused */
+/* of_property_read_u64, of_property_match_string removed - unused */
+/* of_parse_phandle* removed - unused */
+/* of_count_phandle_with_args, of_alias_get_id, of_alias_get_highest_id removed - unused */
+/* of_machine_is_compatible, of_property_read_bool removed - unused */
+/* of_property_read_u8/u16/u32/s32 removed - unused */
 static inline struct device_node *of_get_cpu_node(int cpu, unsigned int *thread) { return NULL; }
 #endif  

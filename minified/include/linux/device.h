@@ -369,11 +369,6 @@ static inline int device_is_registered(struct device *dev)
 	return dev->kobj.state_in_sysfs;
 }
 
-static inline bool device_pm_not_required(struct device *dev)
-{
-	return dev->power.no_pm;
-}
-
 static inline void device_set_pm_not_required(struct device *dev)
 {
 	dev->power.no_pm = true;
@@ -401,30 +396,6 @@ static inline void device_lock_assert(struct device *dev)
 	lockdep_assert_held(&dev->mutex);
 }
 
-static inline struct device_node *dev_of_node(struct device *dev)
-{
-	if (!IS_ENABLED(CONFIG_OF) || !dev)
-		return NULL;
-	return dev->of_node;
-}
-
-static inline bool dev_has_sync_state(struct device *dev)
-{
-	if (!dev)
-		return false;
-	if (dev->driver && dev->driver->sync_state)
-		return true;
-	if (dev->bus && dev->bus->sync_state)
-		return true;
-	return false;
-}
-
-static inline bool dev_removable_is_valid(struct device *dev)
-{
-	return dev->removable != DEVICE_REMOVABLE_NOT_SUPPORTED;
-}
-
- 
 int __must_check device_register(struct device *dev);
 void device_unregister(struct device *dev);
 void device_initialize(struct device *dev);
@@ -445,11 +416,6 @@ int device_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid);
 const char *device_get_devnode(struct device *dev, umode_t *mode, kuid_t *uid,
 			       kgid_t *gid, const char **tmp);
 int device_is_dependent(struct device *dev, void *target);
-
-static inline bool device_supports_offline(struct device *dev)
-{
-	return dev->bus && dev->bus->offline && dev->bus->online;
-}
 
 #define __device_lock_set_class(dev, name, key)                        \
 do {                                                                   \
@@ -514,14 +480,6 @@ int __must_check device_add_groups(struct device *dev,
 				   const struct attribute_group **groups);
 void device_remove_groups(struct device *dev,
 			  const struct attribute_group **groups);
-
-static inline int __must_check device_add_group(struct device *dev,
-					const struct attribute_group *grp)
-{
-	const struct attribute_group *groups[] = { grp, NULL };
-
-	return device_add_groups(dev, groups);
-}
 
 static inline void device_remove_group(struct device *dev,
 				       const struct attribute_group *grp)

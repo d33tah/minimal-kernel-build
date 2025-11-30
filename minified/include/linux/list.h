@@ -132,12 +132,6 @@ static inline void list_move_tail(struct list_head *list,
 	list_add_tail(list, head);
 }
 
-static inline int list_is_last(const struct list_head *list, const struct list_head *head)
-{
-	return list->next == head;
-}
-
- 
 static inline int list_is_head(const struct list_head *list, const struct list_head *head)
 {
 	return list == head;
@@ -392,12 +386,10 @@ static inline void hlist_add_behind(struct hlist_node *n,
 		WRITE_ONCE(n->next->pprev, &n->next);
 }
 
-
 static inline bool hlist_fake(struct hlist_node *h)
 {
 	return h->pprev == &h->next;
 }
-
 
 static inline bool
 hlist_is_singular_node(struct hlist_node *n, struct hlist_head *h)

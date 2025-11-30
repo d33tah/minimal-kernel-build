@@ -43,23 +43,11 @@ static inline int conv_uni_to_pc(struct vc_data *conp, long ucs)
 {
 	return ucs < 0x100 ? ucs : -1;
 }
-static inline u32 conv_8bit_to_uni(unsigned char c)
-{
-	return c;
-}
-static inline int conv_uni_to_8bit(u32 uni)
-{
-	return (uni < 0x100) ? uni : -1;
-}
+/* conv_8bit_to_uni, conv_uni_to_8bit removed - unused */
 static inline void console_map_init(void) { }
-static inline int con_set_trans_old(unsigned char __user * arg) { return 0; }
-static inline int con_get_trans_old(unsigned char __user * arg) { return -EINVAL; }
-static inline int con_set_trans_new(unsigned short __user * arg) { return 0; }
-static inline int con_get_trans_new(unsigned short __user * arg) { return -EINVAL; }
-static inline int con_clear_unimap(struct vc_data *vc) { return 0; }
-struct unipair;
-static inline int con_get_unimap(struct vc_data *vc, unsigned short ct, unsigned short __user *uct, struct unipair __user *list) { return 0; }
-static inline int con_set_unimap(struct vc_data *vc, unsigned short ct, struct unipair __user *list) { return 0; }
+/* con_set_trans_old, con_get_trans_old removed - unused */
+/* con_set_trans_new, con_get_trans_new removed - unused */
+/* con_clear_unimap, con_get_unimap, con_set_unimap removed - unused */
 static inline int con_set_default_unimap(struct vc_data *vc) { return 0; }
 static inline void con_free_unimap(struct vc_data *vc) { }
 #endif

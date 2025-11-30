@@ -16,8 +16,6 @@ static inline void delayacct_blkio_start(void)
 {}
 static inline void delayacct_blkio_end(struct task_struct *p)
 {}
-static inline int delayacct_add_tsk(struct taskstats *d,
-					struct task_struct *tsk)
-{ return 0; }
+/* delayacct_add_tsk removed - unused */
 
 #endif

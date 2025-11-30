@@ -41,6 +41,12 @@ NEW SESSION: Continue LOC reduction toward 100K
 
 **Current LOC:** 188,161 (after mrproper) - reduced ~262 LOC total this session
 
+- More trimming (~19 LOC):
+  - consolemap.h: conv_8bit_to_uni, conv_uni_to_8bit, con_set_trans_*, con_get_trans_*, con_clear_unimap, etc
+  - delayacct.h: delayacct_add_tsk
+
+**Current LOC:** 188,142 (after mrproper) - reduced ~281 LOC total this session
+
 ---
 
 --- 2025-11-30 07:16 ---

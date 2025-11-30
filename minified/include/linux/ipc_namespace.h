@@ -76,9 +76,7 @@ struct ipc_namespace {
 extern struct ipc_namespace init_ipc_ns;
 extern spinlock_t mq_lock;
 
-static inline void shm_destroy_orphaned(struct ipc_namespace *ns) {}
-
-static inline int mq_init_ns(struct ipc_namespace *ns) { return 0; }
+/* shm_destroy_orphaned, mq_init_ns removed - unused */
 
 static inline struct ipc_namespace *copy_ipcs(unsigned long flags,
 	struct user_namespace *user_ns, struct ipc_namespace *ns)
@@ -89,39 +87,13 @@ static inline struct ipc_namespace *copy_ipcs(unsigned long flags,
 	return ns;
 }
 
-static inline struct ipc_namespace *get_ipc_ns(struct ipc_namespace *ns)
-{
-	return ns;
-}
-
-static inline struct ipc_namespace *get_ipc_ns_not_zero(struct ipc_namespace *ns)
-{
-	return ns;
-}
+/* get_ipc_ns, get_ipc_ns_not_zero removed - unused */
 
 static inline void put_ipc_ns(struct ipc_namespace *ns)
 {
 }
 
-
-static inline void retire_mq_sysctls(struct ipc_namespace *ns)
-{
-}
-
-static inline bool setup_mq_sysctls(struct ipc_namespace *ns)
-{
-	return true;
-}
-
-
-
-static inline void retire_ipc_sysctls(struct ipc_namespace *ns)
-{
-}
-
-static inline bool setup_ipc_sysctls(struct ipc_namespace *ns)
-{
-	return true;
-}
+/* retire_mq_sysctls, setup_mq_sysctls removed - unused */
+/* retire_ipc_sysctls, setup_ipc_sysctls removed - unused */
 
 #endif

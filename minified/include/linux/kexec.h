@@ -25,10 +25,7 @@ struct task_struct;
 static inline void __crash_kexec(struct pt_regs *regs) { }
 static inline void crash_kexec(struct pt_regs *regs) { }
 static inline int kexec_should_crash(struct task_struct *p) { return 0; }
-static inline int kexec_crash_loaded(void) { return 0; }
-#define kexec_in_progress false
-
-static inline void set_kexec_sig_enforced(void) {}
+/* kexec_crash_loaded, kexec_in_progress, set_kexec_sig_enforced removed - unused */
 
 #endif  
 

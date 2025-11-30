@@ -1,3 +1,21 @@
+--- 2025-11-30 23:19 ---
+Progress: Stubbed scripts/mod/sumversion.c
+
+Change:
+- Reduced sumversion.c from 388 LOC to 10 LOC (97% reduction)
+- Source versioning (MD4 hashing) only used for loadable modules
+- get_src_version() only called for !is_vmlinux modules
+
+LOC: 195,725 total (down from 196,024 = -299 LOC)
+Binary: 244KB (unchanged)
+make vm: PASSES, prints "Hello, World!"
+
+Total reductions this session:
+- file2alias.c: -1,202 LOC
+- devicetable-offsets.c: -198 LOC
+- sumversion.c: -299 LOC
+Total: -1,699 LOC (from 197,424 to 195,725)
+
 --- 2025-11-30 23:08 ---
 Progress: Stubbed scripts/mod/devicetable-offsets.c
 

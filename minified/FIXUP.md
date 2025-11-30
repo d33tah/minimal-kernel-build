@@ -1,3 +1,15 @@
+--- 2025-11-30 23:08 ---
+Progress: Stubbed scripts/mod/devicetable-offsets.c
+
+Change:
+- Reduced devicetable-offsets.c from 267 LOC to 7 LOC (97% reduction)
+- Device table offsets not needed with stubbed file2alias.c
+- No module device tables without CONFIG_MODULES
+
+LOC: 196,024 total (down from 196,222 = -198 LOC)
+Binary: 244KB (unchanged)
+make vm: PASSES, prints "Hello, World!"
+
 --- 2025-11-30 23:01 ---
 Progress: Stubbed scripts/mod/file2alias.c
 

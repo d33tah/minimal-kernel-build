@@ -203,12 +203,12 @@ extern void d_add(struct dentry *, struct inode *);
 
  
 extern void d_move(struct dentry *, struct dentry *);
-extern void d_exchange(struct dentry *, struct dentry *);
+/* d_exchange removed - unused stub */
 extern struct dentry *d_ancestor(struct dentry *, struct dentry *);
 
  
 extern struct dentry *d_lookup(const struct dentry *, const struct qstr *);
-extern struct dentry *d_hash_and_lookup(struct dentry *, struct qstr *);
+/* d_hash_and_lookup removed - never called */
 extern struct dentry *__d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup_rcu(const struct dentry *parent,
 				const struct qstr *name, unsigned *seq);
@@ -223,10 +223,9 @@ extern __printf(4, 5)
 char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
 
 extern char *__d_path(const struct path *, const struct path *, char *, int);
-extern char *d_absolute_path(const struct path *, char *, int);
+/* d_absolute_path, dentry_path removed - unused */
 extern char *d_path(const struct path *, char *, int);
 extern char *dentry_path_raw(const struct dentry *, char *, int);
-extern char *dentry_path(const struct dentry *, char *, int);
 
  
 

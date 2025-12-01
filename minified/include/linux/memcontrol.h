@@ -61,11 +61,6 @@ static inline bool PageMemcgKmem(struct page *page)
 	return false;
 }
 
-static inline bool mem_cgroup_disabled(void)
-{
-	return true;
-}
-
 static inline int mem_cgroup_charge(struct folio *folio,
 		struct mm_struct *mm, gfp_t gfp)
 {
@@ -98,11 +93,6 @@ void lruvec_memcg_debug(struct lruvec *lruvec, struct folio *folio)
 }
 
 static inline struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *memcg)
-{
-	return NULL;
-}
-
-static inline struct mem_cgroup *get_mem_cgroup_from_mm(struct mm_struct *mm)
 {
 	return NULL;
 }
@@ -324,11 +314,6 @@ static inline struct lruvec *folio_lruvec_relock_irqsave(struct folio *folio,
 		unlock_page_lruvec_irqrestore(locked_lruvec, *flags);
 	}
 	return folio_lruvec_lock_irqsave(folio, flags);
-}
-
-static inline struct wb_domain *mem_cgroup_wb_domain(struct bdi_writeback *wb)
-{
-	return NULL;
 }
 
 struct sock;

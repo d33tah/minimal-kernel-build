@@ -49,49 +49,13 @@ typedef __s64	Elf64_Sxword;
 #define ET_LOPROC 0xff00
 #define ET_HIPROC 0xffff
 
+/* Dynamic section tags - only keep those used by vdso2c.h */
 #define DT_NULL		0
-#define DT_NEEDED	1
-#define DT_PLTRELSZ	2
-#define DT_PLTGOT	3
-#define DT_HASH		4
-#define DT_STRTAB	5
-#define DT_SYMTAB	6
 #define DT_RELA		7
-#define DT_RELASZ	8
-#define DT_RELAENT	9
-#define DT_STRSZ	10
-#define DT_SYMENT	11
-#define DT_INIT		12
-#define DT_FINI		13
-#define DT_SONAME	14
-#define DT_RPATH 	15
-#define DT_SYMBOLIC	16
 #define DT_REL	        17
 #define DT_RELSZ	18
 #define DT_RELENT	19
-#define DT_PLTREL	20
-#define DT_DEBUG	21
 #define DT_TEXTREL	22
-#define DT_JMPREL	23
-#define DT_ENCODING	32
-#define OLD_DT_LOOS	0x60000000
-#define DT_LOOS		0x6000000d
-#define DT_HIOS		0x6ffff000
-#define DT_VALRNGLO	0x6ffffd00
-#define DT_VALRNGHI	0x6ffffdff
-#define DT_ADDRRNGLO	0x6ffffe00
-#define DT_ADDRRNGHI	0x6ffffeff
-#define DT_VERSYM	0x6ffffff0
-#define DT_RELACOUNT	0x6ffffff9
-#define DT_RELCOUNT	0x6ffffffa
-#define DT_FLAGS_1	0x6ffffffb
-#define DT_VERDEF	0x6ffffffc
-#define	DT_VERDEFNUM	0x6ffffffd
-#define DT_VERNEED	0x6ffffffe
-#define	DT_VERNEEDNUM	0x6fffffff
-#define OLD_DT_HIOS     0x6fffffff
-#define DT_LOPROC	0x70000000
-#define DT_HIPROC	0x7fffffff
 
 #define STB_LOCAL  0
 #define STB_GLOBAL 1
@@ -333,73 +297,13 @@ typedef struct elf64_shdr {
 #define ELF_OSABI ELFOSABI_NONE
 #endif
 
+/* Note types - only those used for x86 */
 #define NT_PRSTATUS	1
 #define NT_PRFPREG	2
-#define NT_PRPSINFO	3
-#define NT_TASKSTRUCT	4
-#define NT_AUXV		6
-#define NT_SIGINFO      0x53494749
-#define NT_FILE         0x46494c45
-#define NT_PRXFPREG     0x46e62b7f       
-#define NT_PPC_VMX	0x100		 
-#define NT_PPC_SPE	0x101		 
-#define NT_PPC_VSX	0x102		 
-#define NT_PPC_TAR	0x103		 
-#define NT_PPC_PPR	0x104		 
-#define NT_PPC_DSCR	0x105		 
-#define NT_PPC_EBB	0x106		 
-#define NT_PPC_PMU	0x107		 
-#define NT_PPC_TM_CGPR	0x108		 
-#define NT_PPC_TM_CFPR	0x109		 
-#define NT_PPC_TM_CVMX	0x10a		 
-#define NT_PPC_TM_CVSX	0x10b		 
-#define NT_PPC_TM_SPR	0x10c		 
-#define NT_PPC_TM_CTAR	0x10d		 
-#define NT_PPC_TM_CPPR	0x10e		 
-#define NT_PPC_TM_CDSCR	0x10f		 
-#define NT_PPC_PKEY	0x110		 
-#define NT_386_TLS	0x200		 
-#define NT_386_IOPERM	0x201		 
-#define NT_X86_XSTATE	0x202		 
-#define NT_S390_HIGH_GPRS	0x300	 
-#define NT_S390_TIMER	0x301		 
-#define NT_S390_TODCMP	0x302		 
-#define NT_S390_TODPREG	0x303		 
-#define NT_S390_CTRS	0x304		 
-#define NT_S390_PREFIX	0x305		 
-#define NT_S390_LAST_BREAK	0x306	 
-#define NT_S390_SYSTEM_CALL	0x307	 
-#define NT_S390_TDB	0x308		 
-#define NT_S390_VXRS_LOW	0x309	 
-#define NT_S390_VXRS_HIGH	0x30a	 
-#define NT_S390_GS_CB	0x30b		 
-#define NT_S390_GS_BC	0x30c		 
-#define NT_S390_RI_CB	0x30d		 
-#define NT_ARM_VFP	0x400		 
-#define NT_ARM_TLS	0x401		 
-#define NT_ARM_HW_BREAK	0x402		 
-#define NT_ARM_HW_WATCH	0x403		 
-#define NT_ARM_SYSTEM_CALL	0x404	 
-#define NT_ARM_SVE	0x405		 
-#define NT_ARM_PAC_MASK		0x406	 
-#define NT_ARM_PACA_KEYS	0x407	 
-#define NT_ARM_PACG_KEYS	0x408	 
-#define NT_ARM_TAGGED_ADDR_CTRL	0x409	 
-#define NT_ARM_PAC_ENABLED_KEYS	0x40a	 
-#define NT_ARM_SSVE	0x40b		 
-#define NT_ARM_ZA	0x40c		 
-#define NT_ARC_V2	0x600		 
-#define NT_VMCOREDD	0x700		 
-#define NT_MIPS_DSP	0x800		 
-#define NT_MIPS_FP_MODE	0x801		 
-#define NT_MIPS_MSA	0x802		 
-#define NT_LOONGARCH_CPUCFG	0xa00	 
-#define NT_LOONGARCH_CSR	0xa01	 
-#define NT_LOONGARCH_LSX	0xa02	 
-#define NT_LOONGARCH_LASX	0xa03	 
-#define NT_LOONGARCH_LBT	0xa04	 
-
-#define NT_GNU_PROPERTY_TYPE_0	5
+#define NT_PRXFPREG     0x46e62b7f
+#define NT_386_TLS	0x200
+#define NT_386_IOPERM	0x201
+#define NT_X86_XSTATE	0x202
 
 typedef struct elf32_note {
   Elf32_Word	n_namesz;	 
@@ -412,9 +316,5 @@ typedef struct elf64_note {
   Elf64_Word n_descsz;	 
   Elf64_Word n_type;	 
 } Elf64_Nhdr;
-
-#define GNU_PROPERTY_AARCH64_FEATURE_1_AND	0xc0000000
-
-#define GNU_PROPERTY_AARCH64_FEATURE_1_BTI	(1U << 0)
 
 #endif  

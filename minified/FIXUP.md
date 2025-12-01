@@ -1,3 +1,23 @@
+--- 2025-12-01 03:54 ---
+PROGRESS: Removed more unused uapi headers
+
+Removed headers:
+- include/uapi/linux/in.h (311 LOC) - not included anywhere
+- include/uapi/linux/if.h (224 LOC) - not included anywhere
+- include/uapi/linux/in6.h (222 LOC) - not included anywhere
+- include/uapi/linux/sockios.h (146 LOC) - not included anywhere
+
+Total reduction: ~670 LOC
+
+Current state:
+- make vm: PASSES, prints "Hello, World!"
+- Binary: 244KB
+- LOC: 194,261 (measured with cloc after mrproper)
+- Goal: 150,000 LOC
+- Gap: 44,261 LOC (23% reduction needed)
+
+Session total so far: ~804 LOC removed
+
 --- 2025-12-01 03:48 ---
 PROGRESS: Removed unused headers
 

@@ -333,14 +333,6 @@ extern void __warn_flushing_systemwide_wq(void)
 	__flush_workqueue(_wq);						\
 })
 
- 
-static inline bool schedule_delayed_work_on(int cpu, struct delayed_work *dwork,
-					    unsigned long delay)
-{
-	return queue_delayed_work_on(cpu, system_wq, dwork, delay);
-}
-
- 
 static inline bool schedule_delayed_work(struct delayed_work *dwork,
 					 unsigned long delay)
 {

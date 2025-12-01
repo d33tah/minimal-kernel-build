@@ -1,3 +1,19 @@
+--- 2025-12-01 09:05 ---
+CI RUNNER OFFLINE
+
+Pipeline #34648 has been pending for 10+ minutes.
+URL: https://gitlab.profound.net/claude/minimal-kernel-build/-/pipelines/34648
+
+The CI runner appears to be offline. All recent pipelines show similar behavior:
+- Most are canceled (manually?)
+- A few are failed
+- Current one is stuck pending
+
+Local make vm: PASSES consistently
+bzImage: 244KB
+LOC: 202,213
+Goal: 150,000 (52K gap remaining)
+
 --- 2025-12-01 08:56 ---
 CI WAITING
 

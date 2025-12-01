@@ -226,11 +226,6 @@ struct kiocb {
 	randomized_struct_fields_end
 };
 
-static inline bool is_sync_kiocb(struct kiocb *kiocb)
-{
-	return kiocb->ki_complete == NULL;
-}
-
 struct address_space_operations {
 	int (*writepage)(struct page *page, struct writeback_control *wbc);
 	int (*read_folio)(struct file *, struct folio *);
@@ -477,11 +472,6 @@ static inline void inode_lock_shared(struct inode *inode)
 static inline void inode_unlock_shared(struct inode *inode)
 {
 	up_read(&inode->i_rwsem);
-}
-
-static inline int inode_trylock_shared(struct inode *inode)
-{
-	return down_read_trylock(&inode->i_rwsem);
 }
 
 static inline int inode_is_locked(struct inode *inode)
@@ -1407,11 +1397,6 @@ static_assert(offsetof(struct filename, iname) % sizeof(long) == 0);
 static inline struct user_namespace *file_mnt_user_ns(struct file *file)
 {
 	return mnt_user_ns(file->f_path.mnt);
-}
-
-static inline bool is_idmapped_mnt(const struct vfsmount *mnt)
-{
-	return mnt_user_ns(mnt) != mnt->mnt_sb->s_user_ns;
 }
 
 extern long vfs_truncate(const struct path *, loff_t);

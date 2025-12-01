@@ -30,12 +30,8 @@
 #define PERCPU_DYNAMIC_EARLY_SLOTS	128
 #define PERCPU_DYNAMIC_EARLY_SIZE	(12 << 10)
 
- 
-#if BITS_PER_LONG > 32
-#define PERCPU_DYNAMIC_RESERVE		(28 << 10)
-#else
+/* BITS_PER_LONG == 32 */
 #define PERCPU_DYNAMIC_RESERVE		(20 << 10)
-#endif
 
 extern void *pcpu_base_addr;
 extern const unsigned long *pcpu_unit_offsets;

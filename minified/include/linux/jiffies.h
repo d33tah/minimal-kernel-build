@@ -61,14 +61,8 @@ extern int register_refined_jiffies(long clock_tick_rate);
 extern u64 __cacheline_aligned_in_smp jiffies_64;
 extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffies;
 
-#if (BITS_PER_LONG < 64)
+/* BITS_PER_LONG == 32 */
 u64 get_jiffies_64(void);
-#else
-static inline u64 get_jiffies_64(void)
-{
-	return (u64)jiffies;
-}
-#endif
 
  
 #define time_after(a,b)		\
@@ -152,14 +146,9 @@ extern unsigned long preset_lpj;
 #define NSEC_CONVERSION ((unsigned long)((((u64)1 << NSEC_JIFFIE_SC) +\
                                         TICK_NSEC -1) / (u64)TICK_NSEC))
  
-#if BITS_PER_LONG < 64
-# define MAX_SEC_IN_JIFFIES \
+/* BITS_PER_LONG == 32 */
+#define MAX_SEC_IN_JIFFIES \
 	(long)((u64)((u64)MAX_JIFFY_OFFSET * TICK_NSEC) / NSEC_PER_SEC)
-#else	 
-# define MAX_SEC_IN_JIFFIES \
-	(SH_DIV((MAX_JIFFY_OFFSET >> SEC_JIFFIE_SC) * TICK_NSEC, NSEC_PER_SEC, 1) - 1)
-
-#endif
 
  
 extern unsigned int jiffies_to_msecs(const unsigned long j);

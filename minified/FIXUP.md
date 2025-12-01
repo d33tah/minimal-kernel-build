@@ -1,3 +1,21 @@
+--- 2025-12-01 04:07 ---
+PROGRESS: Removed unused IPC buffer headers
+
+Removed:
+- arch/x86/include/uapi/asm/shmbuf.h (41 LOC) - shared memory buffer
+- arch/x86/include/uapi/asm/msgbuf.h (29 LOC) - message buffer
+- arch/x86/include/uapi/asm/sembuf.h (26 LOC) - semaphore buffer
+- IPC headers not used in minimal kernel
+
+Current state:
+- make vm: PASSES, prints "Hello, World!"
+- Binary: 244KB
+- LOC: 194,141 (measured with cloc after mrproper)
+- Goal: 150,000 LOC
+- Gap: 44,141 LOC (23% reduction needed)
+
+Session total so far: ~924 LOC removed
+
 --- 2025-12-01 04:02 ---
 PROGRESS: Removed unused hdlc directory
 

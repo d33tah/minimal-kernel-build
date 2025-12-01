@@ -70,11 +70,10 @@ static inline bool ktime_before(const ktime_t cmp1, const ktime_t cmp2)
 	return ktime_compare(cmp1, cmp2) < 0;
 }
 
-#if BITS_PER_LONG < 64
+/* BITS_PER_LONG == 32 */
 extern s64 __ktime_divns(const ktime_t kt, s64 div);
 static inline s64 ktime_divns(const ktime_t kt, s64 div)
 {
-	 
 	BUG_ON(div < 0);
 	if (__builtin_constant_p(div) && !(div >> 32)) {
 		s64 ns = kt;
@@ -86,14 +85,6 @@ static inline s64 ktime_divns(const ktime_t kt, s64 div)
 		return __ktime_divns(kt, div);
 	}
 }
-#else  
-static inline s64 ktime_divns(const ktime_t kt, s64 div)
-{
-	 
-	WARN_ON(div < 0);
-	return kt / div;
-}
-#endif
 
 static inline s64 ktime_to_us(const ktime_t kt)
 {

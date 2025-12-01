@@ -156,22 +156,11 @@ static inline void init_nodemask_of_node(nodemask_t *mask, int node)
 
 #define NODE_MASK_LAST_WORD BITMAP_LAST_WORD_MASK(MAX_NUMNODES)
 
-#if MAX_NUMNODES <= BITS_PER_LONG
-
+/* MAX_NUMNODES == 1 <= BITS_PER_LONG always */
 #define NODE_MASK_ALL							\
 ((nodemask_t) { {							\
 	[BITS_TO_LONGS(MAX_NUMNODES)-1] = NODE_MASK_LAST_WORD		\
 } })
-
-#else
-
-#define NODE_MASK_ALL							\
-((nodemask_t) { {							\
-	[0 ... BITS_TO_LONGS(MAX_NUMNODES)-2] = ~0UL,			\
-	[BITS_TO_LONGS(MAX_NUMNODES)-1] = NODE_MASK_LAST_WORD		\
-} })
-
-#endif
 
 #define NODE_MASK_NONE							\
 ((nodemask_t) { {							\

@@ -46,11 +46,7 @@ static inline unsigned int get_random_int(void)
 }
 static inline unsigned long get_random_long(void)
 {
-#if BITS_PER_LONG == 64
-	return get_random_u64();
-#else
-	return get_random_u32();
-#endif
+	return get_random_u32(); /* BITS_PER_LONG == 32 */
 }
 
  

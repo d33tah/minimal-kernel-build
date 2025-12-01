@@ -23,11 +23,8 @@
 #define DIV_ROUND_UP_ULL(ll, d) \
 	DIV_ROUND_DOWN_ULL((unsigned long long)(ll) + (d) - 1, (d))
 
-#if BITS_PER_LONG == 32
-# define DIV_ROUND_UP_SECTOR_T(ll,d) DIV_ROUND_UP_ULL(ll, d)
-#else
-# define DIV_ROUND_UP_SECTOR_T(ll,d) DIV_ROUND_UP(ll,d)
-#endif
+/* 32-bit only kernel */
+#define DIV_ROUND_UP_SECTOR_T(ll,d) DIV_ROUND_UP_ULL(ll, d)
 
  
 #define roundup(x, y) (					\

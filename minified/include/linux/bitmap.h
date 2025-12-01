@@ -148,20 +148,13 @@ static inline void bitmap_copy_clear_tail(unsigned long *dst,
 		dst[nbits / BITS_PER_LONG] &= BITMAP_LAST_WORD_MASK(nbits);
 }
 
- 
-#if BITS_PER_LONG == 64
-void bitmap_from_arr32(unsigned long *bitmap, const u32 *buf,
-							unsigned int nbits);
-void bitmap_to_arr32(u32 *buf, const unsigned long *bitmap,
-							unsigned int nbits);
-#else
+/* 32-bit only kernel - simplified arr32 macros */
 #define bitmap_from_arr32(bitmap, buf, nbits)			\
 	bitmap_copy_clear_tail((unsigned long *) (bitmap),	\
 			(const unsigned long *) (buf), (nbits))
 #define bitmap_to_arr32(buf, bitmap, nbits)			\
 	bitmap_copy_clear_tail((unsigned long *) (buf),		\
 			(const unsigned long *) (bitmap), (nbits))
-#endif
 
  
 #if (BITS_PER_LONG == 32) && defined(__BIG_ENDIAN)
@@ -296,15 +289,9 @@ static __always_inline void bitmap_clear(unsigned long *map, unsigned int start,
 	else
 		__bitmap_clear(map, start, nbits);
 }
-
-
-
-#if __BITS_PER_LONG == 64
-#define BITMAP_FROM_U64(n) (n)
-#else
+/* 32-bit only kernel - BITMAP_FROM_U64 expands to two words */
 #define BITMAP_FROM_U64(n) ((unsigned long) ((u64)(n) & ULONG_MAX)), \
 				((unsigned long) ((u64)(n) >> 32))
-#endif
 
 static inline unsigned long bitmap_get_value8(const unsigned long *map,
 					      unsigned long start)

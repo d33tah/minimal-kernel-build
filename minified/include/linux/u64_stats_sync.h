@@ -8,35 +8,7 @@
 struct u64_stats_sync {
 };
 
-#if BITS_PER_LONG == 64
-#include <asm/local64.h>
-
-typedef struct {
-	local64_t	v;
-} u64_stats_t ;
-
-static inline u64 u64_stats_read(const u64_stats_t *p)
-{
-	return local64_read(&p->v);
-}
-
-static inline void u64_stats_set(u64_stats_t *p, u64 val)
-{
-	local64_set(&p->v, val);
-}
-
-static inline void u64_stats_add(u64_stats_t *p, unsigned long val)
-{
-	local64_add(val, &p->v);
-}
-
-static inline void u64_stats_inc(u64_stats_t *p)
-{
-	local64_inc(&p->v);
-}
-
-#else
-
+/* BITS_PER_LONG == 32 (building for i386) */
 typedef struct {
 	u64		v;
 } u64_stats_t;
@@ -60,7 +32,6 @@ static inline void u64_stats_inc(u64_stats_t *p)
 {
 	p->v++;
 }
-#endif
 
 static inline void u64_stats_init(struct u64_stats_sync *syncp)
 {

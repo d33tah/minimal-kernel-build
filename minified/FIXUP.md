@@ -1,3 +1,15 @@
+--- 2025-12-01 21:29 ---
+SESSION CONTINUING
+
+Additional reduction:
+7. 1d186825 - Reduce mm/Kconfig (-814 LOC, not counted by cloc)
+8. 08fc773c - Update DOUBTS.md
+
+Note: cloc doesn't count Kconfig files as "code".
+Total Kconfig reduction in session: ~814 LOC
+
+Waiting for CI to pick up new commits.
+
 --- 2025-12-01 21:14 ---
 SESSION FINAL SUMMARY
 

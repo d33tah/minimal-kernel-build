@@ -62,7 +62,8 @@ $(out)/xen-hypercalls.h: $(srctree)/scripts/xen-hypercalls.sh FORCE
 
 $(out)/xen-hypercalls.h: $(srctree)/include/xen/interface/xen*.h
 
-uapisyshdr-y			+= unistd_32.h unistd_64.h unistd_x32.h
+uapisyshdr-y			+= unistd_32.h
+# Removed for 32-bit only kernel: unistd_64.h unistd_x32.h
 syshdr-y			+= syscalls_32.h
 syshdr-$(CONFIG_X86_64)		+= unistd_32_ia32.h unistd_64_x32.h
 syshdr-$(CONFIG_X86_64)		+= syscalls_64.h

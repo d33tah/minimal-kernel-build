@@ -1,3 +1,18 @@
+--- 2025-12-01 04:22 ---
+PROGRESS: Removed 64-bit syscall table
+
+Removed:
+- arch/x86/entry/syscalls/syscall_64.tbl (419 LOC) - not needed for 32-bit kernel
+- Modified Makefile to not generate unistd_64.h and unistd_x32.h headers
+- Modified Kbuild to not mark those as generated
+
+Current state:
+- make vm: PASSES, prints "Hello, World!"
+- Binary: 244KB
+- LOC: ~194K (measuring at build boundary)
+- Goal: 150,000 LOC
+- Gap: ~44K LOC (23% reduction needed)
+
 --- 2025-12-01 04:17 ---
 SESSION CONTINUING - Additional analysis
 

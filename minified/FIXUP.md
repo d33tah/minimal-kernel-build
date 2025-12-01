@@ -1,3 +1,53 @@
+--- 2025-12-01 08:17 ---
+SESSION PROGRESS
+
+This session:
+1. Restored XZ decompressor files (+2961 LOC) - previous removal broke build
+2. Reduced asm/dma.h: 228 -> 10 LOC (-218)
+3. Reduced asm/apicdef.h: 409 -> 99 LOC (-310)
+   - Removed unused local_apic struct (lines 148-394)
+   - Only BAD_APICID and MAX_LOCAL_APIC actually used
+
+Current LOC: 202,079
+Goal: 150,000 (need ~52K more)
+make vm: PASSES
+
+Approach: Finding large headers and checking which symbols/structs are
+actually used in .c files. This session rate: ~528 LOC removed in 30 min.
+
+Candidates for next reduction:
+- cpufeatures.h: 336 features defined, only 56 used (risky - bit positions)
+- security.h: 430 LOC with 49 stub functions (CONFIG_SECURITY off)
+- mce.h: 238 LOC mostly stubs (CONFIG_X86_MCE off)
+
+--- 2025-12-01 07:54 ---
+SESSION START
+
+Current state:
+- make vm: PASSES (Hello, World! and Still alive)
+- LOC: 200,358 (current measurement)
+- Goal: 150,000 (need ~50K more)
+- bzImage: 244KB
+
+Analysis:
+- scripts/ has 16K LOC needed for build
+- include/linux has 51K LOC in 512 headers (most used)
+- arch/x86 has 40K LOC (include: 17K, kernel: 10K)
+- mm has 19K LOC - all being compiled
+- kernel has 25K LOC - all being compiled
+- fs has 14.5K LOC - all being compiled
+- TTY has 5K LOC - needed for console output
+
+Attempted strategies:
+1. Finding unused .c files - none found (all compiled or #included)
+2. Searching for unused inline functions in headers - slow
+3. Looking for disabled CONFIG features - RSEQ is off but only has tiny stubs
+
+The code is tightly integrated. Major reductions would need:
+- Stubbing entire subsystems (risky, breaks "make vm")
+- Trimming headers function by function (slow, 143 LOC/hour)
+- Removing entire arch/x86 features we don't need
+
 --- 2025-12-01 04:25 ---
 SESSION SUMMARY
 

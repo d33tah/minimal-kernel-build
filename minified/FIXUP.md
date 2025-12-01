@@ -1,3 +1,19 @@
+--- 2025-12-01 04:02 ---
+PROGRESS: Removed unused hdlc directory
+
+Removed:
+- include/uapi/linux/hdlc/ directory (94 LOC)
+- HDLC (High-Level Data Link Control) not needed for minimal kernel
+
+Current state:
+- make vm: PASSES, prints "Hello, World!"
+- Binary: 244KB
+- LOC: 194,203 (measured with cloc after mrproper)
+- Goal: 150,000 LOC
+- Gap: 44,203 LOC (23% reduction needed)
+
+Session total so far: ~862 LOC removed
+
 --- 2025-12-01 03:54 ---
 PROGRESS: Removed more unused uapi headers
 

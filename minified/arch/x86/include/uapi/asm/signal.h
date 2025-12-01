@@ -71,9 +71,7 @@ typedef unsigned long sigset_t;
 
 
 # ifndef __KERNEL__
- 
-#ifdef __i386__
-
+/* 32-bit only kernel - removed x86_64 sigaction */
 struct sigaction {
 	union {
 	  __sighandler_t _sa_handler;
@@ -87,16 +85,6 @@ struct sigaction {
 #define sa_handler	_u._sa_handler
 #define sa_sigaction	_u._sa_sigaction
 
-#else  
-
-struct sigaction {
-	__sighandler_t sa_handler;
-	unsigned long sa_flags;
-	__sigrestore_t sa_restorer;
-	sigset_t sa_mask;		 
-};
-
-#endif  
 # endif  
 
 typedef struct sigaltstack {

@@ -167,24 +167,9 @@ static inline struct address_space *page_file_mapping(struct page *page)
 	return folio_file_mapping(page_folio(page));
 }
 
-static inline struct inode *folio_inode(struct folio *folio)
-{
-	return folio->mapping->host;
-}
-
 static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 {
 	return folio_alloc(gfp, order);
-}
-
-static inline struct page *__page_cache_alloc(gfp_t gfp)
-{
-	return &filemap_alloc_folio(gfp, 0)->page;
-}
-
-static inline struct page *page_cache_alloc(struct address_space *x)
-{
-	return __page_cache_alloc(mapping_gfp_mask(x));
 }
 
 typedef int filler_t(struct file *, struct folio *);
@@ -392,13 +377,6 @@ static inline bool folio_trylock(struct folio *folio)
 	return likely(!test_and_set_bit_lock(PG_locked, folio_flags(folio, 0)));
 }
 
- 
-static inline int trylock_page(struct page *page)
-{
-	return folio_trylock(page_folio(page));
-}
-
- 
 static inline void folio_lock(struct folio *folio)
 {
 	might_sleep();
@@ -417,33 +395,6 @@ static inline void lock_page(struct page *page)
 		__folio_lock(folio);
 }
 
- 
-static inline int folio_lock_killable(struct folio *folio)
-{
-	might_sleep();
-	if (!folio_trylock(folio))
-		return __folio_lock_killable(folio);
-	return 0;
-}
-
- 
-static inline int lock_page_killable(struct page *page)
-{
-	return folio_lock_killable(page_folio(page));
-}
-
- 
-static inline bool lock_page_or_retry(struct page *page, struct mm_struct *mm,
-				     unsigned int flags)
-{
-	struct folio *folio;
-	might_sleep();
-
-	folio = page_folio(page);
-	return folio_trylock(folio) || __folio_lock_or_retry(folio, mm, flags);
-}
-
- 
 void folio_wait_bit(struct folio *folio, int bit_nr);
 int folio_wait_bit_killable(struct folio *folio, int bit_nr);
 

@@ -17,8 +17,7 @@ typedef elf_greg_t elf_gregset_t[ELF_NGREG];
 
 typedef struct user_i387_struct elf_fpregset_t;
 
-#ifdef __i386__
-
+/* 32-bit only kernel - removed x86_64 relocation types */
 #define R_386_NONE	0
 #define R_386_32	1
 #define R_386_PC32	2
@@ -32,38 +31,9 @@ typedef struct user_i387_struct elf_fpregset_t;
 #define R_386_GOTPC	10
 #define R_386_NUM	11
 
- 
 #define ELF_CLASS	ELFCLASS32
 #define ELF_DATA	ELFDATA2LSB
 #define ELF_ARCH	EM_386
-
-#else
-
- 
-#define R_X86_64_NONE		0	 
-#define R_X86_64_64		1	 
-#define R_X86_64_PC32		2	 
-#define R_X86_64_GOT32		3	 
-#define R_X86_64_PLT32		4	 
-#define R_X86_64_COPY		5	 
-#define R_X86_64_GLOB_DAT	6	 
-#define R_X86_64_JUMP_SLOT	7	 
-#define R_X86_64_RELATIVE	8	 
-#define R_X86_64_GOTPCREL	9	 
-#define R_X86_64_32		10	 
-#define R_X86_64_32S		11	 
-#define R_X86_64_16		12	 
-#define R_X86_64_PC16		13	 
-#define R_X86_64_8		14	 
-#define R_X86_64_PC8		15	 
-#define R_X86_64_PC64		24	 
-
- 
-#define ELF_CLASS	ELFCLASS64
-#define ELF_DATA	ELFDATA2LSB
-#define ELF_ARCH	EM_X86_64
-
-#endif
 
 #include <asm/vdso.h>
 

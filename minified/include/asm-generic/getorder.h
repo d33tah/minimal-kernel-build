@@ -22,11 +22,7 @@ static __always_inline __attribute_const__ int get_order(unsigned long size)
 
 	size--;
 	size >>= PAGE_SHIFT;
-#if BITS_PER_LONG == 32
-	return fls(size);
-#else
-	return fls64(size);
-#endif
+	return fls(size); /* BITS_PER_LONG == 32 */
 }
 
 #endif	 

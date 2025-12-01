@@ -87,41 +87,8 @@ extern int mmap_rnd_bits __read_mostly;
 #define mm_forbids_zeropage(X)	(0)
 #endif
 
-#if BITS_PER_LONG == 64
-
-#define	mm_zero_struct_page(pp) __mm_zero_struct_page(pp)
-static inline void __mm_zero_struct_page(struct page *page)
-{
-	unsigned long *_pp = (void *)page;
-
-	 
-	BUILD_BUG_ON(sizeof(struct page) & 7);
-	BUILD_BUG_ON(sizeof(struct page) < 56);
-	BUILD_BUG_ON(sizeof(struct page) > 80);
-
-	switch (sizeof(struct page)) {
-	case 80:
-		_pp[9] = 0;
-		fallthrough;
-	case 72:
-		_pp[8] = 0;
-		fallthrough;
-	case 64:
-		_pp[7] = 0;
-		fallthrough;
-	case 56:
-		_pp[6] = 0;
-		_pp[5] = 0;
-		_pp[4] = 0;
-		_pp[3] = 0;
-		_pp[2] = 0;
-		_pp[1] = 0;
-		_pp[0] = 0;
-	}
-}
-#else
+/* BITS_PER_LONG == 32 */
 #define mm_zero_struct_page(pp)  ((void)memset((pp), 0, sizeof(struct page)))
-#endif
 
 #define MAPCOUNT_ELF_CORE_MARGIN	(5)
 #define DEFAULT_MAX_MAP_COUNT	(USHRT_MAX - MAPCOUNT_ELF_CORE_MARGIN)

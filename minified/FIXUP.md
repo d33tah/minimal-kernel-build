@@ -1,3 +1,22 @@
+--- 2025-12-01 08:32 ---
+SESSION PROGRESS - ADDITIONAL FIXES
+
+4. Restored vdso/vclock_gettime.c and lib/vdso/gettimeofday.c (+383 LOC)
+   - Previous removal broke build (included via #include from vdso32)
+5. Reduced asm/ptrace.h: 262 -> 158 LOC (-104)
+   - Removed unused kprobe/ftrace register access functions
+
+Current LOC: 202,335
+Goal: 150,000 (need ~52K more)
+make vm: PASSES
+
+Note: Previous sessions incorrectly removed files that are included via
+#include from other files:
+- XZ decompressor
+- vdso/vclock_gettime.c
+- lib/vdso/gettimeofday.c
+These break the build on mrproper + full rebuild but pass incremental.
+
 --- 2025-12-01 08:17 ---
 SESSION PROGRESS
 

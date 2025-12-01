@@ -1,3 +1,20 @@
+--- 2025-12-01 01:10 ---
+SESSION UPDATE
+
+Additional attempts:
+- Tried removing percpu-km.c (100 LOC) - FAILED: #included by percpu.c
+- Checked uncompiled files: bounds.c (compile-time), decompress_unxz.c (boot)
+- scripts/kconfig/ is 11K LOC but needed for build system
+- Core headers (mm.h, fs.h, sched.h) = 4.8K LOC, heavily used
+
+The 150K LOC goal appears to require architectural changes:
+1. Move to a simpler console (serial instead of VGA) - save ~2K LOC
+2. Use embedded simple scheduler instead of CFS - save ~1.5K LOC
+3. Reduce header dependencies manually - labor intensive
+4. Custom minimal libc/mm subsystem - major rewrite
+
+None of these are quick wins. Continuing to look for incremental reductions.
+
 --- 2025-12-01 01:02 ---
 SESSION CONTINUING
 

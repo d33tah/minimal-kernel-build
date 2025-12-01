@@ -1,3 +1,31 @@
+--- 2025-12-01 04:15 ---
+SESSION ANALYSIS - Need different approach for large reduction
+
+Session summary:
+- Removed ~950 LOC via unused header removal
+- Current: 194,141 LOC | Goal: 150,000 LOC | Gap: 44,141 LOC
+
+Files removed this session:
+- include/linux/bio.h, in6.h, in.h, nfs_fs_i.h
+- include/uapi/linux/in.h, if.h, in6.h, sockios.h
+- include/uapi/linux/hdlc/ directory
+- arch/x86/include/uapi/asm/shmbuf.h, msgbuf.h, sembuf.h
+- arch/x86/include/asm/emulate_prefix.h, hyperv-tlfs.h, mmzone.h, cacheinfo.h
+
+Analysis of remaining opportunities:
+- Most remaining headers are heavily interconnected
+- Large files like fs.h (2K LOC), mm.h (1.8K LOC), sched.h (1K LOC) are core
+- Need to consider subsystem-level reductions:
+  * Simplify VT subsystem (drivers/tty/vt/ is ~1.7K LOC)
+  * Reduce memory management complexity
+  * Simplify scheduler (kernel/sched/ is ~7K LOC)
+
+Potential large wins (need careful testing):
+1. Switch from VT console to simpler serial console
+2. Remove or stub more syscalls
+3. Simplify memory allocator
+4. Reduce scheduler to bare minimum
+
 --- 2025-12-01 04:12 ---
 PROGRESS: Removed more unused arch headers
 

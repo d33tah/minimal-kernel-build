@@ -660,30 +660,11 @@ static const struct option long_opts[] = {
 static void conf_usage(const char *progname)
 {
 	printf("Usage: %s [options] <kconfig-file>\n", progname);
-	printf("\n");
-	printf("Generic options:\n");
-	printf("  -h, --help              Print this message and exit.\n");
-	printf("  -s, --silent            Do not print log.\n");
-	printf("\n");
-	printf("Mode options:\n");
-	printf("  --listnewconfig         List new options\n");
-	printf("  --helpnewconfig         List new options and help text\n");
-	printf("  --oldaskconfig          Start a new configuration using a line-oriented program\n");
-	printf("  --oldconfig             Update a configuration using a provided .config as base\n");
-	printf("  --syncconfig            Similar to oldconfig but generates configuration in\n"
-	       "                          include/{generated/,config/}\n");
-	printf("  --olddefconfig          Same as oldconfig but sets new symbols to their default value\n");
-	printf("  --defconfig <file>      New config with default defined in <file>\n");
-	printf("  --savedefconfig <file>  Save the minimal current configuration to <file>\n");
-	printf("  --allnoconfig           New config where all options are answered with no\n");
-	printf("  --allyesconfig          New config where all options are answered with yes\n");
-	printf("  --allmodconfig          New config where all options are answered with mod\n");
-	printf("  --alldefconfig          New config with all symbols set to default\n");
-	printf("  --randconfig            New config with random answer to all options\n");
-	printf("  --yes2modconfig         Change answers from yes to mod if possible\n");
-	printf("  --mod2yesconfig         Change answers from mod to yes if possible\n");
-	printf("  --mod2noconfig          Change answers from mod to no if possible\n");
-	printf("  (If none of the above is given, --oldaskconfig is the default)\n");
+	printf("  -h, --help, -s, --silent, --listnewconfig, --helpnewconfig\n");
+	printf("  --oldaskconfig, --oldconfig, --syncconfig, --olddefconfig\n");
+	printf("  --defconfig <file>, --savedefconfig <file>\n");
+	printf("  --allnoconfig, --allyesconfig, --allmodconfig, --alldefconfig\n");
+	printf("  --randconfig, --yes2modconfig, --mod2yesconfig, --mod2noconfig\n");
 }
 
 int main(int ac, char **av)

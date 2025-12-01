@@ -42,17 +42,11 @@
  
 #define EPOLLET		((__force __poll_t)(1U << 31))
 
- 
-#ifdef __x86_64__
-#define EPOLL_PACKED __attribute__((packed))
-#else
-#define EPOLL_PACKED
-#endif
-
+/* 32-bit only kernel - no packing needed */
 struct epoll_event {
 	__poll_t events;
 	__u64 data;
-} EPOLL_PACKED;
+};
 
 static inline void ep_take_care_of_epollwakeup(struct epoll_event *epev)
 {

@@ -1,3 +1,12 @@
+--- 2025-12-01 08:56 ---
+CI WAITING
+
+Pipeline #34647 stuck in pending state for 7+ minutes.
+URL: https://gitlab.profound.net/claude/minimal-kernel-build/-/pipelines/34647
+
+Local make vm: PASSES
+Will continue waiting for CI.
+
 --- 2025-12-01 08:42 ---
 SESSION UPDATE - IMPORTANT
 
@@ -17,7 +26,7 @@ Net effect: Fixed broken builds, made small header reductions.
 
 make vm: PASSES (verified with mrproper + full rebuild)
 
-NOTE: This is a Github project, NOT Gitlab. Use `gh` not `glab`.
+NOTE: This project has both Github and Gitlab remotes.
 
 --- 2025-12-01 08:05 ---
 SESSION UPDATE

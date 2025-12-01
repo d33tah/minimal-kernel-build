@@ -76,31 +76,7 @@ static inline unsigned int cpumask_any_but(const struct cpumask *mask,
 
 #define for_each_cpu(cpu, mask)			\
 	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
-#else
- 
-static inline unsigned int cpumask_first(const struct cpumask *srcp)
-{
-	return find_first_bit(cpumask_bits(srcp), nr_cpumask_bits);
-}
-
-unsigned int __pure cpumask_next(int n, const struct cpumask *srcp);
-
-/* cpumask_next_and, cpumask_local_spread, cpumask_any_*_distribute removed - unused */
-int __pure cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
-
- 
-#define for_each_cpu(cpu, mask)				\
-	for ((cpu) = -1;				\
-		(cpu) = cpumask_next((cpu), (mask)),	\
-		(cpu) < nr_cpu_ids;)
-
- 
-
-
- 
-
- 
-#endif  
+#endif
 
 #define CPU_BITS_NONE						\
 {								\
@@ -306,28 +282,7 @@ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 	return to_cpumask(p);
 }
 
-#if NR_CPUS > 1
- 
-static inline unsigned int num_online_cpus(void)
-{
-	return atomic_read(&__num_online_cpus);
-}
-#define num_possible_cpus()	cpumask_weight(cpu_possible_mask)
-#define num_present_cpus()	cpumask_weight(cpu_present_mask)
-#define num_active_cpus()	cpumask_weight(cpu_active_mask)
-
-static inline bool cpu_online(unsigned int cpu)
-{
-	return cpumask_test_cpu(cpu, cpu_online_mask);
-}
-
-static inline bool cpu_possible(unsigned int cpu)
-{
-	return cpumask_test_cpu(cpu, cpu_possible_mask);
-}
-
-#else
-
+/* NR_CPUS == 1 - simplified */
 #define num_online_cpus()	1U
 #define num_possible_cpus()	1U
 #define num_present_cpus()	1U
@@ -343,24 +298,13 @@ static inline bool cpu_possible(unsigned int cpu)
 	return cpu == 0;
 }
 
-#endif  
-
 #define cpu_is_offline(cpu)	unlikely(!cpu_online(cpu))
 
-#if NR_CPUS <= BITS_PER_LONG
+/* NR_CPUS <= BITS_PER_LONG always true */
 #define CPU_BITS_ALL						\
 {								\
 	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
 }
-
-#else  
-
-#define CPU_BITS_ALL						\
-{								\
-	[0 ... BITS_TO_LONGS(NR_CPUS)-2] = ~0UL,		\
-	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
-}
-#endif  
 
  
 static inline ssize_t
@@ -388,18 +332,11 @@ cpumap_print_list_to_buf(char *buf, const struct cpumask *mask,
 				   nr_cpu_ids, off, count) - 1;
 }
 
-#if NR_CPUS <= BITS_PER_LONG
+/* NR_CPUS <= BITS_PER_LONG always true */
 #define CPU_MASK_ALL							\
 (cpumask_t) { {								\
 	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
 } }
-#else
-#define CPU_MASK_ALL							\
-(cpumask_t) { {								\
-	[0 ... BITS_TO_LONGS(NR_CPUS)-2] = ~0UL,			\
-	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
-} }
-#endif  
 
 #define CPU_MASK_NONE							\
 (cpumask_t) { {								\

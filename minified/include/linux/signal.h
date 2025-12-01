@@ -301,11 +301,8 @@ extern bool unhandled_signal(struct task_struct *tsk, int sig);
 #define SIGEMT_MASK	0
 #endif
 
-#if SIGRTMIN > BITS_PER_LONG
-#define rt_sigmask(sig)	(1ULL << ((sig)-1))
-#else
+/* SIGRTMIN == BITS_PER_LONG == 32 */
 #define rt_sigmask(sig)	sigmask(sig)
-#endif
 
 #define siginmask(sig, mask) \
 	((sig) > 0 && (sig) < SIGRTMIN && (rt_sigmask(sig) & (mask)))

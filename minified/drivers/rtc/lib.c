@@ -94,11 +94,8 @@ int rtc_valid_tm(struct rtc_time *tm)
 	return 0;
 }
 
-time64_t rtc_tm_to_time64(struct rtc_time *tm)
-{
-	return mktime64(((unsigned int)tm->tm_year + 1900), tm->tm_mon + 1,
-			tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-}
+/* Stub: rtc_tm_to_time64 not used */
+time64_t rtc_tm_to_time64(struct rtc_time *tm) { BUG(); }
 
 /* Stub: rtc_tm_to_ktime not used externally */
 ktime_t rtc_tm_to_ktime(struct rtc_time tm) { BUG(); }

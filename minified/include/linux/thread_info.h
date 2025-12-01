@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_THREAD_INFO_H
 #define _LINUX_THREAD_INFO_H
@@ -10,13 +8,11 @@
 #include <linux/restart_block.h>
 #include <linux/errno.h>
 
- 
 #include <asm/current.h>
 #define current_thread_info() ((struct thread_info *)current)
 
 #include <linux/bitops.h>
 
- 
 enum {
 	BAD_STACK = -1,
 	NOT_STACK = 0,
@@ -64,7 +60,6 @@ static inline long set_restart_fn(struct restart_block *restart,
 
 #define THREADINFO_GFP		(GFP_KERNEL_ACCOUNT | __GFP_ZERO)
 
- 
 
 static inline void set_ti_thread_flag(struct thread_info *ti, int flag)
 {
@@ -100,7 +95,6 @@ static inline int test_ti_thread_flag(struct thread_info *ti, int flag)
 	return test_bit(flag, (unsigned long *)&ti->flags);
 }
 
- 
 static __always_inline unsigned long read_ti_thread_flags(struct thread_info *ti)
 {
 	return READ_ONCE(ti->flags);

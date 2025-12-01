@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_HIGHMEM_INTERNAL_H
 #define _LINUX_HIGHMEM_INTERNAL_H
 
- 
 void *__kmap_local_pfn_prot(unsigned long pfn, pgprot_t prot);
 void *__kmap_local_page_prot(struct page *page, pgprot_t prot);
 void kunmap_local_indexed(void *vaddr);
@@ -90,14 +88,12 @@ static inline void __kunmap_atomic(void *addr)
 /* nr_free_highpages, totalhigh_pages, is_kmap_addr removed - unused */
 
 
- 
 #define kunmap_atomic(__addr)					\
 do {								\
 	BUILD_BUG_ON(__same_type((__addr), struct page *));	\
 	__kunmap_atomic(__addr);				\
 } while (0)
 
- 
 #define kunmap_local(__addr)					\
 do {								\
 	BUILD_BUG_ON(__same_type((__addr), struct page *));	\

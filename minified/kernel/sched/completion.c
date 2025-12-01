@@ -1,6 +1,4 @@
- 
 
- 
 
 /* Stubbed: complete not used */
 void complete(struct completion *x) { }

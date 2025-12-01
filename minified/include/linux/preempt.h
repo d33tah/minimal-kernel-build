@@ -1,13 +1,10 @@
- 
 #ifndef __LINUX_PREEMPT_H
 #define __LINUX_PREEMPT_H
 
- 
 
 #include <linux/linkage.h>
 #include <linux/list.h>
 
- 
 #define PREEMPT_BITS	8
 #define SOFTIRQ_BITS	8
 #define HARDIRQ_BITS	4
@@ -34,16 +31,12 @@
 
 #define PREEMPT_DISABLED	(PREEMPT_DISABLE_OFFSET + PREEMPT_ENABLED)
 
- 
 #define INIT_PREEMPT_COUNT	PREEMPT_OFFSET
 
- 
 #define FORK_PREEMPT_COUNT	(2*PREEMPT_DISABLE_OFFSET + PREEMPT_ENABLED)
 
- 
 #include <asm/preempt.h>
 
- 
 static __always_inline unsigned char interrupt_context_level(void)
 {
 	unsigned long pc = preempt_count();
@@ -61,30 +54,23 @@ static __always_inline unsigned char interrupt_context_level(void)
 # define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
 #define irq_count()	(nmi_count() | hardirq_count() | softirq_count())
 
- 
 #define in_nmi()		(nmi_count())
 #define in_hardirq()		(hardirq_count())
 #define in_serving_softirq()	(softirq_count() & SOFTIRQ_OFFSET)
 #define in_task()		(!(in_nmi() | in_hardirq() | in_serving_softirq()))
 
- 
 #define in_irq()		(hardirq_count())
 #define in_softirq()		(softirq_count())
 #define in_interrupt()		(irq_count())
 
- 
 # define PREEMPT_DISABLE_OFFSET	0
 
- 
 #define PREEMPT_LOCK_OFFSET		PREEMPT_DISABLE_OFFSET
 
- 
 #define SOFTIRQ_LOCK_OFFSET (SOFTIRQ_DISABLE_OFFSET + PREEMPT_LOCK_OFFSET)
 
- 
 #define in_atomic()	(preempt_count() != 0)
 
- 
 #define in_atomic_preempt_off() (preempt_count() != PREEMPT_DISABLE_OFFSET)
 
 #define preempt_count_add(val)	__preempt_count_add(val)
@@ -98,7 +84,6 @@ static __always_inline unsigned char interrupt_context_level(void)
 #define preempt_count_dec() preempt_count_sub(1)
 
 
- 
 #define preempt_disable()			barrier()
 #define sched_preempt_enable_no_resched()	barrier()
 #define preempt_enable_no_resched()		barrier()
@@ -112,7 +97,6 @@ static __always_inline unsigned char interrupt_context_level(void)
 
 
 #ifdef MODULE
- 
 #undef sched_preempt_enable_no_resched
 #undef preempt_enable_no_resched
 #undef preempt_enable_no_resched_notrace

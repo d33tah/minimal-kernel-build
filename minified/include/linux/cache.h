@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_CACHE_H
 #define __LINUX_CACHE_H
 
@@ -13,12 +12,10 @@
 #define SMP_CACHE_BYTES L1_CACHE_BYTES
 #endif
 
- 
 #ifndef __read_mostly
 #define __read_mostly
 #endif
 
- 
 #ifndef __ro_after_init
 #define __ro_after_init __section(".data..ro_after_init")
 #endif
@@ -41,7 +38,6 @@
 #define __cacheline_aligned_in_smp
 #endif
 
- 
 #ifndef INTERNODE_CACHE_SHIFT
 #define INTERNODE_CACHE_SHIFT L1_CACHE_SHIFT
 #endif

@@ -1,15 +1,12 @@
- 
 #ifndef _LINUX_FS_NOTIFY_H
 #define _LINUX_FS_NOTIFY_H
 
- 
 
 #include <linux/fsnotify_backend.h>
 #include <linux/audit.h>
 #include <linux/slab.h>
 #include <linux/bug.h>
 
- 
 static inline int fsnotify_name(__u32 mask, const void *data, int data_type,
 				struct inode *dir, const struct qstr *name,
 				u32 cookie)
@@ -37,7 +34,6 @@ static inline void fsnotify_inode(struct inode *inode, __u32 mask)
 	fsnotify(mask, inode, FSNOTIFY_EVENT_INODE, NULL, NULL, inode, 0);
 }
 
- 
 static inline int fsnotify_parent(struct dentry *dentry, __u32 mask,
 				  const void *data, int data_type)
 {
@@ -64,7 +60,6 @@ notify_child:
 	return fsnotify(mask, data, data_type, NULL, NULL, inode, 0);
 }
 
- 
 static inline void fsnotify_dentry(struct dentry *dentry, __u32 mask)
 {
 	fsnotify_parent(dentry, mask, dentry, FSNOTIFY_EVENT_DENTRY);
@@ -80,7 +75,6 @@ static inline int fsnotify_file(struct file *file, __u32 mask)
 	return fsnotify_parent(path->dentry, mask, path, FSNOTIFY_EVENT_PATH);
 }
 
- 
 static inline int fsnotify_perm(struct file *file, int mask)
 {
 	int ret;
@@ -105,13 +99,11 @@ static inline int fsnotify_perm(struct file *file, int mask)
 	return fsnotify_file(file, fsnotify_mask);
 }
 
- 
 static inline void fsnotify_link_count(struct inode *inode)
 {
 	fsnotify_inode(inode, FS_ATTRIB);
 }
 
- 
 static inline void fsnotify_move(struct inode *old_dir, struct inode *new_dir,
 				 const struct qstr *old_name,
 				 int isdir, struct inode *target,
@@ -145,26 +137,22 @@ static inline void fsnotify_move(struct inode *old_dir, struct inode *new_dir,
 	audit_inode_child(new_dir, moved, AUDIT_TYPE_CHILD_CREATE);
 }
 
- 
 static inline void fsnotify_inode_delete(struct inode *inode)
 {
 	__fsnotify_inode_delete(inode);
 }
 
- 
 static inline void fsnotify_vfsmount_delete(struct vfsmount *mnt)
 {
 	__fsnotify_vfsmount_delete(mnt);
 }
 
- 
 static inline void fsnotify_inoderemove(struct inode *inode)
 {
 	fsnotify_inode(inode, FS_DELETE_SELF);
 	__fsnotify_inode_delete(inode);
 }
 
- 
 static inline void fsnotify_create(struct inode *dir, struct dentry *dentry)
 {
 	audit_inode_child(dir, dentry, AUDIT_TYPE_CHILD_CREATE);
@@ -172,7 +160,6 @@ static inline void fsnotify_create(struct inode *dir, struct dentry *dentry)
 	fsnotify_dirent(dir, dentry, FS_CREATE);
 }
 
- 
 static inline void fsnotify_link(struct inode *dir, struct inode *inode,
 				 struct dentry *new_dentry)
 {
@@ -183,7 +170,6 @@ static inline void fsnotify_link(struct inode *dir, struct inode *inode,
 		      dir, &new_dentry->d_name, 0);
 }
 
- 
 static inline void fsnotify_delete(struct inode *dir, struct inode *inode,
 				   struct dentry *dentry)
 {
@@ -196,7 +182,6 @@ static inline void fsnotify_delete(struct inode *dir, struct inode *inode,
 		      0);
 }
 
- 
 static inline void d_delete_notify(struct inode *dir, struct dentry *dentry)
 {
 	struct inode *inode = d_inode(dentry);
@@ -207,7 +192,6 @@ static inline void d_delete_notify(struct inode *dir, struct dentry *dentry)
 	iput(inode);
 }
 
- 
 static inline void fsnotify_unlink(struct inode *dir, struct dentry *dentry)
 {
 	if (WARN_ON_ONCE(d_is_negative(dentry)))
@@ -216,7 +200,6 @@ static inline void fsnotify_unlink(struct inode *dir, struct dentry *dentry)
 	fsnotify_delete(dir, d_inode(dentry), dentry);
 }
 
- 
 static inline void fsnotify_mkdir(struct inode *dir, struct dentry *dentry)
 {
 	audit_inode_child(dir, dentry, AUDIT_TYPE_CHILD_CREATE);
@@ -224,7 +207,6 @@ static inline void fsnotify_mkdir(struct inode *dir, struct dentry *dentry)
 	fsnotify_dirent(dir, dentry, FS_CREATE | FS_ISDIR);
 }
 
- 
 static inline void fsnotify_rmdir(struct inode *dir, struct dentry *dentry)
 {
 	if (WARN_ON_ONCE(d_is_negative(dentry)))
@@ -233,19 +215,16 @@ static inline void fsnotify_rmdir(struct inode *dir, struct dentry *dentry)
 	fsnotify_delete(dir, d_inode(dentry), dentry);
 }
 
- 
 static inline void fsnotify_access(struct file *file)
 {
 	fsnotify_file(file, FS_ACCESS);
 }
 
- 
 static inline void fsnotify_modify(struct file *file)
 {
 	fsnotify_file(file, FS_MODIFY);
 }
 
- 
 static inline void fsnotify_open(struct file *file)
 {
 	__u32 mask = FS_OPEN;
@@ -256,7 +235,6 @@ static inline void fsnotify_open(struct file *file)
 	fsnotify_file(file, mask);
 }
 
- 
 static inline void fsnotify_close(struct file *file)
 {
 	__u32 mask = (file->f_mode & FMODE_WRITE) ? FS_CLOSE_WRITE :
@@ -265,13 +243,11 @@ static inline void fsnotify_close(struct file *file)
 	fsnotify_file(file, mask);
 }
 
- 
 static inline void fsnotify_xattr(struct dentry *dentry)
 {
 	fsnotify_dentry(dentry, FS_ATTRIB);
 }
 
- 
 static inline void fsnotify_change(struct dentry *dentry, unsigned int ia_valid)
 {
 	__u32 mask = 0;

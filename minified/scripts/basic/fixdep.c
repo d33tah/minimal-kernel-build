@@ -1,4 +1,3 @@
- 
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -36,7 +35,6 @@ static unsigned int strhash(const char *str, unsigned int sz)
 	return hash;
 }
 
- 
 static int is_defined_config(const char *name, int len, unsigned int hash)
 {
 	struct item *aux;
@@ -49,7 +47,6 @@ static int is_defined_config(const char *name, int len, unsigned int hash)
 	return 0;
 }
 
- 
 static void define_config(const char *name, int len, unsigned int hash)
 {
 	struct item *aux = malloc(sizeof(*aux) + len);
@@ -65,7 +62,6 @@ static void define_config(const char *name, int len, unsigned int hash)
 	hashtab[hash % HASHSZ] = aux;
 }
 
- 
 static void use_config(const char *m, int slen)
 {
 	unsigned int hash = strhash(m, slen);
@@ -78,7 +74,6 @@ static void use_config(const char *m, int slen)
 	printf("    $(wildcard include/config/%.*s) \\\n", slen, m);
 }
 
- 
 static int str_ends_with(const char *s, int slen, const char *sub)
 {
 	int sublen = strlen(sub);
@@ -145,14 +140,12 @@ static void *read_file(const char *filename)
 	return buf;
 }
 
- 
 static int is_ignored_file(const char *s, int len)
 {
 	return str_ends_with(s, len, "include/generated/autoconf.h") ||
 	       str_ends_with(s, len, "include/generated/autoksyms.h");
 }
 
- 
 static void parse_dep_file(char *m, const char *target)
 {
 	char *p;

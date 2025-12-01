@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/kernel.h>
 #include <linux/mm.h>
@@ -7,7 +5,6 @@
 #include <linux/syscalls.h>
 #include <linux/export.h>
 
- 
 void file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping)
 {
 	 
@@ -42,7 +39,6 @@ void readahead_expand(struct readahead_control *ractl,
 	 
 }
 
- 
 ssize_t ksys_readahead(int fd, loff_t offset, size_t count)
 {
 	return -ENOSYS;

@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_FS_PARSER_H
 #define _LINUX_FS_PARSER_H
@@ -19,12 +17,10 @@ typedef int fs_param_type(struct p_log *,
 			  const struct fs_parameter_spec *,
 			  struct fs_parameter *,
 			  struct fs_parse_result *);
- 
 fs_param_type fs_param_is_bool, fs_param_is_u32, fs_param_is_s32, fs_param_is_u64,
 	fs_param_is_enum, fs_param_is_string, fs_param_is_blob, fs_param_is_blockdev,
 	fs_param_is_path, fs_param_is_fd;
 
- 
 struct fs_parameter_spec {
 	const char		*name;
 	fs_param_type		*type;	 
@@ -36,7 +32,6 @@ struct fs_parameter_spec {
 	const void		*data;
 };
 
- 
 struct fs_parse_result {
 	bool			negated;	 
 	union {
@@ -74,7 +69,6 @@ static inline bool fs_validate_description(const char *name,
 					   const struct fs_parameter_spec *desc)
 { return true; }
 
- 
 #define __fsparam(TYPE, NAME, OPT, FLAGS, DATA) \
 	{ \
 		.name = NAME, \

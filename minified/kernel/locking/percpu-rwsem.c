@@ -1,4 +1,3 @@
- 
 #include <linux/atomic.h>
 #include <linux/percpu.h>
 #include <linux/wait.h>
@@ -77,7 +76,6 @@ static bool __percpu_rwsem_trylock(struct percpu_rw_semaphore *sem, bool reader)
 	return __percpu_down_write_trylock(sem);
 }
 
- 
 static int percpu_rwsem_wake_function(struct wait_queue_entry *wq_entry,
 				      unsigned int mode, int wake_flags,
 				      void *key)
@@ -150,7 +148,6 @@ bool __sched __percpu_down_read(struct percpu_rw_semaphore *sem, bool try)
 	__sum;								\
 })
 
- 
 static bool readers_active_check(struct percpu_rw_semaphore *sem)
 {
 	if (per_cpu_sum(*sem->read_count) != 0)

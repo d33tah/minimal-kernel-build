@@ -1,5 +1,3 @@
- 
- 
 
 #define __NO_FORTIFY
 #include <linux/string.h>

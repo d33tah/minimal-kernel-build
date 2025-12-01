@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_TRACEPOINT_H
 #define _LINUX_TRACEPOINT_H
 
- 
 
 #include <linux/smp.h>
 #include <linux/srcu.h>
@@ -61,7 +59,6 @@ int unregister_tracepoint_module_notifier(struct notifier_block *nb)
 	return 0;
 }
 
- 
 static inline void tracepoint_synchronize_unregister(void)
 { }
 
@@ -87,7 +84,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 
 #endif  
 
- 
 
 #ifndef DECLARE_TRACE
 
@@ -95,7 +91,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 #define TP_ARGS(args...)	args
 #define TP_CONDITION(args...)	args
 
- 
 
 /* TRACEPOINTS_ENABLED is not defined - use stub implementations */
 #define __DECLARE_TRACE(name, proto, args, cond, data_proto)		\
@@ -127,7 +122,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 #define DEFINE_TRACE_FN(name, reg, unreg, proto, args)
 #define DEFINE_TRACE(name, proto, args)
 
- 
 # define tracepoint_string(str) str
 # define __tracepoint_string
 
@@ -148,7 +142,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 #endif  
 
 #ifndef TRACE_EVENT
- 
 
 #define DECLARE_EVENT_CLASS(name, proto, args, tstruct, assign, print)
 #define DEFINE_EVENT(template, name, proto, args)		\
@@ -197,7 +190,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 
 #endif  
 
- 
 static inline void trace_sys_exit(struct pt_regs *regs, long ret) {}
 static inline void trace_alarmtimer_fired(void *alarm, ktime_t now) {}
 static inline void trace_alarmtimer_start(void *alarm, ktime_t now) {}

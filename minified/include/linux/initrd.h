@@ -1,20 +1,15 @@
- 
 
 #ifndef __LINUX_INITRD_H
 #define __LINUX_INITRD_H
 
 #define INITRD_MINOR 250  
 
- 
 extern int rd_image_start;
 
- 
 extern unsigned long rd_size;
 
- 
 extern int initrd_below_start_ok;
 
- 
 extern unsigned long initrd_start, initrd_end;
 extern void free_initrd_mem(unsigned long, unsigned long);
 

@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_CPU_H_
 #define _LINUX_CPU_H_
 
@@ -59,7 +57,6 @@ void __noreturn cpu_startup_entry(enum cpuhp_state state);
 
 void cpu_idle_poll_ctrl(bool enable);
 
- 
 #define __cpuidle	__section(".cpuidle.text")
 
 bool cpu_in_idle(unsigned long pc);

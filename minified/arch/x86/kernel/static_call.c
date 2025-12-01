@@ -1,4 +1,3 @@
- 
 #include <linux/static_call.h>
 #include <linux/memory.h>
 #include <linux/bug.h>
@@ -11,10 +10,8 @@ enum insn_type {
 	RET = 3,   
 };
 
- 
 static const u8 tramp_ud[] = { 0x0f, 0xb9, 0xcc };
 
- 
 static const u8 xor5rax[] = { 0x2e, 0x2e, 0x2e, 0x31, 0xc0 };
 
 static const u8 retinsn[] = { RET_INSN_OPCODE, 0xcc, 0xcc, 0xcc, 0xcc };

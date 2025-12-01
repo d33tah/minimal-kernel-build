@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_INTEGRITY_H
 #define _LINUX_INTEGRITY_H
@@ -10,7 +8,6 @@ enum integrity_status {
 	INTEGRITY_PASS = 0,
 };
 
- 
 static inline struct integrity_iint_cache *
 				integrity_inode_get(struct inode *inode)
 {

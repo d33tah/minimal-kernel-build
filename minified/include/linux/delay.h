@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_DELAY_H
 #define _LINUX_DELAY_H
 
- 
 
 #include <linux/math.h>
 #include <linux/sched.h>
@@ -11,7 +9,6 @@ extern unsigned long loops_per_jiffy;
 
 #include <asm/delay.h>
 
- 
 
 #ifndef MAX_UDELAY_MS
 #define MAX_UDELAY_MS	5
@@ -54,7 +51,6 @@ static inline void ssleep(unsigned int seconds)
 	msleep(seconds * 1000);
 }
 
- 
 static inline void fsleep(unsigned long usecs)
 {
 	if (usecs <= 10)

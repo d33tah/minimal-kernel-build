@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SCHED_COREDUMP_H
 #define _LINUX_SCHED_COREDUMP_H
 
@@ -8,14 +7,11 @@
 #define SUID_DUMP_USER		1	 
 #define SUID_DUMP_ROOT		2	 
 
- 
 
- 
 #define MMF_DUMPABLE_BITS 2
 #define MMF_DUMPABLE_MASK ((1 << MMF_DUMPABLE_BITS) - 1)
 
 extern void set_dumpable(struct mm_struct *mm, int value);
- 
 static inline int __get_dumpable(unsigned long mm_flags)
 {
 	return mm_flags & MMF_DUMPABLE_MASK;
@@ -26,7 +22,6 @@ static inline int get_dumpable(struct mm_struct *mm)
 	return __get_dumpable(mm->flags);
 }
 
- 
 #define MMF_DUMP_ANON_PRIVATE	2
 #define MMF_DUMP_ANON_SHARED	3
 #define MMF_DUMP_MAPPED_PRIVATE	4
@@ -49,8 +44,6 @@ static inline int get_dumpable(struct mm_struct *mm)
 					 
 #define MMF_VM_MERGEABLE	16	 
 #define MMF_VM_HUGEPAGE		17	 
- 
- 
 
 #define MMF_HAS_UPROBES		19	 
 #define MMF_RECALC_UPROBES	20	 
@@ -61,7 +54,6 @@ static inline int get_dumpable(struct mm_struct *mm)
 #define MMF_OOM_VICTIM		25	 
 #define MMF_OOM_REAP_QUEUED	26	 
 #define MMF_MULTIPROCESS	27	 
- 
 #define MMF_HAS_PINNED		28	 
 #define MMF_DISABLE_THP_MASK	(1 << MMF_DISABLE_THP)
 

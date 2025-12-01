@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_UIDGID_H
 #define _LINUX_UIDGID_H
 
- 
 #include <linux/types.h>
 #include <linux/highuid.h>
 

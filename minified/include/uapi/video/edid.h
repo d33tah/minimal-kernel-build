@@ -1,4 +1,3 @@
- 
 #ifndef _UAPI__linux_video_edid_h__
 #define _UAPI__linux_video_edid_h__
 

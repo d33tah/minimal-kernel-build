@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_PAGE_REF_H
 #define _LINUX_PAGE_REF_H
 
@@ -46,7 +45,6 @@ static inline int page_ref_count(const struct page *page)
 	return atomic_read(&page->_refcount);
 }
 
- 
 static inline int folio_ref_count(const struct folio *folio)
 {
 	return page_ref_count(&folio->page);
@@ -69,7 +67,6 @@ static inline void folio_set_count(struct folio *folio, int v)
 	set_page_count(&folio->page, v);
 }
 
- 
 static inline void init_page_count(struct page *page)
 {
 	set_page_count(page, 1);
@@ -207,7 +204,6 @@ static inline bool folio_ref_add_unless(struct folio *folio, int nr, int u)
 	return page_ref_add_unless(&folio->page, nr, u);
 }
 
- 
 static inline bool folio_try_get(struct folio *folio)
 {
 	return folio_ref_add_unless(folio, 1, 0);
@@ -221,7 +217,6 @@ static inline bool folio_ref_try_add_rcu(struct folio *folio, int count)
 	return true;
 }
 
- 
 static inline bool folio_try_get_rcu(struct folio *folio)
 {
 	return folio_ref_try_add_rcu(folio, 1);

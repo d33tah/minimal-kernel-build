@@ -1,4 +1,3 @@
- 
 
 #ifndef _LINUX_CPUIDLE_H
 #define _LINUX_CPUIDLE_H
@@ -17,7 +16,6 @@ struct cpuidle_device;
 struct cpuidle_driver;
 
 
- 
 
 #define CPUIDLE_STATE_DISABLED_BY_USER		BIT(0)
 #define CPUIDLE_STATE_DISABLED_BY_DRIVER	BIT(1)
@@ -54,7 +52,6 @@ struct cpuidle_state {
 			    int index);
 };
 
- 
 #define CPUIDLE_FLAG_NONE       	(0x00)
 #define CPUIDLE_FLAG_POLLING		BIT(0)  
 #define CPUIDLE_FLAG_COUPLED		BIT(1)  
@@ -90,7 +87,6 @@ struct cpuidle_device {
 DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
 DECLARE_PER_CPU(struct cpuidle_device, cpuidle_dev);
 
- 
 
 struct cpuidle_driver {
 	const char		*name;
@@ -160,7 +156,6 @@ static inline void cpuidle_use_deepest_state(u64 latency_limit_ns)
 {
 }
 
- 
 extern void sched_idle_set_state(struct cpuidle_state *idle_state);
 extern void default_idle_call(void);
 
@@ -170,7 +165,6 @@ static inline void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, 
 
 static inline void cpuidle_poll_state_init(struct cpuidle_driver *drv) {}
 
- 
 
 struct cpuidle_governor {
 	char			name[CPUIDLE_NAME_LEN];

@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_EARLYCPIO_H
 #define _LINUX_EARLYCPIO_H
 

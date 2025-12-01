@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_TERMIOS_H
 #define _LINUX_TERMIOS_H
 

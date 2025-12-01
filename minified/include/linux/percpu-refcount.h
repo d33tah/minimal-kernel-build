@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_PERCPU_REFCOUNT_H
 #define _LINUX_PERCPU_REFCOUNT_H
@@ -13,7 +11,6 @@
 struct percpu_ref;
 typedef void (percpu_ref_func_t)(struct percpu_ref *);
 
- 
 enum {
 	__PERCPU_REF_ATOMIC	= 1LU << 0,	 
 	__PERCPU_REF_DEAD	= 1LU << 1,	 
@@ -22,7 +19,6 @@ enum {
 	__PERCPU_REF_FLAG_BITS	= 2,
 };
 
- 
 enum {
 	 
 	PERCPU_REF_INIT_ATOMIC	= 1 << 0,
@@ -66,13 +62,11 @@ void percpu_ref_resurrect(struct percpu_ref *ref);
 void percpu_ref_reinit(struct percpu_ref *ref);
 bool percpu_ref_is_zero(struct percpu_ref *ref);
 
- 
 static inline void percpu_ref_kill(struct percpu_ref *ref)
 {
 	percpu_ref_kill_and_confirm(ref, NULL);
 }
 
- 
 static inline bool __ref_is_percpu(struct percpu_ref *ref,
 					  unsigned long __percpu **percpu_countp)
 {
@@ -89,7 +83,6 @@ static inline bool __ref_is_percpu(struct percpu_ref *ref,
 	return true;
 }
 
- 
 static inline void percpu_ref_get_many(struct percpu_ref *ref, unsigned long nr)
 {
 	unsigned long __percpu *percpu_count;
@@ -104,13 +97,11 @@ static inline void percpu_ref_get_many(struct percpu_ref *ref, unsigned long nr)
 	rcu_read_unlock();
 }
 
- 
 static inline void percpu_ref_get(struct percpu_ref *ref)
 {
 	percpu_ref_get_many(ref, 1);
 }
 
- 
 static inline bool percpu_ref_tryget_many(struct percpu_ref *ref,
 					  unsigned long nr)
 {
@@ -131,13 +122,11 @@ static inline bool percpu_ref_tryget_many(struct percpu_ref *ref,
 	return ret;
 }
 
- 
 static inline bool percpu_ref_tryget(struct percpu_ref *ref)
 {
 	return percpu_ref_tryget_many(ref, 1);
 }
 
- 
 static inline bool percpu_ref_tryget_live_rcu(struct percpu_ref *ref)
 {
 	unsigned long __percpu *percpu_count;
@@ -154,7 +143,6 @@ static inline bool percpu_ref_tryget_live_rcu(struct percpu_ref *ref)
 	return ret;
 }
 
- 
 static inline bool percpu_ref_tryget_live(struct percpu_ref *ref)
 {
 	bool ret = false;
@@ -165,7 +153,6 @@ static inline bool percpu_ref_tryget_live(struct percpu_ref *ref)
 	return ret;
 }
 
- 
 static inline void percpu_ref_put_many(struct percpu_ref *ref, unsigned long nr)
 {
 	unsigned long __percpu *percpu_count;
@@ -180,13 +167,11 @@ static inline void percpu_ref_put_many(struct percpu_ref *ref, unsigned long nr)
 	rcu_read_unlock();
 }
 
- 
 static inline void percpu_ref_put(struct percpu_ref *ref)
 {
 	percpu_ref_put_many(ref, 1);
 }
 
- 
 static inline bool percpu_ref_is_dying(struct percpu_ref *ref)
 {
 	return ref->percpu_count_ptr & __PERCPU_REF_DEAD;

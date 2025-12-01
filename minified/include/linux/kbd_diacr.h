@@ -1,4 +1,3 @@
- 
 #ifndef _DIACR_H
 #define _DIACR_H
 #include <linux/kd.h>

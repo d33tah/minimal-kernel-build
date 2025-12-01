@@ -1,4 +1,3 @@
- 
 
 #include <linux/slab.h>
 #include <linux/syscalls.h>
@@ -1377,7 +1376,6 @@ SYSCALL_DEFINE2(rt_sigsuspend, sigset_t __user *, unewset, size_t, sigsetsize)
 		return -EFAULT;
 	return sigsuspend(&newset);
 }
- 
 
 SYSCALL_DEFINE3(sigsuspend, int, unused1, int, unused2, old_sigset_t, mask)
 {

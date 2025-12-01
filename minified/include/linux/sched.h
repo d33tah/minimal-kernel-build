@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_SCHED_H
 #define _LINUX_SCHED_H
 
- 
 
 #include <uapi/linux/sched.h>
 
@@ -32,7 +30,6 @@
 #include <linux/seqlock.h>
 #include <asm/kmap_size.h>
 
- 
 struct audit_context;
 struct backing_dev_info;
 struct bio_list;
@@ -64,40 +61,32 @@ struct signal_struct;
 struct task_delay_info;
 struct task_group;
 
- 
 
- 
 #define TASK_RUNNING			0x0000
 #define TASK_INTERRUPTIBLE		0x0001
 #define TASK_UNINTERRUPTIBLE		0x0002
 #define __TASK_STOPPED			0x0004
 #define __TASK_TRACED			0x0008
- 
 #define EXIT_DEAD			0x0010
 #define EXIT_ZOMBIE			0x0020
 #define EXIT_TRACE			(EXIT_ZOMBIE | EXIT_DEAD)
- 
 #define TASK_PARKED			0x0040
 #define TASK_DEAD			0x0080
 #define TASK_WAKEKILL			0x0100
 #define TASK_WAKING			0x0200
 #define TASK_NOLOAD			0x0400
 #define TASK_NEW			0x0800
- 
 #define TASK_RTLOCK_WAIT		0x1000
 #define TASK_STATE_MAX			0x2000
 
- 
 #define TASK_KILLABLE			(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
 #define TASK_STOPPED			(TASK_WAKEKILL | __TASK_STOPPED)
 #define TASK_TRACED			__TASK_TRACED
 
 #define TASK_IDLE			(TASK_UNINTERRUPTIBLE | TASK_NOLOAD)
 
- 
 #define TASK_NORMAL			(TASK_INTERRUPTIBLE | TASK_UNINTERRUPTIBLE)
 
- 
 #define TASK_REPORT			(TASK_RUNNING | TASK_INTERRUPTIBLE | \
 					 TASK_UNINTERRUPTIBLE | __TASK_STOPPED | \
 					 __TASK_TRACED | EXIT_DEAD | EXIT_ZOMBIE | \
@@ -109,7 +98,6 @@ struct task_group;
 #define task_is_stopped(task)		((READ_ONCE(task->jobctl) & JOBCTL_STOPPED) != 0)
 #define task_is_stopped_or_traced(task)	((READ_ONCE(task->jobctl) & (JOBCTL_STOPPED | JOBCTL_TRACED)) != 0)
 
- 
 #define is_special_task_state(state)				\
 	((state) & (__TASK_STOPPED | __TASK_TRACED | TASK_PARKED | TASK_DEAD))
 
@@ -118,7 +106,6 @@ struct task_group;
 # define debug_rtlock_wait_set_state()		do { } while (0)
 # define debug_rtlock_wait_restore_state()	do { } while (0)
 
- 
 #define __set_current_state(state_value)				\
 	do {								\
 		debug_normal_state_change((state_value));		\
@@ -131,7 +118,6 @@ struct task_group;
 		smp_store_mb(current->__state, (state_value));		\
 	} while (0)
 
- 
 #define set_special_state(state_value)					\
 	do {								\
 		unsigned long flags;  			\
@@ -142,7 +128,6 @@ struct task_group;
 		raw_spin_unlock_irqrestore(&current->pi_lock, flags);	\
 	} while (0)
 
- 
 #define current_save_and_set_rtlock_wait_state()			\
 	do {								\
 		lockdep_assert_irqs_disabled();				\
@@ -165,7 +150,6 @@ struct task_group;
 
 #define get_current_state()	READ_ONCE(current->__state)
 
- 
 enum {
 	TASK_COMM_LEN = 16,
 };
@@ -187,7 +171,6 @@ extern void io_schedule_finish(int token);
 extern long io_schedule_timeout(long timeout);
 extern void io_schedule(void);
 
- 
 struct prev_cputime {
 	u64				utime;
 	u64				stime;
@@ -196,18 +179,15 @@ struct prev_cputime {
 
 /* vtime structs removed - not used */
 
- 
 enum uclamp_id { UCLAMP_CNT };
 
 
 struct sched_info {
 };
 
- 
 # define SCHED_FIXEDPOINT_SHIFT		10
 # define SCHED_FIXEDPOINT_SCALE		(1L << SCHED_FIXEDPOINT_SHIFT)
 
- 
 # define SCHED_CAPACITY_SHIFT		SCHED_FIXEDPOINT_SHIFT
 # define SCHED_CAPACITY_SCALE		(1L << SCHED_CAPACITY_SHIFT)
 
@@ -608,7 +588,6 @@ static inline struct pid *task_pid(struct task_struct *task)
 	return task->thread_pid;
 }
 
- 
 pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type, struct pid_namespace *ns);
 
 static inline pid_t task_pid_nr(struct task_struct *tsk)
@@ -645,7 +624,6 @@ static inline int is_global_init(struct task_struct *tsk)
 
 extern struct pid *cad_pid;
 
- 
 #define PF_VCPU			0x00000001	 
 #define PF_IDLE			0x00000002	 
 #define PF_EXITING		0x00000004	 
@@ -674,7 +652,6 @@ extern struct pid *cad_pid;
 #define PF_FREEZER_SKIP		0x40000000	 
 #define PF_SUSPEND_TASK		0x80000000       
 
- 
 #define clear_stopped_child_used_math(child)	do { (child)->flags &= ~PF_USED_MATH; } while (0)
 #define set_stopped_child_used_math(child)	do { (child)->flags |= PF_USED_MATH; } while (0)
 #define clear_used_math()			clear_stopped_child_used_math(current)
@@ -688,7 +665,6 @@ extern struct pid *cad_pid;
 #define copy_to_stopped_child_used_math(child) \
 	do { (child)->flags &= ~PF_USED_MATH, (child)->flags |= current->flags & PF_USED_MATH; } while (0)
 
- 
 #define tsk_used_math(p)			((p)->flags & PF_USED_MATH)
 #define used_math()				tsk_used_math(current)
 
@@ -784,7 +760,6 @@ extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sc
 extern void sched_set_fifo(struct task_struct *p);
 extern struct task_struct *idle_task(int cpu);
 
- 
 static __always_inline bool is_idle_task(const struct task_struct *p)
 {
 	return !!(p->flags & PF_IDLE);
@@ -804,7 +779,6 @@ extern unsigned long init_stack[THREAD_SIZE / sizeof(unsigned long)];
 
 # define task_thread_info(task)	(&(task)->thread_info)
 
- 
 
 extern struct task_struct *find_task_by_vpid(pid_t nr);
 extern struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns);
@@ -833,7 +807,6 @@ static inline unsigned long wait_task_inactive(struct task_struct *p, unsigned i
 	return 1;
 }
 
- 
 static inline void set_tsk_thread_flag(struct task_struct *tsk, int flag)
 {
 	set_ti_thread_flag(task_thread_info(tsk), flag);
@@ -874,7 +847,6 @@ static inline int test_tsk_need_resched(struct task_struct *tsk)
 	return unlikely(test_tsk_thread_flag(tsk,TIF_NEED_RESCHED));
 }
 
- 
 extern int __cond_resched(void);
 
 
@@ -914,7 +886,6 @@ static __always_inline bool need_resched(void)
 	return unlikely(tif_need_resched());
 }
 
- 
 
 static inline unsigned int task_cpu(const struct task_struct *p)
 {

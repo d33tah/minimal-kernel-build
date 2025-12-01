@@ -1,11 +1,8 @@
- 
- 
 
 #ifndef _LINUX_USERFAULTFD_K_H
 #define _LINUX_USERFAULTFD_K_H
 
 
- 
 static inline vm_fault_t handle_userfault(struct vm_fault *vmf,
 				unsigned long reason)
 {
@@ -108,7 +105,6 @@ static inline bool pte_marker_uffd_wp(pte_t pte)
 	return false;
 }
 
- 
 static inline bool pte_swp_uffd_wp_any(pte_t pte)
 {
 	return false;

@@ -1,7 +1,4 @@
- 
- 
 
- 
 
 #include "boot.h"
 #include <generated/utsrelease.h>

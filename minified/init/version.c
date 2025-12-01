@@ -1,5 +1,3 @@
- 
- 
 
 #include <generated/compile.h>
 #include <linux/build-salt.h>
@@ -25,7 +23,6 @@ struct uts_namespace init_uts_ns = {
 	.ns.inum = PROC_UTS_INIT_INO,
 };
 
- 
 const char linux_banner[] =
 	"Linux version " UTS_RELEASE " (" LINUX_COMPILE_BY "@"
 	LINUX_COMPILE_HOST ") (" LINUX_COMPILER ") " UTS_VERSION "\n";

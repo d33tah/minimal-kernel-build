@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_PID_NS_H
 #define _LINUX_PID_NS_H
 
@@ -11,7 +10,6 @@
 #include <linux/ns_common.h>
 #include <linux/idr.h>
 
- 
 #define MAX_PID_NS_LEVEL 32
 
 struct fs_pin;

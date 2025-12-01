@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_HIGHMEM_H
 #define _LINUX_HIGHMEM_H
 
@@ -12,28 +11,20 @@
 
 #include "highmem-internal.h"
 
- 
 static inline void *kmap(struct page *page);
 
- 
 static inline void kunmap(struct page *page);
 
- 
 static inline struct page *kmap_to_page(void *addr);
 
- 
 static inline void kmap_flush_unused(void);
 
- 
 static inline void *kmap_local_page(struct page *page);
 
- 
 static inline void *kmap_local_folio(struct folio *folio, size_t offset);
 
- 
 static inline void *kmap_atomic(struct page *page);
 
- 
 static inline unsigned int nr_free_highpages(void);
 static inline unsigned long totalhigh_pages(void);
 
@@ -52,7 +43,6 @@ static inline void invalidate_kernel_vmap_range(void *vaddr, int size)
 }
 #endif
 
- 
 #ifndef clear_user_highpage
 static inline void clear_user_highpage(struct page *page, unsigned long vaddr)
 {
@@ -63,7 +53,6 @@ static inline void clear_user_highpage(struct page *page, unsigned long vaddr)
 #endif
 
 #ifndef __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE_MOVABLE
- 
 static inline struct page *
 alloc_zeroed_user_highpage_movable(struct vm_area_struct *vma,
 				   unsigned long vaddr)
@@ -92,7 +81,6 @@ static inline void tag_clear_highpage(struct page *page)
 
 #endif
 
- 
 static inline void zero_user_segments(struct page *page,
 		unsigned start1, unsigned end1,
 		unsigned start2, unsigned end2)
@@ -223,21 +211,18 @@ static inline void memzero_page(struct page *page, size_t offset, size_t len)
 	kunmap_local(addr);
 }
 
- 
 static inline void folio_zero_segments(struct folio *folio,
 		size_t start1, size_t xend1, size_t start2, size_t xend2)
 {
 	zero_user_segments(&folio->page, start1, xend1, start2, xend2);
 }
 
- 
 static inline void folio_zero_segment(struct folio *folio,
 		size_t start, size_t xend)
 {
 	zero_user_segments(&folio->page, start, xend, 0, 0);
 }
 
- 
 static inline void folio_zero_range(struct folio *folio,
 		size_t start, size_t length)
 {

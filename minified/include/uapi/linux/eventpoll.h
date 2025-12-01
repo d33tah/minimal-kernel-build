@@ -1,22 +1,16 @@
- 
- 
 
 #ifndef _UAPI_LINUX_EVENTPOLL_H
 #define _UAPI_LINUX_EVENTPOLL_H
 
- 
 #include <linux/fcntl.h>
 #include <linux/types.h>
 
- 
 #define EPOLL_CLOEXEC O_CLOEXEC
 
- 
 #define EPOLL_CTL_ADD 1
 #define EPOLL_CTL_DEL 2
 #define EPOLL_CTL_MOD 3
 
- 
 #define EPOLLIN		(__force __poll_t)0x00000001
 #define EPOLLPRI	(__force __poll_t)0x00000002
 #define EPOLLOUT	(__force __poll_t)0x00000004
@@ -30,16 +24,12 @@
 #define EPOLLMSG	(__force __poll_t)0x00000400
 #define EPOLLRDHUP	(__force __poll_t)0x00002000
 
- 
 #define EPOLLEXCLUSIVE	((__force __poll_t)(1U << 28))
 
- 
 #define EPOLLWAKEUP	((__force __poll_t)(1U << 29))
 
- 
 #define EPOLLONESHOT	((__force __poll_t)(1U << 30))
 
- 
 #define EPOLLET		((__force __poll_t)(1U << 31))
 
 /* 32-bit only kernel - no packing needed */

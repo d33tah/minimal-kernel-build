@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_IMA_H
 #define _LINUX_IMA_H
@@ -8,7 +6,6 @@
 #include <linux/fs.h>
 #include <linux/security.h>
 #include <linux/kexec.h>
- 
 #include <uapi/linux/hash_info.h>
 struct linux_binprm;
 

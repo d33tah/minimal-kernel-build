@@ -1,7 +1,4 @@
- 
- 
 
- 
 
 #include <linux/mm.h>
 #include <linux/sched.h>
@@ -31,10 +28,8 @@
 #include "internal.h"
 
 
- 
 int page_cluster;
 
- 
 struct lru_rotate {
 	local_lock_t lock;
 	struct pagevec pvec;
@@ -43,7 +38,6 @@ static DEFINE_PER_CPU(struct lru_rotate, lru_rotate) = {
 	.lock = INIT_LOCAL_LOCK(lock),
 };
 
- 
 struct lru_pvecs {
 	local_lock_t lock;
 	struct pagevec lru_add;
@@ -55,7 +49,6 @@ static DEFINE_PER_CPU(struct lru_pvecs, lru_pvecs) = {
 	.lock = INIT_LOCAL_LOCK(lock),
 };
 
- 
 static void __page_cache_release(struct page *page)
 {
 	if (PageLRU(page)) {
@@ -103,14 +96,12 @@ void __put_page(struct page *page)
 		__put_single_page(page);
 }
 
- 
 /* Stub: put_pages_list not used in minimal kernel */
 void put_pages_list(struct list_head *pages)
 {
 	INIT_LIST_HEAD(pages);
 }
 
- 
 int get_kernel_pages(const struct kvec *kiov, int nr_segs, int write,
 		struct page **pages)
 {
@@ -155,7 +146,6 @@ static void pagevec_move_tail_fn(struct page *page, struct lruvec *lruvec)
 	}
 }
 
- 
 static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page)
 {
 	bool ret = false;
@@ -167,7 +157,6 @@ static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page)
 	return ret;
 }
 
- 
 void folio_rotate_reclaimable(struct folio *folio)
 {
 	if (!folio_test_locked(folio) && !folio_test_dirty(folio) &&
@@ -243,7 +232,6 @@ static void __lru_cache_activate_folio(struct folio *folio)
 	local_unlock(&lru_pvecs.lock);
 }
 
- 
 void folio_mark_accessed(struct folio *folio)
 {
 	if (!folio_test_referenced(folio)) {
@@ -263,7 +251,6 @@ void folio_mark_accessed(struct folio *folio)
 		folio_clear_idle(folio);
 }
 
- 
 void folio_add_lru(struct folio *folio)
 {
 	struct pagevec *pvec;
@@ -279,7 +266,6 @@ void folio_add_lru(struct folio *folio)
 	local_unlock(&lru_pvecs.lock);
 }
 
- 
 void lru_cache_add_inactive_or_unevictable(struct page *page,
 					 struct vm_area_struct *vma)
 {
@@ -291,7 +277,6 @@ void lru_cache_add_inactive_or_unevictable(struct page *page,
 		lru_cache_add(page);
 }
 
- 
 static void lru_deactivate_file_fn(struct page *page, struct lruvec *lruvec)
 {
 	bool active = PageActive(page);
@@ -360,7 +345,6 @@ static void lru_lazyfree_fn(struct page *page, struct lruvec *lruvec)
 	}
 }
 
- 
 void lru_add_drain_cpu(int cpu)
 {
 	struct pagevec *pvec = &per_cpu(lru_pvecs.lru_add, cpu);
@@ -394,7 +378,6 @@ void lru_add_drain_cpu(int cpu)
 	activate_page_drain(cpu);
 }
 
- 
 void deactivate_file_folio(struct folio *folio)
 {
 	struct pagevec *pvec;
@@ -422,7 +405,6 @@ void lru_add_drain(void)
 
 atomic_t lru_disable_count = ATOMIC_INIT(0);
 
- 
 void release_pages(struct page **pages, int nr)
 {
 	int i;
@@ -497,7 +479,6 @@ void release_pages(struct page **pages, int nr)
 	free_unref_page_list(&pages_to_free);
 }
 
- 
 void __pagevec_release(struct pagevec *pvec)
 {
 	if (!pvec->percpu_pvec_drained) {
@@ -532,7 +513,6 @@ static void __pagevec_lru_add_fn(struct folio *folio, struct lruvec *lruvec)
 	lruvec_add_folio(lruvec, folio);
 }
 
- 
 void __pagevec_lru_add(struct pagevec *pvec)
 {
 	int i;
@@ -551,7 +531,6 @@ void __pagevec_lru_add(struct pagevec *pvec)
 	pagevec_reinit(pvec);
 }
 
- 
 void folio_batch_remove_exceptionals(struct folio_batch *fbatch)
 {
 	unsigned int i, j;
@@ -564,7 +543,6 @@ void folio_batch_remove_exceptionals(struct folio_batch *fbatch)
 	fbatch->nr = j;
 }
 
- 
 unsigned pagevec_lookup_range(struct pagevec *pvec,
 		struct address_space *mapping, pgoff_t *start, pgoff_t end)
 {
@@ -582,7 +560,6 @@ unsigned pagevec_lookup_range_tag(struct pagevec *pvec,
 	return pagevec_count(pvec);
 }
 
- 
 void __init swap_setup(void)
 {
 	unsigned long megs = totalram_pages() >> (20 - PAGE_SHIFT);

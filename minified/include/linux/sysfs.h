@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _SYSFS_H_
 #define _SYSFS_H_
@@ -23,10 +21,8 @@ struct attribute {
 	umode_t			mode;
 };
 
- 
 #define sysfs_attr_init(attr) do {} while (0)
 
- 
 struct attribute_group {
 	const char		*name;
 	umode_t			(*is_visible)(struct kobject *,
@@ -37,7 +33,6 @@ struct attribute_group {
 	struct bin_attribute	**bin_attrs;
 };
 
- 
 
 #define SYSFS_PREALLOC 010000
 
@@ -119,10 +114,8 @@ struct bin_attribute {
 		    struct vm_area_struct *vma);
 };
 
- 
 #define sysfs_bin_attr_init(bin_attr) sysfs_attr_init(&(bin_attr)->attr)
 
- 
 #define __BIN_ATTR(_name, _mode, _read, _write, _size) {		\
 	.attr = { .name = __stringify(_name), .mode = _mode },		\
 	.read	= _read,						\

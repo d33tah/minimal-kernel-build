@@ -1,5 +1,3 @@
- 
- 
 #ifndef __LINUX_MUTEX_H
 #define __LINUX_MUTEX_H
 
@@ -15,7 +13,6 @@
 # define __DEP_MAP_MUTEX_INITIALIZER(lockname)
 
 
- 
 struct mutex {
 	atomic_long_t		owner;
 	raw_spinlock_t		wait_lock;
@@ -28,7 +25,6 @@ struct mutex {
 static inline void mutex_destroy(struct mutex *lock) {}
 
 
- 
 #define mutex_init(mutex)						\
 do {									\
 	static struct lock_class_key __key;				\
@@ -49,11 +45,9 @@ do {									\
 extern void __mutex_init(struct mutex *lock, const char *name,
 			 struct lock_class_key *key);
 
- 
 extern bool mutex_is_locked(struct mutex *lock);
 
 
- 
 extern void mutex_lock(struct mutex *lock);
 extern int __must_check mutex_lock_interruptible(struct mutex *lock);
 extern int __must_check mutex_lock_killable(struct mutex *lock);

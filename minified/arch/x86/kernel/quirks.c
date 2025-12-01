@@ -1,5 +1,3 @@
- 
- 
 #include <linux/dmi.h>
 #include <linux/pci.h>
 #include <linux/irq.h>

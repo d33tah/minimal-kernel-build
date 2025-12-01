@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/export.h>
 #include <linux/kernel.h>
@@ -20,13 +18,11 @@
 #include <generated/timeconst.h>
 #include "timekeeping.h"
 
- 
 struct timezone sys_tz;
 
 
 #ifdef __ARCH_WANT_SYS_TIME
 
- 
 SYSCALL_DEFINE1(time, __kernel_old_time_t __user *, tloc)
 {
 	__kernel_old_time_t i = (__kernel_old_time_t)ktime_get_real_seconds();
@@ -39,7 +35,6 @@ SYSCALL_DEFINE1(time, __kernel_old_time_t __user *, tloc)
 	return i;
 }
 
- 
 
 SYSCALL_DEFINE1(stime, __kernel_old_time_t __user *, tptr)
 {
@@ -68,7 +63,6 @@ SYSCALL_DEFINE2(gettimeofday, struct __kernel_old_timeval __user *, tv,
 	return 0;
 }
 
- 
 
 int do_sys_settimeofday64(const struct timespec64 *tv, const struct timezone *tz)
 {
@@ -86,7 +80,6 @@ SYSCALL_DEFINE2(settimeofday, struct __kernel_old_timeval __user *, tv,
 
 
 
- 
 unsigned int jiffies_to_msecs(const unsigned long j)
 {
 #if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
@@ -119,7 +112,6 @@ unsigned int jiffies_to_usecs(const unsigned long j)
 #endif
 }
 
- 
 time64_t mktime64(const unsigned int year0, const unsigned int mon0,
 		const unsigned int day, const unsigned int hour,
 		const unsigned int min, const unsigned int sec)
@@ -151,7 +143,6 @@ struct __kernel_old_timeval ns_to_kernel_old_timeval(const s64 nsec)
 	return tv;
 }
 
- 
 void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
 {
 	while (nsec >= NSEC_PER_SEC) {
@@ -169,7 +160,6 @@ void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
 	ts->tv_nsec = nsec;
 }
 
- 
 struct timespec64 ns_to_timespec64(const s64 nsec)
 {
 	struct timespec64 ts = { 0, 0 };
@@ -187,7 +177,6 @@ struct timespec64 ns_to_timespec64(const s64 nsec)
 	return ts;
 }
 
- 
 unsigned long __msecs_to_jiffies(const unsigned int m)
 {
 	 
@@ -203,7 +192,6 @@ unsigned long __usecs_to_jiffies(const unsigned int u)
 	return _usecs_to_jiffies(u);
 }
 
- 
 
 unsigned long
 timespec64_to_jiffies(const struct timespec64 *value)
@@ -231,7 +219,6 @@ jiffies_to_timespec64(const unsigned long jiffies, struct timespec64 *value)
 	value->tv_nsec = rem;
 }
 
- 
 clock_t jiffies_to_clock_t(unsigned long x)
 {
 #if (TICK_NSEC % (NSEC_PER_SEC / USER_HZ)) == 0
@@ -308,7 +295,6 @@ u64 jiffies64_to_msecs(const u64 j)
 #endif
 }
 
- 
 u64 nsecs_to_jiffies64(u64 n)
 {
 #if (NSEC_PER_SEC % HZ) == 0
@@ -323,13 +309,11 @@ u64 nsecs_to_jiffies64(u64 n)
 #endif
 }
 
- 
 unsigned long nsecs_to_jiffies(u64 n)
 {
 	return (unsigned long)nsecs_to_jiffies64(n);
 }
 
- 
 struct timespec64 timespec64_add_safe(const struct timespec64 lhs,
 				const struct timespec64 rhs)
 {

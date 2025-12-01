@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_WAIT_BIT_H
 #define _LINUX_WAIT_BIT_H
 
- 
 #include <linux/wait.h>
 
 struct wait_bit_key {
@@ -49,7 +47,6 @@ extern int bit_wait_io(struct wait_bit_key *key, int mode);
 extern int bit_wait_timeout(struct wait_bit_key *key, int mode);
 extern int bit_wait_io_timeout(struct wait_bit_key *key, int mode);
 
- 
 static inline int
 wait_on_bit(unsigned long *word, int bit, unsigned mode)
 {
@@ -61,7 +58,6 @@ wait_on_bit(unsigned long *word, int bit, unsigned mode)
 				       mode);
 }
 
- 
 static inline int
 wait_on_bit_io(unsigned long *word, int bit, unsigned mode)
 {
@@ -73,7 +69,6 @@ wait_on_bit_io(unsigned long *word, int bit, unsigned mode)
 				       mode);
 }
 
- 
 static inline int
 wait_on_bit_timeout(unsigned long *word, int bit, unsigned mode,
 		    unsigned long timeout)
@@ -86,7 +81,6 @@ wait_on_bit_timeout(unsigned long *word, int bit, unsigned mode,
 					       mode, timeout);
 }
 
- 
 static inline int
 wait_on_bit_action(unsigned long *word, int bit, wait_bit_action_f *action,
 		   unsigned mode)
@@ -97,7 +91,6 @@ wait_on_bit_action(unsigned long *word, int bit, wait_bit_action_f *action,
 	return out_of_line_wait_on_bit(word, bit, action, mode);
 }
 
- 
 static inline int
 wait_on_bit_lock(unsigned long *word, int bit, unsigned mode)
 {
@@ -107,7 +100,6 @@ wait_on_bit_lock(unsigned long *word, int bit, unsigned mode)
 	return out_of_line_wait_on_bit_lock(word, bit, bit_wait, mode);
 }
 
- 
 static inline int
 wait_on_bit_lock_io(unsigned long *word, int bit, unsigned mode)
 {
@@ -117,7 +109,6 @@ wait_on_bit_lock_io(unsigned long *word, int bit, unsigned mode)
 	return out_of_line_wait_on_bit_lock(word, bit, bit_wait_io, mode);
 }
 
- 
 static inline int
 wait_on_bit_lock_action(unsigned long *word, int bit, wait_bit_action_f *action,
 			unsigned mode)
@@ -211,7 +202,6 @@ do {									\
 	__ret;								\
 })
 
- 
 static inline void clear_and_wake_up_bit(int bit, void *word)
 {
 	clear_bit_unlock(bit, word);

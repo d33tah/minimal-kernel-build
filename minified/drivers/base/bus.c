@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/async.h>
 #include <linux/device/bus.h>
@@ -14,12 +12,10 @@
 #include "base.h"
 #include "power/power.h"
 
- 
 static struct kset *system_kset;
 
 #define to_bus_attr(_attr) container_of(_attr, struct bus_attribute, attr)
 
- 
 
 #define to_drv_attr(_attr) container_of(_attr, struct driver_attribute, attr)
 
@@ -84,7 +80,6 @@ static struct kobj_type driver_ktype = {
 	.release	= driver_release,
 };
 
- 
 static ssize_t bus_attr_show(struct kobject *kobj, struct attribute *attr,
 			     char *buf)
 {
@@ -149,7 +144,6 @@ static const struct kset_uevent_ops bus_uevent_ops = {
 
 static struct kset *bus_kset;
 
- 
 static ssize_t unbind_store(struct device_driver *drv, const char *buf,
 			    size_t count)
 {
@@ -158,7 +152,6 @@ static ssize_t unbind_store(struct device_driver *drv, const char *buf,
 }
 static DRIVER_ATTR_IGNORE_LOCKDEP(unbind, 0200, NULL, unbind_store);
 
- 
 static ssize_t bind_store(struct device_driver *drv, const char *buf,
 			  size_t count)
 {
@@ -199,7 +192,6 @@ static struct device *next_device(struct klist_iter *i)
 	return dev;
 }
 
- 
 int bus_for_each_dev(struct bus_type *bus, struct device *start,
 		     void *data, int (*fn)(struct device *, void *))
 {
@@ -218,7 +210,6 @@ int bus_for_each_dev(struct bus_type *bus, struct device *start,
 	return error;
 }
 
- 
 struct device *bus_find_device(struct bus_type *bus,
 			       struct device *start, const void *data,
 			       int (*match)(struct device *dev, const void *data))
@@ -254,7 +245,6 @@ static struct device_driver *next_driver(struct klist_iter *i)
 	return NULL;
 }
 
- 
 int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 		     void *data, int (*fn)(struct device_driver *, void *))
 {
@@ -273,7 +263,6 @@ int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 	return error;
 }
 
- 
 int bus_add_device(struct device *dev)
 {
 	struct bus_type *bus = bus_get(dev->bus);
@@ -304,7 +293,6 @@ out_put:
 	return error;
 }
 
- 
 void bus_probe_device(struct device *dev)
 {
 	struct bus_type *bus = dev->bus;
@@ -323,7 +311,6 @@ void bus_probe_device(struct device *dev)
 	mutex_unlock(&bus->p->mutex);
 }
 
- 
 void bus_remove_device(struct device *dev)
 {
 	struct bus_type *bus = dev->bus;
@@ -402,7 +389,6 @@ static ssize_t uevent_store(struct device_driver *drv, const char *buf,
 }
 static DRIVER_ATTR_WO(uevent);
 
- 
 int bus_add_driver(struct device_driver *drv)
 {
 	struct bus_type *bus;
@@ -469,7 +455,6 @@ out_put_bus:
 	return error;
 }
 
- 
 void bus_remove_driver(struct device_driver *drv)
 {
 	if (!drv->bus)
@@ -528,11 +513,9 @@ static ssize_t bus_uevent_store(struct bus_type *bus,
 	rc = kobject_synth_uevent(&bus->p->subsys.kobj, buf, count);
 	return rc ? rc : count;
 }
- 
 static struct bus_attribute bus_attr_uevent = __ATTR(uevent, 0200, NULL,
 						     bus_uevent_store);
 
- 
 int bus_register(struct bus_type *bus)
 {
 	int retval;
@@ -609,7 +592,6 @@ out:
 	return retval;
 }
 
- 
 void bus_unregister(struct bus_type *bus)
 {
 	if (bus->dev_root)
@@ -651,14 +633,12 @@ void bus_sort_breadthfirst(struct bus_type *bus,
 {
 }
 
- 
 /* Stub: subsys_dev_iter_init not used externally */
 void subsys_dev_iter_init(struct subsys_dev_iter *iter, struct bus_type *subsys,
 			  struct device *start, const struct device_type *type)
 {
 }
 
- 
 /* Stub: subsys_dev_iter_next not used externally */
 struct device *subsys_dev_iter_next(struct subsys_dev_iter *iter)
 {
@@ -728,14 +708,12 @@ err_dev:
 	return err;
 }
 
- 
 int subsys_system_register(struct bus_type *subsys,
 			   const struct attribute_group **groups)
 {
 	return subsys_register(subsys, groups, &system_kset->kobj);
 }
 
- 
 /* Stub: subsys_virtual_register not used externally */
 int subsys_virtual_register(struct bus_type *subsys,
 			    const struct attribute_group **groups)

@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_SHRINKER_H
 #define _LINUX_SHRINKER_H
 
- 
 struct shrink_control {
 	gfp_t gfp_mask;
 
@@ -21,7 +19,6 @@ struct shrink_control {
 
 #define SHRINK_STOP (~0UL)
 #define SHRINK_EMPTY (~0UL - 1)
- 
 struct shrinker {
 	unsigned long (*count_objects)(struct shrinker *,
 				       struct shrink_control *sc);
@@ -39,11 +36,9 @@ struct shrinker {
 };
 #define DEFAULT_SEEKS 2  
 
- 
 #define SHRINKER_REGISTERED	(1 << 0)
 #define SHRINKER_NUMA_AWARE	(1 << 1)
 #define SHRINKER_MEMCG_AWARE	(1 << 2)
- 
 #define SHRINKER_NONSLAB	(1 << 3)
 
 extern int prealloc_shrinker(struct shrinker *shrinker);

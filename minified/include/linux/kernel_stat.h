@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_KERNEL_STAT_H
 #define _LINUX_KERNEL_STAT_H
 
@@ -11,7 +10,6 @@
 #include <linux/vtime.h>
 #include <asm/irq.h>
 
- 
 
 enum cpu_usage_stat {
 	CPUTIME_USER,
@@ -39,7 +37,6 @@ struct kernel_stat {
 DECLARE_PER_CPU(struct kernel_stat, kstat);
 DECLARE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
 
- 
 #define kstat_this_cpu this_cpu_ptr(&kstat)
 #define kcpustat_this_cpu this_cpu_ptr(&kernel_cpustat)
 #define kstat_cpu(cpu) per_cpu(kstat, cpu)
@@ -60,10 +57,8 @@ static inline unsigned int kstat_softirqs_cpu(unsigned int irq, int cpu)
        return kstat_cpu(cpu).softirqs[irq];
 }
 
- 
 extern unsigned int kstat_irqs_usr(unsigned int irq);
 
- 
 static inline unsigned int kstat_cpu_irqs_sum(unsigned int cpu)
 {
 	return kstat_cpu(cpu).irqs_sum;

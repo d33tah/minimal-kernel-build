@@ -1,4 +1,3 @@
- 
 #ifndef _UAPI_LINUX_IPC_H
 #define _UAPI_LINUX_IPC_H
 
@@ -6,7 +5,6 @@
 
 #define IPC_PRIVATE ((__kernel_key_t) 0)  
 
- 
 struct ipc_perm
 {
 	__kernel_key_t	key;
@@ -18,30 +16,24 @@ struct ipc_perm
 	unsigned short	seq;
 };
 
- 
 #include <asm/ipcbuf.h>
 
- 
 #define IPC_CREAT  00001000    
 #define IPC_EXCL   00002000    
 #define IPC_NOWAIT 00004000    
 
- 
    
 #define IPC_DIPC 00010000   
 #define IPC_OWN  00020000   
 
- 
 #define IPC_RMID 0      
 #define IPC_SET  1      
 #define IPC_STAT 2      
 #define IPC_INFO 3      
 
- 
 #define IPC_OLD 0	 
 #define IPC_64  0x0100   
 
- 
 struct ipc_kludge {
 	struct msgbuf __user *msgp;
 	long msgtyp;
@@ -60,7 +52,6 @@ struct ipc_kludge {
 #define SHMGET		23
 #define SHMCTL		24
 
- 
 #define DIPC            25
 
 #define IPCCALL(version,op)	((version)<<16 | (op))

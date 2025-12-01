@@ -1,5 +1,3 @@
- 
- 
 #include <linux/kernel.h>
 #include <linux/string.h>
 #include <linux/errno.h>
@@ -15,7 +13,6 @@ static inline void check_kparam_locked(struct module *mod)
 {
 }
 
- 
 struct kmalloced_param {
 	struct list_head list;
 	char val[];
@@ -38,7 +35,6 @@ static void *kmalloc_parameter(unsigned int size)
 	return p->val;
 }
 
- 
 static void maybe_kfree_parameter(void *param)
 {
 	struct kmalloced_param *p;
@@ -131,7 +127,6 @@ static int parse_one(char *param,
 	return -ENOENT;
 }
 
- 
 char *parse_args(const char *doing,
 		 char *args,
 		 const struct kernel_param *params,
@@ -181,7 +176,6 @@ char *parse_args(const char *doing,
 	return err;
 }
 
- 
 #define STANDARD_PARAM_DEF(name, type, format, strtolfn)      		\
 	int param_set_##name(const char *val, const struct kernel_param *kp) \
 	{								\
@@ -265,7 +259,6 @@ const struct kernel_param_ops param_ops_charp = {
 	.free = param_free_charp,
 };
 
- 
 int param_set_bool(const char *val, const struct kernel_param *kp)
 {
 	 
@@ -299,7 +292,6 @@ const struct kernel_param_ops param_ops_bool_enable_only = {
 	.get = param_get_bool,
 };
 
- 
 /* Stub: param_set_invbool not used externally */
 int param_set_invbool(const char *val, const struct kernel_param *kp)
 {
@@ -329,7 +321,6 @@ const struct kernel_param_ops param_ops_bint = {
 	.get = param_get_int,
 };
 
- 
 static int param_array(struct module *mod,
 		       const char *name,
 		       const char *val,
@@ -450,7 +441,6 @@ const struct kernel_param_ops param_ops_string = {
 	.get = param_get_string,
 };
 
- 
 #define to_module_attr(n) container_of(n, struct module_attribute, attr)
 #define to_module_kobject(n) container_of(n, struct module_kobject, kobj)
 

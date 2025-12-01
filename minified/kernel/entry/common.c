@@ -1,4 +1,3 @@
- 
 
 #include <linux/context_tracking.h>
 #include <linux/entry-common.h>
@@ -13,7 +12,6 @@
 #include "common.h"
 
 
- 
 static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 {
 	arch_enter_from_user_mode(regs);
@@ -110,7 +108,6 @@ noinstr void syscall_enter_from_user_mode_prepare(struct pt_regs *regs)
 	local_irq_enable();
 }
 
- 
 static __always_inline void __exit_to_user_mode(void)
 {
 	 
@@ -126,7 +123,6 @@ void noinstr exit_to_user_mode(void)
 	__exit_to_user_mode();
 }
 
- 
 void __weak arch_do_signal_or_restart(struct pt_regs *regs) { }
 
 static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
@@ -189,7 +185,6 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 	lockdep_sys_exit();
 }
 
- 
 static inline bool report_single_step(unsigned long work)
 {
 	if (work & SYSCALL_WORK_SYSCALL_EMU)
@@ -220,7 +215,6 @@ static void syscall_exit_work(struct pt_regs *regs, unsigned long work)
 		ptrace_report_syscall_exit(regs, step);
 }
 
- 
 static void syscall_exit_to_user_mode_prepare(struct pt_regs *regs)
 {
 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);

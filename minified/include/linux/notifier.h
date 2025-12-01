@@ -1,6 +1,3 @@
- 
- 
- 
 #ifndef _LINUX_NOTIFIER_H
 #define _LINUX_NOTIFIER_H
 #include <linux/errno.h>
@@ -8,7 +5,6 @@
 #include <linux/rwsem.h>
 #include <linux/srcu.h>
 
- 
 
 struct notifier_block;
 
@@ -53,7 +49,6 @@ struct srcu_notifier_head {
 		(name)->head = NULL;		\
 	} while (0)
 
- 
 /* srcu_init_notifier_head removed - unused */
 #define srcu_cleanup_notifier_head(name)	\
 		cleanup_srcu_struct(&(name)->srcu);
@@ -133,10 +128,8 @@ extern bool atomic_notifier_call_chain_is_empty(struct atomic_notifier_head *nh)
 #define NOTIFY_STOP_MASK	0x8000		 
 #define NOTIFY_BAD		(NOTIFY_STOP_MASK|0x0002)
 						 
- 
 #define NOTIFY_STOP		(NOTIFY_OK|NOTIFY_STOP_MASK)
 
- 
 static inline int notifier_from_errno(int err)
 {
 	if (err)
@@ -145,28 +138,19 @@ static inline int notifier_from_errno(int err)
 	return NOTIFY_OK;
 }
 
- 
 static inline int notifier_to_errno(int ret)
 {
 	ret &= ~NOTIFY_STOP_MASK;
 	return ret > NOTIFY_OK ? NOTIFY_OK - ret : 0;
 }
 
- 
- 
- 
 
- 
 
- 
 
- 
 
- 
 
 #define NETLINK_URELEASE	0x0001	 
 
- 
 #define KBD_KEYCODE		0x0001  
 #define KBD_UNBOUND_KEYCODE	0x0002  
 #define KBD_UNICODE		0x0003  

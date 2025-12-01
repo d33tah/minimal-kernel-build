@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_NAMEI_H
 #define _LINUX_NAMEI_H
 
@@ -12,10 +11,8 @@ enum { MAX_NESTED_LINKS = 8 };
 
 #define MAXSYMLINKS 40
 
- 
 enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT};
 
- 
 #define LOOKUP_FOLLOW		0x0001	 
 #define LOOKUP_DIRECTORY	0x0002	 
 #define LOOKUP_AUTOMOUNT	0x0004   
@@ -26,23 +23,19 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT};
 #define LOOKUP_REVAL		0x0020	 
 #define LOOKUP_RCU		0x0040	 
 
- 
 #define LOOKUP_OPEN		0x0100	 
 #define LOOKUP_CREATE		0x0200	 
 #define LOOKUP_EXCL		0x0400	 
 #define LOOKUP_RENAME_TARGET	0x0800	 
 
- 
 #define LOOKUP_PARENT		0x0010
 
- 
 #define LOOKUP_NO_SYMLINKS	0x010000  
 #define LOOKUP_NO_MAGICLINKS	0x020000  
 #define LOOKUP_NO_XDEV		0x040000  
 #define LOOKUP_BENEATH		0x080000  
 #define LOOKUP_IN_ROOT		0x100000  
 #define LOOKUP_CACHED		0x200000  
- 
 #define LOOKUP_IS_SCOPED (LOOKUP_BENEATH | LOOKUP_IN_ROOT)
 
 extern int user_path_at_empty(int, const char __user *, unsigned, struct path *, int *empty);
@@ -86,7 +79,6 @@ static inline void nd_terminate_link(void *name, size_t len, size_t maxlen)
 	((char *) name)[min(len, maxlen)] = '\0';
 }
 
- 
 static inline bool
 retry_estale(const long error, const unsigned int flags)
 {

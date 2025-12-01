@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/module.h>
 #include <linux/mm.h>
@@ -50,7 +48,6 @@
 #include <asm/io.h>
 
 
- 
 
 
 int proc_dostring(struct ctl_table *table, int write,
@@ -132,4 +129,3 @@ int proc_do_large_bitmap(struct ctl_table *table, int write,
 }
 
 
- 

@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_LIVEPATCH_H_
 #define _LINUX_LIVEPATCH_H_
@@ -10,12 +8,10 @@
 
 #if IS_ENABLED(CONFIG_LIVEPATCH)
 
- 
 #define KLP_UNDEFINED	-1
 #define KLP_UNPATCHED	 0
 #define KLP_PATCHED	 1
 
- 
 struct klp_func {
 	 
 	const char *old_name;
@@ -36,7 +32,6 @@ struct klp_func {
 
 struct klp_object;
 
- 
 struct klp_callbacks {
 	int (*pre_patch)(struct klp_object *obj);
 	void (*post_patch)(struct klp_object *obj);
@@ -45,7 +40,6 @@ struct klp_callbacks {
 	bool post_unpatch_enabled;
 };
 
- 
 struct klp_object {
 	 
 	const char *name;
@@ -61,14 +55,12 @@ struct klp_object {
 	bool patched;
 };
 
- 
 struct klp_state {
 	unsigned long id;
 	unsigned int version;
 	void *data;
 };
 
- 
 struct klp_patch {
 	 
 	struct module *mod;
@@ -108,7 +100,6 @@ struct klp_patch {
 
 int klp_enable_patch(struct klp_patch *);
 
- 
 int klp_module_coming(struct module *mod);
 void klp_module_going(struct module *mod);
 

@@ -1,14 +1,11 @@
- 
 #ifndef __LINUX_COMPILER_TYPES_H
 #error "Please don't include <linux/compiler-gcc.h> directly, include <linux/compiler.h> instead."
 #endif
 
- 
 #define GCC_VERSION (__GNUC__ * 10000		\
 		     + __GNUC_MINOR__ * 100	\
 		     + __GNUC_PATCHLEVEL__)
 
- 
 #define RELOC_HIDE(ptr, off)						\
 ({									\
 	unsigned long __ptr;						\
@@ -23,10 +20,8 @@
 #define __latent_entropy __attribute__((latent_entropy))
 #endif
 
- 
 #define barrier_before_unreachable() asm volatile("")
 
- 
 #define unreachable() \
 	do {					\
 		annotate_unreachable();		\
@@ -34,7 +29,6 @@
 		__builtin_unreachable();	\
 	} while (0)
 
- 
 #define asm_volatile_goto(x...)	do { asm goto(x); asm (""); } while (0)
 
 #define __HAVE_BUILTIN_BSWAP32__
@@ -68,16 +62,13 @@
 
 #define __no_sanitize_coverage
 
- 
 #ifdef __SANITIZE_HWADDRESS__
 #define __SANITIZE_ADDRESS__
 #endif
 
- 
 #define __diag_GCC(version, severity, s) \
 	__diag_GCC_ ## version(__diag_GCC_ ## severity s)
 
- 
 #define __diag_GCC_ignore	ignored
 #define __diag_GCC_warn		warning
 #define __diag_GCC_error	error
@@ -95,7 +86,6 @@
 #define __diag_ignore_all(option, comment) \
 	__diag_GCC(8, ignore, option)
 
- 
 #if GCC_VERSION < 90100
 #undef __alloc_size__
 #endif

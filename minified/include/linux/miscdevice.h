@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_MISCDEVICE_H
 #define _LINUX_MISCDEVICE_H
 #include <linux/major.h>
@@ -6,22 +5,18 @@
 #include <linux/types.h>
 #include <linux/device.h>
 
- 
 
 #define PSMOUSE_MINOR		1
 #define MS_BUSMOUSE_MINOR	2	 
 #define ATIXL_BUSMOUSE_MINOR	3	 
- 
 #define ATARIMOUSE_MINOR	5	 
 #define SUN_MOUSE_MINOR		6	 
 #define APOLLO_MOUSE_MINOR	7	 
 #define PC110PAD_MINOR		9	 
- 
 #define WATCHDOG_MINOR		130	 
 #define TEMP_MINOR		131	 
 #define APM_MINOR_DEV		134
 #define RTC_MINOR		135
- 
 #define VHCI_MINOR		137
 #define SUN_OPENPROM_MINOR	139
 #define DMAPI_MINOR		140	 
@@ -87,11 +82,9 @@ struct miscdevice  {
 extern int misc_register(struct miscdevice *misc);
 extern void misc_deregister(struct miscdevice *misc);
 
- 
 #define builtin_misc_device(__misc_device) \
 	builtin_driver(__misc_device, misc_register)
 
- 
 #define module_misc_device(__misc_device) \
 	module_driver(__misc_device, misc_register, misc_deregister)
 

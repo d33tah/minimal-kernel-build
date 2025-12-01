@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_RTC_H_
 #define _LINUX_RTC_H_
 
@@ -17,7 +15,6 @@ extern void rtc_time64_to_tm(time64_t time, struct rtc_time *tm);
 ktime_t rtc_tm_to_ktime(struct rtc_time tm);
 struct rtc_time rtc_ktime_to_tm(ktime_t kt);
 
- 
 static inline time64_t rtc_tm_sub(struct rtc_time *lhs, struct rtc_time *rhs)
 {
 	return rtc_tm_to_time64(lhs) - rtc_tm_to_time64(rhs);
@@ -33,7 +30,6 @@ static inline time64_t rtc_tm_sub(struct rtc_time *lhs, struct rtc_time *rhs)
 
 extern struct class *rtc_class;
 
- 
 struct rtc_class_ops {
 	int (*ioctl)(struct device *, unsigned int, unsigned long);
 	int (*read_time)(struct device *, struct rtc_time *);
@@ -58,7 +54,6 @@ struct rtc_timer {
 	int enabled;
 };
 
- 
 #define RTC_DEV_BUSY 0
 #define RTC_NO_CDEV  1
 

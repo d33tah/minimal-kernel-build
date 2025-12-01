@@ -1,4 +1,3 @@
- 
 #ifndef __OF_ADDRESS_H
 #define __OF_ADDRESS_H
 #include <linux/ioport.h>
@@ -35,7 +34,6 @@ struct of_pci_range {
 	for (; of_pci_range_parser_one(parser, range);)
 #define for_each_of_range for_each_of_pci_range
 
- 
 extern u64 of_translate_dma_address(struct device_node *dev,
 				    const __be32 *in_addr);
 

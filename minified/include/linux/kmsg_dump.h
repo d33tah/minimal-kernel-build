@@ -1,11 +1,9 @@
- 
 #ifndef _LINUX_KMSG_DUMP_H
 #define _LINUX_KMSG_DUMP_H
 
 #include <linux/errno.h>
 #include <linux/list.h>
 
- 
 enum kmsg_dump_reason {
 	KMSG_DUMP_UNDEF,
 	KMSG_DUMP_PANIC,
@@ -15,13 +13,11 @@ enum kmsg_dump_reason {
 	KMSG_DUMP_MAX
 };
 
- 
 struct kmsg_dump_iter {
 	u64	cur_seq;
 	u64	next_seq;
 };
 
- 
 struct kmsg_dumper {
 	struct list_head list;
 	void (*dump)(struct kmsg_dumper *dumper, enum kmsg_dump_reason reason);

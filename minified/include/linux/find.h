@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_FIND_H_
 #define __LINUX_FIND_H_
 
@@ -18,7 +17,6 @@ extern unsigned long _find_first_zero_bit(const unsigned long *addr, unsigned lo
 extern unsigned long _find_last_bit(const unsigned long *addr, unsigned long size);
 
 #ifndef find_next_bit
- 
 static inline
 unsigned long find_next_bit(const unsigned long *addr, unsigned long size,
 			    unsigned long offset)
@@ -38,7 +36,6 @@ unsigned long find_next_bit(const unsigned long *addr, unsigned long size,
 #endif
 
 #ifndef find_next_and_bit
- 
 static inline
 unsigned long find_next_and_bit(const unsigned long *addr1,
 		const unsigned long *addr2, unsigned long size,
@@ -59,7 +56,6 @@ unsigned long find_next_and_bit(const unsigned long *addr1,
 #endif
 
 #ifndef find_next_zero_bit
- 
 static inline
 unsigned long find_next_zero_bit(const unsigned long *addr, unsigned long size,
 				 unsigned long offset)
@@ -79,7 +75,6 @@ unsigned long find_next_zero_bit(const unsigned long *addr, unsigned long size,
 #endif
 
 #ifndef find_first_bit
- 
 static inline
 unsigned long find_first_bit(const unsigned long *addr, unsigned long size)
 {
@@ -94,7 +89,6 @@ unsigned long find_first_bit(const unsigned long *addr, unsigned long size)
 #endif
 
 #ifndef find_first_and_bit
- 
 static inline
 unsigned long find_first_and_bit(const unsigned long *addr1,
 				 const unsigned long *addr2,
@@ -111,7 +105,6 @@ unsigned long find_first_and_bit(const unsigned long *addr1,
 #endif
 
 #ifndef find_first_zero_bit
- 
 static inline
 unsigned long find_first_zero_bit(const unsigned long *addr, unsigned long size)
 {
@@ -126,7 +119,6 @@ unsigned long find_first_zero_bit(const unsigned long *addr, unsigned long size)
 #endif
 
 #ifndef find_last_bit
- 
 static inline
 unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 {
@@ -140,7 +132,6 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 }
 #endif
 
- 
 extern unsigned long find_next_clump8(unsigned long *clump,
 				      const unsigned long *addr,
 				      unsigned long size, unsigned long offset);
@@ -222,7 +213,6 @@ unsigned long find_next_bit_le(const void *addr, unsigned
 	     (bit) < (size);					\
 	     (bit) = find_next_bit((addr), (size), (bit) + 1))
 
- 
 #define for_each_set_bit_from(bit, addr, size) \
 	for ((bit) = find_next_bit((addr), (size), (bit));	\
 	     (bit) < (size);					\
@@ -233,7 +223,6 @@ unsigned long find_next_bit_le(const void *addr, unsigned
 	     (bit) < (size);					\
 	     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
 
- 
 #define for_each_set_bitrange(b, e, addr, size)			\
 	for ((b) = find_next_bit((addr), (size), 0),		\
 	     (e) = find_next_zero_bit((addr), (size), (b) + 1);	\
@@ -241,7 +230,6 @@ unsigned long find_next_bit_le(const void *addr, unsigned
 	     (b) = find_next_bit((addr), (size), (e) + 1),	\
 	     (e) = find_next_zero_bit((addr), (size), (b) + 1))
 
- 
 #define for_each_set_bitrange_from(b, e, addr, size)		\
 	for ((b) = find_next_bit((addr), (size), (b)),		\
 	     (e) = find_next_zero_bit((addr), (size), (b) + 1);	\
@@ -249,7 +237,6 @@ unsigned long find_next_bit_le(const void *addr, unsigned
 	     (b) = find_next_bit((addr), (size), (e) + 1),	\
 	     (e) = find_next_zero_bit((addr), (size), (b) + 1))
 
- 
 #define for_each_clear_bitrange(b, e, addr, size)		\
 	for ((b) = find_next_zero_bit((addr), (size), 0),	\
 	     (e) = find_next_bit((addr), (size), (b) + 1);	\
@@ -257,7 +244,6 @@ unsigned long find_next_bit_le(const void *addr, unsigned
 	     (b) = find_next_zero_bit((addr), (size), (e) + 1),	\
 	     (e) = find_next_bit((addr), (size), (b) + 1))
 
- 
 #define for_each_clear_bitrange_from(b, e, addr, size)		\
 	for ((b) = find_next_zero_bit((addr), (size), (b)),	\
 	     (e) = find_next_bit((addr), (size), (b) + 1);	\
@@ -265,7 +251,6 @@ unsigned long find_next_bit_le(const void *addr, unsigned
 	     (b) = find_next_zero_bit((addr), (size), (e) + 1),	\
 	     (e) = find_next_bit((addr), (size), (b) + 1))
 
- 
 #define for_each_set_clump8(start, clump, bits, size) \
 	for ((start) = find_first_clump8(&(clump), (bits), (size)); \
 	     (start) < (size); \

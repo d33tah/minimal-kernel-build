@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/init.h>
 #include <linux/start_kernel.h>
@@ -51,7 +49,6 @@ asmlinkage __visible void __init i386_start_kernel(void)
 	start_kernel();
 }
 
- 
 void __init mk_early_pgtbl_32(void)
 {
 #ifdef __pa

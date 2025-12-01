@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_MATH64_H
 #define _LINUX_MATH64_H
 
@@ -35,7 +34,6 @@ extern u64 div64_u64(u64 dividend, u64 divisor);
 extern s64 div64_s64(s64 dividend, s64 divisor);
 #endif
 
- 
 #ifndef div_u64
 static inline u64 div_u64(u64 dividend, u32 divisor)
 {
@@ -44,7 +42,6 @@ static inline u64 div_u64(u64 dividend, u32 divisor)
 }
 #endif
 
- 
 #ifndef div_s64
 static inline s64 div_s64(s64 dividend, s32 divisor)
 {
@@ -56,7 +53,6 @@ static inline s64 div_s64(s64 dividend, s32 divisor)
 u32 iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder);
 
 #ifndef mul_u32_u32
- 
 static inline u64 mul_u32_u32(u32 a, u32 b)
 {
 	return (u64)a * b;
@@ -186,15 +182,12 @@ u64 mul_u64_u64_div_u64(u64 a, u64 mul, u64 div);
 #define DIV64_U64_ROUND_UP(ll, d)	\
 	({ u64 _tmp = (d); div64_u64((ll) + _tmp - 1, _tmp); })
 
- 
 #define DIV64_U64_ROUND_CLOSEST(dividend, divisor)	\
 	({ u64 _tmp = (divisor); div64_u64((dividend) + _tmp / 2, _tmp); })
 
- 
 #define DIV_U64_ROUND_CLOSEST(dividend, divisor)	\
 	({ u32 _tmp = (divisor); div_u64((u64)(dividend) + _tmp / 2, _tmp); })
 
- 
 #define DIV_S64_ROUND_CLOSEST(dividend, divisor)(	\
 {							\
 	s64 __x = (dividend);				\

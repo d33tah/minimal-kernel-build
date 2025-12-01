@@ -1,4 +1,3 @@
- 
 #ifndef __KERN_LEVELS_H__
 #define __KERN_LEVELS_H__
 
@@ -16,10 +15,8 @@
 
 #define KERN_DEFAULT	""		 
 
- 
 #define KERN_CONT	KERN_SOH "c"
 
- 
 #define LOGLEVEL_SCHED		-2	 
 #define LOGLEVEL_DEFAULT	-1	 
 #define LOGLEVEL_EMERG		0	 

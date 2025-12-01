@@ -1,4 +1,3 @@
- 
 #ifndef __ASM_GENERIC_MMAN_H
 #define __ASM_GENERIC_MMAN_H
 
@@ -10,7 +9,6 @@
 #define MAP_LOCKED	0x2000		 
 #define MAP_NORESERVE	0x4000		 
 
- 
 
 #define MCL_CURRENT	1		 
 #define MCL_FUTURE	2		 

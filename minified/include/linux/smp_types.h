@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_SMP_TYPES_H
 #define __LINUX_SMP_TYPES_H
 
@@ -22,7 +21,6 @@ enum {
 	CSD_FLAG_TYPE_MASK	= 0xF0,
 };
 
- 
 
 struct __call_single_node {
 	struct llist_node	llist;

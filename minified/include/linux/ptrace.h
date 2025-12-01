@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_PTRACE_H
 #define _LINUX_PTRACE_H
 
@@ -11,7 +10,6 @@
 #include <uapi/linux/ptrace.h>
 #include <linux/seccomp.h>
 
- 
 struct syscall_info {
 	__u64			sp;
 	struct seccomp_data	data;
@@ -20,13 +18,11 @@ struct syscall_info {
 extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
 			    void *buf, int len, unsigned int gup_flags);
 
- 
 
 #define PT_SEIZED	0x00010000	 
 #define PT_PTRACED	0x00000001
 
 #define PT_OPT_FLAG_SHIFT	3
- 
 #define PT_EVENT_FLAG(event)	(1 << (PT_OPT_FLAG_SHIFT + (event)))
 #define PT_TRACESYSGOOD		PT_EVENT_FLAG(0)
 #define PT_TRACE_FORK		PT_EVENT_FLAG(PTRACE_EVENT_FORK)
@@ -59,13 +55,11 @@ extern void exit_ptrace(struct task_struct *tracer, struct list_head *dead);
 #define PTRACE_MODE_FSCREDS	0x08
 #define PTRACE_MODE_REALCREDS	0x10
 
- 
 #define PTRACE_MODE_READ_FSCREDS (PTRACE_MODE_READ | PTRACE_MODE_FSCREDS)
 #define PTRACE_MODE_READ_REALCREDS (PTRACE_MODE_READ | PTRACE_MODE_REALCREDS)
 #define PTRACE_MODE_ATTACH_FSCREDS (PTRACE_MODE_ATTACH | PTRACE_MODE_FSCREDS)
 #define PTRACE_MODE_ATTACH_REALCREDS (PTRACE_MODE_ATTACH | PTRACE_MODE_REALCREDS)
 
- 
 extern bool ptrace_may_access(struct task_struct *task, unsigned int mode);
 
 static inline int ptrace_reparented(struct task_struct *child)
@@ -84,7 +78,6 @@ int generic_ptrace_peekdata(struct task_struct *tsk, unsigned long addr,
 int generic_ptrace_pokedata(struct task_struct *tsk, unsigned long addr,
 			    unsigned long data);
 
- 
 static inline struct task_struct *ptrace_parent(struct task_struct *task)
 {
 	if (unlikely(task->ptrace))
@@ -92,13 +85,11 @@ static inline struct task_struct *ptrace_parent(struct task_struct *task)
 	return NULL;
 }
 
- 
 static inline bool ptrace_event_enabled(struct task_struct *task, int event)
 {
 	return task->ptrace & PT_EVENT_FLAG(event);
 }
 
- 
 static inline void ptrace_event(int event, unsigned long message)
 {
 	if (unlikely(ptrace_event_enabled(current, event))) {
@@ -110,7 +101,6 @@ static inline void ptrace_event(int event, unsigned long message)
 	}
 }
 
- 
 static inline void ptrace_event_pid(int event, struct pid *pid)
 {
 	 
@@ -126,7 +116,6 @@ static inline void ptrace_event_pid(int event, struct pid *pid)
 	ptrace_event(event, message);
 }
 
- 
 static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
 {
 	INIT_LIST_HEAD(&child->ptrace_entry);
@@ -148,7 +137,6 @@ static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
 		child->ptracer_cred = NULL;
 }
 
- 
 static inline void ptrace_release_task(struct task_struct *task)
 {
 	BUG_ON(!list_empty(&task->ptraced));
@@ -157,28 +145,22 @@ static inline void ptrace_release_task(struct task_struct *task)
 }
 
 #ifndef force_successful_syscall_return
- 
 #define force_successful_syscall_return() do { } while (0)
 #endif
 
 #ifndef is_syscall_success
- 
 #define is_syscall_success(regs) (!IS_ERR_VALUE((unsigned long)(regs_return_value(regs))))
 #endif
 
- 
 
 #ifndef arch_has_single_step
- 
 #define arch_has_single_step()		(0)
 
- 
 static inline void user_enable_single_step(struct task_struct *task)
 {
 	BUG();			 
 }
 
- 
 static inline void user_disable_single_step(struct task_struct *task)
 {
 }
@@ -188,10 +170,8 @@ extern void user_disable_single_step(struct task_struct *);
 #endif	 
 
 #ifndef arch_has_block_step
- 
 #define arch_has_block_step()		(0)
 
- 
 static inline void user_enable_block_step(struct task_struct *task)
 {
 	BUG();			 
@@ -217,12 +197,10 @@ static inline void user_single_step_report(struct pt_regs *regs)
 #endif
 
 #ifndef arch_ptrace_stop_needed
- 
 #define arch_ptrace_stop_needed()	(0)
 #endif
 
 #ifndef arch_ptrace_stop
- 
 #define arch_ptrace_stop()		do { } while (0)
 #endif
 
@@ -230,7 +208,6 @@ static inline void user_single_step_report(struct pt_regs *regs)
 #define current_pt_regs() task_pt_regs(current)
 #endif
 
- 
 #ifndef signal_pt_regs
 #define signal_pt_regs() task_pt_regs(current)
 #endif
@@ -243,7 +220,6 @@ extern int task_current_syscall(struct task_struct *target, struct syscall_info 
 
 extern void sigaction_compat_abi(struct k_sigaction *act, struct k_sigaction *oact);
 
- 
 static inline int ptrace_report_syscall(unsigned long message)
 {
 	int ptrace = current->ptrace;
@@ -262,14 +238,12 @@ static inline int ptrace_report_syscall(unsigned long message)
 	return fatal_signal_pending(current);
 }
 
- 
 static inline __must_check int ptrace_report_syscall_entry(
 	struct pt_regs *regs)
 {
 	return ptrace_report_syscall(PTRACE_EVENTMSG_SYSCALL_ENTRY);
 }
 
- 
 static inline void ptrace_report_syscall_exit(struct pt_regs *regs, int step)
 {
 	if (step)

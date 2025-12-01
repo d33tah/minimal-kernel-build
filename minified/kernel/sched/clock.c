@@ -1,7 +1,4 @@
- 
- 
 
- 
 notrace unsigned long long __weak sched_clock(void)
 {
 	return (unsigned long long)(jiffies - INITIAL_JIFFIES)
@@ -10,11 +7,9 @@ notrace unsigned long long __weak sched_clock(void)
 
 static DEFINE_STATIC_KEY_FALSE(sched_clock_running);
 
- 
 static DEFINE_STATIC_KEY_FALSE(__sched_clock_stable);
 static int __sched_clock_stable_early = 1;
 
- 
 __read_mostly u64 __sched_clock_offset;
 static __read_mostly u64 __gtod_offset;
 
@@ -66,7 +61,6 @@ notrace static void __set_sched_clock_stable(void)
 	tick_dep_clear(TICK_DEP_BIT_CLOCK_UNSTABLE);
 }
 
- 
 notrace static void __sched_clock_work(struct work_struct *work)
 {
 	struct sched_clock_data *scd;
@@ -129,7 +123,6 @@ void __init sched_clock_init(void)
 
 	static_branch_inc(&sched_clock_running);
 }
- 
 static int __init sched_clock_init_late(void)
 {
 	static_branch_inc(&sched_clock_running);
@@ -143,7 +136,6 @@ static int __init sched_clock_init_late(void)
 }
 late_initcall(sched_clock_init_late);
 
- 
 
 notrace static inline u64 wrap_min(u64 x, u64 y)
 {
@@ -155,7 +147,6 @@ notrace static inline u64 wrap_max(u64 x, u64 y)
 	return (s64)(x - y) > 0 ? x : y;
 }
 
- 
 notrace static u64 sched_clock_local(struct sched_clock_data *scd)
 {
 	u64 now, clock, old_clock, min_clock, max_clock, gtod;
@@ -223,7 +214,6 @@ again:
 	return val;
 }
 
- 
 notrace u64 sched_clock_cpu(int cpu)
 {
 	struct sched_clock_data *scd;
@@ -275,13 +265,11 @@ notrace void sched_clock_tick_stable(void)
 	local_irq_enable();
 }
 
- 
 notrace void sched_clock_idle_sleep_event(void)
 {
 	sched_clock_cpu(smp_processor_id());
 }
 
- 
 notrace void sched_clock_idle_wakeup_event(void)
 {
 	unsigned long flags;
@@ -298,7 +286,6 @@ notrace void sched_clock_idle_wakeup_event(void)
 }
 
 
- 
 notrace u64 __weak running_clock(void)
 {
 	return local_clock();

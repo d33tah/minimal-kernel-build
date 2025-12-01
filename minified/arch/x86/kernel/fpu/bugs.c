@@ -1,13 +1,9 @@
- 
- 
 #include <asm/fpu/api.h>
 
- 
 
 static double __initdata x = 4195835.0;
 static double __initdata y = 3145727.0;
 
- 
 void __init fpu__init_check_bugs(void)
 {
 	s32 fdiv_bug;

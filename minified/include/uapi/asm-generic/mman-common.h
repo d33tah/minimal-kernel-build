@@ -1,25 +1,19 @@
- 
 #ifndef __ASM_GENERIC_MMAN_COMMON_H
 #define __ASM_GENERIC_MMAN_COMMON_H
 
- 
 
 #define PROT_READ	0x1		 
 #define PROT_WRITE	0x2		 
 #define PROT_EXEC	0x4		 
 #define PROT_SEM	0x8		 
- 
- 
 #define PROT_NONE	0x0		 
 #define PROT_GROWSDOWN	0x01000000	 
 #define PROT_GROWSUP	0x02000000	 
 
- 
 #define MAP_TYPE	0x0f		 
 #define MAP_FIXED	0x10		 
 #define MAP_ANONYMOUS	0x20		 
 
- 
 #define MAP_POPULATE		0x008000	 
 #define MAP_NONBLOCK		0x010000	 
 #define MAP_STACK		0x020000	 
@@ -29,7 +23,6 @@
 
 #define MAP_UNINITIALIZED 0x4000000	 
 
- 
 #define MLOCK_ONFAULT	0x01		 
 
 #define MS_ASYNC	1		 
@@ -42,7 +35,6 @@
 #define MADV_WILLNEED	3		 
 #define MADV_DONTNEED	4		 
 
- 
 #define MADV_FREE	8		 
 #define MADV_REMOVE	9		 
 #define MADV_DONTFORK	10		 
@@ -70,7 +62,6 @@
 
 #define MADV_DONTNEED_LOCKED	24	 
 
- 
 #define MAP_FILE	0
 
 #define PKEY_DISABLE_ACCESS	0x1

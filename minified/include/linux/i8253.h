@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_I8253_H
 #define __LINUX_I8253_H
 
@@ -6,7 +5,6 @@
 #include <linux/spinlock.h>
 #include <linux/timex.h>
 
- 
 #define PIT_MODE	0x43
 #define PIT_CH0		0x40
 #define PIT_CH2		0x42

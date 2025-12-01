@@ -1,14 +1,10 @@
- 
 #ifndef _UAPI_ASM_GENERIC_IOCTL_H
 #define _UAPI_ASM_GENERIC_IOCTL_H
 
- 
 
- 
 #define _IOC_NRBITS	8
 #define _IOC_TYPEBITS	8
 
- 
 
 #ifndef _IOC_SIZEBITS
 # define _IOC_SIZEBITS	14
@@ -28,7 +24,6 @@
 #define _IOC_SIZESHIFT	(_IOC_TYPESHIFT+_IOC_TYPEBITS)
 #define _IOC_DIRSHIFT	(_IOC_SIZESHIFT+_IOC_SIZEBITS)
 
- 
 
 #ifndef _IOC_NONE
 # define _IOC_NONE	0U
@@ -52,7 +47,6 @@
 #define _IOC_TYPECHECK(t) (sizeof(t))
 #endif
 
- 
 #define _IO(type,nr)		_IOC(_IOC_NONE,(type),(nr),0)
 #define _IOR(type,nr,size)	_IOC(_IOC_READ,(type),(nr),(_IOC_TYPECHECK(size)))
 #define _IOW(type,nr,size)	_IOC(_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))
@@ -61,13 +55,11 @@
 #define _IOW_BAD(type,nr,size)	_IOC(_IOC_WRITE,(type),(nr),sizeof(size))
 #define _IOWR_BAD(type,nr,size)	_IOC(_IOC_READ|_IOC_WRITE,(type),(nr),sizeof(size))
 
- 
 #define _IOC_DIR(nr)		(((nr) >> _IOC_DIRSHIFT) & _IOC_DIRMASK)
 #define _IOC_TYPE(nr)		(((nr) >> _IOC_TYPESHIFT) & _IOC_TYPEMASK)
 #define _IOC_NR(nr)		(((nr) >> _IOC_NRSHIFT) & _IOC_NRMASK)
 #define _IOC_SIZE(nr)		(((nr) >> _IOC_SIZESHIFT) & _IOC_SIZEMASK)
 
- 
 
 #define IOC_IN		(_IOC_WRITE << _IOC_DIRSHIFT)
 #define IOC_OUT		(_IOC_READ << _IOC_DIRSHIFT)

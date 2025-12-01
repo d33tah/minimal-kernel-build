@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/mm.h>
 #include <linux/export.h>
@@ -13,12 +11,10 @@
 #include <asm/tlbflush.h>
 #include <linux/vmalloc.h>
 
- 
 
 
 #include <asm/kmap_size.h>
 
- 
 # define KM_INCR	1
 
 static inline int kmap_local_idx_push(void)
@@ -72,7 +68,6 @@ static inline void *arch_kmap_local_high_get(struct page *page)
 	set_pte_at(mm, vaddr, ptep, ptev)
 #endif
 
- 
 static inline bool kmap_high_unmap_local(unsigned long vaddr)
 {
 #ifdef ARCH_NEEDS_KMAP_HIGH_GET
@@ -172,7 +167,6 @@ void kunmap_local_indexed(void *vaddr)
 	migrate_enable();
 }
 
- 
 void __kmap_local_sched_out(void)
 {
 	struct task_struct *tsk = current;
@@ -244,7 +238,6 @@ void kmap_local_fork(struct task_struct *tsk)
 
 #define PA_HASH_ORDER	7
 
- 
 struct page_address_map {
 	struct page *page;
 	void *virtual;
@@ -253,7 +246,6 @@ struct page_address_map {
 
 static struct page_address_map page_address_maps[LAST_PKMAP];
 
- 
 static struct page_address_slot {
 	struct list_head lh;			 
 	spinlock_t lock;			 
@@ -264,7 +256,6 @@ static struct page_address_slot *page_slot(const struct page *page)
 	return &page_address_htable[hash_ptr(page, PA_HASH_ORDER)];
 }
 
- 
 void *page_address(const struct page *page)
 {
 	unsigned long flags;
@@ -292,7 +283,6 @@ void *page_address(const struct page *page)
 	return ret;
 }
 
- 
 void set_page_address(struct page *page, void *virtual)
 {
 	unsigned long flags;

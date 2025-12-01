@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/string.h>
 #include <linux/platform_device.h>
@@ -34,7 +32,6 @@ struct device platform_bus = {
 	.init_name	= "platform",
 };
 
- 
 struct resource *platform_get_resource(struct platform_device *dev,
 				       unsigned int type, unsigned int num)
 {
@@ -63,7 +60,6 @@ struct resource *platform_get_mem_or_io(struct platform_device *dev,
 	return NULL;
 }
 
- 
 void __iomem *
 devm_platform_get_and_ioremap_resource(struct platform_device *pdev,
 				unsigned int index, struct resource **res)
@@ -76,14 +72,12 @@ devm_platform_get_and_ioremap_resource(struct platform_device *pdev,
 	return devm_ioremap_resource(&pdev->dev, r);
 }
 
- 
 void __iomem *devm_platform_ioremap_resource(struct platform_device *pdev,
 					     unsigned int index)
 {
 	return devm_platform_get_and_ioremap_resource(pdev, index, NULL);
 }
 
- 
 void __iomem *
 devm_platform_ioremap_resource_byname(struct platform_device *pdev,
 				      const char *name)
@@ -94,14 +88,12 @@ devm_platform_ioremap_resource_byname(struct platform_device *pdev,
 	return devm_ioremap_resource(&pdev->dev, res);
 }
 
- 
 /* Stub: platform_get_irq_optional not used externally */
 int platform_get_irq_optional(struct platform_device *dev, unsigned int num)
 {
 	return -ENXIO;
 }
 
- 
 int platform_get_irq(struct platform_device *dev, unsigned int num)
 {
 	int ret;
@@ -124,7 +116,6 @@ int devm_platform_get_irqs_affinity(struct platform_device *dev,
 	return -ENOSYS;
 }
 
- 
 struct resource *platform_get_resource_byname(struct platform_device *dev,
 					      unsigned int type,
 					      const char *name)
@@ -148,7 +139,6 @@ struct platform_object {
 	char name[];
 };
 
- 
 static void setup_pdev_dma_masks(struct platform_device *pdev)
 {
 	pdev->dev.dma_parms = &pdev->dma_parms;
@@ -174,7 +164,6 @@ static void platform_device_release(struct device *dev)
 	kfree(pa);
 }
 
- 
 struct platform_device *platform_device_alloc(const char *name, int id)
 {
 	struct platform_object *pa;
@@ -216,7 +205,6 @@ void platform_device_unregister(struct platform_device *pdev) { }
 struct platform_device *platform_device_register_full(
 		const struct platform_device_info *pdevinfo) { return ERR_PTR(-ENOSYS); }
 
- 
 int __platform_driver_register(struct platform_driver *drv,
 				struct module *owner)
 {
@@ -226,7 +214,6 @@ int __platform_driver_register(struct platform_driver *drv,
 	return driver_register(&drv->driver);
 }
 
- 
 void platform_driver_unregister(struct platform_driver *drv)
 {
 	driver_unregister(&drv->driver);
@@ -274,7 +261,6 @@ static const struct attribute_group platform_dev_group = { .attrs = platform_dev
 __ATTRIBUTE_GROUPS(platform_dev);
 
 
- 
 static int platform_match(struct device *dev, struct device_driver *drv)
 {
 	struct platform_device *pdev = to_platform_device(dev);
@@ -395,7 +381,6 @@ static inline int __platform_match(struct device *dev, const void *drv)
 	return platform_match(dev, (struct device_driver *)drv);
 }
 
- 
 struct device *platform_find_device_by_driver(struct device *start,
 					      const struct device_driver *drv)
 {

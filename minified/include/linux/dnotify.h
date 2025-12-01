@@ -1,7 +1,5 @@
- 
 #ifndef _LINUX_DNOTIFY_H
 #define _LINUX_DNOTIFY_H
- 
 
 #include <linux/fs.h>
 

@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _DEVICE_BUS_H_
 #define _DEVICE_BUS_H_
@@ -11,7 +9,6 @@
 struct device_driver;
 struct fwnode_handle;
 
- 
 struct bus_type {
 	const char		*name;
 	const char		*dev_name;
@@ -71,7 +68,6 @@ extern int __must_check bus_create_file(struct bus_type *,
 					struct bus_attribute *);
 extern void bus_remove_file(struct bus_type *, struct bus_attribute *);
 
- 
 int device_match_name(struct device *dev, const void *name);
 int device_match_of_node(struct device *dev, const void *np);
 int device_match_fwnode(struct device *dev, const void *fwnode);
@@ -80,7 +76,6 @@ int device_match_acpi_dev(struct device *dev, const void *adev);
 int device_match_acpi_handle(struct device *dev, const void *handle);
 int device_match_any(struct device *dev, const void *unused);
 
- 
 struct subsys_dev_iter {
 	struct klist_iter		ki;
 	const struct device_type	*type;
@@ -97,7 +92,6 @@ int bus_for_each_dev(struct bus_type *bus, struct device *start, void *data,
 struct device *bus_find_device(struct bus_type *bus, struct device *start,
 			       const void *data,
 			       int (*match)(struct device *dev, const void *data));
- 
 static inline struct device *bus_find_device_by_name(struct bus_type *bus,
 						     struct device *start,
 						     const char *name)
@@ -105,28 +99,24 @@ static inline struct device *bus_find_device_by_name(struct bus_type *bus,
 	return bus_find_device(bus, start, name, device_match_name);
 }
 
- 
 static inline struct device *
 bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
 {
 	return bus_find_device(bus, NULL, np, device_match_of_node);
 }
 
- 
 static inline struct device *
 bus_find_device_by_fwnode(struct bus_type *bus, const struct fwnode_handle *fwnode)
 {
 	return bus_find_device(bus, NULL, fwnode, device_match_fwnode);
 }
 
- 
 static inline struct device *bus_find_device_by_devt(struct bus_type *bus,
 						     dev_t devt)
 {
 	return bus_find_device(bus, NULL, &devt, device_match_devt);
 }
 
- 
 static inline struct device *
 bus_find_next_device(struct bus_type *bus,struct device *cur)
 {
@@ -146,7 +136,6 @@ int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 void bus_sort_breadthfirst(struct bus_type *bus,
 			   int (*compare)(const struct device *a,
 					  const struct device *b));
- 
 struct notifier_block;
 
 extern int bus_register_notifier(struct bus_type *bus,
@@ -154,7 +143,6 @@ extern int bus_register_notifier(struct bus_type *bus,
 extern int bus_unregister_notifier(struct bus_type *bus,
 				   struct notifier_block *nb);
 
- 
 #define BUS_NOTIFY_ADD_DEVICE		0x00000001  
 #define BUS_NOTIFY_DEL_DEVICE		0x00000002  
 #define BUS_NOTIFY_REMOVED_DEVICE	0x00000003  

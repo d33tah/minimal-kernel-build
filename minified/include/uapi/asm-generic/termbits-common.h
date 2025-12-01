@@ -1,11 +1,9 @@
- 
 #ifndef __ASM_GENERIC_TERMBITS_COMMON_H
 #define __ASM_GENERIC_TERMBITS_COMMON_H
 
 typedef unsigned char	cc_t;
 typedef unsigned int	speed_t;
 
- 
 #define IGNBRK	0x001			 
 #define BRKINT	0x002			 
 #define IGNPAR	0x004			 
@@ -17,7 +15,6 @@ typedef unsigned int	speed_t;
 #define ICRNL	0x100			 
 #define IXANY	0x800			 
 
- 
 #define OPOST	0x01			 
 #define OCRNL	0x08
 #define ONOCR	0x10
@@ -25,8 +22,6 @@ typedef unsigned int	speed_t;
 #define OFILL	0x40
 #define OFDEL	0x80
 
- 
- 
 #define     B0		0x00000000	 
 #define    B50		0x00000001
 #define    B75		0x00000002
@@ -51,13 +46,11 @@ typedef unsigned int	speed_t;
 
 #define IBSHIFT		16		 
 
- 
 #define TCOOFF		0		 
 #define TCOON		1		 
 #define TCIOFF		2		 
 #define TCION		3		 
 
- 
 #define TCIFLUSH	0		 
 #define TCOFLUSH	1		 
 #define TCIOFLUSH	2		 

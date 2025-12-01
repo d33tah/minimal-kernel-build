@@ -1,4 +1,3 @@
- 
 #ifndef _ASM_GENERIC_RESOURCE_H
 #define _ASM_GENERIC_RESOURCE_H
 
@@ -6,7 +5,6 @@
 #include <uapi/linux/mqueue.h>
 
 
- 
 #define INIT_RLIMITS							\
 {									\
 	[RLIMIT_CPU]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\

@@ -1,7 +1,4 @@
- 
- 
 
- 
 
 #include "boot.h"
 #include "string.h"

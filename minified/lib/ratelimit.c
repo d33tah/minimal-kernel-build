@@ -1,11 +1,8 @@
- 
- 
 
 #include <linux/ratelimit.h>
 #include <linux/jiffies.h>
 #include <linux/export.h>
 
- 
 int ___ratelimit(struct ratelimit_state *rs, const char *func)
 {
 	unsigned long flags;

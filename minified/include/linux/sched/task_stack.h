@@ -1,14 +1,11 @@
- 
 #ifndef _LINUX_SCHED_TASK_STACK_H
 #define _LINUX_SCHED_TASK_STACK_H
 
- 
 
 #include <linux/sched.h>
 #include <linux/magic.h>
 
 
- 
 static __always_inline void *task_stack_page(const struct task_struct *task)
 {
 	return task->stack;

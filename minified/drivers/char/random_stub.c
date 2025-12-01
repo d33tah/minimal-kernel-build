@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/kernel.h>
 #include <linux/random.h>
@@ -9,7 +7,6 @@
 #include <linux/syscalls.h>
 #include <linux/uaccess.h>
 
- 
 
 int wait_for_random_bytes(void)
 {
@@ -61,7 +58,6 @@ bool rng_is_initialized(void)
 	return true;
 }
 
- 
 
 static ssize_t random_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
 {
@@ -100,7 +96,6 @@ const struct file_operations urandom_fops = {
 	.llseek = noop_llseek,
 };
 
- 
 
 SYSCALL_DEFINE3(getrandom, char __user *, buf, size_t, count, unsigned int, flags)
 {

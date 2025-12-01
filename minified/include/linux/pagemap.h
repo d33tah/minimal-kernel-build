@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_PAGEMAP_H
 #define _LINUX_PAGEMAP_H
 
- 
 #include <linux/mm.h>
 #include <linux/fs.h>
 #include <linux/list.h>
@@ -47,19 +45,16 @@ static inline errseq_t filemap_sample_wb_err(struct address_space *mapping)
 	return errseq_sample(&mapping->wb_err);
 }
 
- 
 static inline errseq_t file_sample_sb_err(struct file *file)
 {
 	return errseq_sample(&file->f_path.dentry->d_sb->s_wb_err);
 }
 
- 
 static inline bool mapping_empty(struct address_space *mapping)
 {
 	return xa_empty(&mapping->i_pages);
 }
 
- 
 static inline bool mapping_shrinkable(struct address_space *mapping)
 {
 	void *head;
@@ -80,7 +75,6 @@ static inline bool mapping_shrinkable(struct address_space *mapping)
 	return false;
 }
 
- 
 enum mapping_flags {
 	AS_EIO		= 0,	 
 	AS_ENOSPC	= 1,	 
@@ -117,14 +111,12 @@ static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
 	return mapping->gfp_mask;
 }
 
- 
 static inline gfp_t mapping_gfp_constraint(struct address_space *mapping,
 		gfp_t gfp_mask)
 {
 	return mapping_gfp_mask(mapping) & gfp_mask;
 }
 
- 
 static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
 {
 	m->gfp_mask = mask;
@@ -153,7 +145,6 @@ struct address_space *page_mapping(struct page *);
 struct address_space *folio_mapping(struct folio *);
 struct address_space *swapcache_mapping(struct folio *);
 
- 
 static inline struct address_space *folio_file_mapping(struct folio *folio)
 {
 	if (unlikely(folio_test_swapcache(folio)))
@@ -195,21 +186,18 @@ struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index,
 struct page *pagecache_get_page(struct address_space *mapping, pgoff_t index,
 		int fgp_flags, gfp_t gfp);
 
- 
 static inline struct folio *filemap_get_folio(struct address_space *mapping,
 					pgoff_t index)
 {
 	return __filemap_get_folio(mapping, index, 0, 0);
 }
 
- 
 static inline struct folio *filemap_lock_folio(struct address_space *mapping,
 					pgoff_t index)
 {
 	return __filemap_get_folio(mapping, index, FGP_LOCK, 0);
 }
 
- 
 static inline struct page *find_get_page(struct address_space *mapping,
 					pgoff_t offset)
 {
@@ -240,7 +228,6 @@ static inline struct page *folio_file_page(struct folio *folio, pgoff_t index)
 	return folio_page(folio, index & (folio_nr_pages(folio) - 1));
 }
 
- 
 static inline bool folio_contains(struct folio *folio, pgoff_t index)
 {
 	 
@@ -286,7 +273,6 @@ static inline pgoff_t page_to_index(struct page *page)
 
 extern pgoff_t hugetlb_basepage_index(struct page *page);
 
- 
 static inline pgoff_t page_to_pgoff(struct page *page)
 {
 	if (unlikely(PageHuge(page)))
@@ -294,7 +280,6 @@ static inline pgoff_t page_to_pgoff(struct page *page)
 	return page_to_index(page);
 }
 
- 
 static inline loff_t page_offset(struct page *page)
 {
 	return ((loff_t)page->index) << PAGE_SHIFT;
@@ -305,19 +290,16 @@ static inline loff_t page_file_offset(struct page *page)
 	return ((loff_t)page_index(page)) << PAGE_SHIFT;
 }
 
- 
 static inline loff_t folio_pos(struct folio *folio)
 {
 	return page_offset(&folio->page);
 }
 
- 
 static inline loff_t folio_file_pos(struct folio *folio)
 {
 	return page_file_offset(&folio->page);
 }
 
- 
 static inline pgoff_t folio_pgoff(struct folio *folio)
 {
 	if (unlikely(folio_test_hugetlb(folio)))
@@ -371,7 +353,6 @@ bool __folio_lock_or_retry(struct folio *folio, struct mm_struct *mm,
 void unlock_page(struct page *page);
 void folio_unlock(struct folio *folio);
 
- 
 static inline bool folio_trylock(struct folio *folio)
 {
 	return likely(!test_and_set_bit_lock(PG_locked, folio_flags(folio, 0)));
@@ -384,7 +365,6 @@ static inline void folio_lock(struct folio *folio)
 		__folio_lock(folio);
 }
 
- 
 static inline void lock_page(struct page *page)
 {
 	struct folio *folio;
@@ -398,7 +378,6 @@ static inline void lock_page(struct page *page)
 void folio_wait_bit(struct folio *folio, int bit_nr);
 int folio_wait_bit_killable(struct folio *folio, int bit_nr);
 
- 
 static inline void folio_wait_locked(struct folio *folio)
 {
 	if (folio_test_locked(folio))
@@ -442,10 +421,8 @@ void folio_end_private_2(struct folio *folio);
 void folio_wait_private_2(struct folio *folio);
 int folio_wait_private_2_killable(struct folio *folio);
 
- 
 void folio_add_wait_queue(struct folio *folio, wait_queue_entry_t *waiter);
 
- 
 size_t fault_in_writeable(char __user *uaddr, size_t size);
 size_t fault_in_subpage_writeable(char __user *uaddr, size_t size);
 size_t fault_in_safe_writeable(const char __user *uaddr, size_t size);
@@ -472,15 +449,12 @@ bool filemap_release_folio(struct folio *folio, gfp_t gfp);
 loff_t mapping_seek_hole_data(struct address_space *, loff_t start, loff_t end,
 		int whence);
 
- 
- 
 int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp, void **shadowp);
 
 bool filemap_range_has_writeback(struct address_space *mapping,
 				 loff_t start_byte, loff_t end_byte);
 
- 
 static inline bool filemap_range_needs_writeback(struct address_space *mapping,
 						 loff_t start_byte,
 						 loff_t end_byte)
@@ -493,12 +467,10 @@ static inline bool filemap_range_needs_writeback(struct address_space *mapping,
 	return filemap_range_has_writeback(mapping, start_byte, end_byte);
 }
 
- 
 struct readahead_control {
 	struct file *file;
 	struct address_space *mapping;
 	struct file_ra_state *ra;
- 
 	pgoff_t _index;
 	unsigned int _nr_pages;
 	unsigned int _batch_count;
@@ -522,7 +494,6 @@ void page_cache_async_ra(struct readahead_control *, struct folio *,
 void readahead_expand(struct readahead_control *ractl,
 		      loff_t new_start, size_t new_len);
 
- 
 static inline
 void page_cache_sync_readahead(struct address_space *mapping,
 		struct file_ra_state *ra, struct file *file, pgoff_t index,
@@ -532,7 +503,6 @@ void page_cache_sync_readahead(struct address_space *mapping,
 	page_cache_sync_ra(&ractl, req_count);
 }
 
- 
 static inline
 void page_cache_async_readahead(struct address_space *mapping,
 		struct file_ra_state *ra, struct file *file,
@@ -562,7 +532,6 @@ static inline struct folio *__readahead_folio(struct readahead_control *ractl)
 	return folio;
 }
 
- 
 static inline struct page *readahead_page(struct readahead_control *ractl)
 {
 	struct folio *folio = __readahead_folio(ractl);
@@ -570,7 +539,6 @@ static inline struct page *readahead_page(struct readahead_control *ractl)
 	return &folio->page;
 }
 
- 
 static inline struct folio *readahead_folio(struct readahead_control *ractl)
 {
 	struct folio *folio = __readahead_folio(ractl);
@@ -609,7 +577,6 @@ static inline unsigned int __readahead_batch(struct readahead_control *rac,
 	return i;
 }
 
- 
 #define readahead_page_batch(rac, array)				\
 	__readahead_batch(rac, array, ARRAY_SIZE(array))
 

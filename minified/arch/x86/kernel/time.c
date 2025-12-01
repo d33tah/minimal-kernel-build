@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/clocksource.h>
 #include <linux/clockchips.h>
@@ -31,7 +29,6 @@ unsigned long profile_pc(struct pt_regs *regs)
 	return pc;
 }
 
- 
 static irqreturn_t timer_interrupt(int irq, void *dev_id)
 {
 	global_clock_event->event_handler(global_clock_event);
@@ -47,7 +44,6 @@ static void __init setup_default_timer_irq(void)
 		pr_info("Failed to register legacy timer interrupt\n");
 }
 
- 
 void __init hpet_time_init(void)
 {
 	if (!hpet_enable()) {
@@ -74,13 +70,11 @@ static __init void x86_late_time_init(void)
 		use_tpause_delay();
 }
 
- 
 void __init time_init(void)
 {
 	late_time_init = x86_late_time_init;
 }
 
- 
 void clocksource_arch_init(struct clocksource *cs)
 {
 	if (cs->vdso_clock_mode == VDSO_CLOCKMODE_NONE)

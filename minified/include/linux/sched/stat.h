@@ -1,11 +1,9 @@
- 
 #ifndef _LINUX_SCHED_STAT_H
 #define _LINUX_SCHED_STAT_H
 
 #include <linux/percpu.h>
 #include <linux/kconfig.h>
 
- 
 
 extern unsigned long total_forks;
 extern int nr_threads;

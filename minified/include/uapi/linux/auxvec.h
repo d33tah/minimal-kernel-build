@@ -1,10 +1,8 @@
- 
 #ifndef _UAPI_LINUX_AUXVEC_H
 #define _UAPI_LINUX_AUXVEC_H
 
 #include <asm/auxvec.h>
 
- 
 #define AT_NULL   0	 
 #define AT_IGNORE 1	 
 #define AT_EXECFD 2	 
@@ -23,7 +21,6 @@
 #define AT_PLATFORM 15   
 #define AT_HWCAP  16     
 #define AT_CLKTCK 17	 
- 
 #define AT_SECURE 23    
 #define AT_BASE_PLATFORM 24	 
 #define AT_RANDOM 25	 

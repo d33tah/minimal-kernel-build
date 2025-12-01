@@ -1,4 +1,3 @@
- 
 #ifndef _linux_POSIX_TIMERS_H
 #define _linux_POSIX_TIMERS_H
 
@@ -10,7 +9,6 @@
 struct kernel_siginfo;
 struct task_struct;
 
- 
 #define CPUCLOCK_PID(clock)		((pid_t) ~((clock) >> 3))
 #define CPUCLOCK_PERTHREAD(clock) \
 	(((clock) & (clockid_t) CPUCLOCK_PERTHREAD_MASK) != 0)
@@ -58,7 +56,6 @@ static inline void posix_cputimers_init_work(void) { }
 
 #define REQUEUE_PENDING 1
 
- 
 struct k_itimer;
 
 void run_posix_cpu_timers(void);

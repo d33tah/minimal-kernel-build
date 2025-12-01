@@ -1,4 +1,3 @@
- 
 #include <linux/init.h>
 #include <linux/async.h>
 #include <linux/fs.h>
@@ -68,7 +67,6 @@ static void panic_show_mem(const char *fmt, ...)
 	va_end(args);
 }
 
- 
 
 #define N_ALIGN(len) ((((len) + 1) & ~3) + 2)
 
@@ -133,7 +131,6 @@ static void __init dir_utime(void) {}
 
 static __initdata time64_t mtime;
 
- 
 
 static __initdata unsigned long ino, major, minor, nlink;
 static __initdata umode_t mode;
@@ -168,7 +165,6 @@ static void __init parse_header(char *s)
 	hdr_csum = parsed[12];
 }
 
- 
 
 static __initdata enum state {
 	Start,

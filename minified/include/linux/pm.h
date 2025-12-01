@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_PM_H
 #define _LINUX_PM_H
@@ -13,7 +11,6 @@
 #include <linux/hrtimer.h>
 #include <linux/completion.h>
 
- 
 extern void (*pm_power_off)(void);
 
 struct device;  
@@ -29,7 +26,6 @@ static inline bool cxl_mem_active(void)
 	return false;
 }
 
- 
 
 
 #define power_group_name	NULL
@@ -38,7 +34,6 @@ typedef struct pm_message {
 	int event;
 } pm_message_t;
 
- 
 struct dev_pm_ops {
 	int (*prepare)(struct device *dev);
 	void (*complete)(struct device *dev);
@@ -116,7 +111,6 @@ static __maybe_unused _DEFINE_DEV_PM_OPS(__static_##name, suspend_fn, \
 					 resume_fn, runtime_suspend_fn, \
 					 runtime_resume_fn, idle_fn)
 
- 
 #define DEFINE_SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
 	_DEFINE_DEV_PM_OPS(name, suspend_fn, resume_fn, NULL, NULL, NULL)
 
@@ -129,13 +123,11 @@ static __maybe_unused _DEFINE_DEV_PM_OPS(__static_##name, suspend_fn, \
 #define EXPORT_NS_GPL_SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn, ns)	\
 	_EXPORT_DEV_PM_OPS(name, suspend_fn, resume_fn, NULL, NULL, NULL, "_gpl", #ns)
 
- 
 #define SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
 const struct dev_pm_ops __maybe_unused name = { \
 	SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
 }
 
- 
 #define UNIVERSAL_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn) \
 const struct dev_pm_ops __maybe_unused name = { \
 	SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
@@ -145,7 +137,6 @@ const struct dev_pm_ops __maybe_unused name = { \
 #define pm_ptr(_ptr) PTR_IF(IS_ENABLED(CONFIG_PM), (_ptr))
 #define pm_sleep_ptr(_ptr) PTR_IF(IS_ENABLED(CONFIG_PM_SLEEP), (_ptr))
 
- 
 
 #define PM_EVENT_INVALID	(-1)
 #define PM_EVENT_ON		0x0000
@@ -191,7 +182,6 @@ const struct dev_pm_ops __maybe_unused name = { \
 
 #define PMSG_IS_AUTO(msg)	(((msg).event & PM_EVENT_AUTO) != 0)
 
- 
 
 enum rpm_status {
 	RPM_INVALID = -1,
@@ -201,7 +191,6 @@ enum rpm_status {
 	RPM_SUSPENDING,
 };
 
- 
 
 enum rpm_request {
 	RPM_REQ_NONE = 0,
@@ -220,7 +209,6 @@ struct pm_subsys_data {
 	unsigned int refcount;
 };
 
- 
 #define DPM_FLAG_NO_DIRECT_COMPLETE	BIT(0)
 #define DPM_FLAG_SMART_PREPARE		BIT(1)
 #define DPM_FLAG_SMART_SUSPEND		BIT(2)
@@ -249,7 +237,6 @@ struct dev_pm_info {
 extern int dev_pm_get_subsys_data(struct device *dev);
 extern void dev_pm_put_subsys_data(struct device *dev);
 
- 
 struct dev_pm_domain {
 	struct dev_pm_ops	ops;
 	int (*start)(struct device *dev);
@@ -259,12 +246,9 @@ struct dev_pm_domain {
 	void (*dismiss)(struct device *dev);
 };
 
- 
 
- 
 #define PM_EVENT_PRETHAW PM_EVENT_QUIESCE
 
- 
 
 
 #define device_pm_lock() do {} while (0)
@@ -307,7 +291,6 @@ static inline void dpm_for_each_dev(void *data, void (*fn)(struct device *, void
 #define pm_generic_poweroff		NULL
 #define pm_generic_complete		NULL
 
- 
 /* Reduced dpm_order enum - only DPM_ORDER_NONE needed for stub function type */
 enum dpm_order {
 	DPM_ORDER_NONE,

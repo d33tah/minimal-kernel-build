@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SIGNAL_H
 #define _LINUX_SIGNAL_H
 
@@ -8,7 +7,6 @@
 
 struct task_struct;
 
- 
 extern int print_fatal_signals;
 
 static inline void copy_siginfo(kernel_siginfo_t *to,
@@ -41,12 +39,10 @@ enum siginfo_layout {
 
 enum siginfo_layout siginfo_layout(unsigned sig, int si_code);
 
- 
 
 #ifndef __HAVE_ARCH_SIG_BITOPS
 #include <linux/bitops.h>
 
- 
 static inline void sigaddset(sigset_t *set, int _sig)
 {
 	unsigned long sig = _sig - 1;
@@ -200,7 +196,6 @@ static inline void sigfillset(sigset_t *set)
 	}
 }
 
- 
 
 static inline void sigaddsetmask(sigset_t *set, unsigned long mask)
 {
@@ -248,7 +243,6 @@ static inline void init_sigpending(struct sigpending *sig)
 
 extern void flush_sigqueue(struct sigpending *queue);
 
- 
 static inline int valid_signal(unsigned long sig)
 {
 	return sig <= _NSIG ? 1 : 0;
@@ -293,7 +287,6 @@ extern struct kmem_cache *sighand_cachep;
 
 extern bool unhandled_signal(struct task_struct *tsk, int sig);
 
- 
 
 #ifdef SIGEMT
 #define SIGEMT_MASK	rt_sigmask(SIGEMT)
@@ -360,7 +353,6 @@ bool sigaltstack_size_valid(size_t ss_size);
 
 
 #ifndef arch_untagged_si_addr
- 
 static inline void __user *arch_untagged_si_addr(void __user *addr,
 						 unsigned long sig,
 						 unsigned long si_code)

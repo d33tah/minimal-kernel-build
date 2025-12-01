@@ -1,7 +1,4 @@
- 
- 
 
- 
 #include <linux/sched/clock.h>
 #include <linux/sched/cputime.h>
 
@@ -27,7 +24,6 @@
 #include "stats.h"
 #include "pelt.h"
 
- 
 
 #include "idle.c"
 

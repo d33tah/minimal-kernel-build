@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_RBTREE_AUGMENTED_H
 #define _LINUX_RBTREE_AUGMENTED_H
@@ -8,7 +6,6 @@
 #include <linux/rbtree.h>
 #include <linux/rcupdate.h>
 
- 
 
 struct rb_augment_callbacks {
 	void (*propagate)(struct rb_node *node, struct rb_node *stop);
@@ -19,7 +16,6 @@ struct rb_augment_callbacks {
 extern void __rb_insert_augmented(struct rb_node *node, struct rb_root *root,
 	void (*augment_rotate)(struct rb_node *old, struct rb_node *new));
 
- 
 static inline void
 rb_insert_augmented(struct rb_node *node, struct rb_root *root,
 		    const struct rb_augment_callbacks *augment)
@@ -37,7 +33,6 @@ rb_insert_augmented_cached(struct rb_node *node,
 	rb_insert_augmented(node, &root->rb_root, augment);
 }
 
- 
 
 #define RB_DECLARE_CALLBACKS(RBSTATIC, RBNAME,				\
 			     RBSTRUCT, RBFIELD, RBAUGMENTED, RBCOMPUTE)	\
@@ -72,7 +67,6 @@ RBSTATIC const struct rb_augment_callbacks RBNAME = {			\
 	.rotate = RBNAME ## _rotate					\
 };
 
- 
 
 #define RB_DECLARE_CALLBACKS_MAX(RBSTATIC, RBNAME, RBSTRUCT, RBFIELD,	      \
 				 RBTYPE, RBAUGMENTED, RBCOMPUTE)	      \

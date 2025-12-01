@@ -1,7 +1,4 @@
- 
- 
 
- 
 
 #include <linux/compiler.h>
 #include <linux/kernel.h>
@@ -16,7 +13,6 @@ static noinline void __down(struct semaphore *sem);
 static noinline int __down_interruptible(struct semaphore *sem);
 static noinline void __up(struct semaphore *sem);
 
- 
 void down(struct semaphore *sem)
 {
 	unsigned long flags;
@@ -30,7 +26,6 @@ void down(struct semaphore *sem)
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 }
 
- 
 int down_interruptible(struct semaphore *sem)
 {
 	unsigned long flags;
@@ -75,7 +70,6 @@ void up(struct semaphore *sem)
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 }
 
- 
 
 struct semaphore_waiter {
 	struct list_head list;
@@ -83,7 +77,6 @@ struct semaphore_waiter {
 	bool up;
 };
 
- 
 static inline int __sched ___down_common(struct semaphore *sem, long state,
 								long timeout)
 {

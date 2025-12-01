@@ -1,5 +1,3 @@
- 
- 
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/err.h>
@@ -24,7 +22,6 @@
 
 
 
- 
 atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS] __cacheline_aligned_in_smp;
 atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS] __cacheline_aligned_in_smp;
 atomic_long_t vm_numa_event[NR_VM_NUMA_EVENT_ITEMS] __cacheline_aligned_in_smp;

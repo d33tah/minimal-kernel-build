@@ -1,18 +1,15 @@
- 
 #ifndef _UAPI_LINUX_ELF_H
 #define _UAPI_LINUX_ELF_H
 
 #include <linux/types.h>
 #include <linux/elf-em.h>
 
- 
 typedef __u32	Elf32_Addr;
 typedef __u16	Elf32_Half;
 typedef __u32	Elf32_Off;
 typedef __s32	Elf32_Sword;
 typedef __u32	Elf32_Word;
 
- 
 typedef __u64	Elf64_Addr;
 typedef __u16	Elf64_Half;
 typedef __s16	Elf64_SHalf;
@@ -22,7 +19,6 @@ typedef __u32	Elf64_Word;
 typedef __u64	Elf64_Xword;
 typedef __s64	Elf64_Sxword;
 
- 
 #define PT_NULL    0
 #define PT_LOAD    1
 #define PT_DYNAMIC 2
@@ -41,13 +37,10 @@ typedef __s64	Elf64_Sxword;
 #define PT_GNU_PROPERTY	(PT_LOOS + 0x474e553)
 
 
- 
 #define PT_AARCH64_MEMTAG_MTE	(PT_LOPROC + 0x2)
 
- 
 #define PN_XNUM 0xffff
 
- 
 #define ET_NONE   0
 #define ET_REL    1
 #define ET_EXEC   2
@@ -56,7 +49,6 @@ typedef __s64	Elf64_Sxword;
 #define ET_LOPROC 0xff00
 #define ET_HIPROC 0xffff
 
- 
 #define DT_NULL		0
 #define DT_NEEDED	1
 #define DT_PLTRELSZ	2
@@ -101,7 +93,6 @@ typedef __s64	Elf64_Sxword;
 #define DT_LOPROC	0x70000000
 #define DT_HIPROC	0x7fffffff
 
- 
 #define STB_LOCAL  0
 #define STB_GLOBAL 1
 #define STB_WEAK   2
@@ -137,7 +128,6 @@ typedef struct {
   } d_un;
 } Elf64_Dyn;
 
- 
 #define ELF32_R_SYM(x) ((x) >> 8)
 #define ELF32_R_TYPE(x) ((x) & 0xff)
 
@@ -221,7 +211,6 @@ typedef struct elf64_hdr {
   Elf64_Half e_shstrndx;
 } Elf64_Ehdr;
 
- 
 #define PF_R		0x4
 #define PF_W		0x2
 #define PF_X		0x1
@@ -248,7 +237,6 @@ typedef struct elf64_phdr {
   Elf64_Xword p_align;		 
 } Elf64_Phdr;
 
- 
 #define SHT_NULL	0
 #define SHT_PROGBITS	1
 #define SHT_SYMTAB	2
@@ -267,7 +255,6 @@ typedef struct elf64_phdr {
 #define SHT_LOUSER	0x80000000
 #define SHT_HIUSER	0xffffffff
 
- 
 #define SHF_WRITE		0x1
 #define SHF_ALLOC		0x2
 #define SHF_EXECINSTR		0x4
@@ -275,7 +262,6 @@ typedef struct elf64_phdr {
 #define SHF_RO_AFTER_INIT	0x00200000
 #define SHF_MASKPROC		0xf0000000
 
- 
 #define SHN_UNDEF	0
 #define SHN_LORESERVE	0xff00
 #define SHN_LOPROC	0xff00
@@ -284,7 +270,6 @@ typedef struct elf64_phdr {
 #define SHN_ABS		0xfff1
 #define SHN_COMMON	0xfff2
 #define SHN_HIRESERVE	0xffff
- 
 typedef struct elf32_shdr {
   Elf32_Word	sh_name;
   Elf32_Word	sh_type;
@@ -348,13 +333,11 @@ typedef struct elf64_shdr {
 #define ELF_OSABI ELFOSABI_NONE
 #endif
 
- 
 #define NT_PRSTATUS	1
 #define NT_PRFPREG	2
 #define NT_PRPSINFO	3
 #define NT_TASKSTRUCT	4
 #define NT_AUXV		6
- 
 #define NT_SIGINFO      0x53494749
 #define NT_FILE         0x46494c45
 #define NT_PRXFPREG     0x46e62b7f       
@@ -416,27 +399,22 @@ typedef struct elf64_shdr {
 #define NT_LOONGARCH_LASX	0xa03	 
 #define NT_LOONGARCH_LBT	0xa04	 
 
- 
 #define NT_GNU_PROPERTY_TYPE_0	5
 
- 
 typedef struct elf32_note {
   Elf32_Word	n_namesz;	 
   Elf32_Word	n_descsz;	 
   Elf32_Word	n_type;		 
 } Elf32_Nhdr;
 
- 
 typedef struct elf64_note {
   Elf64_Word n_namesz;	 
   Elf64_Word n_descsz;	 
   Elf64_Word n_type;	 
 } Elf64_Nhdr;
 
- 
 #define GNU_PROPERTY_AARCH64_FEATURE_1_AND	0xc0000000
 
- 
 #define GNU_PROPERTY_AARCH64_FEATURE_1_BTI	(1U << 0)
 
 #endif  

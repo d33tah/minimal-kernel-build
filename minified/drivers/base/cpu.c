@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -48,7 +46,6 @@ static const struct attribute_group *hotplugable_cpu_attr_groups[] = {
 	NULL
 };
 
- 
 
 struct cpu_attr {
 	struct device_attribute attr;
@@ -67,7 +64,6 @@ static ssize_t show_cpus_attr(struct device *dev,
 #define _CPU_ATTR(name, map) \
 	{ __ATTR(name, 0444, show_cpus_attr, NULL), map }
 
- 
 static struct cpu_attr cpu_attrs[] = {
 	_CPU_ATTR(online, &__cpu_online_mask),
 	_CPU_ATTR(possible, &__cpu_possible_mask),
@@ -88,7 +84,6 @@ static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
 	return 0;
 }
 
- 
 int register_cpu(struct cpu *cpu, int num)
 {
 	int error;

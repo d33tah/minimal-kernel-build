@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_KFIFO_H
 #define _LINUX_KFIFO_H
 
- 
 
 struct __kfifo {
 	unsigned int	in;
@@ -40,7 +38,6 @@ struct __STRUCT_KFIFO_PTR(type, 0, type) fifo
 #define DECLARE_KFIFO(fifo, type, size)	\
 struct __STRUCT_KFIFO(type, size, 0, type) fifo
 
- 
 #define INIT_KFIFO(fifo) \
 	(void)sizeof(&(fifo))
 

@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_TIME_H
 #define _LINUX_TIME_H
 
@@ -25,7 +24,6 @@ static inline void clear_itimer(void) {}
 
 extern long do_utimes(int dfd, const char __user *filename, struct timespec64 *times, int flags);
 
- 
 struct tm {
 	 
 	int tm_sec;
@@ -58,11 +56,9 @@ static inline bool itimerspec64_valid(const struct itimerspec64 *its)
 	return true;
 }
 
- 
 #define time_after32(a, b)	((s32)((u32)(b) - (u32)(a)) < 0)
 #define time_before32(b, a)	time_after32(a, b)
 
- 
 #define time_between32(t, l, h) ((u32)(h) - (u32)(l) >= (u32)(t) - (u32)(l))
 
 # include <vdso/time.h>

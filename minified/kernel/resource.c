@@ -1,5 +1,3 @@
- 
- 
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -37,7 +35,6 @@ struct resource iomem_resource = {
 	.flags	= IORESOURCE_MEM,
 };
 
- 
 struct resource_constraint {
 	resource_size_t min, max, align;
 	resource_size_t (*alignf)(void *, const struct resource *,
@@ -73,7 +70,6 @@ static struct resource *alloc_resource(gfp_t flags)
 	return kzalloc(sizeof(struct resource), flags);
 }
 
- 
 static struct resource * __request_resource(struct resource *root, struct resource *new)
 {
 	resource_size_t start = new->start;
@@ -138,7 +134,6 @@ void release_child_resources(struct resource *r)
 {
 }
 
- 
 struct resource *request_resource_conflict(struct resource *root, struct resource *new)
 {
 	struct resource *conflict;
@@ -149,7 +144,6 @@ struct resource *request_resource_conflict(struct resource *root, struct resourc
 	return conflict;
 }
 
- 
 int request_resource(struct resource *root, struct resource *new)
 {
 	struct resource *conflict;
@@ -159,7 +153,6 @@ int request_resource(struct resource *root, struct resource *new)
 }
 
 
- 
 int release_resource(struct resource *old)
 {
 	int retval;
@@ -171,7 +164,6 @@ int release_resource(struct resource *old)
 }
 
 
- 
 static int find_next_iomem_res(resource_size_t start, resource_size_t end,
 			       unsigned long flags, unsigned long desc,
 			       struct resource *res)
@@ -254,7 +246,6 @@ int walk_system_ram_res(u64 start, u64 end, void *arg,
 	return -EINVAL;
 }
 
- 
 int walk_mem_res(u64 start, u64 end, void *arg,
 		 int (*func)(struct resource *, void *))
 {
@@ -276,7 +267,6 @@ static int __is_ram(unsigned long pfn, unsigned long nr_pages, void *arg)
 	return 1;
 }
 
- 
 int __weak page_is_ram(unsigned long pfn)
 {
 	return walk_system_ram_range(pfn, 1, NULL, __is_ram) == 1;
@@ -310,7 +300,6 @@ static int __region_intersects(resource_size_t start, size_t size,
 	return REGION_MIXED;
 }
 
- 
 int region_intersects(resource_size_t start, size_t size, unsigned long flags,
 		      unsigned long desc)
 {
@@ -341,7 +330,6 @@ int allocate_resource(struct resource *root, struct resource *new,
 struct resource *lookup_resource(struct resource *root, resource_size_t start)
 { return NULL; }
 
- 
 static struct resource * __insert_resource(struct resource *parent, struct resource *new)
 {
 	struct resource *first, *next;
@@ -391,7 +379,6 @@ static struct resource * __insert_resource(struct resource *parent, struct resou
 	return NULL;
 }
 
- 
 struct resource *insert_resource_conflict(struct resource *parent, struct resource *new)
 {
 	struct resource *conflict;
@@ -402,7 +389,6 @@ struct resource *insert_resource_conflict(struct resource *parent, struct resour
 	return conflict;
 }
 
- 
 int insert_resource(struct resource *parent, struct resource *new)
 {
 	struct resource *conflict;
@@ -503,14 +489,12 @@ reserve_region_with_split(struct resource *root, resource_size_t start,
 	write_unlock(&resource_lock);
 }
 
- 
 /* Stub: resource_alignment not used in minimal kernel */
 resource_size_t resource_alignment(struct resource *res)
 {
 	return 0;
 }
 
- 
 
 static DECLARE_WAIT_QUEUE_HEAD(muxed_resource_wait);
 
@@ -569,7 +553,6 @@ static int __request_region_locked(struct resource *res, struct resource *parent
 	return 0;
 }
 
- 
 struct resource *__request_region(struct resource *parent,
 				  resource_size_t start, resource_size_t n,
 				  const char *name, int flags)
@@ -595,7 +578,6 @@ struct resource *__request_region(struct resource *parent,
 	return res;
 }
 
- 
 void __release_region(struct resource *parent, resource_size_t start,
 		      resource_size_t n)
 {
@@ -655,7 +637,6 @@ __devm_request_region(struct device *dev, struct resource *parent,
 void __devm_release_region(struct device *dev, struct resource *parent,
 			   resource_size_t start, resource_size_t n) { }
 
- 
 #define MAXRESERVE 4
 /* Stub: reserve= cmdline option not needed for minimal kernel */
 static int __init reserve_setup(char *str)
@@ -664,7 +645,6 @@ static int __init reserve_setup(char *str)
 }
 __setup("reserve=", reserve_setup);
 
- 
 int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
 {
 	/* Stub: sanity check not needed for minimal kernel */

@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/capability.h>
 #include <linux/mman.h>
@@ -39,7 +37,6 @@ SYSCALL_DEFINE0(munlockall)
 	return -ENOSYS;   
 }
 
- 
 void mlock_page_drain_local(void)
 {
 	 

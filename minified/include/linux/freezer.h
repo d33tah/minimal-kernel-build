@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef FREEZER_H_INCLUDED
 #define FREEZER_H_INCLUDED

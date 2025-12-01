@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_EDD_H
 #define _LINUX_EDD_H
 

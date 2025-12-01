@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_RHASHTABLE_TYPES_H
 #define _LINUX_RHASHTABLE_TYPES_H
@@ -20,7 +18,6 @@ struct rhlist_head {
 
 struct bucket_table;
 
- 
 struct rhashtable_compare_arg {
 	struct rhashtable *ht;
 	const void *key;
@@ -31,7 +28,6 @@ typedef u32 (*rht_obj_hashfn_t)(const void *data, u32 len, u32 seed);
 typedef int (*rht_obj_cmpfn_t)(struct rhashtable_compare_arg *arg,
 			       const void *obj);
 
- 
 struct rhashtable_params {
 	u16			nelem_hint;
 	u16			key_len;
@@ -45,7 +41,6 @@ struct rhashtable_params {
 	rht_obj_cmpfn_t		obj_cmpfn;
 };
 
- 
 struct rhashtable {
 	struct bucket_table __rcu	*tbl;
 	unsigned int			key_len;
@@ -58,18 +53,15 @@ struct rhashtable {
 	atomic_t			nelems;
 };
 
- 
 struct rhltable {
 	struct rhashtable ht;
 };
 
- 
 struct rhashtable_walker {
 	struct list_head list;
 	struct bucket_table *tbl;
 };
 
- 
 struct rhashtable_iter {
 	struct rhashtable *ht;
 	struct rhash_head *p;

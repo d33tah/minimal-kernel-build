@@ -1,12 +1,9 @@
- 
 #ifndef _ASM_GENERIC_FCNTL_H
 #define _ASM_GENERIC_FCNTL_H
 
 #include <linux/types.h>
 
- 
 
- 
 
 #define O_ACCMODE	00000003
 #define O_RDONLY	00000000
@@ -55,7 +52,6 @@
 #define O_CLOEXEC	02000000	 
 #endif
 
- 
 #ifndef O_SYNC
 #define __O_SYNC	04000000
 #define O_SYNC		(__O_SYNC|O_DSYNC)
@@ -69,7 +65,6 @@
 #define __O_TMPFILE	020000000
 #endif
 
- 
 #define O_TMPFILE (__O_TMPFILE | O_DIRECTORY)
 #define O_TMPFILE_MASK (__O_TMPFILE | O_DIRECTORY | O_CREAT)      
 
@@ -113,7 +108,6 @@
 #define F_GETOWNER_UIDS	17
 #endif
 
- 
 #define F_OFD_GETLK	36
 #define F_OFD_SETLK	37
 #define F_OFD_SETLKW	38
@@ -127,29 +121,24 @@ struct f_owner_ex {
 	__kernel_pid_t	pid;
 };
 
- 
 #define FD_CLOEXEC	1	 
 
- 
 #ifndef F_RDLCK
 #define F_RDLCK		0
 #define F_WRLCK		1
 #define F_UNLCK		2
 #endif
 
- 
 #ifndef F_EXLCK
 #define F_EXLCK		4	 
 #define F_SHLCK		8	 
 #endif
 
- 
 #define LOCK_SH		1	 
 #define LOCK_EX		2	 
 #define LOCK_NB		4	 
 #define LOCK_UN		8	 
 
- 
 #define LOCK_MAND	32	 
 #define LOCK_READ	64	 
 #define LOCK_WRITE	128	 

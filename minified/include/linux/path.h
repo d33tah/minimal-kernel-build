@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_PATH_H
 #define _LINUX_PATH_H
 

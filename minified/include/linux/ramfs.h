@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_RAMFS_H
 #define _LINUX_RAMFS_H
 

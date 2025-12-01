@@ -1,4 +1,3 @@
- 
 #include <linux/init_task.h>
 #include <linux/export.h>
 #include <linux/mqueue.h>
@@ -45,7 +44,6 @@ static struct sighand_struct init_sighand = {
 };
 
 
- 
 struct task_struct init_task
 	__aligned(L1_CACHE_BYTES)
 = {
@@ -110,4 +108,3 @@ struct task_struct init_task
 	INIT_PREV_CPUTIME(init_task)
 };
 
- 

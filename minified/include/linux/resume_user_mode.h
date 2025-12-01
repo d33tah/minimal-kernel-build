@@ -1,4 +1,3 @@
- 
 
 #ifndef LINUX_RESUME_USER_MODE_H
 #define LINUX_RESUME_USER_MODE_H
@@ -8,7 +7,6 @@
 #include <linux/memcontrol.h>
 #include <linux/blk-cgroup.h>
 
- 
 static inline void set_notify_resume(struct task_struct *task)
 {
 	if (!test_and_set_tsk_thread_flag(task, TIF_NOTIFY_RESUME))
@@ -16,7 +14,6 @@ static inline void set_notify_resume(struct task_struct *task)
 }
 
 
- 
 static inline void resume_user_mode_work(struct pt_regs *regs)
 {
 	clear_thread_flag(TIF_NOTIFY_RESUME);

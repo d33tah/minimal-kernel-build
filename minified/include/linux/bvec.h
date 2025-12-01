@@ -1,5 +1,3 @@
- 
- 
 #ifndef __LINUX_BVEC_H
 #define __LINUX_BVEC_H
 
@@ -13,7 +11,6 @@
 
 struct page;
 
- 
 struct bio_vec {
 	struct page	*bv_page;
 	unsigned int	bv_len;
@@ -35,10 +32,8 @@ struct bvec_iter_all {
 	unsigned	done;
 };
 
- 
 #define __bvec_iter_bvec(bvec, iter)	(&(bvec)[(iter).bi_idx])
 
- 
 #define mp_bvec_iter_page(bvec, iter)				\
 	(__bvec_iter_bvec((bvec), (iter))->bv_page)
 
@@ -59,7 +54,6 @@ struct bvec_iter_all {
 	.bv_offset	= mp_bvec_iter_offset((bvec), (iter)),	\
 })
 
- 
  #define bvec_iter_offset(bvec, iter)				\
 	(mp_bvec_iter_offset((bvec), (iter)) % PAGE_SIZE)
 
@@ -102,7 +96,6 @@ static inline bool bvec_iter_advance(const struct bio_vec *bv,
 	return true;
 }
 
- 
 static inline void bvec_iter_advance_single(const struct bio_vec *bv,
 				struct bvec_iter *iter, unsigned int bytes)
 {
@@ -154,31 +147,26 @@ static inline void bvec_advance(const struct bio_vec *bvec,
 	}
 }
 
- 
 static inline void *bvec_kmap_local(struct bio_vec *bvec)
 {
 	return kmap_local_page(bvec->bv_page) + bvec->bv_offset;
 }
 
- 
 static inline void memcpy_from_bvec(char *to, struct bio_vec *bvec)
 {
 	memcpy_from_page(to, bvec->bv_page, bvec->bv_offset, bvec->bv_len);
 }
 
- 
 static inline void memcpy_to_bvec(struct bio_vec *bvec, const char *from)
 {
 	memcpy_to_page(bvec->bv_page, bvec->bv_offset, from, bvec->bv_len);
 }
 
- 
 static inline void memzero_bvec(struct bio_vec *bvec)
 {
 	memzero_page(bvec->bv_page, bvec->bv_offset, bvec->bv_len);
 }
 
- 
 static inline void *bvec_virt(struct bio_vec *bvec)
 {
 	WARN_ON_ONCE(PageHighMem(bvec->bv_page));

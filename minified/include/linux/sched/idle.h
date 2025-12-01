@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SCHED_IDLE_H
 #define _LINUX_SCHED_IDLE_H
 
@@ -13,7 +12,6 @@ enum cpu_idle_type {
 
 static inline void wake_up_if_idle(int cpu) { }
 
- 
 #ifdef TIF_POLLING_NRFLAG
 
 static inline void __current_set_polling(void)

@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_JIFFIES_H
 #define _LINUX_JIFFIES_H
 
@@ -13,7 +12,6 @@
 #include <asm/param.h>			 
 #include <generated/timeconst.h>
 
- 
 #if HZ >= 12 && HZ < 24
 # define SHIFT_HZ	4
 #elif HZ >= 24 && HZ < 48
@@ -38,33 +36,27 @@
 # error Invalid value of HZ.
 #endif
 
- 
 #define SH_DIV(NOM,DEN,LSH) (   (((NOM) / (DEN)) << (LSH))              \
                              + ((((NOM) % (DEN)) << (LSH)) + (DEN) / 2) / (DEN))
 
- 
 #define LATCH ((CLOCK_TICK_RATE + HZ/2) / HZ)	 
 
 extern int register_refined_jiffies(long clock_tick_rate);
 
- 
 #define TICK_USEC ((USEC_PER_SEC + HZ/2) / HZ)
 
- 
 #define USER_TICK_USEC ((1000000UL + USER_HZ/2) / USER_HZ)
 
 #ifndef __jiffy_arch_data
 #define __jiffy_arch_data
 #endif
 
- 
 extern u64 __cacheline_aligned_in_smp jiffies_64;
 extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffies;
 
 /* BITS_PER_LONG == 32 */
 u64 get_jiffies_64(void);
 
- 
 #define time_after(a,b)		\
 	(typecheck(unsigned long, a) && \
 	 typecheck(unsigned long, b) && \
@@ -77,17 +69,14 @@ u64 get_jiffies_64(void);
 	 ((long)((a) - (b)) >= 0))
 #define time_before_eq(a,b)	time_after_eq(b,a)
 
- 
 #define time_in_range(a,b,c) \
 	(time_after_eq(a,b) && \
 	 time_before_eq(a,c))
 
- 
 #define time_in_range_open(a,b,c) \
 	(time_after_eq(a,b) && \
 	 time_before(a,c))
 
- 
 #define time_after64(a,b)	\
 	(typecheck(__u64, a) &&	\
 	 typecheck(__u64, b) && \
@@ -104,35 +93,26 @@ u64 get_jiffies_64(void);
 	(time_after_eq64(a, b) && \
 	 time_before_eq64(a, c))
 
- 
 
- 
 #define time_is_before_jiffies(a) time_after(jiffies, a)
 #define time_is_before_jiffies64(a) time_after64(get_jiffies_64(), a)
 
- 
 #define time_is_after_jiffies(a) time_before(jiffies, a)
 #define time_is_after_jiffies64(a) time_before64(get_jiffies_64(), a)
 
- 
 #define time_is_before_eq_jiffies(a) time_after_eq(jiffies, a)
 #define time_is_before_eq_jiffies64(a) time_after_eq64(get_jiffies_64(), a)
 
- 
 #define time_is_after_eq_jiffies(a) time_before_eq(jiffies, a)
 #define time_is_after_eq_jiffies64(a) time_before_eq64(get_jiffies_64(), a)
 
- 
 #define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
 
- 
 #define MAX_JIFFY_OFFSET ((LONG_MAX >> 1)-1)
 
 extern unsigned long preset_lpj;
 
- 
 
- 
 
 #define SEC_JIFFIE_SC (31 - SHIFT_HZ)
 #if !((((NSEC_PER_SEC << 2) / TICK_NSEC) << (SEC_JIFFIE_SC - 2)) & 0x80000000)
@@ -145,12 +125,10 @@ extern unsigned long preset_lpj;
 
 #define NSEC_CONVERSION ((unsigned long)((((u64)1 << NSEC_JIFFIE_SC) +\
                                         TICK_NSEC -1) / (u64)TICK_NSEC))
- 
 /* BITS_PER_LONG == 32 */
 #define MAX_SEC_IN_JIFFIES \
 	(long)((u64)((u64)MAX_JIFFY_OFFSET * TICK_NSEC) / NSEC_PER_SEC)
 
- 
 extern unsigned int jiffies_to_msecs(const unsigned long j);
 extern unsigned int jiffies_to_usecs(const unsigned long j);
 
@@ -159,13 +137,11 @@ extern u64 jiffies64_to_msecs(u64 j);
 
 extern unsigned long __msecs_to_jiffies(const unsigned int m);
 #if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
- 
 static inline unsigned long _msecs_to_jiffies(const unsigned int m)
 {
 	return (m + (MSEC_PER_SEC / HZ) - 1) / (MSEC_PER_SEC / HZ);
 }
 #elif HZ > MSEC_PER_SEC && !(HZ % MSEC_PER_SEC)
- 
 static inline unsigned long _msecs_to_jiffies(const unsigned int m)
 {
 	if (m > jiffies_to_msecs(MAX_JIFFY_OFFSET))
@@ -173,7 +149,6 @@ static inline unsigned long _msecs_to_jiffies(const unsigned int m)
 	return m * (HZ / MSEC_PER_SEC);
 }
 #else
- 
 static inline unsigned long _msecs_to_jiffies(const unsigned int m)
 {
 	if (HZ > MSEC_PER_SEC && m > jiffies_to_msecs(MAX_JIFFY_OFFSET))
@@ -182,7 +157,6 @@ static inline unsigned long _msecs_to_jiffies(const unsigned int m)
 	return (MSEC_TO_HZ_MUL32 * m + MSEC_TO_HZ_ADJ32) >> MSEC_TO_HZ_SHR32;
 }
 #endif
- 
 static __always_inline unsigned long msecs_to_jiffies(const unsigned int m)
 {
 	if (__builtin_constant_p(m)) {
@@ -208,7 +182,6 @@ static inline unsigned long _usecs_to_jiffies(const unsigned int u)
 }
 #endif
 
- 
 static __always_inline unsigned long usecs_to_jiffies(const unsigned int u)
 {
 	if (__builtin_constant_p(u)) {

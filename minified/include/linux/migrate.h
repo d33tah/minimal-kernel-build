@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_MIGRATE_H
 #define _LINUX_MIGRATE_H
 
@@ -12,10 +11,8 @@ typedef void free_page_t(struct page *page, unsigned long private);
 
 struct migration_target_control;
 
- 
 #define MIGRATEPAGE_SUCCESS		0
 
- 
 extern const char *migrate_reason_names[MR_TYPES];
 
 

@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_SYSCALLS_H
 #define _LINUX_SYSCALLS_H
@@ -83,11 +81,9 @@ enum landlock_rule_type;
 #include <linux/fcntl.h>
 #include <trace/syscall.h>
 
- 
 #include <asm/syscall_wrapper.h>
 #include <asm/syscall.h>
 
- 
 #define __MAP0(m,...)
 #define __MAP1(m,t,a,...) m(t,a)
 #define __MAP2(m,t,a,...) m(t,a), __MAP1(m,__VA_ARGS__)
@@ -149,7 +145,6 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 
 #define __PROTECT(...) asmlinkage_protect(__VA_ARGS__)
 
- 
 #ifndef __SYSCALL_DEFINEx
 #define __SYSCALL_DEFINEx(x, name, ...)					\
 	__diag_push();							\
@@ -171,7 +166,6 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
 #endif  
 
- 
 #ifdef __LITTLE_ENDIAN
 #define SC_ARG64(name) u32, name##_lo, u32, name##_hi
 #else
@@ -186,7 +180,6 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 #define SYSCALL32_DEFINE5 SYSCALL_DEFINE5
 #define SYSCALL32_DEFINE6 SYSCALL_DEFINE6
 
- 
 static inline void addr_limit_user_check(void)
 {
 #ifdef TIF_FSCHECK
@@ -199,10 +192,8 @@ static inline void addr_limit_user_check(void)
 #endif
 }
 
- 
 
 
- 
 ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count);
 int ksys_fchown(unsigned int fd, uid_t user, gid_t group);
 ssize_t ksys_read(unsigned int fd, char __user *buf, size_t count);

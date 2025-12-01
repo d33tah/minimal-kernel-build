@@ -1,5 +1,3 @@
- 
- 
 
 
 #include <linux/stddef.h>
@@ -20,7 +18,6 @@ struct pglist_data *next_online_pgdat(struct pglist_data *pgdat)
 	return NODE_DATA(nid);
 }
 
- 
 struct zone *next_zone(struct zone *zone)
 {
 	pg_data_t *pgdat = zone->zone_pgdat;
@@ -42,7 +39,6 @@ static inline int zref_in_nodemask(struct zoneref *zref, nodemask_t *nodes)
 	return 1;
 }
 
- 
 struct zoneref *__next_zones_zonelist(struct zoneref *z,
 					enum zone_type highest_zoneidx,
 					nodemask_t *nodes)

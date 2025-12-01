@@ -1,13 +1,10 @@
- 
 #ifndef _LINUX_SCHED_CLOCK_H
 #define _LINUX_SCHED_CLOCK_H
 
 #include <linux/smp.h>
 
- 
 extern unsigned long long notrace sched_clock(void);
 
- 
 extern u64 running_clock(void);
 extern u64 sched_clock_cpu(int cpu);
 
@@ -17,7 +14,6 @@ extern void sched_clock_init(void);
 extern int sched_clock_stable(void);
 extern void clear_sched_clock_stable(void);
 
- 
 extern u64 __sched_clock_offset;
 
 extern void sched_clock_tick(void);
@@ -25,7 +21,6 @@ extern void sched_clock_tick_stable(void);
 extern void sched_clock_idle_sleep_event(void);
 extern void sched_clock_idle_wakeup_event(void);
 
- 
 static inline u64 cpu_clock(int cpu)
 {
 	return sched_clock_cpu(cpu);

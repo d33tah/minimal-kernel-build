@@ -1,5 +1,3 @@
- 
- 
 #include "error.h"
 
 #include "../string.c"
@@ -42,7 +40,6 @@ void *memmove(void *dest, const void *src, size_t n)
 	return dest;
 }
 
- 
 void *memcpy(void *dest, const void *src, size_t n)
 {
 	if (dest > src && dest - src < n) {

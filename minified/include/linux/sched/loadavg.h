@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_SCHED_LOADAVG_H
 #define _LINUX_SCHED_LOADAVG_H
 
- 
 extern unsigned long avenrun[];		 
 extern void get_avenrun(unsigned long *loads, unsigned long offset, int shift);
 
@@ -13,7 +11,6 @@ extern void get_avenrun(unsigned long *loads, unsigned long offset, int shift);
 #define EXP_5		2014		 
 #define EXP_15		2037		 
 
- 
 static inline unsigned long
 calc_load(unsigned long load, unsigned long exp, unsigned long active)
 {

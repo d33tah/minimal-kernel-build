@@ -1,7 +1,4 @@
- 
- 
 
- 
 
 #include <uapi/asm/boot.h>
 
@@ -43,7 +40,6 @@ static void store_video_mode(void)
 	boot_params.screen_info.orig_video_page = oreg.bh;
 }
 
- 
 static void store_mode_params(void)
 {
 	u16 font_size;
@@ -214,7 +210,6 @@ static unsigned int mode_menu(void)
 	}
 }
 
- 
 static struct saved_screen {
 	int x, y;
 	int curx, cury;

@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_DEVPTS_FS_H
 #define _LINUX_DEVPTS_FS_H

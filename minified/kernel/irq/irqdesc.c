@@ -1,5 +1,3 @@
- 
- 
 #include <linux/irq.h>
 #include <linux/slab.h>
 #include <linux/export.h>
@@ -12,7 +10,6 @@
 
 #include "internals.h"
 
- 
 static struct lock_class_key irq_desc_lock_class;
 
 static void __init init_irq_default_affinity(void)
@@ -262,13 +259,11 @@ int handle_irq_desc(struct irq_desc *desc)
 	return 0;
 }
 
- 
 int generic_handle_irq(unsigned int irq)
 {
 	return handle_irq_desc(irq_to_desc(irq));
 }
 
- 
 int generic_handle_irq_safe(unsigned int irq)
 {
 	unsigned long flags;
@@ -281,9 +276,7 @@ int generic_handle_irq_safe(unsigned int irq)
 }
 
 
- 
 
- 
 void irq_free_descs(unsigned int from, unsigned int cnt)
 {
 	int i;
@@ -299,7 +292,6 @@ void irq_free_descs(unsigned int from, unsigned int cnt)
 	mutex_unlock(&sparse_irq_lock);
 }
 
- 
 int __ref
 __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 		  struct module *owner, const struct irq_affinity_desc *affinity)
@@ -337,7 +329,6 @@ unlock:
 	return ret;
 }
 
- 
 unsigned int irq_get_next_irq(unsigned int offset)
 {
 	return find_next_bit(allocated_irqs, nr_irqs, offset);
@@ -414,7 +405,6 @@ void kstat_incr_irq_this_cpu(unsigned int irq)
 	kstat_incr_irqs_this_cpu(irq_to_desc(irq));
 }
 
- 
 unsigned int kstat_irqs_cpu(unsigned int irq, int cpu)
 {
 	struct irq_desc *desc = irq_to_desc(irq);

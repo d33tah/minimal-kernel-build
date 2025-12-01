@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_BACKING_DEV_H
 #define _LINUX_BACKING_DEV_H
@@ -82,7 +80,6 @@ static inline s64 wb_stat_sum(struct bdi_writeback *wb, enum wb_stat_item item)
 
 extern void wb_writeout_inc(struct bdi_writeback *wb);
 
- 
 static inline unsigned long wb_stat_error(void)
 {
 	return 1;
@@ -91,7 +88,6 @@ static inline unsigned long wb_stat_error(void)
 int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio);
 int bdi_set_max_ratio(struct backing_dev_info *bdi, unsigned int max_ratio);
 
- 
 #define BDI_CAP_WRITEBACK		(1 << 0)
 #define BDI_CAP_WRITEBACK_ACCT		(1 << 1)
 #define BDI_CAP_STRICTLIMIT		(1 << 2)
@@ -100,7 +96,6 @@ extern struct backing_dev_info noop_backing_dev_info;
 
 int bdi_init(struct backing_dev_info *bdi);
 
- 
 static inline bool writeback_in_progress(struct bdi_writeback *wb)
 {
 	return test_bit(WB_writeback_running, &wb->state);

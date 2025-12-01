@@ -1,4 +1,3 @@
- 
 #include <linux/bitops.h>
 #include <linux/bug.h>
 #include <linux/export.h>
@@ -9,7 +8,6 @@
 
 #include <linux/reciprocal_div.h>
 
- 
 
 struct reciprocal_value reciprocal_value(u32 d)
 {

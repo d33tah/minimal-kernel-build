@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/export.h>
 #include <linux/kernel.h>
@@ -12,7 +10,6 @@ int get_option(char **str, int *pint) { BUG(); }
 char *get_options(const char *str, int nints, int *ints) { BUG(); }
 unsigned long long memparse(const char *ptr, char **retptr) { BUG(); }
 
- 
 bool parse_option_str(const char *str, const char *option)
 {
 	while (*str) {
@@ -32,7 +29,6 @@ bool parse_option_str(const char *str, const char *option)
 	return false;
 }
 
- 
 char *next_arg(char *args, char **param, char **val)
 {
 	unsigned int i, equals = 0;

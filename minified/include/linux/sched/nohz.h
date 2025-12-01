@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_SCHED_NOHZ_H
 #define _LINUX_SCHED_NOHZ_H
 
- 
 
 static inline void nohz_balance_enter_idle(int cpu) { }
 

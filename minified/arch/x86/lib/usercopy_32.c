@@ -1,5 +1,3 @@
- 
- 
 #include <linux/export.h>
 #include <linux/uaccess.h>
 #include <asm/asm.h>
@@ -12,7 +10,6 @@ static inline int __movsl_is_ok(unsigned long a1, unsigned long a2, unsigned lon
 #define movsl_is_ok(a1, a2, n) \
 	__movsl_is_ok((unsigned long)(a1), (unsigned long)(a2), (n))
 
- 
 
 #define __do_clear_user(addr,size)					\
 do {									\
@@ -30,7 +27,6 @@ do {									\
 		: "r"(size & 3), "0"(size / 4), "1"(addr), "a"(0));	\
 } while (0)
 
- 
 unsigned long
 clear_user(void __user *to, unsigned long n)
 {
@@ -40,7 +36,6 @@ clear_user(void __user *to, unsigned long n)
 	return n;
 }
 
- 
 unsigned long
 __clear_user(void __user *to, unsigned long n)
 {
@@ -49,11 +44,9 @@ __clear_user(void __user *to, unsigned long n)
 }
 
 
- 
 unsigned long __copy_user_intel(void __user *to, const void *from,
 					unsigned long size);
 
- 
 #define __copy_user(to, from, size)					\
 do {									\
 	int __d0, __d1, __d2;						\

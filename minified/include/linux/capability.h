@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_CAPABILITY_H
 #define _LINUX_CAPABILITY_H
 
@@ -16,7 +14,6 @@ typedef struct kernel_cap_struct {
 	__u32 cap[_KERNEL_CAPABILITY_U32S];
 } kernel_cap_t;
 
- 
 struct cpu_vfs_cap_data {
 	__u32 magic_etc;
 	kernel_cap_t permitted;
@@ -37,12 +34,10 @@ struct user_namespace;
 extern const kernel_cap_t __cap_empty_set;
 extern const kernel_cap_t __cap_init_eff_set;
 
- 
 
 #define CAP_FOR_EACH_U32(__capi)  \
 	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
 
- 
 
 # define CAP_FS_MASK_B0     (CAP_TO_MASK(CAP_CHOWN)		\
 			    | CAP_TO_MASK(CAP_MKNOD)		\
@@ -134,7 +129,6 @@ static inline bool cap_isclear(const kernel_cap_t a)
 	return true;
 }
 
- 
 static inline bool cap_issubset(const kernel_cap_t a, const kernel_cap_t set)
 {
 	kernel_cap_t dest;
@@ -142,7 +136,6 @@ static inline bool cap_issubset(const kernel_cap_t a, const kernel_cap_t set)
 	return cap_isclear(dest);
 }
 
- 
 
 static inline kernel_cap_t cap_drop_fs_set(const kernel_cap_t a)
 {
@@ -229,7 +222,6 @@ static inline bool checkpoint_restore_ns_capable(struct user_namespace *ns)
 		ns_capable(ns, CAP_SYS_ADMIN);
 }
 
- 
 int get_vfs_caps_from_disk(struct user_namespace *mnt_userns,
 			   const struct dentry *dentry,
 			   struct cpu_vfs_cap_data *cpu_caps);

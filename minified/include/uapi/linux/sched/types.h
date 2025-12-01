@@ -1,4 +1,3 @@
- 
 #ifndef _UAPI_LINUX_SCHED_TYPES_H
 #define _UAPI_LINUX_SCHED_TYPES_H
 
@@ -11,7 +10,6 @@ struct sched_param {
 #define SCHED_ATTR_SIZE_VER0	48	 
 #define SCHED_ATTR_SIZE_VER1	56	 
 
- 
 struct sched_attr {
 	__u32 size;
 

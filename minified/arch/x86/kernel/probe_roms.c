@@ -1,5 +1,3 @@
- 
- 
 #include <linux/init.h>
 #include <linux/export.h>
 #include <linux/pci.h>

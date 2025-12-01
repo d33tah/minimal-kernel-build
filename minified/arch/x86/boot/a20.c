@@ -1,7 +1,4 @@
- 
- 
 
- 
 
 #include "boot.h"
 
@@ -36,7 +33,6 @@ static int empty_8042(void)
 	return -1;
 }
 
- 
 
 #define A20_TEST_ADDR	(4*0x80)
 #define A20_TEST_SHORT  32
@@ -64,13 +60,11 @@ static int a20_test(int loops)
 	return ok;
 }
 
- 
 static int a20_test_short(void)
 {
 	return a20_test(A20_TEST_SHORT);
 }
 
- 
 static int a20_test_long(void)
 {
 	return a20_test(A20_TEST_LONG);
@@ -109,7 +103,6 @@ static void enable_a20_fast(void)
 	outb(port_a, 0x92);
 }
 
- 
 
 #define A20_ENABLE_LOOPS 255	 
 

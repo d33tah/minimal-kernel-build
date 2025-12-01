@@ -1,11 +1,8 @@
- 
- 
 #ifndef _UAPI__LINUX_KEYBOARD_H
 #define _UAPI__LINUX_KEYBOARD_H
 
 #include <linux/wait.h>
 
- 
 #define KG_SHIFT	0
 #define KG_CTRL		2
 #define KG_ALT		3
@@ -18,7 +15,6 @@
 
 #define NR_SHIFT	9
 
- 
 #define NR_KEYS		256
 #define MAX_NR_KEYMAPS	256
 #define MAX_NR_OF_USER_KEYMAPS 256
@@ -26,7 +22,6 @@
 #define MAX_NR_FUNC	256
 #define MAX_DIACR	256
 
- 
 #define KT_LATIN	0
 #define KT_FN		1
 #define KT_SPEC		2
@@ -47,6 +42,5 @@
 #define KTYP(x)		((x) >> 8)
 #define KVAL(x)		((x) & 0xff)
 
- 
 
 #endif  

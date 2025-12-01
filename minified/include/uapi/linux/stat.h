@@ -1,4 +1,3 @@
- 
 #ifndef _UAPI_LINUX_STAT_H
 #define _UAPI_LINUX_STAT_H
 
@@ -43,14 +42,12 @@
 
 #endif
 
- 
 struct statx_timestamp {
 	__s64	tv_sec;
 	__u32	tv_nsec;
 	__s32	__reserved;
 };
 
- 
 struct statx {
 	 
 	__u32	stx_mask;	 
@@ -85,7 +82,6 @@ struct statx {
 	 
 };
 
- 
 #define STATX_TYPE		0x00000001U	 
 #define STATX_MODE		0x00000002U	 
 #define STATX_NLINK		0x00000004U	 
@@ -104,11 +100,9 @@ struct statx {
 #define STATX__RESERVED		0x80000000U	 
 
 #ifndef __KERNEL__
- 
 #define STATX_ALL		0x00000fffU
 #endif
 
- 
 #define STATX_ATTR_COMPRESSED		0x00000004  
 #define STATX_ATTR_IMMUTABLE		0x00000010  
 #define STATX_ATTR_APPEND		0x00000020  

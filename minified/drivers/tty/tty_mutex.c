@@ -1,4 +1,3 @@
- 
 #include <linux/tty.h>
 #include <linux/module.h>
 #include <linux/kallsyms.h>
@@ -6,9 +5,7 @@
 #include <linux/sched.h>
 #include "tty.h"
 
- 
 
- 
 
 void tty_lock(struct tty_struct *tty)
 {

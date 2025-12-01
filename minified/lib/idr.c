@@ -1,4 +1,3 @@
- 
 #include <linux/bitmap.h>
 #include <linux/bug.h>
 #include <linux/export.h>
@@ -7,7 +6,6 @@
 #include <linux/spinlock.h>
 #include <linux/xarray.h>
 
- 
 int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid,
 			unsigned long max, gfp_t gfp)
 {
@@ -33,7 +31,6 @@ int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid,
 	return 0;
 }
 
- 
 int idr_alloc(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
 {
 	u32 id = start;
@@ -49,7 +46,6 @@ int idr_alloc(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
 	return id;
 }
 
- 
 int idr_alloc_cyclic(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
 {
 	u32 id = idr->idr_next;
@@ -70,13 +66,11 @@ int idr_alloc_cyclic(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
 	return id;
 }
 
- 
 void *idr_remove(struct idr *idr, unsigned long id)
 {
 	return radix_tree_delete_item(&idr->idr_rt, id - idr->idr_base, NULL);
 }
 
- 
 void *idr_find(const struct idr *idr, unsigned long id)
 {
 	return radix_tree_lookup(&idr->idr_rt, id - idr->idr_base);
@@ -101,7 +95,6 @@ void *idr_get_next(struct idr *idr, int *nextid)
 	return NULL;
 }
 
- 
 void *idr_replace(struct idr *idr, void *ptr, unsigned long id)
 {
 	struct radix_tree_node *node;
@@ -119,11 +112,8 @@ void *idr_replace(struct idr *idr, void *ptr, unsigned long id)
 	return entry;
 }
 
- 
 
- 
 
- 
 int ida_alloc_range(struct ida *ida, unsigned int min, unsigned int max,
 			gfp_t gfp)
 {
@@ -222,7 +212,6 @@ nospc:
 	return -ENOSPC;
 }
 
- 
 void ida_free(struct ida *ida, unsigned int id)
 {
 	XA_STATE(xas, &ida->xa, id / IDA_BITMAP_BITS);

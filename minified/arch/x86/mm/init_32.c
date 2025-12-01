@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/signal.h>
 #include <linux/sched.h>
@@ -55,7 +53,6 @@ unsigned long highstart_pfn, highend_pfn;
 
 bool __read_mostly __vmalloc_start_set = false;
 
- 
 static pmd_t * __init one_md_table_init(pgd_t *pgd)
 {
 	p4d_t *p4d;
@@ -69,7 +66,6 @@ static pmd_t * __init one_md_table_init(pgd_t *pgd)
 	return pmd_table;
 }
 
- 
 static pte_t * __init one_page_table_init(pmd_t *pmd)
 {
 	if (!(pmd_val(*pmd) & _PAGE_PRESENT)) {
@@ -114,7 +110,6 @@ static pte_t *__init page_table_kmap_check(pte_t *pte, pmd_t *pmd,
 	return pte;
 }
 
- 
 static void __init
 page_table_range_init(unsigned long start, unsigned long end, pgd_t *pgd_base)
 {
@@ -155,7 +150,6 @@ static inline int is_x86_32_kernel_text(unsigned long addr)
 	return 0;
 }
 
- 
 unsigned long __init
 kernel_physical_mapping_init(unsigned long start,
 			     unsigned long end,
@@ -316,7 +310,6 @@ void __init native_pagetable_init(void)
 	paging_init();
 }
 
- 
 void __init early_ioremap_page_table_range_init(void)
 {
 	pgd_t *pgd_base = swapper_pg_dir;
@@ -337,16 +330,11 @@ static void __init pagetable_init(void)
 }
 
 #define DEFAULT_PTE_MASK ~(_PAGE_NX | _PAGE_GLOBAL)
- 
 pteval_t __supported_pte_mask __read_mostly = DEFAULT_PTE_MASK;
- 
 pteval_t __default_kernel_pte_mask __read_mostly = DEFAULT_PTE_MASK;
- 
 
- 
 static unsigned int highmem_pages = -1;
 
- 
 /* Stub: highmem= cmdline option not needed for minimal kernel */
 static int __init parse_highmem(char *arg) { return 0; }
 early_param("highmem", parse_highmem);
@@ -356,7 +344,6 @@ early_param("highmem", parse_highmem);
 
 #define MSG_LOWMEM_TOO_SMALL \
 	"highmem size (%luMB) results in <64MB lowmem, ignoring it!\n"
- 
 static void __init lowmem_pfn_init(void)
 {
 	 
@@ -373,7 +360,6 @@ static void __init lowmem_pfn_init(void)
 
 #define MSG_HIGHMEM_TRIMMED \
 	"Warning: only 4GB will be used. Use a HIGHMEM64G enabled kernel!\n"
- 
 static void __init highmem_pfn_init(void)
 {
 	max_low_pfn = MAXMEM_PFN;
@@ -399,7 +385,6 @@ static void __init highmem_pfn_init(void)
 	max_pfn = MAXMEM_PFN;
 }
 
- 
 void __init find_low_pfn_range(void)
 {
 	 
@@ -426,7 +411,6 @@ void __init setup_bootmem_allocator(void)
 {
 }
 
- 
 void __init paging_init(void)
 {
 	pagetable_init();
@@ -439,7 +423,6 @@ void __init paging_init(void)
 	zone_sizes_init();
 }
 
- 
 static void __init test_wp_bit(void)
 {
 	char z = 0;

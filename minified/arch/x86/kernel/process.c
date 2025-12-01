@@ -1,4 +1,3 @@
- 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/errno.h>
@@ -49,7 +48,6 @@
 
 #include "process.h"
 
- 
 __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
 	.x86_tss = {
 		 
@@ -65,7 +63,6 @@ __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
 
 DEFINE_PER_CPU(bool, __tss_limit_invalid);
 
- 
 int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
 {
 	memcpy(dst, src, arch_task_struct_size);
@@ -76,7 +73,6 @@ int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
 }
 
 
- 
 void exit_thread(struct task_struct *tsk)
 {
 	struct thread_struct *t = &tsk->thread;
@@ -252,7 +248,6 @@ static int set_cpuid_mode(unsigned long cpuid_enabled)
 	return 0;
 }
 
- 
 void arch_setup_new_exec(void)
 {
 	 
@@ -284,7 +279,6 @@ static __always_inline void amd_set_ssb_virt_state(unsigned long tifn)
 	wrmsrl(MSR_AMD64_VIRT_SPEC_CTRL, ssbd_tif_to_spec_ctrl(tifn));
 }
 
- 
 static __always_inline void __speculation_ctrl_update(unsigned long tifp,
 						      unsigned long tifn)
 {
@@ -398,7 +392,6 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 	}
 }
 
- 
 unsigned long boot_option_idle_override = IDLE_NO_OVERRIDE;
 
 static void (*x86_idle)(void);
@@ -419,13 +412,11 @@ void arch_cpu_idle_dead(void)
 	play_dead();
 }
 
- 
 void arch_cpu_idle(void)
 {
 	x86_idle();
 }
 
- 
 void __cpuidle default_idle(void)
 {
 	raw_safe_halt();
@@ -498,7 +489,6 @@ unsigned long arch_randomize_brk(struct mm_struct *mm)
 	return randomize_page(mm->brk, 0x02000000);
 }
 
- 
 unsigned long __get_wchan(struct task_struct *p)
 {
 	struct unwind_state state;

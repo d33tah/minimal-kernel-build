@@ -1,4 +1,3 @@
- 
 #ifndef __OF_IRQ_H
 #define __OF_IRQ_H
 
@@ -11,7 +10,6 @@
 
 typedef int (*of_irq_init_cb_t)(struct device_node *, struct device_node *);
 
- 
 #define OF_IMAP_OLDWORLD_MAC	0x00000001
 #define OF_IMAP_NO_PHANDLE	0x00000002
 

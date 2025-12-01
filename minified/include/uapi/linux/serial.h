@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _UAPI_LINUX_SERIAL_H
 #define _UAPI_LINUX_SERIAL_H
@@ -30,11 +28,9 @@ struct serial_struct {
 	unsigned long	iomap_base;	 
 };
 
- 
 #define ASYNC_CLOSING_WAIT_INF	0
 #define ASYNC_CLOSING_WAIT_NONE	65535
 
- 
 #define PORT_UNKNOWN	0
 #define PORT_8250	1
 #define PORT_16450	2
@@ -66,7 +62,6 @@ struct serial_struct {
 #define UART_NATSEMI		0x08
 
 
- 
 struct serial_multiport_struct {
 	int		irq;
 	int		port1;
@@ -81,7 +76,6 @@ struct serial_multiport_struct {
 	int	reserved[32];
 };
 
- 
 struct serial_icounter_struct {
 	int cts, dsr, rng, dcd;
 	int rx, tx;
@@ -90,7 +84,6 @@ struct serial_icounter_struct {
 	int reserved[9];
 };
 
- 
 
 struct serial_rs485 {
 	__u32	flags;			 
@@ -104,7 +97,6 @@ struct serial_rs485 {
 	__u32	padding[5];		 
 };
 
- 
 struct serial_iso7816 {
 	__u32	flags;			 
 #define SER_ISO7816_ENABLED		(1 << 0)

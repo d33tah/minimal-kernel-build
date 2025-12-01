@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_PRANDOM_H
 #define _LINUX_PRANDOM_H
 
@@ -25,7 +23,6 @@ static inline u32 prandom_u32_max(u32 ep_ro)
 	return (u32)(((u64) prandom_u32() * ep_ro) >> 32);
 }
 
- 
 static inline u32 next_pseudo_random32(u32 seed)
 {
 	return seed * 1664525 + 1013904223;

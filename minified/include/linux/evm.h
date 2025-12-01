@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_EVM_H
 #define _LINUX_EVM_H

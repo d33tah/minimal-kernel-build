@@ -1,4 +1,3 @@
- 
 
 #ifndef _VIDEO_FONT_H
 #define _VIDEO_FONT_H
@@ -42,19 +41,15 @@ extern const struct font_desc	font_vga_8x8,
 			font_ter_16x32,
 			font_6x8;
 
- 
 
 extern const struct font_desc *find_font(const char *name);
 
- 
 
 extern const struct font_desc *get_default_font(int xres, int yres,
 						u32 font_w, u32 font_h);
 
- 
 #define MAX_FONT_NAME	32
 
- 
 #define REFCOUNT(fd)	(((int *)(fd))[-1])
 #define FNTSIZE(fd)	(((int *)(fd))[-2])
 #define FNTCHARCNT(fd)	(((int *)(fd))[-3])

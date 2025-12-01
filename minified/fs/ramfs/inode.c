@@ -1,6 +1,4 @@
- 
 
- 
 
 #include <linux/fs.h>
 #include <linux/pagemap.h>
@@ -69,8 +67,6 @@ struct inode *ramfs_get_inode(struct super_block *sb,
 	return inode;
 }
 
- 
- 
 static int
 ramfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 	    struct dentry *dentry, umode_t mode, dev_t dev)
@@ -147,7 +143,6 @@ static const struct inode_operations ramfs_dir_inode_operations = {
 	.tmpfile	= ramfs_tmpfile,
 };
 
- 
 static int ramfs_show_options(struct seq_file *m, struct dentry *root)
 {
 	struct ramfs_fs_info *fsi = root->d_sb->s_fs_info;

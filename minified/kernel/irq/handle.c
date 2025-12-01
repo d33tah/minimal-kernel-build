@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/irq.h>
 #include <linux/random.h>
@@ -13,7 +11,6 @@
 #include "internals.h"
 
 
- 
 void handle_bad_irq(struct irq_desc *desc)
 {
 	unsigned int irq = irq_desc_get_irq(desc);
@@ -23,7 +20,6 @@ void handle_bad_irq(struct irq_desc *desc)
 	ack_bad_irq(irq);
 }
 
- 
 irqreturn_t no_action(int cpl, void *dev_id)
 {
 	return IRQ_NONE;

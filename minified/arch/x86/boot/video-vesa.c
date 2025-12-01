@@ -1,14 +1,10 @@
- 
- 
 
- 
 
 #include "boot.h"
 #include "video.h"
 #include "vesa.h"
 #include "string.h"
 
- 
 static struct vesa_general_info vginfo;
 static struct vesa_mode_info vminfo;
 
@@ -130,7 +126,6 @@ static int vesa_set_mode(struct mode_info *mode)
 
 #ifndef _WAKEUP
 
- 
 static void vesa_dac_set_8bits(void)
 {
 	struct biosregs ireg, oreg;
@@ -158,7 +153,6 @@ static void vesa_dac_set_8bits(void)
 	boot_params.screen_info.rsvd_pos   = 0;
 }
 
- 
 static void vesa_store_pm_info(void)
 {
 	struct biosregs ireg, oreg;
@@ -174,7 +168,6 @@ static void vesa_store_pm_info(void)
 	boot_params.screen_info.vesapm_off = oreg.di;
 }
 
- 
 static void vesa_store_mode_params_graphics(void)
 {
 	 
@@ -200,7 +193,6 @@ static void vesa_store_mode_params_graphics(void)
 	vesa_store_pm_info();
 }
 
- 
 void vesa_store_edid(void)
 {
 }

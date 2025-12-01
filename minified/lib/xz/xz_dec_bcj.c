@@ -1,8 +1,6 @@
- 
 
 #include "xz_private.h"
 
- 
 #ifdef XZ_DEC_BCJ
 
 struct xz_dec_bcj {
@@ -46,7 +44,6 @@ struct xz_dec_bcj {
 };
 
 #ifdef XZ_DEC_X86
- 
 static inline int bcj_x86_test_msbyte(uint8_t b)
 {
 	return b == 0x00 || b == 0xFF;
@@ -297,7 +294,6 @@ static size_t bcj_sparc(struct xz_dec_bcj *s, uint8_t *buf, size_t size)
 }
 #endif
 
- 
 static void bcj_apply(struct xz_dec_bcj *s,
 		      uint8_t *buf, size_t *pos, size_t size)
 {
@@ -347,7 +343,6 @@ static void bcj_apply(struct xz_dec_bcj *s,
 	s->pos += filtered;
 }
 
- 
 static void bcj_flush(struct xz_dec_bcj *s, struct xz_buf *b)
 {
 	size_t copy_size;
@@ -361,7 +356,6 @@ static void bcj_flush(struct xz_dec_bcj *s, struct xz_buf *b)
 	memmove(s->temp.buf, s->temp.buf + copy_size, s->temp.size);
 }
 
- 
 XZ_EXTERN enum xz_ret xz_dec_bcj_run(struct xz_dec_bcj *s,
 				     struct xz_dec_lzma2 *lzma2,
 				     struct xz_buf *b)

@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_U64_STATS_SYNC_H
 #define _LINUX_U64_STATS_SYNC_H
 
- 
 #include <linux/seqlock.h>
 
 struct u64_stats_sync {
@@ -87,7 +85,6 @@ static inline bool u64_stats_fetch_retry(const struct u64_stats_sync *syncp,
 	return __u64_stats_fetch_retry(syncp, start);
 }
 
- 
 static inline unsigned int u64_stats_fetch_begin_irq(const struct u64_stats_sync *syncp)
 {
 #if   BITS_PER_LONG == 32 && !defined(CONFIG_SMP)

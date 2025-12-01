@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_SELECTION_H_
 #define _LINUX_SELECTION_H_

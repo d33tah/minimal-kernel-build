@@ -1,5 +1,3 @@
- 
- 
 #include <linux/export.h>
 #include <linux/mm.h>
 #include <linux/uaccess.h>
@@ -98,7 +96,6 @@ Efault:
 	return -EFAULT;
 }
 
- 
 long copy_from_user_nofault(void *dst, const void __user *src, size_t size)
 {
 	long ret = -EFAULT;
@@ -113,7 +110,6 @@ long copy_from_user_nofault(void *dst, const void __user *src, size_t size)
 	return 0;
 }
 
- 
 long copy_to_user_nofault(void __user *dst, const void *src, size_t size)
 {
 	long ret = -EFAULT;
@@ -129,7 +125,6 @@ long copy_to_user_nofault(void __user *dst, const void *src, size_t size)
 	return 0;
 }
 
- 
 long strncpy_from_user_nofault(char *dst, const void __user *unsafe_addr,
 			      long count)
 {
@@ -152,7 +147,6 @@ long strncpy_from_user_nofault(char *dst, const void __user *unsafe_addr,
 	return ret;
 }
 
- 
 long strnlen_user_nofault(const void __user *unsafe_addr, long count)
 {
 	int ret;

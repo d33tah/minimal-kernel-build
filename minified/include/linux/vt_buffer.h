@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_VT_BUFFER_H_
 #define _LINUX_VT_BUFFER_H_

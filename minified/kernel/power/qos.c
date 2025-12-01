@@ -1,5 +1,3 @@
- 
- 
 #include <linux/pm_qos.h>
 #include <linux/sched.h>
 #include <linux/spinlock.h>
@@ -17,7 +15,6 @@
 #include <linux/uaccess.h>
 #include <linux/export.h>
 
- 
 int freq_qos_add_request(struct freq_constraints *qos,
 			 struct freq_qos_request *req,
 			 enum freq_qos_req_type type, s32 value)

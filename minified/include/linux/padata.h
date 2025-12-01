@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef PADATA_H
 #define PADATA_H
@@ -14,7 +12,6 @@
 #define PADATA_CPU_SERIAL   0x01
 #define PADATA_CPU_PARALLEL 0x02
 
- 
 struct padata_priv {
 	struct list_head	list;
 	struct parallel_data	*pd;
@@ -25,26 +22,22 @@ struct padata_priv {
 	void                    (*serial)(struct padata_priv *padata);
 };
 
- 
 struct padata_list {
 	struct list_head        list;
 	spinlock_t              lock;
 };
 
- 
 struct padata_serial_queue {
        struct padata_list    serial;
        struct work_struct    work;
        struct parallel_data *pd;
 };
 
- 
 struct padata_cpumask {
 	cpumask_var_t	pcpu;
 	cpumask_var_t	cbcpu;
 };
 
- 
 struct parallel_data {
 	struct padata_shell		*ps;
 	struct padata_list		__percpu *reorder_list;
@@ -58,7 +51,6 @@ struct parallel_data {
 	spinlock_t                      ____cacheline_aligned lock;
 };
 
- 
 struct padata_shell {
 	struct padata_instance		*pinst;
 	struct parallel_data __rcu	*pd;
@@ -66,7 +58,6 @@ struct padata_shell {
 	struct list_head		list;
 };
 
- 
 struct padata_mt_job {
 	void (*thread_fn)(unsigned long start, unsigned long end, void *arg);
 	void			*fn_arg;
@@ -77,7 +68,6 @@ struct padata_mt_job {
 	int			max_threads;
 };
 
- 
 struct padata_instance {
 	struct hlist_node		cpu_online_node;
 	struct hlist_node		cpu_dead_node;

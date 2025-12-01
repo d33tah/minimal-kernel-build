@@ -1,4 +1,3 @@
- 
 
 #ifndef __ASM_GENERIC_FIXMAP_H
 #define __ASM_GENERIC_FIXMAP_H
@@ -10,7 +9,6 @@
 #define __virt_to_fix(x)	((FIXADDR_TOP - ((x)&PAGE_MASK)) >> PAGE_SHIFT)
 
 #ifndef __ASSEMBLY__
- 
 static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 {
 	BUILD_BUG_ON(idx >= __end_of_fixed_addresses);
@@ -23,7 +21,6 @@ static inline unsigned long virt_to_fix(const unsigned long vaddr)
 	return __virt_to_fix(vaddr);
 }
 
- 
 #ifndef FIXMAP_PAGE_NORMAL
 #define FIXMAP_PAGE_NORMAL PAGE_KERNEL
 #endif
@@ -50,7 +47,6 @@ static inline unsigned long virt_to_fix(const unsigned long vaddr)
 	__set_fixmap(idx, 0, FIXMAP_PAGE_CLEAR)
 #endif
 
- 
 #define __set_fixmap_offset(idx, phys, flags)				\
 ({									\
 	unsigned long ________addr;					\
@@ -62,14 +58,12 @@ static inline unsigned long virt_to_fix(const unsigned long vaddr)
 #define set_fixmap_offset(idx, phys) \
 	__set_fixmap_offset(idx, phys, FIXMAP_PAGE_NORMAL)
 
- 
 #define set_fixmap_nocache(idx, phys) \
 	__set_fixmap(idx, phys, FIXMAP_PAGE_NOCACHE)
 
 #define set_fixmap_offset_nocache(idx, phys) \
 	__set_fixmap_offset(idx, phys, FIXMAP_PAGE_NOCACHE)
 
- 
 #define set_fixmap_io(idx, phys) \
 	__set_fixmap(idx, phys, FIXMAP_PAGE_IO)
 

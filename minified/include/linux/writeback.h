@@ -1,5 +1,3 @@
- 
- 
 #ifndef WRITEBACK_H
 #define WRITEBACK_H
 
@@ -14,19 +12,16 @@ struct bio;
 
 DECLARE_PER_CPU(int, dirty_throttle_leaks);
 
- 
 #define DIRTY_SCOPE		8
 #define DIRTY_FULL_SCOPE	(DIRTY_SCOPE / 2)
 
 struct backing_dev_info;
 
- 
 enum writeback_sync_modes {
 	WB_SYNC_NONE,	 
 	WB_SYNC_ALL,	 
 };
 
- 
 struct writeback_control {
 	long nr_to_write;		 
 	long pages_skipped;		 
@@ -72,7 +67,6 @@ static inline int wbc_to_write_flags(struct writeback_control *wbc)
 
 #define wbc_blkcg_css(wbc)		(blkcg_root_css)
 
- 
 struct wb_domain {
 	spinlock_t lock;
 
@@ -86,7 +80,6 @@ struct wb_domain {
 	unsigned long dirty_limit;
 };
 
- 
 static inline void wb_domain_size_changed(struct wb_domain *dom)
 {
 	spin_lock(&dom->lock);
@@ -108,7 +101,6 @@ void wakeup_flusher_threads_bdi(struct backing_dev_info *bdi,
 void inode_wait_for_writeback(struct inode *inode);
 void inode_io_list_del(struct inode *inode);
 
- 
 static inline void wait_on_inode(struct inode *inode)
 {
 	might_sleep();

@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_TIOCL_H
 #define _LINUX_TIOCL_H
 
@@ -10,7 +9,6 @@
 #define 	TIOCL_SELCLEAR	4	 
 #define 	TIOCL_SELMOUSEREPORT	16	 
 #define 	TIOCL_SELBUTTONMASK	15	 
- 
 struct tiocl_selection {
 	unsigned short xs;	 
 	unsigned short ys;	 
@@ -26,7 +24,6 @@ struct tiocl_selection {
 	 
 	 
 
- 
 #define TIOCL_GETSHIFTSTATE	6	 
 #define TIOCL_GETMOUSEREPORTING	7	 
 #define TIOCL_SETVESABLANK	10	 

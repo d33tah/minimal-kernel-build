@@ -1,4 +1,3 @@
- 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/kernel.h>
@@ -36,7 +35,6 @@ unsigned int __read_mostly tsc_khz;
 
 #define KHZ	1000
 
- 
 static int __read_mostly tsc_unstable;
 static unsigned int __initdata tsc_early_khz;
 
@@ -83,7 +81,6 @@ __always_inline void cyc2ns_read_end(void)
 	preempt_enable_notrace();
 }
 
- 
 
 static __always_inline unsigned long long cycles_2_ns(unsigned long long cyc)
 {
@@ -137,7 +134,6 @@ static void __init cyc2ns_init_boot_cpu(void)
 	__set_cyc2ns_scale(tsc_khz, smp_processor_id(), rdtsc());
 }
 
- 
 static void __init cyc2ns_init_secondary_cpus(void)
 {
 	unsigned int cpu, this_cpu = smp_processor_id();
@@ -154,7 +150,6 @@ static void __init cyc2ns_init_secondary_cpus(void)
 	}
 }
 
- 
 u64 native_sched_clock(void)
 {
 	if (static_branch_likely(&__use_tsc)) {
@@ -170,13 +165,11 @@ u64 native_sched_clock(void)
 	return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
 }
 
- 
 u64 native_sched_clock_from_tsc(u64 tsc)
 {
 	return cycles_2_ns(tsc);
 }
 
- 
 unsigned long long
 sched_clock(void) __attribute__((alias("native_sched_clock")));
 
@@ -202,7 +195,6 @@ __setup("tsc=", tsc_setup);
 #define MAX_RETRIES		5
 #define TSC_DEFAULT_THRESHOLD	0x20000
 
- 
 static u64 tsc_read_refs(u64 *p, int hpet)
 {
 	u64 t1, t2;
@@ -222,7 +214,6 @@ static u64 tsc_read_refs(u64 *p, int hpet)
 	return ULLONG_MAX;
 }
 
- 
 static unsigned long calc_hpet_ref(u64 deltatsc, u64 hpet1, u64 hpet2)
 {
 	u64 tmp;
@@ -237,7 +228,6 @@ static unsigned long calc_hpet_ref(u64 deltatsc, u64 hpet1, u64 hpet2)
 	return (unsigned long) deltatsc;
 }
 
- 
 static unsigned long calc_pmtimer_ref(u64 deltatsc, u64 pm1, u64 pm2)
 {
 	u64 tmp;
@@ -264,7 +254,6 @@ static unsigned long calc_pmtimer_ref(u64 deltatsc, u64 pm1, u64 pm2)
 #define CAL2_PIT_LOOPS	5000
 
 
- 
 static unsigned long pit_calibrate_tsc(u32 latch, unsigned long ms, int loopmin)
 {
 	u64 tsc, t1, t2, delta;
@@ -315,7 +304,6 @@ static unsigned long pit_calibrate_tsc(u32 latch, unsigned long ms, int loopmin)
 	return delta;
 }
 
- 
 static inline int pit_verify_msb(unsigned char val)
 {
 	 
@@ -341,7 +329,6 @@ static inline int pit_expect_msb(unsigned char val, u64 *tscp, unsigned long *de
 	return count > 5;
 }
 
- 
 #define MAX_QUICK_PIT_MS 50
 #define MAX_QUICK_PIT_ITERATIONS (MAX_QUICK_PIT_MS * PIT_TICK_RATE / 1000 / 256)
 
@@ -400,7 +387,6 @@ success:
 	return delta;
 }
 
- 
 unsigned long native_calibrate_tsc(void)
 {
 	unsigned int eax_denominator, ebx_numerator, ecx_hz, edx;
@@ -468,7 +454,6 @@ static unsigned long cpu_khz_from_cpuid(void)
 	return eax_base_mhz * 1000;
 }
 
- 
 static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
 {
 	u64 tsc1, tsc2, delta, ref1, ref2;
@@ -574,7 +559,6 @@ static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
 	return tsc_pit_min;
 }
 
- 
 unsigned long native_calibrate_cpu_early(void)
 {
 	unsigned long flags, fast_calibrate = cpu_khz_from_cpuid();
@@ -590,7 +574,6 @@ unsigned long native_calibrate_cpu_early(void)
 }
 
 
- 
 static unsigned long native_calibrate_cpu(void)
 {
 	unsigned long tsc_freq = native_calibrate_cpu_early();
@@ -624,7 +607,6 @@ void tsc_restore_sched_clock_state(void)
 #define ART_MIN_DENOMINATOR (1)
 
 
- 
 static void __init detect_art(void)
 {
 	unsigned int unused[2];
@@ -652,14 +634,12 @@ static void __init detect_art(void)
 }
 
 
- 
 
 static void tsc_resume(struct clocksource *cs)
 {
 	tsc_verify_tsc_adjust(true);
 }
 
- 
 static u64 read_tsc(struct clocksource *cs)
 {
 	return (u64)rdtsc_ordered();
@@ -692,7 +672,6 @@ static int tsc_cs_enable(struct clocksource *cs)
 	return 0;
 }
 
- 
 static struct clocksource clocksource_tsc_early = {
 	.name			= "tsc-early",
 	.rating			= 299,
@@ -709,7 +688,6 @@ static struct clocksource clocksource_tsc_early = {
 	.list			= LIST_HEAD_INIT(clocksource_tsc_early.list),
 };
 
- 
 static struct clocksource clocksource_tsc = {
 	.name			= "tsc",
 	.rating			= 300,
@@ -762,14 +740,12 @@ static void __init check_system_tsc_reliable(void)
 		tsc_disable_clocksource_watchdog();
 }
 
- 
 /* Stubbed - minimal single-CPU kernel assumes synchronized TSC */
 int unsynchronized_tsc(void)
 {
 	return 0;
 }
 
- 
 struct system_counterval_t convert_art_to_tsc(u64 art)
 {
 	/* Stub: ART conversion not needed for minimal kernel */
@@ -785,7 +761,6 @@ struct system_counterval_t convert_art_ns_to_tsc(u64 art_ns)
 
 static void tsc_refine_calibration_work(struct work_struct *work);
 static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);
- 
 static void tsc_refine_calibration_work(struct work_struct *work)
 {
 	/* Stub: TSC refinement not needed for minimal kernel */
@@ -820,7 +795,6 @@ unreg:
 	schedule_delayed_work(&tsc_irqwork, 0);
 	return 0;
 }
- 
 device_initcall(init_tsc_clocksource);
 
 static bool __init determine_cpu_tsc_frequencies(bool early)

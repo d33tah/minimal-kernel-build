@@ -1,7 +1,5 @@
- 
 #ifndef _LINUX_WAIT_H
 #define _LINUX_WAIT_H
- 
 #include <linux/list.h>
 #include <linux/stddef.h>
 #include <linux/spinlock.h>
@@ -14,7 +12,6 @@ typedef struct wait_queue_entry wait_queue_entry_t;
 typedef int (*wait_queue_func_t)(struct wait_queue_entry *wq_entry, unsigned mode, int flags, void *key);
 int default_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int flags, void *key);
 
- 
 #define WQ_FLAG_EXCLUSIVE	0x01
 #define WQ_FLAG_WOKEN		0x02
 #define WQ_FLAG_BOOKMARK	0x04
@@ -22,7 +19,6 @@ int default_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int 
 #define WQ_FLAG_DONE		0x10
 #define WQ_FLAG_PRIORITY	0x20
 
- 
 struct wait_queue_entry {
 	unsigned int		flags;
 	void			*private;
@@ -38,7 +34,6 @@ typedef struct wait_queue_head wait_queue_head_t;
 
 struct task_struct;
 
- 
 
 #define __WAITQUEUE_INITIALIZER(name, tsk) {					\
 	.private	= tsk,							\
@@ -74,7 +69,6 @@ init_waitqueue_func_entry(struct wait_queue_entry *wq_entry, wait_queue_func_t f
 	wq_entry->func		= func;
 }
 
- 
 static inline int waitqueue_active(struct wait_queue_head *wq_head)
 {
 	return !list_empty(&wq_head->head);
@@ -98,7 +92,6 @@ static inline void __add_wait_queue(struct wait_queue_head *wq_head, struct wait
 	list_add(&wq_entry->entry, head);
 }
 
- 
 static inline void
 __add_wait_queue_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
@@ -134,7 +127,6 @@ void __wake_up_pollfree(struct wait_queue_head *wq_head);
 #define wake_up_interruptible(x)	__wake_up(x, TASK_INTERRUPTIBLE, 1, NULL)
 #define wake_up_interruptible_all(x)	__wake_up(x, TASK_INTERRUPTIBLE, 0, NULL)
 
- 
 #define poll_to_key(m) ((void *)(__force uintptr_t)(__poll_t)(m))
 #define key_to_poll(m) ((__force __poll_t)(uintptr_t)(void *)(m))
 #define wake_up_poll(x, m)							\
@@ -156,7 +148,6 @@ void __wake_up_pollfree(struct wait_queue_head *wq_head);
 
 extern void init_wait_entry(struct wait_queue_entry *wq_entry, int flags);
 
- 
 
 #define ___wait_event(wq_head, condition, state, exclusive, ret, cmd)		\
 ({										\
@@ -186,7 +177,6 @@ __out:	__ret;									\
 	(void)___wait_event(wq_head, condition, TASK_UNINTERRUPTIBLE, 0, 0,	\
 			    schedule())
 
- 
 #define wait_event(wq_head, condition)						\
 do {										\
 	might_sleep();								\

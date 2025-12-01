@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _DEVICE_DRIVER_H_
 #define _DEVICE_DRIVER_H_
@@ -10,14 +8,12 @@
 #include <linux/device/bus.h>
 #include <linux/module.h>
 
- 
 enum probe_type {
 	PROBE_DEFAULT_STRATEGY,
 	PROBE_PREFER_ASYNCHRONOUS,
 	PROBE_FORCE_SYNCHRONOUS,
 };
 
- 
 struct device_driver {
 	const char		*name;
 	struct bus_type		*bus;
@@ -55,7 +51,6 @@ extern struct device_driver *driver_find(const char *name,
 extern int driver_probe_done(void);
 extern void wait_for_device_probe(void);
 
- 
 
 struct driver_attribute {
 	struct attribute attr;
@@ -87,14 +82,12 @@ struct device *driver_find_device(struct device_driver *drv,
 				  struct device *start, const void *data,
 				  int (*match)(struct device *dev, const void *data));
 
- 
 static inline struct device *driver_find_device_by_name(struct device_driver *drv,
 							const char *name)
 {
 	return driver_find_device(drv, NULL, name, device_match_name);
 }
 
- 
 static inline struct device *
 driver_find_device_by_of_node(struct device_driver *drv,
 			      const struct device_node *np)
@@ -102,7 +95,6 @@ driver_find_device_by_of_node(struct device_driver *drv,
 	return driver_find_device(drv, NULL, np, device_match_of_node);
 }
 
- 
 static inline struct device *
 driver_find_device_by_fwnode(struct device_driver *drv,
 			     const struct fwnode_handle *fwnode)
@@ -110,7 +102,6 @@ driver_find_device_by_fwnode(struct device_driver *drv,
 	return driver_find_device(drv, NULL, fwnode, device_match_fwnode);
 }
 
- 
 static inline struct device *driver_find_device_by_devt(struct device_driver *drv,
 							dev_t devt)
 {
@@ -134,7 +125,6 @@ void driver_deferred_probe_add(struct device *dev);
 int driver_deferred_probe_check_state(struct device *dev);
 void driver_init(void);
 
- 
 #define module_driver(__driver, __register, __unregister, ...) \
 static int __init __driver##_init(void) \
 { \
@@ -147,7 +137,6 @@ static void __exit __driver##_exit(void) \
 } \
 module_exit(__driver##_exit);
 
- 
 #define builtin_driver(__driver, __register, ...) \
 static int __init __driver##_init(void) \
 { \

@@ -1,4 +1,3 @@
- 
 #ifndef _NET_CHECKSUM_H
 #define _NET_CHECKSUM_H
 

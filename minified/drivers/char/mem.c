@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/mm.h>
 #include <linux/miscdevice.h>
@@ -66,7 +64,6 @@ int __weak phys_mem_access_prot_allowed(struct file *file,
 
 #ifndef __HAVE_PHYS_MEM_ACCESS_PROT
 
- 
 #ifdef pgprot_noncached
 static int uncached_access(struct file *file, phys_addr_t addr)
 {
@@ -226,13 +223,11 @@ static ssize_t write_full(struct file *file, const char __user *buf,
 	return -ENOSPC;
 }
 
- 
 static loff_t null_lseek(struct file *file, loff_t offset, int orig)
 {
 	return file->f_pos = 0;
 }
 
- 
 static loff_t memory_lseek(struct file *file, loff_t offset, int orig)
 {
 	loff_t ret;

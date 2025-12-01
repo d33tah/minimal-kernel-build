@@ -1,5 +1,3 @@
- 
- 
 #ifndef __LINUX_LOCKDEP_H
 #define __LINUX_LOCKDEP_H
 
@@ -50,7 +48,6 @@ static inline void lockdep_set_selftest_task(struct task_struct *task)
 
 #define lockdep_set_novalidate_class(lock) do { } while (0)
 
- 
 
 # define lockdep_reset()		do { debug_locks = 1; } while (0)
 # define lockdep_free_key_range(start, size)	do { } while (0)
@@ -66,7 +63,6 @@ static inline void lockdep_unregister_key(struct lock_class_key *key)
 
 #define lockdep_depth(tsk)	(0)
 
- 
 extern int lock_is_held(const void *);
 extern int lockdep_is_held(const void *);
 #define lockdep_is_held_type(l, r)		(1)
@@ -97,7 +93,6 @@ enum xhlock_context_t {
 };
 
 #define lockdep_init_map_crosslock(m, n, k, s) do {} while (0)
- 
 #define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
 	{ .name = (_name), .key = (void *)(_key), }
 
@@ -119,16 +114,12 @@ static inline void print_irqtrace_events(struct task_struct *curr)
 {
 }
 
- 
 #define force_read_lock_recursive 0
 
- 
 #define read_lock_is_recursive() 0
 
- 
 #define SINGLE_DEPTH_NESTING			1
 
- 
 
 #define lock_acquire_exclusive(l, s, t, n, i)		lock_acquire(l, s, t, 0, 1, n, i)
 #define lock_acquire_shared(l, s, t, n, i)		lock_acquire(l, s, t, 1, 1, n, i)

@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/clockchips.h>
 #include <linux/hrtimer.h>
@@ -10,12 +8,9 @@
 
 #include "tick-internal.h"
 
- 
 static LIST_HEAD(clockevent_devices);
 static LIST_HEAD(clockevents_released);
- 
 static DEFINE_RAW_SPINLOCK(clockevents_lock);
- 
 static DEFINE_MUTEX(clockevents_mutex);
 
 struct ce_unbind {
@@ -48,7 +43,6 @@ static u64 cev_delta2ns(unsigned long latch, struct clock_event_device *evt,
 	return clc > 1000 ? clc : 1000;
 }
 
- 
 u64 clockevent_delta2ns(unsigned long latch, struct clock_event_device *evt)
 {
 	return cev_delta2ns(latch, evt, false);
@@ -103,7 +97,6 @@ static int __clockevents_switch_state(struct clock_event_device *dev,
 	}
 }
 
- 
 void clockevents_switch_state(struct clock_event_device *dev,
 			      enum clock_event_state state)
 {
@@ -121,14 +114,12 @@ void clockevents_switch_state(struct clock_event_device *dev,
 	}
 }
 
- 
 void clockevents_shutdown(struct clock_event_device *dev)
 {
 	clockevents_switch_state(dev, CLOCK_EVT_STATE_SHUTDOWN);
 	dev->next_event = KTIME_MAX;
 }
 
- 
 int clockevents_tick_resume(struct clock_event_device *dev)
 {
 	int ret = 0;
@@ -140,10 +131,8 @@ int clockevents_tick_resume(struct clock_event_device *dev)
 }
 
 
- 
 #define MIN_DELTA_LIMIT		(NSEC_PER_SEC / HZ)
 
- 
 static int clockevents_increase_min_delta(struct clock_event_device *dev)
 {
 	 
@@ -169,7 +158,6 @@ static int clockevents_increase_min_delta(struct clock_event_device *dev)
 	return 0;
 }
 
- 
 static int clockevents_program_min_delta(struct clock_event_device *dev)
 {
 	unsigned long long clc;
@@ -198,7 +186,6 @@ static int clockevents_program_min_delta(struct clock_event_device *dev)
 }
 
 
- 
 int clockevents_program_event(struct clock_event_device *dev, ktime_t expires,
 			      bool force)
 {
@@ -235,7 +222,6 @@ int clockevents_program_event(struct clock_event_device *dev, ktime_t expires,
 	return (rc && force) ? clockevents_program_min_delta(dev) : rc;
 }
 
- 
 static void clockevents_notify_released(void)
 {
 	struct clock_event_device *dev;
@@ -254,7 +240,6 @@ int clockevents_unbind_device(struct clock_event_device *ced, int cpu)
 	return -ENODEV;
 }
 
- 
 void clockevents_register_device(struct clock_event_device *dev)
 {
 	unsigned long flags;
@@ -302,7 +287,6 @@ static void clockevents_config(struct clock_event_device *dev, u32 freq)
 	dev->max_delta_ns = cev_delta2ns(dev->max_delta_ticks, dev, true);
 }
 
- 
 void clockevents_config_and_register(struct clock_event_device *dev,
 				     u32 freq, unsigned long min_delta,
 				     unsigned long max_delta)
@@ -325,12 +309,10 @@ int clockevents_update_freq(struct clock_event_device *dev, u32 freq)
 	return 0;
 }
 
- 
 void clockevents_handle_noop(struct clock_event_device *dev)
 {
 }
 
- 
 void clockevents_exchange_device(struct clock_event_device *old,
 				 struct clock_event_device *new)
 {

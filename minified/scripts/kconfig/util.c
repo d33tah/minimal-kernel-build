@@ -1,12 +1,9 @@
- 
- 
 
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include "lkc.h"
 
- 
 struct file *file_lookup(const char *name)
 {
 	struct file *file;
@@ -25,7 +22,6 @@ struct file *file_lookup(const char *name)
 	return file;
 }
 
- 
 struct gstr str_new(void)
 {
 	struct gstr gs;
@@ -36,7 +32,6 @@ struct gstr str_new(void)
 	return gs;
 }
 
- 
 void str_free(struct gstr *gs)
 {
 	if (gs->s)
@@ -45,7 +40,6 @@ void str_free(struct gstr *gs)
 	gs->len = 0;
 }
 
- 
 void str_append(struct gstr *gs, const char *s)
 {
 	size_t l;
@@ -59,7 +53,6 @@ void str_append(struct gstr *gs, const char *s)
 	}
 }
 
- 
 void str_printf(struct gstr *gs, const char *fmt, ...)
 {
 	va_list ap;
@@ -70,7 +63,6 @@ void str_printf(struct gstr *gs, const char *fmt, ...)
 	va_end(ap);
 }
 
- 
 const char *str_get(struct gstr *gs)
 {
 	return gs->s;

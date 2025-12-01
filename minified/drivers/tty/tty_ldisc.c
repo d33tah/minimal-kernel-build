@@ -1,4 +1,3 @@
- 
 #include <linux/types.h>
 #include <linux/errno.h>
 #include <linux/kmod.h>
@@ -29,20 +28,16 @@
 #define tty_ldisc_debug(tty, f, args...)
 #endif
 
- 
 enum {
 	LDISC_SEM_NORMAL,
 	LDISC_SEM_OTHER,
 };
 
 
- 
 
 static DEFINE_RAW_SPINLOCK(tty_ldiscs_lock);
- 
 static struct tty_ldisc_ops *tty_ldiscs[NR_LDISCS];
 
- 
 int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc)
 {
 	unsigned long flags;
@@ -58,7 +53,6 @@ int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc)
 	return ret;
 }
 
- 
 
 void tty_unregister_ldisc(struct tty_ldisc_ops *ldisc)
 {
@@ -97,7 +91,6 @@ static void put_ldops(struct tty_ldisc_ops *ldops)
 
 static int tty_ldisc_autoload = IS_BUILTIN(CONFIG_LDISC_AUTOLOAD);
 
- 
 static struct tty_ldisc *tty_ldisc_get(struct tty_struct *tty, int disc)
 {
 	struct tty_ldisc *ld;
@@ -125,7 +118,6 @@ static struct tty_ldisc *tty_ldisc_get(struct tty_struct *tty, int disc)
 	return ld;
 }
 
- 
 static void tty_ldisc_put(struct tty_ldisc *ld)
 {
 	if (WARN_ON_ONCE(!ld))
@@ -162,7 +154,6 @@ const struct seq_operations tty_ldiscs_seq_ops = {
 	.show	= tty_ldiscs_seq_show,
 };
 
- 
 struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *tty)
 {
 	struct tty_ldisc *ld;
@@ -174,7 +165,6 @@ struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *tty)
 	return ld;
 }
 
- 
 struct tty_ldisc *tty_ldisc_ref(struct tty_struct *tty)
 {
 	struct tty_ldisc *ld = NULL;
@@ -187,7 +177,6 @@ struct tty_ldisc *tty_ldisc_ref(struct tty_struct *tty)
 	return ld;
 }
 
- 
 void tty_ldisc_deref(struct tty_ldisc *ld)
 {
 	ldsem_up_read(&ld->tty->ldisc_sem);
@@ -285,7 +274,6 @@ static void tty_ldisc_unlock_pair(struct tty_struct *tty,
 		__tty_ldisc_unlock(tty2);
 }
 
- 
 void tty_ldisc_flush(struct tty_struct *tty)
 {
 	struct tty_ldisc *ld = tty_ldisc_ref(tty);
@@ -295,7 +283,6 @@ void tty_ldisc_flush(struct tty_struct *tty)
 		tty_ldisc_deref(ld);
 }
 
- 
 static void tty_set_termios_ldisc(struct tty_struct *tty, int disc)
 {
 	down_write(&tty->termios_rwsem);
@@ -306,7 +293,6 @@ static void tty_set_termios_ldisc(struct tty_struct *tty, int disc)
 	tty->receive_room = 0;
 }
 
- 
 static int tty_ldisc_open(struct tty_struct *tty, struct tty_ldisc *ld)
 {
 	WARN_ON(test_and_set_bit(TTY_LDISC_OPEN, &tty->flags));
@@ -323,7 +309,6 @@ static int tty_ldisc_open(struct tty_struct *tty, struct tty_ldisc *ld)
 	return 0;
 }
 
- 
 static void tty_ldisc_close(struct tty_struct *tty, struct tty_ldisc *ld)
 {
 	lockdep_assert_held_write(&tty->ldisc_sem);
@@ -342,7 +327,6 @@ int tty_set_ldisc(struct tty_struct *tty, int disc)
 	return -EINVAL;
 }
 
- 
 static void tty_ldisc_kill(struct tty_struct *tty)
 {
 	lockdep_assert_held_write(&tty->ldisc_sem);
@@ -355,7 +339,6 @@ static void tty_ldisc_kill(struct tty_struct *tty)
 	tty->ldisc = NULL;
 }
 
- 
 static void tty_reset_termios(struct tty_struct *tty)
 {
 	down_write(&tty->termios_rwsem);
@@ -366,7 +349,6 @@ static void tty_reset_termios(struct tty_struct *tty)
 }
 
 
- 
 int tty_ldisc_reinit(struct tty_struct *tty, int disc)
 {
 	struct tty_ldisc *ld;
@@ -395,7 +377,6 @@ int tty_ldisc_reinit(struct tty_struct *tty, int disc)
 	return retval;
 }
 
- 
 void tty_ldisc_hangup(struct tty_struct *tty, bool reinit)
 {
 	struct tty_ldisc *ld;
@@ -435,7 +416,6 @@ void tty_ldisc_hangup(struct tty_struct *tty, bool reinit)
 	tty_ldisc_unlock(tty);
 }
 
- 
 int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty)
 {
 	int retval = tty_ldisc_open(tty, tty->ldisc);
@@ -454,7 +434,6 @@ int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty)
 	return 0;
 }
 
- 
 void tty_ldisc_release(struct tty_struct *tty)
 {
 	struct tty_struct *o_tty = tty->link;
@@ -472,7 +451,6 @@ void tty_ldisc_release(struct tty_struct *tty)
 	tty_ldisc_debug(tty, "released\n");
 }
 
- 
 int tty_ldisc_init(struct tty_struct *tty)
 {
 	struct tty_ldisc *ld = tty_ldisc_get(tty, N_TTY);
@@ -483,7 +461,6 @@ int tty_ldisc_init(struct tty_struct *tty)
 	return 0;
 }
 
- 
 void tty_ldisc_deinit(struct tty_struct *tty)
 {
 	 

@@ -1,8 +1,6 @@
- 
 #ifndef _DELAYED_CALL_H
 #define _DELAYED_CALL_H
 
- 
 
 struct delayed_call {
 	void (*fn)(void *);
@@ -11,7 +9,6 @@ struct delayed_call {
 
 #define DEFINE_DELAYED_CALL(name) struct delayed_call name = {NULL, NULL}
 
- 
 static inline void set_delayed_call(struct delayed_call *call,
 		void (*fn)(void *), void *arg)
 {

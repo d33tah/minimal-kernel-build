@@ -1,4 +1,3 @@
- 
 #include <linux/extable.h>
 #include <linux/uaccess.h>
 #include <linux/sched/debug.h>
@@ -54,7 +53,6 @@ static bool ex_handler_sgx(const struct exception_table_entry *fixup,
 	return ex_handler_default(fixup, regs);
 }
 
- 
 static bool ex_handler_fprestore(const struct exception_table_entry *fixup,
 				 struct pt_regs *regs)
 {
@@ -198,7 +196,6 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 
 extern unsigned int early_recursion_flag;
 
- 
 void __init early_fixup_exception(struct pt_regs *regs, int trapnr)
 {
 	 

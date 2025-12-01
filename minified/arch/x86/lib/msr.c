@@ -1,4 +1,3 @@
- 
 #include <linux/export.h>
 #include <linux/percpu.h>
 #include <linux/preempt.h>
@@ -23,7 +22,6 @@ void msrs_free(struct msr *msrs)
 	free_percpu(msrs);
 }
 
- 
 static int msr_read(u32 msr, struct msr *m)
 {
 	int err;
@@ -36,7 +34,6 @@ static int msr_read(u32 msr, struct msr *m)
 	return err;
 }
 
- 
 static int msr_write(u32 msr, struct msr *m)
 {
 	return wrmsrl_safe(msr, m->q);
@@ -70,13 +67,11 @@ static inline int __flip_bit(u32 msr, u8 bit, bool set)
 	return 1;
 }
 
- 
 int msr_set_bit(u32 msr, u8 bit)
 {
 	return __flip_bit(msr, bit, true);
 }
 
- 
 int msr_clear_bit(u32 msr, u8 bit)
 {
 	return __flip_bit(msr, bit, false);

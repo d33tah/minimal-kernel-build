@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_STATFS_H
 #define _LINUX_STATFS_H
 
@@ -21,7 +20,6 @@ struct kstatfs {
 	long f_spare[4];
 };
 
- 
 #define ST_RDONLY	0x0001	 
 #define ST_NOSUID	0x0002	 
 #define ST_NODEV	0x0004	 
@@ -29,9 +27,6 @@ struct kstatfs {
 #define ST_SYNCHRONOUS	0x0010	 
 #define ST_VALID	0x0020	 
 #define ST_MANDLOCK	0x0040	 
- 
- 
- 
 #define ST_NOATIME	0x0400	 
 #define ST_NODIRATIME	0x0800	 
 #define ST_RELATIME	0x1000	 
@@ -45,7 +40,6 @@ static inline __kernel_fsid_t u64_to_fsid(u64 v)
 	return (__kernel_fsid_t){.val = {(u32)v, (u32)(v>>32)}};
 }
 
- 
 static inline __kernel_fsid_t uuid_to_fsid(__u8 *uuid)
 {
 	return u64_to_fsid(le64_to_cpup((void *)uuid) ^

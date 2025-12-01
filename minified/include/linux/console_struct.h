@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_CONSOLE_STRUCT_H
 #define _LINUX_CONSOLE_STRUCT_H
@@ -21,7 +19,6 @@ enum vc_intensity {
 	VCI_MASK = 0x3,
 };
 
- 
 struct vc_state {
 	unsigned int	x, y;
 
@@ -38,7 +35,6 @@ struct vc_state {
 	bool		reverse;
 };
 
- 
 struct vc_data {
 	struct tty_port port;			 
 

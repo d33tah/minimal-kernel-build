@@ -1,10 +1,6 @@
- 
- 
 
- 
 extern char __cpuidle_text_start[], __cpuidle_text_end[];
 
- 
 void sched_idle_set_state(struct cpuidle_state *idle_state)
 {
 	idle_set_state(this_rq(), idle_state);
@@ -41,7 +37,6 @@ static noinline int __cpuidle cpu_idle_poll(void)
 	return 1;
 }
 
- 
 void __weak arch_cpu_idle_prepare(void) { }
 void __weak arch_cpu_idle_enter(void) { }
 void __weak arch_cpu_idle_exit(void) { }
@@ -52,7 +47,6 @@ void __weak arch_cpu_idle(void)
 	raw_local_irq_enable();
 }
 
- 
 void __cpuidle default_idle_call(void)
 {
 	if (current_clr_polling_and_test()) {
@@ -105,7 +99,6 @@ static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_device *dev,
 	return cpuidle_enter(drv, dev, next_state);
 }
 
- 
 static void cpuidle_idle_call(void)
 {
 	struct cpuidle_device *dev = cpuidle_get_device();
@@ -171,7 +164,6 @@ exit_idle:
 		local_irq_enable();
 }
 
- 
 static void do_idle(void)
 {
 	int cpu = smp_processor_id();
@@ -243,10 +235,8 @@ void cpu_startup_entry(enum cpuhp_state state)
 		do_idle();
 }
 
- 
 
 
- 
 static void check_preempt_curr_idle(struct rq *rq, struct task_struct *p, int flags)
 {
 	resched_curr(rq);
@@ -272,7 +262,6 @@ struct task_struct *pick_next_task_idle(struct rq *rq)
 	return next;
 }
 
- 
 static void
 dequeue_task_idle(struct rq *rq, struct task_struct *p, int flags)
 {
@@ -282,7 +271,6 @@ dequeue_task_idle(struct rq *rq, struct task_struct *p, int flags)
 	raw_spin_rq_lock_irq(rq);
 }
 
- 
 static void task_tick_idle(struct rq *rq, struct task_struct *curr, int queued)
 {
 }
@@ -302,7 +290,6 @@ static void update_curr_idle(struct rq *rq)
 {
 }
 
- 
 DEFINE_SCHED_CLASS(idle) = {
 
 	 

@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_VMALLOC_H
 #define _LINUX_VMALLOC_H
 
@@ -15,7 +14,6 @@
 struct vm_area_struct;		 
 struct notifier_block;		 
 
- 
 #define VM_IOREMAP		0x00000001	 
 #define VM_ALLOC		0x00000002	 
 #define VM_MAP			0x00000004	 
@@ -35,9 +33,7 @@ struct notifier_block;
 #define VM_DEFER_KMEMLEAK	0
 #endif
 
- 
 
- 
 #ifndef IOREMAP_MAX_ORDER
 #define IOREMAP_MAX_ORDER	(7 + PAGE_SHIFT)	 
 #endif
@@ -67,7 +63,6 @@ struct vmap_area {
 	};
 };
 
- 
 #ifndef arch_vmap_p4d_supported
 static inline bool arch_vmap_p4d_supported(pgprot_t prot)
 {
@@ -111,7 +106,6 @@ static inline pgprot_t arch_vmap_pgprot_tagged(pgprot_t prot)
 }
 #endif
 
- 
 extern void vm_unmap_ram(const void *mem, unsigned int count);
 extern void *vm_map_ram(struct page **pages, unsigned int count, int node);
 extern void vm_unmap_aliases(void);
@@ -155,15 +149,12 @@ extern int remap_vmalloc_range_partial(struct vm_area_struct *vma,
 extern int remap_vmalloc_range(struct vm_area_struct *vma, void *addr,
 							unsigned long pgoff);
 
- 
 #ifndef ARCH_PAGE_TABLE_SYNC_MASK
 #define ARCH_PAGE_TABLE_SYNC_MASK 0
 #endif
 
- 
 void arch_sync_kernel_mappings(unsigned long start, unsigned long end);
 
- 
 
 static inline size_t get_vm_area_size(const struct vm_struct *area)
 {
@@ -203,10 +194,8 @@ static inline void set_vm_flush_reset_perms(void *addr)
 }
 
 
- 
 extern long vread(char *buf, char *addr, unsigned long count);
 
- 
 extern struct list_head vmap_area_list;
 extern __init void vm_area_add_early(struct vm_struct *vm);
 extern __init void vm_area_register_early(struct vm_struct *vm, size_t align);

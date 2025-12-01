@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_BINFMTS_H
 #define _LINUX_BINFMTS_H
 
@@ -11,7 +10,6 @@ struct coredump_params;
 
 #define CORENAME_MAX_SIZE 128
 
- 
 struct linux_binprm {
 	struct vm_area_struct *vma;
 	unsigned long vma_pages;
@@ -53,15 +51,12 @@ struct linux_binprm {
 #define BINPRM_FLAGS_ENFORCE_NONDUMP_BIT 0
 #define BINPRM_FLAGS_ENFORCE_NONDUMP (1 << BINPRM_FLAGS_ENFORCE_NONDUMP_BIT)
 
- 
 #define BINPRM_FLAGS_PATH_INACCESSIBLE_BIT 2
 #define BINPRM_FLAGS_PATH_INACCESSIBLE (1 << BINPRM_FLAGS_PATH_INACCESSIBLE_BIT)
 
- 
 #define BINPRM_FLAGS_PRESERVE_ARGV0_BIT 3
 #define BINPRM_FLAGS_PRESERVE_ARGV0 (1 << BINPRM_FLAGS_PRESERVE_ARGV0_BIT)
 
- 
 struct linux_binfmt {
 	struct list_head lh;
 	struct module *module;
@@ -71,12 +66,10 @@ struct linux_binfmt {
 
 extern void __register_binfmt(struct linux_binfmt *fmt, int insert);
 
- 
 static inline void register_binfmt(struct linux_binfmt *fmt)
 {
 	__register_binfmt(fmt, 0);
 }
- 
 static inline void insert_binfmt(struct linux_binfmt *fmt)
 {
 	__register_binfmt(fmt, 1);
@@ -92,7 +85,6 @@ extern void would_dump(struct linux_binprm *, struct file *);
 
 extern int suid_dumpable;
 
- 
 #define EXSTACK_DEFAULT   0	 
 #define EXSTACK_DISABLE_X 1	 
 #define EXSTACK_ENABLE_X  2	 

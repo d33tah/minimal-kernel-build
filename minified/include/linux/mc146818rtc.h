@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _MC146818RTC_H
 #define _MC146818RTC_H
@@ -14,7 +12,6 @@
 #include <linux/spinlock.h>		 
 extern spinlock_t rtc_lock;		 
 
- 
 struct cmos_rtc_board_info {
 	void	(*wake_on)(struct device *dev);
 	void	(*wake_off)(struct device *dev);
@@ -29,14 +26,12 @@ struct cmos_rtc_board_info {
 };
 #endif
 
- 
 #define RTC_SECONDS		0
 #define RTC_SECONDS_ALARM	1
 #define RTC_MINUTES		2
 #define RTC_MINUTES_ALARM	3
 #define RTC_HOURS		4
 #define RTC_HOURS_ALARM		5
- 
 # define RTC_ALARM_DONT_CARE 	0xC0
 
 #define RTC_DAY_OF_WEEK		6
@@ -44,16 +39,13 @@ struct cmos_rtc_board_info {
 #define RTC_MONTH		8
 #define RTC_YEAR		9
 
- 
 #define RTC_REG_A		10
 #define RTC_REG_B		11
 #define RTC_REG_C		12
 #define RTC_REG_D		13
 
- 
 #define RTC_FREQ_SELECT	RTC_REG_A
 
- 
 # define RTC_UIP		0x80
 # define RTC_DIV_CTL		0x70
     
@@ -68,7 +60,6 @@ struct cmos_rtc_board_info {
    
 # define RTC_RATE_SELECT 	0x0F
 
- 
 #define RTC_CONTROL	RTC_REG_B
 # define RTC_SET 0x80		 
 # define RTC_PIE 0x40		 
@@ -79,18 +70,14 @@ struct cmos_rtc_board_info {
 # define RTC_24H 0x02		 
 # define RTC_DST_EN 0x01	 
 
- 
 #define RTC_INTR_FLAGS	RTC_REG_C
- 
 # define RTC_IRQF 0x80		 
 # define RTC_PF 0x40
 # define RTC_AF 0x20
 # define RTC_UF 0x10
 
- 
 #define RTC_VALID	RTC_REG_D
 # define RTC_VRT 0x80		 
- 
 
 #ifndef ARCH_RTC_LOCATION	 
 

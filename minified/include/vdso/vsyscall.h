@@ -1,4 +1,3 @@
- 
 #ifndef __VDSO_VSYSCALL_H
 #define __VDSO_VSYSCALL_H
 

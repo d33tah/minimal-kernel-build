@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef __LINUX_FDTABLE_H
 #define __LINUX_FDTABLE_H
@@ -15,7 +13,6 @@
 
 #include <linux/atomic.h>
 
- 
 #define NR_OPEN_DEFAULT BITS_PER_LONG
 #define NR_OPEN_MAX ~0U
 
@@ -38,7 +35,6 @@ static inline bool fd_is_open(unsigned int fd, const struct fdtable *fdt)
 	return test_bit(fd, fdt->open_fds);
 }
 
- 
 struct files_struct {
    
 	atomic_t count;
@@ -66,7 +62,6 @@ struct dentry;
 #define files_fdtable(files) \
 	rcu_dereference_check_fdtable((files), (files)->fdt)
 
- 
 static inline struct file *files_lookup_fd_raw(struct files_struct *files, unsigned int fd)
 {
 	struct fdtable *fdt = rcu_dereference_raw(files->fdt);

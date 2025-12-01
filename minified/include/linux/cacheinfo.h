@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_CACHEINFO_H
 #define _LINUX_CACHEINFO_H
 
@@ -15,7 +14,6 @@ enum cache_type {
 
 extern unsigned int coherency_max_size;
 
- 
 struct cacheinfo {
 	unsigned int id;
 	enum cache_type type;
@@ -52,7 +50,6 @@ struct cpu_cacheinfo *get_cpu_cacheinfo(unsigned int cpu);
 int init_cache_level(unsigned int cpu);
 int populate_cache_leaves(unsigned int cpu);
 int cache_setup_acpi(unsigned int cpu);
- 
 static inline int acpi_find_last_cache_level(unsigned int cpu)
 {
 	return 0;
@@ -60,7 +57,6 @@ static inline int acpi_find_last_cache_level(unsigned int cpu)
 
 const struct attribute_group *cache_get_priv_group(struct cacheinfo *this_leaf);
 
- 
 static inline int get_cpu_cacheinfo_id(int cpu, int level)
 {
 	struct cpu_cacheinfo *ci = get_cpu_cacheinfo(cpu);

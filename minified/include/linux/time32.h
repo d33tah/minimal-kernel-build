@@ -1,6 +1,5 @@
 #ifndef _LINUX_TIME32_H
 #define _LINUX_TIME32_H
- 
 
 #include <linux/time64.h>
 #include <linux/timex.h>
@@ -54,7 +53,6 @@ struct __kernel_timex;
 int get_old_timex32(struct __kernel_timex *, const struct old_timex32 __user *);
 int put_old_timex32(struct old_timex32 __user *, const struct __kernel_timex *);
 
- 
 extern struct __kernel_old_timeval ns_to_kernel_old_timeval(s64 nsec);
 
 #endif

@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_SCHED_TASK_H
 #define _LINUX_SCHED_TASK_H
 
- 
 
 #include <linux/sched.h>
 #include <linux/uaccess.h>
@@ -12,7 +10,6 @@ struct rusage;
 union thread_union;
 struct css_set;
 
- 
 #define CLONE_LEGACY_FLAGS 0xffffffffULL
 
 struct kernel_clone_args {
@@ -37,7 +34,6 @@ struct kernel_clone_args {
 	struct css_set *cset;
 };
 
- 
 extern rwlock_t tasklist_lock;
 extern spinlock_t mmlist_lock;
 
@@ -84,7 +80,6 @@ int kernel_wait(pid_t pid, int *stat);
 
 extern void free_task(struct task_struct *tsk);
 
- 
 #define sched_exec()   {}
 
 static inline struct task_struct *get_task_struct(struct task_struct *t)
@@ -117,7 +112,6 @@ static inline struct vm_struct *task_stack_vm_area(const struct task_struct *t)
 	return NULL;
 }
 
- 
 static inline void task_lock(struct task_struct *p)
 {
 	spin_lock(&p->alloc_lock);

@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _UAPI_ASM_GENERIC_INT_LL64_H
 #define _UAPI_ASM_GENERIC_INT_LL64_H
@@ -7,7 +5,6 @@
 #include <asm/bitsperlong.h>
 
 #ifndef __ASSEMBLY__
- 
 
 typedef __signed__ char __s8;
 typedef unsigned char __u8;

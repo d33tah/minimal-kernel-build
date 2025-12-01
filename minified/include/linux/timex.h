@@ -1,6 +1,4 @@
- 
 
- 
 #ifndef _LINUX_TIMEX_H
 #define _LINUX_TIMEX_H
 
@@ -18,7 +16,6 @@ unsigned long random_get_entropy_fallback(void);
 #include <asm/timex.h>
 
 #ifndef random_get_entropy
- 
 #ifdef get_cycles
 #define random_get_entropy()	((unsigned long)get_cycles())
 #else
@@ -26,12 +23,10 @@ unsigned long random_get_entropy_fallback(void);
 #endif
 #endif
 
- 
 #define SHIFT_PLL	2	 
 #define SHIFT_FLL	2	 
 #define MAXTC		10	 
 
- 
 #define SHIFT_USEC 16		 
 #define PPM_SCALE ((s64)NSEC_PER_USEC << (NTP_SCALE_SHIFT - SHIFT_USEC))
 #define PPM_SCALE_INV_SHIFT 19
@@ -45,11 +40,9 @@ unsigned long random_get_entropy_fallback(void);
 #define MAXSEC 2048		 
 #define NTP_PHASE_LIMIT ((MAXPHASE / NSEC_PER_USEC) << 5)  
 
- 
 extern unsigned long tick_usec;		 
 extern unsigned long tick_nsec;		 
 
- 
 #define shift_right(x, s) ({	\
 	__typeof__(x) __x = (x);	\
 	__typeof__(s) __s = (s);	\
@@ -68,7 +61,6 @@ extern void hardpps(const struct timespec64 *, const struct timespec64 *);
 
 int read_current_timer(unsigned long *timer_val);
 
- 
 #define PIT_TICK_RATE 1193182ul
 
 #endif  

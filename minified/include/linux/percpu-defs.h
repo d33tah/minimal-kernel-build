@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_PERCPU_DEFS_H
 #define _LINUX_PERCPU_DEFS_H
@@ -10,7 +8,6 @@
 #define PER_CPU_FIRST_SECTION ""
 
 
- 
 #define __PCPU_ATTRS(sec)						\
 	__percpu __attribute__((section(PER_CPU_BASE_SECTION sec)))	\
 	PER_CPU_ATTRIBUTES
@@ -18,9 +15,7 @@
 #define __PCPU_DUMMY_ATTRS						\
 	__section(".discard") __attribute__((unused))
 
- 
 #if defined(ARCH_NEEDS_WEAK_PER_CPU) || defined(CONFIG_DEBUG_FORCE_WEAK_PER_CPU)
- 
 #define DECLARE_PER_CPU_SECTION(type, name, sec)			\
 	extern __PCPU_DUMMY_ATTRS char __pcpu_scope_##name;		\
 	extern __PCPU_ATTRS(sec) __typeof__(type) name
@@ -32,7 +27,6 @@
 	extern __PCPU_ATTRS(sec) __typeof__(type) name;			\
 	__PCPU_ATTRS(sec) __weak __typeof__(type) name
 #else
- 
 #define DECLARE_PER_CPU_SECTION(type, name, sec)			\
 	extern __PCPU_ATTRS(sec) __typeof__(type) name
 
@@ -40,21 +34,18 @@
 	__PCPU_ATTRS(sec) __typeof__(type) name
 #endif
 
- 
 #define DECLARE_PER_CPU(type, name)					\
 	DECLARE_PER_CPU_SECTION(type, name, "")
 
 #define DEFINE_PER_CPU(type, name)					\
 	DEFINE_PER_CPU_SECTION(type, name, "")
 
- 
 #define DECLARE_PER_CPU_FIRST(type, name)				\
 	DECLARE_PER_CPU_SECTION(type, name, PER_CPU_FIRST_SECTION)
 
 #define DEFINE_PER_CPU_FIRST(type, name)				\
 	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_FIRST_SECTION)
 
- 
 #define DECLARE_PER_CPU_SHARED_ALIGNED(type, name)			\
 	DECLARE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) \
 	____cacheline_aligned_in_smp
@@ -71,7 +62,6 @@
 	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_ALIGNED_SECTION)	\
 	____cacheline_aligned
 
- 
 #define DECLARE_PER_CPU_PAGE_ALIGNED(type, name)			\
 	DECLARE_PER_CPU_SECTION(type, name, "..page_aligned")		\
 	__aligned(PAGE_SIZE)
@@ -80,17 +70,14 @@
 	DEFINE_PER_CPU_SECTION(type, name, "..page_aligned")		\
 	__aligned(PAGE_SIZE)
 
- 
 #define DECLARE_PER_CPU_READ_MOSTLY(type, name)			\
 	DECLARE_PER_CPU_SECTION(type, name, "..read_mostly")
 
 #define DEFINE_PER_CPU_READ_MOSTLY(type, name)				\
 	DEFINE_PER_CPU_SECTION(type, name, "..read_mostly")
 
- 
 #define DEFINE_PER_CPU_DECRYPTED(type, name)	DEFINE_PER_CPU(type, name)
 
- 
 #ifndef __CHECKER__
 #define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(var)
 #define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(var)
@@ -99,10 +86,8 @@
 #define EXPORT_PER_CPU_SYMBOL_GPL(var)
 #endif
 
- 
 #ifndef __ASSEMBLY__
 
- 
 #define __verify_pcpu_ptr(ptr)						\
 do {									\
 	const void __percpu *__vpp_verify = (typeof((ptr) + 0))NULL;	\
@@ -123,14 +108,12 @@ do {									\
 
 #define per_cpu(var, cpu)	(*per_cpu_ptr(&(var), cpu))
 
- 
 #define get_cpu_var(var)						\
 (*({									\
 	preempt_disable();						\
 	this_cpu_ptr(&var);						\
 }))
 
- 
 #define put_cpu_var(var)						\
 do {									\
 	(void)&(var);							\
@@ -149,7 +132,6 @@ do {									\
 	preempt_enable();						\
 } while (0)
 
- 
 
 extern void __bad_size_call_parameter(void);
 
@@ -185,7 +167,6 @@ static inline void __this_cpu_preempt_check(const char *op) { }
 	pscr2_ret__;							\
 })
 
- 
 #define __pcpu_double_call_return_bool(stem, pcp1, pcp2, ...)		\
 ({									\
 	bool pdcrb_ret__;						\
@@ -218,9 +199,7 @@ do {									\
 	}								\
 } while (0)
 
- 
 
- 
 #define raw_cpu_read(pcp)		__pcpu_size_call_return(raw_cpu_read_, pcp)
 #define raw_cpu_write(pcp, val)		__pcpu_size_call(raw_cpu_write_, pcp, val)
 #define raw_cpu_add(pcp, val)		__pcpu_size_call(raw_cpu_add_, pcp, val)
@@ -240,7 +219,6 @@ do {									\
 #define raw_cpu_inc_return(pcp)		raw_cpu_add_return(pcp, 1)
 #define raw_cpu_dec_return(pcp)		raw_cpu_add_return(pcp, -1)
 
- 
 #define __this_cpu_read(pcp)						\
 ({									\
 	__this_cpu_preempt_check("read");				\
@@ -301,7 +279,6 @@ do {									\
 #define __this_cpu_inc_return(pcp)	__this_cpu_add_return(pcp, 1)
 #define __this_cpu_dec_return(pcp)	__this_cpu_add_return(pcp, -1)
 
- 
 #define this_cpu_read(pcp)		__pcpu_size_call_return(this_cpu_read_, pcp)
 #define this_cpu_write(pcp, val)	__pcpu_size_call(this_cpu_write_, pcp, val)
 #define this_cpu_add(pcp, val)		__pcpu_size_call(this_cpu_add_, pcp, val)

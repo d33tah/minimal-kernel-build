@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_PAGEWALK_H
 #define _LINUX_PAGEWALK_H
 
@@ -6,7 +5,6 @@
 
 struct mm_walk;
 
- 
 struct mm_walk_ops {
 	int (*pgd_entry)(pgd_t *pgd, unsigned long addr,
 			 unsigned long next, struct mm_walk *walk);
@@ -30,7 +28,6 @@ struct mm_walk_ops {
 	void (*post_vma)(struct mm_walk *walk);
 };
 
- 
 enum page_walk_action {
 	 
 	ACTION_SUBTREE = 0,
@@ -40,7 +37,6 @@ enum page_walk_action {
 	ACTION_AGAIN = 2
 };
 
- 
 struct mm_walk {
 	const struct mm_walk_ops *ops;
 	struct mm_struct *mm;

@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_COMPACTION_H
 #define _LINUX_COMPACTION_H
 
@@ -12,7 +11,6 @@ enum compact_result {
 
 struct alloc_context;  
 
- 
 static inline unsigned long compact_gap(unsigned int order)
 {
 	 

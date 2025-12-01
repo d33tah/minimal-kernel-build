@@ -1,7 +1,4 @@
- 
 
- 
- 
 
 #ifndef _LINUX_ATOMIC_FALLBACK_H
 #define _LINUX_ATOMIC_FALLBACK_H
@@ -1157,7 +1154,6 @@ arch_atomic_try_cmpxchg(atomic_t *v, int *old, int new)
 #endif  
 
 #ifndef arch_atomic_sub_and_test
- 
 static __always_inline bool
 arch_atomic_sub_and_test(int i, atomic_t *v)
 {
@@ -1167,7 +1163,6 @@ arch_atomic_sub_and_test(int i, atomic_t *v)
 #endif
 
 #ifndef arch_atomic_dec_and_test
- 
 static __always_inline bool
 arch_atomic_dec_and_test(atomic_t *v)
 {
@@ -1177,7 +1172,6 @@ arch_atomic_dec_and_test(atomic_t *v)
 #endif
 
 #ifndef arch_atomic_inc_and_test
- 
 static __always_inline bool
 arch_atomic_inc_and_test(atomic_t *v)
 {
@@ -1187,7 +1181,6 @@ arch_atomic_inc_and_test(atomic_t *v)
 #endif
 
 #ifndef arch_atomic_add_negative
- 
 static __always_inline bool
 arch_atomic_add_negative(int i, atomic_t *v)
 {
@@ -1197,7 +1190,6 @@ arch_atomic_add_negative(int i, atomic_t *v)
 #endif
 
 #ifndef arch_atomic_fetch_add_unless
- 
 static __always_inline int
 arch_atomic_fetch_add_unless(atomic_t *v, int a, int u)
 {
@@ -1214,7 +1206,6 @@ arch_atomic_fetch_add_unless(atomic_t *v, int a, int u)
 #endif
 
 #ifndef arch_atomic_add_unless
- 
 static __always_inline bool
 arch_atomic_add_unless(atomic_t *v, int a, int u)
 {
@@ -1224,7 +1215,6 @@ arch_atomic_add_unless(atomic_t *v, int a, int u)
 #endif
 
 #ifndef arch_atomic_inc_not_zero
- 
 static __always_inline bool
 arch_atomic_inc_not_zero(atomic_t *v)
 {
@@ -2223,7 +2213,6 @@ arch_atomic64_try_cmpxchg(atomic64_t *v, s64 *old, s64 new)
 #endif  
 
 #ifndef arch_atomic64_sub_and_test
- 
 static __always_inline bool
 arch_atomic64_sub_and_test(s64 i, atomic64_t *v)
 {
@@ -2233,7 +2222,6 @@ arch_atomic64_sub_and_test(s64 i, atomic64_t *v)
 #endif
 
 #ifndef arch_atomic64_dec_and_test
- 
 static __always_inline bool
 arch_atomic64_dec_and_test(atomic64_t *v)
 {
@@ -2243,7 +2231,6 @@ arch_atomic64_dec_and_test(atomic64_t *v)
 #endif
 
 #ifndef arch_atomic64_inc_and_test
- 
 static __always_inline bool
 arch_atomic64_inc_and_test(atomic64_t *v)
 {
@@ -2253,7 +2240,6 @@ arch_atomic64_inc_and_test(atomic64_t *v)
 #endif
 
 #ifndef arch_atomic64_add_negative
- 
 static __always_inline bool
 arch_atomic64_add_negative(s64 i, atomic64_t *v)
 {
@@ -2263,7 +2249,6 @@ arch_atomic64_add_negative(s64 i, atomic64_t *v)
 #endif
 
 #ifndef arch_atomic64_fetch_add_unless
- 
 static __always_inline s64
 arch_atomic64_fetch_add_unless(atomic64_t *v, s64 a, s64 u)
 {
@@ -2280,7 +2265,6 @@ arch_atomic64_fetch_add_unless(atomic64_t *v, s64 a, s64 u)
 #endif
 
 #ifndef arch_atomic64_add_unless
- 
 static __always_inline bool
 arch_atomic64_add_unless(atomic64_t *v, s64 a, s64 u)
 {
@@ -2290,7 +2274,6 @@ arch_atomic64_add_unless(atomic64_t *v, s64 a, s64 u)
 #endif
 
 #ifndef arch_atomic64_inc_not_zero
- 
 static __always_inline bool
 arch_atomic64_inc_not_zero(atomic64_t *v)
 {
@@ -2349,4 +2332,3 @@ arch_atomic64_dec_if_positive(atomic64_t *v)
 #endif
 
 #endif  
- 

@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_COREDUMP_H
 #define _LINUX_COREDUMP_H
 

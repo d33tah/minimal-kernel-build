@@ -1,8 +1,5 @@
- 
 
- 
 
- 
 #ifdef STATIC
 #	define XZ_PREBOOT
 #endif
@@ -15,16 +12,12 @@
 #	include <linux/slab.h>
 #	include <linux/xz.h>
 #else
- 
 #define XZ_INTERNAL_CRC32 1
 
- 
 #	define XZ_DEC_X86
 
- 
 #include "xz/xz_private.h"
 
- 
 #undef kmalloc
 #undef kfree
 #undef vmalloc
@@ -34,7 +27,6 @@
 #define vmalloc(size) malloc(size)
 #define vfree(ptr) do { if (ptr != NULL) free(ptr); } while (0)
 
- 
 
 #ifndef memeq
 static bool memeq(const void *a, const void *b, size_t size)
@@ -63,7 +55,6 @@ static void memzero(void *buf, size_t size)
 #endif
 
 #ifndef memmove
- 
 void *memmove(void *dest, const void *src, size_t size)
 {
 	uint8_t *d = dest;
@@ -83,8 +74,6 @@ void *memmove(void *dest, const void *src, size_t size)
 }
 #endif
 
- 
- 
 
 #include "xz/xz_crc32.c"
 #include "xz/xz_dec_stream.c"
@@ -93,10 +82,8 @@ void *memmove(void *dest, const void *src, size_t size)
 
 #endif  
 
- 
 #define XZ_IOBUF_SIZE 4096
 
- 
 STATIC int INIT unxz(unsigned char *in, long in_size,
 		     long (*fill)(void *dest, unsigned long size),
 		     long (*flush)(void *src, unsigned long size),
@@ -231,7 +218,6 @@ error_alloc_state:
 	return -1;
 }
 
- 
 #ifdef XZ_PREBOOT
 STATIC int INIT __decompress(unsigned char *buf, long len,
 			   long (*fill)(void*, unsigned long),

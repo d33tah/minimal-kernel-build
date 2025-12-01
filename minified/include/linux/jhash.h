@@ -1,16 +1,12 @@
 #ifndef _LINUX_JHASH_H
 #define _LINUX_JHASH_H
 
- 
 #include <linux/bitops.h>
 #include <linux/unaligned/packed_struct.h>
 
- 
 #define jhash_size(n)   ((u32)1<<(n))
- 
 #define jhash_mask(n)   (jhash_size(n)-1)
 
- 
 #define __jhash_mix(a, b, c)			\
 {						\
 	a -= c;  a ^= rol32(c, 4);  c += b;	\
@@ -21,7 +17,6 @@
 	c -= b;  c ^= rol32(b, 4);  b += a;	\
 }
 
- 
 #define __jhash_final(a, b, c)			\
 {						\
 	c ^= b; c -= rol32(b, 14);		\
@@ -33,10 +28,8 @@
 	c ^= b; c -= rol32(b, 24);		\
 }
 
- 
 #define JHASH_INITVAL		0xdeadbeef
 
- 
 static inline u32 jhash(const void *key, u32 length, u32 initval)
 {
 	u32 a, b, c;
@@ -77,7 +70,6 @@ static inline u32 jhash(const void *key, u32 length, u32 initval)
 	return c;
 }
 
- 
 static inline u32 jhash2(const u32 *k, u32 length, u32 initval)
 {
 	u32 a, b, c;
@@ -110,7 +102,6 @@ static inline u32 jhash2(const u32 *k, u32 length, u32 initval)
 }
 
 
- 
 static inline u32 __jhash_nwords(u32 a, u32 b, u32 c, u32 initval)
 {
 	a += initval;

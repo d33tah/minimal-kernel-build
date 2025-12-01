@@ -1,4 +1,3 @@
- 
 #ifndef LINUX_CRASH_DUMP_H
 #define LINUX_CRASH_DUMP_H
 
@@ -8,7 +7,6 @@
 #include <linux/pgtable.h>
 #include <uapi/linux/vmcore.h>
 
- 
 #define ELFCORE_ADDR_MAX	(-1ULL)
 #define ELFCORE_ADDR_ERR	(-2ULL)
 
@@ -17,7 +15,6 @@ extern unsigned long long elfcorehdr_size;
 
 static inline bool is_kdump_kernel(void) { return false; }
 
- 
 struct vmcoredd_data {
 	char dump_name[VMCOREDD_MAX_NAME_BYTES];  
 	unsigned int size;                        

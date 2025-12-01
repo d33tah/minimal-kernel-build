@@ -1,5 +1,3 @@
- 
- 
 #include <linux/capability.h>
 #include <linux/security.h>
 #include <linux/syscalls.h>

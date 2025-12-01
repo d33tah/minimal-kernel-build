@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_ALARMTIMER_H
 #define _LINUX_ALARMTIMER_H
 
@@ -21,7 +20,6 @@ enum alarmtimer_restart {
 #define ALARMTIMER_STATE_INACTIVE	0x00
 #define ALARMTIMER_STATE_ENQUEUED	0x01
 
- 
 struct alarm;
 
 void alarm_init(struct alarm *alarm, enum alarmtimer_type type,

@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/kernel.h>
 #include <linux/sched.h>
@@ -31,7 +29,6 @@
 
 #define AA(__x)		((unsigned long)(__x))
 
- 
 SYSCALL_DEFINE3(ia32_truncate64, const char __user *, filename,
 		unsigned long, offset_low, unsigned long, offset_high)
 {
@@ -44,7 +41,6 @@ SYSCALL_DEFINE3(ia32_ftruncate64, unsigned int, fd,
 	return ksys_ftruncate(fd, ((loff_t) offset_high << 32) | offset_low);
 }
 
- 
 SYSCALL_DEFINE5(ia32_pread64, unsigned int, fd, char __user *, ubuf,
 		u32, count, u32, poslo, u32, poshi)
 {
@@ -60,7 +56,6 @@ SYSCALL_DEFINE5(ia32_pwrite64, unsigned int, fd, const char __user *, ubuf,
 }
 
 
- 
 SYSCALL_DEFINE6(ia32_fadvise64_64, int, fd, __u32, offset_low,
 		__u32, offset_high, __u32, len_low, __u32, len_high,
 		int, advice)

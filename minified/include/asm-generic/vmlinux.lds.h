@@ -1,10 +1,8 @@
- 
 
 #ifndef LOAD_OFFSET
 #define LOAD_OFFSET 0
 #endif
 
- 
 #ifdef EMITS_PT_NOTE
 #define NOTES_HEADERS		:text :note
 #define NOTES_HEADERS_RESTORE	__restore_ph : { *(.__restore_ph) } :text
@@ -13,17 +11,14 @@
 #define NOTES_HEADERS_RESTORE
 #endif
 
- 
 #ifdef RO_EXCEPTION_TABLE_ALIGN
 #define RO_EXCEPTION_TABLE	EXCEPTION_TABLE(RO_EXCEPTION_TABLE_ALIGN)
 #else
 #define RO_EXCEPTION_TABLE
 #endif
 
- 
 #define ALIGN_FUNCTION()  . = ALIGN(8)
 
- 
 #if defined(CONFIG_LD_DEAD_CODE_DATA_ELIMINATION) || defined(CONFIG_LTO_CLANG)
 #define TEXT_MAIN .text .text.[0-9a-zA-Z_]*
 #define DATA_MAIN .data .data.[0-9a-zA-Z_]* .data..L* .data..compoundliteral* .data.$__unnamed_* .data.$L*
@@ -40,11 +35,9 @@
 #define SBSS_MAIN .sbss
 #endif
 
- 
 #define STRUCT_ALIGNMENT 32
 #define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)
 
- 
 #define SCHED_DATA				\
 	STRUCT_ALIGN();				\
 	__sched_class_highest = .;		\
@@ -55,7 +48,6 @@
 	*(__idle_sched_class)			\
 	__sched_class_lowest = .;
 
- 
 #define CPU_KEEP(sec)
 #define CPU_DISCARD(sec) *(.cpu##sec)
 
@@ -113,7 +105,6 @@
 	KEEP(*(.dtb.init.rodata))					\
 	__dtb_end = .;
 
- 
 #define DATA_DATA							\
 	*(.xiptext)							\
 	*(DATA_MAIN)							\
@@ -138,7 +129,6 @@
 	BPF_RAW_TP()							\
 	TRACEPOINT_STR()
 
- 
 #define NOSAVE_DATA							\
 	. = ALIGN(PAGE_SIZE);						\
 	__nosave_begin = .;						\
@@ -178,7 +168,6 @@
 
 #define STATIC_CALL_DATA
 
- 
 #ifndef RO_AFTER_INIT_DATA
 #define RO_AFTER_INIT_DATA						\
 	. = ALIGN(8);							\
@@ -189,7 +178,6 @@
 	__end_ro_after_init = .;
 #endif
 
- 
 #define RO_DATA(align)							\
 	. = ALIGN((align));						\
 	.rodata           : AT(ADDR(.rodata) - LOAD_OFFSET) {		\
@@ -303,17 +291,14 @@
 	__end_rodata = .;
 
 
- 
 #define TEXT_CFI_JT
 
- 
 #define NOINSTR_TEXT							\
 		ALIGN_FUNCTION();					\
 		__noinstr_text_start = .;				\
 		*(.noinstr.text)					\
 		__noinstr_text_end = .;
 
- 
 #define TEXT_TEXT							\
 		ALIGN_FUNCTION();					\
 		*(.text.hot .text.hot.*)				\
@@ -329,14 +314,12 @@
 	MEM_KEEP(exit.text*)						\
 
 
- 
 #define SCHED_TEXT							\
 		ALIGN_FUNCTION();					\
 		__sched_text_start = .;					\
 		*(.sched.text)						\
 		__sched_text_end = .;
 
- 
 #define LOCK_TEXT							\
 		ALIGN_FUNCTION();					\
 		__lock_text_start = .;					\
@@ -379,7 +362,6 @@
 		*(.static_call.text)					\
 		__static_call_text_end = .;
 
- 
 #define HEAD_TEXT  KEEP(*(.head.text))
 
 #define HEAD_TEXT_SECTION							\
@@ -387,7 +369,6 @@
 		HEAD_TEXT						\
 	}
 
- 
 #define EXCEPTION_TABLE(align)						\
 	. = ALIGN(align);						\
 	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {		\
@@ -396,10 +377,8 @@
 		__stop___ex_table = .;					\
 	}
 
- 
 #define BTF
 
- 
 #define INIT_TASK_DATA_SECTION(align)					\
 	. = ALIGN(align);						\
 	.data..init_task :  AT(ADDR(.data..init_task) - LOAD_OFFSET) {	\
@@ -408,7 +387,6 @@
 
 #define KERNEL_CTORS()
 
- 
 #define INIT_DATA							\
 	KEEP(*(SORT(___kentry+*)))					\
 	*(.init.data init.data.*)					\
@@ -456,7 +434,6 @@
 #define EXIT_CALL							\
 	*(.exitcall.exit)
 
- 
 #define SBSS(sbss_align)						\
 	. = ALIGN(sbss_align);						\
 	.sbss : AT(ADDR(.sbss) - LOAD_OFFSET) {				\
@@ -465,7 +442,6 @@
 		*(.scommon)						\
 	}
 
- 
 #ifndef BSS_FIRST_SECTIONS
 #define BSS_FIRST_SECTIONS
 #endif
@@ -482,7 +458,6 @@
 		*(COMMON)						\
 	}
 
- 
 #define DWARF_DEBUG							\
 		 						\
 		.debug          0 : { *(.debug) }			\
@@ -524,7 +499,6 @@
 		.debug_rnglists	0 : { *(.debug_rnglists) }		\
 		.debug_str_offsets	0 : { *(.debug_str_offsets) }
 
- 
 #define STABS_DEBUG							\
 		.stab 0 : { *(.stab) }					\
 		.stabstr 0 : { *(.stabstr) }				\
@@ -533,7 +507,6 @@
 		.stab.index 0 : { *(.stab.index) }			\
 		.stab.indexstr 0 : { *(.stab.indexstr) }
 
- 
 #define ELF_DETAILS							\
 		.comment 0 : { *(.comment) }				\
 		.symtab 0 : { *(.symtab) }				\
@@ -544,7 +517,6 @@
 
 #define ORC_UNWIND_TABLE
 
- 
 #define FW_LOADER_BUILT_IN_DATA
 
 #define TRACEDATA
@@ -589,7 +561,6 @@
 		KEEP(*(.con_initcall.init))				\
 		__con_initcall_end = .;
 
- 
 #define KUNIT_TABLE()							\
 		. = ALIGN(8);						\
 		__kunit_suites_start = .;				\
@@ -603,11 +574,9 @@
 	. = ALIGN(8);							\
 	KEEP(*(.init.ramfs.info))
 
- 
 #define PERCPU_DECRYPTED_SECTION
 
 
- 
 #ifdef RUNTIME_DISCARD_EXIT
 #define EXIT_DISCARDS
 #else
@@ -616,7 +585,6 @@
 	EXIT_DATA
 #endif
 
- 
 #if defined(CONFIG_GCOV_KERNEL) || defined(CONFIG_KASAN_GENERIC) || defined(CONFIG_KCSAN) || \
 	defined(CONFIG_CFI_CLANG)
 #  define SANITIZER_DISCARDS						\
@@ -641,7 +609,6 @@
 	COMMON_DISCARDS							\
 	}
 
- 
 #define PERCPU_INPUT(cacheline)						\
 	__per_cpu_start = .;						\
 	*(.data..percpu..first)						\
@@ -655,7 +622,6 @@
 	PERCPU_DECRYPTED_SECTION					\
 	__per_cpu_end = .;
 
- 
 #define PERCPU_VADDR(cacheline, vaddr, phdr)				\
 	__per_cpu_load = .;						\
 	.data..percpu vaddr : AT(__per_cpu_load - LOAD_OFFSET) {	\
@@ -663,7 +629,6 @@
 	} phdr								\
 	. = __per_cpu_load + SIZEOF(.data..percpu);
 
- 
 #define PERCPU_SECTION(cacheline)					\
 	. = ALIGN(PAGE_SIZE);						\
 	.data..percpu	: AT(ADDR(.data..percpu) - LOAD_OFFSET) {	\
@@ -672,10 +637,8 @@
 	}
 
 
- 
 
 
- 
 #define RW_DATA(cacheline, pagealigned, inittask)			\
 	. = ALIGN(PAGE_SIZE);						\
 	.data : AT(ADDR(.data) - LOAD_OFFSET) {				\

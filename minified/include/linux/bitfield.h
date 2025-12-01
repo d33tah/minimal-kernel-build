@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_BITFIELD_H
 #define _LINUX_BITFIELD_H
@@ -7,7 +5,6 @@
 #include <linux/build_bug.h>
 #include <asm/byteorder.h>
 
- 
 
 #define __bf_shf(x) (__builtin_ffsll(x) - 1)
 
@@ -42,28 +39,24 @@
 					      (1ULL << __bf_shf(_mask))); \
 	})
 
- 
 #define FIELD_MAX(_mask)						\
 	({								\
 		__BF_FIELD_CHECK(_mask, 0ULL, 0ULL, "FIELD_MAX: ");	\
 		(typeof(_mask))((_mask) >> __bf_shf(_mask));		\
 	})
 
- 
 #define FIELD_FIT(_mask, _val)						\
 	({								\
 		__BF_FIELD_CHECK(_mask, 0ULL, 0ULL, "FIELD_FIT: ");	\
 		!((((typeof(_mask))_val) << __bf_shf(_mask)) & ~(_mask)); \
 	})
 
- 
 #define FIELD_PREP(_mask, _val)						\
 	({								\
 		__BF_FIELD_CHECK(_mask, 0ULL, _val, "FIELD_PREP: ");	\
 		((typeof(_mask))(_val) << __bf_shf(_mask)) & (_mask);	\
 	})
 
- 
 #define FIELD_GET(_mask, _reg)						\
 	({								\
 		__BF_FIELD_CHECK(_mask, _reg, 0U, "FIELD_GET: ");	\

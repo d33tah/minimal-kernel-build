@@ -1,10 +1,7 @@
- 
- 
 
 #ifndef _LINUX_TBOOT_H
 #define _LINUX_TBOOT_H
 
- 
 enum {
 	TB_SHUTDOWN_REBOOT = 0,
 	TB_SHUTDOWN_S5,

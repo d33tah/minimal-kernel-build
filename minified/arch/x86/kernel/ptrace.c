@@ -1,6 +1,3 @@
- 
- 
- 
 
 #include <linux/kernel.h>
 #include <linux/sched.h>
@@ -59,9 +56,7 @@ int regs_query_register_offset(const char *name) { return -EINVAL; }
 /* STUB: regs_query_register_name not used externally */
 const char *regs_query_register_name(unsigned int offset) { return NULL; }
 
- 
 
- 
 #define FLAG_MASK_32		((unsigned long)			\
 				 (X86_EFLAGS_CF | X86_EFLAGS_PF |	\
 				  X86_EFLAGS_AF | X86_EFLAGS_ZF |	\
@@ -69,7 +64,6 @@ const char *regs_query_register_name(unsigned int offset) { return NULL; }
 				  X86_EFLAGS_DF | X86_EFLAGS_OF |	\
 				  X86_EFLAGS_RF | X86_EFLAGS_AC))
 
- 
 static inline bool invalid_selector(u16 value)
 {
 	return unlikely(value != 0 && (value & SEGMENT_RPL_MASK) != USER_RPL);
@@ -255,7 +249,6 @@ static int ioperm_get(struct task_struct *target,
 	return membuf_write(&to, iobm->bitmap, IO_BITMAP_BYTES);
 }
 
- 
 void ptrace_disable(struct task_struct *child)
 {
 	user_disable_single_step(child);
@@ -325,13 +318,11 @@ static const struct user_regset_view user_x86_32_view = {
 	.regsets = x86_32_regsets, .n = ARRAY_SIZE(x86_32_regsets)
 };
 
- 
 u64 xstate_fx_sw_bytes[USER_XSTATE_FX_SW_WORDS];
 
 /* STUB: update_regset_xstate_info not used externally */
 void __init update_regset_xstate_info(unsigned int size, u64 xstate_mask) { }
 
- 
 const struct user_regset_view *task_user_regset_view(struct task_struct *task)
 {
 		return &user_x86_32_view;

@@ -1,4 +1,3 @@
- 
 #ifndef _ELF_RANDOMIZE_H
 #define _ELF_RANDOMIZE_H
 

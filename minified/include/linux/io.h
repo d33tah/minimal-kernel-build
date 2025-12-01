@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_IO_H
 #define _LINUX_IO_H
@@ -21,7 +19,6 @@ void __iowrite64_copy(void __iomem *to, const void *from, size_t count);
 int ioremap_page_range(unsigned long addr, unsigned long end,
 		       phys_addr_t phys_addr, pgprot_t prot);
 
- 
 void __iomem * devm_ioport_map(struct device *dev, unsigned long port,
 			       unsigned int nr);
 void devm_ioport_unmap(struct device *dev, void __iomem *addr);
@@ -46,12 +43,10 @@ void *devm_memremap(struct device *dev, resource_size_t offset,
 void devm_memunmap(struct device *dev, void *addr);
 
 
- 
 #ifndef arch_has_dev_port
 #define arch_has_dev_port()     (1)
 #endif
 
- 
 #ifndef arch_phys_wc_add
 static inline int __must_check arch_phys_wc_add(unsigned long base,
 						unsigned long size)
@@ -87,7 +82,6 @@ enum {
 void *memremap(resource_size_t offset, size_t size, unsigned long flags);
 void memunmap(void *addr);
 
- 
 #ifndef arch_io_reserve_memtype_wc
 static inline int arch_io_reserve_memtype_wc(resource_size_t base,
 					     resource_size_t size)

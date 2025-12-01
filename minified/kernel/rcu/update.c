@@ -1,5 +1,3 @@
- 
- 
 #include <linux/types.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
@@ -38,7 +36,6 @@
 
 
 
- 
 void rcu_test_sync_prims(void)
 {
 	if (!IS_ENABLED(CONFIG_PROVE_RCU))
@@ -48,7 +45,6 @@ void rcu_test_sync_prims(void)
 }
 
 
- 
 static int __init rcu_set_runtime_mode(void)
 {
 	rcu_test_sync_prims();
@@ -61,7 +57,6 @@ core_initcall(rcu_set_runtime_mode);
 
 
 
- 
 void wakeme_after_rcu(struct rcu_head *head)
 {
 	struct rcu_synchronize *rcu;
@@ -128,7 +123,6 @@ void do_trace_rcu_torture_read(const char *rcutorturename, struct rcu_head *rhp,
 #endif
 
 #if IS_ENABLED(CONFIG_RCU_TORTURE_TEST) || IS_MODULE(CONFIG_RCU_TORTURE_TEST)
- 
 long rcutorture_sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 {
 	int ret;
@@ -140,8 +134,6 @@ long rcutorture_sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 #endif
 
 
- 
- 
 int rcu_cpu_stall_suppress_at_boot __read_mostly;
 
 void rcu_early_boot_tests(void) {}

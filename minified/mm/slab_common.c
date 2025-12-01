@@ -1,5 +1,3 @@
- 
- 
 #include <linux/slab.h>
 
 #include <linux/mm.h>
@@ -37,7 +35,6 @@ static void slab_caches_to_rcu_destroy_workfn(struct work_struct *work);
 static DECLARE_WORK(slab_caches_to_rcu_destroy_work,
 		    slab_caches_to_rcu_destroy_workfn);
 
- 
 #define SLAB_NEVER_MERGE (SLAB_RED_ZONE | SLAB_POISON | SLAB_STORE_USER | \
 		SLAB_TRACE | SLAB_TYPESAFE_BY_RCU | SLAB_NOLEAKTRACE | \
 		SLAB_FAILSLAB | kasan_never_merge())
@@ -45,7 +42,6 @@ static DECLARE_WORK(slab_caches_to_rcu_destroy_work,
 #define SLAB_MERGE_SAME (SLAB_RECLAIM_ACCOUNT | SLAB_CACHE_DMA | \
 			 SLAB_CACHE_DMA32 | SLAB_ACCOUNT)
 
- 
 static bool slab_nomerge = !IS_ENABLED(CONFIG_SLAB_MERGE_DEFAULT);
 
 static int __init setup_slab_nomerge(char *str)
@@ -104,7 +100,6 @@ int __kmem_cache_alloc_bulk(struct kmem_cache *s, gfp_t flags, size_t nr,
 	return i;
 }
 
- 
 static unsigned int calculate_alignment(slab_flags_t flags,
 		unsigned int align, unsigned int size)
 {
@@ -123,7 +118,6 @@ static unsigned int calculate_alignment(slab_flags_t flags,
 	return ALIGN(align, sizeof(void *));
 }
 
- 
 int slab_unmergeable(struct kmem_cache *s)
 {
 	if (slab_nomerge || (s->flags & SLAB_NEVER_MERGE))
@@ -226,7 +220,6 @@ out_free_cache:
 	goto out;
 }
 
- 
 struct kmem_cache *
 kmem_cache_create_usercopy(const char *name,
 		  unsigned int size, unsigned int align,
@@ -296,7 +289,6 @@ out_unlock:
 	return s;
 }
 
- 
 struct kmem_cache *
 kmem_cache_create(const char *name, unsigned int size, unsigned int align,
 		slab_flags_t flags, void (*ctor)(void *))
@@ -343,7 +335,6 @@ void kmem_cache_destroy(struct kmem_cache *s)
 {
 }
 
- 
 /* STUB: kmem_cache_shrink not used externally */
 int kmem_cache_shrink(struct kmem_cache *cachep) { return 0; }
 
@@ -353,7 +344,6 @@ bool slab_is_available(void)
 }
 
 
- 
 void __init create_boot_cache(struct kmem_cache *s, const char *name,
 		unsigned int size, slab_flags_t flags,
 		unsigned int useroffset, unsigned int usersize)
@@ -401,7 +391,6 @@ struct kmem_cache *
 kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1] __ro_after_init =
 {   };
 
- 
 static u8 size_index[24] __ro_after_init = {
 	3,	 
 	4,	 
@@ -434,7 +423,6 @@ static inline unsigned int size_index_elem(unsigned int bytes)
 	return (bytes - 1) / 8;
 }
 
- 
 struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 {
 	unsigned int index;
@@ -466,7 +454,6 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 	.size = __size,						\
 }
 
- 
 const struct kmalloc_info_struct kmalloc_info[] __initconst = {
 	INIT_KMALLOC_INFO(0, 0),
 	INIT_KMALLOC_INFO(96, 96),
@@ -496,7 +483,6 @@ const struct kmalloc_info_struct kmalloc_info[] __initconst = {
 	INIT_KMALLOC_INFO(33554432, 32M)
 };
 
- 
 void __init setup_kmalloc_cache_index_table(void)
 {
 	unsigned int i;
@@ -551,7 +537,6 @@ new_kmalloc_cache(int idx, enum kmalloc_cache_type type, slab_flags_t flags)
 		kmalloc_caches[type][idx]->refcount = -1;
 }
 
- 
 void __init create_kmalloc_caches(slab_flags_t flags)
 {
 	int i;
@@ -589,7 +574,6 @@ gfp_t kmalloc_fix_flags(gfp_t flags)
 	return flags;
 }
 
- 
 void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
 {
 	void *ret = NULL;
@@ -645,7 +629,6 @@ static __always_inline void *__do_krealloc(const void *p, size_t new_size,
 	return ret;
 }
 
- 
 void *krealloc(const void *p, size_t new_size, gfp_t flags)
 {
 	void *ret;
@@ -668,7 +651,6 @@ void kfree_sensitive(const void *p)
 	kfree(p);
 }
 
- 
 size_t ksize(const void *objp)
 {
 	size_t size;
@@ -683,7 +665,6 @@ size_t ksize(const void *objp)
 	return size;
 }
 
- 
 
 int should_failslab(struct kmem_cache *s, gfp_t gfpflags)
 {

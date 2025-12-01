@@ -1,5 +1,3 @@
- 
- 
 #ifndef _UAPI_LINUX_RTC_H_
 #define _UAPI_LINUX_RTC_H_
 
@@ -7,7 +5,6 @@
 #include <linux/ioctl.h>
 #include <linux/types.h>
 
- 
 
 struct rtc_time {
 	int tm_sec;
@@ -21,14 +18,12 @@ struct rtc_time {
 	int tm_isdst;
 };
 
- 
 struct rtc_wkalrm {
 	unsigned char enabled;	 
 	unsigned char pending;   
 	struct rtc_time time;	 
 };
 
- 
 
 struct rtc_pll_info {
 	int pll_ctrl;        
@@ -51,7 +46,6 @@ struct rtc_param {
 	__u32 __pad;
 };
 
- 
 
 #define RTC_AIE_ON	_IO('p', 0x01)	 
 #define RTC_AIE_OFF	_IO('p', 0x02)	 
@@ -89,13 +83,11 @@ struct rtc_param {
 #define RTC_VL_READ	_IOR('p', 0x13, unsigned int)	 
 #define RTC_VL_CLR	_IO('p', 0x14)		 
 
- 
 #define RTC_IRQF 0x80	 
 #define RTC_PF 0x40	 
 #define RTC_AF 0x20	 
 #define RTC_UF 0x10	 
 
- 
 #define RTC_FEATURE_ALARM		0
 #define RTC_FEATURE_ALARM_RES_MINUTE	1
 #define RTC_FEATURE_NEED_WEEK_DAY	2
@@ -106,7 +98,6 @@ struct rtc_param {
 #define RTC_FEATURE_ALARM_WAKEUP_ONLY	7
 #define RTC_FEATURE_CNT			8
 
- 
 #define RTC_PARAM_FEATURES		0
 #define RTC_PARAM_CORRECTION		1
 #define RTC_PARAM_BACKUP_SWITCH_MODE	2

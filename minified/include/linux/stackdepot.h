@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_STACKDEPOT_H
 #define _LINUX_STACKDEPOT_H
@@ -12,7 +10,6 @@ depot_stack_handle_t __stack_depot_save(unsigned long *entries,
 					unsigned int nr_entries,
 					gfp_t gfp_flags, bool can_alloc);
 
- 
 static inline int stack_depot_init(void) { return 0; }
 
 static inline void stack_depot_want_early_init(void) { }

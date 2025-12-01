@@ -1,4 +1,3 @@
- 
 #ifndef __VDSO_TIME32_H
 #define __VDSO_TIME32_H
 

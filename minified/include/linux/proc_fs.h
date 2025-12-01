@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_PROC_FS_H
 #define _LINUX_PROC_FS_H
 
@@ -35,7 +33,6 @@ struct proc_ops {
 	unsigned long (*proc_get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 } __randomize_layout;
 
- 
 enum proc_hidepid {
 	HIDEPID_OFF	  = 0,
 	HIDEPID_NO_ACCESS = 1,
@@ -43,7 +40,6 @@ enum proc_hidepid {
 	HIDEPID_NOT_PTRACEABLE = 4,  
 };
 
- 
 enum proc_pidonly {
 	PROC_PIDONLY_OFF = 0,
 	PROC_PIDONLY_ON  = 1,
@@ -133,7 +129,6 @@ struct ns_common;
 int open_related_ns(struct ns_common *ns,
 		   struct ns_common *(*get_ns)(struct ns_common *ns));
 
- 
 static inline struct pid_namespace *proc_pid_ns(struct super_block *sb)
 {
 	return proc_sb_info(sb)->pid_ns;

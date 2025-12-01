@@ -1,11 +1,9 @@
- 
 #include <linux/bcd.h>
 #include <linux/delay.h>
 #include <linux/export.h>
 #include <linux/mc146818rtc.h>
 
 
- 
 bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
 			void *param)
 {
@@ -53,7 +51,6 @@ bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
 	return false;
 }
 
- 
 bool mc146818_does_rtc_work(void)
 {
 	return mc146818_avoid_UIP(NULL, NULL);
@@ -111,7 +108,6 @@ int mc146818_get_time(struct rtc_time *time)
 	return 0;
 }
 
- 
 static bool apply_amd_register_a_behavior(void)
 {
 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD ||
@@ -120,7 +116,6 @@ static bool apply_amd_register_a_behavior(void)
 	return false;
 }
 
- 
 int mc146818_set_time(struct rtc_time *time)
 {
 	unsigned long flags;

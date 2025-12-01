@@ -1,4 +1,3 @@
- 
 #include <linux/err.h>
 #include <linux/pci.h>
 #include <linux/io.h>
@@ -54,7 +53,6 @@ static void __iomem *__devm_ioremap(struct device *dev, resource_size_t offset,
 	return addr;
 }
 
- 
 void __iomem *devm_ioremap(struct device *dev, resource_size_t offset,
 			   resource_size_t size)
 {
@@ -124,7 +122,6 @@ __devm_ioremap_resource(struct device *dev, const struct resource *res,
 	return dest_ptr;
 }
 
- 
 void __iomem *devm_ioremap_resource(struct device *dev,
 				    const struct resource *res)
 {

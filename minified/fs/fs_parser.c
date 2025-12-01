@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/export.h>
 #include <linux/fs_context.h>
@@ -27,7 +25,6 @@ __lookup_constant(const struct constant_table *tbl, const char *name)
 	return NULL;
 }
 
- 
 int lookup_constant(const struct constant_table *tbl, const char *name, int not_found)
 {
 	const struct constant_table *p = __lookup_constant(tbl, name);
@@ -71,7 +68,6 @@ static const struct fs_parameter_spec *fs_lookup_key(
 	return other;
 }
 
- 
 int __fs_parse(struct p_log *log,
 	     const struct fs_parameter_spec *desc,
 	     struct fs_parameter *param,
@@ -102,7 +98,6 @@ int __fs_parse(struct p_log *log,
 	return p->opt;
 }
 
- 
 int fs_lookup_param(struct fs_context *fc,
 		    struct fs_parameter *param,
 		    bool want_bdev,

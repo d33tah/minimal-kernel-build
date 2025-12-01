@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/export.h>
 #include <linux/rtc.h>
@@ -18,7 +16,6 @@ int rtc_month_days(unsigned int month, unsigned int year)
 /* Stub: rtc_year_days not used externally */
 int rtc_year_days(unsigned int day, unsigned int month, unsigned int year) { BUG(); }
 
- 
 void rtc_time64_to_tm(time64_t time, struct rtc_time *tm)
 {
 	unsigned int secs;
@@ -81,7 +78,6 @@ void rtc_time64_to_tm(time64_t time, struct rtc_time *tm)
 	tm->tm_isdst = 0;
 }
 
- 
 int rtc_valid_tm(struct rtc_time *tm)
 {
 	if (tm->tm_year < 70 ||
@@ -98,7 +94,6 @@ int rtc_valid_tm(struct rtc_time *tm)
 	return 0;
 }
 
- 
 time64_t rtc_tm_to_time64(struct rtc_time *tm)
 {
 	return mktime64(((unsigned int)tm->tm_year + 1900), tm->tm_mon + 1,

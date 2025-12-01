@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_CGROUP_DEFS_H
 #define _LINUX_CGROUP_DEFS_H
 

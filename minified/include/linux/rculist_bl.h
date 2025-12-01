@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_RCULIST_BL_H
 #define _LINUX_RCULIST_BL_H
 
- 
 #include <linux/list_bl.h>
 #include <linux/rcupdate.h>
 
@@ -22,14 +20,12 @@ static inline struct hlist_bl_node *hlist_bl_first_rcu(struct hlist_bl_head *h)
 		((unsigned long)rcu_dereference_check(h->first, hlist_bl_is_locked(h)) & ~LIST_BL_LOCKMASK);
 }
 
- 
 static inline void hlist_bl_del_rcu(struct hlist_bl_node *n)
 {
 	__hlist_bl_del(n);
 	n->pprev = LIST_POISON2;
 }
 
- 
 static inline void hlist_bl_add_head_rcu(struct hlist_bl_node *n,
 					struct hlist_bl_head *h)
 {
@@ -46,7 +42,6 @@ static inline void hlist_bl_add_head_rcu(struct hlist_bl_node *n,
 	 
 	hlist_bl_set_first_rcu(h, n);
 }
- 
 #define hlist_bl_for_each_entry_rcu(tpos, pos, head, member)		\
 	for (pos = hlist_bl_first_rcu(head);				\
 		pos &&							\

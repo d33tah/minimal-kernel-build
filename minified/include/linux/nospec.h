@@ -1,7 +1,3 @@
- 
- 
- 
- 
 
 #ifndef _LINUX_NOSPEC_H
 #define _LINUX_NOSPEC_H
@@ -11,7 +7,6 @@
 
 struct task_struct;
 
- 
 #ifndef array_index_mask_nospec
 static inline unsigned long array_index_mask_nospec(unsigned long index,
 						    unsigned long size)
@@ -22,7 +17,6 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 }
 #endif
 
- 
 #define array_index_nospec(index, size)					\
 ({									\
 	typeof(index) _i = (index);					\
@@ -35,11 +29,9 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 	(typeof(_i)) (_i & _mask);					\
 })
 
- 
 int arch_prctl_spec_ctrl_get(struct task_struct *task, unsigned long which);
 int arch_prctl_spec_ctrl_set(struct task_struct *task, unsigned long which,
 			     unsigned long ctrl);
- 
 void arch_seccomp_spec_mitigate(struct task_struct *task);
 
 #endif  

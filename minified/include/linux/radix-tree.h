@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_RADIX_TREE_H
 #define _LINUX_RADIX_TREE_H
 
@@ -16,7 +14,6 @@
 #include <linux/xarray.h>
 #include <linux/local_lock.h>
 
- 
 #define radix_tree_root		xarray
 #define radix_tree_node		xa_node
 
@@ -28,7 +25,6 @@ struct radix_tree_preload {
 };
 DECLARE_PER_CPU(struct radix_tree_preload, radix_tree_preloads);
 
- 
 #define RADIX_TREE_ENTRY_MASK		3UL
 #define RADIX_TREE_INTERNAL_NODE	2UL
 
@@ -38,7 +34,6 @@ static inline bool radix_tree_is_internal_node(void *ptr)
 				RADIX_TREE_INTERNAL_NODE;
 }
 
- 
 
 #define RADIX_TREE_MAP_SHIFT	XA_CHUNK_SHIFT
 #define RADIX_TREE_MAP_SIZE	(1UL << RADIX_TREE_MAP_SHIFT)
@@ -51,9 +46,7 @@ static inline bool radix_tree_is_internal_node(void *ptr)
 #define RADIX_TREE_MAX_PATH (DIV_ROUND_UP(RADIX_TREE_INDEX_BITS, \
 					  RADIX_TREE_MAP_SHIFT))
 
- 
 #define ROOT_IS_IDR	((__force gfp_t)4)
- 
 #define ROOT_TAG_SHIFT	(__GFP_BITS_SHIFT)
 
 #define RADIX_TREE_INIT(name, mask)	XARRAY_INIT(name, mask)
@@ -68,7 +61,6 @@ static inline bool radix_tree_empty(const struct radix_tree_root *root)
 	return root->xa_head == NULL;
 }
 
- 
 struct radix_tree_iter {
 	unsigned long	index;
 	unsigned long	next_index;
@@ -76,28 +68,23 @@ struct radix_tree_iter {
 	struct radix_tree_node *node;
 };
 
- 
 
- 
 static inline void *radix_tree_deref_slot(void __rcu **slot)
 {
 	return rcu_dereference(*slot);
 }
 
- 
 static inline void *radix_tree_deref_slot_protected(void __rcu **slot,
 							spinlock_t *treelock)
 {
 	return rcu_dereference_protected(*slot, lockdep_is_held(treelock));
 }
 
- 
 static inline int radix_tree_deref_retry(void *arg)
 {
 	return unlikely(radix_tree_is_internal_node(arg));
 }
 
- 
 static inline int radix_tree_exception(void *arg)
 {
 	return unlikely((unsigned long)arg & RADIX_TREE_ENTRY_MASK);
@@ -157,7 +144,6 @@ enum {
 	RADIX_TREE_ITER_CONTIG   = 0x20,	 
 };
 
- 
 static __always_inline void __rcu **
 radix_tree_iter_init(struct radix_tree_iter *iter, unsigned long start)
 {
@@ -167,11 +153,9 @@ radix_tree_iter_init(struct radix_tree_iter *iter, unsigned long start)
 	return NULL;
 }
 
- 
 void __rcu **radix_tree_next_chunk(const struct radix_tree_root *,
 			     struct radix_tree_iter *iter, unsigned flags);
 
- 
 static inline void __rcu **
 radix_tree_iter_lookup(const struct radix_tree_root *root,
 			struct radix_tree_iter *iter, unsigned long index)
@@ -180,7 +164,6 @@ radix_tree_iter_lookup(const struct radix_tree_root *root,
 	return radix_tree_next_chunk(root, iter, RADIX_TREE_ITER_CONTIG);
 }
 
- 
 static inline __must_check
 void __rcu **radix_tree_iter_retry(struct radix_tree_iter *iter)
 {
@@ -195,18 +178,15 @@ __radix_tree_iter_add(struct radix_tree_iter *iter, unsigned long slots)
 	return iter->index + slots;
 }
 
- 
 void __rcu **__must_check radix_tree_iter_resume(void __rcu **slot,
 					struct radix_tree_iter *iter);
 
- 
 static __always_inline long
 radix_tree_chunk_size(struct radix_tree_iter *iter)
 {
 	return iter->next_index - iter->index;
 }
 
- 
 static __always_inline void __rcu **radix_tree_next_slot(void __rcu **slot,
 				struct radix_tree_iter *iter, unsigned flags)
 {
@@ -249,13 +229,11 @@ static __always_inline void __rcu **radix_tree_next_slot(void __rcu **slot,
 	return slot;
 }
 
- 
 #define radix_tree_for_each_slot(slot, root, iter, start)		\
 	for (slot = radix_tree_iter_init(iter, start) ;			\
 	     slot || (slot = radix_tree_next_chunk(root, iter, 0)) ;	\
 	     slot = radix_tree_next_slot(slot, iter, 0))
 
- 
 #define radix_tree_for_each_tagged(slot, root, iter, start, tag)	\
 	for (slot = radix_tree_iter_init(iter, start) ;			\
 	     slot || (slot = radix_tree_next_chunk(root, iter,		\

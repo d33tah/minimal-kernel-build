@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/export.h>
 #include <linux/sched.h>
@@ -15,11 +13,9 @@
 
 static void delay_loop(u64 __loops);
 
- 
 static void (*delay_fn)(u64) __ro_after_init = delay_loop;
 static void (*delay_halt_fn)(u64 start, u64 cycles) __ro_after_init;
 
- 
 static void delay_loop(u64 __loops)
 {
 	unsigned long loops = (unsigned long)__loops;
@@ -42,7 +38,6 @@ static void delay_loop(u64 __loops)
 	);
 }
 
- 
 static void delay_tsc(u64 cycles)
 {
 	u64 bclock, now;
@@ -71,7 +66,6 @@ static void delay_tsc(u64 cycles)
 	preempt_enable();
 }
 
- 
 static void delay_halt_tpause(u64 start, u64 cycles)
 {
 	u64 until = start + cycles;

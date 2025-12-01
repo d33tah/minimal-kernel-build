@@ -1,11 +1,8 @@
- 
- 
 
 #include <linux/klist.h>
 #include <linux/export.h>
 #include <linux/sched.h>
 
- 
 #define KNODE_DEAD		1LU
 #define KNODE_KLIST_MASK	~KNODE_DEAD
 
@@ -34,7 +31,6 @@ static void knode_kill(struct klist_node *knode)
 	*(unsigned long *)&knode->n_klist |= KNODE_DEAD;
 }
 
- 
 void klist_init(struct klist *k, void (*get)(struct klist_node *),
 		void (*put)(struct klist_node *))
 {
@@ -63,7 +59,6 @@ static void klist_node_init(struct klist *k, struct klist_node *n)
 /* Stub: klist_add_head not called externally */
 void klist_add_head(struct klist_node *n, struct klist *k) { }
 
- 
 void klist_add_tail(struct klist_node *n, struct klist *k)
 {
 	klist_node_init(k, n);
@@ -127,13 +122,11 @@ static void klist_put(struct klist_node *n, bool kill)
 		put(n);
 }
 
- 
 void klist_del(struct klist_node *n)
 {
 	klist_put(n, true);
 }
 
- 
 void klist_remove(struct klist_node *n)
 {
 	struct klist_waiter waiter;
@@ -156,13 +149,11 @@ void klist_remove(struct klist_node *n)
 	__set_current_state(TASK_RUNNING);
 }
 
- 
 int klist_node_attached(struct klist_node *n)
 {
 	return (n->n_klist != NULL);
 }
 
- 
 void klist_iter_init_node(struct klist *k, struct klist_iter *i,
 			  struct klist_node *n)
 {
@@ -172,13 +163,11 @@ void klist_iter_init_node(struct klist *k, struct klist_iter *i,
 		i->i_cur = n;
 }
 
- 
 void klist_iter_init(struct klist *k, struct klist_iter *i)
 {
 	klist_iter_init_node(k, i, NULL);
 }
 
- 
 void klist_iter_exit(struct klist_iter *i)
 {
 	if (i->i_cur) {
@@ -192,7 +181,6 @@ static struct klist_node *to_klist_node(struct list_head *n)
 	return container_of(n, struct klist_node, n_node);
 }
 
- 
 struct klist_node *klist_prev(struct klist_iter *i)
 {
 	void (*put)(struct klist_node *) = i->i_klist->put;
@@ -226,7 +214,6 @@ struct klist_node *klist_prev(struct klist_iter *i)
 	return i->i_cur;
 }
 
- 
 struct klist_node *klist_next(struct klist_iter *i)
 {
 	void (*put)(struct klist_node *) = i->i_klist->put;

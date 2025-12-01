@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_PM_WAKEUP_H
 #define _LINUX_PM_WAKEUP_H
@@ -12,7 +10,6 @@
 
 struct wake_irq;
 
- 
 struct wakeup_source {
 	const char 		*name;
 	int			id;

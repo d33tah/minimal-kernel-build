@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_MMU_NOTIFIER_H
 #define _LINUX_MMU_NOTIFIER_H
 
@@ -14,7 +13,6 @@ struct mmu_notifier;
 struct mmu_notifier_range;
 struct mmu_interval_notifier;
 
- 
 enum mmu_notifier_event {
 	MMU_NOTIFY_UNMAP = 0,
 	MMU_NOTIFY_CLEAR,

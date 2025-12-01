@@ -1,4 +1,3 @@
- 
 #include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/string.h>
@@ -29,14 +28,12 @@
 #include "internal.h"
 #include "swap.h"
 
- 
 void kfree_const(const void *x)
 {
 	if (!is_kernel_rodata((unsigned long)x))
 		kfree(x);
 }
 
- 
 char *kstrdup(const char *s, gfp_t gfp)
 {
 	size_t len;
@@ -52,7 +49,6 @@ char *kstrdup(const char *s, gfp_t gfp)
 	return buf;
 }
 
- 
 const char *kstrdup_const(const char *s, gfp_t gfp)
 {
 	if (is_kernel_rodata((unsigned long)s))
@@ -61,7 +57,6 @@ const char *kstrdup_const(const char *s, gfp_t gfp)
 	return kstrdup(s, gfp);
 }
 
- 
 char *kstrndup(const char *s, size_t max, gfp_t gfp)
 {
 	size_t len;
@@ -79,7 +74,6 @@ char *kstrndup(const char *s, size_t max, gfp_t gfp)
 	return buf;
 }
 
- 
 void *kmemdup(const void *src, size_t len, gfp_t gfp)
 {
 	void *p;
@@ -90,7 +84,6 @@ void *kmemdup(const void *src, size_t len, gfp_t gfp)
 	return p;
 }
 
- 
 char *kmemdup_nul(const char *s, size_t len, gfp_t gfp)
 {
 	char *buf;
@@ -106,7 +99,6 @@ char *kmemdup_nul(const char *s, size_t len, gfp_t gfp)
 	return buf;
 }
 
- 
 void *memdup_user(const void __user *src, size_t len)
 {
 	void *p;
@@ -129,7 +121,6 @@ void *vmemdup_user(const void __user *src, size_t len)
 	return ERR_PTR(-ENOMEM);
 }
 
- 
 char *strndup_user(const char __user *s, long n)
 {
 	char *p;
@@ -191,11 +182,9 @@ void __vma_unlink_list(struct mm_struct *mm, struct vm_area_struct *vma)
 		next->vm_prev = prev;
 }
 
- 
 /* Stub: vma_is_stack_for_current not used in minimal kernel */
 int vma_is_stack_for_current(struct vm_area_struct *vma) { return 0; }
 
- 
 void vma_set_file(struct vm_area_struct *vma, struct file *file)
 {
 	 
@@ -220,7 +209,6 @@ unsigned long randomize_stack_top(unsigned long stack_top)
 	return PAGE_ALIGN(stack_top) - random_variable;
 }
 
- 
 unsigned long randomize_page(unsigned long start, unsigned long range)
 {
 	if (!PAGE_ALIGNED(start)) {
@@ -295,7 +283,6 @@ unsigned long vm_mmap(struct file *file, unsigned long addr,
 	return vm_mmap_pgoff(file, addr, len, prot, flag, offset >> PAGE_SHIFT);
 }
 
- 
 void *kvmalloc_node(size_t size, gfp_t flags, int node)
 {
 	gfp_t kmalloc_flags = flags;
@@ -330,7 +317,6 @@ void *kvmalloc_node(size_t size, gfp_t flags, int node)
 			node, __builtin_return_address(0));
 }
 
- 
 void kvfree(const void *addr)
 {
 	if (is_vmalloc_addr(addr))
@@ -360,13 +346,11 @@ void *__vcalloc(size_t n, size_t size, gfp_t flags) { return NULL; }
 /* Stub: vcalloc not used in minimal kernel */
 void *vcalloc(size_t n, size_t size) { return NULL; }
 
- 
 void *page_rmapping(struct page *page)
 {
 	return folio_raw_mapping(page_folio(page));
 }
 
- 
 bool folio_mapped(struct folio *folio)
 {
 	long i, nr;
@@ -395,7 +379,6 @@ struct anon_vma *folio_anon_vma(struct folio *folio)
 	return (void *)(mapping - PAGE_MAPPING_ANON);
 }
 
- 
 struct address_space *folio_mapping(struct folio *folio)
 {
 	struct address_space *mapping;
@@ -414,7 +397,6 @@ struct address_space *folio_mapping(struct folio *folio)
 	return (void *)((unsigned long)mapping & ~PAGE_MAPPING_FLAGS);
 }
 
- 
 int __page_mapcount(struct page *page)
 {
 	int ret;
@@ -430,7 +412,6 @@ int __page_mapcount(struct page *page)
 	return ret;
 }
 
- 
 int folio_mapcount(struct folio *folio)
 {
 	int i, compound, nr, ret;
@@ -453,7 +434,6 @@ int folio_mapcount(struct folio *folio)
 	return ret;
 }
 
- 
 /* Stub: folio_copy not used in minimal kernel */
 void folio_copy(struct folio *dst, struct folio *src)
 {
@@ -474,7 +454,6 @@ int overcommit_policy_handler(struct ctl_table *table, int write, void *buffer,
 int overcommit_kbytes_handler(struct ctl_table *table, int write, void *buffer,
 		size_t *lenp, loff_t *ppos) { return 0; }
 
- 
 unsigned long vm_commit_limit(void)
 {
 	unsigned long allowed;
@@ -489,13 +468,11 @@ unsigned long vm_commit_limit(void)
 	return allowed;
 }
 
- 
 struct percpu_counter vm_committed_as ____cacheline_aligned_in_smp;
 
 /* Stub: vm_memory_committed not used in minimal kernel */
 unsigned long vm_memory_committed(void) { return 0; }
 
- 
 int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
 {
 	long allowed;
@@ -532,7 +509,6 @@ error:
 	return -ENOMEM;
 }
 
- 
 /* Stub: get_cmdline not used in minimal kernel */
 int get_cmdline(struct task_struct *task, char *buffer, int buflen) { return 0; }
 
@@ -550,7 +526,6 @@ int __weak memcmp_pages(struct page *page1, struct page *page2)
 }
 
 
- 
 /* Stub: page_offline functions not needed for minimal kernel without memory hotplug */
 void page_offline_freeze(void) { }
 void page_offline_thaw(void) { }

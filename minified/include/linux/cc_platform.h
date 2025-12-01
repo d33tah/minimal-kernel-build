@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_CC_PLATFORM_H
 #define _LINUX_CC_PLATFORM_H

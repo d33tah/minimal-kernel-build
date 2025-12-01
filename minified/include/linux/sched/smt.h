@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SCHED_SMT_H
 #define _LINUX_SCHED_SMT_H
 

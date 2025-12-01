@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_MQUEUE_H
 #define _LINUX_MQUEUE_H
 

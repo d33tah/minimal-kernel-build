@@ -1,4 +1,3 @@
- 
 #ifndef LINUX_EXPORTFS_H
 #define LINUX_EXPORTFS_H 1
 
@@ -11,10 +10,8 @@ struct iomap;
 struct super_block;
 struct vfsmount;
 
- 
 #define MAX_HANDLE_SZ 128
 
- 
 enum fid_type {
 	FILEID_ROOT = 0,
 };
@@ -39,7 +36,6 @@ struct fid {
 	};
 };
 
- 
 
 struct export_operations {
 	int (*encode_fh)(struct inode *inode, __u32 *fh, int *max_len,
@@ -81,7 +77,6 @@ extern struct dentry *exportfs_decode_fh(struct vfsmount *mnt, struct fid *fid,
 	int fh_len, int fileid_type, int (*acceptable)(void *, struct dentry *),
 	void *context);
 
- 
 extern struct dentry *generic_fh_to_dentry(struct super_block *sb,
 	struct fid *fid, int fh_len, int fh_type,
 	struct inode *(*get_inode) (struct super_block *sb, u64 ino, u32 gen));

@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef PINCTRL_DEVINFO_H
 #define PINCTRL_DEVINFO_H
@@ -7,7 +5,6 @@
 
 struct device;
 
- 
 
 static inline int pinctrl_bind_pins(struct device *dev)
 {

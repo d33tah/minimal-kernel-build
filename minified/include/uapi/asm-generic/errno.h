@@ -1,4 +1,3 @@
- 
 #ifndef _ASM_GENERIC_ERRNO_H
 #define _ASM_GENERIC_ERRNO_H
 
@@ -8,7 +7,6 @@
 #define	ENAMETOOLONG	36	 
 #define	ENOLCK		37	 
 
- 
 #define	ENOSYS		38	 
 
 #define	ENOTEMPTY	39	 
@@ -106,7 +104,6 @@
 #define	EKEYREVOKED	128	 
 #define	EKEYREJECTED	129	 
 
- 
 #define	EOWNERDEAD	130	 
 #define	ENOTRECOVERABLE	131	 
 

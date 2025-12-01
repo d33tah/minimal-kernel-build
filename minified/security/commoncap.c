@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/capability.h>
 #include <linux/audit.h>
@@ -23,7 +21,6 @@
 #include <linux/personality.h>
 #include <linux/mnt_idmapping.h>
 
- 
 
 int cap_capable(const struct cred *cred, struct user_namespace *targ_ns,
 		int cap, unsigned int opts)

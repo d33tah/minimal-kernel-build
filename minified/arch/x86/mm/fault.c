@@ -1,5 +1,3 @@
- 
- 
 #include <linux/sched.h>		 
 #include <linux/sched/task_stack.h>	 
 #include <linux/kdebug.h>		 
@@ -38,7 +36,6 @@ static __always_inline bool kvm_handle_async_pf(struct pt_regs *regs, u32 token)
 
 #include <asm/trace/exceptions.h>
 
- 
 static nokprobe_inline int
 kmmio_fault(struct pt_regs *regs, unsigned long addr)
 {
@@ -99,7 +96,6 @@ static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
 	return pmd_k;
 }
 
- 
 static noinline int vmalloc_fault(unsigned long address)
 {
 	unsigned long pgd_paddr;
@@ -156,13 +152,11 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
 	return 0;
 }
 
- 
 static int is_errata100(struct pt_regs *regs, unsigned long address)
 {
 	return 0;
 }
 
- 
 static int is_f00f_bug(struct pt_regs *regs, unsigned long error_code,
 		       unsigned long address)
 {
@@ -245,7 +239,6 @@ kernelmode_fixup_or_oops(struct pt_regs *regs, unsigned long error_code,
 	page_fault_oops(regs, error_code, address);
 }
 
- 
 static inline void
 show_signal_msg(struct pt_regs *regs, unsigned long error_code,
 		unsigned long address, struct task_struct *tsk)
@@ -253,7 +246,6 @@ show_signal_msg(struct pt_regs *regs, unsigned long error_code,
 	/* Stub: verbose segfault messages not needed for minimal kernel */
 }
 
- 
 static bool is_vsyscall_vaddr(unsigned long vaddr)
 {
 	return unlikely((vaddr & PAGE_MASK) == VSYSCALL_ADDR);
@@ -397,7 +389,6 @@ static int spurious_kernel_fault_check(unsigned long error_code, pte_t *pte)
 	return 1;
 }
 
- 
 static noinline int
 spurious_kernel_fault(unsigned long error_code, unsigned long address)
 {
@@ -502,7 +493,6 @@ bool fault_in_kernel_space(unsigned long address)
 	return address >= TASK_SIZE_MAX;
 }
 
- 
 static void
 do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code,
 		   unsigned long address)
@@ -532,7 +522,6 @@ do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code,
 }
 NOKPROBE_SYMBOL(do_kern_addr_fault);
 
- 
 static inline
 void do_user_addr_fault(struct pt_regs *regs,
 			unsigned long error_code,

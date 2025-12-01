@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef __LINUX_CPUFEATURE_H
 #define __LINUX_CPUFEATURE_H
@@ -9,7 +7,6 @@
 #include <linux/mod_devicetable.h>
 #include <asm/cpufeature.h>
 
- 
 
 #ifndef CPU_FEATURE_TYPEFMT
 #define CPU_FEATURE_TYPEFMT	"%s"
@@ -19,7 +16,6 @@
 #define CPU_FEATURE_TYPEVAL	ELF_PLATFORM
 #endif
 
- 
 #define module_cpu_feature_match(x, __initfunc)			\
 static struct cpu_feature const __maybe_unused cpu_feature_match_ ## x[] = \
 	{ { .feature = cpu_feature(x) }, { } };			\

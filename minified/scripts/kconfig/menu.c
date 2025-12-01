@@ -1,5 +1,3 @@
- 
- 
 
 #include <ctype.h>
 #include <stdarg.h>
@@ -74,7 +72,6 @@ void menu_end_menu(void)
 	current_menu = current_menu->parent;
 }
 
- 
 static struct expr *rewrite_m(struct expr *e)
 {
 	if (!e)
@@ -478,7 +475,6 @@ bool menu_has_prompt(struct menu *menu)
 	return true;
 }
 
- 
 bool menu_is_empty(struct menu *menu)
 {
 	struct menu *child;
@@ -661,7 +657,6 @@ static void get_symbol_props_str(struct gstr *r, struct symbol *sym,
 		str_append(r, "\n");
 }
 
- 
 static void get_symbol_str(struct gstr *r, struct symbol *sym,
 		    struct list_head *head)
 {

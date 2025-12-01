@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_MAGIC_H__
 #define __LINUX_MAGIC_H__
 
@@ -95,7 +94,6 @@
 #define AAFS_MAGIC		0x5a3c69f0
 #define ZONEFS_MAGIC		0x5a4f4653
 
- 
 #define UDF_SUPER_MAGIC		0x15013346
 #define BALLOON_KVM_MAGIC	0x13661366
 #define ZSMALLOC_MAGIC		0x58295829

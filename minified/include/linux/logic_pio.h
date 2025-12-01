@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef __LINUX_LOGIC_PIO_H
 #define __LINUX_LOGIC_PIO_H

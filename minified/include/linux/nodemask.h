@@ -1,8 +1,6 @@
- 
 #ifndef __LINUX_NODEMASK_H
 #define __LINUX_NODEMASK_H
 
- 
 
 #include <linux/threads.h>
 #include <linux/bitmap.h>
@@ -12,7 +10,6 @@
 typedef struct { DECLARE_BITMAP(bits, MAX_NUMNODES); } nodemask_t;
 extern nodemask_t _unused_nodemask_arg_;
 
- 
 #define nodemask_pr_args(maskp)	__nodemask_pr_numnodes(maskp), \
 				__nodemask_pr_bits(maskp)
 static inline unsigned int __nodemask_pr_numnodes(const nodemask_t *m)
@@ -24,7 +21,6 @@ static inline const unsigned long *__nodemask_pr_bits(const nodemask_t *m)
 	return m ? m->bits : NULL;
 }
 
- 
 #define node_set(node, dst) __node_set((node), &(dst))
 static __always_inline void __node_set(int node, volatile nodemask_t *dstp)
 {
@@ -49,7 +45,6 @@ static inline void __nodes_clear(nodemask_t *dstp, unsigned int nbits)
 	bitmap_zero(dstp->bits, nbits);
 }
 
- 
 #define node_isset(node, nodemask) test_bit((node), (nodemask).bits)
 
 #define node_test_and_set(node, nodemask) \
@@ -133,7 +128,6 @@ static inline unsigned int __next_node(int n, const nodemask_t *srcp)
 	return min_t(unsigned int, MAX_NUMNODES, find_next_bit(srcp->bits, MAX_NUMNODES, n+1));
 }
 
- 
 #define next_node_in(n, src) __next_node_in((n), &(src))
 unsigned int __next_node_in(int node, const nodemask_t *srcp);
 
@@ -187,7 +181,6 @@ static inline int __node_remap(int oldbit,
 	for ((node) = 0; (node) < 1 && !nodes_empty(mask); (node)++)
 #endif  
 
- 
 enum node_states {
 	N_POSSIBLE,		 
 	N_ONLINE,		 
@@ -199,7 +192,6 @@ enum node_states {
 	NR_NODE_STATES
 };
 
- 
 
 extern nodemask_t node_states[NR_NODE_STATES];
 
@@ -298,7 +290,6 @@ static inline int num_node_state(enum node_states state)
 #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
 #define for_each_online_node(node) for_each_node_state(node, N_ONLINE)
 
- 
 #if NODES_SHIFT > 8  
 #define NODEMASK_ALLOC(type, name, gfp_flags)	\
 			type *name = kmalloc(sizeof(*name), gfp_flags)

@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_RANGE_H
 #define _LINUX_RANGE_H
 #include <linux/types.h>

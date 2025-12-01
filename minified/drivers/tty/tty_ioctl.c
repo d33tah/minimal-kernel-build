@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/types.h>
 #include <linux/termios.h>
@@ -20,7 +18,6 @@
 #include <asm/io.h>
 #include <linux/uaccess.h>
 
- 
 unsigned int tty_chars_in_buffer(struct tty_struct *tty)
 {
 	if (tty->ops->chars_in_buffer)
@@ -28,7 +25,6 @@ unsigned int tty_chars_in_buffer(struct tty_struct *tty)
 	return 0;
 }
 
- 
 unsigned int tty_write_room(struct tty_struct *tty)
 {
 	if (tty->ops->write_room)
@@ -36,14 +32,12 @@ unsigned int tty_write_room(struct tty_struct *tty)
 	return 2048;
 }
 
- 
 void tty_driver_flush_buffer(struct tty_struct *tty)
 {
 	if (tty->ops->flush_buffer)
 		tty->ops->flush_buffer(tty);
 }
 
- 
 void tty_unthrottle(struct tty_struct *tty)
 {
 	down_write(&tty->termios_rwsem);
@@ -54,7 +48,6 @@ void tty_unthrottle(struct tty_struct *tty)
 	up_write(&tty->termios_rwsem);
 }
 
- 
 int tty_throttle_safe(struct tty_struct *tty)
 {
 	int ret = 0;
@@ -72,7 +65,6 @@ int tty_throttle_safe(struct tty_struct *tty)
 	return ret;
 }
 
- 
 int tty_unthrottle_safe(struct tty_struct *tty)
 {
 	int ret = 0;
@@ -90,13 +82,11 @@ int tty_unthrottle_safe(struct tty_struct *tty)
 	return ret;
 }
 
- 
 void tty_wait_until_sent(struct tty_struct *tty, long timeout)
 {
 	 
 }
 
- 
 void tty_termios_copy_hw(struct ktermios *new, struct ktermios *old)
 {
 	new->c_cflag &= HUPCL | CREAD | CLOCAL;
@@ -105,7 +95,6 @@ void tty_termios_copy_hw(struct ktermios *new, struct ktermios *old)
 	new->c_ospeed = old->c_ospeed;
 }
 
- 
 int tty_termios_hw_change(const struct ktermios *a, const struct ktermios *b)
 {
 	if (a->c_ispeed != b->c_ispeed || a->c_ospeed != b->c_ospeed)
@@ -115,7 +104,6 @@ int tty_termios_hw_change(const struct ktermios *a, const struct ktermios *b)
 	return 0;
 }
 
- 
 unsigned char tty_get_char_size(unsigned int cflag)
 {
 	switch (cflag & CSIZE) {
@@ -127,7 +115,6 @@ unsigned char tty_get_char_size(unsigned int cflag)
 	}
 }
 
- 
 unsigned char tty_get_frame_size(unsigned int cflag)
 {
 	unsigned char bits = 2 + tty_get_char_size(cflag);
@@ -136,28 +123,24 @@ unsigned char tty_get_frame_size(unsigned int cflag)
 	return bits;
 }
 
- 
 /* Stub: tty_set_termios not used externally */
 int tty_set_termios(struct tty_struct *tty, struct ktermios *new_termios)
 {
 	return 0;
 }
 
- 
 int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 {
 	 
 	return -ENOIOCTLCMD;
 }
 
- 
 /* Stub: tty_perform_flush not used externally */
 int tty_perform_flush(struct tty_struct *tty, unsigned long arg)
 {
 	return 0;
 }
 
- 
 int n_tty_ioctl_helper(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 {
 	 

@@ -1,5 +1,3 @@
- 
- 
 #include <asm/fpu/api.h>
 #include <asm/fpu/regset.h>
 #include <asm/fpu/sched.h>
@@ -22,20 +20,15 @@
 #include <asm/trace/fpu.h>
 
 
- 
 struct fpu_state_config	fpu_kernel_cfg __ro_after_init;
 struct fpu_state_config fpu_user_cfg __ro_after_init;
 
- 
 struct fpstate init_fpstate __ro_after_init;
 
- 
 static DEFINE_PER_CPU(bool, in_kernel_fpu);
 
- 
 DEFINE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 
- 
 bool irq_fpu_usable(void)
 {
 	if (WARN_ON_ONCE(in_nmi()))
@@ -53,7 +46,6 @@ bool irq_fpu_usable(void)
 	return !softirq_count();
 }
 
- 
 static void update_avx_timestamp(struct fpu *fpu)
 {
 
@@ -63,7 +55,6 @@ static void update_avx_timestamp(struct fpu *fpu)
 		fpu->avx512_timestamp = jiffies;
 }
 
- 
 void save_fpregs_to_fpstate(struct fpu *fpu)
 {
 	if (likely(use_xsave())) {
@@ -148,7 +139,6 @@ void fpu_free_guest_fpstate(struct fpu_guest *gfpu)
 	/* Stub: KVM guest FPU not needed for minimal kernel */
 }
 
- 
 int fpu_enable_guest_xfd_features(struct fpu_guest *guest_fpu, u64 xfeatures)
 {
 	/* Stub: KVM guest FPU not needed for minimal kernel */
@@ -208,7 +198,6 @@ void kernel_fpu_end(void)
 	preempt_enable();
 }
 
- 
 void fpu_sync_fpstate(struct fpu *fpu)
 {
 	WARN_ON_FPU(fpu != &current->thread.fpu);
@@ -238,7 +227,6 @@ static inline void fpstate_init_fxstate(struct fpstate *fpstate)
 	fpstate->regs.fxsave.mxcsr = MXCSR_DEFAULT;
 }
 
- 
 static inline void fpstate_init_fstate(struct fpstate *fpstate)
 {
 	fpstate->regs.fsave.cwd = 0xffff037fu;
@@ -247,7 +235,6 @@ static inline void fpstate_init_fstate(struct fpstate *fpstate)
 	fpstate->regs.fsave.fos = 0xffff0000u;
 }
 
- 
 void fpstate_init_user(struct fpstate *fpstate)
 {
 	if (!cpu_feature_enabled(X86_FEATURE_FPU)) {
@@ -300,7 +287,6 @@ static inline void fpu_inherit_perms(struct fpu *dst_fpu)
 	}
 }
 
- 
 int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 {
 	struct fpu *src_fpu = &current->thread.fpu;
@@ -347,7 +333,6 @@ int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 	return 0;
 }
 
- 
 /* Stub: fpu_thread_struct_whitelist not used externally */
 void fpu_thread_struct_whitelist(unsigned long *offset, unsigned long *size)
 {
@@ -355,7 +340,6 @@ void fpu_thread_struct_whitelist(unsigned long *offset, unsigned long *size)
 	*size = 0;
 }
 
- 
 void fpu__drop(struct fpu *fpu)
 {
 	preempt_disable();
@@ -373,7 +357,6 @@ void fpu__drop(struct fpu *fpu)
 	preempt_enable();
 }
 
- 
 static inline void restore_fpregs_from_init_fpstate(u64 features_mask)
 {
 	if (use_xsave())
@@ -386,7 +369,6 @@ static inline void restore_fpregs_from_init_fpstate(u64 features_mask)
 	pkru_write_default();
 }
 
- 
 static void fpu_reset_fpregs(void)
 {
 	struct fpu *fpu = &current->thread.fpu;
@@ -399,7 +381,6 @@ static void fpu_reset_fpregs(void)
 	fpregs_unlock();
 }
 
- 
 void fpu__clear_user_states(struct fpu *fpu)
 {
 	WARN_ON_FPU(fpu != &current->thread.fpu);
@@ -429,7 +410,6 @@ void fpu_flush_thread(void)
 	fpstate_reset(&current->thread.fpu);
 	fpu_reset_fpregs();
 }
- 
 void switch_fpu_return(void)
 {
 	if (!static_cpu_has(X86_FEATURE_FPU))
@@ -448,7 +428,6 @@ void fpregs_mark_activate(void)
 	clear_thread_flag(TIF_NEED_FPU_LOAD);
 }
 
- 
 
 int fpu__exception_code(struct fpu *fpu, int trap_nr)
 {

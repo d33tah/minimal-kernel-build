@@ -1,5 +1,3 @@
- 
- 
 #ifndef __LINUX_UIO_H
 #define __LINUX_UIO_H
 
@@ -103,7 +101,6 @@ static inline unsigned char iov_iter_rw(const struct iov_iter *i)
 	return i->data_source ? WRITE : READ;
 }
 
- 
 static inline size_t iov_length(const struct iovec *iov, unsigned long nr_segs)
 {
 	unsigned long seg;
@@ -224,7 +221,6 @@ static inline size_t iov_iter_count(const struct iov_iter *i)
 	return i->count;
 }
 
- 
 static inline void iov_iter_truncate(struct iov_iter *i, u64 count)
 {
 	 
@@ -232,7 +228,6 @@ static inline void iov_iter_truncate(struct iov_iter *i, u64 count)
 		i->count = count;
 }
 
- 
 static inline void iov_iter_reexpand(struct iov_iter *i, size_t count)
 {
 	i->count = count;

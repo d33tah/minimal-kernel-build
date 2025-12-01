@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_ERR_H
 #define _LINUX_ERR_H
 
@@ -7,7 +6,6 @@
 
 #include <asm/errno.h>
 
- 
 #define MAX_ERRNO	4095
 
 #ifndef __ASSEMBLY__
@@ -34,7 +32,6 @@ static inline bool __must_check IS_ERR_OR_NULL(__force const void *ptr)
 	return unlikely(!ptr) || IS_ERR_VALUE((unsigned long)ptr);
 }
 
- 
 static inline void * __must_check ERR_CAST(__force const void *ptr)
 {
 	 

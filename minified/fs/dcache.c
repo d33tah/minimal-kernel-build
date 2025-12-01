@@ -1,4 +1,3 @@
- 
 
 #include <linux/ratelimit.h>
 #include <linux/string.h>
@@ -788,7 +787,6 @@ void d_invalidate(struct dentry *dentry)
 	}
 }
 
- 
 static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 {
 	struct dentry *dentry;
@@ -976,7 +974,6 @@ static void __d_instantiate(struct dentry *dentry, struct inode *inode)
 	spin_unlock(&dentry->d_lock);
 }
 
- 
 void d_instantiate(struct dentry *entry, struct inode * inode)
 {
 	BUG_ON(!hlist_unhashed(&entry->d_u.d_alias));
@@ -1167,9 +1164,7 @@ struct dentry *d_hash_and_lookup(struct dentry *dir, struct qstr *name)
 	return d_lookup(dir, name);
 }
 
- 
 
- 
 void d_delete(struct dentry * dentry)
 {
 	struct inode *inode = dentry->d_inode;
@@ -1196,7 +1191,6 @@ static void __d_rehash(struct dentry *entry)
 	hlist_bl_unlock(b);
 }
 
- 
 void d_rehash(struct dentry * entry)
 {
 	spin_lock(&entry->d_lock);

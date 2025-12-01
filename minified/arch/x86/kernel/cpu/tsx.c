@@ -1,5 +1,3 @@
- 
- 
 #include <linux/cpu.h>
 #include <asm/processor.h>
 

@@ -1,5 +1,3 @@
- 
- 
 #include <linux/mm.h>
 #include <linux/err.h>
 #include <linux/sched.h>
@@ -166,7 +164,6 @@ static const struct vm_special_mapping vvar_mapping = {
 	.fault = vvar_fault,
 };
 
- 
 static int map_vdso(const struct vdso_image *image, unsigned long addr)
 {
 	struct mm_struct *mm = current->mm;

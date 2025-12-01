@@ -1,5 +1,3 @@
- 
- 
 
 #define ElfW(type)		_ElfW(ELF_BITS, type)
 #define _ElfW(bits, type)	__ElfW(bits, type)
@@ -46,14 +44,12 @@ struct section {
 static struct section *secs;
 
 static const char * const sym_regex_kernel[S_NSYMTYPES] = {
- 
 	[S_ABS] =
 	"^(xen_irq_disable_direct_reloc$|"
 	"xen_save_fl_direct_reloc$|"
 	"VDSO|"
 	"__crc_)",
 
- 
 	[S_REL] =
 	"^(__init_(begin|end)|"
 	"__x86_cpu_dev_(start|end)|"
@@ -82,15 +78,12 @@ static const char * const sym_regex_kernel[S_NSYMTYPES] = {
 
 
 static const char * const sym_regex_realmode[S_NSYMTYPES] = {
- 
 	[S_REL] =
 	"^pa_",
 
- 
 	[S_SEG] =
 	"^real_mode_seg$",
 
- 
 	[S_LIN] =
 	"^pa_",
 };
@@ -718,7 +711,6 @@ static void walk_relocs(int (*process)(struct section *sec, Elf_Rel *rel,
 	}
 }
 
- 
 static int per_cpu_shndx	= -1;
 static Elf_Addr per_cpu_load_addr;
 
@@ -745,7 +737,6 @@ static void percpu_init(void)
 
 #if ELF_BITS == 64
 
- 
 static int is_percpu_sym(ElfW(Sym) *sym, const char *symname)
 {
 	int shndx = sym_index(sym);
@@ -1032,7 +1023,6 @@ static void emit_relocs(int as_text, int use_real_mode)
 	}
 }
 
- 
 static int do_reloc_info(struct section *sec, Elf_Rel *rel, ElfW(Sym) *sym,
 				const char *symname)
 {

@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/export.h>
 #include <linux/mutex.h>
@@ -34,14 +32,12 @@ static int init_srcu_struct_fields(struct srcu_struct *ssp)
 }
 
 
- 
 int init_srcu_struct(struct srcu_struct *ssp)
 {
 	return init_srcu_struct_fields(ssp);
 }
 
 
- 
 void cleanup_srcu_struct(struct srcu_struct *ssp)
 {
 	WARN_ON(ssp->srcu_lock_nesting[0] || ssp->srcu_lock_nesting[1]);
@@ -54,7 +50,6 @@ void cleanup_srcu_struct(struct srcu_struct *ssp)
 	WARN_ON(ssp->srcu_idx & 0x1);
 }
 
- 
 void __srcu_read_unlock(struct srcu_struct *ssp, int idx)
 {
 	int newval = READ_ONCE(ssp->srcu_lock_nesting[idx]) - 1;
@@ -64,7 +59,6 @@ void __srcu_read_unlock(struct srcu_struct *ssp, int idx)
 		swake_up_one(&ssp->srcu_wq);
 }
 
- 
 void srcu_drive_gp(struct work_struct *wp)
 {
 	int idx;
@@ -121,7 +115,6 @@ static void srcu_gp_start_if_needed(struct srcu_struct *ssp)
 	}
 }
 
- 
 void call_srcu(struct srcu_struct *ssp, struct rcu_head *rhp,
 	       rcu_callback_t func)
 {
@@ -136,7 +129,6 @@ void call_srcu(struct srcu_struct *ssp, struct rcu_head *rhp,
 	srcu_gp_start_if_needed(ssp);
 }
 
- 
 void synchronize_srcu(struct srcu_struct *ssp)
 {
 	struct rcu_synchronize rs;
@@ -148,7 +140,6 @@ void synchronize_srcu(struct srcu_struct *ssp)
 	destroy_rcu_head_on_stack(&rs.head);
 }
 
- 
 unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp)
 {
 	unsigned long ret;
@@ -159,7 +150,6 @@ unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp)
 	return ret & USHRT_MAX;
 }
 
- 
 unsigned long start_poll_synchronize_srcu(struct srcu_struct *ssp)
 {
 	unsigned long ret = get_state_synchronize_srcu(ssp);
@@ -168,7 +158,6 @@ unsigned long start_poll_synchronize_srcu(struct srcu_struct *ssp)
 	return ret;
 }
 
- 
 bool poll_state_synchronize_srcu(struct srcu_struct *ssp, unsigned long cookie)
 {
 	bool ret = USHORT_CMP_GE(READ_ONCE(ssp->srcu_idx), cookie);
@@ -177,13 +166,11 @@ bool poll_state_synchronize_srcu(struct srcu_struct *ssp, unsigned long cookie)
 	return ret;
 }
 
- 
 void __init rcu_scheduler_starting(void)
 {
 	rcu_scheduler_active = RCU_SCHEDULER_RUNNING;
 }
 
- 
 void __init srcu_init(void)
 {
 	struct srcu_struct *ssp;

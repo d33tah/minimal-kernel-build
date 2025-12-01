@@ -1,4 +1,3 @@
- 
 #include <linux/mount.h>
 #include <linux/pseudo_fs.h>
 #include <linux/file.h>
@@ -14,7 +13,6 @@
 
 #include "internal.h"
 
- 
 
 const struct dentry_operations ns_dentry_operations = {
 	.d_delete	= always_delete_dentry,

@@ -1,14 +1,10 @@
- 
- 
 
- 
 
 #include "boot.h"
 #include "video.h"
 
 static __videocard video_bios;
 
- 
 static int set_bios_mode(u8 mode);
 
 static int bios_set_mode(struct mode_info *mi)

@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _DEVICE_CLASS_H_
 #define _DEVICE_CLASS_H_
@@ -12,7 +10,6 @@
 struct device;
 struct fwnode_handle;
 
- 
 struct class {
 	const char		*name;
 	struct module		*owner;
@@ -50,7 +47,6 @@ extern int __must_check __class_register(struct class *class,
 					 struct lock_class_key *key);
 extern void class_unregister(struct class *class);
 
- 
 #define class_register(class)			\
 ({						\
 	static struct lock_class_key __key;	\
@@ -79,21 +75,18 @@ extern struct device *class_find_device(struct class *class,
 					struct device *start, const void *data,
 					int (*match)(struct device *, const void *));
 
- 
 static inline struct device *class_find_device_by_name(struct class *class,
 						       const char *name)
 {
 	return class_find_device(class, NULL, name, device_match_name);
 }
 
- 
 static inline struct device *
 class_find_device_by_of_node(struct class *class, const struct device_node *np)
 {
 	return class_find_device(class, NULL, np, device_match_of_node);
 }
 
- 
 static inline struct device *
 class_find_device_by_fwnode(struct class *class,
 			    const struct fwnode_handle *fwnode)
@@ -101,7 +94,6 @@ class_find_device_by_fwnode(struct class *class,
 	return class_find_device(class, NULL, fwnode, device_match_fwnode);
 }
 
- 
 static inline struct device *class_find_device_by_devt(struct class *class,
 						       dev_t devt)
 {
@@ -148,13 +140,11 @@ static inline void class_remove_file(struct class *class,
 	return class_remove_file_ns(class, attr, NULL);
 }
 
- 
 struct class_attribute_string {
 	struct class_attribute attr;
 	char *str;
 };
 
- 
 #define _CLASS_ATTR_STRING(_name, _mode, _str) \
 	{ __ATTR(_name, _mode, show_class_attr_string, NULL), _str }
 #define CLASS_ATTR_STRING(_name, _mode, _str) \
@@ -180,9 +170,7 @@ extern struct class * __must_check __class_create(struct module *owner,
 						  struct lock_class_key *key);
 extern void class_destroy(struct class *cls);
 
- 
 
- 
 #define class_create(owner, name)		\
 ({						\
 	static struct lock_class_key __key;	\

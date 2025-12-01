@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/seq_file.h>
 #include <linux/interrupt.h>
@@ -69,7 +67,6 @@ static inline int execute_on_irq_stack(int overflow, struct irq_desc *desc)
 	return 1;
 }
 
- 
 int irq_init_percpu_irqstack(unsigned int cpu)
 {
 	int node = cpu_to_node(cpu);

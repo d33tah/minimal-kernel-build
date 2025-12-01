@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/export.h>
 #include <linux/time.h>
@@ -13,7 +11,6 @@
 #include <linux/evm.h>
 #include <linux/ima.h>
 
- 
 static bool chown_ok(struct user_namespace *mnt_userns,
 		     const struct inode *inode,
 		     kuid_t uid)
@@ -29,7 +26,6 @@ static bool chown_ok(struct user_namespace *mnt_userns,
 	return false;
 }
 
- 
 static bool chgrp_ok(struct user_namespace *mnt_userns,
 		     const struct inode *inode, kgid_t gid)
 {
@@ -51,7 +47,6 @@ static bool chgrp_ok(struct user_namespace *mnt_userns,
 	return false;
 }
 
- 
 int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 		    struct iattr *attr)
 {
@@ -115,11 +110,9 @@ kill_priv:
 	return 0;
 }
 
- 
 /* Stub: inode_newsize_ok not used in minimal kernel */
 int inode_newsize_ok(const struct inode *inode, loff_t offset) { return 0; }
 
- 
 void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 		  const struct iattr *attr)
 {
@@ -149,7 +142,6 @@ void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 int may_setattr(struct user_namespace *mnt_userns, struct inode *inode,
 		unsigned int ia_valid) { return 0; }
 
- 
 int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 		  struct iattr *attr, struct inode **delegated_inode)
 {

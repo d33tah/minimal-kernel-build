@@ -1,14 +1,11 @@
- 
 #ifndef _UAPI_LINUX_VT_H
 #define _UAPI_LINUX_VT_H
 
 
- 
 #define MIN_NR_CONSOLES 1        
 #define MAX_NR_CONSOLES	63	 
 		 
 
- 
 
 #define VT_OPENQRY	0x5600	 
 

@@ -1,4 +1,3 @@
- 
 #include <linux/mm.h>
 #include <linux/sched.h>
 #include <linux/sched/debug.h>
@@ -16,7 +15,6 @@
 
 static void set_df_gdt_entry(unsigned int cpu);
 
- 
 asmlinkage noinstr void __noreturn doublefault_shim(void)
 {
 	unsigned long cr2;

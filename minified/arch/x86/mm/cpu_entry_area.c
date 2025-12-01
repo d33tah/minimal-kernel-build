@@ -1,4 +1,3 @@
- 
 
 #include <linux/spinlock.h>
 #include <linux/percpu.h>
@@ -15,7 +14,6 @@ static DEFINE_PER_CPU_PAGE_ALIGNED(struct entry_stack_page, entry_stack_storage)
 
 DECLARE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack);
 
- 
 noinstr struct cpu_entry_area *get_cpu_entry_area(int cpu)
 {
 	unsigned long va = CPU_ENTRY_AREA_PER_CPU + cpu * CPU_ENTRY_AREA_SIZE;
@@ -73,7 +71,6 @@ static inline void percpu_setup_exception_stacks(unsigned int cpu)
 			     &per_cpu(doublefault_stack, cpu), 1, PAGE_KERNEL);
 }
 
- 
 static void __init setup_cpu_entry_area(unsigned int cpu)
 {
 	struct cpu_entry_area *cea = get_cpu_entry_area(cpu);

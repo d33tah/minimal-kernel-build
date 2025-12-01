@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/types.h>
 #include <linux/kernel.h>
@@ -16,14 +14,12 @@
 
 #include "lock_events.h"
 
- 
 #define RWSEM_READER_OWNED	(1UL << 0)
 #define RWSEM_NONSPINNABLE	(1UL << 1)
 #define RWSEM_OWNER_FLAGS_MASK	(RWSEM_READER_OWNED | RWSEM_NONSPINNABLE)
 
 # define DEBUG_RWSEMS_WARN_ON(c, sem)
 
- 
 #define RWSEM_WRITER_LOCKED	(1UL << 0)
 #define RWSEM_FLAG_WAITERS	(1UL << 1)
 #define RWSEM_FLAG_HANDOFF	(1UL << 2)
@@ -37,7 +33,6 @@
 #define RWSEM_READ_FAILED_MASK	(RWSEM_WRITER_MASK|RWSEM_FLAG_WAITERS|\
 				 RWSEM_FLAG_HANDOFF|RWSEM_FLAG_READFAIL)
 
- 
 static inline void rwsem_set_owner(struct rw_semaphore *sem)
 {
 	atomic_long_set(&sem->owner, (long)current);
@@ -48,13 +43,11 @@ static inline void rwsem_clear_owner(struct rw_semaphore *sem)
 	atomic_long_set(&sem->owner, 0);
 }
 
- 
 static inline bool rwsem_test_oflags(struct rw_semaphore *sem, long flags)
 {
 	return atomic_long_read(&sem->owner) & flags;
 }
 
- 
 static inline void __rwsem_set_reader_owned(struct rw_semaphore *sem,
 					    struct task_struct *owner)
 {
@@ -69,7 +62,6 @@ static inline void rwsem_set_reader_owned(struct rw_semaphore *sem)
 	__rwsem_set_reader_owned(sem, current);
 }
 
- 
 static inline bool is_rwsem_reader_owned(struct rw_semaphore *sem)
 {
 	return rwsem_test_oflags(sem, RWSEM_READER_OWNED);
@@ -79,7 +71,6 @@ static inline void rwsem_clear_reader_owned(struct rw_semaphore *sem)
 {
 }
 
- 
 static inline void rwsem_set_nonspinnable(struct rw_semaphore *sem)
 {
 	unsigned long owner = atomic_long_read(&sem->owner);
@@ -120,14 +111,12 @@ static inline bool rwsem_write_trylock(struct rw_semaphore *sem)
 	return false;
 }
 
- 
 static inline struct task_struct *rwsem_owner(struct rw_semaphore *sem)
 {
 	return (struct task_struct *)
 		(atomic_long_read(&sem->owner) & ~RWSEM_OWNER_FLAGS_MASK);
 }
 
- 
 static inline struct task_struct *
 rwsem_owner_flags(struct rw_semaphore *sem, unsigned long *pflags)
 {
@@ -137,9 +126,7 @@ rwsem_owner_flags(struct rw_semaphore *sem, unsigned long *pflags)
 	return (struct task_struct *)(owner & ~RWSEM_OWNER_FLAGS_MASK);
 }
 
- 
 
- 
 void __init_rwsem(struct rw_semaphore *sem, const char *name,
 		  struct lock_class_key *key)
 {
@@ -172,10 +159,8 @@ enum rwsem_wake_type {
 	RWSEM_WAKE_READ_OWNED	 
 };
 
- 
 #define RWSEM_WAIT_TIMEOUT	DIV_ROUND_UP(HZ, 250)
 
- 
 #define MAX_READERS_WAKEUP	0x100
 
 static inline void
@@ -186,7 +171,6 @@ rwsem_add_waiter(struct rw_semaphore *sem, struct rwsem_waiter *waiter)
 	 
 }
 
- 
 static inline bool
 rwsem_del_waiter(struct rw_semaphore *sem, struct rwsem_waiter *waiter)
 {
@@ -199,7 +183,6 @@ rwsem_del_waiter(struct rw_semaphore *sem, struct rwsem_waiter *waiter)
 	return false;
 }
 
- 
 static void rwsem_mark_wake(struct rw_semaphore *sem,
 			    enum rwsem_wake_type wake_type,
 			    struct wake_q_head *wake_q)
@@ -295,7 +278,6 @@ static void rwsem_mark_wake(struct rw_semaphore *sem,
 	}
 }
 
- 
 static inline void
 rwsem_del_wake_waiter(struct rw_semaphore *sem, struct rwsem_waiter *waiter,
 		      struct wake_q_head *wake_q)
@@ -313,7 +295,6 @@ rwsem_del_wake_waiter(struct rw_semaphore *sem, struct rwsem_waiter *waiter,
 		wake_up_q(wake_q);
 }
 
- 
 static inline bool rwsem_try_write_lock(struct rw_semaphore *sem,
 					struct rwsem_waiter *waiter)
 {
@@ -364,7 +345,6 @@ static inline bool rwsem_try_write_lock(struct rw_semaphore *sem,
 	return true;
 }
 
- 
 enum owner_state {
 	OWNER_NULL		= 1 << 0,
 	OWNER_WRITER		= 1 << 1,
@@ -390,7 +370,6 @@ rwsem_spin_on_owner(struct rw_semaphore *sem)
 	return OWNER_NONSPINNABLE;
 }
 
- 
 static inline void rwsem_cond_wake_waiter(struct rw_semaphore *sem, long count,
 					  struct wake_q_head *wake_q)
 {
@@ -408,7 +387,6 @@ static inline void rwsem_cond_wake_waiter(struct rw_semaphore *sem, long count,
 	rwsem_mark_wake(sem, wake_type, wake_q);
 }
 
- 
 static struct rw_semaphore __sched *
 rwsem_down_read_slowpath(struct rw_semaphore *sem, long count, unsigned int state)
 {
@@ -502,7 +480,6 @@ out_nolock:
 	return ERR_PTR(-EINTR);
 }
 
- 
 static struct rw_semaphore __sched *
 rwsem_down_write_slowpath(struct rw_semaphore *sem, int state)
 {
@@ -586,7 +563,6 @@ out_nolock:
 	return ERR_PTR(-EINTR);
 }
 
- 
 static struct rw_semaphore *rwsem_wake(struct rw_semaphore *sem)
 {
 	unsigned long flags;
@@ -603,7 +579,6 @@ static struct rw_semaphore *rwsem_wake(struct rw_semaphore *sem)
 	return sem;
 }
 
- 
 static struct rw_semaphore *rwsem_downgrade_wake(struct rw_semaphore *sem)
 {
 	unsigned long flags;
@@ -620,7 +595,6 @@ static struct rw_semaphore *rwsem_downgrade_wake(struct rw_semaphore *sem)
 	return sem;
 }
 
- 
 static inline int __down_read_common(struct rw_semaphore *sem, int state)
 {
 	long count;
@@ -665,7 +639,6 @@ static inline int __down_read_trylock(struct rw_semaphore *sem)
 	return 0;
 }
 
- 
 static inline int __down_write_common(struct rw_semaphore *sem, int state)
 {
 	if (unlikely(!rwsem_write_trylock(sem))) {
@@ -692,7 +665,6 @@ static inline int __down_write_trylock(struct rw_semaphore *sem)
 	return rwsem_write_trylock(sem);
 }
 
- 
 static inline void __up_read(struct rw_semaphore *sem)
 {
 	long tmp;
@@ -710,7 +682,6 @@ static inline void __up_read(struct rw_semaphore *sem)
 	}
 }
 
- 
 static inline void __up_write(struct rw_semaphore *sem)
 {
 	long tmp;
@@ -726,7 +697,6 @@ static inline void __up_write(struct rw_semaphore *sem)
 		rwsem_wake(sem);
 }
 
- 
 static inline void __downgrade_write(struct rw_semaphore *sem)
 {
 	long tmp;
@@ -741,7 +711,6 @@ static inline void __downgrade_write(struct rw_semaphore *sem)
 }
 
 
- 
 void __sched down_read(struct rw_semaphore *sem)
 {
 	might_sleep();
@@ -770,7 +739,6 @@ int __sched down_read_killable(struct rw_semaphore *sem)
 	return 0;
 }
 
- 
 int down_read_trylock(struct rw_semaphore *sem)
 {
 	int ret = __down_read_trylock(sem);
@@ -780,7 +748,6 @@ int down_read_trylock(struct rw_semaphore *sem)
 	return ret;
 }
 
- 
 void __sched down_write(struct rw_semaphore *sem)
 {
 	might_sleep();
@@ -788,7 +755,6 @@ void __sched down_write(struct rw_semaphore *sem)
 	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
 }
 
- 
 int __sched down_write_killable(struct rw_semaphore *sem)
 {
 	might_sleep();
@@ -803,7 +769,6 @@ int __sched down_write_killable(struct rw_semaphore *sem)
 	return 0;
 }
 
- 
 int down_write_trylock(struct rw_semaphore *sem)
 {
 	int ret = __down_write_trylock(sem);
@@ -814,14 +779,12 @@ int down_write_trylock(struct rw_semaphore *sem)
 	return ret;
 }
 
- 
 void up_read(struct rw_semaphore *sem)
 {
 	rwsem_release(&sem->dep_map, _RET_IP_);
 	__up_read(sem);
 }
 
- 
 void up_write(struct rw_semaphore *sem)
 {
 	rwsem_release(&sem->dep_map, _RET_IP_);

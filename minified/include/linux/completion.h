@@ -1,12 +1,9 @@
- 
 #ifndef __LINUX_COMPLETION_H
 #define __LINUX_COMPLETION_H
 
- 
 
 #include <linux/swait.h>
 
- 
 struct completion {
 	unsigned int done;
 	struct swait_queue_head wait;
@@ -25,23 +22,18 @@ static inline void complete_release(struct completion *x) {}
 #define COMPLETION_INITIALIZER_ONSTACK(work) \
 	(*({ init_completion(&work); &work; }))
 
- 
 #define DECLARE_COMPLETION(work) \
 	struct completion work = COMPLETION_INITIALIZER(work)
 
- 
- 
 # define DECLARE_COMPLETION_ONSTACK(work) DECLARE_COMPLETION(work)
 # define DECLARE_COMPLETION_ONSTACK_MAP(work, map) DECLARE_COMPLETION(work)
 
- 
 static inline void init_completion(struct completion *x)
 {
 	x->done = 0;
 	init_swait_queue_head(&x->wait);
 }
 
- 
 static inline void reinit_completion(struct completion *x)
 {
 	x->done = 0;

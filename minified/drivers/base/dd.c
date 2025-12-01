@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/debugfs.h>
 #include <linux/device.h>
@@ -17,19 +15,16 @@
 #include "base.h"
 #include "power/power.h"
 
- 
 static DEFINE_MUTEX(deferred_probe_mutex);
 static LIST_HEAD(deferred_probe_pending_list);
 static LIST_HEAD(deferred_probe_active_list);
 static atomic_t deferred_trigger_count = ATOMIC_INIT(0);
 static bool initcalls_done;
 
- 
 #define ASYNC_DRV_NAMES_MAX_LEN	256
 static char async_probe_drv_names[ASYNC_DRV_NAMES_MAX_LEN];
 static bool async_probe_default;
 
- 
 static bool defer_all_probes;
 
 static void __device_set_deferred_probe_reason(const struct device *dev, char *reason)
@@ -38,7 +33,6 @@ static void __device_set_deferred_probe_reason(const struct device *dev, char *r
 	dev->p->deferred_probe_reason = reason;
 }
 
- 
 static void deferred_probe_work_func(struct work_struct *work)
 {
 	struct device *dev;
@@ -96,7 +90,6 @@ void driver_deferred_probe_del(struct device *dev)
 }
 
 static bool driver_deferred_probe_enable;
- 
 static void driver_deferred_probe_trigger(void)
 {
 	if (!driver_deferred_probe_enable)
@@ -113,7 +106,6 @@ static void driver_deferred_probe_trigger(void)
 	queue_work(system_unbound_wq, &deferred_probe_work);
 }
 
- 
 /* Stub: device_block_probing not used in minimal kernel */
 void device_block_probing(void) { }
 
@@ -123,7 +115,6 @@ void device_unblock_probing(void) { }
 /* Stub: device_set_deferred_probe_reason not used in minimal kernel */
 void device_set_deferred_probe_reason(const struct device *dev, struct va_format *vaf) { }
 
- 
 static int deferred_devs_show(struct seq_file *s, void *data)
 {
 	/* Stub: deferred probe debug info not needed for minimal kernel */
@@ -140,7 +131,6 @@ static int __init deferred_probe_timeout_setup(char *str)
 }
 __setup("deferred_probe_timeout=", deferred_probe_timeout_setup);
 
- 
 int driver_deferred_probe_check_state(struct device *dev)
 {
 	if (!IS_ENABLED(CONFIG_MODULES) && initcalls_done) {
@@ -179,7 +169,6 @@ void deferred_probe_extend_timeout(void)
 	}
 }
 
- 
 /* Stub: simplified deferred probe for minimal kernel */
 static int deferred_probe_initcall(void)
 {
@@ -190,7 +179,6 @@ static int deferred_probe_initcall(void)
 }
 late_initcall(deferred_probe_initcall);
 
- 
 bool device_is_bound(struct device *dev)
 {
 	return dev->p && klist_node_attached(&dev->p->knode_driver);
@@ -222,7 +210,6 @@ static void driver_sysfs_remove(struct device *dev)
 	}
 }
 
- 
 /* Stub: device_bind_driver not used externally */
 int device_bind_driver(struct device *dev)
 {
@@ -383,10 +370,7 @@ done:
 	return ret;
 }
 
- 
- 
 
- 
 int driver_probe_done(void)
 {
 	int local_probe_count = atomic_read(&probe_count);
@@ -396,7 +380,6 @@ int driver_probe_done(void)
 	return 0;
 }
 
- 
 void wait_for_device_probe(void)
 {
 	 
@@ -433,7 +416,6 @@ static int __driver_probe_device(struct device_driver *drv, struct device *dev)
 	return ret;
 }
 
- 
 static int driver_probe_device(struct device_driver *drv, struct device *dev)
 {
 	int trigger_count = atomic_read(&deferred_trigger_count);
@@ -463,7 +445,6 @@ static inline bool cmdline_requested_async_probing(const char *drv_name)
 	return (async_probe_default != async_drv);
 }
 
- 
 /* Stub: driver_async_probe option not needed for minimal kernel */
 static int __init save_async_options(char *buf)
 {
@@ -607,7 +588,6 @@ out_unlock:
 	return ret;
 }
 
- 
 int device_attach(struct device *dev)
 {
 	return __device_attach(dev, false);
@@ -618,7 +598,6 @@ void device_initial_probe(struct device *dev)
 	__device_attach(dev, true);
 }
 
- 
 static void __device_driver_lock(struct device *dev, struct device *parent)
 {
 	if (parent && dev->bus->need_parent_lock)
@@ -626,7 +605,6 @@ static void __device_driver_lock(struct device *dev, struct device *parent)
 	device_lock(dev);
 }
 
- 
 static void __device_driver_unlock(struct device *dev, struct device *parent)
 {
 	device_unlock(dev);
@@ -695,13 +673,11 @@ static int __driver_attach(struct device *dev, void *data)
 	return 0;
 }
 
- 
 int driver_attach(struct device_driver *drv)
 {
 	return bus_for_each_dev(drv->bus, NULL, drv, __driver_attach);
 }
 
- 
 static void __device_release_driver(struct device *dev, struct device *parent)
 {
 	struct device_driver *drv;
@@ -763,20 +739,17 @@ void device_release_driver_internal(struct device *dev,
 	__device_driver_unlock(dev, parent);
 }
 
- 
 void device_release_driver(struct device *dev)
 {
 	 
 	device_release_driver_internal(dev, NULL, NULL);
 }
 
- 
 /* Stub: device_driver_detach not used externally */
 void device_driver_detach(struct device *dev)
 {
 }
 
- 
 void driver_detach(struct device_driver *drv)
 {
 	struct device_private *dev_prv;

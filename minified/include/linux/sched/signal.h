@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SCHED_SIGNAL_H
 #define _LINUX_SCHED_SIGNAL_H
 
@@ -13,7 +12,6 @@
 #include <linux/mm_types.h>
 #include <asm/ptrace.h>
 
- 
 
 struct sighand_struct {
 	spinlock_t		siglock;
@@ -22,12 +20,10 @@ struct sighand_struct {
 	struct k_sigaction	action[_NSIG];
 };
 
- 
 struct pacct_struct;
 
 struct cpu_itimer;
 
- 
 struct task_cputime_atomic {
 	atomic64_t utime;
 	atomic64_t stime;
@@ -40,7 +36,6 @@ struct task_cputime_atomic {
 		.stime = ATOMIC64_INIT(0),			\
 		.sum_exec_runtime = ATOMIC64_INIT(0),		\
 	}
- 
 struct thread_group_cputimer {
 	struct task_cputime_atomic cputime_atomic;
 };
@@ -61,7 +56,6 @@ struct core_state {
 	struct completion startup;
 };
 
- 
 struct signal_struct {
 	refcount_t		sigcnt;
 	atomic_t		live;
@@ -138,11 +132,9 @@ struct signal_struct {
 	struct rw_semaphore exec_update_lock;	 
 } __randomize_layout;
 
- 
 #define SIGNAL_STOP_STOPPED	0x00000001  
 #define SIGNAL_STOP_CONTINUED	0x00000002  
 #define SIGNAL_GROUP_EXIT	0x00000004  
- 
 #define SIGNAL_CLD_STOPPED	0x00000010
 #define SIGNAL_CLD_CONTINUED	0x00000020
 #define SIGNAL_CLD_MASK		(SIGNAL_CLD_STOPPED|SIGNAL_CLD_CONTINUED)
@@ -214,14 +206,12 @@ static inline void clear_notify_signal(void)
 	smp_mb__after_atomic();
 }
 
- 
 static inline bool __set_notify_signal(struct task_struct *task)
 {
 	return !test_and_set_tsk_thread_flag(task, TIF_NOTIFY_SIGNAL) &&
 	       !wake_up_state(task, TASK_INTERRUPTIBLE);
 }
 
- 
 static inline void set_notify_signal(struct task_struct *task)
 {
 	if (__set_notify_signal(task))
@@ -267,7 +257,6 @@ static inline int signal_pending_state(unsigned int state, struct task_struct *p
 	return (state & TASK_INTERRUPTIBLE) || __fatal_signal_pending(p);
 }
 
- 
 static inline bool fault_signal_pending(vm_fault_t fault_flags,
 					struct pt_regs *regs)
 {
@@ -276,7 +265,6 @@ static inline bool fault_signal_pending(vm_fault_t fault_flags,
 			 (user_mode(regs) && signal_pending(current))));
 }
 
- 
 extern void recalc_sigpending_and_wake(struct task_struct *t);
 extern void recalc_sigpending(void);
 extern void calculate_sigpending(void);
@@ -305,9 +293,7 @@ static inline void ptrace_signal_wake_up(struct task_struct *t, bool resume)
 void task_join_group_stop(struct task_struct *task);
 
 #ifdef TIF_RESTORE_SIGMASK
- 
 
- 
 static inline void set_restore_sigmask(void)
 {
 	set_thread_flag(TIF_RESTORE_SIGMASK);
@@ -324,7 +310,6 @@ static inline bool test_and_clear_restore_sigmask(void)
 
 #else	 
 
- 
 static inline void set_restore_sigmask(void)
 {
 	current->restore_sigmask = true;
@@ -381,7 +366,6 @@ static inline int kill_cad_pid(int sig, int priv)
 	return kill_pid(cad_pid, sig, priv);
 }
 
- 
 #define SEND_SIG_NOINFO ((struct kernel_siginfo *) 0)
 #define SEND_SIG_PRIV	((struct kernel_siginfo *) 1)
 
@@ -391,7 +375,6 @@ static inline int __on_sig_stack(unsigned long sp)
 		sp - current->sas_ss_sp <= current->sas_ss_size;
 }
 
- 
 static inline int on_sig_stack(unsigned long sp)
 {
 	 
@@ -436,7 +419,6 @@ extern void __cleanup_sighand(struct sighand_struct *);
 
 extern bool current_is_single_threaded(void);
 
- 
 #define do_each_thread(g, t) \
 	for (g = t = &init_task ; (g = t = next_task(g)) != &init_task ; ) do
 
@@ -468,7 +450,6 @@ static inline struct pid *task_tgid(struct task_struct *task)
 	return task->signal->pids[PIDTYPE_TGID];
 }
 
- 
 static inline struct pid *task_pgrp(struct task_struct *task)
 {
 	return task->signal->pids[PIDTYPE_PGID];

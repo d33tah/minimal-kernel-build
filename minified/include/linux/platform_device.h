@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _PLATFORM_DEVICE_H_
 #define _PLATFORM_DEVICE_H_
@@ -94,7 +92,6 @@ struct platform_device_info {
 extern struct platform_device *platform_device_register_full(
 		const struct platform_device_info *pdevinfo);
 
- 
 static inline struct platform_device *platform_device_register_resndata(
 		struct device *parent, const char *name, int id,
 		const struct resource *res, unsigned int num,
@@ -114,7 +111,6 @@ static inline struct platform_device *platform_device_register_resndata(
 	return platform_device_register_full(&pdevinfo);
 }
 
- 
 static inline struct platform_device *platform_device_register_simple(
 		const char *name, int id,
 		const struct resource *res, unsigned int num)
@@ -123,7 +119,6 @@ static inline struct platform_device *platform_device_register_simple(
 			res, num, NULL, 0);
 }
 
- 
 static inline struct platform_device *platform_device_register_data(
 		struct device *parent, const char *name, int id,
 		const void *data, size_t size)
@@ -157,14 +152,12 @@ struct platform_driver {
 #define to_platform_driver(drv)	(container_of((drv), struct platform_driver, \
 				 driver))
 
- 
 #define platform_driver_register(drv) \
 	__platform_driver_register(drv, THIS_MODULE)
 extern int __platform_driver_register(struct platform_driver *,
 					struct module *);
 extern void platform_driver_unregister(struct platform_driver *);
 
- 
 #define platform_driver_probe(drv, probe) \
 	__platform_driver_probe(drv, probe, THIS_MODULE)
 extern int __platform_driver_probe(struct platform_driver *driver,
@@ -181,16 +174,13 @@ static inline void platform_set_drvdata(struct platform_device *pdev,
 	dev_set_drvdata(&pdev->dev, data);
 }
 
- 
 #define module_platform_driver(__platform_driver) \
 	module_driver(__platform_driver, platform_driver_register, \
 			platform_driver_unregister)
 
- 
 #define builtin_platform_driver(__platform_driver) \
 	builtin_driver(__platform_driver, platform_driver_register)
 
- 
 #define module_platform_driver_probe(__platform_driver, __platform_probe) \
 static int __init __platform_driver##_init(void) \
 { \
@@ -204,7 +194,6 @@ static void __exit __platform_driver##_exit(void) \
 } \
 module_exit(__platform_driver##_exit);
 
- 
 #define builtin_platform_driver_probe(__platform_driver, __platform_probe) \
 static int __init __platform_driver##_init(void) \
 { \
@@ -239,14 +228,12 @@ void platform_unregister_drivers(struct platform_driver * const *drivers,
 #define USE_PLATFORM_PM_SLEEP_OPS
 
 #ifndef CONFIG_SUPERH
- 
 static inline int is_sh_early_platform_device(struct platform_device *pdev)
 {
 	return 0;
 }
 #endif  
 
- 
 void early_platform_cleanup(void);
 
 #endif  

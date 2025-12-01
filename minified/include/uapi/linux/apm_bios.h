@@ -1,5 +1,3 @@
- 
- 
 #ifndef _UAPI_LINUX_APM_H
 #define _UAPI_LINUX_APM_H
 
@@ -22,7 +20,6 @@ struct apm_bios_info {
 };
 
 
- 
 #define APM_STATE_READY		0x0000
 #define APM_STATE_STANDBY	0x0001
 #define APM_STATE_SUSPEND	0x0002
@@ -38,7 +35,6 @@ struct apm_bios_info {
 #define APM_STATE_DISENGAGE	0x0000
 #define APM_STATE_ENGAGE	0x0001
 
- 
 #define APM_SYS_STANDBY		0x0001
 #define APM_SYS_SUSPEND		0x0002
 #define APM_NORMAL_RESUME	0x0003
@@ -54,7 +50,6 @@ struct apm_bios_info {
 #define APM_USER_HIBERNATION	0x000d
 #define APM_HIBERNATION_RESUME	0x000e
 
- 
 #define APM_SUCCESS		0x00
 #define APM_DISABLED		0x01
 #define APM_CONNECTED		0x02
@@ -73,7 +68,6 @@ struct apm_bios_info {
 #define APM_NO_EVENTS		0x80
 #define APM_NOT_PRESENT		0x86
 
- 
 #define APM_DEVICE_BIOS		0x0000
 #define APM_DEVICE_ALL		0x0001
 #define APM_DEVICE_DISPLAY	0x0100
@@ -89,10 +83,8 @@ struct apm_bios_info {
 #define APM_DEVICE_MASK		0xff00
 
 
- 
 #define APM_MAX_BATTERIES	2
 
- 
 #define APM_CAP_GLOBAL_STANDBY		0x0001
 #define APM_CAP_GLOBAL_SUSPEND		0x0002
 #define APM_CAP_RESUME_STANDBY_TIMER	0x0004  
@@ -102,7 +94,6 @@ struct apm_bios_info {
 #define APM_CAP_RESUME_STANDBY_PCMCIA	0x0040  
 #define APM_CAP_RESUME_SUSPEND_PCMCIA	0x0080  
 
- 
 #include <linux/ioctl.h>
 
 #define APM_IOC_STANDBY		_IO('A', 1)

@@ -1,19 +1,15 @@
- 
- 
 
 #ifndef _LINUX_PAGEVEC_H
 #define _LINUX_PAGEVEC_H
 
 #include <linux/xarray.h>
 
- 
 #define PAGEVEC_SIZE	15
 
 struct page;
 struct folio;
 struct address_space;
 
- 
 struct pagevec {
 	unsigned char nr;
 	bool percpu_pvec_drained;
@@ -62,7 +58,6 @@ static inline unsigned pagevec_space(struct pagevec *pvec)
 	return PAGEVEC_SIZE - pvec->nr;
 }
 
- 
 static inline unsigned pagevec_add(struct pagevec *pvec, struct page *page)
 {
 	pvec->pages[pvec->nr++] = page;
@@ -75,19 +70,16 @@ static inline void pagevec_release(struct pagevec *pvec)
 		__pagevec_release(pvec);
 }
 
- 
 struct folio_batch {
 	unsigned char nr;
 	bool percpu_pvec_drained;
 	struct folio *folios[PAGEVEC_SIZE];
 };
 
- 
 static_assert(sizeof(struct pagevec) == sizeof(struct folio_batch));
 static_assert(offsetof(struct pagevec, pages) ==
 		offsetof(struct folio_batch, folios));
 
- 
 static inline void folio_batch_init(struct folio_batch *fbatch)
 {
 	fbatch->nr = 0;
@@ -104,7 +96,6 @@ static inline unsigned int fbatch_space(struct folio_batch *fbatch)
 	return PAGEVEC_SIZE - fbatch->nr;
 }
 
- 
 static inline unsigned folio_batch_add(struct folio_batch *fbatch,
 		struct folio *folio)
 {

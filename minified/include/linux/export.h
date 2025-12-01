@@ -1,12 +1,9 @@
- 
 #ifndef _LINUX_EXPORT_H
 #define _LINUX_EXPORT_H
 
 #include <linux/stringify.h>
 
- 
 
- 
 
 #ifndef __ASSEMBLY__
 #ifdef MODULE
@@ -17,7 +14,6 @@ extern struct module __this_module;
 #endif
 
 #include <linux/compiler.h>
- 
 #define __KSYMTAB_ENTRY(sym, sec)					\
 	__ADDRESSABLE(sym)						\
 	asm("	.section \"___ksymtab" sec "+" #sym "\", \"a\"	\n"	\
@@ -40,7 +36,6 @@ struct kernel_symbol {
 
 #else
 
- 
 #define ___EXPORT_SYMBOL(sym, sec, ns)						\
 	extern typeof(sym) sym;							\
 	extern const char __kstrtab_##sym[];					\
@@ -56,7 +51,6 @@ struct kernel_symbol {
 #endif
 
 
- 
 #define __EXPORT_SYMBOL(sym, sec, ns)
 
 

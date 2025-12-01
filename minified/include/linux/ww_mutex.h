@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef __LINUX_WW_MUTEX_H
 #define __LINUX_WW_MUTEX_H
@@ -58,7 +56,6 @@ struct ww_acquire_ctx {
 #define DEFINE_WW_CLASS(classname) \
 	struct ww_class classname = __WW_CLASS_INITIALIZER(classname, 0)
 
- 
 static inline void ww_mutex_init(struct ww_mutex *lock,
 				 struct ww_class *ww_class)
 {
@@ -69,7 +66,6 @@ static inline void ww_mutex_init(struct ww_mutex *lock,
 #endif
 }
 
- 
 static inline void ww_acquire_init(struct ww_acquire_ctx *ctx,
 				   struct ww_class *ww_class)
 {
@@ -85,7 +81,6 @@ static inline void ww_acquire_init(struct ww_acquire_ctx *ctx,
 #endif
 }
 
- 
 static inline void ww_acquire_done(struct ww_acquire_ctx *ctx)
 {
 #ifdef DEBUG_WW_MUTEXES
@@ -96,7 +91,6 @@ static inline void ww_acquire_done(struct ww_acquire_ctx *ctx)
 #endif
 }
 
- 
 static inline void ww_acquire_fini(struct ww_acquire_ctx *ctx)
 {
 #ifdef DEBUG_WW_MUTEXES
@@ -111,14 +105,11 @@ static inline void ww_acquire_fini(struct ww_acquire_ctx *ctx)
 #endif
 }
 
- 
 extern int   ww_mutex_lock(struct ww_mutex *lock, struct ww_acquire_ctx *ctx);
 
- 
 extern int __must_check ww_mutex_lock_interruptible(struct ww_mutex *lock,
 						    struct ww_acquire_ctx *ctx);
 
- 
 static inline void
 ww_mutex_lock_slow(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
 {
@@ -130,7 +121,6 @@ ww_mutex_lock_slow(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
 	(void)ret;
 }
 
- 
 static inline int __must_check
 ww_mutex_lock_slow_interruptible(struct ww_mutex *lock,
 				 struct ww_acquire_ctx *ctx)
@@ -146,13 +136,11 @@ extern void ww_mutex_unlock(struct ww_mutex *lock);
 extern int __must_check ww_mutex_trylock(struct ww_mutex *lock,
 					 struct ww_acquire_ctx *ctx);
 
- 
 static inline void ww_mutex_destroy(struct ww_mutex *lock)
 {
 	mutex_destroy(&lock->base);
 }
 
- 
 static inline bool ww_mutex_is_locked(struct ww_mutex *lock)
 {
 	return ww_mutex_base_is_locked(&lock->base);

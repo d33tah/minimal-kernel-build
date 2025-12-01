@@ -1,4 +1,3 @@
- 
 #ifndef _ASM_GENERIC_CACHEFLUSH_H
 #define _ASM_GENERIC_CACHEFLUSH_H
 
@@ -7,7 +6,6 @@ struct vm_area_struct;
 struct page;
 struct address_space;
 
- 
 #ifndef flush_cache_all
 static inline void flush_cache_all(void)
 {

@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/mm.h>
 #include <linux/hugetlb.h>
@@ -265,7 +263,6 @@ enum pgt_entry {
 	HPAGE_PUD,
 };
 
- 
 static __always_inline unsigned long get_extent(enum pgt_entry entry,
 			unsigned long old_addr, unsigned long old_end,
 			unsigned long new_addr)
@@ -299,7 +296,6 @@ static __always_inline unsigned long get_extent(enum pgt_entry entry,
 	return extent;
 }
 
- 
 static bool move_pgt_entry(enum pgt_entry entry, struct vm_area_struct *vma,
 			unsigned long old_addr, unsigned long new_addr,
 			void *old_entry, void *new_entry, bool need_rmap_locks)

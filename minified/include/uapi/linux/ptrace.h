@@ -1,10 +1,6 @@
- 
 #ifndef _UAPI_LINUX_PTRACE_H
 #define _UAPI_LINUX_PTRACE_H
- 
- 
 
- 
 
 #include <linux/types.h>
 
@@ -24,13 +20,11 @@
 
 #define PTRACE_SYSCALL		  24
 
- 
 #define PTRACE_SETOPTIONS	0x4200
 #define PTRACE_GETEVENTMSG	0x4201
 #define PTRACE_GETSIGINFO	0x4202
 #define PTRACE_SETSIGINFO	0x4203
 
- 
 #define PTRACE_GETREGSET	0x4204
 #define PTRACE_SETREGSET	0x4205
 
@@ -96,14 +90,11 @@ struct ptrace_rseq_configuration {
 	__u32 pad;
 };
 
- 
 #define PTRACE_EVENTMSG_SYSCALL_ENTRY	1
 #define PTRACE_EVENTMSG_SYSCALL_EXIT	2
 
- 
 #define PTRACE_PEEKSIGINFO_SHARED	(1 << 0)
 
- 
 #define PTRACE_EVENT_FORK	1
 #define PTRACE_EVENT_VFORK	2
 #define PTRACE_EVENT_CLONE	3
@@ -111,10 +102,8 @@ struct ptrace_rseq_configuration {
 #define PTRACE_EVENT_VFORK_DONE	5
 #define PTRACE_EVENT_EXIT	6
 #define PTRACE_EVENT_SECCOMP	7
- 
 #define PTRACE_EVENT_STOP	128
 
- 
 #define PTRACE_O_TRACESYSGOOD	1
 #define PTRACE_O_TRACEFORK	(1 << PTRACE_EVENT_FORK)
 #define PTRACE_O_TRACEVFORK	(1 << PTRACE_EVENT_VFORK)
@@ -124,7 +113,6 @@ struct ptrace_rseq_configuration {
 #define PTRACE_O_TRACEEXIT	(1 << PTRACE_EVENT_EXIT)
 #define PTRACE_O_TRACESECCOMP	(1 << PTRACE_EVENT_SECCOMP)
 
- 
 #define PTRACE_O_EXITKILL		(1 << 20)
 #define PTRACE_O_SUSPEND_SECCOMP	(1 << 21)
 

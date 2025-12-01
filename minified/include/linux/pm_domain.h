@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_PM_DOMAIN_H
 #define _LINUX_PM_DOMAIN_H
@@ -205,7 +203,6 @@ static inline void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next
 static inline void dev_pm_genpd_suspend(struct device *dev) {}
 static inline void dev_pm_genpd_resume(struct device *dev) {}
 
- 
 struct of_device_id;
 
 typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,

@@ -1,7 +1,5 @@
- 
 #ifndef _LINUX_KPROBES_H
 #define _LINUX_KPROBES_H
- 
 #include <linux/compiler.h>
 #include <linux/linkage.h>
 #include <linux/list.h>
@@ -67,37 +65,31 @@ struct kprobe {
 	u32 flags;
 };
 
- 
 #define KPROBE_FLAG_GONE	1  
 #define KPROBE_FLAG_DISABLED	2  
 #define KPROBE_FLAG_OPTIMIZED	4  
 #define KPROBE_FLAG_FTRACE	8  
 
- 
 static inline bool kprobe_gone(struct kprobe *p)
 {
 	return p->flags & KPROBE_FLAG_GONE;
 }
 
- 
 static inline bool kprobe_disabled(struct kprobe *p)
 {
 	return p->flags & (KPROBE_FLAG_DISABLED | KPROBE_FLAG_GONE);
 }
 
- 
 static inline bool kprobe_optimized(struct kprobe *p)
 {
 	return p->flags & KPROBE_FLAG_OPTIMIZED;
 }
 
- 
 static inline bool kprobe_ftrace(struct kprobe *p)
 {
 	return p->flags & KPROBE_FLAG_FTRACE;
 }
 
- 
 struct kretprobe_holder {
 	struct kretprobe	*rp;
 	refcount_t		ref;
@@ -239,7 +231,6 @@ unsigned long kretprobe_find_ret_addr(struct task_struct *tsk, void *fp,
 	return 0;
 }
 
- 
 static nokprobe_inline bool kprobe_page_fault(struct pt_regs *regs,
 					      unsigned int trap)
 {

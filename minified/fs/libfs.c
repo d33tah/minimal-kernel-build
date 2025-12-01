@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/blkdev.h>
 #include <linux/export.h>
@@ -42,7 +40,6 @@ int simple_statfs(struct dentry *dentry, struct kstatfs *buf)
 	return 0;
 }
 
- 
 int always_delete_dentry(const struct dentry *dentry)
 {
 	return 1;
@@ -52,7 +49,6 @@ const struct dentry_operations simple_dentry_operations = {
 	.d_delete = always_delete_dentry,
 };
 
- 
 struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
 {
 	if (dentry->d_name.len > NAME_MAX)
@@ -76,8 +72,6 @@ int dcache_dir_close(struct inode *inode, struct file *file)
 	return 0;
 }
 
- 
- 
 static struct dentry *scan_positives(struct dentry *cursor,
 					struct list_head *p,
 					loff_t count,
@@ -151,13 +145,11 @@ loff_t dcache_dir_lseek(struct file *file, loff_t offset, int whence)
 	return offset;
 }
 
- 
 static inline unsigned char dt_type(struct inode *inode)
 {
 	return (inode->i_mode >> 12) & 15;
 }
 
- 
 
 int dcache_readdir(struct file *file, struct dir_context *ctx)
 {
@@ -264,7 +256,6 @@ static const struct fs_context_operations pseudo_fs_context_ops = {
 	.get_tree	= pseudo_fs_get_tree,
 };
 
- 
 struct pseudo_fs_context *init_pseudo(struct fs_context *fc,
 					unsigned long magic)
 {
@@ -377,7 +368,6 @@ int simple_rename(struct user_namespace *mnt_userns, struct inode *old_dir,
 	return 0;
 }
 
- 
 int simple_setattr(struct user_namespace *mnt_userns, struct dentry *dentry,
 		   struct iattr *iattr)
 {
@@ -427,7 +417,6 @@ int simple_write_begin(struct file *file, struct address_space *mapping,
 	return 0;
 }
 
- 
 static int simple_write_end(struct file *file, struct address_space *mapping,
 			loff_t pos, unsigned len, unsigned copied,
 			struct page *page, void *fsdata)
@@ -455,7 +444,6 @@ static int simple_write_end(struct file *file, struct address_space *mapping,
 	return copied;
 }
 
- 
 const struct address_space_operations ram_aops = {
 	.read_folio	= simple_read_folio,
 	.write_begin	= simple_write_begin,
@@ -463,7 +451,6 @@ const struct address_space_operations ram_aops = {
 	.dirty_folio	= noop_dirty_folio,
 };
 
- 
 int simple_fill_super(struct super_block *s, unsigned long magic,
 		      const struct tree_descr *files)
 {
@@ -557,7 +544,6 @@ void simple_release_fs(struct vfsmount **mount, int *count)
 	mntput(mnt);
 }
 
- 
 ssize_t simple_read_from_buffer(void __user *to, size_t count, loff_t *ppos,
 				const void *from, size_t available)
 {
@@ -578,7 +564,6 @@ ssize_t simple_read_from_buffer(void __user *to, size_t count, loff_t *ppos,
 	return count;
 }
 
- 
 /* Stub: simple_write_to_buffer not used in minimal kernel */
 ssize_t simple_write_to_buffer(void *to, size_t available, loff_t *ppos,
 		const void __user *from, size_t count)
@@ -586,7 +571,6 @@ ssize_t simple_write_to_buffer(void *to, size_t available, loff_t *ppos,
 	return -EINVAL;
 }
 
- 
 /* Stub: memory_read_from_buffer not used in minimal kernel */
 ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
 				const void *from, size_t available)
@@ -594,7 +578,6 @@ ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
 	return 0;
 }
 
- 
 
 /* Stub: simple_transaction_* not needed for minimal kernel */
 void simple_transaction_set(struct file *file, size_t n) { }
@@ -614,7 +597,6 @@ int simple_transaction_release(struct inode *inode, struct file *file)
 	return 0;
 }
 
- 
 
 /* Stub: simple_attr_* not needed for minimal kernel */
 int simple_attr_open(struct inode *inode, struct file *file,
@@ -641,7 +623,6 @@ ssize_t simple_attr_write(struct file *file, const char __user *buf,
 	return -ENOSYS;
 }
 
- 
 struct dentry *generic_fh_to_dentry(struct super_block *sb, struct fid *fid,
 		int fh_len, int fh_type, struct inode *(*get_inode)
 			(struct super_block *sb, u64 ino, u32 gen))
@@ -650,7 +631,6 @@ struct dentry *generic_fh_to_dentry(struct super_block *sb, struct fid *fid,
 	return ERR_PTR(-ESTALE);
 }
 
- 
 struct dentry *generic_fh_to_parent(struct super_block *sb, struct fid *fid,
 		int fh_len, int fh_type, struct inode *(*get_inode)
 			(struct super_block *sb, u64 ino, u32 gen))
@@ -659,7 +639,6 @@ struct dentry *generic_fh_to_parent(struct super_block *sb, struct fid *fid,
 	return ERR_PTR(-ESTALE);
 }
 
- 
 int __generic_file_fsync(struct file *file, loff_t start, loff_t end,
 				 int datasync)
 {
@@ -691,7 +670,6 @@ out:
 	return ret;
 }
 
- 
 
 int generic_file_fsync(struct file *file, loff_t start, loff_t end,
 		       int datasync)
@@ -705,7 +683,6 @@ int generic_file_fsync(struct file *file, loff_t start, loff_t end,
 	return blkdev_issue_flush(inode->i_sb->s_bdev);
 }
 
- 
 int generic_check_addressable(unsigned blocksize_bits, u64 num_blocks)
 {
 	u64 last_fs_block = num_blocks - 1;
@@ -725,7 +702,6 @@ int generic_check_addressable(unsigned blocksize_bits, u64 num_blocks)
 	return 0;
 }
 
- 
 int noop_fsync(struct file *file, loff_t start, loff_t end, int datasync)
 {
 	return 0;
@@ -737,7 +713,6 @@ ssize_t noop_direct_IO(struct kiocb *iocb, struct iov_iter *iter)
 	return -EINVAL;
 }
 
- 
 void kfree_link(void *p)
 {
 	kfree(p);
@@ -766,7 +741,6 @@ struct inode *alloc_anon_inode(struct super_block *s)
 	return inode;
 }
 
- 
 int
 simple_nosetlease(struct file *filp, long arg, struct file_lock **flp,
 		  void **priv)
@@ -774,7 +748,6 @@ simple_nosetlease(struct file *filp, long arg, struct file_lock **flp,
 	return -EINVAL;
 }
 
- 
 const char *simple_get_link(struct dentry *dentry, struct inode *inode,
 			    struct delayed_call *done)
 {
@@ -785,7 +758,6 @@ const struct inode_operations simple_symlink_inode_operations = {
 	.get_link = simple_get_link,
 };
 
- 
 static struct dentry *empty_dir_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
 {
 	return ERR_PTR(-ENOENT);
@@ -849,13 +821,11 @@ bool is_empty_dir_inode(struct inode *inode)
 }
 
 #if IS_ENABLED(CONFIG_UNICODE)
- 
 static bool needs_casefold(const struct inode *dir)
 {
 	return IS_CASEFOLDED(dir) && dir->i_sb->s_encoding;
 }
 
- 
 static int generic_ci_d_compare(const struct dentry *dentry, unsigned int len,
 				const char *str, const struct qstr *name)
 {
@@ -889,7 +859,6 @@ fallback:
 	return !!memcmp(str, name->name, len);
 }
 
- 
 static int generic_ci_d_hash(const struct dentry *dentry, struct qstr *str)
 {
 	const struct inode *dir = READ_ONCE(dentry->d_inode);
@@ -914,7 +883,6 @@ static const struct dentry_operations generic_ci_dentry_ops = {
 
 
 
- 
 void generic_set_encrypted_ci_d_ops(struct dentry *dentry)
 {
 #if IS_ENABLED(CONFIG_UNICODE)

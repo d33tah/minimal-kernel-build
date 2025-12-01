@@ -1,4 +1,3 @@
- 
 #ifndef __VDSO_HELPERS_H
 #define __VDSO_HELPERS_H
 

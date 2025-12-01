@@ -1,5 +1,3 @@
- 
- 
 
 #define pr_fmt(fmt)	"reboot: " fmt
 
@@ -16,7 +14,6 @@
 #include <linux/syscore_ops.h>
 #include <linux/uaccess.h>
 
- 
 
 static int C_A_D = 1;
 struct pid *cad_pid;
@@ -25,7 +22,6 @@ struct pid *cad_pid;
 enum reboot_mode reboot_mode DEFAULT_REBOOT_MODE;
 enum reboot_mode panic_reboot_mode = REBOOT_UNDEFINED;
 
- 
 int reboot_default = 1;
 int reboot_cpu;
 enum reboot_type reboot_type = BOOT_ACPI;
@@ -40,10 +36,8 @@ struct sys_off_handler {
 	void *list;
 };
 
- 
 void __weak (*pm_power_off)(void);
 
- 
 void emergency_restart(void)
 {
 	kmsg_dump(KMSG_DUMP_EMERG);
@@ -94,7 +88,6 @@ void migrate_to_reboot_cpu(void)
 	set_cpus_allowed_ptr(current, cpumask_of(cpu));
 }
 
- 
 void kernel_restart(char *cmd)
 {
 	kernel_restart_prepare(cmd);
@@ -116,7 +109,6 @@ static void kernel_shutdown_prepare(enum system_states state)
 	usermodehelper_disable();
 	device_shutdown();
 }
- 
 void kernel_halt(void)
 {
 	kernel_shutdown_prepare(SYSTEM_HALT);
@@ -127,10 +119,8 @@ void kernel_halt(void)
 	machine_halt();
 }
 
- 
 static BLOCKING_NOTIFIER_HEAD(power_off_prep_handler_list);
 
- 
 static ATOMIC_NOTIFIER_HEAD(power_off_handler_list);
 
 /* Stubbed sys_off_handler infrastructure - not used externally */
@@ -194,7 +184,6 @@ static void do_kernel_power_off_prepare(void)
 	blocking_notifier_call_chain(&power_off_prep_handler_list, 0, NULL);
 }
 
- 
 void do_kernel_power_off(void)
 {
 	struct sys_off_handler *sys_off = NULL;
@@ -210,14 +199,12 @@ void do_kernel_power_off(void)
 	unregister_sys_off_handler(sys_off);
 }
 
- 
 bool kernel_can_power_off(void)
 {
 	return !atomic_notifier_call_chain_is_empty(&power_off_handler_list) ||
 		pm_power_off;
 }
 
- 
 void kernel_power_off(void)
 {
 	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
@@ -231,7 +218,6 @@ void kernel_power_off(void)
 
 DEFINE_MUTEX(system_transition_mutex);
 
- 
 SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 		void __user *, arg)
 {

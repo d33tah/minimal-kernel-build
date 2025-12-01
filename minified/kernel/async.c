@@ -1,10 +1,8 @@
- 
 #include <linux/async.h>
 #include <linux/atomic.h>
 #include <linux/module.h>
 #include <linux/sched.h>
 
- 
 
 struct async_domain async_dfl_domain = { .pending = LIST_HEAD_INIT(async_dfl_domain.pending), .registered = 0 };
 

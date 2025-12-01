@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_BITMAP_H
 #define __LINUX_BITMAP_H
 
@@ -13,28 +12,21 @@
 
 struct device;
 
- 
 
- 
 
- 
 
- 
 
- 
 unsigned long *bitmap_alloc(unsigned int nbits, gfp_t flags);
 unsigned long *bitmap_zalloc(unsigned int nbits, gfp_t flags);
 unsigned long *bitmap_alloc_node(unsigned int nbits, gfp_t flags, int node);
 unsigned long *bitmap_zalloc_node(unsigned int nbits, gfp_t flags, int node);
 void bitmap_free(const unsigned long *bitmap);
 
- 
 unsigned long *devm_bitmap_alloc(struct device *dev,
 				 unsigned int nbits, gfp_t flags);
 unsigned long *devm_bitmap_zalloc(struct device *dev,
 				  unsigned int nbits, gfp_t flags);
 
- 
 
 bool __bitmap_equal(const unsigned long *bitmap1,
 		    const unsigned long *bitmap2, unsigned int nbits);
@@ -70,7 +62,6 @@ unsigned long bitmap_find_next_zero_area_off(unsigned long *map,
 					     unsigned long align_mask,
 					     unsigned long align_offset);
 
- 
 static inline unsigned long
 bitmap_find_next_zero_area(unsigned long *map,
 			   unsigned long size,
@@ -139,7 +130,6 @@ static inline void bitmap_copy(unsigned long *dst, const unsigned long *src,
 	memcpy(dst, src, len);
 }
 
- 
 static inline void bitmap_copy_clear_tail(unsigned long *dst,
 		const unsigned long *src, unsigned int nbits)
 {
@@ -156,7 +146,6 @@ static inline void bitmap_copy_clear_tail(unsigned long *dst,
 	bitmap_copy_clear_tail((unsigned long *) (buf),		\
 			(const unsigned long *) (bitmap), (nbits))
 
- 
 #if (BITS_PER_LONG == 32) && defined(__BIG_ENDIAN)
 void bitmap_from_arr64(unsigned long *bitmap, const u64 *buf, unsigned int nbits);
 void bitmap_to_arr64(u64 *buf, const unsigned long *bitmap, unsigned int nbits);
@@ -302,7 +291,6 @@ static inline unsigned long bitmap_get_value8(const unsigned long *map,
 	return (map[index] >> offset) & 0xFF;
 }
 
- 
 #endif
 
 #endif  

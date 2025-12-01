@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_COMPILER_H
 #define __LINUX_COMPILER_H
 
@@ -8,7 +7,6 @@
 
 #ifdef __KERNEL__
 
- 
 #if defined(CONFIG_TRACE_BRANCH_PROFILING) \
     && !defined(DISABLE_BRANCH_PROFILING) && !defined(__CHECKER__)
 void ftrace_likely_update(struct ftrace_likely_data *f, int val,
@@ -33,7 +31,6 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 			______r;					\
 		})
 
- 
 # ifndef likely
 #  define likely(x)	(__branch_check__(x, 1, __builtin_constant_p(x)))
 # endif
@@ -42,7 +39,6 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 # endif
 
 #ifdef CONFIG_PROFILE_ALL_BRANCHES
- 
 #define if(cond, ...) if ( __trace_if_var( !!(cond , ## __VA_ARGS__) ) )
 
 #define __trace_if_var(cond) (__builtin_constant_p(cond) ? (cond) : __trace_if_value(cond))
@@ -70,25 +66,19 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 # define unlikely_notrace(x)	unlikely(x)
 #endif
 
- 
 #ifndef barrier
- 
 # define barrier() __asm__ __volatile__("": : :"memory")
 #endif
 
 #ifndef barrier_data
- 
 # define barrier_data(ptr) __asm__ __volatile__("": :"r"(ptr) :"memory")
 #endif
 
- 
 #ifndef barrier_before_unreachable
 # define barrier_before_unreachable() do { } while (0)
 #endif
 
- 
 #ifdef CONFIG_OBJTOOL
- 
 #define __stringify_label(n) #n
 
 #define __annotate_unreachable(c) ({					\
@@ -99,7 +89,6 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 })
 #define annotate_unreachable() __annotate_unreachable(__COUNTER__)
 
- 
 #define __annotate_jump_table __section(".rodata..c_jump_table")
 
 #else  
@@ -114,7 +103,6 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 } while (0)
 #endif
 
- 
 #ifndef KENTRY
 # define KENTRY(sym)						\
 	extern typeof(sym) sym;					\
@@ -134,17 +122,14 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 #define absolute_pointer(val)	RELOC_HIDE((void *)(val), 0)
 
 #ifndef OPTIMIZER_HIDE_VAR
- 
 #define OPTIMIZER_HIDE_VAR(var)						\
 	__asm__ ("" : "=r" (var) : "0" (var))
 #endif
 
- 
 #ifndef __UNIQUE_ID
 # define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __LINE__)
 #endif
 
- 
 #define data_race(expr)							\
 ({									\
 	__unqual_scalar_typeof(({ expr; })) __v = ({			\
@@ -155,24 +140,20 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 	__v;								\
 })
 
- 
 #ifndef function_nocfi
 #define function_nocfi(x) (x)
 #endif
 
- 
 #define ASSERT_EXCLUSIVE_ACCESS(var) do { } while (0)
 #define ASSERT_EXCLUSIVE_BITS(var, mask) do { } while (0)
 #define ASSERT_EXCLUSIVE_WRITER(var) do { } while (0)
 
 #endif  
 
- 
 #define __ADDRESSABLE(sym) \
 	static void * __section(".discard.addressable") __used \
 		__UNIQUE_ID(__PASTE(__addressable_,sym)) = (void *)&sym;
 
- 
 static inline void *offset_to_ptr(const int *off)
 {
 	return (void *)((unsigned long)off + *off);
@@ -180,10 +161,8 @@ static inline void *offset_to_ptr(const int *off)
 
 #endif  
 
- 
 #define __must_be_array(a)	BUILD_BUG_ON_ZERO(__same_type((a), &(a)[0]))
 
- 
 #define prevent_tail_call_optimization()	mb()
 
 #include <asm/rwonce.h>

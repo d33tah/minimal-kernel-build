@@ -1,4 +1,3 @@
- 
 
 #include <linux/blkdev.h>
 #include <linux/wait.h>
@@ -21,13 +20,11 @@ struct backing_dev_info noop_backing_dev_info;
 static struct class *bdi_class;
 static const char *bdi_unknown_name = "(unknown)";
 
- 
 DEFINE_SPINLOCK(bdi_lock);
 static u64 bdi_id_cursor;
 static struct rb_root bdi_tree = RB_ROOT;
 LIST_HEAD(bdi_list);
 
- 
 struct workqueue_struct *bdi_wq;
 
 #define K(x) ((x) << (PAGE_SHIFT - 10))
@@ -109,7 +106,6 @@ static void wb_update_bandwidth_workfn(struct work_struct *work)
 	wb_update_bandwidth(wb);
 }
 
- 
 #define INIT_BW		(100 << (20 - PAGE_SHIFT))
 
 static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
@@ -161,7 +157,6 @@ out_destroy_stat:
 
 static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb);
 
- 
 static void wb_shutdown(struct bdi_writeback *wb)
 {
 	 
@@ -325,7 +320,6 @@ int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...)
 /* Stub: bdi_set_owner not used in minimal kernel */
 void bdi_set_owner(struct backing_dev_info *bdi, struct device *owner) { }
 
- 
 static void bdi_remove_from_list(struct backing_dev_info *bdi)
 {
 	spin_lock_bh(&bdi_lock);

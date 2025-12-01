@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_MATH_H
 #define _LINUX_MATH_H
 
@@ -6,13 +5,10 @@
 #include <asm/div64.h>
 #include <uapi/linux/kernel.h>
 
- 
 #define __round_mask(x, y) ((__typeof__(x))((y)-1))
 
- 
 #define round_up(x, y) ((((x)-1) | __round_mask(x, y))+1)
 
- 
 #define round_down(x, y) ((x) & ~__round_mask(x, y))
 
 #define DIV_ROUND_UP __KERNEL_DIV_ROUND_UP
@@ -26,14 +22,12 @@
 /* 32-bit only kernel */
 #define DIV_ROUND_UP_SECTOR_T(ll,d) DIV_ROUND_UP_ULL(ll, d)
 
- 
 #define roundup(x, y) (					\
 {							\
 	typeof(y) __y = y;				\
 	(((x) + (__y - 1)) / __y) * __y;		\
 }							\
 )
- 
 #define rounddown(x, y) (				\
 {							\
 	typeof(x) __x = (x);				\
@@ -41,7 +35,6 @@
 }							\
 )
 
- 
 #define DIV_ROUND_CLOSEST(x, divisor)(			\
 {							\
 	typeof(x) __x = x;				\
@@ -53,7 +46,6 @@
 		(((__x) - ((__d) / 2)) / (__d));	\
 }							\
 )
- 
 #define DIV_ROUND_CLOSEST_ULL(x, divisor)(		\
 {							\
 	typeof(divisor) __d = divisor;			\
@@ -74,7 +66,6 @@ __STRUCT_FRACT(s32)
 __STRUCT_FRACT(u32)
 #undef __STRUCT_FRACT
 
- 
 #define mult_frac(x, numer, denom)(			\
 {							\
 	typeof(x) quot = (x) / (denom);			\
@@ -85,7 +76,6 @@ __STRUCT_FRACT(u32)
 
 #define sector_div(a, b) do_div(a, b)
 
- 
 #define abs(x)	__abs_choose_expr(x, long long,				\
 		__abs_choose_expr(x, long,				\
 		__abs_choose_expr(x, int,				\
@@ -101,7 +91,6 @@ __STRUCT_FRACT(u32)
 	__builtin_types_compatible_p(typeof(x), unsigned type),		\
 	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
 
- 
 static inline u32 reciprocal_scale(u32 val, u32 ep_ro)
 {
 	return (u32)(((u64) val * ep_ro) >> 32);

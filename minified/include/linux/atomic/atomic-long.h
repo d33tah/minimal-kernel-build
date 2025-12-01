@@ -1,7 +1,4 @@
- 
 
- 
- 
 
 #ifndef _LINUX_ATOMIC_LONG_H
 #define _LINUX_ATOMIC_LONG_H
@@ -508,4 +505,3 @@ arch_atomic_long_dec_if_positive(atomic_long_t *v)
 }
 
 #endif  
- 

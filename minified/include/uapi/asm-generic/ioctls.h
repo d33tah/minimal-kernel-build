@@ -1,12 +1,9 @@
- 
 #ifndef __ASM_GENERIC_IOCTLS_H
 #define __ASM_GENERIC_IOCTLS_H
 
 #include <linux/ioctl.h>
 
- 
 
- 
 
 #define TCGETS		0x5401
 #define TCSETS		0x5402
@@ -89,12 +86,10 @@
 #define TIOCMIWAIT	0x545C	 
 #define TIOCGICOUNT	0x545D	 
 
- 
 #ifndef FIOQSIZE
 # define FIOQSIZE	0x5460
 #endif
 
- 
 #define TIOCPKT_DATA		 0
 #define TIOCPKT_FLUSHREAD	 1
 #define TIOCPKT_FLUSHWRITE	 2

@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/linkage.h>
 

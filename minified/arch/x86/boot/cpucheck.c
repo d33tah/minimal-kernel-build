@@ -1,7 +1,4 @@
- 
- 
 
- 
 
 #ifdef _SETUP
 # include "boot.h"
@@ -69,7 +66,6 @@ static int is_intel(void)
 	       cpu_vendor[2] == A32('n', 't', 'e', 'l');
 }
 
- 
 static int check_cpuflags(void)
 {
 	u32 err;
@@ -85,7 +81,6 @@ static int check_cpuflags(void)
 	return err;
 }
 
- 
 int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr)
 {
 	int err;

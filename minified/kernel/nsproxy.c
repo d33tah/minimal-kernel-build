@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/slab.h>
 #include <linux/export.h>
@@ -38,7 +36,6 @@ static inline struct nsproxy *create_nsproxy(void)
 	return nsproxy;
 }
 
- 
 static struct nsproxy *create_new_namespaces(unsigned long flags,
 	struct task_struct *tsk, struct user_namespace *user_ns,
 	struct fs_struct *new_fs)
@@ -119,7 +116,6 @@ out_ns:
 	return ERR_PTR(err);
 }
 
- 
 int copy_namespaces(unsigned long flags, struct task_struct *tsk)
 {
 	struct nsproxy *old_ns = tsk->nsproxy;
@@ -170,7 +166,6 @@ void free_nsproxy(struct nsproxy *ns)
 	kmem_cache_free(nsproxy_cachep, ns);
 }
 
- 
 int unshare_nsproxy_namespaces(unsigned long unshare_flags,
 	struct nsproxy **new_nsp, struct cred *new_cred, struct fs_struct *new_fs)
 {
@@ -223,9 +218,7 @@ static inline int validate_ns(struct nsset *nsset, struct ns_common *ns)
 	return ns->ops->install(nsset, ns);
 }
 
- 
 
- 
 
 SYSCALL_DEFINE2(setns, int, fd, int, flags)
 {

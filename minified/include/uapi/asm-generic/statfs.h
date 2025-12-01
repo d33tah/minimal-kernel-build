@@ -1,4 +1,3 @@
- 
 #ifndef _UAPI_GENERIC_STATFS_H
 #define _UAPI_GENERIC_STATFS_H
 
@@ -25,7 +24,6 @@ struct statfs {
 	__statfs_word f_spare[4];
 };
 
- 
 #ifndef ARCH_PACK_STATFS64
 #define ARCH_PACK_STATFS64
 #endif
@@ -45,7 +43,6 @@ struct statfs64 {
 	__statfs_word f_spare[4];
 } ARCH_PACK_STATFS64;
 
- 
 #ifndef ARCH_PACK_COMPAT_STATFS64
 #define ARCH_PACK_COMPAT_STATFS64
 #endif

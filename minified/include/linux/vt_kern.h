@@ -1,8 +1,6 @@
- 
 #ifndef _VT_KERN_H
 #define _VT_KERN_H
 
- 
 
 #include <linux/vt.h>
 #include <linux/kd.h>
@@ -18,7 +16,6 @@ int kbd_rate(struct kbd_repeat *rep);
 
 extern int fg_console, last_console, want_console;
 
- 
 
 int vc_allocate(unsigned int console);
 int vc_cons_allocated(unsigned int console);
@@ -43,7 +40,6 @@ void redraw_screen(struct vc_data *vc, int is_switch);
 struct tty_struct;
 int tioclinux(struct tty_struct *tty, unsigned long arg);
 
- 
 
 struct unipair;
 
@@ -59,7 +55,6 @@ void con_free_unimap(struct vc_data *vc);
 int con_copy_unimap(struct vc_data *dst_vc, struct vc_data *src_vc);
 
 
- 
 void vt_event_post(unsigned int event, unsigned int old, unsigned int new);
 int vt_waitactive(int n);
 void change_console(struct vc_data *new_vc);
@@ -81,7 +76,6 @@ extern struct vt_spawn_console vt_spawn_con;
 
 int vt_move_to_console(unsigned int vt, int alloc);
 
- 
 
 struct vt_notifier_param {
 	struct vc_data *vc;	 
@@ -93,7 +87,6 @@ int unregister_vt_notifier(struct notifier_block *nb);
 
 void hide_boot_cursor(bool hide);
 
- 
 int vt_do_diacrit(unsigned int cmd, void __user *up, int eperm);
 int vt_do_kdskbmode(unsigned int console, unsigned int arg);
 int vt_do_kdskbmeta(unsigned int console, unsigned int arg);

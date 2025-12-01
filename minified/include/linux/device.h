@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _DEVICE_H_
 #define _DEVICE_H_
@@ -39,7 +37,6 @@ struct dev_pin_info;
 struct dev_iommu;
 struct msi_device_data;
 
- 
 struct subsys_interface {
 	const char *name;
 	struct bus_type *subsys;
@@ -56,7 +53,6 @@ int subsys_system_register(struct bus_type *subsys,
 int subsys_virtual_register(struct bus_type *subsys,
 			    const struct attribute_group **groups);
 
- 
 struct device_type {
 	const char *name;
 	const struct attribute_group **groups;
@@ -68,7 +64,6 @@ struct device_type {
 	const struct dev_pm_ops *pm;
 };
 
- 
 struct device_attribute {
 	struct attribute	attr;
 	ssize_t (*show)(struct device *dev, struct device_attribute *attr,
@@ -107,7 +102,6 @@ int __must_check device_create_bin_file(struct device *dev,
 void device_remove_bin_file(struct device *dev,
 			    const struct bin_attribute *attr);
 
- 
 typedef void (*dr_release_t)(struct device *dev, void *res);
 typedef int (*dr_match_t)(struct device *dev, void *res, void *match_data);
 
@@ -135,13 +129,11 @@ int devres_destroy(struct device *dev, dr_release_t release,
 int devres_release(struct device *dev, dr_release_t release,
 		   dr_match_t match, void *match_data);
 
- 
 void * __must_check devres_open_group(struct device *dev, void *id, gfp_t gfp);
 void devres_close_group(struct device *dev, void *id);
 void devres_remove_group(struct device *dev, void *id);
 int devres_release_group(struct device *dev, void *id);
 
- 
 void *devm_kmalloc(struct device *dev, size_t size, gfp_t gfp) __malloc;
 void *devm_krealloc(struct device *dev, void *ptr, size_t size,
 		    gfp_t gfp) __must_check;
@@ -174,12 +166,10 @@ struct device_dma_parameters {
 	unsigned long segment_boundary_mask;
 };
 
- 
 enum device_link_state {
 	DL_STATE_NONE = -1,
 };
 
- 
 #define DL_FLAG_STATELESS		BIT(0)
 #define DL_FLAG_AUTOREMOVE_CONSUMER	BIT(1)
 #define DL_FLAG_PM_RUNTIME		BIT(2)
@@ -190,18 +180,15 @@ enum device_link_state {
 #define DL_FLAG_SYNC_STATE_ONLY		BIT(7)
 #define DL_FLAG_INFERRED		BIT(8)
 
- 
 enum dl_dev_state {
 	DL_DEV_NO_DRIVER = 0,
 	DL_DEV_PROBING,
 };
 
- 
 enum device_removable {
 	DEVICE_REMOVABLE_NOT_SUPPORTED = 0,
 };
 
- 
 struct dev_links_info {
 	struct list_head suppliers;
 	struct list_head consumers;
@@ -209,14 +196,12 @@ struct dev_links_info {
 	enum dl_dev_state status;
 };
 
- 
 struct dev_msi_info {
 };
 
 /* device_physical_location - not used in minimal kernel */
 struct device_physical_location;
 
- 
 struct device {
 	struct kobject kobj;
 	struct device		*parent;
@@ -282,7 +267,6 @@ struct device {
 #endif
 };
 
- 
 struct device_link {
 	struct device *supplier;
 	struct list_head s_node;
@@ -315,7 +299,6 @@ static inline const char *dev_name(const struct device *dev)
 	return kobject_name(&dev->kobj);
 }
 
- 
 static inline const char *dev_bus_name(const struct device *dev)
 {
 	return dev->bus ? dev->bus->name : (dev->class ? dev->class->name : "");
@@ -406,10 +389,8 @@ do {                                                                   \
 	lock_set_class(&__d2->mutex.dep_map, name, key, 0, _THIS_IP_); \
 } while (0)
 
- 
 #define device_lock_set_class(dev, key) __device_lock_set_class(dev, #key, key)
 
- 
 #define device_lock_reset_class(dev) \
 do { \
 	struct device *__d __maybe_unused = dev;                       \
@@ -428,16 +409,13 @@ void device_set_of_node_from_dev(struct device *dev, const struct device *dev2);
 void device_set_node(struct device *dev, struct fwnode_handle *fwnode);
 
 
- 
 struct device *__root_device_register(const char *name, struct module *owner);
 
- 
 #define root_device_register(name) \
 	__root_device_register(name, THIS_MODULE)
 
 void root_device_unregister(struct device *root);
 
- 
 int __must_check device_driver_attach(struct device_driver *drv,
 				      struct device *dev);
 int __must_check device_bind_driver(struct device *dev);
@@ -449,7 +427,6 @@ int __must_check device_reprobe(struct device *dev);
 
 bool device_is_bound(struct device *dev);
 
- 
 __printf(5, 6) struct device *
 device_create(struct class *cls, struct device *parent, dev_t devt,
 	      void *drvdata, const char *fmt, ...);
@@ -481,27 +458,21 @@ int __must_check devm_device_add_group(struct device *dev,
 void devm_device_remove_group(struct device *dev,
 			      const struct attribute_group *grp);
 
- 
- 
 extern int (*platform_notify)(struct device *dev);
 
 extern int (*platform_notify_remove)(struct device *dev);
 
 
- 
 struct device *get_device(struct device *dev);
 void put_device(struct device *dev);
 bool kill_device(struct device *dev);
 
 static inline int devtmpfs_mount(void) { return 0; }
 
- 
 void device_shutdown(void);
 
- 
 const char *dev_driver_string(const struct device *dev);
 
- 
 struct device_link *device_link_add(struct device *consumer,
 				    struct device *supplier, u32 flags);
 void device_link_del(struct device_link *link);
@@ -512,7 +483,6 @@ void device_links_supplier_sync_state_resume(void);
 extern __printf(3, 4)
 int dev_err_probe(const struct device *dev, int err, const char *fmt, ...);
 
- 
 #define MODULE_ALIAS_CHARDEV(major,minor) \
 	MODULE_ALIAS("char-major-" __stringify(major) "-" __stringify(minor))
 #define MODULE_ALIAS_CHARDEV_MAJOR(major) \

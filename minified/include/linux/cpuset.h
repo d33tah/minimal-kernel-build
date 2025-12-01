@@ -1,7 +1,5 @@
- 
 #ifndef _LINUX_CPUSET_H
 #define _LINUX_CPUSET_H
- 
 
 #include <linux/sched.h>
 #include <linux/sched/topology.h>

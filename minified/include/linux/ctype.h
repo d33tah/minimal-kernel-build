@@ -1,10 +1,8 @@
- 
 #ifndef _LINUX_CTYPE_H
 #define _LINUX_CTYPE_H
 
 #include <linux/compiler.h>
 
- 
 
 #define _U	0x01	 
 #define _L	0x02	 
@@ -26,7 +24,6 @@ extern const unsigned char _ctype[];
 #define islower(c)	((__ismask(c)&(_L)) != 0)
 #define isprint(c)	((__ismask(c)&(_P|_U|_L|_D|_SP)) != 0)
 #define ispunct(c)	((__ismask(c)&(_P)) != 0)
- 
 #define isspace(c)	((__ismask(c)&(_S)) != 0)
 #define isupper(c)	((__ismask(c)&(_U)) != 0)
 #define isxdigit(c)	((__ismask(c)&(_D|_X)) != 0)
@@ -60,13 +57,11 @@ static inline unsigned char __toupper(unsigned char c)
 #define tolower(c) __tolower(c)
 #define toupper(c) __toupper(c)
 
- 
 static inline char _tolower(const char c)
 {
 	return c | 0x20;
 }
 
- 
 static inline int isodigit(const char c)
 {
 	return c >= '0' && c <= '7';

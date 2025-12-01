@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_DMA_DIRECT_H
 #define _LINUX_DMA_DIRECT_H 1
 
@@ -11,7 +9,6 @@
 
 extern unsigned int zone_dma_bits;
 
- 
 struct bus_dma_region {
 	phys_addr_t	cpu_start;
 	dma_addr_t	dma_start;
@@ -52,7 +49,6 @@ static inline dma_addr_t phys_to_dma_unencrypted(struct device *dev,
 	return paddr;
 }
 
- 
 static inline dma_addr_t phys_to_dma(struct device *dev, phys_addr_t paddr)
 {
 	return __sme_set(phys_to_dma_unencrypted(dev, paddr));

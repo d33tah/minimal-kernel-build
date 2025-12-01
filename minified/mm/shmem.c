@@ -1,4 +1,3 @@
- 
 
 #include <linux/fs.h>
 #include <linux/init.h>
@@ -20,7 +19,6 @@
 static struct vfsmount *shm_mnt;
 
 
- 
 
 static struct file_system_type shmem_fs_type = {
 	.name		= "tmpfs",
@@ -71,7 +69,6 @@ void shmem_truncate_range(struct inode *inode, loff_t lstart, loff_t lend)
 #define shmem_unacct_size(flags, size)		do {} while (0)
 
 
- 
 
 static struct file *__shmem_file_setup(struct vfsmount *mnt, const char *name, loff_t size,
 				       unsigned long flags, unsigned int i_flags)
@@ -106,26 +103,22 @@ static struct file *__shmem_file_setup(struct vfsmount *mnt, const char *name, l
 	return res;
 }
 
- 
 struct file *shmem_kernel_file_setup(const char *name, loff_t size, unsigned long flags)
 {
 	return __shmem_file_setup(shm_mnt, name, size, flags, S_PRIVATE);
 }
 
- 
 struct file *shmem_file_setup(const char *name, loff_t size, unsigned long flags)
 {
 	return __shmem_file_setup(shm_mnt, name, size, flags, 0);
 }
 
- 
 struct file *shmem_file_setup_with_mnt(struct vfsmount *mnt, const char *name,
 				       loff_t size, unsigned long flags)
 {
 	return __shmem_file_setup(mnt, name, size, flags, 0);
 }
 
- 
 int shmem_zero_setup(struct vm_area_struct *vma)
 {
 	struct file *file;
@@ -144,7 +137,6 @@ int shmem_zero_setup(struct vm_area_struct *vma)
 	return 0;
 }
 
- 
 struct page *shmem_read_mapping_page_gfp(struct address_space *mapping,
 					 pgoff_t index, gfp_t gfp)
 {

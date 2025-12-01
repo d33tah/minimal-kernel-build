@@ -1,7 +1,5 @@
- 
 #ifndef _LINUX_OF_H
 #define _LINUX_OF_H
- 
 
 #include <linux/types.h>
 #include <linux/errno.h>
@@ -39,11 +37,9 @@ struct of_phandle_args {
 	uint32_t args[MAX_PHANDLE_ARGS];
 };
 
- 
 static inline struct device_node *of_node_get(struct device_node *node) { return node; }
 static inline void of_node_put(struct device_node *node) { }
 
- 
 extern struct device_node *of_root;
 extern struct device_node *of_chosen;
 extern struct device_node *of_aliases;
@@ -59,7 +55,6 @@ extern struct device_node *of_stdout;
 #define OF_OVERLAY_FREE_CSET	6
 #define OF_BAD_ADDR	((u64)-1)
 
- 
 static inline void of_core_init(void) { }
 static inline struct device_node *to_of_node(const struct fwnode_handle *fwnode) { return NULL; }
 /* of_find_node_by_name, of_find_node_by_type removed - unused */

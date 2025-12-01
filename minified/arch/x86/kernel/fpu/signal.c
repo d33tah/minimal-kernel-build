@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/compat.h>
 #include <linux/cpu.h>
@@ -18,7 +16,6 @@
 #include "legacy.h"
 #include "xstate.h"
 
- 
 static inline bool check_xstate_in_sigframe(struct fxregs_state __user *fxbuf,
 					    struct _fpx_sw_bytes *fx_sw)
 {
@@ -53,7 +50,6 @@ setfx:
 	return true;
 }
 
- 
 static inline bool save_fsave_header(struct task_struct *tsk, void __user *buf)
 {
 	if (use_fxsr()) {
@@ -83,7 +79,6 @@ static inline bool save_fsave_header(struct task_struct *tsk, void __user *buf)
 	return true;
 }
 
- 
 static inline void save_sw_bytes(struct _fpx_sw_bytes *sw_bytes, bool ia32_frame,
 				 struct fpstate *fpstate)
 {
@@ -135,7 +130,6 @@ static inline int copy_fpregs_to_sigframe(struct xregs_state __user *buf)
 		return fnsave_to_user_sigframe((struct fregs_state __user *) buf);
 }
 
- 
 bool copy_fpstate_to_sigframe(void __user *buf, void __user *buf_fx, int size)
 {
 	struct task_struct *tsk = current;
@@ -213,7 +207,6 @@ static int __restore_fpregs_from_user(void __user *buf, u64 ufeatures,
 	}
 }
 
- 
 static bool restore_fpregs_from_user(void __user *buf, u64 xrestore,
 				     bool fx_only, unsigned int size)
 {
@@ -352,7 +345,6 @@ static inline unsigned int xstate_sigframe_size(struct fpstate *fpstate)
 	return use_xsave() ? size + FP_XSTATE_MAGIC2_SIZE : size;
 }
 
- 
 bool fpu__restore_sig(void __user *buf, int ia32_frame)
 {
 	struct fpu *fpu = &current->thread.fpu;

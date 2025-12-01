@@ -1,6 +1,4 @@
- 
 
- 
 #ifndef _UAPI_LINUX_TIMEX_H
 #define _UAPI_LINUX_TIMEX_H
 
@@ -9,7 +7,6 @@
 #define NTP_API		4	 
 
 #ifndef __KERNEL__
- 
 struct timex {
 	unsigned int modes;	 
 	__kernel_long_t offset;	 
@@ -77,7 +74,6 @@ struct __kernel_timex {
 	int  :32; int  :32; int  :32;
 };
 
- 
 #define ADJ_OFFSET		0x0001	 
 #define ADJ_FREQUENCY		0x0002	 
 #define ADJ_MAXERROR		0x0004	 
@@ -95,7 +91,6 @@ struct __kernel_timex {
 #define ADJ_OFFSET_SS_READ	0xa001	 
 #endif
 
- 
 #define MOD_OFFSET	ADJ_OFFSET
 #define MOD_FREQUENCY	ADJ_FREQUENCY
 #define MOD_MAXERROR	ADJ_MAXERROR
@@ -107,7 +102,6 @@ struct __kernel_timex {
 #define MOD_NANO	ADJ_NANO
 
 
- 
 #define STA_PLL		0x0001	 
 #define STA_PPSFREQ	0x0002	 
 #define STA_PPSTIME	0x0004	 
@@ -128,11 +122,9 @@ struct __kernel_timex {
 #define STA_MODE	0x4000	 
 #define STA_CLK		0x8000	 
 
- 
 #define STA_RONLY (STA_PPSSIGNAL | STA_PPSJITTER | STA_PPSWANDER | \
 	STA_PPSERROR | STA_CLOCKERR | STA_NANO | STA_MODE | STA_CLK)
 
- 
 #define TIME_OK		0	 
 #define TIME_INS	1	 
 #define TIME_DEL	2	 

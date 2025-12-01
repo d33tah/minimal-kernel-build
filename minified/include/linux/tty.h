@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_TTY_H
 #define _LINUX_TTY_H
 
@@ -17,12 +16,10 @@
 #include <linux/llist.h>
 
 
- 
 #define NR_UNIX98_PTY_DEFAULT	4096       
 #define NR_UNIX98_PTY_RESERVE	1024	   
 #define NR_UNIX98_PTY_MAX	(1 << MINORBITS)  
 
- 
 #define __DISABLED_CHAR '\0'
 
 #define INTR_CHAR(tty) ((tty)->termios.c_cc[VINTR])
@@ -112,7 +109,6 @@ struct device;
 struct signal_struct;
 struct tty_operations;
 
- 
 struct tty_struct {
 	int	magic;
 	struct kref kref;
@@ -174,17 +170,14 @@ struct tty_struct {
 	struct tty_port *port;
 } __randomize_layout;
 
- 
 struct tty_file_private {
 	struct tty_struct *tty;
 	struct file *file;
 	struct list_head list;
 };
 
- 
 #define TTY_MAGIC		0x5401
 
- 
 #define TTY_THROTTLED		0
 #define TTY_IO_ERROR		1
 #define TTY_OTHER_CLOSED	2
@@ -221,7 +214,6 @@ void disassociate_ctty(int priv);
 dev_t tty_devnum(struct tty_struct *tty);
 void proc_clear_tty(struct task_struct *p);
 struct tty_struct *get_current_tty(void);
- 
 int __init tty_init(void);
 const char *tty_name(const struct tty_struct *tty);
 struct tty_struct *tty_kopen_exclusive(dev_t device);
@@ -235,7 +227,6 @@ static inline int vcs_init(void) { return 0; }
 
 extern struct class *tty_class;
 
- 
 
 static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 {
@@ -273,7 +264,6 @@ void tty_termios_encode_baud_rate(struct ktermios *termios, speed_t ibaud,
 void tty_encode_baud_rate(struct tty_struct *tty, speed_t ibaud,
 		speed_t obaud);
 
- 
 static inline speed_t tty_get_baud_rate(struct tty_struct *tty)
 {
 	return tty_termios_baud_rate(&tty->termios);
@@ -299,11 +289,9 @@ int tty_standard_install(struct tty_driver *driver,
 
 extern struct mutex tty_mutex;
 
- 
 void n_tty_inherit_ops(struct tty_ldisc_ops *ops);
 void __init n_tty_init(void);
 
- 
 static inline void tty_audit_exit(void)
 {
 }
@@ -315,19 +303,15 @@ static inline int tty_audit_push(void)
 	return 0;
 }
 
- 
 int n_tty_ioctl_helper(struct tty_struct *tty, unsigned int cmd,
 		unsigned long arg);
 
- 
 
 int vt_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
 
 long vt_compat_ioctl(struct tty_struct *tty, unsigned int cmd,
 		unsigned long arg);
 
- 
- 
 void tty_lock(struct tty_struct *tty);
 int  tty_lock_interruptible(struct tty_struct *tty);
 void tty_unlock(struct tty_struct *tty);

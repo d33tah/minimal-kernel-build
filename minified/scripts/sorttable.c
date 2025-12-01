@@ -1,7 +1,4 @@
- 
- 
 
- 
 
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -55,7 +52,6 @@ static void (*w2)(uint16_t, uint16_t *);
 static void (*w8)(uint64_t, uint64_t *);
 typedef void (*table_sort_t)(char *, int);
 
- 
 static void *mmap_file(char const *fname, size_t *size)
 {
 	int fd;
@@ -149,7 +145,6 @@ static void w8le(uint64_t val, uint64_t *x)
 	put_unaligned_le64(val, x);
 }
 
- 
 #define SPECIAL(i) ((i) - (SHN_HIRESERVE + 1))
 
 static inline int is_shndx_special(unsigned int i)
@@ -157,7 +152,6 @@ static inline int is_shndx_special(unsigned int i)
 	return i != SHN_XINDEX && i >= SHN_LORESERVE && i <= SHN_HIRESERVE;
 }
 
- 
 static inline unsigned int get_secindex(unsigned int shndx,
 					unsigned int sym_offs,
 					const Elf32_Word *symtab_shndx_start)
@@ -169,7 +163,6 @@ static inline unsigned int get_secindex(unsigned int shndx,
 	return r(&symtab_shndx_start[sym_offs]);
 }
 
- 
 #include "sorttable.h"
 #define SORTTABLE_64
 #include "sorttable.h"

@@ -1,10 +1,8 @@
- 
 #ifndef _UAPI_LINUX_SCHED_H
 #define _UAPI_LINUX_SCHED_H
 
 #include <linux/types.h>
 
- 
 #define CSIGNAL		0x000000ff	 
 #define CLONE_VM	0x00000100	 
 #define CLONE_FS	0x00000200	 
@@ -31,15 +29,12 @@
 #define CLONE_NEWNET		0x40000000	 
 #define CLONE_IO		0x80000000	 
 
- 
 #define CLONE_CLEAR_SIGHAND 0x100000000ULL  
 #define CLONE_INTO_CGROUP 0x200000000ULL  
 
- 
 #define CLONE_NEWTIME	0x00000080	 
 
 #ifndef __ASSEMBLY__
- 
 struct clone_args {
 	__aligned_u64 flags;
 	__aligned_u64 pidfd;
@@ -59,19 +54,15 @@ struct clone_args {
 #define CLONE_ARGS_SIZE_VER1 80  
 #define CLONE_ARGS_SIZE_VER2 88  
 
- 
 #define SCHED_NORMAL		0
 #define SCHED_FIFO		1
 #define SCHED_RR		2
 #define SCHED_BATCH		3
- 
 #define SCHED_IDLE		5
 #define SCHED_DEADLINE		6
 
- 
 #define SCHED_RESET_ON_FORK     0x40000000
 
- 
 #define SCHED_FLAG_RESET_ON_FORK	0x01
 #define SCHED_FLAG_RECLAIM		0x02
 #define SCHED_FLAG_DL_OVERRUN		0x04

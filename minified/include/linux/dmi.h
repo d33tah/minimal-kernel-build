@@ -1,4 +1,3 @@
- 
 #ifndef __DMI_H__
 #define __DMI_H__
 
@@ -6,7 +5,6 @@
 #include <linux/kobject.h>
 #include <linux/mod_devicetable.h>
 
- 
 
 enum dmi_device_type {
 	DMI_DEV_TYPE_ANY = 0,

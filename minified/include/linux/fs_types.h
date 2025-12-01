@@ -1,15 +1,11 @@
- 
 #ifndef _LINUX_FS_TYPES_H
 #define _LINUX_FS_TYPES_H
 
- 
 
- 
 #define S_DT_SHIFT	12
 #define S_DT(mode)	(((mode) & S_IFMT) >> S_DT_SHIFT)
 #define S_DT_MASK	(S_IFMT >> S_DT_SHIFT)
 
- 
 #define DT_UNKNOWN	0
 #define DT_FIFO		1
 #define DT_CHR		2
@@ -22,7 +18,6 @@
 
 #define DT_MAX		(S_DT_MASK + 1)  
 
- 
 #define FT_UNKNOWN	0
 #define FT_REG_FILE	1
 #define FT_DIR		2
@@ -34,7 +29,6 @@
 
 #define FT_MAX		8
 
- 
 extern unsigned char fs_ftype_to_dtype(unsigned int filetype);
 extern unsigned char fs_umode_to_ftype(umode_t mode);
 extern unsigned char fs_umode_to_dtype(umode_t mode);

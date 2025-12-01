@@ -1,5 +1,3 @@
- 
- 
 #include <linux/kernel.h>
 #include <linux/string.h>
 #include <linux/ctype.h>
@@ -10,7 +8,6 @@ static inline int myisspace(u8 c)
 	return c <= ' ';	 
 }
 
- 
 static int
 __cmdline_find_option_bool(const char *cmdline, int max_cmdline_size,
 			   const char *option)
@@ -72,7 +69,6 @@ __cmdline_find_option_bool(const char *cmdline, int max_cmdline_size,
 	return 0;	 
 }
 
- 
 static int
 __cmdline_find_option(const char *cmdline, int max_cmdline_size,
 		      const char *option, char *buffer, int bufsize)

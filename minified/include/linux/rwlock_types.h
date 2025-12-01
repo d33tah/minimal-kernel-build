@@ -7,7 +7,6 @@
 
 # define RW_DEP_MAP_INIT(lockname)
 
- 
 typedef struct {
 	arch_rwlock_t raw_lock;
 } rwlock_t;

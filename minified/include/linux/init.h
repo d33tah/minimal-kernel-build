@@ -1,27 +1,22 @@
- 
 #ifndef _LINUX_INIT_H
 #define _LINUX_INIT_H
 
 #include <linux/compiler.h>
 #include <linux/types.h>
 
- 
 #if defined(__noretpoline) && !defined(MODULE)
 #define __noinitretpoline __noretpoline
 #else
 #define __noinitretpoline
 #endif
 
- 
 
- 
 #define __init		__section(".init.text") __cold  __latent_entropy __noinitretpoline __nocfi
 #define __initdata	__section(".init.data")
 #define __initconst	__section(".init.rodata")
 #define __exitdata	__section(".exit.data")
 #define __exit_call	__used __section(".exitcall.exit")
 
- 
 #define __ref            __section(".ref.text") noinline
 #define __refdata        __section(".ref.data")
 #define __refconst       __section(".ref.rodata")
@@ -34,7 +29,6 @@
 
 #define __exit          __section(".exit.text") __exitused __cold notrace
 
- 
 #define __meminit        __section(".meminit.text") __cold notrace \
 						  __latent_entropy
 #define __meminitdata    __section(".meminit.data")
@@ -43,7 +37,6 @@
 #define __memexitdata    __section(".memexit.data")
 #define __memexitconst   __section(".memexit.rodata")
 
- 
 #define __HEAD		.section	".head.text","ax"
 #define __INIT		.section	".init.text","ax"
 #define __FINIT		.previous
@@ -56,13 +49,11 @@
 #define __MEMINITDATA    .section	".meminit.data", "aw"
 #define __MEMINITRODATA  .section	".meminit.rodata", "a"
 
- 
 #define __REF            .section       ".ref.text", "ax"
 #define __REFDATA        .section       ".ref.data", "aw"
 #define __REFCONST       .section       ".ref.rodata", "a"
 
 #ifndef __ASSEMBLY__
- 
 typedef int (*initcall_t)(void);
 typedef void (*exitcall_t)(void);
 
@@ -75,18 +66,15 @@ static inline initcall_t initcall_from_entry(initcall_entry_t *entry)
 
 extern initcall_entry_t __con_initcall_start[], __con_initcall_end[];
 
- 
 typedef void (*ctor_fn_t)(void);
 
 struct file_system_type;
 
- 
 extern int do_one_initcall(initcall_t fn);
 extern char __initdata boot_command_line[];
 extern char *saved_command_line;
 extern unsigned int reset_devices;
 
- 
 void setup_arch(char **);
 void prepare_namespace(void);
 void __init init_rootfs(void);
@@ -105,9 +93,7 @@ extern bool initcall_debug;
 
 #ifndef __ASSEMBLY__
 
- 
 
- 
 #define __initcall_id(fn)					\
 	__PASTE(__KBUILD_MODNAME,				\
 	__PASTE(__,						\
@@ -116,7 +102,6 @@ extern bool initcall_debug;
 	__PASTE(__LINE__,					\
 	__PASTE(_, fn))))))
 
- 
 #define __initcall_name(prefix, __iid, id)			\
 	__PASTE(__,						\
 	__PASTE(prefix,						\
@@ -150,10 +135,8 @@ extern bool initcall_debug;
 
 #define __define_initcall(fn, id) ___define_initcall(fn, id, .initcall##id)
 
- 
 #define early_initcall(fn)		__define_initcall(fn, early)
 
- 
 #define pure_initcall(fn)		__define_initcall(fn, 0)
 
 #define core_initcall(fn)		__define_initcall(fn, 1)
@@ -185,7 +168,6 @@ struct obs_kernel_param {
 	int early;
 };
 
- 
 #define __setup_param(str, unique_id, fn, early)			\
 	static const char __setup_str_##unique_id[] __initconst		\
 		__aligned(1) = str; 					\
@@ -194,11 +176,9 @@ struct obs_kernel_param {
 		__aligned(__alignof__(struct obs_kernel_param))		\
 		= { __setup_str_##unique_id, fn, early }
 
- 
 #define __setup(str, fn)						\
 	__setup_param(str, fn, fn, 0)
 
- 
 #define early_param(str, fn)						\
 	__setup_param(str, fn, fn, 1)
 
@@ -220,7 +200,6 @@ struct obs_kernel_param {
 	}								\
 	early_param(str_off, parse_##var##_off)
 
- 
 void __init parse_early_param(void);
 void __init parse_early_options(char *cmdline);
 #endif  
@@ -231,7 +210,6 @@ void __init parse_early_options(char *cmdline);
 #define __setup(str, func) 			 
 #endif
 
- 
 #define __nosavedata __section(".data..nosave")
 
 #ifdef MODULE

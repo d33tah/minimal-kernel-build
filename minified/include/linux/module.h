@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_MODULE_H
 #define _LINUX_MODULE_H
@@ -58,20 +56,16 @@ struct module_attribute {
 
 struct module_version_attribute;
 
- 
 extern int init_module(void);
 extern void cleanup_module(void);
 
 #ifndef MODULE
- 
 #define module_init(x)	__initcall(x);
 
- 
 #define module_exit(x)	__exitcall(x);
 
 #else  
 
- 
 #define early_initcall(fn)		module_init(fn)
 #define core_initcall(fn)		module_init(fn)
 #define core_initcall_sync(fn)		module_init(fn)
@@ -90,7 +84,6 @@ extern void cleanup_module(void);
 
 #define console_initcall(fn)		module_init(fn)
 
- 
 #define module_init(initfn)					\
 	static inline initcall_t __maybe_unused __inittest(void)		\
 	{ return initfn; }					\
@@ -98,7 +91,6 @@ extern void cleanup_module(void);
 		__attribute__((alias(#initfn)));		\
 	__CFI_ADDRESSABLE(init_module, __initdata);
 
- 
 #define module_exit(exitfn)					\
 	static inline exitcall_t __maybe_unused __exittest(void)		\
 	{ return exitfn; }					\
@@ -108,7 +100,6 @@ extern void cleanup_module(void);
 
 #endif
 
- 
 #define __init_or_module __init
 #define __initdata_or_module __initdata
 #define __initconst_or_module __initconst
@@ -116,33 +107,25 @@ extern void cleanup_module(void);
 #define __INITDATA_OR_MODULE __INITDATA
 #define __INITRODATA_OR_MODULE __INITRODATA
 
- 
 #define MODULE_INFO(tag, info) __MODULE_INFO(tag, tag, info)
 
- 
 #define MODULE_ALIAS(_alias) MODULE_INFO(alias, _alias)
 
- 
 #define MODULE_SOFTDEP(_softdep) MODULE_INFO(softdep, _softdep)
 
- 
 #ifdef MODULE
 #define MODULE_FILE
 #else
 #define MODULE_FILE	MODULE_INFO(file, KBUILD_MODFILE);
 #endif
 
- 
 #define MODULE_LICENSE(_license) MODULE_FILE MODULE_INFO(license, _license)
 
- 
 #define MODULE_AUTHOR(_author) MODULE_INFO(author, _author)
 
- 
 #define MODULE_DESCRIPTION(_description) MODULE_INFO(description, _description)
 
 #ifdef MODULE
- 
 #define MODULE_DEVICE_TABLE(type, name)					\
 extern typeof(name) __mod_##type##__##name##_device_table		\
   __attribute__ ((unused, alias(__stringify(name))))
@@ -150,11 +133,9 @@ extern typeof(name) __mod_##type##__##name##_device_table		\
 #define MODULE_DEVICE_TABLE(type, name)
 #endif
 
- 
 
 #define MODULE_VERSION(_version) MODULE_INFO(version, _version)
 
- 
 #define MODULE_FIRMWARE(_firmware) MODULE_INFO(firmware, _firmware)
 
 #define MODULE_IMPORT_NS(ns)	MODULE_INFO(import_ns, __stringify(ns))
@@ -209,7 +190,6 @@ static inline bool within_module(unsigned long addr, const struct module *mod)
 	return false;
 }
 
- 
 #define symbol_get(x) ({ extern typeof(x) x __attribute__((weak,visibility("hidden"))); &(x); })
 #define symbol_put(x) do { } while (0)
 #define symbol_put_addr(x) do { } while (0)
@@ -229,7 +209,6 @@ static inline void module_put(struct module *module)
 
 #define module_name(mod) "kernel"
 
- 
 static inline const char *module_address_lookup(unsigned long addr,
 					  unsigned long *symbolsize,
 					  unsigned long *offset,
@@ -289,7 +268,6 @@ static inline void set_module_sig_enforced(void)
 {
 }
 
- 
 static inline
 void *dereference_module_function_descriptor(struct module *mod, void *ptr)
 {
@@ -300,7 +278,6 @@ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
 
 #define symbol_request(x) try_then_request_module(symbol_get(x), "symbol:" #x)
 
- 
 
 #define __MODULE_STRING(x) __stringify(x)
 

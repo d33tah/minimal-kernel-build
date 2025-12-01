@@ -1,8 +1,6 @@
- 
 #ifndef _UAPI_LINUX_IOPRIO_H
 #define _UAPI_LINUX_IOPRIO_H
 
- 
 #define IOPRIO_CLASS_SHIFT	13
 #define IOPRIO_CLASS_MASK	0x07
 #define IOPRIO_PRIO_MASK	((1UL << IOPRIO_CLASS_SHIFT) - 1)
@@ -14,7 +12,6 @@
 	((((class) & IOPRIO_CLASS_MASK) << IOPRIO_CLASS_SHIFT) | \
 	 ((data) & IOPRIO_PRIO_MASK))
 
- 
 enum {
 	IOPRIO_CLASS_NONE,
 	IOPRIO_CLASS_RT,
@@ -22,7 +19,6 @@ enum {
 	IOPRIO_CLASS_IDLE,
 };
 
- 
 #define IOPRIO_NR_LEVELS	8
 #define IOPRIO_BE_NR		IOPRIO_NR_LEVELS
 
@@ -32,7 +28,6 @@ enum {
 	IOPRIO_WHO_USER,
 };
 
- 
 #define IOPRIO_NORM	4
 #define IOPRIO_BE_NORM	IOPRIO_NORM
 

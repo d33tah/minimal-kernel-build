@@ -3,7 +3,6 @@
 
 #include <linux/types.h>
 
- 
 #define MS_RDONLY	 1	 
 #define MS_NOSUID	 2	 
 #define MS_NODEV	 4	 
@@ -31,7 +30,6 @@
 #define MS_STRICTATIME	(1<<24)  
 #define MS_LAZYTIME	(1<<25)  
 
- 
 #define MS_SUBMOUNT     (1<<26)
 #define MS_NOREMOTELOCK	(1<<27)
 #define MS_NOSEC	(1<<28)
@@ -39,19 +37,15 @@
 #define MS_ACTIVE	(1<<30)
 #define MS_NOUSER	(1<<31)
 
- 
 #define MS_RMT_MASK	(MS_RDONLY|MS_SYNCHRONOUS|MS_MANDLOCK|MS_I_VERSION|\
 			 MS_LAZYTIME)
 
- 
 #define MS_MGC_VAL 0xC0ED0000
 #define MS_MGC_MSK 0xffff0000
 
- 
 #define OPEN_TREE_CLONE		1		 
 #define OPEN_TREE_CLOEXEC	O_CLOEXEC	 
 
- 
 #define MOVE_MOUNT_F_SYMLINKS		0x00000001  
 #define MOVE_MOUNT_F_AUTOMOUNTS		0x00000002  
 #define MOVE_MOUNT_F_EMPTY_PATH		0x00000004  
@@ -61,16 +55,13 @@
 #define MOVE_MOUNT_SET_GROUP		0x00000100  
 #define MOVE_MOUNT__MASK		0x00000177
 
- 
 #define FSOPEN_CLOEXEC		0x00000001
 
- 
 #define FSPICK_CLOEXEC		0x00000001
 #define FSPICK_SYMLINK_NOFOLLOW	0x00000002
 #define FSPICK_NO_AUTOMOUNT	0x00000004
 #define FSPICK_EMPTY_PATH	0x00000008
 
- 
 enum fsconfig_command {
 	FSCONFIG_SET_FLAG	= 0,	 
 	FSCONFIG_SET_STRING	= 1,	 
@@ -82,10 +73,8 @@ enum fsconfig_command {
 	FSCONFIG_CMD_RECONFIGURE = 7,	 
 };
 
- 
 #define FSMOUNT_CLOEXEC		0x00000001
 
- 
 #define MOUNT_ATTR_RDONLY	0x00000001  
 #define MOUNT_ATTR_NOSUID	0x00000002  
 #define MOUNT_ATTR_NODEV	0x00000004  
@@ -98,7 +87,6 @@ enum fsconfig_command {
 #define MOUNT_ATTR_IDMAP	0x00100000  
 #define MOUNT_ATTR_NOSYMFOLLOW	0x00200000  
 
- 
 struct mount_attr {
 	__u64 attr_set;
 	__u64 attr_clr;
@@ -106,7 +94,6 @@ struct mount_attr {
 	__u64 userns_fd;
 };
 
- 
 #define MOUNT_ATTR_SIZE_VER0	32  
 
 #endif  

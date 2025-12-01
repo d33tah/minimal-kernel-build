@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_EXTABLE_H
 #define _LINUX_EXTABLE_H
 
@@ -17,7 +16,6 @@ void sort_extable(struct exception_table_entry *start,
 void sort_main_extable(void);
 void trim_init_extable(struct module *m);
 
- 
 const struct exception_table_entry *search_exception_tables(unsigned long add);
 const struct exception_table_entry *
 search_kernel_exception_table(unsigned long addr);

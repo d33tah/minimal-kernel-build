@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SYNC_CORE_H
 #define _LINUX_SYNC_CORE_H
 

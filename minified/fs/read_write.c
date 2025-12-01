@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/slab.h>
 #include <linux/stat.h>
@@ -33,7 +31,6 @@ static inline bool unsigned_offsets(struct file *file)
 	return file->f_mode & FMODE_UNSIGNED_OFFSET;
 }
 
- 
 loff_t vfs_setpos(struct file *file, loff_t offset, loff_t maxsize)
 {
 	if (offset < 0 && !unsigned_offsets(file))
@@ -48,7 +45,6 @@ loff_t vfs_setpos(struct file *file, loff_t offset, loff_t maxsize)
 	return offset;
 }
 
- 
 loff_t
 generic_file_llseek_size(struct file *file, loff_t offset, int whence,
 		loff_t maxsize, loff_t eof)
@@ -82,7 +78,6 @@ generic_file_llseek_size(struct file *file, loff_t offset, int whence,
 	return vfs_setpos(file, offset, maxsize);
 }
 
- 
 loff_t generic_file_llseek(struct file *file, loff_t offset, int whence)
 {
 	struct inode *inode = file->f_mapping->host;
@@ -104,7 +99,6 @@ loff_t no_seek_end_llseek(struct file *file, loff_t offset, int whence)
 loff_t no_seek_end_llseek_size(struct file *file, loff_t offset, int whence, loff_t size)
 { return -EINVAL; }
 
- 
 loff_t noop_llseek(struct file *file, loff_t offset, int whence)
 {
 	return file->f_pos;
@@ -352,7 +346,6 @@ static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t 
 	return ret;
 }
 
- 
 ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t *pos)
 {
 	struct kvec iov = {
@@ -384,7 +377,6 @@ ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t 
 	inc_syscw(current);
 	return ret;
 }
- 
 
 ssize_t kernel_write(struct file *file, const void *buf, size_t count,
 			    loff_t *pos)
@@ -433,7 +425,6 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 	return ret;
 }
 
- 
 static inline loff_t *file_ppos(struct file *file)
 {
 	return file->f_mode & FMODE_STREAM ? NULL : &file->f_pos;
@@ -609,7 +600,6 @@ SYSCALL_DEFINE6(pwritev2, unsigned long, fd, const struct iovec __user *, vec,
 	return -ENOSYS;
 }
 
- 
 
 SYSCALL_DEFINE4(sendfile, int, out_fd, int, in_fd, off_t __user *, offset, size_t, count)
 {
@@ -634,6 +624,5 @@ ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from)
 	return iov_iter_count(from);
 }
 
- 
 /* Stub: not used in minimal kernel */
 int generic_file_rw_checks(struct file *file_in, struct file *file_out) { return -EINVAL; }

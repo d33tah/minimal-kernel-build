@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_TTY_BUFFER_H
 #define _LINUX_TTY_BUFFER_H
 
@@ -21,7 +20,6 @@ struct tty_buffer {
 	unsigned long data[];
 };
 
- 
 #define TTYB_NORMAL	1	 
 
 static inline unsigned char *char_buf_ptr(struct tty_buffer *b, int ofs)
@@ -46,7 +44,6 @@ struct tty_bufhead {
 	struct tty_buffer *tail;	 
 };
 
- 
 #define TTY_NORMAL	0
 #define TTY_BREAK	1
 #define TTY_FRAME	2

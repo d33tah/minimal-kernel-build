@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_TIMER_H
 #define _LINUX_TIMER_H
 
@@ -18,7 +17,6 @@ struct timer_list {
 
 #define __TIMER_LOCKDEP_MAP_INITIALIZER(_kn)
 
- 
 #define TIMER_CPUMASK		0x0003FFFF
 #define TIMER_MIGRATING		0x00040000
 #define TIMER_BASEMASK		(TIMER_CPUMASK | TIMER_MIGRATING)
@@ -43,7 +41,6 @@ struct timer_list {
 	struct timer_list _name =				\
 		__TIMER_INITIALIZER(_function, 0)
 
- 
 void init_timer_key(struct timer_list *timer,
 		    void (*func)(struct timer_list *), unsigned int flags,
 		    const char *name, struct lock_class_key *key);
@@ -62,7 +59,6 @@ static inline void init_timer_on_stack_key(struct timer_list *timer,
 #define __init_timer_on_stack(_timer, _fn, _flags)			\
 	init_timer_on_stack_key((_timer), (_fn), (_flags), NULL, NULL)
 
- 
 #define timer_setup(timer, callback, flags)			\
 	__init_timer((timer), (callback), (flags))
 
@@ -74,7 +70,6 @@ static inline void destroy_timer_on_stack(struct timer_list *timer) { }
 #define from_timer(var, callback_timer, timer_fieldname) \
 	container_of(callback_timer, typeof(*var), timer_fieldname)
 
- 
 static inline int timer_pending(const struct timer_list * timer)
 {
 	return !hlist_unhashed_lockless(&timer->entry);

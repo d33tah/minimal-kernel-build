@@ -1,4 +1,3 @@
- 
 #ifndef __ASM_MEMORY_MODEL_H
 #define __ASM_MEMORY_MODEL_H
 
@@ -6,7 +5,6 @@
 
 #ifndef __ASSEMBLY__
 
- 
 
 #ifndef ARCH_PFN_OFFSET
 #define ARCH_PFN_OFFSET		(0UL)
@@ -17,7 +15,6 @@
 				 ARCH_PFN_OFFSET)
 
 
- 
 #define	__phys_to_pfn(paddr)	PHYS_PFN(paddr)
 #define	__pfn_to_phys(pfn)	PFN_PHYS(pfn)
 

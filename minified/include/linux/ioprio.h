@@ -1,4 +1,3 @@
- 
 #ifndef IOPRIO_H
 #define IOPRIO_H
 
@@ -8,10 +7,8 @@
 
 #include <uapi/linux/ioprio.h>
 
- 
 #define IOPRIO_DEFAULT	IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, IOPRIO_BE_NORM)
 
- 
 static inline bool ioprio_valid(unsigned short ioprio)
 {
 	unsigned short class = IOPRIO_PRIO_CLASS(ioprio);
@@ -19,13 +16,11 @@ static inline bool ioprio_valid(unsigned short ioprio)
 	return class > IOPRIO_CLASS_NONE && class <= IOPRIO_CLASS_IDLE;
 }
 
- 
 static inline int task_nice_ioprio(struct task_struct *task)
 {
 	return (task_nice(task) + 20) / 5;
 }
 
- 
 static inline int task_nice_ioclass(struct task_struct *task)
 {
 	if (task->policy == SCHED_IDLE)
@@ -36,7 +31,6 @@ static inline int task_nice_ioclass(struct task_struct *task)
 		return IOPRIO_CLASS_BE;
 }
 
- 
 static inline int get_current_ioprio(void)
 {
 	struct io_context *ioc = current->io_context;
@@ -46,7 +40,6 @@ static inline int get_current_ioprio(void)
 	return IOPRIO_DEFAULT;
 }
 
- 
 extern int ioprio_best(unsigned short aprio, unsigned short bprio);
 
 extern int set_task_ioprio(struct task_struct *task, int ioprio);

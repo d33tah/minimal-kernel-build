@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_TIME64_H
 #define _LINUX_TIME64_H
 
@@ -20,7 +19,6 @@ struct itimerspec64 {
 	struct timespec64 it_value;
 };
 
- 
 #define TIME64_MAX			((s64)~((u64)1 << 63))
 #define TIME64_MIN			(-TIME64_MAX - 1)
 
@@ -29,7 +27,6 @@ struct itimerspec64 {
 #define KTIME_SEC_MAX			(KTIME_MAX / NSEC_PER_SEC)
 #define KTIME_SEC_MIN			(KTIME_MIN / NSEC_PER_SEC)
 
- 
 #define TIME_UPTIME_SEC_MAX		(30LL * 365 * 24 *3600)
 #define TIME_SETTOD_SEC_MAX		(KTIME_SEC_MAX - TIME_UPTIME_SEC_MAX)
 
@@ -39,7 +36,6 @@ static inline int timespec64_equal(const struct timespec64 *a,
 	return (a->tv_sec == b->tv_sec) && (a->tv_nsec == b->tv_nsec);
 }
 
- 
 static inline int timespec64_compare(const struct timespec64 *lhs, const struct timespec64 *rhs)
 {
 	if (lhs->tv_sec < rhs->tv_sec)
@@ -60,7 +56,6 @@ static inline struct timespec64 timespec64_add(struct timespec64 lhs,
 	return ts_delta;
 }
 
- 
 static inline struct timespec64 timespec64_sub(struct timespec64 lhs,
 						struct timespec64 rhs)
 {
@@ -70,7 +65,6 @@ static inline struct timespec64 timespec64_sub(struct timespec64 lhs,
 	return ts_delta;
 }
 
- 
 static inline bool timespec64_valid(const struct timespec64 *ts)
 {
 	 
@@ -102,7 +96,6 @@ static inline bool timespec64_valid_settod(const struct timespec64 *ts)
 	return true;
 }
 
- 
 static inline s64 timespec64_to_ns(const struct timespec64 *ts)
 {
 	 
@@ -115,17 +108,14 @@ static inline s64 timespec64_to_ns(const struct timespec64 *ts)
 	return ((s64) ts->tv_sec * NSEC_PER_SEC) + ts->tv_nsec;
 }
 
- 
 extern struct timespec64 ns_to_timespec64(const s64 nsec);
 
- 
 static __always_inline void timespec64_add_ns(struct timespec64 *a, u64 ns)
 {
 	a->tv_sec += __iter_div_u64_rem(a->tv_nsec + ns, NSEC_PER_SEC, &ns);
 	a->tv_nsec = ns;
 }
 
- 
 extern struct timespec64 timespec64_add_safe(const struct timespec64 lhs,
 					 const struct timespec64 rhs);
 

@@ -1,5 +1,3 @@
- 
- 
 #ifndef __LINUX_RESTART_BLOCK_H
 #define __LINUX_RESTART_BLOCK_H
 
@@ -16,7 +14,6 @@ enum timespec_type {
 	TT_NATIVE	= 1,
 };
 
- 
 struct restart_block {
 	unsigned long arch_data;
 	long (*fn)(struct restart_block *);

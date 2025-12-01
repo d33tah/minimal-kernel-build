@@ -1,18 +1,15 @@
- 
 #ifndef _LINUX_KSTRTOX_H
 #define _LINUX_KSTRTOX_H
 
 #include <linux/compiler.h>
 #include <linux/types.h>
 
- 
 int __must_check _kstrtoul(const char *s, unsigned int base, unsigned long *res);
 int __must_check _kstrtol(const char *s, unsigned int base, long *res);
 
 int __must_check kstrtoull(const char *s, unsigned int base, unsigned long long *res);
 int __must_check kstrtoll(const char *s, unsigned int base, long long *res);
 
- 
 static inline int __must_check kstrtoul(const char *s, unsigned int base, unsigned long *res)
 {
 	 
@@ -23,7 +20,6 @@ static inline int __must_check kstrtoul(const char *s, unsigned int base, unsign
 		return _kstrtoul(s, base, res);
 }
 
- 
 static inline int __must_check kstrtol(const char *s, unsigned int base, long *res)
 {
 	 
@@ -95,7 +91,6 @@ static inline int __must_check kstrtos32_from_user(const char __user *s, size_t 
 	return kstrtoint_from_user(s, count, base, res);
 }
 
- 
 
 extern unsigned long simple_strtoul(const char *,char **,unsigned int);
 extern long simple_strtol(const char *,char **,unsigned int);

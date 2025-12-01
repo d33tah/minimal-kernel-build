@@ -1,5 +1,3 @@
- 
- 
 #ifndef __LINUX_TINY_H
 #define __LINUX_TINY_H
 
@@ -21,7 +19,6 @@ static inline void synchronize_rcu_expedited(void)
 	synchronize_rcu();
 }
 
- 
 extern void kvfree(const void *addr);
 
 static inline void kvfree_call_rcu(struct rcu_head *head, rcu_callback_t func)
@@ -55,7 +52,6 @@ static inline int rcu_needs_cpu(void)
 	return 0;
 }
 
- 
 static inline void rcu_virt_note_context_switch(int cpu) { }
 static inline void rcu_cpu_stall_reset(void) { }
 static inline int rcu_jiffies_till_stall_check(void) { return 21 * HZ; }
@@ -82,10 +78,8 @@ static inline void rcu_momentary_dyntick_idle(void) { }
 static inline void kfree_rcu_scheduler_running(void) { }
 static inline bool rcu_gp_might_be_stalled(void) { return false; }
 
- 
 static inline void rcu_all_qs(void) { barrier(); }
 
- 
 #define rcutree_prepare_cpu      NULL
 #define rcutree_online_cpu       NULL
 #define rcutree_offline_cpu      NULL

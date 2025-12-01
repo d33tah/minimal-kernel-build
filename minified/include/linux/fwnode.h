@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_FWNODE_H_
 #define _LINUX_FWNODE_H_
@@ -12,7 +10,6 @@
 struct fwnode_operations;
 struct device;
 
- 
 #define FWNODE_FLAG_LINKS_ADDED			BIT(0)
 #define FWNODE_FLAG_NOT_DEVICE			BIT(1)
 #define FWNODE_FLAG_INITIALIZED			BIT(2)
@@ -29,27 +26,23 @@ struct fwnode_handle {
 
 struct fwnode_link;
 
- 
 struct fwnode_endpoint {
 	unsigned int port;
 	unsigned int id;
 	const struct fwnode_handle *local_fwnode;
 };
 
- 
 #define SWNODE_GRAPH_PORT_NAME_FMT		"port@%u"
 #define SWNODE_GRAPH_ENDPOINT_NAME_FMT		"endpoint@%u"
 
 #define NR_FWNODE_REFERENCE_ARGS	8
 
- 
 struct fwnode_reference_args {
 	struct fwnode_handle *fwnode;
 	unsigned int nargs;
 	u64 args[NR_FWNODE_REFERENCE_ARGS];
 };
 
- 
 struct fwnode_operations {
 	struct fwnode_handle *(*get)(struct fwnode_handle *fwnode);
 	void (*put)(struct fwnode_handle *fwnode);

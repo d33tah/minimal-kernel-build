@@ -1,8 +1,6 @@
- 
 #ifndef TRACEPOINT_DEFS_H
 #define TRACEPOINT_DEFS_H 1
 
- 
 
 #include <linux/atomic.h>
 #include <linux/static_key.h>
@@ -45,7 +43,6 @@ struct bpf_raw_event_map {
 	u32			writable_size;
 } __aligned(32);
 
- 
 #define DECLARE_TRACEPOINT(tp) \
 	extern struct tracepoint __tracepoint_##tp
 

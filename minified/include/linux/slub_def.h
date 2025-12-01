@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_SLUB_DEF_H
 #define _LINUX_SLUB_DEF_H
 
- 
 #include <linux/kfence.h>
 #include <linux/kobject.h>
 #include <linux/reciprocal_div.h>
@@ -37,7 +35,6 @@ enum stat_item {
 	CPU_PARTIAL_DRAIN,	 
 	NR_SLUB_STAT_ITEMS };
 
- 
 struct kmem_cache_cpu {
 	void **freelist;	 
 	unsigned long tid;	 
@@ -51,12 +48,10 @@ struct kmem_cache_cpu {
 
 #define slub_percpu_partial_read_once(c)	NULL
 
- 
 struct kmem_cache_order_objects {
 	unsigned int x;
 };
 
- 
 struct kmem_cache {
 	struct kmem_cache_cpu __percpu *cpu_slab;
 	 
@@ -108,7 +103,6 @@ static inline void *nearest_obj(struct kmem_cache *cache, const struct slab *sla
 	return result;
 }
 
- 
 static inline unsigned int __obj_to_index(const struct kmem_cache *cache,
 					  void *addr, void *obj)
 {

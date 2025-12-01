@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_STRING_H_
 #define _LINUX_STRING_H_
 
@@ -14,7 +13,6 @@ extern void *memdup_user(const void __user *, size_t);
 extern void *vmemdup_user(const void __user *, size_t);
 extern void *memdup_user_nul(const void __user *, size_t);
 
- 
 #include <asm/string.h>
 
 #ifndef __HAVE_ARCH_STRCPY
@@ -30,7 +28,6 @@ size_t strlcpy(char *, const char *, size_t);
 ssize_t strscpy(char *, const char *, size_t);
 #endif
 
- 
 ssize_t strscpy_pad(char *dest, const char *src, size_t count);
 
 #ifndef __HAVE_ARCH_STRCAT
@@ -184,7 +181,6 @@ extern bool sysfs_streq(const char *s1, const char *s2);
 int match_string(const char * const *array, size_t n, const char *string);
 int __sysfs_match_string(const char * const *array, size_t n, const char *s);
 
- 
 #define sysfs_match_string(_a, _s) __sysfs_match_string(_a, ARRAY_SIZE(_a), _s)
 
 
@@ -193,7 +189,6 @@ extern ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
 
 int ptr_to_hashval(const void *ptr, unsigned long *hashval_out);
 
- 
 static inline bool strstarts(const char *str, const char *prefix)
 {
 	return strncmp(str, prefix, strlen(prefix)) == 0;
@@ -201,14 +196,12 @@ static inline bool strstarts(const char *str, const char *prefix)
 
 size_t memweight(const void *ptr, size_t bytes);
 
- 
 static inline void memzero_explicit(void *s, size_t count)
 {
 	memset(s, 0, count);
 	barrier_data(s);
 }
 
- 
 static inline const char *kbasename(const char *path)
 {
 	const char *tail = strrchr(path, '/');
@@ -223,7 +216,6 @@ static inline const char *kbasename(const char *path)
 void memcpy_and_pad(void *dest, size_t dest_len, const void *src, size_t count,
 		    int pad);
 
- 
 #define memset_after(obj, v, member)					\
 ({									\
 	u8 *__ptr = (u8 *)(obj);					\
@@ -232,7 +224,6 @@ void memcpy_and_pad(void *dest, size_t dest_len, const void *src, size_t count,
 	       sizeof(*(obj)) - offsetofend(typeof(*(obj)), member));	\
 })
 
- 
 #define memset_startat(obj, v, member)					\
 ({									\
 	u8 *__ptr = (u8 *)(obj);					\
@@ -241,7 +232,6 @@ void memcpy_and_pad(void *dest, size_t dest_len, const void *src, size_t count,
 	       sizeof(*(obj)) - offsetof(typeof(*(obj)), member));	\
 })
 
- 
 static __always_inline size_t str_has_prefix(const char *str, const char *prefix)
 {
 	size_t len = strlen(prefix);

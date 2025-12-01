@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/memblock.h>
 #include <linux/init.h>
@@ -23,7 +21,6 @@
 
 #include "physaddr.h"
 
- 
 struct ioremap_desc {
 	unsigned int flags;
 };
@@ -35,7 +32,6 @@ int ioremap_change_attr(unsigned long vaddr, unsigned long size,
 	return 0;
 }
 
- 
 static unsigned int __ioremap_check_ram(struct resource *res)
 {
 	unsigned long start_pfn, stop_pfn;
@@ -56,7 +52,6 @@ static unsigned int __ioremap_check_ram(struct resource *res)
 	return 0;
 }
 
- 
 static unsigned int __ioremap_check_encrypted(struct resource *res)
 {
 	if (!cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
@@ -73,7 +68,6 @@ static unsigned int __ioremap_check_encrypted(struct resource *res)
 	return 0;
 }
 
- 
 static void __ioremap_check_other(resource_size_t addr, struct ioremap_desc *desc)
 {
 	if (!cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
@@ -102,7 +96,6 @@ static int __ioremap_collect_map_flags(struct resource *res, void *arg)
 			       (IORES_MAP_SYSTEM_RAM | IORES_MAP_ENCRYPTED));
 }
 
- 
 static void __ioremap_check_mem(resource_size_t addr, unsigned long size,
 				struct ioremap_desc *desc)
 {
@@ -117,7 +110,6 @@ static void __ioremap_check_mem(resource_size_t addr, unsigned long size,
 	__ioremap_check_other(addr, desc);
 }
 
- 
 static void __iomem *
 __ioremap_caller(resource_size_t phys_addr, unsigned long size,
 		 enum page_cache_mode pcm, void *caller, bool encrypted)
@@ -235,7 +227,6 @@ err_free_memtype:
 	return NULL;
 }
 
- 
 void __iomem *ioremap(resource_size_t phys_addr, unsigned long size)
 {
 	 
@@ -245,7 +236,6 @@ void __iomem *ioremap(resource_size_t phys_addr, unsigned long size)
 				__builtin_return_address(0), false);
 }
 
- 
 void __iomem *ioremap_uc(resource_size_t phys_addr, unsigned long size)
 {
 	enum page_cache_mode pcm = _PAGE_CACHE_MODE_UC;
@@ -254,14 +244,12 @@ void __iomem *ioremap_uc(resource_size_t phys_addr, unsigned long size)
 				__builtin_return_address(0), false);
 }
 
- 
 void __iomem *ioremap_wc(resource_size_t phys_addr, unsigned long size)
 {
 	return __ioremap_caller(phys_addr, size, _PAGE_CACHE_MODE_WC,
 					__builtin_return_address(0), false);
 }
 
- 
 void __iomem *ioremap_wt(resource_size_t phys_addr, unsigned long size)
 {
 	return __ioremap_caller(phys_addr, size, _PAGE_CACHE_MODE_WT,
@@ -283,7 +271,6 @@ void __iomem *ioremap_prot(resource_size_t phys_addr, unsigned long size,
 				unsigned long prot_val)
 { return NULL; }
 
- 
 void iounmap(volatile void __iomem *addr)
 {
 	struct vm_struct *p, *o;
@@ -320,7 +307,6 @@ void iounmap(volatile void __iomem *addr)
 	kfree(p);
 }
 
- 
 void *xlate_dev_mem_ptr(phys_addr_t phys)
 {
 	unsigned long start  = phys &  PAGE_MASK;

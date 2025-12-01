@@ -1,20 +1,14 @@
- 
 #ifndef __LINUX_COMPILER_TYPES_H
 #error "Please don't include <linux/compiler-clang.h> directly, include <linux/compiler.h> instead."
 #endif
 
- 
 
- 
 #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
 
- 
 #define KASAN_ABI_VERSION 5
 
- 
 
 #if __has_feature(address_sanitizer) || __has_feature(hwaddress_sanitizer)
- 
 #define __SANITIZE_ADDRESS__
 #define __no_sanitize_address \
 		__attribute__((no_sanitize("address", "hwaddress")))
@@ -23,7 +17,6 @@
 #endif
 
 #if __has_feature(thread_sanitizer)
- 
 #define __SANITIZE_THREAD__
 #define __no_sanitize_thread \
 		__attribute__((no_sanitize("thread")))
@@ -38,14 +31,12 @@
 #endif  
 
 #if __has_feature(undefined_behavior_sanitizer)
- 
 #define __no_sanitize_undefined \
 		__attribute__((no_sanitize("undefined")))
 #else
 #define __no_sanitize_undefined
 #endif
 
- 
 #if __has_feature(coverage_sanitizer)
 #define __no_sanitize_coverage __attribute__((no_sanitize("coverage")))
 #else
@@ -60,15 +51,12 @@
 #define __cficanonical	__attribute__((__cfi_canonical_jump_table__))
 
 #if defined(CONFIG_CFI_CLANG)
- 
 #define function_nocfi(x)	__builtin_function_start(x)
 #endif
 
- 
 #define __diag_clang(version, severity, s) \
 	__diag_clang_ ## version(__diag_clang_ ## severity s)
 
- 
 #define __diag_clang_ignore	ignored
 #define __diag_clang_warn	warning
 #define __diag_clang_error	error

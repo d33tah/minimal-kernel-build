@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_KLIST_H
 #define _LINUX_KLIST_H

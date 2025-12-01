@@ -1,5 +1,3 @@
- 
- 
 #ifndef __ASM_GENERIC_IO_H
 #define __ASM_GENERIC_IO_H
 
@@ -16,7 +14,6 @@
 #define __io_br()      barrier()
 #endif
 
- 
 #ifndef __io_ar
 #ifdef rmb
 #define __io_ar(v)      rmb()
@@ -25,7 +22,6 @@
 #endif
 #endif
 
- 
 #ifndef __io_bw
 #ifdef wmb
 #define __io_bw()      wmb()
@@ -34,7 +30,6 @@
 #endif
 #endif
 
- 
 #ifndef __io_aw
 #define __io_aw()      mmiowb_set_pending()
 #endif
@@ -56,7 +51,6 @@
 #endif
 
 
- 
 
 #ifndef __raw_readb
 #define __raw_readb __raw_readb
@@ -108,7 +102,6 @@ static inline void __raw_writel(u32 value, volatile void __iomem *addr)
 #endif
 
 
- 
 
 #ifndef readb
 #define readb readb
@@ -181,7 +174,6 @@ static inline void writel(u32 value, volatile void __iomem *addr)
 #endif
 
 
- 
 #ifndef readb_relaxed
 #define readb_relaxed readb_relaxed
 static inline u8 readb_relaxed(const volatile void __iomem *addr)
@@ -246,7 +238,6 @@ static inline void writeq_relaxed(u64 value, volatile void __iomem *addr)
 }
 #endif
 
- 
 #ifndef readsb
 #define readsb readsb
 static inline void readsb(const volatile void __iomem *addr, void *buffer,
@@ -350,7 +341,6 @@ static inline void writesl(volatile void __iomem *addr, const void *buffer,
 #define IO_SPACE_LIMIT 0xffff
 #endif
 
- 
 
 #if !defined(inb) && !defined(_inb)
 #define _inb _inb
@@ -495,7 +485,6 @@ static inline void outl_p(u32 value, unsigned long addr)
 }
 #endif
 
- 
 
 #ifndef insb
 #define insb insb
@@ -605,7 +594,6 @@ static inline void outsl_p(unsigned long addr, const void *buffer,
 #include <linux/vmalloc.h>
 #define __io_virt(x) ((void __force *)(x))
 
- 
 #ifndef virt_to_phys
 #define virt_to_phys virt_to_phys
 static inline unsigned long virt_to_phys(volatile void *address)
@@ -622,7 +610,6 @@ static inline void *phys_to_virt(unsigned long address)
 }
 #endif
 
- 
 #if   defined(CONFIG_GENERIC_IOREMAP)
 #include <linux/pgtable.h>
 
@@ -644,7 +631,6 @@ static inline void __iomem *ioremap(phys_addr_t addr, size_t size)
 #define ioremap_wt ioremap
 #endif
 
- 
 #ifndef ioremap_uc
 #define ioremap_uc ioremap_uc
 static inline void __iomem *ioremap_uc(phys_addr_t offset, size_t size)
@@ -653,7 +639,6 @@ static inline void __iomem *ioremap_uc(phys_addr_t offset, size_t size)
 }
 #endif
 
- 
 #ifndef ioremap_np
 #define ioremap_np ioremap_np
 static inline void __iomem *ioremap_np(phys_addr_t offset, size_t size)
@@ -695,7 +680,6 @@ static inline void *bus_to_virt(unsigned long address)
 
 #ifndef memset_io
 #define memset_io memset_io
- 
 static inline void memset_io(volatile void __iomem *addr, int value,
 			     size_t size)
 {
@@ -705,7 +689,6 @@ static inline void memset_io(volatile void __iomem *addr, int value,
 
 #ifndef memcpy_fromio
 #define memcpy_fromio memcpy_fromio
- 
 static inline void memcpy_fromio(void *buffer,
 				 const volatile void __iomem *addr,
 				 size_t size)
@@ -716,7 +699,6 @@ static inline void memcpy_fromio(void *buffer,
 
 #ifndef memcpy_toio
 #define memcpy_toio memcpy_toio
- 
 static inline void memcpy_toio(volatile void __iomem *addr, const void *buffer,
 			       size_t size)
 {

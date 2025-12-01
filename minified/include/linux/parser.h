@@ -1,9 +1,6 @@
- 
- 
 #ifndef _LINUX_PARSER_H
 #define _LINUX_PARSER_H
 
- 
 struct match_token {
 	int token;
 	const char *pattern;
@@ -11,10 +8,8 @@ struct match_token {
 
 typedef struct match_token match_table_t[];
 
- 
 enum {MAX_OPT_ARGS = 3};
 
- 
 typedef struct {
 	char *from;
 	char *to;

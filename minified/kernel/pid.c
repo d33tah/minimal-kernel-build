@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/mm.h>
 #include <linux/export.h>
@@ -41,7 +39,6 @@ int pid_max = PID_MAX_DEFAULT;
 int pid_max_min = RESERVED_PIDS + 1;
 int pid_max_max = PID_MAX_LIMIT;
 
- 
 struct pid_namespace init_pid_ns = {
 	.ns.count = REFCOUNT_INIT(2),
 	.idr = IDR_INIT(init_pid_ns.idr),
@@ -52,7 +49,6 @@ struct pid_namespace init_pid_ns = {
 	.ns.inum = PROC_PID_INIT_INO,
 };
 
- 
 
 static  __cacheline_aligned_in_smp DEFINE_SPINLOCK(pidmap_lock);
 
@@ -243,7 +239,6 @@ static struct pid **task_pid_ptr(struct task_struct *task, enum pid_type type)
 		&task->signal->pids[type];
 }
 
- 
 void attach_pid(struct task_struct *task, enum pid_type type)
 {
 	struct pid *pid = *task_pid_ptr(task, type);
@@ -300,7 +295,6 @@ void exchange_tids(struct task_struct *left, struct task_struct *right)
 	WRITE_ONCE(right->pid, pid_nr(pid1));
 }
 
- 
 void transfer_pid(struct task_struct *old, struct task_struct *new,
 			   enum pid_type type)
 {
@@ -322,7 +316,6 @@ struct task_struct *pid_task(struct pid *pid, enum pid_type type)
 	return result;
 }
 
- 
 struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
 {
 	RCU_LOCKDEP_WARN(!rcu_read_lock_held(),
@@ -434,7 +427,6 @@ struct task_struct *pidfd_get_task(int pidfd, unsigned int *flags)
 	return ERR_PTR(-ENOSYS);
 }
 
- 
 int pidfd_create(struct pid *pid, unsigned int flags)
 {
 	/* Stub: not needed for minimal kernel */

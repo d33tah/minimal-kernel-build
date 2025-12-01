@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/kernel_stat.h>
 #include <linux/export.h>
@@ -41,36 +39,29 @@
 __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 
 
- 
 
- 
 #define LVL_CLK_SHIFT	3
 #define LVL_CLK_DIV	(1UL << LVL_CLK_SHIFT)
 #define LVL_CLK_MASK	(LVL_CLK_DIV - 1)
 #define LVL_SHIFT(n)	((n) * LVL_CLK_SHIFT)
 #define LVL_GRAN(n)	(1UL << LVL_SHIFT(n))
 
- 
 #define LVL_START(n)	((LVL_SIZE - 1) << (((n) - 1) * LVL_CLK_SHIFT))
 
- 
 #define LVL_BITS	6
 #define LVL_SIZE	(1UL << LVL_BITS)
 #define LVL_MASK	(LVL_SIZE - 1)
 #define LVL_OFFS(n)	((n) * LVL_SIZE)
 
- 
 #if HZ > 100
 # define LVL_DEPTH	9
 # else
 # define LVL_DEPTH	8
 #endif
 
- 
 #define WHEEL_TIMEOUT_CUTOFF	(LVL_START(LVL_DEPTH))
 #define WHEEL_TIMEOUT_MAX	(WHEEL_TIMEOUT_CUTOFF - LVL_GRAN(LVL_DEPTH - 1))
 
- 
 #define WHEEL_SIZE	(LVL_SIZE * LVL_DEPTH)
 
 # define NR_BASES	1
@@ -116,7 +107,6 @@ static inline void timer_set_idx(struct timer_list *timer, unsigned int idx)
 			idx << TIMER_ARRAYSHIFT;
 }
 
- 
 static inline unsigned calc_index(unsigned long expires, unsigned lvl,
 				  unsigned long *bucket_expiry)
 {
@@ -180,7 +170,6 @@ trigger_dyntick_cpu(struct timer_base *base, struct timer_list *timer)
 		wake_up_nohz_cpu(base->cpu);
 }
 
- 
 static void enqueue_timer(struct timer_base *base, struct timer_list *timer,
 			  unsigned int idx, unsigned long bucket_expiry)
 {
@@ -245,7 +234,6 @@ static void do_init_timer(struct timer_list *timer,
 	lockdep_init_map(&timer->lockdep_map, name, key, 0);
 }
 
- 
 void init_timer_key(struct timer_list *timer,
 		    void (*func)(struct timer_list *), unsigned int flags,
 		    const char *name, struct lock_class_key *key)
@@ -333,7 +321,6 @@ static inline void forward_timer_base(struct timer_base *base)
 }
 
 
- 
 static struct timer_base *lock_timer_base(struct timer_list *timer,
 					  unsigned long *flags)
 	__acquires(timer->base->lock)
@@ -449,7 +436,6 @@ int mod_timer_pending(struct timer_list *timer, unsigned long expires)
 	return 0;
 }
 
- 
 int mod_timer(struct timer_list *timer, unsigned long expires)
 {
 	return __mod_timer(timer, expires, 0);
@@ -461,14 +447,12 @@ int timer_reduce(struct timer_list *timer, unsigned long expires)
 	return 0;
 }
 
- 
 void add_timer(struct timer_list *timer)
 {
 	BUG_ON(timer_pending(timer));
 	__mod_timer(timer, timer->expires, MOD_TIMER_NOTPENDING);
 }
 
- 
 void add_timer_on(struct timer_list *timer, int cpu)
 {
 	struct timer_base *new_base, *base;
@@ -496,7 +480,6 @@ void add_timer_on(struct timer_list *timer, int cpu)
 	raw_spin_unlock_irqrestore(&base->lock, flags);
 }
 
- 
 int del_timer(struct timer_list *timer)
 {
 	struct timer_base *base;
@@ -604,7 +587,6 @@ static int collect_expired_timers(struct timer_base *base,
 	return levels;
 }
 
- 
 static int next_pending_bucket(struct timer_base *base, unsigned offset,
 			       unsigned clk)
 {
@@ -619,7 +601,6 @@ static int next_pending_bucket(struct timer_base *base, unsigned offset,
 	return pos < start ? pos + LVL_SIZE - start : -1;
 }
 
- 
 static unsigned long __next_timer_interrupt(struct timer_base *base)
 {
 	unsigned long clk, next, adj;
@@ -655,7 +636,6 @@ static unsigned long __next_timer_interrupt(struct timer_base *base)
 }
 
 
- 
 static inline void __run_timers(struct timer_base *base)
 {
 	struct hlist_head heads[LVL_DEPTH];
@@ -683,7 +663,6 @@ static inline void __run_timers(struct timer_base *base)
 	timer_base_unlock_expiry(base);
 }
 
- 
 static __latent_entropy void run_timer_softirq(struct softirq_action *h)
 {
 	struct timer_base *base = this_cpu_ptr(&timer_bases[BASE_STD]);
@@ -693,7 +672,6 @@ static __latent_entropy void run_timer_softirq(struct softirq_action *h)
 		__run_timers(this_cpu_ptr(&timer_bases[BASE_DEF]));
 }
 
- 
 static void run_local_timers(void)
 {
 	struct timer_base *base = this_cpu_ptr(&timer_bases[BASE_STD]);
@@ -711,7 +689,6 @@ static void run_local_timers(void)
 	raise_softirq(TIMER_SOFTIRQ);
 }
 
- 
 void update_process_times(int user_tick)
 {
 	struct task_struct *p = current;
@@ -727,7 +704,6 @@ void update_process_times(int user_tick)
 		run_posix_cpu_timers();
 }
 
- 
 struct process_timer {
 	struct timer_list timer;
 	struct task_struct *task;
@@ -740,7 +716,6 @@ static void process_timeout(struct timer_list *t)
 	wake_up_process(timeout->task);
 }
 
- 
 signed long __sched schedule_timeout(signed long timeout)
 {
 	struct process_timer timer;
@@ -780,7 +755,6 @@ signed long __sched schedule_timeout(signed long timeout)
 	return timeout < 0 ? 0 : timeout;
 }
 
- 
 signed long __sched schedule_timeout_interruptible(signed long timeout)
 {
 	__set_current_state(TASK_INTERRUPTIBLE);
@@ -829,7 +803,6 @@ void __init init_timers(void)
 	open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
 }
 
- 
 void msleep(unsigned int msecs)
 {
 	unsigned long timeout = msecs_to_jiffies(msecs) + 1;
@@ -839,7 +812,6 @@ void msleep(unsigned int msecs)
 }
 
 
- 
 unsigned long msleep_interruptible(unsigned int msecs)
 {
 	unsigned long timeout = msecs_to_jiffies(msecs) + 1;
@@ -850,7 +822,6 @@ unsigned long msleep_interruptible(unsigned int msecs)
 }
 
 
- 
 /* Stub: usleep_range_state not used in minimal kernel */
 void __sched usleep_range_state(unsigned long min, unsigned long max,
 				unsigned int state) { }

@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SWAPOPS_H
 #define _LINUX_SWAPOPS_H
 
@@ -7,11 +6,9 @@
 #include <linux/mm_types.h>
 
 
- 
 #define SWP_TYPE_SHIFT	(BITS_PER_XA_VALUE - MAX_SWAPFILES_SHIFT)
 #define SWP_OFFSET_MASK	((1UL << SWP_TYPE_SHIFT) - 1)
 
- 
 static inline pte_t pte_swp_clear_flags(pte_t pte)
 {
 	if (pte_swp_exclusive(pte))
@@ -23,7 +20,6 @@ static inline pte_t pte_swp_clear_flags(pte_t pte)
 	return pte;
 }
 
- 
 static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset)
 {
 	swp_entry_t ret;
@@ -32,25 +28,21 @@ static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset)
 	return ret;
 }
 
- 
 static inline unsigned swp_type(swp_entry_t entry)
 {
 	return (entry.val >> SWP_TYPE_SHIFT);
 }
 
- 
 static inline pgoff_t swp_offset(swp_entry_t entry)
 {
 	return entry.val & SWP_OFFSET_MASK;
 }
 
- 
 static inline int is_swap_pte(pte_t pte)
 {
 	return !pte_none(pte) && !pte_present(pte);
 }
 
- 
 static inline swp_entry_t pte_to_swp_entry(pte_t pte)
 {
 	swp_entry_t arch_entry;
@@ -60,7 +52,6 @@ static inline swp_entry_t pte_to_swp_entry(pte_t pte)
 	return swp_entry(__swp_type(arch_entry), __swp_offset(arch_entry));
 }
 
- 
 static inline pte_t swp_entry_to_pte(swp_entry_t entry)
 {
 	swp_entry_t arch_entry;
@@ -246,7 +237,6 @@ static inline pte_t make_pte_marker(pte_marker marker)
 	return swp_entry_to_pte(make_pte_marker_entry(marker));
 }
 
- 
 static inline int pte_none_mostly(pte_t pte)
 {
 	return pte_none(pte) || is_pte_marker(pte);
@@ -262,7 +252,6 @@ static inline struct page *pfn_swap_entry_to_page(swp_entry_t entry)
 	return p;
 }
 
- 
 static inline bool is_pfn_swap_entry(swp_entry_t entry)
 {
 	return is_migration_entry(entry) || is_device_private_entry(entry) ||

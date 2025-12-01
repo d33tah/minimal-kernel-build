@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_EVENTPOLL_H
 #define _LINUX_EVENTPOLL_H
 
@@ -7,7 +5,6 @@
 
 
 
- 
 struct file;
 
 

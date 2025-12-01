@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _UAPI__LINUX_FILTER_H__
 #define _UAPI__LINUX_FILTER_H__
@@ -8,12 +6,9 @@
 #include <linux/types.h>
 #include <linux/bpf_common.h>
 
- 
 #define BPF_MAJOR_VERSION 1
 #define BPF_MINOR_VERSION 1
 
- 
- 
 struct sock_filter {	 
 	__u16	code;    
 	__u8	jt;	 
@@ -26,16 +21,13 @@ struct sock_fprog {
 	struct sock_filter __user *filter;
 };
 
- 
 #define BPF_RVAL(code)  ((code) & 0x18)
 #define         BPF_A           0x10
 
- 
 #define BPF_MISCOP(code) ((code) & 0xf8)
 #define         BPF_TAX         0x00
 #define         BPF_TXA         0x80
 
- 
 #ifndef BPF_STMT
 #define BPF_STMT(code, k) { (unsigned short)(code), 0, 0, k }
 #endif
@@ -43,10 +35,8 @@ struct sock_fprog {
 #define BPF_JUMP(code, k, jt, jf) { (unsigned short)(code), jt, jf, k }
 #endif
 
- 
 #define BPF_MEMWORDS 16
 
- 
 #define SKF_AD_OFF    (-0x1000)
 #define SKF_AD_PROTOCOL 0
 #define SKF_AD_PKTTYPE 	4

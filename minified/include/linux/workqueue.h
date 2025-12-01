@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_WORKQUEUE_H
 #define _LINUX_WORKQUEUE_H
@@ -19,7 +17,6 @@ struct work_struct;
 typedef void (*work_func_t)(struct work_struct *work);
 void delayed_work_timer_fn(struct timer_list *t);
 
- 
 #define work_data_bits(work) ((unsigned long *)(&(work)->data))
 
 enum {
@@ -93,7 +90,6 @@ struct delayed_work {
 
 struct rcu_work;
 
- 
 struct workqueue_attrs;
 
 static inline struct delayed_work *to_delayed_work(struct work_struct *work)
@@ -131,7 +127,6 @@ struct execute_work {
 
 static inline void __init_work(struct work_struct *work, int onstack) { }
 
- 
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
 		__init_work((_work), _onstack);				\
@@ -180,15 +175,12 @@ static inline void __init_work(struct work_struct *work, int onstack) { }
 #define INIT_RCU_WORK_ONSTACK(_work, _func)				\
 	INIT_WORK_ONSTACK(&(_work)->work, (_func))
 
- 
 #define work_pending(work) \
 	test_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))
 
- 
 #define delayed_work_pending(w) \
 	work_pending(&(w)->work)
 
- 
 enum {
 	WQ_UNBOUND		= 1 << 1,  
 	WQ_FREEZABLE		= 1 << 2,  
@@ -210,20 +202,16 @@ enum {
 	WQ_DFL_ACTIVE		= WQ_MAX_ACTIVE / 2,
 };
 
- 
 #define WQ_UNBOUND_MAX_ACTIVE	\
 	max_t(int, WQ_MAX_ACTIVE, num_possible_cpus() * WQ_MAX_UNBOUND_PER_CPU)
 
- 
 extern struct workqueue_struct *system_wq;
 extern struct workqueue_struct *system_long_wq;
 extern struct workqueue_struct *system_unbound_wq;
 
- 
 __printf(1, 4) struct workqueue_struct *
 alloc_workqueue(const char *fmt, unsigned int flags, int max_active, ...);
 
- 
 #define alloc_ordered_workqueue(fmt, flags, args...)			\
 	alloc_workqueue(fmt, WQ_UNBOUND | __WQ_ORDERED |		\
 			__WQ_ORDERED_EXPLICIT | (flags), 1, ##args)
@@ -262,14 +250,12 @@ extern bool flush_delayed_work(struct delayed_work *dwork);
 extern bool cancel_delayed_work(struct delayed_work *dwork);
 extern bool cancel_delayed_work_sync(struct delayed_work *dwork);
 
- 
 static inline bool queue_work(struct workqueue_struct *wq,
 			      struct work_struct *work)
 {
 	return queue_work_on(WORK_CPU_UNBOUND, wq, work);
 }
 
- 
 static inline bool queue_delayed_work(struct workqueue_struct *wq,
 				      struct delayed_work *dwork,
 				      unsigned long delay)
@@ -277,7 +263,6 @@ static inline bool queue_delayed_work(struct workqueue_struct *wq,
 	return queue_delayed_work_on(WORK_CPU_UNBOUND, wq, dwork, delay);
 }
 
- 
 static inline bool mod_delayed_work(struct workqueue_struct *wq,
 				    struct delayed_work *dwork,
 				    unsigned long delay)
@@ -285,24 +270,19 @@ static inline bool mod_delayed_work(struct workqueue_struct *wq,
 	return mod_delayed_work_on(WORK_CPU_UNBOUND, wq, dwork, delay);
 }
 
- 
 static inline bool schedule_work_on(int cpu, struct work_struct *work)
 {
 	return queue_work_on(cpu, system_wq, work);
 }
 
- 
 static inline bool schedule_work(struct work_struct *work)
 {
 	return queue_work(system_wq, work);
 }
 
- 
 extern void __warn_flushing_systemwide_wq(void)
 	__compiletime_warning("Please avoid flushing system-wide workqueues.");
 
- 
- 
 #define flush_scheduled_work()						\
 ({									\
 	if (0)								\
@@ -310,7 +290,6 @@ extern void __warn_flushing_systemwide_wq(void)
 	__flush_workqueue(system_wq);					\
 })
 
- 
 #define flush_workqueue(wq)						\
 ({									\
 	struct workqueue_struct *_wq = (wq);				\

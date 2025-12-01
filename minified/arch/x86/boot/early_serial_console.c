@@ -1,5 +1,3 @@
- 
- 
 #include "boot.h"
 
 #define DEFAULT_SERIAL_PORT 0x3f8  

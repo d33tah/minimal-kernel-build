@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_MEMPOOL_H
 #define _LINUX_MEMPOOL_H
 
@@ -46,7 +44,6 @@ extern void mempool_destroy(mempool_t *pool);
 extern void *mempool_alloc(mempool_t *pool, gfp_t gfp_mask) __malloc;
 extern void mempool_free(void *element, mempool_t *pool);
 
- 
 void *mempool_alloc_slab(gfp_t gfp_mask, void *pool_data);
 void mempool_free_slab(void *element, void *pool_data);
 
@@ -64,7 +61,6 @@ mempool_create_slab_pool(int min_nr, struct kmem_cache *kc)
 			      (void *) kc);
 }
 
- 
 void *mempool_kmalloc(gfp_t gfp_mask, void *pool_data);
 void mempool_kfree(void *element, void *pool_data);
 
@@ -80,7 +76,6 @@ static inline mempool_t *mempool_create_kmalloc_pool(int min_nr, size_t size)
 			      (void *) size);
 }
 
- 
 void *mempool_alloc_pages(gfp_t gfp_mask, void *pool_data);
 void mempool_free_pages(void *element, void *pool_data);
 

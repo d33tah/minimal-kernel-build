@@ -1,8 +1,6 @@
- 
 #ifndef _UAPI_LINUX_FS_H
 #define _UAPI_LINUX_FS_H
 
- 
 
 #include <linux/limits.h>
 #include <linux/ioctl.h>
@@ -11,14 +9,11 @@
 #include <linux/fscrypt.h>
 #endif
 
- 
 #if !defined(__KERNEL__)
 #include <linux/mount.h>
 #endif
 
- 
 
- 
 #undef NR_OPEN
 #define INR_OPEN_CUR 1024	 
 #define INR_OPEN_MAX 4096	 
@@ -50,11 +45,9 @@ struct fstrim_range {
 	__u64 minlen;
 };
 
- 
 #define FILE_DEDUPE_RANGE_SAME		0
 #define FILE_DEDUPE_RANGE_DIFFERS	1
 
- 
 struct file_dedupe_range_info {
 	__s64 dest_fd;		 
 	__u64 dest_offset;	 
@@ -64,7 +57,6 @@ struct file_dedupe_range_info {
 	__u32 reserved;		 
 };
 
- 
 struct file_dedupe_range {
 	__u64 src_offset;	 
 	__u64 src_length;	 
@@ -74,7 +66,6 @@ struct file_dedupe_range {
 	struct file_dedupe_range_info info[0];
 };
 
- 
 struct files_stat_struct {
 	unsigned long nr_files;		 
 	unsigned long nr_free_files;	 
@@ -90,7 +81,6 @@ struct inodes_stat_t {
 
 #define NR_FILE  8192	 
 
- 
 struct fsxattr {
 	__u32		fsx_xflags;	 
 	__u32		fsx_extsize;	 
@@ -100,7 +90,6 @@ struct fsxattr {
 	unsigned char	fsx_pad[8];
 };
 
- 
 #define FS_XFLAG_REALTIME	0x00000001	 
 #define FS_XFLAG_PREALLOC	0x00000002	 
 #define FS_XFLAG_IMMUTABLE	0x00000008	 
@@ -119,7 +108,6 @@ struct fsxattr {
 #define FS_XFLAG_COWEXTSIZE	0x00010000	 
 #define FS_XFLAG_HASATTR	0x80000000	 
 
- 
 
 #define BLKROSET   _IO(0x12,93)	 
 #define BLKROGET   _IO(0x12,94)	 
@@ -133,7 +121,6 @@ struct fsxattr {
 #define BLKSECTSET _IO(0x12,102) 
 #define BLKSECTGET _IO(0x12,103) 
 #define BLKSSZGET  _IO(0x12,104) 
- 
 #define BLKBSZGET  _IOR(0x12,112,size_t)
 #define BLKBSZSET  _IOW(0x12,113,size_t)
 #define BLKGETSIZE64 _IOR(0x12,114,size_t)	 
@@ -151,7 +138,6 @@ struct fsxattr {
 #define BLKROTATIONAL _IO(0x12,126)
 #define BLKZEROOUT _IO(0x12,127)
 #define BLKGETDISKSEQ _IOR(0x12,128,__u64)
- 
 
 #define BMAP_IOCTL 1		 
 #define FIBMAP	   _IO(0x00,1)	 
@@ -179,7 +165,6 @@ struct fsxattr {
 #define FS_IOC_GETFSLABEL		_IOR(0x94, 49, char[FSLABEL_MAX])
 #define FS_IOC_SETFSLABEL		_IOW(0x94, 50, char[FSLABEL_MAX])
 
- 
 #define	FS_SECRM_FL			0x00000001  
 #define	FS_UNRM_FL			0x00000002  
 #define	FS_COMPR_FL			0x00000004  
@@ -188,11 +173,9 @@ struct fsxattr {
 #define FS_APPEND_FL			0x00000020  
 #define FS_NODUMP_FL			0x00000040  
 #define FS_NOATIME_FL			0x00000080  
- 
 #define FS_DIRTY_FL			0x00000100
 #define FS_COMPRBLK_FL			0x00000200  
 #define FS_NOCOMP_FL			0x00000400  
- 
 #define FS_ENCRYPT_FL			0x00000800  
 #define FS_BTREE_FL			0x00001000  
 #define FS_INDEX_FL			0x00001000  
@@ -224,26 +207,19 @@ struct fsxattr {
 					 SYNC_FILE_RANGE_WAIT_BEFORE | \
 					 SYNC_FILE_RANGE_WAIT_AFTER)
 
- 
 
 typedef int __bitwise __kernel_rwf_t;
 
- 
 #define RWF_HIPRI	((__force __kernel_rwf_t)0x00000001)
 
- 
 #define RWF_DSYNC	((__force __kernel_rwf_t)0x00000002)
 
- 
 #define RWF_SYNC	((__force __kernel_rwf_t)0x00000004)
 
- 
 #define RWF_NOWAIT	((__force __kernel_rwf_t)0x00000008)
 
- 
 #define RWF_APPEND	((__force __kernel_rwf_t)0x00000010)
 
- 
 #define RWF_SUPPORTED	(RWF_HIPRI | RWF_DSYNC | RWF_SYNC | RWF_NOWAIT |\
 			 RWF_APPEND)
 

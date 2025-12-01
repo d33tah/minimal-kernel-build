@@ -1,4 +1,3 @@
- 
 #ifndef _UAPI_VMCORE_H
 #define _UAPI_VMCORE_H
 

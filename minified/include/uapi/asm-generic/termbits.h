@@ -1,4 +1,3 @@
- 
 #ifndef __ASM_GENERIC_TERMBITS_H
 #define __ASM_GENERIC_TERMBITS_H
 
@@ -38,7 +37,6 @@ struct ktermios {
 	speed_t c_ospeed;		 
 };
 
- 
 #define VINTR		 0
 #define VQUIT		 1
 #define VERASE		 2
@@ -57,14 +55,12 @@ struct ktermios {
 #define VLNEXT		15
 #define VEOL2		16
 
- 
 #define IUCLC	0x0200
 #define IXON	0x0400
 #define IXOFF	0x1000
 #define IMAXBEL	0x2000
 #define IUTF8	0x4000
 
- 
 #define OLCUC	0x00002
 #define ONLCR	0x00004
 #define NLDLY	0x00100
@@ -91,7 +87,6 @@ struct ktermios {
 #define   FF0	0x00000
 #define   FF1	0x08000
 
- 
 #define CBAUD		0x0000100f
 #define CSIZE		0x00000030
 #define   CS5		0x00000000
@@ -123,7 +118,6 @@ struct ktermios {
 #define   B4000000	0x0000100f
 #define CIBAUD		0x100f0000	 
 
- 
 #define ISIG	0x00001
 #define ICANON	0x00002
 #define XCASE	0x00004
@@ -141,7 +135,6 @@ struct ktermios {
 #define IEXTEN	0x08000
 #define EXTPROC	0x10000
 
- 
 #define	TCSANOW		0
 #define	TCSADRAIN	1
 #define	TCSAFLUSH	2

@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_DAX_H
 #define _LINUX_DAX_H
 
@@ -42,7 +41,6 @@ bool dax_synchronous(struct dax_device *dax_dev);
 void set_dax_synchronous(struct dax_device *dax_dev);
 size_t dax_recovery_write(struct dax_device *dax_dev, pgoff_t pgoff,
 		void *addr, size_t bytes, struct iov_iter *i);
- 
 static inline bool daxdev_mapping_supported(struct vm_area_struct *vma,
 					     struct dax_device *dax_dev)
 {

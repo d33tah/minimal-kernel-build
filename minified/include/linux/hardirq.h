@@ -1,4 +1,3 @@
- 
 #ifndef LINUX_HARDIRQ_H
 #define LINUX_HARDIRQ_H
 
@@ -20,7 +19,6 @@ static __always_inline void rcu_irq_enter_check_tick(void)
 		__rcu_irq_enter_check_tick();
 }
 
- 
 #define __irq_enter()					\
 	do {						\
 		preempt_count_add(HARDIRQ_OFFSET);	\
@@ -28,19 +26,15 @@ static __always_inline void rcu_irq_enter_check_tick(void)
 		account_hardirq_enter(current);		\
 	} while (0)
 
- 
 #define __irq_enter_raw()				\
 	do {						\
 		preempt_count_add(HARDIRQ_OFFSET);	\
 		lockdep_hardirq_enter();		\
 	} while (0)
 
- 
 void irq_enter(void);
- 
 void irq_enter_rcu(void);
 
- 
 #define __irq_exit()					\
 	do {						\
 		account_hardirq_exit(current);		\
@@ -48,17 +42,14 @@ void irq_enter_rcu(void);
 		preempt_count_sub(HARDIRQ_OFFSET);	\
 	} while (0)
 
- 
 #define __irq_exit_raw()				\
 	do {						\
 		lockdep_hardirq_exit();			\
 		preempt_count_sub(HARDIRQ_OFFSET);	\
 	} while (0)
 
- 
 void irq_exit(void);
 
- 
 void irq_exit_rcu(void);
 
 #ifndef arch_nmi_enter
@@ -69,9 +60,7 @@ void irq_exit_rcu(void);
 static inline void rcu_nmi_enter(void) { }
 static inline void rcu_nmi_exit(void) { }
 
- 
 
- 
 #define __nmi_enter()						\
 	do {							\
 		lockdep_off();					\

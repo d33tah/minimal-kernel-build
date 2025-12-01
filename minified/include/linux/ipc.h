@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_IPC_H
 #define _LINUX_IPC_H
 
@@ -8,7 +7,6 @@
 #include <uapi/linux/ipc.h>
 #include <linux/refcount.h>
 
- 
 struct kern_ipc_perm {
 	spinlock_t	lock;
 	bool		deleted;

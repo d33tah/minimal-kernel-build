@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_SRCU_H
 #define _LINUX_SRCU_H
@@ -37,18 +35,14 @@ static inline int srcu_read_lock_held(const struct srcu_struct *ssp)
 }
 
 
- 
 #define srcu_dereference_check(p, ssp, c) \
 	__rcu_dereference_check((p), __UNIQUE_ID(rcu), \
 				(c) || srcu_read_lock_held(ssp), __rcu)
 
- 
 #define srcu_dereference(p, ssp) srcu_dereference_check((p), (ssp), 0)
 
- 
 #define srcu_dereference_notrace(p, ssp) srcu_dereference_check((p), (ssp), 1)
 
- 
 static inline int srcu_read_lock(struct srcu_struct *ssp) __acquires(ssp)
 {
 	int retval;
@@ -58,7 +52,6 @@ static inline int srcu_read_lock(struct srcu_struct *ssp) __acquires(ssp)
 	return retval;
 }
 
- 
 static inline notrace int
 srcu_read_lock_notrace(struct srcu_struct *ssp) __acquires(ssp)
 {
@@ -68,7 +61,6 @@ srcu_read_lock_notrace(struct srcu_struct *ssp) __acquires(ssp)
 	return retval;
 }
 
- 
 static inline void srcu_read_unlock(struct srcu_struct *ssp, int idx)
 	__releases(ssp)
 {
@@ -77,14 +69,12 @@ static inline void srcu_read_unlock(struct srcu_struct *ssp, int idx)
 	__srcu_read_unlock(ssp, idx);
 }
 
- 
 static inline notrace void
 srcu_read_unlock_notrace(struct srcu_struct *ssp, int idx) __releases(ssp)
 {
 	__srcu_read_unlock(ssp, idx);
 }
 
- 
 static inline void smp_mb__after_srcu_read_unlock(void)
 {
 	 

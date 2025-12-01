@@ -1,4 +1,3 @@
- 
 
 #include <inttypes.h>
 #include <stdint.h>
@@ -21,7 +20,6 @@
 
 const char *outfilename;
 
- 
 enum {
 	sym_vvar_start,
 	sym_vvar_page,
@@ -70,7 +68,6 @@ static void fail(const char *format, ...)
 	va_end(ap);
 }
 
- 
 #define GLE(x, bits, ifnot)						\
 	__builtin_choose_expr(						\
 		(sizeof(*(x)) == bits/8),				\

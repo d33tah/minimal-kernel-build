@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_STOP_MACHINE
 #define _LINUX_STOP_MACHINE
 
@@ -7,7 +6,6 @@
 #include <linux/smp.h>
 #include <linux/list.h>
 
- 
 typedef int (*cpu_stop_fn_t)(void *arg);
 
 
@@ -56,7 +54,6 @@ static inline bool stop_one_cpu_nowait(unsigned int cpu,
 static inline void print_stop_info(const char *log_lvl, struct task_struct *task) { }
 
 
- 
 
 static __always_inline int stop_machine_cpuslocked(cpu_stop_fn_t fn, void *data,
 					  const struct cpumask *cpus)

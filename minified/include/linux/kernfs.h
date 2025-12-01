@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef __LINUX_KERNFS_H
 #define __LINUX_KERNFS_H
@@ -55,7 +53,6 @@ enum kernfs_node_flag {
 	KERNFS_HAS_RELEASE	= 0x2000,
 };
 
- 
 enum kernfs_root_flag {
 	 
 	KERNFS_ROOT_CREATE_DEACTIVATED		= 0x0001,
@@ -70,7 +67,6 @@ enum kernfs_root_flag {
 	KERNFS_ROOT_SUPPORT_USER_XATTR		= 0x0008,
 };
 
- 
 struct kernfs_elem_dir {
 	unsigned long		subdirs;
 	 
@@ -93,7 +89,6 @@ struct kernfs_elem_attr {
 	struct kernfs_node	*notify_next;	 
 };
 
- 
 struct kernfs_node {
 	atomic_t		count;
 	atomic_t		active;
@@ -121,7 +116,6 @@ struct kernfs_node {
 	struct kernfs_iattrs	*iattr;
 };
 
- 
 struct kernfs_syscall_ops {
 	int (*show_options)(struct seq_file *sf, struct kernfs_root *root);
 
@@ -184,7 +178,6 @@ struct kernfs_ops {
 	int (*mmap)(struct kernfs_open_file *of, struct vm_area_struct *vma);
 };
 
- 
 struct kernfs_fs_context {
 	struct kernfs_root	*root;		 
 	void			*ns_tag;	 

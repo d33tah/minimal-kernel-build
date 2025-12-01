@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/bitmap.h>
 #include <linux/bitops.h>
@@ -19,7 +17,6 @@
 
 #include "kstrtox.h"
 
- 
 
 bool __bitmap_equal(const unsigned long *bitmap1,
 		    const unsigned long *bitmap2, unsigned int bits)
@@ -144,7 +141,6 @@ void __bitmap_clear(unsigned long *map, unsigned int start, int len)
 	}
 }
 
- 
 unsigned long bitmap_find_next_zero_area_off(unsigned long *map,
 					     unsigned long size,
 					     unsigned long start,
@@ -170,9 +166,7 @@ again:
 	return index;
 }
 
- 
 
- 
 /* Stubbed bitmap parsing functions - not used */
 int bitmap_parse_user(const char __user *ubuf,
 			unsigned int ulen, unsigned long *maskp,
@@ -181,7 +175,6 @@ int bitmap_parse_user(const char __user *ubuf,
 	return -EINVAL;
 }
 
- 
 int bitmap_print_to_pagebuf(bool list, char *buf, const unsigned long *maskp,
 			    int nmaskbits)
 {
@@ -189,8 +182,6 @@ int bitmap_print_to_pagebuf(bool list, char *buf, const unsigned long *maskp,
 	return 0;
 }
 
- 
- 
 int bitmap_print_bitmask_to_buf(char *buf, const unsigned long *maskp,
 				 int nmaskbits, loff_t off, size_t count)
 {
@@ -198,7 +189,6 @@ int bitmap_print_bitmask_to_buf(char *buf, const unsigned long *maskp,
 	return 0;
 }
 
- 
 int bitmap_print_list_to_buf(char *buf, const unsigned long *maskp,
 			      int nmaskbits, loff_t off, size_t count)
 {
@@ -305,7 +295,6 @@ void bitmap_to_arr32(u32 *buf, const unsigned long *bitmap, unsigned int nbits)
 #endif
 
 #if (BITS_PER_LONG == 32) && defined(__BIG_ENDIAN)
- 
 void bitmap_from_arr64(unsigned long *bitmap, const u64 *buf, unsigned int nbits)
 {
 	int n;
@@ -323,7 +312,6 @@ void bitmap_from_arr64(unsigned long *bitmap, const u64 *buf, unsigned int nbits
 		bitmap[-1] &= BITMAP_LAST_WORD_MASK(nbits);
 }
 
- 
 void bitmap_to_arr64(u64 *buf, const unsigned long *bitmap, unsigned int nbits)
 {
 	const unsigned long *end = bitmap + BITS_TO_LONGS(nbits);

@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/string.h>
 #include <linux/slab.h>
@@ -28,12 +26,10 @@
 
 #include "internal.h"
 
- 
 static struct files_stat_struct files_stat = {
 	.max_files = NR_FILE
 };
 
- 
 static struct kmem_cache *filp_cachep __read_mostly;
 
 static struct percpu_counter nr_files __cacheline_aligned_in_smp;
@@ -54,7 +50,6 @@ static inline void file_free(struct file *f)
 	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
 }
 
- 
 static long get_nr_files(void)
 {
 	return percpu_counter_read_positive(&nr_files);
@@ -87,7 +82,6 @@ static struct file *__alloc_file(int flags, const struct cred *cred)
 	return f;
 }
 
- 
 struct file *alloc_empty_file(int flags, const struct cred *cred)
 {
 	static long old_max;
@@ -113,14 +107,12 @@ over:
 	return ERR_PTR(-ENFILE);
 }
 
- 
 /* STUB: alloc_empty_file_noaccount not used externally */
 struct file *alloc_empty_file_noaccount(int flags, const struct cred *cred)
 {
 	return ERR_PTR(-ENOMEM);
 }
 
- 
 static struct file *alloc_file(const struct path *path, int flags,
 		const struct file_operations *fop)
 {
@@ -181,7 +173,6 @@ struct file *alloc_file_clone(struct file *base, int flags,
 	return ERR_PTR(-ENOMEM);
 }
 
- 
 static void __fput(struct file *file)
 {
 	struct dentry *dentry = file->f_path.dentry;
@@ -241,7 +232,6 @@ static void ____fput(struct callback_head *work)
 	__fput(container_of(work, struct file, f_u.fu_rcuhead));
 }
 
- 
 void flush_delayed_fput(void)
 {
 	delayed_fput(NULL);
@@ -280,7 +270,6 @@ void __init files_init(void)
 	percpu_counter_init(&nr_files, 0, GFP_KERNEL);
 }
 
- 
 void __init files_maxfiles_init(void)
 {
 	unsigned long n;

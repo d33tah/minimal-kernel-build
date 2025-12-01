@@ -1,4 +1,3 @@
- 
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/module.h>
@@ -9,7 +8,6 @@ struct cpuid_dep {
 	unsigned int	depends;
 };
 
- 
 /* Minimal dependencies for basic boot - advanced features removed */
 static const struct cpuid_dep cpuid_deps[] = {
 	{ X86_FEATURE_FXSR,			X86_FEATURE_FPU	      },
@@ -30,7 +28,6 @@ static inline void clear_feature(struct cpuinfo_x86 *c, unsigned int feature)
 	}
 }
 
- 
 #define MAX_FEATURE_BITS ((NCAPINTS + NBUGINTS) * sizeof(u32) * 8)
 
 static void do_clear_cpu_cap(struct cpuinfo_x86 *c, unsigned int feature)

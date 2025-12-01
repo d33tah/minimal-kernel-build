@@ -1,15 +1,11 @@
- 
 #include <linux/kernel.h>
 #include <linux/gcd.h>
 #include <linux/export.h>
 
- 
 
 #if !defined(CONFIG_CPU_NO_EFFICIENT_FFS)
 
- 
 
- 
 unsigned long gcd(unsigned long a, unsigned long b)
 {
 	unsigned long r = a | b;
@@ -36,7 +32,6 @@ unsigned long gcd(unsigned long a, unsigned long b)
 
 #else
 
- 
 unsigned long gcd(unsigned long a, unsigned long b)
 {
 	unsigned long r = a | b;

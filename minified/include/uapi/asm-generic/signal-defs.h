@@ -1,10 +1,8 @@
- 
 #ifndef __ASM_GENERIC_SIGNAL_DEFS_H
 #define __ASM_GENERIC_SIGNAL_DEFS_H
 
 #include <linux/compiler.h>
 
- 
 #ifndef SA_NOCLDSTOP
 #define SA_NOCLDSTOP	0x00000001
 #endif
@@ -14,20 +12,8 @@
 #ifndef SA_SIGINFO
 #define SA_SIGINFO	0x00000004
 #endif
- 
- 
- 
- 
- 
- 
- 
 #define SA_UNSUPPORTED	0x00000400
 #define SA_EXPOSE_TAGBITS	0x00000800
- 
- 
- 
- 
- 
 #ifndef SA_ONSTACK
 #define SA_ONSTACK	0x08000000
 #endif

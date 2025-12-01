@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/string.h>
 #include <linux/mm.h>
@@ -174,7 +172,6 @@ SYSCALL_DEFINE2(ftruncate, unsigned int, fd, unsigned long, length)
 }
 
 
- 
 #if BITS_PER_LONG == 32
 SYSCALL_DEFINE2(truncate64, const char __user *, path, loff_t, length)
 {
@@ -205,7 +202,6 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
 }
 
 
- 
 static long do_faccessat(int dfd, const char __user *filename, int mode, int flags)
 {
 	return -ENOSYS;
@@ -437,7 +433,6 @@ cleanup_file:
 	return error;
 }
 
- 
 int finish_open(struct file *file, struct dentry *dentry,
 		int (*open)(struct inode *, struct file *))
 {
@@ -456,7 +451,6 @@ char *file_path(struct file *filp, char *buf, int buflen)
 	return d_path(&filp->f_path, buf, buflen);
 }
 
- 
 int vfs_open(const struct path *path, struct file *file)
 {
 	file->f_path = *path;
@@ -614,7 +608,6 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 	return 0;
 }
 
- 
 struct file *file_open_name(struct filename *name, int flags, umode_t mode)
 {
 	struct open_flags op;
@@ -625,7 +618,6 @@ struct file *file_open_name(struct filename *name, int flags, umode_t mode)
 	return do_filp_open(AT_FDCWD, name, &op);
 }
 
- 
 struct file *filp_open(const char *filename, int flags, umode_t mode)
 {
 	struct filename *name = getname_kernel(filename);
@@ -722,7 +714,6 @@ SYSCALL_DEFINE4(openat2, int, dfd, const char __user *, filename,
 
 #ifndef __alpha__
 
- 
 SYSCALL_DEFINE2(creat, const char __user *, pathname, umode_t, mode)
 {
 	int flags = O_CREAT | O_WRONLY | O_TRUNC;
@@ -733,7 +724,6 @@ SYSCALL_DEFINE2(creat, const char __user *, pathname, umode_t, mode)
 }
 #endif
 
- 
 int filp_close(struct file *filp, fl_owner_t id)
 {
 	int retval = 0;
@@ -755,7 +745,6 @@ int filp_close(struct file *filp, fl_owner_t id)
 }
 
 
- 
 SYSCALL_DEFINE1(close, unsigned int, fd)
 {
 	int retval = close_fd(fd);
@@ -770,21 +759,18 @@ SYSCALL_DEFINE1(close, unsigned int, fd)
 	return retval;
 }
 
- 
 SYSCALL_DEFINE3(close_range, unsigned int, fd, unsigned int, max_fd,
 		unsigned int, flags)
 {
 	return __close_range(fd, max_fd, flags);
 }
 
- 
 SYSCALL_DEFINE0(vhangup)
 {
 	/* Stub: vhangup not needed for minimal kernel */
 	return -EPERM;
 }
 
- 
 int generic_file_open(struct inode * inode, struct file * filp)
 {
 	if (!(filp->f_flags & O_LARGEFILE) && i_size_read(inode) > MAX_NON_LFS)
@@ -793,7 +779,6 @@ int generic_file_open(struct inode * inode, struct file * filp)
 }
 
 
- 
 int nonseekable_open(struct inode *inode, struct file *filp)
 {
 	filp->f_mode &= ~(FMODE_LSEEK | FMODE_PREAD | FMODE_PWRITE);
@@ -801,7 +786,6 @@ int nonseekable_open(struct inode *inode, struct file *filp)
 }
 
 
- 
 int stream_open(struct inode *inode, struct file *filp)
 {
 	filp->f_mode &= ~(FMODE_LSEEK | FMODE_PREAD | FMODE_PWRITE | FMODE_ATOMIC_POS);

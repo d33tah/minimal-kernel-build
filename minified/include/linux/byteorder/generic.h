@@ -1,10 +1,7 @@
- 
 #ifndef _LINUX_BYTEORDER_GENERIC_H
 #define _LINUX_BYTEORDER_GENERIC_H
 
- 
 
- 
 
 #define cpu_to_le64 __cpu_to_le64
 #define le64_to_cpu __le64_to_cpu
@@ -43,7 +40,6 @@
 #define cpu_to_be16s __cpu_to_be16s
 #define be16_to_cpus __be16_to_cpus
 
- 
 
 #undef ntohl
 #undef ntohs
@@ -75,7 +71,6 @@ static inline void le64_add_cpu(__le64 *var, u64 val)
 	*var = cpu_to_le64(le64_to_cpu(*var) + val);
 }
 
- 
 static inline void le32_to_cpu_array(u32 *buf, unsigned int words)
 {
 	while (words--) {

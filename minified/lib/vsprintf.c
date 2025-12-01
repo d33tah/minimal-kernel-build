@@ -1,4 +1,3 @@
- 
 
 #include <linux/stdarg.h>
 #include <linux/build_bug.h>
@@ -23,7 +22,6 @@
 #include <linux/random.h>
 #include <linux/siphash.h>
 
- 
 #define IPV6_FLOWINFO_MASK		cpu_to_be32(0x0FFFFFFF)
 
 #include <linux/compiler.h>
@@ -736,7 +734,6 @@ char *mac_address_string(char *buf, char *end, u8 *addr,
 	return error_string(buf, end, "(mac)", spec);
 }
 
- 
 
 static noinline_for_stack
 char *ip_addr_string(char *buf, char *end, const void *ptr,

@@ -1,8 +1,6 @@
- 
 #ifndef __LINUX_SPINLOCK_H
 #define __LINUX_SPINLOCK_H
 
- 
 
 #include <linux/typecheck.h>
 #include <linux/preempt.h>
@@ -17,7 +15,6 @@
 #include <asm/mmiowb.h>
 
 
- 
 #define LOCK_SECTION_NAME ".text..lock."KBUILD_BASENAME
 
 #define LOCK_SECTION_START(extra)               \
@@ -32,10 +29,8 @@
 
 #define __lockfunc __section(".spinlock.text")
 
- 
 #include <linux/spinlock_types.h>
 
- 
 # include <linux/spinlock_up.h>
 
 # define raw_spin_lock_init(lock)				\
@@ -49,7 +44,6 @@
 #define raw_spin_is_contended(lock)	(((void)(lock), 0))
 #endif  
 
- 
 #ifndef smp_mb__after_spinlock
 #define smp_mb__after_spinlock()	do { } while (0)
 #endif
@@ -78,12 +72,10 @@ static inline void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock)
 	__release(lock);
 }
 
- 
 #define raw_spin_trylock(lock)	__cond_lock(lock, _raw_spin_trylock(lock))
 
 #define raw_spin_lock(lock)	_raw_spin_lock(lock)
 
- 
 # define raw_spin_lock_nested(lock, subclass)		\
 	_raw_spin_lock(((void)(subclass), (lock)))
 # define raw_spin_lock_nest_lock(lock, nest_lock)	_raw_spin_lock(lock)
@@ -128,15 +120,11 @@ static inline void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock)
 	1 : ({ local_irq_restore(flags); 0; }); \
 })
 
- 
 #include <linux/rwlock.h>
 
- 
 # include <linux/spinlock_api_up.h>
 
- 
 
- 
 
 static __always_inline raw_spinlock_t *spinlock_check(spinlock_t *lock)
 {
@@ -226,7 +214,6 @@ static __always_inline int spin_trylock_irq(spinlock_t *lock)
 	raw_spin_trylock_irqsave(spinlock_check(lock), flags); \
 })
 
- 
 static __always_inline int spin_is_locked(spinlock_t *lock)
 {
 	return raw_spin_is_locked(&lock->rlock);
@@ -240,9 +227,7 @@ static __always_inline int spin_is_contended(spinlock_t *lock)
 #define assert_spin_locked(lock)	assert_raw_spin_locked(&(lock)->rlock)
 
 
- 
 #include <linux/atomic.h>
- 
 extern int _atomic_dec_and_lock(atomic_t *atomic, spinlock_t *lock);
 #define atomic_dec_and_lock(atomic, lock) \
 		__cond_lock(lock, _atomic_dec_and_lock(atomic, lock))

@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SCHED_TOPOLOGY_H
 #define _LINUX_SCHED_TOPOLOGY_H
 
@@ -6,7 +5,6 @@
 
 #include <linux/sched/idle.h>
 
- 
 
 struct sched_domain_attr;
 
@@ -33,7 +31,6 @@ static inline void rebuild_sched_domains_energy(void)
 }
 
 #ifndef arch_scale_cpu_capacity
- 
 static __always_inline
 unsigned long arch_scale_cpu_capacity(int cpu)
 {

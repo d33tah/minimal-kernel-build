@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_BACKING_DEV_DEFS_H
 #define __LINUX_BACKING_DEV_DEFS_H
 
@@ -18,7 +17,6 @@ struct page;
 struct device;
 struct dentry;
 
- 
 enum wb_state {
 	WB_registered,
 	WB_writeback_running,
@@ -31,7 +29,6 @@ enum wb_stat_item {
 
 #define WB_STAT_BATCH (8*(1+ilog2(nr_cpu_ids)))
 
- 
 enum wb_reason {
 	WB_REASON_BACKGROUND,
 };
@@ -44,13 +41,11 @@ struct wb_completion {
 #define __WB_COMPLETION_INIT(_waitq)	\
 	(struct wb_completion){ .cnt = ATOMIC_INIT(1), .waitq = (_waitq) }
 
- 
 #define WB_COMPLETION_INIT(bdi)		__WB_COMPLETION_INIT(&(bdi)->wb_waitq)
 
 #define DEFINE_WB_COMPLETION(cmpl, bdi)	\
 	struct wb_completion cmpl = WB_COMPLETION_INIT(bdi)
 
- 
 struct bdi_writeback {
 	struct backing_dev_info *bdi;	 
 

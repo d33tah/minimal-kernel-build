@@ -1,4 +1,3 @@
- 
 #ifndef _UAPI_LINUX_UTSNAME_H
 #define _UAPI_LINUX_UTSNAME_H
 

@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_TTY_PORT_H
 #define _LINUX_TTY_PORT_H
 
@@ -13,7 +12,6 @@ struct tty_driver;
 struct tty_port;
 struct tty_struct;
 
- 
 struct tty_port_operations {
 	int (*carrier_raised)(struct tty_port *port);
 	void (*dtr_rts)(struct tty_port *port, int raise);
@@ -29,7 +27,6 @@ struct tty_port_client_operations {
 
 extern const struct tty_port_client_operations tty_port_default_client_ops;
 
- 
 struct tty_port {
 	struct tty_bufhead	buf;
 	struct tty_struct	*tty;
@@ -55,12 +52,10 @@ struct tty_port {
 	void			*client_data;
 };
 
- 
 #define TTY_PORT_INITIALIZED	0	 
 #define TTY_PORT_SUSPENDED	1	 
 #define TTY_PORT_ACTIVE		2	 
 
- 
 #define TTY_PORT_CTS_FLOW	3	 
 #define TTY_PORT_CHECK_CD	4	 
 #define TTY_PORT_KOPENED	5	 
@@ -96,7 +91,6 @@ static inline struct tty_port *tty_port_get(struct tty_port *port)
 	return NULL;
 }
 
- 
 static inline bool tty_port_cts_enabled(const struct tty_port *port)
 {
 	return test_bit(TTY_PORT_CTS_FLOW, &port->iflags);

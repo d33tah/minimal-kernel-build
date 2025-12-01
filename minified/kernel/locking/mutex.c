@@ -1,5 +1,3 @@
- 
- 
 #include <linux/mutex.h>
 #include <linux/ww_mutex.h>
 #include <linux/sched/signal.h>
@@ -10,7 +8,6 @@
 #include <linux/spinlock.h>
 #include <linux/interrupt.h>
 #include <linux/debug_locks.h>
- 
 
 #include "mutex.h"
 
@@ -26,14 +23,12 @@ __mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key)
 	debug_mutex_init(lock, name, key);
 }
 
- 
 #define MUTEX_FLAG_WAITERS	0x01
 #define MUTEX_FLAG_HANDOFF	0x02
 #define MUTEX_FLAG_PICKUP	0x04
 
 #define MUTEX_FLAGS		0x07
 
- 
 static inline struct task_struct *__mutex_owner(struct mutex *lock)
 {
 	return (struct task_struct *)(atomic_long_read(&lock->owner) & ~MUTEX_FLAGS);
@@ -54,7 +49,6 @@ static inline unsigned long __owner_flags(unsigned long owner)
 	return owner & MUTEX_FLAGS;
 }
 
- 
 static inline struct task_struct *__mutex_trylock_common(struct mutex *lock, bool handoff)
 {
 	unsigned long owner, curr = (unsigned long)current;
@@ -91,21 +85,17 @@ static inline struct task_struct *__mutex_trylock_common(struct mutex *lock, boo
 	return __owner_task(owner);
 }
 
- 
 static inline bool __mutex_trylock_or_handoff(struct mutex *lock, bool handoff)
 {
 	return !__mutex_trylock_common(lock, handoff);
 }
 
- 
 static inline bool __mutex_trylock(struct mutex *lock)
 {
 	return !__mutex_trylock_common(lock, false);
 }
 
- 
 
- 
 static __always_inline bool __mutex_trylock_fast(struct mutex *lock)
 {
 	unsigned long curr = (unsigned long)current;
@@ -139,7 +129,6 @@ static inline bool __mutex_waiter_is_first(struct mutex *lock, struct mutex_wait
 	return list_first_entry(&lock->wait_list, struct mutex_waiter, list) == waiter;
 }
 
- 
 static void
 __mutex_add_waiter(struct mutex *lock, struct mutex_waiter *waiter,
 		   struct list_head *list)
@@ -161,7 +150,6 @@ __mutex_remove_waiter(struct mutex *lock, struct mutex_waiter *waiter)
 	debug_mutex_remove_waiter(lock, waiter, current);
 }
 
- 
 static void __mutex_handoff(struct mutex *lock, struct task_struct *task)
 {
 	unsigned long owner = atomic_long_read(&lock->owner);
@@ -182,10 +170,8 @@ static void __mutex_handoff(struct mutex *lock, struct task_struct *task)
 	}
 }
 
- 
 static void __sched __mutex_lock_slowpath(struct mutex *lock);
 
- 
 void __sched mutex_lock(struct mutex *lock)
 {
 	might_sleep();
@@ -205,7 +191,6 @@ mutex_optimistic_spin(struct mutex *lock, struct ww_acquire_ctx *ww_ctx,
 
 static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigned long ip);
 
- 
 void __sched mutex_unlock(struct mutex *lock)
 {
 	if (__mutex_unlock_fast(lock))
@@ -213,14 +198,12 @@ void __sched mutex_unlock(struct mutex *lock)
 	__mutex_unlock_slowpath(lock, _RET_IP_);
 }
 
- 
 void __sched ww_mutex_unlock(struct ww_mutex *lock)
 {
 	__ww_mutex_unlock(lock);
 	mutex_unlock(&lock->base);
 }
 
- 
 static __always_inline int __sched
 __mutex_lock_common(struct mutex *lock, unsigned int state, unsigned int subclass,
 		    struct lockdep_map *nest_lock, unsigned long ip,
@@ -391,7 +374,6 @@ int ww_mutex_trylock(struct ww_mutex *ww, struct ww_acquire_ctx *ww_ctx)
 }
 
 
- 
 static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigned long ip)
 {
 	struct task_struct *next = NULL;
@@ -439,14 +421,12 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigne
 	wake_up_q(&wake_q);
 }
 
- 
 static noinline int __sched
 __mutex_lock_killable_slowpath(struct mutex *lock);
 
 static noinline int __sched
 __mutex_lock_interruptible_slowpath(struct mutex *lock);
 
- 
 int __sched mutex_lock_interruptible(struct mutex *lock)
 {
 	might_sleep();
@@ -458,7 +438,6 @@ int __sched mutex_lock_interruptible(struct mutex *lock)
 }
 
 
- 
 int __sched mutex_lock_killable(struct mutex *lock)
 {
 	might_sleep();
@@ -503,7 +482,6 @@ __ww_mutex_lock_interruptible_slowpath(struct ww_mutex *lock,
 }
 
 
- 
 int __sched mutex_trylock(struct mutex *lock)
 {
 	bool locked;

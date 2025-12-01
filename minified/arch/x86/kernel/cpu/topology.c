@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/cpu.h>
 #include <asm/apic.h>
@@ -8,10 +6,8 @@
 
 #include "cpu.h"
 
- 
 #define SMT_LEVEL	0
 
- 
 #define INVALID_TYPE	0
 #define SMT_TYPE	1
 #define CORE_TYPE	2
@@ -29,7 +25,6 @@ int detect_extended_topology_early(struct cpuinfo_x86 *c)
 	return 0;
 }
 
- 
 int detect_extended_topology(struct cpuinfo_x86 *c)
 {
 	return 0;

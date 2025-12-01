@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_DMA_MAP_OPS_H
 #define _LINUX_DMA_MAP_OPS_H
 
@@ -97,7 +95,6 @@ static inline bool dma_release_from_contiguous(struct device *dev,
 {
 	return false;
 }
- 
 static inline struct page *dma_alloc_contiguous(struct device *dev, size_t size,
 		gfp_t gfp)
 {
@@ -135,7 +132,6 @@ static inline int dma_mmap_from_global_coherent(struct vm_area_struct *vma,
 	return 0;
 }
 
- 
 struct dma_sgt_handle {
 	struct sg_table sgt;
 	struct page **pages;
@@ -189,7 +185,6 @@ void *arch_dma_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 void arch_dma_free(struct device *dev, size_t size, void *cpu_addr,
 		dma_addr_t dma_addr, unsigned long attrs);
 
- 
 #ifndef pgprot_dmacoherent
 #define pgprot_dmacoherent(prot)	pgprot_noncached(prot)
 #endif

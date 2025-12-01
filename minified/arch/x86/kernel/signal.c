@@ -1,5 +1,3 @@
- 
- 
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -128,14 +126,11 @@ do {									\
 			(__u64 __user *)&(frame)->uc.uc_sigmask, \
 			label)
 
- 
 
- 
 #define FRAME_ALIGNMENT	16UL
 
 #define MAX_FRAME_PADDING	(FRAME_ALIGNMENT - 1)
 
- 
 static unsigned long align_sigframe(unsigned long sp)
 {
 	 
@@ -338,7 +333,6 @@ static int x32_setup_rt_frame(struct ksignal *ksig,
 	return 0;
 }
 
- 
 SYSCALL_DEFINE0(sigreturn)
 {
 	struct pt_regs *regs = current_pt_regs();
@@ -396,15 +390,11 @@ badframe:
 	return 0;
 }
 
- 
 # define MAX_FRAME_SIGINFO_UCTXT_SIZE	sizeof(struct sigframe_ia32)
 
- 
 #define MAX_XSAVE_PADDING	63UL
 
- 
 
- 
 static unsigned long __ro_after_init max_frame_size;
 static unsigned int __ro_after_init fpu_default_state_size;
 
@@ -518,7 +508,6 @@ static inline unsigned long get_nr_restart_syscall(const struct pt_regs *regs)
 	return __NR_restart_syscall;
 }
 
- 
 void arch_do_signal_or_restart(struct pt_regs *regs)
 {
 	struct ksignal ksig;

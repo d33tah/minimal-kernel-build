@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_INTERRUPT_H
 #define _LINUX_INTERRUPT_H
 
@@ -20,7 +18,6 @@
 #include <asm/irq.h>
 #include <asm/sections.h>
 
- 
 #define IRQF_TRIGGER_NONE	0x00000000
 #define IRQF_TRIGGER_RISING	0x00000001
 #define IRQF_TRIGGER_FALLING	0x00000002
@@ -30,7 +27,6 @@
 				 IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING)
 #define IRQF_TRIGGER_PROBE	0x00000010
 
- 
 #define IRQF_SHARED		0x00000080
 #define IRQF_PROBE_SHARED	0x00000100
 #define __IRQF_TIMER		0x00000200
@@ -48,7 +44,6 @@
 
 #define IRQF_TIMER		(__IRQF_TIMER | IRQF_NO_SUSPEND | IRQF_NO_THREAD)
 
- 
 enum {
 	IRQC_IS_HARDIRQ	= 0,
 	IRQC_IS_NESTED,
@@ -56,7 +51,6 @@ enum {
 
 typedef irqreturn_t (*irq_handler_t)(int, void *);
 
- 
 struct irqaction {
 	irq_handler_t		handler;
 	void			*dev_id;
@@ -75,7 +69,6 @@ struct irqaction {
 
 extern irqreturn_t no_action(int cpl, void *dev_id);
 
- 
 #define IRQ_NOTCONNECTED	(1U << 31)
 
 extern int __must_check
@@ -83,7 +76,6 @@ request_threaded_irq(unsigned int irq, irq_handler_t handler,
 		     irq_handler_t thread_fn,
 		     unsigned long flags, const char *name, void *dev);
 
- 
 static inline int __must_check
 request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	    const char *name, void *dev)
@@ -115,12 +107,10 @@ extern bool disable_hardirq(unsigned int irq);
 extern void disable_irq(unsigned int irq);
 extern void enable_irq(unsigned int irq);
 
- 
 struct irq_affinity_notify;
 
 #define	IRQ_AFFINITY_MAX_SETS  4
 
- 
 struct irq_affinity {
 	unsigned int	pre_vectors;
 	unsigned int	post_vectors;
@@ -130,7 +120,6 @@ struct irq_affinity {
 	void		*priv;
 };
 
- 
 struct irq_affinity_desc {
 	struct cpumask	mask;
 	unsigned int	is_managed : 1;
@@ -193,12 +182,10 @@ DECLARE_STATIC_KEY_FALSE(force_irqthreads_key);
 
 #endif  
 
- 
 #ifndef hard_irq_disable
 #define hard_irq_disable()	do { } while(0)
 #endif
 
- 
 
 enum
 {
@@ -216,13 +203,10 @@ enum
 	NR_SOFTIRQS
 };
 
- 
 #define SOFTIRQ_HOTPLUG_SAFE_MASK (BIT(RCU_SOFTIRQ) | BIT(IRQ_POLL_SOFTIRQ))
 
- 
 extern const char * const softirq_to_name[NR_SOFTIRQS];
 
- 
 
 struct softirq_action
 {
@@ -241,7 +225,6 @@ extern void raise_softirq(unsigned int nr);
 
 DECLARE_PER_CPU(struct task_struct *, ksoftirqd);
 
- 
 
 struct tasklet_struct
 {
@@ -312,7 +295,6 @@ extern void tasklet_init(struct tasklet_struct *t,
 extern void tasklet_setup(struct tasklet_struct *t,
 			  void (*callback)(struct tasklet_struct *));
 
- 
 
 /* probe_irq_on, probe_irq_off, probe_irq_mask removed - unused */	 
 
@@ -329,7 +311,6 @@ extern int early_irq_init(void);
 extern int arch_probe_nr_irqs(void);
 extern int arch_early_irq_init(void);
 
- 
 #ifndef __irq_entry
 # define __irq_entry	 __section(".irqentry.text")
 #endif

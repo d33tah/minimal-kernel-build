@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/kernel.h>
 #include <linux/backing-dev.h>
@@ -17,7 +15,6 @@
 #include <linux/rmap.h>
 #include "internal.h"
 
- 
 static inline void __clear_shadow_entry(struct address_space *mapping,
 				pgoff_t index, void *entry)
 {
@@ -41,7 +38,6 @@ static void clear_shadow_entry(struct address_space *mapping, pgoff_t index,
 	spin_unlock(&mapping->host->i_lock);
 }
 
- 
 static void truncate_folio_batch_exceptionals(struct address_space *mapping,
 				struct folio_batch *fbatch, pgoff_t *indices)
 {
@@ -91,7 +87,6 @@ static void truncate_folio_batch_exceptionals(struct address_space *mapping,
 	fbatch->nr = j;
 }
 
- 
 static int invalidate_exceptional_entry(struct address_space *mapping,
 					pgoff_t index, void *entry)
 {
@@ -102,7 +97,6 @@ static int invalidate_exceptional_entry(struct address_space *mapping,
 	return 1;
 }
 
- 
 static int invalidate_exceptional_entry2(struct address_space *mapping,
 					 pgoff_t index, void *entry)
 {
@@ -115,7 +109,6 @@ static int invalidate_exceptional_entry2(struct address_space *mapping,
 	return 1;
 }
 
- 
 void folio_invalidate(struct folio *folio, size_t offset, size_t length)
 {
 	const struct address_space_operations *aops = folio->mapping->a_ops;
@@ -124,7 +117,6 @@ void folio_invalidate(struct folio *folio, size_t offset, size_t length)
 		aops->invalidate_folio(folio, offset, length);
 }
 
- 
 static void truncate_cleanup_folio(struct folio *folio)
 {
 	if (folio_mapped(folio))
@@ -148,7 +140,6 @@ int truncate_inode_folio(struct address_space *mapping, struct folio *folio)
 	return 0;
 }
 
- 
 bool truncate_inode_partial_folio(struct folio *folio, loff_t start, loff_t end)
 {
 	loff_t pos = folio_pos(folio);
@@ -185,7 +176,6 @@ bool truncate_inode_partial_folio(struct folio *folio, loff_t start, loff_t end)
 	return true;
 }
 
- 
 /* Stub: generic_error_remove_page not used in minimal kernel */
 int generic_error_remove_page(struct address_space *mapping, struct page *page)
 {
@@ -207,7 +197,6 @@ static long mapping_evict_folio(struct address_space *mapping,
 	return remove_mapping(mapping, folio);
 }
 
- 
 long invalidate_inode_page(struct page *page)
 {
 	struct folio *folio = page_folio(page);
@@ -219,7 +208,6 @@ long invalidate_inode_page(struct page *page)
 	return mapping_evict_folio(mapping, folio);
 }
 
- 
 void truncate_inode_pages_range(struct address_space *mapping,
 				loff_t lstart, loff_t lend)
 {
@@ -317,13 +305,11 @@ void truncate_inode_pages_range(struct address_space *mapping,
 	}
 }
 
- 
 void truncate_inode_pages(struct address_space *mapping, loff_t lstart)
 {
 	truncate_inode_pages_range(mapping, lstart, (loff_t)-1);
 }
 
- 
 void truncate_inode_pages_final(struct address_space *mapping)
 {
 	 
@@ -338,7 +324,6 @@ void truncate_inode_pages_final(struct address_space *mapping)
 	truncate_inode_pages(mapping, 0);
 }
 
- 
 unsigned long invalidate_mapping_pagevec(struct address_space *mapping,
 		pgoff_t start, pgoff_t end, unsigned long *nr_pagevec)
 {
@@ -384,14 +369,12 @@ unsigned long invalidate_mapping_pagevec(struct address_space *mapping,
 	return count;
 }
 
- 
 unsigned long invalidate_mapping_pages(struct address_space *mapping,
 		pgoff_t start, pgoff_t end)
 {
 	return invalidate_mapping_pagevec(mapping, start, end, NULL);
 }
 
- 
 static int invalidate_complete_folio2(struct address_space *mapping,
 					struct folio *folio)
 {
@@ -431,7 +414,6 @@ static int folio_launder(struct address_space *mapping, struct folio *folio)
 	return mapping->a_ops->launder_folio(folio);
 }
 
- 
 int invalidate_inode_pages2_range(struct address_space *mapping,
 				  pgoff_t start, pgoff_t end)
 {
@@ -502,13 +484,11 @@ int invalidate_inode_pages2_range(struct address_space *mapping,
 	return ret;
 }
 
- 
 int invalidate_inode_pages2(struct address_space *mapping)
 {
 	return invalidate_inode_pages2_range(mapping, 0, -1);
 }
 
- 
 void truncate_pagecache(struct inode *inode, loff_t newsize)
 {
 	struct address_space *mapping = inode->i_mapping;
@@ -520,7 +500,6 @@ void truncate_pagecache(struct inode *inode, loff_t newsize)
 	unmap_mapping_range(mapping, holebegin, 0, 1);
 }
 
- 
 void truncate_setsize(struct inode *inode, loff_t newsize)
 {
 	loff_t oldsize = inode->i_size;
@@ -531,7 +510,6 @@ void truncate_setsize(struct inode *inode, loff_t newsize)
 	truncate_pagecache(inode, newsize);
 }
 
- 
 void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to)
 {
 	int bsize = i_blocksize(inode);
@@ -560,6 +538,5 @@ void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to)
 	put_page(page);
 }
 
- 
 /* Stub: truncate_pagecache_range not used in minimal kernel */
 void truncate_pagecache_range(struct inode *inode, loff_t lstart, loff_t lend) { }

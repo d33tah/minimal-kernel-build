@@ -1,9 +1,7 @@
- 
 
 #include "xz_private.h"
 #include "xz_stream.h"
 
- 
 struct xz_dec_hash {
 	vli_type unpadded;
 	vli_type uncompressed;
@@ -109,7 +107,6 @@ struct xz_dec {
 };
 
 #ifdef XZ_DEC_ANY_CHECK
- 
 static const uint8_t check_sizes[16] = {
 	0,
 	4, 4, 4,
@@ -120,7 +117,6 @@ static const uint8_t check_sizes[16] = {
 };
 #endif
 
- 
 static bool fill_temp(struct xz_dec *s, struct xz_buf *b)
 {
 	size_t copy_size = min_t(size_t,
@@ -138,7 +134,6 @@ static bool fill_temp(struct xz_dec *s, struct xz_buf *b)
 	return false;
 }
 
- 
 static enum xz_ret dec_vli(struct xz_dec *s, const uint8_t *in,
 			   size_t *in_pos, size_t in_size)
 {
@@ -170,7 +165,6 @@ static enum xz_ret dec_vli(struct xz_dec *s, const uint8_t *in,
 	return XZ_OK;
 }
 
- 
 static enum xz_ret dec_block(struct xz_dec *s, struct xz_buf *b)
 {
 	enum xz_ret ret;
@@ -230,7 +224,6 @@ static enum xz_ret dec_block(struct xz_dec *s, struct xz_buf *b)
 	return ret;
 }
 
- 
 static void index_update(struct xz_dec *s, const struct xz_buf *b)
 {
 	size_t in_used = b->in_pos - s->in_start;
@@ -238,7 +231,6 @@ static void index_update(struct xz_dec *s, const struct xz_buf *b)
 	s->crc32 = xz_crc32(b->in + s->in_start, in_used, s->crc32);
 }
 
- 
 static enum xz_ret dec_index(struct xz_dec *s, struct xz_buf *b)
 {
 	enum xz_ret ret;
@@ -281,7 +273,6 @@ static enum xz_ret dec_index(struct xz_dec *s, struct xz_buf *b)
 	return XZ_STREAM_END;
 }
 
- 
 static enum xz_ret crc32_validate(struct xz_dec *s, struct xz_buf *b)
 {
 	do {
@@ -302,7 +293,6 @@ static enum xz_ret crc32_validate(struct xz_dec *s, struct xz_buf *b)
 }
 
 #ifdef XZ_DEC_ANY_CHECK
- 
 static bool check_skip(struct xz_dec *s, struct xz_buf *b)
 {
 	while (s->pos < check_sizes[s->check_type]) {
@@ -319,7 +309,6 @@ static bool check_skip(struct xz_dec *s, struct xz_buf *b)
 }
 #endif
 
- 
 static enum xz_ret dec_stream_header(struct xz_dec *s)
 {
 	if (!memeq(s->temp.buf, HEADER_MAGIC, HEADER_MAGIC_SIZE))
@@ -349,7 +338,6 @@ static enum xz_ret dec_stream_header(struct xz_dec *s)
 	return XZ_OK;
 }
 
- 
 static enum xz_ret dec_stream_footer(struct xz_dec *s)
 {
 	if (!memeq(s->temp.buf + 10, FOOTER_MAGIC, FOOTER_MAGIC_SIZE))
@@ -369,7 +357,6 @@ static enum xz_ret dec_stream_footer(struct xz_dec *s)
 	return XZ_STREAM_END;
 }
 
- 
 static enum xz_ret dec_block_header(struct xz_dec *s)
 {
 	enum xz_ret ret;
@@ -612,7 +599,6 @@ static enum xz_ret dec_main(struct xz_dec *s, struct xz_buf *b)
 	 
 }
 
- 
 XZ_EXTERN enum xz_ret xz_dec_run(struct xz_dec *s, struct xz_buf *b)
 {
 	size_t in_start;

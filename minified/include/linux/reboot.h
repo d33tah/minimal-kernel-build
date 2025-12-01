@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_REBOOT_H
 #define _LINUX_REBOOT_H
 
@@ -50,7 +49,6 @@ extern int register_restart_handler(struct notifier_block *);
 extern int unregister_restart_handler(struct notifier_block *);
 extern void do_kernel_restart(char *cmd);
 
- 
 
 extern void migrate_to_reboot_cpu(void);
 extern void machine_restart(char *cmd);
@@ -63,9 +61,7 @@ extern void machine_crash_shutdown(struct pt_regs *);
 
 void do_kernel_power_off(void);
 
- 
 
- 
 #define SYS_OFF_PRIO_PLATFORM		-256
 #define SYS_OFF_PRIO_LOW		-128
 #define SYS_OFF_PRIO_DEFAULT		0
@@ -83,7 +79,6 @@ enum sys_off_mode {
 	SYS_OFF_MODE_RESTART,
 };
 
- 
 struct sys_off_data {
 	int mode;
 	void *cb_data;
@@ -114,7 +109,6 @@ int devm_register_restart_handler(struct device *dev,
 int register_platform_power_off(void (*power_off)(void));
 void unregister_platform_power_off(void (*power_off)(void));
 
- 
 
 extern void kernel_restart_prepare(char *cmd);
 extern void kernel_restart(char *cmd);
@@ -128,7 +122,6 @@ extern void orderly_poweroff(bool force);
 extern void orderly_reboot(void);
 void hw_protection_shutdown(const char *reason, int ms_until_forced);
 
- 
 
 extern void emergency_restart(void);
 #include <asm/emergency-restart.h>

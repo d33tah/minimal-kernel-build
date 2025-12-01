@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef RB_TREE_LATCH_H
 #define RB_TREE_LATCH_H
@@ -17,7 +15,6 @@ struct latch_tree_root {
 	struct rb_root		tree[2];
 };
 
- 
 struct latch_tree_ops {
 	bool (*less)(struct latch_tree_node *a, struct latch_tree_node *b);
 	int  (*comp)(void *key,                 struct latch_tree_node *b);
@@ -82,7 +79,6 @@ __lt_find(void *key, struct latch_tree_root *ltr, int idx,
 	return NULL;
 }
 
- 
 static __always_inline void
 latch_tree_insert(struct latch_tree_node *node,
 		  struct latch_tree_root *root,
@@ -94,7 +90,6 @@ latch_tree_insert(struct latch_tree_node *node,
 	__lt_insert(node, root, 1, ops->less);
 }
 
- 
 static __always_inline void
 latch_tree_erase(struct latch_tree_node *node,
 		 struct latch_tree_root *root,
@@ -106,7 +101,6 @@ latch_tree_erase(struct latch_tree_node *node,
 	__lt_erase(node, root, 1);
 }
 
- 
 static __always_inline struct latch_tree_node *
 latch_tree_find(void *key, struct latch_tree_root *root,
 		const struct latch_tree_ops *ops)

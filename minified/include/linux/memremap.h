@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_MEMREMAP_H_
 #define _LINUX_MEMREMAP_H_
 
@@ -10,7 +9,6 @@
 struct resource;
 struct device;
 
- 
 struct vmem_altmap {
 	unsigned long base_pfn;
 	const unsigned long end_pfn;
@@ -20,7 +18,6 @@ struct vmem_altmap {
 	unsigned long alloc;
 };
 
- 
 enum memory_type {
 	MEMORY_DEVICE_PRIVATE = 1,
 };
@@ -35,7 +32,6 @@ struct dev_pagemap_ops {
 
 #define PGMAP_ALTMAP_VALID	(1 << 0)
 
- 
 struct dev_pagemap {
 	struct vmem_altmap altmap;
 	struct percpu_ref ref;
@@ -115,7 +111,6 @@ static inline void vmem_altmap_free(struct vmem_altmap *altmap,
 {
 }
 
- 
 static inline unsigned long memremap_compat_align(void)
 {
 	return PAGE_SIZE;

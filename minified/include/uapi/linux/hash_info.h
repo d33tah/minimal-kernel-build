@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _UAPI_LINUX_HASH_INFO_H
 #define _UAPI_LINUX_HASH_INFO_H

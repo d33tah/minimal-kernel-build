@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SWAIT_H
 #define _LINUX_SWAIT_H
 
@@ -8,7 +7,6 @@
 #include <linux/wait.h>
 #include <asm/current.h>
 
- 
 
 struct task_struct;
 
@@ -50,13 +48,11 @@ extern void __init_swait_queue_head(struct swait_queue_head *q, const char *name
 # define DECLARE_SWAIT_QUEUE_HEAD_ONSTACK(name)			\
 	DECLARE_SWAIT_QUEUE_HEAD(name)
 
- 
 static inline int swait_active(struct swait_queue_head *wq)
 {
 	return !list_empty(&wq->task_list);
 }
 
- 
 static inline bool swq_has_sleeper(struct swait_queue_head *wq)
 {
 	 
@@ -74,7 +70,6 @@ extern long prepare_to_swait_event(struct swait_queue_head *q, struct swait_queu
 extern void __finish_swait(struct swait_queue_head *q, struct swait_queue *wait);
 extern void finish_swait(struct swait_queue_head *q, struct swait_queue *wait);
 
- 
 #define ___swait_event(wq, condition, state, ret, cmd)			\
 ({									\
 	__label__ __out;						\
@@ -152,7 +147,6 @@ do {									\
 #define __swait_event_idle(wq, condition)				\
 	(void)___swait_event(wq, condition, TASK_IDLE, 0, schedule())
 
- 
 #define swait_event_idle_exclusive(wq, condition)			\
 do {									\
 	if (condition)							\
@@ -165,7 +159,6 @@ do {									\
 		       TASK_IDLE, timeout,				\
 		       __ret = schedule_timeout(__ret))
 
- 
 #define swait_event_idle_timeout_exclusive(wq, condition, timeout)	\
 ({									\
 	long __ret = timeout;						\

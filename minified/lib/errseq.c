@@ -1,22 +1,16 @@
- 
 #include <linux/err.h>
 #include <linux/bug.h>
 #include <linux/atomic.h>
 #include <linux/errseq.h>
 #include <linux/log2.h>
 
- 
 
- 
 #define ERRSEQ_SHIFT		ilog2(MAX_ERRNO + 1)
 
- 
 #define ERRSEQ_SEEN		(1 << ERRSEQ_SHIFT)
 
- 
 #define ERRSEQ_CTR_INC		(1 << (ERRSEQ_SHIFT + 1))
 
- 
 errseq_t errseq_set(errseq_t *eseq, int err)
 {
 	errseq_t cur, old;
@@ -60,7 +54,6 @@ errseq_t errseq_set(errseq_t *eseq, int err)
 	return cur;
 }
 
- 
 errseq_t errseq_sample(errseq_t *eseq)
 {
 	errseq_t old = READ_ONCE(*eseq);
@@ -71,7 +64,6 @@ errseq_t errseq_sample(errseq_t *eseq)
 	return old;
 }
 
- 
 int errseq_check(errseq_t *eseq, errseq_t since)
 {
 	errseq_t cur = READ_ONCE(*eseq);
@@ -81,7 +73,6 @@ int errseq_check(errseq_t *eseq, errseq_t since)
 	return -(cur & MAX_ERRNO);
 }
 
- 
 int errseq_check_and_advance(errseq_t *eseq, errseq_t *since)
 {
 	int err = 0;

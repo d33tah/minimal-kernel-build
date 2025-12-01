@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/device/driver.h>
 #include <linux/device.h>
@@ -23,7 +21,6 @@ static struct device *next_device(struct klist_iter *i)
 	return dev;
 }
 
- 
 int driver_set_override(struct device *dev, const char **override,
 			const char *s, size_t len)
 {
@@ -31,7 +28,6 @@ int driver_set_override(struct device *dev, const char **override,
 	return -ENOSYS;
 }
 
- 
 int driver_for_each_device(struct device_driver *drv, struct device *start,
 			   void *data, int (*fn)(struct device *, void *))
 {
@@ -50,7 +46,6 @@ int driver_for_each_device(struct device_driver *drv, struct device *start,
 	return error;
 }
 
- 
 struct device *driver_find_device(struct device_driver *drv,
 				  struct device *start, const void *data,
 				  int (*match)(struct device *dev, const void *data))
@@ -70,7 +65,6 @@ struct device *driver_find_device(struct device_driver *drv,
 	return dev;
 }
 
- 
 int driver_create_file(struct device_driver *drv,
 		       const struct driver_attribute *attr)
 {
@@ -83,7 +77,6 @@ int driver_create_file(struct device_driver *drv,
 	return error;
 }
 
- 
 void driver_remove_file(struct device_driver *drv,
 			const struct driver_attribute *attr)
 {
@@ -103,7 +96,6 @@ void driver_remove_groups(struct device_driver *drv,
 	sysfs_remove_groups(&drv->p->kobj, groups);
 }
 
- 
 int driver_register(struct device_driver *drv)
 {
 	int ret;
@@ -136,7 +128,6 @@ int driver_register(struct device_driver *drv)
 	return ret;
 }
 
- 
 void driver_unregister(struct device_driver *drv)
 {
 	if (!drv || !drv->p) {
@@ -147,7 +138,6 @@ void driver_unregister(struct device_driver *drv)
 	bus_remove_driver(drv);
 }
 
- 
 struct device_driver *driver_find(const char *name, struct bus_type *bus)
 {
 	struct kobject *k = kset_find_obj(bus->p->drivers_kset, name);

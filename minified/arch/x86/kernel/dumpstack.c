@@ -1,4 +1,3 @@
- 
 #include <linux/kallsyms.h>
 #include <linux/kprobes.h>
 #include <linux/uaccess.h>
@@ -42,7 +41,6 @@ bool noinstr in_task_stack(unsigned long *stack, struct task_struct *task,
 	return true;
 }
 
- 
 bool noinstr in_entry_stack(unsigned long *stack, struct stack_info *info)
 {
 	struct entry_stack *ss = cpu_entry_stack(smp_processor_id());
@@ -61,7 +59,6 @@ bool noinstr in_entry_stack(unsigned long *stack, struct stack_info *info)
 	return true;
 }
 
- 
 void show_opcodes(struct pt_regs *regs, const char *loglvl)
 {
 	 
@@ -188,7 +185,6 @@ int __die(const char *str, struct pt_regs *regs, long err)
 }
 NOKPROBE_SYMBOL(__die);
 
- 
 void die(const char *str, struct pt_regs *regs, long err)
 {
 	unsigned long flags = oops_begin();

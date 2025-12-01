@@ -1,11 +1,9 @@
- 
 #ifndef _UAPI_LINUX_FUTEX_H
 #define _UAPI_LINUX_FUTEX_H
 
 #include <linux/compiler.h>
 #include <linux/types.h>
 
- 
 
 
 #define FUTEX_WAIT		0
@@ -43,13 +41,10 @@
 #define FUTEX_CMP_REQUEUE_PI_PRIVATE	(FUTEX_CMP_REQUEUE_PI | \
 					 FUTEX_PRIVATE_FLAG)
 
- 
 #define FUTEX_32		2
 
- 
 #define FUTEX_WAITV_MAX		128
 
- 
 struct futex_waitv {
 	__u64 val;
 	__u64 uaddr;
@@ -57,14 +52,11 @@ struct futex_waitv {
 	__u32 __reserved;
 };
 
- 
 
- 
 struct robust_list {
 	struct robust_list __user *next;
 };
 
- 
 struct robust_list_head {
 	 
 	struct robust_list list;
@@ -76,19 +68,14 @@ struct robust_list_head {
 	struct robust_list __user *list_op_pending;
 };
 
- 
 #define FUTEX_WAITERS		0x80000000
 
- 
 #define FUTEX_OWNER_DIED	0x40000000
 
- 
 #define FUTEX_TID_MASK		0x3fffffff
 
- 
 #define ROBUST_LIST_LIMIT	2048
 
- 
 #define FUTEX_BITSET_MATCH_ANY	0xffffffff
 
 
@@ -107,7 +94,6 @@ struct robust_list_head {
 #define FUTEX_OP_CMP_GT		4	 
 #define FUTEX_OP_CMP_GE		5	 
 
- 
 
 #define FUTEX_OP(op, oparg, cmp, cmparg) \
   (((op & 0xf) << 28) | ((cmp & 0xf) << 24)		\

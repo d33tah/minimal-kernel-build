@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_TICK_H
 #define _LINUX_TICK_H
 
@@ -12,9 +10,7 @@
 #include <linux/rcupdate.h>
 
 extern void __init tick_init(void);
- 
 extern void tick_suspend_local(void);
- 
 extern void tick_resume_local(void);
 extern void tick_handover_do_timer(void);
 extern void tick_cleanup_dead_cpu(int cpu);

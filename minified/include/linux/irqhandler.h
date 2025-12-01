@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_IRQHANDLER_H
 #define _LINUX_IRQHANDLER_H
 
- 
 
 struct irq_desc;
 struct irq_data;

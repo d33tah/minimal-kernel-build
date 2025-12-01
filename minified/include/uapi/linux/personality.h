@@ -1,9 +1,7 @@
- 
 #ifndef _UAPI_LINUX_PERSONALITY_H
 #define _UAPI_LINUX_PERSONALITY_H
 
 
- 
 enum {
 	UNAME26	=               0x0020000,
 	ADDR_NO_RANDOMIZE = 	0x0040000,	 
@@ -18,13 +16,11 @@ enum {
 	ADDR_LIMIT_3GB = 	0x8000000,
 };
 
- 
 #define PER_CLEAR_ON_SETID (READ_IMPLIES_EXEC  | \
 			    ADDR_NO_RANDOMIZE  | \
 			    ADDR_COMPAT_LAYOUT | \
 			    MMAP_PAGE_ZERO)
 
- 
 enum {
 	PER_LINUX =		0x0000,
 	PER_LINUX_32BIT =	0x0000 | ADDR_LIMIT_32BIT,

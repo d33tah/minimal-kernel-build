@@ -1,10 +1,7 @@
- 
- 
 #include <vdso/datapage.h>
 #include <vdso/helpers.h>
 
 #ifndef vdso_calc_delta
- 
 static __always_inline
 u64 vdso_calc_delta(u64 cycles, u64 last, u64 mask, u32 mult)
 {

@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_VMSTAT_H
 #define _LINUX_VMSTAT_H
 
@@ -18,7 +17,6 @@ struct reclaim_stat;
 enum writeback_stat_item { NR_VM_WRITEBACK_STAT_ITEMS };
 
 
- 
 static inline void count_vm_event(enum vm_event_item item)
 {
 }
@@ -47,7 +45,6 @@ static inline void vm_events_fold_cpu(int cpu)
 #define __count_zid_vm_events(item, zid, delta) \
 	__count_vm_events(item##_NORMAL - ZONE_NORMAL + zid, delta)
 
- 
 extern atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS];
 extern atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS];
 extern atomic_long_t vm_numa_event[NR_VM_NUMA_EVENT_ITEMS];
@@ -94,7 +91,6 @@ static inline unsigned long zone_page_state(struct zone *zone,
 	return x;
 }
 
- 
 static inline unsigned long zone_page_state_snapshot(struct zone *zone,
 					enum zone_stat_item item)
 {
@@ -177,7 +173,6 @@ static inline void __dec_node_page_state(struct page *page,
 }
 
 
- 
 #define inc_zone_page_state __inc_zone_page_state
 #define dec_zone_page_state __dec_zone_page_state
 #define mod_zone_page_state __mod_zone_page_state

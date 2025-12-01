@@ -1,4 +1,3 @@
- 
 #include <linux/kernel.h>
 #include <linux/export.h>
 #include <linux/uaccess.h>
@@ -7,7 +6,6 @@
 
 #include <asm/word-at-a-time.h>
 
- 
 static __always_inline long do_strnlen_user(const char __user *src, unsigned long count, unsigned long max)
 {
 	const struct word_at_a_time constants = WORD_AT_A_TIME_CONSTANTS;
@@ -47,7 +45,6 @@ efault:
 	return 0;
 }
 
- 
 long strnlen_user(const char __user *str, long count)
 {
 	unsigned long max_addr, src_addr;

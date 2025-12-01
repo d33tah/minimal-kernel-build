@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_FUTEX_H
 #define _LINUX_FUTEX_H
 
@@ -11,7 +10,6 @@ struct inode;
 struct mm_struct;
 struct task_struct;
 
- 
 
 #define FUT_OFF_INODE    1  
 #define FUT_OFF_MMSHARED 2  

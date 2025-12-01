@@ -1,7 +1,5 @@
- 
 #ifndef _LINUX_UPROBES_H
 #define _LINUX_UPROBES_H
- 
 
 #include <linux/errno.h>
 #include <linux/rbtree.h>

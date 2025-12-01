@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_PANIC_NOTIFIERS_H
 #define _LINUX_PANIC_NOTIFIERS_H
 

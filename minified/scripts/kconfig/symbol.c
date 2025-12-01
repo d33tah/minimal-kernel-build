@@ -1,5 +1,3 @@
- 
- 
 
 #include <sys/types.h>
 #include <ctype.h>
@@ -230,7 +228,6 @@ static void sym_calc_visibility(struct symbol *sym)
 	}
 }
 
- 
 struct symbol *sym_choice_default(struct symbol *sym)
 {
 	struct symbol *def_sym;
@@ -672,7 +669,6 @@ bool sym_set_string_value(struct symbol *sym, const char *newval)
 	return true;
 }
 
- 
 const char *sym_get_string_default(struct symbol *sym)
 {
 	struct property *prop;
@@ -850,7 +846,6 @@ struct sym_match {
 	off_t		so, eo;
 };
 
- 
 static int sym_rel_comp(const void *sym1, const void *sym2)
 {
 	const struct sym_match *s1 = sym1;
@@ -920,7 +915,6 @@ sym_re_search_free:
 	return sym_arr;
 }
 
- 
 static struct dep_stack {
 	struct dep_stack *prev, *next;
 	struct symbol *sym;
@@ -945,7 +939,6 @@ static void dep_stack_remove(void)
 		check_top->next = NULL;
 }
 
- 
 static void sym_check_print_recursive(struct symbol *last_sym)
 {
 	struct dep_stack *stack;
@@ -1069,7 +1062,6 @@ static struct symbol *sym_check_expr_deps(struct expr *e)
 	return NULL;
 }
 
- 
 static struct symbol *sym_check_sym_deps(struct symbol *sym)
 {
 	struct symbol *sym2;

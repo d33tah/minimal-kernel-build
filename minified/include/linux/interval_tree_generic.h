@@ -1,9 +1,6 @@
- 
- 
 
 #include <linux/rbtree_augmented.h>
 
- 
 
 #define INTERVAL_TREE_DEFINE(ITSTRUCT, ITRB, ITTYPE, ITSUBTREE,		      \
 			     ITSTART, ITLAST, ITSTATIC, ITPREFIX)	      \

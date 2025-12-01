@@ -1,4 +1,3 @@
- 
 #include <linux/mm.h>
 #include <linux/rmap.h>
 #include <linux/hugetlb.h>
@@ -39,7 +38,6 @@ static bool map_pte(struct page_vma_mapped_walk *pvmw)
 	return true;
 }
 
- 
 static bool check_pte(struct page_vma_mapped_walk *pvmw)
 {
 	unsigned long pfn;
@@ -75,7 +73,6 @@ static bool check_pte(struct page_vma_mapped_walk *pvmw)
 	return (pfn - pvmw->pfn) < pvmw->nr_pages;
 }
 
- 
 static bool check_pmd(unsigned long pfn, struct page_vma_mapped_walk *pvmw)
 {
 	if ((pfn + HPAGE_PMD_NR - 1) < pvmw->pfn)
@@ -92,7 +89,6 @@ static void step_forward(struct page_vma_mapped_walk *pvmw, unsigned long size)
 		pvmw->address = ULONG_MAX;
 }
 
- 
 bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 {
 	struct vm_area_struct *vma = pvmw->vma;
@@ -226,7 +222,6 @@ next_pte:
 	return false;
 }
 
- 
 int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma)
 {
 	struct page_vma_mapped_walk pvmw = {

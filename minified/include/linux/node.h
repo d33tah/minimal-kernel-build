@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_NODE_H_
 #define _LINUX_NODE_H_
 

@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_IRQ_H
 #define _LINUX_IRQ_H
 
- 
 
 #include <linux/cache.h>
 #include <linux/spinlock.h>
@@ -24,7 +22,6 @@ struct msi_msg;
 struct irq_affinity_desc;
 enum irqchip_irq_state;
 
- 
 enum {
 	IRQ_TYPE_NONE		= 0x00000000,
 	IRQ_TYPE_EDGE_RISING	= 0x00000001,
@@ -62,7 +59,6 @@ enum {
 
 #define IRQ_NO_BALANCING_MASK	(IRQ_PER_CPU | IRQ_NO_BALANCING)
 
- 
 enum {
 	IRQ_SET_MASK_OK = 0,
 	IRQ_SET_MASK_OK_NOCOPY,
@@ -72,7 +68,6 @@ enum {
 struct msi_desc;
 struct irq_domain;
 
- 
 struct irq_common_data {
 	unsigned int		__private state_use_accessors;
 	void			*handler_data;
@@ -80,7 +75,6 @@ struct irq_common_data {
 	cpumask_var_t		affinity;
 };
 
- 
 struct irq_data {
 	u32			mask;
 	unsigned int		irq;
@@ -91,7 +85,6 @@ struct irq_data {
 	void			*chip_data;
 };
 
- 
 enum {
 	IRQD_TRIGGER_MASK		= 0xf,
 	IRQD_SETAFFINITY_PENDING	= (1 <<  8),
@@ -131,7 +124,6 @@ static inline u32 irqd_get_trigger_type(struct irq_data *d)
 	return __irqd_to_state(d) & IRQD_TRIGGER_MASK;
 }
 
- 
 static inline void irqd_set_trigger_type(struct irq_data *d, u32 type)
 {
 	__irqd_to_state(d) &= ~IRQD_TRIGGER_MASK;
@@ -139,7 +131,6 @@ static inline void irqd_set_trigger_type(struct irq_data *d, u32 type)
 	__irqd_to_state(d) |= IRQD_DEFAULT_TRIGGER_SET;
 }
 
- 
 static inline bool irqd_irq_disabled(struct irq_data *d)
 {
 	return __irqd_to_state(d) & IRQD_IRQ_DISABLED;
@@ -182,7 +173,6 @@ static inline bool irqd_is_started(struct irq_data *d)
 
 #undef __irqd_to_state
 
- 
 struct irq_chip {
 	const char	*name;
 	unsigned int	(*irq_startup)(struct irq_data *data);
@@ -231,7 +221,6 @@ struct irq_chip {
 	unsigned long	flags;
 };
 
- 
 enum {
 	IRQCHIP_SET_TYPE_MASKED			= (1 <<  0),
 	IRQCHIP_EOI_IF_HANDLED			= (1 <<  1),
@@ -249,7 +238,6 @@ enum {
 
 #include <linux/irqdesc.h>
 
- 
 #include <asm/hw_irq.h>
 
 #ifndef NR_IRQS_LEGACY
@@ -276,7 +264,6 @@ extern int no_irq_affinity;
 
 int irq_set_parent(int irq, int parent_irq);
 
- 
 extern void handle_level_irq(struct irq_desc *desc);
 extern void handle_fasteoi_irq(struct irq_desc *desc);
 extern void handle_edge_irq(struct irq_desc *desc);
@@ -295,17 +282,13 @@ extern int irq_chip_compose_msi_msg(struct irq_data *data, struct msi_msg *msg);
 extern int irq_chip_pm_get(struct irq_data *data);
 extern int irq_chip_pm_put(struct irq_data *data);
 
- 
 extern void note_interrupt(struct irq_desc *desc, irqreturn_t action_ret);
 
 
- 
 extern int noirqdebug_setup(char *str);
 
- 
 extern int can_request_irq(unsigned int irq, unsigned long irqflags);
 
- 
 extern struct irq_chip no_irq_chip;
 extern struct irq_chip dummy_irq_chip;
 
@@ -348,7 +331,6 @@ static inline void irq_set_percpu_devid_flags(unsigned int irq)
 			     IRQ_NOPROBE | IRQ_PER_CPU_DEVID);
 }
 
- 
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
 extern int irq_set_handler_data(unsigned int irq, void *data);
 extern int irq_set_chip_data(unsigned int irq, void *data);
@@ -384,7 +366,6 @@ int __devm_irq_alloc_descs(struct device *dev, int irq, unsigned int from,
 			   unsigned int cnt, int node, struct module *owner,
 			   const struct irq_affinity_desc *affinity);
 
- 
 #define irq_alloc_descs(irq, from, cnt, node)	\
 	__irq_alloc_descs(irq, from, cnt, node, THIS_MODULE, NULL)
 
@@ -456,7 +437,6 @@ unsigned int irq_matrix_allocated(struct irq_matrix *m);
 unsigned int irq_matrix_reserved(struct irq_matrix *m);
 void irq_matrix_debug_show(struct seq_file *sf, struct irq_matrix *m, int ind);
 
- 
 #define INVALID_HWIRQ	(~0UL)
 irq_hw_number_t ipi_get_hwirq(unsigned int irq, unsigned int cpu);
 int __ipi_send_single(struct irq_desc *desc, unsigned int cpu);

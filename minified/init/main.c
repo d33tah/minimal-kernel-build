@@ -1,5 +1,3 @@
- 
- 
 
 #define DEBUG		 
 
@@ -97,28 +95,20 @@ static int kernel_init(void *);
 extern void init_IRQ(void);
 extern void radix_tree_init(void);
 
- 
 bool early_boot_irqs_disabled __read_mostly;
 
 enum system_states system_state __read_mostly;
 
- 
 #define MAX_INIT_ARGS CONFIG_INIT_ENV_ARG_LIMIT
 #define MAX_INIT_ENVS CONFIG_INIT_ENV_ARG_LIMIT
 
 extern void time_init(void);
- 
 void (*__initdata late_time_init)(void);
 
- 
 char __initdata boot_command_line[COMMAND_LINE_SIZE];
- 
 char *saved_command_line;
- 
 static char *static_command_line;
- 
 static char *extra_command_line;
- 
 static char *extra_init_args;
 
 # define bootconfig_found false
@@ -127,10 +117,8 @@ static char *extra_init_args;
 static char *execute_command;
 static char *ramdisk_execute_command = "/init";
 
- 
 bool static_key_initialized __read_mostly;
 
- 
 unsigned int reset_devices;
 
 /* Stub: reset_devices cmdline not needed for minimal kernel */
@@ -169,7 +157,6 @@ static bool __init obsolete_checksetup(char *line)
 	return had_early_param;
 }
 
- 
 unsigned long loops_per_jiffy = (1<<12);
 
 /* Stub: debug/quiet/loglevel cmdline not needed for minimal kernel */
@@ -187,7 +174,6 @@ static int __init warn_bootconfig(char *str) { return 0; }
 #define exit_boot_config()	do {} while (0)
 early_param("bootconfig", warn_bootconfig);
 
- 
 static void __init repair_env_string(char *param, char *val)
 {
 	if (val) {
@@ -202,7 +188,6 @@ static void __init repair_env_string(char *param, char *val)
 	}
 }
 
- 
 static int __init set_init_arg(char *param, char *val,
 			       const char *unused, void *arg)
 {
@@ -224,7 +209,6 @@ static int __init set_init_arg(char *param, char *val,
 	return 0;
 }
 
- 
 static int __init unknown_bootoption(char *param, char *val,
 				     const char *unused, void *arg)
 {
@@ -297,7 +281,6 @@ static const unsigned int setup_max_cpus = NR_CPUS;
 static inline void setup_nr_cpu_ids(void) { }
 static inline void smp_prepare_cpus(unsigned int maxcpus) { }
 
- 
 static void __init setup_command_line(char *command_line)
 {
 	size_t len, xlen = 0, ilen = 0;
@@ -342,7 +325,6 @@ static void __init setup_command_line(char *command_line)
 	}
 }
 
- 
 
 static __initdata DECLARE_COMPLETION(kthreadd_done);
 
@@ -378,7 +360,6 @@ noinline void __ref rest_init(void)
 	cpu_startup_entry(CPUHP_ONLINE);
 }
 
- 
 static int __init do_early_param(char *param, char *val,
 				 const char *unused, void *arg)
 {
@@ -403,7 +384,6 @@ void __init parse_early_options(char *cmdline)
 		   do_early_param);
 }
 
- 
 void __init parse_early_param(void)
 {
 	static int done __initdata;
@@ -448,13 +428,11 @@ static inline void initcall_debug_enable(void)
 }
 #endif
 
- 
 static void __init report_meminit(void)
 {
 	/* Stub: mem auto-init reporting not needed for minimal kernel */
 }
 
- 
 static void __init mm_init(void)
 {
 	 
@@ -649,10 +627,8 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	prevent_tail_call_optimization();
 }
 
- 
 static void __init do_ctors(void)
 {
- 
 }
 
 /* Stub: initcall_blacklist not needed for minimal kernel */
@@ -750,7 +726,6 @@ static initcall_entry_t *initcall_levels[] __initdata = {
 	__initcall_end,
 };
 
- 
 static const char *initcall_level_names[] __initdata = {
 	"pure",
 	"core",
@@ -802,7 +777,6 @@ static void __init do_initcalls(void)
 	kfree(command_line);
 }
 
- 
 static void __init do_basic_setup(void)
 {
 	cpuset_init_smp();
@@ -929,7 +903,6 @@ static int __ref kernel_init(void *unused)
 	      "See Linux Documentation/admin-guide/init.rst for guidance.");
 }
 
- 
 void __init console_on_rootfs(void)
 {
 	struct file *file = filp_open("/dev/console", O_RDWR, 0);

@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_DEBUG_LOCKING_H
 #define __LINUX_DEBUG_LOCKING_H
 
@@ -16,7 +15,6 @@ static __always_inline int __debug_locks_off(void)
 	return xchg(&debug_locks, 0);
 }
 
- 
 extern int debug_locks_off(void);
 
 #define DEBUG_LOCKS_WARN_ON(c)						\

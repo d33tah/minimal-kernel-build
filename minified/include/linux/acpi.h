@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_ACPI_H
 #define _LINUX_ACPI_H
@@ -15,9 +13,7 @@
 #ifndef _LINUX
 #define _LINUX
 #endif
- 
 
- 
 typedef void *acpi_handle;
 typedef u32 acpi_status;
 typedef u32 acpi_object_type;
@@ -170,7 +166,6 @@ struct acpi_osc_context;
 
 static inline __printf(3, 4) void
 acpi_handle_printk(const char *level, void *handle, const char *fmt, ...) {}
- 
 #define acpi_handle_emerg(handle, fmt, ...)				\
 	acpi_handle_printk(KERN_EMERG, handle, fmt, ##__VA_ARGS__)
 #define acpi_handle_alert(handle, fmt, ...)				\
@@ -209,7 +204,6 @@ static inline int acpi_dev_gpio_irq_get(struct acpi_device *adev, int index)
 	return acpi_dev_gpio_irq_get_by(adev, NULL, index);
 }
 
- 
 
 static inline int
 __acpi_node_get_property_reference(const struct fwnode_handle *fwnode,

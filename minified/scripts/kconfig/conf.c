@@ -1,5 +1,3 @@
- 
- 
 
 #include <ctype.h>
 #include <limits.h>
@@ -71,7 +69,6 @@ static void strip(char *str)
 		*p-- = 0;
 }
 
- 
 static void xfgets(char *str, int size, FILE *in)
 {
 	if (!fgets(str, size, in))

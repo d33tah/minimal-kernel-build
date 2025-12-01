@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_FS_CONTEXT_H
 #define _LINUX_FS_CONTEXT_H
@@ -28,7 +26,6 @@ enum fs_context_purpose {
 	FS_CONTEXT_FOR_RECONFIGURE,	 
 };
 
- 
 enum fs_context_phase {
 	FS_CONTEXT_CREATE_PARAMS,	 
 	FS_CONTEXT_CREATING,		 
@@ -39,7 +36,6 @@ enum fs_context_phase {
 	FS_CONTEXT_FAILED,		 
 };
 
- 
 enum fs_value_type {
 	fs_value_is_undefined,
 	fs_value_is_flag,		 
@@ -49,7 +45,6 @@ enum fs_value_type {
 	fs_value_is_file,		 
 };
 
- 
 struct fs_parameter {
 	const char		*key;		 
 	enum fs_value_type	type:8;		 
@@ -68,7 +63,6 @@ struct p_log {
 	struct fc_log *log;
 };
 
- 
 struct fs_context {
 	const struct fs_context_operations *ops;
 	struct mutex		uapi_mutex;	 
@@ -103,7 +97,6 @@ struct fs_context_operations {
 	int (*reconfigure)(struct fs_context *fc);
 };
 
- 
 extern struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
 						unsigned int sb_flags);
 extern struct fs_context *fs_context_for_reconfigure(struct dentry *dentry,
@@ -125,7 +118,6 @@ extern void fc_drop_locked(struct fs_context *fc);
 int reconfigure_single(struct super_block *s,
 		       int flags, void *data);
 
- 
 enum vfs_get_super_keying {
 	vfs_get_single_super,	 
 	vfs_get_single_reconf_super,  
@@ -157,7 +149,6 @@ extern int get_tree_bdev(struct fs_context *fc,
 
 extern const struct file_operations fscontext_fops;
 
- 
 struct fc_log {
 	refcount_t	usage;
 	u8		head;		 
@@ -174,22 +165,18 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 					l, fmt, ## __VA_ARGS__)
 #define __plog(p, l, fmt, ...) logfc((p)->log, (p)->prefix, \
 					l, fmt, ## __VA_ARGS__)
- 
 #define infof(fc, fmt, ...) __logfc(fc, 'i', fmt, ## __VA_ARGS__)
 #define info_plog(p, fmt, ...) __plog(p, 'i', fmt, ## __VA_ARGS__)
 #define infofc(p, fmt, ...) __plog((&(fc)->log), 'i', fmt, ## __VA_ARGS__)
 
- 
 #define warnf(fc, fmt, ...) __logfc(fc, 'w', fmt, ## __VA_ARGS__)
 #define warn_plog(p, fmt, ...) __plog(p, 'w', fmt, ## __VA_ARGS__)
 #define warnfc(fc, fmt, ...) __plog((&(fc)->log), 'w', fmt, ## __VA_ARGS__)
 
- 
 #define errorf(fc, fmt, ...) __logfc(fc, 'e', fmt, ## __VA_ARGS__)
 #define error_plog(p, fmt, ...) __plog(p, 'e', fmt, ## __VA_ARGS__)
 #define errorfc(fc, fmt, ...) __plog((&(fc)->log), 'e', fmt, ## __VA_ARGS__)
 
- 
 #define invalf(fc, fmt, ...) (errorf(fc, fmt, ## __VA_ARGS__), -EINVAL)
 #define inval_plog(p, fmt, ...) (error_plog(p, fmt, ## __VA_ARGS__), -EINVAL)
 #define invalfc(fc, fmt, ...) (errorfc(fc, fmt, ## __VA_ARGS__), -EINVAL)

@@ -1,12 +1,8 @@
- 
- 
 
 #include <linux/rbtree_augmented.h>
 #include <linux/export.h>
 
- 
 
- 
 
 static inline void rb_set_black(struct rb_node *rb)
 {
@@ -18,7 +14,6 @@ static inline struct rb_node *rb_red_parent(struct rb_node *red)
 	return (struct rb_node *)red->__rb_parent_color;
 }
 
- 
 static inline void
 __rb_rotate_set_parents(struct rb_node *old, struct rb_node *new,
 			struct rb_root *root, int color)
@@ -123,7 +118,6 @@ __rb_insert(struct rb_node *node, struct rb_root *root,
 	}
 }
 
- 
 static __always_inline void
 ____rb_erase_color(struct rb_node *parent, struct rb_root *root,
 	void (*augment_rotate)(struct rb_node *old, struct rb_node *new))
@@ -242,14 +236,12 @@ ____rb_erase_color(struct rb_node *parent, struct rb_root *root,
 	}
 }
 
- 
 void __rb_erase_color(struct rb_node *parent, struct rb_root *root,
 	void (*augment_rotate)(struct rb_node *old, struct rb_node *new))
 {
 	____rb_erase_color(parent, root, augment_rotate);
 }
 
- 
 
 static inline void dummy_propagate(struct rb_node *node, struct rb_node *stop) {}
 static inline void dummy_copy(struct rb_node *old, struct rb_node *new) {}
@@ -274,7 +266,6 @@ void rb_erase(struct rb_node *node, struct rb_root *root)
 		____rb_erase_color(rebalance, root, dummy_rotate);
 }
 
- 
 
 void __rb_insert_augmented(struct rb_node *node, struct rb_root *root,
 	void (*augment_rotate)(struct rb_node *old, struct rb_node *new))
@@ -282,7 +273,6 @@ void __rb_insert_augmented(struct rb_node *node, struct rb_root *root,
 	__rb_insert(node, root, augment_rotate);
 }
 
- 
 struct rb_node *rb_first(const struct rb_root *root)
 {
 	struct rb_node	*n;

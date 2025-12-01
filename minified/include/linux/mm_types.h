@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_MM_TYPES_H
 #define _LINUX_MM_TYPES_H
 
@@ -30,7 +29,6 @@
 struct address_space;
 struct mem_cgroup;
 
- 
 #define _struct_page_alignment	__aligned(2 * sizeof(unsigned long))
 
 struct page {
@@ -130,7 +128,6 @@ struct page {
 #endif
 } _struct_page_alignment;
 
- 
 struct folio {
 	 
 	union {
@@ -188,13 +185,11 @@ static inline atomic_t *compound_pincount_ptr(struct page *page)
 	return &page[1].compound_pincount;
 }
 
- 
 #define STRUCT_PAGE_MAX_SHIFT	(order_base_2(sizeof(struct page)))
 
 #define PAGE_FRAG_CACHE_MAX_SIZE	__ALIGN_MASK(32768, ~PAGE_MASK)
 #define PAGE_FRAG_CACHE_MAX_ORDER	get_order(PAGE_FRAG_CACHE_MAX_SIZE)
 
- 
 #define page_private(page)		((page)->private)
 
 static inline void set_page_private(struct page *page, unsigned long private)
@@ -217,7 +212,6 @@ struct page_frag_cache {
 
 typedef unsigned long vm_flags_t;
 
- 
 struct vm_region {
 	struct rb_node	vm_rb;		 
 	vm_flags_t	vm_flags;	 
@@ -240,7 +234,6 @@ struct anon_vma_name {
 	char name[];
 };
 
- 
 struct vm_area_struct {
 	 
 
@@ -372,7 +365,6 @@ struct mm_struct {
 
 extern struct mm_struct init_mm;
 
- 
 static inline void mm_init_cpumask(struct mm_struct *mm)
 {
 	unsigned long cpu_bitmap = (unsigned long)mm;
@@ -381,7 +373,6 @@ static inline void mm_init_cpumask(struct mm_struct *mm)
 	cpumask_clear((struct cpumask *)cpu_bitmap);
 }
 
- 
 static inline cpumask_t *mm_cpumask(struct mm_struct *mm)
 {
 	return (struct cpumask *)&mm->cpu_bitmap;
@@ -394,10 +385,8 @@ extern void tlb_finish_mmu(struct mmu_gather *tlb);
 
 struct vm_fault;
 
- 
 typedef __bitwise unsigned int vm_fault_t;
 
- 
 enum vm_fault_reason {
 	VM_FAULT_OOM            = (__force vm_fault_t)0x000001,
 	VM_FAULT_SIGBUS         = (__force vm_fault_t)0x000002,
@@ -415,7 +404,6 @@ enum vm_fault_reason {
 	VM_FAULT_HINDEX_MASK    = (__force vm_fault_t)0x0f0000,
 };
 
- 
 #define VM_FAULT_SET_HINDEX(x) ((__force vm_fault_t)((x) << 16))
 #define VM_FAULT_GET_HINDEX(x) (((__force unsigned int)(x) >> 16) & 0xf)
 
@@ -460,7 +448,6 @@ typedef struct {
 	unsigned long val;
 } swp_entry_t;
 
- 
 enum fault_flag {
 	FAULT_FLAG_WRITE =		1 << 0,
 	FAULT_FLAG_MKWRITE =		1 << 1,

@@ -1,9 +1,7 @@
- 
 #ifndef __ASM_GENERIC_POSIX_TYPES_H
 #define __ASM_GENERIC_POSIX_TYPES_H
 
 #include <asm/bitsperlong.h>
- 
 
 #ifndef __kernel_long_t
 typedef long		__kernel_long_t;
@@ -66,7 +64,6 @@ typedef struct {
 } __kernel_fsid_t;
 #endif
 
- 
 typedef __kernel_long_t	__kernel_off_t;
 typedef long long	__kernel_loff_t;
 typedef __kernel_long_t	__kernel_old_time_t;

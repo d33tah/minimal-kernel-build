@@ -1,5 +1,3 @@
- 
- 
 #include <linux/export.h>
 #include <linux/bvec.h>
 #include <linux/fault-inject-usercopy.h>
@@ -16,7 +14,6 @@
 
 #define PIPE_PARANOIA  
 
- 
 #define iterate_iovec(i, n, base, len, off, __p, STEP) {	\
 	size_t off = 0;						\
 	size_t skip = i->iov_offset;				\
@@ -1028,7 +1025,6 @@ ssize_t __import_iovec(int type, const struct iovec __user *uvec,
 	return -EFAULT;
 }
 
- 
 ssize_t import_iovec(int type, const struct iovec __user *uvec,
 		 unsigned nr_segs, unsigned fast_segs,
 		 struct iovec **iovp, struct iov_iter *i)

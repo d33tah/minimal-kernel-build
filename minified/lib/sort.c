@@ -1,5 +1,3 @@
- 
- 
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -7,7 +5,6 @@
 #include <linux/export.h>
 #include <linux/sort.h>
 
- 
 __attribute_const__ __always_inline
 static bool is_aligned(const void *base, size_t size, unsigned char align)
 {
@@ -17,7 +14,6 @@ static bool is_aligned(const void *base, size_t size, unsigned char align)
 	return (lsbits & (align - 1)) == 0;
 }
 
- 
 static void swap_words_32(void *a, void *b, size_t n)
 {
 	do {
@@ -27,7 +23,6 @@ static void swap_words_32(void *a, void *b, size_t n)
 	} while (n);
 }
 
- 
 static void swap_words_64(void *a, void *b, size_t n)
 {
 	do {
@@ -42,7 +37,6 @@ static void swap_words_64(void *a, void *b, size_t n)
 	} while (n);
 }
 
- 
 static void swap_bytes(void *a, void *b, size_t n)
 {
 	do {
@@ -52,7 +46,6 @@ static void swap_bytes(void *a, void *b, size_t n)
 	} while (n);
 }
 
- 
 #define SWAP_WORDS_64 (swap_r_func_t)0
 #define SWAP_WORDS_32 (swap_r_func_t)1
 #define SWAP_BYTES    (swap_r_func_t)2
@@ -63,7 +56,6 @@ struct wrapper {
 	swap_func_t swap;
 };
 
- 
 static void do_swap(void *a, void *b, size_t size, swap_r_func_t swap_func, const void *priv)
 {
 	if (swap_func == SWAP_WRAPPER) {
@@ -90,7 +82,6 @@ static int do_cmp(const void *a, const void *b, cmp_r_func_t cmp, const void *pr
 	return cmp(a, b, priv);
 }
 
- 
 __attribute_const__ __always_inline
 static size_t parent(size_t i, unsigned int lsbit, size_t size)
 {
@@ -99,7 +90,6 @@ static size_t parent(size_t i, unsigned int lsbit, size_t size)
 	return i / 2;
 }
 
- 
 void sort_r(void *base, size_t num, size_t size,
 	    cmp_r_func_t cmp_func,
 	    swap_r_func_t swap_func,

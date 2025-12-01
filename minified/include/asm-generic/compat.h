@@ -1,4 +1,3 @@
- 
 #ifndef __ASM_GENERIC_COMPAT_H
 #define __ASM_GENERIC_COMPAT_H
 
@@ -21,7 +20,6 @@
 					 ((u64)name##_hi << 32))
 #endif
 
- 
 typedef u32 compat_size_t;
 typedef s32 compat_ssize_t;
 typedef s32 compat_clock_t;

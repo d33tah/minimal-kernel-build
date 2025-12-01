@@ -1,4 +1,3 @@
- 
 
 #ifndef _LINUX_RANDOM_H
 #define _LINUX_RANDOM_H
@@ -49,7 +48,6 @@ static inline unsigned long get_random_long(void)
 	return get_random_u32(); /* BITS_PER_LONG == 32 */
 }
 
- 
 # define CANARY_MASK 0xffffffffUL
 
 static inline unsigned long get_random_canary(void)
@@ -61,7 +59,6 @@ int __init random_init(const char *command_line);
 bool rng_is_initialized(void);
 int wait_for_random_bytes(void);
 
- 
 static inline int get_random_bytes_wait(void *buf, size_t nbytes)
 {
 	int ret = wait_for_random_bytes();
@@ -83,7 +80,6 @@ declare_get_random_var_wait(int, unsigned int)
 declare_get_random_var_wait(long, unsigned long)
 #undef declare_get_random_var
 
- 
 #include <linux/prandom.h>
 
 static inline bool __must_check arch_get_random_long(unsigned long *v) { return false; }
@@ -91,7 +87,6 @@ static inline bool __must_check arch_get_random_int(unsigned int *v) { return fa
 static inline bool __must_check arch_get_random_seed_long(unsigned long *v) { return false; }
 static inline bool __must_check arch_get_random_seed_int(unsigned int *v) { return false; }
 
- 
 #ifndef arch_get_random_seed_long_early
 static inline bool __init arch_get_random_seed_long_early(unsigned long *v)
 {

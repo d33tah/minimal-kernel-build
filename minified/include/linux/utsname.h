@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_UTSNAME_H
 #define _LINUX_UTSNAME_H
 

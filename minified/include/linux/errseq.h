@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_ERRSEQ_H
 #define _LINUX_ERRSEQ_H
 

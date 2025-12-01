@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_PROPERTY_H_
 #define _LINUX_PROPERTY_H_
@@ -125,7 +123,6 @@ unsigned int device_get_child_node_count(struct device *dev);
 
 struct software_node;
 
- 
 struct software_node_ref_args {
 	const struct software_node *node;
 	unsigned int nargs;
@@ -139,7 +136,6 @@ struct software_node_ref_args {
 	.args = { __VA_ARGS__ },				\
 }
 
- 
 struct property_entry {
 	const char *name;
 	size_t length;
@@ -157,7 +153,6 @@ struct property_entry {
 	};
 };
 
- 
 
 #define __PROPERTY_ENTRY_ELEMENT_SIZE(_elem_)				\
 	sizeof(((struct property_entry *)NULL)->value._elem_[0])
@@ -294,10 +289,7 @@ int fwnode_connection_find_matches(struct fwnode_handle *fwnode,
 				   devcon_match_fn_t match,
 				   void **matches, unsigned int matches_len);
 
- 
- 
 
- 
 struct software_node {
 	const char *name;
 	const struct software_node *parent;

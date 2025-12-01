@@ -1,11 +1,9 @@
- 
 #ifndef _FALLOC_H_
 #define _FALLOC_H_
 
 #include <uapi/linux/falloc.h>
 
 
- 
 struct space_resv {
 	__s16		l_type;
 	__s16		l_whence;
@@ -29,6 +27,5 @@ struct space_resv {
 					 FALLOC_FL_INSERT_RANGE |	\
 					 FALLOC_FL_UNSHARE_RANGE)
 
- 
 
 #endif  

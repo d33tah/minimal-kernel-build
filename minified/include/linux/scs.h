@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_SCS_H
 #define _LINUX_SCS_H

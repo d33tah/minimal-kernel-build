@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_TSACCT_KERN_H
 #define _LINUX_TSACCT_KERN_H

@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/device/class.h>
 #include <linux/device.h>
@@ -69,7 +67,6 @@ static struct kobj_type class_ktype = {
 	.child_ns_type	= class_child_ns_type,
 };
 
- 
 static struct kset *class_kset;
 
 
@@ -186,7 +183,6 @@ static void class_create_release(struct class *cls)
 	kfree(cls);
 }
 
- 
 struct class *__class_create(struct module *owner, const char *name,
 			     struct lock_class_key *key)
 {
@@ -214,7 +210,6 @@ error:
 	return ERR_PTR(retval);
 }
 
- 
 void class_destroy(struct class *cls)
 {
 	if ((cls == NULL) || (IS_ERR(cls)))
@@ -223,7 +218,6 @@ void class_destroy(struct class *cls)
 	class_unregister(cls);
 }
 
- 
 void class_dev_iter_init(struct class_dev_iter *iter, struct class *class,
 			 struct device *start, const struct device_type *type)
 {
@@ -235,7 +229,6 @@ void class_dev_iter_init(struct class_dev_iter *iter, struct class *class,
 	iter->type = type;
 }
 
- 
 struct device *class_dev_iter_next(struct class_dev_iter *iter)
 {
 	struct klist_node *knode;
@@ -251,13 +244,11 @@ struct device *class_dev_iter_next(struct class_dev_iter *iter)
 	}
 }
 
- 
 void class_dev_iter_exit(struct class_dev_iter *iter)
 {
 	klist_iter_exit(&iter->ki);
 }
 
- 
 int class_for_each_device(struct class *class, struct device *start,
 			  void *data, int (*fn)(struct device *, void *))
 {
@@ -284,7 +275,6 @@ int class_for_each_device(struct class *class, struct device *start,
 	return error;
 }
 
- 
 struct device *class_find_device(struct class *class, struct device *start,
 				 const void *data,
 				 int (*match)(struct device *, const void *))
@@ -357,7 +347,6 @@ struct class_compat {
 	struct kobject *kobj;
 };
 
- 
 struct class_compat *class_compat_register(const char *name)
 {
 	struct class_compat *cls;
@@ -373,13 +362,11 @@ struct class_compat *class_compat_register(const char *name)
 	return cls;
 }
 
- 
 /* Stub: class_compat_unregister not used externally */
 void class_compat_unregister(struct class_compat *cls)
 {
 }
 
- 
 int class_compat_create_link(struct class_compat *cls, struct device *dev,
 			     struct device *device_link)
 {
@@ -387,7 +374,6 @@ int class_compat_create_link(struct class_compat *cls, struct device *dev,
 	return 0;
 }
 
- 
 void class_compat_remove_link(struct class_compat *cls, struct device *dev,
 			      struct device *device_link)
 {

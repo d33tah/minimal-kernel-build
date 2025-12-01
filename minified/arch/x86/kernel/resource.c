@@ -1,4 +1,3 @@
- 
 #include <linux/ioport.h>
 #include <linux/printk.h>
 #include <asm/e820/api.h>

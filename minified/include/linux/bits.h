@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_BITS_H
 #define __LINUX_BITS_H
 
@@ -13,14 +12,12 @@
 #define BIT_ULL_WORD(nr)	((nr) / BITS_PER_LONG_LONG)
 #define BITS_PER_BYTE		8
 
- 
 #if !defined(__ASSEMBLY__)
 #include <linux/build_bug.h>
 #define GENMASK_INPUT_CHECK(h, l) \
 	(BUILD_BUG_ON_ZERO(__builtin_choose_expr( \
 		__is_constexpr((l) > (h)), (l) > (h), 0)))
 #else
- 
 #define GENMASK_INPUT_CHECK(h, l) 0
 #endif
 

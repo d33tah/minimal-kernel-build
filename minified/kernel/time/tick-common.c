@@ -1,5 +1,3 @@
- 
- 
 #include <linux/cpu.h>
 #include <linux/err.h>
 #include <linux/hrtimer.h>
@@ -14,15 +12,11 @@
 
 #include "tick-internal.h"
 
- 
 DEFINE_PER_CPU(struct tick_device, tick_cpu_device);
- 
 ktime_t tick_next_period;
 
- 
 int tick_do_timer_cpu __read_mostly = TICK_DO_TIMER_BOOT;
 
- 
 struct tick_device *tick_get_device(int cpu)
 {
 	return &per_cpu(tick_cpu_device, cpu);
@@ -34,7 +28,6 @@ int tick_is_oneshot_available(void)
 	return 0;
 }
 
- 
 static void tick_periodic(int cpu)
 {
 	if (tick_do_timer_cpu == cpu) {
@@ -54,7 +47,6 @@ static void tick_periodic(int cpu)
 	profile_tick(CPU_PROFILING);
 }
 
- 
 void tick_handle_periodic(struct clock_event_device *dev)
 {
 	int cpu = smp_processor_id();
@@ -77,7 +69,6 @@ void tick_handle_periodic(struct clock_event_device *dev)
 	}
 }
 
- 
 void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 {
 	tick_set_periodic_handler(dev, broadcast);
@@ -109,7 +100,6 @@ void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 }
 
 
- 
 static void tick_setup_device(struct tick_device *td,
 			      struct clock_event_device *newdev, int cpu,
 			      const struct cpumask *cpumask)
@@ -194,7 +184,6 @@ static bool tick_check_preferred(struct clock_event_device *curdev,
 	       !cpumask_equal(curdev->cpumask, newdev->cpumask);
 }
 
- 
 bool tick_check_replacement(struct clock_event_device *curdev,
 			    struct clock_event_device *newdev)
 {
@@ -204,7 +193,6 @@ bool tick_check_replacement(struct clock_event_device *curdev,
 	return tick_check_preferred(curdev, newdev);
 }
 
- 
 void tick_check_new_device(struct clock_event_device *newdev)
 {
 	struct clock_event_device *curdev;
@@ -237,7 +225,6 @@ out_bc:
 	tick_install_broadcast_device(newdev, cpu);
 }
 
- 
 int tick_broadcast_oneshot_control(enum tick_broadcast_state state)
 {
 	struct tick_device *td = this_cpu_ptr(&tick_cpu_device);
@@ -274,7 +261,6 @@ void tick_resume(void)
 }
 
 
- 
 void __init tick_init(void)
 {
 	tick_broadcast_init();

@@ -1,4 +1,3 @@
- 
 #ifndef _SCREEN_INFO_H
 #define _SCREEN_INFO_H
 

@@ -1,5 +1,3 @@
- 
- 
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/io.h>
@@ -31,7 +29,6 @@ void __init early_ioremap_reset(void)
 	after_paging_init = 1;
 }
 
- 
 #ifndef __late_set_fixmap
 static inline void __init __late_set_fixmap(enum fixed_addresses idx,
 					    phys_addr_t phys, pgprot_t prot)
@@ -171,14 +168,12 @@ void __init early_iounmap(void __iomem *addr, unsigned long size)
 	prev_map[slot] = NULL;
 }
 
- 
 void __init __iomem *
 early_ioremap(resource_size_t phys_addr, unsigned long size)
 {
 	return __early_ioremap(phys_addr, size, FIXMAP_PAGE_IO);
 }
 
- 
 void __init *
 early_memremap(resource_size_t phys_addr, unsigned long size)
 {

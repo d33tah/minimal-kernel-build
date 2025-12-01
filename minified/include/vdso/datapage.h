@@ -1,4 +1,3 @@
- 
 #ifndef __VDSO_DATAPAGE_H
 #define __VDSO_DATAPAGE_H
 
@@ -34,13 +33,11 @@ struct arch_vdso_data {};
 #define CS_RAW		1
 #define CS_BASES	(CS_RAW + 1)
 
- 
 struct vdso_timestamp {
 	u64	sec;
 	u64	nsec;
 };
 
- 
 struct vdso_data {
 	u32			seq;
 
@@ -63,11 +60,9 @@ struct vdso_data {
 	struct arch_vdso_data	arch_data;
 };
 
- 
 extern struct vdso_data _vdso_data[CS_BASES] __attribute__((visibility("hidden")));
 extern struct vdso_data _timens_data[CS_BASES] __attribute__((visibility("hidden")));
 
- 
 #ifdef ENABLE_COMPAT_VDSO
 #include <asm/vdso/compat_gettimeofday.h>
 #else

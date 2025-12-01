@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/jiffies.h>
 #include <linux/delay.h>

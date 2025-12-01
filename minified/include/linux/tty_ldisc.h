@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_TTY_LDISC_H
 #define _LINUX_TTY_LDISC_H
 
@@ -11,7 +10,6 @@ struct tty_struct;
 #include <linux/lockdep.h>
 #include <linux/seq_file.h>
 
- 
 struct ld_semaphore {
 	atomic_long_t		count;
 	raw_spinlock_t		wait_lock;
@@ -43,7 +41,6 @@ void ldsem_up_write(struct ld_semaphore *sem);
 # define ldsem_down_write_nested(sem, subclass, timeout)	\
 		ldsem_down_write(sem, timeout)
 
- 
 struct tty_ldisc_ops {
 	char	*name;
 	int	num;

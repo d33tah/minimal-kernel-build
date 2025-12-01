@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/libc-compat.h>
 
@@ -13,7 +11,6 @@
 #define XATTR_REPLACE	0x2	 
 #endif
 
- 
 #define XATTR_OS2_PREFIX "os2."
 #define XATTR_OS2_PREFIX_LEN (sizeof(XATTR_OS2_PREFIX) - 1)
 
@@ -38,7 +35,6 @@
 #define XATTR_USER_PREFIX "user."
 #define XATTR_USER_PREFIX_LEN (sizeof(XATTR_USER_PREFIX) - 1)
 
- 
 #define XATTR_EVM_SUFFIX "evm"
 #define XATTR_NAME_EVM XATTR_SECURITY_PREFIX XATTR_EVM_SUFFIX
 

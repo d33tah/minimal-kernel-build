@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SECRETMEM_H
 #define _LINUX_SECRETMEM_H
 

@@ -1,4 +1,3 @@
- 
 #ifndef _KBD_KERN_H
 #define _KBD_KERN_H
 
@@ -8,11 +7,9 @@
 
 extern char *func_table[MAX_NR_FUNC];
 
- 
 struct kbd_struct {
 
 	unsigned char lockstate;
- 
 #define VC_SHIFTLOCK	KG_SHIFT	 
 #define VC_ALTGRLOCK	KG_ALTGR	 
 #define VC_CTRLLOCK	KG_CTRL 	 
@@ -114,13 +111,11 @@ static inline void chg_vc_kbd_led(struct kbd_struct * kbd, int flag)
 
 #define BRL_UC_ROW 0x2800
 
- 
 
 struct console;
 
 void vt_set_leds_compute_shiftstate(void);
 
- 
 
 extern unsigned int keymap_count;
 

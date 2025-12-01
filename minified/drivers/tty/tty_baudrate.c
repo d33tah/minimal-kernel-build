@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/types.h>
 #include <linux/kernel.h>
@@ -9,7 +7,6 @@
 #include "tty.h"
 
 
- 
 static const speed_t baud_table[] = {
 	0, 50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400,
 	4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800,
@@ -26,7 +23,6 @@ static const speed_t baud_table[] = {
 
 static int n_baud_table = ARRAY_SIZE(baud_table);
 
- 
 
 speed_t tty_termios_baud_rate(struct ktermios *termios)
 {
@@ -49,7 +45,6 @@ speed_t tty_termios_baud_rate(struct ktermios *termios)
 	return cbaud >= n_baud_table ? 0 : baud_table[cbaud];
 }
 
- 
 
 speed_t tty_termios_input_baud_rate(struct ktermios *termios)
 {

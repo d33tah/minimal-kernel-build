@@ -1,11 +1,9 @@
- 
 #ifndef _LINUX_LIST_BL_H
 #define _LINUX_LIST_BL_H
 
 #include <linux/list.h>
 #include <linux/bit_spinlock.h>
 
- 
 
 #define LIST_BL_LOCKMASK	0UL
 
@@ -139,14 +137,12 @@ static inline bool hlist_bl_is_locked(struct hlist_bl_head *b)
 	return bit_spin_is_locked(0, (unsigned long *)b);
 }
 
- 
 #define hlist_bl_for_each_entry(tpos, pos, head, member)		\
 	for (pos = hlist_bl_first(head);				\
 	     pos &&							\
 		({ tpos = hlist_bl_entry(pos, typeof(*tpos), member); 1;}); \
 	     pos = pos->next)
 
- 
 #define hlist_bl_for_each_entry_safe(tpos, pos, n, head, member)	 \
 	for (pos = hlist_bl_first(head);				 \
 	     pos && ({ n = pos->next; 1; }) && 				 \

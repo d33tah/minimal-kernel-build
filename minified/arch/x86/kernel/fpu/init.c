@@ -1,5 +1,3 @@
- 
- 
 #include <asm/fpu/api.h>
 #include <asm/tlbflush.h>
 #include <asm/setup.h>
@@ -12,7 +10,6 @@
 #include "legacy.h"
 #include "xstate.h"
 
- 
 static void fpu__init_cpu_generic(void)
 {
 	unsigned long cr0;
@@ -35,7 +32,6 @@ static void fpu__init_cpu_generic(void)
 		asm volatile ("fninit");
 }
 
- 
 void fpu__init_cpu(void)
 {
 	fpu__init_cpu_generic();
@@ -77,7 +73,6 @@ static void fpu__init_system_early_generic(struct cpuinfo_x86 *c)
 	}
 }
 
- 
 unsigned int mxcsr_feature_mask __ro_after_init = 0xffffffffu;
 
 static void __init fpu__init_system_mxcsr(void)
@@ -99,7 +94,6 @@ static void __init fpu__init_system_mxcsr(void)
 	mxcsr_feature_mask &= mask;
 }
 
- 
 static void __init fpu__init_system_generic(void)
 {
 	 
@@ -108,15 +102,12 @@ static void __init fpu__init_system_generic(void)
 	fpu__init_system_mxcsr();
 }
 
- 
 #define TYPE_ALIGN(TYPE) offsetof(struct { char x; TYPE test; }, test)
 
- 
 #define CHECK_MEMBER_AT_END_OF(TYPE, MEMBER) \
 	BUILD_BUG_ON(sizeof(TYPE) != ALIGN(offsetofend(TYPE, MEMBER), \
 					   TYPE_ALIGN(TYPE)))
 
- 
 static void __init fpu__init_task_struct_size(void)
 {
 	int task_size = sizeof(struct task_struct);
@@ -135,7 +126,6 @@ static void __init fpu__init_task_struct_size(void)
 	arch_task_struct_size = task_size;
 }
 
- 
 static void __init fpu__init_system_xstate_size_legacy(void)
 {
 	unsigned int size;
@@ -165,7 +155,6 @@ static void __init fpu__init_init_fpstate(void)
 	init_fpstate.xfeatures		= fpu_kernel_cfg.max_features;
 }
 
- 
 void __init fpu__init_system(struct cpuinfo_x86 *c)
 {
 	fpstate_reset(&current->thread.fpu);

@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_BUFFER_HEAD_H
 #define _LINUX_BUFFER_HEAD_H

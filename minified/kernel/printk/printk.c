@@ -1,5 +1,3 @@
- 
- 
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -50,27 +48,21 @@ int console_printk[4] = {
 
 atomic_t ignore_console_lock_warning __read_mostly = ATOMIC_INIT(0);
 
- 
 int oops_in_progress;
 
- 
 static DEFINE_SEMAPHORE(console_sem);
 struct console *console_drivers;
 
- 
 int __read_mostly suppress_printk;
 
- 
 static int __read_mostly suppress_panic_printk;
 
 /* Stub: printk.devkmsg= option not needed for minimal kernel */
 static int __init control_devkmsg(char *str) { return 1; }
 __setup("printk.devkmsg=", control_devkmsg);
 
- 
 static int nr_ext_console_drivers;
 
- 
 #define down_console_sem() do { \
 	down(&console_sem);\
 	mutex_acquire(&console_lock_dep_map, 0, 0, _RET_IP_);\
@@ -110,10 +102,8 @@ static bool panic_in_progress(void)
 	return unlikely(atomic_read(&panic_cpu) != PANIC_CPU_INVALID);
 }
 
- 
 static int console_locked, console_suspended;
 
- 
 
 #define MAX_CMDLINECONSOLES 8
 
@@ -122,7 +112,6 @@ static struct console_cmdline console_cmdline[MAX_CMDLINECONSOLES];
 static int preferred_console = -1;
 int console_set_on_cmdline;
 
- 
 static int console_may_schedule;
 
 enum con_msg_format_flags {
@@ -132,9 +121,7 @@ enum con_msg_format_flags {
 
 static int console_msg_format = MSG_FORMAT_DEFAULT;
 
- 
 
- 
 static DEFINE_MUTEX(syslog_lock);
 
 
@@ -180,7 +167,6 @@ __setup("console_msg_format=", console_msg_format_setup);
 static int __init console_setup(char *str) { return 1; }
 __setup("console=", console_setup);
 
- 
 /* Stub: add_preferred_console not used externally */
 int add_preferred_console(char *name, int idx, char *options)
 {
@@ -196,7 +182,6 @@ void console_verbose(void)
 		console_loglevel = CONSOLE_LOGLEVEL_MOTORMOUTH;
 }
 
- 
 void suspend_console(void)
 {
 	/* Stub: console suspend not needed for minimal kernel */
@@ -218,7 +203,6 @@ void console_lock(void)
 	console_may_schedule = 1;
 }
 
- 
 int console_trylock(void)
 {
 	if (down_trylock_console_sem())
@@ -237,7 +221,6 @@ int is_console_locked(void)
 	return console_locked;
 }
 
- 
 static bool abandon_console_lock_in_panic(void)
 {
 	if (!panic_in_progress())
@@ -247,7 +230,6 @@ static bool abandon_console_lock_in_panic(void)
 	return atomic_read(&panic_cpu) != raw_smp_processor_id();
 }
 
- 
 static inline bool console_is_usable(struct console *con)
 {
 	if (!(con->flags & CON_ENABLED))
@@ -270,7 +252,6 @@ static void __console_unlock(void)
 	up_console_sem();
 }
 
- 
 static bool console_emit_next_record(struct console *con, char *text, char *ext_text,
 				     char *dropped_text, bool *handover)
 {
@@ -328,7 +309,6 @@ skip:
 	return true;
 }
 
- 
 static bool console_flush_all(bool do_cond_resched, u64 *next_seq, bool *handover)
 {
 	static char dropped_text[DROPPED_TEXT_MAX];
@@ -384,7 +364,6 @@ static bool console_flush_all(bool do_cond_resched, u64 *next_seq, bool *handove
 	return any_usable;
 }
 
- 
 void console_unlock(void)
 {
 	bool do_cond_resched;
@@ -442,7 +421,6 @@ void console_unblank(void)
 		pr_flush(1000, true);
 }
 
- 
 void console_flush_on_panic(enum con_flush_mode mode)
 {
 	 
@@ -460,7 +438,6 @@ void console_flush_on_panic(enum con_flush_mode mode)
 	console_unlock();
 }
 
- 
 struct tty_driver *console_device(int *index)
 {
 	struct console *c;
@@ -478,7 +455,6 @@ struct tty_driver *console_device(int *index)
 	return driver;
 }
 
- 
 /* Stub: console_stop not used in minimal kernel */
 void console_stop(struct console *console) { }
 
@@ -491,7 +467,6 @@ static int __read_mostly keep_bootcon;
 static int __init keep_bootcon_setup(char *str) { return 0; }
 early_param("keep_bootcon", keep_bootcon_setup);
 
- 
 static int try_enable_preferred_console(struct console *newcon,
 					bool user_specified)
 {
@@ -535,7 +510,6 @@ static int try_enable_preferred_console(struct console *newcon,
 	return -ENOENT;
 }
 
- 
 static void try_enable_default_console(struct console *newcon)
 {
 	if (newcon->index < 0)
@@ -555,7 +529,6 @@ static void try_enable_default_console(struct console *newcon)
 	       (con->flags & CON_BOOT) ? "boot" : "",	\
 	       con->name, con->index, ##__VA_ARGS__)
 
- 
 void register_console(struct console *newcon)
 {
 	struct console *con;
@@ -654,7 +627,6 @@ int unregister_console(struct console *console)
 	return 0;
 }
 
- 
 void __init console_init(void)
 {
 	int ret;
@@ -676,7 +648,6 @@ void __init console_init(void)
 	}
 }
 
- 
 /* Stub: printk late init simplified for minimal single-CPU kernel */
 static int __init printk_late_init(void) { return 0; }
 late_initcall(printk_late_init);

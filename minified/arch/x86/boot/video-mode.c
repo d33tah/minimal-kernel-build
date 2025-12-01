@@ -1,7 +1,4 @@
- 
- 
 
- 
 
 #include "boot.h"
 #include "video.h"
@@ -9,13 +6,11 @@
 
 #include <uapi/asm/boot.h>
 
- 
 int adapter;		 
 int force_x, force_y;	 
 int do_restore;		 
 int graphic_mode;	 
 
- 
 void probe_cards(int unsafe)
 {
 	struct card_info *card;
@@ -36,7 +31,6 @@ void probe_cards(int unsafe)
 	}
 }
 
- 
 int mode_defined(u16 mode)
 {
 	struct card_info *card;
@@ -54,7 +48,6 @@ int mode_defined(u16 mode)
 	return 0;
 }
 
- 
 static int raw_set_mode(u16 mode, u16 *real_mode)
 {
 	int nmode, i;
@@ -98,7 +91,6 @@ static int raw_set_mode(u16 mode, u16 *real_mode)
 	return -1;
 }
 
- 
 static void vga_recalc_vertical(void)
 {
 	unsigned int font_size, rows;
@@ -127,7 +119,6 @@ static void vga_recalc_vertical(void)
 	out_idx(ov, crtc, 0x07);
 }
 
- 
 int set_mode(u16 mode)
 {
 	int rv;

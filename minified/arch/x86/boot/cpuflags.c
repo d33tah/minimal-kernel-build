@@ -1,4 +1,3 @@
- 
 #include <linux/types.h>
 #include "bitops.h"
 
@@ -53,7 +52,6 @@ int has_eflag(unsigned long mask)
 	return !!((f0^f1) & mask);
 }
 
- 
 #if defined(__i386__) && defined(__PIC__)
 # define EBX_REG "=r"
 #else

@@ -1,7 +1,4 @@
- 
- 
 
- 
 
 #include "boot.h"
 #include "video.h"
@@ -27,7 +24,6 @@ static struct mode_info cga_modes[] = {
 
 static __videocard video_vga;
 
- 
 static u8 vga_set_basic_mode(void)
 {
 	struct biosregs ireg, oreg;
@@ -120,7 +116,6 @@ static void vga_set_80x43(void)
 	vga_set_8font();
 }
 
- 
 u16 vga_crtc(void)
 {
 	return (inb(0x3cc) & 1) ? 0x3d4 : 0x3b4;
@@ -215,7 +210,6 @@ static int vga_set_mode(struct mode_info *mode)
 	return 0;
 }
 
- 
 static int vga_probe(void)
 {
 	static const char *card_name[] = {

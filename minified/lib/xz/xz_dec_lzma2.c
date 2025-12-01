@@ -1,15 +1,11 @@
- 
 
 #include "xz_private.h"
 #include "xz_lzma2.h"
 
- 
 #define RC_INIT_BYTES 5
 
- 
 #define LZMA_IN_REQUIRED 21
 
- 
 struct dictionary {
 	 
 	uint8_t *buf;
@@ -42,7 +38,6 @@ struct dictionary {
 	enum xz_mode mode;
 };
 
- 
 struct rc_dec {
 	uint32_t range;
 	uint32_t code;
@@ -56,7 +51,6 @@ struct rc_dec {
 	size_t in_limit;
 };
 
- 
 struct lzma_len_dec {
 	 
 	uint16_t choice;
@@ -177,9 +171,7 @@ struct xz_dec_lzma2 {
 	} temp;
 };
 
- 
 
- 
 static void dict_reset(struct dictionary *dict, struct xz_buf *b)
 {
 	if (DEC_IS_SINGLE(dict->mode)) {
@@ -193,7 +185,6 @@ static void dict_reset(struct dictionary *dict, struct xz_buf *b)
 	dict->full = 0;
 }
 
- 
 static void dict_limit(struct dictionary *dict, size_t out_max)
 {
 	if (dict->end - dict->pos <= out_max)
@@ -202,13 +193,11 @@ static void dict_limit(struct dictionary *dict, size_t out_max)
 		dict->limit = dict->pos + out_max;
 }
 
- 
 static inline bool dict_has_space(const struct dictionary *dict)
 {
 	return dict->pos < dict->limit;
 }
 
- 
 static inline uint32_t dict_get(const struct dictionary *dict, uint32_t dist)
 {
 	size_t offset = dict->pos - dist - 1;
@@ -219,7 +208,6 @@ static inline uint32_t dict_get(const struct dictionary *dict, uint32_t dist)
 	return dict->full > 0 ? dict->buf[offset] : 0;
 }
 
- 
 static inline void dict_put(struct dictionary *dict, uint8_t byte)
 {
 	dict->buf[dict->pos++] = byte;
@@ -228,7 +216,6 @@ static inline void dict_put(struct dictionary *dict, uint8_t byte)
 		dict->full = dict->pos;
 }
 
- 
 static bool dict_repeat(struct dictionary *dict, uint32_t *len, uint32_t dist)
 {
 	size_t back;
@@ -256,7 +243,6 @@ static bool dict_repeat(struct dictionary *dict, uint32_t *len, uint32_t dist)
 	return true;
 }
 
- 
 static void dict_uncompressed(struct dictionary *dict, struct xz_buf *b,
 			      uint32_t *left)
 {
@@ -302,7 +288,6 @@ static void dict_uncompressed(struct dictionary *dict, struct xz_buf *b,
 #	define DICT_FLUSH_SUPPORTS_SKIPPING false
 #endif
 
- 
 static uint32_t dict_flush(struct dictionary *dict, struct xz_buf *b)
 {
 	size_t copy_size = dict->pos - dict->start;
@@ -322,9 +307,7 @@ static uint32_t dict_flush(struct dictionary *dict, struct xz_buf *b)
 	return copy_size;
 }
 
- 
 
- 
 static void rc_reset(struct rc_dec *rc)
 {
 	rc->range = (uint32_t)-1;
@@ -332,7 +315,6 @@ static void rc_reset(struct rc_dec *rc)
 	rc->init_bytes_left = RC_INIT_BYTES;
 }
 
- 
 static bool rc_read_init(struct rc_dec *rc, struct xz_buf *b)
 {
 	while (rc->init_bytes_left > 0) {
@@ -346,19 +328,16 @@ static bool rc_read_init(struct rc_dec *rc, struct xz_buf *b)
 	return true;
 }
 
- 
 static inline bool rc_limit_exceeded(const struct rc_dec *rc)
 {
 	return rc->in_pos > rc->in_limit;
 }
 
- 
 static inline bool rc_is_finished(const struct rc_dec *rc)
 {
 	return rc->code == 0;
 }
 
- 
 static __always_inline void rc_normalize(struct rc_dec *rc)
 {
 	if (rc->range < RC_TOP_VALUE) {
@@ -367,7 +346,6 @@ static __always_inline void rc_normalize(struct rc_dec *rc)
 	}
 }
 
- 
 static __always_inline int rc_bit(struct rc_dec *rc, uint16_t *prob)
 {
 	uint32_t bound;
@@ -389,7 +367,6 @@ static __always_inline int rc_bit(struct rc_dec *rc, uint16_t *prob)
 	return bit;
 }
 
- 
 static __always_inline uint32_t rc_bittree(struct rc_dec *rc,
 					   uint16_t *probs, uint32_t limit)
 {
@@ -405,7 +382,6 @@ static __always_inline uint32_t rc_bittree(struct rc_dec *rc,
 	return symbol;
 }
 
- 
 static __always_inline void rc_bittree_reverse(struct rc_dec *rc,
 					       uint16_t *probs,
 					       uint32_t *dest, uint32_t limit)
@@ -423,7 +399,6 @@ static __always_inline void rc_bittree_reverse(struct rc_dec *rc,
 	} while (++i < limit);
 }
 
- 
 static inline void rc_direct(struct rc_dec *rc, uint32_t *dest, uint32_t limit)
 {
 	uint32_t mask;
@@ -438,9 +413,7 @@ static inline void rc_direct(struct rc_dec *rc, uint32_t *dest, uint32_t limit)
 	} while (--limit > 0);
 }
 
- 
 
- 
 static uint16_t *lzma_literal_probs(struct xz_dec_lzma2 *s)
 {
 	uint32_t prev_byte = dict_get(&s->dict, 0);
@@ -449,7 +422,6 @@ static uint16_t *lzma_literal_probs(struct xz_dec_lzma2 *s)
 	return s->lzma.literal[low + high];
 }
 
- 
 static void lzma_literal(struct xz_dec_lzma2 *s)
 {
 	uint16_t *probs;
@@ -487,7 +459,6 @@ static void lzma_literal(struct xz_dec_lzma2 *s)
 	lzma_state_literal(&s->lzma.state);
 }
 
- 
 static void lzma_len(struct xz_dec_lzma2 *s, struct lzma_len_dec *l,
 		     uint32_t pos_state)
 {
@@ -514,7 +485,6 @@ static void lzma_len(struct xz_dec_lzma2 *s, struct lzma_len_dec *l,
 	s->lzma.len += rc_bittree(&s->rc, probs, limit) - limit;
 }
 
- 
 static void lzma_match(struct xz_dec_lzma2 *s, uint32_t pos_state)
 {
 	uint16_t *probs;
@@ -553,7 +523,6 @@ static void lzma_match(struct xz_dec_lzma2 *s, uint32_t pos_state)
 	}
 }
 
- 
 static void lzma_rep_match(struct xz_dec_lzma2 *s, uint32_t pos_state)
 {
 	uint32_t tmp;
@@ -587,7 +556,6 @@ static void lzma_rep_match(struct xz_dec_lzma2 *s, uint32_t pos_state)
 	lzma_len(s, &s->lzma.rep_len_dec, pos_state);
 }
 
- 
 static bool lzma_main(struct xz_dec_lzma2 *s)
 {
 	uint32_t pos_state;
@@ -620,7 +588,6 @@ static bool lzma_main(struct xz_dec_lzma2 *s)
 	return true;
 }
 
- 
 static void lzma_reset(struct xz_dec_lzma2 *s)
 {
 	uint16_t *probs;
@@ -641,7 +608,6 @@ static void lzma_reset(struct xz_dec_lzma2 *s)
 	rc_reset(&s->rc);
 }
 
- 
 static bool lzma_props(struct xz_dec_lzma2 *s, uint8_t props)
 {
 	if (props > (4 * 5 + 4) * 9 + 8)
@@ -673,9 +639,7 @@ static bool lzma_props(struct xz_dec_lzma2 *s, uint8_t props)
 	return true;
 }
 
- 
 
- 
 static bool lzma2_lzma(struct xz_dec_lzma2 *s, struct xz_buf *b)
 {
 	size_t in_avail;
@@ -757,7 +721,6 @@ static bool lzma2_lzma(struct xz_dec_lzma2 *s, struct xz_buf *b)
 	return true;
 }
 
- 
 XZ_EXTERN enum xz_ret xz_dec_lzma2_run(struct xz_dec_lzma2 *s,
 				       struct xz_buf *b)
 {
@@ -962,7 +925,6 @@ XZ_EXTERN void xz_dec_lzma2_end(struct xz_dec_lzma2 *s)
 }
 
 #ifdef XZ_DEC_MICROLZMA
- 
 struct xz_dec_microlzma {
 	struct xz_dec_lzma2 s;
 };

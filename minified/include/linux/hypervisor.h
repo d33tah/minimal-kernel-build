@@ -1,8 +1,6 @@
- 
 #ifndef __LINUX_HYPEVISOR_H
 #define __LINUX_HYPEVISOR_H
 
- 
 
 
 #include <asm/jailhouse_para.h>

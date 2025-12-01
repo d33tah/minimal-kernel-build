@@ -1,5 +1,3 @@
- 
- 
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -24,7 +22,6 @@
 #include <asm/softirq_stack.h>
 
 
- 
 
 #ifndef __ARCH_IRQ_STAT
 DEFINE_PER_CPU_ALIGNED(irq_cpustat_t, irq_stat);
@@ -39,7 +36,6 @@ const char * const softirq_to_name[NR_SOFTIRQS] = {
 	"TASKLET", "SCHED", "HRTIMER", "RCU"
 };
 
- 
 static void wakeup_softirqd(void)
 {
 	 
@@ -49,7 +45,6 @@ static void wakeup_softirqd(void)
 		wake_up_process(tsk);
 }
 
- 
 #define SOFTIRQ_NOW_MASK ((1 << HI_SOFTIRQ) | (1 << TASKLET_SOFTIRQ))
 static bool ksoftirqd_running(unsigned long pending)
 {
@@ -61,9 +56,7 @@ static bool ksoftirqd_running(unsigned long pending)
 }
 
 
- 
 
- 
 
 static void __local_bh_enable(unsigned int cnt)
 {
@@ -75,7 +68,6 @@ static void __local_bh_enable(unsigned int cnt)
 	__preempt_count_sub(cnt);
 }
 
- 
 void _local_bh_enable(void)
 {
 	WARN_ON_ONCE(in_hardirq());
@@ -159,7 +151,6 @@ asmlinkage __visible void do_softirq(void)
 }
 
 
- 
 #define MAX_SOFTIRQ_TIME  msecs_to_jiffies(2)
 #define MAX_SOFTIRQ_RESTART 10
 
@@ -238,7 +229,6 @@ restart:
 	current_restore_flags(old_flags, PF_MEMALLOC);
 }
 
- 
 void irq_enter_rcu(void)
 {
 	__irq_enter_raw();
@@ -250,7 +240,6 @@ void irq_enter_rcu(void)
 	account_hardirq_enter(current);
 }
 
- 
 void irq_enter(void)
 {
 	rcu_irq_enter();
@@ -276,7 +265,6 @@ static inline void __irq_exit_rcu(void)
 	tick_irq_exit();
 }
 
- 
 void irq_exit_rcu(void)
 {
 	__irq_exit_rcu();
@@ -284,7 +272,6 @@ void irq_exit_rcu(void)
 	lockdep_hardirq_exit();
 }
 
- 
 void irq_exit(void)
 {
 	__irq_exit_rcu();
@@ -293,7 +280,6 @@ void irq_exit(void)
 	lockdep_hardirq_exit();
 }
 
- 
 inline void raise_softirq_irqoff(unsigned int nr)
 {
 	__raise_softirq_irqoff(nr);
@@ -324,7 +310,6 @@ void open_softirq(int nr, void (*action)(struct softirq_action *))
 	softirq_vec[nr].action = action;
 }
 
- 
 struct tasklet_head {
 	struct tasklet_struct *head;
 	struct tasklet_struct **tail;
@@ -495,7 +480,6 @@ static __init int spawn_ksoftirqd(void)
 }
 early_initcall(spawn_ksoftirqd);
 
- 
 
 int __init __weak early_irq_init(void)
 {

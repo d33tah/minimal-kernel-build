@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_ELF_EM_H
 #define _LINUX_ELF_EM_H
 
- 
 #define EM_NONE		0
 #define EM_M32		1
 #define EM_SPARC	2
@@ -51,14 +49,10 @@
 #define EM_LOONGARCH	258	 
 #define EM_FRV		0x5441	 
 
- 
 #define EM_ALPHA	0x9026
 
- 
 #define EM_CYGNUS_M32R	0x9041
- 
 #define EM_S390_OLD	0xA390
- 
 #define EM_CYGNUS_MN10300 0xbeef
 
 

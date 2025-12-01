@@ -1,5 +1,3 @@
- 
- 
 #ifndef LINUX_NMI_H
 #define LINUX_NMI_H
 
@@ -23,7 +21,6 @@ static inline void touch_all_softlockup_watchdogs(void) { }
 
 static inline void reset_hung_task_detector(void) { }
 
- 
 #define NMI_WATCHDOG_ENABLED_BIT   0
 #define SOFT_WATCHDOG_ENABLED_BIT  1
 #define NMI_WATCHDOG_ENABLED      (1 << NMI_WATCHDOG_ENABLED_BIT)
@@ -50,14 +47,12 @@ static inline int hardlockup_detector_perf_init(void) { return 0; }
 # endif
 
 
- 
 static inline void touch_nmi_watchdog(void)
 {
 	arch_touch_nmi_watchdog();
 	touch_softlockup_watchdog();
 }
 
- 
 #ifdef arch_trigger_cpumask_backtrace
 static inline bool trigger_all_cpu_backtrace(void)
 {
@@ -83,7 +78,6 @@ static inline bool trigger_single_cpu_backtrace(int cpu)
 	return true;
 }
 
- 
 void nmi_trigger_cpumask_backtrace(const cpumask_t *mask,
 				   bool exclude_self,
 				   void (*raise)(cpumask_t *mask));

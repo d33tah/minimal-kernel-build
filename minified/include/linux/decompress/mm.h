@@ -1,24 +1,18 @@
- 
- 
 
 #ifndef DECOMPR_MM_H
 #define DECOMPR_MM_H
 
 #ifdef STATIC
 
- 
 
- 
 #ifndef STATIC_RW_DATA
 #define STATIC_RW_DATA static
 #endif
 
- 
 #ifndef MALLOC_VISIBLE
 #define MALLOC_VISIBLE static
 #endif
 
- 
 STATIC_RW_DATA unsigned long malloc_ptr;
 STATIC_RW_DATA int malloc_count;
 
@@ -57,7 +51,6 @@ MALLOC_VISIBLE void free(void *where)
 
 #else  
 
- 
 
 #include <linux/kernel.h>
 #include <linux/fs.h>
@@ -65,7 +58,6 @@ MALLOC_VISIBLE void free(void *where)
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
 
- 
 
 #define malloc(a) kmalloc(a, GFP_KERNEL)
 #define free(a) kfree(a)

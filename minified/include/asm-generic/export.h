@@ -1,8 +1,6 @@
- 
 #ifndef __ASM_GENERIC_EXPORT_H
 #define __ASM_GENERIC_EXPORT_H
 
- 
 
 #ifndef KSYM_FUNC
 #define KSYM_FUNC(x) x
@@ -13,7 +11,6 @@
 	.long	\val - ., \name - ., 0
 .endm
 
- 
 
 .macro ___EXPORT_SYMBOL name,val,sec
 .endm

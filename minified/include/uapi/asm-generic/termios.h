@@ -1,7 +1,5 @@
- 
 #ifndef _UAPI_ASM_GENERIC_TERMIOS_H
 #define _UAPI_ASM_GENERIC_TERMIOS_H
- 
 
 #include <asm/termbits.h>
 #include <asm/ioctls.h>
@@ -23,7 +21,6 @@ struct termio {
 	unsigned char c_cc[NCC];	 
 };
 
- 
 #define TIOCM_LE	0x001
 #define TIOCM_DTR	0x002
 #define TIOCM_RTS	0x004
@@ -39,7 +36,6 @@ struct termio {
 #define TIOCM_OUT2	0x4000
 #define TIOCM_LOOP	0x8000
 
- 
 
 
 #endif  

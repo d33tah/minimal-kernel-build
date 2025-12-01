@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/irq.h>
 #include <linux/msi.h>
@@ -17,12 +15,10 @@ static irqreturn_t bad_chained_irq(int irq, void *dev_id)
 	return IRQ_NONE;
 }
 
- 
 struct irqaction chained_action = {
 	.handler = bad_chained_irq,
 };
 
- 
 int irq_set_chip(unsigned int irq, const struct irq_chip *chip)
 {
 	unsigned long flags;
@@ -38,7 +34,6 @@ int irq_set_chip(unsigned int irq, const struct irq_chip *chip)
 	return 0;
 }
 
- 
 int irq_set_irq_type(unsigned int irq, unsigned int type)
 {
 	unsigned long flags;
@@ -53,7 +48,6 @@ int irq_set_irq_type(unsigned int irq, unsigned int type)
 	return ret;
 }
 
- 
 int irq_set_handler_data(unsigned int irq, void *data)
 {
 	unsigned long flags;
@@ -66,7 +60,6 @@ int irq_set_handler_data(unsigned int irq, void *data)
 	return 0;
 }
 
- 
 int irq_set_msi_desc_off(unsigned int irq_base, unsigned int irq_offset,
 			 struct msi_desc *entry)
 {
@@ -82,13 +75,11 @@ int irq_set_msi_desc_off(unsigned int irq_base, unsigned int irq_offset,
 	return 0;
 }
 
- 
 int irq_set_msi_desc(unsigned int irq, struct msi_desc *entry)
 {
 	return irq_set_msi_desc_off(irq, 0, entry);
 }
 
- 
 int irq_set_chip_data(unsigned int irq, void *data)
 {
 	unsigned long flags;
@@ -265,7 +256,6 @@ static void __irq_disable(struct irq_desc *desc, bool mask)
 	}
 }
 
- 
 void irq_disable(struct irq_desc *desc)
 {
 	__irq_disable(desc, irq_settings_disable_unlazy(desc));
@@ -333,7 +323,6 @@ void unmask_threaded_irq(struct irq_desc *desc)
 	unmask_irq(desc);
 }
 
- 
 void handle_nested_irq(unsigned int irq)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
@@ -393,7 +382,6 @@ static bool irq_may_run(struct irq_desc *desc)
 	return irq_check_poll(desc);
 }
 
- 
 void handle_simple_irq(struct irq_desc *desc)
 {
 	raw_spin_lock(&desc->lock);
@@ -415,7 +403,6 @@ out_unlock:
 	raw_spin_unlock(&desc->lock);
 }
 
- 
 void handle_untracked_irq(struct irq_desc *desc)
 {
 	raw_spin_lock(&desc->lock);
@@ -443,7 +430,6 @@ out_unlock:
 	raw_spin_unlock(&desc->lock);
 }
 
- 
 static void cond_unmask_irq(struct irq_desc *desc)
 {
 	 
@@ -452,7 +438,6 @@ static void cond_unmask_irq(struct irq_desc *desc)
 		unmask_irq(desc);
 }
 
- 
 void handle_level_irq(struct irq_desc *desc)
 {
 	raw_spin_lock(&desc->lock);
@@ -494,7 +479,6 @@ static void cond_unmask_eoi_irq(struct irq_desc *desc, struct irq_chip *chip)
 	}
 }
 
- 
 void handle_fasteoi_irq(struct irq_desc *desc)
 {
 	struct irq_chip *chip = desc->irq_data.chip;
@@ -529,7 +513,6 @@ out:
 	raw_spin_unlock(&desc->lock);
 }
 
- 
 void handle_fasteoi_nmi(struct irq_desc *desc)
 {
 	struct irq_chip *chip = irq_desc_get_chip(desc);
@@ -548,7 +531,6 @@ void handle_fasteoi_nmi(struct irq_desc *desc)
 		chip->irq_eoi(&desc->irq_data);
 }
 
- 
 void handle_edge_irq(struct irq_desc *desc)
 {
 	raw_spin_lock(&desc->lock);
@@ -596,7 +578,6 @@ out_unlock:
 }
 
 
- 
 void handle_percpu_irq(struct irq_desc *desc)
 {
 	struct irq_chip *chip = irq_desc_get_chip(desc);
@@ -613,7 +594,6 @@ void handle_percpu_irq(struct irq_desc *desc)
 		chip->irq_eoi(&desc->irq_data);
 }
 
- 
 void handle_percpu_devid_irq(struct irq_desc *desc)
 {
 	struct irq_chip *chip = irq_desc_get_chip(desc);
@@ -646,7 +626,6 @@ void handle_percpu_devid_irq(struct irq_desc *desc)
 		chip->irq_eoi(&desc->irq_data);
 }
 
- 
 void handle_percpu_devid_fasteoi_nmi(struct irq_desc *desc)
 {
 	struct irq_chip *chip = irq_desc_get_chip(desc);
@@ -783,7 +762,6 @@ void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set)
 
 
 
- 
 int irq_chip_compose_msi_msg(struct irq_data *data, struct msi_msg *msg)
 {
 	struct irq_data *pos;
@@ -808,7 +786,6 @@ static struct device *irq_get_parent_device(struct irq_data *data)
 	return NULL;
 }
 
- 
 int irq_chip_pm_get(struct irq_data *data)
 {
 	struct device *dev = irq_get_parent_device(data);
@@ -820,7 +797,6 @@ int irq_chip_pm_get(struct irq_data *data)
 	return retval;
 }
 
- 
 int irq_chip_pm_put(struct irq_data *data)
 {
 	struct device *dev = irq_get_parent_device(data);

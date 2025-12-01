@@ -1,12 +1,10 @@
 #ifndef __LINUX_SPINLOCK_TYPES_H
 #define __LINUX_SPINLOCK_TYPES_H
 
- 
 
 #include <linux/spinlock_types_raw.h>
 
 
- 
 typedef struct spinlock {
 	union {
 		struct raw_spinlock rlock;

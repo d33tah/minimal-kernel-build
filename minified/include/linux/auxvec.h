@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_AUXVEC_H
 #define _LINUX_AUXVEC_H
 

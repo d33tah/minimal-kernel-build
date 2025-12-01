@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_SIGNAL_TYPES_H
 #define _LINUX_SIGNAL_TYPES_H
 
- 
 
 #include <linux/list.h>
 #include <uapi/linux/signal.h>
@@ -13,7 +11,6 @@ typedef struct kernel_siginfo {
 
 struct ucounts;
 
- 
 
 struct sigqueue {
 	struct list_head list;
@@ -22,7 +19,6 @@ struct sigqueue {
 	struct ucounts *ucounts;
 };
 
- 
 #define SIGQUEUE_PREALLOC	1
 
 struct sigpending {
@@ -64,7 +60,6 @@ struct ksignal {
 	int sig;
 };
 
- 
 #define SA_IMMUTABLE		0x00800000
 
 #ifndef __ARCH_UAPI_SA_FLAGS

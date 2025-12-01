@@ -1,8 +1,6 @@
- 
 #ifndef __ASM_GENERIC_DELAY_H
 #define __ASM_GENERIC_DELAY_H
 
- 
 extern void __bad_udelay(void);
 extern void __bad_ndelay(void);
 
@@ -11,9 +9,7 @@ extern void __ndelay(unsigned long nsecs);
 extern void __const_udelay(unsigned long xloops);
 extern void __delay(unsigned long loops);
 
- 
 
- 
 #define udelay(n)							\
 	({								\
 		if (__builtin_constant_p(n)) {				\
@@ -26,7 +22,6 @@ extern void __delay(unsigned long loops);
 		}							\
 	})
 
- 
 #define ndelay(n)							\
 	({								\
 		if (__builtin_constant_p(n)) {				\

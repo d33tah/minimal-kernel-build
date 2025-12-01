@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SCHED_RT_H
 #define _LINUX_SCHED_RT_H
 
@@ -42,7 +41,6 @@ static inline bool tsk_is_pi_blocked(struct task_struct *tsk)
 extern void normalize_rt_tasks(void);
 
 
- 
 #define RR_TIMESLICE		(100 * HZ / 1000)
 
 #endif  

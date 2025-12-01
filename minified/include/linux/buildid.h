@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_BUILDID_H
 #define _LINUX_BUILDID_H
 

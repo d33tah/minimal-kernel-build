@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_UACCESS_H__
 #define __LINUX_UACCESS_H__
 
@@ -10,7 +9,6 @@
 
 #include <asm/uaccess.h>
 
- 
 
 static __always_inline __must_check unsigned long
 __copy_from_user_inatomic(void *to, const void __user *from, unsigned long n)
@@ -31,7 +29,6 @@ __copy_from_user(void *to, const void __user *from, unsigned long n)
 	return raw_copy_from_user(to, from, n);
 }
 
- 
 static __always_inline __must_check unsigned long
 __copy_to_user_inatomic(void __user *to, const void *from, unsigned long n)
 {
@@ -107,7 +104,6 @@ copy_to_user(void __user *to, const void *from, unsigned long n)
 }
 
 #ifndef copy_mc_to_kernel
- 
 static inline unsigned long __must_check
 copy_mc_to_kernel(void *dst, const void *src, size_t cnt)
 {
@@ -126,7 +122,6 @@ static __always_inline void pagefault_disabled_dec(void)
 	current->pagefault_disabled--;
 }
 
- 
 static inline void pagefault_disable(void)
 {
 	pagefault_disabled_inc();
@@ -141,18 +136,15 @@ static inline void pagefault_enable(void)
 	pagefault_disabled_dec();
 }
 
- 
 static inline bool pagefault_disabled(void)
 {
 	return current->pagefault_disabled != 0;
 }
 
- 
 #define faulthandler_disabled() (pagefault_disabled() || in_atomic())
 
 #ifndef CONFIG_ARCH_HAS_SUBPAGE_FAULTS
 
- 
 static inline size_t probe_subpage_writeable(char __user *uaddr, size_t size)
 {
 	return 0;
@@ -173,7 +165,6 @@ __copy_from_user_inatomic_nocache(void *to, const void __user *from,
 
 extern __must_check int check_zeroed_user(const void __user *from, size_t size);
 
- 
 static __always_inline __must_check int
 copy_struct_from_user(void *dst, size_t ksize, const void __user *src,
 		      size_t usize)
@@ -230,7 +221,6 @@ do {							\
 } while (0)
 #endif
 
- 
 #define get_kernel_nofault(val, ptr) ({				\
 	const typeof(val) *__gk_ptr = (ptr);			\
 	copy_from_kernel_nofault(&(val), __gk_ptr, sizeof(val));\

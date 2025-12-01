@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_MEMORY_HOTPLUG_H
 #define __LINUX_MEMORY_HOTPLUG_H
 
@@ -21,7 +20,6 @@ struct dev_pagemap;
 #define arch_alloc_nodedata(nid)	generic_alloc_nodedata(nid)
 
 
- 
 static inline pg_data_t *generic_alloc_nodedata(int nid)
 {
 	BUG();

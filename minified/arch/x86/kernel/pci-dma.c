@@ -1,4 +1,3 @@
- 
 #include <linux/dma-map-ops.h>
 #include <linux/dma-direct.h>
 #include <linux/iommu.h>
@@ -23,7 +22,6 @@ int force_iommu __read_mostly = 0;
 int iommu_merge __read_mostly = 0;
 
 int no_iommu __read_mostly;
- 
 int iommu_detected __read_mostly = 0;
 
 static inline void __init pci_swiotlb_detect(void)
@@ -55,6 +53,5 @@ static int __init pci_iommu_init(void)
 
 	return 0;
 }
- 
 rootfs_initcall(pci_iommu_init);
 

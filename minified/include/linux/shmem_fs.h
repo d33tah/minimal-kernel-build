@@ -1,4 +1,3 @@
- 
 #ifndef __SHMEM_FS_H
 #define __SHMEM_FS_H
 
@@ -10,7 +9,6 @@
 #include <linux/xattr.h>
 #include <linux/fs_parser.h>
 
- 
 
 struct shmem_inode_info {
 	spinlock_t		lock;
@@ -52,7 +50,6 @@ static inline struct shmem_inode_info *SHMEM_I(struct inode *inode)
 	return container_of(inode, struct shmem_inode_info, vfs_inode);
 }
 
- 
 extern const struct fs_parameter_spec shmem_fs_parameters[];
 extern void shmem_init(void);
 extern int shmem_init_fs_context(struct fs_context *fc);
@@ -86,7 +83,6 @@ extern unsigned long shmem_swap_usage(struct vm_area_struct *vma);
 extern unsigned long shmem_partial_swap_usage(struct address_space *mapping,
 						pgoff_t start, pgoff_t end);
 
- 
 enum sgp_type {
 	SGP_READ,	 
 	SGP_NOALLOC,	 
@@ -114,7 +110,6 @@ static inline bool shmem_file(struct file *file)
 	return shmem_mapping(file->f_mapping);
 }
 
- 
 static inline pgoff_t shmem_fallocend(struct inode *inode, pgoff_t eof)
 {
 	return max(eof, SHMEM_I(inode)->fallocend);

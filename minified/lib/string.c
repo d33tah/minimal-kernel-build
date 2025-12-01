@@ -1,7 +1,4 @@
- 
- 
 
- 
 
 #define __NO_FORTIFY
 #include <linux/types.h>
@@ -35,7 +32,6 @@ int strcasecmp(const char *s1, const char *s2)
 #endif
 
 #ifndef __HAVE_ARCH_STRCPY
- 
 char *strcpy(char *dest, const char *src)
 {
 	char *tmp = dest;
@@ -47,7 +43,6 @@ char *strcpy(char *dest, const char *src)
 #endif
 
 #ifndef __HAVE_ARCH_STRNCPY
- 
 char *strncpy(char *dest, const char *src, size_t count)
 {
 	char *tmp = dest;
@@ -63,7 +58,6 @@ char *strncpy(char *dest, const char *src, size_t count)
 #endif
 
 #ifndef __HAVE_ARCH_STRLCPY
- 
 size_t strlcpy(char *dest, const char *src, size_t size)
 {
 	size_t ret = strlen(src);
@@ -78,7 +72,6 @@ size_t strlcpy(char *dest, const char *src, size_t size)
 #endif
 
 #ifndef __HAVE_ARCH_STRSCPY
- 
 ssize_t strscpy(char *dest, const char *src, size_t count)
 {
 	const struct word_at_a_time constants = WORD_AT_A_TIME_CONSTANTS;
@@ -148,7 +141,6 @@ char *strncat(char *dest, const char *src, size_t count) { BUG(); }
 #endif
 
 #ifndef __HAVE_ARCH_STRLCAT
- 
 size_t strlcat(char *dest, const char *src, size_t count)
 {
 	size_t dsize = strlen(dest);
@@ -169,7 +161,6 @@ size_t strlcat(char *dest, const char *src, size_t count)
 #endif
 
 #ifndef __HAVE_ARCH_STRCMP
- 
 int strcmp(const char *cs, const char *ct)
 {
 	unsigned char c1, c2;
@@ -187,7 +178,6 @@ int strcmp(const char *cs, const char *ct)
 #endif
 
 #ifndef __HAVE_ARCH_STRNCMP
- 
 int strncmp(const char *cs, const char *ct, size_t count)
 {
 	unsigned char c1, c2;
@@ -206,7 +196,6 @@ int strncmp(const char *cs, const char *ct, size_t count)
 #endif
 
 #ifndef __HAVE_ARCH_STRCHR
- 
 char *strchr(const char *s, int c)
 {
 	for (; *s != (char)c; ++s)
@@ -217,7 +206,6 @@ char *strchr(const char *s, int c)
 #endif
 
 #ifndef __HAVE_ARCH_STRCHRNUL
- 
 char *strchrnul(const char *s, int c)
 {
 	while (*s && *s != (char)c)
@@ -233,7 +221,6 @@ char *strnchrnul(const char *s, size_t count, int c)
 }
 
 #ifndef __HAVE_ARCH_STRRCHR
- 
 char *strrchr(const char *s, int c)
 {
 	const char *last = NULL;
@@ -246,7 +233,6 @@ char *strrchr(const char *s, int c)
 #endif
 
 #ifndef __HAVE_ARCH_STRNCHR
- 
 char *strnchr(const char *s, size_t count, int c)
 {
 	while (count--) {
@@ -260,7 +246,6 @@ char *strnchr(const char *s, size_t count, int c)
 #endif
 
 #ifndef __HAVE_ARCH_STRLEN
- 
 size_t strlen(const char *s)
 {
 	const char *sc;
@@ -272,7 +257,6 @@ size_t strlen(const char *s)
 #endif
 
 #ifndef __HAVE_ARCH_STRNLEN
- 
 size_t strnlen(const char *s, size_t count)
 {
 	const char *sc;
@@ -292,7 +276,6 @@ size_t strspn(const char *s, const char *accept)
 #endif
 
 #ifndef __HAVE_ARCH_STRCSPN
- 
 size_t strcspn(const char *s, const char *reject)
 {
 	const char *p;
@@ -306,7 +289,6 @@ size_t strcspn(const char *s, const char *reject)
 #endif
 
 #ifndef __HAVE_ARCH_STRPBRK
- 
 char *strpbrk(const char *cs, const char *ct)
 {
 	const char *sc1, *sc2;
@@ -322,7 +304,6 @@ char *strpbrk(const char *cs, const char *ct)
 #endif
 
 #ifndef __HAVE_ARCH_STRSEP
- 
 char *strsep(char **s, const char *ct)
 {
 	char *sbegin = *s;
@@ -340,7 +321,6 @@ char *strsep(char **s, const char *ct)
 #endif
 
 #ifndef __HAVE_ARCH_MEMSET
- 
 void *memset(void *s, int c, size_t count)
 {
 	char *xs = s;
@@ -367,7 +347,6 @@ void *memset64(uint64_t *s, uint64_t v, size_t count) { return s; }
 #endif
 
 #ifndef __HAVE_ARCH_MEMCPY
- 
 void *memcpy(void *dest, const void *src, size_t count)
 {
 	char *tmp = dest;
@@ -380,7 +359,6 @@ void *memcpy(void *dest, const void *src, size_t count)
 #endif
 
 #ifndef __HAVE_ARCH_MEMMOVE
- 
 void *memmove(void *dest, const void *src, size_t count)
 {
 	char *tmp;
@@ -404,7 +382,6 @@ void *memmove(void *dest, const void *src, size_t count)
 #endif
 
 #ifndef __HAVE_ARCH_MEMCMP
- 
 #undef memcmp
 __visible int memcmp(const void *cs, const void *ct, size_t count)
 {
@@ -443,7 +420,6 @@ void *memscan(void *addr, int c, size_t size)
 #endif
 
 #ifndef __HAVE_ARCH_STRSTR
- 
 char *strstr(const char *s1, const char *s2)
 {
 	size_t l1, l2;
@@ -471,7 +447,6 @@ char *strnstr(const char *s1, const char *s2, size_t len)
 #endif
 
 #ifndef __HAVE_ARCH_MEMCHR
- 
 void *memchr(const void *s, int c, size_t n)
 {
 	const unsigned char *p = s;

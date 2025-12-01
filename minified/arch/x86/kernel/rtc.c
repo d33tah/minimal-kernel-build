@@ -1,5 +1,3 @@
- 
- 
 #include <linux/platform_device.h>
 #include <linux/mc146818rtc.h>
 #include <linux/acpi.h>
@@ -14,15 +12,12 @@
 #include <asm/intel-mid.h>
 #include <asm/setup.h>
 
- 
 volatile unsigned long cmos_lock;
 
- 
 #define CMOS_YEARS_OFFS 2000
 
 DEFINE_SPINLOCK(rtc_lock);
 
- 
 int mach_set_rtc_mmss(const struct timespec64 *now)
 {
 	unsigned long long nowtime = now->tv_sec;
@@ -87,7 +82,6 @@ void mach_get_cmos_time(struct timespec64 *now)
 	now->tv_nsec = 0;
 }
 
- 
 unsigned char rtc_cmos_read(unsigned char addr)
 {
 	unsigned char val;
@@ -113,7 +107,6 @@ int update_persistent_clock64(struct timespec64 now)
 	return x86_platform.set_wallclock(&now);
 }
 
- 
 void read_persistent_clock64(struct timespec64 *ts)
 {
 	x86_platform.get_wallclock(ts);

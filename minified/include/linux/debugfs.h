@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _DEBUGFS_H_
 #define _DEBUGFS_H_
@@ -57,7 +55,6 @@ typedef struct vfsmount *(*debugfs_automount_t)(struct dentry *, void *);
 
 #include <linux/err.h>
 
- 
 
 static inline struct dentry *debugfs_lookup(const char *name,
 					    struct dentry *parent)
@@ -246,7 +243,6 @@ static inline ssize_t debugfs_read_file_str(struct file *file,
 }
 
 
- 
 static inline void debugfs_create_xul(const char *name, umode_t mode,
 				      struct dentry *parent,
 				      unsigned long *value)

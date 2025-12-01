@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef __CLK_CONF_H
 #define __CLK_CONF_H

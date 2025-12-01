@@ -1,4 +1,3 @@
- 
 #ifndef __VDSO_MATH64_H
 #define __VDSO_MATH64_H
 

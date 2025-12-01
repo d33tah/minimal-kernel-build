@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_ELFCORE_H
 #define _LINUX_ELFCORE_H
 
@@ -21,7 +20,6 @@ struct elf_siginfo
 	int	si_errno;			 
 };
 
- 
 struct elf_prstatus_common
 {
 	struct elf_siginfo pr_info;	 

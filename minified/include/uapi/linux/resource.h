@@ -1,13 +1,10 @@
- 
 #ifndef _UAPI_LINUX_RESOURCE_H
 #define _UAPI_LINUX_RESOURCE_H
 
 #include <linux/time.h>
 #include <linux/types.h>
 
- 
 
- 
 #define	RUSAGE_SELF	0
 #define	RUSAGE_CHILDREN	(-1)
 #define RUSAGE_BOTH	(-2)		 
@@ -51,13 +48,10 @@ struct rlimit64 {
 #define	PRIO_PGRP	1
 #define	PRIO_USER	2
 
- 
 #define _STK_LIM	(8*1024*1024)
 
- 
 #define MLOCK_LIMIT	(8*1024*1024)
 
- 
 #include <asm/resource.h>
 
 

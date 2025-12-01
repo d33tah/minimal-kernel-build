@@ -1,4 +1,3 @@
- 
 #include "../cpuflags.c"
 
 bool has_cpuflag(int flag)

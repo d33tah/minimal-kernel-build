@@ -1,4 +1,3 @@
- 
 
 #ifndef __LINUX_SECURITY_H
 #define __LINUX_SECURITY_H
@@ -40,14 +39,10 @@ enum fs_value_type;
 struct watch;
 struct watch_notification;
 
- 
 #define CAP_OPT_NONE 0x0
- 
 #define CAP_OPT_NOAUDIT BIT(1)
- 
 #define CAP_OPT_INSETID BIT(2)
 
- 
 #define SECURITY_LSM_NATIVE_LABELS	1
 
 struct ctl_table;
@@ -59,7 +54,6 @@ enum lsm_event {
 	LSM_POLICY_CHANGE,
 };
 
- 
 /* Reduced lockdown enum for minimal kernel - only keep used values */
 enum lockdown_reason {
 	LOCKDOWN_NONE,
@@ -70,7 +64,6 @@ enum lockdown_reason {
 
 extern const char *const lockdown_reasons[LOCKDOWN_CONFIDENTIALITY_MAX+1];
 
- 
 extern int cap_capable(const struct cred *cred, struct user_namespace *ns,
 		       int cap, unsigned int opts);
 extern int cap_settime(const struct timespec64 *ts, const struct timezone *tz);
@@ -105,11 +98,9 @@ extern unsigned long dac_mmap_min_addr;
 
 /* LSM_SETID_* and LSM_PRLIMIT_* removed - unused in minimal kernel */
 
- 
 struct sched_param;
 struct request_sock;
 
- 
 #define LSM_UNSAFE_SHARE	1
 #define LSM_UNSAFE_PTRACE	2
 #define LSM_UNSAFE_NO_NEW_PRIVS	4
@@ -117,12 +108,10 @@ struct request_sock;
 extern int mmap_min_addr_handler(struct ctl_table *table, int write,
 				 void *buffer, size_t *lenp, loff_t *ppos);
 
- 
 typedef int (*initxattrs) (struct inode *inode,
 			   const struct xattr *xattr_array, void *fs_data);
 
 
- 
 #define __data_id_enumify(ENUM, dummy) LOADING_ ## ENUM,
 #define __data_id_stringify(dummy, str) #str,
 
@@ -135,7 +124,6 @@ static inline void security_free_mnt_opts(void **mnt_opts)
 {
 }
 
- 
 
 static inline int security_init(void)
 {

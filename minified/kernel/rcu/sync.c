@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/rcu_sync.h>
 #include <linux/sched.h>
@@ -8,14 +6,12 @@ enum { GP_IDLE = 0, GP_ENTER, GP_PASSED, GP_EXIT, GP_REPLAY };
 
 #define	rss_lock	gp_wait.lock
 
- 
 void rcu_sync_init(struct rcu_sync *rsp)
 {
 	memset(rsp, 0, sizeof(*rsp));
 	init_waitqueue_head(&rsp->gp_wait);
 }
 
- 
 void rcu_sync_enter_start(struct rcu_sync *rsp)
 {
 	rsp->gp_count++;
@@ -30,7 +26,6 @@ static void rcu_sync_call(struct rcu_sync *rsp)
 	call_rcu(&rsp->cb_head, rcu_sync_func);
 }
 
- 
 static void rcu_sync_func(struct rcu_head *rhp)
 {
 	struct rcu_sync *rsp = container_of(rhp, struct rcu_sync, cb_head);
@@ -55,7 +50,6 @@ static void rcu_sync_func(struct rcu_head *rhp)
 	spin_unlock_irqrestore(&rsp->rss_lock, flags);
 }
 
- 
 void rcu_sync_enter(struct rcu_sync *rsp)
 {
 	int gp_state;
@@ -81,7 +75,6 @@ void rcu_sync_enter(struct rcu_sync *rsp)
 	wait_event(rsp->gp_wait, READ_ONCE(rsp->gp_state) >= GP_PASSED);
 }
 
- 
 void rcu_sync_exit(struct rcu_sync *rsp)
 {
 	WARN_ON_ONCE(READ_ONCE(rsp->gp_state) == GP_IDLE);
@@ -99,7 +92,6 @@ void rcu_sync_exit(struct rcu_sync *rsp)
 	spin_unlock_irq(&rsp->rss_lock);
 }
 
- 
 void rcu_sync_dtor(struct rcu_sync *rsp)
 {
 	int gp_state;

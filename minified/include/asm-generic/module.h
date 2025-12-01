@@ -1,8 +1,6 @@
- 
 #ifndef __ASM_GENERIC_MODULE_H
 #define __ASM_GENERIC_MODULE_H
 
- 
 
 
 #define Elf_Shdr	Elf32_Shdr

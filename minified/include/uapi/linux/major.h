@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_MAJOR_H
 #define _LINUX_MAJOR_H
 
- 
 
 #define UNNAMED_MAJOR		0
 #define MEM_MAJOR		1

@@ -1,15 +1,11 @@
- 
- 
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
 #include <linux/mm.h>
 #include <linux/vmacache.h>
 
- 
 #define VMACACHE_SHIFT	PMD_SHIFT
 #define VMACACHE_HASH(addr) ((addr >> VMACACHE_SHIFT) & VMACACHE_MASK)
 
- 
 static inline bool vmacache_valid_mm(struct mm_struct *mm)
 {
 	return current->mm == mm && !(current->flags & PF_KTHREAD);

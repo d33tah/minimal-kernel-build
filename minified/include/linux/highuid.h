@@ -1,13 +1,10 @@
- 
 #ifndef _LINUX_HIGHUID_H
 #define _LINUX_HIGHUID_H
 
 #include <linux/types.h>
 
- 
 
 
- 
 
 extern int overflowuid;
 extern int overflowgid;
@@ -20,20 +17,16 @@ extern int overflowgid;
 #define __convert_gid(size, gid) (gid)
 
 
- 
 #define SET_UID(var, uid) do { (var) = __convert_uid(sizeof(var), (uid)); } while (0)
 #define SET_GID(var, gid) do { (var) = __convert_gid(sizeof(var), (gid)); } while (0)
 
- 
 
- 
 extern int fs_overflowuid;
 extern int fs_overflowgid;
 
 #define DEFAULT_FS_OVERFLOWUID	65534
 #define DEFAULT_FS_OVERFLOWGID	65534
 
- 
 #define fs_high2lowuid(uid) ((uid) & ~0xFFFF ? (uid16_t)fs_overflowuid : (uid16_t)(uid))
 #define fs_high2lowgid(gid) ((gid) & ~0xFFFF ? (gid16_t)fs_overflowgid : (gid16_t)(gid))
 

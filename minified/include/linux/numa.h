@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_NUMA_H
 #define _LINUX_NUMA_H
 #include <linux/types.h>
@@ -9,7 +8,6 @@
 
 #define	NUMA_NO_NODE	(-1)
 
- 
 #define __initdata_or_meminfo __initdata
 
 static inline int numa_map_to_online_node(int node)

@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_APM_H
 #define _LINUX_APM_H
 
@@ -10,14 +8,12 @@
 #define APM_CS_16	(APM_CS + 8)
 #define APM_DS		(APM_CS_16 + 8)
 
- 
 #define APM_16_BIT_SUPPORT	0x0001
 #define APM_32_BIT_SUPPORT	0x0002
 #define APM_IDLE_SLOWS_CLOCK	0x0004
 #define APM_BIOS_DISABLED      	0x0008
 #define APM_BIOS_DISENGAGED     0x0010
 
- 
 struct apm_info {
 	struct apm_bios_info	bios;
 	unsigned short		connection_version;
@@ -29,7 +25,6 @@ struct apm_info {
 	int			disabled;
 };
 
- 
 #define	APM_FUNC_INST_CHECK	0x5300
 #define	APM_FUNC_REAL_CONN	0x5301
 #define	APM_FUNC_16BIT_CONN	0x5302
@@ -51,25 +46,20 @@ struct apm_info {
 #define	APM_FUNC_RESUME_ON_RING	0x5312
 #define	APM_FUNC_TIMER		0x5313
 
- 
 #define	APM_FUNC_DISABLE_TIMER	0
 #define	APM_FUNC_GET_TIMER	1
 #define	APM_FUNC_SET_TIMER	2
 
- 
 #define	APM_FUNC_DISABLE_RING	0
 #define	APM_FUNC_ENABLE_RING	1
 #define	APM_FUNC_GET_RING	2
 
- 
 #define	APM_FUNC_TIMER_DISABLE	0
 #define	APM_FUNC_TIMER_ENABLE	1
 #define	APM_FUNC_TIMER_GET	2
 
- 
 extern struct apm_info	apm_info;
 
- 
 #define APM_DEVICE_BALL		((apm_info.connection_version > 0x0100) ? \
 				 APM_DEVICE_ALL : APM_DEVICE_OLD_ALL)
 #endif	 

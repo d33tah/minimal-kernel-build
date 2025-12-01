@@ -1,5 +1,3 @@
- 
- 
 
 void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *name, struct lock_class_key *key)
 {
@@ -34,10 +32,8 @@ void remove_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry 
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 }
 
- 
 #define WAITQUEUE_WALK_BREAK_CNT 64
 
- 
 static int __wake_up_common(struct wait_queue_head *wq_head, unsigned int mode,
 			int nr_exclusive, int wake_flags, void *key,
 			wait_queue_entry_t *bookmark)
@@ -101,14 +97,12 @@ static void __wake_up_common_lock(struct wait_queue_head *wq_head, unsigned int 
 	} while (bookmark.flags & WQ_FLAG_BOOKMARK);
 }
 
- 
 void __wake_up(struct wait_queue_head *wq_head, unsigned int mode,
 			int nr_exclusive, void *key)
 {
 	__wake_up_common_lock(wq_head, mode, nr_exclusive, 0, key);
 }
 
- 
 void __wake_up_locked(struct wait_queue_head *wq_head, unsigned int mode, int nr)
 {
 	__wake_up_common(wq_head, mode, nr, 0, NULL, NULL);
@@ -125,7 +119,6 @@ void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 	__wake_up_common(wq_head, mode, 1, 0, key, bookmark);
 }
 
- 
 void __wake_up_sync_key(struct wait_queue_head *wq_head, unsigned int mode,
 			void *key)
 {
@@ -149,7 +142,6 @@ void __wake_up_pollfree(struct wait_queue_head *wq_head)
 {
 }
 
- 
 void
 prepare_to_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state)
 {
@@ -163,7 +155,6 @@ prepare_to_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_ent
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 }
 
- 
 bool
 prepare_to_wait_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state)
 {
@@ -219,7 +210,6 @@ int do_wait_intr(wait_queue_head_t *wq, wait_queue_entry_t *wait) { return 0; }
 /* Stubbed: do_wait_intr_irq not used */
 int do_wait_intr_irq(wait_queue_head_t *wq, wait_queue_entry_t *wait) { return 0; }
 
- 
 void finish_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
 	unsigned long flags;

@@ -9,7 +9,7 @@ Current LOC: 195,065 (after mrproper)
 Goal LOC: 150,000
 Gap: 45,065 LOC (23% reduction still needed)
 
-CI Pipeline #34635 is pending - Gitlab runner appears busy.
+CI Pipelines #34635, #34636, #34637 all stuck in pending - Gitlab runner offline/busy.
 
 make vm: PASSES, prints "Hello, World!"
 Binary: 244KB

@@ -66,13 +66,6 @@ extern void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *n
 
 # define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) DECLARE_WAIT_QUEUE_HEAD(name)
 
-static inline void init_waitqueue_entry(struct wait_queue_entry *wq_entry, struct task_struct *p)
-{
-	wq_entry->flags		= 0;
-	wq_entry->private	= p;
-	wq_entry->func		= default_wake_function;
-}
-
 static inline void
 init_waitqueue_func_entry(struct wait_queue_entry *wq_entry, wait_queue_func_t func)
 {
@@ -85,14 +78,6 @@ init_waitqueue_func_entry(struct wait_queue_entry *wq_entry, wait_queue_func_t f
 static inline int waitqueue_active(struct wait_queue_head *wq_head)
 {
 	return !list_empty(&wq_head->head);
-}
-
- 
-static inline bool wq_has_sleeper(struct wait_queue_head *wq_head)
-{
-	 
-	smp_mb();
-	return waitqueue_active(wq_head);
 }
 
 extern void add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry);

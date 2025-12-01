@@ -1,3 +1,23 @@
+--- 2025-12-01 21:04 ---
+SESSION PROGRESS UPDATE
+
+Additional reduction made:
+3. 3f72a972 - Stub early_serial_console.c (-134 LOC)
+
+Current state:
+- make vm: PASSES, prints "Hello, World!"
+- LOC: 192,005 (measured with cloc after mrproper)
+- Goal: 150,000 LOC
+- Gap: ~42K LOC (22% reduction needed)
+- bzImage: 240KB
+
+Session total: 3 commits, ~860 LOC reduced
+
+Next steps to explore:
+- Large header files (cpufeatures.h 434 LOC, pgtable.h 1045 LOC)
+- Kconfig files (14K LOC total)
+- Core kernel files are heavily interdependent, harder to reduce
+
 --- 2025-12-01 20:55 ---
 SESSION PROGRESS - BOOT VIDEO REDUCTION
 
@@ -13,15 +33,6 @@ Changes made:
 - video-bios.c: 110 -> 25 LOC (stub probe/set_mode - no BIOS modes needed)
 - video-vga.c: 268 -> 82 LOC (only 80x25 mode, removed font switching)
 - video-mode.c: 147 -> 97 LOC (removed vga_recalc_vertical)
-
-Current state:
-- make vm: PASSES, prints "Hello, World!"
-- LOC: 192,090 (measured with cloc after mrproper)
-- Goal: 150,000 LOC
-- Gap: ~42K LOC (22% reduction needed)
-- bzImage: 240KB (down from 244KB)
-
-Session reduction: ~9.4K LOC (201,472 -> 192,090)
 
 --- 2025-12-01 20:37 ---
 NEW SESSION STARTING

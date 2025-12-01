@@ -1,3 +1,19 @@
+--- 2025-12-01 01:20 ---
+SESSION UPDATE - PROGRESS MADE
+
+Successfully removed:
+- n_null.c (65 LOC) - null line discipline not needed
+
+Failed removal attempts:
+- platform.c - platform_bus_init required
+- swnode.c - software_node_notify_remove required
+- percpu-km.c - #included by percpu.c
+- deadline.c - #included by build_policy.c
+
+Current: ~195,037 LOC | Goal: 150,000 LOC | Gap: ~45K LOC
+
+Scheduler uses amalgamated build (build_policy.c, build_utility.c).
+
 --- 2025-12-01 01:10 ---
 SESSION UPDATE
 

@@ -1,3 +1,14 @@
+--- 2025-12-01 11:00 ---
+CI RUNNER IS PAUSED
+
+Found the issue: Runner "local01" has "paused":true, "active":false.
+This explains why all pipelines are stuck pending.
+
+The runner is online but paused. Need @d33tah to unpause it.
+Already pinged @d33tah in MR comment.
+
+Local build verified OK - make vm passes with "Hello, World!"
+
 --- 2025-12-01 10:50 ---
 CI STILL OFFLINE - MR UPDATED
 

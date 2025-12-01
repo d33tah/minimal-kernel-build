@@ -1,3 +1,23 @@
+--- 2025-12-01 01:25 ---
+SESSION UPDATE - MORE PROGRESS
+
+Successfully removed:
+- n_null.c (65 LOC) - null line discipline not needed
+- misc.c (187 LOC) - misc char device driver not needed
+
+Current: 194,965 LOC | Goal: 150,000 LOC | Gap: ~44,965 LOC
+
+Failed removal attempts:
+- platform.c - platform_bus_init required
+- swnode.c - software_node_notify_remove required
+- percpu-km.c - #included by percpu.c
+- deadline.c - #included by build_policy.c
+
+Core fs/ files (namei.c, namespace.c, dcache.c, exec.c) needed for /init.
+lib/ files (vsprintf, iov_iter, radix-tree, xarray) heavily used.
+
+Continuing incremental search for removable files.
+
 --- 2025-12-01 01:20 ---
 SESSION UPDATE - PROGRESS MADE
 

@@ -1,3 +1,23 @@
+--- 2025-12-01 09:14 ---
+CONTINUING REDUCTIONS
+
+CI runner still offline (pipeline #34650 pending).
+Continuing header reductions while waiting.
+
+Latest: Reduced asm/mce.h from 238 to 33 LOC (-205)
+CONFIG_X86_MCE is not set, so all MCE constants were unused.
+
+Current LOC: 202,102
+Goal: 150,000 (52K gap)
+make vm: PASSES
+
+Header reductions this session:
+- dma.h: -218 LOC
+- apicdef.h: -310 LOC
+- ptrace.h: -104 LOC
+- mce.h: -205 LOC
+Total: -837 LOC from headers
+
 --- 2025-12-01 09:05 ---
 CI RUNNER OFFLINE
 

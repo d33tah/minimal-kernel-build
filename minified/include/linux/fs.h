@@ -598,12 +598,8 @@ static inline struct file *get_file(struct file *f)
 
 #define	MAX_NON_LFS	((1UL<<31) - 1)
 
- 
-#if BITS_PER_LONG==32
+/* 32-bit only kernel */
 #define MAX_LFS_FILESIZE	((loff_t)ULONG_MAX << PAGE_SHIFT)
-#elif BITS_PER_LONG==64
-#define MAX_LFS_FILESIZE 	((loff_t)LLONG_MAX)
-#endif
 
 #define FL_POSIX	1
 #define FL_FLOCK	2
@@ -641,8 +637,6 @@ struct file_lock_context;
 
 #define locks_inode(f) file_inode(f)
 
-#if BITS_PER_LONG == 32
-#endif
 static inline void
 locks_free_lock_context(struct inode *inode)
 {

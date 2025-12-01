@@ -117,13 +117,10 @@ static inline __attribute_const__ __u32 __fswahb32(__u32 val)
 	__fswab64(x))
 #endif
 
+/* 32-bit only kernel */
 static __always_inline unsigned long __swab(const unsigned long y)
 {
-#if __BITS_PER_LONG == 64
-	return __swab64(y);
-#else  
 	return __swab32(y);
-#endif
 }
 
  

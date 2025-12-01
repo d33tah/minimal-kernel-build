@@ -7,8 +7,7 @@
 #include <uapi/asm/ptrace.h>
 
 #ifndef __ASSEMBLY__
-#ifdef __i386__
-
+/* 32-bit only kernel - removed x86_64 pt_regs */
 struct pt_regs {
 	unsigned long bx;
 	unsigned long cx;
@@ -34,34 +33,6 @@ struct pt_regs {
 	unsigned short ss;
 	unsigned short __ssh;
 };
-
-#else /* __x86_64__ */
-
-struct pt_regs {
-	unsigned long r15;
-	unsigned long r14;
-	unsigned long r13;
-	unsigned long r12;
-	unsigned long bp;
-	unsigned long bx;
-	unsigned long r11;
-	unsigned long r10;
-	unsigned long r9;
-	unsigned long r8;
-	unsigned long ax;
-	unsigned long cx;
-	unsigned long dx;
-	unsigned long si;
-	unsigned long di;
-	unsigned long orig_ax;
-	unsigned long ip;
-	unsigned long cs;
-	unsigned long flags;
-	unsigned long sp;
-	unsigned long ss;
-};
-
-#endif /* __i386__ */
 
 #include <asm/proto.h>
 

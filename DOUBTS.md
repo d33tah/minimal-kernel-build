@@ -1,3 +1,20 @@
+--- 2025-12-01 10:30 ---
+SESSION COMPLETED - CI STILL OFFLINE
+
+Pipeline #34652 still pending after 20+ minutes.
+CI runner appears to be offline.
+
+Session progress: 202,117 -> 201,745 = 372 LOC saved
+Strategy: Remove dead BITS_PER_LONG==64 code paths (building for i386)
+
+Files reduced: cpumask.h, rcu_node_tree.h, tracepoint.h,
+u64_stats_sync.h, local64.h, math64.h, hash.h, random.h,
+bitops/sched.h, mm.h, fls64.h, getorder.h, percpu.h,
+jiffies.h, ktime.h, nodemask.h, bitops.h
+
+All commits pushed to both GitHub and GitLab.
+Waiting for CI runner to come online to verify build.
+
 --- 2025-12-01 09:14 ---
 CONTINUING REDUCTIONS
 

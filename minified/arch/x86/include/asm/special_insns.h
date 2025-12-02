@@ -168,44 +168,23 @@ static inline void clwb(volatile void *__p)
 
 #define nop() asm volatile ("nop")
 
+/* Used by sync_core.h */
 static inline void serialize(void)
 {
-	 
 	asm volatile(".byte 0xf, 0x1, 0xe8" ::: "memory");
 }
 
- 
+/* Used by io.h */
 static inline void movdir64b(void __iomem *dst, const void *src)
 {
 	const struct { char _[64]; } *__src = src;
 	struct { char _[64]; } __iomem *__dst = dst;
 
-	 
 	asm volatile(".byte 0x66, 0x0f, 0x38, 0xf8, 0x02"
 		     : "+m" (*__dst)
 		     :  "m" (*__src), "a" (__dst), "d" (__src));
 }
 
- 
-static inline int enqcmds(void __iomem *dst, const void *src)
-{
-	const struct { char _[64]; } *__src = src;
-	struct { char _[64]; } __iomem *__dst = dst;
-	bool zf;
+#endif
 
-	 
-	asm volatile(".byte 0xf3, 0x0f, 0x38, 0xf8, 0x02, 0x66, 0x90"
-		     CC_SET(z)
-		     : CC_OUT(z) (zf), "+m" (*__dst)
-		     : "m" (*__src), "a" (__dst), "d" (__src));
-
-	 
-	if (zf)
-		return -EAGAIN;
-
-	return 0;
-}
-
-#endif  
-
-#endif  
+#endif

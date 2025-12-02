@@ -106,13 +106,6 @@ static inline void list_splice_init_rcu(struct list_head *list,
 		__list_splice_init_rcu(list, head, head->next, sync);
 }
 
-static inline void list_splice_tail_init_rcu(struct list_head *list,
-					     struct list_head *head,
-					     void (*sync)(void))
-{
-	if (!list_empty(list))
-		__list_splice_init_rcu(list, head->prev, head, sync);
-}
 
 #define list_entry_rcu(ptr, type, member) \
 	container_of(READ_ONCE(ptr), type, member)
@@ -140,19 +133,7 @@ static inline void list_splice_tail_init_rcu(struct list_head *list,
 		&pos->member != (head);					\
 		pos = list_entry_rcu(pos->member.next, typeof(*pos), member))
 
-#define list_for_each_entry_srcu(pos, head, member, cond)		\
-	for (__list_check_srcu(cond),					\
-	     pos = list_entry_rcu((head)->next, typeof(*pos), member);	\
-		&pos->member != (head);					\
-		pos = list_entry_rcu(pos->member.next, typeof(*pos), member))
 
-#define list_entry_lockless(ptr, type, member) \
-	container_of((typeof(ptr))READ_ONCE(ptr), type, member)
-
-#define list_for_each_entry_lockless(pos, head, member) \
-	for (pos = list_entry_lockless((head)->next, typeof(*pos), member); \
-	     &pos->member != (head); \
-	     pos = list_entry_lockless(pos->member.next, typeof(*pos), member))
 
 #define list_for_each_entry_continue_rcu(pos, head, member) 		\
 	for (pos = list_entry_rcu(pos->member.next, typeof(*pos), member); \
@@ -223,46 +204,6 @@ static inline void hlist_add_head_rcu(struct hlist_node *n,
 		pos = hlist_entry_safe(rcu_dereference_raw(hlist_next_rcu(\
 			&(pos)->member)), typeof(*(pos)), member))
 
-#define hlist_for_each_entry_srcu(pos, head, member, cond)		\
-	for (__list_check_srcu(cond),					\
-	     pos = hlist_entry_safe(rcu_dereference_raw(hlist_first_rcu(head)),\
-			typeof(*(pos)), member);			\
-		pos;							\
-		pos = hlist_entry_safe(rcu_dereference_raw(hlist_next_rcu(\
-			&(pos)->member)), typeof(*(pos)), member))
-
-#define hlist_for_each_entry_rcu_notrace(pos, head, member)			\
-	for (pos = hlist_entry_safe(rcu_dereference_raw_check(hlist_first_rcu(head)),\
-			typeof(*(pos)), member);			\
-		pos;							\
-		pos = hlist_entry_safe(rcu_dereference_raw_check(hlist_next_rcu(\
-			&(pos)->member)), typeof(*(pos)), member))
-
-#define hlist_for_each_entry_rcu_bh(pos, head, member)			\
-	for (pos = hlist_entry_safe(rcu_dereference_bh(hlist_first_rcu(head)),\
-			typeof(*(pos)), member);			\
-		pos;							\
-		pos = hlist_entry_safe(rcu_dereference_bh(hlist_next_rcu(\
-			&(pos)->member)), typeof(*(pos)), member))
-
-#define hlist_for_each_entry_continue_rcu(pos, member)			\
-	for (pos = hlist_entry_safe(rcu_dereference_raw(hlist_next_rcu( \
-			&(pos)->member)), typeof(*(pos)), member);	\
-	     pos;							\
-	     pos = hlist_entry_safe(rcu_dereference_raw(hlist_next_rcu(	\
-			&(pos)->member)), typeof(*(pos)), member))
-
-#define hlist_for_each_entry_continue_rcu_bh(pos, member)		\
-	for (pos = hlist_entry_safe(rcu_dereference_bh(hlist_next_rcu(  \
-			&(pos)->member)), typeof(*(pos)), member);	\
-	     pos;							\
-	     pos = hlist_entry_safe(rcu_dereference_bh(hlist_next_rcu(	\
-			&(pos)->member)), typeof(*(pos)), member))
-
-#define hlist_for_each_entry_from_rcu(pos, member)			\
-	for (; pos;							\
-	     pos = hlist_entry_safe(rcu_dereference_raw(hlist_next_rcu(	\
-			&(pos)->member)), typeof(*(pos)), member))
 
 #endif	 
 #endif

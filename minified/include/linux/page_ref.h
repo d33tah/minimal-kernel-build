@@ -96,19 +96,6 @@ static inline void folio_ref_sub(struct folio *folio, int nr)
 	page_ref_sub(&folio->page, nr);
 }
 
-static inline int page_ref_sub_return(struct page *page, int nr)
-{
-	int ret = atomic_sub_return(nr, &page->_refcount);
-
-	if (page_ref_tracepoint_active(page_ref_mod_and_return))
-		__page_ref_mod_and_return(page, -nr, ret);
-	return ret;
-}
-
-static inline int folio_ref_sub_return(struct folio *folio, int nr)
-{
-	return page_ref_sub_return(&folio->page, nr);
-}
 
 static inline void page_ref_inc(struct page *page)
 {
@@ -148,19 +135,6 @@ static inline int folio_ref_sub_and_test(struct folio *folio, int nr)
 	return page_ref_sub_and_test(&folio->page, nr);
 }
 
-static inline int page_ref_inc_return(struct page *page)
-{
-	int ret = atomic_inc_return(&page->_refcount);
-
-	if (page_ref_tracepoint_active(page_ref_mod_and_return))
-		__page_ref_mod_and_return(page, 1, ret);
-	return ret;
-}
-
-static inline int folio_ref_inc_return(struct folio *folio)
-{
-	return page_ref_inc_return(&folio->page);
-}
 
 static inline int page_ref_dec_and_test(struct page *page)
 {
@@ -176,19 +150,6 @@ static inline int folio_ref_dec_and_test(struct folio *folio)
 	return page_ref_dec_and_test(&folio->page);
 }
 
-static inline int page_ref_dec_return(struct page *page)
-{
-	int ret = atomic_dec_return(&page->_refcount);
-
-	if (page_ref_tracepoint_active(page_ref_mod_and_return))
-		__page_ref_mod_and_return(page, -1, ret);
-	return ret;
-}
-
-static inline int folio_ref_dec_return(struct folio *folio)
-{
-	return page_ref_dec_return(&folio->page);
-}
 
 static inline bool page_ref_add_unless(struct page *page, int nr, int u)
 {
@@ -222,32 +183,4 @@ static inline bool folio_try_get_rcu(struct folio *folio)
 	return folio_ref_try_add_rcu(folio, 1);
 }
 
-static inline int page_ref_freeze(struct page *page, int count)
-{
-	int ret = likely(atomic_cmpxchg(&page->_refcount, count, 0) == count);
-
-	if (page_ref_tracepoint_active(page_ref_freeze))
-		__page_ref_freeze(page, count, ret);
-	return ret;
-}
-
-static inline int folio_ref_freeze(struct folio *folio, int count)
-{
-	return page_ref_freeze(&folio->page, count);
-}
-
-static inline void page_ref_unfreeze(struct page *page, int count)
-{
-	VM_BUG_ON_PAGE(page_count(page) != 0, page);
-	VM_BUG_ON(count == 0);
-
-	atomic_set_release(&page->_refcount, count);
-	if (page_ref_tracepoint_active(page_ref_unfreeze))
-		__page_ref_unfreeze(page, count);
-}
-
-static inline void folio_ref_unfreeze(struct folio *folio, int count)
-{
-	page_ref_unfreeze(&folio->page, count);
-}
 #endif

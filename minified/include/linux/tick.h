@@ -39,26 +39,6 @@ static inline void tick_offline_cpu(unsigned int cpu) { }
 
 extern int tick_broadcast_oneshot_control(enum tick_broadcast_state state);
 
-static inline void tick_broadcast_enable(void)
-{
-	tick_broadcast_control(TICK_BROADCAST_ON);
-}
-static inline void tick_broadcast_disable(void)
-{
-	tick_broadcast_control(TICK_BROADCAST_OFF);
-}
-static inline void tick_broadcast_force(void)
-{
-	tick_broadcast_control(TICK_BROADCAST_FORCE);
-}
-static inline int tick_broadcast_enter(void)
-{
-	return tick_broadcast_oneshot_control(TICK_BROADCAST_ENTER);
-}
-static inline void tick_broadcast_exit(void)
-{
-	tick_broadcast_oneshot_control(TICK_BROADCAST_EXIT);
-}
 
 enum tick_dep_bits {
 	TICK_DEP_BIT_CLOCK_UNSTABLE	= 3,
@@ -99,27 +79,9 @@ static inline void tick_nohz_idle_stop_tick_protected(void) { }
 
 static inline bool tick_nohz_full_enabled(void) { return false; }
 static inline bool tick_nohz_full_cpu(int cpu) { return false; }
-static inline void tick_nohz_full_add_cpus_to(struct cpumask *mask) { }
-
-static inline void tick_nohz_dep_set_cpu(int cpu, enum tick_dep_bits bit) { }
-static inline void tick_nohz_dep_clear_cpu(int cpu, enum tick_dep_bits bit) { }
-
 static inline void tick_dep_set(enum tick_dep_bits bit) { }
 static inline void tick_dep_clear(enum tick_dep_bits bit) { }
-static inline void tick_dep_set_cpu(int cpu, enum tick_dep_bits bit) { }
-static inline void tick_dep_clear_cpu(int cpu, enum tick_dep_bits bit) { }
-static inline void tick_dep_set_task(struct task_struct *tsk,
-				     enum tick_dep_bits bit) { }
-static inline void tick_dep_clear_task(struct task_struct *tsk,
-				       enum tick_dep_bits bit) { }
-static inline void tick_dep_set_signal(struct task_struct *tsk,
-				       enum tick_dep_bits bit) { }
-static inline void tick_dep_clear_signal(struct signal_struct *signal,
-					 enum tick_dep_bits bit) { }
-
-static inline void tick_nohz_full_kick_cpu(int cpu) { }
 static inline void __tick_nohz_task_switch(void) { }
-static inline void tick_nohz_full_setup(cpumask_var_t cpumask) { }
 
 static inline void tick_nohz_task_switch(void)
 {

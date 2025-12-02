@@ -60,7 +60,6 @@ static inline bool xa_is_err(const void *entry)
 
 static inline int xa_err(void *entry)
 {
-
 	if (xa_is_err(entry))
 		return (long)entry >> 2;
 	return 0;
@@ -144,11 +143,6 @@ static inline void xa_init_flags(struct xarray *xa, gfp_t flags)
 	spin_lock_init(&xa->xa_lock);
 	xa->xa_flags = flags;
 	xa->xa_head = NULL;
-}
-
-static inline void xa_init(struct xarray *xa)
-{
-	xa_init_flags(xa, 0);
 }
 
 static inline bool xa_empty(const struct xarray *xa)

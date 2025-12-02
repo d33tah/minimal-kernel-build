@@ -157,13 +157,6 @@ static inline int task_has_dl_policy(struct task_struct *p)
 
 #define cap_scale(v, s) ((v)*(s) >> SCHED_CAPACITY_SHIFT)
 
-static inline void update_avg(u64 *avg, u64 sample)
-{
-	s64 diff = sample - *avg;
-	*avg += diff / 8;
-}
-
- 
 #define shr_bound(val, shift)							\
 	(val >> min_t(typeof(shift), shift, BITS_PER_TYPE(typeof(val)) - 1))
 
@@ -208,25 +201,12 @@ struct dl_bandwidth {
 	u64			dl_period;
 };
 
-static inline int dl_bandwidth_enabled(void)
-{
-	return sysctl_sched_rt_runtime >= 0;
-}
 
- 
 struct dl_bw {
 	raw_spinlock_t		lock;
 	u64			bw;
 	u64			total_bw;
 };
-
- 
-static inline bool dl_task_fits_capacity(struct task_struct *p, int cpu)
-{
-	unsigned long cap = arch_scale_cpu_capacity(cpu);
-
-	return cap_scale(p->dl.dl_deadline, cap) >= p->dl.dl_runtime;
-}
 
 extern void init_dl_bw(struct dl_bw *dl_b);
 extern int  sched_dl_global_validate(void);
@@ -268,14 +248,7 @@ struct cfs_rq {
 
 };
 
-static inline int rt_bandwidth_enabled(void)
-{
-	return sysctl_sched_rt_runtime >= 0;
-}
 
- 
-
- 
 struct rt_rq {
 	struct rt_prio_array	active;
 	unsigned int		rt_nr_running;
@@ -290,12 +263,6 @@ struct rt_rq {
 
 };
 
-static inline bool rt_rq_is_runnable(struct rt_rq *rt_rq)
-{
-	return rt_rq->rt_queued && rt_rq->rt_nr_running;
-}
-
- 
 struct dl_rq {
 	 
 	struct rb_root_cached	root;
@@ -318,14 +285,6 @@ struct dl_rq {
 
 static inline void se_update_runnable(struct sched_entity *se) {}
 
-static inline long se_runnable(struct sched_entity *se)
-{
-	return !!se->on_rq;
-}
-
-
-
- 
 struct rq {
 	 
 	raw_spinlock_t		__lock;
@@ -388,11 +347,6 @@ static inline int cpu_of(struct rq *rq)
 
 #define MDF_PUSH	0x01
 
-static inline bool is_migration_disabled(struct task_struct *p)
-{
-	return false;
-}
-
 struct sched_group;
 
 static inline bool sched_core_enabled(struct rq *rq)
@@ -413,23 +367,6 @@ static inline raw_spinlock_t *rq_lockp(struct rq *rq)
 static inline raw_spinlock_t *__rq_lockp(struct rq *rq)
 {
 	return &rq->__lock;
-}
-
-static inline bool sched_cpu_cookie_match(struct rq *rq, struct task_struct *p)
-{
-	return true;
-}
-
-static inline bool sched_core_cookie_match(struct rq *rq, struct task_struct *p)
-{
-	return true;
-}
-
-static inline bool sched_group_cookie_match(struct rq *rq,
-					    struct task_struct *p,
-					    struct sched_group *group)
-{
-	return true;
 }
 
 static inline void lockdep_assert_rq_held(struct rq *rq)
@@ -877,21 +814,6 @@ extern const struct sched_class rt_sched_class;
 extern const struct sched_class fair_sched_class;
 extern const struct sched_class idle_sched_class;
 
-static inline bool sched_stop_runnable(struct rq *rq)
-{
-	return rq->stop && task_on_rq_queued(rq->stop);
-}
-
-static inline bool sched_dl_runnable(struct rq *rq)
-{
-	return rq->dl.dl_nr_running > 0;
-}
-
-static inline bool sched_rt_runnable(struct rq *rq)
-{
-	return rq->rt.rt_queued > 0;
-}
-
 static inline bool sched_fair_runnable(struct rq *rq)
 {
 	return rq->cfs.nr_running > 0;
@@ -909,11 +831,6 @@ extern struct task_struct *pick_next_task_idle(struct rq *rq);
 static inline void idle_set_state(struct rq *rq,
 				  struct cpuidle_state *idle_state)
 {
-}
-
-static inline struct cpuidle_state *idle_get_state(struct rq *rq)
-{
-	return NULL;
 }
 
 extern void schedule_idle(void);

@@ -1,3 +1,18 @@
+--- 2025-12-02 16:30 ---
+SESSION PROGRESS CONTINUED
+
+5. Reduced include/uapi/linux/fs.h from 226 to 56 LOC (-170 LOC)
+   - Removed BLK* ioctls, file_clone/dedupe_range structs
+   - Removed FS_XFLAG_*, FS_*_FL flags, SYNC_FILE_RANGE_*
+   - Keep only: SEEK_*, BLOCK_SIZE, RENAME_*, files_stat_struct, fsxattr, RWF_*
+
+Current state:
+- make vm: PASSES, prints "Hello, World!"
+- LOC: 191,292 (measured with cloc after mrproper)
+- Goal: 150,000 LOC
+- Gap: ~41,292 LOC (22% reduction needed)
+- Session total: -851 LOC
+
 --- 2025-12-02 16:20 ---
 SESSION PROGRESS CONTINUED
 
@@ -6,13 +21,6 @@ SESSION PROGRESS CONTINUED
    - Keep ASYNC_CLOSING_WAIT_* constants (used in tty_port.c)
    - Removed serial_struct, serial_multiport_struct, serial_rs485, serial_iso7816
    - Removed PORT_*, SERIAL_IO_*, UART_* constants
-
-Current state:
-- make vm: PASSES, prints "Hello, World!"
-- LOC: 191,432 (measured with cloc after mrproper)
-- Goal: 150,000 LOC
-- Gap: ~41,432 LOC (22% reduction needed)
-- Session total: -711 LOC
 
 --- 2025-12-02 16:15 ---
 SESSION PROGRESS CONTINUED

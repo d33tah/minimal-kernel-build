@@ -15,9 +15,6 @@ int copy_huge_pud(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		  pud_t *dst_pud, pud_t *src_pud, unsigned long addr,
 		  struct vm_area_struct *vma);
 
-static inline void huge_pud_set_accessed(struct vm_fault *vmf, pud_t orig_pud)
-{
-}
 
 vm_fault_t do_huge_pmd_wp_page(struct vm_fault *vmf);
 struct page *follow_trans_huge_pmd(struct vm_area_struct *vma,
@@ -37,19 +34,6 @@ int change_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
 vm_fault_t vmf_insert_pfn_pmd_prot(struct vm_fault *vmf, pfn_t pfn,
 				   pgprot_t pgprot, bool write);
 
-static inline vm_fault_t vmf_insert_pfn_pmd(struct vm_fault *vmf, pfn_t pfn,
-					    bool write)
-{
-	return vmf_insert_pfn_pmd_prot(vmf, pfn, vmf->vma->vm_page_prot, write);
-}
-vm_fault_t vmf_insert_pfn_pud_prot(struct vm_fault *vmf, pfn_t pfn,
-				   pgprot_t pgprot, bool write);
-
-static inline vm_fault_t vmf_insert_pfn_pud(struct vm_fault *vmf, pfn_t pfn,
-					    bool write)
-{
-	return vmf_insert_pfn_pud_prot(vmf, pfn, vmf->vma->vm_page_prot, write);
-}
 
 enum transparent_hugepage_flag {
 	TRANSPARENT_HUGEPAGE_FLAG,
@@ -83,27 +67,12 @@ static inline bool folio_test_pmd_mappable(struct folio *folio)
 	return false;
 }
 
-static inline bool __transparent_hugepage_enabled(struct vm_area_struct *vma)
-{
-	return false;
-}
 
 static inline bool transparent_hugepage_active(struct vm_area_struct *vma)
 {
 	return false;
 }
 
-static inline bool transhuge_vma_suitable(struct vm_area_struct *vma,
-		unsigned long haddr)
-{
-	return false;
-}
-
-static inline bool transhuge_vma_enabled(struct vm_area_struct *vma,
-					  unsigned long vm_flags)
-{
-	return false;
-}
 
 static inline void prep_transhuge_page(struct page *page) {}
 
@@ -137,18 +106,6 @@ static inline void split_huge_pmd_address(struct vm_area_struct *vma,
 #define split_huge_pud(__vma, __pmd, __address)	\
 	do { } while (0)
 
-static inline int hugepage_madvise(struct vm_area_struct *vma,
-				   unsigned long *vm_flags, int advice)
-{
-	BUG();
-	return 0;
-}
-static inline void vma_adjust_trans_huge(struct vm_area_struct *vma,
-					 unsigned long start,
-					 unsigned long end,
-					 long adjust_next)
-{
-}
 static inline int is_swap_pmd(pmd_t pmd)
 {
 	return 0;
@@ -164,10 +121,6 @@ static inline spinlock_t *pud_trans_huge_lock(pud_t *pud,
 	return NULL;
 }
 
-static inline vm_fault_t do_huge_pmd_numa_page(struct vm_fault *vmf)
-{
-	return 0;
-}
 
 static inline bool is_huge_zero_page(struct page *page)
 {

@@ -289,30 +289,6 @@ static inline void invalidate_tss_limit(void)
 		this_cpu_write(__tss_limit_invalid, true);
 }
 
- 
-#define LDT_empty(info)					\
-	((info)->base_addr		== 0	&&	\
-	 (info)->limit			== 0	&&	\
-	 (info)->contents		== 0	&&	\
-	 (info)->read_exec_only		== 1	&&	\
-	 (info)->seg_32bit		== 0	&&	\
-	 (info)->limit_in_pages		== 0	&&	\
-	 (info)->seg_not_present	== 1	&&	\
-	 (info)->useable		== 0)
-
- 
-static inline bool LDT_zero(const struct user_desc *info)
-{
-	return (info->base_addr		== 0 &&
-		info->limit		== 0 &&
-		info->contents		== 0 &&
-		info->read_exec_only	== 0 &&
-		info->seg_32bit		== 0 &&
-		info->limit_in_pages	== 0 &&
-		info->seg_not_present	== 0 &&
-		info->useable		== 0);
-}
-
 static inline void clear_LDT(void)
 {
 	set_ldt(NULL, 0);

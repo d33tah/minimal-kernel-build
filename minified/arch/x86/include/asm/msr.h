@@ -243,42 +243,5 @@ void msrs_free(struct msr *msrs);
 int msr_set_bit(u32 msr, u8 bit);
 int msr_clear_bit(u32 msr, u8 bit);
 
-static inline int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
-{
-	rdmsr(msr_no, *l, *h);
-	return 0;
-}
-static inline int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
-{
-	wrmsr(msr_no, l, h);
-	return 0;
-}
-static inline int rdmsrl_on_cpu(unsigned int cpu, u32 msr_no, u64 *q)
-{
-	rdmsrl(msr_no, *q);
-	return 0;
-}
-static inline int wrmsrl_on_cpu(unsigned int cpu, u32 msr_no, u64 q)
-{
-	wrmsrl(msr_no, q);
-	return 0;
-}
-static inline int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no,
-				    u32 *l, u32 *h)
-{
-	return rdmsr_safe(msr_no, l, h);
-}
-static inline int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
-{
-	return wrmsr_safe(msr_no, l, h);
-}
-static inline int rdmsrl_safe_on_cpu(unsigned int cpu, u32 msr_no, u64 *q)
-{
-	return rdmsrl_safe(msr_no, q);
-}
-static inline int wrmsrl_safe_on_cpu(unsigned int cpu, u32 msr_no, u64 q)
-{
-	return wrmsrl_safe(msr_no, q);
-}
 #endif
-#endif  
+#endif

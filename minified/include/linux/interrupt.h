@@ -87,44 +87,16 @@ extern const void *free_irq(unsigned int, void *);
 
 struct device;
 
-extern int __must_check
-devm_request_threaded_irq(struct device *dev, unsigned int irq,
-			  irq_handler_t handler, irq_handler_t thread_fn,
-			  unsigned long irqflags, const char *devname,
-			  void *dev_id);
-
-
-extern int __must_check
-devm_request_any_context_irq(struct device *dev, unsigned int irq,
-		 irq_handler_t handler, unsigned long irqflags,
-		 const char *devname, void *dev_id);
-
-extern void devm_free_irq(struct device *dev, unsigned int irq, void *dev_id);
-
 bool irq_has_action(unsigned int irq);
 extern void disable_irq_nosync(unsigned int irq);
 extern bool disable_hardirq(unsigned int irq);
 extern void disable_irq(unsigned int irq);
 extern void enable_irq(unsigned int irq);
 
-struct irq_affinity_notify;
-
-#define	IRQ_AFFINITY_MAX_SETS  4
-
-struct irq_affinity {
-	unsigned int	pre_vectors;
-	unsigned int	post_vectors;
-	unsigned int	nr_sets;
-	unsigned int	set_size[IRQ_AFFINITY_MAX_SETS];
-	void		(*calc_sets)(struct irq_affinity *, unsigned int nvecs);
-	void		*priv;
-};
-
 struct irq_affinity_desc {
 	struct cpumask	mask;
 	unsigned int	is_managed : 1;
 };
-
 
 static inline int irq_set_affinity(unsigned int irq, const struct cpumask *m)
 {
@@ -134,26 +106,6 @@ static inline int irq_set_affinity(unsigned int irq, const struct cpumask *m)
 static inline int irq_can_set_affinity(unsigned int irq)
 {
 	return 0;
-}
-
-static inline int irq_update_affinity_desc(unsigned int irq,
-					   struct irq_affinity_desc *affinity)
-{
-	return -EINVAL;
-}
-
-
-static inline struct irq_affinity_desc *
-irq_create_affinity_masks(unsigned int nvec, struct irq_affinity *affd)
-{
-	return NULL;
-}
-
-static inline unsigned int
-irq_calc_affinity_vectors(unsigned int minvec, unsigned int maxvec,
-			  const struct irq_affinity *affd)
-{
-	return maxvec;
 }
 
 
@@ -239,34 +191,8 @@ struct tasklet_struct
 	unsigned long data;
 };
 
-#define DECLARE_TASKLET(name, _callback)		\
-struct tasklet_struct name = {				\
-	.count = ATOMIC_INIT(0),			\
-	.callback = _callback,				\
-	.use_callback = true,				\
-}
-
-#define DECLARE_TASKLET_DISABLED(name, _callback)	\
-struct tasklet_struct name = {				\
-	.count = ATOMIC_INIT(1),			\
-	.callback = _callback,				\
-	.use_callback = true,				\
-}
-
 #define from_tasklet(var, callback_tasklet, tasklet_fieldname)	\
 	container_of(callback_tasklet, typeof(*var), tasklet_fieldname)
-
-#define DECLARE_TASKLET_OLD(name, _func)		\
-struct tasklet_struct name = {				\
-	.count = ATOMIC_INIT(0),			\
-	.func = _func,					\
-}
-
-#define DECLARE_TASKLET_DISABLED_OLD(name, _func)	\
-struct tasklet_struct name = {				\
-	.count = ATOMIC_INIT(1),			\
-	.func = _func,					\
-}
 
 enum
 {

@@ -362,10 +362,6 @@ int __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 		      struct module *owner,
 		      const struct irq_affinity_desc *affinity);
 
-int __devm_irq_alloc_descs(struct device *dev, int irq, unsigned int from,
-			   unsigned int cnt, int node, struct module *owner,
-			   const struct irq_affinity_desc *affinity);
-
 #define irq_alloc_descs(irq, from, cnt, node)	\
 	__irq_alloc_descs(irq, from, cnt, node, THIS_MODULE, NULL)
 
@@ -381,68 +377,9 @@ int __devm_irq_alloc_descs(struct device *dev, int irq, unsigned int from,
 #define irq_alloc_descs_from(from, cnt, node)	\
 	irq_alloc_descs(-1, from, cnt, node)
 
-#define devm_irq_alloc_descs(dev, irq, from, cnt, node)		\
-	__devm_irq_alloc_descs(dev, irq, from, cnt, node, THIS_MODULE, NULL)
-
-#define devm_irq_alloc_desc(dev, node)				\
-	devm_irq_alloc_descs(dev, -1, 1, 1, node)
-
-#define devm_irq_alloc_desc_at(dev, at, node)			\
-	devm_irq_alloc_descs(dev, at, at, 1, node)
-
-#define devm_irq_alloc_desc_from(dev, from, node)		\
-	devm_irq_alloc_descs(dev, -1, from, 1, node)
-
-#define devm_irq_alloc_descs_from(dev, from, cnt, node)		\
-	devm_irq_alloc_descs(dev, -1, from, cnt, node)
-
 void irq_free_descs(unsigned int irq, unsigned int cnt);
 
-struct irq_chip_generic;
-struct irq_chip_type;
-struct irq_chip_regs;
-struct irq_domain_chip_generic;
-enum irq_gc_flags { IRQ_GC_INIT_MASK_CACHE = 1 };
-
-
-#define IRQ_MSK(n) (u32)((n) < 32 ? ((1 << (n)) - 1) : UINT_MAX)
-
-
-#define irq_gc_lock_irqsave(gc, flags)	\
-	raw_spin_lock_irqsave(&(gc)->lock, flags)
-
-#define irq_gc_unlock_irqrestore(gc, flags)	\
-	raw_spin_unlock_irqrestore(&(gc)->lock, flags)
-
-struct irq_matrix;
-struct irq_matrix *irq_alloc_matrix(unsigned int matrix_bits,
-				    unsigned int alloc_start,
-				    unsigned int alloc_end);
-void irq_matrix_online(struct irq_matrix *m);
-void irq_matrix_offline(struct irq_matrix *m);
-void irq_matrix_assign_system(struct irq_matrix *m, unsigned int bit, bool replace);
-int irq_matrix_reserve_managed(struct irq_matrix *m, const struct cpumask *msk);
-void irq_matrix_remove_managed(struct irq_matrix *m, const struct cpumask *msk);
-int irq_matrix_alloc_managed(struct irq_matrix *m, const struct cpumask *msk,
-				unsigned int *mapped_cpu);
-void irq_matrix_reserve(struct irq_matrix *m);
-void irq_matrix_remove_reserved(struct irq_matrix *m);
-int irq_matrix_alloc(struct irq_matrix *m, const struct cpumask *msk,
-		     bool reserved, unsigned int *mapped_cpu);
-void irq_matrix_free(struct irq_matrix *m, unsigned int cpu,
-		     unsigned int bit, bool managed);
-void irq_matrix_assign(struct irq_matrix *m, unsigned int bit);
-unsigned int irq_matrix_available(struct irq_matrix *m, bool cpudown);
-unsigned int irq_matrix_allocated(struct irq_matrix *m);
-unsigned int irq_matrix_reserved(struct irq_matrix *m);
-void irq_matrix_debug_show(struct seq_file *sf, struct irq_matrix *m, int ind);
-
 #define INVALID_HWIRQ	(~0UL)
-irq_hw_number_t ipi_get_hwirq(unsigned int irq, unsigned int cpu);
-int __ipi_send_single(struct irq_desc *desc, unsigned int cpu);
-int __ipi_send_mask(struct irq_desc *desc, const struct cpumask *dest);
-int ipi_send_single(unsigned int virq, unsigned int cpu);
-int ipi_send_mask(unsigned int virq, const struct cpumask *dest);
 
 #ifndef set_handle_irq
 #define set_handle_irq(handle_irq)		\

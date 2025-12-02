@@ -86,21 +86,8 @@ static inline void *phys_to_virt(phys_addr_t address)
 }
 #define phys_to_virt phys_to_virt
 
- 
 #define page_to_phys(page)    ((dma_addr_t)page_to_pfn(page) << PAGE_SHIFT)
 
- 
-static inline unsigned int isa_virt_to_bus(volatile void *address)
-{
-	return (unsigned int)virt_to_phys(address);
-}
-#define isa_bus_to_virt		phys_to_virt
-
- 
-#define virt_to_bus virt_to_phys
-#define bus_to_virt phys_to_virt
-
- 
 extern void __iomem *ioremap_uc(resource_size_t offset, unsigned long size);
 #define ioremap_uc ioremap_uc
 extern void __iomem *ioremap_cache(resource_size_t offset, unsigned long size);
@@ -242,19 +229,6 @@ static inline bool phys_mem_access_encrypted(unsigned long phys_addr,
 					     unsigned long size)
 {
 	return true;
-}
-
- 
-static inline void iosubmit_cmds512(void __iomem *dst, const void *src,
-				    size_t count)
-{
-	const u8 *from = src;
-	const u8 *end = from + count * 64;
-
-	while (from < end) {
-		movdir64b(dst, from);
-		from += 64;
-	}
 }
 
 #endif  

@@ -602,28 +602,6 @@ static inline unsigned int xas_find_chunk(struct xa_state *xas, bool advance,
 	return find_next_bit(addr, XA_CHUNK_SIZE, offset);
 }
 
-static inline void *xas_next_marked(struct xa_state *xas, unsigned long max,
-								xa_mark_t mark)
-{
-	struct xa_node *node = xas->xa_node;
-	void *entry;
-	unsigned int offset;
-
-	if (unlikely(xas_not_node(node) || node->shift))
-		return xas_find_marked(xas, max, mark);
-	offset = xas_find_chunk(xas, true, mark);
-	xas->xa_offset = offset;
-	xas->xa_index = (xas->xa_index & ~XA_CHUNK_MASK) + offset;
-	if (xas->xa_index > max)
-		return NULL;
-	if (offset == XA_CHUNK_SIZE)
-		return xas_find_marked(xas, max, mark);
-	entry = xa_entry(xas->xa, node, offset);
-	if (!entry)
-		return xas_find_marked(xas, max, mark);
-	return entry;
-}
-
 enum {
 	XA_CHECK_SCHED = 4096,
 };
@@ -632,28 +610,10 @@ enum {
 	for (entry = xas_find(xas, max); entry; \
 	     entry = xas_next_entry(xas, max))
 
-#define xas_for_each_marked(xas, entry, max, mark) \
-	for (entry = xas_find_marked(xas, max, mark); entry; \
-	     entry = xas_next_marked(xas, max, mark))
-
 #define xas_for_each_conflict(xas, entry) \
 	while ((entry = xas_find_conflict(xas)))
 
 void *__xas_next(struct xa_state *);
-void *__xas_prev(struct xa_state *);
-
-static inline void *xas_prev(struct xa_state *xas)
-{
-	struct xa_node *node = xas->xa_node;
-
-	if (unlikely(xas_not_node(node) || node->shift ||
-				xas->xa_offset == 0))
-		return __xas_prev(xas);
-
-	xas->xa_index--;
-	xas->xa_offset--;
-	return xa_entry(xas->xa, node, xas->xa_offset);
-}
 
 static inline void *xas_next(struct xa_state *xas)
 {

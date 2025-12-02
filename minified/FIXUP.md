@@ -1,3 +1,26 @@
+--- 2025-12-02 15:40 ---
+SESSION PROGRESS
+
+1. Reduced include/uapi/linux/prctl.h from 212 to 14 LOC (-198 LOC)
+   - Only PR_SET_SYSCALL_USER_DISPATCH and related constants needed
+   - All other prctl constants unused in kernel code
+   - Commit: c1d688ef
+
+Current state:
+- make vm: PASSES, prints "Hello, World!"
+- LOC: 191,887 (measured with cloc after mrproper)
+- Goal: 150,000 LOC
+- Gap: ~41,887 LOC (22% reduction needed)
+- bzImage: 239KB
+
+Analysis of remaining opportunities:
+- Most remaining headers are heavily used (fs.h, mm.h, etc.)
+- ptrace.h has many unused constants but they're for userspace API
+- timex.h struct needed by many files even if constants unused
+- Kconfig files have lots of help text but cloc doesn't count them
+
+Continuing search for reduction targets...
+
 --- 2025-12-02 15:20 ---
 NEW SESSION STARTING
 

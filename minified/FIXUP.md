@@ -1,3 +1,19 @@
+--- 2025-12-02 16:20 ---
+SESSION PROGRESS CONTINUED
+
+4. Reduced include/uapi/linux/serial.h from 112 to 20 LOC (-92 LOC)
+   - Only keep serial_icounter_struct (used in tty_io.c)
+   - Keep ASYNC_CLOSING_WAIT_* constants (used in tty_port.c)
+   - Removed serial_struct, serial_multiport_struct, serial_rs485, serial_iso7816
+   - Removed PORT_*, SERIAL_IO_*, UART_* constants
+
+Current state:
+- make vm: PASSES, prints "Hello, World!"
+- LOC: 191,432 (measured with cloc after mrproper)
+- Goal: 150,000 LOC
+- Gap: ~41,432 LOC (22% reduction needed)
+- Session total: -711 LOC
+
 --- 2025-12-02 16:15 ---
 SESSION PROGRESS CONTINUED
 
@@ -5,13 +21,6 @@ SESSION PROGRESS CONTINUED
    - Only keep used: UNNAMED, MEM, RAMDISK, TTY, TTYAUX, MISC
    - Plus stub values for root_dev.h enum (FLOPPY, IDE, SCSI)
    - Removed 70+ unused device major numbers
-
-Current state:
-- make vm: PASSES, prints "Hello, World!"
-- LOC: 191,507 (measured with cloc after mrproper)
-- Goal: 150,000 LOC
-- Gap: ~41,507 LOC (22% reduction needed)
-- Session total: -578 LOC
 
 --- 2025-12-02 16:05 ---
 SESSION PROGRESS CONTINUED

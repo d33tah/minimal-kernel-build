@@ -212,17 +212,6 @@ extern struct workqueue_struct *system_unbound_wq;
 __printf(1, 4) struct workqueue_struct *
 alloc_workqueue(const char *fmt, unsigned int flags, int max_active, ...);
 
-#define alloc_ordered_workqueue(fmt, flags, args...)			\
-	alloc_workqueue(fmt, WQ_UNBOUND | __WQ_ORDERED |		\
-			__WQ_ORDERED_EXPLICIT | (flags), 1, ##args)
-
-#define create_workqueue(name)						\
-	alloc_workqueue("%s", __WQ_LEGACY | WQ_MEM_RECLAIM, 1, (name))
-#define create_freezable_workqueue(name)				\
-	alloc_workqueue("%s", __WQ_LEGACY | WQ_FREEZABLE | WQ_UNBOUND |	\
-			WQ_MEM_RECLAIM, 1, (name))
-#define create_singlethread_workqueue(name)				\
-	alloc_ordered_workqueue("%s", __WQ_LEGACY | WQ_MEM_RECLAIM, name)
 
 extern void destroy_workqueue(struct workqueue_struct *wq);
 
@@ -277,12 +266,6 @@ static inline bool schedule_work(struct work_struct *work)
 extern void __warn_flushing_systemwide_wq(void)
 	__compiletime_warning("Please avoid flushing system-wide workqueues.");
 
-#define flush_scheduled_work()						\
-({									\
-	if (0)								\
-		__warn_flushing_systemwide_wq();			\
-	__flush_workqueue(system_wq);					\
-})
 
 #define flush_workqueue(wq)						\
 ({									\

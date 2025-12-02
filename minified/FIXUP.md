@@ -1,3 +1,18 @@
+--- 2025-12-02 16:35 ---
+SESSION PROGRESS CONTINUED
+
+6. Reduced include/uapi/linux/timex.h from 137 to 44 LOC (-93 LOC)
+   - Removed ADJ_*, MOD_*, STA_* constants
+   - Removed TIME_OK, TIME_INS, TIME_DEL, TIME_OOP, TIME_WAIT
+   - Keep only: __kernel_timex struct and TIME_ERROR
+
+Current state:
+- make vm: PASSES, prints "Hello, World!"
+- LOC: 191,222 (measured with cloc after mrproper)
+- Goal: 150,000 LOC
+- Gap: ~41,222 LOC (22% reduction needed)
+- Session total: -827 LOC (starting from 192,049)
+
 --- 2025-12-02 16:30 ---
 SESSION PROGRESS CONTINUED
 
@@ -5,13 +20,6 @@ SESSION PROGRESS CONTINUED
    - Removed BLK* ioctls, file_clone/dedupe_range structs
    - Removed FS_XFLAG_*, FS_*_FL flags, SYNC_FILE_RANGE_*
    - Keep only: SEEK_*, BLOCK_SIZE, RENAME_*, files_stat_struct, fsxattr, RWF_*
-
-Current state:
-- make vm: PASSES, prints "Hello, World!"
-- LOC: 191,292 (measured with cloc after mrproper)
-- Goal: 150,000 LOC
-- Gap: ~41,292 LOC (22% reduction needed)
-- Session total: -851 LOC
 
 --- 2025-12-02 16:20 ---
 SESSION PROGRESS CONTINUED

@@ -26,17 +26,17 @@ static inline void ptrace_breakpoint_init(struct perf_event_attr *attr)
 
 static inline unsigned long hw_breakpoint_addr(struct perf_event *bp)
 {
-	return bp->attr.bp_addr;
+	return 0;
 }
 
 static inline int hw_breakpoint_type(struct perf_event *bp)
 {
-	return bp->attr.bp_type;
+	return 0;
 }
 
 static inline unsigned long hw_breakpoint_len(struct perf_event *bp)
 {
-	return bp->attr.bp_len;
+	return 0;
 }
 
 extern struct perf_event *
@@ -79,7 +79,7 @@ extern void flush_ptrace_hw_breakpoint(struct task_struct *tsk);
 
 static inline struct arch_hw_breakpoint *counter_arch_bp(struct perf_event *bp)
 {
-	return &bp->hw.info;
+	return NULL;
 }
 
 #endif  

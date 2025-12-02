@@ -1,63 +1,23 @@
 #ifndef _LINUX_PERF_EVENT_H
 #define _LINUX_PERF_EVENT_H
 
+/* Minimal perf_event.h - perf events disabled */
 #include <uapi/linux/perf_event.h>
-#include <uapi/linux/bpf_perf_event.h>
 #include <asm/perf_event.h>
-#include <asm/local64.h>
 #include <asm/hw_breakpoint.h>
-#include <linux/list.h>
-#include <linux/mutex.h>
-#include <linux/atomic.h>
 
 struct task_struct;
 struct pt_regs;
-struct perf_event;
-struct perf_event_context;
 struct vm_area_struct;
 
-struct perf_callchain_entry {
-	__u64 nr;
-	__u64 ip[];
-};
-
-struct perf_raw_record {
-	u32 size;
-};
-
-struct perf_sample_data {
-	u64 addr;
-	struct perf_raw_record *raw;
-};
-
+/* Minimal structs - never actually used */
+struct perf_sample_data;
 typedef void (*perf_overflow_handler_t)(struct perf_event *,
 					 struct perf_sample_data *,
 					 struct pt_regs *regs);
 
-struct hw_perf_event {
-	u64 config;
-	union {
-		struct {  
-			struct arch_hw_breakpoint info;
-		};
-	};
-};
-
-struct perf_event {
-	struct list_head event_entry;
-	int state;
-	atomic_t refcount;
-	struct task_struct *owner;
-	struct mutex child_mutex;
-	struct list_head child_list;
-	struct perf_event_attr attr;
-	struct hw_perf_event hw;
-};
-
-struct perf_event_context {
-	struct mutex mutex;
-	struct list_head event_list;
-};
+struct perf_event { int state; };
+struct perf_event_context { int dummy; };
 
 extern void perf_event_task_tick(void);
 extern void perf_event_fork(struct task_struct *tsk);

@@ -165,16 +165,6 @@ static __always_inline unsigned long long rdtsc_ordered(void)
 	return EAX_EDX_VAL(val, low, high);
 }
 
-static inline unsigned long long native_read_pmc(int counter)
-{
-	DECLARE_ARGS(val, low, high);
-
-	asm volatile("rdpmc" : EAX_EDX_RET(val, low, high) : "c" (counter));
-	if (tracepoint_enabled(rdpmc))
-		do_trace_rdpmc(counter, EAX_EDX_VAL(val, low, high), 0);
-	return EAX_EDX_VAL(val, low, high);
-}
-
 #include <linux/errno.h>
  
 
@@ -222,17 +212,6 @@ static inline int rdmsrl_safe(unsigned int msr, unsigned long long *p)
 	return err;
 }
 
-#define rdpmc(counter, low, high)			\
-do {							\
-	u64 _l = native_read_pmc((counter));		\
-	(low)  = (u32)_l;				\
-	(high) = (u32)(_l >> 32);			\
-} while (0)
-
-#define rdpmcl(counter, val) ((val) = native_read_pmc(counter))
-
-
- 
 static inline int wrmsrl_safe(u32 msr, u64 val)
 {
 	return wrmsr_safe(msr, (u32)val,  (u32)(val >> 32));

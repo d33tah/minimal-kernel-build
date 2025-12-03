@@ -1,3 +1,21 @@
+--- 2025-12-03 12:48 ---
+SESSION PROGRESS
+
+Current state: ~195,475 LOC | Goal: 150,000 | Need: ~45.5K more
+make vm: PASSES, prints "Hello, World!"
+bzImage: 239KB
+
+Changes this commit:
+4. seccomp.h: -65 LOC (91 -> 26 LOC)
+   - Removed SECCOMP_MODE_STRICT/FILTER, SET_MODE_*, GET_* constants
+   - Removed SECCOMP_RET_* return codes
+   - Removed structs: seccomp_notif_sizes, seccomp_notif, seccomp_notif_resp,
+     seccomp_notif_addfd
+   - Removed SECCOMP_IOCTL_* ioctl definitions
+   - Kept only SECCOMP_MODE_DISABLED, FILTER_FLAG_* and seccomp_data struct
+
+Session totals: 186+65 = 251 LOC removed
+
 --- 2025-12-03 12:41 ---
 SESSION PROGRESS CONTINUED
 

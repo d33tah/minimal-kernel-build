@@ -116,12 +116,6 @@ extern void *memset64(uint64_t *, uint64_t, __kernel_size_t);
 
 /* memset_l, memset_p removed - unused */
 
-extern void **__memcat_p(void **a, void **b);
-#define memcat_p(a, b) ({					\
-	BUILD_BUG_ON_MSG(!__same_type(*(a), *(b)),		\
-			 "type mismatch in memcat_p()");	\
-	(typeof(*a) *)__memcat_p((void **)(a), (void **)(b));	\
-})
 
 #ifndef __HAVE_ARCH_MEMCPY
 extern void * memcpy(void *,const void *,__kernel_size_t);

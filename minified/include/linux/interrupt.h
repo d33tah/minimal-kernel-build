@@ -155,8 +155,6 @@ enum
 	NR_SOFTIRQS
 };
 
-#define SOFTIRQ_HOTPLUG_SAFE_MASK (BIT(RCU_SOFTIRQ) | BIT(IRQ_POLL_SOFTIRQ))
-
 extern const char * const softirq_to_name[NR_SOFTIRQS];
 
 

@@ -191,70 +191,11 @@ static inline void module_put(struct module *module)
 
 #define module_name(mod) "kernel"
 
-static inline const char *module_address_lookup(unsigned long addr,
-					  unsigned long *symbolsize,
-					  unsigned long *offset,
-					  char **modname,
-					  const unsigned char **modbuildid,
-					  char *namebuf)
-{
-	return NULL;
-}
-
-/* lookup_module_symbol_name, lookup_module_symbol_attrs, module_get_kallsym,
-   module_kallsyms_lookup_name, register/unregister_module_notifier removed - unused */
-
 #define module_put_and_kthread_exit(code) kthread_exit(code)
-
-static inline void print_modules(void)
-{
-}
-
-static inline bool module_requested_async_probing(struct module *module)
-{
-	return false;
-}
-
-
-static inline void set_module_sig_enforced(void)
-{
-}
-
-static inline
-void *dereference_module_function_descriptor(struct module *mod, void *ptr)
-{
-	return ptr;
-}
-
-
 
 #define symbol_request(x) try_then_request_module(symbol_get(x), "symbol:" #x)
 
-
 #define __MODULE_STRING(x) __stringify(x)
-
-
-static inline void module_bug_finalize(const Elf_Ehdr *hdr,
-					const Elf_Shdr *sechdrs,
-					struct module *mod)
-{
-}
-static inline void module_bug_cleanup(struct module *mod) {}
-
-static inline bool retpoline_module_ok(bool has_retpoline)
-{
-	return true;
-}
-
-static inline bool is_module_sig_enforced(void)
-{
-	return false;
-}
-
-static inline bool module_sig_ok(struct module *module)
-{
-	return true;
-}
 
 int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
 					     struct module *, unsigned long),

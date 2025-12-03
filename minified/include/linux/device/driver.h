@@ -82,66 +82,12 @@ struct device *driver_find_device(struct device_driver *drv,
 				  struct device *start, const void *data,
 				  int (*match)(struct device *dev, const void *data));
 
-static inline struct device *driver_find_device_by_name(struct device_driver *drv,
-							const char *name)
-{
-	return driver_find_device(drv, NULL, name, device_match_name);
-}
-
-static inline struct device *
-driver_find_device_by_of_node(struct device_driver *drv,
-			      const struct device_node *np)
-{
-	return driver_find_device(drv, NULL, np, device_match_of_node);
-}
-
-static inline struct device *
-driver_find_device_by_fwnode(struct device_driver *drv,
-			     const struct fwnode_handle *fwnode)
-{
-	return driver_find_device(drv, NULL, fwnode, device_match_fwnode);
-}
-
-static inline struct device *driver_find_device_by_devt(struct device_driver *drv,
-							dev_t devt)
-{
-	return driver_find_device(drv, NULL, &devt, device_match_devt);
-}
-
-static inline struct device *driver_find_next_device(struct device_driver *drv,
-						     struct device *start)
-{
-	return driver_find_device(drv, start, NULL, device_match_any);
-}
-
-static inline struct device *
-driver_find_device_by_acpi_dev(struct device_driver *drv, const void *adev)
-{
-	return NULL;
-}
+/* driver_find_device_by_* helpers removed - unused */
+/* module_driver, builtin_driver macros removed - unused */
 
 extern int driver_deferred_probe_timeout;
 void driver_deferred_probe_add(struct device *dev);
 int driver_deferred_probe_check_state(struct device *dev);
 void driver_init(void);
-
-#define module_driver(__driver, __register, __unregister, ...) \
-static int __init __driver##_init(void) \
-{ \
-	return __register(&(__driver) , ##__VA_ARGS__); \
-} \
-module_init(__driver##_init); \
-static void __exit __driver##_exit(void) \
-{ \
-	__unregister(&(__driver) , ##__VA_ARGS__); \
-} \
-module_exit(__driver##_exit);
-
-#define builtin_driver(__driver, __register, ...) \
-static int __init __driver##_init(void) \
-{ \
-	return __register(&(__driver) , ##__VA_ARGS__); \
-} \
-device_initcall(__driver##_init);
 
 #endif	 

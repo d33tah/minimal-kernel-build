@@ -139,7 +139,6 @@ extern void vfree_atomic(const void *addr);
 
 extern void *vmap(struct page **pages, unsigned int count,
 			unsigned long flags, pgprot_t prot);
-void *vmap_pfn(unsigned long *pfns, unsigned int count, pgprot_t prot);
 extern void vunmap(const void *addr);
 
 extern int remap_vmalloc_range_partial(struct vm_area_struct *vma,
@@ -202,9 +201,6 @@ extern __init void vm_area_register_early(struct vm_struct *vm, size_t align);
 
 
 #define VMALLOC_TOTAL (VMALLOC_END - VMALLOC_START)
-
-int register_vmap_purge_notifier(struct notifier_block *nb);
-int unregister_vmap_purge_notifier(struct notifier_block *nb);
 
 static inline bool vmalloc_dump_obj(void *object) { return false; }
 

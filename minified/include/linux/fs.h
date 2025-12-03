@@ -1820,86 +1820,18 @@ static inline int iocb_flags(struct file *file)
 	return res;
 }
 
-static inline int kiocb_set_rw_flags(struct kiocb *ki, rwf_t flags)
-{
-	int kiocb_flags = 0;
-
-	
-	BUILD_BUG_ON((__force int) RWF_SUPPORTED & IOCB_EVENTFD);
-
-	if (!flags)
-		return 0;
-	if (unlikely(flags & ~RWF_SUPPORTED))
-		return -EOPNOTSUPP;
-
-	if (flags & RWF_NOWAIT) {
-		if (!(ki->ki_filp->f_mode & FMODE_NOWAIT))
-			return -EOPNOTSUPP;
-		kiocb_flags |= IOCB_NOIO;
-	}
-	kiocb_flags |= (__force int) (flags & RWF_SUPPORTED);
-	if (flags & RWF_SYNC)
-		kiocb_flags |= IOCB_DSYNC;
-
-	ki->ki_flags |= kiocb_flags;
-	return 0;
-}
+/* kiocb_set_rw_flags removed - unused */
 
 static inline ino_t parent_ino(struct dentry *dentry)
 {
 	ino_t res;
-
-	
 	spin_lock(&dentry->d_lock);
 	res = dentry->d_parent->d_inode->i_ino;
 	spin_unlock(&dentry->d_lock);
 	return res;
 }
 
-struct simple_transaction_argresp {
-	ssize_t size;
-	char data[];
-};
-
-#define SIMPLE_TRANSACTION_LIMIT (PAGE_SIZE - sizeof(struct simple_transaction_argresp))
-
-char *simple_transaction_get(struct file *file, const char __user *buf,
-				size_t size);
-ssize_t simple_transaction_read(struct file *file, char __user *buf,
-				size_t size, loff_t *pos);
-int simple_transaction_release(struct inode *inode, struct file *file);
-
-void simple_transaction_set(struct file *file, size_t n);
-
-#define DEFINE_SIMPLE_ATTRIBUTE(__fops, __get, __set, __fmt)		\
-static int __fops ## _open(struct inode *inode, struct file *file)	\
-{									\
-	__simple_attr_check_format(__fmt, 0ull);			\
-	return simple_attr_open(inode, file, __get, __set, __fmt);	\
-}									\
-static const struct file_operations __fops = {				\
-	.owner	 = THIS_MODULE,						\
-	.open	 = __fops ## _open,					\
-	.release = simple_attr_release,					\
-	.read	 = simple_attr_read,					\
-	.write	 = simple_attr_write,					\
-	.llseek	 = generic_file_llseek,					\
-}
-
-static inline __printf(1, 2)
-void __simple_attr_check_format(const char *fmt, ...)
-{
-	
-}
-
-int simple_attr_open(struct inode *inode, struct file *file,
-		     int (*get)(void *, u64 *), int (*set)(void *, u64),
-		     const char *fmt);
-int simple_attr_release(struct inode *inode, struct file *file);
-ssize_t simple_attr_read(struct file *file, char __user *buf,
-			 size_t len, loff_t *ppos);
-ssize_t simple_attr_write(struct file *file, const char __user *buf,
-			  size_t len, loff_t *ppos);
+/* simple_transaction_*, simple_attr_*, DEFINE_SIMPLE_ATTRIBUTE removed - unused */
 
 struct ctl_table;
 int __init list_bdev_fs_names(char *buf, size_t size);

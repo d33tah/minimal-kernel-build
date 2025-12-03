@@ -98,41 +98,9 @@ static inline bool device_may_wakeup(struct device *dev)
 	return dev->power.can_wakeup && dev->power.should_wakeup;
 }
 
-static inline bool device_wakeup_path(struct device *dev)
-{
-	return false;
-}
-
-static inline void device_set_wakeup_path(struct device *dev) {}
-
-static inline void __pm_stay_awake(struct wakeup_source *ws) {}
-
-static inline void pm_stay_awake(struct device *dev) {}
-
-static inline void __pm_relax(struct wakeup_source *ws) {}
-
-static inline void pm_relax(struct device *dev) {}
-
-static inline void pm_wakeup_ws_event(struct wakeup_source *ws,
-				      unsigned int msec, bool hard) {}
-
-static inline void pm_wakeup_dev_event(struct device *dev, unsigned int msec,
-				       bool hard) {}
-
-
-static inline void __pm_wakeup_event(struct wakeup_source *ws, unsigned int msec)
-{
-	return pm_wakeup_ws_event(ws, msec, false);
-}
-
-static inline void pm_wakeup_event(struct device *dev, unsigned int msec)
-{
-	return pm_wakeup_dev_event(dev, msec, false);
-}
-
-static inline void pm_wakeup_hard_event(struct device *dev)
-{
-	return pm_wakeup_dev_event(dev, 0, true);
-}
+/* device_wakeup_path, device_set_wakeup_path removed - unused */
+/* __pm_stay_awake, pm_stay_awake, __pm_relax, pm_relax removed - unused */
+/* pm_wakeup_ws_event, pm_wakeup_dev_event removed - unused */
+/* __pm_wakeup_event, pm_wakeup_event, pm_wakeup_hard_event removed - unused */
 
 #endif  

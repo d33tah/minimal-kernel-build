@@ -7,10 +7,7 @@ unsigned long get_state_synchronize_rcu(void);
 unsigned long start_poll_synchronize_rcu(void);
 bool poll_state_synchronize_rcu(unsigned long oldstate);
 
-static inline void cond_synchronize_rcu(unsigned long oldstate)
-{
-	might_sleep();
-}
+/* cond_synchronize_rcu removed - unused */
 
 extern void rcu_barrier(void);
 
@@ -57,14 +54,9 @@ static inline void rcu_idle_exit(void) { }
 static inline void rcu_irq_enter(void) { }
 static inline void rcu_irq_exit(void) { }
 static inline void rcu_irq_exit_check_preempt(void) { }
-#define rcu_is_idle_cpu(cpu) \
-	(is_idle_task(current) && !in_nmi() && !in_hardirq() && !in_serving_softirq())
+/* rcu_is_idle_cpu removed - unused */
 static inline void exit_rcu(void) { }
-static inline bool rcu_preempt_need_deferred_qs(struct task_struct *t)
-{
-	return false;
-}
-static inline void rcu_preempt_deferred_qs(struct task_struct *t) { }
+/* rcu_preempt_need_deferred_qs, rcu_preempt_deferred_qs removed - unused */
 void rcu_scheduler_starting(void);
 static inline void rcu_end_inkernel_boot(void) { }
 static inline bool rcu_inkernel_boot_has_ended(void) { return true; }
@@ -73,11 +65,6 @@ static inline void kfree_rcu_scheduler_running(void) { }
 
 static inline void rcu_all_qs(void) { barrier(); }
 
-#define rcutree_prepare_cpu      NULL
-#define rcutree_online_cpu       NULL
-#define rcutree_offline_cpu      NULL
-#define rcutree_dead_cpu         NULL
-#define rcutree_dying_cpu        NULL
-static inline void rcu_cpu_starting(unsigned int cpu) { }
+/* rcutree_*_cpu, rcu_cpu_starting, rcu_is_idle_cpu removed - unused */
 
 #endif  

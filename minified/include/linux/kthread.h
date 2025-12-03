@@ -35,18 +35,7 @@ bool kthread_is_per_cpu(struct task_struct *k);
 	__k;								   \
 })
 
-static inline struct task_struct *
-kthread_run_on_cpu(int (*threadfn)(void *data), void *data,
-			unsigned int cpu, const char *namefmt)
-{
-	struct task_struct *p;
-
-	p = kthread_create_on_cpu(threadfn, data, cpu, namefmt);
-	if (!IS_ERR(p))
-		wake_up_process(p);
-
-	return p;
-}
+/* kthread_run_on_cpu removed - unused */
 
 void free_kthread_struct(struct task_struct *k);
 void kthread_bind(struct task_struct *k, unsigned int cpu);
@@ -173,7 +162,5 @@ void kthread_destroy_worker(struct kthread_worker *worker);
 void kthread_use_mm(struct mm_struct *mm);
 void kthread_unuse_mm(struct mm_struct *mm);
 
-struct cgroup_subsys_state;
-
-static inline void kthread_associate_blkcg(struct cgroup_subsys_state *css) { }
+/* kthread_associate_blkcg removed - unused */
 #endif  

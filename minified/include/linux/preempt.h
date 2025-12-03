@@ -37,17 +37,7 @@
 
 #include <asm/preempt.h>
 
-static __always_inline unsigned char interrupt_context_level(void)
-{
-	unsigned long pc = preempt_count();
-	unsigned char level = 0;
-
-	level += !!(pc & (NMI_MASK));
-	level += !!(pc & (NMI_MASK | HARDIRQ_MASK));
-	level += !!(pc & (NMI_MASK | HARDIRQ_MASK | SOFTIRQ_OFFSET));
-
-	return level;
-}
+/* interrupt_context_level removed - unused */
 
 #define nmi_count()	(preempt_count() & NMI_MASK)
 #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)

@@ -1,3 +1,18 @@
+--- 2025-12-03 12:55 ---
+SESSION PROGRESS
+
+Current state: ~195,304 LOC | Goal: 150,000 | Need: ~45.3K more
+make vm: PASSES, prints "Hello, World!"
+bzImage: 239KB
+
+Changes this commit:
+6. cn_proc.h: -89 LOC (98 -> 9 LOC)
+   - Removed proc_event struct with all nested event structs
+   - Removed proc_cn_mcast_op enum and PROC_EVENT_* constants except UID/GID
+   - Kept only PROC_EVENT_UID and PROC_EVENT_GID (used by kernel/cred.c)
+
+Session totals: 333+89 = 422 LOC removed
+
 --- 2025-12-03 12:52 ---
 SESSION PROGRESS
 

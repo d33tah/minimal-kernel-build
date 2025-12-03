@@ -30,16 +30,6 @@ void set_pfnblock_flags_mask(struct page *page,
 				unsigned long flags,
 				unsigned long pfn,
 				unsigned long mask);
-
-static inline bool get_pageblock_skip(struct page *page)
-{
-	return false;
-}
-static inline void clear_pageblock_skip(struct page *page)
-{
-}
-static inline void set_pageblock_skip(struct page *page)
-{
-}
+/* get_pageblock_skip, clear_pageblock_skip, set_pageblock_skip removed - unused */
 
 #endif	 

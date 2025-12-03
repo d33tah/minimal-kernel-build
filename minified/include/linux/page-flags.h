@@ -456,12 +456,7 @@ PAGEFLAG_FALSE(DoubleMap, double_map)
 PAGEFLAG_FALSE(HasHWPoisoned, has_hwpoisoned)
 	TESTSCFLAG_FALSE(HasHWPoisoned, has_hwpoisoned)
 
-static inline bool is_page_hwpoison(struct page *page)
-{
-	if (PageHWPoison(page))
-		return true;
-	return PageHuge(page) && PageHWPoison(compound_head(page));
-}
+/* is_page_hwpoison removed - unused */
 
 
 #define PAGE_TYPE_BASE	0xf0000000
@@ -499,10 +494,7 @@ PAGE_TYPE_OPS(Buddy, buddy)
 
 PAGE_TYPE_OPS(Offline, offline)
 
-extern void page_offline_freeze(void);
-extern void page_offline_thaw(void);
-extern void page_offline_begin(void);
-extern void page_offline_end(void);
+/* page_offline_freeze/thaw/begin/end removed - unused */
 
 PAGE_TYPE_OPS(Table, table)
 

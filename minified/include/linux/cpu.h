@@ -31,13 +31,7 @@ extern bool arch_find_n_match_cpu_physical_id(struct device_node *cpun,
 
 #define cpuhp_tasks_frozen	0
 
-static inline void cpu_maps_update_begin(void)
-{
-}
-
-static inline void cpu_maps_update_done(void)
-{
-}
+/* cpu_maps_update_begin/done removed - unused */
 
 /* add_cpu removed - unused */
 
@@ -48,7 +42,7 @@ extern int lockdep_is_cpus_held(void);
 
 static inline void cpus_read_lock(void) { }
 static inline void cpus_read_unlock(void) { }
-static inline int  cpus_read_trylock(void) { return true; }
+/* cpus_read_trylock removed - unused */
 static inline void lockdep_assert_cpus_held(void) { }
 static inline void cpu_hotplug_disable(void) { }
 /* remove_cpu, suspend_disable_secondary_cpus removed - unused */
@@ -72,10 +66,7 @@ int cpu_check_up_prepare(int cpu);
 void cpu_set_state_online(int cpu);
 void play_idle_precise(u64 duration_ns, u64 latency_ns);
 
-static inline void play_idle(unsigned long duration_us)
-{
-	play_idle_precise(duration_us * NSEC_PER_USEC, U64_MAX);
-}
+/* play_idle removed - unused */
 
 static inline void cpuhp_report_idle_dead(void) { }
 

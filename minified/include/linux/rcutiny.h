@@ -44,10 +44,7 @@ static inline void rcu_softirq_qs(void)
 		rcu_tasks_qs(current, (preempt)); \
 	} while (0)
 
-static inline int rcu_needs_cpu(void)
-{
-	return 0;
-}
+/* rcu_needs_cpu removed - unused */
 
 static inline void rcu_idle_enter(void) { }
 static inline void rcu_idle_exit(void) { }

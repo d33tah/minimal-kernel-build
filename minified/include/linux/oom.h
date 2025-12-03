@@ -49,20 +49,7 @@ struct oom_control {
 extern struct mutex oom_lock;
 extern struct mutex oom_adj_mutex;
 
-static inline void set_current_oom_origin(void)
-{
-	current->signal->oom_flag_origin = true;
-}
-
-static inline void clear_current_oom_origin(void)
-{
-	current->signal->oom_flag_origin = false;
-}
-
-static inline bool oom_task_origin(const struct task_struct *p)
-{
-	return p->signal->oom_flag_origin;
-}
+/* set_current_oom_origin, clear_current_oom_origin, oom_task_origin removed - unused */
 
 static inline bool tsk_is_oom_victim(struct task_struct * tsk)
 {

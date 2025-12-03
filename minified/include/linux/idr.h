@@ -76,11 +76,7 @@ static inline void idr_init(struct idr *idr)
 	idr_init_base(idr, 0);
 }
 
-static inline bool idr_is_empty(const struct idr *idr)
-{
-	return radix_tree_empty(&idr->idr_rt) &&
-		radix_tree_tagged(&idr->idr_rt, IDR_FREE);
-}
+/* idr_is_empty removed - unused */
 
 static inline void idr_preload_end(void)
 {
@@ -90,20 +86,7 @@ static inline void idr_preload_end(void)
 #define idr_for_each_entry(idr, entry, id)			\
 	for (id = 0; ((entry) = idr_get_next(idr, &(id))) != NULL; id += 1U)
 
-#define idr_for_each_entry_ul(idr, entry, tmp, id)			\
-	for (tmp = 0, id = 0;						\
-	     tmp <= id && ((entry) = idr_get_next_ul(idr, &(id))) != NULL; \
-	     tmp = id, ++id)
-
-#define idr_for_each_entry_continue(idr, entry, id)			\
-	for ((entry) = idr_get_next((idr), &(id));			\
-	     entry;							\
-	     ++id, (entry) = idr_get_next((idr), &(id)))
-
-#define idr_for_each_entry_continue_ul(idr, entry, tmp, id)		\
-	for (tmp = id;							\
-	     tmp <= id && ((entry) = idr_get_next_ul(idr, &(id))) != NULL; \
-	     tmp = id, ++id)
+/* idr_for_each_entry_ul, idr_for_each_entry_continue, idr_for_each_entry_continue_ul removed - unused */
 
 #define IDA_CHUNK_SIZE		128	 
 #define IDA_BITMAP_LONGS	(IDA_CHUNK_SIZE / sizeof(long))
@@ -148,12 +131,5 @@ static inline void ida_init(struct ida *ida)
 	xa_init_flags(&ida->xa, IDA_INIT_FLAGS);
 }
 
-#define ida_simple_get(ida, start, end, gfp)	\
-			ida_alloc_range(ida, start, (end) - 1, gfp)
-#define ida_simple_remove(ida, id)	ida_free(ida, id)
-
-static inline bool ida_is_empty(const struct ida *ida)
-{
-	return xa_empty(&ida->xa);
-}
+/* ida_simple_get, ida_simple_remove, ida_is_empty removed - unused */
 #endif  

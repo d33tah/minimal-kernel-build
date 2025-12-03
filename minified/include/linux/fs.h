@@ -1372,11 +1372,7 @@ static inline int try_break_deleg(struct inode *inode, struct inode **delegated_
 	return 0;
 }
 
-static inline int break_deleg_wait(struct inode **delegated_inode)
-{
-	BUG();
-	return 0;
-}
+/* break_deleg_wait removed - unused */
 
 struct audit_names;
 struct filename {

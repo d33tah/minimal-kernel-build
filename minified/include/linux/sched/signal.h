@@ -144,12 +144,7 @@ struct signal_struct {
 #define SIGNAL_STOP_MASK (SIGNAL_CLD_MASK | SIGNAL_STOP_STOPPED | \
 			  SIGNAL_STOP_CONTINUED)
 
-static inline void signal_set_stop_flags(struct signal_struct *sig,
-					 unsigned int flags)
-{
-	WARN_ON(sig->flags & SIGNAL_GROUP_EXIT);
-	sig->flags = (sig->flags & ~SIGNAL_STOP_MASK) | flags;
-}
+/* signal_set_stop_flags removed - unused */
 
 extern void ignore_signals(struct task_struct *);
 extern void flush_signal_handlers(struct task_struct *, int force_default);
@@ -280,15 +275,7 @@ static inline void signal_wake_up(struct task_struct *t, bool fatal)
 	}
 	signal_wake_up_state(t, state);
 }
-static inline void ptrace_signal_wake_up(struct task_struct *t, bool resume)
-{
-	unsigned int state = 0;
-	if (resume) {
-		t->jobctl &= ~JOBCTL_TRACED;
-		state = __TASK_TRACED;
-	}
-	signal_wake_up_state(t, state);
-}
+/* ptrace_signal_wake_up removed - unused */
 
 void task_join_group_stop(struct task_struct *task);
 

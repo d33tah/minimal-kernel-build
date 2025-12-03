@@ -34,8 +34,7 @@ static inline void vm_events_fold_cpu(int cpu)
 }
 
 
-#define count_vm_numa_event(x) do {} while (0)
-#define count_vm_numa_events(x, y) do { (void)(y); } while (0)
+/* count_vm_numa_event, count_vm_numa_events removed - unused */
 
 #define count_vm_tlb_event(x)     do {} while (0)
 #define count_vm_tlb_events(x, y) do { (void)(y); } while (0)

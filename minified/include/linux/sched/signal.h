@@ -301,10 +301,6 @@ static inline void set_restore_sigmask(void)
 {
 	current->restore_sigmask = true;
 }
-static inline void clear_tsk_restore_sigmask(struct task_struct *task)
-{
-	task->restore_sigmask = false;
-}
 static inline void clear_restore_sigmask(void)
 {
 	current->restore_sigmask = false;
@@ -312,10 +308,6 @@ static inline void clear_restore_sigmask(void)
 static inline bool test_restore_sigmask(void)
 {
 	return current->restore_sigmask;
-}
-static inline bool test_tsk_restore_sigmask(struct task_struct *task)
-{
-	return task->restore_sigmask;
 }
 static inline bool test_and_clear_restore_sigmask(void)
 {
@@ -332,25 +324,12 @@ static inline void restore_saved_sigmask(void)
 		__set_current_blocked(&current->saved_sigmask);
 }
 
-static inline void restore_saved_sigmask_unless(bool interrupted)
-{
-	if (interrupted)
-		WARN_ON(!signal_pending(current));
-	else
-		restore_saved_sigmask();
-}
-
 static inline sigset_t *sigmask_to_save(void)
 {
 	sigset_t *res = &current->blocked;
 	if (unlikely(test_restore_sigmask()))
 		res = &current->saved_sigmask;
 	return res;
-}
-
-static inline int kill_cad_pid(int sig, int priv)
-{
-	return kill_pid(cad_pid, sig, priv);
 }
 
 #define SEND_SIG_NOINFO ((struct kernel_siginfo *) 0)
@@ -384,13 +363,6 @@ static inline void sas_ss_reset(struct task_struct *p)
 	p->sas_ss_sp = 0;
 	p->sas_ss_size = 0;
 	p->sas_ss_flags = SS_DISABLE;
-}
-
-static inline unsigned long sigsp(unsigned long sp, struct ksignal *ksig)
-{
-	if (unlikely((ksig->ka.sa.sa_flags & SA_ONSTACK)) && ! sas_ss_flags(sp))
-		return current->sas_ss_sp + current->sas_ss_size;
-	return sp;
 }
 
 extern void __cleanup_sighand(struct sighand_struct *);

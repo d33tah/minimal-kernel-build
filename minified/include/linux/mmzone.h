@@ -493,11 +493,6 @@ static inline int is_highmem_idx(enum zone_type idx)
 	return 0;
 }
 
-static inline int is_highmem(struct zone *zone)
-{
-	return 0;
-}
-
 struct ctl_table;
 
 int min_free_kbytes_sysctl_handler(struct ctl_table *, int, void *, size_t *,

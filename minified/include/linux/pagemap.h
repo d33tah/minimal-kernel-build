@@ -270,8 +270,6 @@ static inline loff_t page_offset(struct page *page)
 	return ((loff_t)page->index) << PAGE_SHIFT;
 }
 
-/* page_file_offset and folio_file_pos removed - unused */
-
 static inline loff_t folio_pos(struct folio *folio)
 {
 	return page_offset(&folio->page);

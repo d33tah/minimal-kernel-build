@@ -315,12 +315,7 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
 }
 #endif
 
-#ifndef __HAVE_ARCH_PTE_UNUSED
-static inline int pte_unused(pte_t pte)
-{
-	return 0;
-}
-#endif
+/* pte_unused removed - unused */
 
 #ifndef pte_access_permitted
 #define pte_access_permitted(pte, write) \
@@ -642,20 +637,7 @@ static inline pte_t pte_swp_clear_exclusive(pte_t pte)
 }
 #endif
 
-static inline int pte_soft_dirty(pte_t pte)
-{
-	return 0;
-}
-
-static inline pte_t pte_mksoft_dirty(pte_t pte)
-{
-	return pte;
-}
-
-static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
-{
-	return pte;
-}
+/* pte_soft_dirty, pte_mksoft_dirty, pte_swp_mksoft_dirty removed - unused */
 
 static inline int pte_swp_soft_dirty(pte_t pte)
 {

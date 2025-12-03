@@ -72,41 +72,6 @@ static inline void list_replace_rcu(struct list_head *old,
 	old->prev = LIST_POISON2;
 }
 
-static inline void __list_splice_init_rcu(struct list_head *list,
-					  struct list_head *prev,
-					  struct list_head *next,
-					  void (*sync)(void))
-{
-	struct list_head *first = list->next;
-	struct list_head *last = list->prev;
-
-	 
-
-	INIT_LIST_HEAD_RCU(list);
-
-	 
-
-	sync();
-	ASSERT_EXCLUSIVE_ACCESS(*first);
-	ASSERT_EXCLUSIVE_ACCESS(*last);
-
-	 
-
-	last->next = next;
-	rcu_assign_pointer(list_next_rcu(prev), first);
-	first->prev = prev;
-	next->prev = last;
-}
-
-static inline void list_splice_init_rcu(struct list_head *list,
-					struct list_head *head,
-					void (*sync)(void))
-{
-	if (!list_empty(list))
-		__list_splice_init_rcu(list, head, head->next, sync);
-}
-
-
 #define list_entry_rcu(ptr, type, member) \
 	container_of(READ_ONCE(ptr), type, member)
 
@@ -118,15 +83,6 @@ static inline void list_splice_init_rcu(struct list_head *list,
 	likely(__ptr != __next) ? list_entry_rcu(__next, type, member) : NULL; \
 })
 
-#define list_next_or_null_rcu(head, ptr, type, member) \
-({ \
-	struct list_head *__head = (head); \
-	struct list_head *__ptr = (ptr); \
-	struct list_head *__next = READ_ONCE(__ptr->next); \
-	likely(__next != __head) ? list_entry_rcu(__next, type, \
-						  member) : NULL; \
-})
-
 #define list_for_each_entry_rcu(pos, head, member, cond...)		\
 	for (__list_check_rcu(dummy, ## cond, 0),			\
 	     pos = list_entry_rcu((head)->next, typeof(*pos), member);	\
@@ -134,15 +90,6 @@ static inline void list_splice_init_rcu(struct list_head *list,
 		pos = list_entry_rcu(pos->member.next, typeof(*pos), member))
 
 
-
-#define list_for_each_entry_continue_rcu(pos, head, member) 		\
-	for (pos = list_entry_rcu(pos->member.next, typeof(*pos), member); \
-	     &pos->member != (head);	\
-	     pos = list_entry_rcu(pos->member.next, typeof(*pos), member))
-
-#define list_for_each_entry_from_rcu(pos, head, member)			\
-	for (; &(pos)->member != (head);					\
-		pos = list_entry_rcu(pos->member.next, typeof(*(pos)), member))
 
 static inline void hlist_del_rcu(struct hlist_node *n)
 {

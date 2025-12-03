@@ -103,12 +103,8 @@ enum landlock_rule_type;
 #define __SC_ARGS(t, a)	a
 #define __SC_TEST(t, a) (void)BUILD_BUG_ON_ZERO(!__TYPE_IS_LL(t) && sizeof(t) > sizeof(long))
 
-#define SYSCALL_METADATA(sname, nb, ...)  
-
-static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
-{
-	return 0;
-}
+#define SYSCALL_METADATA(sname, nb, ...)
+/* is_syscall_trace_event removed - unused */
 
 #ifndef SYSCALL_DEFINE0
 #define __MAP0(m,...)

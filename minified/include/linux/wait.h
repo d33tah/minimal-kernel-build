@@ -92,12 +92,7 @@ static inline void __add_wait_queue(struct wait_queue_head *wq_head, struct wait
 	list_add(&wq_entry->entry, head);
 }
 
-static inline void
-__add_wait_queue_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
-{
-	wq_entry->flags |= WQ_FLAG_EXCLUSIVE;
-	__add_wait_queue(wq_head, wq_entry);
-}
+/* __add_wait_queue_exclusive removed - unused */
 
 static inline void __add_wait_queue_entry_tail(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {

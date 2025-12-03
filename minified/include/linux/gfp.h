@@ -202,17 +202,7 @@ unsigned long alloc_pages_bulk_array_mempolicy(gfp_t gfp,
 				unsigned long nr_pages,
 				struct page **page_array);
 
-static inline unsigned long
-alloc_pages_bulk_list(gfp_t gfp, unsigned long nr_pages, struct list_head *list)
-{
-	return __alloc_pages_bulk(gfp, numa_mem_id(), NULL, nr_pages, list, NULL);
-}
-
-static inline unsigned long
-alloc_pages_bulk_array(gfp_t gfp, unsigned long nr_pages, struct page **page_array)
-{
-	return __alloc_pages_bulk(gfp, numa_mem_id(), NULL, nr_pages, NULL, page_array);
-}
+/* alloc_pages_bulk_list, alloc_pages_bulk_array removed - unused */
 
 static inline unsigned long
 alloc_pages_bulk_array_node(gfp_t gfp, int nid, unsigned long nr_pages, struct page **page_array)

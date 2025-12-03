@@ -1,3 +1,19 @@
+--- 2025-12-03 12:52 ---
+SESSION PROGRESS
+
+Current state: ~195,393 LOC | Goal: 150,000 | Need: ~45.4K more
+make vm: PASSES, prints "Hello, World!"
+bzImage: 239KB
+
+Changes this commit:
+5. apm_bios.h: -82 LOC (102 -> 20 LOC)
+   - Removed APM_STATE_*, APM_SYS_*, APM_SUCCESS, APM_DEVICE_*, APM_CAP_* constants
+   - Removed APM_IOC_* ioctl definitions
+   - Removed apm_event_t/apm_eventinfo_t typedefs
+   - Kept only apm_bios_info struct (needed by bootparam.h)
+
+Session totals: 251+82 = 333 LOC removed
+
 --- 2025-12-03 12:48 ---
 SESSION PROGRESS
 

@@ -91,11 +91,7 @@ static const struct attribute_group _name##_group = {		\
 };								\
 __ATTRIBUTE_GROUPS(_name)
 
-#define BIN_ATTRIBUTE_GROUPS(_name)				\
-static const struct attribute_group _name##_group = {		\
-	.bin_attrs = _name##_attrs,				\
-};								\
-__ATTRIBUTE_GROUPS(_name)
+/* BIN_ATTRIBUTE_GROUPS removed - unused */
 
 struct file;
 struct vm_area_struct;
@@ -115,43 +111,7 @@ struct bin_attribute {
 };
 
 #define sysfs_bin_attr_init(bin_attr) sysfs_attr_init(&(bin_attr)->attr)
-
-#define __BIN_ATTR(_name, _mode, _read, _write, _size) {		\
-	.attr = { .name = __stringify(_name), .mode = _mode },		\
-	.read	= _read,						\
-	.write	= _write,						\
-	.size	= _size,						\
-}
-
-#define __BIN_ATTR_RO(_name, _size) {					\
-	.attr	= { .name = __stringify(_name), .mode = 0444 },		\
-	.read	= _name##_read,						\
-	.size	= _size,						\
-}
-
-#define __BIN_ATTR_WO(_name, _size) {					\
-	.attr	= { .name = __stringify(_name), .mode = 0200 },		\
-	.write	= _name##_write,					\
-	.size	= _size,						\
-}
-
-#define __BIN_ATTR_RW(_name, _size)					\
-	__BIN_ATTR(_name, 0644, _name##_read, _name##_write, _size)
-
-#define __BIN_ATTR_NULL __ATTR_NULL
-
-#define BIN_ATTR(_name, _mode, _read, _write, _size)			\
-struct bin_attribute bin_attr_##_name = __BIN_ATTR(_name, _mode, _read,	\
-					_write, _size)
-
-#define BIN_ATTR_RO(_name, _size)					\
-struct bin_attribute bin_attr_##_name = __BIN_ATTR_RO(_name, _size)
-
-#define BIN_ATTR_WO(_name, _size)					\
-struct bin_attribute bin_attr_##_name = __BIN_ATTR_WO(_name, _size)
-
-#define BIN_ATTR_RW(_name, _size)					\
-struct bin_attribute bin_attr_##_name = __BIN_ATTR_RW(_name, _size)
+/* __BIN_ATTR_*, BIN_ATTR_* macros removed - unused */
 
 struct sysfs_ops {
 	ssize_t	(*show)(struct kobject *, struct attribute *, char *);

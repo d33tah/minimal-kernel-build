@@ -145,18 +145,7 @@ struct address_space *page_mapping(struct page *);
 struct address_space *folio_mapping(struct folio *);
 struct address_space *swapcache_mapping(struct folio *);
 
-static inline struct address_space *folio_file_mapping(struct folio *folio)
-{
-	if (unlikely(folio_test_swapcache(folio)))
-		return swapcache_mapping(folio);
-
-	return folio->mapping;
-}
-
-static inline struct address_space *page_file_mapping(struct page *page)
-{
-	return folio_file_mapping(page_folio(page));
-}
+/* folio_file_mapping and page_file_mapping removed - unused */
 
 static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 {
@@ -192,11 +181,7 @@ static inline struct folio *filemap_get_folio(struct address_space *mapping,
 	return __filemap_get_folio(mapping, index, 0, 0);
 }
 
-static inline struct folio *filemap_lock_folio(struct address_space *mapping,
-					pgoff_t index)
-{
-	return __filemap_get_folio(mapping, index, FGP_LOCK, 0);
-}
+/* filemap_lock_folio removed - unused */
 
 static inline struct page *find_get_page(struct address_space *mapping,
 					pgoff_t offset)
@@ -285,19 +270,11 @@ static inline loff_t page_offset(struct page *page)
 	return ((loff_t)page->index) << PAGE_SHIFT;
 }
 
-static inline loff_t page_file_offset(struct page *page)
-{
-	return ((loff_t)page_index(page)) << PAGE_SHIFT;
-}
+/* page_file_offset and folio_file_pos removed - unused */
 
 static inline loff_t folio_pos(struct folio *folio)
 {
 	return page_offset(&folio->page);
-}
-
-static inline loff_t folio_file_pos(struct folio *folio)
-{
-	return page_file_offset(&folio->page);
 }
 
 static inline pgoff_t folio_pgoff(struct folio *folio)
@@ -437,10 +414,7 @@ int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 void filemap_remove_folio(struct folio *folio);
 void delete_from_page_cache(struct page *page);
 void __filemap_remove_folio(struct folio *folio, void *shadow);
-static inline void __delete_from_page_cache(struct page *page, void *shadow)
-{
-	__filemap_remove_folio(page_folio(page), shadow);
-}
+/* __delete_from_page_cache removed - unused */
 void replace_page_cache_page(struct page *old, struct page *new);
 void delete_from_page_cache_batch(struct address_space *mapping,
 				  struct folio_batch *fbatch);
@@ -503,13 +477,6 @@ void page_cache_sync_readahead(struct address_space *mapping,
 	page_cache_sync_ra(&ractl, req_count);
 }
 
-static inline
-void page_cache_async_readahead(struct address_space *mapping,
-		struct file_ra_state *ra, struct file *file,
-		struct folio *folio, pgoff_t index, unsigned long req_count)
-{
-	DEFINE_READAHEAD(ractl, file, ra, mapping, index);
-	page_cache_async_ra(&ractl, folio, req_count);
-}
+/* page_cache_async_readahead removed - unused */
 
 #endif

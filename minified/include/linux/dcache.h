@@ -245,12 +245,7 @@ static inline int cant_mount(const struct dentry *dentry)
 	return (dentry->d_flags & DCACHE_CANT_MOUNT);
 }
 
-static inline void dont_mount(struct dentry *dentry)
-{
-	spin_lock(&dentry->d_lock);
-	dentry->d_flags |= DCACHE_CANT_MOUNT;
-	spin_unlock(&dentry->d_lock);
-}
+/* dont_mount removed - unused */
 
 extern void __d_lookup_done(struct dentry *);
 

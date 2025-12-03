@@ -75,35 +75,13 @@ extern struct device *class_find_device(struct class *class,
 					struct device *start, const void *data,
 					int (*match)(struct device *, const void *));
 
-static inline struct device *class_find_device_by_name(struct class *class,
-						       const char *name)
-{
-	return class_find_device(class, NULL, name, device_match_name);
-}
-
-static inline struct device *
-class_find_device_by_of_node(struct class *class, const struct device_node *np)
-{
-	return class_find_device(class, NULL, np, device_match_of_node);
-}
-
-static inline struct device *
-class_find_device_by_fwnode(struct class *class,
-			    const struct fwnode_handle *fwnode)
-{
-	return class_find_device(class, NULL, fwnode, device_match_fwnode);
-}
+/* class_find_device_by_name, class_find_device_by_of_node,
+ * class_find_device_by_fwnode, class_find_device_by_acpi_dev removed - unused */
 
 static inline struct device *class_find_device_by_devt(struct class *class,
 						       dev_t devt)
 {
 	return class_find_device(class, NULL, &devt, device_match_devt);
-}
-
-static inline struct device *
-class_find_device_by_acpi_dev(struct class *class, const void *adev)
-{
-	return NULL;
 }
 
 struct class_attribute {

@@ -83,10 +83,7 @@ static inline const struct page *page_fixed_fake_head(const struct page *page)
 	return page;
 }
 
-static inline bool hugetlb_optimize_vmemmap_enabled(void)
-{
-	return false;
-}
+/* hugetlb_optimize_vmemmap_enabled removed - unused */
 
 static __always_inline int page_is_fake_head(struct page *page)
 {

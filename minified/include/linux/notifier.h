@@ -149,14 +149,6 @@ static inline int notifier_to_errno(int ret)
 
 
 
-#define NETLINK_URELEASE	0x0001	 
-
-#define KBD_KEYCODE		0x0001  
-#define KBD_UNBOUND_KEYCODE	0x0002  
-#define KBD_UNICODE		0x0003  
-#define KBD_KEYSYM		0x0004  
-#define KBD_POST_KEYSYM		0x0005  
-
 extern struct blocking_notifier_head reboot_notifier_list;
 
 #endif  

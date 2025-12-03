@@ -13,20 +13,7 @@
 
 extern void (*pm_power_off)(void);
 
-struct device;  
-static inline void pm_vt_switch_required(struct device *dev, bool required)
-{
-}
-static inline void pm_vt_switch_unregister(struct device *dev)
-{
-}
-
-static inline bool cxl_mem_active(void)
-{
-	return false;
-}
-
-
+struct device;
 
 #define power_group_name	NULL
 
@@ -254,21 +241,7 @@ struct dev_pm_domain {
 #define device_pm_lock() do {} while (0)
 #define device_pm_unlock() do {} while (0)
 
-static inline int dpm_suspend_start(pm_message_t state)
-{
-	return 0;
-}
-
 #define suspend_report_result(dev, fn, ret)	do {} while (0)
-
-static inline int device_pm_wait_for_dev(struct device *a, struct device *b)
-{
-	return 0;
-}
-
-static inline void dpm_for_each_dev(void *data, void (*fn)(struct device *, void *))
-{
-}
 
 #define pm_generic_prepare		NULL
 #define pm_generic_suspend_late		NULL

@@ -103,113 +103,20 @@ static inline void pm_runtime_drop_link(struct device_link *link) {}
 static inline void pm_runtime_release_supplier(struct device_link *link) {}
 
 
-static inline int pm_runtime_idle(struct device *dev)
-{
-	return __pm_runtime_idle(dev, 0);
-}
-
-static inline int pm_runtime_suspend(struct device *dev)
-{
-	return __pm_runtime_suspend(dev, 0);
-}
-
-static inline int pm_runtime_autosuspend(struct device *dev)
-{
-	return __pm_runtime_suspend(dev, RPM_AUTO);
-}
-
-static inline int pm_runtime_resume(struct device *dev)
-{
-	return __pm_runtime_resume(dev, 0);
-}
-
-static inline int pm_request_idle(struct device *dev)
-{
-	return __pm_runtime_idle(dev, RPM_ASYNC);
-}
-
-static inline int pm_request_resume(struct device *dev)
-{
-	return __pm_runtime_resume(dev, RPM_ASYNC);
-}
-
-static inline int pm_request_autosuspend(struct device *dev)
-{
-	return __pm_runtime_suspend(dev, RPM_ASYNC | RPM_AUTO);
-}
-
-static inline int pm_runtime_get(struct device *dev)
-{
-	return __pm_runtime_resume(dev, RPM_GET_PUT | RPM_ASYNC);
-}
-
-static inline int pm_runtime_get_sync(struct device *dev)
-{
-	return __pm_runtime_resume(dev, RPM_GET_PUT);
-}
-
-static inline int pm_runtime_resume_and_get(struct device *dev)
-{
-	int ret;
-
-	ret = __pm_runtime_resume(dev, RPM_GET_PUT);
-	if (ret < 0) {
-		pm_runtime_put_noidle(dev);
-		return ret;
-	}
-
+/* Compact pm_runtime_* wrapper functions */
+static inline int pm_runtime_idle(struct device *dev) { return __pm_runtime_idle(dev, 0); }
+static inline int pm_runtime_suspend(struct device *dev) { return __pm_runtime_suspend(dev, 0); }
+static inline int pm_runtime_resume(struct device *dev) { return __pm_runtime_resume(dev, 0); }
+static inline int pm_request_idle(struct device *dev) { return __pm_runtime_idle(dev, RPM_ASYNC); }
+static inline int pm_runtime_get_sync(struct device *dev) { return __pm_runtime_resume(dev, RPM_GET_PUT); }
+static inline int pm_runtime_resume_and_get(struct device *dev) {
+	int ret = __pm_runtime_resume(dev, RPM_GET_PUT);
+	if (ret < 0) { pm_runtime_put_noidle(dev); return ret; }
 	return 0;
 }
-
-static inline int pm_runtime_put(struct device *dev)
-{
-	return __pm_runtime_idle(dev, RPM_GET_PUT | RPM_ASYNC);
-}
-
-static inline int pm_runtime_put_autosuspend(struct device *dev)
-{
-	return __pm_runtime_suspend(dev,
-	    RPM_GET_PUT | RPM_ASYNC | RPM_AUTO);
-}
-
-static inline int pm_runtime_put_sync(struct device *dev)
-{
-	return __pm_runtime_idle(dev, RPM_GET_PUT);
-}
-
-static inline int pm_runtime_put_sync_suspend(struct device *dev)
-{
-	return __pm_runtime_suspend(dev, RPM_GET_PUT);
-}
-
-static inline int pm_runtime_put_sync_autosuspend(struct device *dev)
-{
-	return __pm_runtime_suspend(dev, RPM_GET_PUT | RPM_AUTO);
-}
-
-static inline int pm_runtime_set_active(struct device *dev)
-{
-	return __pm_runtime_set_status(dev, RPM_ACTIVE);
-}
-
-static inline int pm_runtime_set_suspended(struct device *dev)
-{
-	return __pm_runtime_set_status(dev, RPM_SUSPENDED);
-}
-
-static inline void pm_runtime_disable(struct device *dev)
-{
-	__pm_runtime_disable(dev, true);
-}
-
-static inline void pm_runtime_use_autosuspend(struct device *dev)
-{
-	__pm_runtime_use_autosuspend(dev, true);
-}
-
-static inline void pm_runtime_dont_use_autosuspend(struct device *dev)
-{
-	__pm_runtime_use_autosuspend(dev, false);
-}
+static inline int pm_runtime_put(struct device *dev) { return __pm_runtime_idle(dev, RPM_GET_PUT | RPM_ASYNC); }
+static inline int pm_runtime_put_sync(struct device *dev) { return __pm_runtime_idle(dev, RPM_GET_PUT); }
+static inline void pm_runtime_disable(struct device *dev) { __pm_runtime_disable(dev, true); }
+static inline int pm_runtime_set_active(struct device *dev) { return __pm_runtime_set_status(dev, RPM_ACTIVE); }
 
 #endif

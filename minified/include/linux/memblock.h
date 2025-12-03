@@ -217,10 +217,7 @@ static inline void *memblock_alloc_node(phys_addr_t size,
 				      MEMBLOCK_ALLOC_ACCESSIBLE, nid);
 }
 
-static inline __init_memblock void memblock_set_bottom_up(bool enable)
-{
-	memblock.bottom_up = enable;
-}
+/* memblock_set_bottom_up removed - unused */
 
 static inline __init_memblock bool memblock_bottom_up(void)
 {
@@ -248,15 +245,7 @@ void memblock_set_current_limit(phys_addr_t limit);
 phys_addr_t memblock_get_current_limit(void);
 
 
-static inline unsigned long memblock_region_memory_base_pfn(const struct memblock_region *reg)
-{
-	return PFN_UP(reg->base);
-}
-
-static inline unsigned long memblock_region_memory_end_pfn(const struct memblock_region *reg)
-{
-	return PFN_DOWN(reg->base + reg->size);
-}
+/* memblock_region_memory_base/end_pfn removed - unused */
 
 /* memblock_region_reserved_base/end_pfn removed - unused */
 

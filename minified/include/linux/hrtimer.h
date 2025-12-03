@@ -101,17 +101,7 @@ struct hrtimer_cpu_base {
 	struct hrtimer_clock_base	clock_base[HRTIMER_MAX_CLOCK_BASES];
 } ____cacheline_aligned;
 
-static inline void hrtimer_set_expires(struct hrtimer *timer, ktime_t time)
-{
-	timer->node.expires = time;
-	timer->_softexpires = time;
-}
-
-static inline void hrtimer_set_expires_range(struct hrtimer *timer, ktime_t time, ktime_t delta)
-{
-	timer->_softexpires = time;
-	timer->node.expires = ktime_add_safe(time, delta);
-}
+/* hrtimer_set_expires, hrtimer_set_expires_range removed - unused */
 
 static inline void hrtimer_set_expires_range_ns(struct hrtimer *timer, ktime_t time, u64 delta)
 {
@@ -180,7 +170,7 @@ static inline int hrtimer_is_hres_active(struct hrtimer *timer)
 /* __hrtimer_expires_remaining_adjusted, hrtimer_expires_remaining_adjusted removed - unused */
 
 static inline void timerfd_clock_was_set(void) { }
-static inline void timerfd_resume(void) { }
+/* timerfd_resume removed - unused */
 
 DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
 
@@ -195,12 +185,7 @@ extern void hrtimer_init(struct hrtimer *timer, clockid_t which_clock,
 extern void hrtimer_init_sleeper(struct hrtimer_sleeper *sl, clockid_t clock_id,
 				 enum hrtimer_mode mode);
 
-static inline void hrtimer_init_on_stack(struct hrtimer *timer,
-					 clockid_t which_clock,
-					 enum hrtimer_mode mode)
-{
-	hrtimer_init(timer, which_clock, mode);
-}
+/* hrtimer_init_on_stack removed - unused */
 
 static inline void hrtimer_init_sleeper_on_stack(struct hrtimer_sleeper *sl,
 						 clockid_t clock_id,
@@ -291,7 +276,7 @@ extern void hrtimer_run_queues(void);
 
 extern void __init hrtimers_init(void);
 
-static inline void sysrq_timer_list_show(void) { }
+/* sysrq_timer_list_show removed - unused */
 
 int hrtimers_prepare_cpu(unsigned int cpu);
 #define hrtimers_dead_cpu	NULL

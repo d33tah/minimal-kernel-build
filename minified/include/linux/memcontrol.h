@@ -40,12 +40,6 @@ static inline struct mem_cgroup *page_memcg(struct page *page)
 	return NULL;
 }
 
-static inline struct mem_cgroup *folio_memcg_rcu(struct folio *folio)
-{
-	WARN_ON_ONCE(!rcu_read_lock_held());
-	return NULL;
-}
-
 static inline struct mem_cgroup *page_memcg_check(struct page *page)
 {
 	return NULL;
@@ -194,11 +188,6 @@ static inline void mod_lruvec_kmem_state(void *p, enum node_stat_item idx,
 {
 	struct page *page = virt_to_head_page(p);
 	mod_node_page_state(page_pgdat(page), idx, val);
-}
-
-static inline void count_memcg_events(struct mem_cgroup *memcg,
-				      enum vm_event_item idx, unsigned long count)
-{
 }
 
 static inline void __count_memcg_events(struct mem_cgroup *memcg,

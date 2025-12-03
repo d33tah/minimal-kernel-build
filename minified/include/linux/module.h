@@ -163,32 +163,14 @@ static inline bool is_module_percpu_address(unsigned long addr)
 	return false;
 }
 
-static inline bool __is_module_percpu_address(unsigned long addr, unsigned long *can_addr)
-{
-	return false;
-}
+/* __is_module_percpu_address removed - unused */
 
 static inline bool is_module_text_address(unsigned long addr)
 {
 	return false;
 }
 
-static inline bool within_module_core(unsigned long addr,
-				      const struct module *mod)
-{
-	return false;
-}
-
-static inline bool within_module_init(unsigned long addr,
-				      const struct module *mod)
-{
-	return false;
-}
-
-static inline bool within_module(unsigned long addr, const struct module *mod)
-{
-	return false;
-}
+/* within_module_core, within_module_init, within_module removed - unused */
 
 #define symbol_get(x) ({ extern typeof(x) x __attribute__((weak,visibility("hidden"))); &(x); })
 #define symbol_put(x) do { } while (0)
@@ -219,38 +201,8 @@ static inline const char *module_address_lookup(unsigned long addr,
 	return NULL;
 }
 
-static inline int lookup_module_symbol_name(unsigned long addr, char *symname)
-{
-	return -ERANGE;
-}
-
-static inline int lookup_module_symbol_attrs(unsigned long addr, unsigned long *size, unsigned long *offset, char *modname, char *name)
-{
-	return -ERANGE;
-}
-
-static inline int module_get_kallsym(unsigned int symnum, unsigned long *value,
-					char *type, char *name,
-					char *module_name, int *exported)
-{
-	return -ERANGE;
-}
-
-static inline unsigned long module_kallsyms_lookup_name(const char *name)
-{
-	return 0;
-}
-
-static inline int register_module_notifier(struct notifier_block *nb)
-{
-	 
-	return 0;
-}
-
-static inline int unregister_module_notifier(struct notifier_block *nb)
-{
-	return 0;
-}
+/* lookup_module_symbol_name, lookup_module_symbol_attrs, module_get_kallsym,
+   module_kallsyms_lookup_name, register/unregister_module_notifier removed - unused */
 
 #define module_put_and_kthread_exit(code) kthread_exit(code)
 

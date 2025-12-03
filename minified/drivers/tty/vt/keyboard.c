@@ -1,17 +1,8 @@
 
 #include <linux/module.h>
 #include <linux/export.h>
-#include <linux/notifier.h>
 
-int register_keyboard_notifier(struct notifier_block *nb)
-{
-	return -ENODEV;
-}
-
-int unregister_keyboard_notifier(struct notifier_block *nb)
-{
-	return -ENODEV;
-}
+/* register_keyboard_notifier and unregister_keyboard_notifier removed - unused */
 
 void kd_mksound(unsigned int hz, unsigned int ticks)
 {

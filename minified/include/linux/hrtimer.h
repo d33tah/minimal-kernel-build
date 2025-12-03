@@ -156,10 +156,7 @@ static inline s64 hrtimer_get_softexpires_tv64(const struct hrtimer *timer)
 	return timer->_softexpires;
 }
 
-static inline s64 hrtimer_get_expires_ns(const struct hrtimer *timer)
-{
-	return ktime_to_ns(timer->node.expires);
-}
+/* hrtimer_get_expires_ns removed - unused */
 
 static inline ktime_t hrtimer_expires_remaining(const struct hrtimer *timer)
 {
@@ -180,24 +177,7 @@ static inline int hrtimer_is_hres_active(struct hrtimer *timer)
 
 #define hrtimer_resolution	(unsigned int)LOW_RES_NSEC
 
-
-static inline ktime_t
-__hrtimer_expires_remaining_adjusted(const struct hrtimer *timer, ktime_t now)
-{
-	ktime_t rem = ktime_sub(timer->node.expires, now);
-
-	 
-	if (IS_ENABLED(CONFIG_TIME_LOW_RES) && timer->is_rel)
-		rem -= hrtimer_resolution;
-	return rem;
-}
-
-static inline ktime_t
-hrtimer_expires_remaining_adjusted(const struct hrtimer *timer)
-{
-	return __hrtimer_expires_remaining_adjusted(timer,
-						    timer->base->get_time());
-}
+/* __hrtimer_expires_remaining_adjusted, hrtimer_expires_remaining_adjusted removed - unused */
 
 static inline void timerfd_clock_was_set(void) { }
 static inline void timerfd_resume(void) { }

@@ -51,10 +51,7 @@ static inline struct mem_cgroup *page_memcg_check(struct page *page)
 	return NULL;
 }
 
-static inline bool folio_memcg_kmem(struct folio *folio)
-{
-	return false;
-}
+/* folio_memcg_kmem removed - unused */
 
 static inline bool PageMemcgKmem(struct page *page)
 {
@@ -87,21 +84,7 @@ static inline struct lruvec *folio_lruvec(struct folio *folio)
 	return &pgdat->__lruvec;
 }
 
-static inline
-void lruvec_memcg_debug(struct lruvec *lruvec, struct folio *folio)
-{
-}
-
-static inline struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *memcg)
-{
-	return NULL;
-}
-
-static inline
-struct mem_cgroup *mem_cgroup_from_css(struct cgroup_subsys_state *css)
-{
-	return NULL;
-}
+/* lruvec_memcg_debug, parent_mem_cgroup, mem_cgroup_from_css removed - unused */
 
 static inline struct lruvec *folio_lruvec_lock(struct folio *folio)
 {
@@ -197,16 +180,7 @@ static inline unsigned long lruvec_page_state(struct lruvec *lruvec,
 	return node_page_state(lruvec_pgdat(lruvec), idx);
 }
 
-static inline unsigned long lruvec_page_state_local(struct lruvec *lruvec,
-						    enum node_stat_item idx)
-{
-	return node_page_state(lruvec_pgdat(lruvec), idx);
-}
-
-static inline void __mod_memcg_lruvec_state(struct lruvec *lruvec,
-					    enum node_stat_item idx, int val)
-{
-}
+/* lruvec_page_state_local, __mod_memcg_lruvec_state removed - unused */
 
 static inline void __mod_lruvec_kmem_state(void *p, enum node_stat_item idx,
 					   int val)
@@ -236,13 +210,7 @@ static inline void split_page_memcg(struct page *head, unsigned int nr)
 {
 }
 
-static inline
-unsigned long mem_cgroup_soft_limit_reclaim(pg_data_t *pgdat, int order,
-					    gfp_t gfp_mask,
-					    unsigned long *total_scanned)
-{
-	return 0;
-}
+/* mem_cgroup_soft_limit_reclaim removed - unused */
 
 static inline void __inc_lruvec_kmem_state(void *p, enum node_stat_item idx)
 {

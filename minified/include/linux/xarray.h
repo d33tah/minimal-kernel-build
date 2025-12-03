@@ -185,48 +185,6 @@ void __xa_set_mark(struct xarray *, unsigned long index, xa_mark_t);
 void __xa_clear_mark(struct xarray *, unsigned long index, xa_mark_t);
 
 
-static inline void *xa_cmpxchg(struct xarray *xa, unsigned long index,
-			void *old, void *entry, gfp_t gfp)
-{
-	void *curr;
-
-	xa_lock(xa);
-	curr = __xa_cmpxchg(xa, index, old, entry, gfp);
-	xa_unlock(xa);
-
-	return curr;
-}
-
-static inline int __must_check xa_insert(struct xarray *xa,
-		unsigned long index, void *entry, gfp_t gfp)
-{
-	int err;
-
-	xa_lock(xa);
-	err = __xa_insert(xa, index, entry, gfp);
-	xa_unlock(xa);
-
-	return err;
-}
-
-static inline __must_check int xa_alloc(struct xarray *xa, u32 *id,
-		void *entry, struct xa_limit limit, gfp_t gfp)
-{
-	int err;
-
-	xa_lock(xa);
-	err = __xa_alloc(xa, id, entry, limit, gfp);
-	xa_unlock(xa);
-
-	return err;
-}
-
-static inline void xa_release(struct xarray *xa, unsigned long index)
-{
-	xa_cmpxchg(xa, index, XA_ZERO_ENTRY, NULL, 0);
-}
-
-
 #ifndef XA_CHUNK_SHIFT
 #define XA_CHUNK_SHIFT		(CONFIG_BASE_SMALL ? 4 : 6)
 #endif

@@ -89,25 +89,12 @@ enum {
 		.desc = IORES_DESC_NONE,				\
 	}
 
-#define DEFINE_RES_IO_NAMED(_start, _size, _name)			\
-	DEFINE_RES_NAMED((_start), (_size), (_name), IORESOURCE_IO)
-#define DEFINE_RES_IO(_start, _size)					\
-	DEFINE_RES_IO_NAMED((_start), (_size), NULL)
 
 #define DEFINE_RES_MEM_NAMED(_start, _size, _name)			\
 	DEFINE_RES_NAMED((_start), (_size), (_name), IORESOURCE_MEM)
 #define DEFINE_RES_MEM(_start, _size)					\
 	DEFINE_RES_MEM_NAMED((_start), (_size), NULL)
 
-#define DEFINE_RES_IRQ_NAMED(_irq, _name)				\
-	DEFINE_RES_NAMED((_irq), 1, (_name), IORESOURCE_IRQ)
-#define DEFINE_RES_IRQ(_irq)						\
-	DEFINE_RES_IRQ_NAMED((_irq), NULL)
-
-#define DEFINE_RES_DMA_NAMED(_dma, _name)				\
-	DEFINE_RES_NAMED((_dma), 1, (_name), IORESOURCE_DMA)
-#define DEFINE_RES_DMA(_dma)						\
-	DEFINE_RES_DMA_NAMED((_dma), NULL)
 
 extern struct resource ioport_resource;
 extern struct resource iomem_resource;
@@ -162,25 +149,6 @@ static inline bool resource_overlaps(struct resource *r1, struct resource *r2)
        return r1->start <= r2->end && r1->end >= r2->start;
 }
 
-static inline bool
-resource_intersection(struct resource *r1, struct resource *r2, struct resource *r)
-{
-	if (!resource_overlaps(r1, r2))
-		return false;
-	r->start = max(r1->start, r2->start);
-	r->end = min(r1->end, r2->end);
-	return true;
-}
-
-static inline bool
-resource_union(struct resource *r1, struct resource *r2, struct resource *r)
-{
-	if (!resource_overlaps(r1, r2))
-		return false;
-	r->start = min(r1->start, r2->start);
-	r->end = max(r1->end, r2->end);
-	return true;
-}
 
 #define request_region(start,n,name)		__request_region(&ioport_resource, (start), (n), (name), 0)
 #define request_muxed_region(start,n,name)	__request_region(&ioport_resource, (start), (n), (name), IORESOURCE_MUXED)
@@ -245,13 +213,6 @@ struct resource *devm_request_free_mem_region(struct device *dev,
 		struct resource *base, unsigned long size);
 struct resource *request_free_mem_region(struct resource *base,
 		unsigned long size, const char *name);
-
-static inline void irqresource_disabled(struct resource *res, u32 irq)
-{
-	res->start = irq;
-	res->end = irq;
-	res->flags |= IORESOURCE_IRQ | IORESOURCE_DISABLED | IORESOURCE_UNSET;
-}
 
 extern struct address_space *iomem_get_mapping(void);
 

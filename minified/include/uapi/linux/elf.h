@@ -24,7 +24,6 @@ typedef __s64	Elf64_Sxword;
 #define PT_DYNAMIC 2
 #define PT_INTERP  3
 #define PT_NOTE    4
-#define PT_SHLIB   5
 #define PT_PHDR    6
 #define PT_TLS     7                
 #define PT_LOOS    0x60000000       
@@ -36,8 +35,6 @@ typedef __s64	Elf64_Sxword;
 #define PT_GNU_RELRO	(PT_LOOS + 0x474e552)
 #define PT_GNU_PROPERTY	(PT_LOOS + 0x474e553)
 
-
-#define PT_AARCH64_MEMTAG_MTE	(PT_LOPROC + 0x2)
 
 #define PN_XNUM 0xffff
 
@@ -230,7 +227,6 @@ typedef struct elf64_phdr {
 #define SHN_LORESERVE	0xff00
 #define SHN_LOPROC	0xff00
 #define SHN_HIPROC	0xff1f
-#define SHN_LIVEPATCH	0xff20
 #define SHN_ABS		0xfff1
 #define SHN_COMMON	0xfff2
 #define SHN_HIRESERVE	0xffff

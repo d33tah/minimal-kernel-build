@@ -21,32 +21,9 @@ inode_peek_iversion_raw(const struct inode *inode)
 }
 
 static inline void
-inode_set_max_iversion_raw(struct inode *inode, u64 val)
-{
-	u64 cur, old;
-
-	cur = inode_peek_iversion_raw(inode);
-	for (;;) {
-		if (cur > val)
-			break;
-		old = atomic64_cmpxchg(&inode->i_version, cur, val);
-		if (likely(old == cur))
-			break;
-		cur = old;
-	}
-}
-
-static inline void
 inode_set_iversion(struct inode *inode, u64 val)
 {
 	inode_set_iversion_raw(inode, val << I_VERSION_QUERIED_SHIFT);
-}
-
-static inline void
-inode_set_iversion_queried(struct inode *inode, u64 val)
-{
-	inode_set_iversion_raw(inode, (val << I_VERSION_QUERIED_SHIFT) |
-				I_VERSION_QUERIED);
 }
 
 static inline bool
@@ -121,24 +98,4 @@ inode_query_iversion(struct inode *inode)
 	return cur >> I_VERSION_QUERIED_SHIFT;
 }
 
-static inline u64 time_to_chattr(struct timespec64 *t)
-{
-	u64 chattr = t->tv_sec;
-
-	chattr <<= 32;
-	chattr += t->tv_nsec;
-	return chattr;
-}
-
-static inline bool
-inode_eq_iversion_raw(const struct inode *inode, u64 old)
-{
-	return inode_peek_iversion_raw(inode) == old;
-}
-
-static inline bool
-inode_eq_iversion(const struct inode *inode, u64 old)
-{
-	return inode_peek_iversion(inode) == old;
-}
 #endif

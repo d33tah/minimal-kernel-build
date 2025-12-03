@@ -1,3 +1,19 @@
+--- 2025-12-03 12:59 ---
+SESSION PROGRESS
+
+Current state: ~195,290 LOC | Goal: 150,000 | Need: ~45.3K more
+make vm: PASSES, prints "Hello, World!"
+bzImage: 239KB
+
+Changes this commit:
+7. screen_info.h: -14 LOC (72 -> 58 LOC)
+   - Removed VIDEO_TYPE_PICA_S3, VIDEO_TYPE_MIPS_G364, VIDEO_TYPE_SGI
+   - Removed VIDEO_TYPE_TGAC, VIDEO_TYPE_SUN, VIDEO_TYPE_SUNPCI, VIDEO_TYPE_PMAC
+   - Removed VIDEO_CAPABILITY_* constants
+   - Kept x86 VGA types and VIDEO_FLAGS_NOCURSOR
+
+Session totals: 422+14 = 436 LOC removed
+
 --- 2025-12-03 12:55 ---
 SESSION PROGRESS
 

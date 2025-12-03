@@ -44,29 +44,15 @@ struct screen_info {
 	__u8  _reserved[2];	 
 } __attribute__((packed));
 
-#define VIDEO_TYPE_MDA		0x10	 
-#define VIDEO_TYPE_CGA		0x11	 
-#define VIDEO_TYPE_EGAM		0x20	 
-#define VIDEO_TYPE_EGAC		0x21	 
-#define VIDEO_TYPE_VGAC		0x22	 
-#define VIDEO_TYPE_VLFB		0x23	 
+/* Only x86 VGA types used by drivers/video/console/vgacon.c */
+#define VIDEO_TYPE_MDA		0x10
+#define VIDEO_TYPE_CGA		0x11
+#define VIDEO_TYPE_EGAM		0x20
+#define VIDEO_TYPE_EGAC		0x21
+#define VIDEO_TYPE_VGAC		0x22
+#define VIDEO_TYPE_VLFB		0x23
+#define VIDEO_TYPE_EFI		0x70
 
-#define VIDEO_TYPE_PICA_S3	0x30	 
-#define VIDEO_TYPE_MIPS_G364	0x31     
-#define VIDEO_TYPE_SGI          0x33     
-
-#define VIDEO_TYPE_TGAC		0x40	 
-
-#define VIDEO_TYPE_SUN          0x50     
-#define VIDEO_TYPE_SUNPCI       0x51     
-
-#define VIDEO_TYPE_PMAC		0x60	 
-
-#define VIDEO_TYPE_EFI		0x70	 
-
-#define VIDEO_FLAGS_NOCURSOR	(1 << 0)  
-
-#define VIDEO_CAPABILITY_SKIP_QUIRKS	(1 << 0)
-#define VIDEO_CAPABILITY_64BIT_BASE	(1 << 1)	 
+#define VIDEO_FLAGS_NOCURSOR	(1 << 0)	 
 
 #endif  

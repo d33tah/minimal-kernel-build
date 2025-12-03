@@ -34,14 +34,7 @@ static inline void flush_anon_page(struct vm_area_struct *vma, struct page *page
 }
 #endif
 
-#ifndef ARCH_IMPLEMENTS_FLUSH_KERNEL_VMAP_RANGE
-static inline void flush_kernel_vmap_range(void *vaddr, int size)
-{
-}
-static inline void invalidate_kernel_vmap_range(void *vaddr, int size)
-{
-}
-#endif
+/* flush_kernel_vmap_range, invalidate_kernel_vmap_range removed - unused */
 
 #ifndef clear_user_highpage
 static inline void clear_user_highpage(struct page *page, unsigned long vaddr)
@@ -66,20 +59,7 @@ alloc_zeroed_user_highpage_movable(struct vm_area_struct *vma,
 }
 #endif
 
-static inline void clear_highpage(struct page *page)
-{
-	void *kaddr = kmap_local_page(page);
-	clear_page(kaddr);
-	kunmap_local(kaddr);
-}
-
-#ifndef __HAVE_ARCH_TAG_CLEAR_HIGHPAGE
-
-static inline void tag_clear_highpage(struct page *page)
-{
-}
-
-#endif
+/* clear_highpage, tag_clear_highpage removed - unused */
 
 static inline void zero_user_segments(struct page *page,
 		unsigned start1, unsigned end1,

@@ -9,24 +9,13 @@ struct completion {
 	struct swait_queue_head wait;
 };
 
-#define init_completion_map(x, m) init_completion(x)
-static inline void complete_acquire(struct completion *x) {}
-static inline void complete_release(struct completion *x) {}
-
 #define COMPLETION_INITIALIZER(work) \
 	{ 0, __SWAIT_QUEUE_HEAD_INITIALIZER((work).wait) }
-
-#define COMPLETION_INITIALIZER_ONSTACK_MAP(work, map) \
-	(*({ init_completion_map(&(work), &(map)); &(work); }))
-
-#define COMPLETION_INITIALIZER_ONSTACK(work) \
-	(*({ init_completion(&work); &work; }))
 
 #define DECLARE_COMPLETION(work) \
 	struct completion work = COMPLETION_INITIALIZER(work)
 
 # define DECLARE_COMPLETION_ONSTACK(work) DECLARE_COMPLETION(work)
-# define DECLARE_COMPLETION_ONSTACK_MAP(work, map) DECLARE_COMPLETION(work)
 
 static inline void init_completion(struct completion *x)
 {

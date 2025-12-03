@@ -77,8 +77,7 @@ static inline int jump_label_text_reserved(void *start, void *end)
 	return 0;
 }
 
-static inline void jump_label_lock(void) {}
-static inline void jump_label_unlock(void) {}
+/* jump_label_lock/unlock removed - unused */
 
 static inline int jump_label_apply_nops(struct module *mod)
 {

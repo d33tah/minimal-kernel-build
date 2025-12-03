@@ -84,11 +84,10 @@ do { \
 #endif
 
 static inline void init_rcu_head(struct rcu_head *head) { }
-static inline void destroy_rcu_head(struct rcu_head *head) { }
+/* destroy_rcu_head removed - unused */
 static inline void init_rcu_head_on_stack(struct rcu_head *head) { }
 static inline void destroy_rcu_head_on_stack(struct rcu_head *head) { }
-
-static inline bool rcu_lockdep_current_cpu_online(void) { return true; }
+/* rcu_lockdep_current_cpu_online removed - unused */
 
 extern struct lockdep_map rcu_lock_map;
 extern struct lockdep_map rcu_bh_lock_map;
@@ -104,10 +103,7 @@ static inline int rcu_read_lock_held(void)
 	return 1;
 }
 
-static inline int rcu_read_lock_bh_held(void)
-{
-	return 1;
-}
+/* rcu_read_lock_bh_held removed - unused */
 
 static inline int rcu_read_lock_sched_held(void)
 {

@@ -6,8 +6,6 @@
 #include <linux/fs.h>
 #include <asm/siginfo.h>
 
-static inline void do_coredump(const kernel_siginfo_t *siginfo) {}
-
-static inline void validate_coredump_safety(void) {}
+/* do_coredump, validate_coredump_safety removed - unused */
 
 #endif  

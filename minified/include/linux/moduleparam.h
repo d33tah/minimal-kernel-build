@@ -185,10 +185,7 @@ extern char *parse_args(const char *name,
 		      int (*unknown)(char *param, char *val,
 				     const char *doing, void *arg));
 
-static inline void destroy_params(const struct kernel_param *params,
-				  unsigned num)
-{
-}
+/* destroy_params removed - unused */
 
 #define __param_check(name, p, type) \
 	static inline type __always_unused *__check_##name(void) { return(p); }

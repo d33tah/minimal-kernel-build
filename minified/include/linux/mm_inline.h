@@ -125,8 +125,7 @@ static inline struct anon_vma_name *anon_vma_name_alloc(const char *name)
 	return NULL;
 }
 
-static inline void anon_vma_name_get(struct anon_vma_name *anon_name) {}
-static inline void anon_vma_name_put(struct anon_vma_name *anon_name) {}
+/* anon_vma_name_get/put removed - unused */
 static inline void dup_anon_vma_name(struct vm_area_struct *orig_vma,
 				     struct vm_area_struct *new_vma) {}
 static inline void free_anon_vma_name(struct vm_area_struct *vma) {}

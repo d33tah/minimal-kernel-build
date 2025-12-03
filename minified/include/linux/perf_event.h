@@ -42,13 +42,8 @@ extern void __perf_sw_event(u32 event_id, u64 nr, struct pt_regs *regs, u64 addr
 extern void perf_tp_event(u64 addr, u64 count, void *record, int entry_size,
 			  struct pt_regs *regs, void *head, int rctx, void *task_ctx);
 
-static inline void perf_event_print_debug(void) { }
-static inline int perf_register_guest_info_callbacks(void *cbs) { return 0; }
-static inline int perf_unregister_guest_info_callbacks(void *cbs) { return 0; }
-static inline void perf_event_task_sched_in(struct task_struct *prev,
-					    struct task_struct *task) { }
-static inline void perf_event_task_sched_out(struct task_struct *prev,
-					     struct task_struct *next) { }
+/* perf_event_print_debug, perf_register/unregister_guest_info_callbacks,
+   perf_event_task_sched_in/out removed - unused */
 static inline void perf_sw_event(u32 event_id, u64 nr, struct pt_regs *regs, u64 addr) {
 	__perf_sw_event(event_id, nr, regs, addr);
 }

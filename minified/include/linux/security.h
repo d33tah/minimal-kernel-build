@@ -143,11 +143,7 @@ static inline int security_capable(const struct cred *cred,
 	return cap_capable(cred, ns, cap, opts);
 }
 
-static inline int security_settime64(const struct timespec64 *ts,
-				     const struct timezone *tz)
-{
-	return cap_settime(ts, tz);
-}
+/* security_settime64 removed - unused */
 
 static inline int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
 {

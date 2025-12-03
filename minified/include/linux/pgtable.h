@@ -970,37 +970,5 @@ typedef unsigned int pgtbl_mod_mask;
 #define pmd_leaf(x)	0
 #endif
 
-#ifndef pgd_leaf_size
-#define pgd_leaf_size(x) (1ULL << PGDIR_SHIFT)
-#endif
-#ifndef p4d_leaf_size
-#define p4d_leaf_size(x) P4D_SIZE
-#endif
-#ifndef pud_leaf_size
-#define pud_leaf_size(x) PUD_SIZE
-#endif
-#ifndef pmd_leaf_size
-#define pmd_leaf_size(x) PMD_SIZE
-#endif
-#ifndef pte_leaf_size
-#define pte_leaf_size(x) PAGE_SIZE
-#endif
-
-
-#ifndef MAX_PTRS_PER_PTE
-#define MAX_PTRS_PER_PTE PTRS_PER_PTE
-#endif
-
-#ifndef MAX_PTRS_PER_PMD
-#define MAX_PTRS_PER_PMD PTRS_PER_PMD
-#endif
-
-#ifndef MAX_PTRS_PER_PUD
-#define MAX_PTRS_PER_PUD PTRS_PER_PUD
-#endif
-
-#ifndef MAX_PTRS_PER_P4D
-#define MAX_PTRS_PER_P4D PTRS_PER_P4D
-#endif
 
 #endif  

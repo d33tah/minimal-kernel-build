@@ -85,17 +85,6 @@ static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);
 
 static inline bool is_timers_nohz_active(void) { return false; }
 
-/* Stubbed - round_jiffies functions not used externally in minimal kernel */
-unsigned long __round_jiffies(unsigned long j, int cpu) { return j; }
-unsigned long __round_jiffies_relative(unsigned long j, int cpu) { return j; }
-unsigned long round_jiffies(unsigned long j) { return j; }
-unsigned long round_jiffies_relative(unsigned long j) { return j; }
-unsigned long __round_jiffies_up(unsigned long j, int cpu) { return j; }
-unsigned long __round_jiffies_up_relative(unsigned long j, int cpu) { return j; }
-unsigned long round_jiffies_up(unsigned long j) { return j; }
-unsigned long round_jiffies_up_relative(unsigned long j) { return j; }
-
-
 static inline unsigned int timer_get_idx(struct timer_list *timer)
 {
 	return (timer->flags & TIMER_ARRAYMASK) >> TIMER_ARRAYSHIFT;

@@ -91,16 +91,6 @@ extern void add_timer(struct timer_list *timer);
 extern void init_timers(void);
 struct hrtimer;
 
-unsigned long __round_jiffies(unsigned long j, int cpu);
-unsigned long __round_jiffies_relative(unsigned long j, int cpu);
-unsigned long round_jiffies(unsigned long j);
-unsigned long round_jiffies_relative(unsigned long j);
-
-unsigned long __round_jiffies_up(unsigned long j, int cpu);
-unsigned long __round_jiffies_up_relative(unsigned long j, int cpu);
-unsigned long round_jiffies_up(unsigned long j);
-unsigned long round_jiffies_up_relative(unsigned long j);
-
 #define timers_prepare_cpu	NULL
 #define timers_dead_cpu		NULL
 

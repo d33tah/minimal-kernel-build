@@ -141,15 +141,7 @@ do {									\
 })
 #endif
 
-
-#define virt_mb() do {  __smp_mb(); } while (0)
 #define virt_rmb() do {  __smp_rmb(); } while (0)
-#define virt_wmb() do {  __smp_wmb(); } while (0)
-#define virt_store_mb(var, value) do {  __smp_store_mb(var, value); } while (0)
-#define virt_mb__before_atomic() do {  __smp_mb__before_atomic(); } while (0)
-#define virt_mb__after_atomic()	do {  __smp_mb__after_atomic(); } while (0)
-#define virt_store_release(p, v) do {  __smp_store_release(p, v); } while (0)
-#define virt_load_acquire(p) __smp_load_acquire(p)
 
 #ifndef smp_acquire__after_ctrl_dep
 #define smp_acquire__after_ctrl_dep()		smp_rmb()
@@ -178,13 +170,5 @@ do {									\
 })
 #endif
 
-#ifndef pmem_wmb
-#define pmem_wmb()	wmb()
 #endif
-
-#ifndef io_stop_wc
-#define io_stop_wc() do { } while (0)
-#endif
-
-#endif  
 #endif  

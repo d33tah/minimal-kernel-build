@@ -176,10 +176,7 @@ static inline bool zalloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
 static inline void alloc_bootmem_cpumask_var(cpumask_var_t *mask)
 {
 }
-
-static inline void free_cpumask_var(cpumask_var_t mask)
-{
-}
+/* free_cpumask_var removed - unused */
 
 extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 #define cpu_all_mask to_cpumask(cpu_all_bits)

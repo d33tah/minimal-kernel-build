@@ -180,15 +180,7 @@ enum vmscan_throttle_state {
 
 #define for_each_lru(lru) for (lru = 0; lru < NR_LRU_LISTS; lru++)
 
-static inline bool is_file_lru(enum lru_list lru)
-{
-	return (lru == LRU_INACTIVE_FILE || lru == LRU_ACTIVE_FILE);
-}
-
-static inline bool is_active_lru(enum lru_list lru)
-{
-	return (lru == LRU_ACTIVE_ANON || lru == LRU_ACTIVE_FILE);
-}
+/* is_file_lru, is_active_lru removed - unused */
 
 #define ANON_AND_FILE 2
 

@@ -18,12 +18,6 @@ static inline void flush_cache_mm(struct mm_struct *mm)
 }
 #endif
 
-#ifndef flush_cache_dup_mm
-static inline void flush_cache_dup_mm(struct mm_struct *mm)
-{
-}
-#endif
-
 #ifndef flush_cache_range
 static inline void flush_cache_range(struct vm_area_struct *vma,
 				     unsigned long start,
@@ -77,14 +71,6 @@ static inline void flush_icache_page(struct vm_area_struct *vma,
 }
 #endif
 
-#ifndef flush_icache_user_page
-static inline void flush_icache_user_page(struct vm_area_struct *vma,
-					   struct page *page,
-					   unsigned long addr, int len)
-{
-}
-#endif
-
 #ifndef flush_cache_vmap
 static inline void flush_cache_vmap(unsigned long start, unsigned long end)
 {
@@ -95,19 +81,6 @@ static inline void flush_cache_vmap(unsigned long start, unsigned long end)
 static inline void flush_cache_vunmap(unsigned long start, unsigned long end)
 {
 }
-#endif
-
-#ifndef copy_to_user_page
-#define copy_to_user_page(vma, page, vaddr, dst, src, len)	\
-	do { \
-		memcpy(dst, src, len); \
-		flush_icache_user_page(vma, page, vaddr, len); \
-	} while (0)
-#endif
-
-#ifndef copy_from_user_page
-#define copy_from_user_page(vma, page, vaddr, dst, src, len) \
-	memcpy(dst, src, len)
 #endif
 
 #endif  

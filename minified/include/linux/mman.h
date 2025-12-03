@@ -47,9 +47,6 @@ extern unsigned long sysctl_overcommit_kbytes;
 extern struct percpu_counter vm_committed_as;
 
 #define vm_committed_as_batch 0
-static inline void mm_compute_batch(int overcommit_policy)
-{
-}
 
 unsigned long vm_memory_committed(void);
 

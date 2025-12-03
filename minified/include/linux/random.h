@@ -50,35 +50,9 @@ static inline unsigned long get_random_long(void)
 
 # define CANARY_MASK 0xffffffffUL
 
-static inline unsigned long get_random_canary(void)
-{
-	return get_random_long() & CANARY_MASK;
-}
-
 int __init random_init(const char *command_line);
 bool rng_is_initialized(void);
 int wait_for_random_bytes(void);
-
-static inline int get_random_bytes_wait(void *buf, size_t nbytes)
-{
-	int ret = wait_for_random_bytes();
-	get_random_bytes(buf, nbytes);
-	return ret;
-}
-
-#define declare_get_random_var_wait(name, ret_type) \
-	static inline int get_random_ ## name ## _wait(ret_type *out) { \
-		int ret = wait_for_random_bytes(); \
-		if (unlikely(ret)) \
-			return ret; \
-		*out = get_random_ ## name(); \
-		return 0; \
-	}
-declare_get_random_var_wait(u32, u32)
-declare_get_random_var_wait(u64, u32)
-declare_get_random_var_wait(int, unsigned int)
-declare_get_random_var_wait(long, unsigned long)
-#undef declare_get_random_var
 
 #include <linux/prandom.h>
 
@@ -86,23 +60,6 @@ static inline bool __must_check arch_get_random_long(unsigned long *v) { return 
 static inline bool __must_check arch_get_random_int(unsigned int *v) { return false; }
 static inline bool __must_check arch_get_random_seed_long(unsigned long *v) { return false; }
 static inline bool __must_check arch_get_random_seed_int(unsigned int *v) { return false; }
-
-#ifndef arch_get_random_seed_long_early
-static inline bool __init arch_get_random_seed_long_early(unsigned long *v)
-{
-	WARN_ON(system_state != SYSTEM_BOOTING);
-	return arch_get_random_seed_long(v);
-}
-#endif
-
-#ifndef arch_get_random_long_early
-static inline bool __init arch_get_random_long_early(unsigned long *v)
-{
-	WARN_ON(system_state != SYSTEM_BOOTING);
-	return arch_get_random_long(v);
-}
-#endif
-
 
 #ifndef MODULE
 extern const struct file_operations random_fops, urandom_fops;

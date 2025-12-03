@@ -45,18 +45,6 @@ static inline bool __must_check __must_check_overflow(bool overflow)
 	__builtin_mul_overflow(__a, __b, __d);	\
 }))
 
-#define check_shl_overflow(a, s, d) __must_check_overflow(({		\
-	typeof(a) _a = a;						\
-	typeof(s) _s = s;						\
-	typeof(d) _d = d;						\
-	u64 _a_full = _a;						\
-	unsigned int _to_shift =					\
-		is_non_negative(_s) && _s < 8 * sizeof(*d) ? _s : 0;	\
-	*_d = (_a_full << _to_shift);					\
-	(_to_shift != _s || is_negative(*_d) || is_negative(_a) ||	\
-	(*_d >> _to_shift) != _a);					\
-}))
-
 static inline size_t __must_check size_mul(size_t factor1, size_t factor2)
 {
 	size_t bytes;
@@ -77,20 +65,7 @@ static inline size_t __must_check size_add(size_t addend1, size_t addend2)
 	return bytes;
 }
 
-static inline size_t __must_check size_sub(size_t minuend, size_t subtrahend)
-{
-	size_t bytes;
-
-	if (minuend == SIZE_MAX || subtrahend == SIZE_MAX ||
-	    check_sub_overflow(minuend, subtrahend, &bytes))
-		return SIZE_MAX;
-
-	return bytes;
-}
-
 #define array_size(a, b)	size_mul(a, b)
-
-#define array3_size(a, b, c)	size_mul(size_mul(a, b), c)
 
 #define flex_array_size(p, member, count)				\
 	__builtin_choose_expr(__is_constexpr(count),			\

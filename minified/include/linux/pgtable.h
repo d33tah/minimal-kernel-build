@@ -400,23 +400,9 @@ static inline int pgd_same(pgd_t pgd_a, pgd_t pgd_b)
 })
 
 #ifndef __HAVE_ARCH_DO_SWAP_PAGE
-static inline void arch_do_swap_page(struct mm_struct *mm,
-				     struct vm_area_struct *vma,
-				     unsigned long addr,
-				     pte_t pte, pte_t oldpte)
-{
-
-}
 #endif
 
 #ifndef __HAVE_ARCH_UNMAP_ONE
-static inline int arch_unmap_one(struct mm_struct *mm,
-				  struct vm_area_struct *vma,
-				  unsigned long addr,
-				  pte_t orig_pte)
-{
-	return 0;
-}
 #endif
 
 #ifndef __HAVE_ARCH_PREPARE_TO_SWAP

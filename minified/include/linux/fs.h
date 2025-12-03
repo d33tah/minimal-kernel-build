@@ -1837,15 +1837,6 @@ static inline bool is_sxid(umode_t mode)
 	return (mode & S_ISUID) || ((mode & S_ISGID) && (mode & S_IXGRP));
 }
 
-static inline int check_sticky(struct user_namespace *mnt_userns,
-			       struct inode *dir, struct inode *inode)
-{
-	if (!(dir->i_mode & S_ISVTX))
-		return 0;
-
-	return __check_sticky(mnt_userns, dir, inode);
-}
-
 static inline void inode_has_no_xattr(struct inode *inode)
 {
 	if (!is_sxid(inode->i_mode) && (inode->i_sb->s_flags & SB_NOSEC))

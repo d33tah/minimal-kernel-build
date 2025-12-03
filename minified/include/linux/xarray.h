@@ -72,9 +72,7 @@ struct xa_limit {
 
 #define XA_LIMIT(_min, _max) (struct xa_limit) { .min = _min, .max = _max }
 
-#define xa_limit_32b	XA_LIMIT(0, UINT_MAX)
-#define xa_limit_31b	XA_LIMIT(0, INT_MAX)
-#define xa_limit_16b	XA_LIMIT(0, USHRT_MAX)
+/* xa_limit_32b, xa_limit_31b, xa_limit_16b removed - unused */
 
 typedef unsigned __bitwise xa_mark_t;
 #define XA_MARK_0		((__force xa_mark_t)0U)
@@ -93,13 +91,13 @@ enum xa_lock_type {
 #define XA_FLAGS_LOCK_BH	((__force gfp_t)XA_LOCK_BH)
 #define XA_FLAGS_TRACK_FREE	((__force gfp_t)4U)
 #define XA_FLAGS_ZERO_BUSY	((__force gfp_t)8U)
-#define XA_FLAGS_ALLOC_WRAPPED	((__force gfp_t)16U)
+/* XA_FLAGS_ALLOC_WRAPPED removed - unused */
 #define XA_FLAGS_ACCOUNT	((__force gfp_t)32U)
 #define XA_FLAGS_MARK(mark)	((__force gfp_t)((1U << __GFP_BITS_SHIFT) << \
 						(__force unsigned)(mark)))
 
 #define XA_FLAGS_ALLOC	(XA_FLAGS_TRACK_FREE | XA_FLAGS_MARK(XA_FREE_MARK))
-#define XA_FLAGS_ALLOC1	(XA_FLAGS_TRACK_FREE | XA_FLAGS_ZERO_BUSY)
+/* XA_FLAGS_ALLOC1 removed - unused */
 
 struct xarray {
 	spinlock_t	xa_lock;
@@ -118,9 +116,7 @@ struct xarray {
 
 #define DEFINE_XARRAY(name) DEFINE_XARRAY_FLAGS(name, 0)
 
-#define DEFINE_XARRAY_ALLOC(name) DEFINE_XARRAY_FLAGS(name, XA_FLAGS_ALLOC)
-
-#define DEFINE_XARRAY_ALLOC1(name) DEFINE_XARRAY_FLAGS(name, XA_FLAGS_ALLOC1)
+/* DEFINE_XARRAY_ALLOC, DEFINE_XARRAY_ALLOC1 removed - unused */
 
 void *xa_load(struct xarray *, unsigned long index);
 void *xa_store(struct xarray *, unsigned long index, void *entry, gfp_t);

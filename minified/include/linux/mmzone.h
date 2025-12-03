@@ -44,10 +44,7 @@ enum migratetype {
 #  define is_migrate_cma_page(_page) false
 
 
-static inline bool migratetype_is_mergeable(int mt)
-{
-	return mt < MIGRATE_PCPTYPES;
-}
+/* migratetype_is_mergeable removed - unused */
 
 #define for_each_migratetype_order(order, type) \
 	for (order = 0; order < MAX_ORDER; order++) \
@@ -364,10 +361,7 @@ static inline bool zone_spans_pfn(const struct zone *zone, unsigned long pfn)
 	return zone->zone_start_pfn <= pfn && pfn < zone_end_pfn(zone);
 }
 
-static inline bool zone_is_initialized(struct zone *zone)
-{
-	return zone->initialized;
-}
+/* zone_is_initialized removed - unused */
 
 #define DEF_PRIORITY 12
 

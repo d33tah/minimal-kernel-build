@@ -37,6 +37,9 @@
 #define EDD_INFO_NO_MEDIA_PRESENT              (1 << 6)
 #define EDD_INFO_USE_INT13_FN50                (1 << 7)
 
+/* Simplified EDD device params - interface_path and device_path unions
+ * not used in minimal kernel, replaced with opaque reserved bytes to
+ * maintain struct size for binary compatibility with boot protocol */
 struct edd_device_params {
 	__u16 length;
 	__u16 info_flags;
@@ -45,95 +48,15 @@ struct edd_device_params {
 	__u32 sectors_per_track;
 	__u64 number_of_sectors;
 	__u16 bytes_per_sector;
-	__u32 dpte_ptr;		 
-	__u16 key;		 
-	__u8 device_path_info_length;	 
+	__u32 dpte_ptr;
+	__u16 key;
+	__u8 device_path_info_length;
 	__u8 reserved2;
 	__u16 reserved3;
 	__u8 host_bus_type[4];
 	__u8 interface_type[8];
-	union {
-		struct {
-			__u16 base_address;
-			__u16 reserved1;
-			__u32 reserved2;
-		} __attribute__ ((packed)) isa;
-		struct {
-			__u8 bus;
-			__u8 slot;
-			__u8 function;
-			__u8 channel;
-			__u32 reserved;
-		} __attribute__ ((packed)) pci;
-		 
-		struct {
-			__u64 reserved;
-		} __attribute__ ((packed)) ibnd;
-		struct {
-			__u64 reserved;
-		} __attribute__ ((packed)) xprs;
-		struct {
-			__u64 reserved;
-		} __attribute__ ((packed)) htpt;
-		struct {
-			__u64 reserved;
-		} __attribute__ ((packed)) unknown;
-	} interface_path;
-	union {
-		struct {
-			__u8 device;
-			__u8 reserved1;
-			__u16 reserved2;
-			__u32 reserved3;
-			__u64 reserved4;
-		} __attribute__ ((packed)) ata;
-		struct {
-			__u8 device;
-			__u8 lun;
-			__u8 reserved1;
-			__u8 reserved2;
-			__u32 reserved3;
-			__u64 reserved4;
-		} __attribute__ ((packed)) atapi;
-		struct {
-			__u16 id;
-			__u64 lun;
-			__u16 reserved1;
-			__u32 reserved2;
-		} __attribute__ ((packed)) scsi;
-		struct {
-			__u64 serial_number;
-			__u64 reserved;
-		} __attribute__ ((packed)) usb;
-		struct {
-			__u64 eui;
-			__u64 reserved;
-		} __attribute__ ((packed)) i1394;
-		struct {
-			__u64 wwid;
-			__u64 lun;
-		} __attribute__ ((packed)) fibre;
-		struct {
-			__u64 identity_tag;
-			__u64 reserved;
-		} __attribute__ ((packed)) i2o;
-		struct {
-			__u32 array_number;
-			__u32 reserved1;
-			__u64 reserved2;
-		} __attribute__ ((packed)) raid;
-		struct {
-			__u8 device;
-			__u8 reserved1;
-			__u16 reserved2;
-			__u32 reserved3;
-			__u64 reserved4;
-		} __attribute__ ((packed)) sata;
-		struct {
-			__u64 reserved1;
-			__u64 reserved2;
-		} __attribute__ ((packed)) unknown;
-	} device_path;
+	__u8 interface_path[8];  /* was union */
+	__u8 device_path[16];    /* was union */
 	__u8 reserved4;
 	__u8 checksum;
 } __attribute__ ((packed));

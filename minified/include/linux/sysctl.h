@@ -19,23 +19,12 @@ struct ctl_dir;
 #define SYSCTL_ONE			((void *)&sysctl_vals[1])
 #define SYSCTL_TWO			((void *)&sysctl_vals[2])
 #define SYSCTL_THREE			((void *)&sysctl_vals[3])
-#define SYSCTL_FOUR			((void *)&sysctl_vals[4])
-#define SYSCTL_ONE_HUNDRED		((void *)&sysctl_vals[5])
-#define SYSCTL_TWO_HUNDRED		((void *)&sysctl_vals[6])
-#define SYSCTL_ONE_THOUSAND		((void *)&sysctl_vals[7])
-#define SYSCTL_THREE_THOUSAND		((void *)&sysctl_vals[8])
-#define SYSCTL_INT_MAX			((void *)&sysctl_vals[9])
-
-#define SYSCTL_MAXOLDUID		((void *)&sysctl_vals[10])
-#define SYSCTL_NEG_ONE			((void *)&sysctl_vals[11])
+#define SYSCTL_ONE_HUNDRED		((void *)&sysctl_vals[4])
+#define SYSCTL_ONE_THOUSAND		((void *)&sysctl_vals[5])
+#define SYSCTL_INT_MAX			((void *)&sysctl_vals[6])
 
 extern const int sysctl_vals[];
 
-#define SYSCTL_LONG_ZERO	((void *)&sysctl_long_vals[0])
-#define SYSCTL_LONG_ONE		((void *)&sysctl_long_vals[1])
-#define SYSCTL_LONG_MAX		((void *)&sysctl_long_vals[2])
-
-extern const unsigned long sysctl_long_vals[];
 
 typedef int proc_handler(struct ctl_table *ctl, int write, void *buffer,
 		size_t *lenp, loff_t *ppos);

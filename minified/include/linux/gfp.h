@@ -118,11 +118,7 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 	return !!(gfp_flags & __GFP_DIRECT_RECLAIM);
 }
 
-static inline bool gfpflags_normal_context(const gfp_t gfp_flags)
-{
-	return (gfp_flags & (__GFP_DIRECT_RECLAIM | __GFP_MEMALLOC)) ==
-		__GFP_DIRECT_RECLAIM;
-}
+/* gfpflags_normal_context removed - unused */
 
 #define OPT_ZONE_HIGHMEM ZONE_NORMAL
 
@@ -304,11 +300,7 @@ extern gfp_t gfp_allowed_mask;
 bool gfp_pfmemalloc_allowed(gfp_t gfp_mask);
 
 /* pm_restrict_gfp_mask, pm_restore_gfp_mask, vma_thp_gfp_mask removed - unused */
-
-static inline bool pm_suspended_storage(void)
-{
-	return false;
-}
+/* pm_suspended_storage removed - unused */
 
 void free_contig_range(unsigned long pfn, unsigned long nr_pages);
 

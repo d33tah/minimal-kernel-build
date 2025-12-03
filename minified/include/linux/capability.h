@@ -88,21 +88,7 @@ do {                                                                \
 	}                                                           \
 } while (0)
 
-static inline kernel_cap_t cap_combine(const kernel_cap_t a,
-				       const kernel_cap_t b)
-{
-	kernel_cap_t dest;
-	CAP_BOP_ALL(dest, a, b, |);
-	return dest;
-}
-
-static inline kernel_cap_t cap_intersect(const kernel_cap_t a,
-					 const kernel_cap_t b)
-{
-	kernel_cap_t dest;
-	CAP_BOP_ALL(dest, a, b, &);
-	return dest;
-}
+/* cap_combine, cap_intersect removed - unused */
 
 static inline kernel_cap_t cap_drop(const kernel_cap_t a,
 				    const kernel_cap_t drop)
@@ -112,12 +98,7 @@ static inline kernel_cap_t cap_drop(const kernel_cap_t a,
 	return dest;
 }
 
-static inline kernel_cap_t cap_invert(const kernel_cap_t c)
-{
-	kernel_cap_t dest;
-	CAP_UOP_ALL(dest, c, ~);
-	return dest;
-}
+/* cap_invert removed - unused */
 
 static inline bool cap_isclear(const kernel_cap_t a)
 {
@@ -136,34 +117,7 @@ static inline bool cap_issubset(const kernel_cap_t a, const kernel_cap_t set)
 	return cap_isclear(dest);
 }
 
-
-static inline kernel_cap_t cap_drop_fs_set(const kernel_cap_t a)
-{
-	const kernel_cap_t __cap_fs_set = CAP_FS_SET;
-	return cap_drop(a, __cap_fs_set);
-}
-
-static inline kernel_cap_t cap_raise_fs_set(const kernel_cap_t a,
-					    const kernel_cap_t permitted)
-{
-	const kernel_cap_t __cap_fs_set = CAP_FS_SET;
-	return cap_combine(a,
-			   cap_intersect(permitted, __cap_fs_set));
-}
-
-static inline kernel_cap_t cap_drop_nfsd_set(const kernel_cap_t a)
-{
-	const kernel_cap_t __cap_fs_set = CAP_NFSD_SET;
-	return cap_drop(a, __cap_fs_set);
-}
-
-static inline kernel_cap_t cap_raise_nfsd_set(const kernel_cap_t a,
-					      const kernel_cap_t permitted)
-{
-	const kernel_cap_t __cap_nfsd_set = CAP_NFSD_SET;
-	return cap_combine(a,
-			   cap_intersect(permitted, __cap_nfsd_set));
-}
+/* cap_drop_fs_set, cap_raise_fs_set, cap_drop_nfsd_set, cap_raise_nfsd_set removed - unused */
 
 static inline bool has_capability(struct task_struct *t, int cap)
 {

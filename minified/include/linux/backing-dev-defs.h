@@ -134,14 +134,6 @@ static inline void wb_put(struct bdi_writeback *wb)
 {
 }
 
-static inline void wb_put_many(struct bdi_writeback *wb, unsigned long nr)
-{
-}
+/* wb_put_many, wb_dying removed - unused */
 
-static inline bool wb_dying(struct bdi_writeback *wb)
-{
-	return false;
-}
-
-
-#endif	 
+#endif 

@@ -112,13 +112,7 @@ static inline void cpumask_clear(struct cpumask *dstp)
 }
 
 
-static inline int cpumask_and(struct cpumask *dstp,
-			       const struct cpumask *src1p,
-			       const struct cpumask *src2p)
-{
-	return bitmap_and(cpumask_bits(dstp), cpumask_bits(src1p),
-				       cpumask_bits(src2p), nr_cpumask_bits);
-}
+/* cpumask_and removed - unused */
 
 static inline void cpumask_or(struct cpumask *dstp, const struct cpumask *src1p,
 			      const struct cpumask *src2p)
@@ -229,14 +223,7 @@ set_cpu_active(unsigned int cpu, bool active)
 		cpumask_clear_cpu(cpu, &__cpu_active_mask);
 }
 
-static inline void
-set_cpu_dying(unsigned int cpu, bool dying)
-{
-	if (dying)
-		cpumask_set_cpu(cpu, &__cpu_dying_mask);
-	else
-		cpumask_clear_cpu(cpu, &__cpu_dying_mask);
-}
+/* set_cpu_dying removed - unused */
 
 
 #define to_cpumask(bitmap)						\
@@ -290,21 +277,7 @@ cpumap_print_to_pagebuf(bool list, char *buf, const struct cpumask *mask)
 				      nr_cpu_ids);
 }
 
-static inline ssize_t
-cpumap_print_bitmask_to_buf(char *buf, const struct cpumask *mask,
-		loff_t off, size_t count)
-{
-	return bitmap_print_bitmask_to_buf(buf, cpumask_bits(mask),
-				   nr_cpu_ids, off, count) - 1;
-}
-
-static inline ssize_t
-cpumap_print_list_to_buf(char *buf, const struct cpumask *mask,
-		loff_t off, size_t count)
-{
-	return bitmap_print_list_to_buf(buf, cpumask_bits(mask),
-				   nr_cpu_ids, off, count) - 1;
-}
+/* cpumap_print_bitmask_to_buf, cpumap_print_list_to_buf removed - unused */
 
 /* NR_CPUS <= BITS_PER_LONG always true */
 #define CPU_MASK_ALL							\

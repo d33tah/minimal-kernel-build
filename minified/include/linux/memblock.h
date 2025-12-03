@@ -198,13 +198,7 @@ static __always_inline void *memblock_alloc(phys_addr_t size, phys_addr_t align)
 				      MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
 }
 
-static inline void *memblock_alloc_raw(phys_addr_t size,
-					       phys_addr_t align)
-{
-	return memblock_alloc_try_nid_raw(size, align, MEMBLOCK_LOW_LIMIT,
-					  MEMBLOCK_ALLOC_ACCESSIBLE,
-					  NUMA_NO_NODE);
-}
+/* memblock_alloc_raw removed - unused */
 
 static inline void *memblock_alloc_from(phys_addr_t size,
 						phys_addr_t align,
@@ -214,12 +208,7 @@ static inline void *memblock_alloc_from(phys_addr_t size,
 				      MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
 }
 
-static inline void *memblock_alloc_low(phys_addr_t size,
-					       phys_addr_t align)
-{
-	return memblock_alloc_try_nid(size, align, MEMBLOCK_LOW_LIMIT,
-				      ARCH_LOW_ADDRESS_LIMIT, NUMA_NO_NODE);
-}
+/* memblock_alloc_low removed - unused */
 
 static inline void *memblock_alloc_node(phys_addr_t size,
 						phys_addr_t align, int nid)
@@ -269,15 +258,7 @@ static inline unsigned long memblock_region_memory_end_pfn(const struct memblock
 	return PFN_DOWN(reg->base + reg->size);
 }
 
-static inline unsigned long memblock_region_reserved_base_pfn(const struct memblock_region *reg)
-{
-	return PFN_DOWN(reg->base);
-}
-
-static inline unsigned long memblock_region_reserved_end_pfn(const struct memblock_region *reg)
-{
-	return PFN_UP(reg->base + reg->size);
-}
+/* memblock_region_reserved_base/end_pfn removed - unused */
 
 #define for_each_mem_region(region)					\
 	for (region = memblock.memory.regions;				\

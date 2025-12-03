@@ -30,12 +30,7 @@ unsigned long *devm_bitmap_zalloc(struct device *dev,
 
 bool __bitmap_equal(const unsigned long *bitmap1,
 		    const unsigned long *bitmap2, unsigned int nbits);
-bool __pure __bitmap_or_equal(const unsigned long *src1,
-			      const unsigned long *src2,
-			      const unsigned long *src3,
-			      unsigned int nbits);
-void bitmap_cut(unsigned long *dst, const unsigned long *src,
-		unsigned int first, unsigned int cut, unsigned int nbits);
+/* __bitmap_or_equal, bitmap_cut removed - unused */
 int __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
 		 const unsigned long *bitmap2, unsigned int nbits);
 void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
@@ -75,23 +70,9 @@ bitmap_find_next_zero_area(unsigned long *map,
 
 int bitmap_parse(const char *buf, unsigned int buflen,
 			unsigned long *dst, int nbits);
-int bitmap_parse_user(const char __user *ubuf, unsigned int ulen,
-			unsigned long *dst, int nbits);
-int bitmap_parselist(const char *buf, unsigned long *maskp,
-			int nmaskbits);
-int bitmap_parselist_user(const char __user *ubuf, unsigned int ulen,
-			unsigned long *dst, int nbits);
-void bitmap_remap(unsigned long *dst, const unsigned long *src,
-		const unsigned long *old, const unsigned long *new, unsigned int nbits);
-int bitmap_bitremap(int oldbit,
-		const unsigned long *old, const unsigned long *new, int bits);
-void bitmap_onto(unsigned long *dst, const unsigned long *orig,
-		const unsigned long *relmap, unsigned int bits);
-void bitmap_fold(unsigned long *dst, const unsigned long *orig,
-		unsigned int sz, unsigned int nbits);
-int bitmap_find_free_region(unsigned long *bitmap, unsigned int bits, int order);
-void bitmap_release_region(unsigned long *bitmap, unsigned int pos, int order);
-int bitmap_allocate_region(unsigned long *bitmap, unsigned int pos, int order);
+/* bitmap_parse_user, bitmap_parselist, bitmap_parselist_user, bitmap_remap,
+ * bitmap_bitremap, bitmap_onto, bitmap_fold, bitmap_find_free_region,
+ * bitmap_release_region, bitmap_allocate_region removed - unused */
 
 #ifdef __BIG_ENDIAN
 void bitmap_copy_le(unsigned long *dst, const unsigned long *src, unsigned int nbits);

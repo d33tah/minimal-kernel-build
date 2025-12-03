@@ -73,15 +73,6 @@ static inline void *swp_to_radix_entry(swp_entry_t entry)
 	return xa_mk_value(entry.val);
 }
 
-static inline swp_entry_t make_swapin_error_entry(struct page *page)
-{
-	return swp_entry(SWP_SWAPIN_ERROR, page_to_pfn(page));
-}
-
-static inline int is_swapin_error_entry(swp_entry_t entry)
-{
-	return swp_type(entry) == SWP_SWAPIN_ERROR;
-}
 
 /* CONFIG_DEVICE_PRIVATE disabled - minimal stubs */
 static inline swp_entry_t make_readable_device_private_entry(pgoff_t offset)
@@ -246,20 +237,6 @@ static inline int is_pmd_migration_entry(pmd_t pmd)
 	return 0;
 }
 
-
-static inline swp_entry_t make_hwpoison_entry(struct page *page)
-{
-	return swp_entry(0, 0);
-}
-
-static inline int is_hwpoison_entry(swp_entry_t swp)
-{
-	return 0;
-}
-
-static inline void num_poisoned_pages_inc(void)
-{
-}
 
 static inline int non_swap_entry(swp_entry_t entry)
 {

@@ -92,42 +92,8 @@ int bus_for_each_dev(struct bus_type *bus, struct device *start, void *data,
 struct device *bus_find_device(struct bus_type *bus, struct device *start,
 			       const void *data,
 			       int (*match)(struct device *dev, const void *data));
-static inline struct device *bus_find_device_by_name(struct bus_type *bus,
-						     struct device *start,
-						     const char *name)
-{
-	return bus_find_device(bus, start, name, device_match_name);
-}
-
-static inline struct device *
-bus_find_device_by_of_node(struct bus_type *bus, const struct device_node *np)
-{
-	return bus_find_device(bus, NULL, np, device_match_of_node);
-}
-
-static inline struct device *
-bus_find_device_by_fwnode(struct bus_type *bus, const struct fwnode_handle *fwnode)
-{
-	return bus_find_device(bus, NULL, fwnode, device_match_fwnode);
-}
-
-static inline struct device *bus_find_device_by_devt(struct bus_type *bus,
-						     dev_t devt)
-{
-	return bus_find_device(bus, NULL, &devt, device_match_devt);
-}
-
-static inline struct device *
-bus_find_next_device(struct bus_type *bus,struct device *cur)
-{
-	return bus_find_device(bus, cur, NULL, device_match_any);
-}
-
-static inline struct device *
-bus_find_device_by_acpi_dev(struct bus_type *bus, const void *adev)
-{
-	return NULL;
-}
+/* bus_find_device_by_name, bus_find_device_by_of_node, bus_find_device_by_fwnode,
+ * bus_find_device_by_devt, bus_find_next_device, bus_find_device_by_acpi_dev removed - unused */
 
 struct device *subsys_find_device_by_id(struct bus_type *bus, unsigned int id,
 					struct device *hint);

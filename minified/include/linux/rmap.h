@@ -36,12 +36,11 @@ struct anon_vma_chain {
 };
 
 enum ttu_flags {
-	TTU_SPLIT_HUGE_PMD	= 0x4,	 
-	TTU_IGNORE_MLOCK	= 0x8,	 
-	TTU_SYNC		= 0x10,	 
-	TTU_IGNORE_HWPOISON	= 0x20,	 
-	TTU_BATCH_FLUSH		= 0x40,	 
-	TTU_RMAP_LOCKED		= 0x80,	 
+	TTU_SPLIT_HUGE_PMD	= 0x4,
+	TTU_IGNORE_MLOCK	= 0x8,
+	TTU_SYNC		= 0x10,
+	TTU_BATCH_FLUSH		= 0x40,
+	TTU_RMAP_LOCKED		= 0x80,
 };
 
 static inline void get_anon_vma(struct anon_vma *anon_vma)

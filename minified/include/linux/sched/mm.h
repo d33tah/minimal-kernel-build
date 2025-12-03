@@ -78,18 +78,7 @@ generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
 				  unsigned long len, unsigned long pgoff,
 				  unsigned long flags);
 
-static inline bool in_vfork(struct task_struct *tsk)
-{
-	bool ret;
-
-	 
-	rcu_read_lock();
-	ret = tsk->vfork_done &&
-			rcu_dereference(tsk->real_parent)->mm == tsk->mm;
-	rcu_read_unlock();
-
-	return ret;
-}
+/* in_vfork removed - unused */
 
 static inline gfp_t current_gfp_context(gfp_t flags)
 {
@@ -108,8 +97,7 @@ static inline gfp_t current_gfp_context(gfp_t flags)
 	return flags;
 }
 
-static inline void __fs_reclaim_acquire(unsigned long ip) { }
-static inline void __fs_reclaim_release(unsigned long ip) { }
+/* __fs_reclaim_acquire, __fs_reclaim_release removed - unused */
 static inline void fs_reclaim_acquire(gfp_t gfp_mask) { }
 static inline void fs_reclaim_release(gfp_t gfp_mask) { }
 

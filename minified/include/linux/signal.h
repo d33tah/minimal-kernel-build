@@ -165,7 +165,7 @@ static inline void name(sigset_t *set)					\
 }
 
 #define _sig_not(x)	(~(x))
-_SIG_SET_OP(signotset, _sig_not)
+/* signotset removed - unused */
 
 #undef _SIG_SET_OP
 #undef _sig_not
@@ -183,18 +183,7 @@ static inline void sigemptyset(sigset_t *set)
 	}
 }
 
-static inline void sigfillset(sigset_t *set)
-{
-	switch (_NSIG_WORDS) {
-	default:
-		memset(set, -1, sizeof(sigset_t));
-		break;
-	case 2: set->sig[1] = -1;
-		fallthrough;
-	case 1:	set->sig[0] = -1;
-		break;
-	}
-}
+/* sigfillset removed - unused */
 
 
 static inline void sigaddsetmask(sigset_t *set, unsigned long mask)
@@ -272,16 +261,7 @@ extern void kernel_sigaction(int, __sighandler_t);
 #define SIG_KTHREAD ((__force __sighandler_t)2)
 #define SIG_KTHREAD_KERNEL ((__force __sighandler_t)3)
 
-static inline void allow_signal(int sig)
-{
-	 
-	kernel_sigaction(sig, SIG_KTHREAD);
-}
-
-static inline void disallow_signal(int sig)
-{
-	kernel_sigaction(sig, SIG_IGN);
-}
+/* allow_signal/disallow_signal removed - unused */
 
 extern struct kmem_cache *sighand_cachep;
 
@@ -352,13 +332,6 @@ int __save_altstack(stack_t __user *, unsigned long);
 bool sigaltstack_size_valid(size_t ss_size);
 
 
-#ifndef arch_untagged_si_addr
-static inline void __user *arch_untagged_si_addr(void __user *addr,
-						 unsigned long sig,
-						 unsigned long si_code)
-{
-	return addr;
-}
-#endif
+/* arch_untagged_si_addr removed - unused */
 
 #endif  

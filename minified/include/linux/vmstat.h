@@ -91,13 +91,7 @@ static inline unsigned long zone_page_state(struct zone *zone,
 	return x;
 }
 
-static inline unsigned long zone_page_state_snapshot(struct zone *zone,
-					enum zone_stat_item item)
-{
-	long x = atomic_long_read(&zone->vm_stat[item]);
-
-	return x;
-}
+/* zone_page_state_snapshot removed - unused */
 
 #define sum_zone_node_page_state(node, item) global_zone_page_state(item)
 #define node_page_state(node, item) global_node_page_state(item)
@@ -194,42 +188,8 @@ static inline void quiet_vmstat(void) { }
 static inline void drain_zonestat(struct zone *zone,
 			struct per_cpu_zonestat *pzstats) { }
 
-static inline void __zone_stat_mod_folio(struct folio *folio,
-		enum zone_stat_item item, long nr)
-{
-	__mod_zone_page_state(folio_zone(folio), item, nr);
-}
-
-static inline void __zone_stat_add_folio(struct folio *folio,
-		enum zone_stat_item item)
-{
-	__mod_zone_page_state(folio_zone(folio), item, folio_nr_pages(folio));
-}
-
-static inline void __zone_stat_sub_folio(struct folio *folio,
-		enum zone_stat_item item)
-{
-	__mod_zone_page_state(folio_zone(folio), item, -folio_nr_pages(folio));
-}
-
-
-static inline void __node_stat_mod_folio(struct folio *folio,
-		enum node_stat_item item, long nr)
-{
-	__mod_node_page_state(folio_pgdat(folio), item, nr);
-}
-
-static inline void __node_stat_add_folio(struct folio *folio,
-		enum node_stat_item item)
-{
-	__mod_node_page_state(folio_pgdat(folio), item, folio_nr_pages(folio));
-}
-
-static inline void __node_stat_sub_folio(struct folio *folio,
-		enum node_stat_item item)
-{
-	__mod_node_page_state(folio_pgdat(folio), item, -folio_nr_pages(folio));
-}
+/* __zone_stat_mod_folio, __zone_stat_add_folio, __zone_stat_sub_folio removed - unused */
+/* __node_stat_mod_folio, __node_stat_add_folio, __node_stat_sub_folio removed - unused */
 
 static inline void node_stat_mod_folio(struct folio *folio,
 		enum node_stat_item item, long nr)

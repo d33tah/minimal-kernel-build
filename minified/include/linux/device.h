@@ -383,20 +383,7 @@ const char *device_get_devnode(struct device *dev, umode_t *mode, kuid_t *uid,
 			       kgid_t *gid, const char **tmp);
 int device_is_dependent(struct device *dev, void *target);
 
-#define __device_lock_set_class(dev, name, key)                        \
-do {                                                                   \
-	struct device *__d2 __maybe_unused = dev;                      \
-	lock_set_class(&__d2->mutex.dep_map, name, key, 0, _THIS_IP_); \
-} while (0)
-
-#define device_lock_set_class(dev, key) __device_lock_set_class(dev, #key, key)
-
-#define device_lock_reset_class(dev) \
-do { \
-	struct device *__d __maybe_unused = dev;                       \
-	lock_set_novalidate_class(&__d->mutex.dep_map, "&dev->mutex",  \
-				  _THIS_IP_);                          \
-} while (0)
+/* __device_lock_set_class, device_lock_set_class, device_lock_reset_class removed - unused */
 
 void lock_device_hotplug(void);
 void unlock_device_hotplug(void);

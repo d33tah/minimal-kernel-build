@@ -1376,16 +1376,7 @@ static inline unsigned long free_initmem_default(int poison)
 				  poison, "unused kernel image (initmem)");
 }
 
-static inline unsigned long get_num_physpages(void)
-{
-	int nid;
-	unsigned long phys_pages = 0;
-
-	for_each_online_node(nid)
-		phys_pages += node_present_pages(nid);
-
-	return phys_pages;
-}
+/* get_num_physpages removed - unused */
 
 void free_area_init(unsigned long *max_zone_pfn);
 unsigned long node_map_pfn_alignment(void);
@@ -1810,11 +1801,7 @@ void __init setup_nr_node_ids(void);
 static inline void setup_nr_node_ids(void) {}
 #endif
 
-static inline int
-madvise_set_anon_name(struct mm_struct *mm, unsigned long start,
-		      unsigned long len_in, struct anon_vma_name *anon_name) {
-	return 0;
-}
+/* madvise_set_anon_name removed - unused */
 
 #define  ZAP_FLAG_DROP_MARKER        ((__force zap_flags_t) BIT(0))
 

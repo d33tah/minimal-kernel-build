@@ -352,11 +352,7 @@ uncached_acl_sentinel(struct task_struct *task)
 	return (void *)task + 1;
 }
 
-static inline bool
-is_uncached_acl(struct posix_acl *acl)
-{
-	return (long)acl & 1;
-}
+/* is_uncached_acl removed - unused */
 
 #define IOP_FASTPERM	0x0001
 #define IOP_LOOKUP	0x0002
@@ -534,10 +530,7 @@ static inline unsigned iminor(const struct inode *inode)
 	return MINOR(inode->i_rdev);
 }
 
-static inline unsigned imajor(const struct inode *inode)
-{
-	return MAJOR(inode->i_rdev);
-}
+/* imajor removed - unused */
 
 struct fown_struct {
 	rwlock_t lock;          
@@ -1491,11 +1484,7 @@ int notify_change(struct user_namespace *, struct dentry *,
 		  struct iattr *, struct inode **);
 int inode_permission(struct user_namespace *, struct inode *, int);
 int generic_permission(struct user_namespace *, struct inode *, int);
-static inline int file_permission(struct file *file, int mask)
-{
-	return inode_permission(file_mnt_user_ns(file),
-				file_inode(file), mask);
-}
+/* file_permission removed - unused */
 static inline int path_permission(const struct path *path, int mask)
 {
 	return inode_permission(mnt_user_ns(path->mnt),

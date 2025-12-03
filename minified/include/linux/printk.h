@@ -34,14 +34,6 @@ static inline const char *printk_skip_level(const char *buffer)
 	return buffer;
 }
 
-static inline const char *printk_skip_headers(const char *buffer)
-{
-	while (printk_get_level(buffer))
-		buffer = printk_skip_level(buffer);
-
-	return buffer;
-}
-
 #define CONSOLE_EXT_LOG_MAX	8192
 
 #define MESSAGE_LOGLEVEL_DEFAULT CONFIG_MESSAGE_LOGLEVEL_DEFAULT
@@ -131,22 +123,9 @@ static inline void setup_log_buf(int early)
 {
 }
 
-static inline void dump_stack_print_info(const char *log_lvl)
-{
-}
-
-static inline void show_regs_print_info(const char *log_lvl)
-{
-}
-
-static inline void dump_stack_lvl(const char *log_lvl)
-{
-}
-
 static inline void dump_stack(void)
 {
 }
-
 
 #define __printk_cpu_sync_try_get() true
 #define __printk_cpu_sync_wait()

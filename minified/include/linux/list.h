@@ -62,12 +62,6 @@ static inline void __list_del(struct list_head * prev, struct list_head * next)
 	WRITE_ONCE(prev->next, next);
 }
 
-static inline void __list_del_clearprev(struct list_head *entry)
-{
-	__list_del(entry->prev, entry->next);
-	entry->prev = NULL;
-}
-
 static inline void __list_del_entry(struct list_head *entry)
 {
 	if (!__list_del_entry_valid(entry))
@@ -319,27 +313,6 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 		WRITE_ONCE(first->pprev, &n->next);
 	WRITE_ONCE(h->first, n);
 	WRITE_ONCE(n->pprev, &h->first);
-}
-
-static inline void hlist_add_before(struct hlist_node *n,
-				    struct hlist_node *next)
-{
-	WRITE_ONCE(n->pprev, next->pprev);
-	WRITE_ONCE(n->next, next);
-	WRITE_ONCE(next->pprev, &n->next);
-	WRITE_ONCE(*(n->pprev), n);
-}
-
-
-static inline void hlist_add_behind(struct hlist_node *n,
-				    struct hlist_node *prev)
-{
-	WRITE_ONCE(n->next, prev->next);
-	WRITE_ONCE(prev->next, n);
-	WRITE_ONCE(n->pprev, &prev->next);
-
-	if (n->next)
-		WRITE_ONCE(n->next->pprev, &n->next);
 }
 
 static inline bool hlist_fake(struct hlist_node *h)

@@ -43,12 +43,6 @@ bool queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *wor
     return true;
 }
 
-/* Stub: queue_work_node not used in minimal kernel */
-bool queue_work_node(int node, struct workqueue_struct *wq, struct work_struct *work)
-{
-    return false;
-}
-
 bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
                            struct delayed_work *dwork, unsigned long delay)
 {
@@ -117,12 +111,6 @@ void destroy_workqueue(struct workqueue_struct *wq)
 {
     if (wq)
         kfree(wq);
-}
-
-/* Stub: execute_in_process_context not used in minimal kernel */
-int execute_in_process_context(work_func_t fn, struct execute_work *ew)
-{
-    return 0;
 }
 
 static struct workqueue_struct system_wq_storage = { .name = "events" };

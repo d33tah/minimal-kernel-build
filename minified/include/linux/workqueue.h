@@ -88,18 +88,12 @@ struct delayed_work {
 	int cpu;
 };
 
-struct rcu_work;
-
 struct workqueue_attrs;
 
 static inline struct delayed_work *to_delayed_work(struct work_struct *work)
 {
 	return container_of(work, struct delayed_work, work);
 }
-
-struct execute_work {
-	struct work_struct work;
-};
 
 #define __WORK_INIT_LOCKDEP_MAP(n, k)
 
@@ -138,9 +132,6 @@ static inline void __init_work(struct work_struct *work, int onstack) { }
 #define INIT_WORK(_work, _func)						\
 	__INIT_WORK((_work), (_func), 0)
 
-#define INIT_WORK_ONSTACK(_work, _func)					\
-	__INIT_WORK((_work), (_func), 1)
-
 #define __INIT_DELAYED_WORK(_work, _func, _tflags)			\
 	do {								\
 		INIT_WORK(&(_work)->work, (_func));			\
@@ -149,31 +140,8 @@ static inline void __init_work(struct work_struct *work, int onstack) { }
 			     (_tflags) | TIMER_IRQSAFE);		\
 	} while (0)
 
-#define __INIT_DELAYED_WORK_ONSTACK(_work, _func, _tflags)		\
-	do {								\
-		INIT_WORK_ONSTACK(&(_work)->work, (_func));		\
-		__init_timer_on_stack(&(_work)->timer,			\
-				      delayed_work_timer_fn,		\
-				      (_tflags) | TIMER_IRQSAFE);	\
-	} while (0)
-
 #define INIT_DELAYED_WORK(_work, _func)					\
 	__INIT_DELAYED_WORK(_work, _func, 0)
-
-#define INIT_DELAYED_WORK_ONSTACK(_work, _func)				\
-	__INIT_DELAYED_WORK_ONSTACK(_work, _func, 0)
-
-#define INIT_DEFERRABLE_WORK(_work, _func)				\
-	__INIT_DELAYED_WORK(_work, _func, TIMER_DEFERRABLE)
-
-#define INIT_DEFERRABLE_WORK_ONSTACK(_work, _func)			\
-	__INIT_DELAYED_WORK_ONSTACK(_work, _func, TIMER_DEFERRABLE)
-
-#define INIT_RCU_WORK(_work, _func)					\
-	INIT_WORK(&(_work)->work, (_func))
-
-#define INIT_RCU_WORK_ONSTACK(_work, _func)				\
-	INIT_WORK_ONSTACK(&(_work)->work, (_func))
 
 #define work_pending(work) \
 	test_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))
@@ -223,8 +191,6 @@ extern bool mod_delayed_work_on(int cpu, struct workqueue_struct *wq,
 			struct delayed_work *dwork, unsigned long delay);
 
 extern void __flush_workqueue(struct workqueue_struct *wq);
-
-int execute_in_process_context(work_func_t fn, struct execute_work *);
 
 extern bool flush_work(struct work_struct *work);
 extern bool cancel_work_sync(struct work_struct *work);

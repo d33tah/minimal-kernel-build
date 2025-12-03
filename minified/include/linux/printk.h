@@ -294,42 +294,6 @@ do {									\
 	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
-enum {
-	DUMP_PREFIX_NONE,
-	DUMP_PREFIX_ADDRESS,
-	DUMP_PREFIX_OFFSET
-};
-static inline void print_hex_dump(const char *level, const char *prefix_str,
-				  int prefix_type, int rowsize, int groupsize,
-				  const void *buf, size_t len, bool ascii)
-{
-}
-static inline void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
-					const void *buf, size_t len)
-{
-}
-
-
-#if defined(CONFIG_DYNAMIC_DEBUG) || \
-	(defined(CONFIG_DYNAMIC_DEBUG_CORE) && defined(DYNAMIC_DEBUG_MODULE))
-#define print_hex_dump_debug(prefix_str, prefix_type, rowsize,	\
-			     groupsize, buf, len, ascii)	\
-	dynamic_hex_dump(prefix_str, prefix_type, rowsize,	\
-			 groupsize, buf, len, ascii)
-#elif defined(DEBUG)
-#define print_hex_dump_debug(prefix_str, prefix_type, rowsize,		\
-			     groupsize, buf, len, ascii)		\
-	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, rowsize,	\
-		       groupsize, buf, len, ascii)
-#else
-static inline void print_hex_dump_debug(const char *prefix_str, int prefix_type,
-					int rowsize, int groupsize,
-					const void *buf, size_t len, bool ascii)
-{
-}
-#endif
-
-#define print_hex_dump_bytes(prefix_str, prefix_type, buf, len)	\
-	print_hex_dump_debug(prefix_str, prefix_type, 16, 1, buf, len, true)
+/* print_hex_dump*, DUMP_PREFIX_* removed - unused */
 
 #endif

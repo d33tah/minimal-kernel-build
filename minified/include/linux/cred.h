@@ -39,14 +39,8 @@ static inline int in_group_p(kgid_t grp)
 {
         return 1;
 }
-static inline int in_egroup_p(kgid_t grp)
-{
-        return 1;
-}
-static inline int groups_search(const struct group_info *group_info, kgid_t grp)
-{
-	return 1;
-}
+
+/* in_egroup_p, groups_search removed - unused */
 
 struct cred {
 	atomic_t	usage;

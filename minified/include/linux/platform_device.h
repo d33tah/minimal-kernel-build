@@ -92,40 +92,8 @@ struct platform_device_info {
 extern struct platform_device *platform_device_register_full(
 		const struct platform_device_info *pdevinfo);
 
-static inline struct platform_device *platform_device_register_resndata(
-		struct device *parent, const char *name, int id,
-		const struct resource *res, unsigned int num,
-		const void *data, size_t size) {
-
-	struct platform_device_info pdevinfo = {
-		.parent = parent,
-		.name = name,
-		.id = id,
-		.res = res,
-		.num_res = num,
-		.data = data,
-		.size_data = size,
-		.dma_mask = 0,
-	};
-
-	return platform_device_register_full(&pdevinfo);
-}
-
-static inline struct platform_device *platform_device_register_simple(
-		const char *name, int id,
-		const struct resource *res, unsigned int num)
-{
-	return platform_device_register_resndata(NULL, name, id,
-			res, num, NULL, 0);
-}
-
-static inline struct platform_device *platform_device_register_data(
-		struct device *parent, const char *name, int id,
-		const void *data, size_t size)
-{
-	return platform_device_register_resndata(parent, name, id,
-			NULL, 0, data, size);
-}
+/* platform_device_register_resndata, platform_device_register_simple,
+   platform_device_register_data removed - unused */
 
 extern struct platform_device *platform_device_alloc(const char *name, int id);
 extern int platform_device_add_resources(struct platform_device *pdev,

@@ -363,28 +363,6 @@ static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf,
 	return fpin;
 }
 
- 
-static inline struct page *mem_map_offset(struct page *base, int offset)
-{
-	if (unlikely(offset >= MAX_ORDER_NR_PAGES))
-		return nth_page(base, offset);
-	return base + offset;
-}
-
- 
-static inline struct page *mem_map_next(struct page *iter,
-						struct page *base, int offset)
-{
-	if (unlikely((offset & (MAX_ORDER_NR_PAGES - 1)) == 0)) {
-		unsigned long pfn = page_to_pfn(base) + offset;
-		if (!pfn_valid(pfn))
-			return NULL;
-		return pfn_to_page(pfn);
-	}
-	return iter + 1;
-}
-
- 
 enum mminit_level {
 	MMINIT_WARNING,
 	MMINIT_VERIFY,
@@ -397,27 +375,10 @@ static inline void mminit_dprintk(enum mminit_level level,
 {
 }
 
-static inline void mminit_verify_pageflags_layout(void)
-{
-}
-
 static inline void mminit_verify_zonelist(void)
 {
 }
 
-#define NODE_RECLAIM_NOSCAN	-2
-#define NODE_RECLAIM_FULL	-1
-#define NODE_RECLAIM_SOME	0
-#define NODE_RECLAIM_SUCCESS	1
-
-static inline int node_reclaim(struct pglist_data *pgdat, gfp_t mask,
-				unsigned int order)
-{
-	return NODE_RECLAIM_NOSCAN;
-}
-/* find_next_best_node removed - unused */
-
- 
 extern int hwpoison_filter(struct page *p);
 
 extern u32 hwpoison_filter_dev_major;

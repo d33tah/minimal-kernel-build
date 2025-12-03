@@ -98,32 +98,18 @@ proc_create_data(const char *name, umode_t mode, struct proc_dir_entry *parent,
 		 const struct proc_ops *proc_ops, void *data)
 { return NULL; }
 
-static inline void proc_set_size(struct proc_dir_entry *de, loff_t size) {}
-static inline void proc_set_user(struct proc_dir_entry *de, kuid_t uid, kgid_t gid) {}
+/* proc_set_size, proc_set_user, proc_get_parent_data removed - unused */
 static inline void *pde_data(const struct inode *inode) {BUG(); return NULL;}
-static inline void *proc_get_parent_data(const struct inode *inode) { BUG(); return NULL; }
 
 static inline void proc_remove(struct proc_dir_entry *de) {}
 #define remove_proc_entry(name, parent) do {} while (0)
-static inline int remove_proc_subtree(const char *name, struct proc_dir_entry *parent) { return 0; }
+/* remove_proc_subtree removed - unused */
 
 #define proc_create_net_data(name, mode, parent, ops, state_size, data) ({NULL;})
 #define proc_create_net(name, mode, parent, state_size, ops) ({NULL;})
 #define proc_create_net_single(name, mode, parent, show, data) ({NULL;})
 
-static inline struct pid *tgid_pidfd_to_pid(const struct file *file)
-{
-	return ERR_PTR(-EBADF);
-}
-
-
-struct net;
-
-static inline struct proc_dir_entry *proc_net_mkdir(
-	struct net *net, const char *name, struct proc_dir_entry *parent)
-{
-	return _proc_mkdir(name, 0, parent, net, true);
-}
+/* tgid_pidfd_to_pid, proc_net_mkdir removed - unused */
 
 struct ns_common;
 int open_related_ns(struct ns_common *ns,

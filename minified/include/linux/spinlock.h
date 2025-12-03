@@ -48,29 +48,7 @@
 #define smp_mb__after_spinlock()	do { } while (0)
 #endif
 
-static inline void do_raw_spin_lock(raw_spinlock_t *lock) __acquires(lock)
-{
-	__acquire(lock);
-	arch_spin_lock(&lock->raw_lock);
-	mmiowb_spin_lock();
-}
-
-static inline int do_raw_spin_trylock(raw_spinlock_t *lock)
-{
-	int ret = arch_spin_trylock(&(lock)->raw_lock);
-
-	if (ret)
-		mmiowb_spin_lock();
-
-	return ret;
-}
-
-static inline void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock)
-{
-	mmiowb_spin_unlock();
-	arch_spin_unlock(&lock->raw_lock);
-	__release(lock);
-}
+/* do_raw_spin_lock, do_raw_spin_trylock, do_raw_spin_unlock removed - unused */
 
 #define raw_spin_trylock(lock)	__cond_lock(lock, _raw_spin_trylock(lock))
 

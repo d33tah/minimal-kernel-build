@@ -147,17 +147,7 @@ static inline void memalloc_nofs_restore(unsigned int flags)
 	current->flags = (current->flags & ~PF_MEMALLOC_NOFS) | flags;
 }
 
-static inline unsigned int memalloc_noreclaim_save(void)
-{
-	unsigned int flags = current->flags & PF_MEMALLOC;
-	current->flags |= PF_MEMALLOC;
-	return flags;
-}
-
-static inline void memalloc_noreclaim_restore(unsigned int flags)
-{
-	current->flags = (current->flags & ~PF_MEMALLOC) | flags;
-}
+/* memalloc_noreclaim_save, memalloc_noreclaim_restore removed - unused */
 
 static inline unsigned int memalloc_pin_save(void)
 {
@@ -172,11 +162,7 @@ static inline void memalloc_pin_restore(unsigned int flags)
 	current->flags = (current->flags & ~PF_MEMALLOC_PIN) | flags;
 }
 
-static inline struct mem_cgroup *
-set_active_memcg(struct mem_cgroup *memcg)
-{
-	return NULL;
-}
+/* set_active_memcg removed - unused */
 
 static inline void membarrier_exec_mmap(struct mm_struct *mm)
 {
@@ -189,7 +175,7 @@ static inline void membarrier_update_current_mm(struct mm_struct *next_mm)
 }
 
 static inline void mm_pasid_init(struct mm_struct *mm) {}
-static inline void mm_pasid_set(struct mm_struct *mm, u32 pasid) {}
+/* mm_pasid_set removed - unused */
 static inline void mm_pasid_drop(struct mm_struct *mm) {}
 
 #endif  

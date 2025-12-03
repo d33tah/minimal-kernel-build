@@ -130,22 +130,7 @@ extern bool atomic_notifier_call_chain_is_empty(struct atomic_notifier_head *nh)
 						 
 #define NOTIFY_STOP		(NOTIFY_OK|NOTIFY_STOP_MASK)
 
-static inline int notifier_from_errno(int err)
-{
-	if (err)
-		return NOTIFY_STOP_MASK | (NOTIFY_OK - err);
-
-	return NOTIFY_OK;
-}
-
-static inline int notifier_to_errno(int ret)
-{
-	ret &= ~NOTIFY_STOP_MASK;
-	return ret > NOTIFY_OK ? NOTIFY_OK - ret : 0;
-}
-
-
-
+/* notifier_from_errno, notifier_to_errno removed - unused */
 
 
 

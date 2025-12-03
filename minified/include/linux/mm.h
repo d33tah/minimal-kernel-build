@@ -1768,13 +1768,7 @@ void vmemmap_populate_print_last(void);
 void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
 				  unsigned long nr_pages);
 
-/* memory failure not used in minimal kernel */
-enum mf_flags { MF_FLAGS_LAST };
-
-/* mf_result - reduced for minimal kernel */
-enum mf_result { MF_RESULT_LAST };
-/* mf_action_page_type - reduced for minimal kernel */
-enum mf_action_page_type { MF_MSG_LAST };
+/* mf_flags, mf_result, mf_action_page_type enums removed - unused */
 
 static inline unsigned int debug_guardpage_minorder(void) { return 0; }
 static inline bool page_is_guard(struct page *page) { return false; }

@@ -165,20 +165,6 @@ static inline int task_has_dl_policy(struct task_struct *p)
 
 #define SCHED_DL_FLAGS (SCHED_FLAG_RECLAIM | SCHED_FLAG_DL_OVERRUN | SCHED_FLAG_SUGOV)
 
-static inline bool dl_entity_is_special(struct sched_dl_entity *dl_se)
-{
-	return false;
-}
-
- 
-static inline bool
-dl_entity_preempt(struct sched_dl_entity *a, struct sched_dl_entity *b)
-{
-	return dl_entity_is_special(a) ||
-	       dl_time_before(a->deadline, b->deadline);
-}
-
- 
 struct rt_prio_array {
 	DECLARE_BITMAP(bitmap, MAX_RT_PRIO+1);  
 	struct list_head queue[MAX_RT_PRIO];
@@ -904,16 +890,6 @@ static inline int hrtick_enabled_fair(struct rq *rq)
 	return 0;
 }
 
-static inline int hrtick_enabled_dl(struct rq *rq)
-{
-	return 0;
-}
-
-static inline int hrtick_enabled(struct rq *rq)
-{
-	return 0;
-}
-
 
 #ifndef arch_scale_freq_tick
 static __always_inline
@@ -930,32 +906,6 @@ unsigned long arch_scale_freq_capacity(int cpu)
 	return SCHED_CAPACITY_SCALE;
 }
 #endif
-
-static inline void double_rq_clock_clear_update(struct rq *rq1, struct rq *rq2) {}
-
-
- 
-static inline void double_rq_lock(struct rq *rq1, struct rq *rq2)
-	__acquires(rq1->lock)
-	__acquires(rq2->lock)
-{
-	BUG_ON(!irqs_disabled());
-	BUG_ON(rq1 != rq2);
-	raw_spin_rq_lock(rq1);
-	__acquire(rq2->lock);	 
-	double_rq_clock_clear_update(rq1, rq2);
-}
-
- 
-static inline void double_rq_unlock(struct rq *rq1, struct rq *rq2)
-	__releases(rq1->lock)
-	__releases(rq2->lock)
-{
-	BUG_ON(rq1 != rq2);
-	raw_spin_rq_unlock(rq1);
-	__release(rq2->lock);
-}
-
 
 extern struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq);
 extern struct sched_entity *__pick_last_entity(struct cfs_rq *cfs_rq);
@@ -992,27 +942,7 @@ unsigned long uclamp_rq_util_with(struct rq *rq, unsigned long util,
 	return util;
 }
 
-static inline bool uclamp_rq_is_capped(struct rq *rq) { return false; }
-
-static inline bool uclamp_is_used(void)
-{
-	return false;
-}
-
-static inline unsigned long cpu_util_irq(struct rq *rq)
-{
-	return 0;
-}
-
-static inline
-unsigned long scale_irq_capacity(unsigned long util, unsigned long irq, unsigned long max)
-{
-	return util;
-}
-
-
 #define perf_domain_span(pd) NULL
-static inline bool sched_energy_enabled(void) { return false; }
 
 
 static inline void membarrier_switch_mm(struct rq *rq,

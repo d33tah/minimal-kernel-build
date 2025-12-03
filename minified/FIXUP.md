@@ -1,3 +1,19 @@
+--- 2025-12-03 12:41 ---
+SESSION PROGRESS CONTINUED
+
+Current state: ~195,540 LOC | Goal: 150,000 | Need: ~45.5K more
+make vm: PASSES, prints "Hello, World!"
+bzImage: 239KB
+
+Changes this commit:
+3. ptrace.h: -101 LOC (125 -> 24 LOC)
+   - Removed basic PTRACE_* ops (TRACEME, PEEK*, POKE*, CONT, KILL, etc)
+   - Removed advanced ops (SEIZE, INTERRUPT, LISTEN, PEEKSIGINFO, SECCOMP_*)
+   - Removed structs (ptrace_peeksiginfo_args, seccomp_metadata,
+     ptrace_syscall_info, ptrace_rseq_configuration)
+   - Removed PTRACE_O_* trace option constants
+   - Kept only PTRACE_EVENT_* and PTRACE_EVENTMSG_* used by kernel
+
 --- 2025-12-03 12:37 ---
 SESSION PROGRESS
 

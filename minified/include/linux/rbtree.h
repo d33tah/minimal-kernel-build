@@ -25,9 +25,9 @@ extern void rb_erase(struct rb_node *, struct rb_root *);
 
 
 extern struct rb_node *rb_next(const struct rb_node *);
-extern struct rb_node *rb_prev(const struct rb_node *);
+/* rb_prev removed - unused */
 extern struct rb_node *rb_first(const struct rb_root *);
-extern struct rb_node *rb_last(const struct rb_root *);
+/* rb_last removed - unused */
 
 
 extern void rb_replace_node(struct rb_node *victim, struct rb_node *new,

@@ -425,10 +425,7 @@ static __always_inline void set_compound_head(struct page *page, struct page *he
 	WRITE_ONCE(page->compound_head, (unsigned long)head + 1);
 }
 
-static __always_inline void clear_compound_head(struct page *page)
-{
-	WRITE_ONCE(page->compound_head, 0);
-}
+/* clear_compound_head removed - unused */
 
 
 #define PG_head_mask ((1UL << PG_head))

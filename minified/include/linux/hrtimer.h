@@ -158,11 +158,7 @@ static inline ktime_t hrtimer_cb_get_time(struct hrtimer *timer)
 	return timer->base->get_time();
 }
 
-static inline int hrtimer_is_hres_active(struct hrtimer *timer)
-{
-	return IS_ENABLED(CONFIG_HIGH_RES_TIMERS) ?
-		timer->base->cpu_base->hres_active : 0;
-}
+/* hrtimer_is_hres_active removed - unused */
 
 
 #define hrtimer_resolution	(unsigned int)LOW_RES_NSEC
@@ -239,11 +235,7 @@ extern u64 hrtimer_next_event_without(const struct hrtimer *exclude);
 
 extern bool hrtimer_active(const struct hrtimer *timer);
 
-static inline bool hrtimer_is_queued(struct hrtimer *timer)
-{
-	 
-	return !!(READ_ONCE(timer->state) & HRTIMER_STATE_ENQUEUED);
-}
+/* hrtimer_is_queued removed - unused */
 
 static inline int hrtimer_callback_running(struct hrtimer *timer)
 {
@@ -253,11 +245,7 @@ static inline int hrtimer_callback_running(struct hrtimer *timer)
 extern u64
 hrtimer_forward(struct hrtimer *timer, ktime_t now, ktime_t interval);
 
-static inline u64 hrtimer_forward_now(struct hrtimer *timer,
-				      ktime_t interval)
-{
-	return hrtimer_forward(timer, timer->base->get_time(), interval);
-}
+/* hrtimer_forward_now removed - unused */
 
 
 extern int nanosleep_copyout(struct restart_block *, struct timespec64 *);

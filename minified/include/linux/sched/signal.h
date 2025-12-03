@@ -470,7 +470,7 @@ static inline void unlock_task_sighand(struct task_struct *task,
 	spin_unlock_irqrestore(&task->sighand->siglock, *flags);
 }
 
-static inline void lockdep_assert_task_sighand_held(struct task_struct *task) { }
+/* lockdep_assert_task_sighand_held removed - unused */
 
 static inline unsigned long task_rlimit(const struct task_struct *task,
 		unsigned int limit)

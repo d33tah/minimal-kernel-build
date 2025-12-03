@@ -469,10 +469,7 @@ static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec)
 #define zone_idx(zone)		((zone) - (zone)->zone_pgdat->node_zones)
 
 
-static inline bool managed_zone(struct zone *zone)
-{
-	return zone_managed_pages(zone);
-}
+/* managed_zone removed - unused */
 
 static inline bool populated_zone(struct zone *zone)
 {

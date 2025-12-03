@@ -200,10 +200,7 @@ extern struct dentry *__d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup_rcu(const struct dentry *parent,
 				const struct qstr *name, unsigned *seq);
 
-static inline unsigned d_count(const struct dentry *dentry)
-{
-	return dentry->d_lockref.count;
-}
+/* d_count removed - unused */
 
 extern __printf(4, 5)
 char *dynamic_dname(struct dentry *, char *, int, const char *, ...);

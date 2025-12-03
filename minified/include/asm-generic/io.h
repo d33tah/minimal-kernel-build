@@ -391,56 +391,7 @@ static inline void outl_p(u32 value, unsigned long addr)
 #endif
 
 
-#ifndef insb
-#define insb insb
-static inline void insb(unsigned long addr, void *buffer, unsigned int count)
-{
-	readsb(PCI_IOBASE + addr, buffer, count);
-}
-#endif
-
-#ifndef insw
-#define insw insw
-static inline void insw(unsigned long addr, void *buffer, unsigned int count)
-{
-	readsw(PCI_IOBASE + addr, buffer, count);
-}
-#endif
-
-#ifndef insl
-#define insl insl
-static inline void insl(unsigned long addr, void *buffer, unsigned int count)
-{
-	readsl(PCI_IOBASE + addr, buffer, count);
-}
-#endif
-
-#ifndef outsb
-#define outsb outsb
-static inline void outsb(unsigned long addr, const void *buffer,
-			 unsigned int count)
-{
-	writesb(PCI_IOBASE + addr, buffer, count);
-}
-#endif
-
-#ifndef outsw
-#define outsw outsw
-static inline void outsw(unsigned long addr, const void *buffer,
-			 unsigned int count)
-{
-	writesw(PCI_IOBASE + addr, buffer, count);
-}
-#endif
-
-#ifndef outsl
-#define outsl outsl
-static inline void outsl(unsigned long addr, const void *buffer,
-			 unsigned int count)
-{
-	writesl(PCI_IOBASE + addr, buffer, count);
-}
-#endif
+/* insb, insw, insl, outsb, outsw, outsl removed - unused */
 
 #ifdef __KERNEL__
 

@@ -1,3 +1,39 @@
+--- 2025-12-03 13:06 ---
+SESSION CONTINUING
+
+Current state: ~187,608 LOC | Goal: 150,000 | Need: ~37.6K more
+make vm: PASSES, prints "Hello, World!"
+bzImage: 239KB
+
+Changes this commit:
+8. ipc.h: -39 LOC (60 -> 21 LOC)
+   - Removed IPC_PRIVATE, IPC_CREAT, IPC_EXCL, IPC_NOWAIT, IPC_DIPC, IPC_OWN
+   - Removed IPC_RMID, IPC_SET, IPC_STAT, IPC_INFO, IPC_OLD, IPC_64
+   - Removed ipc_kludge struct, SEMOP/SEMGET/MSGSND/SHMAT etc opcodes
+   - Removed DIPC, IPCCALL macro
+   - Kept only ipc_perm struct (needed by include/linux/ipc.h)
+
+Session totals: 436+39 = 475 LOC removed
+
+--- 2025-12-03 13:02 ---
+SESSION SUMMARY (after mrproper + cloc)
+
+Current state: 187,647 LOC (measured) | Goal: 150,000 | Need: ~37.6K more
+make vm: PASSES, prints "Hello, World!"
+bzImage: 239KB
+
+This session removed 436 LOC across 7 commits:
+1. edd.h: -85 LOC (simplified EDD device params)
+2. ptrace.h: -101 LOC (removed unused ops/structs)
+3. seccomp.h: -65 LOC (removed seccomp structs/ioctls)
+4. apm_bios.h: -82 LOC (removed APM constants)
+5. cn_proc.h: -89 LOC (removed proc_event struct)
+6. screen_info.h: -14 LOC (removed arch-specific VIDEO_TYPE)
+7. tiny.config: +2 lines (new Kconfig defaults)
+
+Strategy: Systematic removal of unused uapi header definitions.
+All commits pushed and verified with make vm.
+
 --- 2025-12-03 12:59 ---
 SESSION PROGRESS
 

@@ -217,8 +217,6 @@ do {									      \
 
 #define rcu_dereference_sched(p) rcu_dereference_sched_check(p, 0)
 
-#define rcu_pointer_handoff(p) (p)
-
 static __always_inline void rcu_read_lock(void)
 {
 	__rcu_read_lock();
@@ -247,12 +245,6 @@ static inline void rcu_read_lock_sched(void)
 			 "rcu_read_lock_sched() used illegally while idle");
 }
 
-static inline notrace void rcu_read_lock_sched_notrace(void)
-{
-	preempt_disable_notrace();
-	__acquire(RCU_SCHED);
-}
-
 static inline void rcu_read_unlock_sched(void)
 {
 	RCU_LOCKDEP_WARN(!rcu_is_watching(),
@@ -260,12 +252,6 @@ static inline void rcu_read_unlock_sched(void)
 	rcu_lock_release(&rcu_sched_lock_map);
 	__release(RCU_SCHED);
 	preempt_enable();
-}
-
-static inline notrace void rcu_read_unlock_sched_notrace(void)
-{
-	__release(RCU_SCHED);
-	preempt_enable_notrace();
 }
 
 #define RCU_INIT_POINTER(p, v) \
@@ -305,23 +291,5 @@ do {								\
 } while (0)
 
 #define smp_mb__after_unlock_lock()	do { } while (0)
-
-
-
-static inline void rcu_head_init(struct rcu_head *rhp)
-{
-	rhp->func = (rcu_callback_t)~0L;
-}
-
-static inline bool
-rcu_head_after_call_rcu(struct rcu_head *rhp, rcu_callback_t f)
-{
-	rcu_callback_t func = READ_ONCE(rhp->func);
-
-	if (func == f)
-		return true;
-	WARN_ON_ONCE(func != (rcu_callback_t)~0L);
-	return false;
-}
 
 #endif

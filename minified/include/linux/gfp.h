@@ -289,10 +289,6 @@ extern void free_pages(unsigned long addr, unsigned int order);
 #define free_page(addr) free_pages((addr), 0)
 
 void page_alloc_init(void);
-void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp);
-void drain_all_pages(struct zone *zone);
-void drain_local_pages(struct zone *zone);
-
 void page_alloc_init_late(void);
 
 extern gfp_t gfp_allowed_mask;

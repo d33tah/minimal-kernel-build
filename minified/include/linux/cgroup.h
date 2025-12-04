@@ -24,9 +24,6 @@ struct kernel_clone_args;
 struct cgroup_subsys_state;
 struct cgroup;
 
-static inline int cgroupstats_build(struct cgroupstats *stats,
-				    struct dentry *dentry) { return -EINVAL; }
-
 static inline void cgroup_fork(struct task_struct *p) {}
 static inline int cgroup_can_fork(struct task_struct *p,
 				  struct kernel_clone_args *kargs) { return 0; }

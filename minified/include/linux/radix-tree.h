@@ -80,16 +80,6 @@ static inline void *radix_tree_deref_slot_protected(void __rcu **slot,
 	return rcu_dereference_protected(*slot, lockdep_is_held(treelock));
 }
 
-static inline int radix_tree_deref_retry(void *arg)
-{
-	return unlikely(radix_tree_is_internal_node(arg));
-}
-
-static inline int radix_tree_exception(void *arg)
-{
-	return unlikely((unsigned long)arg & RADIX_TREE_ENTRY_MASK);
-}
-
 int radix_tree_insert(struct radix_tree_root *, unsigned long index,
 			void *);
 void *__radix_tree_lookup(const struct radix_tree_root *, unsigned long index,
@@ -128,11 +118,6 @@ unsigned int radix_tree_gang_lookup_tag_slot(const struct radix_tree_root *,
 		void __rcu ***results, unsigned long first_index,
 		unsigned int max_items, unsigned int tag);
 int radix_tree_tagged(const struct radix_tree_root *, unsigned int tag);
-
-static inline void radix_tree_preload_end(void)
-{
-	local_unlock(&radix_tree_preloads.lock);
-}
 
 void __rcu **idr_get_free(struct radix_tree_root *root,
 			      struct radix_tree_iter *iter, gfp_t gfp,

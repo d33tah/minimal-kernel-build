@@ -101,16 +101,6 @@ static inline unsigned char iov_iter_rw(const struct iov_iter *i)
 	return i->data_source ? WRITE : READ;
 }
 
-static inline size_t iov_length(const struct iovec *iov, unsigned long nr_segs)
-{
-	unsigned long seg;
-	size_t ret = 0;
-
-	for (seg = 0; seg < nr_segs; seg++)
-		ret += iov[seg].iov_len;
-	return ret;
-}
-
 static inline struct iovec iov_iter_iovec(const struct iov_iter *iter)
 {
 	return (struct iovec) {

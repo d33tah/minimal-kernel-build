@@ -1,3 +1,12 @@
+--- 2025-12-05 00:23 ---
+SESSION NOTES
+
+Note: d_is_miss in dcache.h shows as unused but removing it causes strange
+build errors related to signal.h - maybe a dependency issue. Skip for now.
+
+Total session: ~149 LOC removed (all committed and pushed)
+Strategy: Systematic grep for unused static inline functions in headers.
+
 --- 2025-12-05 00:17 ---
 SESSION PROGRESS
 

@@ -47,49 +47,7 @@ enum pcie_link_width {
 
 typedef unsigned int pci_power_t;
 
-static inline void *pci_get_drvdata(struct pci_dev *pdev) { return NULL; }
-static inline void pci_set_drvdata(struct pci_dev *pdev, void *data) { }
-static inline const char *pci_name(const struct pci_dev *pdev) { return ""; }
-static inline struct pci_dev *pci_dev_get(struct pci_dev *dev) { return NULL; }
-static inline void pci_dev_put(struct pci_dev *dev) { }
-static inline int pci_enable_device(struct pci_dev *dev) { return -ENODEV; }
-static inline void pci_disable_device(struct pci_dev *dev) { }
-static inline int pci_request_regions(struct pci_dev *pdev, const char *res_name) { return -ENODEV; }
-static inline void pci_release_regions(struct pci_dev *pdev) { }
-static inline void pci_set_master(struct pci_dev *dev) { }
-static inline int pci_set_dma_mask(struct pci_dev *dev, u64 mask) { return -ENODEV; }
-static inline int pci_set_consistent_dma_mask(struct pci_dev *dev, u64 mask) { return -ENODEV; }
-static inline void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar) { return NULL; }
-static inline void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen) { return NULL; }
-static inline void pci_iounmap(struct pci_dev *dev, void __iomem *addr) { }
-
-static inline struct irq_domain *pci_host_bridge_of_msi_domain(struct pci_bus *bus) { return NULL; }
-static inline bool pci_host_of_has_msi_map(struct device *dev) { return false; }
-static inline struct device_node *pci_device_to_OF_node(const struct pci_dev *pdev) { return NULL; }
-static inline struct device_node *pci_bus_to_OF_node(struct pci_bus *bus) { return NULL; }
-static inline struct irq_domain *pci_host_bridge_acpi_msi_domain(struct pci_bus *bus) { return NULL; }
-static inline bool pci_pr3_present(struct pci_dev *pdev) { return false; }
-
-static inline enum pci_bus_speed pcie_get_speed_cap(struct pci_dev *dev) { return PCI_SPEED_UNKNOWN; }
-static inline enum pcie_link_width pcie_get_width_cap(struct pci_dev *dev) { return PCIE_LNK_WIDTH_UNKNOWN; }
-
-static inline int pci_enable_msi(struct pci_dev *dev) { return -ENOSYS; }
-static inline void pci_disable_msi(struct pci_dev *dev) { }
-static inline int pci_alloc_irq_vectors(struct pci_dev *dev, unsigned int min_vecs,
-		unsigned int max_vecs, unsigned int flags) { return -ENOSYS; }
-static inline void pci_free_irq_vectors(struct pci_dev *dev) { }
-
-static inline void pci_add_dma_alias(struct pci_dev *dev, u8 devfn_from, unsigned nr_devfns) { }
-static inline bool pci_devs_are_dma_aliases(struct pci_dev *dev1, struct pci_dev *dev2) { return false; }
-static inline int pci_for_each_dma_alias(struct pci_dev *pdev,
-			   int (*fn)(struct pci_dev *pdev, u16 alias, void *data), void *data) { return 0; }
-
-static inline int pci_read_config_byte(const struct pci_dev *dev, int where, u8 *val) { *val = 0; return -ENODEV; }
-static inline int pci_read_config_word(const struct pci_dev *dev, int where, u16 *val) { *val = 0; return -ENODEV; }
-static inline int pci_read_config_dword(const struct pci_dev *dev, int where, u32 *val) { *val = 0; return -ENODEV; }
-static inline int pci_write_config_byte(const struct pci_dev *dev, int where, u8 val) { return -ENODEV; }
-static inline int pci_write_config_word(const struct pci_dev *dev, int where, u16 val) { return -ENODEV; }
-static inline int pci_write_config_dword(const struct pci_dev *dev, int where, u32 val) { return -ENODEV; }
+/* All PCI stub functions removed - CONFIG_PCI not set */
 
 #include <linux/dma-mapping.h>
 

@@ -46,32 +46,7 @@ static inline void gart_iommu_hole_init(void)
 
 extern int agp_amd64_init(void);
 
-static inline void gart_set_size_and_enable(struct pci_dev *dev, u32 order)
-{
-	u32 ctl;
-
-	 
-	ctl = order << 1;
-
-	pci_write_config_dword(dev, AMD64_GARTAPERTURECTL, ctl);
-}
-
-static inline void enable_gart_translation(struct pci_dev *dev, u64 addr)
-{
-	u32 tmp, ctl;
-
-	 
-	addr >>= 12;
-	tmp = (u32) addr<<4;
-	tmp &= ~0xf;
-	pci_write_config_dword(dev, AMD64_GARTTABLEBASE, tmp);
-
-	 
-	pci_read_config_dword(dev, AMD64_GARTAPERTURECTL, &ctl);
-	ctl |= GARTEN | DISTLBWALKPRB;
-	ctl &= ~(DISGARTCPU | DISGARTIO);
-	pci_write_config_dword(dev, AMD64_GARTAPERTURECTL, ctl);
-}
+/* gart_set_size_and_enable, enable_gart_translation removed - unused */
 
 static inline int aperture_valid(u64 aper_base, u32 aper_size, u32 min_size)
 {

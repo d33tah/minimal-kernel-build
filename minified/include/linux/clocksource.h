@@ -65,26 +65,7 @@ struct clocksource {
 #define CLOCK_SOURCE_VERIFY_PERCPU		0x200
 #define CLOCKSOURCE_MASK(bits) GENMASK_ULL((bits) - 1, 0)
 
-static inline u32 clocksource_freq2mult(u32 freq, u32 shift_constant, u64 from)
-{
-	 
-	u64 tmp = ((u64)from) << shift_constant;
-
-	tmp += freq/2;  
-	do_div(tmp, freq);
-
-	return (u32)tmp;
-}
-
-static inline u32 clocksource_khz2mult(u32 khz, u32 shift_constant)
-{
-	return clocksource_freq2mult(khz, shift_constant, NSEC_PER_MSEC);
-}
-
-static inline u32 clocksource_hz2mult(u32 hz, u32 shift_constant)
-{
-	return clocksource_freq2mult(hz, shift_constant, NSEC_PER_SEC);
-}
+/* clocksource_freq2mult, clocksource_khz2mult, clocksource_hz2mult removed - unused */
 
 static inline s64 clocksource_cyc2ns(u64 cycles, u32 mult, u32 shift)
 {
@@ -128,15 +109,7 @@ static inline int clocksource_register_khz(struct clocksource *cs, u32 khz)
 	return __clocksource_register_scale(cs, 1000, khz);
 }
 
-static inline void __clocksource_update_freq_hz(struct clocksource *cs, u32 hz)
-{
-	__clocksource_update_freq_scale(cs, 1, hz);
-}
-
-static inline void __clocksource_update_freq_khz(struct clocksource *cs, u32 khz)
-{
-	__clocksource_update_freq_scale(cs, 1000, khz);
-}
+/* __clocksource_update_freq_hz, __clocksource_update_freq_khz removed - unused */
 
 extern void clocksource_arch_init(struct clocksource *cs);
 

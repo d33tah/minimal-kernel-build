@@ -46,10 +46,7 @@ static inline int ktime_compare(const ktime_t cmp1, const ktime_t cmp2)
 	return 0;
 }
 
-static inline bool ktime_after(const ktime_t cmp1, const ktime_t cmp2)
-{
-	return ktime_compare(cmp1, cmp2) > 0;
-}
+/* ktime_after removed - unused */
 
 static inline bool ktime_before(const ktime_t cmp1, const ktime_t cmp2)
 {
@@ -72,30 +69,7 @@ static inline s64 ktime_divns(const ktime_t kt, s64 div)
 	}
 }
 
-static inline s64 ktime_to_us(const ktime_t kt)
-{
-	return ktime_divns(kt, NSEC_PER_USEC);
-}
-
-static inline s64 ktime_to_ms(const ktime_t kt)
-{
-	return ktime_divns(kt, NSEC_PER_MSEC);
-}
-
-static inline s64 ktime_us_delta(const ktime_t later, const ktime_t earlier)
-{
-       return ktime_to_us(ktime_sub(later, earlier));
-}
-
-static inline s64 ktime_ms_delta(const ktime_t later, const ktime_t earlier)
-{
-	return ktime_to_ms(ktime_sub(later, earlier));
-}
-
-static inline ktime_t ktime_add_us(const ktime_t kt, const u64 usec)
-{
-	return ktime_add_ns(kt, usec * NSEC_PER_USEC);
-}
+/* ktime_to_us, ktime_to_ms, ktime_us_delta, ktime_ms_delta, ktime_add_us removed - unused */
 
 extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);
 

@@ -136,14 +136,4 @@ extern void ww_mutex_unlock(struct ww_mutex *lock);
 extern int __must_check ww_mutex_trylock(struct ww_mutex *lock,
 					 struct ww_acquire_ctx *ctx);
 
-static inline void ww_mutex_destroy(struct ww_mutex *lock)
-{
-	mutex_destroy(&lock->base);
-}
-
-static inline bool ww_mutex_is_locked(struct ww_mutex *lock)
-{
-	return ww_mutex_base_is_locked(&lock->base);
-}
-
 #endif

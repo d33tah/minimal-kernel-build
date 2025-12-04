@@ -57,13 +57,6 @@ do {								\
 	__init_rwsem((sem), #sem, &__key);			\
 } while (0)
 
-static inline int rwsem_is_contended(struct rw_semaphore *sem)
-{
-	return !list_empty(&sem->wait_list);
-}
-
-
-
 extern void down_read(struct rw_semaphore *sem);
 extern int __must_check down_read_interruptible(struct rw_semaphore *sem);
 extern int __must_check down_read_killable(struct rw_semaphore *sem);

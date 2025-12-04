@@ -35,34 +35,10 @@ tracepoint_probe_register_prio_may_exist(struct tracepoint *tp, void *probe, voi
 					 int prio);
 extern int
 tracepoint_probe_unregister(struct tracepoint *tp, void *probe, void *data);
-static inline int
-tracepoint_probe_register_may_exist(struct tracepoint *tp, void *probe,
-				    void *data)
-{
-	return tracepoint_probe_register_prio_may_exist(tp, probe, data,
-							TRACEPOINT_DEFAULT_PRIO);
-}
-/* for_each_kernel_tracepoint removed - unused */
 
-static inline bool trace_module_has_bad_taint(struct module *mod)
-{
-	return false;
-}
-static inline
-int register_tracepoint_module_notifier(struct notifier_block *nb)
-{
-	return 0;
-}
-static inline
-int unregister_tracepoint_module_notifier(struct notifier_block *nb)
-{
-	return 0;
-}
-
-static inline void tracepoint_synchronize_unregister(void)
-{ }
-
-/* syscall_regfunc/syscall_unregfunc removed - unused */
+/* tracepoint_probe_register_may_exist removed - unused */
+/* trace_module_has_bad_taint, register/unregister_tracepoint_module_notifier removed - unused */
+/* tracepoint_synchronize_unregister, tracepoint_ptr_deref removed - unused */
 
 #ifndef PARAMS
 #define PARAMS(args...) args
@@ -70,11 +46,6 @@ static inline void tracepoint_synchronize_unregister(void)
 
 #define TRACE_DEFINE_ENUM(x)
 #define TRACE_DEFINE_SIZEOF(x)
-
-static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
-{
-	return offset_to_ptr(p);
-}
 
 #define __TRACEPOINT_ENTRY(name)					\
 	asm("	.section \"__tracepoints_ptrs\", \"a\"		\n"	\

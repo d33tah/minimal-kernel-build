@@ -195,12 +195,6 @@ extern int send_sig(int, struct task_struct *, int);
 extern int zap_other_threads(struct task_struct *p);
 extern int do_sigaction(int, struct k_sigaction *, struct k_sigaction *);
 
-static inline void clear_notify_signal(void)
-{
-	clear_thread_flag(TIF_NOTIFY_SIGNAL);
-	smp_mb__after_atomic();
-}
-
 static inline bool __set_notify_signal(struct task_struct *task)
 {
 	return !test_and_set_tsk_thread_flag(task, TIF_NOTIFY_SIGNAL) &&
@@ -211,12 +205,6 @@ static inline void set_notify_signal(struct task_struct *task)
 {
 	if (__set_notify_signal(task))
 		kick_process(task);
-}
-
-static inline int restart_syscall(void)
-{
-	set_tsk_thread_flag(current, TIF_SIGPENDING);
-	return -ERESTARTNOINTR;
 }
 
 static inline int task_sigpending(struct task_struct *p)
@@ -417,11 +405,6 @@ static inline struct pid *task_pgrp(struct task_struct *task)
 static inline struct pid *task_session(struct task_struct *task)
 {
 	return task->signal->pids[PIDTYPE_SID];
-}
-
-static inline int get_nr_threads(struct task_struct *task)
-{
-	return task->signal->nr_threads;
 }
 
 static inline bool thread_group_leader(struct task_struct *p)

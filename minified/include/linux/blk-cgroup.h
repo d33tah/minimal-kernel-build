@@ -20,7 +20,6 @@ static inline struct cgroup_subsys_state *bio_blkcg_css(struct bio *bio)
 	return NULL;
 }
 
-int blkcg_set_fc_appid(char *app_id, u64 cgrp_id, size_t app_id_len);
-char *blkcg_get_fc_appid(struct bio *bio);
+/* blkcg_set_fc_appid, blkcg_get_fc_appid removed - unused */
 
 #endif	 

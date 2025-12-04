@@ -141,16 +141,7 @@ static inline void sysfs_remove_file_ns(struct kobject *kobj,
 {
 }
 
-static inline int sysfs_create_bin_file(struct kobject *kobj,
-					const struct bin_attribute *attr)
-{
-	return 0;
-}
-
-static inline void sysfs_remove_bin_file(struct kobject *kobj,
-					 const struct bin_attribute *attr)
-{
-}
+/* sysfs_create_bin_file, sysfs_remove_bin_file removed - unused */
 
 static inline int sysfs_create_link(struct kobject *kobj,
 				    struct kobject *target, const char *name)

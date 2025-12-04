@@ -1,3 +1,12 @@
+--- 2025-12-05 00:17 ---
+SESSION PROGRESS
+
+Changes this commit:
+8. -17 LOC: memcontrol.h - removed page_memcg_check, folio_memcg_lock,
+   folio_memcg_unlock, __mod_memcg_state, mod_memcg_state
+
+Total session: ~149 LOC removed
+
 --- 2025-12-05 00:12 ---
 SESSION PROGRESS
 

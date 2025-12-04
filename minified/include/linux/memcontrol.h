@@ -40,13 +40,6 @@ static inline struct mem_cgroup *page_memcg(struct page *page)
 	return NULL;
 }
 
-static inline struct mem_cgroup *page_memcg_check(struct page *page)
-{
-	return NULL;
-}
-
-/* folio_memcg_kmem removed - unused */
-
 static inline bool PageMemcgKmem(struct page *page)
 {
 	return false;
@@ -130,14 +123,6 @@ static inline void unlock_page_memcg(struct page *page)
 {
 }
 
-static inline void folio_memcg_lock(struct folio *folio)
-{
-}
-
-static inline void folio_memcg_unlock(struct folio *folio)
-{
-}
-
 static inline void mem_cgroup_handle_over_high(void)
 {
 }
@@ -153,15 +138,6 @@ static inline void mem_cgroup_exit_user_fault(void)
 static inline bool mem_cgroup_oom_synchronize(bool wait)
 {
 	return false;
-}
-
-
-static inline void __mod_memcg_state(struct mem_cgroup *memcg, int idx, int nr)
-{
-}
-
-static inline void mod_memcg_state(struct mem_cgroup *memcg, int idx, int nr)
-{
 }
 
 static inline void mod_memcg_page_state(struct page *page, int idx, int val)

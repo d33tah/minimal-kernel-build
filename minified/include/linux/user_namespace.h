@@ -121,14 +121,6 @@ static inline int create_user_ns(struct cred *new)
 	return -EINVAL;
 }
 
-static inline int unshare_userns(unsigned long unshare_flags,
-				 struct cred **new_cred)
-{
-	if (unshare_flags & CLONE_NEWUSER)
-		return -EINVAL;
-	return 0;
-}
-
 static inline void put_user_ns(struct user_namespace *ns)
 {
 }

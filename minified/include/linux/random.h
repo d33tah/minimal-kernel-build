@@ -27,14 +27,6 @@ static inline void add_latent_entropy(void)
 static inline void add_latent_entropy(void) { }
 #endif
 
-#if IS_ENABLED(CONFIG_VMGENID)
-void add_vmfork_randomness(const void *unique_vm_id, size_t len);
-int register_random_vmfork_notifier(struct notifier_block *nb);
-int unregister_random_vmfork_notifier(struct notifier_block *nb);
-#else
-static inline int register_random_vmfork_notifier(struct notifier_block *nb) { return 0; }
-static inline int unregister_random_vmfork_notifier(struct notifier_block *nb) { return 0; }
-#endif
 
 void get_random_bytes(void *buf, size_t len);
 u32 get_random_u32(void);
@@ -56,10 +48,6 @@ int wait_for_random_bytes(void);
 
 #include <linux/prandom.h>
 
-static inline bool __must_check arch_get_random_long(unsigned long *v) { return false; }
-static inline bool __must_check arch_get_random_int(unsigned int *v) { return false; }
-static inline bool __must_check arch_get_random_seed_long(unsigned long *v) { return false; }
-static inline bool __must_check arch_get_random_seed_int(unsigned int *v) { return false; }
 
 #ifndef MODULE
 extern const struct file_operations random_fops, urandom_fops;

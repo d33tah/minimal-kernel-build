@@ -128,8 +128,6 @@ struct kernfs_syscall_ops {
 			 struct kernfs_root *root);
 };
 
-struct kernfs_node *kernfs_root_to_node(struct kernfs_root *root);
-
 struct kernfs_open_file {
 	 
 	struct kernfs_node	*kn;
@@ -188,22 +186,8 @@ struct kernfs_fs_context {
 };
 
 
-static inline struct kernfs_node *
-kernfs_find_and_get_ns(struct kernfs_node *parent, const char *name,
-		       const void *ns)
-{ return NULL; }
-
-static inline void kernfs_get(struct kernfs_node *kn) { }
 static inline void kernfs_put(struct kernfs_node *kn) { }
 
-static inline void kernfs_notify(struct kernfs_node *kn) { }
-
 static inline void kernfs_init(void) { }
-
-static inline struct kernfs_node *
-kernfs_find_and_get(struct kernfs_node *kn, const char *name)
-{
-	return kernfs_find_and_get_ns(kn, name, NULL);
-}
 
 #endif

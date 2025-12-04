@@ -59,7 +59,6 @@ struct user;
 
   static inline void __might_resched(const char *file, int line,
 				     unsigned int offsets) { }
-static inline void __might_sleep(const char *file, int line) { }
 # define might_sleep() do { might_resched(); } while (0)
 # define cant_sleep() do { } while (0)
 # define cant_migrate()		do { } while (0)

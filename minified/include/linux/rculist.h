@@ -6,12 +6,7 @@
 #include <linux/list.h>
 #include <linux/rcupdate.h>
 
-static inline void INIT_LIST_HEAD_RCU(struct list_head *list)
-{
-	WRITE_ONCE(list->next, list);
-	WRITE_ONCE(list->prev, list);
-}
-
+/* INIT_LIST_HEAD_RCU removed - unused */
 
 #define list_next_rcu(list)	(*((struct list_head __rcu **)(&(list)->next)))
 

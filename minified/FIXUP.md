@@ -1,3 +1,12 @@
+--- 2025-12-05 00:10 ---
+SESSION PROGRESS
+
+Changes this commit:
+6. -83 LOC: highmem.h - removed unused copy_highpage, memcpy_page, memmove_page,
+   memset_page, memcpy_from_page, memzero_page, folio_zero_segments, folio_zero_segment
+
+Total session: ~123 LOC removed
+
 --- 2025-12-05 00:05 ---
 SESSION PROGRESS
 

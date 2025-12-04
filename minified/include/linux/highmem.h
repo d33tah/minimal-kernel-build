@@ -109,67 +109,6 @@ static inline void copy_user_highpage(struct page *to, struct page *from,
 
 #endif
 
-#ifndef __HAVE_ARCH_COPY_HIGHPAGE
-
-static inline void copy_highpage(struct page *to, struct page *from)
-{
-	char *vfrom, *vto;
-
-	vfrom = kmap_local_page(from);
-	vto = kmap_local_page(to);
-	copy_page(vto, vfrom);
-	kunmap_local(vto);
-	kunmap_local(vfrom);
-}
-
-#endif
-
-static inline void memcpy_page(struct page *dst_page, size_t dst_off,
-			       struct page *src_page, size_t src_off,
-			       size_t len)
-{
-	char *dst = kmap_local_page(dst_page);
-	char *src = kmap_local_page(src_page);
-
-	VM_BUG_ON(dst_off + len > PAGE_SIZE || src_off + len > PAGE_SIZE);
-	memcpy(dst + dst_off, src + src_off, len);
-	kunmap_local(src);
-	kunmap_local(dst);
-}
-
-static inline void memmove_page(struct page *dst_page, size_t dst_off,
-			       struct page *src_page, size_t src_off,
-			       size_t len)
-{
-	char *dst = kmap_local_page(dst_page);
-	char *src = kmap_local_page(src_page);
-
-	VM_BUG_ON(dst_off + len > PAGE_SIZE || src_off + len > PAGE_SIZE);
-	memmove(dst + dst_off, src + src_off, len);
-	kunmap_local(src);
-	kunmap_local(dst);
-}
-
-static inline void memset_page(struct page *page, size_t offset, int val,
-			       size_t len)
-{
-	char *addr = kmap_local_page(page);
-
-	VM_BUG_ON(offset + len > PAGE_SIZE);
-	memset(addr + offset, val, len);
-	kunmap_local(addr);
-}
-
-static inline void memcpy_from_page(char *to, struct page *page,
-				    size_t offset, size_t len)
-{
-	char *from = kmap_local_page(page);
-
-	VM_BUG_ON(offset + len > PAGE_SIZE);
-	memcpy(to, from + offset, len);
-	kunmap_local(from);
-}
-
 static inline void memcpy_to_page(struct page *page, size_t offset,
 				  const char *from, size_t len)
 {
@@ -179,28 +118,6 @@ static inline void memcpy_to_page(struct page *page, size_t offset,
 	memcpy(to + offset, from, len);
 	flush_dcache_page(page);
 	kunmap_local(to);
-}
-
-static inline void memzero_page(struct page *page, size_t offset, size_t len)
-{
-	char *addr = kmap_local_page(page);
-
-	VM_BUG_ON(offset + len > PAGE_SIZE);
-	memset(addr + offset, 0, len);
-	flush_dcache_page(page);
-	kunmap_local(addr);
-}
-
-static inline void folio_zero_segments(struct folio *folio,
-		size_t start1, size_t xend1, size_t start2, size_t xend2)
-{
-	zero_user_segments(&folio->page, start1, xend1, start2, xend2);
-}
-
-static inline void folio_zero_segment(struct folio *folio,
-		size_t start, size_t xend)
-{
-	zero_user_segments(&folio->page, start, xend, 0, 0);
 }
 
 static inline void folio_zero_range(struct folio *folio,

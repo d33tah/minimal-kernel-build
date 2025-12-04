@@ -28,10 +28,7 @@ static inline bool task_is_realtime(struct task_struct *tsk)
 	return false;
 }
 
-static inline struct task_struct *rt_mutex_get_top_task(struct task_struct *task)
-{
-	return NULL;
-}
+/* rt_mutex_get_top_task removed - unused */
 # define rt_mutex_adjust_pi(p)		do { } while (0)
 static inline bool tsk_is_pi_blocked(struct task_struct *tsk)
 {

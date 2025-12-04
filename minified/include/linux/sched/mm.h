@@ -35,10 +35,7 @@ static inline void mmget(struct mm_struct *mm)
 	atomic_inc(&mm->mm_users);
 }
 
-static inline bool mmget_not_zero(struct mm_struct *mm)
-{
-	return atomic_inc_not_zero(&mm->mm_users);
-}
+/* mmget_not_zero removed - unused */
 
 extern void mmput(struct mm_struct *);
 
@@ -101,19 +98,7 @@ static inline gfp_t current_gfp_context(gfp_t flags)
 static inline void fs_reclaim_acquire(gfp_t gfp_mask) { }
 static inline void fs_reclaim_release(gfp_t gfp_mask) { }
 
-static inline void memalloc_retry_wait(gfp_t gfp_flags)
-{
-	 
-	__set_current_state(TASK_UNINTERRUPTIBLE);
-	gfp_flags = current_gfp_context(gfp_flags);
-	if (gfpflags_allow_blocking(gfp_flags) &&
-	    !(gfp_flags & __GFP_NORETRY))
-		 
-		io_schedule_timeout(1);
-	else
-		 
-		io_schedule_timeout(HZ/50);
-}
+/* memalloc_retry_wait removed - unused */
 
 static inline void might_alloc(gfp_t gfp_mask)
 {

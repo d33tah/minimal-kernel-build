@@ -14,14 +14,6 @@
 #define NICE_TO_PRIO(nice)	((nice) + DEFAULT_PRIO)
 #define PRIO_TO_NICE(prio)	((prio) - DEFAULT_PRIO)
 
-static inline long nice_to_rlimit(long nice)
-{
-	return (MAX_NICE - nice + 1);
-}
-
-static inline long rlimit_to_nice(long prio)
-{
-	return (MAX_NICE - prio + 1);
-}
+/* nice_to_rlimit, rlimit_to_nice removed - unused */
 
 #endif  

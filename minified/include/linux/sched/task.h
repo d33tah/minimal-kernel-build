@@ -96,11 +96,7 @@ static inline void put_task_struct(struct task_struct *t)
 		__put_task_struct(t);
 }
 
-static inline void put_task_struct_many(struct task_struct *t, int nr)
-{
-	if (refcount_sub_and_test(nr, &t->usage))
-		__put_task_struct(t);
-}
+/* put_task_struct_many removed - unused */
 
 void put_task_struct_rcu_user(struct task_struct *task);
 

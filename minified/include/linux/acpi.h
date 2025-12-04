@@ -30,50 +30,11 @@ union acpi_object;
 
 
 struct fwnode_handle;
-
 struct acpi_device;
 
-static inline bool
-acpi_dev_hid_uid_match(struct acpi_device *adev, const char *hid2, const char *uid2)
-{
-	return false;
-}
-
-static inline struct acpi_device *
-acpi_dev_get_first_match_dev(const char *hid, const char *uid, s64 hrv)
-{
-	return NULL;
-}
-
-static inline struct acpi_device *to_acpi_device_node(const struct fwnode_handle *fwnode)
-{
-	return NULL;
-}
-
-static inline struct acpi_data_node *to_acpi_data_node(const struct fwnode_handle *fwnode)
-{
-	return NULL;
-}
-
-static inline struct fwnode_handle *acpi_fwnode_handle(struct acpi_device *adev)
-{
-	return NULL;
-}
-
-static inline bool has_acpi_companion(struct device *dev)
-{
-	return false;
-}
-
-static inline const char *acpi_dev_name(struct acpi_device *adev)
-{
-	return NULL;
-}
-
-static inline struct device *acpi_get_first_physical_node(struct acpi_device *adev)
-{
-	return NULL;
-}
+/* acpi_dev_hid_uid_match, acpi_dev_get_first_match_dev, to_acpi_device_node removed - unused */
+/* to_acpi_data_node, acpi_fwnode_handle, has_acpi_companion, acpi_dev_name removed - unused */
+/* acpi_get_first_physical_node removed - unused */
 
 static inline void acpi_early_init(void) { }
 static inline void acpi_subsystem_init(void) { }
@@ -99,16 +60,7 @@ static inline int acpi_mps_check(void)
 struct acpi_table_header;
 struct acpi_device_id;
 
-static inline const struct acpi_device_id *acpi_match_device(
-	const struct acpi_device_id *ids, const struct device *dev)
-{
-	return NULL;
-}
-
-static inline const void *acpi_device_get_match_data(const struct device *dev)
-{
-	return NULL;
-}
+/* acpi_match_device, acpi_device_get_match_data removed - unused */
 
 static inline bool acpi_driver_match_device(struct device *dev,
 					    const struct device_driver *drv)

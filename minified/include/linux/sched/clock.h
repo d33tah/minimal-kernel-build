@@ -21,11 +21,6 @@ extern void sched_clock_tick_stable(void);
 extern void sched_clock_idle_sleep_event(void);
 extern void sched_clock_idle_wakeup_event(void);
 
-static inline u64 cpu_clock(int cpu)
-{
-	return sched_clock_cpu(cpu);
-}
-
 static inline u64 local_clock(void)
 {
 	return sched_clock_cpu(raw_smp_processor_id());

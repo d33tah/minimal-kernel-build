@@ -9,11 +9,6 @@ extern void dump_cpu_task(int cpu);
 
 extern void show_state_filter(unsigned int state_filter);
 
-static inline void show_state(void)
-{
-	show_state_filter(0);
-}
-
 struct pt_regs;
 
 extern void show_regs(struct pt_regs *);

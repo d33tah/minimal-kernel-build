@@ -10,8 +10,6 @@ enum cpu_idle_type {
 	CPU_MAX_IDLE_TYPES
 };
 
-static inline void wake_up_if_idle(int cpu) { }
-
 #ifdef TIF_POLLING_NRFLAG
 
 static inline void __current_set_polling(void)

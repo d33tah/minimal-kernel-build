@@ -18,13 +18,6 @@ static inline u64 task_gtime(struct task_struct *t)
 	return t->gtime;
 }
 
-static inline void task_cputime_scaled(struct task_struct *t,
-				       u64 *utimescaled,
-				       u64 *stimescaled)
-{
-	task_cputime(t, utimescaled, stimescaled);
-}
-
 extern void task_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st);
 extern void thread_group_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st);
 extern void cputime_adjust(struct task_cputime *curr, struct prev_cputime *prev,

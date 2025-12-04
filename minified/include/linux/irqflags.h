@@ -16,7 +16,7 @@ static inline unsigned long ftrace_graph_ret_addr(struct task_struct *task, int 
 {
 	return ret;
 }
-static inline void disable_trace_on_warning(void) { }
+/* disable_trace_on_warning removed - unused */
 static inline bool is_ftrace_trampoline(unsigned long addr)
 {
 	return false;

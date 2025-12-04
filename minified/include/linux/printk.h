@@ -14,26 +14,6 @@ extern int oops_in_progress;
 
 #define PRINTK_MAX_SINGLE_HEADER_LEN 2
 
-static inline int printk_get_level(const char *buffer)
-{
-	if (buffer[0] == KERN_SOH_ASCII && buffer[1]) {
-		switch (buffer[1]) {
-		case '0' ... '7':
-		case 'c':	 
-			return buffer[1];
-		}
-	}
-	return 0;
-}
-
-static inline const char *printk_skip_level(const char *buffer)
-{
-	if (printk_get_level(buffer))
-		return buffer + 2;
-
-	return buffer;
-}
-
 #define CONSOLE_EXT_LOG_MAX	8192
 
 #define MESSAGE_LOGLEVEL_DEFAULT CONFIG_MESSAGE_LOGLEVEL_DEFAULT

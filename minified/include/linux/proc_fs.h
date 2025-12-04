@@ -45,21 +45,6 @@ enum proc_pidonly {
 	PROC_PIDONLY_ON  = 1,
 };
 
-struct proc_fs_info {
-	struct pid_namespace *pid_ns;
-	struct dentry *proc_self;         
-	struct dentry *proc_thread_self;  
-	kgid_t pid_gid;
-	enum proc_hidepid hide_pid;
-	enum proc_pidonly pidonly;
-};
-
-static inline struct proc_fs_info *proc_sb_info(struct super_block *sb)
-{
-	return sb->s_fs_info;
-}
-
-
 static inline void proc_root_init(void)
 {
 }
@@ -68,57 +53,11 @@ static inline void proc_flush_pid(struct pid *pid)
 {
 }
 
-static inline struct proc_dir_entry *proc_symlink(const char *name,
-		struct proc_dir_entry *parent,const char *dest) { return NULL;}
-static inline struct proc_dir_entry *proc_mkdir(const char *name,
-	struct proc_dir_entry *parent) {return NULL;}
-static inline struct proc_dir_entry *proc_create_mount_point(const char *name) { return NULL; }
-static inline struct proc_dir_entry *_proc_mkdir(const char *name, umode_t mode,
-		struct proc_dir_entry *parent, void *data, bool force_lookup)
-{
-	return NULL;
-}
-static inline struct proc_dir_entry *proc_mkdir_data(const char *name,
-	umode_t mode, struct proc_dir_entry *parent, void *data) { return NULL; }
-static inline struct proc_dir_entry *proc_mkdir_mode(const char *name,
-	umode_t mode, struct proc_dir_entry *parent) { return NULL; }
-#define proc_create_seq_private(name, mode, parent, ops, size, data) ({NULL;})
-#define proc_create_seq_data(name, mode, parent, ops, data) ({NULL;})
-#define proc_create_seq(name, mode, parent, ops) ({NULL;})
-#define proc_create_single(name, mode, parent, show) ({NULL;})
-#define proc_create_single_data(name, mode, parent, show, data) ({NULL;})
-
-static inline struct proc_dir_entry *
-proc_create(const char *name, umode_t mode, struct proc_dir_entry *parent,
-	    const struct proc_ops *proc_ops)
-{ return NULL; }
-
-static inline struct proc_dir_entry *
-proc_create_data(const char *name, umode_t mode, struct proc_dir_entry *parent,
-		 const struct proc_ops *proc_ops, void *data)
-{ return NULL; }
-
-/* proc_set_size, proc_set_user, proc_get_parent_data removed - unused */
 static inline void *pde_data(const struct inode *inode) {BUG(); return NULL;}
-
-static inline void proc_remove(struct proc_dir_entry *de) {}
-#define remove_proc_entry(name, parent) do {} while (0)
-/* remove_proc_subtree removed - unused */
-
-#define proc_create_net_data(name, mode, parent, ops, state_size, data) ({NULL;})
-#define proc_create_net(name, mode, parent, state_size, ops) ({NULL;})
-#define proc_create_net_single(name, mode, parent, show, data) ({NULL;})
-
-/* tgid_pidfd_to_pid, proc_net_mkdir removed - unused */
 
 struct ns_common;
 int open_related_ns(struct ns_common *ns,
 		   struct ns_common *(*get_ns)(struct ns_common *ns));
-
-static inline struct pid_namespace *proc_pid_ns(struct super_block *sb)
-{
-	return proc_sb_info(sb)->pid_ns;
-}
 
 bool proc_ns_file(const struct file *file);
 

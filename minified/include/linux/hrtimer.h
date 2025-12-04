@@ -218,18 +218,6 @@ static inline void hrtimer_start_expires(struct hrtimer *timer,
 void hrtimer_sleeper_start_expires(struct hrtimer_sleeper *sl,
 				   enum hrtimer_mode mode);
 
-static inline void hrtimer_restart(struct hrtimer *timer)
-{
-	hrtimer_start_expires(timer, HRTIMER_MODE_ABS);
-}
-
-extern ktime_t __hrtimer_get_remaining(const struct hrtimer *timer, bool adjust);
-
-static inline ktime_t hrtimer_get_remaining(const struct hrtimer *timer)
-{
-	return __hrtimer_get_remaining(timer, false);
-}
-
 extern u64 hrtimer_get_next_event(void);
 extern u64 hrtimer_next_event_without(const struct hrtimer *exclude);
 

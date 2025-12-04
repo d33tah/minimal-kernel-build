@@ -109,11 +109,6 @@ static inline int printk_ratelimit(void)
 {
 	return 0;
 }
-static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies,
-					  unsigned int interval_msec)
-{
-	return false;
-}
 
 static inline void wake_up_klogd(void)
 {

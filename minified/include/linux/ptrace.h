@@ -66,12 +66,7 @@ int generic_ptrace_peekdata(struct task_struct *tsk, unsigned long addr,
 int generic_ptrace_pokedata(struct task_struct *tsk, unsigned long addr,
 			    unsigned long data);
 
-static inline struct task_struct *ptrace_parent(struct task_struct *task)
-{
-	if (unlikely(task->ptrace))
-		return rcu_dereference(task->parent);
-	return NULL;
-}
+/* ptrace_parent removed - unused */
 
 static inline bool ptrace_event_enabled(struct task_struct *task, int event)
 {

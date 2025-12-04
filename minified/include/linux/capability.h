@@ -119,24 +119,8 @@ static inline bool cap_issubset(const kernel_cap_t a, const kernel_cap_t set)
 
 /* cap_drop_fs_set, cap_raise_fs_set, cap_drop_nfsd_set, cap_raise_nfsd_set removed - unused */
 
-static inline bool has_capability(struct task_struct *t, int cap)
-{
-	return true;
-}
-static inline bool has_ns_capability(struct task_struct *t,
-			      struct user_namespace *ns, int cap)
-{
-	return true;
-}
-static inline bool has_capability_noaudit(struct task_struct *t, int cap)
-{
-	return true;
-}
-static inline bool has_ns_capability_noaudit(struct task_struct *t,
-				      struct user_namespace *ns, int cap)
-{
-	return true;
-}
+/* has_capability, has_ns_capability, has_capability_noaudit, has_ns_capability_noaudit removed - unused */
+
 static inline bool capable(int cap)
 {
 	return true;
@@ -145,14 +129,9 @@ static inline bool ns_capable(struct user_namespace *ns, int cap)
 {
 	return true;
 }
-static inline bool ns_capable_noaudit(struct user_namespace *ns, int cap)
-{
-	return true;
-}
-static inline bool ns_capable_setid(struct user_namespace *ns, int cap)
-{
-	return true;
-}
+
+/* ns_capable_noaudit, ns_capable_setid removed - unused */
+
 bool privileged_wrt_inode_uidgid(struct user_namespace *ns,
 				 struct user_namespace *mnt_userns,
 				 const struct inode *inode);

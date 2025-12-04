@@ -52,15 +52,9 @@ static inline bool xa_is_zero(const void *entry)
 	return unlikely(entry == XA_ZERO_ENTRY);
 }
 
-static inline bool xa_is_err(const void *entry)
-{
-	return unlikely(xa_is_internal(entry) &&
-			entry >= xa_mk_internal(-MAX_ERRNO));
-}
-
 static inline int xa_err(void *entry)
 {
-	if (xa_is_err(entry))
+	if (xa_is_internal(entry) && entry >= xa_mk_internal(-MAX_ERRNO))
 		return (long)entry >> 2;
 	return 0;
 }

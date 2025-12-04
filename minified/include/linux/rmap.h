@@ -159,19 +159,6 @@ dup:
 	return 0;
 }
 
-static inline int page_try_share_anon_rmap(struct page *page)
-{
-	VM_BUG_ON_PAGE(!PageAnon(page) || !PageAnonExclusive(page), page);
-
-	 
-	if (likely(!is_device_private_page(page) &&
-	    unlikely(page_maybe_dma_pinned(page))))
-		return -EBUSY;
-
-	ClearPageAnonExclusive(page);
-	return 0;
-}
-
 int folio_referenced(struct folio *, int is_locked,
 			struct mem_cgroup *memcg, unsigned long *vm_flags);
 

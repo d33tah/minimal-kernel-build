@@ -65,30 +65,12 @@ struct kprobe {
 	u32 flags;
 };
 
-#define KPROBE_FLAG_GONE	1  
-#define KPROBE_FLAG_DISABLED	2  
-#define KPROBE_FLAG_OPTIMIZED	4  
-#define KPROBE_FLAG_FTRACE	8  
+#define KPROBE_FLAG_GONE	1
+#define KPROBE_FLAG_DISABLED	2
+#define KPROBE_FLAG_OPTIMIZED	4
+#define KPROBE_FLAG_FTRACE	8
 
-static inline bool kprobe_gone(struct kprobe *p)
-{
-	return p->flags & KPROBE_FLAG_GONE;
-}
-
-static inline bool kprobe_disabled(struct kprobe *p)
-{
-	return p->flags & (KPROBE_FLAG_DISABLED | KPROBE_FLAG_GONE);
-}
-
-static inline bool kprobe_optimized(struct kprobe *p)
-{
-	return p->flags & KPROBE_FLAG_OPTIMIZED;
-}
-
-static inline bool kprobe_ftrace(struct kprobe *p)
-{
-	return p->flags & KPROBE_FLAG_FTRACE;
-}
+/* kprobe_gone, kprobe_disabled, kprobe_optimized, kprobe_ftrace removed - unused */
 
 struct kretprobe_holder {
 	struct kretprobe	*rp;
@@ -136,10 +118,7 @@ static inline int kprobe_fault_handler(struct pt_regs *regs, int trapnr)
 {
 	return 0;
 }
-static inline struct kprobe *get_kprobe(void *addr)
-{
-	return NULL;
-}
+/* get_kprobe removed - unused */
 static inline struct kprobe *kprobe_running(void)
 {
 	return NULL;
@@ -147,67 +126,18 @@ static inline struct kprobe *kprobe_running(void)
 #define kprobe_busy_begin()	do {} while (0)
 #define kprobe_busy_end()	do {} while (0)
 
-static inline int register_kprobe(struct kprobe *p)
-{
-	return -EOPNOTSUPP;
-}
-static inline int register_kprobes(struct kprobe **kps, int num)
-{
-	return -EOPNOTSUPP;
-}
-static inline void unregister_kprobe(struct kprobe *p)
-{
-}
-static inline void unregister_kprobes(struct kprobe **kps, int num)
-{
-}
-static inline int register_kretprobe(struct kretprobe *rp)
-{
-	return -EOPNOTSUPP;
-}
-static inline int register_kretprobes(struct kretprobe **rps, int num)
-{
-	return -EOPNOTSUPP;
-}
-static inline void unregister_kretprobe(struct kretprobe *rp)
-{
-}
-static inline void unregister_kretprobes(struct kretprobe **rps, int num)
-{
-}
+/* register_kprobe, register_kprobes, unregister_kprobe, unregister_kprobes removed - unused */
+/* register_kretprobe, register_kretprobes, unregister_kretprobe, unregister_kretprobes removed - unused */
+
 static inline void kprobe_flush_task(struct task_struct *tk)
 {
 }
 static inline void kprobe_free_init_mem(void)
 {
 }
-static inline int disable_kprobe(struct kprobe *kp)
-{
-	return -EOPNOTSUPP;
-}
-static inline int enable_kprobe(struct kprobe *kp)
-{
-	return -EOPNOTSUPP;
-}
 
-static inline bool within_kprobe_blacklist(unsigned long addr)
-{
-	return true;
-}
-static inline int kprobe_get_kallsym(unsigned int symnum, unsigned long *value,
-				     char *type, char *sym)
-{
-	return -ERANGE;
-}
-
-static inline int disable_kretprobe(struct kretprobe *rp)
-{
-	return disable_kprobe(&rp->kp);
-}
-static inline int enable_kretprobe(struct kretprobe *rp)
-{
-	return enable_kprobe(&rp->kp);
-}
+/* disable_kprobe, enable_kprobe, within_kprobe_blacklist, kprobe_get_kallsym removed - unused */
+/* disable_kretprobe, enable_kretprobe removed - unused */
 
 static inline bool is_kprobe_insn_slot(unsigned long addr)
 {
@@ -219,17 +149,7 @@ static inline bool is_kprobe_optinsn_slot(unsigned long addr)
 	return false;
 }
 
-static nokprobe_inline bool is_kretprobe_trampoline(unsigned long addr)
-{
-	return false;
-}
-
-static nokprobe_inline
-unsigned long kretprobe_find_ret_addr(struct task_struct *tsk, void *fp,
-				      struct llist_node **cur)
-{
-	return 0;
-}
+/* is_kretprobe_trampoline, kretprobe_find_ret_addr removed - unused */
 
 static nokprobe_inline bool kprobe_page_fault(struct pt_regs *regs,
 					      unsigned int trap)

@@ -1,3 +1,12 @@
+--- 2025-12-05 00:27 ---
+SESSION PROGRESS
+
+Changes this commit:
+9. -55 LOC: percpu-refcount.h - removed percpu_ref_tryget_many, percpu_ref_tryget,
+   percpu_ref_tryget_live_rcu, percpu_ref_tryget_live, percpu_ref_is_dying
+
+Total session: ~204 LOC removed
+
 --- 2025-12-05 00:23 ---
 SESSION NOTES
 

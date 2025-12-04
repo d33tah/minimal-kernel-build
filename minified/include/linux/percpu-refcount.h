@@ -102,57 +102,6 @@ static inline void percpu_ref_get(struct percpu_ref *ref)
 	percpu_ref_get_many(ref, 1);
 }
 
-static inline bool percpu_ref_tryget_many(struct percpu_ref *ref,
-					  unsigned long nr)
-{
-	unsigned long __percpu *percpu_count;
-	bool ret;
-
-	rcu_read_lock();
-
-	if (__ref_is_percpu(ref, &percpu_count)) {
-		this_cpu_add(*percpu_count, nr);
-		ret = true;
-	} else {
-		ret = atomic_long_add_unless(&ref->data->count, nr, 0);
-	}
-
-	rcu_read_unlock();
-
-	return ret;
-}
-
-static inline bool percpu_ref_tryget(struct percpu_ref *ref)
-{
-	return percpu_ref_tryget_many(ref, 1);
-}
-
-static inline bool percpu_ref_tryget_live_rcu(struct percpu_ref *ref)
-{
-	unsigned long __percpu *percpu_count;
-	bool ret = false;
-
-	WARN_ON_ONCE(!rcu_read_lock_held());
-
-	if (likely(__ref_is_percpu(ref, &percpu_count))) {
-		this_cpu_inc(*percpu_count);
-		ret = true;
-	} else if (!(ref->percpu_count_ptr & __PERCPU_REF_DEAD)) {
-		ret = atomic_long_inc_not_zero(&ref->data->count);
-	}
-	return ret;
-}
-
-static inline bool percpu_ref_tryget_live(struct percpu_ref *ref)
-{
-	bool ret = false;
-
-	rcu_read_lock();
-	ret = percpu_ref_tryget_live_rcu(ref);
-	rcu_read_unlock();
-	return ret;
-}
-
 static inline void percpu_ref_put_many(struct percpu_ref *ref, unsigned long nr)
 {
 	unsigned long __percpu *percpu_count;
@@ -170,11 +119,6 @@ static inline void percpu_ref_put_many(struct percpu_ref *ref, unsigned long nr)
 static inline void percpu_ref_put(struct percpu_ref *ref)
 {
 	percpu_ref_put_many(ref, 1);
-}
-
-static inline bool percpu_ref_is_dying(struct percpu_ref *ref)
-{
-	return ref->percpu_count_ptr & __PERCPU_REF_DEAD;
 }
 
 #endif

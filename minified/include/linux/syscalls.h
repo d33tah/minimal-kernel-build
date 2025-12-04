@@ -217,18 +217,7 @@ ssize_t ksys_readahead(int fd, loff_t offset, size_t count);
 extern int do_fchownat(int dfd, const char __user *filename, uid_t user,
 		       gid_t group, int flag);
 
-static inline long ksys_chown(const char __user *filename, uid_t user,
-			      gid_t group)
-{
-	return do_fchownat(AT_FDCWD, filename, user, group, 0);
-}
-
-static inline long ksys_lchown(const char __user *filename, uid_t user,
-			       gid_t group)
-{
-	return do_fchownat(AT_FDCWD, filename, user, group,
-			     AT_SYMLINK_NOFOLLOW);
-}
+/* ksys_chown, ksys_lchown removed - unused */
 
 extern long do_sys_ftruncate(unsigned int fd, loff_t length, int small);
 
@@ -237,22 +226,7 @@ static inline long ksys_ftruncate(unsigned int fd, loff_t length)
 	return do_sys_ftruncate(fd, length, 1);
 }
 
-extern long do_sys_truncate(const char __user *pathname, loff_t length);
-
-static inline long ksys_truncate(const char __user *pathname, loff_t length)
-{
-	return do_sys_truncate(pathname, length);
-}
-
-static inline unsigned int ksys_personality(unsigned int personality)
-{
-	unsigned int old = current->personality;
-
-	if (personality != 0xffffffff)
-		set_personality(personality);
-
-	return old;
-}
+/* ksys_truncate, ksys_personality removed - unused */
 
 /* IPC ksys_* declarations removed - unused */
 

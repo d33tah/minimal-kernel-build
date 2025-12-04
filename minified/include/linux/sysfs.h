@@ -119,11 +119,6 @@ struct sysfs_ops {
 };
 
 
-static inline int sysfs_create_dir_ns(struct kobject *kobj, const void *ns)
-{
-	return 0;
-}
-
 static inline void sysfs_remove_dir(struct kobject *kobj)
 {
 }
@@ -153,21 +148,10 @@ static inline void sysfs_remove_link(struct kobject *kobj, const char *name)
 {
 }
 
-static inline int sysfs_create_group(struct kobject *kobj,
-				     const struct attribute_group *grp)
-{
-	return 0;
-}
-
 static inline int sysfs_create_groups(struct kobject *kobj,
 				      const struct attribute_group **groups)
 {
 	return 0;
-}
-
-static inline void sysfs_remove_group(struct kobject *kobj,
-				      const struct attribute_group *grp)
-{
 }
 
 static inline void sysfs_remove_groups(struct kobject *kobj,

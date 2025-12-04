@@ -142,8 +142,6 @@ extern bool console_suspend_enabled;
 extern void suspend_console(void);
 extern void resume_console(void);
 
-int mda_console_init(void);
-
 static inline void vcs_make_sysfs(int index) { }
 static inline void vcs_remove_sysfs(int index) { }
 
@@ -156,7 +154,6 @@ extern atomic_t ignore_console_lock_warning;
 
 extern void console_init(void);
 
-void dummycon_register_output_notifier(struct notifier_block *nb);
-void dummycon_unregister_output_notifier(struct notifier_block *nb);
+/* dummycon notifiers removed - unused */
 
 #endif  

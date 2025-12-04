@@ -49,9 +49,7 @@ struct srcu_notifier_head {
 		(name)->head = NULL;		\
 	} while (0)
 
-/* srcu_init_notifier_head removed - unused */
-#define srcu_cleanup_notifier_head(name)	\
-		cleanup_srcu_struct(&(name)->srcu);
+/* srcu notifier macros removed - unused */
 
 #define ATOMIC_NOTIFIER_INIT(name) {				\
 		.lock = __SPIN_LOCK_UNLOCKED(name.lock),	\
@@ -61,13 +59,6 @@ struct srcu_notifier_head {
 		.head = NULL }
 #define RAW_NOTIFIER_INIT(name)	{				\
 		.head = NULL }
-
-#define SRCU_NOTIFIER_INIT(name, pcpu)				\
-	{							\
-		.mutex = __MUTEX_INITIALIZER(name.mutex),	\
-		.head = NULL,					\
-		.srcu = __SRCU_STRUCT_INIT(name.srcu, pcpu),	\
-	}
 
 #define ATOMIC_NOTIFIER_HEAD(name)				\
 	struct atomic_notifier_head name =			\
@@ -79,16 +70,7 @@ struct srcu_notifier_head {
 	struct raw_notifier_head name =				\
 		RAW_NOTIFIER_INIT(name)
 
-#define _SRCU_NOTIFIER_HEAD(name, mod)				\
-	mod struct srcu_notifier_head name =			\
-			SRCU_NOTIFIER_INIT(name, name)
-
-
-#define SRCU_NOTIFIER_HEAD(name)				\
-	_SRCU_NOTIFIER_HEAD(name,  )
-
-#define SRCU_NOTIFIER_HEAD_STATIC(name)				\
-	_SRCU_NOTIFIER_HEAD(name, static)
+/* SRCU_NOTIFIER_INIT, SRCU_NOTIFIER_HEAD, _SRCU_NOTIFIER_HEAD removed - unused */
 
 #ifdef __KERNEL__
 

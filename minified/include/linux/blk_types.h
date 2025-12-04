@@ -168,10 +168,6 @@ enum stat_group {
 #define bio_op(bio) \
 	((bio)->bi_opf & REQ_OP_MASK)
 
-
-static inline bool op_is_write(unsigned int op)
-{
-	return (op & 1);
-}
+/* op_is_write removed - unused */
 
 #endif  

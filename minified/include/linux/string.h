@@ -68,10 +68,7 @@ extern char * __must_check skip_spaces(const char *);
 
 extern char *strim(char *);
 
-static inline __must_check char *strstrip(char *str)
-{
-	return strim(str);
-}
+/* strstrip removed - unused (alias for strim) */
 
 #ifndef __HAVE_ARCH_STRSTR
 extern char * strstr(const char *, const char *);
@@ -173,7 +170,7 @@ static inline bool strstarts(const char *str, const char *prefix)
 	return strncmp(str, prefix, strlen(prefix)) == 0;
 }
 
-size_t memweight(const void *ptr, size_t bytes);
+/* memweight removed - unused */
 
 static inline void memzero_explicit(void *s, size_t count)
 {
@@ -195,21 +192,7 @@ static inline const char *kbasename(const char *path)
 void memcpy_and_pad(void *dest, size_t dest_len, const void *src, size_t count,
 		    int pad);
 
-#define memset_after(obj, v, member)					\
-({									\
-	u8 *__ptr = (u8 *)(obj);					\
-	typeof(v) __val = (v);						\
-	memset(__ptr + offsetofend(typeof(*(obj)), member), __val,	\
-	       sizeof(*(obj)) - offsetofend(typeof(*(obj)), member));	\
-})
-
-#define memset_startat(obj, v, member)					\
-({									\
-	u8 *__ptr = (u8 *)(obj);					\
-	typeof(v) __val = (v);						\
-	memset(__ptr + offsetof(typeof(*(obj)), member), __val,		\
-	       sizeof(*(obj)) - offsetof(typeof(*(obj)), member));	\
-})
+/* memset_after, memset_startat removed - unused */
 
 static __always_inline size_t str_has_prefix(const char *str, const char *prefix)
 {

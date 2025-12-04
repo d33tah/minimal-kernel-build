@@ -84,14 +84,9 @@ struct sk_buff;
 struct sock;
 struct sockaddr;
 struct socket;
-struct flowi_common;
 struct dst_entry;
-struct xfrm_selector;
-struct xfrm_policy;
-struct xfrm_state;
-struct xfrm_user_sec_ctx;
 struct seq_file;
-struct sctp_association;
+/* Removed unused: flowi_common, xfrm_*, sctp_association forward decls */
 
 extern unsigned long mmap_min_addr;
 extern unsigned long dac_mmap_min_addr;
@@ -408,7 +403,6 @@ static inline int security_path_chroot(const struct path *path)
 
 
 
-struct perf_event_attr;
-struct perf_event;
+/* Removed perf_event_attr, perf_event forward decls - unnecessary in security.h */
 
 #endif  

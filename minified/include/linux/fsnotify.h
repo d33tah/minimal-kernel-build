@@ -99,43 +99,7 @@ static inline int fsnotify_perm(struct file *file, int mask)
 	return fsnotify_file(file, fsnotify_mask);
 }
 
-static inline void fsnotify_link_count(struct inode *inode)
-{
-	fsnotify_inode(inode, FS_ATTRIB);
-}
-
-static inline void fsnotify_move(struct inode *old_dir, struct inode *new_dir,
-				 const struct qstr *old_name,
-				 int isdir, struct inode *target,
-				 struct dentry *moved)
-{
-	struct inode *source = moved->d_inode;
-	u32 fs_cookie = fsnotify_get_cookie();
-	__u32 old_dir_mask = FS_MOVED_FROM;
-	__u32 new_dir_mask = FS_MOVED_TO;
-	__u32 rename_mask = FS_RENAME;
-	const struct qstr *new_name = &moved->d_name;
-
-	if (isdir) {
-		old_dir_mask |= FS_ISDIR;
-		new_dir_mask |= FS_ISDIR;
-		rename_mask |= FS_ISDIR;
-	}
-
-	 
-	fsnotify_name(rename_mask, moved, FSNOTIFY_EVENT_DENTRY,
-		      old_dir, old_name, 0);
-
-	fsnotify_name(old_dir_mask, source, FSNOTIFY_EVENT_INODE,
-		      old_dir, old_name, fs_cookie);
-	fsnotify_name(new_dir_mask, source, FSNOTIFY_EVENT_INODE,
-		      new_dir, new_name, fs_cookie);
-
-	if (target)
-		fsnotify_link_count(target);
-	fsnotify_inode(source, FS_MOVE_SELF);
-	audit_inode_child(new_dir, moved, AUDIT_TYPE_CHILD_CREATE);
-}
+/* fsnotify_link_count, fsnotify_move removed - unused */
 
 static inline void fsnotify_inode_delete(struct inode *inode)
 {
@@ -160,15 +124,7 @@ static inline void fsnotify_create(struct inode *dir, struct dentry *dentry)
 	fsnotify_dirent(dir, dentry, FS_CREATE);
 }
 
-static inline void fsnotify_link(struct inode *dir, struct inode *inode,
-				 struct dentry *new_dentry)
-{
-	fsnotify_link_count(inode);
-	audit_inode_child(dir, new_dentry, AUDIT_TYPE_CHILD_CREATE);
-
-	fsnotify_name(FS_CREATE, inode, FSNOTIFY_EVENT_INODE,
-		      dir, &new_dentry->d_name, 0);
-}
+/* fsnotify_link removed - unused */
 
 static inline void fsnotify_delete(struct inode *dir, struct inode *inode,
 				   struct dentry *dentry)
@@ -243,10 +199,7 @@ static inline void fsnotify_close(struct file *file)
 	fsnotify_file(file, mask);
 }
 
-static inline void fsnotify_xattr(struct dentry *dentry)
-{
-	fsnotify_dentry(dentry, FS_ATTRIB);
-}
+/* fsnotify_xattr removed - unused */
 
 static inline void fsnotify_change(struct dentry *dentry, unsigned int ia_valid)
 {
@@ -274,17 +227,6 @@ static inline void fsnotify_change(struct dentry *dentry, unsigned int ia_valid)
 		fsnotify_dentry(dentry, mask);
 }
 
-static inline int fsnotify_sb_error(struct super_block *sb, struct inode *inode,
-				    int error)
-{
-	struct fs_error_report report = {
-		.error = error,
-		.inode = inode,
-		.sb = sb,
-	};
-
-	return fsnotify(FS_ERROR, &report, FSNOTIFY_EVENT_ERROR,
-			NULL, NULL, NULL, 0);
-}
+/* fsnotify_sb_error removed - unused */
 
 #endif	 

@@ -18,12 +18,6 @@ int arch_stack_walk_reliable(stack_trace_consume_fn consume_entry, void *cookie,
 void arch_stack_walk_user(stack_trace_consume_fn consume_entry, void *cookie,
 			  const struct pt_regs *regs);
 
-
-static inline int stack_trace_save_tsk_reliable(struct task_struct *tsk,
-						unsigned long *store,
-						unsigned int size)
-{
-	return -ENOSYS;
-}
+/* stack_trace_save_tsk_reliable removed - unused */
 
 #endif  

@@ -48,18 +48,6 @@ extern void __init_swait_queue_head(struct swait_queue_head *q, const char *name
 # define DECLARE_SWAIT_QUEUE_HEAD_ONSTACK(name)			\
 	DECLARE_SWAIT_QUEUE_HEAD(name)
 
-static inline int swait_active(struct swait_queue_head *wq)
-{
-	return !list_empty(&wq->task_list);
-}
-
-static inline bool swq_has_sleeper(struct swait_queue_head *wq)
-{
-	 
-	smp_mb();
-	return swait_active(wq);
-}
-
 extern void swake_up_one(struct swait_queue_head *q);
 extern void swake_up_all(struct swait_queue_head *q);
 extern void swake_up_locked(struct swait_queue_head *q);

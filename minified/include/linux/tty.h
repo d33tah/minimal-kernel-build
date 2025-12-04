@@ -191,12 +191,6 @@ struct tty_file_private {
 #define TTY_LDISC_CHANGING	20
 #define TTY_LDISC_HALTED	22
 
-static inline bool tty_io_nonblock(struct tty_struct *tty, struct file *file)
-{
-	return file->f_flags & O_NONBLOCK ||
-		test_bit(TTY_LDISC_CHANGING, &tty->flags);
-}
-
 static inline bool tty_io_error(struct tty_struct *tty)
 {
 	return test_bit(TTY_IO_ERROR, &tty->flags);
@@ -298,11 +292,6 @@ static inline void tty_audit_exit(void)
 static inline void tty_audit_fork(struct signal_struct *sig)
 {
 }
-static inline int tty_audit_push(void)
-{
-	return 0;
-}
-
 int n_tty_ioctl_helper(struct tty_struct *tty, unsigned int cmd,
 		unsigned long arg);
 

@@ -312,11 +312,6 @@ static inline bool xa_is_retry(const void *entry)
 	return unlikely(entry == XA_RETRY_ENTRY);
 }
 
-static inline bool xa_is_advanced(const void *entry)
-{
-	return xa_is_internal(entry) && (entry <= XA_RETRY_ENTRY);
-}
-
 typedef void (*xa_update_node_t)(struct xa_node *node);
 
 void xa_delete_node(struct xa_node *, xa_update_node_t);

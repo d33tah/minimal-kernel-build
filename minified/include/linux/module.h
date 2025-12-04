@@ -143,38 +143,17 @@ extern typeof(name) __mod_##type##__##name##_device_table		\
 struct notifier_block;
 
 
-static inline struct module *__module_address(unsigned long addr)
-{
-	return NULL;
-}
-
-static inline struct module *__module_text_address(unsigned long addr)
-{
-	return NULL;
-}
-
-static inline bool is_module_address(unsigned long addr)
-{
-	return false;
-}
-
-static inline bool is_module_percpu_address(unsigned long addr)
-{
-	return false;
-}
-
-/* __is_module_percpu_address removed - unused */
+/* __module_address, __module_text_address, is_module_address,
+   is_module_percpu_address removed - unused (only is_module_text_address kept) */
 
 static inline bool is_module_text_address(unsigned long addr)
 {
 	return false;
 }
 
-/* within_module_core, within_module_init, within_module removed - unused */
-
 #define symbol_get(x) ({ extern typeof(x) x __attribute__((weak,visibility("hidden"))); &(x); })
 #define symbol_put(x) do { } while (0)
-#define symbol_put_addr(x) do { } while (0)
+/* symbol_put_addr removed - unused */
 
 static inline void __module_get(struct module *module)
 {
@@ -193,12 +172,8 @@ static inline void module_put(struct module *module)
 
 #define module_put_and_kthread_exit(code) kthread_exit(code)
 
-#define symbol_request(x) try_then_request_module(symbol_get(x), "symbol:" #x)
+/* symbol_request, module_kallsyms_on_each_symbol removed - unused */
 
 #define __MODULE_STRING(x) __stringify(x)
-
-int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
-					     struct module *, unsigned long),
-				   void *data);
 
 #endif  

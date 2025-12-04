@@ -254,32 +254,7 @@ extern int param_set_bint(const char *val, const struct kernel_param *kp);
 			    perm, -1, 0);				\
 	__MODULE_PARM_TYPE(name, "array of " #type)
 
-enum hwparam_type { hwparam_other };
-
-#define module_param_hw_named(name, value, type, hwtype, perm)		\
-	param_check_##type(name, &(value));				\
-	__module_param_call(MODULE_PARAM_PREFIX, name,			\
-			    &param_ops_##type, &value,			\
-			    perm, -1,					\
-			    KERNEL_PARAM_FL_HWPARAM | (hwparam_##hwtype & 0));	\
-	__MODULE_PARM_TYPE(name, #type)
-
-#define module_param_hw(name, type, hwtype, perm)		\
-	module_param_hw_named(name, name, type, hwtype, perm)
-
-#define module_param_hw_array(name, type, hwtype, nump, perm)		\
-	param_check_##type(name, &(name)[0]);				\
-	static const struct kparam_array __param_arr_##name		\
-	= { .max = ARRAY_SIZE(name), .num = nump,			\
-	    .ops = &param_ops_##type,					\
-	    .elemsize = sizeof(name[0]), .elem = name };		\
-	__module_param_call(MODULE_PARAM_PREFIX, name,			\
-			    &param_array_ops,				\
-			    .arr = &__param_arr_##name,			\
-			    perm, -1,					\
-			    KERNEL_PARAM_FL_HWPARAM | (hwparam_##hwtype & 0));	\
-	__MODULE_PARM_TYPE(name, "array of " #type)
-
+/* hwparam macros removed - unused */
 
 extern const struct kernel_param_ops param_array_ops;
 

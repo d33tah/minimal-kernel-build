@@ -399,20 +399,7 @@ static inline int pgd_same(pgd_t pgd_a, pgd_t pgd_b)
 	set_pgd(pgdp, pgd); \
 })
 
-#ifndef __HAVE_ARCH_DO_SWAP_PAGE
-#endif
-
-#ifndef __HAVE_ARCH_UNMAP_ONE
-#endif
-
-#ifndef __HAVE_ARCH_PREPARE_TO_SWAP
-#endif
-
-#ifndef __HAVE_ARCH_SWAP_INVALIDATE
-#endif
-
-#ifndef __HAVE_ARCH_SWAP_RESTORE
-#endif
+/* Empty arch swap hooks removed - unused */
 
 #ifndef __HAVE_ARCH_PGD_OFFSET_GATE
 #define pgd_offset_gate(mm, addr)	pgd_offset(mm, addr)

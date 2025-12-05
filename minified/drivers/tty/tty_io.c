@@ -44,12 +44,7 @@
 #include <linux/nsproxy.h>
 #include "tty.h"
 
-#undef TTY_DEBUG_HANGUP
-#ifdef TTY_DEBUG_HANGUP
-# define tty_debug_hangup(tty, f, args...)	tty_debug(tty, f, ##args)
-#else
-# define tty_debug_hangup(tty, f, args...)	do { } while (0)
-#endif
+#define tty_debug_hangup(tty, f, args...)	do { } while (0)
 
 #define TTY_PARANOIA_CHECK 1
 #define CHECK_TTY_COUNT 1

@@ -52,8 +52,6 @@ static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
 	return false;
 }
 
-#undef SLUB_DEBUG_CMPXCHG
-
 #define MIN_PARTIAL 5
 
 #define MAX_PARTIAL 10
@@ -240,11 +238,6 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab
 
 	cpu_relax();
 	stat(s, CMPXCHG_DOUBLE_FAIL);
-
-#ifdef SLUB_DEBUG_CMPXCHG
-	pr_info("%s %s: cmpxchg double redo ", n, s->name);
-#endif
-
 	return false;
 }
 
@@ -281,11 +274,6 @@ static inline bool cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab,
 
 	cpu_relax();
 	stat(s, CMPXCHG_DOUBLE_FAIL);
-
-#ifdef SLUB_DEBUG_CMPXCHG
-	pr_info("%s %s: cmpxchg double redo ", n, s->name);
-#endif
-
 	return false;
 }
 

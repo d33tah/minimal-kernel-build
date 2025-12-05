@@ -971,25 +971,3 @@ void xa_delete_node(struct xa_node *node, xa_update_node_t update)
 void xa_destroy(struct xarray *xa)
 {
 }
-
-#ifdef XA_DEBUG
-void xa_dump_node(const struct xa_node *node)
-{
-	
-}
-
-void xa_dump_index(unsigned long index, unsigned int shift)
-{
-	
-}
-
-void xa_dump_entry(const void *entry, unsigned long index, unsigned long shift)
-{
-	
-}
-
-void xa_dump(const struct xarray *xa)
-{
-	
-}
-#endif

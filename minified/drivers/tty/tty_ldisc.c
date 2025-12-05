@@ -20,13 +20,7 @@
 #include <linux/ratelimit.h>
 #include "tty.h"
 
-#undef LDISC_DEBUG_HANGUP
-
-#ifdef LDISC_DEBUG_HANGUP
-#define tty_ldisc_debug(tty, f, args...)	tty_debug(tty, f, ##args)
-#else
 #define tty_ldisc_debug(tty, f, args...)
-#endif
 
 enum {
 	LDISC_SEM_NORMAL,

@@ -8,7 +8,7 @@
 #include <linux/string.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
-#include <asm/poll.h>
+#include <uapi/linux/poll.h>
 #include <uapi/linux/eventpoll.h>
 
 #ifdef __clang__

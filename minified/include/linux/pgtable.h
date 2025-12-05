@@ -760,10 +760,7 @@ static inline bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
 	return true;
 }
 
-static inline bool arch_has_pfn_modify_check(void)
-{
-	return false;
-}
+/* arch_has_pfn_modify_check removed - unused */
 #endif  
 
 

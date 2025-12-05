@@ -136,10 +136,10 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_MAYEXEC	0x00000040
 #define VM_MAYSHARE	0x00000080
 
-#define VM_GROWSDOWN	0x00000100	
-#define VM_UFFD_MISSING	0x00000200	
-#define VM_PFNMAP	0x00000400	
-#define VM_UFFD_WP	0x00001000	
+#define VM_GROWSDOWN	0x00000100
+/* VM_UFFD_MISSING (0x200) removed - unused */
+#define VM_PFNMAP	0x00000400
+/* VM_UFFD_WP (0x1000) removed - unused */	
 
 #define VM_LOCKED	0x00002000
 #define VM_IO           0x00004000	
@@ -155,16 +155,16 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_NORESERVE	0x00200000	
 #define VM_HUGETLB	0x00400000	
 #define VM_SYNC		0x00800000	
-#define VM_ARCH_1	0x01000000	
-#define VM_WIPEONFORK	0x02000000	
+#define VM_ARCH_1	0x01000000
+/* VM_WIPEONFORK (0x02000000) removed - unused */
 #define VM_DONTDUMP	0x04000000	
 
 # define VM_SOFTDIRTY	0
 
-#define VM_MIXEDMAP	0x10000000	
-#define VM_HUGEPAGE	0x20000000	
-#define VM_NOHUGEPAGE	0x40000000	
-#define VM_MERGEABLE	0x80000000	
+#define VM_MIXEDMAP	0x10000000
+/* VM_HUGEPAGE (0x20000000) removed - unused */
+#define VM_NOHUGEPAGE	0x40000000
+/* VM_MERGEABLE (0x80000000) removed - unused */	
 
 # define VM_PAT		VM_ARCH_1	
 
@@ -180,7 +180,7 @@ void vm_area_free(struct vm_area_struct *);
 # define VM_GROWSUP	VM_NONE
 #endif
 
-# define VM_UFFD_MINOR		VM_NONE
+/* VM_UFFD_MINOR removed - unused */
 
 #define VM_STACK_INCOMPLETE_SETUP	(VM_RAND_READ | VM_SEQ_READ)
 

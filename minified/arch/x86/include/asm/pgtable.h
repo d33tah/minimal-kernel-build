@@ -877,10 +877,7 @@ static inline bool pud_access_permitted(pud_t pud, bool write)
 #define __HAVE_ARCH_PFN_MODIFY_ALLOWED 1
 extern bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot);
 
-static inline bool arch_has_pfn_modify_check(void)
-{
-	return boot_cpu_has_bug(X86_BUG_L1TF);
-}
+/* arch_has_pfn_modify_check removed - unused */
 
 #define arch_faults_on_old_pte arch_faults_on_old_pte
 static inline bool arch_faults_on_old_pte(void)

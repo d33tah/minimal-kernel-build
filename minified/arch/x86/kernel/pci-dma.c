@@ -1,7 +1,7 @@
 #include <linux/dma-map-ops.h>
 #include <linux/dma-direct.h>
 #include <linux/iommu.h>
-#include <linux/dmar.h>
+static inline void detect_intel_iommu(void) { }
 #include <linux/export.h>
 #include <linux/memblock.h>
 #include <linux/gfp.h>

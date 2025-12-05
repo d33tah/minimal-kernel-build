@@ -15,7 +15,7 @@
 #include <linux/pm_domain.h>
 #include <linux/idr.h>
 #include <linux/acpi.h>
-#include <linux/clk/clk-conf.h>
+static inline int of_clk_set_defaults(struct device_node *node, bool clk_supplier) { return 0; }
 #include <linux/limits.h>
 #include <linux/property.h>
 #include <linux/kmemleak.h>

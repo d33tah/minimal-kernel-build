@@ -42,72 +42,9 @@ void __weak unxlate_dev_mem_ptr(phys_addr_t phys, void *addr)
 }
 #endif
 
-static ssize_t read_mem(struct file *file, char __user *buf,
-			size_t count, loff_t *ppos)
-{
-	/* Stub: /dev/mem not needed for minimal kernel */
-	return -EIO;
-}
+/* read_mem, write_mem removed - /dev/mem not used */
 
-static ssize_t write_mem(struct file *file, const char __user *buf,
-			 size_t count, loff_t *ppos)
-{
-	/* Stub: /dev/mem not needed for minimal kernel */
-	return -EIO;
-}
-
-int __weak phys_mem_access_prot_allowed(struct file *file,
-	unsigned long pfn, unsigned long size, pgprot_t *vma_prot)
-{
-	return 1;
-}
-
-#ifndef __HAVE_PHYS_MEM_ACCESS_PROT
-
-#ifdef pgprot_noncached
-static int uncached_access(struct file *file, phys_addr_t addr)
-{
-	 
-	if (file->f_flags & O_DSYNC)
-		return 1;
-	return addr >= __pa(high_memory);
-}
-#endif
-
-static pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
-				     unsigned long size, pgprot_t vma_prot)
-{
-#ifdef pgprot_noncached
-	phys_addr_t offset = pfn << PAGE_SHIFT;
-
-	if (uncached_access(file, offset))
-		return pgprot_noncached(vma_prot);
-#endif
-	return vma_prot;
-}
-#endif
-
-/* mmap_mem_ops removed: unused since mmap_mem is stubbed */
-
-static int mmap_mem(struct file *file, struct vm_area_struct *vma)
-{
-	/* Stub: /dev/mem mmap not needed for minimal kernel */
-	return -EIO;
-}
-
-static ssize_t read_port(struct file *file, char __user *buf,
-			 size_t count, loff_t *ppos)
-{
-	/* Stub: /dev/port not needed for minimal kernel */
-	return -ENOSYS;
-}
-
-static ssize_t write_port(struct file *file, const char __user *buf,
-			  size_t count, loff_t *ppos)
-{
-	/* Stub: /dev/port not needed for minimal kernel */
-	return -ENOSYS;
-}
+/* phys_mem_access_prot_allowed, uncached_access, phys_mem_access_prot removed - /dev/mem not used */
 
 static ssize_t read_null(struct file *file, char __user *buf,
 			 size_t count, loff_t *ppos)
@@ -228,65 +165,14 @@ static loff_t null_lseek(struct file *file, loff_t offset, int orig)
 	return file->f_pos = 0;
 }
 
-static loff_t memory_lseek(struct file *file, loff_t offset, int orig)
-{
-	loff_t ret;
-
-	inode_lock(file_inode(file));
-	switch (orig) {
-	case SEEK_CUR:
-		offset += file->f_pos;
-		fallthrough;
-	case SEEK_SET:
-		 
-		if ((unsigned long long)offset >= -MAX_ERRNO) {
-			ret = -EOVERFLOW;
-			break;
-		}
-		file->f_pos = offset;
-		ret = file->f_pos;
-		force_successful_syscall_return();
-		break;
-	default:
-		ret = -EINVAL;
-	}
-	inode_unlock(file_inode(file));
-	return ret;
-}
-
-static int open_port(struct inode *inode, struct file *filp)
-{
-	int rc;
-
-	if (!capable(CAP_SYS_RAWIO))
-		return -EPERM;
-
-	rc = security_locked_down(LOCKDOWN_DEV_MEM);
-	if (rc)
-		return rc;
-
-	if (iminor(inode) != DEVMEM_MINOR)
-		return 0;
-
-	 
-	filp->f_mapping = iomem_get_mapping();
-
-	return 0;
-}
+/* memory_lseek and open_port removed - /dev/mem and /dev/port not used */
 
 #define zero_lseek	null_lseek
 #define full_lseek      null_lseek
 #define write_zero	write_null
 #define write_iter_zero	write_iter_null
-#define open_mem	open_port
 
-static const struct file_operations __maybe_unused mem_fops = {
-	.llseek		= memory_lseek,
-	.read		= read_mem,
-	.write		= write_mem,
-	.mmap		= mmap_mem,
-	.open		= open_mem,
-};
+/* mem_fops and port_fops removed - /dev/mem and /dev/port not needed */
 
 static const struct file_operations null_fops = {
 	.llseek		= null_lseek,
@@ -295,13 +181,6 @@ static const struct file_operations null_fops = {
 	.read_iter	= read_iter_null,
 	.write_iter	= write_iter_null,
 	.splice_write	= splice_write_null,
-};
-
-static const struct file_operations __maybe_unused port_fops = {
-	.llseek		= memory_lseek,
-	.read		= read_port,
-	.write		= write_port,
-	.open		= open_port,
 };
 
 static const struct file_operations zero_fops = {

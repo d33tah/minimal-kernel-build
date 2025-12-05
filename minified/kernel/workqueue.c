@@ -17,11 +17,7 @@
 #include <linux/lockdep.h>
 #include <linux/idr.h>
 #include <linux/rculist.h>
-#include <linux/nodemask.h>
-#include <linux/moduleparam.h>
-#include <linux/uaccess.h>
 #include <linux/sched/isolation.h>
-#include <linux/nmi.h>
 
 #include "workqueue_internal.h"
 

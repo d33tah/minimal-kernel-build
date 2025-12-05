@@ -16,7 +16,6 @@
 #include <linux/debug_locks.h>
 #include <linux/lockdep.h>
 #include <linux/idr.h>
-#include <linux/jhash.h>
 #include <linux/rculist.h>
 #include <linux/nodemask.h>
 #include <linux/moduleparam.h>

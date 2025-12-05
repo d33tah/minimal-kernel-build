@@ -451,64 +451,11 @@ const struct address_space_operations ram_aops = {
 	.dirty_folio	= noop_dirty_folio,
 };
 
+/* STUB: simple_fill_super not used for minimal kernel */
 int simple_fill_super(struct super_block *s, unsigned long magic,
 		      const struct tree_descr *files)
 {
-	struct inode *inode;
-	struct dentry *root;
-	struct dentry *dentry;
-	int i;
-
-	s->s_blocksize = PAGE_SIZE;
-	s->s_blocksize_bits = PAGE_SHIFT;
-	s->s_magic = magic;
-	s->s_op = &simple_super_operations;
-	s->s_time_gran = 1;
-
-	inode = new_inode(s);
-	if (!inode)
-		return -ENOMEM;
-	 
-	inode->i_ino = 1;
-	inode->i_mode = S_IFDIR | 0755;
-	inode->i_atime = inode->i_mtime = inode->i_ctime = current_time(inode);
-	inode->i_op = &simple_dir_inode_operations;
-	inode->i_fop = &simple_dir_operations;
-	set_nlink(inode, 2);
-	root = d_make_root(inode);
-	if (!root)
-		return -ENOMEM;
-	for (i = 0; !files->name || files->name[0]; i++, files++) {
-		if (!files->name)
-			continue;
-
-		 
-		if (unlikely(i == 1))
-			printk(KERN_WARNING "%s: %s passed in a files array"
-				"with an index of 1!\n", __func__,
-				s->s_type->name);
-
-		dentry = d_alloc_name(root, files->name);
-		if (!dentry)
-			goto out;
-		inode = new_inode(s);
-		if (!inode) {
-			dput(dentry);
-			goto out;
-		}
-		inode->i_mode = S_IFREG | files->mode;
-		inode->i_atime = inode->i_mtime = inode->i_ctime = current_time(inode);
-		inode->i_fop = files->ops;
-		inode->i_ino = i;
-		d_add(dentry, inode);
-	}
-	s->s_root = root;
-	return 0;
-out:
-	d_genocide(root);
-	shrink_dcache_parent(root);
-	dput(root);
-	return -ENOMEM;
+	return -ENOSYS;
 }
 
 static DEFINE_SPINLOCK(pin_fs_lock);

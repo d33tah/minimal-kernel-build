@@ -1,3 +1,18 @@
+--- 2025-12-05 17:03 ---
+SESSION PROGRESS - CONTINUED
+
+Attempted reductions that didn't work:
+- percpu-rwsem.c: Used by fs/super.c for s_writers semaphore
+- syscore.c: Used by kernel/reboot.c for shutdown
+- Most inline functions in headers: Called somewhere in the codebase
+
+Candidates to investigate next time:
+- Look for CONFIG_HIGHMEM code (disabled in our config)
+- Look for CONFIG_SMP code (disabled in our config)
+- Maybe simplify the vt.c console driver
+
+Current LOC: 192,959 (goal: 150k, need ~43k reduction)
+
 --- 2025-12-05 16:53 ---
 SESSION PROGRESS
 

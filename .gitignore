@@ -12,3 +12,4 @@ FIXUP.md
 *.backup
 ailogs/
 find_unused*.sh
+FIXUP.md

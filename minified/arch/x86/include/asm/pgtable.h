@@ -263,25 +263,14 @@ static inline pmd_t pmd_wrprotect(pmd_t pmd)
 	return pmd_clear_flags(pmd, _PAGE_RW);
 }
 
-static inline pmd_t pmd_mkdirty(pmd_t pmd)
-{
-	return pmd_set_flags(pmd, _PAGE_DIRTY | _PAGE_SOFT_DIRTY);
-}
+/* pmd_mkdirty removed - unused */
 
 static inline pmd_t pmd_mkdevmap(pmd_t pmd)
 {
 	return pmd_set_flags(pmd, _PAGE_DEVMAP);
 }
 
-static inline pmd_t pmd_mkhuge(pmd_t pmd)
-{
-	return pmd_set_flags(pmd, _PAGE_PSE);
-}
-
-static inline pmd_t pmd_mkyoung(pmd_t pmd)
-{
-	return pmd_set_flags(pmd, _PAGE_ACCESSED);
-}
+/* pmd_mkhuge, pmd_mkyoung removed - unused */
 
 static inline pmd_t pmd_mkwrite(pmd_t pmd)
 {
@@ -302,45 +291,7 @@ static inline pud_t pud_clear_flags(pud_t pud, pudval_t clear)
 	return native_make_pud(v & ~clear);
 }
 
-static inline pud_t pud_mkold(pud_t pud)
-{
-	return pud_clear_flags(pud, _PAGE_ACCESSED);
-}
-
-static inline pud_t pud_mkclean(pud_t pud)
-{
-	return pud_clear_flags(pud, _PAGE_DIRTY);
-}
-
-static inline pud_t pud_wrprotect(pud_t pud)
-{
-	return pud_clear_flags(pud, _PAGE_RW);
-}
-
-static inline pud_t pud_mkdirty(pud_t pud)
-{
-	return pud_set_flags(pud, _PAGE_DIRTY | _PAGE_SOFT_DIRTY);
-}
-
-static inline pud_t pud_mkdevmap(pud_t pud)
-{
-	return pud_set_flags(pud, _PAGE_DEVMAP);
-}
-
-static inline pud_t pud_mkhuge(pud_t pud)
-{
-	return pud_set_flags(pud, _PAGE_PSE);
-}
-
-static inline pud_t pud_mkyoung(pud_t pud)
-{
-	return pud_set_flags(pud, _PAGE_ACCESSED);
-}
-
-static inline pud_t pud_mkwrite(pud_t pud)
-{
-	return pud_set_flags(pud, _PAGE_RW);
-}
+/* pud_mkold, pud_mkclean, pud_wrprotect, pud_mkdirty, pud_mkdevmap, pud_mkhuge, pud_mkyoung, pud_mkwrite removed - unused */
 
 
  

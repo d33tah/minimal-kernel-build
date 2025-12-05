@@ -5,7 +5,8 @@
 #include <linux/ioport.h>
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
-#include <linux/mmiotrace.h>
+static inline void mmiotrace_ioremap(resource_size_t off, unsigned long size, void __iomem *addr) { }
+static inline void mmiotrace_iounmap(volatile void __iomem *addr) { }
 #include <linux/cc_platform.h>
 #include <linux/efi.h>
 #include <linux/pgtable.h>

@@ -4,8 +4,9 @@
 #include <linux/extable.h>		 
 #include <linux/memblock.h>		 
 #include <linux/kfence.h>		 
-#include <linux/kprobes.h>		 
-#include <linux/mmiotrace.h>		 
+#include <linux/kprobes.h>
+static inline int is_kmmio_active(void) { return 0; }
+static inline int kmmio_handler(struct pt_regs *regs, unsigned long addr) { return 0; }
 #include <linux/perf_event.h>		 
 #include <linux/hugetlb.h>		 
 		 

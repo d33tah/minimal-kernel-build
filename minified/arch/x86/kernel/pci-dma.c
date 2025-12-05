@@ -6,7 +6,7 @@ static inline void detect_intel_iommu(void) { }
 #include <linux/memblock.h>
 #include <linux/gfp.h>
 #include <linux/pci.h>
-#include <linux/amd-iommu.h>
+static inline int amd_iommu_detect(void) { return -ENODEV; }
 
 #include <asm/proto.h>
 #include <asm/dma.h>

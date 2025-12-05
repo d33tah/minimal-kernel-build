@@ -590,14 +590,7 @@ this_rq_lock_irq(struct rq_flags *rf)
 	return rq;
 }
 
-static inline void sched_init_numa(int offline_node) { }
-static inline void sched_update_numa(int cpu, bool online) { }
-static inline void sched_domains_numa_masks_set(unsigned int cpu) { }
-static inline void sched_domains_numa_masks_clear(unsigned int cpu) { }
-static inline int sched_numa_find_closest(const struct cpumask *cpus, int cpu)
-{
-	return nr_cpu_ids;
-}
+/* sched_init_numa, sched_update_numa, sched_domains_numa_masks_set/clear, sched_numa_find_closest removed - unused */
 
 static inline void
 init_numa_balancing(unsigned long clone_flags, struct task_struct *p)
@@ -608,7 +601,7 @@ init_numa_balancing(unsigned long clone_flags, struct task_struct *p)
 #include "stats.h"
 
 
-static inline void sched_core_account_forceidle(struct rq *rq) {}
+/* sched_core_account_forceidle removed - unused */
 
 static inline void sched_core_tick(struct rq *rq) {}
 
@@ -847,7 +840,7 @@ unsigned long to_ratio(u64 period, u64 runtime);
 extern void init_entity_runnable_average(struct sched_entity *se);
 extern void post_init_entity_util_avg(struct task_struct *p);
 
-static inline int sched_tick_offload_init(void) { return 0; }
+/* sched_tick_offload_init removed - unused */
 static inline void sched_update_tick_dependency(struct rq *rq) { }
 
 static inline void add_nr_running(struct rq *rq, unsigned count)
@@ -914,7 +907,7 @@ extern void init_dl_rq(struct dl_rq *dl_rq);
 extern void cfs_bandwidth_usage_inc(void);
 extern void cfs_bandwidth_usage_dec(void);
 
-static inline void nohz_balance_exit_idle(struct rq *rq) { }
+/* nohz_balance_exit_idle removed - unused */
 
 static inline void nohz_run_idle_balance(int cpu) { }
 
@@ -930,12 +923,7 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
 #endif
 
 
-static inline
-unsigned long uclamp_rq_util_with(struct rq *rq, unsigned long util,
-				  struct task_struct *p)
-{
-	return util;
-}
+/* uclamp_rq_util_with removed - unused */
 
 #define perf_domain_span(pd) NULL
 

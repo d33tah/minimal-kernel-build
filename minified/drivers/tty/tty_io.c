@@ -21,7 +21,7 @@
 #include <linux/string.h>
 #include <linux/slab.h>
 #include <linux/poll.h>
-#include <linux/ppp-ioctl.h>
+#include <uapi/linux/ppp-ioctl.h> /* ppp-ioctl.h redirect */
 #include <linux/proc_fs.h>
 #include <linux/init.h>
 #include <linux/module.h>

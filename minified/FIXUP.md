@@ -1,3 +1,16 @@
+--- 2025-12-05 11:55 ---
+SESSION PROGRESS UPDATE
+
+Fourth commit:
+4. -49 LOC: Removed unused stub functions:
+   - memory.c: zap_page_range, zap_vma_ptes, vmf_insert_mixed* functions
+   - mmap.c: copy_vma
+   - exec.c: read_code, remove_arg_zero
+   - fork.c: get_task_exe_file, fork_idle, create_io_thread
+
+Current LOC: 184,359 (via cloc) | Goal: 150,000 | Remaining: ~34,400 LOC
+Total removed this session: ~180 LOC (184,515 -> 184,359)
+
 --- 2025-12-05 11:47 ---
 SESSION PROGRESS UPDATE
 
@@ -6,9 +19,6 @@ Third commit:
    - xarray.c: XA_DEBUG functions (never defined)
    - tty_io.c, tty_ldisc.c: Simplified debug macros
    - slub.c: SLUB_DEBUG_CMPXCHG blocks
-
-Current LOC: 184,383 (via cloc) | Goal: 150,000 | Remaining: ~34,400 LOC
-Total removed this session: ~132 LOC
 
 --- 2025-12-05 11:35 ---
 SESSION PROGRESS UPDATE

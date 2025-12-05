@@ -1,7 +1,7 @@
 #ifndef _LINUX_ERRNO_H
 #define _LINUX_ERRNO_H
 
-#include <uapi/linux/errno.h>
+#include <asm/errno.h>
 
 
 #define ERESTARTSYS	512

@@ -552,10 +552,7 @@ static inline bool is_zone_device_page(const struct page *page)
 	return false;
 }
 
-static inline bool folio_is_zone_device(const struct folio *folio)
-{
-	return is_zone_device_page(&folio->page);
-}
+/* folio_is_zone_device removed - unused */
 
 static inline bool put_devmap_managed_page(struct page *page)
 {

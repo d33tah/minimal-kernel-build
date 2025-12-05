@@ -346,13 +346,7 @@ struct posix_acl;
 
 #define ACL_DONT_CACHE ((void *)(-3))
 
-static inline struct posix_acl *
-uncached_acl_sentinel(struct task_struct *task)
-{
-	return (void *)task + 1;
-}
-
-/* is_uncached_acl removed - unused */
+/* uncached_acl_sentinel, is_uncached_acl removed - unused */
 
 #define IOP_FASTPERM	0x0001
 #define IOP_LOOKUP	0x0002

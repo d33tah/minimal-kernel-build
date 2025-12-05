@@ -340,26 +340,7 @@ static inline pmd_t pmd_mkinvalid(pmd_t pmd)
 
 static inline u64 flip_protnone_guard(u64 oldval, u64 val, u64 mask);
 
-static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
-{
-	pteval_t val = pte_val(pte), oldval = val;
-
-	 
-	val &= _PAGE_CHG_MASK;
-	val |= check_pgprot(newprot) & ~_PAGE_CHG_MASK;
-	val = flip_protnone_guard(oldval, val, PTE_PFN_MASK);
-	return __pte(val);
-}
-
-static inline pmd_t pmd_modify(pmd_t pmd, pgprot_t newprot)
-{
-	pmdval_t val = pmd_val(pmd), oldval = val;
-
-	val &= _HPAGE_CHG_MASK;
-	val |= check_pgprot(newprot) & ~_HPAGE_CHG_MASK;
-	val = flip_protnone_guard(oldval, val, PHYSICAL_PMD_PAGE_MASK);
-	return __pmd(val);
-}
+/* pte_modify, pmd_modify removed - unused */
 
  
 #define pgprot_modify pgprot_modify
@@ -403,10 +384,7 @@ static inline int is_new_memtype_allowed(u64 paddr, unsigned long size,
 pmd_t *populate_extra_pmd(unsigned long vaddr);
 pte_t *populate_extra_pte(unsigned long vaddr);
 
-static inline pgd_t pti_set_user_pgtbl(pgd_t *pgdp, pgd_t pgd)
-{
-	return pgd;
-}
+/* pti_set_user_pgtbl removed - unused */
 
 #endif	 
 

@@ -653,10 +653,7 @@ static inline pg_data_t *page_pgdat(const struct page *page)
 	return NODE_DATA(page_to_nid(page));
 }
 
-static inline struct zone *folio_zone(const struct folio *folio)
-{
-	return page_zone(&folio->page);
-}
+/* folio_zone removed - unused */
 
 static inline pg_data_t *folio_pgdat(const struct folio *folio)
 {
@@ -678,7 +675,7 @@ static inline bool folio_maybe_dma_pinned(struct folio *folio)
 	if (folio_test_large(folio))
 		return atomic_read(folio_pincount_ptr(folio)) > 0;
 
-	
+
 	return ((unsigned int)folio_ref_count(folio)) >=
 		GUP_PIN_COUNTING_BIAS;
 }
@@ -731,10 +728,7 @@ static inline long folio_nr_pages(struct folio *folio)
 	return compound_nr(&folio->page);
 }
 
-static inline struct folio *folio_next(struct folio *folio)
-{
-	return (struct folio *)folio_page(folio, folio_nr_pages(folio));
-}
+/* folio_next removed - unused */
 
 static inline unsigned int folio_shift(struct folio *folio)
 {
@@ -793,12 +787,7 @@ static inline void *folio_address(const struct folio *folio)
 extern void *page_rmapping(struct page *page);
 extern pgoff_t __page_file_index(struct page *page);
 
-static inline pgoff_t page_index(struct page *page)
-{
-	if (unlikely(PageSwapCache(page)))
-		return __page_file_index(page);
-	return page->index;
-}
+/* page_index removed - unused */
 
 bool page_mapped(struct page *page);
 bool folio_mapped(struct folio *folio);
@@ -1113,10 +1102,7 @@ static inline void mm_pgtables_bytes_init(struct mm_struct *mm)
 	atomic_long_set(&mm->pgtables_bytes, 0);
 }
 
-static inline unsigned long mm_pgtables_bytes(const struct mm_struct *mm)
-{
-	return atomic_long_read(&mm->pgtables_bytes);
-}
+/* mm_pgtables_bytes removed - unused */
 
 static inline void mm_inc_nr_ptes(struct mm_struct *mm)
 {
@@ -1567,16 +1553,7 @@ struct vm_area_struct *find_vma_intersection(struct mm_struct *mm,
 	return vma;
 }
 
-static inline
-struct vm_area_struct *vma_lookup(struct mm_struct *mm, unsigned long addr)
-{
-	struct vm_area_struct *vma = find_vma(mm, addr);
-
-	if (vma && addr < vma->vm_start)
-		vma = NULL;
-
-	return vma;
-}
+/* vma_lookup removed - unused */
 
 static inline unsigned long vm_start_gap(struct vm_area_struct *vma)
 {

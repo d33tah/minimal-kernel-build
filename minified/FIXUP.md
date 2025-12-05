@@ -1,3 +1,15 @@
+--- 2025-12-05 11:47 ---
+SESSION PROGRESS UPDATE
+
+Third commit:
+3. -45 LOC: Removed dead debug code:
+   - xarray.c: XA_DEBUG functions (never defined)
+   - tty_io.c, tty_ldisc.c: Simplified debug macros
+   - slub.c: SLUB_DEBUG_CMPXCHG blocks
+
+Current LOC: 184,383 (via cloc) | Goal: 150,000 | Remaining: ~34,400 LOC
+Total removed this session: ~132 LOC
+
 --- 2025-12-05 11:35 ---
 SESSION PROGRESS UPDATE
 
@@ -10,12 +22,6 @@ Second commit this session:
    - file.c: last_fd
    - percpu.c: pcpu_page_idx
    - slub.c: removed SLUB_DEBUG_CMPXCHG dead code
-
-Current LOC: 184,407 (via cloc) | Goal: 150,000 | Remaining: ~34,400 LOC
-
-Note: Most major .c files have been scanned - remaining unused static
-functions are rare. Need bigger cuts (stubbing entire subsystems or
-removing headers).
 
 --- 2025-12-05 11:17 ---
 SESSION PROGRESS

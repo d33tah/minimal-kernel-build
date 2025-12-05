@@ -167,25 +167,6 @@ static inline void lockdep_assert_wait_lock_held(struct rt_mutex *lock)
 static __always_inline void
 ww_mutex_lock_acquired(struct ww_mutex *ww, struct ww_acquire_ctx *ww_ctx)
 {
-#ifdef DEBUG_WW_MUTEXES
-	 
-	DEBUG_LOCKS_WARN_ON(ww->ctx);
-
-	 
-	DEBUG_LOCKS_WARN_ON(ww_ctx->done_acquire);
-
-	if (ww_ctx->contending_lock) {
-		 
-		DEBUG_LOCKS_WARN_ON(ww_ctx->contending_lock != ww);
-
-		 
-		DEBUG_LOCKS_WARN_ON(ww_ctx->acquired > 0);
-		ww_ctx->contending_lock = NULL;
-	}
-
-	 
-	DEBUG_LOCKS_WARN_ON(ww_ctx->ww_class != ww->ww_class);
-#endif
 	ww_ctx->acquired++;
 	ww->ctx = ww_ctx;
 }
@@ -319,13 +300,6 @@ static __always_inline int
 __ww_mutex_kill(struct MUTEX *lock, struct ww_acquire_ctx *ww_ctx)
 {
 	if (ww_ctx->acquired > 0) {
-#ifdef DEBUG_WW_MUTEXES
-		struct ww_mutex *ww;
-
-		ww = container_of(lock, struct ww_mutex, base);
-		DEBUG_LOCKS_WARN_ON(ww_ctx->contending_lock);
-		ww_ctx->contending_lock = ww;
-#endif
 		return -EDEADLK;
 	}
 
@@ -425,9 +399,6 @@ __ww_mutex_add_waiter(struct MUTEX_WAITER *waiter,
 static inline void __ww_mutex_unlock(struct ww_mutex *lock)
 {
 	if (lock->ctx) {
-#ifdef DEBUG_WW_MUTEXES
-		DEBUG_LOCKS_WARN_ON(!lock->ctx->acquired);
-#endif
 		if (lock->ctx->acquired > 0)
 			lock->ctx->acquired--;
 		lock->ctx = NULL;

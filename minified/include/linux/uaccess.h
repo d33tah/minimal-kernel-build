@@ -143,14 +143,7 @@ static inline bool pagefault_disabled(void)
 
 #define faulthandler_disabled() (pagefault_disabled() || in_atomic())
 
-#ifndef CONFIG_ARCH_HAS_SUBPAGE_FAULTS
-
-static inline size_t probe_subpage_writeable(char __user *uaddr, size_t size)
-{
-	return 0;
-}
-
-#endif  
+/* probe_subpage_writeable removed - never called */  
 
 #ifndef ARCH_HAS_NOCACHE_UACCESS
 

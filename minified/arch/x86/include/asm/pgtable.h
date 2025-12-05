@@ -115,40 +115,14 @@ static inline int pte_young(pte_t pte)
 	return pte_flags(pte) & _PAGE_ACCESSED;
 }
 
-static inline int pmd_dirty(pmd_t pmd)
-{
-	return pmd_flags(pmd) & _PAGE_DIRTY;
-}
-
-static inline int pmd_young(pmd_t pmd)
-{
-	return pmd_flags(pmd) & _PAGE_ACCESSED;
-}
-
-static inline int pud_dirty(pud_t pud)
-{
-	return pud_flags(pud) & _PAGE_DIRTY;
-}
-
-static inline int pud_young(pud_t pud)
-{
-	return pud_flags(pud) & _PAGE_ACCESSED;
-}
+/* pmd_dirty, pmd_young, pud_dirty, pud_young removed - unused */
 
 static inline int pte_write(pte_t pte)
 {
 	return pte_flags(pte) & _PAGE_RW;
 }
 
-static inline int pte_huge(pte_t pte)
-{
-	return pte_flags(pte) & _PAGE_PSE;
-}
-
-static inline int pte_global(pte_t pte)
-{
-	return pte_flags(pte) & _PAGE_GLOBAL;
-}
+/* pte_huge, pte_global removed - unused */
 
 static inline int pte_exec(pte_t pte)
 {
@@ -238,10 +212,7 @@ static inline pte_t pte_wrprotect(pte_t pte)
 	return pte_clear_flags(pte, _PAGE_RW);
 }
 
-static inline pte_t pte_mkexec(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_NX);
-}
+/* pte_mkexec removed - unused */
 
 static inline pte_t pte_mkdirty(pte_t pte)
 {
@@ -258,25 +229,7 @@ static inline pte_t pte_mkwrite(pte_t pte)
 	return pte_set_flags(pte, _PAGE_RW);
 }
 
-static inline pte_t pte_mkhuge(pte_t pte)
-{
-	return pte_set_flags(pte, _PAGE_PSE);
-}
-
-static inline pte_t pte_clrhuge(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_PSE);
-}
-
-static inline pte_t pte_mkglobal(pte_t pte)
-{
-	return pte_set_flags(pte, _PAGE_GLOBAL);
-}
-
-static inline pte_t pte_clrglobal(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_GLOBAL);
-}
+/* pte_mkhuge, pte_clrhuge, pte_mkglobal, pte_clrglobal removed - unused */
 
 static inline pte_t pte_mkspecial(pte_t pte)
 {
@@ -303,15 +256,7 @@ static inline pmd_t pmd_clear_flags(pmd_t pmd, pmdval_t clear)
 }
 
 
-static inline pmd_t pmd_mkold(pmd_t pmd)
-{
-	return pmd_clear_flags(pmd, _PAGE_ACCESSED);
-}
-
-static inline pmd_t pmd_mkclean(pmd_t pmd)
-{
-	return pmd_clear_flags(pmd, _PAGE_DIRTY);
-}
+/* pmd_mkold, pmd_mkclean removed - unused */
 
 static inline pmd_t pmd_wrprotect(pmd_t pmd)
 {

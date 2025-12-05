@@ -478,12 +478,7 @@ static inline void rq_clock_skip_update(struct rq *rq)
 	rq->clock_update_flags |= RQCF_REQ_SKIP;
 }
 
- 
-static inline void rq_clock_cancel_skipupdate(struct rq *rq)
-{
-	lockdep_assert_rq_held(rq);
-	rq->clock_update_flags &= ~RQCF_REQ_SKIP;
-}
+/* rq_clock_cancel_skipupdate removed - unused */
 
 struct rq_flags {
 	unsigned long flags;

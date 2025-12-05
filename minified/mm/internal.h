@@ -105,18 +105,8 @@ static inline bool folio_evictable(struct folio *folio)
 	return ret;
 }
 
-static inline bool page_evictable(struct page *page)
-{
-	bool ret;
+/* page_evictable removed - unused */
 
-	 
-	rcu_read_lock();
-	ret = !mapping_unevictable(page_mapping(page)) && !PageMlocked(page);
-	rcu_read_unlock();
-	return ret;
-}
-
- 
 static inline void set_page_refcounted(struct page *page)
 {
 	VM_BUG_ON_PAGE(PageTail(page), page);
@@ -186,28 +176,7 @@ static inline bool page_is_buddy(struct page *page, struct page *buddy,
 	return true;
 }
 
- 
-static inline unsigned long
-__find_buddy_pfn(unsigned long page_pfn, unsigned int order)
-{
-	return page_pfn ^ (1 << order);
-}
-
- 
-static inline struct page *find_buddy_page_pfn(struct page *page,
-			unsigned long pfn, unsigned int order, unsigned long *buddy_pfn)
-{
-	unsigned long __buddy_pfn = __find_buddy_pfn(pfn, order);
-	struct page *buddy;
-
-	buddy = page + (__buddy_pfn - pfn);
-	if (buddy_pfn)
-		*buddy_pfn = __buddy_pfn;
-
-	if (page_is_buddy(page, buddy, order))
-		return buddy;
-	return NULL;
-}
+/* __find_buddy_pfn, find_buddy_page_pfn removed - unused */
 
 extern struct page *__pageblock_pfn_to_page(unsigned long start_pfn,
 				unsigned long end_pfn, struct zone *zone);

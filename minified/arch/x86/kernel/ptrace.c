@@ -7,7 +7,7 @@
 #include <linux/errno.h>
 #include <linux/slab.h>
 #include <linux/ptrace.h>
-#include <linux/user.h>
+#include <asm/user.h> /* linux/user.h redirect */
 #include <linux/elf.h>
 #include <linux/security.h>
 #include <linux/audit.h>

@@ -13,7 +13,7 @@
 #include <linux/stddef.h>
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
-#include <linux/user.h>
+#include <asm/user.h> /* linux/user.h redirect */
 #include <linux/interrupt.h>
 #include <linux/delay.h>
 #include <linux/reboot.h>

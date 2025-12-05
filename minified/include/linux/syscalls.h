@@ -67,7 +67,7 @@ struct landlock_ruleset_attr;
 enum landlock_rule_type;
 
 #include <linux/types.h>
-#include <linux/aio_abi.h>
+#include <uapi/linux/aio_abi.h> /* aio_abi.h redirect */
 #include <linux/capability.h>
 #include <linux/signal.h>
 #include <linux/list.h>

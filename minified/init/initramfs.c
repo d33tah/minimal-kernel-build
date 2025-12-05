@@ -8,7 +8,7 @@
 #include <linux/string.h>
 #include <linux/dirent.h>
 #include <linux/syscalls.h>
-#include <linux/utime.h>
+#include <uapi/linux/utime.h> /* utime.h redirect */
 #include <linux/file.h>
 #include <linux/memblock.h>
 #include <linux/mm.h>

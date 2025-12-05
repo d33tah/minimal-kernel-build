@@ -9,7 +9,7 @@
 #include <linux/sem.h>
 #include <linux/socket.h>
 #include <linux/fs.h>
-#include <linux/aio_abi.h>
+#include <uapi/linux/aio_abi.h> /* aio_abi.h redirect */
 #include <linux/uaccess.h>
 #include <linux/unistd.h>
 #include <asm/compat.h>

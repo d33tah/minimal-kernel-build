@@ -59,7 +59,9 @@ static inline void taskstats_init_early(void) {}
 #include <linux/device/driver.h>
 #include <linux/kthread.h>
 #include <linux/sched.h>
-#include <linux/sched/init.h>
+/* sched/init.h inlined */
+extern void sched_init(void);
+extern void sched_init_smp(void);
 #include <linux/signal.h>
 #include <linux/idr.h>
 #include <linux/kgdb.h>

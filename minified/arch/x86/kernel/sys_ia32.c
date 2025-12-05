@@ -14,7 +14,7 @@
 #include <linux/stat.h>
 #include <linux/rwsem.h>
 #include <linux/compat.h>
-#include <linux/vfs.h>
+#include <linux/statfs.h> /* vfs.h redirect */
 #include <linux/ptrace.h>
 #include <linux/highuid.h>
 #include <linux/sysctl.h>

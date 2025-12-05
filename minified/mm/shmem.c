@@ -1,7 +1,7 @@
 
 #include <linux/fs.h>
 #include <linux/init.h>
-#include <linux/vfs.h>
+#include <linux/statfs.h> /* vfs.h redirect */
 #include <linux/mount.h>
 #include <linux/ramfs.h>
 #include <linux/pagemap.h>

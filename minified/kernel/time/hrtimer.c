@@ -12,7 +12,8 @@
 #include <linux/sched/sysctl.h>
 #include <linux/sched/rt.h>
 #include <linux/sched/deadline.h>
-#include <linux/sched/nohz.h>
+/* sched/nohz.h inlined */
+static inline void wake_up_nohz_cpu(int cpu) { }
 #include <linux/sched/debug.h>
 #include <linux/timer.h>
 #include <linux/freezer.h>

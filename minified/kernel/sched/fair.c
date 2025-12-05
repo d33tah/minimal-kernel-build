@@ -10,7 +10,8 @@
 
 #include <linux/sched/cputime.h>
 #include <linux/sched/isolation.h>
-#include <linux/sched/nohz.h>
+/* sched/nohz.h inlined */
+static inline void wake_up_nohz_cpu(int cpu) { }
 
 #include <linux/cpuidle.h>
 #include <linux/interrupt.h>

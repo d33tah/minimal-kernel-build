@@ -3,7 +3,8 @@
 #include <linux/sched/debug.h>
 #include <linux/sched/isolation.h>
 #include <linux/sched/loadavg.h>
-#include <linux/sched/nohz.h>
+/* sched/nohz.h inlined */
+static inline void wake_up_nohz_cpu(int cpu) { }
 #include <linux/sched/mm.h>
 
 #include <linux/sched/task_stack.h>

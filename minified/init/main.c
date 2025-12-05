@@ -22,7 +22,6 @@
 #include <linux/console.h>
 #include <linux/nmi.h>
 #include <linux/percpu.h>
-#include <linux/start_kernel.h>
 #include <linux/security.h>
 #include <linux/smp.h>
 #include <linux/profile.h>

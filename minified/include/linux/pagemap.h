@@ -9,7 +9,7 @@
 #include <linux/uaccess.h>
 #include <linux/gfp.h>
 #include <linux/bitops.h>
-#include <linux/hardirq.h>  
+#include <linux/hardirq.h>
 #include <linux/hugetlb_inline.h>
 
 struct folio_batch;

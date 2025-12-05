@@ -1,6 +1,5 @@
 
 #include <linux/mmap_lock.h>
-#include <linux/hugetlb_inline.h>
 #include <linux/jiffies.h>
 
 #include <linux/highmem.h>

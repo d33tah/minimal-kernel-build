@@ -1,7 +1,7 @@
 #ifndef _LINUX_KASAN_ENABLED_H
 #define _LINUX_KASAN_ENABLED_H
 
-#include <linux/static_key.h>
+#include <linux/jump_label.h>
 
 
 static inline bool kasan_enabled(void)

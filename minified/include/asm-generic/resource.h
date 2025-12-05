@@ -2,8 +2,8 @@
 #define _ASM_GENERIC_RESOURCE_H
 
 #include <uapi/asm-generic/resource.h>
-#include <uapi/linux/mqueue.h>
 
+#define MQ_BYTES_MAX	819200
 
 #define INIT_RLIMITS							\
 {									\

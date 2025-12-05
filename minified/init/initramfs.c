@@ -6,7 +6,6 @@
 #include <linux/fcntl.h>
 #include <linux/delay.h>
 #include <linux/string.h>
-#include <linux/dirent.h>
 #include <linux/syscalls.h>
 #include <uapi/linux/utime.h> /* utime.h redirect */
 #include <linux/file.h>

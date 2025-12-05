@@ -1,6 +1,6 @@
 #include <linux/perf_event.h>
 #include <linux/export.h>
-#include <linux/static_key.h>
+#include <linux/jump_label.h>
 
 
 int perf_event_refresh(struct perf_event *event, int refresh) { return 0; }

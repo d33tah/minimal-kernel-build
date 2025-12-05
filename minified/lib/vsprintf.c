@@ -2,7 +2,7 @@
 #include <linux/stdarg.h>
 #include <linux/build_bug.h>
 
-#include <linux/errname.h>
+static inline const char *errname(int err) { return NULL; }
 #include <linux/module.h>	
 #include <linux/types.h>
 #include <linux/string.h>

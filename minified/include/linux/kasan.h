@@ -4,7 +4,7 @@
 #include <linux/bug.h>
 #include <linux/kasan-enabled.h>
 #include <linux/kernel.h>
-#include <linux/static_key.h>
+#include <linux/jump_label.h>
 #include <linux/types.h>
 
 struct kmem_cache;

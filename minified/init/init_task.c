@@ -1,6 +1,5 @@
 #include <linux/init_task.h>
 #include <linux/export.h>
-#include <linux/mqueue.h>
 #include <linux/sched.h>
 #include <linux/sched/sysctl.h>
 #include <linux/sched/rt.h>

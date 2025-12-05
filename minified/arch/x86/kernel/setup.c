@@ -6,7 +6,7 @@
 #include <linux/efi.h>
 
 #include <linux/initrd.h>
-#include <linux/iscsi_ibft.h>
+static inline void reserve_ibft_region(void) {}
 #include <linux/memblock.h>
 #include <linux/panic_notifier.h>
 #include <linux/pci.h>

@@ -52,7 +52,7 @@
 #include <linux/seqlock.h>
 
 
-#include <linux/static_key.h>
+#include <linux/jump_label.h>
 #include <linux/stop_machine.h>
 
 #include <linux/syscalls.h>

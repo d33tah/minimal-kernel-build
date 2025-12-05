@@ -1,6 +1,7 @@
 
 #include <linux/init.h>
-#include <linux/start_kernel.h>
+#include <linux/linkage.h>
+extern asmlinkage void __init start_kernel(void);
 #include <linux/mm.h>
 #include <linux/memblock.h>
 

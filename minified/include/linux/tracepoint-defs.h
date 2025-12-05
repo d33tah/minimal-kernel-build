@@ -3,7 +3,7 @@
 
 
 #include <linux/atomic.h>
-#include <linux/static_key.h>
+#include <linux/jump_label.h>
 
 struct static_call_key;
 

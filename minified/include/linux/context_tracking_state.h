@@ -2,7 +2,7 @@
 #define _LINUX_CONTEXT_TRACKING_STATE_H
 
 #include <linux/percpu.h>
-#include <linux/static_key.h>
+#include <linux/jump_label.h>
 
 struct context_tracking {
 	 

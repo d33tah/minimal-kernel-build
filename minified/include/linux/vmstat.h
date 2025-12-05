@@ -6,7 +6,7 @@
 #include <linux/mmzone.h>
 #include <linux/vm_event_item.h>
 #include <linux/atomic.h>
-#include <linux/static_key.h>
+#include <linux/jump_label.h>
 #include <linux/mmdebug.h>
 
 /* sysctl_stat_interval removed - unused */

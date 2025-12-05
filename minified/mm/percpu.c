@@ -135,11 +135,6 @@ static struct pcpu_chunk *pcpu_get_page_chunk(struct page *page)
 	return (struct pcpu_chunk *)page->index;
 }
 
-static int __maybe_unused pcpu_page_idx(unsigned int cpu, int page_idx)
-{
-	return pcpu_unit_map[cpu] * pcpu_unit_pages + page_idx;
-}
-
 static unsigned long pcpu_unit_page_offset(unsigned int cpu, int page_idx)
 {
 	return pcpu_unit_offsets[cpu] + (page_idx << PAGE_SHIFT);

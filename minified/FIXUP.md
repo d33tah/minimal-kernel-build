@@ -1,3 +1,23 @@
+--- 2025-12-05 11:17 ---
+SESSION PROGRESS
+
+Commit this session:
+1. -40 LOC: Removed unused static functions:
+   - vt.c: bs() and vc_invert_attr()
+   - fork.c: init_idle_pids()
+   - page_alloc.c: page_expected_state() and check_new_page()
+
+Current LOC: ~184,400 (estimated) | Goal: 150,000
+
+Strategy: Systematic search for unused static functions in large files.
+Note: Most simple inline functions in headers turn out to be used somewhere.
+The remaining low-hanging fruit is in static functions within .c files.
+
+Next targets to investigate:
+- Large mm/ files (memory.c, mmap.c, vmalloc.c)
+- fs/ files (namei.c, namespace.c)
+- kernel/sched/*.c files
+
 --- 2025-12-05 09:55 ---
 SESSION SUMMARY
 

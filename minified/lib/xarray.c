@@ -5,31 +5,6 @@
 #include <linux/slab.h>
 #include <linux/xarray.h>
 
-static inline unsigned int xa_lock_type(const struct xarray *xa)
-{
-	return (__force unsigned int)xa->xa_flags & 3;
-}
-
-static inline void xas_lock_type(struct xa_state *xas, unsigned int lock_type)
-{
-	if (lock_type == XA_LOCK_IRQ)
-		xas_lock_irq(xas);
-	else if (lock_type == XA_LOCK_BH)
-		xas_lock_bh(xas);
-	else
-		xas_lock(xas);
-}
-
-static inline void xas_unlock_type(struct xa_state *xas, unsigned int lock_type)
-{
-	if (lock_type == XA_LOCK_IRQ)
-		xas_unlock_irq(xas);
-	else if (lock_type == XA_LOCK_BH)
-		xas_unlock_bh(xas);
-	else
-		xas_unlock(xas);
-}
-
 static inline bool xa_track_free(const struct xarray *xa)
 {
 	return xa->xa_flags & XA_FLAGS_TRACK_FREE;

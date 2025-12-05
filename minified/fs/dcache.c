@@ -530,11 +530,6 @@ static inline void __dget_dlock(struct dentry *dentry)
 	dentry->d_lockref.count++;
 }
 
-static inline void __dget(struct dentry *dentry)
-{
-	lockref_get(&dentry->d_lockref);
-}
-
 struct dentry *dget_parent(struct dentry *dentry)
 {
 	int gotref;

@@ -531,11 +531,6 @@ int close_fd(unsigned fd)
 	return filp_close(file, files);
 }
 
-static inline unsigned last_fd(struct fdtable *fdt)
-{
-	return fdt->max_fds - 1;
-}
-
 /* Stub: close_range not needed for minimal kernel */
 int __close_range(unsigned fd, unsigned max_fd, unsigned int flags)
 {

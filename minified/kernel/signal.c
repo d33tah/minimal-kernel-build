@@ -587,17 +587,6 @@ static int kill_proc_info(int sig, struct kernel_siginfo *info, pid_t pid)
 	return error;
 }
 
-static inline bool kill_as_cred_perm(const struct cred *cred,
-				     struct task_struct *target)
-{
-	const struct cred *pcred = __task_cred(target);
-
-	return uid_eq(cred->euid, pcred->suid) ||
-	       uid_eq(cred->euid, pcred->uid) ||
-	       uid_eq(cred->uid, pcred->suid) ||
-	       uid_eq(cred->uid, pcred->uid);
-}
-
 /* Stubbed - not used externally */
 int kill_pid_usb_asyncio(int sig, int errno, sigval_t addr,
 			 struct pid *pid, const struct cred *cred)

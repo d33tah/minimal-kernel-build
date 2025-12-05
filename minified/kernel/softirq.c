@@ -19,7 +19,8 @@
 #include <linux/irq.h>
 #include <linux/wait_bit.h>
 
-#include <asm/softirq_stack.h>
+/* softirq_stack.h inlined */
+void do_softirq_own_stack(void);
 
 
 

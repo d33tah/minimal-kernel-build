@@ -12,7 +12,8 @@
 
 #include <asm/apic.h>
 #include <asm/nospec-branch.h>
-#include <asm/softirq_stack.h>
+/* softirq_stack.h inlined */
+void do_softirq_own_stack(void);
 
 static inline int check_stack_overflow(void) { return 0; }
 static inline void print_stack_overflow(void) { }

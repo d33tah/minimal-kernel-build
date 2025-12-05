@@ -597,12 +597,6 @@ struct file *open_exec(const char *name)
 	return f;
 }
 
-/* STUB: read_code not used externally */
-ssize_t read_code(struct file *file, unsigned long addr, loff_t pos, size_t len)
-{
-	return -EINVAL;
-}
-
 static int exec_mmap(struct mm_struct *mm)
 {
 	struct task_struct *tsk;
@@ -1070,12 +1064,6 @@ static int prepare_binprm(struct linux_binprm *bprm)
 
 	memset(bprm->buf, 0, BINPRM_BUF_SIZE);
 	return kernel_read(bprm->file, bprm->buf, BINPRM_BUF_SIZE, &pos);
-}
-
-/* Stub: remove_arg_zero not used (no script interpreters) */
-int remove_arg_zero(struct linux_binprm *bprm)
-{
-	return 0;
 }
 
 #define printable(c) (((c)=='\t') || ((c)=='\n') || (0x20<=(c) && (c)<=0x7e))

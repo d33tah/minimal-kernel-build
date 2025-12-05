@@ -769,9 +769,6 @@ int replace_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 /* Stub: get_mm_exe_file not used in minimal kernel */
 struct file *get_mm_exe_file(struct mm_struct *mm) { return NULL; }
 
-/* Stub: get_task_exe_file not used in minimal kernel */
-struct file *get_task_exe_file(struct task_struct *task) { return NULL; }
-
 struct mm_struct *get_task_mm(struct task_struct *task)
 {
 	struct mm_struct *mm;
@@ -1558,16 +1555,10 @@ fork_out:
 	return ERR_PTR(retval);
 }
 
-/* Stub: fork_idle not used in minimal kernel (no SMP support) */
-struct task_struct * __init fork_idle(int cpu) { return ERR_PTR(-EINVAL); }
-
 struct mm_struct *copy_init_mm(void)
 {
 	return dup_mm(NULL, &init_mm);
 }
-
-/* Stub: create_io_thread not used in minimal kernel */
-struct task_struct *create_io_thread(int (*fn)(void *), void *arg, int node) { return NULL; }
 
 pid_t kernel_clone(struct kernel_clone_args *args)
 {

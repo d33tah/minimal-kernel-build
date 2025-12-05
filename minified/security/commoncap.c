@@ -15,7 +15,7 @@
 #include <linux/mount.h>
 #include <linux/sched.h>
 #include <linux/prctl.h>
-#include <linux/securebits.h>
+#include <uapi/linux/securebits.h> /* securebits.h redirect */
 #include <linux/user_namespace.h>
 #include <linux/binfmts.h>
 #include <linux/personality.h>

@@ -8,7 +8,7 @@
 #include <linux/ipc.h>
 #include <linux/pid_namespace.h>
 #include <linux/user_namespace.h>
-#include <linux/securebits.h>
+#include <uapi/linux/securebits.h> /* securebits.h redirect */
 #include <linux/seqlock.h>
 #include <linux/rbtree.h>
 #include <linux/refcount.h>

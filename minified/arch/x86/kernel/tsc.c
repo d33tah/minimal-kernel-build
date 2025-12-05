@@ -6,8 +6,12 @@
 #include <linux/init.h>
 #include <linux/export.h>
 #include <linux/timer.h>
-#include <linux/acpi_pmtmr.h>
 #include <linux/cpufreq.h>
+
+/* Inlined from acpi_pmtmr.h */
+#define PMTMR_TICKS_PER_SEC 3579545
+#define ACPI_PM_OVRRUN	(1<<24)
+static inline u32 acpi_pm_read_early(void) { return 0; }
 #include <linux/delay.h>
 #include <linux/clocksource.h>
 #include <linux/percpu.h>

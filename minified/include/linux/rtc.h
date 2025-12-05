@@ -1,10 +1,10 @@
 #ifndef _LINUX_RTC_H_
 #define _LINUX_RTC_H_
 
+/* Minimal rtc.h - only what's needed for time functions */
 
 #include <linux/types.h>
-#include <linux/interrupt.h>
-
+#include <linux/ktime.h>
 #include <uapi/linux/rtc.h>
 
 extern int rtc_month_days(unsigned int month, unsigned int year);
@@ -20,136 +20,11 @@ static inline time64_t rtc_tm_sub(struct rtc_time *lhs, struct rtc_time *rhs)
 	return rtc_tm_to_time64(lhs) - rtc_tm_to_time64(rhs);
 }
 
-#include <linux/device.h>
-#include <linux/seq_file.h>
-#include <linux/cdev.h>
-#include <linux/poll.h>
-#include <linux/mutex.h>
-#include <linux/timerqueue.h>
-#include <linux/workqueue.h>
-
-extern struct class *rtc_class;
-
-struct rtc_class_ops {
-	int (*ioctl)(struct device *, unsigned int, unsigned long);
-	int (*read_time)(struct device *, struct rtc_time *);
-	int (*set_time)(struct device *, struct rtc_time *);
-	int (*read_alarm)(struct device *, struct rtc_wkalrm *);
-	int (*set_alarm)(struct device *, struct rtc_wkalrm *);
-	int (*proc)(struct device *, struct seq_file *);
-	int (*alarm_irq_enable)(struct device *, unsigned int enabled);
-	int (*read_offset)(struct device *, long *offset);
-	int (*set_offset)(struct device *, long offset);
-	int (*param_get)(struct device *, struct rtc_param *param);
-	int (*param_set)(struct device *, struct rtc_param *param);
-};
-
-struct rtc_device;
-
-struct rtc_timer {
-	struct timerqueue_node node;
-	ktime_t period;
-	void (*func)(struct rtc_device *rtc);
-	struct rtc_device *rtc;
-	int enabled;
-};
-
-#define RTC_DEV_BUSY 0
-#define RTC_NO_CDEV  1
-
-struct rtc_device {
-	struct device dev;
-	struct module *owner;
-
-	int id;
-
-	const struct rtc_class_ops *ops;
-	struct mutex ops_lock;
-
-	struct cdev char_dev;
-	unsigned long flags;
-
-	unsigned long irq_data;
-	spinlock_t irq_lock;
-	wait_queue_head_t irq_queue;
-	struct fasync_struct *async_queue;
-
-	int irq_freq;
-	int max_user_freq;
-
-	struct timerqueue_head timerqueue;
-	struct rtc_timer aie_timer;
-	struct rtc_timer uie_rtctimer;
-	struct hrtimer pie_timer;  
-	int pie_enabled;
-	struct work_struct irqwork;
-
-	 
-	unsigned long set_offset_nsec;
-
-	unsigned long features[BITS_TO_LONGS(RTC_FEATURE_CNT)];
-
-	time64_t range_min;
-	timeu64_t range_max;
-	time64_t start_secs;
-	time64_t offset_secs;
-	bool set_start_time;
-
-};
-#define to_rtc_device(d) container_of(d, struct rtc_device, dev)
-
-#define rtc_lock(d) mutex_lock(&d->ops_lock)
-#define rtc_unlock(d) mutex_unlock(&d->ops_lock)
-
-/* RTC_TIMESTAMP_* defines - not used in minimal kernel */  
-
-/* Most RTC functions removed - unused in minimal kernel */
-extern int rtc_read_time(struct rtc_device *rtc, struct rtc_time *tm);
-extern int rtc_set_time(struct rtc_device *rtc, struct rtc_time *tm);
-extern void rtc_update_irq(struct rtc_device *rtc,
-			unsigned long num, unsigned long events);
-extern int rtc_update_irq_enable(struct rtc_device *rtc, unsigned int enabled);
-extern int rtc_alarm_irq_enable(struct rtc_device *rtc, unsigned int enabled);
-
-void rtc_handle_legacy_irq(struct rtc_device *rtc, int num, int mode);
-void rtc_aie_update_irq(struct rtc_device *rtc);
-void rtc_uie_update_irq(struct rtc_device *rtc);
-enum hrtimer_restart rtc_pie_update_irq(struct hrtimer *timer);
-
-void rtc_timer_init(struct rtc_timer *timer, void (*f)(struct rtc_device *r),
-		    struct rtc_device *rtc);
-int rtc_timer_start(struct rtc_device *rtc, struct rtc_timer *timer,
-		    ktime_t expires, ktime_t period);
-void rtc_timer_cancel(struct rtc_device *rtc, struct rtc_timer *timer);
-int rtc_read_offset(struct rtc_device *rtc, long *offset);
-int rtc_set_offset(struct rtc_device *rtc, long offset);
-void rtc_timer_do_work(struct work_struct *work);
-
 static inline bool is_leap_year(unsigned int year)
 {
 	return (!(year % 4) && (year % 100)) || !(year % 400);
 }
 
-#define devm_rtc_register_device(device) \
-	__devm_rtc_register_device(THIS_MODULE, device)
-
 #define rtc_hctosys_ret -ENODEV
 
-static inline int devm_rtc_nvmem_register(struct rtc_device *rtc,
-					  struct nvmem_config *nvmem_config)
-{
-	return 0;
-}
-
-static inline
-int rtc_add_group(struct rtc_device *rtc, const struct attribute_group *grp)
-{
-	return 0;
-}
-
-static inline
-int rtc_add_groups(struct rtc_device *rtc, const struct attribute_group **grps)
-{
-	return 0;
-}
-#endif  
+#endif

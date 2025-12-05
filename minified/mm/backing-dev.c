@@ -4,7 +4,6 @@
 #include <linux/rbtree.h>
 #include <linux/kthread.h>
 #include <linux/backing-dev.h>
-#include <linux/blk-cgroup.h>
 #include <linux/freezer.h>
 #include <linux/fs.h>
 #include <linux/pagemap.h>

@@ -5,7 +5,9 @@
 #include <linux/sched.h>
 #include <linux/task_work.h>
 #include <linux/memcontrol.h>
-#include <linux/blk-cgroup.h>
+
+/* Inlined from blk-cgroup.h */
+static inline void blkcg_maybe_throttle_current(void) { }
 
 static inline void set_notify_resume(struct task_struct *task)
 {

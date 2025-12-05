@@ -1,5 +1,5 @@
+/* BCD conversion functions */
 #include <linux/bcd.h>
-#include <linux/export.h>
 
 unsigned _bcd2bin(unsigned char val)
 {

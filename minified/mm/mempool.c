@@ -1,7 +1,6 @@
-#include <linux/mm.h>
-#include <linux/slab.h>
-#include <linux/export.h>
+/* Minimal includes - all functions are stubs */
 #include <linux/mempool.h>
+#include <linux/errno.h>
 
 void mempool_exit(mempool_t *pool) {}
 

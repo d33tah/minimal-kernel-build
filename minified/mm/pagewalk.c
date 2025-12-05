@@ -1,10 +1,5 @@
 /* STUB: Page table walking functions - return error/no-op */
-
 #include <linux/pagewalk.h>
-#include <linux/highmem.h>
-#include <linux/sched.h>
-#include <linux/hugetlb.h>
-#include <linux/errno.h>
 
 /* Walk page range with mm_walk_ops - stub returns success after no-op */
 int walk_page_range(struct mm_struct *mm, unsigned long start,

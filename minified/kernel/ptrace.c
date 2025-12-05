@@ -1,29 +1,7 @@
-
-#include <linux/capability.h>
-#include <linux/export.h>
-#include <linux/sched.h>
-#include <linux/sched/mm.h>
-#include <linux/sched/coredump.h>
-#include <linux/sched/task.h>
-#include <linux/errno.h>
-#include <linux/mm.h>
-#include <linux/highmem.h>
-#include <linux/pagemap.h>
+/* Minimal includes - all functions are stubs */
 #include <linux/ptrace.h>
-#include <linux/signal.h>
-#include <linux/uio.h>
-#include <linux/audit.h>
-#include <linux/pid_namespace.h>
 #include <linux/syscalls.h>
-#include <linux/uaccess.h>
-#include <linux/regset.h>
-#include <linux/hw_breakpoint.h>
-#include <linux/cn_proc.h>
-#include <linux/compat.h>
-#include <linux/sched/signal.h>
-#include <linux/minmax.h>
-
-#include <asm/syscall.h>
+#include <linux/errno.h>
 
 int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
 		     void *buf, int len, unsigned int gup_flags)

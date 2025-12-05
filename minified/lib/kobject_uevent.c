@@ -1,5 +1,5 @@
+/* Stubs for kobject uevent */
 #include <linux/kobject.h>
-#include <linux/export.h>
 
 u64 uevent_seqnum;
 

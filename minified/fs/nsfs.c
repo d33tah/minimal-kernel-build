@@ -1,17 +1,9 @@
-#include <linux/mount.h>
-#include <linux/pseudo_fs.h>
-#include <linux/file.h>
+/* Stubs for namespace filesystem */
 #include <linux/fs.h>
-#include <linux/proc_fs.h>
 #include <linux/proc_ns.h>
-#include <linux/magic.h>
-#include <linux/ktime.h>
-#include <linux/seq_file.h>
-#include <linux/user_namespace.h>
 #include <linux/nsfs.h>
-#include <linux/uaccess.h>
-
-#include "internal.h"
+#include <linux/errno.h>
+#include <linux/err.h>
 
 
 const struct dentry_operations ns_dentry_operations = {

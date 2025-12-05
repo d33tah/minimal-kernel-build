@@ -1,6 +1,5 @@
-
+/* Red-Black tree implementation */
 #include <linux/rbtree_augmented.h>
-#include <linux/export.h>
 
 
 

@@ -1,8 +1,6 @@
-
+/* Syscore operations for shutdown */
 #include <linux/syscore_ops.h>
 #include <linux/mutex.h>
-#include <linux/module.h>
-#include <linux/suspend.h>
 
 static LIST_HEAD(syscore_ops_list);
 static DEFINE_MUTEX(syscore_ops_lock);

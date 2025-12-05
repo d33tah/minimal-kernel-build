@@ -1637,11 +1637,7 @@ unsigned long nr_free_buffer_pages(void)
 	return nr_free_zone_pages(gfp_zone(GFP_USER));
 }
 
-static inline void show_node(struct zone *zone)
-{
-	if (IS_ENABLED(CONFIG_NUMA))
-		printk("Node %d ", zone_to_nid(zone));
-}
+/* show_node removed - unused */
 
 long si_mem_available(void)
 {

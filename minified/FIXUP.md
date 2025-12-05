@@ -1,3 +1,34 @@
+--- 2025-12-05 16:53 ---
+SESSION PROGRESS
+
+Commits this session:
+1. Restored required headers (vmlinux.lds.h, orc_lookup.h, local.h, libc-compat.h)
+   - Previous removal was incorrect, broke clean builds after mrproper
+2. Removed DEBUG_WW_MUTEXES code (~45 LOC)
+   - CONFIG_DEBUG_MUTEXES is disabled, so debug code was dead
+
+Current LOC: 192,959 (goal: 150k, need ~43k reduction)
+
+Note: The previous header removal (d505e8c7) only worked because
+incremental builds cached object files. Clean builds require these headers.
+
+--- 2025-12-05 16:47 ---
+BUILD FIX
+
+Restored required header files that were incorrectly removed in d505e8c7:
+- include/asm-generic/vmlinux.lds.h (678 LOC) - required for linker script
+- arch/x86/include/asm/orc_lookup.h (20 LOC) - required by vmlinux.lds.S
+- arch/x86/include/asm/local.h (115 LOC) - local operations
+- include/uapi/linux/libc-compat.h (183 LOC) - libc compatibility
+
+Also reverted broken commit 455a7e42 which removed uapi redirect headers
+incorrectly.
+
+Current LOC: 193,004 (goal: 150k, need ~43k reduction)
+
+Note: Previous pre-commit hook only ran incremental build which still had
+cached objects. Clean build after mrproper revealed missing headers.
+
 --- 2025-12-05 11:55 ---
 SESSION PROGRESS UPDATE
 

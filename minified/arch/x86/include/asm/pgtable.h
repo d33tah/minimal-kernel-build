@@ -185,10 +185,7 @@ static inline unsigned long pud_pfn(pud_t pud)
 	return (pfn & pud_pfn_mask(pud)) >> PAGE_SHIFT;
 }
 
-static inline unsigned long p4d_pfn(p4d_t p4d)
-{
-	return (p4d_val(p4d) & p4d_pfn_mask(p4d)) >> PAGE_SHIFT;
-}
+/* p4d_pfn removed - unused */
 
 static inline unsigned long pgd_pfn(pgd_t pgd)
 {
@@ -437,13 +434,7 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 	return __pmd(pfn | check_pgprot(pgprot));
 }
 
-static inline pud_t pfn_pud(unsigned long page_nr, pgprot_t pgprot)
-{
-	phys_addr_t pfn = (phys_addr_t)page_nr << PAGE_SHIFT;
-	pfn ^= protnone_mask(pgprot_val(pgprot));
-	pfn &= PHYSICAL_PUD_PAGE_MASK;
-	return __pud(pfn | check_pgprot(pgprot));
-}
+/* pfn_pud removed - unused */
 
 static inline pmd_t pmd_mkinvalid(pmd_t pmd)
 {
@@ -665,10 +656,7 @@ static inline int p4d_bad(p4d_t p4d)
 }
 #endif   
 
-static inline unsigned long p4d_index(unsigned long address)
-{
-	return (address >> P4D_SHIFT) & (PTRS_PER_P4D - 1);
-}
+/* p4d_index removed - unused */
 
 #if CONFIG_PGTABLE_LEVELS > 4
 static inline int pgd_present(pgd_t pgd)
@@ -923,25 +911,12 @@ static inline bool pgdp_maps_userspace(void *__ptr)
 static inline int pgd_large(pgd_t pgd) { return 0; }
 
 
- 
 static inline void clone_pgd_range(pgd_t *dst, pgd_t *src, int count)
 {
 	memcpy(dst, src, count * sizeof(pgd_t));
 }
 
-#define PTE_SHIFT ilog2(PTRS_PER_PTE)
-static inline int page_level_shift(enum pg_level level)
-{
-	return (PAGE_SHIFT - PTE_SHIFT) + level * PTE_SHIFT;
-}
-static inline unsigned long page_level_size(enum pg_level level)
-{
-	return 1UL << page_level_shift(level);
-}
-static inline unsigned long page_level_mask(enum pg_level level)
-{
-	return ~(page_level_size(level) - 1);
-}
+/* page_level_shift, page_level_size, page_level_mask removed - unused */
 
  
 static inline void update_mmu_cache(struct vm_area_struct *vma,

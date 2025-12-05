@@ -38,11 +38,7 @@ static inline void __rcu_read_unlock(void)
 		rcu_read_unlock_strict();
 }
 
-static inline int rcu_preempt_depth(void)
-{
-	return 0;
-}
-
+/* rcu_preempt_depth removed - unused */
 
 void rcu_init(void);
 extern int rcu_scheduler_active;

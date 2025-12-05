@@ -62,10 +62,7 @@ static inline ktime_t ktime_get_clocktai(void)
 	return ktime_get_with_offset(TK_OFFS_TAI);
 }
 
-static inline ktime_t ktime_mono_to_real(ktime_t mono)
-{
-	return ktime_mono_to_any(mono, TK_OFFS_REAL);
-}
+/* ktime_mono_to_real removed - unused */
 
 static inline u64 ktime_get_ns(void)
 {
@@ -86,10 +83,7 @@ static inline void ktime_get_boottime_ts64(struct timespec64 *ts)
 	*ts = ktime_to_timespec64(ktime_get_boottime());
 }
 
-extern bool timekeeping_rtc_skipsuspend(void);
-extern bool timekeeping_rtc_skipresume(void);
-
-extern void timekeeping_inject_sleeptime64(const struct timespec64 *delta);
+/* timekeeping_rtc_skipsuspend, timekeeping_rtc_skipresume, timekeeping_inject_sleeptime64 removed - unused */
 
 struct ktime_timestamps {
 	u64		mono;

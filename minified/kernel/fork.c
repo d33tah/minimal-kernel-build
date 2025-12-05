@@ -1558,16 +1558,6 @@ fork_out:
 	return ERR_PTR(retval);
 }
 
-static inline void init_idle_pids(struct task_struct *idle)
-{
-	enum pid_type type;
-
-	for (type = PIDTYPE_PID; type < PIDTYPE_MAX; ++type) {
-		INIT_HLIST_NODE(&idle->pid_links[type]); 
-		init_task_pid(idle, type, &init_struct_pid);
-	}
-}
-
 /* Stub: fork_idle not used in minimal kernel (no SMP support) */
 struct task_struct * __init fork_idle(int cpu) { return ERR_PTR(-EINVAL); }
 

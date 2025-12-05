@@ -392,21 +392,6 @@ int split_free_page(struct page *free_page,
 	return -ENOENT;
 }
 
-static inline bool page_expected_state(struct page *page,
-					unsigned long check_flags)
-{
-	if (unlikely(atomic_read(&page->_mapcount) != -1))
-		return false;
-
-	if (unlikely((unsigned long)page->mapping |
-			page_ref_count(page) |
-			(page->flags & check_flags)))
-		return false;
-
-	return true;
-}
-
-
 static __always_inline bool free_pages_prepare(struct page *page,
 			unsigned int order, bool check_free, fpi_t fpi_flags)
 {
@@ -599,21 +584,6 @@ static inline void expand(struct zone *zone, struct page *page,
 		add_to_free_list(&page[size], zone, high, migratetype);
 		set_buddy_order(&page[size], high);
 	}
-}
-
-static void check_new_page_bad(struct page *page)
-{
-	/* Stub: page validation not needed for minimal kernel */
-}
-
-static inline int check_new_page(struct page *page)
-{
-	if (likely(page_expected_state(page,
-				PAGE_FLAGS_CHECK_AT_PREP|__PG_HWPOISON)))
-		return 0;
-
-	check_new_page_bad(page);
-	return 1;
 }
 
 static bool check_new_pages(struct page *page, unsigned int order)

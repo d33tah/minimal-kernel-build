@@ -737,17 +737,6 @@ static inline void cr(struct vc_data *vc)
 	notify_write(vc, '\r');
 }
 
-static inline void bs(struct vc_data *vc)
-{
-	if (vc->state.x) {
-		vc->vc_pos -= 2;
-		vc->state.x--;
-		vc->vc_need_wrap = 0;
-		notify_write(vc, '\b');
-	}
-}
-
-
 static void csi_J(struct vc_data *vc, int vpar)
 {
 	unsigned int count;
@@ -974,21 +963,6 @@ static int vc_translate(struct vc_data *vc, int *c, bool *rescan)
 
 	
 	return vc_translate_ascii(vc, *c);
-}
-
-static inline unsigned char vc_invert_attr(const struct vc_data *vc)
-{
-	if (!vc->vc_can_do_color)
-		return vc->vc_attr ^ 0x08;
-
-	if (vc->vc_hi_font_mask == 0x100)
-		return   (vc->vc_attr & 0x11) |
-			((vc->vc_attr & 0xe0) >> 4) |
-			((vc->vc_attr & 0x0e) << 4);
-
-	return   (vc->vc_attr & 0x88) |
-		((vc->vc_attr & 0x70) >> 4) |
-		((vc->vc_attr & 0x07) << 4);
 }
 
 static bool vc_is_control(struct vc_data *vc, int tc, int c)

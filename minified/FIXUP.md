@@ -1,22 +1,30 @@
+--- 2025-12-05 11:35 ---
+SESSION PROGRESS UPDATE
+
+Second commit this session:
+2. -70 LOC: Removed more unused static functions:
+   - page_alloc.c: __zone_watermark_unusable_free
+   - signal.c: kill_as_cred_perm
+   - xarray.c: xa_lock_type, xas_lock_type, xas_unlock_type
+   - dcache.c: __dget
+   - file.c: last_fd
+   - percpu.c: pcpu_page_idx
+   - slub.c: removed SLUB_DEBUG_CMPXCHG dead code
+
+Current LOC: 184,407 (via cloc) | Goal: 150,000 | Remaining: ~34,400 LOC
+
+Note: Most major .c files have been scanned - remaining unused static
+functions are rare. Need bigger cuts (stubbing entire subsystems or
+removing headers).
+
 --- 2025-12-05 11:17 ---
 SESSION PROGRESS
 
-Commit this session:
+First commit this session:
 1. -40 LOC: Removed unused static functions:
    - vt.c: bs() and vc_invert_attr()
    - fork.c: init_idle_pids()
    - page_alloc.c: page_expected_state() and check_new_page()
-
-Current LOC: ~184,400 (estimated) | Goal: 150,000
-
-Strategy: Systematic search for unused static functions in large files.
-Note: Most simple inline functions in headers turn out to be used somewhere.
-The remaining low-hanging fruit is in static functions within .c files.
-
-Next targets to investigate:
-- Large mm/ files (memory.c, mmap.c, vmalloc.c)
-- fs/ files (namei.c, namespace.c)
-- kernel/sched/*.c files
 
 --- 2025-12-05 09:55 ---
 SESSION SUMMARY

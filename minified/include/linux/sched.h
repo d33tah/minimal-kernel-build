@@ -26,9 +26,10 @@ static inline void clear_tsk_latency_tracing(struct task_struct *p) {}
 #include <linux/signal_types.h>
 #include <linux/syscall_user_dispatch.h>
 #include <linux/mm_types_task.h>
-#include <linux/task_io_accounting.h>
+/* task_io_accounting.h inlined - empty struct */
+struct task_io_accounting { };
 #include <linux/posix-timers.h>
-#include <linux/rseq.h>
+/* rseq.h removed - empty header */
 #include <linux/seqlock.h>
 #include <asm/kmap_size.h>
 

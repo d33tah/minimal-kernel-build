@@ -40,7 +40,10 @@
 #include <linux/tick.h>
 #include <linux/sched/isolation.h>
 #include <linux/interrupt.h>
-#include <linux/taskstats_kern.h>
+/* taskstats_kern.h inlined */
+static inline void taskstats_exit(struct task_struct *tsk, int group_dead) {}
+static inline void taskstats_tgid_free(struct signal_struct *sig) {}
+static inline void taskstats_init_early(void) {}
 #include <linux/delayacct.h>
 #include <linux/unistd.h>
 #include <linux/utsname.h>

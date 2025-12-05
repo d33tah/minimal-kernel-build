@@ -46,9 +46,6 @@ int __init random_init(const char *command_line);
 bool rng_is_initialized(void);
 int wait_for_random_bytes(void);
 
-#include <linux/prandom.h>
-
-
 #ifndef MODULE
 extern const struct file_operations random_fops, urandom_fops;
 #endif

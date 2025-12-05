@@ -40,7 +40,6 @@
 #include <linux/binfmts.h>
 
 #include <linux/sched.h>
-#include <linux/sched/autogroup.h>
 #include <linux/sched/loadavg.h>
 #include <linux/sched/stat.h>
 #include <linux/sched/mm.h>

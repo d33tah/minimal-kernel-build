@@ -3,9 +3,7 @@
 #ifndef _KERNEL_SCHED_SCHED_H
 #define _KERNEL_SCHED_SCHED_H
 
-
-#include <linux/sched/autogroup.h>
-#include <linux/sched/cpufreq.h>
+#define SCHED_CPUFREQ_IOWAIT	(1U << 0)
 #include <linux/sched/deadline.h>
 #include <linux/sched.h>
 #include <linux/sched/loadavg.h>

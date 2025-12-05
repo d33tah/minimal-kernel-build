@@ -1,7 +1,6 @@
 
 #include <linux/mm.h>
 #include <linux/slab.h>
-#include <linux/sched/autogroup.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/stat.h>
 #include <linux/sched/task.h>
@@ -480,7 +479,7 @@ void __noreturn do_exit(long code)
 
 	perf_event_exit_task(tsk);
 
-	sched_autogroup_exit_task(tsk);
+	/* sched_autogroup_exit_task - stubbed */
 	cgroup_exit(tsk);
 
 	flush_ptrace_hw_breakpoint(tsk);

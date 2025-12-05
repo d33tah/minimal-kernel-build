@@ -12,7 +12,6 @@
 #include <linux/seqlock.h>
 #include <linux/rbtree.h>
 #include <linux/refcount.h>
-#include <linux/sched/autogroup.h>
 #include <net/net_namespace.h>
 #include <linux/sched/rt.h>
 #include <linux/livepatch.h>

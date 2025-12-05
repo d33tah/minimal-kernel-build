@@ -1,7 +1,6 @@
 
 #include <linux/anon_inodes.h>
 #include <linux/slab.h>
-#include <linux/sched/autogroup.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/user.h>
@@ -435,8 +434,7 @@ static void mmdrop_async(struct mm_struct *mm)
 static inline void free_signal_struct(struct signal_struct *sig)
 {
 	taskstats_tgid_free(sig);
-	sched_autogroup_exit(sig);
-	
+	/* sched_autogroup_exit - stubbed */
 	if (sig->oom_mm)
 		mmdrop_async(sig->oom_mm);
 	kmem_cache_free(signal_cachep, sig);
@@ -1046,8 +1044,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	posix_cpu_timers_init_group(sig);
 
 	tty_audit_fork(sig);
-	sched_autogroup_fork(sig);
-
+	/* sched_autogroup_fork - stubbed */
 	sig->oom_score_adj = current->signal->oom_score_adj;
 	sig->oom_score_adj_min = current->signal->oom_score_adj_min;
 

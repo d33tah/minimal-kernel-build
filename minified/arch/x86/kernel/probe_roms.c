@@ -1,7 +1,6 @@
-#include <linux/init.h>
-#include <linux/export.h>
+/* Stub ROM probing */
 #include <linux/pci.h>
-#include <asm/probe_roms.h>
+#include <linux/init.h>
 
 void __iomem *pci_map_biosrom(struct pci_dev *pdev)
 {

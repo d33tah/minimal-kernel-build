@@ -1,12 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 // Stubbed out TLS syscalls - not needed for "Hello World"
-
-#include <linux/kernel.h>
-#include <linux/errno.h>
-#include <linux/sched.h>
 #include <linux/syscalls.h>
 #include <linux/regset.h>
-#include <asm/desc.h>
 
 SYSCALL_DEFINE1(set_thread_area, void __user *, u_info)
 {

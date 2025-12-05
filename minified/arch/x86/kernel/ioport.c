@@ -1,14 +1,6 @@
-#include <linux/capability.h>
-#include <linux/security.h>
+/* Stub IO port syscalls */
 #include <linux/syscalls.h>
-#include <linux/bitmap.h>
-#include <linux/ioport.h>
-#include <linux/sched.h>
-#include <linux/slab.h>
-
-#include <asm/io_bitmap.h>
-#include <asm/desc.h>
-#include <asm/syscalls.h>
+#include <linux/errno.h>
 
 
 long ksys_ioperm(unsigned long from, unsigned long num, int turn_on)

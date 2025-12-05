@@ -1,6 +1,6 @@
 #include <linux/export.h>
 #include <linux/bvec.h>
-#include <linux/fault-inject-usercopy.h>
+/* fault-inject-usercopy.h removed - inlined in uaccess.h */
 #include <linux/uio.h>
 #include <linux/pagemap.h>
 #include <linux/highmem.h>

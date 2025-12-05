@@ -9,7 +9,8 @@
 #include <linux/rmap.h>
 #include <linux/swap.h>
 #include <linux/swapops.h>
-#include <linux/secretmem.h>
+/* secretmem.h inlined - header removed */
+static inline bool vma_is_secretmem(struct vm_area_struct *vma) { return false; }
 
 #include <linux/sched/signal.h>
 #include <linux/rwsem.h>

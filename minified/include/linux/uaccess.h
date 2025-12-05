@@ -1,7 +1,10 @@
 #ifndef __LINUX_UACCESS_H__
 #define __LINUX_UACCESS_H__
 
-#include <linux/fault-inject-usercopy.h>
+/* fault-inject-usercopy.h inlined - header removed */
+#include <linux/types.h>
+#include <linux/stddef.h>
+static inline bool should_fail_usercopy(void) { return false; }
 #include <linux/instrumented.h>
 #include <linux/minmax.h>
 #include <linux/sched.h>

@@ -18,7 +18,9 @@
 #include <linux/rcupdate.h>
 #include <linux/refcount.h>
 #include <linux/resource.h>
-#include <linux/latencytop.h>
+/* latencytop.h inlined - header removed */
+static inline void account_scheduler_latency(struct task_struct *task, int usecs, int inter) {}
+static inline void clear_tsk_latency_tracing(struct task_struct *p) {}
 #include <linux/sched/prio.h>
 #include <linux/sched/types.h>
 #include <linux/signal_types.h>

@@ -1,8 +1,6 @@
- 
+/* --- 2025-12-06 13:40 --- uapi/asm/setup.h removed (empty file) */
 #ifndef _ASM_X86_SETUP_H
 #define _ASM_X86_SETUP_H
-
-#include <uapi/asm/setup.h>
 
 #define COMMAND_LINE_SIZE 2048
 

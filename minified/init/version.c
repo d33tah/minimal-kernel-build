@@ -1,7 +1,11 @@
 
 #include <generated/compile.h>
 #include <linux/build-salt.h>
-#include <linux/elfnote-lto.h>
+#include <linux/elfnote.h>
+/* elfnote-lto.h inlined */
+#define LINUX_ELFNOTE_LTO_INFO	0x101
+#define BUILD_LTO_INFO	ELFNOTE32("Linux", LINUX_ELFNOTE_LTO_INFO, 0)
+/* end elfnote-lto.h */
 #include <linux/export.h>
 
 /* --- 2025-12-06 20:37 --- uts.h inlined (16 LOC) */

@@ -1914,7 +1914,9 @@ static void add_header(struct buffer *b, struct module *mod)
 	 
 	buf_printf(b, "#define INCLUDE_VERMAGIC\n");
 	buf_printf(b, "#include <linux/build-salt.h>\n");
-	buf_printf(b, "#include <linux/elfnote-lto.h>\n");
+	buf_printf(b, "#include <linux/elfnote.h>\n");
+	buf_printf(b, "#define LINUX_ELFNOTE_LTO_INFO 0x101\n");
+	buf_printf(b, "#define BUILD_LTO_INFO ELFNOTE32(\"Linux\", LINUX_ELFNOTE_LTO_INFO, 0)\n");
 	buf_printf(b, "#include <linux/export-internal.h>\n");
 	buf_printf(b, "#include <linux/vermagic.h>\n");
 	buf_printf(b, "#include <linux/compiler.h>\n");

@@ -3,7 +3,10 @@
 #include <linux/timekeeper_internal.h>
 #include <vdso/datapage.h>
 #include <vdso/helpers.h>
-#include <vdso/vsyscall.h>
+#include <asm/vdso/vsyscall.h>
+
+unsigned long vdso_update_begin(void);
+void vdso_update_end(unsigned long flags);
 
 #include "timekeeping_internal.h"
 

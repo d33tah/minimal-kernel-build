@@ -17,7 +17,10 @@
 #include <linux/capability.h>
 #include <linux/file.h>
 #include <linux/fcntl.h>
-#include <linux/device_cgroup.h>
+/* device_cgroup.h inlined - stub functions */
+static inline int devcgroup_check_permission(short type, u32 major, u32 minor, short access) { return 0; }
+static inline int devcgroup_inode_permission(struct inode *inode, int mask) { return 0; }
+static inline int devcgroup_inode_mknod(int mode, dev_t dev) { return 0; }
 #include <linux/fs_struct.h>
 
 #include <linux/hash.h>

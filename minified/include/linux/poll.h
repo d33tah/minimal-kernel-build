@@ -9,7 +9,7 @@
 #include <linux/fs.h>
 #include <linux/uaccess.h>
 #include <asm/poll.h>
-#include <uapi/linux/eventpoll.h>
+#include <linux/eventpoll.h>
 
 #ifdef __clang__
 #define MAX_STACK_ALLOC 768

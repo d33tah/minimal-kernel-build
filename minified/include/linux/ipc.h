@@ -6,7 +6,22 @@
 #include <linux/rhashtable-types.h>
 #include <linux/types.h>
 #include <linux/refcount.h>
-#include <asm/ipcbuf.h>
+#include <linux/posix_types.h>
+
+/* From uapi/asm-generic/ipcbuf.h - inlined */
+struct ipc64_perm {
+	__kernel_key_t		key;
+	__kernel_uid32_t	uid;
+	__kernel_gid32_t	gid;
+	__kernel_uid32_t	cuid;
+	__kernel_gid32_t	cgid;
+	__kernel_mode_t		mode;
+	unsigned char		__pad1[4 - sizeof(__kernel_mode_t)];
+	unsigned short		seq;
+	unsigned short		__pad2;
+	__kernel_ulong_t	__unused1;
+	__kernel_ulong_t	__unused2;
+};
 
 /* From uapi/linux/ipc.h - inlined */
 struct ipc_perm

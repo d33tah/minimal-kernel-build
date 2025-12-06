@@ -1,8 +1,6 @@
-
-#include <linux/mutex.h>
+/* Minimal includes for refcount */
 #include <linux/refcount.h>
 #include <linux/spinlock.h>
-#include <linux/bug.h>
 
 #define REFCOUNT_WARN(str)	WARN_ONCE(1, "refcount_t: " str ".\n")
 

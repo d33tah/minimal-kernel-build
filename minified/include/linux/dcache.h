@@ -11,7 +11,25 @@
 #include <linux/cache.h>
 #include <linux/rcupdate.h>
 #include <linux/lockref.h>
-#include <linux/stringhash.h>
+#include <linux/hash.h>
+
+/* Inlined from stringhash.h */
+#define init_name_hash(salt)		(unsigned long)(salt)
+static inline unsigned long partial_name_hash(unsigned long c, unsigned long prevhash)
+{
+	return (prevhash + (c << 4) + (c >> 4)) * 11;
+}
+static inline unsigned int end_name_hash(unsigned long hash)
+{
+	return hash_long(hash, 32);
+}
+extern unsigned int __pure full_name_hash(const void *salt, const char *, unsigned int);
+#define hashlen_hash(hashlen) ((u32)(hashlen))
+#define hashlen_len(hashlen)  ((u32)((hashlen) >> 32))
+#define hashlen_create(hash, len) ((u64)(len)<<32 | (u32)(hash))
+extern u64 __pure hashlen_string(const void *salt, const char *name);
+/* End of inlined stringhash.h content */
+
 #include <linux/wait.h>
 
 struct path;

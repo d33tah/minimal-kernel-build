@@ -16,8 +16,7 @@
 #include <linux/init.h>
 #include <linux/mutex.h>
 #include <linux/vt_kern.h>
-#include <linux/selection.h>
-#include <linux/tiocl.h>
+#include <linux/selection.h> /* includes tiocl defines */
 #include <linux/kbd_kern.h>
 #include <linux/consolemap.h>
 #include <linux/timer.h>

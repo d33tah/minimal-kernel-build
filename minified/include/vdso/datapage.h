@@ -6,7 +6,7 @@
 #include <linux/compiler.h>
 #include <uapi/linux/time.h>
 #include <uapi/linux/types.h>
-#include <uapi/asm-generic/errno-base.h>
+#include <linux/errno.h>
 
 #include <vdso/bits.h>
 #include <vdso/clocksource.h>

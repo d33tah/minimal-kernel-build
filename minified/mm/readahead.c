@@ -1,9 +1,6 @@
-
-#include <linux/kernel.h>
-#include <linux/mm.h>
-#include <linux/pagemap.h>
+/* Minimal includes for readahead stubs */
 #include <linux/syscalls.h>
-#include <linux/export.h>
+#include <linux/pagemap.h>
 
 void file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping)
 {

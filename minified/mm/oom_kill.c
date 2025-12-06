@@ -1,13 +1,7 @@
-
+/* Minimal includes for OOM stubs */
 #include <linux/oom.h>
-#include <linux/mm.h>
-#include <linux/err.h>
-#include <linux/sched.h>
-#include <linux/sched/mm.h>
-#include <linux/sched/task.h>
-#include <linux/notifier.h>
-#include <linux/export.h>
 #include <linux/mutex.h>
+#include <linux/notifier.h>
 
 DEFINE_MUTEX(oom_lock);
 DEFINE_MUTEX(oom_adj_mutex);

@@ -1,5 +1,6 @@
 #include <linux/kernel.h>
-#include <linux/gcd.h>
+/* gcd.h inlined */
+unsigned long gcd(unsigned long a, unsigned long b) __attribute_const__;
 #include <linux/export.h>
 
 

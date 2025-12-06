@@ -32,7 +32,8 @@
 
 #include <linux/ctype.h>
 #include <linux/bsearch.h>
-#include <linux/gcd.h>
+/* gcd.h inlined */
+unsigned long gcd(unsigned long a, unsigned long b);
 
 #define MAX_NR_CON_DRIVER 16
 

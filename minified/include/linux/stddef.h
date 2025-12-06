@@ -1,7 +1,24 @@
 #ifndef _LINUX_STDDEF_H
 #define _LINUX_STDDEF_H
 
-#include <uapi/linux/stddef.h>
+#include <linux/compiler_types.h>
+
+/* Inlined from uapi/linux/stddef.h */
+#ifndef __always_inline
+#define __always_inline inline
+#endif
+
+#define __struct_group(TAG, NAME, ATTRS, MEMBERS...) \
+	union { \
+		struct { MEMBERS } ATTRS; \
+		struct TAG { MEMBERS } ATTRS NAME; \
+	}
+
+#define __DECLARE_FLEX_ARRAY(TYPE, NAME)	\
+	struct { \
+		struct { } __empty_ ## NAME; \
+		TYPE NAME[]; \
+	}
 
 #undef NULL
 #define NULL ((void *)0)

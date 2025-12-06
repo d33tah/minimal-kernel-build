@@ -2,9 +2,45 @@
 #ifndef _LINUX_TIMEX_H
 #define _LINUX_TIMEX_H
 
-#include <uapi/linux/timex.h>
+#include <linux/time.h>
 
-#define ADJ_ADJTIME		0x8000	 
+/* Inlined from uapi/linux/timex.h */
+struct __kernel_timex_timeval {
+	__kernel_time64_t       tv_sec;
+	long long		tv_usec;
+};
+
+struct __kernel_timex {
+	unsigned int modes;
+	int :32;
+	long long offset;
+	long long freq;
+	long long maxerror;
+	long long esterror;
+	int status;
+	int :32;
+	long long constant;
+	long long precision;
+	long long tolerance;
+	struct __kernel_timex_timeval time;
+	long long tick;
+	long long ppsfreq;
+	long long jitter;
+	int shift;
+	int :32;
+	long long stabil;
+	long long jitcnt;
+	long long calcnt;
+	long long errcnt;
+	long long stbcnt;
+	int tai;
+	int  :32; int  :32; int  :32; int  :32;
+	int  :32; int  :32; int  :32; int  :32;
+	int  :32; int  :32; int  :32;
+};
+#define TIME_ERROR	5
+
+#define ADJ_ADJTIME		0x8000 
 #define ADJ_OFFSET_SINGLESHOT	0x0001	 
 #define ADJ_OFFSET_READONLY	0x2000	 
 #include <linux/compiler.h>

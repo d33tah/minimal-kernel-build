@@ -1,10 +1,11 @@
 /* Minimal audit.h - stubs for !CONFIG_AUDIT */
+/* --- 2025-12-06 13:10 --- elf-em.h replaced with elf.h */
 #ifndef _LINUX_AUDIT_H_
 #define _LINUX_AUDIT_H_
 
 #include <linux/ptrace.h>
 #include <linux/types.h>
-#include <linux/elf-em.h>
+#include <linux/elf.h>
 
 /* From uapi/linux/audit.h - inlined */
 #define __AUDIT_ARCH_64BIT 0x80000000

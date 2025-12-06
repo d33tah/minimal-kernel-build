@@ -1,8 +1,14 @@
+/* --- 2025-12-06 13:10 --- elf-em.h inlined */
 #ifndef _UAPI_LINUX_ELF_H
 #define _UAPI_LINUX_ELF_H
 
 #include <linux/types.h>
-#include <linux/elf-em.h>
+
+/* ELF machine types - inlined from elf-em.h */
+#define EM_NONE		0
+#define EM_386		3
+#define EM_486		6
+#define EM_X86_64	62
 
 typedef __u32	Elf32_Addr;
 typedef __u16	Elf32_Half;

@@ -1,13 +1,11 @@
-
-
+/* Minimal audit.h - stubs for !CONFIG_AUDIT */
 #ifndef _LINUX_AUDIT_H_
 #define _LINUX_AUDIT_H_
 
-#include <linux/sched.h>
 #include <linux/ptrace.h>
-
 #include <uapi/linux/audit.h>
 
+struct task_struct;
 struct audit_buffer;
 struct audit_context;
 struct kern_ipc_perm;

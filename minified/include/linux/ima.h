@@ -1,13 +1,14 @@
-
+/* Minimal ima.h - stubs for !CONFIG_IMA */
 #ifndef _LINUX_IMA_H
 #define _LINUX_IMA_H
 
-#include <linux/kernel_read_file.h>
-#include <linux/fs.h>
-#include <linux/security.h>
-#include <linux/kexec.h>
 #include <uapi/linux/hash_info.h>
+
 struct linux_binprm;
+struct file;
+struct vm_area_struct;
+struct inode;
+struct user_namespace;
 
 static inline enum hash_algo ima_get_current_hash_algo(void)
 {

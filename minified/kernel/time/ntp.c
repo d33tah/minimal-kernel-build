@@ -1,19 +1,8 @@
-
-#include <linux/capability.h>
-#include <linux/clocksource.h>
-#include <linux/workqueue.h>
-#include <linux/hrtimer.h>
-#include <linux/jiffies.h>
-#include <linux/math64.h>
+/* NTP stubs - minimal includes */
 #include <linux/timex.h>
-#include <linux/time.h>
-#include <linux/mm.h>
-#include <linux/module.h>
-#include <linux/rtc.h>
+#include <linux/ktime.h>
 #include <linux/audit.h>
-
 #include "ntp_internal.h"
-#include "timekeeping_internal.h"
 
 static u64 tick_length_stub = ((u64)TICK_NSEC << 32);
 

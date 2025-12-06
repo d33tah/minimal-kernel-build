@@ -1,25 +1,7 @@
-
-#include <linux/export.h>
-#include <linux/kernel.h>
-#include <linux/sched.h>
-#include <linux/init.h>
-#include <linux/signal.h>
-#include <linux/completion.h>
+/* Stub workqueue - runs work immediately (no threading) */
 #include <linux/workqueue.h>
 #include <linux/slab.h>
-#include <linux/cpu.h>
-#include <linux/notifier.h>
-#include <linux/kthread.h>
-#include <linux/hardirq.h>
-#include <linux/mempolicy.h>
-#include <linux/freezer.h>
-#include <linux/debug_locks.h>
-#include <linux/lockdep.h>
-#include <linux/idr.h>
-#include <linux/rculist.h>
-#include <linux/sched/isolation.h>
-
-#include "workqueue_internal.h"
+#include <linux/timer.h>
 
 struct workqueue_struct {
     unsigned int flags;

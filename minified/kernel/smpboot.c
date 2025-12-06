@@ -1,18 +1,6 @@
-#include <linux/cpu.h>
-#include <linux/err.h>
-#include <linux/smp.h>
-#include <linux/delay.h>
-#include <linux/init.h>
-#include <linux/list.h>
-#include <linux/slab.h>
-#include <linux/sched.h>
-#include <linux/sched/task.h>
-#include <linux/export.h>
-#include <linux/percpu.h>
-#include <linux/kthread.h>
+/* Stub SMP boot - single CPU only */
 #include <linux/smpboot.h>
-
-#include "smpboot.h"
+#include <linux/stddef.h>
 
 int smpboot_create_threads(unsigned int cpu)
 {

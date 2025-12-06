@@ -2,8 +2,12 @@
 #define _LINUX_TIMEKEEPING_H
 
 #include <linux/errno.h>
-#include <linux/clocksource_ids.h>
 
+/* Inlined from clocksource_ids.h */
+enum clocksource_ids {
+	CSID_GENERIC		= 0,
+	CSID_MAX,
+};
 
 void timekeeping_init(void);
 extern int timekeeping_suspended;

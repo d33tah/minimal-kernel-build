@@ -8,7 +8,7 @@
 /* irqhandler.h inlined */
 struct irq_desc;
 typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
-#include <linux/irqreturn.h>
+#include <linux/interrupt.h>
 #include <linux/irqnr.h>
 #include <linux/topology.h>
 #include <linux/io.h>

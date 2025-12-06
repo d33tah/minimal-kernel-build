@@ -1,8 +1,8 @@
 #include <linux/err.h>
 #include <linux/bug.h>
 #include <linux/atomic.h>
-#include <linux/errseq.h>
 #include <linux/log2.h>
+#include <linux/fs.h>
 
 
 #define ERRSEQ_SHIFT		ilog2(MAX_ERRNO + 1)

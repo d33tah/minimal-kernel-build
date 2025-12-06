@@ -3,7 +3,7 @@
 
 #ifndef __ASSEMBLY__
 
-#include <linux/align.h>
+#include <linux/kernel.h>
 #include <linux/bitops.h>
 #include <linux/limits.h>
 

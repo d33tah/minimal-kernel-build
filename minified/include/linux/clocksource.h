@@ -9,7 +9,7 @@
 #include <linux/timer.h>
 #include <linux/init.h>
 #include <linux/of.h>
-#include <linux/clocksource_ids.h>
+#include <linux/timekeeping.h>
 #include <asm/div64.h>
 #include <asm/io.h>
 

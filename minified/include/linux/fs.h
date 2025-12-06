@@ -58,8 +58,14 @@ static inline void clear_delayed_call(struct delayed_call *call)
 /* End of inlined delayed_call.h content */
 
 #include <linux/uuid.h>
-#include <linux/errseq.h>
 #include <linux/ioprio.h>
+
+/* Inlined from errseq.h */
+typedef u32	errseq_t;
+errseq_t errseq_set(errseq_t *eseq, int err);
+errseq_t errseq_sample(errseq_t *eseq);
+int errseq_check(errseq_t *eseq, errseq_t since);
+int errseq_check_and_advance(errseq_t *eseq, errseq_t *since);
 #include <linux/build_bug.h>
 
 /* --- 2025-12-06 20:11 --- fs_types.h inlined (36 LOC) */

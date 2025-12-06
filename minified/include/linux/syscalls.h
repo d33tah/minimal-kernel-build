@@ -78,7 +78,9 @@ enum landlock_rule_type;
 #include <linux/key.h>
 #include <linux/personality.h>
 #include <linux/fcntl.h>
-#include <trace/syscall.h>
+
+/* Inlined from trace/syscall.h */
+static inline void syscall_tracepoint_update(struct task_struct *p) {}
 
 #include <asm/syscall_wrapper.h>
 #include <asm/syscall.h>

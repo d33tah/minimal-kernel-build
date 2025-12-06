@@ -8,8 +8,11 @@
 #include <linux/vmalloc.h>
 #include <linux/splice.h>
 #include <linux/compat.h>
-#include <net/checksum.h>
 #include <linux/scatterlist.h>
+
+/* Inlined from net/checksum.h */
+typedef __u16 __sum16;
+typedef __u32 __wsum;
 #include <linux/instrumented.h>
 
 #define PIPE_PARANOIA  

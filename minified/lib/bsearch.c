@@ -1,5 +1,4 @@
-
-#include <linux/export.h>
+/* Binary search */
 #include <linux/bsearch.h>
 #include <linux/kprobes.h>
 

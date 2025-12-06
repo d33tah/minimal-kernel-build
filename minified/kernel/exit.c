@@ -15,7 +15,10 @@
 #include <linux/iocontext.h>
 #include <linux/key.h>
 #include <linux/cpu.h>
-#include <linux/acct.h>
+/* acct.h inlined */
+#define acct_collect(x,y)	do { } while (0)
+#define acct_process()		do { } while (0)
+#define acct_exit_ns(ns)	do { } while (0)
 #include <linux/tsacct_kern.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>

@@ -53,7 +53,10 @@
 #include <linux/proc_fs.h>
 #include <linux/rmap.h>
 #include <linux/ksm.h>
-#include <linux/acct.h>
+/* acct.h inlined */
+#define acct_collect(x,y)	do { } while (0)
+#define acct_process()		do { } while (0)
+#define acct_exit_ns(ns)	do { } while (0)
 #include <linux/userfaultfd_k.h>
 #include <linux/tsacct_kern.h>
 #include <linux/cn_proc.h>

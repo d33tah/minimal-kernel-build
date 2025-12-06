@@ -19,7 +19,9 @@
 #include <linux/printk.h>
 #include <linux/build_bug.h>
 #include <linux/static_call_types.h>
-#include <linux/instruction_pointer.h>
+/* instruction_pointer.h inlined */
+#define _RET_IP_		(unsigned long)__builtin_return_address(0)
+#define _THIS_IP_  ({ __label__ __here; __here: (unsigned long)&&__here; })
 #include <asm/byteorder.h>
 
 /* From uapi/linux/sysinfo.h - inlined */

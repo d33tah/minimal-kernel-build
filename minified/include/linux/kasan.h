@@ -2,8 +2,12 @@
 #ifndef _LINUX_KASAN_H
 #define _LINUX_KASAN_H
 
-#include <linux/kasan-enabled.h>
 #include <linux/types.h>
+
+/* --- 2025-12-06 20:30 --- kasan-enabled.h inlined (18 LOC) */
+static inline bool kasan_enabled(void) { return IS_ENABLED(CONFIG_KASAN); }
+static inline bool kasan_hw_tags_enabled(void) { return false; }
+/* --- end kasan-enabled.h inlined --- */
 
 struct kmem_cache;
 struct page;

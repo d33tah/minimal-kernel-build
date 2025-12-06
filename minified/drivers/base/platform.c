@@ -55,7 +55,13 @@ static inline unsigned int irq_of_parse_and_map(struct device_node *dev,
 #include <linux/err.h>
 #include <linux/slab.h>
 #include <linux/pm_runtime.h>
-#include <linux/pm_domain.h>
+
+/* --- 2025-12-06 20:27 --- pm_domain.h inlined (19 LOC) */
+static inline int dev_pm_domain_attach(struct device *dev, bool power_on) { return 0; }
+static inline void dev_pm_domain_detach(struct device *dev, bool power_off) {}
+static inline int dev_pm_domain_start(struct device *dev) { return 0; }
+static inline void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd) {}
+/* --- end pm_domain.h inlined --- */
 #include <linux/idr.h>
 #include <linux/acpi.h>
 static inline int of_clk_set_defaults(struct device_node *node, bool clk_supplier) { return 0; }

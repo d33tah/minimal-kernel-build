@@ -3,7 +3,20 @@
 
 #include <linux/stat.h>
 #include <asm/fcntl.h>
-#include <linux/openat2.h>
+
+/* --- 2025-12-06 20:29 --- openat2.h inlined (19 LOC) */
+struct open_how {
+	__u64 flags;
+	__u64 mode;
+	__u64 resolve;
+};
+#define RESOLVE_NO_XDEV		0x01
+#define RESOLVE_NO_MAGICLINKS	0x02
+#define RESOLVE_NO_SYMLINKS	0x04
+#define RESOLVE_BENEATH		0x08
+#define RESOLVE_IN_ROOT		0x10
+#define RESOLVE_CACHED		0x20
+/* --- end openat2.h inlined --- */
 
 /* Inlined from uapi/linux/fcntl.h */
 #define F_SETLEASE	(F_LINUX_SPECIFIC_BASE + 0)

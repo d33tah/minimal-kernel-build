@@ -72,7 +72,14 @@ static inline void taskstats_init_early(void) {}
 #include <linux/magic.h>
 #include <linux/perf_event.h>
 #include <linux/posix-timers.h>
-#include <linux/user-return-notifier.h>
+/* user-return-notifier.h inlined */
+#ifndef _URN_INLINE
+#define _URN_INLINE
+struct user_return_notifier {};
+static inline void propagate_user_return_notify(struct task_struct *prev, struct task_struct *next) {}
+static inline void fire_user_return_notifiers(void) {}
+static inline void clear_user_return_notifier(struct task_struct *p) {}
+#endif
 #include <linux/oom.h>
 #include <linux/khugepaged.h>
 #include <linux/uprobes.h>

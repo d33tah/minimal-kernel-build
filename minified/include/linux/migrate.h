@@ -3,7 +3,7 @@
 
 #include <linux/mm.h>
 #include <linux/mempolicy.h>
-#include <linux/migrate_mode.h>
+/* migrate_mode.h included via fs.h already */
 #include <linux/hugetlb.h>
 
 typedef struct page *new_page_t(struct page *page, unsigned long private);

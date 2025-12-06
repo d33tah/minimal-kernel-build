@@ -27,7 +27,9 @@
 #include <linux/rculist_bl.h>
 #include <linux/atomic.h>
 #include <linux/shrinker.h>
-#include <linux/migrate_mode.h>
+/* migrate_mode.h inlined */
+enum migrate_mode { MIGRATE_MODE_LAST };
+enum migrate_reason { MR_TYPES };
 #include <linux/uidgid.h>
 #include <linux/lockdep.h>
 #include <linux/percpu-rwsem.h>

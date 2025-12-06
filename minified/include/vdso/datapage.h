@@ -7,11 +7,10 @@
 #include <uapi/linux/time.h>
 #include <uapi/linux/types.h>
 #include <linux/errno.h>
-
-#include <vdso/bits.h>
+#include <linux/bits.h>
+#include <linux/limits.h>
 #include <vdso/clocksource.h>
 #include <vdso/ktime.h>
-#include <vdso/limits.h>
 #include <vdso/math64.h>
 
 #include <vdso/time.h>

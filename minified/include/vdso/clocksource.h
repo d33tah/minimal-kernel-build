@@ -1,8 +1,7 @@
 #ifndef __VDSO_CLOCKSOURCE_H
 #define __VDSO_CLOCKSOURCE_H
 
-#include <vdso/limits.h>
-
+#include <linux/limits.h>
 #include <asm/vdso/clocksource.h>
 
 enum vdso_clock_mode {

@@ -5,8 +5,15 @@
 #include <linux/file.h>
 #include <linux/signal.h>
 #include <linux/syscalls.h>
-#include <linux/times.h>
 #include <linux/utsname.h>
+
+/* From uapi/linux/times.h - inlined */
+struct tms {
+	__kernel_clock_t tms_utime;
+	__kernel_clock_t tms_stime;
+	__kernel_clock_t tms_cutime;
+	__kernel_clock_t tms_cstime;
+};
 #include <linux/mm.h>
 #include <linux/uio.h>
 

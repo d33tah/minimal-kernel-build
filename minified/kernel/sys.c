@@ -2,8 +2,15 @@
 #include <linux/syscalls.h>
 #include <linux/utsname.h>
 #include <linux/resource.h>
-#include <linux/times.h>
 #include <linux/sched.h>
+
+/* From uapi/linux/times.h - inlined */
+struct tms {
+	__kernel_clock_t tms_utime;
+	__kernel_clock_t tms_stime;
+	__kernel_clock_t tms_cutime;
+	__kernel_clock_t tms_cstime;
+};
 #include <linux/rcupdate.h>
 #include <linux/cred.h>
 #include <linux/uaccess.h>

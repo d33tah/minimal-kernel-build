@@ -3,7 +3,13 @@
 #define _LINUX_AUDIT_H_
 
 #include <linux/ptrace.h>
-#include <uapi/linux/audit.h>
+#include <linux/types.h>
+#include <linux/elf-em.h>
+
+/* From uapi/linux/audit.h - inlined */
+#define __AUDIT_ARCH_64BIT 0x80000000
+#define __AUDIT_ARCH_LE	   0x40000000
+#define AUDIT_ARCH_I386		(EM_386|__AUDIT_ARCH_LE)
 
 struct task_struct;
 struct audit_buffer;

@@ -4,7 +4,18 @@
 #include <linux/kernel.h>
 #include <linux/thread_info.h>
 #include <linux/mm_types.h>
-#include <uapi/linux/uio.h>
+#include <linux/compiler.h>
+#include <linux/types.h>
+
+/* From uapi/linux/uio.h - inlined */
+struct iovec
+{
+	void __user *iov_base;
+	__kernel_size_t iov_len;
+};
+
+#define UIO_FASTIOV	8
+#define UIO_MAXIOV	1024
 
 struct page;
 struct pipe_inode_info;

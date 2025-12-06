@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_PANIC_H
 #define _LINUX_PANIC_H
 
@@ -31,18 +30,15 @@ extern int sysctl_panic_on_stackoverflow;
 
 extern bool crash_kexec_post_notifiers;
 
- 
 extern atomic_t panic_cpu;
 #define PANIC_CPU_INVALID	-1
 
- 
 static inline void set_arch_panic_timeout(int timeout, int arch_default_timeout)
 {
 	if (panic_timeout == arch_default_timeout)
 		panic_timeout = timeout;
 }
 
- 
 #define TAINT_PROPRIETARY_MODULE	0
 #define TAINT_FORCED_MODULE		1
 #define TAINT_CPU_OUT_OF_SPEC		2

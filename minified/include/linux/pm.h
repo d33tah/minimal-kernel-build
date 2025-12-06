@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_PM_H
 #define _LINUX_PM_H
@@ -13,24 +11,9 @@
 #include <linux/hrtimer.h>
 #include <linux/completion.h>
 
- 
 extern void (*pm_power_off)(void);
 
-struct device;  
-static inline void pm_vt_switch_required(struct device *dev, bool required)
-{
-}
-static inline void pm_vt_switch_unregister(struct device *dev)
-{
-}
-
-static inline bool cxl_mem_active(void)
-{
-	return false;
-}
-
- 
-
+struct device;
 
 #define power_group_name	NULL
 
@@ -38,7 +21,6 @@ typedef struct pm_message {
 	int event;
 } pm_message_t;
 
- 
 struct dev_pm_ops {
 	int (*prepare)(struct device *dev);
 	void (*complete)(struct device *dev);
@@ -116,7 +98,6 @@ static __maybe_unused _DEFINE_DEV_PM_OPS(__static_##name, suspend_fn, \
 					 resume_fn, runtime_suspend_fn, \
 					 runtime_resume_fn, idle_fn)
 
- 
 #define DEFINE_SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
 	_DEFINE_DEV_PM_OPS(name, suspend_fn, resume_fn, NULL, NULL, NULL)
 
@@ -129,13 +110,11 @@ static __maybe_unused _DEFINE_DEV_PM_OPS(__static_##name, suspend_fn, \
 #define EXPORT_NS_GPL_SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn, ns)	\
 	_EXPORT_DEV_PM_OPS(name, suspend_fn, resume_fn, NULL, NULL, NULL, "_gpl", #ns)
 
- 
 #define SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
 const struct dev_pm_ops __maybe_unused name = { \
 	SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
 }
 
- 
 #define UNIVERSAL_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn) \
 const struct dev_pm_ops __maybe_unused name = { \
 	SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
@@ -145,53 +124,23 @@ const struct dev_pm_ops __maybe_unused name = { \
 #define pm_ptr(_ptr) PTR_IF(IS_ENABLED(CONFIG_PM), (_ptr))
 #define pm_sleep_ptr(_ptr) PTR_IF(IS_ENABLED(CONFIG_PM_SLEEP), (_ptr))
 
- 
 
 #define PM_EVENT_INVALID	(-1)
 #define PM_EVENT_ON		0x0000
 #define PM_EVENT_FREEZE		0x0001
 #define PM_EVENT_SUSPEND	0x0002
-#define PM_EVENT_HIBERNATE	0x0004
-#define PM_EVENT_QUIESCE	0x0008
 #define PM_EVENT_RESUME		0x0010
-#define PM_EVENT_THAW		0x0020
-#define PM_EVENT_RESTORE	0x0040
-#define PM_EVENT_RECOVER	0x0080
-#define PM_EVENT_USER		0x0100
-#define PM_EVENT_REMOTE		0x0200
-#define PM_EVENT_AUTO		0x0400
-
-#define PM_EVENT_SLEEP		(PM_EVENT_SUSPEND | PM_EVENT_HIBERNATE)
-#define PM_EVENT_USER_SUSPEND	(PM_EVENT_USER | PM_EVENT_SUSPEND)
-#define PM_EVENT_USER_RESUME	(PM_EVENT_USER | PM_EVENT_RESUME)
-#define PM_EVENT_REMOTE_RESUME	(PM_EVENT_REMOTE | PM_EVENT_RESUME)
-#define PM_EVENT_AUTO_SUSPEND	(PM_EVENT_AUTO | PM_EVENT_SUSPEND)
-#define PM_EVENT_AUTO_RESUME	(PM_EVENT_AUTO | PM_EVENT_RESUME)
+/* Unused PM_EVENT_* removed: HIBERNATE, QUIESCE, THAW, RESTORE, RECOVER,
+   USER, REMOTE, AUTO, SLEEP, SUSPEND and RESUME compound variants */
 
 #define PMSG_INVALID	((struct pm_message){ .event = PM_EVENT_INVALID, })
 #define PMSG_ON		((struct pm_message){ .event = PM_EVENT_ON, })
 #define PMSG_FREEZE	((struct pm_message){ .event = PM_EVENT_FREEZE, })
-#define PMSG_QUIESCE	((struct pm_message){ .event = PM_EVENT_QUIESCE, })
 #define PMSG_SUSPEND	((struct pm_message){ .event = PM_EVENT_SUSPEND, })
-#define PMSG_HIBERNATE	((struct pm_message){ .event = PM_EVENT_HIBERNATE, })
 #define PMSG_RESUME	((struct pm_message){ .event = PM_EVENT_RESUME, })
-#define PMSG_THAW	((struct pm_message){ .event = PM_EVENT_THAW, })
-#define PMSG_RESTORE	((struct pm_message){ .event = PM_EVENT_RESTORE, })
-#define PMSG_RECOVER	((struct pm_message){ .event = PM_EVENT_RECOVER, })
-#define PMSG_USER_SUSPEND	((struct pm_message) \
-					{ .event = PM_EVENT_USER_SUSPEND, })
-#define PMSG_USER_RESUME	((struct pm_message) \
-					{ .event = PM_EVENT_USER_RESUME, })
-#define PMSG_REMOTE_RESUME	((struct pm_message) \
-					{ .event = PM_EVENT_REMOTE_RESUME, })
-#define PMSG_AUTO_SUSPEND	((struct pm_message) \
-					{ .event = PM_EVENT_AUTO_SUSPEND, })
-#define PMSG_AUTO_RESUME	((struct pm_message) \
-					{ .event = PM_EVENT_AUTO_RESUME, })
+/* Unused PMSG_* macros removed: QUIESCE, HIBERNATE, THAW, RESTORE, RECOVER,
+   USER_SUSPEND, USER_RESUME, REMOTE_RESUME, AUTO_SUSPEND, AUTO_RESUME, IS_AUTO */
 
-#define PMSG_IS_AUTO(msg)	(((msg).event & PM_EVENT_AUTO) != 0)
-
- 
 
 enum rpm_status {
 	RPM_INVALID = -1,
@@ -201,15 +150,8 @@ enum rpm_status {
 	RPM_SUSPENDING,
 };
 
- 
 
-enum rpm_request {
-	RPM_REQ_NONE = 0,
-	RPM_REQ_IDLE,
-	RPM_REQ_SUSPEND,
-	RPM_REQ_AUTOSUSPEND,
-	RPM_REQ_RESUME,
-};
+/* enum rpm_request removed - unused */
 
 struct wakeup_source;
 struct wake_irq;
@@ -220,7 +162,6 @@ struct pm_subsys_data {
 	unsigned int refcount;
 };
 
- 
 #define DPM_FLAG_NO_DIRECT_COMPLETE	BIT(0)
 #define DPM_FLAG_SMART_PREPARE		BIT(1)
 #define DPM_FLAG_SMART_SUSPEND		BIT(2)
@@ -249,7 +190,6 @@ struct dev_pm_info {
 extern int dev_pm_get_subsys_data(struct device *dev);
 extern void dev_pm_put_subsys_data(struct device *dev);
 
- 
 struct dev_pm_domain {
 	struct dev_pm_ops	ops;
 	int (*start)(struct device *dev);
@@ -259,32 +199,15 @@ struct dev_pm_domain {
 	void (*dismiss)(struct device *dev);
 };
 
- 
 
- 
 #define PM_EVENT_PRETHAW PM_EVENT_QUIESCE
 
- 
 
 
 #define device_pm_lock() do {} while (0)
 #define device_pm_unlock() do {} while (0)
 
-static inline int dpm_suspend_start(pm_message_t state)
-{
-	return 0;
-}
-
 #define suspend_report_result(dev, fn, ret)	do {} while (0)
-
-static inline int device_pm_wait_for_dev(struct device *a, struct device *b)
-{
-	return 0;
-}
-
-static inline void dpm_for_each_dev(void *data, void (*fn)(struct device *, void *))
-{
-}
 
 #define pm_generic_prepare		NULL
 #define pm_generic_suspend_late		NULL
@@ -307,7 +230,6 @@ static inline void dpm_for_each_dev(void *data, void (*fn)(struct device *, void
 #define pm_generic_poweroff		NULL
 #define pm_generic_complete		NULL
 
- 
 /* Reduced dpm_order enum - only DPM_ORDER_NONE needed for stub function type */
 enum dpm_order {
 	DPM_ORDER_NONE,

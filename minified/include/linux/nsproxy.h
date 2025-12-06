@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_NSPROXY_H
 #define _LINUX_NSPROXY_H
 
@@ -12,7 +11,6 @@ struct pid_namespace;
 struct cgroup_namespace;
 struct fs_struct;
 
- 
 struct nsproxy {
 	atomic_t count;
 	struct uts_namespace *uts_ns;
@@ -26,7 +24,6 @@ struct nsproxy {
 };
 extern struct nsproxy init_nsproxy;
 
- 
 struct nsset {
 	unsigned flags;
 	struct nsproxy *nsproxy;
@@ -42,7 +39,6 @@ static inline struct cred *nsset_cred(struct nsset *set)
 	return NULL;
 }
 
- 
 
 int copy_namespaces(unsigned long flags, struct task_struct *tsk);
 void exit_task_namespaces(struct task_struct *tsk);

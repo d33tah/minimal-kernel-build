@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_DMA_MAPPING_H
 #define _LINUX_DMA_MAPPING_H
 
@@ -11,44 +10,25 @@
 #include <linux/bug.h>
 #include <linux/mem_encrypt.h>
 
- 
 
- 
 #define DMA_ATTR_WEAK_ORDERING		(1UL << 1)
- 
 #define DMA_ATTR_WRITE_COMBINE		(1UL << 2)
- 
 #define DMA_ATTR_NO_KERNEL_MAPPING	(1UL << 4)
- 
 #define DMA_ATTR_SKIP_CPU_SYNC		(1UL << 5)
- 
 #define DMA_ATTR_FORCE_CONTIGUOUS	(1UL << 6)
- 
 #define DMA_ATTR_ALLOC_SINGLE_PAGES	(1UL << 7)
- 
 #define DMA_ATTR_NO_WARN	(1UL << 8)
 
- 
 #define DMA_ATTR_PRIVILEGED		(1UL << 9)
 
- 
 #define DMA_MAPPING_ERROR		(~(dma_addr_t)0)
 
 #define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
 
-static inline void debug_dma_mapping_error(struct device *dev,
-		dma_addr_t dma_addr)
-{
-}
-static inline void debug_dma_map_single(struct device *dev, const void *addr,
-		unsigned long len)
-{
-}
+/* debug_dma_mapping_error, debug_dma_map_single removed - unused */
 
 static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
 {
-	debug_dma_mapping_error(dev, dma_addr);
-
 	if (unlikely(dma_addr == DMA_MAPPING_ERROR))
 		return -ENOMEM;
 	return 0;
@@ -121,11 +101,9 @@ int dma_mmap_pages(struct device *dev, struct vm_area_struct *vma,
 static inline dma_addr_t dma_map_single_attrs(struct device *dev, void *ptr,
 		size_t size, enum dma_data_direction dir, unsigned long attrs)
 {
-	 
 	if (dev_WARN_ONCE(dev, is_vmalloc_addr(ptr),
 			  "rejecting DMA map of vmalloc memory\n"))
 		return DMA_MAPPING_ERROR;
-	debug_dma_map_single(dev, ptr, size);
 	return dma_map_page_attrs(dev, virt_to_page(ptr), offset_in_page(ptr),
 			size, dir, attrs);
 }
@@ -141,19 +119,7 @@ static inline dma_addr_t dma_map_single_attrs(struct device *dev, void *ptr,
 #define dma_get_sgtable(d, t, v, h, s) dma_get_sgtable_attrs(d, t, v, h, s, 0)
 #define dma_mmap_coherent(d, v, c, h, s) dma_mmap_attrs(d, v, c, h, s, 0)
 
-static inline void *dma_alloc_coherent(struct device *dev, size_t size,
-		dma_addr_t *dma_handle, gfp_t gfp)
-{
-	return dma_alloc_attrs(dev, size, dma_handle, gfp,
-			(gfp & __GFP_NOWARN) ? DMA_ATTR_NO_WARN : 0);
-}
-
-static inline void dma_free_coherent(struct device *dev, size_t size,
-		void *cpu_addr, dma_addr_t dma_handle)
-{
-	return dma_free_attrs(dev, size, cpu_addr, dma_handle, 0);
-}
-
+/* dma_alloc_coherent, dma_free_coherent removed - unused */
 
 static inline u64 dma_get_mask(struct device *dev)
 {
@@ -163,7 +129,6 @@ static inline u64 dma_get_mask(struct device *dev)
 }
 
 
- 
 static inline bool dma_addressing_limited(struct device *dev)
 {
 	return min_not_zero(dma_get_mask(dev), dev->bus_dma_limit) <
@@ -171,14 +136,7 @@ static inline bool dma_addressing_limited(struct device *dev)
 }
 
 
-static inline int dma_get_cache_alignment(void)
-{
-#ifdef ARCH_DMA_MINALIGN
-	return ARCH_DMA_MINALIGN;
-#endif
-	return 1;
-}
-
+/* dma_get_cache_alignment removed - unused */
 
 #define DEFINE_DMA_UNMAP_ADDR(ADDR_NAME)
 #define DEFINE_DMA_UNMAP_LEN(LEN_NAME)

@@ -8,12 +8,8 @@
  
 
 #define _NSIG		64
-
-#ifdef __i386__
-# define _NSIG_BPW	32
-#else
-# define _NSIG_BPW	64
-#endif
+/* __i386__ (32-bit) */
+#define _NSIG_BPW	32
 
 #define _NSIG_WORDS	(_NSIG / _NSIG_BPW)
 
@@ -39,8 +35,7 @@ typedef sigset_t compat_sigset_t;
 #include <asm/asm.h>
 #include <uapi/asm/sigcontext.h>
 
-#ifdef __i386__
-
+/* __i386__ - 32-bit x86 */
 #define __HAVE_ARCH_SIG_BITOPS
 
 #define sigaddset(set,sig)		    \
@@ -96,12 +91,6 @@ static inline int __gen_sigismember(sigset_t *set, int _sig)
 	 : __gen_sigismember((set), (sig)))
 
 struct pt_regs;
-
-#else  
-
-#undef __HAVE_ARCH_SIG_BITOPS
-
-#endif  
 
 #endif  
 #endif  

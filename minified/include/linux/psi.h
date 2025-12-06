@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_PSI_H
 #define _LINUX_PSI_H
 
@@ -13,9 +12,7 @@ struct css_set;
 
 
 static inline void psi_init(void) {}
-
-static inline void psi_memstall_enter(unsigned long *flags) {}
-static inline void psi_memstall_leave(unsigned long *flags) {}
+/* psi_memstall_enter/leave removed - unused */
 
 
 

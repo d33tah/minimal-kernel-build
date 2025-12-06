@@ -1,5 +1,3 @@
- 
- 
 #include <linux/memblock.h>  
 #include <linux/export.h>
 #include <linux/mm.h>
@@ -11,7 +9,6 @@
 #include <linux/slab.h>
 #include "direct.h"
 
- 
 unsigned int zone_dma_bits __ro_after_init = 24;
 
 static inline dma_addr_t phys_to_dma_direct(struct device *dev,
@@ -144,7 +141,6 @@ again:
 	return page;
 }
 
- 
 static bool dma_direct_use_pool(struct device *dev, gfp_t gfp)
 {
 	return !gfpflags_allow_blocking(gfp) && !is_swiotlb_for_alloc(dev);

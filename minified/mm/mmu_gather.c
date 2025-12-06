@@ -136,19 +136,16 @@ static void __tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm,
 	inc_tlb_flush_pending(tlb->mm);
 }
 
- 
 void tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm)
 {
 	__tlb_gather_mmu(tlb, mm, false);
 }
 
- 
 void tlb_gather_mmu_fullmm(struct mmu_gather *tlb, struct mm_struct *mm)
 {
 	__tlb_gather_mmu(tlb, mm, true);
 }
 
- 
 void tlb_finish_mmu(struct mmu_gather *tlb)
 {
 	 

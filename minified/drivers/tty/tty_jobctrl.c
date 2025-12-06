@@ -1,14 +1,6 @@
- 
- 
-
-#include <linux/types.h>
-#include <linux/errno.h>
-#include <linux/signal.h>
-#include <linux/sched/signal.h>
-#include <linux/sched/task.h>
+/* Minimal includes for tty jobctrl stubs */
 #include <linux/tty.h>
-#include <linux/fcntl.h>
-#include <linux/uaccess.h>
+#include <linux/sched.h>
 #include "tty.h"
 
 int __tty_check_change(struct tty_struct *tty, int sig)

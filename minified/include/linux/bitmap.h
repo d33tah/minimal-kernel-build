@@ -1,49 +1,286 @@
- 
 #ifndef __LINUX_BITMAP_H
 #define __LINUX_BITMAP_H
 
 #ifndef __ASSEMBLY__
 
-#include <linux/align.h>
+#include <linux/kernel.h>
 #include <linux/bitops.h>
-#include <linux/find.h>
 #include <linux/limits.h>
+
+/* Inlined from find.h */
+extern unsigned long _find_next_bit(const unsigned long *addr1,
+		const unsigned long *addr2, unsigned long nbits,
+		unsigned long start, unsigned long invert, unsigned long le);
+extern unsigned long _find_first_bit(const unsigned long *addr, unsigned long size);
+extern unsigned long _find_first_and_bit(const unsigned long *addr1,
+					 const unsigned long *addr2, unsigned long size);
+extern unsigned long _find_first_zero_bit(const unsigned long *addr, unsigned long size);
+extern unsigned long _find_last_bit(const unsigned long *addr, unsigned long size);
+
+#ifndef find_next_bit
+static inline
+unsigned long find_next_bit(const unsigned long *addr, unsigned long size,
+			    unsigned long offset)
+{
+	if (small_const_nbits(size)) {
+		unsigned long val;
+
+		if (unlikely(offset >= size))
+			return size;
+
+		val = *addr & GENMASK(size - 1, offset);
+		return val ? __ffs(val) : size;
+	}
+
+	return _find_next_bit(addr, NULL, size, offset, 0UL, 0);
+}
+#endif
+
+#ifndef find_next_and_bit
+static inline
+unsigned long find_next_and_bit(const unsigned long *addr1,
+		const unsigned long *addr2, unsigned long size,
+		unsigned long offset)
+{
+	if (small_const_nbits(size)) {
+		unsigned long val;
+
+		if (unlikely(offset >= size))
+			return size;
+
+		val = *addr1 & *addr2 & GENMASK(size - 1, offset);
+		return val ? __ffs(val) : size;
+	}
+
+	return _find_next_bit(addr1, addr2, size, offset, 0UL, 0);
+}
+#endif
+
+#ifndef find_next_zero_bit
+static inline
+unsigned long find_next_zero_bit(const unsigned long *addr, unsigned long size,
+				 unsigned long offset)
+{
+	if (small_const_nbits(size)) {
+		unsigned long val;
+
+		if (unlikely(offset >= size))
+			return size;
+
+		val = *addr | ~GENMASK(size - 1, offset);
+		return val == ~0UL ? size : ffz(val);
+	}
+
+	return _find_next_bit(addr, NULL, size, offset, ~0UL, 0);
+}
+#endif
+
+#ifndef find_first_bit
+static inline
+unsigned long find_first_bit(const unsigned long *addr, unsigned long size)
+{
+	if (small_const_nbits(size)) {
+		unsigned long val = *addr & GENMASK(size - 1, 0);
+
+		return val ? __ffs(val) : size;
+	}
+
+	return _find_first_bit(addr, size);
+}
+#endif
+
+#ifndef find_first_and_bit
+static inline
+unsigned long find_first_and_bit(const unsigned long *addr1,
+				 const unsigned long *addr2,
+				 unsigned long size)
+{
+	if (small_const_nbits(size)) {
+		unsigned long val = *addr1 & *addr2 & GENMASK(size - 1, 0);
+
+		return val ? __ffs(val) : size;
+	}
+
+	return _find_first_and_bit(addr1, addr2, size);
+}
+#endif
+
+#ifndef find_first_zero_bit
+static inline
+unsigned long find_first_zero_bit(const unsigned long *addr, unsigned long size)
+{
+	if (small_const_nbits(size)) {
+		unsigned long val = *addr | ~GENMASK(size - 1, 0);
+
+		return val == ~0UL ? size : ffz(val);
+	}
+
+	return _find_first_zero_bit(addr, size);
+}
+#endif
+
+#ifndef find_last_bit
+static inline
+unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
+{
+	if (small_const_nbits(size)) {
+		unsigned long val = *addr & GENMASK(size - 1, 0);
+
+		return val ? __fls(val) : size;
+	}
+
+	return _find_last_bit(addr, size);
+}
+#endif
+
+extern unsigned long find_next_clump8(unsigned long *clump,
+				      const unsigned long *addr,
+				      unsigned long size, unsigned long offset);
+
+#define find_first_clump8(clump, bits, size) \
+	find_next_clump8((clump), (bits), (size), 0)
+
+#if defined(__LITTLE_ENDIAN)
+
+static inline unsigned long find_next_zero_bit_le(const void *addr,
+		unsigned long size, unsigned long offset)
+{
+	return find_next_zero_bit(addr, size, offset);
+}
+
+static inline unsigned long find_next_bit_le(const void *addr,
+		unsigned long size, unsigned long offset)
+{
+	return find_next_bit(addr, size, offset);
+}
+
+static inline unsigned long find_first_zero_bit_le(const void *addr,
+		unsigned long size)
+{
+	return find_first_zero_bit(addr, size);
+}
+
+#elif defined(__BIG_ENDIAN)
+
+#ifndef find_next_zero_bit_le
+static inline
+unsigned long find_next_zero_bit_le(const void *addr, unsigned
+		long size, unsigned long offset)
+{
+	if (small_const_nbits(size)) {
+		unsigned long val = *(const unsigned long *)addr;
+
+		if (unlikely(offset >= size))
+			return size;
+
+		val = swab(val) | ~GENMASK(size - 1, offset);
+		return val == ~0UL ? size : ffz(val);
+	}
+
+	return _find_next_bit(addr, NULL, size, offset, ~0UL, 1);
+}
+#endif
+
+#ifndef find_next_bit_le
+static inline
+unsigned long find_next_bit_le(const void *addr, unsigned
+		long size, unsigned long offset)
+{
+	if (small_const_nbits(size)) {
+		unsigned long val = *(const unsigned long *)addr;
+
+		if (unlikely(offset >= size))
+			return size;
+
+		val = swab(val) & GENMASK(size - 1, offset);
+		return val ? __ffs(val) : size;
+	}
+
+	return _find_next_bit(addr, NULL, size, offset, 0UL, 1);
+}
+#endif
+
+#ifndef find_first_zero_bit_le
+#define find_first_zero_bit_le(addr, size) \
+	find_next_zero_bit_le((addr), (size), 0)
+#endif
+
+#else
+#error "Please fix <asm/byteorder.h>"
+#endif
+
+#define for_each_set_bit(bit, addr, size) \
+	for ((bit) = find_next_bit((addr), (size), 0);		\
+	     (bit) < (size);					\
+	     (bit) = find_next_bit((addr), (size), (bit) + 1))
+
+#define for_each_set_bit_from(bit, addr, size) \
+	for ((bit) = find_next_bit((addr), (size), (bit));	\
+	     (bit) < (size);					\
+	     (bit) = find_next_bit((addr), (size), (bit) + 1))
+
+#define for_each_clear_bit_from(bit, addr, size) \
+	for ((bit) = find_next_zero_bit((addr), (size), (bit));	\
+	     (bit) < (size);					\
+	     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
+
+#define for_each_set_bitrange(b, e, addr, size)			\
+	for ((b) = find_next_bit((addr), (size), 0),		\
+	     (e) = find_next_zero_bit((addr), (size), (b) + 1);	\
+	     (b) < (size);					\
+	     (b) = find_next_bit((addr), (size), (e) + 1),	\
+	     (e) = find_next_zero_bit((addr), (size), (b) + 1))
+
+#define for_each_set_bitrange_from(b, e, addr, size)		\
+	for ((b) = find_next_bit((addr), (size), (b)),		\
+	     (e) = find_next_zero_bit((addr), (size), (b) + 1);	\
+	     (b) < (size);					\
+	     (b) = find_next_bit((addr), (size), (e) + 1),	\
+	     (e) = find_next_zero_bit((addr), (size), (b) + 1))
+
+#define for_each_clear_bitrange(b, e, addr, size)		\
+	for ((b) = find_next_zero_bit((addr), (size), 0),	\
+	     (e) = find_next_bit((addr), (size), (b) + 1);	\
+	     (b) < (size);					\
+	     (b) = find_next_zero_bit((addr), (size), (e) + 1),	\
+	     (e) = find_next_bit((addr), (size), (b) + 1))
+
+#define for_each_clear_bitrange_from(b, e, addr, size)		\
+	for ((b) = find_next_zero_bit((addr), (size), (b)),	\
+	     (e) = find_next_bit((addr), (size), (b) + 1);	\
+	     (b) < (size);					\
+	     (b) = find_next_zero_bit((addr), (size), (e) + 1),	\
+	     (e) = find_next_bit((addr), (size), (b) + 1))
+
+#define for_each_set_clump8(start, clump, bits, size) \
+	for ((start) = find_first_clump8(&(clump), (bits), (size)); \
+	     (start) < (size); \
+	     (start) = find_next_clump8(&(clump), (bits), (size), (start) + 8))
+/* End of inlined find.h content */
 #include <linux/string.h>
 #include <linux/types.h>
 
 struct device;
 
- 
 
- 
 
- 
 
- 
 
- 
 unsigned long *bitmap_alloc(unsigned int nbits, gfp_t flags);
 unsigned long *bitmap_zalloc(unsigned int nbits, gfp_t flags);
 unsigned long *bitmap_alloc_node(unsigned int nbits, gfp_t flags, int node);
 unsigned long *bitmap_zalloc_node(unsigned int nbits, gfp_t flags, int node);
 void bitmap_free(const unsigned long *bitmap);
 
- 
 unsigned long *devm_bitmap_alloc(struct device *dev,
 				 unsigned int nbits, gfp_t flags);
 unsigned long *devm_bitmap_zalloc(struct device *dev,
 				  unsigned int nbits, gfp_t flags);
 
- 
 
 bool __bitmap_equal(const unsigned long *bitmap1,
 		    const unsigned long *bitmap2, unsigned int nbits);
-bool __pure __bitmap_or_equal(const unsigned long *src1,
-			      const unsigned long *src2,
-			      const unsigned long *src3,
-			      unsigned int nbits);
-void bitmap_cut(unsigned long *dst, const unsigned long *src,
-		unsigned int first, unsigned int cut, unsigned int nbits);
+/* __bitmap_or_equal, bitmap_cut removed - unused */
 int __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
 		 const unsigned long *bitmap2, unsigned int nbits);
 void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
@@ -70,7 +307,6 @@ unsigned long bitmap_find_next_zero_area_off(unsigned long *map,
 					     unsigned long align_mask,
 					     unsigned long align_offset);
 
- 
 static inline unsigned long
 bitmap_find_next_zero_area(unsigned long *map,
 			   unsigned long size,
@@ -84,23 +320,9 @@ bitmap_find_next_zero_area(unsigned long *map,
 
 int bitmap_parse(const char *buf, unsigned int buflen,
 			unsigned long *dst, int nbits);
-int bitmap_parse_user(const char __user *ubuf, unsigned int ulen,
-			unsigned long *dst, int nbits);
-int bitmap_parselist(const char *buf, unsigned long *maskp,
-			int nmaskbits);
-int bitmap_parselist_user(const char __user *ubuf, unsigned int ulen,
-			unsigned long *dst, int nbits);
-void bitmap_remap(unsigned long *dst, const unsigned long *src,
-		const unsigned long *old, const unsigned long *new, unsigned int nbits);
-int bitmap_bitremap(int oldbit,
-		const unsigned long *old, const unsigned long *new, int bits);
-void bitmap_onto(unsigned long *dst, const unsigned long *orig,
-		const unsigned long *relmap, unsigned int bits);
-void bitmap_fold(unsigned long *dst, const unsigned long *orig,
-		unsigned int sz, unsigned int nbits);
-int bitmap_find_free_region(unsigned long *bitmap, unsigned int bits, int order);
-void bitmap_release_region(unsigned long *bitmap, unsigned int pos, int order);
-int bitmap_allocate_region(unsigned long *bitmap, unsigned int pos, int order);
+/* bitmap_parse_user, bitmap_parselist, bitmap_parselist_user, bitmap_remap,
+ * bitmap_bitremap, bitmap_onto, bitmap_fold, bitmap_find_free_region,
+ * bitmap_release_region, bitmap_allocate_region removed - unused */
 
 #ifdef __BIG_ENDIAN
 void bitmap_copy_le(unsigned long *dst, const unsigned long *src, unsigned int nbits);
@@ -139,7 +361,6 @@ static inline void bitmap_copy(unsigned long *dst, const unsigned long *src,
 	memcpy(dst, src, len);
 }
 
- 
 static inline void bitmap_copy_clear_tail(unsigned long *dst,
 		const unsigned long *src, unsigned int nbits)
 {
@@ -148,22 +369,14 @@ static inline void bitmap_copy_clear_tail(unsigned long *dst,
 		dst[nbits / BITS_PER_LONG] &= BITMAP_LAST_WORD_MASK(nbits);
 }
 
- 
-#if BITS_PER_LONG == 64
-void bitmap_from_arr32(unsigned long *bitmap, const u32 *buf,
-							unsigned int nbits);
-void bitmap_to_arr32(u32 *buf, const unsigned long *bitmap,
-							unsigned int nbits);
-#else
+/* 32-bit only kernel - simplified arr32 macros */
 #define bitmap_from_arr32(bitmap, buf, nbits)			\
 	bitmap_copy_clear_tail((unsigned long *) (bitmap),	\
 			(const unsigned long *) (buf), (nbits))
 #define bitmap_to_arr32(buf, bitmap, nbits)			\
 	bitmap_copy_clear_tail((unsigned long *) (buf),		\
 			(const unsigned long *) (bitmap), (nbits))
-#endif
 
- 
 #if (BITS_PER_LONG == 32) && defined(__BIG_ENDIAN)
 void bitmap_from_arr64(unsigned long *bitmap, const u64 *buf, unsigned int nbits);
 void bitmap_to_arr64(u64 *buf, const unsigned long *bitmap, unsigned int nbits);
@@ -296,15 +509,9 @@ static __always_inline void bitmap_clear(unsigned long *map, unsigned int start,
 	else
 		__bitmap_clear(map, start, nbits);
 }
-
-
-
-#if __BITS_PER_LONG == 64
-#define BITMAP_FROM_U64(n) (n)
-#else
+/* 32-bit only kernel - BITMAP_FROM_U64 expands to two words */
 #define BITMAP_FROM_U64(n) ((unsigned long) ((u64)(n) & ULONG_MAX)), \
 				((unsigned long) ((u64)(n) >> 32))
-#endif
 
 static inline unsigned long bitmap_get_value8(const unsigned long *map,
 					      unsigned long start)
@@ -315,7 +522,6 @@ static inline unsigned long bitmap_get_value8(const unsigned long *map,
 	return (map[index] >> offset) & 0xFF;
 }
 
- 
 #endif
 
 #endif  

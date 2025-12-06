@@ -1,7 +1,5 @@
- 
 #ifndef _LINUX_KTHREAD_H
 #define _LINUX_KTHREAD_H
- 
 #include <linux/err.h>
 #include <linux/sched.h>
 
@@ -13,7 +11,6 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 					   int node,
 					   const char namefmt[], ...);
 
- 
 #define kthread_create(threadfn, data, namefmt, arg...) \
 	kthread_create_on_node(threadfn, data, NUMA_NO_NODE, namefmt, ##arg)
 
@@ -29,7 +26,6 @@ bool set_kthread_struct(struct task_struct *p);
 void kthread_set_per_cpu(struct task_struct *k, int cpu);
 bool kthread_is_per_cpu(struct task_struct *k);
 
- 
 #define kthread_run(threadfn, data, namefmt, ...)			   \
 ({									   \
 	struct task_struct *__k						   \
@@ -39,19 +35,7 @@ bool kthread_is_per_cpu(struct task_struct *k);
 	__k;								   \
 })
 
- 
-static inline struct task_struct *
-kthread_run_on_cpu(int (*threadfn)(void *data), void *data,
-			unsigned int cpu, const char *namefmt)
-{
-	struct task_struct *p;
-
-	p = kthread_create_on_cpu(threadfn, data, cpu, namefmt);
-	if (!IS_ERR(p))
-		wake_up_process(p);
-
-	return p;
-}
+/* kthread_run_on_cpu removed - unused */
 
 void free_kthread_struct(struct task_struct *k);
 void kthread_bind(struct task_struct *k, unsigned int cpu);
@@ -74,7 +58,6 @@ int kthreadd(void *unused);
 extern struct task_struct *kthreadd_task;
 extern int tsk_fork_get_node(struct task_struct *tsk);
 
- 
 struct kthread_work;
 typedef void (*kthread_work_func_t)(struct kthread_work *work);
 void kthread_delayed_work_timer_fn(struct timer_list *t);
@@ -179,7 +162,5 @@ void kthread_destroy_worker(struct kthread_worker *worker);
 void kthread_use_mm(struct mm_struct *mm);
 void kthread_unuse_mm(struct mm_struct *mm);
 
-struct cgroup_subsys_state;
-
-static inline void kthread_associate_blkcg(struct cgroup_subsys_state *css) { }
+/* kthread_associate_blkcg removed - unused */
 #endif  

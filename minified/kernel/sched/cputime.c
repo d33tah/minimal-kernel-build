@@ -1,5 +1,3 @@
- 
- 
 
 
 #define sched_clock_irqtime	(0)
@@ -13,7 +11,6 @@ static inline void task_group_account_field(struct task_struct *p, int index,
 	cgroup_account_cputime_field(p, index, tmp);
 }
 
- 
 void account_user_time(struct task_struct *p, u64 cputime)
 {
 	int index;
@@ -31,7 +28,6 @@ void account_user_time(struct task_struct *p, u64 cputime)
 	acct_account_cputime(p);
 }
 
- 
 void account_guest_time(struct task_struct *p, u64 cputime)
 {
 	u64 *cpustat = kcpustat_this_cpu->cpustat;
@@ -51,7 +47,6 @@ void account_guest_time(struct task_struct *p, u64 cputime)
 	}
 }
 
- 
 void account_system_index_time(struct task_struct *p,
 			       u64 cputime, enum cpu_usage_stat index)
 {
@@ -66,7 +61,6 @@ void account_system_index_time(struct task_struct *p,
 	acct_account_cputime(p);
 }
 
- 
 void account_system_time(struct task_struct *p, int hardirq_offset, u64 cputime)
 {
 	int index;
@@ -86,11 +80,9 @@ void account_system_time(struct task_struct *p, int hardirq_offset, u64 cputime)
 	account_system_index_time(p, cputime, index);
 }
 
- 
 /* Stub: account_steal_time not used in minimal kernel */
 void account_steal_time(u64 cputime) { }
 
- 
 void account_idle_time(u64 cputime)
 {
 	u64 *cpustat = kcpustat_this_cpu->cpustat;
@@ -102,7 +94,6 @@ void account_idle_time(u64 cputime)
 		cpustat[CPUTIME_IDLE] += cputime;
 }
 
- 
 static __always_inline u64 steal_account_process_time(u64 maxtime)
 {
 	return 0;
@@ -120,9 +111,7 @@ static inline void irqtime_account_idle_ticks(int ticks) { }
 static inline void irqtime_account_process_tick(struct task_struct *p, int user_tick,
 						int nr_ticks) { }
 
- 
 
- 
 void account_process_tick(struct task_struct *p, int user_tick)
 {
 	u64 cputime, steal;
@@ -151,7 +140,6 @@ void account_process_tick(struct task_struct *p, int user_tick)
 		account_idle_time(cputime);
 }
 
- 
 /* Stub: account_idle_ticks not used in minimal kernel */
 void account_idle_ticks(unsigned long ticks)
 {

@@ -1,5 +1,3 @@
- 
- 
 #include <linux/export.h>
 #include <linux/cred.h>
 #include <linux/slab.h>
@@ -22,10 +20,8 @@ do {									\
 
 static struct kmem_cache *cred_jar;
 
- 
 static struct group_info init_groups = { .usage = ATOMIC_INIT(2) };
 
- 
 struct cred init_cred = {
 	.usage			= ATOMIC_INIT(4),
 	.uid			= GLOBAL_ROOT_UID,
@@ -60,7 +56,6 @@ static inline void alter_cred_subscribers(const struct cred *_cred, int n)
 {
 }
 
- 
 static void put_cred_rcu(struct rcu_head *rcu)
 {
 	struct cred *cred = container_of(rcu, struct cred, rcu);
@@ -85,7 +80,6 @@ static void put_cred_rcu(struct rcu_head *rcu)
 	kmem_cache_free(cred_jar, cred);
 }
 
- 
 void __put_cred(struct cred *cred)
 {
 	kdebug("__put_cred(%p{%d,%d})", cred,
@@ -102,7 +96,6 @@ void __put_cred(struct cred *cred)
 		call_rcu(&cred->rcu, put_cred_rcu);
 }
 
- 
 void exit_creds(struct task_struct *tsk)
 {
 	struct cred *cred;
@@ -125,7 +118,6 @@ void exit_creds(struct task_struct *tsk)
 
 }
 
- 
 const struct cred *get_task_cred(struct task_struct *task)
 {
 	const struct cred *cred;
@@ -141,7 +133,6 @@ const struct cred *get_task_cred(struct task_struct *task)
 	return cred;
 }
 
- 
 struct cred *cred_alloc_blank(void)
 {
 	struct cred *new;
@@ -161,7 +152,6 @@ error:
 	return NULL;
 }
 
- 
 struct cred *prepare_creds(void)
 {
 	struct task_struct *task = current;
@@ -203,7 +193,6 @@ error:
 	return NULL;
 }
 
- 
 struct cred *prepare_exec_creds(void)
 {
 	struct cred *new;
@@ -219,7 +208,6 @@ struct cred *prepare_exec_creds(void)
 	return new;
 }
 
- 
 int copy_creds(struct task_struct *p, unsigned long clone_flags)
 {
 	struct cred *new;
@@ -283,7 +271,6 @@ static bool cred_cap_issubset(const struct cred *set, const struct cred *subset)
 	return false;
 }
 
- 
 int commit_creds(struct cred *new)
 {
 	struct task_struct *task = current;
@@ -346,7 +333,6 @@ int commit_creds(struct cred *new)
 	return 0;
 }
 
- 
 void abort_creds(struct cred *new)
 {
 	kdebug("abort_creds(%p{%d,%d})", new,
@@ -357,7 +343,6 @@ void abort_creds(struct cred *new)
 	put_cred(new);
 }
 
- 
 const struct cred *override_creds(const struct cred *new)
 {
 	const struct cred *old = current->cred;
@@ -381,7 +366,6 @@ const struct cred *override_creds(const struct cred *new)
 	return old;
 }
 
- 
 void revert_creds(const struct cred *old)
 {
 	const struct cred *override = current->cred;
@@ -421,7 +405,6 @@ int set_cred_ucounts(struct cred *new)
 	return 0;
 }
 
- 
 void __init cred_init(void)
 {
 	 

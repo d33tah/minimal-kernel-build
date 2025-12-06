@@ -1,8 +1,6 @@
- 
 #ifndef LINUX_MSI_H
 #define LINUX_MSI_H
 
- 
 
 #include <linux/cpumask.h>
 #include <linux/xarray.h>
@@ -10,7 +8,6 @@
 #include <linux/list.h>
 #include <asm/msi.h>
 
- 
 #ifndef arch_msi_msg_addr_lo
 typedef struct arch_msi_msg_addr_lo {
 	u32	address_lo;
@@ -29,7 +26,6 @@ typedef struct arch_msi_msg_data {
 } __attribute__ ((packed)) arch_msi_msg_data_t;
 #endif
 
- 
 struct msi_msg {
 	union {
 		u32			address_lo;
@@ -46,7 +42,6 @@ struct msi_msg {
 };
 
 extern int pci_msi_ignore_mask;
- 
 struct irq_data;
 struct msi_desc;
 struct pci_dev;
@@ -61,7 +56,6 @@ static inline void get_cached_msi_msg(unsigned int irq, struct msi_msg *msg)
 typedef void (*irq_write_msi_msg_t)(struct msi_desc *desc,
 				    struct msi_msg *msg);
 
- 
 struct pci_msi_desc {
 	union {
 		u32 msi_mask;
@@ -84,7 +78,6 @@ struct pci_msi_desc {
 
 #define MSI_MAX_INDEX		((unsigned int)USHRT_MAX)
 
- 
 struct msi_desc {
 	 
 	unsigned int			irq;
@@ -100,7 +93,6 @@ struct msi_desc {
 	struct pci_msi_desc		pci;
 };
 
- 
 enum msi_desc_filter {
 	 
 	MSI_DESC_ALL,
@@ -110,7 +102,6 @@ enum msi_desc_filter {
 	MSI_DESC_ASSOCIATED,
 };
 
- 
 struct msi_device_data {
 	unsigned long			properties;
 	struct platform_msi_priv_data	*platform_data;
@@ -128,7 +119,6 @@ void msi_unlock_descs(struct device *dev);
 struct msi_desc *msi_first_desc(struct device *dev, enum msi_desc_filter filter);
 struct msi_desc *msi_next_desc(struct device *dev, enum msi_desc_filter filter);
 
- 
 #define msi_for_each_desc(desc, dev, filter)			\
 	for ((desc) = msi_first_desc((dev), (filter)); (desc);	\
 	     (desc) = msi_next_desc((dev), (filter)))
@@ -153,7 +143,6 @@ int msi_add_msi_desc(struct device *dev, struct msi_desc *init_desc);
 void msi_free_msi_descs_range(struct device *dev, enum msi_desc_filter filter,
 			      unsigned int first_index, unsigned int last_index);
 
- 
 static inline void msi_free_msi_descs(struct device *dev)
 {
 	msi_free_msi_descs_range(dev, MSI_DESC_ALL, 0, MSI_MAX_INDEX);
@@ -165,9 +154,7 @@ void __pci_write_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
 void pci_msi_mask_irq(struct irq_data *data);
 void pci_msi_unmask_irq(struct irq_data *data);
 
- 
 
- 
 bool arch_restore_msi_irqs(struct pci_dev *dev);
 
 

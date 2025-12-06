@@ -1,8 +1,7 @@
- 
- 
 
 #include <linux/init.h>
-#include <linux/start_kernel.h>
+#include <linux/linkage.h>
+extern asmlinkage void __init start_kernel(void);
 #include <linux/mm.h>
 #include <linux/memblock.h>
 
@@ -51,7 +50,6 @@ asmlinkage __visible void __init i386_start_kernel(void)
 	start_kernel();
 }
 
- 
 void __init mk_early_pgtbl_32(void)
 {
 #ifdef __pa

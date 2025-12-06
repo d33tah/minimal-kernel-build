@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/export.h>
 #include <linux/time.h>
@@ -10,10 +8,39 @@
 #include <linux/fsnotify.h>
 #include <linux/fcntl.h>
 #include <linux/security.h>
-#include <linux/evm.h>
 #include <linux/ima.h>
 
- 
+/* --- 2025-12-06 17:18 --- evm.h inlined */
+#include <linux/integrity.h>
+#include <linux/xattr.h>
+
+struct integrity_iint_cache;
+
+static inline int evm_set_key(void *key, size_t keylen) { return -EOPNOTSUPP; }
+static inline int evm_inode_setattr(struct dentry *dentry, struct iattr *attr) { return 0; }
+static inline void evm_inode_post_setattr(struct dentry *dentry, int ia_valid) { }
+static inline int evm_inode_setxattr(struct user_namespace *mnt_userns,
+				     struct dentry *dentry, const char *name,
+				     const void *value, size_t size) { return 0; }
+static inline void evm_inode_post_setxattr(struct dentry *dentry,
+					   const char *xattr_name,
+					   const void *xattr_value,
+					   size_t xattr_value_len) { }
+static inline int evm_inode_removexattr(struct user_namespace *mnt_userns,
+					struct dentry *dentry,
+					const char *xattr_name) { return 0; }
+static inline void evm_inode_post_removexattr(struct dentry *dentry,
+					      const char *xattr_name) { }
+static inline int evm_inode_init_security(struct inode *inode,
+					  const struct xattr *xattr_array,
+					  struct xattr *evm) { return 0; }
+static inline bool evm_revalidate_status(const char *xattr_name) { return false; }
+static inline int evm_protected_xattr_if_enabled(const char *req_xattr_name) { return false; }
+static inline int evm_read_protected_xattrs(struct dentry *dentry, u8 *buffer,
+					    int buffer_size, char type,
+					    bool canonical_fmt) { return -EOPNOTSUPP; }
+/* --- end evm.h inlined --- */
+
 static bool chown_ok(struct user_namespace *mnt_userns,
 		     const struct inode *inode,
 		     kuid_t uid)
@@ -29,7 +56,6 @@ static bool chown_ok(struct user_namespace *mnt_userns,
 	return false;
 }
 
- 
 static bool chgrp_ok(struct user_namespace *mnt_userns,
 		     const struct inode *inode, kgid_t gid)
 {
@@ -51,7 +77,6 @@ static bool chgrp_ok(struct user_namespace *mnt_userns,
 	return false;
 }
 
- 
 int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 		    struct iattr *attr)
 {
@@ -115,11 +140,9 @@ kill_priv:
 	return 0;
 }
 
- 
 /* Stub: inode_newsize_ok not used in minimal kernel */
 int inode_newsize_ok(const struct inode *inode, loff_t offset) { return 0; }
 
- 
 void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 		  const struct iattr *attr)
 {
@@ -149,7 +172,6 @@ void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 int may_setattr(struct user_namespace *mnt_userns, struct inode *inode,
 		unsigned int ia_valid) { return 0; }
 
- 
 int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 		  struct iattr *attr, struct inode **delegated_inode)
 {

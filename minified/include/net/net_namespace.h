@@ -1,5 +1,4 @@
- 
- 
+/* Minimal net_namespace.h - networking disabled */
 #ifndef __NET_NET_NAMESPACE_H
 #define __NET_NET_NAMESPACE_H
 
@@ -7,43 +6,10 @@
 
 typedef struct net *possible_net_t;
 
+/* Minimal struct net - only fields needed for namespace stubs */
 struct net {
-	atomic_t		passive;
 	atomic_t		count;
-	spinlock_t		rules_mod_lock;
-
-	atomic64_t		cookie_gen;
-
-	struct list_head	list;
-
-	struct list_head	exit_list;
-	struct llist_node	cleanup_list;
-
-	struct vfsmount		*nsfs_ns;
-	struct proc_ns		*proc_net_ns;
-
-	struct ctl_table_set	sysctls;
-
-	struct sock		*genl_sock;
-
-	struct uevent_sock	*uevent_sock;
-	struct list_head 	uevent_sock_list;
-
-	struct {
-		u32			hash_mix;
-		struct netns_bhash	*bhash;
-		struct mutex		*hash_mutex;
-	} bhash;
-
-	struct net		*peer;
-
-	struct list_head	dev_base_head;
-
 	struct user_namespace	*user_ns;
-
-#ifdef CONFIG_BPF
-	struct netns_bpf	bpf;
-#endif
 };
 
 #ifdef CONFIG_NET_NS

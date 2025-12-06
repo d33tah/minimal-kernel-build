@@ -1,5 +1,3 @@
- 
- 
 #ifndef _UAPI_LINUX_PERF_EVENT_H
 #define _UAPI_LINUX_PERF_EVENT_H
 
@@ -7,7 +5,6 @@
 #include <linux/ioctl.h>
 #include <asm/byteorder.h>
 
- 
 enum perf_type_id {
 	PERF_TYPE_HARDWARE = 0,
 	PERF_TYPE_SOFTWARE = 1,
@@ -34,7 +31,6 @@ enum perf_sw_ids {
 	PERF_COUNT_SW_MAX,
 };
 
- 
 struct perf_event_attr {
 	__u32 type;
 	__u32 size;
@@ -118,7 +114,6 @@ struct perf_event_attr {
 	__u64 sig_data;
 };
 
- 
 #define PERF_ATTR_SIZE_VER0	64
 #define PERF_ATTR_SIZE_VER1	72
 #define PERF_ATTR_SIZE_VER2	80

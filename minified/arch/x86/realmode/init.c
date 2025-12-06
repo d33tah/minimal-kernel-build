@@ -1,4 +1,3 @@
- 
 #include <linux/io.h>
 #include <linux/slab.h>
 #include <linux/memblock.h>
@@ -14,7 +13,6 @@
 struct real_mode_header *real_mode_header;
 u32 *trampoline_cr4_features;
 
- 
 pgd_t trampoline_pgd_entry;
 
 void load_trampoline_pgtable(void)
@@ -98,7 +96,6 @@ static void __init setup_real_mode(void)
 	sme_sev_setup_real_mode(trampoline_header);
 }
 
- 
 static void __init set_real_mode_permissions(void)
 {
 	unsigned char *base = (unsigned char *) real_mode_header;

@@ -1,7 +1,4 @@
- 
- 
 
- 
 
 #include "boot.h"
 
@@ -10,7 +7,6 @@ static inline int myisspace(u8 c)
 	return c <= ' ';	 
 }
 
- 
 int __cmdline_find_option(unsigned long cmdline_ptr, const char *option, char *buffer, int bufsize)
 {
 	addr_t cptr;
@@ -77,7 +73,6 @@ int __cmdline_find_option(unsigned long cmdline_ptr, const char *option, char *b
 	return len;
 }
 
- 
 int __cmdline_find_option_bool(unsigned long cmdline_ptr, const char *option)
 {
 	addr_t cptr;

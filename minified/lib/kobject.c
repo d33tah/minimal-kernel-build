@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/kobject.h>
 #include <linux/string.h>
@@ -14,7 +12,6 @@ const void *kobject_namespace(struct kobject *kobj)
 	return NULL;
 }
 
- 
 void kobject_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
 {
 	*uid = GLOBAL_ROOT_UID;
@@ -36,7 +33,6 @@ char *kobject_get_path(struct kobject *kobj, gfp_t gfp_mask)
 	return NULL;
 }
 
- 
 static void kobj_kset_join(struct kobject *kobj)
 {
 	if (!kobj->kset)
@@ -48,7 +44,6 @@ static void kobj_kset_join(struct kobject *kobj)
 	spin_unlock(&kobj->kset->list_lock);
 }
 
- 
 static void kobj_kset_leave(struct kobject *kobj)
 {
 	if (!kobj->kset)
@@ -118,7 +113,6 @@ static int kobject_add_internal(struct kobject *kobj)
 	return error;
 }
 
- 
 int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
 				  va_list vargs)
 {
@@ -148,7 +142,6 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
 	return 0;
 }
 
- 
 int kobject_set_name(struct kobject *kobj, const char *fmt, ...)
 {
 	va_list vargs;
@@ -161,7 +154,6 @@ int kobject_set_name(struct kobject *kobj, const char *fmt, ...)
 	return retval;
 }
 
- 
 void kobject_init(struct kobject *kobj, const struct kobj_type *ktype)
 {
 	char *err_str;
@@ -205,7 +197,6 @@ static __printf(3, 0) int kobject_add_varg(struct kobject *kobj,
 	return kobject_add_internal(kobj);
 }
 
- 
 int kobject_add(struct kobject *kobj, struct kobject *parent,
 		const char *fmt, ...)
 {
@@ -228,7 +219,6 @@ int kobject_add(struct kobject *kobj, struct kobject *parent,
 	return retval;
 }
 
- 
 int kobject_init_and_add(struct kobject *kobj, const struct kobj_type *ktype,
 			 struct kobject *parent, const char *fmt, ...)
 {
@@ -244,7 +234,6 @@ int kobject_init_and_add(struct kobject *kobj, const struct kobj_type *ktype,
 	return retval;
 }
 
- 
 static void __kobject_del(struct kobject *kobj)
 {
 	struct kernfs_node *sd;
@@ -269,7 +258,6 @@ static void __kobject_del(struct kobject *kobj)
 	kobj->parent = NULL;
 }
 
- 
 void kobject_del(struct kobject *kobj)
 {
 	struct kobject *parent;
@@ -282,7 +270,6 @@ void kobject_del(struct kobject *kobj)
 	kobject_put(parent);
 }
 
- 
 struct kobject *kobject_get(struct kobject *kobj)
 {
 	if (kobj) {
@@ -304,7 +291,6 @@ struct kobject * __must_check kobject_get_unless_zero(struct kobject *kobj)
 	return kobj;
 }
 
- 
 static void kobject_cleanup(struct kobject *kobj)
 {
 	struct kobject *parent = kobj->parent;
@@ -338,7 +324,6 @@ static void kobject_release(struct kref *kref)
 	kobject_cleanup(kobj);
 }
 
- 
 void kobject_put(struct kobject *kobj)
 {
 	if (kobj) {
@@ -360,7 +345,6 @@ static struct kobj_type dynamic_kobj_ktype = {
 	.sysfs_ops	= &kobj_sysfs_ops,
 };
 
- 
 static struct kobject *kobject_create(void)
 {
 	struct kobject *kobj;
@@ -373,7 +357,6 @@ static struct kobject *kobject_create(void)
 	return kobj;
 }
 
- 
 struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
 {
 	struct kobject *kobj;
@@ -392,7 +375,6 @@ struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
 	return kobj;
 }
 
- 
 void kset_init(struct kset *k)
 {
 	kobject_init_internal(&k->kobj);
@@ -400,7 +382,6 @@ void kset_init(struct kset *k)
 	spin_lock_init(&k->list_lock);
 }
 
- 
 static ssize_t kobj_attr_show(struct kobject *kobj, struct attribute *attr,
 			      char *buf)
 {
@@ -430,7 +411,6 @@ const struct sysfs_ops kobj_sysfs_ops = {
 	.store	= kobj_attr_store,
 };
 
- 
 int kset_register(struct kset *k)
 {
 	int err;
@@ -446,7 +426,6 @@ int kset_register(struct kset *k)
 	return 0;
 }
 
- 
 void kset_unregister(struct kset *k)
 {
 	if (!k)
@@ -455,7 +434,6 @@ void kset_unregister(struct kset *k)
 	kobject_put(&k->kobj);
 }
 
- 
 /* Stub: kset_find_obj not used in minimal kernel */
 struct kobject *kset_find_obj(struct kset *kset, const char *name) { return NULL; }
 
@@ -477,7 +455,6 @@ static struct kobj_type kset_ktype = {
 	.get_ownership	= kset_get_ownership,
 };
 
- 
 static struct kset *kset_create(const char *name,
 				const struct kset_uevent_ops *uevent_ops,
 				struct kobject *parent_kobj)
@@ -503,7 +480,6 @@ static struct kset *kset_create(const char *name,
 	return kset;
 }
 
- 
 struct kset *kset_create_and_add(const char *name,
 				 const struct kset_uevent_ops *uevent_ops,
 				 struct kobject *parent_kobj)

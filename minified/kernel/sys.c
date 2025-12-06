@@ -1,67 +1,20 @@
- 
- 
-
-#include <linux/export.h>
-#include <linux/mm.h>
-#include <linux/mm_inline.h>
-#include <linux/utsname.h>
-#include <linux/mman.h>
-#include <linux/reboot.h>
-#include <linux/prctl.h>
-#include <linux/highuid.h>
-#include <linux/fs.h>
-#include <linux/kmod.h>
-#include <linux/resource.h>
-#include <linux/kernel.h>
-#include <linux/capability.h>
-#include <linux/times.h>
-#include <linux/posix-timers.h>
-#include <linux/tty.h>
-#include <linux/signal.h>
-#include <linux/cn_proc.h>
-
-#include <linux/task_io_accounting_ops.h>
-#include <linux/seccomp.h>
-#include <linux/cpu.h>
-#include <linux/personality.h>
-#include <linux/ptrace.h>
-#include <linux/fs_struct.h>
-#include <linux/file.h>
-#include <linux/mount.h>
-#include <linux/gfp.h>
-#include <linux/syscore_ops.h>
-#include <linux/version.h>
-#include <linux/ctype.h>
-#include <linux/syscall_user_dispatch.h>
-
-#include <linux/compat.h>
+/* Minimal includes for syscall stubs */
 #include <linux/syscalls.h>
-#include <linux/kprobes.h>
-#include <linux/user_namespace.h>
-#include <linux/time_namespace.h>
-#include <linux/binfmts.h>
-
+#include <linux/utsname.h>
+#include <linux/resource.h>
 #include <linux/sched.h>
-#include <linux/sched/autogroup.h>
-#include <linux/sched/loadavg.h>
-#include <linux/sched/stat.h>
-#include <linux/sched/mm.h>
-#include <linux/sched/coredump.h>
-#include <linux/sched/task.h>
-#include <linux/sched/cputime.h>
+
+/* From uapi/linux/times.h - inlined */
+struct tms {
+	__kernel_clock_t tms_utime;
+	__kernel_clock_t tms_stime;
+	__kernel_clock_t tms_cutime;
+	__kernel_clock_t tms_cstime;
+};
 #include <linux/rcupdate.h>
-#include <linux/uidgid.h>
 #include <linux/cred.h>
-
-#include <linux/nospec.h>
-
-#include <linux/kmsg_dump.h>
- 
-#include <generated/utsrelease.h>
-
 #include <linux/uaccess.h>
-#include <asm/io.h>
-#include <asm/unistd.h>
+#include <linux/fs_struct.h>
 
 #include "uid16.h"
 
@@ -129,19 +82,16 @@
 # define GET_TAGGED_ADDR_CTRL()		(-EINVAL)
 #endif
 
- 
 
 int overflowuid = DEFAULT_OVERFLOWUID;
 int overflowgid = DEFAULT_OVERFLOWGID;
 
 
- 
 
 int fs_overflowuid = DEFAULT_FS_OVERFLOWUID;
 int fs_overflowgid = DEFAULT_FS_OVERFLOWGID;
 
 
- 
 SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)
 {
 	return -ENOSYS;
@@ -152,21 +102,17 @@ SYSCALL_DEFINE2(getpriority, int, which, int, who)
 	return 20;  
 }
 
- 
 
- 
 SYSCALL_DEFINE0(getpid)
 {
 	return task_tgid_vnr(current);
 }
 
- 
 SYSCALL_DEFINE0(gettid)
 {
 	return task_pid_vnr(current);
 }
 
- 
 SYSCALL_DEFINE0(getppid)
 {
 	int pid;
@@ -202,7 +148,6 @@ SYSCALL_DEFINE0(getegid)
 	return from_kgid_munged(current_user_ns(), current_egid());
 }
 
- 
 SYSCALL_DEFINE1(times, struct tms __user *, tbuf)
 {
 	 
@@ -215,8 +160,6 @@ SYSCALL_DEFINE1(times, struct tms __user *, tbuf)
 }
 
 
- 
- 
 SYSCALL_DEFINE2(setpgid, pid_t, pid, pid_t, pgid)
 {
 	return 0;  
@@ -251,7 +194,6 @@ SYSCALL_DEFINE0(setsid)
 
 DECLARE_RWSEM(uts_sem);
 
- 
 SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 {
 	struct new_utsname tmp;
@@ -270,7 +212,6 @@ SYSCALL_DEFINE1(uname, struct old_utsname __user *, name) { return -ENOSYS; }
 SYSCALL_DEFINE1(olduname, struct oldold_utsname __user *, name) { return -ENOSYS; }
 #endif
 
- 
 SYSCALL_DEFINE2(sethostname, char __user *, name, int, len)
 {
 	return -EPERM;
@@ -281,14 +222,11 @@ SYSCALL_DEFINE2(sethostname, char __user *, name, int, len)
 SYSCALL_DEFINE2(gethostname, char __user *, name, int, len) { return -ENOSYS; }
 #endif
 
- 
 SYSCALL_DEFINE2(setdomainname, char __user *, name, int, len)
 {
 	return -EPERM;
 }
 
- 
- 
 SYSCALL_DEFINE2(getrlimit, unsigned int, resource, struct rlimit __user *, rlim)
 {
 	struct rlimit value = { .rlim_cur = RLIM_INFINITY, .rlim_max = RLIM_INFINITY };
@@ -303,7 +241,6 @@ SYSCALL_DEFINE2(old_getrlimit, unsigned int, resource, struct rlimit __user *, r
 }
 #endif
 
- 
 SYSCALL_DEFINE4(prlimit64, pid_t, pid, unsigned int, resource,
 		const struct rlimit64 __user *, new_rlim,
 		struct rlimit64 __user *, old_rlim)
@@ -319,7 +256,6 @@ SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
 	return 0;  
 }
 
- 
 void getrusage(struct task_struct *p, int who, struct rusage *r)
 {
 	memset(r, 0, sizeof(*r));
@@ -369,8 +305,6 @@ SYSCALL_DEFINE3(getcpu, unsigned __user *, cpup, unsigned __user *, nodep,
 	return err ? -EFAULT : 0;
 }
 
- 
- 
 SYSCALL_DEFINE1(sysinfo, struct sysinfo __user *, info)
 {
 	struct sysinfo val = {0};

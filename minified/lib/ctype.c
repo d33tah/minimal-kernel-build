@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/ctype.h>
 #include <linux/compiler.h>

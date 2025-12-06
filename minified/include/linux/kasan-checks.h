@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_KASAN_CHECKS_H
 #define _LINUX_KASAN_CHECKS_H
 
@@ -17,7 +16,6 @@ static inline bool __kasan_check_write(const volatile void *p, unsigned int size
 	return true;
 }
 
- 
 #ifdef __SANITIZE_ADDRESS__
 #define kasan_check_read __kasan_check_read
 #define kasan_check_write __kasan_check_write

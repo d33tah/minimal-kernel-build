@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_BUG_H
 #define _LINUX_BUG_H
 
@@ -29,29 +28,13 @@ struct pt_regs;
 #endif	 
 
 
-static inline void *find_bug(unsigned long bugaddr)
-{
-	return NULL;
-}
-
 static inline enum bug_trap_type report_bug(unsigned long bug_addr,
 					    struct pt_regs *regs)
 {
 	return BUG_TRAP_TYPE_BUG;
 }
 
-struct bug_entry;
-static inline void bug_get_file_line(struct bug_entry *bug, const char **file,
-				     unsigned int *line)
-{
-	*file = NULL;
-	*line = 0;
-}
 
-static inline void generic_bug_clear_once(void) {}
-
-
- 
 static inline __must_check bool check_data_corruption(bool v) { return v; }
 #define CHECK_DATA_CORRUPTION(condition, fmt, ...)			 \
 	check_data_corruption(({					 \

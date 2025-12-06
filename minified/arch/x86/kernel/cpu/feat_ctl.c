@@ -1,5 +1,3 @@
- 
- 
 #include <linux/tboot.h>
 #include <asm/cpufeature.h>
 #include <asm/msr-index.h>
@@ -13,7 +11,6 @@
 static int __init nosgx(char *str) { return 0; }
 early_param("nosgx", nosgx);
 
- 
 void init_ia32_feat_ctl(struct cpuinfo_x86 *c)
 {
 	 

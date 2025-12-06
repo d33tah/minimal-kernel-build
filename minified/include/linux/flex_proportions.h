@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_FLEX_PROPORTIONS_H
 #define _LINUX_FLEX_PROPORTIONS_H
@@ -9,11 +7,9 @@
 #include <linux/seqlock.h>
 #include <linux/gfp.h>
 
- 
 #define FPROP_FRAC_SHIFT 10
 #define FPROP_FRAC_BASE (1UL << FPROP_FRAC_SHIFT)
 
- 
 struct fprop_global {
 	 
 	struct percpu_counter events;
@@ -27,7 +23,6 @@ int fprop_global_init(struct fprop_global *p, gfp_t gfp);
 void fprop_global_destroy(struct fprop_global *p);
 bool fprop_new_period(struct fprop_global *p, int periods);
 
- 
 struct fprop_local_single {
 	 
 	unsigned long events;
@@ -57,7 +52,6 @@ void fprop_inc_single(struct fprop_global *p, struct fprop_local_single *pl)
 	local_irq_restore(flags);
 }
 
- 
 struct fprop_local_percpu {
 	 
 	struct percpu_counter events;

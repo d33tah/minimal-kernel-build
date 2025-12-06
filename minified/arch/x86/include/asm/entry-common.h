@@ -2,7 +2,14 @@
 #ifndef _ASM_X86_ENTRY_COMMON_H
 #define _ASM_X86_ENTRY_COMMON_H
 
-#include <linux/user-return-notifier.h>
+/* user-return-notifier.h inlined */
+#ifndef _URN_INLINE
+#define _URN_INLINE
+struct user_return_notifier {};
+static inline void propagate_user_return_notify(struct task_struct *prev, struct task_struct *next) {}
+static inline void fire_user_return_notifiers(void) {}
+static inline void clear_user_return_notifier(struct task_struct *p) {}
+#endif
 #include <linux/sched/task_stack.h>
 
 #include <asm/nospec-branch.h>

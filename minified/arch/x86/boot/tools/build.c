@@ -1,9 +1,5 @@
- 
- 
 
- 
 
- 
 
 #include <stdio.h>
 #include <string.h>
@@ -24,11 +20,9 @@ typedef unsigned int   u32;
 #define DEFAULT_MINOR_ROOT 0
 #define DEFAULT_ROOT_DEV (DEFAULT_MAJOR_ROOT << 8 | DEFAULT_MINOR_ROOT)
 
- 
 #define SETUP_SECT_MIN 5
 #define SETUP_SECT_MAX 64
 
- 
 u8 buf[SETUP_SECT_MAX*512];
 
 #define PECOFF_RELOC_RESERVE 0x20
@@ -44,7 +38,6 @@ static unsigned long startup_64;
 static unsigned long _ehead;
 static unsigned long _end;
 
- 
 
 static const u32 crctab32[] = {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419,
@@ -148,7 +141,6 @@ static int reserve_pecoff_compat_section(int c)
 	return PECOFF_COMPAT_RESERVE;
 }
 
- 
 #define PARSE_ZOFS(p, sym) do { \
 	if (!strncmp(p, "#define ZO_" #sym " ", 11+sizeof(#sym)))	\
 		sym = strtoul(p + 11 + sizeof(#sym), NULL, 16);		\

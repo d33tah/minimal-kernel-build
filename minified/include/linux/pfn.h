@@ -1,11 +1,9 @@
- 
 #ifndef _LINUX_PFN_H_
 #define _LINUX_PFN_H_
 
 #ifndef __ASSEMBLY__
 #include <linux/types.h>
 
- 
 typedef struct {
 	u64 val;
 } pfn_t;

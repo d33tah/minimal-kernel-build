@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_MMU_NOTIFIER_H
 #define _LINUX_MMU_NOTIFIER_H
 
@@ -7,14 +6,30 @@
 #include <linux/mm_types.h>
 #include <linux/mmap_lock.h>
 #include <linux/srcu.h>
-#include <linux/interval_tree.h>
+#include <linux/rbtree.h>
+
+/* Inlined from interval_tree.h */
+struct interval_tree_node {
+	struct rb_node rb;
+	unsigned long start;
+	unsigned long last;
+	unsigned long __subtree_last;
+};
+extern void interval_tree_insert(struct interval_tree_node *node,
+		     struct rb_root_cached *root);
+extern void interval_tree_remove(struct interval_tree_node *node,
+		     struct rb_root_cached *root);
+extern struct interval_tree_node *interval_tree_iter_first(struct rb_root_cached *root,
+			 unsigned long start, unsigned long last);
+extern struct interval_tree_node *interval_tree_iter_next(struct interval_tree_node *node,
+			unsigned long start, unsigned long last);
+/* End of inlined interval_tree.h content */
 
 struct mmu_notifier_subscriptions;
 struct mmu_notifier;
 struct mmu_notifier_range;
 struct mmu_interval_notifier;
 
- 
 enum mmu_notifier_event {
 	MMU_NOTIFY_UNMAP = 0,
 	MMU_NOTIFY_CLEAR,
@@ -103,11 +118,6 @@ void mmu_notifier_invalidate_range_end(struct mmu_notifier_range *range)
 {
 }
 
-static inline void
-mmu_notifier_invalidate_range_only_end(struct mmu_notifier_range *range)
-{
-}
-
 static inline void mmu_notifier_invalidate_range(struct mm_struct *mm,
 				  unsigned long start, unsigned long end)
 {
@@ -121,8 +131,6 @@ static inline void mmu_notifier_subscriptions_destroy(struct mm_struct *mm)
 {
 }
 
-#define mmu_notifier_range_update_to_read_only(r) false
-
 #define ptep_clear_flush_young_notify ptep_clear_flush_young
 #define pmdp_clear_flush_young_notify pmdp_clear_flush_young
 #define ptep_clear_young_notify ptep_test_and_clear_young
@@ -131,10 +139,5 @@ static inline void mmu_notifier_subscriptions_destroy(struct mm_struct *mm)
 #define pmdp_huge_clear_flush_notify pmdp_huge_clear_flush
 #define pudp_huge_clear_flush_notify pudp_huge_clear_flush
 #define set_pte_at_notify set_pte_at
-
-static inline void mmu_notifier_synchronize(void)
-{
-}
-
 
 #endif  

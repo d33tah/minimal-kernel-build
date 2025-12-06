@@ -26,12 +26,10 @@
 #include <asm/text-patching.h>
 #include <asm/memtype.h>
 
- 
 
 
 #include "mm_internal.h"
 
- 
 static uint16_t __cachemode2pte_tbl[_PAGE_CACHE_MODE_NUM] = {
 	[_PAGE_CACHE_MODE_WB      ]	= 0         | 0        ,
 	[_PAGE_CACHE_MODE_WC      ]	= 0         | _PAGE_PCD,
@@ -59,7 +57,6 @@ static uint8_t __pte2cachemode_tbl[8] = {
 	[__pte2cm_idx(_PAGE_PWT | _PAGE_PCD | _PAGE_PAT)] = _PAGE_CACHE_MODE_UC,
 };
 
- 
 bool x86_has_pat_wp(void)
 {
 	uint16_t prot = __cachemode2pte_tbl[_PAGE_CACHE_MODE_WP];
@@ -85,7 +82,6 @@ static unsigned long min_pfn_mapped;
 
 static bool __initdata can_use_brk_pgt = true;
 
- 
 __ref void *alloc_low_pages(unsigned int num)
 {
 	unsigned long pfn;
@@ -129,7 +125,6 @@ __ref void *alloc_low_pages(unsigned int num)
 	return __va(pfn << PAGE_SHIFT);
 }
 
- 
 
 #define INIT_PGD_PAGE_TABLES    3
 
@@ -161,7 +156,6 @@ struct map_range {
 
 static int page_size_mask;
 
- 
 static inline void cr4_set_bits_and_update_boot(unsigned long mask)
 {
 	mmu_cr4_features |= mask;
@@ -243,7 +237,6 @@ static int __meminit save_mr(struct map_range *mr, int nr_range,
 	return nr_range;
 }
 
- 
 static void __ref adjust_range_page_size_mask(struct map_range *mr,
 							 int nr_range)
 {
@@ -360,7 +353,6 @@ bool pfn_range_is_mapped(unsigned long start_pfn, unsigned long end_pfn)
 	return false;
 }
 
- 
 unsigned long __ref init_memory_mapping(unsigned long start,
 					unsigned long end, pgprot_t prot)
 {
@@ -381,7 +373,6 @@ unsigned long __ref init_memory_mapping(unsigned long start,
 	return ret >> PAGE_SHIFT;
 }
 
- 
 static unsigned long __init init_range_memory_mapping(
 					   unsigned long r_start,
 					   unsigned long r_end)
@@ -413,7 +404,6 @@ static unsigned long __init get_new_step_size(unsigned long step_size)
 	return step_size << (PMD_SHIFT - PAGE_SHIFT - 1);
 }
 
- 
 static void __init memory_map_top_down(unsigned long map_start,
 				       unsigned long map_end)
 {
@@ -456,7 +446,6 @@ static void __init memory_map_top_down(unsigned long map_start,
 		init_range_memory_mapping(real_end, map_end);
 }
 
- 
 static void __init memory_map_bottom_up(unsigned long map_start,
 					unsigned long map_end)
 {
@@ -486,7 +475,6 @@ static void __init memory_map_bottom_up(unsigned long map_start,
 	}
 }
 
- 
 static void __init init_trampoline(void)
 {
 }
@@ -528,7 +516,6 @@ void __init init_mem_mapping(void)
 	early_memtest(0, max_pfn_mapped << PAGE_SHIFT);
 }
 
- 
 void __init poking_init(void)
 {
 	spinlock_t *ptl;
@@ -552,7 +539,6 @@ void __init poking_init(void)
 	pte_unmap_unlock(ptep, ptl);
 }
 
- 
 /* Stub: devmem_is_allowed not used in minimal kernel */
 int devmem_is_allowed(unsigned long pagenr)
 { return 1; }
@@ -590,7 +576,6 @@ void free_init_pages(const char *what, unsigned long begin, unsigned long end)
 	}
 }
 
- 
 /* Stub: free_kernel_image_pages not called in minimal kernel */
 void free_kernel_image_pages(const char *what, void *begin, void *end) { }
 
@@ -610,7 +595,6 @@ void __init free_initrd_mem(unsigned long start, unsigned long end)
 	free_init_pages("initrd", start, PAGE_ALIGN(end));
 }
 
- 
 void __init memblock_find_dma_reserve(void)
 {
 }

@@ -1,8 +1,48 @@
- 
 #ifndef _LINUX_TTY_PORT_H
 #define _LINUX_TTY_PORT_H
 
-#include <linux/kfifo.h>
+/* Inlined from kfifo.h */
+struct __kfifo {
+	unsigned int	in;
+	unsigned int	out;
+	unsigned int	mask;
+	unsigned int	esize;
+	void		*data;
+};
+
+#define __STRUCT_KFIFO_COMMON(datatype, recsize, ptrtype) \
+	union { \
+		struct __kfifo	kfifo; \
+		datatype	*type; \
+		const datatype	*const_type; \
+		char		(*rectype)[recsize]; \
+		ptrtype		*ptr; \
+		ptrtype const	*ptr_const; \
+	}
+
+#define __STRUCT_KFIFO_PTR(type, recsize, ptrtype) \
+{ \
+	__STRUCT_KFIFO_COMMON(type, recsize, ptrtype); \
+	type		buf[0]; \
+}
+
+#define DECLARE_KFIFO_PTR(fifo, type)	\
+struct __STRUCT_KFIFO_PTR(type, 0, type) fifo
+
+#define INIT_KFIFO(fifo) \
+	(void)sizeof(&(fifo))
+
+static inline void kfifo_init(void *fifo, void *buffer, unsigned int size)
+{
+	struct __kfifo *kf = fifo;
+	kf->in = 0;
+	kf->out = 0;
+	kf->mask = size - 1;
+	kf->esize = 1;
+	kf->data = buffer;
+}
+/* End of inlined kfifo.h content */
+
 #include <linux/kref.h>
 #include <linux/mutex.h>
 #include <linux/tty_buffer.h>
@@ -13,7 +53,6 @@ struct tty_driver;
 struct tty_port;
 struct tty_struct;
 
- 
 struct tty_port_operations {
 	int (*carrier_raised)(struct tty_port *port);
 	void (*dtr_rts)(struct tty_port *port, int raise);
@@ -29,7 +68,6 @@ struct tty_port_client_operations {
 
 extern const struct tty_port_client_operations tty_port_default_client_ops;
 
- 
 struct tty_port {
 	struct tty_bufhead	buf;
 	struct tty_struct	*tty;
@@ -55,12 +93,10 @@ struct tty_port {
 	void			*client_data;
 };
 
- 
 #define TTY_PORT_INITIALIZED	0	 
 #define TTY_PORT_SUSPENDED	1	 
 #define TTY_PORT_ACTIVE		2	 
 
- 
 #define TTY_PORT_CTS_FLOW	3	 
 #define TTY_PORT_CHECK_CD	4	 
 #define TTY_PORT_KOPENED	5	 
@@ -96,7 +132,6 @@ static inline struct tty_port *tty_port_get(struct tty_port *port)
 	return NULL;
 }
 
- 
 static inline bool tty_port_cts_enabled(const struct tty_port *port)
 {
 	return test_bit(TTY_PORT_CTS_FLOW, &port->iflags);

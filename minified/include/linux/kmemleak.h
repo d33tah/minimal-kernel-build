@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef __KMEMLEAK_H
 #define __KMEMLEAK_H
@@ -52,12 +50,7 @@ static inline void kmemleak_ignore(const void *ptr)
 static inline void kmemleak_scan_area(const void *ptr, size_t size, gfp_t gfp)
 {
 }
-static inline void kmemleak_erase(void **ptr)
-{
-}
-static inline void kmemleak_no_scan(const void *ptr)
-{
-}
+/* kmemleak_erase, kmemleak_no_scan removed - unused */
 static inline void kmemleak_alloc_phys(phys_addr_t phys, size_t size,
 				       int min_count, gfp_t gfp)
 {
@@ -65,12 +58,6 @@ static inline void kmemleak_alloc_phys(phys_addr_t phys, size_t size,
 static inline void kmemleak_free_part_phys(phys_addr_t phys, size_t size)
 {
 }
-static inline void kmemleak_not_leak_phys(phys_addr_t phys)
-{
-}
-static inline void kmemleak_ignore_phys(phys_addr_t phys)
-{
-}
-
+/* kmemleak_not_leak_phys, kmemleak_ignore_phys removed - unused */
 
 #endif	 

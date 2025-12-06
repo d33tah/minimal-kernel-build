@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SIGNAL_H
 #define _LINUX_SIGNAL_H
 
@@ -8,7 +7,6 @@
 
 struct task_struct;
 
- 
 extern int print_fatal_signals;
 
 static inline void copy_siginfo(kernel_siginfo_t *to,
@@ -22,15 +20,7 @@ static inline void clear_siginfo(kernel_siginfo_t *info)
 	memset(info, 0, sizeof(*info));
 }
 
-#define SI_EXPANSION_SIZE (sizeof(struct siginfo) - sizeof(struct kernel_siginfo))
-
-static inline void copy_siginfo_to_external(siginfo_t *to,
-					    const kernel_siginfo_t *from)
-{
-	memcpy(to, from, sizeof(*from));
-	memset(((char *)to) + sizeof(struct kernel_siginfo), 0,
-		SI_EXPANSION_SIZE);
-}
+/* SI_EXPANSION_SIZE and copy_siginfo_to_external removed - unused */
 
 int copy_siginfo_to_user(siginfo_t __user *to, const kernel_siginfo_t *from);
 int copy_siginfo_from_user(kernel_siginfo_t *to, const siginfo_t __user *from);
@@ -41,12 +31,10 @@ enum siginfo_layout {
 
 enum siginfo_layout siginfo_layout(unsigned sig, int si_code);
 
- 
 
 #ifndef __HAVE_ARCH_SIG_BITOPS
 #include <linux/bitops.h>
 
- 
 static inline void sigaddset(sigset_t *set, int _sig)
 {
 	unsigned long sig = _sig - 1;
@@ -169,7 +157,7 @@ static inline void name(sigset_t *set)					\
 }
 
 #define _sig_not(x)	(~(x))
-_SIG_SET_OP(signotset, _sig_not)
+/* signotset removed - unused */
 
 #undef _SIG_SET_OP
 #undef _sig_not
@@ -187,20 +175,8 @@ static inline void sigemptyset(sigset_t *set)
 	}
 }
 
-static inline void sigfillset(sigset_t *set)
-{
-	switch (_NSIG_WORDS) {
-	default:
-		memset(set, -1, sizeof(sigset_t));
-		break;
-	case 2: set->sig[1] = -1;
-		fallthrough;
-	case 1:	set->sig[0] = -1;
-		break;
-	}
-}
+/* sigfillset removed - unused */
 
- 
 
 static inline void sigaddsetmask(sigset_t *set, unsigned long mask)
 {
@@ -248,7 +224,6 @@ static inline void init_sigpending(struct sigpending *sig)
 
 extern void flush_sigqueue(struct sigpending *queue);
 
- 
 static inline int valid_signal(unsigned long sig)
 {
 	return sig <= _NSIG ? 1 : 0;
@@ -278,22 +253,12 @@ extern void kernel_sigaction(int, __sighandler_t);
 #define SIG_KTHREAD ((__force __sighandler_t)2)
 #define SIG_KTHREAD_KERNEL ((__force __sighandler_t)3)
 
-static inline void allow_signal(int sig)
-{
-	 
-	kernel_sigaction(sig, SIG_KTHREAD);
-}
-
-static inline void disallow_signal(int sig)
-{
-	kernel_sigaction(sig, SIG_IGN);
-}
+/* allow_signal/disallow_signal removed - unused */
 
 extern struct kmem_cache *sighand_cachep;
 
 extern bool unhandled_signal(struct task_struct *tsk, int sig);
 
- 
 
 #ifdef SIGEMT
 #define SIGEMT_MASK	rt_sigmask(SIGEMT)
@@ -301,11 +266,8 @@ extern bool unhandled_signal(struct task_struct *tsk, int sig);
 #define SIGEMT_MASK	0
 #endif
 
-#if SIGRTMIN > BITS_PER_LONG
-#define rt_sigmask(sig)	(1ULL << ((sig)-1))
-#else
+/* SIGRTMIN == BITS_PER_LONG == 32 */
 #define rt_sigmask(sig)	sigmask(sig)
-#endif
 
 #define siginmask(sig, mask) \
 	((sig) > 0 && (sig) < SIGRTMIN && (rt_sigmask(sig) & (mask)))
@@ -362,14 +324,6 @@ int __save_altstack(stack_t __user *, unsigned long);
 bool sigaltstack_size_valid(size_t ss_size);
 
 
-#ifndef arch_untagged_si_addr
- 
-static inline void __user *arch_untagged_si_addr(void __user *addr,
-						 unsigned long sig,
-						 unsigned long si_code)
-{
-	return addr;
-}
-#endif
+/* arch_untagged_si_addr removed - unused */
 
 #endif  

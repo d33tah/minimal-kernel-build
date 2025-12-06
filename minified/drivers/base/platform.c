@@ -1,10 +1,51 @@
- 
- 
 
 #include <linux/string.h>
 #include <linux/platform_device.h>
 #include <linux/of_device.h>
-#include <linux/of_irq.h>
+
+/* Inlined from of_irq.h */
+#include <linux/irqdomain.h>
+typedef int (*of_irq_init_cb_t)(struct device_node *, struct device_node *);
+#define of_irq_workarounds (0)
+#define of_irq_dflt_pic (NULL)
+static inline int of_irq_parse_oldworld(const struct device_node *device, int index,
+				      struct of_phandle_args *out_irq)
+{ return -EINVAL; }
+extern int of_irq_parse_raw(const __be32 *addr, struct of_phandle_args *out_irq);
+extern unsigned int irq_create_of_mapping(struct of_phandle_args *irq_data);
+extern int of_irq_to_resource(struct device_node *dev, int index,
+			      struct resource *r);
+extern void of_irq_init(const struct of_device_id *matches);
+static inline int of_irq_parse_one(struct device_node *device, int index,
+				   struct of_phandle_args *out_irq)
+{ return -EINVAL; }
+static inline int of_irq_count(struct device_node *dev)
+{ return 0; }
+static inline int of_irq_get(struct device_node *dev, int index)
+{ return 0; }
+static inline int of_irq_get_byname(struct device_node *dev, const char *name)
+{ return 0; }
+static inline int of_irq_to_resource_table(struct device_node *dev,
+					   struct resource *res, int nr_irqs)
+{ return 0; }
+static inline void *of_irq_find_parent(struct device_node *child)
+{ return NULL; }
+static inline struct irq_domain *of_msi_get_domain(struct device *dev,
+						   struct device_node *np,
+						   enum irq_domain_bus_token token)
+{ return NULL; }
+static inline struct irq_domain *of_msi_map_get_device_domain(struct device *dev,
+						u32 id, u32 bus_token)
+{ return NULL; }
+static inline void of_msi_configure(struct device *dev, struct device_node *np) { }
+static inline u32 of_msi_map_id(struct device *dev,
+				 struct device_node *msi_np, u32 id_in)
+{ return id_in; }
+static inline unsigned int irq_of_parse_and_map(struct device_node *dev,
+						int index)
+{ return 0; }
+/* End of inlined of_irq.h content */
+
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/interrupt.h>
@@ -14,10 +55,16 @@
 #include <linux/err.h>
 #include <linux/slab.h>
 #include <linux/pm_runtime.h>
-#include <linux/pm_domain.h>
+
+/* --- 2025-12-06 20:27 --- pm_domain.h inlined (19 LOC) */
+static inline int dev_pm_domain_attach(struct device *dev, bool power_on) { return 0; }
+static inline void dev_pm_domain_detach(struct device *dev, bool power_off) {}
+static inline int dev_pm_domain_start(struct device *dev) { return 0; }
+static inline void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd) {}
+/* --- end pm_domain.h inlined --- */
 #include <linux/idr.h>
 #include <linux/acpi.h>
-#include <linux/clk/clk-conf.h>
+static inline int of_clk_set_defaults(struct device_node *node, bool clk_supplier) { return 0; }
 #include <linux/limits.h>
 #include <linux/property.h>
 #include <linux/kmemleak.h>
@@ -34,7 +81,6 @@ struct device platform_bus = {
 	.init_name	= "platform",
 };
 
- 
 struct resource *platform_get_resource(struct platform_device *dev,
 				       unsigned int type, unsigned int num)
 {
@@ -63,7 +109,6 @@ struct resource *platform_get_mem_or_io(struct platform_device *dev,
 	return NULL;
 }
 
- 
 void __iomem *
 devm_platform_get_and_ioremap_resource(struct platform_device *pdev,
 				unsigned int index, struct resource **res)
@@ -76,14 +121,12 @@ devm_platform_get_and_ioremap_resource(struct platform_device *pdev,
 	return devm_ioremap_resource(&pdev->dev, r);
 }
 
- 
 void __iomem *devm_platform_ioremap_resource(struct platform_device *pdev,
 					     unsigned int index)
 {
 	return devm_platform_get_and_ioremap_resource(pdev, index, NULL);
 }
 
- 
 void __iomem *
 devm_platform_ioremap_resource_byname(struct platform_device *pdev,
 				      const char *name)
@@ -94,14 +137,12 @@ devm_platform_ioremap_resource_byname(struct platform_device *pdev,
 	return devm_ioremap_resource(&pdev->dev, res);
 }
 
- 
 /* Stub: platform_get_irq_optional not used externally */
 int platform_get_irq_optional(struct platform_device *dev, unsigned int num)
 {
 	return -ENXIO;
 }
 
- 
 int platform_get_irq(struct platform_device *dev, unsigned int num)
 {
 	int ret;
@@ -124,7 +165,6 @@ int devm_platform_get_irqs_affinity(struct platform_device *dev,
 	return -ENOSYS;
 }
 
- 
 struct resource *platform_get_resource_byname(struct platform_device *dev,
 					      unsigned int type,
 					      const char *name)
@@ -148,7 +188,6 @@ struct platform_object {
 	char name[];
 };
 
- 
 static void setup_pdev_dma_masks(struct platform_device *pdev)
 {
 	pdev->dev.dma_parms = &pdev->dma_parms;
@@ -174,7 +213,6 @@ static void platform_device_release(struct device *dev)
 	kfree(pa);
 }
 
- 
 struct platform_device *platform_device_alloc(const char *name, int id)
 {
 	struct platform_object *pa;
@@ -216,7 +254,6 @@ void platform_device_unregister(struct platform_device *pdev) { }
 struct platform_device *platform_device_register_full(
 		const struct platform_device_info *pdevinfo) { return ERR_PTR(-ENOSYS); }
 
- 
 int __platform_driver_register(struct platform_driver *drv,
 				struct module *owner)
 {
@@ -226,7 +263,6 @@ int __platform_driver_register(struct platform_driver *drv,
 	return driver_register(&drv->driver);
 }
 
- 
 void platform_driver_unregister(struct platform_driver *drv)
 {
 	driver_unregister(&drv->driver);
@@ -274,7 +310,6 @@ static const struct attribute_group platform_dev_group = { .attrs = platform_dev
 __ATTRIBUTE_GROUPS(platform_dev);
 
 
- 
 static int platform_match(struct device *dev, struct device_driver *drv)
 {
 	struct platform_device *pdev = to_platform_device(dev);
@@ -395,7 +430,6 @@ static inline int __platform_match(struct device *dev, const void *drv)
 	return platform_match(dev, (struct device_driver *)drv);
 }
 
- 
 struct device *platform_find_device_by_driver(struct device *start,
 					      const struct device_driver *drv)
 {

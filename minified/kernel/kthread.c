@@ -1,6 +1,4 @@
- 
- 
-#include <uapi/linux/sched/types.h>
+#include <linux/sched/types.h>
 #include <linux/mm.h>
 #include <linux/mmu_context.h>
 #include <linux/sched.h>
@@ -65,7 +63,6 @@ static inline struct kthread *to_kthread(struct task_struct *k)
 	return k->worker_private;
 }
 
- 
 static inline struct kthread *__to_kthread(struct task_struct *p)
 {
 	void *kthread = p->worker_private;
@@ -119,7 +116,6 @@ void free_kthread_struct(struct task_struct *k)
 	kfree(kthread);
 }
 
- 
 bool kthread_should_stop(void)
 {
 	return test_bit(KTHREAD_SHOULD_STOP, &to_kthread(current)->flags);
@@ -130,7 +126,6 @@ bool __kthread_should_park(struct task_struct *k)
 	return test_bit(KTHREAD_SHOULD_PARK, &to_kthread(k)->flags);
 }
 
- 
 bool kthread_should_park(void)
 {
 	return __kthread_should_park(current);
@@ -144,7 +139,6 @@ bool kthread_freezable_should_stop(bool *was_frozen)
 	return kthread_should_stop();
 }
 
- 
 void *kthread_func(struct task_struct *task)
 {
 	struct kthread *kthread = __to_kthread(task);
@@ -153,7 +147,6 @@ void *kthread_func(struct task_struct *task)
 	return NULL;
 }
 
- 
 void *kthread_data(struct task_struct *task)
 {
 	return to_kthread(task)->data;
@@ -184,7 +177,6 @@ void kthread_parkme(void)
 	__kthread_parkme(to_kthread(current));
 }
 
- 
 void __noreturn kthread_exit(long result)
 {
 	struct kthread *kthread = to_kthread(current);
@@ -192,7 +184,6 @@ void __noreturn kthread_exit(long result)
 	do_exit(0);
 }
 
- 
 /* Stub: kthread_complete_and_exit not used externally */
 void __noreturn kthread_complete_and_exit(struct completion *comp, long code)
 {
@@ -244,7 +235,6 @@ static int kthread(void *_create)
 	kthread_exit(ret);
 }
 
- 
 int tsk_fork_get_node(struct task_struct *tsk)
 {
 	return NUMA_NO_NODE;
@@ -322,7 +312,6 @@ struct task_struct *__kthread_create_on_node(int (*threadfn)(void *data),
 	return task;
 }
 
- 
 struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 					   void *data, int node,
 					   const char namefmt[],
@@ -393,7 +382,6 @@ bool kthread_is_per_cpu(struct task_struct *p)
 	return false;
 }
 
- 
 void kthread_unpark(struct task_struct *k)
 {
 	struct kthread *kthread = to_kthread(k);
@@ -407,14 +395,12 @@ void kthread_unpark(struct task_struct *k)
 	wake_up_state(k, TASK_PARKED);
 }
 
- 
 /* Stub: kthread_park not used externally in minimal kernel */
 int kthread_park(struct task_struct *k)
 {
 	return -ENOSYS;
 }
 
- 
 int kthread_stop(struct task_struct *k)
 {
 	struct kthread *kthread;

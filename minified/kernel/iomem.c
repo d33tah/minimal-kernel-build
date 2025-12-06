@@ -1,11 +1,9 @@
- 
 #include <linux/device.h>
 #include <linux/types.h>
 #include <linux/io.h>
 #include <linux/mm.h>
 
 #ifndef ioremap_cache
- 
 __weak void __iomem *ioremap_cache(resource_size_t offset, unsigned long size)
 {
 	return ioremap(offset, size);
@@ -40,7 +38,6 @@ static void *try_ram_remap(resource_size_t offset, size_t size,
 	return NULL;  
 }
 
- 
 void *memremap(resource_size_t offset, size_t size, unsigned long flags)
 {
 	int is_ram = region_intersects(offset, size,

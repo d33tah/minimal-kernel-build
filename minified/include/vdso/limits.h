@@ -1,4 +1,3 @@
- 
 #ifndef __VDSO_LIMITS_H
 #define __VDSO_LIMITS_H
 

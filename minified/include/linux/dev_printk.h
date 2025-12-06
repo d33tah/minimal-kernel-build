@@ -1,4 +1,3 @@
- 
 /* Minimal stub for dev_printk.h - all device printing disabled */
 
 #ifndef _DEVICE_PRINTK_H_

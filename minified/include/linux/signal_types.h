@@ -1,11 +1,16 @@
- 
 #ifndef _LINUX_SIGNAL_TYPES_H
 #define _LINUX_SIGNAL_TYPES_H
 
- 
 
 #include <linux/list.h>
-#include <uapi/linux/signal.h>
+#include <asm/signal.h>
+#include <asm/siginfo.h>
+
+/* From uapi/linux/signal.h - inlined */
+#define SS_ONSTACK	1
+#define SS_DISABLE	2
+#define SS_AUTODISARM	(1U << 31)
+#define SS_FLAG_BITS	SS_AUTODISARM
 
 typedef struct kernel_siginfo {
 	__SIGINFO;
@@ -13,7 +18,6 @@ typedef struct kernel_siginfo {
 
 struct ucounts;
 
- 
 
 struct sigqueue {
 	struct list_head list;
@@ -22,7 +26,6 @@ struct sigqueue {
 	struct ucounts *ucounts;
 };
 
- 
 #define SIGQUEUE_PREALLOC	1
 
 struct sigpending {
@@ -64,7 +67,6 @@ struct ksignal {
 	int sig;
 };
 
- 
 #define SA_IMMUTABLE		0x00800000
 
 #ifndef __ARCH_UAPI_SA_FLAGS

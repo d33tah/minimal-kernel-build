@@ -1,10 +1,7 @@
- 
 
- 
 
 #include "xz_private.h"
 
- 
 #ifndef STATIC_RW_DATA
 #	define STATIC_RW_DATA static
 #endif

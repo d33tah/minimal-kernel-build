@@ -1,6 +1,3 @@
- 
- 
- 
 
 #include <ctype.h>
 #include <stdarg.h>
@@ -30,7 +27,6 @@ static void __attribute__((noreturn)) pperror(const char *format, ...)
 	exit(1);
 }
 
- 
 static LIST_HEAD(env_list);
 
 struct env {
@@ -58,7 +54,6 @@ static void env_del(struct env *e)
 	free(e);
 }
 
- 
 static char *env_expand(const char *name)
 {
 	struct env *e;
@@ -94,7 +89,6 @@ void env_write_dep(FILE *f, const char *autoconfig_name)
 	}
 }
 
- 
 struct function {
 	const char *name;
 	unsigned int min_args;
@@ -216,7 +210,6 @@ static char *function_expand(const char *name, int argc, char *argv[])
 	return NULL;
 }
 
- 
 static LIST_HEAD(variable_list);
 
 struct variable {
@@ -328,7 +321,6 @@ void variable_all_del(void)
 		variable_del(v);
 }
 
- 
 static char *eval_clause(const char *str, size_t len, int argc, char *argv[])
 {
 	char *tmp, *name, *res, *endptr, *prev, *p;
@@ -402,7 +394,6 @@ free_tmp:
 	return res;
 }
 
- 
 static char *expand_dollar_with_args(const char **str, int argc, char *argv[])
 {
 	const char *p = *str;
@@ -490,7 +481,6 @@ static bool is_end_of_str(char c)
 	return !c;
 }
 
- 
 static char *expand_string_with_args(const char *in, int argc, char *argv[])
 {
 	return __expand_string(&in, is_end_of_str, argc, argv);
@@ -506,7 +496,6 @@ static bool is_end_of_token(char c)
 	return !(isalnum(c) || c == '_' || c == '-');
 }
 
- 
 char *expand_one_token(const char **str)
 {
 	return __expand_string(str, is_end_of_token, 0, NULL);

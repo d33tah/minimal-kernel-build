@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/bitops.h>
 #include <linux/bitmap.h>
@@ -11,7 +9,6 @@
 #if !defined(find_next_bit) || !defined(find_next_zero_bit) ||			\
 	!defined(find_next_bit_le) || !defined(find_next_zero_bit_le) ||	\
 	!defined(find_next_and_bit)
- 
 unsigned long _find_next_bit(const unsigned long *addr1,
 		const unsigned long *addr2, unsigned long nbits,
 		unsigned long start, unsigned long invert, unsigned long le)
@@ -54,7 +51,6 @@ unsigned long _find_next_bit(const unsigned long *addr1,
 #endif
 
 #ifndef find_first_bit
- 
 unsigned long _find_first_bit(const unsigned long *addr, unsigned long size)
 {
 	unsigned long idx;
@@ -69,7 +65,6 @@ unsigned long _find_first_bit(const unsigned long *addr, unsigned long size)
 #endif
 
 #ifndef find_first_and_bit
- 
 unsigned long _find_first_and_bit(const unsigned long *addr1,
 				  const unsigned long *addr2,
 				  unsigned long size)
@@ -87,7 +82,6 @@ unsigned long _find_first_and_bit(const unsigned long *addr1,
 #endif
 
 #ifndef find_first_zero_bit
- 
 unsigned long _find_first_zero_bit(const unsigned long *addr, unsigned long size)
 {
 	unsigned long idx;

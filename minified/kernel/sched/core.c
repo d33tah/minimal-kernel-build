@@ -1,4 +1,3 @@
- 
 
 #include <linux/highmem.h>
 
@@ -20,11 +19,14 @@
 #include <linux/sched/cputime.h>
 #include <linux/sched/debug.h>
 
-#include <linux/sched/init.h>
+/* sched/init.h inlined */
+extern void sched_init(void);
+extern void sched_init_smp(void);
 #include <linux/sched/isolation.h>
 #include <linux/sched/loadavg.h>
 #include <linux/sched/mm.h>
-#include <linux/sched/nohz.h>
+/* sched/nohz.h inlined */
+static inline void wake_up_nohz_cpu(int cpu) { }
 
 #include <linux/sched/rt.h>
 
@@ -53,7 +55,7 @@
 #include <linux/syscalls.h>
 #include <linux/vtime.h>
 
-#include <uapi/linux/sched/types.h>
+#include <linux/sched/types.h>
 
 #include <asm/switch_to.h>
 #include <asm/tlb.h>

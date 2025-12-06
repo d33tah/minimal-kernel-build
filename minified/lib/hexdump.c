@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/types.h>
 #include <linux/ctype.h>
@@ -12,7 +10,6 @@
 const char hex_asc[] = "0123456789abcdef";
 const char hex_asc_upper[] = "0123456789ABCDEF";
 
- 
 int hex_to_bin(unsigned char ch)
 {
 	unsigned char cu = ch & 0xdf;
@@ -21,7 +18,6 @@ int hex_to_bin(unsigned char ch)
 		((cu - 'A' + 11) & (unsigned)((cu - 'F' - 1) & ('A' - 1 - cu)) >> 8);
 }
 
- 
 int hex2bin(u8 *dst, const char *src, size_t count)
 {
 	while (count--) {
@@ -39,7 +35,6 @@ int hex2bin(u8 *dst, const char *src, size_t count)
 	return 0;
 }
 
- 
 char *bin2hex(char *dst, const void *src, size_t count)
 {
 	const unsigned char *_src = src;
@@ -49,7 +44,6 @@ char *bin2hex(char *dst, const void *src, size_t count)
 	return dst;
 }
 
- 
 int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
 		       char *linebuf, size_t linebuflen, bool ascii)
 {

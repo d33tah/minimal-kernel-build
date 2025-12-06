@@ -1,9 +1,7 @@
- 
 #ifndef _LINUX_PFN_T_H_
 #define _LINUX_PFN_T_H_
 #include <linux/mm.h>
 
- 
 #define PFN_FLAGS_MASK (((u64) (~PAGE_MASK)) << (BITS_PER_LONG_LONG - PAGE_SHIFT))
 #define PFN_SG_CHAIN (1ULL << (BITS_PER_LONG_LONG - 1))
 #define PFN_SG_LAST (1ULL << (BITS_PER_LONG_LONG - 2))
@@ -25,7 +23,6 @@ static inline pfn_t __pfn_to_pfn_t(unsigned long pfn, u64 flags)
 	return pfn_t;
 }
 
- 
 static inline pfn_t pfn_to_pfn_t(unsigned long pfn)
 {
 	return __pfn_to_pfn_t(pfn, 0);

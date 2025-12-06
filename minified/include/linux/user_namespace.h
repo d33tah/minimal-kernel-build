@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_USER_NAMESPACE_H
 #define _LINUX_USER_NAMESPACE_H
 
@@ -122,37 +121,17 @@ static inline int create_user_ns(struct cred *new)
 	return -EINVAL;
 }
 
-static inline int unshare_userns(unsigned long unshare_flags,
-				 struct cred **new_cred)
-{
-	if (unshare_flags & CLONE_NEWUSER)
-		return -EINVAL;
-	return 0;
-}
-
 static inline void put_user_ns(struct user_namespace *ns)
 {
 }
 
-static inline bool userns_may_setgroups(const struct user_namespace *ns)
-{
-	return true;
-}
-
-static inline bool in_userns(const struct user_namespace *ancestor,
-			     const struct user_namespace *child)
-{
-	return true;
-}
+/* userns_may_setgroups, in_userns removed - unused */
 
 static inline bool current_in_userns(const struct user_namespace *target_ns)
 {
 	return true;
 }
 
-static inline struct ns_common *ns_get_owner(struct ns_common *ns)
-{
-	return ERR_PTR(-EPERM);
-}
+/* ns_get_owner removed - unused */
 
 #endif  

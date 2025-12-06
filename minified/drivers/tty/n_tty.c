@@ -1,4 +1,3 @@
- 
 
 #include <linux/types.h>
 #include <linux/major.h>
@@ -33,14 +32,12 @@ struct n_tty_data {
 	char read_buf[N_TTY_BUF_SIZE];
 };
 
- 
 static void n_tty_write_wakeup(struct tty_struct *tty)
 {
 	if (tty->fasync && test_and_clear_bit(TTY_DO_WRITE_WAKEUP, &tty->flags))
 		kill_fasync(&tty->fasync, SIGIO, POLL_OUT);
 }
 
- 
 static void n_tty_flush_buffer(struct tty_struct *tty)
 {
 	struct n_tty_data *ldata = tty->disc_data;
@@ -53,13 +50,11 @@ static void n_tty_flush_buffer(struct tty_struct *tty)
 		n_tty_flush_buffer(tty->link);
 }
 
- 
 static void n_tty_set_termios(struct tty_struct *tty, struct ktermios *old)
 {
 	 
 }
 
- 
 static void n_tty_close(struct tty_struct *tty)
 {
 	struct n_tty_data *ldata = tty->disc_data;
@@ -70,7 +65,6 @@ static void n_tty_close(struct tty_struct *tty)
 	}
 }
 
- 
 static int n_tty_open(struct tty_struct *tty)
 {
 	struct n_tty_data *ldata;
@@ -86,7 +80,6 @@ static int n_tty_open(struct tty_struct *tty)
 	return 0;
 }
 
- 
 static ssize_t n_tty_read(struct tty_struct *tty, struct file *file,
 			 unsigned char *buf, size_t nr,
 			 void **cookie, unsigned long offset)
@@ -95,7 +88,6 @@ static ssize_t n_tty_read(struct tty_struct *tty, struct file *file,
 	return 0;
 }
 
- 
 static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 			   const unsigned char *buf, size_t nr)
 {
@@ -140,7 +132,6 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 	return retval;
 }
 
- 
 static __poll_t n_tty_poll(struct tty_struct *tty, struct file *file,
 			  poll_table *wait)
 {
@@ -155,7 +146,6 @@ static __poll_t n_tty_poll(struct tty_struct *tty, struct file *file,
 	return mask;
 }
 
- 
 static int n_tty_ioctl(struct tty_struct *tty, unsigned int cmd,
 		       unsigned long arg)
 {
@@ -169,14 +159,12 @@ static int n_tty_ioctl(struct tty_struct *tty, unsigned int cmd,
 	}
 }
 
- 
 static void n_tty_receive_buf(struct tty_struct *tty, const unsigned char *cp,
 			      const char *fp, int count)
 {
 	 
 }
 
- 
 static int n_tty_receive_buf2(struct tty_struct *tty, const unsigned char *cp,
 			      const char *fp, int count)
 {

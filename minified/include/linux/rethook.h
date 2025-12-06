@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_RETHOOK_H
 #define _LINUX_RETHOOK_H
 
@@ -14,7 +12,6 @@ struct rethook_node;
 
 typedef void (*rethook_handler_t) (struct rethook_node *, void *, struct pt_regs *);
 
- 
 struct rethook {
 	void			*data;
 	rethook_handler_t	handler;
@@ -23,7 +20,6 @@ struct rethook {
 	struct rcu_head		rcu;
 };
 
- 
 struct rethook_node {
 	union {
 		struct freelist_node freelist;
@@ -44,21 +40,17 @@ void rethook_hook(struct rethook_node *node, struct pt_regs *regs, bool mcount);
 unsigned long rethook_find_ret_addr(struct task_struct *tsk, unsigned long frame,
 				    struct llist_node **cur);
 
- 
 void arch_rethook_prepare(struct rethook_node *node, struct pt_regs *regs, bool mcount);
 void arch_rethook_trampoline(void);
 
- 
 static inline bool is_rethook_trampoline(unsigned long addr)
 {
 	return addr == (unsigned long)dereference_symbol_descriptor(arch_rethook_trampoline);
 }
 
- 
 void arch_rethook_fixup_return(struct pt_regs *regs,
 			       unsigned long correct_ret_addr);
 
- 
 unsigned long rethook_trampoline_handler(struct pt_regs *regs,
 					 unsigned long frame);
 

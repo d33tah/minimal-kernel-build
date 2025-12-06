@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SCATTERLIST_H
 #define _LINUX_SCATTERLIST_H
 
@@ -16,7 +15,6 @@ struct scatterlist {
 	unsigned int	dma_length;
 };
 
- 
 #define sg_dma_address(sg)	((sg)->dma_address)
 
 #define sg_dma_len(sg)		((sg)->dma_length)
@@ -33,12 +31,10 @@ struct sg_append_table {
 	unsigned int total_nents;	 
 };
 
- 
 
 #define SG_CHAIN	0x01UL
 #define SG_END		0x02UL
 
- 
 #define SG_PAGE_LINK_MASK (SG_CHAIN | SG_END)
 
 static inline unsigned int __sg_flags(struct scatterlist *sg)
@@ -61,7 +57,6 @@ static inline bool sg_is_last(struct scatterlist *sg)
 	return __sg_flags(sg) & SG_END;
 }
 
- 
 static inline void sg_assign_page(struct scatterlist *sg, struct page *page)
 {
 	unsigned long page_link = sg->page_link & (SG_CHAIN | SG_END);
@@ -71,7 +66,6 @@ static inline void sg_assign_page(struct scatterlist *sg, struct page *page)
 	sg->page_link = page_link | (unsigned long) page;
 }
 
- 
 static inline void sg_set_page(struct scatterlist *sg, struct page *page,
 			       unsigned int len, unsigned int offset)
 {
@@ -85,22 +79,18 @@ static inline struct page *sg_page(struct scatterlist *sg)
 	return (struct page *)((sg)->page_link & ~SG_PAGE_LINK_MASK);
 }
 
- 
 static inline void sg_set_buf(struct scatterlist *sg, const void *buf,
 			      unsigned int buflen)
 {
 	sg_set_page(sg, virt_to_page(buf), buflen, offset_in_page(buf));
 }
 
- 
 #define for_each_sg(sglist, sg, nr, __i)	\
 	for (__i = 0, sg = (sglist); __i < (nr); __i++, sg = sg_next(sg))
 
- 
 #define for_each_sgtable_sg(sgt, sg, i)		\
 	for_each_sg((sgt)->sgl, sg, (sgt)->orig_nents, i)
 
- 
 #define for_each_sgtable_dma_sg(sgt, sg, i)	\
 	for_each_sg((sgt)->sgl, sg, (sgt)->nents, i)
 
@@ -115,14 +105,12 @@ static inline void __sg_chain(struct scatterlist *chain_sg,
 	chain_sg->page_link = ((unsigned long) sgl | SG_CHAIN) & ~SG_END;
 }
 
- 
 static inline void sg_chain(struct scatterlist *prv, unsigned int prv_nents,
 			    struct scatterlist *sgl)
 {
 	__sg_chain(&prv[prv_nents - 1], sgl);
 }
 
- 
 static inline void sg_mark_end(struct scatterlist *sg)
 {
 	 
@@ -130,25 +118,21 @@ static inline void sg_mark_end(struct scatterlist *sg)
 	sg->page_link &= ~SG_CHAIN;
 }
 
- 
 static inline void sg_unmark_end(struct scatterlist *sg)
 {
 	sg->page_link &= ~SG_END;
 }
 
- 
 static inline dma_addr_t sg_phys(struct scatterlist *sg)
 {
 	return page_to_phys(sg_page(sg)) + sg->offset;
 }
 
- 
 static inline void *sg_virt(struct scatterlist *sg)
 {
 	return page_address(sg_page(sg)) + sg->offset;
 }
 
- 
 static inline void sg_init_marker(struct scatterlist *sgl,
 				  unsigned int nents)
 {
@@ -187,7 +171,6 @@ int sg_alloc_table_from_pages_segment(struct sg_table *sgt, struct page **pages,
 				      unsigned long size,
 				      unsigned int max_segment, gfp_t gfp_mask);
 
- 
 static inline int sg_alloc_table_from_pages(struct sg_table *sgt,
 					    struct page **pages,
 					    unsigned int n_pages,
@@ -214,17 +197,13 @@ size_t sg_pcopy_to_buffer(struct scatterlist *sgl, unsigned int nents,
 size_t sg_zero_buffer(struct scatterlist *sgl, unsigned int nents,
 		       size_t buflen, off_t skip);
 
- 
 #define SG_MAX_SINGLE_ALLOC		(PAGE_SIZE / sizeof(struct scatterlist))
 
- 
 #define SG_CHUNK_SIZE	128
 
- 
 #define SG_MAX_SEGMENTS	2048
 
 
- 
 struct sg_page_iter {
 	struct scatterlist	*sg;		 
 	unsigned int		sg_pgoffset;	 
@@ -234,7 +213,6 @@ struct sg_page_iter {
 	int			__pg_advance;	 
 };
 
- 
 struct sg_dma_page_iter {
 	struct sg_page_iter base;
 };
@@ -244,13 +222,11 @@ bool __sg_page_iter_dma_next(struct sg_dma_page_iter *dma_iter);
 void __sg_page_iter_start(struct sg_page_iter *piter,
 			  struct scatterlist *sglist, unsigned int nents,
 			  unsigned long pgoffset);
- 
 static inline struct page *sg_page_iter_page(struct sg_page_iter *piter)
 {
 	return nth_page(sg_page(piter->sg), piter->sg_pgoffset);
 }
 
- 
 static inline dma_addr_t
 sg_page_iter_dma_address(struct sg_dma_page_iter *dma_iter)
 {
@@ -258,27 +234,22 @@ sg_page_iter_dma_address(struct sg_dma_page_iter *dma_iter)
 	       (dma_iter->base.sg_pgoffset << PAGE_SHIFT);
 }
 
- 
 #define for_each_sg_page(sglist, piter, nents, pgoffset)		   \
 	for (__sg_page_iter_start((piter), (sglist), (nents), (pgoffset)); \
 	     __sg_page_iter_next(piter);)
 
- 
 #define for_each_sg_dma_page(sglist, dma_iter, dma_nents, pgoffset)            \
 	for (__sg_page_iter_start(&(dma_iter)->base, sglist, dma_nents,        \
 				  pgoffset);                                   \
 	     __sg_page_iter_dma_next(dma_iter);)
 
- 
 #define for_each_sgtable_page(sgt, piter, pgoffset)	\
 	for_each_sg_page((sgt)->sgl, piter, (sgt)->orig_nents, pgoffset)
 
- 
 #define for_each_sgtable_dma_page(sgt, dma_iter, pgoffset)	\
 	for_each_sg_dma_page((sgt)->sgl, dma_iter, (sgt)->nents, pgoffset)
 
 
- 
 
 #define SG_MITER_ATOMIC		(1 << 0)	  
 #define SG_MITER_TO_SG		(1 << 1)	 

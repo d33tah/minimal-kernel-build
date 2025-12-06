@@ -1,8 +1,6 @@
- 
 #ifndef __LINUX_KMOD_H__
 #define __LINUX_KMOD_H__
 
- 
 
 #include <linux/umh.h>
 #include <linux/gfp.h>

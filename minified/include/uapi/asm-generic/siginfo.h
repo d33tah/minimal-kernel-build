@@ -1,4 +1,3 @@
- 
 #ifndef _UAPI_ASM_GENERIC_SIGINFO_H
 #define _UAPI_ASM_GENERIC_SIGINFO_H
 
@@ -12,7 +11,6 @@ typedef union sigval {
 
 #define SI_MAX_SIZE	128
 
- 
 #ifndef __ARCH_SI_BAND_T
 #define __ARCH_SI_BAND_T long
 #endif
@@ -25,7 +23,6 @@ typedef union sigval {
 #define __ARCH_SI_ATTRIBUTES
 #endif
 
- 
 union __sifields {
 	 
 	struct {
@@ -132,7 +129,6 @@ typedef struct siginfo {
 	};
 } __ARCH_SI_ATTRIBUTES siginfo_t;
 
- 
 #define si_pid		_sifields._kill._pid
 #define si_uid		_sifields._kill._uid
 #define si_tid		_sifields._timer._tid
@@ -159,7 +155,6 @@ typedef struct siginfo {
 #define si_syscall	_sifields._sigsys._syscall
 #define si_arch		_sifields._sigsys._arch
 
- 
 #define SI_USER		0		 
 #define SI_KERNEL	0x80		 
 #define SI_QUEUE	-1		 
@@ -174,7 +169,6 @@ typedef struct siginfo {
 #define SI_FROMUSER(siptr)	((siptr)->si_code <= 0)
 #define SI_FROMKERNEL(siptr)	((siptr)->si_code > 0)
 
- 
 #define ILL_ILLOPC	1	 
 #define ILL_ILLOPN	2	 
 #define ILL_ILLADR	3	 
@@ -188,7 +182,6 @@ typedef struct siginfo {
 #define __ILL_BNDMOD	11	 
 #define NSIGILL		11
 
- 
 #define FPE_INTDIV	1	 
 #define FPE_INTOVF	2	 
 #define FPE_FLTDIV	3	 
@@ -206,7 +199,6 @@ typedef struct siginfo {
 #define FPE_CONDTRAP	15	 
 #define NSIGFPE		15
 
- 
 #define SEGV_MAPERR	1	 
 #define SEGV_ACCERR	2	 
 #define SEGV_BNDERR	3	 
@@ -222,17 +214,13 @@ typedef struct siginfo {
 #define SEGV_MTESERR	9	 
 #define NSIGSEGV	9
 
- 
 #define BUS_ADRALN	1	 
 #define BUS_ADRERR	2	 
 #define BUS_OBJERR	3	 
- 
 #define BUS_MCEERR_AR	4
- 
 #define BUS_MCEERR_AO	5
 #define NSIGBUS		5
 
- 
 #define TRAP_BRKPT	1	 
 #define TRAP_TRACE	2	 
 #define TRAP_BRANCH     3	 
@@ -241,12 +229,9 @@ typedef struct siginfo {
 #define TRAP_PERF	6	 
 #define NSIGTRAP	6
 
- 
 
- 
 #define TRAP_PERF_FLAG_ASYNC (1u << 0)
 
- 
 #define CLD_EXITED	1	 
 #define CLD_KILLED	2	 
 #define CLD_DUMPED	3	 
@@ -255,7 +240,6 @@ typedef struct siginfo {
 #define CLD_CONTINUED	6	 
 #define NSIGCHLD	6
 
- 
 #define POLL_IN		1	 
 #define POLL_OUT	2	 
 #define POLL_MSG	3	 
@@ -264,22 +248,18 @@ typedef struct siginfo {
 #define POLL_HUP	6	 
 #define NSIGPOLL	6
 
- 
 #define SYS_SECCOMP	1	 
 #define SYS_USER_DISPATCH 2	 
 #define NSIGSYS		2
 
- 
 #define EMT_TAGOVF	1	 
 #define NSIGEMT		1
 
- 
 #define SIGEV_SIGNAL	0	 
 #define SIGEV_NONE	1	 
 #define SIGEV_THREAD	2	 
 #define SIGEV_THREAD_ID 4	 
 
- 
 #ifndef __ARCH_SIGEV_PREAMBLE_SIZE
 #define __ARCH_SIGEV_PREAMBLE_SIZE	(sizeof(int) * 2 + sizeof(sigval_t))
 #endif

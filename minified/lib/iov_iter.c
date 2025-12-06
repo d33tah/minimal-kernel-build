@@ -1,8 +1,6 @@
- 
- 
 #include <linux/export.h>
 #include <linux/bvec.h>
-#include <linux/fault-inject-usercopy.h>
+/* fault-inject-usercopy.h removed - inlined in uaccess.h */
 #include <linux/uio.h>
 #include <linux/pagemap.h>
 #include <linux/highmem.h>
@@ -10,13 +8,15 @@
 #include <linux/vmalloc.h>
 #include <linux/splice.h>
 #include <linux/compat.h>
-#include <net/checksum.h>
 #include <linux/scatterlist.h>
+
+/* Inlined from net/checksum.h */
+typedef __u16 __sum16;
+typedef __u32 __wsum;
 #include <linux/instrumented.h>
 
 #define PIPE_PARANOIA  
 
- 
 #define iterate_iovec(i, n, base, len, off, __p, STEP) {	\
 	size_t off = 0;						\
 	size_t skip = i->iov_offset;				\
@@ -1028,7 +1028,6 @@ ssize_t __import_iovec(int type, const struct iovec __user *uvec,
 	return -EFAULT;
 }
 
- 
 ssize_t import_iovec(int type, const struct iovec __user *uvec,
 		 unsigned nr_segs, unsigned fast_segs,
 		 struct iovec **iovp, struct iov_iter *i)

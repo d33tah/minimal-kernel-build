@@ -1,21 +1,17 @@
- 
+/* Minimal hugetlb.h - all stubs */
 #ifndef _LINUX_HUGETLB_H
 #define _LINUX_HUGETLB_H
 
 #include <linux/mm_types.h>
-#include <linux/mmdebug.h>
 #include <linux/fs.h>
-#include <linux/hugetlb_inline.h>
-#include <linux/cgroup.h>
-#include <linux/list.h>
-#include <linux/kref.h>
-#include <linux/pgtable.h>
-#include <linux/gfp.h>
-#include <linux/userfaultfd_k.h>
+#include <linux/pagemap.h>
 
 struct ctl_table;
 struct user_struct;
 struct mmu_gather;
+struct vm_area_struct;
+struct mm_struct;
+struct page;
 
 #ifndef is_hugepd
 typedef struct { unsigned long pd; } hugepd_t;
@@ -169,7 +165,6 @@ static inline vm_fault_t hugetlb_fault(struct mm_struct *mm,
 }
 
 
- 
 #ifndef pgd_huge
 #define pgd_huge(x)	0
 #endif
@@ -215,12 +210,10 @@ generic_hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
 				  unsigned long len, unsigned long pgoff,
 				  unsigned long flags);
 
- 
 enum hugetlb_page_flags {
 	__NR_HPAGEFLAGS,
 };
 
- 
 #define TESTHPAGEFLAG(uname, flname)				\
 static inline int HPage##uname(struct page *page)		\
 	{ return 0; }
@@ -238,7 +231,6 @@ static inline void ClearHPage##uname(struct page *page)		\
 	SETHPAGEFLAG(uname, flname)				\
 	CLEARHPAGEFLAG(uname, flname)				\
 
- 
 HPAGEFLAG(RestoreReserve, restore_reserve)
 HPAGEFLAG(Migratable, migratable)
 HPAGEFLAG(Temporary, temporary)
@@ -322,7 +314,6 @@ static inline __init void hugetlb_cma_reserve(int order)
 bool want_pmd_share(struct vm_area_struct *vma, unsigned long addr);
 
 #ifndef __HAVE_ARCH_FLUSH_HUGETLB_TLB_RANGE
- 
 #define flush_hugetlb_tlb_range(vma, addr, end)	flush_tlb_range(vma, addr, end)
 #endif
 

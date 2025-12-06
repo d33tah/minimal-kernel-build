@@ -1,13 +1,6 @@
- 
- 
-
-#include <linux/capability.h>
-#include <linux/mman.h>
-#include <linux/mm.h>
-#include <linux/sched/user.h>
+/* Minimal includes for mlock stubs */
 #include <linux/syscalls.h>
-#include <linux/export.h>
-#include <linux/hugetlb.h>
+#include <linux/mm.h>
 
 bool can_do_mlock(void)
 {
@@ -39,7 +32,6 @@ SYSCALL_DEFINE0(munlockall)
 	return -ENOSYS;   
 }
 
- 
 void mlock_page_drain_local(void)
 {
 	 

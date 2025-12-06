@@ -1,4 +1,3 @@
- 
 #define BUILD_VDSO32
 
 

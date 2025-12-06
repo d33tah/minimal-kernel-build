@@ -1,4 +1,3 @@
- 
 
 #include <linux/module.h>
 #include <linux/types.h>
@@ -17,15 +16,74 @@
 #include <linux/init.h>
 #include <linux/mutex.h>
 #include <linux/vt_kern.h>
-#include <linux/selection.h>
-#include <linux/tiocl.h>
+#include <linux/selection.h> /* includes tiocl defines */
 #include <linux/kbd_kern.h>
 #include <linux/consolemap.h>
 #include <linux/timer.h>
 #include <linux/interrupt.h>
 #include <linux/workqueue.h>
 #include <linux/pm.h>
-#include <linux/font.h>
+
+/* Inlined from font.h */
+struct font_desc {
+    int idx;
+    const char *name;
+    unsigned int width, height;
+    unsigned int charcount;
+    const void *data;
+    int pref;
+};
+
+#define VGA8x8_IDX	0
+#define VGA8x16_IDX	1
+#define PEARL8x8_IDX	2
+#define VGA6x11_IDX	3
+#define FONT7x14_IDX	4
+#define	FONT10x18_IDX	5
+#define SUN8x16_IDX	6
+#define SUN12x22_IDX	7
+#define ACORN8x8_IDX	8
+#define	MINI4x6_IDX	9
+#define FONT6x10_IDX	10
+#define TER16x32_IDX	11
+#define FONT6x8_IDX	12
+
+extern const struct font_desc	font_vga_8x8,
+			font_vga_8x16,
+			font_pearl_8x8,
+			font_vga_6x11,
+			font_7x14,
+			font_10x18,
+			font_sun_8x16,
+			font_sun_12x22,
+			font_acorn_8x8,
+			font_mini_4x6,
+			font_6x10,
+			font_ter_16x32,
+			font_6x8;
+
+
+extern const struct font_desc *find_font(const char *name);
+
+
+extern const struct font_desc *get_default_font(int xres, int yres,
+						u32 font_w, u32 font_h);
+
+#define MAX_FONT_NAME	32
+
+#define REFCOUNT(fd)	(((int *)(fd))[-1])
+#define FNTSIZE(fd)	(((int *)(fd))[-2])
+#define FNTCHARCNT(fd)	(((int *)(fd))[-3])
+#define FNTSUM(fd)	(((int *)(fd))[-4])
+
+#define FONT_EXTRA_WORDS 4
+
+struct font_data {
+	unsigned int extra[FONT_EXTRA_WORDS];
+	const unsigned char data[];
+} __packed;
+/* End of inlined font.h content */
+
 #include <linux/bitops.h>
 #include <linux/notifier.h>
 #include <linux/device.h>
@@ -34,7 +92,8 @@
 
 #include <linux/ctype.h>
 #include <linux/bsearch.h>
-#include <linux/gcd.h>
+/* gcd.h inlined */
+unsigned long gcd(unsigned long a, unsigned long b);
 
 #define MAX_NR_CON_DRIVER 16
 
@@ -738,17 +797,6 @@ static inline void cr(struct vc_data *vc)
 	notify_write(vc, '\r');
 }
 
-static inline void bs(struct vc_data *vc)
-{
-	if (vc->state.x) {
-		vc->vc_pos -= 2;
-		vc->state.x--;
-		vc->vc_need_wrap = 0;
-		notify_write(vc, '\b');
-	}
-}
-
-
 static void csi_J(struct vc_data *vc, int vpar)
 {
 	unsigned int count;
@@ -975,21 +1023,6 @@ static int vc_translate(struct vc_data *vc, int *c, bool *rescan)
 
 	
 	return vc_translate_ascii(vc, *c);
-}
-
-static inline unsigned char vc_invert_attr(const struct vc_data *vc)
-{
-	if (!vc->vc_can_do_color)
-		return vc->vc_attr ^ 0x08;
-
-	if (vc->vc_hi_font_mask == 0x100)
-		return   (vc->vc_attr & 0x11) |
-			((vc->vc_attr & 0xe0) >> 4) |
-			((vc->vc_attr & 0x0e) << 4);
-
-	return   (vc->vc_attr & 0x88) |
-		((vc->vc_attr & 0x70) >> 4) |
-		((vc->vc_attr & 0x07) << 4);
 }
 
 static bool vc_is_control(struct vc_data *vc, int tc, int c)

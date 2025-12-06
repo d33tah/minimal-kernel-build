@@ -1,12 +1,8 @@
- 
- 
 
- 
 
 #include "boot.h"
 #include <asm/segment.h>
 
- 
 static void realmode_switch_hook(void)
 {
 	if (boot_params.hdr.realmode_swtch) {
@@ -20,7 +16,6 @@ static void realmode_switch_hook(void)
 	}
 }
 
- 
 static void mask_all_interrupts(void)
 {
 	outb(0xff, 0xa1);	 
@@ -29,7 +24,6 @@ static void mask_all_interrupts(void)
 	io_delay();
 }
 
- 
 static void reset_coprocessor(void)
 {
 	outb(0, 0xf0);
@@ -38,7 +32,6 @@ static void reset_coprocessor(void)
 	io_delay();
 }
 
- 
 
 struct gdt_ptr {
 	u16 len;
@@ -66,14 +59,12 @@ static void setup_gdt(void)
 	asm volatile("lgdtl %0" : : "m" (gdt));
 }
 
- 
 static void setup_idt(void)
 {
 	static const struct gdt_ptr null_idt = {0, 0};
 	asm volatile("lidtl %0" : : "m" (null_idt));
 }
 
- 
 void go_to_protected_mode(void)
 {
 	 

@@ -1,4 +1,3 @@
- 
 #ifndef LINUX_MM_INLINE_H
 #define LINUX_MM_INLINE_H
 
@@ -9,7 +8,6 @@
 #include <linux/userfaultfd_k.h>
 #include <linux/swapops.h>
 
- 
 static inline int folio_is_file_lru(struct folio *folio)
 {
 	return !folio_test_swapbacked(folio);
@@ -31,7 +29,6 @@ static __always_inline void update_lru_size(struct lruvec *lruvec,
 				NR_ZONE_LRU_BASE + lru, nr_pages);
 }
 
- 
 static __always_inline void __folio_clear_lru_flags(struct folio *folio)
 {
 	VM_BUG_ON_FOLIO(!folio_test_lru(folio), folio);
@@ -51,7 +48,6 @@ static __always_inline void __clear_page_lru_flags(struct page *page)
 	__folio_clear_lru_flags(page_folio(page));
 }
 
- 
 static __always_inline enum lru_list folio_lru_list(struct folio *folio)
 {
 	enum lru_list lru;
@@ -129,8 +125,7 @@ static inline struct anon_vma_name *anon_vma_name_alloc(const char *name)
 	return NULL;
 }
 
-static inline void anon_vma_name_get(struct anon_vma_name *anon_name) {}
-static inline void anon_vma_name_put(struct anon_vma_name *anon_name) {}
+/* anon_vma_name_get/put removed - unused */
 static inline void dup_anon_vma_name(struct vm_area_struct *orig_vma,
 				     struct vm_area_struct *new_vma) {}
 static inline void free_anon_vma_name(struct vm_area_struct *vma) {}
@@ -171,7 +166,6 @@ static inline bool mm_tlb_flush_nested(struct mm_struct *mm)
 	return atomic_read(&mm->tlb_flush_pending) > 1;
 }
 
- 
 static inline void
 pte_install_uffd_wp_if_needed(struct vm_area_struct *vma, unsigned long addr,
 			      pte_t *pte, pte_t pteval)

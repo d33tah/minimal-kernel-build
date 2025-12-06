@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/kernel.h>
 #include <asm/tsc.h>

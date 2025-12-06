@@ -13,7 +13,7 @@
 #include <linux/pagemap.h>
 #include <linux/atomic.h>
 #include <linux/page-flags.h>
-#include <uapi/linux/mempolicy.h>
+#include <linux/mempolicy.h>
 #include <asm/page.h>
 
 struct notifier_block;
@@ -97,27 +97,13 @@ extern void lru_cache_add_inactive_or_unevictable(struct page *page,
 extern unsigned long zone_reclaimable_pages(struct zone *zone);
 extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 					gfp_t gfp_mask, nodemask_t *mask);
-extern unsigned long shrink_all_memory(unsigned long nr_pages);
 extern int vm_swappiness;
 long remove_mapping(struct address_space *mapping, struct folio *folio);
 
-extern unsigned long reclaim_pages(struct list_head *page_list);
 #define node_reclaim_mode 0
 
 extern void check_move_unevictable_pages(struct pagevec *pvec);
 
-extern void kswapd_run(int nid);
-extern void kswapd_stop(int nid);
-
-static inline struct swap_info_struct *swp_swap_info(swp_entry_t entry)
-{
-	return NULL;
-}
-
-static inline struct swap_info_struct *get_swap_device(swp_entry_t entry)
-{
-	return NULL;
-}
 
 #define get_nr_swap_pages()			0L
 #define total_swap_pages			0L
@@ -136,10 +122,6 @@ static inline struct swap_info_struct *get_swap_device(swp_entry_t entry)
 
 static inline void cgroup_throttle_swaprate(struct page *page, gfp_t gfp_mask)
 {
-}
-static inline void folio_throttle_swaprate(struct folio *folio, gfp_t gfp)
-{
-	cgroup_throttle_swaprate(&folio->page, gfp);
 }
 
 #endif /* __KERNEL__ */

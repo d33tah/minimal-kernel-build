@@ -1,12 +1,21 @@
- 
- 
 #ifndef __LINUX_UIO_H
 #define __LINUX_UIO_H
 
 #include <linux/kernel.h>
 #include <linux/thread_info.h>
 #include <linux/mm_types.h>
-#include <uapi/linux/uio.h>
+#include <linux/compiler.h>
+#include <linux/types.h>
+
+/* From uapi/linux/uio.h - inlined */
+struct iovec
+{
+	void __user *iov_base;
+	__kernel_size_t iov_len;
+};
+
+#define UIO_FASTIOV	8
+#define UIO_MAXIOV	1024
 
 struct page;
 struct pipe_inode_info;
@@ -103,17 +112,6 @@ static inline unsigned char iov_iter_rw(const struct iov_iter *i)
 	return i->data_source ? WRITE : READ;
 }
 
- 
-static inline size_t iov_length(const struct iovec *iov, unsigned long nr_segs)
-{
-	unsigned long seg;
-	size_t ret = 0;
-
-	for (seg = 0; seg < nr_segs; seg++)
-		ret += iov[seg].iov_len;
-	return ret;
-}
-
 static inline struct iovec iov_iter_iovec(const struct iov_iter *iter)
 {
 	return (struct iovec) {
@@ -173,24 +171,7 @@ bool copy_from_iter_full(void *addr, size_t bytes, struct iov_iter *i)
 	return false;
 }
 
-static __always_inline __must_check
-size_t copy_from_iter_nocache(void *addr, size_t bytes, struct iov_iter *i)
-{
-	if (unlikely(!check_copy_size(addr, bytes, false)))
-		return 0;
-	else
-		return _copy_from_iter_nocache(addr, bytes, i);
-}
-
-static __always_inline __must_check
-bool copy_from_iter_full_nocache(void *addr, size_t bytes, struct iov_iter *i)
-{
-	size_t copied = copy_from_iter_nocache(addr, bytes, i);
-	if (likely(copied == bytes))
-		return true;
-	iov_iter_revert(i, copied);
-	return false;
-}
+/* copy_from_iter_nocache, copy_from_iter_full_nocache removed - unused */
 
 #define _copy_from_iter_flushcache _copy_from_iter_nocache
 
@@ -224,7 +205,6 @@ static inline size_t iov_iter_count(const struct iov_iter *i)
 	return i->count;
 }
 
- 
 static inline void iov_iter_truncate(struct iov_iter *i, u64 count)
 {
 	 
@@ -232,46 +212,14 @@ static inline void iov_iter_truncate(struct iov_iter *i, u64 count)
 		i->count = count;
 }
 
- 
 static inline void iov_iter_reexpand(struct iov_iter *i, size_t count)
 {
 	i->count = count;
 }
 
-static inline int
-iov_iter_npages_cap(struct iov_iter *i, int maxpages, size_t max_bytes)
-{
-	size_t shorted = 0;
-	int npages;
+/* iov_iter_npages_cap removed - unused */
 
-	if (iov_iter_count(i) > max_bytes) {
-		shorted = iov_iter_count(i) - max_bytes;
-		iov_iter_truncate(i, max_bytes);
-	}
-	npages = iov_iter_npages(i, INT_MAX);
-	if (shorted)
-		iov_iter_reexpand(i, iov_iter_count(i) + shorted);
-
-	return npages;
-}
-
-struct csum_state;
-
-size_t csum_and_copy_to_iter(const void *addr, size_t bytes, void *csstate, struct iov_iter *i);
-size_t csum_and_copy_from_iter(void *addr, size_t bytes, __wsum *csum, struct iov_iter *i);
-
-static __always_inline __must_check
-bool csum_and_copy_from_iter_full(void *addr, size_t bytes,
-				  __wsum *csum, struct iov_iter *i)
-{
-	size_t copied = csum_and_copy_from_iter(addr, bytes, csum, i);
-	if (likely(copied == bytes))
-		return true;
-	iov_iter_revert(i, copied);
-	return false;
-}
-size_t hash_and_copy_to_iter(const void *addr, size_t bytes, void *hashp,
-		struct iov_iter *i);
+/* csum_and_copy_*, hash_and_copy_to_iter removed - unused outside iov_iter.c */
 
 struct iovec *iovec_from_user(const struct iovec __user *uvector,
 		unsigned long nr_segs, unsigned long fast_segs,

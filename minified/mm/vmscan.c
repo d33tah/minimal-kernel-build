@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/mm.h>
 #include <linux/module.h>
@@ -7,7 +5,6 @@
 #include <linux/swap.h>
 #include <linux/pagemap.h>
 
- 
 int register_shrinker(struct shrinker *shrinker)
 {
 	return 0;   
@@ -28,7 +25,6 @@ void check_move_unevictable_pages(struct pagevec *pvec)
 	 
 }
 
- 
 int prealloc_shrinker(struct shrinker *shrinker)
 {
 	return 0;   

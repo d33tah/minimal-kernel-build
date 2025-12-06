@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/slab.h>
 #include <linux/export.h>
@@ -9,8 +7,23 @@
 #include <linux/utsname.h>
 #include <linux/pid_namespace.h>
 #include <net/net_namespace.h>
-#include <linux/ipc_namespace.h>
 #include <linux/time_namespace.h>
+
+/* --- 2025-12-06 20:10 --- ipc_namespace.h inlined (40 LOC) */
+struct ipc_namespace {
+	struct user_namespace *user_ns;
+	struct ns_common ns;
+};
+extern struct ipc_namespace init_ipc_ns;
+static inline struct ipc_namespace *copy_ipcs(unsigned long flags,
+	struct user_namespace *user_ns, struct ipc_namespace *ns)
+{
+	if (flags & CLONE_NEWIPC)
+		return ERR_PTR(-EINVAL);
+	return ns;
+}
+static inline void put_ipc_ns(struct ipc_namespace *ns) {}
+/* --- end ipc_namespace.h inlined --- */
 #include <linux/fs_struct.h>
 #include <linux/proc_fs.h>
 #include <linux/proc_ns.h>
@@ -38,7 +51,6 @@ static inline struct nsproxy *create_nsproxy(void)
 	return nsproxy;
 }
 
- 
 static struct nsproxy *create_new_namespaces(unsigned long flags,
 	struct task_struct *tsk, struct user_namespace *user_ns,
 	struct fs_struct *new_fs)
@@ -119,7 +131,6 @@ out_ns:
 	return ERR_PTR(err);
 }
 
- 
 int copy_namespaces(unsigned long flags, struct task_struct *tsk)
 {
 	struct nsproxy *old_ns = tsk->nsproxy;
@@ -170,7 +181,6 @@ void free_nsproxy(struct nsproxy *ns)
 	kmem_cache_free(nsproxy_cachep, ns);
 }
 
- 
 int unshare_nsproxy_namespaces(unsigned long unshare_flags,
 	struct nsproxy **new_nsp, struct cred *new_cred, struct fs_struct *new_fs)
 {
@@ -223,9 +233,7 @@ static inline int validate_ns(struct nsset *nsset, struct ns_common *ns)
 	return ns->ops->install(nsset, ns);
 }
 
- 
 
- 
 
 SYSCALL_DEFINE2(setns, int, fd, int, flags)
 {

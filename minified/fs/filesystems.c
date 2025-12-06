@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/syscalls.h>
 #include <linux/fs.h>
@@ -12,12 +10,10 @@
 #include <linux/uaccess.h>
 #include <linux/fs_parser.h>
 
- 
 
 static struct file_system_type *file_systems;
 static DEFINE_RWLOCK(file_systems_lock);
 
- 
 struct file_system_type *get_filesystem(struct file_system_type *fs)
 {
 	__module_get(fs->owner);
@@ -39,8 +35,6 @@ static struct file_system_type **find_filesystem(const char *name, unsigned len)
 	return p;
 }
 
- 
- 
 int register_filesystem(struct file_system_type * fs)
 {
 	int res = 0;
@@ -64,8 +58,6 @@ int register_filesystem(struct file_system_type * fs)
 }
 
 
- 
- 
 /* Stub: unregister_filesystem not used externally */
 int unregister_filesystem(struct file_system_type * fs)
 {

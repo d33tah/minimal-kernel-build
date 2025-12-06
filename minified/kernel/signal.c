@@ -1,4 +1,3 @@
- 
 
 #include <linux/slab.h>
 #include <linux/syscalls.h>
@@ -11,7 +10,7 @@
 #include <linux/cgroup.h>
 #include <linux/audit.h>
 #include <linux/task_work.h>
-#include <linux/coredump.h>
+/* coredump.h removed - no definitions used */
 #include <linux/cn_proc.h>
 #include <linux/tty.h>
 #include <linux/proc_fs.h>
@@ -586,17 +585,6 @@ static int kill_proc_info(int sig, struct kernel_siginfo *info, pid_t pid)
 	error = kill_pid_info(sig, info, find_vpid(pid));
 	rcu_read_unlock();
 	return error;
-}
-
-static inline bool kill_as_cred_perm(const struct cred *cred,
-				     struct task_struct *target)
-{
-	const struct cred *pcred = __task_cred(target);
-
-	return uid_eq(cred->euid, pcred->suid) ||
-	       uid_eq(cred->euid, pcred->uid) ||
-	       uid_eq(cred->uid, pcred->suid) ||
-	       uid_eq(cred->uid, pcred->uid);
 }
 
 /* Stubbed - not used externally */
@@ -1377,7 +1365,6 @@ SYSCALL_DEFINE2(rt_sigsuspend, sigset_t __user *, unewset, size_t, sigsetsize)
 		return -EFAULT;
 	return sigsuspend(&newset);
 }
- 
 
 SYSCALL_DEFINE3(sigsuspend, int, unused1, int, unused2, old_sigset_t, mask)
 {

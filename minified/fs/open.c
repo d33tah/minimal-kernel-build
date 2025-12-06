@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/string.h>
 #include <linux/mm.h>
@@ -11,7 +9,7 @@
 #include <linux/namei.h>
 #include <linux/backing-dev.h>
 #include <linux/capability.h>
-#include <linux/securebits.h>
+#include <linux/init_task.h> /* for securebits defines */
 #include <linux/security.h>
 #include <linux/mount.h>
 #include <linux/fcntl.h>
@@ -23,10 +21,46 @@
 #include <linux/syscalls.h>
 #include <linux/rcupdate.h>
 #include <linux/audit.h>
-#include <linux/falloc.h>
+
+/* --- 2025-12-06 20:12 --- falloc.h inlined (36 LOC) */
+#define FALLOC_FL_KEEP_SIZE	0x01
+#define FALLOC_FL_PUNCH_HOLE	0x02
+#define FALLOC_FL_NO_HIDE_STALE	0x04
+#define FALLOC_FL_COLLAPSE_RANGE	0x08
+#define FALLOC_FL_ZERO_RANGE		0x10
+#define FALLOC_FL_INSERT_RANGE		0x20
+#define FALLOC_FL_UNSHARE_RANGE		0x40
+struct space_resv {
+	__s16		l_type;
+	__s16		l_whence;
+	__s64		l_start;
+	__s64		l_len;
+	__s32		l_sysid;
+	__u32		l_pid;
+	__s32		l_pad[4];
+};
+#define FS_IOC_RESVSP		_IOW('X', 40, struct space_resv)
+#define FS_IOC_UNRESVSP		_IOW('X', 41, struct space_resv)
+#define FS_IOC_RESVSP64		_IOW('X', 42, struct space_resv)
+#define FS_IOC_UNRESVSP64	_IOW('X', 43, struct space_resv)
+#define FS_IOC_ZERO_RANGE	_IOW('X', 57, struct space_resv)
+#define	FALLOC_FL_SUPPORTED_MASK	(FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE | FALLOC_FL_COLLAPSE_RANGE | FALLOC_FL_ZERO_RANGE | FALLOC_FL_INSERT_RANGE | FALLOC_FL_UNSHARE_RANGE)
+/* --- end falloc.h inlined --- */
 #include <linux/fs_struct.h>
 #include <linux/ima.h>
-#include <linux/dnotify.h>
+
+/* Inlined from dnotify.h */
+struct dnotify_struct {
+	struct dnotify_struct *	dn_next;
+	__u32			dn_mask;
+	int			dn_fd;
+	struct file *		dn_filp;
+	fl_owner_t		dn_owner;
+};
+static inline void dnotify_flush(struct file *filp, fl_owner_t id) {}
+static inline int fcntl_dirnotify(int fd, struct file *filp, unsigned long arg) { return -EINVAL; }
+/* End of inlined dnotify.h content */
+
 #include <linux/compat.h>
 #include <linux/mnt_idmapping.h>
 
@@ -174,7 +208,6 @@ SYSCALL_DEFINE2(ftruncate, unsigned int, fd, unsigned long, length)
 }
 
 
- 
 #if BITS_PER_LONG == 32
 SYSCALL_DEFINE2(truncate64, const char __user *, path, loff_t, length)
 {
@@ -205,7 +238,6 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
 }
 
 
- 
 static long do_faccessat(int dfd, const char __user *filename, int mode, int flags)
 {
 	return -ENOSYS;
@@ -437,7 +469,6 @@ cleanup_file:
 	return error;
 }
 
- 
 int finish_open(struct file *file, struct dentry *dentry,
 		int (*open)(struct inode *, struct file *))
 {
@@ -456,7 +487,6 @@ char *file_path(struct file *filp, char *buf, int buflen)
 	return d_path(&filp->f_path, buf, buflen);
 }
 
- 
 int vfs_open(const struct path *path, struct file *file)
 {
 	file->f_path = *path;
@@ -614,7 +644,6 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 	return 0;
 }
 
- 
 struct file *file_open_name(struct filename *name, int flags, umode_t mode)
 {
 	struct open_flags op;
@@ -625,7 +654,6 @@ struct file *file_open_name(struct filename *name, int flags, umode_t mode)
 	return do_filp_open(AT_FDCWD, name, &op);
 }
 
- 
 struct file *filp_open(const char *filename, int flags, umode_t mode)
 {
 	struct filename *name = getname_kernel(filename);
@@ -722,7 +750,6 @@ SYSCALL_DEFINE4(openat2, int, dfd, const char __user *, filename,
 
 #ifndef __alpha__
 
- 
 SYSCALL_DEFINE2(creat, const char __user *, pathname, umode_t, mode)
 {
 	int flags = O_CREAT | O_WRONLY | O_TRUNC;
@@ -733,7 +760,6 @@ SYSCALL_DEFINE2(creat, const char __user *, pathname, umode_t, mode)
 }
 #endif
 
- 
 int filp_close(struct file *filp, fl_owner_t id)
 {
 	int retval = 0;
@@ -755,7 +781,6 @@ int filp_close(struct file *filp, fl_owner_t id)
 }
 
 
- 
 SYSCALL_DEFINE1(close, unsigned int, fd)
 {
 	int retval = close_fd(fd);
@@ -770,21 +795,18 @@ SYSCALL_DEFINE1(close, unsigned int, fd)
 	return retval;
 }
 
- 
 SYSCALL_DEFINE3(close_range, unsigned int, fd, unsigned int, max_fd,
 		unsigned int, flags)
 {
 	return __close_range(fd, max_fd, flags);
 }
 
- 
 SYSCALL_DEFINE0(vhangup)
 {
 	/* Stub: vhangup not needed for minimal kernel */
 	return -EPERM;
 }
 
- 
 int generic_file_open(struct inode * inode, struct file * filp)
 {
 	if (!(filp->f_flags & O_LARGEFILE) && i_size_read(inode) > MAX_NON_LFS)
@@ -793,7 +815,6 @@ int generic_file_open(struct inode * inode, struct file * filp)
 }
 
 
- 
 int nonseekable_open(struct inode *inode, struct file *filp)
 {
 	filp->f_mode &= ~(FMODE_LSEEK | FMODE_PREAD | FMODE_PWRITE);
@@ -801,7 +822,6 @@ int nonseekable_open(struct inode *inode, struct file *filp)
 }
 
 
- 
 int stream_open(struct inode *inode, struct file *filp)
 {
 	filp->f_mode &= ~(FMODE_LSEEK | FMODE_PREAD | FMODE_PWRITE | FMODE_ATOMIC_POS);

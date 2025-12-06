@@ -1,4 +1,3 @@
- 
 #ifndef __ASM_GENERIC_GETORDER_H
 #define __ASM_GENERIC_GETORDER_H
 
@@ -7,7 +6,6 @@
 #include <linux/compiler.h>
 #include <linux/log2.h>
 
- 
 static __always_inline __attribute_const__ int get_order(unsigned long size)
 {
 	if (__builtin_constant_p(size)) {
@@ -22,11 +20,7 @@ static __always_inline __attribute_const__ int get_order(unsigned long size)
 
 	size--;
 	size >>= PAGE_SHIFT;
-#if BITS_PER_LONG == 32
-	return fls(size);
-#else
-	return fls64(size);
-#endif
+	return fls(size); /* BITS_PER_LONG == 32 */
 }
 
 #endif	 

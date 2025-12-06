@@ -1,5 +1,3 @@
- 
- 
 
 #include "misc.h"
 #include "error.h"
@@ -8,23 +6,17 @@
 #include "../voffset.h"
 #include <asm/bootparam_utils.h>
 
- 
 
- 
 #define STATIC		static
- 
 #define MALLOC_VISIBLE
 #include <linux/decompress/mm.h>
 
- 
 #define memzero(s, n)	memset((s), 0, (n))
 #ifndef memmove
 #define memmove		memmove
- 
 void *memmove(void *dest, const void *src, size_t n);
 #endif
 
- 
 struct boot_params *boot_params;
 
 struct port_io_ops pio_ops;
@@ -35,7 +27,6 @@ memptr free_mem_end_ptr;
 static char *vidmem;
 static int vidport;
 
- 
 static int lines __section(".data");
 static int cols __section(".data");
 
@@ -46,7 +37,6 @@ static int cols __section(".data");
 
 
 
- 
 
 static void scroll(void)
 {
@@ -180,7 +170,6 @@ static void parse_elf(void *output)
 	free(phdrs);
 }
 
- 
 asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 				  unsigned char *input_data,
 				  unsigned long input_len,

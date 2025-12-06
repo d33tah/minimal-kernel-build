@@ -1,5 +1,3 @@
- 
- 
 #include <linux/init.h>
 #include <linux/cpu.h>
 #include <linux/module.h>
@@ -20,7 +18,6 @@ enum vmx_l1d_flush_state {
 };
 #include <asm/nospec-branch.h>
 
- 
 u64 x86_spec_ctrl_base;
 
 DEFINE_PER_CPU(u64, x86_spec_ctrl_current);

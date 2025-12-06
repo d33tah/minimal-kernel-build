@@ -1,4 +1,3 @@
- 
 
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
@@ -500,9 +499,6 @@ unsigned long vmalloc_to_pfn(const void *vmalloc_addr)
 	return 0;
 }
 
-#define DEBUG_AUGMENT_PROPAGATE_CHECK 0
-#define DEBUG_AUGMENT_LOWEST_MATCH_CHECK 0
-
 static DEFINE_SPINLOCK(vmap_area_lock);
 static DEFINE_SPINLOCK(free_vmap_area_lock);
 
@@ -670,40 +666,10 @@ unlink_va(struct vmap_area *va, struct rb_root *root)
 	RB_CLEAR_NODE(&va->rb_node);
 }
 
-#if DEBUG_AUGMENT_PROPAGATE_CHECK
-
-static __always_inline unsigned long
-compute_subtree_max_size(struct vmap_area *va)
-{
-	return max3(va_size(va),
-		get_subtree_max_size(va->rb_node.rb_left),
-		get_subtree_max_size(va->rb_node.rb_right));
-}
-
-static void
-augment_tree_propagate_check(void)
-{
-	struct vmap_area *va;
-	unsigned long computed_size;
-
-	list_for_each_entry(va, &free_vmap_area_list, list) {
-		computed_size = compute_subtree_max_size(va);
-		if (computed_size != va->subtree_max_size)
-			pr_emerg("tree is corrupted: %lu, %lu\n",
-				va_size(va), va->subtree_max_size);
-	}
-}
-#endif
-
 static __always_inline void
 augment_tree_propagate_from(struct vmap_area *va)
 {
-	
 	free_vmap_area_rb_augment_cb_propagate(&va->rb_node, NULL);
-
-#if DEBUG_AUGMENT_PROPAGATE_CHECK
-	augment_tree_propagate_check();
-#endif
 }
 
 static void
@@ -878,44 +844,6 @@ find_vmap_lowest_match(unsigned long size, unsigned long align,
 	return NULL;
 }
 
-#if DEBUG_AUGMENT_LOWEST_MATCH_CHECK
-#include <linux/random.h>
-
-static struct vmap_area *
-find_vmap_lowest_linear_match(unsigned long size,
-	unsigned long align, unsigned long vstart)
-{
-	struct vmap_area *va;
-
-	list_for_each_entry(va, &free_vmap_area_list, list) {
-		if (!is_within_this_va(va, size, align, vstart))
-			continue;
-
-		return va;
-	}
-
-	return NULL;
-}
-
-static void
-find_vmap_lowest_match_check(unsigned long size, unsigned long align)
-{
-	struct vmap_area *va_1, *va_2;
-	unsigned long vstart;
-	unsigned int rnd;
-
-	get_random_bytes(&rnd, sizeof(rnd));
-	vstart = VMALLOC_START + rnd;
-
-	va_1 = find_vmap_lowest_match(size, align, vstart, false);
-	va_2 = find_vmap_lowest_linear_match(size, align, vstart);
-
-	if (va_1 != va_2)
-		pr_emerg("not lowest: t: 0x%p, l: 0x%p, v: 0x%lx\n",
-			va_1, va_2, vstart);
-}
-#endif
-
 enum fit_type {
 	NOTHING_FIT = 0,
 	FL_FIT_TYPE = 1,	
@@ -1030,14 +958,9 @@ __alloc_vmap_area(unsigned long size, unsigned long align,
 	if (WARN_ON_ONCE(type == NOTHING_FIT))
 		return vend;
 
-	
 	ret = adjust_va_to_fit_type(va, nva_start_addr, size, type);
 	if (ret)
 		return vend;
-
-#if DEBUG_AUGMENT_LOWEST_MATCH_CHECK
-	find_vmap_lowest_match_check(size, align);
-#endif
 
 	return nva_start_addr;
 }

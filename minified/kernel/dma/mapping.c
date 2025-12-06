@@ -1,5 +1,3 @@
- 
- 
 #include <linux/memblock.h>  
 #include <linux/acpi.h>
 #include <linux/dma-map-ops.h>
@@ -13,7 +11,6 @@
 
 bool dma_default_coherent;
 
- 
 struct dma_devres {
 	size_t		size;
 	void		*vaddr;
@@ -38,7 +35,6 @@ static bool dma_go_direct(struct device *dev, dma_addr_t mask,
 }
 
 
- 
 static inline bool dma_alloc_direct(struct device *dev,
 		const struct dma_map_ops *ops)
 {
@@ -113,7 +109,6 @@ static int __dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
 	return ents;
 }
 
- 
 unsigned int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
 		    int nents, enum dma_data_direction dir, unsigned long attrs)
 {
@@ -125,7 +120,6 @@ unsigned int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
 	return ret;
 }
 
- 
 int dma_map_sgtable(struct device *dev, struct sg_table *sgt,
 		    enum dma_data_direction dir, unsigned long attrs)
 {
@@ -214,7 +208,6 @@ void dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
 	debug_dma_sync_sg_for_device(dev, sg, nelems, dir);
 }
 
- 
 /* Stubbed: dma_get_sgtable_attrs not used externally */
 int dma_get_sgtable_attrs(struct device *dev, struct sg_table *sgt,
 		void *cpu_addr, dma_addr_t dma_addr, size_t size,

@@ -1,5 +1,3 @@
- 
- 
 #include <linux/cpu.h>
 #include <linux/interrupt.h>
 #include <linux/kernel_stat.h>
@@ -25,7 +23,6 @@ DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
 
 atomic_t irq_err_count;
 
- 
 void ack_bad_irq(unsigned int irq)
 {
 	if (printk_ratelimit())
@@ -36,7 +33,6 @@ void ack_bad_irq(unsigned int irq)
 }
 
 #define irq_stats(x)		(&per_cpu(irq_stat, x))
- 
 int arch_show_interrupts(struct seq_file *p, int prec)
 {
 	/* Stub: detailed interrupt stats not needed for minimal kernel */
@@ -44,7 +40,6 @@ int arch_show_interrupts(struct seq_file *p, int prec)
 	return 0;
 }
 
- 
 u64 arch_irq_stat_cpu(unsigned int cpu)
 {
 	u64 sum = irq_stats(cpu)->__nmi_count;
@@ -67,7 +62,6 @@ static __always_inline void handle_irq(struct irq_desc *desc,
 		__handle_irq(desc, regs);
 }
 
- 
 DEFINE_IDTENTRY_IRQ(common_interrupt)
 {
 	struct pt_regs *old_regs = set_irq_regs(regs);

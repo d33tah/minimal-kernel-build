@@ -1,7 +1,5 @@
- 
 #ifndef _LINUX_PERCPU_COUNTER_H
 #define _LINUX_PERCPU_COUNTER_H
- 
 
 #include <linux/spinlock.h>
 #include <linux/smp.h>
@@ -67,7 +65,6 @@ static inline s64 percpu_counter_read(struct percpu_counter *fbc)
 	return fbc->count;
 }
 
- 
 static inline s64 percpu_counter_read_positive(struct percpu_counter *fbc)
 {
 	return fbc->count;

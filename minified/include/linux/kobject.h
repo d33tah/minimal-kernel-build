@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _KOBJECT_H_
 #define _KOBJECT_H_
@@ -22,10 +20,8 @@
 #define UEVENT_BUFFER_SIZE		2048	 
 
 
- 
 extern u64 uevent_seqnum;
 
- 
 enum kobject_action {
 	KOBJ_ADD,
 	KOBJ_REMOVE,
@@ -117,7 +113,6 @@ extern const struct sysfs_ops kobj_sysfs_ops;
 
 struct sock;
 
- 
 struct kset {
 	struct list_head list;
 	spinlock_t list_lock;
@@ -154,16 +149,9 @@ static inline const struct kobj_type *get_ktype(struct kobject *kobj)
 
 extern struct kobject *kset_find_obj(struct kset *, const char *);
 
- 
 extern struct kobject *kernel_kobj;
- 
 extern struct kobject *mm_kobj;
- 
-extern struct kobject *hypervisor_kobj;
- 
-extern struct kobject *power_kobj;
- 
-extern struct kobject *firmware_kobj;
+/* hypervisor_kobj, power_kobj, firmware_kobj removed - unused */
 
 int kobject_uevent(struct kobject *kobj, enum kobject_action action);
 int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,

@@ -1,11 +1,6 @@
- 
- 
+/* Minimal includes for stepping stubs */
 #include <linux/sched.h>
-#include <linux/sched/task_stack.h>
-#include <linux/mm.h>
-#include <linux/ptrace.h>
-#include <asm/desc.h>
-#include <asm/mmu_context.h>
+#include <asm/ptrace.h>
 
 unsigned long convert_ip_to_linear(struct task_struct *child, struct pt_regs *regs)
 {

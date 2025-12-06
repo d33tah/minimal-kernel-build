@@ -1,7 +1,5 @@
- 
 #ifndef __LINUX_KSM_H
 #define __LINUX_KSM_H
- 
 
 #include <linux/bitops.h>
 #include <linux/mm.h>

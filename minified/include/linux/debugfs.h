@@ -1,63 +1,20 @@
- 
- 
-
+/* Minimal debugfs.h - CONFIG_DEBUG_FS is disabled */
 #ifndef _DEBUGFS_H_
 #define _DEBUGFS_H_
 
-#include <linux/fs.h>
-#include <linux/seq_file.h>
-
+#include <linux/err.h>
 #include <linux/types.h>
-#include <linux/compiler.h>
+#include <linux/seq_file.h>
 
 struct device;
 struct file_operations;
-
-struct debugfs_blob_wrapper {
-	void *data;
-	unsigned long size;
-};
-
-struct debugfs_reg32 {
-	char *name;
-	unsigned long offset;
-};
-
-struct debugfs_regset32 {
-	const struct debugfs_reg32 *regs;
-	int nregs;
-	void __iomem *base;
-	struct device *dev;	 
-};
-
-struct debugfs_u32_array {
-	u32 *array;
-	u32 n_elements;
-};
-
-extern struct dentry *arch_debugfs_dir;
-
-#define DEFINE_DEBUGFS_ATTRIBUTE(__fops, __get, __set, __fmt)		\
-static int __fops ## _open(struct inode *inode, struct file *file)	\
-{									\
-	__simple_attr_check_format(__fmt, 0ull);			\
-	return simple_attr_open(inode, file, __get, __set, __fmt);	\
-}									\
-static const struct file_operations __fops = {				\
-	.owner	 = THIS_MODULE,						\
-	.open	 = __fops ## _open,					\
-	.release = simple_attr_release,					\
-	.read	 = debugfs_attr_read,					\
-	.write	 = debugfs_attr_write,					\
-	.llseek  = no_llseek,						\
-}
+struct debugfs_blob_wrapper;
+struct debugfs_reg32;
+struct debugfs_regset32;
+struct debugfs_u32_array;
 
 typedef struct vfsmount *(*debugfs_automount_t)(struct dentry *, void *);
 
-
-#include <linux/err.h>
-
- 
 
 static inline struct dentry *debugfs_lookup(const char *name,
 					    struct dentry *parent)
@@ -246,7 +203,6 @@ static inline ssize_t debugfs_read_file_str(struct file *file,
 }
 
 
- 
 static inline void debugfs_create_xul(const char *name, umode_t mode,
 				      struct dentry *parent,
 				      unsigned long *value)

@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_SYSCTL_H
 #define _LINUX_SYSCTL_H
 
@@ -10,7 +8,6 @@
 #include <linux/uidgid.h>
 
 
- 
 struct completion;
 struct ctl_table;
 struct nsproxy;
@@ -18,29 +15,16 @@ struct ctl_table_root;
 struct ctl_table_header;
 struct ctl_dir;
 
- 
 #define SYSCTL_ZERO			((void *)&sysctl_vals[0])
 #define SYSCTL_ONE			((void *)&sysctl_vals[1])
 #define SYSCTL_TWO			((void *)&sysctl_vals[2])
 #define SYSCTL_THREE			((void *)&sysctl_vals[3])
-#define SYSCTL_FOUR			((void *)&sysctl_vals[4])
-#define SYSCTL_ONE_HUNDRED		((void *)&sysctl_vals[5])
-#define SYSCTL_TWO_HUNDRED		((void *)&sysctl_vals[6])
-#define SYSCTL_ONE_THOUSAND		((void *)&sysctl_vals[7])
-#define SYSCTL_THREE_THOUSAND		((void *)&sysctl_vals[8])
-#define SYSCTL_INT_MAX			((void *)&sysctl_vals[9])
-
- 
-#define SYSCTL_MAXOLDUID		((void *)&sysctl_vals[10])
-#define SYSCTL_NEG_ONE			((void *)&sysctl_vals[11])
+#define SYSCTL_ONE_HUNDRED		((void *)&sysctl_vals[4])
+#define SYSCTL_ONE_THOUSAND		((void *)&sysctl_vals[5])
+#define SYSCTL_INT_MAX			((void *)&sysctl_vals[6])
 
 extern const int sysctl_vals[];
 
-#define SYSCTL_LONG_ZERO	((void *)&sysctl_long_vals[0])
-#define SYSCTL_LONG_ONE		((void *)&sysctl_long_vals[1])
-#define SYSCTL_LONG_MAX		((void *)&sysctl_long_vals[2])
-
-extern const unsigned long sysctl_long_vals[];
 
 typedef int proc_handler(struct ctl_table *ctl, int write, void *buffer,
 		size_t *lenp, loff_t *ppos);
@@ -67,9 +51,7 @@ int proc_do_large_bitmap(struct ctl_table *, int, void *, size_t *, loff_t *);
 int proc_do_static_key(struct ctl_table *table, int write, void *buffer,
 		size_t *lenp, loff_t *ppos);
 
- 
 
- 
 struct ctl_table_poll {
 	atomic_t event;
 	wait_queue_head_t wait;
@@ -87,7 +69,6 @@ static inline void *proc_sys_poll_event(struct ctl_table_poll *poll)
 #define DEFINE_CTL_TABLE_POLL(name)					\
 	struct ctl_table_poll name = __CTL_TABLE_POLL_INITIALIZER(name)
 
- 
 struct ctl_table {
 	const char *procname;		 
 	void *data;
@@ -105,7 +86,6 @@ struct ctl_node {
 	struct ctl_table_header *header;
 };
 
- 
 struct ctl_table_header {
 	union {
 		struct {
@@ -145,7 +125,6 @@ struct ctl_table_root {
 	int (*permissions)(struct ctl_table_header *head, struct ctl_table *table);
 };
 
- 
 struct ctl_path {
 	const char *procname;
 };

@@ -1,13 +1,12 @@
- 
 #include <linux/dma-map-ops.h>
 #include <linux/dma-direct.h>
 #include <linux/iommu.h>
-#include <linux/dmar.h>
+static inline void detect_intel_iommu(void) { }
 #include <linux/export.h>
 #include <linux/memblock.h>
 #include <linux/gfp.h>
 #include <linux/pci.h>
-#include <linux/amd-iommu.h>
+static inline int amd_iommu_detect(void) { return -ENODEV; }
 
 #include <asm/proto.h>
 #include <asm/dma.h>
@@ -23,7 +22,6 @@ int force_iommu __read_mostly = 0;
 int iommu_merge __read_mostly = 0;
 
 int no_iommu __read_mostly;
- 
 int iommu_detected __read_mostly = 0;
 
 static inline void __init pci_swiotlb_detect(void)
@@ -55,6 +53,5 @@ static int __init pci_iommu_init(void)
 
 	return 0;
 }
- 
 rootfs_initcall(pci_iommu_init);
 

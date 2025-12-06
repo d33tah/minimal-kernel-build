@@ -1,4 +1,3 @@
- 
 #ifndef _PGTABLE_NOPMD_H
 #define _PGTABLE_NOPMD_H
 
@@ -10,7 +9,6 @@ struct mm_struct;
 
 #define __PAGETABLE_PMD_FOLDED 1
 
- 
 typedef struct { pud_t pud; } pmd_t;
 
 #define PMD_SHIFT	PUD_SHIFT
@@ -18,7 +16,6 @@ typedef struct { pud_t pud; } pmd_t;
 #define PMD_SIZE  	(1UL << PMD_SHIFT)
 #define PMD_MASK  	(~(PMD_SIZE-1))
 
- 
 static inline int pud_none(pud_t pud)		{ return 0; }
 static inline int pud_bad(pud_t pud)		{ return 0; }
 static inline int pud_present(pud_t pud)	{ return 1; }
@@ -29,7 +26,6 @@ static inline void pud_clear(pud_t *pud)	{ }
 
 #define pud_populate(mm, pmd, pte)		do { } while (0)
 
- 
 #define set_pud(pudptr, pudval)			set_pmd((pmd_t *)(pudptr), (pmd_t) { pudval })
 
 static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
@@ -44,7 +40,6 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
 #define pud_page(pud)				(pmd_page((pmd_t){ pud }))
 #define pud_pgtable(pud)			((pmd_t *)(pmd_page_vaddr((pmd_t){ pud })))
 
- 
 #define pmd_alloc_one(mm, address)		NULL
 static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
 {

@@ -1,5 +1,3 @@
- 
- 
 #ifndef __ASM_GENERIC_BARRIER_H
 #define __ASM_GENERIC_BARRIER_H
 
@@ -12,7 +10,6 @@
 #define nop()	asm volatile ("nop")
 #endif
 
- 
 
 #ifdef __mb
 #define mb()	do {  __mb(); } while (0)
@@ -34,7 +31,6 @@
 #define dma_wmb()	do {  __dma_wmb(); } while (0)
 #endif
 
- 
 
 #ifndef mb
 #define mb()	barrier()
@@ -145,23 +141,12 @@ do {									\
 })
 #endif
 
-
- 
-#define virt_mb() do {  __smp_mb(); } while (0)
 #define virt_rmb() do {  __smp_rmb(); } while (0)
-#define virt_wmb() do {  __smp_wmb(); } while (0)
-#define virt_store_mb(var, value) do {  __smp_store_mb(var, value); } while (0)
-#define virt_mb__before_atomic() do {  __smp_mb__before_atomic(); } while (0)
-#define virt_mb__after_atomic()	do {  __smp_mb__after_atomic(); } while (0)
-#define virt_store_release(p, v) do {  __smp_store_release(p, v); } while (0)
-#define virt_load_acquire(p) __smp_load_acquire(p)
 
- 
 #ifndef smp_acquire__after_ctrl_dep
 #define smp_acquire__after_ctrl_dep()		smp_rmb()
 #endif
 
- 
 #ifndef smp_cond_load_relaxed
 #define smp_cond_load_relaxed(ptr, cond_expr) ({		\
 	typeof(ptr) __PTR = (ptr);				\
@@ -176,7 +161,6 @@ do {									\
 })
 #endif
 
- 
 #ifndef smp_cond_load_acquire
 #define smp_cond_load_acquire(ptr, cond_expr) ({		\
 	__unqual_scalar_typeof(*ptr) _val;			\
@@ -186,15 +170,5 @@ do {									\
 })
 #endif
 
- 
-#ifndef pmem_wmb
-#define pmem_wmb()	wmb()
 #endif
-
- 
-#ifndef io_stop_wc
-#define io_stop_wc() do { } while (0)
-#endif
-
-#endif  
 #endif  

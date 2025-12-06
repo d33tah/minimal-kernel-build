@@ -178,18 +178,7 @@ static inline unsigned default_get_apic_id(unsigned long x)
 #define TRAMPOLINE_PHYS_LOW		0x467
 #define TRAMPOLINE_PHYS_HIGH		0x469
 
-extern void generic_bigsmp_probe(void);
-
-
 static inline bool apic_id_is_primary_thread(unsigned int id) { return false; }
 static inline void apic_smt_update(void) { }
 
-struct msi_msg;
-struct irq_cfg;
-
-extern void __irq_msi_compose_msg(struct irq_cfg *cfg, struct msi_msg *msg,
-				  bool dmar);
-
-extern void ioapic_zap_locks(void);
-
-#endif  
+#endif

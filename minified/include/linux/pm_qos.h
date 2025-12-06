@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_PM_QOS_H
 #define _LINUX_PM_QOS_H
@@ -27,7 +25,6 @@ enum pm_qos_flags_status { PM_QOS_FLAGS_UNDEFINED = -1 };
 
 enum pm_qos_type { PM_QOS_UNITIALIZED };
 
- 
 struct pm_qos_constraints {
 	struct plist_head list;
 	s32 target_value;	 

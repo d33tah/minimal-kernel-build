@@ -1,5 +1,3 @@
- 
- 
 #include <linux/completion.h>
 #include <linux/interrupt.h>
 #include <linux/notifier.h>
@@ -18,7 +16,6 @@
 
 #include "rcu.h"
 
- 
 struct rcu_ctrlblk {
 	struct rcu_head *rcucblist;	 
 	struct rcu_head **donetail;	 
@@ -26,7 +23,6 @@ struct rcu_ctrlblk {
 	unsigned long gp_seq;		 
 };
 
- 
 static struct rcu_ctrlblk rcu_ctrlblk = {
 	.donetail	= &rcu_ctrlblk.rcucblist,
 	.curtail	= &rcu_ctrlblk.rcucblist,
@@ -38,7 +34,6 @@ void rcu_barrier(void)
 	wait_rcu_gp(call_rcu);
 }
 
- 
 void rcu_qs(void)
 {
 	unsigned long flags;
@@ -52,7 +47,6 @@ void rcu_qs(void)
 	local_irq_restore(flags);
 }
 
- 
 void rcu_sched_clock_irq(int user)
 {
 	if (user) {
@@ -63,7 +57,6 @@ void rcu_sched_clock_irq(int user)
 	}
 }
 
- 
 static inline bool rcu_reclaim_tiny(struct rcu_head *head)
 {
 	rcu_callback_t f;
@@ -85,7 +78,6 @@ static inline bool rcu_reclaim_tiny(struct rcu_head *head)
 	return false;
 }
 
- 
 static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused)
 {
 	struct rcu_head *next, *list;
@@ -118,7 +110,6 @@ static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused
 	}
 }
 
- 
 void synchronize_rcu(void)
 {
 	RCU_LOCKDEP_WARN(lock_is_held(&rcu_bh_lock_map) ||
@@ -127,7 +118,6 @@ void synchronize_rcu(void)
 			 "Illegal synchronize_rcu() in RCU read-side critical section");
 }
 
- 
 void call_rcu(struct rcu_head *head, rcu_callback_t func)
 {
 	unsigned long flags;
@@ -147,13 +137,11 @@ void call_rcu(struct rcu_head *head, rcu_callback_t func)
 	}
 }
 
- 
 unsigned long get_state_synchronize_rcu(void)
 {
 	return READ_ONCE(rcu_ctrlblk.gp_seq);
 }
 
- 
 unsigned long start_poll_synchronize_rcu(void)
 {
 	unsigned long gp_seq = get_state_synchronize_rcu();
@@ -165,7 +153,6 @@ unsigned long start_poll_synchronize_rcu(void)
 	return gp_seq;
 }
 
- 
 /* Stub: poll_state_synchronize_rcu not used in minimal kernel */
 bool poll_state_synchronize_rcu(unsigned long oldstate)
 {

@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef __LINUX_KERNFS_H
 #define __LINUX_KERNFS_H
@@ -55,7 +53,6 @@ enum kernfs_node_flag {
 	KERNFS_HAS_RELEASE	= 0x2000,
 };
 
- 
 enum kernfs_root_flag {
 	 
 	KERNFS_ROOT_CREATE_DEACTIVATED		= 0x0001,
@@ -70,7 +67,6 @@ enum kernfs_root_flag {
 	KERNFS_ROOT_SUPPORT_USER_XATTR		= 0x0008,
 };
 
- 
 struct kernfs_elem_dir {
 	unsigned long		subdirs;
 	 
@@ -93,7 +89,6 @@ struct kernfs_elem_attr {
 	struct kernfs_node	*notify_next;	 
 };
 
- 
 struct kernfs_node {
 	atomic_t		count;
 	atomic_t		active;
@@ -121,7 +116,6 @@ struct kernfs_node {
 	struct kernfs_iattrs	*iattr;
 };
 
- 
 struct kernfs_syscall_ops {
 	int (*show_options)(struct seq_file *sf, struct kernfs_root *root);
 
@@ -133,8 +127,6 @@ struct kernfs_syscall_ops {
 	int (*show_path)(struct seq_file *sf, struct kernfs_node *kn,
 			 struct kernfs_root *root);
 };
-
-struct kernfs_node *kernfs_root_to_node(struct kernfs_root *root);
 
 struct kernfs_open_file {
 	 
@@ -184,7 +176,6 @@ struct kernfs_ops {
 	int (*mmap)(struct kernfs_open_file *of, struct vm_area_struct *vma);
 };
 
- 
 struct kernfs_fs_context {
 	struct kernfs_root	*root;		 
 	void			*ns_tag;	 
@@ -195,22 +186,8 @@ struct kernfs_fs_context {
 };
 
 
-static inline struct kernfs_node *
-kernfs_find_and_get_ns(struct kernfs_node *parent, const char *name,
-		       const void *ns)
-{ return NULL; }
-
-static inline void kernfs_get(struct kernfs_node *kn) { }
 static inline void kernfs_put(struct kernfs_node *kn) { }
 
-static inline void kernfs_notify(struct kernfs_node *kn) { }
-
 static inline void kernfs_init(void) { }
-
-static inline struct kernfs_node *
-kernfs_find_and_get(struct kernfs_node *kn, const char *name)
-{
-	return kernfs_find_and_get_ns(kn, name, NULL);
-}
 
 #endif

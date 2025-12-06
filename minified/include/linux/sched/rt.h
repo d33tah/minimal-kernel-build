@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SCHED_RT_H
 #define _LINUX_SCHED_RT_H
 
@@ -29,10 +28,7 @@ static inline bool task_is_realtime(struct task_struct *tsk)
 	return false;
 }
 
-static inline struct task_struct *rt_mutex_get_top_task(struct task_struct *task)
-{
-	return NULL;
-}
+/* rt_mutex_get_top_task removed - unused */
 # define rt_mutex_adjust_pi(p)		do { } while (0)
 static inline bool tsk_is_pi_blocked(struct task_struct *tsk)
 {
@@ -42,7 +38,6 @@ static inline bool tsk_is_pi_blocked(struct task_struct *tsk)
 extern void normalize_rt_tasks(void);
 
 
- 
 #define RR_TIMESLICE		(100 * HZ / 1000)
 
 #endif  

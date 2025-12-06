@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_LIST_H
 #define _LINUX_LIST_H
 
@@ -10,14 +9,12 @@
 
 #include <asm/barrier.h>
 
- 
 
 #define LIST_HEAD_INIT(name) { &(name), &(name) }
 
 #define LIST_HEAD(name) \
 	struct list_head name = LIST_HEAD_INIT(name)
 
- 
 static inline void INIT_LIST_HEAD(struct list_head *list)
 {
 	WRITE_ONCE(list->next, list);
@@ -35,7 +32,6 @@ static inline bool __list_del_entry_valid(struct list_head *entry)
 	return true;
 }
 
- 
 static inline void __list_add(struct list_head *new,
 			      struct list_head *prev,
 			      struct list_head *next)
@@ -49,31 +45,21 @@ static inline void __list_add(struct list_head *new,
 	WRITE_ONCE(prev->next, new);
 }
 
- 
 static inline void list_add(struct list_head *new, struct list_head *head)
 {
 	__list_add(new, head, head->next);
 }
 
 
- 
 static inline void list_add_tail(struct list_head *new, struct list_head *head)
 {
 	__list_add(new, head->prev, head);
 }
 
- 
 static inline void __list_del(struct list_head * prev, struct list_head * next)
 {
 	next->prev = prev;
 	WRITE_ONCE(prev->next, next);
-}
-
- 
-static inline void __list_del_clearprev(struct list_head *entry)
-{
-	__list_del(entry->prev, entry->next);
-	entry->prev = NULL;
 }
 
 static inline void __list_del_entry(struct list_head *entry)
@@ -84,7 +70,6 @@ static inline void __list_del_entry(struct list_head *entry)
 	__list_del(entry->prev, entry->next);
 }
 
- 
 static inline void list_del(struct list_head *entry)
 {
 	__list_del_entry(entry);
@@ -92,7 +77,6 @@ static inline void list_del(struct list_head *entry)
 	entry->prev = LIST_POISON2;
 }
 
- 
 static inline void list_replace(struct list_head *old,
 				struct list_head *new)
 {
@@ -102,7 +86,6 @@ static inline void list_replace(struct list_head *old,
 	new->prev->next = new;
 }
 
- 
 static inline void list_replace_init(struct list_head *old,
 				     struct list_head *new)
 {
@@ -110,21 +93,18 @@ static inline void list_replace_init(struct list_head *old,
 	INIT_LIST_HEAD(old);
 }
 
- 
 static inline void list_del_init(struct list_head *entry)
 {
 	__list_del_entry(entry);
 	INIT_LIST_HEAD(entry);
 }
 
- 
 static inline void list_move(struct list_head *list, struct list_head *head)
 {
 	__list_del_entry(list);
 	list_add(list, head);
 }
 
- 
 static inline void list_move_tail(struct list_head *list,
 				  struct list_head *head)
 {
@@ -137,13 +117,11 @@ static inline int list_is_head(const struct list_head *list, const struct list_h
 	return list == head;
 }
 
- 
 static inline int list_empty(const struct list_head *head)
 {
 	return READ_ONCE(head->next) == head;
 }
 
- 
 static inline void list_del_init_careful(struct list_head *entry)
 {
 	__list_del_entry(entry);
@@ -151,7 +129,6 @@ static inline void list_del_init_careful(struct list_head *entry)
 	smp_store_release(&entry->next, entry);
 }
 
- 
 static inline int list_empty_careful(const struct list_head *head)
 {
 	struct list_head *next = smp_load_acquire(&head->next);
@@ -178,7 +155,6 @@ static inline void __list_splice(const struct list_head *list,
 	next->prev = last;
 }
 
- 
 static inline void list_splice(const struct list_head *list,
 				struct list_head *head)
 {
@@ -197,7 +173,6 @@ static inline void list_splice_init(struct list_head *list,
 	}
 }
 
- 
 static inline void list_splice_tail_init(struct list_head *list,
 					 struct list_head *head)
 {
@@ -207,26 +182,21 @@ static inline void list_splice_tail_init(struct list_head *list,
 	}
 }
 
- 
 #define list_entry(ptr, type, member) \
 	container_of(ptr, type, member)
 
- 
 #define list_first_entry(ptr, type, member) \
 	list_entry((ptr)->next, type, member)
 
- 
 #define list_last_entry(ptr, type, member) \
 	list_entry((ptr)->prev, type, member)
 
- 
 #define list_first_entry_or_null(ptr, type, member) ({ \
 	struct list_head *head__ = (ptr); \
 	struct list_head *pos__ = READ_ONCE(head__->next); \
 	pos__ != head__ ? list_entry(pos__, type, member) : NULL; \
 })
 
- 
 #define list_next_entry(pos, member) \
 	list_entry((pos)->member.next, typeof(*(pos)), member)
 
@@ -234,29 +204,23 @@ static inline void list_splice_tail_init(struct list_head *list,
 #define list_prev_entry(pos, member) \
 	list_entry((pos)->member.prev, typeof(*(pos)), member)
 
- 
 #define list_for_each(pos, head) \
 	for (pos = (head)->next; !list_is_head(pos, (head)); pos = pos->next)
 
- 
 #define list_for_each_safe(pos, n, head) \
 	for (pos = (head)->next, n = pos->next; \
 	     !list_is_head(pos, (head)); \
 	     pos = n, n = pos->next)
 
- 
 
- 
 #define list_entry_is_head(pos, head, member)				\
 	(&pos->member == (head))
 
- 
 #define list_for_each_entry(pos, head, member)				\
 	for (pos = list_first_entry(head, typeof(*pos), member);	\
 	     !list_entry_is_head(pos, head, member);			\
 	     pos = list_next_entry(pos, member))
 
- 
 #define list_for_each_entry_reverse(pos, head, member)			\
 	for (pos = list_last_entry(head, typeof(*pos), member);		\
 	     !list_entry_is_head(pos, head, member); 			\
@@ -268,30 +232,23 @@ static inline void list_splice_tail_init(struct list_head *list,
 	     !list_entry_is_head(pos, head, member);			\
 	     pos = list_next_entry(pos, member))
 
- 
 
- 
 #define list_for_each_entry_from(pos, head, member) 			\
 	for (; !list_entry_is_head(pos, head, member);			\
 	     pos = list_next_entry(pos, member))
 
- 
- 
 #define list_for_each_entry_safe(pos, n, head, member)			\
 	for (pos = list_first_entry(head, typeof(*pos), member),	\
 		n = list_next_entry(pos, member);			\
 	     !list_entry_is_head(pos, head, member); 			\
 	     pos = n, n = list_next_entry(n, member))
 
- 
 
- 
 #define list_for_each_entry_safe_from(pos, n, head, member) 			\
 	for (n = list_next_entry(pos, member);					\
 	     !list_entry_is_head(pos, head, member);				\
 	     pos = n, n = list_next_entry(n, member))
 
- 
 #define list_for_each_entry_safe_reverse(pos, n, head, member)		\
 	for (pos = list_last_entry(head, typeof(*pos), member),		\
 		n = list_prev_entry(pos, member);			\
@@ -308,19 +265,16 @@ static inline void INIT_HLIST_NODE(struct hlist_node *h)
 	h->pprev = NULL;
 }
 
- 
 static inline int hlist_unhashed(const struct hlist_node *h)
 {
 	return !h->pprev;
 }
 
- 
 static inline int hlist_unhashed_lockless(const struct hlist_node *h)
 {
 	return !READ_ONCE(h->pprev);
 }
 
- 
 static inline int hlist_empty(const struct hlist_head *h)
 {
 	return !READ_ONCE(h->first);
@@ -336,7 +290,6 @@ static inline void __hlist_del(struct hlist_node *n)
 		WRITE_ONCE(next->pprev, pprev);
 }
 
- 
 static inline void hlist_del(struct hlist_node *n)
 {
 	__hlist_del(n);
@@ -344,7 +297,6 @@ static inline void hlist_del(struct hlist_node *n)
 	n->pprev = LIST_POISON2;
 }
 
- 
 static inline void hlist_del_init(struct hlist_node *n)
 {
 	if (!hlist_unhashed(n)) {
@@ -353,7 +305,6 @@ static inline void hlist_del_init(struct hlist_node *n)
 	}
 }
 
- 
 static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 {
 	struct hlist_node *first = h->first;
@@ -362,28 +313,6 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 		WRITE_ONCE(first->pprev, &n->next);
 	WRITE_ONCE(h->first, n);
 	WRITE_ONCE(n->pprev, &h->first);
-}
-
- 
-static inline void hlist_add_before(struct hlist_node *n,
-				    struct hlist_node *next)
-{
-	WRITE_ONCE(n->pprev, next->pprev);
-	WRITE_ONCE(n->next, next);
-	WRITE_ONCE(next->pprev, &n->next);
-	WRITE_ONCE(*(n->pprev), n);
-}
-
-
-static inline void hlist_add_behind(struct hlist_node *n,
-				    struct hlist_node *prev)
-{
-	WRITE_ONCE(n->next, prev->next);
-	WRITE_ONCE(prev->next, n);
-	WRITE_ONCE(n->pprev, &prev->next);
-
-	if (n->next)
-		WRITE_ONCE(n->next->pprev, &n->next);
 }
 
 static inline bool hlist_fake(struct hlist_node *h)
@@ -397,7 +326,6 @@ hlist_is_singular_node(struct hlist_node *n, struct hlist_head *h)
 	return !n->next && n->pprev == &h->first;
 }
 
- 
 static inline void hlist_move_list(struct hlist_head *old,
 				   struct hlist_head *new)
 {
@@ -417,7 +345,6 @@ static inline void hlist_move_list(struct hlist_head *old,
 	   ____ptr ? hlist_entry(____ptr, type, member) : NULL; \
 	})
 
- 
 #define hlist_for_each_entry(pos, head, member)				\
 	for (pos = hlist_entry_safe((head)->first, typeof(*(pos)), member);\
 	     pos;							\

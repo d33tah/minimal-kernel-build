@@ -1,8 +1,6 @@
- 
+/* --- 2025-12-06 13:40 --- uapi/asm/setup.h removed (empty file) */
 #ifndef _ASM_X86_SETUP_H
 #define _ASM_X86_SETUP_H
-
-#include <uapi/asm/setup.h>
 
 #define COMMAND_LINE_SIZE 2048
 
@@ -10,14 +8,11 @@
 #include <asm/page_types.h>
 #include <asm/ibt.h>
 
-#ifdef __i386__
-
+/* 32-bit only kernel */
 #include <linux/pfn.h>
- 
-#define MAXMEM_PFN	PFN_DOWN(MAXMEM)
-#define MAX_NONPAE_PFN	(1 << 20)
 
-#endif  
+#define MAXMEM_PFN	PFN_DOWN(MAXMEM)
+#define MAX_NONPAE_PFN	(1 << 20)  
 
 #define PARAM_SIZE 4096		 
 
@@ -93,15 +88,9 @@ extern void probe_roms(void);
 
 void clear_bss(void);
 
-#ifdef __i386__
-
+/* 32-bit only kernel */
 asmlinkage void __init i386_start_kernel(void);
 
-#else
-asmlinkage void __init x86_64_start_kernel(char *real_mode);
-asmlinkage void __init x86_64_start_reservations(char *real_mode_data);
-
-#endif  
 #endif  
 
 #else   

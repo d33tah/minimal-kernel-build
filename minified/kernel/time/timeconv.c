@@ -1,4 +1,3 @@
- 
 /* Stub: time64_to_tm not used externally */
 #include <linux/time.h>
 #include <linux/bug.h>

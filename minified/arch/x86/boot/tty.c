@@ -1,7 +1,4 @@
- 
- 
 
- 
 
 #include "boot.h"
 
@@ -12,7 +9,6 @@ int early_serial_base;
 #define TXR             0        
 #define LSR             5        
 
- 
 
 static void __section(".inittext") serial_putchar(int ch)
 {
@@ -53,7 +49,6 @@ void __section(".inittext") puts(const char *str)
 		putchar(*str++);
 }
 
- 
 
 static u8 gettime(void)
 {
@@ -66,7 +61,6 @@ static u8 gettime(void)
 	return oreg.dh;
 }
 
- 
 int getchar(void)
 {
 	struct biosregs ireg, oreg;

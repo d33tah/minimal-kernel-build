@@ -1,4 +1,3 @@
- 
 #include "relocs.h"
 
 #define ELF_BITS 32

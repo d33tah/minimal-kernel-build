@@ -1,21 +1,13 @@
- 
- 
-
-#include <linux/types.h>
-#include <linux/kdev_t.h>
+/* Minimal includes for dummycon */
 #include <linux/console.h>
 #include <linux/vt_kern.h>
-#include <linux/screen_info.h>
-#include <linux/init.h>
 #include <linux/module.h>
 
- 
 
 #if defined(__arm__)
 #define DUMMY_COLUMNS	screen_info.orig_video_cols
 #define DUMMY_ROWS	screen_info.orig_video_lines
 #else
- 
 #define DUMMY_COLUMNS	CONFIG_DUMMY_CONSOLE_COLUMNS
 #define DUMMY_ROWS	CONFIG_DUMMY_CONSOLE_ROWS
 #endif
@@ -60,7 +52,6 @@ static int dummycon_switch(struct vc_data *vc)
 	return 0;
 }
 
- 
 
 const struct consw dummy_con = {
 	.owner =		THIS_MODULE,

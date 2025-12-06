@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_RWSEM_H
 #define _LINUX_RWSEM_H
@@ -16,7 +14,6 @@
 
 
 
- 
 struct rw_semaphore {
 	atomic_long_t count;
 	 
@@ -25,7 +22,6 @@ struct rw_semaphore {
 	struct list_head wait_list;
 };
 
- 
 static inline int rwsem_is_locked(struct rw_semaphore *sem)
 {
 	return atomic_long_read(&sem->count) != 0;
@@ -34,7 +30,6 @@ static inline int rwsem_is_locked(struct rw_semaphore *sem)
 #define RWSEM_UNLOCKED_VALUE		0L
 #define __RWSEM_COUNT_INIT(name)	.count = ATOMIC_LONG_INIT(RWSEM_UNLOCKED_VALUE)
 
- 
 
 # define __RWSEM_DEBUG_INIT(lockname)
 
@@ -62,37 +57,21 @@ do {								\
 	__init_rwsem((sem), #sem, &__key);			\
 } while (0)
 
- 
-static inline int rwsem_is_contended(struct rw_semaphore *sem)
-{
-	return !list_empty(&sem->wait_list);
-}
-
-
- 
-
- 
 extern void down_read(struct rw_semaphore *sem);
 extern int __must_check down_read_interruptible(struct rw_semaphore *sem);
 extern int __must_check down_read_killable(struct rw_semaphore *sem);
 
- 
 extern int down_read_trylock(struct rw_semaphore *sem);
 
- 
 extern void down_write(struct rw_semaphore *sem);
 extern int __must_check down_write_killable(struct rw_semaphore *sem);
 
- 
 extern int down_write_trylock(struct rw_semaphore *sem);
 
- 
 extern void up_read(struct rw_semaphore *sem);
 
- 
 extern void up_write(struct rw_semaphore *sem);
 
- 
 extern void downgrade_write(struct rw_semaphore *sem);
 
 # define down_read_nested(sem, subclass)		down_read(sem)

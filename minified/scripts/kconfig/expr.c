@@ -1,5 +1,3 @@
- 
- 
 
 #include <ctype.h>
 #include <errno.h>
@@ -137,7 +135,6 @@ static int trans_count;
 #define e1 (*ep1)
 #define e2 (*ep2)
 
- 
 static void __expr_eliminate_eq(enum expr_type type, struct expr **ep1, struct expr **ep2)
 {
 	 
@@ -180,7 +177,6 @@ static void __expr_eliminate_eq(enum expr_type type, struct expr **ep1, struct e
 	}
 }
 
- 
 void expr_eliminate_eq(struct expr **ep1, struct expr **ep2)
 {
 	if (!e1 || !e2)
@@ -206,7 +202,6 @@ void expr_eliminate_eq(struct expr **ep1, struct expr **ep2)
 #undef e1
 #undef e2
 
- 
 int expr_eq(struct expr *e1, struct expr *e2)
 {
 	int res, old_count;
@@ -257,7 +252,6 @@ int expr_eq(struct expr *e1, struct expr *e2)
 	return 0;
 }
 
- 
 static struct expr *expr_eliminate_yn(struct expr *e)
 {
 	struct expr *tmp;
@@ -341,7 +335,6 @@ static struct expr *expr_eliminate_yn(struct expr *e)
 	return e;
 }
 
- 
 struct expr *expr_trans_bool(struct expr *e)
 {
 	if (!e)
@@ -368,7 +361,6 @@ struct expr *expr_trans_bool(struct expr *e)
 	return e;
 }
 
- 
 static struct expr *expr_join_or(struct expr *e1, struct expr *e2)
 {
 	struct expr *tmp;
@@ -527,7 +519,6 @@ static struct expr *expr_join_and(struct expr *e1, struct expr *e2)
 	return NULL;
 }
 
- 
 static void expr_eliminate_dups1(enum expr_type type, struct expr **ep1, struct expr **ep2)
 {
 #define e1 (*ep1)
@@ -585,7 +576,6 @@ static void expr_eliminate_dups1(enum expr_type type, struct expr **ep1, struct 
 #undef e2
 }
 
- 
 struct expr *expr_eliminate_dups(struct expr *e)
 {
 	int oldcount;
@@ -610,7 +600,6 @@ struct expr *expr_eliminate_dups(struct expr *e)
 	return e;
 }
 
- 
 struct expr *expr_transform(struct expr *e)
 {
 	struct expr *tmp;
@@ -825,7 +814,6 @@ bool expr_depends_symbol(struct expr *dep, struct symbol *sym)
  	return false;
 }
 
- 
 struct expr *expr_trans_compare(struct expr *e, enum expr_type type, struct symbol *sym)
 {
 	struct expr *e1, *e2;
@@ -1179,7 +1167,6 @@ void expr_gstr_print(struct expr *e, struct gstr *gs)
 	expr_print(e, expr_print_gstr_helper, gs, E_NONE);
 }
 
- 
 static void expr_print_revdep(struct expr *e,
 			      void (*fn)(void *, struct symbol *, const char *),
 			      void *data, tristate pr_type, const char **title)

@@ -1,5 +1,3 @@
- 
- 
 #include <linux/fs.h>
 #include <linux/stat.h>
 #include <linux/syscalls.h>

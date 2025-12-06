@@ -1,10 +1,8 @@
- 
 #ifndef FREELIST_H
 #define FREELIST_H
 
 #include <linux/atomic.h>
 
- 
 
 struct freelist_node {
 	atomic_t		refs;

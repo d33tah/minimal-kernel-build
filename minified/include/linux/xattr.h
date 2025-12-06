@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_XATTR_H
 #define _LINUX_XATTR_H
 
@@ -9,12 +7,10 @@
 #include <linux/spinlock.h>
 #include <linux/mm.h>
 #include <linux/user_namespace.h>
-#include <uapi/linux/xattr.h>
 
 struct inode;
 struct dentry;
 
- 
 struct xattr_handler {
 	const char *name;
 	const char *prefix;
@@ -79,14 +75,12 @@ struct simple_xattr {
 	char value[];
 };
 
- 
 static inline void simple_xattrs_init(struct simple_xattrs *xattrs)
 {
 	INIT_LIST_HEAD(&xattrs->head);
 	spin_lock_init(&xattrs->lock);
 }
 
- 
 static inline void simple_xattrs_free(struct simple_xattrs *xattrs)
 {
 	struct simple_xattr *xattr, *node;

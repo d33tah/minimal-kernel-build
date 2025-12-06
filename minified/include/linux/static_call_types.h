@@ -1,4 +1,3 @@
- 
 #ifndef _STATIC_CALL_TYPES_H
 #define _STATIC_CALL_TYPES_H
 
@@ -18,12 +17,10 @@
 #define STATIC_CALL_TRAMP(name)		__PASTE(STATIC_CALL_TRAMP_PREFIX, name)
 #define STATIC_CALL_TRAMP_STR(name)	__stringify(STATIC_CALL_TRAMP(name))
 
- 
 #define STATIC_CALL_SITE_TAIL 1UL	 
 #define STATIC_CALL_SITE_INIT 2UL	 
 #define STATIC_CALL_SITE_FLAGS 3UL
 
- 
 struct static_call_site {
 	s32 addr;
 	s32 key;

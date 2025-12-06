@@ -1,11 +1,8 @@
- 
- 
+/* Minimal lockdep.h - stubs for !CONFIG_LOCKDEP */
 #ifndef __LINUX_LOCKDEP_H
 #define __LINUX_LOCKDEP_H
 
 #include <linux/lockdep_types.h>
-#include <linux/smp.h>
-#include <asm/percpu.h>
 
 struct task_struct;
 
@@ -22,9 +19,7 @@ static inline void lockdep_on(void)
 {
 }
 
-static inline void lockdep_set_selftest_task(struct task_struct *task)
-{
-}
+/* lockdep_set_selftest_task removed - unused */
 
 # define lock_acquire(l, s, t, r, c, n, i)	do { } while (0)
 # define lock_release(l, i)			do { } while (0)
@@ -50,23 +45,15 @@ static inline void lockdep_set_selftest_task(struct task_struct *task)
 
 #define lockdep_set_novalidate_class(lock) do { } while (0)
 
- 
 
 # define lockdep_reset()		do { debug_locks = 1; } while (0)
 # define lockdep_free_key_range(start, size)	do { } while (0)
 # define lockdep_sys_exit() 			do { } while (0)
 
-static inline void lockdep_register_key(struct lock_class_key *key)
-{
-}
-
-static inline void lockdep_unregister_key(struct lock_class_key *key)
-{
-}
+/* lockdep_register_key, lockdep_unregister_key removed - unused */
 
 #define lockdep_depth(tsk)	(0)
 
- 
 extern int lock_is_held(const void *);
 extern int lockdep_is_held(const void *);
 #define lockdep_is_held_type(l, r)		(1)
@@ -97,11 +84,10 @@ enum xhlock_context_t {
 };
 
 #define lockdep_init_map_crosslock(m, n, k, s) do {} while (0)
- 
 #define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
 	{ .name = (_name), .key = (void *)(_key), }
 
-static inline void lockdep_invariant_state(bool force) {}
+/* lockdep_invariant_state removed - unused */
 static inline void lockdep_free_task(struct task_struct *task) {}
 
 
@@ -115,20 +101,14 @@ static inline void lockdep_free_task(struct task_struct *task) {}
 	lock(_lock)
 
 
-static inline void print_irqtrace_events(struct task_struct *curr)
-{
-}
+/* print_irqtrace_events removed - unused */
 
- 
 #define force_read_lock_recursive 0
 
- 
 #define read_lock_is_recursive() 0
 
- 
 #define SINGLE_DEPTH_NESTING			1
 
- 
 
 #define lock_acquire_exclusive(l, s, t, n, i)		lock_acquire(l, s, t, 0, 1, n, i)
 #define lock_acquire_shared(l, s, t, n, i)		lock_acquire(l, s, t, 1, 1, n, i)
@@ -183,9 +163,6 @@ do {									\
 # define lockdep_assert_RT_in_threaded_ctx() do { } while (0)
 
 
-static inline void
-lockdep_rcu_suspicious(const char *file, const int line, const char *s)
-{
-}
+/* lockdep_rcu_suspicious removed - unused */
 
 #endif  

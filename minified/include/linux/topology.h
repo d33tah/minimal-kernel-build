@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_TOPOLOGY_H
 #define _LINUX_TOPOLOGY_H
 
@@ -20,7 +19,6 @@
 
 int arch_update_cpu_topology(void);
 
- 
 #define LOCAL_DISTANCE		10
 #define REMOTE_DISTANCE		20
 #define DISTANCE_BITS           8
@@ -28,11 +26,9 @@ int arch_update_cpu_topology(void);
 #define node_distance(from,to)	((from) == (to) ? LOCAL_DISTANCE : REMOTE_DISTANCE)
 #endif
 #ifndef RECLAIM_DISTANCE
- 
 #define RECLAIM_DISTANCE 30
 #endif
 
- 
 extern int __read_mostly node_reclaim_distance;
 
 #ifndef PENALTY_FOR_NODE_WITH_CPUS
@@ -40,7 +36,6 @@ extern int __read_mostly node_reclaim_distance;
 #endif
 
 
- 
 #ifndef numa_node_id
 static inline int numa_node_id(void)
 {
@@ -51,7 +46,6 @@ static inline int numa_node_id(void)
 
 
 #ifndef numa_mem_id
- 
 static inline int numa_mem_id(void)
 {
 	return numa_node_id();

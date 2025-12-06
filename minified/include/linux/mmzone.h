@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_MMZONE_H
 #define _LINUX_MMZONE_H
 
@@ -23,7 +22,6 @@
 #include <linux/local_lock.h>
 #include <asm/page.h>
 
- 
 #ifndef CONFIG_FORCE_MAX_ZONEORDER
 #define MAX_ORDER 11
 #else
@@ -31,7 +29,6 @@
 #endif
 #define MAX_ORDER_NR_PAGES (1 << (MAX_ORDER - 1))
 
- 
 #define PAGE_ALLOC_COSTLY_ORDER 3
 
 enum migratetype {
@@ -47,10 +44,7 @@ enum migratetype {
 #  define is_migrate_cma_page(_page) false
 
 
-static inline bool migratetype_is_mergeable(int mt)
-{
-	return mt < MIGRATE_PCPTYPES;
-}
+/* migratetype_is_mergeable removed - unused */
 
 #define for_each_migratetype_order(order, type) \
 	for (order = 0; order < MAX_ORDER; order++) \
@@ -82,7 +76,6 @@ static inline bool free_area_empty(struct free_area *area, int migratetype)
 
 struct pglist_data;
 
- 
 #define ZONE_PADDING(name)
 
 #define NR_VM_NUMA_EVENT_ITEMS 0
@@ -164,7 +157,6 @@ static __always_inline bool vmstat_item_in_bytes(int idx)
 		idx == NR_SLAB_UNRECLAIMABLE_B);
 }
 
- 
 #define LRU_BASE 0
 #define LRU_ACTIVE 1
 #define LRU_FILE 2
@@ -188,15 +180,7 @@ enum vmscan_throttle_state {
 
 #define for_each_lru(lru) for (lru = 0; lru < NR_LRU_LISTS; lru++)
 
-static inline bool is_file_lru(enum lru_list lru)
-{
-	return (lru == LRU_INACTIVE_FILE || lru == LRU_ACTIVE_FILE);
-}
-
-static inline bool is_active_lru(enum lru_list lru)
-{
-	return (lru == LRU_ACTIVE_ANON || lru == LRU_ACTIVE_FILE);
-}
+/* is_file_lru, is_active_lru removed - unused */
 
 #define ANON_AND_FILE 2
 
@@ -219,14 +203,10 @@ struct lruvec {
 	unsigned long			flags;
 };
 
- 
 #define ISOLATE_UNMAPPED	((__force isolate_mode_t)0x2)
- 
 #define ISOLATE_ASYNC_MIGRATE	((__force isolate_mode_t)0x4)
- 
 #define ISOLATE_UNEVICTABLE	((__force isolate_mode_t)0x8)
 
- 
 typedef unsigned __bitwise isolate_mode_t;
 
 enum zone_watermarks {
@@ -237,11 +217,9 @@ enum zone_watermarks {
 	NR_WMARK
 };
 
- 
 #define NR_PCP_THP 0
 #define NR_PCP_LISTS (MIGRATE_PCPTYPES * (PAGE_ALLOC_COSTLY_ORDER + 1 + NR_PCP_THP))
 
- 
 #define NR_PCP_ORDER_WIDTH 8
 #define NR_PCP_ORDER_MASK ((1<<NR_PCP_ORDER_WIDTH) - 1)
 
@@ -250,7 +228,6 @@ enum zone_watermarks {
 #define high_wmark_pages(z) (z->_watermark[WMARK_HIGH] + z->watermark_boost)
 #define wmark_pages(z, i) (z->_watermark[i] + z->watermark_boost)
 
- 
 struct per_cpu_pages {
 	int count;		 
 	int high;		 
@@ -376,14 +353,10 @@ static inline bool zone_spans_pfn(const struct zone *zone, unsigned long pfn)
 	return zone->zone_start_pfn <= pfn && pfn < zone_end_pfn(zone);
 }
 
-static inline bool zone_is_initialized(struct zone *zone)
-{
-	return zone->initialized;
-}
+/* zone_is_initialized removed - unused */
 
 #define DEF_PRIORITY 12
 
- 
 #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
 
 enum {
@@ -391,22 +364,18 @@ enum {
 	MAX_ZONELISTS
 };
 
- 
 struct zoneref {
 	struct zone *zone;	 
 	int zone_idx;		 
 };
 
- 
 struct zonelist {
 	struct zoneref _zonerefs[MAX_ZONES_PER_ZONELIST + 1];
 };
 
- 
 extern struct page *mem_map;
 
 
- 
 typedef struct pglist_data {
 	 
 	struct zone node_zones[MAX_NR_ZONES];
@@ -481,7 +450,6 @@ bool zone_watermark_ok(struct zone *z, unsigned int order,
 		unsigned int alloc_flags);
 bool zone_watermark_ok_safe(struct zone *z, unsigned int order,
 		unsigned long mark, int highest_zoneidx);
- 
 enum meminit_context {
 	MEMINIT_EARLY,
 	MEMINIT_HOTPLUG,
@@ -501,12 +469,8 @@ static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec)
 #define zone_idx(zone)		((zone) - (zone)->zone_pgdat->node_zones)
 
 
-static inline bool managed_zone(struct zone *zone)
-{
-	return zone_managed_pages(zone);
-}
+/* managed_zone removed - unused */
 
- 
 static inline bool populated_zone(struct zone *zone)
 {
 	return zone->present_pages;
@@ -526,12 +490,6 @@ static inline int is_highmem_idx(enum zone_type idx)
 	return 0;
 }
 
-static inline int is_highmem(struct zone *zone)
-{
-	return 0;
-}
-
- 
 struct ctl_table;
 
 int min_free_kbytes_sysctl_handler(struct ctl_table *, int, void *, size_t *,
@@ -551,12 +509,10 @@ extern struct pglist_data *first_online_pgdat(void);
 extern struct pglist_data *next_online_pgdat(struct pglist_data *pgdat);
 extern struct zone *next_zone(struct zone *zone);
 
- 
 #define for_each_online_pgdat(pgdat)			\
 	for (pgdat = first_online_pgdat();		\
 	     pgdat;					\
 	     pgdat = next_online_pgdat(pgdat))
- 
 #define for_each_zone(zone)			        \
 	for (zone = (first_online_pgdat())->node_zones; \
 	     zone;					\
@@ -584,7 +540,6 @@ struct zoneref *__next_zones_zonelist(struct zoneref *z,
 					enum zone_type highest_zoneidx,
 					nodemask_t *nodes);
 
- 
 static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z,
 					enum zone_type highest_zoneidx,
 					nodemask_t *nodes)
@@ -594,7 +549,6 @@ static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z,
 	return __next_zones_zonelist(z, highest_zoneidx, nodes);
 }
 
- 
 static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 					enum zone_type highest_zoneidx,
 					nodemask_t *nodes)
@@ -603,7 +557,6 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 							highest_zoneidx, nodes);
 }
 
- 
 #define for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, nodemask) \
 	for (z = first_zones_zonelist(zlist, highidx, nodemask), zone = zonelist_zone(z);	\
 		zone;							\
@@ -617,7 +570,6 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 			zone = zonelist_zone(z))
 
 
- 
 #define for_each_zone_zonelist(zone, z, zlist, highidx) \
 	for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, NULL)
 

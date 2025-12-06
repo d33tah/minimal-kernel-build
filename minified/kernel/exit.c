@@ -1,7 +1,6 @@
 
 #include <linux/mm.h>
 #include <linux/slab.h>
-#include <linux/sched/autogroup.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/stat.h>
 #include <linux/sched/task.h>
@@ -16,7 +15,10 @@
 #include <linux/iocontext.h>
 #include <linux/key.h>
 #include <linux/cpu.h>
-#include <linux/acct.h>
+/* acct.h inlined */
+#define acct_collect(x,y)	do { } while (0)
+#define acct_process()		do { } while (0)
+#define acct_exit_ns(ns)	do { } while (0)
 #include <linux/tsacct_kern.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
@@ -29,7 +31,10 @@
 #include <linux/proc_fs.h>
 #include <linux/kthread.h>
 #include <linux/mempolicy.h>
-#include <linux/taskstats_kern.h>
+/* taskstats_kern.h inlined */
+static inline void taskstats_exit(struct task_struct *tsk, int group_dead) {}
+static inline void taskstats_tgid_free(struct signal_struct *sig) {}
+static inline void taskstats_init_early(void) {}
 #include <linux/delayacct.h>
 #include <linux/cgroup.h>
 #include <linux/syscalls.h>
@@ -477,7 +482,7 @@ void __noreturn do_exit(long code)
 
 	perf_event_exit_task(tsk);
 
-	sched_autogroup_exit_task(tsk);
+	/* sched_autogroup_exit_task - stubbed */
 	cgroup_exit(tsk);
 
 	flush_ptrace_hw_breakpoint(tsk);

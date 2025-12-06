@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_OBJTOOL_H
 #define _LINUX_OBJTOOL_H
 
@@ -6,7 +5,6 @@
 
 #include <linux/types.h>
 
- 
 struct unwind_hint {
 	u32		ip;
 	s16		sp_offset;
@@ -16,7 +14,6 @@ struct unwind_hint {
 };
 #endif
 
- 
 #define UNWIND_HINT_TYPE_CALL		0
 #define UNWIND_HINT_TYPE_REGS		1
 #define UNWIND_HINT_TYPE_REGS_PARTIAL	2

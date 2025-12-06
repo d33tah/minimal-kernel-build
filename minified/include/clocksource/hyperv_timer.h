@@ -1,6 +1,4 @@
- 
 
- 
 
 #ifndef __CLKSOURCE_HYPERV_TIMER_H
 #define __CLKSOURCE_HYPERV_TIMER_H

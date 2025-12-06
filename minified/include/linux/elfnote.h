@@ -1,10 +1,7 @@
- 
 #ifndef _LINUX_ELFNOTE_H
 #define _LINUX_ELFNOTE_H
- 
 
 #ifdef __ASSEMBLER__
- 
 #define ELFNOTE_START(name, type, flags)	\
 .pushsection .note.name, flags,@note	;	\
   .balign 4				;	\
@@ -26,7 +23,6 @@
 
 #else	 
 #include <uapi/linux/elf.h>
- 
 #define _ELFNOTE_PASTE(a,b)	a##b
 #define _ELFNOTE(size, name, unique, type, desc)			\
 	static const struct {						\

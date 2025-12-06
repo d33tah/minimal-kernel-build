@@ -12,7 +12,8 @@
 #include <linux/sched/sysctl.h>
 #include <linux/sched/rt.h>
 #include <linux/sched/deadline.h>
-#include <linux/sched/nohz.h>
+/* sched/nohz.h inlined */
+static inline void wake_up_nohz_cpu(int cpu) { }
 #include <linux/sched/debug.h>
 #include <linux/timer.h>
 #include <linux/freezer.h>
@@ -85,10 +86,7 @@ static const int hrtimer_clock_to_base_table[MAX_CLOCKS] = {
 	[CLOCK_TAI]		= HRTIMER_BASE_TAI,
 };
 
-static inline bool is_migration_base(struct hrtimer_clock_base *base)
-{
-	return false;
-}
+/* is_migration_base removed - unused */
 
 static inline struct hrtimer_clock_base *
 lock_hrtimer_base(const struct hrtimer *timer, unsigned long *flags)
@@ -286,10 +284,7 @@ static inline int __hrtimer_hres_active(struct hrtimer_cpu_base *cpu_base)
 		cpu_base->hres_active : 0;
 }
 
-static inline int hrtimer_hres_active(void)
-{
-	return __hrtimer_hres_active(this_cpu_ptr(&hrtimer_bases));
-}
+/* hrtimer_hres_active removed - unused */
 
 static void __hrtimer_reprogram(struct hrtimer_cpu_base *cpu_base,
 				struct hrtimer *next_timer,

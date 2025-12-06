@@ -1,10 +1,38 @@
- 
 #ifndef _LINUX_MM_TYPES_H
 #define _LINUX_MM_TYPES_H
 
 #include <linux/mm_types_task.h>
 
-#include <linux/auxvec.h>
+#include <asm/auxvec.h>
+/* --- 2025-12-06 20:13 --- auxvec.h inlined (36 LOC) */
+#define AT_NULL   0
+#define AT_IGNORE 1
+#define AT_EXECFD 2
+#define AT_PHDR   3
+#define AT_PHENT  4
+#define AT_PHNUM  5
+#define AT_PAGESZ 6
+#define AT_BASE   7
+#define AT_FLAGS  8
+#define AT_ENTRY  9
+#define AT_NOTELF 10
+#define AT_UID    11
+#define AT_EUID   12
+#define AT_GID    13
+#define AT_EGID   14
+#define AT_PLATFORM 15
+#define AT_HWCAP  16
+#define AT_CLKTCK 17
+#define AT_SECURE 23
+#define AT_BASE_PLATFORM 24
+#define AT_RANDOM 25
+#define AT_HWCAP2 26
+#define AT_EXECFN  31
+#ifndef AT_MINSIGSTKSZ
+#define AT_MINSIGSTKSZ	51
+#endif
+#define AT_VECTOR_SIZE_BASE 20
+/* --- end auxvec.h inlined --- */
 #include <linux/kref.h>
 #include <linux/list.h>
 #include <linux/spinlock.h>
@@ -30,7 +58,6 @@
 struct address_space;
 struct mem_cgroup;
 
- 
 #define _struct_page_alignment	__aligned(2 * sizeof(unsigned long))
 
 struct page {
@@ -130,7 +157,6 @@ struct page {
 #endif
 } _struct_page_alignment;
 
- 
 struct folio {
 	 
 	union {
@@ -188,13 +214,11 @@ static inline atomic_t *compound_pincount_ptr(struct page *page)
 	return &page[1].compound_pincount;
 }
 
- 
 #define STRUCT_PAGE_MAX_SHIFT	(order_base_2(sizeof(struct page)))
 
 #define PAGE_FRAG_CACHE_MAX_SIZE	__ALIGN_MASK(32768, ~PAGE_MASK)
 #define PAGE_FRAG_CACHE_MAX_ORDER	get_order(PAGE_FRAG_CACHE_MAX_SIZE)
 
- 
 #define page_private(page)		((page)->private)
 
 static inline void set_page_private(struct page *page, unsigned long private)
@@ -217,7 +241,6 @@ struct page_frag_cache {
 
 typedef unsigned long vm_flags_t;
 
- 
 struct vm_region {
 	struct rb_node	vm_rb;		 
 	vm_flags_t	vm_flags;	 
@@ -240,7 +263,6 @@ struct anon_vma_name {
 	char name[];
 };
 
- 
 struct vm_area_struct {
 	 
 
@@ -372,7 +394,6 @@ struct mm_struct {
 
 extern struct mm_struct init_mm;
 
- 
 static inline void mm_init_cpumask(struct mm_struct *mm)
 {
 	unsigned long cpu_bitmap = (unsigned long)mm;
@@ -381,7 +402,6 @@ static inline void mm_init_cpumask(struct mm_struct *mm)
 	cpumask_clear((struct cpumask *)cpu_bitmap);
 }
 
- 
 static inline cpumask_t *mm_cpumask(struct mm_struct *mm)
 {
 	return (struct cpumask *)&mm->cpu_bitmap;
@@ -394,10 +414,8 @@ extern void tlb_finish_mmu(struct mmu_gather *tlb);
 
 struct vm_fault;
 
- 
 typedef __bitwise unsigned int vm_fault_t;
 
- 
 enum vm_fault_reason {
 	VM_FAULT_OOM            = (__force vm_fault_t)0x000001,
 	VM_FAULT_SIGBUS         = (__force vm_fault_t)0x000002,
@@ -415,28 +433,10 @@ enum vm_fault_reason {
 	VM_FAULT_HINDEX_MASK    = (__force vm_fault_t)0x0f0000,
 };
 
- 
-#define VM_FAULT_SET_HINDEX(x) ((__force vm_fault_t)((x) << 16))
-#define VM_FAULT_GET_HINDEX(x) (((__force unsigned int)(x) >> 16) & 0xf)
-
 #define VM_FAULT_ERROR (VM_FAULT_OOM | VM_FAULT_SIGBUS |	\
 			VM_FAULT_SIGSEGV | VM_FAULT_HWPOISON |	\
 			VM_FAULT_HWPOISON_LARGE | VM_FAULT_FALLBACK)
-
-#define VM_FAULT_RESULT_TRACE \
-	{ VM_FAULT_OOM,                 "OOM" },	\
-	{ VM_FAULT_SIGBUS,              "SIGBUS" },	\
-	{ VM_FAULT_MAJOR,               "MAJOR" },	\
-	{ VM_FAULT_WRITE,               "WRITE" },	\
-	{ VM_FAULT_HWPOISON,            "HWPOISON" },	\
-	{ VM_FAULT_HWPOISON_LARGE,      "HWPOISON_LARGE" },	\
-	{ VM_FAULT_SIGSEGV,             "SIGSEGV" },	\
-	{ VM_FAULT_NOPAGE,              "NOPAGE" },	\
-	{ VM_FAULT_LOCKED,              "LOCKED" },	\
-	{ VM_FAULT_RETRY,               "RETRY" },	\
-	{ VM_FAULT_FALLBACK,            "FALLBACK" },	\
-	{ VM_FAULT_DONE_COW,            "DONE_COW" },	\
-	{ VM_FAULT_NEEDDSYNC,           "NEEDDSYNC" }
+/* VM_FAULT_SET_HINDEX, VM_FAULT_GET_HINDEX, VM_FAULT_RESULT_TRACE removed - unused */
 
 struct vm_special_mapping {
 	const char *name;	 
@@ -460,7 +460,6 @@ typedef struct {
 	unsigned long val;
 } swp_entry_t;
 
- 
 enum fault_flag {
 	FAULT_FLAG_WRITE =		1 << 0,
 	FAULT_FLAG_MKWRITE =		1 << 1,

@@ -1,5 +1,3 @@
- 
- 
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -10,13 +8,11 @@
 #include <linux/sched.h>  
 #include <linux/tick.h>
 #include <linux/kthread.h>
-#include <linux/prandom.h>
 #include <linux/cpu.h>
 
 #include "tick-internal.h"
 #include "timekeeping_internal.h"
 
- 
 void
 clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec)
 {
@@ -42,7 +38,6 @@ clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec)
 	*shift = sft;
 }
 
- 
 static struct clocksource *curr_clocksource;
 static struct clocksource *suspend_clocksource;
 static LIST_HEAD(clocksource_list);
@@ -51,10 +46,8 @@ static char override_name[CS_NAME_LEN];
 static int finished_booting;
 /* suspend_start removed - unused */
 
- 
 #define WATCHDOG_THRESHOLD (NSEC_PER_SEC >> 5)
 
- 
 #define MAX_SKEW_USEC	100
 
 #define WATCHDOG_MAX_SKEW (MAX_SKEW_USEC * NSEC_PER_USEC)
@@ -83,7 +76,6 @@ static inline void clocksource_watchdog_unlock(unsigned long *flags)
 static int clocksource_watchdog_kthread(void *data);
 static void __clocksource_change_rating(struct clocksource *cs, int rating);
 
- 
 #define WATCHDOG_INTERVAL (HZ >> 1)
 
 static void clocksource_watchdog_work(struct work_struct *work)
@@ -111,7 +103,6 @@ static void __clocksource_unstable(struct clocksource *cs)
 		schedule_work(&watchdog_work);
 }
 
- 
 void clocksource_mark_unstable(struct clocksource *cs)
 {
 	unsigned long flags;
@@ -461,7 +452,6 @@ static void __clocksource_suspend_select(struct clocksource *cs)
 		suspend_clocksource = cs;
 }
 
- 
 static void clocksource_suspend_select(bool fallback)
 {
 	struct clocksource *cs, *old_suspend;
@@ -501,13 +491,11 @@ void clocksource_resume(void)
 	/* Stub: resume not needed for minimal kernel */
 }
 
- 
 void clocksource_touch_watchdog(void)
 {
 	clocksource_resume_watchdog();
 }
 
- 
 static u32 clocksource_max_adjustment(struct clocksource *cs)
 {
 	u64 ret;
@@ -517,7 +505,6 @@ static u32 clocksource_max_adjustment(struct clocksource *cs)
 	return (u32)ret;
 }
 
- 
 u64 clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask, u64 *max_cyc)
 {
 	u64 max_nsecs, max_cycles;
@@ -540,7 +527,6 @@ u64 clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask, u64 *max_cy
 	return max_nsecs;
 }
 
- 
 static inline void clocksource_update_max_deferment(struct clocksource *cs)
 {
 	cs->max_idle_ns = clocks_calc_max_nsecs(cs->mult, cs->shift,
@@ -607,7 +593,6 @@ found:
 	}
 }
 
- 
 static void clocksource_select(void)
 {
 	__clocksource_select(false);
@@ -618,7 +603,6 @@ static void clocksource_select_fallback(void)
 	__clocksource_select(true);
 }
 
- 
 static int __init clocksource_done_booting(void)
 {
 	mutex_lock(&clocksource_mutex);
@@ -632,7 +616,6 @@ static int __init clocksource_done_booting(void)
 }
 fs_initcall(clocksource_done_booting);
 
- 
 static void clocksource_enqueue(struct clocksource *cs)
 {
 	struct list_head *entry = &clocksource_list;
@@ -647,7 +630,6 @@ static void clocksource_enqueue(struct clocksource *cs)
 	list_add(&cs->list, entry);
 }
 
- 
 void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq)
 {
 	u64 sec;
@@ -694,7 +676,6 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq
 	clocksource_update_max_deferment(cs);
 }
 
- 
 int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 {
 	unsigned long flags;
@@ -740,7 +721,6 @@ void clocksource_change_rating(struct clocksource *cs, int rating)
 {
 }
 
- 
 static int clocksource_unbind(struct clocksource *cs)
 {
 	unsigned long flags;
@@ -772,7 +752,6 @@ static int clocksource_unbind(struct clocksource *cs)
 	return 0;
 }
 
- 
 int clocksource_unregister(struct clocksource *cs)
 {
 	int ret = 0;

@@ -1,4 +1,3 @@
- 
 
 #include <linux/export.h>
 #include <linux/compiler.h>
@@ -250,11 +249,7 @@ int __filemap_fdatawrite_range(struct address_space *mapping, loff_t start,
 	return filemap_fdatawrite_wbc(mapping, &wbc);
 }
 
-static inline int __filemap_fdatawrite(struct address_space *mapping,
-	int sync_mode)
-{
-	return __filemap_fdatawrite_range(mapping, 0, LLONG_MAX, sync_mode);
-}
+/* __filemap_fdatawrite removed - unused */
 
 /* Stubbed - not used externally */
 int filemap_fdatawrite(struct address_space *mapping)

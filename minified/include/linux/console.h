@@ -1,4 +1,3 @@
- 
 
 #ifndef _LINUX_CONSOLE_H_
 #define _LINUX_CONSOLE_H_ 1
@@ -20,7 +19,6 @@ enum con_scroll {
 
 enum vc_intensity;
 
- 
 struct consw {
 	struct module *owner;
 	const char *(*con_startup)(void);
@@ -77,12 +75,10 @@ void give_up_console(const struct consw *sw);
 int con_debug_enter(struct vc_data *vc);
 int con_debug_leave(void);
 
- 
 #define CM_DRAW     (1)
 #define CM_ERASE    (2)
 #define CM_MOVE     (3)
 
- 
 
 #define CON_PRINTBUFFER	(1)
 #define CON_CONSDEV	(2)  
@@ -112,7 +108,6 @@ struct console {
 	struct	 console *next;
 };
 
- 
 #define for_each_console(con) \
 	for (con = console_drivers; con != NULL; con = con->next)
 
@@ -144,28 +139,21 @@ extern int braille_unregister_console(struct console *);
 extern void console_sysfs_notify(void);
 extern bool console_suspend_enabled;
 
- 
 extern void suspend_console(void);
 extern void resume_console(void);
-
-int mda_console_init(void);
 
 static inline void vcs_make_sysfs(int index) { }
 static inline void vcs_remove_sysfs(int index) { }
 
- 
 #define WARN_CONSOLE_UNLOCKED()						\
 	WARN_ON(!atomic_read(&ignore_console_lock_warning) &&		\
 		!is_console_locked() && !oops_in_progress)
- 
 extern atomic_t ignore_console_lock_warning;
 
 /* VESA_* defines removed - unused in minimal kernel */
 
 extern void console_init(void);
 
- 
-void dummycon_register_output_notifier(struct notifier_block *nb);
-void dummycon_unregister_output_notifier(struct notifier_block *nb);
+/* dummycon notifiers removed - unused */
 
 #endif  

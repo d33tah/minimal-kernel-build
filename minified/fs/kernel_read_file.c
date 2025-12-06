@@ -1,10 +1,8 @@
- 
 #include <linux/fs.h>
 #include <linux/fs_struct.h>
 #include <linux/kernel_read_file.h>
 #include <linux/vmalloc.h>
 
- 
 
 int kernel_read_file(struct file *file, loff_t offset, void **buf,
 		     size_t buf_size, size_t *file_size,

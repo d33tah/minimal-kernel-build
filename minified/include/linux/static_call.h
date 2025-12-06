@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_STATIC_CALL_H
 #define _LINUX_STATIC_CALL_H
 
- 
 
 #include <linux/types.h>
 #include <linux/cpu.h>
@@ -10,7 +8,6 @@
 
 #include <asm/static_call.h>
 
- 
 extern void arch_static_call_transform(void *site, void *tramp, void *func, bool tail);
 
 #define STATIC_CALL_TRAMP_ADDR(name) &STATIC_CALL_TRAMP(name)
@@ -74,7 +71,6 @@ extern long __static_call_return0(void);
 	EXPORT_SYMBOL_GPL(STATIC_CALL_KEY(name));			\
 	EXPORT_SYMBOL_GPL(STATIC_CALL_TRAMP(name))
 
- 
 #define EXPORT_STATIC_CALL_TRAMP(name)					\
 	EXPORT_SYMBOL(STATIC_CALL_TRAMP(name))
 #define EXPORT_STATIC_CALL_TRAMP_GPL(name)				\

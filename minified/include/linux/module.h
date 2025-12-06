@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_MODULE_H
 #define _LINUX_MODULE_H
@@ -17,7 +15,123 @@
 #include <linux/moduleparam.h>
 #include <linux/jump_label.h>
 #include <linux/export.h>
-#include <linux/rbtree_latch.h>
+
+/* Inlined from rbtree_latch.h */
+#include <linux/rbtree.h>
+#include <linux/seqlock.h>
+#include <linux/rcupdate.h>
+
+struct latch_tree_node {
+	struct rb_node node[2];
+};
+
+struct latch_tree_root {
+	seqcount_latch_t	seq;
+	struct rb_root		tree[2];
+};
+
+struct latch_tree_ops {
+	bool (*less)(struct latch_tree_node *a, struct latch_tree_node *b);
+	int  (*comp)(void *key,                 struct latch_tree_node *b);
+};
+
+static __always_inline struct latch_tree_node *
+__lt_from_rb(struct rb_node *node, int idx)
+{
+	return container_of(node, struct latch_tree_node, node[idx]);
+}
+
+static __always_inline void
+__lt_insert(struct latch_tree_node *ltn, struct latch_tree_root *ltr, int idx,
+	    bool (*less)(struct latch_tree_node *a, struct latch_tree_node *b))
+{
+	struct rb_root *root = &ltr->tree[idx];
+	struct rb_node **link = &root->rb_node;
+	struct rb_node *node = &ltn->node[idx];
+	struct rb_node *parent = NULL;
+	struct latch_tree_node *ltp;
+
+	while (*link) {
+		parent = *link;
+		ltp = __lt_from_rb(parent, idx);
+
+		if (less(ltn, ltp))
+			link = &parent->rb_left;
+		else
+			link = &parent->rb_right;
+	}
+
+	rb_link_node_rcu(node, parent, link);
+	rb_insert_color(node, root);
+}
+
+static __always_inline void
+__lt_erase(struct latch_tree_node *ltn, struct latch_tree_root *ltr, int idx)
+{
+	rb_erase(&ltn->node[idx], &ltr->tree[idx]);
+}
+
+static __always_inline struct latch_tree_node *
+__lt_find(void *key, struct latch_tree_root *ltr, int idx,
+	  int (*comp)(void *key, struct latch_tree_node *node))
+{
+	struct rb_node *node = rcu_dereference_raw(ltr->tree[idx].rb_node);
+	struct latch_tree_node *ltn;
+	int c;
+
+	while (node) {
+		ltn = __lt_from_rb(node, idx);
+		c = comp(key, ltn);
+
+		if (c < 0)
+			node = rcu_dereference_raw(node->rb_left);
+		else if (c > 0)
+			node = rcu_dereference_raw(node->rb_right);
+		else
+			return ltn;
+	}
+
+	return NULL;
+}
+
+static __always_inline void
+latch_tree_insert(struct latch_tree_node *node,
+		  struct latch_tree_root *root,
+		  const struct latch_tree_ops *ops)
+{
+	raw_write_seqcount_latch(&root->seq);
+	__lt_insert(node, root, 0, ops->less);
+	raw_write_seqcount_latch(&root->seq);
+	__lt_insert(node, root, 1, ops->less);
+}
+
+static __always_inline void
+latch_tree_erase(struct latch_tree_node *node,
+		 struct latch_tree_root *root,
+		 const struct latch_tree_ops *ops)
+{
+	raw_write_seqcount_latch(&root->seq);
+	__lt_erase(node, root, 0);
+	raw_write_seqcount_latch(&root->seq);
+	__lt_erase(node, root, 1);
+}
+
+static __always_inline struct latch_tree_node *
+latch_tree_find(void *key, struct latch_tree_root *root,
+		const struct latch_tree_ops *ops)
+{
+	struct latch_tree_node *node;
+	unsigned int seq;
+
+	do {
+		seq = raw_read_seqcount_latch(&root->seq);
+		node = __lt_find(key, root, seq & 1, ops->comp);
+	} while (read_seqcount_latch_retry(&root->seq, seq));
+
+	return node;
+}
+/* End of inlined rbtree_latch.h content */
+
 #include <linux/error-injection.h>
 #include <linux/tracepoint-defs.h>
 #include <linux/srcu.h>
@@ -58,20 +172,16 @@ struct module_attribute {
 
 struct module_version_attribute;
 
- 
 extern int init_module(void);
 extern void cleanup_module(void);
 
 #ifndef MODULE
- 
 #define module_init(x)	__initcall(x);
 
- 
 #define module_exit(x)	__exitcall(x);
 
 #else  
 
- 
 #define early_initcall(fn)		module_init(fn)
 #define core_initcall(fn)		module_init(fn)
 #define core_initcall_sync(fn)		module_init(fn)
@@ -90,7 +200,6 @@ extern void cleanup_module(void);
 
 #define console_initcall(fn)		module_init(fn)
 
- 
 #define module_init(initfn)					\
 	static inline initcall_t __maybe_unused __inittest(void)		\
 	{ return initfn; }					\
@@ -98,7 +207,6 @@ extern void cleanup_module(void);
 		__attribute__((alias(#initfn)));		\
 	__CFI_ADDRESSABLE(init_module, __initdata);
 
- 
 #define module_exit(exitfn)					\
 	static inline exitcall_t __maybe_unused __exittest(void)		\
 	{ return exitfn; }					\
@@ -108,7 +216,6 @@ extern void cleanup_module(void);
 
 #endif
 
- 
 #define __init_or_module __init
 #define __initdata_or_module __initdata
 #define __initconst_or_module __initconst
@@ -116,33 +223,25 @@ extern void cleanup_module(void);
 #define __INITDATA_OR_MODULE __INITDATA
 #define __INITRODATA_OR_MODULE __INITRODATA
 
- 
 #define MODULE_INFO(tag, info) __MODULE_INFO(tag, tag, info)
 
- 
 #define MODULE_ALIAS(_alias) MODULE_INFO(alias, _alias)
 
- 
 #define MODULE_SOFTDEP(_softdep) MODULE_INFO(softdep, _softdep)
 
- 
 #ifdef MODULE
 #define MODULE_FILE
 #else
 #define MODULE_FILE	MODULE_INFO(file, KBUILD_MODFILE);
 #endif
 
- 
 #define MODULE_LICENSE(_license) MODULE_FILE MODULE_INFO(license, _license)
 
- 
 #define MODULE_AUTHOR(_author) MODULE_INFO(author, _author)
 
- 
 #define MODULE_DESCRIPTION(_description) MODULE_INFO(description, _description)
 
 #ifdef MODULE
- 
 #define MODULE_DEVICE_TABLE(type, name)					\
 extern typeof(name) __mod_##type##__##name##_device_table		\
   __attribute__ ((unused, alias(__stringify(name))))
@@ -150,11 +249,9 @@ extern typeof(name) __mod_##type##__##name##_device_table		\
 #define MODULE_DEVICE_TABLE(type, name)
 #endif
 
- 
 
 #define MODULE_VERSION(_version) MODULE_INFO(version, _version)
 
- 
 #define MODULE_FIRMWARE(_firmware) MODULE_INFO(firmware, _firmware)
 
 #define MODULE_IMPORT_NS(ns)	MODULE_INFO(import_ns, __stringify(ns))
@@ -162,57 +259,17 @@ extern typeof(name) __mod_##type##__##name##_device_table		\
 struct notifier_block;
 
 
-static inline struct module *__module_address(unsigned long addr)
-{
-	return NULL;
-}
-
-static inline struct module *__module_text_address(unsigned long addr)
-{
-	return NULL;
-}
-
-static inline bool is_module_address(unsigned long addr)
-{
-	return false;
-}
-
-static inline bool is_module_percpu_address(unsigned long addr)
-{
-	return false;
-}
-
-static inline bool __is_module_percpu_address(unsigned long addr, unsigned long *can_addr)
-{
-	return false;
-}
+/* __module_address, __module_text_address, is_module_address,
+   is_module_percpu_address removed - unused (only is_module_text_address kept) */
 
 static inline bool is_module_text_address(unsigned long addr)
 {
 	return false;
 }
 
-static inline bool within_module_core(unsigned long addr,
-				      const struct module *mod)
-{
-	return false;
-}
-
-static inline bool within_module_init(unsigned long addr,
-				      const struct module *mod)
-{
-	return false;
-}
-
-static inline bool within_module(unsigned long addr, const struct module *mod)
-{
-	return false;
-}
-
- 
 #define symbol_get(x) ({ extern typeof(x) x __attribute__((weak,visibility("hidden"))); &(x); })
 #define symbol_put(x) do { } while (0)
-#define symbol_put_addr(x) do { } while (0)
+/* symbol_put_addr removed - unused */
 
 static inline void __module_get(struct module *module)
 {
@@ -229,106 +286,10 @@ static inline void module_put(struct module *module)
 
 #define module_name(mod) "kernel"
 
- 
-static inline const char *module_address_lookup(unsigned long addr,
-					  unsigned long *symbolsize,
-					  unsigned long *offset,
-					  char **modname,
-					  const unsigned char **modbuildid,
-					  char *namebuf)
-{
-	return NULL;
-}
-
-static inline int lookup_module_symbol_name(unsigned long addr, char *symname)
-{
-	return -ERANGE;
-}
-
-static inline int lookup_module_symbol_attrs(unsigned long addr, unsigned long *size, unsigned long *offset, char *modname, char *name)
-{
-	return -ERANGE;
-}
-
-static inline int module_get_kallsym(unsigned int symnum, unsigned long *value,
-					char *type, char *name,
-					char *module_name, int *exported)
-{
-	return -ERANGE;
-}
-
-static inline unsigned long module_kallsyms_lookup_name(const char *name)
-{
-	return 0;
-}
-
-static inline int register_module_notifier(struct notifier_block *nb)
-{
-	 
-	return 0;
-}
-
-static inline int unregister_module_notifier(struct notifier_block *nb)
-{
-	return 0;
-}
-
 #define module_put_and_kthread_exit(code) kthread_exit(code)
 
-static inline void print_modules(void)
-{
-}
-
-static inline bool module_requested_async_probing(struct module *module)
-{
-	return false;
-}
-
-
-static inline void set_module_sig_enforced(void)
-{
-}
-
- 
-static inline
-void *dereference_module_function_descriptor(struct module *mod, void *ptr)
-{
-	return ptr;
-}
-
-
-
-#define symbol_request(x) try_then_request_module(symbol_get(x), "symbol:" #x)
-
- 
+/* symbol_request, module_kallsyms_on_each_symbol removed - unused */
 
 #define __MODULE_STRING(x) __stringify(x)
-
-
-static inline void module_bug_finalize(const Elf_Ehdr *hdr,
-					const Elf_Shdr *sechdrs,
-					struct module *mod)
-{
-}
-static inline void module_bug_cleanup(struct module *mod) {}
-
-static inline bool retpoline_module_ok(bool has_retpoline)
-{
-	return true;
-}
-
-static inline bool is_module_sig_enforced(void)
-{
-	return false;
-}
-
-static inline bool module_sig_ok(struct module *module)
-{
-	return true;
-}
-
-int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
-					     struct module *, unsigned long),
-				   void *data);
 
 #endif  

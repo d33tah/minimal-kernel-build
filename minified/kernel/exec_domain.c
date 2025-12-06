@@ -1,13 +1,7 @@
- 
- 
-
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/kmod.h>
-#include <linux/module.h>
-#include <linux/personality.h>
-#include <linux/sched.h>
+/* Minimal includes for personality syscall */
 #include <linux/syscalls.h>
+#include <linux/sched.h>
+#include <linux/personality.h>
 
 SYSCALL_DEFINE1(personality, unsigned int, personality)
 {

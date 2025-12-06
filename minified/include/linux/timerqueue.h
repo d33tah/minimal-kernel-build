@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_TIMERQUEUE_H
 #define _LINUX_TIMERQUEUE_H
 
@@ -23,7 +22,6 @@ extern bool timerqueue_del(struct timerqueue_head *head,
 extern struct timerqueue_node *timerqueue_iterate_next(
 						struct timerqueue_node *node);
 
- 
 static inline
 struct timerqueue_node *timerqueue_getnext(struct timerqueue_head *head)
 {

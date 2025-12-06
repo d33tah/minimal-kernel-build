@@ -1,15 +1,10 @@
- 
- 
-
+/* Syscore operations for shutdown */
 #include <linux/syscore_ops.h>
 #include <linux/mutex.h>
-#include <linux/module.h>
-#include <linux/suspend.h>
 
 static LIST_HEAD(syscore_ops_list);
 static DEFINE_MUTEX(syscore_ops_lock);
 
- 
 void register_syscore_ops(struct syscore_ops *ops)
 {
 	mutex_lock(&syscore_ops_lock);
@@ -17,7 +12,6 @@ void register_syscore_ops(struct syscore_ops *ops)
 	mutex_unlock(&syscore_ops_lock);
 }
 
- 
 void unregister_syscore_ops(struct syscore_ops *ops)
 {
 	mutex_lock(&syscore_ops_lock);
@@ -26,7 +20,6 @@ void unregister_syscore_ops(struct syscore_ops *ops)
 }
 
 
- 
 void syscore_shutdown(void)
 {
 	struct syscore_ops *ops;

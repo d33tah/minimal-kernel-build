@@ -1,4 +1,3 @@
- 
 #include <linux/export.h>
 #include <linux/slab.h>
 #include <linux/regset.h>
@@ -47,7 +46,6 @@ int regset_get_alloc(struct task_struct *target,
 	return __regset_get(target, regset, size, data);
 }
 
- 
 int copy_regset_to_user(struct task_struct *target,
 			const struct user_regset_view *view,
 			unsigned int setno,

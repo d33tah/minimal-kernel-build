@@ -1,8 +1,6 @@
- 
 #ifndef __LINUX_SPINLOCK_H
 #define __LINUX_SPINLOCK_H
 
- 
 
 #include <linux/typecheck.h>
 #include <linux/preempt.h>
@@ -17,7 +15,6 @@
 #include <asm/mmiowb.h>
 
 
- 
 #define LOCK_SECTION_NAME ".text..lock."KBUILD_BASENAME
 
 #define LOCK_SECTION_START(extra)               \
@@ -32,10 +29,8 @@
 
 #define __lockfunc __section(".spinlock.text")
 
- 
 #include <linux/spinlock_types.h>
 
- 
 # include <linux/spinlock_up.h>
 
 # define raw_spin_lock_init(lock)				\
@@ -49,41 +44,16 @@
 #define raw_spin_is_contended(lock)	(((void)(lock), 0))
 #endif  
 
- 
 #ifndef smp_mb__after_spinlock
 #define smp_mb__after_spinlock()	do { } while (0)
 #endif
 
-static inline void do_raw_spin_lock(raw_spinlock_t *lock) __acquires(lock)
-{
-	__acquire(lock);
-	arch_spin_lock(&lock->raw_lock);
-	mmiowb_spin_lock();
-}
+/* do_raw_spin_lock, do_raw_spin_trylock, do_raw_spin_unlock removed - unused */
 
-static inline int do_raw_spin_trylock(raw_spinlock_t *lock)
-{
-	int ret = arch_spin_trylock(&(lock)->raw_lock);
-
-	if (ret)
-		mmiowb_spin_lock();
-
-	return ret;
-}
-
-static inline void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock)
-{
-	mmiowb_spin_unlock();
-	arch_spin_unlock(&lock->raw_lock);
-	__release(lock);
-}
-
- 
 #define raw_spin_trylock(lock)	__cond_lock(lock, _raw_spin_trylock(lock))
 
 #define raw_spin_lock(lock)	_raw_spin_lock(lock)
 
- 
 # define raw_spin_lock_nested(lock, subclass)		\
 	_raw_spin_lock(((void)(subclass), (lock)))
 # define raw_spin_lock_nest_lock(lock, nest_lock)	_raw_spin_lock(lock)
@@ -128,15 +98,79 @@ static inline void do_raw_spin_unlock(raw_spinlock_t *lock) __releases(lock)
 	1 : ({ local_irq_restore(flags); 0; }); \
 })
 
- 
-#include <linux/rwlock.h>
+/* Inlined from rwlock.h */
+# define rwlock_init(lock)					\
+	do { *(lock) = __RW_LOCK_UNLOCKED(lock); } while (0)
 
- 
+# define do_raw_read_lock(rwlock)	do {__acquire(lock); arch_read_lock(&(rwlock)->raw_lock); } while (0)
+# define do_raw_read_trylock(rwlock)	arch_read_trylock(&(rwlock)->raw_lock)
+# define do_raw_read_unlock(rwlock)	do {arch_read_unlock(&(rwlock)->raw_lock); __release(lock); } while (0)
+# define do_raw_write_lock(rwlock)	do {__acquire(lock); arch_write_lock(&(rwlock)->raw_lock); } while (0)
+# define do_raw_write_trylock(rwlock)	arch_write_trylock(&(rwlock)->raw_lock)
+# define do_raw_write_unlock(rwlock)	do {arch_write_unlock(&(rwlock)->raw_lock); __release(lock); } while (0)
+
+#define read_trylock(lock)	__cond_lock(lock, _raw_read_trylock(lock))
+#define write_trylock(lock)	__cond_lock(lock, _raw_write_trylock(lock))
+
+#define write_lock(lock)	_raw_write_lock(lock)
+#define read_lock(lock)		_raw_read_lock(lock)
+
+#define write_lock_nested(lock, subclass)	_raw_write_lock(lock)
+
+
+#define read_lock_irqsave(lock, flags)			\
+	do {						\
+		typecheck(unsigned long, flags);	\
+		_raw_read_lock_irqsave(lock, flags);	\
+	} while (0)
+#define write_lock_irqsave(lock, flags)			\
+	do {						\
+		typecheck(unsigned long, flags);	\
+		_raw_write_lock_irqsave(lock, flags);	\
+	} while (0)
+
+
+#define read_lock_irq(lock)		_raw_read_lock_irq(lock)
+#define read_lock_bh(lock)		_raw_read_lock_bh(lock)
+#define write_lock_irq(lock)		_raw_write_lock_irq(lock)
+#define write_lock_bh(lock)		_raw_write_lock_bh(lock)
+#define read_unlock(lock)		_raw_read_unlock(lock)
+#define write_unlock(lock)		_raw_write_unlock(lock)
+#define read_unlock_irq(lock)		_raw_read_unlock_irq(lock)
+#define write_unlock_irq(lock)		_raw_write_unlock_irq(lock)
+
+#define read_unlock_irqrestore(lock, flags)			\
+	do {							\
+		typecheck(unsigned long, flags);		\
+		_raw_read_unlock_irqrestore(lock, flags);	\
+	} while (0)
+#define read_unlock_bh(lock)		_raw_read_unlock_bh(lock)
+
+#define write_unlock_irqrestore(lock, flags)		\
+	do {						\
+		typecheck(unsigned long, flags);	\
+		_raw_write_unlock_irqrestore(lock, flags);	\
+	} while (0)
+#define write_unlock_bh(lock)		_raw_write_unlock_bh(lock)
+
+#define write_trylock_irqsave(lock, flags) \
+({ \
+	local_irq_save(flags); \
+	write_trylock(lock) ? \
+	1 : ({ local_irq_restore(flags); 0; }); \
+})
+
+#ifdef arch_rwlock_is_contended
+#define rwlock_is_contended(lock) \
+	 arch_rwlock_is_contended(&(lock)->raw_lock)
+#else
+#define rwlock_is_contended(lock)	((void)(lock), 0)
+#endif
+/* End of inlined rwlock.h content */
+
 # include <linux/spinlock_api_up.h>
 
- 
 
- 
 
 static __always_inline raw_spinlock_t *spinlock_check(spinlock_t *lock)
 {
@@ -211,14 +245,9 @@ static __always_inline void spin_unlock_irqrestore(spinlock_t *lock, unsigned lo
 	raw_spin_unlock_irqrestore(&lock->rlock, flags);
 }
 
-static __always_inline int spin_trylock_bh(spinlock_t *lock)
+static __always_inline int spin_is_locked(spinlock_t *lock)
 {
-	return raw_spin_trylock_bh(&lock->rlock);
-}
-
-static __always_inline int spin_trylock_irq(spinlock_t *lock)
-{
-	return raw_spin_trylock_irq(&lock->rlock);
+	return raw_spin_is_locked(&lock->rlock);
 }
 
 #define spin_trylock_irqsave(lock, flags)			\
@@ -226,23 +255,10 @@ static __always_inline int spin_trylock_irq(spinlock_t *lock)
 	raw_spin_trylock_irqsave(spinlock_check(lock), flags); \
 })
 
- 
-static __always_inline int spin_is_locked(spinlock_t *lock)
-{
-	return raw_spin_is_locked(&lock->rlock);
-}
-
-static __always_inline int spin_is_contended(spinlock_t *lock)
-{
-	return raw_spin_is_contended(&lock->rlock);
-}
-
 #define assert_spin_locked(lock)	assert_raw_spin_locked(&(lock)->rlock)
 
 
- 
 #include <linux/atomic.h>
- 
 extern int _atomic_dec_and_lock(atomic_t *atomic, spinlock_t *lock);
 #define atomic_dec_and_lock(atomic, lock) \
 		__cond_lock(lock, _atomic_dec_and_lock(atomic, lock))

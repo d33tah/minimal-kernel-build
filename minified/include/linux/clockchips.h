@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_CLOCKCHIPS_H
 #define _LINUX_CLOCKCHIPS_H
 
@@ -12,7 +10,6 @@
 struct clock_event_device;
 struct module;
 
- 
 enum clock_event_state {
 	CLOCK_EVT_STATE_DETACHED,
 	CLOCK_EVT_STATE_SHUTDOWN,
@@ -27,7 +24,6 @@ enum clock_event_state {
 # define CLOCK_EVT_FEAT_C3STOP		0x000008
 # define CLOCK_EVT_FEAT_DUMMY		0x000010
 
- 
 struct clock_event_device {
 	void			(*event_handler)(struct clock_event_device *);
 	int			(*set_next_event)(unsigned long evt, struct clock_event_device *);
@@ -62,7 +58,6 @@ struct clock_event_device {
 	struct module		*owner;
 } ____cacheline_aligned;
 
- 
 static inline bool clockevent_state_detached(struct clock_event_device *dev)
 {
 	return dev->state_use_accessors == CLOCK_EVT_STATE_DETACHED;
@@ -83,23 +78,6 @@ static inline bool clockevent_state_oneshot(struct clock_event_device *dev)
 	return dev->state_use_accessors == CLOCK_EVT_STATE_ONESHOT;
 }
 
-static inline bool clockevent_state_oneshot_stopped(struct clock_event_device *dev)
-{
-	return dev->state_use_accessors == CLOCK_EVT_STATE_ONESHOT_STOPPED;
-}
-
- 
-static inline unsigned long
-div_sc(unsigned long ticks, unsigned long nsec, int shift)
-{
-	u64 tmp = ((u64)ticks) << shift;
-
-	do_div(tmp, nsec);
-
-	return (unsigned long) tmp;
-}
-
- 
 extern u64 clockevent_delta2ns(unsigned long latch, struct clock_event_device *evt);
 extern void clockevents_register_device(struct clock_event_device *dev);
 extern int clockevents_unbind_device(struct clock_event_device *ced, int cpu);

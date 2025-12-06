@@ -1,11 +1,8 @@
- 
- 
 #ifndef SPLICE_H
 #define SPLICE_H
 
 #include <linux/pipe_fs_i.h>
 
- 
 #define SPLICE_F_MOVE	(0x01)	 
 #define SPLICE_F_NONBLOCK (0x02)  
 				  
@@ -15,7 +12,6 @@
 
 #define SPLICE_F_ALL (SPLICE_F_MOVE|SPLICE_F_NONBLOCK|SPLICE_F_MORE|SPLICE_F_GIFT)
 
- 
 struct splice_desc {
 	size_t total_len;		 
 	unsigned int len;		 
@@ -38,7 +34,6 @@ struct partial_page {
 	unsigned long private;
 };
 
- 
 struct splice_pipe_desc {
 	struct page **pages;		 
 	struct partial_page *partial;	 
@@ -71,7 +66,6 @@ extern long do_splice(struct file *in, loff_t *off_in,
 extern long do_tee(struct file *in, struct file *out, size_t len,
 		   unsigned int flags);
 
- 
 extern int splice_grow_spd(const struct pipe_inode_info *, struct splice_pipe_desc *);
 extern void splice_shrink_spd(struct splice_pipe_desc *);
 

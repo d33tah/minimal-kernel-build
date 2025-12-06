@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_STRING_HELPERS_H_
 #define _LINUX_STRING_HELPERS_H_
 
@@ -11,7 +10,6 @@ struct device;
 struct file;
 struct task_struct;
 
- 
 enum string_size_units {
 	STRING_UNITS_10,
 };

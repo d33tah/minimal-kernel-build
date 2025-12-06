@@ -1,16 +1,12 @@
- 
 #ifndef __ASM_GENERIC_ACCESS_OK_H__
 #define __ASM_GENERIC_ACCESS_OK_H__
 
- 
 
- 
 #ifndef TASK_SIZE_MAX
 #define TASK_SIZE_MAX			TASK_SIZE
 #endif
 
 #ifndef __access_ok
- 
 static inline int __access_ok(const void __user *ptr, unsigned long size)
 {
 	unsigned long limit = TASK_SIZE_MAX;

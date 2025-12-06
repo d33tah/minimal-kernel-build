@@ -1,4 +1,3 @@
- 
 #include <linux/linkage.h>
 #include <linux/errno.h>
 #include <linux/signal.h>
@@ -23,18 +22,14 @@
 #include <asm/apic.h>
 #include <asm/i8259.h>
 
- 
 static void init_8259A(int auto_eoi);
 
 static int i8259A_auto_eoi;
 DEFINE_RAW_SPINLOCK(i8259A_lock);
 
- 
 
- 
 unsigned int cached_irq_mask = 0xffff;
 
- 
 unsigned long io_apic_irqs;
 
 static void mask_8259A_irq(unsigned int irq)
@@ -100,7 +95,6 @@ static void make_8259A_irq(unsigned int irq)
 	lapic_assign_legacy_vector(irq, true);
 }
 
- 
 static inline int i8259A_irq_real(unsigned int irq)
 {
 	int value;
@@ -118,7 +112,6 @@ static inline int i8259A_irq_real(unsigned int irq)
 	return value;
 }
 
- 
 static void mask_and_ack_8259A(struct irq_data *data)
 {
 	unsigned int irq = data->irq;
@@ -268,7 +261,6 @@ static void init_8259A(int auto_eoi)
 	raw_spin_unlock_irqrestore(&i8259A_lock, flags);
 }
 
- 
 
 static void legacy_pic_noop(void) { };
 static void legacy_pic_uint_noop(unsigned int unused) { };

@@ -1,4 +1,3 @@
- 
 #include <linux/init.h>
 #include <linux/ioport.h>
 #include <linux/export.h>
@@ -36,7 +35,6 @@ static __initconst const struct of_device_id of_cmos_match[] = {
 	{}
 };
 
- 
 static __init void x86_wallclock_init(void)
 {
 	struct device_node *node = of_find_matching_node(NULL, of_cmos_match);
@@ -47,7 +45,6 @@ static __init void x86_wallclock_init(void)
 	}
 }
 
- 
 struct x86_init_ops x86_init __initdata = {
 
 	.resources = {

@@ -1,11 +1,9 @@
- 
 
 #include <linux/uaccess.h>
 #include <linux/export.h>
 
 #include <asm/tlbflush.h>
 
- 
 unsigned long
 copy_from_user_nmi(void *to, const void __user *from, unsigned long n)
 {

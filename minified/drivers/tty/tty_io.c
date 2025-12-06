@@ -1,4 +1,3 @@
- 
 
 #include <linux/types.h>
 #include <linux/major.h>
@@ -11,7 +10,8 @@
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
 #include <linux/tty_flip.h>
-#include <linux/devpts_fs.h>
+/* devpts_fs.h inlined */
+static inline int ptm_open_peer(struct file *master, struct tty_struct *tty, int flags) { return -EIO; }
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/console.h>
@@ -22,7 +22,6 @@
 #include <linux/string.h>
 #include <linux/slab.h>
 #include <linux/poll.h>
-#include <linux/ppp-ioctl.h>
 #include <linux/proc_fs.h>
 #include <linux/init.h>
 #include <linux/module.h>
@@ -45,12 +44,7 @@
 #include <linux/nsproxy.h>
 #include "tty.h"
 
-#undef TTY_DEBUG_HANGUP
-#ifdef TTY_DEBUG_HANGUP
-# define tty_debug_hangup(tty, f, args...)	tty_debug(tty, f, ##args)
-#else
-# define tty_debug_hangup(tty, f, args...)	do { } while (0)
-#endif
+#define tty_debug_hangup(tty, f, args...)	do { } while (0)
 
 #define TTY_PARANOIA_CHECK 1
 #define CHECK_TTY_COUNT 1

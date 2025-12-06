@@ -1,4 +1,3 @@
- 
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/memblock.h>
@@ -6,7 +5,6 @@
 #include <asm/setup.h>
 #include <asm/bios_ebda.h>
 
- 
 
 #define BIOS_RAM_SIZE_KB_PTR	0x413
 

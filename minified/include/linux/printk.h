@@ -1,11 +1,30 @@
- 
 #ifndef __KERNEL_PRINTK__
 #define __KERNEL_PRINTK__
 
 #include <linux/stdarg.h>
 #include <linux/init.h>
-#include <linux/kern_levels.h>
 #include <linux/linkage.h>
+
+/* --- 2025-12-06 20:19 --- kern_levels.h inlined (27 LOC) */
+#define KERN_SOH	"\001"
+#define KERN_SOH_ASCII	'\001'
+#define KERN_EMERG	KERN_SOH "0"
+#define KERN_ALERT	KERN_SOH "1"
+#define KERN_CRIT	KERN_SOH "2"
+#define KERN_ERR	KERN_SOH "3"
+#define KERN_WARNING	KERN_SOH "4"
+#define KERN_NOTICE	KERN_SOH "5"
+#define KERN_INFO	KERN_SOH "6"
+#define KERN_DEBUG	KERN_SOH "7"
+#define KERN_DEFAULT	""
+#define KERN_CONT	KERN_SOH "c"
+#define LOGLEVEL_DEFAULT	-1
+#define LOGLEVEL_EMERG		0
+#define LOGLEVEL_ERR		3
+#define LOGLEVEL_WARNING	4
+#define LOGLEVEL_INFO		6
+#define LOGLEVEL_DEBUG		7
+/* --- end kern_levels.h inlined --- */
 #include <linux/ratelimit_types.h>
 
 
@@ -15,46 +34,15 @@ extern int oops_in_progress;
 
 #define PRINTK_MAX_SINGLE_HEADER_LEN 2
 
-static inline int printk_get_level(const char *buffer)
-{
-	if (buffer[0] == KERN_SOH_ASCII && buffer[1]) {
-		switch (buffer[1]) {
-		case '0' ... '7':
-		case 'c':	 
-			return buffer[1];
-		}
-	}
-	return 0;
-}
-
-static inline const char *printk_skip_level(const char *buffer)
-{
-	if (printk_get_level(buffer))
-		return buffer + 2;
-
-	return buffer;
-}
-
-static inline const char *printk_skip_headers(const char *buffer)
-{
-	while (printk_get_level(buffer))
-		buffer = printk_skip_level(buffer);
-
-	return buffer;
-}
-
 #define CONSOLE_EXT_LOG_MAX	8192
 
- 
 #define MESSAGE_LOGLEVEL_DEFAULT CONFIG_MESSAGE_LOGLEVEL_DEFAULT
 
- 
 #define CONSOLE_LOGLEVEL_SILENT  0  
 #define CONSOLE_LOGLEVEL_MIN	 1  
 #define CONSOLE_LOGLEVEL_DEBUG	10  
 #define CONSOLE_LOGLEVEL_MOTORMOUTH 15	 
 
- 
 #define CONSOLE_LOGLEVEL_DEFAULT CONFIG_CONSOLE_LOGLEVEL_DEFAULT
 #define CONSOLE_LOGLEVEL_QUIET	 CONFIG_CONSOLE_LOGLEVEL_QUIET
 
@@ -76,18 +64,14 @@ struct va_format {
 	va_list *va;
 };
 
- 
 #define FW_BUG		"[Firmware Bug]: "
 #define FW_WARN		"[Firmware Warn]: "
 #define FW_INFO		"[Firmware Info]: "
 
- 
 #define HW_ERR		"[Hardware Error]: "
 
- 
 #define DEPRECATED	"[Deprecated]: "
 
- 
 #define no_printk(fmt, ...)				\
 ({							\
 	if (0)						\
@@ -125,11 +109,6 @@ static inline int printk_ratelimit(void)
 {
 	return 0;
 }
-static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies,
-					  unsigned int interval_msec)
-{
-	return false;
-}
 
 static inline void wake_up_klogd(void)
 {
@@ -139,28 +118,14 @@ static inline void setup_log_buf(int early)
 {
 }
 
-static inline void dump_stack_print_info(const char *log_lvl)
-{
-}
-
-static inline void show_regs_print_info(const char *log_lvl)
-{
-}
-
-static inline void dump_stack_lvl(const char *log_lvl)
-{
-}
-
 static inline void dump_stack(void)
 {
 }
-
 
 #define __printk_cpu_sync_try_get() true
 #define __printk_cpu_sync_wait()
 #define __printk_cpu_sync_put()
 
- 
 #define printk_cpu_sync_get_irqsave(flags)		\
 	for (;;) {					\
 		local_irq_save(flags);			\
@@ -170,7 +135,6 @@ static inline void dump_stack(void)
 		__printk_cpu_sync_wait();		\
 	}
 
- 
 #define printk_cpu_sync_put_irqrestore(flags)	\
 	do {					\
 		__printk_cpu_sync_put();	\
@@ -179,7 +143,6 @@ static inline void dump_stack(void)
 
 extern int kptr_restrict;
 
- 
 #ifndef pr_fmt
 #define pr_fmt(fmt) fmt
 #endif
@@ -188,7 +151,6 @@ struct module;
 
 #define __printk_index_emit(...) do {} while (0)
 
- 
 #define printk_index_subsys_emit(subsys_fmt_prefix, level, fmt, ...) \
 	__printk_index_emit(fmt, level, subsys_fmt_prefix)
 
@@ -199,38 +161,28 @@ struct module;
 	})
 
 
- 
 #define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
 #define printk_deferred(fmt, ...)					\
 	printk_index_wrap(_printk_deferred, fmt, ##__VA_ARGS__)
 
- 
 #define pr_emerg(fmt, ...) \
 	printk(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
- 
 #define pr_alert(fmt, ...) \
 	printk(KERN_ALERT pr_fmt(fmt), ##__VA_ARGS__)
- 
 #define pr_crit(fmt, ...) \
 	printk(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)
- 
 #define pr_err(fmt, ...) \
 	printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
- 
 #define pr_warn(fmt, ...) \
 	printk(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
- 
 #define pr_notice(fmt, ...) \
 	printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
- 
 #define pr_info(fmt, ...) \
 	printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
 
- 
 #define pr_cont(fmt, ...) \
 	printk(KERN_CONT fmt, ##__VA_ARGS__)
 
- 
 #ifdef DEBUG
 #define pr_devel(fmt, ...) \
 	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
@@ -240,12 +192,10 @@ struct module;
 #endif
 
 
- 
 #if defined(CONFIG_DYNAMIC_DEBUG) || \
 	(defined(CONFIG_DYNAMIC_DEBUG_CORE) && defined(DYNAMIC_DEBUG_MODULE))
 #include <linux/dynamic_debug.h>
 
- 
 #define pr_debug(fmt, ...)			\
 	dynamic_pr_debug(fmt, ##__VA_ARGS__)
 #elif defined(DEBUG)
@@ -256,133 +206,35 @@ struct module;
 	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
- 
 
 #define printk_once(fmt, ...)					\
 	no_printk(fmt, ##__VA_ARGS__)
 #define printk_deferred_once(fmt, ...)				\
 	no_printk(fmt, ##__VA_ARGS__)
 
-#define pr_emerg_once(fmt, ...)					\
-	printk_once(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_alert_once(fmt, ...)					\
-	printk_once(KERN_ALERT pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_crit_once(fmt, ...)					\
-	printk_once(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)
+/* pr_emerg/alert/crit/notice_once removed - unused */
 #define pr_err_once(fmt, ...)					\
 	printk_once(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_warn_once(fmt, ...)					\
 	printk_once(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_notice_once(fmt, ...)				\
-	printk_once(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_info_once(fmt, ...)					\
 	printk_once(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
- 
 
-#if defined(DEBUG)
-#define pr_devel_once(fmt, ...)					\
-	printk_once(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-#else
-#define pr_devel_once(fmt, ...)					\
-	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-#endif
+/* pr_devel_once, pr_debug_once removed - unused */
 
- 
-#if defined(DEBUG)
-#define pr_debug_once(fmt, ...)					\
-	printk_once(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-#else
-#define pr_debug_once(fmt, ...)					\
-	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-#endif
-
- 
 #define printk_ratelimited(fmt, ...)					\
 	no_printk(fmt, ##__VA_ARGS__)
 
 #define pr_emerg_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_alert_ratelimited(fmt, ...)					\
-	printk_ratelimited(KERN_ALERT pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_crit_ratelimited(fmt, ...)					\
-	printk_ratelimited(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)
+/* pr_alert/crit/notice/devel/debug_ratelimited removed - unused */
 #define pr_err_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_warn_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_notice_ratelimited(fmt, ...)					\
-	printk_ratelimited(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_info_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
- 
 
-#if defined(DEBUG)
-#define pr_devel_ratelimited(fmt, ...)					\
-	printk_ratelimited(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-#else
-#define pr_devel_ratelimited(fmt, ...)					\
-	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-#endif
-
- 
-#if defined(CONFIG_DYNAMIC_DEBUG) || \
-	(defined(CONFIG_DYNAMIC_DEBUG_CORE) && defined(DYNAMIC_DEBUG_MODULE))
- 
-#define pr_debug_ratelimited(fmt, ...)					\
-do {									\
-	static DEFINE_RATELIMIT_STATE(_rs,				\
-				      DEFAULT_RATELIMIT_INTERVAL,	\
-				      DEFAULT_RATELIMIT_BURST);		\
-	DEFINE_DYNAMIC_DEBUG_METADATA(descriptor, pr_fmt(fmt));		\
-	if (DYNAMIC_DEBUG_BRANCH(descriptor) &&				\
-	    __ratelimit(&_rs))						\
-		__dynamic_pr_debug(&descriptor, pr_fmt(fmt), ##__VA_ARGS__);	\
-} while (0)
-#elif defined(DEBUG)
-#define pr_debug_ratelimited(fmt, ...)					\
-	printk_ratelimited(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-#else
-#define pr_debug_ratelimited(fmt, ...) \
-	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-#endif
-
-enum {
-	DUMP_PREFIX_NONE,
-	DUMP_PREFIX_ADDRESS,
-	DUMP_PREFIX_OFFSET
-};
-static inline void print_hex_dump(const char *level, const char *prefix_str,
-				  int prefix_type, int rowsize, int groupsize,
-				  const void *buf, size_t len, bool ascii)
-{
-}
-static inline void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
-					const void *buf, size_t len)
-{
-}
-
-
-#if defined(CONFIG_DYNAMIC_DEBUG) || \
-	(defined(CONFIG_DYNAMIC_DEBUG_CORE) && defined(DYNAMIC_DEBUG_MODULE))
-#define print_hex_dump_debug(prefix_str, prefix_type, rowsize,	\
-			     groupsize, buf, len, ascii)	\
-	dynamic_hex_dump(prefix_str, prefix_type, rowsize,	\
-			 groupsize, buf, len, ascii)
-#elif defined(DEBUG)
-#define print_hex_dump_debug(prefix_str, prefix_type, rowsize,		\
-			     groupsize, buf, len, ascii)		\
-	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, rowsize,	\
-		       groupsize, buf, len, ascii)
-#else
-static inline void print_hex_dump_debug(const char *prefix_str, int prefix_type,
-					int rowsize, int groupsize,
-					const void *buf, size_t len, bool ascii)
-{
-}
-#endif
-
- 
-#define print_hex_dump_bytes(prefix_str, prefix_type, buf, len)	\
-	print_hex_dump_debug(prefix_str, prefix_type, 16, 1, buf, len, true)
+/* print_hex_dump*, DUMP_PREFIX_* removed - unused */
 
 #endif

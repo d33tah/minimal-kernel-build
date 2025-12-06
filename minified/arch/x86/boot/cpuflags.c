@@ -1,4 +1,3 @@
- 
 #include <linux/types.h>
 #include "bitops.h"
 
@@ -29,14 +28,9 @@ static int has_fpu(void)
 	return fsw == 0 && (fcw & 0x103f) == 0x003f;
 }
 
- 
-#ifdef __x86_64__
-#define PUSHF "pushfq"
-#define POPF "popfq"
-#else
+/* 32-bit only kernel */
 #define PUSHF "pushfl"
 #define POPF "popfl"
-#endif
 
 int has_eflag(unsigned long mask)
 {
@@ -58,7 +52,6 @@ int has_eflag(unsigned long mask)
 	return !!((f0^f1) & mask);
 }
 
- 
 #if defined(__i386__) && defined(__PIC__)
 # define EBX_REG "=r"
 #else

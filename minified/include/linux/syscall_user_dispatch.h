@@ -1,5 +1,3 @@
- 
- 
 #ifndef _SYSCALL_USER_DISPATCH_H
 #define _SYSCALL_USER_DISPATCH_H
 

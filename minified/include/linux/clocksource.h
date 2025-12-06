@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_CLOCKSOURCE_H
 #define _LINUX_CLOCKSOURCE_H
 
@@ -11,7 +9,7 @@
 #include <linux/timer.h>
 #include <linux/init.h>
 #include <linux/of.h>
-#include <linux/clocksource_ids.h>
+#include <linux/timekeeping.h>
 #include <asm/div64.h>
 #include <asm/io.h>
 
@@ -25,7 +23,6 @@ struct module;
 
 #include <vdso/clocksource.h>
 
- 
 struct clocksource {
 	u64			(*read)(struct clocksource *cs);
 	u64			mask;
@@ -57,7 +54,6 @@ struct clocksource {
 	struct module		*owner;
 };
 
- 
 #define CLOCK_SOURCE_IS_CONTINUOUS		0x01
 #define CLOCK_SOURCE_MUST_VERIFY		0x02
 
@@ -67,33 +63,10 @@ struct clocksource {
 #define CLOCK_SOURCE_SUSPEND_NONSTOP		0x80
 #define CLOCK_SOURCE_RESELECT			0x100
 #define CLOCK_SOURCE_VERIFY_PERCPU		0x200
- 
 #define CLOCKSOURCE_MASK(bits) GENMASK_ULL((bits) - 1, 0)
 
-static inline u32 clocksource_freq2mult(u32 freq, u32 shift_constant, u64 from)
-{
-	 
-	u64 tmp = ((u64)from) << shift_constant;
+/* clocksource_freq2mult, clocksource_khz2mult, clocksource_hz2mult removed - unused */
 
-	tmp += freq/2;  
-	do_div(tmp, freq);
-
-	return (u32)tmp;
-}
-
- 
-static inline u32 clocksource_khz2mult(u32 khz, u32 shift_constant)
-{
-	return clocksource_freq2mult(khz, shift_constant, NSEC_PER_MSEC);
-}
-
- 
-static inline u32 clocksource_hz2mult(u32 hz, u32 shift_constant)
-{
-	return clocksource_freq2mult(hz, shift_constant, NSEC_PER_SEC);
-}
-
- 
 static inline s64 clocksource_cyc2ns(u64 cycles, u32 mult, u32 shift)
 {
 	return ((u64) cycles * mult) >> shift;
@@ -116,13 +89,11 @@ clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask, u64 *max_cycles
 extern void
 clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 minsec);
 
- 
 extern int
 __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq);
 extern void
 __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq);
 
- 
 static inline int __clocksource_register(struct clocksource *cs)
 {
 	return __clocksource_register_scale(cs, 1, 0);
@@ -138,15 +109,7 @@ static inline int clocksource_register_khz(struct clocksource *cs, u32 khz)
 	return __clocksource_register_scale(cs, 1000, khz);
 }
 
-static inline void __clocksource_update_freq_hz(struct clocksource *cs, u32 hz)
-{
-	__clocksource_update_freq_scale(cs, 1, hz);
-}
-
-static inline void __clocksource_update_freq_khz(struct clocksource *cs, u32 khz)
-{
-	__clocksource_update_freq_scale(cs, 1000, khz);
-}
+/* __clocksource_update_freq_hz, __clocksource_update_freq_khz removed - unused */
 
 extern void clocksource_arch_init(struct clocksource *cs);
 
@@ -165,7 +128,7 @@ extern int clocksource_i8253_init(void);
 #define TIMER_OF_DECLARE(name, compat, fn) \
 	OF_DECLARE_1_RET(timer, name, compat, fn)
 
-static inline void timer_probe(void) {}
+/* timer_probe removed - unused */
 
 #define TIMER_ACPI_DECLARE(name, table_id, fn)		\
 	ACPI_DECLARE_PROBE_ENTRY(timer, name, table_id, 0, NULL, 0, fn)

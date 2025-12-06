@@ -1,17 +1,19 @@
- 
- 
 #include <linux/crash_dump.h>
 #include <linux/memblock.h>
 #include <linux/suspend.h>
 #include <linux/acpi.h>
-#include <linux/firmware-map.h>
 #include <linux/sort.h>
+
+/* --- 2025-12-06 20:26 --- firmware-map.h inlined (23 LOC) */
+static inline int firmware_map_add_early(u64 start, u64 end, const char *type) { return 0; }
+static inline int firmware_map_add_hotplug(u64 start, u64 end, const char *type) { return 0; }
+static inline int firmware_map_remove(u64 start, u64 end, const char *type) { return 0; }
+/* --- end firmware-map.h inlined --- */
 #include <linux/memory_hotplug.h>
 
 #include <asm/e820/api.h>
 #include <asm/setup.h>
 
- 
 static struct e820_table e820_table_init		__initdata;
 static struct e820_table e820_table_kexec_init		__initdata;
 static struct e820_table e820_table_firmware_init	__initdata;
@@ -20,7 +22,6 @@ struct e820_table *e820_table __refdata			= &e820_table_init;
 struct e820_table *e820_table_kexec __refdata		= &e820_table_kexec_init;
 struct e820_table *e820_table_firmware __refdata	= &e820_table_firmware_init;
 
- 
 unsigned long pci_mem_start = 0xaeedbabe;
 
 /* Stubbed - not used externally */
@@ -34,7 +35,6 @@ bool e820__mapped_any(u64 start, u64 end, enum e820_type type)
 	return false;
 }
 
- 
 static struct e820_entry *__e820__mapped_all(u64 start, u64 end,
 					     enum e820_type type)
 {
@@ -62,7 +62,6 @@ static struct e820_entry *__e820__mapped_all(u64 start, u64 end,
 	return NULL;
 }
 
- 
 bool __init e820__mapped_all(u64 start, u64 end, enum e820_type type)
 {
 	return __e820__mapped_all(start, end, type);
@@ -74,7 +73,6 @@ int e820__get_entry_type(u64 start, u64 end)
 	return -EINVAL;
 }
 
- 
 static void __init __e820__range_add(struct e820_table *table, u64 start, u64 size, enum e820_type type)
 {
 	int x = table->nr_entries;
@@ -106,7 +104,6 @@ void __init e820__print_table(char *who)
 	/* Stub: e820 memory map printing not needed for minimal kernel */
 }
 
- 
 struct change_member {
 	 
 	struct e820_entry	*entry;
@@ -256,7 +253,6 @@ static int __init __append_e820_table(struct boot_e820_entry *entries, u32 nr_en
 	return 0;
 }
 
- 
 static int __init append_e820_table(struct boot_e820_entry *entries, u32 nr_entries)
 {
 	 
@@ -341,7 +337,6 @@ static u64 __init e820__range_update_kexec(u64 start, u64 size, enum e820_type o
 	return __e820__range_update(e820_table_kexec, start, size, old_type, new_type);
 }
 
- 
 u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type, bool check_type)
 {
 	int i;
@@ -413,7 +408,6 @@ static void __init e820__update_table_kexec(void)
 
 #define MAX_GAP_END 0x100000000ull
 
- 
 static int __init e820_search_gap(unsigned long *gapstart, unsigned long *gapsize)
 {
 	unsigned long long last = MAX_GAP_END;
@@ -440,7 +434,6 @@ static int __init e820_search_gap(unsigned long *gapstart, unsigned long *gapsiz
 	return found;
 }
 
- 
 __init void e820__setup_pci_gap(void)
 {
 	unsigned long gapstart, gapsize;
@@ -460,7 +453,6 @@ __init void e820__setup_pci_gap(void)
 		gapstart, gapstart + gapsize - 1);
 }
 
- 
 __init void e820__reallocate_tables(void)
 {
 	struct e820_table *n;
@@ -482,7 +474,6 @@ __init void e820__reallocate_tables(void)
 	e820_table_firmware = n;
 }
 
- 
 void __init e820__memory_setup_extended(u64 phys_addr, u32 data_len)
 {
 	int entries;
@@ -504,14 +495,12 @@ void __init e820__memory_setup_extended(u64 phys_addr, u32 data_len)
 	e820__print_table("extended");
 }
 
- 
 void __init e820__register_nosave_regions(unsigned long limit_pfn)
 {
 	/* Stub: hibernation nosave regions not needed for minimal kernel */
 }
 
 
- 
 u64 __init e820__memblock_alloc_reserved(u64 size, u64 align)
 {
 	u64 addr;
@@ -528,7 +517,6 @@ u64 __init e820__memblock_alloc_reserved(u64 size, u64 align)
 
 #  define MAX_ARCH_PFN		(1ULL<<(32-PAGE_SHIFT))
 
- 
 static unsigned long __init e820_end_pfn(unsigned long limit_pfn, enum e820_type type)
 {
 	int i;
@@ -590,7 +578,6 @@ early_param("mem", parse_memopt);
 static int __init parse_memmap_opt(char *str) { return 0; }
 early_param("memmap", parse_memmap_opt);
 
- 
 void __init e820__reserve_setup_data(void)
 {
 	struct setup_indirect *indirect;
@@ -650,7 +637,6 @@ void __init e820__reserve_setup_data(void)
 	e820__print_table("reserve setup_data");
 }
 
- 
 void __init e820__finish_early_params(void)
 {
 	if (userdef) {
@@ -733,7 +719,6 @@ static bool __init do_mark_busy(enum e820_type type, struct resource *res)
 	}
 }
 
- 
 
 static struct resource __initdata *e820_res;
 
@@ -785,7 +770,6 @@ void __init e820__reserve_resources(void)
 /* Stub: e820__reserve_resources_late not called in minimal kernel */
 void __init e820__reserve_resources_late(void) { }
 
- 
 char *__init e820__memory_setup_default(void)
 {
 	char *who = "BIOS-e820";
@@ -814,7 +798,6 @@ char *__init e820__memory_setup_default(void)
 	return who;
 }
 
- 
 void __init e820__memory_setup(void)
 {
 	char *who;

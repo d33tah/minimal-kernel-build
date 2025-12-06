@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/init.h>
 #include <linux/fs.h>
@@ -36,7 +34,6 @@ static struct char_device_struct {
 	struct cdev *cdev;		 
 } *chrdevs[CHRDEV_MAJOR_HASH_SIZE];
 
- 
 static inline int major_to_index(unsigned major)
 {
 	return major % CHRDEV_MAJOR_HASH_SIZE;
@@ -66,7 +63,6 @@ static int find_dynamic_major(void)
 	return -EBUSY;
 }
 
- 
 static struct char_device_struct *
 __register_chrdev_region(unsigned int major, unsigned int baseminor,
 			   int minorct, const char *name)
@@ -162,7 +158,6 @@ __unregister_chrdev_region(unsigned major, unsigned baseminor, int minorct)
 	return cd;
 }
 
- 
 int register_chrdev_region(dev_t from, unsigned count, const char *name)
 {
 	struct char_device_struct *cd;
@@ -188,7 +183,6 @@ fail:
 	return PTR_ERR(cd);
 }
 
- 
 int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count,
 			const char *name)
 {
@@ -200,7 +194,6 @@ int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count,
 	return 0;
 }
 
- 
 int __register_chrdev(unsigned int major, unsigned int baseminor,
 		      unsigned int count, const char *name,
 		      const struct file_operations *fops)
@@ -235,7 +228,6 @@ out2:
 	return err;
 }
 
- 
 void unregister_chrdev_region(dev_t from, unsigned count)
 {
 	dev_t to = from + count;
@@ -249,7 +241,6 @@ void unregister_chrdev_region(dev_t from, unsigned count)
 	}
 }
 
- 
 void __unregister_chrdev(unsigned int major, unsigned int baseminor,
 			 unsigned int count, const char *name)
 {
@@ -285,7 +276,6 @@ void cdev_put(struct cdev *p)
 	}
 }
 
- 
 static int chrdev_open(struct inode *inode, struct file *filp)
 {
 	const struct file_operations *fops;
@@ -359,7 +349,6 @@ static void cdev_purge(struct cdev *cdev)
 	spin_unlock(&cdev_lock);
 }
 
- 
 const struct file_operations def_chr_fops = {
 	.open = chrdev_open,
 	.llseek = noop_llseek,
@@ -377,7 +366,6 @@ static int exact_lock(dev_t dev, void *data)
 	return cdev_get(p) ? 0 : -1;
 }
 
- 
 int cdev_add(struct cdev *p, dev_t dev, unsigned count)
 {
 	int error;
@@ -403,7 +391,6 @@ static void cdev_unmap(dev_t dev, unsigned count)
 	kobj_unmap(cdev_map, dev, count);
 }
 
- 
 void cdev_del(struct cdev *p)
 {
 	cdev_unmap(p->dev, p->count);
@@ -438,7 +425,6 @@ static struct kobj_type ktype_cdev_dynamic = {
 	.release	= cdev_dynamic_release,
 };
 
- 
 struct cdev *cdev_alloc(void)
 {
 	struct cdev *p = kzalloc(sizeof(struct cdev), GFP_KERNEL);
@@ -449,7 +435,6 @@ struct cdev *cdev_alloc(void)
 	return p;
 }
 
- 
 void cdev_init(struct cdev *cdev, const struct file_operations *fops)
 {
 	memset(cdev, 0, sizeof *cdev);
@@ -472,4 +457,3 @@ void __init chrdev_init(void)
 }
 
 
- 

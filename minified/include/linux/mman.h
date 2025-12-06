@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_MMAN_H
 #define _LINUX_MMAN_H
 
@@ -6,9 +5,38 @@
 #include <linux/percpu_counter.h>
 
 #include <linux/atomic.h>
-#include <uapi/linux/mman.h>
+#include <asm/mman.h>
 
- 
+/* From uapi/linux/mman.h and asm-generic/hugetlb_encode.h - inlined */
+#define MREMAP_MAYMOVE		1
+#define MREMAP_FIXED		2
+#define MREMAP_DONTUNMAP	4
+#define OVERCOMMIT_GUESS		0
+#define OVERCOMMIT_ALWAYS		1
+#define OVERCOMMIT_NEVER		2
+#define MAP_SHARED	0x01
+#define MAP_PRIVATE	0x02
+#define MAP_SHARED_VALIDATE 0x03
+
+/* hugetlb encoding constants */
+#define HUGETLB_FLAG_ENCODE_SHIFT	26
+#define HUGETLB_FLAG_ENCODE_MASK	0x3f
+#define MAP_HUGE_SHIFT	HUGETLB_FLAG_ENCODE_SHIFT
+#define MAP_HUGE_MASK	HUGETLB_FLAG_ENCODE_MASK
+#define MAP_HUGE_16KB	(14 << HUGETLB_FLAG_ENCODE_SHIFT)
+#define MAP_HUGE_64KB	(16 << HUGETLB_FLAG_ENCODE_SHIFT)
+#define MAP_HUGE_512KB	(19 << HUGETLB_FLAG_ENCODE_SHIFT)
+#define MAP_HUGE_1MB	(20 << HUGETLB_FLAG_ENCODE_SHIFT)
+#define MAP_HUGE_2MB	(21 << HUGETLB_FLAG_ENCODE_SHIFT)
+#define MAP_HUGE_8MB	(23 << HUGETLB_FLAG_ENCODE_SHIFT)
+#define MAP_HUGE_16MB	(24 << HUGETLB_FLAG_ENCODE_SHIFT)
+#define MAP_HUGE_32MB	(25 << HUGETLB_FLAG_ENCODE_SHIFT)
+#define MAP_HUGE_256MB	(28 << HUGETLB_FLAG_ENCODE_SHIFT)
+#define MAP_HUGE_512MB	(29 << HUGETLB_FLAG_ENCODE_SHIFT)
+#define MAP_HUGE_1GB	(30 << HUGETLB_FLAG_ENCODE_SHIFT)
+#define MAP_HUGE_2GB	(31 << HUGETLB_FLAG_ENCODE_SHIFT)
+#define MAP_HUGE_16GB	(34 << HUGETLB_FLAG_ENCODE_SHIFT)
+
 #ifndef MAP_32BIT
 #define MAP_32BIT 0
 #endif
@@ -25,7 +53,6 @@
 #define MAP_SYNC 0
 #endif
 
- 
 #define LEGACY_MAP_MASK (MAP_SHARED \
 		| MAP_PRIVATE \
 		| MAP_FIXED \
@@ -50,9 +77,6 @@ extern unsigned long sysctl_overcommit_kbytes;
 extern struct percpu_counter vm_committed_as;
 
 #define vm_committed_as_batch 0
-static inline void mm_compute_batch(int overcommit_policy)
-{
-}
 
 unsigned long vm_memory_committed(void);
 
@@ -66,7 +90,6 @@ static inline void vm_unacct_memory(long pages)
 	vm_acct_memory(-pages);
 }
 
- 
 
 #ifndef arch_calc_vm_prot_bits
 #define arch_calc_vm_prot_bits(prot, pkey) 0
@@ -77,7 +100,6 @@ static inline void vm_unacct_memory(long pages)
 #endif
 
 #ifndef arch_validate_prot
- 
 static inline bool arch_validate_prot(unsigned long prot, unsigned long addr)
 {
 	return (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM)) == 0;
@@ -86,7 +108,6 @@ static inline bool arch_validate_prot(unsigned long prot, unsigned long addr)
 #endif
 
 #ifndef arch_validate_flags
- 
 static inline bool arch_validate_flags(unsigned long flags)
 {
 	return true;
@@ -94,13 +115,11 @@ static inline bool arch_validate_flags(unsigned long flags)
 #define arch_validate_flags arch_validate_flags
 #endif
 
- 
 #define _calc_vm_trans(x, bit1, bit2) \
   ((!(bit1) || !(bit2)) ? 0 : \
   ((bit1) <= (bit2) ? ((x) & (bit1)) * ((bit2) / (bit1)) \
    : ((x) & (bit1)) / ((bit1) / (bit2))))
 
- 
 static inline unsigned long
 calc_vm_prot_bits(unsigned long prot, unsigned long pkey)
 {
@@ -110,7 +129,6 @@ calc_vm_prot_bits(unsigned long prot, unsigned long pkey)
 	       arch_calc_vm_prot_bits(prot, pkey);
 }
 
- 
 static inline unsigned long
 calc_vm_flag_bits(unsigned long flags)
 {

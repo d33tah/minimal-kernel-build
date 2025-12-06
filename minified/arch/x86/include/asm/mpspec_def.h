@@ -73,26 +73,6 @@ struct mpc_bus {
 	unsigned char bustype[6];
 };
 
- 
-#define BUSTYPE_EISA	"EISA"
-#define BUSTYPE_ISA	"ISA"
-#define BUSTYPE_INTERN	"INTERN"	 
-#define BUSTYPE_MCA	"MCA"		 
-#define BUSTYPE_VL	"VL"		 
-#define BUSTYPE_PCI	"PCI"
-#define BUSTYPE_PCMCIA	"PCMCIA"
-#define BUSTYPE_CBUS	"CBUS"
-#define BUSTYPE_CBUSII	"CBUSII"
-#define BUSTYPE_FUTURE	"FUTURE"
-#define BUSTYPE_MBI	"MBI"
-#define BUSTYPE_MBII	"MBII"
-#define BUSTYPE_MPI	"MPI"
-#define BUSTYPE_MPSA	"MPSA"
-#define BUSTYPE_NUBUS	"NUBUS"
-#define BUSTYPE_TC	"TC"
-#define BUSTYPE_VME	"VME"
-#define BUSTYPE_XPRESS	"XPRESS"
-
 #define MPC_APIC_USABLE		0x01
 
 struct mpc_ioapic {
@@ -143,18 +123,6 @@ struct mpc_lintsrc {
 	unsigned char destapic;
 	unsigned char destapiclint;
 };
-
-#define MPC_OEM_SIGNATURE "_OEM"
-
-struct mpc_oemtable {
-	char signature[4];
-	unsigned short length;		 
-	char  rev;			 
-	char  checksum;
-	char  mpc[8];
-};
-
- 
 
 enum mp_bustype {
 	MP_BUS_ISA = 1,

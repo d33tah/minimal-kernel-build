@@ -1,9 +1,5 @@
- 
 
- 
- 
 
- 
 #ifndef _LINUX_ATOMIC_INSTRUMENTED_H
 #define _LINUX_ATOMIC_INSTRUMENTED_H
 
@@ -1938,4 +1934,3 @@ atomic_long_dec_if_positive(atomic_long_t *v)
 })
 
 #endif  
- 

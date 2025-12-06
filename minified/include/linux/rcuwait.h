@@ -1,11 +1,9 @@
- 
 #ifndef _LINUX_RCUWAIT_H_
 #define _LINUX_RCUWAIT_H_
 
 #include <linux/rcupdate.h>
 #include <linux/sched/signal.h>
 
- 
 struct rcuwait {
 	struct task_struct __rcu *task;
 };
@@ -18,7 +16,6 @@ static inline void rcuwait_init(struct rcuwait *w)
 	w->task = NULL;
 }
 
- 
 static inline int rcuwait_active(struct rcuwait *w)
 {
 	return !!rcu_access_pointer(w->task);
@@ -26,7 +23,6 @@ static inline int rcuwait_active(struct rcuwait *w)
 
 extern int rcuwait_wake_up(struct rcuwait *w);
 
- 
 
 static inline void prepare_to_rcuwait(struct rcuwait *w)
 {

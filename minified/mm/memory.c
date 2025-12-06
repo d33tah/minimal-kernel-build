@@ -1,4 +1,3 @@
- 
 
 #include <linux/kernel_stat.h>
 #include <linux/mm.h>
@@ -908,12 +907,6 @@ void unmap_vmas(struct mmu_gather *tlb,
 	mmu_notifier_invalidate_range_end(&range);
 }
 
-/* Stub: zap_page_range not used in minimal kernel */
-void zap_page_range(struct vm_area_struct *vma, unsigned long start,
-		unsigned long size)
-{
-}
-
 static void zap_page_range_single(struct vm_area_struct *vma, unsigned long address,
 		unsigned long size, struct zap_details *details)
 {
@@ -930,10 +923,6 @@ static void zap_page_range_single(struct vm_area_struct *vma, unsigned long addr
 	mmu_notifier_invalidate_range_end(&range);
 	tlb_finish_mmu(&tlb);
 }
-
-/* Stub: zap_vma_ptes not used in minimal kernel */
-void zap_vma_ptes(struct vm_area_struct *vma, unsigned long address,
-		unsigned long size) { }
 
 static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)
 {
@@ -1038,19 +1027,6 @@ vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 {
 	return vmf_insert_pfn_prot(vma, addr, pfn, vma->vm_page_prot);
 }
-
-/* Stub: vmf_insert_mixed functions not used in minimal kernel */
-vm_fault_t vmf_insert_mixed_prot(struct vm_area_struct *vma, unsigned long addr,
-				 pfn_t pfn, pgprot_t pgprot)
-{ return VM_FAULT_SIGBUS; }
-
-vm_fault_t vmf_insert_mixed(struct vm_area_struct *vma, unsigned long addr,
-		pfn_t pfn)
-{ return VM_FAULT_SIGBUS; }
-
-vm_fault_t vmf_insert_mixed_mkwrite(struct vm_area_struct *vma,
-		unsigned long addr, pfn_t pfn)
-{ return VM_FAULT_SIGBUS; }
 
 static int remap_pte_range(struct mm_struct *mm, pmd_t *pmd,
 			unsigned long addr, unsigned long end,

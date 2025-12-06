@@ -1,10 +1,8 @@
- 
 #ifndef _UAPI_LINUX_KD_H
 #define _UAPI_LINUX_KD_H
 #include <linux/types.h>
 #include <linux/compiler.h>
 
- 
 
 #define GIO_FONT	0x4B60	 
 #define PIO_FONT	0x4B61	 
@@ -176,7 +174,5 @@ struct console_font {
 
 #define KD_FONT_FLAG_DONT_RECALC 	1	 
 
- 
- 
 
 #endif  

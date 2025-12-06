@@ -1,8 +1,5 @@
- 
- 
+/* Stub d_path - path to string conversion */
 #include <linux/fs.h>
-#include <linux/export.h>
-#include <linux/dcache.h>
 #include <linux/syscalls.h>
 
 char *d_path(const struct path *path, char *buf, int buflen) { return buf; }

@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/blkdev.h>
 #include <linux/export.h>
@@ -7,12 +5,87 @@
 #include <linux/slab.h>
 #include <linux/cred.h>
 #include <linux/mount.h>
-#include <linux/vfs.h>
+#include <linux/statfs.h> /* vfs.h redirect */
 
 #include <linux/mutex.h>
 #include <linux/namei.h>
-#include <linux/exportfs.h>
 #include <linux/writeback.h>
+
+/* --- 2025-12-06 17:15 --- exportfs.h inlined */
+struct iomap;
+
+#define MAX_HANDLE_SZ 128
+
+enum fid_type {
+	FILEID_ROOT = 0,
+};
+
+struct fid {
+	union {
+		struct {
+			u32 ino;
+			u32 gen;
+			u32 parent_ino;
+			u32 parent_gen;
+		} i32;
+ 		struct {
+ 			u32 block;
+ 			u16 partref;
+ 			u16 parent_partref;
+ 			u32 generation;
+ 			u32 parent_block;
+ 			u32 parent_generation;
+ 		} udf;
+		__u32 raw[0];
+	};
+};
+
+struct export_operations {
+	int (*encode_fh)(struct inode *inode, __u32 *fh, int *max_len,
+			struct inode *parent);
+	struct dentry * (*fh_to_dentry)(struct super_block *sb, struct fid *fid,
+			int fh_len, int fh_type);
+	struct dentry * (*fh_to_parent)(struct super_block *sb, struct fid *fid,
+			int fh_len, int fh_type);
+	int (*get_name)(struct dentry *parent, char *name,
+			struct dentry *child);
+	struct dentry * (*get_parent)(struct dentry *child);
+	int (*commit_metadata)(struct inode *inode);
+	int (*get_uuid)(struct super_block *sb, u8 *buf, u32 *len, u64 *offset);
+	int (*map_blocks)(struct inode *inode, loff_t offset,
+			  u64 len, struct iomap *iomap,
+			  bool write, u32 *device_generation);
+	int (*commit_blocks)(struct inode *inode, struct iomap *iomaps,
+			     int nr_iomaps, struct iattr *iattr);
+	u64 (*fetch_iversion)(struct inode *);
+#define	EXPORT_OP_NOWCC			(0x1)
+#define	EXPORT_OP_NOSUBTREECHK		(0x2)
+#define	EXPORT_OP_CLOSE_BEFORE_UNLINK	(0x4)
+#define EXPORT_OP_REMOTE_FS		(0x8)
+#define EXPORT_OP_NOATOMIC_ATTR		(0x10)
+	unsigned long	flags;
+};
+
+extern int exportfs_encode_inode_fh(struct inode *inode, struct fid *fid,
+				    int *max_len, struct inode *parent);
+extern int exportfs_encode_fh(struct dentry *dentry, struct fid *fid,
+	int *max_len, int connectable);
+extern struct dentry *exportfs_decode_fh_raw(struct vfsmount *mnt,
+					     struct fid *fid, int fh_len,
+					     int fileid_type,
+					     int (*acceptable)(void *, struct dentry *),
+					     void *context);
+extern struct dentry *exportfs_decode_fh(struct vfsmount *mnt, struct fid *fid,
+	int fh_len, int fileid_type, int (*acceptable)(void *, struct dentry *),
+	void *context);
+
+extern struct dentry *generic_fh_to_dentry(struct super_block *sb,
+	struct fid *fid, int fh_len, int fh_type,
+	struct inode *(*get_inode) (struct super_block *sb, u64 ino, u32 gen));
+extern struct dentry *generic_fh_to_parent(struct super_block *sb,
+	struct fid *fid, int fh_len, int fh_type,
+	struct inode *(*get_inode) (struct super_block *sb, u64 ino, u32 gen));
+/* --- end exportfs.h inlined --- */
 #include <linux/buffer_head.h>  
 #include <linux/fs_context.h>
 #include <linux/pseudo_fs.h>
@@ -42,7 +115,6 @@ int simple_statfs(struct dentry *dentry, struct kstatfs *buf)
 	return 0;
 }
 
- 
 int always_delete_dentry(const struct dentry *dentry)
 {
 	return 1;
@@ -52,7 +124,6 @@ const struct dentry_operations simple_dentry_operations = {
 	.d_delete = always_delete_dentry,
 };
 
- 
 struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
 {
 	if (dentry->d_name.len > NAME_MAX)
@@ -76,8 +147,6 @@ int dcache_dir_close(struct inode *inode, struct file *file)
 	return 0;
 }
 
- 
- 
 static struct dentry *scan_positives(struct dentry *cursor,
 					struct list_head *p,
 					loff_t count,
@@ -151,13 +220,11 @@ loff_t dcache_dir_lseek(struct file *file, loff_t offset, int whence)
 	return offset;
 }
 
- 
 static inline unsigned char dt_type(struct inode *inode)
 {
 	return (inode->i_mode >> 12) & 15;
 }
 
- 
 
 int dcache_readdir(struct file *file, struct dir_context *ctx)
 {
@@ -264,7 +331,6 @@ static const struct fs_context_operations pseudo_fs_context_ops = {
 	.get_tree	= pseudo_fs_get_tree,
 };
 
- 
 struct pseudo_fs_context *init_pseudo(struct fs_context *fc,
 					unsigned long magic)
 {
@@ -377,7 +443,6 @@ int simple_rename(struct user_namespace *mnt_userns, struct inode *old_dir,
 	return 0;
 }
 
- 
 int simple_setattr(struct user_namespace *mnt_userns, struct dentry *dentry,
 		   struct iattr *iattr)
 {
@@ -427,7 +492,6 @@ int simple_write_begin(struct file *file, struct address_space *mapping,
 	return 0;
 }
 
- 
 static int simple_write_end(struct file *file, struct address_space *mapping,
 			loff_t pos, unsigned len, unsigned copied,
 			struct page *page, void *fsdata)
@@ -455,7 +519,6 @@ static int simple_write_end(struct file *file, struct address_space *mapping,
 	return copied;
 }
 
- 
 const struct address_space_operations ram_aops = {
 	.read_folio	= simple_read_folio,
 	.write_begin	= simple_write_begin,
@@ -463,65 +526,11 @@ const struct address_space_operations ram_aops = {
 	.dirty_folio	= noop_dirty_folio,
 };
 
- 
+/* STUB: simple_fill_super not used for minimal kernel */
 int simple_fill_super(struct super_block *s, unsigned long magic,
 		      const struct tree_descr *files)
 {
-	struct inode *inode;
-	struct dentry *root;
-	struct dentry *dentry;
-	int i;
-
-	s->s_blocksize = PAGE_SIZE;
-	s->s_blocksize_bits = PAGE_SHIFT;
-	s->s_magic = magic;
-	s->s_op = &simple_super_operations;
-	s->s_time_gran = 1;
-
-	inode = new_inode(s);
-	if (!inode)
-		return -ENOMEM;
-	 
-	inode->i_ino = 1;
-	inode->i_mode = S_IFDIR | 0755;
-	inode->i_atime = inode->i_mtime = inode->i_ctime = current_time(inode);
-	inode->i_op = &simple_dir_inode_operations;
-	inode->i_fop = &simple_dir_operations;
-	set_nlink(inode, 2);
-	root = d_make_root(inode);
-	if (!root)
-		return -ENOMEM;
-	for (i = 0; !files->name || files->name[0]; i++, files++) {
-		if (!files->name)
-			continue;
-
-		 
-		if (unlikely(i == 1))
-			printk(KERN_WARNING "%s: %s passed in a files array"
-				"with an index of 1!\n", __func__,
-				s->s_type->name);
-
-		dentry = d_alloc_name(root, files->name);
-		if (!dentry)
-			goto out;
-		inode = new_inode(s);
-		if (!inode) {
-			dput(dentry);
-			goto out;
-		}
-		inode->i_mode = S_IFREG | files->mode;
-		inode->i_atime = inode->i_mtime = inode->i_ctime = current_time(inode);
-		inode->i_fop = files->ops;
-		inode->i_ino = i;
-		d_add(dentry, inode);
-	}
-	s->s_root = root;
-	return 0;
-out:
-	d_genocide(root);
-	shrink_dcache_parent(root);
-	dput(root);
-	return -ENOMEM;
+	return -ENOSYS;
 }
 
 static DEFINE_SPINLOCK(pin_fs_lock);
@@ -557,7 +566,6 @@ void simple_release_fs(struct vfsmount **mount, int *count)
 	mntput(mnt);
 }
 
- 
 ssize_t simple_read_from_buffer(void __user *to, size_t count, loff_t *ppos,
 				const void *from, size_t available)
 {
@@ -578,7 +586,6 @@ ssize_t simple_read_from_buffer(void __user *to, size_t count, loff_t *ppos,
 	return count;
 }
 
- 
 /* Stub: simple_write_to_buffer not used in minimal kernel */
 ssize_t simple_write_to_buffer(void *to, size_t available, loff_t *ppos,
 		const void __user *from, size_t count)
@@ -586,7 +593,6 @@ ssize_t simple_write_to_buffer(void *to, size_t available, loff_t *ppos,
 	return -EINVAL;
 }
 
- 
 /* Stub: memory_read_from_buffer not used in minimal kernel */
 ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
 				const void *from, size_t available)
@@ -594,7 +600,6 @@ ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
 	return 0;
 }
 
- 
 
 /* Stub: simple_transaction_* not needed for minimal kernel */
 void simple_transaction_set(struct file *file, size_t n) { }
@@ -614,7 +619,6 @@ int simple_transaction_release(struct inode *inode, struct file *file)
 	return 0;
 }
 
- 
 
 /* Stub: simple_attr_* not needed for minimal kernel */
 int simple_attr_open(struct inode *inode, struct file *file,
@@ -641,7 +645,6 @@ ssize_t simple_attr_write(struct file *file, const char __user *buf,
 	return -ENOSYS;
 }
 
- 
 struct dentry *generic_fh_to_dentry(struct super_block *sb, struct fid *fid,
 		int fh_len, int fh_type, struct inode *(*get_inode)
 			(struct super_block *sb, u64 ino, u32 gen))
@@ -650,7 +653,6 @@ struct dentry *generic_fh_to_dentry(struct super_block *sb, struct fid *fid,
 	return ERR_PTR(-ESTALE);
 }
 
- 
 struct dentry *generic_fh_to_parent(struct super_block *sb, struct fid *fid,
 		int fh_len, int fh_type, struct inode *(*get_inode)
 			(struct super_block *sb, u64 ino, u32 gen))
@@ -659,7 +661,6 @@ struct dentry *generic_fh_to_parent(struct super_block *sb, struct fid *fid,
 	return ERR_PTR(-ESTALE);
 }
 
- 
 int __generic_file_fsync(struct file *file, loff_t start, loff_t end,
 				 int datasync)
 {
@@ -691,7 +692,6 @@ out:
 	return ret;
 }
 
- 
 
 int generic_file_fsync(struct file *file, loff_t start, loff_t end,
 		       int datasync)
@@ -705,7 +705,6 @@ int generic_file_fsync(struct file *file, loff_t start, loff_t end,
 	return blkdev_issue_flush(inode->i_sb->s_bdev);
 }
 
- 
 int generic_check_addressable(unsigned blocksize_bits, u64 num_blocks)
 {
 	u64 last_fs_block = num_blocks - 1;
@@ -725,7 +724,6 @@ int generic_check_addressable(unsigned blocksize_bits, u64 num_blocks)
 	return 0;
 }
 
- 
 int noop_fsync(struct file *file, loff_t start, loff_t end, int datasync)
 {
 	return 0;
@@ -737,7 +735,6 @@ ssize_t noop_direct_IO(struct kiocb *iocb, struct iov_iter *iter)
 	return -EINVAL;
 }
 
- 
 void kfree_link(void *p)
 {
 	kfree(p);
@@ -766,7 +763,6 @@ struct inode *alloc_anon_inode(struct super_block *s)
 	return inode;
 }
 
- 
 int
 simple_nosetlease(struct file *filp, long arg, struct file_lock **flp,
 		  void **priv)
@@ -774,7 +770,6 @@ simple_nosetlease(struct file *filp, long arg, struct file_lock **flp,
 	return -EINVAL;
 }
 
- 
 const char *simple_get_link(struct dentry *dentry, struct inode *inode,
 			    struct delayed_call *done)
 {
@@ -785,7 +780,6 @@ const struct inode_operations simple_symlink_inode_operations = {
 	.get_link = simple_get_link,
 };
 
- 
 static struct dentry *empty_dir_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
 {
 	return ERR_PTR(-ENOENT);
@@ -849,13 +843,11 @@ bool is_empty_dir_inode(struct inode *inode)
 }
 
 #if IS_ENABLED(CONFIG_UNICODE)
- 
 static bool needs_casefold(const struct inode *dir)
 {
 	return IS_CASEFOLDED(dir) && dir->i_sb->s_encoding;
 }
 
- 
 static int generic_ci_d_compare(const struct dentry *dentry, unsigned int len,
 				const char *str, const struct qstr *name)
 {
@@ -889,7 +881,6 @@ fallback:
 	return !!memcmp(str, name->name, len);
 }
 
- 
 static int generic_ci_d_hash(const struct dentry *dentry, struct qstr *str)
 {
 	const struct inode *dir = READ_ONCE(dentry->d_inode);
@@ -914,7 +905,6 @@ static const struct dentry_operations generic_ci_dentry_ops = {
 
 
 
- 
 void generic_set_encrypted_ci_d_ops(struct dentry *dentry)
 {
 #if IS_ENABLED(CONFIG_UNICODE)

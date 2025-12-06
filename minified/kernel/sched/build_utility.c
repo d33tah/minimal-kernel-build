@@ -1,11 +1,10 @@
- 
- 
 #include <linux/sched/clock.h>
 #include <linux/sched/cputime.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/isolation.h>
 #include <linux/sched/loadavg.h>
-#include <linux/sched/nohz.h>
+/* sched/nohz.h inlined */
+static inline void wake_up_nohz_cpu(int cpu) { }
 #include <linux/sched/mm.h>
 
 #include <linux/sched/task_stack.h>
@@ -19,7 +18,6 @@
 
 #include <linux/irq.h>
 
-#include <linux/membarrier.h>
 #include <linux/mempolicy.h>
 #include <linux/nmi.h>
 #include <linux/nospec.h>
@@ -32,8 +30,7 @@
 
 
 
-#include <uapi/linux/prctl.h>
-#include <uapi/linux/sched/types.h>
+#include <linux/sched/types.h>
 
 #include <asm/switch_to.h>
 

@@ -1,5 +1,3 @@
- 
- 
 #include <linux/dma-map-ops.h>
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
@@ -13,7 +11,6 @@ struct page **dma_common_find_pages(void *cpu_addr)
 	return area->pages;
 }
 
- 
 void *dma_common_pages_remap(struct page **pages, size_t size,
 			 pgprot_t prot, const void *caller)
 {
@@ -26,7 +23,6 @@ void *dma_common_pages_remap(struct page **pages, size_t size,
 	return vaddr;
 }
 
- 
 void *dma_common_contiguous_remap(struct page *page, size_t size,
 			pgprot_t prot, const void *caller)
 {
@@ -46,7 +42,6 @@ void *dma_common_contiguous_remap(struct page *page, size_t size,
 	return vaddr;
 }
 
- 
 void dma_common_free_remap(void *cpu_addr, size_t size)
 {
 	struct vm_struct *area = find_vm_area(cpu_addr);

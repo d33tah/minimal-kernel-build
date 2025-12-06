@@ -1,5 +1,3 @@
- 
- 
 #include <linux/interrupt.h>
 
 #include <asm/cpu_entry_area.h>
@@ -26,17 +24,14 @@
 		.segment	= _segment,		\
 	}
 
- 
 #define INTG(_vector, _addr)				\
 	G(_vector, _addr, DEFAULT_STACK, GATE_INTERRUPT, DPL0, __KERNEL_CS)
 
- 
 #define SYSG(_vector, _addr)				\
 	G(_vector, _addr, DEFAULT_STACK, GATE_INTERRUPT, DPL3, __KERNEL_CS)
 
 #define ISTG(_vector, _addr, _ist)	INTG(_vector, _addr)
 
- 
 #define TSKG(_vector, _gdt)				\
 	G(_vector, NULL, DEFAULT_STACK, GATE_TASK, DPL0, _gdt << 3)
 
@@ -44,7 +39,6 @@
 
 static bool idt_setup_done __initdata;
 
- 
 static const __initconst struct idt_data early_idts[] = {
 	INTG(X86_TRAP_DB,		asm_exc_debug),
 	SYSG(X86_TRAP_BP,		asm_exc_int3),
@@ -53,7 +47,6 @@ static const __initconst struct idt_data early_idts[] = {
 	INTG(X86_TRAP_PF,		asm_exc_page_fault),
 };
 
- 
 static const __initconst struct idt_data def_idts[] = {
 	INTG(X86_TRAP_DE,		asm_exc_divide_error),
 	ISTG(X86_TRAP_NMI,		asm_exc_nmi, IST_INDEX_NMI),
@@ -80,7 +73,6 @@ static const __initconst struct idt_data def_idts[] = {
 	SYSG(IA32_SYSCALL_VECTOR,	entry_INT80_32),
 };
 
- 
 static const __initconst struct idt_data apic_idts[] = {
 
 
@@ -88,7 +80,6 @@ static const __initconst struct idt_data apic_idts[] = {
 
 };
 
- 
 static gate_desc idt_table[IDT_ENTRIES] __page_aligned_bss;
 
 static struct desc_ptr idt_descr __ro_after_init = {
@@ -125,7 +116,6 @@ static __init void set_intr_gate(unsigned int n, const void *addr)
 	idt_setup_from_table(idt_table, &data, 1, false);
 }
 
- 
 void __init idt_setup_early_traps(void)
 {
 	idt_setup_from_table(idt_table, early_idts, ARRAY_SIZE(early_idts),
@@ -133,7 +123,6 @@ void __init idt_setup_early_traps(void)
 	load_idt(&idt_descr);
 }
 
- 
 void __init idt_setup_traps(void)
 {
 	idt_setup_from_table(idt_table, def_idts, ARRAY_SIZE(def_idts), true);
@@ -148,7 +137,6 @@ static void __init idt_map_in_cea(void)
 	idt_descr.address = CPU_ENTRY_AREA_RO_IDT;
 }
 
- 
 void __init idt_setup_apic_and_irq_gates(void)
 {
 	int i = FIRST_EXTERNAL_VECTOR;
@@ -171,7 +159,6 @@ void __init idt_setup_apic_and_irq_gates(void)
 	idt_setup_done = true;
 }
 
- 
 void __init idt_setup_early_handler(void)
 {
 	int i;
@@ -183,7 +170,6 @@ void __init idt_setup_early_handler(void)
 	load_idt(&idt_descr);
 }
 
- 
 void idt_invalidate(void)
 {
 	static const struct desc_ptr idt = { .address = 0, .size = 0 };

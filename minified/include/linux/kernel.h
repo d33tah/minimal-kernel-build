@@ -1,11 +1,17 @@
- 
- 
 #ifndef _LINUX_KERNEL_H
 #define _LINUX_KERNEL_H
 
 #include <linux/stdarg.h>
-#include <linux/align.h>
 #include <linux/limits.h>
+#include <linux/const.h>
+
+/* Inlined from align.h */
+#define ALIGN(x, a)		__ALIGN_KERNEL((x), (a))
+#define ALIGN_DOWN(x, a)	__ALIGN_KERNEL((x) - ((a) - 1), (a))
+#define __ALIGN_MASK(x, mask)	__ALIGN_KERNEL_MASK((x), (mask))
+#define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
+#define PTR_ALIGN_DOWN(p, a)	((typeof(p))ALIGN_DOWN((unsigned long)(p), (a)))
+#define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
 #include <linux/linkage.h>
 #include <linux/stddef.h>
 #include <linux/types.h>
@@ -21,21 +27,39 @@
 #include <linux/printk.h>
 #include <linux/build_bug.h>
 #include <linux/static_call_types.h>
-#include <linux/instruction_pointer.h>
+/* instruction_pointer.h inlined */
+#define _RET_IP_		(unsigned long)__builtin_return_address(0)
+#define _THIS_IP_  ({ __label__ __here; __here: (unsigned long)&&__here; })
 #include <asm/byteorder.h>
 
-#include <uapi/linux/kernel.h>
+/* From uapi/linux/sysinfo.h - inlined */
+#define SI_LOAD_SHIFT	16
+struct sysinfo {
+	__kernel_long_t uptime;
+	__kernel_ulong_t loads[3];
+	__kernel_ulong_t totalram;
+	__kernel_ulong_t freeram;
+	__kernel_ulong_t sharedram;
+	__kernel_ulong_t bufferram;
+	__kernel_ulong_t totalswap;
+	__kernel_ulong_t freeswap;
+	__u16 procs;
+	__u16 pad;
+	__kernel_ulong_t totalhigh;
+	__kernel_ulong_t freehigh;
+	__u32 mem_unit;
+	char _f[20-2*sizeof(__kernel_ulong_t)-sizeof(__u32)];
+};
+
+#include <linux/const.h>
 
 #define STACK_MAGIC	0xdeadbeef
 
- 
 #define REPEAT_BYTE(x)	((~0ul / 0xff) * (x))
 
- 
 #define READ			0
 #define WRITE			1
 
- 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 
 #define PTR_IF(cond, ptr)	((cond) ? (ptr) : NULL)
@@ -47,16 +71,12 @@
 }					\
 )
 
- 
 #define upper_32_bits(n) ((u32)(((n) >> 16) >> 16))
 
- 
 #define lower_32_bits(n) ((u32)((n) & 0xffffffff))
 
- 
 #define upper_16_bits(n) ((u16)((n) >> 16))
 
- 
 #define lower_16_bits(n) ((u16)((n) & 0xffff))
 
 struct completion;
@@ -68,7 +88,6 @@ struct user;
 
   static inline void __might_resched(const char *file, int line,
 				     unsigned int offsets) { }
-static inline void __might_sleep(const char *file, int line) { }
 # define might_sleep() do { might_resched(); } while (0)
 # define cant_sleep() do { } while (0)
 # define cant_migrate()		do { } while (0)
@@ -128,7 +147,6 @@ extern int root_mountflags;
 
 extern bool early_boot_irqs_disabled;
 
- 
 extern enum system_states {
 	SYSTEM_BOOTING,
 	SYSTEM_SCHEDULING,
@@ -152,21 +170,11 @@ static inline char *hex_byte_pack(char *buf, u8 byte)
 }
 
 extern const char hex_asc_upper[];
-#define hex_asc_upper_lo(x)	hex_asc_upper[((x) & 0x0f)]
-#define hex_asc_upper_hi(x)	hex_asc_upper[((x) & 0xf0) >> 4]
-
-static inline char *hex_byte_pack_upper(char *buf, u8 byte)
-{
-	*buf++ = hex_asc_upper_hi(byte);
-	*buf++ = hex_asc_upper_lo(byte);
-	return buf;
-}
 
 extern int hex_to_bin(unsigned char ch);
 
 bool mac_pton(const char *s, u8 *mac);
 
- 
 
 /* tracing_start, tracing_stop, trace_dump_stack removed - unused */
 /* tracing_on removed - unused */
@@ -174,16 +182,13 @@ static inline void tracing_off(void) { }
 /* tracing_is_on, tracing_snapshot, tracing_snapshot_alloc removed - unused */
 /* trace_printk, ftrace_vprintk, ftrace_dump removed - unused */
 
- 
 #define __COUNT_ARGS(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _n, X...) _n
 #define COUNT_ARGS(X...) __COUNT_ARGS(, ##X, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
 
 #define __CONCAT(a, b) a ## b
 #define CONCATENATE(a, b) __CONCAT(a, b)
 
- 
 
- 
 #define VERIFY_OCTAL_PERMISSIONS(perms)						\
 	(BUILD_BUG_ON_ZERO((perms) < 0) +					\
 	 BUILD_BUG_ON_ZERO((perms) > 0777) +					\

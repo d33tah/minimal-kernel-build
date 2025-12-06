@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SCHED_JOBCTL_H
 #define _LINUX_SCHED_JOBCTL_H
 
@@ -6,7 +5,6 @@
 
 struct task_struct;
 
- 
 #define JOBCTL_STOP_SIGMASK	0xffff	 
 
 #define JOBCTL_STOP_DEQUEUED_BIT 16	 

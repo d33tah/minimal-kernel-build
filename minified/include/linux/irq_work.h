@@ -1,11 +1,9 @@
- 
 #ifndef _LINUX_IRQ_WORK_H
 #define _LINUX_IRQ_WORK_H
 
 #include <linux/smp_types.h>
 #include <linux/rcuwait.h>
 
- 
 
 struct irq_work {
 	struct __call_single_node node;

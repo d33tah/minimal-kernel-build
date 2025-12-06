@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_PGTABLE_H
 #define _LINUX_PGTABLE_H
 
@@ -18,22 +17,18 @@
 #error CONFIG_PGTABLE_LEVELS is not consistent with __PAGETABLE_{P4D,PUD,PMD}_FOLDED
 #endif
 
- 
 #ifndef USER_PGTABLES_CEILING
 #define USER_PGTABLES_CEILING	0UL
 #endif
 
- 
 #ifndef FIRST_USER_ADDRESS
 #define FIRST_USER_ADDRESS	0UL
 #endif
 
- 
 #ifndef pmd_pgtable
 #define pmd_pgtable(pmd) pmd_page(pmd)
 #endif
 
- 
 
 static inline unsigned long pte_index(unsigned long address)
 {
@@ -58,7 +53,6 @@ static inline unsigned long pud_index(unsigned long address)
 #endif
 
 #ifndef pgd_index
- 
 #define pgd_index(a)  (((a) >> PGDIR_SHIFT) & (PTRS_PER_PGD - 1))
 #endif
 
@@ -73,7 +67,6 @@ static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
 #define pte_offset_map(dir, address)	pte_offset_kernel((dir), (address))
 #define pte_unmap(pte) ((void)(pte))	 
 
- 
 #ifndef pmd_offset
 static inline pmd_t *pmd_offset(pud_t *pud, unsigned long address)
 {
@@ -95,17 +88,14 @@ static inline pgd_t *pgd_offset_pgd(pgd_t *pgd, unsigned long address)
 	return (pgd + pgd_index(address));
 };
 
- 
 #ifndef pgd_offset
 #define pgd_offset(mm, address)		pgd_offset_pgd((mm)->pgd, (address))
 #endif
 
- 
 #ifndef pgd_offset_k
 #define pgd_offset_k(address)		pgd_offset(&init_mm, (address))
 #endif
 
- 
 static inline pmd_t *pmd_off_k(unsigned long va)
 {
 	return pmd_offset(pud_offset(p4d_offset(pgd_offset_k(va), va), va), va);
@@ -172,7 +162,6 @@ int ptep_clear_flush_young(struct vm_area_struct *vma,
 #endif
 
 #ifndef __HAVE_ARCH_PMDP_CLEAR_YOUNG_FLUSH
- 
 static inline int pmdp_clear_flush_young(struct vm_area_struct *vma,
 					 unsigned long address, pmd_t *pmdp)
 {
@@ -200,13 +189,7 @@ static inline pte_t ptep_get(pte_t *ptep)
 }
 #endif
 
- 
-static inline pte_t ptep_get_lockless(pte_t *ptep)
-{
-	return ptep_get(ptep);
-}
-
-
+/* ptep_get_lockless removed - unused */
 
 #ifndef __HAVE_ARCH_PTEP_GET_AND_CLEAR_FULL
 static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
@@ -220,24 +203,12 @@ static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
 #endif
 
 
- 
 #ifndef __HAVE_ARCH_UPDATE_MMU_TLB
 static inline void update_mmu_tlb(struct vm_area_struct *vma,
 				unsigned long address, pte_t *ptep)
 {
 }
 #define __HAVE_ARCH_UPDATE_MMU_TLB
-#endif
-
- 
-#ifndef __HAVE_ARCH_PTE_CLEAR_NOT_PRESENT_FULL
-static inline void pte_clear_not_present_full(struct mm_struct *mm,
-					      unsigned long address,
-					      pte_t *ptep,
-					      int full)
-{
-	pte_clear(mm, address, ptep);
-}
 #endif
 
 #ifndef __HAVE_ARCH_PTEP_CLEAR_FLUSH
@@ -264,7 +235,6 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addres
 }
 #endif
 
- 
 #ifndef pte_sw_mkyoung
 static inline pte_t pte_sw_mkyoung(pte_t pte)
 {
@@ -319,7 +289,6 @@ extern pmd_t pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
 
 #ifndef __HAVE_ARCH_PMDP_INVALIDATE_AD
 
- 
 extern pmd_t pmdp_invalidate_ad(struct vm_area_struct *vma,
 				unsigned long address, pmd_t *pmdp);
 #endif
@@ -331,13 +300,7 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
 }
 #endif
 
-#ifndef __HAVE_ARCH_PTE_UNUSED
- 
-static inline int pte_unused(pte_t pte)
-{
-	return 0;
-}
-#endif
+/* pte_unused removed - unused */
 
 #ifndef pte_access_permitted
 #define pte_access_permitted(pte, write) \
@@ -421,37 +384,7 @@ static inline int pgd_same(pgd_t pgd_a, pgd_t pgd_b)
 	set_pgd(pgdp, pgd); \
 })
 
-#ifndef __HAVE_ARCH_DO_SWAP_PAGE
- 
-static inline void arch_do_swap_page(struct mm_struct *mm,
-				     struct vm_area_struct *vma,
-				     unsigned long addr,
-				     pte_t pte, pte_t oldpte)
-{
-
-}
-#endif
-
-#ifndef __HAVE_ARCH_UNMAP_ONE
- 
-static inline int arch_unmap_one(struct mm_struct *mm,
-				  struct vm_area_struct *vma,
-				  unsigned long addr,
-				  pte_t orig_pte)
-{
-	return 0;
-}
-#endif
-
- 
-#ifndef __HAVE_ARCH_PREPARE_TO_SWAP
-#endif
-
-#ifndef __HAVE_ARCH_SWAP_INVALIDATE
-#endif
-
-#ifndef __HAVE_ARCH_SWAP_RESTORE
-#endif
+/* Empty arch swap hooks removed - unused */
 
 #ifndef __HAVE_ARCH_PGD_OFFSET_GATE
 #define pgd_offset_gate(mm, addr)	pgd_offset(mm, addr)
@@ -469,7 +402,6 @@ static inline int arch_unmap_one(struct mm_struct *mm,
 #define flush_tlb_fix_spurious_fault(vma, address) flush_tlb_page(vma, address)
 #endif
 
- 
 
 #define pgd_addr_end(addr, end)						\
 ({	unsigned long __boundary = ((addr) + PGDIR_SIZE) & PGDIR_MASK;	\
@@ -497,7 +429,6 @@ static inline int arch_unmap_one(struct mm_struct *mm,
 })
 #endif
 
- 
 void pgd_clear_bad(pgd_t *);
 
 #ifndef __PAGETABLE_P4D_FOLDED
@@ -558,41 +489,8 @@ static inline int pmd_none_or_clear_bad(pmd_t *pmd)
 	return 0;
 }
 
-static inline pte_t __ptep_modify_prot_start(struct vm_area_struct *vma,
-					     unsigned long addr,
-					     pte_t *ptep)
-{
-	 
-	return ptep_get_and_clear(vma->vm_mm, addr, ptep);
-}
+/* ptep_modify_prot_start, ptep_modify_prot_commit removed - unused */
 
-static inline void __ptep_modify_prot_commit(struct vm_area_struct *vma,
-					     unsigned long addr,
-					     pte_t *ptep, pte_t pte)
-{
-	 
-	set_pte_at(vma->vm_mm, addr, ptep, pte);
-}
-
-#ifndef __HAVE_ARCH_PTEP_MODIFY_PROT_TRANSACTION
- 
-static inline pte_t ptep_modify_prot_start(struct vm_area_struct *vma,
-					   unsigned long addr,
-					   pte_t *ptep)
-{
-	return __ptep_modify_prot_start(vma, addr, ptep);
-}
-
- 
-static inline void ptep_modify_prot_commit(struct vm_area_struct *vma,
-					   unsigned long addr,
-					   pte_t *ptep, pte_t old_pte, pte_t pte)
-{
-	__ptep_modify_prot_commit(vma, addr, ptep, pte);
-}
-#endif  
-
- 
 
 #ifndef pgprot_nx
 #define pgprot_nx(prot)	(prot)
@@ -640,19 +538,16 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
 #define pgprot_decrypted(prot)	(prot)
 #endif
 
- 
 #ifndef __HAVE_ARCH_ENTER_LAZY_MMU_MODE
 #define arch_enter_lazy_mmu_mode()	do {} while (0)
 #define arch_leave_lazy_mmu_mode()	do {} while (0)
 #define arch_flush_lazy_mmu_mode()	do {} while (0)
 #endif
 
- 
 #ifndef __HAVE_ARCH_START_CONTEXT_SWITCH
 #define arch_start_context_switch(prev)	do {} while (0)
 #endif
 
- 
 #ifndef __HAVE_ARCH_PTE_SWP_EXCLUSIVE
 static inline pte_t pte_swp_mkexclusive(pte_t pte)
 {
@@ -670,20 +565,7 @@ static inline pte_t pte_swp_clear_exclusive(pte_t pte)
 }
 #endif
 
-static inline int pte_soft_dirty(pte_t pte)
-{
-	return 0;
-}
-
-static inline pte_t pte_mksoft_dirty(pte_t pte)
-{
-	return pte;
-}
-
-static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
-{
-	return pte;
-}
+/* pte_soft_dirty, pte_mksoft_dirty, pte_swp_mksoft_dirty removed - unused */
 
 static inline int pte_swp_soft_dirty(pte_t pte)
 {
@@ -696,9 +578,7 @@ static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
 }
 
 #ifndef __HAVE_PFNMAP_TRACKING
- 
 
- 
 static inline int track_pfn_remap(struct vm_area_struct *vma, pgprot_t *prot,
 				  unsigned long pfn, unsigned long addr,
 				  unsigned long size)
@@ -706,25 +586,21 @@ static inline int track_pfn_remap(struct vm_area_struct *vma, pgprot_t *prot,
 	return 0;
 }
 
- 
 static inline void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot,
 				    pfn_t pfn)
 {
 }
 
- 
 static inline int track_pfn_copy(struct vm_area_struct *vma)
 {
 	return 0;
 }
 
- 
 static inline void untrack_pfn(struct vm_area_struct *vma,
 			       unsigned long pfn, unsigned long size)
 {
 }
 
- 
 static inline void untrack_pfn_moved(struct vm_area_struct *vma)
 {
 }
@@ -793,10 +669,7 @@ static inline int pud_devmap(pud_t pud)
 {
 	return 0;
 }
-static inline int pgd_devmap(pgd_t pgd)
-{
-	return 0;
-}
+/* pgd_devmap removed - unused */
 
 #if !defined(CONFIG_TRANSPARENT_HUGEPAGE) || \
 	(defined(CONFIG_TRANSPARENT_HUGEPAGE) && \
@@ -807,30 +680,7 @@ static inline int pud_trans_huge(pud_t pud)
 }
 #endif
 
- 
-static inline int pud_none_or_trans_huge_or_dev_or_clear_bad(pud_t *pud)
-{
-	pud_t pudval = READ_ONCE(*pud);
-
-	if (pud_none(pudval) || pud_trans_huge(pudval) || pud_devmap(pudval))
-		return 1;
-	if (unlikely(pud_bad(pudval))) {
-		pud_clear_bad(pud);
-		return 1;
-	}
-	return 0;
-}
-
- 
-static inline int pud_trans_unstable(pud_t *pud)
-{
-#if defined(CONFIG_TRANSPARENT_HUGEPAGE) &&			\
-	defined(CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD)
-	return pud_none_or_trans_huge_or_dev_or_clear_bad(pud);
-#else
-	return 0;
-#endif
-}
+/* pud_none_or_trans_huge_or_dev_or_clear_bad, pud_trans_unstable removed - unused */
 
 #ifndef pmd_read_atomic
 static inline pmd_t pmd_read_atomic(pmd_t *pmdp)
@@ -843,7 +693,6 @@ static inline pmd_t pmd_read_atomic(pmd_t *pmdp)
 #ifndef arch_needs_pgtable_deposit
 #define arch_needs_pgtable_deposit() (false)
 #endif
- 
 static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
 {
 	pmd_t pmdval = pmd_read_atomic(pmd);
@@ -859,19 +708,16 @@ static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
 	return 0;
 }
 
- 
 static inline int pmd_trans_unstable(pmd_t *pmd)
 {
 	return 0;
 }
 
- 
 static inline int pmd_devmap_trans_unstable(pmd_t *pmd)
 {
 	return pmd_devmap(*pmd) || pmd_trans_unstable(pmd);
 }
 
- 
 static inline int pte_protnone(pte_t pte)
 {
 	return 0;
@@ -883,36 +729,14 @@ static inline int pmd_protnone(pmd_t pmd)
 }
 
 
-static inline int p4d_set_huge(p4d_t *p4d, phys_addr_t addr, pgprot_t prot)
-{
-	return 0;
-}
-static inline int pud_set_huge(pud_t *pud, phys_addr_t addr, pgprot_t prot)
-{
-	return 0;
-}
-static inline int pmd_set_huge(pmd_t *pmd, phys_addr_t addr, pgprot_t prot)
-{
-	return 0;
-}
+/* p4d_set_huge, pud_set_huge, pmd_set_huge, p4d_free_pud_page, pud_free_pmd_page,
+   pmd_free_pte_page removed - unused */
 static inline void p4d_clear_huge(p4d_t *p4d) { }
 static inline int pud_clear_huge(pud_t *pud)
 {
 	return 0;
 }
 static inline int pmd_clear_huge(pmd_t *pmd)
-{
-	return 0;
-}
-static inline int p4d_free_pud_page(p4d_t *p4d, unsigned long addr)
-{
-	return 0;
-}
-static inline int pud_free_pmd_page(pud_t *pud, unsigned long addr)
-{
-	return 0;
-}
-static inline int pmd_free_pte_page(pmd_t *pmd, unsigned long addr)
 {
 	return 0;
 }
@@ -936,13 +760,9 @@ static inline bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
 	return true;
 }
 
-static inline bool arch_has_pfn_modify_check(void)
-{
-	return false;
-}
+/* arch_has_pfn_modify_check removed - unused */
 #endif  
 
- 
 
 #ifndef PAGE_KERNEL_RO
 # define PAGE_KERNEL_RO PAGE_KERNEL
@@ -952,7 +772,6 @@ static inline bool arch_has_pfn_modify_check(void)
 # define PAGE_KERNEL_EXEC PAGE_KERNEL
 #endif
 
- 
 #define		__PGTBL_PGD_MODIFIED	0
 #define		__PGTBL_P4D_MODIFIED	1
 #define		__PGTBL_PUD_MODIFIED	2
@@ -965,7 +784,6 @@ static inline bool arch_has_pfn_modify_check(void)
 #define		PGTBL_PMD_MODIFIED	BIT(__PGTBL_PMD_MODIFIED)
 #define		PGTBL_PTE_MODIFIED	BIT(__PGTBL_PTE_MODIFIED)
 
- 
 typedef unsigned int pgtbl_mod_mask;
 
 #endif  
@@ -978,7 +796,6 @@ typedef unsigned int pgtbl_mod_mask;
 #define has_transparent_hugepage() 0
 #endif
 
- 
 #ifndef mm_p4d_folded
 #define mm_p4d_folded(mm)	__is_defined(__PAGETABLE_P4D_FOLDED)
 #endif
@@ -1001,7 +818,6 @@ typedef unsigned int pgtbl_mod_mask;
 #define pmd_offset_lockless(pudp, pud, address) pmd_offset(&(pud), address)
 #endif
 
- 
 #ifndef pgd_leaf
 #define pgd_leaf(x)	0
 #endif
@@ -1015,38 +831,5 @@ typedef unsigned int pgtbl_mod_mask;
 #define pmd_leaf(x)	0
 #endif
 
-#ifndef pgd_leaf_size
-#define pgd_leaf_size(x) (1ULL << PGDIR_SHIFT)
-#endif
-#ifndef p4d_leaf_size
-#define p4d_leaf_size(x) P4D_SIZE
-#endif
-#ifndef pud_leaf_size
-#define pud_leaf_size(x) PUD_SIZE
-#endif
-#ifndef pmd_leaf_size
-#define pmd_leaf_size(x) PMD_SIZE
-#endif
-#ifndef pte_leaf_size
-#define pte_leaf_size(x) PAGE_SIZE
-#endif
-
- 
-
-#ifndef MAX_PTRS_PER_PTE
-#define MAX_PTRS_PER_PTE PTRS_PER_PTE
-#endif
-
-#ifndef MAX_PTRS_PER_PMD
-#define MAX_PTRS_PER_PMD PTRS_PER_PMD
-#endif
-
-#ifndef MAX_PTRS_PER_PUD
-#define MAX_PTRS_PER_PUD PTRS_PER_PUD
-#endif
-
-#ifndef MAX_PTRS_PER_P4D
-#define MAX_PTRS_PER_P4D PTRS_PER_P4D
-#endif
 
 #endif  

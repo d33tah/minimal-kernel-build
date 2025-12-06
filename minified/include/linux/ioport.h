@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_IOPORT_H
 #define _LINUX_IOPORT_H
@@ -9,7 +7,6 @@
 #include <linux/compiler.h>
 #include <linux/minmax.h>
 #include <linux/types.h>
- 
 struct resource {
 	resource_size_t start;
 	resource_size_t end;
@@ -19,7 +16,6 @@ struct resource {
 	struct resource *parent, *sibling, *child;
 };
 
- 
 #define IORESOURCE_BITS		0x000000ff	 
 
 #define IORESOURCE_TYPE_BITS	0x00001f00	 
@@ -46,9 +42,6 @@ struct resource {
 #define IORESOURCE_EXT_TYPE_BITS 0x01000000	 
 #define IORESOURCE_SYSRAM	0x01000000	 
 
- 
-#define IORESOURCE_SYSRAM_DRIVER_MANAGED	0x02000000  
-#define IORESOURCE_SYSRAM_MERGEABLE		0x04000000  
 
 #define IORESOURCE_EXCLUSIVE	0x08000000	 
 
@@ -57,10 +50,8 @@ struct resource {
 #define IORESOURCE_AUTO		0x40000000
 #define IORESOURCE_BUSY		0x80000000	 
 
- 
 #define IORESOURCE_SYSTEM_RAM		(IORESOURCE_MEM|IORESOURCE_SYSRAM)
 
- 
 #define IORESOURCE_IRQ_HIGHEDGE		(1<<0)
 #define IORESOURCE_IRQ_LOWEDGE		(1<<1)
 #define IORESOURCE_IRQ_HIGHLEVEL	(1<<2)
@@ -68,49 +59,8 @@ struct resource {
 #define IORESOURCE_IRQ_SHAREABLE	(1<<4)
 #define IORESOURCE_IRQ_OPTIONAL 	(1<<5)
 
- 
-#define IORESOURCE_DMA_TYPE_MASK	(3<<0)
-#define IORESOURCE_DMA_8BIT		(0<<0)
-#define IORESOURCE_DMA_8AND16BIT	(1<<0)
-#define IORESOURCE_DMA_16BIT		(2<<0)
-
-#define IORESOURCE_DMA_MASTER		(1<<2)
-#define IORESOURCE_DMA_BYTE		(1<<3)
-#define IORESOURCE_DMA_WORD		(1<<4)
-
-#define IORESOURCE_DMA_SPEED_MASK	(3<<6)
-#define IORESOURCE_DMA_COMPATIBLE	(0<<6)
-#define IORESOURCE_DMA_TYPEA		(1<<6)
-#define IORESOURCE_DMA_TYPEB		(2<<6)
-#define IORESOURCE_DMA_TYPEF		(3<<6)
-
- 
-#define IORESOURCE_MEM_WRITEABLE	(1<<0)	 
-#define IORESOURCE_MEM_CACHEABLE	(1<<1)	 
-#define IORESOURCE_MEM_RANGELENGTH	(1<<2)	 
-#define IORESOURCE_MEM_TYPE_MASK	(3<<3)
-#define IORESOURCE_MEM_8BIT		(0<<3)
-#define IORESOURCE_MEM_16BIT		(1<<3)
-#define IORESOURCE_MEM_8AND16BIT	(2<<3)
-#define IORESOURCE_MEM_32BIT		(3<<3)
-#define IORESOURCE_MEM_SHADOWABLE	(1<<5)	 
-#define IORESOURCE_MEM_EXPANSIONROM	(1<<6)
 #define IORESOURCE_MEM_NONPOSTED	(1<<7)
 
- 
-#define IORESOURCE_IO_16BIT_ADDR	(1<<0)
-#define IORESOURCE_IO_FIXED		(1<<1)
-#define IORESOURCE_IO_SPARSE		(1<<2)
-
- 
-#define IORESOURCE_ROM_ENABLE		(1<<0)	 
-#define IORESOURCE_ROM_SHADOW		(1<<1)	 
-
- 
-#define IORESOURCE_PCI_FIXED		(1<<4)	 
-#define IORESOURCE_PCI_EA_BEI		(1<<5)	 
-
- 
 enum {
 	IORES_DESC_NONE				= 0,
 	IORES_DESC_CRASH_KERNEL			= 1,
@@ -123,13 +73,11 @@ enum {
 	IORES_DESC_SOFT_RESERVED		= 8,
 };
 
- 
 enum {
 	IORES_MAP_SYSTEM_RAM		= BIT(0),
 	IORES_MAP_ENCRYPTED		= BIT(1),
 };
 
- 
 #define DEFINE_RES_NAMED(_start, _size, _name, _flags)			\
 	{								\
 		.start = (_start),					\
@@ -139,27 +87,13 @@ enum {
 		.desc = IORES_DESC_NONE,				\
 	}
 
-#define DEFINE_RES_IO_NAMED(_start, _size, _name)			\
-	DEFINE_RES_NAMED((_start), (_size), (_name), IORESOURCE_IO)
-#define DEFINE_RES_IO(_start, _size)					\
-	DEFINE_RES_IO_NAMED((_start), (_size), NULL)
 
 #define DEFINE_RES_MEM_NAMED(_start, _size, _name)			\
 	DEFINE_RES_NAMED((_start), (_size), (_name), IORESOURCE_MEM)
 #define DEFINE_RES_MEM(_start, _size)					\
 	DEFINE_RES_MEM_NAMED((_start), (_size), NULL)
 
-#define DEFINE_RES_IRQ_NAMED(_irq, _name)				\
-	DEFINE_RES_NAMED((_irq), 1, (_name), IORESOURCE_IRQ)
-#define DEFINE_RES_IRQ(_irq)						\
-	DEFINE_RES_IRQ_NAMED((_irq), NULL)
 
-#define DEFINE_RES_DMA_NAMED(_dma, _name)				\
-	DEFINE_RES_NAMED((_dma), 1, (_name), IORESOURCE_DMA)
-#define DEFINE_RES_DMA(_dma)						\
-	DEFINE_RES_DMA_NAMED((_dma), NULL)
-
- 
 extern struct resource ioport_resource;
 extern struct resource iomem_resource;
 
@@ -199,7 +133,6 @@ static inline unsigned long resource_ext_type(const struct resource *res)
 {
 	return res->flags & IORESOURCE_EXT_TYPE_BITS;
 }
- 
 static inline bool resource_contains(struct resource *r1, struct resource *r2)
 {
 	if (resource_type(r1) != resource_type(r2))
@@ -209,33 +142,12 @@ static inline bool resource_contains(struct resource *r1, struct resource *r2)
 	return r1->start <= r2->start && r1->end >= r2->end;
 }
 
- 
 static inline bool resource_overlaps(struct resource *r1, struct resource *r2)
 {
        return r1->start <= r2->end && r1->end >= r2->start;
 }
 
-static inline bool
-resource_intersection(struct resource *r1, struct resource *r2, struct resource *r)
-{
-	if (!resource_overlaps(r1, r2))
-		return false;
-	r->start = max(r1->start, r2->start);
-	r->end = min(r1->end, r2->end);
-	return true;
-}
 
-static inline bool
-resource_union(struct resource *r1, struct resource *r2, struct resource *r)
-{
-	if (!resource_overlaps(r1, r2))
-		return false;
-	r->start = min(r1->start, r2->start);
-	r->end = max(r1->end, r2->end);
-	return true;
-}
-
- 
 #define request_region(start,n,name)		__request_region(&ioport_resource, (start), (n), (name), 0)
 #define request_muxed_region(start,n,name)	__request_region(&ioport_resource, (start), (n), (name), IORESOURCE_MUXED)
 #define __request_mem_region(start,n,name, excl) __request_region(&iomem_resource, (start), (n), (name), excl)
@@ -251,14 +163,12 @@ extern struct resource * __request_region(struct resource *,
 					resource_size_t n,
 					const char *name, int flags);
 
- 
 #define release_region(start,n)	__release_region(&ioport_resource, (start), (n))
 #define release_mem_region(start,n)	__release_region(&iomem_resource, (start), (n))
 
 extern void __release_region(struct resource *, resource_size_t,
 				resource_size_t);
 
- 
 struct device;
 
 extern int devm_request_resource(struct device *dev, struct resource *root,
@@ -301,13 +211,6 @@ struct resource *devm_request_free_mem_region(struct device *dev,
 		struct resource *base, unsigned long size);
 struct resource *request_free_mem_region(struct resource *base,
 		unsigned long size, const char *name);
-
-static inline void irqresource_disabled(struct resource *res, u32 irq)
-{
-	res->start = irq;
-	res->end = irq;
-	res->flags |= IORESOURCE_IRQ | IORESOURCE_DISABLED | IORESOURCE_UNSET;
-}
 
 extern struct address_space *iomem_get_mapping(void);
 

@@ -1,7 +1,4 @@
- 
- 
 
- 
 #include <linux/build_bug.h>
 
 #include "boot.h"
@@ -14,7 +11,6 @@ struct port_io_ops pio_ops;
 char *HEAP = _end;
 char *heap_end = _end;		 
 
- 
 
 static void copy_boot_params(void)
 {
@@ -44,7 +40,6 @@ static void copy_boot_params(void)
 	}
 }
 
- 
 static void keyboard_init(void)
 {
 	struct biosregs ireg, oreg;
@@ -58,7 +53,6 @@ static void keyboard_init(void)
 	intcall(0x16, &ireg, NULL);
 }
 
- 
 static void query_ist(void)
 {
 	struct biosregs ireg, oreg;
@@ -78,7 +72,6 @@ static void query_ist(void)
 	boot_params.ist_info.perf_level = oreg.edx;
 }
 
- 
 static void set_bios_mode(void)
 {
 }

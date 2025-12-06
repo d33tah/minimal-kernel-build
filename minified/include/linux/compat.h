@@ -8,9 +8,7 @@
 #include <linux/param.h>
 #include <linux/sem.h>
 #include <linux/socket.h>
-#include <linux/if.h>
 #include <linux/fs.h>
-#include <linux/aio_abi.h>
 #include <linux/uaccess.h>
 #include <linux/unistd.h>
 #include <asm/compat.h>

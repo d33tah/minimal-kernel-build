@@ -435,15 +435,6 @@ static inline unsigned int cpuid_ebx(unsigned int op)
 	return ebx;
 }
 
-static inline unsigned int cpuid_ecx(unsigned int op)
-{
-	unsigned int eax, ebx, ecx, edx;
-
-	cpuid(op, &eax, &ebx, &ecx, &edx);
-
-	return ecx;
-}
-
 static inline unsigned int cpuid_edx(unsigned int op)
 {
 	unsigned int eax, ebx, ecx, edx;
@@ -476,20 +467,6 @@ extern void cpu_init(void);
 extern void cpu_init_secondary(void);
 extern void cpu_init_exception_handling(void);
 extern void cr4_init(void);
-
-static inline unsigned long get_debugctlmsr(void)
-{
-	unsigned long debugctlmsr = 0;
-
-	rdmsrl(MSR_IA32_DEBUGCTLMSR, debugctlmsr);
-
-	return debugctlmsr;
-}
-
-static inline void update_debugctlmsr(unsigned long debugctlmsr)
-{
-	wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctlmsr);
-}
 
 extern void set_task_blockstep(struct task_struct *task, bool on);
 
@@ -567,26 +544,7 @@ DECLARE_PER_CPU(u64, msr_misc_features_shadow);
 
 extern u16 get_llc_id(unsigned int cpu);
 
-extern u32 amd_get_nodes_per_socket(void);
-extern u32 amd_get_highest_perf(void);
 
-#define for_each_possible_hypervisor_cpuid_base(function) \
-	for (function = 0x40000000; function < 0x40010000; function += 0x100)
-
-static inline uint32_t hypervisor_cpuid_base(const char *sig, uint32_t leaves)
-{
-	uint32_t base, eax, signature[3];
-
-	for_each_possible_hypervisor_cpuid_base(base) {
-		cpuid(base, &eax, &signature[0], &signature[1], &signature[2]);
-
-		if (!memcmp(sig, signature, 12) &&
-		    (leaves == 0 || ((eax - base) >= leaves)))
-			return base;
-	}
-
-	return 0;
-}
 
 extern unsigned long arch_align_stack(unsigned long sp);
 void free_init_pages(const char *what, unsigned long begin, unsigned long end);

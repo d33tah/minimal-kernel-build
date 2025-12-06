@@ -1,63 +1,37 @@
- 
- 
-
+/* Minimal slab.h */
 #ifndef _LINUX_SLAB_H
 #define	_LINUX_SLAB_H
 
 #include <linux/gfp.h>
 #include <linux/overflow.h>
 #include <linux/types.h>
-#include <linux/workqueue.h>
-#include <linux/percpu-refcount.h>
 
-
- 
- 
 #define SLAB_CONSISTENCY_CHECKS	((slab_flags_t __force)0x00000100U)
- 
 #define SLAB_RED_ZONE		((slab_flags_t __force)0x00000400U)
- 
 #define SLAB_POISON		((slab_flags_t __force)0x00000800U)
- 
 #define SLAB_HWCACHE_ALIGN	((slab_flags_t __force)0x00002000U)
- 
 #define SLAB_CACHE_DMA		((slab_flags_t __force)0x00004000U)
- 
 #define SLAB_CACHE_DMA32	((slab_flags_t __force)0x00008000U)
- 
 #define SLAB_STORE_USER		((slab_flags_t __force)0x00010000U)
- 
 #define SLAB_PANIC		((slab_flags_t __force)0x00040000U)
- 
- 
 #define SLAB_TYPESAFE_BY_RCU	((slab_flags_t __force)0x00080000U)
- 
 #define SLAB_MEM_SPREAD		((slab_flags_t __force)0x00100000U)
- 
 #define SLAB_TRACE		((slab_flags_t __force)0x00200000U)
 
- 
 # define SLAB_DEBUG_OBJECTS	0
 
- 
 #define SLAB_NOLEAKTRACE	((slab_flags_t __force)0x00800000U)
 
- 
 # define SLAB_FAILSLAB		0
- 
 # define SLAB_ACCOUNT		0
 
 #define SLAB_KASAN		0
 
- 
 #define SLAB_NO_USER_FLAGS	((slab_flags_t __force)0x10000000U)
 
- 
- 
 #define SLAB_RECLAIM_ACCOUNT	((slab_flags_t __force)0x00020000U)
 #define SLAB_TEMPORARY		SLAB_RECLAIM_ACCOUNT	 
 
- 
 #define ZERO_SIZE_PTR ((void *)16)
 
 #define ZERO_OR_NULL_PTR(x) ((unsigned long)(x) <= \
@@ -67,7 +41,6 @@
 
 struct list_lru;
 struct mem_cgroup;
- 
 void __init kmem_cache_init(void);
 bool slab_is_available(void);
 
@@ -82,12 +55,10 @@ struct kmem_cache *kmem_cache_create_usercopy(const char *name,
 void kmem_cache_destroy(struct kmem_cache *s);
 int kmem_cache_shrink(struct kmem_cache *s);
 
- 
 #define KMEM_CACHE(__struct, __flags)					\
 		kmem_cache_create(#__struct, sizeof(struct __struct),	\
 			__alignof__(struct __struct), (__flags), NULL)
 
- 
 #define KMEM_CACHE_USERCOPY(__struct, __flags, __field)			\
 		kmem_cache_create_usercopy(#__struct,			\
 			sizeof(struct __struct),			\
@@ -95,14 +66,12 @@ int kmem_cache_shrink(struct kmem_cache *s);
 			offsetof(struct __struct, __field),		\
 			sizeof_field(struct __struct, __field), NULL)
 
- 
 void * __must_check krealloc(const void *objp, size_t new_size, gfp_t flags) __alloc_size(2);
 void kfree(const void *objp);
 void kfree_sensitive(const void *objp);
 size_t __ksize(const void *objp);
 size_t ksize(const void *objp);
 
- 
 #if defined(ARCH_DMA_MINALIGN) && ARCH_DMA_MINALIGN > 8
 #define ARCH_KMALLOC_MINALIGN ARCH_DMA_MINALIGN
 #define KMALLOC_MIN_SIZE ARCH_DMA_MINALIGN
@@ -111,12 +80,10 @@ size_t ksize(const void *objp);
 #define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long long)
 #endif
 
- 
 #ifndef ARCH_SLAB_MINALIGN
 #define ARCH_SLAB_MINALIGN __alignof__(unsigned long long)
 #endif
 
- 
 #ifndef arch_slab_minalign
 static inline unsigned int arch_slab_minalign(void)
 {
@@ -124,15 +91,12 @@ static inline unsigned int arch_slab_minalign(void)
 }
 #endif
 
- 
 #define __assume_kmalloc_alignment __assume_aligned(ARCH_KMALLOC_MINALIGN)
 #define __assume_slab_alignment __assume_aligned(ARCH_SLAB_MINALIGN)
 #define __assume_page_alignment __assume_aligned(PAGE_SIZE)
 
- 
 
 
- 
 #define KMALLOC_SHIFT_HIGH	(PAGE_SHIFT + 1)
 #define KMALLOC_SHIFT_MAX	(MAX_ORDER + PAGE_SHIFT - 1)
 #ifndef KMALLOC_SHIFT_LOW
@@ -140,23 +104,17 @@ static inline unsigned int arch_slab_minalign(void)
 #endif
 
 
- 
 #define KMALLOC_MAX_SIZE	(1UL << KMALLOC_SHIFT_MAX)
- 
 #define KMALLOC_MAX_CACHE_SIZE	(1UL << KMALLOC_SHIFT_HIGH)
- 
 #define KMALLOC_MAX_ORDER	(KMALLOC_SHIFT_MAX - PAGE_SHIFT)
 
- 
 #ifndef KMALLOC_MIN_SIZE
 #define KMALLOC_MIN_SIZE (1 << KMALLOC_SHIFT_LOW)
 #endif
 
- 
 #define SLAB_OBJ_MIN_SIZE      (KMALLOC_MIN_SIZE < 16 ? \
                                (KMALLOC_MIN_SIZE) : 16)
 
- 
 enum kmalloc_cache_type {
 	KMALLOC_NORMAL = 0,
 	KMALLOC_DMA = KMALLOC_NORMAL,
@@ -168,7 +126,6 @@ enum kmalloc_cache_type {
 extern struct kmem_cache *
 kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1];
 
- 
 #define KMALLOC_NOT_NORMAL_BITS					\
 	(__GFP_RECLAIMABLE |					\
 	(IS_ENABLED(CONFIG_ZONE_DMA)   ? __GFP_DMA : 0) |	\
@@ -189,7 +146,6 @@ static __always_inline enum kmalloc_cache_type kmalloc_type(gfp_t flags)
 		return KMALLOC_CGROUP;
 }
 
- 
 static __always_inline unsigned int __kmalloc_index(size_t size,
 						    bool size_is_constant)
 {
@@ -243,7 +199,6 @@ void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru,
 			   gfp_t gfpflags) __assume_slab_alignment __malloc;
 void kmem_cache_free(struct kmem_cache *s, void *objp);
 
- 
 void kmem_cache_free_bulk(struct kmem_cache *s, size_t size, void **p);
 int kmem_cache_alloc_bulk(struct kmem_cache *s, gfp_t flags, size_t size, void **p);
 
@@ -290,7 +245,6 @@ static __always_inline __alloc_size(1) void *kmalloc_large(size_t size, gfp_t fl
 	return kmalloc_order_trace(size, flags, order);
 }
 
- 
 static __always_inline __alloc_size(1) void *kmalloc(size_t size, gfp_t flags)
 {
 	if (__builtin_constant_p(size)) {
@@ -325,7 +279,6 @@ static __always_inline __alloc_size(1) void *kmalloc_node(size_t size, gfp_t fla
 	return __kmalloc_node(size, flags, node);
 }
 
- 
 static inline __alloc_size(1, 2) void *kmalloc_array(size_t n, size_t size, gfp_t flags)
 {
 	size_t bytes;
@@ -343,7 +296,6 @@ static inline __alloc_size(1, 2) void *kcalloc(size_t n, size_t size, gfp_t flag
 	return kmalloc_array(n, size, flags | __GFP_ZERO);
 }
 
- 
 extern void *__kmalloc_track_caller(size_t size, gfp_t flags, unsigned long caller);
 #define kmalloc_track_caller(size, flags) \
 	__kmalloc_track_caller(size, flags, _RET_IP_)
@@ -352,19 +304,16 @@ extern void *__kmalloc_track_caller(size_t size, gfp_t flags, unsigned long call
 	kmalloc_track_caller(size, flags)
 
 
- 
 static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
 {
 	return kmem_cache_alloc(k, flags | __GFP_ZERO);
 }
 
- 
 static inline __alloc_size(1) void *kzalloc(size_t size, gfp_t flags)
 {
 	return kmalloc(size, flags | __GFP_ZERO);
 }
 
- 
 static inline __alloc_size(1) void *kzalloc_node(size_t size, gfp_t flags, int node)
 {
 	return kmalloc_node(size, flags | __GFP_ZERO, node);
@@ -375,11 +324,6 @@ static inline __alloc_size(1) void *kvmalloc(size_t size, gfp_t flags)
 {
 	return kvmalloc_node(size, flags, NUMA_NO_NODE);
 }
-static inline __alloc_size(1) void *kvzalloc(size_t size, gfp_t flags)
-{
-	return kvmalloc(size, flags | __GFP_ZERO);
-}
-
 static inline __alloc_size(1, 2) void *kvmalloc_array(size_t n, size_t size, gfp_t flags)
 {
 	size_t bytes;

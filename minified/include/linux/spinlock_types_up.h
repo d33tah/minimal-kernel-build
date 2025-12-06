@@ -5,7 +5,6 @@
 # error "please don't include this file directly"
 #endif
 
- 
 
 
 typedef struct { } arch_spinlock_t;

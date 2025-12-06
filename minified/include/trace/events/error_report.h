@@ -1,5 +1,3 @@
- 
- 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM error_report
 
@@ -23,7 +21,6 @@ enum error_detector {
 	EM(ERROR_DETECTOR_KFENCE, "kfence")	\
 	EM(ERROR_DETECTOR_KASAN, "kasan")	\
 	EMe(ERROR_DETECTOR_WARN, "warning")
- 
 
 #undef EM
 #undef EMe
@@ -53,12 +50,10 @@ DECLARE_EVENT_CLASS(error_report_template,
 			      show_error_detector_list(__entry->error_detector),
 			      __entry->id));
 
- 
 DEFINE_EVENT(error_report_template, error_report_end,
 	     TP_PROTO(enum error_detector error_detector, unsigned long id),
 	     TP_ARGS(error_detector, id));
 
 #endif  
 
- 
 

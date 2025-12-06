@@ -1,42 +1,15 @@
- 
-#include <linux/sched/mm.h>
-#include <linux/proc_fs.h>
+/* Minimal includes for CPU hotplug */
 #include <linux/smp.h>
 #include <linux/init.h>
-#include <linux/notifier.h>
-#include <linux/sched/signal.h>
-
-#include <linux/sched/isolation.h>
-#include <linux/sched/task.h>
-#include <linux/sched/smt.h>
-#include <linux/unistd.h>
 #include <linux/cpu.h>
-#include <linux/oom.h>
-#include <linux/rcupdate.h>
-#include <linux/export.h>
-#include <linux/bug.h>
-#include <linux/kthread.h>
-#include <linux/stop_machine.h>
+#include <linux/cpumask.h>
+#include <linux/percpu.h>
 #include <linux/mutex.h>
-#include <linux/gfp.h>
-#include <linux/suspend.h>
-#include <linux/lockdep.h>
-#include <linux/tick.h>
-#include <linux/irq.h>
-#include <linux/nmi.h>
-#include <linux/smpboot.h>
-
-#include <linux/slab.h>
-#include <linux/scs.h>
-#include <linux/percpu-rwsem.h>
-#include <linux/cpuset.h>
-#include <linux/random.h>
-#include <linux/cc_platform.h>
-
+#include <linux/bug.h>
+#include <linux/list.h>
 
 #include "smpboot.h"
 
- 
 struct cpuhp_cpu_state {
 	enum cpuhp_state	state;
 	enum cpuhp_state	target;
@@ -81,7 +54,6 @@ static bool cpuhp_step_empty(bool bringup, struct cpuhp_step *step)
 	return bringup ? !step->startup.single : !step->teardown.single;
 }
 
- 
 static int cpuhp_invoke_callback(unsigned int cpu, enum cpuhp_state state,
 				 bool bringup, struct hlist_node *node,
 				 struct hlist_node **lastp)
@@ -163,7 +135,6 @@ err:
 }
 
 
- 
 static struct cpuhp_step cpuhp_hp_states[] = {
 	[CPUHP_OFFLINE] = {
 		.name			= "offline",
@@ -181,7 +152,6 @@ static struct cpuhp_step cpuhp_hp_states[] = {
 	},
 };
 
- 
 static int cpuhp_cb_check(enum cpuhp_state state)
 {
 	if (state <= CPUHP_OFFLINE || state >= CPUHP_ONLINE)
@@ -189,7 +159,6 @@ static int cpuhp_cb_check(enum cpuhp_state state)
 	return 0;
 }
 
- 
 static int cpuhp_reserve_state(enum cpuhp_state state)
 {
 	enum cpuhp_state i, end;
@@ -250,7 +219,6 @@ static void *cpuhp_get_teardown_cb(enum cpuhp_state state)
 	return cpuhp_get_step(state)->teardown.single;
 }
 
- 
 static int cpuhp_issue_call(int cpu, enum cpuhp_state state, bool bringup,
 			    struct hlist_node *node)
 {
@@ -266,7 +234,6 @@ static int cpuhp_issue_call(int cpu, enum cpuhp_state state, bool bringup,
 	return ret;
 }
 
- 
 static void cpuhp_rollback_install(int failedcpu, enum cpuhp_state state,
 				   struct hlist_node *node)
 {
@@ -339,7 +306,6 @@ int __cpuhp_state_add_instance(enum cpuhp_state state, struct hlist_node *node,
 	return ret;
 }
 
- 
 int __cpuhp_setup_state_cpuslocked(enum cpuhp_state state,
 				   const char *name, bool invoke,
 				   int (*startup)(unsigned int cpu),
@@ -440,7 +406,6 @@ remove:
 	return 0;
 }
 
- 
 void __cpuhp_remove_state_cpuslocked(enum cpuhp_state state, bool invoke)
 {
 	struct cpuhp_step *sp = cpuhp_get_step(state);
@@ -483,9 +448,7 @@ void __cpuhp_remove_state(enum cpuhp_state state, bool invoke)
 
 
 
- 
 
- 
 #define MASK_DECLARE_1(x)	[x+1][0] = (1UL << (x))
 #define MASK_DECLARE_2(x)	MASK_DECLARE_1(x), MASK_DECLARE_1(x+1)
 #define MASK_DECLARE_4(x)	MASK_DECLARE_2(x), MASK_DECLARE_2(x+2)
@@ -542,7 +505,6 @@ void set_cpu_online(unsigned int cpu, bool online)
 	}
 }
 
- 
 void __init boot_cpu_init(void)
 {
 	int cpu = smp_processor_id();
@@ -555,13 +517,11 @@ void __init boot_cpu_init(void)
 
 }
 
- 
 void __init boot_cpu_hotplug_init(void)
 {
 	this_cpu_write(cpuhp_state.state, CPUHP_ONLINE);
 }
 
- 
 /* Stub: mitigations= cmdline option not needed for minimal kernel */
 static int __init mitigations_parse_cmdline(char *arg) { return 0; }
 early_param("mitigations", mitigations_parse_cmdline);

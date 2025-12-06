@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_EFI_H
 #define _LINUX_EFI_H
 
- 
 
 #include <linux/init.h>
 #include <linux/string.h>
@@ -12,7 +10,6 @@
 #include <linux/reboot.h>
 #include <asm/page.h>
 
- 
 typedef unsigned long efi_status_t;
 typedef u8 efi_bool_t;
 typedef u16 efi_char16_t;
@@ -20,7 +17,6 @@ typedef u64 efi_physical_addr_t;
 typedef void *efi_handle_t;
 typedef guid_t efi_guid_t __aligned(__alignof__(u32));
 
- 
 #define EFI_SUCCESS		0
 #define EFI_LOAD_ERROR		( 1 | (1UL << (BITS_PER_LONG-1)))
 #define EFI_INVALID_PARAMETER	( 2 | (1UL << (BITS_PER_LONG-1)))
@@ -31,10 +27,8 @@ typedef guid_t efi_guid_t __aligned(__alignof__(u32));
 #define EFI_RUNTIME_SERVICES_DATA	 6
 #define EFI_CONVENTIONAL_MEMORY		 7
 
- 
 #define EFI_MEMORY_RUNTIME		(1UL << 63)
 
- 
 typedef struct {
 	u32 type;
 	u32 pad;
@@ -44,7 +38,6 @@ typedef struct {
 	u64 attribute;
 } efi_memory_desc_t;
 
- 
 #define EFI_BOOT		0
 #define EFI_CONFIG_TABLES	2
 #define EFI_RUNTIME_SERVICES	3
@@ -58,7 +51,6 @@ typedef struct {
 #define EFI_MEM_NO_SOFT_RESERVE	11
 #define EFI_PRESERVE_BS_REGIONS	12
 
- 
 enum efi_secureboot_mode {
 	efi_secureboot_mode_unset,
 	efi_secureboot_mode_unknown,
@@ -66,7 +58,6 @@ enum efi_secureboot_mode {
 	efi_secureboot_mode_enabled,
 };
 
- 
 typedef struct {
 	u32 get_time;
 	u32 set_time;
@@ -86,7 +77,6 @@ typedef struct {
 
 typedef efi_runtime_services_32_t efi_runtime_services_t;
 
- 
 static inline bool efi_enabled(int feature)
 {
 	return false;

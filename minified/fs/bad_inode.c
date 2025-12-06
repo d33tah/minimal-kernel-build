@@ -1,8 +1,5 @@
- 
- 
-
+/* Stubs for bad inode handling */
 #include <linux/fs.h>
-#include <linux/export.h>
 
 void make_bad_inode(struct inode *inode)
 {

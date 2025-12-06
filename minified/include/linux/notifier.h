@@ -1,6 +1,3 @@
- 
- 
- 
 #ifndef _LINUX_NOTIFIER_H
 #define _LINUX_NOTIFIER_H
 #include <linux/errno.h>
@@ -8,7 +5,6 @@
 #include <linux/rwsem.h>
 #include <linux/srcu.h>
 
- 
 
 struct notifier_block;
 
@@ -53,10 +49,7 @@ struct srcu_notifier_head {
 		(name)->head = NULL;		\
 	} while (0)
 
- 
-/* srcu_init_notifier_head removed - unused */
-#define srcu_cleanup_notifier_head(name)	\
-		cleanup_srcu_struct(&(name)->srcu);
+/* srcu notifier macros removed - unused */
 
 #define ATOMIC_NOTIFIER_INIT(name) {				\
 		.lock = __SPIN_LOCK_UNLOCKED(name.lock),	\
@@ -66,13 +59,6 @@ struct srcu_notifier_head {
 		.head = NULL }
 #define RAW_NOTIFIER_INIT(name)	{				\
 		.head = NULL }
-
-#define SRCU_NOTIFIER_INIT(name, pcpu)				\
-	{							\
-		.mutex = __MUTEX_INITIALIZER(name.mutex),	\
-		.head = NULL,					\
-		.srcu = __SRCU_STRUCT_INIT(name.srcu, pcpu),	\
-	}
 
 #define ATOMIC_NOTIFIER_HEAD(name)				\
 	struct atomic_notifier_head name =			\
@@ -84,16 +70,7 @@ struct srcu_notifier_head {
 	struct raw_notifier_head name =				\
 		RAW_NOTIFIER_INIT(name)
 
-#define _SRCU_NOTIFIER_HEAD(name, mod)				\
-	mod struct srcu_notifier_head name =			\
-			SRCU_NOTIFIER_INIT(name, name)
-
-
-#define SRCU_NOTIFIER_HEAD(name)				\
-	_SRCU_NOTIFIER_HEAD(name,  )
-
-#define SRCU_NOTIFIER_HEAD_STATIC(name)				\
-	_SRCU_NOTIFIER_HEAD(name, static)
+/* SRCU_NOTIFIER_INIT, SRCU_NOTIFIER_HEAD, _SRCU_NOTIFIER_HEAD removed - unused */
 
 #ifdef __KERNEL__
 
@@ -133,45 +110,11 @@ extern bool atomic_notifier_call_chain_is_empty(struct atomic_notifier_head *nh)
 #define NOTIFY_STOP_MASK	0x8000		 
 #define NOTIFY_BAD		(NOTIFY_STOP_MASK|0x0002)
 						 
- 
 #define NOTIFY_STOP		(NOTIFY_OK|NOTIFY_STOP_MASK)
 
- 
-static inline int notifier_from_errno(int err)
-{
-	if (err)
-		return NOTIFY_STOP_MASK | (NOTIFY_OK - err);
+/* notifier_from_errno, notifier_to_errno removed - unused */
 
-	return NOTIFY_OK;
-}
 
- 
-static inline int notifier_to_errno(int ret)
-{
-	ret &= ~NOTIFY_STOP_MASK;
-	return ret > NOTIFY_OK ? NOTIFY_OK - ret : 0;
-}
-
- 
- 
- 
-
- 
-
- 
-
- 
-
- 
-
-#define NETLINK_URELEASE	0x0001	 
-
- 
-#define KBD_KEYCODE		0x0001  
-#define KBD_UNBOUND_KEYCODE	0x0002  
-#define KBD_UNICODE		0x0003  
-#define KBD_KEYSYM		0x0004  
-#define KBD_POST_KEYSYM		0x0005  
 
 extern struct blocking_notifier_head reboot_notifier_list;
 

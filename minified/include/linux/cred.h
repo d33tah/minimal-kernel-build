@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_CRED_H
 #define _LINUX_CRED_H
@@ -15,21 +13,18 @@
 struct cred;
 struct inode;
 
- 
 struct group_info {
 	atomic_t	usage;
 	int		ngroups;
 	kgid_t		gid[];
 } __randomize_layout;
 
- 
 static inline struct group_info *get_group_info(struct group_info *gi)
 {
 	atomic_inc(&gi->usage);
 	return gi;
 }
 
- 
 #define put_group_info(group_info)			\
 do {							\
 	if (atomic_dec_and_test(&(group_info)->usage))	\
@@ -44,16 +39,9 @@ static inline int in_group_p(kgid_t grp)
 {
         return 1;
 }
-static inline int in_egroup_p(kgid_t grp)
-{
-        return 1;
-}
-static inline int groups_search(const struct group_info *group_info, kgid_t grp)
-{
-	return 1;
-}
 
- 
+/* in_egroup_p, groups_search removed - unused */
+
 struct cred {
 	atomic_t	usage;
 	kuid_t		uid;		 
@@ -99,7 +87,6 @@ extern int set_security_override_from_ctx(struct cred *, const char *);
 extern void __init cred_init(void);
 extern int set_cred_ucounts(struct cred *);
 
- 
 static inline void validate_creds(const struct cred *cred)
 {
 }
@@ -117,7 +104,6 @@ static inline struct cred *get_new_cred(struct cred *cred)
 	return cred;
 }
 
- 
 static inline const struct cred *get_cred(const struct cred *cred)
 {
 	struct cred *nonconst_cred = (struct cred *) cred;
@@ -140,7 +126,6 @@ static inline const struct cred *get_cred_rcu(const struct cred *cred)
 	return cred;
 }
 
- 
 static inline void put_cred(const struct cred *_cred)
 {
 	struct cred *cred = (struct cred *) _cred;
@@ -152,23 +137,18 @@ static inline void put_cred(const struct cred *_cred)
 	}
 }
 
- 
 #define current_cred() \
 	rcu_dereference_protected(current->cred, 1)
 
- 
 #define current_real_cred() \
 	rcu_dereference_protected(current->real_cred, 1)
 
- 
 #define __task_cred(task)	\
 	rcu_dereference((task)->real_cred)
 
- 
 #define get_current_cred()				\
 	(get_cred(current_cred()))
 
- 
 #define get_current_user()				\
 ({							\
 	struct user_struct *__u;			\
@@ -178,7 +158,6 @@ static inline void put_cred(const struct cred *_cred)
 	__u;						\
 })
 
- 
 #define get_current_groups()				\
 ({							\
 	struct group_info *__groups;			\

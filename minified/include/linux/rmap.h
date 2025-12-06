@@ -1,7 +1,5 @@
- 
 #ifndef _LINUX_RMAP_H
 #define _LINUX_RMAP_H
- 
 
 #include <linux/list.h>
 #include <linux/slab.h>
@@ -12,7 +10,6 @@
 #include <linux/pagemap.h>
 #include <linux/memremap.h>
 
- 
 struct anon_vma {
 	struct anon_vma *root;		 
 	struct rw_semaphore rwsem;	 
@@ -30,7 +27,6 @@ struct anon_vma {
 	struct rb_root_cached rb_root;
 };
 
- 
 struct anon_vma_chain {
 	struct vm_area_struct *vma;
 	struct anon_vma *anon_vma;
@@ -40,12 +36,11 @@ struct anon_vma_chain {
 };
 
 enum ttu_flags {
-	TTU_SPLIT_HUGE_PMD	= 0x4,	 
-	TTU_IGNORE_MLOCK	= 0x8,	 
-	TTU_SYNC		= 0x10,	 
-	TTU_IGNORE_HWPOISON	= 0x20,	 
-	TTU_BATCH_FLUSH		= 0x40,	 
-	TTU_RMAP_LOCKED		= 0x80,	 
+	TTU_SPLIT_HUGE_PMD	= 0x4,
+	TTU_IGNORE_MLOCK	= 0x8,
+	TTU_SYNC		= 0x10,
+	TTU_BATCH_FLUSH		= 0x40,
+	TTU_RMAP_LOCKED		= 0x80,
 };
 
 static inline void get_anon_vma(struct anon_vma *anon_vma)
@@ -87,7 +82,6 @@ static inline void anon_vma_unlock_read(struct anon_vma *anon_vma)
 }
 
 
- 
 void anon_vma_init(void);	 
 int  __anon_vma_prepare(struct vm_area_struct *);
 void unlink_anon_vmas(struct vm_area_struct *);
@@ -111,19 +105,14 @@ static inline void anon_vma_merge(struct vm_area_struct *vma,
 
 struct anon_vma *page_get_anon_vma(struct page *page);
 
- 
 typedef int __bitwise rmap_t;
 
- 
 #define RMAP_NONE		((__force rmap_t)0)
 
- 
 #define RMAP_EXCLUSIVE		((__force rmap_t)BIT(0))
 
- 
 #define RMAP_COMPOUND		((__force rmap_t)BIT(1))
 
- 
 void page_move_anon_rmap(struct page *, struct vm_area_struct *);
 void page_add_anon_rmap(struct page *, struct vm_area_struct *,
 		unsigned long address, rmap_t flags);
@@ -149,7 +138,6 @@ static inline void page_dup_file_rmap(struct page *page, bool compound)
 	__page_dup_rmap(page, compound);
 }
 
- 
 static inline int page_try_dup_anon_rmap(struct page *page, bool compound,
 					 struct vm_area_struct *vma)
 {
@@ -171,21 +159,6 @@ dup:
 	return 0;
 }
 
- 
-static inline int page_try_share_anon_rmap(struct page *page)
-{
-	VM_BUG_ON_PAGE(!PageAnon(page) || !PageAnonExclusive(page), page);
-
-	 
-	if (likely(!is_device_private_page(page) &&
-	    unlikely(page_maybe_dma_pinned(page))))
-		return -EBUSY;
-
-	ClearPageAnonExclusive(page);
-	return 0;
-}
-
- 
 int folio_referenced(struct folio *, int is_locked,
 			struct mem_cgroup *memcg, unsigned long *vm_flags);
 
@@ -196,9 +169,7 @@ int make_device_exclusive_range(struct mm_struct *mm, unsigned long start,
 				unsigned long end, struct page **pages,
 				void *arg);
 
- 
 #define PVMW_SYNC		(1 << 0)
- 
 #define PVMW_MIGRATION		(1 << 1)
 
 struct page_vma_mapped_walk {
@@ -213,26 +184,6 @@ struct page_vma_mapped_walk {
 	unsigned int flags;
 };
 
-#define DEFINE_PAGE_VMA_WALK(name, _page, _vma, _address, _flags)	\
-	struct page_vma_mapped_walk name = {				\
-		.pfn = page_to_pfn(_page),				\
-		.nr_pages = compound_nr(page),				\
-		.pgoff = page_to_pgoff(page),				\
-		.vma = _vma,						\
-		.address = _address,					\
-		.flags = _flags,					\
-	}
-
-#define DEFINE_FOLIO_VMA_WALK(name, _folio, _vma, _address, _flags)	\
-	struct page_vma_mapped_walk name = {				\
-		.pfn = folio_pfn(_folio),				\
-		.nr_pages = folio_nr_pages(_folio),			\
-		.pgoff = folio_pgoff(_folio),				\
-		.vma = _vma,						\
-		.address = _address,					\
-		.flags = _flags,					\
-	}
-
 static inline void page_vma_mapped_walk_done(struct page_vma_mapped_walk *pvmw)
 {
 	 
@@ -244,10 +195,8 @@ static inline void page_vma_mapped_walk_done(struct page_vma_mapped_walk *pvmw)
 
 bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw);
 
- 
 unsigned long page_address_in_vma(struct page *, struct vm_area_struct *);
 
- 
 int folio_mkclean(struct folio *);
 
 int pfn_mkclean_range(unsigned long pfn, unsigned long nr_pages, pgoff_t pgoff,
@@ -257,7 +206,6 @@ void remove_migration_ptes(struct folio *src, struct folio *dst, bool locked);
 
 int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma);
 
- 
 struct rmap_walk_control {
 	void *arg;
 	bool try_lock;
@@ -274,7 +222,6 @@ struct rmap_walk_control {
 void rmap_walk(struct folio *folio, struct rmap_walk_control *rwc);
 void rmap_walk_locked(struct folio *folio, struct rmap_walk_control *rwc);
 
- 
 struct anon_vma *folio_lock_anon_vma_read(struct folio *folio,
 					  struct rmap_walk_control *rwc);
 void page_unlock_anon_vma_read(struct anon_vma *anon_vma);

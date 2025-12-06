@@ -1,14 +1,11 @@
- 
 #ifndef _LINUX_SCHED_TASK_STACK_H
 #define _LINUX_SCHED_TASK_STACK_H
 
- 
 
 #include <linux/sched.h>
 #include <linux/magic.h>
 
 
- 
 static __always_inline void *task_stack_page(const struct task_struct *task)
 {
 	return task->stack;
@@ -35,23 +32,12 @@ void exit_task_stack_account(struct task_struct *tsk);
 #define task_stack_end_corrupted(task) \
 		(*(end_of_stack(task)) != STACK_END_MAGIC)
 
-static inline int object_is_on_stack(const void *obj)
-{
-	void *stack = task_stack_page(current);
-
-	return (obj >= stack) && (obj < (stack + THREAD_SIZE));
-}
+/* object_is_on_stack removed - unused */
 
 extern void thread_stack_cache_init(void);
 
 extern void set_task_stack_end_magic(struct task_struct *tsk);
 
-#ifndef __HAVE_ARCH_KSTACK_END
-static inline int kstack_end(void *addr)
-{
-	 
-	return !(((unsigned long)addr+sizeof(void*)-1) & (THREAD_SIZE-sizeof(void*)));
-}
-#endif
+/* kstack_end removed - unused */
 
 #endif  

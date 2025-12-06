@@ -1,8 +1,7 @@
- 
 #ifndef _LINUX_ELFCORE_H
 #define _LINUX_ELFCORE_H
 
-#include <linux/user.h>
+#include <asm/user.h> /* linux/user.h redirect */
 #include <linux/bug.h>
 #include <linux/sched/task_stack.h>
 #include <linux/types.h>
@@ -21,7 +20,6 @@ struct elf_siginfo
 	int	si_errno;			 
 };
 
- 
 struct elf_prstatus_common
 {
 	struct elf_siginfo pr_info;	 

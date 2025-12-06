@@ -1,4 +1,3 @@
- 
 
 #define _GNU_SOURCE
 #include <elf.h>
@@ -10,31 +9,32 @@
 #include <stdbool.h>
 #include <errno.h>
 #include "modpost.h"
-#include "../../include/linux/license.h"
+/* license.h inlined */
+static inline int license_is_gpl_compatible(const char *license)
+{
+	return (strcmp(license, "GPL") == 0
+		|| strcmp(license, "GPL v2") == 0
+		|| strcmp(license, "GPL and additional rights") == 0
+		|| strcmp(license, "Dual BSD/GPL") == 0
+		|| strcmp(license, "Dual MIT/GPL") == 0
+		|| strcmp(license, "Dual MPL/GPL") == 0);
+}
 
- 
 static bool modversions;
- 
 static bool all_versions;
- 
 static bool external_module;
- 
 static bool warn_unresolved;
 
 static int sec_mismatch_count;
 static bool sec_mismatch_warn_only = true;
- 
 static bool ignore_missing_files;
- 
 static bool allow_missing_ns_imports;
 
 static bool error_occurred;
 
- 
 #define MAX_UNRESOLVED_REPORTS	10
 static unsigned int nr_unresolved;
 
- 
 
 #define MODULE_NAME_LEN (64 - sizeof(Elf_Addr))
 
@@ -143,7 +143,6 @@ char *get_line(char **stringp)
 	return orig;
 }
 
- 
 LIST_HEAD(modules);
 
 static struct module *find_module(const char *modname)
@@ -181,7 +180,6 @@ static struct module *new_module(const char *name, size_t namelen)
 	return mod;
 }
 
- 
 
 #define SYMBOL_HASH_SIZE 1024
 
@@ -199,7 +197,6 @@ struct symbol {
 
 static struct symbol *symbolhash[SYMBOL_HASH_SIZE];
 
- 
 static inline unsigned int tdb_hash(const char *name)
 {
 	unsigned value;	 
@@ -212,7 +209,6 @@ static inline unsigned int tdb_hash(const char *name)
 	return (1103515243 * value + 12345);
 }
 
- 
 static struct symbol *alloc_symbol(const char *name)
 {
 	struct symbol *s = NOFAIL(malloc(sizeof(*s) + strlen(name) + 1));
@@ -223,7 +219,6 @@ static struct symbol *alloc_symbol(const char *name)
 	return s;
 }
 
- 
 static void hash_add_symbol(struct symbol *sym)
 {
 	unsigned int hash;
@@ -634,7 +629,6 @@ static void handle_symbol(struct module *mod, struct elf_info *info,
 	}
 }
 
- 
 static char *next_string(char *string, unsigned long *secsize)
 {
 	 
@@ -687,7 +681,6 @@ static const char *sym_name(struct elf_info *elf, Elf_Sym *sym)
 		return "(unknown)";
 }
 
- 
 static bool match(const char *string, const char *const patterns[])
 {
 	const char *pattern;
@@ -700,7 +693,6 @@ static bool match(const char *string, const char *const patterns[])
 	return false;
 }
 
- 
 static const char *const section_white_list[] =
 {
 	".comment*",
@@ -725,7 +717,6 @@ static const char *const section_white_list[] =
 	NULL
 };
 
- 
 static void check_section(const char *modname, struct elf_info *elf,
 			  Elf_Shdr *sechdr)
 {
@@ -782,25 +773,19 @@ static void check_section(const char *modname, struct elf_info *elf,
 #define ALL_TEXT_SECTIONS  ALL_INIT_TEXT_SECTIONS, ALL_EXIT_TEXT_SECTIONS, \
 		TEXT_SECTIONS, OTHER_TEXT_SECTIONS
 
- 
 static const char *const init_data_sections[] =
 	{ ALL_INIT_DATA_SECTIONS, NULL };
 
- 
 static const char *const init_sections[] = { ALL_INIT_SECTIONS, NULL };
 
- 
 static const char *const init_exit_sections[] =
 	{ALL_INIT_SECTIONS, ALL_EXIT_SECTIONS, NULL };
 
- 
 static const char *const text_sections[] = { ALL_TEXT_SECTIONS, NULL };
 
- 
 static const char *const data_sections[] = { DATA_SECTIONS, NULL };
 
 
- 
 #define DEFAULT_SYMBOL_WHITE_LIST					\
 	"*driver",							\
 	"*_template",  			\
@@ -829,7 +814,6 @@ enum mismatch {
 	EXTABLE_TO_NON_TEXT,
 };
 
- 
 struct sectioncheck {
 	const char *fromsec[20];
 	const char *bad_tosec[20];
@@ -848,7 +832,6 @@ static void extable_mismatch_handler(const char *modname, struct elf_info *elf,
 				     const char *fromsec);
 
 static const struct sectioncheck sectioncheck[] = {
- 
 {
 	.fromsec = { TEXT_SECTIONS, NULL },
 	.bad_tosec = { ALL_INIT_SECTIONS, NULL },
@@ -882,28 +865,24 @@ static const struct sectioncheck sectioncheck[] = {
 	.mismatch = DATA_TO_ANY_EXIT,
 	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
 },
- 
 {
 	.fromsec = { ALL_XXXINIT_SECTIONS, NULL },
 	.bad_tosec = { INIT_SECTIONS, NULL },
 	.mismatch = XXXINIT_TO_SOME_INIT,
 	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
 },
- 
 {
 	.fromsec = { ALL_XXXEXIT_SECTIONS, NULL },
 	.bad_tosec = { EXIT_SECTIONS, NULL },
 	.mismatch = XXXEXIT_TO_SOME_EXIT,
 	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
 },
- 
 {
 	.fromsec = { ALL_INIT_SECTIONS, NULL },
 	.bad_tosec = { ALL_EXIT_SECTIONS, NULL },
 	.mismatch = ANY_INIT_TO_ANY_EXIT,
 	.symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL },
 },
- 
 {
 	.fromsec = { ALL_EXIT_SECTIONS, NULL },
 	.bad_tosec = { ALL_INIT_SECTIONS, NULL },
@@ -916,7 +895,6 @@ static const struct sectioncheck sectioncheck[] = {
 	.mismatch = ANY_INIT_TO_ANY_EXIT,
 	.symbol_white_list = { NULL },
 },
- 
 {
 	.fromsec = { "___ksymtab*", NULL },
 	.bad_tosec = { INIT_SECTIONS, EXIT_SECTIONS, NULL },
@@ -955,7 +933,6 @@ static const struct sectioncheck *section_mismatch(
 	return NULL;
 }
 
- 
 static int secref_whitelist(const struct sectioncheck *mismatch,
 			    const char *fromsec, const char *fromsym,
 			    const char *tosec, const char *tosym)
@@ -1007,7 +984,6 @@ static inline int is_arm_mapping_symbol(const char *str)
 	       && (str[2] == '\0' || str[2] == '.');
 }
 
- 
 static inline int is_valid_name(struct elf_info *elf, Elf_Sym *sym)
 {
 	const char *name = elf->strtab + sym->st_name;
@@ -1017,7 +993,6 @@ static inline int is_valid_name(struct elf_info *elf, Elf_Sym *sym)
 	return !is_arm_mapping_symbol(name);
 }
 
- 
 static Elf_Sym *find_elf_symbol(struct elf_info *elf, Elf64_Sword addr,
 				Elf_Sym *relsym)
 {
@@ -1056,7 +1031,6 @@ static Elf_Sym *find_elf_symbol(struct elf_info *elf, Elf64_Sword addr,
 		return NULL;
 }
 
- 
 static Elf_Sym *find_elf_symbol2(struct elf_info *elf, Elf_Addr addr,
 				 const char *sec)
 {
@@ -1082,7 +1056,6 @@ static Elf_Sym *find_elf_symbol2(struct elf_info *elf, Elf_Addr addr,
 	return near;
 }
 
- 
 static char *sec2annotation(const char *s)
 {
 	if (match(s, init_exit_sections)) {
@@ -1140,7 +1113,6 @@ static inline void get_pretty_name(int is_func, const char** name, const char** 
 	}
 }
 
- 
 static void report_sec_mismatch(const char *modname,
 				const struct sectioncheck *mismatch,
 				const char *fromsec,
@@ -1319,7 +1291,6 @@ static int is_executable_section(struct elf_info* elf, unsigned int section_inde
 	return ((elf->sechdrs[section_index].sh_flags & SHF_EXECINSTR) == SHF_EXECINSTR);
 }
 
- 
 static unsigned int extable_entry_size = 0;
 static void find_extable_entry_size(const char* const sec, const Elf_Rela* r)
 {
@@ -1644,7 +1615,6 @@ static void section_rel(const char *modname, struct elf_info *elf,
 	}
 }
 
- 
 static void check_sec_ref(const char *modname, struct elf_info *elf)
 {
 	int i;
@@ -1673,7 +1643,6 @@ static char *remove_dot(char *s)
 	return s;
 }
 
- 
 static void extract_crcs_for_object(const char *object, struct module *mod)
 {
 	char cmd_file[PATH_MAX];
@@ -1733,7 +1702,6 @@ static void extract_crcs_for_object(const char *object, struct module *mod)
 	free(buf);
 }
 
- 
 static void mod_set_crcs(struct module *mod)
 {
 	char objlist[PATH_MAX];
@@ -1859,7 +1827,6 @@ static void read_symbols_from_files(const char *filename)
 
 #define SZ 500
 
- 
 
 void __attribute__((format(printf, 2, 3))) buf_printf(struct buffer *buf,
 						      const char *fmt, ...)
@@ -1941,7 +1908,6 @@ static void check_modname_len(struct module *mod)
 		error("module name is too long [%s.ko]\n", mod->name);
 }
 
- 
 static void add_header(struct buffer *b, struct module *mod)
 {
 	buf_printf(b, "#include <linux/module.h>\n");
@@ -2007,7 +1973,6 @@ static void add_exported_symbols(struct buffer *buf, struct module *mod)
 	}
 }
 
- 
 static void add_versions(struct buffer *b, struct module *mod)
 {
 	struct symbol *s;
@@ -2150,7 +2115,6 @@ static void write_vmlinux_export_c_file(struct module *mod)
 	free(buf.p);
 }
 
- 
 static void write_mod_c_file(struct module *mod)
 {
 	struct buffer buf = { };
@@ -2179,7 +2143,6 @@ free:
 	free(buf.p);
 }
 
- 
 static void read_dump(const char *fname)
 {
 	char *buf, *pos, *line;

@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_PROC_NS_H
 #define _LINUX_PROC_NS_H
 
@@ -33,7 +31,6 @@ extern const struct proc_ns_operations cgroupns_operations;
 extern const struct proc_ns_operations timens_operations;
 extern const struct proc_ns_operations timens_for_children_operations;
 
- 
 enum {
 	PROC_ROOT_INO		= 1,
 	PROC_IPC_INIT_INO	= 0xEFFFFFFFU,

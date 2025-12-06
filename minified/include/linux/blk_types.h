@@ -1,5 +1,3 @@
- 
- 
 #ifndef __LINUX_BLK_TYPES_H
 #define __LINUX_BLK_TYPES_H
 
@@ -16,7 +14,6 @@ struct cgroup_subsys_state;
 typedef void (bio_end_io_t) (struct bio *);
 struct bio_crypt_ctx;
 
- 
 #ifndef SECTOR_SHIFT
 #define SECTOR_SHIFT 9
 #endif
@@ -67,7 +64,6 @@ struct block_device {
 #define bdev_kobj(_bdev) \
 	(&((_bdev)->bd_device.kobj))
 
- 
 /* Reduced blk_status_t - only BLK_STS_OK needed in minimal kernel */
 #if defined(CONFIG_ALPHA) && !defined(__alpha_bwx__)
 typedef u32 __bitwise blk_status_t;
@@ -81,7 +77,6 @@ typedef u16 blk_short_t;
 typedef unsigned int blk_qc_t;
 #define BLK_QC_T_NONE		-1U
 
- 
 struct bio {
 	struct bio		*bi_next;	 
 	struct block_device	*bi_bdev;
@@ -136,7 +131,6 @@ enum {
 
 typedef __u32 __bitwise blk_mq_req_flags_t;
 
- 
 #define REQ_OP_BITS	8
 #define REQ_OP_MASK	((1 << REQ_OP_BITS) - 1)
 #define REQ_FLAG_BITS	24
@@ -174,10 +168,6 @@ enum stat_group {
 #define bio_op(bio) \
 	((bio)->bi_opf & REQ_OP_MASK)
 
-
-static inline bool op_is_write(unsigned int op)
-{
-	return (op & 1);
-}
+/* op_is_write removed - unused */
 
 #endif  

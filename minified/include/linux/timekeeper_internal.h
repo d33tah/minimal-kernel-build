@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_TIMEKEEPER_INTERNAL_H
 #define _LINUX_TIMEKEEPER_INTERNAL_H
@@ -8,7 +6,6 @@
 #include <linux/jiffies.h>
 #include <linux/time.h>
 
- 
 struct tk_read_base {
 	struct clocksource	*clock;
 	u64			mask;
@@ -20,7 +17,6 @@ struct tk_read_base {
 	u64			base_real;
 };
 
- 
 struct timekeeper {
 	struct tk_read_base	tkr_mono;
 	struct tk_read_base	tkr_raw;

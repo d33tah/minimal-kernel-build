@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/hrtimer.h>
 #include <linux/timekeeper_internal.h>
@@ -118,7 +116,6 @@ void update_vsyscall_tz(void)
 	__arch_sync_vdso_data(vdata);
 }
 
- 
 unsigned long vdso_update_begin(void)
 {
 	struct vdso_data *vdata = __arch_get_k_vdso_data();
@@ -129,7 +126,6 @@ unsigned long vdso_update_begin(void)
 	return flags;
 }
 
- 
 void vdso_update_end(unsigned long flags)
 {
 	struct vdso_data *vdata = __arch_get_k_vdso_data();

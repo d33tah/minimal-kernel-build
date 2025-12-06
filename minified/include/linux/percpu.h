@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_PERCPU_H
 #define __LINUX_PERCPU_H
 
@@ -11,31 +10,22 @@
 
 #include <asm/percpu.h>
 
- 
 #define PERCPU_MODULE_RESERVE		0
 
- 
 #define PCPU_MIN_UNIT_SIZE		PFN_ALIGN(32 << 10)
 
- 
 #define PCPU_MIN_ALLOC_SHIFT		2
 #define PCPU_MIN_ALLOC_SIZE		(1 << PCPU_MIN_ALLOC_SHIFT)
 
- 
 #define PCPU_BITMAP_BLOCK_SIZE		PAGE_SIZE
 #define PCPU_BITMAP_BLOCK_BITS		(PCPU_BITMAP_BLOCK_SIZE >>	\
 					 PCPU_MIN_ALLOC_SHIFT)
 
- 
 #define PERCPU_DYNAMIC_EARLY_SLOTS	128
 #define PERCPU_DYNAMIC_EARLY_SIZE	(12 << 10)
 
- 
-#if BITS_PER_LONG > 32
-#define PERCPU_DYNAMIC_RESERVE		(28 << 10)
-#else
+/* BITS_PER_LONG == 32 */
 #define PERCPU_DYNAMIC_RESERVE		(20 << 10)
-#endif
 
 extern void *pcpu_base_addr;
 extern const unsigned long *pcpu_unit_offsets;

@@ -1,12 +1,10 @@
- 
- 
 
 #ifndef __LINUX_FILE_H
 #define __LINUX_FILE_H
 
 #include <linux/compiler.h>
 #include <linux/types.h>
-#include <linux/posix_types.h>
+#include <asm/posix_types.h>
 #include <linux/errno.h>
 
 struct file;
@@ -24,11 +22,7 @@ extern struct file *alloc_file_pseudo(struct inode *, struct vfsmount *,
 extern struct file *alloc_file_clone(struct file *, int flags,
 	const struct file_operations *);
 
-static inline void fput_light(struct file *file, int fput_needed)
-{
-	if (fput_needed)
-		fput(file);
-}
+/* fput_light removed - unused */
 
 struct fd {
 	struct file *file;
@@ -96,13 +90,7 @@ extern int __receive_fd(struct file *file, int __user *ufd,
 
 extern int receive_fd(struct file *file, unsigned int o_flags);
 
-static inline int receive_fd_user(struct file *file, int __user *ufd,
-				  unsigned int o_flags)
-{
-	if (ufd == NULL)
-		return -EFAULT;
-	return __receive_fd(file, ufd, o_flags);
-}
+/* receive_fd_user removed - unused */
 int receive_fd_replace(int new_fd, struct file *file, unsigned int o_flags);
 
 extern void flush_delayed_fput(void);

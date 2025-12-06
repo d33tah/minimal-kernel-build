@@ -1,5 +1,3 @@
- 
- 
 
 #include <asm/iomap.h>
 #include <asm/memtype.h>

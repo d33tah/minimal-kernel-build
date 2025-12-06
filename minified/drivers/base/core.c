@@ -1,4 +1,3 @@
- 
 
 #include <linux/acpi.h>
 #include <linux/cpufreq.h>

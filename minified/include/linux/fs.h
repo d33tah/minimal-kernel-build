@@ -27,17 +27,74 @@
 #include <linux/rculist_bl.h>
 #include <linux/atomic.h>
 #include <linux/shrinker.h>
-#include <linux/migrate_mode.h>
+/* migrate_mode.h inlined */
+enum migrate_mode { MIGRATE_MODE_LAST };
+enum migrate_reason { MR_TYPES };
 #include <linux/uidgid.h>
 #include <linux/lockdep.h>
 #include <linux/percpu-rwsem.h>
 #include <linux/workqueue.h>
-#include <linux/delayed_call.h>
+
+/* Inlined from delayed_call.h */
+struct delayed_call {
+	void (*fn)(void *);
+	void *arg;
+};
+#define DEFINE_DELAYED_CALL(name) struct delayed_call name = {NULL, NULL}
+static inline void set_delayed_call(struct delayed_call *call, void (*fn)(void *), void *arg)
+{
+	call->fn = fn;
+	call->arg = arg;
+}
+static inline void do_delayed_call(struct delayed_call *call)
+{
+	if (call->fn)
+		call->fn(call->arg);
+}
+static inline void clear_delayed_call(struct delayed_call *call)
+{
+	call->fn = NULL;
+}
+/* End of inlined delayed_call.h content */
+
 #include <linux/uuid.h>
-#include <linux/errseq.h>
 #include <linux/ioprio.h>
-#include <linux/fs_types.h>
+
+/* Inlined from errseq.h */
+typedef u32	errseq_t;
+errseq_t errseq_set(errseq_t *eseq, int err);
+errseq_t errseq_sample(errseq_t *eseq);
+int errseq_check(errseq_t *eseq, errseq_t since);
+int errseq_check_and_advance(errseq_t *eseq, errseq_t *since);
 #include <linux/build_bug.h>
+
+/* --- 2025-12-06 20:11 --- fs_types.h inlined (36 LOC) */
+#define S_DT_SHIFT	12
+#define S_DT(mode)	(((mode) & S_IFMT) >> S_DT_SHIFT)
+#define S_DT_MASK	(S_IFMT >> S_DT_SHIFT)
+#define DT_UNKNOWN	0
+#define DT_FIFO		1
+#define DT_CHR		2
+#define DT_DIR		4
+#define DT_BLK		6
+#define DT_REG		8
+#define DT_LNK		10
+#define DT_SOCK		12
+#define DT_WHT		14
+#define DT_MAX		(S_DT_MASK + 1)
+#define FT_UNKNOWN	0
+#define FT_REG_FILE	1
+#define FT_DIR		2
+#define FT_CHRDEV	3
+#define FT_BLKDEV	4
+#define FT_FIFO		5
+#define FT_SOCK		6
+#define FT_SYMLINK	7
+#define FT_MAX		8
+extern unsigned char fs_ftype_to_dtype(unsigned int filetype);
+extern unsigned char fs_umode_to_ftype(umode_t mode);
+extern unsigned char fs_umode_to_dtype(umode_t mode);
+/* --- end fs_types.h inlined --- */
 #include <linux/stddef.h>
 #include <linux/mount.h>
 #include <linux/cred.h>
@@ -45,7 +102,45 @@
 #include <linux/slab.h>
 
 #include <asm/byteorder.h>
-#include <uapi/linux/fs.h>
+/* --- 2025-12-06 13:20 --- uapi/linux/fs.h inlined */
+#include <linux/limits.h>
+#include <linux/ioctl.h>
+#undef NR_OPEN
+#define INR_OPEN_CUR 1024
+#define INR_OPEN_MAX 4096
+#define BLOCK_SIZE_BITS 10
+#define BLOCK_SIZE (1<<BLOCK_SIZE_BITS)
+#define SEEK_SET	0
+#define SEEK_CUR	1
+#define SEEK_END	2
+#define SEEK_DATA	3
+#define SEEK_HOLE	4
+#define SEEK_MAX	SEEK_HOLE
+#define RENAME_NOREPLACE	(1 << 0)
+#define RENAME_EXCHANGE		(1 << 1)
+#define RENAME_WHITEOUT		(1 << 2)
+struct files_stat_struct {
+	unsigned long nr_files;
+	unsigned long nr_free_files;
+	unsigned long max_files;
+};
+#define NR_FILE  8192
+struct fsxattr {
+	__u32		fsx_xflags;
+	__u32		fsx_extsize;
+	__u32		fsx_nextents;
+	__u32		fsx_projid;
+	__u32		fsx_cowextsize;
+	unsigned char	fsx_pad[8];
+};
+typedef int __bitwise __kernel_rwf_t;
+#define RWF_HIPRI	((__force __kernel_rwf_t)0x00000001)
+#define RWF_DSYNC	((__force __kernel_rwf_t)0x00000002)
+#define RWF_SYNC	((__force __kernel_rwf_t)0x00000004)
+#define RWF_NOWAIT	((__force __kernel_rwf_t)0x00000008)
+#define RWF_APPEND	((__force __kernel_rwf_t)0x00000010)
+#define RWF_SUPPORTED	(RWF_HIPRI | RWF_DSYNC | RWF_SYNC | RWF_NOWAIT | RWF_APPEND)
+/* end uapi/linux/fs.h */
 
 struct backing_dev_info;
 struct bdi_writeback;
@@ -226,11 +321,6 @@ struct kiocb {
 	randomized_struct_fields_end
 };
 
-static inline bool is_sync_kiocb(struct kiocb *kiocb)
-{
-	return kiocb->ki_complete == NULL;
-}
-
 struct address_space_operations {
 	int (*writepage)(struct page *page, struct writeback_control *wbc);
 	int (*read_folio)(struct file *, struct folio *);
@@ -351,17 +441,7 @@ struct posix_acl;
 
 #define ACL_DONT_CACHE ((void *)(-3))
 
-static inline struct posix_acl *
-uncached_acl_sentinel(struct task_struct *task)
-{
-	return (void *)task + 1;
-}
-
-static inline bool
-is_uncached_acl(struct posix_acl *acl)
-{
-	return (long)acl & 1;
-}
+/* uncached_acl_sentinel, is_uncached_acl removed - unused */
 
 #define IOP_FASTPERM	0x0001
 #define IOP_LOOKUP	0x0002
@@ -479,11 +559,6 @@ static inline void inode_unlock_shared(struct inode *inode)
 	up_read(&inode->i_rwsem);
 }
 
-static inline int inode_trylock_shared(struct inode *inode)
-{
-	return down_read_trylock(&inode->i_rwsem);
-}
-
 static inline int inode_is_locked(struct inode *inode)
 {
 	return rwsem_is_locked(&inode->i_rwsem);
@@ -544,10 +619,7 @@ static inline unsigned iminor(const struct inode *inode)
 	return MINOR(inode->i_rdev);
 }
 
-static inline unsigned imajor(const struct inode *inode)
-{
-	return MAJOR(inode->i_rdev);
-}
+/* imajor removed - unused */
 
 struct fown_struct {
 	rwlock_t lock;          
@@ -608,12 +680,8 @@ static inline struct file *get_file(struct file *f)
 
 #define	MAX_NON_LFS	((1UL<<31) - 1)
 
- 
-#if BITS_PER_LONG==32
+/* 32-bit only kernel */
 #define MAX_LFS_FILESIZE	((loff_t)ULONG_MAX << PAGE_SHIFT)
-#elif BITS_PER_LONG==64
-#define MAX_LFS_FILESIZE 	((loff_t)LLONG_MAX)
-#endif
 
 #define FL_POSIX	1
 #define FL_FLOCK	2
@@ -651,8 +719,6 @@ struct file_lock_context;
 
 #define locks_inode(f) file_inode(f)
 
-#if BITS_PER_LONG == 32
-#endif
 static inline void
 locks_free_lock_context(struct inode *inode)
 {
@@ -1388,11 +1454,7 @@ static inline int try_break_deleg(struct inode *inode, struct inode **delegated_
 	return 0;
 }
 
-static inline int break_deleg_wait(struct inode **delegated_inode)
-{
-	BUG();
-	return 0;
-}
+/* break_deleg_wait removed - unused */
 
 struct audit_names;
 struct filename {
@@ -1407,11 +1469,6 @@ static_assert(offsetof(struct filename, iname) % sizeof(long) == 0);
 static inline struct user_namespace *file_mnt_user_ns(struct file *file)
 {
 	return mnt_user_ns(file->f_path.mnt);
-}
-
-static inline bool is_idmapped_mnt(const struct vfsmount *mnt)
-{
-	return mnt_user_ns(mnt) != mnt->mnt_sb->s_user_ns;
 }
 
 extern long vfs_truncate(const struct path *, loff_t);
@@ -1516,11 +1573,7 @@ int notify_change(struct user_namespace *, struct dentry *,
 		  struct iattr *, struct inode **);
 int inode_permission(struct user_namespace *, struct inode *, int);
 int generic_permission(struct user_namespace *, struct inode *, int);
-static inline int file_permission(struct file *file, int mask)
-{
-	return inode_permission(file_mnt_user_ns(file),
-				file_inode(file), mask);
-}
+/* file_permission removed - unused */
 static inline int path_permission(const struct path *path, int mask)
 {
 	return inode_permission(mnt_user_ns(path->mnt),
@@ -1574,7 +1627,6 @@ ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos);
 extern ssize_t kernel_write(struct file *, const void *, size_t, loff_t *);
 extern ssize_t __kernel_write(struct file *, const void *, size_t, loff_t *);
 extern struct file * open_exec(const char *);
- 
 
 extern bool is_subdir(struct dentry *, struct dentry *);
 extern bool path_is_under(const struct path *, const struct path *);
@@ -1846,86 +1898,18 @@ static inline int iocb_flags(struct file *file)
 	return res;
 }
 
-static inline int kiocb_set_rw_flags(struct kiocb *ki, rwf_t flags)
-{
-	int kiocb_flags = 0;
-
-	
-	BUILD_BUG_ON((__force int) RWF_SUPPORTED & IOCB_EVENTFD);
-
-	if (!flags)
-		return 0;
-	if (unlikely(flags & ~RWF_SUPPORTED))
-		return -EOPNOTSUPP;
-
-	if (flags & RWF_NOWAIT) {
-		if (!(ki->ki_filp->f_mode & FMODE_NOWAIT))
-			return -EOPNOTSUPP;
-		kiocb_flags |= IOCB_NOIO;
-	}
-	kiocb_flags |= (__force int) (flags & RWF_SUPPORTED);
-	if (flags & RWF_SYNC)
-		kiocb_flags |= IOCB_DSYNC;
-
-	ki->ki_flags |= kiocb_flags;
-	return 0;
-}
+/* kiocb_set_rw_flags removed - unused */
 
 static inline ino_t parent_ino(struct dentry *dentry)
 {
 	ino_t res;
-
-	
 	spin_lock(&dentry->d_lock);
 	res = dentry->d_parent->d_inode->i_ino;
 	spin_unlock(&dentry->d_lock);
 	return res;
 }
 
-struct simple_transaction_argresp {
-	ssize_t size;
-	char data[];
-};
-
-#define SIMPLE_TRANSACTION_LIMIT (PAGE_SIZE - sizeof(struct simple_transaction_argresp))
-
-char *simple_transaction_get(struct file *file, const char __user *buf,
-				size_t size);
-ssize_t simple_transaction_read(struct file *file, char __user *buf,
-				size_t size, loff_t *pos);
-int simple_transaction_release(struct inode *inode, struct file *file);
-
-void simple_transaction_set(struct file *file, size_t n);
-
-#define DEFINE_SIMPLE_ATTRIBUTE(__fops, __get, __set, __fmt)		\
-static int __fops ## _open(struct inode *inode, struct file *file)	\
-{									\
-	__simple_attr_check_format(__fmt, 0ull);			\
-	return simple_attr_open(inode, file, __get, __set, __fmt);	\
-}									\
-static const struct file_operations __fops = {				\
-	.owner	 = THIS_MODULE,						\
-	.open	 = __fops ## _open,					\
-	.release = simple_attr_release,					\
-	.read	 = simple_attr_read,					\
-	.write	 = simple_attr_write,					\
-	.llseek	 = generic_file_llseek,					\
-}
-
-static inline __printf(1, 2)
-void __simple_attr_check_format(const char *fmt, ...)
-{
-	
-}
-
-int simple_attr_open(struct inode *inode, struct file *file,
-		     int (*get)(void *, u64 *), int (*set)(void *, u64),
-		     const char *fmt);
-int simple_attr_release(struct inode *inode, struct file *file);
-ssize_t simple_attr_read(struct file *file, char __user *buf,
-			 size_t len, loff_t *ppos);
-ssize_t simple_attr_write(struct file *file, const char __user *buf,
-			  size_t len, loff_t *ppos);
+/* simple_transaction_*, simple_attr_*, DEFINE_SIMPLE_ATTRIBUTE removed - unused */
 
 struct ctl_table;
 int __init list_bdev_fs_names(char *buf, size_t size);
@@ -1940,15 +1924,6 @@ int __init list_bdev_fs_names(char *buf, size_t size);
 static inline bool is_sxid(umode_t mode)
 {
 	return (mode & S_ISUID) || ((mode & S_ISGID) && (mode & S_IXGRP));
-}
-
-static inline int check_sticky(struct user_namespace *mnt_userns,
-			       struct inode *dir, struct inode *inode)
-{
-	if (!(dir->i_mode & S_ISVTX))
-		return 0;
-
-	return __check_sticky(mnt_userns, dir, inode);
 }
 
 static inline void inode_has_no_xattr(struct inode *inode)

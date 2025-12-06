@@ -1,7 +1,6 @@
- 
 #include <linux/compiler.h>
 #include <linux/export.h>
-#include <linux/fault-inject-usercopy.h>
+/* fault-inject-usercopy.h removed - inlined in uaccess.h */
 #include <linux/kasan-checks.h>
 #include <linux/thread_info.h>
 #include <linux/uaccess.h>
@@ -14,7 +13,6 @@
 
 #define IS_UNALIGNED(src, dst)	0
 
- 
 static __always_inline long do_strncpy_from_user(char *dst, const char __user *src,
 					unsigned long count, unsigned long max)
 {
@@ -66,7 +64,6 @@ efault:
 	return -EFAULT;
 }
 
- 
 long strncpy_from_user(char *dst, const char __user *src, long count)
 {
 	unsigned long max_addr, src_addr;

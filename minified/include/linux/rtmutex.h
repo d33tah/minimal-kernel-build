@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef __LINUX_RT_MUTEX_H
 #define __LINUX_RT_MUTEX_H
@@ -24,7 +22,6 @@ struct rt_mutex_base {
 	.owner = NULL							\
 }
 
- 
 static inline bool rt_mutex_base_is_locked(struct rt_mutex_base *lock)
 {
 	return READ_ONCE(lock->owner) != NULL;
@@ -32,7 +29,6 @@ static inline bool rt_mutex_base_is_locked(struct rt_mutex_base *lock)
 
 extern void rt_mutex_base_init(struct rt_mutex_base *rtb);
 
- 
 struct rt_mutex {
 	struct rt_mutex_base	rtmutex;
 };

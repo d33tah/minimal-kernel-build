@@ -1,6 +1,4 @@
- 
 
- 
 
 #define WAIT_TABLE_BITS 8
 #define WAIT_TABLE_SIZE (1 << WAIT_TABLE_BITS)
@@ -28,7 +26,6 @@ int wake_bit_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync
 	return autoremove_wake_function(wq_entry, mode, sync, key);
 }
 
- 
 int __sched
 __wait_on_bit(struct wait_queue_head *wq_head, struct wait_bit_queue_entry *wbq_entry,
 	      wait_bit_action_f *action, unsigned mode)
@@ -75,7 +72,6 @@ void __wake_up_bit(struct wait_queue_head *wq_head, void *word, int bit)
 		__wake_up(wq_head, TASK_NORMAL, 1, &key);
 }
 
- 
 void wake_up_bit(void *word, int bit)
 {
 	__wake_up_bit(bit_waitqueue(word, bit), word, bit);

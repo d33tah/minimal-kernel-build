@@ -2,8 +2,7 @@
 #ifndef _ASM_X86_PTRACE_ABI_H
 #define _ASM_X86_PTRACE_ABI_H
 
-#ifdef __i386__
-
+/* 32-bit only kernel - removed x86_64 register definitions */
 #define EBX 0
 #define ECX 1
 #define EDX 2
@@ -21,42 +20,7 @@
 #define EFL 14
 #define UESP 15
 #define SS   16
-#define FRAME_SIZE 17
-
-#else  
-
-#if defined(__ASSEMBLY__) || defined(__FRAME_OFFSETS)
- 
-#define R15 0
-#define R14 8
-#define R13 16
-#define R12 24
-#define RBP 32
-#define RBX 40
- 
-#define R11 48
-#define R10 56
-#define R9 64
-#define R8 72
-#define RAX 80
-#define RCX 88
-#define RDX 96
-#define RSI 104
-#define RDI 112
- 
-#define ORIG_RAX 120
- 
-#define RIP 128
-#define CS 136
-#define EFLAGS 144
-#define RSP 152
-#define SS 160
-#endif  
-
- 
-#define FRAME_SIZE 168
-
-#endif  
+#define FRAME_SIZE 17  
 
  
 #define PTRACE_GETREGS            12
@@ -68,13 +32,10 @@
 
 #define PTRACE_OLDSETOPTIONS      21
 
- 
+
 #define PTRACE_GET_THREAD_AREA    25
 #define PTRACE_SET_THREAD_AREA    26
-
-#ifdef __x86_64__
-# define PTRACE_ARCH_PRCTL	  30
-#endif
+/* Removed PTRACE_ARCH_PRCTL - x86_64 only */
 
 #define PTRACE_SYSEMU		  31
 #define PTRACE_SYSEMU_SINGLESTEP  32

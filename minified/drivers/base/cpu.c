@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -14,8 +12,29 @@
 #include <linux/percpu.h>
 #include <linux/acpi.h>
 #include <linux/of.h>
-#include <linux/cpufeature.h>
 #include <linux/tick.h>
+
+/* --- 2025-12-06 20:14 --- cpufeature.h inlined (32 LOC) */
+#include <linux/mod_devicetable.h>
+#include <asm/cpufeature.h>
+#ifndef CPU_FEATURE_TYPEFMT
+#define CPU_FEATURE_TYPEFMT	"%s"
+#endif
+#ifndef CPU_FEATURE_TYPEVAL
+#define CPU_FEATURE_TYPEVAL	ELF_PLATFORM
+#endif
+#define module_cpu_feature_match(x, __initfunc)			\
+static struct cpu_feature const __maybe_unused cpu_feature_match_ ## x[] = \
+	{ { .feature = cpu_feature(x) }, { } };			\
+MODULE_DEVICE_TABLE(cpu, cpu_feature_match_ ## x);		\
+static int __init cpu_feature_match_ ## x ## _init(void)	\
+{								\
+	if (!cpu_have_feature(cpu_feature(x)))			\
+		return -ENODEV;					\
+	return __initfunc();					\
+}								\
+module_init(cpu_feature_match_ ## x ## _init)
+/* --- end cpufeature.h inlined --- */
 #include <linux/pm_qos.h>
 #include <linux/sched/isolation.h>
 
@@ -48,7 +67,6 @@ static const struct attribute_group *hotplugable_cpu_attr_groups[] = {
 	NULL
 };
 
- 
 
 struct cpu_attr {
 	struct device_attribute attr;
@@ -67,7 +85,6 @@ static ssize_t show_cpus_attr(struct device *dev,
 #define _CPU_ATTR(name, map) \
 	{ __ATTR(name, 0444, show_cpus_attr, NULL), map }
 
- 
 static struct cpu_attr cpu_attrs[] = {
 	_CPU_ATTR(online, &__cpu_online_mask),
 	_CPU_ATTR(possible, &__cpu_possible_mask),
@@ -88,7 +105,6 @@ static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
 	return 0;
 }
 
- 
 int register_cpu(struct cpu *cpu, int num)
 {
 	int error;

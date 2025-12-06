@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SEQ_FILE_H
 #define _LINUX_SEQ_FILE_H
 
@@ -38,13 +37,11 @@ struct seq_operations {
 
 #define SEQ_SKIP 1
 
- 
 static inline bool seq_has_overflowed(struct seq_file *m)
 {
 	return m->count == m->size;
 }
 
- 
 static inline size_t seq_get_buf(struct seq_file *m, char **bufp)
 {
 	BUG_ON(m->count > m->size);
@@ -56,7 +53,6 @@ static inline size_t seq_get_buf(struct seq_file *m, char **bufp)
 	return m->size - m->count;
 }
 
- 
 static inline void seq_commit(struct seq_file *m, int num)
 {
 	if (num < 0) {
@@ -67,7 +63,6 @@ static inline void seq_commit(struct seq_file *m, int num)
 	}
 }
 
- 
 static inline void seq_setwidth(struct seq_file *m, size_t size)
 {
 	m->pad_until = m->count + size;
@@ -105,7 +100,6 @@ static inline void seq_escape_str(struct seq_file *m, const char *src,
 	seq_escape_mem(m, src, strlen(src), flags, esc);
 }
 
- 
 static inline void seq_escape(struct seq_file *m, const char *s, const char *esc)
 {
 	seq_escape_str(m, s, ESCAPE_OCTAL, esc);
@@ -182,7 +176,6 @@ static inline struct user_namespace *seq_user_ns(struct seq_file *seq)
 	return &init_user_ns;
 }
 
- 
 static inline void seq_show_option(struct seq_file *m, const char *name,
 				   const char *value)
 {
@@ -194,7 +187,6 @@ static inline void seq_show_option(struct seq_file *m, const char *name,
 	}
 }
 
- 
 #define seq_show_option_n(m, name, value, length) {	\
 	char val_buf[length + 1];			\
 	strncpy(val_buf, value, length);		\
@@ -203,7 +195,6 @@ static inline void seq_show_option(struct seq_file *m, const char *name,
 }
 
 #define SEQ_START_TOKEN ((void *)1)
- 
 
 extern struct list_head *seq_list_start(struct list_head *head,
 		loff_t pos);
@@ -216,7 +207,6 @@ extern struct list_head *seq_list_start_rcu(struct list_head *head, loff_t pos);
 extern struct list_head *seq_list_start_head_rcu(struct list_head *head, loff_t pos);
 extern struct list_head *seq_list_next_rcu(void *v, struct list_head *head, loff_t *ppos);
 
- 
 
 extern struct hlist_node *seq_hlist_start(struct hlist_head *head,
 					  loff_t pos);
@@ -233,7 +223,6 @@ extern struct hlist_node *seq_hlist_next_rcu(void *v,
 						   struct hlist_head *head,
 						   loff_t *ppos);
 
- 
 extern struct hlist_node *seq_hlist_start_percpu(struct hlist_head __percpu *head, int *cpu, loff_t pos);
 
 extern struct hlist_node *seq_hlist_next_percpu(void *v, struct hlist_head __percpu *head, int *cpu, loff_t *pos);

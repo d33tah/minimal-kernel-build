@@ -1,13 +1,7 @@
- 
-#include <linux/mnt_namespace.h>
+/* Minimal includes for propagation stubs */
 #include <linux/mount.h>
-#include <linux/fs.h>
-#include <linux/nsproxy.h>
-#include <uapi/linux/mount.h>
-#include "internal.h"
 #include "pnode.h"
 
- 
 
 int get_dominating_id(struct mount *mnt, const struct path *root)
 {

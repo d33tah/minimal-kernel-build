@@ -1,5 +1,3 @@
- 
- 
 #ifndef __ASM_GENERIC_RWONCE_H
 #define __ASM_GENERIC_RWONCE_H
 
@@ -8,12 +6,10 @@
 #include <linux/compiler_types.h>
 #include <linux/kasan-checks.h>
 
- 
 #define compiletime_assert_rwonce_type(t)					\
 	compiletime_assert(__native_word(t) || sizeof(t) == sizeof(long long),	\
 		"Unsupported access size for {READ,WRITE}_ONCE().")
 
- 
 #ifndef __READ_ONCE
 #define __READ_ONCE(x)	(*(const volatile __unqual_scalar_typeof(x) *)&(x))
 #endif
@@ -41,7 +37,6 @@ unsigned long __read_once_word_nocheck(const void *addr)
 	return __READ_ONCE(*(unsigned long *)addr);
 }
 
- 
 #define READ_ONCE_NOCHECK(x)						\
 ({									\
 	compiletime_assert(sizeof(x) == sizeof(unsigned long),		\

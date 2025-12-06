@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_TTY_DRIVER_H
 #define _LINUX_TTY_DRIVER_H
 
@@ -7,7 +6,8 @@
 #include <linux/kref.h>
 #include <linux/list.h>
 #include <linux/cdev.h>
-#include <linux/termios.h>
+#include <linux/types.h>
+#include <asm/termios.h>
 #include <linux/seq_file.h>
 
 struct tty_struct;
@@ -15,7 +15,6 @@ struct tty_driver;
 struct serial_icounter_struct;
 struct serial_struct;
 
- 
 struct tty_operations {
 	struct tty_struct * (*lookup)(struct tty_driver *driver,
 			struct file *filp, int idx);
@@ -58,7 +57,6 @@ struct tty_operations {
 	int (*proc_show)(struct seq_file *m, void *driver);
 } __randomize_layout;
 
- 
 struct tty_driver {
 	int	magic;
 	struct kref kref;
@@ -97,7 +95,6 @@ struct tty_driver *tty_find_polling_driver(char *name, int *line);
 
 void tty_driver_kref_put(struct tty_driver *driver);
 
- 
 #define tty_alloc_driver(lines, flags) \
 		__tty_alloc_driver(lines, THIS_MODULE, flags)
 
@@ -113,10 +110,8 @@ static inline void tty_set_operations(struct tty_driver *driver,
 	driver->ops = op;
 }
 
- 
 #define TTY_DRIVER_MAGIC		0x5402
 
- 
 #define TTY_DRIVER_INSTALLED		0x0001
 #define TTY_DRIVER_RESET_TERMIOS	0x0002
 #define TTY_DRIVER_REAL_RAW		0x0004
@@ -126,7 +121,6 @@ static inline void tty_set_operations(struct tty_driver *driver,
 #define TTY_DRIVER_DYNAMIC_ALLOC	0x0040
 #define TTY_DRIVER_UNNUMBERED_NODE	0x0080
 
- 
 #define TTY_DRIVER_TYPE_SYSTEM		0x0001
 #define TTY_DRIVER_TYPE_CONSOLE		0x0002
 #define TTY_DRIVER_TYPE_SERIAL		0x0003
@@ -134,17 +128,14 @@ static inline void tty_set_operations(struct tty_driver *driver,
 #define TTY_DRIVER_TYPE_SCC		0x0005	 
 #define TTY_DRIVER_TYPE_SYSCONS		0x0006
 
- 
 #define SYSTEM_TYPE_TTY			0x0001
 #define SYSTEM_TYPE_CONSOLE		0x0002
 #define SYSTEM_TYPE_SYSCONS		0x0003
 #define SYSTEM_TYPE_SYSPTMX		0x0004
 
- 
 #define PTY_TYPE_MASTER			0x0001
 #define PTY_TYPE_SLAVE			0x0002
 
- 
 #define SERIAL_TYPE_NORMAL	1
 
 int tty_register_driver(struct tty_driver *driver);

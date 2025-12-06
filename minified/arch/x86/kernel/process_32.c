@@ -1,6 +1,4 @@
- 
 
- 
 
 #include <linux/cpu.h>
 #include <linux/errno.h>
@@ -15,7 +13,7 @@
 #include <linux/stddef.h>
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
-#include <linux/user.h>
+#include <asm/user.h> /* linux/user.h redirect */
 #include <linux/interrupt.h>
 #include <linux/delay.h>
 #include <linux/reboot.h>
@@ -75,7 +73,6 @@ start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
 }
 
 
- 
 __visible struct task_struct *
 __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 {

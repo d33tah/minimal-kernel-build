@@ -1,5 +1,3 @@
- 
- 
 
 void __init_swait_queue_head(struct swait_queue_head *q, const char *name,
 			     struct lock_class_key *key)
@@ -9,7 +7,6 @@ void __init_swait_queue_head(struct swait_queue_head *q, const char *name,
 	INIT_LIST_HEAD(&q->task_list);
 }
 
- 
 void swake_up_locked(struct swait_queue_head *q)
 {
 	struct swait_queue *curr;
@@ -22,7 +19,6 @@ void swake_up_locked(struct swait_queue_head *q)
 	list_del_init(&curr->task_list);
 }
 
- 
 void swake_up_all_locked(struct swait_queue_head *q)
 {
 	while (!list_empty(&q->task_list))
@@ -38,7 +34,6 @@ void swake_up_one(struct swait_queue_head *q)
 	raw_spin_unlock_irqrestore(&q->lock, flags);
 }
 
- 
 void swake_up_all(struct swait_queue_head *q)
 {
 	struct swait_queue *curr;

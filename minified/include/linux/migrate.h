@@ -1,10 +1,9 @@
- 
 #ifndef _LINUX_MIGRATE_H
 #define _LINUX_MIGRATE_H
 
 #include <linux/mm.h>
 #include <linux/mempolicy.h>
-#include <linux/migrate_mode.h>
+/* migrate_mode.h included via fs.h already */
 #include <linux/hugetlb.h>
 
 typedef struct page *new_page_t(struct page *page, unsigned long private);
@@ -12,10 +11,8 @@ typedef void free_page_t(struct page *page, unsigned long private);
 
 struct migration_target_control;
 
- 
 #define MIGRATEPAGE_SUCCESS		0
 
- 
 extern const char *migrate_reason_names[MR_TYPES];
 
 

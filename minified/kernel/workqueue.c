@@ -1,41 +1,13 @@
- 
- 
-
-#include <linux/export.h>
-#include <linux/kernel.h>
-#include <linux/sched.h>
-#include <linux/init.h>
-#include <linux/signal.h>
-#include <linux/completion.h>
+/* Stub workqueue - runs work immediately (no threading) */
 #include <linux/workqueue.h>
 #include <linux/slab.h>
-#include <linux/cpu.h>
-#include <linux/notifier.h>
-#include <linux/kthread.h>
-#include <linux/hardirq.h>
-#include <linux/mempolicy.h>
-#include <linux/freezer.h>
-#include <linux/debug_locks.h>
-#include <linux/lockdep.h>
-#include <linux/idr.h>
-#include <linux/jhash.h>
-#include <linux/hashtable.h>
-#include <linux/rculist.h>
-#include <linux/nodemask.h>
-#include <linux/moduleparam.h>
-#include <linux/uaccess.h>
-#include <linux/sched/isolation.h>
-#include <linux/nmi.h>
+#include <linux/timer.h>
 
-#include "workqueue_internal.h"
-
- 
 struct workqueue_struct {
     unsigned int flags;
     const char *name;
 };
 
- 
 bool queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *work)
 {
      
@@ -45,12 +17,6 @@ bool queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *wor
     work->func(work);
     clear_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work));
     return true;
-}
-
-/* Stub: queue_work_node not used in minimal kernel */
-bool queue_work_node(int node, struct workqueue_struct *wq, struct work_struct *work)
-{
-    return false;
 }
 
 bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
@@ -123,13 +89,6 @@ void destroy_workqueue(struct workqueue_struct *wq)
         kfree(wq);
 }
 
-/* Stub: execute_in_process_context not used in minimal kernel */
-int execute_in_process_context(work_func_t fn, struct execute_work *ew)
-{
-    return 0;
-}
-
- 
 static struct workqueue_struct system_wq_storage = { .name = "events" };
 static struct workqueue_struct system_highpri_wq_storage = { .name = "events_highpri" };
 static struct workqueue_struct system_long_wq_storage = { .name = "events_long" };

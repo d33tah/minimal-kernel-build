@@ -1,7 +1,4 @@
- 
- 
 
- 
 
 #include <linux/types.h>
 #include <linux/compiler.h>
@@ -13,7 +10,6 @@
 
 #define KSTRTOX_OVERFLOW       (1U << 31)
 
- 
 #undef memcpy
 #undef memset
 #undef memcmp
@@ -26,7 +22,6 @@ int memcmp(const void *s1, const void *s2, size_t len)
 	return diff;
 }
 
- 
 int bcmp(const void *s1, const void *s2, size_t len)
 {
 	return memcmp(s1, s2, len);
@@ -83,7 +78,6 @@ unsigned int atou(const char *s)
 	return i;
 }
 
- 
 #define TOLOWER(x) ((x) | 0x20)
 
 static unsigned int simple_guess_base(const char *cp)
@@ -98,7 +92,6 @@ static unsigned int simple_guess_base(const char *cp)
 	}
 }
 
- 
 unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int base)
 {
 	unsigned long long result = 0;
@@ -132,7 +125,6 @@ long simple_strtol(const char *cp, char **endp, unsigned int base)
 	return simple_strtoull(cp, endp, base);
 }
 
- 
 size_t strlen(const char *s)
 {
 	const char *sc;
@@ -142,7 +134,6 @@ size_t strlen(const char *s)
 	return sc - s;
 }
 
- 
 char *strstr(const char *s1, const char *s2)
 {
 	size_t l1, l2;
@@ -160,7 +151,6 @@ char *strstr(const char *s1, const char *s2)
 	return NULL;
 }
 
- 
 char *strchr(const char *s, int c)
 {
 	while (*s != (char)c)
@@ -216,7 +206,6 @@ static const char *_parse_integer_fixup_radix(const char *s, unsigned int *base)
 	return s;
 }
 
- 
 static unsigned int _parse_integer(const char *s,
 				   unsigned int base,
 				   unsigned long long *p)
@@ -273,7 +262,6 @@ static int _kstrtoull(const char *s, unsigned int base, unsigned long long *res)
 	return 0;
 }
 
- 
 int kstrtoull(const char *s, unsigned int base, unsigned long long *res)
 {
 	if (s[0] == '+')
@@ -295,7 +283,6 @@ static int _kstrtoul(const char *s, unsigned int base, unsigned long *res)
 	return 0;
 }
 
- 
 int boot_kstrtoul(const char *s, unsigned int base, unsigned long *res)
 {
 	 

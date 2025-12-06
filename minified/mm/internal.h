@@ -58,14 +58,7 @@ static inline void acct_reclaim_writeback(struct folio *folio)
 		__acct_reclaim_writeback(pgdat, folio, nr_throttled);
 }
 
-static inline void wake_throttle_isolated(pg_data_t *pgdat)
-{
-	wait_queue_head_t *wqh;
-
-	wqh = &pgdat->reclaim_wait[VMSCAN_THROTTLE_ISOLATED];
-	if (waitqueue_active(wqh))
-		wake_up(wqh);
-}
+/* wake_throttle_isolated removed - unused */
 
 vm_fault_t do_swap_page(struct vm_fault *vmf);
 void folio_rotate_reclaimable(struct folio *folio);
@@ -85,12 +78,7 @@ void unmap_page_range(struct mmu_gather *tlb,
 void page_cache_ra_order(struct readahead_control *, struct file_ra_state *,
 		unsigned int order);
 void force_page_cache_ra(struct readahead_control *, unsigned long nr);
-static inline void force_page_cache_readahead(struct address_space *mapping,
-		struct file *file, pgoff_t index, unsigned long nr_to_read)
-{
-	DEFINE_READAHEAD(ractl, file, &file->f_ra, mapping, index);
-	force_page_cache_ra(&ractl, nr_to_read);
-}
+/* force_page_cache_readahead removed - unused */
 
 unsigned find_lock_entries(struct address_space *mapping, pgoff_t start,
 		pgoff_t end, struct folio_batch *fbatch, pgoff_t *indices);
@@ -117,18 +105,8 @@ static inline bool folio_evictable(struct folio *folio)
 	return ret;
 }
 
-static inline bool page_evictable(struct page *page)
-{
-	bool ret;
+/* page_evictable removed - unused */
 
-	 
-	rcu_read_lock();
-	ret = !mapping_unevictable(page_mapping(page)) && !PageMlocked(page);
-	rcu_read_unlock();
-	return ret;
-}
-
- 
 static inline void set_page_refcounted(struct page *page)
 {
 	VM_BUG_ON_PAGE(PageTail(page), page);
@@ -198,28 +176,7 @@ static inline bool page_is_buddy(struct page *page, struct page *buddy,
 	return true;
 }
 
- 
-static inline unsigned long
-__find_buddy_pfn(unsigned long page_pfn, unsigned int order)
-{
-	return page_pfn ^ (1 << order);
-}
-
- 
-static inline struct page *find_buddy_page_pfn(struct page *page,
-			unsigned long pfn, unsigned int order, unsigned long *buddy_pfn)
-{
-	unsigned long __buddy_pfn = __find_buddy_pfn(pfn, order);
-	struct page *buddy;
-
-	buddy = page + (__buddy_pfn - pfn);
-	if (buddy_pfn)
-		*buddy_pfn = __buddy_pfn;
-
-	if (page_is_buddy(page, buddy, order))
-		return buddy;
-	return NULL;
-}
+/* __find_buddy_pfn, find_buddy_page_pfn removed - unused */
 
 extern struct page *__pageblock_pfn_to_page(unsigned long start_pfn,
 				unsigned long end_pfn, struct zone *zone);
@@ -262,27 +219,8 @@ int split_free_page(struct page *free_page,
 int find_suitable_fallback(struct free_area *area, unsigned int order,
 			int migratetype, bool only_stealable, bool *can_steal);
 
- 
+/* is_exec_mapping, is_stack_mapping, is_data_mapping removed - unused */
 
- 
-static inline bool is_exec_mapping(vm_flags_t flags)
-{
-	return (flags & (VM_EXEC | VM_WRITE | VM_STACK)) == VM_EXEC;
-}
-
- 
-static inline bool is_stack_mapping(vm_flags_t flags)
-{
-	return (flags & VM_STACK) == VM_STACK;
-}
-
- 
-static inline bool is_data_mapping(vm_flags_t flags)
-{
-	return (flags & (VM_WRITE | VM_SHARED | VM_STACK)) == VM_WRITE;
-}
-
- 
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct vm_area_struct *prev);
 void __vma_unlink_list(struct mm_struct *mm, struct vm_area_struct *vma);
@@ -394,28 +332,6 @@ static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf,
 	return fpin;
 }
 
- 
-static inline struct page *mem_map_offset(struct page *base, int offset)
-{
-	if (unlikely(offset >= MAX_ORDER_NR_PAGES))
-		return nth_page(base, offset);
-	return base + offset;
-}
-
- 
-static inline struct page *mem_map_next(struct page *iter,
-						struct page *base, int offset)
-{
-	if (unlikely((offset & (MAX_ORDER_NR_PAGES - 1)) == 0)) {
-		unsigned long pfn = page_to_pfn(base) + offset;
-		if (!pfn_valid(pfn))
-			return NULL;
-		return pfn_to_page(pfn);
-	}
-	return iter + 1;
-}
-
- 
 enum mminit_level {
 	MMINIT_WARNING,
 	MMINIT_VERIFY,
@@ -428,30 +344,10 @@ static inline void mminit_dprintk(enum mminit_level level,
 {
 }
 
-static inline void mminit_verify_pageflags_layout(void)
-{
-}
-
 static inline void mminit_verify_zonelist(void)
 {
 }
 
-#define NODE_RECLAIM_NOSCAN	-2
-#define NODE_RECLAIM_FULL	-1
-#define NODE_RECLAIM_SOME	0
-#define NODE_RECLAIM_SUCCESS	1
-
-static inline int node_reclaim(struct pglist_data *pgdat, gfp_t mask,
-				unsigned int order)
-{
-	return NODE_RECLAIM_NOSCAN;
-}
-static inline int find_next_best_node(int node, nodemask_t *used_node_mask)
-{
-	return NUMA_NO_NODE;
-}
-
- 
 extern int hwpoison_filter(struct page *p);
 
 extern u32 hwpoison_filter_dev_major;
@@ -461,9 +357,7 @@ extern u64 hwpoison_filter_flags_value;
 extern u64 hwpoison_filter_memcg;
 extern u32 hwpoison_filter_enable;
 
-static inline void clear_hwpoisoned_pages(struct page *memmap, int nr_pages)
-{
-}
+/* clear_hwpoisoned_pages removed - unused */
 
 extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
         unsigned long, unsigned long,
@@ -506,15 +400,7 @@ extern const struct trace_print_flags pageflag_names[];
 extern const struct trace_print_flags vmaflag_names[];
 extern const struct trace_print_flags gfpflag_names[];
 
-static inline bool is_migrate_highatomic(enum migratetype migratetype)
-{
-	return migratetype == MIGRATE_HIGHATOMIC;
-}
-
-static inline bool is_migrate_highatomic_page(struct page *page)
-{
-	return get_pageblock_migratetype(page) == MIGRATE_HIGHATOMIC;
-}
+/* is_migrate_highatomic, is_migrate_highatomic_page removed - unused */
 
 void setup_zone_pageset(struct zone *zone);
 

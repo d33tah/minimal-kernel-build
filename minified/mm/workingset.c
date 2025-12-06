@@ -1,20 +1,9 @@
- 
- 
-
-#include <linux/memcontrol.h>
-#include <linux/mm_inline.h>
-#include <linux/writeback.h>
-#include <linux/shmem_fs.h>
-#include <linux/pagemap.h>
-#include <linux/atomic.h>
-#include <linux/module.h>
-#include <linux/swap.h>
-#include <linux/dax.h>
-#include <linux/fs.h>
+/* Minimal includes for workingset stubs */
 #include <linux/mm.h>
+#include <linux/module.h>
 #include <linux/list_lru.h>
+#include <linux/xarray.h>
 
- 
 void workingset_age_nonresident(struct lruvec *lruvec, unsigned long nr_pages)
 {
 	 
@@ -40,7 +29,6 @@ void workingset_update_node(struct xa_node *node)
 	 
 }
 
- 
 struct list_lru shadow_nodes;
 
 static int __init workingset_init(void)

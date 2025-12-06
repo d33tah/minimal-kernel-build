@@ -3,7 +3,6 @@
 
 #include <vdso/const.h>
 
- 
 #define __is_constexpr(x) \
 	(sizeof(int) == sizeof(*(8 ? ((void *)((long)(x) * 0l)) : (int *)8)))
 

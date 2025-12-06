@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/types.h>
 #include <linux/errno.h>
@@ -15,7 +13,16 @@
 #include <linux/bitops.h>
 #include <linux/delay.h>
 #include <linux/module.h>
-#include <linux/serdev.h>
+
+/* --- 2025-12-06 20:22 --- serdev.h inlined (24 LOC) */
+struct tty_port;
+struct tty_driver;
+static inline struct device *serdev_tty_port_register(struct tty_port *port,
+				   struct device *parent, struct tty_driver *drv, int idx)
+{ return ERR_PTR(-ENODEV); }
+static inline int serdev_tty_port_unregister(struct tty_port *port)
+{ return -ENODEV; }
+/* --- end serdev.h inlined --- */
 #include "tty.h"
 
 static int tty_port_default_receive_buf(struct tty_port *port,
@@ -56,7 +63,6 @@ const struct tty_port_client_operations tty_port_default_client_ops = {
 	.write_wakeup = tty_port_default_wakeup,
 };
 
- 
 void tty_port_init(struct tty_port *port)
 {
 	memset(port, 0, sizeof(*port));
@@ -72,7 +78,6 @@ void tty_port_init(struct tty_port *port)
 	kref_init(&port->kref);
 }
 
- 
 void tty_port_link_device(struct tty_port *port,
 		struct tty_driver *driver, unsigned index)
 {
@@ -81,7 +86,6 @@ void tty_port_link_device(struct tty_port *port,
 	driver->ports[index] = port;
 }
 
- 
 struct device *tty_port_register_device(struct tty_port *port,
 		struct tty_driver *driver, unsigned index,
 		struct device *device)
@@ -89,7 +93,6 @@ struct device *tty_port_register_device(struct tty_port *port,
 	return tty_port_register_device_attr(port, driver, index, device, NULL, NULL);
 }
 
- 
 struct device *tty_port_register_device_attr(struct tty_port *port,
 		struct tty_driver *driver, unsigned index,
 		struct device *device, void *drvdata,
@@ -100,7 +103,6 @@ struct device *tty_port_register_device_attr(struct tty_port *port,
 			attr_grp);
 }
 
- 
 struct device *tty_port_register_device_attr_serdev(struct tty_port *port,
 		struct tty_driver *driver, unsigned index,
 		struct device *device, void *drvdata,
@@ -120,7 +122,6 @@ struct device *tty_port_register_device_attr_serdev(struct tty_port *port,
 			attr_grp);
 }
 
- 
 struct device *tty_port_register_device_serdev(struct tty_port *port,
 		struct tty_driver *driver, unsigned index,
 		struct device *device)
@@ -129,7 +130,6 @@ struct device *tty_port_register_device_serdev(struct tty_port *port,
 			device, NULL, NULL);
 }
 
- 
 void tty_port_unregister_device(struct tty_port *port,
 		struct tty_driver *driver, unsigned index)
 {
@@ -166,7 +166,6 @@ void tty_port_free_xmit_buf(struct tty_port *port)
 	mutex_unlock(&port->buf_mutex);
 }
 
- 
 void tty_port_destroy(struct tty_port *port)
 {
 	tty_buffer_cancel_work(port);
@@ -188,14 +187,12 @@ static void tty_port_destructor(struct kref *kref)
 		kfree(port);
 }
 
- 
 void tty_port_put(struct tty_port *port)
 {
 	if (port)
 		kref_put(&port->kref, tty_port_destructor);
 }
 
- 
 struct tty_struct *tty_port_tty_get(struct tty_port *port)
 {
 	unsigned long flags;
@@ -207,7 +204,6 @@ struct tty_struct *tty_port_tty_get(struct tty_port *port)
 	return tty;
 }
 
- 
 void tty_port_tty_set(struct tty_port *port, struct tty_struct *tty)
 {
 	unsigned long flags;
@@ -218,7 +214,6 @@ void tty_port_tty_set(struct tty_port *port, struct tty_struct *tty)
 	spin_unlock_irqrestore(&port->lock, flags);
 }
 
- 
 static void tty_port_shutdown(struct tty_port *port, struct tty_struct *tty)
 {
 	mutex_lock(&port->mutex);
@@ -238,7 +233,6 @@ out:
 	mutex_unlock(&port->mutex);
 }
 
- 
 void tty_port_hangup(struct tty_port *port)
 {
 	struct tty_struct *tty;
@@ -258,7 +252,6 @@ void tty_port_hangup(struct tty_port *port)
 	wake_up_interruptible(&port->delta_msr_wait);
 }
 
- 
 void tty_port_tty_hangup(struct tty_port *port, bool check_clocal)
 {
 	struct tty_struct *tty = tty_port_tty_get(port);
@@ -268,13 +261,11 @@ void tty_port_tty_hangup(struct tty_port *port, bool check_clocal)
 	tty_kref_put(tty);
 }
 
- 
 void tty_port_tty_wakeup(struct tty_port *port)
 {
 	port->client_ops->write_wakeup(port);
 }
 
- 
 int tty_port_carrier_raised(struct tty_port *port)
 {
 	if (port->ops->carrier_raised == NULL)
@@ -282,21 +273,18 @@ int tty_port_carrier_raised(struct tty_port *port)
 	return port->ops->carrier_raised(port);
 }
 
- 
 void tty_port_raise_dtr_rts(struct tty_port *port)
 {
 	if (port->ops->dtr_rts)
 		port->ops->dtr_rts(port, 1);
 }
 
- 
 void tty_port_lower_dtr_rts(struct tty_port *port)
 {
 	if (port->ops->dtr_rts)
 		port->ops->dtr_rts(port, 0);
 }
 
- 
 int tty_port_block_til_ready(struct tty_port *port,
 				struct tty_struct *tty, struct file *filp)
 {
@@ -382,7 +370,6 @@ static void tty_port_drain_delay(struct tty_port *port, struct tty_struct *tty)
 	schedule_timeout_interruptible(timeout);
 }
 
- 
 int tty_port_close_start(struct tty_port *port,
 				struct tty_struct *tty, struct file *filp)
 {
@@ -427,7 +414,6 @@ int tty_port_close_start(struct tty_port *port,
 	return 1;
 }
 
- 
 void tty_port_close_end(struct tty_port *port, struct tty_struct *tty)
 {
 	unsigned long flags;
@@ -448,7 +434,6 @@ void tty_port_close_end(struct tty_port *port, struct tty_struct *tty)
 	tty_port_set_active(port, 0);
 }
 
- 
 void tty_port_close(struct tty_port *port, struct tty_struct *tty,
 							struct file *filp)
 {
@@ -461,7 +446,6 @@ void tty_port_close(struct tty_port *port, struct tty_struct *tty,
 	tty_port_tty_set(port, NULL);
 }
 
- 
 int tty_port_install(struct tty_port *port, struct tty_driver *driver,
 		struct tty_struct *tty)
 {
@@ -469,7 +453,6 @@ int tty_port_install(struct tty_port *port, struct tty_driver *driver,
 	return tty_standard_install(driver, tty);
 }
 
- 
 int tty_port_open(struct tty_port *port, struct tty_struct *tty,
 							struct file *filp)
 {

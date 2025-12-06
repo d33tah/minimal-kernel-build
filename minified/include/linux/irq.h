@@ -1,14 +1,14 @@
- 
 #ifndef _LINUX_IRQ_H
 #define _LINUX_IRQ_H
 
- 
 
 #include <linux/cache.h>
 #include <linux/spinlock.h>
 #include <linux/cpumask.h>
-#include <linux/irqhandler.h>
-#include <linux/irqreturn.h>
+/* irqhandler.h inlined */
+struct irq_desc;
+typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
+#include <linux/interrupt.h>
 #include <linux/irqnr.h>
 #include <linux/topology.h>
 #include <linux/io.h>
@@ -24,7 +24,6 @@ struct msi_msg;
 struct irq_affinity_desc;
 enum irqchip_irq_state;
 
- 
 enum {
 	IRQ_TYPE_NONE		= 0x00000000,
 	IRQ_TYPE_EDGE_RISING	= 0x00000001,
@@ -62,7 +61,6 @@ enum {
 
 #define IRQ_NO_BALANCING_MASK	(IRQ_PER_CPU | IRQ_NO_BALANCING)
 
- 
 enum {
 	IRQ_SET_MASK_OK = 0,
 	IRQ_SET_MASK_OK_NOCOPY,
@@ -72,7 +70,6 @@ enum {
 struct msi_desc;
 struct irq_domain;
 
- 
 struct irq_common_data {
 	unsigned int		__private state_use_accessors;
 	void			*handler_data;
@@ -80,7 +77,6 @@ struct irq_common_data {
 	cpumask_var_t		affinity;
 };
 
- 
 struct irq_data {
 	u32			mask;
 	unsigned int		irq;
@@ -91,7 +87,6 @@ struct irq_data {
 	void			*chip_data;
 };
 
- 
 enum {
 	IRQD_TRIGGER_MASK		= 0xf,
 	IRQD_SETAFFINITY_PENDING	= (1 <<  8),
@@ -131,7 +126,6 @@ static inline u32 irqd_get_trigger_type(struct irq_data *d)
 	return __irqd_to_state(d) & IRQD_TRIGGER_MASK;
 }
 
- 
 static inline void irqd_set_trigger_type(struct irq_data *d, u32 type)
 {
 	__irqd_to_state(d) &= ~IRQD_TRIGGER_MASK;
@@ -139,7 +133,6 @@ static inline void irqd_set_trigger_type(struct irq_data *d, u32 type)
 	__irqd_to_state(d) |= IRQD_DEFAULT_TRIGGER_SET;
 }
 
- 
 static inline bool irqd_irq_disabled(struct irq_data *d)
 {
 	return __irqd_to_state(d) & IRQD_IRQ_DISABLED;
@@ -182,7 +175,6 @@ static inline bool irqd_is_started(struct irq_data *d)
 
 #undef __irqd_to_state
 
- 
 struct irq_chip {
 	const char	*name;
 	unsigned int	(*irq_startup)(struct irq_data *data);
@@ -231,7 +223,6 @@ struct irq_chip {
 	unsigned long	flags;
 };
 
- 
 enum {
 	IRQCHIP_SET_TYPE_MASKED			= (1 <<  0),
 	IRQCHIP_EOI_IF_HANDLED			= (1 <<  1),
@@ -249,7 +240,6 @@ enum {
 
 #include <linux/irqdesc.h>
 
- 
 #include <asm/hw_irq.h>
 
 #ifndef NR_IRQS_LEGACY
@@ -276,7 +266,6 @@ extern int no_irq_affinity;
 
 int irq_set_parent(int irq, int parent_irq);
 
- 
 extern void handle_level_irq(struct irq_desc *desc);
 extern void handle_fasteoi_irq(struct irq_desc *desc);
 extern void handle_edge_irq(struct irq_desc *desc);
@@ -295,17 +284,13 @@ extern int irq_chip_compose_msi_msg(struct irq_data *data, struct msi_msg *msg);
 extern int irq_chip_pm_get(struct irq_data *data);
 extern int irq_chip_pm_put(struct irq_data *data);
 
- 
 extern void note_interrupt(struct irq_desc *desc, irqreturn_t action_ret);
 
 
- 
 extern int noirqdebug_setup(char *str);
 
- 
 extern int can_request_irq(unsigned int irq, unsigned long irqflags);
 
- 
 extern struct irq_chip no_irq_chip;
 extern struct irq_chip dummy_irq_chip;
 
@@ -348,7 +333,6 @@ static inline void irq_set_percpu_devid_flags(unsigned int irq)
 			     IRQ_NOPROBE | IRQ_PER_CPU_DEVID);
 }
 
- 
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
 extern int irq_set_handler_data(unsigned int irq, void *data);
 extern int irq_set_chip_data(unsigned int irq, void *data);
@@ -380,11 +364,6 @@ int __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 		      struct module *owner,
 		      const struct irq_affinity_desc *affinity);
 
-int __devm_irq_alloc_descs(struct device *dev, int irq, unsigned int from,
-			   unsigned int cnt, int node, struct module *owner,
-			   const struct irq_affinity_desc *affinity);
-
- 
 #define irq_alloc_descs(irq, from, cnt, node)	\
 	__irq_alloc_descs(irq, from, cnt, node, THIS_MODULE, NULL)
 
@@ -400,69 +379,9 @@ int __devm_irq_alloc_descs(struct device *dev, int irq, unsigned int from,
 #define irq_alloc_descs_from(from, cnt, node)	\
 	irq_alloc_descs(-1, from, cnt, node)
 
-#define devm_irq_alloc_descs(dev, irq, from, cnt, node)		\
-	__devm_irq_alloc_descs(dev, irq, from, cnt, node, THIS_MODULE, NULL)
-
-#define devm_irq_alloc_desc(dev, node)				\
-	devm_irq_alloc_descs(dev, -1, 1, 1, node)
-
-#define devm_irq_alloc_desc_at(dev, at, node)			\
-	devm_irq_alloc_descs(dev, at, at, 1, node)
-
-#define devm_irq_alloc_desc_from(dev, from, node)		\
-	devm_irq_alloc_descs(dev, -1, from, 1, node)
-
-#define devm_irq_alloc_descs_from(dev, from, cnt, node)		\
-	devm_irq_alloc_descs(dev, -1, from, cnt, node)
-
 void irq_free_descs(unsigned int irq, unsigned int cnt);
 
-struct irq_chip_generic;
-struct irq_chip_type;
-struct irq_chip_regs;
-struct irq_domain_chip_generic;
-enum irq_gc_flags { IRQ_GC_INIT_MASK_CACHE = 1 };
-
-
-#define IRQ_MSK(n) (u32)((n) < 32 ? ((1 << (n)) - 1) : UINT_MAX)
-
-
-#define irq_gc_lock_irqsave(gc, flags)	\
-	raw_spin_lock_irqsave(&(gc)->lock, flags)
-
-#define irq_gc_unlock_irqrestore(gc, flags)	\
-	raw_spin_unlock_irqrestore(&(gc)->lock, flags)
-
-struct irq_matrix;
-struct irq_matrix *irq_alloc_matrix(unsigned int matrix_bits,
-				    unsigned int alloc_start,
-				    unsigned int alloc_end);
-void irq_matrix_online(struct irq_matrix *m);
-void irq_matrix_offline(struct irq_matrix *m);
-void irq_matrix_assign_system(struct irq_matrix *m, unsigned int bit, bool replace);
-int irq_matrix_reserve_managed(struct irq_matrix *m, const struct cpumask *msk);
-void irq_matrix_remove_managed(struct irq_matrix *m, const struct cpumask *msk);
-int irq_matrix_alloc_managed(struct irq_matrix *m, const struct cpumask *msk,
-				unsigned int *mapped_cpu);
-void irq_matrix_reserve(struct irq_matrix *m);
-void irq_matrix_remove_reserved(struct irq_matrix *m);
-int irq_matrix_alloc(struct irq_matrix *m, const struct cpumask *msk,
-		     bool reserved, unsigned int *mapped_cpu);
-void irq_matrix_free(struct irq_matrix *m, unsigned int cpu,
-		     unsigned int bit, bool managed);
-void irq_matrix_assign(struct irq_matrix *m, unsigned int bit);
-unsigned int irq_matrix_available(struct irq_matrix *m, bool cpudown);
-unsigned int irq_matrix_allocated(struct irq_matrix *m);
-unsigned int irq_matrix_reserved(struct irq_matrix *m);
-void irq_matrix_debug_show(struct seq_file *sf, struct irq_matrix *m, int ind);
-
- 
 #define INVALID_HWIRQ	(~0UL)
-irq_hw_number_t ipi_get_hwirq(unsigned int irq, unsigned int cpu);
-int __ipi_send_single(struct irq_desc *desc, unsigned int cpu);
-int __ipi_send_mask(struct irq_desc *desc, const struct cpumask *dest);
-int ipi_send_single(unsigned int virq, unsigned int cpu);
-int ipi_send_mask(unsigned int virq, const struct cpumask *dest);
 
 #ifndef set_handle_irq
 #define set_handle_irq(handle_irq)		\

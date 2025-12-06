@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/syscalls.h>
 #include <linux/export.h>
@@ -13,18 +11,17 @@
 #include <linux/bitops.h>
 #include <linux/spinlock.h>
 #include <linux/rcupdate.h>
-#include <linux/close_range.h>
+/* close_range.h inlined */
+#define CLOSE_RANGE_UNSHARE	(1U << 1)
+#define CLOSE_RANGE_CLOEXEC	(1U << 2)
 #include <linux/security.h>
- 
 
 #include "internal.h"
 
- 
 static inline void __receive_sock(struct file *file) { }
 
 unsigned int sysctl_nr_open __read_mostly = 1024*1024;
 unsigned int sysctl_nr_open_min = BITS_PER_LONG;
- 
 #define __const_min(x, y) ((x) < (y) ? (x) : (y))
 unsigned int sysctl_nr_open_max =
 	__const_min(INT_MAX, ~(size_t)0/sizeof(void *)) & -BITS_PER_LONG;
@@ -44,7 +41,6 @@ static void free_fdtable_rcu(struct rcu_head *rcu)
 #define BITBIT_NR(nr)	BITS_TO_LONGS(BITS_TO_LONGS(nr))
 #define BITBIT_SIZE(nr)	(BITBIT_NR(nr) * sizeof(long))
 
- 
 static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt,
 			    unsigned int count)
 {
@@ -63,7 +59,6 @@ static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt,
 	memset((char *)nfdt->full_fds_bits + cpy, 0, set);
 }
 
- 
 static void copy_fdtable(struct fdtable *nfdt, struct fdtable *ofdt)
 {
 	size_t cpy, set;
@@ -78,7 +73,6 @@ static void copy_fdtable(struct fdtable *nfdt, struct fdtable *ofdt)
 	copy_fd_bitmaps(nfdt, ofdt, ofdt->max_fds);
 }
 
- 
 static struct fdtable * alloc_fdtable(unsigned int nr)
 {
 	struct fdtable *fdt;
@@ -123,7 +117,6 @@ out:
 	return NULL;
 }
 
- 
 static int expand_fdtable(struct files_struct *files, unsigned int nr)
 	__releases(files->file_lock)
 	__acquires(files->file_lock)
@@ -156,7 +149,6 @@ static int expand_fdtable(struct files_struct *files, unsigned int nr)
 	return 1;
 }
 
- 
 static int expand_files(struct files_struct *files, unsigned int nr)
 	__releases(files->file_lock)
 	__acquires(files->file_lock)
@@ -231,7 +223,6 @@ static unsigned int count_open_files(struct fdtable *fdt)
 	return i;
 }
 
- 
 static unsigned int sane_fdtable_size(struct fdtable *fdt, unsigned int max_fds)
 {
 	unsigned int count;
@@ -242,7 +233,6 @@ static unsigned int sane_fdtable_size(struct fdtable *fdt, unsigned int max_fds)
 	return ALIGN(min(count, max_fds), BITS_PER_LONG);
 }
 
- 
 struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds, int *errorp)
 {
 	struct files_struct *newf;
@@ -408,7 +398,6 @@ static unsigned int find_next_fd(struct fdtable *fdt, unsigned int start)
 	return find_next_zero_bit(fdt->open_fds, maxfd, start);
 }
 
- 
 static int alloc_fd(unsigned start, unsigned end, unsigned flags)
 {
 	struct files_struct *files = current->files;
@@ -488,7 +477,6 @@ void put_unused_fd(unsigned int fd)
 }
 
 
- 
 
 void fd_install(unsigned int fd, struct file *file)
 {
@@ -515,7 +503,6 @@ void fd_install(unsigned int fd, struct file *file)
 }
 
 
- 
 static struct file *pick_file(struct files_struct *files, unsigned fd)
 {
 	struct fdtable *fdt = files_fdtable(files);
@@ -544,12 +531,6 @@ int close_fd(unsigned fd)
 		return -EBADF;
 
 	return filp_close(file, files);
-}
-
- 
-static inline unsigned last_fd(struct fdtable *fdt)
-{
-	return fdt->max_fds - 1;
 }
 
 /* Stub: close_range not needed for minimal kernel */
@@ -674,7 +655,6 @@ struct file *task_lookup_next_fd_rcu(struct task_struct *task, unsigned int *ret
 	return NULL;
 }
 
- 
 static unsigned long __fget_light(unsigned int fd, fmode_t mask)
 {
 	struct files_struct *files = current->files;
@@ -721,7 +701,6 @@ void __f_unlock_pos(struct file *f)
 	mutex_unlock(&f->f_pos_lock);
 }
 
- 
 
 /* Stub: set_close_on_exec not used in minimal kernel */
 void set_close_on_exec(unsigned int fd, int flag)
@@ -777,7 +756,6 @@ int replace_fd(unsigned fd, struct file *file, unsigned flags)
 	return -EBADF;
 }
 
- 
 /* Stub: __receive_fd not used in minimal kernel */
 int __receive_fd(struct file *file, int __user *ufd, unsigned int o_flags)
 { return -ENOSYS; }

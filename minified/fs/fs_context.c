@@ -1,5 +1,3 @@
- 
- 
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 #include <linux/module.h>
@@ -50,7 +48,6 @@ static const struct constant_table common_clear_sb_flag[] = {
 	{ },
 };
 
- 
 static int vfs_parse_sb_flag(struct fs_context *fc, const char *key)
 {
 	unsigned int token;
@@ -72,7 +69,6 @@ static int vfs_parse_sb_flag(struct fs_context *fc, const char *key)
 	return -ENOPARAM;
 }
 
- 
 int vfs_parse_fs_param_source(struct fs_context *fc, struct fs_parameter *param)
 {
 	if (strcmp(param->key, "source") != 0)
@@ -89,7 +85,6 @@ int vfs_parse_fs_param_source(struct fs_context *fc, struct fs_parameter *param)
 	return 0;
 }
 
- 
 int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
 {
 	int ret;
@@ -121,7 +116,6 @@ int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
 		      fc->fs_type->name, param->key);
 }
 
- 
 int vfs_parse_fs_string(struct fs_context *fc, const char *key,
 			const char *value, size_t v_size)
 {
@@ -145,7 +139,6 @@ int vfs_parse_fs_string(struct fs_context *fc, const char *key,
 	return ret;
 }
 
- 
 int generic_parse_monolithic(struct fs_context *fc, void *data)
 {
 	char *options = data, *key;
@@ -178,7 +171,6 @@ int generic_parse_monolithic(struct fs_context *fc, void *data)
 	return ret;
 }
 
- 
 static struct fs_context *alloc_fs_context(struct file_system_type *fs_type,
 				      struct dentry *reference,
 				      unsigned int sb_flags,
@@ -271,7 +263,6 @@ struct fs_context *vfs_dup_fs_context(struct fs_context *src_fc)
 	return ERR_PTR(-EOPNOTSUPP);
 }
 
- 
 void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, ...)
 {
 	va_list va;
@@ -320,7 +311,6 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 	va_end(va);
 }
 
- 
 static void put_fc_log(struct fs_context *fc)
 {
 	struct fc_log *log = fc->log.log;
@@ -337,7 +327,6 @@ static void put_fc_log(struct fs_context *fc)
 	}
 }
 
- 
 void put_fs_context(struct fs_context *fc)
 {
 	struct super_block *sb;
@@ -362,7 +351,6 @@ void put_fs_context(struct fs_context *fc)
 	kfree(fc);
 }
 
- 
 static void legacy_fs_context_free(struct fs_context *fc)
 {
 	struct legacy_fs_context *ctx = fc->fs_private;
@@ -374,7 +362,6 @@ static void legacy_fs_context_free(struct fs_context *fc)
 	}
 }
 
- 
 static int legacy_fs_context_dup(struct fs_context *fc, struct fs_context *src_fc)
 {
 	struct legacy_fs_context *ctx;
@@ -397,7 +384,6 @@ static int legacy_fs_context_dup(struct fs_context *fc, struct fs_context *src_f
 	return 0;
 }
 
- 
 static int legacy_parse_param(struct fs_context *fc, struct fs_parameter *param)
 {
 	struct legacy_fs_context *ctx = fc->fs_private;
@@ -452,7 +438,6 @@ static int legacy_parse_param(struct fs_context *fc, struct fs_parameter *param)
 	return 0;
 }
 
- 
 static int legacy_parse_monolithic(struct fs_context *fc, void *data)
 {
 	struct legacy_fs_context *ctx = fc->fs_private;
@@ -472,7 +457,6 @@ static int legacy_parse_monolithic(struct fs_context *fc, void *data)
 	return security_sb_eat_lsm_opts(ctx->legacy_data, &fc->security);
 }
 
- 
 static int legacy_get_tree(struct fs_context *fc)
 {
 	struct legacy_fs_context *ctx = fc->fs_private;
@@ -491,7 +475,6 @@ static int legacy_get_tree(struct fs_context *fc)
 	return 0;
 }
 
- 
 static int legacy_reconfigure(struct fs_context *fc)
 {
 	struct legacy_fs_context *ctx = fc->fs_private;
@@ -513,7 +496,6 @@ const struct fs_context_operations legacy_fs_context_ops = {
 	.reconfigure		= legacy_reconfigure,
 };
 
- 
 static int legacy_init_fs_context(struct fs_context *fc)
 {
 	fc->fs_private = kzalloc(sizeof(struct legacy_fs_context), GFP_KERNEL_ACCOUNT);
@@ -534,7 +516,6 @@ int parse_monolithic_mount_data(struct fs_context *fc, void *data)
 	return monolithic_mount_data(fc, data);
 }
 
- 
 void vfs_clean_context(struct fs_context *fc)
 {
 	if (fc->need_free && fc->ops && fc->ops->free)

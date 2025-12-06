@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/linkage.h>
 #include <linux/kernel.h>
@@ -12,7 +10,6 @@
 #include <linux/time_namespace.h>
 #include <linux/compat.h>
 
- 
 #include <asm/syscall_wrapper.h>
 
 asmlinkage long sys_ni_posix_timers(void)
@@ -41,7 +38,6 @@ SYS_NI(clock_adjtime32);
 SYS_NI(alarm);
 #endif
 
- 
 
 SYSCALL_DEFINE2(clock_settime, const clockid_t, which_clock,
 		const struct __kernel_timespec __user *, tp)

@@ -22,13 +22,7 @@ struct gendisk;
 struct blk_plug {
 };
 
-static inline void blk_start_plug(struct blk_plug *plug)
-{
-}
-
-static inline void blk_finish_plug(struct blk_plug *plug)
-{
-}
+/* blk_start_plug, blk_finish_plug removed - unused */
 
 static inline void blk_flush_plug(struct blk_plug *plug, bool async)
 {
@@ -39,14 +33,7 @@ static inline int blkdev_issue_flush(struct block_device *bdev)
 	return 0;
 }
 
-static inline long nr_blockdev_pages(void)
-{
-	return 0;
-}
-
-static inline void invalidate_bdev(struct block_device *bdev)
-{
-}
+/* nr_blockdev_pages, invalidate_bdev removed - unused */
 
 static inline void printk_all_partitions(void)
 {

@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/module.h>
 #include <linux/kernel.h>
@@ -26,7 +24,7 @@
 #include <linux/elf.h>
 #include <linux/elf-randomize.h>
 #include <linux/utsname.h>
-#include <linux/coredump.h>
+/* coredump.h removed - no definitions used */
 #include <linux/sched.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/task_stack.h>
@@ -50,7 +48,6 @@
 #define user_siginfo_t siginfo_t
 #endif
 
- 
 #ifndef elf_check_fdpic
 #define elf_check_fdpic(ex) false
 #endif
@@ -59,7 +56,6 @@ static int load_elf_binary(struct linux_binprm *bprm);
 
 #define load_elf_library NULL
 
- 
 #define elf_core_dump	NULL
 
 #if ELF_EXEC_PAGESIZE > PAGE_SIZE
@@ -99,7 +95,6 @@ static int set_brk(unsigned long start, unsigned long end, int prot)
 	return 0;
 }
 
- 
 static int padzero(unsigned long elf_bss)
 {
 	unsigned long nbyte;
@@ -113,14 +108,12 @@ static int padzero(unsigned long elf_bss)
 	return 0;
 }
 
- 
 #define STACK_ADD(sp, items) ((elf_addr_t __user *)(sp) - (items))
 #define STACK_ROUND(sp, items) \
 	(((unsigned long) (sp - items)) &~ 15UL)
 #define STACK_ALLOC(sp, len) (sp -= len)
 
 #ifndef ELF_BASE_PLATFORM
- 
 #define ELF_BASE_PLATFORM NULL
 #endif
 
@@ -368,7 +361,6 @@ static unsigned long maximum_alignment(struct elf_phdr *cmds, int nr)
 	return ELF_PAGEALIGN(alignment);
 }
 
- 
 static struct elf_phdr *load_elf_phdrs(const struct elfhdr *elf_ex,
 				       struct file *elf_file)
 {
@@ -409,13 +401,11 @@ out:
 
 #ifndef CONFIG_ARCH_BINFMT_ELF_STATE
 
- 
 struct arch_elf_state {
 };
 
 #define INIT_ARCH_ELF_STATE {}
 
- 
 static inline int arch_elf_pt_proc(struct elfhdr *ehdr,
 				   struct elf_phdr *phdr,
 				   struct file *elf, bool is_interp,
@@ -425,7 +415,6 @@ static inline int arch_elf_pt_proc(struct elfhdr *ehdr,
 	return 0;
 }
 
- 
 static inline int arch_check_elf(struct elfhdr *ehdr, bool has_interp,
 				 struct elfhdr *interp_ehdr,
 				 struct arch_elf_state *state)
@@ -451,7 +440,6 @@ static inline int make_prot(u32 p_flags, struct arch_elf_state *arch_state,
 	return arch_elf_adjust_prot(prot, arch_state, has_interp, is_interp);
 }
 
- 
 
 static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
 		struct file *interpreter,
@@ -557,7 +545,6 @@ out:
 	return error;
 }
 
- 
 
 static int __maybe_unused parse_elf_property(const char *data, size_t *off, size_t datasz,
 			      struct arch_elf_state *arch,

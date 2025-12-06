@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_MEMORY_H_
 #define _LINUX_MEMORY_H_
 
@@ -10,7 +8,6 @@
 
 #define MIN_MEMORY_BLOCK_SIZE     (1UL << SECTION_SIZE_BITS)
 
- 
 struct memory_group {
 	int nid;
 	struct list_head memory_blocks;
@@ -45,7 +42,6 @@ int arch_get_memory_phys_device(unsigned long start_pfn);
 unsigned long memory_block_size_bytes(void);
 int set_memory_block_size_order(unsigned int order);
 
- 
 #define	MEM_ONLINE		(1<<0)  
 #define	MEM_GOING_OFFLINE	(1<<1)  
 #define	MEM_OFFLINE		(1<<2)  
@@ -63,7 +59,6 @@ struct memory_notify {
 struct notifier_block;
 struct mem_section;
 
- 
 #define SLAB_CALLBACK_PRI       1
 #define IPC_CALLBACK_PRI        10
 
@@ -86,11 +81,9 @@ static inline int hotplug_memory_notifier(notifier_fn_t fn, int pri)
 {
 	return 0;
 }
- 
 #define register_hotmemory_notifier(nb)    ({ (void)(nb); 0; })
 #define unregister_hotmemory_notifier(nb)  ({ (void)(nb); })
 
- 
 extern struct mutex text_mutex;
 
 #endif  

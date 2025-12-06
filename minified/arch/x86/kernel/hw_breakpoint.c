@@ -1,12 +1,7 @@
- 
- 
-#include <linux/perf_event.h>
+/* Stub hardware breakpoints */
 #include <linux/hw_breakpoint.h>
 #include <linux/percpu.h>
-#include <linux/kernel.h>
-#include <linux/export.h>
 
- 
 DEFINE_PER_CPU(unsigned long, cpu_dr7);
 
 void hw_breakpoint_restore(void)

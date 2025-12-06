@@ -1,8 +1,6 @@
- 
 
 #include <linux/anon_inodes.h>
 #include <linux/slab.h>
-#include <linux/sched/autogroup.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/user.h>
@@ -55,27 +53,40 @@
 #include <linux/proc_fs.h>
 #include <linux/rmap.h>
 #include <linux/ksm.h>
-#include <linux/acct.h>
+/* acct.h inlined */
+#define acct_collect(x,y)	do { } while (0)
+#define acct_process()		do { } while (0)
+#define acct_exit_ns(ns)	do { } while (0)
 #include <linux/userfaultfd_k.h>
 #include <linux/tsacct_kern.h>
 #include <linux/cn_proc.h>
 #include <linux/freezer.h>
 #include <linux/delayacct.h>
-#include <linux/taskstats_kern.h>
+/* taskstats_kern.h inlined */
+static inline void taskstats_exit(struct task_struct *tsk, int group_dead) {}
+static inline void taskstats_tgid_free(struct signal_struct *sig) {}
+static inline void taskstats_init_early(void) {}
 #include <linux/random.h>
 #include <linux/tty.h>
 #include <linux/fs_struct.h>
 #include <linux/magic.h>
 #include <linux/perf_event.h>
 #include <linux/posix-timers.h>
-#include <linux/user-return-notifier.h>
+/* user-return-notifier.h inlined */
+#ifndef _URN_INLINE
+#define _URN_INLINE
+struct user_return_notifier {};
+static inline void propagate_user_return_notify(struct task_struct *prev, struct task_struct *next) {}
+static inline void fire_user_return_notifiers(void) {}
+static inline void clear_user_return_notifier(struct task_struct *p) {}
+#endif
 #include <linux/oom.h>
 #include <linux/khugepaged.h>
 #include <linux/uprobes.h>
 #include <linux/compiler.h>
 #include <linux/sysctl.h>
 #include <linux/kcov.h>
-#include <linux/livepatch.h>
+#include <linux/init_task.h>
 #include <linux/thread_info.h>
 #include <linux/kasan.h>
 #include <linux/scs.h>
@@ -433,8 +444,7 @@ static void mmdrop_async(struct mm_struct *mm)
 static inline void free_signal_struct(struct signal_struct *sig)
 {
 	taskstats_tgid_free(sig);
-	sched_autogroup_exit(sig);
-	
+	/* sched_autogroup_exit - stubbed */
 	if (sig->oom_mm)
 		mmdrop_async(sig->oom_mm);
 	kmem_cache_free(signal_cachep, sig);
@@ -770,9 +780,6 @@ int replace_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 /* Stub: get_mm_exe_file not used in minimal kernel */
 struct file *get_mm_exe_file(struct mm_struct *mm) { return NULL; }
 
-/* Stub: get_task_exe_file not used in minimal kernel */
-struct file *get_task_exe_file(struct task_struct *task) { return NULL; }
-
 struct mm_struct *get_task_mm(struct task_struct *task)
 {
 	struct mm_struct *mm;
@@ -1047,8 +1054,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	posix_cpu_timers_init_group(sig);
 
 	tty_audit_fork(sig);
-	sched_autogroup_fork(sig);
-
+	/* sched_autogroup_fork - stubbed */
 	sig->oom_score_adj = current->signal->oom_score_adj;
 	sig->oom_score_adj_min = current->signal->oom_score_adj_min;
 
@@ -1559,26 +1565,10 @@ fork_out:
 	return ERR_PTR(retval);
 }
 
-static inline void init_idle_pids(struct task_struct *idle)
-{
-	enum pid_type type;
-
-	for (type = PIDTYPE_PID; type < PIDTYPE_MAX; ++type) {
-		INIT_HLIST_NODE(&idle->pid_links[type]); 
-		init_task_pid(idle, type, &init_struct_pid);
-	}
-}
-
-/* Stub: fork_idle not used in minimal kernel (no SMP support) */
-struct task_struct * __init fork_idle(int cpu) { return ERR_PTR(-EINVAL); }
-
 struct mm_struct *copy_init_mm(void)
 {
 	return dup_mm(NULL, &init_mm);
 }
-
-/* Stub: create_io_thread not used in minimal kernel */
-struct task_struct *create_io_thread(int (*fn)(void *), void *arg, int node) { return NULL; }
 
 pid_t kernel_clone(struct kernel_clone_args *args)
 {

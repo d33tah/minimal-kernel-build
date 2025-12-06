@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/init.h>
 #include <linux/sched.h>
@@ -12,7 +10,6 @@
 #include <linux/user_namespace.h>
 #include <linux/proc_ns.h>
 
- 
 struct user_namespace init_user_ns = {
 	.uid_map = {
 		.nr_extents = 1,
@@ -51,7 +48,6 @@ struct user_namespace init_user_ns = {
 	.flags = USERNS_INIT_FLAGS,
 };
 
- 
 
 #define UIDHASH_BITS	(CONFIG_BASE_SMALL ? 3 : 7)
 #define UIDHASH_SZ	(1 << UIDHASH_BITS)
@@ -62,17 +58,14 @@ struct user_namespace init_user_ns = {
 static struct kmem_cache *uid_cachep;
 static struct hlist_head uidhash_table[UIDHASH_SZ];
 
- 
 static DEFINE_SPINLOCK(uidhash_lock);
 
- 
 struct user_struct root_user = {
 	.__count	= REFCOUNT_INIT(1),
 	.uid		= GLOBAL_ROOT_UID,
 	.ratelimit	= RATELIMIT_STATE_INIT(root_user.ratelimit, 0, 0),
 };
 
- 
 static void uid_hash_insert(struct user_struct *up, struct hlist_head *hashent)
 {
 	hlist_add_head(&up->uidhash_node, hashent);
@@ -106,7 +99,6 @@ static void user_epoll_free(struct user_struct *up)
 {
 }
 
- 
 static void free_user(struct user_struct *up, unsigned long flags)
 	__releases(&uidhash_lock)
 {
@@ -116,7 +108,6 @@ static void free_user(struct user_struct *up, unsigned long flags)
 	kmem_cache_free(uid_cachep, up);
 }
 
- 
 struct user_struct *find_user(kuid_t uid)
 {
 	struct user_struct *ret;

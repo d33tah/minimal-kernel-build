@@ -1,4 +1,3 @@
- 
 #include <linux/export.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
@@ -8,7 +7,6 @@
 #include <linux/fs_struct.h>
 #include "internal.h"
 
- 
 void set_fs_root(struct fs_struct *fs, const struct path *path)
 {
 	struct path old_root;
@@ -24,7 +22,6 @@ void set_fs_root(struct fs_struct *fs, const struct path *path)
 		path_put(&old_root);
 }
 
- 
 void set_fs_pwd(struct fs_struct *fs, const struct path *path)
 {
 	struct path old_pwd;
@@ -151,7 +148,6 @@ int current_umask(void)
 	return current->fs->umask;
 }
 
- 
 struct fs_struct init_fs = {
 	.users		= 1,
 	.lock		= __SPIN_LOCK_UNLOCKED(init_fs.lock),

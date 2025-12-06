@@ -1,22 +1,17 @@
- 
 #ifndef _LINUX_MODULE_PARAMS_H
 #define _LINUX_MODULE_PARAMS_H
- 
 #include <linux/init.h>
 #include <linux/stringify.h>
 #include <linux/kernel.h>
 
- 
 #ifdef MODULE
 #define MODULE_PARAM_PREFIX  
 #define __MODULE_INFO_PREFIX  
 #else
 #define MODULE_PARAM_PREFIX KBUILD_MODNAME "."
- 
 #define __MODULE_INFO_PREFIX KBUILD_MODNAME "."
 #endif
 
- 
 #define MAX_PARAM_PREFIX_LEN (64 - sizeof(unsigned long))
 
 #define __MODULE_INFO(tag, name, info)					  \
@@ -27,13 +22,11 @@
 #define __MODULE_PARM_TYPE(name, _type)					  \
 	__MODULE_INFO(parmtype, name##type, #name ":" _type)
 
- 
 #define MODULE_PARM_DESC(_parm, desc) \
 	__MODULE_INFO(parm, _parm, #_parm ":" desc)
 
 struct kernel_param;
 
- 
 enum {
 	KERNEL_PARAM_OPS_FL_NOARG = (1 << 0)
 };
@@ -49,7 +42,6 @@ struct kernel_param_ops {
 	void (*free)(void *arg);
 };
 
- 
 enum {
 	KERNEL_PARAM_FL_UNSAFE	= (1 << 0),
 	KERNEL_PARAM_FL_HWPARAM	= (1 << 1),
@@ -71,13 +63,11 @@ struct kernel_param {
 
 extern const struct kernel_param __start___param[], __stop___param[];
 
- 
 struct kparam_string {
 	unsigned int maxlen;
 	char *string;
 };
 
- 
 struct kparam_array
 {
 	unsigned int max;
@@ -87,27 +77,22 @@ struct kparam_array
 	void *elem;
 };
 
- 
 #define module_param(name, type, perm)				\
 	module_param_named(name, name, type, perm)
 
- 
 #define module_param_unsafe(name, type, perm)			\
 	module_param_named_unsafe(name, name, type, perm)
 
- 
 #define module_param_named(name, value, type, perm)			   \
 	param_check_##type(name, &(value));				   \
 	module_param_cb(name, &param_ops_##type, &value, perm);		   \
 	__MODULE_PARM_TYPE(name, #type)
 
- 
 #define module_param_named_unsafe(name, value, type, perm)		\
 	param_check_##type(name, &(value));				\
 	module_param_cb_unsafe(name, &param_ops_##type, &value, perm);	\
 	__MODULE_PARM_TYPE(name, #type)
 
- 
 #define module_param_cb(name, ops, arg, perm)				      \
 	__module_param_call(MODULE_PARAM_PREFIX, name, ops, arg, perm, -1, 0)
 
@@ -117,42 +102,33 @@ struct kparam_array
 
 #define __level_param_cb(name, ops, arg, perm, level)			\
 	__module_param_call(MODULE_PARAM_PREFIX, name, ops, arg, perm, level, 0)
- 
 #define core_param_cb(name, ops, arg, perm)		\
 	__level_param_cb(name, ops, arg, perm, 1)
 
- 
 #define postcore_param_cb(name, ops, arg, perm)		\
 	__level_param_cb(name, ops, arg, perm, 2)
 
- 
 #define arch_param_cb(name, ops, arg, perm)		\
 	__level_param_cb(name, ops, arg, perm, 3)
 
- 
 #define subsys_param_cb(name, ops, arg, perm)		\
 	__level_param_cb(name, ops, arg, perm, 4)
 
- 
 #define fs_param_cb(name, ops, arg, perm)		\
 	__level_param_cb(name, ops, arg, perm, 5)
 
- 
 #define device_param_cb(name, ops, arg, perm)		\
 	__level_param_cb(name, ops, arg, perm, 6)
 
- 
 #define late_param_cb(name, ops, arg, perm)		\
 	__level_param_cb(name, ops, arg, perm, 7)
 
- 
 #if defined(CONFIG_ALPHA) || defined(CONFIG_IA64) || defined(CONFIG_PPC64)
 #define __moduleparam_const
 #else
 #define __moduleparam_const const
 #endif
 
- 
 #define __module_param_call(prefix, name, ops, arg, perm, level, flags)	\
 	 			\
 	static const char __param_str_##name[] = prefix #name;		\
@@ -162,7 +138,6 @@ struct kparam_array
 	= { __param_str_##name, THIS_MODULE, ops,			\
 	    VERIFY_OCTAL_PERMISSIONS(perm), level, flags, { arg } }
 
- 
 #define module_param_call(name, _set, _get, arg, perm)			\
 	static const struct kernel_param_ops __param_ops_##name =	\
 		{ .flags = 0, .set = _set, .get = _get };		\
@@ -177,12 +152,10 @@ static inline void kernel_param_unlock(struct module *mod)
 }
 
 #ifndef MODULE
- 
 #define core_param(name, var, type, perm)				\
 	param_check_##type(name, &(var));				\
 	__module_param_call("", name, &param_ops_##type, &var, perm, -1, 0)
 
- 
 #define core_param_unsafe(name, var, type, perm)		\
 	param_check_##type(name, &(var));				\
 	__module_param_call("", name, &param_ops_##type, &var, perm,	\
@@ -190,7 +163,6 @@ static inline void kernel_param_unlock(struct module *mod)
 
 #endif  
 
- 
 #define module_param_string(name, string, len, perm)			\
 	static const struct kparam_string __param_string_##name		\
 		= { len, string };					\
@@ -199,13 +171,10 @@ static inline void kernel_param_unlock(struct module *mod)
 			    .str = &__param_string_##name, perm, -1, 0);\
 	__MODULE_PARM_TYPE(name, "string")
 
- 
 extern bool parameq(const char *name1, const char *name2);
 
- 
 extern bool parameqn(const char *name1, const char *name2, size_t n);
 
- 
 extern char *parse_args(const char *name,
 		      char *args,
 		      const struct kernel_param *params,
@@ -216,14 +185,8 @@ extern char *parse_args(const char *name,
 		      int (*unknown)(char *param, char *val,
 				     const char *doing, void *arg));
 
- 
-static inline void destroy_params(const struct kernel_param *params,
-				  unsigned num)
-{
-}
+/* destroy_params removed - unused */
 
- 
- 
 #define __param_check(name, p, type) \
 	static inline type __always_unused *__check_##name(void) { return(p); }
 
@@ -256,7 +219,6 @@ extern int param_get_charp(char *buffer, const struct kernel_param *kp);
 extern void param_free_charp(void *arg);
 #define param_check_charp(name, p) __param_check(name, p, char *)
 
- 
 extern const struct kernel_param_ops param_ops_bool;
 extern int param_set_bool(const char *val, const struct kernel_param *kp);
 extern int param_get_bool(char *buffer, const struct kernel_param *kp);
@@ -265,7 +227,6 @@ extern int param_get_bool(char *buffer, const struct kernel_param *kp);
 extern const struct kernel_param_ops param_ops_bool_enable_only;
 extern int param_set_bool_enable_only(const char *val,
 				      const struct kernel_param *kp);
- 
 #define param_check_bool_enable_only param_check_bool
 
 extern const struct kernel_param_ops param_ops_invbool;
@@ -273,17 +234,14 @@ extern int param_set_invbool(const char *val, const struct kernel_param *kp);
 extern int param_get_invbool(char *buffer, const struct kernel_param *kp);
 #define param_check_invbool(name, p) __param_check(name, p, bool)
 
- 
 extern const struct kernel_param_ops param_ops_bint;
 extern int param_set_bint(const char *val, const struct kernel_param *kp);
 #define param_get_bint param_get_int
 #define param_check_bint param_check_int
 
- 
 #define module_param_array(name, type, nump, perm)		\
 	module_param_array_named(name, name, type, nump, perm)
 
- 
 #define module_param_array_named(name, array, type, nump, perm)		\
 	param_check_##type(name, &(array)[0]);				\
 	static const struct kparam_array __param_arr_##name		\
@@ -296,34 +254,7 @@ extern int param_set_bint(const char *val, const struct kernel_param *kp);
 			    perm, -1, 0);				\
 	__MODULE_PARM_TYPE(name, "array of " #type)
 
-enum hwparam_type { hwparam_other };
-
- 
-#define module_param_hw_named(name, value, type, hwtype, perm)		\
-	param_check_##type(name, &(value));				\
-	__module_param_call(MODULE_PARAM_PREFIX, name,			\
-			    &param_ops_##type, &value,			\
-			    perm, -1,					\
-			    KERNEL_PARAM_FL_HWPARAM | (hwparam_##hwtype & 0));	\
-	__MODULE_PARM_TYPE(name, #type)
-
-#define module_param_hw(name, type, hwtype, perm)		\
-	module_param_hw_named(name, name, type, hwtype, perm)
-
- 
-#define module_param_hw_array(name, type, hwtype, nump, perm)		\
-	param_check_##type(name, &(name)[0]);				\
-	static const struct kparam_array __param_arr_##name		\
-	= { .max = ARRAY_SIZE(name), .num = nump,			\
-	    .ops = &param_ops_##type,					\
-	    .elemsize = sizeof(name[0]), .elem = name };		\
-	__module_param_call(MODULE_PARAM_PREFIX, name,			\
-			    &param_array_ops,				\
-			    .arr = &__param_arr_##name,			\
-			    perm, -1,					\
-			    KERNEL_PARAM_FL_HWPARAM | (hwparam_##hwtype & 0));	\
-	__MODULE_PARM_TYPE(name, "array of " #type)
-
+/* hwparam macros removed - unused */
 
 extern const struct kernel_param_ops param_array_ops;
 
@@ -331,7 +262,6 @@ extern const struct kernel_param_ops param_ops_string;
 extern int param_set_copystring(const char *val, const struct kernel_param *);
 extern int param_get_string(char *buffer, const struct kernel_param *kp);
 
- 
 
 struct module;
 

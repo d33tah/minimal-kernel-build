@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_DAX_H
 #define _LINUX_DAX_H
 
@@ -42,7 +41,6 @@ bool dax_synchronous(struct dax_device *dax_dev);
 void set_dax_synchronous(struct dax_device *dax_dev);
 size_t dax_recovery_write(struct dax_device *dax_dev, pgoff_t pgoff,
 		void *addr, size_t bytes, struct iov_iter *i);
- 
 static inline bool daxdev_mapping_supported(struct vm_area_struct *vma,
 					     struct dax_device *dax_dev)
 {
@@ -73,9 +71,6 @@ static inline bool daxdev_mapping_supported(struct vm_area_struct *vma,
 	return !(vma->vm_flags & VM_SYNC);
 }
 #endif
-
-void set_dax_nocache(struct dax_device *dax_dev);
-void set_dax_nomc(struct dax_device *dax_dev);
 
 struct writeback_control;
 static inline int dax_add_host(struct dax_device *dax_dev, struct gendisk *disk)
@@ -131,10 +126,6 @@ static inline void dax_unlock_page(struct page *page, dax_entry_t cookie)
 }
 #endif
 
-int dax_zero_range(struct inode *inode, loff_t pos, loff_t len, bool *did_zero,
-		const struct iomap_ops *ops);
-int dax_truncate_page(struct inode *inode, loff_t pos, bool *did_zero,
-		const struct iomap_ops *ops);
 
 #if IS_ENABLED(CONFIG_DAX)
 int dax_read_lock(void);
@@ -149,24 +140,6 @@ static inline void dax_read_unlock(int id)
 {
 }
 #endif  
-bool dax_alive(struct dax_device *dax_dev);
-void *dax_get_private(struct dax_device *dax_dev);
-long dax_direct_access(struct dax_device *dax_dev, pgoff_t pgoff, long nr_pages,
-		enum dax_access_mode mode, void **kaddr, pfn_t *pfn);
-size_t dax_copy_from_iter(struct dax_device *dax_dev, pgoff_t pgoff, void *addr,
-		size_t bytes, struct iov_iter *i);
-size_t dax_copy_to_iter(struct dax_device *dax_dev, pgoff_t pgoff, void *addr,
-		size_t bytes, struct iov_iter *i);
-int dax_zero_page_range(struct dax_device *dax_dev, pgoff_t pgoff,
-			size_t nr_pages);
-void dax_flush(struct dax_device *dax_dev, void *addr, size_t size);
-
-ssize_t dax_iomap_rw(struct kiocb *iocb, struct iov_iter *iter,
-		const struct iomap_ops *ops);
-vm_fault_t dax_iomap_fault(struct vm_fault *vmf, enum page_entry_size pe_size,
-		    pfn_t *pfnp, int *errp, const struct iomap_ops *ops);
-vm_fault_t dax_finish_sync_fault(struct vm_fault *vmf,
-		enum page_entry_size pe_size, pfn_t pfn);
 int dax_delete_mapping_entry(struct address_space *mapping, pgoff_t index);
 int dax_invalidate_mapping_entry_sync(struct address_space *mapping,
 				      pgoff_t index);

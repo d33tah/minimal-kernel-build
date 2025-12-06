@@ -1,5 +1,3 @@
- 
- 
 #ifndef __ASM_GENERIC_IO_H
 #define __ASM_GENERIC_IO_H
 
@@ -16,7 +14,6 @@
 #define __io_br()      barrier()
 #endif
 
- 
 #ifndef __io_ar
 #ifdef rmb
 #define __io_ar(v)      rmb()
@@ -25,7 +22,6 @@
 #endif
 #endif
 
- 
 #ifndef __io_bw
 #ifdef wmb
 #define __io_bw()      wmb()
@@ -34,7 +30,6 @@
 #endif
 #endif
 
- 
 #ifndef __io_aw
 #define __io_aw()      mmiowb_set_pending()
 #endif
@@ -56,7 +51,6 @@
 #endif
 
 
- 
 
 #ifndef __raw_readb
 #define __raw_readb __raw_readb
@@ -108,7 +102,6 @@ static inline void __raw_writel(u32 value, volatile void __iomem *addr)
 #endif
 
 
- 
 
 #ifndef readb
 #define readb readb
@@ -181,7 +174,6 @@ static inline void writel(u32 value, volatile void __iomem *addr)
 #endif
 
 
- 
 #ifndef readb_relaxed
 #define readb_relaxed readb_relaxed
 static inline u8 readb_relaxed(const volatile void __iomem *addr)
@@ -246,102 +238,6 @@ static inline void writeq_relaxed(u64 value, volatile void __iomem *addr)
 }
 #endif
 
- 
-#ifndef readsb
-#define readsb readsb
-static inline void readsb(const volatile void __iomem *addr, void *buffer,
-			  unsigned int count)
-{
-	if (count) {
-		u8 *buf = buffer;
-
-		do {
-			u8 x = __raw_readb(addr);
-			*buf++ = x;
-		} while (--count);
-	}
-}
-#endif
-
-#ifndef readsw
-#define readsw readsw
-static inline void readsw(const volatile void __iomem *addr, void *buffer,
-			  unsigned int count)
-{
-	if (count) {
-		u16 *buf = buffer;
-
-		do {
-			u16 x = __raw_readw(addr);
-			*buf++ = x;
-		} while (--count);
-	}
-}
-#endif
-
-#ifndef readsl
-#define readsl readsl
-static inline void readsl(const volatile void __iomem *addr, void *buffer,
-			  unsigned int count)
-{
-	if (count) {
-		u32 *buf = buffer;
-
-		do {
-			u32 x = __raw_readl(addr);
-			*buf++ = x;
-		} while (--count);
-	}
-}
-#endif
-
-
-#ifndef writesb
-#define writesb writesb
-static inline void writesb(volatile void __iomem *addr, const void *buffer,
-			   unsigned int count)
-{
-	if (count) {
-		const u8 *buf = buffer;
-
-		do {
-			__raw_writeb(*buf++, addr);
-		} while (--count);
-	}
-}
-#endif
-
-#ifndef writesw
-#define writesw writesw
-static inline void writesw(volatile void __iomem *addr, const void *buffer,
-			   unsigned int count)
-{
-	if (count) {
-		const u16 *buf = buffer;
-
-		do {
-			__raw_writew(*buf++, addr);
-		} while (--count);
-	}
-}
-#endif
-
-#ifndef writesl
-#define writesl writesl
-static inline void writesl(volatile void __iomem *addr, const void *buffer,
-			   unsigned int count)
-{
-	if (count) {
-		const u32 *buf = buffer;
-
-		do {
-			__raw_writel(*buf++, addr);
-		} while (--count);
-	}
-}
-#endif
-
-
 #ifndef PCI_IOBASE
 #define PCI_IOBASE ((void __iomem *)0)
 #endif
@@ -350,7 +246,6 @@ static inline void writesl(volatile void __iomem *addr, const void *buffer,
 #define IO_SPACE_LIMIT 0xffff
 #endif
 
- 
 
 #if !defined(inb) && !defined(_inb)
 #define _inb _inb
@@ -421,7 +316,20 @@ static inline void _outl(u32 value, unsigned long addr)
 }
 #endif
 
-#include <linux/logic_pio.h>
+/* --- 2025-12-06 20:24 --- logic_pio.h inlined (23 LOC) */
+#include <linux/fwnode.h>
+enum { LOGIC_PIO_CPU_MMIO };
+struct logic_pio_hwaddr;
+struct logic_pio_host_ops;
+#define PIO_INDIRECT_SIZE 0
+#define MMIO_UPPER_LIMIT (IO_SPACE_LIMIT - PIO_INDIRECT_SIZE)
+struct logic_pio_hwaddr *find_io_range_by_fwnode(struct fwnode_handle *fwnode);
+unsigned long logic_pio_trans_hwaddr(struct fwnode_handle *fwnode, resource_size_t hw_addr, resource_size_t size);
+int logic_pio_register_range(struct logic_pio_hwaddr *newrange);
+void logic_pio_unregister_range(struct logic_pio_hwaddr *range);
+resource_size_t logic_pio_to_hwaddr(unsigned long pio);
+unsigned long logic_pio_trans_cpuaddr(resource_size_t hw_addr);
+/* --- end logic_pio.h inlined --- */
 
 #ifndef inb
 #define inb _inb
@@ -495,117 +403,14 @@ static inline void outl_p(u32 value, unsigned long addr)
 }
 #endif
 
- 
 
-#ifndef insb
-#define insb insb
-static inline void insb(unsigned long addr, void *buffer, unsigned int count)
-{
-	readsb(PCI_IOBASE + addr, buffer, count);
-}
-#endif
-
-#ifndef insw
-#define insw insw
-static inline void insw(unsigned long addr, void *buffer, unsigned int count)
-{
-	readsw(PCI_IOBASE + addr, buffer, count);
-}
-#endif
-
-#ifndef insl
-#define insl insl
-static inline void insl(unsigned long addr, void *buffer, unsigned int count)
-{
-	readsl(PCI_IOBASE + addr, buffer, count);
-}
-#endif
-
-#ifndef outsb
-#define outsb outsb
-static inline void outsb(unsigned long addr, const void *buffer,
-			 unsigned int count)
-{
-	writesb(PCI_IOBASE + addr, buffer, count);
-}
-#endif
-
-#ifndef outsw
-#define outsw outsw
-static inline void outsw(unsigned long addr, const void *buffer,
-			 unsigned int count)
-{
-	writesw(PCI_IOBASE + addr, buffer, count);
-}
-#endif
-
-#ifndef outsl
-#define outsl outsl
-static inline void outsl(unsigned long addr, const void *buffer,
-			 unsigned int count)
-{
-	writesl(PCI_IOBASE + addr, buffer, count);
-}
-#endif
-
-#ifndef insb_p
-#define insb_p insb_p
-static inline void insb_p(unsigned long addr, void *buffer, unsigned int count)
-{
-	insb(addr, buffer, count);
-}
-#endif
-
-#ifndef insw_p
-#define insw_p insw_p
-static inline void insw_p(unsigned long addr, void *buffer, unsigned int count)
-{
-	insw(addr, buffer, count);
-}
-#endif
-
-#ifndef insl_p
-#define insl_p insl_p
-static inline void insl_p(unsigned long addr, void *buffer, unsigned int count)
-{
-	insl(addr, buffer, count);
-}
-#endif
-
-#ifndef outsb_p
-#define outsb_p outsb_p
-static inline void outsb_p(unsigned long addr, const void *buffer,
-			   unsigned int count)
-{
-	outsb(addr, buffer, count);
-}
-#endif
-
-#ifndef outsw_p
-#define outsw_p outsw_p
-static inline void outsw_p(unsigned long addr, const void *buffer,
-			   unsigned int count)
-{
-	outsw(addr, buffer, count);
-}
-#endif
-
-#ifndef outsl_p
-#define outsl_p outsl_p
-static inline void outsl_p(unsigned long addr, const void *buffer,
-			   unsigned int count)
-{
-	outsl(addr, buffer, count);
-}
-#endif
-
+/* insb, insw, insl, outsb, outsw, outsl removed - unused */
 
 #ifdef __KERNEL__
 
 #include <linux/vmalloc.h>
 #define __io_virt(x) ((void __force *)(x))
 
- 
 #ifndef virt_to_phys
 #define virt_to_phys virt_to_phys
 static inline unsigned long virt_to_phys(volatile void *address)
@@ -622,7 +427,6 @@ static inline void *phys_to_virt(unsigned long address)
 }
 #endif
 
- 
 #if   defined(CONFIG_GENERIC_IOREMAP)
 #include <linux/pgtable.h>
 
@@ -644,7 +448,6 @@ static inline void __iomem *ioremap(phys_addr_t addr, size_t size)
 #define ioremap_wt ioremap
 #endif
 
- 
 #ifndef ioremap_uc
 #define ioremap_uc ioremap_uc
 static inline void __iomem *ioremap_uc(phys_addr_t offset, size_t size)
@@ -653,7 +456,6 @@ static inline void __iomem *ioremap_uc(phys_addr_t offset, size_t size)
 }
 #endif
 
- 
 #ifndef ioremap_np
 #define ioremap_np ioremap_np
 static inline void __iomem *ioremap_np(phys_addr_t offset, size_t size)
@@ -681,21 +483,8 @@ static inline void unxlate_dev_mem_ptr(phys_addr_t phys, void *addr)
 }
 #endif
 
-#ifndef virt_to_bus
-static inline unsigned long virt_to_bus(void *address)
-{
-	return (unsigned long)address;
-}
-
-static inline void *bus_to_virt(unsigned long address)
-{
-	return (void *)address;
-}
-#endif
-
 #ifndef memset_io
 #define memset_io memset_io
- 
 static inline void memset_io(volatile void __iomem *addr, int value,
 			     size_t size)
 {
@@ -705,7 +494,6 @@ static inline void memset_io(volatile void __iomem *addr, int value,
 
 #ifndef memcpy_fromio
 #define memcpy_fromio memcpy_fromio
- 
 static inline void memcpy_fromio(void *buffer,
 				 const volatile void __iomem *addr,
 				 size_t size)
@@ -716,7 +504,6 @@ static inline void memcpy_fromio(void *buffer,
 
 #ifndef memcpy_toio
 #define memcpy_toio memcpy_toio
- 
 static inline void memcpy_toio(volatile void __iomem *addr, const void *buffer,
 			       size_t size)
 {

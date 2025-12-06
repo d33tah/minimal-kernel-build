@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_KERNEL_VTIME_H
 #define _LINUX_KERNEL_VTIME_H
 
@@ -6,35 +5,18 @@
 #include <linux/sched.h>
 
 
- 
 
-static inline void vtime_user_enter(struct task_struct *tsk) { }
-static inline void vtime_user_exit(struct task_struct *tsk) { }
-static inline void vtime_guest_enter(struct task_struct *tsk) { }
-static inline void vtime_guest_exit(struct task_struct *tsk) { }
+/* vtime_user_enter/exit, vtime_guest_enter/exit removed - unused */
 static inline void vtime_init_idle(struct task_struct *tsk, int cpu) { }
-
 static inline void vtime_account_irq(struct task_struct *tsk, unsigned int offset) { }
 static inline void vtime_account_softirq(struct task_struct *tsk) { }
 static inline void vtime_account_hardirq(struct task_struct *tsk) { }
-static inline void vtime_flush(struct task_struct *tsk) { }
+/* vtime_flush removed - unused */
 
- 
 
 static inline bool vtime_accounting_enabled_this_cpu(void) { return false; }
 static inline void vtime_task_switch(struct task_struct *prev) { }
-
-static __always_inline void vtime_account_guest_enter(void)
-{
-	current->flags |= PF_VCPU;
-}
-
-static __always_inline void vtime_account_guest_exit(void)
-{
-	current->flags &= ~PF_VCPU;
-}
-
-
+/* vtime_account_guest_enter, vtime_account_guest_exit removed - unused */
 
 static inline void irqtime_account_irq(struct task_struct *tsk, unsigned int offset) { }
 

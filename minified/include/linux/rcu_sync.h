@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_RCU_SYNC_H_
 #define _LINUX_RCU_SYNC_H_
@@ -7,7 +5,6 @@
 #include <linux/wait.h>
 #include <linux/rcupdate.h>
 
- 
 struct rcu_sync {
 	int			gp_state;
 	int			gp_count;
@@ -16,7 +13,6 @@ struct rcu_sync {
 	struct rcu_head		cb_head;
 };
 
- 
 static inline bool rcu_sync_is_idle(struct rcu_sync *rsp)
 {
 	RCU_LOCKDEP_WARN(!rcu_read_lock_any_held(),

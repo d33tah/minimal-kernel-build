@@ -1,7 +1,4 @@
- 
- 
 
- 
 #include <linux/debug_locks.h>
 #include <linux/sched/debug.h>
 #include <linux/printk.h>
@@ -16,7 +13,9 @@
 #include <linux/reboot.h>
 #include <linux/delay.h>
 #include <linux/kexec.h>
-#include <linux/panic_notifier.h>
+/* panic_notifier.h inlined */
+extern struct atomic_notifier_head panic_notifier_list;
+extern bool crash_kexec_post_notifiers;
 #include <linux/sched.h>
 
 #include <linux/init.h>
@@ -63,23 +62,19 @@ static long no_blink(int state)
 	return 0;
 }
 
- 
 long (*panic_blink)(int state);
 
- 
 void __weak panic_smp_self_stop(void)
 {
 	while (1)
 		cpu_relax();
 }
 
- 
 void __weak nmi_panic_self_stop(struct pt_regs *regs)
 {
 	panic_smp_self_stop();
 }
 
- 
 void __weak crash_smp_send_stop(void)
 {
 	static int cpus_stopped;
@@ -95,7 +90,6 @@ void __weak crash_smp_send_stop(void)
 
 atomic_t panic_cpu = ATOMIC_INIT(PANIC_CPU_INVALID);
 
- 
 void nmi_panic(struct pt_regs *regs, const char *msg)
 {
 	int old_cpu, cpu;
@@ -114,7 +108,6 @@ static void panic_print_sys_info(bool console_flush)
 	/* Stub: panic diagnostic printing not needed for minimal kernel */
 }
 
- 
 void panic(const char *fmt, ...)
 {
 	static char buf[1024];
@@ -232,7 +225,6 @@ void panic(const char *fmt, ...)
 }
 
 
- 
 const struct taint_flag taint_flags[TAINT_FLAGS_COUNT] = {
 	[ TAINT_PROPRIETARY_MODULE ]	= { 'P', 'G', true },
 	[ TAINT_FORCED_MODULE ]		= { 'F', ' ', true },
@@ -254,7 +246,6 @@ const struct taint_flag taint_flags[TAINT_FLAGS_COUNT] = {
 	[ TAINT_RANDSTRUCT ]		= { 'T', ' ', true },
 };
 
- 
 const char *print_tainted(void)
 {
 	/* Stub: taint flag printing not needed for minimal kernel */
@@ -269,7 +260,6 @@ unsigned long get_taint(void)
 	return tainted_mask;
 }
 
- 
 void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
 {
 	if (lockdep_ok == LOCKDEP_NOW_UNRELIABLE)
@@ -293,7 +283,6 @@ static void spin_msec(int msecs)
 	}
 }
 
- 
 static void do_oops_enter_exit(void)
 {
 	unsigned long flags;
@@ -329,11 +318,9 @@ static void do_oops_enter_exit(void)
 	spin_unlock_irqrestore(&pause_on_oops_lock, flags);
 }
 
- 
 /* STUB: oops_may_print not used externally */
 bool oops_may_print(void) { return true; }
 
- 
 void oops_enter(void)
 {
 	tracing_off();
@@ -349,7 +336,6 @@ static void print_oops_end_marker(void)
 {
 }
 
- 
 void oops_exit(void)
 {
 	do_oops_enter_exit();

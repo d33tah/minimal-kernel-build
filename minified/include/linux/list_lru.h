@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LRU_LIST_H
 #define _LRU_LIST_H
 
@@ -10,7 +8,6 @@
 
 struct mem_cgroup;
 
- 
 enum lru_status {
 	LRU_REMOVED,		 
 	LRU_REMOVED_RETRY,	 
@@ -58,13 +55,10 @@ int memcg_list_lru_alloc(struct mem_cgroup *memcg, struct list_lru *lru,
 			 gfp_t gfp);
 void memcg_reparent_list_lrus(struct mem_cgroup *memcg, struct mem_cgroup *parent);
 
- 
 bool list_lru_add(struct list_lru *lru, struct list_head *item);
 
- 
 bool list_lru_del(struct list_lru *lru, struct list_head *item);
 
- 
 unsigned long list_lru_count_one(struct list_lru *lru,
 				 int nid, struct mem_cgroup *memcg);
 unsigned long list_lru_count_node(struct list_lru *lru, int nid);
@@ -93,12 +87,10 @@ void list_lru_isolate_move(struct list_lru_one *list, struct list_head *item,
 typedef enum lru_status (*list_lru_walk_cb)(struct list_head *item,
 		struct list_lru_one *list, spinlock_t *lock, void *cb_arg);
 
- 
 unsigned long list_lru_walk_one(struct list_lru *lru,
 				int nid, struct mem_cgroup *memcg,
 				list_lru_walk_cb isolate, void *cb_arg,
 				unsigned long *nr_to_walk);
- 
 unsigned long list_lru_walk_one_irq(struct list_lru *lru,
 				    int nid, struct mem_cgroup *memcg,
 				    list_lru_walk_cb isolate, void *cb_arg,
@@ -115,13 +107,7 @@ list_lru_shrink_walk(struct list_lru *lru, struct shrink_control *sc,
 				 &sc->nr_to_scan);
 }
 
-static inline unsigned long
-list_lru_shrink_walk_irq(struct list_lru *lru, struct shrink_control *sc,
-			 list_lru_walk_cb isolate, void *cb_arg)
-{
-	return list_lru_walk_one_irq(lru, sc->nid, sc->memcg, isolate, cb_arg,
-				     &sc->nr_to_scan);
-}
+/* list_lru_shrink_walk_irq removed - unused */
 
 static inline unsigned long
 list_lru_walk(struct list_lru *lru, list_lru_walk_cb isolate,

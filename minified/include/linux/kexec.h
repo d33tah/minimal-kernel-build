@@ -1,4 +1,3 @@
- 
 #ifndef LINUX_KEXEC_H
 #define LINUX_KEXEC_H
 

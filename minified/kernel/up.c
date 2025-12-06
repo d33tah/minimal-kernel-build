@@ -1,11 +1,10 @@
- 
- 
 
 #include <linux/interrupt.h>
 #include <linux/kernel.h>
 #include <linux/export.h>
 #include <linux/smp.h>
-#include <linux/hypervisor.h>
+#include <asm/x86_init.h>
+static inline void hypervisor_pin_vcpu(int cpu) { x86_platform.hyper.pin_vcpu(cpu); }
 
 int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
 				int wait)
@@ -32,7 +31,6 @@ int smp_call_function_single_async(int cpu, struct __call_single_data *csd)
 	return 0;
 }
 
- 
 void on_each_cpu_cond_mask(smp_cond_func_t cond_func, smp_call_func_t func,
 			   void *info, bool wait, const struct cpumask *mask)
 {

@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_GFP_H
 #define __LINUX_GFP_H
 
@@ -8,13 +7,10 @@
 #include <linux/linkage.h>
 #include <linux/topology.h>
 
- 
 
 struct vm_area_struct;
 
- 
 
- 
 #define ___GFP_DMA		0x01u
 #define ___GFP_HIGHMEM		0x02u
 #define ___GFP_DMA32		0x04u
@@ -43,29 +39,24 @@ struct vm_area_struct;
 #define ___GFP_SKIP_KASAN_UNPOISON	0
 #define ___GFP_SKIP_KASAN_POISON	0
 #define ___GFP_NOLOCKDEP	0
- 
 
- 
 #define __GFP_DMA	((__force gfp_t)___GFP_DMA)
 #define __GFP_HIGHMEM	((__force gfp_t)___GFP_HIGHMEM)
 #define __GFP_DMA32	((__force gfp_t)___GFP_DMA32)
 #define __GFP_MOVABLE	((__force gfp_t)___GFP_MOVABLE)   
 #define GFP_ZONEMASK	(__GFP_DMA|__GFP_HIGHMEM|__GFP_DMA32|__GFP_MOVABLE)
 
- 
 #define __GFP_RECLAIMABLE ((__force gfp_t)___GFP_RECLAIMABLE)
 #define __GFP_WRITE	((__force gfp_t)___GFP_WRITE)
 #define __GFP_HARDWALL   ((__force gfp_t)___GFP_HARDWALL)
 #define __GFP_THISNODE	((__force gfp_t)___GFP_THISNODE)
 #define __GFP_ACCOUNT	((__force gfp_t)___GFP_ACCOUNT)
 
- 
 #define __GFP_ATOMIC	((__force gfp_t)___GFP_ATOMIC)
 #define __GFP_HIGH	((__force gfp_t)___GFP_HIGH)
 #define __GFP_MEMALLOC	((__force gfp_t)___GFP_MEMALLOC)
 #define __GFP_NOMEMALLOC ((__force gfp_t)___GFP_NOMEMALLOC)
 
- 
 #define __GFP_IO	((__force gfp_t)___GFP_IO)
 #define __GFP_FS	((__force gfp_t)___GFP_FS)
 #define __GFP_DIRECT_RECLAIM	((__force gfp_t)___GFP_DIRECT_RECLAIM)  
@@ -75,7 +66,6 @@ struct vm_area_struct;
 #define __GFP_NOFAIL	((__force gfp_t)___GFP_NOFAIL)
 #define __GFP_NORETRY	((__force gfp_t)___GFP_NORETRY)
 
- 
 #define __GFP_NOWARN	((__force gfp_t)___GFP_NOWARN)
 #define __GFP_COMP	((__force gfp_t)___GFP_COMP)
 #define __GFP_ZERO	((__force gfp_t)___GFP_ZERO)
@@ -84,14 +74,11 @@ struct vm_area_struct;
 #define __GFP_SKIP_KASAN_UNPOISON ((__force gfp_t)___GFP_SKIP_KASAN_UNPOISON)
 #define __GFP_SKIP_KASAN_POISON   ((__force gfp_t)___GFP_SKIP_KASAN_POISON)
 
- 
 #define __GFP_NOLOCKDEP ((__force gfp_t)___GFP_NOLOCKDEP)
 
- 
 #define __GFP_BITS_SHIFT (27 + IS_ENABLED(CONFIG_LOCKDEP))
 #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
 
- 
 #define GFP_ATOMIC	(__GFP_HIGH|__GFP_ATOMIC|__GFP_KSWAPD_RECLAIM)
 #define GFP_KERNEL	(__GFP_RECLAIM | __GFP_IO | __GFP_FS)
 #define GFP_KERNEL_ACCOUNT (GFP_KERNEL | __GFP_ACCOUNT)
@@ -108,7 +95,6 @@ struct vm_area_struct;
 			 __GFP_NOMEMALLOC | __GFP_NOWARN) & ~__GFP_RECLAIM)
 #define GFP_TRANSHUGE	(GFP_TRANSHUGE_LIGHT | __GFP_DIRECT_RECLAIM)
 
- 
 #define GFP_MOVABLE_MASK (__GFP_RECLAIMABLE|__GFP_MOVABLE)
 #define GFP_MOVABLE_SHIFT 3
 
@@ -132,12 +118,7 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 	return !!(gfp_flags & __GFP_DIRECT_RECLAIM);
 }
 
- 
-static inline bool gfpflags_normal_context(const gfp_t gfp_flags)
-{
-	return (gfp_flags & (__GFP_DIRECT_RECLAIM | __GFP_MEMALLOC)) ==
-		__GFP_DIRECT_RECLAIM;
-}
+/* gfpflags_normal_context removed - unused */
 
 #define OPT_ZONE_HIGHMEM ZONE_NORMAL
 
@@ -145,10 +126,8 @@ static inline bool gfpflags_normal_context(const gfp_t gfp_flags)
 
 #define OPT_ZONE_DMA32 ZONE_NORMAL
 
- 
 
 #if defined(CONFIG_ZONE_DEVICE) && (MAX_NR_ZONES-1) <= 4
- 
 #define GFP_ZONES_SHIFT 2
 #else
 #define GFP_ZONES_SHIFT ZONES_SHIFT
@@ -169,7 +148,6 @@ static inline bool gfpflags_normal_context(const gfp_t gfp_flags)
 	| (OPT_ZONE_DMA32 << (___GFP_MOVABLE | ___GFP_DMA32) * GFP_ZONES_SHIFT)\
 )
 
- 
 #define GFP_ZONE_BAD ( \
 	1 << (___GFP_DMA | ___GFP_HIGHMEM)				      \
 	| 1 << (___GFP_DMA | ___GFP_DMA32)				      \
@@ -192,14 +170,12 @@ static inline enum zone_type gfp_zone(gfp_t flags)
 	return z;
 }
 
- 
 
 static inline int gfp_zonelist(gfp_t flags)
 {
 	return ZONELIST_FALLBACK;
 }
 
- 
 static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
 {
 	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags);
@@ -226,18 +202,7 @@ unsigned long alloc_pages_bulk_array_mempolicy(gfp_t gfp,
 				unsigned long nr_pages,
 				struct page **page_array);
 
- 
-static inline unsigned long
-alloc_pages_bulk_list(gfp_t gfp, unsigned long nr_pages, struct list_head *list)
-{
-	return __alloc_pages_bulk(gfp, numa_mem_id(), NULL, nr_pages, list, NULL);
-}
-
-static inline unsigned long
-alloc_pages_bulk_array(gfp_t gfp, unsigned long nr_pages, struct page **page_array)
-{
-	return __alloc_pages_bulk(gfp, numa_mem_id(), NULL, nr_pages, NULL, page_array);
-}
+/* alloc_pages_bulk_list, alloc_pages_bulk_array removed - unused */
 
 static inline unsigned long
 alloc_pages_bulk_array_node(gfp_t gfp, int nid, unsigned long nr_pages, struct page **page_array)
@@ -248,7 +213,6 @@ alloc_pages_bulk_array_node(gfp_t gfp, int nid, unsigned long nr_pages, struct p
 	return __alloc_pages_bulk(gfp, nid, NULL, nr_pages, NULL, page_array);
 }
 
- 
 static inline struct page *
 __alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order)
 {
@@ -267,7 +231,6 @@ struct folio *__folio_alloc_node(gfp_t gfp, unsigned int order, int nid)
 	return __folio_alloc(gfp, order, nid, NULL);
 }
 
- 
 static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
 						unsigned int order)
 {
@@ -316,24 +279,14 @@ extern void free_pages(unsigned long addr, unsigned int order);
 #define free_page(addr) free_pages((addr), 0)
 
 void page_alloc_init(void);
-void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp);
-void drain_all_pages(struct zone *zone);
-void drain_local_pages(struct zone *zone);
-
 void page_alloc_init_late(void);
 
- 
 extern gfp_t gfp_allowed_mask;
 
- 
 bool gfp_pfmemalloc_allowed(gfp_t gfp_mask);
 
 /* pm_restrict_gfp_mask, pm_restore_gfp_mask, vma_thp_gfp_mask removed - unused */
-
-static inline bool pm_suspended_storage(void)
-{
-	return false;
-}
+/* pm_suspended_storage removed - unused */
 
 void free_contig_range(unsigned long pfn, unsigned long nr_pages);
 

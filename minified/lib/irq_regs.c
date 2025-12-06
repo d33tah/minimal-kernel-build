@@ -1,6 +1,4 @@
- 
- 
-#include <linux/export.h>
+/* IRQ register storage */
 #include <linux/percpu.h>
 #include <asm/irq_regs.h>
 

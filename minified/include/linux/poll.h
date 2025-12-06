@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_POLL_H
 #define _LINUX_POLL_H
 
@@ -9,10 +8,43 @@
 #include <linux/string.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
-#include <uapi/linux/poll.h>
-#include <uapi/linux/eventpoll.h>
+#include <linux/eventpoll.h>
 
- 
+/* Inlined from uapi/asm-generic/poll.h */
+#define POLLIN		0x0001
+#define POLLPRI		0x0002
+#define POLLOUT		0x0004
+#define POLLERR		0x0008
+#define POLLHUP		0x0010
+#define POLLNVAL	0x0020
+
+#define POLLRDNORM	0x0040
+#define POLLRDBAND	0x0080
+#ifndef POLLWRNORM
+#define POLLWRNORM	0x0100
+#endif
+#ifndef POLLWRBAND
+#define POLLWRBAND	0x0200
+#endif
+#ifndef POLLMSG
+#define POLLMSG		0x0400
+#endif
+#ifndef POLLREMOVE
+#define POLLREMOVE	0x1000
+#endif
+#ifndef POLLRDHUP
+#define POLLRDHUP       0x2000
+#endif
+
+#define POLLFREE	(__force __poll_t)0x4000
+#define POLL_BUSY_LOOP	(__force __poll_t)0x8000
+
+struct pollfd {
+	int fd;
+	short events;
+	short revents;
+};
+
 #ifdef __clang__
 #define MAX_STACK_ALLOC 768
 #else
@@ -28,10 +60,8 @@
 
 struct poll_table_struct;
 
- 
 typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_table_struct *);
 
- 
 typedef struct poll_table_struct {
 	poll_queue_proc _qproc;
 	__poll_t _key;
@@ -43,13 +73,11 @@ static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_addres
 		p->_qproc(filp, wait_address, p);
 }
 
- 
 static inline bool poll_does_not_wait(const poll_table *p)
 {
 	return p == NULL || p->_qproc == NULL;
 }
 
- 
 static inline __poll_t poll_requested_events(const poll_table *p)
 {
 	return p ? p->_key : ~(__poll_t)0;
@@ -80,7 +108,6 @@ struct poll_table_entry {
 	wait_queue_head_t *wait_address;
 };
 
- 
 struct poll_wqueues {
 	poll_table pt;
 	struct poll_table_page *table;

@@ -1,4 +1,3 @@
- 
 
 #include <linux/stddef.h>
 #include <linux/mm.h>
@@ -37,7 +36,45 @@
 #include <linux/fault-inject.h>
 #include <linux/page-isolation.h>
 #include <linux/kmemleak.h>
-#include <linux/compaction.h>
+
+/* --- 2025-12-06 17:10 --- compaction.h inlined */
+enum compact_priority {
+	COMPACT_PRIO_SYNC_FULL,
+};
+
+enum compact_result {
+	COMPACT_SKIPPED,
+};
+
+struct alloc_context;
+
+static inline unsigned long compact_gap(unsigned int order)
+{
+	return 2UL << order;
+}
+
+static inline void reset_isolation_suitable(pg_data_t *pgdat) { }
+
+static inline enum compact_result compaction_suitable(struct zone *zone, int order,
+					int alloc_flags, int highest_zoneidx)
+{
+	return COMPACT_SKIPPED;
+}
+
+static inline bool compaction_made_progress(enum compact_result result) { return false; }
+static inline bool compaction_failed(enum compact_result result) { return false; }
+static inline bool compaction_needs_reclaim(enum compact_result result) { return false; }
+static inline bool compaction_withdrawn(enum compact_result result) { return true; }
+
+static inline void kcompactd_run(int nid) { }
+static inline void kcompactd_stop(int nid) { }
+
+static inline void wakeup_kcompactd(pg_data_t *pgdat, int order, int highest_zoneidx) { }
+
+struct node;
+static inline int compaction_register_node(struct node *node) { return 0; }
+static inline void compaction_unregister_node(struct node *node) { }
+/* --- end compaction.h inlined --- */
 
 #include <linux/mm_inline.h>
 #include <linux/mmu_notifier.h>
@@ -45,7 +82,15 @@
 #include <linux/hugetlb.h>
 #include <linux/sched/rt.h>
 #include <linux/sched/mm.h>
-#include <linux/page_owner.h>
+
+/* --- 2025-12-06 20:21 --- page_owner.h inlined (26 LOC) */
+static inline void reset_page_owner(struct page *page, unsigned short order) {}
+static inline void set_page_owner(struct page *page, unsigned int order, gfp_t gfp_mask) {}
+static inline void split_page_owner(struct page *page, unsigned short order) {}
+static inline void folio_copy_owner(struct folio *newfolio, struct folio *folio) {}
+static inline void set_page_owner_migrate_reason(struct page *page, int reason) {}
+static inline void dump_page_owner(const struct page *page) {}
+/* --- end page_owner.h inlined --- */
 #include <linux/page_table_check.h>
 #include <linux/kthread.h>
 #include <linux/memcontrol.h>
@@ -393,21 +438,6 @@ int split_free_page(struct page *free_page,
 	return -ENOENT;
 }
 
-static inline bool page_expected_state(struct page *page,
-					unsigned long check_flags)
-{
-	if (unlikely(atomic_read(&page->_mapcount) != -1))
-		return false;
-
-	if (unlikely((unsigned long)page->mapping |
-			page_ref_count(page) |
-			(page->flags & check_flags)))
-		return false;
-
-	return true;
-}
-
-
 static __always_inline bool free_pages_prepare(struct page *page,
 			unsigned int order, bool check_free, fpi_t fpi_flags)
 {
@@ -600,21 +630,6 @@ static inline void expand(struct zone *zone, struct page *page,
 		add_to_free_list(&page[size], zone, high, migratetype);
 		set_buddy_order(&page[size], high);
 	}
-}
-
-static void check_new_page_bad(struct page *page)
-{
-	/* Stub: page validation not needed for minimal kernel */
-}
-
-static inline int check_new_page(struct page *page)
-{
-	if (likely(page_expected_state(page,
-				PAGE_FLAGS_CHECK_AT_PREP|__PG_HWPOISON)))
-		return 0;
-
-	check_new_page_bad(page);
-	return 1;
 }
 
 static bool check_new_pages(struct page *page, unsigned int order)
@@ -1139,19 +1154,6 @@ noinline bool should_fail_alloc_page(gfp_t gfp_mask, unsigned int order)
 }
 ALLOW_ERROR_INJECTION(should_fail_alloc_page, TRUE);
 
-static inline long __zone_watermark_unusable_free(struct zone *z,
-				unsigned int order, unsigned int alloc_flags)
-{
-	const bool alloc_harder = (alloc_flags & (ALLOC_HARDER|ALLOC_OOM));
-	long unusable_free = (1 << order) - 1;
-
-	
-	if (likely(!alloc_harder))
-		unusable_free += z->nr_reserved_highatomic;
-
-	return unusable_free;
-}
-
 bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 			 int highest_zoneidx, unsigned int alloc_flags,
 			 long free_pages)
@@ -1638,11 +1640,7 @@ unsigned long nr_free_buffer_pages(void)
 	return nr_free_zone_pages(gfp_zone(GFP_USER));
 }
 
-static inline void show_node(struct zone *zone)
-{
-	if (IS_ENABLED(CONFIG_NUMA))
-		printk("Node %d ", zone_to_nid(zone));
-}
+/* show_node removed - unused */
 
 long si_mem_available(void)
 {

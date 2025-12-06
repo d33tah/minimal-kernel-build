@@ -12,7 +12,7 @@
 #include <linux/sched/rt.h>
 #include <linux/sched/task.h>
 #include <linux/sched/isolation.h>
-#include <uapi/linux/sched/types.h>
+#include <linux/sched/types.h>
 #include <linux/task_work.h>
 
 #include "internals.h"

@@ -1,10 +1,8 @@
- 
 #include <linux/bitops.h>
-#include <linux/fault-inject-usercopy.h>
+/* fault-inject-usercopy.h removed - inlined in uaccess.h */
 #include <linux/instrumented.h>
 #include <linux/uaccess.h>
 
- 
 
 #ifndef INLINE_COPY_FROM_USER
 unsigned long _copy_from_user(void *to, const void __user *from, unsigned long n)
@@ -35,7 +33,6 @@ unsigned long _copy_to_user(void __user *to, const void *from, unsigned long n)
 }
 #endif
 
- 
 int check_zeroed_user(const void __user *from, size_t size)
 {
 	 

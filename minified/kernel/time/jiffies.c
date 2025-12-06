@@ -1,5 +1,3 @@
- 
- 
 #include <linux/clocksource.h>
 #include <linux/jiffies.h>
 #include <linux/module.h>
@@ -14,7 +12,6 @@ static u64 jiffies_read(struct clocksource *cs)
 	return (u64) jiffies;
 }
 
- 
 static struct clocksource clocksource_jiffies = {
 	.name			= "jiffies",
 	.rating			= 1,  

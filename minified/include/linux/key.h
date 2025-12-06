@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_KEY_H
 #define _LINUX_KEY_H
@@ -18,10 +16,8 @@
 #ifdef __KERNEL__
 #include <linux/uidgid.h>
 
- 
 typedef int32_t key_serial_t;
 
- 
 typedef uint32_t key_perm_t;
 
 struct key;

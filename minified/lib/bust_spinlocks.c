@@ -1,11 +1,5 @@
- 
- 
-
-#include <linux/kernel.h>
+/* Minimal includes for bust_spinlocks */
 #include <linux/printk.h>
-#include <linux/spinlock.h>
-#include <linux/tty.h>
-#include <linux/wait.h>
 #include <linux/vt_kern.h>
 #include <linux/console.h>
 

@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _KOBJ_MAP_H_
 #define _KOBJ_MAP_H_

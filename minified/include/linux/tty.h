@@ -1,28 +1,144 @@
- 
 #ifndef _LINUX_TTY_H
 #define _LINUX_TTY_H
 
 #include <linux/fs.h>
 #include <linux/major.h>
-#include <linux/termios.h>
+#include <linux/types.h>
+#include <asm/termios.h>
 #include <linux/workqueue.h>
 #include <linux/tty_buffer.h>
 #include <linux/tty_driver.h>
-#include <linux/tty_ldisc.h>
 #include <linux/tty_port.h>
+
+/* --- 2025-12-06 17:12 --- tty_ldisc.h inlined */
+#include <linux/wait.h>
+#include <linux/atomic.h>
+#include <linux/list.h>
+#include <linux/lockdep.h>
+#include <linux/seq_file.h>
+
+struct ld_semaphore {
+	atomic_long_t		count;
+	raw_spinlock_t		wait_lock;
+	unsigned int		wait_readers;
+	struct list_head	read_wait;
+	struct list_head	write_wait;
+};
+
+void __init_ldsem(struct ld_semaphore *sem, const char *name,
+			 struct lock_class_key *key);
+
+#define init_ldsem(sem)						\
+do {								\
+	static struct lock_class_key __key;			\
+								\
+	__init_ldsem((sem), #sem, &__key);			\
+} while (0)
+
+int ldsem_down_read(struct ld_semaphore *sem, long timeout);
+int ldsem_down_read_trylock(struct ld_semaphore *sem);
+int ldsem_down_write(struct ld_semaphore *sem, long timeout);
+int ldsem_down_write_trylock(struct ld_semaphore *sem);
+void ldsem_up_read(struct ld_semaphore *sem);
+void ldsem_up_write(struct ld_semaphore *sem);
+
+# define ldsem_down_read_nested(sem, subclass, timeout)		\
+		ldsem_down_read(sem, timeout)
+# define ldsem_down_write_nested(sem, subclass, timeout)	\
+		ldsem_down_write(sem, timeout)
+
+struct tty_ldisc_ops {
+	char	*name;
+	int	num;
+	int	(*open)(struct tty_struct *tty);
+	void	(*close)(struct tty_struct *tty);
+	void	(*flush_buffer)(struct tty_struct *tty);
+	ssize_t	(*read)(struct tty_struct *tty, struct file *file,
+			unsigned char *buf, size_t nr,
+			void **cookie, unsigned long offset);
+	ssize_t	(*write)(struct tty_struct *tty, struct file *file,
+			 const unsigned char *buf, size_t nr);
+	int	(*ioctl)(struct tty_struct *tty, unsigned int cmd,
+			unsigned long arg);
+	int	(*compat_ioctl)(struct tty_struct *tty, unsigned int cmd,
+			unsigned long arg);
+	void	(*set_termios)(struct tty_struct *tty, struct ktermios *old);
+	__poll_t (*poll)(struct tty_struct *tty, struct file *file,
+			     struct poll_table_struct *wait);
+	void	(*hangup)(struct tty_struct *tty);
+	void	(*receive_buf)(struct tty_struct *tty, const unsigned char *cp,
+			       const char *fp, int count);
+	void	(*write_wakeup)(struct tty_struct *tty);
+	void	(*dcd_change)(struct tty_struct *tty, unsigned int status);
+	int	(*receive_buf2)(struct tty_struct *tty, const unsigned char *cp,
+				const char *fp, int count);
+	struct  module *owner;
+};
+
+struct tty_ldisc {
+	struct tty_ldisc_ops *ops;
+	struct tty_struct *tty;
+};
+
+#define MODULE_ALIAS_LDISC(ldisc) \
+	MODULE_ALIAS("tty-ldisc-" __stringify(ldisc))
+
+extern const struct seq_operations tty_ldiscs_seq_ops;
+
+struct tty_ldisc *tty_ldisc_ref(struct tty_struct *);
+void tty_ldisc_deref(struct tty_ldisc *);
+struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *);
+
+void tty_ldisc_flush(struct tty_struct *tty);
+
+int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
+void tty_unregister_ldisc(struct tty_ldisc_ops *ldisc);
+int tty_set_ldisc(struct tty_struct *tty, int disc);
+/* --- end tty_ldisc.h inlined --- */
 #include <linux/mutex.h>
 #include <linux/tty_flags.h>
-#include <uapi/linux/tty.h>
 #include <linux/rwsem.h>
+
+/* From uapi/linux/tty.h - inlined */
+#define N_TTY		0
+#define N_SLIP		1
+#define N_MOUSE		2
+#define N_PPP		3
+#define N_STRIP		4
+#define N_AX25		5
+#define N_X25		6
+#define N_6PACK		7
+#define N_MASC		8
+#define N_R3964		9
+#define N_PROFIBUS_FDL	10
+#define N_IRDA		11
+#define N_SMSBLOCK	12
+#define N_HDLC		13
+#define N_SYNC_PPP	14
+#define N_HCI		15
+#define N_GIGASET_M101	16
+#define N_SLCAN		17
+#define N_PPS		18
+#define N_V253		19
+#define N_CAIF		20
+#define N_GSM0710	21
+#define N_TI_WL		22
+#define N_TRACESINK	23
+#define N_TRACEROUTER	24
+#define N_NCI		25
+#define N_SPEAKUP	26
+#define N_NULL		27
+#define N_MCTP		28
+#define N_DEVELOPMENT	29
+#define N_CAN327	30
+#define NR_LDISCS	31
 #include <linux/llist.h>
 
 
- 
 #define NR_UNIX98_PTY_DEFAULT	4096       
 #define NR_UNIX98_PTY_RESERVE	1024	   
 #define NR_UNIX98_PTY_MAX	(1 << MINORBITS)  
 
- 
 #define __DISABLED_CHAR '\0'
 
 #define INTR_CHAR(tty) ((tty)->termios.c_cc[VINTR])
@@ -112,7 +228,6 @@ struct device;
 struct signal_struct;
 struct tty_operations;
 
- 
 struct tty_struct {
 	int	magic;
 	struct kref kref;
@@ -174,17 +289,14 @@ struct tty_struct {
 	struct tty_port *port;
 } __randomize_layout;
 
- 
 struct tty_file_private {
 	struct tty_struct *tty;
 	struct file *file;
 	struct list_head list;
 };
 
- 
 #define TTY_MAGIC		0x5401
 
- 
 #define TTY_THROTTLED		0
 #define TTY_IO_ERROR		1
 #define TTY_OTHER_CLOSED	2
@@ -197,12 +309,6 @@ struct tty_file_private {
 #define TTY_HUPPING		19
 #define TTY_LDISC_CHANGING	20
 #define TTY_LDISC_HALTED	22
-
-static inline bool tty_io_nonblock(struct tty_struct *tty, struct file *file)
-{
-	return file->f_flags & O_NONBLOCK ||
-		test_bit(TTY_LDISC_CHANGING, &tty->flags);
-}
 
 static inline bool tty_io_error(struct tty_struct *tty)
 {
@@ -221,7 +327,6 @@ void disassociate_ctty(int priv);
 dev_t tty_devnum(struct tty_struct *tty);
 void proc_clear_tty(struct task_struct *p);
 struct tty_struct *get_current_tty(void);
- 
 int __init tty_init(void);
 const char *tty_name(const struct tty_struct *tty);
 struct tty_struct *tty_kopen_exclusive(dev_t device);
@@ -235,7 +340,6 @@ static inline int vcs_init(void) { return 0; }
 
 extern struct class *tty_class;
 
- 
 
 static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 {
@@ -273,7 +377,6 @@ void tty_termios_encode_baud_rate(struct ktermios *termios, speed_t ibaud,
 void tty_encode_baud_rate(struct tty_struct *tty, speed_t ibaud,
 		speed_t obaud);
 
- 
 static inline speed_t tty_get_baud_rate(struct tty_struct *tty)
 {
 	return tty_termios_baud_rate(&tty->termios);
@@ -299,35 +402,24 @@ int tty_standard_install(struct tty_driver *driver,
 
 extern struct mutex tty_mutex;
 
- 
 void n_tty_inherit_ops(struct tty_ldisc_ops *ops);
 void __init n_tty_init(void);
 
- 
 static inline void tty_audit_exit(void)
 {
 }
 static inline void tty_audit_fork(struct signal_struct *sig)
 {
 }
-static inline int tty_audit_push(void)
-{
-	return 0;
-}
-
- 
 int n_tty_ioctl_helper(struct tty_struct *tty, unsigned int cmd,
 		unsigned long arg);
 
- 
 
 int vt_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
 
 long vt_compat_ioctl(struct tty_struct *tty, unsigned int cmd,
 		unsigned long arg);
 
- 
- 
 void tty_lock(struct tty_struct *tty);
 int  tty_lock_interruptible(struct tty_struct *tty);
 void tty_unlock(struct tty_struct *tty);

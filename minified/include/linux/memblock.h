@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_MEMBLOCK_H
 #define _LINUX_MEMBLOCK_H
 
- 
 
 #include <linux/init.h>
 #include <linux/mm.h>
@@ -11,12 +9,9 @@
 extern unsigned long max_low_pfn;
 extern unsigned long min_low_pfn;
 
- 
 extern unsigned long max_pfn;
- 
 extern unsigned long long max_possible_pfn;
 
- 
 enum memblock_flags {
 	MEMBLOCK_NONE		= 0x0,	 
 	MEMBLOCK_HOTPLUG	= 0x1,	 
@@ -25,14 +20,12 @@ enum memblock_flags {
 	MEMBLOCK_DRIVER_MANAGED = 0x8,	 
 };
 
- 
 struct memblock_region {
 	phys_addr_t base;
 	phys_addr_t size;
 	enum memblock_flags flags;
 };
 
- 
 struct memblock_type {
 	unsigned long cnt;
 	unsigned long max;
@@ -41,7 +34,6 @@ struct memblock_type {
 	char *name;
 };
 
- 
 struct memblock {
 	bool bottom_up;   
 	phys_addr_t current_limit;
@@ -71,7 +63,6 @@ void memblock_free(void *ptr, size_t size);
 void reset_node_managed_pages(pg_data_t *pgdat);
 void reset_all_zones_managed_pages(void);
 
- 
 void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags,
 		      struct memblock_type *type_a,
 		      struct memblock_type *type_b, phys_addr_t *out_start,
@@ -85,7 +76,6 @@ void __next_mem_range_rev(u64 *idx, int nid, enum memblock_flags flags,
 void memblock_free_late(phys_addr_t base, phys_addr_t size);
 
 
- 
 #define __for_each_mem_range(i, type_a, type_b, nid, flags,		\
 			   p_start, p_end, p_nid)			\
 	for (i = 0, __next_mem_range(&i, nid, flags, type_a, type_b,	\
@@ -94,7 +84,6 @@ void memblock_free_late(phys_addr_t base, phys_addr_t size);
 	     __next_mem_range(&i, nid, flags, type_a, type_b,		\
 			      p_start, p_end, p_nid))
 
- 
 #define __for_each_mem_range_rev(i, type_a, type_b, nid, flags,		\
 				 p_start, p_end, p_nid)			\
 	for (i = (u64)ULLONG_MAX,					\
@@ -104,19 +93,16 @@ void memblock_free_late(phys_addr_t base, phys_addr_t size);
 	     __next_mem_range_rev(&i, nid, flags, type_a, type_b,	\
 				  p_start, p_end, p_nid))
 
- 
 #define for_each_mem_range(i, p_start, p_end) \
 	__for_each_mem_range(i, &memblock.memory, NULL, NUMA_NO_NODE,	\
 			     MEMBLOCK_HOTPLUG | MEMBLOCK_DRIVER_MANAGED, \
 			     p_start, p_end, NULL)
 
- 
 #define for_each_mem_range_rev(i, p_start, p_end)			\
 	__for_each_mem_range_rev(i, &memblock.memory, NULL, NUMA_NO_NODE, \
 				 MEMBLOCK_HOTPLUG | MEMBLOCK_DRIVER_MANAGED,\
 				 p_start, p_end, NULL)
 
- 
 #define for_each_reserved_mem_range(i, p_start, p_end)			\
 	__for_each_mem_range(i, &memblock.reserved, NULL, NUMA_NO_NODE,	\
 			     MEMBLOCK_NONE, p_start, p_end, NULL)
@@ -146,18 +132,15 @@ int memblock_search_pfn_nid(unsigned long pfn, unsigned long *start_pfn,
 void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn,
 			  unsigned long *out_end_pfn, int *out_nid);
 
- 
 #define for_each_mem_pfn_range(i, nid, p_start, p_end, p_nid)		\
 	for (i = -1, __next_mem_pfn_range(&i, nid, p_start, p_end, p_nid); \
 	     i >= 0; __next_mem_pfn_range(&i, nid, p_start, p_end, p_nid))
 
 
- 
 #define for_each_free_mem_range(i, nid, flags, p_start, p_end, p_nid)	\
 	__for_each_mem_range(i, &memblock.memory, &memblock.reserved,	\
 			     nid, flags, p_start, p_end, p_nid)
 
- 
 #define for_each_free_mem_range_reverse(i, nid, flags, p_start, p_end,	\
 					p_nid)				\
 	__for_each_mem_range_rev(i, &memblock.memory, &memblock.reserved, \
@@ -175,12 +158,10 @@ static inline int memblock_get_region_node(const struct memblock_region *r)
 	return 0;
 }
 
- 
 #define MEMBLOCK_ALLOC_ANYWHERE	(~(phys_addr_t)0)
 #define MEMBLOCK_ALLOC_ACCESSIBLE	0
 #define MEMBLOCK_ALLOC_NOLEAKTRACE	1
 
- 
 #define MEMBLOCK_LOW_LIMIT 0
 
 #ifndef ARCH_LOW_ADDRESS_LIMIT
@@ -217,13 +198,7 @@ static __always_inline void *memblock_alloc(phys_addr_t size, phys_addr_t align)
 				      MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
 }
 
-static inline void *memblock_alloc_raw(phys_addr_t size,
-					       phys_addr_t align)
-{
-	return memblock_alloc_try_nid_raw(size, align, MEMBLOCK_LOW_LIMIT,
-					  MEMBLOCK_ALLOC_ACCESSIBLE,
-					  NUMA_NO_NODE);
-}
+/* memblock_alloc_raw removed - unused */
 
 static inline void *memblock_alloc_from(phys_addr_t size,
 						phys_addr_t align,
@@ -233,12 +208,7 @@ static inline void *memblock_alloc_from(phys_addr_t size,
 				      MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
 }
 
-static inline void *memblock_alloc_low(phys_addr_t size,
-					       phys_addr_t align)
-{
-	return memblock_alloc_try_nid(size, align, MEMBLOCK_LOW_LIMIT,
-				      ARCH_LOW_ADDRESS_LIMIT, NUMA_NO_NODE);
-}
+/* memblock_alloc_low removed - unused */
 
 static inline void *memblock_alloc_node(phys_addr_t size,
 						phys_addr_t align, int nid)
@@ -247,13 +217,8 @@ static inline void *memblock_alloc_node(phys_addr_t size,
 				      MEMBLOCK_ALLOC_ACCESSIBLE, nid);
 }
 
- 
-static inline __init_memblock void memblock_set_bottom_up(bool enable)
-{
-	memblock.bottom_up = enable;
-}
+/* memblock_set_bottom_up removed - unused */
 
- 
 static inline __init_memblock bool memblock_bottom_up(void)
 {
 	return memblock.bottom_up;
@@ -274,45 +239,21 @@ bool memblock_is_region_reserved(phys_addr_t base, phys_addr_t size);
 
 void memblock_dump_all(void);
 
- 
 void memblock_set_current_limit(phys_addr_t limit);
 
 
 phys_addr_t memblock_get_current_limit(void);
 
- 
 
- 
-static inline unsigned long memblock_region_memory_base_pfn(const struct memblock_region *reg)
-{
-	return PFN_UP(reg->base);
-}
+/* memblock_region_memory_base/end_pfn removed - unused */
 
- 
-static inline unsigned long memblock_region_memory_end_pfn(const struct memblock_region *reg)
-{
-	return PFN_DOWN(reg->base + reg->size);
-}
+/* memblock_region_reserved_base/end_pfn removed - unused */
 
- 
-static inline unsigned long memblock_region_reserved_base_pfn(const struct memblock_region *reg)
-{
-	return PFN_DOWN(reg->base);
-}
-
- 
-static inline unsigned long memblock_region_reserved_end_pfn(const struct memblock_region *reg)
-{
-	return PFN_UP(reg->base + reg->size);
-}
-
- 
 #define for_each_mem_region(region)					\
 	for (region = memblock.memory.regions;				\
 	     region < (memblock.memory.regions + memblock.memory.cnt);	\
 	     region++)
 
- 
 #define for_each_reserved_mem_region(region)				\
 	for (region = memblock.reserved.regions;			\
 	     region < (memblock.reserved.regions + memblock.reserved.cnt); \
@@ -332,7 +273,6 @@ extern void *alloc_large_system_hash(const char *tablename,
 #define HASH_SMALL	0x00000002	 
 #define HASH_ZERO	0x00000004	 
 
- 
 #define hashdist (0)
 
 static inline void early_memtest(phys_addr_t start, phys_addr_t end)

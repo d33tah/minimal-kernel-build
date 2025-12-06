@@ -1,12 +1,5 @@
- 
- 
+/* Early platform quirks - minimal includes */
 #include <linux/dmi.h>
-#include <linux/pci.h>
-#include <linux/irq.h>
-
-#include <asm/hpet.h>
-#include <asm/setup.h>
-#include <asm/mce.h>
 
 
 

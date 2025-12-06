@@ -1,4 +1,3 @@
- 
 #include "relocs.h"
 
 void die(char *fmt, ...)

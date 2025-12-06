@@ -1,4 +1,3 @@
- 
 #include <linux/sched.h>
 #include <asm/ptrace.h>
 #include <asm/bitops.h>

@@ -1,19 +1,11 @@
- 
- 
+/* Minimal includes for PIT timer */
 #include <linux/clockchips.h>
 #include <linux/init.h>
-#include <linux/timex.h>
 #include <linux/i8253.h>
-
 #include <asm/apic.h>
-#include <asm/hpet.h>
-#include <asm/time.h>
-#include <asm/smp.h>
 
- 
 struct clock_event_device *global_clock_event;
 
- 
 static bool __init use_pit(void)
 {
 	if (!IS_ENABLED(CONFIG_X86_TSC) || !boot_cpu_has(X86_FEATURE_TSC))

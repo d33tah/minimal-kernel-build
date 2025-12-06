@@ -1,5 +1,3 @@
- 
- 
 
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -18,7 +16,6 @@
 
 #include "lkc.h"
 
- 
 static bool is_present(const char *path)
 {
 	struct stat st;
@@ -26,7 +23,6 @@ static bool is_present(const char *path)
 	return !stat(path, &st);
 }
 
- 
 static bool is_dir(const char *path)
 {
 	struct stat st;
@@ -37,7 +33,6 @@ static bool is_dir(const char *path)
 	return S_ISDIR(st.st_mode);
 }
 
- 
 static bool is_same(const char *file1, const char *file2)
 {
 	int fd1, fd2;
@@ -83,7 +78,6 @@ close1:
 	return ret;
 }
 
- 
 static int make_parent_dir(const char *path)
 {
 	char tmp[PATH_MAX + 1];
@@ -121,7 +115,6 @@ static int make_parent_dir(const char *path)
 static char depfile_path[PATH_MAX];
 static size_t depfile_prefix_len;
 
- 
 static int conf_touch_dep(const char *name)
 {
 	int fd;
@@ -600,7 +593,6 @@ static void conf_write_heading(FILE *fp, const struct comment_style *cs)
 	fprintf(fp, "%s\n", cs->postfix);
 }
 
- 
 static char *escape_string_value(const char *in)
 {
 	const char *p;
@@ -730,7 +722,6 @@ static void print_symbol_for_c(FILE *fp, struct symbol *sym)
 	free(escaped);
 }
 
- 
 int conf_write_defconfig(const char *filename)
 {
 	struct symbol *sym;
@@ -914,7 +905,6 @@ end_check:
 	return 0;
 }
 
- 
 static int conf_write_autoconf_cmd(const char *autoconf_name)
 {
 	char name[PATH_MAX], tmp[PATH_MAX];

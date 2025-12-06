@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/bitops.h>
 #include <linux/export.h>
@@ -7,7 +5,6 @@
 #include <linux/math64.h>
 #include <linux/log2.h>
 
- 
 #if BITS_PER_LONG == 32
 
 #ifndef __div64_32
@@ -45,7 +42,6 @@ uint32_t __attribute__((weak)) __div64_32(uint64_t *n, uint32_t base)
 }
 #endif
 
- 
 #ifndef div_s64_rem
 s64 div_s64_rem(s64 dividend, s32 divisor, s32 *remainder)
 {
@@ -65,7 +61,6 @@ s64 div_s64_rem(s64 dividend, s32 divisor, s32 *remainder)
 }
 #endif
 
- 
 #ifndef div64_u64_rem
 u64 div64_u64_rem(u64 dividend, u64 divisor, u64 *remainder)
 {
@@ -94,7 +89,6 @@ u64 div64_u64_rem(u64 dividend, u64 divisor, u64 *remainder)
 }
 #endif
 
- 
 #ifndef div64_u64
 u64 div64_u64(u64 dividend, u64 divisor)
 {
@@ -117,7 +111,6 @@ u64 div64_u64(u64 dividend, u64 divisor)
 }
 #endif
 
- 
 #ifndef div64_s64
 s64 div64_s64(s64 dividend, s64 divisor)
 {
@@ -132,7 +125,6 @@ s64 div64_s64(s64 dividend, s64 divisor)
 
 #endif  
 
- 
 u32 iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
 {
 	return __iter_div_u64_rem(dividend, divisor, remainder);

@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_UIDGID_H
 #define _LINUX_UIDGID_H
 
- 
 #include <linux/types.h>
 #include <linux/highuid.h>
 
@@ -47,45 +45,7 @@ static inline bool gid_eq(kgid_t left, kgid_t right)
 	return __kgid_val(left) == __kgid_val(right);
 }
 
-static inline bool uid_gt(kuid_t left, kuid_t right)
-{
-	return __kuid_val(left) > __kuid_val(right);
-}
-
-static inline bool gid_gt(kgid_t left, kgid_t right)
-{
-	return __kgid_val(left) > __kgid_val(right);
-}
-
-static inline bool uid_gte(kuid_t left, kuid_t right)
-{
-	return __kuid_val(left) >= __kuid_val(right);
-}
-
-static inline bool gid_gte(kgid_t left, kgid_t right)
-{
-	return __kgid_val(left) >= __kgid_val(right);
-}
-
-static inline bool uid_lt(kuid_t left, kuid_t right)
-{
-	return __kuid_val(left) < __kuid_val(right);
-}
-
-static inline bool gid_lt(kgid_t left, kgid_t right)
-{
-	return __kgid_val(left) < __kgid_val(right);
-}
-
-static inline bool uid_lte(kuid_t left, kuid_t right)
-{
-	return __kuid_val(left) <= __kuid_val(right);
-}
-
-static inline bool gid_lte(kgid_t left, kgid_t right)
-{
-	return __kgid_val(left) <= __kgid_val(right);
-}
+/* uid_gt, gid_gt, uid_gte, gid_gte, uid_lt, gid_lt, uid_lte, gid_lte removed - unused */
 
 static inline bool uid_valid(kuid_t uid)
 {

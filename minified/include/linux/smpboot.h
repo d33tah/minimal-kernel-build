@@ -1,14 +1,11 @@
- 
 #ifndef _LINUX_SMPBOOT_H
 #define _LINUX_SMPBOOT_H
 
 #include <linux/types.h>
 
 struct task_struct;
- 
 struct smpboot_thread_data;
 
- 
 struct smp_hotplug_thread {
 	struct task_struct		* __percpu *store;
 	struct list_head		list;

@@ -1,4 +1,3 @@
- 
 #include <linux/module.h>
 #include <linux/sched.h>
 #include <linux/ctype.h>
@@ -19,9 +18,6 @@
 #include <linux/ramfs.h>
 #include <linux/shmem_fs.h>
 
- 
- 
- 
 #include <uapi/linux/mount.h>
 
 #include "do_mounts.h"
@@ -64,7 +60,6 @@ static dev_t devt_from_devnum(const char *name)
 	return devt;
 }
 
- 
 dev_t name_to_dev_t(const char *name)
 {
 	if (strcmp(name, "/dev/nfs") == 0)
@@ -100,7 +95,6 @@ __setup("rootflags=", root_data_setup);
 __setup("rootfstype=", fs_names_setup);
 __setup("rootdelay=", root_delay_setup);
 
- 
 static int __init split_fs_names(char *page, size_t size, char *names)
 {
 	int count = 1;
@@ -205,7 +199,6 @@ retry:
 out:
 	put_page(page);
 }
- 
 
 
 static bool __init fs_is_nodev(char *fstype)
@@ -256,7 +249,6 @@ void __init mount_root(void)
 	}
 }
 
- 
 void __init prepare_namespace(void)
 {
 	if (root_delay) {

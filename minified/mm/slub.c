@@ -1,4 +1,3 @@
- 
 
 #include <linux/mm.h>
 #include <linux/swap.h> 
@@ -52,8 +51,6 @@ static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
 {
 	return false;
 }
-
-#undef SLUB_DEBUG_CMPXCHG
 
 #define MIN_PARTIAL 5
 
@@ -241,11 +238,6 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab
 
 	cpu_relax();
 	stat(s, CMPXCHG_DOUBLE_FAIL);
-
-#ifdef SLUB_DEBUG_CMPXCHG
-	pr_info("%s %s: cmpxchg double redo ", n, s->name);
-#endif
-
 	return false;
 }
 
@@ -282,11 +274,6 @@ static inline bool cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab,
 
 	cpu_relax();
 	stat(s, CMPXCHG_DOUBLE_FAIL);
-
-#ifdef SLUB_DEBUG_CMPXCHG
-	pr_info("%s %s: cmpxchg double redo ", n, s->name);
-#endif
-
 	return false;
 }
 
@@ -697,18 +684,6 @@ static inline unsigned long next_tid(unsigned long tid)
 	return tid + TID_STEP;
 }
 
-#ifdef SLUB_DEBUG_CMPXCHG
-static inline unsigned int tid_to_cpu(unsigned long tid)
-{
-	return tid % TID_STEP;
-}
-
-static inline unsigned long tid_to_event(unsigned long tid)
-{
-	return tid / TID_STEP;
-}
-#endif
-
 static inline unsigned int init_tid(int cpu)
 {
 	return cpu;
@@ -717,18 +692,6 @@ static inline unsigned int init_tid(int cpu)
 static inline void note_cmpxchg_failure(const char *n,
 		const struct kmem_cache *s, unsigned long tid)
 {
-#ifdef SLUB_DEBUG_CMPXCHG
-	unsigned long actual_tid = __this_cpu_read(s->cpu_slab->tid);
-
-	pr_info("%s %s: cmpxchg redo ", n, s->name);
-
-	if (tid_to_event(tid) != tid_to_event(actual_tid))
-		pr_warn("due to cpu running other code. Event %ld->%ld\n",
-			tid_to_event(tid), tid_to_event(actual_tid));
-	else
-		pr_warn("for unknown reason: actual=%lx was=%lx target=%lx\n",
-			actual_tid, tid, next_tid(tid));
-#endif
 	stat(s, CMPXCHG_DOUBLE_CPU_FAIL);
 }
 

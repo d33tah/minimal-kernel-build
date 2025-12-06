@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_IRQDESC_H
 #define _LINUX_IRQDESC_H
 
@@ -6,7 +5,6 @@
 #include <linux/kobject.h>
 #include <linux/mutex.h>
 
- 
 
 struct irq_affinity_notify;
 struct proc_dir_entry;
@@ -15,7 +13,6 @@ struct irq_desc;
 struct irq_domain;
 struct pt_regs;
 
- 
 struct irq_desc {
 	struct irq_common_data	irq_common_data;
 	struct irq_data		irq_data;
@@ -85,7 +82,6 @@ static inline void *irq_desc_get_handler_data(struct irq_desc *desc)
 	return desc->irq_common_data.handler_data;
 }
 
- 
 static inline void generic_handle_irq_desc(struct irq_desc *desc)
 {
 	desc->handle_irq(desc);
@@ -96,13 +92,11 @@ int generic_handle_irq(unsigned int irq);
 int generic_handle_irq_safe(unsigned int irq);
 
 
- 
 static inline int irq_desc_has_action(struct irq_desc *desc)
 {
 	return desc && desc->action != NULL;
 }
 
- 
 static inline void irq_set_handler_locked(struct irq_data *data,
 					  irq_flow_handler_t handler)
 {
@@ -111,7 +105,6 @@ static inline void irq_set_handler_locked(struct irq_data *data,
 	desc->handle_irq = handler;
 }
 
- 
 static inline void
 irq_set_chip_handler_name_locked(struct irq_data *data, struct irq_chip *chip,
 				 irq_flow_handler_t handler, const char *name)

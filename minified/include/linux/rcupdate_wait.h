@@ -1,13 +1,10 @@
- 
 #ifndef _LINUX_SCHED_RCUPDATE_WAIT_H
 #define _LINUX_SCHED_RCUPDATE_WAIT_H
 
- 
 
 #include <linux/rcupdate.h>
 #include <linux/completion.h>
 
- 
 struct rcu_synchronize {
 	struct rcu_head head;
 	struct completion completion;
@@ -27,7 +24,6 @@ do {									\
 
 #define wait_rcu_gp(...) _wait_rcu_gp(false, __VA_ARGS__)
 
- 
 #define synchronize_rcu_mult(...) \
 	_wait_rcu_gp(IS_ENABLED(CONFIG_TINY_RCU), __VA_ARGS__)
 

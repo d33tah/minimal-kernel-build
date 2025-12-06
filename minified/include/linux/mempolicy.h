@@ -1,18 +1,13 @@
- 
- 
+/* Minimal mempolicy.h - all stubs */
 #ifndef _LINUX_MEMPOLICY_H
 #define _LINUX_MEMPOLICY_H 1
 
-#include <linux/sched.h>
-#include <linux/mmzone.h>
-#include <linux/slab.h>
-#include <linux/rbtree.h>
-#include <linux/spinlock.h>
 #include <linux/nodemask.h>
-#include <linux/pagemap.h>
-#include <uapi/linux/mempolicy.h>
 
 struct mm_struct;
+struct task_struct;
+struct vm_area_struct;
+struct page;
 
 
 struct mempolicy {};

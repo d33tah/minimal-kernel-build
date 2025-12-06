@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_TYPES_H
 #define _LINUX_TYPES_H
 
@@ -36,7 +35,6 @@ typedef __kernel_gid16_t        gid16_t;
 
 typedef unsigned long		uintptr_t;
 
- 
 typedef __kernel_old_uid_t	old_uid_t;
 typedef __kernel_old_gid_t	old_gid_t;
 
@@ -44,7 +42,6 @@ typedef __kernel_old_gid_t	old_gid_t;
 typedef __kernel_loff_t		loff_t;
 #endif
 
- 
 #ifndef _SIZE_T
 #define _SIZE_T
 typedef __kernel_size_t		size_t;
@@ -70,13 +67,11 @@ typedef __kernel_clock_t	clock_t;
 typedef __kernel_caddr_t	caddr_t;
 #endif
 
- 
 typedef unsigned char		u_char;
 typedef unsigned short		u_short;
 typedef unsigned int		u_int;
 typedef unsigned long		u_long;
 
- 
 typedef unsigned char		unchar;
 typedef unsigned short		ushort;
 typedef unsigned int		uint;
@@ -104,19 +99,15 @@ typedef u64			u_int64_t;
 typedef s64			int64_t;
 #endif
 
- 
 #define aligned_u64		__aligned_u64
 #define aligned_be64		__aligned_be64
 #define aligned_le64		__aligned_le64
 
- 
 typedef u64 sector_t;
 typedef u64 blkcnt_t;
 
- 
 #define pgoff_t unsigned long
 
- 
 typedef u32 dma_addr_t;
 
 typedef unsigned int __bitwise gfp_t;
@@ -127,7 +118,6 @@ typedef u32 phys_addr_t;
 
 typedef phys_addr_t resource_size_t;
 
- 
 typedef unsigned long irq_hw_number_t;
 
 typedef struct {
@@ -156,7 +146,6 @@ struct ustat {
 	char			f_fpack[6];
 };
 
- 
 struct callback_head {
 	struct callback_head *next;
 	void (*func)(struct callback_head *head);

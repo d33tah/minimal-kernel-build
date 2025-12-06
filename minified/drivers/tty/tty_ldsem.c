@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/list.h>
 #include <linux/spinlock.h>
@@ -27,7 +25,6 @@ struct ldsem_waiter {
 	struct task_struct *task;
 };
 
- 
 void __init_ldsem(struct ld_semaphore *sem, const char *name,
 		  struct lock_class_key *key)
 {
@@ -84,7 +81,6 @@ static void __ldsem_wake_writer(struct ld_semaphore *sem)
 	wake_up_process(waiter->task);
 }
 
- 
 static void __ldsem_wake(struct ld_semaphore *sem)
 {
 	if (!list_empty(&sem->write_wait))
@@ -102,7 +98,6 @@ static void ldsem_wake(struct ld_semaphore *sem)
 	raw_spin_unlock_irqrestore(&sem->wait_lock, flags);
 }
 
- 
 static struct ld_semaphore __sched *
 down_read_failed(struct ld_semaphore *sem, long count, long timeout)
 {
@@ -166,7 +161,6 @@ down_read_failed(struct ld_semaphore *sem, long count, long timeout)
 	return sem;
 }
 
- 
 static struct ld_semaphore __sched *
 down_write_failed(struct ld_semaphore *sem, long count, long timeout)
 {
@@ -263,14 +257,12 @@ static int __ldsem_down_write_nested(struct ld_semaphore *sem,
 }
 
 
- 
 int __sched ldsem_down_read(struct ld_semaphore *sem, long timeout)
 {
 	might_sleep();
 	return __ldsem_down_read_nested(sem, 0, timeout);
 }
 
- 
 int ldsem_down_read_trylock(struct ld_semaphore *sem)
 {
 	long count = atomic_long_read(&sem->count);
@@ -285,14 +277,12 @@ int ldsem_down_read_trylock(struct ld_semaphore *sem)
 	return 0;
 }
 
- 
 int __sched ldsem_down_write(struct ld_semaphore *sem, long timeout)
 {
 	might_sleep();
 	return __ldsem_down_write_nested(sem, 0, timeout);
 }
 
- 
 int ldsem_down_write_trylock(struct ld_semaphore *sem)
 {
 	long count = atomic_long_read(&sem->count);
@@ -307,7 +297,6 @@ int ldsem_down_write_trylock(struct ld_semaphore *sem)
 	return 0;
 }
 
- 
 void ldsem_up_read(struct ld_semaphore *sem)
 {
 	long count;
@@ -319,7 +308,6 @@ void ldsem_up_read(struct ld_semaphore *sem)
 		ldsem_wake(sem);
 }
 
- 
 void ldsem_up_write(struct ld_semaphore *sem)
 {
 	long count;

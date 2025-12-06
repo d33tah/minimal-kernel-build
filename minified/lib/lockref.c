@@ -1,11 +1,9 @@
- 
 #include <linux/export.h>
 #include <linux/lockref.h>
 #include <linux/bug.h>
 
 #if USE_CMPXCHG_LOCKREF
 
- 
 #define CMPXCHG_LOOP(CODE, SUCCESS) do {					\
 	int retry = 100;							\
 	struct lockref old;							\
@@ -31,7 +29,6 @@
 
 #endif
 
- 
 void lockref_get(struct lockref *lockref)
 {
 	CMPXCHG_LOOP(
@@ -45,7 +42,6 @@ void lockref_get(struct lockref *lockref)
 	spin_unlock(&lockref->lock);
 }
 
- 
 int lockref_get_not_zero(struct lockref *lockref)
 {
 	int retval;
@@ -71,7 +67,6 @@ int lockref_get_not_zero(struct lockref *lockref)
 /* Stub: lockref_put_not_zero not used externally */
 int lockref_put_not_zero(struct lockref *lockref) { BUG(); }
 
- 
 int lockref_put_return(struct lockref *lockref)
 {
 	CMPXCHG_LOOP(
@@ -84,7 +79,6 @@ int lockref_put_return(struct lockref *lockref)
 	return -1;
 }
 
- 
 int lockref_put_or_lock(struct lockref *lockref)
 {
 	CMPXCHG_LOOP(
@@ -103,14 +97,12 @@ int lockref_put_or_lock(struct lockref *lockref)
 	return 1;
 }
 
- 
 void lockref_mark_dead(struct lockref *lockref)
 {
 	assert_spin_locked(&lockref->lock);
 	lockref->count = -128;
 }
 
- 
 int lockref_get_not_dead(struct lockref *lockref)
 {
 	int retval;

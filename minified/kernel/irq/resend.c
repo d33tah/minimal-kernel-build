@@ -1,4 +1,3 @@
- 
 /* Stub: IRQ resend - simplified for minimal kernel */
 
 #include <linux/irq.h>

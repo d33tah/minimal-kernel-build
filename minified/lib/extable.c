@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/bsearch.h>
 #include <linux/module.h>
@@ -38,7 +36,6 @@ static void swap_ex(void *a, void *b, int size)
 }
 #endif  
 
- 
 static int cmp_ex_sort(const void *a, const void *b)
 {
 	const struct exception_table_entry *x = a, *y = b;
@@ -72,7 +69,6 @@ static int cmp_ex_search(const void *key, const void *elt)
 	return 0;
 }
 
- 
 const struct exception_table_entry *
 search_extable(const struct exception_table_entry *base,
 	       const size_t num,

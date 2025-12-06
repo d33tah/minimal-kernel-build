@@ -1,5 +1,3 @@
- 
- 
 #include <linux/elf.h>
 #include <linux/memory.h>
 #include <linux/extable.h>
@@ -18,16 +16,13 @@ static inline bool is_bpf_text_address(unsigned long addr)
 	return false;
 }
 
- 
 DEFINE_MUTEX(text_mutex);
 
 extern struct exception_table_entry __start___ex_table[];
 extern struct exception_table_entry __stop___ex_table[];
 
- 
 u32 __initdata __visible main_extable_sort_needed = 1;
 
- 
 void __init sort_main_extable(void)
 {
 	if (main_extable_sort_needed &&
@@ -36,7 +31,6 @@ void __init sort_main_extable(void)
 	}
 }
 
- 
 const
 struct exception_table_entry *search_kernel_exception_table(unsigned long addr)
 {
@@ -44,7 +38,6 @@ struct exception_table_entry *search_kernel_exception_table(unsigned long addr)
 			      __stop___ex_table - __start___ex_table, addr);
 }
 
- 
 const struct exception_table_entry *search_exception_tables(unsigned long addr)
 {
 	const struct exception_table_entry *e;

@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/personality.h>
 #include <linux/mm.h>
@@ -93,7 +91,6 @@ static unsigned long mmap_legacy_base(unsigned long rnd,
 	return __TASK_UNMAPPED_BASE(task_size) + rnd;
 }
 
- 
 static void arch_pick_mmap_base(unsigned long *base, unsigned long *legacy_base,
 		unsigned long random_factor, unsigned long task_size,
 		struct rlimit *rlim_stack)
@@ -130,7 +127,6 @@ const char *arch_vma_name(struct vm_area_struct *vma)
 	return NULL;
 }
 
- 
 bool mmap_address_hint_valid(unsigned long addr, unsigned long len)
 {
 	if (TASK_SIZE - len < addr)
@@ -139,13 +135,11 @@ bool mmap_address_hint_valid(unsigned long addr, unsigned long len)
 	return (addr > DEFAULT_MAP_WINDOW) == (addr + len > DEFAULT_MAP_WINDOW);
 }
 
- 
 int valid_phys_addr_range(phys_addr_t addr, size_t count)
 {
 	return addr + count - 1 <= __pa(high_memory - 1);
 }
 
- 
 int valid_mmap_phys_addr_range(unsigned long pfn, size_t count)
 {
 	phys_addr_t addr = (phys_addr_t)pfn << PAGE_SHIFT;
@@ -153,7 +147,6 @@ int valid_mmap_phys_addr_range(unsigned long pfn, size_t count)
 	return phys_addr_valid(addr + count - 1);
 }
 
- 
 bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
 {
 	if (!boot_cpu_has_bug(X86_BUG_L1TF))

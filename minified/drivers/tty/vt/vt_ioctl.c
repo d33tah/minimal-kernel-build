@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/types.h>
 #include <linux/errno.h>
@@ -28,7 +26,9 @@
 
 #include <linux/kbd_kern.h>
 #include <linux/vt_kern.h>
-#include <linux/kbd_diacr.h>
+/* kbd_diacr.h inlined */
+extern struct kbdiacruc accent_table[];
+extern unsigned int accent_table_size;
 #include <linux/selection.h>
 
 bool vt_dont_switch;

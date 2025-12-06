@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_ELF_H
 #define _LINUX_ELF_H
 

@@ -1,5 +1,3 @@
- 
- 
 #include <linux/clockchips.h>
 #include <linux/init.h>
 #include <linux/io.h>
@@ -9,13 +7,10 @@
 #include <linux/i8253.h>
 #include <linux/smp.h>
 
- 
 DEFINE_RAW_SPINLOCK(i8253_lock);
 
- 
 bool i8253_clear_counter_on_shutdown __ro_after_init = true;
 
- 
 static u64 i8253_read(struct clocksource *cs)
 {
 	static int old_count;
@@ -104,7 +99,6 @@ static int pit_set_periodic(struct clock_event_device *evt)
 	return 0;
 }
 
- 
 static int pit_next_event(unsigned long delta, struct clock_event_device *evt)
 {
 	raw_spin_lock(&i8253_lock);
@@ -115,7 +109,6 @@ static int pit_next_event(unsigned long delta, struct clock_event_device *evt)
 	return 0;
 }
 
- 
 struct clock_event_device i8253_clockevent = {
 	.name			= "pit",
 	.features		= CLOCK_EVT_FEAT_PERIODIC,
@@ -124,7 +117,6 @@ struct clock_event_device i8253_clockevent = {
 	.set_next_event		= pit_next_event,
 };
 
- 
 void __init clockevent_i8253_init(bool oneshot)
 {
 	if (oneshot) {

@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_MOUNT_H
 #define _LINUX_MOUNT_H
 
@@ -28,7 +26,6 @@ struct path;
 
 #define MNT_SHARED	0x1000	 
 #define MNT_UNBINDABLE	0x2000	 
- 
 #define MNT_SHARED_MASK	(MNT_UNBINDABLE)
 #define MNT_USER_SETTABLE_MASK  (MNT_NOSUID | MNT_NODEV | MNT_NOEXEC \
 				 | MNT_NOATIME | MNT_NODIRATIME | MNT_RELATIME \

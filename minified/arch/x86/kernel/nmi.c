@@ -1,7 +1,4 @@
- 
- 
 
- 
 #include <linux/spinlock.h>
 #include <linux/kprobes.h>
 #include <linux/kdebug.h>
@@ -65,7 +62,6 @@ static DEFINE_PER_CPU(struct nmi_stats, nmi_stats);
 static int ignore_nmis __read_mostly;
 
 int unknown_nmi_panic;
- 
 static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
 
 /* Stub: unknown_nmi_panic cmdline option not needed for minimal kernel */
@@ -263,7 +259,6 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 out:
 }
 
- 
 enum nmi_states {
 	NMI_NOT_RUNNING = 0,
 	NMI_EXECUTING,
@@ -327,7 +322,6 @@ void stop_nmi(void) { }
 /* STUB: restart_nmi not used externally */
 void restart_nmi(void) { }
 
- 
 void local_touch_nmi(void)
 {
 	__this_cpu_write(last_nmi_rip, 0);

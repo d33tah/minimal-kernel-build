@@ -83,31 +83,8 @@ struct _fpstate_32 {
 	};
 };
 
- 
-struct _fpstate_64 {
-	__u16				cwd;
-	__u16				swd;
-	 
-	__u16				twd;
-	__u16				fop;
-	__u64				rip;
-	__u64				rdp;
-	__u32				mxcsr;
-	__u32				mxcsr_mask;
-	__u32				st_space[32];	 
-	__u32				xmm_space[64];	 
-	__u32				reserved2[12];
-	union {
-		__u32			reserved3[12];
-		struct _fpx_sw_bytes	sw_reserved;	 
-	};
-};
-
-#ifdef __i386__
-# define _fpstate _fpstate_32
-#else
-# define _fpstate _fpstate_64
-#endif
+/* 32-bit only kernel - _fpstate_64 removed */
+#define _fpstate _fpstate_32
 
 struct _header {
 	__u64				xfeatures;
@@ -156,47 +133,9 @@ struct sigcontext_32 {
 	__u32				cr2;
 };
 
- 
-struct sigcontext_64 {
-	__u64				r8;
-	__u64				r9;
-	__u64				r10;
-	__u64				r11;
-	__u64				r12;
-	__u64				r13;
-	__u64				r14;
-	__u64				r15;
-	__u64				di;
-	__u64				si;
-	__u64				bp;
-	__u64				bx;
-	__u64				dx;
-	__u64				ax;
-	__u64				cx;
-	__u64				sp;
-	__u64				ip;
-	__u64				flags;
-	__u16				cs;
-	__u16				gs;
-	__u16				fs;
-	__u16				ss;
-	__u64				err;
-	__u64				trapno;
-	__u64				oldmask;
-	__u64				cr2;
-
-	 
-	__u64				fpstate;  
-	__u64				reserved1[8];
-};
-
- 
+/* 32-bit only kernel - sigcontext_64 removed */
 #ifdef __KERNEL__
-# ifdef __i386__
-#  define sigcontext sigcontext_32
-# else
-#  define sigcontext sigcontext_64
-# endif
+#define sigcontext sigcontext_32
 #endif
 
  
@@ -206,7 +145,7 @@ struct sigcontext_64 {
 #define sigcontext_ia32			sigcontext_32
 
 
-# ifdef __i386__
+/* 32-bit only - removed 64-bit sigcontext */
 struct sigcontext {
 	__u16				gs, __gsh;
 	__u16				fs, __fsh;
@@ -231,46 +170,6 @@ struct sigcontext {
 	__u32				oldmask;
 	__u32				cr2;
 };
-# else  
-struct sigcontext {
-	__u64				r8;
-	__u64				r9;
-	__u64				r10;
-	__u64				r11;
-	__u64				r12;
-	__u64				r13;
-	__u64				r14;
-	__u64				r15;
-	__u64				rdi;
-	__u64				rsi;
-	__u64				rbp;
-	__u64				rbx;
-	__u64				rdx;
-	__u64				rax;
-	__u64				rcx;
-	__u64				rsp;
-	__u64				rip;
-	__u64				eflags;		 
-	__u16				cs;
-
-	 
-	__u16				gs;
-	__u16				fs;
-	union {
-		__u16			ss;	 
-		__u16			__pad0;	 
-	};
-	__u64				err;
-	__u64				trapno;
-	__u64				oldmask;
-	__u64				cr2;
-	struct _fpstate __user		*fpstate;	 
-#  ifdef __ILP32__
-	__u32				__fpstate_pad;
-#  endif
-	__u64				reserved1[8];
-};
-# endif  
 #endif  
 
 #endif  

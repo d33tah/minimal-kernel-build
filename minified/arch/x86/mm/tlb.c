@@ -1,4 +1,3 @@
- 
 #include <linux/init.h>
 
 #include <linux/mm.h>
@@ -8,7 +7,8 @@
 #include <linux/export.h>
 #include <linux/cpu.h>
 #include <linux/debugfs.h>
-#include <linux/sched/smt.h>
+/* sched/smt.h inlined */
+void arch_smt_update(void);
 #include <linux/task_work.h>
 
 #include <asm/tlbflush.h>
@@ -27,30 +27,22 @@
 # define __flush_tlb_one_user(addr)	native_flush_tlb_one_user(addr)
 # define __flush_tlb_multi(msk, info)	native_flush_tlb_multi(msk, info)
 
- 
 
- 
 #define LAST_USER_MM_IBPB	0x1UL
 #define LAST_USER_MM_L1D_FLUSH	0x2UL
 #define LAST_USER_MM_SPEC_MASK	(LAST_USER_MM_IBPB | LAST_USER_MM_L1D_FLUSH)
 
- 
 #define LAST_USER_MM_INIT	LAST_USER_MM_IBPB
 
- 
 
- 
 #define CR3_HW_ASID_BITS		12
 
- 
 # define PTI_CONSUMED_PCID_BITS	0
 
 #define CR3_AVAIL_PCID_BITS (X86_CR3_PCID_BITS - PTI_CONSUMED_PCID_BITS)
 
- 
 #define MAX_ASID_AVAILABLE ((1 << CR3_AVAIL_PCID_BITS) - 2)
 
- 
 static inline u16 kern_pcid(u16 asid)
 {
 	VM_WARN_ON_ONCE(asid > MAX_ASID_AVAILABLE);
@@ -59,7 +51,6 @@ static inline u16 kern_pcid(u16 asid)
 	return asid + 1;
 }
 
- 
 static inline u16 user_pcid(u16 asid)
 {
 	u16 ret = kern_pcid(asid);
@@ -84,7 +75,6 @@ static inline unsigned long build_cr3_noflush(pgd_t *pgd, u16 asid)
 	return __sme_pa(pgd) | kern_pcid(asid) | CR3_NOFLUSH;
 }
 
- 
 static void clear_asid_other(void)
 {
 	u16 asid;
@@ -142,7 +132,6 @@ static void choose_new_asid(struct mm_struct *next, u64 next_tlb_gen,
 	*need_flush = true;
 }
 
- 
 static inline void invalidate_user_asid(u16 asid)
 {
 	 
@@ -199,7 +188,6 @@ void switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	local_irq_restore(flags);
 }
 
- 
 static void l1d_flush_force_sigbus(struct callback_head *ch)
 {
 	force_sig(SIGBUS);
@@ -380,7 +368,6 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 	}
 }
 
- 
 void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
 {
 	if (this_cpu_read(cpu_tlbstate.loaded_mm) == &init_mm)
@@ -389,7 +376,6 @@ void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
 	this_cpu_write(cpu_tlbstate_shared.is_lazy, true);
 }
 
- 
 void initialize_tlbstate_and_flush(void)
 {
 	int i;
@@ -418,7 +404,6 @@ void initialize_tlbstate_and_flush(void)
 		this_cpu_write(cpu_tlbstate.ctxs[i].ctx_id, 0);
 }
 
- 
 static void flush_tlb_func(void *info)
 {
 	 
@@ -520,7 +505,6 @@ void flush_tlb_multi(const struct cpumask *cpumask,
 	__flush_tlb_multi(cpumask, info);
 }
 
- 
 unsigned long tlb_single_page_flush_ceiling __read_mostly = 33;
 
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct flush_tlb_info, flush_tlb_info);
@@ -628,7 +612,6 @@ void flush_tlb_kernel_range(unsigned long start, unsigned long end)
 	}
 }
 
- 
 unsigned long __get_current_cr3_fast(void)
 {
 	unsigned long cr3 = build_cr3(this_cpu_read(cpu_tlbstate.loaded_mm)->pgd,
@@ -641,7 +624,6 @@ unsigned long __get_current_cr3_fast(void)
 	return cr3;
 }
 
- 
 void flush_tlb_one_kernel(unsigned long addr)
 {
 	count_vm_tlb_event(NR_TLB_LOCAL_FLUSH_ONE);
@@ -656,7 +638,6 @@ void flush_tlb_one_kernel(unsigned long addr)
 	this_cpu_write(cpu_tlbstate.invalidate_other, true);
 }
 
- 
 STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
 {
 	u32 loaded_mm_asid = this_cpu_read(cpu_tlbstate.loaded_mm_asid);
@@ -678,7 +659,6 @@ void flush_tlb_one_user(unsigned long addr)
 	__flush_tlb_one_user(addr);
 }
 
- 
 STATIC_NOPV void native_flush_tlb_global(void)
 {
 	unsigned long flags;
@@ -697,7 +677,6 @@ STATIC_NOPV void native_flush_tlb_global(void)
 	raw_local_irq_restore(flags);
 }
 
- 
 STATIC_NOPV void native_flush_tlb_local(void)
 {
 	 
@@ -714,7 +693,6 @@ void flush_tlb_local(void)
 	__flush_tlb_local();
 }
 
- 
 void __flush_tlb_all(void)
 {
 	 
@@ -733,7 +711,6 @@ void arch_tlbbatch_flush(struct arch_tlbflush_unmap_batch *batch)
 {
 }
 
- 
 bool nmi_uaccess_okay(void)
 {
 	struct mm_struct *loaded_mm = this_cpu_read(cpu_tlbstate.loaded_mm);

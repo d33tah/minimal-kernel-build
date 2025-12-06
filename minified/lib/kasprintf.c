@@ -1,13 +1,7 @@
- 
- 
-
-#include <linux/stdarg.h>
-#include <linux/export.h>
+/* Minimal includes for kasprintf */
 #include <linux/slab.h>
-#include <linux/types.h>
 #include <linux/string.h>
 
- 
 char *kvasprintf(gfp_t gfp, const char *fmt, va_list ap)
 {
 	unsigned int first, second;
@@ -29,7 +23,6 @@ char *kvasprintf(gfp_t gfp, const char *fmt, va_list ap)
 	return p;
 }
 
- 
 const char *kvasprintf_const(gfp_t gfp, const char *fmt, va_list ap)
 {
 	if (!strchr(fmt, '%'))

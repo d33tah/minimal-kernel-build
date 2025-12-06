@@ -1,4 +1,3 @@
- 
 #include <linux/linkage.h>
 #include <linux/errno.h>
 #include <linux/signal.h>
@@ -30,9 +29,7 @@
 #include <asm/traps.h>
 #include <asm/prom.h>
 
- 
 
- 
 
 DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
 	[0 ... NR_VECTORS - 1] = VECTOR_UNUSED,

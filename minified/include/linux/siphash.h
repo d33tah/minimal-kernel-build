@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_SIPHASH_H
 #define _LINUX_SIPHASH_H
@@ -64,7 +62,6 @@ static inline u64 ___siphash_aligned(const __le64 *data, size_t len,
 	return __siphash_aligned(data, len, key);
 }
 
- 
 static inline u64 siphash(const void *data, size_t len,
 			  const siphash_key_t *key)
 {
@@ -109,7 +106,6 @@ static inline u32 ___hsiphash_aligned(const __le32 *data, size_t len,
 	return __hsiphash_aligned(data, len, key);
 }
 
- 
 static inline u32 hsiphash(const void *data, size_t len,
 			   const hsiphash_key_t *key)
 {
@@ -119,7 +115,6 @@ static inline u32 hsiphash(const void *data, size_t len,
 	return ___hsiphash_aligned(data, len, key);
 }
 
- 
 
 #define SIPHASH_PERMUTATION(a, b, c, d) ( \
 	(a) += (b), (b) = rol64((b), 13), (b) ^= (a), (a) = rol64((a), 32), \

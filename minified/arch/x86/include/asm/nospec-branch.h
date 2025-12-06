@@ -3,7 +3,7 @@
 #ifndef _ASM_X86_NOSPEC_BRANCH_H_
 #define _ASM_X86_NOSPEC_BRANCH_H_
 
-#include <linux/static_key.h>
+#include <linux/jump_label.h>
 #include <linux/objtool.h>
 #include <linux/linkage.h>
 

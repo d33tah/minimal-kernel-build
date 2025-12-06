@@ -1,5 +1,3 @@
- 
- 
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -13,7 +11,6 @@
 #include <linux/user_namespace.h>
 #include <linux/uaccess.h>
 
- 
 
 const kernel_cap_t __cap_empty_set = CAP_EMPTY_SET;
 
@@ -24,7 +21,6 @@ static int __init file_caps_disable(char *str) { return 1; }
 __setup("no_file_caps", file_caps_disable);
 
 
- 
 bool file_ns_capable(const struct file *file, struct user_namespace *ns,
 		     int cap)
 {
@@ -38,7 +34,6 @@ bool file_ns_capable(const struct file *file, struct user_namespace *ns,
 	return false;
 }
 
- 
 bool privileged_wrt_inode_uidgid(struct user_namespace *ns,
 				 struct user_namespace *mnt_userns,
 				 const struct inode *inode)
@@ -47,7 +42,6 @@ bool privileged_wrt_inode_uidgid(struct user_namespace *ns,
 	       kgid_has_mapping(ns, i_gid_into_mnt(mnt_userns, inode));
 }
 
- 
 bool capable_wrt_inode_uidgid(struct user_namespace *mnt_userns,
 			      const struct inode *inode, int cap)
 {
@@ -57,7 +51,6 @@ bool capable_wrt_inode_uidgid(struct user_namespace *mnt_userns,
 	       privileged_wrt_inode_uidgid(ns, mnt_userns, inode);
 }
 
- 
 bool ptracer_capable(struct task_struct *tsk, struct user_namespace *ns)
 {
 	int ret = 0;   

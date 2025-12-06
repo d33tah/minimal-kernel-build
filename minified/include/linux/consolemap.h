@@ -1,5 +1,3 @@
- 
- 
 #ifndef __LINUX_CONSOLEMAP_H__
 #define __LINUX_CONSOLEMAP_H__
 

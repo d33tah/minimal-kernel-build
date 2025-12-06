@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef __INCLUDE_LINUX_RCU_SEGCBLIST_H
 #define __INCLUDE_LINUX_RCU_SEGCBLIST_H
@@ -7,7 +5,6 @@
 #include <linux/types.h>
 #include <linux/atomic.h>
 
- 
 struct rcu_cblist {
 	struct rcu_head *head;
 	struct rcu_head **tail;
@@ -16,9 +13,7 @@ struct rcu_cblist {
 
 #define RCU_CBLIST_INITIALIZER(n) { .head = NULL, .tail = &n.head }
 
- 
 
- 
 #define RCU_DONE_TAIL		0	 
 #define RCU_WAIT_TAIL		1	 
 #define RCU_NEXT_READY_TAIL	2	 
@@ -26,11 +21,9 @@ struct rcu_cblist {
 #define RCU_CBLIST_NSEGS	4
 
 
- 
 
 
 
- 
 #define SEGCBLIST_ENABLED	BIT(0)
 #define SEGCBLIST_RCU_CORE	BIT(1)
 #define SEGCBLIST_LOCKING	BIT(2)

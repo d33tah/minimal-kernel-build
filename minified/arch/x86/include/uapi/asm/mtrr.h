@@ -9,39 +9,19 @@
 
 #define	MTRR_IOCTL_BASE	'M'
 
- 
-
-#ifdef __i386__
+/* 32-bit only kernel - removed x86_64 mtrr structures */
 struct mtrr_sentry {
-    unsigned long base;     
-    unsigned int size;     
-    unsigned int type;      
+    unsigned long base;
+    unsigned int size;
+    unsigned int type;
 };
 
 struct mtrr_gentry {
-    unsigned int regnum;    
-    unsigned long base;     
-    unsigned int size;     
-    unsigned int type;      
-};
-
-#else  
-
-struct mtrr_sentry {
-	__u64 base;		 
-	__u32 size;		 
-	__u32 type;		 
-};
-
-struct mtrr_gentry {
-	__u64 base;		 
-	__u32 size;		 
-	__u32 regnum;		 
-	__u32 type;		 
-	__u32 _pad;		 
-};
-
-#endif  
+    unsigned int regnum;
+    unsigned long base;
+    unsigned int size;
+    unsigned int type;
+};  
 
 struct mtrr_var_range {
 	__u32 base_lo;

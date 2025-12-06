@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/cred.h>
 #include <linux/file.h>
@@ -19,7 +17,6 @@
 static struct vfsmount *anon_inode_mnt __read_mostly;
 static struct inode *anon_inode_inode;
 
- 
 static char *anon_inodefs_dname(struct dentry *dentry, char *buffer, int buflen)
 {
 	return dynamic_dname(dentry, buffer, buflen, "anon_inode:%s",

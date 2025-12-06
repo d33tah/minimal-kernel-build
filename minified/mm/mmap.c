@@ -1,4 +1,3 @@
- 
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -1709,11 +1708,6 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 	vma_link(mm, vma, prev, rb_link, rb_parent);
 	return 0;
 }
-
-/* Stub: copy_vma not used in minimal kernel */
-struct vm_area_struct *copy_vma(struct vm_area_struct **vmap,
-	unsigned long addr, unsigned long len, pgoff_t pgoff,
-	bool *need_rmap_locks) { return NULL; }
 
 /* Stub: may_expand_vm not used externally */
 bool may_expand_vm(struct mm_struct *mm, vm_flags_t flags, unsigned long npages)

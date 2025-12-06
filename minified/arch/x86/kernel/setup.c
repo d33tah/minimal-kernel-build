@@ -1,5 +1,3 @@
- 
- 
 #include <linux/acpi.h>
 #include <linux/console.h>
 #include <linux/crash_dump.h>
@@ -8,9 +6,11 @@
 #include <linux/efi.h>
 
 #include <linux/initrd.h>
-#include <linux/iscsi_ibft.h>
+static inline void reserve_ibft_region(void) {}
 #include <linux/memblock.h>
-#include <linux/panic_notifier.h>
+/* panic_notifier.h inlined */
+extern struct atomic_notifier_head panic_notifier_list;
+extern bool crash_kexec_post_notifiers;
 #include <linux/pci.h>
 #include <linux/root_dev.h>
 #include <linux/hugetlb.h>
@@ -43,7 +43,6 @@
 #include <asm/vsyscall.h>
 #include <linux/vmalloc.h>
 
- 
 unsigned long max_low_pfn_mapped;
 unsigned long max_pfn_mapped;
 
@@ -54,7 +53,6 @@ unsigned long _brk_end   = (unsigned long)__brk_base;
 
 struct boot_params boot_params;
 
- 
 
 static struct resource rodata_resource = {
 	.name	= "Kernel rodata",
@@ -85,10 +83,8 @@ static struct resource bss_resource = {
 };
 
 
- 
 struct cpuinfo_x86 new_cpu_data;
 
- 
 struct cpuinfo_x86 boot_cpu_data __read_mostly;
 
 unsigned int def_to_bigsmp;
@@ -106,10 +102,8 @@ struct ist_info ist_info;
 
 __visible unsigned long mmu_cr4_features __ro_after_init;
 
- 
 int bootloader_type, bootloader_version;
 
- 
 struct screen_info screen_info;
 struct edid_info edid_info;
 
@@ -329,12 +323,9 @@ static void __init memblock_x86_reserve_range_setup_data(void)
 	}
 }
 
- 
 
- 
 #define CRASH_ALIGN		SZ_16M
 
- 
 # define CRASH_ADDR_LOW_MAX	SZ_512M
 # define CRASH_ADDR_HIGH_MAX	SZ_512M
 
@@ -393,7 +384,6 @@ static void __init trim_bios_range(void)
 	e820__update_table(e820_table);
 }
 
- 
 static void __init e820_add_kernel_range(void)
 {
 	u64 start = __pa_symbol(_text);
@@ -426,7 +416,6 @@ static void __init early_reserve_memory(void)
 	trim_snb_memory();
 }
 
- 
 static int
 dump_kernel_offset(struct notifier_block *self, unsigned long v, void *p)
 {
@@ -447,8 +436,6 @@ static void __init x86_report_nx(void)
 	/* Stub: NX reporting not needed for minimal kernel */
 }
 
- 
- 
 
 void __init setup_arch(char **cmdline_p)
 {

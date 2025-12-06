@@ -42,12 +42,88 @@
 
 #include <linux/types.h>
 #include <linux/screen_info.h>
-#include <linux/apm_bios.h>
 #include <linux/edd.h>
-#include <asm/ist.h>
-#include <video/edid.h>
 
- 
+/* --- 2025-12-06 17:05 --- apm_bios.h inlined */
+struct apm_bios_info {
+	__u16	version;
+	__u16	cseg;
+	__u32	offset;
+	__u16	cseg_16;
+	__u16	dseg;
+	__u16	flags;
+	__u16	cseg_len;
+	__u16	cseg_16_len;
+	__u16	dseg_len;
+};
+
+#define APM_CS		(GDT_ENTRY_APMBIOS_BASE * 8)
+#define APM_CS_16	(APM_CS + 8)
+#define APM_DS		(APM_CS_16 + 8)
+
+#define APM_16_BIT_SUPPORT	0x0001
+#define APM_32_BIT_SUPPORT	0x0002
+#define APM_IDLE_SLOWS_CLOCK	0x0004
+#define APM_BIOS_DISABLED      	0x0008
+#define APM_BIOS_DISENGAGED     0x0010
+
+struct apm_info {
+	struct apm_bios_info	bios;
+	unsigned short		connection_version;
+	int			get_power_status_broken;
+	int			get_power_status_swabinminutes;
+	int			allow_ints;
+	int			forbid_idle;
+	int			realmode_power_off;
+	int			disabled;
+};
+
+#define	APM_FUNC_INST_CHECK	0x5300
+#define	APM_FUNC_REAL_CONN	0x5301
+#define	APM_FUNC_16BIT_CONN	0x5302
+#define	APM_FUNC_32BIT_CONN	0x5303
+#define	APM_FUNC_DISCONN	0x5304
+#define	APM_FUNC_IDLE		0x5305
+#define	APM_FUNC_BUSY		0x5306
+#define	APM_FUNC_SET_STATE	0x5307
+#define	APM_FUNC_ENABLE_PM	0x5308
+#define	APM_FUNC_RESTORE_BIOS	0x5309
+#define	APM_FUNC_GET_STATUS	0x530a
+#define	APM_FUNC_GET_EVENT	0x530b
+#define	APM_FUNC_GET_STATE	0x530c
+#define	APM_FUNC_ENABLE_DEV_PM	0x530d
+#define	APM_FUNC_VERSION	0x530e
+#define	APM_FUNC_ENGAGE_PM	0x530f
+#define	APM_FUNC_GET_CAP	0x5310
+#define	APM_FUNC_RESUME_TIMER	0x5311
+#define	APM_FUNC_RESUME_ON_RING	0x5312
+#define	APM_FUNC_TIMER		0x5313
+
+#define	APM_FUNC_DISABLE_TIMER	0
+#define	APM_FUNC_GET_TIMER	1
+#define	APM_FUNC_SET_TIMER	2
+
+#define	APM_FUNC_DISABLE_RING	0
+#define	APM_FUNC_ENABLE_RING	1
+#define	APM_FUNC_GET_RING	2
+
+#define	APM_FUNC_TIMER_DISABLE	0
+#define	APM_FUNC_TIMER_ENABLE	1
+#define	APM_FUNC_TIMER_GET	2
+
+extern struct apm_info	apm_info;
+
+#define APM_DEVICE_BALL		((apm_info.connection_version > 0x0100) ? \
+				 APM_DEVICE_ALL : APM_DEVICE_OLD_ALL)
+/* --- end apm_bios.h inlined --- */
+#include <asm/ist.h>
+
+/* Inlined from video/edid.h */
+struct edid_info {
+	unsigned char dummy[128];
+};
+extern struct edid_info edid_info;
+
 struct setup_data {
 	__u64 next;
 	__u32 type;

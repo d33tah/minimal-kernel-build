@@ -1,11 +1,7 @@
- 
- 
-#include <linux/fs.h>
+/* Minimal includes for splice stubs */
+#include <linux/syscalls.h>
 #include <linux/splice.h>
 #include <linux/pipe_fs_i.h>
-#include <linux/export.h>
-#include <linux/syscalls.h>
-#include "internal.h"
 
 ssize_t splice_to_pipe(struct pipe_inode_info *pipe, struct splice_pipe_desc *spd) { return 0; }
 

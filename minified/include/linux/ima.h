@@ -1,16 +1,37 @@
- 
- 
-
+/* Minimal ima.h - stubs for !CONFIG_IMA */
 #ifndef _LINUX_IMA_H
 #define _LINUX_IMA_H
 
-#include <linux/kernel_read_file.h>
-#include <linux/fs.h>
-#include <linux/security.h>
-#include <linux/kexec.h>
- 
-#include <uapi/linux/hash_info.h>
+/* From uapi/linux/hash_info.h - inlined */
+enum hash_algo {
+	HASH_ALGO_MD4,
+	HASH_ALGO_MD5,
+	HASH_ALGO_SHA1,
+	HASH_ALGO_RIPE_MD_160,
+	HASH_ALGO_SHA256,
+	HASH_ALGO_SHA384,
+	HASH_ALGO_SHA512,
+	HASH_ALGO_SHA224,
+	HASH_ALGO_RIPE_MD_128,
+	HASH_ALGO_RIPE_MD_256,
+	HASH_ALGO_RIPE_MD_320,
+	HASH_ALGO_WP_256,
+	HASH_ALGO_WP_384,
+	HASH_ALGO_WP_512,
+	HASH_ALGO_TGR_128,
+	HASH_ALGO_TGR_160,
+	HASH_ALGO_TGR_192,
+	HASH_ALGO_SM3_256,
+	HASH_ALGO_STREEBOG_256,
+	HASH_ALGO_STREEBOG_512,
+	HASH_ALGO__LAST
+};
+
 struct linux_binprm;
+struct file;
+struct vm_area_struct;
+struct inode;
+struct user_namespace;
 
 static inline enum hash_algo ima_get_current_hash_algo(void)
 {

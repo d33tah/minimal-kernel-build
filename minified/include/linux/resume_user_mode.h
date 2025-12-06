@@ -1,4 +1,3 @@
- 
 
 #ifndef LINUX_RESUME_USER_MODE_H
 #define LINUX_RESUME_USER_MODE_H
@@ -6,9 +5,10 @@
 #include <linux/sched.h>
 #include <linux/task_work.h>
 #include <linux/memcontrol.h>
-#include <linux/blk-cgroup.h>
 
- 
+/* Inlined from blk-cgroup.h */
+static inline void blkcg_maybe_throttle_current(void) { }
+
 static inline void set_notify_resume(struct task_struct *task)
 {
 	if (!test_and_set_tsk_thread_flag(task, TIF_NOTIFY_RESUME))
@@ -16,7 +16,6 @@ static inline void set_notify_resume(struct task_struct *task)
 }
 
 
- 
 static inline void resume_user_mode_work(struct pt_regs *regs)
 {
 	clear_thread_flag(TIF_NOTIFY_RESUME);

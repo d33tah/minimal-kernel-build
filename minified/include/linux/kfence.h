@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_KFENCE_H
 #define _LINUX_KFENCE_H

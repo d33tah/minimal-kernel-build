@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_REFCOUNT_H
 #define _LINUX_REFCOUNT_H
@@ -12,7 +10,6 @@
 
 struct mutex;
 
- 
 typedef struct refcount_struct {
 	atomic_t refs;
 } refcount_t;
@@ -31,13 +28,11 @@ enum refcount_saturation_type {
 
 void refcount_warn_saturate(refcount_t *r, enum refcount_saturation_type t);
 
- 
 static inline void refcount_set(refcount_t *r, int n)
 {
 	atomic_set(&r->refs, n);
 }
 
- 
 static inline unsigned int refcount_read(const refcount_t *r)
 {
 	return atomic_read(&r->refs);
@@ -90,7 +85,6 @@ static inline void __refcount_inc(refcount_t *r, int *oldp)
 	__refcount_add(1, r, oldp);
 }
 
- 
 static inline void refcount_inc(refcount_t *r)
 {
 	__refcount_inc(r, NULL);
@@ -114,7 +108,6 @@ static inline __must_check bool __refcount_sub_and_test(int i, refcount_t *r, in
 	return false;
 }
 
- 
 static inline __must_check bool refcount_sub_and_test(int i, refcount_t *r)
 {
 	return __refcount_sub_and_test(i, r, NULL);
@@ -125,7 +118,6 @@ static inline __must_check bool __refcount_dec_and_test(refcount_t *r, int *oldp
 	return __refcount_sub_and_test(1, r, oldp);
 }
 
- 
 static inline __must_check bool refcount_dec_and_test(refcount_t *r)
 {
 	return __refcount_dec_and_test(r, NULL);
@@ -142,7 +134,6 @@ static inline void __refcount_dec(refcount_t *r, int *oldp)
 		refcount_warn_saturate(r, REFCOUNT_DEC_LEAK);
 }
 
- 
 static inline void refcount_dec(refcount_t *r)
 {
 	__refcount_dec(r, NULL);

@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef __MEM_ENCRYPT_H__
 #define __MEM_ENCRYPT_H__

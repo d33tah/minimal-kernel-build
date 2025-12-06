@@ -1,4 +1,3 @@
- 
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -6,7 +5,9 @@
 #include <linux/cpumask.h>
 #include <linux/memblock.h>
 #include <linux/err.h>
-#include <linux/lcm.h>
+/* lcm.h inlined */
+unsigned long lcm(unsigned long a, unsigned long b) __attribute_const__;
+unsigned long lcm_not_zero(unsigned long a, unsigned long b) __attribute_const__;
 #include <linux/list.h>
 #include <linux/log2.h>
 #include <linux/mm.h>
@@ -134,11 +135,6 @@ static void pcpu_set_page_chunk(struct page *page, struct pcpu_chunk *pcpu)
 static struct pcpu_chunk *pcpu_get_page_chunk(struct page *page)
 {
 	return (struct pcpu_chunk *)page->index;
-}
-
-static int __maybe_unused pcpu_page_idx(unsigned int cpu, int page_idx)
-{
-	return pcpu_unit_map[cpu] * pcpu_unit_pages + page_idx;
 }
 
 static unsigned long pcpu_unit_page_offset(unsigned int cpu, int page_idx)

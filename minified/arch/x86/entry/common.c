@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/kernel.h>
 #include <linux/sched.h>
@@ -34,7 +32,6 @@ static __always_inline int syscall_32_enter(struct pt_regs *regs)
 	return (int)regs->orig_ax;
 }
 
- 
 static __always_inline void do_syscall_32_irqs_on(struct pt_regs *regs, int nr)
 {
 	 
@@ -48,7 +45,6 @@ static __always_inline void do_syscall_32_irqs_on(struct pt_regs *regs, int nr)
 	}
 }
 
- 
 __visible noinstr void do_int80_syscall_32(struct pt_regs *regs)
 {
 	int nr = syscall_32_enter(regs);
@@ -97,7 +93,6 @@ static noinstr bool __do_fast_syscall_32(struct pt_regs *regs)
 	return true;
 }
 
- 
 __visible noinstr long do_fast_syscall_32(struct pt_regs *regs)
 {
 	 
@@ -118,7 +113,6 @@ __visible noinstr long do_fast_syscall_32(struct pt_regs *regs)
 		(regs->flags & (X86_EFLAGS_RF | X86_EFLAGS_TF | X86_EFLAGS_VM)) == 0;
 }
 
- 
 __visible noinstr long do_SYSENTER_32(struct pt_regs *regs)
 {
 	 

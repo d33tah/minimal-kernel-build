@@ -1,11 +1,6 @@
-// Stubbed memory protection change implementation
-// Original: 658 LOC
-// Not needed for minimal boot - hello world doesn't change memory protection
-
+/* Minimal includes for mprotect stubs */
 #include <linux/syscalls.h>
 #include <linux/mm.h>
-#include <linux/mman.h>
-#include <linux/errno.h>
 #include <asm/tlb.h>
 
 #include "internal.h"

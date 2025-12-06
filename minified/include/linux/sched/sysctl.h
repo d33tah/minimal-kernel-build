@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_SCHED_SYSCTL_H
 #define _LINUX_SCHED_SYSCTL_H
 
@@ -6,7 +5,6 @@
 
 struct ctl_table;
 
- 
 enum { sysctl_hung_task_timeout_secs = 0 };
 
 enum sched_tunable_scaling {

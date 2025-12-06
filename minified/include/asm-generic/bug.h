@@ -1,4 +1,3 @@
- 
 #ifndef _ASM_GENERIC_BUG_H
 #define _ASM_GENERIC_BUG_H
 
@@ -47,11 +46,8 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
 #define WARN_TAINT_ONCE(condition, taint, format...) WARN(condition, format)
 
 
- 
- 
 # define WARN_ON_SMP(x)			({0;})
 
- 
 # define WARN_ON_FUNCTION_MISMATCH(x, fn) WARN_ON_ONCE((x) != (fn))
 
 #endif  

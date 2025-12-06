@@ -1,4 +1,3 @@
- 
 
 #ifndef _LINUX_RANDOM_H
 #define _LINUX_RANDOM_H
@@ -6,9 +5,28 @@
 #include <linux/bug.h>
 #include <linux/kernel.h>
 #include <linux/list.h>
+#include <linux/types.h>
+#include <linux/ioctl.h>
+#include <linux/irqnr.h>
 
+/* From uapi/linux/random.h - inlined */
+#define RNDGETENTCNT	_IOR( 'R', 0x00, int )
+#define RNDADDTOENTCNT	_IOW( 'R', 0x01, int )
+#define RNDGETPOOL	_IOR( 'R', 0x02, int [2] )
+#define RNDADDENTROPY	_IOW( 'R', 0x03, int [2] )
+#define RNDZAPENTCNT	_IO( 'R', 0x04 )
+#define RNDCLEARPOOL	_IO( 'R', 0x06 )
+#define RNDRESEEDCRNG	_IO( 'R', 0x07 )
 
-#include <uapi/linux/random.h>
+struct rand_pool_info {
+	int	entropy_count;
+	int	buf_size;
+	__u32	buf[0];
+};
+
+#define GRND_NONBLOCK	0x0001
+#define GRND_RANDOM	0x0002
+#define GRND_INSECURE	0x0004
 
 struct notifier_block;
 
@@ -28,14 +46,6 @@ static inline void add_latent_entropy(void)
 static inline void add_latent_entropy(void) { }
 #endif
 
-#if IS_ENABLED(CONFIG_VMGENID)
-void add_vmfork_randomness(const void *unique_vm_id, size_t len);
-int register_random_vmfork_notifier(struct notifier_block *nb);
-int unregister_random_vmfork_notifier(struct notifier_block *nb);
-#else
-static inline int register_random_vmfork_notifier(struct notifier_block *nb) { return 0; }
-static inline int unregister_random_vmfork_notifier(struct notifier_block *nb) { return 0; }
-#endif
 
 void get_random_bytes(void *buf, size_t len);
 u32 get_random_u32(void);
@@ -46,72 +56,14 @@ static inline unsigned int get_random_int(void)
 }
 static inline unsigned long get_random_long(void)
 {
-#if BITS_PER_LONG == 64
-	return get_random_u64();
-#else
-	return get_random_u32();
-#endif
+	return get_random_u32(); /* BITS_PER_LONG == 32 */
 }
 
- 
 # define CANARY_MASK 0xffffffffUL
-
-static inline unsigned long get_random_canary(void)
-{
-	return get_random_long() & CANARY_MASK;
-}
 
 int __init random_init(const char *command_line);
 bool rng_is_initialized(void);
 int wait_for_random_bytes(void);
-
- 
-static inline int get_random_bytes_wait(void *buf, size_t nbytes)
-{
-	int ret = wait_for_random_bytes();
-	get_random_bytes(buf, nbytes);
-	return ret;
-}
-
-#define declare_get_random_var_wait(name, ret_type) \
-	static inline int get_random_ ## name ## _wait(ret_type *out) { \
-		int ret = wait_for_random_bytes(); \
-		if (unlikely(ret)) \
-			return ret; \
-		*out = get_random_ ## name(); \
-		return 0; \
-	}
-declare_get_random_var_wait(u32, u32)
-declare_get_random_var_wait(u64, u32)
-declare_get_random_var_wait(int, unsigned int)
-declare_get_random_var_wait(long, unsigned long)
-#undef declare_get_random_var
-
- 
-#include <linux/prandom.h>
-
-static inline bool __must_check arch_get_random_long(unsigned long *v) { return false; }
-static inline bool __must_check arch_get_random_int(unsigned int *v) { return false; }
-static inline bool __must_check arch_get_random_seed_long(unsigned long *v) { return false; }
-static inline bool __must_check arch_get_random_seed_int(unsigned int *v) { return false; }
-
- 
-#ifndef arch_get_random_seed_long_early
-static inline bool __init arch_get_random_seed_long_early(unsigned long *v)
-{
-	WARN_ON(system_state != SYSTEM_BOOTING);
-	return arch_get_random_seed_long(v);
-}
-#endif
-
-#ifndef arch_get_random_long_early
-static inline bool __init arch_get_random_long_early(unsigned long *v)
-{
-	WARN_ON(system_state != SYSTEM_BOOTING);
-	return arch_get_random_long(v);
-}
-#endif
-
 
 #ifndef MODULE
 extern const struct file_operations random_fops, urandom_fops;

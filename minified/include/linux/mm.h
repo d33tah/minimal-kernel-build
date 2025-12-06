@@ -22,8 +22,167 @@
 #include <linux/page_ext.h>
 #include <linux/err.h>
 #include <linux/page-flags.h>
-#include <linux/page_ref.h>
+#include <linux/tracepoint-defs.h>
 #include <linux/overflow.h>
+
+/* --- 2025-12-06 16:45 --- page_ref.h inlined */
+DECLARE_TRACEPOINT(page_ref_set);
+DECLARE_TRACEPOINT(page_ref_mod);
+DECLARE_TRACEPOINT(page_ref_mod_and_test);
+DECLARE_TRACEPOINT(page_ref_mod_and_return);
+DECLARE_TRACEPOINT(page_ref_mod_unless);
+DECLARE_TRACEPOINT(page_ref_freeze);
+DECLARE_TRACEPOINT(page_ref_unfreeze);
+
+#define page_ref_tracepoint_active(t) false
+
+static inline void __page_ref_set(struct page *page, int v) { }
+static inline void __page_ref_mod(struct page *page, int v) { }
+static inline void __page_ref_mod_and_test(struct page *page, int v, int ret) { }
+static inline void __page_ref_mod_and_return(struct page *page, int v, int ret) { }
+static inline void __page_ref_mod_unless(struct page *page, int v, int u) { }
+static inline void __page_ref_freeze(struct page *page, int v, int ret) { }
+static inline void __page_ref_unfreeze(struct page *page, int v) { }
+
+static inline int page_ref_count(const struct page *page)
+{
+	return atomic_read(&page->_refcount);
+}
+
+static inline int folio_ref_count(const struct folio *folio)
+{
+	return page_ref_count(&folio->page);
+}
+
+static inline int page_count(const struct page *page)
+{
+	return folio_ref_count(page_folio(page));
+}
+
+static inline void set_page_count(struct page *page, int v)
+{
+	atomic_set(&page->_refcount, v);
+	if (page_ref_tracepoint_active(page_ref_set))
+		__page_ref_set(page, v);
+}
+
+static inline void folio_set_count(struct folio *folio, int v)
+{
+	set_page_count(&folio->page, v);
+}
+
+static inline void init_page_count(struct page *page)
+{
+	set_page_count(page, 1);
+}
+
+static inline void page_ref_add(struct page *page, int nr)
+{
+	atomic_add(nr, &page->_refcount);
+	if (page_ref_tracepoint_active(page_ref_mod))
+		__page_ref_mod(page, nr);
+}
+
+static inline void folio_ref_add(struct folio *folio, int nr)
+{
+	page_ref_add(&folio->page, nr);
+}
+
+static inline void page_ref_sub(struct page *page, int nr)
+{
+	atomic_sub(nr, &page->_refcount);
+	if (page_ref_tracepoint_active(page_ref_mod))
+		__page_ref_mod(page, -nr);
+}
+
+static inline void folio_ref_sub(struct folio *folio, int nr)
+{
+	page_ref_sub(&folio->page, nr);
+}
+
+static inline void page_ref_inc(struct page *page)
+{
+	atomic_inc(&page->_refcount);
+	if (page_ref_tracepoint_active(page_ref_mod))
+		__page_ref_mod(page, 1);
+}
+
+static inline void folio_ref_inc(struct folio *folio)
+{
+	page_ref_inc(&folio->page);
+}
+
+static inline void page_ref_dec(struct page *page)
+{
+	atomic_dec(&page->_refcount);
+	if (page_ref_tracepoint_active(page_ref_mod))
+		__page_ref_mod(page, -1);
+}
+
+static inline void folio_ref_dec(struct folio *folio)
+{
+	page_ref_dec(&folio->page);
+}
+
+static inline int page_ref_sub_and_test(struct page *page, int nr)
+{
+	int ret = atomic_sub_and_test(nr, &page->_refcount);
+
+	if (page_ref_tracepoint_active(page_ref_mod_and_test))
+		__page_ref_mod_and_test(page, -nr, ret);
+	return ret;
+}
+
+static inline int folio_ref_sub_and_test(struct folio *folio, int nr)
+{
+	return page_ref_sub_and_test(&folio->page, nr);
+}
+
+static inline int page_ref_dec_and_test(struct page *page)
+{
+	int ret = atomic_dec_and_test(&page->_refcount);
+
+	if (page_ref_tracepoint_active(page_ref_mod_and_test))
+		__page_ref_mod_and_test(page, -1, ret);
+	return ret;
+}
+
+static inline int folio_ref_dec_and_test(struct folio *folio)
+{
+	return page_ref_dec_and_test(&folio->page);
+}
+
+static inline bool page_ref_add_unless(struct page *page, int nr, int u)
+{
+	bool ret = atomic_add_unless(&page->_refcount, nr, u);
+
+	if (page_ref_tracepoint_active(page_ref_mod_unless))
+		__page_ref_mod_unless(page, nr, ret);
+	return ret;
+}
+
+static inline bool folio_ref_add_unless(struct folio *folio, int nr, int u)
+{
+	return page_ref_add_unless(&folio->page, nr, u);
+}
+
+static inline bool folio_try_get(struct folio *folio)
+{
+	return folio_ref_add_unless(folio, 1, 0);
+}
+
+static inline bool folio_ref_try_add_rcu(struct folio *folio, int count)
+{
+	VM_BUG_ON_FOLIO(folio_ref_count(folio) == 0, folio);
+	folio_ref_add(folio, count);
+	return true;
+}
+
+static inline bool folio_try_get_rcu(struct folio *folio)
+{
+	return folio_ref_try_add_rcu(folio, 1);
+}
+/* --- end page_ref.h inlined --- */
 #include <linux/sizes.h>
 #include <linux/sched.h>
 #include <linux/pgtable.h>
@@ -87,41 +246,8 @@ extern int mmap_rnd_bits __read_mostly;
 #define mm_forbids_zeropage(X)	(0)
 #endif
 
-#if BITS_PER_LONG == 64
-
-#define	mm_zero_struct_page(pp) __mm_zero_struct_page(pp)
-static inline void __mm_zero_struct_page(struct page *page)
-{
-	unsigned long *_pp = (void *)page;
-
-	 
-	BUILD_BUG_ON(sizeof(struct page) & 7);
-	BUILD_BUG_ON(sizeof(struct page) < 56);
-	BUILD_BUG_ON(sizeof(struct page) > 80);
-
-	switch (sizeof(struct page)) {
-	case 80:
-		_pp[9] = 0;
-		fallthrough;
-	case 72:
-		_pp[8] = 0;
-		fallthrough;
-	case 64:
-		_pp[7] = 0;
-		fallthrough;
-	case 56:
-		_pp[6] = 0;
-		_pp[5] = 0;
-		_pp[4] = 0;
-		_pp[3] = 0;
-		_pp[2] = 0;
-		_pp[1] = 0;
-		_pp[0] = 0;
-	}
-}
-#else
+/* BITS_PER_LONG == 32 */
 #define mm_zero_struct_page(pp)  ((void)memset((pp), 0, sizeof(struct page)))
-#endif
 
 #define MAPCOUNT_ELF_CORE_MARGIN	(5)
 #define DEFAULT_MAX_MAP_COUNT	(USHRT_MAX - MAPCOUNT_ELF_CORE_MARGIN)
@@ -169,10 +295,10 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_MAYEXEC	0x00000040
 #define VM_MAYSHARE	0x00000080
 
-#define VM_GROWSDOWN	0x00000100	
-#define VM_UFFD_MISSING	0x00000200	
-#define VM_PFNMAP	0x00000400	
-#define VM_UFFD_WP	0x00001000	
+#define VM_GROWSDOWN	0x00000100
+/* VM_UFFD_MISSING (0x200) removed - unused */
+#define VM_PFNMAP	0x00000400
+/* VM_UFFD_WP (0x1000) removed - unused */	
 
 #define VM_LOCKED	0x00002000
 #define VM_IO           0x00004000	
@@ -188,16 +314,16 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_NORESERVE	0x00200000	
 #define VM_HUGETLB	0x00400000	
 #define VM_SYNC		0x00800000	
-#define VM_ARCH_1	0x01000000	
-#define VM_WIPEONFORK	0x02000000	
+#define VM_ARCH_1	0x01000000
+/* VM_WIPEONFORK (0x02000000) removed - unused */
 #define VM_DONTDUMP	0x04000000	
 
 # define VM_SOFTDIRTY	0
 
-#define VM_MIXEDMAP	0x10000000	
-#define VM_HUGEPAGE	0x20000000	
-#define VM_NOHUGEPAGE	0x40000000	
-#define VM_MERGEABLE	0x80000000	
+#define VM_MIXEDMAP	0x10000000
+/* VM_HUGEPAGE (0x20000000) removed - unused */
+#define VM_NOHUGEPAGE	0x40000000
+/* VM_MERGEABLE (0x80000000) removed - unused */	
 
 # define VM_PAT		VM_ARCH_1	
 
@@ -213,7 +339,7 @@ void vm_area_free(struct vm_area_struct *);
 # define VM_GROWSUP	VM_NONE
 #endif
 
-# define VM_UFFD_MINOR		VM_NONE
+/* VM_UFFD_MINOR removed - unused */
 
 #define VM_STACK_INCOMPLETE_SETUP	(VM_RAND_READ | VM_SEQ_READ)
 
@@ -517,11 +643,6 @@ static inline unsigned long page_size(struct page *page)
 	return PAGE_SIZE << compound_order(page);
 }
 
-static inline unsigned int page_shift(struct page *page)
-{
-	return PAGE_SHIFT + compound_order(page);
-}
-
 static inline int thp_nr_pages(struct page *page)
 {
 	VM_BUG_ON_PGFLAGS(PageTail(page), page);
@@ -590,10 +711,7 @@ static inline bool is_zone_device_page(const struct page *page)
 	return false;
 }
 
-static inline bool folio_is_zone_device(const struct folio *folio)
-{
-	return is_zone_device_page(&folio->page);
-}
+/* folio_is_zone_device removed - unused */
 
 static inline bool put_devmap_managed_page(struct page *page)
 {
@@ -694,24 +812,12 @@ static inline pg_data_t *page_pgdat(const struct page *page)
 	return NODE_DATA(page_to_nid(page));
 }
 
-static inline struct zone *folio_zone(const struct folio *folio)
-{
-	return page_zone(&folio->page);
-}
+/* folio_zone removed - unused */
 
 static inline pg_data_t *folio_pgdat(const struct folio *folio)
 {
 	return page_pgdat(&folio->page);
 }
-
-#ifdef SECTION_IN_PAGE_FLAGS
-static inline void set_page_section(struct page *page, unsigned long section)
-{
-	page->flags &= ~(SECTIONS_MASK << SECTIONS_PGSHIFT);
-	page->flags |= (section & SECTIONS_MASK) << SECTIONS_PGSHIFT;
-}
-
-#endif
 
 static inline unsigned long folio_pfn(struct folio *folio)
 {
@@ -728,7 +834,7 @@ static inline bool folio_maybe_dma_pinned(struct folio *folio)
 	if (folio_test_large(folio))
 		return atomic_read(folio_pincount_ptr(folio)) > 0;
 
-	
+
 	return ((unsigned int)folio_ref_count(folio)) >=
 		GUP_PIN_COUNTING_BIAS;
 }
@@ -781,10 +887,7 @@ static inline long folio_nr_pages(struct folio *folio)
 	return compound_nr(&folio->page);
 }
 
-static inline struct folio *folio_next(struct folio *folio)
-{
-	return (struct folio *)folio_page(folio, folio_nr_pages(folio));
-}
+/* folio_next removed - unused */
 
 static inline unsigned int folio_shift(struct folio *folio)
 {
@@ -843,12 +946,7 @@ static inline void *folio_address(const struct folio *folio)
 extern void *page_rmapping(struct page *page);
 extern pgoff_t __page_file_index(struct page *page);
 
-static inline pgoff_t page_index(struct page *page)
-{
-	if (unlikely(PageSwapCache(page)))
-		return __page_file_index(page);
-	return page->index;
-}
+/* page_index removed - unused */
 
 bool page_mapped(struct page *page);
 bool folio_mapped(struct folio *folio);
@@ -1163,10 +1261,7 @@ static inline void mm_pgtables_bytes_init(struct mm_struct *mm)
 	atomic_long_set(&mm->pgtables_bytes, 0);
 }
 
-static inline unsigned long mm_pgtables_bytes(const struct mm_struct *mm)
-{
-	return atomic_long_read(&mm->pgtables_bytes);
-}
+/* mm_pgtables_bytes removed - unused */
 
 static inline void mm_inc_nr_ptes(struct mm_struct *mm)
 {
@@ -1409,16 +1504,7 @@ static inline unsigned long free_initmem_default(int poison)
 				  poison, "unused kernel image (initmem)");
 }
 
-static inline unsigned long get_num_physpages(void)
-{
-	int nid;
-	unsigned long phys_pages = 0;
-
-	for_each_online_node(nid)
-		phys_pages += node_present_pages(nid);
-
-	return phys_pages;
-}
+/* get_num_physpages removed - unused */
 
 void free_area_init(unsigned long *max_zone_pfn);
 unsigned long node_map_pfn_alignment(void);
@@ -1626,16 +1712,7 @@ struct vm_area_struct *find_vma_intersection(struct mm_struct *mm,
 	return vma;
 }
 
-static inline
-struct vm_area_struct *vma_lookup(struct mm_struct *mm, unsigned long addr)
-{
-	struct vm_area_struct *vma = find_vma(mm, addr);
-
-	if (vma && addr < vma->vm_start)
-		vma = NULL;
-
-	return vma;
-}
+/* vma_lookup removed - unused */
 
 static inline unsigned long vm_start_gap(struct vm_area_struct *vma)
 {
@@ -1664,17 +1741,6 @@ static inline unsigned long vm_end_gap(struct vm_area_struct *vma)
 static inline unsigned long vma_pages(struct vm_area_struct *vma)
 {
 	return (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
-}
-
-static inline struct vm_area_struct *find_exact_vma(struct mm_struct *mm,
-				unsigned long vm_start, unsigned long vm_end)
-{
-	struct vm_area_struct *vma = find_vma(mm, vm_start);
-
-	if (vma && (vma->vm_start != vm_start || vma->vm_end != vm_end))
-		vma = NULL;
-
-	return vma;
 }
 
 pgprot_t vm_get_page_prot(unsigned long vm_flags);
@@ -1826,13 +1892,7 @@ void vmemmap_populate_print_last(void);
 void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
 				  unsigned long nr_pages);
 
-/* memory failure not used in minimal kernel */
-enum mf_flags { MF_FLAGS_LAST };
-
-/* mf_result - reduced for minimal kernel */
-enum mf_result { MF_RESULT_LAST };
-/* mf_action_page_type - reduced for minimal kernel */
-enum mf_action_page_type { MF_MSG_LAST };
+/* mf_flags, mf_result, mf_action_page_type enums removed - unused */
 
 static inline unsigned int debug_guardpage_minorder(void) { return 0; }
 static inline bool page_is_guard(struct page *page) { return false; }
@@ -1843,11 +1903,7 @@ void __init setup_nr_node_ids(void);
 static inline void setup_nr_node_ids(void) {}
 #endif
 
-static inline int
-madvise_set_anon_name(struct mm_struct *mm, unsigned long start,
-		      unsigned long len_in, struct anon_vma_name *anon_name) {
-	return 0;
-}
+/* madvise_set_anon_name removed - unused */
 
 #define  ZAP_FLAG_DROP_MARKER        ((__force zap_flags_t) BIT(0))
 

@@ -52,11 +52,8 @@
 
  
 
-#ifdef __i386__
-#define DR_CONTROL_RESERVED (0xFC00)  
-#else
-#define DR_CONTROL_RESERVED (0xFFFFFFFF0000FC00UL)  
-#endif
+/* 32-bit only kernel */
+#define DR_CONTROL_RESERVED (0xFC00)
 
 #define DR_LOCAL_SLOWDOWN (0x100)    
 #define DR_GLOBAL_SLOWDOWN (0x200)   

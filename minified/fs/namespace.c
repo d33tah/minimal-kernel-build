@@ -1,4 +1,3 @@
- 
 
 #include <linux/syscalls.h>
 #include <linux/export.h>
@@ -1044,7 +1043,6 @@ static int can_umount(const struct path *path, int flags)
 	return 0;
 }
 
- 
 int path_umount(struct path *path, int flags)
 {
 	struct mount *mnt = real_mount(path->mnt);

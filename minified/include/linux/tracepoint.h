@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_TRACEPOINT_H
 #define _LINUX_TRACEPOINT_H
 
- 
 
 #include <linux/smp.h>
 #include <linux/srcu.h>
@@ -37,35 +35,10 @@ tracepoint_probe_register_prio_may_exist(struct tracepoint *tp, void *probe, voi
 					 int prio);
 extern int
 tracepoint_probe_unregister(struct tracepoint *tp, void *probe, void *data);
-static inline int
-tracepoint_probe_register_may_exist(struct tracepoint *tp, void *probe,
-				    void *data)
-{
-	return tracepoint_probe_register_prio_may_exist(tp, probe, data,
-							TRACEPOINT_DEFAULT_PRIO);
-}
-/* for_each_kernel_tracepoint removed - unused */
 
-static inline bool trace_module_has_bad_taint(struct module *mod)
-{
-	return false;
-}
-static inline
-int register_tracepoint_module_notifier(struct notifier_block *nb)
-{
-	return 0;
-}
-static inline
-int unregister_tracepoint_module_notifier(struct notifier_block *nb)
-{
-	return 0;
-}
-
- 
-static inline void tracepoint_synchronize_unregister(void)
-{ }
-
-/* syscall_regfunc/syscall_unregfunc removed - unused */
+/* tracepoint_probe_register_may_exist removed - unused */
+/* trace_module_has_bad_taint, register/unregister_tracepoint_module_notifier removed - unused */
+/* tracepoint_synchronize_unregister, tracepoint_ptr_deref removed - unused */
 
 #ifndef PARAMS
 #define PARAMS(args...) args
@@ -73,11 +46,6 @@ static inline void tracepoint_synchronize_unregister(void)
 
 #define TRACE_DEFINE_ENUM(x)
 #define TRACE_DEFINE_SIZEOF(x)
-
-static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
-{
-	return offset_to_ptr(p);
-}
 
 #define __TRACEPOINT_ENTRY(name)					\
 	asm("	.section \"__tracepoints_ptrs\", \"a\"		\n"	\
@@ -87,7 +55,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 
 #endif  
 
- 
 
 #ifndef DECLARE_TRACE
 
@@ -95,160 +62,8 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 #define TP_ARGS(args...)	args
 #define TP_CONDITION(args...)	args
 
- 
 
-#ifdef TRACEPOINTS_ENABLED
-
-#define __DO_TRACE_CALL(name, args)					\
-	do {								\
-		struct tracepoint_func *it_func_ptr;			\
-		void *__data;						\
-		it_func_ptr =						\
-			rcu_dereference_raw((&__tracepoint_##name)->funcs); \
-		if (it_func_ptr) {					\
-			__data = (it_func_ptr)->data;			\
-			static_call(tp_func_##name)(__data, args);	\
-		}							\
-	} while (0)
-
- 
-#define __DO_TRACE(name, args, cond, rcuidle)				\
-	do {								\
-		int __maybe_unused __idx = 0;				\
-									\
-		if (!(cond))						\
-			return;						\
-									\
-		 			\
-		WARN_ON_ONCE(rcuidle && in_nmi());			\
-									\
-		 		\
-		preempt_disable_notrace();				\
-									\
-		 							\
-		if (rcuidle) {						\
-			__idx = srcu_read_lock_notrace(&tracepoint_srcu);\
-			rcu_irq_enter_irqson();				\
-		}							\
-									\
-		__DO_TRACE_CALL(name, TP_ARGS(args));			\
-									\
-		if (rcuidle) {						\
-			rcu_irq_exit_irqson();				\
-			srcu_read_unlock_notrace(&tracepoint_srcu, __idx);\
-		}							\
-									\
-		preempt_enable_notrace();				\
-	} while (0)
-
-#ifndef MODULE
-#define __DECLARE_TRACE_RCU(name, proto, args, cond)			\
-	static inline void trace_##name##_rcuidle(proto)		\
-	{								\
-		if (static_key_false(&__tracepoint_##name.key))		\
-			__DO_TRACE(name,				\
-				TP_ARGS(args),				\
-				TP_CONDITION(cond), 1);			\
-	}
-#else
-#define __DECLARE_TRACE_RCU(name, proto, args, cond)
-#endif
-
- 
-#define __DECLARE_TRACE(name, proto, args, cond, data_proto)		\
-	extern int __traceiter_##name(data_proto);			\
-	DECLARE_STATIC_CALL(tp_func_##name, __traceiter_##name);	\
-	extern struct tracepoint __tracepoint_##name;			\
-	static inline void trace_##name(proto)				\
-	{								\
-		if (static_key_false(&__tracepoint_##name.key))		\
-			__DO_TRACE(name,				\
-				TP_ARGS(args),				\
-				TP_CONDITION(cond), 0);			\
-		if (IS_ENABLED(CONFIG_LOCKDEP) && (cond)) {		\
-			rcu_read_lock_sched_notrace();			\
-			rcu_dereference_sched(__tracepoint_##name.funcs);\
-			rcu_read_unlock_sched_notrace();		\
-		}							\
-	}								\
-	__DECLARE_TRACE_RCU(name, PARAMS(proto), PARAMS(args),		\
-			    PARAMS(cond))				\
-	static inline int						\
-	register_trace_##name(void (*probe)(data_proto), void *data)	\
-	{								\
-		return tracepoint_probe_register(&__tracepoint_##name,	\
-						(void *)probe, data);	\
-	}								\
-	static inline int						\
-	register_trace_prio_##name(void (*probe)(data_proto), void *data,\
-				   int prio)				\
-	{								\
-		return tracepoint_probe_register_prio(&__tracepoint_##name, \
-					      (void *)probe, data, prio); \
-	}								\
-	static inline int						\
-	unregister_trace_##name(void (*probe)(data_proto), void *data)	\
-	{								\
-		return tracepoint_probe_unregister(&__tracepoint_##name,\
-						(void *)probe, data);	\
-	}								\
-	static inline void						\
-	check_trace_callback_type_##name(void (*cb)(data_proto))	\
-	{								\
-	}								\
-	static inline bool						\
-	trace_##name##_enabled(void)					\
-	{								\
-		return static_key_false(&__tracepoint_##name.key);	\
-	}
-
- 
-#define DEFINE_TRACE_FN(_name, _reg, _unreg, proto, args)		\
-	static const char __tpstrtab_##_name[]				\
-	__section("__tracepoints_strings") = #_name;			\
-	extern struct static_call_key STATIC_CALL_KEY(tp_func_##_name);	\
-	int __traceiter_##_name(void *__data, proto);			\
-	struct tracepoint __tracepoint_##_name	__used			\
-	__section("__tracepoints") = {					\
-		.name = __tpstrtab_##_name,				\
-		.key = STATIC_KEY_INIT_FALSE,				\
-		.static_call_key = &STATIC_CALL_KEY(tp_func_##_name),	\
-		.static_call_tramp = STATIC_CALL_TRAMP_ADDR(tp_func_##_name), \
-		.iterator = &__traceiter_##_name,			\
-		.regfunc = _reg,					\
-		.unregfunc = _unreg,					\
-		.funcs = NULL };					\
-	__TRACEPOINT_ENTRY(_name);					\
-	int __traceiter_##_name(void *__data, proto)			\
-	{								\
-		struct tracepoint_func *it_func_ptr;			\
-		void *it_func;						\
-									\
-		it_func_ptr =						\
-			rcu_dereference_raw((&__tracepoint_##_name)->funcs); \
-		if (it_func_ptr) {					\
-			do {						\
-				it_func = READ_ONCE((it_func_ptr)->func); \
-				__data = (it_func_ptr)->data;		\
-				((void(*)(void *, proto))(it_func))(__data, args); \
-			} while ((++it_func_ptr)->func);		\
-		}							\
-		return 0;						\
-	}								\
-	DEFINE_STATIC_CALL(tp_func_##_name, __traceiter_##_name);
-
-#define DEFINE_TRACE(name, proto, args)		\
-	DEFINE_TRACE_FN(name, NULL, NULL, PARAMS(proto), PARAMS(args));
-
-	EXPORT_SYMBOL_GPL(__tracepoint_##name);				\
-	EXPORT_SYMBOL_GPL(__traceiter_##name);				\
-	EXPORT_STATIC_CALL_GPL(tp_func_##name)
-	EXPORT_SYMBOL(__tracepoint_##name);				\
-	EXPORT_SYMBOL(__traceiter_##name);				\
-	EXPORT_STATIC_CALL(tp_func_##name)
-
-
-#else  
+/* TRACEPOINTS_ENABLED is not defined - use stub implementations */
 #define __DECLARE_TRACE(name, proto, args, cond, data_proto)		\
 	static inline void trace_##name(proto)				\
 	{ }								\
@@ -278,9 +93,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 #define DEFINE_TRACE_FN(name, reg, unreg, proto, args)
 #define DEFINE_TRACE(name, proto, args)
 
-#endif  
-
- 
 # define tracepoint_string(str) str
 # define __tracepoint_string
 
@@ -301,7 +113,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 #endif  
 
 #ifndef TRACE_EVENT
- 
 
 #define DECLARE_EVENT_CLASS(name, proto, args, tstruct, assign, print)
 #define DEFINE_EVENT(template, name, proto, args)		\
@@ -350,36 +161,6 @@ static inline struct tracepoint *tracepoint_ptr_deref(tracepoint_ptr_t *p)
 
 #endif  
 
- 
+/* Minimal trace stubs - only those actually called from code */
 static inline void trace_sys_exit(struct pt_regs *regs, long ret) {}
-static inline void trace_alarmtimer_fired(void *alarm, ktime_t now) {}
-static inline void trace_alarmtimer_start(void *alarm, ktime_t now) {}
-static inline void trace_alarmtimer_cancel(void *alarm, ktime_t now) {}
-static inline void trace_mm_shrink_slab_start(void *shrinker, void *shrinkctl, long nr, long nr_to_scan) {}
-static inline void trace_mm_shrink_slab_end(void *shrinker, int nid, unsigned long freed, long nr, long new_nr, int total_scan) {}
-static inline void trace_mm_vmscan_throttled(int nid, unsigned long timeout) {}
-static inline void trace_mm_vmscan_write_folio(void *folio) {}
-static inline void trace_mm_vmscan_lru_isolate(int reclaim_idx, unsigned int order, unsigned long nr_to_scan, unsigned long nr_scanned, unsigned long nr_taken, int lru) {}
-static inline void trace_mm_vmscan_lru_shrink_inactive(int nid, unsigned long nr_scanned, unsigned long nr_reclaimed, int priority, int file) {}
-static inline void trace_mm_vmscan_lru_shrink_active(int nid, unsigned long nr_taken, unsigned long nr_activate, unsigned long nr_deactivate, unsigned long nr_rotated, int priority, int file) {}
-static inline void trace_mm_vmscan_direct_reclaim_begin(unsigned int order, gfp_t gfp_mask) {}
-static inline void trace_mm_vmscan_direct_reclaim_end(unsigned long nr_reclaimed) {}
-static inline void trace_mm_vmscan_kswapd_sleep(int nid) {}
-static inline void trace_mm_vmscan_kswapd_wake(int nid, int zid, int order) {}
-static inline void trace_mm_vmscan_wakeup_kswapd(int nid, int zid, int order, unsigned int gfp_flags) {}
-static inline void trace_global_dirty_state(unsigned long bg_thresh, unsigned long thresh) {}
-static inline void trace_bdi_dirty_ratelimit(struct bdi_writeback *wb, unsigned long dirty_rate, unsigned long task_ratelimit) {}
-static inline void trace_balance_dirty_pages(struct bdi_writeback *wb, unsigned long thresh, unsigned long bg_thresh, unsigned long dirty, unsigned long wb_thresh, unsigned long wb_dirty, unsigned long dirty_ratelimit, unsigned long task_ratelimit, unsigned long pages_dirtied, unsigned long period, long pause, unsigned long start_time) {}
-static inline void trace_wbc_writepage(struct writeback_control *wbc, struct backing_dev_info *bdi) {}
-static inline void trace_writeback_dirty_folio(struct folio *folio, struct address_space *mapping) {}
-static inline void trace_folio_wait_writeback(struct folio *folio, struct address_space *mapping) {}
 static inline void trace_writeback_lazytime_iput(struct inode *inode) {}
-static inline void trace_mm_lru_activate(struct folio *folio) {}
-static inline void trace_mm_lru_insertion(struct folio *folio) {}
-static inline void trace_mm_page_free(struct page *page, unsigned int order) {}
-static inline void trace_mm_page_pcpu_drain(struct page *page, unsigned int order, int migratetype) {}
-static inline void trace_mm_page_alloc_zone_locked(struct page *page, unsigned int order, int migratetype, bool pcp) {}
-static inline void trace_mm_page_alloc_extfrag(struct page *page, unsigned int order, int current_order, int migratetype, int alloc_migratetype) {}
-static inline void trace_mm_page_free_batched(struct page *page) {}
-static inline void trace_mm_page_alloc(struct page *page, unsigned int order, gfp_t gfp_flags, int migratetype) {}
-static inline void trace_writeback_bdi_register(struct backing_dev_info *bdi) {}

@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/types.h>
 #include <linux/errno.h>
@@ -20,14 +18,11 @@
 #define MIN_TTYB_SIZE	256
 #define TTYB_ALIGN_MASK	255
 
- 
 #define TTYB_DEFAULT_MEM_LIMIT	(640 * 1024UL)
 
- 
 
 #define TTY_BUFFER_PAGE	(((PAGE_SIZE - sizeof(struct tty_buffer)) / 2) & ~0xFF)
 
- 
 void tty_buffer_lock_exclusive(struct tty_port *port)
 {
 	struct tty_bufhead *buf = &port->buf;
@@ -36,7 +31,6 @@ void tty_buffer_lock_exclusive(struct tty_port *port)
 	mutex_lock(&buf->lock);
 }
 
- 
 void tty_buffer_unlock_exclusive(struct tty_port *port)
 {
 	struct tty_bufhead *buf = &port->buf;
@@ -50,7 +44,6 @@ void tty_buffer_unlock_exclusive(struct tty_port *port)
 		queue_work(system_unbound_wq, &buf->work);
 }
 
- 
 unsigned int tty_buffer_space_avail(struct tty_port *port)
 {
 	int space = port->buf.mem_limit - atomic_read(&port->buf.mem_used);
@@ -68,7 +61,6 @@ static void tty_buffer_reset(struct tty_buffer *p, size_t size)
 	p->flags = 0;
 }
 
- 
 void tty_buffer_free_all(struct tty_port *port)
 {
 	struct tty_bufhead *buf = &port->buf;
@@ -96,7 +88,6 @@ void tty_buffer_free_all(struct tty_port *port)
 			still_used - freed);
 }
 
- 
 static struct tty_buffer *tty_buffer_alloc(struct tty_port *port, size_t size)
 {
 	struct llist_node *free;
@@ -127,7 +118,6 @@ found:
 	return p;
 }
 
- 
 static void tty_buffer_free(struct tty_port *port, struct tty_buffer *b)
 {
 	struct tty_bufhead *buf = &port->buf;
@@ -141,13 +131,11 @@ static void tty_buffer_free(struct tty_port *port, struct tty_buffer *b)
 		llist_add(&b->free, &buf->free);
 }
 
- 
 void tty_buffer_flush(struct tty_struct *tty, struct tty_ldisc *ld)
 {
 	 
 }
 
- 
 static int __tty_buffer_request_room(struct tty_port *port, size_t size,
 				     int flags)
 {
@@ -185,7 +173,6 @@ int tty_buffer_request_room(struct tty_port *port, size_t size)
 	return __tty_buffer_request_room(port, size, 0);
 }
 
- 
 int tty_insert_flip_string_fixed_flag(struct tty_port *port,
 		const unsigned char *chars, char flag, size_t size)
 {
@@ -210,7 +197,6 @@ int tty_insert_flip_string_fixed_flag(struct tty_port *port,
 	return copied;
 }
 
- 
 int tty_insert_flip_string_flags(struct tty_port *port,
 		const unsigned char *chars, const char *flags, size_t size)
 {
@@ -234,7 +220,6 @@ int tty_insert_flip_string_flags(struct tty_port *port,
 	return copied;
 }
 
- 
 int __tty_insert_flip_char(struct tty_port *port, unsigned char ch, char flag)
 {
 	struct tty_buffer *tb;
@@ -251,7 +236,6 @@ int __tty_insert_flip_char(struct tty_port *port, unsigned char ch, char flag)
 	return 1;
 }
 
- 
 int tty_prepare_flip_string(struct tty_port *port, unsigned char **chars,
 		size_t size)
 {
@@ -268,7 +252,6 @@ int tty_prepare_flip_string(struct tty_port *port, unsigned char **chars,
 	return space;
 }
 
- 
 int tty_ldisc_receive_buf(struct tty_ldisc *ld, const unsigned char *p,
 			  const char *f, int count)
 {
@@ -298,7 +281,6 @@ receive_buf(struct tty_port *port, struct tty_buffer *head, int count)
 	return n;
 }
 
- 
 static void flush_to_ldisc(struct work_struct *work)
 {
 	struct tty_port *port = container_of(work, struct tty_port, buf.work);
@@ -346,7 +328,6 @@ static inline void tty_flip_buffer_commit(struct tty_buffer *tail)
 	smp_store_release(&tail->commit, tail->used);
 }
 
- 
 void tty_flip_buffer_push(struct tty_port *port)
 {
 	struct tty_bufhead *buf = &port->buf;
@@ -355,7 +336,6 @@ void tty_flip_buffer_push(struct tty_port *port)
 	queue_work(system_unbound_wq, &buf->work);
 }
 
- 
 int tty_insert_flip_string_and_push_buffer(struct tty_port *port,
 		const unsigned char *chars, size_t size)
 {
@@ -373,7 +353,6 @@ int tty_insert_flip_string_and_push_buffer(struct tty_port *port,
 	return size;
 }
 
- 
 void tty_buffer_init(struct tty_port *port)
 {
 	struct tty_bufhead *buf = &port->buf;
@@ -389,14 +368,12 @@ void tty_buffer_init(struct tty_port *port)
 	buf->mem_limit = TTYB_DEFAULT_MEM_LIMIT;
 }
 
- 
 /* Stub: tty_buffer_set_limit not used externally */
 int tty_buffer_set_limit(struct tty_port *port, int limit)
 {
 	return 0;
 }
 
- 
 /* Stub: tty_buffer_set_lock_subclass not used externally */
 void tty_buffer_set_lock_subclass(struct tty_port *port)
 {

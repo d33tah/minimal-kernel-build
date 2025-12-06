@@ -1,4 +1,3 @@
- 
 #ifndef _LINUX_STRING_H_
 #define _LINUX_STRING_H_
 
@@ -14,7 +13,6 @@ extern void *memdup_user(const void __user *, size_t);
 extern void *vmemdup_user(const void __user *, size_t);
 extern void *memdup_user_nul(const void __user *, size_t);
 
- 
 #include <asm/string.h>
 
 #ifndef __HAVE_ARCH_STRCPY
@@ -30,7 +28,6 @@ size_t strlcpy(char *, const char *, size_t);
 ssize_t strscpy(char *, const char *, size_t);
 #endif
 
- 
 ssize_t strscpy_pad(char *dest, const char *src, size_t count);
 
 #ifndef __HAVE_ARCH_STRCAT
@@ -71,10 +68,7 @@ extern char * __must_check skip_spaces(const char *);
 
 extern char *strim(char *);
 
-static inline __must_check char *strstrip(char *str)
-{
-	return strim(str);
-}
+/* strstrip removed - unused (alias for strim) */
 
 #ifndef __HAVE_ARCH_STRSTR
 extern char * strstr(const char *, const char *);
@@ -117,29 +111,8 @@ extern void *memset32(uint32_t *, uint32_t, __kernel_size_t);
 extern void *memset64(uint64_t *, uint64_t, __kernel_size_t);
 #endif
 
-static inline void *memset_l(unsigned long *p, unsigned long v,
-		__kernel_size_t n)
-{
-	if (BITS_PER_LONG == 32)
-		return memset32((uint32_t *)p, v, n);
-	else
-		return memset64((uint64_t *)p, v, n);
-}
+/* memset_l, memset_p removed - unused */
 
-static inline void *memset_p(void **p, void *v, __kernel_size_t n)
-{
-	if (BITS_PER_LONG == 32)
-		return memset32((uint32_t *)p, (uintptr_t)v, n);
-	else
-		return memset64((uint64_t *)p, (uintptr_t)v, n);
-}
-
-extern void **__memcat_p(void **a, void **b);
-#define memcat_p(a, b) ({					\
-	BUILD_BUG_ON_MSG(!__same_type(*(a), *(b)),		\
-			 "type mismatch in memcat_p()");	\
-	(typeof(*a) *)__memcat_p((void **)(a), (void **)(b));	\
-})
 
 #ifndef __HAVE_ARCH_MEMCPY
 extern void * memcpy(void *,const void *,__kernel_size_t);
@@ -158,12 +131,6 @@ extern int bcmp(const void *,const void *,__kernel_size_t);
 #endif
 #ifndef __HAVE_ARCH_MEMCHR
 extern void * memchr(const void *,int,__kernel_size_t);
-#endif
-#ifndef __HAVE_ARCH_MEMCPY_FLUSHCACHE
-static inline void memcpy_flushcache(void *dst, const void *src, size_t cnt)
-{
-	memcpy(dst, src, cnt);
-}
 #endif
 
 void *memchr_inv(const void *s, int c, size_t n);
@@ -184,7 +151,6 @@ extern bool sysfs_streq(const char *s1, const char *s2);
 int match_string(const char * const *array, size_t n, const char *string);
 int __sysfs_match_string(const char * const *array, size_t n, const char *s);
 
- 
 #define sysfs_match_string(_a, _s) __sysfs_match_string(_a, ARRAY_SIZE(_a), _s)
 
 
@@ -193,22 +159,19 @@ extern ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
 
 int ptr_to_hashval(const void *ptr, unsigned long *hashval_out);
 
- 
 static inline bool strstarts(const char *str, const char *prefix)
 {
 	return strncmp(str, prefix, strlen(prefix)) == 0;
 }
 
-size_t memweight(const void *ptr, size_t bytes);
+/* memweight removed - unused */
 
- 
 static inline void memzero_explicit(void *s, size_t count)
 {
 	memset(s, 0, count);
 	barrier_data(s);
 }
 
- 
 static inline const char *kbasename(const char *path)
 {
 	const char *tail = strrchr(path, '/');
@@ -223,25 +186,8 @@ static inline const char *kbasename(const char *path)
 void memcpy_and_pad(void *dest, size_t dest_len, const void *src, size_t count,
 		    int pad);
 
- 
-#define memset_after(obj, v, member)					\
-({									\
-	u8 *__ptr = (u8 *)(obj);					\
-	typeof(v) __val = (v);						\
-	memset(__ptr + offsetofend(typeof(*(obj)), member), __val,	\
-	       sizeof(*(obj)) - offsetofend(typeof(*(obj)), member));	\
-})
+/* memset_after, memset_startat removed - unused */
 
- 
-#define memset_startat(obj, v, member)					\
-({									\
-	u8 *__ptr = (u8 *)(obj);					\
-	typeof(v) __val = (v);						\
-	memset(__ptr + offsetof(typeof(*(obj)), member), __val,		\
-	       sizeof(*(obj)) - offsetof(typeof(*(obj)), member));	\
-})
-
- 
 static __always_inline size_t str_has_prefix(const char *str, const char *prefix)
 {
 	size_t len = strlen(prefix);

@@ -1,5 +1,3 @@
- 
- 
 #include <linux/ctype.h>
 #include <linux/errno.h>
 #include <linux/export.h>
@@ -27,7 +25,6 @@ const char *_parse_integer_fixup_radix(const char *s, unsigned int *base)
 	return s;
 }
 
- 
 noinline
 unsigned int _parse_integer_limit(const char *s, unsigned int base, unsigned long long *p,
 				  size_t max_chars)
@@ -90,7 +87,6 @@ static int _kstrtoull(const char *s, unsigned int base, unsigned long long *res)
 	return 0;
 }
 
- 
 noinline
 int kstrtoull(const char *s, unsigned int base, unsigned long long *res)
 {
@@ -99,7 +95,6 @@ int kstrtoull(const char *s, unsigned int base, unsigned long long *res)
 	return _kstrtoull(s, base, res);
 }
 
- 
 noinline
 int kstrtoll(const char *s, unsigned int base, long long *res)
 {
@@ -124,7 +119,6 @@ int kstrtoll(const char *s, unsigned int base, long long *res)
 	return 0;
 }
 
- 
 int _kstrtoul(const char *s, unsigned int base, unsigned long *res)
 {
 	unsigned long long tmp;
@@ -139,7 +133,6 @@ int _kstrtoul(const char *s, unsigned int base, unsigned long *res)
 	return 0;
 }
 
- 
 int _kstrtol(const char *s, unsigned int base, long *res)
 {
 	long long tmp;
@@ -154,7 +147,6 @@ int _kstrtol(const char *s, unsigned int base, long *res)
 	return 0;
 }
 
- 
 noinline
 int kstrtouint(const char *s, unsigned int base, unsigned int *res)
 {
@@ -170,7 +162,6 @@ int kstrtouint(const char *s, unsigned int base, unsigned int *res)
 	return 0;
 }
 
- 
 noinline
 int kstrtoint(const char *s, unsigned int base, int *res)
 {
@@ -246,7 +237,6 @@ int kstrtos8(const char *s, unsigned int base, s8 *res)
 	return 0;
 }
 
- 
 noinline
 int kstrtobool(const char *s, bool *res)
 {
@@ -290,7 +280,6 @@ int kstrtobool(const char *s, bool *res)
 	return -EINVAL;
 }
 
- 
 /* Stubbed - not used externally */
 int kstrtobool_from_user(const char __user *s, size_t count, bool *res)
 {

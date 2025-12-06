@@ -1,4 +1,3 @@
- 
 
 #include <linux/module.h>
 #include <linux/types.h>
@@ -28,7 +27,6 @@ static struct vgastate vgastate;
 #define BLANK 0x0020
 
 #define VGA_FONTWIDTH       8    
- 
 
 static const char *vgacon_startup(void);
 static void vgacon_init(struct vc_data *c, int init);
@@ -43,7 +41,6 @@ static void vgacon_invert_region(struct vc_data *c, u16 * p, int count);
 static struct uni_pagedir *vgacon_uni_pagedir;
 static int vgacon_refcount;
 
- 
 static unsigned long	vga_vram_base		__read_mostly;	 
 static unsigned long	vga_vram_end		__read_mostly;	 
 static unsigned int	vga_vram_size		__read_mostly;	 
@@ -73,7 +70,6 @@ static int __init no_scroll(char *str)
 
 __setup("no-scroll", no_scroll);
 
- 
 static inline void write_vga(unsigned char reg, unsigned int val)
 {
 	unsigned int v1, v2;
@@ -580,7 +576,6 @@ static void vgacon_set_palette(struct vc_data *vc, const unsigned char *table)
 	vga_set_palette(vc, table);
 }
 
- 
 /* vga_state struct and vga_vesa_blank/unblank removed: VESA power saving not needed */
 
 static void vga_vesa_blank(struct vgastate *state, int mode)
@@ -636,10 +631,8 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
 	}
 }
 
- 
 
 #define colourmap 0xa0000
- 
 #define blackwmap 0xa0000
 #define cmapsz 8192
 
@@ -755,7 +748,6 @@ static bool vgacon_scroll(struct vc_data *c, unsigned int t, unsigned int b,
 	return true;
 }
 
- 
 
 static void vgacon_clear(struct vc_data *vc, int sy, int sx, int height,
 			 int width) { }

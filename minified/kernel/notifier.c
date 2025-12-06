@@ -1,4 +1,3 @@
- 
 #include <linux/kdebug.h>
 #include <linux/kprobes.h>
 #include <linux/export.h>
@@ -7,10 +6,8 @@
 #include <linux/vmalloc.h>
 #include <linux/reboot.h>
 
- 
 BLOCKING_NOTIFIER_HEAD(reboot_notifier_list);
 
- 
 
 static int notifier_chain_register(struct notifier_block **nl,
 				   struct notifier_block *n,
@@ -46,7 +43,6 @@ static int notifier_chain_unregister(struct notifier_block **nl,
 	return -ENOENT;
 }
 
- 
 static int notifier_call_chain(struct notifier_block **nl,
 			       unsigned long val, void *v,
 			       int nr_to_call, int *nr_calls)
@@ -92,7 +88,6 @@ int atomic_notifier_chain_register_unique_prio(struct atomic_notifier_head *nh,
 	return 0;
 }
 
- 
 int atomic_notifier_chain_unregister(struct atomic_notifier_head *nh,
 		struct notifier_block *n)
 {
@@ -106,7 +101,6 @@ int atomic_notifier_chain_unregister(struct atomic_notifier_head *nh,
 	return ret;
 }
 
- 
 int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 			       unsigned long val, void *v)
 {
@@ -120,13 +114,11 @@ int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 }
 NOKPROBE_SYMBOL(atomic_notifier_call_chain);
 
- 
 bool atomic_notifier_call_chain_is_empty(struct atomic_notifier_head *nh)
 {
 	return !rcu_access_pointer(nh->head);
 }
 
- 
 
 static int __blocking_notifier_chain_register(struct blocking_notifier_head *nh,
 					      struct notifier_block *n,
@@ -144,7 +136,6 @@ static int __blocking_notifier_chain_register(struct blocking_notifier_head *nh,
 	return ret;
 }
 
- 
 int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
 		struct notifier_block *n)
 {
@@ -158,7 +149,6 @@ int blocking_notifier_chain_register_unique_prio(struct blocking_notifier_head *
 	return 0;
 }
 
- 
 int blocking_notifier_chain_unregister(struct blocking_notifier_head *nh,
 		struct notifier_block *n)
 {
@@ -181,7 +171,6 @@ int blocking_notifier_call_chain_robust(struct blocking_notifier_head *nh,
 	return NOTIFY_DONE;
 }
 
- 
 int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 		unsigned long val, void *v)
 {
@@ -196,9 +185,7 @@ int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 	return ret;
 }
 
- 
 
- 
 int raw_notifier_chain_register(struct raw_notifier_head *nh,
 		struct notifier_block *n)
 {
@@ -219,16 +206,13 @@ int raw_notifier_call_chain_robust(struct raw_notifier_head *nh,
 	return NOTIFY_DONE;
 }
 
- 
 int raw_notifier_call_chain(struct raw_notifier_head *nh,
 		unsigned long val, void *v)
 {
 	return notifier_call_chain(&nh->head, val, v, -1, NULL);
 }
 
- 
 
- 
 /* Stub: srcu notifier functions not used in minimal kernel */
 int srcu_notifier_chain_register(struct srcu_notifier_head *nh,
 		struct notifier_block *n) { return 0; }

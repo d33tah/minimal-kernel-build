@@ -1,4 +1,3 @@
- 
 #ifndef __VDSO_CONST_H
 #define __VDSO_CONST_H
 

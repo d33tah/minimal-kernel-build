@@ -1,5 +1,3 @@
- 
- 
 
 #ifndef _LINUX_SYSCALLS_H
 #define _LINUX_SYSCALLS_H
@@ -69,7 +67,6 @@ struct landlock_ruleset_attr;
 enum landlock_rule_type;
 
 #include <linux/types.h>
-#include <linux/aio_abi.h>
 #include <linux/capability.h>
 #include <linux/signal.h>
 #include <linux/list.h>
@@ -81,13 +78,13 @@ enum landlock_rule_type;
 #include <linux/key.h>
 #include <linux/personality.h>
 #include <linux/fcntl.h>
-#include <trace/syscall.h>
 
- 
+/* Inlined from trace/syscall.h */
+static inline void syscall_tracepoint_update(struct task_struct *p) {}
+
 #include <asm/syscall_wrapper.h>
 #include <asm/syscall.h>
 
- 
 #define __MAP0(m,...)
 #define __MAP1(m,t,a,...) m(t,a)
 #define __MAP2(m,t,a,...) m(t,a), __MAP1(m,__VA_ARGS__)
@@ -107,12 +104,8 @@ enum landlock_rule_type;
 #define __SC_ARGS(t, a)	a
 #define __SC_TEST(t, a) (void)BUILD_BUG_ON_ZERO(!__TYPE_IS_LL(t) && sizeof(t) > sizeof(long))
 
-#define SYSCALL_METADATA(sname, nb, ...)  
-
-static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
-{
-	return 0;
-}
+#define SYSCALL_METADATA(sname, nb, ...)
+/* is_syscall_trace_event removed - unused */
 
 #ifndef SYSCALL_DEFINE0
 #define __MAP0(m,...)
@@ -149,7 +142,6 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 
 #define __PROTECT(...) asmlinkage_protect(__VA_ARGS__)
 
- 
 #ifndef __SYSCALL_DEFINEx
 #define __SYSCALL_DEFINEx(x, name, ...)					\
 	__diag_push();							\
@@ -171,7 +163,6 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
 #endif  
 
- 
 #ifdef __LITTLE_ENDIAN
 #define SC_ARG64(name) u32, name##_lo, u32, name##_hi
 #else
@@ -186,7 +177,6 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
 #define SYSCALL32_DEFINE5 SYSCALL_DEFINE5
 #define SYSCALL32_DEFINE6 SYSCALL_DEFINE6
 
- 
 static inline void addr_limit_user_check(void)
 {
 #ifdef TIF_FSCHECK
@@ -199,10 +189,8 @@ static inline void addr_limit_user_check(void)
 #endif
 }
 
- 
 
 
- 
 ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count);
 int ksys_fchown(unsigned int fd, uid_t user, gid_t group);
 ssize_t ksys_read(unsigned int fd, char __user *buf, size_t count);
@@ -230,18 +218,7 @@ ssize_t ksys_readahead(int fd, loff_t offset, size_t count);
 extern int do_fchownat(int dfd, const char __user *filename, uid_t user,
 		       gid_t group, int flag);
 
-static inline long ksys_chown(const char __user *filename, uid_t user,
-			      gid_t group)
-{
-	return do_fchownat(AT_FDCWD, filename, user, group, 0);
-}
-
-static inline long ksys_lchown(const char __user *filename, uid_t user,
-			       gid_t group)
-{
-	return do_fchownat(AT_FDCWD, filename, user, group,
-			     AT_SYMLINK_NOFOLLOW);
-}
+/* ksys_chown, ksys_lchown removed - unused */
 
 extern long do_sys_ftruncate(unsigned int fd, loff_t length, int small);
 
@@ -250,22 +227,7 @@ static inline long ksys_ftruncate(unsigned int fd, loff_t length)
 	return do_sys_ftruncate(fd, length, 1);
 }
 
-extern long do_sys_truncate(const char __user *pathname, loff_t length);
-
-static inline long ksys_truncate(const char __user *pathname, loff_t length)
-{
-	return do_sys_truncate(pathname, length);
-}
-
-static inline unsigned int ksys_personality(unsigned int personality)
-{
-	unsigned int old = current->personality;
-
-	if (personality != 0xffffffff)
-		set_personality(personality);
-
-	return old;
-}
+/* ksys_truncate, ksys_personality removed - unused */
 
 /* IPC ksys_* declarations removed - unused */
 

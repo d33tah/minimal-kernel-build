@@ -1,4 +1,3 @@
- 
 #ifndef __VDSO_BITS_H
 #define __VDSO_BITS_H
 

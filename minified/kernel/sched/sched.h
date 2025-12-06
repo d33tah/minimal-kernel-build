@@ -3,16 +3,15 @@
 #ifndef _KERNEL_SCHED_SCHED_H
 #define _KERNEL_SCHED_SCHED_H
 
-
-#include <linux/sched/autogroup.h>
-#include <linux/sched/cpufreq.h>
+#define SCHED_CPUFREQ_IOWAIT	(1U << 0)
 #include <linux/sched/deadline.h>
 #include <linux/sched.h>
 #include <linux/sched/loadavg.h>
 #include <linux/sched/mm.h>
 
 #include <linux/sched/signal.h>
-#include <linux/sched/smt.h>
+/* sched/smt.h inlined */
+void arch_smt_update(void);
 #include <linux/sched/stat.h>
 #include <linux/sched/sysctl.h>
 
@@ -52,7 +51,7 @@
 #include <linux/seqlock.h>
 
 
-#include <linux/static_key.h>
+#include <linux/jump_label.h>
 #include <linux/stop_machine.h>
 
 #include <linux/syscalls.h>
@@ -157,13 +156,6 @@ static inline int task_has_dl_policy(struct task_struct *p)
 
 #define cap_scale(v, s) ((v)*(s) >> SCHED_CAPACITY_SHIFT)
 
-static inline void update_avg(u64 *avg, u64 sample)
-{
-	s64 diff = sample - *avg;
-	*avg += diff / 8;
-}
-
- 
 #define shr_bound(val, shift)							\
 	(val >> min_t(typeof(shift), shift, BITS_PER_TYPE(typeof(val)) - 1))
 
@@ -172,20 +164,6 @@ static inline void update_avg(u64 *avg, u64 sample)
 
 #define SCHED_DL_FLAGS (SCHED_FLAG_RECLAIM | SCHED_FLAG_DL_OVERRUN | SCHED_FLAG_SUGOV)
 
-static inline bool dl_entity_is_special(struct sched_dl_entity *dl_se)
-{
-	return false;
-}
-
- 
-static inline bool
-dl_entity_preempt(struct sched_dl_entity *a, struct sched_dl_entity *b)
-{
-	return dl_entity_is_special(a) ||
-	       dl_time_before(a->deadline, b->deadline);
-}
-
- 
 struct rt_prio_array {
 	DECLARE_BITMAP(bitmap, MAX_RT_PRIO+1);  
 	struct list_head queue[MAX_RT_PRIO];
@@ -208,25 +186,12 @@ struct dl_bandwidth {
 	u64			dl_period;
 };
 
-static inline int dl_bandwidth_enabled(void)
-{
-	return sysctl_sched_rt_runtime >= 0;
-}
 
- 
 struct dl_bw {
 	raw_spinlock_t		lock;
 	u64			bw;
 	u64			total_bw;
 };
-
- 
-static inline bool dl_task_fits_capacity(struct task_struct *p, int cpu)
-{
-	unsigned long cap = arch_scale_cpu_capacity(cpu);
-
-	return cap_scale(p->dl.dl_deadline, cap) >= p->dl.dl_runtime;
-}
 
 extern void init_dl_bw(struct dl_bw *dl_b);
 extern int  sched_dl_global_validate(void);
@@ -268,14 +233,7 @@ struct cfs_rq {
 
 };
 
-static inline int rt_bandwidth_enabled(void)
-{
-	return sysctl_sched_rt_runtime >= 0;
-}
 
- 
-
- 
 struct rt_rq {
 	struct rt_prio_array	active;
 	unsigned int		rt_nr_running;
@@ -290,12 +248,6 @@ struct rt_rq {
 
 };
 
-static inline bool rt_rq_is_runnable(struct rt_rq *rt_rq)
-{
-	return rt_rq->rt_queued && rt_rq->rt_nr_running;
-}
-
- 
 struct dl_rq {
 	 
 	struct rb_root_cached	root;
@@ -318,14 +270,6 @@ struct dl_rq {
 
 static inline void se_update_runnable(struct sched_entity *se) {}
 
-static inline long se_runnable(struct sched_entity *se)
-{
-	return !!se->on_rq;
-}
-
-
-
- 
 struct rq {
 	 
 	raw_spinlock_t		__lock;
@@ -388,11 +332,6 @@ static inline int cpu_of(struct rq *rq)
 
 #define MDF_PUSH	0x01
 
-static inline bool is_migration_disabled(struct task_struct *p)
-{
-	return false;
-}
-
 struct sched_group;
 
 static inline bool sched_core_enabled(struct rq *rq)
@@ -413,23 +352,6 @@ static inline raw_spinlock_t *rq_lockp(struct rq *rq)
 static inline raw_spinlock_t *__rq_lockp(struct rq *rq)
 {
 	return &rq->__lock;
-}
-
-static inline bool sched_cpu_cookie_match(struct rq *rq, struct task_struct *p)
-{
-	return true;
-}
-
-static inline bool sched_core_cookie_match(struct rq *rq, struct task_struct *p)
-{
-	return true;
-}
-
-static inline bool sched_group_cookie_match(struct rq *rq,
-					    struct task_struct *p,
-					    struct sched_group *group)
-{
-	return true;
 }
 
 static inline void lockdep_assert_rq_held(struct rq *rq)
@@ -555,12 +477,7 @@ static inline void rq_clock_skip_update(struct rq *rq)
 	rq->clock_update_flags |= RQCF_REQ_SKIP;
 }
 
- 
-static inline void rq_clock_cancel_skipupdate(struct rq *rq)
-{
-	lockdep_assert_rq_held(rq);
-	rq->clock_update_flags &= ~RQCF_REQ_SKIP;
-}
+/* rq_clock_cancel_skipupdate removed - unused */
 
 struct rq_flags {
 	unsigned long flags;
@@ -672,14 +589,7 @@ this_rq_lock_irq(struct rq_flags *rf)
 	return rq;
 }
 
-static inline void sched_init_numa(int offline_node) { }
-static inline void sched_update_numa(int cpu, bool online) { }
-static inline void sched_domains_numa_masks_set(unsigned int cpu) { }
-static inline void sched_domains_numa_masks_clear(unsigned int cpu) { }
-static inline int sched_numa_find_closest(const struct cpumask *cpus, int cpu)
-{
-	return nr_cpu_ids;
-}
+/* sched_init_numa, sched_update_numa, sched_domains_numa_masks_set/clear, sched_numa_find_closest removed - unused */
 
 static inline void
 init_numa_balancing(unsigned long clone_flags, struct task_struct *p)
@@ -690,7 +600,7 @@ init_numa_balancing(unsigned long clone_flags, struct task_struct *p)
 #include "stats.h"
 
 
-static inline void sched_core_account_forceidle(struct rq *rq) {}
+/* sched_core_account_forceidle removed - unused */
 
 static inline void sched_core_tick(struct rq *rq) {}
 
@@ -877,21 +787,6 @@ extern const struct sched_class rt_sched_class;
 extern const struct sched_class fair_sched_class;
 extern const struct sched_class idle_sched_class;
 
-static inline bool sched_stop_runnable(struct rq *rq)
-{
-	return rq->stop && task_on_rq_queued(rq->stop);
-}
-
-static inline bool sched_dl_runnable(struct rq *rq)
-{
-	return rq->dl.dl_nr_running > 0;
-}
-
-static inline bool sched_rt_runnable(struct rq *rq)
-{
-	return rq->rt.rt_queued > 0;
-}
-
 static inline bool sched_fair_runnable(struct rq *rq)
 {
 	return rq->cfs.nr_running > 0;
@@ -909,11 +804,6 @@ extern struct task_struct *pick_next_task_idle(struct rq *rq);
 static inline void idle_set_state(struct rq *rq,
 				  struct cpuidle_state *idle_state)
 {
-}
-
-static inline struct cpuidle_state *idle_get_state(struct rq *rq)
-{
-	return NULL;
 }
 
 extern void schedule_idle(void);
@@ -949,7 +839,7 @@ unsigned long to_ratio(u64 period, u64 runtime);
 extern void init_entity_runnable_average(struct sched_entity *se);
 extern void post_init_entity_util_avg(struct task_struct *p);
 
-static inline int sched_tick_offload_init(void) { return 0; }
+/* sched_tick_offload_init removed - unused */
 static inline void sched_update_tick_dependency(struct rq *rq) { }
 
 static inline void add_nr_running(struct rq *rq, unsigned count)
@@ -987,16 +877,6 @@ static inline int hrtick_enabled_fair(struct rq *rq)
 	return 0;
 }
 
-static inline int hrtick_enabled_dl(struct rq *rq)
-{
-	return 0;
-}
-
-static inline int hrtick_enabled(struct rq *rq)
-{
-	return 0;
-}
-
 
 #ifndef arch_scale_freq_tick
 static __always_inline
@@ -1014,32 +894,6 @@ unsigned long arch_scale_freq_capacity(int cpu)
 }
 #endif
 
-static inline void double_rq_clock_clear_update(struct rq *rq1, struct rq *rq2) {}
-
-
- 
-static inline void double_rq_lock(struct rq *rq1, struct rq *rq2)
-	__acquires(rq1->lock)
-	__acquires(rq2->lock)
-{
-	BUG_ON(!irqs_disabled());
-	BUG_ON(rq1 != rq2);
-	raw_spin_rq_lock(rq1);
-	__acquire(rq2->lock);	 
-	double_rq_clock_clear_update(rq1, rq2);
-}
-
- 
-static inline void double_rq_unlock(struct rq *rq1, struct rq *rq2)
-	__releases(rq1->lock)
-	__releases(rq2->lock)
-{
-	BUG_ON(rq1 != rq2);
-	raw_spin_rq_unlock(rq1);
-	__release(rq2->lock);
-}
-
-
 extern struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq);
 extern struct sched_entity *__pick_last_entity(struct cfs_rq *cfs_rq);
 
@@ -1052,7 +906,7 @@ extern void init_dl_rq(struct dl_rq *dl_rq);
 extern void cfs_bandwidth_usage_inc(void);
 extern void cfs_bandwidth_usage_dec(void);
 
-static inline void nohz_balance_exit_idle(struct rq *rq) { }
+/* nohz_balance_exit_idle removed - unused */
 
 static inline void nohz_run_idle_balance(int cpu) { }
 
@@ -1068,34 +922,9 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
 #endif
 
 
-static inline
-unsigned long uclamp_rq_util_with(struct rq *rq, unsigned long util,
-				  struct task_struct *p)
-{
-	return util;
-}
-
-static inline bool uclamp_rq_is_capped(struct rq *rq) { return false; }
-
-static inline bool uclamp_is_used(void)
-{
-	return false;
-}
-
-static inline unsigned long cpu_util_irq(struct rq *rq)
-{
-	return 0;
-}
-
-static inline
-unsigned long scale_irq_capacity(unsigned long util, unsigned long irq, unsigned long max)
-{
-	return util;
-}
-
+/* uclamp_rq_util_with removed - unused */
 
 #define perf_domain_span(pd) NULL
-static inline bool sched_energy_enabled(void) { return false; }
 
 
 static inline void membarrier_switch_mm(struct rq *rq,

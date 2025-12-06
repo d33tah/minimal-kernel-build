@@ -1,8 +1,8 @@
- 
 #ifndef CN_PROC_H
 #define CN_PROC_H
 
-#include <uapi/linux/cn_proc.h>
+#define PROC_EVENT_UID  0x00000004
+#define PROC_EVENT_GID  0x00000040
 
 static inline void proc_fork_connector(struct task_struct *task)
 {}

@@ -1,13 +1,18 @@
-
-
+/* Minimal audit.h - stubs for !CONFIG_AUDIT */
+/* --- 2025-12-06 13:10 --- elf-em.h replaced with elf.h */
 #ifndef _LINUX_AUDIT_H_
 #define _LINUX_AUDIT_H_
 
-#include <linux/sched.h>
 #include <linux/ptrace.h>
+#include <linux/types.h>
+#include <linux/elf.h>
 
-#include <uapi/linux/audit.h>
+/* From uapi/linux/audit.h - inlined */
+#define __AUDIT_ARCH_64BIT 0x80000000
+#define __AUDIT_ARCH_LE	   0x40000000
+#define AUDIT_ARCH_I386		(EM_386|__AUDIT_ARCH_LE)
 
+struct task_struct;
 struct audit_buffer;
 struct audit_context;
 struct kern_ipc_perm;
@@ -40,31 +45,10 @@ struct filename;
 #define AUDIT_ON	1
 #define AUDIT_LOCKED	2
 
-static inline __printf(4, 5)
-void audit_log(struct audit_context *ctx, gfp_t gfp_mask, int type,
-	       const char *fmt, ...)
-{ }
-static inline struct audit_buffer *audit_log_start(struct audit_context *ctx,
-						   gfp_t gfp_mask, int type)
-{
-	return NULL;
-}
-static inline __printf(2, 3)
-void audit_log_format(struct audit_buffer *ab, const char *fmt, ...)
-{ }
-static inline void audit_log_end(struct audit_buffer *ab)
-{ }
-/* audit_log_untrustedstring, audit_log_d_path, audit_log_path_denied, audit_log_task_context removed - unused */
-/* audit_get_loginuid, audit_get_sessionid removed - unused */
+/* audit_log, audit_log_start, audit_log_format, audit_log_end removed - unused */
+/* audit_signal_info removed - unused */
 
 #define audit_enabled AUDIT_OFF
-
-static inline int audit_signal_info(int sig, struct task_struct *t)
-{
-	return 0;
-}
-
-/* audit_is_compat removed - unused */
 
 static inline int audit_alloc(struct task_struct *task)
 {

@@ -1,8 +1,6 @@
- 
 #ifndef _LINUX_JUMP_LABEL_H
 #define _LINUX_JUMP_LABEL_H
 
- 
 
 #ifndef __ASSEMBLY__
 
@@ -74,18 +72,7 @@ static inline void static_key_slow_dec(struct static_key *key)
 #define static_key_slow_inc_cpuslocked(key) static_key_slow_inc(key)
 #define static_key_slow_dec_cpuslocked(key) static_key_slow_dec(key)
 
-static inline int jump_label_text_reserved(void *start, void *end)
-{
-	return 0;
-}
-
-static inline void jump_label_lock(void) {}
-static inline void jump_label_unlock(void) {}
-
-static inline int jump_label_apply_nops(struct module *mod)
-{
-	return 0;
-}
+/* jump_label_text_reserved, jump_label_apply_nops removed - unused */
 
 static inline void static_key_enable(struct static_key *key)
 {
@@ -119,9 +106,7 @@ static inline void static_key_disable(struct static_key *key)
 #define STATIC_KEY_INIT STATIC_KEY_INIT_FALSE
 #define jump_label_enabled static_key_enabled
 
- 
 
- 
 
 struct static_key_true {
 	struct static_key key;
@@ -197,14 +182,12 @@ extern bool ____wrong_branch_error(void);
 	(IS_ENABLED(config) ? static_branch_likely(x)			\
 			    : static_branch_unlikely(x))
 
- 
 
 #define static_branch_inc(x)		static_key_slow_inc(&(x)->key)
 #define static_branch_dec(x)		static_key_slow_dec(&(x)->key)
 #define static_branch_inc_cpuslocked(x)	static_key_slow_inc_cpuslocked(&(x)->key)
 #define static_branch_dec_cpuslocked(x)	static_key_slow_dec_cpuslocked(&(x)->key)
 
- 
 
 #define static_branch_enable(x)			static_key_enable(&(x)->key)
 #define static_branch_disable(x)		static_key_disable(&(x)->key)

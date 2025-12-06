@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_COMPILER_TYPES_H
 #define __LINUX_COMPILER_TYPES_H
 
@@ -11,9 +10,7 @@
 # define BTF_TYPE_TAG(value)  
 #endif
 
- 
 #ifdef __CHECKER__
- 
 # define __kernel	__attribute__((address_space(0)))
 # define __user		__attribute__((noderef, address_space(__user)))
 # define __iomem	__attribute__((noderef, address_space(__iomem)))
@@ -21,7 +18,6 @@
 # define __rcu		__attribute__((noderef, address_space(__rcu)))
 static inline void __chk_user_ptr(const volatile void __user *ptr) { }
 static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
- 
 # define __must_hold(x)	__attribute__((context(x,1,1)))
 # define __acquires(x)	__attribute__((context(x,0,1)))
 # define __cond_acquires(x) __attribute__((context(x,0,-1)))
@@ -29,14 +25,12 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 # define __acquire(x)	__context__(x,1)
 # define __release(x)	__context__(x,-1)
 # define __cond_lock(x,c)	((c) ? ({ __acquire(x); 1; }) : 0)
- 
 # define __force	__attribute__((force))
 # define __nocast	__attribute__((nocast))
 # define __safe		__attribute__((safe))
 # define __private	__attribute__((noderef))
 # define ACCESS_PRIVATE(p, member) (*((typeof((p)->member) __force *) &(p)->member))
 #else  
- 
 # define __kernel
 # ifdef STRUCTLEAK_PLUGIN
 #  define __user	__attribute__((user))
@@ -48,7 +42,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 # define __rcu
 # define __chk_user_ptr(x)	(void)0
 # define __chk_io_ptr(x)	(void)0
- 
 # define __must_hold(x)
 # define __acquires(x)
 # define __cond_acquires(x)
@@ -56,7 +49,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 # define __acquire(x)	(void)0
 # define __release(x)	(void)0
 # define __cond_lock(x,c) (c)
- 
 # define __force
 # define __nocast
 # define __safe
@@ -65,35 +57,28 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 # define __builtin_warning(x, y...) (1)
 #endif  
 
- 
 #define ___PASTE(a,b) a##b
 #define __PASTE(a,b) ___PASTE(a,b)
 
 #ifdef __KERNEL__
 
- 
 #include <linux/compiler_attributes.h>
 
- 
 
- 
 #ifndef __has_builtin
 #define __has_builtin(x) (0)
 #endif
 
- 
 #ifdef __clang__
 #include <linux/compiler-clang.h>
 #elif defined(__INTEL_COMPILER)
 #include <linux/compiler-intel.h>
 #elif defined(__GNUC__)
- 
 #include <linux/compiler-gcc.h>
 #else
 #error "Unknown compiler"
 #endif
 
- 
 
 struct ftrace_branch_data {
 	const char *func;
@@ -125,28 +110,21 @@ struct ftrace_likely_data {
 #define notrace			__attribute__((__no_instrument_function__))
 #endif
 
- 
 #define __naked			__attribute__((__naked__)) notrace
 
- 
 #define inline inline __gnu_inline __inline_maybe_unused notrace
 
- 
 #define __inline__ inline
 
- 
 #ifdef KBUILD_EXTRA_WARN1
 #define __inline_maybe_unused
 #else
 #define __inline_maybe_unused __maybe_unused
 #endif
 
- 
 #define noinline_for_stack noinline
 
- 
 #ifdef __SANITIZE_ADDRESS__
- 
 # define __no_kasan_or_inline __no_sanitize_address notrace __maybe_unused
 # define __no_sanitize_or_inline __no_kasan_or_inline
 #else
@@ -154,7 +132,6 @@ struct ftrace_likely_data {
 #endif
 
 #ifdef __SANITIZE_THREAD__
- 
 # define __no_kcsan __no_sanitize_thread __disable_sanitizer_instrumentation
 # define __no_sanitize_or_inline __no_kcsan notrace __maybe_unused
 #else
@@ -165,7 +142,6 @@ struct ftrace_likely_data {
 #define __no_sanitize_or_inline __always_inline
 #endif
 
- 
 #define noinstr								\
 	noinline notrace __attribute((__section__(".noinstr.text")))	\
 	__no_kcsan __no_sanitize_address __no_profile __no_sanitize_coverage
@@ -174,7 +150,6 @@ struct ftrace_likely_data {
 
 #endif  
 
- 
 #ifndef __latent_entropy
 # define __latent_entropy
 #endif
@@ -182,7 +157,6 @@ struct ftrace_likely_data {
 #if defined(RANDSTRUCT) && !defined(__CHECKER__)
 # define __randomize_layout __designated_init __attribute__((randomize_layout))
 # define __no_randomize_layout __attribute__((no_randomize_layout))
- 
 # define randomized_struct_fields_start	struct {
 # define randomized_struct_fields_end	} __randomize_layout;
 #else
@@ -204,7 +178,6 @@ struct ftrace_likely_data {
 # define __cficanonical
 #endif
 
- 
 #ifdef __alloc_size__
 # define __alloc_size(x, ...)	__alloc_size__(x, ## __VA_ARGS__) __malloc
 #else
@@ -217,11 +190,8 @@ struct ftrace_likely_data {
 
 #define asm_inline asm __inline
 
- 
 #define __same_type(a, b) __builtin_types_compatible_p(typeof(a), typeof(b))
 
- 
- 
 #define __scalar_type_to_expr_cases(type)				\
 		unsigned type:	(unsigned type)0,			\
 		signed type:	(signed type)0
@@ -236,7 +206,6 @@ struct ftrace_likely_data {
 			 __scalar_type_to_expr_cases(long long),	\
 			 default: (x)))
 
- 
 #define __native_word(t) \
 	(sizeof(t) == sizeof(char) || sizeof(t) == sizeof(short) || \
 	 sizeof(t) == sizeof(int) || sizeof(t) == sizeof(long))
@@ -257,7 +226,6 @@ struct ftrace_likely_data {
 #define _compiletime_assert(condition, msg, prefix, suffix) \
 	__compiletime_assert(condition, msg, prefix, suffix)
 
- 
 #define compiletime_assert(condition, msg) \
 	_compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
 
@@ -265,7 +233,6 @@ struct ftrace_likely_data {
 	compiletime_assert(__native_word(t),				\
 		"Need native word sized stores/loads for atomicity.")
 
- 
 #ifndef __diag
 #define __diag(string)
 #endif

@@ -115,40 +115,14 @@ static inline int pte_young(pte_t pte)
 	return pte_flags(pte) & _PAGE_ACCESSED;
 }
 
-static inline int pmd_dirty(pmd_t pmd)
-{
-	return pmd_flags(pmd) & _PAGE_DIRTY;
-}
-
-static inline int pmd_young(pmd_t pmd)
-{
-	return pmd_flags(pmd) & _PAGE_ACCESSED;
-}
-
-static inline int pud_dirty(pud_t pud)
-{
-	return pud_flags(pud) & _PAGE_DIRTY;
-}
-
-static inline int pud_young(pud_t pud)
-{
-	return pud_flags(pud) & _PAGE_ACCESSED;
-}
+/* pmd_dirty, pmd_young, pud_dirty, pud_young removed - unused */
 
 static inline int pte_write(pte_t pte)
 {
 	return pte_flags(pte) & _PAGE_RW;
 }
 
-static inline int pte_huge(pte_t pte)
-{
-	return pte_flags(pte) & _PAGE_PSE;
-}
-
-static inline int pte_global(pte_t pte)
-{
-	return pte_flags(pte) & _PAGE_GLOBAL;
-}
+/* pte_huge, pte_global removed - unused */
 
 static inline int pte_exec(pte_t pte)
 {
@@ -185,10 +159,7 @@ static inline unsigned long pud_pfn(pud_t pud)
 	return (pfn & pud_pfn_mask(pud)) >> PAGE_SHIFT;
 }
 
-static inline unsigned long p4d_pfn(p4d_t p4d)
-{
-	return (p4d_val(p4d) & p4d_pfn_mask(p4d)) >> PAGE_SHIFT;
-}
+/* p4d_pfn removed - unused */
 
 static inline unsigned long pgd_pfn(pgd_t pgd)
 {
@@ -241,10 +212,7 @@ static inline pte_t pte_wrprotect(pte_t pte)
 	return pte_clear_flags(pte, _PAGE_RW);
 }
 
-static inline pte_t pte_mkexec(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_NX);
-}
+/* pte_mkexec removed - unused */
 
 static inline pte_t pte_mkdirty(pte_t pte)
 {
@@ -261,25 +229,7 @@ static inline pte_t pte_mkwrite(pte_t pte)
 	return pte_set_flags(pte, _PAGE_RW);
 }
 
-static inline pte_t pte_mkhuge(pte_t pte)
-{
-	return pte_set_flags(pte, _PAGE_PSE);
-}
-
-static inline pte_t pte_clrhuge(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_PSE);
-}
-
-static inline pte_t pte_mkglobal(pte_t pte)
-{
-	return pte_set_flags(pte, _PAGE_GLOBAL);
-}
-
-static inline pte_t pte_clrglobal(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_GLOBAL);
-}
+/* pte_mkhuge, pte_clrhuge, pte_mkglobal, pte_clrglobal removed - unused */
 
 static inline pte_t pte_mkspecial(pte_t pte)
 {
@@ -306,40 +256,21 @@ static inline pmd_t pmd_clear_flags(pmd_t pmd, pmdval_t clear)
 }
 
 
-static inline pmd_t pmd_mkold(pmd_t pmd)
-{
-	return pmd_clear_flags(pmd, _PAGE_ACCESSED);
-}
-
-static inline pmd_t pmd_mkclean(pmd_t pmd)
-{
-	return pmd_clear_flags(pmd, _PAGE_DIRTY);
-}
+/* pmd_mkold, pmd_mkclean removed - unused */
 
 static inline pmd_t pmd_wrprotect(pmd_t pmd)
 {
 	return pmd_clear_flags(pmd, _PAGE_RW);
 }
 
-static inline pmd_t pmd_mkdirty(pmd_t pmd)
-{
-	return pmd_set_flags(pmd, _PAGE_DIRTY | _PAGE_SOFT_DIRTY);
-}
+/* pmd_mkdirty removed - unused */
 
 static inline pmd_t pmd_mkdevmap(pmd_t pmd)
 {
 	return pmd_set_flags(pmd, _PAGE_DEVMAP);
 }
 
-static inline pmd_t pmd_mkhuge(pmd_t pmd)
-{
-	return pmd_set_flags(pmd, _PAGE_PSE);
-}
-
-static inline pmd_t pmd_mkyoung(pmd_t pmd)
-{
-	return pmd_set_flags(pmd, _PAGE_ACCESSED);
-}
+/* pmd_mkhuge, pmd_mkyoung removed - unused */
 
 static inline pmd_t pmd_mkwrite(pmd_t pmd)
 {
@@ -360,45 +291,7 @@ static inline pud_t pud_clear_flags(pud_t pud, pudval_t clear)
 	return native_make_pud(v & ~clear);
 }
 
-static inline pud_t pud_mkold(pud_t pud)
-{
-	return pud_clear_flags(pud, _PAGE_ACCESSED);
-}
-
-static inline pud_t pud_mkclean(pud_t pud)
-{
-	return pud_clear_flags(pud, _PAGE_DIRTY);
-}
-
-static inline pud_t pud_wrprotect(pud_t pud)
-{
-	return pud_clear_flags(pud, _PAGE_RW);
-}
-
-static inline pud_t pud_mkdirty(pud_t pud)
-{
-	return pud_set_flags(pud, _PAGE_DIRTY | _PAGE_SOFT_DIRTY);
-}
-
-static inline pud_t pud_mkdevmap(pud_t pud)
-{
-	return pud_set_flags(pud, _PAGE_DEVMAP);
-}
-
-static inline pud_t pud_mkhuge(pud_t pud)
-{
-	return pud_set_flags(pud, _PAGE_PSE);
-}
-
-static inline pud_t pud_mkyoung(pud_t pud)
-{
-	return pud_set_flags(pud, _PAGE_ACCESSED);
-}
-
-static inline pud_t pud_mkwrite(pud_t pud)
-{
-	return pud_set_flags(pud, _PAGE_RW);
-}
+/* pud_mkold, pud_mkclean, pud_wrprotect, pud_mkdirty, pud_mkdevmap, pud_mkhuge, pud_mkyoung, pud_mkwrite removed - unused */
 
 
  
@@ -437,13 +330,7 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 	return __pmd(pfn | check_pgprot(pgprot));
 }
 
-static inline pud_t pfn_pud(unsigned long page_nr, pgprot_t pgprot)
-{
-	phys_addr_t pfn = (phys_addr_t)page_nr << PAGE_SHIFT;
-	pfn ^= protnone_mask(pgprot_val(pgprot));
-	pfn &= PHYSICAL_PUD_PAGE_MASK;
-	return __pud(pfn | check_pgprot(pgprot));
-}
+/* pfn_pud removed - unused */
 
 static inline pmd_t pmd_mkinvalid(pmd_t pmd)
 {
@@ -453,26 +340,7 @@ static inline pmd_t pmd_mkinvalid(pmd_t pmd)
 
 static inline u64 flip_protnone_guard(u64 oldval, u64 val, u64 mask);
 
-static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
-{
-	pteval_t val = pte_val(pte), oldval = val;
-
-	 
-	val &= _PAGE_CHG_MASK;
-	val |= check_pgprot(newprot) & ~_PAGE_CHG_MASK;
-	val = flip_protnone_guard(oldval, val, PTE_PFN_MASK);
-	return __pte(val);
-}
-
-static inline pmd_t pmd_modify(pmd_t pmd, pgprot_t newprot)
-{
-	pmdval_t val = pmd_val(pmd), oldval = val;
-
-	val &= _HPAGE_CHG_MASK;
-	val |= check_pgprot(newprot) & ~_HPAGE_CHG_MASK;
-	val = flip_protnone_guard(oldval, val, PHYSICAL_PMD_PAGE_MASK);
-	return __pmd(val);
-}
+/* pte_modify, pmd_modify removed - unused */
 
  
 #define pgprot_modify pgprot_modify
@@ -516,10 +384,7 @@ static inline int is_new_memtype_allowed(u64 paddr, unsigned long size,
 pmd_t *populate_extra_pmd(unsigned long vaddr);
 pte_t *populate_extra_pte(unsigned long vaddr);
 
-static inline pgd_t pti_set_user_pgtbl(pgd_t *pgdp, pgd_t pgd)
-{
-	return pgd;
-}
+/* pti_set_user_pgtbl removed - unused */
 
 #endif	 
 
@@ -665,10 +530,7 @@ static inline int p4d_bad(p4d_t p4d)
 }
 #endif   
 
-static inline unsigned long p4d_index(unsigned long address)
-{
-	return (address >> P4D_SHIFT) & (PTRS_PER_P4D - 1);
-}
+/* p4d_index removed - unused */
 
 #if CONFIG_PGTABLE_LEVELS > 4
 static inline int pgd_present(pgd_t pgd)
@@ -923,25 +785,12 @@ static inline bool pgdp_maps_userspace(void *__ptr)
 static inline int pgd_large(pgd_t pgd) { return 0; }
 
 
- 
 static inline void clone_pgd_range(pgd_t *dst, pgd_t *src, int count)
 {
 	memcpy(dst, src, count * sizeof(pgd_t));
 }
 
-#define PTE_SHIFT ilog2(PTRS_PER_PTE)
-static inline int page_level_shift(enum pg_level level)
-{
-	return (PAGE_SHIFT - PTE_SHIFT) + level * PTE_SHIFT;
-}
-static inline unsigned long page_level_size(enum pg_level level)
-{
-	return 1UL << page_level_shift(level);
-}
-static inline unsigned long page_level_mask(enum pg_level level)
-{
-	return ~(page_level_size(level) - 1);
-}
+/* page_level_shift, page_level_size, page_level_mask removed - unused */
 
  
 static inline void update_mmu_cache(struct vm_area_struct *vma,
@@ -1028,10 +877,7 @@ static inline bool pud_access_permitted(pud_t pud, bool write)
 #define __HAVE_ARCH_PFN_MODIFY_ALLOWED 1
 extern bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot);
 
-static inline bool arch_has_pfn_modify_check(void)
-{
-	return boot_cpu_has_bug(X86_BUG_L1TF);
-}
+/* arch_has_pfn_modify_check removed - unused */
 
 #define arch_faults_on_old_pte arch_faults_on_old_pte
 static inline bool arch_faults_on_old_pte(void)

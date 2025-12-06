@@ -1,6 +1,4 @@
- 
 
- 
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -148,7 +146,6 @@ static void do_error_trap(struct pt_regs *regs, long error_code, char *str,
 	}
 }
 
- 
 static __always_inline void __user *error_get_trap_addr(struct pt_regs *regs)
 {
 	return (void __user *)uprobe_get_trap_addr(regs);
@@ -253,7 +250,6 @@ out:
 }
 
 
- 
 DEFINE_IDTENTRY_DF(exc_double_fault)
 {
 	static const char str[] = "double fault";
@@ -294,7 +290,6 @@ enum kernel_gp_hint {
 	GP_CANONICAL
 };
 
- 
 static enum kernel_gp_hint get_kernel_gp_address(struct pt_regs *regs,
 						 unsigned long *addr)
 {
@@ -310,7 +305,6 @@ static bool fixup_iopl_exception(struct pt_regs *regs)
 	return false;
 }
 
- 
 static bool try_fixup_enqcmd_gp(void)
 {
 	return false;
@@ -462,7 +456,6 @@ static __always_inline unsigned long debug_read_clear_dr6(void)
 	return dr6;
 }
 
- 
 
 static bool notify_debug(struct pt_regs *regs, unsigned long *dr6)
 {
@@ -559,7 +552,6 @@ out:
 	irqentry_exit_to_user_mode(regs);
 }
 
- 
 DEFINE_IDTENTRY_RAW(exc_debug)
 {
 	unsigned long dr6 = debug_read_clear_dr6();
@@ -570,7 +562,6 @@ DEFINE_IDTENTRY_RAW(exc_debug)
 		exc_debug_kernel(regs, dr6);
 }
 
- 
 static void math_error(struct pt_regs *regs, int trapnr)
 {
 	struct task_struct *task = current;

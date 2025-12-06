@@ -1,4 +1,3 @@
- 
 #include <linux/mm.h>
 #include <linux/gfp.h>
 #include <linux/hugetlb.h>
@@ -119,10 +118,8 @@ static void pgd_dtor(pgd_t *pgd)
 	spin_unlock(&pgd_lock);
 }
 
- 
 
 
- 
 #define PREALLOCATED_PMDS	0
 #define MAX_PREALLOCATED_PMDS	0
 #define PREALLOCATED_USER_PMDS	 0
@@ -171,7 +168,6 @@ static int preallocate_pmds(struct mm_struct *mm, pmd_t *pmds[], int count)
 	return 0;
 }
 
- 
 static void mop_up_one_pmd(struct mm_struct *mm, pgd_t *pgdp)
 {
 	pgd_t pgd = *pgdp;
@@ -223,7 +219,6 @@ static void pgd_prepopulate_user_pmd(struct mm_struct *mm,
 				     pgd_t *k_pgd, pmd_t *pmds[])
 {
 }
- 
 
 static inline pgd_t *_pgd_alloc(void)
 {
@@ -287,7 +282,6 @@ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 	_pgd_free(pgd);
 }
 
- 
 int ptep_set_access_flags(struct vm_area_struct *vma,
 			  unsigned long address, pte_t *ptep,
 			  pte_t entry, int dirty)
@@ -322,7 +316,6 @@ int ptep_clear_flush_young(struct vm_area_struct *vma,
 }
 
 
- 
 void __init reserve_top_address(unsigned long reserve)
 {
 	BUG_ON(fixmaps_set > 0);

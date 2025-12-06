@@ -10,6 +10,7 @@
 
 #ifndef __ASSEMBLY__
  
+/* 32-bit only kernel - removed x86_64 lm field */
 struct user_desc {
 	unsigned int  entry_number;
 	unsigned int  base_addr;
@@ -20,10 +21,6 @@ struct user_desc {
 	unsigned int  limit_in_pages:1;
 	unsigned int  seg_not_present:1;
 	unsigned int  useable:1;
-#ifdef __x86_64__
-	 
-	unsigned int  lm:1;
-#endif
 };
 
 #define MODIFY_LDT_CONTENTS_DATA	0

@@ -1,11 +1,91 @@
- 
- 
 
 #ifndef _LINUX_SELECTION_H_
 #define _LINUX_SELECTION_H_
 
-#include <linux/tiocl.h>
-#include <linux/vt_buffer.h>
+/* Inlined from vt_buffer.h */
+#include <linux/string.h>
+
+#include <asm/vga.h>
+
+#ifndef VT_BUF_HAVE_RW
+#define scr_writew(val, addr) (*(addr) = (val))
+#define scr_readw(addr) (*(addr))
+#endif
+
+#ifndef VT_BUF_HAVE_MEMSETW
+static inline void scr_memsetw(u16 *s, u16 c, unsigned int count)
+{
+#ifdef VT_BUF_HAVE_RW
+	count /= 2;
+	while (count--)
+		scr_writew(c, s++);
+#else
+	memset16(s, c, count / 2);
+#endif
+}
+#endif
+
+#ifndef VT_BUF_HAVE_MEMCPYW
+static inline void scr_memcpyw(u16 *d, const u16 *s, unsigned int count)
+{
+#ifdef VT_BUF_HAVE_RW
+	count /= 2;
+	while (count--)
+		scr_writew(scr_readw(s++), d++);
+#else
+	memcpy(d, s, count);
+#endif
+}
+#endif
+
+#ifndef VT_BUF_HAVE_MEMMOVEW
+static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count)
+{
+#ifdef VT_BUF_HAVE_RW
+	if (d < s)
+		scr_memcpyw(d, s, count);
+	else {
+		count /= 2;
+		d += count;
+		s += count;
+		while (count--)
+			scr_writew(scr_readw(--s), --d);
+	}
+#else
+	memmove(d, s, count);
+#endif
+}
+#endif
+/* End of inlined vt_buffer.h content */
+
+/* From uapi/linux/tiocl.h - inlined */
+#define TIOCL_SETSEL	2
+#define 	TIOCL_SELCHAR	0
+#define 	TIOCL_SELWORD	1
+#define 	TIOCL_SELLINE	2
+#define 	TIOCL_SELPOINTER	3
+#define 	TIOCL_SELCLEAR	4
+#define 	TIOCL_SELMOUSEREPORT	16
+#define 	TIOCL_SELBUTTONMASK	15
+struct tiocl_selection {
+	unsigned short xs;
+	unsigned short ys;
+	unsigned short xe;
+	unsigned short ye;
+	unsigned short sel_mode;
+};
+#define TIOCL_PASTESEL	3
+#define TIOCL_UNBLANKSCREEN	4
+#define TIOCL_SELLOADLUT	5
+#define TIOCL_GETSHIFTSTATE	6
+#define TIOCL_GETMOUSEREPORTING	7
+#define TIOCL_SETVESABLANK	10
+#define TIOCL_SETKMSGREDIRECT	11
+#define TIOCL_GETFGCONSOLE	12
+#define TIOCL_SCROLLCONSOLE	13
+#define TIOCL_BLANKSCREEN	14
+#define TIOCL_BLANKEDSCREEN	15
+#define TIOCL_GETKMSGREDIRECT	17
 
 struct tty_struct;
 struct vc_data;

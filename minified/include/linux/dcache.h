@@ -1,4 +1,3 @@
- 
 #ifndef __LINUX_DCACHE_H
 #define __LINUX_DCACHE_H
 
@@ -12,17 +11,33 @@
 #include <linux/cache.h>
 #include <linux/rcupdate.h>
 #include <linux/lockref.h>
-#include <linux/stringhash.h>
+#include <linux/hash.h>
+
+/* Inlined from stringhash.h */
+#define init_name_hash(salt)		(unsigned long)(salt)
+static inline unsigned long partial_name_hash(unsigned long c, unsigned long prevhash)
+{
+	return (prevhash + (c << 4) + (c >> 4)) * 11;
+}
+static inline unsigned int end_name_hash(unsigned long hash)
+{
+	return hash_long(hash, 32);
+}
+extern unsigned int __pure full_name_hash(const void *salt, const char *, unsigned int);
+#define hashlen_hash(hashlen) ((u32)(hashlen))
+#define hashlen_len(hashlen)  ((u32)((hashlen) >> 32))
+#define hashlen_create(hash, len) ((u64)(len)<<32 | (u32)(hash))
+extern u64 __pure hashlen_string(const void *salt, const char *name);
+/* End of inlined stringhash.h content */
+
 #include <linux/wait.h>
 
 struct path;
 struct vfsmount;
 
- 
 
 #define IS_ROOT(x) ((x) == (x)->d_parent)
 
- 
 #ifdef __LITTLE_ENDIAN
  #define HASH_LEN_DECLARE u32 hash; u32 len
  #define bytemask_from_count(cnt)	(~(~0ul << (cnt)*8))
@@ -31,7 +46,6 @@ struct vfsmount;
  #define bytemask_from_count(cnt)	(~(~0ul >> (cnt)*8))
 #endif
 
- 
 struct qstr {
 	union {
 		struct {
@@ -48,7 +62,6 @@ extern const struct qstr empty_name;
 extern const struct qstr slash_name;
 extern const struct qstr dotdot_name;
 
- 
 #  define DNAME_INLINE_LEN 40  
 
 #define d_lock	d_lockref.lock
@@ -84,7 +97,6 @@ struct dentry {
 	} d_u;
 } __randomize_layout;
 
- 
 enum dentry_d_lock_class
 {
 	DENTRY_D_LOCK_NORMAL,  
@@ -108,9 +120,7 @@ struct dentry_operations {
 	struct dentry *(*d_real)(struct dentry *, const struct inode *);
 } ____cacheline_aligned;
 
- 
 
- 
 #define DCACHE_OP_HASH			0x00000001
 #define DCACHE_OP_COMPARE		0x00000002
 #define DCACHE_OP_REVALIDATE		0x00000004
@@ -166,7 +176,6 @@ struct dentry_operations {
 
 extern seqlock_t rename_lock;
 
- 
 extern void d_instantiate(struct dentry *, struct inode *);
 extern void d_instantiate_new(struct dentry *, struct inode *);
 extern void __d_drop(struct dentry *dentry);
@@ -196,29 +205,21 @@ extern void d_tmpfile(struct dentry *, struct inode *);
 
 extern int path_has_submounts(const struct path *);
 
- 
 extern void d_rehash(struct dentry *);
- 
 extern void d_add(struct dentry *, struct inode *);
 
- 
 extern void d_move(struct dentry *, struct dentry *);
 /* d_exchange removed - unused stub */
 extern struct dentry *d_ancestor(struct dentry *, struct dentry *);
 
- 
 extern struct dentry *d_lookup(const struct dentry *, const struct qstr *);
 /* d_hash_and_lookup removed - never called */
 extern struct dentry *__d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup_rcu(const struct dentry *parent,
 				const struct qstr *name, unsigned *seq);
 
-static inline unsigned d_count(const struct dentry *dentry)
-{
-	return dentry->d_lockref.count;
-}
+/* d_count removed - unused */
 
- 
 extern __printf(4, 5)
 char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
 
@@ -227,9 +228,7 @@ extern char *__d_path(const struct path *, const struct path *, char *, int);
 extern char *d_path(const struct path *, char *, int);
 extern char *dentry_path_raw(const struct dentry *, char *, int);
 
- 
 
- 
 static inline struct dentry *dget_dlock(struct dentry *dentry)
 {
 	if (dentry)
@@ -246,8 +245,6 @@ static inline struct dentry *dget(struct dentry *dentry)
 
 extern struct dentry *dget_parent(struct dentry *dentry);
 
- 
- 
 static inline int d_unhashed(const struct dentry *dentry)
 {
 	return hlist_bl_unhashed(&dentry->d_hash);
@@ -263,12 +260,7 @@ static inline int cant_mount(const struct dentry *dentry)
 	return (dentry->d_flags & DCACHE_CANT_MOUNT);
 }
 
-static inline void dont_mount(struct dentry *dentry)
-{
-	spin_lock(&dentry->d_lock);
-	dentry->d_flags |= DCACHE_CANT_MOUNT;
-	spin_unlock(&dentry->d_lock);
-}
+/* dont_mount removed - unused */
 
 extern void __d_lookup_done(struct dentry *);
 
@@ -293,7 +285,6 @@ static inline bool d_mountpoint(const struct dentry *dentry)
 	return dentry->d_flags & DCACHE_MOUNTED;
 }
 
- 
 static inline unsigned __d_entry_type(const struct dentry *dentry)
 {
 	return dentry->d_flags & DCACHE_ENTRY_TYPE;
@@ -364,7 +355,6 @@ static inline unsigned long vfs_pressure_ratio(unsigned long val)
 	return mult_frac(val, sysctl_vfs_cache_pressure, 100);
 }
 
- 
 static inline struct inode *d_inode(const struct dentry *dentry)
 {
 	return dentry->d_inode;

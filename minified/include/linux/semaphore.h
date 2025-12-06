@@ -1,12 +1,9 @@
- 
- 
 #ifndef __LINUX_SEMAPHORE_H
 #define __LINUX_SEMAPHORE_H
 
 #include <linux/list.h>
 #include <linux/spinlock.h>
 
- 
 struct semaphore {
 	raw_spinlock_t		lock;
 	unsigned int		count;

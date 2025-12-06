@@ -1,5 +1,3 @@
- 
- 
 
 #include <linux/seq_file.h>
 #include <linux/interrupt.h>
@@ -14,7 +12,8 @@
 
 #include <asm/apic.h>
 #include <asm/nospec-branch.h>
-#include <asm/softirq_stack.h>
+/* softirq_stack.h inlined */
+void do_softirq_own_stack(void);
 
 static inline int check_stack_overflow(void) { return 0; }
 static inline void print_stack_overflow(void) { }
@@ -69,7 +68,6 @@ static inline int execute_on_irq_stack(int overflow, struct irq_desc *desc)
 	return 1;
 }
 
- 
 int irq_init_percpu_irqstack(unsigned int cpu)
 {
 	int node = cpu_to_node(cpu);

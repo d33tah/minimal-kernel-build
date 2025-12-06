@@ -1,11 +1,8 @@
- 
- 
 #include <linux/kernel.h>
 #include <linux/export.h>
 #include <linux/llist.h>
 
 
- 
 bool llist_add_batch(struct llist_node *new_first, struct llist_node *new_last,
 		     struct llist_head *head)
 {
@@ -18,7 +15,6 @@ bool llist_add_batch(struct llist_node *new_first, struct llist_node *new_last,
 	return !first;
 }
 
- 
 struct llist_node *llist_del_first(struct llist_head *head)
 {
 	struct llist_node *entry, *old_entry, *next;
@@ -37,7 +33,6 @@ struct llist_node *llist_del_first(struct llist_head *head)
 	return entry;
 }
 
- 
 struct llist_node *llist_reverse_order(struct llist_node *head)
 {
 	struct llist_node *new_head = NULL;

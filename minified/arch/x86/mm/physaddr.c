@@ -1,12 +1,7 @@
- 
-#include <linux/memblock.h>
-#include <linux/mmdebug.h>
-#include <linux/export.h>
+/* Minimal includes for physaddr */
 #include <linux/mm.h>
-
-#include <asm/page.h>
 #include <linux/vmalloc.h>
-
+#include <asm/page.h>
 #include "physaddr.h"
 
 

@@ -1,5 +1,3 @@
- 
- 
 #ifndef _LINUX_ATOMIC_H
 #define _LINUX_ATOMIC_H
 #include <linux/types.h>
@@ -7,7 +5,6 @@
 #include <asm/atomic.h>
 #include <asm/barrier.h>
 
- 
 
 #define atomic_cond_read_acquire(v, c) smp_cond_load_acquire(&(v)->counter, (c))
 #define atomic_cond_read_relaxed(v, c) smp_cond_load_relaxed(&(v)->counter, (c))
@@ -15,7 +12,6 @@
 #define atomic64_cond_read_acquire(v, c) smp_cond_load_acquire(&(v)->counter, (c))
 #define atomic64_cond_read_relaxed(v, c) smp_cond_load_relaxed(&(v)->counter, (c))
 
- 
 #ifndef __atomic_acquire_fence
 #define __atomic_acquire_fence		smp_mb__after_atomic
 #endif

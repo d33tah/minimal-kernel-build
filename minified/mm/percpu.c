@@ -5,7 +5,9 @@
 #include <linux/cpumask.h>
 #include <linux/memblock.h>
 #include <linux/err.h>
-#include <linux/lcm.h>
+/* lcm.h inlined */
+unsigned long lcm(unsigned long a, unsigned long b) __attribute_const__;
+unsigned long lcm_not_zero(unsigned long a, unsigned long b) __attribute_const__;
 #include <linux/list.h>
 #include <linux/log2.h>
 #include <linux/mm.h>

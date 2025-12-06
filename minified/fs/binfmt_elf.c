@@ -24,7 +24,7 @@
 #include <linux/elf.h>
 #include <linux/elf-randomize.h>
 #include <linux/utsname.h>
-#include <linux/coredump.h>
+/* coredump.h removed - no definitions used */
 #include <linux/sched.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/task_stack.h>

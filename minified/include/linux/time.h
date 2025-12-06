@@ -50,6 +50,10 @@ void time64_to_tm(time64_t totalsecs, int offset, struct tm *result);
 
 #define time_between32(t, l, h) ((u32)(h) - (u32)(l) >= (u32)(t) - (u32)(l))
 
-# include <vdso/time.h>
+/* Inlined from vdso/time.h */
+struct timens_offset {
+	s64	sec;
+	u64	nsec;
+};
 
 #endif

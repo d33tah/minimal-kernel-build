@@ -13,8 +13,8 @@
 #include <linux/ktime.h>
 #include <vdso/math64.h>
 #include <linux/time64.h>
-#include <vdso/time.h>
-#include <vdso/time32.h>
+#include <linux/time32.h>
+#include <linux/time.h>
 
 struct arch_vdso_data {};
 

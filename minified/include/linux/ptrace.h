@@ -7,8 +7,18 @@
 #include <linux/err.h>			 
 #include <linux/bug.h>			 
 #include <linux/pid_namespace.h>	 
-#include <uapi/linux/ptrace.h>
+#include <linux/types.h>
+#include <asm/ptrace.h>
 #include <linux/seccomp.h>
+
+#define PTRACE_EVENT_FORK	1
+#define PTRACE_EVENT_VFORK	2
+#define PTRACE_EVENT_CLONE	3
+#define PTRACE_EVENT_EXEC	4
+#define PTRACE_EVENT_VFORK_DONE	5
+#define PTRACE_EVENT_EXIT	6
+#define PTRACE_EVENTMSG_SYSCALL_ENTRY	1
+#define PTRACE_EVENTMSG_SYSCALL_EXIT	2
 
 struct syscall_info {
 	__u64			sp;

@@ -71,7 +71,60 @@ do { \
 #if defined(CONFIG_TREE_RCU)
 #include <linux/rcutree.h>
 #else
-#include <linux/rcutiny.h>
+/* --- 2025-12-06 17:10 --- rcutiny.h inlined */
+#include <asm/param.h>
+
+unsigned long get_state_synchronize_rcu(void);
+unsigned long start_poll_synchronize_rcu(void);
+bool poll_state_synchronize_rcu(unsigned long oldstate);
+
+extern void rcu_barrier(void);
+
+static inline void synchronize_rcu_expedited(void)
+{
+	synchronize_rcu();
+}
+
+extern void kvfree(const void *addr);
+
+static inline void kvfree_call_rcu(struct rcu_head *head, rcu_callback_t func)
+{
+	if (head) {
+		call_rcu(head, func);
+		return;
+	}
+	might_sleep();
+	synchronize_rcu();
+	kvfree((void *) func);
+}
+
+void rcu_qs(void);
+
+static inline void rcu_softirq_qs(void)
+{
+	rcu_qs();
+}
+
+#define rcu_note_context_switch(preempt) \
+	do { \
+		rcu_qs(); \
+		rcu_tasks_qs(current, (preempt)); \
+	} while (0)
+
+static inline void rcu_idle_enter(void) { }
+static inline void rcu_idle_exit(void) { }
+static inline void rcu_irq_enter(void) { }
+static inline void rcu_irq_exit(void) { }
+static inline void rcu_irq_exit_check_preempt(void) { }
+static inline void exit_rcu(void) { }
+void rcu_scheduler_starting(void);
+static inline void rcu_end_inkernel_boot(void) { }
+static inline bool rcu_inkernel_boot_has_ended(void) { return true; }
+static inline bool rcu_is_watching(void) { return true; }
+static inline void kfree_rcu_scheduler_running(void) { }
+
+static inline void rcu_all_qs(void) { barrier(); }
+/* --- end rcutiny.h inlined --- */
 #endif
 
 static inline void init_rcu_head(struct rcu_head *head) { }

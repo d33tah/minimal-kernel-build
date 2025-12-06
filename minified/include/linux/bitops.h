@@ -5,7 +5,7 @@
 #include <linux/bits.h>
 #include <linux/typecheck.h>
 
-#include <uapi/linux/kernel.h>
+#include <linux/const.h>
 
 #ifdef __LITTLE_ENDIAN
 #  define aligned_byte_mask(n) ((1UL << 8*(n))-1)

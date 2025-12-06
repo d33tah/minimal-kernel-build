@@ -3,7 +3,7 @@
 
 #include <linux/types.h>
 #include <asm/div64.h>
-#include <uapi/linux/kernel.h>
+#include <linux/const.h>
 
 #define __round_mask(x, y) ((__typeof__(x))((y)-1))
 

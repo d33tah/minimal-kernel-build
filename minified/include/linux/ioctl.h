@@ -3,5 +3,4 @@
 
 #include <asm/ioctl.h>
 
-#endif  
-
+#endif

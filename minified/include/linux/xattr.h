@@ -7,7 +7,6 @@
 #include <linux/spinlock.h>
 #include <linux/mm.h>
 #include <linux/user_namespace.h>
-#include <uapi/linux/xattr.h>
 
 struct inode;
 struct dentry;

@@ -22,7 +22,8 @@
 #include <linux/instruction_pointer.h>
 #include <asm/byteorder.h>
 
-#include <uapi/linux/kernel.h>
+#include <linux/sysinfo.h>
+#include <linux/const.h>
 
 #define STACK_MAGIC	0xdeadbeef
 

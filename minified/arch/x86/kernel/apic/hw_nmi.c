@@ -1,14 +1,9 @@
-#include <linux/thread_info.h>
-#include <asm/apic.h>
-#include <asm/nmi.h>
-
+/* Minimal includes for NMI backtrace */
 #include <linux/cpumask.h>
-#include <linux/kdebug.h>
-#include <linux/notifier.h>
-#include <linux/kprobes.h>
 #include <linux/nmi.h>
 #include <linux/init.h>
-#include <linux/delay.h>
+#include <asm/apic.h>
+#include <asm/nmi.h>
 
 
 #ifdef arch_trigger_cpumask_backtrace

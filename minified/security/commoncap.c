@@ -1,25 +1,8 @@
-
+/* Minimal includes for capability stubs */
 #include <linux/capability.h>
-#include <linux/audit.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/security.h>
-#include <linux/file.h>
-#include <linux/mm.h>
-#include <linux/mman.h>
-#include <linux/pagemap.h>
-#include <linux/swap.h>
-#include <linux/ptrace.h>
-#include <linux/xattr.h>
-#include <linux/hugetlb.h>
-#include <linux/mount.h>
-#include <linux/sched.h>
-#include <linux/prctl.h>
-#include <uapi/linux/securebits.h> /* securebits.h redirect */
-#include <linux/user_namespace.h>
+#include <linux/cred.h>
 #include <linux/binfmts.h>
-#include <linux/personality.h>
-#include <linux/mnt_idmapping.h>
+#include <linux/mm.h>
 
 
 int cap_capable(const struct cred *cred, struct user_namespace *targ_ns,

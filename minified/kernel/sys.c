@@ -1,63 +1,13 @@
-
-#include <linux/export.h>
-#include <linux/mm.h>
-#include <linux/mm_inline.h>
-#include <linux/utsname.h>
-#include <linux/mman.h>
-#include <linux/reboot.h>
-#include <linux/prctl.h>
-#include <linux/highuid.h>
-#include <linux/fs.h>
-#include <linux/kmod.h>
-#include <linux/resource.h>
-#include <linux/kernel.h>
-#include <linux/capability.h>
-#include <linux/times.h>
-#include <linux/posix-timers.h>
-#include <linux/tty.h>
-#include <linux/signal.h>
-#include <linux/cn_proc.h>
-
-#include <linux/task_io_accounting_ops.h>
-#include <linux/seccomp.h>
-#include <linux/cpu.h>
-#include <linux/personality.h>
-#include <linux/ptrace.h>
-#include <linux/fs_struct.h>
-#include <linux/file.h>
-#include <linux/mount.h>
-#include <linux/gfp.h>
-#include <linux/syscore_ops.h>
-#include <linux/version.h>
-#include <linux/ctype.h>
-#include <linux/syscall_user_dispatch.h>
-
-#include <linux/compat.h>
+/* Minimal includes for syscall stubs */
 #include <linux/syscalls.h>
-#include <linux/kprobes.h>
-#include <linux/user_namespace.h>
-#include <linux/time_namespace.h>
-#include <linux/binfmts.h>
-
+#include <linux/utsname.h>
+#include <linux/resource.h>
+#include <linux/times.h>
 #include <linux/sched.h>
-#include <linux/sched/loadavg.h>
-#include <linux/sched/stat.h>
-#include <linux/sched/mm.h>
-#include <linux/sched/coredump.h>
-#include <linux/sched/task.h>
-#include <linux/sched/cputime.h>
 #include <linux/rcupdate.h>
-#include <linux/uidgid.h>
 #include <linux/cred.h>
-
-#include <linux/nospec.h>
-
-#include <linux/kmsg_dump.h>
-#include <generated/utsrelease.h>
-
 #include <linux/uaccess.h>
-#include <asm/io.h>
-#include <asm/unistd.h>
+#include <linux/fs_struct.h>
 
 #include "uid16.h"
 

@@ -18,7 +18,6 @@ static inline void wake_up_nohz_cpu(int cpu) { }
 
 #include <linux/irq.h>
 
-#include <uapi/linux/membarrier.h> /* membarrier.h redirect */
 #include <linux/mempolicy.h>
 #include <linux/nmi.h>
 #include <linux/nospec.h>

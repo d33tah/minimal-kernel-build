@@ -1,5 +1,4 @@
 #include <linux/syscalls.h>
-#include <uapi/linux/utime.h> /* utime.h redirect */
 #include <linux/fs.h>
 
 int vfs_utimes(const struct path *path, struct timespec64 *times) { return 0; }

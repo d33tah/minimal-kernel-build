@@ -7,7 +7,6 @@
 #include <linux/delay.h>
 #include <linux/string.h>
 #include <linux/syscalls.h>
-#include <uapi/linux/utime.h> /* utime.h redirect */
 #include <linux/file.h>
 #include <linux/memblock.h>
 #include <linux/mm.h>

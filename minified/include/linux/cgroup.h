@@ -6,7 +6,6 @@
 #include <linux/cpumask.h>
 #include <linux/nodemask.h>
 #include <linux/rculist.h>
-#include <uapi/linux/cgroupstats.h> /* cgroupstats.h redirect */
 #include <linux/fs.h>
 #include <linux/seq_file.h>
 #include <linux/kernfs.h>

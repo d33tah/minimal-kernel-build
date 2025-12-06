@@ -21,7 +21,16 @@ struct module;
 #include <asm/clocksource.h>
 #endif
 
-#include <vdso/clocksource.h>
+#include <linux/limits.h>
+#include <asm/vdso/clocksource.h>
+
+/* Inlined from vdso/clocksource.h */
+enum vdso_clock_mode {
+	VDSO_CLOCKMODE_NONE,
+	VDSO_ARCH_CLOCKMODES,
+	VDSO_CLOCKMODE_MAX,
+	VDSO_CLOCKMODE_TIMENS = INT_MAX
+};
 
 struct clocksource {
 	u64			(*read)(struct clocksource *cs);

@@ -9,7 +9,7 @@
 #include <linux/errno.h>
 #include <linux/bits.h>
 #include <linux/limits.h>
-#include <vdso/clocksource.h>
+#include <linux/clocksource.h>
 #include <linux/ktime.h>
 #include <linux/math64.h>
 #include <linux/time64.h>

@@ -1,7 +1,7 @@
 #ifndef __VDSO_KTIME_H
 #define __VDSO_KTIME_H
 
-#include <vdso/jiffies.h>
+#include <linux/jiffies.h>
 
 #define LOW_RES_NSEC		TICK_NSEC
 #define KTIME_LOW_RES		(LOW_RES_NSEC)

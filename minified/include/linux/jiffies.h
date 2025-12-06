@@ -8,8 +8,12 @@
 #include <linux/types.h>
 #include <linux/time.h>
 #include <linux/timex.h>
-#include <vdso/jiffies.h>
-#include <asm/param.h>			 
+#include <linux/time64.h>
+#include <asm/param.h>
+
+/* Inlined from vdso/jiffies.h */
+#define TICK_NSEC ((NSEC_PER_SEC+HZ/2)/HZ)
+
 #include <generated/timeconst.h>
 
 #if HZ >= 12 && HZ < 24

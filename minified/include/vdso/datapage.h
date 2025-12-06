@@ -12,10 +12,9 @@
 #include <vdso/clocksource.h>
 #include <vdso/ktime.h>
 #include <vdso/math64.h>
-
+#include <linux/time64.h>
 #include <vdso/time.h>
 #include <vdso/time32.h>
-#include <vdso/time64.h>
 
 struct arch_vdso_data {};
 

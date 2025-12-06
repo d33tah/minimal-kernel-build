@@ -2,7 +2,16 @@
 #define _LINUX_TIME64_H
 
 #include <linux/math64.h>
-#include <vdso/time64.h>
+
+/* Inlined from vdso/time64.h */
+#define MSEC_PER_SEC	1000L
+#define USEC_PER_MSEC	1000L
+#define NSEC_PER_USEC	1000L
+#define NSEC_PER_MSEC	1000000L
+#define USEC_PER_SEC	1000000L
+#define NSEC_PER_SEC	1000000000L
+#define PSEC_PER_SEC	1000000000000LL
+#define FSEC_PER_SEC	1000000000000000LL
 
 typedef __s64 time64_t;
 typedef __u64 timeu64_t;

@@ -1,15 +1,12 @@
-
+/* Minimal workqueue.h */
 #ifndef _LINUX_WORKQUEUE_H
 #define _LINUX_WORKQUEUE_H
 
 #include <linux/timer.h>
-#include <linux/linkage.h>
 #include <linux/bitops.h>
-#include <linux/lockdep.h>
 #include <linux/threads.h>
 #include <linux/atomic.h>
 #include <linux/cpumask.h>
-#include <linux/rcupdate.h>
 
 struct workqueue_struct;
 

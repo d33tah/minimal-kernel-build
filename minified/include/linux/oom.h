@@ -1,13 +1,12 @@
+/* Minimal oom.h */
 #ifndef __INCLUDE_LINUX_OOM_H
 #define __INCLUDE_LINUX_OOM_H
-
 
 #include <linux/sched/signal.h>
 #include <linux/types.h>
 #include <linux/nodemask.h>
-#include <uapi/linux/oom.h>
-#include <linux/sched/coredump.h>  
-#include <linux/mm.h>  
+#include <linux/sched/coredump.h>
+#include <linux/mm.h>
 
 struct zonelist;
 struct notifier_block;

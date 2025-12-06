@@ -2,9 +2,7 @@
 #ifndef _LINUX_DELAYACCT_H
 #define _LINUX_DELAYACCT_H
 
-#include <linux/sched.h>
-#include <linux/slab.h>
-#include <linux/jump_label.h>
+struct task_struct;
 
 static inline void delayacct_init(void)
 {}

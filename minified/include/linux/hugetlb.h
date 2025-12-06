@@ -1,20 +1,17 @@
+/* Minimal hugetlb.h - all stubs */
 #ifndef _LINUX_HUGETLB_H
 #define _LINUX_HUGETLB_H
 
 #include <linux/mm_types.h>
-#include <linux/mmdebug.h>
 #include <linux/fs.h>
 #include <linux/hugetlb_inline.h>
-#include <linux/cgroup.h>
-#include <linux/list.h>
-#include <linux/kref.h>
-#include <linux/pgtable.h>
-#include <linux/gfp.h>
-#include <linux/userfaultfd_k.h>
 
 struct ctl_table;
 struct user_struct;
 struct mmu_gather;
+struct vm_area_struct;
+struct mm_struct;
+struct page;
 
 #ifndef is_hugepd
 typedef struct { unsigned long pd; } hugepd_t;

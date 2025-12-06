@@ -1,11 +1,8 @@
-
+/* Minimal freezer.h - stubs only */
 #ifndef FREEZER_H_INCLUDED
 #define FREEZER_H_INCLUDED
 
-#include <linux/debug_locks.h>
-#include <linux/sched.h>
-#include <linux/wait.h>
-#include <linux/atomic.h>
+struct task_struct;
 
 static inline bool frozen(struct task_struct *p) { return false; }
 static inline bool freezing(struct task_struct *p) { return false; }

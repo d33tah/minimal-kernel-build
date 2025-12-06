@@ -73,7 +73,9 @@ static inline s64 ktime_divns(const ktime_t kt, s64 div)
 
 extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);
 
-#include <vdso/ktime.h>
+/* Inlined from vdso/ktime.h */
+#define LOW_RES_NSEC		TICK_NSEC
+#define KTIME_LOW_RES		(LOW_RES_NSEC)
 
 static inline ktime_t ns_to_ktime(u64 ns)
 {

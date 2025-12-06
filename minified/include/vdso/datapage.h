@@ -10,7 +10,7 @@
 #include <linux/bits.h>
 #include <linux/limits.h>
 #include <vdso/clocksource.h>
-#include <vdso/ktime.h>
+#include <linux/ktime.h>
 #include <vdso/math64.h>
 #include <linux/time64.h>
 #include <vdso/time.h>

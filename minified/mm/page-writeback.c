@@ -1,31 +1,7 @@
-
-#include <linux/kernel.h>
-#include <linux/export.h>
-#include <linux/spinlock.h>
-#include <linux/fs.h>
-#include <linux/mm.h>
-#include <linux/swap.h>
-#include <linux/slab.h>
-#include <linux/pagemap.h>
+/* Stub page writeback - no actual writeback */
 #include <linux/writeback.h>
-#include <linux/init.h>
 #include <linux/backing-dev.h>
-#include <linux/task_io_accounting_ops.h>
-#include <linux/blkdev.h>
-#include <linux/tracepoint.h>
-#include <linux/rmap.h>
 #include <linux/percpu.h>
-#include <linux/smp.h>
-#include <linux/sysctl.h>
-#include <linux/cpu.h>
-#include <linux/syscalls.h>
-#include <linux/pagevec.h>
-#include <linux/timer.h>
-#include <linux/sched/rt.h>
-#include <linux/sched/signal.h>
-#include <linux/mm_inline.h>
-
-#include "internal.h"
 
 struct wb_domain global_wb_domain;
 DEFINE_PER_CPU(int, dirty_throttle_leaks);

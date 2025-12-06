@@ -2,8 +2,7 @@
 #ifndef _LINUX_SOCKET_H
 #define _LINUX_SOCKET_H
 
-#include <asm/socket.h>
-/* sockios.h removed - network socket ioctls not used */
+/* asm/socket.h and sockios.h removed - network socket code not used */
 #include <linux/uio.h>
 #include <linux/types.h>
 #include <linux/compiler.h>

@@ -11,7 +11,7 @@
 #include <linux/limits.h>
 #include <vdso/clocksource.h>
 #include <linux/ktime.h>
-#include <vdso/math64.h>
+#include <linux/math64.h>
 #include <linux/time64.h>
 #include <linux/time32.h>
 #include <linux/time.h>

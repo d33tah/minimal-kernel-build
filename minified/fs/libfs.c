@@ -9,8 +9,83 @@
 
 #include <linux/mutex.h>
 #include <linux/namei.h>
-#include <linux/exportfs.h>
 #include <linux/writeback.h>
+
+/* --- 2025-12-06 17:15 --- exportfs.h inlined */
+struct iomap;
+
+#define MAX_HANDLE_SZ 128
+
+enum fid_type {
+	FILEID_ROOT = 0,
+};
+
+struct fid {
+	union {
+		struct {
+			u32 ino;
+			u32 gen;
+			u32 parent_ino;
+			u32 parent_gen;
+		} i32;
+ 		struct {
+ 			u32 block;
+ 			u16 partref;
+ 			u16 parent_partref;
+ 			u32 generation;
+ 			u32 parent_block;
+ 			u32 parent_generation;
+ 		} udf;
+		__u32 raw[0];
+	};
+};
+
+struct export_operations {
+	int (*encode_fh)(struct inode *inode, __u32 *fh, int *max_len,
+			struct inode *parent);
+	struct dentry * (*fh_to_dentry)(struct super_block *sb, struct fid *fid,
+			int fh_len, int fh_type);
+	struct dentry * (*fh_to_parent)(struct super_block *sb, struct fid *fid,
+			int fh_len, int fh_type);
+	int (*get_name)(struct dentry *parent, char *name,
+			struct dentry *child);
+	struct dentry * (*get_parent)(struct dentry *child);
+	int (*commit_metadata)(struct inode *inode);
+	int (*get_uuid)(struct super_block *sb, u8 *buf, u32 *len, u64 *offset);
+	int (*map_blocks)(struct inode *inode, loff_t offset,
+			  u64 len, struct iomap *iomap,
+			  bool write, u32 *device_generation);
+	int (*commit_blocks)(struct inode *inode, struct iomap *iomaps,
+			     int nr_iomaps, struct iattr *iattr);
+	u64 (*fetch_iversion)(struct inode *);
+#define	EXPORT_OP_NOWCC			(0x1)
+#define	EXPORT_OP_NOSUBTREECHK		(0x2)
+#define	EXPORT_OP_CLOSE_BEFORE_UNLINK	(0x4)
+#define EXPORT_OP_REMOTE_FS		(0x8)
+#define EXPORT_OP_NOATOMIC_ATTR		(0x10)
+	unsigned long	flags;
+};
+
+extern int exportfs_encode_inode_fh(struct inode *inode, struct fid *fid,
+				    int *max_len, struct inode *parent);
+extern int exportfs_encode_fh(struct dentry *dentry, struct fid *fid,
+	int *max_len, int connectable);
+extern struct dentry *exportfs_decode_fh_raw(struct vfsmount *mnt,
+					     struct fid *fid, int fh_len,
+					     int fileid_type,
+					     int (*acceptable)(void *, struct dentry *),
+					     void *context);
+extern struct dentry *exportfs_decode_fh(struct vfsmount *mnt, struct fid *fid,
+	int fh_len, int fileid_type, int (*acceptable)(void *, struct dentry *),
+	void *context);
+
+extern struct dentry *generic_fh_to_dentry(struct super_block *sb,
+	struct fid *fid, int fh_len, int fh_type,
+	struct inode *(*get_inode) (struct super_block *sb, u64 ino, u32 gen));
+extern struct dentry *generic_fh_to_parent(struct super_block *sb,
+	struct fid *fid, int fh_len, int fh_type,
+	struct inode *(*get_inode) (struct super_block *sb, u64 ino, u32 gen));
+/* --- end exportfs.h inlined --- */
 #include <linux/buffer_head.h>  
 #include <linux/fs_context.h>
 #include <linux/pseudo_fs.h>

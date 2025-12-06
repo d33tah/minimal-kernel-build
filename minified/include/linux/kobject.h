@@ -150,8 +150,7 @@ static inline const struct kobj_type *get_ktype(struct kobject *kobj)
 extern struct kobject *kset_find_obj(struct kset *, const char *);
 
 extern struct kobject *kernel_kobj;
-extern struct kobject *mm_kobj;
-/* hypervisor_kobj, power_kobj, firmware_kobj removed - unused */
+/* mm_kobj, hypervisor_kobj, power_kobj, firmware_kobj removed - unused */
 
 int kobject_uevent(struct kobject *kobj, enum kobject_action action);
 int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,

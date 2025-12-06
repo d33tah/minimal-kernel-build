@@ -14,11 +14,7 @@
 
 const kernel_cap_t __cap_empty_set = CAP_EMPTY_SET;
 
-int file_caps_enabled = 1;
-
-/* Stub: no_file_caps cmdline option not needed for minimal kernel */
-static int __init file_caps_disable(char *str) { return 1; }
-__setup("no_file_caps", file_caps_disable);
+/* file_caps_enabled and no_file_caps cmdline removed - unused */
 
 
 bool file_ns_capable(const struct file *file, struct user_namespace *ns,

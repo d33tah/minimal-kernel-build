@@ -26,7 +26,9 @@ static inline void clear_user_return_notifier(struct task_struct *p) {}
 #endif
 #include <linux/dmi.h>
 #include <linux/utsname.h>
-#include <linux/stackprotector.h>
+/* stackprotector.h inlined - !CONFIG_STACKPROTECTOR */
+static inline void boot_init_stack_canary(void) {}
+/* end stackprotector.h */
 #include <linux/cpuidle.h>
 #include <linux/acpi.h>
 #include <linux/elf-randomize.h>

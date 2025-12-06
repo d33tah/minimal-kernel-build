@@ -8,7 +8,9 @@
 #include <linux/binfmts.h>
 #include <linux/kernel.h>
 #include <linux/syscalls.h>
-#include <linux/stackprotector.h>
+/* stackprotector.h inlined - !CONFIG_STACKPROTECTOR */
+static inline void boot_init_stack_canary(void) {}
+/* end stackprotector.h */
 #include <linux/string.h>
 #include <linux/ctype.h>
 #include <linux/delay.h>

@@ -5,5 +5,4 @@
 
 #define CLOSE_RANGE_CLOEXEC	(1U << 2)
 
-#endif  
-
+#endif

@@ -30,7 +30,7 @@ static inline void wake_up_nohz_cpu(int cpu) { }
 
 
 
-#include <uapi/linux/sched/types.h>
+#include <linux/sched/types.h>
 
 #include <asm/switch_to.h>
 

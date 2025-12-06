@@ -10,7 +10,7 @@
 #endif  
 #endif
 
-#include <linux/posix_types.h>
+#include <asm/posix_types.h>
 
 
 

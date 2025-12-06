@@ -1,6 +1,7 @@
 
 #include <linux/types.h>
-#include <linux/termios.h>
+#include <linux/types.h>
+#include <asm/termios.h>
 #include <linux/errno.h>
 #include <linux/sched/signal.h>
 #include <linux/kernel.h>

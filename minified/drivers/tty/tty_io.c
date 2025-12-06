@@ -10,7 +10,8 @@
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
 #include <linux/tty_flip.h>
-#include <linux/devpts_fs.h>
+/* devpts_fs.h inlined */
+static inline int ptm_open_peer(struct file *master, struct tty_struct *tty, int flags) { return -EIO; }
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/console.h>

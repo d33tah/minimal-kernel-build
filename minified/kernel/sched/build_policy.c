@@ -15,7 +15,7 @@
 #include <linux/tsacct_kern.h>
 #include <linux/vtime.h>
 
-#include <uapi/linux/sched/types.h>
+#include <linux/sched/types.h>
 
 #include "sched.h"
 #include "smp.h"

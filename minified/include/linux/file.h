@@ -4,7 +4,7 @@
 
 #include <linux/compiler.h>
 #include <linux/types.h>
-#include <linux/posix_types.h>
+#include <asm/posix_types.h>
 #include <linux/errno.h>
 
 struct file;

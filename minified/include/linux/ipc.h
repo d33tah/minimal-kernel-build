@@ -6,7 +6,7 @@
 #include <linux/rhashtable-types.h>
 #include <linux/types.h>
 #include <linux/refcount.h>
-#include <linux/posix_types.h>
+#include <asm/posix_types.h>
 
 /* From uapi/asm-generic/ipcbuf.h - inlined */
 struct ipc64_perm {

@@ -11,7 +11,9 @@
 #include <linux/bitops.h>
 #include <linux/spinlock.h>
 #include <linux/rcupdate.h>
-#include <linux/close_range.h>
+/* close_range.h inlined */
+#define CLOSE_RANGE_UNSHARE	(1U << 1)
+#define CLOSE_RANGE_CLOEXEC	(1U << 2)
 #include <linux/security.h>
 
 #include "internal.h"

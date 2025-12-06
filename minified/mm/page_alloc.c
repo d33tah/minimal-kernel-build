@@ -82,7 +82,15 @@ static inline void compaction_unregister_node(struct node *node) { }
 #include <linux/hugetlb.h>
 #include <linux/sched/rt.h>
 #include <linux/sched/mm.h>
-#include <linux/page_owner.h>
+
+/* --- 2025-12-06 20:21 --- page_owner.h inlined (26 LOC) */
+static inline void reset_page_owner(struct page *page, unsigned short order) {}
+static inline void set_page_owner(struct page *page, unsigned int order, gfp_t gfp_mask) {}
+static inline void split_page_owner(struct page *page, unsigned short order) {}
+static inline void folio_copy_owner(struct folio *newfolio, struct folio *folio) {}
+static inline void set_page_owner_migrate_reason(struct page *page, int reason) {}
+static inline void dump_page_owner(const struct page *page) {}
+/* --- end page_owner.h inlined --- */
 #include <linux/page_table_check.h>
 #include <linux/kthread.h>
 #include <linux/memcontrol.h>

@@ -13,7 +13,16 @@
 #include <linux/bitops.h>
 #include <linux/delay.h>
 #include <linux/module.h>
-#include <linux/serdev.h>
+
+/* --- 2025-12-06 20:22 --- serdev.h inlined (24 LOC) */
+struct tty_port;
+struct tty_driver;
+static inline struct device *serdev_tty_port_register(struct tty_port *port,
+				   struct device *parent, struct tty_driver *drv, int idx)
+{ return ERR_PTR(-ENODEV); }
+static inline int serdev_tty_port_unregister(struct tty_port *port)
+{ return -ENODEV; }
+/* --- end serdev.h inlined --- */
 #include "tty.h"
 
 static int tty_port_default_receive_buf(struct tty_port *port,

@@ -4,7 +4,7 @@
 
 #include <linux/mm_types.h>
 #include <linux/fs.h>
-#include <linux/hugetlb_inline.h>
+#include <linux/pagemap.h>
 
 struct ctl_table;
 struct user_struct;

@@ -117,9 +117,13 @@ extern struct apm_info	apm_info;
 				 APM_DEVICE_ALL : APM_DEVICE_OLD_ALL)
 /* --- end apm_bios.h inlined --- */
 #include <asm/ist.h>
-#include <video/edid.h>
 
- 
+/* Inlined from video/edid.h */
+struct edid_info {
+	unsigned char dummy[128];
+};
+extern struct edid_info edid_info;
+
 struct setup_data {
 	__u64 next;
 	__u32 type;

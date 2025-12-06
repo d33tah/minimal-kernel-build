@@ -10,7 +10,9 @@
 #include <linux/gfp.h>
 #include <linux/bitops.h>
 #include <linux/hardirq.h>
-#include <linux/hugetlb_inline.h>
+
+/* Inlined from hugetlb_inline.h */
+static inline bool is_vm_hugetlb_page(struct vm_area_struct *vma) { return false; }
 
 struct folio_batch;
 

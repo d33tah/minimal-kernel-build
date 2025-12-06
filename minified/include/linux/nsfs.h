@@ -10,4 +10,4 @@
 #define NS_GET_NSTYPE		_IO(NSIO, 0x3)
 #define NS_GET_OWNER_UID	_IO(NSIO, 0x4)
 
-#endif  
+#endif

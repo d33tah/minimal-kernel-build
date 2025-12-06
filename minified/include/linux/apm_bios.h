@@ -1,8 +1,19 @@
 #ifndef _LINUX_APM_H
 #define _LINUX_APM_H
 
-#include <uapi/linux/apm_bios.h>
+#include <linux/types.h>
 
+struct apm_bios_info {
+	__u16	version;
+	__u16	cseg;
+	__u32	offset;
+	__u16	cseg_16;
+	__u16	dseg;
+	__u16	flags;
+	__u16	cseg_len;
+	__u16	cseg_16_len;
+	__u16	dseg_len;
+};
 
 #define APM_CS		(GDT_ENTRY_APMBIOS_BASE * 8)
 #define APM_CS_16	(APM_CS + 8)

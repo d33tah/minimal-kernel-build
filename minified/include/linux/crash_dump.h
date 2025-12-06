@@ -5,7 +5,7 @@
 #include <linux/proc_fs.h>
 #include <linux/elf.h>
 #include <linux/pgtable.h>
-#include <uapi/linux/vmcore.h>
+#define VMCOREDD_MAX_NAME_BYTES 44
 
 #define ELFCORE_ADDR_MAX	(-1ULL)
 #define ELFCORE_ADDR_ERR	(-2ULL)

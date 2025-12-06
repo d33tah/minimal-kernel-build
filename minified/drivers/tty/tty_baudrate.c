@@ -1,9 +1,5 @@
-
-#include <linux/types.h>
-#include <linux/kernel.h>
-#include <linux/termios.h>
+/* Minimal includes for tty_baudrate */
 #include <linux/tty.h>
-#include <linux/export.h>
 #include "tty.h"
 
 

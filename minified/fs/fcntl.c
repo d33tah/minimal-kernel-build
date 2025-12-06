@@ -1,7 +1,5 @@
+/* Stub fcntl - minimal file control */
 #include <linux/fs.h>
-#include <linux/file.h>
-#include <linux/fdtable.h>
-#include <linux/export.h>
 #include <linux/syscalls.h>
 
 void __f_setown(struct file *filp, struct pid *pid, enum pid_type type, int force) { }

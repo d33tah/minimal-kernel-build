@@ -1,8 +1,6 @@
-
-
+/* Stub readdir syscalls */
 #include <linux/fs.h>
 #include <linux/syscalls.h>
-#include <linux/export.h>
 
 SYSCALL_DEFINE3(getdents64, unsigned int, fd,
 		struct linux_dirent64 __user *, dirent, unsigned int, count) { return 0; }

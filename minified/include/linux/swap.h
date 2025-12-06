@@ -13,7 +13,7 @@
 #include <linux/pagemap.h>
 #include <linux/atomic.h>
 #include <linux/page-flags.h>
-#include <uapi/linux/mempolicy.h>
+#include <linux/mempolicy.h>
 #include <asm/page.h>
 
 struct notifier_block;

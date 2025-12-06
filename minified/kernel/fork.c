@@ -86,7 +86,7 @@ static inline void clear_user_return_notifier(struct task_struct *p) {}
 #include <linux/compiler.h>
 #include <linux/sysctl.h>
 #include <linux/kcov.h>
-#include <linux/livepatch.h>
+#include <linux/init_task.h>
 #include <linux/thread_info.h>
 #include <linux/kasan.h>
 #include <linux/scs.h>

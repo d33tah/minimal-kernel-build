@@ -13,7 +13,7 @@
 #include <linux/device.h>
 #include <linux/interrupt.h>
 #include <linux/io.h>
-#include <linux/resource_ext.h>
+#include <linux/acpi.h>
 /* pci_regs.h inlined */
 #define PCI_CFG_SPACE_SIZE	256
 #define PCI_CFG_SPACE_EXP_SIZE	4096

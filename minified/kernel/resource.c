@@ -16,7 +16,7 @@
 #include <linux/pfn.h>
 #include <linux/mm.h>
 #include <linux/mount.h>
-#include <linux/resource_ext.h>
+#include <linux/acpi.h>
 #include <uapi/linux/magic.h>
 #include <asm/io.h>
 

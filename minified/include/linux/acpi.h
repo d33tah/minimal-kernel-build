@@ -3,10 +3,14 @@
 #define _LINUX_ACPI_H
 
 #include <linux/errno.h>
-#include <linux/ioport.h>	 
+#include <linux/ioport.h>
 #include <linux/irqdomain.h>
-#include <linux/resource_ext.h>
 #include <linux/device.h>
+#include <linux/list.h>
+
+/* Inlined from resource_ext.h */
+struct resource_win;
+struct resource_entry;
 #include <linux/property.h>
 #include <linux/uuid.h>
 

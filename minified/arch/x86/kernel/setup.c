@@ -8,7 +8,9 @@
 #include <linux/initrd.h>
 static inline void reserve_ibft_region(void) {}
 #include <linux/memblock.h>
-#include <linux/panic_notifier.h>
+/* panic_notifier.h inlined */
+extern struct atomic_notifier_head panic_notifier_list;
+extern bool crash_kexec_post_notifiers;
 #include <linux/pci.h>
 #include <linux/root_dev.h>
 #include <linux/hugetlb.h>

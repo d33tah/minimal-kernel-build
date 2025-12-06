@@ -3,7 +3,18 @@
 #include <linux/build-salt.h>
 #include <linux/elfnote-lto.h>
 #include <linux/export.h>
-#include <linux/uts.h>
+
+/* --- 2025-12-06 20:37 --- uts.h inlined (16 LOC) */
+#ifndef UTS_SYSNAME
+#define UTS_SYSNAME "Linux"
+#endif
+#ifndef UTS_NODENAME
+#define UTS_NODENAME CONFIG_DEFAULT_HOSTNAME
+#endif
+#ifndef UTS_DOMAINNAME
+#define UTS_DOMAINNAME "(none)"
+#endif
+/* --- end uts.h inlined --- */
 #include <linux/utsname.h>
 #include <generated/utsrelease.h>
 #include <linux/version.h>

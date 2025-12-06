@@ -1,14 +1,11 @@
-
+/* Minimal security.h - stubs for !CONFIG_SECURITY */
 #ifndef __LINUX_SECURITY_H
 #define __LINUX_SECURITY_H
 
 #include <linux/kernel_read_file.h>
-#include <linux/key.h>
 #include <linux/capability.h>
 #include <linux/fs.h>
-#include <linux/slab.h>
 #include <linux/err.h>
-#include <linux/string.h>
 #include <linux/mm.h>
 
 struct linux_binprm;

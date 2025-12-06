@@ -9,7 +9,7 @@
 #include <linux/namei.h>
 #include <linux/backing-dev.h>
 #include <linux/capability.h>
-#include <uapi/linux/securebits.h> /* securebits.h redirect */
+#include <linux/init_task.h> /* for securebits defines */
 #include <linux/security.h>
 #include <linux/mount.h>
 #include <linux/fcntl.h>

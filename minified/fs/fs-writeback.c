@@ -1,6 +1,4 @@
-#include <linux/kernel.h>
-#include <linux/export.h>
-#include <linux/fs.h>
+/* Minimal includes for writeback stubs */
 #include <linux/writeback.h>
 #include <linux/backing-dev.h>
 

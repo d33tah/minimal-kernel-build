@@ -112,7 +112,7 @@ struct console {
 	for (con = console_drivers; con != NULL; con = con->next)
 
 extern int console_set_on_cmdline;
-extern struct console *early_console;
+/* early_console removed - unused */
 
 enum con_flush_mode {
 	CONSOLE_FLUSH_PENDING,

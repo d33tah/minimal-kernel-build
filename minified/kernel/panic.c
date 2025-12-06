@@ -40,7 +40,7 @@ static DEFINE_SPINLOCK(pause_on_oops_lock);
 bool crash_kexec_post_notifiers;
 int panic_on_warn __read_mostly;
 unsigned long panic_on_taint;
-bool panic_on_taint_nousertaint = false;
+/* panic_on_taint_nousertaint removed - unused */
 
 int panic_timeout = CONFIG_PANIC_TIMEOUT;
 

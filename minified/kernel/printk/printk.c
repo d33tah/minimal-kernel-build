@@ -173,7 +173,7 @@ int add_preferred_console(char *name, int idx, char *options)
 	return 0;
 }
 
-bool console_suspend_enabled = true;
+/* console_suspend_enabled removed - unused */
 static bool printk_console_no_auto_verbose;
 
 void console_verbose(void)

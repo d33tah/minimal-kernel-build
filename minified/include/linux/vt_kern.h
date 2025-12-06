@@ -183,7 +183,7 @@ int do_unbind_con_driver(const struct consw *csw, int first, int last,
 			 int deflt);
 int vty_init(const struct file_operations *console_fops);
 
-extern bool vt_dont_switch;
+/* vt_dont_switch removed - unused */
 extern int default_utf8;
 extern int global_cursor_default;
 

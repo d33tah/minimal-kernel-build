@@ -137,7 +137,7 @@ extern int braille_register_console(struct console *, int index,
 		char *console_options, char *braille_options);
 extern int braille_unregister_console(struct console *);
 extern void console_sysfs_notify(void);
-extern bool console_suspend_enabled;
+/* console_suspend_enabled removed - unused */
 
 extern void suspend_console(void);
 extern void resume_console(void);

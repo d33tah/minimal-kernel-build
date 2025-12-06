@@ -4,7 +4,9 @@
 #include <linux/mutex.h>
 #include <linux/kdev_t.h>
 #include <linux/kobject.h>
-#include <linux/kobj_map.h>
+/* kobj_map.h inlined - typedef only, impl is here */
+typedef struct kobject *kobj_probe_t(dev_t, int *, void *);
+/* end kobj_map.h */
 
 struct kobj_map {
 	struct probe {

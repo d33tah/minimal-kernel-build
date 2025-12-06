@@ -430,9 +430,18 @@ static long __init flush_buffer(void *bufv, unsigned long len)
 	return origLen;
 }
 
-static unsigned long my_inptr;  
+static unsigned long my_inptr;
 
-#include <linux/decompress/generic.h>
+/* decompress/generic.h inlined */
+typedef int (*decompress_fn) (unsigned char *inbuf, long len,
+			      long (*fill)(void*, unsigned long),
+			      long (*flush)(void*, unsigned long),
+			      unsigned char *outbuf,
+			      long *posp,
+			      void(*error)(char *x));
+decompress_fn decompress_method(const unsigned char *inbuf, long len,
+				const char **name);
+/* end decompress/generic.h */
 
 static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 {

@@ -1,10 +1,8 @@
+/* Minimal kasan.h - stubs for CONFIG_KASAN disabled */
 #ifndef _LINUX_KASAN_H
 #define _LINUX_KASAN_H
 
-#include <linux/bug.h>
 #include <linux/kasan-enabled.h>
-#include <linux/kernel.h>
-#include <linux/jump_label.h>
 #include <linux/types.h>
 
 struct kmem_cache;

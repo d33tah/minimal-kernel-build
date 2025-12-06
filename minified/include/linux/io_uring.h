@@ -1,11 +1,10 @@
+/* Minimal io_uring.h - stubs for !CONFIG_IO_URING */
 #ifndef _LINUX_IO_URING_H
 #define _LINUX_IO_URING_H
 
-#include <linux/sched.h>
-#include <linux/xarray.h>
-
-/* io_uring_cmd_flags and io_uring_cmd struct - reduced for minimal kernel */
-enum io_uring_cmd_flags { IO_URING_F_LAST };
+struct task_struct;
+struct file;
+struct sock;
 struct io_uring_cmd;
 
 static inline void io_uring_cmd_done(struct io_uring_cmd *cmd, ssize_t ret,

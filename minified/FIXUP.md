@@ -1,11 +1,13 @@
---- 2025-12-07 02:12 ---
+--- 2025-12-07 02:22 ---
 Progress update:
-- Current LOC: 191,183 (after mrproper)
-- Commits this session: 4
+- Current LOC: 181,640 (after mrproper)
+- Goal: 150,000 LOC - need ~32K more reduction
+- Commits this session: 5
 - Reductions:
   1. Remove unused file operations (28 LOC)
   2. Remove more unused fs symbols (34 LOC)
   3. Remove more unused fs stubs (54 LOC)
+  4. Remove unused inode stubs (45 LOC in inode.c, 14 in fs.h)
 
 Strategy: grep for "Stub.*not used" comments to find stub functions that are
 defined but not called anywhere. Remove both the stub and its declaration.

@@ -13,13 +13,30 @@
 # define WARN_ON_IN_IRQ()
 
  
+/* Inlined from asm-generic/access_ok.h */
+#ifndef TASK_SIZE_MAX
+#define TASK_SIZE_MAX			TASK_SIZE
+#endif
+
+#ifndef __access_ok
+static inline int __access_ok(const void __user *ptr, unsigned long size)
+{
+	unsigned long limit = TASK_SIZE_MAX;
+	unsigned long addr = (unsigned long)ptr;
+
+	if (IS_ENABLED(CONFIG_ALTERNATE_USER_ADDRESS_SPACE) ||
+	    !IS_ENABLED(CONFIG_MMU))
+		return true;
+
+	return (size <= limit) && (addr <= (limit - size));
+}
+#endif
+
 #define access_ok(addr, size)					\
 ({									\
 	WARN_ON_IN_IRQ();						\
 	likely(__access_ok(addr, size));				\
 })
-
-#include <asm-generic/access_ok.h>
 
 extern int __get_user_1(void);
 extern int __get_user_2(void);

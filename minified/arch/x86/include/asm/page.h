@@ -67,9 +67,21 @@ static __always_inline u64 __is_canonical_address(u64 vaddr, u8 vaddr_bits)
 	return __canonical_address(vaddr, vaddr_bits) == vaddr;
 }
 
-#endif	 
+#endif
 
-#include <asm-generic/memory_model.h>
+/* Inlined from asm-generic/memory_model.h */
+#include <linux/pfn.h>
+#ifndef ARCH_PFN_OFFSET
+#define ARCH_PFN_OFFSET		(0UL)
+#endif
+#define __pfn_to_page(pfn)	(mem_map + ((pfn) - ARCH_PFN_OFFSET))
+#define __page_to_pfn(page)	((unsigned long)((page) - mem_map) + \
+				 ARCH_PFN_OFFSET)
+#define	__phys_to_pfn(paddr)	PHYS_PFN(paddr)
+#define	__pfn_to_phys(pfn)	PFN_PHYS(pfn)
+#define page_to_pfn __page_to_pfn
+#define pfn_to_page __pfn_to_page
+
 #include <asm-generic/getorder.h>
 
 #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA

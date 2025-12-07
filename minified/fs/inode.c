@@ -15,8 +15,39 @@
 #include <linux/buffer_head.h> 
 #include <linux/ratelimit.h>
 #include <linux/list_lru.h>
-#include <linux/iversion.h>
 #include "internal.h"
+
+/* Inlined from iversion.h - only used in this file */
+#define I_VERSION_QUERIED_SHIFT	(1)
+#define I_VERSION_QUERIED	(1ULL << (I_VERSION_QUERIED_SHIFT - 1))
+#define I_VERSION_INCREMENT	(1ULL << I_VERSION_QUERIED_SHIFT)
+
+static inline u64 inode_peek_iversion_raw(const struct inode *inode)
+{
+	return atomic64_read(&inode->i_version);
+}
+
+static inline bool inode_maybe_inc_iversion(struct inode *inode, bool force)
+{
+	u64 cur, old, new;
+	smp_mb();
+	cur = inode_peek_iversion_raw(inode);
+	for (;;) {
+		if (!force && !(cur & I_VERSION_QUERIED))
+			return false;
+		new = (cur & ~I_VERSION_QUERIED) + I_VERSION_INCREMENT;
+		old = atomic64_cmpxchg(&inode->i_version, cur, new);
+		if (likely(old == cur))
+			break;
+		cur = old;
+	}
+	return true;
+}
+
+static inline bool inode_iversion_need_inc(struct inode *inode)
+{
+	return inode_peek_iversion_raw(inode) & I_VERSION_QUERIED;
+}
 
 static unsigned int i_hash_mask __read_mostly;
 static unsigned int i_hash_shift __read_mostly;

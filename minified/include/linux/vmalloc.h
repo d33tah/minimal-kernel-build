@@ -9,7 +9,9 @@
 #include <linux/rbtree.h>
 #include <linux/overflow.h>
 
-#include <asm/vmalloc.h>
+/* Inlined from asm/vmalloc.h */
+#include <asm/cpufeature.h>
+#include <asm/pgtable_areas.h>
 
 struct vm_area_struct;		 
 struct notifier_block;		 

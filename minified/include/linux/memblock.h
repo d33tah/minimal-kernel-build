@@ -4,7 +4,11 @@
 
 #include <linux/init.h>
 #include <linux/mm.h>
-#include <asm/dma.h>
+
+/* Inlined from asm/dma.h */
+#ifndef MAX_DMA_ADDRESS
+#define MAX_DMA_ADDRESS      (PAGE_OFFSET + 0x1000000)
+#endif
 
 extern unsigned long max_low_pfn;
 extern unsigned long min_low_pfn;

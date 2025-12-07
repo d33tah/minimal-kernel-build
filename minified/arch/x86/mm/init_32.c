@@ -28,7 +28,7 @@
 #include <asm/bios_ebda.h>
 #include <asm/processor.h>
 #include <linux/uaccess.h>
-#include <asm/dma.h>
+/* dma.h inlined into memblock.h */
 #include <asm/fixmap.h>
 #include <asm/e820/api.h>
 #include <asm/apic.h>

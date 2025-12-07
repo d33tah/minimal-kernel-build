@@ -17,7 +17,7 @@
 #include <asm/tlbflush.h>
 #include <asm/tlb.h>
 #include <asm/proto.h>
-#include <asm/dma.h>		 
+/* dma.h inlined into memblock.h */
 #include <asm/microcode.h>
 /* kaslr.h inlined */
 unsigned long kaslr_get_random_long(const char *purpose);

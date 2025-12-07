@@ -19,7 +19,11 @@ static inline u32 acpi_pm_read_early(void) { return 0; }
 #include <linux/jump_label.h>
 #include <linux/static_call.h>
 
-#include <asm/hpet.h>
+/* hpet.h stubs inlined */
+static inline int is_hpet_enabled(void) { return 0; }
+#define hpet_readl(a) 0
+#define HPET_COUNTER 0
+#define HPET_PERIOD 0
 #include <asm/timer.h>
 #include <asm/vgtod.h>
 #include <asm/time.h>

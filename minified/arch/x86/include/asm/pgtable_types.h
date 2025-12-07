@@ -243,20 +243,43 @@ static inline pgdval_t pgd_flags(pgd_t pgd)
 	return native_pgd_val(pgd) & PTE_FLAGS_MASK;
 }
 
-#if CONFIG_PGTABLE_LEVELS > 4
-typedef struct { p4dval_t p4d; } p4d_t;
+/* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nop4d.h content */
+#define __PAGETABLE_P4D_FOLDED 1
 
-static inline p4d_t native_make_p4d(pudval_t val)
+typedef struct { pgd_t pgd; } p4d_t;
+
+#define P4D_SHIFT		PGDIR_SHIFT
+#define PTRS_PER_P4D		1
+#define P4D_SIZE		(1UL << P4D_SHIFT)
+#define P4D_MASK		(~(P4D_SIZE-1))
+
+static inline int pgd_none(pgd_t pgd)		{ return 0; }
+static inline int pgd_bad(pgd_t pgd)		{ return 0; }
+static inline int pgd_present(pgd_t pgd)	{ return 1; }
+static inline void pgd_clear(pgd_t *pgd)	{ }
+#define p4d_ERROR(p4d)				(pgd_ERROR((p4d).pgd))
+
+#define pgd_populate(mm, pgd, p4d)		do { } while (0)
+#define pgd_populate_safe(mm, pgd, p4d)		do { } while (0)
+#define set_pgd(pgdptr, pgdval)	set_p4d((p4d_t *)(pgdptr), (p4d_t) { pgdval })
+
+static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 {
-	return (p4d_t) { val };
+	return (p4d_t *)pgd;
 }
 
-static inline p4dval_t native_p4d_val(p4d_t p4d)
-{
-	return p4d.p4d;
-}
-#else
-#include <asm-generic/pgtable-nop4d.h>
+#define p4d_val(x)				(pgd_val((x).pgd))
+#define __p4d(x)				((p4d_t) { __pgd(x) })
+
+#define pgd_page(pgd)				(p4d_page((p4d_t){ pgd }))
+#define pgd_page_vaddr(pgd)			((unsigned long)(p4d_pgtable((p4d_t){ pgd })))
+
+#define p4d_alloc_one(mm, address)		NULL
+#define p4d_free(mm, x)				do { } while (0)
+#define p4d_free_tlb(tlb, x, a)			do { } while (0)
+
+#undef  p4d_addr_end
+#define p4d_addr_end(addr, end)			(end)
 
 static inline p4d_t native_make_p4d(pudval_t val)
 {
@@ -267,22 +290,45 @@ static inline p4dval_t native_p4d_val(p4d_t p4d)
 {
 	return native_pgd_val(p4d.pgd);
 }
-#endif
 
-#if CONFIG_PGTABLE_LEVELS > 3
-typedef struct { pudval_t pud; } pud_t;
+/* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nopud.h content */
+#define __PAGETABLE_PUD_FOLDED 1
 
-static inline pud_t native_make_pud(pmdval_t val)
+typedef struct { p4d_t p4d; } pud_t;
+
+#define PUD_SHIFT	P4D_SHIFT
+#define PTRS_PER_PUD	1
+#define PUD_SIZE  	(1UL << PUD_SHIFT)
+#define PUD_MASK  	(~(PUD_SIZE-1))
+
+static inline int p4d_none(p4d_t p4d)		{ return 0; }
+static inline int p4d_bad(p4d_t p4d)		{ return 0; }
+static inline int p4d_present(p4d_t p4d)	{ return 1; }
+static inline void p4d_clear(p4d_t *p4d)	{ }
+#define pud_ERROR(pud)				(p4d_ERROR((pud).p4d))
+
+#define p4d_populate(mm, p4d, pud)		do { } while (0)
+#define p4d_populate_safe(mm, p4d, pud)		do { } while (0)
+#define set_p4d(p4dptr, p4dval)	set_pud((pud_t *)(p4dptr), (pud_t) { p4dval })
+
+static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 {
-	return (pud_t) { val };
+	return (pud_t *)p4d;
 }
+#define pud_offset pud_offset
 
-static inline pudval_t native_pud_val(pud_t pud)
-{
-	return pud.pud;
-}
-#else
-#include <asm-generic/pgtable-nopud.h>
+#define pud_val(x)				(p4d_val((x).p4d))
+#define __pud(x)				((pud_t) { __p4d(x) })
+
+#define p4d_page(p4d)				(pud_page((pud_t){ p4d }))
+#define p4d_pgtable(p4d)			((pud_t *)(pud_pgtable((pud_t){ p4d })))
+
+#define pud_alloc_one(mm, address)		NULL
+#define pud_free(mm, x)				do { } while (0)
+#define pud_free_tlb(tlb, x, a)		        do { } while (0)
+
+#undef  pud_addr_end
+#define pud_addr_end(addr, end)			(end)
 
 static inline pud_t native_make_pud(pudval_t val)
 {
@@ -293,22 +339,51 @@ static inline pudval_t native_pud_val(pud_t pud)
 {
 	return native_pgd_val(pud.p4d.pgd);
 }
-#endif
 
-#if CONFIG_PGTABLE_LEVELS > 2
-typedef struct { pmdval_t pmd; } pmd_t;
+/* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nopmd.h content */
+struct mm_struct;
 
-static inline pmd_t native_make_pmd(pmdval_t val)
+#define __PAGETABLE_PMD_FOLDED 1
+
+typedef struct { pud_t pud; } pmd_t;
+
+#define PMD_SHIFT	PUD_SHIFT
+#define PTRS_PER_PMD	1
+#define PMD_SIZE  	(1UL << PMD_SHIFT)
+#define PMD_MASK  	(~(PMD_SIZE-1))
+
+static inline int pud_none(pud_t pud)		{ return 0; }
+static inline int pud_bad(pud_t pud)		{ return 0; }
+static inline int pud_present(pud_t pud)	{ return 1; }
+static inline int pud_user(pud_t pud)		{ return 0; }
+static inline int pud_leaf(pud_t pud)		{ return 0; }
+static inline void pud_clear(pud_t *pud)	{ }
+#define pmd_ERROR(pmd)				(pud_ERROR((pmd).pud))
+
+#define pud_populate(mm, pmd, pte)		do { } while (0)
+
+#define set_pud(pudptr, pudval)			set_pmd((pmd_t *)(pudptr), (pmd_t) { pudval })
+
+static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
 {
-	return (pmd_t) { val };
+	return (pmd_t *)pud;
 }
+#define pmd_offset pmd_offset
 
-static inline pmdval_t native_pmd_val(pmd_t pmd)
+#define pmd_val(x)				(pud_val((x).pud))
+#define __pmd(x)				((pmd_t) { __pud(x) } )
+
+#define pud_page(pud)				(pmd_page((pmd_t){ pud }))
+#define pud_pgtable(pud)			((pmd_t *)(pmd_page_vaddr((pmd_t){ pud })))
+
+#define pmd_alloc_one(mm, address)		NULL
+static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
 {
-	return pmd.pmd;
 }
-#else
-#include <asm-generic/pgtable-nopmd.h>
+#define pmd_free_tlb(tlb, x, a)		do { } while (0)
+
+#undef  pmd_addr_end
+#define pmd_addr_end(addr, end)			(end)
 
 static inline pmd_t native_make_pmd(pmdval_t val)
 {
@@ -319,7 +394,6 @@ static inline pmdval_t native_pmd_val(pmd_t pmd)
 {
 	return native_pgd_val(pmd.pud.p4d.pgd);
 }
-#endif
 
 static inline p4dval_t p4d_pfn_mask(p4d_t p4d)
 {

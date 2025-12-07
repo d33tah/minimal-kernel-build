@@ -9,8 +9,8 @@
 #include <linux/mm_types.h>
 #include <linux/bug.h>
 #include <linux/errno.h>
-#include <asm-generic/pgtable_uffd.h>
 #include <linux/page_table_check.h>
+/* pgtable_uffd.h inlined into asm/pgtable.h */
 
 #if 5 - defined(__PAGETABLE_P4D_FOLDED) - defined(__PAGETABLE_PUD_FOLDED) - \
 	defined(__PAGETABLE_PMD_FOLDED) != CONFIG_PGTABLE_LEVELS

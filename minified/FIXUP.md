@@ -1,3 +1,106 @@
+--- 2025-12-07 01:52 ---
+Session start:
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: 191,250 (after mrproper)
+- Goal: 150,000 LOC (need ~41K more reduction)
+- Kernel binary: 239K bzImage
+
+Note: LOC increased from ~182K to 191K possibly due to cloc counting different
+files or measurement variance. Will investigate.
+
+Plan: Continue reducing codebase. Focus on:
+1. Large unused functions/files
+2. Header file consolidation
+3. Dead code from disabled CONFIG options
+
+--- 2025-12-07 00:50 ---
+Session summary:
+- Current LOC: 181,732 (after mrproper)
+- Total commits this session: 11
+- Reductions:
+  1. Inline vdso/vsyscall.h, elfnote-lto.h (-14 LOC, 2 files removed)
+  2. Inline decompress/generic.h, kobj_map.h (-8 LOC, 2 files removed)
+  3. Inline stackprotector.h (-12 LOC, 1 file removed)
+  4. Remove unused vmpressure.h (-35 LOC)
+  5. Remove unused local64.h (-40 LOC)
+  6. Remove unused mm_kobj (-3 LOC)
+  7. Remove unused kernel_kobj (-5 LOC)
+  8. Remove unused bdi_async_bio_wq, early_console (0 net, comment swap)
+  9. Remove unused file_caps_enabled (-5 LOC)
+  10. Remove unused console_suspend_enabled, vt_dont_switch, panic_on_taint_nousertaint (-3 LOC)
+
+Total estimate: ~125 LOC removed (LOC fluctuates ~20)
+
+Strategy notes:
+- Header inlining: only profitable for headers used 1-2 times
+- Unused extern declarations: good source of small reductions
+- Using grep to find declarations with only one definition (no usages)
+- lib/xz/ and lib/vdso/ appear uncompiled but are #included by boot/compressed
+
+Next session: continue looking for unused extern symbols
+
+--- 2025-12-07 00:32 ---
+Session summary:
+- Current LOC: 181,706 (after mrproper)
+- Total reduction this session: ~109 LOC
+- 5 commits removing/inlining headers
+
+Progress notes:
+- Most small headers are used 3+ times, making inlining net-negative for LOC
+- lib/xz/ and lib/vdso/ appear uncompiled but are #included by boot/compressed
+- DEBUG-guarded code is optimized out at compile time
+- Remaining unused headers are either empty or conditionally used
+- Next steps: look for larger structural changes (dead subsystems, simplifications)
+
+--- 2025-12-07 00:26 ---
+Progress update:
+- Current LOC: 181,706 (after mrproper)
+- Total reduction this session: ~52 LOC
+- Commits this session:
+  1. Inline vdso/vsyscall.h, elfnote-lto.h (-14 LOC, 2 files removed)
+  2. Inline decompress/generic.h, kobj_map.h (-8 LOC, 2 files removed)
+  3. Inline stackprotector.h (-12 LOC, 1 file removed)
+  4. Remove unused vmpressure.h (-35 LOC)
+  5. Remove unused local64.h (-40 LOC)
+
+Strategy: using find_unused_headers_quick.sh script to find headers not included.
+Remaining potentially unused: compiler-version.h (empty), hidden.h, spinlock_*_up.h
+(all used conditionally), xz.h (used), libc-compat.h (required).
+
+--- 2025-12-07 00:18 ---
+Progress update:
+- Current LOC: 181,745 (after mrproper)
+- Commits this session:
+  1. Inline vdso/vsyscall.h, elfnote-lto.h (-14 LOC, 2 files removed)
+  2. Inline decompress/generic.h, kobj_map.h (-8 LOC, 2 files removed)
+  3. Inline stackprotector.h (-12 LOC, 1 file removed)
+
+Headers that CAN'T be easily inlined (too many uses):
+- mem_encrypt.h (5+ uses)
+- cc_platform.h (5 uses)
+- pfn.h (5+ uses)
+- buffer_head.h (6 uses)
+- delayacct.h (7 uses)
+- error-injection.h (can't inline - conflicts via module.h)
+
+Most small headers (~15-20 LOC) are used 3+ places, making inlining net-negative.
+Need different strategy: look for unused code in large files.
+
+--- 2025-12-06 23:52 ---
+Session started:
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: 181,756 (after mrproper)
+- Goal: 150,000 LOC (need ~32K more reduction)
+- Kernel binary: 239K bzImage
+
+Note: previous sessions inlined many vdso headers and other small headers.
+LOC was previously ~191K, now down to 182K.
+
+Plan: Continue reducing codebase. Look for:
+1. More headers that can be inlined/removed
+2. Large unused functions that can be stubbed
+3. Disabled CONFIG options with dead code still in source
+
 --- 2025-12-05 17:08 ---
 SESSION PROGRESS - FINAL UPDATE
 

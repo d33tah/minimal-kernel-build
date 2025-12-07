@@ -21,7 +21,16 @@ static inline int early_cpu_to_node(int cpu)
 static inline void setup_node_to_cpumask_map(void) { }
 
 
-#include <asm-generic/topology.h>
+/* Inlined from asm-generic/topology.h */
+#ifndef cpu_to_node
+#define cpu_to_node(cpu)	((void)(cpu),0)
+#endif
+#ifndef cpu_to_mem
+#define cpu_to_mem(cpu)		((void)(cpu),0)
+#endif
+#ifndef cpumask_of_node
+    #define cpumask_of_node(node)	((void)(node), cpu_online_mask)
+#endif
 
 extern const struct cpumask *cpu_coregroup_mask(int cpu);
 extern const struct cpumask *cpu_clustergroup_mask(int cpu);

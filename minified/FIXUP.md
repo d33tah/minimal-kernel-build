@@ -1,22 +1,24 @@
---- 2025-12-07 02:33 ---
-Progress update:
-- Current LOC: 181,578 (after mrproper)
-- Goal: 150,000 LOC - need ~31.5K more reduction
-- Commits this session: 9
-- Total session reduction: ~9,700 LOC
-- Reductions:
-  1. Remove unused file operations (28 LOC)
-  2. Remove more unused fs symbols (34 LOC)
-  3. Remove more unused fs stubs (54 LOC)
-  4. Remove unused inode stubs (45 LOC)
-  5. Remove kobj_ns stubs (66 LOC)
-  6. Remove tasklet stubs (39 LOC)
+--- 2025-12-07 02:40 ---
+Session ending:
+- Final LOC: 181,578 (after mrproper)
+- Goal: 150,000 LOC - still need ~31.5K more reduction
+- Total commits this session: 10
+- Total session reduction: ~9,700 LOC (from 191,250 to 181,578)
 
-Strategy: grep for "Stub.*not used" comments to find stub functions that are
-defined but not called anywhere. Remove both the stub and its declaration.
+Approach used:
+- grep for "Stub.*not used" comments to find stub functions
+- Remove both stub definition and declaration from headers
+- Small but consistent progress
 
-Need faster approach - small stubs one by one is too slow. Should find entire
-files/directories that can be removed or larger functions.
+Files analyzed for large uncompiled code - all are either:
+- #included by other files (kernel/sched/*.c)
+- Build tools (relocs.c, gen_init_cpio.c, build.c)
+- Library code for boot (lib/xz/*.c)
+
+Next steps:
+- Look at larger function blocks within compiled files
+- Consider stubbing out entire subsystems (e.g., simplify security.h stubs)
+- Look at large headers that might be reducible
 
 --- 2025-12-07 01:52 ---
 Session start:

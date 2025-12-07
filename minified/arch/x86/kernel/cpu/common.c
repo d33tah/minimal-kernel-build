@@ -27,8 +27,10 @@ void arch_smt_update(void);
 #include <asm/stackprotector.h>
 #include <asm/perf_event.h>
 #include <asm/mmu_context.h>
-#include <asm/doublefault.h>
 #include <asm/archrandom.h>
+
+/* Inlined from asm/doublefault.h */
+extern void doublefault_init_cpu_tss(void);
 #include <asm/hypervisor.h>
 #include <asm/processor.h>
 #include <asm/tlbflush.h>

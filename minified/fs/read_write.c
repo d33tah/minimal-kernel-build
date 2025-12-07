@@ -1,8 +1,13 @@
 
 #include <linux/slab.h>
 #include <linux/stat.h>
-#include <linux/sched/xacct.h>
 #include <linux/fcntl.h>
+
+/* Inlined from sched/xacct.h - all stubs */
+static inline void add_rchar(struct task_struct *tsk, ssize_t amt) {}
+static inline void add_wchar(struct task_struct *tsk, ssize_t amt) {}
+static inline void inc_syscr(struct task_struct *tsk) {}
+static inline void inc_syscw(struct task_struct *tsk) {}
 #include <linux/file.h>
 #include <linux/uio.h>
 #include <linux/fsnotify.h>

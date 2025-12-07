@@ -51,7 +51,9 @@
 #include <asm/traps.h>
 #include <asm/kdebug.h>
 #include <asm/insn-eval.h>
-#include <asm/sgx.h>
+
+/* Inlined from asm/sgx.h */
+#define SGX_ENCLS_FAULT_FLAG 0x40000000
 
 static inline unsigned long *pt_regs_nr(struct pt_regs *regs, int nr)
 {

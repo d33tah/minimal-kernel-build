@@ -138,6 +138,8 @@ void hw_protection_shutdown(const char *reason, int ms_until_forced);
 
 
 extern void emergency_restart(void);
-#include <asm/emergency-restart.h>
+
+/* Inlined from asm/emergency-restart.h */
+extern void machine_emergency_restart(void);
 
 #endif  

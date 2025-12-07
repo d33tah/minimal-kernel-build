@@ -9,7 +9,10 @@
 
 #include <asm/page.h>
 
-#include <asm/tlbbatch.h>
+/* Inlined from asm/tlbbatch.h */
+struct arch_tlbflush_unmap_batch {
+	struct cpumask cpumask;
+};
 
 #define USE_SPLIT_PTE_PTLOCKS	(NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS)
 #define USE_SPLIT_PMD_PTLOCKS	(USE_SPLIT_PTE_PTLOCKS && \

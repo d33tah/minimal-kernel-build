@@ -18,7 +18,10 @@
 #include <asm/page.h>
 #include <asm/desc.h>
 #include <asm/cpufeature.h>
-#include <clocksource/hyperv_timer.h>
+
+/* Inlined from clocksource/hyperv_timer.h - only needed for hv_get_tsc_page stub */
+struct ms_hyperv_tsc_page;
+static inline struct ms_hyperv_tsc_page *hv_get_tsc_page(void) { return NULL; }
 
 #undef _ASM_X86_VVAR_H
 #define EMIT_VVAR(name, offset)	\

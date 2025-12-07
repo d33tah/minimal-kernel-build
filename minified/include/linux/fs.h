@@ -1768,7 +1768,6 @@ extern void inode_set_flags(struct inode *inode, unsigned int flags,
 
 #define special_file(m) (S_ISCHR(m)||S_ISBLK(m)||S_ISFIFO(m)||S_ISSOCK(m))
 
-extern int readlink_copy(char __user *, int, const char *);
 extern int page_readlink(struct dentry *, char __user *, int);
 extern const char *page_get_link(struct dentry *, struct inode *,
 				 struct delayed_call *);
@@ -1790,9 +1789,6 @@ void inode_set_bytes(struct inode *inode, loff_t bytes);
 int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,
 		int flags);
 int vfs_fstat(int fd, struct kstat *stat);
-
-extern const char *vfs_get_link(struct dentry *, struct delayed_call *);
-extern int vfs_readlink(struct dentry *, char __user *, int);
 
 extern struct file_system_type *get_filesystem(struct file_system_type *fs);
 extern void put_filesystem(struct file_system_type *fs);
@@ -1823,8 +1819,6 @@ extern int simple_rename_exchange(struct inode *old_dir, struct dentry *old_dent
 extern int simple_rename(struct user_namespace *, struct inode *,
 			 struct dentry *, struct inode *, struct dentry *,
 			 unsigned int);
-extern void simple_recursive_removal(struct dentry *,
-                              void (*callback)(struct dentry *));
 extern int noop_fsync(struct file *, loff_t, loff_t, int);
 extern ssize_t noop_direct_IO(struct kiocb *iocb, struct iov_iter *iter);
 extern int simple_empty(struct dentry *);
@@ -1842,7 +1836,6 @@ extern const struct file_operations simple_dir_operations;
 extern void make_empty_dir_inode(struct inode *inode);
 extern bool is_empty_dir_inode(struct inode *inode);
 struct tree_descr { const char *name; const struct file_operations *ops; int mode; };
-struct dentry *d_alloc_name(struct dentry *, const char *);
 extern int simple_pin_fs(struct file_system_type *, struct vfsmount **mount, int *count);
 extern void simple_release_fs(struct vfsmount **mount, int *count);
 

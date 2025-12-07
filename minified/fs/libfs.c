@@ -276,11 +276,6 @@ const struct file_operations simple_dir_operations = {
 	.fsync		= noop_fsync,
 };
 
-/* STUB: simple_recursive_removal not used for minimal kernel */
-void simple_recursive_removal(struct dentry *dentry,
-                              void (*callback)(struct dentry *))
-{ }
-
 static const struct super_operations simple_super_operations = {
 	.statfs		= simple_statfs,
 };
@@ -757,13 +752,6 @@ struct inode *alloc_anon_inode(struct super_block *s)
 	inode->i_flags |= S_PRIVATE;
 	inode->i_atime = inode->i_mtime = inode->i_ctime = current_time(inode);
 	return inode;
-}
-
-int
-simple_nosetlease(struct file *filp, long arg, struct file_lock **flp,
-		  void **priv)
-{
-	return -EINVAL;
 }
 
 static struct dentry *empty_dir_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)

@@ -883,9 +883,6 @@ struct dentry *d_alloc_pseudo(struct super_block *sb, const struct qstr *name)
 	return dentry;
 }
 
-/* Stub: d_alloc_name not used in minimal kernel */
-struct dentry *d_alloc_name(struct dentry *parent, const char *name) { return NULL; }
-
 void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
 {
 	WARN_ON_ONCE(dentry->d_op);

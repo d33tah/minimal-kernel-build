@@ -2505,18 +2505,6 @@ SYSCALL_DEFINE2(rename, const char __user *, oldname, const char __user *, newna
 				getname(newname), 0);
 }
 
-/* Stub: readlink_copy not used in minimal kernel */
-int readlink_copy(char __user *buffer, int buflen, const char *link)
-{
-	return -EINVAL;
-}
-
-/* Stub: readlink not used in minimal kernel */
-int vfs_readlink(struct dentry *dentry, char __user *buffer, int buflen) { return -EINVAL; }
-
-/* Stub: not used in minimal kernel */
-const char *vfs_get_link(struct dentry *dentry, struct delayed_call *done) { return ERR_PTR(-EINVAL); }
-
 const char *page_get_link(struct dentry *dentry, struct inode *inode,
 			  struct delayed_call *callback)
 {

@@ -590,16 +590,6 @@ void unlock_new_inode(struct inode *inode)
 	spin_unlock(&inode->i_lock);
 }
 
-/* STUB: discard_new_inode not used externally */
-void discard_new_inode(struct inode *inode)
-{
-	iput(inode);
-}
-
-/* Stub: not used in minimal kernel */
-void lock_two_nondirectories(struct inode *inode1, struct inode *inode2) { }
-void unlock_two_nondirectories(struct inode *inode1, struct inode *inode2) { }
-
 struct inode *inode_insert5(struct inode *inode, unsigned long hashval,
 			    int (*test)(struct inode *, void *),
 			    int (*set)(struct inode *, void *), void *data)
@@ -712,12 +702,6 @@ again:
 	return inode;
 }
 
-/* Stub: not used in minimal kernel */
-ino_t iunique(struct super_block *sb, ino_t max_reserved) { return 0; }
-
-/* Stub: igrab not used in minimal kernel */
-struct inode *igrab(struct inode *inode) { return inode ? __iget(inode), inode : NULL; }
-
 struct inode *ilookup5_nowait(struct super_block *sb, unsigned long hashval,
 		int (*test)(struct inode *, void *), void *data)
 {
@@ -754,20 +738,7 @@ struct inode *find_inode_by_ino_rcu(struct super_block *sb,
 				    unsigned long ino) { return NULL;
 }
 
-/* Stub: insert_inode_locked not used in minimal kernel */
-int insert_inode_locked(struct inode *inode)
-{
-	return -EBUSY;
-}
-
-/* Stub: insert_inode_locked4 not used in minimal kernel */
-int insert_inode_locked4(struct inode *inode, unsigned long hashval,
-		int (*test)(struct inode *, void *), void *data)
-{
-	return -EBUSY;
-}
-
-/* Stub: generic_delete_inode not used externally */
+/* Used by ramfs */
 int generic_delete_inode(struct inode *inode) { return 1; }
 
 static void iput_final(struct inode *inode)
@@ -1048,9 +1019,6 @@ int file_modified(struct file *file)
 	return file_update_time(file);
 }
 
-/* Stub: inode_needs_sync not used externally */
-int inode_needs_sync(struct inode *inode) { return 0; }
-
 static void __wait_on_freeing_inode(struct inode *inode)
 {
 	wait_queue_head_t *wq;
@@ -1163,17 +1131,6 @@ bool inode_owner_or_capable(struct user_namespace *mnt_userns,
 	if (kuid_has_mapping(ns, i_uid) && ns_capable(ns, CAP_FOWNER))
 		return true;
 	return false;
-}
-
-/* Stub: inode_dio_wait not used externally in minimal kernel */
-void inode_dio_wait(struct inode *inode)
-{
-}
-
-/* Stub: inode_set_flags not used in minimal kernel */
-void inode_set_flags(struct inode *inode, unsigned int flags,
-		     unsigned int mask)
-{
 }
 
 void inode_nohighmem(struct inode *inode)

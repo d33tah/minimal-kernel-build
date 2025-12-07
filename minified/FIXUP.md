@@ -1,3 +1,15 @@
+--- 2025-12-07 02:12 ---
+Progress update:
+- Current LOC: 191,183 (after mrproper)
+- Commits this session: 4
+- Reductions:
+  1. Remove unused file operations (28 LOC)
+  2. Remove more unused fs symbols (34 LOC)
+  3. Remove more unused fs stubs (54 LOC)
+
+Strategy: grep for "Stub.*not used" comments to find stub functions that are
+defined but not called anywhere. Remove both the stub and its declaration.
+
 --- 2025-12-07 01:52 ---
 Session start:
 - make vm: WORKING (prints "Hello, World!")

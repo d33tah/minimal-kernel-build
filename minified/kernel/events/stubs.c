@@ -73,10 +73,8 @@ DEFINE_STATIC_KEY_FALSE(rdpmc_always_available_key);
 DEFINE_PER_CPU_PAGE_ALIGNED(struct debug_store, cpu_debug_store);
 DEFINE_PER_CPU(struct pt_regs, __perf_regs[4]);
 
-#include <asm/perf_regs.h>
-#ifndef PERF_REG_X86_MAX
+/* Perf regs disabled - just define minimum needed */
 #define PERF_REG_X86_MAX 32
-#endif
 unsigned int pt_regs_offset[PERF_REG_X86_MAX];
 
 int insn_get_addr_ref(struct insn *insn, struct pt_regs *regs) { return -ENOSYS; }

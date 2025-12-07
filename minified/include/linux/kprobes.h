@@ -15,7 +15,7 @@
 #include <linux/rethook.h>
 #include <asm/kprobes.h>
 
-#include <asm-generic/kprobes.h>
+/* asm-generic/kprobes.h inlined into asm/kprobes.h */
 typedef int kprobe_opcode_t;
 struct arch_specific_insn {
 	int dummy;

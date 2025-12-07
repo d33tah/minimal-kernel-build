@@ -49,7 +49,17 @@ static inline void boot_init_stack_canary(void) {}
 #include <asm/spec-ctrl.h>
 #include <asm/io_bitmap.h>
 #include <asm/proto.h>
-#include <asm/frame.h>
+/* --- 2025-12-07 20:47 --- Inlined frame.h */
+#include <asm/asm.h>
+#define ENCODE_FRAME_POINTER
+static inline unsigned long encode_frame_pointer(struct pt_regs *regs)
+{
+	return 0;
+}
+#define FRAME_BEGIN
+#define FRAME_END
+#define FRAME_OFFSET 0
+/* --- end inlined frame.h --- */
 #include <asm/unwind.h>
 #include <asm/tdx.h>
 

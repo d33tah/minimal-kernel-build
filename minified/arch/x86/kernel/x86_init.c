@@ -19,7 +19,8 @@
 #include <asm/tsc.h>
 #include <asm/iommu.h>
 #include <asm/mach_traps.h>
-#include <asm/irqdomain.h>
+/* asm/irqdomain.h inlined */
+#define native_create_pci_msi_domain	NULL
 
 void x86_init_noop(void) { }
 void __init x86_init_uint_noop(unsigned int unused) { }

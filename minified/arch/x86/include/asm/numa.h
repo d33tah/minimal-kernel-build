@@ -17,7 +17,8 @@ static inline int numa_cpu_node(int cpu)
 	return NUMA_NO_NODE;
 }
 
-# include <asm/numa_32.h>
+/* numa_32.h inlined */
+static inline void set_highmem_pages_init(void) { }
 
 static inline void numa_set_node(int cpu, int node)	{ }
 static inline void numa_clear_node(int cpu)		{ }

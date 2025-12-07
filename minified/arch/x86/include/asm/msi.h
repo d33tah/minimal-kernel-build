@@ -2,7 +2,11 @@
 #ifndef _ASM_X86_MSI_H
 #define _ASM_X86_MSI_H
 #include <asm/hw_irq.h>
-#include <asm/irqdomain.h>
+#include <linux/irqdomain.h>
+/* irqdomain.h inlined */
+static inline void x86_create_pci_msi_domain(void) { }
+#define native_create_pci_msi_domain	NULL
+#define x86_pci_msi_default_domain	NULL
 
 typedef struct irq_alloc_info msi_alloc_info_t;
 

@@ -31,7 +31,25 @@ static inline u32 read_pkru(void) { if (cpu_feature_enabled(X86_FEATURE_OSPKE)) 
 static inline void write_pkru(u32 pkru) { if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) return; if (pkru != rdpkru()) wrpkru(pkru); }
 static inline void pkru_write_default(void) { if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) return; wrpkru(pkru_get_init_value()); }
 /* End of pkru.h */
-#include <asm/coco.h>
+/* --- 2025-12-07 20:42 --- Inlined coco.h */
+#include <asm/types.h>
+enum cc_vendor {
+	CC_VENDOR_NONE,
+	CC_VENDOR_AMD,
+	CC_VENDOR_HYPERV,
+	CC_VENDOR_INTEL,
+};
+void cc_set_vendor(enum cc_vendor v);
+void cc_set_mask(u64 mask);
+static inline u64 cc_mkenc(u64 val)
+{
+	return val;
+}
+static inline u64 cc_mkdec(u64 val)
+{
+	return val;
+}
+/* --- end inlined coco.h --- */
 #include <linux/page_table_check.h>
 
 /* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable_uffd.h content */

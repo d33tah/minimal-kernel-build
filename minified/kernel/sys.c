@@ -16,7 +16,16 @@ struct tms {
 #include <linux/uaccess.h>
 #include <linux/fs_struct.h>
 
-#include "uid16.h"
+/* uid16.h inlined */
+long __sys_setuid(uid_t uid);
+long __sys_setgid(gid_t gid);
+long __sys_setreuid(uid_t ruid, uid_t euid);
+long __sys_setregid(gid_t rgid, gid_t egid);
+long __sys_setresuid(uid_t ruid, uid_t euid, uid_t suid);
+long __sys_setresgid(gid_t rgid, gid_t egid, gid_t sgid);
+long __sys_setfsuid(uid_t uid);
+long __sys_setfsgid(gid_t gid);
+/* end uid16.h */
 
 #ifndef SET_UNALIGN_CTL
 # define SET_UNALIGN_CTL(a, b)	(-EINVAL)

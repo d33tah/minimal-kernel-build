@@ -13,9 +13,12 @@
 #include <linux/refcount.h>
 #include <linux/freelist.h>
 #include <linux/rethook.h>
-#include <asm/kprobes.h>
-
-/* asm-generic/kprobes.h inlined into asm/kprobes.h */
+/* asm/kprobes.h inlined */
+# define NOKPROBE_SYMBOL(fname)
+# define __kprobes
+# define nokprobe_inline	inline
+static inline int kprobe_debug_handler(struct pt_regs *regs) { return 0; }
+/* end asm/kprobes.h */
 typedef int kprobe_opcode_t;
 struct arch_specific_insn {
 	int dummy;

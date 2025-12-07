@@ -250,21 +250,172 @@ static __always_inline int fls(unsigned int x)
 	return r + 1;
 }
 
- 
-#include <asm-generic/bitops/fls64.h>
+/* Inlined from asm-generic/bitops/fls64.h - BITS_PER_LONG == 32 */
+static __always_inline int fls64(__u64 x)
+{
+	__u32 h = x >> 32;
+	if (h)
+		return fls(h) + 32;
+	return fls(x);
+}
 
-#include <asm-generic/bitops/sched.h>
+/* Inlined from asm-generic/bitops/sched.h - i386 BITS_PER_LONG == 32 */
+static inline int sched_find_first_bit(const unsigned long *b)
+{
+	if (b[0])
+		return __ffs(b[0]);
+	if (b[1])
+		return __ffs(b[1]) + 32;
+	if (b[2])
+		return __ffs(b[2]) + 64;
+	return __ffs(b[3]) + 96;
+}
 
 #include <asm/arch_hweight.h>
 
-#include <asm-generic/bitops/const_hweight.h>
+/* Inlined from asm-generic/bitops/const_hweight.h */
+#define __const_hweight8(w)		\
+	((unsigned int)			\
+	 ((!!((w) & (1ULL << 0))) +	\
+	  (!!((w) & (1ULL << 1))) +	\
+	  (!!((w) & (1ULL << 2))) +	\
+	  (!!((w) & (1ULL << 3))) +	\
+	  (!!((w) & (1ULL << 4))) +	\
+	  (!!((w) & (1ULL << 5))) +	\
+	  (!!((w) & (1ULL << 6))) +	\
+	  (!!((w) & (1ULL << 7)))))
 
-#include <asm-generic/bitops/instrumented-atomic.h>
-#include <asm-generic/bitops/instrumented-non-atomic.h>
-#include <asm-generic/bitops/instrumented-lock.h>
+#define __const_hweight16(w) (__const_hweight8(w)  + __const_hweight8((w)  >> 8 ))
+#define __const_hweight32(w) (__const_hweight16(w) + __const_hweight16((w) >> 16))
+#define __const_hweight64(w) (__const_hweight32(w) + __const_hweight32((w) >> 32))
 
+#define hweight8(w)  (__builtin_constant_p(w) ? __const_hweight8(w)  : __arch_hweight8(w))
+#define hweight16(w) (__builtin_constant_p(w) ? __const_hweight16(w) : __arch_hweight16(w))
+#define hweight32(w) (__builtin_constant_p(w) ? __const_hweight32(w) : __arch_hweight32(w))
+#define hweight64(w) (__builtin_constant_p(w) ? __const_hweight64(w) : __arch_hweight64(w))
 
+#define HWEIGHT8(w)  (BUILD_BUG_ON_ZERO(!__builtin_constant_p(w)) + __const_hweight8(w))
+#define HWEIGHT16(w) (BUILD_BUG_ON_ZERO(!__builtin_constant_p(w)) + __const_hweight16(w))
+#define HWEIGHT32(w) (BUILD_BUG_ON_ZERO(!__builtin_constant_p(w)) + __const_hweight32(w))
+#define HWEIGHT64(w) (BUILD_BUG_ON_ZERO(!__builtin_constant_p(w)) + __const_hweight64(w))
 
+#define HWEIGHT(w)   HWEIGHT64((u64)w)
+
+/* Inlined from asm-generic/bitops/instrumented-atomic.h */
+#include <linux/instrumented.h>
+
+static __always_inline void set_bit(long nr, volatile unsigned long *addr)
+{
+	instrument_atomic_write(addr + BIT_WORD(nr), sizeof(long));
+	arch_set_bit(nr, addr);
+}
+
+static __always_inline void clear_bit(long nr, volatile unsigned long *addr)
+{
+	instrument_atomic_write(addr + BIT_WORD(nr), sizeof(long));
+	arch_clear_bit(nr, addr);
+}
+
+static __always_inline void change_bit(long nr, volatile unsigned long *addr)
+{
+	instrument_atomic_write(addr + BIT_WORD(nr), sizeof(long));
+	arch_change_bit(nr, addr);
+}
+
+static __always_inline bool test_and_set_bit(long nr, volatile unsigned long *addr)
+{
+	instrument_atomic_read_write(addr + BIT_WORD(nr), sizeof(long));
+	return arch_test_and_set_bit(nr, addr);
+}
+
+static __always_inline bool test_and_clear_bit(long nr, volatile unsigned long *addr)
+{
+	instrument_atomic_read_write(addr + BIT_WORD(nr), sizeof(long));
+	return arch_test_and_clear_bit(nr, addr);
+}
+
+static __always_inline bool test_and_change_bit(long nr, volatile unsigned long *addr)
+{
+	instrument_atomic_read_write(addr + BIT_WORD(nr), sizeof(long));
+	return arch_test_and_change_bit(nr, addr);
+}
+
+/* Inlined from asm-generic/bitops/instrumented-non-atomic.h */
+static __always_inline void __set_bit(long nr, volatile unsigned long *addr)
+{
+	instrument_write(addr + BIT_WORD(nr), sizeof(long));
+	arch___set_bit(nr, addr);
+}
+
+static __always_inline void __clear_bit(long nr, volatile unsigned long *addr)
+{
+	instrument_write(addr + BIT_WORD(nr), sizeof(long));
+	arch___clear_bit(nr, addr);
+}
+
+static __always_inline void __change_bit(long nr, volatile unsigned long *addr)
+{
+	instrument_write(addr + BIT_WORD(nr), sizeof(long));
+	arch___change_bit(nr, addr);
+}
+
+static __always_inline void __instrument_read_write_bitop(long nr, volatile unsigned long *addr)
+{
+	instrument_read_write(addr + BIT_WORD(nr), sizeof(long));
+}
+
+static __always_inline bool __test_and_set_bit(long nr, volatile unsigned long *addr)
+{
+	__instrument_read_write_bitop(nr, addr);
+	return arch___test_and_set_bit(nr, addr);
+}
+
+static __always_inline bool __test_and_clear_bit(long nr, volatile unsigned long *addr)
+{
+	__instrument_read_write_bitop(nr, addr);
+	return arch___test_and_clear_bit(nr, addr);
+}
+
+static __always_inline bool __test_and_change_bit(long nr, volatile unsigned long *addr)
+{
+	__instrument_read_write_bitop(nr, addr);
+	return arch___test_and_change_bit(nr, addr);
+}
+
+static __always_inline bool test_bit(long nr, const volatile unsigned long *addr)
+{
+	instrument_atomic_read(addr + BIT_WORD(nr), sizeof(long));
+	return arch_test_bit(nr, addr);
+}
+
+/* Inlined from asm-generic/bitops/instrumented-lock.h */
+static inline void clear_bit_unlock(long nr, volatile unsigned long *addr)
+{
+	instrument_atomic_write(addr + BIT_WORD(nr), sizeof(long));
+	arch_clear_bit_unlock(nr, addr);
+}
+
+static inline void __clear_bit_unlock(long nr, volatile unsigned long *addr)
+{
+	instrument_write(addr + BIT_WORD(nr), sizeof(long));
+	arch___clear_bit_unlock(nr, addr);
+}
+
+static inline bool test_and_set_bit_lock(long nr, volatile unsigned long *addr)
+{
+	instrument_atomic_read_write(addr + BIT_WORD(nr), sizeof(long));
+	return arch_test_and_set_bit_lock(nr, addr);
+}
+
+#if defined(arch_clear_bit_unlock_is_negative_byte)
+static inline bool
+clear_bit_unlock_is_negative_byte(long nr, volatile unsigned long *addr)
+{
+	instrument_atomic_write(addr + BIT_WORD(nr), sizeof(long));
+	return arch_clear_bit_unlock_is_negative_byte(nr, addr);
+}
+#define clear_bit_unlock_is_negative_byte clear_bit_unlock_is_negative_byte
+#endif
 
 
 #endif  

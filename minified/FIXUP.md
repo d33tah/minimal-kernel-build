@@ -1,16 +1,22 @@
---- 2025-12-07 02:22 ---
+--- 2025-12-07 02:33 ---
 Progress update:
-- Current LOC: 181,640 (after mrproper)
-- Goal: 150,000 LOC - need ~32K more reduction
-- Commits this session: 5
+- Current LOC: 181,578 (after mrproper)
+- Goal: 150,000 LOC - need ~31.5K more reduction
+- Commits this session: 9
+- Total session reduction: ~9,700 LOC
 - Reductions:
   1. Remove unused file operations (28 LOC)
   2. Remove more unused fs symbols (34 LOC)
   3. Remove more unused fs stubs (54 LOC)
-  4. Remove unused inode stubs (45 LOC in inode.c, 14 in fs.h)
+  4. Remove unused inode stubs (45 LOC)
+  5. Remove kobj_ns stubs (66 LOC)
+  6. Remove tasklet stubs (39 LOC)
 
 Strategy: grep for "Stub.*not used" comments to find stub functions that are
 defined but not called anywhere. Remove both the stub and its declaration.
+
+Need faster approach - small stubs one by one is too slow. Should find entire
+files/directories that can be removed or larger functions.
 
 --- 2025-12-07 01:52 ---
 Session start:

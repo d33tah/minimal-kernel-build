@@ -341,11 +341,6 @@ void __tasklet_schedule(struct tasklet_struct *t)
 				  TASKLET_SOFTIRQ);
 }
 
-/* Stub: __tasklet_hi_schedule not used in minimal kernel */
-void __tasklet_hi_schedule(struct tasklet_struct *t)
-{
-}
-
 static bool tasklet_clear_sched(struct tasklet_struct *t)
 {
 	if (test_and_clear_bit(TASKLET_STATE_SCHED, &t->state)) {
@@ -409,25 +404,6 @@ static __latent_entropy void tasklet_hi_action(struct softirq_action *a)
 {
 	tasklet_action_common(a, this_cpu_ptr(&tasklet_hi_vec), HI_SOFTIRQ);
 }
-
-/* Stub: tasklet_setup not used in minimal kernel */
-void tasklet_setup(struct tasklet_struct *t,
-		   void (*callback)(struct tasklet_struct *))
-{
-}
-
-/* Stub: tasklet_init not used in minimal kernel */
-void tasklet_init(struct tasklet_struct *t,
-		  void (*func)(unsigned long), unsigned long data)
-{
-}
-
-
-/* Stub: tasklet_kill not used in minimal kernel */
-void tasklet_kill(struct tasklet_struct *t)
-{
-}
-
 
 void __init softirq_init(void)
 {

@@ -211,21 +211,7 @@ static inline int tasklet_trylock(struct tasklet_struct *t) { return 1; }
 static inline void tasklet_unlock(struct tasklet_struct *t) { }
 /* tasklet_unlock_wait removed - unused */
 
-extern void __tasklet_schedule(struct tasklet_struct *t);
-
-/* tasklet_schedule removed - unused */
-
-extern void __tasklet_hi_schedule(struct tasklet_struct *t);
-
-
-extern void tasklet_kill(struct tasklet_struct *t);
-extern void tasklet_init(struct tasklet_struct *t,
-			 void (*func)(unsigned long), unsigned long data);
-extern void tasklet_setup(struct tasklet_struct *t,
-			  void (*callback)(struct tasklet_struct *));
-
-
-/* probe_irq_on, probe_irq_off, probe_irq_mask removed - unused */	 
+extern void __tasklet_schedule(struct tasklet_struct *t);	 
 
 static inline void init_irq_proc(void)
 {

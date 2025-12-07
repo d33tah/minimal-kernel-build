@@ -4,7 +4,7 @@
 
 #include <linux/types.h>
 #include <linux/limits.h>
-#include <linux/dma-direction.h>
+#include <linux/dma-mapping.h>
 
 struct device;
 struct page;

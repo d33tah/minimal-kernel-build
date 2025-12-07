@@ -7,7 +7,6 @@
 #include <linux/delay.h>
 #include <linux/srcu.h>
 
-#include <linux/rcu_node_tree.h>
 #include "rcu_segcblist.h"
 #include "rcu.h"
 

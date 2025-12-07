@@ -164,7 +164,16 @@ void rcu_test_sync_prims(void);
 extern void resched_cpu(int cpu);
 
 
-#include <linux/rcu_node_tree.h>
+/* rcu_node_tree.h inlined - simplified for NR_CPUS=1 */
+#define RCU_FANOUT 32
+#define RCU_FANOUT_LEAF 16
+#define RCU_NUM_LVLS	      1
+#define NUM_RCU_LVL_0	      1
+#define NUM_RCU_NODES	      NUM_RCU_LVL_0
+#define NUM_RCU_LVL_INIT    { NUM_RCU_LVL_0 }
+#define RCU_NODE_NAME_INIT  { "rcu_node_0" }
+#define RCU_FQS_NAME_INIT   { "rcu_node_fqs_0" }
+/* end rcu_node_tree.h */
 
 extern int rcu_num_lvls;
 extern int num_rcu_lvl[];

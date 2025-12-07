@@ -78,8 +78,19 @@ extern unsigned int nr_iowait_cpu(int cpu);
 
 
 
-#include "cpupri.h"
-#include "cpudeadline.h"
+/* cpupri.h inlined */
+#define CPUPRI_NR_PRIORITIES	(MAX_RT_PRIO+1)
+#define CPUPRI_INVALID		-1
+#define CPUPRI_NORMAL		 0
+#define CPUPRI_HIGHER		100
+struct cpupri_vec { atomic_t count; cpumask_var_t mask; };
+struct cpupri { struct cpupri_vec pri_to_cpu[CPUPRI_NR_PRIORITIES]; int *cpu_to_pri; };
+/* end cpupri.h */
+/* cpudeadline.h inlined */
+#define IDX_INVALID		-1
+struct cpudl_item { u64 dl; int cpu; int idx; };
+struct cpudl { raw_spinlock_t lock; int size; cpumask_var_t free_cpus; struct cpudl_item *elements; };
+/* end cpudeadline.h */
 
 # define SCHED_WARN_ON(x)      ({ (void)(x), 0; })
 

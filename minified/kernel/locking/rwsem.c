@@ -12,7 +12,21 @@
 #include <linux/rwsem.h>
 #include <linux/atomic.h>
 
-#include "lock_events.h"
+/* lock_events.h and lock_events_list.h inlined */
+#define LOCK_EVENT(name)	LOCKEVENT_ ## name,
+enum lock_events {
+	LOCK_EVENT(rwsem_sleep_reader) LOCK_EVENT(rwsem_sleep_writer) LOCK_EVENT(rwsem_wake_reader)
+	LOCK_EVENT(rwsem_wake_writer) LOCK_EVENT(rwsem_opt_lock) LOCK_EVENT(rwsem_opt_fail)
+	LOCK_EVENT(rwsem_opt_nospin) LOCK_EVENT(rwsem_rlock) LOCK_EVENT(rwsem_rlock_steal)
+	LOCK_EVENT(rwsem_rlock_fast) LOCK_EVENT(rwsem_rlock_fail) LOCK_EVENT(rwsem_rlock_handoff)
+	LOCK_EVENT(rwsem_wlock) LOCK_EVENT(rwsem_wlock_fail) LOCK_EVENT(rwsem_wlock_handoff)
+	lockevent_num, LOCKEVENT_reset_cnts = lockevent_num,
+};
+#undef LOCK_EVENT
+#define lockevent_inc(ev)
+#define lockevent_add(ev, c)
+#define lockevent_cond_inc(ev, c)
+/* end lock_events headers */
 
 #define RWSEM_READER_OWNED	(1UL << 0)
 #define RWSEM_NONSPINNABLE	(1UL << 1)

@@ -9,7 +9,7 @@
 #include <asm/vsyscall.h>
 #include <asm/x86_init.h>
 #include <asm/time.h>
-#include <asm/intel-mid.h>
+/* asm/intel-mid.h removed - unused */
 #include <asm/setup.h>
 
 volatile unsigned long cmos_lock;

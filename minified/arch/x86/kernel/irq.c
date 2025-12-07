@@ -17,7 +17,7 @@
 #include <asm/desc.h>
 #include <asm/traps.h>
 
-#include <asm/trace/irq_vectors.h>
+/* asm/trace/irq_vectors.h removed - unused */
 
 DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
 

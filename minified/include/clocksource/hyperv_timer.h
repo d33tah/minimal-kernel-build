@@ -5,7 +5,10 @@
 
 #include <linux/clocksource.h>
 #include <linux/math64.h>
-#include <asm/mshyperv.h>
+
+/* Inlined from asm/mshyperv.h */
+static inline bool hv_is_isolation_supported(void) { return false; }
+static inline int hv_set_mem_host_visibility(unsigned long addr, int numpages, bool visible) { return 0; }
 
 #define HV_MAX_MAX_DELTA_TICKS 0xffffffff
 #define HV_MIN_DELTA_TICKS 1

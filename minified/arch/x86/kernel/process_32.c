@@ -40,8 +40,10 @@
 #include <asm/debugreg.h>
 #include <asm/switch_to.h>
 #include <asm/vm86.h>
-#include <asm/resctrl.h>
 #include <asm/proto.h>
+
+/* Inlined from asm/resctrl.h */
+static inline void resctrl_sched_in(void) {}
 
 #include "process.h"
 

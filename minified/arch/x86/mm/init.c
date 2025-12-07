@@ -9,7 +9,7 @@
 
 #include <asm/set_memory.h>
 #include <asm/e820/api.h>
-#include <asm/init.h>
+/* asm/init.h removed - unused */
 #include <asm/page.h>
 #include <asm/page_types.h>
 #include <asm/sections.h>

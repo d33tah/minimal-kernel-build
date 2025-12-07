@@ -44,7 +44,7 @@ static inline void olpc_dt_build_devicetree(void) { }
 #include <asm/set_memory.h>
 #include <asm/page_types.h>
 #include <asm/cpu_entry_area.h>
-#include <asm/init.h>
+/* asm/init.h removed - unused */
 #include <asm/pgtable_areas.h>
 #include <asm/numa.h>
 

@@ -31,7 +31,7 @@ static inline int is_hpet_enabled(void) { return 0; }
 #include <asm/hypervisor.h>
 #include <asm/nmi.h>
 #include <asm/x86_init.h>
-#include <asm/geode.h>
+/* asm/geode.h removed - unused */
 #include <asm/apic.h>
 #include <asm/intel-family.h>
 #include <asm/i8259.h>

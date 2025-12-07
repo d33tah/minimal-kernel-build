@@ -1,10 +1,2 @@
- 
+
 # include <asm/suspend_32.h>
-extern unsigned long restore_jump_address __visible;
-extern unsigned long jump_address_phys;
-extern unsigned long restore_cr3 __visible;
-extern unsigned long temp_pgt __visible;
-extern unsigned long relocated_restore_code __visible;
-extern int relocate_restore_code(void);
- 
-extern asmlinkage __visible int restore_image(void);

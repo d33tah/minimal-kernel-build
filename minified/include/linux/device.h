@@ -20,7 +20,9 @@
 #include <linux/device/bus.h>
 #include <linux/device/class.h>
 #include <linux/device/driver.h>
-#include <asm/device.h>
+/* asm/device.h inlined */
+struct dev_archdata { };
+struct pdev_archdata { };
 
 struct device;
 struct device_private;

@@ -30,12 +30,15 @@ extern bool crash_kexec_post_notifiers;
 #include <asm/hypervisor.h>
 #include <asm/io_apic.h>
 #include <asm/kasan.h>
-#include <asm/kaslr.h>
+/* kaslr.h inlined */
+static inline void kernel_randomize_memory(void) { }
 #include <asm/mce.h>
 #include <asm/memtype.h>
 #include <asm/mtrr.h>
 #include <asm/realmode.h>
-#include <asm/olpc_ofw.h>
+/* olpc_ofw.h inlined */
+static inline void olpc_ofw_detect(void) { }
+static inline void setup_olpc_ofw_pgd(void) { }
 #include <asm/pci-direct.h>
 #include <asm/prom.h>
 #include <asm/proto.h>

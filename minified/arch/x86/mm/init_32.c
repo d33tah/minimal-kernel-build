@@ -35,7 +35,8 @@
 #include <asm/bugs.h>
 #include <asm/tlb.h>
 #include <asm/tlbflush.h>
-#include <asm/olpc_ofw.h>
+/* olpc_ofw.h inlined */
+static inline void olpc_dt_build_devicetree(void) { }
 #include <asm/pgalloc.h>
 #include <asm/sections.h>
 #include <asm/paravirt.h>

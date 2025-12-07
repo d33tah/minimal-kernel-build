@@ -33,7 +33,6 @@
 #include <asm/hw_breakpoint.h>
 #include <asm/traps.h>
 #include <asm/syscall.h>
-#include <asm/fsgsbase.h>
 #include <asm/io_bitmap.h>
 
 #include "tls.h"

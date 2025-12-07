@@ -220,8 +220,21 @@ extern bool is_early_ioremap_ptep(pte_t *ptep);
 
 #define IO_SPACE_LIMIT 0xffff
 
-#include <asm-generic/io.h>
-#undef PCI_IOBASE
+/* --- 2025-12-07 11:50 --- inlined asm-generic/io.h (522 LOC) */
+/* x86 already defines: readb/w/l, writeb/w/l, virt_to_phys, phys_to_virt,
+   ioremap variants, memcpy_fromio/toio, memset_io, inb/outb family, etc.
+   Only need: ioport_map/unmap declarations and ioremap_np stub */
+extern void __iomem *ioport_map(unsigned long port, unsigned int nr);
+extern void ioport_unmap(void __iomem *p);
+
+#ifndef ioremap_np
+#define ioremap_np ioremap_np
+static inline void __iomem *ioremap_np(phys_addr_t offset, size_t size)
+{
+	return NULL;
+}
+#endif
+/* --- end inlined asm-generic/io.h --- */
 
 
 

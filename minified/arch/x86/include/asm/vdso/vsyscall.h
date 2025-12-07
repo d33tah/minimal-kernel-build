@@ -19,9 +19,28 @@ struct vdso_data *__x86_get_k_vdso_data(void)
 }
 #define __arch_get_k_vdso_data __x86_get_k_vdso_data
 
- 
-#include <asm-generic/vdso/vsyscall.h>
+/* Inlined from asm-generic/vdso/vsyscall.h */
+#ifndef __arch_get_k_vdso_data
+static __always_inline struct vdso_data *__arch_get_k_vdso_data(void)
+{
+	return NULL;
+}
+#endif
 
-#endif  
+#ifndef __arch_update_vsyscall
+static __always_inline void __arch_update_vsyscall(struct vdso_data *vdata,
+						   struct timekeeper *tk)
+{
+}
+#endif
+
+#ifndef __arch_sync_vdso_data
+static __always_inline void __arch_sync_vdso_data(struct vdso_data *vdata)
+{
+}
+#endif
+/* End of inlined asm-generic/vdso/vsyscall.h */
+
+#endif
 
 #endif  

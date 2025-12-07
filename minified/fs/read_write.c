@@ -18,14 +18,6 @@
 #include <linux/uaccess.h>
 #include <asm/unistd.h>
 
-const struct file_operations generic_ro_fops = {
-	.llseek		= generic_file_llseek,
-	.read_iter	= generic_file_read_iter,
-	.mmap		= generic_file_readonly_mmap,
-	.splice_read	= generic_file_splice_read,
-};
-
-
 static inline bool unsigned_offsets(struct file *file)
 {
 	return file->f_mode & FMODE_UNSIGNED_OFFSET;

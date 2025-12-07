@@ -276,10 +276,6 @@ const struct file_operations simple_dir_operations = {
 	.fsync		= noop_fsync,
 };
 
-const struct inode_operations simple_dir_inode_operations = {
-	.lookup		= simple_lookup,
-};
-
 /* STUB: simple_recursive_removal not used for minimal kernel */
 void simple_recursive_removal(struct dentry *dentry,
                               void (*callback)(struct dentry *))
@@ -769,16 +765,6 @@ simple_nosetlease(struct file *filp, long arg, struct file_lock **flp,
 {
 	return -EINVAL;
 }
-
-const char *simple_get_link(struct dentry *dentry, struct inode *inode,
-			    struct delayed_call *done)
-{
-	return inode->i_link;
-}
-
-const struct inode_operations simple_symlink_inode_operations = {
-	.get_link = simple_get_link,
-};
 
 static struct dentry *empty_dir_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
 {

@@ -1766,8 +1766,6 @@ void dio_warn_stale_pagecache(struct file *filp);
 extern void inode_set_flags(struct inode *inode, unsigned int flags,
 			    unsigned int mask);
 
-extern const struct file_operations generic_ro_fops;
-
 #define special_file(m) (S_ISCHR(m)||S_ISBLK(m)||S_ISFIFO(m)||S_ISSOCK(m))
 
 extern int readlink_copy(char __user *, int, const char *);
@@ -1788,9 +1786,6 @@ void __inode_sub_bytes(struct inode *inode, loff_t bytes);
 void inode_sub_bytes(struct inode *inode, loff_t bytes);
 loff_t inode_get_bytes(struct inode *inode);
 void inode_set_bytes(struct inode *inode, loff_t bytes);
-const char *simple_get_link(struct dentry *, struct inode *,
-			    struct delayed_call *);
-extern const struct inode_operations simple_symlink_inode_operations;
 
 int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,
 		int flags);
@@ -1844,7 +1839,6 @@ extern const struct dentry_operations simple_dentry_operations;
 extern struct dentry *simple_lookup(struct inode *, struct dentry *, unsigned int flags);
 extern ssize_t generic_read_dir(struct file *, char __user *, size_t, loff_t *);
 extern const struct file_operations simple_dir_operations;
-extern const struct inode_operations simple_dir_inode_operations;
 extern void make_empty_dir_inode(struct inode *inode);
 extern bool is_empty_dir_inode(struct inode *inode);
 struct tree_descr { const char *name; const struct file_operations *ops; int mode; };

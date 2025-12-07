@@ -7,8 +7,10 @@
 
 
 
-#include <asm/mmiowb.h>
-
+/* Inlined from asm-generic/mmiowb.h */
+#ifndef mmiowb_set_pending
+#define mmiowb_set_pending()		do { } while (0)
+#endif
 
 #ifndef __io_br
 #define __io_br()      barrier()

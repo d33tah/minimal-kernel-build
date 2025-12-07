@@ -5,7 +5,6 @@
 #include <linux/kallsyms.h>
 #include <linux/kmsg_dump.h>
 #include <linux/kgdb.h>
-#include <trace/events/error_report.h>
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
 #include <linux/module.h>

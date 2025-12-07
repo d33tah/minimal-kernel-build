@@ -15,8 +15,6 @@
 #include <linux/tty.h>
 #include <linux/proc_fs.h>
 
-#include <trace/events/signal.h>
-
 #include <asm/param.h>
 #include <linux/uaccess.h>
 #include <asm/unistd.h>

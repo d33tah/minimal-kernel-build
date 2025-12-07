@@ -132,7 +132,18 @@ latch_tree_find(void *key, struct latch_tree_root *root,
 }
 /* End of inlined rbtree_latch.h content */
 
-#include <linux/error-injection.h>
+/* error-injection.h inlined */
+enum {
+	EI_ETYPE_NONE,
+	EI_ETYPE_NULL,
+	EI_ETYPE_ERRNO,
+	EI_ETYPE_ERRNO_NULL,
+	EI_ETYPE_TRUE,
+};
+#define ALLOW_ERROR_INJECTION(fname, _etype)
+static inline bool within_error_injection_list(unsigned long addr) { return false; }
+static inline int get_injectable_error_type(unsigned long addr) { return EI_ETYPE_NONE; }
+/* end error-injection.h */
 #include <linux/tracepoint-defs.h>
 #include <linux/srcu.h>
 #include <linux/static_call_types.h>

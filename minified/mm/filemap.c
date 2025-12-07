@@ -15,7 +15,8 @@
 #include <linux/pagemap.h>
 #include <linux/file.h>
 #include <linux/uio.h>
-#include <linux/error-injection.h>
+/* error-injection.h - only need ALLOW_ERROR_INJECTION macro */
+#define ALLOW_ERROR_INJECTION(fname, _etype)
 #include <linux/hash.h>
 #include <linux/writeback.h>
 #include <linux/backing-dev.h>

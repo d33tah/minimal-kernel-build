@@ -116,7 +116,15 @@ extern struct apm_info	apm_info;
 #define APM_DEVICE_BALL		((apm_info.connection_version > 0x0100) ? \
 				 APM_DEVICE_ALL : APM_DEVICE_OLD_ALL)
 /* --- end apm_bios.h inlined --- */
-#include <asm/ist.h>
+/* asm/ist.h inlined */
+struct ist_info {
+	__u32 signature;
+	__u32 command;
+	__u32 event;
+	__u32 perf_level;
+};
+extern struct ist_info ist_info;
+/* --- end ist.h inlined --- */
 
 /* Inlined from video/edid.h */
 struct edid_info {

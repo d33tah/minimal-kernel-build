@@ -22,7 +22,8 @@
 #include <asm/kaslr.h>
 #include <asm/hypervisor.h>
 #include <asm/cpufeature.h>
-#include <asm/pti.h>
+/* pti.h inlined */
+static inline void pti_check_boottime_disable(void) { }
 #include <asm/text-patching.h>
 #include <asm/memtype.h>
 

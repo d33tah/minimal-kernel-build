@@ -6,7 +6,8 @@
 #define _TRACE_PAGE_FAULT_H
 
 #include <linux/tracepoint.h>
-#include <asm/trace/common.h>
+/* trace/common.h inlined */
+static inline bool trace_pagefault_enabled(void) { return false; }
 
 extern int trace_pagefault_reg(void);
 extern void trace_pagefault_unreg(void);

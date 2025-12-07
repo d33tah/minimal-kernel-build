@@ -31,7 +31,6 @@
 #include <linux/hugetlb.h>
 #include <linux/sched/mm.h>
 #include <asm/tlbflush.h>
-#include <asm/shmparam.h>
 
 #include "internal.h"
 #include "pgalloc-track.h"

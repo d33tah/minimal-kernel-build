@@ -33,7 +33,6 @@
 #include <linux/sort.h>
 #include <linux/pfn.h>
 #include <linux/backing-dev.h>
-#include <linux/fault-inject.h>
 #include <linux/page-isolation.h>
 #include <linux/kmemleak.h>
 

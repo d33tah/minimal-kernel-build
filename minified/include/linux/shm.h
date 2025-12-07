@@ -4,7 +4,8 @@
 #include <linux/list.h>
 #include <asm/page.h>
 
-#include <asm/shmparam.h>
+/* shmparam.h inlined */
+#define SHMLBA PAGE_SIZE
 
 struct file;
 

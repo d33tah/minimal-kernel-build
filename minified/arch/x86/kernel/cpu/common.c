@@ -23,7 +23,6 @@ void arch_smt_update(void);
 #include <linux/syscore_ops.h>
 #include <linux/pgtable.h>
 
-#include <asm/cmdline.h>
 #include <asm/perf_event.h>
 #include <asm/mmu_context.h>
 #include <asm/archrandom.h>

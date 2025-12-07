@@ -6,7 +6,6 @@
 #define _TRACE_IRQ_VECTORS_H
 
 #include <linux/tracepoint.h>
-#include <asm/trace/common.h>
 
 
 #undef TRACE_INCLUDE_PATH

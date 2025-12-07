@@ -226,7 +226,11 @@ static inline int objs_per_slab(const struct kmem_cache *cache,
 /* --- end slub_def.h inlined --- */
 
 #include <linux/memcontrol.h>
-#include <linux/fault-inject.h>
+/* fault-inject.h inlined */
+int should_failslab(struct kmem_cache *s, gfp_t gfpflags);
+static inline bool __should_failslab(struct kmem_cache *s, gfp_t gfpflags)
+{ return false; }
+/* end fault-inject.h */
 #include <linux/kasan.h>
 #include <linux/kmemleak.h>
 #include <linux/random.h>

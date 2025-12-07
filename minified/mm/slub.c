@@ -20,7 +20,6 @@
 #include <linux/kfence.h>
 #include <linux/memory.h>
 #include <linux/math64.h>
-#include <linux/fault-inject.h>
 #include <linux/stacktrace.h>
 
 #include <linux/memcontrol.h>

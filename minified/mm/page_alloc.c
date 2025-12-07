@@ -104,7 +104,10 @@ static inline void dump_page_owner(const struct page *page) {}
 #include <asm/tlbflush.h>
 #include <asm/div64.h>
 #include "internal.h"
-#include "page_reporting.h"
+/* page_reporting.h inlined */
+#define page_reported(_page)	false
+static inline void page_reporting_notify_free(unsigned int order) { }
+/* end page_reporting.h */
 #include "swap.h"
 
 typedef int __bitwise fpi_t;

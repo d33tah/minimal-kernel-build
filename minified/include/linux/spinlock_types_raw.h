@@ -3,7 +3,12 @@
 
 #include <linux/types.h>
 
-# include <linux/spinlock_types_up.h>
+/* spinlock_types_up.h inlined */
+typedef struct { } arch_spinlock_t;
+#define __ARCH_SPIN_LOCK_UNLOCKED { }
+typedef struct { } arch_rwlock_t;
+#define __ARCH_RW_LOCK_UNLOCKED { }
+/* end spinlock_types_up.h */
 
 #include <linux/lockdep_types.h>
 

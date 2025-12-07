@@ -104,7 +104,6 @@ static inline void dump_page_owner(const struct page *page) {}
 #include <asm/tlbflush.h>
 #include <asm/div64.h>
 #include "internal.h"
-#include "shuffle.h"
 #include "page_reporting.h"
 #include "swap.h"
 

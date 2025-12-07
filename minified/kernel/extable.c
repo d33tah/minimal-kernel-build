@@ -5,7 +5,6 @@
 #include <linux/mutex.h>
 #include <linux/init.h>
 #include <linux/kprobes.h>
-#include <linux/filter.h>
 #include <linux/hardirq.h>
 
 #include <asm/sections.h>

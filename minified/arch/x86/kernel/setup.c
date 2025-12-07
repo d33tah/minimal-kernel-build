@@ -29,7 +29,19 @@ extern bool crash_kexec_post_notifiers;
 #include <asm/gart.h>
 #include <asm/hypervisor.h>
 #include <asm/io_apic.h>
-#include <asm/kasan.h>
+/* --- 2025-12-07 20:48 --- Inlined kasan.h */
+#include <linux/const.h>
+#define KASAN_SHADOW_OFFSET _AC(CONFIG_KASAN_SHADOW_OFFSET, UL)
+#define KASAN_SHADOW_SCALE_SHIFT 3
+#define KASAN_SHADOW_START      (KASAN_SHADOW_OFFSET + \
+				((-1UL << __VIRTUAL_MASK_SHIFT) >> \
+					KASAN_SHADOW_SCALE_SHIFT))
+#define KASAN_SHADOW_END        (KASAN_SHADOW_START + \
+				(1ULL << (__VIRTUAL_MASK_SHIFT - \
+					  KASAN_SHADOW_SCALE_SHIFT)))
+static inline void kasan_early_init(void) { }
+static inline void kasan_init(void) { }
+/* --- end inlined kasan.h --- */
 /* kaslr.h inlined */
 static inline void kernel_randomize_memory(void) { }
 #include <asm/mce.h>

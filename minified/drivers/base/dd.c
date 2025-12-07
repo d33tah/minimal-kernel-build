@@ -9,8 +9,11 @@
 #include <linux/wait.h>
 #include <linux/async.h>
 #include <linux/pm_runtime.h>
-#include <linux/pinctrl/devinfo.h>
 #include <linux/slab.h>
+
+/* Inlined from pinctrl/devinfo.h - stubs for no PINCTRL */
+static inline int pinctrl_bind_pins(struct device *dev) { return 0; }
+static inline int pinctrl_init_done(struct device *dev) { return 0; }
 
 #include "base.h"
 #include "power/power.h"

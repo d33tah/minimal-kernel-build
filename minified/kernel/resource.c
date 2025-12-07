@@ -8,8 +8,8 @@
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/fs.h>
+#include <linux/fs_context.h>
 #include <linux/proc_fs.h>
-#include <linux/pseudo_fs.h>
 #include <linux/sched.h>
 #include <linux/seq_file.h>
 #include <linux/device.h>

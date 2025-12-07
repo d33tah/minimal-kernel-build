@@ -1,6 +1,11 @@
 #include <linux/sched.h>
-#include <linux/prctl.h>
 #include <linux/syscall_user_dispatch.h>
+
+/* Inlined from prctl.h */
+#define PR_SYS_DISPATCH_OFF		0
+#define PR_SYS_DISPATCH_ON		1
+#define SYSCALL_DISPATCH_FILTER_ALLOW	0
+#define SYSCALL_DISPATCH_FILTER_BLOCK	1
 #include <linux/uaccess.h>
 #include <linux/signal.h>
 #include <linux/elf.h>

@@ -1907,4 +1907,8 @@ static inline void setup_nr_node_ids(void) {}
 
 #define  ZAP_FLAG_DROP_MARKER        ((__force zap_flags_t) BIT(0))
 
+/* Inlined from elf-randomize.h */
+extern unsigned long arch_mmap_rnd(void);
+extern unsigned long arch_randomize_brk(struct mm_struct *mm);
+
 #endif 

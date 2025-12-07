@@ -23,7 +23,6 @@
 #include <linux/ptrace.h>
 #include <linux/personality.h>
 #include <linux/percpu.h>
-#include <linux/prctl.h>
 #include <linux/uaccess.h>
 #include <linux/io.h>
 #include <linux/kdebug.h>

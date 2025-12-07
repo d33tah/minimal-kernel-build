@@ -22,7 +22,6 @@
 #include <linux/vmalloc.h>
 #include <linux/random.h>
 #include <linux/elf.h>
-#include <linux/elf-randomize.h>
 #include <linux/utsname.h>
 /* coredump.h removed - no definitions used */
 #include <linux/sched.h>

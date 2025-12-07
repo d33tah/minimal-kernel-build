@@ -6,7 +6,6 @@
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
 #include <linux/compat.h>
-#include <linux/elf-randomize.h>
 #include <asm/elf.h>
 #include <asm/io.h>
 

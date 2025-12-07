@@ -4,7 +4,6 @@
 #define _LINUX_MEMCONTROL_H
 
 #include <linux/cgroup.h>
-#include <linux/vm_event_item.h>
 #include <linux/mm.h>
 #include <linux/vmstat.h>
 #include <linux/writeback.h>

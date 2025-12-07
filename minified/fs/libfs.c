@@ -86,9 +86,8 @@ extern struct dentry *generic_fh_to_parent(struct super_block *sb,
 	struct fid *fid, int fh_len, int fh_type,
 	struct inode *(*get_inode) (struct super_block *sb, u64 ino, u32 gen));
 /* --- end exportfs.h inlined --- */
-#include <linux/buffer_head.h>  
+#include <linux/buffer_head.h>
 #include <linux/fs_context.h>
-#include <linux/pseudo_fs.h>
 #include <linux/fsnotify.h>
 
 #include <linux/fscrypt.h>

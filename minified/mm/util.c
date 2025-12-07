@@ -16,7 +16,6 @@
 #include <linux/vmalloc.h>
 #include <linux/userfaultfd_k.h>
 #include <linux/elf.h>
-#include <linux/elf-randomize.h>
 #include <linux/personality.h>
 #include <linux/random.h>
 

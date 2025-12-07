@@ -4,7 +4,6 @@
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/smp.h>
-#include <linux/prctl.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/sched/idle.h>
@@ -31,7 +30,6 @@ static inline void boot_init_stack_canary(void) {}
 /* end stackprotector.h */
 #include <linux/cpuidle.h>
 #include <linux/acpi.h>
-#include <linux/elf-randomize.h>
 #include <linux/hw_breakpoint.h>
 #include <asm/cpu.h>
 #include <asm/apic.h>

@@ -5,12 +5,12 @@
 #include <linux/sched.h>
 #include <linux/init.h>
 #include <linux/fs.h>
+#include <linux/fs_context.h>
 #include <linux/mount.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/magic.h>
 #include <linux/anon_inodes.h>
-#include <linux/pseudo_fs.h>
 
 #include <linux/uaccess.h>
 

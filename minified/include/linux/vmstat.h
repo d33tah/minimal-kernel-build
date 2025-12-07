@@ -4,8 +4,18 @@
 #include <linux/types.h>
 #include <linux/percpu.h>
 #include <linux/mmzone.h>
-#include <linux/vm_event_item.h>
 #include <linux/atomic.h>
+
+/* Inlined from vm_event_item.h */
+#define FOR_ALL_ZONES(xx) xx##_NORMAL, xx##_MOVABLE
+
+enum vm_event_item {
+	FOR_ALL_ZONES(PGALLOC),
+	PGFREE, PGACTIVATE, PGDEACTIVATE, PGLAZYFREE,
+	PGFAULT, PGREUSE, PGROTATED,
+	UNEVICTABLE_PGCULLED, UNEVICTABLE_PGRESCUED, UNEVICTABLE_PGCLEARED,
+	NR_VM_EVENT_ITEMS
+};
 #include <linux/jump_label.h>
 #include <linux/mmdebug.h>
 

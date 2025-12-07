@@ -7,7 +7,50 @@
 #include <linux/string.h>
 #include <asm/asm.h>
 #include <asm/page.h>
-#include <asm/smap.h>
+/* --- 2025-12-07 20:15 --- Inlined smap.h */
+#include <asm/nops.h>
+#include <asm/cpufeatures.h>
+#include <asm/alternative.h>
+
+#define __ASM_CLAC	".byte 0x0f,0x01,0xca"
+#define __ASM_STAC	".byte 0x0f,0x01,0xcb"
+
+#ifdef __ASSEMBLY__
+#define ASM_CLAC \
+	ALTERNATIVE "", __ASM_CLAC, X86_FEATURE_SMAP
+#define ASM_STAC \
+	ALTERNATIVE "", __ASM_STAC, X86_FEATURE_SMAP
+#else
+static __always_inline void clac(void)
+{
+	alternative("", __ASM_CLAC, X86_FEATURE_SMAP);
+}
+static __always_inline void stac(void)
+{
+	alternative("", __ASM_STAC, X86_FEATURE_SMAP);
+}
+static __always_inline unsigned long smap_save(void)
+{
+	unsigned long flags;
+	asm volatile ("# smap_save\n\t"
+		      ALTERNATIVE("", "pushf; pop %0; " __ASM_CLAC "\n\t",
+				  X86_FEATURE_SMAP)
+		      : "=rm" (flags) : : "memory", "cc");
+	return flags;
+}
+static __always_inline void smap_restore(unsigned long flags)
+{
+	asm volatile ("# smap_restore\n\t"
+		      ALTERNATIVE("", "push %0; popf\n\t",
+				  X86_FEATURE_SMAP)
+		      : : "g" (flags) : "memory", "cc");
+}
+#define ASM_CLAC \
+	ALTERNATIVE("", __ASM_CLAC, X86_FEATURE_SMAP)
+#define ASM_STAC \
+	ALTERNATIVE("", __ASM_STAC, X86_FEATURE_SMAP)
+#endif
+/* --- end inlined smap.h --- */
 #include <asm/extable.h>
 
 # define WARN_ON_IN_IRQ()

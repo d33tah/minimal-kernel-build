@@ -16,8 +16,21 @@
 #ifndef __ASSEMBLY__
 #include <linux/spinlock.h>
 #include <asm/x86_init.h>
-#include <asm/pkru.h>
 #include <asm/fpu/api.h>
+
+/* Inlined from asm/pkru.h */
+#include <asm/cpufeature.h>
+#define PKRU_AD_BIT 0x1u
+#define PKRU_WD_BIT 0x2u
+#define PKRU_BITS_PER_PKEY 2
+#define init_pkru_value	0
+#define pkru_get_init_value()	0
+static inline bool __pkru_allows_read(u32 pkru, u16 pkey) { int pkru_pkey_bits = pkey * PKRU_BITS_PER_PKEY; return !(pkru & (PKRU_AD_BIT << pkru_pkey_bits)); }
+static inline bool __pkru_allows_write(u32 pkru, u16 pkey) { int pkru_pkey_bits = pkey * PKRU_BITS_PER_PKEY; return !(pkru & ((PKRU_AD_BIT|PKRU_WD_BIT) << pkru_pkey_bits)); }
+static inline u32 read_pkru(void) { if (cpu_feature_enabled(X86_FEATURE_OSPKE)) return rdpkru(); return 0; }
+static inline void write_pkru(u32 pkru) { if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) return; if (pkru != rdpkru()) wrpkru(pkru); }
+static inline void pkru_write_default(void) { if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) return; wrpkru(pkru_get_init_value()); }
+/* End of pkru.h */
 #include <asm/coco.h>
 #include <linux/page_table_check.h>
 

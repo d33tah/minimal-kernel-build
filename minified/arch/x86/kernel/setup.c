@@ -51,7 +51,16 @@ static inline void kernel_randomize_memory(void) { }
 /* olpc_ofw.h inlined */
 static inline void olpc_ofw_detect(void) { }
 static inline void setup_olpc_ofw_pgd(void) { }
-#include <asm/pci-direct.h>
+/* --- 2025-12-07 20:54 --- Inlined pci-direct.h */
+#include <linux/types.h>
+extern u32 read_pci_config(u8 bus, u8 slot, u8 func, u8 offset);
+extern u8 read_pci_config_byte(u8 bus, u8 slot, u8 func, u8 offset);
+extern u16 read_pci_config_16(u8 bus, u8 slot, u8 func, u8 offset);
+extern void write_pci_config(u8 bus, u8 slot, u8 func, u8 offset, u32 val);
+extern void write_pci_config_byte(u8 bus, u8 slot, u8 func, u8 offset, u8 val);
+extern void write_pci_config_16(u8 bus, u8 slot, u8 func, u8 offset, u16 val);
+extern int early_pci_allowed(void);
+/* --- end inlined pci-direct.h --- */
 #include <asm/prom.h>
 #include <asm/proto.h>
 #include <asm/unwind.h>

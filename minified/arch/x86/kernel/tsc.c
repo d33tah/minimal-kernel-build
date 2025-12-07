@@ -31,7 +31,9 @@ static inline u32 acpi_pm_read_early(void) { return 0; }
 #include <asm/apic.h>
 #include <asm/intel-family.h>
 #include <asm/i8259.h>
-#include <asm/uv/uv.h>
+/* uv/uv.h inlined */
+static inline bool is_early_uv_system(void) { return 0; }
+static inline int is_uv_system(void) { return 0; }
 
 unsigned int __read_mostly cpu_khz;	 
 

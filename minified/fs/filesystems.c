@@ -58,14 +58,6 @@ int register_filesystem(struct file_system_type * fs)
 }
 
 
-/* Stub: unregister_filesystem not used externally */
-int unregister_filesystem(struct file_system_type * fs)
-{
-	return 0;
-}
-
-
-
 int __init list_bdev_fs_names(char *buf, size_t size)
 {
 	struct file_system_type *p;

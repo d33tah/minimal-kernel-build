@@ -79,18 +79,6 @@ loff_t generic_file_llseek(struct file *file, loff_t offset, int whence)
 					i_size_read(inode));
 }
 
-/* Stub: fixed_size_llseek not used in minimal kernel */
-loff_t fixed_size_llseek(struct file *file, loff_t offset, int whence, loff_t size)
-{ return -EINVAL; }
-
-/* Stub: no_seek_end_llseek not used in minimal kernel */
-loff_t no_seek_end_llseek(struct file *file, loff_t offset, int whence)
-{ return -EINVAL; }
-
-/* Stub: no_seek_end_llseek_size not used in minimal kernel */
-loff_t no_seek_end_llseek_size(struct file *file, loff_t offset, int whence, loff_t size)
-{ return -EINVAL; }
-
 loff_t noop_llseek(struct file *file, loff_t offset, int whence)
 {
 	return file->f_pos;
@@ -497,26 +485,6 @@ SYSCALL_DEFINE4(pwrite64, unsigned int, fd, const char __user *, buf,
 	return ksys_pwrite64(fd, buf, count, pos);
 }
 
-
-/* Stub: vfs_iocb_iter_read not used in minimal kernel */
-ssize_t vfs_iocb_iter_read(struct file *file, struct kiocb *iocb,
-			   struct iov_iter *iter)
-{ return -EINVAL; }
-
-/* Stub: vfs_iter_read not used in minimal kernel */
-ssize_t vfs_iter_read(struct file *file, struct iov_iter *iter, loff_t *ppos,
-		rwf_t flags)
-{ return -EINVAL; }
-
-/* Stub: vfs_iocb_iter_write not used in minimal kernel */
-ssize_t vfs_iocb_iter_write(struct file *file, struct kiocb *iocb,
-			    struct iov_iter *iter)
-{ return -EINVAL; }
-
-/* Stub: vfs_iter_write not used in minimal kernel */
-ssize_t vfs_iter_write(struct file *file, struct iov_iter *iter, loff_t *ppos,
-		rwf_t flags)
-{ return -EINVAL; }
 
 static ssize_t do_readv(unsigned long fd, const struct iovec __user *vec,
 			unsigned long vlen, rwf_t flags)

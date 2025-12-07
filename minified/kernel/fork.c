@@ -5,7 +5,6 @@
 #include <linux/sched/coredump.h>
 #include <linux/sched/user.h>
 #include <linux/sched/numa_balancing.h>
-#include <linux/sched/stat.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
@@ -89,8 +88,12 @@ static inline void clear_user_return_notifier(struct task_struct *p) {}
 #include <linux/init_task.h>
 #include <linux/thread_info.h>
 #include <linux/kasan.h>
-#include <linux/scs.h>
 #include <linux/io_uring.h>
+/* scs.h inlined - stubs for !CONFIG_SHADOW_CALL_STACK */
+static inline void scs_init(void) {}
+static inline int scs_prepare(struct task_struct *tsk, int node) { return 0; }
+static inline void scs_release(struct task_struct *tsk) {}
+/* end scs.h */
 
 #include <asm/pgalloc.h>
 #include <linux/uaccess.h>

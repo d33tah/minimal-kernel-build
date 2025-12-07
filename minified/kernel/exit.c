@@ -2,7 +2,10 @@
 #include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/sched/mm.h>
-#include <linux/sched/stat.h>
+/* sched/stat.h inlined */
+extern int nr_threads;
+DECLARE_PER_CPU(unsigned long, process_counts);
+/* end sched/stat.h */
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>

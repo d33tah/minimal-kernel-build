@@ -50,7 +50,6 @@ static inline void wake_up_nohz_cpu(int cpu) { }
 #include <linux/psi.h>
 
 #include <linux/sched/wake_q.h>
-#include <linux/scs.h>
 #include <linux/slab.h>
 #include <linux/syscalls.h>
 #include <linux/vtime.h>

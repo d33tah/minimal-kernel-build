@@ -12,7 +12,15 @@
 #include <linux/sched/signal.h>
 /* sched/smt.h inlined */
 void arch_smt_update(void);
-#include <linux/sched/stat.h>
+/* sched/stat.h inlined */
+extern unsigned long total_forks;
+extern int nr_threads;
+DECLARE_PER_CPU(unsigned long, process_counts);
+extern unsigned int nr_running(void);
+extern bool single_task_running(void);
+extern unsigned int nr_iowait(void);
+extern unsigned int nr_iowait_cpu(int cpu);
+/* end sched/stat.h */
 #include <linux/sched/sysctl.h>
 
 #include <linux/sched/task.h>

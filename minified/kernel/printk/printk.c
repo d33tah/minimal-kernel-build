@@ -35,7 +35,9 @@
 
 
 #include "printk_ringbuffer.h"
-#include "console_cmdline.h"
+/* console_cmdline.h inlined */
+struct console_cmdline { char name[16]; int index; bool user_specified; char *options; };
+/* end console_cmdline.h */
 #include "braille.h"
 #include "internal.h"
 

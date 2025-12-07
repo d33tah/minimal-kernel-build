@@ -1,10 +1,11 @@
  
 #ifndef _ASM_X86_INAT_H
 #define _ASM_X86_INAT_H
- 
-#include <asm/inat_types.h>  
 
- 
+/* Inlined from asm/inat_types.h */
+typedef unsigned int insn_attr_t;
+typedef unsigned char insn_byte_t;
+typedef signed int insn_value_t;
 
 #define INAT_OPCODE_TABLE_SIZE 256
 #define INAT_GROUP_TABLE_SIZE 8

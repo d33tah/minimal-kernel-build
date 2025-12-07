@@ -66,8 +66,11 @@ static inline void wake_up_nohz_cpu(int cpu) { }
 #include "smp.h"
 
 #include "../workqueue_internal.h"
-#include "../../fs/io-wq.h"
 #include "../smpboot.h"
+
+/* --- 2025-12-07 23:42 --- Inlined from fs/io-wq.h (stubs only, CONFIG_IO_WQ not set) */
+static inline void io_wq_worker_sleeping(struct task_struct *tsk) { }
+static inline void io_wq_worker_running(struct task_struct *tsk) { }
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 

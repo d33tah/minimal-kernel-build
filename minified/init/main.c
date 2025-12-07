@@ -67,8 +67,10 @@ static inline void taskstats_init_early(void) {}
 #include <linux/debug_locks.h>
 #include <linux/lockdep.h>
 #include <linux/kmemleak.h>
-#include <linux/padata.h>
 #include <linux/pid_namespace.h>
+
+/* --- 2025-12-08 00:37 --- padata.h stubbed out */
+static inline void __init padata_init(void) {}
 #include <linux/device/driver.h>
 #include <linux/kthread.h>
 #include <linux/sched.h>

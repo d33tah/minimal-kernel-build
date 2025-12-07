@@ -11,9 +11,9 @@
 #include <linux/ima.h>
 
 /* --- 2025-12-06 17:18 --- evm.h inlined */
-#include <linux/integrity.h>
 #include <linux/xattr.h>
 
+/* --- 2025-12-08 00:40 --- integrity.h removed, struct kept */
 struct integrity_iint_cache;
 
 static inline int evm_set_key(void *key, size_t keylen) { return -EOPNOTSUPP; }

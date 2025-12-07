@@ -93,8 +93,10 @@ extern void sched_init_smp(void);
 #include <linux/context_tracking.h>
 #include <linux/random.h>
 #include <linux/list.h>
-#include <linux/integrity.h>
 #include <linux/proc_ns.h>
+
+/* --- 2025-12-08 00:40 --- integrity.h stubbed out */
+static inline void integrity_load_keys(void) { }
 #include <linux/io.h>
 #include <linux/cache.h>
 #include <linux/jump_label.h>

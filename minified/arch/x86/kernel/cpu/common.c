@@ -25,7 +25,8 @@ void arch_smt_update(void);
 
 #include <asm/perf_event.h>
 #include <asm/mmu_context.h>
-#include <asm/archrandom.h>
+/* archrandom.h inlined - only x86_init_rdrand used */
+static inline void x86_init_rdrand(struct cpuinfo_x86 *c) { }
 
 /* Inlined from asm/doublefault.h */
 extern void doublefault_init_cpu_tss(void);

@@ -13,7 +13,9 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/signal.h>
-#include <linux/sched/numa_balancing.h>
+/* sched/numa_balancing.h inlined */
+static inline void task_numa_free(struct task_struct *p, bool final) {}
+/* end numa_balancing.h */
 #include <linux/sched/task.h>
 #include <linux/pagemap.h>
 #include <linux/perf_event.h>

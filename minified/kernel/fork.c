@@ -4,7 +4,9 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/user.h>
-#include <linux/sched/numa_balancing.h>
+/* sched/numa_balancing.h inlined */
+static inline void task_numa_free(struct task_struct *p, bool final) {}
+/* end sched/numa_balancing.h */
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>

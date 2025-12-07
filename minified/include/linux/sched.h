@@ -87,7 +87,16 @@ struct clone_args {
 /* latencytop.h inlined - header removed */
 static inline void account_scheduler_latency(struct task_struct *task, int usecs, int inter) {}
 static inline void clear_tsk_latency_tracing(struct task_struct *p) {}
-#include <linux/sched/prio.h>
+/* sched/prio.h inlined */
+#define MAX_NICE	19
+#define MIN_NICE	-20
+#define NICE_WIDTH	(MAX_NICE - MIN_NICE + 1)
+#define MAX_RT_PRIO		100
+#define MAX_PRIO		(MAX_RT_PRIO + NICE_WIDTH)
+#define DEFAULT_PRIO		(MAX_RT_PRIO + NICE_WIDTH / 2)
+#define NICE_TO_PRIO(nice)	((nice) + DEFAULT_PRIO)
+#define PRIO_TO_NICE(prio)	((prio) - DEFAULT_PRIO)
+/* end sched/prio.h */
 #include <linux/sched/types.h>
 #include <linux/signal_types.h>
 #include <linux/syscall_user_dispatch.h>

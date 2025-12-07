@@ -35,7 +35,10 @@ static __always_inline bool kvm_handle_async_pf(struct pt_regs *regs, u32 token)
 }			 
 #include <asm/irq_stack.h>
 
-#include <asm/trace/exceptions.h>
+/* Inlined from asm/trace/exceptions.h - tracing disabled */
+static inline bool trace_pagefault_enabled(void) { return false; }
+static inline void trace_page_fault_user(unsigned long address, struct pt_regs *regs, unsigned long error_code) {}
+static inline void trace_page_fault_kernel(unsigned long address, struct pt_regs *regs, unsigned long error_code) {}
 
 static nokprobe_inline int
 kmmio_fault(struct pt_regs *regs, unsigned long addr)

@@ -11,7 +11,7 @@
 #include <asm/thread_info.h>
 #include <asm/sigframe.h>
 #include <asm/bootparam.h>
-#include <asm/suspend.h>
+#include <asm/suspend_32.h>
 #include <asm/tlbflush.h>
 /* TDX not used in minimal kernel */
 #ifdef CONFIG_KVM_INTEL

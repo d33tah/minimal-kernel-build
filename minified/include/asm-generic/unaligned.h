@@ -1,7 +1,6 @@
 #ifndef __ASM_GENERIC_UNALIGNED_H
 #define __ASM_GENERIC_UNALIGNED_H
 
-#include <linux/unaligned/packed_struct.h>
 #include <asm/byteorder.h>
 
 #define __get_unaligned_t(type, ptr) ({						\

@@ -1,7 +1,7 @@
  
 #include <linux/uaccess.h>
 #include <linux/pgtable.h>
-#include <asm/string.h>
+#include <asm/string_32.h>
 #include <asm/page.h>
 
 /* Inlined from asm/checksum.h */

@@ -210,13 +210,7 @@ typedef struct elf64_phdr {
 #define SHT_NOTE	7
 #define SHT_NOBITS	8
 #define SHT_REL		9
-#define SHT_SHLIB	10
 #define SHT_DYNSYM	11
-#define SHT_NUM		12
-#define SHT_LOPROC	0x70000000
-#define SHT_HIPROC	0x7fffffff
-#define SHT_LOUSER	0x80000000
-#define SHT_HIUSER	0xffffffff
 
 #define SHF_WRITE		0x1
 #define SHF_ALLOC		0x2
@@ -275,18 +269,13 @@ typedef struct elf64_shdr {
 #define	ELFMAG		"\177ELF"
 #define	SELFMAG		4
 
-#define	ELFCLASSNONE	0		 
 #define	ELFCLASS32	1
 #define	ELFCLASS64	2
-#define	ELFCLASSNUM	3
 
-#define ELFDATANONE	0		 
 #define ELFDATA2LSB	1
 #define ELFDATA2MSB	2
 
-#define EV_NONE		0		 
 #define EV_CURRENT	1
-#define EV_NUM		2
 
 #define ELFOSABI_NONE	0
 #define ELFOSABI_LINUX	3

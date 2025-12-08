@@ -312,8 +312,8 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_LOCKONFAULT	0x00080000	
 #define VM_ACCOUNT	0x00100000	
 #define VM_NORESERVE	0x00200000	
-#define VM_HUGETLB	0x00400000	
-#define VM_SYNC		0x00800000	
+#define VM_HUGETLB	0x00400000
+#define VM_SYNC		0x00800000
 #define VM_ARCH_1	0x01000000
 /* VM_WIPEONFORK (0x02000000) removed - unused */
 #define VM_DONTDUMP	0x04000000	

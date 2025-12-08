@@ -382,11 +382,7 @@ void revert_creds(const struct cred *old)
 	put_cred(override);
 }
 
-/* Stub: cred_fscmp not used in minimal kernel */
-int cred_fscmp(const struct cred *a, const struct cred *b)
-{
-	return 0;
-}
+/* cred_fscmp removed - unused */
 
 int set_cred_ucounts(struct cred *new)
 {

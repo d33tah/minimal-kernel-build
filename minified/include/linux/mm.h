@@ -391,17 +391,7 @@ static inline bool fault_flag_allow_retry_first(enum fault_flag flags)
 	    (!(flags & FAULT_FLAG_TRIED));
 }
 
-#define FAULT_FLAG_TRACE \
-	{ FAULT_FLAG_WRITE,		"WRITE" }, \
-	{ FAULT_FLAG_MKWRITE,		"MKWRITE" }, \
-	{ FAULT_FLAG_ALLOW_RETRY,	"ALLOW_RETRY" }, \
-	{ FAULT_FLAG_RETRY_NOWAIT,	"RETRY_NOWAIT" }, \
-	{ FAULT_FLAG_KILLABLE,		"KILLABLE" }, \
-	{ FAULT_FLAG_TRIED,		"TRIED" }, \
-	{ FAULT_FLAG_USER,		"USER" }, \
-	{ FAULT_FLAG_REMOTE,		"REMOTE" }, \
-	{ FAULT_FLAG_INSTRUCTION,	"INSTRUCTION" }, \
-	{ FAULT_FLAG_INTERRUPTIBLE,	"INTERRUPTIBLE" }
+/* FAULT_FLAG_TRACE removed - unused */
 
 struct vm_fault {
 	const struct {
@@ -1060,14 +1050,7 @@ extern unsigned long move_page_tables(struct vm_area_struct *vma,
 		unsigned long new_addr, unsigned long len,
 		bool need_rmap_locks);
 
-#define  MM_CP_DIRTY_ACCT                  (1UL << 0)
-
-#define  MM_CP_PROT_NUMA                   (1UL << 1)
-
-#define  MM_CP_UFFD_WP                     (1UL << 2) 
-#define  MM_CP_UFFD_WP_RESOLVE             (1UL << 3) 
-#define  MM_CP_UFFD_WP_ALL                 (MM_CP_UFFD_WP | \
-					    MM_CP_UFFD_WP_RESOLVE)
+/* MM_CP_DIRTY_ACCT, MM_CP_PROT_NUMA, MM_CP_UFFD_WP* removed - unused */
 
 extern unsigned long change_protection(struct mmu_gather *tlb,
 			      struct vm_area_struct *vma, unsigned long start,

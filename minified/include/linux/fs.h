@@ -1045,15 +1045,7 @@ struct dir_context {
 	loff_t pos;
 };
 
-#define NOMMU_MAP_COPY		0x00000001
-#define NOMMU_MAP_DIRECT	0x00000008
-#define NOMMU_MAP_READ		VM_MAYREAD
-#define NOMMU_MAP_WRITE		VM_MAYWRITE
-#define NOMMU_MAP_EXEC		VM_MAYEXEC
-
-#define NOMMU_VMFLAGS \
-	(NOMMU_MAP_READ | NOMMU_MAP_WRITE | NOMMU_MAP_EXEC)
-
+/* NOMMU_MAP_*, NOMMU_VMFLAGS removed - unused in minimal kernel */
 /* REMAP_FILE_* defines removed - unused in minimal kernel */
 
 struct iov_iter;
@@ -1268,12 +1260,12 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 #define I_DIO_WAKEUP		(1 << __I_DIO_WAKEUP)
 #define I_LINKABLE		(1 << 10)
 #define I_DIRTY_TIME		(1 << 11)
-#define I_WB_SWITCH		(1 << 13)
-#define I_OVL_INUSE		(1 << 14)
+/* I_WB_SWITCH (1 << 13) removed - unused */
+/* I_OVL_INUSE (1 << 14) removed - unused */
 #define I_CREATING		(1 << 15)
 #define I_DONTCACHE		(1 << 16)
-#define I_SYNC_QUEUED		(1 << 17)
-#define I_PINNING_FSCACHE_WB	(1 << 18)
+/* I_SYNC_QUEUED (1 << 17) removed - unused */
+/* I_PINNING_FSCACHE_WB (1 << 18) removed - unused */
 
 #define I_DIRTY_INODE (I_DIRTY_SYNC | I_DIRTY_DATASYNC)
 #define I_DIRTY (I_DIRTY_INODE | I_DIRTY_PAGES)

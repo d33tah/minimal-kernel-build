@@ -178,56 +178,6 @@ rb_find_add(struct rb_node *node, struct rb_root *tree,
 	return NULL;
 }
 
-static __always_inline struct rb_node *
-rb_find(const void *key, const struct rb_root *tree,
-	int (*cmp)(const void *key, const struct rb_node *))
-{
-	struct rb_node *node = tree->rb_node;
-
-	while (node) {
-		int c = cmp(key, node);
-
-		if (c < 0)
-			node = node->rb_left;
-		else if (c > 0)
-			node = node->rb_right;
-		else
-			return node;
-	}
-
-	return NULL;
-}
-
-static __always_inline struct rb_node *
-rb_find_first(const void *key, const struct rb_root *tree,
-	      int (*cmp)(const void *key, const struct rb_node *))
-{
-	struct rb_node *node = tree->rb_node;
-	struct rb_node *match = NULL;
-
-	while (node) {
-		int c = cmp(key, node);
-
-		if (c <= 0) {
-			if (!c)
-				match = node;
-			node = node->rb_left;
-		} else if (c > 0) {
-			node = node->rb_right;
-		}
-	}
-
-	return match;
-}
-
-static __always_inline struct rb_node *
-rb_next_match(const void *key, struct rb_node *node,
-	      int (*cmp)(const void *key, const struct rb_node *))
-{
-	node = rb_next(node);
-	if (node && cmp(key, node))
-		node = NULL;
-	return node;
-}
+/* rb_find, rb_find_first, rb_next_match - unused */
 
 #endif	 

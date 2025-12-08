@@ -56,15 +56,7 @@ struct kbsentry {
 	unsigned char kb_string[512];
 };
 
-/* kbdiacr used by keyboard.c, vt_ioctl.c, vt_kern.h */
-struct kbdiacr {
-	unsigned char diacr, base, result;
-};
-
-struct kbdiacrs {
-	unsigned int kb_cnt;
-	struct kbdiacr kbdiacr[256];
-};
+/* kbdiacr, kbdiacrs removed - unused */
 
 /* kbdiacruc used by vt_ioctl.c, vt_kern.h */
 struct kbdiacruc {

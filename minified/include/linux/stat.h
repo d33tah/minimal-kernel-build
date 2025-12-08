@@ -90,15 +90,7 @@ struct statx {
 #define STATX_MNT_ID		0x00001000U
 #define STATX__RESERVED		0x80000000U
 
-#define STATX_ATTR_COMPRESSED		0x00000004
-#define STATX_ATTR_IMMUTABLE		0x00000010
-#define STATX_ATTR_APPEND		0x00000020
-#define STATX_ATTR_NODUMP		0x00000040
-#define STATX_ATTR_ENCRYPTED		0x00000800
-#define STATX_ATTR_AUTOMOUNT		0x00001000
-#define STATX_ATTR_MOUNT_ROOT		0x00002000
-#define STATX_ATTR_VERITY		0x00100000
-#define STATX_ATTR_DAX			0x00200000
+/* STATX_ATTR_* removed - unused */
 /* End uapi/linux/stat.h */
 
 #define S_IRWXUGO	(S_IRWXU|S_IRWXG|S_IRWXO)
@@ -120,18 +112,7 @@ struct kstat {
 	uint32_t	blksize;
 	u64		attributes;
 	u64		attributes_mask;
-#define KSTAT_ATTR_FS_IOC_FLAGS				\
-	(STATX_ATTR_COMPRESSED |			\
-	 STATX_ATTR_IMMUTABLE |				\
-	 STATX_ATTR_APPEND |				\
-	 STATX_ATTR_NODUMP |				\
-	 STATX_ATTR_ENCRYPTED |				\
-	 STATX_ATTR_VERITY				\
-	 )
-#define KSTAT_ATTR_VFS_FLAGS				\
-	(STATX_ATTR_IMMUTABLE |				\
-	 STATX_ATTR_APPEND				\
-	 )
+	/* KSTAT_ATTR_* macros removed - unused */
 	u64		ino;
 	dev_t		dev;
 	dev_t		rdev;

@@ -159,12 +159,11 @@ typedef struct siginfo {
 #define SI_KERNEL	0x80		 
 #define SI_QUEUE	-1		 
 #define SI_TIMER	-2		 
-#define SI_MESGQ	-3		 
-#define SI_ASYNCIO	-4		 
-#define SI_SIGIO	-5		 
-#define SI_TKILL	-6		 
-#define SI_DETHREAD	-7		 
-#define SI_ASYNCNL	-60		 
+/* SI_MESGQ, SI_ASYNCIO - unused */
+#define SI_SIGIO	-5
+#define SI_TKILL	-6
+#define SI_DETHREAD	-7
+/* SI_ASYNCNL - unused */
 
 #define SI_FROMUSER(siptr)	((siptr)->si_code <= 0)
 #define SI_FROMKERNEL(siptr)	((siptr)->si_code > 0)
@@ -252,40 +251,7 @@ typedef struct siginfo {
 #define SYS_USER_DISPATCH 2	 
 #define NSIGSYS		2
 
-#define EMT_TAGOVF	1	 
-#define NSIGEMT		1
-
-#define SIGEV_SIGNAL	0	 
-#define SIGEV_NONE	1	 
-#define SIGEV_THREAD	2	 
-#define SIGEV_THREAD_ID 4	 
-
-#ifndef __ARCH_SIGEV_PREAMBLE_SIZE
-#define __ARCH_SIGEV_PREAMBLE_SIZE	(sizeof(int) * 2 + sizeof(sigval_t))
-#endif
-
-#define SIGEV_MAX_SIZE	64
-#define SIGEV_PAD_SIZE	((SIGEV_MAX_SIZE - __ARCH_SIGEV_PREAMBLE_SIZE) \
-		/ sizeof(int))
-
-typedef struct sigevent {
-	sigval_t sigev_value;
-	int sigev_signo;
-	int sigev_notify;
-	union {
-		int _pad[SIGEV_PAD_SIZE];
-		 int _tid;
-
-		struct {
-			void (*_function)(sigval_t);
-			void *_attribute;	 
-		} _sigev_thread;
-	} _sigev_un;
-} sigevent_t;
-
-#define sigev_notify_function	_sigev_un._sigev_thread._function
-#define sigev_notify_attributes	_sigev_un._sigev_thread._attribute
-#define sigev_notify_thread_id	 _sigev_un._tid
-
+/* EMT_TAGOVF, NSIGEMT - unused */
+/* SIGEV_* and sigevent_t - unused */
 
 #endif  

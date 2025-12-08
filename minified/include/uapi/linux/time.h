@@ -32,10 +32,7 @@ struct __kernel_old_itimerval {
 	struct __kernel_old_timeval it_value;
 };
 
-struct __kernel_sock_timeval {
-	__s64 tv_sec;
-	__s64 tv_usec;
-};
+/* __kernel_sock_timeval - unused */
 /* End time_types.h */
 
 #ifndef __KERNEL__

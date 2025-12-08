@@ -1,27 +1,17 @@
+/* --- 2025-12-08 04:18 --- Minimal efi.h - reduced unused typedefs */
 #ifndef _LINUX_EFI_H
 #define _LINUX_EFI_H
 
-
 #include <linux/init.h>
-#include <linux/string.h>
 #include <linux/types.h>
 #include <linux/uuid.h>
 #include <linux/screen_info.h>
-#include <linux/reboot.h>
 #include <asm/page.h>
 
 typedef unsigned long efi_status_t;
-typedef u8 efi_bool_t;
-typedef u16 efi_char16_t;
-typedef u64 efi_physical_addr_t;
-typedef void *efi_handle_t;
-typedef guid_t efi_guid_t __aligned(__alignof__(u32));
+/* efi_bool_t, efi_char16_t, efi_physical_addr_t, efi_handle_t, efi_guid_t removed - unused */
 
 #define EFI_SUCCESS		0
-#define EFI_LOAD_ERROR		( 1 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_INVALID_PARAMETER	( 2 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_UNSUPPORTED		( 3 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_NOT_FOUND		(14 | (1UL << (BITS_PER_LONG-1)))
 
 #define EFI_BOOT_SERVICES_DATA		 4
 #define EFI_RUNTIME_SERVICES_DATA	 6

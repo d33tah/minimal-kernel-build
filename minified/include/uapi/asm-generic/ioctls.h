@@ -50,55 +50,27 @@
 #define TCSETS2		_IOW('T', 0x2B, struct termios2)
 #define TCSETSW2	_IOW('T', 0x2C, struct termios2)
 #define TCSETSF2	_IOW('T', 0x2D, struct termios2)
-#define TIOCGRS485	0x542E
-#ifndef TIOCSRS485
-#define TIOCSRS485	0x542F
-#endif
-#define TIOCGPTN	_IOR('T', 0x30, unsigned int)  
-#define TIOCSPTLCK	_IOW('T', 0x31, int)   
-#define TIOCGDEV	_IOR('T', 0x32, unsigned int)  
-#define TCGETX		0x5432  
-#define TCSETX		0x5433
-#define TCSETXF		0x5434
-#define TCSETXW		0x5435
-#define TIOCSIG		_IOW('T', 0x36, int)   
+/* TIOCGRS485, TIOCSRS485 - unused */
+/* TIOCGPTN, TIOCSPTLCK, TIOCGDEV - PTY, unused */
+/* TCGETX, TCSETX, TCSETXF, TCSETXW - unused */
+#define TIOCSIG		_IOW('T', 0x36, int)
 #define TIOCVHANGUP	0x5437
-#define TIOCGPKT	_IOR('T', 0x38, int)  
-#define TIOCGPTLCK	_IOR('T', 0x39, int)  
-#define TIOCGEXCL	_IOR('T', 0x40, int)  
-#define TIOCGPTPEER	_IO('T', 0x41)  
-#define TIOCGISO7816	_IOR('T', 0x42, struct serial_iso7816)
-#define TIOCSISO7816	_IOWR('T', 0x43, struct serial_iso7816)
+/* TIOCGPKT, TIOCGPTLCK, TIOCGEXCL, TIOCGPTPEER - PTY, unused */
+/* TIOCGISO7816, TIOCSISO7816 - unused */
 
 #define FIONCLEX	0x5450
 #define FIOCLEX		0x5451
 #define FIOASYNC	0x5452
 #define TIOCSERCONFIG	0x5453
-#define TIOCSERGWILD	0x5454
-#define TIOCSERSWILD	0x5455
-#define TIOCGLCKTRMIOS	0x5456
-#define TIOCSLCKTRMIOS	0x5457
-#define TIOCSERGSTRUCT	0x5458  
-#define TIOCSERGETLSR   0x5459  
-#define TIOCSERGETMULTI 0x545A  
-#define TIOCSERSETMULTI 0x545B  
-
-#define TIOCMIWAIT	0x545C	 
-#define TIOCGICOUNT	0x545D	 
+/* TIOCSERGWILD, TIOCSERSWILD, TIOCGLCKTRMIOS, TIOCSLCKTRMIOS - unused */
+/* TIOCSERGSTRUCT, TIOCSERGETLSR, TIOCSERGETMULTI, TIOCSERSETMULTI - unused */
+/* TIOCMIWAIT, TIOCGICOUNT - unused */
 
 #ifndef FIOQSIZE
 # define FIOQSIZE	0x5460
 #endif
 
-#define TIOCPKT_DATA		 0
-#define TIOCPKT_FLUSHREAD	 1
-#define TIOCPKT_FLUSHWRITE	 2
-#define TIOCPKT_STOP		 4
-#define TIOCPKT_START		 8
-#define TIOCPKT_NOSTOP		16
-#define TIOCPKT_DOSTOP		32
-#define TIOCPKT_IOCTL		64
-
-#define TIOCSER_TEMT	0x01	 
+/* TIOCPKT_* - unused */
+/* TIOCSER_TEMT - unused */
 
 #endif  

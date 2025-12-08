@@ -1418,12 +1418,6 @@ struct vm_struct *__get_vm_area_caller(unsigned long size, unsigned long flags,
 				  NUMA_NO_NODE, GFP_KERNEL, caller);
 }
 
-/* Stub: get_vm_area not used externally */
-struct vm_struct *get_vm_area(unsigned long size, unsigned long flags)
-{
-	return NULL;
-}
-
 struct vm_struct *get_vm_area_caller(unsigned long size, unsigned long flags,
 				const void *caller)
 {

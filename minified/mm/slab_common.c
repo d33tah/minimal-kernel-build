@@ -62,12 +62,6 @@ __setup_param("slub_merge", slub_merge, setup_slab_merge, 0);
 __setup("slab_nomerge", setup_slab_nomerge);
 __setup("slab_merge", setup_slab_merge);
 
-/* Stub: kmem_cache_size not used externally */
-unsigned int kmem_cache_size(struct kmem_cache *s)
-{
-	return 0;
-}
-
 static inline int kmem_cache_sanity_check(const char *name, unsigned int size)
 {
 	return 0;
@@ -329,14 +323,6 @@ void slab_kmem_cache_release(struct kmem_cache *s)
 	kfree_const(s->name);
 	kmem_cache_free(kmem_cache, s);
 }
-
-/* Stub: kmem_cache_destroy not used in minimal kernel */
-void kmem_cache_destroy(struct kmem_cache *s)
-{
-}
-
-/* STUB: kmem_cache_shrink not used externally */
-int kmem_cache_shrink(struct kmem_cache *cachep) { return 0; }
 
 bool slab_is_available(void)
 {
@@ -643,12 +629,6 @@ void *krealloc(const void *p, size_t new_size, gfp_t flags)
 		kfree(p);
 
 	return ret;
-}
-
-/* Stub: kfree_sensitive not used externally */
-void kfree_sensitive(const void *p)
-{
-	kfree(p);
 }
 
 size_t ksize(const void *objp)

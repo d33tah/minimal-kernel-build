@@ -52,9 +52,6 @@ struct kmem_cache *kmem_cache_create_usercopy(const char *name,
 			slab_flags_t flags,
 			unsigned int useroffset, unsigned int usersize,
 			void (*ctor)(void *));
-void kmem_cache_destroy(struct kmem_cache *s);
-int kmem_cache_shrink(struct kmem_cache *s);
-
 #define KMEM_CACHE(__struct, __flags)					\
 		kmem_cache_create(#__struct, sizeof(struct __struct),	\
 			__alignof__(struct __struct), (__flags), NULL)
@@ -68,7 +65,6 @@ int kmem_cache_shrink(struct kmem_cache *s);
 
 void * __must_check krealloc(const void *objp, size_t new_size, gfp_t flags) __alloc_size(2);
 void kfree(const void *objp);
-void kfree_sensitive(const void *objp);
 size_t __ksize(const void *objp);
 size_t ksize(const void *objp);
 
@@ -337,7 +333,6 @@ static inline __alloc_size(1, 2) void *kvmalloc_array(size_t n, size_t size, gfp
 /* kvrealloc, kvfree_sensitive removed - unused */
 extern void kvfree(const void *addr);
 
-unsigned int kmem_cache_size(struct kmem_cache *s);
 void __init kmem_cache_init_late(void);
 
 #define slab_prepare_cpu	NULL

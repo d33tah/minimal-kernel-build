@@ -218,11 +218,7 @@ int rcuwait_wake_up(struct rcuwait *w)
 	return ret;
 }
 
-/* Stubbed - not used externally */
-int is_current_pgrp_orphaned(void)
-{
-	return 0;
-}
+/* is_current_pgrp_orphaned removed - unused */
 
 /* Stub: orphaned pgrp handling not needed for minimal kernel */
 static void
@@ -1134,8 +1130,7 @@ long kernel_wait4(pid_t upid, int __user *stat_addr, int options,
 	return ret;
 }
 
-/* Stub: not used in minimal kernel */
-int kernel_wait(pid_t pid, int *stat) { return -ECHILD; }
+/* kernel_wait removed - unused */
 
 SYSCALL_DEFINE4(wait4, pid_t, upid, int __user *, stat_addr,
 		int, options, struct rusage __user *, ru)
@@ -1159,11 +1154,7 @@ SYSCALL_DEFINE3(waitpid, pid_t, pid, int __user *, stat_addr, int, options)
 
 #endif
 
-/* Stubbed - not used externally */
-bool thread_group_exited(struct pid *pid)
-{
-	return true;
-}
+/* thread_group_exited removed - unused */
 
 __weak void abort(void)
 {

@@ -408,27 +408,5 @@ void __init cred_init(void)
 			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
 }
 
-/* Stub: prepare_kernel_cred not used externally in minimal kernel */
-struct cred *prepare_kernel_cred(struct task_struct *daemon)
-{
-	return NULL;
-}
-
-/* Stub: set_security_override not used in minimal kernel */
-int set_security_override(struct cred *new, u32 secid)
-{
-	return 0;
-}
-
-/* Stub: set_security_override_from_ctx not used in minimal kernel */
-int set_security_override_from_ctx(struct cred *new, const char *secctx)
-{
-	return 0;
-}
-
-/* Stub: set_create_files_as not used in minimal kernel */
-int set_create_files_as(struct cred *new, struct inode *inode)
-{
-	return 0;
-}
+/* prepare_kernel_cred, set_security_override, set_security_override_from_ctx, set_create_files_as removed - unused */
 

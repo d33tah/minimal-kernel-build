@@ -782,7 +782,7 @@ int replace_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 	return -EINVAL;
 }
 
-/* Stub: get_mm_exe_file not used in minimal kernel */
+/* get_mm_exe_file stubbed - used by dup_mm */
 struct file *get_mm_exe_file(struct mm_struct *mm) { return NULL; }
 
 struct mm_struct *get_task_mm(struct task_struct *task)

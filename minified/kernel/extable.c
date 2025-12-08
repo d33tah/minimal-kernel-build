@@ -101,8 +101,4 @@ out:
 	return ret;
 }
 
-/* Stub: func_ptr_is_kernel_text not used in minimal kernel */
-int func_ptr_is_kernel_text(void *ptr)
-{
-	return 1;
-}
+/* func_ptr_is_kernel_text removed - unused */

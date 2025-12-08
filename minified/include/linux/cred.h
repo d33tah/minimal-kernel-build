@@ -80,10 +80,7 @@ extern int commit_creds(struct cred *);
 extern void abort_creds(struct cred *);
 extern const struct cred *override_creds(const struct cred *);
 extern void revert_creds(const struct cred *);
-extern struct cred *prepare_kernel_cred(struct task_struct *);
-extern int set_security_override(struct cred *, u32);
-extern int set_security_override_from_ctx(struct cred *, const char *);
-/* change_create_files_as, set_create_files_as, cred_fscmp removed - unused */
+/* prepare_kernel_cred, set_security_override, set_security_override_from_ctx, change_create_files_as, set_create_files_as, cred_fscmp removed - unused */
 extern void __init cred_init(void);
 extern int set_cred_ucounts(struct cred *);
 

@@ -23,20 +23,18 @@ int invalidate_inode_pages2(struct address_space *mapping);
 int invalidate_inode_pages2_range(struct address_space *mapping,
 		pgoff_t start, pgoff_t end);
 int write_inode_now(struct inode *, int sync);
-int filemap_fdatawrite(struct address_space *);
-int filemap_flush(struct address_space *);
+/* filemap_fdatawrite, filemap_flush removed - unused */
 int filemap_fdatawait_keep_errors(struct address_space *mapping);
 int filemap_fdatawait_range(struct address_space *, loff_t lstart, loff_t lend);
 int filemap_fdatawait_range_keep_errors(struct address_space *mapping,
 		loff_t start_byte, loff_t end_byte);
 
-bool filemap_range_has_page(struct address_space *, loff_t lstart, loff_t lend);
+/* filemap_range_has_page removed - unused */
 int filemap_write_and_wait_range(struct address_space *mapping,
 		loff_t lstart, loff_t lend);
 int __filemap_fdatawrite_range(struct address_space *mapping,
 		loff_t start, loff_t end, int sync_mode);
-int filemap_fdatawrite_range(struct address_space *mapping,
-		loff_t start, loff_t end);
+/* filemap_fdatawrite_range removed - unused */
 int filemap_check_errors(struct address_space *mapping);
 /* __filemap_set_wb_err removed - unused */
 int filemap_fdatawrite_wbc(struct address_space *mapping,

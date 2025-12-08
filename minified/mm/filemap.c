@@ -252,27 +252,10 @@ int __filemap_fdatawrite_range(struct address_space *mapping, loff_t start,
 
 /* __filemap_fdatawrite removed - unused */
 
-/* Stubbed - not used externally */
-int filemap_fdatawrite(struct address_space *mapping)
-{
-	return 0;
-}
+/* filemap_fdatawrite, filemap_fdatawrite_range, filemap_flush removed - unused */
 
-/* Stubbed - not used externally */
-int filemap_fdatawrite_range(struct address_space *mapping, loff_t start,
-				loff_t end)
-{
-	return 0;
-}
-
-/* Stubbed - not used externally */
-int filemap_flush(struct address_space *mapping)
-{
-	return 0;
-}
-
-/* Stubbed - not used externally */
-bool filemap_range_has_page(struct address_space *mapping,
+/* filemap_range_has_page used internally */
+static bool filemap_range_has_page(struct address_space *mapping,
 			   loff_t start_byte, loff_t end_byte)
 {
 	return false;
@@ -322,11 +305,7 @@ int filemap_fdatawait_range_keep_errors(struct address_space *mapping,
 	return 0;
 }
 
-/* Stub: file_fdatawait_range not used externally */
-int file_fdatawait_range(struct file *file, loff_t start_byte, loff_t end_byte)
-{
-	return 0;
-}
+/* file_fdatawait_range removed - unused */
 
 int filemap_fdatawait_keep_errors(struct address_space *mapping)
 {

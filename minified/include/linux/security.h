@@ -36,9 +36,7 @@ enum fs_value_type;
 struct watch;
 struct watch_notification;
 
-#define CAP_OPT_NONE 0x0
-#define CAP_OPT_NOAUDIT BIT(1)
-#define CAP_OPT_INSETID BIT(2)
+/* CAP_OPT_* now defined in capability.h */
 
 #define SECURITY_LSM_NATIVE_LABELS	1
 

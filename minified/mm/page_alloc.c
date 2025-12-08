@@ -914,10 +914,7 @@ static void __drain_all_pages(struct zone *zone, bool force_all_cpus)
 		return;
 }
 
-void drain_all_pages(struct zone *zone)
-{
-	__drain_all_pages(zone, false);
-}
+/* drain_all_pages removed - unused */
 
 static bool free_unref_page_prepare(struct page *page, unsigned long pfn,
 							unsigned int order)

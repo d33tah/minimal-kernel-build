@@ -296,14 +296,12 @@ static inline bool d_can_lookup(const struct dentry *dentry)
 	return __d_entry_type(dentry) == DCACHE_DIRECTORY_TYPE;
 }
 
-static inline bool d_is_autodir(const struct dentry *dentry)
-{
-	return __d_entry_type(dentry) == DCACHE_AUTODIR_TYPE;
-}
+/* d_is_autodir removed - unused */
 
 static inline bool d_is_dir(const struct dentry *dentry)
 {
-	return d_can_lookup(dentry) || d_is_autodir(dentry);
+	/* Simplified: only check d_can_lookup since d_is_autodir was unused */
+	return d_can_lookup(dentry);
 }
 
 static inline bool d_is_symlink(const struct dentry *dentry)

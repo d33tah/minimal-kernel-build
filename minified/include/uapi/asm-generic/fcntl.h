@@ -99,27 +99,7 @@
 #endif
 #endif  
 
-#ifndef F_SETOWN_EX
-#define F_SETOWN_EX	15
-#define F_GETOWN_EX	16
-#endif
-
-#ifndef F_GETOWNER_UIDS
-#define F_GETOWNER_UIDS	17
-#endif
-
-#define F_OFD_GETLK	36
-#define F_OFD_SETLK	37
-#define F_OFD_SETLKW	38
-
-#define F_OWNER_TID	0
-#define F_OWNER_PID	1
-#define F_OWNER_PGRP	2
-
-struct f_owner_ex {
-	int	type;
-	__kernel_pid_t	pid;
-};
+/* F_SETOWN_EX, F_GETOWN_EX, F_GETOWNER_UIDS, F_OFD_*, f_owner_ex removed - unused */
 
 #define FD_CLOEXEC	1	 
 
@@ -134,15 +114,11 @@ struct f_owner_ex {
 #define F_SHLCK		8	 
 #endif
 
-#define LOCK_SH		1	 
-#define LOCK_EX		2	 
-#define LOCK_NB		4	 
-#define LOCK_UN		8	 
-
-#define LOCK_MAND	32	 
-#define LOCK_READ	64	 
-#define LOCK_WRITE	128	 
-#define LOCK_RW		192	 
+#define LOCK_SH		1
+#define LOCK_EX		2
+#define LOCK_NB		4
+#define LOCK_UN		8
+/* LOCK_MAND, LOCK_READ, LOCK_WRITE, LOCK_RW removed - unused */
 
 #define F_LINUX_SPECIFIC_BASE	1024
 

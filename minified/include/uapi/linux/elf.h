@@ -31,16 +31,14 @@ typedef __s64	Elf64_Sxword;
 #define PT_INTERP  3
 #define PT_NOTE    4
 #define PT_PHDR    6
-#define PT_TLS     7                
-#define PT_LOOS    0x60000000       
-#define PT_HIOS    0x6fffffff       
+/* PT_TLS removed - unused */
+#define PT_LOOS    0x60000000
+/* PT_HIOS removed - unused */
 #define PT_LOPROC  0x70000000
 #define PT_HIPROC  0x7fffffff
 #define PT_GNU_STACK	(PT_LOOS + 0x474e551)
 #define PT_GNU_PROPERTY	(PT_LOOS + 0x474e553)
-
-
-#define PN_XNUM 0xffff
+/* PN_XNUM removed - unused */
 
 #define ET_NONE   0
 #define ET_REL    1

@@ -909,11 +909,4 @@ int __xa_alloc(struct xarray *xa, u32 *id, void *entry,
 	return -EINVAL;
 }
 
-/* Stubbed - not used externally */
-int __xa_alloc_cyclic(struct xarray *xa, u32 *id, void *entry,
-		struct xa_limit limit, u32 *next, gfp_t gfp)
-{
-	return -EINVAL;
-}
-
-/* xa_*_mark, xa_find, xa_find_after, xa_extract, xa_delete_node, xa_destroy removed - unused */
+/* __xa_alloc_cyclic, xa_*_mark, xa_find, xa_find_after, xa_extract, xa_delete_node, xa_destroy removed - unused */

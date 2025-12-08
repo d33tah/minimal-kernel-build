@@ -162,10 +162,7 @@ int __must_check __xa_insert(struct xarray *, unsigned long index,
 		void *entry, gfp_t);
 int __must_check __xa_alloc(struct xarray *, u32 *id, void *entry,
 		struct xa_limit, gfp_t);
-int __must_check __xa_alloc_cyclic(struct xarray *, u32 *id, void *entry,
-		struct xa_limit, u32 *next, gfp_t);
-void __xa_set_mark(struct xarray *, unsigned long index, xa_mark_t);
-void __xa_clear_mark(struct xarray *, unsigned long index, xa_mark_t);
+/* __xa_alloc_cyclic, __xa_set_mark, __xa_clear_mark removed - unused */
 
 
 #ifndef XA_CHUNK_SHIFT

@@ -630,12 +630,7 @@ static void node_tag_set(struct radix_tree_root *root,
 		root_tag_set(root, tag);
 }
 
-/* Stubbed - not used externally */
-void *radix_tree_tag_set(struct radix_tree_root *root,
-			unsigned long index, unsigned int tag)
-{
-	return NULL;
-}
+/* radix_tree_tag_set removed - unused */
 
 static void node_tag_clear(struct radix_tree_root *root,
 				struct radix_tree_node *node,
@@ -656,12 +651,7 @@ static void node_tag_clear(struct radix_tree_root *root,
 		root_tag_clear(root, tag);
 }
 
-/* Stub: radix_tree_tag_clear not used in minimal kernel */
-void *radix_tree_tag_clear(struct radix_tree_root *root,
-			unsigned long index, unsigned int tag)
-{
-	return NULL;
-}
+/* radix_tree_tag_clear removed - unused */
 
 void radix_tree_iter_tag_clear(struct radix_tree_root *root,
 			const struct radix_tree_iter *iter, unsigned int tag)
@@ -807,31 +797,7 @@ void __rcu **radix_tree_next_chunk(const struct radix_tree_root *root,
 	return node->slots + offset;
 }
 
-/* Stubbed - not used externally */
-unsigned int
-radix_tree_gang_lookup(const struct radix_tree_root *root, void **results,
-			unsigned long first_index, unsigned int max_items)
-{
-	return 0;
-}
-
-/* Stubbed - not used externally */
-unsigned int
-radix_tree_gang_lookup_tag(const struct radix_tree_root *root, void **results,
-		unsigned long first_index, unsigned int max_items,
-		unsigned int tag)
-{
-	return 0;
-}
-
-/* Stubbed - not used externally */
-unsigned int
-radix_tree_gang_lookup_tag_slot(const struct radix_tree_root *root,
-		void __rcu ***results, unsigned long first_index,
-		unsigned int max_items, unsigned int tag)
-{
-	return 0;
-}
+/* radix_tree_gang_lookup, radix_tree_gang_lookup_tag, radix_tree_gang_lookup_tag_slot removed - unused */
 
 static bool __radix_tree_delete(struct radix_tree_root *root,
 				struct radix_tree_node *node, void __rcu **slot)
@@ -851,11 +817,7 @@ static bool __radix_tree_delete(struct radix_tree_root *root,
 	return node && delete_node(root, node);
 }
 
-/* Stubbed - not used externally */
-void radix_tree_iter_delete(struct radix_tree_root *root,
-				struct radix_tree_iter *iter, void __rcu **slot)
-{
-}
+/* radix_tree_iter_delete removed - unused */
 
 void *radix_tree_delete_item(struct radix_tree_root *root,
 			     unsigned long index, void *item)
@@ -884,7 +846,8 @@ void *radix_tree_delete(struct radix_tree_root *root, unsigned long index)
 	return radix_tree_delete_item(root, index, NULL);
 }
 
-int radix_tree_tagged(const struct radix_tree_root *root, unsigned int tag)
+/* radix_tree_tagged used internally by idr_get_free */
+static int radix_tree_tagged(const struct radix_tree_root *root, unsigned int tag)
 {
 	return root_tag_get(root, tag);
 }

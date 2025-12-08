@@ -984,23 +984,7 @@ ssize_t iov_iter_get_pages_alloc(struct iov_iter *i,
 	return -EFAULT;
 }
 
-size_t csum_and_copy_from_iter(void *addr, size_t bytes, __wsum *csum,
-			       struct iov_iter *i)
-{
-	return 0;
-}
-
-size_t csum_and_copy_to_iter(const void *addr, size_t bytes, void *_csstate,
-			     struct iov_iter *i)
-{
-	return 0;
-}
-
-size_t hash_and_copy_to_iter(const void *addr, size_t bytes, void *hashp,
-		struct iov_iter *i)
-{
-	return 0;
-}
+/* csum_and_copy_from_iter, csum_and_copy_to_iter, hash_and_copy_to_iter removed - unused */
 
 int iov_iter_npages(const struct iov_iter *i, int maxpages)
 {

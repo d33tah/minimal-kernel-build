@@ -17,12 +17,6 @@ void add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 }
 
-/* Stubbed: add_wait_queue_exclusive not used */
-void add_wait_queue_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry) { }
-
-/* Stubbed: add_wait_queue_priority not used */
-void add_wait_queue_priority(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry) { }
-
 void remove_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
 	unsigned long flags;
@@ -119,22 +113,8 @@ void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 	__wake_up_common(wq_head, mode, 1, 0, key, bookmark);
 }
 
-/* Stubbed: __wake_up_sync_key not used externally */
+/* Used by __wake_up_parent and begin_new_exec */
 void __wake_up_sync_key(struct wait_queue_head *wq_head, unsigned int mode, void *key) { }
-
-/* Stub: __wake_up_locked_sync_key not used in minimal kernel */
-void __wake_up_locked_sync_key(struct wait_queue_head *wq_head,
-			       unsigned int mode, void *key)
-{
-}
-
-/* Stubbed: __wake_up_sync not used */
-void __wake_up_sync(struct wait_queue_head *wq_head, unsigned int mode) { }
-
-/* Stub: __wake_up_pollfree not used in minimal kernel */
-void __wake_up_pollfree(struct wait_queue_head *wq_head)
-{
-}
 
 void
 prepare_to_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state)
@@ -148,9 +128,6 @@ prepare_to_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_ent
 	set_current_state(state);
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 }
-
-/* Stubbed: prepare_to_wait_exclusive not used */
-bool prepare_to_wait_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state) { return false; }
 
 void init_wait_entry(struct wait_queue_entry *wq_entry, int flags)
 {
@@ -184,12 +161,6 @@ long prepare_to_wait_event(struct wait_queue_head *wq_head, struct wait_queue_en
 	return ret;
 }
 
-/* Stubbed: do_wait_intr not used */
-int do_wait_intr(wait_queue_head_t *wq, wait_queue_entry_t *wait) { return 0; }
-
-/* Stubbed: do_wait_intr_irq not used */
-int do_wait_intr_irq(wait_queue_head_t *wq, wait_queue_entry_t *wait) { return 0; }
-
 void finish_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
 	unsigned long flags;
@@ -213,8 +184,3 @@ int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, i
 	return ret;
 }
 
-/* Stubbed: wait_woken not used */
-long wait_woken(struct wait_queue_entry *wq_entry, unsigned mode, long timeout) { return timeout; }
-
-/* Stubbed: woken_wake_function not used */
-int woken_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync, void *key) { return 0; }

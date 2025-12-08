@@ -155,22 +155,8 @@ prepare_to_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_ent
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 }
 
-bool
-prepare_to_wait_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state)
-{
-	unsigned long flags;
-	bool was_empty = false;
-
-	wq_entry->flags |= WQ_FLAG_EXCLUSIVE;
-	spin_lock_irqsave(&wq_head->lock, flags);
-	if (list_empty(&wq_entry->entry)) {
-		was_empty = list_empty(&wq_head->head);
-		__add_wait_queue_entry_tail(wq_head, wq_entry);
-	}
-	set_current_state(state);
-	spin_unlock_irqrestore(&wq_head->lock, flags);
-	return was_empty;
-}
+/* Stubbed: prepare_to_wait_exclusive not used */
+bool prepare_to_wait_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state) { return false; }
 
 void init_wait_entry(struct wait_queue_entry *wq_entry, int flags)
 {

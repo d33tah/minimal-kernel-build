@@ -141,11 +141,6 @@ bool __must_check try_grab_page(struct page *page, unsigned int flags)
 	return true;
 }
 
-/* Stubbed - not used externally */
-void unpin_user_page(struct page *page)
-{
-}
-
 static inline struct folio *gup_folio_range_next(struct page *start,
 		unsigned long npages, unsigned long i, unsigned int *ntails)
 {
@@ -174,18 +169,6 @@ static inline struct folio *gup_folio_next(struct page **list,
 
 	*ntails = nr - i;
 	return folio;
-}
-
-/* Stubbed - not used externally */
-void unpin_user_pages_dirty_lock(struct page **pages, unsigned long npages,
-				 bool make_dirty)
-{
-}
-
-/* Stubbed - not used externally */
-void unpin_user_page_range_dirty_lock(struct page *page, unsigned long npages,
-				      bool make_dirty)
-{
 }
 
 void unpin_user_pages(struct page **pages, unsigned long npages)
@@ -1045,18 +1028,6 @@ out:
 	return 0;
 }
 
-/* Stubbed - not used externally */
-size_t fault_in_subpage_writeable(char __user *uaddr, size_t size)
-{
-	return size;
-}
-
-/* Stubbed - not used externally */
-size_t fault_in_safe_writeable(const char __user *uaddr, size_t size)
-{
-	return size;
-}
-
 size_t fault_in_readable(const char __user *uaddr, size_t size)
 {
 	const char __user *start = uaddr, *end;
@@ -1163,14 +1134,6 @@ long get_user_pages_remote(struct mm_struct *mm,
 				       pages, vmas, locked);
 }
 
-/* Stubbed - not used externally */
-long get_user_pages(unsigned long start, unsigned long nr_pages,
-		unsigned int gup_flags, struct page **pages,
-		struct vm_area_struct **vmas)
-{
-	return -EINVAL;
-}
-
 /* get_user_pages_unlocked, get_user_pages_fast_only, get_user_pages_fast,
    pin_user_pages_fast, pin_user_pages_fast_only, pin_user_pages_remote,
-   pin_user_pages, pin_user_pages_unlocked removed - unused */
+   pin_user_pages, pin_user_pages_unlocked, get_user_pages removed - unused */

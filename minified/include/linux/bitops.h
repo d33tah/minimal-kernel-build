@@ -15,9 +15,7 @@
 
 #define BITS_PER_TYPE(type)	(sizeof(type) * BITS_PER_BYTE)
 #define BITS_TO_LONGS(nr)	__KERNEL_DIV_ROUND_UP(nr, BITS_PER_TYPE(long))
-#define BITS_TO_U64(nr)		__KERNEL_DIV_ROUND_UP(nr, BITS_PER_TYPE(u64))
-#define BITS_TO_U32(nr)		__KERNEL_DIV_ROUND_UP(nr, BITS_PER_TYPE(u32))
-#define BITS_TO_BYTES(nr)	__KERNEL_DIV_ROUND_UP(nr, BITS_PER_TYPE(char))
+/* BITS_TO_U64, BITS_TO_U32, BITS_TO_BYTES removed - unused */
 
 extern unsigned int __sw_hweight8(unsigned int w);
 extern unsigned int __sw_hweight16(unsigned int w);
@@ -139,23 +137,7 @@ static __always_inline void __assign_bit(long nr, volatile unsigned long *addr,
 		__clear_bit(nr, addr);
 }
 
-#define __ptr_set_bit(nr, addr)                         \
-	({                                              \
-		typecheck_pointer(*(addr));             \
-		__set_bit(nr, (unsigned long *)(addr)); \
-	})
-
-#define __ptr_clear_bit(nr, addr)                         \
-	({                                                \
-		typecheck_pointer(*(addr));               \
-		__clear_bit(nr, (unsigned long *)(addr)); \
-	})
-
-#define __ptr_test_bit(nr, addr)                       \
-	({                                             \
-		typecheck_pointer(*(addr));            \
-		test_bit(nr, (unsigned long *)(addr)); \
-	})
+/* __ptr_set_bit, __ptr_clear_bit, __ptr_test_bit removed - unused */
 
 #ifdef __KERNEL__
 
@@ -174,21 +156,7 @@ static __always_inline void __assign_bit(long nr, volatile unsigned long *addr,
 })
 #endif
 
-#ifndef bit_clear_unless
-#define bit_clear_unless(ptr, clear, test)	\
-({								\
-	const typeof(*(ptr)) clear__ = (clear), test__ = (test);\
-	typeof(*(ptr)) old__, new__;				\
-								\
-	do {							\
-		old__ = READ_ONCE(*(ptr));			\
-		new__ = old__ & ~clear__;			\
-	} while (!(old__ & test__) &&				\
-		 cmpxchg(ptr, old__, new__) != old__);		\
-								\
-	!(old__ & test__);					\
-})
-#endif
+/* bit_clear_unless removed - unused */
 
 #endif  
 #endif

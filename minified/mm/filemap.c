@@ -701,16 +701,13 @@ int folio_wait_bit_killable(struct folio *folio, int bit_nr)
 	return folio_wait_bit_common(folio, bit_nr, TASK_KILLABLE, SHARED);
 }
 
-/* Stubbed - not used externally */
+/* folio_put_wait_locked used internally */
 int folio_put_wait_locked(struct folio *folio, int state)
 {
 	return 0;
 }
 
-/* Stubbed - not used externally */
-void folio_add_wait_queue(struct folio *folio, wait_queue_entry_t *waiter)
-{
-}
+/* folio_add_wait_queue removed - unused */
 
 #ifndef clear_bit_unlock_is_negative_byte
 
@@ -756,8 +753,7 @@ void folio_end_writeback(struct folio *folio)
 	folio_put(folio);
 }
 
-/* STUB: page_endio not used externally */
-void page_endio(struct page *page, bool is_write, int err) { }
+/* page_endio removed - unused */
 
 void __folio_lock(struct folio *folio)
 {
@@ -822,19 +818,7 @@ bool __folio_lock_or_retry(struct folio *folio, struct mm_struct *mm,
 	return true;
 }
 
-/* Stub: page_cache_next_miss not used in minimal kernel */
-pgoff_t page_cache_next_miss(struct address_space *mapping,
-			     pgoff_t index, unsigned long max_scan)
-{
-	return index;
-}
-
-/* Stub: page_cache_prev_miss not used in minimal kernel */
-pgoff_t page_cache_prev_miss(struct address_space *mapping,
-			     pgoff_t index, unsigned long max_scan)
-{
-	return index;
-}
+/* page_cache_next_miss, page_cache_prev_miss removed - unused */
 
 static void *mapping_get_entry(struct address_space *mapping, pgoff_t index)
 {

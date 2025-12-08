@@ -335,11 +335,7 @@ static void __tasklet_schedule_common(struct tasklet_struct *t,
 	local_irq_restore(flags);
 }
 
-void __tasklet_schedule(struct tasklet_struct *t)
-{
-	__tasklet_schedule_common(t, &tasklet_vec,
-				  TASKLET_SOFTIRQ);
-}
+/* __tasklet_schedule removed - unused */
 
 static bool tasklet_clear_sched(struct tasklet_struct *t)
 {

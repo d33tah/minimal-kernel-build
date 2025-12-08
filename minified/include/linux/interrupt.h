@@ -211,7 +211,7 @@ static inline int tasklet_trylock(struct tasklet_struct *t) { return 1; }
 static inline void tasklet_unlock(struct tasklet_struct *t) { }
 /* tasklet_unlock_wait removed - unused */
 
-extern void __tasklet_schedule(struct tasklet_struct *t);	 
+/* __tasklet_schedule removed - unused */	 
 
 static inline void init_irq_proc(void)
 {

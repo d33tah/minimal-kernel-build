@@ -9,8 +9,7 @@
 /* INIT_LIST_HEAD_RCU removed - unused */
 
 #define list_next_rcu(list)	(*((struct list_head __rcu **)(&(list)->next)))
-
-#define list_tail_rcu(head)	(*((struct list_head __rcu **)(&(head)->prev)))
+/* list_tail_rcu removed - unused */
 
 
 #define check_arg_count_one(dummy)
@@ -70,13 +69,7 @@ static inline void list_replace_rcu(struct list_head *old,
 #define list_entry_rcu(ptr, type, member) \
 	container_of(READ_ONCE(ptr), type, member)
 
-
-#define list_first_or_null_rcu(ptr, type, member) \
-({ \
-	struct list_head *__ptr = (ptr); \
-	struct list_head *__next = READ_ONCE(__ptr->next); \
-	likely(__ptr != __next) ? list_entry_rcu(__next, type, member) : NULL; \
-})
+/* list_first_or_null_rcu removed - unused */
 
 #define list_for_each_entry_rcu(pos, head, member, cond...)		\
 	for (__list_check_rcu(dummy, ## cond, 0),			\

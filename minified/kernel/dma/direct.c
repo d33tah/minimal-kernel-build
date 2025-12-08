@@ -463,22 +463,6 @@ dma_addr_t dma_direct_map_resource(struct device *dev, phys_addr_t paddr,
 	return dma_addr;
 }
 
-/* Stub: dma_direct_get_sgtable not used in minimal kernel */
-int dma_direct_get_sgtable(struct device *dev, struct sg_table *sgt,
-		void *cpu_addr, dma_addr_t dma_addr, size_t size,
-		unsigned long attrs)
-{ return -ENXIO; }
-
-/* Stub: dma_direct_can_mmap not used in minimal kernel */
-bool dma_direct_can_mmap(struct device *dev)
-{ return false; }
-
-/* Stub: dma_direct_mmap not used in minimal kernel */
-int dma_direct_mmap(struct device *dev, struct vm_area_struct *vma,
-		void *cpu_addr, dma_addr_t dma_addr, size_t size,
-		unsigned long attrs)
-{ return -ENXIO; }
-
 int dma_direct_supported(struct device *dev, u64 mask)
 {
 	u64 min_mask = (max_pfn - 1) << PAGE_SHIFT;
@@ -508,7 +492,3 @@ bool dma_direct_need_sync(struct device *dev, dma_addr_t dma_addr)
 	       is_swiotlb_buffer(dev, dma_to_phys(dev, dma_addr));
 }
 
-/* Stub: dma_direct_set_offset not used in minimal kernel */
-int dma_direct_set_offset(struct device *dev, phys_addr_t cpu_start,
-			 dma_addr_t dma_start, u64 size)
-{ return 0; }

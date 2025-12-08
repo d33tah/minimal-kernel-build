@@ -26,7 +26,7 @@ bool filemap_dirty_folio(struct address_space *mapping, struct folio *folio) { r
 void folio_account_redirty(struct folio *folio) {}
 bool folio_redirty_for_writepage(struct writeback_control *wbc, struct folio *folio) { return true; }
 bool folio_mark_dirty(struct folio *folio) { return true; }
-int set_page_dirty_lock(struct page *page) { return 0; }
+/* set_page_dirty_lock removed - unused */
 void __folio_cancel_dirty(struct folio *folio) {}
 bool folio_clear_dirty_for_io(struct folio *folio) { return true; }
 void folio_wait_writeback(struct folio *folio) {}

@@ -1019,7 +1019,7 @@ long get_user_pages_remote(struct mm_struct *mm,
 
 bool folio_mark_dirty(struct folio *folio);
 bool set_page_dirty(struct page *page);
-int set_page_dirty_lock(struct page *page);
+/* set_page_dirty_lock removed - unused */
 
 int get_cmdline(struct task_struct *task, char *buffer, int buflen);
 

@@ -26,13 +26,7 @@
 	(((__u64)(x) & (__u64)0x00ff000000000000ULL) >> 40) |	\
 	(((__u64)(x) & (__u64)0xff00000000000000ULL) >> 56)))
 
-#define ___constant_swahw32(x) ((__u32)(			\
-	(((__u32)(x) & (__u32)0x0000ffffUL) << 16) |		\
-	(((__u32)(x) & (__u32)0xffff0000UL) >> 16)))
-
-#define ___constant_swahb32(x) ((__u32)(			\
-	(((__u32)(x) & (__u32)0x00ff00ffUL) << 8) |		\
-	(((__u32)(x) & (__u32)0xff00ff00UL) >> 8)))
+/* ___constant_swahw32, ___constant_swahb32 - unused */
 
 
 static inline __attribute_const__ __u16 __fswab16(__u16 val)
@@ -66,23 +60,7 @@ static inline __attribute_const__ __u64 __fswab64(__u64 val)
 #endif
 }
 
-static inline __attribute_const__ __u32 __fswahw32(__u32 val)
-{
-#ifdef __arch_swahw32
-	return __arch_swahw32(val);
-#else
-	return ___constant_swahw32(val);
-#endif
-}
-
-static inline __attribute_const__ __u32 __fswahb32(__u32 val)
-{
-#ifdef __arch_swahb32
-	return __arch_swahb32(val);
-#else
-	return ___constant_swahb32(val);
-#endif
-}
+/* __fswahw32, __fswahb32 - unused */
 
 #ifdef __HAVE_BUILTIN_BSWAP16__
 #define __swab16(x) (__u16)__builtin_bswap16((__u16)(x))
@@ -117,15 +95,7 @@ static __always_inline unsigned long __swab(const unsigned long y)
 	return __swab32(y);
 }
 
-#define __swahw32(x)				\
-	(__builtin_constant_p((__u32)(x)) ?	\
-	___constant_swahw32(x) :		\
-	__fswahw32(x))
-
-#define __swahb32(x)				\
-	(__builtin_constant_p((__u32)(x)) ?	\
-	___constant_swahb32(x) :		\
-	__fswahb32(x))
+/* __swahw32, __swahb32 macros - unused */
 
 static __always_inline __u16 __swab16p(const __u16 *p)
 {
@@ -154,23 +124,7 @@ static __always_inline __u64 __swab64p(const __u64 *p)
 #endif
 }
 
-static inline __u32 __swahw32p(const __u32 *p)
-{
-#ifdef __arch_swahw32p
-	return __arch_swahw32p(p);
-#else
-	return __swahw32(*p);
-#endif
-}
-
-static inline __u32 __swahb32p(const __u32 *p)
-{
-#ifdef __arch_swahb32p
-	return __arch_swahb32p(p);
-#else
-	return __swahb32(*p);
-#endif
-}
+/* __swahw32p, __swahb32p - unused */
 
 static inline void __swab16s(__u16 *p)
 {
@@ -198,23 +152,7 @@ static __always_inline void __swab64s(__u64 *p)
 #endif
 }
 
-static inline void __swahw32s(__u32 *p)
-{
-#ifdef __arch_swahw32s
-	__arch_swahw32s(p);
-#else
-	*p = __swahw32p(p);
-#endif
-}
-
-static inline void __swahb32s(__u32 *p)
-{
-#ifdef __arch_swahb32s
-	__arch_swahb32s(p);
-#else
-	*p = __swahb32p(p);
-#endif
-}
+/* __swahw32s, __swahb32s - unused */
 
 
 #endif  

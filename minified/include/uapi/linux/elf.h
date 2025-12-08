@@ -44,9 +44,7 @@ typedef __s64	Elf64_Sxword;
 #define ET_REL    1
 #define ET_EXEC   2
 #define ET_DYN    3
-#define ET_CORE   4
-#define ET_LOPROC 0xff00
-#define ET_HIPROC 0xffff
+/* ET_CORE, ET_LOPROC, ET_HIPROC - unused */
 
 /* Dynamic section tags - only keep those used */
 #define DT_NULL		0
@@ -205,12 +203,11 @@ typedef struct elf64_phdr {
 #define SHT_SYMTAB	2
 #define SHT_STRTAB	3
 #define SHT_RELA	4
-#define SHT_HASH	5
+/* SHT_HASH, SHT_DYNSYM - unused */
 #define SHT_DYNAMIC	6
 #define SHT_NOTE	7
 #define SHT_NOBITS	8
 #define SHT_REL		9
-#define SHT_DYNSYM	11
 
 #define SHF_WRITE		0x1
 #define SHF_ALLOC		0x2
@@ -221,8 +218,7 @@ typedef struct elf64_phdr {
 
 #define SHN_UNDEF	0
 #define SHN_LORESERVE	0xff00
-#define SHN_LOPROC	0xff00
-#define SHN_HIPROC	0xff1f
+/* SHN_LOPROC, SHN_HIPROC - unused */
 #define SHN_ABS		0xfff1
 #define SHN_COMMON	0xfff2
 #define SHN_HIRESERVE	0xffff

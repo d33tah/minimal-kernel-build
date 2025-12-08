@@ -1,3 +1,4 @@
+/* --- 2025-12-08 10:34 --- Reduced enums to only used values */
 #ifndef _UAPI_LINUX_PERF_EVENT_H
 #define _UAPI_LINUX_PERF_EVENT_H
 
@@ -5,31 +6,16 @@
 #include <linux/ioctl.h>
 #include <asm/byteorder.h>
 
-enum perf_type_id {
-	PERF_TYPE_HARDWARE = 0,
-	PERF_TYPE_SOFTWARE = 1,
-	PERF_TYPE_TRACEPOINT = 2,
-	PERF_TYPE_HW_CACHE = 3,
-	PERF_TYPE_RAW = 4,
-	PERF_TYPE_BREAKPOINT = 5,
-	PERF_TYPE_MAX,
-};
+/* Only keep used enum values */
+#define PERF_TYPE_BREAKPOINT 5
 
-enum perf_sw_ids {
-	PERF_COUNT_SW_CPU_CLOCK = 0,
-	PERF_COUNT_SW_TASK_CLOCK = 1,
-	PERF_COUNT_SW_PAGE_FAULTS = 2,
-	PERF_COUNT_SW_CONTEXT_SWITCHES = 3,
-	PERF_COUNT_SW_CPU_MIGRATIONS = 4,
-	PERF_COUNT_SW_PAGE_FAULTS_MIN = 5,
-	PERF_COUNT_SW_PAGE_FAULTS_MAJ = 6,
-	PERF_COUNT_SW_ALIGNMENT_FAULTS = 7,
-	PERF_COUNT_SW_EMULATION_FAULTS = 8,
-	PERF_COUNT_SW_DUMMY = 9,
-	PERF_COUNT_SW_BPF_OUTPUT = 10,
-	PERF_COUNT_SW_CGROUP_SWITCHES = 11,
-	PERF_COUNT_SW_MAX,
-};
+/* SW event IDs used in mm code */
+#define PERF_COUNT_SW_PAGE_FAULTS 2
+#define PERF_COUNT_SW_PAGE_FAULTS_MIN 5
+#define PERF_COUNT_SW_PAGE_FAULTS_MAJ 6
+
+/* PERF_COUNT_SW_MAX used for array size */
+#define PERF_COUNT_SW_MAX 12
 
 struct perf_event_attr {
 	__u32 type;
@@ -114,13 +100,6 @@ struct perf_event_attr {
 	__u64 sig_data;
 };
 
-#define PERF_ATTR_SIZE_VER0	64
-#define PERF_ATTR_SIZE_VER1	72
-#define PERF_ATTR_SIZE_VER2	80
-#define PERF_ATTR_SIZE_VER3	96
-#define PERF_ATTR_SIZE_VER4	104
-#define PERF_ATTR_SIZE_VER5	112
-#define PERF_ATTR_SIZE_VER6	120
-#define PERF_ATTR_SIZE_VER7	128
+/* PERF_ATTR_SIZE_* removed - unused */
 
 #endif  

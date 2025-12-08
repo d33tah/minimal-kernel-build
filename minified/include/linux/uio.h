@@ -186,15 +186,9 @@ void iov_iter_kvec(struct iov_iter *i, unsigned int direction, const struct kvec
 			unsigned long nr_segs, size_t count);
 void iov_iter_bvec(struct iov_iter *i, unsigned int direction, const struct bio_vec *bvec,
 			unsigned long nr_segs, size_t count);
-/* iov_iter_pipe, iov_iter_discard, iov_iter_xarray removed - unused */
-ssize_t iov_iter_get_pages(struct iov_iter *i, struct page **pages,
-			size_t maxsize, unsigned maxpages, size_t *start);
-ssize_t iov_iter_get_pages_alloc(struct iov_iter *i, struct page ***pages,
-			size_t maxsize, size_t *start);
-int iov_iter_npages(const struct iov_iter *i, int maxpages);
-void iov_iter_restore(struct iov_iter *i, struct iov_iter_state *state);
-
-const void *dup_iter(struct iov_iter *new, struct iov_iter *old, gfp_t flags);
+/* iov_iter_pipe, iov_iter_discard, iov_iter_xarray, iov_iter_get_pages,
+   iov_iter_get_pages_alloc, iov_iter_npages, iov_iter_restore, dup_iter
+   removed - unused */
 
 static inline size_t iov_iter_count(const struct iov_iter *i)
 {
@@ -213,20 +207,8 @@ static inline void iov_iter_reexpand(struct iov_iter *i, size_t count)
 	i->count = count;
 }
 
-/* iov_iter_npages_cap removed - unused */
-
-/* csum_and_copy_*, hash_and_copy_to_iter removed - unused outside iov_iter.c */
-
-struct iovec *iovec_from_user(const struct iovec __user *uvector,
-		unsigned long nr_segs, unsigned long fast_segs,
-		struct iovec *fast_iov, bool compat);
-ssize_t import_iovec(int type, const struct iovec __user *uvec,
-		 unsigned nr_segs, unsigned fast_segs, struct iovec **iovp,
-		 struct iov_iter *i);
-ssize_t __import_iovec(int type, const struct iovec __user *uvec,
-		 unsigned nr_segs, unsigned fast_segs, struct iovec **iovp,
-		 struct iov_iter *i, bool compat);
-int import_single_range(int type, void __user *buf, size_t len,
-		 struct iovec *iov, struct iov_iter *i);
+/* iov_iter_npages_cap, csum_and_copy_*, hash_and_copy_to_iter,
+   iovec_from_user, import_iovec, __import_iovec, import_single_range
+   removed - unused */
 
 #endif

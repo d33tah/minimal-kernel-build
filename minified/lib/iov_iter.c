@@ -945,73 +945,9 @@ void iov_iter_bvec(struct iov_iter *i, unsigned int direction,
 {
 }
 
-/* iov_iter_pipe, iov_iter_xarray, iov_iter_discard removed - unused */
+/* iov_iter_pipe, iov_iter_xarray, iov_iter_discard, iov_iter_alignment,
+   iov_iter_gap_alignment, iov_iter_get_pages, iov_iter_get_pages_alloc,
+   csum_and_copy_*, hash_and_copy_*, iov_iter_npages removed - unused */
 
-/* Stubbed - not used externally */
-unsigned long iov_iter_alignment(const struct iov_iter *i) { return 0; }
-
-/* Stubbed - not used externally */
-unsigned long iov_iter_gap_alignment(const struct iov_iter *i)
-{
-	return 0;
-}
-
-ssize_t iov_iter_get_pages(struct iov_iter *i,
-		   struct page **pages, size_t maxsize, unsigned maxpages,
-		   size_t *start)
-{
-	return -EFAULT;
-}
-
-ssize_t iov_iter_get_pages_alloc(struct iov_iter *i,
-		   struct page ***pages, size_t maxsize,
-		   size_t *start)
-{
-	return -EFAULT;
-}
-
-/* csum_and_copy_from_iter, csum_and_copy_to_iter, hash_and_copy_to_iter removed - unused */
-
-int iov_iter_npages(const struct iov_iter *i, int maxpages)
-{
-	return 0;
-}
-
-const void *dup_iter(struct iov_iter *new, struct iov_iter *old, gfp_t flags)
-{
-	return NULL;
-}
-
-/* Stub: iovec_from_user not used externally */
-struct iovec *iovec_from_user(const struct iovec __user *uvec,
-		unsigned long nr_segs, unsigned long fast_segs,
-		struct iovec *fast_iov, bool compat)
-{
-	return ERR_PTR(-EFAULT);
-}
-
-/* Stub: __import_iovec not used externally */
-ssize_t __import_iovec(int type, const struct iovec __user *uvec,
-		 unsigned nr_segs, unsigned fast_segs, struct iovec **iovp,
-		 struct iov_iter *i, bool compat)
-{
-	return -EFAULT;
-}
-
-ssize_t import_iovec(int type, const struct iovec __user *uvec,
-		 unsigned nr_segs, unsigned fast_segs,
-		 struct iovec **iovp, struct iov_iter *i)
-{
-	return -EFAULT;
-}
-
-int import_single_range(int rw, void __user *buf, size_t len,
-		 struct iovec *iov, struct iov_iter *i)
-{
-	return -EFAULT;
-}
-
-/* Stub: iov_iter_restore not used externally */
-void iov_iter_restore(struct iov_iter *i, struct iov_iter_state *state)
-{
-}
+/* dup_iter, iovec_from_user, __import_iovec, import_iovec,
+   import_single_range, iov_iter_restore removed - unused */

@@ -261,18 +261,7 @@ out:
 	return ret;
 }
 
-int radix_tree_preload(gfp_t gfp_mask)
-{
-	
-	WARN_ON_ONCE(!gfpflags_allow_blocking(gfp_mask));
-	return __radix_tree_preload(gfp_mask, RADIX_TREE_PRELOAD_SIZE);
-}
-
-/* Stub: radix_tree_maybe_preload not used in minimal kernel */
-int radix_tree_maybe_preload(gfp_t gfp_mask)
-{
-	return radix_tree_preload(gfp_mask);
-}
+/* radix_tree_preload, radix_tree_maybe_preload removed - unused */
 
 static unsigned radix_tree_load_root(const struct radix_tree_root *root,
 		struct radix_tree_node **nodep, unsigned long *maxindex)

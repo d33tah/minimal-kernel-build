@@ -77,17 +77,7 @@ static inline __u8 ror8(__u8 word, unsigned int shift)
 	return (word >> (shift & 7)) | (word << ((-shift) & 7));
 }
 
-static __always_inline __s32 sign_extend32(__u32 value, int index)
-{
-	__u8 shift = 31 - index;
-	return (__s32)(value << shift) >> shift;
-}
-
-static __always_inline __s64 sign_extend64(__u64 value, int index)
-{
-	__u8 shift = 63 - index;
-	return (__s64)(value << shift) >> shift;
-}
+/* sign_extend32, sign_extend64 - unused */
 
 static inline unsigned fls_long(unsigned long l)
 {
@@ -96,13 +86,7 @@ static inline unsigned fls_long(unsigned long l)
 	return fls64(l);
 }
 
-static inline int get_count_order(unsigned int count)
-{
-	if (count == 0)
-		return -1;
-
-	return fls(--count);
-}
+/* get_count_order - unused */
 
 static inline int get_count_order_long(unsigned long l)
 {
@@ -111,13 +95,7 @@ static inline int get_count_order_long(unsigned long l)
 	return (int)fls_long(--l);
 }
 
-/* BITS_PER_LONG == 32 */
-static inline unsigned long __ffs64(u64 word)
-{
-	if (((u32)word) == 0UL)
-		return __ffs((u32)(word >> 32)) + 32;
-	return __ffs((unsigned long)word);
-}
+/* __ffs64 - unused */
 
 static __always_inline void assign_bit(long nr, volatile unsigned long *addr,
 				       bool value)

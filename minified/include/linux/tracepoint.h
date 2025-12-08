@@ -23,22 +23,7 @@ struct trace_eval_map {
 
 #define TRACEPOINT_DEFAULT_PRIO	10
 
-/* tracepoint_srcu removed - unused */
-
-extern int
-tracepoint_probe_register(struct tracepoint *tp, void *probe, void *data);
-extern int
-tracepoint_probe_register_prio(struct tracepoint *tp, void *probe, void *data,
-			       int prio);
-extern int
-tracepoint_probe_register_prio_may_exist(struct tracepoint *tp, void *probe, void *data,
-					 int prio);
-extern int
-tracepoint_probe_unregister(struct tracepoint *tp, void *probe, void *data);
-
-/* tracepoint_probe_register_may_exist removed - unused */
-/* trace_module_has_bad_taint, register/unregister_tracepoint_module_notifier removed - unused */
-/* tracepoint_synchronize_unregister, tracepoint_ptr_deref removed - unused */
+/* --- 2025-12-08 04:12 --- tracepoint_probe_* removed - unused */
 
 #ifndef PARAMS
 #define PARAMS(args...) args

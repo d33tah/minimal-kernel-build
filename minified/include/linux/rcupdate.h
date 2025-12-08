@@ -46,26 +46,14 @@ static inline void rcu_init_tasks_generic(void) { }
 static inline void rcu_init_nohz(void) { }
 static inline void rcu_nocb_flush_deferred_wakeup(void) { }
 
-#define RCU_NONIDLE(a) \
-	do { \
-		rcu_irq_enter_irqson(); \
-		do { a; } while (0); \
-		rcu_irq_exit_irqson(); \
-	} while (0)
-
+/* RCU_NONIDLE removed - unused */
+/* rcu_note_voluntary_context_switch removed - unused */
 #define rcu_tasks_classic_qs(t, preempt) do { } while (0)
 #define rcu_tasks_qs(t, preempt) do { } while (0)
-#define rcu_note_voluntary_context_switch(t) do { } while (0)
 #define call_rcu_tasks call_rcu
 #define synchronize_rcu_tasks synchronize_rcu
 static inline void exit_tasks_rcu_start(void) { }
 static inline void exit_tasks_rcu_finish(void) { }
-
-#define cond_resched_tasks_rcu_qs() \
-do { \
-	rcu_tasks_qs(current, false); \
-	cond_resched(); \
-} while (0)
 
 
 #if defined(CONFIG_TREE_RCU)

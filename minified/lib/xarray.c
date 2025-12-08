@@ -916,34 +916,4 @@ int __xa_alloc_cyclic(struct xarray *xa, u32 *id, void *entry,
 	return -EINVAL;
 }
 
-/* xa_*_mark functions removed - unused */
-
-/* Stubbed - not used externally */
-void *xa_find(struct xarray *xa, unsigned long *indexp,
-			unsigned long max, xa_mark_t filter)
-{
-	return NULL;
-}
-
-/* Stubbed - not used externally */
-void *xa_find_after(struct xarray *xa, unsigned long *indexp,
-			unsigned long max, xa_mark_t filter)
-{
-	return NULL;
-}
-
-unsigned int xa_extract(struct xarray *xa, void **dst, unsigned long start,
-			unsigned long max, unsigned int n, xa_mark_t filter)
-{
-	return 0;
-}
-
-/* Stubbed - not used externally */
-void xa_delete_node(struct xa_node *node, xa_update_node_t update)
-{
-}
-
-/* Stubbed - not used externally */
-void xa_destroy(struct xarray *xa)
-{
-}
+/* xa_*_mark, xa_find, xa_find_after, xa_extract, xa_delete_node, xa_destroy removed - unused */

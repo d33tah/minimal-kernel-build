@@ -115,16 +115,7 @@ struct xarray {
 void *xa_load(struct xarray *, unsigned long index);
 void *xa_store(struct xarray *, unsigned long index, void *entry, gfp_t);
 void *xa_erase(struct xarray *, unsigned long index);
-void *xa_store_range(struct xarray *, unsigned long first, unsigned long last,
-			void *entry, gfp_t);
-/* xa_get_mark, xa_set_mark, xa_clear_mark removed - unused */
-void *xa_find(struct xarray *xa, unsigned long *index,
-		unsigned long max, xa_mark_t) __attribute__((nonnull(2)));
-void *xa_find_after(struct xarray *xa, unsigned long *index,
-		unsigned long max, xa_mark_t) __attribute__((nonnull(2)));
-unsigned int xa_extract(struct xarray *, void **dst, unsigned long start,
-		unsigned long max, unsigned int n, xa_mark_t);
-void xa_destroy(struct xarray *);
+/* xa_store_range, xa_find, xa_find_after, xa_extract, xa_destroy, xa_*_mark removed - unused */
 
 static inline void xa_init_flags(struct xarray *xa, gfp_t flags)
 {

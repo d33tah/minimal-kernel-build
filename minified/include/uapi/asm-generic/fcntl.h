@@ -88,14 +88,7 @@
 #endif
 /* F_SETSIG, F_GETSIG removed - unused */
 
-#if __BITS_PER_LONG == 32 || defined(__KERNEL__)
-#ifndef F_GETLK64
-#define F_GETLK64	12	 
-#define F_SETLK64	13
-#define F_SETLKW64	14
-#endif
-#endif  
-
+/* F_GETLK64, F_SETLK64, F_SETLKW64 removed - unused */
 /* F_SETOWN_EX, F_GETOWN_EX, F_GETOWNER_UIDS, F_OFD_*, f_owner_ex removed - unused */
 
 #define FD_CLOEXEC	1	 
@@ -130,15 +123,6 @@ struct flock {
 #endif
 };
 
-struct flock64 {
-	short  l_type;
-	short  l_whence;
-	__kernel_loff_t l_start;
-	__kernel_loff_t l_len;
-	__kernel_pid_t  l_pid;
-#ifdef	__ARCH_FLOCK64_PAD
-	__ARCH_FLOCK64_PAD
-#endif
-};
+/* struct flock64 removed - unused */
 
 #endif  

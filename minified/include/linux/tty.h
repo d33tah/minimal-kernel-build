@@ -106,9 +106,7 @@ int tty_set_ldisc(struct tty_struct *tty, int disc);
 #include <linux/llist.h>
 
 
-#define NR_UNIX98_PTY_DEFAULT	4096       
-#define NR_UNIX98_PTY_RESERVE	1024	   
-#define NR_UNIX98_PTY_MAX	(1 << MINORBITS)  
+/* NR_UNIX98_PTY_* defines removed - no PTY support in minimal kernel */
 
 #define __DISABLED_CHAR '\0'
 

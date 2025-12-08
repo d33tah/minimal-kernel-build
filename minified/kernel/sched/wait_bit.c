@@ -52,18 +52,6 @@ int __sched out_of_line_wait_on_bit(void *word, int bit,
 	return __wait_on_bit(wq_head, &wq_entry, action, mode);
 }
 
-/* Stubbed: out_of_line_wait_on_bit_timeout not used */
-int __sched out_of_line_wait_on_bit_timeout(void *word, int bit, wait_bit_action_f *action,
-	unsigned mode, unsigned long timeout) { return 0; }
-
-/* Stubbed: __wait_on_bit_lock not used */
-int __sched __wait_on_bit_lock(struct wait_queue_head *wq_head, struct wait_bit_queue_entry *wbq_entry,
-			wait_bit_action_f *action, unsigned mode) { return 0; }
-
-/* Stubbed: out_of_line_wait_on_bit_lock not used */
-int __sched out_of_line_wait_on_bit_lock(void *word, int bit,
-					 wait_bit_action_f *action, unsigned mode) { return 0; }
-
 void __wake_up_bit(struct wait_queue_head *wq_head, void *word, int bit)
 {
 	struct wait_bit_key key = __WAIT_BIT_KEY_INITIALIZER(word, bit);
@@ -82,10 +70,7 @@ wait_queue_head_t *__var_waitqueue(void *p)
 	return bit_wait_table + hash_ptr(p, WAIT_TABLE_BITS);
 }
 
-/* Stubbed: init_wait_var_entry not used */
-void init_wait_var_entry(struct wait_bit_queue_entry *wbq_entry, void *var, int flags) { }
-
-/* Stubbed: wake_up_var not used */
+/* Used by softirq.c */
 void wake_up_var(void *var) { }
 
 __sched int bit_wait(struct wait_bit_key *word, int mode)
@@ -96,15 +81,6 @@ __sched int bit_wait(struct wait_bit_key *word, int mode)
 
 	return 0;
 }
-
-/* Stubbed: bit_wait_io not used */
-__sched int bit_wait_io(struct wait_bit_key *word, int mode) { return 0; }
-
-/* Stubbed: bit_wait_timeout not used */
-__sched int bit_wait_timeout(struct wait_bit_key *word, int mode) { return 0; }
-
-/* Stubbed: bit_wait_io_timeout not used */
-__sched int bit_wait_io_timeout(struct wait_bit_key *word, int mode) { return 0; }
 
 void __init wait_bit_init(void)
 {

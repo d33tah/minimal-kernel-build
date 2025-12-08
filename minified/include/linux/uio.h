@@ -125,9 +125,7 @@ size_t copy_page_from_iter_atomic(struct page *page, unsigned offset,
 				  size_t bytes, struct iov_iter *i);
 void iov_iter_advance(struct iov_iter *i, size_t bytes);
 void iov_iter_revert(struct iov_iter *i, size_t bytes);
-size_t fault_in_iov_iter_readable(const struct iov_iter *i, size_t bytes);
-size_t fault_in_iov_iter_writeable(const struct iov_iter *i, size_t bytes);
-size_t iov_iter_single_seg_count(const struct iov_iter *i);
+/* fault_in_iov_iter_readable, fault_in_iov_iter_writeable, iov_iter_single_seg_count removed - unused */
 size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes,
 			 struct iov_iter *i);
 size_t copy_page_from_iter(struct page *page, size_t offset, size_t bytes,
@@ -135,7 +133,7 @@ size_t copy_page_from_iter(struct page *page, size_t offset, size_t bytes,
 
 size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i);
 size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i);
-size_t _copy_from_iter_nocache(void *addr, size_t bytes, struct iov_iter *i);
+/* _copy_from_iter_nocache removed - unused */
 
 static inline size_t copy_folio_to_iter(struct folio *folio, size_t offset,
 		size_t bytes, struct iov_iter *i)
@@ -171,9 +169,7 @@ bool copy_from_iter_full(void *addr, size_t bytes, struct iov_iter *i)
 	return false;
 }
 
-/* copy_from_iter_nocache, copy_from_iter_full_nocache removed - unused */
-
-#define _copy_from_iter_flushcache _copy_from_iter_nocache
+/* copy_from_iter_nocache, copy_from_iter_full_nocache, _copy_from_iter_flushcache removed - unused */
 
 #define _copy_mc_to_iter _copy_to_iter
 

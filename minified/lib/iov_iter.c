@@ -428,16 +428,7 @@ out:
 	return bytes;
 }
 
-/* Stubbed fault_in functions - not used externally */
-size_t fault_in_iov_iter_readable(const struct iov_iter *i, size_t size)
-{
-	return 0;
-}
-
-size_t fault_in_iov_iter_writeable(const struct iov_iter *i, size_t size)
-{
-	return 0;
-}
+/* fault_in_iov_iter_readable, fault_in_iov_iter_writeable removed - unused */
 
 void iov_iter_init(struct iov_iter *i, unsigned int direction,
 			const struct iovec *iov, unsigned long nr_segs,
@@ -584,20 +575,7 @@ size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i)
 	return bytes;
 }
 
-size_t _copy_from_iter_nocache(void *addr, size_t bytes, struct iov_iter *i)
-{
-	if (unlikely(iov_iter_is_pipe(i))) {
-		WARN_ON(1);
-		return 0;
-	}
-	iterate_and_advance(i, bytes, base, len, off,
-		__copy_from_user_inatomic_nocache(addr + off, base, len),
-		memcpy(addr + off, base, len)
-	)
-
-	return bytes;
-}
-
+/* _copy_from_iter_nocache removed - unused */
 
 static inline bool page_copy_sane(struct page *page, size_t offset, size_t n)
 {
@@ -917,11 +895,7 @@ void iov_iter_revert(struct iov_iter *i, size_t unroll)
 	}
 }
 
-/* Stubbed - not used externally */
-size_t iov_iter_single_seg_count(const struct iov_iter *i)
-{
-	return i->count;
-}
+/* iov_iter_single_seg_count removed - unused */
 
 void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 			const struct kvec *kvec, unsigned long nr_segs,

@@ -8,13 +8,10 @@
 #define SETUP_DTB			2
 #define SETUP_PCI			3
 #define SETUP_EFI			4
-#define SETUP_APPLE_PROPERTIES		5
-#define SETUP_JAILHOUSE			6
+/* SETUP_APPLE_PROPERTIES, SETUP_JAILHOUSE - unused */
 #define SETUP_CC_BLOB			7
 
 #define SETUP_INDIRECT			(1<<31)
-
- 
 #define SETUP_TYPE_MAX			(SETUP_INDIRECT | SETUP_CC_BLOB)
 
  
@@ -32,9 +29,7 @@
  
 #define XLF_KERNEL_64			(1<<0)
 #define XLF_CAN_BE_LOADED_ABOVE_4G	(1<<1)
-#define XLF_EFI_HANDOVER_32		(1<<2)
-#define XLF_EFI_HANDOVER_64		(1<<3)
-#define XLF_EFI_KEXEC			(1<<4)
+/* XLF_EFI_HANDOVER_32, XLF_EFI_HANDOVER_64, XLF_EFI_KEXEC - unused */
 #define XLF_5LEVEL			(1<<5)
 #define XLF_5LEVEL_ENABLED		(1<<6)
 
@@ -60,12 +55,7 @@ struct apm_bios_info {
 #define APM_CS		(GDT_ENTRY_APMBIOS_BASE * 8)
 #define APM_CS_16	(APM_CS + 8)
 #define APM_DS		(APM_CS_16 + 8)
-
-#define APM_16_BIT_SUPPORT	0x0001
-#define APM_32_BIT_SUPPORT	0x0002
-#define APM_IDLE_SLOWS_CLOCK	0x0004
-#define APM_BIOS_DISABLED      	0x0008
-#define APM_BIOS_DISENGAGED     0x0010
+/* APM_*_SUPPORT, APM_BIOS_* - unused */
 
 struct apm_info {
 	struct apm_bios_info	bios;

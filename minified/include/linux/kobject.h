@@ -15,10 +15,9 @@
 #include <linux/workqueue.h>
 #include <linux/uidgid.h>
 
-#define UEVENT_HELPER_PATH_LEN		256
-#define UEVENT_NUM_ENVP			64	 
-#define UEVENT_BUFFER_SIZE		2048	 
-
+/* UEVENT_HELPER_PATH_LEN - unused */
+#define UEVENT_NUM_ENVP			64
+#define UEVENT_BUFFER_SIZE		2048
 
 extern u64 uevent_seqnum;
 

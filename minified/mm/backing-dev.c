@@ -94,8 +94,7 @@ static int __init default_bdi_init(void)
 }
 subsys_initcall(default_bdi_init);
 
-/* Stub: wb_wakeup_delayed not used in minimal kernel */
-void wb_wakeup_delayed(struct bdi_writeback *wb) { }
+/* wb_wakeup_delayed removed - unused */
 
 static void wb_update_bandwidth_workfn(struct work_struct *work)
 {
@@ -268,8 +267,7 @@ static struct rb_node **bdi_lookup_rb_node(u64 id, struct rb_node **parentp)
 	return p;
 }
 
-/* Stub: bdi_get_by_id not used in minimal kernel */
-struct backing_dev_info *bdi_get_by_id(u64 id) { return NULL; }
+/* bdi_get_by_id removed - unused */
 
 int bdi_register_va(struct backing_dev_info *bdi, const char *fmt, va_list args)
 {
@@ -316,8 +314,7 @@ int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...)
 	return ret;
 }
 
-/* Stub: bdi_set_owner not used in minimal kernel */
-void bdi_set_owner(struct backing_dev_info *bdi, struct device *owner) { }
+/* bdi_set_owner removed - unused */
 
 static void bdi_remove_from_list(struct backing_dev_info *bdi)
 {

@@ -16,7 +16,7 @@ static inline struct backing_dev_info *bdi_get(struct backing_dev_info *bdi)
 	return bdi;
 }
 
-struct backing_dev_info *bdi_get_by_id(u64 id);
+/* bdi_get_by_id removed - unused */
 void bdi_put(struct backing_dev_info *bdi);
 
 __printf(2, 3)
@@ -24,14 +24,14 @@ int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...);
 __printf(2, 0)
 int bdi_register_va(struct backing_dev_info *bdi, const char *fmt,
 		    va_list args);
-void bdi_set_owner(struct backing_dev_info *bdi, struct device *owner);
+/* bdi_set_owner removed - unused */
 void bdi_unregister(struct backing_dev_info *bdi);
 
 struct backing_dev_info *bdi_alloc(int node_id);
 
 void wb_start_background_writeback(struct bdi_writeback *wb);
 void wb_workfn(struct work_struct *work);
-void wb_wakeup_delayed(struct bdi_writeback *wb);
+/* wb_wakeup_delayed removed - unused */
 
 void wb_wait_for_completion(struct wb_completion *done);
 

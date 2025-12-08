@@ -66,8 +66,6 @@ extern struct percpu_counter vm_committed_as;
 
 #define vm_committed_as_batch 0
 
-unsigned long vm_memory_committed(void);
-
 static inline void vm_acct_memory(long pages)
 {
 	percpu_counter_add_batch(&vm_committed_as, pages, vm_committed_as_batch);

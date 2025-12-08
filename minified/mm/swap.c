@@ -96,14 +96,6 @@ void __put_page(struct page *page)
 		__put_single_page(page);
 }
 
-/* Stub: put_pages_list not used in minimal kernel */
-void put_pages_list(struct list_head *pages)
-{
-	INIT_LIST_HEAD(pages);
-}
-
-/* get_kernel_pages removed - unused */
-
 static void pagevec_lru_move_fn(struct pagevec *pvec,
 	void (*move_fn)(struct page *page, struct lruvec *lruvec))
 {

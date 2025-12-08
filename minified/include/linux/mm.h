@@ -261,13 +261,6 @@ extern int sysctl_overcommit_memory;
 extern int sysctl_overcommit_ratio;
 extern unsigned long sysctl_overcommit_kbytes;
 
-int overcommit_ratio_handler(struct ctl_table *, int, void *, size_t *,
-		loff_t *);
-int overcommit_kbytes_handler(struct ctl_table *, int, void *, size_t *,
-		loff_t *);
-int overcommit_policy_handler(struct ctl_table *, int, void *, size_t *,
-		loff_t *);
-
 #define nth_page(page,n) ((page) + (n))
 #define folio_page_idx(folio, p)	((p) - &(folio)->page)
 
@@ -491,8 +484,6 @@ static inline bool vma_is_accessible(struct vm_area_struct *vma)
 	return vma->vm_flags & VM_ACCESS_FLAGS;
 }
 
-int vma_is_stack_for_current(struct vm_area_struct *vma);
-
 #define TLB_FLUSH_VMA(mm,flags) { .vm_mm = (mm), .vm_flags = (flags) }
 
 struct mmu_gather;
@@ -585,10 +576,7 @@ static inline struct folio *virt_to_folio(const void *x)
 
 void __put_page(struct page *page);
 
-void put_pages_list(struct list_head *pages);
-
 void split_page(struct page *page, unsigned int order);
-void folio_copy(struct folio *dst, struct folio *src);
 
 unsigned long nr_free_buffer_pages(void);
 
@@ -1017,9 +1005,6 @@ long get_user_pages_remote(struct mm_struct *mm,
 
 bool folio_mark_dirty(struct folio *folio);
 bool set_page_dirty(struct page *page);
-/* set_page_dirty_lock removed - unused */
-
-int get_cmdline(struct task_struct *task, char *buffer, int buflen);
 
 extern unsigned long move_page_tables(struct vm_area_struct *vma,
 		unsigned long old_addr, struct vm_area_struct *new_vma,

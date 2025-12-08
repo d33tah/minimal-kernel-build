@@ -173,9 +173,6 @@ void __vma_unlink_list(struct mm_struct *mm, struct vm_area_struct *vma)
 		next->vm_prev = prev;
 }
 
-/* Stub: vma_is_stack_for_current not used in minimal kernel */
-int vma_is_stack_for_current(struct vm_area_struct *vma) { return 0; }
-
 void vma_set_file(struct vm_area_struct *vma, struct file *file)
 {
 	 
@@ -397,25 +394,12 @@ int folio_mapcount(struct folio *folio)
 	return ret;
 }
 
-/* Stub: folio_copy not used in minimal kernel */
-void folio_copy(struct folio *dst, struct folio *src)
-{
-}
-
 int sysctl_overcommit_memory __read_mostly = OVERCOMMIT_GUESS;
 int sysctl_overcommit_ratio __read_mostly = 50;
 unsigned long sysctl_overcommit_kbytes __read_mostly;
 int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
 unsigned long sysctl_user_reserve_kbytes __read_mostly = 1UL << 17;  
 unsigned long sysctl_admin_reserve_kbytes __read_mostly = 1UL << 13;  
-
-/* Stub: overcommit handlers not used in minimal kernel */
-int overcommit_ratio_handler(struct ctl_table *table, int write, void *buffer,
-		size_t *lenp, loff_t *ppos) { return 0; }
-int overcommit_policy_handler(struct ctl_table *table, int write, void *buffer,
-		size_t *lenp, loff_t *ppos) { return 0; }
-int overcommit_kbytes_handler(struct ctl_table *table, int write, void *buffer,
-		size_t *lenp, loff_t *ppos) { return 0; }
 
 unsigned long vm_commit_limit(void)
 {
@@ -432,9 +416,6 @@ unsigned long vm_commit_limit(void)
 }
 
 struct percpu_counter vm_committed_as ____cacheline_aligned_in_smp;
-
-/* Stub: vm_memory_committed not used in minimal kernel */
-unsigned long vm_memory_committed(void) { return 0; }
 
 int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
 {
@@ -471,9 +452,6 @@ error:
 
 	return -ENOMEM;
 }
-
-/* Stub: get_cmdline not used in minimal kernel */
-int get_cmdline(struct task_struct *task, char *buffer, int buflen) { return 0; }
 
 int __weak memcmp_pages(struct page *page1, struct page *page2)
 {

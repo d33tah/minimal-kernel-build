@@ -614,7 +614,7 @@ static inline unsigned long round_hint_to_min(unsigned long hint)
 	return hint;
 }
 
-/* Stub: mlock_future_check not used externally */
+/* Used internally by acct_stack_growth */
 int mlock_future_check(struct mm_struct *mm, unsigned long flags,
 		       unsigned long len)
 {
@@ -879,7 +879,7 @@ SYSCALL_DEFINE1(old_mmap, struct mmap_arg_struct __user *, arg)
 }
 #endif 
 
-/* Stubbed - not used externally */
+/* Used by vma_set_page_prot */
 int vma_wants_writenotify(struct vm_area_struct *vma, pgprot_t vm_page_prot)
 {
 	return 0;
@@ -1156,7 +1156,7 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 }
 
 
-/* Stub: find_vma_prev not used in minimal kernel */
+/* Used by generic_get_unmapped_area and generic_get_unmapped_area_topdown */
 struct vm_area_struct *
 find_vma_prev(struct mm_struct *mm, unsigned long addr,
 			struct vm_area_struct **pprev)

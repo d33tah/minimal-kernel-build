@@ -176,12 +176,6 @@ bool truncate_inode_partial_folio(struct folio *folio, loff_t start, loff_t end)
 	return true;
 }
 
-/* Stub: generic_error_remove_page not used in minimal kernel */
-int generic_error_remove_page(struct address_space *mapping, struct page *page)
-{
-	return -EINVAL;
-}
-
 static long mapping_evict_folio(struct address_space *mapping,
 		struct folio *folio)
 {
@@ -537,6 +531,3 @@ void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to)
 	unlock_page(page);
 	put_page(page);
 }
-
-/* Stub: truncate_pagecache_range not used in minimal kernel */
-void truncate_pagecache_range(struct inode *inode, loff_t lstart, loff_t lend) { }

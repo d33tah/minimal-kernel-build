@@ -807,12 +807,6 @@ phys_addr_t __init memblock_phys_alloc_range(phys_addr_t size,
 					false);
 }
 
-/* Stub: memblock_phys_alloc_try_nid not used in minimal kernel */
-phys_addr_t __init memblock_phys_alloc_try_nid(phys_addr_t size, phys_addr_t align, int nid)
-{
-	return 0;
-}
-
 static void * __init memblock_alloc_internal(
 				phys_addr_t size, phys_addr_t align,
 				phys_addr_t min_addr, phys_addr_t max_addr,
@@ -964,13 +958,6 @@ bool __init_memblock memblock_is_map_memory(phys_addr_t addr)
 	if (i == -1)
 		return false;
 	return !memblock_is_nomap(&memblock.memory.regions[i]);
-}
-
-/* Stub: memblock_search_pfn_nid not used in minimal kernel */
-int __init_memblock memblock_search_pfn_nid(unsigned long pfn,
-			 unsigned long *start_pfn, unsigned long *end_pfn)
-{
-	return -1;
 }
 
 bool __init_memblock memblock_is_region_memory(phys_addr_t base, phys_addr_t size)
@@ -1140,12 +1127,7 @@ static unsigned long __init free_low_memory_core_early(void)
 
 /* reset_managed_pages_done removed - unused */
 
-/* Stub: reset_node_managed_pages not used in minimal kernel */
-void reset_node_managed_pages(pg_data_t *pgdat)
-{
-}
-
-/* Stub: reset_all_zones_managed_pages not used in minimal kernel */
+/* Used internally by memblock_free_all */
 void __init reset_all_zones_managed_pages(void)
 {
 }

@@ -350,16 +350,6 @@ void page_unlock_anon_vma_read(struct anon_vma *anon_vma)
 	anon_vma_unlock_read(anon_vma);
 }
 
-/* Stub: try_to_unmap_flush not used externally */
-void try_to_unmap_flush(void)
-{
-}
-
-/* Stub: try_to_unmap_flush_dirty not used externally */
-void try_to_unmap_flush_dirty(void)
-{
-}
-
 /* set_tlb_ubc_flush_pending, should_defer_flush removed - unused */
 #define TLB_FLUSH_BATCH_FLUSHED_SHIFT	16
 #define TLB_FLUSH_BATCH_PENDING_MASK			\
@@ -434,23 +424,8 @@ struct folio_referenced_arg {
 	struct mem_cgroup *memcg;
 };
 
-/* Stubbed: folio_referenced not used externally */
-int folio_referenced(struct folio *folio, int is_locked,
-		     struct mem_cgroup *memcg, unsigned long *vm_flags)
-{
-	*vm_flags = 0;
-	return 0;
-}
-
-/* Stubbed: folio_mkclean not used externally */
+/* Stubbed: folio_mkclean used by truncate.c */
 int folio_mkclean(struct folio *folio) { return 0; }
-
-/* Stubbed: pfn_mkclean_range not used externally */
-int pfn_mkclean_range(unsigned long pfn, unsigned long nr_pages, pgoff_t pgoff,
-		      struct vm_area_struct *vma) { return 0; }
-
-/* Stub: page_move_anon_rmap not used in minimal kernel */
-void page_move_anon_rmap(struct page *page, struct vm_area_struct *vma) { }
 
 static void __page_set_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, int exclusive)
@@ -690,11 +665,6 @@ out:
 	munlock_vma_page(page, vma, compound);
 }
 
-/* Stub: try_to_unmap not used externally */
-void try_to_unmap(struct folio *folio, enum ttu_flags flags)
-{
-}
-
 void try_to_migrate(struct folio *folio, enum ttu_flags flags)
 {
 	/* Stubbed: page migration not needed for minimal kernel */
@@ -830,9 +800,4 @@ void rmap_walk(struct folio *folio, struct rmap_walk_control *rwc)
 		rmap_walk_anon(folio, rwc, false);
 	else
 		rmap_walk_file(folio, rwc, false);
-}
-
-/* Stub: rmap_walk_locked not used externally */
-void rmap_walk_locked(struct folio *folio, struct rmap_walk_control *rwc)
-{
 }

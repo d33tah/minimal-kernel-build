@@ -113,7 +113,6 @@ typedef int __bitwise rmap_t;
 
 #define RMAP_COMPOUND		((__force rmap_t)BIT(1))
 
-void page_move_anon_rmap(struct page *, struct vm_area_struct *);
 void page_add_anon_rmap(struct page *, struct vm_area_struct *,
 		unsigned long address, rmap_t flags);
 void page_add_new_anon_rmap(struct page *, struct vm_area_struct *,
@@ -159,11 +158,7 @@ dup:
 	return 0;
 }
 
-int folio_referenced(struct folio *, int is_locked,
-			struct mem_cgroup *memcg, unsigned long *vm_flags);
-
 void try_to_migrate(struct folio *folio, enum ttu_flags flags);
-void try_to_unmap(struct folio *, enum ttu_flags flags);
 
 int make_device_exclusive_range(struct mm_struct *mm, unsigned long start,
 				unsigned long end, struct page **pages,
@@ -199,9 +194,6 @@ unsigned long page_address_in_vma(struct page *, struct vm_area_struct *);
 
 int folio_mkclean(struct folio *);
 
-int pfn_mkclean_range(unsigned long pfn, unsigned long nr_pages, pgoff_t pgoff,
-		      struct vm_area_struct *vma);
-
 void remove_migration_ptes(struct folio *src, struct folio *dst, bool locked);
 
 int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma);
@@ -220,7 +212,6 @@ struct rmap_walk_control {
 };
 
 void rmap_walk(struct folio *folio, struct rmap_walk_control *rwc);
-void rmap_walk_locked(struct folio *folio, struct rmap_walk_control *rwc);
 
 struct anon_vma *folio_lock_anon_vma_read(struct folio *folio,
 					  struct rmap_walk_control *rwc);

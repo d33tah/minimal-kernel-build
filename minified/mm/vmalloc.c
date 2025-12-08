@@ -481,21 +481,9 @@ static int vmap_pages_range(unsigned long addr, unsigned long end,
 	return err;
 }
 
-/* Stubbed - not used externally */
-int is_vmalloc_or_module_addr(const void *x)
-{
-	return 0;
-}
-
 struct page *vmalloc_to_page(const void *vmalloc_addr)
 {
 	return NULL;
-}
-
-/* Stubbed - not used externally */
-unsigned long vmalloc_to_pfn(const void *vmalloc_addr)
-{
-	return 0;
 }
 
 static DEFINE_SPINLOCK(vmap_area_lock);
@@ -541,12 +529,6 @@ static void drain_vmap_area_work(struct work_struct *work);
 static DECLARE_WORK(drain_vmap_work, drain_vmap_area_work);
 
 static atomic_long_t nr_vmalloc_pages;
-
-/* Stubbed - not used externally */
-unsigned long vmalloc_nr_pages(void)
-{
-	return 0;
-}
 
 static struct vmap_area *__find_vmap_area(unsigned long addr)
 {
@@ -1240,22 +1222,6 @@ static void _vm_unmap_aliases(unsigned long start, unsigned long end, int flush)
 	mutex_unlock(&vmap_purge_lock);
 }
 
-/* Stubbed - not used externally */
-void vm_unmap_aliases(void)
-{
-}
-
-/* Stubbed - not used externally */
-void vm_unmap_ram(const void *mem, unsigned int count)
-{
-}
-
-/* Stubbed - not used externally */
-void *vm_map_ram(struct page **pages, unsigned int count, int node)
-{
-	return NULL;
-}
-
 static struct vm_struct *vmlist __initdata;
 
 static inline unsigned int vm_area_page_order(struct vm_struct *vm)
@@ -1526,9 +1492,9 @@ static void vm_remove_mappings(struct vm_struct *area, int deallocate_pages)
 	if (!flush_reset)
 		return;
 
-	
+
 	if (!deallocate_pages) {
-		vm_unmap_aliases();
+		_vm_unmap_aliases(ULONG_MAX, 0, 1);
 		return;
 	}
 

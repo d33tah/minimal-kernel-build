@@ -108,12 +108,7 @@ static inline pgprot_t arch_vmap_pgprot_tagged(pgprot_t prot)
 }
 #endif
 
-extern void vm_unmap_ram(const void *mem, unsigned int count);
-extern void *vm_map_ram(struct page **pages, unsigned int count, int node);
-extern void vm_unmap_aliases(void);
-
 extern void __init vmalloc_init(void);
-extern unsigned long vmalloc_nr_pages(void);
 
 extern void *vmalloc(unsigned long size) __alloc_size(1);
 extern void *vzalloc(unsigned long size) __alloc_size(1);

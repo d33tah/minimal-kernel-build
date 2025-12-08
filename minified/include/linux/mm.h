@@ -535,14 +535,12 @@ int region_intersects(resource_size_t offset, size_t size, unsigned long flags,
 		      unsigned long desc);
 
 struct page *vmalloc_to_page(const void *addr);
-unsigned long vmalloc_to_pfn(const void *addr);
 
 #ifndef is_ioremap_addr
 #define is_ioremap_addr(x) is_vmalloc_addr(x)
 #endif
 
 extern bool is_vmalloc_addr(const void *x);
-extern int is_vmalloc_or_module_addr(const void *x);
 
 static inline int folio_entire_mapcount(struct folio *folio)
 {

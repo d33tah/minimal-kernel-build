@@ -5,28 +5,11 @@
 #include <linux/types.h>
 #include <linux/tty_flags.h>
 
-/* From uapi/linux/serial.h - inlined */
-#define ASYNC_CLOSING_WAIT_INF	0
+/* From uapi/linux/serial.h - reduced to only used values */
 #define ASYNC_CLOSING_WAIT_NONE	65535
 
-struct serial_icounter_struct {
-	int cts, dsr, rng, dcd;
-	int rx, tx;
-	int frame, overrun, parity, brk;
-	int buf_overrun;
-	int reserved[9];
-};
-
-#define UART_LCR_WLEN(x)	((x) - 5)
-
-
-struct async_icount {
-	__u32	cts, dsr, rng, dcd, tx, rx;
-	__u32	frame, parity, overrun, brk;
-	__u32	buf_overrun;
-};
-
-#define SERIAL_XMIT_SIZE PAGE_SIZE
+/* serial_icounter_struct, UART_LCR_WLEN, async_icount,
+   ASYNC_CLOSING_WAIT_INF, SERIAL_XMIT_SIZE removed - unused */
 
 #include <linux/compiler.h>
 

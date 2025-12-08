@@ -83,14 +83,7 @@ struct file *anon_inode_getfile(const char *name,
 	return __anon_inode_getfile(name, fops, priv, flags);
 }
 
-/* Stubbed: anon_inode_getfile_secure not used */
-struct file *anon_inode_getfile_secure(const char *name,
-				       const struct file_operations *fops,
-				       void *priv, int flags,
-				       const struct inode *context_inode)
-{
-	return ERR_PTR(-ENOSYS);
-}
+/* anon_inode_getfile_secure removed - unused */
 
 int anon_inode_getfd(const char *name, const struct file_operations *fops,
 		     void *priv, int flags)
@@ -113,13 +106,7 @@ int anon_inode_getfd(const char *name, const struct file_operations *fops,
 	return fd;
 }
 
-/* Stubbed: anon_inode_getfd_secure not used */
-int anon_inode_getfd_secure(const char *name, const struct file_operations *fops,
-			    void *priv, int flags,
-			    const struct inode *context_inode)
-{
-	return -ENOSYS;
-}
+/* anon_inode_getfd_secure removed - unused */
 
 static int __init anon_inode_init(void)
 {

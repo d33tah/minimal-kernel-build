@@ -140,7 +140,7 @@ kill_priv:
 	return 0;
 }
 
-/* Stub: inode_newsize_ok not used in minimal kernel */
+/* inode_newsize_ok used internally by setattr_prepare */
 int inode_newsize_ok(const struct inode *inode, loff_t offset) { return 0; }
 
 void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
@@ -168,7 +168,7 @@ void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 	}
 }
 
-/* Stub: may_setattr not used in minimal kernel */
+/* may_setattr used internally by notify_change */
 int may_setattr(struct user_namespace *mnt_userns, struct inode *inode,
 		unsigned int ia_valid) { return 0; }
 

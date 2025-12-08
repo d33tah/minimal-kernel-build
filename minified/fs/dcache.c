@@ -565,23 +565,7 @@ repeat:
 	return ret;
 }
 
-/* Stub: d_find_any_alias not used externally */
-struct dentry *d_find_any_alias(struct inode *inode)
-{
-	return NULL;
-}
-
-/* Stub: d_find_alias not used externally */
-struct dentry *d_find_alias(struct inode *inode)
-{
-	return NULL;
-}
-
-/* Stub: not used in minimal kernel */
-struct dentry *d_find_alias_rcu(struct inode *inode) { return NULL; }
-
-/* Stub: not used in minimal kernel */
-void d_prune_aliases(struct inode *inode) { }
+/* d_find_any_alias, d_find_alias, d_find_alias_rcu, d_prune_aliases removed - unused */
 
 void shrink_dentry_list(struct list_head *list)
 {

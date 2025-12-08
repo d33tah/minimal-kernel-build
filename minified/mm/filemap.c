@@ -368,12 +368,7 @@ int filemap_write_and_wait_range(struct address_space *mapping,
 	return err;
 }
 
-void __filemap_set_wb_err(struct address_space *mapping, int err)
-{
-	errseq_set(&mapping->wb_err, err);
-
-
-}
+/* __filemap_set_wb_err removed - unused */
 
 int file_check_and_advance_wb_err(struct file *file)
 {
@@ -534,17 +529,7 @@ int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 	return ret;
 }
 
-/* Stubbed - not used externally */
-void filemap_invalidate_lock_two(struct address_space *mapping1,
-				 struct address_space *mapping2)
-{
-}
-
-/* Stubbed - not used externally */
-void filemap_invalidate_unlock_two(struct address_space *mapping1,
-				   struct address_space *mapping2)
-{
-}
+/* filemap_invalidate_lock_two, filemap_invalidate_unlock_two removed - unused */
 
 #define PAGE_WAIT_TABLE_BITS 8
 #define PAGE_WAIT_TABLE_SIZE (1 << PAGE_WAIT_TABLE_BITS)

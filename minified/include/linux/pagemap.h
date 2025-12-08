@@ -38,7 +38,7 @@ int __filemap_fdatawrite_range(struct address_space *mapping,
 int filemap_fdatawrite_range(struct address_space *mapping,
 		loff_t start, loff_t end);
 int filemap_check_errors(struct address_space *mapping);
-void __filemap_set_wb_err(struct address_space *mapping, int err);
+/* __filemap_set_wb_err removed - unused */
 int filemap_fdatawrite_wbc(struct address_space *mapping,
 			   struct writeback_control *wbc);
 

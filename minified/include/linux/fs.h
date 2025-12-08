@@ -581,10 +581,7 @@ static inline void filemap_invalidate_unlock_shared(
 	up_read(&mapping->invalidate_lock);
 }
 
-void filemap_invalidate_lock_two(struct address_space *mapping1,
-				 struct address_space *mapping2);
-void filemap_invalidate_unlock_two(struct address_space *mapping1,
-				   struct address_space *mapping2);
+/* filemap_invalidate_lock_two, filemap_invalidate_unlock_two removed - unused */
 
 static inline loff_t i_size_read(const struct inode *inode)
 {

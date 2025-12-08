@@ -1256,31 +1256,6 @@ static inline void free_large_kmalloc(struct folio *folio, void *object)
 	__free_pages(folio_page(folio, 0), order);
 }
 
-/* Stub: bulk free not used in minimal kernel */
-void kmem_cache_free_bulk(struct kmem_cache *s, size_t size, void **p)
-{
-	size_t i;
-	for (i = 0; i < size; i++)
-		if (p[i])
-			kmem_cache_free(s, p[i]);
-}
-
-int kmem_cache_alloc_bulk(struct kmem_cache *s, gfp_t flags, size_t size,
-			  void **p)
-{
-	/* Stub: bulk allocation not used in minimal kernel */
-	size_t i;
-	for (i = 0; i < size; i++) {
-		p[i] = kmem_cache_alloc(s, flags);
-		if (!p[i]) {
-			while (i--)
-				kmem_cache_free(s, p[i]);
-			return 0;
-		}
-	}
-	return size;
-}
-
 static unsigned int slub_min_order;
 static unsigned int slub_max_order = PAGE_ALLOC_COSTLY_ORDER;
 static unsigned int slub_min_objects;
@@ -1585,12 +1560,6 @@ static void free_partial(struct kmem_cache *s, struct kmem_cache_node *n)
 		discard_slab(s, slab);
 }
 
-/* STUB: __kmem_cache_empty not used externally */
-bool __kmem_cache_empty(struct kmem_cache *s)
-{
-	return true;
-}
-
 int __kmem_cache_shutdown(struct kmem_cache *s)
 {
 	int node;
@@ -1683,12 +1652,6 @@ void kfree(const void *x)
 	}
 	slab = folio_slab(folio);
 	slab_free(slab->slab_cache, slab, object, NULL, 1, _RET_IP_);
-}
-
-/* Stubbed - not used externally */
-int __kmem_cache_shrink(struct kmem_cache *s)
-{
-	return 0;
 }
 
 /* Memory hotplug callbacks removed - not needed for minimal kernel

@@ -945,21 +945,7 @@ void iov_iter_bvec(struct iov_iter *i, unsigned int direction,
 {
 }
 
-/* Stubbed iov_iter init functions - not used externally */
-void iov_iter_pipe(struct iov_iter *i, unsigned int direction,
-			struct pipe_inode_info *pipe,
-			size_t count)
-{
-}
-
-void iov_iter_xarray(struct iov_iter *i, unsigned int direction,
-		     struct xarray *xarray, loff_t start, size_t count)
-{
-}
-
-void iov_iter_discard(struct iov_iter *i, unsigned int direction, size_t count)
-{
-}
+/* iov_iter_pipe, iov_iter_xarray, iov_iter_discard removed - unused */
 
 /* Stubbed - not used externally */
 unsigned long iov_iter_alignment(const struct iov_iter *i) { return 0; }

@@ -186,11 +186,7 @@ void iov_iter_kvec(struct iov_iter *i, unsigned int direction, const struct kvec
 			unsigned long nr_segs, size_t count);
 void iov_iter_bvec(struct iov_iter *i, unsigned int direction, const struct bio_vec *bvec,
 			unsigned long nr_segs, size_t count);
-void iov_iter_pipe(struct iov_iter *i, unsigned int direction, struct pipe_inode_info *pipe,
-			size_t count);
-void iov_iter_discard(struct iov_iter *i, unsigned int direction, size_t count);
-void iov_iter_xarray(struct iov_iter *i, unsigned int direction, struct xarray *xarray,
-		     loff_t start, size_t count);
+/* iov_iter_pipe, iov_iter_discard, iov_iter_xarray removed - unused */
 ssize_t iov_iter_get_pages(struct iov_iter *i, struct page **pages,
 			size_t maxsize, unsigned maxpages, size_t *start);
 ssize_t iov_iter_get_pages_alloc(struct iov_iter *i, struct page ***pages,

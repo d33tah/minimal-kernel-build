@@ -1,29 +1,17 @@
-
+/* --- 2025-12-08 03:55 --- Minimal key.h with reduced includes */
 #ifndef _LINUX_KEY_H
 #define _LINUX_KEY_H
 
 #include <linux/types.h>
-#include <linux/list.h>
-#include <linux/rbtree.h>
-#include <linux/rcupdate.h>
-#include <linux/sysctl.h>
-#include <linux/rwsem.h>
-#include <linux/atomic.h>
-
-#include <linux/refcount.h>
-#include <linux/time64.h>
 
 #ifdef __KERNEL__
-#include <linux/uidgid.h>
-
 typedef int32_t key_serial_t;
-
 typedef uint32_t key_perm_t;
 
 struct key;
 struct net;
 
-
+/* All key functions are stubs - CONFIG_KEYS is disabled */
 #define key_validate(k)			0
 #define key_serial(k)			0
 #define key_get(k) 			({ NULL; })
@@ -40,5 +28,5 @@ struct net;
 #define key_free_user_ns(ns)		do { } while(0)
 #define key_remove_domain(d)		do { } while(0)
 
-#endif  
+#endif
 #endif  

@@ -334,10 +334,8 @@ static inline __alloc_size(1, 2) void *kvmalloc_array(size_t n, size_t size, gfp
 	return kvmalloc(bytes, flags);
 }
 
-extern void *kvrealloc(const void *p, size_t oldsize, size_t newsize, gfp_t flags)
-		      __alloc_size(3);
+/* kvrealloc, kvfree_sensitive removed - unused */
 extern void kvfree(const void *addr);
-extern void kvfree_sensitive(const void *addr, size_t len);
 
 unsigned int kmem_cache_size(struct kmem_cache *s);
 void __init kmem_cache_init_late(void);

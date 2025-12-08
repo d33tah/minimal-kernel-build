@@ -324,26 +324,9 @@ void kvfree(const void *addr)
 		kfree(addr);
 }
 
-/* Stub: kvfree_sensitive not used in minimal kernel */
-void kvfree_sensitive(const void *addr, size_t len) { }
+/* kvfree_sensitive, kvrealloc removed - unused */
 
-/* Stub: kvrealloc not used in minimal kernel */
-void *kvrealloc(const void *p, size_t oldsize, size_t newsize, gfp_t flags)
-{
-	return NULL;
-}
-
-/* Stub: __vmalloc_array not used in minimal kernel */
-void *__vmalloc_array(size_t n, size_t size, gfp_t flags) { return NULL; }
-
-/* Stub: vmalloc_array not used in minimal kernel */
-void *vmalloc_array(size_t n, size_t size) { return NULL; }
-
-/* Stub: __vcalloc not used in minimal kernel */
-void *__vcalloc(size_t n, size_t size, gfp_t flags) { return NULL; }
-
-/* Stub: vcalloc not used in minimal kernel */
-void *vcalloc(size_t n, size_t size) { return NULL; }
+/* __vmalloc_array, vmalloc_array, __vcalloc, vcalloc removed - unused */
 
 void *page_rmapping(struct page *page)
 {

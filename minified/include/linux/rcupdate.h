@@ -210,12 +210,7 @@ do {									      \
 		smp_store_release(&p, RCU_INITIALIZER((typeof(p))_r_a_p__v)); \
 } while (0)
 
-#define rcu_replace_pointer(rcu_ptr, ptr, c)				\
-({									\
-	typeof(ptr) __tmp = rcu_dereference_protected((rcu_ptr), (c));	\
-	rcu_assign_pointer((rcu_ptr), (ptr));				\
-	__tmp;								\
-})
+/* rcu_replace_pointer removed - unused */
 
 #define rcu_access_pointer(p) __rcu_access_pointer((p), __UNIQUE_ID(rcu), __rcu)
 
@@ -223,9 +218,7 @@ do {									      \
 	__rcu_dereference_check((p), __UNIQUE_ID(rcu), \
 				(c) || rcu_read_lock_held(), __rcu)
 
-#define rcu_dereference_bh_check(p, c) \
-	__rcu_dereference_check((p), __UNIQUE_ID(rcu), \
-				(c) || rcu_read_lock_bh_held(), __rcu)
+/* rcu_dereference_bh_check removed - unused */
 
 #define rcu_dereference_sched_check(p, c) \
 	__rcu_dereference_check((p), __UNIQUE_ID(rcu), \
@@ -241,7 +234,7 @@ do {									      \
 
 #define rcu_dereference(p) rcu_dereference_check(p, 0)
 
-#define rcu_dereference_bh(p) rcu_dereference_bh_check(p, 0)
+/* rcu_dereference_bh removed - unused */
 
 #define rcu_dereference_sched(p) rcu_dereference_sched_check(p, 0)
 

@@ -916,31 +916,7 @@ int __xa_alloc_cyclic(struct xarray *xa, u32 *id, void *entry,
 	return -EINVAL;
 }
 
-/* Stubbed - not used externally */
-void __xa_set_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
-{
-}
-
-/* Stubbed - not used externally */
-void __xa_clear_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
-{
-}
-
-/* Stubbed - not used externally */
-bool xa_get_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
-{
-	return false;
-}
-
-/* Stubbed - not used externally */
-void xa_set_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
-{
-}
-
-/* Stubbed - not used externally */
-void xa_clear_mark(struct xarray *xa, unsigned long index, xa_mark_t mark)
-{
-}
+/* xa_*_mark functions removed - unused */
 
 /* Stubbed - not used externally */
 void *xa_find(struct xarray *xa, unsigned long *indexp,

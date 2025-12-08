@@ -18,14 +18,6 @@ struct dma_devres {
 	unsigned long	attrs;
 };
 
-/* Stubbed: dmam_free_coherent not used externally */
-void dmam_free_coherent(struct device *dev, size_t size, void *vaddr,
-			dma_addr_t dma_handle) { }
-
-/* Stubbed: dmam_alloc_attrs not used externally */
-void *dmam_alloc_attrs(struct device *dev, size_t size, dma_addr_t *dma_handle,
-		gfp_t gfp, unsigned long attrs) { return NULL; }
-
 static bool dma_go_direct(struct device *dev, dma_addr_t mask,
 		const struct dma_map_ops *ops)
 {
@@ -147,15 +139,6 @@ void dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sg,
 		ops->unmap_sg(dev, sg, nents, dir, attrs);
 }
 
-/* Stubbed: dma_map_resource not used externally */
-dma_addr_t dma_map_resource(struct device *dev, phys_addr_t phys_addr,
-		size_t size, enum dma_data_direction dir, unsigned long attrs)
-{ return DMA_MAPPING_ERROR; }
-
-/* Stubbed: dma_unmap_resource not used externally */
-void dma_unmap_resource(struct device *dev, dma_addr_t addr, size_t size,
-		enum dma_data_direction dir, unsigned long attrs) { }
-
 void dma_sync_single_for_cpu(struct device *dev, dma_addr_t addr, size_t size,
 		enum dma_data_direction dir)
 {
@@ -208,22 +191,9 @@ void dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
 	debug_dma_sync_sg_for_device(dev, sg, nelems, dir);
 }
 
-/* Stubbed: dma_get_sgtable_attrs not used externally */
-int dma_get_sgtable_attrs(struct device *dev, struct sg_table *sgt,
-		void *cpu_addr, dma_addr_t dma_addr, size_t size,
-		unsigned long attrs) { return -ENXIO; }
-
-/* Stubbed: dma_pgprot not used externally */
+/* Used by direct.c */
 pgprot_t dma_pgprot(struct device *dev, pgprot_t prot, unsigned long attrs)
 { return prot; }
-
-/* Stubbed: dma_can_mmap not used externally */
-bool dma_can_mmap(struct device *dev) { return false; }
-
-/* Stubbed: dma_mmap_attrs not used externally */
-int dma_mmap_attrs(struct device *dev, struct vm_area_struct *vma,
-		void *cpu_addr, dma_addr_t dma_addr, size_t size,
-		unsigned long attrs) { return -ENXIO; }
 
 u64 dma_get_required_mask(struct device *dev)
 {
@@ -282,39 +252,6 @@ void dma_free_attrs(struct device *dev, size_t size, void *cpu_addr,
 	else if (ops->free)
 		ops->free(dev, size, cpu_addr, dma_handle, attrs);
 }
-
-/* Stubbed: dma_alloc_pages not used externally */
-struct page *dma_alloc_pages(struct device *dev, size_t size,
-		dma_addr_t *dma_handle, enum dma_data_direction dir, gfp_t gfp)
-{ return NULL; }
-
-/* Stubbed: dma_free_pages not used externally */
-void dma_free_pages(struct device *dev, size_t size, struct page *page,
-		dma_addr_t dma_handle, enum dma_data_direction dir) { }
-
-/* Stubbed: dma_mmap_pages not used externally */
-int dma_mmap_pages(struct device *dev, struct vm_area_struct *vma,
-		size_t size, struct page *page) { return -ENXIO; }
-
-/* Stubbed: dma_alloc_noncontiguous not used externally */
-struct sg_table *dma_alloc_noncontiguous(struct device *dev, size_t size,
-		enum dma_data_direction dir, gfp_t gfp, unsigned long attrs)
-{ return NULL; }
-
-/* Stubbed: dma_free_noncontiguous not used externally */
-void dma_free_noncontiguous(struct device *dev, size_t size,
-		struct sg_table *sgt, enum dma_data_direction dir) { }
-
-/* Stubbed: dma_vmap_noncontiguous not used externally */
-void *dma_vmap_noncontiguous(struct device *dev, size_t size,
-		struct sg_table *sgt) { return NULL; }
-
-/* Stubbed: dma_vunmap_noncontiguous not used externally */
-void dma_vunmap_noncontiguous(struct device *dev, void *vaddr) { }
-
-/* Stubbed: dma_mmap_noncontiguous not used externally */
-int dma_mmap_noncontiguous(struct device *dev, struct vm_area_struct *vma,
-		size_t size, struct sg_table *sgt) { return -ENXIO; }
 
 int dma_supported(struct device *dev, u64 mask)
 {

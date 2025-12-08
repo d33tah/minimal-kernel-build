@@ -168,87 +168,52 @@ typedef struct siginfo {
 #define SI_FROMUSER(siptr)	((siptr)->si_code <= 0)
 #define SI_FROMKERNEL(siptr)	((siptr)->si_code > 0)
 
-#define ILL_ILLOPC	1	 
-#define ILL_ILLOPN	2	 
-#define ILL_ILLADR	3	 
-#define ILL_ILLTRP	4	 
-#define ILL_PRVOPC	5	 
-#define ILL_PRVREG	6	 
-#define ILL_COPROC	7	 
-#define ILL_BADSTK	8	 
-#define ILL_BADIADDR	9	 
-#define __ILL_BREAK	10	 
-#define __ILL_BNDMOD	11	 
+/* Only keep signal sub-codes actually used */
+#define ILL_ILLOPN	2
+#define ILL_BADSTK	8
 #define NSIGILL		11
 
-#define FPE_INTDIV	1	 
-#define FPE_INTOVF	2	 
-#define FPE_FLTDIV	3	 
-#define FPE_FLTOVF	4	 
-#define FPE_FLTUND	5	 
-#define FPE_FLTRES	6	 
-#define FPE_FLTINV	7	 
-#define FPE_FLTSUB	8	 
-#define __FPE_DECOVF	9	 
-#define __FPE_DECDIV	10	 
-#define __FPE_DECERR	11	 
-#define __FPE_INVASC	12	 
-#define __FPE_INVDEC	13	 
-#define FPE_FLTUNK	14	 
-#define FPE_CONDTRAP	15	 
+/* FPE codes used by x86 FPU */
+#define FPE_INTDIV	1
+#define FPE_FLTDIV	3
+#define FPE_FLTOVF	4
+#define FPE_FLTUND	5
+#define FPE_FLTRES	6
+#define FPE_FLTINV	7
 #define NSIGFPE		15
 
-#define SEGV_MAPERR	1	 
-#define SEGV_ACCERR	2	 
-#define SEGV_BNDERR	3	 
-#ifdef __ia64__
-# define __SEGV_PSTKOVF	4	 
-#else
-# define SEGV_PKUERR	4	 
-#endif
-#define SEGV_ACCADI	5	 
-#define SEGV_ADIDERR	6	 
-#define SEGV_ADIPERR	7	 
-#define SEGV_MTEAERR	8	 
-#define SEGV_MTESERR	9	 
+/* SEGV codes used by x86 fault handler */
+#define SEGV_MAPERR	1
+#define SEGV_ACCERR	2
+#define SEGV_PKUERR	4
 #define NSIGSEGV	9
 
-#define BUS_ADRALN	1	 
-#define BUS_ADRERR	2	 
-#define BUS_OBJERR	3	 
-#define BUS_MCEERR_AR	4
-#define BUS_MCEERR_AO	5
+/* BUS codes used by x86 */
+#define BUS_ADRALN	1
+#define BUS_ADRERR	2
 #define NSIGBUS		5
 
-#define TRAP_BRKPT	1	 
-#define TRAP_TRACE	2	 
-#define TRAP_BRANCH     3	 
-#define TRAP_HWBKPT     4	 
-#define TRAP_UNK	5	 
-#define TRAP_PERF	6	 
+/* TRAP codes used by x86 */
+#define TRAP_BRKPT	1
+#define TRAP_TRACE	2
+#define TRAP_HWBKPT     4
 #define NSIGTRAP	6
 
-
-#define TRAP_PERF_FLAG_ASYNC (1u << 0)
-
-#define CLD_EXITED	1	 
-#define CLD_KILLED	2	 
-#define CLD_DUMPED	3	 
-#define CLD_TRAPPED	4	 
-#define CLD_STOPPED	5	 
-#define CLD_CONTINUED	6	 
+/* CLD codes used by kernel/exit.c, kernel/signal.c */
+#define CLD_EXITED	1
+#define CLD_KILLED	2
+#define CLD_DUMPED	3
+#define CLD_TRAPPED	4
+#define CLD_STOPPED	5
+#define CLD_CONTINUED	6
 #define NSIGCHLD	6
 
-#define POLL_IN		1	 
-#define POLL_OUT	2	 
-#define POLL_MSG	3	 
-#define POLL_ERR	4	 
-#define POLL_PRI	5	 
-#define POLL_HUP	6	 
+/* POLL codes */
+#define POLL_OUT	2
 #define NSIGPOLL	6
 
-#define SYS_SECCOMP	1	 
-#define SYS_USER_DISPATCH 2	 
+/* SYS codes */
+#define SYS_USER_DISPATCH 2
 #define NSIGSYS		2
 
 /* EMT_TAGOVF, NSIGEMT - unused */

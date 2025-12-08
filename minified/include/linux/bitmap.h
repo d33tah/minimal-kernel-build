@@ -214,10 +214,7 @@ unsigned long find_next_bit_le(const void *addr, unsigned
 	     (bit) < (size);					\
 	     (bit) = find_next_bit((addr), (size), (bit) + 1))
 
-#define for_each_set_bit_from(bit, addr, size) \
-	for ((bit) = find_next_bit((addr), (size), (bit));	\
-	     (bit) < (size);					\
-	     (bit) = find_next_bit((addr), (size), (bit) + 1))
+/* for_each_set_bit_from removed - unused */
 
 #define for_each_clear_bit_from(bit, addr, size) \
 	for ((bit) = find_next_zero_bit((addr), (size), (bit));	\
@@ -231,12 +228,7 @@ unsigned long find_next_bit_le(const void *addr, unsigned
 	     (b) = find_next_bit((addr), (size), (e) + 1),	\
 	     (e) = find_next_zero_bit((addr), (size), (b) + 1))
 
-#define for_each_set_bitrange_from(b, e, addr, size)		\
-	for ((b) = find_next_bit((addr), (size), (b)),		\
-	     (e) = find_next_zero_bit((addr), (size), (b) + 1);	\
-	     (b) < (size);					\
-	     (b) = find_next_bit((addr), (size), (e) + 1),	\
-	     (e) = find_next_zero_bit((addr), (size), (b) + 1))
+/* for_each_set_bitrange_from removed - unused */
 
 #define for_each_clear_bitrange(b, e, addr, size)		\
 	for ((b) = find_next_zero_bit((addr), (size), 0),	\
@@ -252,10 +244,7 @@ unsigned long find_next_bit_le(const void *addr, unsigned
 	     (b) = find_next_zero_bit((addr), (size), (e) + 1),	\
 	     (e) = find_next_bit((addr), (size), (b) + 1))
 
-#define for_each_set_clump8(start, clump, bits, size) \
-	for ((start) = find_first_clump8(&(clump), (bits), (size)); \
-	     (start) < (size); \
-	     (start) = find_next_clump8(&(clump), (bits), (size), (start) + 8))
+/* for_each_set_clump8 removed - unused */
 /* End of inlined find.h content */
 #include <linux/string.h>
 #include <linux/types.h>

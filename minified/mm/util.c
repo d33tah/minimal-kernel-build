@@ -114,11 +114,7 @@ void *memdup_user(const void __user *src, size_t len)
 	return p;
 }
 
-/* Stub: vmemdup_user not used in minimal kernel */
-void *vmemdup_user(const void __user *src, size_t len)
-{
-	return ERR_PTR(-ENOMEM);
-}
+/* vmemdup_user removed - unused */
 
 char *strndup_user(const char __user *s, long n)
 {
@@ -143,11 +139,7 @@ char *strndup_user(const char __user *s, long n)
 	return p;
 }
 
-/* Stub: memdup_user_nul not used in minimal kernel */
-void *memdup_user_nul(const void __user *src, size_t len)
-{
-	return ERR_PTR(-ENOMEM);
-}
+/* memdup_user_nul removed - unused */
 
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct vm_area_struct *prev)

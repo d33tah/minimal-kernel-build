@@ -1010,25 +1010,8 @@ long get_user_pages_remote(struct mm_struct *mm,
 			    unsigned long start, unsigned long nr_pages,
 			    unsigned int gup_flags, struct page **pages,
 			    struct vm_area_struct **vmas, int *locked);
-long pin_user_pages_remote(struct mm_struct *mm,
-			   unsigned long start, unsigned long nr_pages,
-			   unsigned int gup_flags, struct page **pages,
-			   struct vm_area_struct **vmas, int *locked);
-long get_user_pages(unsigned long start, unsigned long nr_pages,
-			    unsigned int gup_flags, struct page **pages,
-			    struct vm_area_struct **vmas);
-long pin_user_pages(unsigned long start, unsigned long nr_pages,
-		    unsigned int gup_flags, struct page **pages,
-		    struct vm_area_struct **vmas);
-long get_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
-		    struct page **pages, unsigned int gup_flags);
-long pin_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
-		    struct page **pages, unsigned int gup_flags);
-
-int get_user_pages_fast(unsigned long start, int nr_pages,
-			unsigned int gup_flags, struct page **pages);
-int pin_user_pages_fast(unsigned long start, int nr_pages,
-			unsigned int gup_flags, struct page **pages);
+/* pin_user_pages_remote, get_user_pages, pin_user_pages, get_user_pages_unlocked,
+   pin_user_pages_unlocked, get_user_pages_fast, pin_user_pages_fast removed - unused */
 
 int account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc);
 int __account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc,
@@ -1060,10 +1043,7 @@ extern int mprotect_fixup(struct mmu_gather *tlb, struct vm_area_struct *vma,
 			  struct vm_area_struct **pprev, unsigned long start,
 			  unsigned long end, unsigned long newflags);
 
-int get_user_pages_fast_only(unsigned long start, int nr_pages,
-			     unsigned int gup_flags, struct page **pages);
-int pin_user_pages_fast_only(unsigned long start, int nr_pages,
-			     unsigned int gup_flags, struct page **pages);
+/* get_user_pages_fast_only, pin_user_pages_fast_only removed - unused */
 
 static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
 {

@@ -1171,62 +1171,6 @@ long get_user_pages(unsigned long start, unsigned long nr_pages,
 	return -EINVAL;
 }
 
-/* Stubbed - not used externally */
-long get_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
-			     struct page **pages, unsigned int gup_flags)
-{
-	return -EINVAL;
-}
-
-
-/* Stubbed - not used externally */
-int get_user_pages_fast_only(unsigned long start, int nr_pages,
-			     unsigned int gup_flags, struct page **pages)
-{
-	return 0;
-}
-
-/* Stubbed - not used externally */
-int get_user_pages_fast(unsigned long start, int nr_pages,
-			unsigned int gup_flags, struct page **pages)
-{
-	return -EINVAL;
-}
-
-/* Stubbed - not used externally */
-int pin_user_pages_fast(unsigned long start, int nr_pages,
-			unsigned int gup_flags, struct page **pages)
-{
-	return -EINVAL;
-}
-
-/* Stubbed - not used externally */
-int pin_user_pages_fast_only(unsigned long start, int nr_pages,
-			     unsigned int gup_flags, struct page **pages)
-{
-	return 0;
-}
-
-/* Stubbed - not used externally */
-long pin_user_pages_remote(struct mm_struct *mm,
-			   unsigned long start, unsigned long nr_pages,
-			   unsigned int gup_flags, struct page **pages,
-			   struct vm_area_struct **vmas, int *locked)
-{
-	return -EINVAL;
-}
-
-/* Stubbed - not used externally */
-long pin_user_pages(unsigned long start, unsigned long nr_pages,
-		    unsigned int gup_flags, struct page **pages,
-		    struct vm_area_struct **vmas)
-{
-	return -EINVAL;
-}
-
-/* Stubbed - not used externally */
-long pin_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
-			     struct page **pages, unsigned int gup_flags)
-{
-	return -EINVAL;
-}
+/* get_user_pages_unlocked, get_user_pages_fast_only, get_user_pages_fast,
+   pin_user_pages_fast, pin_user_pages_fast_only, pin_user_pages_remote,
+   pin_user_pages, pin_user_pages_unlocked removed - unused */

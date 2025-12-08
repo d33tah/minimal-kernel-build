@@ -832,13 +832,7 @@ out:
 	return i ? i : ret;
 }
 
-/* Stubbed - not used externally */
-int fixup_user_fault(struct mm_struct *mm,
-		     unsigned long address, unsigned int fault_flags,
-		     bool *unlocked)
-{
-	return -EFAULT;
-}
+/* fixup_user_fault removed - unused */
 
 static __always_inline long __get_user_pages_locked(struct mm_struct *mm,
 						unsigned long start,
@@ -979,9 +973,7 @@ long populate_vma_page_range(struct vm_area_struct *vma,
 	return ret;
 }
 
-/* Stub: faultin_vma_page_range not used in minimal kernel */
-long faultin_vma_page_range(struct vm_area_struct *vma, unsigned long start,
-			    unsigned long end, bool write, int *locked) { return 0; }
+/* faultin_vma_page_range removed - unused */
 
 int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 {

@@ -72,9 +72,7 @@ extern struct list_lru shadow_nodes;
 extern unsigned long totalreserve_pages;
 #define nr_free_pages() global_zone_page_state(NR_FREE_PAGES)
 
-extern void lru_note_cost(struct lruvec *lruvec, bool file,
-			  unsigned int nr_pages);
-extern void lru_note_cost_folio(struct folio *);
+/* lru_note_cost, lru_note_cost_folio removed - unused */
 extern void folio_add_lru(struct folio *);
 extern void lru_cache_add(struct page *);
 void mark_page_accessed(struct page *);

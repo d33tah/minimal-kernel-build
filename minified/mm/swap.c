@@ -169,12 +169,7 @@ void folio_rotate_reclaimable(struct folio *folio)
 	}
 }
 
-/* Stub: lru_note_cost not used externally in minimal kernel */
-void lru_note_cost(struct lruvec *lruvec, bool file, unsigned int nr_pages)
-{
-}
-
-void lru_note_cost_folio(struct folio *folio) { }
+/* lru_note_cost, lru_note_cost_folio removed - unused */
 
 static void __folio_activate(struct folio *folio, struct lruvec *lruvec)
 {

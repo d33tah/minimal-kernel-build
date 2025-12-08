@@ -16,17 +16,13 @@
 #define _EFER_LME		8
 #define _EFER_LMA		10
 #define _EFER_NX		11
-#define _EFER_SVME		12
-#define _EFER_LMSLE		13
-#define _EFER_FFXSR		14
+/* _EFER_SVME, _EFER_LMSLE, _EFER_FFXSR - unused (SVM/AMD only) */
 
 #define EFER_SCE		(1<<_EFER_SCE)
 #define EFER_LME		(1<<_EFER_LME)
 #define EFER_LMA		(1<<_EFER_LMA)
 #define EFER_NX			(1<<_EFER_NX)
-#define EFER_SVME		(1<<_EFER_SVME)
-#define EFER_LMSLE		(1<<_EFER_LMSLE)
-#define EFER_FFXSR		(1<<_EFER_FFXSR)
+/* EFER_SVME, EFER_LMSLE, EFER_FFXSR - unused (SVM/AMD only) */
 
 /* Speculation control MSRs */
 #define MSR_IA32_SPEC_CTRL		0x00000048
@@ -75,14 +71,9 @@
 /* CET (Control-flow Enforcement Technology) */
 #define MSR_IA32_S_CET			0x000006a2
 #define CET_SHSTK_EN			BIT_ULL(0)
-#define CET_WRSS_EN			BIT_ULL(1)
+/* CET_WRSS_EN - unused */
 #define CET_ENDBR_EN			BIT_ULL(2)
-#define CET_LEG_IW_EN			BIT_ULL(3)
-#define CET_NO_TRACK_EN			BIT_ULL(4)
-#define CET_SUPPRESS_DISABLE		BIT_ULL(5)
-#define CET_RESERVED			(BIT_ULL(6) | BIT_ULL(7) | BIT_ULL(8) | BIT_ULL(9))
-#define CET_SUPPRESS			BIT_ULL(10)
-#define CET_WAIT_ENDBR			BIT_ULL(11)
+/* CET_LEG_IW_EN through CET_WAIT_ENDBR - unused */
 
 /* AMD specific */
 #define MSR_AMD64_LS_CFG		0xc0011020

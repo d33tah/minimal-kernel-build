@@ -80,20 +80,9 @@ int errseq_check_and_advance(errseq_t *eseq, errseq_t *since);
 #define DT_REG		8
 #define DT_LNK		10
 #define DT_SOCK		12
-#define DT_WHT		14
+/* DT_WHT removed - unused */
 #define DT_MAX		(S_DT_MASK + 1)
-#define FT_UNKNOWN	0
-#define FT_REG_FILE	1
-#define FT_DIR		2
-#define FT_CHRDEV	3
-#define FT_BLKDEV	4
-#define FT_FIFO		5
-#define FT_SOCK		6
-#define FT_SYMLINK	7
-#define FT_MAX		8
-extern unsigned char fs_ftype_to_dtype(unsigned int filetype);
-extern unsigned char fs_umode_to_ftype(umode_t mode);
-extern unsigned char fs_umode_to_dtype(umode_t mode);
+/* Removed unused FT_* defines and fs_ftype_to_dtype/fs_umode_to_ftype/fs_umode_to_dtype */
 /* --- end fs_types.h inlined --- */
 #include <linux/stddef.h>
 #include <linux/mount.h>

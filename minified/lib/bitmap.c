@@ -61,19 +61,6 @@ void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
 {
 }
 
-/* Stub: __bitmap_xor not used in minimal kernel */
-void __bitmap_xor(unsigned long *dst, const unsigned long *bitmap1,
-				const unsigned long *bitmap2, unsigned int bits)
-{
-}
-
-/* Stub: __bitmap_andnot not used in minimal kernel */
-int __bitmap_andnot(unsigned long *dst, const unsigned long *bitmap1,
-				const unsigned long *bitmap2, unsigned int bits)
-{
-	return 0;
-}
-
 /* Stub: __bitmap_replace not called externally */
 void __bitmap_replace(unsigned long *dst,
 		      const unsigned long *old, const unsigned long *new,
@@ -86,13 +73,6 @@ bool __bitmap_intersects(const unsigned long *bitmap1,
 			 const unsigned long *bitmap2, unsigned int bits)
 {
 	return false;
-}
-
-/* Stub: __bitmap_subset not used in minimal kernel */
-bool __bitmap_subset(const unsigned long *bitmap1,
-		     const unsigned long *bitmap2, unsigned int bits)
-{
-	return true;
 }
 
 /* Stub: __bitmap_weight not used in minimal kernel */

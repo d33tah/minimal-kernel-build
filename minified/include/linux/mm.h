@@ -1510,10 +1510,7 @@ extern void mem_init(void);
 extern void __init mmap_init(void);
 extern long si_mem_available(void);
 extern void si_meminfo(struct sysinfo * val);
-extern void si_meminfo_node(struct sysinfo *val, int nid);
-#ifdef __HAVE_ARCH_RESERVED_KERNEL_PAGES
-extern unsigned long arch_reserved_kernel_pages(void);
-#endif
+/* si_meminfo_node, arch_reserved_kernel_pages removed - unused */
 
 extern __printf(3, 4)
 void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...);
@@ -1521,7 +1518,7 @@ void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...);
 extern void setup_per_cpu_pageset(void);
 
 extern int min_free_kbytes;
-extern int watermark_boost_factor;
+/* watermark_boost_factor removed - unused */
 extern int watermark_scale_factor;
 
 extern atomic_long_t mmap_pages_allocated;

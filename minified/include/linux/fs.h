@@ -205,11 +205,7 @@ typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
 #define FMODE_PWRITE		((__force fmode_t)0x10)
 
 #define FMODE_EXEC		((__force fmode_t)0x20)
-
-#define FMODE_NDELAY		((__force fmode_t)0x40)
-
-#define FMODE_EXCL		((__force fmode_t)0x80)
-
+/* FMODE_NDELAY, FMODE_EXCL removed - unused */
 #define FMODE_WRITE_IOCTL	((__force fmode_t)0x100)
 /* FMODE_32BITHASH, FMODE_64BITHASH, FMODE_RANDOM removed - unused */
 #define FMODE_NOCMTIME		((__force fmode_t)0x800)
@@ -680,23 +676,8 @@ static inline struct file *get_file(struct file *f)
 /* 32-bit only kernel */
 #define MAX_LFS_FILESIZE	((loff_t)ULONG_MAX << PAGE_SHIFT)
 
-#define FL_POSIX	1
-#define FL_FLOCK	2
-#define FL_DELEG	4	
-#define FL_ACCESS	8	
-#define FL_EXISTS	16	
-#define FL_LEASE	32	
-#define FL_CLOSE	64	
-#define FL_SLEEP	128	
-#define FL_DOWNGRADE_PENDING	256 
-#define FL_UNLOCK_PENDING	512 
-#define FL_OFDLCK	1024	
-#define FL_LAYOUT	2048	
-#define FL_RECLAIM	4096	
-
-#define FL_CLOSE_POSIX (FL_POSIX | FL_CLOSE)
-
-#define FILE_LOCK_DEFERRED 1
+/* FL_* file lock defines removed - unused (FL_POSIX, FL_FLOCK, etc) */
+/* FILE_LOCK_DEFERRED removed - unused */
 
 typedef void *fl_owner_t;
 
@@ -792,17 +773,13 @@ extern int f_setown(struct file *filp, unsigned long arg, int force);
 #define UMOUNT_NOFOLLOW	0x00000008	
 #define UMOUNT_UNUSED	0x80000000	
 
-#define SB_I_CGROUPWB	0x00000001	
-#define SB_I_NOEXEC	0x00000002	
-#define SB_I_NODEV	0x00000004	
-#define SB_I_STABLE_WRITES 0x00000008	
-
-#define SB_I_USERNS_VISIBLE		0x00000010 
-#define SB_I_IMA_UNVERIFIABLE_SIGNATURE	0x00000020
-#define SB_I_UNTRUSTED_MOUNTER		0x00000040
-
-#define SB_I_SKIP_SYNC	0x00000100	
-#define SB_I_PERSB_BDI	0x00000200	
+/* SB_I_CGROUPWB removed - unused */
+#define SB_I_NOEXEC	0x00000002
+#define SB_I_NODEV	0x00000004
+/* SB_I_STABLE_WRITES removed - unused */
+#define SB_I_USERNS_VISIBLE		0x00000010
+/* SB_I_IMA_UNVERIFIABLE_SIGNATURE, SB_I_UNTRUSTED_MOUNTER, SB_I_SKIP_SYNC removed - unused */
+#define SB_I_PERSB_BDI	0x00000200
 #define SB_I_TS_EXPIRY_WARNED 0x00000400 
 
 enum {
@@ -1224,24 +1201,23 @@ struct super_operations {
 				    struct shrink_control *);
 };
 
-#define S_SYNC		(1 << 0)  
-#define S_NOATIME	(1 << 1)  
-#define S_APPEND	(1 << 2)  
-#define S_IMMUTABLE	(1 << 3)  
-#define S_DEAD		(1 << 4)  
-#define S_NOQUOTA	(1 << 5)  
-#define S_DIRSYNC	(1 << 6)  
-#define S_NOCMTIME	(1 << 7)  
-#define S_SWAPFILE	(1 << 8)  
-#define S_PRIVATE	(1 << 9)  
-#define S_IMA		(1 << 10) 
-#define S_AUTOMOUNT	(1 << 11) 
-#define S_NOSEC		(1 << 12) 
-#define S_DAX		0	  
-#define S_ENCRYPTED	(1 << 14) 
-#define S_CASEFOLD	(1 << 15) 
-#define S_VERITY	(1 << 16) 
-#define S_KERNEL_FILE	(1 << 17) 
+#define S_SYNC		(1 << 0)
+#define S_NOATIME	(1 << 1)
+#define S_APPEND	(1 << 2)
+#define S_IMMUTABLE	(1 << 3)
+#define S_DEAD		(1 << 4)
+/* S_NOQUOTA removed - unused */
+#define S_DIRSYNC	(1 << 6)
+#define S_NOCMTIME	(1 << 7)
+#define S_SWAPFILE	(1 << 8)
+#define S_PRIVATE	(1 << 9)
+/* S_IMA removed - unused */
+#define S_AUTOMOUNT	(1 << 11)
+#define S_NOSEC		(1 << 12)
+#define S_DAX		0
+/* S_ENCRYPTED removed - unused */
+#define S_CASEFOLD	(1 << 15)
+/* S_VERITY, S_KERNEL_FILE removed - unused */ 
 
 #define __IS_FLG(inode, flg)	((inode)->i_sb->s_flags & (flg))
 
@@ -1251,29 +1227,24 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
 					((inode)->i_flags & S_SYNC))
 #define IS_DIRSYNC(inode)	(__IS_FLG(inode, SB_SYNCHRONOUS|SB_DIRSYNC) || \
 					((inode)->i_flags & (S_SYNC|S_DIRSYNC)))
-#define IS_MANDLOCK(inode)	__IS_FLG(inode, SB_MANDLOCK)
+/* IS_MANDLOCK removed - unused */
 #define IS_NOATIME(inode)	__IS_FLG(inode, SB_RDONLY|SB_NOATIME)
 #define IS_I_VERSION(inode)	__IS_FLG(inode, SB_I_VERSION)
-
-#define IS_NOQUOTA(inode)	((inode)->i_flags & S_NOQUOTA)
+/* IS_NOQUOTA removed - unused */
 #define IS_APPEND(inode)	((inode)->i_flags & S_APPEND)
 #define IS_IMMUTABLE(inode)	((inode)->i_flags & S_IMMUTABLE)
 #define IS_POSIXACL(inode)	__IS_FLG(inode, SB_POSIXACL)
-
 #define IS_DEADDIR(inode)	((inode)->i_flags & S_DEAD)
 #define IS_NOCMTIME(inode)	((inode)->i_flags & S_NOCMTIME)
 #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
 #define IS_PRIVATE(inode)	((inode)->i_flags & S_PRIVATE)
-#define IS_IMA(inode)		((inode)->i_flags & S_IMA)
+/* IS_IMA removed - unused */
 #define IS_AUTOMOUNT(inode)	((inode)->i_flags & S_AUTOMOUNT)
 #define IS_NOSEC(inode)		((inode)->i_flags & S_NOSEC)
 #define IS_DAX(inode)		((inode)->i_flags & S_DAX)
-#define IS_ENCRYPTED(inode)	((inode)->i_flags & S_ENCRYPTED)
+/* IS_ENCRYPTED removed - unused */
 #define IS_CASEFOLDED(inode)	((inode)->i_flags & S_CASEFOLD)
-#define IS_VERITY(inode)	((inode)->i_flags & S_VERITY)
-
-#define IS_WHITEOUT(inode)	(S_ISCHR(inode->i_mode) && \
-				 (inode)->i_rdev == WHITEOUT_DEV)
+/* IS_VERITY, IS_WHITEOUT removed - unused */
 
 static inline bool HAS_UNMAPPED_ID(struct user_namespace *mnt_userns,
 				   struct inode *inode)

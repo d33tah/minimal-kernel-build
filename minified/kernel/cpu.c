@@ -526,14 +526,4 @@ void __init boot_cpu_hotplug_init(void)
 static int __init mitigations_parse_cmdline(char *arg) { return 0; }
 early_param("mitigations", mitigations_parse_cmdline);
 
-/* Stub: cpu_mitigations_off not used in minimal kernel */
-bool cpu_mitigations_off(void)
-{
-	return false;
-}
-
-/* Stub: cpu_mitigations_auto_nosmt not used in minimal kernel */
-bool cpu_mitigations_auto_nosmt(void)
-{
-	return false;
-}
+/* cpu_mitigations_off, cpu_mitigations_auto_nosmt removed - unused */

@@ -208,8 +208,6 @@ void play_idle_precise(u64 duration_ns, u64 latency_ns);
 static inline void cpuhp_report_idle_dead(void) { }
 
 /* cpu_smt_control, cpu_smt_possible, cpuhp_smt_enable, cpuhp_smt_disable removed - unused */
-
-extern bool cpu_mitigations_off(void);
-extern bool cpu_mitigations_auto_nosmt(void);
+/* cpu_mitigations_off, cpu_mitigations_auto_nosmt removed - unused */
 
 #endif  

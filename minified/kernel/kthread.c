@@ -131,13 +131,7 @@ bool kthread_should_park(void)
 	return __kthread_should_park(current);
 }
 
-/* Stubbed: kthread_freezable_should_stop not used externally */
-bool kthread_freezable_should_stop(bool *was_frozen)
-{
-	if (was_frozen)
-		*was_frozen = false;
-	return kthread_should_stop();
-}
+/* kthread_freezable_should_stop removed - unused */
 
 void *kthread_func(struct task_struct *task)
 {
@@ -152,8 +146,7 @@ void *kthread_data(struct task_struct *task)
 	return to_kthread(task)->data;
 }
 
-/* Stubbed: kthread_probe_data not used externally */
-void *kthread_probe_data(struct task_struct *task) { return NULL; }
+/* kthread_probe_data removed - unused */
 
 static void __kthread_parkme(struct kthread *self)
 {
@@ -184,11 +177,7 @@ void __noreturn kthread_exit(long result)
 	do_exit(0);
 }
 
-/* Stub: kthread_complete_and_exit not used externally */
-void __noreturn kthread_complete_and_exit(struct completion *comp, long code)
-{
-	kthread_exit(code);
-}
+/* kthread_complete_and_exit removed - unused */
 
 static int kthread(void *_create)
 {
@@ -348,16 +337,7 @@ static void __kthread_bind(struct task_struct *p, unsigned int cpu, unsigned int
 	__kthread_bind_mask(p, cpumask_of(cpu), state);
 }
 
-/* Stubbed: kthread_bind_mask not used externally */
-void kthread_bind_mask(struct task_struct *p, const struct cpumask *mask) { }
-
-/* Stubbed: kthread_bind not used externally */
-void kthread_bind(struct task_struct *p, unsigned int cpu) { }
-
-/* Stubbed: kthread_create_on_cpu not used externally */
-struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
-					  void *data, unsigned int cpu,
-					  const char *namefmt) { return ERR_PTR(-ENOSYS); }
+/* kthread_bind_mask, kthread_bind, kthread_create_on_cpu removed - unused */
 
 void kthread_set_per_cpu(struct task_struct *k, int cpu)
 {
@@ -376,11 +356,7 @@ void kthread_set_per_cpu(struct task_struct *k, int cpu)
 	set_bit(KTHREAD_IS_PER_CPU, &kthread->flags);
 }
 
-/* Stub: kthread_is_per_cpu not used externally */
-bool kthread_is_per_cpu(struct task_struct *p)
-{
-	return false;
-}
+/* kthread_is_per_cpu removed - unused */
 
 void kthread_unpark(struct task_struct *k)
 {

@@ -102,11 +102,7 @@ void put_pages_list(struct list_head *pages)
 	INIT_LIST_HEAD(pages);
 }
 
-int get_kernel_pages(const struct kvec *kiov, int nr_segs, int write,
-		struct page **pages)
-{
-	return 0;
-}
+/* get_kernel_pages removed - unused */
 
 static void pagevec_lru_move_fn(struct pagevec *pvec,
 	void (*move_fn)(struct page *page, struct lruvec *lruvec))

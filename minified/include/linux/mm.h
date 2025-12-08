@@ -1013,14 +1013,9 @@ long get_user_pages_remote(struct mm_struct *mm,
 /* pin_user_pages_remote, get_user_pages, pin_user_pages, get_user_pages_unlocked,
    pin_user_pages_unlocked, get_user_pages_fast, pin_user_pages_fast removed - unused */
 
-int account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc);
-int __account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc,
-			struct task_struct *task, bool bypass_rlim);
+/* account_locked_vm, __account_locked_vm removed - unused */
 
-struct kvec;
-int get_kernel_pages(const struct kvec *iov, int nr_pages, int write,
-			struct page **pages);
-struct page *get_dump_page(unsigned long addr);
+/* get_kernel_pages, get_dump_page removed - unused */
 
 bool folio_mark_dirty(struct folio *folio);
 bool set_page_dirty(struct page *page);

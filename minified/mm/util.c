@@ -226,18 +226,7 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 }
 #endif
 
-/* Stub: __account_locked_vm not used in minimal kernel */
-int __account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc,
-			struct task_struct *task, bool bypass_rlim)
-{
-	return 0;
-}
-
-/* Stub: account_locked_vm not used in minimal kernel */
-int account_locked_vm(struct mm_struct *mm, unsigned long pages, bool inc)
-{
-	return 0;
-}
+/* __account_locked_vm, account_locked_vm removed - unused */
 
 unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 	unsigned long len, unsigned long prot,

@@ -16,8 +16,6 @@
 #define ARCH_GET_XCOMP_GUEST_PERM	0x1024
 #define ARCH_REQ_XCOMP_GUEST_PERM	0x1025
 
-#define ARCH_MAP_VDSO_X32		0x2001
-#define ARCH_MAP_VDSO_32		0x2002
-#define ARCH_MAP_VDSO_64		0x2003
+/* ARCH_MAP_VDSO_X32/32/64 removed - unused */
 
 #endif  

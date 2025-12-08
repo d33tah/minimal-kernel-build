@@ -86,10 +86,7 @@
 #define F_SETOWN	8	 
 #define F_GETOWN	9	 
 #endif
-#ifndef F_SETSIG
-#define F_SETSIG	10	 
-#define F_GETSIG	11	 
-#endif
+/* F_SETSIG, F_GETSIG removed - unused */
 
 #if __BITS_PER_LONG == 32 || defined(__KERNEL__)
 #ifndef F_GETLK64
@@ -109,10 +106,7 @@
 #define F_UNLCK		2
 #endif
 
-#ifndef F_EXLCK
-#define F_EXLCK		4	 
-#define F_SHLCK		8	 
-#endif
+/* F_EXLCK, F_SHLCK removed - unused */
 
 #define LOCK_SH		1
 #define LOCK_EX		2

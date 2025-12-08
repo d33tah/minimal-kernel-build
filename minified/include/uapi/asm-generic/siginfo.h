@@ -81,12 +81,7 @@ union __sifields {
 				char _dummy_pkey[__ADDR_BND_PKEY_PAD];
 				__u32 _pkey;
 			} _addr_pkey;
-			 
-			struct {
-				unsigned long _data;
-				__u32 _type;
-				__u32 _flags;
-			} _perf;
+			/* _perf struct removed - unused */
 		};
 	} _sigfault;
 
@@ -146,9 +141,7 @@ typedef struct siginfo {
 #define si_lower	_sifields._sigfault._addr_bnd._lower
 #define si_upper	_sifields._sigfault._addr_bnd._upper
 #define si_pkey		_sifields._sigfault._addr_pkey._pkey
-#define si_perf_data	_sifields._sigfault._perf._data
-#define si_perf_type	_sifields._sigfault._perf._type
-#define si_perf_flags	_sifields._sigfault._perf._flags
+/* si_perf_* removed - unused */
 #define si_band		_sifields._sigpoll._band
 #define si_fd		_sifields._sigpoll._fd
 #define si_call_addr	_sifields._sigsys._call_addr

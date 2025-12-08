@@ -50,17 +50,7 @@ enum pageflags {
 	 
 	PG_fscache = PG_private_2,	 
 
-	 
-	 
-	PG_pinned = PG_owner_priv_1,
-	 
-	PG_savepinned = PG_dirty,
-	 
-	PG_foreign = PG_owner_priv_1,
-	 
-	PG_xen_remapped = PG_owner_priv_1,
-
-	 
+	/* PG_pinned, PG_savepinned, PG_foreign, PG_xen_remapped removed - unused */
 	PG_slob_free = PG_private,
 
 	 

@@ -6,12 +6,6 @@
 #include <linux/slab.h>
 #include <linux/random.h>
 
-/* Stub: kobject_namespace not used externally */
-const void *kobject_namespace(struct kobject *kobj)
-{
-	return NULL;
-}
-
 void kobject_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
 {
 	*uid = GLOBAL_ROOT_UID;
@@ -25,12 +19,6 @@ static int create_dir(struct kobject *kobj)
 {
 	 
 	return 0;
-}
-
-/* Stub: kobject_get_path and helpers not used externally */
-char *kobject_get_path(struct kobject *kobj, gfp_t gfp_mask)
-{
-	return NULL;
 }
 
 static void kobj_kset_join(struct kobject *kobj)

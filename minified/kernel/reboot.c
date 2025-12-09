@@ -52,23 +52,9 @@ void kernel_restart_prepare(char *cmd)
 	device_shutdown();
 }
 
-/* Stubbed: register_reboot_notifier not used externally */
-int register_reboot_notifier(struct notifier_block *nb) { return 0; }
-
-/* Stubbed: unregister_reboot_notifier not used externally */
-int unregister_reboot_notifier(struct notifier_block *nb) { return 0; }
-
-/* Stubbed: devm_register_reboot_notifier not used */
-int devm_register_reboot_notifier(struct device *dev, struct notifier_block *nb) { return 0; }
-
-/* Stubbed: register_restart_handler not used */
-int register_restart_handler(struct notifier_block *nb) { return 0; }
-
-/* Stubbed: unregister_restart_handler not used */
-int unregister_restart_handler(struct notifier_block *nb) { return 0; }
-
-/* Stubbed: do_kernel_restart not used */
-void do_kernel_restart(char *cmd) { }
+/* Reboot notifier functions removed - unused:
+ * register_reboot_notifier, unregister_reboot_notifier, devm_register_reboot_notifier,
+ * register_restart_handler, unregister_restart_handler, do_kernel_restart */
 
 void migrate_to_reboot_cpu(void)
 {

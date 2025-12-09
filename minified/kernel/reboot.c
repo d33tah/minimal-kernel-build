@@ -14,8 +14,7 @@
 #include <linux/syscore_ops.h>
 #include <linux/uaccess.h>
 
-
-static int C_A_D = 1;
+/* Removed: C_A_D - variable set but never read */
 struct pid *cad_pid;
 
 #define DEFAULT_REBOOT_MODE
@@ -239,11 +238,8 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 		break;
 
 	case LINUX_REBOOT_CMD_CAD_ON:
-		C_A_D = 1;
-		break;
-
 	case LINUX_REBOOT_CMD_CAD_OFF:
-		C_A_D = 0;
+		/* Stub: C_A_D never read, just accept the command */
 		break;
 
 	case LINUX_REBOOT_CMD_HALT:

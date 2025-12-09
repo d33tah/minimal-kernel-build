@@ -26,13 +26,6 @@ struct ioremap_desc {
 	unsigned int flags;
 };
 
-/* Stub: ioremap_change_attr not used in minimal kernel */
-int ioremap_change_attr(unsigned long vaddr, unsigned long size,
-			enum page_cache_mode pcm)
-{
-	return 0;
-}
-
 static unsigned int __ioremap_check_ram(struct resource *res)
 {
 	unsigned long start_pfn, stop_pfn;
@@ -257,20 +250,11 @@ void __iomem *ioremap_wt(resource_size_t phys_addr, unsigned long size)
 					__builtin_return_address(0), false);
 }
 
-/* Stub: ioremap_encrypted not used in minimal kernel */
-void __iomem *ioremap_encrypted(resource_size_t phys_addr, unsigned long size)
-{ return NULL; }
-
 void __iomem *ioremap_cache(resource_size_t phys_addr, unsigned long size)
 {
 	return __ioremap_caller(phys_addr, size, _PAGE_CACHE_MODE_WB,
 				__builtin_return_address(0), false);
 }
-
-/* Stub: ioremap_prot not used in minimal kernel */
-void __iomem *ioremap_prot(resource_size_t phys_addr, unsigned long size,
-				unsigned long prot_val)
-{ return NULL; }
 
 void iounmap(volatile void __iomem *addr)
 {

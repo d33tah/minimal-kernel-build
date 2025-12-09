@@ -1603,14 +1603,7 @@ extern struct inode *inode_insert5(struct inode *inode, unsigned long hashval,
 		void *data);
 extern struct inode * iget5_locked(struct super_block *, unsigned long, int (*test)(struct inode *, void *), int (*set)(struct inode *, void *), void *);
 extern struct inode * iget_locked(struct super_block *, unsigned long);
-extern struct inode *find_inode_nowait(struct super_block *,
-				       unsigned long,
-				       int (*match)(struct inode *,
-						    unsigned long, void *),
-				       void *data);
-extern struct inode *find_inode_rcu(struct super_block *, unsigned long,
-				    int (*)(struct inode *, void *), void *);
-extern struct inode *find_inode_by_ino_rcu(struct super_block *, unsigned long);
+/* find_inode_nowait, find_inode_rcu, find_inode_by_ino_rcu removed - unused */
 static inline void lockdep_annotate_inode_mutex_key(struct inode *inode) { };
 extern void unlock_new_inode(struct inode *);
 extern unsigned int get_next_ino(void);

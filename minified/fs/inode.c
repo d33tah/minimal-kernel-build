@@ -742,16 +742,7 @@ struct inode *ilookup5(struct super_block *sb, unsigned long hashval,
 	return NULL;
 }
 
-/* ilookup, find_inode_nowait removed - no callers */
-
-/* Stub: not used in minimal kernel */
-struct inode *find_inode_rcu(struct super_block *sb, unsigned long hashval,
-			     int (*test)(struct inode *, void *), void *data) { return NULL; }
-
-/* Stub: not used in minimal kernel */
-struct inode *find_inode_by_ino_rcu(struct super_block *sb,
-				    unsigned long ino) { return NULL;
-}
+/* ilookup, find_inode_nowait, find_inode_rcu, find_inode_by_ino_rcu removed - no callers */
 
 /* Used by ramfs */
 int generic_delete_inode(struct inode *inode) { return 1; }

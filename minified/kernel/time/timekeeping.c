@@ -234,18 +234,10 @@ static inline u64 timekeeping_cycles_to_ns(const struct tk_read_base *tkr, u64 c
 	return timekeeping_delta_to_ns(tkr, delta);
 }
 
+/* Stub: update_fast_timekeeper - fast path functions are stubbed */
 static void update_fast_timekeeper(const struct tk_read_base *tkr,
 				   struct tk_fast *tkf)
 {
-	struct tk_read_base *base = tkf->base;
-
-	raw_write_seqcount_latch(&tkf->seq);
-
-	memcpy(base, tkr, sizeof(*base));
-
-	raw_write_seqcount_latch(&tkf->seq);
-
-	memcpy(base + 1, base, sizeof(*base));
 }
 
 /* Stub: ktime_get_mono_fast_ns not called in minimal kernel */

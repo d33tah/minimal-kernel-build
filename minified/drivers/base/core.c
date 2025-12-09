@@ -34,21 +34,7 @@ static DEFINE_MUTEX(fwnode_link_lock);
 /* fw_devlink_is_permissive forward decl removed - unused */
 static bool fw_devlink_drv_reg_done;
 
-/* Stubbed - not used externally */
-int fwnode_link_add(struct fwnode_handle *con, struct fwnode_handle *sup)
-{
-	return 0;
-}
-
-/* Stubbed - not used externally */
-void fwnode_links_purge(struct fwnode_handle *fwnode)
-{
-}
-
-/* Stubbed - not used externally */
-void fw_devlink_purge_absent_suppliers(struct fwnode_handle *fwnode)
-{
-}
+/* Removed: fwnode_link_add, fwnode_links_purge, fw_devlink_purge_absent_suppliers - no callers */
 
 static DEFINE_MUTEX(device_links_lock);
 DEFINE_STATIC_SRCU(device_links_srcu);
@@ -317,11 +303,7 @@ u32 fw_devlink_get_flags(void)
 	return fw_devlink_flags;
 }
 
-/* Stubbed - not used externally */
-bool fw_devlink_is_strict(void)
-{
-	return false;
-}
+/* fw_devlink_is_strict removed - no callers */
 
 /* fw_devlink_parse_fwnode, fw_devlink_parse_fwtree removed - unused */
 
@@ -339,21 +321,7 @@ struct kobject *sysfs_dev_block_kobj;
 
 static DEFINE_MUTEX(device_hotplug_lock);
 
-/* Stubbed - not used externally */
-void lock_device_hotplug(void)
-{
-}
-
-/* Stubbed - not used externally */
-void unlock_device_hotplug(void)
-{
-}
-
-/* Stubbed - not used externally */
-int lock_device_hotplug_sysfs(void)
-{
-	return 0;
-}
+/* Removed: lock_device_hotplug, unlock_device_hotplug, lock_device_hotplug_sysfs - no callers */
 
 static inline int device_is_not_partition(struct device *dev)
 {
@@ -600,10 +568,7 @@ static DEVICE_ATTR_RO(dev);
 
 struct kset *devices_kset;
 
-/* Stubbed - not used externally */
-void devices_kset_move_last(struct device *dev)
-{
-}
+/* devices_kset_move_last removed - no callers */
 
 int device_create_file(struct device *dev,
 		       const struct device_attribute *attr)
@@ -630,25 +595,7 @@ void device_remove_file(struct device *dev,
 		sysfs_remove_file(&dev->kobj, &attr->attr);
 }
 
-/* Stubbed - not used externally */
-bool device_remove_file_self(struct device *dev,
-			     const struct device_attribute *attr)
-{
-	return false;
-}
-
-/* Stubbed - not used externally */
-int device_create_bin_file(struct device *dev,
-			   const struct bin_attribute *attr)
-{
-	return 0;
-}
-
-/* Stubbed - not used externally */
-void device_remove_bin_file(struct device *dev,
-			    const struct bin_attribute *attr)
-{
-}
+/* Removed: device_remove_file_self, device_create_bin_file, device_remove_bin_file - no callers */
 
 static void klist_children_get(struct klist_node *n)
 {
@@ -1117,16 +1064,7 @@ static inline struct root_device *to_root_device(struct device *d)
 	return container_of(d, struct root_device, dev);
 }
 
-/* Stubbed - not used externally */
-struct device *__root_device_register(const char *name, struct module *owner)
-{
-	return ERR_PTR(-ENODEV);
-}
-
-/* Stubbed - not used externally */
-void root_device_unregister(struct device *dev)
-{
-}
+/* Removed: __root_device_register, root_device_unregister - no callers */
 
 static void device_create_release(struct device *dev)
 {

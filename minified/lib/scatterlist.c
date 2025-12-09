@@ -90,12 +90,6 @@ int sg_alloc_append_table_from_pages(struct sg_append_table *sgt_append,
 	return -EOPNOTSUPP;
 }
 
-/* Stub: sg_last not used externally */
-struct scatterlist *sg_last(struct scatterlist *sgl, unsigned int nents) { BUG(); }
-
-/* Stub: sg_nents_for_len not used externally */
-int sg_nents_for_len(struct scatterlist *sg, u64 len) { BUG(); }
-
 size_t sg_copy_buffer(struct scatterlist *sgl, unsigned int nents, void *buf,
 		      size_t buflen, off_t skip, bool to_buffer)
 {

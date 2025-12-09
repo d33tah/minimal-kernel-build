@@ -76,25 +76,6 @@ void *idr_find(const struct idr *idr, unsigned long id)
 	return radix_tree_lookup(&idr->idr_rt, id - idr->idr_base);
 }
 
-/* Stub: idr_for_each not used in minimal kernel */
-int idr_for_each(const struct idr *idr,
-		int (*fn)(int id, void *p, void *data), void *data)
-{
-	return 0;
-}
-
-/* Stub: idr_get_next_ul not used in minimal kernel */
-void *idr_get_next_ul(struct idr *idr, unsigned long *nextid)
-{
-	return NULL;
-}
-
-/* Stub: idr_get_next not used in minimal kernel */
-void *idr_get_next(struct idr *idr, int *nextid)
-{
-	return NULL;
-}
-
 void *idr_replace(struct idr *idr, void *ptr, unsigned long id)
 {
 	struct radix_tree_node *node;
@@ -251,11 +232,6 @@ delete:
  err:
 	xas_unlock_irqrestore(&xas, flags);
 	WARN(1, "ida_free called for id=%d which is not allocated.\n", id);
-}
-
-/* Stub: ida_destroy not used in minimal kernel */
-void ida_destroy(struct ida *ida)
-{
 }
 
 #ifndef __KERNEL__

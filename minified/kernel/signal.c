@@ -294,18 +294,7 @@ flush_signal_handlers(struct task_struct *t, int force_default)
 	}
 }
 
-/* Stub: unhandled_signal not called in minimal kernel */
-bool unhandled_signal(struct task_struct *tsk, int sig) { return true; }
-
-/* collect_signal removed - unused */
-
-/* Stub: dequeue_signal not used externally */
-int dequeue_signal(struct task_struct *tsk, sigset_t *mask,
-		   kernel_siginfo_t *info, enum pid_type *type)
-{
-	*type = PIDTYPE_PID;
-	return 0;
-}
+/* unhandled_signal, collect_signal, dequeue_signal removed - unused */
 
 void signal_wake_up_state(struct task_struct *t, unsigned int state)
 {

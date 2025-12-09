@@ -257,8 +257,7 @@ extern void kernel_sigaction(int, __sighandler_t);
 
 extern struct kmem_cache *sighand_cachep;
 
-extern bool unhandled_signal(struct task_struct *tsk, int sig);
-
+/* unhandled_signal removed - unused */
 
 #ifdef SIGEMT
 #define SIGEMT_MASK	rt_sigmask(SIGEMT)

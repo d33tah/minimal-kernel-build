@@ -1759,8 +1759,8 @@ void __init proc_caches_init(void)
 	nsproxy_cache_init();
 }
 
-/* Stub: unshare_fd not called externally */
-int unshare_fd(unsigned long unshare_flags, unsigned int max_fds,
+/* unshare_fd - used internally */
+static int unshare_fd(unsigned long unshare_flags, unsigned int max_fds,
 	       struct files_struct **new_fdp)
 {
 	return 0;

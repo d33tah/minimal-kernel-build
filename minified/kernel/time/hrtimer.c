@@ -354,10 +354,7 @@ void clock_was_set_delayed(void)
 	schedule_work(&hrtimer_work);
 }
 
-void hrtimers_resume_local(void)
-{
-	/* Stub: resume not needed for minimal kernel */
-}
+/* hrtimers_resume_local removed - unused */
 
 static inline
 void unlock_hrtimer_base(const struct hrtimer *timer, unsigned long *flags)
@@ -756,8 +753,8 @@ void hrtimer_init_sleeper(struct hrtimer_sleeper *sl, clockid_t clock_id,
 
 }
 
-/* Stub: nanosleep_copyout not called externally */
-int nanosleep_copyout(struct restart_block *restart, struct timespec64 *ts)
+/* nanosleep_copyout - used internally by do_nanosleep */
+static int nanosleep_copyout(struct restart_block *restart, struct timespec64 *ts)
 {
 	return -ERESTART_RESTARTBLOCK;
 }

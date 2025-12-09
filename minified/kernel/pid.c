@@ -411,11 +411,7 @@ struct pid *pidfd_get_pid(unsigned int fd, unsigned int *flags)
 	return pid;
 }
 
-int pidfd_create(struct pid *pid, unsigned int flags)
-{
-	/* Stub: not needed for minimal kernel */
-	return -ENOSYS;
-}
+/* pidfd_create removed - unused */
 
 SYSCALL_DEFINE2(pidfd_open, pid_t, pid, unsigned int, flags)
 {

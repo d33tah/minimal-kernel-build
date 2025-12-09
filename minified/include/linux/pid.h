@@ -44,8 +44,7 @@ struct file;
 
 extern struct pid *pidfd_pid(const struct file *file);
 struct pid *pidfd_get_pid(unsigned int fd, unsigned int *flags);
-/* pidfd_get_task removed - unused */
-int pidfd_create(struct pid *pid, unsigned int flags);
+/* pidfd_get_task, pidfd_create removed - unused */
 
 static inline struct pid *get_pid(struct pid *pid)
 {

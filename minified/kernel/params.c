@@ -280,47 +280,6 @@ const struct kernel_param_ops param_ops_bool = {
 	.get = param_get_bool,
 };
 
-/* Stub: param_set_bool_enable_only not used externally */
-int param_set_bool_enable_only(const char *val, const struct kernel_param *kp)
-{
-	return param_set_bool(val, kp);
-}
-
-const struct kernel_param_ops param_ops_bool_enable_only = {
-	.flags = KERNEL_PARAM_OPS_FL_NOARG,
-	.set = param_set_bool_enable_only,
-	.get = param_get_bool,
-};
-
-/* Stub: param_set_invbool not used externally */
-int param_set_invbool(const char *val, const struct kernel_param *kp)
-{
-	return 0;
-}
-
-/* Stub: param_get_invbool not used externally */
-int param_get_invbool(char *buffer, const struct kernel_param *kp)
-{
-	return sprintf(buffer, "N\n");
-}
-
-const struct kernel_param_ops param_ops_invbool = {
-	.set = param_set_invbool,
-	.get = param_get_invbool,
-};
-
-/* Stub: param_set_bint not used externally */
-int param_set_bint(const char *val, const struct kernel_param *kp)
-{
-	return param_set_bool(val, kp);
-}
-
-const struct kernel_param_ops param_ops_bint = {
-	.flags = KERNEL_PARAM_OPS_FL_NOARG,
-	.set = param_set_bint,
-	.get = param_get_int,
-};
-
 static int param_array(struct module *mod,
 		       const char *name,
 		       const char *val,

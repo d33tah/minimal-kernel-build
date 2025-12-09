@@ -82,7 +82,7 @@ getname_flags(const char __user *filename, int flags, int *empty)
 struct filename *
 getname_uflags(const char __user *filename, int uflags)
 {
-	/* Stub: not used in minimal kernel */
+	/* Used by linkat syscall */
 	return getname(filename);
 }
 
@@ -2489,11 +2489,7 @@ void page_put_link(void *arg)
 	put_page(arg);
 }
 
-int page_readlink(struct dentry *dentry, char __user *buffer, int buflen)
-{
-	/* Stub: page readlink not used in minimal kernel */
-	return -EINVAL;
-}
+/* page_readlink removed - unused */
 
 int page_symlink(struct inode *inode, const char *symname, int len)
 {

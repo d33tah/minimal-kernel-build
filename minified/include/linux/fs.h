@@ -1673,7 +1673,7 @@ void dio_warn_stale_pagecache(struct file *filp);
 
 #define special_file(m) (S_ISCHR(m)||S_ISBLK(m)||S_ISFIFO(m)||S_ISSOCK(m))
 
-extern int page_readlink(struct dentry *, char __user *, int);
+/* page_readlink removed - unused */
 extern const char *page_get_link(struct dentry *, struct inode *,
 				 struct delayed_call *);
 extern void page_put_link(void *);

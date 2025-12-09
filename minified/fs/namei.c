@@ -1542,12 +1542,6 @@ static int filename_parentat(int dfd, struct filename *name,
 	return retval;
 }
 
-/* Stub: kern_path_locked not used in minimal kernel */
-struct dentry *kern_path_locked(const char *name, struct path *path)
-{
-	return ERR_PTR(-ENOENT);
-}
-
 int kern_path(const char *name, unsigned int flags, struct path *path)
 {
 	struct filename *filename = getname_kernel(name);
@@ -1602,9 +1596,6 @@ static int lookup_one_common(struct user_namespace *mnt_userns,
 
 	return inode_permission(mnt_userns, base->d_inode, MAY_EXEC);
 }
-
-/* Stub: not used in minimal kernel */
-struct dentry *try_lookup_one_len(const char *name, struct dentry *base, int len) { return ERR_PTR(-ENOENT); }
 
 struct dentry *lookup_one_len(const char *name, struct dentry *base, int len)
 {
@@ -1707,10 +1698,6 @@ static inline int may_create(struct user_namespace *mnt_userns,
 
 	return inode_permission(mnt_userns, dir, MAY_WRITE | MAY_EXEC);
 }
-
-/* Stub: rename operations not used in minimal kernel */
-struct dentry *lock_rename(struct dentry *p1, struct dentry *p2) { return NULL; }
-void unlock_rename(struct dentry *p1, struct dentry *p2) { }
 
 int vfs_create(struct user_namespace *mnt_userns, struct inode *dir,
 	       struct dentry *dentry, umode_t mode, bool want_excl)
@@ -2067,13 +2054,6 @@ static int do_open(struct nameidata *nd,
 	if (do_truncate)
 		mnt_drop_write(nd->path.mnt);
 	return error;
-}
-
-/* Stub: vfs_tmpfile not used in minimal kernel */
-struct dentry *vfs_tmpfile(struct user_namespace *mnt_userns,
-			   struct dentry *dentry, umode_t mode, int open_flag)
-{
-	return ERR_PTR(-EOPNOTSUPP);
 }
 
 static int do_tmpfile(struct nameidata *nd, unsigned flags,

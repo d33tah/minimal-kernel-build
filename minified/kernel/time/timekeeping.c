@@ -240,17 +240,7 @@ static void update_fast_timekeeper(const struct tk_read_base *tkr,
 {
 }
 
-/* Stub: ktime_get_mono_fast_ns not called in minimal kernel */
-u64 notrace ktime_get_mono_fast_ns(void)
-{
-	return 0;
-}
-
-/* Stub: ktime_get_raw_fast_ns not called in minimal kernel */
-u64 notrace ktime_get_raw_fast_ns(void)
-{
-	return 0;
-}
+/* ktime_get_mono_fast_ns, ktime_get_raw_fast_ns removed - unused */
 
 /* Removed: ktime_get_boot_fast_ns, ktime_get_tai_fast_ns, ktime_get_real_fast_ns,
    ktime_get_fast_timestamps - no callers */

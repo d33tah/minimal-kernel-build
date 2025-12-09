@@ -480,16 +480,7 @@ u64 clocksource_stop_suspend_timing(struct clocksource *cs, u64 cycle_now)
 }
 
 
-void clocksource_suspend(void)
-{
-	/* Stub: suspend not needed for minimal kernel */
-}
-
-
-void clocksource_resume(void)
-{
-	/* Stub: resume not needed for minimal kernel */
-}
+/* clocksource_suspend, clocksource_resume removed - unused */
 
 void clocksource_touch_watchdog(void)
 {

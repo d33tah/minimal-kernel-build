@@ -312,15 +312,6 @@ void clockevents_exchange_device(struct clock_event_device *old,
 }
 
 
-void clockevents_suspend(void)
-{
-	/* Stub: suspend not needed for minimal kernel */
-}
-
-
-void clockevents_resume(void)
-{
-	/* Stub: resume not needed for minimal kernel */
-}
+/* clockevents_suspend, clockevents_resume removed - unused */
 
 

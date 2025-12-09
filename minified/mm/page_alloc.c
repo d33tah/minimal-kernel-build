@@ -596,11 +596,6 @@ void set_zone_contiguous(struct zone *zone)
 	zone->contiguous = true;
 }
 
-void clear_zone_contiguous(struct zone *zone)
-{
-	zone->contiguous = false;
-}
-
 void __init page_alloc_init_late(void)
 {
 	struct zone *zone;
@@ -858,12 +853,6 @@ static void drain_pages(unsigned int cpu)
 {
 	/* Stub: skip per-CPU page draining for minimal kernel */
 }
-
-void drain_local_pages(struct zone *zone)
-{
-	/* Stub: skip page draining for minimal kernel */
-}
-
 
 static void __drain_all_pages(struct zone *zone, bool force_all_cpus)
 {

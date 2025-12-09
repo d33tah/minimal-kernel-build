@@ -51,6 +51,5 @@ struct range arch_get_mappable_range(void);
 static inline void pgdat_resize_init(struct pglist_data *pgdat) {}
 
 extern void set_zone_contiguous(struct zone *zone);
-extern void clear_zone_contiguous(struct zone *zone);
 
-#endif  
+#endif

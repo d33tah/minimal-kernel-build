@@ -313,23 +313,6 @@ void resched_cpu(int cpu)
 	raw_spin_rq_unlock_irqrestore(rq, flags);
 }
 
-#if defined(CONFIG_RT_GROUP_SCHED) || (defined(CONFIG_FAIR_GROUP_SCHED) && \
-			(defined(CONFIG_SMP) || defined(CONFIG_CFS_BANDWIDTH)))
-
-/* Stub: walk_tg_tree_from not used in minimal kernel */
-int walk_tg_tree_from(struct task_group *from,
-			     tg_visitor down, tg_visitor up, void *data)
-{
-	return 0;
-}
-
-/* Stub: tg_nop not used in minimal kernel */
-int tg_nop(struct task_group *tg, void *data)
-{
-	return 0;
-}
-#endif
-
 static void set_load_weight(struct task_struct *p, bool update_load)
 {
 	int prio = p->static_prio - MAX_RT_PRIO;

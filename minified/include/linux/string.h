@@ -148,9 +148,6 @@ int __sysfs_match_string(const char * const *array, size_t n, const char *s);
 #define sysfs_match_string(_a, _s) __sysfs_match_string(_a, ARRAY_SIZE(_a), _s)
 
 
-extern ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
-				       const void *from, size_t available);
-
 int ptr_to_hashval(const void *ptr, unsigned long *hashval_out);
 
 static inline bool strstarts(const char *str, const char *prefix)

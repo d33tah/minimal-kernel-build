@@ -572,81 +572,6 @@ ssize_t simple_read_from_buffer(void __user *to, size_t count, loff_t *ppos,
 	return count;
 }
 
-/* Stub: simple_write_to_buffer not used in minimal kernel */
-ssize_t simple_write_to_buffer(void *to, size_t available, loff_t *ppos,
-		const void __user *from, size_t count)
-{
-	return -EINVAL;
-}
-
-/* Stub: memory_read_from_buffer not used in minimal kernel */
-ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
-				const void *from, size_t available)
-{
-	return 0;
-}
-
-
-/* Stub: simple_transaction_* not needed for minimal kernel */
-void simple_transaction_set(struct file *file, size_t n) { }
-
-char *simple_transaction_get(struct file *file, const char __user *buf, size_t size)
-{
-	return ERR_PTR(-ENOSYS);
-}
-
-ssize_t simple_transaction_read(struct file *file, char __user *buf, size_t size, loff_t *pos)
-{
-	return 0;
-}
-
-int simple_transaction_release(struct inode *inode, struct file *file)
-{
-	return 0;
-}
-
-
-/* Stub: simple_attr_* not needed for minimal kernel */
-int simple_attr_open(struct inode *inode, struct file *file,
-		     int (*get)(void *, u64 *), int (*set)(void *, u64),
-		     const char *fmt)
-{
-	return -ENOSYS;
-}
-
-int simple_attr_release(struct inode *inode, struct file *file)
-{
-	return 0;
-}
-
-ssize_t simple_attr_read(struct file *file, char __user *buf,
-			 size_t len, loff_t *ppos)
-{
-	return -ENOSYS;
-}
-
-ssize_t simple_attr_write(struct file *file, const char __user *buf,
-			  size_t len, loff_t *ppos)
-{
-	return -ENOSYS;
-}
-
-struct dentry *generic_fh_to_dentry(struct super_block *sb, struct fid *fid,
-		int fh_len, int fh_type, struct inode *(*get_inode)
-			(struct super_block *sb, u64 ino, u32 gen))
-{
-	/* Stub: NFS export not needed for minimal kernel */
-	return ERR_PTR(-ESTALE);
-}
-
-struct dentry *generic_fh_to_parent(struct super_block *sb, struct fid *fid,
-		int fh_len, int fh_type, struct inode *(*get_inode)
-			(struct super_block *sb, u64 ino, u32 gen))
-{
-	/* Stub: NFS export not needed for minimal kernel */
-	return ERR_PTR(-ESTALE);
-}
-
 int __generic_file_fsync(struct file *file, loff_t start, loff_t end,
 				 int datasync)
 {
@@ -801,9 +726,6 @@ static const struct file_operations empty_dir_operations = {
 	.fsync		= noop_fsync,
 };
 
-
-/* Stub: make_empty_dir_inode not used in minimal kernel */
-void make_empty_dir_inode(struct inode *inode) { }
 
 bool is_empty_dir_inode(struct inode *inode)
 {

@@ -156,11 +156,6 @@ static inline struct folio *gup_folio_range_next(struct page *start,
 	return folio;
 }
 
-/* Stub: unpin_user_pages not called in minimal kernel */
-void unpin_user_pages(struct page **pages, unsigned long npages)
-{
-}
-
 static inline void mm_set_has_pinned_flag(unsigned long *mm_flags)
 {
 	if (!test_bit(MMF_HAS_PINNED, mm_flags))

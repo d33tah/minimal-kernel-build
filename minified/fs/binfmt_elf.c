@@ -544,19 +544,6 @@ out:
 	return error;
 }
 
-
-static int __maybe_unused parse_elf_property(const char *data, size_t *off, size_t datasz,
-			      struct arch_elf_state *arch,
-			      bool have_prev_type, u32 *prev_type)
-{
-	/* Stub: parse_elf_property not used when parse_elf_properties is stubbed */
-	return -ENOENT;
-}
-
-#define NOTE_DATA_SZ SZ_1K
-#define GNU_PROPERTY_TYPE_0_NAME "GNU"
-#define NOTE_NAME_SZ (sizeof(GNU_PROPERTY_TYPE_0_NAME))
-
 static int parse_elf_properties(struct file *f, const struct elf_phdr *phdr,
 				struct arch_elf_state *arch)
 {

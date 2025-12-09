@@ -594,13 +594,7 @@ int get_tree_keyed(struct fs_context *fc,
 	return vfs_get_super(fc, vfs_get_keyed_super, fill_super);
 }
 
-/* Stub: mount_nodev not called in minimal kernel */
-struct dentry *mount_nodev(struct file_system_type *fs_type,
-	int flags, void *data,
-	int (*fill_super)(struct super_block *, void *, int))
-{
-	return ERR_PTR(-ENODEV);
-}
+/* Removed: mount_nodev - never called (~7 LOC) */
 
 int vfs_get_tree(struct fs_context *fc)
 {

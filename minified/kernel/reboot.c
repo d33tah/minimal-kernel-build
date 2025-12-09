@@ -122,40 +122,6 @@ void unregister_sys_off_handler(struct sys_off_handler *handler)
 {
 }
 
-/* Stub: devm_register_* not needed for minimal kernel */
-int devm_register_sys_off_handler(struct device *dev,
-				  enum sys_off_mode mode,
-				  int priority,
-				  int (*callback)(struct sys_off_data *data),
-				  void *cb_data)
-{
-	return -ENOSYS;
-}
-
-int devm_register_power_off_handler(struct device *dev,
-				    int (*callback)(struct sys_off_data *data),
-				    void *cb_data)
-{
-	return -ENOSYS;
-}
-
-int devm_register_restart_handler(struct device *dev,
-				  int (*callback)(struct sys_off_data *data),
-				  void *cb_data)
-{
-	return -ENOSYS;
-}
-
-/* Stub: platform_power_off not needed for minimal kernel */
-int register_platform_power_off(void (*power_off)(void))
-{
-	return -ENOSYS;
-}
-
-void unregister_platform_power_off(void (*power_off)(void))
-{
-}
-
 static int legacy_pm_power_off(struct sys_off_data *data)
 {
 	if (pm_power_off)

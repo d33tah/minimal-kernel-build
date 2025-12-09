@@ -106,24 +106,6 @@ register_sys_off_handler(enum sys_off_mode mode,
 			 void *cb_data);
 void unregister_sys_off_handler(struct sys_off_handler *handler);
 
-int devm_register_sys_off_handler(struct device *dev,
-				  enum sys_off_mode mode,
-				  int priority,
-				  int (*callback)(struct sys_off_data *data),
-				  void *cb_data);
-
-int devm_register_power_off_handler(struct device *dev,
-				    int (*callback)(struct sys_off_data *data),
-				    void *cb_data);
-
-int devm_register_restart_handler(struct device *dev,
-				  int (*callback)(struct sys_off_data *data),
-				  void *cb_data);
-
-int register_platform_power_off(void (*power_off)(void));
-void unregister_platform_power_off(void (*power_off)(void));
-
-
 extern void kernel_restart_prepare(char *cmd);
 extern void kernel_restart(char *cmd);
 extern void kernel_halt(void);

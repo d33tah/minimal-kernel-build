@@ -231,28 +231,7 @@ int tick_broadcast_oneshot_control(enum tick_broadcast_state state)
 
 
 
-void tick_suspend_local(void)
-{
-	/* Stub: suspend not needed for minimal kernel */
-}
-
-
-void tick_resume_local(void)
-{
-	/* Stub: resume not needed for minimal kernel */
-}
-
-
-void tick_suspend(void)
-{
-	/* Stub: suspend not needed for minimal kernel */
-}
-
-
-void tick_resume(void)
-{
-	/* Stub: resume not needed for minimal kernel */
-}
+/* tick_suspend_local, tick_resume_local, tick_suspend, tick_resume removed - unused */
 
 
 void __init tick_init(void)

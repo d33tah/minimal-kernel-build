@@ -77,8 +77,7 @@ extern void tick_setup_periodic(struct clock_event_device *dev, int broadcast);
 extern void tick_handle_periodic(struct clock_event_device *dev);
 extern void tick_check_new_device(struct clock_event_device *dev);
 extern void tick_shutdown(unsigned int cpu);
-extern void tick_suspend(void);
-extern void tick_resume(void);
+/* tick_suspend, tick_resume removed - unused */
 extern bool tick_check_replacement(struct clock_event_device *curdev,
 				   struct clock_event_device *newdev);
 extern void tick_install_replacement(struct clock_event_device *dev);

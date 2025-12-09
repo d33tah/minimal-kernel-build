@@ -33,9 +33,6 @@ struct klist_node {
 };
 
 extern void klist_add_tail(struct klist_node *n, struct klist *k);
-extern void klist_add_head(struct klist_node *n, struct klist *k);
-extern void klist_add_behind(struct klist_node *n, struct klist_node *pos);
-extern void klist_add_before(struct klist_node *n, struct klist_node *pos);
 
 extern void klist_del(struct klist_node *n);
 extern void klist_remove(struct klist_node *n);

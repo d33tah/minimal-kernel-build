@@ -56,20 +56,11 @@ static void klist_node_init(struct klist *k, struct klist_node *n)
 		k->get(n);
 }
 
-/* Stub: klist_add_head not called externally */
-void klist_add_head(struct klist_node *n, struct klist *k) { }
-
 void klist_add_tail(struct klist_node *n, struct klist *k)
 {
 	klist_node_init(k, n);
 	add_tail(k, n);
 }
-
-/* Stub: klist_add_behind not called externally */
-void klist_add_behind(struct klist_node *n, struct klist_node *pos) { }
-
-/* Stub: klist_add_before not called externally */
-void klist_add_before(struct klist_node *n, struct klist_node *pos) { }
 
 struct klist_waiter {
 	struct list_head list;

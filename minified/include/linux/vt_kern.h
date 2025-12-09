@@ -199,11 +199,8 @@ int vt_move_to_console(unsigned int vt, int alloc);
 
 struct vt_notifier_param {
 	struct vc_data *vc;	 
-	unsigned int c;		 
+	unsigned int c;
 };
-
-int register_vt_notifier(struct notifier_block *nb);
-int unregister_vt_notifier(struct notifier_block *nb);
 
 void hide_boot_cursor(bool hide);
 

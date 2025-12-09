@@ -824,7 +824,6 @@ static inline void release_user_cpus_ptr(struct task_struct *p)
 	WARN_ON(p->user_cpus_ptr);
 }
 
-extern void set_user_nice(struct task_struct *p, long nice);
 extern int task_prio(const struct task_struct *p);
 
 static inline int task_nice(const struct task_struct *p)

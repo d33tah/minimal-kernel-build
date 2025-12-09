@@ -1313,9 +1313,6 @@ static void __setscheduler_prio(struct task_struct *p, int prio)
 	p->prio = prio;
 }
 
-/* Stub: set_user_nice not used in minimal kernel */
-void set_user_nice(struct task_struct *p, long nice) { }
-
 #ifdef __ARCH_WANT_SYS_NICE
 
 SYSCALL_DEFINE1(nice, int, increment)

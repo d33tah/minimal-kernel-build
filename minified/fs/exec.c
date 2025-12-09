@@ -994,9 +994,7 @@ out:
 	return ERR_PTR(retval);
 }
 
-/* STUB: bprm_change_interp not used (no script interpreters) */
-int bprm_change_interp(const char *interp, struct linux_binprm *bprm)
-{ return -ENOEXEC; }
+/* Removed: bprm_change_interp - never called */
 
 static void check_unsafe_exec(struct linux_binprm *bprm)
 {

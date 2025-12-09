@@ -372,9 +372,6 @@ int __page_mapcount(struct page *page)
 	return ret;
 }
 
-/* Stub: folio_mapcount not called in minimal kernel */
-int folio_mapcount(struct folio *folio) { return 0; }
-
 int sysctl_overcommit_memory __read_mostly = OVERCOMMIT_GUESS;
 int sysctl_overcommit_ratio __read_mostly = 50;
 unsigned long sysctl_overcommit_kbytes __read_mostly;
@@ -440,12 +437,6 @@ int __weak memcmp_pages(struct page *page1, struct page *page2)
 	return 0;
 }
 
-
-/* Stub: page_offline functions not needed for minimal kernel without memory hotplug */
-void page_offline_freeze(void) { }
-void page_offline_thaw(void) { }
-void page_offline_begin(void) { }
-void page_offline_end(void) { }
 
 #ifndef ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO
 void flush_dcache_folio(struct folio *folio)

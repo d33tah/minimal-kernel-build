@@ -631,10 +631,6 @@ void *krealloc(const void *p, size_t new_size, gfp_t flags)
 	return ret;
 }
 
-/* Stub: ksize not called in minimal kernel */
-size_t ksize(const void *objp) { return 0; }
-
-
 int should_failslab(struct kmem_cache *s, gfp_t gfpflags)
 {
 	if (__should_failslab(s, gfpflags))

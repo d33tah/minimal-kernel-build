@@ -390,9 +390,6 @@ int file_write_and_wait_range(struct file *file, loff_t lstart, loff_t lend)
 	return err;
 }
 
-/* Stub: not used in minimal kernel */
-void replace_page_cache_page(struct page *old, struct page *new) { }
-
 noinline int __filemap_add_folio(struct address_space *mapping,
 		struct folio *folio, pgoff_t index, gfp_t gfp, void **shadowp)
 {

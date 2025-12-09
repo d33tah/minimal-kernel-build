@@ -575,13 +575,6 @@ static int kill_proc_info(int sig, struct kernel_siginfo *info, pid_t pid)
 	return error;
 }
 
-/* Stubbed - not used externally */
-int kill_pid_usb_asyncio(int sig, int errno, sigval_t addr,
-			 struct pid *pid, const struct cred *cred)
-{
-	return -ENOSYS;
-}
-
 static int kill_something_info(int sig, struct kernel_siginfo *info, pid_t pid)
 {
 	/* Simplified: only handle simple pid > 0 case */
@@ -699,24 +692,10 @@ int send_sig_fault(int sig, int code, void __user *addr
 	return send_sig_info(info.si_signo, &info, t);
 }
 
-/* Stub: memory corrected error signals not used in minimal kernel */
-int force_sig_mceerr(int code, void __user *addr, short lsb) { return 0; }
-int send_sig_mceerr(int code, void __user *addr, short lsb, struct task_struct *t) { return 0; }
-int force_sig_bnderr(void __user *addr, void __user *lower, void __user *upper) { return 0; }
-
-/* Stub: PKU signal not used in minimal kernel */
+/* Stub: PKU signal - used by fault.c */
 #ifdef SEGV_PKUERR
 int force_sig_pkuerr(void __user *addr, u32 pkey) { return 0; }
 #endif
-
-/* Stub: perf/seccomp/ptrace signals not used in minimal kernel */
-int send_sig_perf(void __user *addr, u32 type, u64 sig_data) { return 0; }
-int force_sig_seccomp(int syscall, int reason, bool force_coredump) { return 0; }
-int force_sig_ptrace_errno_trap(int errno, void __user *addr) { return 0; }
-
-/* Stub: trapno signals not used in minimal kernel */
-int force_sig_fault_trapno(int sig, int code, void __user *addr, int trapno) { return 0; }
-int send_sig_fault_trapno(int sig, int code, void __user *addr, int trapno, struct task_struct *t) { return 0; }
 
 int kill_pgrp(struct pid *pid, int sig, int priv)
 {

@@ -100,14 +100,6 @@ lock_hrtimer_base(const struct hrtimer *timer, unsigned long *flags)
 
 # define switch_hrtimer_base(t, b, p)	(b)
 
-#if BITS_PER_LONG < 64
-/* Stub: __ktime_divns not called in minimal kernel */
-s64 __ktime_divns(const ktime_t kt, s64 div)
-{
-	return 0;
-}
-#endif 
-
 ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs)
 {
 	ktime_t res = ktime_add_unsafe(lhs, rhs);
@@ -373,12 +365,6 @@ void unlock_hrtimer_base(const struct hrtimer *timer, unsigned long *flags)
 	raw_spin_unlock_irqrestore(&timer->base->cpu_base->lock, *flags);
 }
 
-/* Stub: hrtimer_forward not called in minimal kernel */
-u64 hrtimer_forward(struct hrtimer *timer, ktime_t now, ktime_t interval)
-{
-	return 0;
-}
-
 static int enqueue_hrtimer(struct hrtimer *timer,
 			   struct hrtimer_clock_base *base,
 			   enum hrtimer_mode mode)
@@ -545,12 +531,6 @@ int hrtimer_cancel(struct hrtimer *timer)
 			hrtimer_cancel_wait_running(timer);
 	} while (ret < 0);
 	return ret;
-}
-
-/* Stub: __hrtimer_get_remaining not used externally */
-ktime_t __hrtimer_get_remaining(const struct hrtimer *timer, bool adjust)
-{
-	return 0;
 }
 
 static inline int hrtimer_clockid_to_base(clockid_t clock_id)

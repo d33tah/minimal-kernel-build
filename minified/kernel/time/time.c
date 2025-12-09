@@ -405,30 +405,3 @@ int put_old_timespec32(const struct timespec64 *ts, void __user *uts)
 		return __put_old_timespec32(ts, uts);
 }
 
-/* Stub: get_itimerspec64 not used in minimal kernel */
-int get_itimerspec64(struct itimerspec64 *it,
-			const struct __kernel_itimerspec __user *uit)
-{
-	return -EINVAL;
-}
-
-/* Stub: put_itimerspec64 not used in minimal kernel */
-int put_itimerspec64(const struct itimerspec64 *it,
-			struct __kernel_itimerspec __user *uit)
-{
-	return -EINVAL;
-}
-
-/* Stub: get_old_itimerspec32 not used in minimal kernel */
-int get_old_itimerspec32(struct itimerspec64 *its,
-			const struct old_itimerspec32 __user *uits)
-{
-	return -EINVAL;
-}
-
-/* Stub: put_old_itimerspec32 not used in minimal kernel */
-int put_old_itimerspec32(const struct itimerspec64 *its,
-			struct old_itimerspec32 __user *uits)
-{
-	return -EINVAL;
-}

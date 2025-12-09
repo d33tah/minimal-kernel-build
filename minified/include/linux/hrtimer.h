@@ -230,12 +230,6 @@ static inline int hrtimer_callback_running(struct hrtimer *timer)
 	return timer->base->running == timer;
 }
 
-extern u64
-hrtimer_forward(struct hrtimer *timer, ktime_t now, ktime_t interval);
-
-/* hrtimer_forward_now removed - unused */
-
-
 extern int nanosleep_copyout(struct restart_block *, struct timespec64 *);
 extern long hrtimer_nanosleep(ktime_t rqtp, const enum hrtimer_mode mode,
 			      const clockid_t clockid);

@@ -649,11 +649,7 @@ struct file *task_lookup_fd_rcu(struct task_struct *task, unsigned int fd)
 	return NULL;
 }
 
-/* Stub: task_lookup_next_fd_rcu not used externally */
-struct file *task_lookup_next_fd_rcu(struct task_struct *task, unsigned int *ret_fd)
-{
-	return NULL;
-}
+/* task_lookup_next_fd_rcu removed - no callers */
 
 static unsigned long __fget_light(unsigned int fd, fmode_t mask)
 {
@@ -760,17 +756,7 @@ int replace_fd(unsigned fd, struct file *file, unsigned flags)
 int __receive_fd(struct file *file, int __user *ufd, unsigned int o_flags)
 { return -ENOSYS; }
 
-/* Stub: receive_fd_replace not used externally */
-int receive_fd_replace(int new_fd, struct file *file, unsigned int o_flags)
-{
-	return -ENOSYS;
-}
-
-/* Stub: receive_fd not used externally */
-int receive_fd(struct file *file, unsigned int o_flags)
-{
-	return -ENOSYS;
-}
+/* receive_fd_replace, receive_fd removed - no callers */
 
 static int ksys_dup3(unsigned int oldfd, unsigned int newfd, int flags)
 {
@@ -841,16 +827,4 @@ SYSCALL_DEFINE1(dup, unsigned int, fildes)
 	return ret;
 }
 
-/* Stub: f_dupfd not used externally */
-int f_dupfd(unsigned int from, struct file *file, unsigned flags)
-{
-	return -ENOSYS;
-}
-
-/* Stubbed - not used externally */
-int iterate_fd(struct files_struct *files, unsigned n,
-		int (*f)(const void *, struct file *, unsigned),
-		const void *p)
-{
-	return 0;
-}
+/* f_dupfd, iterate_fd removed - no callers */

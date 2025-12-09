@@ -64,11 +64,7 @@ static struct kmem_cache *inode_cachep __read_mostly;
 
 /* get_nr_inodes, get_nr_inodes_unused removed - unused */
 
-/* Stubbed - not used externally */
-long get_nr_dirty_inodes(void)
-{
-	return 0;
-}
+/* get_nr_dirty_inodes removed - no callers */
 
 static int no_open(struct inode *inode, struct file *file)
 {
@@ -261,10 +257,7 @@ static void __address_space_init_once(struct address_space *mapping)
 	mapping->i_mmap = RB_ROOT_CACHED;
 }
 
-/* Stubbed - not used externally */
-void address_space_init_once(struct address_space *mapping)
-{
-}
+/* address_space_init_once removed - no callers */
 
 void inode_init_once(struct inode *inode)
 {
@@ -469,11 +462,7 @@ again:
 	dispose_list(&dispose);
 }
 
-/* Stubbed - not used externally */
-int invalidate_inodes(struct super_block *sb, bool kill_dirty)
-{
-	return 0;
-}
+/* invalidate_inodes removed - no callers */
 
 static enum lru_status inode_lru_isolate(struct list_head *item,
 		struct list_lru_one *lru, spinlock_t *lru_lock, void *arg)
@@ -753,12 +742,7 @@ struct inode *ilookup5(struct super_block *sb, unsigned long hashval,
 	return NULL;
 }
 
-/* Stub: not used in minimal kernel */
-struct inode *ilookup(struct super_block *sb, unsigned long ino) { return NULL; }
-
-/* Stub: not used in minimal kernel */
-struct inode *find_inode_nowait(struct super_block *sb, unsigned long hashval,
-		int (*match)(struct inode *, unsigned long, void *), void *data) { return NULL; }
+/* ilookup, find_inode_nowait removed - no callers */
 
 /* Stub: not used in minimal kernel */
 struct inode *find_inode_rcu(struct super_block *sb, unsigned long hashval,

@@ -632,10 +632,10 @@ struct file *fget(unsigned int fd)
 	return __fget(fd, FMODE_PATH);
 }
 
-/* Stub: fget_raw not called in minimal kernel */
-struct file *fget_raw(unsigned int fd)
+/* fget_raw - used internally by replace_fd */
+static struct file *fget_raw(unsigned int fd)
 {
-	return NULL;
+	return __fget(fd, 0);  /* No FMODE_PATH filter */
 }
 
 /* fget_task, task_lookup_fd_rcu, task_lookup_next_fd_rcu removed - unused */

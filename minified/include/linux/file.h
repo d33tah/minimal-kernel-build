@@ -42,8 +42,7 @@ static inline void fdput(struct fd fd)
 extern void fput(struct file *file);
 
 extern struct file *fget(unsigned int fd);
-extern struct file *fget_raw(unsigned int fd);
-extern struct file *fget_task(struct task_struct *task, unsigned int fd);
+/* fget_raw, fget_task removed - unused */
 extern unsigned long __fdget(unsigned int fd);
 extern unsigned long __fdget_raw(unsigned int fd);
 extern unsigned long __fdget_pos(unsigned int fd);

@@ -342,11 +342,7 @@ __setup("console_msg_format=", console_msg_format_setup);
 static int __init console_setup(char *str) { return 1; }
 __setup("console=", console_setup);
 
-/* Stub: add_preferred_console not used externally */
-int add_preferred_console(char *name, int idx, char *options)
-{
-	return 0;
-}
+/* add_preferred_console removed - no callers */
 
 /* console_suspend_enabled removed - unused */
 static bool printk_console_no_auto_verbose;
@@ -569,10 +565,7 @@ void console_unlock(void)
 	} while (prb_read_valid(prb, next_seq, NULL) && console_trylock());
 }
 
-/* Stubbed: console_conditional_schedule not used externally */
-void __sched console_conditional_schedule(void)
-{
-}
+/* console_conditional_schedule removed - no callers */
 
 void console_unblank(void)
 {

@@ -251,8 +251,7 @@ const char *print_tainted(void)
 	return "";
 }
 
-/* Stub: test_taint not used externally */
-int test_taint(unsigned flag) { return 0; }
+/* test_taint removed - no callers */
 
 unsigned long get_taint(void)
 {

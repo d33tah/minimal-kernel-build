@@ -47,8 +47,7 @@ static void __synchronize_hardirq(struct irq_desc *desc, bool sync_chip)
 	} while (inprogress);
 }
 
-/* Stubbed: synchronize_hardirq not used externally */
-bool synchronize_hardirq(unsigned int irq) { return true; }
+/* synchronize_hardirq removed - no callers */
 
 void synchronize_irq(unsigned int irq)
 {
@@ -91,11 +90,7 @@ void disable_irq(unsigned int irq)
 		synchronize_irq(irq);
 }
 
-/* Stubbed: disable_hardirq not used externally */
-bool disable_hardirq(unsigned int irq) { return false; }
-
-/* Stubbed: disable_nmi_nosync not used externally */
-void disable_nmi_nosync(unsigned int irq) { }
+/* disable_hardirq, disable_nmi_nosync removed - no callers */
 
 void __enable_irq(struct irq_desc *desc)
 {
@@ -135,11 +130,7 @@ out:
 	irq_put_desc_busunlock(desc, flags);
 }
 
-/* Stubbed: enable_nmi not used externally */
-void enable_nmi(unsigned int irq) { }
-
-/* Stubbed: can_request_irq not used externally */
-int can_request_irq(unsigned int irq, unsigned long irqflags) { return 0; }
+/* enable_nmi, can_request_irq removed - no callers */
 
 int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 {

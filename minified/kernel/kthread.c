@@ -371,11 +371,7 @@ void kthread_unpark(struct task_struct *k)
 	wake_up_state(k, TASK_PARKED);
 }
 
-/* Stub: kthread_park not used externally in minimal kernel */
-int kthread_park(struct task_struct *k)
-{
-	return -ENOSYS;
-}
+/* kthread_park removed - no callers */
 
 int kthread_stop(struct task_struct *k)
 {

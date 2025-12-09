@@ -52,14 +52,6 @@ enum x86_regset {
 	REGSET_IOPERM32,
 };
 
-/* regoffset_table removed: unused since regs_query_register_* are stubbed */
-
-/* STUB: regs_query_register_offset not used externally */
-int regs_query_register_offset(const char *name) { return -EINVAL; }
-
-/* STUB: regs_query_register_name not used externally */
-const char *regs_query_register_name(unsigned int offset) { return NULL; }
-
 
 #define FLAG_MASK_32		((unsigned long)			\
 				 (X86_EFLAGS_CF | X86_EFLAGS_PF |	\

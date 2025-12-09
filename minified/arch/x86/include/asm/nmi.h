@@ -46,8 +46,6 @@ int __register_nmi_handler(unsigned int, struct nmiaction *);
 
 void unregister_nmi_handler(unsigned int, const char *);
 
-void stop_nmi(void);
-void restart_nmi(void);
 void local_touch_nmi(void);
 
 #endif  

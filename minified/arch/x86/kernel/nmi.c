@@ -316,12 +316,6 @@ nmi_restart:
 #if IS_MODULE(CONFIG_KVM_INTEL)
 #endif
 
-/* STUB: stop_nmi not used externally */
-void stop_nmi(void) { }
-
-/* STUB: restart_nmi not used externally */
-void restart_nmi(void) { }
-
 void local_touch_nmi(void)
 {
 	__this_cpu_write(last_nmi_rip, 0);

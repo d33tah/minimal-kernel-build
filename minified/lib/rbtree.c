@@ -318,26 +318,10 @@ struct rb_node *rb_next(const struct rb_node *node)
 	return parent;
 }
 
+/* Stub: rb_prev not called in minimal kernel */
 struct rb_node *rb_prev(const struct rb_node *node)
 {
-	struct rb_node *parent;
-
-	if (RB_EMPTY_NODE(node))
-		return NULL;
-
-	 
-	if (node->rb_left) {
-		node = node->rb_left;
-		while (node->rb_right)
-			node = node->rb_right;
-		return (struct rb_node *)node;
-	}
-
-	 
-	while ((parent = rb_parent(node)) && node == parent->rb_left)
-		node = parent;
-
-	return parent;
+	return NULL;
 }
 
 /* Stub: rb_replace_node not called externally */

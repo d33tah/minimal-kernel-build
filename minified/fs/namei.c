@@ -1719,15 +1719,7 @@ int vfs_create(struct user_namespace *mnt_userns, struct inode *dir,
 	return error;
 }
 
-int vfs_mkobj(struct dentry *dentry, umode_t mode,
-		int (*f)(struct dentry *, umode_t, void *),
-		void *arg)
-{
-	/* Stub: vfs_mkobj not used in minimal kernel */
-	return -ENOENT;
-}
-
-bool may_open_dev(const struct path *path)
+static bool may_open_dev(const struct path *path)
 {
 	/* Stub: device opening check not used in minimal kernel */
 	return true;

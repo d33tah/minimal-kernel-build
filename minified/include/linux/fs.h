@@ -1017,10 +1017,6 @@ int vfs_rename(struct renamedata *);
 struct dentry *vfs_tmpfile(struct user_namespace *mnt_userns,
 			   struct dentry *dentry, umode_t mode, int open_flag);
 
-int vfs_mkobj(struct dentry *, umode_t,
-		int (*f)(struct dentry *, umode_t, void *),
-		void *);
-
 int vfs_fchown(struct file *file, uid_t user, gid_t group);
 int vfs_fchmod(struct file *file, umode_t mode);
 int vfs_utimes(const struct path *path, struct timespec64 *times);
@@ -1031,7 +1027,6 @@ extern long vfs_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
 
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 		      const struct inode *dir, umode_t mode);
-extern bool may_open_dev(const struct path *path);
 
 struct dir_context;
 typedef int (*filldir_t)(struct dir_context *, const char *, int, loff_t, u64,

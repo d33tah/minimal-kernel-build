@@ -313,14 +313,6 @@ static void tty_ldisc_close(struct tty_struct *tty, struct tty_ldisc *ld)
 	tty_ldisc_debug(tty, "%p: closed\n", ld);
 }
 
-/* tty_ldisc_failto removed - unused */
-
-/* Stubbed - ldisc switching not needed for minimal kernel */
-int tty_set_ldisc(struct tty_struct *tty, int disc)
-{
-	return -EINVAL;
-}
-
 static void tty_ldisc_kill(struct tty_struct *tty)
 {
 	lockdep_assert_held_write(&tty->ldisc_sem);

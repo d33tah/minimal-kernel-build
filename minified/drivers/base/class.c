@@ -361,18 +361,7 @@ struct class_compat *class_compat_register(const char *name)
 
 /* class_compat_unregister removed - unused */
 
-int class_compat_create_link(struct class_compat *cls, struct device *dev,
-			     struct device *device_link)
-{
-	/* Stub: compat links not needed for minimal kernel */
-	return 0;
-}
-
-void class_compat_remove_link(struct class_compat *cls, struct device *dev,
-			      struct device *device_link)
-{
-	/* Stub: compat links not needed for minimal kernel */
-}
+/* class_compat_create_link, class_compat_remove_link removed - unused */
 
 int __init classes_init(void)
 {

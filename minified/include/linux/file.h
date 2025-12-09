@@ -76,8 +76,8 @@ static inline void fdput_pos(struct fd f)
 }
 
 extern int f_dupfd(unsigned int from, struct file *file, unsigned flags);
-extern int replace_fd(unsigned fd, struct file *file, unsigned flags);
-extern void set_close_on_exec(unsigned int fd, int flag);
+/* replace_fd removed - unused */
+/* set_close_on_exec removed - unused */
 extern bool get_close_on_exec(unsigned int fd);
 extern int __get_unused_fd_flags(unsigned flags, unsigned long nofile);
 extern int get_unused_fd_flags(unsigned flags);
@@ -85,13 +85,7 @@ extern void put_unused_fd(unsigned int fd);
 
 extern void fd_install(unsigned int fd, struct file *file);
 
-extern int __receive_fd(struct file *file, int __user *ufd,
-			unsigned int o_flags);
-
-extern int receive_fd(struct file *file, unsigned int o_flags);
-
-/* receive_fd_user removed - unused */
-int receive_fd_replace(int new_fd, struct file *file, unsigned int o_flags);
+/* __receive_fd, receive_fd, receive_fd_user, receive_fd_replace removed - unused */
 
 extern void flush_delayed_fput(void);
 extern void __fput_sync(struct file *);

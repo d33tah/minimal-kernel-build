@@ -687,11 +687,7 @@ void __f_unlock_pos(struct file *f)
 	mutex_unlock(&f->f_pos_lock);
 }
 
-
-/* Stub: set_close_on_exec not used in minimal kernel */
-void set_close_on_exec(unsigned int fd, int flag)
-{
-}
+/* set_close_on_exec removed - unused */
 
 bool get_close_on_exec(unsigned int fd)
 {
@@ -736,17 +732,7 @@ Ebusy:
 	return -EBUSY;
 }
 
-/* Stub: replace_fd not used in minimal kernel */
-int replace_fd(unsigned fd, struct file *file, unsigned flags)
-{
-	return -EBADF;
-}
-
-/* Stub: __receive_fd not used in minimal kernel */
-int __receive_fd(struct file *file, int __user *ufd, unsigned int o_flags)
-{ return -ENOSYS; }
-
-/* receive_fd_replace, receive_fd removed - no callers */
+/* replace_fd, __receive_fd, receive_fd_replace, receive_fd removed - no callers */
 
 static int ksys_dup3(unsigned int oldfd, unsigned int newfd, int flags)
 {

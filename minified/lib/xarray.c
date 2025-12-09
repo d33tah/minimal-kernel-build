@@ -877,36 +877,6 @@ void *xa_erase(struct xarray *xa, unsigned long index)
 	return entry;
 }
 
-/* Stubbed - not used externally */
-void *__xa_store(struct xarray *xa, unsigned long index, void *entry, gfp_t gfp)
-{
-	return NULL;
-}
-
-/* Stubbed - not used externally */
-void *xa_store(struct xarray *xa, unsigned long index, void *entry, gfp_t gfp)
-{
-	return NULL;
-}
-
-/* Stubbed - not used externally */
-void *__xa_cmpxchg(struct xarray *xa, unsigned long index,
-			void *old, void *entry, gfp_t gfp)
-{
-	return NULL;
-}
-
-/* Stubbed - not used externally */
-int __xa_insert(struct xarray *xa, unsigned long index, void *entry, gfp_t gfp)
-{
-	return -EINVAL;
-}
-
-/* Stubbed - not used externally */
-int __xa_alloc(struct xarray *xa, u32 *id, void *entry,
-		struct xa_limit limit, gfp_t gfp)
-{
-	return -EINVAL;
-}
+/* Removed: __xa_store, xa_store, __xa_cmpxchg, __xa_insert, __xa_alloc - no callers */
 
 /* __xa_alloc_cyclic, xa_*_mark, xa_find, xa_find_after, xa_extract, xa_delete_node, xa_destroy removed - unused */

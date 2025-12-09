@@ -356,8 +356,7 @@ void speculation_ctrl_update(unsigned long tif)
 	local_irq_restore(flags);
 }
 
-/* Stub: speculation_ctrl_update_current not used externally */
-void speculation_ctrl_update_current(void) { }
+/* speculation_ctrl_update_current removed - no callers */
 
 static inline void cr4_toggle_bits_irqsoff(unsigned long mask)
 {
@@ -466,10 +465,7 @@ void select_idle_routine(const struct cpuinfo_x86 *c)
 		x86_idle = default_idle;
 }
 
-/* Stub: amd_e400_c1e_apic_setup not used externally */
-void amd_e400_c1e_apic_setup(void)
-{
-}
+/* amd_e400_c1e_apic_setup removed - no callers */
 
 void __init arch_post_acpi_subsys_init(void)
 {

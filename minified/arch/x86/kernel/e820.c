@@ -24,11 +24,7 @@ struct e820_table *e820_table_firmware __refdata	= &e820_table_firmware_init;
 
 unsigned long pci_mem_start = 0xaeedbabe;
 
-/* Stubbed - not used externally */
-bool e820__mapped_raw_any(u64 start, u64 end, enum e820_type type)
-{
-	return false;
-}
+/* e820__mapped_raw_any removed - no callers */
 
 bool e820__mapped_any(u64 start, u64 end, enum e820_type type)
 {
@@ -67,11 +63,7 @@ bool __init e820__mapped_all(u64 start, u64 end, enum e820_type type)
 	return __e820__mapped_all(start, end, type);
 }
 
-/* Stubbed - not used externally */
-int e820__get_entry_type(u64 start, u64 end)
-{
-	return -EINVAL;
-}
+/* e820__get_entry_type removed - no callers */
 
 static void __init __e820__range_add(struct e820_table *table, u64 start, u64 size, enum e820_type type)
 {

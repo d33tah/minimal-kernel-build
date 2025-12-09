@@ -594,10 +594,7 @@ static unsigned long native_calibrate_cpu(void)
 	return tsc_freq;
 }
 
-/* Stubbed - not used externally */
-void recalibrate_cpu_khz(void)
-{
-}
+/* recalibrate_cpu_khz removed - no callers */
 
 
 /* cyc2ns_suspend removed - unused */

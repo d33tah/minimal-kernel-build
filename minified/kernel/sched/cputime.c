@@ -80,9 +80,6 @@ void account_system_time(struct task_struct *p, int hardirq_offset, u64 cputime)
 	account_system_index_time(p, cputime, index);
 }
 
-/* Stub: account_steal_time not used in minimal kernel */
-void account_steal_time(u64 cputime) { }
-
 void account_idle_time(u64 cputime)
 {
 	u64 *cpustat = kcpustat_this_cpu->cpustat;
@@ -138,11 +135,6 @@ void account_process_tick(struct task_struct *p, int user_tick)
 		account_system_time(p, HARDIRQ_OFFSET, cputime);
 	else
 		account_idle_time(cputime);
-}
-
-/* Stub: account_idle_ticks not used in minimal kernel */
-void account_idle_ticks(unsigned long ticks)
-{
 }
 
 /* Stubbed: cputime_adjust not used externally */

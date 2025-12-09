@@ -81,12 +81,11 @@ extern void account_guest_time(struct task_struct *, u64);
 extern void account_system_time(struct task_struct *, int, u64);
 extern void account_system_index_time(struct task_struct *, u64,
 				      enum cpu_usage_stat);
-extern void account_steal_time(u64);
+/* account_steal_time removed - unused */
 extern void account_idle_time(u64);
 extern u64 get_idle_time(struct kernel_cpustat *kcs, int cpu);
 
 extern void account_process_tick(struct task_struct *, int user);
-
-extern void account_idle_ticks(unsigned long ticks);
+/* account_idle_ticks removed - unused */
 
 #endif  

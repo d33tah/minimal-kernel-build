@@ -809,7 +809,5 @@ int nonseekable_open(struct inode *inode, struct file *filp)
 	return 0;
 }
 
-
-/* Stub: stream_open not called in minimal kernel */
-int stream_open(struct inode *inode, struct file *filp) { return 0; }
+/* Removed: stream_open - never called */
 

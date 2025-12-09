@@ -1679,7 +1679,7 @@ extern loff_t generic_file_llseek_size(struct file *file, loff_t offset,
 int rw_verify_area(int, struct file *, const loff_t *, size_t);
 extern int generic_file_open(struct inode * inode, struct file * filp);
 extern int nonseekable_open(struct inode * inode, struct file * filp);
-extern int stream_open(struct inode * inode, struct file * filp);
+/* Removed: stream_open - never called */
 
 void dio_warn_stale_pagecache(struct file *filp);
 

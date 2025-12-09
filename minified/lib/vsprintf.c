@@ -81,12 +81,6 @@ long simple_strtol(const char *cp, char **endp, unsigned int base)
 	return simple_strtoul(cp, endp, base);
 }
 
-/* STUB: simple_strtoll not used externally */
-long long simple_strtoll(const char *cp, char **endp, unsigned int base)
-{
-	return 0;
-}
-
 static noinline_for_stack
 int skip_atoi(const char **s)
 {
@@ -252,12 +246,6 @@ char *put_dec(char *buf, unsigned long long n)
 }
 
 #endif
-
-/* Stub: num_to_str not used in minimal kernel */
-int num_to_str(char *buf, int size, unsigned long long num, unsigned int width)
-{
-	return 0;
-}
 
 #define SIGN	1		
 #define LEFT	2		

@@ -1666,17 +1666,6 @@ static int do_register_con_driver(const struct consw *csw, int first, int last)
 	return -ENODEV;
 }
 
-int do_unregister_con_driver(const struct consw *csw)
-{
-	/* Stub: console driver unregistration not needed for minimal kernel */
-	return -ENODEV;
-}
-
-static void con_driver_unregister_callback(struct work_struct *ignored)
-{
-	/* Stub: no console driver unregistration in minimal kernel */
-}
-
 int do_take_over_console(const struct consw *csw, int first, int last, int deflt)
 {
 	int err;
@@ -1689,10 +1678,6 @@ int do_take_over_console(const struct consw *csw, int first, int last, int deflt
 		do_bind_con_driver(csw, first, last, deflt);
 
 	return err;
-}
-
-void give_up_console(const struct consw *csw)
-{
 }
 
 static int __init vtconsole_class_init(void)

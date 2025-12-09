@@ -912,12 +912,7 @@ void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 	};
 }
 
-/* Stubbed - not used externally */
-void iov_iter_bvec(struct iov_iter *i, unsigned int direction,
-			const struct bio_vec *bvec, unsigned long nr_segs,
-			size_t count)
-{
-}
+/* iov_iter_bvec removed - unused */
 
 /* iov_iter_pipe, iov_iter_xarray, iov_iter_discard, iov_iter_alignment,
    iov_iter_gap_alignment, iov_iter_get_pages, iov_iter_get_pages_alloc,

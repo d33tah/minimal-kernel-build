@@ -601,12 +601,7 @@ static int nd_jump_root(struct nameidata *nd)
 	return 0;
 }
 
-/* STUB: nd_jump_link not used externally */
-int nd_jump_link(struct path *path)
-{
-	path_put(path);
-	return -ELOOP;
-}
+/* nd_jump_link removed - unused */
 
 static inline void put_link(struct nameidata *nd)
 {
@@ -676,11 +671,7 @@ static inline int traverse_mounts(struct path *path, bool *jumped,
 	return __traverse_mounts(path, flags, jumped, count, lookup_flags);
 }
 
-/* STUB: follow_down_one not used externally */
-int follow_down_one(struct path *path) { return 0; }
-
-/* STUB: follow_down not used externally */
-int follow_down(struct path *path) { return 0; }
+/* follow_down_one, follow_down removed - unused */
 
 static bool __follow_mount_rcu(struct nameidata *nd, struct path *path,
 			       struct inode **inode, unsigned *seqp)

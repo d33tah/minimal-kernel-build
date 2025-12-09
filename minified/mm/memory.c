@@ -1933,34 +1933,7 @@ int __pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
 }
 #endif 
 
-int follow_pte(struct mm_struct *mm, unsigned long address,
-	       pte_t **ptepp, spinlock_t **ptlp)
-{
-	/* Stub: PTE following not needed for minimal kernel */
-	return -EINVAL;
-}
-
-int follow_pfn(struct vm_area_struct *vma, unsigned long address,
-	unsigned long *pfn)
-{
-	/* Stub: PFN following not needed for minimal kernel */
-	return -EINVAL;
-}
-
-int follow_phys(struct vm_area_struct *vma,
-		unsigned long address, unsigned int flags,
-		unsigned long *prot, resource_size_t *phys)
-{
-	/* Stub: physical address following not needed for minimal kernel */
-	return -EINVAL;
-}
-
-int generic_access_phys(struct vm_area_struct *vma, unsigned long addr,
-			void *buf, int len, int write)
-{
-	/* Stub: physical memory access not needed for minimal kernel */
-	return -EINVAL;
-}
+/* follow_pte, follow_pfn, follow_phys, generic_access_phys removed - unused */
 
 #if USE_SPLIT_PTE_PTLOCKS && ALLOC_SPLIT_PTLOCKS
 

@@ -1187,21 +1187,7 @@ static inline bool fwnode_is_primary(struct fwnode_handle *fwnode)
 	return fwnode && !IS_ERR(fwnode->secondary);
 }
 
-/* STUB: set_primary_fwnode not used externally */
-void set_primary_fwnode(struct device *dev, struct fwnode_handle *fwnode) { }
-/* STUB: set_secondary_fwnode not used externally */
-void set_secondary_fwnode(struct device *dev, struct fwnode_handle *fwnode) { }
+/* set_primary_fwnode, set_secondary_fwnode, device_set_of_node_from_dev, device_set_node removed - unused */
 
-/* STUB: device_set_of_node_from_dev not used externally */
-void device_set_of_node_from_dev(struct device *dev, const struct device *dev2) { }
-/* STUB: device_set_node not used externally */
-void device_set_node(struct device *dev, struct fwnode_handle *fwnode) { }
-
-/* Stub: device_match functions not used in minimal kernel */
-int device_match_name(struct device *dev, const void *name) { return 0; }
-int device_match_of_node(struct device *dev, const void *np) { return 0; }
-int device_match_fwnode(struct device *dev, const void *fwnode) { return 0; }
+/* device_match_* functions removed - unused, except device_match_devt */
 int device_match_devt(struct device *dev, const void *pdevt) { return 0; }
-int device_match_acpi_dev(struct device *dev, const void *adev) { return 0; }
-int device_match_acpi_handle(struct device *dev, const void *handle) { return 0; }
-int device_match_any(struct device *dev, const void *unused) { return 1; }

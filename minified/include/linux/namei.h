@@ -65,14 +65,11 @@ struct dentry *lookup_one_positive_unlocked(struct user_namespace *mnt_userns,
 					    const char *name,
 					    struct dentry *base, int len);
 
-extern int follow_down_one(struct path *);
-extern int follow_down(struct path *);
+/* follow_down_one, follow_down, nd_jump_link removed - unused */
 extern int follow_up(struct path *);
 
 extern struct dentry *lock_rename(struct dentry *, struct dentry *);
 extern void unlock_rename(struct dentry *, struct dentry *);
-
-extern int __must_check nd_jump_link(struct path *path);
 
 static inline void nd_terminate_link(void *name, size_t len, size_t maxlen)
 {

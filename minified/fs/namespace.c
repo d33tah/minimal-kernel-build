@@ -670,13 +670,7 @@ struct vfsmount *vfs_kern_mount(struct file_system_type *type,
 	return mnt;
 }
 
-/* Stub: vfs_submount not used in minimal kernel */
-struct vfsmount *
-vfs_submount(const struct dentry *mountpoint, struct file_system_type *type,
-	     const char *name, void *data)
-{
-	return ERR_PTR(-EPERM);
-}
+/* vfs_submount removed - unused */
 
 static struct mount *clone_mnt(struct mount *old, struct dentry *root,
 					int flag)
@@ -1113,12 +1107,7 @@ void dissolve_on_fput(struct vfsmount *mnt)
 /* Stub: not used in minimal kernel */
 void drop_collected_mounts(struct vfsmount *mnt) { }
 
-/* Stub: not used in minimal kernel */
-struct vfsmount *clone_private_mount(const struct path *path) { return ERR_PTR(-EINVAL); }
-
-/* Stub: not used in minimal kernel */
-int iterate_mounts(int (*f)(struct vfsmount *, void *), void *arg,
-		   struct vfsmount *root) { return 0; }
+/* clone_private_mount, iterate_mounts removed - unused */
 
 static void lock_mnt_tree(struct mount *mnt)
 {

@@ -370,11 +370,4 @@ static inline struct dentry *d_real(struct dentry *dentry,
 		return dentry;
 }
 
-struct name_snapshot {
-	struct qstr name;
-	unsigned char inline_name[DNAME_INLINE_LEN];
-};
-void take_dentry_name_snapshot(struct name_snapshot *, struct dentry *);
-void release_dentry_name_snapshot(struct name_snapshot *);
-
 #endif	 

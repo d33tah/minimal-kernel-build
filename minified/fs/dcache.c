@@ -125,16 +125,6 @@ static inline int dname_external(const struct dentry *dentry)
 	return dentry->d_name.name != dentry->d_iname;
 }
 
-/* Stubbed - not used externally */
-void take_dentry_name_snapshot(struct name_snapshot *name, struct dentry *dentry)
-{
-}
-
-/* Stubbed - not used externally */
-void release_dentry_name_snapshot(struct name_snapshot *name)
-{
-}
-
 static inline void __d_set_inode_and_type(struct dentry *dentry,
 					  struct inode *inode,
 					  unsigned type_flags)
@@ -371,11 +361,6 @@ static inline bool retain_dentry(struct dentry *dentry)
 	else if (unlikely(!(dentry->d_flags & DCACHE_REFERENCED)))
 		dentry->d_flags |= DCACHE_REFERENCED;
 	return true;
-}
-
-/* Stubbed - not used externally */
-void d_mark_dontcache(struct inode *inode)
-{
 }
 
 static struct dentry *dentry_kill(struct dentry *dentry)
@@ -979,35 +964,6 @@ struct dentry *d_make_root(struct inode *root_inode)
 			iput(root_inode);
 	}
 	return res;
-}
-
-/* Stubbed - not used in minimal kernel (anonymous dentries for NFS etc) */
-struct dentry *d_instantiate_anon(struct dentry *dentry, struct inode *inode)
-{
-	iput(inode);
-	dput(dentry);
-	return ERR_PTR(-ESTALE);
-}
-
-/* Stubbed - not used in minimal kernel */
-struct dentry *d_obtain_alias(struct inode *inode)
-{
-	iput(inode);
-	return ERR_PTR(-ESTALE);
-}
-
-struct dentry *d_obtain_root(struct inode *inode)
-{
-	iput(inode);
-	return ERR_PTR(-ESTALE);
-}
-
-/* Stubbed - not used in minimal kernel (case-insensitive fs) */
-struct dentry *d_add_ci(struct dentry *dentry, struct inode *inode,
-			struct qstr *name)
-{
-	iput(inode);
-	return ERR_PTR(-ENOENT);
 }
 
 static inline bool d_same_name(const struct dentry *dentry,

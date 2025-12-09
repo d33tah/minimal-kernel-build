@@ -316,8 +316,7 @@ static void do_oops_enter_exit(void)
 	spin_unlock_irqrestore(&pause_on_oops_lock, flags);
 }
 
-/* STUB: oops_may_print not used externally */
-bool oops_may_print(void) { return true; }
+/* Removed: oops_may_print - never called */
 
 void oops_enter(void)
 {

@@ -260,8 +260,9 @@ static int grab_super(struct super_block *s) __releases(sb_lock)
 	return 0;
 }
 
-/* Stub: trylock_super not used in minimal kernel */
-bool trylock_super(struct super_block *sb) { return false; }
+bool trylock_super(struct super_block *sb) {
+	return down_read_trylock(&sb->s_umount) && sb->s_root && (sb->s_flags & SB_BORN);
+}
 
 void generic_shutdown_super(struct super_block *sb)
 {
@@ -432,13 +433,8 @@ void drop_super(struct super_block *sb)
 	put_super(sb);
 }
 
-
-/* Stub: drop_super_exclusive not called in minimal kernel */
-void drop_super_exclusive(struct super_block *sb)
-{
-}
-
-/* iterate_supers, iterate_supers_type, get_super, get_active_super, user_get_super removed - unused */
+/* Removed: drop_super_exclusive, iterate_supers, iterate_supers_type,
+   get_super, get_active_super, user_get_super - never called */
 
 /* Stubbed - remount not needed for minimal kernel */
 int reconfigure_super(struct fs_context *fc)

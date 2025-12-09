@@ -253,19 +253,7 @@ struct device;
 
 
 
-
-
-unsigned long *bitmap_alloc(unsigned int nbits, gfp_t flags);
-unsigned long *bitmap_zalloc(unsigned int nbits, gfp_t flags);
-unsigned long *bitmap_alloc_node(unsigned int nbits, gfp_t flags, int node);
-unsigned long *bitmap_zalloc_node(unsigned int nbits, gfp_t flags, int node);
-void bitmap_free(const unsigned long *bitmap);
-
-unsigned long *devm_bitmap_alloc(struct device *dev,
-				 unsigned int nbits, gfp_t flags);
-unsigned long *devm_bitmap_zalloc(struct device *dev,
-				  unsigned int nbits, gfp_t flags);
-
+/* bitmap_alloc, bitmap_zalloc, bitmap_free, devm_bitmap_alloc, devm_bitmap_zalloc removed - unused */
 
 bool __bitmap_equal(const unsigned long *bitmap1,
 		    const unsigned long *bitmap2, unsigned int nbits);

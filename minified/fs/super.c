@@ -433,10 +433,9 @@ void drop_super(struct super_block *sb)
 }
 
 
+/* Stub: drop_super_exclusive not called in minimal kernel */
 void drop_super_exclusive(struct super_block *sb)
 {
-	up_write(&sb->s_umount);
-	put_super(sb);
 }
 
 /* iterate_supers, iterate_supers_type, get_super, get_active_super, user_get_super removed - unused */
@@ -595,23 +594,12 @@ int get_tree_keyed(struct fs_context *fc,
 	return vfs_get_super(fc, vfs_get_keyed_super, fill_super);
 }
 
+/* Stub: mount_nodev not called in minimal kernel */
 struct dentry *mount_nodev(struct file_system_type *fs_type,
 	int flags, void *data,
 	int (*fill_super)(struct super_block *, void *, int))
 {
-	int error;
-	struct super_block *s = sget(fs_type, NULL, set_anon_super, flags, NULL);
-
-	if (IS_ERR(s))
-		return ERR_CAST(s);
-
-	error = fill_super(s, data, flags & SB_SILENT ? 1 : 0);
-	if (error) {
-		deactivate_locked_super(s);
-		return ERR_PTR(error);
-	}
-	s->s_flags |= SB_ACTIVE;
-	return dget(s->s_root);
+	return ERR_PTR(-ENODEV);
 }
 
 int vfs_get_tree(struct fs_context *fc)

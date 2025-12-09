@@ -64,19 +64,12 @@ unsigned long _find_first_bit(const unsigned long *addr, unsigned long size)
 }
 #endif
 
+/* Stub: _find_first_and_bit not used in minimal kernel */
 #ifndef find_first_and_bit
 unsigned long _find_first_and_bit(const unsigned long *addr1,
 				  const unsigned long *addr2,
 				  unsigned long size)
 {
-	unsigned long idx, val;
-
-	for (idx = 0; idx * BITS_PER_LONG < size; idx++) {
-		val = addr1[idx] & addr2[idx];
-		if (val)
-			return min(idx * BITS_PER_LONG + __ffs(val), size);
-	}
-
 	return size;
 }
 #endif
@@ -114,15 +107,9 @@ unsigned long _find_last_bit(const unsigned long *addr, unsigned long size)
 }
 #endif
 
+/* Stub: find_next_clump8 not used in minimal kernel */
 unsigned long find_next_clump8(unsigned long *clump, const unsigned long *addr,
 			       unsigned long size, unsigned long offset)
 {
-	offset = find_next_bit(addr, size, offset);
-	if (offset == size)
-		return size;
-
-	offset = round_down(offset, 8);
-	*clump = bitmap_get_value8(addr, offset);
-
-	return offset;
+	return size;
 }

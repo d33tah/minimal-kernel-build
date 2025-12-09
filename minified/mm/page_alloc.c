@@ -53,20 +53,7 @@ static inline bool is_migrate_isolate(int migratetype)
 #define REPORT_FAILURE	0x2
 
 void set_pageblock_migratetype(struct page *page, int migratetype);
-/* move_freepages_block declaration removed - unused */
-
-int
-start_isolate_page_range(unsigned long start_pfn, unsigned long end_pfn,
-			 int migratetype, int flags, gfp_t gfp_flags);
-
-void
-undo_isolate_page_range(unsigned long start_pfn, unsigned long end_pfn,
-			int migratetype);
-
-int test_pages_isolated(unsigned long start_pfn, unsigned long end_pfn,
-			int isol_flags);
-
-struct page *alloc_migrate_target(struct page *page, unsigned long private);
+/* page-isolation function declarations removed - unused */
 /* end page-isolation.h */
 
 /* --- 2025-12-06 17:10 --- compaction.h inlined */
@@ -80,13 +67,6 @@ enum compact_result {
 
 struct alloc_context;
 
-static inline unsigned long compact_gap(unsigned int order)
-{
-	return 2UL << order;
-}
-
-static inline void reset_isolation_suitable(pg_data_t *pgdat) { }
-
 static inline enum compact_result compaction_suitable(struct zone *zone, int order,
 					int alloc_flags, int highest_zoneidx)
 {
@@ -98,14 +78,6 @@ static inline bool compaction_failed(enum compact_result result) { return false;
 static inline bool compaction_needs_reclaim(enum compact_result result) { return false; }
 static inline bool compaction_withdrawn(enum compact_result result) { return true; }
 
-static inline void kcompactd_run(int nid) { }
-static inline void kcompactd_stop(int nid) { }
-
-static inline void wakeup_kcompactd(pg_data_t *pgdat, int order, int highest_zoneidx) { }
-
-struct node;
-static inline int compaction_register_node(struct node *node) { return 0; }
-static inline void compaction_unregister_node(struct node *node) { }
 /* --- end compaction.h inlined --- */
 
 #include <linux/mm_inline.h>

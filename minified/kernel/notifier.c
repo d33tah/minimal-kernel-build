@@ -81,13 +81,6 @@ int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
 	return ret;
 }
 
-/* Stub: atomic_notifier_chain_register_unique_prio not used in minimal kernel */
-int atomic_notifier_chain_register_unique_prio(struct atomic_notifier_head *nh,
-					       struct notifier_block *n)
-{
-	return 0;
-}
-
 int atomic_notifier_chain_unregister(struct atomic_notifier_head *nh,
 		struct notifier_block *n)
 {
@@ -142,13 +135,6 @@ int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
 	return __blocking_notifier_chain_register(nh, n, false);
 }
 
-/* Stub: blocking_notifier_chain_register_unique_prio not used in minimal kernel */
-int blocking_notifier_chain_register_unique_prio(struct blocking_notifier_head *nh,
-						 struct notifier_block *n)
-{
-	return 0;
-}
-
 int blocking_notifier_chain_unregister(struct blocking_notifier_head *nh,
 		struct notifier_block *n)
 {
@@ -162,13 +148,6 @@ int blocking_notifier_chain_unregister(struct blocking_notifier_head *nh,
 	ret = notifier_chain_unregister(&nh->head, n);
 	up_write(&nh->rwsem);
 	return ret;
-}
-
-/* Stub: blocking_notifier_call_chain_robust not used in minimal kernel */
-int blocking_notifier_call_chain_robust(struct blocking_notifier_head *nh,
-		unsigned long val_up, unsigned long val_down, void *v)
-{
-	return NOTIFY_DONE;
 }
 
 int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
@@ -192,35 +171,11 @@ int raw_notifier_chain_register(struct raw_notifier_head *nh,
 	return notifier_chain_register(&nh->head, n, false);
 }
 
-/* Stub: raw_notifier_chain_unregister not used in minimal kernel */
-int raw_notifier_chain_unregister(struct raw_notifier_head *nh,
-		struct notifier_block *n)
-{
-	return 0;
-}
-
-/* Stub: raw_notifier_call_chain_robust not used in minimal kernel */
-int raw_notifier_call_chain_robust(struct raw_notifier_head *nh,
-		unsigned long val_up, unsigned long val_down, void *v)
-{
-	return NOTIFY_DONE;
-}
-
 int raw_notifier_call_chain(struct raw_notifier_head *nh,
 		unsigned long val, void *v)
 {
 	return notifier_call_chain(&nh->head, val, v, -1, NULL);
 }
-
-
-/* Stub: srcu notifier functions not used in minimal kernel */
-int srcu_notifier_chain_register(struct srcu_notifier_head *nh,
-		struct notifier_block *n) { return 0; }
-int srcu_notifier_chain_unregister(struct srcu_notifier_head *nh,
-		struct notifier_block *n) { return 0; }
-int srcu_notifier_call_chain(struct srcu_notifier_head *nh,
-		unsigned long val, void *v) { return NOTIFY_DONE; }
-void srcu_init_notifier_head(struct srcu_notifier_head *nh) { }
 
 
 static ATOMIC_NOTIFIER_HEAD(die_chain);
@@ -241,7 +196,3 @@ int notrace notify_die(enum die_val val, const char *str,
 	return atomic_notifier_call_chain(&die_chain, val, &args);
 }
 NOKPROBE_SYMBOL(notify_die);
-
-/* Stub: die notifier functions not used in minimal kernel */
-int register_die_notifier(struct notifier_block *nb) { return 0; }
-int unregister_die_notifier(struct notifier_block *nb) { return 0; }

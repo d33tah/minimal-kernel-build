@@ -86,9 +86,7 @@ extern int atomic_notifier_chain_unregister(struct atomic_notifier_head *nh,
 		struct notifier_block *nb);
 extern int blocking_notifier_chain_unregister(struct blocking_notifier_head *nh,
 		struct notifier_block *nb);
-extern int raw_notifier_chain_unregister(struct raw_notifier_head *nh,
-		struct notifier_block *nb);
-/* srcu_notifier_chain_unregister removed - unused */
+/* raw_notifier_chain_unregister, srcu_notifier_chain_unregister removed - unused */
 
 extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 		unsigned long val, void *v);
@@ -98,10 +96,7 @@ extern int raw_notifier_call_chain(struct raw_notifier_head *nh,
 		unsigned long val, void *v);
 /* srcu_notifier_call_chain removed - unused */
 
-extern int blocking_notifier_call_chain_robust(struct blocking_notifier_head *nh,
-		unsigned long val_up, unsigned long val_down, void *v);
-extern int raw_notifier_call_chain_robust(struct raw_notifier_head *nh,
-		unsigned long val_up, unsigned long val_down, void *v);
+/* blocking_notifier_call_chain_robust, raw_notifier_call_chain_robust removed - unused */
 
 extern bool atomic_notifier_call_chain_is_empty(struct atomic_notifier_head *nh);
 

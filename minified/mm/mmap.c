@@ -81,19 +81,8 @@ static pgprot_t vm_pgprot_modify(pgprot_t oldprot, unsigned long vm_flags)
 	return pgprot_modify(oldprot, vm_get_page_prot(vm_flags));
 }
 
-void vma_set_page_prot(struct vm_area_struct *vma)
-{
-	unsigned long vm_flags = vma->vm_flags;
-	pgprot_t vm_page_prot;
-
-	vm_page_prot = vm_pgprot_modify(vma->vm_page_prot, vm_flags);
-	if (vma_wants_writenotify(vma, vm_page_prot)) {
-		vm_flags &= ~VM_SHARED;
-		vm_page_prot = vm_pgprot_modify(vm_page_prot, vm_flags);
-	}
-	
-	WRITE_ONCE(vma->vm_page_prot, vm_page_prot);
-}
+/* Stub: vma_set_page_prot not called in minimal kernel */
+void vma_set_page_prot(struct vm_area_struct *vma) { }
 
 static void __remove_shared_vm_struct(struct vm_area_struct *vma,
 		struct file *file, struct address_space *mapping)

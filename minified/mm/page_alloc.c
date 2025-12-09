@@ -53,8 +53,7 @@ static inline bool is_migrate_isolate(int migratetype)
 #define REPORT_FAILURE	0x2
 
 void set_pageblock_migratetype(struct page *page, int migratetype);
-int move_freepages_block(struct zone *zone, struct page *page,
-				int migratetype, int *num_movable);
+/* move_freepages_block declaration removed - unused */
 
 int
 start_isolate_page_range(unsigned long start_pfn, unsigned long end_pfn,
@@ -465,12 +464,7 @@ static inline void __free_one_page(struct page *page,
 		page_reporting_notify_free(order);
 }
 
-int split_free_page(struct page *free_page,
-			unsigned int order, unsigned long split_pfn_offset)
-{
-	/* Stub: free page splitting not needed for minimal kernel */
-	return -ENOENT;
-}
+/* split_free_page removed - unused */
 
 static __always_inline bool free_pages_prepare(struct page *page,
 			unsigned int order, bool check_free, fpi_t fpi_flags)
@@ -752,15 +746,7 @@ static int fallbacks[MIGRATE_TYPES][3] = {
 static inline struct page *__rmqueue_cma_fallback(struct zone *zone,
 					unsigned int order) { return NULL; }
 
-int move_freepages_block(struct zone *zone, struct page *page,
-				int migratetype, int *num_movable)
-{
-	/* Stub: freepage block moving not used in minimal kernel */
-	if (num_movable)
-		*num_movable = 0;
-	return 0;
-}
-
+/* move_freepages_block removed - unused */
 
 static bool can_steal_fallback(unsigned int order, int start_mt)
 {
@@ -1049,16 +1035,7 @@ void split_page(struct page *page, unsigned int order)
 	split_page_memcg(page, 1 << order);
 }
 
-int __isolate_free_page(struct page *page, unsigned int order)
-{
-	/* Stub: page isolation not used in minimal kernel */
-	return 0;
-}
-
-void __putback_isolated_page(struct page *page, unsigned int order, int mt)
-{
-	/* Stub: page isolation not used in minimal kernel */
-}
+/* __isolate_free_page, __putback_isolated_page removed - unused */
 
 static inline void zone_statistics(struct zone *preferred_zone, struct zone *z,
 				   long nr_account)
@@ -1218,13 +1195,7 @@ static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
 	return __zone_watermark_ok(z, order, mark, highest_zoneidx, alloc_flags, free_pages);
 }
 
-bool zone_watermark_ok_safe(struct zone *z, unsigned int order,
-			unsigned long mark, int highest_zoneidx)
-{
-	/* Stub: safe watermark check not used in minimal kernel */
-	return true;
-}
-
+/* zone_watermark_ok_safe removed - unused */
 
 static inline unsigned int
 alloc_flags_nofragment(struct zone *zone, gfp_t gfp_mask)
@@ -1665,15 +1636,7 @@ unsigned long nr_free_buffer_pages(void)
 	return nr_free_zone_pages(gfp_zone(GFP_USER));
 }
 
-/* show_node removed - unused */
-
-long si_mem_available(void)
-{
-	/* Stub: memory info reporting not needed for minimal kernel */
-	return global_zone_page_state(NR_FREE_PAGES);
-}
-
-/* si_meminfo removed - unused */
+/* show_node, si_mem_available, si_meminfo removed - unused */
 
 static void zoneref_set_zone(struct zone *zone, struct zoneref *zoneref)
 {

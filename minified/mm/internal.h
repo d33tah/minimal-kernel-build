@@ -190,9 +190,7 @@ static inline struct page *pageblock_pfn_to_page(unsigned long start_pfn,
 	return __pageblock_pfn_to_page(start_pfn, end_pfn, zone);
 }
 
-extern int __isolate_free_page(struct page *page, unsigned int order);
-extern void __putback_isolated_page(struct page *page, unsigned int order,
-				    int mt);
+/* __isolate_free_page, __putback_isolated_page removed - unused */
 extern void memblock_free_pages(struct page *page, unsigned long pfn,
 					unsigned int order);
 extern void __free_pages_core(struct page *page, unsigned int order);
@@ -213,8 +211,7 @@ extern void *memmap_alloc(phys_addr_t size, phys_addr_t align,
 			  phys_addr_t min_addr,
 			  int nid, bool exact_nid);
 
-int split_free_page(struct page *free_page,
-			unsigned int order, unsigned long split_pfn_offset);
+/* split_free_page removed - unused */
 
 int find_suitable_fallback(struct free_area *area, unsigned int order,
 			int migratetype, bool only_stealable, bool *can_steal);

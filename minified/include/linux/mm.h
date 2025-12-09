@@ -1459,9 +1459,7 @@ extern void calculate_min_free_kbytes(void);
 extern int __meminit init_per_zone_wmark_min(void);
 extern void mem_init(void);
 extern void __init mmap_init(void);
-extern long si_mem_available(void);
-extern void si_meminfo(struct sysinfo * val);
-/* si_meminfo_node, arch_reserved_kernel_pages removed - unused */
+/* si_mem_available, si_meminfo, si_meminfo_node, arch_reserved_kernel_pages removed - unused */
 
 extern __printf(3, 4)
 void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...);

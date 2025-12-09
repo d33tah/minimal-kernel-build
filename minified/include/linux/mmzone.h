@@ -469,8 +469,7 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 bool zone_watermark_ok(struct zone *z, unsigned int order,
 		unsigned long mark, int highest_zoneidx,
 		unsigned int alloc_flags);
-bool zone_watermark_ok_safe(struct zone *z, unsigned int order,
-		unsigned long mark, int highest_zoneidx);
+/* zone_watermark_ok_safe removed - unused */
 enum meminit_context {
 	MEMINIT_EARLY,
 	MEMINIT_HOTPLUG,

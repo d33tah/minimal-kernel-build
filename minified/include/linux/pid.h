@@ -44,7 +44,7 @@ struct file;
 
 extern struct pid *pidfd_pid(const struct file *file);
 struct pid *pidfd_get_pid(unsigned int fd, unsigned int *flags);
-struct task_struct *pidfd_get_task(int pidfd, unsigned int *flags);
+/* pidfd_get_task removed - unused */
 int pidfd_create(struct pid *pid, unsigned int flags);
 
 static inline struct pid *get_pid(struct pid *pid)
@@ -82,12 +82,12 @@ extern struct pid *find_pid_ns(int nr, struct pid_namespace *ns);
 extern struct pid *find_vpid(int nr);
 
 extern struct pid *find_get_pid(int nr);
-extern struct pid *find_ge_pid(int nr, struct pid_namespace *);
+/* find_ge_pid removed - unused */
 
 extern struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 			     size_t set_tid_size);
 extern void free_pid(struct pid *pid);
-extern void disable_pid_allocation(struct pid_namespace *ns);
+/* disable_pid_allocation removed - unused */
 
 static inline struct pid_namespace *ns_of_pid(struct pid *pid)
 {

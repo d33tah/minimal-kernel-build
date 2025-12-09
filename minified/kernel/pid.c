@@ -218,9 +218,6 @@ out_free:
 	return ERR_PTR(retval);
 }
 
-/* Stub: disable_pid_allocation not used in minimal kernel */
-void disable_pid_allocation(struct pid_namespace *ns) { }
-
 struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
 {
 	return idr_find(&ns->idr, nr);
@@ -395,12 +392,6 @@ struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 	return ns_of_pid(task_pid(tsk));
 }
 
-/* Stub: find_ge_pid not used externally in minimal kernel */
-struct pid *find_ge_pid(int nr, struct pid_namespace *ns)
-{
-	return NULL;
-}
-
 struct pid *pidfd_get_pid(unsigned int fd, unsigned int *flags)
 {
 	struct fd f;
@@ -418,12 +409,6 @@ struct pid *pidfd_get_pid(unsigned int fd, unsigned int *flags)
 
 	fdput(f);
 	return pid;
-}
-
-/* Stub: pidfd_get_task not used externally in minimal kernel */
-struct task_struct *pidfd_get_task(int pidfd, unsigned int *flags)
-{
-	return ERR_PTR(-ENOSYS);
 }
 
 int pidfd_create(struct pid *pid, unsigned int flags)

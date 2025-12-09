@@ -28,7 +28,7 @@ static inline void sema_init(struct semaphore *sem, int val)
 }
 
 extern void down(struct semaphore *sem);
-extern int __must_check down_interruptible(struct semaphore *sem);
+/* down_interruptible removed - unused */
 extern int __must_check down_trylock(struct semaphore *sem);
 extern void up(struct semaphore *sem);
 

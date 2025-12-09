@@ -25,9 +25,7 @@ void down(struct semaphore *sem)
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 }
 
-/* Stub: down_interruptible not called in minimal kernel */
-int down_interruptible(struct semaphore *sem) { return 0; }
-
+/* down_interruptible removed - unused */
 
 int down_trylock(struct semaphore *sem)
 {

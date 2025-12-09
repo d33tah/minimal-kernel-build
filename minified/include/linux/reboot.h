@@ -130,12 +130,7 @@ extern void kernel_halt(void);
 extern void kernel_power_off(void);
 extern bool kernel_can_power_off(void);
 
-void ctrl_alt_del(void);
-
-extern void orderly_poweroff(bool force);
-extern void orderly_reboot(void);
-void hw_protection_shutdown(const char *reason, int ms_until_forced);
-
+/* ctrl_alt_del, orderly_poweroff, orderly_reboot, hw_protection_shutdown removed - unused */
 
 extern void emergency_restart(void);
 

@@ -272,17 +272,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 	return ret;
 }
 
-/* Stub: ctrl_alt_del not needed in minimal kernel */
-void ctrl_alt_del(void) { }
-
-/* Stub: orderly_poweroff not needed in minimal kernel */
-void orderly_poweroff(bool force) { }
-
-/* Stub: orderly_reboot not needed in minimal kernel */
-void orderly_reboot(void) { }
-
-/* Stub: hw_protection_shutdown not needed in minimal kernel */
-void hw_protection_shutdown(const char *reason, int ms_until_forced) { }
+/* ctrl_alt_del, orderly_poweroff, orderly_reboot, hw_protection_shutdown removed - unused */
 
 /* Stub: reboot= cmdline parsing not needed for minimal kernel */
 static int __init reboot_setup(char *str)

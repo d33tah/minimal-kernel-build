@@ -623,11 +623,7 @@ struct tty_driver *console_device(int *index)
 	return driver;
 }
 
-/* Stub: console_stop not used in minimal kernel */
-void console_stop(struct console *console) { }
-
-/* Stub: console_start not used in minimal kernel */
-void console_start(struct console *console) { }
+/* console_stop, console_start removed - unused */
 
 static int __read_mostly keep_bootcon;
 

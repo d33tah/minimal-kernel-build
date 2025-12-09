@@ -532,8 +532,4 @@ void vfs_clean_context(struct fs_context *fc)
 	fc->phase = FS_CONTEXT_AWAITING_RECONF;
 }
 
-/* Stub: finish_clean_context not used externally */
-int finish_clean_context(struct fs_context *fc)
-{
-	return 0;
-}
+/* finish_clean_context removed - no callers */

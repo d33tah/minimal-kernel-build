@@ -1679,19 +1679,7 @@ struct dentry *lookup_one_positive_unlocked(struct user_namespace *mnt_userns,
 	return ret;
 }
 
-/* Stub: lookup_one_len_unlocked not used externally */
-struct dentry *lookup_one_len_unlocked(const char *name,
-				       struct dentry *base, int len)
-{
-	return ERR_PTR(-ENOENT);
-}
-
-/* Stub: lookup_positive_unlocked not used externally */
-struct dentry *lookup_positive_unlocked(const char *name,
-				       struct dentry *base, int len)
-{
-	return ERR_PTR(-ENOENT);
-}
+/* lookup_one_len_unlocked, lookup_positive_unlocked removed - no callers */
 
 int user_path_at_empty(int dfd, const char __user *name, unsigned flags,
 		 struct path *path, int *empty)

@@ -856,17 +856,9 @@ struct vfsmount *mntget(struct vfsmount *mnt)
 	return mnt;
 }
 
-/* Stub: path_is_mountpoint not used externally */
-bool path_is_mountpoint(const struct path *path)
-{
-	return false;
-}
+/* path_is_mountpoint removed - no callers */
 
-/* STUB: mnt_clone_internal not used externally */
-struct vfsmount *mnt_clone_internal(const struct path *path)
-{
-	return ERR_PTR(-EINVAL);
-}
+/* mnt_clone_internal removed - no callers */
 
 /* Stub: not used in minimal kernel */
 int may_umount_tree(struct vfsmount *m) { return 1; }
@@ -1542,11 +1534,7 @@ static int do_new_mount(struct path *path, const char *fstype, int sb_flags,
 	return err;
 }
 
-/* Stub: finish_automount not used externally */
-int finish_automount(struct vfsmount *m, const struct path *path)
-{
-	return 0;
-}
+/* finish_automount removed - no callers */
 
 /* Stub: mount expiry not used in minimal kernel */
 void mnt_set_expiry(struct vfsmount *mnt, struct list_head *expiry_list) { }
@@ -1810,11 +1798,7 @@ bool is_path_reachable(struct mount *mnt, struct dentry *dentry,
 	return true;
 }
 
-/* Stubbed - not used externally */
-bool path_is_under(const struct path *path1, const struct path *path2)
-{
-	return false;
-}
+/* path_is_under removed - no callers */
 
 SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
 		const char __user *, put_old)

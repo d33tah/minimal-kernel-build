@@ -337,11 +337,7 @@ struct pseudo_fs_context *init_pseudo(struct fs_context *fc,
 	return ctx;
 }
 
-/* Stub: simple_open not used externally */
-int simple_open(struct inode *inode, struct file *file)
-{
-	return 0;
-}
+/* simple_open removed - no callers */
 
 int simple_link(struct dentry *old_dentry, struct inode *dir, struct dentry *dentry)
 {

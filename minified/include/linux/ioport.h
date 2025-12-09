@@ -193,17 +193,8 @@ extern int iomem_map_sanity_check(resource_size_t addr, unsigned long size);
 extern bool iomem_is_exclusive(u64 addr);
 
 extern int
-walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
-		void *arg, int (*func)(unsigned long, unsigned long, void *));
-extern int
 walk_mem_res(u64 start, u64 end, void *arg,
 	     int (*func)(struct resource *, void *));
-extern int
-walk_system_ram_res(u64 start, u64 end, void *arg,
-		    int (*func)(struct resource *, void *));
-extern int
-walk_iomem_res_desc(unsigned long desc, unsigned long flags, u64 start, u64 end,
-		    void *arg, int (*func)(struct resource *, void *));
 
 struct resource *devm_request_free_mem_region(struct device *dev,
 		struct resource *base, unsigned long size);

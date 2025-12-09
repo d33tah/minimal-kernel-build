@@ -228,30 +228,14 @@ static int __walk_iomem_res_desc(resource_size_t start, resource_size_t end,
 	return ret;
 }
 
-/* Stubbed - not used externally */
-int walk_iomem_res_desc(unsigned long desc, unsigned long flags, u64 start,
-		u64 end, void *arg, int (*func)(struct resource *, void *))
-{
-	return -EINVAL;
-}
-
-int walk_system_ram_res(u64 start, u64 end, void *arg,
-			int (*func)(struct resource *, void *))
-{
-	return -EINVAL;
-}
-
 int walk_mem_res(u64 start, u64 end, void *arg,
 		 int (*func)(struct resource *, void *))
 {
 	unsigned long flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-
-	return __walk_iomem_res_desc(start, end, flags, IORES_DESC_NONE, arg,
-				     func);
+	return __walk_iomem_res_desc(start, end, flags, IORES_DESC_NONE, arg, func);
 }
 
-/* Stubbed - not used externally */
-int walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
+static int walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
 			  void *arg, int (*func)(unsigned long, unsigned long, void *))
 {
 	return -EINVAL;

@@ -202,18 +202,6 @@ void disable_TSC(void)
 	preempt_enable();
 }
 
-/* Stub: get_tsc_mode not used externally */
-int get_tsc_mode(unsigned long adr)
-{
-	return -EINVAL;
-}
-
-/* Stub: set_tsc_mode not used externally */
-int set_tsc_mode(unsigned int val)
-{
-	return -EINVAL;
-}
-
 DEFINE_PER_CPU(u64, msr_misc_features_shadow);
 
 static void set_cpuid_faulting(bool on)

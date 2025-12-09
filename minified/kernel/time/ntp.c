@@ -38,13 +38,6 @@ void __hardpps(const struct timespec64 *phase_ts, const struct timespec64 *raw_t
 {
 }
 
-/* Stub: __do_adjtimex not called externally */
-int __do_adjtimex(struct __kernel_timex *txc, const struct timespec64 *ts,
-		  s32 *time_tai, struct audit_ntp_data *ad)
-{
-	return TIME_ERROR;
-}
-
 void __init ntp_init(void)
 {
 }

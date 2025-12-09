@@ -44,8 +44,6 @@ struct nmiaction {
 
 int __register_nmi_handler(unsigned int, struct nmiaction *);
 
-void unregister_nmi_handler(unsigned int, const char *);
-
 void local_touch_nmi(void);
 
 #endif  

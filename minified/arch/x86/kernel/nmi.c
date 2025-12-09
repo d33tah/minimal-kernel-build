@@ -114,11 +114,6 @@ int __register_nmi_handler(unsigned int type, struct nmiaction *action)
 	return 0;
 }
 
-/* Stub: unregister_nmi_handler not used in minimal kernel */
-void unregister_nmi_handler(unsigned int type, const char *name)
-{
-}
-
 static void
 pci_serr_error(unsigned char reason, struct pt_regs *regs)
 {

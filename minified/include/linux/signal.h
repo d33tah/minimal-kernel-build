@@ -7,7 +7,7 @@
 
 struct task_struct;
 
-extern int print_fatal_signals;
+/* Removed: print_fatal_signals - never used */
 
 static inline void copy_siginfo(kernel_siginfo_t *to,
 				const kernel_siginfo_t *from)

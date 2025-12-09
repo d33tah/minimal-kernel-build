@@ -24,7 +24,7 @@
 
 static struct kmem_cache *sigqueue_cachep;
 
-int print_fatal_signals __read_mostly;
+/* Removed: print_fatal_signals - never used */
 
 static void __user *sig_handler(struct task_struct *t, int sig)
 {
@@ -429,13 +429,7 @@ int send_signal_locked(int sig, struct kernel_siginfo *info,
 	return __send_signal_locked(sig, info, t, type, force);
 }
 
-static int __init setup_print_fatal_signals(char *str)
-{
-	/* Stub: skip setup for minimal kernel */
-	return 1;
-}
-
-__setup("print-fatal-signals=", setup_print_fatal_signals);
+/* Removed: setup_print_fatal_signals and __setup - never used */
 
 int do_send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p,
 			enum pid_type type)

@@ -13,8 +13,7 @@ int rtc_month_days(unsigned int month, unsigned int year)
 	return rtc_days_in_month[month] + (is_leap_year(year) && month == 1);
 }
 
-/* Stub: rtc_year_days not used externally */
-int rtc_year_days(unsigned int day, unsigned int month, unsigned int year) { BUG(); }
+/* rtc_year_days removed - unused */
 
 void rtc_time64_to_tm(time64_t time, struct rtc_time *tm)
 {
@@ -97,8 +96,4 @@ int rtc_valid_tm(struct rtc_time *tm)
 /* Stub: rtc_tm_to_time64 not used */
 time64_t rtc_tm_to_time64(struct rtc_time *tm) { BUG(); }
 
-/* Stub: rtc_tm_to_ktime not used externally */
-ktime_t rtc_tm_to_ktime(struct rtc_time tm) { BUG(); }
-
-/* Stub: rtc_ktime_to_tm not used externally */
-struct rtc_time rtc_ktime_to_tm(ktime_t kt) { BUG(); }
+/* rtc_tm_to_ktime, rtc_ktime_to_tm removed - unused */

@@ -280,20 +280,4 @@ int kstrtobool(const char *s, bool *res)
 	return -EINVAL;
 }
 
-/* Stubbed - not used externally */
-int kstrtobool_from_user(const char __user *s, size_t count, bool *res)
-{
-	return -EINVAL;
-}
-
-/* Stubbed - kstrto_from_user functions not used externally in minimal kernel */
-int kstrtoull_from_user(const char __user *s, size_t count, unsigned int base, unsigned long long *res) { return -EINVAL; }
-int kstrtoll_from_user(const char __user *s, size_t count, unsigned int base, long long *res) { return -EINVAL; }
-int kstrtoul_from_user(const char __user *s, size_t count, unsigned int base, unsigned long *res) { return -EINVAL; }
-int kstrtol_from_user(const char __user *s, size_t count, unsigned int base, long *res) { return -EINVAL; }
-int kstrtouint_from_user(const char __user *s, size_t count, unsigned int base, unsigned int *res) { return -EINVAL; }
-int kstrtoint_from_user(const char __user *s, size_t count, unsigned int base, int *res) { return -EINVAL; }
-int kstrtou16_from_user(const char __user *s, size_t count, unsigned int base, u16 *res) { return -EINVAL; }
-int kstrtos16_from_user(const char __user *s, size_t count, unsigned int base, s16 *res) { return -EINVAL; }
-int kstrtou8_from_user(const char __user *s, size_t count, unsigned int base, u8 *res) { return -EINVAL; }
-int kstrtos8_from_user(const char __user *s, size_t count, unsigned int base, s8 *res) { return -EINVAL; }
+/* kstrtobool_from_user and all kstrto*_from_user functions removed - unused */

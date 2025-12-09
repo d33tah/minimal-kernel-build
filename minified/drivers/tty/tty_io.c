@@ -1027,11 +1027,7 @@ static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,
 	return driver;
 }
 
-/* STUB: tty_kopen_exclusive not used externally */
-struct tty_struct *tty_kopen_exclusive(dev_t device) { return ERR_PTR(-EINVAL); }
-
-/* STUB: tty_kopen_shared not used externally */
-struct tty_struct *tty_kopen_shared(dev_t device) { return ERR_PTR(-EINVAL); }
+/* tty_kopen_exclusive, tty_kopen_shared removed - unused */
 
 static struct tty_struct *tty_open_by_driver(dev_t device,
 					     struct file *filp)

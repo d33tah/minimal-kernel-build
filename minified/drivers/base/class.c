@@ -328,10 +328,7 @@ int class_interface_register(struct class_interface *class_intf)
 	return 0;
 }
 
-/* Stub: class_interface_unregister not used externally */
-void class_interface_unregister(struct class_interface *class_intf)
-{
-}
+/* class_interface_unregister removed - unused */
 
 ssize_t show_class_attr_string(struct class *class,
 			       struct class_attribute *attr, char *buf)
@@ -362,10 +359,7 @@ struct class_compat *class_compat_register(const char *name)
 	return cls;
 }
 
-/* Stub: class_compat_unregister not used externally */
-void class_compat_unregister(struct class_compat *cls)
-{
-}
+/* class_compat_unregister removed - unused */
 
 int class_compat_create_link(struct class_compat *cls, struct device *dev,
 			     struct device *device_link)

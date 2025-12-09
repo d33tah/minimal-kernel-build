@@ -615,9 +615,7 @@ static void __device_driver_unlock(struct device *dev, struct device *parent)
 		device_unlock(parent);
 }
 
-/* STUB: device_driver_attach not used externally */
-int device_driver_attach(struct device_driver *drv, struct device *dev)
-{ return -ENODEV; }
+/* device_driver_attach removed - unused */
 
 static void __driver_attach_async_helper(void *_dev, async_cookie_t cookie)
 {
@@ -748,10 +746,7 @@ void device_release_driver(struct device *dev)
 	device_release_driver_internal(dev, NULL, NULL);
 }
 
-/* Stub: device_driver_detach not used externally */
-void device_driver_detach(struct device *dev)
-{
-}
+/* device_driver_detach removed - unused */
 
 void driver_detach(struct device_driver *drv)
 {

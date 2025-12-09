@@ -229,9 +229,7 @@ struct device *bus_find_device(struct bus_type *bus,
 	return dev;
 }
 
-/* Stubbed: subsys_find_device_by_id not used externally */
-struct device *subsys_find_device_by_id(struct bus_type *subsys, unsigned int id,
-					struct device *hint) { return NULL; }
+/* subsys_find_device_by_id removed - unused */
 
 static struct device_driver *next_driver(struct klist_iter *i)
 {
@@ -471,11 +469,7 @@ void bus_remove_driver(struct device_driver *drv)
 	bus_put(drv->bus);
 }
 
-/* Stubbed: bus_rescan_devices not used externally */
-int bus_rescan_devices(struct bus_type *bus) { return 0; }
-
-/* Stubbed: device_reprobe not used externally */
-int device_reprobe(struct device *dev) { return 0; }
+/* bus_rescan_devices, device_reprobe removed - unused */
 
 static int bus_add_groups(struct bus_type *bus,
 			  const struct attribute_group **groups)

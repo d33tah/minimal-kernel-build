@@ -372,27 +372,8 @@ int __page_mapcount(struct page *page)
 	return ret;
 }
 
-int folio_mapcount(struct folio *folio)
-{
-	int i, compound, nr, ret;
-
-	if (likely(!folio_test_large(folio)))
-		return atomic_read(&folio->_mapcount) + 1;
-
-	compound = folio_entire_mapcount(folio);
-	nr = folio_nr_pages(folio);
-	if (folio_test_hugetlb(folio))
-		return compound;
-	ret = compound;
-	for (i = 0; i < nr; i++)
-		ret += atomic_read(&folio_page(folio, i)->_mapcount) + 1;
-	 
-	if (!folio_test_anon(folio))
-		return ret - compound * nr;
-	if (folio_test_double_map(folio))
-		ret -= nr;
-	return ret;
-}
+/* Stub: folio_mapcount not called in minimal kernel */
+int folio_mapcount(struct folio *folio) { return 0; }
 
 int sysctl_overcommit_memory __read_mostly = OVERCOMMIT_GUESS;
 int sysctl_overcommit_ratio __read_mostly = 50;

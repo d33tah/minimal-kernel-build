@@ -147,14 +147,6 @@ void *memchr(const void *cs, int c, size_t count)
 }
 #endif
 
-#ifdef __HAVE_ARCH_MEMSCAN
-/* Stub: memscan not used externally */
-void *memscan(void *addr, int c, size_t size)
-{
-	return addr;
-}
-#endif
-
 #ifdef __HAVE_ARCH_STRNLEN
 size_t strnlen(const char *s, size_t count)
 {

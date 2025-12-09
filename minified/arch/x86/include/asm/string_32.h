@@ -210,9 +210,6 @@ static inline void *memset32(uint32_t *s, uint32_t v, size_t n)
 	return s;
 }
 
- 
-#define __HAVE_ARCH_MEMSCAN
-extern void *memscan(void *addr, int c, size_t size);
 
 #endif  
 

@@ -93,7 +93,4 @@ int rtc_valid_tm(struct rtc_time *tm)
 	return 0;
 }
 
-/* Stub: rtc_tm_to_time64 not used */
-time64_t rtc_tm_to_time64(struct rtc_time *tm) { BUG(); }
-
-/* rtc_tm_to_ktime, rtc_ktime_to_tm removed - unused */
+/* rtc_tm_to_time64, rtc_tm_to_ktime, rtc_ktime_to_tm removed - unused */

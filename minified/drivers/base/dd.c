@@ -109,14 +109,7 @@ static void driver_deferred_probe_trigger(void)
 	queue_work(system_unbound_wq, &deferred_probe_work);
 }
 
-/* Stub: device_block_probing not used in minimal kernel */
-void device_block_probing(void) { }
-
-/* Stub: device_unblock_probing not used in minimal kernel */
-void device_unblock_probing(void) { }
-
-/* Stub: device_set_deferred_probe_reason not used in minimal kernel */
-void device_set_deferred_probe_reason(const struct device *dev, struct va_format *vaf) { }
+/* device_block_probing, device_unblock_probing, device_set_deferred_probe_reason removed - unused */
 
 static int deferred_devs_show(struct seq_file *s, void *data)
 {

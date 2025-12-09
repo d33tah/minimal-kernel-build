@@ -171,23 +171,7 @@ void __iomem *devm_ioremap(struct device *dev, resource_size_t offset,
 	return __devm_ioremap(dev, offset, size, DEVM_IOREMAP);
 }
 
-/* Stub: devm_ioremap_uc not used in minimal kernel */
-void __iomem *devm_ioremap_uc(struct device *dev, resource_size_t offset,
-			      resource_size_t size)
-{ return NULL; }
-
-/* Stub: devm_ioremap_wc not used in minimal kernel */
-void __iomem *devm_ioremap_wc(struct device *dev, resource_size_t offset,
-			      resource_size_t size)
-{ return NULL; }
-
-/* Stub: devm_ioremap_np not used in minimal kernel */
-void __iomem *devm_ioremap_np(struct device *dev, resource_size_t offset,
-			      resource_size_t size)
-{ return NULL; }
-
-/* Stub: devm_iounmap not used in minimal kernel */
-void devm_iounmap(struct device *dev, void __iomem *addr) { }
+/* devm_ioremap_uc, devm_ioremap_wc, devm_ioremap_np, devm_iounmap removed - unused */
 
 static void __iomem *
 __devm_ioremap_resource(struct device *dev, const struct resource *res,

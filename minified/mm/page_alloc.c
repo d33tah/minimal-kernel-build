@@ -2677,34 +2677,8 @@ void *__init alloc_large_system_hash(const char *tablename,
 	return table;
 }
 
-void free_contig_range(unsigned long pfn, unsigned long nr_pages)
-{
-	/* Stub: contiguous allocation not needed for minimal kernel */
-}
-
 void zone_pcp_update(struct zone *zone, int cpu_online)
 {
 	/* Stub: PCP update not needed for minimal single-CPU kernel */
-}
-
-void zone_pcp_disable(struct zone *zone)
-{
-	/* Stub: PCP disable not used in minimal kernel */
-}
-
-void zone_pcp_enable(struct zone *zone)
-{
-	/* Stub: PCP enable not used in minimal kernel */
-}
-
-void zone_pcp_reset(struct zone *zone)
-{
-	/* Stub: PCP reset not needed for minimal single-CPU kernel */
-}
-
-bool is_free_buddy_page(struct page *page)
-{
-	/* Stub: buddy page check not needed for minimal kernel */
-	return false;
 }
 

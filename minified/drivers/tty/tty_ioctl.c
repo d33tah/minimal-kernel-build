@@ -124,22 +124,12 @@ unsigned char tty_get_frame_size(unsigned int cflag)
 	return bits;
 }
 
-/* Stub: tty_set_termios not used externally */
-int tty_set_termios(struct tty_struct *tty, struct ktermios *new_termios)
-{
-	return 0;
-}
+/* tty_set_termios, tty_perform_flush removed - no callers */
 
 int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 {
-	 
-	return -ENOIOCTLCMD;
-}
 
-/* Stub: tty_perform_flush not used externally */
-int tty_perform_flush(struct tty_struct *tty, unsigned long arg)
-{
-	return 0;
+	return -ENOIOCTLCMD;
 }
 
 int n_tty_ioctl_helper(struct tty_struct *tty, unsigned int cmd, unsigned long arg)

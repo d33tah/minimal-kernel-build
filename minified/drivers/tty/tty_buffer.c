@@ -368,16 +368,7 @@ void tty_buffer_init(struct tty_port *port)
 	buf->mem_limit = TTYB_DEFAULT_MEM_LIMIT;
 }
 
-/* Stub: tty_buffer_set_limit not used externally */
-int tty_buffer_set_limit(struct tty_port *port, int limit)
-{
-	return 0;
-}
-
-/* Stub: tty_buffer_set_lock_subclass not used externally */
-void tty_buffer_set_lock_subclass(struct tty_port *port)
-{
-}
+/* tty_buffer_set_limit, tty_buffer_set_lock_subclass removed - no callers */
 
 bool tty_buffer_restart_work(struct tty_port *port)
 {

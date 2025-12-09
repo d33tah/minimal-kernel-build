@@ -201,11 +201,7 @@ static struct tty_driver *get_tty_driver(dev_t device, int *index)
 	return NULL;
 }
 
-/* Stub: tty_dev_name_to_number not used externally */
-int tty_dev_name_to_number(const char *name, dev_t *number)
-{
-	return -ENODEV;
-}
+/* tty_dev_name_to_number removed - no callers */
 
 static ssize_t hung_up_tty_read(struct kiocb *iocb, struct iov_iter *to)
 {
@@ -334,10 +330,7 @@ void tty_vhangup(struct tty_struct *tty)
 	/* Stub: tty_vhangup not used in minimal kernel */
 }
 
-/* Stub: tty_vhangup_self not used externally */
-void tty_vhangup_self(void)
-{
-}
+/* tty_vhangup_self removed - no callers */
 
 void tty_vhangup_session(struct tty_struct *tty)
 {
@@ -923,10 +916,7 @@ static int tty_release_checks(struct tty_struct *tty, int idx)
 	return 0;
 }
 
-/* Stub: tty_kclose not used externally */
-void tty_kclose(struct tty_struct *tty)
-{
-}
+/* tty_kclose removed - no callers */
 
 void tty_release_struct(struct tty_struct *tty, int idx)
 {
@@ -1274,12 +1264,7 @@ static int tiocswinsz(struct tty_struct *tty, struct winsize __user *arg)
 		return tty_do_resize(tty, &tmp_ws);
 }
 
-/* Stub: tty_get_icount not used externally */
-int tty_get_icount(struct tty_struct *tty,
-		   struct serial_icounter_struct *icount)
-{
-	return -ENOTTY;
-}
+/* tty_get_icount removed - no callers */
 
 static struct tty_struct *tty_pair_get_tty(struct tty_struct *tty)
 {
@@ -1334,10 +1319,7 @@ static void do_SAK_work(struct work_struct *work)
 	__do_SAK(tty);
 }
 
-/* Stubbed: do_SAK not used externally */
-void do_SAK(struct tty_struct *tty)
-{
-}
+/* do_SAK removed - no callers */
 
 static struct device *tty_get_device(struct tty_struct *tty)
 {

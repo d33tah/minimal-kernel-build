@@ -64,9 +64,4 @@ speed_t tty_termios_input_baud_rate(struct ktermios *termios)
 	return cbaud >= n_baud_table ? 0 : baud_table[cbaud];
 }
 
-/* Stub: tty_termios_encode_baud_rate not used externally */
-void tty_termios_encode_baud_rate(struct ktermios *termios,
-				  speed_t ibaud, speed_t obaud) { }
-
-/* Stub: tty_encode_baud_rate not used externally */
-void tty_encode_baud_rate(struct tty_struct *tty, speed_t ibaud, speed_t obaud) { }
+/* tty_termios_encode_baud_rate, tty_encode_baud_rate removed - no callers */

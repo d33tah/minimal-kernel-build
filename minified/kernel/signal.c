@@ -744,22 +744,7 @@ int kill_pid(struct pid *pid, int sig, int priv)
 	return kill_pid_info(sig, __si_special(priv), pid);
 }
 
-/* Stub: sigqueue_alloc not used externally */
-struct sigqueue *sigqueue_alloc(void)
-{
-	return NULL;
-}
-
-/* Stub: sigqueue_free not used externally */
-void sigqueue_free(struct sigqueue *q)
-{
-}
-
-/* Stub: send_sigqueue not used externally */
-int send_sigqueue(struct sigqueue *q, struct pid *pid, enum pid_type type)
-{
-	return -1;
-}
+/* sigqueue_alloc, sigqueue_free, send_sigqueue removed - no external callers */
 
 bool do_notify_parent(struct task_struct *tsk, int sig)
 {

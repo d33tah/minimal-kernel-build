@@ -230,29 +230,9 @@ struct platform_device *platform_device_alloc(const char *name, int id)
 	return pa ? &pa->pdev : NULL;
 }
 
-/* Stubbed: platform_device_add_resources not used externally */
-int platform_device_add_resources(struct platform_device *pdev,
-				  const struct resource *res, unsigned int num) { return 0; }
-
-/* Stubbed: platform_device_add_data not used externally */
-int platform_device_add_data(struct platform_device *pdev, const void *data,
-			     size_t size) { return 0; }
-
-/* Stubbed: platform_device_add not used externally */
-int platform_device_add(struct platform_device *pdev) { return -ENOSYS; }
-
-/* Stubbed: platform_device_del not used externally */
-void platform_device_del(struct platform_device *pdev) { }
-
-/* Stubbed: platform_device_register not used externally */
-int platform_device_register(struct platform_device *pdev) { return -ENOSYS; }
-
-/* Stubbed: platform_device_unregister not used externally */
-void platform_device_unregister(struct platform_device *pdev) { }
-
-/* Stubbed: platform_device_register_full not used externally */
-struct platform_device *platform_device_register_full(
-		const struct platform_device_info *pdevinfo) { return ERR_PTR(-ENOSYS); }
+/* Removed: platform_device_add_resources, platform_device_add_data, platform_device_add,
+   platform_device_del, platform_device_register, platform_device_unregister,
+   platform_device_register_full - no external callers */
 
 int __platform_driver_register(struct platform_driver *drv,
 				struct module *owner)
@@ -268,24 +248,8 @@ void platform_driver_unregister(struct platform_driver *drv)
 	driver_unregister(&drv->driver);
 }
 
-/* Stubbed: __platform_driver_probe not used externally */
-int __init_or_module __platform_driver_probe(struct platform_driver *drv,
-		int (*probe)(struct platform_device *), struct module *module) { return -ENOSYS; }
-
-/* Stubbed: __platform_create_bundle not used externally */
-struct platform_device * __init_or_module __platform_create_bundle(
-			struct platform_driver *driver,
-			int (*probe)(struct platform_device *),
-			struct resource *res, unsigned int n_res,
-			const void *data, size_t size, struct module *module) { return ERR_PTR(-ENOSYS); }
-
-/* Stubbed: __platform_register_drivers not used externally */
-int __platform_register_drivers(struct platform_driver * const *drivers,
-				unsigned int count, struct module *owner) { return 0; }
-
-/* Stubbed: platform_unregister_drivers not used externally */
-void platform_unregister_drivers(struct platform_driver * const *drivers,
-				 unsigned int count) { }
+/* Removed: __platform_driver_probe, __platform_create_bundle,
+   __platform_register_drivers, platform_unregister_drivers - no external callers */
 
 static const struct platform_device_id *platform_match_id(
 			const struct platform_device_id *id,

@@ -76,16 +76,7 @@ int device_match_acpi_dev(struct device *dev, const void *adev);
 int device_match_acpi_handle(struct device *dev, const void *handle);
 int device_match_any(struct device *dev, const void *unused);
 
-struct subsys_dev_iter {
-	struct klist_iter		ki;
-	const struct device_type	*type;
-};
-void subsys_dev_iter_init(struct subsys_dev_iter *iter,
-			 struct bus_type *subsys,
-			 struct device *start,
-			 const struct device_type *type);
-struct device *subsys_dev_iter_next(struct subsys_dev_iter *iter);
-void subsys_dev_iter_exit(struct subsys_dev_iter *iter);
+/* subsys_dev_iter_* removed - unused */
 
 int bus_for_each_dev(struct bus_type *bus, struct device *start, void *data,
 		     int (*fn)(struct device *dev, void *data));
@@ -99,15 +90,11 @@ struct device *subsys_find_device_by_id(struct bus_type *bus, unsigned int id,
 					struct device *hint);
 int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 		     void *data, int (*fn)(struct device_driver *, void *));
-void bus_sort_breadthfirst(struct bus_type *bus,
-			   int (*compare)(const struct device *a,
-					  const struct device *b));
 struct notifier_block;
 
 extern int bus_register_notifier(struct bus_type *bus,
 				 struct notifier_block *nb);
-extern int bus_unregister_notifier(struct bus_type *bus,
-				   struct notifier_block *nb);
+/* bus_sort_breadthfirst, bus_unregister_notifier removed - unused */
 
 #define BUS_NOTIFY_ADD_DEVICE		0x00000001  
 #define BUS_NOTIFY_DEL_DEVICE		0x00000002  
@@ -118,7 +105,7 @@ extern int bus_unregister_notifier(struct bus_type *bus,
 #define BUS_NOTIFY_UNBOUND_DRIVER	0x00000007  
 #define BUS_NOTIFY_DRIVER_NOT_BOUND	0x00000008  
 
-extern struct kset *bus_get_kset(struct bus_type *bus);
+/* bus_get_kset removed - unused */
 extern struct klist *bus_get_device_klist(struct bus_type *bus);
 
 #endif

@@ -93,13 +93,10 @@ struct subsys_interface {
 	void (*remove_dev)(struct device *dev, struct subsys_interface *sif);
 };
 
-int subsys_interface_register(struct subsys_interface *sif);
-void subsys_interface_unregister(struct subsys_interface *sif);
+/* subsys_interface_register/unregister, subsys_virtual_register removed - unused */
 
 int subsys_system_register(struct bus_type *subsys,
 			   const struct attribute_group **groups);
-int subsys_virtual_register(struct bus_type *subsys,
-			    const struct attribute_group **groups);
 
 struct device_type {
 	const char *name;

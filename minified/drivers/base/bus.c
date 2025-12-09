@@ -609,57 +609,13 @@ int bus_register_notifier(struct bus_type *bus, struct notifier_block *nb)
 	return blocking_notifier_chain_register(&bus->p->bus_notifier, nb);
 }
 
-/* Stub: bus_unregister_notifier not used externally */
-int bus_unregister_notifier(struct bus_type *bus, struct notifier_block *nb)
-{
-	return 0;
-}
-
-/* Stub: bus_get_kset not used externally */
-struct kset *bus_get_kset(struct bus_type *bus)
-{
-	return NULL;
-}
-
 struct klist *bus_get_device_klist(struct bus_type *bus)
 {
 	return &bus->p->klist_devices;
 }
 
-/* Stub: bus_sort_breadthfirst not used externally */
-void bus_sort_breadthfirst(struct bus_type *bus,
-			   int (*compare)(const struct device *a,
-					  const struct device *b))
-{
-}
-
-/* Stub: subsys_dev_iter_init not used externally */
-void subsys_dev_iter_init(struct subsys_dev_iter *iter, struct bus_type *subsys,
-			  struct device *start, const struct device_type *type)
-{
-}
-
-/* Stub: subsys_dev_iter_next not used externally */
-struct device *subsys_dev_iter_next(struct subsys_dev_iter *iter)
-{
-	return NULL;
-}
-
-/* Stub: subsys_dev_iter_exit not used externally */
-void subsys_dev_iter_exit(struct subsys_dev_iter *iter)
-{
-}
-
-/* Stub: subsys_interface_register not used externally */
-int subsys_interface_register(struct subsys_interface *sif)
-{
-	return 0;
-}
-
-/* Stub: subsys_interface_unregister not used externally */
-void subsys_interface_unregister(struct subsys_interface *sif)
-{
-}
+/* Removed: bus_unregister_notifier, bus_get_kset, bus_sort_breadthfirst,
+   subsys_dev_iter_init/next/exit, subsys_interface_register/unregister - no external callers */
 
 static void system_root_device_release(struct device *dev)
 {
@@ -714,12 +670,7 @@ int subsys_system_register(struct bus_type *subsys,
 	return subsys_register(subsys, groups, &system_kset->kobj);
 }
 
-/* Stub: subsys_virtual_register not used externally */
-int subsys_virtual_register(struct bus_type *subsys,
-			    const struct attribute_group **groups)
-{
-	return 0;
-}
+/* subsys_virtual_register removed - no external callers */
 
 int __init buses_init(void)
 {

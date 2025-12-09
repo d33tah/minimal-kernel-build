@@ -248,38 +248,16 @@ static void update_fast_timekeeper(const struct tk_read_base *tkr,
 	memcpy(base + 1, base, sizeof(*base));
 }
 
-static __always_inline u64 fast_tk_get_delta_ns(struct tk_read_base *tkr)
-{
-	u64 delta, cycles = tk_clock_read(tkr);
-
-	delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
-	return timekeeping_delta_to_ns(tkr, delta);
-}
-
-static __always_inline u64 __ktime_get_fast_ns(struct tk_fast *tkf)
-{
-	struct tk_read_base *tkr;
-	unsigned int seq;
-	u64 now;
-
-	do {
-		seq = raw_read_seqcount_latch(&tkf->seq);
-		tkr = tkf->base + (seq & 0x01);
-		now = ktime_to_ns(tkr->base);
-		now += fast_tk_get_delta_ns(tkr);
-	} while (read_seqcount_latch_retry(&tkf->seq, seq));
-
-	return now;
-}
-
+/* Stub: ktime_get_mono_fast_ns not called in minimal kernel */
 u64 notrace ktime_get_mono_fast_ns(void)
 {
-	return __ktime_get_fast_ns(&tk_fast_mono);
+	return 0;
 }
 
+/* Stub: ktime_get_raw_fast_ns not called in minimal kernel */
 u64 notrace ktime_get_raw_fast_ns(void)
 {
-	return __ktime_get_fast_ns(&tk_fast_raw);
+	return 0;
 }
 
 /* Removed: ktime_get_boot_fast_ns, ktime_get_tai_fast_ns, ktime_get_real_fast_ns,

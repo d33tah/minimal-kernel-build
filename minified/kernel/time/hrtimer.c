@@ -101,23 +101,10 @@ lock_hrtimer_base(const struct hrtimer *timer, unsigned long *flags)
 # define switch_hrtimer_base(t, b, p)	(b)
 
 #if BITS_PER_LONG < 64
-
+/* Stub: __ktime_divns not called in minimal kernel */
 s64 __ktime_divns(const ktime_t kt, s64 div)
 {
-	int sft = 0;
-	s64 dclc;
-	u64 tmp;
-
-	dclc = ktime_to_ns(kt);
-	tmp = dclc < 0 ? -dclc : dclc;
-
-	while (div >> 32) {
-		sft++;
-		div >>= 1;
-	}
-	tmp >>= sft;
-	do_div(tmp, (u32) div);
-	return dclc < 0 ? -tmp : tmp;
+	return 0;
 }
 #endif 
 
@@ -386,35 +373,10 @@ void unlock_hrtimer_base(const struct hrtimer *timer, unsigned long *flags)
 	raw_spin_unlock_irqrestore(&timer->base->cpu_base->lock, *flags);
 }
 
+/* Stub: hrtimer_forward not called in minimal kernel */
 u64 hrtimer_forward(struct hrtimer *timer, ktime_t now, ktime_t interval)
 {
-	u64 orun = 1;
-	ktime_t delta;
-
-	delta = ktime_sub(now, hrtimer_get_expires(timer));
-
-	if (delta < 0)
-		return 0;
-
-	if (WARN_ON(timer->state & HRTIMER_STATE_ENQUEUED))
-		return 0;
-
-	if (interval < hrtimer_resolution)
-		interval = hrtimer_resolution;
-
-	if (unlikely(delta >= interval)) {
-		s64 incr = ktime_to_ns(interval);
-
-		orun = ktime_divns(delta, incr);
-		hrtimer_add_expires_ns(timer, incr * orun);
-		if (hrtimer_get_expires_tv64(timer) > now)
-			return orun;
-		
-		orun++;
-	}
-	hrtimer_add_expires(timer, interval);
-
-	return orun;
+	return 0;
 }
 
 static int enqueue_hrtimer(struct hrtimer *timer,

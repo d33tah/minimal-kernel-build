@@ -182,7 +182,4 @@ void __sched percpu_down_write(struct percpu_rw_semaphore *sem)
 	 
 }
 
-/* Stub: percpu_up_write not used in minimal kernel */
-void percpu_up_write(struct percpu_rw_semaphore *sem)
-{
-}
+/* percpu_up_write removed - unused */

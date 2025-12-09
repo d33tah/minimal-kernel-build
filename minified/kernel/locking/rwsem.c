@@ -733,12 +733,7 @@ void __sched down_read(struct rw_semaphore *sem)
 	LOCK_CONTENDED(sem, __down_read_trylock, __down_read);
 }
 
-/* Stub: down_read_interruptible not used in minimal kernel */
-int __sched down_read_interruptible(struct rw_semaphore *sem)
-{
-	down_read(sem);
-	return 0;
-}
+/* down_read_interruptible removed - unused */
 
 int __sched down_read_killable(struct rw_semaphore *sem)
 {
@@ -805,7 +800,7 @@ void up_write(struct rw_semaphore *sem)
 	__up_write(sem);
 }
 
-/* Stub: downgrade_write not used in minimal kernel */
+/* downgrade_write - called by __do_munmap */
 void downgrade_write(struct rw_semaphore *sem)
 {
 	__downgrade_write(sem);

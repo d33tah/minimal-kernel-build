@@ -10,14 +10,7 @@
 const char hex_asc[] = "0123456789abcdef";
 const char hex_asc_upper[] = "0123456789ABCDEF";
 
-/* Stub: hex_to_bin not called in minimal kernel */
-int hex_to_bin(unsigned char ch) { return -1; }
-
-/* Stub: hex2bin not called in minimal kernel */
-int hex2bin(u8 *dst, const char *src, size_t count) { return -EINVAL; }
-
-/* Stub: bin2hex not called in minimal kernel */
-char *bin2hex(char *dst, const void *src, size_t count) { return dst; }
+/* Removed: hex_to_bin, hex2bin, bin2hex - never called (~6 LOC) */
 
 int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
 		       char *linebuf, size_t linebuflen, bool ascii)

@@ -170,8 +170,7 @@ static inline char *hex_byte_pack(char *buf, u8 byte)
 }
 
 extern const char hex_asc_upper[];
-
-extern int hex_to_bin(unsigned char ch);
+/* Removed: hex_to_bin, hex2bin, bin2hex - never called */
 
 bool mac_pton(const char *s, u8 *mac);
 

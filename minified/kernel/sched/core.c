@@ -599,11 +599,7 @@ out:
 	return success;
 }
 
-/* Stub: task_call_func not used externally */
-int task_call_func(struct task_struct *p, task_call_f func, void *arg)
-{
-	return -ENOSYS;
-}
+/* task_call_func removed - unused */
 
 int wake_up_process(struct task_struct *p)
 {
@@ -923,17 +919,7 @@ unsigned int nr_running(void)
 	return sum;
 }
 
-/* Stub: single_task_running not used externally */
-bool single_task_running(void)
-{
-	return true;
-}
-
-/* Stub: nr_context_switches not used externally */
-unsigned long long nr_context_switches(void)
-{
-	return 0;
-}
+/* single_task_running, nr_context_switches removed - unused */
 
 unsigned int nr_iowait_cpu(int cpu)
 {

@@ -716,11 +716,6 @@ static void __clocksource_change_rating(struct clocksource *cs, int rating)
 	clocksource_enqueue(cs);
 }
 
-/* Stub: clocksource_change_rating not used in minimal kernel */
-void clocksource_change_rating(struct clocksource *cs, int rating)
-{
-}
-
 static int clocksource_unbind(struct clocksource *cs)
 {
 	unsigned long flags;

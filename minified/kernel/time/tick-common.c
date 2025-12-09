@@ -22,12 +22,6 @@ struct tick_device *tick_get_device(int cpu)
 	return &per_cpu(tick_cpu_device, cpu);
 }
 
-/* Stub: tick_is_oneshot_available not used in minimal kernel */
-int tick_is_oneshot_available(void)
-{
-	return 0;
-}
-
 static void tick_periodic(int cpu)
 {
 	if (tick_do_timer_cpu == cpu) {

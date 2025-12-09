@@ -82,7 +82,6 @@ extern void tick_resume(void);
 extern bool tick_check_replacement(struct clock_event_device *curdev,
 				   struct clock_event_device *newdev);
 extern void tick_install_replacement(struct clock_event_device *dev);
-extern int tick_is_oneshot_available(void);
 extern struct tick_device *tick_get_device(int cpu);
 
 extern int clockevents_tick_resume(struct clock_event_device *dev);

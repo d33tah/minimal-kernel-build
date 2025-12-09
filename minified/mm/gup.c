@@ -156,36 +156,9 @@ static inline struct folio *gup_folio_range_next(struct page *start,
 	return folio;
 }
 
-static inline struct folio *gup_folio_next(struct page **list,
-		unsigned long npages, unsigned long i, unsigned int *ntails)
-{
-	struct folio *folio = page_folio(list[i]);
-	unsigned int nr;
-
-	for (nr = i + 1; nr < npages; nr++) {
-		if (page_folio(list[nr]) != folio)
-			break;
-	}
-
-	*ntails = nr - i;
-	return folio;
-}
-
+/* Stub: unpin_user_pages not called in minimal kernel */
 void unpin_user_pages(struct page **pages, unsigned long npages)
 {
-	unsigned long i;
-	struct folio *folio;
-	unsigned int nr;
-
-	
-	if (WARN_ON(IS_ERR_VALUE(npages)))
-		return;
-
-	sanity_check_pinned_pages(pages, npages);
-	for (i = 0; i < npages; i += nr) {
-		folio = gup_folio_next(pages, npages, i, &nr);
-		gup_put_folio(folio, nr, FOLL_PIN);
-	}
 }
 
 static inline void mm_set_has_pinned_flag(unsigned long *mm_flags)

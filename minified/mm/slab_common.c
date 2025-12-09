@@ -631,19 +631,8 @@ void *krealloc(const void *p, size_t new_size, gfp_t flags)
 	return ret;
 }
 
-size_t ksize(const void *objp)
-{
-	size_t size;
-
-	 
-	if (unlikely(ZERO_OR_NULL_PTR(objp)) || !kasan_check_byte(objp))
-		return 0;
-
-	size = kfence_ksize(objp) ?: __ksize(objp);
-	 
-	kasan_unpoison_range(objp, size);
-	return size;
-}
+/* Stub: ksize not called in minimal kernel */
+size_t ksize(const void *objp) { return 0; }
 
 
 int should_failslab(struct kmem_cache *s, gfp_t gfpflags)

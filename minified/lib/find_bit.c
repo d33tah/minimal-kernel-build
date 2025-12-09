@@ -64,16 +64,6 @@ unsigned long _find_first_bit(const unsigned long *addr, unsigned long size)
 }
 #endif
 
-/* Stub: _find_first_and_bit not used in minimal kernel */
-#ifndef find_first_and_bit
-unsigned long _find_first_and_bit(const unsigned long *addr1,
-				  const unsigned long *addr2,
-				  unsigned long size)
-{
-	return size;
-}
-#endif
-
 #ifndef find_first_zero_bit
 unsigned long _find_first_zero_bit(const unsigned long *addr, unsigned long size)
 {
@@ -106,10 +96,3 @@ unsigned long _find_last_bit(const unsigned long *addr, unsigned long size)
 	return size;
 }
 #endif
-
-/* Stub: find_next_clump8 not used in minimal kernel */
-unsigned long find_next_clump8(unsigned long *clump, const unsigned long *addr,
-			       unsigned long size, unsigned long offset)
-{
-	return size;
-}

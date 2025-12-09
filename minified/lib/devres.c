@@ -223,30 +223,3 @@ void __iomem *devm_ioremap_resource(struct device *dev,
 {
 	return __devm_ioremap_resource(dev, res, DEVM_IOREMAP);
 }
-
-/* Stub: devm_ioremap_resource_wc not used in minimal kernel */
-void __iomem *devm_ioremap_resource_wc(struct device *dev,
-				       const struct resource *res)
-{ return NULL; }
-
-/* Stub: devm_of_iomap not used in minimal kernel */
-void __iomem *devm_of_iomap(struct device *dev, struct device_node *node, int index,
-			    resource_size_t *size)
-{ return IOMEM_ERR_PTR(-EINVAL); }
-
-/* Stub: devm_ioport_map not used in minimal kernel */
-void __iomem *devm_ioport_map(struct device *dev, unsigned long port,
-			       unsigned int nr)
-{ return NULL; }
-
-/* Stub: devm_ioport_unmap not used in minimal kernel */
-void devm_ioport_unmap(struct device *dev, void __iomem *addr) { }
-
-/* Stub: devm_arch_phys_wc_add not used in minimal kernel */
-int devm_arch_phys_wc_add(struct device *dev, unsigned long base, unsigned long size)
-{ return -ENODEV; }
-
-/* Stub: devm_arch_io_reserve_memtype_wc not used in minimal kernel */
-int devm_arch_io_reserve_memtype_wc(struct device *dev, resource_size_t start,
-				    resource_size_t size)
-{ return -ENODEV; }

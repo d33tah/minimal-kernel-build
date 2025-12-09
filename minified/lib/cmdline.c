@@ -4,12 +4,6 @@
 #include <linux/string.h>
 #include <linux/ctype.h>
 
-/* Stub: get_option, get_options, memparse not used externally */
-#include <linux/bug.h>
-int get_option(char **str, int *pint) { BUG(); }
-char *get_options(const char *str, int nints, int *ints) { BUG(); }
-unsigned long long memparse(const char *ptr, char **retptr) { BUG(); }
-
 bool parse_option_str(const char *str, const char *option)
 {
 	while (*str) {

@@ -325,16 +325,7 @@ void tty_hangup(struct tty_struct *tty)
 	schedule_work(&tty->hangup_work);
 }
 
-void tty_vhangup(struct tty_struct *tty)
-{
-	/* Stub: tty_vhangup not used in minimal kernel */
-}
-
-/* tty_vhangup_self removed - no callers */
-
-void tty_vhangup_session(struct tty_struct *tty)
-{
-}
+/* tty_vhangup, tty_vhangup_self, tty_vhangup_session removed - unused */
 
 int tty_hung_up_p(struct file *filp)
 {

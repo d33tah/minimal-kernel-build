@@ -172,17 +172,7 @@ static struct device *tty0dev;
 
 static ATOMIC_NOTIFIER_HEAD(vt_notifier_list);
 
-int register_vt_notifier(struct notifier_block *nb)
-{
-	/* Stub: VT notifiers not needed for minimal kernel */
-	return 0;
-}
-
-int unregister_vt_notifier(struct notifier_block *nb)
-{
-	/* Stub: VT notifiers not needed for minimal kernel */
-	return 0;
-}
+/* register_vt_notifier, unregister_vt_notifier removed - unused */
 
 static void notify_write(struct vc_data *vc, unsigned int unicode)
 {

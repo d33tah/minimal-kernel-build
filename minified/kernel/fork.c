@@ -776,12 +776,6 @@ int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 	return 0;
 }
 
-int replace_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
-{
-	/* Stubbed: exe file replacement not needed for minimal boot */
-	return -EINVAL;
-}
-
 /* get_mm_exe_file stubbed - used by dup_mm */
 struct file *get_mm_exe_file(struct mm_struct *mm) { return NULL; }
 
@@ -1717,11 +1711,6 @@ SYSCALL_DEFINE2(clone3, struct clone_args __user *, uargs, size_t, size)
 	return -ENOSYS;
 }
 #endif
-
-void walk_process_tree(struct task_struct *top, proc_visitor visitor, void *data)
-{
-	/* Stub: process tree walking not needed for minimal kernel */
-}
 
 #ifndef ARCH_MIN_MMSTRUCT_ALIGN
 #define ARCH_MIN_MMSTRUCT_ALIGN 0

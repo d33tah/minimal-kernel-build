@@ -80,13 +80,10 @@ static inline bool clockevent_state_oneshot(struct clock_event_device *dev)
 
 extern u64 clockevent_delta2ns(unsigned long latch, struct clock_event_device *evt);
 extern void clockevents_register_device(struct clock_event_device *dev);
-extern int clockevents_unbind_device(struct clock_event_device *ced, int cpu);
 
 extern void clockevents_config_and_register(struct clock_event_device *dev,
 					    u32 freq, unsigned long min_delta,
 					    unsigned long max_delta);
-
-extern int clockevents_update_freq(struct clock_event_device *ce, u32 freq);
 
 static inline void
 clockevents_calc_mult_shift(struct clock_event_device *ce, u32 freq, u32 maxsec)

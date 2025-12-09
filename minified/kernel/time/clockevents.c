@@ -234,12 +234,6 @@ static void clockevents_notify_released(void)
 	}
 }
 
-/* Stub: clockevents_unbind_device not used in minimal kernel */
-int clockevents_unbind_device(struct clock_event_device *ced, int cpu)
-{
-	return -ENODEV;
-}
-
 void clockevents_register_device(struct clock_event_device *dev)
 {
 	unsigned long flags;
@@ -295,18 +289,6 @@ void clockevents_config_and_register(struct clock_event_device *dev,
 	dev->max_delta_ticks = max_delta;
 	clockevents_config(dev, freq);
 	clockevents_register_device(dev);
-}
-
-/* Stub: __clockevents_update_freq not used in minimal kernel */
-int __clockevents_update_freq(struct clock_event_device *dev, u32 freq)
-{
-	return 0;
-}
-
-/* Stub: clockevents_update_freq not used in minimal kernel */
-int clockevents_update_freq(struct clock_event_device *dev, u32 freq)
-{
-	return 0;
 }
 
 void clockevents_handle_noop(struct clock_event_device *dev)

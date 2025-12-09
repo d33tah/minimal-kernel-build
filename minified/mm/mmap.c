@@ -81,8 +81,7 @@ static pgprot_t vm_pgprot_modify(pgprot_t oldprot, unsigned long vm_flags)
 	return pgprot_modify(oldprot, vm_get_page_prot(vm_flags));
 }
 
-/* Stub: vma_set_page_prot not called in minimal kernel */
-void vma_set_page_prot(struct vm_area_struct *vma) { }
+/* Removed: vma_set_page_prot - never called (~2 LOC) */
 
 static void __remove_shared_vm_struct(struct vm_area_struct *vma,
 		struct file *file, struct address_space *mapping)
@@ -866,13 +865,9 @@ SYSCALL_DEFINE1(old_mmap, struct mmap_arg_struct __user *, arg)
 	return ksys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
 			       a.offset >> PAGE_SHIFT);
 }
-#endif 
+#endif
 
-/* Used by vma_set_page_prot */
-int vma_wants_writenotify(struct vm_area_struct *vma, pgprot_t vm_page_prot)
-{
-	return 0;
-}
+/* Removed: vma_wants_writenotify - was used only by vma_set_page_prot (~4 LOC) */
 
 unsigned long mmap_region(struct file *file, unsigned long addr,
 		unsigned long len, vm_flags_t vm_flags, unsigned long pgoff,

@@ -1113,7 +1113,7 @@ static inline int pte_devmap(pte_t pte)
 	return 0;
 }
 
-int vma_wants_writenotify(struct vm_area_struct *vma, pgprot_t vm_page_prot);
+/* Removed: vma_wants_writenotify - never called */
 
 extern pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
 			       spinlock_t **ptl);
@@ -1675,7 +1675,7 @@ static inline unsigned long vma_pages(struct vm_area_struct *vma)
 }
 
 pgprot_t vm_get_page_prot(unsigned long vm_flags);
-void vma_set_page_prot(struct vm_area_struct *vma);
+/* Removed: vma_set_page_prot - never called */
 
 void vma_set_file(struct vm_area_struct *vma, struct file *file);
 

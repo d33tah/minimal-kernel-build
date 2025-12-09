@@ -967,9 +967,7 @@ struct mmu_notifier_range;
 
 void free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
 		unsigned long end, unsigned long floor, unsigned long ceiling);
-int
-copy_page_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma);
-/* follow_pte, follow_pfn, follow_phys, generic_access_phys removed - unused */
+/* copy_page_range, follow_pte, follow_pfn, follow_phys, generic_access_phys removed - unused */
 
 extern void truncate_pagecache(struct inode *inode, loff_t new);
 extern void truncate_setsize(struct inode *inode, loff_t newsize);

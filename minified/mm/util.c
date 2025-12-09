@@ -431,12 +431,7 @@ error:
 	return -ENOMEM;
 }
 
-/* Stub: memcmp_pages not called in minimal kernel */
-int __weak memcmp_pages(struct page *page1, struct page *page2)
-{
-	return 0;
-}
-
+/* memcmp_pages removed - unused */
 
 #ifndef ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO
 void flush_dcache_folio(struct folio *folio)

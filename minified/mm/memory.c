@@ -435,12 +435,7 @@ out:
  * since simplified dup_mmap doesn't use them (~230 LOC removed)
  */
 
-/* Stub: copy_page_range not called - simplified dup_mmap doesn't use it */
-int
-copy_page_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma)
-{
-	return 0;
-}
+/* copy_page_range removed - not called anywhere */
 
 struct zap_details {
 	struct folio *single_folio;	

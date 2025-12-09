@@ -10,7 +10,6 @@
 #include <linux/spinlock.h>
 
 static noinline void __down(struct semaphore *sem);
-static noinline int __down_interruptible(struct semaphore *sem);
 static noinline void __up(struct semaphore *sem);
 
 void down(struct semaphore *sem)
@@ -26,21 +25,8 @@ void down(struct semaphore *sem)
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 }
 
-int down_interruptible(struct semaphore *sem)
-{
-	unsigned long flags;
-	int result = 0;
-
-	might_sleep();
-	raw_spin_lock_irqsave(&sem->lock, flags);
-	if (likely(sem->count > 0))
-		sem->count--;
-	else
-		result = __down_interruptible(sem);
-	raw_spin_unlock_irqrestore(&sem->lock, flags);
-
-	return result;
-}
+/* Stub: down_interruptible not called in minimal kernel */
+int down_interruptible(struct semaphore *sem) { return 0; }
 
 
 int down_trylock(struct semaphore *sem)
@@ -123,11 +109,6 @@ static inline int __sched __down_common(struct semaphore *sem, long state,
 static noinline void __sched __down(struct semaphore *sem)
 {
 	__down_common(sem, TASK_UNINTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
-}
-
-static noinline int __sched __down_interruptible(struct semaphore *sem)
-{
-	return __down_common(sem, TASK_INTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
 }
 
 static noinline void __sched __up(struct semaphore *sem)

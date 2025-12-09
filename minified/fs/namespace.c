@@ -854,9 +854,7 @@ struct vfsmount *mntget(struct vfsmount *mnt)
 
 /* mnt_clone_internal removed - no callers */
 
-/* Stub: not used in minimal kernel */
-int may_umount_tree(struct vfsmount *m) { return 1; }
-int may_umount(struct vfsmount *mnt) { return 1; }
+/* may_umount_tree, may_umount removed - unused */
 
 
 static void namespace_unlock(void)
@@ -1080,8 +1078,10 @@ struct mount *copy_tree(struct mount *mnt, struct dentry *dentry,
 	return clone_mnt(mnt, dentry, flag);
 }
 
-/* Stub: not used in minimal kernel */
-struct vfsmount *collect_mounts(const struct path *path) { return ERR_PTR(-EINVAL); }
+/* collect_mounts removed - unused */
+
+/* drop_collected_mounts - used internally in put_mnt_ns */
+static void drop_collected_mounts(struct vfsmount *mnt) { }
 
 static void free_mnt_ns(struct mnt_namespace *);
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *, bool);
@@ -1103,9 +1103,6 @@ void dissolve_on_fput(struct vfsmount *mnt)
 	if (ns)
 		free_mnt_ns(ns);
 }
-
-/* Stub: not used in minimal kernel */
-void drop_collected_mounts(struct vfsmount *mnt) { }
 
 /* clone_private_mount, iterate_mounts removed - unused */
 
@@ -1163,8 +1160,8 @@ static int invent_group_ids(struct mount *mnt, bool recurse)
 	return 0;
 }
 
-/* Stub: count_mounts not used externally */
-int count_mounts(struct mnt_namespace *ns, struct mount *mnt)
+/* count_mounts - used internally in attach_recursive_mnt */
+static int count_mounts(struct mnt_namespace *ns, struct mount *mnt)
 {
 	return 0;
 }

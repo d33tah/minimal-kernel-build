@@ -216,20 +216,12 @@ struct device_link *device_link_add(struct device *consumer,
 	return NULL;
 }
 
-/* Stub: device link operations not needed since device_link_add returns NULL */
-void device_link_del(struct device_link *link) { }
-void device_link_remove(void *consumer, struct device *supplier) { }
-
 /* Stub: no device links since device_link_add returns NULL */
 int device_links_check_suppliers(struct device *dev)
 {
 	dev->links.status = DL_DEV_PROBING;
 	return 0;
 }
-
-/* Stub: sync state functions not needed since no device links */
-void device_links_supplier_sync_state_pause(void) { }
-void device_links_supplier_sync_state_resume(void) { }
 
 /* Stub: waiting_for_supplier sysfs attribute simplified for minimal kernel */
 static ssize_t waiting_for_supplier_show(struct device *dev,
@@ -1040,20 +1032,6 @@ int __init devices_init(void)
 	return -ENOMEM;
 }
 
-/* device_check_offline removed - only called from stubbed device_offline */
-
-int device_offline(struct device *dev)
-{
-	/* Stub: device offline not needed for minimal kernel */
-	return -ENOSYS;
-}
-
-int device_online(struct device *dev)
-{
-	/* Stub: device online not needed for minimal kernel */
-	return 0;
-}
-
 struct root_device {
 	struct device dev;
 	struct module *owner;
@@ -1150,25 +1128,6 @@ void device_destroy(struct class *class, dev_t devt)
 		put_device(dev);
 		device_unregister(dev);
 	}
-}
-
-int device_rename(struct device *dev, const char *new_name)
-{
-	/* Stub: device renaming not needed for minimal kernel */
-	return -EINVAL;
-}
-
-int device_move(struct device *dev, struct device *new_parent,
-		enum dpm_order dpm_order)
-{
-	/* Stubbed: device moving not needed for minimal boot */
-	return -EINVAL;
-}
-
-int device_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid)
-{
-	/* Stubbed: device ownership changes not needed for minimal boot */
-	return -EINVAL;
 }
 
 void device_shutdown(void)

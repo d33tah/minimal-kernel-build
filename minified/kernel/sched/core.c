@@ -359,18 +359,6 @@ static inline void uclamp_fork(struct task_struct *p) { }
 static inline void uclamp_post_fork(struct task_struct *p) { }
 static inline void init_uclamp(void) { }
 
-/* Stub: sched_task_on_rq not used externally */
-bool sched_task_on_rq(struct task_struct *p)
-{
-	return false;
-}
-
-unsigned long get_wchan(struct task_struct *p)
-{
-	/* Stub: wait channel inspection not needed for minimal kernel */
-	return 0;
-}
-
 static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (!(flags & ENQUEUE_NOCLOCK))

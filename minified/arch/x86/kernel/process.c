@@ -502,29 +502,6 @@ unsigned long arch_randomize_brk(struct mm_struct *mm)
 	return randomize_page(mm->brk, 0x02000000);
 }
 
-unsigned long __get_wchan(struct task_struct *p)
-{
-	struct unwind_state state;
-	unsigned long addr = 0;
-
-	if (!try_get_task_stack(p))
-		return 0;
-
-	for (unwind_start(&state, p, NULL, NULL); !unwind_done(&state);
-	     unwind_next_frame(&state)) {
-		addr = unwind_get_return_address(&state);
-		if (!addr)
-			break;
-		if (in_sched_functions(addr))
-			continue;
-		break;
-	}
-
-	put_task_stack(p);
-
-	return addr;
-}
-
 long do_arch_prctl_common(int option, unsigned long arg2)
 {
 	switch (option) {

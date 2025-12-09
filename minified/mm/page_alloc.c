@@ -1638,13 +1638,7 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
 	return make_alloc_exact(addr, order, size);
 }
 
-/* Stub: not used in minimal kernel */
-void * __meminit alloc_pages_exact_nid(int nid, size_t size, gfp_t gfp_mask) { return NULL; }
-
-void free_pages_exact(void *virt, size_t size)
-{
-	/* Stub: exact page freeing not used in minimal kernel */
-}
+/* alloc_pages_exact_nid, free_pages_exact removed - unused */
 
 static unsigned long nr_free_zone_pages(int offset)
 {
@@ -1679,10 +1673,7 @@ long si_mem_available(void)
 	return global_zone_page_state(NR_FREE_PAGES);
 }
 
-void si_meminfo(struct sysinfo *val)
-{
-	/* Stub: sysinfo not needed for minimal kernel */
-}
+/* si_meminfo removed - unused */
 
 static void zoneref_set_zone(struct zone *zone, struct zoneref *zoneref)
 {

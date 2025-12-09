@@ -280,11 +280,7 @@ void __init anon_vma_init(void)
 			SLAB_PANIC|SLAB_ACCOUNT);
 }
 
-/* Stubbed - not used in minimal kernel */
-struct anon_vma *page_get_anon_vma(struct page *page)
-{
-	return NULL;
-}
+/* page_get_anon_vma removed - unused */
 
 struct anon_vma *folio_lock_anon_vma_read(struct folio *folio,
 					  struct rmap_walk_control *rwc)

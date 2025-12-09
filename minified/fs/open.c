@@ -810,10 +810,6 @@ int nonseekable_open(struct inode *inode, struct file *filp)
 }
 
 
-int stream_open(struct inode *inode, struct file *filp)
-{
-	filp->f_mode &= ~(FMODE_LSEEK | FMODE_PREAD | FMODE_PWRITE | FMODE_ATOMIC_POS);
-	filp->f_mode |= FMODE_STREAM;
-	return 0;
-}
+/* Stub: stream_open not called in minimal kernel */
+int stream_open(struct inode *inode, struct file *filp) { return 0; }
 

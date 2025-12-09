@@ -173,7 +173,6 @@ static inline void do_sysctl_args(void)
 {
 }
 
-int sysctl_max_threads(struct ctl_table *table, int write, void *buffer,
-		size_t *lenp, loff_t *ppos);
+/* sysctl_max_threads removed - unused */
 
 #endif  

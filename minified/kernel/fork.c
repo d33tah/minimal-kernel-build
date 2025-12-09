@@ -1795,9 +1795,4 @@ int unshare_files(void)
 	return 0;
 }
 
-int sysctl_max_threads(struct ctl_table *table, int write,
-		       void *buffer, size_t *lenp, loff_t *ppos)
-{
-	/* Stub: sysctl handler not needed for minimal kernel */
-	return 0;
-}
+/* sysctl_max_threads removed - unused */

@@ -1451,7 +1451,7 @@ extern struct kmem_cache *names_cachep;
 #define __putname(name)		kmem_cache_free(names_cachep, (void *)(name))
 
 extern struct super_block *blockdev_superblock;
-void emergency_thaw_all(void);
+/* emergency_thaw_all removed - unused */
 extern int sync_filesystem(struct super_block *);
 extern const struct file_operations def_blk_fops;
 extern const struct file_operations def_chr_fops;
@@ -1510,7 +1510,7 @@ static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count)
 }
 
 extern void emergency_sync(void);
-extern void emergency_remount(void);
+/* emergency_remount removed - unused */
 
 int notify_change(struct user_namespace *, struct dentry *,
 		  struct iattr *, struct inode **);

@@ -442,13 +442,7 @@ int reconfigure_super(struct fs_context *fc)
 	return -EINVAL;
 }
 
-/* Stub: emergency remount not needed for minimal kernel */
-void emergency_remount(void) { }
-
-/* Stub: emergency thaw not needed for minimal kernel */
-void emergency_thaw_all(void)
-{
-}
+/* emergency_remount, emergency_thaw_all removed - unused */
 
 static DEFINE_IDA(unnamed_dev_ida);
 

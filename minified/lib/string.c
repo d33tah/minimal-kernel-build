@@ -123,13 +123,6 @@ ssize_t strscpy(char *dest, const char *src, size_t count)
 }
 #endif
 
-/* Stub: stpcpy not used in minimal kernel */
-char *stpcpy(char *__restrict__ dest, const char *__restrict__ src);
-char *stpcpy(char *__restrict__ dest, const char *__restrict__ src)
-{
-	return dest;
-}
-
 #ifndef __HAVE_ARCH_STRCAT
 /* Stub: strcat not used in kernel proper (only in scripts/) */
 char *strcat(char *dest, const char *src) { BUG(); }
@@ -213,12 +206,6 @@ char *strchrnul(const char *s, int c)
 	return (char *)s;
 }
 #endif
-
-/* Stub: strnchrnul not used externally */
-char *strnchrnul(const char *s, size_t count, int c)
-{
-	return (char *)s;
-}
 
 #ifndef __HAVE_ARCH_STRRCHR
 char *strrchr(const char *s, int c)
@@ -438,14 +425,6 @@ char *strstr(const char *s1, const char *s2)
 }
 #endif
 
-#ifndef __HAVE_ARCH_STRNSTR
-/* Stubbed - not used externally */
-char *strnstr(const char *s1, const char *s2, size_t len)
-{
-	return NULL;
-}
-#endif
-
 #ifndef __HAVE_ARCH_MEMCHR
 void *memchr(const void *s, int c, size_t n)
 {
@@ -458,9 +437,3 @@ void *memchr(const void *s, int c, size_t n)
 	return NULL;
 }
 #endif
-
-/* Stub: memchr_inv not used in minimal kernel */
-void *memchr_inv(const void *start, int c, size_t bytes)
-{
-	return NULL;
-}

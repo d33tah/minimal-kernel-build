@@ -56,7 +56,6 @@ extern char * strchr(const char *,int);
 #ifndef __HAVE_ARCH_STRCHRNUL
 extern char * strchrnul(const char *,int);
 #endif
-extern char * strnchrnul(const char *, size_t, int);
 #ifndef __HAVE_ARCH_STRNCHR
 extern char * strnchr(const char *, size_t, int);
 #endif
@@ -71,9 +70,6 @@ extern char *strim(char *);
 
 #ifndef __HAVE_ARCH_STRSTR
 extern char * strstr(const char *, const char *);
-#endif
-#ifndef __HAVE_ARCH_STRNSTR
-extern char * strnstr(const char *, const char *, size_t);
 #endif
 #ifndef __HAVE_ARCH_STRLEN
 extern __kernel_size_t strlen(const char *);
@@ -132,7 +128,6 @@ extern int bcmp(const void *,const void *,__kernel_size_t);
 extern void * memchr(const void *,int,__kernel_size_t);
 #endif
 
-void *memchr_inv(const void *s, int c, size_t n);
 char *strreplace(char *s, char old, char new);
 
 extern void kfree_const(const void *x);

@@ -27,16 +27,6 @@ void exit_ptrace(struct task_struct *tracer, struct list_head *dead)
 {
 }
 
-int ptrace_readdata(struct task_struct *tsk, unsigned long src, char __user *dst, int len)
-{
-	return -EIO;
-}
-
-int ptrace_writedata(struct task_struct *tsk, char __user *src, unsigned long dst, int len)
-{
-	return -EIO;
-}
-
 int ptrace_request(struct task_struct *child, long request,
 		   unsigned long addr, unsigned long data)
 {
@@ -49,28 +39,3 @@ SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
 	return -ENOSYS;
 }
 
-int generic_ptrace_peekdata(struct task_struct *tsk, unsigned long addr,
-			    unsigned long data)
-{
-	return -EIO;
-}
-
-int generic_ptrace_pokedata(struct task_struct *tsk, unsigned long addr,
-			    unsigned long data)
-{
-	return -EIO;
-}
-
-int ptrace_get_breakpoints(struct task_struct *tsk)
-{
-	return 0;
-}
-
-void ptrace_put_breakpoints(struct task_struct *tsk)
-{
-}
-
-int task_current_syscall(struct task_struct *target, struct syscall_info *info)
-{
-	return -ENOSYS;
-}

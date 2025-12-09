@@ -946,11 +946,7 @@ void d_instantiate(struct dentry *entry, struct inode * inode)
 	}
 }
 
-void d_instantiate_new(struct dentry *entry, struct inode *inode)
-{
-	/* Stub: d_instantiate_new not used in minimal kernel */
-	d_instantiate(entry, inode);
-}
+/* d_instantiate_new removed - unused */
 
 struct dentry *d_make_root(struct inode *root_inode)
 {
@@ -1304,8 +1300,7 @@ void d_add(struct dentry *entry, struct inode *inode)
 	__d_add(entry, inode);
 }
 
-/* Stub: d_exact_alias not used in minimal kernel */
-struct dentry *d_exact_alias(struct dentry *entry, struct inode *inode) { return NULL; }
+/* d_exact_alias removed - unused */
 
 static void swap_names(struct dentry *dentry, struct dentry *target)
 {
@@ -1445,7 +1440,7 @@ void d_move(struct dentry *dentry, struct dentry *target)
 	write_sequnlock(&rename_lock);
 }
 
-void d_exchange(struct dentry *dentry1, struct dentry *dentry2) { }
+/* d_exchange removed - unused */
 
 /* Stubbed - not used in minimal kernel */
 struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)

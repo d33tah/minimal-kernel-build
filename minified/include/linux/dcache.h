@@ -173,7 +173,7 @@ struct dentry_operations {
 extern seqlock_t rename_lock;
 
 extern void d_instantiate(struct dentry *, struct inode *);
-extern void d_instantiate_new(struct dentry *, struct inode *);
+/* d_instantiate_new removed - unused */
 extern void __d_drop(struct dentry *dentry);
 extern void d_drop(struct dentry *dentry);
 extern void d_delete(struct dentry *);

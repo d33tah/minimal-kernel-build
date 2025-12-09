@@ -43,13 +43,8 @@ extern void rb_erase(struct rb_node *, struct rb_root *);
 
 
 extern struct rb_node *rb_next(const struct rb_node *);
-/* rb_prev removed - unused */
+/* rb_prev, rb_last, rb_replace_node removed - unused */
 extern struct rb_node *rb_first(const struct rb_root *);
-/* rb_last removed - unused */
-
-
-extern void rb_replace_node(struct rb_node *victim, struct rb_node *new,
-			    struct rb_root *root);
 
 static inline void rb_link_node(struct rb_node *node, struct rb_node *parent,
 				struct rb_node **rb_link)
@@ -100,15 +95,7 @@ rb_erase_cached(struct rb_node *node, struct rb_root_cached *root)
 	return leftmost;
 }
 
-static inline void rb_replace_node_cached(struct rb_node *victim,
-					  struct rb_node *new,
-					  struct rb_root_cached *root)
-{
-	if (root->rb_leftmost == victim)
-		root->rb_leftmost = new;
-	rb_replace_node(victim, new, &root->rb_root);
-}
-
+/* Removed: rb_replace_node_cached - never called (~7 LOC) */
 
 static __always_inline struct rb_node *
 rb_add_cached(struct rb_node *node, struct rb_root_cached *tree,

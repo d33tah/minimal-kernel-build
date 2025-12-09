@@ -318,14 +318,4 @@ struct rb_node *rb_next(const struct rb_node *node)
 	return parent;
 }
 
-/* Stub: rb_prev not called in minimal kernel */
-struct rb_node *rb_prev(const struct rb_node *node)
-{
-	return NULL;
-}
-
-/* Stub: rb_replace_node not called externally */
-void rb_replace_node(struct rb_node *victim, struct rb_node *new,
-		     struct rb_root *root)
-{
-}
+/* Removed: rb_prev, rb_replace_node - never called (~10 LOC) */

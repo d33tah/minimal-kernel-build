@@ -15,22 +15,6 @@
 #include <asm/word-at-a-time.h>
 #include <asm/page.h>
 
-#ifndef __HAVE_ARCH_STRNCASECMP
-/* Stub: strncasecmp not used in minimal kernel */
-int strncasecmp(const char *s1, const char *s2, size_t len)
-{
-	return 0;
-}
-#endif
-
-#ifndef __HAVE_ARCH_STRCASECMP
-/* Stub: strcasecmp not used in minimal kernel */
-int strcasecmp(const char *s1, const char *s2)
-{
-	return 0;
-}
-#endif
-
 #ifndef __HAVE_ARCH_STRCPY
 char *strcpy(char *dest, const char *src)
 {

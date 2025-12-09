@@ -479,8 +479,7 @@ int finish_open(struct file *file, struct dentry *dentry,
 }
 
 
-/* Stub: finish_no_open not used in minimal kernel */
-int finish_no_open(struct file *file, struct dentry *dentry) { return 0; }
+/* finish_no_open removed - unused */
 
 char *file_path(struct file *filp, char *buf, int buflen)
 {
@@ -515,15 +514,7 @@ struct file *dentry_open(const struct path *path, int flags,
 	return f;
 }
 
-/* Stub: dentry_create not used in minimal kernel */
-struct file *dentry_create(const struct path *path, int flags, umode_t mode,
-			   const struct cred *cred)
-{ return ERR_PTR(-EINVAL); }
-
-/* Stub: open_with_fake_path not used in minimal kernel */
-struct file *open_with_fake_path(const struct path *path, int flags,
-				struct inode *inode, const struct cred *cred)
-{ return ERR_PTR(-EINVAL); }
+/* dentry_create, open_with_fake_path removed - unused */
 
 #define WILL_CREATE(flags)	(flags & (O_CREAT | __O_TMPFILE))
 #define O_PATH_FLAGS		(O_DIRECTORY | O_NOFOLLOW | O_PATH | O_CLOEXEC)
@@ -666,10 +657,7 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 	return file;
 }
 
-/* Stub: file_open_root not used in minimal kernel */
-struct file *file_open_root(const struct path *root,
-			    const char *filename, int flags, umode_t mode)
-{ return ERR_PTR(-EINVAL); }
+/* file_open_root removed - unused */
 
 static long do_sys_openat2(int dfd, const char __user *filename,
 			   struct open_how *how)

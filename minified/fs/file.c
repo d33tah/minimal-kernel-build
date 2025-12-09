@@ -637,19 +637,7 @@ struct file *fget_raw(unsigned int fd)
 	return __fget(fd, 0);
 }
 
-/* Stub: fget_task not used in minimal kernel */
-struct file *fget_task(struct task_struct *task, unsigned int fd)
-{
-	return NULL;
-}
-
-/* Stub: task_lookup_fd_rcu not used in minimal kernel */
-struct file *task_lookup_fd_rcu(struct task_struct *task, unsigned int fd)
-{
-	return NULL;
-}
-
-/* task_lookup_next_fd_rcu removed - no callers */
+/* fget_task, task_lookup_fd_rcu, task_lookup_next_fd_rcu removed - unused */
 
 static unsigned long __fget_light(unsigned int fd, fmode_t mask)
 {

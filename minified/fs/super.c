@@ -439,31 +439,7 @@ void drop_super_exclusive(struct super_block *sb)
 	put_super(sb);
 }
 
-/* Stub: not used in minimal kernel */
-void iterate_supers(void (*f)(struct super_block *, void *), void *arg) { }
-
-/* Stub: not used in minimal kernel */
-void iterate_supers_type(struct file_system_type *type,
-	void (*f)(struct super_block *, void *), void *arg) { }
-
-
-/* Stubbed - not used in minimal kernel (no block device) */
-struct super_block *get_super(struct block_device *bdev)
-{
-	return NULL;
-}
-
-/* Stubbed - not used in minimal kernel (no block device) */
-struct super_block *get_active_super(struct block_device *bdev)
-{
-	return NULL;
-}
-
-/* Stubbed - not used in minimal kernel */
-struct super_block *user_get_super(dev_t dev, bool excl)
-{
-	return NULL;
-}
+/* iterate_supers, iterate_supers_type, get_super, get_active_super, user_get_super removed - unused */
 
 /* Stubbed - remount not needed for minimal kernel */
 int reconfigure_super(struct fs_context *fc)

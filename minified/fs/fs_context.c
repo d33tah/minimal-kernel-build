@@ -240,12 +240,7 @@ struct fs_context *fs_context_for_reconfigure(struct dentry *dentry,
 				sb_flags_mask, FS_CONTEXT_FOR_RECONFIGURE);
 }
 
-/* Stub: fs_context_for_submount not used in minimal kernel */
-struct fs_context *fs_context_for_submount(struct file_system_type *type,
-					   struct dentry *reference)
-{
-	return ERR_PTR(-EOPNOTSUPP);
-}
+/* fs_context_for_submount removed - unused */
 
 void fc_drop_locked(struct fs_context *fc)
 {
@@ -257,11 +252,7 @@ void fc_drop_locked(struct fs_context *fc)
 
 static void legacy_fs_context_free(struct fs_context *fc);
 
-/* Stub: vfs_dup_fs_context not used in minimal kernel */
-struct fs_context *vfs_dup_fs_context(struct fs_context *src_fc)
-{
-	return ERR_PTR(-EOPNOTSUPP);
-}
+/* vfs_dup_fs_context removed - unused */
 
 void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, ...)
 {

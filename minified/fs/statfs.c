@@ -4,17 +4,7 @@
 #include <linux/fs.h>
 #include <linux/statfs.h>
 
-/* Stub: vfs_get_fsid not used in minimal kernel */
-int vfs_get_fsid(struct dentry *dentry, __kernel_fsid_t *fsid)
-{
-	return -ENOSYS;
-}
-
-/* Stub: vfs_statfs not used in minimal kernel */
-int vfs_statfs(const struct path *path, struct kstatfs *buf)
-{
-	return -ENOSYS;
-}
+/* vfs_get_fsid, vfs_statfs removed - unused */
 
 SYSCALL_DEFINE2(statfs, const char __user *, pathname, struct statfs __user *, buf)
 {

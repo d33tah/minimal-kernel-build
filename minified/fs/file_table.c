@@ -107,11 +107,7 @@ over:
 	return ERR_PTR(-ENFILE);
 }
 
-/* STUB: alloc_empty_file_noaccount not used externally */
-struct file *alloc_empty_file_noaccount(int flags, const struct cred *cred)
-{
-	return ERR_PTR(-ENOMEM);
-}
+/* alloc_empty_file_noaccount removed - unused */
 
 static struct file *alloc_file(const struct path *path, int flags,
 		const struct file_operations *fop)
@@ -166,12 +162,7 @@ struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
 	return file;
 }
 
-/* STUB: alloc_file_clone not used externally */
-struct file *alloc_file_clone(struct file *base, int flags,
-				const struct file_operations *fops)
-{
-	return ERR_PTR(-ENOMEM);
-}
+/* alloc_file_clone removed - unused */
 
 static void __fput(struct file *file)
 {
@@ -256,11 +247,7 @@ void fput(struct file *file)
 	}
 }
 
-/* Stub: __fput_sync not used in minimal kernel */
-void __fput_sync(struct file *file)
-{
-	fput(file);
-}
+/* __fput_sync removed - unused */
 
 
 void __init files_init(void)

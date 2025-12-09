@@ -269,12 +269,6 @@ static inline void cr4_update_pce_mm(struct mm_struct *mm)
 		cr4_clear_bits_irqsoff(X86_CR4_PCE);
 }
 
-/* Stub: cr4_update_pce not used in minimal kernel */
-void cr4_update_pce(void *ignored)
-{
-}
-
-
 void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 			struct task_struct *tsk)
 {
@@ -704,11 +698,6 @@ void __flush_tlb_all(void)
 		 
 		flush_tlb_local();
 	}
-}
-
-/* Stub: arch_tlbbatch_flush not used in minimal kernel */
-void arch_tlbbatch_flush(struct arch_tlbflush_unmap_batch *batch)
-{
 }
 
 bool nmi_uaccess_okay(void)

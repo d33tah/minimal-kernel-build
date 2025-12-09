@@ -62,7 +62,7 @@ int idr_for_each(const struct idr *,
 void *idr_get_next(struct idr *, int *nextid);
 void *idr_get_next_ul(struct idr *, unsigned long *nextid);
 void *idr_replace(struct idr *, void *, unsigned long id);
-void idr_destroy(struct idr *);
+/* idr_destroy removed - unused */
 
 static inline void idr_init_base(struct idr *idr, int base)
 {

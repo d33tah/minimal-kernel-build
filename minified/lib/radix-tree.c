@@ -601,12 +601,6 @@ void __radix_tree_replace(struct radix_tree_root *root,
 	delete_node(root, node);
 }
 
-/* Stubbed - not used externally */
-void radix_tree_replace_slot(struct radix_tree_root *root,
-			     void __rcu **slot, void *item)
-{
-}
-
 void radix_tree_iter_replace(struct radix_tree_root *root,
 				const struct radix_tree_iter *iter,
 				void __rcu **slot, void *item)
@@ -928,11 +922,6 @@ void __rcu **idr_get_free(struct radix_tree_root *root,
 	set_iter_tags(iter, node, offset, IDR_FREE);
 
 	return slot;
-}
-
-/* Stub: idr_destroy not used in minimal kernel */
-void idr_destroy(struct idr *idr)
-{
 }
 
 static void

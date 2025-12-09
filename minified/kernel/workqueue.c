@@ -116,15 +116,8 @@ void __init workqueue_init(void)
 }
 
 
-void wq_watchdog_set_thresh(unsigned long thresh) {}
-
-int workqueue_prepare_cpu(unsigned int cpu) { return 0; }
-int workqueue_online_cpu(unsigned int cpu) { return 0; }
-int workqueue_offline_cpu(unsigned int cpu) { return 0; }
-
 void wq_worker_running(struct task_struct *task) {}
 void wq_worker_sleeping(struct task_struct *task) {}
-void wq_worker_tick(struct task_struct *task) {}
 
 void delayed_work_timer_fn(struct timer_list *t)
 {
@@ -133,8 +126,3 @@ void delayed_work_timer_fn(struct timer_list *t)
     queue_work(dwork->wq, &dwork->work);
 }
 
-int schedule_on_each_cpu(work_func_t func)
-{
-
-	return 0;
-}

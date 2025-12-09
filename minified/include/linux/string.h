@@ -29,12 +29,7 @@ ssize_t strscpy(char *, const char *, size_t);
 
 ssize_t strscpy_pad(char *dest, const char *src, size_t count);
 
-#ifndef __HAVE_ARCH_STRCAT
-extern char * strcat(char *, const char *);
-#endif
-#ifndef __HAVE_ARCH_STRNCAT
-extern char * strncat(char *, const char *, __kernel_size_t);
-#endif
+/* strcat, strncat removed - not used in kernel proper (only scripts/) */
 #ifndef __HAVE_ARCH_STRLCAT
 extern size_t strlcat(char *, const char *, __kernel_size_t);
 #endif
@@ -77,9 +72,7 @@ extern char * strpbrk(const char *,const char *);
 #ifndef __HAVE_ARCH_STRSEP
 extern char * strsep(char **,const char *);
 #endif
-#ifndef __HAVE_ARCH_STRSPN
-extern __kernel_size_t strspn(const char *,const char *);
-#endif
+/* strspn removed - not used in kernel proper (only scripts/) */
 #ifndef __HAVE_ARCH_STRCSPN
 extern __kernel_size_t strcspn(const char *,const char *);
 #endif
@@ -116,7 +109,7 @@ extern void * memscan(void *,int,__kernel_size_t);
 extern int memcmp(const void *,const void *,__kernel_size_t);
 #endif
 #ifndef __HAVE_ARCH_BCMP
-extern int bcmp(const void *,const void *,__kernel_size_t);
+/* bcmp removed - boot/kconfig use their own */
 #endif
 #ifndef __HAVE_ARCH_MEMCHR
 extern void * memchr(const void *,int,__kernel_size_t);

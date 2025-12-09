@@ -107,15 +107,7 @@ ssize_t strscpy(char *dest, const char *src, size_t count)
 }
 #endif
 
-#ifndef __HAVE_ARCH_STRCAT
-/* Stub: strcat not used in kernel proper (only in scripts/) */
-char *strcat(char *dest, const char *src) { BUG(); }
-#endif
-
-#ifndef __HAVE_ARCH_STRNCAT
-/* Stub: strncat not used in kernel proper (only in scripts/) */
-char *strncat(char *dest, const char *src, size_t count) { BUG(); }
-#endif
+/* strcat, strncat removed - not used in kernel proper (only scripts/) */
 
 #ifndef __HAVE_ARCH_STRLCAT
 size_t strlcat(char *dest, const char *src, size_t count)
@@ -238,13 +230,7 @@ size_t strnlen(const char *s, size_t count)
 }
 #endif
 
-#ifndef __HAVE_ARCH_STRSPN
-/* Stub: strspn not used in kernel proper (only in scripts/) */
-size_t strspn(const char *s, const char *accept)
-{
-	return 0;
-}
-#endif
+/* strspn removed - not used in kernel proper (only scripts/) */
 
 #ifndef __HAVE_ARCH_STRCSPN
 size_t strcspn(const char *s, const char *reject)
@@ -379,8 +365,7 @@ __visible int memcmp(const void *cs, const void *ct, size_t count)
 }
 #endif
 
-/* Stub: bcmp not used in minimal kernel (except boot/kconfig which use their own) */
-int bcmp(const void *a, const void *b, size_t len) { return 0; }
+/* bcmp removed - boot/kconfig use their own */
 
 #ifndef __HAVE_ARCH_MEMSCAN
 /* Stubbed - not used externally */

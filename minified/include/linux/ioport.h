@@ -100,13 +100,13 @@ extern struct resource iomem_resource;
 extern struct resource *request_resource_conflict(struct resource *root, struct resource *new);
 extern int request_resource(struct resource *root, struct resource *new);
 extern int release_resource(struct resource *new);
-void release_child_resources(struct resource *new);
+/* release_child_resources removed - unused */
 extern void reserve_region_with_split(struct resource *root,
 			     resource_size_t start, resource_size_t end,
 			     const char *name);
 extern struct resource *insert_resource_conflict(struct resource *parent, struct resource *new);
 extern int insert_resource(struct resource *parent, struct resource *new);
-extern void insert_resource_expand_to_fit(struct resource *root, struct resource *new);
+/* insert_resource_expand_to_fit removed - unused */
 extern int remove_resource(struct resource *old);
 extern void arch_remove_reservations(struct resource *avail);
 extern int allocate_resource(struct resource *root, struct resource *new,
@@ -120,7 +120,7 @@ extern int allocate_resource(struct resource *root, struct resource *new,
 struct resource *lookup_resource(struct resource *root, resource_size_t start);
 int adjust_resource(struct resource *res, resource_size_t start,
 		    resource_size_t size);
-resource_size_t resource_alignment(struct resource *res);
+/* resource_alignment removed - unused */
 static inline resource_size_t resource_size(const struct resource *res)
 {
 	return res->end - res->start + 1;
@@ -171,9 +171,7 @@ extern void __release_region(struct resource *, resource_size_t,
 
 struct device;
 
-extern int devm_request_resource(struct device *dev, struct resource *root,
-				 struct resource *new);
-extern void devm_release_resource(struct device *dev, struct resource *new);
+/* devm_request_resource, devm_release_resource removed - unused */
 
 #define devm_request_region(dev,start,n,name) \
 	__devm_request_region(dev, &ioport_resource, (start), (n), (name))

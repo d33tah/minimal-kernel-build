@@ -129,11 +129,6 @@ static int __release_resource(struct resource *old, bool release_child)
 
 /* __release_child_resources removed - only called from stubbed release_child_resources */
 
-/* Stub: release_child_resources not used in minimal kernel */
-void release_child_resources(struct resource *r)
-{
-}
-
 struct resource *request_resource_conflict(struct resource *root, struct resource *new)
 {
 	struct resource *conflict;
@@ -397,10 +392,6 @@ int insert_resource(struct resource *parent, struct resource *new)
 	return conflict ? -EBUSY : 0;
 }
 
-/* Stub: insert_resource_expand_to_fit not used in minimal kernel */
-void insert_resource_expand_to_fit(struct resource *root, struct resource *new)
-{ }
-
 /* STUB: unused remove/adjust resource functions */
 int remove_resource(struct resource *old) { return -EINVAL; }
 int adjust_resource(struct resource *res, resource_size_t start,
@@ -488,13 +479,6 @@ reserve_region_with_split(struct resource *root, resource_size_t start,
 		__reserve_region_with_split(root, start, end, name);
 	write_unlock(&resource_lock);
 }
-
-/* Stub: resource_alignment not used in minimal kernel */
-resource_size_t resource_alignment(struct resource *res)
-{
-	return 0;
-}
-
 
 static DECLARE_WAIT_QUEUE_HEAD(muxed_resource_wait);
 
@@ -619,21 +603,12 @@ void __release_region(struct resource *parent, resource_size_t start,
 }
 
 
-
-/* Stubbed: devm_request_resource not used externally */
-int devm_request_resource(struct device *dev, struct resource *root,
-			  struct resource *new) { return -ENOSYS; }
-
-/* Stubbed: devm_release_resource not used externally */
-void devm_release_resource(struct device *dev, struct resource *new) { }
-
-/* Stubbed: __devm_request_region not used externally */
+/* Stubbed: __devm_request_region and __devm_release_region - needed by lib/devres.c */
 struct resource *
 __devm_request_region(struct device *dev, struct resource *parent,
 		      resource_size_t start, resource_size_t n, const char *name)
 { return NULL; }
 
-/* Stubbed: __devm_release_region not used externally */
 void __devm_release_region(struct device *dev, struct resource *parent,
 			   resource_size_t start, resource_size_t n) { }
 
@@ -656,19 +631,6 @@ bool iomem_is_exclusive(u64 addr)
 	/* Stub: exclusivity check not needed for minimal kernel */
 	return false;
 }
-
-/* Stub: resource_list_create_entry not used externally */
-struct resource_entry *resource_list_create_entry(struct resource *res,
-						  size_t extra_size)
-{
-	return NULL;
-}
-
-/* Stub: resource_list_free not used externally */
-void resource_list_free(struct list_head *head)
-{
-}
-
 
 /* Stub: iomem= cmdline option not needed for minimal kernel */
 static int __init strict_iomem(char *str) { return 1; }

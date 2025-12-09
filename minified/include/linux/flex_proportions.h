@@ -23,35 +23,6 @@ int fprop_global_init(struct fprop_global *p, gfp_t gfp);
 void fprop_global_destroy(struct fprop_global *p);
 bool fprop_new_period(struct fprop_global *p, int periods);
 
-struct fprop_local_single {
-	 
-	unsigned long events;
-	 
-	unsigned int period;
-	raw_spinlock_t lock;	 
-};
-
-#define INIT_FPROP_LOCAL_SINGLE(name)			\
-{	.lock = __RAW_SPIN_LOCK_UNLOCKED(name.lock),	\
-}
-
-int fprop_local_init_single(struct fprop_local_single *pl);
-void fprop_local_destroy_single(struct fprop_local_single *pl);
-void __fprop_inc_single(struct fprop_global *p, struct fprop_local_single *pl);
-void fprop_fraction_single(struct fprop_global *p,
-	struct fprop_local_single *pl, unsigned long *numerator,
-	unsigned long *denominator);
-
-static inline
-void fprop_inc_single(struct fprop_global *p, struct fprop_local_single *pl)
-{
-	unsigned long flags;
-
-	local_irq_save(flags);
-	__fprop_inc_single(p, pl);
-	local_irq_restore(flags);
-}
-
 struct fprop_local_percpu {
 	 
 	struct percpu_counter events;

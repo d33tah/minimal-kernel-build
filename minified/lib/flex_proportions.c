@@ -22,15 +22,6 @@ bool fprop_new_period(struct fprop_global *p, int periods)
 	return false;
 }
 
-/* Stub: single-cpu variants not used in minimal kernel */
-int fprop_local_init_single(struct fprop_local_single *pl) { return 0; }
-void fprop_local_destroy_single(struct fprop_local_single *pl) { }
-void __fprop_inc_single(struct fprop_global *p, struct fprop_local_single *pl) { }
-void fprop_fraction_single(struct fprop_global *p,
-			   struct fprop_local_single *pl,
-			   unsigned long *numerator, unsigned long *denominator)
-{ *numerator = 0; *denominator = 1; }
-
 int fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp)
 {
 	int err = percpu_counter_init(&pl->events, 0, gfp);

@@ -316,9 +316,6 @@ static const struct user_regset_view user_x86_32_view = {
 
 u64 xstate_fx_sw_bytes[USER_XSTATE_FX_SW_WORDS];
 
-/* STUB: update_regset_xstate_info not used externally */
-void __init update_regset_xstate_info(unsigned int size, u64 xstate_mask) { }
-
 const struct user_regset_view *task_user_regset_view(struct task_struct *task)
 {
 		return &user_x86_32_view;

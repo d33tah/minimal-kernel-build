@@ -632,9 +632,10 @@ struct file *fget(unsigned int fd)
 	return __fget(fd, FMODE_PATH);
 }
 
+/* Stub: fget_raw not called in minimal kernel */
 struct file *fget_raw(unsigned int fd)
 {
-	return __fget(fd, 0);
+	return NULL;
 }
 
 /* fget_task, task_lookup_fd_rcu, task_lookup_next_fd_rcu removed - unused */
@@ -661,9 +662,10 @@ unsigned long __fdget(unsigned int fd)
 	return __fget_light(fd, FMODE_PATH);
 }
 
+/* Stub: __fdget_raw not called in minimal kernel */
 unsigned long __fdget_raw(unsigned int fd)
 {
-	return __fget_light(fd, 0);
+	return 0;
 }
 
 unsigned long __fdget_pos(unsigned int fd)

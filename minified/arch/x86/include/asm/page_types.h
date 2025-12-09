@@ -47,8 +47,6 @@
 
 #define __PHYSICAL_MASK		((phys_addr_t)((1ULL << __PHYSICAL_MASK_SHIFT) - 1))
 
-extern int devmem_is_allowed(unsigned long pagenr);
-
 extern unsigned long max_low_pfn_mapped;
 extern unsigned long max_pfn_mapped;
 

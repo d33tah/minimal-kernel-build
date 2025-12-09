@@ -544,10 +544,6 @@ void __init poking_init(void)
 	pte_unmap_unlock(ptep, ptl);
 }
 
-/* Stub: devmem_is_allowed not used in minimal kernel */
-int devmem_is_allowed(unsigned long pagenr)
-{ return 1; }
-
 void free_init_pages(const char *what, unsigned long begin, unsigned long end)
 {
 	unsigned long begin_aligned, end_aligned;

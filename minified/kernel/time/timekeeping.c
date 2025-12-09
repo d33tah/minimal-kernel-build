@@ -282,22 +282,8 @@ u64 notrace ktime_get_raw_fast_ns(void)
 	return __ktime_get_fast_ns(&tk_fast_raw);
 }
 
-/* Stubbed: ktime_get_boot_fast_ns not used externally */
-u64 notrace ktime_get_boot_fast_ns(void) { return 0; }
-
-/* Stubbed: ktime_get_tai_fast_ns not used externally */
-u64 notrace ktime_get_tai_fast_ns(void) { return 0; }
-
-/* Stubbed: ktime_get_real_fast_ns not used externally */
-u64 ktime_get_real_fast_ns(void) { return 0; }
-
-/* Stubbed: ktime_get_fast_timestamps not used externally */
-void ktime_get_fast_timestamps(struct ktime_timestamps *snapshot)
-{
-	snapshot->real = 0;
-	snapshot->mono = 0;
-	snapshot->boot = 0;
-}
+/* Removed: ktime_get_boot_fast_ns, ktime_get_tai_fast_ns, ktime_get_real_fast_ns,
+   ktime_get_fast_timestamps - no callers */
 
 static RAW_NOTIFIER_HEAD(pvclock_gtod_chain);
 
@@ -306,11 +292,7 @@ static void update_pvclock_gtod(struct timekeeper *tk, bool was_set)
 	raw_notifier_call_chain(&pvclock_gtod_chain, was_set, tk);
 }
 
-/* Stubbed: pvclock_gtod_register_notifier not used externally */
-int pvclock_gtod_register_notifier(struct notifier_block *nb) { return 0; }
-
-/* Stubbed: pvclock_gtod_unregister_notifier not used externally */
-int pvclock_gtod_unregister_notifier(struct notifier_block *nb) { return 0; }
+/* pvclock_gtod_register/unregister_notifier removed - no callers */
 
 static inline void tk_update_leap_state(struct timekeeper *tk)
 {
@@ -458,14 +440,7 @@ ktime_t ktime_get_with_offset(enum tk_offsets offs)
 
 }
 
-/* Stubbed: ktime_get_coarse_with_offset not used externally */
-ktime_t ktime_get_coarse_with_offset(enum tk_offsets offs) { return 0; }
-
-/* Stubbed: ktime_mono_to_any not used externally */
-ktime_t ktime_mono_to_any(ktime_t tmono, enum tk_offsets offs) { return tmono; }
-
-/* Stubbed: ktime_get_raw not used externally */
-ktime_t ktime_get_raw(void) { return 0; }
+/* Removed: ktime_get_coarse_with_offset, ktime_mono_to_any, ktime_get_raw - no callers */
 
 void ktime_get_ts64(struct timespec64 *ts)
 {
@@ -522,11 +497,7 @@ noinstr time64_t __ktime_get_real_seconds(void)
 	return tk->xtime_sec;
 }
 
-/* Stubbed: ktime_get_snapshot not used externally */
-void ktime_get_snapshot(struct system_time_snapshot *systime_snapshot)
-{
-	memset(systime_snapshot, 0, sizeof(*systime_snapshot));
-}
+/* ktime_get_snapshot removed - no callers */
 
 int get_device_system_crosststamp(int (*get_time_fn)
 				  (ktime_t *device_time,
@@ -547,8 +518,7 @@ int do_settimeofday64(const struct timespec64 *ts)
 
 int persistent_clock_is_local;
 
-/* Stubbed: timekeeping_warp_clock not used externally */
-void timekeeping_warp_clock(void) { }
+/* timekeeping_warp_clock removed - no callers */
 
 static void __timekeeping_set_tai_offset(struct timekeeper *tk, s32 tai_offset)
 {

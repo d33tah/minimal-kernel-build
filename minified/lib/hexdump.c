@@ -7,7 +7,7 @@
 #include <linux/export.h>
 #include <asm/unaligned.h>
 
-const char hex_asc[] = "0123456789abcdef";
+/* hex_asc removed - never used, only hex_asc_upper is used by vsprintf */
 const char hex_asc_upper[] = "0123456789ABCDEF";
 
 /* Removed: hex_to_bin, hex2bin, bin2hex - never called (~6 LOC) */

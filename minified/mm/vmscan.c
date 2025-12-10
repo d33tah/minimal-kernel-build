@@ -12,17 +12,7 @@ int register_shrinker(struct shrinker *shrinker)
 
 void unregister_shrinker(struct shrinker *shrinker)
 {
-	 
-}
 
-void synchronize_shrinkers(void)
-{
-	 
-}
-
-void check_move_unevictable_pages(struct pagevec *pvec)
-{
-	 
 }
 
 int prealloc_shrinker(struct shrinker *shrinker)

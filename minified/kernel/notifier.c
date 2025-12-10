@@ -165,11 +165,7 @@ int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 }
 
 
-int raw_notifier_chain_register(struct raw_notifier_head *nh,
-		struct notifier_block *n)
-{
-	return notifier_chain_register(&nh->head, n, false);
-}
+/* raw_notifier_chain_register removed - unused */
 
 int raw_notifier_call_chain(struct raw_notifier_head *nh,
 		unsigned long val, void *v)

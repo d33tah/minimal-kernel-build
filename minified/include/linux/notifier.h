@@ -78,9 +78,7 @@ extern int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
 		struct notifier_block *nb);
 extern int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
 		struct notifier_block *nb);
-extern int raw_notifier_chain_register(struct raw_notifier_head *nh,
-		struct notifier_block *nb);
-/* srcu_notifier_chain_register, *_unique_prio variants removed - unused */
+/* raw_notifier_chain_register, srcu_notifier_chain_register, *_unique_prio variants removed - unused */
 
 extern int atomic_notifier_chain_unregister(struct atomic_notifier_head *nh,
 		struct notifier_block *nb);

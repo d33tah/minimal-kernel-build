@@ -44,18 +44,13 @@ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 void wakeup_kswapd(struct zone *zone, gfp_t gfp_flags, int order,
 		   enum zone_type highest_zoneidx)
 {
-	 
+
 }
 
 void __acct_reclaim_writeback(pg_data_t *pgdat, struct folio *folio,
 			       int nr_throttled)
 {
-	 
-}
 
-void reclaim_throttle(pg_data_t *pgdat, enum vmscan_throttle_state reason)
-{
-	 
 }
 
 long remove_mapping(struct address_space *mapping, struct folio *folio)

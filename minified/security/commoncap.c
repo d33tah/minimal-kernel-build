@@ -8,15 +8,10 @@
 int cap_capable(const struct cred *cred, struct user_namespace *targ_ns,
 		int cap, unsigned int opts)
 {
-	return 0;  
-}
-
-int cap_settime(const struct timespec64 *ts, const struct timezone *tz)
-{
 	return 0;
 }
 
-/* cap_ptrace_access_check, cap_ptrace_traceme, cap_capget, cap_capset removed - unused */
+/* cap_settime, cap_ptrace_access_check, cap_ptrace_traceme, cap_capget, cap_capset removed - unused */
 
 int cap_inode_need_killpriv(struct dentry *dentry)
 {

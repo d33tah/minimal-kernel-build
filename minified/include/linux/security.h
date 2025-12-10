@@ -61,8 +61,7 @@ extern const char *const lockdown_reasons[LOCKDOWN_CONFIDENTIALITY_MAX+1];
 
 extern int cap_capable(const struct cred *cred, struct user_namespace *ns,
 		       int cap, unsigned int opts);
-extern int cap_settime(const struct timespec64 *ts, const struct timezone *tz);
-/* cap_ptrace_*, cap_capget, cap_capset removed - unused */
+/* cap_settime, cap_ptrace_*, cap_capget, cap_capset removed - unused */
 extern int cap_bprm_creds_from_file(struct linux_binprm *bprm, struct file *file);
 /* cap_inode_setxattr, cap_inode_removexattr, cap_inode_getsecurity removed - unused */
 int cap_inode_need_killpriv(struct dentry *dentry);

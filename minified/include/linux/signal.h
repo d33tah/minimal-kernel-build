@@ -233,7 +233,7 @@ struct timespec;
 struct pt_regs;
 enum pid_type;
 
-extern int next_signal(struct sigpending *pending, sigset_t *mask);
+/* next_signal removed - not called */
 extern int do_send_sig_info(int sig, struct kernel_siginfo *info,
 				struct task_struct *p, enum pid_type type);
 extern int group_send_sig_info(int sig, struct kernel_siginfo *info,

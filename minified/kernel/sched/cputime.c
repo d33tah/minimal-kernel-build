@@ -96,13 +96,7 @@ static __always_inline u64 steal_account_process_time(u64 maxtime)
 	return 0;
 }
 
-/* Stubbed: thread_group_cputime not used externally */
-void thread_group_cputime(struct task_struct *tsk, struct task_cputime *times)
-{
-	times->utime = 0;
-	times->stime = 0;
-	times->sum_exec_runtime = 0;
-}
+/* thread_group_cputime removed - unused */
 
 static inline void irqtime_account_idle_ticks(int ticks) { }
 static inline void irqtime_account_process_tick(struct task_struct *p, int user_tick,
@@ -137,22 +131,9 @@ void account_process_tick(struct task_struct *p, int user_tick)
 		account_idle_time(cputime);
 }
 
-/* Stubbed: cputime_adjust not used externally */
-void cputime_adjust(struct task_cputime *curr, struct prev_cputime *prev,
-		    u64 *ut, u64 *st)
-{
-	*ut = 0;
-	*st = 0;
-}
+/* cputime_adjust, task_cputime_adjusted removed - unused */
 
-/* Stubbed: task_cputime_adjusted not used externally */
-void task_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st)
-{
-	*ut = 0;
-	*st = 0;
-}
-
-/* Stubbed: thread_group_cputime_adjusted not used externally */
+/* thread_group_cputime_adjusted - used by exit.c */
 void thread_group_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st)
 {
 	*ut = 0;

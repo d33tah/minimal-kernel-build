@@ -102,9 +102,6 @@ extern void * memcpy(void *,const void *,__kernel_size_t);
 #ifndef __HAVE_ARCH_MEMMOVE
 extern void * memmove(void *,const void *,__kernel_size_t);
 #endif
-#ifndef __HAVE_ARCH_MEMSCAN
-extern void * memscan(void *,int,__kernel_size_t);
-#endif
 #ifndef __HAVE_ARCH_MEMCMP
 extern int memcmp(const void *,const void *,__kernel_size_t);
 #endif

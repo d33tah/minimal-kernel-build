@@ -367,14 +367,6 @@ __visible int memcmp(const void *cs, const void *ct, size_t count)
 
 /* bcmp removed - boot/kconfig use their own */
 
-#ifndef __HAVE_ARCH_MEMSCAN
-/* Stubbed - not used externally */
-void *memscan(void *addr, int c, size_t size)
-{
-	return addr;
-}
-#endif
-
 #ifndef __HAVE_ARCH_STRSTR
 char *strstr(const char *s1, const char *s2)
 {

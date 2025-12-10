@@ -1,26 +1,8 @@
 /* Minimal stub for flex_proportions - flexible proportions library
  * Used only by backing-dev.c for writeback tracking
- * Original: 202 LOC, Stubbed to minimal implementations
  */
 
 #include <linux/flex_proportions.h>
-
-int fprop_global_init(struct fprop_global *p, gfp_t gfp)
-{
-	p->period = 0;
-	seqcount_init(&p->sequence);
-	return percpu_counter_init(&p->events, 1, gfp);
-}
-
-void fprop_global_destroy(struct fprop_global *p)
-{
-	percpu_counter_destroy(&p->events);
-}
-
-bool fprop_new_period(struct fprop_global *p, int periods)
-{
-	return false;
-}
 
 int fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp)
 {
@@ -35,31 +17,4 @@ int fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp)
 void fprop_local_destroy_percpu(struct fprop_local_percpu *pl)
 {
 	percpu_counter_destroy(&pl->events);
-}
-
-void __fprop_add_percpu(struct fprop_global *p, struct fprop_local_percpu *pl,
-		long nr)
-{
-	percpu_counter_add(&pl->events, nr);
-	percpu_counter_add(&p->events, nr);
-}
-
-void fprop_fraction_percpu(struct fprop_global *p,
-			   struct fprop_local_percpu *pl,
-			   unsigned long *numerator, unsigned long *denominator)
-{
-	s64 num = percpu_counter_read_positive(&pl->events);
-	s64 den = percpu_counter_read_positive(&p->events);
-
-	if (den <= num) {
-		den = num ? num : 1;
-	}
-	*denominator = den;
-	*numerator = num;
-}
-
-void __fprop_add_percpu_max(struct fprop_global *p,
-		struct fprop_local_percpu *pl, int max_frac, long nr)
-{
-	__fprop_add_percpu(p, pl, nr);
 }

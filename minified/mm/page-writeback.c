@@ -18,7 +18,6 @@ void balance_dirty_pages_ratelimited(struct address_space *mapping) {}
 void __init page_writeback_init(void) {}
 void laptop_mode_timer_fn(struct timer_list *t) {}
 int do_writepages(struct address_space *mapping, struct writeback_control *wbc) { return 0; }
-int folio_write_one(struct folio *folio) { return 0; }
 bool noop_dirty_folio(struct address_space *mapping, struct folio *folio) { return true; }
 void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb) {}
 void __folio_mark_dirty(struct folio *folio, struct address_space *mapping, int warn) {}
@@ -31,4 +30,3 @@ void __folio_cancel_dirty(struct folio *folio) {}
 bool folio_clear_dirty_for_io(struct folio *folio) { return true; }
 void folio_wait_writeback(struct folio *folio) {}
 void folio_wait_stable(struct folio *folio) {}
-int folio_wait_writeback_killable(struct folio *folio) { return 0; }

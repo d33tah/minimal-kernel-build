@@ -257,38 +257,6 @@ int irq_set_irq_type(unsigned int irq, unsigned int type)
 	return ret;
 }
 
-int irq_set_handler_data(unsigned int irq, void *data)
-{
-	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_lock(irq, &flags, 0);
-
-	if (!desc)
-		return -EINVAL;
-	desc->irq_common_data.handler_data = data;
-	irq_put_desc_unlock(desc, flags);
-	return 0;
-}
-
-int irq_set_msi_desc_off(unsigned int irq_base, unsigned int irq_offset,
-			 struct msi_desc *entry)
-{
-	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_lock(irq_base + irq_offset, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
-
-	if (!desc)
-		return -EINVAL;
-	desc->irq_common_data.msi_desc = entry;
-	if (entry && !irq_offset)
-		entry->irq = irq_base;
-	irq_put_desc_unlock(desc, flags);
-	return 0;
-}
-
-int irq_set_msi_desc(unsigned int irq, struct msi_desc *entry)
-{
-	return irq_set_msi_desc_off(irq, 0, entry);
-}
-
 int irq_set_chip_data(unsigned int irq, void *data)
 {
 	unsigned long flags;
@@ -470,16 +438,7 @@ void irq_disable(struct irq_desc *desc)
 	__irq_disable(desc, irq_settings_disable_unlazy(desc));
 }
 
-void irq_percpu_enable(struct irq_desc *desc, unsigned int cpu)
-{
-	if (desc->irq_data.chip->irq_enable)
-		desc->irq_data.chip->irq_enable(&desc->irq_data);
-	else
-		desc->irq_data.chip->irq_unmask(&desc->irq_data);
-	cpumask_set_cpu(cpu, desc->percpu_enabled);
-}
-
-void irq_percpu_disable(struct irq_desc *desc, unsigned int cpu)
+static void irq_percpu_disable(struct irq_desc *desc, unsigned int cpu)
 {
 	if (desc->irq_data.chip->irq_disable)
 		desc->irq_data.chip->irq_disable(&desc->irq_data);
@@ -530,42 +489,6 @@ void unmask_threaded_irq(struct irq_desc *desc)
 		chip->irq_eoi(&desc->irq_data);
 
 	unmask_irq(desc);
-}
-
-void handle_nested_irq(unsigned int irq)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-	struct irqaction *action;
-	irqreturn_t action_ret;
-
-	might_sleep();
-
-	raw_spin_lock_irq(&desc->lock);
-
-	desc->istate &= ~(IRQS_REPLAY | IRQS_WAITING);
-
-	action = desc->action;
-	if (unlikely(!action || irqd_irq_disabled(&desc->irq_data))) {
-		desc->istate |= IRQS_PENDING;
-		goto out_unlock;
-	}
-
-	kstat_incr_irqs_this_cpu(desc);
-	irqd_set(&desc->irq_data, IRQD_IRQ_INPROGRESS);
-	raw_spin_unlock_irq(&desc->lock);
-
-	action_ret = IRQ_NONE;
-	for_each_action_of_desc(desc, action)
-		action_ret |= action->thread_fn(action->irq, action->dev_id);
-
-	if (!irq_settings_no_debug(desc))
-		note_interrupt(desc, action_ret);
-
-	raw_spin_lock_irq(&desc->lock);
-	irqd_clear(&desc->irq_data, IRQD_IRQ_INPROGRESS);
-
-out_unlock:
-	raw_spin_unlock_irq(&desc->lock);
 }
 
 static bool irq_check_poll(struct irq_desc *desc)

@@ -275,7 +275,6 @@ extern void handle_untracked_irq(struct irq_desc *desc);
 extern void handle_percpu_irq(struct irq_desc *desc);
 extern void handle_percpu_devid_irq(struct irq_desc *desc);
 extern void handle_bad_irq(struct irq_desc *desc);
-extern void handle_nested_irq(unsigned int irq);
 
 extern void handle_fasteoi_nmi(struct irq_desc *desc);
 extern void handle_percpu_devid_fasteoi_nmi(struct irq_desc *desc);
@@ -332,12 +331,8 @@ static inline void irq_set_percpu_devid_flags(unsigned int irq)
 }
 
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
-extern int irq_set_handler_data(unsigned int irq, void *data);
 extern int irq_set_chip_data(unsigned int irq, void *data);
 extern int irq_set_irq_type(unsigned int irq, unsigned int type);
-extern int irq_set_msi_desc(unsigned int irq, struct msi_desc *entry);
-extern int irq_set_msi_desc_off(unsigned int irq_base, unsigned int irq_offset,
-				struct msi_desc *entry);
 extern struct irq_data *irq_get_irq_data(unsigned int irq);
 
 static inline struct irq_chip *irq_data_get_irq_chip(struct irq_data *d)

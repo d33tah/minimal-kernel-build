@@ -97,25 +97,3 @@ struct page *grab_cache_page_write_begin(struct address_space *mapping,
 	return pagecache_get_page(mapping, index, fgp_flags,
 			mapping_gfp_mask(mapping));
 }
-
-void delete_from_page_cache(struct page *page)
-{
-	return filemap_remove_folio(page_folio(page));
-}
-
-int try_to_release_page(struct page *page, gfp_t gfp)
-{
-	return filemap_release_folio(page_folio(page), gfp);
-}
-
-int isolate_lru_page(struct page *page)
-{
-	if (WARN_RATELIMIT(PageTail(page), "trying to isolate tail page"))
-		return -EBUSY;
-	return folio_isolate_lru((struct folio *)page);
-}
-
-void putback_lru_page(struct page *page)
-{
-	folio_putback_lru(page_folio(page));
-}

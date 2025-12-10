@@ -176,7 +176,6 @@ static inline bool is_vm_area_hugepages(const void *addr)
 	return false;
 }
 
-void vunmap_range(unsigned long addr, unsigned long end);
 static inline void set_vm_flush_reset_perms(void *addr)
 {
 	struct vm_struct *vm = find_vm_area(addr);

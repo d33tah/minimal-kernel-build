@@ -329,13 +329,6 @@ void vunmap_range_noflush(unsigned long start, unsigned long end)
 		arch_sync_kernel_mappings(start, end);
 }
 
-void vunmap_range(unsigned long addr, unsigned long end)
-{
-	flush_cache_vunmap(addr, end);
-	vunmap_range_noflush(addr, end);
-	flush_tlb_kernel_range(addr, end);
-}
-
 static int vmap_pages_pte_range(pmd_t *pmd, unsigned long addr,
 		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
 		pgtbl_mod_mask *mask)

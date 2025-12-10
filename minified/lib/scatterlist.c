@@ -76,26 +76,3 @@ void sg_free_table(struct sg_table *table)
 	table->sgl = NULL;
 }
 
-size_t sg_copy_buffer(struct scatterlist *sgl, unsigned int nents, void *buf,
-		      size_t buflen, off_t skip, bool to_buffer)
-{
-	return 0;
-}
-
-size_t sg_pcopy_from_buffer(struct scatterlist *sgl, unsigned int nents,
-			     const void *buf, size_t buflen, off_t skip)
-{
-	return sg_copy_buffer(sgl, nents, (void *)buf, buflen, skip, false);
-}
-
-size_t sg_pcopy_to_buffer(struct scatterlist *sgl, unsigned int nents,
-			   void *buf, size_t buflen, off_t skip)
-{
-	return sg_copy_buffer(sgl, nents, buf, buflen, skip, true);
-}
-
-size_t sg_zero_buffer(struct scatterlist *sgl, unsigned int nents,
-		       size_t buflen, off_t skip)
-{
-	return 0;
-}

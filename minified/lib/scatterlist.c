@@ -76,20 +76,6 @@ void sg_free_table(struct sg_table *table)
 	table->sgl = NULL;
 }
 
-/* Stub for append table operations - not used */
-void sg_free_append_table(struct sg_append_table *table)
-{
-	sg_free_table(&table->sgt);
-}
-
-int sg_alloc_append_table_from_pages(struct sg_append_table *sgt_append,
-		struct page **pages, unsigned int n_pages, unsigned int offset,
-		unsigned long size, unsigned int max_segment,
-		unsigned int left_pages, gfp_t gfp_mask)
-{
-	return -EOPNOTSUPP;
-}
-
 size_t sg_copy_buffer(struct scatterlist *sgl, unsigned int nents, void *buf,
 		      size_t buflen, off_t skip, bool to_buffer)
 {

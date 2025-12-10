@@ -222,20 +222,6 @@ int kstrtou8(const char *s, unsigned int base, u8 *res)
 	return 0;
 }
 
-noinline
-int kstrtos8(const char *s, unsigned int base, s8 *res)
-{
-	long long tmp;
-	int rv;
-
-	rv = kstrtoll(s, base, &tmp);
-	if (rv < 0)
-		return rv;
-	if (tmp != (s8)tmp)
-		return -ERANGE;
-	*res = tmp;
-	return 0;
-}
 
 noinline
 int kstrtobool(const char *s, bool *res)

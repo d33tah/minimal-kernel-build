@@ -158,12 +158,8 @@ extern void boot_cpu_hotplug_init(void);
 extern void cpu_init(void);
 extern void trap_init(void);
 
-/* register_cpu removed - not called */
+/* register_cpu, cpu_is_hotpluggable, arch_match_cpu_phys_id, arch_find_n_match_cpu_physical_id removed */
 extern struct device *get_cpu_device(unsigned cpu);
-extern bool cpu_is_hotpluggable(unsigned cpu);
-extern bool arch_match_cpu_phys_id(int cpu, u64 phys_id);
-extern bool arch_find_n_match_cpu_physical_id(struct device_node *cpun,
-					      int cpu, unsigned int *thread);
 
 
 #define cpuhp_tasks_frozen	0

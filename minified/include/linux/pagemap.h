@@ -219,8 +219,7 @@ static inline bool folio_contains(struct folio *folio, pgoff_t index)
 unsigned find_get_pages_range(struct address_space *mapping, pgoff_t *start,
 			pgoff_t end, unsigned int nr_pages,
 			struct page **pages);
-unsigned find_get_pages_contig(struct address_space *mapping, pgoff_t start,
-			       unsigned int nr_pages, struct page **pages);
+/* find_get_pages_contig removed - unused */
 unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
 			pgoff_t end, xa_mark_t tag, unsigned int nr_pages,
 			struct page **pages);
@@ -413,14 +412,12 @@ void delete_from_page_cache_batch(struct address_space *mapping,
 				  struct folio_batch *fbatch);
 int try_to_release_page(struct page *page, gfp_t gfp);
 bool filemap_release_folio(struct folio *folio, gfp_t gfp);
-loff_t mapping_seek_hole_data(struct address_space *, loff_t start, loff_t end,
-		int whence);
+/* mapping_seek_hole_data removed - unused */
 
 int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp, void **shadowp);
 
-bool filemap_range_has_writeback(struct address_space *mapping,
-				 loff_t start_byte, loff_t end_byte);
+/* filemap_range_has_writeback removed - unused */
 
 static inline bool filemap_range_needs_writeback(struct address_space *mapping,
 						 loff_t start_byte,
@@ -431,7 +428,7 @@ static inline bool filemap_range_needs_writeback(struct address_space *mapping,
 	if (!mapping_tagged(mapping, PAGECACHE_TAG_DIRTY) &&
 	    !mapping_tagged(mapping, PAGECACHE_TAG_WRITEBACK))
 		return false;
-	return filemap_range_has_writeback(mapping, start_byte, end_byte);
+	return false; /* simplified - no writeback in minimal kernel */
 }
 
 struct readahead_control {

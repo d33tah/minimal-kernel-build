@@ -304,11 +304,7 @@ static bool mapping_needs_writeback(struct address_space *mapping)
 	return mapping->nrpages;
 }
 
-bool filemap_range_has_writeback(struct address_space *mapping,
-				 loff_t start_byte, loff_t end_byte)
-{
-	return false;
-}
+/* filemap_range_has_writeback removed - unused */
 
 int filemap_write_and_wait_range(struct address_space *mapping,
 				 loff_t lstart, loff_t lend)
@@ -1041,12 +1037,7 @@ out:
 	return ret;
 }
 
-unsigned find_get_pages_contig(struct address_space *mapping, pgoff_t index,
-			       unsigned int nr_pages, struct page **pages)
-{
-	/* Stubbed: contiguous page finding not needed for minimal boot */
-	return 0;
-}
+/* find_get_pages_contig removed - unused */
 
 unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
 			pgoff_t end, xa_mark_t tag, unsigned int nr_pages,
@@ -1462,12 +1453,7 @@ generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 	return filemap_read(iocb, iter, retval);
 }
 
-loff_t mapping_seek_hole_data(struct address_space *mapping, loff_t start,
-		loff_t end, int whence)
-{
-	/* Stubbed: SEEK_HOLE/SEEK_DATA not needed for minimal boot */
-	return -ENXIO;
-}
+/* mapping_seek_hole_data removed - unused */
 
 #define MMAP_LOTSAMISS  (100)
 

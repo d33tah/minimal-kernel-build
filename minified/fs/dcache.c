@@ -1423,25 +1423,8 @@ struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)
 	return NULL;
 }
 
-/* Simplified - minimal kernel doesn't need complex aliasing */
-struct dentry *d_splice_alias(struct inode *inode, struct dentry *dentry)
-{
-	if (IS_ERR(inode))
-		return ERR_CAST(inode);
+/* d_splice_alias removed - unused */
 
-	BUG_ON(!d_unhashed(dentry));
-
-	if (!inode) {
-		__d_add(dentry, inode);
-		return NULL;
-	}
-
-	security_d_instantiate(dentry, inode);
-	__d_add(dentry, inode);
-	return NULL;
-}
-
-  
 bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
 {
 	bool result;

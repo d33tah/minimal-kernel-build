@@ -192,9 +192,6 @@ extern void d_invalidate(struct dentry *);
 
 extern struct dentry * d_make_root(struct inode *);
 
-
-extern void d_genocide(struct dentry *);
-
 extern void d_tmpfile(struct dentry *, struct inode *);
 
 

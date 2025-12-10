@@ -1465,10 +1465,6 @@ bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
 	return result;
 }
 
-/* Stub: d_genocide not used in minimal kernel */
-void d_genocide(struct dentry *parent) { }
-
-
 void d_tmpfile(struct dentry *dentry, struct inode *inode)
 {
 	inode_dec_link_count(inode);

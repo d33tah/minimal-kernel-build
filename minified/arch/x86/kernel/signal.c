@@ -566,9 +566,4 @@ static int __init strict_sas_size(char *arg)
 }
 __setup("strict_sas_size", strict_sas_size);
 
-/* Stub: sigaltstack_size_valid not used in minimal kernel */
-bool sigaltstack_size_valid(size_t ss_size)
-{
-	return true;
-}
 

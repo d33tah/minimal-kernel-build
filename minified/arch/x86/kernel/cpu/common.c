@@ -13,8 +13,6 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/clock.h>
 #include <linux/sched/task.h>
-/* sched/smt.h inlined */
-void arch_smt_update(void);
 #include <linux/init.h>
 #include <linux/kprobes.h>
 #include <linux/kgdb.h>
@@ -83,12 +81,6 @@ cpumask_var_t cpu_sibling_setup_mask;
 int smp_num_siblings = 1;
 
 DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_llc_id) = BAD_APICID;
-
-/* Stub: get_llc_id not used in minimal kernel */
-u16 get_llc_id(unsigned int cpu)
-{
-	return 0;
-}
 
 DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_l2c_id) = BAD_APICID;
 
@@ -1046,7 +1038,3 @@ void cpu_init(void)
 	load_fixmap_gdt(cpu);
 }
 
-/* Stub: arch_smt_update not used in minimal kernel */
-void arch_smt_update(void)
-{
-}

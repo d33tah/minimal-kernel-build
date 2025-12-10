@@ -7,8 +7,6 @@
 #include <linux/export.h>
 #include <linux/cpu.h>
 #include <linux/debugfs.h>
-/* sched/smt.h inlined */
-void arch_smt_update(void);
 #include <linux/task_work.h>
 
 #include <asm/tlbflush.h>

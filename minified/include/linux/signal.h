@@ -320,9 +320,6 @@ int __save_altstack(stack_t __user *, unsigned long);
 	unsafe_put_user(t->sas_ss_size, &__uss->ss_size, label); \
 } while (0);
 
-bool sigaltstack_size_valid(size_t ss_size);
-
-
 /* arch_untagged_si_addr removed - unused */
 
 #endif  

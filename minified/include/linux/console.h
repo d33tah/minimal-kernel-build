@@ -130,9 +130,7 @@ extern void console_flush_on_panic(enum con_flush_mode mode);
 extern struct tty_driver *console_device(int *);
 /* console_stop, console_start removed - unused */
 extern int is_console_locked(void);
-extern int braille_register_console(struct console *, int index,
-		char *console_options, char *braille_options);
-extern int braille_unregister_console(struct console *);
+/* braille_register_console, braille_unregister_console removed - no definition or callers */
 extern void console_sysfs_notify(void);
 /* console_suspend_enabled removed - unused */
 

@@ -15,11 +15,9 @@ void perf_event_task_tick(void) { }
 int perf_event_init_task(struct task_struct *child, u64 clone_flags) { return 0; }
 void perf_event_fork(struct task_struct *task) { }
 void perf_event_free_task(struct task_struct *task) { }
-void perf_event_namespaces(struct task_struct *task) { }
+/* perf_event_namespaces, perf_event_task_disable, perf_event_task_enable removed - unused */
 void perf_event_delayed_put(struct task_struct *task) { }
 void perf_event_exit_task(struct task_struct *task) { }
-int perf_event_task_disable(void) { return 0; }
-int perf_event_task_enable(void) { return 0; }
 
 void perf_event_mmap(struct vm_area_struct *vma) { }
 void perf_event_exec(void) { }

@@ -61,10 +61,7 @@ bool cancel_delayed_work(struct delayed_work *dwork)
     return cancel_work_sync(&dwork->work);
 }
 
-bool cancel_delayed_work_sync(struct delayed_work *dwork)
-{
-    return cancel_work_sync(&dwork->work);
-}
+/* cancel_delayed_work_sync removed - not called */
 
 __printf(1, 4) struct workqueue_struct *
 alloc_workqueue(const char *fmt, unsigned int flags, int max_active, ...)

@@ -18,14 +18,6 @@ long calc_load_fold_active(struct rq *this_rq, long adjust)
 	return 0;
 }
 
-/* Stub: calc_load_n - not needed for minimal kernel */
-unsigned long
-calc_load_n(unsigned long load, unsigned long exp,
-	    unsigned long active, unsigned int n)
-{
-	return 0;
-}
-
 /* Stub: calc_global_load - no load average calculation for minimal kernel */
 void calc_global_load(void)
 {

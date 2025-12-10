@@ -11,11 +11,6 @@ extern void get_avenrun(unsigned long *loads, unsigned long offset, int shift);
 #define EXP_5		2014		 
 #define EXP_15		2037		 
 
-/* calc_load removed - unused */
-
-extern unsigned long calc_load_n(unsigned long load, unsigned long exp,
-				 unsigned long active, unsigned int n);
-
 #define LOAD_INT(x) ((x) >> FSHIFT)
 #define LOAD_FRAC(x) LOAD_INT(((x) & (FIXED_1-1)) * 100)
 

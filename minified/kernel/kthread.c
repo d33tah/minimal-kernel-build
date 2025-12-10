@@ -71,18 +71,6 @@ static inline struct kthread *__to_kthread(struct task_struct *p)
 	return kthread;
 }
 
-void get_kthread_comm(char *buf, size_t buf_size, struct task_struct *tsk)
-{
-	struct kthread *kthread = to_kthread(tsk);
-
-	if (!kthread || !kthread->full_name) {
-		__get_task_comm(buf, buf_size, tsk);
-		return;
-	}
-
-	strscpy_pad(buf, kthread->full_name, buf_size);
-}
-
 bool set_kthread_struct(struct task_struct *p)
 {
 	struct kthread *kthread;

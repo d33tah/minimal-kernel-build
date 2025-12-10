@@ -2539,24 +2539,6 @@ int __meminit init_per_zone_wmark_min(void)
 }
 postcore_initcall(init_per_zone_wmark_min)
 
-int min_free_kbytes_sysctl_handler(struct ctl_table *table, int write,
-		void *buffer, size_t *length, loff_t *ppos)
-{
-	/* Stub: minimal sysctl handler */
-	return proc_dointvec_minmax(table, write, buffer, length, ppos);
-}
-
-int watermark_scale_factor_sysctl_handler(struct ctl_table *table, int write,
-		void *buffer, size_t *length, loff_t *ppos)
-{
-	/* Stub: minimal sysctl handler */
-	return proc_dointvec_minmax(table, write, buffer, length, ppos);
-}
-
-#ifndef __HAVE_ARCH_RESERVED_KERNEL_PAGES
-
-#endif
-
 #if __BITS_PER_LONG > 32
 #define ADAPT_SCALE_BASE	(64ul << 30)
 #define ADAPT_SCALE_SHIFT	2

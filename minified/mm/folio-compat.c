@@ -24,10 +24,7 @@ void wait_on_page_writeback(struct page *page)
 	return folio_wait_writeback(page_folio(page));
 }
 
-void wait_for_stable_page(struct page *page)
-{
-	return folio_wait_stable(page_folio(page));
-}
+/* wait_for_stable_page removed - unused */
 
 bool page_mapped(struct page *page)
 {
@@ -60,11 +57,7 @@ bool clear_page_dirty_for_io(struct page *page)
 	return folio_clear_dirty_for_io(page_folio(page));
 }
 
-bool redirty_page_for_writepage(struct writeback_control *wbc,
-		struct page *page)
-{
-	return folio_redirty_for_writepage(wbc, page_folio(page));
-}
+/* redirty_page_for_writepage removed - unused */
 
 void lru_cache_add(struct page *page)
 {

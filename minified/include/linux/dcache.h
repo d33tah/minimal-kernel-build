@@ -199,8 +199,6 @@ extern void d_genocide(struct dentry *);
 extern void d_tmpfile(struct dentry *, struct inode *);
 
 
-extern int path_has_submounts(const struct path *);
-
 extern void d_rehash(struct dentry *);
 extern void d_add(struct dentry *, struct inode *);
 

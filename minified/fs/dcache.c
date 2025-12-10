@@ -609,12 +609,6 @@ struct check_mount {
 	unsigned int mounted;
 };
 
-int path_has_submounts(const struct path *parent)
-{
-	/* Stub: simplified submount detection for minimal kernel */
-	return 0;
-}
-
 int d_set_mounted(struct dentry *dentry)
 {
 	/* Stub: simplified mount point marking for minimal kernel */

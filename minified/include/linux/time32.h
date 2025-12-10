@@ -54,8 +54,6 @@ struct old_timex32 {
 	s32:32; s32:32; s32:32;
 };
 
-/* get_old_timespec32, put_old_timespec32, get_old_itimerspec32, put_old_itimerspec32, get_old_timex32, put_old_timex32 removed - unused */
-
-extern struct __kernel_old_timeval ns_to_kernel_old_timeval(s64 nsec);
+/* get_old_timespec32, put_old_timespec32, get_old_itimerspec32, put_old_itimerspec32, get_old_timex32, put_old_timex32, ns_to_kernel_old_timeval removed - unused */
 
 #endif

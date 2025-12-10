@@ -132,16 +132,7 @@ time64_t mktime64(const unsigned int year0, const unsigned int mon0,
 	)*60 + sec;  
 }
 
-struct __kernel_old_timeval ns_to_kernel_old_timeval(const s64 nsec)
-{
-	struct timespec64 ts = ns_to_timespec64(nsec);
-	struct __kernel_old_timeval tv;
-
-	tv.tv_sec = ts.tv_sec;
-	tv.tv_usec = (suseconds_t)ts.tv_nsec / 1000;
-
-	return tv;
-}
+/* ns_to_kernel_old_timeval removed - unused */
 
 void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
 {
@@ -219,25 +210,7 @@ jiffies_to_timespec64(const unsigned long jiffies, struct timespec64 *value)
 	value->tv_nsec = rem;
 }
 
-/* jiffies_to_clock_t, clock_t_to_jiffies, jiffies_64_to_clock_t, nsec_to_clock_t removed - unused */
-
-u64 jiffies64_to_nsecs(u64 j)
-{
-#if !(NSEC_PER_SEC % HZ)
-	return (NSEC_PER_SEC / HZ) * j;
-# else
-	return div_u64(j * HZ_TO_NSEC_NUM, HZ_TO_NSEC_DEN);
-#endif
-}
-
-u64 jiffies64_to_msecs(const u64 j)
-{
-#if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
-	return (MSEC_PER_SEC / HZ) * j;
-#else
-	return div_u64(j * HZ_TO_MSEC_NUM, HZ_TO_MSEC_DEN);
-#endif
-}
+/* jiffies_to_clock_t, clock_t_to_jiffies, jiffies_64_to_clock_t, nsec_to_clock_t, jiffies64_to_nsecs, jiffies64_to_msecs removed - unused */
 
 u64 nsecs_to_jiffies64(u64 n)
 {
@@ -258,21 +231,7 @@ unsigned long nsecs_to_jiffies(u64 n)
 	return (unsigned long)nsecs_to_jiffies64(n);
 }
 
-struct timespec64 timespec64_add_safe(const struct timespec64 lhs,
-				const struct timespec64 rhs)
-{
-	struct timespec64 res;
-
-	set_normalized_timespec64(&res, (timeu64_t) lhs.tv_sec + rhs.tv_sec,
-			lhs.tv_nsec + rhs.tv_nsec);
-
-	if (unlikely(res.tv_sec < lhs.tv_sec || res.tv_sec < rhs.tv_sec)) {
-		res.tv_sec = TIME64_MAX;
-		res.tv_nsec = 0;
-	}
-
-	return res;
-}
+/* timespec64_add_safe removed - unused */
 
 int get_timespec64(struct timespec64 *ts,
 		   const struct __kernel_timespec __user *uts)

@@ -136,8 +136,7 @@ extern unsigned long preset_lpj;
 extern unsigned int jiffies_to_msecs(const unsigned long j);
 extern unsigned int jiffies_to_usecs(const unsigned long j);
 
-extern u64 jiffies64_to_nsecs(u64 j);
-extern u64 jiffies64_to_msecs(u64 j);
+/* jiffies64_to_nsecs, jiffies64_to_msecs removed - unused */
 
 extern unsigned long __msecs_to_jiffies(const unsigned int m);
 #if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)

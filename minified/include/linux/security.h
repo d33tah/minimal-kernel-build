@@ -95,8 +95,7 @@ struct request_sock;
 #define LSM_UNSAFE_PTRACE	2
 #define LSM_UNSAFE_NO_NEW_PRIVS	4
 
-extern int mmap_min_addr_handler(struct ctl_table *table, int write,
-				 void *buffer, size_t *lenp, loff_t *ppos);
+/* mmap_min_addr_handler declaration removed - function removed */
 
 typedef int (*initxattrs) (struct inode *inode,
 			   const struct xattr *xattr_array, void *fs_data);

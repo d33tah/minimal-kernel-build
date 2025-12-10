@@ -131,9 +131,6 @@ int __sysfs_match_string(const char * const *array, size_t n, const char *s);
 
 #define sysfs_match_string(_a, _s) __sysfs_match_string(_a, ARRAY_SIZE(_a), _s)
 
-
-int ptr_to_hashval(const void *ptr, unsigned long *hashval_out);
-
 static inline bool strstarts(const char *str, const char *prefix)
 {
 	return strncmp(str, prefix, strlen(prefix)) == 0;

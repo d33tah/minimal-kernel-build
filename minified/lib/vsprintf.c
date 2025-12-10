@@ -564,7 +564,7 @@ static void enable_ptr_key_workfn(struct work_struct *work)
 	static_branch_enable(&filled_random_ptr_key);
 }
 
-static inline int __ptr_to_hashval(const void *ptr, unsigned long *hashval_out)
+static inline int ptr_to_hashval(const void *ptr, unsigned long *hashval_out)
 {
 	static siphash_key_t ptr_key __read_mostly;
 	unsigned long hashval;
@@ -592,11 +592,6 @@ static inline int __ptr_to_hashval(const void *ptr, unsigned long *hashval_out)
 	return 0;
 }
 
-int ptr_to_hashval(const void *ptr, unsigned long *hashval_out)
-{
-	return __ptr_to_hashval(ptr, hashval_out);
-}
-
 static char *ptr_to_id(char *buf, char *end, const void *ptr,
 		       struct printf_spec spec)
 {
@@ -614,7 +609,7 @@ static char *ptr_to_id(char *buf, char *end, const void *ptr,
 		return pointer_string(buf, end, (const void *)hashval, spec);
 	}
 
-	ret = __ptr_to_hashval(ptr, &hashval);
+	ret = ptr_to_hashval(ptr, &hashval);
 	if (ret) {
 		spec.field_width = 2 * sizeof(ptr);
 		

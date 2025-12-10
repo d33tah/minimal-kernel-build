@@ -4,16 +4,6 @@
 #include <linux/list_lru.h>
 #include <linux/xarray.h>
 
-void workingset_age_nonresident(struct lruvec *lruvec, unsigned long nr_pages)
-{
-	 
-}
-
-void *workingset_eviction(struct folio *folio, struct mem_cgroup *target_memcg)
-{
-	return NULL;
-}
-
 void workingset_refault(struct folio *folio, void *shadow)
 {
 	 

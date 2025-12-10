@@ -55,10 +55,4 @@ static inline void proc_flush_pid(struct pid *pid)
 
 static inline void *pde_data(const struct inode *inode) {BUG(); return NULL;}
 
-struct ns_common;
-int open_related_ns(struct ns_common *ns,
-		   struct ns_common *(*get_ns)(struct ns_common *ns));
-
-bool proc_ns_file(const struct file *file);
-
-#endif  
+#endif

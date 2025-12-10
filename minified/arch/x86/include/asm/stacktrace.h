@@ -88,6 +88,5 @@ struct stack_frame_ia32 {
     u32 return_address;
 };
 
-void show_opcodes(struct pt_regs *regs, const char *loglvl);
-void show_ip(struct pt_regs *regs, const char *loglvl);
+/* show_opcodes, show_ip removed - unused */
 #endif  

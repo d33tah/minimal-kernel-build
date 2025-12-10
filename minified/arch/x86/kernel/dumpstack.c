@@ -59,22 +59,7 @@ bool noinstr in_entry_stack(unsigned long *stack, struct stack_info *info)
 	return true;
 }
 
-void show_opcodes(struct pt_regs *regs, const char *loglvl)
-{
-	 
-}
-
-
-void show_ip(struct pt_regs *regs, const char *loglvl)
-{
-	 
-}
-
-
-void show_iret_regs(struct pt_regs *regs, const char *log_lvl)
-{
-	 
-}
+/* show_opcodes, show_ip, show_iret_regs removed - unused */
 
 static void show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,
 			unsigned long *stack, const char *log_lvl)

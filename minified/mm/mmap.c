@@ -1407,14 +1407,7 @@ int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	return err;
 }
 
-int split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
-	      unsigned long addr, int new_below)
-{
-	if (mm->map_count >= sysctl_max_map_count)
-		return -ENOMEM;
-
-	return __split_vma(mm, vma, addr, new_below);
-}
+/* split_vma removed - unused (only wrapper for __split_vma) */
 
 int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 		struct list_head *uf, bool downgrade)

@@ -19,9 +19,6 @@ void __iowrite64_copy(void __iomem *to, const void *from, size_t count);
 int ioremap_page_range(unsigned long addr, unsigned long end,
 		       phys_addr_t phys_addr, pgprot_t prot);
 
-void __iomem * devm_ioport_map(struct device *dev, unsigned long port,
-			       unsigned int nr);
-void devm_ioport_unmap(struct device *dev, void __iomem *addr);
 
 #define IOMEM_ERR_PTR(err) (__force void __iomem *)ERR_PTR(err)
 
@@ -34,8 +31,6 @@ void __iomem *devm_ioremap_wc(struct device *dev, resource_size_t offset,
 void __iomem *devm_ioremap_np(struct device *dev, resource_size_t offset,
 				   resource_size_t size);
 void devm_iounmap(struct device *dev, void __iomem *addr);
-int check_signature(const volatile void __iomem *io_addr,
-			const unsigned char *signature, int length);
 void devm_ioremap_release(struct device *dev, void *res);
 
 

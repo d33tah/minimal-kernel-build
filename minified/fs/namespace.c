@@ -64,8 +64,6 @@ struct mount_kattr {
 	struct user_namespace *mnt_userns;
 };
 
-struct kobject *fs_kobj;
-
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
 
 static inline void lock_mount_hash(void)

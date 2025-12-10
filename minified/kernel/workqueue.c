@@ -37,10 +37,7 @@ bool mod_delayed_work_on(int cpu, struct workqueue_struct *wq,
     return queue_delayed_work_on(cpu, wq, dwork, delay);
 }
 
-void __flush_workqueue(struct workqueue_struct *wq)
-{
-     
-}
+/* __flush_workqueue removed - not called */
 
 bool flush_work(struct work_struct *work)
 {

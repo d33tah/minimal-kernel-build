@@ -187,7 +187,7 @@ extern bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 extern bool mod_delayed_work_on(int cpu, struct workqueue_struct *wq,
 			struct delayed_work *dwork, unsigned long delay);
 
-extern void __flush_workqueue(struct workqueue_struct *wq);
+/* __flush_workqueue removed - not called */
 
 extern bool flush_work(struct work_struct *work);
 extern bool cancel_work_sync(struct work_struct *work);
@@ -230,27 +230,7 @@ extern void __warn_flushing_systemwide_wq(void)
 	__compiletime_warning("Please avoid flushing system-wide workqueues.");
 
 
-#define flush_workqueue(wq)						\
-({									\
-	struct workqueue_struct *_wq = (wq);				\
-									\
-	if ((__builtin_constant_p(_wq == system_wq) &&			\
-	     _wq == system_wq) ||					\
-	    (__builtin_constant_p(_wq == system_highpri_wq) &&		\
-	     _wq == system_highpri_wq) ||				\
-	    (__builtin_constant_p(_wq == system_long_wq) &&		\
-	     _wq == system_long_wq) ||					\
-	    (__builtin_constant_p(_wq == system_unbound_wq) &&		\
-	     _wq == system_unbound_wq) ||				\
-	    (__builtin_constant_p(_wq == system_freezable_wq) &&	\
-	     _wq == system_freezable_wq) ||				\
-	    (__builtin_constant_p(_wq == system_power_efficient_wq) &&	\
-	     _wq == system_power_efficient_wq) ||			\
-	    (__builtin_constant_p(_wq == system_freezable_power_efficient_wq) && \
-	     _wq == system_freezable_power_efficient_wq))		\
-		__warn_flushing_systemwide_wq();			\
-	__flush_workqueue(_wq);						\
-})
+/* flush_workqueue macro removed - not used */
 
 static inline bool schedule_delayed_work(struct delayed_work *dwork,
 					 unsigned long delay)

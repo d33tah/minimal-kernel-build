@@ -193,14 +193,7 @@ void flush_thread(void)
 	pkru_flush_thread();
 }
 
-void disable_TSC(void)
-{
-	preempt_disable();
-	if (!test_and_set_thread_flag(TIF_NOTSC))
-		 
-		cr4_set_bits(X86_CR4_TSD);
-	preempt_enable();
-}
+/* disable_TSC removed - unused */
 
 DEFINE_PER_CPU(u64, msr_misc_features_shadow);
 

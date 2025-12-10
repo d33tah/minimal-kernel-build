@@ -12,7 +12,7 @@ typedef unsigned long long cycles_t;
 extern unsigned int cpu_khz;
 extern unsigned int tsc_khz;
 
-extern void disable_TSC(void);
+/* disable_TSC removed - unused */
 
 static inline cycles_t get_cycles(void)
 {

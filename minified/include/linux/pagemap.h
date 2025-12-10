@@ -24,9 +24,6 @@ int invalidate_inode_pages2_range(struct address_space *mapping,
 int write_inode_now(struct inode *, int sync);
 /* filemap_fdatawrite, filemap_flush removed - unused */
 int filemap_fdatawait_range(struct address_space *, loff_t lstart, loff_t lend);
-int filemap_fdatawait_range_keep_errors(struct address_space *mapping,
-		loff_t start_byte, loff_t end_byte);
-
 /* filemap_range_has_page removed - unused */
 int filemap_write_and_wait_range(struct address_space *mapping,
 		loff_t lstart, loff_t lend);

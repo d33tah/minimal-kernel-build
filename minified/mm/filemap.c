@@ -299,14 +299,6 @@ int filemap_fdatawait_range(struct address_space *mapping, loff_t start_byte,
 	return filemap_check_errors(mapping);
 }
 
-int filemap_fdatawait_range_keep_errors(struct address_space *mapping,
-		loff_t start_byte, loff_t end_byte)
-{
-	return 0;
-}
-
-/* file_fdatawait_range removed - unused */
-
 static bool mapping_needs_writeback(struct address_space *mapping)
 {
 	return mapping->nrpages;

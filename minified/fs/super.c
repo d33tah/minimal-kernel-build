@@ -575,15 +575,6 @@ int get_tree_single_reconf(struct fs_context *fc,
 	return vfs_get_super(fc, vfs_get_single_reconf_super, fill_super);
 }
 
-int get_tree_keyed(struct fs_context *fc,
-		  int (*fill_super)(struct super_block *sb,
-				    struct fs_context *fc),
-		void *key)
-{
-	fc->s_fs_info = key;
-	return vfs_get_super(fc, vfs_get_keyed_super, fill_super);
-}
-
 /* Removed: mount_nodev - never called (~7 LOC) */
 
 int vfs_get_tree(struct fs_context *fc)

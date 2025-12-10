@@ -24,12 +24,8 @@ int perf_event_task_enable(void) { return 0; }
 void perf_event_mmap(struct vm_area_struct *vma) { }
 void perf_event_exec(void) { }
 void perf_event_comm(struct task_struct *task, bool exec) { }
-void perf_event_text_poke(const void *addr, const void *old_bytes, size_t old_len, 
-                          const void *new_bytes, size_t new_len) { }
 
 void __perf_sw_event(u32 event_id, u64 nr, struct pt_regs *regs, u64 addr) { }
-void ___perf_sw_event(u32 event_id, u64 nr, struct pt_regs *regs, u64 addr) { }
-void perf_bp_event(struct perf_event *event, void *data) { }
 
 void perf_event_init(void) { }
 
@@ -46,11 +42,6 @@ DEFINE_PER_CPU(struct pt_regs, __perf_regs[4]);
 /* Perf regs disabled - just define minimum needed */
 #define PERF_REG_X86_MAX 32
 unsigned int pt_regs_offset[PERF_REG_X86_MAX];
-
-int insn_get_addr_ref(struct insn *insn, struct pt_regs *regs) { return -ENOSYS; }
-
-#include <asm/insn.h>
-int insn_decode(struct insn *insn, const void *kaddr, int buf_len, enum insn_mode m) { return -ENOSYS; }
 
 void irq_work_tick(void) { }
 

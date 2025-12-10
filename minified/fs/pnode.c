@@ -3,10 +3,7 @@
 #include "pnode.h"
 
 
-int get_dominating_id(struct mount *mnt, const struct path *root)
-{
-	return 0;
-}
+/* get_dominating_id removed - unused */
 
 void change_mnt_propagation(struct mount *mnt, int type)
 {

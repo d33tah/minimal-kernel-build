@@ -39,7 +39,7 @@ int propagate_umount(struct list_head *);
 int propagate_mount_busy(struct mount *, int);
 void propagate_mount_unlock(struct mount *);
 void mnt_release_group_id(struct mount *);
-int get_dominating_id(struct mount *mnt, const struct path *root);
+/* get_dominating_id removed - unused */
 int mnt_get_count(struct mount *mnt);
 void mnt_set_mountpoint(struct mount *, struct mountpoint *,
 			struct mount *);

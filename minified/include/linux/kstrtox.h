@@ -75,7 +75,6 @@ int __must_check kstrtobool_from_user(const char __user *s, size_t count, bool *
 
 
 extern unsigned long simple_strtoul(const char *,char **,unsigned int);
-extern long simple_strtol(const char *,char **,unsigned int);
 extern unsigned long long simple_strtoull(const char *,char **,unsigned int);
 
 static inline int strtobool(const char *s, bool *res)

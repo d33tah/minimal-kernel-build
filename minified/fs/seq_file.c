@@ -25,8 +25,4 @@ int single_open_size(struct file *file, int (*show)(struct seq_file *, void *), 
 
 int single_release(struct inode *inode, struct file *file) { return 0; }
 
-void *__seq_open_private(struct file *file, const struct seq_operations *ops, int psize) { return NULL; }
-
-int seq_open_private(struct file *file, const struct seq_operations *ops, int psize) { return -ENOMEM; }
-
 void seq_file_init(void) { }

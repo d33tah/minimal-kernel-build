@@ -875,8 +875,6 @@ void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
 
 }
 
-void d_set_fallthru(struct dentry *dentry) { }
-
 static unsigned d_flags_for_inode(struct inode *inode)
 {
 	unsigned add_flags = DCACHE_REGULAR_TYPE;

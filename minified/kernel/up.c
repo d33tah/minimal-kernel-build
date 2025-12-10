@@ -3,8 +3,6 @@
 #include <linux/kernel.h>
 #include <linux/export.h>
 #include <linux/smp.h>
-#include <asm/x86_init.h>
-static inline void hypervisor_pin_vcpu(int cpu) { x86_platform.hyper.pin_vcpu(cpu); }
 
 int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
 				int wait)
@@ -21,16 +19,6 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
 	return 0;
 }
 
-int smp_call_function_single_async(int cpu, struct __call_single_data *csd)
-{
-	unsigned long flags;
-
-	local_irq_save(flags);
-	csd->func(csd->info);
-	local_irq_restore(flags);
-	return 0;
-}
-
 void on_each_cpu_cond_mask(smp_cond_func_t cond_func, smp_call_func_t func,
 			   void *info, bool wait, const struct cpumask *mask)
 {
@@ -43,20 +31,4 @@ void on_each_cpu_cond_mask(smp_cond_func_t cond_func, smp_call_func_t func,
 		local_irq_restore(flags);
 	}
 	preempt_enable();
-}
-
-int smp_call_on_cpu(unsigned int cpu, int (*func)(void *), void *par, bool phys)
-{
-	int ret;
-
-	if (cpu != 0)
-		return -ENXIO;
-
-	if (phys)
-		hypervisor_pin_vcpu(0);
-	ret = func(par);
-	if (phys)
-		hypervisor_pin_vcpu(-1);
-
-	return ret;
 }

@@ -155,16 +155,6 @@ int platform_get_irq(struct platform_device *dev, unsigned int num)
 	return ret;
 }
 
-int devm_platform_get_irqs_affinity(struct platform_device *dev,
-				    struct irq_affinity *affd,
-				    unsigned int minvec,
-				    unsigned int maxvec,
-				    int **irqs)
-{
-	/* Stub: IRQ affinity not needed for minimal kernel */
-	return -ENOSYS;
-}
-
 struct resource *platform_get_resource_byname(struct platform_device *dev,
 					      unsigned int type,
 					      const char *name)

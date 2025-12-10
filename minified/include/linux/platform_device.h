@@ -63,11 +63,6 @@ devm_platform_ioremap_resource_byname(struct platform_device *pdev,
 				      const char *name);
 extern int platform_get_irq(struct platform_device *, unsigned int);
 extern int platform_get_irq_optional(struct platform_device *, unsigned int);
-extern int devm_platform_get_irqs_affinity(struct platform_device *dev,
-					   struct irq_affinity *affd,
-					   unsigned int minvec,
-					   unsigned int maxvec,
-					   int **irqs);
 extern struct resource *platform_get_resource_byname(struct platform_device *,
 						     unsigned int,
 						     const char *);

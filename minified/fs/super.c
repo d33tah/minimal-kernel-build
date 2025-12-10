@@ -511,7 +511,6 @@ int vfs_get_super(struct fs_context *fc,
 
 	switch (keying) {
 	case vfs_get_single_super:
-	case vfs_get_single_reconf_super:
 		test = test_single_super;
 		break;
 	case vfs_get_keyed_super:
@@ -537,14 +536,6 @@ int vfs_get_super(struct fs_context *fc,
 		fc->root = dget(sb->s_root);
 	} else {
 		fc->root = dget(sb->s_root);
-		if (keying == vfs_get_single_reconf_super) {
-			err = reconfigure_super(fc);
-			if (err < 0) {
-				dput(fc->root);
-				fc->root = NULL;
-				goto error;
-			}
-		}
 	}
 
 	return 0;

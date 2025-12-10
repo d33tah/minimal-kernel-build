@@ -119,10 +119,9 @@ int reconfigure_single(struct super_block *s,
 		       int flags, void *data);
 
 enum vfs_get_super_keying {
-	vfs_get_single_super,	 
-	vfs_get_single_reconf_super,  
-	vfs_get_keyed_super,	 
-	vfs_get_independent_super,  
+	vfs_get_single_super,
+	vfs_get_keyed_super,
+	vfs_get_independent_super,
 };
 extern int vfs_get_super(struct fs_context *fc,
 			 enum vfs_get_super_keying keying,

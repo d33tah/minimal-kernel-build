@@ -20,14 +20,5 @@ void *mempool_alloc(mempool_t *pool, gfp_t gfp_mask) { return NULL; }
 
 void mempool_free(void *element, mempool_t *pool) {}
 
-void *mempool_alloc_slab(gfp_t gfp_mask, void *pool_data) { return NULL; }
-
-void mempool_free_slab(void *element, void *pool_data) {}
-
-void *mempool_kmalloc(gfp_t gfp_mask, void *pool_data) { return NULL; }
-
-void mempool_kfree(void *element, void *pool_data) {}
-
-void *mempool_alloc_pages(gfp_t gfp_mask, void *pool_data) { return NULL; }
-
-void mempool_free_pages(void *element, void *pool_data) {}
+/* mempool_alloc_slab, mempool_free_slab, mempool_kmalloc, mempool_kfree,
+   mempool_alloc_pages, mempool_free_pages removed - unused */

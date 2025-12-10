@@ -372,14 +372,7 @@ void warn_slowpath_fmt(const char *file, int line, unsigned taint,
 	va_end(args.args);
 }
 #else
-void __warn_printk(const char *fmt, ...)
-{
-	va_list args;
-
-	va_start(args, fmt);
-	vprintk(fmt, args);
-	va_end(args);
-}
+/* __warn_printk removed - not called */
 #endif
 
 

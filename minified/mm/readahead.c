@@ -30,19 +30,7 @@ SYSCALL_DEFINE3(readahead, int, fd, loff_t, offset, size_t, count)
 	return -ENOSYS;   
 }
 
-void readahead_expand(struct readahead_control *ractl,
-		      loff_t new_start, size_t new_len)
-{
-	 
-}
-
 ssize_t ksys_readahead(int fd, loff_t offset, size_t count)
 {
 	return -ENOSYS;
-}
-
-void page_cache_ra_order(struct readahead_control *ractl,
-		struct file_ra_state *ra, unsigned int order)
-{
-	 
 }

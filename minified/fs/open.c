@@ -49,17 +49,9 @@ struct space_resv {
 #include <linux/fs_struct.h>
 #include <linux/ima.h>
 
-/* Inlined from dnotify.h */
-struct dnotify_struct {
-	struct dnotify_struct *	dn_next;
-	__u32			dn_mask;
-	int			dn_fd;
-	struct file *		dn_filp;
-	fl_owner_t		dn_owner;
-};
+/* Inlined from dnotify.h - only dnotify_flush kept (used by __fput) */
 static inline void dnotify_flush(struct file *filp, fl_owner_t id) {}
-static inline int fcntl_dirnotify(int fd, struct file *filp, unsigned long arg) { return -EINVAL; }
-/* End of inlined dnotify.h content */
+/* dnotify_struct, fcntl_dirnotify removed - unused */
 
 #include <linux/compat.h>
 #include <linux/mnt_idmapping.h>

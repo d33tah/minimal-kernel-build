@@ -64,7 +64,6 @@ static inline void exit_tasks_rcu_finish(void) { }
 
 unsigned long get_state_synchronize_rcu(void);
 unsigned long start_poll_synchronize_rcu(void);
-bool poll_state_synchronize_rcu(unsigned long oldstate);
 
 extern void rcu_barrier(void);
 

@@ -153,12 +153,6 @@ unsigned long start_poll_synchronize_rcu(void)
 	return gp_seq;
 }
 
-/* Stub: poll_state_synchronize_rcu not used in minimal kernel */
-bool poll_state_synchronize_rcu(unsigned long oldstate)
-{
-	return true;
-}
-
 void __init rcu_init(void)
 {
 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);

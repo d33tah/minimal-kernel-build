@@ -117,14 +117,6 @@ again:
 }
 
 
-/* Stubbed bitmap parsing functions - not used */
-int bitmap_parse_user(const char __user *ubuf,
-			unsigned int ulen, unsigned long *maskp,
-			int nmaskbits)
-{
-	return -EINVAL;
-}
-
 int bitmap_print_to_pagebuf(bool list, char *buf, const unsigned long *maskp,
 			    int nmaskbits)
 {

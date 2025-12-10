@@ -21,5 +21,3 @@ SYSCALL_DEFINE1(pipe, int __user *, fildes) { return -ENOSYS; }
 
 void free_pipe_info(struct pipe_inode_info *pipe) { }
 const struct file_operations pipefifo_fops = { };
-
-struct pipe_inode_info *get_pipe_info(struct file *file, bool for_splice) { return NULL; }

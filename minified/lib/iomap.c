@@ -25,24 +25,3 @@ void iowrite64_lo_hi(u64 val, void __iomem *addr) { }
 void iowrite64_hi_lo(u64 val, void __iomem *addr) { }
 void iowrite64be_lo_hi(u64 val, void __iomem *addr) { }
 void iowrite64be_hi_lo(u64 val, void __iomem *addr) { }
-
-/* Repeated I/O operations - no-ops */
-void ioread8_rep(const void __iomem *addr, void *dst, unsigned long count) { }
-void ioread16_rep(const void __iomem *addr, void *dst, unsigned long count) { }
-void ioread32_rep(const void __iomem *addr, void *dst, unsigned long count) { }
-void iowrite8_rep(void __iomem *addr, const void *src, unsigned long count) { }
-void iowrite16_rep(void __iomem *addr, const void *src, unsigned long count) { }
-void iowrite32_rep(void __iomem *addr, const void *src, unsigned long count) { }
-
-/* PCI I/O mapping - return NULL */
-void __iomem *ioport_map(unsigned long port, unsigned int nr) { return NULL; }
-void ioport_unmap(void __iomem *addr) { }
-
-/* PCI device mapping - return NULL/no-op */
-void __iomem *pci_iomap_range(struct pci_dev *dev, int bar, unsigned long offset,
-			      unsigned long maxlen) { return NULL; }
-void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int bar, unsigned long offset,
-				 unsigned long maxlen) { return NULL; }
-void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long maxlen) { return NULL; }
-/* Note: pci_iomap and pci_iounmap already defined as static inline in pci.h */
-/* EXPORT_SYMBOL removed - monolithic kernel without modules */

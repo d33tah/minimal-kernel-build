@@ -15,4 +15,3 @@ int match_octal(substring_t *s, int *result) { return -EINVAL; }
 int match_hex(substring_t *s, int *result) { return -EINVAL; }
 bool match_wildcard(const char *pattern, const char *str) { return false; }
 size_t match_strlcpy(char *dest, const substring_t *src, size_t size) { if (size) dest[0] = '\0'; return 0; }
-char *match_strdup(const substring_t *s) { return NULL; }

@@ -130,17 +130,7 @@ struct device *tty_port_register_device_serdev(struct tty_port *port,
 			device, NULL, NULL);
 }
 
-void tty_port_unregister_device(struct tty_port *port,
-		struct tty_driver *driver, unsigned index)
-{
-	int ret;
-
-	ret = serdev_tty_port_unregister(port);
-	if (ret == 0)
-		return;
-
-	tty_unregister_device(driver, index);
-}
+/* tty_port_unregister_device removed - unused */
 
 int tty_port_alloc_xmit_buf(struct tty_port *port)
 {

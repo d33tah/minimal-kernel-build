@@ -512,13 +512,6 @@ const struct address_space_operations ram_aops = {
 	.dirty_folio	= noop_dirty_folio,
 };
 
-/* STUB: simple_fill_super not used for minimal kernel */
-int simple_fill_super(struct super_block *s, unsigned long magic,
-		      const struct tree_descr *files)
-{
-	return -ENOSYS;
-}
-
 static DEFINE_SPINLOCK(pin_fs_lock);
 
 int simple_pin_fs(struct file_system_type *type, struct vfsmount **mount, int *count)

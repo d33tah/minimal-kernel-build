@@ -201,9 +201,6 @@ void arch_cpu_idle_dead(void);
 int cpu_report_state(int cpu);
 int cpu_check_up_prepare(int cpu);
 void cpu_set_state_online(int cpu);
-void play_idle_precise(u64 duration_ns, u64 latency_ns);
-
-/* play_idle removed - unused */
 
 static inline void cpuhp_report_idle_dead(void) { }
 

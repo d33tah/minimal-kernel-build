@@ -222,11 +222,6 @@ bool cpu_in_idle(unsigned long pc)
 		pc < (unsigned long)__cpuidle_text_end;
 }
 
-void play_idle_precise(u64 duration_ns, u64 latency_ns)
-{
-	/* Stub: idle injection not needed for minimal kernel */
-}
-
 void cpu_startup_entry(enum cpuhp_state state)
 {
 	arch_cpu_idle_prepare();

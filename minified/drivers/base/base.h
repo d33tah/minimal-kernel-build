@@ -112,10 +112,9 @@ static inline int devtmpfs_init(void) { return 0; }
  
 extern int device_links_read_lock(void);
 extern void device_links_read_unlock(int idx);
-extern int device_links_read_lock_held(void);
+/* device_links_read_lock_held removed - unused */
 extern int device_links_check_suppliers(struct device *dev);
-extern void device_links_force_bind(struct device *dev);
-extern void device_links_driver_bound(struct device *dev);
+/* device_links_force_bind, device_links_driver_bound removed - unused */
 extern void device_links_driver_cleanup(struct device *dev);
 extern void device_links_no_driver(struct device *dev);
 extern bool device_links_busy(struct device *dev);

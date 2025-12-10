@@ -504,7 +504,7 @@ struct device *device_find_child_by_name(struct device *parent,
 /* device_rename, device_move, device_change_owner removed - unused */
 const char *device_get_devnode(struct device *dev, umode_t *mode, kuid_t *uid,
 			       kgid_t *gid, const char **tmp);
-int device_is_dependent(struct device *dev, void *target);
+/* device_is_dependent removed - unused */
 
 /* __device_lock_set_class, device_lock_set_class, device_lock_reset_class removed - unused */
 

@@ -59,23 +59,14 @@ void device_links_read_unlock(int idx) __releases(&device_links_srcu)
 	srcu_read_unlock(&device_links_srcu, idx);
 }
 
-int device_links_read_lock_held(void)
-{
-	return srcu_read_lock_held(&device_links_srcu);
-}
+/* device_links_read_lock_held removed - unused */
 
 static void device_link_synchronize_removal(void)
 {
 	synchronize_srcu(&device_links_srcu);
 }
 
-int device_is_dependent(struct device *dev, void *target)
-{
-	/* Minimal stub: no dependency tracking */
-	(void)dev;
-	(void)target;
-	return 0;
-}
+/* device_is_dependent removed - unused */
 
 static int device_reorder_to_tail(struct device *dev, void *not_used)
 {
@@ -232,17 +223,7 @@ static ssize_t waiting_for_supplier_show(struct device *dev,
 }
 static DEVICE_ATTR_RO(waiting_for_supplier);
 
-void device_links_force_bind(struct device *dev)
-{
-	/* Minimal stub */
-	(void)dev;
-}
-
-void device_links_driver_bound(struct device *dev)
-{
-	/* Minimal stub */
-	(void)dev;
-}
+/* device_links_force_bind, device_links_driver_bound removed - unused */
 
 void device_links_no_driver(struct device *dev)
 {

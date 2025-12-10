@@ -478,21 +478,6 @@ struct cpumask __cpu_dying_mask __read_mostly;
 
 atomic_t __num_online_cpus __read_mostly;
 
-void init_cpu_present(const struct cpumask *src)
-{
-	cpumask_copy(&__cpu_present_mask, src);
-}
-
-void init_cpu_possible(const struct cpumask *src)
-{
-	cpumask_copy(&__cpu_possible_mask, src);
-}
-
-void init_cpu_online(const struct cpumask *src)
-{
-	cpumask_copy(&__cpu_online_mask, src);
-}
-
 void set_cpu_online(unsigned int cpu, bool online)
 {
 	 

@@ -589,5 +589,3 @@ ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from)
 	return iov_iter_count(from);
 }
 
-/* Stub: not used in minimal kernel */
-int generic_file_rw_checks(struct file *file_in, struct file *file_out) { return -EINVAL; }

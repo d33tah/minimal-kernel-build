@@ -1671,36 +1671,6 @@ SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
 	return retval;
 }
 
-void sched_show_task(struct task_struct *p)
-{
-	
-}
-
-static inline bool
-state_filter_match(unsigned long state_filter, struct task_struct *p)
-{
-	unsigned int state = READ_ONCE(p->__state);
-
-	
-	if (!state_filter)
-		return true;
-
-	
-	if (!(state & state_filter))
-		return false;
-
-	
-	if (state_filter == TASK_UNINTERRUPTIBLE && state == TASK_IDLE)
-		return false;
-
-	return true;
-}
-
-void show_state_filter(unsigned int state_filter)
-{
-	
-}
-
 void __init init_idle(struct task_struct *idle, int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
@@ -1811,11 +1781,6 @@ void __init sched_init(void)
 	preempt_dynamic_init();
 
 	scheduler_running = 1;
-}
-
-void dump_cpu_task(int cpu)
-{
-	
 }
 
 const int sched_prio_to_weight[40] = {

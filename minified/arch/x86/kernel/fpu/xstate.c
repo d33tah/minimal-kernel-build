@@ -36,48 +36,14 @@ int cpu_has_xfeatures(u64 xfeatures_needed, const char **feature_name)
 // Stub: Initialize CPU xstate
 void fpu__init_cpu_xstate(void) { }
 
-// Stub: Get xfeature size
-int xfeature_size(int xfeature_nr)
-{
-	return 0;
-}
-
 // Stub: Initialize system xstate
 void __init fpu__init_system_xstate(unsigned int legacy_size) { }
 
 // Stub: Resume CPU FPU state
 void fpu__resume_cpu(void) { }
 
-// Stub: Copy xstate to user buffer
-void __copy_xstate_to_uabi_buf(struct membuf to, struct fpstate *fpstate,
-			       u32 pkru_val, enum xstate_copy_mode copy_mode)
-{ }
-
-void copy_xstate_to_uabi_buf(struct membuf to, struct task_struct *tsk,
-			     enum xstate_copy_mode copy_mode)
-{ }
-
-// Stub: Copy from user to xstate
-int copy_uabi_from_kernel_to_xstate(struct fpstate *fpstate, const void *kbuf)
-{
-	return 0;
-}
-
 int copy_sigframe_from_user_to_xstate(struct fpstate *fpstate,
 				      const void __user *ubuf)
-{
-	return 0;
-}
-
-// Stub: Save/restore extended state
-void xsaves(struct xregs_state *xstate, u64 mask) { }
-void xrstors(struct xregs_state *xstate, u64 mask) { }
-
-// Stub: Clear xstate component
-void fpstate_clear_xstate_component(struct fpstate *fps, unsigned int xfeature) { }
-
-// Stub: Guest permission
-u64 xstate_get_guest_group_perm(void)
 {
 	return 0;
 }

@@ -1468,8 +1468,6 @@ static inline int register_chrdev(unsigned int major, const char *name,
 
 extern void init_special_inode(struct inode *, umode_t, dev_t);
 
-extern int __must_check file_fdatawait_range(struct file *file, loff_t lstart,
-						loff_t lend);
 extern int __must_check file_check_and_advance_wb_err(struct file *file);
 extern int __must_check file_write_and_wait_range(struct file *file,
 						loff_t start, loff_t end);

@@ -914,8 +914,6 @@ static inline int throttled_hierarchy(struct cfs_rq *cfs_rq)
 	return 0;
 }
 
-void init_cfs_bandwidth(struct cfs_bandwidth *cfs_b) {}
-
 static inline struct cfs_bandwidth *tg_cfs_bandwidth(struct task_group *tg)
 {
 	return NULL;
@@ -1456,16 +1454,10 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
 	cfs_rq->min_vruntime_copy = cfs_rq->min_vruntime;
 }
 
-void free_fair_sched_group(struct task_group *tg) { }
-
 int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
 {
 	return 1;
 }
-
-void online_fair_sched_group(struct task_group *tg) { }
-
-void unregister_fair_sched_group(struct task_group *tg) { }
 
 static unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task)
 {

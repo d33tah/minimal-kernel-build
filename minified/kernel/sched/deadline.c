@@ -61,13 +61,7 @@ DEFINE_SCHED_CLASS(dl) = {
 	.update_curr		= update_curr_dl,
 };
 
-int sched_dl_global_validate(void) { return 0; }
-void sched_dl_do_global(void) { }
-int sched_dl_overflow(struct task_struct *p, int policy, const struct sched_attr *attr) { return 0; }
 void __setparam_dl(struct task_struct *p, const struct sched_attr *attr) { }
-void __getparam_dl(struct task_struct *p, struct sched_attr *attr) { }
-bool __checkparam_dl(const struct sched_attr *attr) { return false; }
-bool dl_param_changed(struct task_struct *p, const struct sched_attr *attr) { return false; }
 
 void __dl_clear_params(struct task_struct *p)
 {

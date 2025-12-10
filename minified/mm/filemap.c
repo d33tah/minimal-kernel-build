@@ -727,10 +727,6 @@ void folio_unlock(struct folio *folio)
 		folio_wake_bit(folio, PG_locked);
 }
 
-void folio_end_private_2(struct folio *folio) { }
-void folio_wait_private_2(struct folio *folio) { }
-int folio_wait_private_2_killable(struct folio *folio) { return 0; }
-
 void folio_end_writeback(struct folio *folio)
 {
 	

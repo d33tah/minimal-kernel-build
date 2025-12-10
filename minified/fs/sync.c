@@ -4,7 +4,6 @@
 
 int sync_filesystem(struct super_block *sb) { return 0; }
 
-void ksys_sync(void) { }
 SYSCALL_DEFINE0(sync) { return 0; }
 SYSCALL_DEFINE1(syncfs, int, fd) { return -ENOSYS; }
 
@@ -19,5 +18,3 @@ int sync_file_range(struct file *file, loff_t offset, loff_t nbytes, unsigned in
 int ksys_sync_file_range(int fd, loff_t offset, loff_t nbytes, unsigned int flags) { return -ENOSYS; }
 SYSCALL_DEFINE4(sync_file_range, int, fd, loff_t, offset, loff_t, nbytes, unsigned int, flags) { return -ENOSYS; }
 SYSCALL_DEFINE4(sync_file_range2, int, fd, unsigned int, flags, loff_t, offset, loff_t, nbytes) { return -ENOSYS; }
-
-void emergency_sync(void) { }

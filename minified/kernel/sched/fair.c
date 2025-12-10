@@ -1454,10 +1454,7 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
 	cfs_rq->min_vruntime_copy = cfs_rq->min_vruntime;
 }
 
-int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
-{
-	return 1;
-}
+/* alloc_fair_sched_group removed - not called */
 
 static unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task)
 {

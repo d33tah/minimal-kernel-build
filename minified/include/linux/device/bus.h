@@ -90,11 +90,7 @@ struct device *subsys_find_device_by_id(struct bus_type *bus, unsigned int id,
 					struct device *hint);
 int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 		     void *data, int (*fn)(struct device_driver *, void *));
-struct notifier_block;
-
-extern int bus_register_notifier(struct bus_type *bus,
-				 struct notifier_block *nb);
-/* bus_sort_breadthfirst, bus_unregister_notifier removed - unused */
+/* bus_sort_breadthfirst, bus_unregister_notifier, bus_register_notifier removed - unused */
 
 #define BUS_NOTIFY_ADD_DEVICE		0x00000001  
 #define BUS_NOTIFY_DEL_DEVICE		0x00000002  

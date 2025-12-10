@@ -598,11 +598,6 @@ void bus_unregister(struct bus_type *bus)
 	kset_unregister(&bus->p->subsys);
 }
 
-int bus_register_notifier(struct bus_type *bus, struct notifier_block *nb)
-{
-	return blocking_notifier_chain_register(&bus->p->bus_notifier, nb);
-}
-
 struct klist *bus_get_device_klist(struct bus_type *bus)
 {
 	return &bus->p->klist_devices;

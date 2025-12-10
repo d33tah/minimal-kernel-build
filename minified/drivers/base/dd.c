@@ -110,13 +110,7 @@ static void driver_deferred_probe_trigger(void)
 }
 
 /* device_block_probing, device_unblock_probing, device_set_deferred_probe_reason removed - unused */
-
-static int deferred_devs_show(struct seq_file *s, void *data)
-{
-	/* Stub: deferred probe debug info not needed for minimal kernel */
-	return 0;
-}
-DEFINE_SHOW_ATTRIBUTE(deferred_devs);
+/* deferred_devs_show and DEFINE_SHOW_ATTRIBUTE removed - unused */
 
 int driver_deferred_probe_timeout;
 

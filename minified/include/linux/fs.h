@@ -723,7 +723,7 @@ struct fasync_struct {
 extern int fasync_helper(int, struct file *, int, struct fasync_struct **);
 extern void kill_fasync(struct fasync_struct **, int, int);
 extern void __f_setown(struct file *filp, struct pid *, enum pid_type, int force);
-extern int f_setown(struct file *filp, unsigned long arg, int force);
+/* f_setown removed - unused */
 
 #define SB_RDONLY	 1	
 #define SB_NOSUID	 2	

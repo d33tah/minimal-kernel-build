@@ -134,38 +134,7 @@ void *__kmap_local_page_prot(struct page *page, pgprot_t prot)
 	return __kmap_local_pfn_prot(page_to_pfn(page), prot);
 }
 
-void kunmap_local_indexed(void *vaddr)
-{
-	unsigned long addr = (unsigned long) vaddr & PAGE_MASK;
-	pte_t *kmap_pte;
-	int idx;
-
-	if (addr < __fix_to_virt(FIX_KMAP_END) ||
-	    addr > __fix_to_virt(FIX_KMAP_BEGIN)) {
-		if (IS_ENABLED(CONFIG_DEBUG_KMAP_LOCAL_FORCE_MAP)) {
-			 
-			WARN_ON_ONCE(1);
-			return;
-		}
-		 
-		if (!kmap_high_unmap_local(addr))
-			WARN_ON_ONCE(addr < PAGE_OFFSET);
-		return;
-	}
-
-	preempt_disable();
-	idx = arch_kmap_local_unmap_idx(kmap_local_idx(), addr);
-	WARN_ON_ONCE(addr != __fix_to_virt(FIX_KMAP_BEGIN + idx));
-
-	kmap_pte = kmap_get_pte(addr, idx);
-	arch_kmap_local_pre_unmap(addr);
-	pte_clear(&init_mm, addr, kmap_pte);
-	arch_kmap_local_post_unmap(addr);
-	current->kmap_ctrl.pteval[kmap_local_idx()] = __pte(0);
-	kmap_local_idx_pop();
-	preempt_enable();
-	migrate_enable();
-}
+/* kunmap_local_indexed removed - unused */
 
 void __kmap_local_sched_out(void)
 {

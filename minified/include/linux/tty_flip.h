@@ -43,7 +43,6 @@ static inline int tty_insert_flip_string(struct tty_port *port,
 int tty_ldisc_receive_buf(struct tty_ldisc *ld, const unsigned char *p,
 		const char *f, int count);
 
-void tty_buffer_lock_exclusive(struct tty_port *port);
-void tty_buffer_unlock_exclusive(struct tty_port *port);
+/* tty_buffer_lock_exclusive, tty_buffer_unlock_exclusive removed - unused */
 
 #endif  

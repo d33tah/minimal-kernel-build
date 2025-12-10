@@ -120,14 +120,7 @@ bool kthread_should_park(void)
 }
 
 /* kthread_freezable_should_stop removed - unused */
-
-void *kthread_func(struct task_struct *task)
-{
-	struct kthread *kthread = __to_kthread(task);
-	if (kthread)
-		return kthread->threadfn;
-	return NULL;
-}
+/* kthread_func removed - unused */
 
 void *kthread_data(struct task_struct *task)
 {

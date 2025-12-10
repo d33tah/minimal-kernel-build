@@ -23,26 +23,7 @@
 
 #define TTY_BUFFER_PAGE	(((PAGE_SIZE - sizeof(struct tty_buffer)) / 2) & ~0xFF)
 
-void tty_buffer_lock_exclusive(struct tty_port *port)
-{
-	struct tty_bufhead *buf = &port->buf;
-
-	atomic_inc(&buf->priority);
-	mutex_lock(&buf->lock);
-}
-
-void tty_buffer_unlock_exclusive(struct tty_port *port)
-{
-	struct tty_bufhead *buf = &port->buf;
-	int restart;
-
-	restart = buf->head->commit != buf->head->read;
-
-	atomic_dec(&buf->priority);
-	mutex_unlock(&buf->lock);
-	if (restart)
-		queue_work(system_unbound_wq, &buf->work);
-}
+/* tty_buffer_lock_exclusive, tty_buffer_unlock_exclusive removed - unused */
 
 unsigned int tty_buffer_space_avail(struct tty_port *port)
 {
@@ -380,7 +361,4 @@ bool tty_buffer_cancel_work(struct tty_port *port)
 	return cancel_work_sync(&port->buf.work);
 }
 
-void tty_buffer_flush_work(struct tty_port *port)
-{
-	flush_work(&port->buf.work);
-}
+/* tty_buffer_flush_work removed - unused */

@@ -332,42 +332,7 @@ int tty_hung_up_p(struct file *filp)
 	return (filp && filp->f_op == &hung_up_tty_fops);
 }
 
-void __stop_tty(struct tty_struct *tty)
-{
-	if (tty->flow.stopped)
-		return;
-	tty->flow.stopped = true;
-	if (tty->ops->stop)
-		tty->ops->stop(tty);
-}
-
-void stop_tty(struct tty_struct *tty)
-{
-	unsigned long flags;
-
-	spin_lock_irqsave(&tty->flow.lock, flags);
-	__stop_tty(tty);
-	spin_unlock_irqrestore(&tty->flow.lock, flags);
-}
-
-void __start_tty(struct tty_struct *tty)
-{
-	if (!tty->flow.stopped || tty->flow.tco_stopped)
-		return;
-	tty->flow.stopped = false;
-	if (tty->ops->start)
-		tty->ops->start(tty);
-	tty_wakeup(tty);
-}
-
-void start_tty(struct tty_struct *tty)
-{
-	unsigned long flags;
-
-	spin_lock_irqsave(&tty->flow.lock, flags);
-	__start_tty(tty);
-	spin_unlock_irqrestore(&tty->flow.lock, flags);
-}
+/* __stop_tty, stop_tty, __start_tty, start_tty removed - unused */
 
 static void tty_update_time(struct timespec64 *time)
 {
@@ -546,9 +511,7 @@ out:
 	return ret;
 }
 
-void tty_write_message(struct tty_struct *tty, char *msg)
-{
-}
+/* tty_write_message removed - unused */
 
 static ssize_t file_tty_write(struct file *file, struct kiocb *iocb, struct iov_iter *from)
 {

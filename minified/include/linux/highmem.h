@@ -22,7 +22,7 @@ static inline void flush_dcache_folio(struct folio *folio) {}
 /* Inlined from highmem-internal.h */
 void *__kmap_local_pfn_prot(unsigned long pfn, pgprot_t prot);
 void *__kmap_local_page_prot(struct page *page, pgprot_t prot);
-void kunmap_local_indexed(void *vaddr);
+/* kunmap_local_indexed removed - unused */
 void kmap_local_fork(struct task_struct *tsk);
 void __kmap_local_sched_out(void);
 void __kmap_local_sched_in(void);

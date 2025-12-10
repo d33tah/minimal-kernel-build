@@ -40,7 +40,7 @@ bool kthread_should_stop(void);
 bool kthread_should_park(void);
 bool __kthread_should_park(struct task_struct *k);
 /* kthread_freezable_should_stop removed - unused */
-void *kthread_func(struct task_struct *k);
+/* kthread_func removed - unused */
 void *kthread_data(struct task_struct *k);
 /* kthread_probe_data removed - unused */
 int kthread_park(struct task_struct *k);

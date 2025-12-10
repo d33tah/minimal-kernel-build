@@ -812,6 +812,3 @@ unsigned long msleep_interruptible(unsigned int msecs)
 }
 
 
-/* Stub: usleep_range_state not used in minimal kernel */
-void __sched usleep_range_state(unsigned long min, unsigned long max,
-				unsigned int state) { }

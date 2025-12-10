@@ -75,7 +75,6 @@ ssize_t seq_read(struct file *, char __user *, size_t, loff_t *);
 ssize_t seq_read_iter(struct kiocb *iocb, struct iov_iter *iter);
 loff_t seq_lseek(struct file *, loff_t, int);
 int seq_release(struct inode *, struct file *);
-int seq_write(struct seq_file *seq, const void *data, size_t len);
 
 __printf(2, 0)
 void seq_vprintf(struct seq_file *m, const char *fmt, va_list args);
@@ -109,19 +108,12 @@ void seq_hex_dump(struct seq_file *m, const char *prefix_str, int prefix_type,
 		  int rowsize, int groupsize, const void *buf, size_t len,
 		  bool ascii);
 
-int seq_path(struct seq_file *, const struct path *, const char *);
-int seq_file_path(struct seq_file *, struct file *, const char *);
-int seq_dentry(struct seq_file *, struct dentry *, const char *);
-int seq_path_root(struct seq_file *m, const struct path *path,
-		  const struct path *root, const char *esc);
-
 void *single_start(struct seq_file *, loff_t *);
 int single_open(struct file *, int (*)(struct seq_file *, void *), void *);
 int single_open_size(struct file *, int (*)(struct seq_file *, void *), void *, size_t);
 int single_release(struct inode *, struct file *);
 void *__seq_open_private(struct file *, const struct seq_operations *, int);
 int seq_open_private(struct file *, const struct seq_operations *, int);
-int seq_release_private(struct inode *, struct file *);
 
 
 #define DEFINE_SEQ_ATTRIBUTE(__name)					\
@@ -195,37 +187,6 @@ static inline void seq_show_option(struct seq_file *m, const char *name,
 }
 
 #define SEQ_START_TOKEN ((void *)1)
-
-extern struct list_head *seq_list_start(struct list_head *head,
-		loff_t pos);
-extern struct list_head *seq_list_start_head(struct list_head *head,
-		loff_t pos);
-extern struct list_head *seq_list_next(void *v, struct list_head *head,
-		loff_t *ppos);
-
-extern struct list_head *seq_list_start_rcu(struct list_head *head, loff_t pos);
-extern struct list_head *seq_list_start_head_rcu(struct list_head *head, loff_t pos);
-extern struct list_head *seq_list_next_rcu(void *v, struct list_head *head, loff_t *ppos);
-
-
-extern struct hlist_node *seq_hlist_start(struct hlist_head *head,
-					  loff_t pos);
-extern struct hlist_node *seq_hlist_start_head(struct hlist_head *head,
-					       loff_t pos);
-extern struct hlist_node *seq_hlist_next(void *v, struct hlist_head *head,
-					 loff_t *ppos);
-
-extern struct hlist_node *seq_hlist_start_rcu(struct hlist_head *head,
-					      loff_t pos);
-extern struct hlist_node *seq_hlist_start_head_rcu(struct hlist_head *head,
-						   loff_t pos);
-extern struct hlist_node *seq_hlist_next_rcu(void *v,
-						   struct hlist_head *head,
-						   loff_t *ppos);
-
-extern struct hlist_node *seq_hlist_start_percpu(struct hlist_head __percpu *head, int *cpu, loff_t pos);
-
-extern struct hlist_node *seq_hlist_next_percpu(void *v, struct hlist_head __percpu *head, int *cpu, loff_t *pos);
 
 void seq_file_init(void);
 #endif

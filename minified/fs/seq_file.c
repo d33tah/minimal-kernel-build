@@ -14,10 +14,6 @@ loff_t seq_lseek(struct file *file, loff_t offset, int whence) { return 0; }
 
 int seq_release(struct inode *inode, struct file *file) { return 0; }
 
-/* seq_escape_mem removed - unused */
-
-void seq_vprintf(struct seq_file *m, const char *fmt, va_list args) { }
-
 __printf(2, 3)
 void seq_printf(struct seq_file *m, const char *fmt, ...) { }
 
@@ -32,15 +28,5 @@ int single_release(struct inode *inode, struct file *file) { return 0; }
 void *__seq_open_private(struct file *file, const struct seq_operations *ops, int psize) { return NULL; }
 
 int seq_open_private(struct file *file, const struct seq_operations *ops, int psize) { return -ENOMEM; }
-
-void seq_putc(struct seq_file *m, char c) { }
-
-void seq_puts(struct seq_file *m, const char *s) { }
-
-void seq_put_decimal_ull(struct seq_file *m, const char *delimiter, unsigned long long num) { }
-
-void seq_put_decimal_ll(struct seq_file *m, const char *delimiter, long long num) { }
-
-void seq_pad(struct seq_file *m, char c) { }
 
 void seq_file_init(void) { }

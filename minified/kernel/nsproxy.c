@@ -227,14 +227,6 @@ void exit_task_namespaces(struct task_struct *p)
 	switch_task_namespaces(p, NULL);
 }
 
-
-static inline int validate_ns(struct nsset *nsset, struct ns_common *ns)
-{
-	return ns->ops->install(nsset, ns);
-}
-
-
-
 SYSCALL_DEFINE2(setns, int, fd, int, flags)
 {
 	/* Stubbed: setns not needed for minimal kernel */

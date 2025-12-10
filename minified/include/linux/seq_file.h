@@ -70,11 +70,7 @@ static inline void seq_setwidth(struct seq_file *m, size_t size)
 /* seq_pad removed - unused */
 
 char *mangle_path(char *s, const char *p, const char *esc);
-int seq_open(struct file *, const struct seq_operations *);
-ssize_t seq_read(struct file *, char __user *, size_t, loff_t *);
-ssize_t seq_read_iter(struct kiocb *iocb, struct iov_iter *iter);
-loff_t seq_lseek(struct file *, loff_t, int);
-int seq_release(struct inode *, struct file *);
+/* seq_open, seq_read, seq_read_iter, seq_lseek, seq_release removed - not called */
 
 __printf(2, 0)
 void seq_vprintf(struct seq_file *m, const char *fmt, va_list args);

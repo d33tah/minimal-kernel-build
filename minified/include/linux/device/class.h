@@ -137,7 +137,7 @@ struct class_interface {
 };
 
 extern int __must_check class_interface_register(struct class_interface *);
-extern void class_interface_unregister(struct class_interface *);
+/* class_interface_unregister removed - unused */
 
 extern struct class * __must_check __class_create(struct module *owner,
 						  const char *name,

@@ -29,10 +29,5 @@ void async_synchronize_full_domain(struct async_domain *domain)
 
 void async_synchronize_cookie_domain(async_cookie_t cookie, struct async_domain *domain)
 {
-	 
-}
 
-void async_synchronize_cookie(async_cookie_t cookie)
-{
-	 
 }

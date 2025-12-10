@@ -594,12 +594,6 @@ int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
 	return 0;
 }
 
-bool iomem_is_exclusive(u64 addr)
-{
-	/* Stub: exclusivity check not needed for minimal kernel */
-	return false;
-}
-
 /* Stub: iomem= cmdline option not needed for minimal kernel */
 static int __init strict_iomem(char *str) { return 1; }
 

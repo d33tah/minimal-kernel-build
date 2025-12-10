@@ -67,7 +67,7 @@ static inline void seq_setwidth(struct seq_file *m, size_t size)
 {
 	m->pad_until = m->count + size;
 }
-void seq_pad(struct seq_file *m, char c);
+/* seq_pad removed - unused */
 
 char *mangle_path(char *s, const char *p, const char *esc);
 int seq_open(struct file *, const struct seq_operations *);
@@ -82,13 +82,9 @@ __printf(2, 3)
 void seq_printf(struct seq_file *m, const char *fmt, ...);
 void seq_putc(struct seq_file *m, char c);
 void seq_puts(struct seq_file *m, const char *s);
-void seq_put_decimal_ull_width(struct seq_file *m, const char *delimiter,
-			       unsigned long long num, unsigned int width);
+/* seq_put_decimal_ull_width, seq_put_decimal_ll, seq_put_hex_ll removed - unused */
 void seq_put_decimal_ull(struct seq_file *m, const char *delimiter,
 			 unsigned long long num);
-void seq_put_decimal_ll(struct seq_file *m, const char *delimiter, long long num);
-void seq_put_hex_ll(struct seq_file *m, const char *delimiter,
-		    unsigned long long v, unsigned int width);
 
 void seq_escape_mem(struct seq_file *m, const char *src, size_t len,
 		    unsigned int flags, const char *esc);
@@ -104,9 +100,7 @@ static inline void seq_escape(struct seq_file *m, const char *s, const char *esc
 	seq_escape_str(m, s, ESCAPE_OCTAL, esc);
 }
 
-void seq_hex_dump(struct seq_file *m, const char *prefix_str, int prefix_type,
-		  int rowsize, int groupsize, const void *buf, size_t len,
-		  bool ascii);
+/* seq_hex_dump removed - unused */
 
 void *single_start(struct seq_file *, loff_t *);
 int single_open(struct file *, int (*)(struct seq_file *, void *), void *);

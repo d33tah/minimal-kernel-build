@@ -51,15 +51,14 @@ extern int kern_path(const char *, unsigned, struct path *);
 extern struct dentry *kern_path_create(int, const char *, struct path *, unsigned int);
 extern struct dentry *user_path_create(int, const char __user *, struct path *, unsigned int);
 extern void done_path_create(struct path *, struct dentry *);
-extern struct dentry *kern_path_locked(const char *, struct path *);
+/* kern_path_locked removed - no definition or callers */
 
 /* try_lookup_one_len, lookup_one_len, lookup_one_len_unlocked, lookup_positive_unlocked,
    lookup_one, lookup_one_unlocked, lookup_one_positive_unlocked removed - no callers */
 
 /* follow_down_one, follow_down, nd_jump_link, follow_up removed - unused */
 
-extern struct dentry *lock_rename(struct dentry *, struct dentry *);
-extern void unlock_rename(struct dentry *, struct dentry *);
+/* lock_rename, unlock_rename removed - no definition or callers */
 
 static inline void nd_terminate_link(void *name, size_t len, size_t maxlen)
 {

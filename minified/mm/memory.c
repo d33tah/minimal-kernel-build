@@ -1466,14 +1466,6 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 	return ret;
 }
 
-int numa_migrate_prep(struct page *page, struct vm_area_struct *vma,
-		      unsigned long addr, int page_nid, int *flags)
-{
-	/* Stub: NUMA migration not needed for minimal kernel */
-	get_page(page);
-	return -1;
-}
-
 static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 {
 	if (unlikely(pmd_none(*vmf->pmd))) {

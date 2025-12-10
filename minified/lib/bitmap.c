@@ -47,13 +47,6 @@ void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
 {
 }
 
-/* Stub: __bitmap_replace not called externally */
-void __bitmap_replace(unsigned long *dst,
-		      const unsigned long *old, const unsigned long *new,
-		      const unsigned long *mask, unsigned int nbits)
-{
-}
-
 /* Stub: __bitmap_intersects not used in minimal kernel */
 bool __bitmap_intersects(const unsigned long *bitmap1,
 			 const unsigned long *bitmap2, unsigned int bits)

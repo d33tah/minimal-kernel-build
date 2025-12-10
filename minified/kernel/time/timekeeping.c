@@ -538,13 +538,6 @@ int timekeeping_notify(struct clocksource *clock)
 	return tk->tkr_mono.clock == clock ? 0 : -1;
 }
 
-/* Stub: ktime_get_raw_ts64 not used in minimal kernel */
-void ktime_get_raw_ts64(struct timespec64 *ts)
-{
-	ts->tv_sec = 0;
-	ts->tv_nsec = 0;
-}
-
 int timekeeping_valid_for_hres(void)
 {
 	struct timekeeper *tk = &tk_core.timekeeper;
@@ -559,12 +552,6 @@ int timekeeping_valid_for_hres(void)
 	} while (read_seqcount_retry(&tk_core.seq, seq));
 
 	return ret;
-}
-
-/* Stub: timekeeping_max_deferment not used in minimal kernel */
-u64 timekeeping_max_deferment(void)
-{
-	return NSEC_PER_SEC;
 }
 
 void __weak read_persistent_clock64(struct timespec64 *ts)

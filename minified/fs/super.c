@@ -550,12 +550,7 @@ int get_tree_nodev(struct fs_context *fc,
 	return vfs_get_super(fc, vfs_get_independent_super, fill_super);
 }
 
-int get_tree_single(struct fs_context *fc,
-		  int (*fill_super)(struct super_block *sb,
-				    struct fs_context *fc))
-{
-	return vfs_get_super(fc, vfs_get_single_super, fill_super);
-}
+/* get_tree_single removed - unused */
 
 /* Removed: mount_nodev - never called (~7 LOC) */
 

@@ -93,11 +93,8 @@ extern bool path_is_mountpoint(const struct path *path);
 extern bool our_mnt(struct vfsmount *mnt);
 
 extern struct vfsmount *kern_mount(struct file_system_type *);
-extern void kern_unmount(struct vfsmount *mnt);
-/* may_umount_tree, may_umount removed - unused */
+/* kern_unmount, kern_unmount_array, may_umount_tree, may_umount, collect_mounts, drop_collected_mounts, iterate_mounts removed - unused */
 extern long do_mount(const char *, const char __user *,
 		     const char *, unsigned long, void *);
-/* collect_mounts, drop_collected_mounts, iterate_mounts removed - unused */
-extern void kern_unmount_array(struct vfsmount *mnt[], unsigned int num);
 
 #endif  

@@ -123,10 +123,7 @@ enum irqchip_irq_state {
 	IRQCHIP_STATE_ACTIVE,
 };
 
-extern int irq_get_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
-				 bool *state);
-extern int irq_set_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
-				 bool state);
+/* irq_get_irqchip_state, irq_set_irqchip_state removed - not called */
 
 DECLARE_STATIC_KEY_FALSE(force_irqthreads_key);
 #  define force_irqthreads()	(static_branch_unlikely(&force_irqthreads_key))

@@ -866,59 +866,7 @@ int __irq_get_irqchip_state(struct irq_data *data, enum irqchip_irq_state which,
 	return err;
 }
 
-int irq_get_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
-			  bool *state)
-{
-	struct irq_desc *desc;
-	struct irq_data *data;
-	unsigned long flags;
-	int err = -EINVAL;
-
-	desc = irq_get_desc_buslock(irq, &flags, 0);
-	if (!desc)
-		return err;
-
-	data = irq_desc_get_irq_data(desc);
-
-	err = __irq_get_irqchip_state(data, which, state);
-
-	irq_put_desc_busunlock(desc, flags);
-	return err;
-}
-
-int irq_set_irqchip_state(unsigned int irq, enum irqchip_irq_state which,
-			  bool val)
-{
-	struct irq_desc *desc;
-	struct irq_data *data;
-	struct irq_chip *chip;
-	unsigned long flags;
-	int err = -EINVAL;
-
-	desc = irq_get_desc_buslock(irq, &flags, 0);
-	if (!desc)
-		return err;
-
-	data = irq_desc_get_irq_data(desc);
-
-	do {
-		chip = irq_data_get_irq_chip(data);
-		if (WARN_ON_ONCE(!chip)) {
-			err = -ENODEV;
-			goto out_unlock;
-		}
-		if (chip->irq_set_irqchip_state)
-			break;
-		data = NULL;
-	} while (data);
-
-	if (data)
-		err = chip->irq_set_irqchip_state(data, which, val);
-
-out_unlock:
-	irq_put_desc_busunlock(desc, flags);
-	return err;
-}
+/* irq_get_irqchip_state, irq_set_irqchip_state removed - not called externally */
 
 /* Stub: not used in minimal kernel */
 bool irq_has_action(unsigned int irq)

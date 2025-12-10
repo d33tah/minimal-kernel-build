@@ -68,7 +68,7 @@ static inline int arch_phys_wc_index(int handle)
 #endif
 #endif
 
-int devm_arch_phys_wc_add(struct device *dev, unsigned long base, unsigned long size);
+/* devm_arch_phys_wc_add removed - unused */
 
 enum {
 	 

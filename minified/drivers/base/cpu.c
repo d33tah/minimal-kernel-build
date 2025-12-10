@@ -105,35 +105,7 @@ static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
 	return 0;
 }
 
-int register_cpu(struct cpu *cpu, int num)
-{
-	int error;
-
-	cpu->node_id = cpu_to_node(num);
-	memset(&cpu->dev, 0x00, sizeof(struct device));
-	cpu->dev.id = num;
-	cpu->dev.bus = &cpu_subsys;
-	cpu->dev.release = cpu_device_release;
-	cpu->dev.offline_disabled = !cpu->hotpluggable;
-	cpu->dev.offline = !cpu_online(num);
-	cpu->dev.of_node = of_get_cpu_node(num, NULL);
-	cpu->dev.bus->uevent = cpu_uevent;
-	cpu->dev.groups = common_cpu_attr_groups;
-	if (cpu->hotpluggable)
-		cpu->dev.groups = hotplugable_cpu_attr_groups;
-	error = device_register(&cpu->dev);
-	if (error) {
-		put_device(&cpu->dev);
-		return error;
-	}
-
-	per_cpu(cpu_sys_devices, num) = &cpu->dev;
-	register_cpu_under_node(num, cpu_to_node(num));
-	dev_pm_qos_expose_latency_limit(&cpu->dev,
-					PM_QOS_RESUME_LATENCY_NO_CONSTRAINT);
-
-	return 0;
-}
+/* register_cpu removed - not called */
 
 struct device *get_cpu_device(unsigned int cpu)
 {

@@ -158,7 +158,7 @@ extern void boot_cpu_hotplug_init(void);
 extern void cpu_init(void);
 extern void trap_init(void);
 
-extern int register_cpu(struct cpu *cpu, int num);
+/* register_cpu removed - not called */
 extern struct device *get_cpu_device(unsigned cpu);
 extern bool cpu_is_hotpluggable(unsigned cpu);
 extern bool arch_match_cpu_phys_id(int cpu, u64 phys_id);

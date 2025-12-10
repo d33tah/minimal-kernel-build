@@ -501,10 +501,7 @@ struct device *device_find_child(struct device *dev, void *data,
 				 int (*match)(struct device *dev, void *data));
 struct device *device_find_child_by_name(struct device *parent,
 					 const char *name);
-int device_rename(struct device *dev, const char *new_name);
-int device_move(struct device *dev, struct device *new_parent,
-		enum dpm_order dpm_order);
-int device_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid);
+/* device_rename, device_move, device_change_owner removed - unused */
 const char *device_get_devnode(struct device *dev, umode_t *mode, kuid_t *uid,
 			       kgid_t *gid, const char **tmp);
 int device_is_dependent(struct device *dev, void *target);

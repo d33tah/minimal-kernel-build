@@ -55,19 +55,7 @@ struct resource *platform_get_resource(struct platform_device *dev,
 	return NULL;
 }
 
-struct resource *platform_get_mem_or_io(struct platform_device *dev,
-					unsigned int num)
-{
-	u32 i;
-
-	for (i = 0; i < dev->num_resources; i++) {
-		struct resource *r = &dev->resource[i];
-
-		if ((resource_type(r) & (IORESOURCE_MEM|IORESOURCE_IO)) && num-- == 0)
-			return r;
-	}
-	return NULL;
-}
+/* platform_get_mem_or_io removed - unused */
 
 void __iomem *
 devm_platform_get_and_ioremap_resource(struct platform_device *pdev,
@@ -163,22 +151,7 @@ static void platform_device_release(struct device *dev)
 	kfree(pa);
 }
 
-struct platform_device *platform_device_alloc(const char *name, int id)
-{
-	struct platform_object *pa;
-
-	pa = kzalloc(sizeof(*pa) + strlen(name) + 1, GFP_KERNEL);
-	if (pa) {
-		strcpy(pa->name, name);
-		pa->pdev.name = pa->name;
-		pa->pdev.id = id;
-		device_initialize(&pa->pdev.dev);
-		pa->pdev.dev.release = platform_device_release;
-		setup_pdev_dma_masks(&pa->pdev);
-	}
-
-	return pa ? &pa->pdev : NULL;
-}
+/* platform_device_alloc removed - unused */
 
 /* Removed: platform_device_add_resources, platform_device_add_data, platform_device_add,
    platform_device_del, platform_device_register, platform_device_unregister,
@@ -193,10 +166,7 @@ int __platform_driver_register(struct platform_driver *drv,
 	return driver_register(&drv->driver);
 }
 
-void platform_driver_unregister(struct platform_driver *drv)
-{
-	driver_unregister(&drv->driver);
-}
+/* platform_driver_unregister removed - unused */
 
 /* Removed: __platform_driver_probe, __platform_create_bundle,
    __platform_register_drivers, platform_unregister_drivers - no external callers */
@@ -339,17 +309,7 @@ struct bus_type platform_bus_type = {
 	.pm		= &platform_dev_pm_ops,
 };
 
-static inline int __platform_match(struct device *dev, const void *drv)
-{
-	return platform_match(dev, (struct device_driver *)drv);
-}
-
-struct device *platform_find_device_by_driver(struct device *start,
-					      const struct device_driver *drv)
-{
-	return bus_find_device(&platform_bus_type, start, drv,
-			       __platform_match);
-}
+/* platform_find_device_by_driver removed - unused */
 
 void __weak __init early_platform_cleanup(void) { }
 

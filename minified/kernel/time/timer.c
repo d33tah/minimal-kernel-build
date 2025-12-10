@@ -420,21 +420,9 @@ out_unlock:
 	return ret;
 }
 
-/* Stub: mod_timer_pending not used in minimal kernel */
-int mod_timer_pending(struct timer_list *timer, unsigned long expires)
-{
-	return 0;
-}
-
 int mod_timer(struct timer_list *timer, unsigned long expires)
 {
 	return __mod_timer(timer, expires, 0);
-}
-
-/* Stub: timer_reduce not used in minimal kernel */
-int timer_reduce(struct timer_list *timer, unsigned long expires)
-{
-	return 0;
 }
 
 void add_timer(struct timer_list *timer)
@@ -485,12 +473,6 @@ int del_timer(struct timer_list *timer)
 	}
 
 	return ret;
-}
-
-/* Stub: try_to_del_timer_sync not called externally */
-int try_to_del_timer_sync(struct timer_list *timer)
-{
-	return -1;
 }
 
 static inline void timer_base_init_expiry_lock(struct timer_base *base) { }
@@ -749,12 +731,6 @@ signed long __sched schedule_timeout_interruptible(signed long timeout)
 {
 	__set_current_state(TASK_INTERRUPTIBLE);
 	return schedule_timeout(timeout);
-}
-
-/* Stub: not used in minimal kernel */
-signed long __sched schedule_timeout_killable(signed long timeout)
-{
-	return schedule_timeout_interruptible(timeout);
 }
 
 signed long __sched schedule_timeout_uninterruptible(signed long timeout)

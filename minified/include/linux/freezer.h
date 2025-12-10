@@ -20,11 +20,5 @@ static inline void freezer_count(void) {}
 #define freezable_schedule_timeout_interruptible(timeout)		\
 	schedule_timeout_interruptible(timeout)
 
-#define freezable_schedule_timeout_killable(timeout)			\
-	schedule_timeout_killable(timeout)
-
-/* Unused macros removed: freezable_schedule_unsafe, *_interruptible_unsafe,
-   *_killable_unsafe, *_hrtimeout_range, wait_event_freezekillable_unsafe */
-
 
 #endif	 

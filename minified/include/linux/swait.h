@@ -49,7 +49,7 @@ extern void __init_swait_queue_head(struct swait_queue_head *q, const char *name
 	DECLARE_SWAIT_QUEUE_HEAD(name)
 
 extern void swake_up_one(struct swait_queue_head *q);
-extern void swake_up_all(struct swait_queue_head *q);
+/* swake_up_all removed - unused */
 extern void swake_up_locked(struct swait_queue_head *q);
 
 extern void prepare_to_swait_exclusive(struct swait_queue_head *q, struct swait_queue *wait, int state);

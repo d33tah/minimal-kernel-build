@@ -951,7 +951,7 @@ static inline void membarrier_switch_mm(struct rq *rq,
 }
 
 
-extern void swake_up_all_locked(struct swait_queue_head *q);
+/* swake_up_all_locked removed - unused */
 extern void __prepare_to_swait(struct swait_queue_head *q, struct swait_queue *wait);
 
 

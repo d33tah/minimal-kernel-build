@@ -19,11 +19,7 @@ void swake_up_locked(struct swait_queue_head *q)
 	list_del_init(&curr->task_list);
 }
 
-void swake_up_all_locked(struct swait_queue_head *q)
-{
-	while (!list_empty(&q->task_list))
-		swake_up_locked(q);
-}
+/* swake_up_all_locked removed - unused */
 
 void swake_up_one(struct swait_queue_head *q)
 {
@@ -34,27 +30,7 @@ void swake_up_one(struct swait_queue_head *q)
 	raw_spin_unlock_irqrestore(&q->lock, flags);
 }
 
-void swake_up_all(struct swait_queue_head *q)
-{
-	struct swait_queue *curr;
-	LIST_HEAD(tmp);
-
-	raw_spin_lock_irq(&q->lock);
-	list_splice_init(&q->task_list, &tmp);
-	while (!list_empty(&tmp)) {
-		curr = list_first_entry(&tmp, typeof(*curr), task_list);
-
-		wake_up_state(curr->task, TASK_NORMAL);
-		list_del_init(&curr->task_list);
-
-		if (list_empty(&tmp))
-			break;
-
-		raw_spin_unlock_irq(&q->lock);
-		raw_spin_lock_irq(&q->lock);
-	}
-	raw_spin_unlock_irq(&q->lock);
-}
+/* swake_up_all removed - unused */
 
 void __prepare_to_swait(struct swait_queue_head *q, struct swait_queue *wait)
 {

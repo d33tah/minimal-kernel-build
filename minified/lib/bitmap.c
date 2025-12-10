@@ -34,12 +34,6 @@ bool __bitmap_or_equal(const unsigned long *bitmap1,
 	return false;
 }
 
-/* Stub: bitmap_cut not used in minimal kernel */
-void bitmap_cut(unsigned long *dst, const unsigned long *src,
-		unsigned int first, unsigned int cut, unsigned int nbits)
-{
-}
-
 /* Stub: __bitmap_and not used in minimal kernel */
 int __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
 				const unsigned long *bitmap2, unsigned int bits)

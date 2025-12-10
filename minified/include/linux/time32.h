@@ -54,15 +54,7 @@ struct old_timex32 {
 	s32:32; s32:32; s32:32;
 };
 
-extern int get_old_timespec32(struct timespec64 *, const void __user *);
-extern int put_old_timespec32(const struct timespec64 *, void __user *);
-extern int get_old_itimerspec32(struct itimerspec64 *its,
-			const struct old_itimerspec32 __user *uits);
-extern int put_old_itimerspec32(const struct itimerspec64 *its,
-			struct old_itimerspec32 __user *uits);
-struct __kernel_timex;
-int get_old_timex32(struct __kernel_timex *, const struct old_timex32 __user *);
-int put_old_timex32(struct old_timex32 __user *, const struct __kernel_timex *);
+/* get_old_timespec32, put_old_timespec32, get_old_itimerspec32, put_old_itimerspec32, get_old_timex32, put_old_timex32 removed - unused */
 
 extern struct __kernel_old_timeval ns_to_kernel_old_timeval(s64 nsec);
 

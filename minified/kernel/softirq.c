@@ -311,109 +311,11 @@ void open_softirq(int nr, void (*action)(struct softirq_action *))
 	softirq_vec[nr].action = action;
 }
 
-struct tasklet_head {
-	struct tasklet_struct *head;
-	struct tasklet_struct **tail;
-};
-
-static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec);
-static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec);
-
-static void __tasklet_schedule_common(struct tasklet_struct *t,
-				      struct tasklet_head __percpu *headp,
-				      unsigned int softirq_nr)
-{
-	struct tasklet_head *head;
-	unsigned long flags;
-
-	local_irq_save(flags);
-	head = this_cpu_ptr(headp);
-	t->next = NULL;
-	*head->tail = t;
-	head->tail = &(t->next);
-	raise_softirq_irqoff(softirq_nr);
-	local_irq_restore(flags);
-}
-
-/* __tasklet_schedule removed - unused */
-
-static bool tasklet_clear_sched(struct tasklet_struct *t)
-{
-	if (test_and_clear_bit(TASKLET_STATE_SCHED, &t->state)) {
-		wake_up_var(&t->state);
-		return true;
-	}
-
-	WARN_ONCE(1, "tasklet SCHED state not set: %s %pS\n",
-		  t->use_callback ? "callback" : "func",
-		  t->use_callback ? (void *)t->callback : (void *)t->func);
-
-	return false;
-}
-
-static void tasklet_action_common(struct softirq_action *a,
-				  struct tasklet_head *tl_head,
-				  unsigned int softirq_nr)
-{
-	struct tasklet_struct *list;
-
-	local_irq_disable();
-	list = tl_head->head;
-	tl_head->head = NULL;
-	tl_head->tail = &tl_head->head;
-	local_irq_enable();
-
-	while (list) {
-		struct tasklet_struct *t = list;
-
-		list = list->next;
-
-		if (tasklet_trylock(t)) {
-			if (!atomic_read(&t->count)) {
-				if (tasklet_clear_sched(t)) {
-					if (t->use_callback)
-						t->callback(t);
-					else
-						t->func(t->data);
-				}
-				tasklet_unlock(t);
-				continue;
-			}
-			tasklet_unlock(t);
-		}
-
-		local_irq_disable();
-		t->next = NULL;
-		*tl_head->tail = t;
-		tl_head->tail = &t->next;
-		__raise_softirq_irqoff(softirq_nr);
-		local_irq_enable();
-	}
-}
-
-static __latent_entropy void tasklet_action(struct softirq_action *a)
-{
-	tasklet_action_common(a, this_cpu_ptr(&tasklet_vec), TASKLET_SOFTIRQ);
-}
-
-static __latent_entropy void tasklet_hi_action(struct softirq_action *a)
-{
-	tasklet_action_common(a, this_cpu_ptr(&tasklet_hi_vec), HI_SOFTIRQ);
-}
+/* tasklet code removed - unused in minimal kernel */
 
 void __init softirq_init(void)
 {
-	int cpu;
-
-	for_each_possible_cpu(cpu) {
-		per_cpu(tasklet_vec, cpu).tail =
-			&per_cpu(tasklet_vec, cpu).head;
-		per_cpu(tasklet_hi_vec, cpu).tail =
-			&per_cpu(tasklet_hi_vec, cpu).head;
-	}
-
-	open_softirq(TASKLET_SOFTIRQ, tasklet_action);
-	open_softirq(HI_SOFTIRQ, tasklet_hi_action);
+	/* No tasklets needed in minimal kernel */
 }
 
 static int ksoftirqd_should_run(unsigned int cpu)

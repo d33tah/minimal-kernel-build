@@ -142,8 +142,7 @@ extern void class_interface_unregister(struct class_interface *);
 extern struct class * __must_check __class_create(struct module *owner,
 						  const char *name,
 						  struct lock_class_key *key);
-extern void class_destroy(struct class *cls);
-
+/* class_destroy removed - unused */
 
 #define class_create(owner, name)		\
 ({						\

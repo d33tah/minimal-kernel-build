@@ -210,13 +210,7 @@ error:
 	return ERR_PTR(retval);
 }
 
-void class_destroy(struct class *cls)
-{
-	if ((cls == NULL) || (IS_ERR(cls)))
-		return;
-
-	class_unregister(cls);
-}
+/* class_destroy removed - unused */
 
 void class_dev_iter_init(struct class_dev_iter *iter, struct class *class,
 			 struct device *start, const struct device_type *type)

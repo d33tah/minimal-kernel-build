@@ -21,12 +21,7 @@ static struct device *next_device(struct klist_iter *i)
 	return dev;
 }
 
-int driver_set_override(struct device *dev, const char **override,
-			const char *s, size_t len)
-{
-	/* Stub: driver override not needed for minimal kernel */
-	return -ENOSYS;
-}
+/* driver_set_override removed - unused */
 
 int driver_for_each_device(struct device_driver *drv, struct device *start,
 			   void *data, int (*fn)(struct device *, void *))

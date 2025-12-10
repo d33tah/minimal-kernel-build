@@ -182,33 +182,7 @@ extern void raise_softirq(unsigned int nr);
 DECLARE_PER_CPU(struct task_struct *, ksoftirqd);
 
 
-struct tasklet_struct
-{
-	struct tasklet_struct *next;
-	unsigned long state;
-	atomic_t count;
-	bool use_callback;
-	union {
-		void (*func)(unsigned long data);
-		void (*callback)(struct tasklet_struct *t);
-	};
-	unsigned long data;
-};
-
-#define from_tasklet(var, callback_tasklet, tasklet_fieldname)	\
-	container_of(callback_tasklet, typeof(*var), tasklet_fieldname)
-
-enum
-{
-	TASKLET_STATE_SCHED,	 
-	TASKLET_STATE_RUN	 
-};
-
-static inline int tasklet_trylock(struct tasklet_struct *t) { return 1; }
-static inline void tasklet_unlock(struct tasklet_struct *t) { }
-/* tasklet_unlock_wait removed - unused */
-
-/* __tasklet_schedule removed - unused */	 
+/* tasklet_struct and related removed - unused in minimal kernel */
 
 static inline void init_irq_proc(void)
 {

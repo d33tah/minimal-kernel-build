@@ -941,15 +941,7 @@ static int __init_memblock memblock_search(struct memblock_type *type, phys_addr
 	return -1;
 }
 
-bool __init_memblock memblock_is_reserved(phys_addr_t addr)
-{
-	return memblock_search(&memblock.reserved, addr) != -1;
-}
-
-bool __init_memblock memblock_is_memory(phys_addr_t addr)
-{
-	return memblock_search(&memblock.memory, addr) != -1;
-}
+/* memblock_is_reserved, memblock_is_memory removed - unused */
 
 bool __init_memblock memblock_is_map_memory(phys_addr_t addr)
 {

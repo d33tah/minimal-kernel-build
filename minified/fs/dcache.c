@@ -574,12 +574,6 @@ long prune_dcache_sb(struct super_block *sb, struct shrink_control *sc)
 	return freed;
 }
 
-static enum lru_status dentry_lru_isolate_shrink(struct list_head *item,
-		struct list_lru_one *lru, spinlock_t *lru_lock, void *arg)
-{
-	return LRU_SKIP; /* Stub */
-}
-
 enum d_walk_ret {
 	D_WALK_CONTINUE,
 	D_WALK_QUIT,

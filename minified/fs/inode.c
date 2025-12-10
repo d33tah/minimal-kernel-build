@@ -1011,19 +1011,7 @@ int file_update_time(struct file *file)
 	return ret;
 }
 
-int file_modified(struct file *file)
-{
-	int err;
-
-	err = file_remove_privs(file);
-	if (err)
-		return err;
-
-	if (unlikely(file->f_mode & FMODE_NOCMTIME))
-		return 0;
-
-	return file_update_time(file);
-}
+/* file_modified removed - unused */
 
 static void __wait_on_freeing_inode(struct inode *inode)
 {

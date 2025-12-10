@@ -3,13 +3,7 @@
 static unsigned int sysctl_sched_dl_period_max = 1 << 22;
 static unsigned int sysctl_sched_dl_period_min = 100;
 
-void __dl_update(struct dl_bw *dl_b, s64 bw) { }
-void __dl_sub(struct dl_bw *dl_b, u64 tsk_bw, int cpus) { }
-void __dl_add(struct dl_bw *dl_b, u64 tsk_bw, int cpus) { }
-void add_rq_bw(struct sched_dl_entity *dl_se, struct dl_rq *dl_rq) { }
-void sub_rq_bw(struct sched_dl_entity *dl_se, struct dl_rq *dl_rq) { }
-void add_running_bw(struct sched_dl_entity *dl_se, struct dl_rq *dl_rq) { }
-void sub_running_bw(struct sched_dl_entity *dl_se, struct dl_rq *dl_rq) { }
+/* __dl_update, __dl_sub, __dl_add, add_rq_bw, sub_rq_bw, add_running_bw, sub_running_bw removed - unused */
 
 void init_dl_bandwidth(struct dl_bandwidth *dl_b, u64 period, u64 runtime)
 {
@@ -32,15 +26,10 @@ void init_dl_rq(struct dl_rq *dl_rq)
 	dl_rq->root = RB_ROOT_CACHED;
 }
 
-void enqueue_pushable_dl_task(struct rq *rq, struct task_struct *p) { }
-void dequeue_pushable_dl_task(struct rq *rq, struct task_struct *p) { }
-void inc_dl_migration(struct sched_dl_entity *dl_se, struct dl_rq *dl_rq) { }
-void dec_dl_migration(struct sched_dl_entity *dl_se, struct dl_rq *dl_rq) { }
+/* enqueue_pushable_dl_task, dequeue_pushable_dl_task, inc_dl_migration, dec_dl_migration removed - unused */
 void init_dl_task_timer(struct sched_dl_entity *dl_se) { }
-int dl_runtime_exceeded(struct sched_dl_entity *dl_se) { return 0; }
 void init_dl_inactive_task_timer(struct sched_dl_entity *dl_se) { }
-void inc_dl_tasks(struct sched_dl_entity *dl_se, struct dl_rq *dl_rq) { }
-void dec_dl_tasks(struct sched_dl_entity *dl_se, struct dl_rq *dl_rq) { }
+/* dl_runtime_exceeded, inc_dl_tasks, dec_dl_tasks removed - unused */
 
 static void enqueue_task_dl(struct rq *rq, struct task_struct *p, int flags) { }
 static void dequeue_task_dl(struct rq *rq, struct task_struct *p, int flags) { }

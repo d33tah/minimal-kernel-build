@@ -29,26 +29,7 @@ extern const int sysctl_vals[];
 typedef int proc_handler(struct ctl_table *ctl, int write, void *buffer,
 		size_t *lenp, loff_t *ppos);
 
-int proc_dostring(struct ctl_table *, int, void *, size_t *, loff_t *);
-int proc_dobool(struct ctl_table *table, int write, void *buffer,
-		size_t *lenp, loff_t *ppos);
-int proc_dointvec(struct ctl_table *, int, void *, size_t *, loff_t *);
-int proc_douintvec(struct ctl_table *, int, void *, size_t *, loff_t *);
-int proc_dointvec_minmax(struct ctl_table *, int, void *, size_t *, loff_t *);
-int proc_douintvec_minmax(struct ctl_table *table, int write, void *buffer,
-		size_t *lenp, loff_t *ppos);
-int proc_dou8vec_minmax(struct ctl_table *table, int write, void *buffer,
-			size_t *lenp, loff_t *ppos);
-int proc_dointvec_jiffies(struct ctl_table *, int, void *, size_t *, loff_t *);
-int proc_dointvec_userhz_jiffies(struct ctl_table *, int, void *, size_t *,
-		loff_t *);
-int proc_dointvec_ms_jiffies(struct ctl_table *, int, void *, size_t *,
-		loff_t *);
-int proc_doulongvec_minmax(struct ctl_table *, int, void *, size_t *, loff_t *);
-int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int, void *,
-		size_t *, loff_t *);
-int proc_do_large_bitmap(struct ctl_table *, int, void *, size_t *, loff_t *);
-/* proc_do_static_key removed - unused */
+/* proc_dostring, proc_dobool, proc_dointvec, proc_douintvec, proc_dointvec_minmax, proc_douintvec_minmax, proc_dou8vec_minmax, proc_dointvec_jiffies, proc_dointvec_userhz_jiffies, proc_dointvec_ms_jiffies, proc_doulongvec_minmax, proc_doulongvec_ms_jiffies_minmax, proc_do_large_bitmap, proc_do_static_key removed - unused */
 
 
 struct ctl_table_poll {

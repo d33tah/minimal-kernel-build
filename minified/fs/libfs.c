@@ -545,25 +545,7 @@ void simple_release_fs(struct vfsmount **mount, int *count)
 	mntput(mnt);
 }
 
-ssize_t simple_read_from_buffer(void __user *to, size_t count, loff_t *ppos,
-				const void *from, size_t available)
-{
-	loff_t pos = *ppos;
-	size_t ret;
-
-	if (pos < 0)
-		return -EINVAL;
-	if (pos >= available || !count)
-		return 0;
-	if (count > available - pos)
-		count = available - pos;
-	ret = copy_to_user(to, from + pos, count);
-	if (ret == count)
-		return -EFAULT;
-	count -= ret;
-	*ppos = pos + count;
-	return count;
-}
+/* simple_read_from_buffer removed - unused */
 
 int __generic_file_fsync(struct file *file, loff_t start, loff_t end,
 				 int datasync)

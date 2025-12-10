@@ -478,11 +478,6 @@ int invalidate_inode_pages2_range(struct address_space *mapping,
 	return ret;
 }
 
-int invalidate_inode_pages2(struct address_space *mapping)
-{
-	return invalidate_inode_pages2_range(mapping, 0, -1);
-}
-
 void truncate_pagecache(struct inode *inode, loff_t newsize)
 {
 	struct address_space *mapping = inode->i_mapping;

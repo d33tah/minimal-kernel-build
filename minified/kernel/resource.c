@@ -363,10 +363,7 @@ int insert_resource(struct resource *parent, struct resource *new)
 	return conflict ? -EBUSY : 0;
 }
 
-/* STUB: unused remove/adjust resource functions */
-int remove_resource(struct resource *old) { return -EINVAL; }
-int adjust_resource(struct resource *res, resource_size_t start,
-		    resource_size_t size) { return -EBUSY; }
+/* remove_resource and adjust_resource removed - unused */
 
 static void __init
 __reserve_region_with_split(struct resource *root, resource_size_t start,

@@ -918,10 +918,7 @@ phys_addr_t __init_memblock memblock_end_of_DRAM(void)
 
 /* __find_max_addr removed - unused */
 
-/* STUB: unused memory limit functions */
-void __init memblock_enforce_memory_limit(phys_addr_t limit) { }
-void __init memblock_cap_memory_range(phys_addr_t base, phys_addr_t size) { }
-void __init memblock_mem_limit_remove_map(phys_addr_t limit) { }
+/* memblock_enforce_memory_limit, memblock_cap_memory_range, memblock_mem_limit_remove_map removed - unused */
 
 static int __init_memblock memblock_search(struct memblock_type *type, phys_addr_t addr)
 {

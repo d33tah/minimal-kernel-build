@@ -84,10 +84,9 @@ struct device *bus_find_device(struct bus_type *bus, struct device *start,
 			       const void *data,
 			       int (*match)(struct device *dev, const void *data));
 /* bus_find_device_by_name, bus_find_device_by_of_node, bus_find_device_by_fwnode,
- * bus_find_device_by_devt, bus_find_next_device, bus_find_device_by_acpi_dev removed - unused */
+ * bus_find_device_by_devt, bus_find_next_device, bus_find_device_by_acpi_dev,
+ * subsys_find_device_by_id removed - unused */
 
-struct device *subsys_find_device_by_id(struct bus_type *bus, unsigned int id,
-					struct device *hint);
 int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 		     void *data, int (*fn)(struct device_driver *, void *));
 /* bus_sort_breadthfirst, bus_unregister_notifier, bus_register_notifier removed - unused */

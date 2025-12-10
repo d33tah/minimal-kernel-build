@@ -80,41 +80,12 @@ void *text_poke(void *addr, const void *opcode, size_t len)
 	return NULL;
 }
 
-void *text_poke_kgdb(void *addr, const void *opcode, size_t len)
-{
-	return text_poke_early(addr, opcode, len), addr;
-}
-
-void *text_poke_copy(void *addr, const void *opcode, size_t len)
-{
-	return NULL;
-}
-
-void *text_poke_set(void *addr, int c, size_t len)
-{
-	return NULL;
-}
-
-void text_poke_sync(void)
-{
-}
-
-void __ref text_poke_queue(void *addr, const void *opcode, size_t len, const void *emulate)
-{
-}
+/* text_poke_kgdb, text_poke_copy, text_poke_set, text_poke_sync,
+   text_poke_queue, text_poke_finish, int3_exception_notify removed - unused */
 
 void __ref text_poke_bp(void *addr, const void *opcode, size_t len, const void *emulate)
 {
 	text_poke_early(addr, opcode, len);
-}
-
-void text_poke_finish(void)
-{
-}
-
-int int3_exception_notify(struct notifier_block *self, unsigned long val, void *data)
-{
-	return 0;
 }
 
 int poke_int3_handler(struct pt_regs *regs)

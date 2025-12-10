@@ -18,17 +18,12 @@ static inline void apply_paravirt(struct paravirt_patch_site *start,
 
 extern void text_poke_early(void *addr, const void *opcode, size_t len);
 
- 
+
 extern void *text_poke(void *addr, const void *opcode, size_t len);
-extern void text_poke_sync(void);
-extern void *text_poke_kgdb(void *addr, const void *opcode, size_t len);
-extern void *text_poke_copy(void *addr, const void *opcode, size_t len);
-extern void *text_poke_set(void *addr, int c, size_t len);
+/* text_poke_sync, text_poke_kgdb, text_poke_copy, text_poke_set removed - unused */
 extern int poke_int3_handler(struct pt_regs *regs);
 extern void text_poke_bp(void *addr, const void *opcode, size_t len, const void *emulate);
-
-extern void text_poke_queue(void *addr, const void *opcode, size_t len, const void *emulate);
-extern void text_poke_finish(void);
+/* text_poke_queue, text_poke_finish removed - unused */
 
 #define INT3_INSN_SIZE		1
 #define INT3_INSN_OPCODE	0xCC

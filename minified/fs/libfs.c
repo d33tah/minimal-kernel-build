@@ -615,16 +615,9 @@ int noop_fsync(struct file *file, loff_t start, loff_t end, int datasync)
 	return 0;
 }
 
-ssize_t noop_direct_IO(struct kiocb *iocb, struct iov_iter *iter)
-{
-	 
-	return -EINVAL;
-}
+/* noop_direct_IO removed - unused */
 
-void kfree_link(void *p)
-{
-	kfree(p);
-}
+/* kfree_link removed - unused */
 
 struct inode *alloc_anon_inode(struct super_block *s)
 {

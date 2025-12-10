@@ -53,17 +53,8 @@ extern struct dentry *user_path_create(int, const char __user *, struct path *, 
 extern void done_path_create(struct path *, struct dentry *);
 extern struct dentry *kern_path_locked(const char *, struct path *);
 
-extern struct dentry *try_lookup_one_len(const char *, struct dentry *, int);
-extern struct dentry *lookup_one_len(const char *, struct dentry *, int);
-extern struct dentry *lookup_one_len_unlocked(const char *, struct dentry *, int);
-extern struct dentry *lookup_positive_unlocked(const char *, struct dentry *, int);
-struct dentry *lookup_one(struct user_namespace *, const char *, struct dentry *, int);
-struct dentry *lookup_one_unlocked(struct user_namespace *mnt_userns,
-				   const char *name, struct dentry *base,
-				   int len);
-struct dentry *lookup_one_positive_unlocked(struct user_namespace *mnt_userns,
-					    const char *name,
-					    struct dentry *base, int len);
+/* try_lookup_one_len, lookup_one_len, lookup_one_len_unlocked, lookup_positive_unlocked,
+   lookup_one, lookup_one_unlocked, lookup_one_positive_unlocked removed - no callers */
 
 /* follow_down_one, follow_down, nd_jump_link, follow_up removed - unused */
 

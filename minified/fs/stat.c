@@ -6,25 +6,8 @@
 void generic_fillattr(struct user_namespace *mnt_userns, struct inode *inode,
 		      struct kstat *stat) { }
 
-void generic_fill_statx_attr(struct inode *inode, struct kstat *stat) { }
-
-int vfs_getattr_nosec(const struct path *path, struct kstat *stat,
-		      u32 request_mask, unsigned int query_flags) { return 0; }
-
 int vfs_getattr(const struct path *path, struct kstat *stat,
 		u32 request_mask, unsigned int query_flags) { return 0; }
-
-void __inode_add_bytes(struct inode *inode, loff_t bytes) { }
-
-void inode_add_bytes(struct inode *inode, loff_t bytes) { }
-
-void __inode_sub_bytes(struct inode *inode, loff_t bytes) { }
-
-void inode_sub_bytes(struct inode *inode, loff_t bytes) { }
-
-loff_t inode_get_bytes(struct inode *inode) { return 0; }
-
-void inode_set_bytes(struct inode *inode, loff_t bytes) { }
 
 SYSCALL_DEFINE2(stat, const char __user *, filename,
 		struct __old_kernel_stat __user *, statbuf) { return -ENOSYS; }

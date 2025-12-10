@@ -1520,12 +1520,6 @@ static int do_new_mount(struct path *path, const char *fstype, int sb_flags,
 	return err;
 }
 
-/* finish_automount removed - no callers */
-
-/* Stub: mount expiry not used in minimal kernel */
-void mnt_set_expiry(struct vfsmount *mnt, struct list_head *expiry_list) { }
-void mark_mounts_for_expiry(struct list_head *mounts) { }
-
 static void *copy_mount_options(const void __user * data)
 {
 	char *copy;
@@ -1883,12 +1877,6 @@ struct vfsmount *kern_mount(struct file_system_type *type)
 	}
 	return mnt;
 }
-
-/* Stub: kernel unmount not used in minimal kernel */
-void kern_unmount(struct vfsmount *mnt) { }
-void kern_unmount_array(struct vfsmount *mnt[], unsigned int num) { }
-bool our_mnt(struct vfsmount *mnt) { return false; }
-bool current_chrooted(void) { return false; }
 
 static bool mnt_already_visible(struct mnt_namespace *ns,
 				const struct super_block *sb,

@@ -136,9 +136,6 @@ extern int braille_unregister_console(struct console *);
 extern void console_sysfs_notify(void);
 /* console_suspend_enabled removed - unused */
 
-extern void suspend_console(void);
-extern void resume_console(void);
-
 static inline void vcs_make_sysfs(int index) { }
 static inline void vcs_remove_sysfs(int index) { }
 

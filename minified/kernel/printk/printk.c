@@ -353,16 +353,6 @@ void console_verbose(void)
 		console_loglevel = CONSOLE_LOGLEVEL_MOTORMOUTH;
 }
 
-void suspend_console(void)
-{
-	/* Stub: console suspend not needed for minimal kernel */
-}
-
-void resume_console(void)
-{
-	/* Stub: console resume not needed for minimal kernel */
-}
-
 void console_lock(void)
 {
 	might_sleep();

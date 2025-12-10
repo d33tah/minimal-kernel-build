@@ -19,12 +19,7 @@ async_cookie_t async_schedule_node(async_func_t func, void *data, int node)
 
 void async_synchronize_full(void)
 {
-	 
-}
 
-void async_synchronize_full_domain(struct async_domain *domain)
-{
-	 
 }
 
 void async_synchronize_cookie_domain(async_cookie_t cookie, struct async_domain *domain)

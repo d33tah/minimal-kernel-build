@@ -53,8 +53,6 @@ async_schedule_dev_domain(async_func_t func, struct device *dev,
 }
 
 extern void async_synchronize_full(void);
-extern void async_synchronize_full_domain(struct async_domain *domain);
-extern void async_synchronize_cookie(async_cookie_t cookie);
 extern void async_synchronize_cookie_domain(async_cookie_t cookie,
 					    struct async_domain *domain);
 /* Removed: current_is_async - never defined/used */

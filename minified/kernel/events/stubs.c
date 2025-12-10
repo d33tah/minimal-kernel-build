@@ -3,40 +3,10 @@
 #include <linux/jump_label.h>
 
 
-int perf_event_refresh(struct perf_event *event, int refresh) { return 0; }
-
-int perf_event_release_kernel(struct perf_event *event) { return 0; }
-
-u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running) { return 0; }
-
-u64 perf_event_pause(struct perf_event *event, bool reset) { return 0; }
-
-struct perf_event *perf_event_create_kernel_counter(struct perf_event_attr *attr, int cpu,
-                                                     struct task_struct *task,
-                                                     perf_overflow_handler_t callback,
-                                                     void *context) 
-{ 
-    return ERR_PTR(-ENOSYS); 
-}
-
-ssize_t perf_event_sysfs_show(struct device *dev, struct device_attribute *attr, char *page) 
-{ 
-    return 0; 
-}
-
-struct perf_event *register_user_hw_breakpoint(struct perf_event_attr *attr,
-                                                perf_overflow_handler_t triggered,
-                                                void *context, struct task_struct *tsk) 
-{ 
-    return ERR_PTR(-ENOSYS); 
-}
-
-int modify_user_hw_breakpoint(struct perf_event *bp, struct perf_event_attr *attr) 
-{ 
-    return -ENOSYS; 
-}
-
-void unregister_hw_breakpoint(struct perf_event *bp) { }
+/* perf_event_refresh, perf_event_release_kernel, perf_event_read_value,
+   perf_event_pause, perf_event_create_kernel_counter, perf_event_sysfs_show,
+   register_user_hw_breakpoint, modify_user_hw_breakpoint, unregister_hw_breakpoint
+   removed - unused */
 
 void __perf_event_task_sched_in(struct task_struct *prev, struct task_struct *task) { }
 void __perf_event_task_sched_out(struct task_struct *prev, struct task_struct *next) { }

@@ -245,7 +245,6 @@ asmlinkage void preempt_schedule_irq(void);
 
 extern int __must_check io_schedule_prepare(void);
 extern void io_schedule_finish(int token);
-extern long io_schedule_timeout(long timeout);
 extern void io_schedule(void);
 
 struct prev_cputime {

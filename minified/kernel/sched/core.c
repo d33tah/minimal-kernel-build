@@ -1621,18 +1621,6 @@ void io_schedule_finish(int token)
 	current->in_iowait = token;
 }
 
-long __sched io_schedule_timeout(long timeout)
-{
-	int token;
-	long ret;
-
-	token = io_schedule_prepare();
-	ret = schedule_timeout(timeout);
-	io_schedule_finish(token);
-
-	return ret;
-}
-
 void __sched io_schedule(void)
 {
 	int token;

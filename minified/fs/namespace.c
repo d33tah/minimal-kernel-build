@@ -403,12 +403,6 @@ static inline bool mnt_is_cursor(struct mount *mnt)
 	return mnt->mnt.mnt_flags & MNT_CURSOR;
 }
 
-/* Stub: __is_local_mountpoint not used in minimal kernel */
-bool __is_local_mountpoint(struct dentry *dentry)
-{
-	return false;
-}
-
 static struct mountpoint *lookup_mountpoint(struct dentry *dentry)
 {
 	struct hlist_head *chain = mp_hash(dentry);

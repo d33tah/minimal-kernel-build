@@ -904,10 +904,7 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
 	return err;
 }
 
-int vm_iomap_memory(struct vm_area_struct *vma, phys_addr_t start, unsigned long len)
-{
-	return -EINVAL;
-}
+/* vm_iomap_memory removed - unused */
 
 static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)
 {

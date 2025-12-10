@@ -787,9 +787,6 @@ const void *free_irq(unsigned int irq, void *dev_id)
 	return devname;
 }
 
-/* Stub: free_nmi not used in minimal kernel */
-const void *free_nmi(unsigned int irq, void *dev_id) { return NULL; }
-
 int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 			 irq_handler_t thread_fn, unsigned long irqflags,
 			 const char *devname, void *dev_id)

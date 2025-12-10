@@ -69,9 +69,7 @@ int cap_inode_need_killpriv(struct dentry *dentry);
 int cap_inode_killpriv(struct user_namespace *mnt_userns,
 		       struct dentry *dentry);
 extern int cap_mmap_addr(unsigned long addr);
-extern int cap_mmap_file(struct file *file, unsigned long reqprot,
-			 unsigned long prot, unsigned long flags);
-/* cap_task_* externs removed - unused */
+/* cap_mmap_file, cap_task_* externs removed - unused */
 extern int cap_vm_enough_memory(struct mm_struct *mm, long pages);
 
 struct msghdr;

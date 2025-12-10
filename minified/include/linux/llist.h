@@ -93,6 +93,6 @@ static inline struct llist_node *__llist_del_all(struct llist_head *head)
 
 extern struct llist_node *llist_del_first(struct llist_head *head);
 
-struct llist_node *llist_reverse_order(struct llist_node *head);
+/* llist_reverse_order removed - unused in minimal kernel */
 
 #endif  

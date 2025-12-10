@@ -480,12 +480,7 @@ u64 clocksource_stop_suspend_timing(struct clocksource *cs, u64 cycle_now)
 }
 
 
-/* clocksource_suspend, clocksource_resume removed - unused */
-
-void clocksource_touch_watchdog(void)
-{
-	clocksource_resume_watchdog();
-}
+/* clocksource_suspend, clocksource_resume, clocksource_touch_watchdog removed - unused */
 
 static u32 clocksource_max_adjustment(struct clocksource *cs)
 {

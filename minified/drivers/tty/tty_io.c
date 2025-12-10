@@ -1616,9 +1616,6 @@ err:
 	return error;
 }
 
-/* STUB: tty_unregister_driver not used in minimal kernel */
-void tty_unregister_driver(struct tty_driver *driver) { }
-
 dev_t tty_devnum(struct tty_struct *tty)
 {
 	return MKDEV(tty->driver->major, tty->driver->minor_start) + tty->index;

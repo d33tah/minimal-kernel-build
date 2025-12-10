@@ -139,7 +139,6 @@ static inline void tty_set_operations(struct tty_driver *driver,
 #define SERIAL_TYPE_NORMAL	1
 
 int tty_register_driver(struct tty_driver *driver);
-void tty_unregister_driver(struct tty_driver *driver);
 struct device *tty_register_device(struct tty_driver *driver, unsigned index,
 		struct device *dev);
 struct device *tty_register_device_attr(struct tty_driver *driver,

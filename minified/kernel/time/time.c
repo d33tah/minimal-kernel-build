@@ -219,63 +219,7 @@ jiffies_to_timespec64(const unsigned long jiffies, struct timespec64 *value)
 	value->tv_nsec = rem;
 }
 
-clock_t jiffies_to_clock_t(unsigned long x)
-{
-#if (TICK_NSEC % (NSEC_PER_SEC / USER_HZ)) == 0
-# if HZ < USER_HZ
-	return x * (USER_HZ / HZ);
-# else
-	return x / (HZ / USER_HZ);
-# endif
-#else
-	return div_u64((u64)x * TICK_NSEC, NSEC_PER_SEC / USER_HZ);
-#endif
-}
-
-unsigned long clock_t_to_jiffies(unsigned long x)
-{
-#if (HZ % USER_HZ)==0
-	if (x >= ~0UL / (HZ / USER_HZ))
-		return ~0UL;
-	return x * (HZ / USER_HZ);
-#else
-	 
-	if (x >= ~0UL / HZ * USER_HZ)
-		return ~0UL;
-
-	 
-	return div_u64((u64)x * HZ, USER_HZ);
-#endif
-}
-
-u64 jiffies_64_to_clock_t(u64 x)
-{
-#if (TICK_NSEC % (NSEC_PER_SEC / USER_HZ)) == 0
-# if HZ < USER_HZ
-	x = div_u64(x * USER_HZ, HZ);
-# elif HZ > USER_HZ
-	x = div_u64(x, HZ / USER_HZ);
-# else
-	 
-# endif
-#else
-	 
-	x = div_u64(x * TICK_NSEC, (NSEC_PER_SEC / USER_HZ));
-#endif
-	return x;
-}
-
-u64 nsec_to_clock_t(u64 x)
-{
-#if (NSEC_PER_SEC % USER_HZ) == 0
-	return div_u64(x, NSEC_PER_SEC / USER_HZ);
-#elif (USER_HZ % 512) == 0
-	return div_u64(x * USER_HZ / 512, NSEC_PER_SEC / 512);
-#else
-	 
-	return div_u64(x * 9, (9ull * NSEC_PER_SEC + (USER_HZ / 2)) / USER_HZ);
-#endif
-}
+/* jiffies_to_clock_t, clock_t_to_jiffies, jiffies_64_to_clock_t, nsec_to_clock_t removed - unused */
 
 u64 jiffies64_to_nsecs(u64 j)
 {

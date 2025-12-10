@@ -210,14 +210,9 @@ SYSCALL_DEFINE2(ftruncate64, unsigned int, fd, loff_t, length)
 {
 	return do_sys_ftruncate(fd, length, 0);
 }
-#endif  
+#endif
 
-
-
-int vfs_fallocate(struct file *file, int mode, loff_t offset, loff_t len)
-{
-	return -EOPNOTSUPP;
-}
+/* vfs_fallocate removed - unused */
 
 int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len)
 {

@@ -1412,8 +1412,7 @@ static inline struct user_namespace *file_mnt_user_ns(struct file *file)
 extern long vfs_truncate(const struct path *, loff_t);
 int do_truncate(struct user_namespace *, struct dentry *, loff_t start,
 		unsigned int time_attrs, struct file *filp);
-extern int vfs_fallocate(struct file *file, int mode, loff_t offset,
-			loff_t len);
+/* vfs_fallocate removed - unused */
 extern long do_sys_open(int dfd, const char __user *filename, int flags,
 			umode_t mode);
 extern struct file *file_open_name(struct filename *, int, umode_t);

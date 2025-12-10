@@ -513,21 +513,7 @@ int devm_device_add_group(struct device *dev, const struct attribute_group *grp)
 	return 0;
 }
 
-void devm_device_remove_group(struct device *dev,
-			      const struct attribute_group *grp)
-{
-}
-
-int devm_device_add_groups(struct device *dev,
-			   const struct attribute_group **groups)
-{
-	return 0;
-}
-
-void devm_device_remove_groups(struct device *dev,
-			       const struct attribute_group **groups)
-{
-}
+/* devm_device_remove_group, devm_device_add_groups, devm_device_remove_groups removed - unused */
 
 static void device_remove_attrs(struct device *dev)
 {

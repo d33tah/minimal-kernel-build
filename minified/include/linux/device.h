@@ -559,14 +559,10 @@ static inline void device_remove_group(struct device *dev,
 	return device_remove_groups(dev, groups);
 }
 
-int __must_check devm_device_add_groups(struct device *dev,
-					const struct attribute_group **groups);
-void devm_device_remove_groups(struct device *dev,
-			       const struct attribute_group **groups);
+/* devm_device_add_groups, devm_device_remove_groups removed - unused */
 int __must_check devm_device_add_group(struct device *dev,
 				       const struct attribute_group *grp);
-void devm_device_remove_group(struct device *dev,
-			      const struct attribute_group *grp);
+/* devm_device_remove_group removed - unused */
 
 extern int (*platform_notify)(struct device *dev);
 

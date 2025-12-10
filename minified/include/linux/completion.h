@@ -28,6 +28,6 @@ extern int wait_for_completion_killable(struct completion *x);
 extern unsigned long wait_for_completion_timeout(struct completion *x,
 						   unsigned long timeout);
 extern void complete(struct completion *);
-extern void complete_all(struct completion *);
+/* complete_all removed - not called */
 
 #endif

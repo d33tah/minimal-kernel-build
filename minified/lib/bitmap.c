@@ -124,19 +124,7 @@ int bitmap_print_to_pagebuf(bool list, char *buf, const unsigned long *maskp,
 	return 0;
 }
 
-int bitmap_print_bitmask_to_buf(char *buf, const unsigned long *maskp,
-				 int nmaskbits, loff_t off, size_t count)
-{
-	 
-	return 0;
-}
-
-int bitmap_print_list_to_buf(char *buf, const unsigned long *maskp,
-			      int nmaskbits, loff_t off, size_t count)
-{
-	 
-	return 0;
-}
+/* bitmap_print_bitmask_to_buf, bitmap_print_list_to_buf removed - not called */
 
 int bitmap_parselist(const char *buf, unsigned long *maskp, int nmaskbits)
 {

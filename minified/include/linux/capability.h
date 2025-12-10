@@ -226,8 +226,6 @@ bool privileged_wrt_inode_uidgid(struct user_namespace *ns,
 				 const struct inode *inode);
 bool capable_wrt_inode_uidgid(struct user_namespace *mnt_userns,
 			      const struct inode *inode, int cap);
-extern bool file_ns_capable(const struct file *file, struct user_namespace *ns, int cap);
-extern bool ptracer_capable(struct task_struct *tsk, struct user_namespace *ns);
 
 static inline bool checkpoint_restore_ns_capable(struct user_namespace *ns)
 {

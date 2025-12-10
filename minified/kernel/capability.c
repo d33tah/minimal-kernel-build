@@ -14,22 +14,6 @@
 
 const kernel_cap_t __cap_empty_set = CAP_EMPTY_SET;
 
-/* file_caps_enabled and no_file_caps cmdline removed - unused */
-
-
-bool file_ns_capable(const struct file *file, struct user_namespace *ns,
-		     int cap)
-{
-
-	if (WARN_ON_ONCE(!cap_valid(cap)))
-		return false;
-
-	if (security_capable(file->f_cred, ns, cap, CAP_OPT_NONE) == 0)
-		return true;
-
-	return false;
-}
-
 bool privileged_wrt_inode_uidgid(struct user_namespace *ns,
 				 struct user_namespace *mnt_userns,
 				 const struct inode *inode)
@@ -45,18 +29,4 @@ bool capable_wrt_inode_uidgid(struct user_namespace *mnt_userns,
 
 	return ns_capable(ns, cap) &&
 	       privileged_wrt_inode_uidgid(ns, mnt_userns, inode);
-}
-
-bool ptracer_capable(struct task_struct *tsk, struct user_namespace *ns)
-{
-	int ret = 0;   
-	const struct cred *cred;
-
-	rcu_read_lock();
-	cred = rcu_dereference(tsk->ptracer_cred);
-	if (cred)
-		ret = security_capable(cred, ns, CAP_SYS_PTRACE,
-				       CAP_OPT_NOAUDIT);
-	rcu_read_unlock();
-	return (ret == 0);
 }

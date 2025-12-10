@@ -65,8 +65,7 @@ struct dentry *lookup_one_positive_unlocked(struct user_namespace *mnt_userns,
 					    const char *name,
 					    struct dentry *base, int len);
 
-/* follow_down_one, follow_down, nd_jump_link removed - unused */
-extern int follow_up(struct path *);
+/* follow_down_one, follow_down, nd_jump_link, follow_up removed - unused */
 
 extern struct dentry *lock_rename(struct dentry *, struct dentry *);
 extern void unlock_rename(struct dentry *, struct dentry *);

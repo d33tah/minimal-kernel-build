@@ -630,10 +630,7 @@ static int may_create_in_sticky(struct user_namespace *mnt_userns,
 	return 0;
 }
 
-int follow_up(struct path *path)
-{
-	return 0;
-}
+/* follow_up removed - unused */
 
 static bool choose_mountpoint_rcu(struct mount *m, const struct path *root,
 				  struct path *path, unsigned *seqp)

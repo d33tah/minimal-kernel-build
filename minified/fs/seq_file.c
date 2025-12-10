@@ -19,10 +19,4 @@ void seq_printf(struct seq_file *m, const char *fmt, ...) { }
 
 char *mangle_path(char *s, const char *p, const char *esc) { return s; }
 
-int single_open(struct file *file, int (*show)(struct seq_file *, void *), void *data) { return -ENOMEM; }
-
-int single_open_size(struct file *file, int (*show)(struct seq_file *, void *), void *data, size_t size) { return -ENOMEM; }
-
-int single_release(struct inode *inode, struct file *file) { return 0; }
-
 void seq_file_init(void) { }

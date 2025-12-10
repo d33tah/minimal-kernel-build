@@ -195,11 +195,6 @@ bool task_set_jobctl_pending(struct task_struct *task, unsigned long mask)
 }
 
 /* Stubbed - not used externally */
-void task_clear_jobctl_trapping(struct task_struct *task)
-{
-}
-
-/* Stubbed - not used externally */
 void task_clear_jobctl_pending(struct task_struct *task, unsigned long mask)
 {
 }
@@ -262,11 +257,6 @@ void flush_sigqueue(struct sigpending *queue)
 		list_del_init(&q->list);
 		__sigqueue_free(q);
 	}
-}
-
-/* Stubbed - not used externally */
-void flush_signals(struct task_struct *t)
-{
 }
 
 void ignore_signals(struct task_struct *t)

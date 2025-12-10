@@ -14,7 +14,7 @@ loff_t seq_lseek(struct file *file, loff_t offset, int whence) { return 0; }
 
 int seq_release(struct inode *inode, struct file *file) { return 0; }
 
-void seq_escape_mem(struct seq_file *m, const char *src, size_t len, unsigned int flags, const char *esc) { }
+/* seq_escape_mem removed - unused */
 
 void seq_vprintf(struct seq_file *m, const char *fmt, va_list args) { }
 
@@ -53,8 +53,7 @@ int seq_write(struct seq_file *seq, const void *data, size_t len) { return 0; }
 
 void seq_pad(struct seq_file *m, char c) { }
 
-void seq_hex_dump(struct seq_file *m, const char *prefix_str, int prefix_type,
-		  int rowsize, int groupsize, const void *buf, size_t len, bool ascii) { }
+/* seq_hex_dump removed - unused */
 
 struct list_head *seq_list_start(struct list_head *head, loff_t pos) { return NULL; }
 
@@ -80,8 +79,6 @@ struct hlist_node *seq_hlist_start_head_rcu(struct hlist_head *head, loff_t pos)
 
 struct hlist_node *seq_hlist_next_rcu(void *v, struct hlist_head *head, loff_t *ppos) { return NULL; }
 
-struct hlist_node *seq_hlist_start_percpu(struct hlist_head __percpu *head, int *cpu, loff_t pos) { return NULL; }
-
-struct hlist_node *seq_hlist_next_percpu(void *v, struct hlist_head __percpu *head, int *cpu, loff_t *pos) { return NULL; }
+/* seq_hlist_start_percpu, seq_hlist_next_percpu removed - unused */
 
 void seq_file_init(void) { }

@@ -1475,9 +1475,6 @@ static inline int register_chrdev(unsigned int major, const char *name,
 
 extern void init_special_inode(struct inode *, umode_t, dev_t);
 
-extern void make_bad_inode(struct inode *);
-extern bool is_bad_inode(struct inode *);
-
 extern int __must_check file_fdatawait_range(struct file *file, loff_t lstart,
 						loff_t lend);
 extern int __must_check file_check_and_advance_wb_err(struct file *file);
@@ -1606,7 +1603,6 @@ extern void evict_inodes(struct super_block *sb);
 void dump_mapping(const struct address_space *);
 
 extern void __iget(struct inode * inode);
-extern void iget_failed(struct inode *);
 extern void clear_inode(struct inode *);
 extern void __destroy_inode(struct inode *);
 extern struct inode *new_inode_pseudo(struct super_block *sb);

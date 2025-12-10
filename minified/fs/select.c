@@ -3,9 +3,7 @@
 #include <linux/syscalls.h>
 #include <linux/compat.h>
 
-void poll_initwait(struct poll_wqueues *pwq) { }
-
-void poll_freewait(struct poll_wqueues *pwq) { }
+/* poll_initwait, poll_freewait removed - unused */
 
 struct sel_arg_struct { unsigned long n; fd_set __user *inp, *outp, *exp; struct timeval __user *tvp; };
 

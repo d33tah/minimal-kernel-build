@@ -65,14 +65,7 @@ void __register_binfmt(struct linux_binfmt * fmt, int insert)
 	write_unlock(&binfmt_lock);
 }
 
-
-void unregister_binfmt(struct linux_binfmt * fmt)
-{
-	write_lock(&binfmt_lock);
-	list_del(&fmt->lh);
-	write_unlock(&binfmt_lock);
-}
-
+/* unregister_binfmt removed - unused (modules never unloaded) */
 
 static inline void put_binfmt(struct linux_binfmt * fmt)
 {

@@ -82,7 +82,7 @@ static inline void insert_binfmt(struct linux_binfmt *fmt)
 	__register_binfmt(fmt, 1);
 }
 
-extern void unregister_binfmt(struct linux_binfmt *);
+/* unregister_binfmt removed - unused */
 
 extern int __must_check remove_arg_zero(struct linux_binprm *);
 extern int begin_new_exec(struct linux_binprm * bprm);

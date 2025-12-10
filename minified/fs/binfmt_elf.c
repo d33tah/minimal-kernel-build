@@ -991,13 +991,8 @@ static int __init init_elf_binfmt(void)
 	return 0;
 }
 
-static void __exit exit_elf_binfmt(void)
-{
-	 
-	unregister_binfmt(&elf_format);
-}
+/* exit_elf_binfmt removed - modules are built-in, never unloaded */
 
 core_initcall(init_elf_binfmt);
-module_exit(exit_elf_binfmt);
 MODULE_LICENSE("GPL");
 

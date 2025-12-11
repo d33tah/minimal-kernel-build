@@ -124,10 +124,7 @@ pgprot_t __init early_memremap_pgprot_adjust(resource_size_t phys_addr,
 					unsigned long size, pgprot_t prot);
 
 
-int isolate_lru_page(struct page *page);
-/* folio_isolate_lru removed - never called */
-void putback_lru_page(struct page *page);
-/* folio_putback_lru, reclaim_throttle, mm_find_pmd removed - never called */
+/* isolate_lru_page, putback_lru_page removed - never called */
 
  
 

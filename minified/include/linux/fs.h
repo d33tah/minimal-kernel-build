@@ -1555,7 +1555,6 @@ extern ssize_t __kernel_write(struct file *, const void *, size_t, loff_t *);
 extern struct file * open_exec(const char *);
 
 extern bool is_subdir(struct dentry *, struct dentry *);
-extern bool path_is_under(const struct path *, const struct path *);
 
 #include <linux/err.h>
 

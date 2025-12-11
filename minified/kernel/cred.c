@@ -118,20 +118,7 @@ void exit_creds(struct task_struct *tsk)
 
 }
 
-const struct cred *get_task_cred(struct task_struct *task)
-{
-	const struct cred *cred;
-
-	rcu_read_lock();
-
-	do {
-		cred = __task_cred((task));
-		BUG_ON(!cred);
-	} while (!get_cred_rcu(cred));
-
-	rcu_read_unlock();
-	return cred;
-}
+/* get_task_cred removed - never called */
 
 /* cred_alloc_blank removed - never called */
 

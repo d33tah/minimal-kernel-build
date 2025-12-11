@@ -285,7 +285,7 @@ static int console_locked, console_suspended;
 static struct console_cmdline console_cmdline[MAX_CMDLINECONSOLES];
 
 static int preferred_console = -1;
-int console_set_on_cmdline;
+/* console_set_on_cmdline removed - never used */
 
 static int console_may_schedule;
 

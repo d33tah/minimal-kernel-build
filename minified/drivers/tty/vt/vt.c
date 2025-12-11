@@ -143,7 +143,7 @@ static int printable;
 int default_utf8 = true;
 int global_cursor_default = -1;
 static int cur_default = CUR_UNDERLINE;
-int do_poke_blanked_console;
+/* do_poke_blanked_console removed - never used */
 int console_blanked;
 static int blankinterval;
 

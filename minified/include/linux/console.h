@@ -108,8 +108,7 @@ struct console {
 #define for_each_console(con) \
 	for (con = console_drivers; con != NULL; con = con->next)
 
-extern int console_set_on_cmdline;
-/* early_console removed - unused */
+/* console_set_on_cmdline, early_console removed - unused */
 
 enum con_flush_mode {
 	CONSOLE_FLUSH_PENDING,

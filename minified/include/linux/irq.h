@@ -258,9 +258,7 @@ struct irqaction;
 
 # define irq_affinity_online_cpu	NULL
 
-extern int no_irq_affinity;
-
-/* irq_set_parent removed - unused */
+/* no_irq_affinity, irq_set_parent removed - unused */
 
 extern void handle_level_irq(struct irq_desc *desc);
 extern void handle_fasteoi_irq(struct irq_desc *desc);

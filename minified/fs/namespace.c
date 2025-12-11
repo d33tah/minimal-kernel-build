@@ -1058,10 +1058,7 @@ static struct mnt_namespace *to_mnt_ns(struct ns_common *ns)
 	return container_of(ns, struct mnt_namespace, ns);
 }
 
-struct ns_common *from_mnt_ns(struct mnt_namespace *mnt)
-{
-	return &mnt->ns;
-}
+/* from_mnt_ns removed - never called */
 
 struct mount *copy_tree(struct mount *mnt, struct dentry *dentry,
 					int flag)

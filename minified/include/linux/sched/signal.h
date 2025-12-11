@@ -390,8 +390,7 @@ extern void __cleanup_sighand(struct sighand_struct *);
 #define for_each_thread(p, t)		\
 	__for_each_thread((p)->signal, t)
 
-typedef int (*proc_visitor)(struct task_struct *p, void *data);
-void walk_process_tree(struct task_struct *top, proc_visitor, void *);
+/* walk_process_tree and proc_visitor removed - unused */
 
 static inline
 struct pid *task_pid_type(struct task_struct *task, enum pid_type type)

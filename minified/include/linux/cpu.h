@@ -170,8 +170,7 @@ extern struct device *get_cpu_device(unsigned cpu);
 
 extern struct bus_type cpu_subsys;
 
-extern int lockdep_is_cpus_held(void);
-
+/* lockdep_is_cpus_held removed - unused */
 
 static inline void cpus_read_lock(void) { }
 static inline void cpus_read_unlock(void) { }

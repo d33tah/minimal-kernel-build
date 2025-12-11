@@ -25,19 +25,11 @@ bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
     if (delay == 0)
         return queue_work_on(cpu, wq, &dwork->work);
 
-     
+
     return queue_work_on(cpu, wq, &dwork->work);
 }
 
-bool mod_delayed_work_on(int cpu, struct workqueue_struct *wq,
-                         struct delayed_work *dwork, unsigned long delay)
-{
-     
-    cancel_delayed_work(dwork);
-    return queue_delayed_work_on(cpu, wq, dwork, delay);
-}
-
-/* __flush_workqueue removed - not called */
+/* mod_delayed_work_on, __flush_workqueue removed - not called */
 
 bool flush_work(struct work_struct *work)
 {

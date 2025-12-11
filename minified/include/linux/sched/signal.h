@@ -184,9 +184,7 @@ extern void flush_signal_handlers(struct task_struct *, int force_default);
 # define ___ARCH_SI_IA64(_a1, _a2, _a3)
 #endif
 
-int force_sig_fault_to_task(int sig, int code, void __user *addr
-	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr)
-	, struct task_struct *t);
+/* force_sig_fault_to_task inlined into force_sig_fault */
 int force_sig_fault(int sig, int code, void __user *addr
 	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr));
 /* send_sig_fault, force_sig_mceerr, send_sig_mceerr, force_sig_bnderr, send_sig_perf,

@@ -563,9 +563,9 @@ void force_sigsegv(int sig)
 {
 }
 
-int force_sig_fault_to_task(int sig, int code, void __user *addr
-	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr)
-	, struct task_struct *t)
+/* force_sig_fault_to_task inlined - only called with current */
+int force_sig_fault(int sig, int code, void __user *addr
+	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr))
 {
 	struct kernel_siginfo info;
 
@@ -579,14 +579,7 @@ int force_sig_fault_to_task(int sig, int code, void __user *addr
 	info.si_flags = flags;
 	info.si_isr = isr;
 #endif
-	return force_sig_info_to_task(&info, t, HANDLER_CURRENT);
-}
-
-int force_sig_fault(int sig, int code, void __user *addr
-	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr))
-{
-	return force_sig_fault_to_task(sig, code, addr
-				       ___ARCH_SI_IA64(imm, flags, isr), current);
+	return force_sig_info_to_task(&info, current, HANDLER_CURRENT);
 }
 
 /* send_sig_fault removed - unused */

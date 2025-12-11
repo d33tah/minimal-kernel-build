@@ -112,11 +112,7 @@ struct system_counterval_t {
 	struct clocksource	*cs;
 };
 
-/* get_device_system_crosststamp removed - unused */
-
-extern void ktime_get_snapshot(struct system_time_snapshot *systime_snapshot);
-
-extern void ktime_get_fast_timestamps(struct ktime_timestamps *snap);
+/* get_device_system_crosststamp, ktime_get_snapshot, ktime_get_fast_timestamps removed - unused */
 
 extern int persistent_clock_is_local;
 

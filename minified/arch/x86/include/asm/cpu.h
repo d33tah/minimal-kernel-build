@@ -21,8 +21,7 @@ struct x86_cpu {
 	struct cpu cpu;
 };
 
-
-extern void ap_init_aperfmperf(void);
+/* ap_init_aperfmperf removed - never defined or called */
 
 int mwait_usable(const struct cpuinfo_x86 *);
 
@@ -31,10 +30,9 @@ unsigned int x86_model(unsigned int sig);
 unsigned int x86_stepping(unsigned int sig);
 extern void __init sld_setup(struct cpuinfo_x86 *c);
 extern bool handle_user_split_lock(struct pt_regs *regs, long error_code);
-extern bool handle_guest_split_lock(unsigned long ip);
+/* handle_guest_split_lock removed - never called */
 extern void handle_bus_lock(struct pt_regs *regs);
-u8 get_this_hybrid_cpu_type(void);
-void init_ia32_feat_ctl(struct cpuinfo_x86 *c);
+/* get_this_hybrid_cpu_type, init_ia32_feat_ctl removed - never called */
 
 extern __noendbr void cet_disable(void);
 

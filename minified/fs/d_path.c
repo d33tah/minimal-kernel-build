@@ -4,7 +4,7 @@
 
 char *d_path(const struct path *path, char *buf, int buflen) { return buf; }
 
-char *dentry_path_raw(const struct dentry *dentry, char *buf, int buflen) { return buf; }
+/* dentry_path_raw removed - unused */
 
 char *dynamic_dname(struct dentry *dentry, char *buffer, int buflen,
 		    const char *fmt, ...) { return buffer; }

@@ -1695,7 +1695,6 @@ extern int simple_setattr(struct user_namespace *, struct dentry *,
 extern int simple_getattr(struct user_namespace *, const struct path *,
 			  struct kstat *, u32, unsigned int);
 extern int simple_statfs(struct dentry *, struct kstatfs *);
-extern int simple_open(struct inode *inode, struct file *file);
 extern int simple_link(struct dentry *, struct inode *, struct dentry *);
 extern int simple_unlink(struct inode *, struct dentry *);
 extern int simple_rmdir(struct inode *, struct dentry *);

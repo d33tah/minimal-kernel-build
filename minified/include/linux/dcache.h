@@ -27,7 +27,7 @@ extern unsigned int __pure full_name_hash(const void *salt, const char *, unsign
 #define hashlen_hash(hashlen) ((u32)(hashlen))
 #define hashlen_len(hashlen)  ((u32)((hashlen) >> 32))
 #define hashlen_create(hash, len) ((u64)(len)<<32 | (u32)(hash))
-extern u64 __pure hashlen_string(const void *salt, const char *name);
+/* hashlen_string removed - unused */
 /* End of inlined stringhash.h content */
 
 #include <linux/wait.h>

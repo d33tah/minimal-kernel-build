@@ -474,7 +474,7 @@ struct cpumask __cpu_present_mask __read_mostly;
 
 struct cpumask __cpu_active_mask __read_mostly;
 
-struct cpumask __cpu_dying_mask __read_mostly;
+/* __cpu_dying_mask removed - unused */
 
 atomic_t __num_online_cpus __read_mostly;
 

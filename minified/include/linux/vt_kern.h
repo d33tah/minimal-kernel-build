@@ -147,11 +147,7 @@ void unblank_screen(void);
 void poke_blanked_console(void);
 /* do_blank_screen, con_font_op, con_set_cmap, con_get_cmap removed - never called */
 /* scrollback, scrollfront removed - never called */
-void clear_buffer_attributes(struct vc_data *vc);
-void update_region(struct vc_data *vc, unsigned long start, int count);
-void redraw_screen(struct vc_data *vc, int is_switch);
-#define update_screen(x) redraw_screen(x, 0)
-#define switch_screen(x) redraw_screen(x, 1)
+/* clear_buffer_attributes, update_region, redraw_screen - now static in vt.c */
 /* tioclinux removed - never called */
 
 struct unipair;

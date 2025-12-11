@@ -1613,10 +1613,7 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	return ret;
 }
 
-int vm_brk(unsigned long addr, unsigned long len)
-{
-	return vm_brk_flags(addr, len, 0);
-}
+/* vm_brk removed - never called */
 
 void exit_mmap(struct mm_struct *mm)
 {

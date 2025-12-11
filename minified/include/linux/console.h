@@ -70,8 +70,7 @@ extern const struct consw vga_con;
 
 int con_is_bound(const struct consw *csw);
 int do_take_over_console(const struct consw *sw, int first, int last, int deflt);
-int con_debug_enter(struct vc_data *vc);
-int con_debug_leave(void);
+/* con_debug_enter, con_debug_leave removed - never called */
 
 #define CM_DRAW     (1)
 #define CM_ERASE    (2)

@@ -206,10 +206,7 @@ static inline unsigned short *screenpos(const struct vc_data *vc, int offset,
 	return p;
 }
 
-void schedule_console_callback(void)
-{
-	schedule_work(&console_work);
-}
+/* schedule_console_callback removed - never called */
 
 #ifdef NO_VC_UNI_SCREEN
 
@@ -1607,15 +1604,7 @@ bool con_is_visible(const struct vc_data *vc)
 	return *vc->vc_display_fg == vc;
 }
 
-int con_debug_enter(struct vc_data *vc)
-{
-	return 0;
-}
-
-int con_debug_leave(void)
-{
-	return 0;
-}
+/* con_debug_enter, con_debug_leave removed - never called */
 
 static int do_register_con_driver(const struct consw *csw, int first, int last)
 {

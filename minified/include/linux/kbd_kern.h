@@ -93,7 +93,7 @@ extern int do_poke_blanked_console;
 extern void (*kbd_ledfunc)(unsigned int led);
 
 extern int set_console(int nr);
-extern void schedule_console_callback(void);
+/* schedule_console_callback removed - never called */
 
 static inline int vc_kbd_mode(struct kbd_struct * kbd, int flag)
 {

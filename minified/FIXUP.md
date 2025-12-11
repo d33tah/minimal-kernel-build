@@ -1,3 +1,23 @@
+--- 2025-12-11 14:57 ---
+
+SESSION UPDATE:
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: 169,900 (after mrproper)
+- Binary size: 232K
+- Goal: 150,000 LOC (~19,900 to go)
+- Removed this session: ~20 LOC (169,920 -> 169,900)
+
+Functions removed:
+1. task_prio (kernel/sched/core.c, sched.h) - ~4 LOC
+2. idle_task (kernel/sched/core.c, sched.h) - ~4 LOC
+3. yield (kernel/sched/core.c, sched.h) - ~6 LOC
+4. curr_task declaration (sched.h) - ~1 LOC
+5. wb_writeout_inc (mm/page-writeback.c, backing-dev.h) - ~2 LOC
+6. vfs_ioctl declaration (fs.h) - ~1 LOC
+
+Strategy: Searching for functions that are defined but never called externally,
+and orphan declarations (extern without definition).
+
 --- 2025-12-11 13:35 ---
 
 SESSION FINAL:

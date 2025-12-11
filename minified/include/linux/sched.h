@@ -822,7 +822,7 @@ static inline void release_user_cpus_ptr(struct task_struct *p)
 	WARN_ON(p->user_cpus_ptr);
 }
 
-extern int task_prio(const struct task_struct *p);
+/* task_prio removed - unused */
 
 static inline int task_nice(const struct task_struct *p)
 {
@@ -833,16 +833,15 @@ static inline int task_nice(const struct task_struct *p)
 extern int sched_setscheduler(struct task_struct *, int, const struct sched_param *);
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
 extern void sched_set_fifo(struct task_struct *p);
-extern struct task_struct *idle_task(int cpu);
+/* idle_task removed - unused */
 
 static __always_inline bool is_idle_task(const struct task_struct *p)
 {
 	return !!(p->flags & PF_IDLE);
 }
 
-extern struct task_struct *curr_task(int cpu);
-
-void yield(void);
+/* curr_task removed - unused */
+/* yield removed - unused */
 
 union thread_union {
 	struct task_struct task;

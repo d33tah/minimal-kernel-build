@@ -1306,17 +1306,10 @@ SYSCALL_DEFINE1(nice, int, increment)
 
 #endif
 
-int task_prio(const struct task_struct *p)
-{
-	return p->prio - MAX_RT_PRIO;
-}
+/* task_prio removed - unused */
 
 /* idle_cpu removed - unused */
-
-struct task_struct *idle_task(int cpu)
-{
-	return cpu_rq(cpu)->idle;
-}
+/* idle_task removed - unused */
 
 #define SETPARAM_POLICY	-1
 
@@ -1590,11 +1583,7 @@ int __cond_resched_lock(spinlock_t *lock)
 
 static inline void preempt_dynamic_init(void) { }
 
-void __sched yield(void)
-{
-	set_current_state(TASK_RUNNING);
-	do_sched_yield();
-}
+/* yield removed - unused */
 
 int io_schedule_prepare(void)
 {

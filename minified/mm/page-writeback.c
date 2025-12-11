@@ -10,7 +10,7 @@ unsigned int dirty_writeback_interval = 5 * 100;
 bool __folio_end_writeback(struct folio *folio) { return true; }
 bool __folio_start_writeback(struct folio *folio, bool keep_write) { return true; }
 
-void wb_writeout_inc(struct bdi_writeback *wb) {}
+/* wb_writeout_inc removed - unused */
 int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio) { return 0; }
 int bdi_set_max_ratio(struct backing_dev_info *bdi, unsigned max_ratio) { return 0; }
 void wb_update_bandwidth(struct bdi_writeback *wb) {}

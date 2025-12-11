@@ -590,25 +590,7 @@ int generic_file_fsync(struct file *file, loff_t start, loff_t end,
 		return err;
 	return blkdev_issue_flush(inode->i_sb->s_bdev);
 }
-
-int generic_check_addressable(unsigned blocksize_bits, u64 num_blocks)
-{
-	u64 last_fs_block = num_blocks - 1;
-	u64 last_fs_page =
-		last_fs_block >> (PAGE_SHIFT - blocksize_bits);
-
-	if (unlikely(num_blocks == 0))
-		return 0;
-
-	if ((blocksize_bits < 9) || (blocksize_bits > PAGE_SHIFT))
-		return -EINVAL;
-
-	if ((last_fs_block > (sector_t)(~0ULL) >> (blocksize_bits - 9)) ||
-	    (last_fs_page > (pgoff_t)(~0ULL))) {
-		return -EFBIG;
-	}
-	return 0;
-}
+/* generic_check_addressable removed - never called */
 
 int noop_fsync(struct file *file, loff_t start, loff_t end, int datasync)
 {
@@ -763,16 +745,4 @@ static const struct dentry_operations generic_ci_dentry_ops = {
 #endif
 
 
-
-void generic_set_encrypted_ci_d_ops(struct dentry *dentry)
-{
-#if IS_ENABLED(CONFIG_UNICODE)
-	bool needs_ci_ops = dentry->d_sb->s_encoding;
-#endif
-#if IS_ENABLED(CONFIG_UNICODE)
-	if (needs_ci_ops) {
-		d_set_d_op(dentry, &generic_ci_dentry_ops);
-		return;
-	}
-#endif
-}
+/* generic_set_encrypted_ci_d_ops removed - never called */

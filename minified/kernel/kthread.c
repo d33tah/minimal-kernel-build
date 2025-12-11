@@ -146,7 +146,7 @@ static void __kthread_parkme(struct kthread *self)
 	__set_current_state(TASK_RUNNING);
 }
 
-/* kthread_parkme removed - unused */
+/* kthread_parkme, kthread_complete_and_exit removed - unused */
 
 void __noreturn kthread_exit(long result)
 {
@@ -154,8 +154,6 @@ void __noreturn kthread_exit(long result)
 	kthread->result = result;
 	do_exit(0);
 }
-
-/* kthread_complete_and_exit removed - unused */
 
 static int kthread(void *_create)
 {

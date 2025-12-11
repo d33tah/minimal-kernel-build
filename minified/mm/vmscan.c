@@ -55,15 +55,7 @@ void __acct_reclaim_writeback(pg_data_t *pgdat, struct folio *folio,
 
 long remove_mapping(struct address_space *mapping, struct folio *folio)
 {
-	return 0;   
+	return 0;
 }
 
-void folio_putback_lru(struct folio *folio)
-{
-	 
-}
-
-int folio_isolate_lru(struct folio *folio)
-{
-	return -1;   
-}
+/* folio_putback_lru, folio_isolate_lru removed - never called */

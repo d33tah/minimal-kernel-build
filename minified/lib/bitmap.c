@@ -120,28 +120,9 @@ again:
 int bitmap_print_to_pagebuf(bool list, char *buf, const unsigned long *maskp,
 			    int nmaskbits)
 {
-	 
+	/* Stub - returns 0 bytes written */
 	return 0;
 }
 
-/* bitmap_print_bitmask_to_buf, bitmap_print_list_to_buf removed - not called */
-
-int bitmap_parselist(const char *buf, unsigned long *maskp, int nmaskbits)
-{
-	return -EINVAL;
-}
-
-int bitmap_parselist_user(const char __user *ubuf,
-			unsigned int ulen, unsigned long *maskp,
-			int nmaskbits)
-{
-	return -EINVAL;
-}
-
-int bitmap_parse(const char *start, unsigned int buflen,
-		unsigned long *maskp, int nmaskbits)
-{
-	return -EINVAL;
-}
-
-/* bitmap_from_arr32, bitmap_to_arr32, bitmap_from_arr64, bitmap_to_arr64 removed - unused */
+/* bitmap_parselist, bitmap_parselist_user, bitmap_parse,
+   bitmap_from_arr32, bitmap_to_arr32, bitmap_from_arr64, bitmap_to_arr64 removed - unused */

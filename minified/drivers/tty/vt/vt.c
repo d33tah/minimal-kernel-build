@@ -135,10 +135,9 @@ static void con_flush_chars(struct tty_struct *tty);
 static void set_cursor(struct vc_data *vc);
 static void hide_cursor(struct vc_data *vc);
 static void console_callback(struct work_struct *ignored);
-static void con_driver_unregister_callback(struct work_struct *ignored);
 static void blank_screen_t(struct timer_list *unused);
 static void set_palette(struct vc_data *vc);
-/* vt_get_kmsg_redirect macro and vt_kmsg_redirect removed - never used */
+/* vt_get_kmsg_redirect, con_driver_unregister_callback removed - never used */
 
 static int printable;
 int default_utf8 = true;
@@ -149,7 +148,7 @@ int console_blanked;
 static int blankinterval;
 
 static DECLARE_WORK(console_work, console_callback);
-static DECLARE_WORK(con_driver_unregister_work, con_driver_unregister_callback);
+/* con_driver_unregister_work removed - never scheduled */
 
 int fg_console;
 int last_console;

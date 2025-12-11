@@ -59,14 +59,7 @@ struct bus_type cpu_subsys = {
 };
 
 
-static const struct attribute_group *common_cpu_attr_groups[] = {
-	NULL
-};
-
-static const struct attribute_group *hotplugable_cpu_attr_groups[] = {
-	NULL
-};
-
+/* common_cpu_attr_groups, hotplugable_cpu_attr_groups removed - unused */
 
 struct cpu_attr {
 	struct device_attribute attr;

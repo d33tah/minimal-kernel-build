@@ -126,32 +126,7 @@ struct platform_object {
 	char name[];
 };
 
-static void setup_pdev_dma_masks(struct platform_device *pdev)
-{
-	pdev->dev.dma_parms = &pdev->dma_parms;
-
-	if (!pdev->dev.coherent_dma_mask)
-		pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
-	if (!pdev->dev.dma_mask) {
-		pdev->platform_dma_mask = DMA_BIT_MASK(32);
-		pdev->dev.dma_mask = &pdev->platform_dma_mask;
-	}
-};
-
-static void platform_device_release(struct device *dev)
-{
-	struct platform_object *pa = container_of(dev, struct platform_object,
-						  pdev.dev);
-
-	of_node_put(pa->pdev.dev.of_node);
-	kfree(pa->pdev.dev.platform_data);
-	kfree(pa->pdev.mfd_cell);
-	kfree(pa->pdev.resource);
-	kfree(pa->pdev.driver_override);
-	kfree(pa);
-}
-
-/* platform_device_alloc removed - unused */
+/* setup_pdev_dma_masks, platform_device_release, platform_device_alloc removed - unused */
 
 /* Removed: platform_device_add_resources, platform_device_add_data, platform_device_add,
    platform_device_del, platform_device_register, platform_device_unregister,

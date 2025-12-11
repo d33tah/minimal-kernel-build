@@ -83,7 +83,7 @@ struct tty_ldisc {
 #define MODULE_ALIAS_LDISC(ldisc) \
 	MODULE_ALIAS("tty-ldisc-" __stringify(ldisc))
 
-extern const struct seq_operations tty_ldiscs_seq_ops;
+/* tty_ldiscs_seq_ops removed - unused (procfs not enabled) */
 
 struct tty_ldisc *tty_ldisc_ref(struct tty_struct *);
 void tty_ldisc_deref(struct tty_ldisc *);

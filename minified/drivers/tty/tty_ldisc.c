@@ -141,12 +141,7 @@ static int tty_ldiscs_seq_show(struct seq_file *m, void *v)
 	return 0;
 }
 
-const struct seq_operations tty_ldiscs_seq_ops = {
-	.start	= tty_ldiscs_seq_start,
-	.next	= tty_ldiscs_seq_next,
-	.stop	= tty_ldiscs_seq_stop,
-	.show	= tty_ldiscs_seq_show,
-};
+/* tty_ldiscs_seq_ops removed - unused (procfs not enabled) */
 
 struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *tty)
 {

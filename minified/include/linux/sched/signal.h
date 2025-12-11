@@ -391,7 +391,7 @@ extern void __cleanup_sighand(struct sighand_struct *);
 #define for_each_process(p) \
 	for (p = &init_task ; (p = next_task(p)) != &init_task ; )
 
-extern bool current_is_single_threaded(void);
+/* current_is_single_threaded removed - unused */
 
 #define do_each_thread(g, t) \
 	for (g = t = &init_task ; (g = t = next_task(g)) != &init_task ; ) do
@@ -459,7 +459,7 @@ static inline int thread_group_empty(struct task_struct *p)
 #define delay_group_leader(p) \
 		(thread_group_leader(p) && !thread_group_empty(p))
 
-extern bool thread_group_exited(struct pid *pid);
+/* thread_group_exited removed - unused */
 
 extern struct sighand_struct *__lock_task_sighand(struct task_struct *task,
 							unsigned long *flags);

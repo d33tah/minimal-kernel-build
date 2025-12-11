@@ -180,9 +180,7 @@ void iov_iter_init(struct iov_iter *i, unsigned int direction, const struct iove
 			unsigned long nr_segs, size_t count);
 void iov_iter_kvec(struct iov_iter *i, unsigned int direction, const struct kvec *kvec,
 			unsigned long nr_segs, size_t count);
-void iov_iter_bvec(struct iov_iter *i, unsigned int direction, const struct bio_vec *bvec,
-			unsigned long nr_segs, size_t count);
-/* iov_iter_pipe, iov_iter_discard, iov_iter_xarray, iov_iter_get_pages,
+/* iov_iter_bvec, iov_iter_pipe, iov_iter_discard, iov_iter_xarray, iov_iter_get_pages,
    iov_iter_get_pages_alloc, iov_iter_npages, iov_iter_restore, dup_iter
    removed - unused */
 

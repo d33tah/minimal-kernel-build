@@ -133,12 +133,7 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 }
 #endif
 
-extern unsigned long find_next_clump8(unsigned long *clump,
-				      const unsigned long *addr,
-				      unsigned long size, unsigned long offset);
-
-#define find_first_clump8(clump, bits, size) \
-	find_next_clump8((clump), (bits), (size), 0)
+/* find_next_clump8, find_first_clump8 removed - unused */
 
 #if defined(__LITTLE_ENDIAN)
 

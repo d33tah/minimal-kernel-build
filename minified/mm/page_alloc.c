@@ -1973,7 +1973,7 @@ void __meminit init_currently_empty_zone(struct zone *zone,
 	zone->initialized = 1;
 }
 
-void __init get_pfn_range_for_nid(unsigned int nid,
+static void __init get_pfn_range_for_nid(unsigned int nid,
 			unsigned long *start_pfn, unsigned long *end_pfn)
 {
 	unsigned long this_start_pfn, this_end_pfn;
@@ -2050,7 +2050,7 @@ static unsigned long __init zone_spanned_pages_in_node(int nid,
 	return *zone_end_pfn - *zone_start_pfn;
 }
 
-unsigned long __init __absent_pages_in_range(int nid,
+static unsigned long __init __absent_pages_in_range(int nid,
 				unsigned long range_start_pfn,
 				unsigned long range_end_pfn)
 {
@@ -2066,7 +2066,7 @@ unsigned long __init __absent_pages_in_range(int nid,
 	return nr_absent;
 }
 
-unsigned long __init absent_pages_in_range(unsigned long start_pfn,
+static unsigned long __init absent_pages_in_range(unsigned long start_pfn,
 							unsigned long end_pfn)
 {
 	return __absent_pages_in_range(MAX_NUMNODES, start_pfn, end_pfn);
@@ -2338,13 +2338,7 @@ void __init setup_nr_node_ids(void)
 }
 #endif
 
-unsigned long __init node_map_pfn_alignment(void)
-{
-	/* Stub: minimal single-node system doesn't need alignment calculation */
-	return PAGE_SIZE;
-}
-
-unsigned long __init find_min_pfn_with_active_regions(void)
+static unsigned long __init find_min_pfn_with_active_regions(void)
 {
 	return PHYS_PFN(memblock_start_of_DRAM());
 }

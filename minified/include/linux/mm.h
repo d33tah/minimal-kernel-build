@@ -1433,15 +1433,6 @@ static inline unsigned long free_initmem_default(int poison)
 /* get_num_physpages removed - unused */
 
 void free_area_init(unsigned long *max_zone_pfn);
-unsigned long node_map_pfn_alignment(void);
-unsigned long __absent_pages_in_range(int nid, unsigned long start_pfn,
-						unsigned long end_pfn);
-extern unsigned long absent_pages_in_range(unsigned long start_pfn,
-						unsigned long end_pfn);
-extern void get_pfn_range_for_nid(unsigned int nid,
-			unsigned long *start_pfn, unsigned long *end_pfn);
-extern unsigned long find_min_pfn_with_active_regions(void);
-
 /* set_dma_reserve removed - never called */
 extern void memmap_init_range(unsigned long, int, unsigned long,
 		unsigned long, unsigned long, enum meminit_context,

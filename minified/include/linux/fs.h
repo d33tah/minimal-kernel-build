@@ -1492,8 +1492,7 @@ static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count)
 	return count;
 }
 
-extern void emergency_sync(void);
-/* emergency_remount removed - unused */
+/* emergency_sync, emergency_remount removed - unused */
 
 int notify_change(struct user_namespace *, struct dentry *,
 		  struct iattr *, struct inode **);
@@ -1605,7 +1604,7 @@ alloc_inode_sb(struct super_block *sb, struct kmem_cache *cache, gfp_t gfp)
 	return kmem_cache_alloc_lru(cache, &sb->s_inode_lru, gfp);
 }
 
-extern void __insert_inode_hash(struct inode *, unsigned long hashval);
+/* __insert_inode_hash removed - unused */
 extern void __remove_inode_hash(struct inode *);
 static inline void remove_inode_hash(struct inode *inode)
 {

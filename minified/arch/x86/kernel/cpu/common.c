@@ -913,16 +913,7 @@ void __init identify_boot_cpu(void)
 
 	tsx_init();
 }
-
-/* Stubbed - no SMP in minimal kernel */
-void identify_secondary_cpu(struct cpuinfo_x86 *c)
-{
-}
-
-void print_cpu_info(struct cpuinfo_x86 *c)
-{
-	
-}
+/* identify_secondary_cpu, print_cpu_info removed - never called */
 
 static __init int setup_clearcpuid(char *arg)
 {

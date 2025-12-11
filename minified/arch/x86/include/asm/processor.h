@@ -170,9 +170,7 @@ static inline unsigned long long l1tf_pfn_limit(void)
 
 extern void early_cpu_init(void);
 extern void identify_boot_cpu(void);
-extern void identify_secondary_cpu(struct cpuinfo_x86 *);
-extern void print_cpu_info(struct cpuinfo_x86 *);
-void print_cpu_msr(struct cpuinfo_x86 *);
+/* identify_secondary_cpu, print_cpu_info, print_cpu_msr removed - never called */
 
 extern int have_cpuid_p(void);
 static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,

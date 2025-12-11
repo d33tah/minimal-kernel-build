@@ -58,7 +58,6 @@ do {								\
 } while (0)
 
 extern void down_read(struct rw_semaphore *sem);
-extern int __must_check down_read_interruptible(struct rw_semaphore *sem);
 extern int __must_check down_read_killable(struct rw_semaphore *sem);
 
 extern int down_read_trylock(struct rw_semaphore *sem);

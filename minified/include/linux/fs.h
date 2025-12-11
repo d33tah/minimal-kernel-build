@@ -1557,8 +1557,6 @@ extern struct file * open_exec(const char *);
 extern bool is_subdir(struct dentry *, struct dentry *);
 extern bool path_is_under(const struct path *, const struct path *);
 
-extern char *file_path(struct file *, char *, int);
-
 #include <linux/err.h>
 
 extern loff_t default_llseek(struct file *file, loff_t offset, int whence);

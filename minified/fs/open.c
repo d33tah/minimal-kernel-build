@@ -466,12 +466,7 @@ int finish_open(struct file *file, struct dentry *dentry,
 }
 
 
-/* finish_no_open removed - unused */
-
-char *file_path(struct file *filp, char *buf, int buflen)
-{
-	return d_path(&filp->f_path, buf, buflen);
-}
+/* finish_no_open, file_path removed - unused */
 
 int vfs_open(const struct path *path, struct file *file)
 {

@@ -590,7 +590,7 @@ struct page *__pageblock_pfn_to_page(unsigned long start_pfn,
 	return NULL;
 }
 
-void set_zone_contiguous(struct zone *zone)
+static void set_zone_contiguous(struct zone *zone)
 {
 	/* Stub: assume contiguous zones for minimal system */
 	zone->contiguous = true;

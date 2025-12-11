@@ -380,14 +380,7 @@ static void update_attr(struct vc_data *vc)
 				vc->vc_decscnm, false) << 8);
 }
 
-void invert_screen(struct vc_data *vc, int offset, int count, bool viewed)
-{
-	
-}
-
-void complement_pos(struct vc_data *vc, int offset)
-{
-}
+/* invert_screen, complement_pos removed - never called */
 
 static int softcursor_original = -1;
 

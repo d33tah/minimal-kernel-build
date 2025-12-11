@@ -108,19 +108,8 @@ extern unsigned char default_red[];
 extern unsigned char default_grn[];
 extern unsigned char default_blu[];
 
-extern unsigned short *screen_pos(const struct vc_data *vc, int w_offset,
-		bool viewed);
-extern u16 screen_glyph(const struct vc_data *vc, int offset);
-extern u32 screen_glyph_unicode(const struct vc_data *vc, int offset);
-extern void complement_pos(struct vc_data *vc, int offset);
-extern void invert_screen(struct vc_data *vc, int offset, int count, bool viewed);
-
-extern void getconsxy(const struct vc_data *vc, unsigned char xy[static 2]);
-extern void putconsxy(struct vc_data *vc, unsigned char xy[static const 2]);
-
-extern u16 vcs_scr_readw(const struct vc_data *vc, const u16 *org);
-extern void vcs_scr_writew(struct vc_data *vc, u16 val, u16 *org);
-extern void vcs_scr_updated(struct vc_data *vc);
+/* complement_pos, invert_screen, screen_pos, screen_glyph, screen_glyph_unicode,
+ * getconsxy, putconsxy, vcs_scr_readw, vcs_scr_writew, vcs_scr_updated removed - never called */
 /* vc_uniscr_check, vc_uniscr_copy_line removed - never called */
 
 #endif

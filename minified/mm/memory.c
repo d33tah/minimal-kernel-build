@@ -1007,21 +1007,7 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 	return VM_FAULT_OOM;
 }
 
-vm_fault_t finish_mkwrite_fault(struct vm_fault *vmf)
-{
-	WARN_ON_ONCE(!(vmf->vma->vm_flags & VM_SHARED));
-	vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd, vmf->address,
-				       &vmf->ptl);
-	
-	if (!pte_same(*vmf->pte, vmf->orig_pte)) {
-		update_mmu_tlb(vmf->vma, vmf->address, vmf->pte);
-		pte_unmap_unlock(vmf->pte, vmf->ptl);
-		return VM_FAULT_NOPAGE;
-	}
-	wp_page_reuse(vmf);
-	return 0;
-}
-
+/* finish_mkwrite_fault removed - unused */
 
 
 static vm_fault_t do_wp_page(struct vm_fault *vmf)

@@ -121,15 +121,7 @@ extern void clocksource_arch_init(struct clocksource *cs);
 
 extern int timekeeping_notify(struct clocksource *clock);
 
-extern u64 clocksource_mmio_readl_up(struct clocksource *);
-extern u64 clocksource_mmio_readl_down(struct clocksource *);
-extern u64 clocksource_mmio_readw_up(struct clocksource *);
-extern u64 clocksource_mmio_readw_down(struct clocksource *);
-
-extern int clocksource_mmio_init(void __iomem *, const char *,
-	unsigned long, int, unsigned, u64 (*)(struct clocksource *));
-
-extern int clocksource_i8253_init(void);
+/* clocksource_mmio_readl_up/down, clocksource_mmio_readw_up/down, clocksource_mmio_init, clocksource_i8253_init removed - unused */
 
 #define TIMER_OF_DECLARE(name, compat, fn) \
 	OF_DECLARE_1_RET(timer, name, compat, fn)

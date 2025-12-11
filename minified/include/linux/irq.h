@@ -253,18 +253,14 @@ enum {
 #define IRQ_DEFAULT_INIT_FLAGS	ARCH_IRQ_INIT_FLAGS
 
 struct irqaction;
-extern int setup_percpu_irq(unsigned int irq, struct irqaction *new);
-extern void remove_percpu_irq(unsigned int irq, struct irqaction *act);
-
-extern int irq_set_affinity_locked(struct irq_data *data,
-				   const struct cpumask *cpumask, bool force);
-extern int irq_set_vcpu_affinity(unsigned int irq, void *vcpu_info);
+/* setup_percpu_irq, remove_percpu_irq removed - unused */
+/* irq_set_affinity_locked, irq_set_vcpu_affinity removed - unused */
 
 # define irq_affinity_online_cpu	NULL
 
 extern int no_irq_affinity;
 
-int irq_set_parent(int irq, int parent_irq);
+/* irq_set_parent removed - unused */
 
 extern void handle_level_irq(struct irq_desc *desc);
 extern void handle_fasteoi_irq(struct irq_desc *desc);
@@ -276,8 +272,7 @@ extern void handle_percpu_irq(struct irq_desc *desc);
 extern void handle_percpu_devid_irq(struct irq_desc *desc);
 extern void handle_bad_irq(struct irq_desc *desc);
 
-extern void handle_fasteoi_nmi(struct irq_desc *desc);
-extern void handle_percpu_devid_fasteoi_nmi(struct irq_desc *desc);
+/* handle_fasteoi_nmi, handle_percpu_devid_fasteoi_nmi removed - unused */
 
 extern int irq_chip_compose_msi_msg(struct irq_data *data, struct msi_msg *msg);
 extern int irq_chip_pm_get(struct irq_data *data);

@@ -20,7 +20,7 @@ extern time64_t mktime64(const unsigned int year, const unsigned int mon,
 			const unsigned int day, const unsigned int hour,
 			const unsigned int min, const unsigned int sec);
 
-extern long do_utimes(int dfd, const char __user *filename, struct timespec64 *times, int flags);
+/* do_utimes removed - unused */
 
 struct tm {
 	 
@@ -41,7 +41,7 @@ struct tm {
 	int tm_yday;
 };
 
-void time64_to_tm(time64_t totalsecs, int offset, struct tm *result);
+/* time64_to_tm removed - unused */
 
 # include <linux/time32.h>
 

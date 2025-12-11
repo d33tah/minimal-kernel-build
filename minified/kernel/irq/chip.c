@@ -645,23 +645,7 @@ out:
 	raw_spin_unlock(&desc->lock);
 }
 
-void handle_fasteoi_nmi(struct irq_desc *desc)
-{
-	struct irq_chip *chip = irq_desc_get_chip(desc);
-	struct irqaction *action = desc->action;
-	unsigned int irq = irq_desc_get_irq(desc);
-	irqreturn_t res;
-
-	__kstat_incr_irqs_this_cpu(desc);
-
-	 
-	 
-	res = action->handler(irq, action->dev_id);
-	 
-
-	if (chip->irq_eoi)
-		chip->irq_eoi(&desc->irq_data);
-}
+/* handle_fasteoi_nmi removed - unused */
 
 void handle_edge_irq(struct irq_desc *desc)
 {
@@ -758,22 +742,7 @@ void handle_percpu_devid_irq(struct irq_desc *desc)
 		chip->irq_eoi(&desc->irq_data);
 }
 
-void handle_percpu_devid_fasteoi_nmi(struct irq_desc *desc)
-{
-	struct irq_chip *chip = irq_desc_get_chip(desc);
-	struct irqaction *action = desc->action;
-	unsigned int irq = irq_desc_get_irq(desc);
-	irqreturn_t res;
-
-	__kstat_incr_irqs_this_cpu(desc);
-
-	 
-	res = action->handler(irq, raw_cpu_ptr(action->percpu_dev_id));
-	 
-
-	if (chip->irq_eoi)
-		chip->irq_eoi(&desc->irq_data);
-}
+/* handle_percpu_devid_fasteoi_nmi removed - unused */
 
 static void
 __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,

@@ -91,8 +91,7 @@ extern unsigned long tick_nsec;
 #define NTP_INTERVAL_LENGTH (NSEC_PER_SEC/NTP_INTERVAL_FREQ)
 
 /* do_adjtimex, do_clock_adjtime, hardpps removed - unused */
-
-int read_current_timer(unsigned long *timer_val);
+/* read_current_timer removed - unused */
 
 #define PIT_TICK_RATE 1193182ul
 

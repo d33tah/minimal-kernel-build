@@ -115,8 +115,8 @@ static bool recalc_sigpending_tsk(struct task_struct *t)
 	return false;
 }
 
-/* Stubbed - not used externally */
-void recalc_sigpending_and_wake(struct task_struct *t)
+/* Stubbed - only used internally */
+static void recalc_sigpending_and_wake(struct task_struct *t)
 {
 }
 
@@ -476,8 +476,8 @@ int group_send_sig_info(int sig, struct kernel_siginfo *info,
 	return ret;
 }
 
-/* Stubbed - not used externally */
-int __kill_pgrp_info(int sig, struct kernel_siginfo *info, struct pid *pgrp)
+/* Stubbed - only used internally */
+static int __kill_pgrp_info(int sig, struct kernel_siginfo *info, struct pid *pgrp)
 {
 	return -ESRCH;
 }

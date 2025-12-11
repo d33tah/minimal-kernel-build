@@ -209,7 +209,7 @@ int force_sig_seccomp(int syscall, int reason, bool force_coredump);
 extern int send_sig_info(int, struct kernel_siginfo *, struct task_struct *);
 extern void force_sigsegv(int sig);
 extern int force_sig_info(struct kernel_siginfo *);
-extern int __kill_pgrp_info(int sig, struct kernel_siginfo *info, struct pid *pgrp);
+/* __kill_pgrp_info now static in signal.c */
 extern int kill_pid_info(int sig, struct kernel_siginfo *info, struct pid *pid);
 extern int kill_pgrp(struct pid *pid, int sig, int priv);
 extern int kill_pid(struct pid *pid, int sig, int priv);
@@ -275,7 +275,7 @@ static inline bool fault_signal_pending(vm_fault_t fault_flags,
 			 (user_mode(regs) && signal_pending(current))));
 }
 
-extern void recalc_sigpending_and_wake(struct task_struct *t);
+/* recalc_sigpending_and_wake only used internally in signal.c */
 extern void recalc_sigpending(void);
 extern void calculate_sigpending(void);
 

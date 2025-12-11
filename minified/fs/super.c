@@ -436,13 +436,7 @@ void drop_super(struct super_block *sb)
 /* Removed: drop_super_exclusive, iterate_supers, iterate_supers_type,
    get_super, get_active_super, user_get_super - never called */
 
-/* Stubbed - remount not needed for minimal kernel */
-int reconfigure_super(struct fs_context *fc)
-{
-	return -EINVAL;
-}
-
-/* emergency_remount, emergency_thaw_all removed - unused */
+/* reconfigure_super, emergency_remount, emergency_thaw_all removed - unused */
 
 static DEFINE_IDA(unnamed_dev_ida);
 

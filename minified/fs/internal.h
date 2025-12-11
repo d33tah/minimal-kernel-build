@@ -75,10 +75,8 @@ extern void chroot_fs_refs(const struct path *, const struct path *);
 extern struct file *alloc_empty_file(int, const struct cred *);
 extern struct file *alloc_empty_file_noaccount(int, const struct cred *);
 
- 
-extern int reconfigure_super(struct fs_context *);
+/* reconfigure_super, user_get_super removed - unused */
 extern bool trylock_super(struct super_block *sb);
-struct super_block *user_get_super(dev_t, bool excl);
 void put_super(struct super_block *sb);
 extern bool mount_capable(struct fs_context *);
 

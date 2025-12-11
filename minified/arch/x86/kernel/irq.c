@@ -32,21 +32,7 @@ void ack_bad_irq(unsigned int irq)
 	ack_APIC_irq();
 }
 
-#define irq_stats(x)		(&per_cpu(irq_stat, x))
-/* arch_show_interrupts removed - never called */
-
-u64 arch_irq_stat_cpu(unsigned int cpu)
-{
-	u64 sum = irq_stats(cpu)->__nmi_count;
-
-	return sum;
-}
-
-u64 arch_irq_stat(void)
-{
-	u64 sum = atomic_read(&irq_err_count);
-	return sum;
-}
+/* irq_stats, arch_show_interrupts, arch_irq_stat_cpu, arch_irq_stat removed - never called */
 
 static __always_inline void handle_irq(struct irq_desc *desc,
 				       struct pt_regs *regs)

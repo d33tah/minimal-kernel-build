@@ -133,24 +133,7 @@ const struct cred *get_task_cred(struct task_struct *task)
 	return cred;
 }
 
-struct cred *cred_alloc_blank(void)
-{
-	struct cred *new;
-
-	new = kmem_cache_zalloc(cred_jar, GFP_KERNEL);
-	if (!new)
-		return NULL;
-
-	atomic_set(&new->usage, 1);
-	if (security_cred_alloc_blank(new, GFP_KERNEL_ACCOUNT) < 0)
-		goto error;
-
-	return new;
-
-error:
-	abort_creds(new);
-	return NULL;
-}
+/* cred_alloc_blank removed - never called */
 
 struct cred *prepare_creds(void)
 {

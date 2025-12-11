@@ -316,10 +316,7 @@ static inline int security_task_alloc(struct task_struct *task,
 static inline void security_task_free(struct task_struct *task)
 { }
 
-static inline int security_cred_alloc_blank(struct cred *cred, gfp_t gfp)
-{
-	return 0;
-}
+/* security_cred_alloc_blank removed - never called */
 
 static inline void security_cred_free(struct cred *cred)
 { }

@@ -165,21 +165,13 @@ void devres_close_group(struct device *dev, void *id);
 void devres_remove_group(struct device *dev, void *id);
 int devres_release_group(struct device *dev, void *id);
 
-void *devm_kmalloc(struct device *dev, size_t size, gfp_t gfp) __malloc;
-void *devm_krealloc(struct device *dev, void *ptr, size_t size,
-		    gfp_t gfp) __must_check;
-__printf(3, 0) char *devm_kvasprintf(struct device *dev, gfp_t gfp,
-				     const char *fmt, va_list ap) __malloc;
 __printf(3, 4) char *devm_kasprintf(struct device *dev, gfp_t gfp,
 				    const char *fmt, ...) __malloc;
-void devm_kfree(struct device *dev, const void *p);
 char *devm_kstrdup(struct device *dev, const char *s, gfp_t gfp) __malloc;
-const char *devm_kstrdup_const(struct device *dev, const char *s, gfp_t gfp);
-void *devm_kmemdup(struct device *dev, const void *src, size_t len, gfp_t gfp);
 
-unsigned long devm_get_free_pages(struct device *dev,
-				  gfp_t gfp_mask, unsigned int order);
-void devm_free_pages(struct device *dev, unsigned long addr);
+/* devm_kmalloc, devm_krealloc, devm_kvasprintf, devm_kfree,
+   devm_kstrdup_const, devm_kmemdup, devm_get_free_pages,
+   devm_free_pages removed - none are called in minimal kernel */
 
 void __iomem *devm_ioremap_resource(struct device *dev,
 				    const struct resource *res);

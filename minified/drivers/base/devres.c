@@ -84,25 +84,9 @@ int devres_release_group(struct device *dev, void *id)
 	return 0;
 }
 
-void *devm_kmalloc(struct device *dev, size_t size, gfp_t gfp)
-{
-	return kmalloc(size, gfp);
-}
-
-void devm_kfree(struct device *dev, const void *p)
-{
-	kfree(p);
-}
-
 char *devm_kstrdup(struct device *dev, const char *s, gfp_t gfp)
 {
 	return kstrdup(s, gfp);
-}
-
-char *devm_kvasprintf(struct device *dev, gfp_t gfp, const char *fmt,
-		      va_list ap)
-{
-	return kvasprintf(gfp, fmt, ap);
 }
 
 char *devm_kasprintf(struct device *dev, gfp_t gfp, const char *fmt, ...)
@@ -111,37 +95,11 @@ char *devm_kasprintf(struct device *dev, gfp_t gfp, const char *fmt, ...)
 	char *p;
 
 	va_start(ap, fmt);
-	p = devm_kvasprintf(dev, gfp, fmt, ap);
+	p = kvasprintf(gfp, fmt, ap);
 	va_end(ap);
 
 	return p;
 }
 
-const char *devm_kstrdup_const(struct device *dev, const char *s, gfp_t gfp)
-{
-	return kstrdup(s, gfp);
-}
-
-void *devm_kmemdup(struct device *dev, const void *src, size_t len, gfp_t gfp)
-{
-	void *p = kmalloc(len, gfp);
-	if (p)
-		memcpy(p, src, len);
-	return p;
-}
-
-unsigned long devm_get_free_pages(struct device *dev,
-				  gfp_t gfp_mask, unsigned int order)
-{
-	return __get_free_pages(gfp_mask, order);
-}
-
-void devm_free_pages(struct device *dev, unsigned long addr)
-{
-	free_pages(addr, 0);
-}
-
-void *devm_krealloc(struct device *dev, void *ptr, size_t new_size, gfp_t gfp)
-{
-	return krealloc(ptr, new_size, gfp);
-}
+/* devm_kmalloc, devm_kfree, devm_kvasprintf, devm_kstrdup_const, devm_kmemdup,
+   devm_get_free_pages, devm_free_pages, devm_krealloc removed - not called */

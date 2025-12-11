@@ -52,17 +52,4 @@ int set_pages_ro(struct page *page, int numpages) { return 0; }
 int set_direct_map_invalid_noflush(struct page *page) { return 0; }
 int set_direct_map_default_noflush(struct page *page) { return 0; }
 
-/* kernel_page_present removed - never called */
-
-// Stub: pgd manipulation
-int __init kernel_map_pages_in_pgd(pgd_t *pgd, u64 pfn, unsigned long address,
-				   unsigned numpages, unsigned long prot)
-{
-	return 0;
-}
-
-int __init kernel_unmap_pages_in_pgd(pgd_t *pgd, unsigned long address,
-				     unsigned long numpages)
-{
-	return 0;
-}
+/* kernel_page_present, kernel_map_pages_in_pgd, kernel_unmap_pages_in_pgd removed - never called */

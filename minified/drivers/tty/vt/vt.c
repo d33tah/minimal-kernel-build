@@ -138,8 +138,7 @@ static void console_callback(struct work_struct *ignored);
 static void con_driver_unregister_callback(struct work_struct *ignored);
 static void blank_screen_t(struct timer_list *unused);
 static void set_palette(struct vc_data *vc);
-
-#define vt_get_kmsg_redirect() vt_kmsg_redirect(-1)
+/* vt_get_kmsg_redirect macro and vt_kmsg_redirect removed - never used */
 
 static int printable;
 int default_utf8 = true;
@@ -257,17 +256,7 @@ static void vc_uniscr_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 	/* Stub: skip unicode screen buffer scroll for minimal kernel */
 }
 
-int vc_uniscr_check(struct vc_data *vc)
-{
-	/* Stub: unicode screen not needed for minimal kernel */
-	return -ENOMEM;
-}
-
-void vc_uniscr_copy_line(const struct vc_data *vc, void *dest, bool viewed,
-			 unsigned int row, unsigned int col, unsigned int nr)
-{
-	/* Stub: unicode screen copy not needed for minimal kernel */
-}
+/* vc_uniscr_check, vc_uniscr_copy_line removed - never called */
 
 static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 		enum con_scroll dir, unsigned int nr)
@@ -1125,12 +1114,7 @@ int set_console(int nr)
 }
 
 struct tty_driver *console_driver;
-
-int vt_kmsg_redirect(int new)
-{
-	/* Stub: no kmsg redirection */
-	return 0;
-}
+/* vt_kmsg_redirect removed - never called */
 
 static void vt_console_print(struct console *co, const char *b, unsigned count)
 {
@@ -1180,11 +1164,7 @@ static struct console vt_console_driver = {
 	.flags		= CON_PRINTBUFFER,
 	.index		= -1,
 };
-
-int tioclinux(struct tty_struct *tty, unsigned long arg)
-{
-	return -EINVAL;
-}
+/* tioclinux removed - never called */
 
 static int con_write(struct tty_struct *tty, const unsigned char *buf, int count)
 {

@@ -156,10 +156,7 @@ void update_region(struct vc_data *vc, unsigned long start, int count);
 void redraw_screen(struct vc_data *vc, int is_switch);
 #define update_screen(x) redraw_screen(x, 0)
 #define switch_screen(x) redraw_screen(x, 1)
-
-struct tty_struct;
-int tioclinux(struct tty_struct *tty, unsigned long arg);
-
+/* tioclinux removed - never called */
 
 struct unipair;
 

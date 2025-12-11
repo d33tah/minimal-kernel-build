@@ -1571,17 +1571,7 @@ void free_percpu(void __percpu *ptr)
 	if (need_balance)
 		pcpu_schedule_balance_work();
 }
-
-bool __is_kernel_percpu_address(unsigned long addr, unsigned long *can_addr)
-{
-	
-	return false;
-}
-
-bool is_kernel_percpu_address(unsigned long addr)
-{
-	return __is_kernel_percpu_address(addr, NULL);
-}
+/* __is_kernel_percpu_address, is_kernel_percpu_address removed - never called */
 
 /* Stub: per_cpu_ptr_to_phys not used in minimal kernel */
 phys_addr_t per_cpu_ptr_to_phys(void *addr) { return __pa(addr); }

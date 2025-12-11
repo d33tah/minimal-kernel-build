@@ -1,21 +1,26 @@
---- 2025-12-11 02:20 ---
+--- 2025-12-11 02:40 ---
 
 SESSION IN PROGRESS:
 - make vm: WORKING (prints "Hello, World!")
-- Current LOC: 170,471 (after git clean -fdx)
+- Current LOC: 170,438 (after git clean -fdx)
 - Started at: 170,523
+- Removed: ~85 LOC this session
 - Binary size: 233K
-- Goal: 150,000 LOC (~20,471 to go)
+- Goal: 150,000 LOC (~20,438 to go)
 
 Functions removed this session:
 1. zone_pcp_update, zone_pcp_reset, zone_pcp_disable, zone_pcp_enable (mm/page_alloc.c) - ~13 LOC
 2. hashlen_string (fs/namei.c) - ~21 LOC
 3. finish_mkwrite_fault (mm/memory.c) - ~14 LOC
 4. dump_mapping (fs/inode.c) - ~4 LOC
+5. blocking_notifier_chain_unregister (kernel/notifier.c) - ~14 LOC
+6. atomic_notifier_chain_unregister (kernel/notifier.c) - ~11 LOC
+7. idle_cpu (kernel/sched/core.c) - ~12 LOC
+8. xas_pause (lib/xarray.c) - ~4 LOC empty stub
+9. do_adjtimex, do_clock_adjtime, hardpps (kernel/time) - ~7 LOC
 
 Strategy: Continue searching for functions declared in headers but never called.
-
-Commits this session: f487ef56, c86671e0, 47bf25af, 927d2611, d1200f10
+Commits: 10 this session
 
 --- 2025-12-11 00:53 ---
 

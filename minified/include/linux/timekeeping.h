@@ -14,11 +14,9 @@ extern int timekeeping_suspended;
 
 /* legacy_timer_tick removed - unused */
 
-extern int do_settimeofday64(const struct timespec64 *ts);
+/* do_settimeofday64 removed - unused */
 extern int do_sys_settimeofday64(const struct timespec64 *tv,
 				 const struct timezone *tz);
-
-
 
 extern void ktime_get_ts64(struct timespec64 *ts);
 extern void ktime_get_real_ts64(struct timespec64 *tv);
@@ -114,13 +112,7 @@ struct system_counterval_t {
 	struct clocksource	*cs;
 };
 
-extern int get_device_system_crosststamp(
-			int (*get_time_fn)(ktime_t *device_time,
-				struct system_counterval_t *system_counterval,
-				void *ctx),
-			void *ctx,
-			struct system_time_snapshot *history,
-			struct system_device_crosststamp *xtstamp);
+/* get_device_system_crosststamp removed - unused */
 
 extern void ktime_get_snapshot(struct system_time_snapshot *systime_snapshot);
 

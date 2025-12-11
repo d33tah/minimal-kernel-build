@@ -458,23 +458,8 @@ noinstr time64_t __ktime_get_real_seconds(void)
 }
 
 /* ktime_get_snapshot removed - no callers */
-
-int get_device_system_crosststamp(int (*get_time_fn)
-				  (ktime_t *device_time,
-				   struct system_counterval_t *sys_counterval,
-				   void *ctx),
-				  void *ctx,
-				  struct system_time_snapshot *history_begin,
-				  struct system_device_crosststamp *xtstamp)
-{
-	return -ENODEV;
-}
-
-int do_settimeofday64(const struct timespec64 *ts)
-{
-	/* Stub: setting time not needed for minimal kernel */
-	return -EPERM;
-}
+/* get_device_system_crosststamp removed - unused */
+/* do_settimeofday64 removed - unused */
 
 int persistent_clock_is_local;
 

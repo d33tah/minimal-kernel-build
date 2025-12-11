@@ -47,9 +47,7 @@ int set_memory_ro(unsigned long addr, int numpages) { return 0; }
 int set_memory_rw(unsigned long addr, int numpages) { return 0; }
 int set_memory_np(unsigned long addr, int numpages) { return 0; }
 int set_memory_np_noalias(unsigned long addr, int numpages) { return 0; }
-int set_memory_4k(unsigned long addr, int numpages) { return 0; }
-int set_memory_nonglobal(unsigned long addr, int numpages) { return 0; }
-int set_memory_global(unsigned long addr, int numpages) { return 0; }
+/* set_memory_4k, set_memory_nonglobal, set_memory_global removed - never called */
 int set_memory_encrypted(unsigned long addr, int numpages) { return 0; }
 int set_memory_decrypted(unsigned long addr, int numpages) { return 0; }
 

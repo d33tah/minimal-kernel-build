@@ -21,12 +21,10 @@ int set_memory_uc(unsigned long addr, int numpages);
 int set_memory_wc(unsigned long addr, int numpages);
 int set_memory_wb(unsigned long addr, int numpages);
 int set_memory_np(unsigned long addr, int numpages);
-int set_memory_4k(unsigned long addr, int numpages);
+/* set_memory_4k, set_memory_nonglobal, set_memory_global removed - never called */
 int set_memory_encrypted(unsigned long addr, int numpages);
 int set_memory_decrypted(unsigned long addr, int numpages);
 int set_memory_np_noalias(unsigned long addr, int numpages);
-int set_memory_nonglobal(unsigned long addr, int numpages);
-int set_memory_global(unsigned long addr, int numpages);
 
 /* set_pages_array_uc, set_pages_array_wc, set_pages_array_wb, set_pages_uc, set_pages_wb, set_pages_rw removed - never called */
 int set_pages_ro(struct page *page, int numpages);

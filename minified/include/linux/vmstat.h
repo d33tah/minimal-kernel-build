@@ -215,11 +215,7 @@ static inline void __mod_zone_freepage_state(struct zone *zone, int nr_pages,
 		__mod_zone_page_state(zone, NR_FREE_CMA_PAGES, nr_pages);
 }
 
-extern const char * const vmstat_text[];
-
-
-
-/* mod_lruvec_state removed - unused */
+/* vmstat_text, mod_lruvec_state removed - unused */
 
 static inline void __mod_lruvec_state(struct lruvec *lruvec,
 				      enum node_stat_item idx, int val)

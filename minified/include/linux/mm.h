@@ -1655,7 +1655,7 @@ static inline unsigned long vma_pages(struct vm_area_struct *vma)
 pgprot_t vm_get_page_prot(unsigned long vm_flags);
 /* Removed: vma_set_page_prot - never called */
 
-void vma_set_file(struct vm_area_struct *vma, struct file *file);
+/* vma_set_file removed - unused */
 
 struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 int remap_pfn_range(struct vm_area_struct *, unsigned long addr,

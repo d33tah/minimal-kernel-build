@@ -173,13 +173,7 @@ void __vma_unlink_list(struct mm_struct *mm, struct vm_area_struct *vma)
 		next->vm_prev = prev;
 }
 
-void vma_set_file(struct vm_area_struct *vma, struct file *file)
-{
-	 
-	get_file(file);
-	swap(vma->vm_file, file);
-	fput(file);
-}
+/* vma_set_file removed - unused */
 
 #ifndef STACK_RND_MASK
 #define STACK_RND_MASK (0x7ff >> (PAGE_SHIFT - 12))      

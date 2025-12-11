@@ -265,28 +265,3 @@ notrace void sched_clock_tick_stable(void)
 	local_irq_enable();
 }
 
-notrace void sched_clock_idle_sleep_event(void)
-{
-	sched_clock_cpu(smp_processor_id());
-}
-
-notrace void sched_clock_idle_wakeup_event(void)
-{
-	unsigned long flags;
-
-	if (sched_clock_stable())
-		return;
-
-	if (unlikely(timekeeping_suspended))
-		return;
-
-	local_irq_save(flags);
-	sched_clock_tick();
-	local_irq_restore(flags);
-}
-
-
-notrace u64 __weak running_clock(void)
-{
-	return local_clock();
-}

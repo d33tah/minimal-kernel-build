@@ -5,7 +5,6 @@
 
 extern unsigned long long notrace sched_clock(void);
 
-extern u64 running_clock(void);
 extern u64 sched_clock_cpu(int cpu);
 
 
@@ -18,8 +17,6 @@ extern u64 __sched_clock_offset;
 
 extern void sched_clock_tick(void);
 extern void sched_clock_tick_stable(void);
-extern void sched_clock_idle_sleep_event(void);
-extern void sched_clock_idle_wakeup_event(void);
 
 static inline u64 local_clock(void)
 {

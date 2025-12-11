@@ -146,10 +146,7 @@ static void __kthread_parkme(struct kthread *self)
 	__set_current_state(TASK_RUNNING);
 }
 
-void kthread_parkme(void)
-{
-	__kthread_parkme(to_kthread(current));
-}
+/* kthread_parkme removed - unused */
 
 void __noreturn kthread_exit(long result)
 {

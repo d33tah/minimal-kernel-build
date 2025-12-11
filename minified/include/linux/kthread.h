@@ -42,9 +42,8 @@ bool __kthread_should_park(struct task_struct *k);
 /* kthread_freezable_should_stop removed - unused */
 /* kthread_func removed - unused */
 void *kthread_data(struct task_struct *k);
-/* kthread_probe_data, kthread_park removed - unused */
+/* kthread_probe_data, kthread_park, kthread_parkme removed - unused */
 void kthread_unpark(struct task_struct *k);
-void kthread_parkme(void);
 void kthread_exit(long result) __noreturn;
 /* kthread_complete_and_exit removed - unused */
 

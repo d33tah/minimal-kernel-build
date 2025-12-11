@@ -1,11 +1,11 @@
---- 2025-12-11 17:05 ---
+--- 2025-12-11 17:18 ---
 
 SESSION UPDATE:
 - make vm: WORKING (prints "Hello, World!")
-- Current LOC: 169,811 (after mrproper)
+- Current LOC: 169,803 (after mrproper)
 - Binary size: 232K
-- Goal: 150,000 LOC (~19,811 to go)
-- Total removed this session: ~52 LOC (169,863 -> 169,811)
+- Goal: 150,000 LOC (~19,803 to go)
+- Total removed this session: ~60 LOC (169,863 -> 169,803)
 
 Functions removed:
 Batch 1:
@@ -23,8 +23,14 @@ Batch 3:
   devm_kstrdup_const, devm_kmemdup, devm_get_free_pages, devm_free_pages
   (devres.c and device.h) - ~48 LOC
 
-Strategy: Systematically checking for unused devres/devm functions
-and orphan declarations in headers. Build is now clean.
+Batch 4:
+- kthread_parkme (kthread.c and kthread.h) - ~5 LOC
+
+Notes:
+- Attempted to remove kthread_exit but it's called internally
+- kthread_unpark also used internally
+- Build is now clean, most obvious unused functions removed
+- Need larger subsystem reduction for significant progress
 
 --- 2025-12-11 15:28 ---
 

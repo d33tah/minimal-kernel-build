@@ -100,8 +100,7 @@ long remove_mapping(struct address_space *mapping, struct folio *folio);
 
 #define node_reclaim_mode 0
 
-extern void check_move_unevictable_pages(struct pagevec *pvec);
-
+/* check_move_unevictable_pages removed - unused */
 
 #define get_nr_swap_pages()			0L
 #define total_swap_pages			0L

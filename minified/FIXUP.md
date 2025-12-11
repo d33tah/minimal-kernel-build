@@ -1,3 +1,21 @@
+--- 2025-12-11 15:07 ---
+
+SESSION UPDATE:
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: 169,883 (after mrproper)
+- Binary size: 232K
+- Goal: 150,000 LOC (~19,883 to go)
+- Removed in 2nd batch: ~17 LOC (169,900 -> 169,883)
+
+Additional functions removed:
+7. do_utimes, time64_to_tm, read_current_timer declarations (time.h, timex.h) - ~3 LOC
+8. setup_percpu_irq, remove_percpu_irq, irq_set_affinity_locked, irq_set_vcpu_affinity, irq_set_parent declarations (irq.h) - ~5 LOC
+9. handle_fasteoi_nmi (kernel/irq/chip.c) - ~17 LOC
+10. handle_percpu_devid_fasteoi_nmi (kernel/irq/chip.c) - ~16 LOC
+
+Strategy: Systematic search for orphan declarations (extern without definition)
+and functions defined but never called externally.
+
 --- 2025-12-11 14:57 ---
 
 SESSION UPDATE:

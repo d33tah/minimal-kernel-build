@@ -362,10 +362,7 @@ void __remove_inode_hash(struct inode *inode)
 	spin_unlock(&inode_hash_lock);
 }
 
-void dump_mapping(const struct address_space *mapping)
-{
-	
-}
+/* dump_mapping removed - unused */
 
 void clear_inode(struct inode *inode)
 {

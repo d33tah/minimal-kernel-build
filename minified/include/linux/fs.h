@@ -1591,7 +1591,7 @@ static inline void lockdep_annotate_inode_mutex_key(struct inode *inode) { };
 extern void unlock_new_inode(struct inode *);
 extern unsigned int get_next_ino(void);
 extern void evict_inodes(struct super_block *sb);
-void dump_mapping(const struct address_space *);
+/* dump_mapping removed - unused */
 
 extern void __iget(struct inode * inode);
 extern void clear_inode(struct inode *);

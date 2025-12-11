@@ -155,10 +155,7 @@ static inline const char *kbasename(const char *path)
 	memcpy(dst, src, bytes)
 #endif
 
-void memcpy_and_pad(void *dest, size_t dest_len, const void *src, size_t count,
-		    int pad);
-
-/* memset_after, memset_startat removed - unused */
+/* memcpy_and_pad, memset_after, memset_startat removed - unused */
 
 static __always_inline size_t str_has_prefix(const char *str, const char *prefix)
 {

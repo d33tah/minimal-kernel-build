@@ -235,17 +235,7 @@ int walk_mem_res(u64 start, u64 end, void *arg,
 	return __walk_iomem_res_desc(start, end, flags, IORES_DESC_NONE, arg, func);
 }
 
-static int walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
-			  void *arg, int (*func)(unsigned long, unsigned long, void *))
-{
-	return -EINVAL;
-}
-
-static int __is_ram(unsigned long pfn, unsigned long nr_pages, void *arg)
-{
-	return 1;
-}
-/* page_is_ram removed - never called */
+/* walk_system_ram_range, __is_ram, page_is_ram removed - never called */
 
 static int __region_intersects(resource_size_t start, size_t size,
 			unsigned long flags, unsigned long desc)

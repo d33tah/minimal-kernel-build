@@ -87,18 +87,7 @@ static struct cpu_attr cpu_attrs[] = {
 unsigned int total_cpus;
 
 
-static void cpu_device_release(struct device *dev)
-{
-	 
-}
-
-
-static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
-{
-	return 0;
-}
-
-/* register_cpu removed - not called */
+/* cpu_device_release, cpu_uevent, register_cpu removed - not called */
 
 struct device *get_cpu_device(unsigned int cpu)
 {

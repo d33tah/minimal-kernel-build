@@ -829,7 +829,7 @@ static inline int task_nice(const struct task_struct *p)
 	return PRIO_TO_NICE((p)->static_prio);
 }
 
-extern int idle_cpu(int cpu);
+/* idle_cpu removed - unused */
 extern int sched_setscheduler(struct task_struct *, int, const struct sched_param *);
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
 extern void sched_set_fifo(struct task_struct *p);

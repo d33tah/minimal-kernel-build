@@ -1311,18 +1311,7 @@ int task_prio(const struct task_struct *p)
 	return p->prio - MAX_RT_PRIO;
 }
 
-int idle_cpu(int cpu)
-{
-	struct rq *rq = cpu_rq(cpu);
-
-	if (rq->curr != rq->idle)
-		return 0;
-
-	if (rq->nr_running)
-		return 0;
-
-	return 1;
-}
+/* idle_cpu removed - unused */
 
 struct task_struct *idle_task(int cpu)
 {

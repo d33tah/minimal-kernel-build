@@ -921,23 +921,7 @@ int device_for_each_child(struct device *parent, void *data,
 	klist_iter_exit(&i);
 	return error;
 }
-
-int device_for_each_child_reverse(struct device *parent, void *data,
-				  int (*fn)(struct device *dev, void *data))
-{
-	struct klist_iter i;
-	struct device *child;
-	int error = 0;
-
-	if (!parent->p)
-		return 0;
-
-	klist_iter_init(&parent->p->klist_children, &i);
-	while ((child = prev_device(&i)) && !error)
-		error = fn(child, data);
-	klist_iter_exit(&i);
-	return error;
-}
+/* device_for_each_child_reverse removed - never called */
 
 struct device *device_find_child(struct device *parent, void *data,
 				 int (*match)(struct device *dev, void *data))
@@ -955,23 +939,7 @@ struct device *device_find_child(struct device *parent, void *data,
 	klist_iter_exit(&i);
 	return child;
 }
-
-struct device *device_find_child_by_name(struct device *parent,
-					 const char *name)
-{
-	struct klist_iter i;
-	struct device *child;
-
-	if (!parent)
-		return NULL;
-
-	klist_iter_init(&parent->p->klist_children, &i);
-	while ((child = next_device(&i)))
-		if (sysfs_streq(dev_name(child), name) && get_device(child))
-			break;
-	klist_iter_exit(&i);
-	return child;
-}
+/* device_find_child_by_name removed - never called */
 
 int __init devices_init(void)
 {

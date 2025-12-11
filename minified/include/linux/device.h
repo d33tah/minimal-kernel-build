@@ -495,13 +495,10 @@ int __must_check device_add(struct device *dev);
 void device_del(struct device *dev);
 int device_for_each_child(struct device *dev, void *data,
 			  int (*fn)(struct device *dev, void *data));
-int device_for_each_child_reverse(struct device *dev, void *data,
-				  int (*fn)(struct device *dev, void *data));
+/* device_for_each_child_reverse removed - never called */
 struct device *device_find_child(struct device *dev, void *data,
 				 int (*match)(struct device *dev, void *data));
-struct device *device_find_child_by_name(struct device *parent,
-					 const char *name);
-/* device_rename, device_move, device_change_owner removed - unused */
+/* device_find_child_by_name, device_rename, device_move, device_change_owner removed - unused */
 const char *device_get_devnode(struct device *dev, umode_t *mode, kuid_t *uid,
 			       kgid_t *gid, const char **tmp);
 /* device_is_dependent removed - unused */

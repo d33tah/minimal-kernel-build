@@ -103,11 +103,4 @@ void change_console(struct vc_data *new_vc)
 {
 }
 
-int vt_move_to_console(unsigned int vt, int alloc)
-{
-	return 0;
-}
-
-void pm_set_vt_switch(int do_switch)
-{
-}
+/* vt_move_to_console, pm_set_vt_switch removed - never called */

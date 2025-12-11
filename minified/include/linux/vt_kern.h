@@ -142,13 +142,10 @@ int vc_cons_allocated(unsigned int console);
 int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int lines);
 struct vc_data *vc_deallocate(unsigned int console);
 void reset_palette(struct vc_data *vc);
-void do_blank_screen(int entering_gfx);
 void do_unblank_screen(int leaving_gfx);
 void unblank_screen(void);
 void poke_blanked_console(void);
-int con_font_op(struct vc_data *vc, struct console_font_op *op);
-int con_set_cmap(unsigned char __user *cmap);
-int con_get_cmap(unsigned char __user *cmap);
+/* do_blank_screen, con_font_op, con_set_cmap, con_get_cmap removed - never called */
 /* scrollback, scrollfront removed - never called */
 void clear_buffer_attributes(struct vc_data *vc);
 void update_region(struct vc_data *vc, unsigned long start, int count);
@@ -190,15 +187,14 @@ struct vt_spawn_console {
 };
 extern struct vt_spawn_console vt_spawn_con;
 
-int vt_move_to_console(unsigned int vt, int alloc);
-
+/* vt_move_to_console removed - never called */
 
 struct vt_notifier_param {
 	struct vc_data *vc;	 
 	unsigned int c;
 };
 
-void hide_boot_cursor(bool hide);
+/* hide_boot_cursor removed - never called */
 
 int vt_do_diacrit(unsigned int cmd, void __user *up, int eperm);
 int vt_do_kdskbmode(unsigned int console, unsigned int arg);

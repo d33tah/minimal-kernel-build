@@ -1672,10 +1672,7 @@ postcore_initcall(vtconsole_class_init);
 #endif
 
 
-void do_blank_screen(int entering_gfx)
-{
-	/* Stubbed: screen blanking not needed for minimal boot */
-}
+/* do_blank_screen removed - never called */
 
 void do_unblank_screen(int leaving_gfx)
 {

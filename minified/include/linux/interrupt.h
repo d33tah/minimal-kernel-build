@@ -98,7 +98,7 @@ struct device;
 
 bool irq_has_action(unsigned int irq);
 extern void disable_irq_nosync(unsigned int irq);
-extern bool disable_hardirq(unsigned int irq);
+/* disable_hardirq removed - never called */
 extern void disable_irq(unsigned int irq);
 extern void enable_irq(unsigned int irq);
 

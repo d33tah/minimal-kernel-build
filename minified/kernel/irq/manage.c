@@ -84,13 +84,7 @@ void disable_irq_nosync(unsigned int irq)
 	__disable_irq_nosync(irq);
 }
 
-void disable_irq(unsigned int irq)
-{
-	if (!__disable_irq_nosync(irq))
-		synchronize_irq(irq);
-}
-
-/* disable_hardirq, disable_nmi_nosync removed - no callers */
+/* disable_irq, disable_hardirq, disable_nmi_nosync removed - no callers */
 
 void __enable_irq(struct irq_desc *desc)
 {

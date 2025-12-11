@@ -11,35 +11,10 @@ int cap_capable(const struct cred *cred, struct user_namespace *targ_ns,
 	return 0;
 }
 
-/* cap_settime, cap_ptrace_access_check, cap_ptrace_traceme, cap_capget, cap_capset removed - unused */
-
-int cap_inode_need_killpriv(struct dentry *dentry)
-{
-	return 0;
-}
-
-int cap_inode_killpriv(struct user_namespace *mnt_userns, struct dentry *dentry)
-{
-	return 0;
-}
-
-/* cap_inode_getsecurity, cap_convert_nscap, get_vfs_caps_from_disk removed - unused */
+/* cap_settime, cap_ptrace_*, cap_capget, cap_capset, cap_inode_need_killpriv,
+   cap_inode_killpriv, cap_vm_enough_memory, cap_mmap_addr removed - unused */
 
 int cap_bprm_creds_from_file(struct linux_binprm *bprm, struct file *file)
 {
 	return 0;
 }
-
-/* cap_inode_setxattr, cap_inode_removexattr, cap_task_* removed - unused */
-
-int cap_vm_enough_memory(struct mm_struct *mm, long pages)
-{
-	return 1;  
-}
-
-int cap_mmap_addr(unsigned long addr)
-{
-	return 0;
-}
-
-/* cap_mmap_file removed - unused */

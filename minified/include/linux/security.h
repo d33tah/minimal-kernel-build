@@ -61,15 +61,9 @@ extern const char *const lockdown_reasons[LOCKDOWN_CONFIDENTIALITY_MAX+1];
 
 extern int cap_capable(const struct cred *cred, struct user_namespace *ns,
 		       int cap, unsigned int opts);
-/* cap_settime, cap_ptrace_*, cap_capget, cap_capset removed - unused */
+/* cap_settime, cap_ptrace_*, cap_capget, cap_capset, cap_inode_*,
+   cap_mmap_addr, cap_vm_enough_memory removed - unused */
 extern int cap_bprm_creds_from_file(struct linux_binprm *bprm, struct file *file);
-/* cap_inode_setxattr, cap_inode_removexattr, cap_inode_getsecurity removed - unused */
-int cap_inode_need_killpriv(struct dentry *dentry);
-int cap_inode_killpriv(struct user_namespace *mnt_userns,
-		       struct dentry *dentry);
-extern int cap_mmap_addr(unsigned long addr);
-/* cap_mmap_file, cap_task_* externs removed - unused */
-extern int cap_vm_enough_memory(struct mm_struct *mm, long pages);
 
 struct msghdr;
 struct sk_buff;
@@ -133,7 +127,7 @@ static inline int security_capable(const struct cred *cred,
 
 static inline int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
 {
-	return __vm_enough_memory(mm, pages, cap_vm_enough_memory(mm, pages));
+	return __vm_enough_memory(mm, pages, 1);  /* Stub: always assume capability present */
 }
 
 static inline int security_bprm_creds_for_exec(struct linux_binprm *bprm)
@@ -270,13 +264,13 @@ static inline int security_inode_setattr(struct dentry *dentry,
 
 static inline int security_inode_need_killpriv(struct dentry *dentry)
 {
-	return cap_inode_need_killpriv(dentry);
+	return 0;  /* Stub: capability checking disabled */
 }
 
 static inline int security_inode_killpriv(struct user_namespace *mnt_userns,
 					  struct dentry *dentry)
 {
-	return cap_inode_killpriv(mnt_userns, dentry);
+	return 0;  /* Stub: capability checking disabled */
 }
 
 /* security_file_permission removed - unused */
@@ -297,7 +291,7 @@ static inline int security_mmap_file(struct file *file, unsigned long prot,
 
 static inline int security_mmap_addr(unsigned long addr)
 {
-	return cap_mmap_addr(addr);
+	return 0;  /* Stub: capability checking disabled */
 }
 
 /* security_file_mprotect, security_file_receive removed - unused */

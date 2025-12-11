@@ -193,18 +193,10 @@ int send_sig_fault(int sig, int code, void __user *addr
 	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr)
 	, struct task_struct *t);
 
-int force_sig_mceerr(int code, void __user *, short);
-int send_sig_mceerr(int code, void __user *, short, struct task_struct *);
-
-int force_sig_bnderr(void __user *addr, void __user *lower, void __user *upper);
+/* force_sig_mceerr, send_sig_mceerr, force_sig_bnderr, send_sig_perf,
+   force_sig_ptrace_errno_trap, force_sig_fault_trapno, send_sig_fault_trapno,
+   force_sig_seccomp removed - unused */
 int force_sig_pkuerr(void __user *addr, u32 pkey);
-int send_sig_perf(void __user *addr, u32 type, u64 sig_data);
-
-int force_sig_ptrace_errno_trap(int errno, void __user *addr);
-int force_sig_fault_trapno(int sig, int code, void __user *addr, int trapno);
-int send_sig_fault_trapno(int sig, int code, void __user *addr, int trapno,
-			struct task_struct *t);
-int force_sig_seccomp(int syscall, int reason, bool force_coredump);
 
 extern int send_sig_info(int, struct kernel_siginfo *, struct task_struct *);
 extern void force_sigsegv(int sig);

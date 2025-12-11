@@ -558,8 +558,8 @@ void force_exit_sig(int sig)
 	force_sig_info_to_task(&info, current, HANDLER_EXIT);
 }
 
-/* Stubbed - not used externally */
-void force_sigsegv(int sig)
+/* Stubbed - now static, only used internally */
+static void force_sigsegv(int sig)
 {
 }
 

@@ -193,7 +193,7 @@ int force_sig_fault(int sig, int code, void __user *addr
 int force_sig_pkuerr(void __user *addr, u32 pkey);
 
 extern int send_sig_info(int, struct kernel_siginfo *, struct task_struct *);
-extern void force_sigsegv(int sig);
+/* force_sigsegv now static in signal.c */
 extern int force_sig_info(struct kernel_siginfo *);
 /* __kill_pgrp_info, kill_pid now static/removed in signal.c */
 extern int kill_pid_info(int sig, struct kernel_siginfo *info, struct pid *pid);

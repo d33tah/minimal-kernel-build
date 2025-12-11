@@ -100,17 +100,8 @@ struct rtc_param {
 #define RTC_MAX_FREQ	8192
 
 extern int rtc_month_days(unsigned int month, unsigned int year);
-extern int rtc_year_days(unsigned int day, unsigned int month, unsigned int year);
 extern int rtc_valid_tm(struct rtc_time *tm);
-extern time64_t rtc_tm_to_time64(struct rtc_time *tm);
 extern void rtc_time64_to_tm(time64_t time, struct rtc_time *tm);
-ktime_t rtc_tm_to_ktime(struct rtc_time tm);
-struct rtc_time rtc_ktime_to_tm(ktime_t kt);
-
-static inline time64_t rtc_tm_sub(struct rtc_time *lhs, struct rtc_time *rhs)
-{
-	return rtc_tm_to_time64(lhs) - rtc_tm_to_time64(rhs);
-}
 
 static inline bool is_leap_year(unsigned int year)
 {

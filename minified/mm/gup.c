@@ -103,18 +103,7 @@ struct folio *try_grab_folio(struct page *page, int refs, unsigned int flags)
 	return NULL;
 }
 
-static void gup_put_folio(struct folio *folio, int refs, unsigned int flags)
-{
-	if (flags & FOLL_PIN) {
-		node_stat_mod_folio(folio, NR_FOLL_PIN_RELEASED, refs);
-		if (folio_test_large(folio))
-			atomic_sub(refs, folio_pincount_ptr(folio));
-		else
-			refs *= GUP_PIN_COUNTING_BIAS;
-	}
-
-	folio_put_refs(folio, refs);
-}
+/* gup_put_folio removed - unused */
 
 bool __must_check try_grab_page(struct page *page, unsigned int flags)
 {

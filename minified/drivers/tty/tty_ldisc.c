@@ -121,27 +121,7 @@ static void tty_ldisc_put(struct tty_ldisc *ld)
 	kfree(ld);
 }
 
-static void *tty_ldiscs_seq_start(struct seq_file *m, loff_t *pos)
-{
-	/* Stub: /proc/tty/ldiscs not needed for minimal kernel */
-	return NULL;
-}
-
-static void *tty_ldiscs_seq_next(struct seq_file *m, void *v, loff_t *pos)
-{
-	return NULL;
-}
-
-static void tty_ldiscs_seq_stop(struct seq_file *m, void *v)
-{
-}
-
-static int tty_ldiscs_seq_show(struct seq_file *m, void *v)
-{
-	return 0;
-}
-
-/* tty_ldiscs_seq_ops removed - unused (procfs not enabled) */
+/* tty_ldiscs_seq_* functions and tty_ldiscs_seq_ops removed - procfs not enabled */
 
 struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *tty)
 {

@@ -847,18 +847,7 @@ void device_unregister(struct device *dev)
 	put_device(dev);
 }
 
-static struct device *prev_device(struct klist_iter *i)
-{
-	struct klist_node *n = klist_prev(i);
-	struct device *dev = NULL;
-	struct device_private *p;
-
-	if (n) {
-		p = to_device_private_parent(n);
-		dev = p->device;
-	}
-	return dev;
-}
+/* prev_device removed - unused */
 
 static struct device *next_device(struct klist_iter *i)
 {

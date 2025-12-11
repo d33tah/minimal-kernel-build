@@ -2424,10 +2424,7 @@ void __init mem_init_print_info(void)
 
 }
 
-void __init set_dma_reserve(unsigned long new_dma_reserve)
-{
-	dma_reserve = new_dma_reserve;
-}
+/* set_dma_reserve removed - never called */
 
 static int page_alloc_cpu_dead(unsigned int cpu)
 {

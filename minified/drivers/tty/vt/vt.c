@@ -1709,15 +1709,7 @@ static void set_palette(struct vc_data *vc)
 	/* Stub: no palette setting in minimal kernel */
 }
 
-int con_set_cmap(unsigned char __user *arg)
-{
-	return -EINVAL;
-}
-
-int con_get_cmap(unsigned char __user *arg)
-{
-	return -EINVAL;
-}
+/* con_set_cmap, con_get_cmap removed - never called */
 
 void reset_palette(struct vc_data *vc)
 {
@@ -1730,64 +1722,13 @@ void reset_palette(struct vc_data *vc)
 	set_palette(vc);
 }
 
-int con_font_op(struct vc_data *vc, struct console_font_op *op)
-{
-	return -ENOSYS;
-}
+/* con_font_op, screen_glyph, screen_glyph_unicode removed - never called */
 
-u16 screen_glyph(const struct vc_data *vc, int offset)
-{
-	u16 w = scr_readw(screenpos(vc, offset, true));
-	u16 c = w & 0xff;
+/* screen_pos removed - never called */
 
-	if (w & vc->vc_hi_font_mask)
-		c |= 0x100;
-	return c;
-}
+/* getconsxy, putconsxy removed - never called */
 
-u32 screen_glyph_unicode(const struct vc_data *vc, int n)
-{
-	struct uni_screen *uniscr = get_vc_uniscr(vc);
-
-	if (uniscr)
-		return uniscr->lines[n / vc->vc_cols][n % vc->vc_cols];
-	return inverse_translate(vc, screen_glyph(vc, n * 2), 1);
-}
-
-unsigned short *screen_pos(const struct vc_data *vc, int w_offset, bool viewed)
-{
-	return screenpos(vc, 2 * w_offset, viewed);
-}
-
-void getconsxy(const struct vc_data *vc, unsigned char xy[static 2])
-{
-	
-	xy[0] = min(vc->state.x, 0xFFu);
-	xy[1] = min(vc->state.y, 0xFFu);
-}
-
-void putconsxy(struct vc_data *vc, unsigned char xy[static const 2])
-{
-	/* Stub: cursor positioning not needed for minimal kernel */
-}
-
-u16 vcs_scr_readw(const struct vc_data *vc, const u16 *org)
-{
-	if ((unsigned long)org == vc->vc_pos && softcursor_original != -1)
-		return softcursor_original;
-	return scr_readw(org);
-}
-
-void vcs_scr_writew(struct vc_data *vc, u16 val, u16 *org)
-{
-	/* Stub: VCS screen write not needed for minimal kernel */
-	scr_writew(val, org);
-}
-
-void vcs_scr_updated(struct vc_data *vc)
-{
-	notify_update(vc);
-}
+/* vcs_scr_readw, vcs_scr_writew, vcs_scr_updated removed - never called */
 
 void vc_scrolldelta_helper(struct vc_data *c, int lines,
 		unsigned int rolled_over, void *base, unsigned int size)

@@ -1,3 +1,51 @@
+--- 2025-12-11 00:53 ---
+
+SESSION COMPLETE:
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: 171,331 (after git clean -fdx)
+- Started at: 171,876
+- Removed: ~545 LOC this session
+- Binary size: 233K (was 235K)
+- Goal: 150,000 LOC (~21,331 to go)
+- 11 commits this session (see 32324efc to 61c0315b)
+
+Functions removed this session:
+1. ww_mutex code from mutex.c (~482 LOC) - unused wait/wound mutex
+2. tasklet code from softirq.c (~100 LOC) - tasklets not used
+3. tasklet_struct from interrupt.h (~27 LOC)
+4. filemap_range_has_writeback, find_get_pages_contig, mapping_seek_hole_data (mm/filemap.c)
+5. d_splice_alias (fs/dcache.c)
+6. platform_device_alloc, platform_driver_unregister,
+   platform_find_device_by_driver, platform_get_mem_or_io (drivers/base/platform.c)
+7. call_trace_sched_update_nr_running (kernel/sched/core.c)
+8. tty_port_unregister_device (drivers/tty/tty_port.c)
+9. noop_direct_IO, kfree_link (fs/libfs.c)
+10. vfs_clean_context (fs/fs_context.c)
+11. split_vma (mm/mmap.c) - wrapper for __split_vma
+12. get_tree_single (fs/super.c)
+
+Strategy used: Search for functions with non-static linkage that are declared
+in headers but never called anywhere in the codebase.
+
+Next session could explore:
+- More mm/*.c functions
+- Deeper header file cleanup
+- Consider removing entire stub files if all functions are empty
+
+--- 2025-12-10 23:57 ---
+
+SESSION START:
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: 171,876 (after git clean -fdx)
+- Goal: 150,000 LOC
+- ~21,876 LOC to remove
+- Binary size: 235K
+
+Strategy this session:
+- Continue systematic removal of unused functions
+- Look for larger targets - entire subsystems or files
+- Consider header file cleanup
+
 --- 2025-12-07 02:40 ---
 Session ending:
 - Final LOC: 181,578 (after mrproper)

@@ -33,7 +33,7 @@
 void clflush_cache_range(void *vaddr, unsigned int size) { }
 
 // Stub: memory protection functions - all return success
-int __set_memory_prot(unsigned long addr, int numpages, pgprot_t prot) { return 0; }
+/* __set_memory_prot removed - never called */
 /* _set_memory_uc, set_memory_uc, _set_memory_wc, set_memory_wc, _set_memory_wt, _set_memory_wb, set_memory_wb, set_memory_np_noalias removed - never called */
 int set_memory_x(unsigned long addr, int numpages) { return 0; }
 int set_memory_nx(unsigned long addr, int numpages) { return 0; }
@@ -52,8 +52,7 @@ int set_pages_ro(struct page *page, int numpages) { return 0; }
 int set_direct_map_invalid_noflush(struct page *page) { return 0; }
 int set_direct_map_default_noflush(struct page *page) { return 0; }
 
-// Stub: page presence check
-bool kernel_page_present(struct page *page) { return true; }
+/* kernel_page_present removed - never called */
 
 // Stub: pgd manipulation
 int __init kernel_map_pages_in_pgd(pgd_t *pgd, u64 pfn, unsigned long address,

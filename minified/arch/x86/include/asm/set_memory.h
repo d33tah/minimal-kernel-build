@@ -12,8 +12,7 @@ int set_memory_nx(unsigned long addr, int numpages);
 
  
 
-int __set_memory_prot(unsigned long addr, int numpages, pgprot_t prot);
-/* _set_memory_uc, _set_memory_wc, _set_memory_wt, _set_memory_wb, set_memory_uc, set_memory_wc, set_memory_wb, set_memory_np_noalias, set_memory_4k, set_memory_nonglobal, set_memory_global removed - never called */
+/* __set_memory_prot, _set_memory_uc, _set_memory_wc, _set_memory_wt, _set_memory_wb, set_memory_uc, set_memory_wc, set_memory_wb, set_memory_np_noalias, set_memory_4k, set_memory_nonglobal, set_memory_global removed - never called */
 int set_memory_np(unsigned long addr, int numpages);
 int set_memory_encrypted(unsigned long addr, int numpages);
 int set_memory_decrypted(unsigned long addr, int numpages);
@@ -23,7 +22,7 @@ int set_pages_ro(struct page *page, int numpages);
 
 int set_direct_map_invalid_noflush(struct page *page);
 int set_direct_map_default_noflush(struct page *page);
-bool kernel_page_present(struct page *page);
+/* kernel_page_present removed - never called */
 
 extern int kernel_set_to_readonly;
 

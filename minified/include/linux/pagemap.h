@@ -454,8 +454,7 @@ struct readahead_control {
 void page_cache_sync_ra(struct readahead_control *, unsigned long req_count);
 void page_cache_async_ra(struct readahead_control *, struct folio *,
 		unsigned long req_count);
-void readahead_expand(struct readahead_control *ractl,
-		      loff_t new_start, size_t new_len);
+/* readahead_expand removed - never called */
 
 static inline
 void page_cache_sync_readahead(struct address_space *mapping,

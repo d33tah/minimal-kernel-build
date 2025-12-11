@@ -60,7 +60,7 @@ int set_pages_array_wc(struct page **pages, int numpages) { return 0; }
 int set_pages_wb(struct page *page, int numpages) { return 0; }
 int set_pages_array_wb(struct page **pages, int numpages) { return 0; }
 int set_pages_ro(struct page *page, int numpages) { return 0; }
-int set_pages_rw(struct page *page, int numpages) { return 0; }
+/* set_pages_rw removed - never called */
 
 // Stub: direct map manipulation
 int set_direct_map_invalid_noflush(struct page *page) { return 0; }

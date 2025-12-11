@@ -54,16 +54,7 @@ enum tlb_infos {
 	ENTRIES,
 	NR_INFO
 };
-
-extern u16 __read_mostly tlb_lli_4k[NR_INFO];
-extern u16 __read_mostly tlb_lli_2m[NR_INFO];
-extern u16 __read_mostly tlb_lli_4m[NR_INFO];
-extern u16 __read_mostly tlb_lld_4k[NR_INFO];
-extern u16 __read_mostly tlb_lld_2m[NR_INFO];
-extern u16 __read_mostly tlb_lld_4m[NR_INFO];
-extern u16 __read_mostly tlb_lld_1g[NR_INFO];
-
- 
+/* TLB arrays removed - never used in minimal kernel */
 
 struct cpuinfo_x86 {
 	__u8			x86;		 

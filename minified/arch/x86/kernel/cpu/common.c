@@ -489,19 +489,7 @@ void cpu_detect_cache_sizes(struct cpuinfo_x86 *c)
 {
 	c->x86_cache_size = 0;
 }
-
-u16 __read_mostly tlb_lli_4k[NR_INFO];
-u16 __read_mostly tlb_lli_2m[NR_INFO];
-u16 __read_mostly tlb_lli_4m[NR_INFO];
-u16 __read_mostly tlb_lld_4k[NR_INFO];
-u16 __read_mostly tlb_lld_2m[NR_INFO];
-u16 __read_mostly tlb_lld_4m[NR_INFO];
-u16 __read_mostly tlb_lld_1g[NR_INFO];
-
-static void cpu_detect_tlb(struct cpuinfo_x86 *c)
-{
-	/* Stub: TLB detection not needed for minimal kernel */
-}
+/* TLB arrays and cpu_detect_tlb removed - never used in minimal kernel */
 
 int detect_ht_early(struct cpuinfo_x86 *c)
 {
@@ -908,7 +896,7 @@ void __init identify_boot_cpu(void)
 		pr_info("CET detected: Indirect Branch Tracking enabled\n");
 	sysenter_setup();
 	enable_sep_cpu();
-	cpu_detect_tlb(&boot_cpu_data);
+	/* cpu_detect_tlb removed - TLB info never used */
 	setup_cr_pinning();
 
 	tsx_init();

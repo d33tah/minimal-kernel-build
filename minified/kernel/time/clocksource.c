@@ -315,10 +315,7 @@ static inline void clocksource_reset_watchdog(void)
 		cs->flags &= ~CLOCK_SOURCE_WATCHDOG;
 }
 
-static void clocksource_resume_watchdog(void)
-{
-	atomic_inc(&watchdog_reset_pending);
-}
+/* clocksource_resume_watchdog removed - never called */
 
 static void clocksource_enqueue_watchdog(struct clocksource *cs)
 {

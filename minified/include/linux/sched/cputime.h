@@ -20,10 +20,7 @@ static inline u64 task_gtime(struct task_struct *t)
 
 extern void task_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st);
 extern void thread_group_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st);
-extern void cputime_adjust(struct task_cputime *curr, struct prev_cputime *prev,
-			   u64 *ut, u64 *st);
 
-void thread_group_cputime(struct task_struct *tsk, struct task_cputime *times);
 void thread_group_sample_cputime(struct task_struct *tsk, u64 *samples);
 
 

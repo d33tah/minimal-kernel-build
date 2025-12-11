@@ -131,12 +131,7 @@ int device_create_file(struct device *device,
 		       const struct device_attribute *entry);
 void device_remove_file(struct device *dev,
 			const struct device_attribute *attr);
-bool device_remove_file_self(struct device *dev,
-			     const struct device_attribute *attr);
-int __must_check device_create_bin_file(struct device *dev,
-					const struct bin_attribute *attr);
-void device_remove_bin_file(struct device *dev,
-			    const struct bin_attribute *attr);
+/* device_remove_file_self, device_create_bin_file, device_remove_bin_file removed - unused */
 
 typedef void (*dr_release_t)(struct device *dev, void *res);
 typedef int (*dr_match_t)(struct device *dev, void *res, void *match_data);

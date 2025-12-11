@@ -1503,8 +1503,7 @@ static inline int path_permission(const struct path *path, int mask)
 	return inode_permission(mnt_user_ns(path->mnt),
 				d_inode(path->dentry), mask);
 }
-int __check_sticky(struct user_namespace *mnt_userns, struct inode *dir,
-		   struct inode *inode);
+/* __check_sticky removed - never called */
 
 static inline void file_start_write(struct file *file)
 {
@@ -1663,9 +1662,8 @@ void generic_fillattr(struct user_namespace *, struct inode *, struct kstat *);
 void generic_fill_statx_attr(struct inode *inode, struct kstat *stat);
 extern int vfs_getattr_nosec(const struct path *, struct kstat *, u32, unsigned int);
 extern int vfs_getattr(const struct path *, struct kstat *, u32, unsigned int);
-void __inode_add_bytes(struct inode *inode, loff_t bytes);
+/* __inode_add_bytes, __inode_sub_bytes removed - never called */
 void inode_add_bytes(struct inode *inode, loff_t bytes);
-void __inode_sub_bytes(struct inode *inode, loff_t bytes);
 void inode_sub_bytes(struct inode *inode, loff_t bytes);
 loff_t inode_get_bytes(struct inode *inode);
 void inode_set_bytes(struct inode *inode, loff_t bytes);

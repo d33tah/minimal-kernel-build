@@ -1555,17 +1555,7 @@ int user_path_at_empty(int dfd, const char __user *name, unsigned flags,
 	return ret;
 }
 
-int __check_sticky(struct user_namespace *mnt_userns, struct inode *dir,
-		   struct inode *inode)
-{
-	kuid_t fsuid = current_fsuid();
-
-	if (uid_eq(i_uid_into_mnt(mnt_userns, inode), fsuid))
-		return 0;
-	if (uid_eq(i_uid_into_mnt(mnt_userns, dir), fsuid))
-		return 0;
-	return !capable_wrt_inode_uidgid(mnt_userns, inode, CAP_FOWNER);
-}
+/* __check_sticky removed - never called */
 
 static inline int may_create(struct user_namespace *mnt_userns,
 			     struct inode *dir, struct dentry *child)

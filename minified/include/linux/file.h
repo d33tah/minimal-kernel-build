@@ -19,10 +19,8 @@ struct inode;
 struct path;
 extern struct file *alloc_file_pseudo(struct inode *, struct vfsmount *,
 	const char *, int flags, const struct file_operations *);
-extern struct file *alloc_file_clone(struct file *, int flags,
-	const struct file_operations *);
 
-/* fput_light removed - unused */
+/* alloc_file_clone, fput_light removed - unused */
 
 struct fd {
 	struct file *file;
@@ -87,7 +85,6 @@ extern void fd_install(unsigned int fd, struct file *file);
 /* __receive_fd, receive_fd, receive_fd_user, receive_fd_replace removed - unused */
 
 extern void flush_delayed_fput(void);
-extern void __fput_sync(struct file *);
 
 extern unsigned int sysctl_nr_open_min, sysctl_nr_open_max;
 

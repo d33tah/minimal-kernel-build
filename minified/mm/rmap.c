@@ -383,35 +383,7 @@ unsigned long page_address_in_vma(struct page *page, struct vm_area_struct *vma)
 	return vma_address(page, vma);
 }
 
-pmd_t *mm_find_pmd(struct mm_struct *mm, unsigned long address)
-{
-	pgd_t *pgd;
-	p4d_t *p4d;
-	pud_t *pud;
-	pmd_t *pmd = NULL;
-	pmd_t pmde;
-
-	pgd = pgd_offset(mm, address);
-	if (!pgd_present(*pgd))
-		goto out;
-
-	p4d = p4d_offset(pgd, address);
-	if (!p4d_present(*p4d))
-		goto out;
-
-	pud = pud_offset(p4d, address);
-	if (!pud_present(*pud))
-		goto out;
-
-	pmd = pmd_offset(pud, address);
-	
-	pmde = *pmd;
-	barrier();
-	if (!pmd_present(pmde) || pmd_trans_huge(pmde))
-		pmd = NULL;
-out:
-	return pmd;
-}
+/* mm_find_pmd removed - never called */
 
 struct folio_referenced_arg {
 	int mapcount;

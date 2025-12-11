@@ -2443,18 +2443,14 @@ static int page_alloc_cpu_dead(unsigned int cpu)
 	
 	cpu_vm_stats_fold(cpu);
 
-	for_each_populated_zone(zone)
-		zone_pcp_update(zone, 0);
+	/* zone_pcp_update removed - not needed for single CPU minimal kernel */
 
 	return 0;
 }
 
 static int page_alloc_cpu_online(unsigned int cpu)
 {
-	struct zone *zone;
-
-	for_each_populated_zone(zone)
-		zone_pcp_update(zone, 1);
+	/* zone_pcp_update removed - not needed for single CPU minimal kernel */
 	return 0;
 }
 
@@ -2501,16 +2497,12 @@ static void __setup_per_zone_wmarks(void)
 
 void setup_per_zone_wmarks(void)
 {
-	struct zone *zone;
 	static DEFINE_SPINLOCK(lock);
 
 	spin_lock(&lock);
 	__setup_per_zone_wmarks();
 	spin_unlock(&lock);
-
-	
-	for_each_zone(zone)
-		zone_pcp_update(zone, 0);
+	/* zone_pcp_update removed - not needed for single CPU minimal kernel */
 }
 
 void calculate_min_free_kbytes(void)
@@ -2581,10 +2573,5 @@ void *__init alloc_large_system_hash(const char *tablename,
 		*_hash_mask = (1 << log2qty) - 1;
 
 	return table;
-}
-
-void zone_pcp_update(struct zone *zone, int cpu_online)
-{
-	/* Stub: PCP update not needed for minimal single-CPU kernel */
 }
 

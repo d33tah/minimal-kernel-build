@@ -854,7 +854,7 @@ extern unsigned long init_stack[THREAD_SIZE / sizeof(unsigned long)];
 # define task_thread_info(task)	(&(task)->thread_info)
 
 
-extern struct task_struct *find_task_by_vpid(pid_t nr);
+/* find_task_by_vpid removed - unused */
 extern struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns);
 
 extern int wake_up_state(struct task_struct *tsk, unsigned int state);

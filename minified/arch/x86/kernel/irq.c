@@ -28,17 +28,12 @@ void ack_bad_irq(unsigned int irq)
 	if (printk_ratelimit())
 		pr_err("unexpected IRQ trap at vector %02x\n", irq);
 
-	 
+
 	ack_APIC_irq();
 }
 
 #define irq_stats(x)		(&per_cpu(irq_stat, x))
-int arch_show_interrupts(struct seq_file *p, int prec)
-{
-	/* Stub: detailed interrupt stats not needed for minimal kernel */
-	seq_printf(p, "%*s: %10u\n", prec, "ERR", atomic_read(&irq_err_count));
-	return 0;
-}
+/* arch_show_interrupts removed - never called */
 
 u64 arch_irq_stat_cpu(unsigned int cpu)
 {

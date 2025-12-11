@@ -90,10 +90,7 @@ extern unsigned long tick_nsec;
 #define NTP_INTERVAL_FREQ  (HZ)
 #define NTP_INTERVAL_LENGTH (NSEC_PER_SEC/NTP_INTERVAL_FREQ)
 
-extern int do_adjtimex(struct __kernel_timex *);
-extern int do_clock_adjtime(const clockid_t which_clock, struct __kernel_timex * ktx);
-
-extern void hardpps(const struct timespec64 *, const struct timespec64 *);
+/* do_adjtimex, do_clock_adjtime, hardpps removed - unused */
 
 int read_current_timer(unsigned long *timer_val);
 

@@ -882,7 +882,4 @@ unsigned long random_get_entropy_fallback(void)
 	return clock->read(clock);
 }
 
-int do_adjtimex(struct __kernel_timex *txc)
-{
-	return -EINVAL;
-}
+/* do_adjtimex removed - unused stub */

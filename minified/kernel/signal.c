@@ -624,12 +624,7 @@ int kill_pgrp(struct pid *pid, int sig, int priv)
 	return ret;
 }
 
-int kill_pid(struct pid *pid, int sig, int priv)
-{
-	return kill_pid_info(sig, __si_special(priv), pid);
-}
-
-/* sigqueue_alloc, sigqueue_free, send_sigqueue removed - no external callers */
+/* kill_pid, sigqueue_alloc, sigqueue_free, send_sigqueue removed - no external callers */
 
 bool do_notify_parent(struct task_struct *tsk, int sig)
 {

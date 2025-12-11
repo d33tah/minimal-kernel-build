@@ -209,10 +209,9 @@ int force_sig_seccomp(int syscall, int reason, bool force_coredump);
 extern int send_sig_info(int, struct kernel_siginfo *, struct task_struct *);
 extern void force_sigsegv(int sig);
 extern int force_sig_info(struct kernel_siginfo *);
-/* __kill_pgrp_info now static in signal.c */
+/* __kill_pgrp_info, kill_pid now static/removed in signal.c */
 extern int kill_pid_info(int sig, struct kernel_siginfo *info, struct pid *pid);
 extern int kill_pgrp(struct pid *pid, int sig, int priv);
-extern int kill_pid(struct pid *pid, int sig, int priv);
 extern __must_check bool do_notify_parent(struct task_struct *, int);
 extern void __wake_up_parent(struct task_struct *p, struct task_struct *parent);
 extern void force_sig(int);

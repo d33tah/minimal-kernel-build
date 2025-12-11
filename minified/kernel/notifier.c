@@ -30,18 +30,7 @@ static int notifier_chain_register(struct notifier_block **nl,
 	return 0;
 }
 
-static int notifier_chain_unregister(struct notifier_block **nl,
-		struct notifier_block *n)
-{
-	while ((*nl) != NULL) {
-		if ((*nl) == n) {
-			rcu_assign_pointer(*nl, n->next);
-			return 0;
-		}
-		nl = &((*nl)->next);
-	}
-	return -ENOENT;
-}
+/* notifier_chain_unregister removed - unused */
 
 static int notifier_call_chain(struct notifier_block **nl,
 			       unsigned long val, void *v,

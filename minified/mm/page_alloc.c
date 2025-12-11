@@ -854,14 +854,7 @@ static void drain_pages(unsigned int cpu)
 	/* Stub: skip per-CPU page draining for minimal kernel */
 }
 
-static void __drain_all_pages(struct zone *zone, bool force_all_cpus)
-{
-	/* Minimal stub: skip complex per-CPU draining */
-	if (!mm_percpu_wq)
-		return;
-}
-
-/* drain_all_pages removed - unused */
+/* __drain_all_pages, drain_all_pages removed - unused */
 
 static bool free_unref_page_prepare(struct page *page, unsigned long pfn,
 							unsigned int order)
@@ -2066,11 +2059,7 @@ static unsigned long __init __absent_pages_in_range(int nid,
 	return nr_absent;
 }
 
-static unsigned long __init absent_pages_in_range(unsigned long start_pfn,
-							unsigned long end_pfn)
-{
-	return __absent_pages_in_range(MAX_NUMNODES, start_pfn, end_pfn);
-}
+/* absent_pages_in_range removed - unused */
 
 static unsigned long __init zone_absent_pages_in_node(int nid,
 					unsigned long zone_type,
@@ -2422,8 +2411,6 @@ void __init mem_init_print_info(void)
 
 static int page_alloc_cpu_dead(unsigned int cpu)
 {
-	struct zone *zone;
-
 	lru_add_drain_cpu(cpu);
 	mlock_page_drain_remote(cpu);
 	drain_pages(cpu);

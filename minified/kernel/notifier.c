@@ -81,18 +81,7 @@ int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
 	return ret;
 }
 
-int atomic_notifier_chain_unregister(struct atomic_notifier_head *nh,
-		struct notifier_block *n)
-{
-	unsigned long flags;
-	int ret;
-
-	spin_lock_irqsave(&nh->lock, flags);
-	ret = notifier_chain_unregister(&nh->head, n);
-	spin_unlock_irqrestore(&nh->lock, flags);
-	synchronize_rcu();
-	return ret;
-}
+/* atomic_notifier_chain_unregister removed - unused */
 
 int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 			       unsigned long val, void *v)
@@ -135,20 +124,7 @@ int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
 	return __blocking_notifier_chain_register(nh, n, false);
 }
 
-int blocking_notifier_chain_unregister(struct blocking_notifier_head *nh,
-		struct notifier_block *n)
-{
-	int ret;
-
-	 
-	if (unlikely(system_state == SYSTEM_BOOTING))
-		return notifier_chain_unregister(&nh->head, n);
-
-	down_write(&nh->rwsem);
-	ret = notifier_chain_unregister(&nh->head, n);
-	up_write(&nh->rwsem);
-	return ret;
-}
+/* blocking_notifier_chain_unregister removed - unused */
 
 int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 		unsigned long val, void *v)

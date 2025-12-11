@@ -80,10 +80,8 @@ extern int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
 		struct notifier_block *nb);
 /* raw_notifier_chain_register, srcu_notifier_chain_register, *_unique_prio variants removed - unused */
 
-extern int atomic_notifier_chain_unregister(struct atomic_notifier_head *nh,
-		struct notifier_block *nb);
-extern int blocking_notifier_chain_unregister(struct blocking_notifier_head *nh,
-		struct notifier_block *nb);
+/* atomic_notifier_chain_unregister removed - unused */
+/* blocking_notifier_chain_unregister removed - unused */
 /* raw_notifier_chain_unregister, srcu_notifier_chain_unregister removed - unused */
 
 extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,

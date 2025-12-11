@@ -131,9 +131,7 @@ int vsscanf(const char *, const char *, va_list);
 
 extern int no_hash_pointers_enable(char *str);
 
-extern int get_option(char **str, int *pint);
-extern char *get_options(const char *str, int nints, int *ints);
-extern unsigned long long memparse(const char *ptr, char **retptr);
+/* get_option, get_options, memparse removed - never called */
 extern bool parse_option_str(const char *str, const char *option);
 extern char *next_arg(char *args, char **param, char **val);
 

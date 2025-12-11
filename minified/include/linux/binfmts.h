@@ -82,9 +82,8 @@ static inline void insert_binfmt(struct linux_binfmt *fmt)
 	__register_binfmt(fmt, 1);
 }
 
-/* unregister_binfmt removed - unused */
+/* unregister_binfmt, remove_arg_zero removed - unused */
 
-extern int __must_check remove_arg_zero(struct linux_binprm *);
 extern int begin_new_exec(struct linux_binprm * bprm);
 extern void setup_new_exec(struct linux_binprm * bprm);
 extern void finalize_exec(struct linux_binprm *bprm);
@@ -99,12 +98,9 @@ extern int suid_dumpable;
 extern int setup_arg_pages(struct linux_binprm * bprm,
 			   unsigned long stack_top,
 			   int executable_stack);
-extern int transfer_args_to_stack(struct linux_binprm *bprm,
-				  unsigned long *sp_location);
-/* Removed: bprm_change_interp - never called */
+/* transfer_args_to_stack, bprm_change_interp, read_code removed - never called */
 int copy_string_kernel(const char *arg, struct linux_binprm *bprm);
 extern void set_binfmt(struct linux_binfmt *new);
-extern ssize_t read_code(struct file *, unsigned long, loff_t, size_t);
 
 int kernel_execve(const char *filename,
 		  const char *const *argv, const char *const *envp);

@@ -513,8 +513,7 @@ static inline int folio_put_testzero(struct folio *folio)
 {
 	return put_page_testzero(&folio->page);
 }
-
-extern int page_is_ram(unsigned long pfn);
+/* page_is_ram removed - never called */
 
 enum {
 	REGION_INTERSECTS,
@@ -1002,12 +1001,7 @@ extern unsigned long move_page_tables(struct vm_area_struct *vma,
 		unsigned long new_addr, unsigned long len,
 		bool need_rmap_locks);
 
-/* MM_CP_DIRTY_ACCT, MM_CP_PROT_NUMA, MM_CP_UFFD_WP* removed - unused */
-
-extern unsigned long change_protection(struct mmu_gather *tlb,
-			      struct vm_area_struct *vma, unsigned long start,
-			      unsigned long end, pgprot_t newprot,
-			      unsigned long cp_flags);
+/* MM_CP_DIRTY_ACCT, MM_CP_PROT_NUMA, MM_CP_UFFD_WP*, change_protection removed - unused */
 extern int mprotect_fixup(struct mmu_gather *tlb, struct vm_area_struct *vma,
 			  struct vm_area_struct **pprev, unsigned long start,
 			  unsigned long end, unsigned long newflags);

@@ -245,11 +245,7 @@ static int __is_ram(unsigned long pfn, unsigned long nr_pages, void *arg)
 {
 	return 1;
 }
-
-int __weak page_is_ram(unsigned long pfn)
-{
-	return walk_system_ram_range(pfn, 1, NULL, __is_ram) == 1;
-}
+/* page_is_ram removed - never called */
 
 static int __region_intersects(resource_size_t start, size_t size,
 			unsigned long flags, unsigned long desc)

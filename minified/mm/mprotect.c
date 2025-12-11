@@ -4,16 +4,7 @@
 #include <asm/tlb.h>
 
 #include "internal.h"
-
-// Stub: change_protection - pretend we changed protection
-unsigned long change_protection(struct mmu_gather *tlb,
-			      struct vm_area_struct *vma, unsigned long start,
-			      unsigned long end, pgprot_t newprot,
-			      unsigned long cp_flags)
-{
-	// Return 0 pages changed
-	return 0;
-}
+/* change_protection removed - never called */
 
 // Stub: mprotect_fixup - called by setup_arg_pages during exec
 int mprotect_fixup(struct mmu_gather *tlb, struct vm_area_struct *vma,

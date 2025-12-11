@@ -222,17 +222,14 @@ static inline bool tty_throttled(struct tty_struct *tty)
 
 void tty_kref_put(struct tty_struct *tty);
 struct pid *tty_get_pgrp(struct tty_struct *tty);
-void tty_vhangup_self(void);
+/* tty_vhangup_self removed - unused */
 void disassociate_ctty(int priv);
 dev_t tty_devnum(struct tty_struct *tty);
 void proc_clear_tty(struct task_struct *p);
 struct tty_struct *get_current_tty(void);
 int __init tty_init(void);
 const char *tty_name(const struct tty_struct *tty);
-struct tty_struct *tty_kopen_exclusive(dev_t device);
-struct tty_struct *tty_kopen_shared(dev_t device);
-void tty_kclose(struct tty_struct *tty);
-int tty_dev_name_to_number(const char *name, dev_t *number);
+/* tty_kopen_exclusive, tty_kopen_shared, tty_kclose, tty_dev_name_to_number removed - unused */
 
 extern struct ktermios tty_std_termios;
 
@@ -263,9 +260,9 @@ int tty_get_icount(struct tty_struct *tty,
 		struct serial_icounter_struct *icount);
 int is_current_pgrp_orphaned(void);
 void tty_hangup(struct tty_struct *tty);
-void tty_vhangup(struct tty_struct *tty);
+/* tty_vhangup removed - unused */
 int tty_hung_up_p(struct file *filp);
-void do_SAK(struct tty_struct *tty);
+/* do_SAK removed - unused */
 void __do_SAK(struct tty_struct *tty);
 void no_tty(void);
 speed_t tty_termios_baud_rate(struct ktermios *termios);

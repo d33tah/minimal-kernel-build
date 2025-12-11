@@ -747,14 +747,7 @@ static void gotoxy(struct vc_data *vc, int new_x, int new_y)
 		(vc->state.x << 1);
 	vc->vc_need_wrap = 0;
 }
-
-void scrollback(struct vc_data *vc)
-{
-}
-
-void scrollfront(struct vc_data *vc, int lines)
-{
-}
+/* scrollback, scrollfront removed - never called */
 
 static void lf(struct vc_data *vc)
 {
@@ -822,15 +815,7 @@ static void default_attr(struct vc_data *vc)
 	vc->state.blink = false;
 	vc->state.color = vc->vc_def_color;
 }
-
-void mouse_report(struct tty_struct *tty, int butt, int mrx, int mry)
-{
-}
-
-int mouse_reporting(void)
-{
-	return 0;
-}
+/* mouse_report, mouse_reporting removed - never called */
 
 static void save_cur(struct vc_data *vc)
 {

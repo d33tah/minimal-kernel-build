@@ -189,11 +189,7 @@ int force_sig_fault_to_task(int sig, int code, void __user *addr
 	, struct task_struct *t);
 int force_sig_fault(int sig, int code, void __user *addr
 	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr));
-int send_sig_fault(int sig, int code, void __user *addr
-	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr)
-	, struct task_struct *t);
-
-/* force_sig_mceerr, send_sig_mceerr, force_sig_bnderr, send_sig_perf,
+/* send_sig_fault, force_sig_mceerr, send_sig_mceerr, force_sig_bnderr, send_sig_perf,
    force_sig_ptrace_errno_trap, force_sig_fault_trapno, send_sig_fault_trapno,
    force_sig_seccomp removed - unused */
 int force_sig_pkuerr(void __user *addr, u32 pkey);

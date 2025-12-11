@@ -37,7 +37,7 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch);
 static void vgacon_scrolldelta(struct vc_data *c, int lines);
 static int vgacon_set_origin(struct vc_data *c);
 static void vgacon_save_screen(struct vc_data *c);
-static void vgacon_invert_region(struct vc_data *c, u16 * p, int count);
+/* vgacon_invert_region forward decl removed */
 static struct uni_pagedir *vgacon_uni_pagedir;
 static int vgacon_refcount;
 
@@ -355,20 +355,7 @@ static u8 vgacon_build_attr(struct vc_data *c, u8 color,
 	return attr;
 }
 
-static void vgacon_invert_region(struct vc_data *c, u16 * p, int count)
-{
-	const bool col = vga_can_do_color;
-
-	while (count--) {
-		u16 a = scr_readw(p);
-		if (col)
-			a = ((a) & 0x88ff) | (((a) & 0x7000) >> 4) |
-			    (((a) & 0x0700) << 4);
-		else
-			a ^= ((a & 0x0700) == 0x0100) ? 0x7000 : 0x7700;
-		scr_writew(a, p++);
-	}
-}
+/* vgacon_invert_region removed - con_invert_region never called through struct */
 
 static void vgacon_set_cursor_size(int xpos, int from, int to)
 {
@@ -775,7 +762,7 @@ const struct consw vga_con = {
 	.con_set_origin = vgacon_set_origin,
 	.con_save_screen = vgacon_save_screen,
 	.con_build_attr = vgacon_build_attr,
-	.con_invert_region = vgacon_invert_region,
+	/* .con_invert_region removed - never called through struct */
 };
 
 MODULE_LICENSE("GPL");

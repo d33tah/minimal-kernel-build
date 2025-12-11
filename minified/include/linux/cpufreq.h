@@ -14,8 +14,6 @@ struct cpufreq_frequency_table;
 
 /* cpufreq_get, cpufreq_quick_get*, disable_cpufreq, cpufreq_suspend/resume removed - unused */
 /* cpufreq_boost_*, cpufreq_enable_boost_support, cpufreq_scale removed - unused */
-/* arch_set_freq_scale removed - unused */
+/* arch_set_freq_scale, arch_freq_get_on_cpu removed - unused */
 
-extern unsigned int arch_freq_get_on_cpu(int cpu);
-
-#endif  
+#endif

@@ -178,11 +178,9 @@ static inline void cpus_read_unlock(void) { }
 /* cpus_read_trylock removed - unused */
 static inline void lockdep_assert_cpus_held(void) { }
 static inline void cpu_hotplug_disable(void) { }
-/* remove_cpu, suspend_disable_secondary_cpus removed - unused */
+/* remove_cpu, suspend_disable_secondary_cpus, cpu_idle_poll_ctrl removed - unused */
 
 void __noreturn cpu_startup_entry(enum cpuhp_state state);
-
-void cpu_idle_poll_ctrl(bool enable);
 
 #define __cpuidle	__section(".cpuidle.text")
 

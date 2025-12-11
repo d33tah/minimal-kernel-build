@@ -3,17 +3,6 @@ extern char __cpuidle_text_start[], __cpuidle_text_end[];
 
 static int __read_mostly cpu_idle_force_poll;
 
-void cpu_idle_poll_ctrl(bool enable)
-{
-	if (enable) {
-		cpu_idle_force_poll++;
-	} else {
-		cpu_idle_force_poll--;
-		WARN_ON_ONCE(cpu_idle_force_poll < 0);
-	}
-}
-
-
 static noinline int __cpuidle cpu_idle_poll(void)
 {
 	 

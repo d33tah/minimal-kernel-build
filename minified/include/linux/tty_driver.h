@@ -144,7 +144,7 @@ struct device *tty_register_device(struct tty_driver *driver, unsigned index,
 struct device *tty_register_device_attr(struct tty_driver *driver,
 		unsigned index, struct device *device, void *drvdata,
 		const struct attribute_group **attr_grp);
-void tty_unregister_device(struct tty_driver *driver, unsigned index);
+/* tty_unregister_device removed - never called */
 
 static inline void proc_tty_register_driver(struct tty_driver *d) {}
 static inline void proc_tty_unregister_driver(struct tty_driver *d) {}

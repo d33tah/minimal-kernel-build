@@ -561,11 +561,7 @@ ssize_t redirected_tty_write(struct kiocb *iocb, struct iov_iter *iter)
 	}
 	return tty_write(iocb, iter);
 }
-
-int tty_send_xchar(struct tty_struct *tty, char ch)
-{
-	return 0;
-}
+/* tty_send_xchar removed - never called */
 
 static void pty_line_name(struct tty_driver *driver, int index, char *p)
 {
@@ -1422,7 +1418,8 @@ err_put:
 	return ERR_PTR(retval);
 }
 
-void tty_unregister_device(struct tty_driver *driver, unsigned index)
+/* Only used internally, make it static */
+static void tty_unregister_device(struct tty_driver *driver, unsigned index)
 {
 	device_destroy(tty_class,
 		MKDEV(driver->major, driver->minor_start) + index);

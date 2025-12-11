@@ -250,8 +250,7 @@ static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 
 const char *tty_driver_name(const struct tty_struct *tty);
 void tty_wait_until_sent(struct tty_struct *tty, long timeout);
-/* stop_tty, start_tty, tty_write_message removed - unused */
-int tty_send_xchar(struct tty_struct *tty, char ch);
+/* stop_tty, start_tty, tty_write_message, tty_send_xchar removed - unused */
 int tty_put_char(struct tty_struct *tty, unsigned char c);
 unsigned int tty_chars_in_buffer(struct tty_struct *tty);
 unsigned int tty_write_room(struct tty_struct *tty);

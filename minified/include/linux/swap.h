@@ -92,7 +92,7 @@ extern void swap_setup(void);
 extern void lru_cache_add_inactive_or_unevictable(struct page *page,
 						struct vm_area_struct *vma);
 
-extern unsigned long zone_reclaimable_pages(struct zone *zone);
+/* zone_reclaimable_pages removed - never called */
 extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 					gfp_t gfp_mask, nodemask_t *mask);
 extern int vm_swappiness;

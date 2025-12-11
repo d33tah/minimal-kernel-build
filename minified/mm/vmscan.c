@@ -30,10 +30,7 @@ void register_shrinker_prepared(struct shrinker *shrinker)
 	 
 }
 
-unsigned long zone_reclaimable_pages(struct zone *zone)
-{
-	return 0;   
-}
+/* zone_reclaimable_pages removed - never called */
 
 unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 				 gfp_t gfp_mask, nodemask_t *nodemask)

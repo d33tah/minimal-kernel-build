@@ -639,9 +639,7 @@ void xas_init_marks(const struct xa_state *xas)
 	}
 }
 
-void xas_pause(struct xa_state *xas)
-{
-}
+/* xas_pause removed - unused */
 
 void *__xas_prev(struct xa_state *xas)
 {

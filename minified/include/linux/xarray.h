@@ -416,7 +416,7 @@ void xas_init_marks(const struct xa_state *);
 
 bool xas_nomem(struct xa_state *, gfp_t);
 void xas_destroy(struct xa_state *);
-void xas_pause(struct xa_state *);
+/* xas_pause removed - unused */
 
 void xas_create_range(struct xa_state *);
 

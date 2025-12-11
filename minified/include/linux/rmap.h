@@ -103,8 +103,6 @@ static inline void anon_vma_merge(struct vm_area_struct *vma,
 	unlink_anon_vmas(next);
 }
 
-struct anon_vma *page_get_anon_vma(struct page *page);
-
 typedef int __bitwise rmap_t;
 
 #define RMAP_NONE		((__force rmap_t)0)

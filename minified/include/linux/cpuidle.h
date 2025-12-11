@@ -131,7 +131,6 @@ static inline int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
 static inline int cpuidle_enter_s2idle(struct cpuidle_driver *drv,
 				       struct cpuidle_device *dev)
 {return -ENODEV; }
-extern void sched_idle_set_state(struct cpuidle_state *idle_state);
 extern void default_idle_call(void);
 
 #endif  

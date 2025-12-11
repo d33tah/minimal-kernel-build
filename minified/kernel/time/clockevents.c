@@ -43,11 +43,6 @@ static u64 cev_delta2ns(unsigned long latch, struct clock_event_device *evt,
 	return clc > 1000 ? clc : 1000;
 }
 
-u64 clockevent_delta2ns(unsigned long latch, struct clock_event_device *evt)
-{
-	return cev_delta2ns(latch, evt, false);
-}
-
 static int __clockevents_switch_state(struct clock_event_device *dev,
 				      enum clock_event_state state)
 {

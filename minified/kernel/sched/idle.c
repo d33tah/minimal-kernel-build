@@ -1,11 +1,6 @@
 
 extern char __cpuidle_text_start[], __cpuidle_text_end[];
 
-void sched_idle_set_state(struct cpuidle_state *idle_state)
-{
-	idle_set_state(this_rq(), idle_state);
-}
-
 static int __read_mostly cpu_idle_force_poll;
 
 void cpu_idle_poll_ctrl(bool enable)

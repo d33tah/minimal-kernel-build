@@ -53,12 +53,7 @@ int set_memory_global(unsigned long addr, int numpages) { return 0; }
 int set_memory_encrypted(unsigned long addr, int numpages) { return 0; }
 int set_memory_decrypted(unsigned long addr, int numpages) { return 0; }
 
-// Stub: page-based memory protection
-int set_pages_uc(struct page *page, int numpages) { return 0; }
-int set_pages_array_uc(struct page **pages, int numpages) { return 0; }
-int set_pages_array_wc(struct page **pages, int numpages) { return 0; }
-int set_pages_wb(struct page *page, int numpages) { return 0; }
-int set_pages_array_wb(struct page **pages, int numpages) { return 0; }
+/* set_pages_uc, set_pages_array_uc, set_pages_array_wc, set_pages_wb, set_pages_array_wb removed - never called */
 int set_pages_ro(struct page *page, int numpages) { return 0; }
 /* set_pages_rw removed - never called */
 

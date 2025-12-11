@@ -28,16 +28,8 @@ int set_memory_np_noalias(unsigned long addr, int numpages);
 int set_memory_nonglobal(unsigned long addr, int numpages);
 int set_memory_global(unsigned long addr, int numpages);
 
-int set_pages_array_uc(struct page **pages, int addrinarray);
-int set_pages_array_wc(struct page **pages, int addrinarray);
-int set_pages_array_wb(struct page **pages, int addrinarray);
-
- 
-
-int set_pages_uc(struct page *page, int numpages);
-int set_pages_wb(struct page *page, int numpages);
+/* set_pages_array_uc, set_pages_array_wc, set_pages_array_wb, set_pages_uc, set_pages_wb, set_pages_rw removed - never called */
 int set_pages_ro(struct page *page, int numpages);
-/* set_pages_rw removed - never called */
 
 int set_direct_map_invalid_noflush(struct page *page);
 int set_direct_map_default_noflush(struct page *page);

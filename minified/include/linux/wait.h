@@ -124,10 +124,8 @@ void __wake_up_locked_key(struct wait_queue_head *wq_head, unsigned int mode, vo
 void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 		unsigned int mode, void *key, wait_queue_entry_t *bookmark);
 void __wake_up_sync_key(struct wait_queue_head *wq_head, unsigned int mode, void *key);
-void __wake_up_locked_sync_key(struct wait_queue_head *wq_head, unsigned int mode, void *key);
+/* __wake_up_locked_sync_key, __wake_up_sync, __wake_up_pollfree removed - unused */
 void __wake_up_locked(struct wait_queue_head *wq_head, unsigned int mode, int nr);
-void __wake_up_sync(struct wait_queue_head *wq_head, unsigned int mode);
-void __wake_up_pollfree(struct wait_queue_head *wq_head);
 
 #define wake_up(x)			__wake_up(x, TASK_NORMAL, 1, NULL)
 #define wake_up_all(x)			__wake_up(x, TASK_NORMAL, 0, NULL)

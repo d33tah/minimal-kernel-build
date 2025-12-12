@@ -84,28 +84,7 @@ struct file *anon_inode_getfile(const char *name,
 }
 
 /* anon_inode_getfile_secure removed - unused */
-
-int anon_inode_getfd(const char *name, const struct file_operations *fops,
-		     void *priv, int flags)
-{
-	int error, fd;
-	struct file *file;
-
-	error = get_unused_fd_flags(flags);
-	if (error < 0)
-		return error;
-	fd = error;
-
-	file = __anon_inode_getfile(name, fops, priv, flags);
-	if (IS_ERR(file)) {
-		error = PTR_ERR(file);
-		put_unused_fd(fd);
-		return error;
-	}
-	fd_install(fd, file);
-	return fd;
-}
-
+/* anon_inode_getfd removed - unused (~20 LOC) */
 /* anon_inode_getfd_secure removed - unused */
 
 static int __init anon_inode_init(void)

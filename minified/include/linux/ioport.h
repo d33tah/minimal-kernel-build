@@ -100,10 +100,7 @@ extern struct resource iomem_resource;
 extern struct resource *request_resource_conflict(struct resource *root, struct resource *new);
 extern int request_resource(struct resource *root, struct resource *new);
 extern int release_resource(struct resource *new);
-/* release_child_resources removed - unused */
-extern void reserve_region_with_split(struct resource *root,
-			     resource_size_t start, resource_size_t end,
-			     const char *name);
+/* release_child_resources, reserve_region_with_split removed - unused */
 extern struct resource *insert_resource_conflict(struct resource *parent, struct resource *new);
 extern int insert_resource(struct resource *parent, struct resource *new);
 /* insert_resource_expand_to_fit removed - unused */

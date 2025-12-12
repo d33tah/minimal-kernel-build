@@ -26,7 +26,6 @@
 #include <linux/string.h>
 #include <linux/debugfs.h>
 #include <linux/userfaultfd_k.h>
-#include <linux/dax.h>
 #include <linux/oom.h>
 #include <linux/file.h>
 #include <linux/numa.h>

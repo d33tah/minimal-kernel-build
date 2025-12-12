@@ -31,7 +31,6 @@
 #include <linux/sizes.h>
 #include <linux/types.h>
 #include <linux/cred.h>
-#include <linux/dax.h>
 #include <linux/uaccess.h>
 #include <asm/param.h>
 #include <asm/page.h>

@@ -1444,9 +1444,6 @@ extern atomic_long_t mmap_pages_allocated;
 
 void vma_interval_tree_insert(struct vm_area_struct *node,
 			      struct rb_root_cached *root);
-void vma_interval_tree_insert_after(struct vm_area_struct *node,
-				    struct vm_area_struct *prev,
-				    struct rb_root_cached *root);
 void vma_interval_tree_remove(struct vm_area_struct *node,
 			      struct rb_root_cached *root);
 struct vm_area_struct *vma_interval_tree_iter_first(struct rb_root_cached *root,

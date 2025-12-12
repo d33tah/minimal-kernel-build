@@ -200,17 +200,7 @@ timespec64_to_jiffies(const struct timespec64 *value)
 
 }
 
-void
-jiffies_to_timespec64(const unsigned long jiffies, struct timespec64 *value)
-{
-	 
-	u32 rem;
-	value->tv_sec = div_u64_rem((u64)jiffies * TICK_NSEC,
-				    NSEC_PER_SEC, &rem);
-	value->tv_nsec = rem;
-}
-
-/* jiffies_to_clock_t, clock_t_to_jiffies, jiffies_64_to_clock_t, nsec_to_clock_t, jiffies64_to_nsecs, jiffies64_to_msecs removed - unused */
+/* jiffies_to_timespec64, jiffies_to_clock_t, clock_t_to_jiffies, jiffies_64_to_clock_t, nsec_to_clock_t, jiffies64_to_nsecs, jiffies64_to_msecs removed - unused */
 
 u64 nsecs_to_jiffies64(u64 n)
 {

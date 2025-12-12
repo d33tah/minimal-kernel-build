@@ -50,7 +50,8 @@ static inline void shm_init_task(struct task_struct *task) { }
 #include <linux/futex.h>
 #include <linux/compat.h>
 #include <linux/kthread.h>
-#include <linux/task_io_accounting_ops.h>
+/* task_io_accounting_ops.h removed - stubs inlined */
+static inline void task_io_accounting_init(struct task_io_accounting *ioac) {}
 #include <linux/rcupdate.h>
 #include <linux/ptrace.h>
 #include <linux/mount.h>

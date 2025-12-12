@@ -50,7 +50,10 @@ static inline void proc_exit_connector(struct task_struct *task) {}
 #include <linux/pipe_fs_i.h>
 #include <linux/audit.h> 
 #include <linux/resource.h>
-#include <linux/task_io_accounting_ops.h>
+/* task_io_accounting_ops.h removed - stubs inlined */
+static inline unsigned long task_io_get_inblock(const struct task_struct *p) { return 0; }
+static inline unsigned long task_io_get_oublock(const struct task_struct *p) { return 0; }
+static inline void task_io_accounting_add(struct task_io_accounting *dst, struct task_io_accounting *src) {}
 #include <linux/blkdev.h>
 #include <linux/task_work.h>
 #include <linux/fs_struct.h>

@@ -1,4 +1,4 @@
-#include <linux/crash_dump.h>
+#include <asm/early_ioremap.h>
 #include <linux/memblock.h>
 #include <linux/suspend.h>
 #include <linux/acpi.h>

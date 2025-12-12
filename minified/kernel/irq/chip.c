@@ -535,32 +535,7 @@ out_unlock:
 	raw_spin_unlock(&desc->lock);
 }
 
-void handle_untracked_irq(struct irq_desc *desc)
-{
-	raw_spin_lock(&desc->lock);
-
-	if (!irq_may_run(desc))
-		goto out_unlock;
-
-	desc->istate &= ~(IRQS_REPLAY | IRQS_WAITING);
-
-	if (unlikely(!desc->action || irqd_irq_disabled(&desc->irq_data))) {
-		desc->istate |= IRQS_PENDING;
-		goto out_unlock;
-	}
-
-	desc->istate &= ~IRQS_PENDING;
-	irqd_set(&desc->irq_data, IRQD_IRQ_INPROGRESS);
-	raw_spin_unlock(&desc->lock);
-
-	__handle_irq_event_percpu(desc);
-
-	raw_spin_lock(&desc->lock);
-	irqd_clear(&desc->irq_data, IRQD_IRQ_INPROGRESS);
-
-out_unlock:
-	raw_spin_unlock(&desc->lock);
-}
+/* handle_untracked_irq removed - unused (~26 LOC) */
 
 static void cond_unmask_irq(struct irq_desc *desc)
 {

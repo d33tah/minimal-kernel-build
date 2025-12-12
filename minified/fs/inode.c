@@ -816,7 +816,7 @@ static int relatime_need_update(struct vfsmount *mnt, struct inode *inode,
 	return 0;
 }
 
-int generic_update_time(struct inode *inode, struct timespec64 *time, int flags)
+static int generic_update_time(struct inode *inode, struct timespec64 *time, int flags)
 {
 	int dirty_flags = 0;
 

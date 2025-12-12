@@ -20,10 +20,7 @@
 #define PTRACE_EVENTMSG_SYSCALL_ENTRY	1
 #define PTRACE_EVENTMSG_SYSCALL_EXIT	2
 
-struct syscall_info {
-	__u64			sp;
-	struct seccomp_data	data;
-};
+/* struct syscall_info removed - unused */
 
 extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
 			    void *buf, int len, unsigned int gup_flags);
@@ -208,8 +205,7 @@ static inline void user_single_step_report(struct pt_regs *regs)
 #define current_user_stack_pointer() user_stack_pointer(current_pt_regs())
 #endif
 
-extern int task_current_syscall(struct task_struct *target, struct syscall_info *info);
-/* sigaction_compat_abi removed - never called */
+/* task_current_syscall, sigaction_compat_abi removed - never called */
 
 static inline int ptrace_report_syscall(unsigned long message)
 {

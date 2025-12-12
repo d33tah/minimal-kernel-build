@@ -26,7 +26,7 @@ extern void ktime_get_coarse_real_ts64(struct timespec64 *ts);
 /* getboottime64 removed - unused */
 
 extern time64_t ktime_get_seconds(void);
-extern time64_t __ktime_get_real_seconds(void);
+/* __ktime_get_real_seconds removed - unused */
 extern time64_t ktime_get_real_seconds(void);
 
 

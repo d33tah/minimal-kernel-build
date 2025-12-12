@@ -450,14 +450,7 @@ time64_t ktime_get_real_seconds(void)
 	return seconds;
 }
 
-noinstr time64_t __ktime_get_real_seconds(void)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-
-	return tk->xtime_sec;
-}
-
-/* ktime_get_snapshot removed - no callers */
+/* __ktime_get_real_seconds, ktime_get_snapshot removed - no callers */
 /* get_device_system_crosststamp removed - unused */
 /* do_settimeofday64, persistent_clock_is_local removed - unused */
 /* timekeeping_warp_clock removed - no callers */

@@ -131,8 +131,7 @@ struct task_struct;
 struct user_namespace;
 
 extern const kernel_cap_t __cap_empty_set;
-extern const kernel_cap_t __cap_init_eff_set;
-
+/* __cap_init_eff_set removed - unused */
 
 #define CAP_FOR_EACH_U32(__capi)  \
 	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)

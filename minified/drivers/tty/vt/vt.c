@@ -1437,23 +1437,7 @@ int __init vty_init(const struct file_operations *console_fops)
 
 /* do_bind_con_driver, vt_bind, vt_unbind, store_bind, show_bind, show_name,
    dev_attr_bind, dev_attr_name, con_dev_attrs, vtconsole_init_device,
-   vtconsole_class - all removed, never used since vtconsole_class_init is stubbed */
-
-int con_is_bound(const struct consw *csw)
-{
-	int i, bound = 0;
-
-	WARN_CONSOLE_UNLOCKED();
-
-	for (i = 0; i < MAX_NR_CONSOLES; i++) {
-		if (con_driver_map[i] == csw) {
-			bound = 1;
-			break;
-		}
-	}
-
-	return bound;
-}
+   vtconsole_class, con_is_bound - all removed, never used */
 
 bool con_is_visible(const struct vc_data *vc)
 {

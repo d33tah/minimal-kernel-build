@@ -1437,96 +1437,7 @@ int __init vty_init(const struct file_operations *console_fops)
 
 static struct class *vtconsole_class;
 
-static int do_bind_con_driver(const struct consw *csw, int first, int last,
-			   int deflt)
-{
-	struct module *owner = csw->owner;
-	const char *desc = NULL;
-	struct con_driver *con_driver;
-	int i, j = -1, k = -1, retval = -ENODEV;
-
-	if (!try_module_get(owner))
-		return -ENODEV;
-
-	WARN_CONSOLE_UNLOCKED();
-
-	
-	for (i = 0; i < MAX_NR_CON_DRIVER; i++) {
-		con_driver = &registered_con_driver[i];
-
-		if (con_driver->con == csw) {
-			desc = con_driver->desc;
-			retval = 0;
-			break;
-		}
-	}
-
-	if (retval)
-		goto err;
-
-	if (!(con_driver->flag & CON_DRIVER_FLAG_INIT)) {
-		csw->con_startup();
-		con_driver->flag |= CON_DRIVER_FLAG_INIT;
-	}
-
-	if (deflt) {
-		if (conswitchp)
-			module_put(conswitchp->owner);
-
-		__module_get(owner);
-		conswitchp = csw;
-	}
-
-	first = max(first, con_driver->first);
-	last = min(last, con_driver->last);
-
-	for (i = first; i <= last; i++) {
-		int old_was_color;
-		struct vc_data *vc = vc_cons[i].d;
-
-		if (con_driver_map[i])
-			module_put(con_driver_map[i]->owner);
-		__module_get(owner);
-		con_driver_map[i] = csw;
-
-		if (!vc || !vc->vc_sw)
-			continue;
-
-		j = i;
-
-		if (con_is_visible(vc)) {
-			k = i;
-			save_screen(vc);
-		}
-
-		old_was_color = vc->vc_can_do_color;
-		vc->vc_sw->con_deinit(vc);
-		vc->vc_origin = (unsigned long)vc->vc_screenbuf;
-		visual_init(vc, i, 0);
-		set_origin(vc);
-		update_attr(vc);
-
-		
-		if (old_was_color != vc->vc_can_do_color)
-			clear_buffer_attributes(vc);
-	}
-
-	if (j >= 0) {
-		struct vc_data *vc = vc_cons[j].d;
-
-		if (k >= 0) {
-			vc = vc_cons[k].d;
-			update_screen(vc);
-		}
-	} else {
-		pr_cont("to %s\n", desc);
-	}
-
-	retval = 0;
-err:
-	module_put(owner);
-	return retval;
-};
+/* do_bind_con_driver removed - never called (do_take_over_console stubbed) */
 
 static inline int vt_bind(struct con_driver *con)
 {
@@ -1604,18 +1515,10 @@ static int do_register_con_driver(const struct consw *csw, int first, int last)
 	return -ENODEV;
 }
 
+/* do_take_over_console stubbed - never called in minimal kernel */
 int do_take_over_console(const struct consw *csw, int first, int last, int deflt)
 {
-	int err;
-
-	err = do_register_con_driver(csw, first, last);
-	
-	if (err == -EBUSY)
-		err = 0;
-	if (!err)
-		do_bind_con_driver(csw, first, last, deflt);
-
-	return err;
+	return -ENODEV;
 }
 
 static int __init vtconsole_class_init(void)

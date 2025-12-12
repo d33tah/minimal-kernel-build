@@ -224,11 +224,8 @@ static long hung_up_tty_ioctl(struct file *file, unsigned int cmd,
 	return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
 }
 
-static long hung_up_tty_compat_ioctl(struct file *file,
-				     unsigned int cmd, unsigned long arg)
-{
-	return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
-}
+/* hung_up_tty_compat_ioctl merged with hung_up_tty_ioctl - identical behavior */
+#define hung_up_tty_compat_ioctl hung_up_tty_ioctl
 
 static int hung_up_tty_fasync(int fd, struct file *file, int on)
 {

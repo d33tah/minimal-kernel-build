@@ -8,8 +8,6 @@
 #include <linux/cpuidle.h>
 #include <linux/jiffies.h>
 #include <linux/init_task.h>
-#include <linux/psi.h>
-
 #include <linux/slab.h>
 #include <linux/suspend.h>
 /* tsacct_kern.h inlined - stub */

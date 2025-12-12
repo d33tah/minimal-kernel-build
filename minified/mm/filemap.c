@@ -26,7 +26,6 @@
 #include <linux/memcontrol.h>
 #include <linux/shmem_fs.h>
 #include <linux/rmap.h>
-#include <linux/psi.h>
 #include <linux/ramfs.h>
 #include <linux/page_idle.h>
 #include <linux/migrate.h>

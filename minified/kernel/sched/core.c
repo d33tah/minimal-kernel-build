@@ -48,8 +48,8 @@ static inline void delayacct_blkio_end(struct task_struct *p) {}
 
 #include <linux/nmi.h>
 #include <linux/nospec.h>
-
-#include <linux/psi.h>
+/* psi.h removed - psi_init is stub */
+static inline void psi_init(void) {}
 
 #include <linux/sched/wake_q.h>
 #include <linux/slab.h>

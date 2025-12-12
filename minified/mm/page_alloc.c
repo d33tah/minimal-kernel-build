@@ -100,7 +100,6 @@ static inline void dump_page_owner(const struct page *page) {}
 #include <linux/memcontrol.h>
 #include <linux/lockdep.h>
 #include <linux/nmi.h>
-#include <linux/psi.h>
 #include <linux/khugepaged.h>
 #include <linux/buffer_head.h>
 #include <asm/sections.h>

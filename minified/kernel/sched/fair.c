@@ -15,8 +15,6 @@ static inline void wake_up_nohz_cpu(int cpu) { }
 #include <linux/cpuidle.h>
 #include <linux/interrupt.h>
 #include <linux/mempolicy.h>
-
-#include <linux/psi.h>
 #include <linux/ratelimit.h>
 #include <linux/task_work.h>
 

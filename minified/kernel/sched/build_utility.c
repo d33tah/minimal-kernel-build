@@ -20,8 +20,6 @@ static inline void wake_up_nohz_cpu(int cpu) { }
 #include <linux/nmi.h>
 #include <linux/nospec.h>
 #include <linux/proc_fs.h>
-#include <linux/psi.h>
-
 
 #include <linux/timex.h>
 #include <linux/utsname.h>

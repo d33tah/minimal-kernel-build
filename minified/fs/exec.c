@@ -31,7 +31,8 @@ static inline void task_numa_free(struct task_struct *p, bool final) {}
 #include <linux/mount.h>
 #include <linux/security.h>
 #include <linux/syscalls.h>
-#include <linux/tsacct_kern.h>
+/* tsacct_kern.h inlined - stub */
+static inline void acct_update_integrals(struct task_struct *tsk) {}
 #include <linux/cn_proc.h>
 #include <linux/audit.h>
 #include <linux/kmod.h>

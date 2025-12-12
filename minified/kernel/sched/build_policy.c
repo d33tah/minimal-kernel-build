@@ -12,7 +12,8 @@
 
 #include <linux/slab.h>
 #include <linux/suspend.h>
-#include <linux/tsacct_kern.h>
+/* tsacct_kern.h inlined - stub */
+static inline void acct_account_cputime(struct task_struct *tsk) {}
 #include <linux/vtime.h>
 
 #include <linux/sched/types.h>

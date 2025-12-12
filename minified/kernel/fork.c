@@ -60,7 +60,8 @@ static inline void rt_mutex_debug_task_free(struct task_struct *tsk) { }
 #define acct_process()		do { } while (0)
 #define acct_exit_ns(ns)	do { } while (0)
 #include <linux/userfaultfd_k.h>
-#include <linux/tsacct_kern.h>
+/* tsacct_kern.h inlined - stub */
+static inline void acct_clear_integrals(struct task_struct *tsk) {}
 #include <linux/cn_proc.h>
 #include <linux/freezer.h>
 /* delayacct.h inlined - stubs */

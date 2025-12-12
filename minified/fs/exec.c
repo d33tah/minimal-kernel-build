@@ -772,14 +772,7 @@ static int unshare_sighand(struct task_struct *me)
 	return 0;
 }
 
-char *__get_task_comm(char *buf, size_t buf_size, struct task_struct *tsk)
-{
-	task_lock(tsk);
-	
-	strscpy_pad(buf, tsk->comm, buf_size);
-	task_unlock(tsk);
-	return buf;
-}
+/* __get_task_comm removed - unused */
 
 void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 {

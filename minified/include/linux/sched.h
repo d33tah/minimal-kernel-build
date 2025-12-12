@@ -110,14 +110,13 @@ struct audit_context;
 struct backing_dev_info;
 struct bio_list;
 struct blk_plug;
-struct bpf_local_storage;
-struct bpf_run_ctx;
+/* bpf_local_storage, bpf_run_ctx removed - unused */
 struct capture_control;
 struct cfs_rq;
 struct fs_struct;
 struct futex_pi_state;
 struct io_context;
-struct io_uring_task;
+/* io_uring_task removed - unused */
 struct mempolicy;
 struct nameidata;
 struct nsproxy;

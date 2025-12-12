@@ -1,3 +1,32 @@
+--- 2025-12-12 07:24 ---
+
+SESSION UPDATE:
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: 168,734 (after mrproper)
+- Goal: 150,000 LOC (~18,734 to go)
+- Removed this session: ~35 LOC
+
+Commits:
+1. Remove unused update_region function from vt.c (~10 LOC)
+2. Remove unused keyboard/vt functions (vt_spawn_con, vt_get_kb, vt_set_kb,
+   kbd_rate) and related header entries (~25 LOC)
+
+Notes:
+- Many stub functions remain but are called from other code
+- Large atomic headers (~4500 LOC) are auto-generated and hard to reduce
+- Most obvious unused functions already removed in prior sessions
+- Looking for larger subsystem reductions
+
+--- 2025-12-12 07:10 ---
+
+SESSION START:
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: 168,759 (after mrproper)
+- Goal: 150,000 LOC (~18,759 to go)
+
+Strategy: Focus on larger reductions - subsystem stubs, unused header files,
+and consolidation of small scattered code.
+
 --- 2025-12-11 17:18 ---
 
 SESSION UPDATE:

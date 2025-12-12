@@ -55,8 +55,6 @@ static inline swp_entry_t folio_swap_entry(struct folio *folio)
 	return entry;
 }
 
-void workingset_age_nonresident(struct lruvec *lruvec, unsigned long nr_pages);
-void *workingset_eviction(struct folio *folio, struct mem_cgroup *target_memcg);
 void workingset_refault(struct folio *folio, void *shadow);
 void workingset_activation(struct folio *folio);
 
@@ -87,8 +85,6 @@ static inline bool lru_cache_disabled(void)
 
 extern void lru_add_drain(void);
 extern void lru_add_drain_cpu(int cpu);
-extern void swap_setup(void);
-
 extern void lru_cache_add_inactive_or_unevictable(struct page *page,
 						struct vm_area_struct *vma);
 

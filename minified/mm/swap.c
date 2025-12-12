@@ -544,14 +544,3 @@ unsigned pagevec_lookup_range_tag(struct pagevec *pvec,
 	return pagevec_count(pvec);
 }
 
-void __init swap_setup(void)
-{
-	unsigned long megs = totalram_pages() >> (20 - PAGE_SHIFT);
-
-	 
-	if (megs < 16)
-		page_cluster = 2;
-	else
-		page_cluster = 3;
-	 
-}

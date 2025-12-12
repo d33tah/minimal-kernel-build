@@ -3,14 +3,12 @@
 #include <linux/export.h>
 #include <linux/syscalls.h>
 
-/* pipe_lock, pipe_unlock, pipe_fcntl removed - unused */
+/* pipe_lock, pipe_unlock, pipe_fcntl, generic_pipe_buf_release removed - unused */
 
 bool generic_pipe_buf_try_steal(struct pipe_inode_info *pipe,
 				struct pipe_buffer *buf) { return false; }
 
 bool generic_pipe_buf_get(struct pipe_inode_info *pipe, struct pipe_buffer *buf) { return true; }
-
-void generic_pipe_buf_release(struct pipe_inode_info *pipe, struct pipe_buffer *buf) { }
 
 SYSCALL_DEFINE2(pipe2, int __user *, fildes, int, flags) { return -ENOSYS; }
 SYSCALL_DEFINE1(pipe, int __user *, fildes) { return -ENOSYS; }

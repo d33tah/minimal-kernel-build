@@ -49,7 +49,7 @@ int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc)
 
 
 /* tty_unregister_ldisc stubbed - ldisc modules never unloaded in minimal kernel */
-void tty_unregister_ldisc(struct tty_ldisc_ops *ldisc) { }
+/* tty_unregister_ldisc removed - unused */
 
 static struct tty_ldisc_ops *get_ldops(int disc)
 {

@@ -92,7 +92,7 @@ struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *);
 void tty_ldisc_flush(struct tty_struct *tty);
 
 int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
-void tty_unregister_ldisc(struct tty_ldisc_ops *ldisc);
+/* tty_unregister_ldisc removed - unused */
 int tty_set_ldisc(struct tty_struct *tty, int disc);
 /* --- end tty_ldisc.h inlined --- */
 #include <linux/mutex.h>

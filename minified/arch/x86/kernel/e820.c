@@ -15,12 +15,10 @@ static inline int firmware_map_remove(u64 start, u64 end, const char *type) { re
 #include <asm/setup.h>
 
 static struct e820_table e820_table_init		__initdata;
-static struct e820_table e820_table_kexec_init		__initdata;
-static struct e820_table e820_table_firmware_init	__initdata;
+/* e820_table_kexec_init/firmware_init removed - unused in minimal kernel */
 
 struct e820_table *e820_table __refdata			= &e820_table_init;
-struct e820_table *e820_table_kexec __refdata		= &e820_table_kexec_init;
-struct e820_table *e820_table_firmware __refdata	= &e820_table_firmware_init;
+/* e820_table_kexec/firmware removed - unused in minimal kernel */
 
 unsigned long pci_mem_start = 0xaeedbabe;
 

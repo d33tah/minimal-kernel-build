@@ -919,8 +919,6 @@ static inline void *folio_address(const struct folio *folio)
 }
 
 extern void *page_rmapping(struct page *page);
-extern pgoff_t __page_file_index(struct page *page);
-/* page_index removed - unused */
 
 bool page_mapped(struct page *page);
 bool folio_mapped(struct folio *folio);

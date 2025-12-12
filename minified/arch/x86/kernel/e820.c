@@ -493,20 +493,6 @@ void __init e820__register_nosave_regions(unsigned long limit_pfn)
 }
 
 
-u64 __init e820__memblock_alloc_reserved(u64 size, u64 align)
-{
-	u64 addr;
-
-	addr = memblock_phys_alloc(size, align);
-	if (addr) {
-		e820__range_update_kexec(addr, size, E820_TYPE_RAM, E820_TYPE_RESERVED);
-		pr_info("update e820_table_kexec for e820__memblock_alloc_reserved()\n");
-		e820__update_table_kexec();
-	}
-
-	return addr;
-}
-
 #  define MAX_ARCH_PFN		(1ULL<<(32-PAGE_SHIFT))
 
 static unsigned long __init e820_end_pfn(unsigned long limit_pfn, enum e820_type type)

@@ -337,12 +337,9 @@ struct address_space *folio_mapping(struct folio *folio)
 {
 	struct address_space *mapping;
 
-	 
+
 	if (unlikely(folio_test_slab(folio)))
 		return NULL;
-
-	if (unlikely(folio_test_swapcache(folio)))
-		return swap_address_space(folio_swap_entry(folio));
 
 	mapping = folio->mapping;
 	if ((unsigned long)mapping & PAGE_MAPPING_ANON)

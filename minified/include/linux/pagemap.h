@@ -190,12 +190,8 @@ static inline struct page *find_lock_page(struct address_space *mapping,
 	return pagecache_get_page(mapping, index, FGP_LOCK, 0);
 }
 
-#define swapcache_index(folio)	__page_file_index(&(folio)->page)
-
 static inline pgoff_t folio_index(struct folio *folio)
 {
-        if (unlikely(folio_test_swapcache(folio)))
-                return swapcache_index(folio);
         return folio->index;
 }
 

@@ -477,7 +477,7 @@ PAGE_TYPE_OPS(Table, table)
 
 PAGE_TYPE_OPS(Guard, guard)
 
-extern bool is_free_buddy_page(struct page *page);
+/* is_free_buddy_page removed - never called */
 
 PAGEFLAG(Isolated, isolated, PF_ANY);
 

@@ -87,15 +87,7 @@ static struct cpu_attr cpu_attrs[] = {
 unsigned int total_cpus;
 
 
-/* cpu_device_release, cpu_uevent, register_cpu removed - not called */
-
-struct device *get_cpu_device(unsigned int cpu)
-{
-	if (cpu < nr_cpu_ids && cpu_possible(cpu))
-		return per_cpu(cpu_sys_devices, cpu);
-	else
-		return NULL;
-}
+/* cpu_device_release, cpu_uevent, register_cpu, get_cpu_device removed - not called */
 
 static void device_create_release(struct device *dev)
 {

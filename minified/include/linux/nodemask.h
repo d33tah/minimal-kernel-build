@@ -102,9 +102,7 @@ static inline void node_set_state(int node, enum node_states state)
 {
 }
 
-static inline void node_clear_state(int node, enum node_states state)
-{
-}
+/* node_clear_state removed - unused */
 
 static inline int num_node_state(enum node_states state)
 {
@@ -121,7 +119,7 @@ static inline int num_node_state(enum node_states state)
 #define nr_online_nodes		1U
 
 #define node_set_online(node)	   node_set_state((node), N_ONLINE)
-#define node_set_offline(node)	   node_clear_state((node), N_ONLINE)
+/* node_set_offline removed - unused */
 
 #define node_online_map 	node_states[N_ONLINE]
 #define node_possible_map 	node_states[N_POSSIBLE]

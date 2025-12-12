@@ -130,8 +130,7 @@ static inline bool memblock_is_driver_managed(struct memblock_region *m)
 	return m->flags & MEMBLOCK_DRIVER_MANAGED;
 }
 
-int memblock_search_pfn_nid(unsigned long pfn, unsigned long *start_pfn,
-			    unsigned long  *end_pfn);
+/* memblock_search_pfn_nid removed - unused */
 void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn,
 			  unsigned long *out_end_pfn, int *out_nid);
 
@@ -227,8 +226,7 @@ static inline __init_memblock bool memblock_bottom_up(void)
 	return memblock.bottom_up;
 }
 
-phys_addr_t memblock_phys_mem_size(void);
-phys_addr_t memblock_reserved_size(void);
+/* memblock_phys_mem_size, memblock_reserved_size removed - unused */
 phys_addr_t memblock_start_of_DRAM(void);
 phys_addr_t memblock_end_of_DRAM(void);
 /* memblock_enforce_memory_limit, memblock_cap_memory_range, memblock_mem_limit_remove_map, memblock_is_memory, memblock_is_reserved removed - unused */

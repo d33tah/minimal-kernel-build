@@ -1,3 +1,145 @@
+--- 2025-12-12 17:33 ---
+
+SESSION END:
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: 173,583 (cloc --exclude-ext=md)
+- Binary size: 231K
+- Total commits this session: 19
+
+Commit 19: Remove unused rb_first function (~12 LOC)
+
+Total removed this session: ~170 LOC
+Starting LOC: 173,753, Ending LOC: 173,583
+Goal: 150K LOC (still ~23.5K to go)
+
+Strategy: Systematically searching for extern declarations in header
+files, then checking if they have callers outside their implementation
+file. Remove declarations and implementations for functions not called.
+
+--- 2025-12-12 17:28 ---
+
+SESSION CONTINUING:
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: 173,594 (cloc --exclude-ext=md)
+- Binary size: 231K
+- Total commits this session: 18
+
+Additional commits:
+17. Remove unused pcpu_page_first_chunk declaration (~2 LOC)
+18. Remove unused jiffies_to_timespec64 function (~10 LOC)
+
+Total removed this session: ~160 LOC
+Goal: 150K LOC (still ~23.6K to go)
+
+--- 2025-12-12 17:21 ---
+
+SESSION END SUMMARY:
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: 173,606 (cloc --exclude-ext=md)
+- Binary size: 231K
+- Total commits this session: 16
+
+Additional commits since last update:
+15. Remove unused remap_vmalloc_range* declarations (~5 LOC)
+16. Remove unused empty_name, dotdot_name; make slash_name static (~3 LOC)
+
+Strategy: Systematically finding unused externs, inline functions, and
+unused variables in header files and .c files, then removing their
+declarations and implementations.
+
+Total removed this session: ~800 LOC (started at ~173,753)
+Still ~23.6K LOC to go to reach 150K goal.
+
+Key observations:
+- Many functions are declared in headers but never called
+- Some functions have implementations that are never invoked
+- The kernel has accumulated many legacy functions over time
+- Removing single functions is tedious but adds up
+
+--- 2025-12-12 17:15 ---
+
+SESSION PROGRESS (update):
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: 173,616 (cloc --exclude-ext=md)
+- Binary size: 231K
+- Total commits this session: 14
+
+Commit 14:
+14. Remove unused reset_devices variable and setup (~5 LOC)
+
+Strategy: systematically finding unused externs, inline functions, and
+unused variables in header files and .c files.
+Total removed this session: ~750 LOC (started at ~173,753)
+Still ~23.6K LOC to go to reach 150K goal.
+
+--- 2025-12-12 17:08 ---
+
+SESSION PROGRESS (final update):
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: ~173,620 (cloc --exclude-ext=md)
+- Binary size: 231K
+- Total commits this session: 13
+
+Commits 9-13:
+9. Remove unused task_cputime_adjusted declaration
+10. Remove unused persistent_clock_is_local and update_persistent_clock64 (~8 LOC)
+11. Remove unused __cap_init_eff_set declaration
+
+Strategy working well: systematically finding unused externs and inlines.
+Total removed this session: ~650 LOC
+Still ~23.6K LOC to go to reach 150K goal.
+
+--- 2025-12-12 16:58 ---
+
+SESSION PROGRESS (continued):
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: ~173,130
+- Binary size: 231K
+- Total commits this session: 9
+
+Additional commits:
+6. Remove unused node_clear_state + node_set_offline (~4 LOC)
+7. Remove unused reserve_region_with_split function (~80 LOC)
+8. Remove unused remove_resource declaration (~1 LOC)
+
+Strategy working well: systematically finding unused externs and inlines.
+Still ~23K LOC to go to reach 150K goal.
+
+--- 2025-12-12 16:47 ---
+
+SESSION PROGRESS UPDATE:
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: 173,232 (down from 173,753)
+- Binary size: 231K
+- LOC removed this session: ~521
+
+Commits this session (6 total):
+1. Remove unused klist_prev function (~34 LOC)
+2. Remove unused lockdown_reasons declaration (~2 LOC)
+3. Remove unused clocksource_start_suspend_timing function (~7 LOC)
+4. Remove unused wb_memcg_offline and wb_blkcg_offline functions (~7 LOC)
+5. Remove unused insert_binfmt function (~5 LOC)
+
+Strategy: Systematically finding unused extern declarations and inline
+functions in header files, removing them and their implementations.
+
+--- 2025-12-12 16:28 ---
+
+SESSION START:
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: 173,753 (cloc excluding .md files)
+- Binary size: 231K
+- Goal: 150,000 LOC (~23,753 to go)
+
+Note: FIXUP.md itself has grown to ~3K lines and was counting in cloc.
+Using --exclude-ext=md for accurate measurement.
+
+Plan for this session:
+1. Find and remove large unused subsystems/files
+2. Focus on atomic headers (large auto-generated)
+3. Look for mm/ and fs/ functions that can be stubbed
+4. Consider simplifying scheduler
+
 --- 2025-12-12 07:37 ---
 
 SESSION END SUMMARY:

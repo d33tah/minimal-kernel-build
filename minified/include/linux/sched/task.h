@@ -48,7 +48,7 @@ extern void init_idle(struct task_struct *idle, int cpu);
 extern int sched_fork(unsigned long clone_flags, struct task_struct *p);
 extern void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs);
 extern void sched_post_fork(struct task_struct *p);
-extern void sched_dead(struct task_struct *p);
+/* sched_dead removed - never defined or called */
 
 void __noreturn do_task_dead(void);
 void __noreturn make_task_dead(int signr);

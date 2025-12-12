@@ -18,7 +18,8 @@
 #include <linux/percpu_counter.h>
 #include <linux/percpu.h>
 #include <linux/task_work.h>
-#include <linux/ima.h>
+/* ima.h inlined - stub */
+static inline void ima_file_free(struct file *file) {}
 #include <linux/swap.h>
 #include <linux/kmemleak.h>
 

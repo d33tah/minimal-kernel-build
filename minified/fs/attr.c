@@ -8,7 +8,9 @@
 #include <linux/fsnotify.h>
 #include <linux/fcntl.h>
 #include <linux/security.h>
-#include <linux/ima.h>
+/* ima.h inlined - stub */
+static inline void ima_inode_post_setattr(struct user_namespace *mnt_userns,
+					  struct dentry *dentry) {}
 
 /* --- 2025-12-06 17:18 --- evm.h inlined - most functions removed as unused */
 #include <linux/xattr.h>

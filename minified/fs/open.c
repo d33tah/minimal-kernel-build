@@ -47,7 +47,6 @@ struct space_resv {
 #define	FALLOC_FL_SUPPORTED_MASK	(FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE | FALLOC_FL_COLLAPSE_RANGE | FALLOC_FL_ZERO_RANGE | FALLOC_FL_INSERT_RANGE | FALLOC_FL_UNSHARE_RANGE)
 /* --- end falloc.h inlined --- */
 #include <linux/fs_struct.h>
-#include <linux/ima.h>
 
 /* Inlined from dnotify.h - only dnotify_flush kept (used by __fput) */
 static inline void dnotify_flush(struct file *filp, fl_owner_t id) {}

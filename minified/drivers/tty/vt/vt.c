@@ -322,17 +322,6 @@ static void do_update_region(struct vc_data *vc, unsigned long start, int count)
 	}
 }
 
-static void update_region(struct vc_data *vc, unsigned long start, int count)
-{
-	WARN_CONSOLE_UNLOCKED();
-
-	if (con_should_update(vc)) {
-		hide_cursor(vc);
-		do_update_region(vc, start, count);
-		set_cursor(vc);
-	}
-}
-
 static u8 build_attr(struct vc_data *vc, u8 _color,
 		enum vc_intensity _intensity, bool _blink, bool _underline,
 		bool _reverse, bool _italic)

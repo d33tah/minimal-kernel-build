@@ -104,22 +104,7 @@ int vt_do_kdgkbmeta(int console)
 	return 0;
 }
 
-int vt_spawn_con(unsigned int vt_num)
-{
-	return -EINVAL;
-}
-
 int vt_reset_unicode(int console)
-{
-	return 0;
-}
-
-int vt_get_kb(unsigned int console)
-{
-	return 0;
-}
-
-int vt_set_kb(unsigned int console, unsigned int kb)
 {
 	return 0;
 }
@@ -127,9 +112,4 @@ int vt_set_kb(unsigned int console, unsigned int kb)
 int __init kbd_init(void)
 {
 	return 0;
-}
-
-int kbd_rate(struct kbd_repeat *rpt)
-{
-	return -EINVAL;
 }

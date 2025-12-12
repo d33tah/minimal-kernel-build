@@ -132,7 +132,7 @@ bool con_is_visible(const struct vc_data *vc);
 /* --- end console_struct.h inlined --- */
 
 void kd_mksound(unsigned int hz, unsigned int ticks);
-int kbd_rate(struct kbd_repeat *rep);
+/* kbd_rate removed - unused */
 
 extern int fg_console, last_console, want_console;
 
@@ -176,13 +176,7 @@ int vty_init(const struct file_operations *console_fops);
 extern int default_utf8;
 extern int global_cursor_default;
 
-struct vt_spawn_console {
-	spinlock_t lock;
-	struct pid *pid;
-	int sig;
-};
-extern struct vt_spawn_console vt_spawn_con;
-
+/* vt_spawn_console struct and vt_spawn_con removed - never used */
 /* vt_move_to_console removed - never called */
 
 struct vt_notifier_param {

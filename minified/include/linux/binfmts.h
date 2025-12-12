@@ -77,12 +77,7 @@ static inline void register_binfmt(struct linux_binfmt *fmt)
 {
 	__register_binfmt(fmt, 0);
 }
-static inline void insert_binfmt(struct linux_binfmt *fmt)
-{
-	__register_binfmt(fmt, 1);
-}
-
-/* unregister_binfmt, remove_arg_zero removed - unused */
+/* insert_binfmt, unregister_binfmt, remove_arg_zero removed - unused */
 
 extern int begin_new_exec(struct linux_binprm * bprm);
 extern void setup_new_exec(struct linux_binprm * bprm);

@@ -21,7 +21,9 @@
 #include <linux/gfp.h>
 #include <linux/uio.h>
 #include <linux/hugetlb.h>
-#include <linux/page_idle.h>
+/* page_idle.h removed - stubs inlined */
+static inline bool folio_test_idle(struct folio *folio) { return false; }
+static inline void folio_clear_idle(struct folio *folio) { }
 #include <linux/local_lock.h>
 
 #include "internal.h"

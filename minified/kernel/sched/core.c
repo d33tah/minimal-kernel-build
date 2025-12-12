@@ -1585,7 +1585,7 @@ static inline void preempt_dynamic_init(void) { }
 
 /* yield removed - unused */
 
-int io_schedule_prepare(void)
+static int io_schedule_prepare(void)
 {
 	int old_iowait = current->in_iowait;
 
@@ -1594,7 +1594,7 @@ int io_schedule_prepare(void)
 	return old_iowait;
 }
 
-void io_schedule_finish(int token)
+static void io_schedule_finish(int token)
 {
 	current->in_iowait = token;
 }

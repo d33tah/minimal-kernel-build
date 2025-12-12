@@ -239,8 +239,7 @@ asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);
 asmlinkage void preempt_schedule_irq(void);
 
-extern int __must_check io_schedule_prepare(void);
-extern void io_schedule_finish(int token);
+/* io_schedule_prepare, io_schedule_finish removed - only used internally */
 extern void io_schedule(void);
 
 struct prev_cputime {

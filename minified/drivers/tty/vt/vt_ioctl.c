@@ -31,16 +31,7 @@ extern struct kbdiacruc accent_table[];
 extern unsigned int accent_table_size;
 #include <linux/selection.h>
 
-/* vt_dont_switch removed - unused */
-
-void vt_event_post(unsigned int event, unsigned int old, unsigned int new)
-{
-}
-
-int vt_waitactive(int n)
-{
-	return 0;
-}
+/* vt_dont_switch, vt_event_post, vt_waitactive removed - unused */
 
 int vt_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 {

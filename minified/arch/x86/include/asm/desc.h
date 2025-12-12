@@ -353,6 +353,6 @@ extern bool idt_is_f00f_address(unsigned long address);
 
 static inline void idt_setup_early_pf(void) { }
 
-extern void idt_invalidate(void);
+/* idt_invalidate removed - unused */
 
 #endif  

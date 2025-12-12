@@ -170,12 +170,7 @@ void __init idt_setup_early_handler(void)
 	load_idt(&idt_descr);
 }
 
-void idt_invalidate(void)
-{
-	static const struct desc_ptr idt = { .address = 0, .size = 0 };
-
-	load_idt(&idt);
-}
+/* idt_invalidate removed - unused (~6 LOC) */
 
 void __init alloc_intr_gate(unsigned int n, const void *addr)
 {

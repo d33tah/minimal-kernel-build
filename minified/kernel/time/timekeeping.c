@@ -804,22 +804,7 @@ void ktime_get_coarse_real_ts64(struct timespec64 *ts)
 	} while (read_seqcount_retry(&tk_core.seq, seq));
 }
 
-void ktime_get_coarse_ts64(struct timespec64 *ts)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	struct timespec64 now, mono;
-	unsigned int seq;
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-
-		now = tk_xtime(tk);
-		mono = tk->wall_to_monotonic;
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	set_normalized_timespec64(ts, now.tv_sec + mono.tv_sec,
-				now.tv_nsec + mono.tv_nsec);
-}
+/* ktime_get_coarse_ts64 removed - unused */
 
 void do_timer(unsigned long ticks)
 {

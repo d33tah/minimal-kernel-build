@@ -1366,7 +1366,7 @@ struct super_block *sget(struct file_system_type *type,
 	} while(0)
 
 extern int register_filesystem(struct file_system_type *);
-extern int vfs_statfs(const struct path *, struct kstatfs *);
+/* vfs_statfs removed - function was already stubbed out */
 
 extern int current_umask(void);
 
@@ -1406,9 +1406,7 @@ static inline struct user_namespace *file_mnt_user_ns(struct file *file)
 extern long vfs_truncate(const struct path *, loff_t);
 int do_truncate(struct user_namespace *, struct dentry *, loff_t start,
 		unsigned int time_attrs, struct file *filp);
-/* vfs_fallocate removed - unused */
-extern long do_sys_open(int dfd, const char __user *filename, int flags,
-			umode_t mode);
+/* vfs_fallocate, do_sys_open removed - unused or internal only */
 extern struct file *file_open_name(struct filename *, int, umode_t);
 extern struct file *filp_open(const char *, int, umode_t);
 /* file_open_root removed - unused */

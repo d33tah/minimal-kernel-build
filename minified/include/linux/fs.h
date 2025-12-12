@@ -137,7 +137,7 @@ struct bio;
 struct io_comp_batch;
 struct export_operations;
 struct fiemap_extent_info;
-struct hd_geometry;
+/* hd_geometry removed - unused */
 struct iovec;
 struct kiocb;
 struct kobject;
@@ -151,10 +151,7 @@ struct swap_info_struct;
 struct seq_file;
 struct workqueue_struct;
 struct iov_iter;
-struct fscrypt_info;
-struct fscrypt_operations;
-struct fsverity_info;
-struct fsverity_operations;
+/* fscrypt_info, fscrypt_operations, fsverity_info, fsverity_operations removed - unused */
 struct fs_context;
 struct fs_parameter_spec;
 struct fileattr;

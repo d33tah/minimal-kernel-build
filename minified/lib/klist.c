@@ -172,39 +172,6 @@ static struct klist_node *to_klist_node(struct list_head *n)
 	return container_of(n, struct klist_node, n_node);
 }
 
-struct klist_node *klist_prev(struct klist_iter *i)
-{
-	void (*put)(struct klist_node *) = i->i_klist->put;
-	struct klist_node *last = i->i_cur;
-	struct klist_node *prev;
-	unsigned long flags;
-
-	spin_lock_irqsave(&i->i_klist->k_lock, flags);
-
-	if (last) {
-		prev = to_klist_node(last->n_node.prev);
-		if (!klist_dec_and_del(last))
-			put = NULL;
-	} else
-		prev = to_klist_node(i->i_klist->k_list.prev);
-
-	i->i_cur = NULL;
-	while (prev != to_klist_node(&i->i_klist->k_list)) {
-		if (likely(!knode_dead(prev))) {
-			kref_get(&prev->n_ref);
-			i->i_cur = prev;
-			break;
-		}
-		prev = to_klist_node(prev->n_node.prev);
-	}
-
-	spin_unlock_irqrestore(&i->i_klist->k_lock, flags);
-
-	if (put && last)
-		put(last);
-	return i->i_cur;
-}
-
 struct klist_node *klist_next(struct klist_iter *i)
 {
 	void (*put)(struct klist_node *) = i->i_klist->put;

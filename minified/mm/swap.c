@@ -23,7 +23,6 @@
 #include <linux/hugetlb.h>
 #include <linux/page_idle.h>
 #include <linux/local_lock.h>
-#include <linux/buffer_head.h>
 
 #include "internal.h"
 

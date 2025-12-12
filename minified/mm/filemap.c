@@ -33,7 +33,8 @@
 #include <asm/tlbflush.h>
 #include "internal.h"
 
-#include <linux/buffer_head.h> 
+/* buffer_head.h removed - try_to_free_buffers is stub */
+static inline bool try_to_free_buffers(struct folio *folio) { return true; }
 
 #include <asm/mman.h>
 

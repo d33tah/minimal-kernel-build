@@ -12,7 +12,8 @@
 #include <linux/writeback.h>
 
 /* exportfs.h removed - s_export_op never used in minimal kernel */
-#include <linux/buffer_head.h>
+/* buffer_head.h removed - sync_mapping_buffers is stub */
+static inline int sync_mapping_buffers(struct address_space *mapping) { return 0; }
 #include <linux/fs_context.h>
 #include <linux/fsnotify.h>
 

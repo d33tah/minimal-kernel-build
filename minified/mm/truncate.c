@@ -10,7 +10,6 @@
 #include <linux/highmem.h>
 #include <linux/pagevec.h>
 #include <linux/task_io_accounting_ops.h>
-#include <linux/buffer_head.h>	 
 #include <linux/shmem_fs.h>
 #include <linux/rmap.h>
 #include "internal.h"

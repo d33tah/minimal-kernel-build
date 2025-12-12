@@ -101,7 +101,8 @@ static inline void dump_page_owner(const struct page *page) {}
 #include <linux/lockdep.h>
 #include <linux/nmi.h>
 #include <linux/khugepaged.h>
-#include <linux/buffer_head.h>
+/* buffer_head.h removed - buffer_init is stub */
+static inline void buffer_init(void) {}
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
 #include <asm/div64.h>

@@ -12,7 +12,8 @@
 #include <linux/mount.h>
 #include <linux/tracepoint.h>
 
-#include <linux/buffer_head.h> 
+/* buffer_head.h removed - inode_has_buffers is stub */
+static inline int inode_has_buffers(struct inode *inode) { return 0; }
 #include <linux/ratelimit.h>
 #include <linux/list_lru.h>
 #include "internal.h"

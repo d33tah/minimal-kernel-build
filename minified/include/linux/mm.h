@@ -734,11 +734,6 @@ static inline void put_page(struct page *page)
 #define GUP_PIN_COUNTING_BIAS (1U << 10)
 
 void unpin_user_page(struct page *page);
-void unpin_user_pages_dirty_lock(struct page **pages, unsigned long npages,
-				 bool make_dirty);
-void unpin_user_page_range_dirty_lock(struct page *page, unsigned long npages,
-				      bool make_dirty);
-void unpin_user_pages(struct page **pages, unsigned long npages);
 
 static inline bool is_cow_mapping(vm_flags_t flags)
 {
@@ -949,11 +944,7 @@ extern bool can_do_mlock(void);
 
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 			     pte_t pte);
-struct page *vm_normal_page_pmd(struct vm_area_struct *vma, unsigned long addr,
-				pmd_t pmd);
 
-void zap_vma_ptes(struct vm_area_struct *vma, unsigned long address,
-		  unsigned long size);
 void zap_page_range(struct vm_area_struct *vma, unsigned long address,
 		    unsigned long size);
 void unmap_vmas(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
@@ -968,7 +959,6 @@ void free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
 extern void truncate_pagecache(struct inode *inode, loff_t new);
 extern void truncate_setsize(struct inode *inode, loff_t newsize);
 void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to);
-void truncate_pagecache_range(struct inode *inode, loff_t offset, loff_t end);
 int generic_error_remove_page(struct address_space *mapping, struct page *page);
 
 extern vm_fault_t handle_mm_fault(struct vm_area_struct *vma,

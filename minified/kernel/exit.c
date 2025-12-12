@@ -59,7 +59,8 @@ static inline void proc_exit_connector(struct task_struct *task) {}
 #include <linux/hw_breakpoint.h>
 #include <linux/oom.h>
 #include <linux/writeback.h>
-#include <linux/shm.h>
+/* shm.h removed - exit_shm is stub */
+static inline void exit_shm(struct task_struct *task) {}
 /* sem.h removed - exit_sem is stub */
 static inline void exit_sem(struct task_struct *tsk) { }
 /* kcov.h removed - stubs inlined: kcov_task_exit is no-op */

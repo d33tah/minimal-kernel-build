@@ -23,6 +23,8 @@ static inline void rt_mutex_debug_task_free(struct task_struct *tsk) { }
 /* sem.h removed - stubs inlined */
 static inline int copy_semundo(unsigned long clone_flags, struct task_struct *tsk) { return 0; }
 static inline void exit_sem(struct task_struct *tsk) { }
+/* shm.h removed - shm_init_task is stub */
+static inline void shm_init_task(struct task_struct *task) { }
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/iocontext.h>

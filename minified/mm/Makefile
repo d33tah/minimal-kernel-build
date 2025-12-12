@@ -47,11 +47,11 @@ ifdef CONFIG_CROSS_MEMORY_ATTACH
 mmu-$(CONFIG_MMU)	+= process_vm_access.o
 endif
 
-obj-y			:= filemap.o mempool.o oom_kill.o \
+obj-y			:= filemap.o oom_kill.o \
 			   maccess.o page-writeback.o folio-compat.o \
 			   readahead.o swap.o truncate.o vmscan.o shmem.o \
 			   util.o mmzone.o vmstat.o backing-dev.o \
-			   mm_init.o percpu.o slab_common.o \
+			   percpu.o slab_common.o \
 			   vmacache.o \
 			   interval_tree.o list_lru.o workingset.o \
 			   gup.o $(mmu-y)

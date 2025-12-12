@@ -637,7 +637,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	signals_init();
 	seq_file_init();
 	proc_root_init();
-	nsfs_init();
 	cpuset_init();
 	cgroup_init();
 	taskstats_init_early();

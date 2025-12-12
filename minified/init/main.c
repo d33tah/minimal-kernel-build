@@ -80,7 +80,10 @@ extern void sched_init(void);
 extern void sched_init_smp(void);
 #include <linux/signal.h>
 #include <linux/idr.h>
-#include <linux/kgdb.h>
+/* kgdb.h inlined - stubs (includes kprobe stub too) */
+#define dbg_late_init() do { } while (0)
+static inline void kgdb_free_init_mem(void) { }
+static inline void kprobe_free_init_mem(void) { }
 #include <linux/async.h>
 #include <linux/shmem_fs.h>
 #include <linux/slab.h>

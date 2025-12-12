@@ -15,7 +15,6 @@
 #include <linux/sched/task.h>
 #include <linux/init.h>
 #include <linux/kprobes.h>
-#include <linux/kgdb.h>
 #include <linux/smp.h>
 #include <linux/io.h>
 #include <linux/syscore_ops.h>

@@ -9,7 +9,6 @@
 #include <linux/kprobes.h>
 #include <linux/uaccess.h>
 #include <linux/kdebug.h>
-#include <linux/kgdb.h>
 #include <linux/kernel.h>
 #include <linux/export.h>
 #include <linux/ptrace.h>

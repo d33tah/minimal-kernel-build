@@ -4,7 +4,8 @@
 #include <linux/printk.h>
 #include <linux/kallsyms.h>
 #include <linux/kmsg_dump.h>
-#include <linux/kgdb.h>
+/* kgdb.h inlined - stub */
+static inline void kgdb_panic(const char *msg) { }
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
 #include <linux/module.h>

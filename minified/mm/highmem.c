@@ -7,7 +7,6 @@
 #include <linux/init.h>
 #include <linux/hash.h>
 #include <linux/highmem.h>
-#include <linux/kgdb.h>
 #include <asm/tlbflush.h>
 #include <linux/vmalloc.h>
 

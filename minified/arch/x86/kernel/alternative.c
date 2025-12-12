@@ -15,7 +15,6 @@
 #include <linux/kdebug.h>
 #include <linux/kprobes.h>
 #include <linux/mmu_context.h>
-#include <linux/bsearch.h>
 #include <asm/sync_core.h>
 #include <asm/text-patching.h>
 #include <asm/alternative.h>

@@ -91,7 +91,6 @@ struct font_data {
 #include <linux/uaccess.h>
 
 #include <linux/ctype.h>
-#include <linux/bsearch.h>
 /* gcd.h inlined */
 unsigned long gcd(unsigned long a, unsigned long b);
 

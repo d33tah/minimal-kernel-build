@@ -1,6 +1,5 @@
 
 #include <linux/acpi.h>
-#include <linux/cpufreq.h>
 #include <linux/device.h>
 #include <linux/err.h>
 #include <linux/fwnode.h>

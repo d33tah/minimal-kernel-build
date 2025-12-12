@@ -6,8 +6,6 @@
 #include <linux/init.h>
 #include <linux/export.h>
 #include <linux/timer.h>
-#include <linux/cpufreq.h>
-
 /* Inlined from acpi_pmtmr.h */
 #define PMTMR_TICKS_PER_SEC 3579545
 #define ACPI_PM_OVRRUN	(1<<24)

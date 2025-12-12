@@ -9,8 +9,6 @@ static inline void wake_up_nohz_cpu(int cpu) { }
 
 #include <linux/sched/task_stack.h>
 
-#include <linux/cpufreq.h>
-
 #include <linux/cpuset.h>
 #include <linux/ctype.h>
 #include <linux/debugfs.h>

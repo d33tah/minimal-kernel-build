@@ -30,8 +30,6 @@ extern unsigned int nr_iowait_cpu(int cpu);
 #include <linux/capability.h>
 
 #include <linux/cgroup.h>
-#include <linux/cpufreq.h>
-
 #include <linux/ctype.h>
 #include <linux/file.h>
 

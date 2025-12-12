@@ -263,14 +263,12 @@ struct irqaction;
 extern void handle_level_irq(struct irq_desc *desc);
 extern void handle_fasteoi_irq(struct irq_desc *desc);
 extern void handle_edge_irq(struct irq_desc *desc);
-extern void handle_edge_eoi_irq(struct irq_desc *desc);
 extern void handle_simple_irq(struct irq_desc *desc);
-extern void handle_untracked_irq(struct irq_desc *desc);
 extern void handle_percpu_irq(struct irq_desc *desc);
 extern void handle_percpu_devid_irq(struct irq_desc *desc);
 extern void handle_bad_irq(struct irq_desc *desc);
 
-/* handle_fasteoi_nmi, handle_percpu_devid_fasteoi_nmi removed - unused */
+/* handle_edge_eoi_irq, handle_untracked_irq, handle_fasteoi_nmi, handle_percpu_devid_fasteoi_nmi removed - unused */
 
 extern int irq_chip_compose_msi_msg(struct irq_data *data, struct msi_msg *msg);
 extern int irq_chip_pm_get(struct irq_data *data);
@@ -278,10 +276,8 @@ extern int irq_chip_pm_put(struct irq_data *data);
 
 extern void note_interrupt(struct irq_desc *desc, irqreturn_t action_ret);
 
-
 extern int noirqdebug_setup(char *str);
-
-extern int can_request_irq(unsigned int irq, unsigned long irqflags);
+/* can_request_irq removed - unused */
 
 extern struct irq_chip no_irq_chip;
 extern struct irq_chip dummy_irq_chip;

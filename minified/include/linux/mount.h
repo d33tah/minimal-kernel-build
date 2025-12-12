@@ -84,13 +84,10 @@ extern struct vfsmount *vfs_kern_mount(struct file_system_type *type,
 				      void *data);
 /* vfs_submount removed - unused */
 
-extern void mnt_set_expiry(struct vfsmount *mnt, struct list_head *expiry_list);
-extern void mark_mounts_for_expiry(struct list_head *mounts);
+/* mnt_set_expiry, mark_mounts_for_expiry removed - unused */
 
 extern dev_t name_to_dev_t(const char *name);
-extern bool path_is_mountpoint(const struct path *path);
-
-extern bool our_mnt(struct vfsmount *mnt);
+/* path_is_mountpoint, our_mnt removed - unused */
 
 extern struct vfsmount *kern_mount(struct file_system_type *);
 /* kern_unmount, kern_unmount_array, may_umount_tree, may_umount, collect_mounts, drop_collected_mounts, iterate_mounts removed - unused */

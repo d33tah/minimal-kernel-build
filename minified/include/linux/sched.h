@@ -110,8 +110,7 @@ struct audit_context;
 struct backing_dev_info;
 struct bio_list;
 struct blk_plug;
-/* bpf_local_storage, bpf_run_ctx removed - unused */
-struct capture_control;
+/* bpf_local_storage, bpf_run_ctx, capture_control removed - unused */
 struct cfs_rq;
 struct fs_struct;
 struct futex_pi_state;

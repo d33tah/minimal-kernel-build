@@ -65,7 +65,7 @@ bool memblock_overlaps_region(struct memblock_type *type,
 void memblock_free_all(void);
 void memblock_free(void *ptr, size_t size);
 void reset_node_managed_pages(pg_data_t *pgdat);
-void reset_all_zones_managed_pages(void);
+/* reset_all_zones_managed_pages declaration removed - only used internally */
 
 void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags,
 		      struct memblock_type *type_a,

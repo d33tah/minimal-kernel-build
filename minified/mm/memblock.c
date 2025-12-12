@@ -1117,7 +1117,7 @@ static unsigned long __init free_low_memory_core_early(void)
 /* reset_managed_pages_done removed - unused */
 
 /* Used internally by memblock_free_all */
-void __init reset_all_zones_managed_pages(void)
+static void __init reset_all_zones_managed_pages(void)
 {
 }
 

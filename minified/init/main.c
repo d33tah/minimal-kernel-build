@@ -147,11 +147,7 @@ static char *ramdisk_execute_command = "/init";
 
 bool static_key_initialized __read_mostly;
 
-unsigned int reset_devices;
-
-/* Stub: reset_devices cmdline not needed for minimal kernel */
-static int __init set_reset_devices(char *str) { return 1; }
-__setup("reset_devices", set_reset_devices);
+/* reset_devices removed - unused */
 
 static const char *argv_init[MAX_INIT_ARGS+2] = { "init", NULL, };
 const char *envp_init[MAX_INIT_ENVS+2] = { "HOME=/", "TERM=linux", NULL, };

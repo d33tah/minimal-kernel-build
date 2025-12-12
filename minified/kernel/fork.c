@@ -63,7 +63,9 @@ static inline void rt_mutex_debug_task_free(struct task_struct *tsk) { }
 #include <linux/tsacct_kern.h>
 #include <linux/cn_proc.h>
 #include <linux/freezer.h>
-#include <linux/delayacct.h>
+/* delayacct.h inlined - stubs */
+static inline void delayacct_tsk_init(struct task_struct *tsk) {}
+static inline void delayacct_tsk_free(struct task_struct *tsk) {}
 /* taskstats_kern.h inlined */
 static inline void taskstats_exit(struct task_struct *tsk, int group_dead) {}
 static inline void taskstats_tgid_free(struct signal_struct *sig) {}

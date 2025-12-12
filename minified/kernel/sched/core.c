@@ -33,7 +33,9 @@ static inline void wake_up_nohz_cpu(int cpu) { }
 #include <linux/blkdev.h>
 #include <linux/context_tracking.h>
 #include <linux/cpuset.h>
-#include <linux/delayacct.h>
+/* delayacct.h inlined - stubs */
+static inline void delayacct_blkio_start(void) {}
+static inline void delayacct_blkio_end(struct task_struct *p) {}
 #include <linux/init_task.h>
 #include <linux/interrupt.h>
 #include <linux/ioprio.h>

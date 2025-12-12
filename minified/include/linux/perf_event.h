@@ -26,26 +26,14 @@ extern void perf_event_exit_task(struct task_struct *child);
 extern void perf_event_delayed_put(struct task_struct *tsk);
 extern int perf_event_init_task(struct task_struct *child, u64 flags);
 extern void perf_event_free_task(struct task_struct *task);
-extern void perf_event_namespaces(struct task_struct *task);
-extern int perf_event_task_disable(void);
-extern int perf_event_task_enable(void);
-extern int perf_event_refresh(struct perf_event *event, int refresh);
-extern int perf_event_release_kernel(struct perf_event *event);
+/* perf_event_namespaces, perf_event_task_disable/enable, perf_event_refresh,
+ * perf_event_release_kernel removed - unused */
 extern void perf_event_mmap(struct vm_area_struct *vma);
 extern void perf_event_exec(void);
 extern void perf_event_comm(struct task_struct *tsk, bool exec);
-extern void perf_bp_event(struct perf_event *event, void *data);
-extern void perf_event_text_poke(const void *addr, const void *old_bytes,
-				 size_t old_len, const void *new_bytes, size_t new_len);
-
-extern void __perf_sw_event(u32 event_id, u64 nr, struct pt_regs *regs, u64 addr);
-extern void perf_tp_event(u64 addr, u64 count, void *record, int entry_size,
-			  struct pt_regs *regs, void *head, int rctx, void *task_ctx);
-
-/* perf_event_print_debug, perf_register/unregister_guest_info_callbacks,
-   perf_event_task_sched_in/out removed - unused */
-static inline void perf_sw_event(u32 event_id, u64 nr, struct pt_regs *regs, u64 addr) {
-	__perf_sw_event(event_id, nr, regs, addr);
-}
+/* perf_bp_event, perf_event_text_poke, __perf_sw_event, perf_tp_event,
+ * perf_event_print_debug, perf_register/unregister_guest_info_callbacks,
+ * perf_event_task_sched_in/out removed - unused */
+static inline void perf_sw_event(u32 event_id, u64 nr, struct pt_regs *regs, u64 addr) { }
 
 #endif  

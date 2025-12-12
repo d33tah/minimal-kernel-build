@@ -22,9 +22,7 @@ void perf_event_exit_task(struct task_struct *task) { }
 void perf_event_mmap(struct vm_area_struct *vma) { }
 void perf_event_exec(void) { }
 void perf_event_comm(struct task_struct *task, bool exec) { }
-
-void __perf_sw_event(u32 event_id, u64 nr, struct pt_regs *regs, u64 addr) { }
-
+/* __perf_sw_event inlined as empty in perf_event.h */
 void perf_event_init(void) { }
 
 DEFINE_STATIC_KEY_FALSE(perf_sched_events);

@@ -122,17 +122,17 @@ struct nsproxy;
 struct perf_event_context;
 struct pid_namespace;
 struct pipe_inode_info;
-struct rcu_node;
+/* rcu_node removed - unused */
 struct reclaim_state;
 struct robust_list_head;
-struct root_domain;
+/* root_domain removed - unused */
 struct rq;
 struct sched_attr;
 struct sched_param;
 struct seq_file;
 struct sighand_struct;
 struct signal_struct;
-struct task_delay_info;
+/* task_delay_info removed - unused */
 struct task_group;
 
 

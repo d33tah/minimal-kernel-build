@@ -11,8 +11,6 @@ struct syscore_ops {
 	void (*shutdown)(void);
 };
 
-extern void register_syscore_ops(struct syscore_ops *ops);
-extern void unregister_syscore_ops(struct syscore_ops *ops);
-extern void syscore_shutdown(void);
+static inline void syscore_shutdown(void) {}
 
 #endif

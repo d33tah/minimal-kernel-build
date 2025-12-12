@@ -1412,7 +1412,7 @@ extern struct file *filp_open(const char *, int, umode_t);
 extern int filp_close(struct file *, fl_owner_t id);
 
 extern struct filename *getname_flags(const char __user *, int, int *);
-extern struct filename *getname_uflags(const char __user *, int);
+/* getname_uflags removed - internal only */
 extern struct filename *getname(const char __user *);
 extern struct filename *getname_kernel(const char *);
 extern void putname(struct filename *name);

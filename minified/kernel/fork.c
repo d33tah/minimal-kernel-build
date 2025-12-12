@@ -11,7 +11,8 @@ static inline void task_numa_free(struct task_struct *p, bool final) {}
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
 #include <linux/seq_file.h>
-#include <linux/rtmutex.h>
+/* rtmutex.h inlined - only need empty debug stub */
+static inline void rt_mutex_debug_task_free(struct task_struct *tsk) { }
 #include <linux/init.h>
 #include <linux/unistd.h>
 #include <linux/module.h>

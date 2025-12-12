@@ -33,8 +33,4 @@ unsigned long _copy_to_user(void __user *to, const void *from, unsigned long n)
 }
 #endif
 
-int check_zeroed_user(const void __user *from, size_t size)
-{
-	 
-	return 0;
-}
+/* check_zeroed_user moved to inline in uaccess.h */

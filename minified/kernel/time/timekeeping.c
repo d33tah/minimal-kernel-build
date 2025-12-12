@@ -781,13 +781,7 @@ void update_wall_time(void)
 		clock_was_set_delayed();
 }
 
-void getboottime64(struct timespec64 *ts)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	ktime_t t = ktime_sub(tk->offs_real, tk->offs_boot);
-
-	*ts = ktime_to_timespec64(t);
-}
+/* getboottime64 removed - unused */
 
 void ktime_get_coarse_real_ts64(struct timespec64 *ts)
 {

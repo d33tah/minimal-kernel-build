@@ -927,18 +927,13 @@ static inline int _cond_resched(void)
 	_cond_resched();			\
 })
 
-extern int __cond_resched_lock(spinlock_t *lock);
+/* __cond_resched_lock, cond_resched_lock removed - unused */
 
 #define MIGHT_RESCHED_RCU_SHIFT		8
 #define MIGHT_RESCHED_PREEMPT_MASK	((1U << MIGHT_RESCHED_RCU_SHIFT) - 1)
 
 
 # define PREEMPT_LOCK_RESCHED_OFFSETS	PREEMPT_LOCK_OFFSET
-
-#define cond_resched_lock(lock) ({						\
-	__might_resched(__FILE__, __LINE__, PREEMPT_LOCK_RESCHED_OFFSETS);	\
-	__cond_resched_lock(lock);						\
-})
 
 
 static inline int spin_needbreak(spinlock_t *lock)

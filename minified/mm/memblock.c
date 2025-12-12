@@ -930,16 +930,7 @@ static int __init_memblock memblock_search(struct memblock_type *type, phys_addr
 	return -1;
 }
 
-/* memblock_is_reserved, memblock_is_memory removed - unused */
-
-bool __init_memblock memblock_is_map_memory(phys_addr_t addr)
-{
-	int i = memblock_search(&memblock.memory, addr);
-
-	if (i == -1)
-		return false;
-	return !memblock_is_nomap(&memblock.memory.regions[i]);
-}
+/* memblock_is_reserved, memblock_is_memory, memblock_is_map_memory removed - unused */
 
 bool __init_memblock memblock_is_region_memory(phys_addr_t base, phys_addr_t size)
 {

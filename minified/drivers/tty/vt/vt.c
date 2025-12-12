@@ -1448,11 +1448,7 @@ bool con_is_visible(const struct vc_data *vc)
 
 /* con_debug_enter, con_debug_leave, do_register_con_driver removed - never called */
 
-/* do_take_over_console stubbed - never called in minimal kernel */
-int do_take_over_console(const struct consw *csw, int first, int last, int deflt)
-{
-	return -ENODEV;
-}
+/* do_take_over_console removed - never called */
 
 /* vtconsole_class_init simplified - sysfs entries not needed for minimal kernel */
 static int __init vtconsole_class_init(void)

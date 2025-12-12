@@ -69,7 +69,7 @@ extern const struct consw vga_con;
 /* newport_con removed - unused */
 
 int con_is_bound(const struct consw *csw);
-int do_take_over_console(const struct consw *sw, int first, int last, int deflt);
+/* do_take_over_console removed - unused */
 /* con_debug_enter, con_debug_leave removed - never called */
 
 #define CM_DRAW     (1)

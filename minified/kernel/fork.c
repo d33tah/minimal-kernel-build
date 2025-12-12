@@ -91,7 +91,7 @@ static inline void clear_user_return_notifier(struct task_struct *p) {}
 #include <linux/uprobes.h>
 #include <linux/compiler.h>
 #include <linux/sysctl.h>
-#include <linux/kcov.h>
+/* kcov.h removed - kcov_task_init is no-op */
 #include <linux/init_task.h>
 #include <linux/thread_info.h>
 #include <linux/kasan.h>
@@ -622,7 +622,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	tsk->wake_q.next = NULL;
 	tsk->worker_private = NULL;
 
-	kcov_task_init(tsk);
 	kmap_local_fork(tsk);
 
 	tsk->reported_split_lock = 0;

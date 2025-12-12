@@ -60,7 +60,7 @@ static inline void proc_exit_connector(struct task_struct *task) {}
 #include <linux/oom.h>
 #include <linux/writeback.h>
 #include <linux/shm.h>
-#include <linux/kcov.h>
+/* kcov.h removed - stubs inlined: kcov_task_exit is no-op */
 #include <linux/random.h>
 #include <linux/rcuwait.h>
 #include <linux/compat.h>
@@ -432,8 +432,6 @@ void __noreturn do_exit(long code)
 	int group_dead;
 
 	WARN_ON(tsk->plug);
-
-	kcov_task_exit(tsk);
 
 	coredump_task_exit(tsk);
 	ptrace_event(PTRACE_EVENT_EXIT, code);

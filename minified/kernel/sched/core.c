@@ -40,7 +40,7 @@ static inline void delayacct_blkio_end(struct task_struct *p) {}
 #include <linux/interrupt.h>
 #include <linux/ioprio.h>
 #include <linux/kallsyms.h>
-#include <linux/kcov.h>
+/* kcov.h removed - stubs are no-ops */
 #include <linux/kprobes.h>
 
 #include <linux/mmu_context.h>
@@ -771,7 +771,6 @@ static inline void
 prepare_task_switch(struct rq *rq, struct task_struct *prev,
 		    struct task_struct *next)
 {
-	kcov_prepare_switch(prev);
 	sched_info_switch(rq, prev, next);
 	
 	rseq_preempt(prev);
@@ -804,8 +803,7 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	tick_nohz_task_switch();
 	finish_lock_switch(rq);
 	finish_arch_post_lock_switch();
-	kcov_finish_switch(current);
-	
+
 	kmap_local_sched_in();
 
 	fire_sched_in_preempt_notifiers(current);

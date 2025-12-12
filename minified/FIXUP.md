@@ -1,3 +1,27 @@
+--- 2025-12-12 07:32 ---
+
+CONTINUED SESSION:
+- make vm: WORKING (prints "Hello, World!")
+- Current LOC: 168,734 (after mrproper)
+- Goal: 150,000 LOC (~18,734 to go)
+
+Attempted reductions that didn't work:
+- adjust_managed_page_count: Used indirectly via free_reserved_page inline
+- Most obvious unused static functions already removed
+
+Observations:
+- lib/vsprintf.c has many %p format handlers (M/m for MAC, I/i for IP, etc.)
+  that a minimal kernel may not need, but risky to remove
+- Scheduler (kernel/sched) is 4606 LOC, fair.c (1497) and core.c (1774)
+  dominate but are complex
+- lib/xz is 2289 LOC for decompression - likely needed for kernel
+- Most files are already substantially reduced from original kernel
+
+Need larger architectural changes to reach goal:
+- Consider simplifying scheduler to minimal round-robin?
+- Consider removing some printf format specifiers?
+- Consider simplifying TTY/VT code further?
+
 --- 2025-12-12 07:24 ---
 
 SESSION UPDATE:

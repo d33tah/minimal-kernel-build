@@ -131,8 +131,7 @@ extern void vc_SAK(struct work_struct *work);
 bool con_is_visible(const struct vc_data *vc);
 /* --- end console_struct.h inlined --- */
 
-void kd_mksound(unsigned int hz, unsigned int ticks);
-/* kbd_rate removed - unused */
+/* kd_mksound, kbd_rate removed - unused */
 
 extern int fg_console, last_console, want_console;
 

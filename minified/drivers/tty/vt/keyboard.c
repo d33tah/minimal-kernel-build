@@ -2,12 +2,7 @@
 #include <linux/module.h>
 #include <linux/export.h>
 
-/* register_keyboard_notifier and unregister_keyboard_notifier removed - unused */
-
-void kd_mksound(unsigned int hz, unsigned int ticks)
-{
-	 
-}
+/* register_keyboard_notifier, unregister_keyboard_notifier, kd_mksound removed - unused */
 
 int vt_get_leds(int console, int flag)
 {

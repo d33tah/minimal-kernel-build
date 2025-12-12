@@ -48,14 +48,8 @@ int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc)
 }
 
 
-void tty_unregister_ldisc(struct tty_ldisc_ops *ldisc)
-{
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&tty_ldiscs_lock, flags);
-	tty_ldiscs[ldisc->num] = NULL;
-	raw_spin_unlock_irqrestore(&tty_ldiscs_lock, flags);
-}
+/* tty_unregister_ldisc stubbed - ldisc modules never unloaded in minimal kernel */
+void tty_unregister_ldisc(struct tty_ldisc_ops *ldisc) { }
 
 static struct tty_ldisc_ops *get_ldops(int disc)
 {

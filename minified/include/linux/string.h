@@ -85,15 +85,7 @@ extern void * memset(void *,int,__kernel_size_t);
 extern void *memset16(uint16_t *, uint16_t, __kernel_size_t);
 #endif
 
-#ifndef __HAVE_ARCH_MEMSET32
-extern void *memset32(uint32_t *, uint32_t, __kernel_size_t);
-#endif
-
-#ifndef __HAVE_ARCH_MEMSET64
-extern void *memset64(uint64_t *, uint64_t, __kernel_size_t);
-#endif
-
-/* memset_l, memset_p removed - unused */
+/* memset32, memset64, memset_l, memset_p removed - unused */
 
 
 #ifndef __HAVE_ARCH_MEMCPY

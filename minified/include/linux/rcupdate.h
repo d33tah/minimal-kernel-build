@@ -14,8 +14,7 @@
 #define USHORT_CMP_LT(a, b)	(USHRT_MAX / 2 < (unsigned short)((a) - (b)))
 
 void call_rcu(struct rcu_head *head, rcu_callback_t func);
-void rcu_barrier_tasks(void);
-void rcu_barrier_tasks_rude(void);
+/* rcu_barrier_tasks, rcu_barrier_tasks_rude removed - never called */
 void synchronize_rcu(void);
 
 

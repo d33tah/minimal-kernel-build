@@ -1424,8 +1424,7 @@ void free_area_init(unsigned long *max_zone_pfn);
 extern void memmap_init_range(unsigned long, int, unsigned long,
 		unsigned long, unsigned long, enum meminit_context,
 		struct vmem_altmap *, int migratetype);
-extern void setup_per_zone_wmarks(void);
-extern void calculate_min_free_kbytes(void);
+/* setup_per_zone_wmarks, calculate_min_free_kbytes removed - only called internally */
 extern int __meminit init_per_zone_wmark_min(void);
 extern void mem_init(void);
 extern void __init mmap_init(void);

@@ -4,6 +4,7 @@
 
 #include <linux/types.h>
 /* irqhandler.h inlined - irq_flow_handler_t */
+struct irq_desc;
 typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 #include <linux/of.h>
 #include <linux/mutex.h>
@@ -14,7 +15,6 @@ struct fwnode_handle;
 struct irq_domain;
 struct irq_chip;
 struct irq_data;
-struct irq_desc;
 struct cpumask;
 struct seq_file;
 struct irq_affinity_desc;

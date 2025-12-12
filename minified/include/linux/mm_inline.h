@@ -5,7 +5,6 @@
 #include <linux/huge_mm.h>
 #include <linux/swap.h>
 #include <linux/string.h>
-#include <linux/userfaultfd_k.h>
 #include <linux/swapops.h>
 
 static inline int folio_is_file_lru(struct folio *folio)

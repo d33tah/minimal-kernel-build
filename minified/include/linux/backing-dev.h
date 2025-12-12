@@ -153,14 +153,7 @@ static inline void unlocked_inode_to_wb_end(struct inode *inode,
 {
 }
 
-static inline void wb_memcg_offline(struct mem_cgroup *memcg)
-{
-}
-
-static inline void wb_blkcg_offline(struct cgroup_subsys_state *css)
-{
-}
-
+/* wb_memcg_offline, wb_blkcg_offline removed - unused */
 
 const char *bdi_dev_name(struct backing_dev_info *bdi);
 

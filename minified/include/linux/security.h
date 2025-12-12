@@ -57,8 +57,6 @@ enum lockdown_reason {
 	LOCKDOWN_CONFIDENTIALITY_MAX,
 };
 
-extern const char *const lockdown_reasons[LOCKDOWN_CONFIDENTIALITY_MAX+1];
-
 extern int cap_capable(const struct cred *cred, struct user_namespace *ns,
 		       int cap, unsigned int opts);
 /* cap_settime, cap_ptrace_*, cap_capget, cap_capset, cap_inode_*,

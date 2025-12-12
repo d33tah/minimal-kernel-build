@@ -102,10 +102,7 @@ void rtc_cmos_write(unsigned char val, unsigned char addr)
 	lock_cmos_suffix(addr);
 }
 
-int update_persistent_clock64(struct timespec64 now)
-{
-	return x86_platform.set_wallclock(&now);
-}
+/* update_persistent_clock64 removed - unused */
 
 void read_persistent_clock64(struct timespec64 *ts)
 {

@@ -459,10 +459,7 @@ noinstr time64_t __ktime_get_real_seconds(void)
 
 /* ktime_get_snapshot removed - no callers */
 /* get_device_system_crosststamp removed - unused */
-/* do_settimeofday64 removed - unused */
-
-int persistent_clock_is_local;
-
+/* do_settimeofday64, persistent_clock_is_local removed - unused */
 /* timekeeping_warp_clock removed - no callers */
 
 static void __timekeeping_set_tai_offset(struct timekeeper *tk, s32 tai_offset)

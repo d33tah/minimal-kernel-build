@@ -317,22 +317,7 @@ void tty_flip_buffer_push(struct tty_port *port)
 	queue_work(system_unbound_wq, &buf->work);
 }
 
-int tty_insert_flip_string_and_push_buffer(struct tty_port *port,
-		const unsigned char *chars, size_t size)
-{
-	struct tty_bufhead *buf = &port->buf;
-	unsigned long flags;
-
-	spin_lock_irqsave(&port->lock, flags);
-	size = tty_insert_flip_string(port, chars, size);
-	if (size)
-		tty_flip_buffer_commit(buf->tail);
-	spin_unlock_irqrestore(&port->lock, flags);
-
-	queue_work(system_unbound_wq, &buf->work);
-
-	return size;
-}
+/* tty_insert_flip_string_and_push_buffer removed - unused (~17 LOC) */
 
 void tty_buffer_init(struct tty_port *port)
 {

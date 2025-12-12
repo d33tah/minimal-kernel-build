@@ -86,7 +86,6 @@ static inline void tty_audit_tiocsti(struct tty_struct *tty, char ch)
 
 ssize_t redirected_tty_write(struct kiocb *, struct iov_iter *);
 
-int tty_insert_flip_string_and_push_buffer(struct tty_port *port,
-		const unsigned char *chars, size_t cnt);
+/* tty_insert_flip_string_and_push_buffer removed - unused */
 
 #endif

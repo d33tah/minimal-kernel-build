@@ -11,7 +11,6 @@
 #include <linux/audit.h>
 #include <linux/task_work.h>
 /* coredump.h removed - no definitions used */
-#include <linux/cn_proc.h>
 #include <linux/tty.h>
 #include <linux/proc_fs.h>
 

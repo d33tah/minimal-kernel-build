@@ -43,7 +43,8 @@ static inline void taskstats_init_early(void) {}
 #include <linux/syscalls.h>
 #include <linux/signal.h>
 #include <linux/posix-timers.h>
-#include <linux/cn_proc.h>
+/* cn_proc.h inlined - stub */
+static inline void proc_exit_connector(struct task_struct *task) {}
 #include <linux/mutex.h>
 #include <linux/futex.h>
 #include <linux/pipe_fs_i.h>

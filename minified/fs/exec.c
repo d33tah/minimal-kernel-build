@@ -33,7 +33,8 @@ static inline void task_numa_free(struct task_struct *p, bool final) {}
 #include <linux/syscalls.h>
 /* tsacct_kern.h inlined - stub */
 static inline void acct_update_integrals(struct task_struct *tsk) {}
-#include <linux/cn_proc.h>
+/* cn_proc.h inlined - stub */
+static inline void proc_exec_connector(struct task_struct *task) {}
 #include <linux/audit.h>
 #include <linux/kmod.h>
 #include <linux/fsnotify.h>

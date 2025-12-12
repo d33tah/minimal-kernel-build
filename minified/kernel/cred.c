@@ -8,7 +8,10 @@
 #include <linux/init_task.h>
 #include <linux/security.h>
 #include <linux/binfmts.h>
-#include <linux/cn_proc.h>
+/* cn_proc.h inlined - stub */
+#define PROC_EVENT_UID  0x00000004
+#define PROC_EVENT_GID  0x00000040
+static inline void proc_id_connector(struct task_struct *task, int which_id) {}
 #include <linux/uidgid.h>
 
 #define kdebug(FMT, ...)						\

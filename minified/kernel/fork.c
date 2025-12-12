@@ -62,7 +62,8 @@ static inline void rt_mutex_debug_task_free(struct task_struct *tsk) { }
 #include <linux/userfaultfd_k.h>
 /* tsacct_kern.h inlined - stub */
 static inline void acct_clear_integrals(struct task_struct *tsk) {}
-#include <linux/cn_proc.h>
+/* cn_proc.h inlined - stub */
+static inline void proc_fork_connector(struct task_struct *task) {}
 #include <linux/freezer.h>
 /* delayacct.h inlined - stubs */
 static inline void delayacct_tsk_init(struct task_struct *tsk) {}

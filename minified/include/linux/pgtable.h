@@ -217,14 +217,7 @@ extern pte_t ptep_clear_flush(struct vm_area_struct *vma,
 			      pte_t *ptep);
 #endif
 
-#ifndef __HAVE_ARCH_PMDP_HUGE_CLEAR_FLUSH
-extern pmd_t pmdp_huge_clear_flush(struct vm_area_struct *vma,
-			      unsigned long address,
-			      pmd_t *pmdp);
-extern pud_t pudp_huge_clear_flush(struct vm_area_struct *vma,
-			      unsigned long address,
-			      pud_t *pudp);
-#endif
+/* pmdp_huge_clear_flush, pudp_huge_clear_flush removed - unused */
 
 #ifndef __HAVE_ARCH_PTEP_SET_WRPROTECT
 struct mm_struct;
@@ -272,14 +265,7 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 #ifndef __HAVE_ARCH_PUDP_SET_WRPROTECT
 #endif
 
-#ifndef __HAVE_ARCH_PGTABLE_DEPOSIT
-extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
-				       pgtable_t pgtable);
-#endif
-
-#ifndef __HAVE_ARCH_PGTABLE_WITHDRAW
-extern pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
-#endif
+/* pgtable_trans_huge_deposit, pgtable_trans_huge_withdraw removed - unused */
 
 
 #ifndef __HAVE_ARCH_PMDP_INVALIDATE
@@ -287,11 +273,7 @@ extern pmd_t pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
 			    pmd_t *pmdp);
 #endif
 
-#ifndef __HAVE_ARCH_PMDP_INVALIDATE_AD
-
-extern pmd_t pmdp_invalidate_ad(struct vm_area_struct *vma,
-				unsigned long address, pmd_t *pmdp);
-#endif
+/* pmdp_invalidate_ad removed - unused */
 
 #ifndef __HAVE_ARCH_PTE_SAME
 static inline int pte_same(pte_t pte_a, pte_t pte_b)

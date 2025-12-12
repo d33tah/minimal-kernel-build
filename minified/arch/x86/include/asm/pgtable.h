@@ -860,9 +860,7 @@ static inline pmd_t pmdp_establish(struct vm_area_struct *vma,
 }
 #endif
 
-#define __HAVE_ARCH_PMDP_INVALIDATE_AD
-extern pmd_t pmdp_invalidate_ad(struct vm_area_struct *vma,
-				unsigned long address, pmd_t *pmdp);
+/* pmdp_invalidate_ad removed - unused */
 
  
 static inline bool pgdp_maps_userspace(void *__ptr)

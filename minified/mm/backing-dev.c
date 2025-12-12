@@ -267,54 +267,7 @@ static struct rb_node **bdi_lookup_rb_node(u64 id, struct rb_node **parentp)
 	return p;
 }
 
-/* bdi_get_by_id removed - unused */
-
-int bdi_register_va(struct backing_dev_info *bdi, const char *fmt, va_list args)
-{
-	struct device *dev;
-	struct rb_node *parent, **p;
-
-	if (bdi->dev)	 
-		return 0;
-
-	vsnprintf(bdi->dev_name, sizeof(bdi->dev_name), fmt, args);
-	dev = device_create(bdi_class, NULL, MKDEV(0, 0), bdi, bdi->dev_name);
-	if (IS_ERR(dev))
-		return PTR_ERR(dev);
-
-	cgwb_bdi_register(bdi);
-	bdi->dev = dev;
-
-	bdi_debug_register(bdi, dev_name(dev));
-	set_bit(WB_registered, &bdi->wb.state);
-
-	spin_lock_bh(&bdi_lock);
-
-	bdi->id = ++bdi_id_cursor;
-
-	p = bdi_lookup_rb_node(bdi->id, &parent);
-	rb_link_node(&bdi->rb_node, parent, p);
-	rb_insert_color(&bdi->rb_node, &bdi_tree);
-
-	list_add_tail_rcu(&bdi->bdi_list, &bdi_list);
-
-	spin_unlock_bh(&bdi_lock);
-
-	return 0;
-}
-
-int bdi_register(struct backing_dev_info *bdi, const char *fmt, ...)
-{
-	va_list args;
-	int ret;
-
-	va_start(args, fmt);
-	ret = bdi_register_va(bdi, fmt, args);
-	va_end(args);
-	return ret;
-}
-
-/* bdi_set_owner removed - unused */
+/* bdi_get_by_id, bdi_register, bdi_register_va, bdi_set_owner removed - unused */
 
 static void bdi_remove_from_list(struct backing_dev_info *bdi)
 {

@@ -73,9 +73,7 @@ extern int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 				pcpu_fc_cpu_to_node_fn_t cpu_to_nd_fn);
 
 void __init pcpu_populate_pte(unsigned long addr);
-extern int __init pcpu_page_first_chunk(size_t reserved_size,
-				pcpu_fc_cpu_to_node_fn_t cpu_to_nd_fn);
-/* __is_kernel_percpu_address, is_kernel_percpu_address removed - never called */
+/* pcpu_page_first_chunk, __is_kernel_percpu_address, is_kernel_percpu_address removed - never called */
 
 extern void __init setup_per_cpu_areas(void);
 

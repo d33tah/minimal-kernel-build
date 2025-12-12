@@ -26,9 +26,8 @@ __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
 
 static struct kmem_cache *dentry_cache __read_mostly;
 
-const struct qstr empty_name = QSTR_INIT("", 0);
-const struct qstr slash_name = QSTR_INIT("/", 1);
-const struct qstr dotdot_name = QSTR_INIT("..", 2);
+/* empty_name, dotdot_name removed - unused externally */
+static const struct qstr slash_name = QSTR_INIT("/", 1);
 
 static unsigned int d_hash_shift __read_mostly;
 

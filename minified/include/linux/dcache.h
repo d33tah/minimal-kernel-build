@@ -58,9 +58,7 @@ struct qstr {
 
 #define QSTR_INIT(n,l) { { { .len = l } }, .name = n }
 
-extern const struct qstr empty_name;
-extern const struct qstr slash_name;
-extern const struct qstr dotdot_name;
+/* empty_name, dotdot_name removed - unused externally */
 
 #  define DNAME_INLINE_LEN 40  
 

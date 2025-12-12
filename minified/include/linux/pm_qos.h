@@ -206,24 +206,22 @@ static inline int freq_qos_request_active(struct freq_qos_request *req)
 	return !IS_ERR_OR_NULL(req->qos);
 }
 
-void freq_constraints_init(struct freq_constraints *qos);
-
-s32 freq_qos_read_value(struct freq_constraints *qos,
-			enum freq_qos_req_type type);
-
-int freq_qos_add_request(struct freq_constraints *qos,
+/* All freq_qos functions inlined as stubs - none are called */
+static inline void freq_constraints_init(struct freq_constraints *qos) { }
+static inline s32 freq_qos_read_value(struct freq_constraints *qos,
+			enum freq_qos_req_type type) { return 0; }
+static inline int freq_qos_add_request(struct freq_constraints *qos,
 			 struct freq_qos_request *req,
-			 enum freq_qos_req_type type, s32 value);
-int freq_qos_update_request(struct freq_qos_request *req, s32 new_value);
-int freq_qos_remove_request(struct freq_qos_request *req);
-int freq_qos_apply(struct freq_qos_request *req,
-		   enum pm_qos_req_action action, s32 value);
-
-int freq_qos_add_notifier(struct freq_constraints *qos,
+			 enum freq_qos_req_type type, s32 value) { return 0; }
+static inline int freq_qos_update_request(struct freq_qos_request *req, s32 new_value) { return 0; }
+static inline int freq_qos_remove_request(struct freq_qos_request *req) { return 0; }
+static inline int freq_qos_apply(struct freq_qos_request *req,
+		   enum pm_qos_req_action action, s32 value) { return 0; }
+static inline int freq_qos_add_notifier(struct freq_constraints *qos,
 			  enum freq_qos_req_type type,
-			  struct notifier_block *notifier);
-int freq_qos_remove_notifier(struct freq_constraints *qos,
+			  struct notifier_block *notifier) { return 0; }
+static inline int freq_qos_remove_notifier(struct freq_constraints *qos,
 			     enum freq_qos_req_type type,
-			     struct notifier_block *notifier);
+			     struct notifier_block *notifier) { return 0; }
 
 #endif

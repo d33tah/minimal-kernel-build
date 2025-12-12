@@ -8,7 +8,7 @@ endif
 
 KASAN_SANITIZE_snapshot.o	:= n
 
-obj-y				+= qos.o
+# obj-y			+= qos.o  # Inlined into pm_qos.h as static inlines
 obj-$(CONFIG_PM)		+= main.o
 obj-$(CONFIG_VT_CONSOLE_SLEEP)	+= console.o
 obj-$(CONFIG_FREEZER)		+= process.o

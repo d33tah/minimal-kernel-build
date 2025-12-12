@@ -38,7 +38,8 @@ static inline const char *xbc_get_embedded_bootconfig(size_t *size) { return NUL
 #include <linux/percpu.h>
 #include <linux/security.h>
 #include <linux/smp.h>
-#include <linux/profile.h>
+/* profile.h inlined - stub */
+static inline int profile_init(void) { return 0; }
 #include <linux/kfence.h>
 #include <linux/rcupdate.h>
 #include <linux/srcu.h>

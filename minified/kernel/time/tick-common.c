@@ -4,7 +4,9 @@
 #include <linux/interrupt.h>
 #include <linux/nmi.h>
 #include <linux/percpu.h>
-#include <linux/profile.h>
+/* profile.h inlined - all stub functions */
+#define CPU_PROFILING 1
+static inline void profile_tick(int type) { }
 #include <linux/sched.h>
 #include <linux/module.h>
 

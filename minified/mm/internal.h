@@ -200,11 +200,7 @@ extern void *memmap_alloc(phys_addr_t size, phys_addr_t align,
 			  phys_addr_t min_addr,
 			  int nid, bool exact_nid);
 
-/* split_free_page removed - unused */
-
-int find_suitable_fallback(struct free_area *area, unsigned int order,
-			int migratetype, bool only_stealable, bool *can_steal);
-
+/* split_free_page, find_suitable_fallback declaration removed - unused */
 /* is_exec_mapping, is_stack_mapping, is_data_mapping removed - unused */
 
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,

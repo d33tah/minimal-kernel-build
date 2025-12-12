@@ -728,7 +728,7 @@ static void steal_suitable_fallback(struct zone *zone, struct page *page,
 	move_to_free_list(page, zone, current_order, start_type);
 }
 
-int find_suitable_fallback(struct free_area *area, unsigned int order,
+static int find_suitable_fallback(struct free_area *area, unsigned int order,
 			int migratetype, bool only_stealable, bool *can_steal)
 {
 	int i;

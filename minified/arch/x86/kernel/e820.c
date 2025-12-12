@@ -324,10 +324,7 @@ u64 __init e820__range_update(u64 start, u64 size, enum e820_type old_type, enum
 	return __e820__range_update(e820_table, start, size, old_type, new_type);
 }
 
-static u64 __init e820__range_update_kexec(u64 start, u64 size, enum e820_type old_type, enum e820_type  new_type)
-{
-	return __e820__range_update(e820_table_kexec, start, size, old_type, new_type);
-}
+/* e820__range_update_kexec removed - kexec not used in minimal kernel */
 
 u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type, bool check_type)
 {
@@ -393,10 +390,7 @@ void __init e820__update_table_print(void)
 	e820__update_table(e820_table);
 }
 
-static void __init e820__update_table_kexec(void)
-{
-	e820__update_table(e820_table_kexec);
-}
+/* e820__update_table_kexec removed - kexec not used in minimal kernel */
 
 #define MAX_GAP_END 0x100000000ull
 
@@ -454,16 +448,7 @@ __init void e820__reallocate_tables(void)
 	n = kmemdup(e820_table, size, GFP_KERNEL);
 	BUG_ON(!n);
 	e820_table = n;
-
-	size = offsetof(struct e820_table, entries) + sizeof(struct e820_entry)*e820_table_kexec->nr_entries;
-	n = kmemdup(e820_table_kexec, size, GFP_KERNEL);
-	BUG_ON(!n);
-	e820_table_kexec = n;
-
-	size = offsetof(struct e820_table, entries) + sizeof(struct e820_entry)*e820_table_firmware->nr_entries;
-	n = kmemdup(e820_table_firmware, size, GFP_KERNEL);
-	BUG_ON(!n);
-	e820_table_firmware = n;
+	/* kexec/firmware table reallocation removed - unused in minimal kernel */
 }
 
 void __init e820__memory_setup_extended(u64 phys_addr, u32 data_len)
@@ -478,13 +463,9 @@ void __init e820__memory_setup_extended(u64 phys_addr, u32 data_len)
 
 	__append_e820_table(extmap, entries);
 	e820__update_table(e820_table);
-
-	memcpy(e820_table_kexec, e820_table, sizeof(*e820_table_kexec));
-	memcpy(e820_table_firmware, e820_table, sizeof(*e820_table_firmware));
+	/* kexec/firmware table copy removed - unused in minimal kernel */
 
 	early_memunmap(sdata, data_len);
-	pr_info("extended physical RAM map:\n");
-	e820__print_table("extended");
 }
 
 void __init e820__register_nosave_regions(unsigned long limit_pfn)
@@ -578,12 +559,7 @@ void __init e820__reserve_setup_data(void)
 		pa_next = data->next;
 
 		e820__range_update(pa_data, sizeof(*data)+data->len, E820_TYPE_RAM, E820_TYPE_RESERVED_KERN);
-
-		 
-		if (data->type != SETUP_EFI)
-			e820__range_update_kexec(pa_data,
-						 sizeof(*data) + data->len,
-						 E820_TYPE_RAM, E820_TYPE_RESERVED_KERN);
+		/* kexec table update removed - unused in minimal kernel */
 
 		if (data->type == SETUP_INDIRECT) {
 			len += data->len;
@@ -599,8 +575,7 @@ void __init e820__reserve_setup_data(void)
 			if (indirect->type != SETUP_INDIRECT) {
 				e820__range_update(indirect->addr, indirect->len,
 						   E820_TYPE_RAM, E820_TYPE_RESERVED_KERN);
-				e820__range_update_kexec(indirect->addr, indirect->len,
-							 E820_TYPE_RAM, E820_TYPE_RESERVED_KERN);
+				/* kexec table update removed */
 			}
 		}
 
@@ -609,10 +584,7 @@ void __init e820__reserve_setup_data(void)
 	}
 
 	e820__update_table(e820_table);
-	e820__update_table(e820_table_kexec);
-
-	pr_info("extended physical RAM map:\n");
-	e820__print_table("reserve setup_data");
+	/* kexec table update removed - unused in minimal kernel */
 }
 
 void __init e820__finish_early_params(void)
@@ -735,12 +707,7 @@ void __init e820__reserve_resources(void)
 		res++;
 	}
 
-	 
-	for (i = 0; i < e820_table_firmware->nr_entries; i++) {
-		struct e820_entry *entry = e820_table_firmware->entries + i;
-
-		firmware_map_add_early(entry->addr, entry->addr + entry->size, e820_type_to_string(entry));
-	}
+	/* firmware_map_add_early loop removed - unused in minimal kernel */
 }
 
 #define MAX_RESOURCE_SIZE ((resource_size_t)-1)
@@ -775,18 +742,11 @@ char *__init e820__memory_setup_default(void)
 
 void __init e820__memory_setup(void)
 {
-	char *who;
 
-	 
 	BUILD_BUG_ON(sizeof(struct boot_e820_entry) != 20);
 
-	who = x86_init.resources.memory_setup();
-
-	memcpy(e820_table_kexec, e820_table, sizeof(*e820_table_kexec));
-	memcpy(e820_table_firmware, e820_table, sizeof(*e820_table_firmware));
-
-	pr_info("BIOS-provided physical RAM map:\n");
-	e820__print_table(who);
+	x86_init.resources.memory_setup();
+	/* kexec/firmware table copies removed - unused in minimal kernel */
 }
 
 void __init e820__memblock_setup(void)

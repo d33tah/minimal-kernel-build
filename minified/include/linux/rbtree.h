@@ -43,8 +43,7 @@ extern void rb_erase(struct rb_node *, struct rb_root *);
 
 
 extern struct rb_node *rb_next(const struct rb_node *);
-/* rb_prev, rb_last, rb_replace_node removed - unused */
-extern struct rb_node *rb_first(const struct rb_root *);
+/* rb_prev, rb_last, rb_replace_node, rb_first removed - unused */
 
 static inline void rb_link_node(struct rb_node *node, struct rb_node *parent,
 				struct rb_node **rb_link)

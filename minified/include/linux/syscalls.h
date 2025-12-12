@@ -71,7 +71,6 @@ enum landlock_rule_type;
 #include <linux/signal.h>
 #include <linux/list.h>
 #include <linux/bug.h>
-#include <linux/sem.h>
 #include <asm/siginfo.h>
 #include <linux/unistd.h>
 #include <linux/quota.h>

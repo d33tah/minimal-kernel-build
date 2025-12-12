@@ -20,7 +20,9 @@ static inline void rt_mutex_debug_task_free(struct task_struct *tsk) { }
 #include <linux/completion.h>
 #include <linux/personality.h>
 #include <linux/mempolicy.h>
-#include <linux/sem.h>
+/* sem.h removed - stubs inlined */
+static inline int copy_semundo(unsigned long clone_flags, struct task_struct *tsk) { return 0; }
+static inline void exit_sem(struct task_struct *tsk) { }
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/iocontext.h>

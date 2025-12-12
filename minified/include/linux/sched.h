@@ -73,7 +73,6 @@ struct clone_args {
 #include <asm/current.h>
 
 #include <linux/pid.h>
-#include <linux/sem.h>
 #include <linux/shm.h>
 #include <linux/mutex.h>
 #include <linux/plist.h>

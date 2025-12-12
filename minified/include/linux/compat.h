@@ -6,7 +6,6 @@
 #include <linux/time.h>
 #include <linux/stat.h>
 #include <linux/param.h>
-#include <linux/sem.h>
 #include <linux/uio.h>
 #include <linux/compiler.h>
 

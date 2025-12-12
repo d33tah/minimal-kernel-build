@@ -1435,54 +1435,9 @@ int __init vty_init(const struct file_operations *console_fops)
 
 #ifndef VT_SINGLE_DRIVER
 
-static struct class *vtconsole_class;
-
-/* do_bind_con_driver removed - never called (do_take_over_console stubbed) */
-
-static inline int vt_bind(struct con_driver *con)
-{
-	return 0;
-}
-static inline int vt_unbind(struct con_driver *con)
-{
-	return 0;
-}
-
-/* Stub: VT console sysfs attributes simplified for minimal kernel */
-static ssize_t store_bind(struct device *dev, struct device_attribute *attr,
-			  const char *buf, size_t count)
-{
-	return count;
-}
-
-static ssize_t show_bind(struct device *dev, struct device_attribute *attr,
-			 char *buf)
-{
-	return snprintf(buf, PAGE_SIZE, "1\n");
-}
-
-static ssize_t show_name(struct device *dev, struct device_attribute *attr,
-			 char *buf)
-{
-	return snprintf(buf, PAGE_SIZE, "(S) vga\n");
-}
-
-static DEVICE_ATTR(bind, S_IRUGO|S_IWUSR, show_bind, store_bind);
-static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
-
-static struct attribute *con_dev_attrs[] = {
-	&dev_attr_bind.attr,
-	&dev_attr_name.attr,
-	NULL
-};
-
-ATTRIBUTE_GROUPS(con_dev);
-
-static int vtconsole_init_device(struct con_driver *con)
-{
-	con->flag |= CON_DRIVER_FLAG_ATTR;
-	return 0;
-}
+/* do_bind_con_driver, vt_bind, vt_unbind, store_bind, show_bind, show_name,
+   dev_attr_bind, dev_attr_name, con_dev_attrs, vtconsole_init_device,
+   vtconsole_class - all removed, never used since vtconsole_class_init is stubbed */
 
 int con_is_bound(const struct consw *csw)
 {
@@ -1507,13 +1462,7 @@ bool con_is_visible(const struct vc_data *vc)
 	return *vc->vc_display_fg == vc;
 }
 
-/* con_debug_enter, con_debug_leave removed - never called */
-
-static int do_register_con_driver(const struct consw *csw, int first, int last)
-{
-	/* Stub: console driver registration not needed for minimal kernel */
-	return -ENODEV;
-}
+/* con_debug_enter, con_debug_leave, do_register_con_driver removed - never called */
 
 /* do_take_over_console stubbed - never called in minimal kernel */
 int do_take_over_console(const struct consw *csw, int first, int last, int deflt)
@@ -1521,34 +1470,9 @@ int do_take_over_console(const struct consw *csw, int first, int last, int deflt
 	return -ENODEV;
 }
 
+/* vtconsole_class_init simplified - sysfs entries not needed for minimal kernel */
 static int __init vtconsole_class_init(void)
 {
-	int i;
-
-	vtconsole_class = class_create(THIS_MODULE, "vtconsole");
-	if (IS_ERR(vtconsole_class)) {
-		vtconsole_class = NULL;
-	}
-
-	
-	for (i = 0; i < MAX_NR_CON_DRIVER; i++) {
-		struct con_driver *con = &registered_con_driver[i];
-
-		if (con->con && !con->dev) {
-			con->dev =
-				device_create_with_groups(vtconsole_class, NULL,
-							  MKDEV(0, con->node),
-							  con, con_dev_groups,
-							  "vtcon%i", con->node);
-
-			if (IS_ERR(con->dev)) {
-				con->dev = NULL;
-			} else {
-				vtconsole_init_device(con);
-			}
-		}
-	}
-
 	return 0;
 }
 postcore_initcall(vtconsole_class_init);
@@ -1611,6 +1535,3 @@ void vc_scrolldelta_helper(struct vc_data *c, int lines,
 	if (!lines)
 		c->vc_visible_origin = c->vc_origin;
 }
-
-#ifndef VT_SINGLE_DRIVER
-#endif

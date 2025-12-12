@@ -244,9 +244,9 @@ bool need_mlock_page_drain(int cpu);
 void mlock_page_drain_local(void);
 void mlock_page_drain_remote(int cpu);
 
-extern pmd_t maybe_pmd_mkwrite(pmd_t pmd, struct vm_area_struct *vma);
+/* maybe_pmd_mkwrite removed - unused */
 
- 
+
 static inline unsigned long
 vma_pgoff_address(pgoff_t pgoff, unsigned long nr_pages,
 		  struct vm_area_struct *vma)

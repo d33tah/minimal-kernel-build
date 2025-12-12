@@ -1756,7 +1756,7 @@ static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
 }
 #endif
 
-void drop_slab(void);
+/* drop_slab removed - never implemented */
 
 extern int randomize_va_space;
 

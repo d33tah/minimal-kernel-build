@@ -2472,7 +2472,7 @@ static void __setup_per_zone_wmarks(void)
 	calculate_totalreserve_pages();
 }
 
-void setup_per_zone_wmarks(void)
+static void setup_per_zone_wmarks(void)
 {
 	static DEFINE_SPINLOCK(lock);
 
@@ -2482,7 +2482,7 @@ void setup_per_zone_wmarks(void)
 	/* zone_pcp_update removed - not needed for single CPU minimal kernel */
 }
 
-void calculate_min_free_kbytes(void)
+static void calculate_min_free_kbytes(void)
 {
 	unsigned long lowmem_kbytes;
 	int new_min_free_kbytes;

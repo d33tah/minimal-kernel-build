@@ -1651,7 +1651,7 @@ extern const struct inode_operations page_symlink_inode_operations;
 /* kfree_link removed - unused */
 void generic_fillattr(struct user_namespace *, struct inode *, struct kstat *);
 void generic_fill_statx_attr(struct inode *inode, struct kstat *stat);
-extern int vfs_getattr_nosec(const struct path *, struct kstat *, u32, unsigned int);
+/* vfs_getattr_nosec removed - never implemented */
 extern int vfs_getattr(const struct path *, struct kstat *, u32, unsigned int);
 /* __inode_add_bytes, __inode_sub_bytes removed - never called */
 void inode_add_bytes(struct inode *inode, loff_t bytes);

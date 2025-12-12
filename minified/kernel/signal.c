@@ -929,12 +929,7 @@ SYSCALL_DEFINE4(rt_tgsigqueueinfo, pid_t, tgid, pid_t, pid, int, sig,
 	return -ENOSYS;
 }
 
-/* kernel_sigaction removed - unused */
-
-void __weak sigaction_compat_abi(struct k_sigaction *act,
-		struct k_sigaction *oact)
-{
-}
+/* kernel_sigaction, sigaction_compat_abi removed - unused */
 
 int do_sigaction(int sig, struct k_sigaction *act, struct k_sigaction *oact)
 {

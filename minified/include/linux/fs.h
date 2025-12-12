@@ -1406,12 +1406,9 @@ static inline struct user_namespace *file_mnt_user_ns(struct file *file)
 extern long vfs_truncate(const struct path *, loff_t);
 int do_truncate(struct user_namespace *, struct dentry *, loff_t start,
 		unsigned int time_attrs, struct file *filp);
-/* vfs_fallocate, do_sys_open removed - unused or internal only */
-extern struct file *file_open_name(struct filename *, int, umode_t);
+/* vfs_fallocate, do_sys_open, file_open_name, file_open_root, dentry_open,
+   dentry_create, open_with_fake_path removed - unused/internal only */
 extern struct file *filp_open(const char *, int, umode_t);
-/* file_open_root removed - unused */
-extern struct file * dentry_open(const struct path *, int, const struct cred *);
-/* dentry_create, open_with_fake_path removed - unused */
 extern int filp_close(struct file *, fl_owner_t id);
 
 extern struct filename *getname_flags(const char __user *, int, int *);

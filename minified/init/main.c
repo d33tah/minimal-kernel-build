@@ -45,7 +45,8 @@ static inline int profile_init(void) { return 0; }
 #include <linux/srcu.h>
 #include <linux/moduleparam.h>
 #include <linux/kallsyms.h>
-#include <linux/buildid.h>
+/* buildid.h removed - init_vmlinux_build_id is stub */
+static inline void init_vmlinux_build_id(void) { }
 #include <linux/writeback.h>
 #include <linux/cpu.h>
 #include <linux/cpuset.h>

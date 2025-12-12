@@ -466,12 +466,7 @@ static void clocksource_suspend_select(bool fallback)
 	}
 }
 
-/* Stubbed - suspend timing not needed for minimal kernel */
-void clocksource_start_suspend_timing(struct clocksource *cs, u64 start_cycles)
-{
-}
-
-/* clocksource_stop_suspend_timing, clocksource_suspend, clocksource_resume, clocksource_touch_watchdog removed - unused */
+/* clocksource_start_suspend_timing, clocksource_stop_suspend_timing, clocksource_suspend, clocksource_resume, clocksource_touch_watchdog removed - unused */
 
 static u32 clocksource_max_adjustment(struct clocksource *cs)
 {

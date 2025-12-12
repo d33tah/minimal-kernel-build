@@ -86,9 +86,7 @@ extern int clocksource_unregister(struct clocksource*);
 /* clocksource_touch_watchdog, clocksource_suspend, clocksource_resume removed - unused */
 extern struct clocksource * __init clocksource_default_clock(void);
 extern void clocksource_mark_unstable(struct clocksource *cs);
-extern void
-clocksource_start_suspend_timing(struct clocksource *cs, u64 start_cycles);
-/* clocksource_stop_suspend_timing removed - unused */
+/* clocksource_start_suspend_timing, clocksource_stop_suspend_timing removed - unused */
 
 extern u64
 clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask, u64 *max_cycles);

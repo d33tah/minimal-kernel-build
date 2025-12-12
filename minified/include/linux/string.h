@@ -122,14 +122,7 @@ extern char *kstrndup(const char *s, size_t len, gfp_t gfp);
 extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
 extern char *kmemdup_nul(const char *s, size_t len, gfp_t gfp);
 
-extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
-extern void argv_free(char **argv);
-
-extern bool sysfs_streq(const char *s1, const char *s2);
-int match_string(const char * const *array, size_t n, const char *string);
-int __sysfs_match_string(const char * const *array, size_t n, const char *s);
-
-#define sysfs_match_string(_a, _s) __sysfs_match_string(_a, ARRAY_SIZE(_a), _s)
+/* argv_split, argv_free, sysfs_streq, match_string, __sysfs_match_string removed - unused */
 
 static inline bool strstarts(const char *str, const char *prefix)
 {

@@ -8,7 +8,6 @@
 #include <linux/vtime.h>
 #include <asm/hardirq.h>
 
-/* synchronize_irq, synchronize_hardirq removed - unused */
 
 static inline void __rcu_irq_enter_check_tick(void) { }
 

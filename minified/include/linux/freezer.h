@@ -6,12 +6,9 @@ struct task_struct;
 
 static inline bool frozen(struct task_struct *p) { return false; }
 static inline bool freezing(struct task_struct *p) { return false; }
-/* __thaw_task, __refrigerator, freeze_processes, freeze_kernel_threads removed - unused */
-/* thaw_processes, thaw_kernel_threads, try_to_freeze removed - unused */
 
 static inline void freezer_do_not_count(void) {}
 static inline void freezer_count(void) {}
-/* freezer_should_skip, set_freezable removed - unused */
 
 #define freezable_schedule()  schedule()
 

@@ -101,7 +101,6 @@ struct hrtimer_cpu_base {
 	struct hrtimer_clock_base	clock_base[HRTIMER_MAX_CLOCK_BASES];
 } ____cacheline_aligned;
 
-/* hrtimer_set_expires, hrtimer_set_expires_range removed - unused */
 
 static inline void hrtimer_set_expires_range_ns(struct hrtimer *timer, ktime_t time, u64 delta)
 {
@@ -146,7 +145,6 @@ static inline s64 hrtimer_get_softexpires_tv64(const struct hrtimer *timer)
 	return timer->_softexpires;
 }
 
-/* hrtimer_get_expires_ns removed - unused */
 
 static inline ktime_t hrtimer_expires_remaining(const struct hrtimer *timer)
 {
@@ -158,15 +156,12 @@ static inline ktime_t hrtimer_cb_get_time(struct hrtimer *timer)
 	return timer->base->get_time();
 }
 
-/* hrtimer_is_hres_active removed - unused */
 
 
 #define hrtimer_resolution	(unsigned int)LOW_RES_NSEC
 
-/* __hrtimer_expires_remaining_adjusted, hrtimer_expires_remaining_adjusted removed - unused */
 
 static inline void timerfd_clock_was_set(void) { }
-/* timerfd_resume removed - unused */
 
 DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
 
@@ -181,7 +176,6 @@ extern void hrtimer_init(struct hrtimer *timer, clockid_t which_clock,
 extern void hrtimer_init_sleeper(struct hrtimer_sleeper *sl, clockid_t clock_id,
 				 enum hrtimer_mode mode);
 
-/* hrtimer_init_on_stack removed - unused */
 
 static inline void hrtimer_init_sleeper_on_stack(struct hrtimer_sleeper *sl,
 						 clockid_t clock_id,
@@ -217,28 +211,23 @@ static inline void hrtimer_start_expires(struct hrtimer *timer,
 
 /* hrtimer_sleeper_start_expires declaration removed - only used internally */
 
-/* hrtimer_get_next_event, hrtimer_next_event_without removed - unused */
 
 extern bool hrtimer_active(const struct hrtimer *timer);
 
-/* hrtimer_is_queued removed - unused */
 
 static inline int hrtimer_callback_running(struct hrtimer *timer)
 {
 	return timer->base->running == timer;
 }
 
-/* nanosleep_copyout removed - unused */
 extern long hrtimer_nanosleep(ktime_t rqtp, const enum hrtimer_mode mode,
 			      const clockid_t clockid);
 
-/* schedule_hrtimeout_range, schedule_hrtimeout_range_clock, schedule_hrtimeout removed - unused */
 
 extern void hrtimer_run_queues(void);
 
 extern void __init hrtimers_init(void);
 
-/* sysrq_timer_list_show removed - unused */
 
 int hrtimers_prepare_cpu(unsigned int cpu);
 #define hrtimers_dead_cpu	NULL

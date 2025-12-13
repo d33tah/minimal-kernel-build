@@ -217,7 +217,6 @@ static inline void totalram_pages_add(long count)
 }
 
 extern void * high_memory;
-/* page_cluster removed - unused */
 
 #define sysctl_legacy_va_layout 0
 
@@ -289,7 +288,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_MAYSHARE	0x00000080
 
 #define VM_GROWSDOWN	0x00000100
-/* VM_UFFD_MISSING (0x200) removed - unused */
 #define VM_PFNMAP	0x00000400
 /* VM_UFFD_WP (0x1000) removed - unused */	
 
@@ -308,13 +306,11 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_HUGETLB	0x00400000
 #define VM_SYNC		0x00800000
 #define VM_ARCH_1	0x01000000
-/* VM_WIPEONFORK (0x02000000) removed - unused */
 #define VM_DONTDUMP	0x04000000	
 
 # define VM_SOFTDIRTY	0
 
 #define VM_MIXEDMAP	0x10000000
-/* VM_HUGEPAGE (0x20000000) removed - unused */
 #define VM_NOHUGEPAGE	0x40000000
 /* VM_MERGEABLE (0x80000000) removed - unused */	
 
@@ -332,7 +328,6 @@ void vm_area_free(struct vm_area_struct *);
 # define VM_GROWSUP	VM_NONE
 #endif
 
-/* VM_UFFD_MINOR removed - unused */
 
 #define VM_STACK_INCOMPLETE_SETUP	(VM_RAND_READ | VM_SEQ_READ)
 
@@ -384,7 +379,6 @@ static inline bool fault_flag_allow_retry_first(enum fault_flag flags)
 	    (!(flags & FAULT_FLAG_TRIED));
 }
 
-/* FAULT_FLAG_TRACE removed - unused */
 
 struct vm_fault {
 	const struct {
@@ -513,7 +507,6 @@ static inline int folio_put_testzero(struct folio *folio)
 {
 	return put_page_testzero(&folio->page);
 }
-/* page_is_ram removed - never called */
 
 enum {
 	REGION_INTERSECTS,
@@ -637,7 +630,6 @@ vm_fault_t do_set_pmd(struct vm_fault *vmf, struct page *page);
 void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr);
 
 vm_fault_t finish_fault(struct vm_fault *vmf);
-/* finish_mkwrite_fault removed - unused */
 
 #define SECTIONS_PGOFF		((sizeof(unsigned long)*8) - SECTIONS_WIDTH)
 #define NODES_PGOFF		(SECTIONS_PGOFF - NODES_WIDTH)
@@ -686,7 +678,6 @@ static inline bool is_zone_device_page(const struct page *page)
 	return false;
 }
 
-/* folio_is_zone_device removed - unused */
 
 static inline bool put_devmap_managed_page(struct page *page)
 {
@@ -782,7 +773,6 @@ static inline pg_data_t *page_pgdat(const struct page *page)
 	return NODE_DATA(page_to_nid(page));
 }
 
-/* folio_zone removed - unused */
 
 static inline pg_data_t *folio_pgdat(const struct folio *folio)
 {
@@ -857,7 +847,6 @@ static inline long folio_nr_pages(struct folio *folio)
 	return compound_nr(&folio->page);
 }
 
-/* folio_next removed - unused */
 
 static inline unsigned int folio_shift(struct folio *folio)
 {
@@ -954,12 +943,10 @@ struct mmu_notifier_range;
 
 void free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
 		unsigned long end, unsigned long floor, unsigned long ceiling);
-/* copy_page_range, follow_pte, follow_pfn, follow_phys, generic_access_phys removed - unused */
 
 extern void truncate_pagecache(struct inode *inode, loff_t new);
 extern void truncate_setsize(struct inode *inode, loff_t newsize);
 void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to);
-/* generic_error_remove_page removed - never defined or called */
 
 extern vm_fault_t handle_mm_fault(struct vm_area_struct *vma,
 				  unsigned long address, unsigned int flags,
@@ -976,9 +963,7 @@ long get_user_pages_remote(struct mm_struct *mm,
 /* pin_user_pages_remote, get_user_pages, pin_user_pages, get_user_pages_unlocked,
    pin_user_pages_unlocked, get_user_pages_fast, pin_user_pages_fast removed - unused */
 
-/* account_locked_vm, __account_locked_vm removed - unused */
 
-/* get_kernel_pages, get_dump_page removed - unused */
 
 bool folio_mark_dirty(struct folio *folio);
 bool set_page_dirty(struct page *page);
@@ -988,12 +973,10 @@ extern unsigned long move_page_tables(struct vm_area_struct *vma,
 		unsigned long new_addr, unsigned long len,
 		bool need_rmap_locks);
 
-/* MM_CP_DIRTY_ACCT, MM_CP_PROT_NUMA, MM_CP_UFFD_WP*, change_protection removed - unused */
 extern int mprotect_fixup(struct mmu_gather *tlb, struct vm_area_struct *vma,
 			  struct vm_area_struct **pprev, unsigned long start,
 			  unsigned long end, unsigned long newflags);
 
-/* get_user_pages_fast_only, pin_user_pages_fast_only removed - unused */
 
 static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
 {
@@ -1174,7 +1157,6 @@ static inline void mm_pgtables_bytes_init(struct mm_struct *mm)
 	atomic_long_set(&mm->pgtables_bytes, 0);
 }
 
-/* mm_pgtables_bytes removed - unused */
 
 static inline void mm_inc_nr_ptes(struct mm_struct *mm)
 {
@@ -1417,10 +1399,8 @@ static inline unsigned long free_initmem_default(int poison)
 				  poison, "unused kernel image (initmem)");
 }
 
-/* get_num_physpages removed - unused */
 
 void free_area_init(unsigned long *max_zone_pfn);
-/* set_dma_reserve removed - never called */
 extern void memmap_init_range(unsigned long, int, unsigned long,
 		unsigned long, unsigned long, enum meminit_context,
 		struct vmem_altmap *, int migratetype);
@@ -1428,7 +1408,6 @@ extern void memmap_init_range(unsigned long, int, unsigned long,
 extern int __meminit init_per_zone_wmark_min(void);
 extern void mem_init(void);
 extern void __init mmap_init(void);
-/* si_mem_available, si_meminfo, si_meminfo_node, arch_reserved_kernel_pages removed - unused */
 
 extern __printf(3, 4)
 void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...);
@@ -1436,7 +1415,6 @@ void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...);
 extern void setup_per_cpu_pageset(void);
 
 extern int min_free_kbytes;
-/* watermark_boost_factor, watermark_scale_factor removed - unused */
 
 extern atomic_long_t mmap_pages_allocated;
 
@@ -1547,7 +1525,6 @@ static inline void mm_populate(unsigned long addr, unsigned long len)
 	(void) __mm_populate(addr, len, 1);
 }
 
-/* vm_brk removed - never called */
 extern int __must_check vm_brk_flags(unsigned long, unsigned long, unsigned long);
 extern int vm_munmap(unsigned long, size_t);
 extern unsigned long __must_check vm_mmap(struct file *, unsigned long,
@@ -1604,7 +1581,6 @@ struct vm_area_struct *find_vma_intersection(struct mm_struct *mm,
 	return vma;
 }
 
-/* vma_lookup removed - unused */
 
 static inline unsigned long vm_start_gap(struct vm_area_struct *vma)
 {
@@ -1638,7 +1614,6 @@ static inline unsigned long vma_pages(struct vm_area_struct *vma)
 pgprot_t vm_get_page_prot(unsigned long vm_flags);
 /* Removed: vma_set_page_prot - never called */
 
-/* vma_set_file removed - unused */
 
 struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 int remap_pfn_range(struct vm_area_struct *, unsigned long addr,
@@ -1655,7 +1630,6 @@ vm_fault_t vmf_insert_mixed_prot(struct vm_area_struct *vma, unsigned long addr,
 			pfn_t pfn, pgprot_t pgprot);
 vm_fault_t vmf_insert_mixed_mkwrite(struct vm_area_struct *vma,
 		unsigned long addr, pfn_t pfn);
-/* vm_iomap_memory removed - unused */
 
 struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
 			 unsigned int foll_flags);
@@ -1755,7 +1729,6 @@ static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
 }
 #endif
 
-/* drop_slab removed - never implemented */
 
 extern int randomize_va_space;
 
@@ -1784,7 +1757,6 @@ void vmemmap_populate_print_last(void);
 void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
 				  unsigned long nr_pages);
 
-/* mf_flags, mf_result, mf_action_page_type enums removed - unused */
 
 static inline unsigned int debug_guardpage_minorder(void) { return 0; }
 static inline bool page_is_guard(struct page *page) { return false; }
@@ -1795,7 +1767,6 @@ void __init setup_nr_node_ids(void);
 static inline void setup_nr_node_ids(void) {}
 #endif
 
-/* madvise_set_anon_name removed - unused */
 
 #define  ZAP_FLAG_DROP_MARKER        ((__force zap_flags_t) BIT(0))
 

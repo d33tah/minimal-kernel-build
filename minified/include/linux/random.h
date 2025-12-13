@@ -31,7 +31,6 @@ struct rand_pool_info {
 struct notifier_block;
 
 void add_device_randomness(const void *buf, size_t len);
-/* add_bootloader_randomness, add_input_randomness, add_hwgenerator_randomness removed - never called */
 void add_interrupt_randomness(int irq) __latent_entropy;
 
 #if defined(LATENT_ENTROPY_PLUGIN) && !defined(__CHECKER__)

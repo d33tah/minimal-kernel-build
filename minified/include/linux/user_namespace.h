@@ -125,13 +125,11 @@ static inline void put_user_ns(struct user_namespace *ns)
 {
 }
 
-/* userns_may_setgroups, in_userns removed - unused */
 
 static inline bool current_in_userns(const struct user_namespace *target_ns)
 {
 	return true;
 }
 
-/* ns_get_owner removed - unused */
 
 #endif  

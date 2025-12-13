@@ -65,7 +65,6 @@ enum migratetype {
 #  define is_migrate_cma_page(_page) false
 
 
-/* migratetype_is_mergeable removed - unused */
 
 #define for_each_migratetype_order(order, type) \
 	for (order = 0; order < MAX_ORDER; order++) \
@@ -201,7 +200,6 @@ enum vmscan_throttle_state {
 
 #define for_each_lru(lru) for (lru = 0; lru < NR_LRU_LISTS; lru++)
 
-/* is_file_lru, is_active_lru removed - unused */
 
 #define ANON_AND_FILE 2
 
@@ -374,7 +372,6 @@ static inline bool zone_spans_pfn(const struct zone *zone, unsigned long pfn)
 	return zone->zone_start_pfn <= pfn && pfn < zone_end_pfn(zone);
 }
 
-/* zone_is_initialized removed - unused */
 
 #define DEF_PRIORITY 12
 
@@ -469,7 +466,6 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 bool zone_watermark_ok(struct zone *z, unsigned int order,
 		unsigned long mark, int highest_zoneidx,
 		unsigned int alloc_flags);
-/* zone_watermark_ok_safe removed - unused */
 enum meminit_context {
 	MEMINIT_EARLY,
 	MEMINIT_HOTPLUG,
@@ -489,7 +485,6 @@ static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec)
 #define zone_idx(zone)		((zone) - (zone)->zone_pgdat->node_zones)
 
 
-/* managed_zone removed - unused */
 
 static inline bool populated_zone(struct zone *zone)
 {

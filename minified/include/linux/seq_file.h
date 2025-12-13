@@ -63,15 +63,10 @@ static inline void seq_commit(struct seq_file *m, int num)
 	}
 }
 
-/* seq_setwidth, seq_pad, mangle_path, seq_vprintf removed - unused */
 /* seq_open, seq_read, seq_read_iter, seq_lseek, seq_release removed - not called */
 
 __printf(2, 3)
 void seq_printf(struct seq_file *m, const char *fmt, ...);
-/* seq_putc, seq_puts, seq_put_decimal_ull, seq_put_decimal_ull_width, seq_put_decimal_ll, seq_put_hex_ll removed - unused */
-/* seq_escape_mem, seq_escape_str, seq_escape, seq_hex_dump removed - unused */
-/* single_start, single_open, single_open_size, single_release removed - unused */
-/* DEFINE_SEQ_ATTRIBUTE, DEFINE_SHOW_ATTRIBUTE, DEFINE_PROC_SHOW_ATTRIBUTE removed - unused */
 
 static inline struct user_namespace *seq_user_ns(struct seq_file *seq)
 {
@@ -79,7 +74,6 @@ static inline struct user_namespace *seq_user_ns(struct seq_file *seq)
 	return &init_user_ns;
 }
 
-/* seq_show_option and seq_show_option_n removed - unused */
 
 #define SEQ_START_TOKEN ((void *)1)
 

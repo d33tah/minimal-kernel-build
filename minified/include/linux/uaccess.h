@@ -146,7 +146,6 @@ static inline bool pagefault_disabled(void)
 
 #define faulthandler_disabled() (pagefault_disabled() || in_atomic())
 
-/* probe_subpage_writeable removed - never called */  
 
 #ifndef ARCH_HAS_NOCACHE_UACCESS
 

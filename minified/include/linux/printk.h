@@ -141,7 +141,6 @@ static inline void dump_stack(void)
 		local_irq_restore(flags);	\
 	} while (0)
 
-/* kptr_restrict removed - never used */
 
 #ifndef pr_fmt
 #define pr_fmt(fmt) fmt
@@ -212,7 +211,6 @@ struct module;
 #define printk_deferred_once(fmt, ...)				\
 	no_printk(fmt, ##__VA_ARGS__)
 
-/* pr_emerg/alert/crit/notice_once removed - unused */
 #define pr_err_once(fmt, ...)					\
 	printk_once(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_warn_once(fmt, ...)					\
@@ -220,14 +218,12 @@ struct module;
 #define pr_info_once(fmt, ...)					\
 	printk_once(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
 
-/* pr_devel_once, pr_debug_once removed - unused */
 
 #define printk_ratelimited(fmt, ...)					\
 	no_printk(fmt, ##__VA_ARGS__)
 
 #define pr_emerg_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
-/* pr_alert/crit/notice/devel/debug_ratelimited removed - unused */
 #define pr_err_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_warn_ratelimited(fmt, ...)					\
@@ -235,6 +231,5 @@ struct module;
 #define pr_info_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
 
-/* print_hex_dump*, DUMP_PREFIX_* removed - unused */
 
 #endif

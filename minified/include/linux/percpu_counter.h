@@ -30,7 +30,6 @@ static inline void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
 	fbc->count = amount;
 }
 
-/* percpu_counter_compare and __percpu_counter_compare removed - unused */
 
 static inline void
 percpu_counter_add(struct percpu_counter *fbc, s64 amount)
@@ -85,6 +84,5 @@ static inline void percpu_counter_dec(struct percpu_counter *fbc)
 	percpu_counter_add(fbc, -1);
 }
 
-/* percpu_counter_sub removed - unused */
 
 #endif  

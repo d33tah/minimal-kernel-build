@@ -83,7 +83,6 @@ struct clone_args {
 #include <linux/refcount.h>
 #include <linux/resource.h>
 /* latencytop.h inlined - header removed */
-/* account_scheduler_latency removed - unused */
 static inline void clear_tsk_latency_tracing(struct task_struct *p) {}
 /* sched/prio.h inlined */
 #define MAX_NICE	19
@@ -110,29 +109,23 @@ struct audit_context;
 struct backing_dev_info;
 struct bio_list;
 struct blk_plug;
-/* bpf_local_storage, bpf_run_ctx, capture_control removed - unused */
 struct cfs_rq;
 struct fs_struct;
-/* futex_pi_state removed - unused */
 struct io_context;
-/* io_uring_task removed - unused */
 struct mempolicy;
 struct nameidata;
 struct nsproxy;
 struct perf_event_context;
 struct pid_namespace;
 struct pipe_inode_info;
-/* rcu_node removed - unused */
 struct reclaim_state;
 struct robust_list_head;
-/* root_domain removed - unused */
 struct rq;
 struct sched_attr;
 struct sched_param;
 struct seq_file;
 struct sighand_struct;
 struct signal_struct;
-/* task_delay_info removed - unused */
 struct task_group;
 
 
@@ -817,26 +810,21 @@ static inline void release_user_cpus_ptr(struct task_struct *p)
 	WARN_ON(p->user_cpus_ptr);
 }
 
-/* task_prio removed - unused */
 
 static inline int task_nice(const struct task_struct *p)
 {
 	return PRIO_TO_NICE((p)->static_prio);
 }
 
-/* idle_cpu removed - unused */
 extern int sched_setscheduler(struct task_struct *, int, const struct sched_param *);
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
 extern void sched_set_fifo(struct task_struct *p);
-/* idle_task removed - unused */
 
 static __always_inline bool is_idle_task(const struct task_struct *p)
 {
 	return !!(p->flags & PF_IDLE);
 }
 
-/* curr_task removed - unused */
-/* yield removed - unused */
 
 union thread_union {
 	struct task_struct task;
@@ -849,7 +837,6 @@ extern unsigned long init_stack[THREAD_SIZE / sizeof(unsigned long)];
 # define task_thread_info(task)	(&(task)->thread_info)
 
 
-/* find_task_by_vpid removed - unused */
 extern struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns);
 
 extern int wake_up_state(struct task_struct *tsk, unsigned int state);
@@ -865,7 +852,6 @@ static inline void set_task_comm(struct task_struct *tsk, const char *from)
 	__set_task_comm(tsk, from, false);
 }
 
-/* __get_task_comm, get_task_comm removed - unused */
 
 static inline unsigned long wait_task_inactive(struct task_struct *p, unsigned int match_state)
 {
@@ -927,7 +913,6 @@ static inline int _cond_resched(void)
 	_cond_resched();			\
 })
 
-/* __cond_resched_lock, cond_resched_lock removed - unused */
 
 #define MIGHT_RESCHED_RCU_SHIFT		8
 #define MIGHT_RESCHED_PREEMPT_MASK	((1U << MIGHT_RESCHED_RCU_SHIFT) - 1)

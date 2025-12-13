@@ -91,7 +91,6 @@ static const struct attribute_group _name##_group = {		\
 };								\
 __ATTRIBUTE_GROUPS(_name)
 
-/* BIN_ATTRIBUTE_GROUPS removed - unused */
 
 struct file;
 struct vm_area_struct;
@@ -111,7 +110,6 @@ struct bin_attribute {
 };
 
 #define sysfs_bin_attr_init(bin_attr) sysfs_attr_init(&(bin_attr)->attr)
-/* __BIN_ATTR_*, BIN_ATTR_* macros removed - unused */
 
 struct sysfs_ops {
 	ssize_t	(*show)(struct kobject *, struct attribute *, char *);
@@ -136,7 +134,6 @@ static inline void sysfs_remove_file_ns(struct kobject *kobj,
 {
 }
 
-/* sysfs_create_bin_file, sysfs_remove_bin_file removed - unused */
 
 static inline int sysfs_create_link(struct kobject *kobj,
 				    struct kobject *target, const char *name)

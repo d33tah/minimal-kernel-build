@@ -133,7 +133,6 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 }
 #endif
 
-/* find_next_clump8, find_first_clump8 removed - unused */
 
 #if defined(__LITTLE_ENDIAN)
 
@@ -209,7 +208,6 @@ unsigned long find_next_bit_le(const void *addr, unsigned
 	     (bit) < (size);					\
 	     (bit) = find_next_bit((addr), (size), (bit) + 1))
 
-/* for_each_set_bit_from removed - unused */
 
 #define for_each_clear_bit_from(bit, addr, size) \
 	for ((bit) = find_next_zero_bit((addr), (size), (bit));	\
@@ -223,7 +221,6 @@ unsigned long find_next_bit_le(const void *addr, unsigned
 	     (b) = find_next_bit((addr), (size), (e) + 1),	\
 	     (e) = find_next_zero_bit((addr), (size), (b) + 1))
 
-/* for_each_set_bitrange_from removed - unused */
 
 #define for_each_clear_bitrange(b, e, addr, size)		\
 	for ((b) = find_next_zero_bit((addr), (size), 0),	\
@@ -239,7 +236,6 @@ unsigned long find_next_bit_le(const void *addr, unsigned
 	     (b) = find_next_zero_bit((addr), (size), (e) + 1),	\
 	     (e) = find_next_bit((addr), (size), (b) + 1))
 
-/* for_each_set_clump8 removed - unused */
 /* End of inlined find.h content */
 #include <linux/string.h>
 #include <linux/types.h>
@@ -248,11 +244,9 @@ struct device;
 
 
 
-/* bitmap_alloc, bitmap_zalloc, bitmap_free, devm_bitmap_alloc, devm_bitmap_zalloc removed - unused */
 
 bool __bitmap_equal(const unsigned long *bitmap1,
 		    const unsigned long *bitmap2, unsigned int nbits);
-/* __bitmap_or_equal, bitmap_cut removed - unused */
 int __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
 		 const unsigned long *bitmap2, unsigned int nbits);
 void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,

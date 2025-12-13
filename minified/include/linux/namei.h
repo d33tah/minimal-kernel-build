@@ -56,7 +56,6 @@ extern void done_path_create(struct path *, struct dentry *);
 /* try_lookup_one_len, lookup_one_len, lookup_one_len_unlocked, lookup_positive_unlocked,
    lookup_one, lookup_one_unlocked, lookup_one_positive_unlocked removed - no callers */
 
-/* follow_down_one, follow_down, nd_jump_link, follow_up removed - unused */
 
 /* lock_rename, unlock_rename removed - no definition or callers */
 

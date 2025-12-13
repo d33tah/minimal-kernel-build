@@ -15,12 +15,10 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 	kthread_create_on_node(threadfn, data, NUMA_NO_NODE, namefmt, ##arg)
 
 
-/* kthread_create_on_cpu removed - unused */
 
 bool set_kthread_struct(struct task_struct *p);
 
 void kthread_set_per_cpu(struct task_struct *k, int cpu);
-/* kthread_is_per_cpu removed - unused */
 
 #define kthread_run(threadfn, data, namefmt, ...)			   \
 ({									   \
@@ -31,21 +29,15 @@ void kthread_set_per_cpu(struct task_struct *k, int cpu);
 	__k;								   \
 })
 
-/* kthread_run_on_cpu removed - unused */
 
 void free_kthread_struct(struct task_struct *k);
-/* kthread_bind, kthread_bind_mask removed - unused */
 int kthread_stop(struct task_struct *k);
 bool kthread_should_stop(void);
 bool kthread_should_park(void);
 bool __kthread_should_park(struct task_struct *k);
-/* kthread_freezable_should_stop removed - unused */
-/* kthread_func removed - unused */
 void *kthread_data(struct task_struct *k);
-/* kthread_probe_data, kthread_park, kthread_parkme removed - unused */
 void kthread_unpark(struct task_struct *k);
 void kthread_exit(long result) __noreturn;
-/* kthread_complete_and_exit removed - unused */
 
 int kthreadd(void *unused);
 extern struct task_struct *kthreadd_task;
@@ -155,5 +147,4 @@ void kthread_destroy_worker(struct kthread_worker *worker);
 void kthread_use_mm(struct mm_struct *mm);
 void kthread_unuse_mm(struct mm_struct *mm);
 
-/* kthread_associate_blkcg removed - unused */
 #endif  

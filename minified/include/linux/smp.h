@@ -29,7 +29,6 @@ do {						\
 	*(_csd) = CSD_INIT((_func), (_info));	\
 } while (0)
 
-/* __smp_call_single_queue, total_cpus removed - unused */
 
 int smp_call_function_single(int cpuid, smp_call_func_t func, void *info,
 			     int wait);

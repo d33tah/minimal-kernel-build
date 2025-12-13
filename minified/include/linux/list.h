@@ -232,7 +232,6 @@ static inline void list_splice_tail_init(struct list_head *list,
 	     !list_entry_is_head(pos, head, member);			\
 	     pos = list_next_entry(pos, member))
 
-/* list_for_each_entry_from removed - unused */
 
 #define list_for_each_entry_safe(pos, n, head, member)			\
 	for (pos = list_first_entry(head, typeof(*pos), member),	\
@@ -245,7 +244,6 @@ static inline void list_splice_tail_init(struct list_head *list,
 	     !list_entry_is_head(pos, head, member);				\
 	     pos = n, n = list_next_entry(n, member))
 
-/* list_for_each_entry_safe_reverse removed - unused */
 
 
 #define HLIST_HEAD_INIT { .first = NULL }

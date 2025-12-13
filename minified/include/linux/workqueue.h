@@ -225,7 +225,6 @@ static inline bool schedule_work(struct work_struct *work)
 	return queue_work(system_wq, work);
 }
 
-/* __warn_flushing_systemwide_wq removed - unused */
 /* flush_workqueue macro removed - not used */
 
 static inline bool schedule_delayed_work(struct delayed_work *dwork,

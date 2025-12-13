@@ -55,7 +55,6 @@ enum pcpu_fc {
 
 	PCPU_FC_NR,
 };
-/* pcpu_fc_names, pcpu_chosen_fc removed - never used */
 
 typedef int (pcpu_fc_cpu_to_node_fn_t)(int cpu);
 typedef int (pcpu_fc_cpu_distance_fn_t)(unsigned int from, unsigned int to);
@@ -67,8 +66,6 @@ extern void __init pcpu_free_alloc_info(struct pcpu_alloc_info *ai);
 extern void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 					 void *base_addr);
 
-/* pcpu_embed_first_chunk, pcpu_populate_pte removed - never called */
-/* pcpu_page_first_chunk, __is_kernel_percpu_address, is_kernel_percpu_address removed - never called */
 
 extern void __init setup_per_cpu_areas(void);
 

@@ -90,7 +90,6 @@ clockevents_calc_mult_shift(struct clock_event_device *ce, u32 freq, u32 maxsec)
 	return clocks_calc_mult_shift(&ce->mult, &ce->shift, NSEC_PER_SEC, freq, maxsec);
 }
 
-/* clockevents_suspend, clockevents_resume removed - unused */
 
 
 static inline int tick_check_broadcast_expired(void) { return 0; }

@@ -22,7 +22,6 @@ static inline void flush_dcache_folio(struct folio *folio) {}
 /* Inlined from highmem-internal.h */
 void *__kmap_local_pfn_prot(unsigned long pfn, pgprot_t prot);
 void *__kmap_local_page_prot(struct page *page, pgprot_t prot);
-/* kunmap_local_indexed removed - unused */
 void kmap_local_fork(struct task_struct *tsk);
 void __kmap_local_sched_out(void);
 void __kmap_local_sched_in(void);
@@ -122,7 +121,6 @@ static inline void flush_anon_page(struct vm_area_struct *vma, struct page *page
 }
 #endif
 
-/* flush_kernel_vmap_range, invalidate_kernel_vmap_range removed - unused */
 
 #ifndef clear_user_highpage
 static inline void clear_user_highpage(struct page *page, unsigned long vaddr)
@@ -147,7 +145,6 @@ alloc_zeroed_user_highpage_movable(struct vm_area_struct *vma,
 }
 #endif
 
-/* clear_highpage, tag_clear_highpage removed - unused */
 
 static inline void zero_user_segments(struct page *page,
 		unsigned start1, unsigned end1,

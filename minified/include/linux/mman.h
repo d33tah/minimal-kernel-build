@@ -10,7 +10,6 @@
 /* From uapi/linux/mman.h and asm-generic/hugetlb_encode.h - inlined */
 #define MREMAP_MAYMOVE		1
 #define MREMAP_FIXED		2
-/* MREMAP_DONTUNMAP removed - unused */
 #define OVERCOMMIT_GUESS		0
 #define OVERCOMMIT_ALWAYS		1
 #define OVERCOMMIT_NEVER		2
@@ -23,7 +22,6 @@
 #define HUGETLB_FLAG_ENCODE_MASK	0x3f
 #define MAP_HUGE_SHIFT	HUGETLB_FLAG_ENCODE_SHIFT
 #define MAP_HUGE_MASK	HUGETLB_FLAG_ENCODE_MASK
-/* MAP_HUGE_*KB/MB/GB defines removed - unused */
 
 #ifndef MAP_32BIT
 #define MAP_32BIT 0

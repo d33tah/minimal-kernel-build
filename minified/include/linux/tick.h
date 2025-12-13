@@ -14,7 +14,6 @@ extern void tick_handover_do_timer(void);
 
 static inline void tick_irq_enter(void) { }
 
-/* hotplug_cpu__broadcast_tick_pull removed - unused */
 
 enum tick_broadcast_mode {
 	TICK_BROADCAST_OFF,
@@ -27,7 +26,6 @@ enum tick_broadcast_state {
 	TICK_BROADCAST_ENTER,
 };
 
-/* tick_broadcast_control, tick_offline_cpu removed - unused */
 
 extern int tick_broadcast_oneshot_control(enum tick_broadcast_state state);
 
@@ -53,8 +51,6 @@ static inline void tick_nohz_idle_retain_tick(void) { }
 static inline void tick_nohz_idle_restart_tick(void) { }
 static inline void tick_nohz_idle_enter(void) { }
 static inline void tick_nohz_idle_exit(void) { }
-/* tick_nohz_idle_got_tick, tick_nohz_get_next_hrtimer, tick_nohz_get_sleep_length removed - unused */
-/* get_cpu_idle_time_us, get_cpu_iowait_time_us, tick_nohz_idle_stop_tick_protected removed - unused */
 
 static inline bool tick_nohz_full_enabled(void) { return false; }
 static inline bool tick_nohz_full_cpu(int cpu) { return false; }

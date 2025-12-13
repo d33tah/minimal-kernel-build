@@ -330,7 +330,6 @@ static inline __alloc_size(1, 2) void *kvmalloc_array(size_t n, size_t size, gfp
 	return kvmalloc(bytes, flags);
 }
 
-/* kvrealloc, kvfree_sensitive removed - unused */
 extern void kvfree(const void *addr);
 
 void __init kmem_cache_init_late(void);

@@ -130,7 +130,6 @@ static inline bool memblock_is_driver_managed(struct memblock_region *m)
 	return m->flags & MEMBLOCK_DRIVER_MANAGED;
 }
 
-/* memblock_search_pfn_nid removed - unused */
 void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn,
 			  unsigned long *out_end_pfn, int *out_nid);
 
@@ -200,7 +199,6 @@ static __always_inline void *memblock_alloc(phys_addr_t size, phys_addr_t align)
 				      MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
 }
 
-/* memblock_alloc_raw removed - unused */
 
 static inline void *memblock_alloc_from(phys_addr_t size,
 						phys_addr_t align,
@@ -210,7 +208,6 @@ static inline void *memblock_alloc_from(phys_addr_t size,
 				      MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
 }
 
-/* memblock_alloc_low removed - unused */
 
 static inline void *memblock_alloc_node(phys_addr_t size,
 						phys_addr_t align, int nid)
@@ -219,17 +216,14 @@ static inline void *memblock_alloc_node(phys_addr_t size,
 				      MEMBLOCK_ALLOC_ACCESSIBLE, nid);
 }
 
-/* memblock_set_bottom_up removed - unused */
 
 static inline __init_memblock bool memblock_bottom_up(void)
 {
 	return memblock.bottom_up;
 }
 
-/* memblock_phys_mem_size, memblock_reserved_size removed - unused */
 phys_addr_t memblock_start_of_DRAM(void);
 phys_addr_t memblock_end_of_DRAM(void);
-/* memblock_enforce_memory_limit, memblock_cap_memory_range, memblock_mem_limit_remove_map, memblock_is_memory, memblock_is_reserved, memblock_is_map_memory removed - unused */
 bool memblock_is_region_memory(phys_addr_t base, phys_addr_t size);
 bool memblock_is_region_reserved(phys_addr_t base, phys_addr_t size);
 
@@ -241,9 +235,7 @@ void memblock_set_current_limit(phys_addr_t limit);
 phys_addr_t memblock_get_current_limit(void);
 
 
-/* memblock_region_memory_base/end_pfn removed - unused */
 
-/* memblock_region_reserved_base/end_pfn removed - unused */
 
 #define for_each_mem_region(region)					\
 	for (region = memblock.memory.regions;				\

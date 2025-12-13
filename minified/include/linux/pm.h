@@ -151,7 +151,6 @@ enum rpm_status {
 };
 
 
-/* enum rpm_request removed - unused */
 
 struct wakeup_source;
 struct wake_irq;
@@ -187,7 +186,6 @@ struct dev_pm_info {
 	struct dev_pm_qos	*qos;
 };
 
-/* dev_pm_get_subsys_data, dev_pm_put_subsys_data removed - unused */
 
 struct dev_pm_domain {
 	struct dev_pm_ops	ops;
@@ -199,7 +197,6 @@ struct dev_pm_domain {
 };
 
 
-/* PM_EVENT_PRETHAW removed - unused */
 
 
 

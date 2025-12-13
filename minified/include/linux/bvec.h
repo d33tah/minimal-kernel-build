@@ -96,6 +96,5 @@ static inline bool bvec_iter_advance(const struct bio_vec *bv,
 	return true;
 }
 
-/* BVEC_ITER_ALL_INIT, bvec_init_iter_all, bvec_advance removed - unused */
 
 #endif  

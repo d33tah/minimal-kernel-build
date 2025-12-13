@@ -73,7 +73,6 @@ static inline const struct page *page_fixed_fake_head(const struct page *page)
 	return page;
 }
 
-/* hugetlb_optimize_vmemmap_enabled removed - unused */
 
 static __always_inline int page_is_fake_head(struct page *page)
 {
@@ -415,7 +414,6 @@ static __always_inline void set_compound_head(struct page *page, struct page *he
 	WRITE_ONCE(page->compound_head, (unsigned long)head + 1);
 }
 
-/* clear_compound_head removed - unused */
 
 
 #define PG_head_mask ((1UL << PG_head))
@@ -433,7 +431,6 @@ PAGEFLAG_FALSE(DoubleMap, double_map)
 PAGEFLAG_FALSE(HasHWPoisoned, has_hwpoisoned)
 	TESTSCFLAG_FALSE(HasHWPoisoned, has_hwpoisoned)
 
-/* is_page_hwpoison removed - unused */
 
 
 #define PAGE_TYPE_BASE	0xf0000000
@@ -471,13 +468,11 @@ PAGE_TYPE_OPS(Buddy, buddy)
 
 PAGE_TYPE_OPS(Offline, offline)
 
-/* page_offline_freeze/thaw/begin/end removed - unused */
 
 PAGE_TYPE_OPS(Table, table)
 
 PAGE_TYPE_OPS(Guard, guard)
 
-/* is_free_buddy_page removed - never called */
 
 PAGEFLAG(Isolated, isolated, PF_ANY);
 

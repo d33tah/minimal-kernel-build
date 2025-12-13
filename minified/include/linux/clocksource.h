@@ -74,7 +74,6 @@ struct clocksource {
 #define CLOCK_SOURCE_VERIFY_PERCPU		0x200
 #define CLOCKSOURCE_MASK(bits) GENMASK_ULL((bits) - 1, 0)
 
-/* clocksource_freq2mult, clocksource_khz2mult, clocksource_hz2mult removed - unused */
 
 static inline s64 clocksource_cyc2ns(u64 cycles, u32 mult, u32 shift)
 {
@@ -83,10 +82,8 @@ static inline s64 clocksource_cyc2ns(u64 cycles, u32 mult, u32 shift)
 
 
 extern int clocksource_unregister(struct clocksource*);
-/* clocksource_touch_watchdog, clocksource_suspend, clocksource_resume removed - unused */
 extern struct clocksource * __init clocksource_default_clock(void);
 extern void clocksource_mark_unstable(struct clocksource *cs);
-/* clocksource_start_suspend_timing, clocksource_stop_suspend_timing removed - unused */
 
 extern u64
 clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask, u64 *max_cycles);
@@ -113,18 +110,15 @@ static inline int clocksource_register_khz(struct clocksource *cs, u32 khz)
 	return __clocksource_register_scale(cs, 1000, khz);
 }
 
-/* __clocksource_update_freq_hz, __clocksource_update_freq_khz removed - unused */
 
 extern void clocksource_arch_init(struct clocksource *cs);
 
 extern int timekeeping_notify(struct clocksource *clock);
 
-/* clocksource_mmio_readl_up/down, clocksource_mmio_readw_up/down, clocksource_mmio_init, clocksource_i8253_init removed - unused */
 
 #define TIMER_OF_DECLARE(name, compat, fn) \
 	OF_DECLARE_1_RET(timer, name, compat, fn)
 
-/* timer_probe removed - unused */
 
 #define TIMER_ACPI_DECLARE(name, table_id, fn)		\
 	ACPI_DECLARE_PROBE_ENTRY(timer, name, table_id, 0, NULL, 0, fn)

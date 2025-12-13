@@ -66,9 +66,6 @@ extern const struct consw *conswitchp;
 
 extern const struct consw dummy_con;
 extern const struct consw vga_con;
-/* newport_con removed - unused */
-/* con_is_bound, do_take_over_console removed - unused */
-/* con_debug_enter, con_debug_leave removed - never called */
 
 #define CM_DRAW     (1)
 #define CM_ERASE    (2)
@@ -106,14 +103,12 @@ struct console {
 #define for_each_console(con) \
 	for (con = console_drivers; con != NULL; con = con->next)
 
-/* console_set_on_cmdline, early_console removed - unused */
 
 enum con_flush_mode {
 	CONSOLE_FLUSH_PENDING,
 	CONSOLE_REPLAY_ALL,
 };
 
-/* add_preferred_console removed - unused */
 extern void register_console(struct console *);
 extern int unregister_console(struct console *);
 extern struct console *console_drivers;
@@ -124,11 +119,9 @@ extern void console_unlock(void);
 extern void console_unblank(void);
 extern void console_flush_on_panic(enum con_flush_mode mode);
 extern struct tty_driver *console_device(int *);
-/* console_stop, console_start removed - unused */
 extern int is_console_locked(void);
 /* braille_register_console, braille_unregister_console removed - no definition or callers */
 extern void console_sysfs_notify(void);
-/* console_suspend_enabled removed - unused */
 
 static inline void vcs_make_sysfs(int index) { }
 static inline void vcs_remove_sysfs(int index) { }
@@ -142,6 +135,5 @@ extern atomic_t ignore_console_lock_warning;
 
 extern void console_init(void);
 
-/* dummycon notifiers removed - unused */
 
 #endif  

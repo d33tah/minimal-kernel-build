@@ -16,7 +16,6 @@ static inline struct backing_dev_info *bdi_get(struct backing_dev_info *bdi)
 	return bdi;
 }
 
-/* bdi_get_by_id, bdi_register, bdi_register_va, bdi_set_owner removed - unused */
 void bdi_put(struct backing_dev_info *bdi);
 void bdi_unregister(struct backing_dev_info *bdi);
 
@@ -24,7 +23,6 @@ struct backing_dev_info *bdi_alloc(int node_id);
 
 void wb_start_background_writeback(struct bdi_writeback *wb);
 void wb_workfn(struct work_struct *work);
-/* wb_wakeup_delayed removed - unused */
 
 void wb_wait_for_completion(struct wb_completion *done);
 
@@ -32,7 +30,6 @@ extern spinlock_t bdi_lock;
 extern struct list_head bdi_list;
 
 extern struct workqueue_struct *bdi_wq;
-/* bdi_async_bio_wq removed - unused */
 
 static inline bool wb_has_dirty_io(struct bdi_writeback *wb)
 {
@@ -71,7 +68,6 @@ static inline s64 wb_stat_sum(struct bdi_writeback *wb, enum wb_stat_item item)
 	return percpu_counter_sum_positive(&wb->stat[item]);
 }
 
-/* wb_writeout_inc removed - unused */
 
 static inline unsigned long wb_stat_error(void)
 {
@@ -153,7 +149,6 @@ static inline void unlocked_inode_to_wb_end(struct inode *inode,
 {
 }
 
-/* wb_memcg_offline, wb_blkcg_offline removed - unused */
 
 const char *bdi_dev_name(struct backing_dev_info *bdi);
 

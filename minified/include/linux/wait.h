@@ -89,8 +89,6 @@ static inline int waitqueue_active(struct wait_queue_head *wq_head)
 }
 
 extern void add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry);
-/* add_wait_queue_exclusive removed - unused */
-/* add_wait_queue_priority removed - unused */
 extern void remove_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry);
 
 static inline void __add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
@@ -106,7 +104,6 @@ static inline void __add_wait_queue(struct wait_queue_head *wq_head, struct wait
 	list_add(&wq_entry->entry, head);
 }
 
-/* __add_wait_queue_exclusive removed - unused */
 
 static inline void __add_wait_queue_entry_tail(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
@@ -124,7 +121,6 @@ void __wake_up_locked_key(struct wait_queue_head *wq_head, unsigned int mode, vo
 void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 		unsigned int mode, void *key, wait_queue_entry_t *bookmark);
 void __wake_up_sync_key(struct wait_queue_head *wq_head, unsigned int mode, void *key);
-/* __wake_up_locked_sync_key, __wake_up_sync, __wake_up_pollfree removed - unused */
 void __wake_up_locked(struct wait_queue_head *wq_head, unsigned int mode, int nr);
 
 #define wake_up(x)			__wake_up(x, TASK_NORMAL, 1, NULL)
@@ -222,6 +218,5 @@ int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, i
 		(wait)->flags = 0;						\
 	} while (0)
 
-/* task_call_f typedef and task_call_func removed - unused */
 
 #endif  

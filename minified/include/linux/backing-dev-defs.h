@@ -134,6 +134,5 @@ static inline void wb_put(struct bdi_writeback *wb)
 {
 }
 
-/* wb_put_many, wb_dying removed - unused */
 
 #endif 

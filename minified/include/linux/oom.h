@@ -48,7 +48,6 @@ struct oom_control {
 extern struct mutex oom_lock;
 extern struct mutex oom_adj_mutex;
 
-/* set_current_oom_origin, clear_current_oom_origin, oom_task_origin removed - unused */
 
 static inline bool tsk_is_oom_victim(struct task_struct * tsk)
 {

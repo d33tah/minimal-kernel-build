@@ -19,7 +19,6 @@
 #define UEVENT_NUM_ENVP			64
 #define UEVENT_BUFFER_SIZE		2048
 
-/* uevent_seqnum removed - never used */
 
 enum kobject_action {
 	KOBJ_ADD,
@@ -146,13 +145,11 @@ static inline const struct kobj_type *get_ktype(struct kobject *kobj)
 
 extern struct kobject *kset_find_obj(struct kset *, const char *);
 
-/* kernel_kobj, mm_kobj, hypervisor_kobj, power_kobj, firmware_kobj removed - unused */
 
 int kobject_uevent(struct kobject *kobj, enum kobject_action action);
 int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 			char *envp[]);
 int kobject_synth_uevent(struct kobject *kobj, const char *buf, size_t count);
 
-/* add_uevent_var removed - unused */
 
 #endif  

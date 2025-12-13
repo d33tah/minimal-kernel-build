@@ -53,7 +53,6 @@ static inline int arch_phys_wc_index(int handle)
 #endif
 #endif
 
-/* devm_arch_phys_wc_add removed - unused */
 
 enum {
 	 

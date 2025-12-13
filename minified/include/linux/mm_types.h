@@ -436,7 +436,6 @@ enum vm_fault_reason {
 #define VM_FAULT_ERROR (VM_FAULT_OOM | VM_FAULT_SIGBUS |	\
 			VM_FAULT_SIGSEGV | VM_FAULT_HWPOISON |	\
 			VM_FAULT_HWPOISON_LARGE | VM_FAULT_FALLBACK)
-/* VM_FAULT_SET_HINDEX, VM_FAULT_GET_HINDEX, VM_FAULT_RESULT_TRACE removed - unused */
 
 struct vm_special_mapping {
 	const char *name;	 

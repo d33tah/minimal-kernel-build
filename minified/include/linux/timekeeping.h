@@ -12,21 +12,16 @@ enum clocksource_ids {
 void timekeeping_init(void);
 extern int timekeeping_suspended;
 
-/* legacy_timer_tick removed - unused */
 
-/* do_settimeofday64 removed - unused */
 extern int do_sys_settimeofday64(const struct timespec64 *tv,
 				 const struct timezone *tz);
 
 extern void ktime_get_ts64(struct timespec64 *ts);
 extern void ktime_get_real_ts64(struct timespec64 *tv);
-/* ktime_get_coarse_ts64 removed - unused */
 extern void ktime_get_coarse_real_ts64(struct timespec64 *ts);
 
-/* getboottime64 removed - unused */
 
 extern time64_t ktime_get_seconds(void);
-/* __ktime_get_real_seconds removed - unused */
 extern time64_t ktime_get_real_seconds(void);
 
 
@@ -39,16 +34,12 @@ enum tk_offsets {
 
 extern ktime_t ktime_get(void);
 extern ktime_t ktime_get_with_offset(enum tk_offsets offs);
-/* ktime_get_coarse_with_offset, ktime_mono_to_any, ktime_get_raw removed - unused */
 
 static inline ktime_t ktime_get_real(void)
 {
 	return ktime_get_with_offset(TK_OFFS_REAL);
 }
 
-/* ktime_get_coarse_real, ktime_get_coarse_boottime, ktime_get_coarse_clocktai removed - unused */
-/* ktime_get_coarse, ktime_get_coarse_ns, ktime_get_coarse_real_ns removed - unused */
-/* ktime_get_coarse_boottime_ns, ktime_get_coarse_clocktai_ns removed - unused */
 
 static inline ktime_t ktime_get_boottime(void)
 {
@@ -60,16 +51,12 @@ static inline ktime_t ktime_get_clocktai(void)
 	return ktime_get_with_offset(TK_OFFS_TAI);
 }
 
-/* ktime_mono_to_real removed - unused */
 
 static inline u64 ktime_get_ns(void)
 {
 	return ktime_to_ns(ktime_get());
 }
 
-/* ktime_get_real_ns, ktime_get_clocktai_ns, ktime_get_raw_ns removed - unused */
-/* ktime_get_coarse_boottime_ts64, ktime_get_boottime_seconds removed - unused */
-/* ktime_get_clocktai_ts64, ktime_get_coarse_clocktai_ts64, ktime_get_clocktai_seconds removed - unused */
 
 static inline u64 ktime_get_boottime_ns(void)
 {
@@ -81,7 +68,6 @@ static inline void ktime_get_boottime_ts64(struct timespec64 *ts)
 	*ts = ktime_to_timespec64(ktime_get_boottime());
 }
 
-/* timekeeping_rtc_skipsuspend, timekeeping_rtc_skipresume, timekeeping_inject_sleeptime64 removed - unused */
 
 struct ktime_timestamps {
 	u64		mono;
@@ -109,8 +95,6 @@ struct system_counterval_t {
 	struct clocksource	*cs;
 };
 
-/* get_device_system_crosststamp, ktime_get_snapshot, ktime_get_fast_timestamps removed - unused */
-/* persistent_clock_is_local, update_persistent_clock64 removed - unused */
 
 extern void read_persistent_clock64(struct timespec64 *ts);
 void read_persistent_wall_and_boot_offset(struct timespec64 *wall_clock,

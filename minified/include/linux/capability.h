@@ -26,8 +26,6 @@ typedef struct __user_cap_data_struct {
 #define VFS_CAP_FLAGS_MASK	~VFS_CAP_REVISION_MASK
 #define VFS_CAP_FLAGS_EFFECTIVE	0x000001
 
-/* VFS_CAP_REVISION_1, VFS_CAP_U32_1, XATTR_CAPS_SZ_1 removed - unused */
-/* VFS_CAP_REVISION_2, VFS_CAP_U32_2, XATTR_CAPS_SZ_2 removed - unused */
 
 #define VFS_CAP_REVISION_3	0x03000000
 #define VFS_CAP_U32_3           2
@@ -107,7 +105,6 @@ struct vfs_ns_cap_data {
 #define _KERNEL_CAPABILITY_VERSION _LINUX_CAPABILITY_VERSION_3
 #define _KERNEL_CAPABILITY_U32S    _LINUX_CAPABILITY_U32S_3
 
-/* file_caps_enabled removed - unused */
 
 typedef struct kernel_cap_struct {
 	__u32 cap[_KERNEL_CAPABILITY_U32S];
@@ -131,7 +128,6 @@ struct task_struct;
 struct user_namespace;
 
 extern const kernel_cap_t __cap_empty_set;
-/* __cap_init_eff_set removed - unused */
 
 #define CAP_FOR_EACH_U32(__capi)  \
 	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)

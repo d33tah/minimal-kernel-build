@@ -57,10 +57,8 @@ int __must_check idr_alloc_u32(struct idr *, void *ptr, u32 *id,
 int idr_alloc_cyclic(struct idr *, void *ptr, int start, int end, gfp_t);
 void *idr_remove(struct idr *, unsigned long id);
 void *idr_find(const struct idr *, unsigned long id);
-/* idr_for_each, idr_get_next removed - unused */
 void *idr_get_next_ul(struct idr *, unsigned long *nextid);
 void *idr_replace(struct idr *, void *, unsigned long id);
-/* idr_destroy removed - unused */
 
 static inline void idr_init_base(struct idr *idr, int base)
 {
@@ -74,14 +72,12 @@ static inline void idr_init(struct idr *idr)
 	idr_init_base(idr, 0);
 }
 
-/* idr_is_empty removed - unused */
 
 static inline void idr_preload_end(void)
 {
 	local_unlock(&radix_tree_preloads.lock);
 }
 
-/* idr_for_each_entry, idr_for_each_entry_ul, idr_for_each_entry_continue, idr_for_each_entry_continue_ul removed - unused */
 
 #define IDA_CHUNK_SIZE		128	 
 #define IDA_BITMAP_LONGS	(IDA_CHUNK_SIZE / sizeof(long))
@@ -121,5 +117,4 @@ static inline void ida_init(struct ida *ida)
 	xa_init_flags(&ida->xa, IDA_INIT_FLAGS);
 }
 
-/* ida_simple_get, ida_simple_remove, ida_is_empty removed - unused */
 #endif  

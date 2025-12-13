@@ -13,7 +13,6 @@ struct die_args {
 	int signr;
 };
 
-/* register_die_notifier, unregister_die_notifier removed - unused */
 
 int notify_die(enum die_val val, const char *str,
 	       struct pt_regs *regs, long err, int trap, int sig);

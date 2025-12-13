@@ -20,7 +20,6 @@ struct path;
 extern struct file *alloc_file_pseudo(struct inode *, struct vfsmount *,
 	const char *, int flags, const struct file_operations *);
 
-/* alloc_file_clone, fput_light removed - unused */
 
 struct fd {
 	struct file *file;
@@ -40,7 +39,6 @@ static inline void fdput(struct fd fd)
 extern void fput(struct file *file);
 
 extern struct file *fget(unsigned int fd);
-/* fget_raw, fget_task removed - unused */
 extern unsigned long __fdget(unsigned int fd);
 extern unsigned long __fdget_raw(unsigned int fd);
 extern unsigned long __fdget_pos(unsigned int fd);
@@ -73,8 +71,6 @@ static inline void fdput_pos(struct fd f)
 }
 
 extern int f_dupfd(unsigned int from, struct file *file, unsigned flags);
-/* replace_fd removed - unused */
-/* set_close_on_exec removed - unused */
 extern bool get_close_on_exec(unsigned int fd);
 extern int __get_unused_fd_flags(unsigned flags, unsigned long nofile);
 extern int get_unused_fd_flags(unsigned flags);
@@ -82,10 +78,8 @@ extern void put_unused_fd(unsigned int fd);
 
 extern void fd_install(unsigned int fd, struct file *file);
 
-/* __receive_fd, receive_fd, receive_fd_user, receive_fd_replace removed - unused */
 
 extern void flush_delayed_fput(void);
 
-/* sysctl_nr_open_min, sysctl_nr_open_max removed - unused */
 
 #endif

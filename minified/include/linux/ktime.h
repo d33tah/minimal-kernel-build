@@ -46,7 +46,6 @@ static inline int ktime_compare(const ktime_t cmp1, const ktime_t cmp2)
 	return 0;
 }
 
-/* ktime_after removed - unused */
 
 static inline bool ktime_before(const ktime_t cmp1, const ktime_t cmp2)
 {
@@ -69,7 +68,6 @@ static inline s64 ktime_divns(const ktime_t kt, s64 div)
 	}
 }
 
-/* ktime_to_us, ktime_to_ms, ktime_us_delta, ktime_ms_delta, ktime_add_us removed - unused */
 
 extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);
 

@@ -49,7 +49,6 @@ struct srcu_notifier_head {
 		(name)->head = NULL;		\
 	} while (0)
 
-/* srcu notifier macros removed - unused */
 
 #define ATOMIC_NOTIFIER_INIT(name) {				\
 		.lock = __SPIN_LOCK_UNLOCKED(name.lock),	\
@@ -70,7 +69,6 @@ struct srcu_notifier_head {
 	struct raw_notifier_head name =				\
 		RAW_NOTIFIER_INIT(name)
 
-/* SRCU_NOTIFIER_INIT, SRCU_NOTIFIER_HEAD, _SRCU_NOTIFIER_HEAD removed - unused */
 
 #ifdef __KERNEL__
 
@@ -78,11 +76,7 @@ extern int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
 		struct notifier_block *nb);
 extern int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
 		struct notifier_block *nb);
-/* raw_notifier_chain_register, srcu_notifier_chain_register, *_unique_prio variants removed - unused */
 
-/* atomic_notifier_chain_unregister removed - unused */
-/* blocking_notifier_chain_unregister removed - unused */
-/* raw_notifier_chain_unregister, srcu_notifier_chain_unregister removed - unused */
 
 extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 		unsigned long val, void *v);
@@ -90,9 +84,7 @@ extern int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 		unsigned long val, void *v);
 extern int raw_notifier_call_chain(struct raw_notifier_head *nh,
 		unsigned long val, void *v);
-/* srcu_notifier_call_chain removed - unused */
 
-/* blocking_notifier_call_chain_robust, raw_notifier_call_chain_robust removed - unused */
 
 extern bool atomic_notifier_call_chain_is_empty(struct atomic_notifier_head *nh);
 
@@ -103,7 +95,6 @@ extern bool atomic_notifier_call_chain_is_empty(struct atomic_notifier_head *nh)
 						 
 #define NOTIFY_STOP		(NOTIFY_OK|NOTIFY_STOP_MASK)
 
-/* notifier_from_errno, notifier_to_errno removed - unused */
 
 
 

@@ -131,7 +131,6 @@ extern void vc_SAK(struct work_struct *work);
 bool con_is_visible(const struct vc_data *vc);
 /* --- end console_struct.h inlined --- */
 
-/* kd_mksound, kbd_rate removed - unused */
 
 extern int fg_console, last_console, want_console;
 
@@ -144,10 +143,7 @@ void reset_palette(struct vc_data *vc);
 void do_unblank_screen(int leaving_gfx);
 void unblank_screen(void);
 void poke_blanked_console(void);
-/* do_blank_screen, con_font_op, con_set_cmap, con_get_cmap removed - never called */
-/* scrollback, scrollfront removed - never called */
 /* clear_buffer_attributes, update_region, redraw_screen - now static in vt.c */
-/* tioclinux removed - never called */
 
 struct unipair;
 
@@ -163,18 +159,13 @@ void con_free_unimap(struct vc_data *vc);
 int con_copy_unimap(struct vc_data *dst_vc, struct vc_data *src_vc);
 
 
-/* vt_event_post, vt_waitactive removed - unused */
 void change_console(struct vc_data *new_vc);
 void reset_vc(struct vc_data *vc);
-/* do_unbind_con_driver removed - never called */
 int vty_init(const struct file_operations *console_fops);
 
-/* vt_dont_switch removed - unused */
 extern int default_utf8;
 extern int global_cursor_default;
 
-/* vt_spawn_console struct and vt_spawn_con removed - never used */
-/* vt_move_to_console removed - never called */
 
 struct vt_notifier_param {
 	struct vc_data *vc;	 

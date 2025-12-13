@@ -105,6 +105,5 @@ extern unsigned char default_blu[];
 
 /* complement_pos, invert_screen, screen_pos, screen_glyph, screen_glyph_unicode,
  * getconsxy, putconsxy, vcs_scr_readw, vcs_scr_writew, vcs_scr_updated removed - never called */
-/* vc_uniscr_check, vc_uniscr_copy_line removed - never called */
 
 #endif

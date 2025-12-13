@@ -65,7 +65,6 @@
 #define smp_mb__after_spinlock()	do { } while (0)
 #endif
 
-/* do_raw_spin_lock, do_raw_spin_trylock, do_raw_spin_unlock removed - unused */
 
 #define raw_spin_trylock(lock)	__cond_lock(lock, _raw_spin_trylock(lock))
 

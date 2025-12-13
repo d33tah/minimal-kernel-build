@@ -19,7 +19,6 @@ static inline void lockdep_on(void)
 {
 }
 
-/* lockdep_set_selftest_task removed - unused */
 
 # define lock_acquire(l, s, t, r, c, n, i)	do { } while (0)
 # define lock_release(l, i)			do { } while (0)
@@ -50,7 +49,6 @@ static inline void lockdep_on(void)
 # define lockdep_free_key_range(start, size)	do { } while (0)
 # define lockdep_sys_exit() 			do { } while (0)
 
-/* lockdep_register_key, lockdep_unregister_key removed - unused */
 
 #define lockdep_depth(tsk)	(0)
 
@@ -87,7 +85,6 @@ enum xhlock_context_t {
 #define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
 	{ .name = (_name), .key = (void *)(_key), }
 
-/* lockdep_invariant_state removed - unused */
 static inline void lockdep_free_task(struct task_struct *task) {}
 
 
@@ -101,7 +98,6 @@ static inline void lockdep_free_task(struct task_struct *task) {}
 	lock(_lock)
 
 
-/* print_irqtrace_events removed - unused */
 
 #define force_read_lock_recursive 0
 
@@ -163,6 +159,5 @@ do {									\
 # define lockdep_assert_RT_in_threaded_ctx() do { } while (0)
 
 
-/* lockdep_rcu_suspicious removed - unused */
 
 #endif  

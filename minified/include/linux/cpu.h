@@ -158,25 +158,19 @@ extern void boot_cpu_hotplug_init(void);
 extern void cpu_init(void);
 extern void trap_init(void);
 
-/* register_cpu, cpu_is_hotpluggable, arch_match_cpu_phys_id, arch_find_n_match_cpu_physical_id, get_cpu_device removed - unused */
 
 
 #define cpuhp_tasks_frozen	0
 
-/* cpu_maps_update_begin/done removed - unused */
 
-/* add_cpu removed - unused */
 
 extern struct bus_type cpu_subsys;
 
-/* lockdep_is_cpus_held removed - unused */
 
 static inline void cpus_read_lock(void) { }
 static inline void cpus_read_unlock(void) { }
-/* cpus_read_trylock removed - unused */
 static inline void lockdep_assert_cpus_held(void) { }
 static inline void cpu_hotplug_disable(void) { }
-/* remove_cpu, suspend_disable_secondary_cpus, cpu_idle_poll_ctrl removed - unused */
 
 void __noreturn cpu_startup_entry(enum cpuhp_state state);
 
@@ -196,7 +190,5 @@ void cpu_set_state_online(int cpu);
 
 static inline void cpuhp_report_idle_dead(void) { }
 
-/* cpu_smt_control, cpu_smt_possible, cpuhp_smt_enable, cpuhp_smt_disable removed - unused */
-/* cpu_mitigations_off, cpu_mitigations_auto_nosmt removed - unused */
 
 #endif  

@@ -27,7 +27,6 @@ struct timer_list {
 #define TIMER_ARRAYSHIFT	22
 #define TIMER_ARRAYMASK		0xFFC00000
 
-/* TIMER_TRACE_FLAGMASK removed - unused */
 
 #define __TIMER_INITIALIZER(_function, _flags) {		\
 		.entry = { .next = TIMER_ENTRY_STATIC },	\

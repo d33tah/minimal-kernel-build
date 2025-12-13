@@ -20,7 +20,6 @@ static inline void clear_siginfo(kernel_siginfo_t *info)
 	memset(info, 0, sizeof(*info));
 }
 
-/* SI_EXPANSION_SIZE and copy_siginfo_to_external removed - unused */
 
 int copy_siginfo_to_user(siginfo_t __user *to, const kernel_siginfo_t *from);
 int copy_siginfo_from_user(kernel_siginfo_t *to, const siginfo_t __user *from);
@@ -157,7 +156,6 @@ static inline void name(sigset_t *set)					\
 }
 
 #define _sig_not(x)	(~(x))
-/* signotset removed - unused */
 
 #undef _SIG_SET_OP
 #undef _sig_not
@@ -175,7 +173,6 @@ static inline void sigemptyset(sigset_t *set)
 	}
 }
 
-/* sigfillset removed - unused */
 
 
 static inline void sigaddsetmask(sigset_t *set, unsigned long mask)
@@ -248,16 +245,13 @@ extern int show_unhandled_signals;
 extern bool get_signal(struct ksignal *ksig);
 extern void signal_setup_done(int failed, struct ksignal *ksig, int stepping);
 extern void exit_signals(struct task_struct *tsk);
-/* kernel_sigaction removed - unused */
 
 #define SIG_KTHREAD ((__force __sighandler_t)2)
 #define SIG_KTHREAD_KERNEL ((__force __sighandler_t)3)
 
-/* allow_signal/disallow_signal removed - unused */
 
 extern struct kmem_cache *sighand_cachep;
 
-/* unhandled_signal removed - unused */
 
 #ifdef SIGEMT
 #define SIGEMT_MASK	rt_sigmask(SIGEMT)
@@ -320,6 +314,5 @@ int __save_altstack(stack_t __user *, unsigned long);
 	unsafe_put_user(t->sas_ss_size, &__uss->ss_size, label); \
 } while (0);
 
-/* arch_untagged_si_addr removed - unused */
 
 #endif  

@@ -20,7 +20,6 @@
 #define PTRACE_EVENTMSG_SYSCALL_ENTRY	1
 #define PTRACE_EVENTMSG_SYSCALL_EXIT	2
 
-/* struct syscall_info removed - unused */
 
 extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
 			    void *buf, int len, unsigned int gup_flags);
@@ -32,11 +31,9 @@ extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
 #define PT_OPT_FLAG_SHIFT	3
 #define PT_EVENT_FLAG(event)	(1 << (PT_OPT_FLAG_SHIFT + (event)))
 #define PT_TRACESYSGOOD		PT_EVENT_FLAG(0)
-/* PT_TRACE_*, PT_EXITKILL, PT_SUSPEND_SECCOMP removed - unused */
 
 extern long arch_ptrace(struct task_struct *child, long request,
 			unsigned long addr, unsigned long data);
-/* ptrace_readdata, ptrace_writedata removed - unused */
 extern void ptrace_disable(struct task_struct *);
 extern int ptrace_request(struct task_struct *child, long request,
 			  unsigned long addr, unsigned long data);
@@ -52,7 +49,6 @@ extern void exit_ptrace(struct task_struct *tracer, struct list_head *dead);
 #define PTRACE_MODE_FSCREDS	0x08
 #define PTRACE_MODE_REALCREDS	0x10
 
-/* PTRACE_MODE_*_FSCREDS, PTRACE_MODE_*_REALCREDS removed - unused */
 
 extern bool ptrace_may_access(struct task_struct *task, unsigned int mode);
 
@@ -72,7 +68,6 @@ int generic_ptrace_peekdata(struct task_struct *tsk, unsigned long addr,
 int generic_ptrace_pokedata(struct task_struct *tsk, unsigned long addr,
 			    unsigned long data);
 
-/* ptrace_parent removed - unused */
 
 static inline bool ptrace_event_enabled(struct task_struct *task, int event)
 {
@@ -205,7 +200,6 @@ static inline void user_single_step_report(struct pt_regs *regs)
 #define current_user_stack_pointer() user_stack_pointer(current_pt_regs())
 #endif
 
-/* task_current_syscall, sigaction_compat_abi removed - never called */
 
 static inline int ptrace_report_syscall(unsigned long message)
 {

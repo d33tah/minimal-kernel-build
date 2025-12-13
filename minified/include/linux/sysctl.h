@@ -15,12 +15,10 @@ struct ctl_table_root;
 struct ctl_table_header;
 struct ctl_dir;
 
-/* SYSCTL_ZERO/ONE/TWO/etc macros and sysctl_vals removed - never used */
 
 typedef int proc_handler(struct ctl_table *ctl, int write, void *buffer,
 		size_t *lenp, loff_t *ppos);
 
-/* proc_dostring, proc_dobool, proc_dointvec, proc_douintvec, proc_dointvec_minmax, proc_douintvec_minmax, proc_dou8vec_minmax, proc_dointvec_jiffies, proc_dointvec_userhz_jiffies, proc_dointvec_ms_jiffies, proc_doulongvec_minmax, proc_doulongvec_ms_jiffies_minmax, proc_do_large_bitmap, proc_do_static_key removed - unused */
 
 
 struct ctl_table_poll {
@@ -145,6 +143,5 @@ static inline void do_sysctl_args(void)
 {
 }
 
-/* sysctl_max_threads removed - unused */
 
 #endif  

@@ -83,6 +83,5 @@ struct vt_setactivate {
 #define VT_WRITE		0x0003
 #define VT_UPDATE		0x0004
 #define VT_PREWRITE		0x0005
-/* vt_kmsg_redirect removed - never called */
 
 #endif

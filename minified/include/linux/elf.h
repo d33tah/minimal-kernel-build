@@ -58,8 +58,6 @@ extern Elf64_Dyn _DYNAMIC [];
 
 #endif
 
-/* elf_coredump_extra_notes_* removed - unused */
-/* arch_parse_elf_property removed - unused */
 struct arch_elf_state;
 
 static inline int arch_elf_adjust_prot(int prot,

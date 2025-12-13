@@ -119,6 +119,5 @@ static inline void fwnode_dev_initialized(struct fwnode_handle *fwnode,
 }
 
 extern u32 fw_devlink_get_flags(void);
-/* fw_devlink_is_strict removed - unused */
 
 #endif

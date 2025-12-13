@@ -176,7 +176,6 @@ static inline bool is_module_text_address(unsigned long addr)
 
 #define symbol_get(x) ({ extern typeof(x) x __attribute__((weak,visibility("hidden"))); &(x); })
 #define symbol_put(x) do { } while (0)
-/* symbol_put_addr removed - unused */
 
 static inline void __module_get(struct module *module)
 {
@@ -195,7 +194,6 @@ static inline void module_put(struct module *module)
 
 #define module_put_and_kthread_exit(code) kthread_exit(code)
 
-/* symbol_request, module_kallsyms_on_each_symbol removed - unused */
 
 #define __MODULE_STRING(x) __stringify(x)
 

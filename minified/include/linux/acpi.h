@@ -36,9 +36,6 @@ union acpi_object;
 struct fwnode_handle;
 struct acpi_device;
 
-/* acpi_dev_hid_uid_match, acpi_dev_get_first_match_dev, to_acpi_device_node removed - unused */
-/* to_acpi_data_node, acpi_fwnode_handle, has_acpi_companion, acpi_dev_name removed - unused */
-/* acpi_get_first_physical_node removed - unused */
 
 static inline void acpi_early_init(void) { }
 static inline void acpi_subsystem_init(void) { }
@@ -64,7 +61,6 @@ static inline int acpi_mps_check(void)
 struct acpi_table_header;
 struct acpi_device_id;
 
-/* acpi_match_device, acpi_device_get_match_data removed - unused */
 
 static inline bool acpi_driver_match_device(struct device *dev,
 					    const struct device_driver *drv)

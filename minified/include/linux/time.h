@@ -18,7 +18,6 @@ extern time64_t mktime64(const unsigned int year, const unsigned int mon,
 			const unsigned int day, const unsigned int hour,
 			const unsigned int min, const unsigned int sec);
 
-/* do_utimes removed - unused */
 
 struct tm {
 	 
@@ -39,7 +38,6 @@ struct tm {
 	int tm_yday;
 };
 
-/* time64_to_tm removed - unused */
 
 # include <linux/time32.h>
 

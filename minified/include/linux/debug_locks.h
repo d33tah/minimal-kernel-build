@@ -29,7 +29,6 @@ extern int debug_locks_off(void);
 	__ret;								\
 })
 
-/* SMP_DEBUG_LOCKS_WARN_ON, debug_show_all_locks, debug_show_held_locks removed - unused */
 
 # define locking_selftest()	do { } while (0)
 

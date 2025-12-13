@@ -98,7 +98,6 @@ struct device;
 
 bool irq_has_action(unsigned int irq);
 extern void disable_irq_nosync(unsigned int irq);
-/* disable_hardirq, disable_irq removed - never called */
 extern void enable_irq(unsigned int irq);
 
 struct irq_affinity_desc {

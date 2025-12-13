@@ -6,10 +6,8 @@
 #include <linux/list.h>
 #include <linux/rcupdate.h>
 
-/* INIT_LIST_HEAD_RCU removed - unused */
 
 #define list_next_rcu(list)	(*((struct list_head __rcu **)(&(list)->next)))
-/* list_tail_rcu removed - unused */
 
 
 #define check_arg_count_one(dummy)
@@ -69,7 +67,6 @@ static inline void list_replace_rcu(struct list_head *old,
 #define list_entry_rcu(ptr, type, member) \
 	container_of(READ_ONCE(ptr), type, member)
 
-/* list_first_or_null_rcu removed - unused */
 
 #define list_for_each_entry_rcu(pos, head, member, cond...)		\
 	for (__list_check_rcu(dummy, ## cond, 0),			\

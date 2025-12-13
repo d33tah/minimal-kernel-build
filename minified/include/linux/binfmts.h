@@ -77,7 +77,6 @@ static inline void register_binfmt(struct linux_binfmt *fmt)
 {
 	__register_binfmt(fmt, 0);
 }
-/* insert_binfmt, unregister_binfmt, remove_arg_zero removed - unused */
 
 extern int begin_new_exec(struct linux_binprm * bprm);
 extern void setup_new_exec(struct linux_binprm * bprm);
@@ -93,7 +92,6 @@ extern int suid_dumpable;
 extern int setup_arg_pages(struct linux_binprm * bprm,
 			   unsigned long stack_top,
 			   int executable_stack);
-/* transfer_args_to_stack, bprm_change_interp, read_code removed - never called */
 int copy_string_kernel(const char *arg, struct linux_binprm *bprm);
 extern void set_binfmt(struct linux_binfmt *new);
 

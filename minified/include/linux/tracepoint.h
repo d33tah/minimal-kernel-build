@@ -23,7 +23,6 @@ struct trace_eval_map {
 
 #define TRACEPOINT_DEFAULT_PRIO	10
 
-/* --- 2025-12-08 04:12 --- tracepoint_probe_* removed - unused */
 
 #ifndef PARAMS
 #define PARAMS(args...) args

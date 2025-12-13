@@ -189,7 +189,6 @@ static inline pte_t ptep_get(pte_t *ptep)
 }
 #endif
 
-/* ptep_get_lockless removed - unused */
 
 #ifndef __HAVE_ARCH_PTEP_GET_AND_CLEAR_FULL
 static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
@@ -217,7 +216,6 @@ extern pte_t ptep_clear_flush(struct vm_area_struct *vma,
 			      pte_t *ptep);
 #endif
 
-/* pmdp_huge_clear_flush, pudp_huge_clear_flush removed - unused */
 
 #ifndef __HAVE_ARCH_PTEP_SET_WRPROTECT
 struct mm_struct;
@@ -265,10 +263,8 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 #ifndef __HAVE_ARCH_PUDP_SET_WRPROTECT
 #endif
 
-/* pgtable_trans_huge_deposit, pgtable_trans_huge_withdraw removed - unused */
 
 
-/* pmdp_invalidate and pmdp_invalidate_ad removed - unused */
 
 #ifndef __HAVE_ARCH_PTE_SAME
 static inline int pte_same(pte_t pte_a, pte_t pte_b)
@@ -277,7 +273,6 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
 }
 #endif
 
-/* pte_unused removed - unused */
 
 #ifndef pte_access_permitted
 #define pte_access_permitted(pte, write) \
@@ -361,7 +356,6 @@ static inline int pgd_same(pgd_t pgd_a, pgd_t pgd_b)
 	set_pgd(pgdp, pgd); \
 })
 
-/* Empty arch swap hooks removed - unused */
 
 #ifndef __HAVE_ARCH_PGD_OFFSET_GATE
 #define pgd_offset_gate(mm, addr)	pgd_offset(mm, addr)
@@ -466,7 +460,6 @@ static inline int pmd_none_or_clear_bad(pmd_t *pmd)
 	return 0;
 }
 
-/* ptep_modify_prot_start, ptep_modify_prot_commit removed - unused */
 
 
 #ifndef pgprot_nx
@@ -542,7 +535,6 @@ static inline pte_t pte_swp_clear_exclusive(pte_t pte)
 }
 #endif
 
-/* pte_soft_dirty, pte_mksoft_dirty, pte_swp_mksoft_dirty removed - unused */
 
 static inline int pte_swp_soft_dirty(pte_t pte)
 {
@@ -646,7 +638,6 @@ static inline int pud_devmap(pud_t pud)
 {
 	return 0;
 }
-/* pgd_devmap removed - unused */
 
 #if !defined(CONFIG_TRANSPARENT_HUGEPAGE) || \
 	(defined(CONFIG_TRANSPARENT_HUGEPAGE) && \
@@ -657,7 +648,6 @@ static inline int pud_trans_huge(pud_t pud)
 }
 #endif
 
-/* pud_none_or_trans_huge_or_dev_or_clear_bad, pud_trans_unstable removed - unused */
 
 #ifndef pmd_read_atomic
 static inline pmd_t pmd_read_atomic(pmd_t *pmdp)
@@ -737,7 +727,6 @@ static inline bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
 	return true;
 }
 
-/* arch_has_pfn_modify_check removed - unused */
 #endif  
 
 

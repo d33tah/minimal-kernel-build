@@ -45,7 +45,6 @@ static inline bool gid_eq(kgid_t left, kgid_t right)
 	return __kgid_val(left) == __kgid_val(right);
 }
 
-/* uid_gt, gid_gt, uid_gte, gid_gte, uid_lt, gid_lt, uid_lte, gid_lte removed - unused */
 
 static inline bool uid_valid(kuid_t uid)
 {

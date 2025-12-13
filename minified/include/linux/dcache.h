@@ -27,7 +27,6 @@ extern unsigned int __pure full_name_hash(const void *salt, const char *, unsign
 #define hashlen_hash(hashlen) ((u32)(hashlen))
 #define hashlen_len(hashlen)  ((u32)((hashlen) >> 32))
 #define hashlen_create(hash, len) ((u64)(len)<<32 | (u32)(hash))
-/* hashlen_string removed - unused */
 /* End of inlined stringhash.h content */
 
 #include <linux/wait.h>
@@ -137,7 +136,6 @@ struct dentry_operations {
 
 #define DCACHE_OP_WEAK_REVALIDATE	0x00000800
 
-/* DCACHE_NFSFS_RENAMED, DCACHE_COOKIE, DCACHE_GENOCIDE, DCACHE_FSNOTIFY_PARENT_WATCHED removed - unused */
 
 
 #define DCACHE_DENTRY_KILLED		0x00008000
@@ -161,7 +159,6 @@ struct dentry_operations {
 
 #define DCACHE_MAY_FREE			0x00800000
 #define DCACHE_FALLTHRU			0x01000000
-/* DCACHE_NOKEY_NAME removed - unused */
 #define DCACHE_OP_REAL			0x04000000
 
 #define DCACHE_PAR_LOOKUP		0x10000000  
@@ -171,7 +168,6 @@ struct dentry_operations {
 extern seqlock_t rename_lock;
 
 extern void d_instantiate(struct dentry *, struct inode *);
-/* d_instantiate_new removed - unused */
 extern void __d_drop(struct dentry *dentry);
 extern void d_drop(struct dentry *dentry);
 extern void d_delete(struct dentry *);
@@ -182,7 +178,6 @@ extern struct dentry * d_alloc(struct dentry *, const struct qstr *);
 extern struct dentry * d_alloc_anon(struct super_block *);
 extern struct dentry * d_alloc_parallel(struct dentry *, const struct qstr *,
 					wait_queue_head_t *);
-/* d_splice_alias removed - unused */
 extern void shrink_dcache_parent(struct dentry *);
 extern void shrink_dcache_for_umount(struct super_block *);
 extern void d_invalidate(struct dentry *);
@@ -201,19 +196,15 @@ extern void d_move(struct dentry *, struct dentry *);
 extern struct dentry *d_ancestor(struct dentry *, struct dentry *);
 
 extern struct dentry *d_lookup(const struct dentry *, const struct qstr *);
-/* d_hash_and_lookup removed - never called */
 extern struct dentry *__d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup_rcu(const struct dentry *parent,
 				const struct qstr *name, unsigned *seq);
 
-/* d_count removed - unused */
 
 extern __printf(4, 5)
 char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
 
-/* __d_path, d_absolute_path, dentry_path removed - unused */
 extern char *d_path(const struct path *, char *, int);
-/* dentry_path_raw removed - unused */
 
 static inline struct dentry *dget_dlock(struct dentry *dentry)
 {
@@ -246,7 +237,6 @@ static inline int cant_mount(const struct dentry *dentry)
 	return (dentry->d_flags & DCACHE_CANT_MOUNT);
 }
 
-/* dont_mount removed - unused */
 
 extern void __d_lookup_done(struct dentry *);
 
@@ -286,7 +276,6 @@ static inline bool d_can_lookup(const struct dentry *dentry)
 	return __d_entry_type(dentry) == DCACHE_DIRECTORY_TYPE;
 }
 
-/* d_is_autodir removed - unused */
 
 static inline bool d_is_dir(const struct dentry *dentry)
 {

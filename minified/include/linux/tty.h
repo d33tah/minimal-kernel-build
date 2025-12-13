@@ -92,7 +92,6 @@ struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *);
 void tty_ldisc_flush(struct tty_struct *tty);
 
 int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
-/* tty_unregister_ldisc removed - unused */
 int tty_set_ldisc(struct tty_struct *tty, int disc);
 /* --- end tty_ldisc.h inlined --- */
 #include <linux/mutex.h>
@@ -110,7 +109,6 @@ int tty_set_ldisc(struct tty_struct *tty, int disc);
 
 #define __DISABLED_CHAR '\0'
 
-/* *_CHAR macros removed - unused */
 
 /* Flag accessor macros - only keep used ones */
 #define _C_FLAG(tty, f)	((tty)->termios.c_cflag & (f))
@@ -222,14 +220,12 @@ static inline bool tty_throttled(struct tty_struct *tty)
 
 void tty_kref_put(struct tty_struct *tty);
 struct pid *tty_get_pgrp(struct tty_struct *tty);
-/* tty_vhangup_self removed - unused */
 void disassociate_ctty(int priv);
 dev_t tty_devnum(struct tty_struct *tty);
 void proc_clear_tty(struct task_struct *p);
 struct tty_struct *get_current_tty(void);
 int __init tty_init(void);
 const char *tty_name(const struct tty_struct *tty);
-/* tty_kopen_exclusive, tty_kopen_shared, tty_kclose, tty_dev_name_to_number removed - unused */
 
 extern struct ktermios tty_std_termios;
 
@@ -247,7 +243,6 @@ static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 
 const char *tty_driver_name(const struct tty_struct *tty);
 void tty_wait_until_sent(struct tty_struct *tty, long timeout);
-/* stop_tty, start_tty, tty_write_message, tty_send_xchar removed - unused */
 int tty_put_char(struct tty_struct *tty, unsigned char c);
 unsigned int tty_chars_in_buffer(struct tty_struct *tty);
 unsigned int tty_write_room(struct tty_struct *tty);
@@ -260,9 +255,7 @@ int tty_get_icount(struct tty_struct *tty,
 		struct serial_icounter_struct *icount);
 int is_current_pgrp_orphaned(void);
 void tty_hangup(struct tty_struct *tty);
-/* tty_vhangup removed - unused */
 int tty_hung_up_p(struct file *filp);
-/* do_SAK removed - unused */
 void __do_SAK(struct tty_struct *tty);
 void no_tty(void);
 speed_t tty_termios_baud_rate(struct ktermios *termios);

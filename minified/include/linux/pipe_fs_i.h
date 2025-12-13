@@ -116,14 +116,10 @@ static inline bool pipe_buf_try_steal(struct pipe_inode_info *pipe,
 
 #define PIPE_SIZE		PAGE_SIZE
 
-/* pipe_lock, pipe_unlock, pipe_double_lock removed - unused */
-/* pipe_wait_readable, pipe_wait_writable, alloc_pipe_info removed - unused */
 
 void free_pipe_info(struct pipe_inode_info *);
 
 bool generic_pipe_buf_get(struct pipe_inode_info *, struct pipe_buffer *);
 bool generic_pipe_buf_try_steal(struct pipe_inode_info *, struct pipe_buffer *);
-/* generic_pipe_buf_release, nosteal_pipe_buf_ops removed - unused */
-/* pipe_fcntl, get_pipe_info, create_pipe_files, round_pipe_size removed - unused */
 
 #endif

@@ -73,7 +73,6 @@ struct kprobe {
 #define KPROBE_FLAG_OPTIMIZED	4
 #define KPROBE_FLAG_FTRACE	8
 
-/* kprobe_gone, kprobe_disabled, kprobe_optimized, kprobe_ftrace removed - unused */
 
 struct kretprobe_holder {
 	struct kretprobe	*rp;
@@ -121,7 +120,6 @@ static inline int kprobe_fault_handler(struct pt_regs *regs, int trapnr)
 {
 	return 0;
 }
-/* get_kprobe removed - unused */
 static inline struct kprobe *kprobe_running(void)
 {
 	return NULL;
@@ -129,8 +127,6 @@ static inline struct kprobe *kprobe_running(void)
 #define kprobe_busy_begin()	do {} while (0)
 #define kprobe_busy_end()	do {} while (0)
 
-/* register_kprobe, register_kprobes, unregister_kprobe, unregister_kprobes removed - unused */
-/* register_kretprobe, register_kretprobes, unregister_kretprobe, unregister_kretprobes removed - unused */
 
 static inline void kprobe_flush_task(struct task_struct *tk)
 {
@@ -139,8 +135,6 @@ static inline void kprobe_free_init_mem(void)
 {
 }
 
-/* disable_kprobe, enable_kprobe, within_kprobe_blacklist, kprobe_get_kallsym removed - unused */
-/* disable_kretprobe, enable_kretprobe removed - unused */
 
 static inline bool is_kprobe_insn_slot(unsigned long addr)
 {
@@ -152,7 +146,6 @@ static inline bool is_kprobe_optinsn_slot(unsigned long addr)
 	return false;
 }
 
-/* is_kretprobe_trampoline, kretprobe_find_ret_addr removed - unused */
 
 static nokprobe_inline bool kprobe_page_fault(struct pt_regs *regs,
 					      unsigned int trap)

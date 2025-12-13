@@ -71,7 +71,6 @@ extern struct page *shmem_read_mapping_page_gfp(struct address_space *mapping,
 extern void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end);
 int shmem_unuse(unsigned int type);
 
-/* shmem_is_huge, shmem_huge_enabled, shmem_swap_usage, shmem_partial_swap_usage, shmem_getpage removed - unused */
 
 static inline struct page *shmem_read_mapping_page(
 				struct address_space *mapping, pgoff_t index)
@@ -94,6 +93,5 @@ static inline pgoff_t shmem_fallocend(struct inode *inode, pgoff_t eof)
 	return max(eof, SHMEM_I(inode)->fallocend);
 }
 
-/* shmem_charge, shmem_uncharge removed - unused */
 
 #endif

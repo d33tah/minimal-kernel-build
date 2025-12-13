@@ -23,11 +23,9 @@ enum dev_dma_attr {
 	DEV_DMA_COHERENT,
 };
 
-/* Most device_property_* and fwnode_property_* functions removed - unused */
 
 struct software_node;
 
-/* software_node_ref_args struct removed - never instantiated */
 
 /* Minimal property_entry - only needs to exist as a type, never instantiated */
 struct property_entry;

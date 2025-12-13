@@ -43,10 +43,8 @@ struct robust_list_head;
 struct futex_waitv;
 struct getcpu_cache;
 struct old_linux_dirent;
-/* perf_event_attr, file_handle removed - unused */
 struct sigaltstack;
 struct rseq;
-/* bpf_attr, io_uring_params, landlock_ruleset_attr, landlock_rule_type removed - unused */
 struct clone_args;
 struct open_how;
 struct mount_attr;
@@ -89,7 +87,6 @@ static inline void syscall_tracepoint_update(struct task_struct *p) {}
 #define __SC_TEST(t, a) (void)BUILD_BUG_ON_ZERO(!__TYPE_IS_LL(t) && sizeof(t) > sizeof(long))
 
 #define SYSCALL_METADATA(sname, nb, ...)
-/* is_syscall_trace_event removed - unused */
 
 #ifndef SYSCALL_DEFINE0
 #define __MAP0(m,...)
@@ -197,12 +194,10 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 			      unsigned long prot, unsigned long flags,
 			      unsigned long fd, unsigned long pgoff);
 ssize_t ksys_readahead(int fd, loff_t offset, size_t count);
-/* ksys_ipc and compat_ksys_ipc removed - unused */
 
 extern int do_fchownat(int dfd, const char __user *filename, uid_t user,
 		       gid_t group, int flag);
 
-/* ksys_chown, ksys_lchown removed - unused */
 
 extern long do_sys_ftruncate(unsigned int fd, loff_t length, int small);
 
@@ -211,8 +206,5 @@ static inline long ksys_ftruncate(unsigned int fd, loff_t length)
 	return do_sys_ftruncate(fd, length, 1);
 }
 
-/* ksys_truncate, ksys_personality removed - unused */
 
-/* IPC ksys_* declarations removed - unused */
-/* __sys_getsockopt, __sys_setsockopt removed - unused */
 #endif

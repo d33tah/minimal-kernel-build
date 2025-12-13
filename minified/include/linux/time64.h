@@ -125,6 +125,5 @@ static __always_inline void timespec64_add_ns(struct timespec64 *a, u64 ns)
 	a->tv_nsec = ns;
 }
 
-/* timespec64_add_safe removed - unused */
 
 #endif  

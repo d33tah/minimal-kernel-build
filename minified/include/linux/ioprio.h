@@ -68,7 +68,6 @@ static inline int get_current_ioprio(void)
 	return IOPRIO_DEFAULT;
 }
 
-/* ioprio_best, set_task_ioprio removed - unused */
 
 static inline int ioprio_check_cap(int ioprio)
 {

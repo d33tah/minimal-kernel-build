@@ -121,7 +121,6 @@ static inline int security_capable(const struct cred *cred,
 	return cap_capable(cred, ns, cap, opts);
 }
 
-/* security_settime64 removed - unused */
 
 static inline int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
 {
@@ -152,7 +151,6 @@ static inline void security_bprm_committed_creds(struct linux_binprm *bprm)
 {
 }
 
-/* security_fs_context_dup removed - unused */
 static inline int security_fs_context_parse_param(struct fs_context *fc,
 						  struct fs_parameter *param)
 {
@@ -176,14 +174,12 @@ static inline int security_sb_eat_lsm_opts(char *options,
 	return 0;
 }
 
-/* security_sb_remount removed - unused */
 
 static inline int security_sb_kern_mount(struct super_block *sb)
 {
 	return 0;
 }
 
-/* security_sb_statfs removed - unused */
 
 static inline int security_sb_mount(const char *dev_name, const struct path *path,
 				    const char *type, unsigned long flags,
@@ -213,7 +209,6 @@ static inline int security_inode_alloc(struct inode *inode)
 static inline void security_inode_free(struct inode *inode)
 { }
 
-/* security_inode_init_security_anon removed - unused */
 
 static inline int security_inode_create(struct inode *dir,
 					 struct dentry *dentry,
@@ -222,7 +217,6 @@ static inline int security_inode_create(struct inode *dir,
 	return 0;
 }
 
-/* security_inode_link, security_inode_unlink, security_inode_symlink removed - unused */
 
 static inline int security_inode_mkdir(struct inode *dir,
 					struct dentry *dentry,
@@ -231,7 +225,6 @@ static inline int security_inode_mkdir(struct inode *dir,
 	return 0;
 }
 
-/* security_inode_rmdir removed - unused */
 
 static inline int security_inode_mknod(struct inode *dir,
 					struct dentry *dentry,
@@ -240,7 +233,6 @@ static inline int security_inode_mknod(struct inode *dir,
 	return 0;
 }
 
-/* security_inode_rename, security_inode_readlink removed - unused */
 
 static inline int security_inode_follow_link(struct dentry *dentry,
 					     struct inode *inode,
@@ -271,7 +263,6 @@ static inline int security_inode_killpriv(struct user_namespace *mnt_userns,
 	return 0;  /* Stub: capability checking disabled */
 }
 
-/* security_file_permission removed - unused */
 
 static inline int security_file_alloc(struct file *file)
 {
@@ -292,7 +283,6 @@ static inline int security_mmap_addr(unsigned long addr)
 	return 0;  /* Stub: capability checking disabled */
 }
 
-/* security_file_mprotect, security_file_receive removed - unused */
 
 static inline int security_file_open(struct file *file)
 {
@@ -308,7 +298,6 @@ static inline int security_task_alloc(struct task_struct *task,
 static inline void security_task_free(struct task_struct *task)
 { }
 
-/* security_cred_alloc_blank removed - never called */
 
 static inline void security_cred_free(struct cred *cred)
 { }
@@ -320,9 +309,7 @@ static inline int security_prepare_creds(struct cred *new,
 	return 0;
 }
 
-/* security_kernel_act_as and security_kernel_create_files_as removed - unused */
 
-/* security_task_setnice, security_task_setscheduler, security_task_getscheduler removed - unused */
 
 static inline int security_task_kill(struct task_struct *p,
 				     struct kernel_siginfo *info, int sig,
@@ -335,14 +322,12 @@ static inline void security_d_instantiate(struct dentry *dentry,
 					  struct inode *inode)
 { }
 
-/* security_secctx_to_secid removed - unused */
 
 static inline int security_locked_down(enum lockdown_reason what)
 {
 	return 0;
 }
 
-/* security_path_unlink, security_path_rmdir, security_path_chmod, security_path_chown removed - unused */
 
 static inline int security_path_truncate(const struct path *path)
 {

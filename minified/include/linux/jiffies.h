@@ -136,7 +136,6 @@ extern unsigned long preset_lpj;
 extern unsigned int jiffies_to_msecs(const unsigned long j);
 extern unsigned int jiffies_to_usecs(const unsigned long j);
 
-/* jiffies64_to_nsecs, jiffies64_to_msecs removed - unused */
 
 extern unsigned long __msecs_to_jiffies(const unsigned int m);
 #if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
@@ -197,7 +196,6 @@ static __always_inline unsigned long usecs_to_jiffies(const unsigned int u)
 }
 
 extern unsigned long timespec64_to_jiffies(const struct timespec64 *value);
-/* jiffies_to_timespec64, jiffies_to_clock_t, clock_t_to_jiffies, jiffies_64_to_clock_t, nsec_to_clock_t removed - unused */
 extern u64 nsecs_to_jiffies64(u64 n);
 extern unsigned long nsecs_to_jiffies(u64 n);
 

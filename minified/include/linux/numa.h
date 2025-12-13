@@ -14,6 +14,5 @@ static inline int numa_map_to_online_node(int node)
 {
 	return NUMA_NO_NODE;
 }
-/* memory_add_physaddr_to_nid, phys_to_target_node removed - unused */
 
 #endif  

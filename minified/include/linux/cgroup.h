@@ -52,7 +52,6 @@ struct cgroup_namespace {
 	struct css_set          *root_cset;
 };
 
-/* init_cgroup_ns removed - never defined or used */
 
 static inline void free_cgroup_ns(struct cgroup_namespace *ns) { }
 static inline struct cgroup_namespace *

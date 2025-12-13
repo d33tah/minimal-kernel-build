@@ -19,7 +19,6 @@ enum vm_event_item {
 #include <linux/jump_label.h>
 #include <linux/mmdebug.h>
 
-/* sysctl_stat_interval removed - unused */
 
 
 struct reclaim_stat;
@@ -44,7 +43,6 @@ static inline void vm_events_fold_cpu(int cpu)
 }
 
 
-/* count_vm_numa_event, count_vm_numa_events removed - unused */
 
 #define count_vm_tlb_event(x)     do {} while (0)
 #define count_vm_tlb_events(x, y) do { (void)(y); } while (0)
@@ -56,7 +54,6 @@ static inline void vm_events_fold_cpu(int cpu)
 
 extern atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS];
 extern atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS];
-/* vm_numa_event removed - never accessed */
 
 
 static inline void zone_page_state_add(long x, struct zone *zone,
@@ -100,7 +97,6 @@ static inline unsigned long zone_page_state(struct zone *zone,
 	return x;
 }
 
-/* zone_page_state_snapshot removed - unused */
 
 #define sum_zone_node_page_state(node, item) global_zone_page_state(item)
 #define node_page_state(node, item) global_node_page_state(item)
@@ -197,8 +193,6 @@ static inline void quiet_vmstat(void) { }
 static inline void drain_zonestat(struct zone *zone,
 			struct per_cpu_zonestat *pzstats) { }
 
-/* __zone_stat_mod_folio, __zone_stat_add_folio, __zone_stat_sub_folio removed - unused */
-/* __node_stat_mod_folio, __node_stat_add_folio, __node_stat_sub_folio removed - unused */
 
 static inline void node_stat_mod_folio(struct folio *folio,
 		enum node_stat_item item, long nr)
@@ -215,7 +209,6 @@ static inline void __mod_zone_freepage_state(struct zone *zone, int nr_pages,
 		__mod_zone_page_state(zone, NR_FREE_CMA_PAGES, nr_pages);
 }
 
-/* vmstat_text, mod_lruvec_state removed - unused */
 
 static inline void __mod_lruvec_state(struct lruvec *lruvec,
 				      enum node_stat_item idx, int val)
@@ -235,7 +228,6 @@ static inline void mod_lruvec_page_state(struct page *page,
 	mod_node_page_state(page_pgdat(page), idx, val);
 }
 
-/* __inc_lruvec_page_state removed - unused */
 
 static inline void __dec_lruvec_page_state(struct page *page,
 					   enum node_stat_item idx)
@@ -261,6 +253,5 @@ static inline void __lruvec_stat_mod_folio(struct folio *folio,
 	__mod_lruvec_page_state(&folio->page, idx, val);
 }
 
-/* __lruvec_stat_add_folio, __lruvec_stat_sub_folio removed - unused */
 
 #endif  

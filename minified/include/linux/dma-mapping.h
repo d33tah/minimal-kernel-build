@@ -38,7 +38,6 @@ static inline int valid_dma_direction(enum dma_data_direction dir)
 
 #define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
 
-/* debug_dma_mapping_error, debug_dma_map_single removed - unused */
 
 static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
 {
@@ -132,7 +131,6 @@ static inline dma_addr_t dma_map_single_attrs(struct device *dev, void *ptr,
 #define dma_get_sgtable(d, t, v, h, s) dma_get_sgtable_attrs(d, t, v, h, s, 0)
 #define dma_mmap_coherent(d, v, c, h, s) dma_mmap_attrs(d, v, c, h, s, 0)
 
-/* dma_alloc_coherent, dma_free_coherent removed - unused */
 
 static inline u64 dma_get_mask(struct device *dev)
 {
@@ -149,7 +147,6 @@ static inline bool dma_addressing_limited(struct device *dev)
 }
 
 
-/* dma_get_cache_alignment removed - unused */
 
 #define DEFINE_DMA_UNMAP_ADDR(ADDR_NAME)
 #define DEFINE_DMA_UNMAP_LEN(LEN_NAME)

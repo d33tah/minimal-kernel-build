@@ -168,6 +168,5 @@ enum stat_group {
 #define bio_op(bio) \
 	((bio)->bi_opf & REQ_OP_MASK)
 
-/* op_is_write removed - unused */
 
 #endif  

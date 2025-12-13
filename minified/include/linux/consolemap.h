@@ -41,11 +41,7 @@ static inline int conv_uni_to_pc(struct vc_data *conp, long ucs)
 {
 	return ucs < 0x100 ? ucs : -1;
 }
-/* conv_8bit_to_uni, conv_uni_to_8bit removed - unused */
 static inline void console_map_init(void) { }
-/* con_set_trans_old, con_get_trans_old removed - unused */
-/* con_set_trans_new, con_get_trans_new removed - unused */
-/* con_clear_unimap, con_get_unimap, con_set_unimap removed - unused */
 static inline int con_set_default_unimap(struct vc_data *vc) { return 0; }
 static inline void con_free_unimap(struct vc_data *vc) { }
 #endif

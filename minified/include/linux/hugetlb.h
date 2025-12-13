@@ -20,7 +20,6 @@ typedef struct { unsigned long pd; } hugepd_t;
 #endif
 
 
-/* reset_vma_resv_huge_pages and clear_vma_resv_huge_pages removed - unused */
 
 static inline unsigned long hugetlb_total_pages(void)
 {
@@ -28,7 +27,6 @@ static inline unsigned long hugetlb_total_pages(void)
 }
 
 
-/* huge_pmd_unshare and adjust_range_if_pmd_sharing_possible removed - unused */
 
 static inline long follow_hugetlb_page(struct mm_struct *mm,
 			struct vm_area_struct *vma, struct page **pages,
@@ -46,7 +44,6 @@ static inline struct page *follow_huge_addr(struct mm_struct *mm,
 	return ERR_PTR(-EINVAL);
 }
 
-/* copy_hugetlb_page_range removed - unused */
 
 static inline int move_hugetlb_page_tables(struct vm_area_struct *vma,
 					   struct vm_area_struct *new_vma,
@@ -116,7 +113,6 @@ static inline pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr,
 }
 
 
-/* hugetlb_change_protection removed - unused */
 
 static inline void __unmap_hugepage_range_final(struct mmu_gather *tlb,
 			struct vm_area_struct *vma, unsigned long start,
@@ -281,7 +277,6 @@ static inline __init void hugetlb_cma_reserve(int order)
 {
 }
 
-/* want_pmd_share removed - unused */
 
 #ifndef __HAVE_ARCH_FLUSH_HUGETLB_TLB_RANGE
 #define flush_hugetlb_tlb_range(vma, addr, end)	flush_tlb_range(vma, addr, end)

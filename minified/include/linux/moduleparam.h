@@ -185,12 +185,10 @@ extern char *parse_args(const char *name,
 		      int (*unknown)(char *param, char *val,
 				     const char *doing, void *arg));
 
-/* destroy_params removed - unused */
 
 #define __param_check(name, p, type) \
 	static inline type __always_unused *__check_##name(void) { return(p); }
 
-/* param_ops_byte, param_ops_short, param_ops_ushort removed - unused */
 #define param_check_byte(name, p) __param_check(name, p, unsigned char)
 #define param_check_short(name, p) __param_check(name, p, short)
 #define param_check_ushort(name, p) __param_check(name, p, unsigned short)
@@ -207,7 +205,6 @@ int param_set_uint_minmax(const char *val, const struct kernel_param *kp,
 		unsigned int min, unsigned int max);
 #define param_check_uint(name, p) __param_check(name, p, unsigned int)
 
-/* param_ops_long, param_ops_ulong, param_ops_ullong, param_ops_hexint removed - unused */
 #define param_check_long(name, p) __param_check(name, p, long)
 #define param_check_ulong(name, p) __param_check(name, p, unsigned long)
 #define param_check_ullong(name, p) __param_check(name, p, unsigned long long)
@@ -239,7 +236,6 @@ extern int param_get_bool(char *buffer, const struct kernel_param *kp);
 			    perm, -1, 0);				\
 	__MODULE_PARM_TYPE(name, "array of " #type)
 
-/* hwparam macros removed - unused */
 
 extern const struct kernel_param_ops param_array_ops;
 

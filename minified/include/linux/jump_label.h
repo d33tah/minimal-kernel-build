@@ -72,7 +72,6 @@ static inline void static_key_slow_dec(struct static_key *key)
 #define static_key_slow_inc_cpuslocked(key) static_key_slow_inc(key)
 #define static_key_slow_dec_cpuslocked(key) static_key_slow_dec(key)
 
-/* jump_label_text_reserved, jump_label_apply_nops removed - unused */
 
 static inline void static_key_enable(struct static_key *key)
 {

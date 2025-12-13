@@ -43,7 +43,6 @@ extern unsigned short *key_maps[MAX_NR_KEYMAPS];
 extern unsigned short plain_map[NR_KEYS];
 /* --- end keyboard.h inlined --- */
 
-/* func_table removed - never defined or used */
 
 struct kbd_struct {
 
@@ -88,12 +87,10 @@ extern int kbd_init(void);
 
 extern void setledstate(struct kbd_struct *kbd, unsigned int led);
 
-/* do_poke_blanked_console removed - never used */
 
 extern void (*kbd_ledfunc)(unsigned int led);
 
 extern int set_console(int nr);
-/* schedule_console_callback removed - never called */
 
 static inline int vc_kbd_mode(struct kbd_struct * kbd, int flag)
 {

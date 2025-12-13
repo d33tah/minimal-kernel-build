@@ -37,7 +37,6 @@
 
 #include <asm/preempt.h>
 
-/* interrupt_context_level removed - unused */
 
 #define nmi_count()	(preempt_count() & NMI_MASK)
 #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)

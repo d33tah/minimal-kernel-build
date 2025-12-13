@@ -40,7 +40,6 @@ static inline int in_group_p(kgid_t grp)
         return 1;
 }
 
-/* in_egroup_p, groups_search removed - unused */
 
 struct cred {
 	atomic_t	usage;
@@ -72,13 +71,10 @@ struct cred {
 extern void __put_cred(struct cred *);
 extern void exit_creds(struct task_struct *);
 extern int copy_creds(struct task_struct *, unsigned long);
-/* get_task_cred removed - unused */
-/* cred_alloc_blank removed - unused */
 extern struct cred *prepare_creds(void);
 extern struct cred *prepare_exec_creds(void);
 extern int commit_creds(struct cred *);
 extern void abort_creds(struct cred *);
-/* override_creds, revert_creds, prepare_kernel_cred, set_security_override, set_security_override_from_ctx, change_create_files_as, set_create_files_as, cred_fscmp removed - unused */
 extern void __init cred_init(void);
 extern int set_cred_ucounts(struct cred *);
 

@@ -131,7 +131,6 @@ int vsscanf(const char *, const char *, va_list);
 
 extern int no_hash_pointers_enable(char *str);
 
-/* get_option, get_options, memparse removed - never called */
 extern bool parse_option_str(const char *str, const char *option);
 extern char *next_arg(char *args, char **param, char **val);
 
@@ -156,16 +155,11 @@ extern enum system_states {
 	SYSTEM_SUSPEND,
 } system_state;
 
-/* hex_asc, hex_asc_lo, hex_asc_hi, hex_byte_pack removed - never used */
 extern const char hex_asc_upper[];
 /* Removed: hex_to_bin, hex2bin, bin2hex, mac_pton - never called */
 
 
-/* tracing_start, tracing_stop, trace_dump_stack removed - unused */
-/* tracing_on removed - unused */
 static inline void tracing_off(void) { }
-/* tracing_is_on, tracing_snapshot, tracing_snapshot_alloc removed - unused */
-/* trace_printk, ftrace_vprintk, ftrace_dump removed - unused */
 
 #define __COUNT_ARGS(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _n, X...) _n
 #define COUNT_ARGS(X...) __COUNT_ARGS(, ##X, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)

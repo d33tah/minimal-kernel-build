@@ -125,7 +125,6 @@ void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 		int node, const void *caller) __alloc_size(1);
 void *vmalloc_huge(unsigned long size, gfp_t gfp_mask) __alloc_size(1);
 
-/* __vmalloc_array, vmalloc_array, __vcalloc, vcalloc removed - unused */
 
 extern void vfree(const void *addr);
 /* vfree_atomic removed - no definition or callers */
@@ -134,7 +133,6 @@ extern void *vmap(struct page **pages, unsigned int count,
 			unsigned long flags, pgprot_t prot);
 extern void vunmap(const void *addr);
 
-/* remap_vmalloc_range_partial, remap_vmalloc_range removed - unused */
 
 #ifndef ARCH_PAGE_TABLE_SYNC_MASK
 #define ARCH_PAGE_TABLE_SYNC_MASK 0
@@ -179,7 +177,6 @@ static inline void set_vm_flush_reset_perms(void *addr)
 }
 
 
-/* vread, vmap_area_list, vm_area_add_early, vm_area_register_early removed - unused */
 
 
 #define VMALLOC_TOTAL (VMALLOC_END - VMALLOC_START)

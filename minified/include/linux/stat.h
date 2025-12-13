@@ -77,7 +77,6 @@ struct statx {
 /* Only keeping STATX_BASIC_STATS which is used */
 #define STATX_BASIC_STATS	0x000007ffU
 
-/* STATX_ATTR_* removed - unused */
 /* End uapi/linux/stat.h */
 
 #define S_IRWXUGO	(S_IRWXU|S_IRWXG|S_IRWXO)

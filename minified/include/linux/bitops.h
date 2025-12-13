@@ -15,7 +15,6 @@
 
 #define BITS_PER_TYPE(type)	(sizeof(type) * BITS_PER_BYTE)
 #define BITS_TO_LONGS(nr)	__KERNEL_DIV_ROUND_UP(nr, BITS_PER_TYPE(long))
-/* BITS_TO_U64, BITS_TO_U32, BITS_TO_BYTES removed - unused */
 /* __sw_hweight8/16/32/64 removed - unused software fallback declarations */
 
 #include <asm/bitops.h>
@@ -111,7 +110,6 @@ static __always_inline void __assign_bit(long nr, volatile unsigned long *addr,
 		__clear_bit(nr, addr);
 }
 
-/* __ptr_set_bit, __ptr_clear_bit, __ptr_test_bit removed - unused */
 
 #ifdef __KERNEL__
 
@@ -130,7 +128,6 @@ static __always_inline void __assign_bit(long nr, volatile unsigned long *addr,
 })
 #endif
 
-/* bit_clear_unless removed - unused */
 
 #endif  
 #endif

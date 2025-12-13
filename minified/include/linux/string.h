@@ -10,7 +10,6 @@
 
 extern char *strndup_user(const char __user *, long);
 extern void *memdup_user(const void __user *, size_t);
-/* vmemdup_user, memdup_user_nul removed - unused */
 
 #include <asm/string_32.h>
 
@@ -42,7 +41,6 @@ extern int strncmp(const char *,const char *,__kernel_size_t);
 #ifndef __HAVE_ARCH_STRCHR
 extern char * strchr(const char *,int);
 #endif
-/* strchrnul removed - never called */
 #ifndef __HAVE_ARCH_STRNCHR
 extern char * strnchr(const char *, size_t, int);
 #endif
@@ -51,7 +49,6 @@ extern char * strrchr(const char *,int);
 #endif
 extern char * __must_check skip_spaces(const char *);
 
-/* strim, strstrip removed - never called */
 
 #ifndef __HAVE_ARCH_STRSTR
 extern char * strstr(const char *, const char *);
@@ -77,7 +74,6 @@ extern __kernel_size_t strcspn(const char *,const char *);
 extern void * memset(void *,int,__kernel_size_t);
 #endif
 
-/* memset16, memset32, memset64, memset_l, memset_p removed - unused */
 
 
 #ifndef __HAVE_ARCH_MEMCPY
@@ -106,14 +102,12 @@ extern char *kstrndup(const char *s, size_t len, gfp_t gfp);
 extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
 extern char *kmemdup_nul(const char *s, size_t len, gfp_t gfp);
 
-/* argv_split, argv_free, sysfs_streq, match_string, __sysfs_match_string removed - unused */
 
 static inline bool strstarts(const char *str, const char *prefix)
 {
 	return strncmp(str, prefix, strlen(prefix)) == 0;
 }
 
-/* memweight removed - unused */
 
 static inline void memzero_explicit(void *s, size_t count)
 {
@@ -132,7 +126,6 @@ static inline const char *kbasename(const char *path)
 	memcpy(dst, src, bytes)
 #endif
 
-/* memcpy_and_pad, memset_after, memset_startat removed - unused */
 
 static __always_inline size_t str_has_prefix(const char *str, const char *prefix)
 {

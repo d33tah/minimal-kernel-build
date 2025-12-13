@@ -253,27 +253,20 @@ enum {
 #define IRQ_DEFAULT_INIT_FLAGS	ARCH_IRQ_INIT_FLAGS
 
 struct irqaction;
-/* setup_percpu_irq, remove_percpu_irq removed - unused */
-/* irq_set_affinity_locked, irq_set_vcpu_affinity removed - unused */
 
 # define irq_affinity_online_cpu	NULL
 
-/* no_irq_affinity, irq_set_parent removed - unused */
 
 extern void handle_level_irq(struct irq_desc *desc);
 extern void handle_bad_irq(struct irq_desc *desc);
 
-/* handle_fasteoi_irq, handle_edge_irq, handle_simple_irq, handle_percpu_irq, handle_percpu_devid_irq removed - unused */
-/* handle_edge_eoi_irq, handle_untracked_irq, handle_fasteoi_nmi, handle_percpu_devid_fasteoi_nmi removed - unused */
 
-/* irq_chip_compose_msi_msg removed - unused */
 extern int irq_chip_pm_get(struct irq_data *data);
 extern int irq_chip_pm_put(struct irq_data *data);
 
 extern void note_interrupt(struct irq_desc *desc, irqreturn_t action_ret);
 
 /* noirqdebug_setup declaration removed - only used via __setup macro */
-/* can_request_irq removed - unused */
 
 extern struct irq_chip no_irq_chip;
 extern struct irq_chip dummy_irq_chip;
@@ -289,13 +282,11 @@ static inline void irq_set_chip_and_handler(unsigned int irq,
 	irq_set_chip_and_handler_name(irq, chip, handle, NULL);
 }
 
-/* irq_set_percpu_devid, irq_set_percpu_devid_partition removed - unused */
 
 extern void
 __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 		  const char *name);
 
-/* irq_set_chained_handler_and_data removed - unused */
 
 void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set);
 
@@ -304,7 +295,6 @@ static inline void irq_set_status_flags(unsigned int irq, unsigned long set)
 	irq_modify_status(irq, 0, set);
 }
 
-/* irq_set_percpu_devid_flags removed - unused */
 
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
 extern int irq_set_chip_data(unsigned int irq, void *data);

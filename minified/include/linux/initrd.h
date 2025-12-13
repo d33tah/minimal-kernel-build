@@ -4,7 +4,6 @@
 
 #define INITRD_MINOR 250
 
-/* rd_image_start, rd_size removed - never defined or used */
 
 extern int initrd_below_start_ok;
 

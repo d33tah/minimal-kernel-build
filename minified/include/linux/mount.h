@@ -71,7 +71,6 @@ extern void mntput(struct vfsmount *mnt);
 extern struct vfsmount *mntget(struct vfsmount *mnt);
 extern bool mnt_may_suid(struct vfsmount *mnt);
 
-/* clone_private_mount removed - unused */
 extern int __mnt_want_write(struct vfsmount *);
 extern void __mnt_drop_write(struct vfsmount *);
 
@@ -80,15 +79,11 @@ extern struct vfsmount *vfs_create_mount(struct fs_context *fc);
 extern struct vfsmount *vfs_kern_mount(struct file_system_type *type,
 				      int flags, const char *name,
 				      void *data);
-/* vfs_submount removed - unused */
 
-/* mnt_set_expiry, mark_mounts_for_expiry removed - unused */
 
 extern dev_t name_to_dev_t(const char *name);
-/* path_is_mountpoint, our_mnt removed - unused */
 
 extern struct vfsmount *kern_mount(struct file_system_type *);
-/* kern_unmount, kern_unmount_array, may_umount_tree, may_umount, collect_mounts, drop_collected_mounts, iterate_mounts removed - unused */
 extern long do_mount(const char *, const char __user *,
 		     const char *, unsigned long, void *);
 

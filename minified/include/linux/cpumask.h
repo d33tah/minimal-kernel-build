@@ -30,11 +30,9 @@ extern struct cpumask __cpu_active_mask;
 #define cpu_online_mask   ((const struct cpumask *)&__cpu_online_mask)
 #define cpu_present_mask  ((const struct cpumask *)&__cpu_present_mask)
 #define cpu_active_mask   ((const struct cpumask *)&__cpu_active_mask)
-/* __cpu_dying_mask, cpu_dying_mask removed - unused */
 
 extern atomic_t __num_online_cpus;
 
-/* cpus_booted_once_mask removed - unused */
 
 static __always_inline void cpu_max_bits_warn(unsigned int cpu, unsigned int bits)
 {
@@ -111,7 +109,6 @@ static inline void cpumask_clear(struct cpumask *dstp)
 }
 
 
-/* cpumask_and removed - unused */
 
 static inline void cpumask_or(struct cpumask *dstp, const struct cpumask *src1p,
 			      const struct cpumask *src2p)
@@ -175,7 +172,6 @@ static inline bool zalloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
 static inline void alloc_bootmem_cpumask_var(cpumask_var_t *mask)
 {
 }
-/* free_cpumask_var removed - unused */
 
 extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 #define cpu_all_mask to_cpumask(cpu_all_bits)
@@ -215,7 +211,6 @@ set_cpu_active(unsigned int cpu, bool active)
 		cpumask_clear_cpu(cpu, &__cpu_active_mask);
 }
 
-/* set_cpu_dying removed - unused */
 
 
 #define to_cpumask(bitmap)						\
@@ -269,7 +264,6 @@ cpumap_print_to_pagebuf(bool list, char *buf, const struct cpumask *mask)
 				      nr_cpu_ids);
 }
 
-/* cpumap_print_bitmask_to_buf, cpumap_print_list_to_buf removed - unused */
 
 /* NR_CPUS <= BITS_PER_LONG always true */
 #define CPU_MASK_ALL							\

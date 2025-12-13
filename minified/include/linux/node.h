@@ -33,7 +33,6 @@ static inline void register_memory_blocks_under_node(int nid, unsigned long star
 {
 }
 
-/* unregister_node removed - never called or defined */
 static inline void node_dev_init(void)
 {
 }

@@ -19,7 +19,6 @@
 		buffer;							\
 	})
 
-/* old_valid_dev, old_encode_dev removed - unused */
 
 static __always_inline dev_t old_decode_dev(u16 val)
 {
@@ -40,6 +39,5 @@ static __always_inline dev_t new_decode_dev(u32 dev)
 	return MKDEV(major, minor);
 }
 
-/* huge_encode_dev, huge_decode_dev, sysv_* functions removed - unused */
 
 #endif

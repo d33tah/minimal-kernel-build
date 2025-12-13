@@ -28,14 +28,10 @@ struct dmi_device {
 };
 
 
-/* dmi_check_system, dmi_get_system_info, dmi_find_device removed - unused */
 static inline void dmi_setup(void) { }
-/* dmi_get_date, dmi_get_bios_year, dmi_name_in_vendors, dmi_name_in_serial removed - unused */
 #define dmi_available 0
-/* dmi_walk removed - unused */
 static inline bool dmi_match(enum dmi_field f, const char *str)
 	{ return false; }
-/* dmi_memdev_*, dmi_first_match removed - unused */
 
 
 #endif	 

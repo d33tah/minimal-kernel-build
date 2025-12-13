@@ -14,7 +14,6 @@
 #define USHORT_CMP_LT(a, b)	(USHRT_MAX / 2 < (unsigned short)((a) - (b)))
 
 void call_rcu(struct rcu_head *head, rcu_callback_t func);
-/* rcu_barrier_tasks, rcu_barrier_tasks_rude removed - never called */
 void synchronize_rcu(void);
 
 
@@ -32,7 +31,6 @@ static inline void __rcu_read_unlock(void)
 		rcu_read_unlock_strict();
 }
 
-/* rcu_preempt_depth removed - unused */
 
 void rcu_init(void);
 extern int rcu_scheduler_active;
@@ -45,8 +43,6 @@ static inline void rcu_init_tasks_generic(void) { }
 static inline void rcu_init_nohz(void) { }
 static inline void rcu_nocb_flush_deferred_wakeup(void) { }
 
-/* RCU_NONIDLE removed - unused */
-/* rcu_note_voluntary_context_switch removed - unused */
 #define rcu_tasks_classic_qs(t, preempt) do { } while (0)
 #define rcu_tasks_qs(t, preempt) do { } while (0)
 #define call_rcu_tasks call_rcu
@@ -114,10 +110,8 @@ static inline void rcu_all_qs(void) { barrier(); }
 #endif
 
 static inline void init_rcu_head(struct rcu_head *head) { }
-/* destroy_rcu_head removed - unused */
 static inline void init_rcu_head_on_stack(struct rcu_head *head) { }
 static inline void destroy_rcu_head_on_stack(struct rcu_head *head) { }
-/* rcu_lockdep_current_cpu_online removed - unused */
 
 extern struct lockdep_map rcu_lock_map;
 extern struct lockdep_map rcu_bh_lock_map;
@@ -133,7 +127,6 @@ static inline int rcu_read_lock_held(void)
 	return 1;
 }
 
-/* rcu_read_lock_bh_held removed - unused */
 
 static inline int rcu_read_lock_sched_held(void)
 {
@@ -208,7 +201,6 @@ do {									      \
 		smp_store_release(&p, RCU_INITIALIZER((typeof(p))_r_a_p__v)); \
 } while (0)
 
-/* rcu_replace_pointer removed - unused */
 
 #define rcu_access_pointer(p) __rcu_access_pointer((p), __UNIQUE_ID(rcu), __rcu)
 
@@ -216,7 +208,6 @@ do {									      \
 	__rcu_dereference_check((p), __UNIQUE_ID(rcu), \
 				(c) || rcu_read_lock_held(), __rcu)
 
-/* rcu_dereference_bh_check removed - unused */
 
 #define rcu_dereference_sched_check(p, c) \
 	__rcu_dereference_check((p), __UNIQUE_ID(rcu), \
@@ -232,7 +223,6 @@ do {									      \
 
 #define rcu_dereference(p) rcu_dereference_check(p, 0)
 
-/* rcu_dereference_bh removed - unused */
 
 #define rcu_dereference_sched(p) rcu_dereference_sched_check(p, 0)
 

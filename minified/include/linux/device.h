@@ -93,7 +93,6 @@ struct subsys_interface {
 	void (*remove_dev)(struct device *dev, struct subsys_interface *sif);
 };
 
-/* subsys_interface_register/unregister, subsys_virtual_register removed - unused */
 
 int subsys_system_register(struct bus_type *subsys,
 			   const struct attribute_group **groups);
@@ -125,13 +124,11 @@ struct device_attribute {
 	struct device_attribute dev_attr_##_name = __ATTR_RO(_name)
 #define DEVICE_ATTR_WO(_name) \
 	struct device_attribute dev_attr_##_name = __ATTR_WO(_name)
-/* DEVICE_ATTR_PREALLOC, DEVICE_ATTR_ADMIN_*, DEVICE_ATTR_IGNORE_LOCKDEP removed - unused */
 
 int device_create_file(struct device *device,
 		       const struct device_attribute *entry);
 void device_remove_file(struct device *dev,
 			const struct device_attribute *attr);
-/* device_remove_file_self, device_create_bin_file, device_remove_bin_file removed - unused */
 
 typedef void (*dr_release_t)(struct device *dev, void *res);
 typedef int (*dr_match_t)(struct device *dev, void *res, void *match_data);
@@ -160,7 +157,6 @@ int devres_destroy(struct device *dev, dr_release_t release,
 int devres_release(struct device *dev, dr_release_t release,
 		   dr_match_t match, void *match_data);
 
-/* devres_open_group, devres_close_group, devres_remove_group, devres_release_group removed - unused */
 
 __printf(3, 4) char *devm_kasprintf(struct device *dev, gfp_t gfp,
 				    const char *fmt, ...) __malloc;
@@ -172,7 +168,6 @@ char *devm_kstrdup(struct device *dev, const char *s, gfp_t gfp) __malloc;
 
 void __iomem *devm_ioremap_resource(struct device *dev,
 				    const struct resource *res);
-/* devm_ioremap_resource_wc, devm_of_iomap removed - unused */
 
 struct device_dma_parameters {
 	 
@@ -384,15 +379,11 @@ int __must_check device_add(struct device *dev);
 void device_del(struct device *dev);
 int device_for_each_child(struct device *dev, void *data,
 			  int (*fn)(struct device *dev, void *data));
-/* device_for_each_child_reverse removed - never called */
 struct device *device_find_child(struct device *dev, void *data,
 				 int (*match)(struct device *dev, void *data));
-/* device_find_child_by_name, device_rename, device_move, device_change_owner removed - unused */
 const char *device_get_devnode(struct device *dev, umode_t *mode, kuid_t *uid,
 			       kgid_t *gid, const char **tmp);
-/* device_is_dependent removed - unused */
 
-/* __device_lock_set_class, device_lock_set_class, device_lock_reset_class removed - unused */
 
 /* lock_device_hotplug, unlock_device_hotplug, lock_device_hotplug_sysfs,
    device_offline, device_online, set_primary_fwnode, set_secondary_fwnode,
@@ -432,8 +423,6 @@ static inline void device_remove_group(struct device *dev,
 	return device_remove_groups(dev, groups);
 }
 
-/* devm_device_add_group, devm_device_add_groups, devm_device_remove_group, devm_device_remove_groups removed - unused */
-/* platform_notify, platform_notify_remove removed - never assigned to */
 
 
 struct device *get_device(struct device *dev);

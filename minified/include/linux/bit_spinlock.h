@@ -11,7 +11,6 @@ static inline void bit_spin_lock(int bitnum, unsigned long *addr)
 	preempt_disable();
 	__acquire(bitlock);
 }
-/* bit_spin_trylock removed - unused */
 
 static inline void bit_spin_unlock(int bitnum, unsigned long *addr)
 {

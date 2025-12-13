@@ -26,7 +26,6 @@ static __always_inline void __node_set(int node, volatile nodemask_t *dstp)
 	set_bit(node, dstp->bits);
 }
 
-/* node_clear, nodes_setall removed - unused */
 
 #define nodes_clear(dst) __nodes_clear(&(dst), MAX_NUMNODES)
 static inline void __nodes_clear(nodemask_t *dstp, unsigned int nbits)
@@ -71,7 +70,6 @@ static inline int __nodes_weight(const nodemask_t *srcp, unsigned int nbits)
 
 #define nodes_addr(src) ((src).bits)
 
-/* node_remap removed - unused */
 
 /* MAX_NUMNODES=1, use simplified version */
 #define for_each_node_mask(node, mask)                                  \
@@ -101,7 +99,6 @@ static inline void node_set_state(int node, enum node_states state)
 {
 }
 
-/* node_clear_state removed - unused */
 
 static inline int num_node_state(enum node_states state)
 {
@@ -118,7 +115,6 @@ static inline int num_node_state(enum node_states state)
 #define nr_online_nodes		1U
 
 #define node_set_online(node)	   node_set_state((node), N_ONLINE)
-/* node_set_offline removed - unused */
 
 #define node_online_map 	node_states[N_ONLINE]
 #define node_possible_map 	node_states[N_POSSIBLE]

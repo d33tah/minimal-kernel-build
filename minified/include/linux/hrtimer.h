@@ -202,7 +202,7 @@ static inline void hrtimer_start(struct hrtimer *timer, ktime_t tim,
 }
 
 extern int hrtimer_cancel(struct hrtimer *timer);
-extern int hrtimer_try_to_cancel(struct hrtimer *timer);
+/* hrtimer_try_to_cancel declaration removed - only used internally */
 
 static inline void hrtimer_start_expires(struct hrtimer *timer,
 					 enum hrtimer_mode mode)

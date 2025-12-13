@@ -21,10 +21,7 @@
 static inline void __receive_sock(struct file *file) { }
 
 unsigned int sysctl_nr_open __read_mostly = 1024*1024;
-unsigned int sysctl_nr_open_min = BITS_PER_LONG;
-#define __const_min(x, y) ((x) < (y) ? (x) : (y))
-unsigned int sysctl_nr_open_max =
-	__const_min(INT_MAX, ~(size_t)0/sizeof(void *)) & -BITS_PER_LONG;
+/* sysctl_nr_open_min, sysctl_nr_open_max removed - unused (no sysctl table) */
 
 static void __free_fdtable(struct fdtable *fdt)
 {

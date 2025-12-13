@@ -86,6 +86,6 @@ extern void fd_install(unsigned int fd, struct file *file);
 
 extern void flush_delayed_fput(void);
 
-extern unsigned int sysctl_nr_open_min, sysctl_nr_open_max;
+/* sysctl_nr_open_min, sysctl_nr_open_max removed - unused */
 
-#endif  
+#endif

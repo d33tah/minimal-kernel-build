@@ -70,58 +70,8 @@ __printf(2, 3)
 void seq_printf(struct seq_file *m, const char *fmt, ...);
 /* seq_putc, seq_puts, seq_put_decimal_ull, seq_put_decimal_ull_width, seq_put_decimal_ll, seq_put_hex_ll removed - unused */
 /* seq_escape_mem, seq_escape_str, seq_escape, seq_hex_dump removed - unused */
-
-void *single_start(struct seq_file *, loff_t *);
-int single_open(struct file *, int (*)(struct seq_file *, void *), void *);
-int single_open_size(struct file *, int (*)(struct seq_file *, void *), void *, size_t);
-int single_release(struct inode *, struct file *);
-
-
-#define DEFINE_SEQ_ATTRIBUTE(__name)					\
-static int __name ## _open(struct inode *inode, struct file *file)	\
-{									\
-	int ret = seq_open(file, &__name ## _sops);			\
-	if (!ret && inode->i_private) {					\
-		struct seq_file *seq_f = file->private_data;		\
-		seq_f->private = inode->i_private;			\
-	}								\
-	return ret;							\
-}									\
-									\
-static const struct file_operations __name ## _fops = {			\
-	.owner		= THIS_MODULE,					\
-	.open		= __name ## _open,				\
-	.read		= seq_read,					\
-	.llseek		= seq_lseek,					\
-	.release	= seq_release,					\
-}
-
-#define DEFINE_SHOW_ATTRIBUTE(__name)					\
-static int __name ## _open(struct inode *inode, struct file *file)	\
-{									\
-	return single_open(file, __name ## _show, inode->i_private);	\
-}									\
-									\
-static const struct file_operations __name ## _fops = {			\
-	.owner		= THIS_MODULE,					\
-	.open		= __name ## _open,				\
-	.read		= seq_read,					\
-	.llseek		= seq_lseek,					\
-	.release	= single_release,				\
-}
-
-#define DEFINE_PROC_SHOW_ATTRIBUTE(__name)				\
-static int __name ## _open(struct inode *inode, struct file *file)	\
-{									\
-	return single_open(file, __name ## _show, pde_data(inode));	\
-}									\
-									\
-static const struct proc_ops __name ## _proc_ops = {			\
-	.proc_open	= __name ## _open,				\
-	.proc_read	= seq_read,					\
-	.proc_lseek	= seq_lseek,					\
-	.proc_release	= single_release,				\
-}
+/* single_start, single_open, single_open_size, single_release removed - unused */
+/* DEFINE_SEQ_ATTRIBUTE, DEFINE_SHOW_ATTRIBUTE, DEFINE_PROC_SHOW_ATTRIBUTE removed - unused */
 
 static inline struct user_namespace *seq_user_ns(struct seq_file *seq)
 {

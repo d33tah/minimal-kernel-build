@@ -1436,8 +1436,7 @@ void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...);
 extern void setup_per_cpu_pageset(void);
 
 extern int min_free_kbytes;
-/* watermark_boost_factor removed - unused */
-extern int watermark_scale_factor;
+/* watermark_boost_factor, watermark_scale_factor removed - unused */
 
 extern atomic_long_t mmap_pages_allocated;
 

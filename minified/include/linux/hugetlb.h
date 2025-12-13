@@ -20,13 +20,7 @@ typedef struct { unsigned long pd; } hugepd_t;
 #endif
 
 
-static inline void reset_vma_resv_huge_pages(struct vm_area_struct *vma)
-{
-}
-
-static inline void clear_vma_resv_huge_pages(struct vm_area_struct *vma)
-{
-}
+/* reset_vma_resv_huge_pages and clear_vma_resv_huge_pages removed - unused */
 
 static inline unsigned long hugetlb_total_pages(void)
 {
@@ -34,18 +28,7 @@ static inline unsigned long hugetlb_total_pages(void)
 }
 
 
-static inline int huge_pmd_unshare(struct mm_struct *mm,
-					struct vm_area_struct *vma,
-					unsigned long *addr, pte_t *ptep)
-{
-	return 0;
-}
-
-static inline void adjust_range_if_pmd_sharing_possible(
-				struct vm_area_struct *vma,
-				unsigned long *start, unsigned long *end)
-{
-}
+/* huge_pmd_unshare and adjust_range_if_pmd_sharing_possible removed - unused */
 
 static inline long follow_hugetlb_page(struct mm_struct *mm,
 			struct vm_area_struct *vma, struct page **pages,
@@ -63,14 +46,7 @@ static inline struct page *follow_huge_addr(struct mm_struct *mm,
 	return ERR_PTR(-EINVAL);
 }
 
-static inline int copy_hugetlb_page_range(struct mm_struct *dst,
-					  struct mm_struct *src,
-					  struct vm_area_struct *dst_vma,
-					  struct vm_area_struct *src_vma)
-{
-	BUG();
-	return 0;
-}
+/* copy_hugetlb_page_range removed - unused */
 
 static inline int move_hugetlb_page_tables(struct vm_area_struct *vma,
 					   struct vm_area_struct *new_vma,
@@ -140,13 +116,7 @@ static inline pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr,
 }
 
 
-static inline unsigned long hugetlb_change_protection(
-			struct vm_area_struct *vma, unsigned long address,
-			unsigned long end, pgprot_t newprot,
-			unsigned long cp_flags)
-{
-	return 0;
-}
+/* hugetlb_change_protection removed - unused */
 
 static inline void __unmap_hugepage_range_final(struct mmu_gather *tlb,
 			struct vm_area_struct *vma, unsigned long start,
@@ -311,7 +281,7 @@ static inline __init void hugetlb_cma_reserve(int order)
 {
 }
 
-bool want_pmd_share(struct vm_area_struct *vma, unsigned long addr);
+/* want_pmd_share removed - unused */
 
 #ifndef __HAVE_ARCH_FLUSH_HUGETLB_TLB_RANGE
 #define flush_hugetlb_tlb_range(vma, addr, end)	flush_tlb_range(vma, addr, end)

@@ -63,19 +63,7 @@ struct kernel_param {
 
 extern const struct kernel_param __start___param[], __stop___param[];
 
-struct kparam_string {
-	unsigned int maxlen;
-	char *string;
-};
-
-struct kparam_array
-{
-	unsigned int max;
-	unsigned int elemsize;
-	unsigned int *num;
-	const struct kernel_param_ops *ops;
-	void *elem;
-};
+/* kparam_string and kparam_array removed - unused in minimal kernel */
 
 #define module_param(name, type, perm)				\
 	module_param_named(name, name, type, perm)

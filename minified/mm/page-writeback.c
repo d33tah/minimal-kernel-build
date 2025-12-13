@@ -20,7 +20,7 @@ void laptop_mode_timer_fn(struct timer_list *t) {}
 int do_writepages(struct address_space *mapping, struct writeback_control *wbc) { return 0; }
 bool noop_dirty_folio(struct address_space *mapping, struct folio *folio) { return true; }
 void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb) {}
-void __folio_mark_dirty(struct folio *folio, struct address_space *mapping, int warn) {}
+/* __folio_mark_dirty removed - never called */
 bool filemap_dirty_folio(struct address_space *mapping, struct folio *folio) { return true; }
 void folio_account_redirty(struct folio *folio) {}
 bool folio_redirty_for_writepage(struct writeback_control *wbc, struct folio *folio) { return true; }

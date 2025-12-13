@@ -364,7 +364,7 @@ void end_page_writeback(struct page *page);
 void folio_end_writeback(struct folio *folio);
 /* wait_for_stable_page removed - unused */
 void folio_wait_stable(struct folio *folio);
-void __folio_mark_dirty(struct folio *folio, struct address_space *, int warn);
+/* __folio_mark_dirty removed - never called */
 void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb);
 void __folio_cancel_dirty(struct folio *folio);
 static inline void folio_cancel_dirty(struct folio *folio)

@@ -29,7 +29,7 @@ int arch_update_cpu_topology(void);
 #define RECLAIM_DISTANCE 30
 #endif
 
-extern int __read_mostly node_reclaim_distance;
+/* node_reclaim_distance removed - never defined or used */
 
 #ifndef PENALTY_FOR_NODE_WITH_CPUS
 #define PENALTY_FOR_NODE_WITH_CPUS	(1)

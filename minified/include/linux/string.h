@@ -51,9 +51,7 @@ extern char * strrchr(const char *,int);
 #endif
 extern char * __must_check skip_spaces(const char *);
 
-extern char *strim(char *);
-
-/* strstrip removed - unused (alias for strim) */
+/* strim, strstrip removed - never called */
 
 #ifndef __HAVE_ARCH_STRSTR
 extern char * strstr(const char *, const char *);

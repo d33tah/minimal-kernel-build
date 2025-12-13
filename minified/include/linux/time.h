@@ -5,8 +5,6 @@
 # include <linux/math64.h>
 # include <linux/time64.h>
 
-extern struct timezone sys_tz;
-
 int get_timespec64(struct timespec64 *ts,
 		const struct __kernel_timespec __user *uts);
 int put_timespec64(const struct timespec64 *ts,

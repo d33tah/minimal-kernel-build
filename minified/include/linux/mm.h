@@ -194,7 +194,7 @@ struct anon_vma_chain;
 struct user_struct;
 struct pt_regs;
 
-extern int sysctl_page_lock_unfairness;
+/* sysctl_page_lock_unfairness extern removed - only used in filemap.c */
 
 void init_mm_internals(void);
 

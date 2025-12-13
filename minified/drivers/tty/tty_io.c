@@ -739,7 +739,7 @@ err_release_lock:
 	return ERR_PTR(retval);
 }
 
-void tty_save_termios(struct tty_struct *tty)
+static void tty_save_termios(struct tty_struct *tty)
 {
 	struct ktermios *tp;
 	int idx = tty->index;
@@ -865,7 +865,7 @@ static int tty_release_checks(struct tty_struct *tty, int idx)
 
 /* tty_kclose removed - no callers */
 
-void tty_release_struct(struct tty_struct *tty, int idx)
+static void tty_release_struct(struct tty_struct *tty, int idx)
 {
 	
 	tty_ldisc_release(tty);

@@ -276,9 +276,7 @@ void tty_wakeup(struct tty_struct *tty);
 int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
 int tty_perform_flush(struct tty_struct *tty, unsigned long arg);
 struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx);
-void tty_release_struct(struct tty_struct *tty, int idx);
 void tty_init_termios(struct tty_struct *tty);
-void tty_save_termios(struct tty_struct *tty);
 int tty_standard_install(struct tty_driver *driver,
 		struct tty_struct *tty);
 

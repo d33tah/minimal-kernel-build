@@ -113,7 +113,7 @@ struct blk_plug;
 /* bpf_local_storage, bpf_run_ctx, capture_control removed - unused */
 struct cfs_rq;
 struct fs_struct;
-struct futex_pi_state;
+/* futex_pi_state removed - unused */
 struct io_context;
 /* io_uring_task removed - unused */
 struct mempolicy;

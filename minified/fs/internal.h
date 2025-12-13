@@ -138,13 +138,8 @@ int getname_statx_lookup_flags(int flags);
 int do_statx(int dfd, struct filename *filename, unsigned int flags,
 	     unsigned int mask, struct statx __user *buffer);
 
- 
-long splice_file_to_pipe(struct file *in,
-			 struct pipe_inode_info *opipe,
-			 loff_t *offset,
-			 size_t len, unsigned int flags);
+/* splice_file_to_pipe removed - unused */
 
- 
 struct xattr_name {
 	char name[XATTR_NAME_MAX + 1];
 };

@@ -3,28 +3,16 @@
 #include <linux/splice.h>
 #include <linux/pipe_fs_i.h>
 
-ssize_t splice_to_pipe(struct pipe_inode_info *pipe, struct splice_pipe_desc *spd) { return 0; }
-
-ssize_t add_to_pipe(struct pipe_inode_info *pipe, struct pipe_buffer *buf) { return 0; }
+/* splice_to_pipe, add_to_pipe, __splice_from_pipe removed - unused */
 
 ssize_t generic_file_splice_read(struct file *in, loff_t *ppos,
 				 struct pipe_inode_info *pipe, size_t len,
 				 unsigned int flags) { return 0; }
 
-ssize_t __splice_from_pipe(struct pipe_inode_info *pipe, struct splice_desc *sd,
-			   splice_actor *actor) { return 0; }
-
 ssize_t iter_file_splice_write(struct pipe_inode_info *pipe, struct file *out,
 			       loff_t *ppos, size_t len, unsigned int flags) { return 0; }
 
-ssize_t generic_splice_sendpage(struct pipe_inode_info *pipe, struct file *out,
-				loff_t *ppos, size_t len, unsigned int flags) { return 0; }
-
-ssize_t splice_direct_to_actor(struct file *in, struct splice_desc *sd,
-			       splice_direct_actor *actor) { return 0; }
-
-long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
-		      loff_t *opos, size_t len, unsigned int flags) { return 0; }
+/* generic_splice_sendpage, splice_direct_to_actor, do_splice_direct removed - unused */
 
 static void page_cache_pipe_buf_release(struct pipe_inode_info *pipe, struct pipe_buffer *buf) { }
 static bool page_cache_pipe_buf_get(struct pipe_inode_info *pipe, struct pipe_buffer *buf) { return false; }
@@ -46,8 +34,7 @@ ssize_t splice_from_pipe(struct pipe_inode_info *pipe, struct file *out,
 			 loff_t *ppos, size_t len, unsigned int flags,
 			 splice_actor *actor) { return 0; }
 
-long splice_file_to_pipe(struct file *in, struct pipe_inode_info *opipe,
-			 loff_t *offset, size_t len, unsigned int flags) { return 0; }
+/* splice_file_to_pipe removed - unused */
 
 SYSCALL_DEFINE6(splice, int, fd_in, loff_t __user *, off_in,
 		int, fd_out, loff_t __user *, off_out,

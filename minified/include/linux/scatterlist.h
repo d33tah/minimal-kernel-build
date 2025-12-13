@@ -139,118 +139,14 @@ static inline void sg_init_marker(struct scatterlist *sgl,
 	sg_mark_end(&sgl[nents - 1]);
 }
 
+/* Basic functions - only sg_nents, sg_next, sg_init_table, sg_init_one used */
 int sg_nents(struct scatterlist *sg);
-int sg_nents_for_len(struct scatterlist *sg, u64 len);
 struct scatterlist *sg_next(struct scatterlist *);
-struct scatterlist *sg_last(struct scatterlist *s, unsigned int);
 void sg_init_table(struct scatterlist *, unsigned int);
 void sg_init_one(struct scatterlist *, const void *, unsigned int);
-int sg_split(struct scatterlist *in, const int in_mapped_nents,
-	     const off_t skip, const int nb_splits,
-	     const size_t *split_sizes,
-	     struct scatterlist **out, int *out_mapped_nents,
-	     gfp_t gfp_mask);
-
-typedef struct scatterlist *(sg_alloc_fn)(unsigned int, gfp_t);
-typedef void (sg_free_fn)(struct scatterlist *, unsigned int);
-
-void __sg_free_table(struct sg_table *, unsigned int, unsigned int,
-		     sg_free_fn *, unsigned int);
 void sg_free_table(struct sg_table *);
-int __sg_alloc_table(struct sg_table *, unsigned int, unsigned int,
-		     struct scatterlist *, unsigned int, gfp_t, sg_alloc_fn *);
 int sg_alloc_table(struct sg_table *, unsigned int, gfp_t);
-int sg_alloc_table_from_pages_segment(struct sg_table *sgt, struct page **pages,
-				      unsigned int n_pages, unsigned int offset,
-				      unsigned long size,
-				      unsigned int max_segment, gfp_t gfp_mask);
-
-static inline int sg_alloc_table_from_pages(struct sg_table *sgt,
-					    struct page **pages,
-					    unsigned int n_pages,
-					    unsigned int offset,
-					    unsigned long size, gfp_t gfp_mask)
-{
-	return sg_alloc_table_from_pages_segment(sgt, pages, n_pages, offset,
-						 size, UINT_MAX, gfp_mask);
-}
 
 #define SG_MAX_SINGLE_ALLOC		(PAGE_SIZE / sizeof(struct scatterlist))
-
-#define SG_CHUNK_SIZE	128
-
-#define SG_MAX_SEGMENTS	2048
-
-
-struct sg_page_iter {
-	struct scatterlist	*sg;		 
-	unsigned int		sg_pgoffset;	 
-
-	 
-	unsigned int		__nents;	 
-	int			__pg_advance;	 
-};
-
-struct sg_dma_page_iter {
-	struct sg_page_iter base;
-};
-
-bool __sg_page_iter_next(struct sg_page_iter *piter);
-bool __sg_page_iter_dma_next(struct sg_dma_page_iter *dma_iter);
-void __sg_page_iter_start(struct sg_page_iter *piter,
-			  struct scatterlist *sglist, unsigned int nents,
-			  unsigned long pgoffset);
-static inline struct page *sg_page_iter_page(struct sg_page_iter *piter)
-{
-	return nth_page(sg_page(piter->sg), piter->sg_pgoffset);
-}
-
-static inline dma_addr_t
-sg_page_iter_dma_address(struct sg_dma_page_iter *dma_iter)
-{
-	return sg_dma_address(dma_iter->base.sg) +
-	       (dma_iter->base.sg_pgoffset << PAGE_SHIFT);
-}
-
-#define for_each_sg_page(sglist, piter, nents, pgoffset)		   \
-	for (__sg_page_iter_start((piter), (sglist), (nents), (pgoffset)); \
-	     __sg_page_iter_next(piter);)
-
-#define for_each_sg_dma_page(sglist, dma_iter, dma_nents, pgoffset)            \
-	for (__sg_page_iter_start(&(dma_iter)->base, sglist, dma_nents,        \
-				  pgoffset);                                   \
-	     __sg_page_iter_dma_next(dma_iter);)
-
-#define for_each_sgtable_page(sgt, piter, pgoffset)	\
-	for_each_sg_page((sgt)->sgl, piter, (sgt)->orig_nents, pgoffset)
-
-#define for_each_sgtable_dma_page(sgt, dma_iter, pgoffset)	\
-	for_each_sg_dma_page((sgt)->sgl, dma_iter, (sgt)->nents, pgoffset)
-
-
-
-#define SG_MITER_ATOMIC		(1 << 0)	  
-#define SG_MITER_TO_SG		(1 << 1)	 
-#define SG_MITER_FROM_SG	(1 << 2)	 
-
-struct sg_mapping_iter {
-	 
-	struct page		*page;		 
-	void			*addr;		 
-	size_t			length;		 
-	size_t			consumed;	 
-	struct sg_page_iter	piter;		 
-
-	 
-	unsigned int		__offset;	 
-	unsigned int		__remaining;	 
-	unsigned int		__flags;
-};
-
-void sg_miter_start(struct sg_mapping_iter *miter, struct scatterlist *sgl,
-		    unsigned int nents, unsigned int flags);
-bool sg_miter_skip(struct sg_mapping_iter *miter, off_t offset);
-bool sg_miter_next(struct sg_mapping_iter *miter);
-void sg_miter_stop(struct sg_mapping_iter *miter);
 
 #endif  

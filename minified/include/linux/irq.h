@@ -272,7 +272,7 @@ extern int irq_chip_pm_put(struct irq_data *data);
 
 extern void note_interrupt(struct irq_desc *desc, irqreturn_t action_ret);
 
-extern int noirqdebug_setup(char *str);
+/* noirqdebug_setup declaration removed - only used via __setup macro */
 /* can_request_irq removed - unused */
 
 extern struct irq_chip no_irq_chip;

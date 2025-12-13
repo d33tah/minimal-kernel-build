@@ -31,30 +31,9 @@ struct dax_operations {
 			void *addr, size_t bytes, struct iov_iter *iter);
 };
 
-#if IS_ENABLED(CONFIG_DAX)
-struct dax_device *alloc_dax(void *private, const struct dax_operations *ops);
-void put_dax(struct dax_device *dax_dev);
-void kill_dax(struct dax_device *dax_dev);
-void dax_write_cache(struct dax_device *dax_dev, bool wc);
-bool dax_write_cache_enabled(struct dax_device *dax_dev);
-bool dax_synchronous(struct dax_device *dax_dev);
-void set_dax_synchronous(struct dax_device *dax_dev);
-size_t dax_recovery_write(struct dax_device *dax_dev, pgoff_t pgoff,
-		void *addr, size_t bytes, struct iov_iter *i);
-static inline bool daxdev_mapping_supported(struct vm_area_struct *vma,
-					     struct dax_device *dax_dev)
-{
-	if (!(vma->vm_flags & VM_SYNC))
-		return true;
-	if (!IS_DAX(file_inode(vma->vm_file)))
-		return false;
-	return dax_synchronous(dax_dev);
-}
-#else
 static inline struct dax_device *alloc_dax(void *private,
 		const struct dax_operations *ops)
 {
-	 
 	return NULL;
 }
 static inline bool dax_write_cache_enabled(struct dax_device *dax_dev)
@@ -70,7 +49,6 @@ static inline bool daxdev_mapping_supported(struct vm_area_struct *vma,
 {
 	return !(vma->vm_flags & VM_SYNC);
 }
-#endif
 
 struct writeback_control;
 static inline int dax_add_host(struct dax_device *dax_dev, struct gendisk *disk)
@@ -89,15 +67,6 @@ static inline void fs_put_dax(struct dax_device *dax_dev)
 {
 }
 
-#if IS_ENABLED(CONFIG_FS_DAX)
-int dax_writeback_mapping_range(struct address_space *mapping,
-		struct dax_device *dax_dev, struct writeback_control *wbc);
-
-struct page *dax_layout_busy_page(struct address_space *mapping);
-struct page *dax_layout_busy_page_range(struct address_space *mapping, loff_t start, loff_t end);
-dax_entry_t dax_lock_page(struct page *page);
-void dax_unlock_page(struct page *page, dax_entry_t cookie);
-#else
 static inline struct page *dax_layout_busy_page(struct address_space *mapping)
 {
 	return NULL;
@@ -124,13 +93,7 @@ static inline dax_entry_t dax_lock_page(struct page *page)
 static inline void dax_unlock_page(struct page *page, dax_entry_t cookie)
 {
 }
-#endif
 
-
-#if IS_ENABLED(CONFIG_DAX)
-int dax_read_lock(void);
-void dax_read_unlock(int id);
-#else
 static inline int dax_read_lock(void)
 {
 	return 0;
@@ -138,8 +101,7 @@ static inline int dax_read_lock(void)
 
 static inline void dax_read_unlock(int id)
 {
-}
-#endif  
+}  
 int dax_delete_mapping_entry(struct address_space *mapping, pgoff_t index);
 int dax_invalidate_mapping_entry_sync(struct address_space *mapping,
 				      pgoff_t index);

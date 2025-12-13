@@ -160,9 +160,6 @@ enum
 	NR_SOFTIRQS
 };
 
-extern const char * const softirq_to_name[NR_SOFTIRQS];
-
-
 struct softirq_action
 {
 	void	(*action)(struct softirq_action *);

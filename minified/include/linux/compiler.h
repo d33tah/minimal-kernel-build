@@ -38,27 +38,6 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 #  define unlikely(x)	(__branch_check__(x, 0, __builtin_constant_p(x)))
 # endif
 
-#ifdef CONFIG_PROFILE_ALL_BRANCHES
-#define if(cond, ...) if ( __trace_if_var( !!(cond , ## __VA_ARGS__) ) )
-
-#define __trace_if_var(cond) (__builtin_constant_p(cond) ? (cond) : __trace_if_value(cond))
-
-#define __trace_if_value(cond) ({			\
-	static struct ftrace_branch_data		\
-		__aligned(4)				\
-		__section("_ftrace_branch")		\
-		__if_trace = {				\
-			.func = __func__,		\
-			.file = __FILE__,		\
-			.line = __LINE__,		\
-		};					\
-	(cond) ?					\
-		(__if_trace.miss_hit[1]++,1) :		\
-		(__if_trace.miss_hit[0]++,0);		\
-})
-
-#endif  
-
 #else
 # define likely(x)	__builtin_expect(!!(x), 1)
 # define unlikely(x)	__builtin_expect(!!(x), 0)
@@ -78,23 +57,8 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 # define barrier_before_unreachable() do { } while (0)
 #endif
 
-#ifdef CONFIG_OBJTOOL
-#define __stringify_label(n) #n
-
-#define __annotate_unreachable(c) ({					\
-	asm volatile(__stringify_label(c) ":\n\t"			\
-		     ".pushsection .discard.unreachable\n\t"		\
-		     ".long " __stringify_label(c) "b - .\n\t"		\
-		     ".popsection\n\t" : : "i" (c));			\
-})
-#define annotate_unreachable() __annotate_unreachable(__COUNTER__)
-
-#define __annotate_jump_table __section(".rodata..c_jump_table")
-
-#else  
 #define annotate_unreachable()
-#define __annotate_jump_table
-#endif  
+#define __annotate_jump_table  
 
 #ifndef unreachable
 # define unreachable() do {		\

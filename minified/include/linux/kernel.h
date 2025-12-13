@@ -156,17 +156,7 @@ extern enum system_states {
 	SYSTEM_SUSPEND,
 } system_state;
 
-extern const char hex_asc[];
-#define hex_asc_lo(x)	hex_asc[((x) & 0x0f)]
-#define hex_asc_hi(x)	hex_asc[((x) & 0xf0) >> 4]
-
-static inline char *hex_byte_pack(char *buf, u8 byte)
-{
-	*buf++ = hex_asc_hi(byte);
-	*buf++ = hex_asc_lo(byte);
-	return buf;
-}
-
+/* hex_asc, hex_asc_lo, hex_asc_hi, hex_byte_pack removed - never used */
 extern const char hex_asc_upper[];
 /* Removed: hex_to_bin, hex2bin, bin2hex - never called */
 

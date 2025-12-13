@@ -108,16 +108,7 @@ static void free_user(struct user_struct *up, unsigned long flags)
 	kmem_cache_free(uid_cachep, up);
 }
 
-struct user_struct *find_user(kuid_t uid)
-{
-	struct user_struct *ret;
-	unsigned long flags;
-
-	spin_lock_irqsave(&uidhash_lock, flags);
-	ret = uid_hash_find(uid, uidhashentry(uid));
-	spin_unlock_irqrestore(&uidhash_lock, flags);
-	return ret;
-}
+/* find_user removed - unused */
 
 void free_uid(struct user_struct *up)
 {

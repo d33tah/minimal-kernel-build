@@ -35,8 +35,7 @@ static inline bool tsk_is_pi_blocked(struct task_struct *tsk)
 	return false;
 }
 
-extern void normalize_rt_tasks(void);
-
+/* normalize_rt_tasks removed - unused */
 
 #define RR_TIMESLICE		(100 * HZ / 1000)
 

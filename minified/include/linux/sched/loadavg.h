@@ -1,7 +1,6 @@
 #ifndef _LINUX_SCHED_LOADAVG_H
 #define _LINUX_SCHED_LOADAVG_H
 
-extern unsigned long avenrun[];		 
 extern void get_avenrun(unsigned long *loads, unsigned long offset, int shift);
 
 #define FSHIFT		11		 

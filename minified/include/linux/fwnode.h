@@ -25,23 +25,9 @@ struct fwnode_handle {
 };
 
 struct fwnode_link;
+/* fwnode_endpoint, fwnode_reference_args structs removed - never instantiated */
 
-struct fwnode_endpoint {
-	unsigned int port;
-	unsigned int id;
-	const struct fwnode_handle *local_fwnode;
-};
-
-#define SWNODE_GRAPH_PORT_NAME_FMT		"port@%u"
-#define SWNODE_GRAPH_ENDPOINT_NAME_FMT		"endpoint@%u"
-
-#define NR_FWNODE_REFERENCE_ARGS	8
-
-struct fwnode_reference_args {
-	struct fwnode_handle *fwnode;
-	unsigned int nargs;
-	u64 args[NR_FWNODE_REFERENCE_ARGS];
-};
+#define NR_FWNODE_REFERENCE_ARGS	8  /* Kept for property.h (if ever needed) */
 
 struct fwnode_operations {
 	struct fwnode_handle *(*get)(struct fwnode_handle *fwnode);
@@ -131,6 +117,6 @@ static inline void fwnode_dev_initialized(struct fwnode_handle *fwnode,
 }
 
 extern u32 fw_devlink_get_flags(void);
-extern bool fw_devlink_is_strict(void);
+/* fw_devlink_is_strict removed - unused */
 
 #endif

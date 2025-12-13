@@ -1173,7 +1173,7 @@ static int tiocgwinsz(struct tty_struct *tty, struct winsize __user *arg)
 	return err ? -EFAULT : 0;
 }
 
-int tty_do_resize(struct tty_struct *tty, struct winsize *ws)
+static int tty_do_resize(struct tty_struct *tty, struct winsize *ws)
 {
 	struct pid *pgrp;
 

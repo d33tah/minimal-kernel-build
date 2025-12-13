@@ -187,8 +187,7 @@ struct dev_pm_info {
 	struct dev_pm_qos	*qos;
 };
 
-extern int dev_pm_get_subsys_data(struct device *dev);
-extern void dev_pm_put_subsys_data(struct device *dev);
+/* dev_pm_get_subsys_data, dev_pm_put_subsys_data removed - unused */
 
 struct dev_pm_domain {
 	struct dev_pm_ops	ops;
@@ -200,7 +199,7 @@ struct dev_pm_domain {
 };
 
 
-#define PM_EVENT_PRETHAW PM_EVENT_QUIESCE
+/* PM_EVENT_PRETHAW removed - unused */
 
 
 

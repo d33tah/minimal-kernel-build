@@ -163,10 +163,6 @@ extern void trap_init(void);
 #define cpuhp_tasks_frozen	0
 
 
-
-extern struct bus_type cpu_subsys;
-
-
 static inline void cpus_read_lock(void) { }
 static inline void cpus_read_unlock(void) { }
 static inline void lockdep_assert_cpus_held(void) { }

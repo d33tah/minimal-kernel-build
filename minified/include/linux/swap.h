@@ -67,7 +67,6 @@ extern struct list_lru shadow_nodes;
 	}								\
 } while (0)
 
-extern unsigned long totalreserve_pages;
 #define nr_free_pages() global_zone_page_state(NR_FREE_PAGES)
 
 extern void folio_add_lru(struct folio *);

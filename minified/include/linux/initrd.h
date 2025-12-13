@@ -6,7 +6,7 @@
 
 extern int rd_image_start;
 
-extern unsigned long rd_size;
+/* rd_size removed - never defined or used */
 
 extern int initrd_below_start_ok;
 

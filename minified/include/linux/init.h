@@ -80,7 +80,7 @@ void prepare_namespace(void);
 void __init init_rootfs(void);
 extern struct file_system_type rootfs_fs_type;
 
-extern bool rodata_enabled;
+/* rodata_enabled extern removed - only used in init/main.c */
 void mark_rodata_ro(void);
 
 extern void (*late_time_init)(void);

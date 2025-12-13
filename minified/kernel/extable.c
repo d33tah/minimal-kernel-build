@@ -4,9 +4,12 @@
 #include <linux/module.h>
 #include <linux/mutex.h>
 #include <linux/init.h>
-#include <linux/kprobes.h>
 #include <linux/hardirq.h>
 #include <linux/kallsyms.h>
+
+/* kprobes stub - kprobes disabled */
+static inline bool is_kprobe_insn_slot(unsigned long addr) { return false; }
+static inline bool is_kprobe_optinsn_slot(unsigned long addr) { return false; }
 
 #include <asm/sections.h>
 #include <linux/uaccess.h>

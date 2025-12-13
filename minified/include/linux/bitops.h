@@ -16,11 +16,7 @@
 #define BITS_PER_TYPE(type)	(sizeof(type) * BITS_PER_BYTE)
 #define BITS_TO_LONGS(nr)	__KERNEL_DIV_ROUND_UP(nr, BITS_PER_TYPE(long))
 /* BITS_TO_U64, BITS_TO_U32, BITS_TO_BYTES removed - unused */
-
-extern unsigned int __sw_hweight8(unsigned int w);
-extern unsigned int __sw_hweight16(unsigned int w);
-extern unsigned int __sw_hweight32(unsigned int w);
-extern unsigned long __sw_hweight64(__u64 w);
+/* __sw_hweight8/16/32/64 removed - unused software fallback declarations */
 
 #include <asm/bitops.h>
 

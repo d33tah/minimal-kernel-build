@@ -25,7 +25,9 @@ struct fwnode_handle {
 };
 
 struct fwnode_link;
-/* fwnode_endpoint, fwnode_reference_args structs removed - never instantiated */
+/* Forward declarations - structs removed, but function pointer types need the names */
+struct fwnode_endpoint;
+struct fwnode_reference_args;
 
 #define NR_FWNODE_REFERENCE_ARGS	8  /* Kept for property.h (if ever needed) */
 

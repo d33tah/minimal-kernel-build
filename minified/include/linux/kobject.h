@@ -19,7 +19,7 @@
 #define UEVENT_NUM_ENVP			64
 #define UEVENT_BUFFER_SIZE		2048
 
-extern u64 uevent_seqnum;
+/* uevent_seqnum removed - never used */
 
 enum kobject_action {
 	KOBJ_ADD,

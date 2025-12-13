@@ -1,7 +1,7 @@
 /* Stubs for kobject uevent */
 #include <linux/kobject.h>
 
-u64 uevent_seqnum;
+/* uevent_seqnum removed - never used */
 
 int kobject_synth_uevent(struct kobject *kobj, const char *buf, size_t count)
 {

@@ -2,31 +2,20 @@
 #ifndef _LINUX_SYSCALLS_H
 #define _LINUX_SYSCALLS_H
 
-struct __aio_sigset;
-struct epoll_event;
+/* Removed many unused forward declarations:
+   __aio_sigset, epoll_event, iocb, io_event, __kernel_old_itimerval,
+   kexec_segment, mmap_arg_struct, msgbuf, user_msghdr, mmsghdr, msqid_ds,
+   nfsctl_arg, __old_kernel_stat, oldold_utsname, old_utsname,
+   rlimit64, old_timeval32, getcpu_cache, bpf_attr, open_how */
 struct iattr;
 struct inode;
-struct iocb;
-struct io_event;
 struct iovec;
-struct __kernel_old_itimerval;
-struct kexec_segment;
 struct linux_dirent;
 struct linux_dirent64;
 struct list_head;
-struct mmap_arg_struct;
-struct msgbuf;
-struct user_msghdr;
-struct mmsghdr;
-struct msqid_ds;
 struct new_utsname;
-struct nfsctl_arg;
-struct __old_kernel_stat;
-struct oldold_utsname;
-struct old_utsname;
 struct pollfd;
 struct rlimit;
-struct rlimit64;
 struct rusage;
 struct sched_param;
 struct sched_attr;
@@ -54,17 +43,13 @@ struct robust_list_head;
 struct futex_waitv;
 struct getcpu_cache;
 struct old_linux_dirent;
-struct perf_event_attr;
-struct file_handle;
+/* perf_event_attr, file_handle removed - unused */
 struct sigaltstack;
 struct rseq;
-union bpf_attr;
-struct io_uring_params;
+/* bpf_attr, io_uring_params, landlock_ruleset_attr, landlock_rule_type removed - unused */
 struct clone_args;
 struct open_how;
 struct mount_attr;
-struct landlock_ruleset_attr;
-enum landlock_rule_type;
 
 #include <linux/types.h>
 #include <linux/capability.h>
@@ -229,9 +214,5 @@ static inline long ksys_ftruncate(unsigned int fd, loff_t length)
 /* ksys_truncate, ksys_personality removed - unused */
 
 /* IPC ksys_* declarations removed - unused */
-
-int __sys_getsockopt(int fd, int level, int optname, char __user *optval,
-		int __user *optlen);
-int __sys_setsockopt(int fd, int level, int optname, char __user *optval,
-		int optlen);
+/* __sys_getsockopt, __sys_setsockopt removed - unused */
 #endif

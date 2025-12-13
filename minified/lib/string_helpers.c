@@ -22,26 +22,7 @@ ssize_t strscpy_pad(char *dest, const char *src, size_t count)
 	return len;
 }
 
-int match_string(const char * const *array, size_t n, const char *string)
-{
-	int index;
-	if (!array || !string)
-		return -EINVAL;
-	for (index = 0; index < n; index++) {
-		if (!array[index])
-			break;
-		if (!strcmp(array[index], string))
-			return index;
-	}
-	return -EINVAL;
-}
-
-int __sysfs_match_string(const char * const *array, size_t n, const char *str)
-{
-	return match_string(array, n, str);
-}
-
-/* memcpy_and_pad removed - unused */
+/* match_string, __sysfs_match_string, memcpy_and_pad, sysfs_streq removed - unused */
 
 char *skip_spaces(const char *str)
 {
@@ -57,19 +38,3 @@ char *strreplace(char *s, char old, char new)
 			*s = new;
 	return s;
 }
-
-bool sysfs_streq(const char *s1, const char *s2)
-{
-	while (*s1 && *s1 == *s2) {
-		s1++;
-		s2++;
-	}
-	if (*s1 == *s2)
-		return true;
-	if (!*s1 && *s2 == '\n' && !s2[1])
-		return true;
-	if (*s1 == '\n' && !s1[1] && !*s2)
-		return true;
-	return false;
-}
-/* EXPORT_SYMBOL removed - monolithic kernel without modules */

@@ -268,12 +268,7 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 /* pgtable_trans_huge_deposit, pgtable_trans_huge_withdraw removed - unused */
 
 
-#ifndef __HAVE_ARCH_PMDP_INVALIDATE
-extern pmd_t pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
-			    pmd_t *pmdp);
-#endif
-
-/* pmdp_invalidate_ad removed - unused */
+/* pmdp_invalidate and pmdp_invalidate_ad removed - unused */
 
 #ifndef __HAVE_ARCH_PTE_SAME
 static inline int pte_same(pte_t pte_a, pte_t pte_b)

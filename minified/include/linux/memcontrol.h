@@ -171,23 +171,7 @@ static inline void split_page_memcg(struct page *head, unsigned int nr)
 {
 }
 
-/* mem_cgroup_soft_limit_reclaim removed - unused */
-
-static inline void __inc_lruvec_kmem_state(void *p, enum node_stat_item idx)
-{
-	__mod_lruvec_kmem_state(p, idx, 1);
-}
-
-static inline void __dec_lruvec_kmem_state(void *p, enum node_stat_item idx)
-{
-	__mod_lruvec_kmem_state(p, idx, -1);
-}
-
-
-static inline void unlock_page_lruvec(struct lruvec *lruvec)
-{
-	spin_unlock(&lruvec->lru_lock);
-}
+/* mem_cgroup_soft_limit_reclaim, __inc_lruvec_kmem_state, __dec_lruvec_kmem_state, unlock_page_lruvec removed - unused */
 
 static inline void unlock_page_lruvec_irq(struct lruvec *lruvec)
 {

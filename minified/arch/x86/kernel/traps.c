@@ -46,11 +46,8 @@
 #include <asm/alternative.h>
 #include <asm/fpu/xstate.h>
 #include <asm/vm86.h>
-#include <asm/insn.h>
-
 /* Inlined from asm/umip.h */
 static inline bool fixup_umip_exception(struct pt_regs *regs) { return false; }
-#include <asm/insn-eval.h>
 #include <asm/vdso.h>
 #include <asm/tdx.h>
 

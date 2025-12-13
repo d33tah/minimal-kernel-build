@@ -56,7 +56,7 @@ static inline void vm_events_fold_cpu(int cpu)
 
 extern atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS];
 extern atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS];
-extern atomic_long_t vm_numa_event[NR_VM_NUMA_EVENT_ITEMS];
+/* vm_numa_event removed - never accessed */
 
 
 static inline void zone_page_state_add(long x, struct zone *zone,

@@ -27,28 +27,10 @@ enum dev_dma_attr {
 
 struct software_node;
 
-struct software_node_ref_args {
-	const struct software_node *node;
-	unsigned int nargs;
-	u64 args[NR_FWNODE_REFERENCE_ARGS];
-};
+/* software_node_ref_args struct removed - never instantiated */
 
-struct property_entry {
-	const char *name;
-	size_t length;
-	bool is_inline;
-	enum dev_prop_type type;
-	union {
-		const void *pointer;
-		union {
-			u8 u8_data[sizeof(u64) / sizeof(u8)];
-			u16 u16_data[sizeof(u64) / sizeof(u16)];
-			u32 u32_data[sizeof(u64) / sizeof(u32)];
-			u64 u64_data[sizeof(u64) / sizeof(u64)];
-			const char *str[sizeof(u64) / sizeof(char *)];
-		} value;
-	};
-};
+/* Minimal property_entry - only needs to exist as a type, never instantiated */
+struct property_entry;
 
 void property_entries_free(const struct property_entry *properties);
 

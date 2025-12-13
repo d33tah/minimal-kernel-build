@@ -2,11 +2,9 @@
 #ifndef __LINUX_INITRD_H
 #define __LINUX_INITRD_H
 
-#define INITRD_MINOR 250  
+#define INITRD_MINOR 250
 
-extern int rd_image_start;
-
-/* rd_size removed - never defined or used */
+/* rd_image_start, rd_size removed - never defined or used */
 
 extern int initrd_below_start_ok;
 

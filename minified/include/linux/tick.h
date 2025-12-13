@@ -10,11 +10,7 @@
 #include <linux/rcupdate.h>
 
 extern void __init tick_init(void);
-/* tick_suspend_local, tick_resume_local removed - unused */
 extern void tick_handover_do_timer(void);
-extern void tick_cleanup_dead_cpu(int cpu);
-
-/* tick_freeze/unfreeze removed - unused */
 
 static inline void tick_irq_enter(void) { }
 

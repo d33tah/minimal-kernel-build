@@ -141,7 +141,7 @@ static inline void dump_stack(void)
 		local_irq_restore(flags);	\
 	} while (0)
 
-extern int kptr_restrict;
+/* kptr_restrict removed - never used */
 
 #ifndef pr_fmt
 #define pr_fmt(fmt) fmt

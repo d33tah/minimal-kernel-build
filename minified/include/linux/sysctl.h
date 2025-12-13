@@ -15,16 +15,7 @@ struct ctl_table_root;
 struct ctl_table_header;
 struct ctl_dir;
 
-#define SYSCTL_ZERO			((void *)&sysctl_vals[0])
-#define SYSCTL_ONE			((void *)&sysctl_vals[1])
-#define SYSCTL_TWO			((void *)&sysctl_vals[2])
-#define SYSCTL_THREE			((void *)&sysctl_vals[3])
-#define SYSCTL_ONE_HUNDRED		((void *)&sysctl_vals[4])
-#define SYSCTL_ONE_THOUSAND		((void *)&sysctl_vals[5])
-#define SYSCTL_INT_MAX			((void *)&sysctl_vals[6])
-
-extern const int sysctl_vals[];
-
+/* SYSCTL_ZERO/ONE/TWO/etc macros and sysctl_vals removed - never used */
 
 typedef int proc_handler(struct ctl_table *ctl, int write, void *buffer,
 		size_t *lenp, loff_t *ppos);

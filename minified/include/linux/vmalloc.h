@@ -179,10 +179,7 @@ static inline void set_vm_flush_reset_perms(void *addr)
 }
 
 
-/* vread removed - unused */
-extern struct list_head vmap_area_list;
-extern __init void vm_area_add_early(struct vm_struct *vm);
-extern __init void vm_area_register_early(struct vm_struct *vm, size_t align);
+/* vread, vmap_area_list, vm_area_add_early, vm_area_register_early removed - unused */
 
 
 #define VMALLOC_TOTAL (VMALLOC_END - VMALLOC_START)

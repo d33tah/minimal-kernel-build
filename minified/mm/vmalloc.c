@@ -1227,41 +1227,7 @@ static inline void set_vm_area_page_order(struct vm_struct *vm, unsigned int ord
 	BUG_ON(order != 0);
 }
 
-void __init vm_area_add_early(struct vm_struct *vm)
-{
-	struct vm_struct *tmp, **p;
-
-	BUG_ON(vmap_initialized);
-	for (p = &vmlist; (tmp = *p) != NULL; p = &tmp->next) {
-		if (tmp->addr >= vm->addr) {
-			BUG_ON(tmp->addr < vm->addr + vm->size);
-			break;
-		} else
-			BUG_ON(tmp->addr + tmp->size > vm->addr);
-	}
-	vm->next = *p;
-	*p = vm;
-}
-
-void __init vm_area_register_early(struct vm_struct *vm, size_t align)
-{
-	unsigned long addr = ALIGN(VMALLOC_START, align);
-	struct vm_struct *cur, **p;
-
-	BUG_ON(vmap_initialized);
-
-	for (p = &vmlist; (cur = *p) != NULL; p = &cur->next) {
-		if ((unsigned long)cur->addr - addr >= vm->size)
-			break;
-		addr = ALIGN((unsigned long)cur->addr + cur->size, align);
-	}
-
-	BUG_ON(addr > VMALLOC_END - vm->size);
-	vm->addr = (void *)addr;
-	vm->next = *p;
-	*p = vm;
-	kasan_populate_early_vm_area_shadow(vm->addr, vm->size);
-}
+/* vm_area_add_early, vm_area_register_early removed - never called */
 
 static void vmap_init_free_space(void)
 {

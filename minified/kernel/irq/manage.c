@@ -48,18 +48,7 @@ static void __synchronize_hardirq(struct irq_desc *desc, bool sync_chip)
 }
 
 /* synchronize_hardirq removed - no callers */
-
-void synchronize_irq(unsigned int irq)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-
-	if (desc) {
-		__synchronize_hardirq(desc, true);
-		
-		wait_event(desc->wait_for_threads,
-			   !atomic_read(&desc->threads_active));
-	}
-}
+/* synchronize_irq removed - no callers (~12 LOC) */
 
 void __disable_irq(struct irq_desc *desc)
 {

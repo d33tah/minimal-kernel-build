@@ -215,8 +215,7 @@ static inline void hrtimer_start_expires(struct hrtimer *timer,
 	hrtimer_start_range_ns(timer, soft, delta, mode);
 }
 
-void hrtimer_sleeper_start_expires(struct hrtimer_sleeper *sl,
-				   enum hrtimer_mode mode);
+/* hrtimer_sleeper_start_expires declaration removed - only used internally */
 
 /* hrtimer_get_next_event, hrtimer_next_event_without removed - unused */
 

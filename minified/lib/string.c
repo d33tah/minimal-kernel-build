@@ -174,14 +174,7 @@ char *strchr(const char *s, int c)
 }
 #endif
 
-#ifndef __HAVE_ARCH_STRCHRNUL
-char *strchrnul(const char *s, int c)
-{
-	while (*s && *s != (char)c)
-		s++;
-	return (char *)s;
-}
-#endif
+/* strchrnul removed - never called */
 
 #ifndef __HAVE_ARCH_STRRCHR
 char *strrchr(const char *s, int c)

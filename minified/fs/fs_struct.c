@@ -121,27 +121,7 @@ struct fs_struct *copy_fs_struct(struct fs_struct *old)
 	return fs;
 }
 
-int unshare_fs_struct(void)
-{
-	struct fs_struct *fs = current->fs;
-	struct fs_struct *new_fs = copy_fs_struct(fs);
-	int kill;
-
-	if (!new_fs)
-		return -ENOMEM;
-
-	task_lock(current);
-	spin_lock(&fs->lock);
-	kill = !--fs->users;
-	current->fs = new_fs;
-	spin_unlock(&fs->lock);
-	task_unlock(current);
-
-	if (kill)
-		free_fs_struct(fs);
-
-	return 0;
-}
+/* unshare_fs_struct removed - unused */
 
 int current_umask(void)
 {

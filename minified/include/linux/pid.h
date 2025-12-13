@@ -71,9 +71,6 @@ extern void transfer_pid(struct task_struct *old, struct task_struct *new,
 struct pid_namespace;
 extern struct pid_namespace init_pid_ns;
 
-extern int pid_max;
-/* pid_max_min, pid_max_max removed - only used internally in pid.c */
-
 extern struct pid *find_pid_ns(int nr, struct pid_namespace *ns);
 extern struct pid *find_vpid(int nr);
 

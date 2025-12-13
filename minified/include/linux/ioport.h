@@ -103,8 +103,7 @@ extern int release_resource(struct resource *new);
 /* release_child_resources, reserve_region_with_split removed - unused */
 extern struct resource *insert_resource_conflict(struct resource *parent, struct resource *new);
 extern int insert_resource(struct resource *parent, struct resource *new);
-/* insert_resource_expand_to_fit, remove_resource removed - unused */
-extern void arch_remove_reservations(struct resource *avail);
+/* insert_resource_expand_to_fit, remove_resource, arch_remove_reservations removed - unused */
 extern int allocate_resource(struct resource *root, struct resource *new,
 			     resource_size_t size, resource_size_t min,
 			     resource_size_t max, resource_size_t align,

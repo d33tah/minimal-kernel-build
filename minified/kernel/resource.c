@@ -277,9 +277,7 @@ int region_intersects(resource_size_t start, size_t size, unsigned long flags,
 	return ret;
 }
 
-void __weak arch_remove_reservations(struct resource *avail)
-{
-}
+/* arch_remove_reservations removed - never called */
 
 /* STUB: unused resource allocation/lookup functions */
 static struct resource * __insert_resource(struct resource *parent, struct resource *new)

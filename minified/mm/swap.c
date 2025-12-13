@@ -28,8 +28,7 @@ static inline void folio_clear_idle(struct folio *folio) { }
 
 #include "internal.h"
 
-
-int page_cluster;
+/* page_cluster removed - unused */
 
 struct lru_rotate {
 	local_lock_t lock;

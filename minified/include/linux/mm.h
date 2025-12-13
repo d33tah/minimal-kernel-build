@@ -217,7 +217,7 @@ static inline void totalram_pages_add(long count)
 }
 
 extern void * high_memory;
-extern int page_cluster;
+/* page_cluster removed - unused */
 
 #define sysctl_legacy_va_layout 0
 

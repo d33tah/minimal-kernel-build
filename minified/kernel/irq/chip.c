@@ -663,21 +663,7 @@ void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set)
 
 
 
-int irq_chip_compose_msi_msg(struct irq_data *data, struct msi_msg *msg)
-{
-	struct irq_data *pos;
-
-	for (pos = NULL; !pos && data; data = irqd_get_parent_data(data)) {
-		if (data->chip && data->chip->irq_compose_msi_msg)
-			pos = data;
-	}
-
-	if (!pos)
-		return -ENOSYS;
-
-	pos->chip->irq_compose_msi_msg(pos, msg);
-	return 0;
-}
+/* irq_chip_compose_msi_msg removed - unused (~15 LOC) */
 
 static struct device *irq_get_parent_device(struct irq_data *data)
 {

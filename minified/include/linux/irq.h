@@ -266,7 +266,7 @@ extern void handle_bad_irq(struct irq_desc *desc);
 /* handle_fasteoi_irq, handle_edge_irq, handle_simple_irq, handle_percpu_irq, handle_percpu_devid_irq removed - unused */
 /* handle_edge_eoi_irq, handle_untracked_irq, handle_fasteoi_nmi, handle_percpu_devid_fasteoi_nmi removed - unused */
 
-extern int irq_chip_compose_msi_msg(struct irq_data *data, struct msi_msg *msg);
+/* irq_chip_compose_msi_msg removed - unused */
 extern int irq_chip_pm_get(struct irq_data *data);
 extern int irq_chip_pm_put(struct irq_data *data);
 

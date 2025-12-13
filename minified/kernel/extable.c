@@ -6,6 +6,7 @@
 #include <linux/init.h>
 #include <linux/kprobes.h>
 #include <linux/hardirq.h>
+#include <linux/kallsyms.h>
 
 #include <asm/sections.h>
 #include <linux/uaccess.h>

@@ -1,165 +1,31 @@
+/* Minimal kprobes.h - kprobes disabled */
 #ifndef _LINUX_KPROBES_H
 #define _LINUX_KPROBES_H
+
 #include <linux/compiler.h>
-#include <linux/linkage.h>
-#include <linux/list.h>
-#include <linux/notifier.h>
-#include <linux/smp.h>
-#include <linux/bug.h>
-#include <linux/percpu.h>
-#include <linux/spinlock.h>
-#include <linux/rcupdate.h>
-#include <linux/mutex.h>
-#include <linux/refcount.h>
-#include <linux/freelist.h>
-#include <linux/rethook.h>
-/* asm/kprobes.h inlined */
-# define NOKPROBE_SYMBOL(fname)
-# define __kprobes
-# define nokprobe_inline	inline
-static inline int kprobe_debug_handler(struct pt_regs *regs) { return 0; }
-/* end asm/kprobes.h */
-typedef int kprobe_opcode_t;
-struct arch_specific_insn {
-	int dummy;
-};
+#include <linux/ptrace.h>
+
+/* Stubs for kprobes-disabled kernel */
+#define NOKPROBE_SYMBOL(fname)
+#define __kprobes
+#define nokprobe_inline	inline
 
 struct kprobe;
-struct pt_regs;
-struct kretprobe;
-struct kretprobe_instance;
-typedef int (*kprobe_pre_handler_t) (struct kprobe *, struct pt_regs *);
-typedef void (*kprobe_post_handler_t) (struct kprobe *, struct pt_regs *,
-				       unsigned long flags);
-typedef int (*kretprobe_handler_t) (struct kretprobe_instance *,
-				    struct pt_regs *);
+struct task_struct;
 
-struct kprobe {
-	struct hlist_node hlist;
+static inline int kprobe_fault_handler(struct pt_regs *regs, int trapnr) { return 0; }
+static inline struct kprobe *kprobe_running(void) { return NULL; }
 
-	 
-	struct list_head list;
+static inline void kprobe_flush_task(struct task_struct *tk) { }
+static inline void kprobe_free_init_mem(void) { }
 
-	 
-	unsigned long nmissed;
-
-	 
-	kprobe_opcode_t *addr;
-
-	 
-	const char *symbol_name;
-
-	 
-	unsigned int offset;
-
-	 
-	kprobe_pre_handler_t pre_handler;
-
-	 
-	kprobe_post_handler_t post_handler;
-
-	 
-	kprobe_opcode_t opcode;
-
-	 
-	struct arch_specific_insn ainsn;
-
-	 
-	u32 flags;
-};
-
-#define KPROBE_FLAG_GONE	1
-#define KPROBE_FLAG_DISABLED	2
-#define KPROBE_FLAG_OPTIMIZED	4
-#define KPROBE_FLAG_FTRACE	8
-
-
-struct kretprobe_holder {
-	struct kretprobe	*rp;
-	refcount_t		ref;
-};
-
-struct kretprobe {
-	struct kprobe kp;
-	kretprobe_handler_t handler;
-	kretprobe_handler_t entry_handler;
-	int maxactive;
-	int nmissed;
-	size_t data_size;
-	struct freelist_head freelist;
-	struct kretprobe_holder *rph;
-};
-
-#define KRETPROBE_MAX_DATA_SIZE	4096
-
-struct kretprobe_instance {
-	union {
-		struct freelist_node freelist;
-		struct rcu_head rcu;
-	};
-	struct llist_node llist;
-	struct kretprobe_holder *rph;
-	kprobe_opcode_t *ret_addr;
-	void *fp;
-	char data[];
-};
-
-struct kretprobe_blackpoint {
-	const char *name;
-	void *addr;
-};
-
-struct kprobe_blacklist_entry {
-	struct list_head list;
-	unsigned long start_addr;
-	unsigned long end_addr;
-};
-
-
-static inline int kprobe_fault_handler(struct pt_regs *regs, int trapnr)
-{
-	return 0;
-}
-static inline struct kprobe *kprobe_running(void)
-{
-	return NULL;
-}
-#define kprobe_busy_begin()	do {} while (0)
-#define kprobe_busy_end()	do {} while (0)
-
-
-static inline void kprobe_flush_task(struct task_struct *tk)
-{
-}
-static inline void kprobe_free_init_mem(void)
-{
-}
-
-
-static inline bool is_kprobe_insn_slot(unsigned long addr)
-{
-	return false;
-}
-
-static inline bool is_kprobe_optinsn_slot(unsigned long addr)
-{
-	return false;
-}
-
+static inline bool is_kprobe_insn_slot(unsigned long addr) { return false; }
+static inline bool is_kprobe_optinsn_slot(unsigned long addr) { return false; }
 
 static nokprobe_inline bool kprobe_page_fault(struct pt_regs *regs,
 					      unsigned int trap)
 {
-	if (!IS_ENABLED(CONFIG_KPROBES))
-		return false;
-	if (user_mode(regs))
-		return false;
-	 
-	if (preemptible())
-		return false;
-	if (!kprobe_running())
-		return false;
-	return kprobe_fault_handler(regs, trap);
+	return false;
 }
 
-#endif  
+#endif

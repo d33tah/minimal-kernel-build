@@ -160,10 +160,7 @@ int devres_destroy(struct device *dev, dr_release_t release,
 int devres_release(struct device *dev, dr_release_t release,
 		   dr_match_t match, void *match_data);
 
-void * __must_check devres_open_group(struct device *dev, void *id, gfp_t gfp);
-void devres_close_group(struct device *dev, void *id);
-void devres_remove_group(struct device *dev, void *id);
-int devres_release_group(struct device *dev, void *id);
+/* devres_open_group, devres_close_group, devres_remove_group, devres_release_group removed - unused */
 
 __printf(3, 4) char *devm_kasprintf(struct device *dev, gfp_t gfp,
 				    const char *fmt, ...) __malloc;

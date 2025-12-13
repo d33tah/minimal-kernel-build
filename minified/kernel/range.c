@@ -5,7 +5,7 @@
 #include <linux/string.h>
 #include <linux/range.h>
 
-int add_range(struct range *range, int az, int nr_range, u64 start, u64 end)
+static int add_range(struct range *range, int az, int nr_range, u64 start, u64 end)
 {
 	if (start >= end)
 		return nr_range;

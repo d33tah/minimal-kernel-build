@@ -253,9 +253,6 @@ extern int mmap_rnd_bits __read_mostly;
 
 extern int sysctl_max_map_count;
 
-extern unsigned long sysctl_user_reserve_kbytes;
-extern unsigned long sysctl_admin_reserve_kbytes;
-
 extern int sysctl_overcommit_memory;
 extern int sysctl_overcommit_ratio;
 extern unsigned long sysctl_overcommit_kbytes;

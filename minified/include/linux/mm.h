@@ -1416,8 +1416,6 @@ extern void setup_per_cpu_pageset(void);
 
 extern int min_free_kbytes;
 
-extern atomic_long_t mmap_pages_allocated;
-
 void vma_interval_tree_insert(struct vm_area_struct *node,
 			      struct rb_root_cached *root);
 void vma_interval_tree_remove(struct vm_area_struct *node,

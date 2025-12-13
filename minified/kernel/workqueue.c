@@ -76,20 +76,12 @@ void destroy_workqueue(struct workqueue_struct *wq)
 }
 
 static struct workqueue_struct system_wq_storage = { .name = "events" };
-static struct workqueue_struct system_highpri_wq_storage = { .name = "events_highpri" };
 static struct workqueue_struct system_long_wq_storage = { .name = "events_long" };
 static struct workqueue_struct system_unbound_wq_storage = { .name = "events_unbound" };
-static struct workqueue_struct system_freezable_wq_storage = { .name = "events_freezable" };
-static struct workqueue_struct system_power_efficient_wq_storage = { .name = "events_power_efficient" };
-static struct workqueue_struct system_freezable_power_efficient_wq_storage = { .name = "events_freezable_power_efficient" };
 
 struct workqueue_struct *system_wq = &system_wq_storage;
-struct workqueue_struct *system_highpri_wq = &system_highpri_wq_storage;
 struct workqueue_struct *system_long_wq = &system_long_wq_storage;
 struct workqueue_struct *system_unbound_wq = &system_unbound_wq_storage;
-struct workqueue_struct *system_freezable_wq = &system_freezable_wq_storage;
-struct workqueue_struct *system_power_efficient_wq = &system_power_efficient_wq_storage;
-struct workqueue_struct *system_freezable_power_efficient_wq = &system_freezable_power_efficient_wq_storage;
 
 void __init workqueue_init_early(void)
 {

@@ -116,27 +116,14 @@ static inline bool pipe_buf_try_steal(struct pipe_inode_info *pipe,
 
 #define PIPE_SIZE		PAGE_SIZE
 
-void pipe_lock(struct pipe_inode_info *);
-void pipe_unlock(struct pipe_inode_info *);
-void pipe_double_lock(struct pipe_inode_info *, struct pipe_inode_info *);
+/* pipe_lock, pipe_unlock, pipe_double_lock removed - unused */
+/* pipe_wait_readable, pipe_wait_writable, alloc_pipe_info removed - unused */
 
-void pipe_wait_readable(struct pipe_inode_info *);
-void pipe_wait_writable(struct pipe_inode_info *);
-
-struct pipe_inode_info *alloc_pipe_info(void);
 void free_pipe_info(struct pipe_inode_info *);
 
 bool generic_pipe_buf_get(struct pipe_inode_info *, struct pipe_buffer *);
 bool generic_pipe_buf_try_steal(struct pipe_inode_info *, struct pipe_buffer *);
-/* generic_pipe_buf_release removed - unused */
-
-extern const struct pipe_buf_operations nosteal_pipe_buf_ops;
-
-
-long pipe_fcntl(struct file *, unsigned int, unsigned long arg);
-struct pipe_inode_info *get_pipe_info(struct file *file, bool for_splice);
-
-int create_pipe_files(struct file **, int);
-unsigned int round_pipe_size(unsigned long size);
+/* generic_pipe_buf_release, nosteal_pipe_buf_ops removed - unused */
+/* pipe_fcntl, get_pipe_info, create_pipe_files, round_pipe_size removed - unused */
 
 #endif

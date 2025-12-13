@@ -26,11 +26,6 @@ void wb_workfn(struct work_struct *work);
 
 void wb_wait_for_completion(struct wb_completion *done);
 
-extern spinlock_t bdi_lock;
-extern struct list_head bdi_list;
-
-extern struct workqueue_struct *bdi_wq;
-
 static inline bool wb_has_dirty_io(struct bdi_writeback *wb)
 {
 	return test_bit(WB_has_dirty_io, &wb->state);

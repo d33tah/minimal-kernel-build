@@ -261,13 +261,9 @@ struct irqaction;
 /* no_irq_affinity, irq_set_parent removed - unused */
 
 extern void handle_level_irq(struct irq_desc *desc);
-extern void handle_fasteoi_irq(struct irq_desc *desc);
-extern void handle_edge_irq(struct irq_desc *desc);
-extern void handle_simple_irq(struct irq_desc *desc);
-extern void handle_percpu_irq(struct irq_desc *desc);
-extern void handle_percpu_devid_irq(struct irq_desc *desc);
 extern void handle_bad_irq(struct irq_desc *desc);
 
+/* handle_fasteoi_irq, handle_edge_irq, handle_simple_irq, handle_percpu_irq, handle_percpu_devid_irq removed - unused */
 /* handle_edge_eoi_irq, handle_untracked_irq, handle_fasteoi_nmi, handle_percpu_devid_fasteoi_nmi removed - unused */
 
 extern int irq_chip_compose_msi_msg(struct irq_data *data, struct msi_msg *msg);

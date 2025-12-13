@@ -438,14 +438,7 @@ void irq_disable(struct irq_desc *desc)
 	__irq_disable(desc, irq_settings_disable_unlazy(desc));
 }
 
-static void irq_percpu_disable(struct irq_desc *desc, unsigned int cpu)
-{
-	if (desc->irq_data.chip->irq_disable)
-		desc->irq_data.chip->irq_disable(&desc->irq_data);
-	else
-		desc->irq_data.chip->irq_mask(&desc->irq_data);
-	cpumask_clear_cpu(cpu, desc->percpu_enabled);
-}
+/* irq_percpu_disable removed - only used by handle_percpu_devid_irq (~8 LOC) */
 
 static inline void mask_ack_irq(struct irq_desc *desc)
 {
@@ -514,26 +507,7 @@ static bool irq_may_run(struct irq_desc *desc)
 	return irq_check_poll(desc);
 }
 
-void handle_simple_irq(struct irq_desc *desc)
-{
-	raw_spin_lock(&desc->lock);
-
-	if (!irq_may_run(desc))
-		goto out_unlock;
-
-	desc->istate &= ~(IRQS_REPLAY | IRQS_WAITING);
-
-	if (unlikely(!desc->action || irqd_irq_disabled(&desc->irq_data))) {
-		desc->istate |= IRQS_PENDING;
-		goto out_unlock;
-	}
-
-	kstat_incr_irqs_this_cpu(desc);
-	handle_irq_event(desc);
-
-out_unlock:
-	raw_spin_unlock(&desc->lock);
-}
+/* handle_simple_irq removed - unused (~20 LOC) */
 
 /* handle_untracked_irq removed - unused (~26 LOC) */
 
@@ -570,152 +544,17 @@ out_unlock:
 	raw_spin_unlock(&desc->lock);
 }
 
-static void cond_unmask_eoi_irq(struct irq_desc *desc, struct irq_chip *chip)
-{
-	if (!(desc->istate & IRQS_ONESHOT)) {
-		chip->irq_eoi(&desc->irq_data);
-		return;
-	}
-	 
-	if (!irqd_irq_disabled(&desc->irq_data) &&
-	    irqd_irq_masked(&desc->irq_data) && !desc->threads_oneshot) {
-		chip->irq_eoi(&desc->irq_data);
-		unmask_irq(desc);
-	} else if (!(chip->flags & IRQCHIP_EOI_THREADED)) {
-		chip->irq_eoi(&desc->irq_data);
-	}
-}
+/* cond_unmask_eoi_irq removed - only used by handle_fasteoi_irq (~16 LOC) */
 
-void handle_fasteoi_irq(struct irq_desc *desc)
-{
-	struct irq_chip *chip = desc->irq_data.chip;
-
-	raw_spin_lock(&desc->lock);
-
-	if (!irq_may_run(desc))
-		goto out;
-
-	desc->istate &= ~(IRQS_REPLAY | IRQS_WAITING);
-
-	 
-	if (unlikely(!desc->action || irqd_irq_disabled(&desc->irq_data))) {
-		desc->istate |= IRQS_PENDING;
-		mask_irq(desc);
-		goto out;
-	}
-
-	kstat_incr_irqs_this_cpu(desc);
-	if (desc->istate & IRQS_ONESHOT)
-		mask_irq(desc);
-
-	handle_irq_event(desc);
-
-	cond_unmask_eoi_irq(desc, chip);
-
-	raw_spin_unlock(&desc->lock);
-	return;
-out:
-	if (!(chip->flags & IRQCHIP_EOI_IF_HANDLED))
-		chip->irq_eoi(&desc->irq_data);
-	raw_spin_unlock(&desc->lock);
-}
+/* handle_fasteoi_irq removed - unused (~33 LOC) */
 
 /* handle_fasteoi_nmi removed - unused */
 
-void handle_edge_irq(struct irq_desc *desc)
-{
-	raw_spin_lock(&desc->lock);
+/* handle_edge_irq removed - unused (~45 LOC) */
 
-	desc->istate &= ~(IRQS_REPLAY | IRQS_WAITING);
+/* handle_percpu_irq removed - unused (~15 LOC) */
 
-	if (!irq_may_run(desc)) {
-		desc->istate |= IRQS_PENDING;
-		mask_ack_irq(desc);
-		goto out_unlock;
-	}
-
-	 
-	if (irqd_irq_disabled(&desc->irq_data) || !desc->action) {
-		desc->istate |= IRQS_PENDING;
-		mask_ack_irq(desc);
-		goto out_unlock;
-	}
-
-	kstat_incr_irqs_this_cpu(desc);
-
-	 
-	desc->irq_data.chip->irq_ack(&desc->irq_data);
-
-	do {
-		if (unlikely(!desc->action)) {
-			mask_irq(desc);
-			goto out_unlock;
-		}
-
-		 
-		if (unlikely(desc->istate & IRQS_PENDING)) {
-			if (!irqd_irq_disabled(&desc->irq_data) &&
-			    irqd_irq_masked(&desc->irq_data))
-				unmask_irq(desc);
-		}
-
-		handle_irq_event(desc);
-
-	} while ((desc->istate & IRQS_PENDING) &&
-		 !irqd_irq_disabled(&desc->irq_data));
-
-out_unlock:
-	raw_spin_unlock(&desc->lock);
-}
-
-
-void handle_percpu_irq(struct irq_desc *desc)
-{
-	struct irq_chip *chip = irq_desc_get_chip(desc);
-
-	 
-	__kstat_incr_irqs_this_cpu(desc);
-
-	if (chip->irq_ack)
-		chip->irq_ack(&desc->irq_data);
-
-	handle_irq_event_percpu(desc);
-
-	if (chip->irq_eoi)
-		chip->irq_eoi(&desc->irq_data);
-}
-
-void handle_percpu_devid_irq(struct irq_desc *desc)
-{
-	struct irq_chip *chip = irq_desc_get_chip(desc);
-	struct irqaction *action = desc->action;
-	unsigned int irq = irq_desc_get_irq(desc);
-	irqreturn_t res;
-
-	 
-	__kstat_incr_irqs_this_cpu(desc);
-
-	if (chip->irq_ack)
-		chip->irq_ack(&desc->irq_data);
-
-	if (likely(action)) {
-		 
-		res = action->handler(irq, raw_cpu_ptr(action->percpu_dev_id));
-		 
-	} else {
-		unsigned int cpu = smp_processor_id();
-		bool enabled = cpumask_test_cpu(cpu, desc->percpu_enabled);
-
-		if (enabled)
-			irq_percpu_disable(desc, cpu);
-
-		pr_err_once("Spurious%s percpu IRQ%u on CPU%u\n",
-			    enabled ? " and unmasked" : "", irq, cpu);
-	}
-
-	if (chip->irq_eoi)
-		chip->irq_eoi(&desc->irq_data);
-}
+/* handle_percpu_devid_irq removed - unused (~31 LOC) */
 
 /* handle_percpu_devid_fasteoi_nmi removed - unused */
 

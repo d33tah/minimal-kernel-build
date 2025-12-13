@@ -319,8 +319,8 @@ int simple_rmdir(struct inode *dir, struct dentry *dentry)
 	return 0;
 }
 
-/* Stub: simple_rename_exchange not used in minimal kernel */
-int simple_rename_exchange(struct inode *old_dir, struct dentry *old_dentry,
+/* Stub: simple_rename_exchange only used internally */
+static int simple_rename_exchange(struct inode *old_dir, struct dentry *old_dentry,
 			   struct inode *new_dir, struct dentry *new_dentry) { return -EINVAL; }
 
 int simple_rename(struct user_namespace *mnt_userns, struct inode *old_dir,

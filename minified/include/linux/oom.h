@@ -68,8 +68,7 @@ static inline vm_fault_t check_stable_address_space(struct mm_struct *mm)
 
 bool __oom_reap_task_mm(struct mm_struct *mm);
 
-long oom_badness(struct task_struct *p,
-		unsigned long totalpages);
+/* oom_badness removed - unused */
 
 extern bool out_of_memory(struct oom_control *oc);
 
@@ -81,6 +80,6 @@ extern int unregister_oom_notifier(struct notifier_block *nb);
 extern bool oom_killer_disable(signed long timeout);
 extern void oom_killer_enable(void);
 
-extern struct task_struct *find_lock_task_mm(struct task_struct *p);
+/* find_lock_task_mm removed - unused */
 
 #endif  

@@ -11,15 +11,8 @@ bool __oom_reap_task_mm(struct mm_struct *mm)
 	return true;
 }
 
-struct task_struct *find_lock_task_mm(struct task_struct *p)
-{
-	return NULL;
-}
-
-bool process_shares_mm(struct task_struct *p, struct mm_struct *mm)
-{
-	return false;
-}
+/* find_lock_task_mm removed - unused */
+/* process_shares_mm removed - unused */
 
 void exit_oom_victim(void)
 {

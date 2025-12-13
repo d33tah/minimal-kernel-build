@@ -693,7 +693,7 @@ static inline int is_global_init(struct task_struct *tsk)
 	return task_tgid_nr(tsk) == 1;
 }
 
-extern struct pid *cad_pid;
+/* cad_pid removed - only set, never read (ctrl-alt-delete not needed) */
 
 #define PF_VCPU			0x00000001	 
 #define PF_IDLE			0x00000002	 

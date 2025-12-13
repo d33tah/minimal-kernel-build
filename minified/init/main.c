@@ -945,10 +945,10 @@ static noinline void __init kernel_init_freeable(void)
 	 
 	gfp_allowed_mask = __GFP_BITS_MASK;
 
-	 
+
 	set_mems_allowed(node_states[N_MEMORY]);
 
-	cad_pid = get_pid(task_pid(current));
+	/* cad_pid removed - only set, never read */
 
 	smp_prepare_cpus(setup_max_cpus);
 

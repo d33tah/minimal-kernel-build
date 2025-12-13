@@ -14,8 +14,7 @@
 #include <linux/syscore_ops.h>
 #include <linux/uaccess.h>
 
-/* Removed: C_A_D - variable set but never read */
-struct pid *cad_pid;
+/* Removed: C_A_D, cad_pid - only set but never read */
 
 #define DEFAULT_REBOOT_MODE
 enum reboot_mode reboot_mode DEFAULT_REBOOT_MODE;

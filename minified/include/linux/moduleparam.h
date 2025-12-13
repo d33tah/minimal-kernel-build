@@ -221,28 +221,8 @@ extern int param_set_bool(const char *val, const struct kernel_param *kp);
 extern int param_get_bool(char *buffer, const struct kernel_param *kp);
 #define param_check_bool(name, p) __param_check(name, p, bool)
 
-#define module_param_array(name, type, nump, perm)		\
-	module_param_array_named(name, name, type, nump, perm)
-
-#define module_param_array_named(name, array, type, nump, perm)		\
-	param_check_##type(name, &(array)[0]);				\
-	static const struct kparam_array __param_arr_##name		\
-	= { .max = ARRAY_SIZE(array), .num = nump,                      \
-	    .ops = &param_ops_##type,					\
-	    .elemsize = sizeof(array[0]), .elem = array };		\
-	__module_param_call(MODULE_PARAM_PREFIX, name,			\
-			    &param_array_ops,				\
-			    .arr = &__param_arr_##name,			\
-			    perm, -1, 0);				\
-	__MODULE_PARM_TYPE(name, "array of " #type)
-
-
-extern const struct kernel_param_ops param_array_ops;
-
-extern const struct kernel_param_ops param_ops_string;
-extern int param_set_copystring(const char *val, const struct kernel_param *);
-extern int param_get_string(char *buffer, const struct kernel_param *kp);
-
+/* module_param_array removed - unused in minimal kernel */
+/* param_array_ops, param_ops_string declarations removed - unused */
 
 struct module;
 

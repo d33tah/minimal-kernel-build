@@ -248,7 +248,7 @@ int param_get_charp(char *buffer, const struct kernel_param *kp)
 	return scnprintf(buffer, PAGE_SIZE, "%s\n", *((char **)kp->arg));
 }
 
-void param_free_charp(void *arg)
+static void param_free_charp(void *arg)
 {
 	maybe_kfree_parameter(*((char **)arg));
 }

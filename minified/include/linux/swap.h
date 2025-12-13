@@ -88,7 +88,6 @@ extern void lru_cache_add_inactive_or_unevictable(struct page *page,
 
 extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 					gfp_t gfp_mask, nodemask_t *mask);
-extern int vm_swappiness;
 long remove_mapping(struct address_space *mapping, struct folio *folio);
 
 #define node_reclaim_mode 0

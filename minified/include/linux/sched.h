@@ -83,7 +83,7 @@ struct clone_args {
 #include <linux/refcount.h>
 #include <linux/resource.h>
 /* latencytop.h inlined - header removed */
-static inline void account_scheduler_latency(struct task_struct *task, int usecs, int inter) {}
+/* account_scheduler_latency removed - unused */
 static inline void clear_tsk_latency_tracing(struct task_struct *p) {}
 /* sched/prio.h inlined */
 #define MAX_NICE	19

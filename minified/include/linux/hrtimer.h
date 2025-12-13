@@ -233,13 +233,7 @@ static inline int hrtimer_callback_running(struct hrtimer *timer)
 extern long hrtimer_nanosleep(ktime_t rqtp, const enum hrtimer_mode mode,
 			      const clockid_t clockid);
 
-extern int schedule_hrtimeout_range(ktime_t *expires, u64 delta,
-				    const enum hrtimer_mode mode);
-extern int schedule_hrtimeout_range_clock(ktime_t *expires,
-					  u64 delta,
-					  const enum hrtimer_mode mode,
-					  clockid_t clock_id);
-extern int schedule_hrtimeout(ktime_t *expires, const enum hrtimer_mode mode);
+/* schedule_hrtimeout_range, schedule_hrtimeout_range_clock, schedule_hrtimeout removed - unused */
 
 extern void hrtimer_run_queues(void);
 

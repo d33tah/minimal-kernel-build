@@ -959,7 +959,7 @@ void free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
 extern void truncate_pagecache(struct inode *inode, loff_t new);
 extern void truncate_setsize(struct inode *inode, loff_t newsize);
 void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to);
-int generic_error_remove_page(struct address_space *mapping, struct page *page);
+/* generic_error_remove_page removed - never defined or called */
 
 extern vm_fault_t handle_mm_fault(struct vm_area_struct *vma,
 				  unsigned long address, unsigned int flags,

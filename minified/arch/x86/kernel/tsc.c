@@ -897,7 +897,7 @@ void __init tsc_init(void)
 	if (!no_sched_irq_time)
 		enable_sched_clock_irqtime();
 
-	lpj_fine = get_loops_per_jiffy();
+	/* lpj_fine assignment removed - never read */
 
 	check_system_tsc_reliable();
 

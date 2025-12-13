@@ -3,7 +3,7 @@
 #include <linux/init.h>
 #include <linux/percpu.h>
 
-unsigned long lpj_fine;
+/* lpj_fine removed - only set, never read */
 unsigned long preset_lpj;
 
 static int __init lpj_setup(char *str)

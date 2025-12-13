@@ -28,7 +28,7 @@ static inline void ndelay(unsigned long x)
 #define ndelay(x) ndelay(x)
 #endif
 
-extern unsigned long lpj_fine;
+/* lpj_fine removed - only set, never read */
 void calibrate_delay(void);
 void __attribute__((weak)) calibration_delay_done(void);
 void msleep(unsigned int msecs);

@@ -85,7 +85,7 @@ void mark_rodata_ro(void);
 
 extern void (*late_time_init)(void);
 
-extern bool initcall_debug;
+/* initcall_debug extern removed - only used in init/main.c */
 
 #endif
   

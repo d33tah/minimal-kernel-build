@@ -366,47 +366,9 @@ void __irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags, bool bus)
 		chip_bus_sync_unlock(desc);
 }
 
-int irq_set_percpu_devid_partition(unsigned int irq,
-				   const struct cpumask *affinity)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-
-	if (!desc)
-		return -EINVAL;
-
-	if (desc->percpu_enabled)
-		return -EINVAL;
-
-	desc->percpu_enabled = kzalloc(sizeof(*desc->percpu_enabled), GFP_KERNEL);
-
-	if (!desc->percpu_enabled)
-		return -ENOMEM;
-
-	if (affinity)
-		desc->percpu_affinity = affinity;
-	else
-		desc->percpu_affinity = cpu_possible_mask;
-
-	irq_set_percpu_devid_flags(irq);
-	return 0;
-}
-
-int irq_set_percpu_devid(unsigned int irq)
-{
-	return irq_set_percpu_devid_partition(irq, NULL);
-}
-
-void kstat_incr_irq_this_cpu(unsigned int irq)
-{
-	kstat_incr_irqs_this_cpu(irq_to_desc(irq));
-}
-
-unsigned int kstat_irqs_cpu(unsigned int irq, int cpu)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-
-	return desc && desc->kstat_irqs ?
-			*per_cpu_ptr(desc->kstat_irqs, cpu) : 0;
-}
+/* irq_set_percpu_devid_partition removed - unused (~24 LOC) */
+/* irq_set_percpu_devid removed - unused (~4 LOC) */
+/* kstat_incr_irq_this_cpu removed - unused (~4 LOC) */
+/* kstat_irqs_cpu removed - unused (~7 LOC) */
 
 

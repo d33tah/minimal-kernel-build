@@ -289,9 +289,7 @@ static inline void irq_set_chip_and_handler(unsigned int irq,
 	irq_set_chip_and_handler_name(irq, chip, handle, NULL);
 }
 
-extern int irq_set_percpu_devid(unsigned int irq);
-extern int irq_set_percpu_devid_partition(unsigned int irq,
-					  const struct cpumask *affinity);
+/* irq_set_percpu_devid, irq_set_percpu_devid_partition removed - unused */
 
 extern void
 __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
@@ -308,12 +306,7 @@ static inline void irq_set_status_flags(unsigned int irq, unsigned long set)
 	irq_modify_status(irq, 0, set);
 }
 
-static inline void irq_set_percpu_devid_flags(unsigned int irq)
-{
-	irq_set_status_flags(irq,
-			     IRQ_NOAUTOEN | IRQ_PER_CPU | IRQ_NOTHREAD |
-			     IRQ_NOPROBE | IRQ_PER_CPU_DEVID);
-}
+/* irq_set_percpu_devid_flags removed - unused */
 
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
 extern int irq_set_chip_data(unsigned int irq, void *data);

@@ -1592,8 +1592,6 @@ extern int generic_file_open(struct inode * inode, struct file * filp);
 extern int nonseekable_open(struct inode * inode, struct file * filp);
 /* Removed: stream_open - never called */
 
-void dio_warn_stale_pagecache(struct file *filp);
-
 #define special_file(m) (S_ISCHR(m)||S_ISBLK(m)||S_ISFIFO(m)||S_ISSOCK(m))
 
 extern const char *page_get_link(struct dentry *, struct inode *,

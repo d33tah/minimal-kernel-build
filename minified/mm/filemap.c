@@ -1777,7 +1777,7 @@ struct page *read_cache_page_gfp(struct address_space *mapping,
 	return do_read_cache_page(mapping, index, NULL, NULL, gfp);
 }
 
-void dio_warn_stale_pagecache(struct file *filp)
+static void dio_warn_stale_pagecache(struct file *filp)
 {
 	/* Stub: direct I/O warning not needed for minimal kernel */
 	errseq_set(&filp->f_mapping->wb_err, -EIO);

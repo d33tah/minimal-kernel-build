@@ -265,12 +265,7 @@ void detach_pid(struct task_struct *task, enum pid_type type)
 	__change_pid(task, type, NULL);
 }
 
-void change_pid(struct task_struct *task, enum pid_type type,
-		struct pid *pid)
-{
-	__change_pid(task, type, pid);
-	attach_pid(task, type);
-}
+/* change_pid removed - never called externally */
 
 void exchange_tids(struct task_struct *left, struct task_struct *right)
 {

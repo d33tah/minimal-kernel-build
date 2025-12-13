@@ -346,8 +346,6 @@ struct address_space_operations {
 	int (*swap_rw)(struct kiocb *iocb, struct iov_iter *iter);
 };
 
-extern const struct address_space_operations empty_aops;
-
 struct address_space {
 	struct inode		*host;
 	struct xarray		i_pages;

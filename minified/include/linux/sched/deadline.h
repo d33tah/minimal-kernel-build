@@ -16,8 +16,5 @@ static inline int dl_task(struct task_struct *p)
 	return dl_prio(p->prio);
 }
 
-static inline bool dl_time_before(u64 a, u64 b)
-{
-	return (s64)(a - b) < 0;
-}
+/* dl_time_before removed - unused */
 

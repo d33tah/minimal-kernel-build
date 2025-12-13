@@ -64,12 +64,10 @@ struct consw {
 
 extern const struct consw *conswitchp;
 
-extern const struct consw dummy_con;	 
-extern const struct consw vga_con;	 
+extern const struct consw dummy_con;
+extern const struct consw vga_con;
 /* newport_con removed - unused */
-
-int con_is_bound(const struct consw *csw);
-/* do_take_over_console removed - unused */
+/* con_is_bound, do_take_over_console removed - unused */
 /* con_debug_enter, con_debug_leave removed - never called */
 
 #define CM_DRAW     (1)

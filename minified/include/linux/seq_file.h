@@ -63,40 +63,13 @@ static inline void seq_commit(struct seq_file *m, int num)
 	}
 }
 
-static inline void seq_setwidth(struct seq_file *m, size_t size)
-{
-	m->pad_until = m->count + size;
-}
-/* seq_pad removed - unused */
-
-char *mangle_path(char *s, const char *p, const char *esc);
+/* seq_setwidth, seq_pad, mangle_path, seq_vprintf removed - unused */
 /* seq_open, seq_read, seq_read_iter, seq_lseek, seq_release removed - not called */
 
-__printf(2, 0)
-void seq_vprintf(struct seq_file *m, const char *fmt, va_list args);
 __printf(2, 3)
 void seq_printf(struct seq_file *m, const char *fmt, ...);
-void seq_putc(struct seq_file *m, char c);
-void seq_puts(struct seq_file *m, const char *s);
-/* seq_put_decimal_ull_width, seq_put_decimal_ll, seq_put_hex_ll removed - unused */
-void seq_put_decimal_ull(struct seq_file *m, const char *delimiter,
-			 unsigned long long num);
-
-void seq_escape_mem(struct seq_file *m, const char *src, size_t len,
-		    unsigned int flags, const char *esc);
-
-static inline void seq_escape_str(struct seq_file *m, const char *src,
-				  unsigned int flags, const char *esc)
-{
-	seq_escape_mem(m, src, strlen(src), flags, esc);
-}
-
-static inline void seq_escape(struct seq_file *m, const char *s, const char *esc)
-{
-	seq_escape_str(m, s, ESCAPE_OCTAL, esc);
-}
-
-/* seq_hex_dump removed - unused */
+/* seq_putc, seq_puts, seq_put_decimal_ull, seq_put_decimal_ull_width, seq_put_decimal_ll, seq_put_hex_ll removed - unused */
+/* seq_escape_mem, seq_escape_str, seq_escape, seq_hex_dump removed - unused */
 
 void *single_start(struct seq_file *, loff_t *);
 int single_open(struct file *, int (*)(struct seq_file *, void *), void *);
@@ -156,23 +129,7 @@ static inline struct user_namespace *seq_user_ns(struct seq_file *seq)
 	return &init_user_ns;
 }
 
-static inline void seq_show_option(struct seq_file *m, const char *name,
-				   const char *value)
-{
-	seq_putc(m, ',');
-	seq_escape(m, name, ",= \t\n\\");
-	if (value) {
-		seq_putc(m, '=');
-		seq_escape(m, value, ", \t\n\\");
-	}
-}
-
-#define seq_show_option_n(m, name, value, length) {	\
-	char val_buf[length + 1];			\
-	strncpy(val_buf, value, length);		\
-	val_buf[length] = '\0';				\
-	seq_show_option(m, name, val_buf);		\
-}
+/* seq_show_option and seq_show_option_n removed - unused */
 
 #define SEQ_START_TOKEN ((void *)1)
 

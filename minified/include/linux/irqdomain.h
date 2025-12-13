@@ -46,7 +46,7 @@ struct irq_domain_ops {
 		     unsigned long *out_hwirq, unsigned int *out_type);
 };
 
-extern const struct irq_domain_ops irq_generic_chip_ops;
+/* irq_generic_chip_ops removed - unused */
 
 struct irq_domain_chip_generic;
 

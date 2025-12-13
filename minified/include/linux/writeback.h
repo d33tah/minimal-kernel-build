@@ -146,13 +146,7 @@ static inline void cgroup_writeback_umount(void)
 }
 
 
-extern struct wb_domain global_wb_domain;
-
 void laptop_mode_timer_fn(struct timer_list *t);
-
-extern unsigned int dirty_writeback_interval;
-/* dirty_expire_interval, dirtytime_expire_interval, laptop_mode - unused */
-/* dirtytime_interval_handler - unused */
 
 void wb_update_bandwidth(struct bdi_writeback *wb);
 void balance_dirty_pages_ratelimited(struct address_space *mapping);

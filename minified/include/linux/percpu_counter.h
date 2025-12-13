@@ -30,21 +30,7 @@ static inline void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
 	fbc->count = amount;
 }
 
-static inline int percpu_counter_compare(struct percpu_counter *fbc, s64 rhs)
-{
-	if (fbc->count > rhs)
-		return 1;
-	else if (fbc->count < rhs)
-		return -1;
-	else
-		return 0;
-}
-
-static inline int
-__percpu_counter_compare(struct percpu_counter *fbc, s64 rhs, s32 batch)
-{
-	return percpu_counter_compare(fbc, rhs);
-}
+/* percpu_counter_compare and __percpu_counter_compare removed - unused */
 
 static inline void
 percpu_counter_add(struct percpu_counter *fbc, s64 amount)
@@ -99,9 +85,6 @@ static inline void percpu_counter_dec(struct percpu_counter *fbc)
 	percpu_counter_add(fbc, -1);
 }
 
-static inline void percpu_counter_sub(struct percpu_counter *fbc, s64 amount)
-{
-	percpu_counter_add(fbc, -amount);
-}
+/* percpu_counter_sub removed - unused */
 
 #endif  

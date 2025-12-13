@@ -1242,7 +1242,6 @@ static inline void mark_inode_dirty_sync(struct inode *inode)
 extern void inc_nlink(struct inode *inode);
 extern void drop_nlink(struct inode *inode);
 extern void clear_nlink(struct inode *inode);
-extern void set_nlink(struct inode *inode, unsigned int nlink);
 
 static inline void inode_dec_link_count(struct inode *inode)
 {

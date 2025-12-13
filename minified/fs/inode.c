@@ -226,19 +226,6 @@ void clear_nlink(struct inode *inode)
 	}
 }
 
-void set_nlink(struct inode *inode, unsigned int nlink)
-{
-	if (!nlink) {
-		clear_nlink(inode);
-	} else {
-		
-		if (inode->i_nlink == 0)
-			atomic_long_dec(&inode->i_sb->s_remove_count);
-
-		inode->__i_nlink = nlink;
-	}
-}
-
 void inc_nlink(struct inode *inode)
 {
 	if (unlikely(inode->i_nlink == 0)) {

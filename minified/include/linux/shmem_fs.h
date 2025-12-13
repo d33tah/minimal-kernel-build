@@ -57,8 +57,6 @@ extern struct file *shmem_file_setup(const char *name,
 					loff_t size, unsigned long flags);
 extern struct file *shmem_kernel_file_setup(const char *name, loff_t size,
 					    unsigned long flags);
-extern struct file *shmem_file_setup_with_mnt(struct vfsmount *mnt,
-		const char *name, loff_t size, unsigned long flags);
 extern int shmem_zero_setup(struct vm_area_struct *);
 extern unsigned long shmem_get_unmapped_area(struct file *, unsigned long addr,
 		unsigned long len, unsigned long pgoff, unsigned long flags);
@@ -73,26 +71,7 @@ extern struct page *shmem_read_mapping_page_gfp(struct address_space *mapping,
 extern void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end);
 int shmem_unuse(unsigned int type);
 
-extern bool shmem_is_huge(struct vm_area_struct *vma,
-			  struct inode *inode, pgoff_t index);
-static inline bool shmem_huge_enabled(struct vm_area_struct *vma)
-{
-	return shmem_is_huge(vma, file_inode(vma->vm_file), vma->vm_pgoff);
-}
-extern unsigned long shmem_swap_usage(struct vm_area_struct *vma);
-extern unsigned long shmem_partial_swap_usage(struct address_space *mapping,
-						pgoff_t start, pgoff_t end);
-
-enum sgp_type {
-	SGP_READ,	 
-	SGP_NOALLOC,	 
-	SGP_CACHE,	 
-	SGP_WRITE,	 
-	SGP_FALLOC,	 
-};
-
-extern int shmem_getpage(struct inode *inode, pgoff_t index,
-		struct page **pagep, enum sgp_type sgp);
+/* shmem_is_huge, shmem_huge_enabled, shmem_swap_usage, shmem_partial_swap_usage, shmem_getpage removed - unused */
 
 static inline struct page *shmem_read_mapping_page(
 				struct address_space *mapping, pgoff_t index)
@@ -115,8 +94,6 @@ static inline pgoff_t shmem_fallocend(struct inode *inode, pgoff_t eof)
 	return max(eof, SHMEM_I(inode)->fallocend);
 }
 
-extern bool shmem_charge(struct inode *inode, long pages);
-extern void shmem_uncharge(struct inode *inode, long pages);
-
+/* shmem_charge, shmem_uncharge removed - unused */
 
 #endif

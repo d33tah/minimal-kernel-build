@@ -113,12 +113,6 @@ struct file *shmem_file_setup(const char *name, loff_t size, unsigned long flags
 	return __shmem_file_setup(shm_mnt, name, size, flags, 0);
 }
 
-struct file *shmem_file_setup_with_mnt(struct vfsmount *mnt, const char *name,
-				       loff_t size, unsigned long flags)
-{
-	return __shmem_file_setup(mnt, name, size, flags, 0);
-}
-
 int shmem_zero_setup(struct vm_area_struct *vma)
 {
 	struct file *file;

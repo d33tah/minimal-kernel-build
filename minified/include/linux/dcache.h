@@ -190,9 +190,7 @@ extern void d_tmpfile(struct dentry *, struct inode *);
 
 extern void d_rehash(struct dentry *);
 extern void d_add(struct dentry *, struct inode *);
-
-extern void d_move(struct dentry *, struct dentry *);
-/* d_exchange removed - unused stub */
+/* d_move and d_exchange removed - unused */
 extern struct dentry *d_ancestor(struct dentry *, struct dentry *);
 
 extern struct dentry *d_lookup(const struct dentry *, const struct qstr *);

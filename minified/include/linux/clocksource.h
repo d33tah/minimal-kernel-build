@@ -129,7 +129,6 @@ extern int timekeeping_notify(struct clocksource *clock);
 #define TIMER_ACPI_DECLARE(name, table_id, fn)		\
 	ACPI_DECLARE_PROBE_ENTRY(timer, name, table_id, 0, NULL, 0, fn)
 
-extern ulong max_cswd_read_retries;
-/* clocksource_verify_percpu declaration removed - only used internally */
+/* max_cswd_read_retries, clocksource_verify_percpu removed - only used internally */
 
-#endif  
+#endif

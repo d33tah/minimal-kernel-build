@@ -13,8 +13,6 @@ extern void sched_clock_init(void);
 extern int sched_clock_stable(void);
 extern void clear_sched_clock_stable(void);
 
-extern u64 __sched_clock_offset;
-
 extern void sched_clock_tick(void);
 extern void sched_clock_tick_stable(void);
 

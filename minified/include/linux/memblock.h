@@ -14,7 +14,7 @@ extern unsigned long max_low_pfn;
 extern unsigned long min_low_pfn;
 
 extern unsigned long max_pfn;
-extern unsigned long long max_possible_pfn;
+/* max_possible_pfn removed - only set, never read */
 
 enum memblock_flags {
 	MEMBLOCK_NONE		= 0x0,	 

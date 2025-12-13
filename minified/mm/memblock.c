@@ -27,7 +27,7 @@ struct pglist_data __refdata contig_page_data;
 unsigned long max_low_pfn;
 unsigned long min_low_pfn;
 unsigned long max_pfn;
-unsigned long long max_possible_pfn;
+/* max_possible_pfn removed - only set, never read */
 
 static struct memblock_region memblock_memory_init_regions[INIT_MEMBLOCK_REGIONS] __initdata_memblock;
 static struct memblock_region memblock_reserved_init_regions[INIT_MEMBLOCK_RESERVED_REGIONS] __initdata_memblock;

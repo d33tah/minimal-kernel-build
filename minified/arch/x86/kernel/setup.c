@@ -585,9 +585,9 @@ void __init setup_arch(char **cmdline_p)
 	if (mtrr_trim_uncached_memory(max_pfn))
 		max_pfn = e820__end_of_ram_pfn();
 
-	max_possible_pfn = max_pfn;
+	/* max_possible_pfn assignment removed - never read */
 
-	 
+
 	init_cache_modes();
 
 	 

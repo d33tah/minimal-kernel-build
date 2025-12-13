@@ -612,19 +612,7 @@ struct task_struct {
 
 
 
-#if IS_ENABLED(CONFIG_KUNIT)
-	struct kunit			*kunit_test;
-#endif
 
-
-
-
-
-
-#if defined(CONFIG_BCACHE) || defined(CONFIG_BCACHE_MODULE)
-	unsigned int			sequential_io;
-	unsigned int			sequential_io_avg;
-#endif
 	struct kmap_ctrl		kmap_ctrl;
 	int				pagefault_disabled;
 	struct task_struct		*oom_reaper_list;

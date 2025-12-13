@@ -75,7 +75,7 @@ struct pid_namespace;
 extern struct pid_namespace init_pid_ns;
 
 extern int pid_max;
-extern int pid_max_min, pid_max_max;
+/* pid_max_min, pid_max_max removed - only used internally in pid.c */
 
 extern struct pid *find_pid_ns(int nr, struct pid_namespace *ns);
 extern struct pid *find_vpid(int nr);

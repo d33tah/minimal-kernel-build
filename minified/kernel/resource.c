@@ -357,11 +357,7 @@ static struct inode *iomem_inode;
 
 static void revoke_iomem(struct resource *res) {}
 
-struct address_space *iomem_get_mapping(void)
-{
-	 
-	return smp_load_acquire(&iomem_inode)->i_mapping;
-}
+/* iomem_get_mapping removed - never called */
 
 static int __request_region_locked(struct resource *res, struct resource *parent,
 				   resource_size_t start, resource_size_t n,

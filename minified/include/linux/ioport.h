@@ -196,7 +196,7 @@ struct resource *devm_request_free_mem_region(struct device *dev,
 struct resource *request_free_mem_region(struct resource *base,
 		unsigned long size, const char *name);
 
-extern struct address_space *iomem_get_mapping(void);
+/* iomem_get_mapping removed - never called */
 
-#endif  
+#endif
 #endif	 

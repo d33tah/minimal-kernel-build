@@ -172,12 +172,7 @@ char *devm_kstrdup(struct device *dev, const char *s, gfp_t gfp) __malloc;
 
 void __iomem *devm_ioremap_resource(struct device *dev,
 				    const struct resource *res);
-void __iomem *devm_ioremap_resource_wc(struct device *dev,
-				       const struct resource *res);
-
-void __iomem *devm_of_iomap(struct device *dev,
-			    struct device_node *node, int index,
-			    resource_size_t *size);
+/* devm_ioremap_resource_wc, devm_of_iomap removed - unused */
 
 struct device_dma_parameters {
 	 
@@ -308,97 +303,7 @@ static inline struct device *kobj_to_dev(struct kobject *kobj)
 
 
 
-/* Inlined from pm_wakeup.h */
-struct wake_irq;
-
-struct wakeup_source {
-	const char 		*name;
-	int			id;
-	struct list_head	entry;
-	spinlock_t		lock;
-	struct wake_irq		*wakeirq;
-	struct timer_list	timer;
-	unsigned long		timer_expires;
-	ktime_t total_time;
-	ktime_t max_time;
-	ktime_t last_time;
-	ktime_t start_prevent_time;
-	ktime_t prevent_sleep_time;
-	unsigned long		event_count;
-	unsigned long		active_count;
-	unsigned long		relax_count;
-	unsigned long		expire_count;
-	unsigned long		wakeup_count;
-	struct device		*dev;
-	bool			active:1;
-	bool			autosleep_enabled:1;
-};
-
-#define for_each_wakeup_source(ws) \
-	for ((ws) = wakeup_sources_walk_start();	\
-	     (ws);					\
-	     (ws) = wakeup_sources_walk_next((ws)))
-
-
-static inline void device_set_wakeup_capable(struct device *dev, bool capable)
-{
-	dev->power.can_wakeup = capable;
-}
-
-static inline bool device_can_wakeup(struct device *dev)
-{
-	return dev->power.can_wakeup;
-}
-
-static inline struct wakeup_source *wakeup_source_create(const char *name)
-{
-	return NULL;
-}
-
-static inline void wakeup_source_destroy(struct wakeup_source *ws) {}
-
-static inline void wakeup_source_add(struct wakeup_source *ws) {}
-
-static inline void wakeup_source_remove(struct wakeup_source *ws) {}
-
-static inline struct wakeup_source *wakeup_source_register(struct device *dev,
-							   const char *name)
-{
-	return NULL;
-}
-
-static inline void wakeup_source_unregister(struct wakeup_source *ws) {}
-
-static inline int device_wakeup_enable(struct device *dev)
-{
-	dev->power.should_wakeup = true;
-	return 0;
-}
-
-static inline int device_wakeup_disable(struct device *dev)
-{
-	dev->power.should_wakeup = false;
-	return 0;
-}
-
-static inline int device_set_wakeup_enable(struct device *dev, bool enable)
-{
-	dev->power.should_wakeup = enable;
-	return 0;
-}
-
-static inline int device_init_wakeup(struct device *dev, bool val)
-{
-	device_set_wakeup_capable(dev, val);
-	device_set_wakeup_enable(dev, val);
-	return 0;
-}
-
-static inline bool device_may_wakeup(struct device *dev)
-{
-	return dev->power.can_wakeup && dev->power.should_wakeup;
-}
-/* End of inlined pm_wakeup.h content */
+/* pm_wakeup.h content removed - wakeup functions not used in minimal kernel */
 
 static inline const char *dev_name(const struct device *dev)
 {
@@ -489,23 +394,10 @@ const char *device_get_devnode(struct device *dev, umode_t *mode, kuid_t *uid,
 
 /* __device_lock_set_class, device_lock_set_class, device_lock_reset_class removed - unused */
 
-void lock_device_hotplug(void);
-void unlock_device_hotplug(void);
-int lock_device_hotplug_sysfs(void);
-int device_offline(struct device *dev);
-int device_online(struct device *dev);
-void set_primary_fwnode(struct device *dev, struct fwnode_handle *fwnode);
-void set_secondary_fwnode(struct device *dev, struct fwnode_handle *fwnode);
-void device_set_of_node_from_dev(struct device *dev, const struct device *dev2);
-void device_set_node(struct device *dev, struct fwnode_handle *fwnode);
-
-
-struct device *__root_device_register(const char *name, struct module *owner);
-
-#define root_device_register(name) \
-	__root_device_register(name, THIS_MODULE)
-
-void root_device_unregister(struct device *root);
+/* lock_device_hotplug, unlock_device_hotplug, lock_device_hotplug_sysfs,
+   device_offline, device_online, set_primary_fwnode, set_secondary_fwnode,
+   device_set_of_node_from_dev, device_set_node, __root_device_register,
+   root_device_unregister removed - unused */
 
 int __must_check device_driver_attach(struct device_driver *drv,
 				      struct device *dev);
@@ -557,12 +449,8 @@ void device_shutdown(void);
 
 const char *dev_driver_string(const struct device *dev);
 
-struct device_link *device_link_add(struct device *consumer,
-				    struct device *supplier, u32 flags);
-void device_link_del(struct device_link *link);
-void device_link_remove(void *consumer, struct device *supplier);
-void device_links_supplier_sync_state_pause(void);
-void device_links_supplier_sync_state_resume(void);
+/* device_link_add, device_link_del, device_link_remove,
+   device_links_supplier_sync_state_pause, device_links_supplier_sync_state_resume removed - unused */
 
 extern __printf(3, 4)
 int dev_err_probe(const struct device *dev, int err, const char *fmt, ...);

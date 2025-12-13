@@ -1,11 +1,12 @@
 #ifndef _ASM_X86_INSN_EVAL_H
 #define _ASM_X86_INSN_EVAL_H
- 
+
 
 #include <linux/compiler.h>
 #include <linux/bug.h>
 #include <linux/err.h>
 #include <asm/ptrace.h>
+#include <asm/insn.h>
 
 #define INSN_CODE_SEG_ADDR_SZ(params) ((params >> 4) & 0xf)
 #define INSN_CODE_SEG_OPND_SZ(params) (params & 0xf)

@@ -143,7 +143,7 @@ extern void bust_spinlocks(int yes);
 
 extern int root_mountflags;
 
-extern bool early_boot_irqs_disabled;
+/* early_boot_irqs_disabled removed - only used in init/main.c */
 
 extern enum system_states {
 	SYSTEM_BOOTING,

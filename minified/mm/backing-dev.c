@@ -20,7 +20,6 @@ static struct class *bdi_class;
 static const char *bdi_unknown_name = "(unknown)";
 
 DEFINE_SPINLOCK(bdi_lock);
-static u64 bdi_id_cursor;
 static struct rb_root bdi_tree = RB_ROOT;
 LIST_HEAD(bdi_list);
 
@@ -193,11 +192,6 @@ static int cgwb_bdi_init(struct backing_dev_info *bdi)
 
 static void cgwb_bdi_unregister(struct backing_dev_info *bdi) { }
 
-static void cgwb_bdi_register(struct backing_dev_info *bdi)
-{
-	list_add_tail_rcu(&bdi->wb.bdi_node, &bdi->wb_list);
-}
-
 static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb)
 {
 	list_del_rcu(&wb->bdi_node);
@@ -242,32 +236,7 @@ struct backing_dev_info *bdi_alloc(int node_id)
 	return bdi;
 }
 
-static struct rb_node **bdi_lookup_rb_node(u64 id, struct rb_node **parentp)
-{
-	struct rb_node **p = &bdi_tree.rb_node;
-	struct rb_node *parent = NULL;
-	struct backing_dev_info *bdi;
-
-	lockdep_assert_held(&bdi_lock);
-
-	while (*p) {
-		parent = *p;
-		bdi = rb_entry(parent, struct backing_dev_info, rb_node);
-
-		if (bdi->id > id)
-			p = &(*p)->rb_left;
-		else if (bdi->id < id)
-			p = &(*p)->rb_right;
-		else
-			break;
-	}
-
-	if (parentp)
-		*parentp = parent;
-	return p;
-}
-
-/* bdi_get_by_id, bdi_register, bdi_register_va, bdi_set_owner removed - unused */
+/* bdi_get_by_id, bdi_register, bdi_register_va, bdi_set_owner, bdi_lookup_rb_node removed - unused */
 
 static void bdi_remove_from_list(struct backing_dev_info *bdi)
 {

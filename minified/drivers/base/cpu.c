@@ -40,8 +40,6 @@ module_init(cpu_feature_match_ ## x ## _init)
 
 #include "base.h"
 
-static DEFINE_PER_CPU(struct device *, cpu_sys_devices);
-
 static int cpu_subsys_match(struct device *dev, struct device_driver *drv)
 {
 	 

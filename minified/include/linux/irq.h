@@ -295,9 +295,7 @@ extern void
 __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 		  const char *name);
 
-void
-irq_set_chained_handler_and_data(unsigned int irq, irq_flow_handler_t handle,
-				 void *data);
+/* irq_set_chained_handler_and_data removed - unused */
 
 void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set);
 

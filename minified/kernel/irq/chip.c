@@ -616,21 +616,7 @@ __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 	irq_put_desc_busunlock(desc, flags);
 }
 
-void
-irq_set_chained_handler_and_data(unsigned int irq, irq_flow_handler_t handle,
-				 void *data)
-{
-	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_buslock(irq, &flags, 0);
-
-	if (!desc)
-		return;
-
-	desc->irq_common_data.handler_data = data;
-	__irq_do_set_handler(desc, handle, 1, NULL);
-
-	irq_put_desc_busunlock(desc, flags);
-}
+/* irq_set_chained_handler_and_data removed - unused (~15 LOC) */
 
 void
 irq_set_chip_and_handler_name(unsigned int irq, const struct irq_chip *chip,

@@ -487,13 +487,7 @@ void device_remove_groups(struct device *dev,
 	sysfs_remove_groups(&dev->kobj, groups);
 }
 
-/* --- 2025-11-25 00:35 --- Stubbed unused devm device attribute functions */
-int devm_device_add_group(struct device *dev, const struct attribute_group *grp)
-{
-	return 0;
-}
-
-/* devm_device_remove_group, devm_device_add_groups, devm_device_remove_groups removed - unused */
+/* devm_device_add_group, devm_device_remove_group, devm_device_add_groups, devm_device_remove_groups removed - unused */
 
 static void device_remove_attrs(struct device *dev)
 {
@@ -769,7 +763,7 @@ void put_device(struct device *dev)
 		kobject_put(&dev->kobj);
 }
 
-bool kill_device(struct device *dev)
+static bool kill_device(struct device *dev)
 {
 	
 	device_lock_assert(dev);

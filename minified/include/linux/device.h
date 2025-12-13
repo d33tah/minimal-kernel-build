@@ -540,10 +540,7 @@ static inline void device_remove_group(struct device *dev,
 	return device_remove_groups(dev, groups);
 }
 
-/* devm_device_add_groups, devm_device_remove_groups removed - unused */
-int __must_check devm_device_add_group(struct device *dev,
-				       const struct attribute_group *grp);
-/* devm_device_remove_group removed - unused */
+/* devm_device_add_group, devm_device_add_groups, devm_device_remove_group, devm_device_remove_groups removed - unused */
 
 extern int (*platform_notify)(struct device *dev);
 
@@ -552,7 +549,7 @@ extern int (*platform_notify_remove)(struct device *dev);
 
 struct device *get_device(struct device *dev);
 void put_device(struct device *dev);
-bool kill_device(struct device *dev);
+/* kill_device removed - now static in core.c */
 
 static inline int devtmpfs_mount(void) { return 0; }
 

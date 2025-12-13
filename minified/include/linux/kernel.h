@@ -158,9 +158,7 @@ extern enum system_states {
 
 /* hex_asc, hex_asc_lo, hex_asc_hi, hex_byte_pack removed - never used */
 extern const char hex_asc_upper[];
-/* Removed: hex_to_bin, hex2bin, bin2hex - never called */
-
-bool mac_pton(const char *s, u8 *mac);
+/* Removed: hex_to_bin, hex2bin, bin2hex, mac_pton - never called */
 
 
 /* tracing_start, tracing_stop, trace_dump_stack removed - unused */

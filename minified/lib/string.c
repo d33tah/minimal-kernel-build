@@ -288,12 +288,7 @@ void *memset(void *s, int c, size_t count)
 }
 #endif
 
-#ifndef __HAVE_ARCH_MEMSET16
-/* Stub: memset16 not used in minimal kernel */
-void *memset16(uint16_t *s, uint16_t v, size_t count) { return s; }
-#endif
-
-/* memset32, memset64 removed - unused */
+/* memset16, memset32, memset64 removed - unused */
 
 #ifndef __HAVE_ARCH_MEMCPY
 void *memcpy(void *dest, const void *src, size_t count)

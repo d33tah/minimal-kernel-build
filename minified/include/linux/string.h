@@ -81,11 +81,7 @@ extern __kernel_size_t strcspn(const char *,const char *);
 extern void * memset(void *,int,__kernel_size_t);
 #endif
 
-#ifndef __HAVE_ARCH_MEMSET16
-extern void *memset16(uint16_t *, uint16_t, __kernel_size_t);
-#endif
-
-/* memset32, memset64, memset_l, memset_p removed - unused */
+/* memset16, memset32, memset64, memset_l, memset_p removed - unused */
 
 
 #ifndef __HAVE_ARCH_MEMCPY

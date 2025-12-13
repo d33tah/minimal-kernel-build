@@ -456,9 +456,7 @@ void wakeup_kswapd(struct zone *zone, gfp_t gfp_mask, int order,
 bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 			 int highest_zoneidx, unsigned int alloc_flags,
 			 long free_pages);
-bool zone_watermark_ok(struct zone *z, unsigned int order,
-		unsigned long mark, int highest_zoneidx,
-		unsigned int alloc_flags);
+/* zone_watermark_ok removed - unused wrapper */
 enum meminit_context {
 	MEMINIT_EARLY,
 	MEMINIT_HOTPLUG,

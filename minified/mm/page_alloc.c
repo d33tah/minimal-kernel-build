@@ -1132,12 +1132,7 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 	return free_pages > min + z->lowmem_reserve[highest_zoneidx];
 }
 
-bool zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
-		      int highest_zoneidx, unsigned int alloc_flags)
-{
-	return __zone_watermark_ok(z, order, mark, highest_zoneidx, alloc_flags,
-					zone_page_state(z, NR_FREE_PAGES));
-}
+/* zone_watermark_ok removed - unused wrapper around __zone_watermark_ok */
 
 static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
 				unsigned long mark, int highest_zoneidx,

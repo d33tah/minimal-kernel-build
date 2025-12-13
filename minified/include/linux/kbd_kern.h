@@ -43,7 +43,7 @@ extern unsigned short *key_maps[MAX_NR_KEYMAPS];
 extern unsigned short plain_map[NR_KEYS];
 /* --- end keyboard.h inlined --- */
 
-extern char *func_table[MAX_NR_FUNC];
+/* func_table removed - never defined or used */
 
 struct kbd_struct {
 

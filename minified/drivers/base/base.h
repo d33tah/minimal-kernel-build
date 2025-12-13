@@ -127,5 +127,5 @@ void device_pm_move_to_tail(struct device *dev);
 static inline int devtmpfs_create_node(struct device *dev) { return 0; }
 static inline int devtmpfs_delete_node(struct device *dev) { return 0; }
 
-void software_node_notify(struct device *dev);
+/* software_node_notify removed - unused */
 void software_node_notify_remove(struct device *dev);

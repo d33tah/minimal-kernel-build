@@ -30,37 +30,17 @@ struct software_node;
 /* Minimal property_entry - only needs to exist as a type, never instantiated */
 struct property_entry;
 
-void property_entries_free(const struct property_entry *properties);
+/* property_entries_free, is_software_node, to_software_node, software_node_fwnode,
+   software_node_find_by_name, software_node_register_nodes, software_node_unregister_nodes,
+   software_node_register_node_group, software_node_unregister_node_group,
+   software_node_register, software_node_unregister, fwnode_remove_software_node,
+   device_add_software_node, device_remove_software_node, device_create_managed_software_node
+   removed - unused */
 
 struct software_node {
 	const char *name;
 	const struct software_node *parent;
 	const struct property_entry *properties;
 };
-
-bool is_software_node(const struct fwnode_handle *fwnode);
-const struct software_node *to_software_node(const struct fwnode_handle *fwnode);
-struct fwnode_handle *software_node_fwnode(const struct software_node *node);
-
-const struct software_node *
-software_node_find_by_name(const struct software_node *parent, const char *name);
-
-int software_node_register_nodes(const struct software_node *nodes);
-void software_node_unregister_nodes(const struct software_node *nodes);
-
-int software_node_register_node_group(const struct software_node **node_group);
-void software_node_unregister_node_group(const struct software_node **node_group);
-
-int software_node_register(const struct software_node *node);
-void software_node_unregister(const struct software_node *node);
-
-void fwnode_remove_software_node(struct fwnode_handle *fwnode);
-
-int device_add_software_node(struct device *dev, const struct software_node *node);
-void device_remove_software_node(struct device *dev);
-
-int device_create_managed_software_node(struct device *dev,
-					const struct property_entry *properties,
-					const struct software_node *parent);
 
 #endif /* _LINUX_PROPERTY_H_ */

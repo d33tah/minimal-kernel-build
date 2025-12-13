@@ -102,43 +102,7 @@ cpuhp_state_add_instance_nocalls_cpuslocked(enum cpuhp_state state,
 	return __cpuhp_state_add_instance_cpuslocked(state, node, false);
 }
 
-void __cpuhp_remove_state(enum cpuhp_state state, bool invoke);
-void __cpuhp_remove_state_cpuslocked(enum cpuhp_state state, bool invoke);
-
-static inline void cpuhp_remove_state(enum cpuhp_state state)
-{
-	__cpuhp_remove_state(state, true);
-}
-
-static inline void cpuhp_remove_state_nocalls(enum cpuhp_state state)
-{
-	__cpuhp_remove_state(state, false);
-}
-
-static inline void cpuhp_remove_state_nocalls_cpuslocked(enum cpuhp_state state)
-{
-	__cpuhp_remove_state_cpuslocked(state, false);
-}
-
-static inline void cpuhp_remove_multi_state(enum cpuhp_state state)
-{
-	__cpuhp_remove_state(state, false);
-}
-
-int __cpuhp_state_remove_instance(enum cpuhp_state state,
-				  struct hlist_node *node, bool invoke);
-
-static inline int cpuhp_state_remove_instance(enum cpuhp_state state,
-					      struct hlist_node *node)
-{
-	return __cpuhp_state_remove_instance(state, node, true);
-}
-
-static inline int cpuhp_state_remove_instance_nocalls(enum cpuhp_state state,
-						      struct hlist_node *node)
-{
-	return __cpuhp_state_remove_instance(state, node, false);
-}
+/* cpuhp_remove_state* and cpuhp_state_remove_instance* removed - never used */
 
 static inline void cpuhp_online_idle(enum cpuhp_state state) { }
 /* --- end cpuhotplug.h inlined --- */

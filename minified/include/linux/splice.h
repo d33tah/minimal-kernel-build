@@ -51,23 +51,9 @@ typedef int (splice_direct_actor)(struct pipe_inode_info *,
 extern ssize_t splice_from_pipe(struct pipe_inode_info *, struct file *,
 				loff_t *, size_t, unsigned int,
 				splice_actor *);
-extern ssize_t __splice_from_pipe(struct pipe_inode_info *,
-				  struct splice_desc *, splice_actor *);
-extern ssize_t splice_to_pipe(struct pipe_inode_info *,
-			      struct splice_pipe_desc *);
-extern ssize_t add_to_pipe(struct pipe_inode_info *,
-			      struct pipe_buffer *);
-extern ssize_t splice_direct_to_actor(struct file *, struct splice_desc *,
-				      splice_direct_actor *);
-extern long do_splice(struct file *in, loff_t *off_in,
-		      struct file *out, loff_t *off_out,
-		      size_t len, unsigned int flags);
-
-extern long do_tee(struct file *in, struct file *out, size_t len,
-		   unsigned int flags);
-
-extern int splice_grow_spd(const struct pipe_inode_info *, struct splice_pipe_desc *);
-extern void splice_shrink_spd(struct splice_pipe_desc *);
+/* __splice_from_pipe, splice_to_pipe, add_to_pipe, splice_direct_to_actor removed - never called */
+/* do_splice only defined in splice.c, do_tee not called */
+/* splice_grow_spd, splice_shrink_spd not called */
 
 extern const struct pipe_buf_operations page_cache_pipe_buf_ops;
 extern const struct pipe_buf_operations default_pipe_buf_ops;

@@ -285,8 +285,7 @@ void fw_devlink_drivers_done(void)
 	fw_devlink_drv_reg_done = true;
 }
 
-int (*platform_notify)(struct device *dev) = NULL;
-int (*platform_notify_remove)(struct device *dev) = NULL;
+/* platform_notify, platform_notify_remove removed - never assigned */
 static struct kobject *dev_kobj;
 struct kobject *sysfs_dev_char_kobj;
 struct kobject *sysfs_dev_block_kobj;
@@ -303,11 +302,8 @@ static inline int device_is_not_partition(struct device *dev)
 static void device_platform_notify_remove(struct device *dev)
 {
 	acpi_device_notify_remove(dev);
-
 	software_node_notify_remove(dev);
-
-	if (platform_notify_remove)
-		platform_notify_remove(dev);
+	/* platform_notify_remove call removed - never assigned */
 }
 
 const char *dev_driver_string(const struct device *dev)

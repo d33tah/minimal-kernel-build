@@ -433,10 +433,7 @@ static inline void device_remove_group(struct device *dev,
 }
 
 /* devm_device_add_group, devm_device_add_groups, devm_device_remove_group, devm_device_remove_groups removed - unused */
-
-extern int (*platform_notify)(struct device *dev);
-
-extern int (*platform_notify_remove)(struct device *dev);
+/* platform_notify, platform_notify_remove removed - never assigned to */
 
 
 struct device *get_device(struct device *dev);

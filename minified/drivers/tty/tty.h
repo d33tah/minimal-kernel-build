@@ -59,7 +59,6 @@ int tty_ldisc_reinit(struct tty_struct *tty, int disc);
 long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
 long tty_jobctrl_ioctl(struct tty_struct *tty, struct tty_struct *real_tty,
 		       struct file *file, unsigned int cmd, unsigned long arg);
-void tty_default_fops(struct file_operations *fops);
 struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx);
 int tty_alloc_file(struct file *file);
 void tty_add_file(struct tty_struct *tty, struct file *file);

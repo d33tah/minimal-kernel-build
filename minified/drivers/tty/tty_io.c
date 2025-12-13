@@ -1264,6 +1264,8 @@ static void do_SAK_work(struct work_struct *work)
 
 /* do_SAK removed - no callers */
 
+static dev_t tty_devnum(struct tty_struct *tty);
+
 static struct device *tty_get_device(struct tty_struct *tty)
 {
 	dev_t devt = tty_devnum(tty);
@@ -1573,14 +1575,9 @@ err:
 	return error;
 }
 
-dev_t tty_devnum(struct tty_struct *tty)
+static dev_t tty_devnum(struct tty_struct *tty)
 {
 	return MKDEV(tty->driver->major, tty->driver->minor_start) + tty->index;
-}
-
-void tty_default_fops(struct file_operations *fops)
-{
-	*fops = tty_fops;
 }
 
 static char *tty_devnode(struct device *dev, umode_t *mode)

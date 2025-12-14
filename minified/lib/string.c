@@ -224,19 +224,7 @@ size_t strnlen(const char *s, size_t count)
 #endif
 
 /* strspn removed - not used in kernel proper (only scripts/) */
-
-#ifndef __HAVE_ARCH_STRCSPN
-size_t strcspn(const char *s, const char *reject)
-{
-	const char *p;
-
-	for (p = s; *p != '\0'; ++p) {
-		if (strchr(reject, *p))
-			break;
-	}
-	return p - s;
-}
-#endif
+/* strcspn removed - not used in kernel proper (only scripts/) */
 
 #ifndef __HAVE_ARCH_STRPBRK
 char *strpbrk(const char *cs, const char *ct)

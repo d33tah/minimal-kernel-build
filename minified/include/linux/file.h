@@ -70,7 +70,7 @@ static inline void fdput_pos(struct fd f)
 	fdput(f);
 }
 
-extern int f_dupfd(unsigned int from, struct file *file, unsigned flags);
+/* f_dupfd declaration removed - no implementation */
 extern bool get_close_on_exec(unsigned int fd);
 /* __get_unused_fd_flags declaration removed - made static */
 extern int get_unused_fd_flags(unsigned flags);

@@ -19,8 +19,6 @@
 
 #define __ref            __section(".ref.text") noinline
 #define __refdata        __section(".ref.data")
-#define __refconst       __section(".ref.rodata")
-
 #ifdef MODULE
 #define __exitused
 #else
@@ -32,10 +30,6 @@
 #define __meminit        __section(".meminit.text") __cold notrace \
 						  __latent_entropy
 #define __meminitdata    __section(".meminit.data")
-#define __meminitconst   __section(".meminit.rodata")
-#define __memexit        __section(".memexit.text") __exitused __cold notrace
-#define __memexitdata    __section(".memexit.data")
-#define __memexitconst   __section(".memexit.rodata")
 
 #define __HEAD		.section	".head.text","ax"
 #define __INIT		.section	".init.text","ax"
@@ -47,11 +41,9 @@
 
 #define __MEMINIT        .section	".meminit.text", "ax"
 #define __MEMINITDATA    .section	".meminit.data", "aw"
-#define __MEMINITRODATA  .section	".meminit.rodata", "a"
 
 #define __REF            .section       ".ref.text", "ax"
 #define __REFDATA        .section       ".ref.data", "aw"
-#define __REFCONST       .section       ".ref.rodata", "a"
 
 #ifndef __ASSEMBLY__
 typedef int (*initcall_t)(void);

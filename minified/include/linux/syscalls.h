@@ -172,8 +172,6 @@ static inline void addr_limit_user_check(void)
 
 
 
-ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count);
-ssize_t ksys_read(unsigned int fd, char __user *buf, size_t count);
 void ksys_sync(void);
 int ksys_sync_file_range(int fd, loff_t offset, loff_t nbytes,
 			 unsigned int flags);

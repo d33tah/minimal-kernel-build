@@ -196,15 +196,7 @@ postcore_initcall(devlink_class_init);
 #define DL_ADD_VALID_FLAGS (DL_MANAGED_LINK_FLAGS | DL_FLAG_STATELESS | \
 			    DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE)
 
-struct device_link *device_link_add(struct device *consumer,
-				    struct device *supplier, u32 flags)
-{
-	/* Minimal stub: no device links for minimal kernel */
-	(void)consumer;
-	(void)supplier;
-	(void)flags;
-	return NULL;
-}
+/* device_link_add removed - only returns NULL stub, never called */
 
 /* Stub: no device links since device_link_add returns NULL */
 int device_links_check_suppliers(struct device *dev)

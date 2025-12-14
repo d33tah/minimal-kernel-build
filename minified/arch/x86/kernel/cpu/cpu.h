@@ -52,7 +52,7 @@ enum tsx_ctrl_states {
 extern __ro_after_init enum tsx_ctrl_states tsx_ctrl_state;
 
 extern void __init tsx_init(void);
-void tsx_ap_init(void);
+/* tsx_ap_init removed - no callers */
 
 extern void init_spectral_chicken(struct cpuinfo_x86 *c);
 

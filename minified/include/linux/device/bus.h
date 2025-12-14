@@ -48,8 +48,7 @@ struct bus_type {
 extern int __must_check bus_register(struct bus_type *bus);
 
 extern void bus_unregister(struct bus_type *bus);
-
-extern int __must_check bus_rescan_devices(struct bus_type *bus);
+/* bus_rescan_devices removed - unused */
 
 struct bus_attribute {
 	struct attribute	attr;

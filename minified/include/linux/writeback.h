@@ -160,8 +160,7 @@ bool filemap_dirty_folio(struct address_space *mapping, struct folio *folio);
 /* folio_account_redirty and account_page_redirty removed - unused */
 bool folio_redirty_for_writepage(struct writeback_control *, struct folio *);
 
-void sb_mark_inode_writeback(struct inode *inode);
-void sb_clear_inode_writeback(struct inode *inode);
+/* sb_mark_inode_writeback, sb_clear_inode_writeback removed - unused */
 
 
 

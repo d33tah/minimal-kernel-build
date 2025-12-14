@@ -1,10 +1,8 @@
-/* --- 2025-12-06 13:25 --- uapi/linux/stat.h inlined */
 #ifndef _LINUX_STAT_H
 #define _LINUX_STAT_H
 
 #include <asm/stat.h>
 
-/* Inlined from uapi/linux/stat.h */
 #include <linux/types.h>
 
 #if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
@@ -42,51 +40,16 @@
 #define S_IXOTH 00001
 #endif
 
-struct statx_timestamp {
-	__s64	tv_sec;
-	__u32	tv_nsec;
-	__s32	__reserved;
-};
+/* struct statx forward decl for syscall signature */
+struct statx;
 
-struct statx {
-	__u32	stx_mask;
-	__u32	stx_blksize;
-	__u64	stx_attributes;
-	__u32	stx_nlink;
-	__u32	stx_uid;
-	__u32	stx_gid;
-	__u16	stx_mode;
-	__u16	__spare0[1];
-	__u64	stx_ino;
-	__u64	stx_size;
-	__u64	stx_blocks;
-	__u64	stx_attributes_mask;
-	struct statx_timestamp	stx_atime;
-	struct statx_timestamp	stx_btime;
-	struct statx_timestamp	stx_ctime;
-	struct statx_timestamp	stx_mtime;
-	__u32	stx_rdev_major;
-	__u32	stx_rdev_minor;
-	__u32	stx_dev_major;
-	__u32	stx_dev_minor;
-	__u64	stx_mnt_id;
-	__u64	__spare2;
-	__u64	__spare3[12];
-};
-
-/* Only keeping STATX_BASIC_STATS which is used */
 #define STATX_BASIC_STATS	0x000007ffU
-
-/* End uapi/linux/stat.h */
 
 #define S_IRWXUGO	(S_IRWXU|S_IRWXG|S_IRWXO)
 #define S_IALLUGO	(S_ISUID|S_ISGID|S_ISVTX|S_IRWXUGO)
 #define S_IRUGO		(S_IRUSR|S_IRGRP|S_IROTH)
 #define S_IWUGO		(S_IWUSR|S_IWGRP|S_IWOTH)
 #define S_IXUGO		(S_IXUSR|S_IXGRP|S_IXOTH)
-
-#define UTIME_NOW	((1l << 30) - 1l)
-#define UTIME_OMIT	((1l << 30) - 2l)
 
 #include <linux/time.h>
 #include <linux/uidgid.h>
@@ -98,7 +61,6 @@ struct kstat {
 	uint32_t	blksize;
 	u64		attributes;
 	u64		attributes_mask;
-	/* KSTAT_ATTR_* macros removed - unused */
 	u64		ino;
 	dev_t		dev;
 	dev_t		rdev;

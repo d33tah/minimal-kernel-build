@@ -756,12 +756,4 @@ done:
 		i_mmap_unlock_read(mapping);
 }
 
-void rmap_walk(struct folio *folio, struct rmap_walk_control *rwc)
-{
-	if (unlikely(folio_test_ksm(folio)))
-		rmap_walk_ksm(folio, rwc);
-	else if (folio_test_anon(folio))
-		rmap_walk_anon(folio, rwc, false);
-	else
-		rmap_walk_file(folio, rwc, false);
-}
+/* rmap_walk removed - was only called internally, now unreferenced */

@@ -207,8 +207,6 @@ struct rmap_walk_control {
 	bool (*invalid_vma)(struct vm_area_struct *vma, void *arg);
 };
 
-void rmap_walk(struct folio *folio, struct rmap_walk_control *rwc);
-
 struct anon_vma *folio_lock_anon_vma_read(struct folio *folio,
 					  struct rmap_walk_control *rwc);
 void page_unlock_anon_vma_read(struct anon_vma *anon_vma);

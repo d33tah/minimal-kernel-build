@@ -97,10 +97,6 @@ int overflowgid = DEFAULT_OVERFLOWGID;
 
 
 
-int fs_overflowuid = DEFAULT_FS_OVERFLOWUID;
-int fs_overflowgid = DEFAULT_FS_OVERFLOWGID;
-
-
 SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)
 {
 	return -ENOSYS;

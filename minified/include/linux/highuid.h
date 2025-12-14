@@ -21,15 +21,6 @@ extern int overflowgid;
 #define SET_GID(var, gid) do { (var) = __convert_gid(sizeof(var), (gid)); } while (0)
 
 
-extern int fs_overflowuid;
-extern int fs_overflowgid;
-
-#define DEFAULT_FS_OVERFLOWUID	65534
-#define DEFAULT_FS_OVERFLOWGID	65534
-
-#define fs_high2lowuid(uid) ((uid) & ~0xFFFF ? (uid16_t)fs_overflowuid : (uid16_t)(uid))
-#define fs_high2lowgid(gid) ((gid) & ~0xFFFF ? (gid16_t)fs_overflowgid : (gid16_t)(gid))
-
 #define low_16_bits(x)	((x) & 0xFFFF)
 #define high_16_bits(x)	(((x) & 0xFFFF0000) >> 16)
 

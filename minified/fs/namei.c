@@ -1197,25 +1197,7 @@ static inline unsigned int fold_hash(unsigned long x, unsigned long y)
 
 #endif
 
-unsigned int full_name_hash(const void *salt, const char *name, unsigned int len)
-{
-	unsigned long a, x = 0, y = (unsigned long)salt;
-
-	for (;;) {
-		if (!len)
-			goto done;
-		a = load_unaligned_zeropad(name);
-		if (len < sizeof(unsigned long))
-			break;
-		HASH_MIX(x, y, a);
-		name += sizeof(unsigned long);
-		len -= sizeof(unsigned long);
-	}
-	x ^= a & bytemask_from_count(len);
-done:
-	return fold_hash(x, y);
-}
-
+/* full_name_hash removed - unused */
 /* hashlen_string removed - unused */
 
 static inline u64 hash_name(const void *salt, const char *name)
@@ -1545,17 +1527,7 @@ int vfs_path_lookup(struct dentry *dentry, struct vfsmount *mnt,
 }
 
 /* lookup_one_common, lookup_one_len, lookup_one, lookup_one_unlocked, lookup_one_positive_unlocked removed - no callers */
-
-int user_path_at_empty(int dfd, const char __user *name, unsigned flags,
-		 struct path *path, int *empty)
-{
-	struct filename *filename = getname_flags(name, flags, empty);
-	int ret = filename_lookup(dfd, filename, flags, path, NULL);
-
-	putname(filename);
-	return ret;
-}
-
+/* user_path_at_empty removed - no callers */
 /* __check_sticky removed - never called */
 
 static inline int may_create(struct user_namespace *mnt_userns,

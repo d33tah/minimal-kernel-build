@@ -27,7 +27,7 @@ enum tick_broadcast_state {
 };
 
 
-extern int tick_broadcast_oneshot_control(enum tick_broadcast_state state);
+/* tick_broadcast_oneshot_control removed - unused */
 
 
 enum tick_dep_bits {

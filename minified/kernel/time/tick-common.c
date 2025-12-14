@@ -221,15 +221,7 @@ out_bc:
 	tick_install_broadcast_device(newdev, cpu);
 }
 
-int tick_broadcast_oneshot_control(enum tick_broadcast_state state)
-{
-	struct tick_device *td = this_cpu_ptr(&tick_cpu_device);
-
-	if (!(td->evtdev->features & CLOCK_EVT_FEAT_C3STOP))
-		return 0;
-
-	return __tick_broadcast_oneshot_control(state);
-}
+/* tick_broadcast_oneshot_control removed - unused */
 
 
 

@@ -49,39 +49,7 @@ void tty_unthrottle(struct tty_struct *tty)
 	up_write(&tty->termios_rwsem);
 }
 
-int tty_throttle_safe(struct tty_struct *tty)
-{
-	int ret = 0;
-	mutex_lock(&tty->throttle_mutex);
-	if (!tty_throttled(tty)) {
-		if (tty->flow_change != TTY_THROTTLE_SAFE)
-			ret = 1;
-		else {
-			set_bit(TTY_THROTTLED, &tty->flags);
-			if (tty->ops->throttle)
-				tty->ops->throttle(tty);
-		}
-	}
-	mutex_unlock(&tty->throttle_mutex);
-	return ret;
-}
-
-int tty_unthrottle_safe(struct tty_struct *tty)
-{
-	int ret = 0;
-	mutex_lock(&tty->throttle_mutex);
-	if (tty_throttled(tty)) {
-		if (tty->flow_change != TTY_UNTHROTTLE_SAFE)
-			ret = 1;
-		else {
-			clear_bit(TTY_THROTTLED, &tty->flags);
-			if (tty->ops->unthrottle)
-				tty->ops->unthrottle(tty);
-		}
-	}
-	mutex_unlock(&tty->throttle_mutex);
-	return ret;
-}
+/* tty_throttle_safe and tty_unthrottle_safe removed - no callers */
 
 void tty_wait_until_sent(struct tty_struct *tty, long timeout)
 {

@@ -247,11 +247,6 @@ unsigned int tty_chars_in_buffer(struct tty_struct *tty);
 unsigned int tty_write_room(struct tty_struct *tty);
 void tty_driver_flush_buffer(struct tty_struct *tty);
 void tty_unthrottle(struct tty_struct *tty);
-int tty_throttle_safe(struct tty_struct *tty);
-int tty_unthrottle_safe(struct tty_struct *tty);
-int tty_get_icount(struct tty_struct *tty,
-		struct serial_icounter_struct *icount);
-int is_current_pgrp_orphaned(void);
 void tty_hangup(struct tty_struct *tty);
 int tty_hung_up_p(struct file *filp);
 void __do_SAK(struct tty_struct *tty);
@@ -268,12 +263,10 @@ unsigned char tty_get_frame_size(unsigned int cflag);
 
 void tty_termios_copy_hw(struct ktermios *new, struct ktermios *old);
 int tty_termios_hw_change(const struct ktermios *a, const struct ktermios *b);
-int tty_set_termios(struct tty_struct *tty, struct ktermios *kt);
 
 void tty_wakeup(struct tty_struct *tty);
 
 int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
-int tty_perform_flush(struct tty_struct *tty, unsigned long arg);
 struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx);
 void tty_init_termios(struct tty_struct *tty);
 int tty_standard_install(struct tty_driver *driver,

@@ -304,31 +304,8 @@ int class_interface_register(struct class_interface *class_intf)
 	return 0;
 }
 
-/* class_interface_unregister, show_class_attr_string removed - unused */
-
-
-struct class_compat {
-	struct kobject *kobj;
-};
-
-struct class_compat *class_compat_register(const char *name)
-{
-	struct class_compat *cls;
-
-	cls = kmalloc(sizeof(struct class_compat), GFP_KERNEL);
-	if (!cls)
-		return NULL;
-	cls->kobj = kobject_create_and_add(name, &class_kset->kobj);
-	if (!cls->kobj) {
-		kfree(cls);
-		return NULL;
-	}
-	return cls;
-}
-
-/* class_compat_unregister removed - unused */
-
-/* class_compat_create_link, class_compat_remove_link removed - unused */
+/* class_interface_unregister, show_class_attr_string, class_compat_register,
+   class_compat_unregister, class_compat_create_link, class_compat_remove_link removed - unused */
 
 int __init classes_init(void)
 {

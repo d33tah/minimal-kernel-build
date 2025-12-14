@@ -53,9 +53,8 @@ extern void class_unregister(struct class *class);
 	__class_register(class, &__key);	\
 })
 
-struct class_compat;
-struct class_compat *class_compat_register(const char *name);
-/* class_compat_unregister, class_compat_create_link, class_compat_remove_link removed - unused */
+/* struct class_compat, class_compat_register, class_compat_unregister,
+   class_compat_create_link, class_compat_remove_link removed - unused */
 
 extern void class_dev_iter_init(struct class_dev_iter *iter,
 				struct class *class,

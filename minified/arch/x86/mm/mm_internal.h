@@ -21,7 +21,7 @@ void zone_sizes_init(void);
 
 extern int after_bootmem;
 
-void update_cache_mode_entry(unsigned entry, enum page_cache_mode cache);
+/* update_cache_mode_entry removed - unused */
 
 extern unsigned long tlb_single_page_flush_ceiling;
 

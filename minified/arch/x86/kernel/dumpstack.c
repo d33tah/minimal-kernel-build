@@ -68,17 +68,7 @@ static void show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,
 	printk("%sCall Trace: <stubbed>\n", log_lvl);
 }
 
-void show_stack(struct task_struct *task, unsigned long *sp,
-		       const char *loglvl)
-{
-	task = task ? : current;
-
-	 
-	if (!sp && task == current)
-		sp = get_stack_pointer(current, NULL);
-
-	show_trace_log_lvl(task, NULL, sp, loglvl);
-}
+/* show_stack removed - never called */
 
 void show_stack_regs(struct pt_regs *regs)
 {

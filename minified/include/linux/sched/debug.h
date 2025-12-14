@@ -8,8 +8,7 @@ struct pt_regs;
 
 extern void show_regs(struct pt_regs *);
 
-extern void show_stack(struct task_struct *task, unsigned long *sp,
-		       const char *loglvl);
+/* show_stack declaration removed - never called */
 
 #define __sched		__section(".sched.text")
 

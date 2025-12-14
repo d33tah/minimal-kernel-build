@@ -79,10 +79,5 @@ int populate_cache_leaves(unsigned int cpu)
 	return -ENOENT;
 }
 
-void init_intel_cacheinfo(struct cpuinfo_x86 *c)
-{
-	 
-}
-
-/* init_amd_cacheinfo, init_hygon_cacheinfo, cacheinfo_hygon_init_llc_id,
+/* init_intel_cacheinfo, init_amd_cacheinfo, init_hygon_cacheinfo, cacheinfo_hygon_init_llc_id,
    cacheinfo_amd_init_llc_id removed - no callers */

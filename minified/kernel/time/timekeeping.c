@@ -586,11 +586,8 @@ void __init timekeeping_init(void)
 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
 }
 
-/* Stub: timekeeping syscore ops - suspend/resume not needed for minimal kernel */
-void timekeeping_resume(void) { }
-int timekeeping_suspend(void) { return 0; }
-static int __init timekeeping_init_ops(void) { return 0; }
-device_initcall(timekeeping_init_ops);
+/* timekeeping_resume, timekeeping_suspend removed - unused */
+/* timekeeping_init_ops removed - unused */
 
 static __always_inline void timekeeping_apply_adjustment(struct timekeeper *tk,
 							 s64 offset,

@@ -32,20 +32,6 @@ extern void __init sld_setup(struct cpuinfo_x86 *c);
 extern bool handle_user_split_lock(struct pt_regs *regs, long error_code);
 /* handle_guest_split_lock removed - never called */
 extern void handle_bus_lock(struct pt_regs *regs);
-/* get_this_hybrid_cpu_type, init_ia32_feat_ctl, cet_disable, intel_cpu_collect_info removed - never called */
-
-static inline bool intel_cpu_signatures_match(unsigned int s1, unsigned int p1,
-					      unsigned int s2, unsigned int p2)
-{
-	if (s1 != s2)
-		return false;
-
-	 
-	if (!p1 && !p2)
-		return true;
-
-	 
-	return p1 & p2;
-}
+/* get_this_hybrid_cpu_type, init_ia32_feat_ctl, cet_disable, intel_cpu_collect_info, intel_cpu_signatures_match removed - never called */
 
 #endif  

@@ -2140,12 +2140,7 @@ SYSCALL_DEFINE2(mkdir, const char __user *, pathname, umode_t, mode)
 	return do_mkdirat(AT_FDCWD, getname(pathname), mode);
 }
 
-int vfs_rmdir(struct user_namespace *mnt_userns, struct inode *dir,
-		     struct dentry *dentry)
-{
-	/* Stub: directory removal not needed for minimal kernel */
-	return -EPERM;
-}
+/* vfs_rmdir removed - unused */
 
 int do_rmdir(int dfd, struct filename *name)
 {
@@ -2158,12 +2153,7 @@ SYSCALL_DEFINE1(rmdir, const char __user *, pathname)
 	return do_rmdir(AT_FDCWD, getname(pathname));
 }
 
-int vfs_unlink(struct user_namespace *mnt_userns, struct inode *dir,
-	       struct dentry *dentry, struct inode **delegated_inode)
-{
-	/* Stub: file unlinking not needed for minimal kernel */
-	return -EPERM;
-}
+/* vfs_unlink removed - unused */
 
 int do_unlinkat(int dfd, struct filename *name)
 {

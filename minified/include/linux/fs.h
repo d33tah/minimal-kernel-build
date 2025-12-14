@@ -974,9 +974,7 @@ int vfs_symlink(struct user_namespace *, struct inode *,
 		struct dentry *, const char *);
 int vfs_link(struct dentry *, struct user_namespace *, struct inode *,
 	     struct dentry *, struct inode **);
-int vfs_rmdir(struct user_namespace *, struct inode *, struct dentry *);
-int vfs_unlink(struct user_namespace *, struct inode *, struct dentry *,
-	       struct inode **);
+/* vfs_rmdir, vfs_unlink removed - unused */
 
 struct renamedata {
 	struct user_namespace *old_mnt_userns;

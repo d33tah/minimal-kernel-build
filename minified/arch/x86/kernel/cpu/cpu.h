@@ -73,7 +73,7 @@ extern void check_null_seg_clears_base(struct cpuinfo_x86 *c);
 
 unsigned int aperfmperf_get_khz(int cpu);
 
-extern void x86_spec_ctrl_setup_ap(void);
+/* x86_spec_ctrl_setup_ap removed - no callers */
 extern void update_srbds_msr(void);
 
 extern u64 x86_read_arch_cap_msr(void);

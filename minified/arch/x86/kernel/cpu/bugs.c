@@ -58,11 +58,7 @@ void __init check_bugs(void)
 	fpu__init_check_bugs();
 }
 
-/* x86_virt_spec_ctrl removed - unused in minimal kernel */
-
-void x86_spec_ctrl_setup_ap(void)
-{
-}
+/* x86_virt_spec_ctrl, x86_spec_ctrl_setup_ap removed - unused in minimal kernel */
 
 bool itlb_multihit_kvm_mitigation;
 

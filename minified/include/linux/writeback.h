@@ -157,11 +157,7 @@ typedef int (*writepage_t)(struct page *page, struct writeback_control *wbc,
 int do_writepages(struct address_space *mapping, struct writeback_control *wbc);
 
 bool filemap_dirty_folio(struct address_space *mapping, struct folio *folio);
-void folio_account_redirty(struct folio *folio);
-static inline void account_page_redirty(struct page *page)
-{
-	folio_account_redirty(page_folio(page));
-}
+/* folio_account_redirty and account_page_redirty removed - unused */
 bool folio_redirty_for_writepage(struct writeback_control *, struct folio *);
 
 void sb_mark_inode_writeback(struct inode *inode);

@@ -22,7 +22,7 @@ bool noop_dirty_folio(struct address_space *mapping, struct folio *folio) { retu
 void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb) {}
 /* __folio_mark_dirty removed - never called */
 bool filemap_dirty_folio(struct address_space *mapping, struct folio *folio) { return true; }
-void folio_account_redirty(struct folio *folio) {}
+/* folio_account_redirty removed - unused */
 bool folio_redirty_for_writepage(struct writeback_control *wbc, struct folio *folio) { return true; }
 bool folio_mark_dirty(struct folio *folio) { return true; }
 /* set_page_dirty_lock removed - unused */

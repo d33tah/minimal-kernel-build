@@ -488,9 +488,7 @@ static void *xas_create(struct xa_state *xas, bool allow_root)
 	return entry;
 }
 
-void xas_create_range(struct xa_state *xas)
-{
-}
+/* xas_create_range removed - unused */
 
 static void update_node(struct xa_state *xas, struct xa_node *node,
 		int count, int values)

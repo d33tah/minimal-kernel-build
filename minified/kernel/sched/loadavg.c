@@ -4,13 +4,7 @@ atomic_long_t calc_load_tasks;
 unsigned long calc_load_update;
 unsigned long avenrun[3];
 
-/* Stub: get_avenrun - return zeros */
-void get_avenrun(unsigned long *loads, unsigned long offset, int shift)
-{
-	loads[0] = 0;
-	loads[1] = 0;
-	loads[2] = 0;
-}
+/* get_avenrun removed - never called */
 
 /* Stub: calc_load_fold_active - no load tracking for minimal kernel */
 long calc_load_fold_active(struct rq *this_rq, long adjust)

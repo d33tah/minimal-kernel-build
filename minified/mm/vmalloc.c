@@ -1856,11 +1856,7 @@ void *vmalloc(unsigned long size)
 				__builtin_return_address(0));
 }
 
-void *vzalloc(unsigned long size)
-{
-	return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_ZERO, NUMA_NO_NODE,
-				__builtin_return_address(0));
-}
+/* vzalloc removed - never called (~5 LOC) */
 
 void free_vm_area(struct vm_struct *area)
 {

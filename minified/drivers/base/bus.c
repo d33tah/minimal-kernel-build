@@ -598,12 +598,7 @@ void bus_unregister(struct bus_type *bus)
 	kset_unregister(&bus->p->subsys);
 }
 
-struct klist *bus_get_device_klist(struct bus_type *bus)
-{
-	return &bus->p->klist_devices;
-}
-
-/* Removed: bus_unregister_notifier, bus_get_kset, bus_sort_breadthfirst,
+/* Removed: bus_get_device_klist, bus_unregister_notifier, bus_get_kset, bus_sort_breadthfirst,
    subsys_dev_iter_init/next/exit, subsys_interface_register/unregister - no external callers */
 
 static void system_root_device_release(struct device *dev)

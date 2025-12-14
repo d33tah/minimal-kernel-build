@@ -94,7 +94,6 @@ int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 #define BUS_NOTIFY_UNBOUND_DRIVER	0x00000007  
 #define BUS_NOTIFY_DRIVER_NOT_BOUND	0x00000008  
 
-/* bus_get_kset removed - unused */
-extern struct klist *bus_get_device_klist(struct bus_type *bus);
+/* bus_get_kset, bus_get_device_klist removed - unused */
 
 #endif

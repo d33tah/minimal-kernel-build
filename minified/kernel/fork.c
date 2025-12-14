@@ -1775,15 +1775,10 @@ static int unshare_fd(unsigned long unshare_flags, unsigned int max_fds,
 	return 0;
 }
 
-int ksys_unshare(unsigned long unshare_flags)
+SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)
 {
 	/* Stubbed: namespace unsharing not needed for minimal boot */
 	return -EINVAL;
-}
-
-SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)
-{
-	return ksys_unshare(unshare_flags);
 }
 
 int unshare_files(void)

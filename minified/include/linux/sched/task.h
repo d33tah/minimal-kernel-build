@@ -67,7 +67,7 @@ extern void exit_thread(struct task_struct *tsk);
 /* do_group_exit now static in exit.c */
 
 extern void exit_files(struct task_struct *);
-extern void exit_itimers(struct task_struct *);
+/* exit_itimers removed - never defined or called */
 
 extern pid_t kernel_clone(struct kernel_clone_args *kargs);
 /* create_io_thread removed - unused */

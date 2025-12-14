@@ -210,7 +210,7 @@ void delete_from_page_cache_batch(struct address_space *mapping,
 		filemap_free_folio(mapping, fbatch->folios[i]);
 }
 
-int filemap_check_errors(struct address_space *mapping)
+static int filemap_check_errors(struct address_space *mapping)
 {
 	int ret = 0;
 	

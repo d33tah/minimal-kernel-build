@@ -27,7 +27,7 @@ int filemap_write_and_wait_range(struct address_space *mapping,
 		loff_t lstart, loff_t lend);
 int __filemap_fdatawrite_range(struct address_space *mapping,
 		loff_t start, loff_t end, int sync_mode);
-int filemap_check_errors(struct address_space *mapping);
+/* filemap_check_errors declaration removed - made static (~1 LOC) */
 int filemap_fdatawrite_wbc(struct address_space *mapping,
 			   struct writeback_control *wbc);
 

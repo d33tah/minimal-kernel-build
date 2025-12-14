@@ -97,8 +97,7 @@ extern int build_open_flags(const struct open_how *how, struct open_flags *op);
 
 long do_sys_ftruncate(unsigned int fd, loff_t length, int small);
 int chmod_common(const struct path *path, umode_t mode);
-int do_fchownat(int dfd, const char __user *filename, uid_t user, gid_t group,
-		int flag);
+/* do_fchownat declaration removed - made static */
 int chown_common(const struct path *path, uid_t user, gid_t group);
 extern int vfs_open(const struct path *, struct file *);
 

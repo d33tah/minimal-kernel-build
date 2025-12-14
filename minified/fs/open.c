@@ -307,7 +307,7 @@ int chown_common(const struct path *path, uid_t user, gid_t group)
 	return -EOPNOTSUPP;
 }
 
-int do_fchownat(int dfd, const char __user *filename, uid_t user, gid_t group,
+static int do_fchownat(int dfd, const char __user *filename, uid_t user, gid_t group,
 		int flag)
 {
 	return -ENOSYS;

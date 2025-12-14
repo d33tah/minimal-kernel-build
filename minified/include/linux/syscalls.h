@@ -190,9 +190,7 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 			      unsigned long fd, unsigned long pgoff);
 ssize_t ksys_readahead(int fd, loff_t offset, size_t count);
 
-extern int do_fchownat(int dfd, const char __user *filename, uid_t user,
-		       gid_t group, int flag);
-
+/* do_fchownat declaration removed - made static */
 
 extern long do_sys_ftruncate(unsigned int fd, loff_t length, int small);
 

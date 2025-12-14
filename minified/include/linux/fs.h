@@ -974,20 +974,7 @@ int vfs_symlink(struct user_namespace *, struct inode *,
 		struct dentry *, const char *);
 int vfs_link(struct dentry *, struct user_namespace *, struct inode *,
 	     struct dentry *, struct inode **);
-/* vfs_rmdir, vfs_unlink removed - unused */
-
-struct renamedata {
-	struct user_namespace *old_mnt_userns;
-	struct inode *old_dir;
-	struct dentry *old_dentry;
-	struct user_namespace *new_mnt_userns;
-	struct inode *new_dir;
-	struct dentry *new_dentry;
-	struct inode **delegated_inode;
-	unsigned int flags;
-} __randomize_layout;
-
-/* vfs_rename, vfs_tmpfile removed - unused */
+/* vfs_rmdir, vfs_unlink, struct renamedata, vfs_rename, vfs_tmpfile removed - unused */
 
 int vfs_fchown(struct file *file, uid_t user, gid_t group);
 int vfs_fchmod(struct file *file, umode_t mode);

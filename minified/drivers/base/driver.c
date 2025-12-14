@@ -123,15 +123,7 @@ int driver_register(struct device_driver *drv)
 	return ret;
 }
 
-void driver_unregister(struct device_driver *drv)
-{
-	if (!drv || !drv->p) {
-		WARN(1, "Unexpected driver unregister!\n");
-		return;
-	}
-	driver_remove_groups(drv, drv->groups);
-	bus_remove_driver(drv);
-}
+/* driver_unregister removed - never called */
 
 struct device_driver *driver_find(const char *name, struct bus_type *bus)
 {

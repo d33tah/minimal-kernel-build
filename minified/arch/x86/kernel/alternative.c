@@ -50,9 +50,7 @@ void __init_or_module noinline apply_alternatives(struct alt_instr *start,
 {
 }
 
-void __init_or_module noinline apply_retpolines(s32 *start, s32 *end) { }
-void __init_or_module noinline apply_returns(s32 *start, s32 *end) { }
-void __init_or_module noinline apply_ibt_endbr(s32 *start, s32 *end) { }
+/* apply_retpolines, apply_returns, apply_ibt_endbr removed - never called */
 
 void __init alternative_instructions(void)
 {

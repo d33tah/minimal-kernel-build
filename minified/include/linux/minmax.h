@@ -28,10 +28,6 @@
 
 #define max(x, y)	__careful_cmp(x, y, >)
 
-#define min3(x, y, z) min((typeof(x))min(x, y), z)
-
-#define max3(x, y, z) max((typeof(x))max(x, y), z)
-
 #define min_not_zero(x, y) ({			\
 	typeof(x) __x = (x);			\
 	typeof(y) __y = (y);			\

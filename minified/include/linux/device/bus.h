@@ -66,13 +66,9 @@ struct bus_attribute {
 
 /* bus_create_file, bus_remove_file removed - unused */
 
-int device_match_name(struct device *dev, const void *name);
-int device_match_of_node(struct device *dev, const void *np);
-int device_match_fwnode(struct device *dev, const void *fwnode);
+/* device_match_name, device_match_of_node, device_match_fwnode,
+   device_match_acpi_dev, device_match_acpi_handle, device_match_any removed - unused */
 int device_match_devt(struct device *dev, const void *pdevt);
-int device_match_acpi_dev(struct device *dev, const void *adev);
-int device_match_acpi_handle(struct device *dev, const void *handle);
-int device_match_any(struct device *dev, const void *unused);
 
 /* subsys_dev_iter_* removed - unused */
 

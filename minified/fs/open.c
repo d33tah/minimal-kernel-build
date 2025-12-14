@@ -335,14 +335,9 @@ int vfs_fchown(struct file *file, uid_t user, gid_t group)
 	return -ENOSYS;
 }
 
-int ksys_fchown(unsigned int fd, uid_t user, gid_t group)
-{
-	return -ENOSYS;
-}
-
 SYSCALL_DEFINE3(fchown, unsigned int, fd, uid_t, user, gid_t, group)
 {
-	return ksys_fchown(fd, user, group);
+	return -ENOSYS;  /* stubbed */
 }
 
 static int do_dentry_open(struct file *f,

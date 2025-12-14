@@ -175,7 +175,7 @@ out_free_cache:
 	return NULL;
 }
 
-bool __mnt_is_readonly(struct vfsmount *mnt)
+static bool __mnt_is_readonly(struct vfsmount *mnt)
 {
 	return (mnt->mnt_flags & MNT_READONLY) || sb_rdonly(mnt->mnt_sb);
 }

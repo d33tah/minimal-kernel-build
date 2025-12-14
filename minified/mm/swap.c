@@ -526,13 +526,7 @@ void folio_batch_remove_exceptionals(struct folio_batch *fbatch)
 	fbatch->nr = j;
 }
 
-unsigned pagevec_lookup_range(struct pagevec *pvec,
-		struct address_space *mapping, pgoff_t *start, pgoff_t end)
-{
-	pvec->nr = find_get_pages_range(mapping, start, end, PAGEVEC_SIZE,
-					pvec->pages);
-	return pagevec_count(pvec);
-}
+/* pagevec_lookup_range removed - no callers */
 
 unsigned pagevec_lookup_range_tag(struct pagevec *pvec,
 		struct address_space *mapping, pgoff_t *index, pgoff_t end,

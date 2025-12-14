@@ -206,9 +206,6 @@ static inline bool folio_contains(struct folio *folio, pgoff_t index)
 	return index - folio_index(folio) < folio_nr_pages(folio);
 }
 
-unsigned find_get_pages_range(struct address_space *mapping, pgoff_t *start,
-			pgoff_t end, unsigned int nr_pages,
-			struct page **pages);
 unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
 			pgoff_t end, xa_mark_t tag, unsigned int nr_pages,
 			struct page **pages);

@@ -1476,10 +1476,7 @@ static void blank_screen_t(struct timer_list *unused)
 	/* Stub: no screen blanking in minimal kernel */
 }
 
-void poke_blanked_console(void)
-{
-	/* Stub: console blanking poke not needed for minimal kernel */
-}
+/* poke_blanked_console removed - never called */
 
 static void set_palette(struct vc_data *vc)
 {

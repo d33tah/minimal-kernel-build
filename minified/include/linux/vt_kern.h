@@ -142,8 +142,7 @@ struct vc_data *vc_deallocate(unsigned int console);
 void reset_palette(struct vc_data *vc);
 void do_unblank_screen(int leaving_gfx);
 void unblank_screen(void);
-void poke_blanked_console(void);
-/* clear_buffer_attributes, update_region, redraw_screen - now static in vt.c */
+/* poke_blanked_console, clear_buffer_attributes, update_region, redraw_screen - removed/static in vt.c */
 
 struct unipair;
 

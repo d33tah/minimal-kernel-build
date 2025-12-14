@@ -24,7 +24,6 @@ int __wait_on_bit(struct wait_queue_head *wq_head, struct wait_bit_queue_entry *
 int __wait_on_bit_lock(struct wait_queue_head *wq_head, struct wait_bit_queue_entry *wbq_entry, wait_bit_action_f *action, unsigned int mode);
 void wake_up_bit(void *word, int bit);
 int out_of_line_wait_on_bit(void *word, int, wait_bit_action_f *action, unsigned int mode);
-int out_of_line_wait_on_bit_timeout(void *word, int, wait_bit_action_f *action, unsigned int mode, unsigned long timeout);
 int out_of_line_wait_on_bit_lock(void *word, int, wait_bit_action_f *action, unsigned int mode);
 struct wait_queue_head *bit_waitqueue(void *word, int bit);
 extern void __init wait_bit_init(void);
@@ -43,9 +42,6 @@ int wake_bit_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync
 	}
 
 extern int bit_wait(struct wait_bit_key *key, int mode);
-extern int bit_wait_io(struct wait_bit_key *key, int mode);
-extern int bit_wait_timeout(struct wait_bit_key *key, int mode);
-extern int bit_wait_io_timeout(struct wait_bit_key *key, int mode);
 
 static inline int
 wait_on_bit(unsigned long *word, int bit, unsigned mode)
@@ -58,38 +54,7 @@ wait_on_bit(unsigned long *word, int bit, unsigned mode)
 				       mode);
 }
 
-static inline int
-wait_on_bit_io(unsigned long *word, int bit, unsigned mode)
-{
-	might_sleep();
-	if (!test_bit(bit, word))
-		return 0;
-	return out_of_line_wait_on_bit(word, bit,
-				       bit_wait_io,
-				       mode);
-}
-
-static inline int
-wait_on_bit_timeout(unsigned long *word, int bit, unsigned mode,
-		    unsigned long timeout)
-{
-	might_sleep();
-	if (!test_bit(bit, word))
-		return 0;
-	return out_of_line_wait_on_bit_timeout(word, bit,
-					       bit_wait_timeout,
-					       mode, timeout);
-}
-
-static inline int
-wait_on_bit_action(unsigned long *word, int bit, wait_bit_action_f *action,
-		   unsigned mode)
-{
-	might_sleep();
-	if (!test_bit(bit, word))
-		return 0;
-	return out_of_line_wait_on_bit(word, bit, action, mode);
-}
+/* wait_on_bit_io, wait_on_bit_timeout, wait_on_bit_lock_io, wait_on_bit_lock_action removed - unused */
 
 static inline int
 wait_on_bit_lock(unsigned long *word, int bit, unsigned mode)
@@ -98,25 +63,6 @@ wait_on_bit_lock(unsigned long *word, int bit, unsigned mode)
 	if (!test_and_set_bit(bit, word))
 		return 0;
 	return out_of_line_wait_on_bit_lock(word, bit, bit_wait, mode);
-}
-
-static inline int
-wait_on_bit_lock_io(unsigned long *word, int bit, unsigned mode)
-{
-	might_sleep();
-	if (!test_and_set_bit(bit, word))
-		return 0;
-	return out_of_line_wait_on_bit_lock(word, bit, bit_wait_io, mode);
-}
-
-static inline int
-wait_on_bit_lock_action(unsigned long *word, int bit, wait_bit_action_f *action,
-			unsigned mode)
-{
-	might_sleep();
-	if (!test_and_set_bit(bit, word))
-		return 0;
-	return out_of_line_wait_on_bit_lock(word, bit, action, mode);
 }
 
 extern void init_wait_var_entry(struct wait_bit_queue_entry *wbq_entry, void *var, int flags);

@@ -13,9 +13,7 @@
 #define AUDIT_ARCH_I386		(EM_386|__AUDIT_ARCH_LE)
 
 struct task_struct;
-struct audit_buffer;
-struct audit_context;
-struct kern_ipc_perm;
+/* Forward declarations for audit_buffer, audit_context, kern_ipc_perm removed - unused */
 
 /* Reduced audit_ntp_type enum - NTP audit not used in minimal kernel */
 enum audit_ntp_type {

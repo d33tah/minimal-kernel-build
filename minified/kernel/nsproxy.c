@@ -183,7 +183,7 @@ void free_nsproxy(struct nsproxy *ns)
 
 /* unshare_nsproxy_namespaces removed - unused */
 
-void switch_task_namespaces(struct task_struct *p, struct nsproxy *new)
+static void switch_task_namespaces(struct task_struct *p, struct nsproxy *new)
 {
 	struct nsproxy *ns;
 

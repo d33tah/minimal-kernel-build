@@ -42,7 +42,7 @@ static inline struct cred *nsset_cred(struct nsset *set)
 
 int copy_namespaces(unsigned long flags, struct task_struct *tsk);
 void exit_task_namespaces(struct task_struct *tsk);
-void switch_task_namespaces(struct task_struct *tsk, struct nsproxy *new);
+/* switch_task_namespaces now static in nsproxy.c */
 void free_nsproxy(struct nsproxy *ns);
 int __init nsproxy_cache_init(void);
 

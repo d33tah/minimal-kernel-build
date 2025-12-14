@@ -90,8 +90,4 @@ void vc_SAK(struct work_struct *work)
 	console_unlock();
 }
 
-void change_console(struct vc_data *new_vc)
-{
-}
-
-/* vt_move_to_console, pm_set_vt_switch removed - never called */
+/* change_console, vt_move_to_console, pm_set_vt_switch removed - never called */

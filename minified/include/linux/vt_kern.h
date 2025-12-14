@@ -157,7 +157,6 @@ void con_free_unimap(struct vc_data *vc);
 int con_copy_unimap(struct vc_data *dst_vc, struct vc_data *src_vc);
 
 
-void change_console(struct vc_data *new_vc);
 void reset_vc(struct vc_data *vc);
 int vty_init(const struct file_operations *console_fops);
 

@@ -1,5 +1,4 @@
 /* Minimal audit.h - stubs for !CONFIG_AUDIT */
-/* --- 2025-12-06 13:10 --- elf-em.h replaced with elf.h */
 #ifndef _LINUX_AUDIT_H_
 #define _LINUX_AUDIT_H_
 
@@ -13,38 +12,17 @@
 #define AUDIT_ARCH_I386		(EM_386|__AUDIT_ARCH_LE)
 
 struct task_struct;
-/* Forward declarations for audit_buffer, audit_context, kern_ipc_perm removed - unused */
-
-/* Reduced audit_ntp_type enum - NTP audit not used in minimal kernel */
-enum audit_ntp_type {
-	AUDIT_NTP_NVALS,  /* Only value needed for stub function signature */
-};
-
-struct audit_ntp_data {};
-
-/* Reduced audit_nfcfgop enum - netfilter audit not used in minimal kernel */
-enum audit_nfcfgop {
-	AUDIT_NFT_OP_INVALID,  /* Only value needed for stub function signature */
-};
 
 struct filename;
 
-#define	AUDIT_TYPE_UNKNOWN	0
-#define	AUDIT_TYPE_NORMAL	1
-#define	AUDIT_TYPE_PARENT	2
-#define	AUDIT_TYPE_CHILD_DELETE 3
-#define	AUDIT_TYPE_CHILD_CREATE 4
+#define AUDIT_TYPE_CHILD_CREATE 4
 
 #define AUDIT_INODE_PARENT	1
-#define AUDIT_INODE_HIDDEN	2
 #define AUDIT_INODE_NOEVAL	4
 
-#define AUDIT_OFF	0
-#define AUDIT_ON	1
-#define AUDIT_LOCKED	2
-
-
 #define audit_enabled AUDIT_OFF
+
+#define AUDIT_OFF	0
 
 static inline int audit_alloc(struct task_struct *task)
 {
@@ -88,10 +66,5 @@ static inline void audit_mmap_fd(int fd, int flags)
 
 static inline void audit_openat2_how(struct open_how *how)
 { }
-
-
-#define audit_n_rules 0
-#define audit_signals 0
-
 
 #endif

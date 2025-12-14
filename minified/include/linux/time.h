@@ -41,10 +41,7 @@ struct tm {
 
 # include <linux/time32.h>
 
-#define time_after32(a, b)	((s32)((u32)(b) - (u32)(a)) < 0)
-#define time_before32(b, a)	time_after32(a, b)
-
-#define time_between32(t, l, h) ((u32)(h) - (u32)(l) >= (u32)(t) - (u32)(l))
+/* time_after32, time_before32, time_between32 removed - never used */
 
 /* Inlined from vdso/time.h */
 struct timens_offset {

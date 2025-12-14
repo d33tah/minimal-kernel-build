@@ -6,7 +6,7 @@
 #include <linux/slab.h>
 #include <linux/random.h>
 
-void kobject_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
+static void kobject_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
 {
 	*uid = GLOBAL_ROOT_UID;
 	*gid = GLOBAL_ROOT_GID;

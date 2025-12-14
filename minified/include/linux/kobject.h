@@ -71,8 +71,7 @@ extern struct kobject * __must_check kobject_get_unless_zero(
 						struct kobject *kobj);
 extern void kobject_put(struct kobject *kobj);
 
-extern void kobject_get_ownership(struct kobject *kobj,
-				  kuid_t *uid, kgid_t *gid);
+/* kobject_get_ownership now static in kobject.c */
 
 struct kobj_type {
 	void (*release)(struct kobject *kobj);

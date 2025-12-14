@@ -13,40 +13,10 @@ enum bug_trap_type {
 
 struct pt_regs;
 
-#ifdef __CHECKER__
-#define MAYBE_BUILD_BUG_ON(cond) (0)
-#else  
-
-#define MAYBE_BUILD_BUG_ON(cond)			\
-	do {						\
-		if (__builtin_constant_p((cond)))       \
-			BUILD_BUG_ON(cond);             \
-		else                                    \
-			BUG_ON(cond);                   \
-	} while (0)
-
-#endif	 
-
-
 static inline enum bug_trap_type report_bug(unsigned long bug_addr,
 					    struct pt_regs *regs)
 {
 	return BUG_TRAP_TYPE_BUG;
 }
 
-
-static inline __must_check bool check_data_corruption(bool v) { return v; }
-#define CHECK_DATA_CORRUPTION(condition, fmt, ...)			 \
-	check_data_corruption(({					 \
-		bool corruption = unlikely(condition);			 \
-		if (corruption) {					 \
-			if (IS_ENABLED(CONFIG_BUG_ON_DATA_CORRUPTION)) { \
-				pr_err(fmt, ##__VA_ARGS__);		 \
-				BUG();					 \
-			} else						 \
-				WARN(1, fmt, ##__VA_ARGS__);		 \
-		}							 \
-		corruption;						 \
-	}))
-
-#endif	 
+#endif

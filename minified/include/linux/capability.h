@@ -216,9 +216,7 @@ static inline bool ns_capable(struct user_namespace *ns, int cap)
 	return true;
 }
 
-bool privileged_wrt_inode_uidgid(struct user_namespace *ns,
-				 struct user_namespace *mnt_userns,
-				 const struct inode *inode);
+/* privileged_wrt_inode_uidgid moved to static in capability.c */
 bool capable_wrt_inode_uidgid(struct user_namespace *mnt_userns,
 			      const struct inode *inode, int cap);
 

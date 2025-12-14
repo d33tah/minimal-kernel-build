@@ -373,14 +373,10 @@ void device_del(struct device *dev);
    device_set_of_node_from_dev, device_set_node, __root_device_register,
    root_device_unregister removed - unused */
 
-int __must_check device_driver_attach(struct device_driver *drv,
-				      struct device *dev);
-int __must_check device_bind_driver(struct device *dev);
+/* device_driver_attach, device_bind_driver, device_reprobe removed - unused */
 void device_release_driver(struct device *dev);
-int  __must_check device_attach(struct device *dev);
 int __must_check driver_attach(struct device_driver *drv);
 void device_initial_probe(struct device *dev);
-int __must_check device_reprobe(struct device *dev);
 
 bool device_is_bound(struct device *dev);
 

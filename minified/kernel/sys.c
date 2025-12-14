@@ -187,14 +187,9 @@ SYSCALL_DEFINE1(getsid, pid_t, pid)
 	return 1;  
 }
 
-int ksys_setsid(void)
-{
-	return 1;  
-}
-
 SYSCALL_DEFINE0(setsid)
 {
-	return ksys_setsid();
+	return 1;  /* stubbed */
 }
 
 DECLARE_RWSEM(uts_sem);

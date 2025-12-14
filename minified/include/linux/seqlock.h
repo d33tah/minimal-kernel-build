@@ -306,11 +306,7 @@ typedef struct {
 
 #define seqcount_latch_init(s) seqcount_init(&(s)->seqcount)
 
-static inline unsigned raw_read_seqcount_latch(const seqcount_latch_t *s)
-{
-	 
-	return READ_ONCE(s->seqcount.sequence);
-}
+/* raw_read_seqcount_latch removed - never called */
 
 static inline int
 read_seqcount_latch_retry(const seqcount_latch_t *s, unsigned start)

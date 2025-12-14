@@ -139,7 +139,7 @@ out:
 	return -ENOMEM;
 }
 
-void free_inode_nonrcu(struct inode *inode)
+static void free_inode_nonrcu(struct inode *inode)
 {
 	kmem_cache_free(inode_cachep, inode);
 }
@@ -586,7 +586,7 @@ void unlock_new_inode(struct inode *inode)
 	spin_unlock(&inode->i_lock);
 }
 
-struct inode *inode_insert5(struct inode *inode, unsigned long hashval,
+static struct inode *inode_insert5(struct inode *inode, unsigned long hashval,
 			    int (*test)(struct inode *, void *),
 			    int (*set)(struct inode *, void *), void *data)
 {

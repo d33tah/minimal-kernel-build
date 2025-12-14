@@ -484,16 +484,7 @@ void cpu_detect_cache_sizes(struct cpuinfo_x86 *c)
 {
 	c->x86_cache_size = 0;
 }
-/* TLB arrays and cpu_detect_tlb removed - never used in minimal kernel */
-
-int detect_ht_early(struct cpuinfo_x86 *c)
-{
-	return 0;
-}
-
-void detect_ht(struct cpuinfo_x86 *c)
-{
-}
+/* TLB arrays and cpu_detect_tlb, detect_ht_early, detect_ht removed - never used in minimal kernel */
 
 static void get_cpu_vendor(struct cpuinfo_x86 *c)
 {

@@ -32,8 +32,7 @@ static inline void setup_node_to_cpumask_map(void) { }
     #define cpumask_of_node(node)	((void)(node), cpu_online_mask)
 #endif
 
-extern const struct cpumask *cpu_coregroup_mask(int cpu);
-extern const struct cpumask *cpu_clustergroup_mask(int cpu);
+/* cpu_coregroup_mask, cpu_clustergroup_mask declarations removed - no implementation */
 
 #define topology_logical_package_id(cpu)	(cpu_data(cpu).logical_proc_id)
 #define topology_physical_package_id(cpu)	(cpu_data(cpu).phys_proc_id)
@@ -65,8 +64,7 @@ struct pci_bus;
 int x86_pci_root_bus_node(int bus);
 void x86_pci_root_bus_resources(int bus, struct list_head *resources);
 
-extern bool x86_topology_update;
-
+/* x86_topology_update declaration removed - no implementation */
 
 #define sysctl_sched_itmt_enabled	0
 static inline void sched_set_itmt_core_prio(int prio, int core_cpu)

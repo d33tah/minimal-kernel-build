@@ -2239,11 +2239,7 @@ SYSCALL_DEFINE2(link, const char __user *, oldname, const char __user *, newname
 	return do_linkat(AT_FDCWD, getname(oldname), AT_FDCWD, getname(newname), 0);
 }
 
-int vfs_rename(struct renamedata *rd)
-{
-	/* Stubbed: rename not needed for minimal kernel */
-	return -EPERM;
-}
+/* vfs_rename removed - unused, do_renameat2 returns -ENOSYS */
 
 int do_renameat2(int olddfd, struct filename *from, int newdfd,
 		 struct filename *to, unsigned int flags)

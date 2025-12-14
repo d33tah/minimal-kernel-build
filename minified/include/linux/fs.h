@@ -989,7 +989,7 @@ struct renamedata {
 	unsigned int flags;
 } __randomize_layout;
 
-int vfs_rename(struct renamedata *);
+/* vfs_rename removed - unused */
 
 struct dentry *vfs_tmpfile(struct user_namespace *mnt_userns,
 			   struct dentry *dentry, umode_t mode, int open_flag);

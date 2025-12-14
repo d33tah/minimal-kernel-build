@@ -60,16 +60,6 @@ static inline void *kmap_local_folio(struct folio *folio, size_t offset)
 	return page_address(&folio->page) + offset;
 }
 
-static inline void *kmap_local_page_prot(struct page *page, pgprot_t prot)
-{
-	return kmap_local_page(page);
-}
-
-static inline void *kmap_local_pfn(unsigned long pfn)
-{
-	return kmap_local_page(pfn_to_page(pfn));
-}
-
 static inline void __kunmap_local(void *addr)
 {
 #ifdef ARCH_HAS_FLUSH_ON_KUNMAP
@@ -111,7 +101,6 @@ do {								\
 	__kunmap_local(__addr);					\
 } while (0)
 
-static inline void kmap_flush_unused(void) { }
 static inline unsigned int nr_free_highpages(void) { return 0; }
 static inline unsigned long totalhigh_pages(void) { return 0; }
 

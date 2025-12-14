@@ -5,10 +5,7 @@
 #include <asm/bugs.h>
 #include <asm/microcode_intel.h>
 
-int intel_cpu_collect_info(struct ucode_cpu_info *uci)
-{
-	return -1;
-}
+/* intel_cpu_collect_info removed - no callers */
 
 int ppro_with_ram_bug(void)
 {

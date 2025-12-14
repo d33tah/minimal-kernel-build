@@ -866,21 +866,11 @@ const char *device_get_devnode(struct device *dev,
 	return *tmp = s;
 }
 
+/* Stub: device_for_each_child not called externally */
 int device_for_each_child(struct device *parent, void *data,
 			  int (*fn)(struct device *dev, void *data))
 {
-	struct klist_iter i;
-	struct device *child;
-	int error = 0;
-
-	if (!parent->p)
-		return 0;
-
-	klist_iter_init(&parent->p->klist_children, &i);
-	while (!error && (child = next_device(&i)))
-		error = fn(child, data);
-	klist_iter_exit(&i);
-	return error;
+	return 0;
 }
 /* device_for_each_child_reverse removed - never called */
 

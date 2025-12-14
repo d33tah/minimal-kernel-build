@@ -16,12 +16,8 @@ void *__devres_alloc_node(dr_release_t release, size_t size, gfp_t gfp, int nid,
 	return NULL;
 }
 
-void devres_for_each_res(struct device *dev, dr_release_t release,
-			 dr_match_t match, void *match_data,
-			 void (*fn)(struct device *, void *, void *),
-			 void *data)
-{
-}
+/* devres_for_each_res, devres_find, devres_get, devres_remove,
+   devres_destroy, devres_release removed - never called */
 
 void devres_free(void *res)
 {
@@ -29,36 +25,6 @@ void devres_free(void *res)
 
 void devres_add(struct device *dev, void *res)
 {
-}
-
-void *devres_find(struct device *dev, dr_release_t release,
-		  dr_match_t match, void *match_data)
-{
-	return NULL;
-}
-
-void *devres_get(struct device *dev, void *new_res,
-		 dr_match_t match, void *match_data)
-{
-	return NULL;
-}
-
-void *devres_remove(struct device *dev, dr_release_t release,
-		    dr_match_t match, void *match_data)
-{
-	return NULL;
-}
-
-int devres_destroy(struct device *dev, dr_release_t release,
-		   dr_match_t match, void *match_data)
-{
-	return 0;
-}
-
-int devres_release(struct device *dev, dr_release_t release,
-		   dr_match_t match, void *match_data)
-{
-	return 0;
 }
 
 int devres_release_all(struct device *dev)

@@ -182,16 +182,7 @@ early_memremap(resource_size_t phys_addr, unsigned long size)
 
 	return (__force void *)__early_ioremap(phys_addr, size, prot);
 }
-#ifdef FIXMAP_PAGE_RO
-void __init *
-early_memremap_ro(resource_size_t phys_addr, unsigned long size)
-{
-	pgprot_t prot = early_memremap_pgprot_adjust(phys_addr, size,
-						     FIXMAP_PAGE_RO);
-
-	return (__force void *)__early_ioremap(phys_addr, size, prot);
-}
-#endif
+/* early_memremap_ro removed - unused */
 
 
 #define MAX_MAP_CHUNK	(NR_FIX_BTMAPS << PAGE_SHIFT)

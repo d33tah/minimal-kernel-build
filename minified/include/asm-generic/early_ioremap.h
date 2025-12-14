@@ -7,8 +7,7 @@ extern void __iomem *early_ioremap(resource_size_t phys_addr,
 				   unsigned long size);
 extern void *early_memremap(resource_size_t phys_addr,
 			    unsigned long size);
-extern void *early_memremap_ro(resource_size_t phys_addr,
-			       unsigned long size);
+/* early_memremap_ro removed - unused */
 extern void *early_memremap_prot(resource_size_t phys_addr,
 				 unsigned long size, unsigned long prot_val);
 extern void early_iounmap(void __iomem *addr, unsigned long size);

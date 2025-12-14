@@ -1492,9 +1492,7 @@ extern struct vm_area_struct *_install_special_mapping(struct mm_struct *mm,
 				   unsigned long flags,
 				   const struct vm_special_mapping *spec);
 
-extern int install_special_mapping(struct mm_struct *mm,
-				   unsigned long addr, unsigned long len,
-				   unsigned long flags, struct page **pages);
+/* install_special_mapping removed - unused */
 
 unsigned long randomize_stack_top(unsigned long stack_top);
 unsigned long randomize_page(unsigned long start, unsigned long range);

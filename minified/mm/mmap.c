@@ -1818,16 +1818,7 @@ struct vm_area_struct *_install_special_mapping(
 					&special_mapping_vmops);
 }
 
-int install_special_mapping(struct mm_struct *mm,
-			    unsigned long addr, unsigned long len,
-			    unsigned long vm_flags, struct page **pages)
-{
-	struct vm_area_struct *vma = __install_special_mapping(
-		mm, addr, len, vm_flags, (void *)pages,
-		&legacy_special_mapping_vmops);
-
-	return PTR_ERR_OR_ZERO(vma);
-}
+/* install_special_mapping removed - unused */
 
 void __init mmap_init(void)
 {

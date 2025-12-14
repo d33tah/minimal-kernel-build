@@ -279,71 +279,7 @@ void __init anon_vma_init(void)
 			SLAB_PANIC|SLAB_ACCOUNT);
 }
 
-/* page_get_anon_vma removed - unused */
-
-struct anon_vma *folio_lock_anon_vma_read(struct folio *folio,
-					  struct rmap_walk_control *rwc)
-{
-	struct anon_vma *anon_vma = NULL;
-	struct anon_vma *root_anon_vma;
-	unsigned long anon_mapping;
-
-	rcu_read_lock();
-	anon_mapping = (unsigned long)READ_ONCE(folio->mapping);
-	if ((anon_mapping & PAGE_MAPPING_FLAGS) != PAGE_MAPPING_ANON)
-		goto out;
-	if (!folio_mapped(folio))
-		goto out;
-
-	anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
-	root_anon_vma = READ_ONCE(anon_vma->root);
-	if (down_read_trylock(&root_anon_vma->rwsem)) {
-		
-		if (!folio_mapped(folio)) {
-			up_read(&root_anon_vma->rwsem);
-			anon_vma = NULL;
-		}
-		goto out;
-	}
-
-	if (rwc && rwc->try_lock) {
-		anon_vma = NULL;
-		rwc->contended = true;
-		goto out;
-	}
-
-	if (!atomic_inc_not_zero(&anon_vma->refcount)) {
-		anon_vma = NULL;
-		goto out;
-	}
-
-	if (!folio_mapped(folio)) {
-		rcu_read_unlock();
-		put_anon_vma(anon_vma);
-		return NULL;
-	}
-
-	rcu_read_unlock();
-	anon_vma_lock_read(anon_vma);
-
-	if (atomic_dec_and_test(&anon_vma->refcount)) {
-		
-		anon_vma_unlock_read(anon_vma);
-		__put_anon_vma(anon_vma);
-		anon_vma = NULL;
-	}
-
-	return anon_vma;
-
-out:
-	rcu_read_unlock();
-	return anon_vma;
-}
-
-void page_unlock_anon_vma_read(struct anon_vma *anon_vma)
-{
-	anon_vma_unlock_read(anon_vma);
-}
+/* page_get_anon_vma, folio_lock_anon_vma_read, page_unlock_anon_vma_read removed - unused */
 
 /* set_tlb_ubc_flush_pending, should_defer_flush removed - unused */
 #define TLB_FLUSH_BATCH_FLUSHED_SHIFT	16

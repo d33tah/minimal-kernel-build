@@ -12,12 +12,7 @@ void rcu_sync_init(struct rcu_sync *rsp)
 	init_waitqueue_head(&rsp->gp_wait);
 }
 
-void rcu_sync_enter_start(struct rcu_sync *rsp)
-{
-	rsp->gp_count++;
-	rsp->gp_state = GP_PASSED;
-}
-
+/* rcu_sync_enter_start removed - never called */
 
 static void rcu_sync_func(struct rcu_head *rhp);
 

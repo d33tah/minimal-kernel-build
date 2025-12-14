@@ -33,10 +33,7 @@ static inline struct page *ksm_might_need_to_copy(struct page *page,
 	return page;
 }
 
-static inline void rmap_walk_ksm(struct folio *folio,
-			struct rmap_walk_control *rwc)
-{
-}
+/* rmap_walk_ksm removed - unused */
 
 static inline void folio_migrate_ksm(struct folio *newfolio, struct folio *old)
 {

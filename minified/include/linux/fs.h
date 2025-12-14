@@ -1519,9 +1519,6 @@ static inline int generic_drop_inode(struct inode *inode)
 {
 	return !inode->i_nlink || inode_unhashed(inode);
 }
-extern struct inode *ilookup5_nowait(struct super_block *sb,
-		unsigned long hashval, int (*test)(struct inode *, void *),
-		void *data);
 extern struct inode *ilookup5(struct super_block *sb, unsigned long hashval,
 		int (*test)(struct inode *, void *), void *data);
 extern struct inode *ilookup(struct super_block *sb, unsigned long ino);

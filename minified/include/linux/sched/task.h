@@ -75,7 +75,7 @@ struct task_struct *fork_idle(int);
 struct mm_struct *copy_init_mm(void);
 extern pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
 extern pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags);
-extern long kernel_wait4(pid_t, int __user *, int, struct rusage *);
+/* kernel_wait4 now static in exit.c */
 /* kernel_wait removed - unused */
 
 extern void free_task(struct task_struct *tsk);

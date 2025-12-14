@@ -1544,25 +1544,7 @@ static inline int may_create(struct user_namespace *mnt_userns,
 	return inode_permission(mnt_userns, dir, MAY_WRITE | MAY_EXEC);
 }
 
-int vfs_create(struct user_namespace *mnt_userns, struct inode *dir,
-	       struct dentry *dentry, umode_t mode, bool want_excl)
-{
-	int error = may_create(mnt_userns, dir, dentry);
-	if (error)
-		return error;
-
-	if (!dir->i_op->create)
-		return -EACCES;	
-	mode &= S_IALLUGO;
-	mode |= S_IFREG;
-	error = security_inode_create(dir, dentry, mode);
-	if (error)
-		return error;
-	error = dir->i_op->create(mnt_userns, dir, dentry, mode, want_excl);
-	if (!error)
-		fsnotify_create(dir, dentry);
-	return error;
-}
+/* vfs_create removed - unused */
 
 static bool may_open_dev(const struct path *path)
 {

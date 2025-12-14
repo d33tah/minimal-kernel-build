@@ -965,8 +965,7 @@ static inline void sb_start_pagefault(struct super_block *sb)
 bool inode_owner_or_capable(struct user_namespace *mnt_userns,
 			    const struct inode *inode);
 
-int vfs_create(struct user_namespace *, struct inode *,
-	       struct dentry *, umode_t, bool);
+/* vfs_create removed - unused */
 int vfs_mkdir(struct user_namespace *, struct inode *,
 	      struct dentry *, umode_t);
 int vfs_mknod(struct user_namespace *, struct inode *, struct dentry *,

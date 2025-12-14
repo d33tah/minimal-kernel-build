@@ -377,8 +377,7 @@ void device_del(struct device *dev);
 void device_release_driver(struct device *dev);
 int __must_check driver_attach(struct device_driver *drv);
 void device_initial_probe(struct device *dev);
-
-bool device_is_bound(struct device *dev);
+/* device_is_bound removed - only used internally in dd.c */
 
 __printf(5, 6) struct device *
 device_create(struct class *cls, struct device *parent, dev_t devt,

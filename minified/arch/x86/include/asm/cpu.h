@@ -32,9 +32,7 @@ extern void __init sld_setup(struct cpuinfo_x86 *c);
 extern bool handle_user_split_lock(struct pt_regs *regs, long error_code);
 /* handle_guest_split_lock removed - never called */
 extern void handle_bus_lock(struct pt_regs *regs);
-/* get_this_hybrid_cpu_type, init_ia32_feat_ctl removed - never called */
-
-extern __noendbr void cet_disable(void);
+/* get_this_hybrid_cpu_type, init_ia32_feat_ctl, cet_disable removed - never called */
 
 struct ucode_cpu_info;
 

@@ -347,11 +347,7 @@ static __always_inline void setup_cet(struct cpuinfo_x86 *c)
 	}
 }
 
-__noendbr void cet_disable(void)
-{
-	if (cpu_feature_enabled(X86_FEATURE_IBT))
-		wrmsrl(MSR_IA32_S_CET, 0);
-}
+/* cet_disable removed - no callers */
 
 struct cpuid_dependent_feature {
 	u32 feature;

@@ -49,21 +49,11 @@ wait_on_bit(unsigned long *word, int bit, unsigned mode)
 	might_sleep();
 	if (!test_bit(bit, word))
 		return 0;
-	return out_of_line_wait_on_bit(word, bit,
-				       bit_wait,
-				       mode);
+	return out_of_line_wait_on_bit(word, bit, bit_wait, mode);
 }
 
-/* wait_on_bit_io, wait_on_bit_timeout, wait_on_bit_lock_io, wait_on_bit_lock_action removed - unused */
-
-static inline int
-wait_on_bit_lock(unsigned long *word, int bit, unsigned mode)
-{
-	might_sleep();
-	if (!test_and_set_bit(bit, word))
-		return 0;
-	return out_of_line_wait_on_bit_lock(word, bit, bit_wait, mode);
-}
+/* wait_on_bit_io, wait_on_bit_timeout, wait_on_bit_lock,
+   wait_on_bit_lock_io, wait_on_bit_lock_action removed - unused */
 
 extern void init_wait_var_entry(struct wait_bit_queue_entry *wbq_entry, void *var, int flags);
 extern void wake_up_var(void *var);
@@ -148,12 +138,6 @@ do {									\
 	__ret;								\
 })
 
-static inline void clear_and_wake_up_bit(int bit, void *word)
-{
-	clear_bit_unlock(bit, word);
-	 
-	smp_mb__after_atomic();
-	wake_up_bit(word, bit);
-}
+/* clear_and_wake_up_bit removed - unused */
 
 #endif  

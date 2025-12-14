@@ -117,7 +117,7 @@ static int mnt_alloc_group_id(struct mount *mnt)
 }
 
 /* Stub: mnt_release_group_id not used externally */
-void mnt_release_group_id(struct mount *mnt)
+static void mnt_release_group_id(struct mount *mnt)
 {
 }
 

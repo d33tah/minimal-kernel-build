@@ -102,12 +102,6 @@ extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
 extern char *kmemdup_nul(const char *s, size_t len, gfp_t gfp);
 
 
-static inline bool strstarts(const char *str, const char *prefix)
-{
-	return strncmp(str, prefix, strlen(prefix)) == 0;
-}
-
-
 static inline void memzero_explicit(void *s, size_t count)
 {
 	memset(s, 0, count);
@@ -118,18 +112,6 @@ static inline const char *kbasename(const char *path)
 {
 	const char *tail = strrchr(path, '/');
 	return tail ? tail + 1 : path;
-}
-
-#ifndef unsafe_memcpy
-#define unsafe_memcpy(dst, src, bytes, justification)		\
-	memcpy(dst, src, bytes)
-#endif
-
-
-static __always_inline size_t str_has_prefix(const char *str, const char *prefix)
-{
-	size_t len = strlen(prefix);
-	return strncmp(str, prefix, len) == 0 ? len : 0;
 }
 
 #endif  

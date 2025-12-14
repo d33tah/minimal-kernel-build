@@ -144,7 +144,7 @@ int sg_nents(struct scatterlist *sg);
 struct scatterlist *sg_next(struct scatterlist *);
 void sg_init_table(struct scatterlist *, unsigned int);
 void sg_init_one(struct scatterlist *, const void *, unsigned int);
-void sg_free_table(struct sg_table *);
+/* sg_free_table removed - unused */
 int sg_alloc_table(struct sg_table *, unsigned int, gfp_t);
 
 #define SG_MAX_SINGLE_ALLOC		(PAGE_SIZE / sizeof(struct scatterlist))

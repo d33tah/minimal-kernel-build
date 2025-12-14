@@ -68,11 +68,5 @@ int sg_alloc_table(struct sg_table *table, unsigned int nents, gfp_t gfp_mask)
 	return 0;
 }
 
-void sg_free_table(struct sg_table *table)
-{
-	if (unlikely(!table->sgl))
-		return;
-	kfree(table->sgl);
-	table->sgl = NULL;
-}
+/* sg_free_table removed - unused */
 

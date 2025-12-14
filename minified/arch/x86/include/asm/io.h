@@ -211,8 +211,7 @@ extern void __iomem *ioremap_wc(resource_size_t offset, unsigned long size);
 #define ioremap_wc ioremap_wc
 extern void __iomem *ioremap_wt(resource_size_t offset, unsigned long size);
 #define ioremap_wt ioremap_wt
-
-extern bool is_early_ioremap_ptep(pte_t *ptep);
+/* is_early_ioremap_ptep declaration removed - function never called */
 
 #define IO_SPACE_LIMIT 0xffff
 

@@ -1,3 +1,28 @@
+--- 2025-12-14 15:02 ---
+
+SESSION PROGRESS:
+- Current LOC: 164,055 (after mrproper)
+- make vm: PASSING - shows "Hello, World!"
+- bzImage: 226K
+- Goal: 150,000 LOC (need to remove ~14,055 LOC)
+
+Commits this session (4 total):
+1. Update FIXUP.md with session progress notes
+2. Remove stale declarations from processor.h and desc.h (~5 LOC)
+3. Remove stale declarations from io.h and tlbflush.h (~5 LOC)
+4. Remove unused apply_retpolines, apply_returns, apply_ibt_endbr (~5 LOC)
+
+Total removed this session: ~16 LOC
+Strategy: Searching for extern declarations with no corresponding implementation.
+
+Files cleaned:
+- arch/x86/include/asm/processor.h (amd_e400_c1e_apic_setup, set_task_blockstep, cpu_init_secondary, cpuinfo_op)
+- arch/x86/include/asm/desc.h (idt_is_f00f_address)
+- arch/x86/include/asm/io.h (ioremap_encrypted, ioremap_change_attr)
+- arch/x86/include/asm/tlbflush.h (arch_tlbbatch_flush)
+- arch/x86/include/asm/alternative.h (apply_retpolines, apply_returns, apply_ibt_endbr)
+- arch/x86/kernel/alternative.c (removed corresponding stubs)
+
 --- 2025-12-14 13:38 ---
 
 SESSION FINAL SUMMARY:

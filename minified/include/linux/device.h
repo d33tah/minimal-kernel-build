@@ -125,8 +125,6 @@ struct device_attribute {
 #define DEVICE_ATTR_WO(_name) \
 	struct device_attribute dev_attr_##_name = __ATTR_WO(_name)
 
-int device_create_file(struct device *device,
-		       const struct device_attribute *entry);
 void device_remove_file(struct device *dev,
 			const struct device_attribute *attr);
 

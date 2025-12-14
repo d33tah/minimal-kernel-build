@@ -147,8 +147,7 @@ extern __u32			cpu_caps_set[NCAPINTS + NBUGINTS];
 
 #define cpu_info		boot_cpu_data
 #define cpu_data(cpu)		boot_cpu_data
-
-extern const struct seq_operations cpuinfo_op;
+/* cpuinfo_op declaration removed - no implementation */
 
 #define cache_line_size()	(boot_cpu_data.x86_cache_alignment)
 
@@ -437,7 +436,7 @@ static inline unsigned int cpuid_edx(unsigned int op)
 }
 
 extern void select_idle_routine(const struct cpuinfo_x86 *c);
-extern void amd_e400_c1e_apic_setup(void);
+/* amd_e400_c1e_apic_setup declaration removed - implementation was removed */
 
 extern unsigned long		boot_option_idle_override;
 
@@ -456,13 +455,11 @@ extern void load_direct_gdt(int);
 extern void load_fixmap_gdt(int);
 extern void load_percpu_segment(int);
 extern void cpu_init(void);
-extern void cpu_init_secondary(void);
+/* cpu_init_secondary declaration removed - no implementation */
 extern void cpu_init_exception_handling(void);
 extern void cr4_init(void);
+/* set_task_blockstep declaration removed - no implementation */
 
-extern void set_task_blockstep(struct task_struct *task, bool on);
-
- 
 extern int			bootloader_type;
 extern int			bootloader_version;
 

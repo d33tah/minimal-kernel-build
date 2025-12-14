@@ -705,7 +705,7 @@ skip_update:
 	sb_end_write(inode->i_sb);
 }
 
-int should_remove_suid(struct dentry *dentry)
+static int should_remove_suid(struct dentry *dentry)
 {
 	umode_t mode = d_inode(dentry)->i_mode;
 	int kill = 0;

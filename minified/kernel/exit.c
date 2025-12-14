@@ -551,7 +551,7 @@ SYSCALL_DEFINE1(exit, int, error_code)
 	do_exit((error_code&0xff)<<8);
 }
 
-void __noreturn
+static void __noreturn
 do_group_exit(int exit_code)
 {
 	struct signal_struct *sig = current->signal;

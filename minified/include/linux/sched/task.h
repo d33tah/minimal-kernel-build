@@ -64,7 +64,7 @@ extern int copy_thread(struct task_struct *, const struct kernel_clone_args *);
 extern void flush_thread(void);
 
 extern void exit_thread(struct task_struct *tsk);
-extern __noreturn void do_group_exit(int);
+/* do_group_exit now static in exit.c */
 
 extern void exit_files(struct task_struct *);
 extern void exit_itimers(struct task_struct *);

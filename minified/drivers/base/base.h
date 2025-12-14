@@ -63,7 +63,7 @@ extern void cpu_dev_init(void);
 static inline void container_dev_init(void) { }
 static inline void auxiliary_bus_init(void) { }
 
-struct kobject *virtual_device_parent(struct device *dev);
+/* virtual_device_parent removed - unused */
 
 extern int bus_add_device(struct device *dev);
 extern void bus_probe_device(struct device *dev);

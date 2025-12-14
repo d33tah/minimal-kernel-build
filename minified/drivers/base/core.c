@@ -583,16 +583,7 @@ void device_initialize(struct device *dev)
 #endif
 }
 
-struct kobject *virtual_device_parent(struct device *dev)
-{
-	static struct kobject *virtual_dir = NULL;
-
-	if (!virtual_dir)
-		virtual_dir = kobject_create_and_add("virtual",
-						     &devices_kset->kobj);
-
-	return virtual_dir;
-}
+/* virtual_device_parent removed - unused */
 
 /* class_dir struct and related functions removed - unused */
 

@@ -112,10 +112,6 @@ extern void __init vmalloc_init(void);
 
 extern void *vmalloc(unsigned long size) __alloc_size(1);
 extern void *vzalloc(unsigned long size) __alloc_size(1);
-/* vmalloc_user removed - no definition or callers */
-extern void *vmalloc_node(unsigned long size, int node) __alloc_size(1);
-extern void *vzalloc_node(unsigned long size, int node) __alloc_size(1);
-/* vmalloc_32, vmalloc_32_user removed - no definition or callers */
 extern void *__vmalloc(unsigned long size, gfp_t gfp_mask) __alloc_size(1);
 extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
 			unsigned long start, unsigned long end, gfp_t gfp_mask,
@@ -123,8 +119,6 @@ extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
 			const void *caller) __alloc_size(1);
 void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 		int node, const void *caller) __alloc_size(1);
-void *vmalloc_huge(unsigned long size, gfp_t gfp_mask) __alloc_size(1);
-
 
 extern void vfree(const void *addr);
 /* vfree_atomic removed - no definition or callers */

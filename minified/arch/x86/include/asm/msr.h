@@ -135,11 +135,8 @@ native_write_msr_safe(unsigned int msr, u32 low, u32 high)
 		do_trace_write_msr(msr, ((u64)high << 32 | low), err);
 	return err;
 }
+/* rdmsr_safe_regs, wrmsr_safe_regs declarations removed - no implementation */
 
-extern int rdmsr_safe_regs(u32 regs[8]);
-extern int wrmsr_safe_regs(u32 regs[8]);
-
- 
 static __always_inline unsigned long long rdtsc(void)
 {
 	DECLARE_ARGS(val, low, high);

@@ -94,10 +94,8 @@ extern void __iomem *ioremap_cache(resource_size_t offset, unsigned long size);
 #define ioremap_cache ioremap_cache
 extern void __iomem *ioremap_prot(resource_size_t offset, unsigned long size, unsigned long prot_val);
 #define ioremap_prot ioremap_prot
-extern void __iomem *ioremap_encrypted(resource_size_t phys_addr, unsigned long size);
-#define ioremap_encrypted ioremap_encrypted
+/* ioremap_encrypted declaration removed - no implementation */
 
- 
 void __iomem *ioremap(resource_size_t offset, unsigned long size);
 #define ioremap ioremap
 
@@ -208,9 +206,7 @@ extern void unxlate_dev_mem_ptr(phys_addr_t phys, void *addr);
 
 #define xlate_dev_mem_ptr xlate_dev_mem_ptr
 #define unxlate_dev_mem_ptr unxlate_dev_mem_ptr
-
-extern int ioremap_change_attr(unsigned long vaddr, unsigned long size,
-				enum page_cache_mode pcm);
+/* ioremap_change_attr declaration removed - no implementation */
 extern void __iomem *ioremap_wc(resource_size_t offset, unsigned long size);
 #define ioremap_wc ioremap_wc
 extern void __iomem *ioremap_wt(resource_size_t offset, unsigned long size);

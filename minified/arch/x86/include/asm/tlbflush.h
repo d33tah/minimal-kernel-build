@@ -175,8 +175,7 @@ static inline void arch_tlbbatch_add_mm(struct arch_tlbflush_unmap_batch *batch,
 	inc_mm_tlb_gen(mm);
 	cpumask_or(&batch->cpumask, &batch->cpumask, mm_cpumask(mm));
 }
-
-extern void arch_tlbbatch_flush(struct arch_tlbflush_unmap_batch *batch);
+/* arch_tlbbatch_flush declaration removed - no implementation */
 
 static inline bool pte_flags_need_flush(unsigned long oldflags,
 					unsigned long newflags,

@@ -442,14 +442,7 @@ static __always_inline void bitmap_clear(unsigned long *map, unsigned int start,
 #define BITMAP_FROM_U64(n) ((unsigned long) ((u64)(n) & ULONG_MAX)), \
 				((unsigned long) ((u64)(n) >> 32))
 
-static inline unsigned long bitmap_get_value8(const unsigned long *map,
-					      unsigned long start)
-{
-	const size_t index = BIT_WORD(start);
-	const unsigned long offset = start % BITS_PER_LONG;
-
-	return (map[index] >> offset) & 0xFF;
-}
+/* bitmap_get_value8 removed - never called */
 
 #endif
 

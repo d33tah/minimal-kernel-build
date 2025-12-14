@@ -48,12 +48,12 @@ static inline void device_links_write_unlock(void)
 	mutex_unlock(&device_links_lock);
 }
 
-int device_links_read_lock(void) __acquires(&device_links_srcu)
+static int device_links_read_lock(void) __acquires(&device_links_srcu)
 {
 	return srcu_read_lock(&device_links_srcu);
 }
 
-void device_links_read_unlock(int idx) __releases(&device_links_srcu)
+static void device_links_read_unlock(int idx) __releases(&device_links_srcu)
 {
 	srcu_read_unlock(&device_links_srcu, idx);
 }

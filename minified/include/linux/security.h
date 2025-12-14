@@ -73,7 +73,7 @@ struct seq_file;
 /* Removed unused: flowi_common, xfrm_*, sctp_association forward decls */
 
 extern unsigned long mmap_min_addr;
-extern unsigned long dac_mmap_min_addr;
+/* dac_mmap_min_addr removed - unused */
 
 /* LSM_SETID_* and LSM_PRLIMIT_* removed - unused in minimal kernel */
 

@@ -2,4 +2,4 @@
 #include <linux/mm.h>
 
 unsigned long mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
-unsigned long dac_mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
+/* dac_mmap_min_addr removed - unused */

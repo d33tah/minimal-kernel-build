@@ -657,27 +657,7 @@ static int vt_resize(struct tty_struct *tty, struct winsize *ws)
 	return ret;
 }
 
-struct vc_data *vc_deallocate(unsigned int currcons)
-{
-	struct vc_data *vc = NULL;
-
-	WARN_CONSOLE_UNLOCKED();
-
-	if (vc_cons_allocated(currcons)) {
-		struct vt_notifier_param param;
-
-		param.vc = vc = vc_cons[currcons].d;
-		atomic_notifier_call_chain(&vt_notifier_list, VT_DEALLOCATE, &param);
-		vcs_remove_sysfs(currcons);
-		visual_deinit(vc);
-		con_free_unimap(vc);
-		put_pid(vc->vt_pid);
-		vc_uniscr_set(vc, NULL);
-		kfree(vc->vc_screenbuf);
-		vc_cons[currcons].d = NULL;
-	}
-	return vc;
-}
+/* vc_deallocate removed - never called */
 
 enum { EPecma = 0, EPdec, EPeq, EPgt, EPlt};
 

@@ -70,9 +70,9 @@ enum lockdep_ok {
 	LOCKDEP_NOW_UNRELIABLE,
 };
 
-extern const char *print_tainted(void);
+/* print_tainted removed - unused */
 extern void add_taint(unsigned flag, enum lockdep_ok);
-extern int test_taint(unsigned flag);
+/* test_taint removed - unused */
 extern unsigned long get_taint(void);
 
 #endif	 

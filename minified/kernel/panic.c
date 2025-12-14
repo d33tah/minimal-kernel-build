@@ -246,11 +246,7 @@ const struct taint_flag taint_flags[TAINT_FLAGS_COUNT] = {
 	[ TAINT_RANDSTRUCT ]		= { 'T', ' ', true },
 };
 
-const char *print_tainted(void)
-{
-	/* Stub: taint flag printing not needed for minimal kernel */
-	return "";
-}
+/* print_tainted removed - unused */
 
 /* test_taint removed - no callers */
 

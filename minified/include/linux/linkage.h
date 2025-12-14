@@ -108,12 +108,6 @@
 
 
 
-#ifndef SYM_INNER_LABEL_ALIGN
-#define SYM_INNER_LABEL_ALIGN(name, linkage)	\
-	.type name SYM_T_NONE ASM_NL			\
-	SYM_ENTRY(name, linkage, SYM_A_ALIGN)
-#endif
-
 #ifndef SYM_INNER_LABEL
 #define SYM_INNER_LABEL(name, linkage)		\
 	.type name SYM_T_NONE ASM_NL			\
@@ -140,16 +134,6 @@
 	SYM_START(name, SYM_L_LOCAL, SYM_A_NONE)
 #endif
 
-#ifndef SYM_FUNC_START_WEAK
-#define SYM_FUNC_START_WEAK(name)			\
-	SYM_START(name, SYM_L_WEAK, SYM_A_ALIGN)
-#endif
-
-#ifndef SYM_FUNC_START_WEAK_NOALIGN
-#define SYM_FUNC_START_WEAK_NOALIGN(name)		\
-	SYM_START(name, SYM_L_WEAK, SYM_A_NONE)
-#endif
-
 #ifndef SYM_FUNC_END
 #define SYM_FUNC_END(name)				\
 	SYM_END(name, SYM_T_FUNC)
@@ -158,16 +142,6 @@
 #ifndef SYM_FUNC_ALIAS
 #define SYM_FUNC_ALIAS(alias, name)					\
 	SYM_ALIAS(alias, name, SYM_L_GLOBAL)
-#endif
-
-#ifndef SYM_FUNC_ALIAS_LOCAL
-#define SYM_FUNC_ALIAS_LOCAL(alias, name)				\
-	SYM_ALIAS(alias, name, SYM_L_LOCAL)
-#endif
-
-#ifndef SYM_FUNC_ALIAS_WEAK
-#define SYM_FUNC_ALIAS_WEAK(alias, name)				\
-	SYM_ALIAS(alias, name, SYM_L_WEAK)
 #endif
 
 #ifndef SYM_CODE_START

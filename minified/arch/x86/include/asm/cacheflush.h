@@ -64,6 +64,6 @@ static inline void flush_cache_vunmap(unsigned long start, unsigned long end) { 
 
 #include <asm/special_insns.h>
 
-void clflush_cache_range(void *addr, unsigned int size);
+/* clflush_cache_range removed - unused */
 
 #endif  

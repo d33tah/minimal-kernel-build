@@ -30,7 +30,7 @@
 #include <asm/memtype.h>
 
 // Stub: cache flushing
-void clflush_cache_range(void *vaddr, unsigned int size) { }
+/* clflush_cache_range removed - unused */
 
 // Stub: memory protection functions - all return success
 /* __set_memory_prot removed - never called */

@@ -1488,8 +1488,6 @@ extern bool is_subdir(struct dentry *, struct dentry *);
 
 #include <linux/err.h>
 
-extern loff_t default_llseek(struct file *file, loff_t offset, int whence);
-
 extern loff_t vfs_llseek(struct file *file, loff_t offset, int whence);
 
 extern int inode_init_always(struct super_block *, struct inode *);

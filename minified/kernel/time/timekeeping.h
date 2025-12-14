@@ -8,8 +8,7 @@ extern ktime_t ktime_get_update_offsets_now(unsigned int *cwsseq,
 					    ktime_t *offs_tai);
 
 extern int timekeeping_valid_for_hres(void);
-extern void timekeeping_warp_clock(void);
-/* timekeeping_suspend, timekeeping_resume removed - unused */
+/* timekeeping_warp_clock, timekeeping_suspend, timekeeping_resume removed - unused */
 static inline int sched_clock_suspend(void) { return 0; }
 static inline void sched_clock_resume(void) { }
 

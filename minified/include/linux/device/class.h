@@ -95,18 +95,7 @@ struct class_attribute {
 #define CLASS_ATTR_WO(_name) \
 	struct class_attribute class_attr_##_name = __ATTR_WO(_name)
 
-extern int __must_check class_create_file_ns(struct class *class,
-					     const struct class_attribute *attr,
-					     const void *ns);
-/* class_remove_file_ns removed - unused */
-
-static inline int __must_check class_create_file(struct class *class,
-					const struct class_attribute *attr)
-{
-	return class_create_file_ns(class, attr, NULL);
-}
-
-/* class_remove_file removed - unused */
+/* class_create_file_ns, class_remove_file_ns, class_create_file, class_remove_file removed - unused */
 
 struct class_attribute_string {
 	struct class_attribute attr;

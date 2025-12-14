@@ -70,20 +70,7 @@ static struct kobj_type class_ktype = {
 static struct kset *class_kset;
 
 
-int class_create_file_ns(struct class *cls, const struct class_attribute *attr,
-			 const void *ns)
-{
-	int error;
-
-	if (cls)
-		error = sysfs_create_file_ns(&cls->p->subsys.kobj,
-					     &attr->attr, ns);
-	else
-		error = -EINVAL;
-	return error;
-}
-
-/* class_remove_file_ns removed - unused */
+/* class_create_file_ns, class_remove_file_ns removed - unused */
 
 static struct class *class_get(struct class *cls)
 {

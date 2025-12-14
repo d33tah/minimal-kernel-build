@@ -834,37 +834,7 @@ static struct device *next_device(struct klist_iter *i)
 	return dev;
 }
 
-const char *device_get_devnode(struct device *dev,
-			       umode_t *mode, kuid_t *uid, kgid_t *gid,
-			       const char **tmp)
-{
-	char *s;
-
-	*tmp = NULL;
-
-	
-	if (dev->type && dev->type->devnode)
-		*tmp = dev->type->devnode(dev, mode, uid, gid);
-	if (*tmp)
-		return *tmp;
-
-	
-	if (dev->class && dev->class->devnode)
-		*tmp = dev->class->devnode(dev, mode);
-	if (*tmp)
-		return *tmp;
-
-	
-	if (strchr(dev_name(dev), '!') == NULL)
-		return dev_name(dev);
-
-	
-	s = kstrdup(dev_name(dev), GFP_KERNEL);
-	if (!s)
-		return NULL;
-	strreplace(s, '!', '/');
-	return *tmp = s;
-}
+/* device_get_devnode removed - never called */
 
 /* Stub: device_for_each_child not called externally */
 int device_for_each_child(struct device *parent, void *data,

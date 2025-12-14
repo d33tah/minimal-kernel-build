@@ -377,9 +377,7 @@ void device_unregister(struct device *dev);
 void device_initialize(struct device *dev);
 int __must_check device_add(struct device *dev);
 void device_del(struct device *dev);
-/* device_for_each_child, device_find_child removed - never called */
-const char *device_get_devnode(struct device *dev, umode_t *mode, kuid_t *uid,
-			       kgid_t *gid, const char **tmp);
+/* device_for_each_child, device_find_child, device_get_devnode removed - never called */
 
 
 /* lock_device_hotplug, unlock_device_hotplug, lock_device_hotplug_sysfs,

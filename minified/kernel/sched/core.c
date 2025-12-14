@@ -1657,12 +1657,7 @@ void __init sched_init_smp(void)
 	sched_init_granularity();
 }
 
-int in_sched_functions(unsigned long addr)
-{
-	return in_lock_functions(addr) ||
-		(addr >= (unsigned long)__sched_text_start
-		&& addr < (unsigned long)__sched_text_end);
-}
+/* in_sched_functions removed - never called */
 
 DECLARE_PER_CPU(cpumask_var_t, load_balance_mask);
 DECLARE_PER_CPU(cpumask_var_t, select_idle_mask);

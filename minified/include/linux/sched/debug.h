@@ -15,6 +15,6 @@ extern void show_stack(struct task_struct *task, unsigned long *sp,
 
 extern char __sched_text_start[], __sched_text_end[];
 
-extern int in_sched_functions(unsigned long addr);
+/* in_sched_functions declaration removed - never called */
 
 #endif  

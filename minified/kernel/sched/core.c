@@ -1446,11 +1446,6 @@ int sched_setattr(struct task_struct *p, const struct sched_attr *attr)
 	return __sched_setscheduler(p, attr, true, true);
 }
 
-int sched_setattr_nocheck(struct task_struct *p, const struct sched_attr *attr)
-{
-	return __sched_setscheduler(p, attr, false, true);
-}
-
 int sched_setscheduler_nocheck(struct task_struct *p, int policy,
 			       const struct sched_param *param)
 {

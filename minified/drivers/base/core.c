@@ -872,25 +872,7 @@ int device_for_each_child(struct device *parent, void *data,
 {
 	return 0;
 }
-/* device_for_each_child_reverse removed - never called */
-
-struct device *device_find_child(struct device *parent, void *data,
-				 int (*match)(struct device *dev, void *data))
-{
-	struct klist_iter i;
-	struct device *child;
-
-	if (!parent)
-		return NULL;
-
-	klist_iter_init(&parent->p->klist_children, &i);
-	while ((child = next_device(&i)))
-		if (match(child, data) && get_device(child))
-			break;
-	klist_iter_exit(&i);
-	return child;
-}
-/* device_find_child_by_name removed - never called */
+/* device_for_each_child_reverse, device_find_child, device_find_child_by_name removed - never called */
 
 int __init devices_init(void)
 {

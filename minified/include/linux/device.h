@@ -377,10 +377,7 @@ void device_unregister(struct device *dev);
 void device_initialize(struct device *dev);
 int __must_check device_add(struct device *dev);
 void device_del(struct device *dev);
-int device_for_each_child(struct device *dev, void *data,
-			  int (*fn)(struct device *dev, void *data));
-struct device *device_find_child(struct device *dev, void *data,
-				 int (*match)(struct device *dev, void *data));
+/* device_for_each_child, device_find_child removed - never called */
 const char *device_get_devnode(struct device *dev, umode_t *mode, kuid_t *uid,
 			       kgid_t *gid, const char **tmp);
 

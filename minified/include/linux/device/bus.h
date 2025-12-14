@@ -64,9 +64,7 @@ struct bus_attribute {
 #define BUS_ATTR_WO(_name) \
 	struct bus_attribute bus_attr_##_name = __ATTR_WO(_name)
 
-extern int __must_check bus_create_file(struct bus_type *,
-					struct bus_attribute *);
-extern void bus_remove_file(struct bus_type *, struct bus_attribute *);
+/* bus_create_file, bus_remove_file removed - unused */
 
 int device_match_name(struct device *dev, const void *name);
 int device_match_of_node(struct device *dev, const void *np);

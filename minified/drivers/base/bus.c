@@ -109,11 +109,11 @@ static const struct sysfs_ops bus_sysfs_ops = {
 	.store	= bus_attr_store,
 };
 
-/* Stubbed: bus_create_file not used externally */
-int bus_create_file(struct bus_type *bus, struct bus_attribute *attr) { return 0; }
+/* Static: bus_create_file only used internally */
+static int bus_create_file(struct bus_type *bus, struct bus_attribute *attr) { return 0; }
 
-/* Stubbed: bus_remove_file not used externally */
-void bus_remove_file(struct bus_type *bus, struct bus_attribute *attr) { }
+/* Static: bus_remove_file only used internally */
+static void bus_remove_file(struct bus_type *bus, struct bus_attribute *attr) { }
 
 static void bus_release(struct kobject *kobj)
 {

@@ -151,7 +151,7 @@ extern struct vm_struct *get_vm_area_caller(unsigned long size,
 void free_vm_area(struct vm_struct *area);
 extern struct vm_struct *remove_vm_area(const void *addr);
 extern struct vm_struct *find_vm_area(const void *addr);
-struct vmap_area *find_vmap_area(unsigned long addr);
+/* find_vmap_area declaration removed - made static */
 
 static inline bool is_vm_area_hugepages(const void *addr)
 {

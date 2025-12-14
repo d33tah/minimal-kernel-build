@@ -84,22 +84,5 @@ void init_intel_cacheinfo(struct cpuinfo_x86 *c)
 	 
 }
 
-void init_amd_cacheinfo(struct cpuinfo_x86 *c)
-{
-	 
-}
-
-void init_hygon_cacheinfo(struct cpuinfo_x86 *c)
-{
-	 
-}
-
-void cacheinfo_hygon_init_llc_id(struct cpuinfo_x86 *c, int cpu)
-{
-	 
-}
-
-void cacheinfo_amd_init_llc_id(struct cpuinfo_x86 *c, int cpu)
-{
-	 
-}
+/* init_amd_cacheinfo, init_hygon_cacheinfo, cacheinfo_hygon_init_llc_id,
+   cacheinfo_amd_init_llc_id removed - no callers */

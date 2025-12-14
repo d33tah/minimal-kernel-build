@@ -298,14 +298,7 @@ static void device_platform_notify_remove(struct device *dev)
 	/* platform_notify_remove call removed - never assigned */
 }
 
-const char *dev_driver_string(const struct device *dev)
-{
-	struct device_driver *drv;
-
-	
-	drv = READ_ONCE(dev->driver);
-	return drv ? drv->name : dev_bus_name(dev);
-}
+/* dev_driver_string removed - no callers */
 
 #define to_dev_attr(_attr) container_of(_attr, struct device_attribute, attr)
 

@@ -409,8 +409,6 @@ static inline int devtmpfs_mount(void) { return 0; }
 
 void device_shutdown(void);
 
-const char *dev_driver_string(const struct device *dev);
-
 /* device_link_add, device_link_del, device_link_remove,
    device_links_supplier_sync_state_pause, device_links_supplier_sync_state_resume removed - unused */
 

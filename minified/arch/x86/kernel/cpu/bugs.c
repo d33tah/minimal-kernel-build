@@ -58,9 +58,7 @@ void __init check_bugs(void)
 	fpu__init_check_bugs();
 }
 
-void x86_virt_spec_ctrl(u64 guest_spec_ctrl, u64 guest_virt_spec_ctrl, bool setguest)
-{
-}
+/* x86_virt_spec_ctrl removed - unused in minimal kernel */
 
 void x86_spec_ctrl_setup_ap(void)
 {

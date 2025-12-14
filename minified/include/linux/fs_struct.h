@@ -38,6 +38,4 @@ static inline void get_fs_pwd(struct fs_struct *fs, struct path *pwd)
 	spin_unlock(&fs->lock);
 }
 
-extern bool current_chrooted(void);
-
 #endif  

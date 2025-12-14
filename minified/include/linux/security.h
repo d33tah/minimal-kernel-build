@@ -113,13 +113,7 @@ static inline int early_security_init(void)
 	return 0;
 }
 
-static inline int security_capable(const struct cred *cred,
-				   struct user_namespace *ns,
-				   int cap,
-				   unsigned int opts)
-{
-	return cap_capable(cred, ns, cap, opts);
-}
+/* security_capable removed - never called */
 
 
 static inline int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)

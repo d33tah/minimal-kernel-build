@@ -98,9 +98,7 @@ struct class_attribute {
 extern int __must_check class_create_file_ns(struct class *class,
 					     const struct class_attribute *attr,
 					     const void *ns);
-extern void class_remove_file_ns(struct class *class,
-				 const struct class_attribute *attr,
-				 const void *ns);
+/* class_remove_file_ns removed - unused */
 
 static inline int __must_check class_create_file(struct class *class,
 					const struct class_attribute *attr)
@@ -108,11 +106,7 @@ static inline int __must_check class_create_file(struct class *class,
 	return class_create_file_ns(class, attr, NULL);
 }
 
-static inline void class_remove_file(struct class *class,
-				     const struct class_attribute *attr)
-{
-	return class_remove_file_ns(class, attr, NULL);
-}
+/* class_remove_file removed - unused */
 
 struct class_attribute_string {
 	struct class_attribute attr;

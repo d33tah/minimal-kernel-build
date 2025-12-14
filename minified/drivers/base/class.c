@@ -83,12 +83,7 @@ int class_create_file_ns(struct class *cls, const struct class_attribute *attr,
 	return error;
 }
 
-void class_remove_file_ns(struct class *cls, const struct class_attribute *attr,
-			  const void *ns)
-{
-	if (cls)
-		sysfs_remove_file_ns(&cls->p->subsys.kobj, &attr->attr, ns);
-}
+/* class_remove_file_ns removed - unused */
 
 static struct class *class_get(struct class *cls)
 {

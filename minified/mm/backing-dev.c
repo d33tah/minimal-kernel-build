@@ -300,9 +300,4 @@ struct backing_dev_info *inode_to_bdi(struct inode *inode)
 	return sb->s_bdi;
 }
 
-const char *bdi_dev_name(struct backing_dev_info *bdi)
-{
-	if (!bdi || !bdi->dev)
-		return bdi_unknown_name;
-	return bdi->dev_name;
-}
+/* bdi_dev_name removed - unused */

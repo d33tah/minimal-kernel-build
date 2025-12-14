@@ -145,6 +145,6 @@ static inline void unlocked_inode_to_wb_end(struct inode *inode,
 }
 
 
-const char *bdi_dev_name(struct backing_dev_info *bdi);
+/* bdi_dev_name removed - unused */
 
-#endif	 
+#endif

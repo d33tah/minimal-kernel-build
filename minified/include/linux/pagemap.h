@@ -25,8 +25,7 @@ int write_inode_now(struct inode *, int sync);
 int filemap_fdatawait_range(struct address_space *, loff_t lstart, loff_t lend);
 int filemap_write_and_wait_range(struct address_space *mapping,
 		loff_t lstart, loff_t lend);
-int __filemap_fdatawrite_range(struct address_space *mapping,
-		loff_t start, loff_t end, int sync_mode);
+/* __filemap_fdatawrite_range declaration removed - made static */
 /* filemap_check_errors declaration removed - made static (~1 LOC) */
 int filemap_fdatawrite_wbc(struct address_space *mapping,
 			   struct writeback_control *wbc);

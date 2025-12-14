@@ -238,7 +238,7 @@ int filemap_fdatawrite_wbc(struct address_space *mapping,
 	return ret;
 }
 
-int __filemap_fdatawrite_range(struct address_space *mapping, loff_t start,
+static int __filemap_fdatawrite_range(struct address_space *mapping, loff_t start,
 				loff_t end, int sync_mode)
 {
 	struct writeback_control wbc = {

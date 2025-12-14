@@ -24,10 +24,7 @@ void oom_killer_enable(void)
 	 
 }
 
-bool oom_killer_disable(signed long timeout)
-{
-	return true;
-}
+/* oom_killer_disable removed - never called */
 
 int register_oom_notifier(struct notifier_block *nb)
 {

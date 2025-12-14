@@ -270,7 +270,7 @@ early_param("fw_devlink", fw_devlink_setup);
 static int __init fw_devlink_strict_setup(char *arg) { return 0; }
 early_param("fw_devlink.strict", fw_devlink_strict_setup);
 
-u32 fw_devlink_get_flags(void)
+static u32 fw_devlink_get_flags(void)
 {
 	return fw_devlink_flags;
 }

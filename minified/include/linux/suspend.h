@@ -29,8 +29,6 @@ struct pbe {
 	struct pbe *next;
 };
 
-extern void mark_free_pages(struct zone *zone);
-
 static inline void register_nosave_region(unsigned long b, unsigned long e) {}
 
 static inline bool hibernation_available(void) { return false; }

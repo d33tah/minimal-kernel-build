@@ -20,13 +20,6 @@
 	(((x) + (__y - 1)) / __y) * __y;		\
 }							\
 )
-#define rounddown(x, y) (				\
-{							\
-	typeof(x) __x = (x);				\
-	__x - (__x % (y));				\
-}							\
-)
-
 
 
 #define mult_frac(x, numer, denom)(			\

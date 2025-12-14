@@ -81,7 +81,7 @@ extern int mod_timer(struct timer_list *timer, unsigned long expires);
 
 #define NEXT_TIMER_MAX_DELTA	((1UL << 30) - 1)
 
-extern void add_timer(struct timer_list *timer);
+/* add_timer declaration removed - never called */
 
 # define del_timer_sync(t)		del_timer(t)
 

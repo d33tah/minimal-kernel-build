@@ -425,11 +425,7 @@ int mod_timer(struct timer_list *timer, unsigned long expires)
 	return __mod_timer(timer, expires, 0);
 }
 
-void add_timer(struct timer_list *timer)
-{
-	BUG_ON(timer_pending(timer));
-	__mod_timer(timer, timer->expires, MOD_TIMER_NOTPENDING);
-}
+/* add_timer removed - never called from outside timer.c */
 
 void add_timer_on(struct timer_list *timer, int cpu)
 {

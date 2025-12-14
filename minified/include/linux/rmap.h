@@ -156,8 +156,6 @@ dup:
 	return 0;
 }
 
-void try_to_migrate(struct folio *folio, enum ttu_flags flags);
-
 int make_device_exclusive_range(struct mm_struct *mm, unsigned long start,
 				unsigned long end, struct page **pages,
 				void *arg);

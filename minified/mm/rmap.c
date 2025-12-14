@@ -632,10 +632,7 @@ out:
 	munlock_vma_page(page, vma, compound);
 }
 
-void try_to_migrate(struct folio *folio, enum ttu_flags flags)
-{
-	/* Stubbed: page migration not needed for minimal kernel */
-}
+/* try_to_migrate removed - was empty stub, never called */
 
 void __put_anon_vma(struct anon_vma *anon_vma)
 {

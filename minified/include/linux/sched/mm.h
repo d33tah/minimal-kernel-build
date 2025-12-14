@@ -39,8 +39,6 @@ static inline void mmget(struct mm_struct *mm)
 
 extern void mmput(struct mm_struct *);
 
-extern struct mm_struct *get_task_mm(struct task_struct *task);
-
 extern void exit_mm_release(struct task_struct *, struct mm_struct *);
 extern void exec_mm_release(struct task_struct *, struct mm_struct *);
 

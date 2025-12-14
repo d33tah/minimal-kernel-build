@@ -123,7 +123,7 @@ extern void shrink_dentry_list(struct list_head *);
 extern const struct file_operations pipefifo_fops;
 
  
-extern void group_pin_kill(struct hlist_head *p);
+/* group_pin_kill removed - unused */
 extern void mnt_pin_kill(struct mount *m);
 
  

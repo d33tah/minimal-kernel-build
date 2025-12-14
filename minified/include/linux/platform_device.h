@@ -119,7 +119,6 @@ struct platform_driver {
 	__platform_driver_register(drv, THIS_MODULE)
 extern int __platform_driver_register(struct platform_driver *,
 					struct module *);
-extern void platform_driver_unregister(struct platform_driver *);
 
 #define platform_driver_probe(drv, probe) \
 	__platform_driver_probe(drv, probe, THIS_MODULE)
@@ -137,25 +136,10 @@ static inline void platform_set_drvdata(struct platform_device *pdev,
 	dev_set_drvdata(&pdev->dev, data);
 }
 
-#define module_platform_driver(__platform_driver) \
-	module_driver(__platform_driver, platform_driver_register, \
-			platform_driver_unregister)
-
 #define builtin_platform_driver(__platform_driver) \
 	builtin_driver(__platform_driver, platform_driver_register)
 
-#define module_platform_driver_probe(__platform_driver, __platform_probe) \
-static int __init __platform_driver##_init(void) \
-{ \
-	return platform_driver_probe(&(__platform_driver), \
-				     __platform_probe);    \
-} \
-module_init(__platform_driver##_init); \
-static void __exit __platform_driver##_exit(void) \
-{ \
-	platform_driver_unregister(&(__platform_driver)); \
-} \
-module_exit(__platform_driver##_exit);
+/* module_platform_driver, module_platform_driver_probe removed - reference missing platform_driver_unregister */
 
 #define builtin_platform_driver_probe(__platform_driver, __platform_probe) \
 static int __init __platform_driver##_init(void) \

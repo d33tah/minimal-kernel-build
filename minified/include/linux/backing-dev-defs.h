@@ -120,19 +120,6 @@ struct wb_lock_cookie {
 	unsigned long flags;
 };
 
+/* wb_tryget, wb_get, wb_put removed - never called */
 
-static inline bool wb_tryget(struct bdi_writeback *wb)
-{
-	return true;
-}
-
-static inline void wb_get(struct bdi_writeback *wb)
-{
-}
-
-static inline void wb_put(struct bdi_writeback *wb)
-{
-}
-
-
-#endif 
+#endif

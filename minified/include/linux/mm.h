@@ -26,23 +26,8 @@
 #include <linux/overflow.h>
 
 /* --- 2025-12-06 16:45 --- page_ref.h inlined */
-DECLARE_TRACEPOINT(page_ref_set);
-DECLARE_TRACEPOINT(page_ref_mod);
-DECLARE_TRACEPOINT(page_ref_mod_and_test);
-DECLARE_TRACEPOINT(page_ref_mod_and_return);
-DECLARE_TRACEPOINT(page_ref_mod_unless);
-DECLARE_TRACEPOINT(page_ref_freeze);
-DECLARE_TRACEPOINT(page_ref_unfreeze);
-
+/* DECLARE_TRACEPOINT and __page_ref_* stubs removed - never used */
 #define page_ref_tracepoint_active(t) false
-
-static inline void __page_ref_set(struct page *page, int v) { }
-static inline void __page_ref_mod(struct page *page, int v) { }
-static inline void __page_ref_mod_and_test(struct page *page, int v, int ret) { }
-static inline void __page_ref_mod_and_return(struct page *page, int v, int ret) { }
-static inline void __page_ref_mod_unless(struct page *page, int v, int u) { }
-static inline void __page_ref_freeze(struct page *page, int v, int ret) { }
-static inline void __page_ref_unfreeze(struct page *page, int v) { }
 
 static inline int page_ref_count(const struct page *page)
 {
@@ -62,14 +47,9 @@ static inline int page_count(const struct page *page)
 static inline void set_page_count(struct page *page, int v)
 {
 	atomic_set(&page->_refcount, v);
-	if (page_ref_tracepoint_active(page_ref_set))
-		__page_ref_set(page, v);
 }
 
-static inline void folio_set_count(struct folio *folio, int v)
-{
-	set_page_count(&folio->page, v);
-}
+/* folio_set_count removed - never called */
 
 static inline void init_page_count(struct page *page)
 {
@@ -79,8 +59,6 @@ static inline void init_page_count(struct page *page)
 static inline void page_ref_add(struct page *page, int nr)
 {
 	atomic_add(nr, &page->_refcount);
-	if (page_ref_tracepoint_active(page_ref_mod))
-		__page_ref_mod(page, nr);
 }
 
 static inline void folio_ref_add(struct folio *folio, int nr)
@@ -91,8 +69,6 @@ static inline void folio_ref_add(struct folio *folio, int nr)
 static inline void page_ref_sub(struct page *page, int nr)
 {
 	atomic_sub(nr, &page->_refcount);
-	if (page_ref_tracepoint_active(page_ref_mod))
-		__page_ref_mod(page, -nr);
 }
 
 static inline void folio_ref_sub(struct folio *folio, int nr)
@@ -103,8 +79,6 @@ static inline void folio_ref_sub(struct folio *folio, int nr)
 static inline void page_ref_inc(struct page *page)
 {
 	atomic_inc(&page->_refcount);
-	if (page_ref_tracepoint_active(page_ref_mod))
-		__page_ref_mod(page, 1);
 }
 
 static inline void folio_ref_inc(struct folio *folio)
@@ -115,22 +89,13 @@ static inline void folio_ref_inc(struct folio *folio)
 static inline void page_ref_dec(struct page *page)
 {
 	atomic_dec(&page->_refcount);
-	if (page_ref_tracepoint_active(page_ref_mod))
-		__page_ref_mod(page, -1);
 }
 
-static inline void folio_ref_dec(struct folio *folio)
-{
-	page_ref_dec(&folio->page);
-}
+/* folio_ref_dec removed - never called */
 
 static inline int page_ref_sub_and_test(struct page *page, int nr)
 {
-	int ret = atomic_sub_and_test(nr, &page->_refcount);
-
-	if (page_ref_tracepoint_active(page_ref_mod_and_test))
-		__page_ref_mod_and_test(page, -nr, ret);
-	return ret;
+	return atomic_sub_and_test(nr, &page->_refcount);
 }
 
 static inline int folio_ref_sub_and_test(struct folio *folio, int nr)
@@ -140,25 +105,14 @@ static inline int folio_ref_sub_and_test(struct folio *folio, int nr)
 
 static inline int page_ref_dec_and_test(struct page *page)
 {
-	int ret = atomic_dec_and_test(&page->_refcount);
-
-	if (page_ref_tracepoint_active(page_ref_mod_and_test))
-		__page_ref_mod_and_test(page, -1, ret);
-	return ret;
+	return atomic_dec_and_test(&page->_refcount);
 }
 
-static inline int folio_ref_dec_and_test(struct folio *folio)
-{
-	return page_ref_dec_and_test(&folio->page);
-}
+/* folio_ref_dec_and_test removed - never called */
 
 static inline bool page_ref_add_unless(struct page *page, int nr, int u)
 {
-	bool ret = atomic_add_unless(&page->_refcount, nr, u);
-
-	if (page_ref_tracepoint_active(page_ref_mod_unless))
-		__page_ref_mod_unless(page, nr, ret);
-	return ret;
+	return atomic_add_unless(&page->_refcount, nr, u);
 }
 
 static inline bool folio_ref_add_unless(struct folio *folio, int nr, int u)
@@ -166,16 +120,11 @@ static inline bool folio_ref_add_unless(struct folio *folio, int nr, int u)
 	return page_ref_add_unless(&folio->page, nr, u);
 }
 
-static inline bool folio_try_get(struct folio *folio)
-{
-	return folio_ref_add_unless(folio, 1, 0);
-}
+/* folio_try_get removed - never called */
 
 static inline bool folio_ref_try_add_rcu(struct folio *folio, int count)
 {
-	VM_BUG_ON_FOLIO(folio_ref_count(folio) == 0, folio);
-	folio_ref_add(folio, count);
-	return true;
+	return folio_ref_add_unless(folio, count, 0);
 }
 
 static inline bool folio_try_get_rcu(struct folio *folio)
@@ -463,10 +412,8 @@ static inline bool vma_is_foreign(struct vm_area_struct *vma)
 {
 	if (!current->mm)
 		return true;
-
 	if (current->mm != vma->vm_mm)
 		return true;
-
 	return false;
 }
 

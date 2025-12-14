@@ -1,3 +1,26 @@
+--- 2025-12-14 15:16 ---
+
+SESSION PROGRESS (continued):
+- Current LOC: 164,064 (after mrproper)
+- make vm: PASSING - shows "Hello, World!"
+- bzImage: 226K
+- Goal: 150,000 LOC (need to remove ~14,064 LOC)
+
+Additional commits:
+5. Remove unused is_early_ioremap_ptep function (~5 LOC)
+6. Remove stale rdmsr_safe_regs and wrmsr_safe_regs declarations (~2 LOC)
+7. Remove stale apic_ack_irq declaration (~1 LOC)
+8. Remove stale declarations from topology.h (~3 LOC)
+
+New files cleaned:
+- arch/x86/mm/ioremap.c (is_early_ioremap_ptep)
+- arch/x86/include/asm/io.h (is_early_ioremap_ptep)
+- arch/x86/include/asm/msr.h (rdmsr_safe_regs, wrmsr_safe_regs)
+- arch/x86/include/asm/apic.h (apic_ack_irq)
+- arch/x86/include/asm/topology.h (cpu_coregroup_mask, cpu_clustergroup_mask, x86_topology_update)
+
+Strategy continues: searching for extern declarations with no implementation.
+
 --- 2025-12-14 15:02 ---
 
 SESSION PROGRESS:

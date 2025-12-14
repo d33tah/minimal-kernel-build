@@ -50,7 +50,5 @@ struct timekeeper {
 
 
 extern void update_vsyscall(struct timekeeper *tk);
-extern void update_vsyscall_tz(void);
-
 
 #endif  

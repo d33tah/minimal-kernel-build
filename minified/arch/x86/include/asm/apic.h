@@ -146,9 +146,7 @@ static inline void apic_icr_write(u32 low, u32 high) { }
 static inline void apic_wait_icr_idle(void) { }
 static inline u32 safe_apic_wait_icr_idle(void) { return 0; }
 static inline void apic_set_eoi_write(void (*eoi_write)(u32 reg, u32 v)) {}
-
-
-extern void apic_ack_irq(struct irq_data *data);
+/* apic_ack_irq declaration removed - no implementation */
 
 static inline void ack_APIC_irq(void)
 {

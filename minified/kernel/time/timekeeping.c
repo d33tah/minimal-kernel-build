@@ -45,7 +45,7 @@ static struct {
 
 static struct timekeeper shadow_timekeeper;
 
-int __read_mostly timekeeping_suspended;
+static int __read_mostly timekeeping_suspended;
 
 struct tk_fast {
 	seqcount_latch_t	seq;

@@ -10,7 +10,7 @@ enum clocksource_ids {
 };
 
 void timekeeping_init(void);
-extern int timekeeping_suspended;
+/* timekeeping_suspended now static in timekeeping.c */
 
 
 extern int do_sys_settimeofday64(const struct timespec64 *tv,

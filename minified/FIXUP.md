@@ -1,3 +1,42 @@
+--- 2025-12-14 15:24 ---
+
+SESSION FINAL SUMMARY:
+- Current LOC: 164,080 (after mrproper)
+- make vm: PASSING - shows "Hello, World!"
+- bzImage: 226K
+- Goal: 150,000 LOC (need to remove ~14,080 LOC)
+
+Total commits this session: 9
+1. Update FIXUP.md with session progress notes
+2. Remove stale declarations from processor.h and desc.h (~5 LOC)
+3. Remove stale declarations from io.h and tlbflush.h (~5 LOC)
+4. Remove unused apply_retpolines, apply_returns, apply_ibt_endbr (~5 LOC)
+5. Remove unused is_early_ioremap_ptep function (~5 LOC)
+6. Remove stale rdmsr_safe_regs and wrmsr_safe_regs declarations (~2 LOC)
+7. Remove stale apic_ack_irq declaration (~1 LOC)
+8. Remove stale declarations from topology.h (~3 LOC)
+9. Remove stale fixup_irqs and x86_platform_ipi_callback declarations (~2 LOC)
+
+Files cleaned:
+- arch/x86/include/asm/processor.h (amd_e400_c1e_apic_setup, set_task_blockstep, cpu_init_secondary, cpuinfo_op)
+- arch/x86/include/asm/desc.h (idt_is_f00f_address)
+- arch/x86/include/asm/io.h (ioremap_encrypted, ioremap_change_attr, is_early_ioremap_ptep)
+- arch/x86/include/asm/tlbflush.h (arch_tlbbatch_flush)
+- arch/x86/include/asm/alternative.h (apply_retpolines, apply_returns, apply_ibt_endbr)
+- arch/x86/kernel/alternative.c (removed corresponding stubs)
+- arch/x86/mm/ioremap.c (is_early_ioremap_ptep implementation)
+- arch/x86/include/asm/msr.h (rdmsr_safe_regs, wrmsr_safe_regs)
+- arch/x86/include/asm/apic.h (apic_ack_irq)
+- arch/x86/include/asm/topology.h (cpu_coregroup_mask, cpu_clustergroup_mask, x86_topology_update)
+- arch/x86/include/asm/irq.h (fixup_irqs, x86_platform_ipi_callback)
+
+Note: Tried to remove ibt_selftest, math_emulate from traps.h but they are still needed
+for compilation even though code paths are disabled (HAS_KERNEL_IBT=0).
+
+Strategy: Searching for extern declarations with no corresponding implementation.
+This approach yields small but consistent gains. Need larger-scale refactoring for
+significant LOC reduction toward 150K goal.
+
 --- 2025-12-14 15:16 ---
 
 SESSION PROGRESS (continued):

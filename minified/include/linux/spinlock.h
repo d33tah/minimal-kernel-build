@@ -24,17 +24,7 @@
 #endif
 
 
-#define LOCK_SECTION_NAME ".text..lock."KBUILD_BASENAME
-
-#define LOCK_SECTION_START(extra)               \
-        ".subsection 1\n\t"                     \
-        extra                                   \
-        ".ifndef " LOCK_SECTION_NAME "\n\t"     \
-        LOCK_SECTION_NAME ":\n\t"               \
-        ".endif\n"
-
-#define LOCK_SECTION_END                        \
-        ".previous\n\t"
+/* LOCK_SECTION_NAME, LOCK_SECTION_START, LOCK_SECTION_END removed - unused */
 
 #define __lockfunc __section(".spinlock.text")
 
@@ -55,11 +45,7 @@
 
 #define raw_spin_is_locked(lock)	arch_spin_is_locked(&(lock)->raw_lock)
 
-#ifdef arch_spin_is_contended
-#define raw_spin_is_contended(lock)	arch_spin_is_contended(&(lock)->raw_lock)
-#else
-#define raw_spin_is_contended(lock)	(((void)(lock), 0))
-#endif  
+/* raw_spin_is_contended removed - unused */
 
 #ifndef smp_mb__after_spinlock
 #define smp_mb__after_spinlock()	do { } while (0)

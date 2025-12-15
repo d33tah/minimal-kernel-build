@@ -24,9 +24,7 @@ static LIST_HEAD(deferred_probe_active_list);
 static atomic_t deferred_trigger_count = ATOMIC_INIT(0);
 static bool initcalls_done;
 
-#define ASYNC_DRV_NAMES_MAX_LEN	256
-static char async_probe_drv_names[ASYNC_DRV_NAMES_MAX_LEN];
-static bool async_probe_default;
+/* async_probe_drv_names, async_probe_default removed - unused */
 
 static bool defer_all_probes;
 

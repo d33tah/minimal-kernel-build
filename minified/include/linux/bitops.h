@@ -27,10 +27,7 @@ static inline int get_bitmask_order(unsigned int count)
 	return order;	 
 }
 
-static __always_inline unsigned long hweight_long(unsigned long w)
-{
-	return sizeof(w) == 4 ? hweight32(w) : hweight64((__u64)w);
-}
+/* hweight_long removed - never used */
 
 /* rol64, ror64, ror32, rol16, ror16, rol8, ror8 removed - never called */
 

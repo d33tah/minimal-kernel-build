@@ -97,50 +97,8 @@ static inline int irq_desc_has_action(struct irq_desc *desc)
 	return desc && desc->action != NULL;
 }
 
-static inline void irq_set_handler_locked(struct irq_data *data,
-					  irq_flow_handler_t handler)
-{
-	struct irq_desc *desc = irq_data_to_desc(data);
-
-	desc->handle_irq = handler;
-}
-
-static inline void
-irq_set_chip_handler_name_locked(struct irq_data *data, struct irq_chip *chip,
-				 irq_flow_handler_t handler, const char *name)
-{
-	struct irq_desc *desc = irq_data_to_desc(data);
-
-	desc->handle_irq = handler;
-	desc->name = name;
-	data->chip = chip;
-}
-
-bool irq_check_status_bit(unsigned int irq, unsigned int bitmask);
-
-static inline bool irq_balancing_disabled(unsigned int irq)
-{
-	return irq_check_status_bit(irq, IRQ_NO_BALANCING_MASK);
-}
-
-static inline bool irq_is_percpu(unsigned int irq)
-{
-	return irq_check_status_bit(irq, IRQ_PER_CPU);
-}
-
-static inline bool irq_is_percpu_devid(unsigned int irq)
-{
-	return irq_check_status_bit(irq, IRQ_PER_CPU_DEVID);
-}
-
-void __irq_set_lockdep_class(unsigned int irq, struct lock_class_key *lock_class,
-			     struct lock_class_key *request_class);
-static inline void
-irq_set_lockdep_class(unsigned int irq, struct lock_class_key *lock_class,
-		      struct lock_class_key *request_class)
-{
-	if (IS_ENABLED(CONFIG_LOCKDEP))
-		__irq_set_lockdep_class(irq, lock_class, request_class);
-}
+/* irq_set_handler_locked, irq_set_chip_handler_name_locked,
+   irq_balancing_disabled, irq_is_percpu, irq_is_percpu_devid,
+   irq_set_lockdep_class removed - unused */
 
 #endif

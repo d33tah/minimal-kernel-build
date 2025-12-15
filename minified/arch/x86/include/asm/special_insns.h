@@ -74,16 +74,7 @@ static inline void native_wbinvd(void)
 	asm volatile("wbinvd": : :"memory");
 }
 
-extern asmlinkage void asm_load_gs_index(unsigned int selector);
-
-static inline void native_load_gs_index(unsigned int selector)
-{
-	unsigned long flags;
-
-	local_irq_save(flags);
-	asm_load_gs_index(selector);
-	local_irq_restore(flags);
-}
+/* native_load_gs_index, asm_load_gs_index removed - unused */
 
 static inline unsigned long __read_cr4(void)
 {
@@ -132,12 +123,7 @@ static inline void wbinvd(void)
 	native_wbinvd();
 }
 
-
-static inline void load_gs_index(unsigned int selector)
-{
-	loadsegment(gs, selector);
-}
-
+/* load_gs_index removed - unused */
 
 static inline void clflush(volatile void *__p)
 {
@@ -152,16 +138,7 @@ static inline void serialize(void)
 	asm volatile(".byte 0xf, 0x1, 0xe8" ::: "memory");
 }
 
-/* Used by io.h */
-static inline void movdir64b(void __iomem *dst, const void *src)
-{
-	const struct { char _[64]; } *__src = src;
-	struct { char _[64]; } __iomem *__dst = dst;
-
-	asm volatile(".byte 0x66, 0x0f, 0x38, 0xf8, 0x02"
-		     : "+m" (*__dst)
-		     :  "m" (*__src), "a" (__dst), "d" (__src));
-}
+/* movdir64b removed - unused */
 
 #endif
 

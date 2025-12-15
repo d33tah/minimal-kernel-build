@@ -132,22 +132,12 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 #define xa_trylock(xa)		spin_trylock(&(xa)->xa_lock)
 #define xa_lock(xa)		spin_lock(&(xa)->xa_lock)
 #define xa_unlock(xa)		spin_unlock(&(xa)->xa_lock)
-#define xa_lock_bh(xa)		spin_lock_bh(&(xa)->xa_lock)
-#define xa_unlock_bh(xa)	spin_unlock_bh(&(xa)->xa_lock)
 #define xa_lock_irq(xa)		spin_lock_irq(&(xa)->xa_lock)
 #define xa_unlock_irq(xa)	spin_unlock_irq(&(xa)->xa_lock)
 #define xa_lock_irqsave(xa, flags) \
 				spin_lock_irqsave(&(xa)->xa_lock, flags)
 #define xa_unlock_irqrestore(xa, flags) \
 				spin_unlock_irqrestore(&(xa)->xa_lock, flags)
-#define xa_lock_nested(xa, subclass) \
-				spin_lock_nested(&(xa)->xa_lock, subclass)
-#define xa_lock_bh_nested(xa, subclass) \
-				spin_lock_bh_nested(&(xa)->xa_lock, subclass)
-#define xa_lock_irq_nested(xa, subclass) \
-				spin_lock_irq_nested(&(xa)->xa_lock, subclass)
-#define xa_lock_irqsave_nested(xa, flags, subclass) \
-		spin_lock_irqsave_nested(&(xa)->xa_lock, flags, subclass)
 
 void *__xa_erase(struct xarray *, unsigned long index);
 void *__xa_store(struct xarray *, unsigned long index, void *entry, gfp_t);
@@ -185,26 +175,8 @@ struct xa_node {
 	};
 };
 
-void xa_dump(const struct xarray *);
-void xa_dump_node(const struct xa_node *);
-
-#ifdef XA_DEBUG
-#define XA_BUG_ON(xa, x) do {					\
-		if (x) {					\
-			xa_dump(xa);				\
-			BUG();					\
-		}						\
-	} while (0)
-#define XA_NODE_BUG_ON(node, x) do {				\
-		if (x) {					\
-			if (node) xa_dump_node(node);		\
-			BUG();					\
-		}						\
-	} while (0)
-#else
 #define XA_BUG_ON(xa, x)	do { } while (0)
 #define XA_NODE_BUG_ON(node, x)	do { } while (0)
-#endif
 
 static inline void *xa_head(const struct xarray *xa)
 {
@@ -333,8 +305,6 @@ struct xa_state {
 #define xas_trylock(xas)	xa_trylock((xas)->xa)
 #define xas_lock(xas)		xa_lock((xas)->xa)
 #define xas_unlock(xas)		xa_unlock((xas)->xa)
-#define xas_lock_bh(xas)	xa_lock_bh((xas)->xa)
-#define xas_unlock_bh(xas)	xa_unlock_bh((xas)->xa)
 #define xas_lock_irq(xas)	xa_lock_irq((xas)->xa)
 #define xas_unlock_irq(xas)	xa_unlock_irq((xas)->xa)
 #define xas_lock_irqsave(xas, flags) \

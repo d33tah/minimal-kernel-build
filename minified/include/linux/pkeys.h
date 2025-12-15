@@ -16,31 +16,4 @@ static inline int vma_pkey(struct vm_area_struct *vma)
 	return 0;
 }
 
-static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
-{
-	return (pkey == 0);
-}
-
-static inline int mm_pkey_alloc(struct mm_struct *mm)
-{
-	return -1;
-}
-
-static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
-{
-	return -EINVAL;
-}
-
-static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
-			unsigned long init_val)
-{
-	return 0;
-}
-
-static inline bool arch_pkeys_enabled(void)
-{
-	return false;
-}
-
-
 #endif  

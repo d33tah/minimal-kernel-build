@@ -98,27 +98,7 @@ static inline int __srcu_read_lock(struct srcu_struct *ssp)
 	return idx;
 }
 
-static inline void synchronize_srcu_expedited(struct srcu_struct *ssp)
-{
-	synchronize_srcu(ssp);
-}
-
-static inline void srcu_barrier(struct srcu_struct *ssp)
-{
-	synchronize_srcu(ssp);
-}
-
-static inline void srcu_torture_stats_print(struct srcu_struct *ssp,
-					    char *tt, char *tf)
-{
-	int idx;
-
-	idx = ((data_race(READ_ONCE(ssp->srcu_idx)) + 1) & 0x2) >> 1;
-	pr_alert("%s%s Tiny SRCU per-CPU(idx=%d): (%hd,%hd)\n",
-		 tt, tf, idx,
-		 data_race(READ_ONCE(ssp->srcu_lock_nesting[!idx])),
-		 data_race(READ_ONCE(ssp->srcu_lock_nesting[idx])));
-}
+/* synchronize_srcu_expedited, srcu_barrier, srcu_torture_stats_print removed - unused */
 /* End of inlined srcutiny.h content */
 
 void call_srcu(struct srcu_struct *ssp, struct rcu_head *head,

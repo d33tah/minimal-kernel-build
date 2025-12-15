@@ -82,26 +82,8 @@ int dma_supported(struct device *dev, u64 mask);
 int dma_set_mask(struct device *dev, u64 mask);
 int dma_set_coherent_mask(struct device *dev, u64 mask);
 u64 dma_get_required_mask(struct device *dev);
-size_t dma_max_mapping_size(struct device *dev);
-bool dma_need_sync(struct device *dev, dma_addr_t dma_addr);
-unsigned long dma_get_merge_boundary(struct device *dev);
-struct sg_table *dma_alloc_noncontiguous(struct device *dev, size_t size,
-		enum dma_data_direction dir, gfp_t gfp, unsigned long attrs);
-void dma_free_noncontiguous(struct device *dev, size_t size,
-		struct sg_table *sgt, enum dma_data_direction dir);
-void *dma_vmap_noncontiguous(struct device *dev, size_t size,
-		struct sg_table *sgt);
-void dma_vunmap_noncontiguous(struct device *dev, void *vaddr);
-int dma_mmap_noncontiguous(struct device *dev, struct vm_area_struct *vma,
-		size_t size, struct sg_table *sgt);
-
-struct page *dma_alloc_pages(struct device *dev, size_t size,
-		dma_addr_t *dma_handle, enum dma_data_direction dir, gfp_t gfp);
-void dma_free_pages(struct device *dev, size_t size, struct page *page,
-		dma_addr_t dma_handle, enum dma_data_direction dir);
-int dma_mmap_pages(struct device *dev, struct vm_area_struct *vma,
-		size_t size, struct page *page);
-
+/* dma_max_mapping_size, dma_need_sync, dma_get_merge_boundary,
+   dma_alloc/free/vmap/vunmap/mmap_noncontiguous, dma_alloc/free/mmap_pages removed - unused */
 
 static inline u64 dma_get_mask(struct device *dev)
 {

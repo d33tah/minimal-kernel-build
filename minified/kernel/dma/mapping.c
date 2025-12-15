@@ -292,34 +292,4 @@ int dma_set_coherent_mask(struct device *dev, u64 mask)
 	return 0;
 }
 
-size_t dma_max_mapping_size(struct device *dev)
-{
-	const struct dma_map_ops *ops = get_dma_ops(dev);
-	size_t size = SIZE_MAX;
-
-	if (dma_map_direct(dev, ops))
-		size = dma_direct_max_mapping_size(dev);
-	else if (ops && ops->max_mapping_size)
-		size = ops->max_mapping_size(dev);
-
-	return size;
-}
-
-bool dma_need_sync(struct device *dev, dma_addr_t dma_addr)
-{
-	const struct dma_map_ops *ops = get_dma_ops(dev);
-
-	if (dma_map_direct(dev, ops))
-		return dma_direct_need_sync(dev, dma_addr);
-	return ops->sync_single_for_cpu || ops->sync_single_for_device;
-}
-
-unsigned long dma_get_merge_boundary(struct device *dev)
-{
-	const struct dma_map_ops *ops = get_dma_ops(dev);
-
-	if (!ops || !ops->get_merge_boundary)
-		return 0;	 
-
-	return ops->get_merge_boundary(dev);
-}
+/* dma_max_mapping_size, dma_need_sync, dma_get_merge_boundary removed - unused */

@@ -222,16 +222,7 @@ struct uni_screen {
 	char32_t *lines[0];
 };
 
-static void vc_uniscr_free(struct uni_screen *uniscr)
-{
-	vfree(uniscr);
-}
-
-static void vc_uniscr_set(struct vc_data *vc, struct uni_screen *new_uniscr)
-{
-	vc_uniscr_free(vc->vc_uni_screen);
-	vc->vc_uni_screen = new_uniscr;
-}
+/* vc_uniscr_free, vc_uniscr_set removed - never called */
 
 static void vc_uniscr_clear_line(struct vc_data *vc, unsigned int x,
 				 unsigned int nr)

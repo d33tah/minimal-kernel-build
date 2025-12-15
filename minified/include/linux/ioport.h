@@ -125,14 +125,7 @@ static inline unsigned long resource_ext_type(const struct resource *res)
 {
 	return res->flags & IORESOURCE_EXT_TYPE_BITS;
 }
-static inline bool resource_contains(struct resource *r1, struct resource *r2)
-{
-	if (resource_type(r1) != resource_type(r2))
-		return false;
-	if (r1->flags & IORESOURCE_UNSET || r2->flags & IORESOURCE_UNSET)
-		return false;
-	return r1->start <= r2->start && r1->end >= r2->end;
-}
+/* resource_contains removed - unused */
 
 static inline bool resource_overlaps(struct resource *r1, struct resource *r2)
 {

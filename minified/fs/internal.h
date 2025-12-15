@@ -17,10 +17,7 @@ struct pipe_inode_info;
 static inline void bdev_cache_init(void)
 {
 }
-static inline int emergency_thaw_bdev(struct super_block *sb)
-{
-	return 0;
-}
+/* emergency_thaw_bdev removed - unused */
 
  
 int __block_write_begin_int(struct folio *folio, loff_t pos, unsigned len,

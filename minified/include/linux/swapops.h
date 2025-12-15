@@ -60,18 +60,7 @@ static inline pte_t swp_entry_to_pte(swp_entry_t entry)
 	return __swp_entry_to_pte(arch_entry);
 }
 
-static inline swp_entry_t radix_to_swp_entry(void *arg)
-{
-	swp_entry_t entry;
-
-	entry.val = xa_to_value(arg);
-	return entry;
-}
-
-static inline void *swp_to_radix_entry(swp_entry_t entry)
-{
-	return xa_mk_value(entry.val);
-}
+/* radix_to_swp_entry, swp_to_radix_entry removed - unused */
 
 
 /* CONFIG_DEVICE_PRIVATE disabled - minimal stubs */
@@ -137,14 +126,7 @@ static inline int is_migration_entry(swp_entry_t swp)
 
 static inline void migration_entry_wait(struct mm_struct *mm, pmd_t *pmd,
 					 unsigned long address) { }
-static inline int is_writable_migration_entry(swp_entry_t entry)
-{
-	return 0;
-}
-static inline int is_readable_migration_entry(swp_entry_t entry)
-{
-	return 0;
-}
+/* is_writable_migration_entry, is_readable_migration_entry removed - unused */
 
 
 typedef unsigned long pte_marker;
@@ -153,38 +135,9 @@ typedef unsigned long pte_marker;
 #define  PTE_MARKER_MASK     (PTE_MARKER_UFFD_WP)
 
 
-static inline swp_entry_t make_pte_marker_entry(pte_marker marker)
-{
-	 
-	WARN_ON_ONCE(1);
-	return swp_entry(0, 0);
-}
+/* make_pte_marker_entry, is_pte_marker_entry, pte_marker_get removed - unused */
 
-static inline bool is_pte_marker_entry(swp_entry_t entry)
-{
-	return false;
-}
-
-static inline pte_marker pte_marker_get(swp_entry_t entry)
-{
-	return 0;
-}
-
-static inline bool is_pte_marker(pte_t pte)
-{
-	return false;
-}
-
-
-static inline pte_t make_pte_marker(pte_marker marker)
-{
-	return swp_entry_to_pte(make_pte_marker_entry(marker));
-}
-
-static inline int pte_none_mostly(pte_t pte)
-{
-	return pte_none(pte) || is_pte_marker(pte);
-}
+/* is_pte_marker, make_pte_marker, pte_none_mostly removed - unused */
 
 static inline struct page *pfn_swap_entry_to_page(swp_entry_t entry)
 {

@@ -12,14 +12,9 @@ static inline void kfence_init(void) { }
 static inline void kfence_shutdown_cache(struct kmem_cache *s) { }
 static inline void *kfence_alloc(struct kmem_cache *s, size_t size, gfp_t flags) { return NULL; }
 static inline size_t kfence_ksize(const void *addr) { return 0; }
-static inline void *kfence_object_start(const void *addr) { return NULL; }
-static inline void __kfence_free(void *addr) { }
+/* kfence_object_start, __kfence_free removed - unused */
 static inline bool __must_check kfence_free(void *addr) { return false; }
-static inline bool __must_check kfence_handle_page_fault(unsigned long addr, bool is_write,
-							 struct pt_regs *regs)
-{
-	return false;
-}
+/* kfence_handle_page_fault removed - unused */
 
 
 

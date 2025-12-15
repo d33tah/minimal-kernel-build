@@ -144,28 +144,6 @@ static inline void clflush(volatile void *__p)
 	asm volatile("clflush %0" : "+m" (*(volatile char __force *)__p));
 }
 
-static inline void clflushopt(volatile void *__p)
-{
-	alternative_io(".byte 0x3e; clflush %P0",
-		       ".byte 0x66; clflush %P0",
-		       X86_FEATURE_CLFLUSHOPT,
-		       "+m" (*(volatile char __force *)__p));
-}
-
-static inline void clwb(volatile void *__p)
-{
-	volatile struct { char x[64]; } *p = __p;
-
-	asm volatile(ALTERNATIVE_2(
-		".byte 0x3e; clflush (%[pax])",
-		".byte 0x66; clflush (%[pax])",  
-		X86_FEATURE_CLFLUSHOPT,
-		".byte 0x66, 0x0f, 0xae, 0x30",   
-		X86_FEATURE_CLWB)
-		: [p] "+m" (*p)
-		: [pax] "a" (p));
-}
-
 #define nop() asm volatile ("nop")
 
 /* Used by sync_core.h */

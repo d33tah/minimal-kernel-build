@@ -1,3 +1,32 @@
+--- 2025-12-15 19:23 ---
+
+SESSION PROGRESS UPDATE:
+- Current LOC: ~160,975 (after mrproper)
+- make vm: PASSING - shows "Hello, World!"
+- bzImage: 226K
+- Goal: 150,000 LOC (need to remove ~10,975 LOC)
+
+Commits this session (continuing):
+1. Remove unused functions from desc.h (~69 LOC)
+2. Remove unused page table functions (~25 LOC)
+3. Remove unused phys_mem_access_encrypted from io.h (~5 LOC)
+4. Remove unused functions from special_insns.h (~23 LOC)
+5. Remove unused tlb_get_unmap_size and get_bitmask_order (~12 LOC)
+6. Remove unused do_trace_rdpmc from msr.h (~1 LOC)
+7. Remove unused arch_within_stack_frames from thread_info.h (~6 LOC)
+8. Remove unused paravirt_set_cap from paravirt.h (~3 LOC)
+9. Remove unused irq settings clr functions from internals.h (~8 LOC)
+
+Total removed this session: ~152 LOC
+
+Strategy: Systematically checking inline functions in headers for usage in .c and .h files.
+Functions that are defined but never called anywhere can be safely removed.
+
+Next targets:
+- Continue checking more headers (scheduler, mm, fs internals)
+- Look for larger blocks of unused code
+- Consider stubbing out entire subsystems
+
 --- 2025-12-15 19:07 ---
 
 SESSION PROGRESS UPDATE:
@@ -6,31 +35,7 @@ SESSION PROGRESS UPDATE:
 - bzImage: 226K
 - Goal: 150,000 LOC (need to remove ~10,981 LOC)
 
-Commits this session:
-1. Remove unused functions from desc.h (~69 LOC)
-   - get_current_gdt_ro, desc_empty
-   - native_gdt_invalidate, native_idt_invalidate
-   - refresh_tss_limit, invalidate_tss_limit
-   - get_desc_base, set_desc_base, get_desc_limit, set_desc_limit
-
-2. Remove unused page table functions (~25 LOC)
-   - pud_user from pgtable_types.h
-   - pud_set_flags, pud_clear_flags, pmd_mkinvalid, pte_swp_mkexclusive from pgtable.h
-
-3. Remove unused phys_mem_access_encrypted from io.h (~5 LOC)
-
-4. Remove unused functions from special_insns.h (~23 LOC)
-   - native_load_gs_index, asm_load_gs_index, load_gs_index, movdir64b
-
-Total removed this session: ~122 LOC
-
-Strategy: Systematically checking inline functions in headers for usage in .c and .h files.
-Functions that are defined but never called anywhere can be safely removed.
-
-Next targets:
-- Continue checking arch/x86/include/asm/ headers
-- Check include/linux/ headers for unused inline functions
-- Consider larger subsystems that might be simplifiable
+Previous commits this session...
 
 --- 2025-12-15 17:25 ---
 

@@ -93,7 +93,7 @@ clockevents_calc_mult_shift(struct clock_event_device *ce, u32 freq, u32 maxsec)
 
 
 static inline int tick_check_broadcast_expired(void) { return 0; }
-static inline void tick_setup_hrtimer_broadcast(void) { }
+/* tick_setup_hrtimer_broadcast removed - unused */
 
 
 #endif  

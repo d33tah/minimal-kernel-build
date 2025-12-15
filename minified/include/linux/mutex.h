@@ -22,9 +22,6 @@ struct mutex {
 
 # define __DEBUG_MUTEX_INITIALIZER(lockname)
 
-static inline void mutex_destroy(struct mutex *lock) {}
-
-
 #define mutex_init(mutex)						\
 do {									\
 	static struct lock_class_key __key;				\

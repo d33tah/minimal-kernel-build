@@ -262,11 +262,7 @@ early_param("fw_devlink", fw_devlink_setup);
 static int __init fw_devlink_strict_setup(char *arg) { return 0; }
 early_param("fw_devlink.strict", fw_devlink_strict_setup);
 
-static u32 fw_devlink_get_flags(void)
-{
-	return fw_devlink_flags;
-}
-
+/* fw_devlink_get_flags removed - unused */
 /* fw_devlink_is_strict removed - no callers */
 
 /* fw_devlink_parse_fwnode, fw_devlink_parse_fwtree removed - unused */
@@ -795,20 +791,7 @@ void device_unregister(struct device *dev)
 }
 
 /* prev_device removed - unused */
-
-static struct device *next_device(struct klist_iter *i)
-{
-	struct klist_node *n = klist_next(i);
-	struct device *dev = NULL;
-	struct device_private *p;
-
-	if (n) {
-		p = to_device_private_parent(n);
-		dev = p->device;
-	}
-	return dev;
-}
-
+/* next_device removed - unused */
 /* device_get_devnode removed - never called */
 
 /* Stub: device_for_each_child not called externally */

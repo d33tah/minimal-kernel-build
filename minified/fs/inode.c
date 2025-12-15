@@ -320,16 +320,7 @@ static inline void inode_sb_list_del(struct inode *inode)
 	}
 }
 
-static unsigned long hash(struct super_block *sb, unsigned long hashval)
-{
-	unsigned long tmp;
-
-	tmp = (hashval * (unsigned long)sb) ^ (GOLDEN_RATIO_PRIME + hashval) /
-			L1_CACHE_BYTES;
-	tmp = tmp ^ ((tmp ^ GOLDEN_RATIO_PRIME) >> i_hash_shift);
-	return tmp & i_hash_mask;
-}
-
+/* hash function removed - unused */
 /* __insert_inode_hash removed - unused */
 
 void __remove_inode_hash(struct inode *inode)
@@ -475,8 +466,7 @@ long prune_icache_sb(struct super_block *sb, struct shrink_control *sc)
 	return freed;
 }
 
-static void __wait_on_freeing_inode(struct inode *inode);
-
+/* __wait_on_freeing_inode declaration removed - unused */
 /* find_inode, find_inode_fast removed - no callers */
 
 #define LAST_INO_BATCH 1024
@@ -804,19 +794,7 @@ int file_update_time(struct file *file)
 }
 
 /* file_modified removed - unused */
-
-static void __wait_on_freeing_inode(struct inode *inode)
-{
-	wait_queue_head_t *wq;
-	DEFINE_WAIT_BIT(wait, &inode->i_state, __I_NEW);
-	wq = bit_waitqueue(&inode->i_state, __I_NEW);
-	prepare_to_wait(wq, &wait.wq_entry, TASK_UNINTERRUPTIBLE);
-	spin_unlock(&inode->i_lock);
-	spin_unlock(&inode_hash_lock);
-	schedule();
-	finish_wait(wq, &wait.wq_entry);
-	spin_lock(&inode_hash_lock);
-}
+/* __wait_on_freeing_inode removed - unused */
 
 static __initdata unsigned long ihash_entries;
 /* Stub: ihash_entries= option not needed for minimal kernel */

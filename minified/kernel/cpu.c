@@ -214,10 +214,7 @@ static int cpuhp_store_callbacks(enum cpuhp_state state, const char *name,
 	return ret;
 }
 
-static void *cpuhp_get_teardown_cb(enum cpuhp_state state)
-{
-	return cpuhp_get_step(state)->teardown.single;
-}
+/* cpuhp_get_teardown_cb removed - unused */
 
 static int cpuhp_issue_call(int cpu, enum cpuhp_state state, bool bringup,
 			    struct hlist_node *node)

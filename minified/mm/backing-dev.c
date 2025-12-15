@@ -17,7 +17,7 @@
 struct backing_dev_info noop_backing_dev_info;
 
 static struct class *bdi_class;
-static const char *bdi_unknown_name = "(unknown)";
+/* bdi_unknown_name removed - unused */
 
 DEFINE_SPINLOCK(bdi_lock);
 static struct rb_root bdi_tree = RB_ROOT;

@@ -193,10 +193,7 @@ static inline bool irq_settings_is_nested_thread(struct irq_desc *desc)
 	return desc->status_use_accessors & _IRQ_NESTED_THREAD;
 }
 
-static inline bool irq_settings_is_polled(struct irq_desc *desc)
-{
-	return desc->status_use_accessors & _IRQ_IS_POLLED;
-}
+/* irq_settings_is_polled removed - unused */
 
 static inline bool irq_settings_disable_unlazy(struct irq_desc *desc)
 {
@@ -208,10 +205,7 @@ static inline void irq_settings_clr_disable_unlazy(struct irq_desc *desc)
 	desc->status_use_accessors &= ~_IRQ_DISABLE_UNLAZY;
 }
 
-static inline bool irq_settings_is_hidden(struct irq_desc *desc)
-{
-	return desc->status_use_accessors & _IRQ_HIDDEN;
-}
+/* irq_settings_is_hidden removed - unused */
 
 static inline void irq_settings_set_no_debug(struct irq_desc *desc)
 {
@@ -423,35 +417,10 @@ static inline void irq_setup_timings(struct irq_desc *desc,
 static inline void record_irq_time(struct irq_desc *desc) {}
 
 
-static inline void
-irq_init_generic_chip(struct irq_chip_generic *gc, const char *name,
-		      int num_ct, unsigned int irq_base,
-		      void __iomem *reg_base, irq_flow_handler_t handler) { }
+/* irq_init_generic_chip, irq_can_move_pcntxt, irq_move_pending,
+   irq_copy_pending, irq_get_pending, irq_desc_get_pending_mask,
+   irq_fixup_move_pending removed - unused */
 
-static inline bool irq_can_move_pcntxt(struct irq_data *data)
-{
-	return true;
-}
-static inline bool irq_move_pending(struct irq_data *data)
-{
-	return false;
-}
-static inline void
-irq_copy_pending(struct irq_desc *desc, const struct cpumask *mask)
-{
-}
-static inline void
-irq_get_pending(struct cpumask *mask, struct irq_desc *desc)
-{
-}
-static inline struct cpumask *irq_desc_get_pending_mask(struct irq_desc *desc)
-{
-	return NULL;
-}
-static inline bool irq_fixup_move_pending(struct irq_desc *desc, bool fclear)
-{
-	return false;
-}
 static inline bool handle_enforce_irqctx(struct irq_data *data)
 {
 	return false;
@@ -467,10 +436,7 @@ static inline void irq_domain_deactivate_irq(struct irq_data *data)
 	irqd_clr_activated(data);
 }
 
-static inline struct irq_data *irqd_get_parent_data(struct irq_data *irqd)
-{
-	return NULL;
-}
+/* irqd_get_parent_data removed - unused */
 
 static inline void irq_add_debugfs_entry(unsigned int irq, struct irq_desc *d)
 {

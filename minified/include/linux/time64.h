@@ -85,15 +85,7 @@ static inline bool timespec64_valid(const struct timespec64 *ts)
 	return true;
 }
 
-static inline bool timespec64_valid_strict(const struct timespec64 *ts)
-{
-	if (!timespec64_valid(ts))
-		return false;
-	 
-	if ((unsigned long long)ts->tv_sec >= KTIME_SEC_MAX)
-		return false;
-	return true;
-}
+/* timespec64_valid_strict removed - unused */
 
 static inline bool timespec64_valid_settod(const struct timespec64 *ts)
 {

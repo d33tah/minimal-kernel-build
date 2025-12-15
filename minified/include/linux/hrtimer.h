@@ -114,17 +114,7 @@ static inline void hrtimer_set_expires_tv64(struct hrtimer *timer, s64 tv64)
 	timer->_softexpires = tv64;
 }
 
-static inline void hrtimer_add_expires(struct hrtimer *timer, ktime_t time)
-{
-	timer->node.expires = ktime_add_safe(timer->node.expires, time);
-	timer->_softexpires = ktime_add_safe(timer->_softexpires, time);
-}
-
-static inline void hrtimer_add_expires_ns(struct hrtimer *timer, u64 ns)
-{
-	timer->node.expires = ktime_add_ns(timer->node.expires, ns);
-	timer->_softexpires = ktime_add_ns(timer->_softexpires, ns);
-}
+/* hrtimer_add_expires, hrtimer_add_expires_ns removed - unused */
 
 static inline ktime_t hrtimer_get_expires(const struct hrtimer *timer)
 {

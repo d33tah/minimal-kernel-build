@@ -15,8 +15,6 @@ static inline void paravirt_arch_exit_mmap(struct mm_struct *mm)
 {
 }
 
-static inline void paravirt_set_cap(void)
-{
-}
-#endif  
+/* paravirt_set_cap removed - unused */
+#endif
 #endif  

@@ -39,13 +39,8 @@ static inline struct desc_struct *get_cpu_gdt_ro(int cpu)
 	return (struct desc_struct *)&get_cpu_entry_area(cpu)->gdt;
 }
 
- 
-static inline struct desc_struct *get_current_gdt_ro(void)
-{
-	return get_cpu_gdt_ro(smp_processor_id());
-}
+/* get_current_gdt_ro removed - unused */
 
- 
 static inline phys_addr_t get_cpu_gdt_paddr(unsigned int cpu)
 {
 	return per_cpu_ptr_to_phys(get_cpu_gdt_rw(cpu));
@@ -64,12 +59,7 @@ static inline void pack_gate(gate_desc *gate, unsigned type, unsigned long func,
 	gate->bits.ist		= 0;
 }
 
-static inline int desc_empty(const void *ptr)
-{
-	const u32 *desc = ptr;
-
-	return !(desc[0] | desc[1]);
-}
+/* desc_empty removed - unused */
 
 #define load_TR_desc()				native_load_tr_desc()
 #define load_gdt(dtr)				native_load_gdt(dtr)
@@ -171,27 +161,8 @@ static inline void store_idt(struct desc_ptr *dtr)
 	asm volatile("sidt %0":"=m" (*dtr));
 }
 
-static inline void native_gdt_invalidate(void)
-{
-	const struct desc_ptr invalid_gdt = {
-		.address = 0,
-		.size = 0
-	};
+/* native_gdt_invalidate, native_idt_invalidate removed - unused */
 
-	native_load_gdt(&invalid_gdt);
-}
-
-static inline void native_idt_invalidate(void)
-{
-	const struct desc_ptr invalid_idt = {
-		.address = 0,
-		.size = 0
-	};
-
-	native_load_idt(&invalid_idt);
-}
-
- 
 static inline void native_load_tr_desc(void)
 {
 	asm volatile("ltr %w0"::"q" (GDT_ENTRY_TSS*8));
@@ -232,52 +203,12 @@ static inline void force_reload_TR(void)
 	this_cpu_write(__tss_limit_invalid, false);
 }
 
- 
-static inline void refresh_tss_limit(void)
-{
-	DEBUG_LOCKS_WARN_ON(preemptible());
-
-	if (unlikely(this_cpu_read(__tss_limit_invalid)))
-		force_reload_TR();
-}
-
- 
-static inline void invalidate_tss_limit(void)
-{
-	DEBUG_LOCKS_WARN_ON(preemptible());
-
-	if (unlikely(test_thread_flag(TIF_IO_BITMAP)))
-		force_reload_TR();
-	else
-		this_cpu_write(__tss_limit_invalid, true);
-}
+/* refresh_tss_limit, invalidate_tss_limit removed - unused */
+/* get_desc_base, set_desc_base, get_desc_limit, set_desc_limit removed - unused */
 
 static inline void clear_LDT(void)
 {
 	set_ldt(NULL, 0);
-}
-
-static inline unsigned long get_desc_base(const struct desc_struct *desc)
-{
-	return (unsigned)(desc->base0 | ((desc->base1) << 16) | ((desc->base2) << 24));
-}
-
-static inline void set_desc_base(struct desc_struct *desc, unsigned long base)
-{
-	desc->base0 = base & 0xffff;
-	desc->base1 = (base >> 16) & 0xff;
-	desc->base2 = (base >> 24) & 0xff;
-}
-
-static inline unsigned long get_desc_limit(const struct desc_struct *desc)
-{
-	return desc->limit0 | (desc->limit1 << 16);
-}
-
-static inline void set_desc_limit(struct desc_struct *desc, unsigned long limit)
-{
-	desc->limit0 = limit & 0xffff;
-	desc->limit1 = (limit >> 16) & 0xf;
 }
 
 void alloc_intr_gate(unsigned int n, const void *addr);

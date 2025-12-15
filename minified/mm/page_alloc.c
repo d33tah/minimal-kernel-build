@@ -66,15 +66,7 @@ enum compact_result {
 };
 
 struct alloc_context;
-
-static inline enum compact_result compaction_suitable(struct zone *zone, int order,
-					int alloc_flags, int highest_zoneidx)
-{
-	return COMPACT_SKIPPED;
-}
-
-/* compaction_made_progress, compaction_failed, compaction_needs_reclaim, compaction_withdrawn removed - unused */
-
+/* compaction_suitable, compaction_made_progress, etc. removed - unused */
 /* --- end compaction.h inlined --- */
 
 #include <linux/mm_inline.h>
@@ -84,13 +76,11 @@ static inline enum compact_result compaction_suitable(struct zone *zone, int ord
 #include <linux/sched/rt.h>
 #include <linux/sched/mm.h>
 
-/* --- 2025-12-06 20:21 --- page_owner.h inlined (26 LOC) */
+/* --- 2025-12-06 20:21 --- page_owner.h inlined */
 static inline void reset_page_owner(struct page *page, unsigned short order) {}
 static inline void set_page_owner(struct page *page, unsigned int order, gfp_t gfp_mask) {}
 static inline void split_page_owner(struct page *page, unsigned short order) {}
-static inline void folio_copy_owner(struct folio *newfolio, struct folio *folio) {}
-static inline void set_page_owner_migrate_reason(struct page *page, int reason) {}
-static inline void dump_page_owner(const struct page *page) {}
+/* folio_copy_owner, set_page_owner_migrate_reason, dump_page_owner removed - unused */
 /* --- end page_owner.h inlined --- */
 #include <linux/page_table_check.h>
 #include <linux/kthread.h>
@@ -633,18 +623,7 @@ static inline bool check_new_pcp(struct page *page, unsigned int order)
 	/* Stub: skip page checking for minimal kernel */
 	return false;
 }
-
-static inline bool should_skip_kasan_unpoison(gfp_t flags, bool init_tags)
-{
-	/* Stub: KASAN not needed for minimal kernel */
-	return true;
-}
-
-static inline bool should_skip_init(gfp_t flags)
-{
-	/* Stub: advanced initialization not needed for minimal kernel */
-	return false;
-}
+/* should_skip_kasan_unpoison, should_skip_init removed - unused */
 
 inline void post_alloc_hook(struct page *page, unsigned int order,
 				gfp_t gfp_flags)

@@ -9,8 +9,7 @@
 
 #include <linux/sched/cputime.h>
 #include <linux/sched/isolation.h>
-/* sched/nohz.h inlined */
-static inline void wake_up_nohz_cpu(int cpu) { }
+/* sched/nohz.h inlined - wake_up_nohz_cpu removed, unused duplicate */
 
 #include <linux/cpuidle.h>
 #include <linux/interrupt.h>

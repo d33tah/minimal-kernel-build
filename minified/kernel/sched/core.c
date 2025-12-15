@@ -25,8 +25,7 @@ extern void sched_init_smp(void);
 #include <linux/sched/isolation.h>
 #include <linux/sched/loadavg.h>
 #include <linux/sched/mm.h>
-/* sched/nohz.h inlined */
-static inline void wake_up_nohz_cpu(int cpu) { }
+/* sched/nohz.h inlined - wake_up_nohz_cpu removed, unused duplicate */
 
 #include <linux/sched/rt.h>
 

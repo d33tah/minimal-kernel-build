@@ -254,12 +254,7 @@ static inline loff_t folio_pos(struct folio *folio)
 	return page_offset(&folio->page);
 }
 
-static inline pgoff_t folio_pgoff(struct folio *folio)
-{
-	if (unlikely(folio_test_hugetlb(folio)))
-		return hugetlb_basepage_index(&folio->page);
-	return folio->index;
-}
+/* folio_pgoff removed - unused (2025-12-15 07:26) */
 
 extern pgoff_t linear_hugepage_index(struct vm_area_struct *vma,
 				     unsigned long address);

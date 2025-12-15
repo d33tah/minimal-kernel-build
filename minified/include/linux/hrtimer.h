@@ -141,12 +141,7 @@ static inline ktime_t hrtimer_expires_remaining(const struct hrtimer *timer)
 	return ktime_sub(timer->node.expires, timer->base->get_time());
 }
 
-static inline ktime_t hrtimer_cb_get_time(struct hrtimer *timer)
-{
-	return timer->base->get_time();
-}
-
-
+/* hrtimer_cb_get_time removed - unused */
 
 #define hrtimer_resolution	(unsigned int)LOW_RES_NSEC
 

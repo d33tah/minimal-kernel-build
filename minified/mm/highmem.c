@@ -3,7 +3,6 @@
 #include <linux/export.h>
 #include <linux/swap.h>
 #include <linux/pagemap.h>
-#include <linux/mempool.h>
 #include <linux/init.h>
 #include <linux/hash.h>
 #include <linux/highmem.h>

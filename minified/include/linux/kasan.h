@@ -102,8 +102,7 @@ static inline void *kasan_reset_tag(const void *addr)
 
 
 
-static inline void kasan_populate_early_vm_area_shadow(void *start,
-						       unsigned long size) { }
+/* kasan_populate_early_vm_area_shadow removed - unused */
 static inline int kasan_populate_vmalloc(unsigned long start,
 					unsigned long size)
 {

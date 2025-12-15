@@ -205,11 +205,8 @@ u64 prb_next_seq(struct printk_ringbuffer *rb);
 /* console_cmdline.h inlined */
 struct console_cmdline { char name[16]; int index; bool user_specified; char *options; };
 /* end console_cmdline.h */
-/* braille.h inlined - all stub functions */
-static inline void braille_set_options(struct console_cmdline *c, char *brl_options) { }
-static inline int _braille_console_setup(char **str, char **brl_options) { return 0; }
+/* braille.h inlined - stub for _braille_register_console only (others unused) */
 static inline int _braille_register_console(struct console *console, struct console_cmdline *c) { return 0; }
-static inline int _braille_unregister_console(struct console *console) { return 0; }
 /* end braille.h */
 #include "internal.h"
 

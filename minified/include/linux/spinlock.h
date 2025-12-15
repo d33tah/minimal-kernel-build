@@ -72,7 +72,6 @@
 
 # define raw_spin_lock_nested(lock, subclass)		\
 	_raw_spin_lock(((void)(subclass), (lock)))
-# define raw_spin_lock_nest_lock(lock, nest_lock)	_raw_spin_lock(lock)
 
 
 #define raw_spin_lock_irqsave(lock, flags)		\
@@ -96,9 +95,6 @@
 		_raw_spin_unlock_irqrestore(lock, flags);	\
 	} while (0)
 #define raw_spin_unlock_bh(lock)	_raw_spin_unlock_bh(lock)
-
-#define raw_spin_trylock_bh(lock) \
-	__cond_lock(lock, _raw_spin_trylock_bh(lock))
 
 #define raw_spin_trylock_irq(lock) \
 ({ \

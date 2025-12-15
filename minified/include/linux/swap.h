@@ -49,12 +49,6 @@ struct swap_info_struct;
 #define SWAP_CLUSTER_MAX 32UL
 #define COMPACT_CLUSTER_MAX SWAP_CLUSTER_MAX
 
-static inline swp_entry_t folio_swap_entry(struct folio *folio)
-{
-	swp_entry_t entry = { .val = page_private(&folio->page) };
-	return entry;
-}
-
 void workingset_refault(struct folio *folio, void *shadow);
 void workingset_activation(struct folio *folio);
 

@@ -1,10 +1,10 @@
---- 2025-12-15 19:23 ---
+--- 2025-12-15 19:29 ---
 
 SESSION PROGRESS UPDATE:
-- Current LOC: ~160,975 (after mrproper)
+- Current LOC: 160,957 (after mrproper)
 - make vm: PASSING - shows "Hello, World!"
 - bzImage: 226K
-- Goal: 150,000 LOC (need to remove ~10,975 LOC)
+- Goal: 150,000 LOC (need to remove ~10,957 LOC)
 
 Commits this session (continuing):
 1. Remove unused functions from desc.h (~69 LOC)
@@ -16,8 +16,9 @@ Commits this session (continuing):
 7. Remove unused arch_within_stack_frames from thread_info.h (~6 LOC)
 8. Remove unused paravirt_set_cap from paravirt.h (~3 LOC)
 9. Remove unused irq settings clr functions from internals.h (~8 LOC)
+10. Remove unused page_is_buddy and pageblock_pfn_to_page (~30 LOC)
 
-Total removed this session: ~152 LOC
+Total removed this session: ~182 LOC (127 LOC actual reduction counted by cloc)
 
 Strategy: Systematically checking inline functions in headers for usage in .c and .h files.
 Functions that are defined but never called anywhere can be safely removed.

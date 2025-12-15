@@ -173,19 +173,7 @@ void arch_dma_clear_uncached(void *addr, size_t size);
 #define arch_dma_map_sg_direct(d, s, n)		(false)
 #define arch_dma_unmap_sg_direct(d, s, n)	(false)
 
-static inline void arch_setup_dma_ops(struct device *dev, u64 dma_base,
-		u64 size, const struct iommu_ops *iommu, bool coherent)
-{
-}
-
 static inline void arch_teardown_dma_ops(struct device *dev)
-{
-}
-
-static inline void dma_debug_add_bus(struct bus_type *bus)
-{
-}
-static inline void debug_dma_dump_mappings(struct device *dev)
 {
 }
 

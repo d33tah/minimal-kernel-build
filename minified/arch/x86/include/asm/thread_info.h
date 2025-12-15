@@ -98,13 +98,7 @@ struct thread_info {
  
 #ifndef __ASSEMBLY__
 
- 
-static inline int arch_within_stack_frames(const void * const stack,
-					   const void * const stackend,
-					   const void *obj, unsigned long len)
-{
-	return NOT_STACK;
-}
+/* arch_within_stack_frames removed - unused */
 
 #endif   
 

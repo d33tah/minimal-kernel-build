@@ -4,11 +4,7 @@
 #include <linux/acpi.h>
 #include <linux/sort.h>
 
-/* --- 2025-12-06 20:26 --- firmware-map.h inlined (23 LOC) */
-static inline int firmware_map_add_early(u64 start, u64 end, const char *type) { return 0; }
-static inline int firmware_map_add_hotplug(u64 start, u64 end, const char *type) { return 0; }
-static inline int firmware_map_remove(u64 start, u64 end, const char *type) { return 0; }
-/* --- end firmware-map.h inlined --- */
+/* firmware-map.h functions removed - unused */
 #include <linux/memory_hotplug.h>
 
 #include <asm/e820/api.h>

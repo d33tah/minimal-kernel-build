@@ -74,12 +74,6 @@ static inline void *radix_tree_deref_slot(void __rcu **slot)
 	return rcu_dereference(*slot);
 }
 
-static inline void *radix_tree_deref_slot_protected(void __rcu **slot,
-							spinlock_t *treelock)
-{
-	return rcu_dereference_protected(*slot, lockdep_is_held(treelock));
-}
-
 int radix_tree_insert(struct radix_tree_root *, unsigned long index,
 			void *);
 void *__radix_tree_lookup(const struct radix_tree_root *, unsigned long index,

@@ -33,9 +33,8 @@ static inline int is_hpet_enabled(void) { return 0; }
 #include <asm/apic.h>
 #include <asm/intel-family.h>
 #include <asm/i8259.h>
-/* uv/uv.h inlined */
+/* uv/uv.h inlined - is_uv_system removed, unused */
 static inline bool is_early_uv_system(void) { return 0; }
-static inline int is_uv_system(void) { return 0; }
 
 unsigned int __read_mostly cpu_khz;	 
 

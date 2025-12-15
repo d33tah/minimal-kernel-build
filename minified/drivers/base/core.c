@@ -22,8 +22,7 @@
 #include <linux/dma-map-ops.h> 
 
 #include "base.h"
-/* physical_location.h inlined */
-static inline bool dev_add_physical_location(struct device *dev) { return false; }
+/* physical_location.h inlined; dev_add_physical_location removed - unused */
 static const struct attribute_group dev_attr_physical_location_group = {};
 /* end physical_location.h */
 #include "power/power.h"

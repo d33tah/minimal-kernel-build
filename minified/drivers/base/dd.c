@@ -415,14 +415,7 @@ static int driver_probe_device(struct device_driver *drv, struct device *dev)
 	return ret;
 }
 
-static inline bool cmdline_requested_async_probing(const char *drv_name)
-{
-	bool async_drv;
-
-	async_drv = parse_option_str(async_probe_drv_names, drv_name);
-
-	return (async_probe_default != async_drv);
-}
+/* cmdline_requested_async_probing removed - unused */
 
 /* Stub: driver_async_probe option not needed for minimal kernel */
 static int __init save_async_options(char *buf)

@@ -138,10 +138,7 @@ static inline bool irq_settings_can_request(struct irq_desc *desc)
 	return !(desc->status_use_accessors & _IRQ_NOREQUEST);
 }
 
-static inline void irq_settings_clr_norequest(struct irq_desc *desc)
-{
-	desc->status_use_accessors &= ~_IRQ_NOREQUEST;
-}
+/* irq_settings_clr_norequest removed - unused */
 
 static inline void irq_settings_set_norequest(struct irq_desc *desc)
 {
@@ -153,10 +150,7 @@ static inline bool irq_settings_can_thread(struct irq_desc *desc)
 	return !(desc->status_use_accessors & _IRQ_NOTHREAD);
 }
 
-static inline void irq_settings_clr_nothread(struct irq_desc *desc)
-{
-	desc->status_use_accessors &= ~_IRQ_NOTHREAD;
-}
+/* irq_settings_clr_nothread removed - unused */
 
 static inline void irq_settings_set_nothread(struct irq_desc *desc)
 {

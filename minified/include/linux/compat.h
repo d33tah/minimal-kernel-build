@@ -47,13 +47,6 @@ typedef struct {
 
 #define _COMPAT_NSIG_WORDS	(_COMPAT_NSIG / _COMPAT_NSIG_BPW)
 
-#ifndef compat_user_stack_pointer
-#define compat_user_stack_pointer() current_user_stack_pointer()
-#endif
-#ifndef COMPAT_MINSIGSTKSZ
-#define COMPAT_MINSIGSTKSZ	MINSIGSTKSZ
-#endif
-
 typedef __compat_uid32_t	compat_uid_t;
 typedef __compat_gid32_t	compat_gid_t;
 
@@ -70,10 +63,5 @@ static inline void __user *compat_ptr(compat_uptr_t uptr)
 	return (void __user *)(unsigned long)uptr;
 }
 #endif
-
-static inline compat_uptr_t ptr_to_compat(void __user *uptr)
-{
-	return (u32)(unsigned long)uptr;
-}
 
 #endif /* _LINUX_COMPAT_H */

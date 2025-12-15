@@ -150,38 +150,10 @@ static inline unsigned int buddy_order(struct page *page)
  
 #define buddy_order_unsafe(page)	READ_ONCE(page_private(page))
 
- 
-static inline bool page_is_buddy(struct page *page, struct page *buddy,
-				 unsigned int order)
-{
-	if (!page_is_guard(buddy) && !PageBuddy(buddy))
-		return false;
-
-	if (buddy_order(buddy) != order)
-		return false;
-
-	 
-	if (page_zone_id(page) != page_zone_id(buddy))
-		return false;
-
-	VM_BUG_ON_PAGE(page_count(buddy) != 0, buddy);
-
-	return true;
-}
-
+/* page_is_buddy removed - unused */
 /* __find_buddy_pfn, find_buddy_page_pfn removed - unused */
 
-extern struct page *__pageblock_pfn_to_page(unsigned long start_pfn,
-				unsigned long end_pfn, struct zone *zone);
-
-static inline struct page *pageblock_pfn_to_page(unsigned long start_pfn,
-				unsigned long end_pfn, struct zone *zone)
-{
-	if (zone->contiguous)
-		return pfn_to_page(start_pfn);
-
-	return __pageblock_pfn_to_page(start_pfn, end_pfn, zone);
-}
+/* __pageblock_pfn_to_page, pageblock_pfn_to_page removed - unused */
 
 /* __isolate_free_page, __putback_isolated_page removed - unused */
 extern void memblock_free_pages(struct page *page, unsigned long pfn,

@@ -582,12 +582,7 @@ void __init memblock_free_pages(struct page *page, unsigned long pfn,
 	__free_pages_core(page, order);
 }
 
-struct page *__pageblock_pfn_to_page(unsigned long start_pfn,
-				     unsigned long end_pfn, struct zone *zone)
-{
-	/* Stub: pageblock traversal not used in minimal kernel */
-	return NULL;
-}
+/* __pageblock_pfn_to_page removed - unused */
 
 static void set_zone_contiguous(struct zone *zone)
 {

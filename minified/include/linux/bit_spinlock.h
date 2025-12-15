@@ -12,12 +12,6 @@ static inline void bit_spin_lock(int bitnum, unsigned long *addr)
 	__acquire(bitlock);
 }
 
-static inline void bit_spin_unlock(int bitnum, unsigned long *addr)
-{
-	preempt_enable();
-	__release(bitlock);
-}
-
 static inline void __bit_spin_unlock(int bitnum, unsigned long *addr)
 {
 	preempt_enable();

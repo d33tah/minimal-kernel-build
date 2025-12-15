@@ -34,16 +34,8 @@ static inline bool __must_check IS_ERR_OR_NULL(__force const void *ptr)
 
 static inline void * __must_check ERR_CAST(__force const void *ptr)
 {
-	 
-	return (void *) ptr;
-}
 
-static inline int __must_check PTR_ERR_OR_ZERO(__force const void *ptr)
-{
-	if (IS_ERR(ptr))
-		return PTR_ERR(ptr);
-	else
-		return 0;
+	return (void *) ptr;
 }
 
 #endif

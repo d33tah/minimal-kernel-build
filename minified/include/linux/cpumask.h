@@ -158,17 +158,6 @@ typedef struct cpumask cpumask_var_t[1];
 #define this_cpu_cpumask_var_ptr(x) this_cpu_ptr(x)
 #define __cpumask_var_read_mostly
 
-static inline bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
-{
-	return true;
-}
-
-static inline bool zalloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
-{
-	cpumask_clear(*mask);
-	return true;
-}
-
 static inline void alloc_bootmem_cpumask_var(cpumask_var_t *mask)
 {
 }

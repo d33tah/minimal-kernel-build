@@ -469,16 +469,7 @@ struct page *vmalloc_to_page(const void *addr);
 
 extern bool is_vmalloc_addr(const void *x);
 
-static inline int folio_entire_mapcount(struct folio *folio)
-{
-	VM_BUG_ON_FOLIO(!folio_test_large(folio), folio);
-	return atomic_read(folio_mapcount_ptr(folio)) + 1;
-}
-
-static inline int compound_mapcount(struct page *page)
-{
-	return folio_entire_mapcount(page_folio(page));
-}
+/* folio_entire_mapcount and compound_mapcount removed - unused */
 
 static inline void page_mapcount_reset(struct page *page)
 {

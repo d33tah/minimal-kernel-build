@@ -99,46 +99,6 @@ struct ctl_path {
 };
 
 
-#define DECLARE_SYSCTL_BASE(_name, _table)
-
-static inline int __register_sysctl_base(struct ctl_table *base_table)
-{
-	return 0;
-}
-
-#define register_sysctl_base(table) __register_sysctl_base(table)
-
-static inline struct ctl_table_header *register_sysctl_table(struct ctl_table * table)
-{
-	return NULL;
-}
-
-static inline struct ctl_table_header *register_sysctl_mount_point(const char *path)
-{
-	return NULL;
-}
-
-static inline struct ctl_table_header *register_sysctl_paths(
-			const struct ctl_path *path, struct ctl_table *table)
-{
-	return NULL;
-}
-
-static inline struct ctl_table_header *register_sysctl(const char *path, struct ctl_table *table)
-{
-	return NULL;
-}
-
-static inline void unregister_sysctl_table(struct ctl_table_header * table)
-{
-}
-
-static inline void setup_sysctl_set(struct ctl_table_set *p,
-	struct ctl_table_root *root,
-	int (*is_seen)(struct ctl_table_set *))
-{
-}
-
 static inline void do_sysctl_args(void)
 {
 }

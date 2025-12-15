@@ -13,30 +13,7 @@
 #include <linux/smp.h>
 #include <linux/percpu.h>
 
-static inline void fill_ldt(struct desc_struct *desc, const struct user_desc *info)
-{
-	desc->limit0		= info->limit & 0x0ffff;
-
-	desc->base0		= (info->base_addr & 0x0000ffff);
-	desc->base1		= (info->base_addr & 0x00ff0000) >> 16;
-
-	desc->type		= (info->read_exec_only ^ 1) << 1;
-	desc->type	       |= info->contents << 2;
-	 
-	desc->type	       |= 1;
-
-	desc->s			= 1;
-	desc->dpl		= 0x3;
-	desc->p			= info->seg_not_present ^ 1;
-	desc->limit1		= (info->limit & 0xf0000) >> 16;
-	desc->avl		= info->useable;
-	desc->d			= info->seg_32bit;
-	desc->g			= info->limit_in_pages;
-
-	desc->base2		= (info->base_addr & 0xff000000) >> 24;
-	 
-	desc->l			= 0;
-}
+/* fill_ldt removed - never called */
 
 struct gdt_page {
 	struct desc_struct gdt[GDT_ENTRIES];
@@ -106,28 +83,14 @@ static inline int desc_empty(const void *ptr)
 #define load_TLS(t, cpu)			native_load_tls(t, cpu)
 #define set_ldt					native_set_ldt
 
-#define write_ldt_entry(dt, entry, desc)	native_write_ldt_entry(dt, entry, desc)
+/* write_ldt_entry, paravirt_alloc_ldt, paravirt_free_ldt, native_write_ldt_entry removed - never called */
 #define write_gdt_entry(dt, entry, desc, type)	native_write_gdt_entry(dt, entry, desc, type)
 #define write_idt_entry(dt, entry, g)		native_write_idt_entry(dt, entry, g)
-
-static inline void paravirt_alloc_ldt(struct desc_struct *ldt, unsigned entries)
-{
-}
-
-static inline void paravirt_free_ldt(struct desc_struct *ldt, unsigned entries)
-{
-}
-
 #define store_ldt(ldt) asm("sldt %0" : "=m"(ldt))
 
 static inline void native_write_idt_entry(gate_desc *idt, int entry, const gate_desc *gate)
 {
 	memcpy(&idt[entry], gate, sizeof(*gate));
-}
-
-static inline void native_write_ldt_entry(struct desc_struct *ldt, int entry, const void *desc)
-{
-	memcpy(&ldt[entry], desc, 8);
 }
 
 static inline void

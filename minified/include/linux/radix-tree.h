@@ -122,22 +122,6 @@ radix_tree_iter_init(struct radix_tree_iter *iter, unsigned long start)
 void __rcu **radix_tree_next_chunk(const struct radix_tree_root *,
 			     struct radix_tree_iter *iter, unsigned flags);
 
-static inline void __rcu **
-radix_tree_iter_lookup(const struct radix_tree_root *root,
-			struct radix_tree_iter *iter, unsigned long index)
-{
-	radix_tree_iter_init(iter, index);
-	return radix_tree_next_chunk(root, iter, RADIX_TREE_ITER_CONTIG);
-}
-
-static inline __must_check
-void __rcu **radix_tree_iter_retry(struct radix_tree_iter *iter)
-{
-	iter->next_index = iter->index;
-	iter->tags = 0;
-	return NULL;
-}
-
 static inline unsigned long
 __radix_tree_iter_add(struct radix_tree_iter *iter, unsigned long slots)
 {
@@ -146,65 +130,5 @@ __radix_tree_iter_add(struct radix_tree_iter *iter, unsigned long slots)
 
 void __rcu **__must_check radix_tree_iter_resume(void __rcu **slot,
 					struct radix_tree_iter *iter);
-
-static __always_inline long
-radix_tree_chunk_size(struct radix_tree_iter *iter)
-{
-	return iter->next_index - iter->index;
-}
-
-static __always_inline void __rcu **radix_tree_next_slot(void __rcu **slot,
-				struct radix_tree_iter *iter, unsigned flags)
-{
-	if (flags & RADIX_TREE_ITER_TAGGED) {
-		iter->tags >>= 1;
-		if (unlikely(!iter->tags))
-			return NULL;
-		if (likely(iter->tags & 1ul)) {
-			iter->index = __radix_tree_iter_add(iter, 1);
-			slot++;
-			goto found;
-		}
-		if (!(flags & RADIX_TREE_ITER_CONTIG)) {
-			unsigned offset = __ffs(iter->tags);
-
-			iter->tags >>= offset++;
-			iter->index = __radix_tree_iter_add(iter, offset);
-			slot += offset;
-			goto found;
-		}
-	} else {
-		long count = radix_tree_chunk_size(iter);
-
-		while (--count > 0) {
-			slot++;
-			iter->index = __radix_tree_iter_add(iter, 1);
-
-			if (likely(*slot))
-				goto found;
-			if (flags & RADIX_TREE_ITER_CONTIG) {
-				 
-				iter->next_index = 0;
-				break;
-			}
-		}
-	}
-	return NULL;
-
- found:
-	return slot;
-}
-
-#define radix_tree_for_each_slot(slot, root, iter, start)		\
-	for (slot = radix_tree_iter_init(iter, start) ;			\
-	     slot || (slot = radix_tree_next_chunk(root, iter, 0)) ;	\
-	     slot = radix_tree_next_slot(slot, iter, 0))
-
-#define radix_tree_for_each_tagged(slot, root, iter, start, tag)	\
-	for (slot = radix_tree_iter_init(iter, start) ;			\
-	     slot || (slot = radix_tree_next_chunk(root, iter,		\
-			      RADIX_TREE_ITER_TAGGED | tag)) ;		\
-	     slot = radix_tree_next_slot(slot, iter,			\
-				RADIX_TREE_ITER_TAGGED | tag))
 
 #endif  

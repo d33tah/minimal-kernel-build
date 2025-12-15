@@ -374,15 +374,7 @@ static inline bool kmem_cache_debug_flags(struct kmem_cache *s, slab_flags_t fla
 	return false;
 }
 
-static inline struct obj_cgroup **slab_objcgs(struct slab *slab)
-{
-	return NULL;
-}
-
-static inline struct mem_cgroup *memcg_from_slab_obj(void *ptr)
-{
-	return NULL;
-}
+/* slab_objcgs, memcg_from_slab_obj removed - unused */
 
 static inline int memcg_alloc_slab_cgroups(struct slab *slab,
 					       struct kmem_cache *s, gfp_t gfp,
@@ -532,9 +524,7 @@ static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
 		 if ((__n = get_node(__s, __node)))
 
 
-static inline void dump_unreclaimable_slab(void)
-{
-}
+/* dump_unreclaimable_slab removed - unused */
 
 void ___cache_free(struct kmem_cache *cache, void *x, unsigned long addr);
 

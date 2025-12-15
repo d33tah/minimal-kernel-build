@@ -1,78 +1,9 @@
-
+/* userfaultfd_k.h - minimal stubs for CONFIG_USERFAULTFD disabled */
 #ifndef _LINUX_USERFAULTFD_K_H
 #define _LINUX_USERFAULTFD_K_H
 
-
-static inline vm_fault_t handle_userfault(struct vm_fault *vmf,
-				unsigned long reason)
-{
-	return VM_FAULT_SIGBUS;
-}
-
 static inline bool is_mergeable_vm_userfaultfd_ctx(struct vm_area_struct *vma,
 					struct vm_userfaultfd_ctx vm_ctx)
-{
-	return true;
-}
-
-static inline bool userfaultfd_missing(struct vm_area_struct *vma)
-{
-	return false;
-}
-
-static inline bool userfaultfd_wp(struct vm_area_struct *vma)
-{
-	return false;
-}
-
-static inline bool userfaultfd_minor(struct vm_area_struct *vma)
-{
-	return false;
-}
-
-static inline bool userfaultfd_pte_wp(struct vm_area_struct *vma,
-				      pte_t pte)
-{
-	return false;
-}
-
-static inline bool userfaultfd_huge_pmd_wp(struct vm_area_struct *vma,
-					   pmd_t pmd)
-{
-	return false;
-}
-
-
-static inline bool userfaultfd_armed(struct vm_area_struct *vma)
-{
-	return false;
-}
-
-static inline int dup_userfaultfd(struct vm_area_struct *vma,
-				  struct list_head *l)
-{
-	return 0;
-}
-
-static inline void dup_userfaultfd_complete(struct list_head *l)
-{
-}
-
-static inline void mremap_userfaultfd_prep(struct vm_area_struct *vma,
-					   struct vm_userfaultfd_ctx *ctx)
-{
-}
-
-static inline void mremap_userfaultfd_complete(struct vm_userfaultfd_ctx *ctx,
-					       unsigned long from,
-					       unsigned long to,
-					       unsigned long len)
-{
-}
-
-static inline bool userfaultfd_remove(struct vm_area_struct *vma,
-				      unsigned long start,
-				      unsigned long end)
 {
 	return true;
 }
@@ -94,18 +25,7 @@ static inline bool uffd_disable_fault_around(struct vm_area_struct *vma)
 	return false;
 }
 
-
-static inline bool pte_marker_entry_uffd_wp(swp_entry_t entry)
-{
-	return false;
-}
-
 static inline bool pte_marker_uffd_wp(pte_t pte)
-{
-	return false;
-}
-
-static inline bool pte_swp_uffd_wp_any(pte_t pte)
 {
 	return false;
 }

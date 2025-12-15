@@ -45,16 +45,6 @@ static inline void kmsg_dump_rewind(struct kmsg_dump_iter *iter)
 {
 }
 
-static inline int kmsg_dump_register(struct kmsg_dumper *dumper)
-{
-	return -EINVAL;
-}
-
-static inline int kmsg_dump_unregister(struct kmsg_dumper *dumper)
-{
-	return -EINVAL;
-}
-
 static inline const char *kmsg_dump_reason_str(enum kmsg_dump_reason reason)
 {
 	return "Disabled";

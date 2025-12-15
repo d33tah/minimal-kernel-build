@@ -226,10 +226,7 @@ static inline unsigned long huge_page_size(struct hstate *h)
 	return PAGE_SIZE;
 }
 
-static inline unsigned long huge_page_mask(struct hstate *h)
-{
-	return PAGE_MASK;
-}
+/* huge_page_mask removed - unused */
 
 
 static inline unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
@@ -253,25 +250,7 @@ static inline void hugetlb_count_init(struct mm_struct *mm)
 }
 
 
-static inline void hugetlb_count_sub(long l, struct mm_struct *mm)
-{
-}
-
-static inline void set_huge_swap_pte_at(struct mm_struct *mm, unsigned long addr,
-					pte_t *ptep, pte_t pte, unsigned long sz)
-{
-}
-
-static inline pte_t huge_ptep_clear_flush(struct vm_area_struct *vma,
-					  unsigned long addr, pte_t *ptep)
-{
-	return *ptep;
-}
-
-static inline void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
-				   pte_t *ptep, pte_t pte)
-{
-}
+/* hugetlb_count_sub, set_huge_swap_pte_at, huge_ptep_clear_flush, set_huge_pte_at removed - unused */
 
 static inline __init void hugetlb_cma_reserve(int order)
 {

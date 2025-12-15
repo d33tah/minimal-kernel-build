@@ -75,38 +75,6 @@ extern insn_attr_t inat_get_escape_attribute(insn_byte_t opcode, int lpfx_id, in
 extern insn_attr_t inat_get_group_attribute(insn_byte_t modrm, int lpfx_id, insn_attr_t esc_attr);
 extern insn_attr_t inat_get_avx_attribute(insn_byte_t opcode, insn_byte_t vex_m, insn_byte_t vex_pp);
 
-static inline int inat_is_legacy_prefix(insn_attr_t attr) {
-	attr &= INAT_PFX_MASK;
-	return attr && attr <= INAT_LGCPFX_MAX;
-}
-static inline int inat_is_address_size_prefix(insn_attr_t attr) { return (attr & INAT_PFX_MASK) == INAT_PFX_ADDRSZ; }
-static inline int inat_is_operand_size_prefix(insn_attr_t attr) { return (attr & INAT_PFX_MASK) == INAT_PFX_OPNDSZ; }
-static inline int inat_is_rex_prefix(insn_attr_t attr) { return (attr & INAT_PFX_MASK) == INAT_PFX_REX; }
-static inline int inat_last_prefix_id(insn_attr_t attr) {
-	if ((attr & INAT_PFX_MASK) > INAT_LSTPFX_MAX) return 0;
-	else return attr & INAT_PFX_MASK;
-}
-static inline int inat_is_vex_prefix(insn_attr_t attr) {
-	attr &= INAT_PFX_MASK;
-	return attr == INAT_PFX_VEX2 || attr == INAT_PFX_VEX3 || attr == INAT_PFX_EVEX;
-}
-static inline int inat_is_evex_prefix(insn_attr_t attr) { return (attr & INAT_PFX_MASK) == INAT_PFX_EVEX; }
-static inline int inat_is_vex3_prefix(insn_attr_t attr) { return (attr & INAT_PFX_MASK) == INAT_PFX_VEX3; }
-static inline int inat_is_escape(insn_attr_t attr) { return attr & INAT_ESC_MASK; }
-static inline int inat_escape_id(insn_attr_t attr) { return (attr & INAT_ESC_MASK) >> INAT_ESC_OFFS; }
-static inline int inat_is_group(insn_attr_t attr) { return attr & INAT_GRP_MASK; }
-static inline int inat_group_id(insn_attr_t attr) { return (attr & INAT_GRP_MASK) >> INAT_GRP_OFFS; }
-static inline int inat_group_common_attribute(insn_attr_t attr) { return attr & ~INAT_GRP_MASK; }
-static inline int inat_has_immediate(insn_attr_t attr) { return attr & INAT_IMM_MASK; }
-static inline int inat_immediate_size(insn_attr_t attr) { return (attr & INAT_IMM_MASK) >> INAT_IMM_OFFS; }
-static inline int inat_has_modrm(insn_attr_t attr) { return attr & INAT_MODRM; }
-static inline int inat_is_force64(insn_attr_t attr) { return attr & INAT_FORCE64; }
-static inline int inat_has_second_immediate(insn_attr_t attr) { return attr & INAT_SCNDIMM; }
-static inline int inat_has_moffset(insn_attr_t attr) { return attr & INAT_MOFFSET; }
-static inline int inat_has_variant(insn_attr_t attr) { return attr & INAT_VARIANT; }
-static inline int inat_accept_vex(insn_attr_t attr) { return attr & INAT_VEXOK; }
-static inline int inat_must_vex(insn_attr_t attr) { return attr & (INAT_VEXONLY | INAT_EVEXONLY); }
-static inline int inat_must_evex(insn_attr_t attr) { return attr & INAT_EVEXONLY; }
 /* End of inat.h */
 
 #if defined(__BYTE_ORDER) ? __BYTE_ORDER == __LITTLE_ENDIAN : defined(__LITTLE_ENDIAN)
@@ -121,19 +89,6 @@ struct insn_field {
 	unsigned char nbytes;
 };
 
-static inline void insn_field_set(struct insn_field *p, insn_value_t v,
-				  unsigned char n)
-{
-	p->value = v;
-	p->nbytes = n;
-}
-
-static inline void insn_set_byte(struct insn_field *p, unsigned char n,
-				 insn_byte_t v)
-{
-	p->bytes[n] = v;
-}
-
 #else
 
 struct insn_field {
@@ -142,25 +97,10 @@ struct insn_field {
 		insn_value_t little;
 		insn_byte_t bytes[4];
 	};
-	 
+
 	unsigned char got;
 	unsigned char nbytes;
 };
-
-static inline void insn_field_set(struct insn_field *p, insn_value_t v,
-				  unsigned char n)
-{
-	p->value = v;
-	p->little = __cpu_to_le32(v);
-	p->nbytes = n;
-}
-
-static inline void insn_set_byte(struct insn_field *p, unsigned char n,
-				 insn_byte_t v)
-{
-	p->bytes[n] = v;
-	p->value = __le32_to_cpu(p->little);
-}
 #endif
 
 struct insn {
@@ -243,107 +183,9 @@ extern int insn_decode(struct insn *insn, const void *kaddr, int buf_len, enum i
 
 #define insn_decode_kernel(_insn, _ptr) insn_decode((_insn), (_ptr), MAX_INSN_SIZE, INSN_MODE_KERN)
 
- 
-static inline void insn_get_attribute(struct insn *insn)
-{
-	insn_get_modrm(insn);
-}
-
- 
 extern int insn_rip_relative(struct insn *insn);
 
-static inline int insn_is_avx(struct insn *insn)
-{
-	if (!insn->prefixes.got)
-		insn_get_prefixes(insn);
-	return (insn->vex_prefix.value != 0);
-}
-
-static inline int insn_is_evex(struct insn *insn)
-{
-	if (!insn->prefixes.got)
-		insn_get_prefixes(insn);
-	return (insn->vex_prefix.nbytes == 4);
-}
-
-static inline int insn_has_emulate_prefix(struct insn *insn)
-{
-	return !!insn->emulate_prefix_size;
-}
-
-static inline insn_byte_t insn_vex_m_bits(struct insn *insn)
-{
-	if (insn->vex_prefix.nbytes == 2)	 
-		return X86_VEX2_M;
-	else if (insn->vex_prefix.nbytes == 3)	 
-		return X86_VEX3_M(insn->vex_prefix.bytes[1]);
-	else					 
-		return X86_EVEX_M(insn->vex_prefix.bytes[1]);
-}
-
-static inline insn_byte_t insn_vex_p_bits(struct insn *insn)
-{
-	if (insn->vex_prefix.nbytes == 2)	 
-		return X86_VEX_P(insn->vex_prefix.bytes[1]);
-	else
-		return X86_VEX_P(insn->vex_prefix.bytes[2]);
-}
-
- 
-static inline int insn_last_prefix_id(struct insn *insn)
-{
-	if (insn_is_avx(insn))
-		return insn_vex_p_bits(insn);	 
-
-	if (insn->prefixes.bytes[3])
-		return inat_get_last_prefix_id(insn->prefixes.bytes[3]);
-
-	return 0;
-}
-
- 
-static inline int insn_offset_rex_prefix(struct insn *insn)
-{
-	return insn->prefixes.nbytes;
-}
-static inline int insn_offset_vex_prefix(struct insn *insn)
-{
-	return insn_offset_rex_prefix(insn) + insn->rex_prefix.nbytes;
-}
-static inline int insn_offset_opcode(struct insn *insn)
-{
-	return insn_offset_vex_prefix(insn) + insn->vex_prefix.nbytes;
-}
-static inline int insn_offset_modrm(struct insn *insn)
-{
-	return insn_offset_opcode(insn) + insn->opcode.nbytes;
-}
-static inline int insn_offset_sib(struct insn *insn)
-{
-	return insn_offset_modrm(insn) + insn->modrm.nbytes;
-}
-static inline int insn_offset_displacement(struct insn *insn)
-{
-	return insn_offset_sib(insn) + insn->sib.nbytes;
-}
-static inline int insn_offset_immediate(struct insn *insn)
-{
-	return insn_offset_displacement(insn) + insn->displacement.nbytes;
-}
-
- 
 #define for_each_insn_prefix(insn, idx, prefix)	\
 	for (idx = 0; idx < ARRAY_SIZE(insn->prefixes.bytes) && (prefix = insn->prefixes.bytes[idx]) != 0; idx++)
-
-#define POP_SS_OPCODE 0x1f
-#define MOV_SREG_OPCODE 0x8e
-
- 
-static inline int insn_masking_exception(struct insn *insn)
-{
-	return insn->opcode.bytes[0] == POP_SS_OPCODE ||
-		(insn->opcode.bytes[0] == MOV_SREG_OPCODE &&
-		 X86_MODRM_REG(insn->modrm.bytes[0]) == 2);
-}
 
 #endif  

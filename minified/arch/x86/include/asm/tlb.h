@@ -110,10 +110,7 @@ static inline unsigned long tlb_get_unmap_shift(struct mmu_gather *tlb)
 	return PAGE_SHIFT;
 }
 
-static inline unsigned long tlb_get_unmap_size(struct mmu_gather *tlb)
-{
-	return 1UL << tlb_get_unmap_shift(tlb);
-}
+/* tlb_get_unmap_size removed - unused */
 
 /* X86-specific tlb_flush - defined before generic version would be */
 #define tlb_flush tlb_flush

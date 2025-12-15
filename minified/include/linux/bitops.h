@@ -19,15 +19,7 @@
 
 #include <asm/bitops.h>
 
-static inline int get_bitmask_order(unsigned int count)
-{
-	int order;
-
-	order = fls(count);
-	return order;	 
-}
-
-/* hweight_long removed - never used */
+/* get_bitmask_order, hweight_long removed - unused */
 
 /* rol64, ror64, ror32, rol16, ror16, rol8, ror8 removed - never called */
 

@@ -129,11 +129,7 @@ static inline bool cpumask_empty(const struct cpumask *srcp)
 	return bitmap_empty(cpumask_bits(srcp), nr_cpumask_bits);
 }
 
-
-static inline unsigned int cpumask_weight(const struct cpumask *srcp)
-{
-	return bitmap_weight(cpumask_bits(srcp), nr_cpumask_bits);
-}
+/* cpumask_weight removed - unused */
 
 static inline void cpumask_copy(struct cpumask *dstp,
 				const struct cpumask *srcp)

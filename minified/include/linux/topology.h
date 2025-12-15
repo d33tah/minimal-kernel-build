@@ -9,13 +9,7 @@
 #include <linux/percpu.h>
 #include <asm/topology.h>
 
-#ifndef nr_cpus_node
-#define nr_cpus_node(node) cpumask_weight(cpumask_of_node(node))
-#endif
-
-#define for_each_node_with_cpus(node)			\
-	for_each_online_node(node)			\
-		if (nr_cpus_node(node))
+/* nr_cpus_node and for_each_node_with_cpus removed - unused */
 
 int arch_update_cpu_topology(void);
 

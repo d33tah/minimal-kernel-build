@@ -326,11 +326,7 @@ static inline int pgd_same(pgd_t pgd_a, pgd_t pgd_b)
 #endif
 
 
-#define set_pte_safe(ptep, pte) \
-({ \
-	WARN_ON_ONCE(pte_present(*ptep) && !pte_same(*ptep, pte)); \
-	set_pte(ptep, pte); \
-})
+/* set_pte_safe removed - unused */
 
 #define set_pmd_safe(pmdp, pmd) \
 ({ \

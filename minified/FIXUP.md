@@ -1,3 +1,73 @@
+--- 2025-12-15 14:55 ---
+--- 2025-12-15 15:19 ---
+
+SESSION PROGRESS:
+- Current LOC: 161,198 (after mrproper) - down from 169,820 at start
+- make vm: PASSING - shows "Hello, World!"
+- bzImage: 226K
+- Goal: 150,000 LOC (need to remove ~11,198 LOC)
+
+Summary of commits this session:
+1. Remove unused inline functions from headers (~135 LOC)
+   - hw_breakpoint.h, uaccess.h, compat.h
+2. Remove unused functions from irqdesc.h and xattr.h (~70 LOC)
+3. Remove unused DMA mapping functions (~51 LOC)
+4. Remove unused IRQ internal functions (~40 LOC)
+
+Total removed this session: ~296 LOC (code lines)
+Total LOC reduction: ~8,622 LOC (includes mrproper cleanup)
+
+Strategy applied:
+- Grep for function names that appear in headers but not in .c files
+- Focus on stub functions (inline functions returning 0, NULL, or empty)
+- Check IRQ, DMA, sched subsystems - these have many unused stubs
+
+Next targets to investigate:
+- page-flags.h (539 lines) - many macro-generated functions
+- mm.h (1715 lines) - many inline functions
+- arch/x86/include/asm/pgtable.h (980 lines)
+- kernel/signal.c (1210 lines) - some syscalls may be reducible
+
+--- 2025-12-15 15:10 ---
+
+SESSION PROGRESS UPDATE:
+- Current LOC: 161,221 (after mrproper)
+- make vm: PASSING - shows "Hello, World!"
+- bzImage: 226K
+- Goal: 150,000 LOC (need to remove ~11,221 LOC)
+
+Commits this session:
+1. Remove unused inline functions from headers (~135 LOC)
+   - hw_breakpoint.h, uaccess.h, compat.h
+2. Remove unused functions from irqdesc.h and xattr.h (~70 LOC)
+3. Remove unused DMA mapping functions (~51 LOC)
+   - dma-mapping.h and kernel/dma/mapping.c
+
+Strategy: Systematically searching for inline functions, extern declarations,
+and function implementations that have no callers. Focus on header files which
+have many unused stub functions due to disabled kernel features.
+
+Total reduction from session start: ~256 LOC (from 168,873 to 161,221 = 7,652 LOC,
+but this includes mrproper removing generated files vs before)
+
+
+SESSION IN PROGRESS:
+- Current LOC: 168,873 (after mrproper)
+- make vm: PASSING - shows "Hello, World!"
+- bzImage: 226K
+- Goal: 150,000 LOC (need to remove ~18,873 LOC)
+
+Commits this session:
+1. Remove unused inline functions from headers (~135 LOC)
+   - hw_breakpoint.h: Removed hw_breakpoint_init, ptrace_breakpoint_init,
+     hw_breakpoint_addr/type/len, counter_arch_bp and all registration functions
+   - uaccess.h: Removed smap_save/restore and user_access_save/restore macros
+   - compat.h: Removed ptr_to_compat, compat_user_stack_pointer, COMPAT_MINSIGSTKSZ
+
+Strategy: Searching header files for inline functions that are defined but never
+used in any .c file. This session focused on complete removal of hw_breakpoint.h
+content (only flush_ptrace_hw_breakpoint is needed).
+
 --- 2025-12-14 15:24 ---
 
 SESSION FINAL SUMMARY:

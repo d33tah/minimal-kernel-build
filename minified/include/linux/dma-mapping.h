@@ -39,13 +39,6 @@ static inline int valid_dma_direction(enum dma_data_direction dir)
 #define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
 
 
-static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
-{
-	if (unlikely(dma_addr == DMA_MAPPING_ERROR))
-		return -ENOMEM;
-	return 0;
-}
-
 dma_addr_t dma_map_page_attrs(struct device *dev, struct page *page,
 		size_t offset, size_t size, enum dma_data_direction dir,
 		unsigned long attrs);
@@ -110,28 +103,6 @@ int dma_mmap_pages(struct device *dev, struct vm_area_struct *vma,
 		size_t size, struct page *page);
 
 
-static inline dma_addr_t dma_map_single_attrs(struct device *dev, void *ptr,
-		size_t size, enum dma_data_direction dir, unsigned long attrs)
-{
-	if (dev_WARN_ONCE(dev, is_vmalloc_addr(ptr),
-			  "rejecting DMA map of vmalloc memory\n"))
-		return DMA_MAPPING_ERROR;
-	return dma_map_page_attrs(dev, virt_to_page(ptr), offset_in_page(ptr),
-			size, dir, attrs);
-}
-
-
-
-#define dma_map_single(d, a, s, r) dma_map_single_attrs(d, a, s, r, 0)
-#define dma_unmap_single(d, a, s, r) dma_unmap_single_attrs(d, a, s, r, 0)
-#define dma_map_sg(d, s, n, r) dma_map_sg_attrs(d, s, n, r, 0)
-#define dma_unmap_sg(d, s, n, r) dma_unmap_sg_attrs(d, s, n, r, 0)
-#define dma_map_page(d, p, o, s, r) dma_map_page_attrs(d, p, o, s, r, 0)
-#define dma_unmap_page(d, a, s, r) dma_unmap_page_attrs(d, a, s, r, 0)
-#define dma_get_sgtable(d, t, v, h, s) dma_get_sgtable_attrs(d, t, v, h, s, 0)
-#define dma_mmap_coherent(d, v, c, h, s) dma_mmap_attrs(d, v, c, h, s, 0)
-
-
 static inline u64 dma_get_mask(struct device *dev)
 {
 	if (dev->dma_mask && *dev->dma_mask)
@@ -145,7 +116,6 @@ static inline bool dma_addressing_limited(struct device *dev)
 	return min_not_zero(dma_get_mask(dev), dev->bus_dma_limit) <
 			    dma_get_required_mask(dev);
 }
-
 
 
 #define DEFINE_DMA_UNMAP_ADDR(ADDR_NAME)

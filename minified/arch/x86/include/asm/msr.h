@@ -45,7 +45,7 @@ struct saved_msrs {
 
 static inline void do_trace_write_msr(unsigned int msr, u64 val, int failed) {}
 static inline void do_trace_read_msr(unsigned int msr, u64 val, int failed) {}
-static inline void do_trace_rdpmc(unsigned int msr, u64 val, int failed) {}
+/* do_trace_rdpmc removed - unused */
 
  
 static __always_inline unsigned long long __rdmsr(unsigned int msr)

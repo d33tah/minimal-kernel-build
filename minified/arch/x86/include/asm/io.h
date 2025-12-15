@@ -231,12 +231,6 @@ static inline void __iomem *ioremap_np(phys_addr_t offset, size_t size)
 #endif
 /* --- end inlined asm-generic/io.h --- */
 
-
-
-static inline bool phys_mem_access_encrypted(unsigned long phys_addr,
-					     unsigned long size)
-{
-	return true;
-}
+/* phys_mem_access_encrypted removed - unused */
 
 #endif  

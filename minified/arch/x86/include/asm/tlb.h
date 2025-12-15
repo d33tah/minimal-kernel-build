@@ -222,40 +222,7 @@ static inline void tlb_flush_p4d_range(struct mmu_gather *tlb,
 		__tlb_remove_tlb_entry(tlb, ptep, address);	\
 	} while (0)
 
-#define tlb_remove_huge_tlb_entry(h, tlb, ptep, address)	\
-	do {							\
-		unsigned long _sz = huge_page_size(h);		\
-		if (_sz >= P4D_SIZE)				\
-			tlb_flush_p4d_range(tlb, address, _sz);	\
-		else if (_sz >= PUD_SIZE)			\
-			tlb_flush_pud_range(tlb, address, _sz);	\
-		else if (_sz >= PMD_SIZE)			\
-			tlb_flush_pmd_range(tlb, address, _sz);	\
-		else						\
-			tlb_flush_pte_range(tlb, address, _sz);	\
-		__tlb_remove_tlb_entry(tlb, ptep, address);	\
-	} while (0)
-
-#ifndef __tlb_remove_pmd_tlb_entry
-#define __tlb_remove_pmd_tlb_entry(tlb, pmdp, address) do {} while (0)
-#endif
-
-#define tlb_remove_pmd_tlb_entry(tlb, pmdp, address)			\
-	do {								\
-		tlb_flush_pmd_range(tlb, address, HPAGE_PMD_SIZE);	\
-		__tlb_remove_pmd_tlb_entry(tlb, pmdp, address);		\
-	} while (0)
-
-#ifndef __tlb_remove_pud_tlb_entry
-#define __tlb_remove_pud_tlb_entry(tlb, pudp, address) do {} while (0)
-#endif
-
-#define tlb_remove_pud_tlb_entry(tlb, pudp, address)			\
-	do {								\
-		tlb_flush_pud_range(tlb, address, HPAGE_PUD_SIZE);	\
-		__tlb_remove_pud_tlb_entry(tlb, pudp, address);		\
-	} while (0)
-
+/* tlb_remove_huge_tlb_entry, tlb_remove_pmd_tlb_entry, tlb_remove_pud_tlb_entry removed - never used */
 
 #ifndef pte_free_tlb
 #define pte_free_tlb(tlb, ptep, address)			\

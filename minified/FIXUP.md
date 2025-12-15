@@ -1,3 +1,46 @@
+--- 2025-12-15 17:25 ---
+
+SESSION PROGRESS UPDATE:
+- Current LOC: 161,080 (after mrproper)
+- make vm: PASSING - shows "Hello, World!"
+- bzImage: 226K
+- Goal: 150,000 LOC (need to remove ~11,080 LOC)
+
+Commits this session:
+1. Remove unused functions from vt.c and dcache.h (~19 LOC)
+   - vc_uniscr_free, vc_uniscr_set from vt.c
+   - init_name_hash, partial_name_hash, end_name_hash from dcache.h
+2. Remove unused uffd functions from pgtable.h (~51 LOC)
+   - pte_uffd_wp, pmd_uffd_wp, pmd_mkuffd_wp, pte_clear_uffd_wp, etc.
+3. Remove unused TLB entry removal macros from tlb.h (~32 LOC)
+   - tlb_remove_huge_tlb_entry, tlb_remove_pmd_tlb_entry, tlb_remove_pud_tlb_entry
+4. Remove unused hweight functions from bitops headers (~57 LOC)
+   - __arch_hweight*, __const_hweight*, hweight*, hweight_long
+5. Remove unused LDT functions from desc.h (~40 LOC)
+   - fill_ldt, paravirt_alloc_ldt, paravirt_free_ldt, native_write_ldt_entry
+
+Total removed this session: ~199 LOC
+
+Strategy: Systematically checking inline functions in headers for usage in .c files.
+Most functions are used somewhere but some stub functions can be removed.
+Next: continue checking remaining headers in arch/x86/include/asm/
+
+--- 2025-12-15 16:45 ---
+
+SESSION START:
+- Current LOC: 161,221 (after mrproper)
+- make vm: PASSING - shows "Hello, World!"
+- bzImage: 226K
+- Goal: 150,000 LOC (need to remove ~11,221 LOC)
+
+Working from /home/user/minimal-kernel-build (parent directory has Makefile with vm target)
+minified/ subdirectory contains the kernel source.
+
+Investigating areas for reduction:
+- Large header files with unused inline functions
+- Unused static functions in .c files
+- Stubbed syscalls that could have their helper code removed
+
 --- 2025-12-15 14:55 ---
 --- 2025-12-15 15:19 ---
 

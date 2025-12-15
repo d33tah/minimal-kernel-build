@@ -8,41 +8,6 @@
 struct kernel_siginfo;
 struct task_struct;
 
-#define CPUCLOCK_PID(clock)		((pid_t) ~((clock) >> 3))
-#define CPUCLOCK_PERTHREAD(clock) \
-	(((clock) & (clockid_t) CPUCLOCK_PERTHREAD_MASK) != 0)
-
-#define CPUCLOCK_PERTHREAD_MASK	4
-#define CPUCLOCK_WHICH(clock)	((clock) & (clockid_t) CPUCLOCK_CLOCK_MASK)
-#define CPUCLOCK_CLOCK_MASK	3
-#define CPUCLOCK_PROF		0
-#define CPUCLOCK_VIRT		1
-#define CPUCLOCK_SCHED		2
-#define CPUCLOCK_MAX		3
-#define CLOCKFD			CPUCLOCK_MAX
-#define CLOCKFD_MASK		(CPUCLOCK_PERTHREAD_MASK|CPUCLOCK_CLOCK_MASK)
-
-static inline clockid_t make_process_cpuclock(const unsigned int pid,
-		const clockid_t clock)
-{
-	return ((~pid) << 3) | clock;
-}
-static inline clockid_t make_thread_cpuclock(const unsigned int tid,
-		const clockid_t clock)
-{
-	return make_process_cpuclock(tid, clock | CPUCLOCK_PERTHREAD_MASK);
-}
-
-static inline clockid_t fd_to_clockid(const int fd)
-{
-	return make_process_cpuclock((unsigned int) fd, CLOCKFD);
-}
-
-static inline int clockid_to_fd(const clockid_t clk)
-{
-	return ~(clk >> 3);
-}
-
 struct posix_cputimers { };
 struct cpu_timer { };
 #define INIT_CPU_TIMERS(s)

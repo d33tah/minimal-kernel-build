@@ -100,11 +100,6 @@ static inline int __clocksource_register(struct clocksource *cs)
 	return __clocksource_register_scale(cs, 1, 0);
 }
 
-static inline int clocksource_register_hz(struct clocksource *cs, u32 hz)
-{
-	return __clocksource_register_scale(cs, 1, hz);
-}
-
 static inline int clocksource_register_khz(struct clocksource *cs, u32 khz)
 {
 	return __clocksource_register_scale(cs, 1000, khz);

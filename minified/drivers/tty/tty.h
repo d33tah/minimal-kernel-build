@@ -25,16 +25,7 @@ enum {
 #define TTY_THROTTLE_SAFE	1
 #define TTY_UNTHROTTLE_SAFE	2
 
-static inline void __tty_set_flow_change(struct tty_struct *tty, int val)
-{
-	tty->flow_change = val;
-}
-
-static inline void tty_set_flow_change(struct tty_struct *tty, int val)
-{
-	tty->flow_change = val;
-	smp_mb();
-}
+/* __tty_set_flow_change, tty_set_flow_change removed - unused */
 
 int tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout);
 void tty_ldisc_unlock(struct tty_struct *tty);
@@ -74,14 +65,7 @@ void tty_ldisc_deinit(struct tty_struct *tty);
 
 void tty_sysctl_init(void);
 
- 
-static inline void tty_audit_add_data(struct tty_struct *tty, const void *data,
-				      size_t size)
-{
-}
-static inline void tty_audit_tiocsti(struct tty_struct *tty, char ch)
-{
-}
+/* tty_audit_add_data, tty_audit_tiocsti removed - unused */
 
 ssize_t redirected_tty_write(struct kiocb *, struct iov_iter *);
 

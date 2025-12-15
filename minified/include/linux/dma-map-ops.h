@@ -79,22 +79,6 @@ static inline struct cma *dev_get_cma_area(struct device *dev)
 static inline void dma_contiguous_reserve(phys_addr_t limit)
 {
 }
-static inline int dma_contiguous_reserve_area(phys_addr_t size,
-		phys_addr_t base, phys_addr_t limit, struct cma **res_cma,
-		bool fixed)
-{
-	return -ENOSYS;
-}
-static inline struct page *dma_alloc_from_contiguous(struct device *dev,
-		size_t count, unsigned int order, bool no_warn)
-{
-	return NULL;
-}
-static inline bool dma_release_from_contiguous(struct device *dev,
-		struct page *pages, int count)
-{
-	return false;
-}
 static inline struct page *dma_alloc_contiguous(struct device *dev, size_t size,
 		gfp_t gfp)
 {
@@ -106,13 +90,6 @@ static inline void dma_free_contiguous(struct device *dev, struct page *page,
 	__free_pages(page, get_order(size));
 }
 
-static inline void dma_pernuma_cma_reserve(void) { }
-
-static inline int dma_declare_coherent_memory(struct device *dev,
-		phys_addr_t phys_addr, dma_addr_t device_addr, size_t size)
-{
-	return -ENOSYS;
-}
 #define dma_alloc_from_dev_coherent(dev, size, handle, ret) (0)
 #define dma_release_from_dev_coherent(dev, order, vaddr) (0)
 #define dma_mmap_from_dev_coherent(dev, vma, vaddr, order, ret) (0)
@@ -123,11 +100,6 @@ static inline void *dma_alloc_from_global_coherent(struct device *dev,
 	return NULL;
 }
 static inline int dma_release_from_global_coherent(int order, void *vaddr)
-{
-	return 0;
-}
-static inline int dma_mmap_from_global_coherent(struct vm_area_struct *vma,
-		void *cpu_addr, size_t size, int *ret)
 {
 	return 0;
 }

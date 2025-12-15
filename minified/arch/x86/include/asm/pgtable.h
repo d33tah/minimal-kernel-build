@@ -314,20 +314,7 @@ static inline pmd_t pmd_mkwrite(pmd_t pmd)
 	return pmd_set_flags(pmd, _PAGE_RW);
 }
 
-static inline pud_t pud_set_flags(pud_t pud, pudval_t set)
-{
-	pudval_t v = native_pud_val(pud);
-
-	return native_make_pud(v | set);
-}
-
-static inline pud_t pud_clear_flags(pud_t pud, pudval_t clear)
-{
-	pudval_t v = native_pud_val(pud);
-
-	return native_make_pud(v & ~clear);
-}
-
+/* pud_set_flags, pud_clear_flags removed - unused */
 /* pud_mkold, pud_mkclean, pud_wrprotect, pud_mkdirty, pud_mkdevmap, pud_mkhuge, pud_mkyoung, pud_mkwrite removed - unused */
 
 
@@ -367,13 +354,7 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 	return __pmd(pfn | check_pgprot(pgprot));
 }
 
-/* pfn_pud removed - unused */
-
-static inline pmd_t pmd_mkinvalid(pmd_t pmd)
-{
-	return pfn_pmd(pmd_pfn(pmd),
-		      __pgprot(pmd_flags(pmd) & ~(_PAGE_PRESENT|_PAGE_PROTNONE)));
-}
+/* pfn_pud, pmd_mkinvalid removed - unused */
 
 static inline u64 flip_protnone_guard(u64 oldval, u64 val, u64 mask);
 
@@ -842,10 +823,7 @@ static inline void update_mmu_cache_pud(struct vm_area_struct *vma,
 }
 #ifdef _PAGE_SWP_EXCLUSIVE
 #define __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-static inline pte_t pte_swp_mkexclusive(pte_t pte)
-{
-	return pte_set_flags(pte, _PAGE_SWP_EXCLUSIVE);
-}
+/* pte_swp_mkexclusive removed - unused */
 
 static inline int pte_swp_exclusive(pte_t pte)
 {

@@ -31,15 +31,6 @@ struct nsset {
 	const struct cred *cred;
 };
 
-static inline struct cred *nsset_cred(struct nsset *set)
-{
-	if (set->flags & CLONE_NEWUSER)
-		return (struct cred *)set->cred;
-
-	return NULL;
-}
-
-
 int copy_namespaces(unsigned long flags, struct task_struct *tsk);
 void exit_task_namespaces(struct task_struct *tsk);
 /* switch_task_namespaces now static in nsproxy.c */

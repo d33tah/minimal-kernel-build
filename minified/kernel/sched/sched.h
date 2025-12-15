@@ -815,10 +815,7 @@ extern struct task_struct *pick_next_task_idle(struct rq *rq);
 #define SCA_USER		0x08
 
 
-static inline void idle_set_state(struct rq *rq,
-				  struct cpuidle_state *idle_state)
-{
-}
+/* idle_set_state removed - unused */
 
 extern void schedule_idle(void);
 

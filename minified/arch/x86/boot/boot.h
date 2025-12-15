@@ -89,36 +89,12 @@ static inline u32 rdfs32(addr_t addr)
 	return v;
 }
 
-static inline void wrfs8(u8 v, addr_t addr)
-{
-	u8 *ptr = (u8 *)absolute_pointer(addr);
-	asm volatile("movb %1,%%fs:%0" : "+m" (*ptr) : "qi" (v));
-}
-static inline void wrfs16(u16 v, addr_t addr)
-{
-	u16 *ptr = (u16 *)absolute_pointer(addr);
-	asm volatile("movw %1,%%fs:%0" : "+m" (*ptr) : "ri" (v));
-}
 static inline void wrfs32(u32 v, addr_t addr)
 {
 	u32 *ptr = (u32 *)absolute_pointer(addr);
 	asm volatile("movl %1,%%fs:%0" : "+m" (*ptr) : "ri" (v));
 }
 
-static inline u8 rdgs8(addr_t addr)
-{
-	u8 *ptr = (u8 *)absolute_pointer(addr);
-	u8 v;
-	asm volatile("movb %%gs:%1,%0" : "=q" (v) : "m" (*ptr));
-	return v;
-}
-static inline u16 rdgs16(addr_t addr)
-{
-	u16 *ptr = (u16 *)absolute_pointer(addr);
-	u16 v;
-	asm volatile("movw %%gs:%1,%0" : "=r" (v) : "m" (*ptr));
-	return v;
-}
 static inline u32 rdgs32(addr_t addr)
 {
 	u32 *ptr = (u32 *)absolute_pointer(addr);
@@ -127,59 +103,16 @@ static inline u32 rdgs32(addr_t addr)
 	return v;
 }
 
-static inline void wrgs8(u8 v, addr_t addr)
-{
-	u8 *ptr = (u8 *)absolute_pointer(addr);
-	asm volatile("movb %1,%%gs:%0" : "+m" (*ptr) : "qi" (v));
-}
-static inline void wrgs16(u16 v, addr_t addr)
-{
-	u16 *ptr = (u16 *)absolute_pointer(addr);
-	asm volatile("movw %1,%%gs:%0" : "+m" (*ptr) : "ri" (v));
-}
-static inline void wrgs32(u32 v, addr_t addr)
-{
-	u32 *ptr = (u32 *)absolute_pointer(addr);
-	asm volatile("movl %1,%%gs:%0" : "+m" (*ptr) : "ri" (v));
-}
 
- 
-static inline bool memcmp_fs(const void *s1, addr_t s2, size_t len)
-{
-	bool diff;
-	asm volatile("fs; repe; cmpsb" CC_SET(nz)
-		     : CC_OUT(nz) (diff), "+D" (s1), "+S" (s2), "+c" (len));
-	return diff;
-}
-static inline bool memcmp_gs(const void *s1, addr_t s2, size_t len)
-{
-	bool diff;
-	asm volatile("gs; repe; cmpsb" CC_SET(nz)
-		     : CC_OUT(nz) (diff), "+D" (s1), "+S" (s2), "+c" (len));
-	return diff;
-}
 
  
 extern char _end[];
 extern char *HEAP;
 extern char *heap_end;
 #define RESET_HEAP() ((void *)( HEAP = _end ))
-static inline char *__get_heap(size_t s, size_t a, size_t n)
-{
-	char *tmp;
-
-	HEAP = (char *)(((size_t)HEAP+(a-1)) & ~(a-1));
-	tmp = HEAP;
-	HEAP += s*n;
-	return tmp;
-}
 #define GET_HEAP(type, n) \
-	((type *)__get_heap(sizeof(type),__alignof__(type),(n)))
-
-static inline bool heap_free(size_t n)
-{
-	return (int)(heap_end-HEAP) >= (int)n;
-}
+	((type *)(HEAP = (char *)(((size_t)HEAP+(__alignof__(type)-1)) & ~(__alignof__(type)-1)), \
+	          HEAP += sizeof(type)*(n), HEAP - sizeof(type)*(n)))
 
  
 

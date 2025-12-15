@@ -139,44 +139,17 @@ extern struct apic *__apicdrivers[], *__apicdrivers_end[];
 
 
 static inline u32 apic_read(u32 reg) { return 0; }
-static inline void apic_write(u32 reg, u32 val) { }
 static inline void apic_eoi(void) { }
-static inline u64 apic_icr_read(void) { return 0; }
-static inline void apic_icr_write(u32 low, u32 high) { }
-static inline void apic_wait_icr_idle(void) { }
-static inline u32 safe_apic_wait_icr_idle(void) { return 0; }
-static inline void apic_set_eoi_write(void (*eoi_write)(u32 reg, u32 v)) {}
-/* apic_ack_irq declaration removed - no implementation */
 
 static inline void ack_APIC_irq(void)
 {
-	 
+
 	apic_eoi();
-}
-
-
-static inline bool lapic_vector_set_in_irr(unsigned int vector)
-{
-	u32 irr = apic_read(APIC_IRR + (vector / 32 * 0x10));
-
-	return !!(irr & (1U << (vector % 32)));
-}
-
-static inline unsigned default_get_apic_id(unsigned long x)
-{
-	unsigned int ver = GET_APIC_VERSION(apic_read(APIC_LVR));
-
-	if (APIC_XAPIC(ver) || boot_cpu_has(X86_FEATURE_EXTD_APICID))
-		return (x >> 24) & 0xFF;
-	else
-		return (x >> 24) & 0x0F;
 }
 
  
 #define TRAMPOLINE_PHYS_LOW		0x467
 #define TRAMPOLINE_PHYS_HIGH		0x469
 
-static inline bool apic_id_is_primary_thread(unsigned int id) { return false; }
-static inline void apic_smt_update(void) { }
 
 #endif

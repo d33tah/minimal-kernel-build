@@ -225,9 +225,4 @@ do {									\
 #endif
 /* end asm-generic/barrier.h */
 
-static inline void weak_wrmsr_fence(void)
-{
-	asm volatile("mfence; lfence" : : : "memory");
-}
-
 #endif  

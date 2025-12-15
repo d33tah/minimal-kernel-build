@@ -88,30 +88,6 @@ arch_clear_bit_unlock_is_negative_byte(long nr, volatile unsigned long *addr)
 #define arch_clear_bit_unlock_is_negative_byte                                 \
 	arch_clear_bit_unlock_is_negative_byte
 
-static __always_inline void
-arch___clear_bit_unlock(long nr, volatile unsigned long *addr)
-{
-	arch___clear_bit(nr, addr);
-}
-
-static __always_inline void
-arch___change_bit(long nr, volatile unsigned long *addr)
-{
-	asm volatile(__ASM_SIZE(btc) " %1,%0" : : ADDR, "Ir" (nr) : "memory");
-}
-
-static __always_inline void
-arch_change_bit(long nr, volatile unsigned long *addr)
-{
-	if (__builtin_constant_p(nr)) {
-		asm volatile(LOCK_PREFIX "xorb %b1,%0"
-			: CONST_MASK_ADDR(nr, addr)
-			: "iq" (CONST_MASK(nr)));
-	} else {
-		asm volatile(LOCK_PREFIX __ASM_SIZE(btc) " %1,%0"
-			: : RLONG_ADDR(addr), "Ir" (nr) : "memory");
-	}
-}
 
 static __always_inline bool
 arch_test_and_set_bit(long nr, volatile unsigned long *addr)
@@ -124,6 +100,7 @@ arch_test_and_set_bit_lock(long nr, volatile unsigned long *addr)
 {
 	return arch_test_and_set_bit(nr, addr);
 }
+
 
 static __always_inline bool
 arch___test_and_set_bit(long nr, volatile unsigned long *addr)
@@ -156,24 +133,6 @@ arch___test_and_clear_bit(long nr, volatile unsigned long *addr)
 	return oldbit;
 }
 
-static __always_inline bool
-arch___test_and_change_bit(long nr, volatile unsigned long *addr)
-{
-	bool oldbit;
-
-	asm volatile(__ASM_SIZE(btc) " %2,%1"
-		     CC_SET(c)
-		     : CC_OUT(c) (oldbit)
-		     : ADDR, "Ir" (nr) : "memory");
-
-	return oldbit;
-}
-
-static __always_inline bool
-arch_test_and_change_bit(long nr, volatile unsigned long *addr)
-{
-	return GEN_BINARY_RMWcc(LOCK_PREFIX __ASM_SIZE(btc), *addr, c, "Ir", nr);
-}
 
 static __always_inline bool constant_test_bit(long nr, const volatile unsigned long *addr)
 {
@@ -259,17 +218,6 @@ static __always_inline int fls64(__u64 x)
 	return fls(x);
 }
 
-/* Inlined from asm-generic/bitops/sched.h - i386 BITS_PER_LONG == 32 */
-static inline int sched_find_first_bit(const unsigned long *b)
-{
-	if (b[0])
-		return __ffs(b[0]);
-	if (b[1])
-		return __ffs(b[1]) + 32;
-	if (b[2])
-		return __ffs(b[2]) + 64;
-	return __ffs(b[3]) + 96;
-}
 
 /* --- 2025-12-07 20:24 --- Inlined arch_hweight.h */
 #include <asm/cpufeatures.h>
@@ -341,11 +289,6 @@ static __always_inline void clear_bit(long nr, volatile unsigned long *addr)
 	arch_clear_bit(nr, addr);
 }
 
-static __always_inline void change_bit(long nr, volatile unsigned long *addr)
-{
-	instrument_atomic_write(addr + BIT_WORD(nr), sizeof(long));
-	arch_change_bit(nr, addr);
-}
 
 static __always_inline bool test_and_set_bit(long nr, volatile unsigned long *addr)
 {
@@ -359,11 +302,6 @@ static __always_inline bool test_and_clear_bit(long nr, volatile unsigned long *
 	return arch_test_and_clear_bit(nr, addr);
 }
 
-static __always_inline bool test_and_change_bit(long nr, volatile unsigned long *addr)
-{
-	instrument_atomic_read_write(addr + BIT_WORD(nr), sizeof(long));
-	return arch_test_and_change_bit(nr, addr);
-}
 
 /* Inlined from asm-generic/bitops/instrumented-non-atomic.h */
 static __always_inline void __set_bit(long nr, volatile unsigned long *addr)
@@ -378,11 +316,6 @@ static __always_inline void __clear_bit(long nr, volatile unsigned long *addr)
 	arch___clear_bit(nr, addr);
 }
 
-static __always_inline void __change_bit(long nr, volatile unsigned long *addr)
-{
-	instrument_write(addr + BIT_WORD(nr), sizeof(long));
-	arch___change_bit(nr, addr);
-}
 
 static __always_inline void __instrument_read_write_bitop(long nr, volatile unsigned long *addr)
 {
@@ -401,11 +334,6 @@ static __always_inline bool __test_and_clear_bit(long nr, volatile unsigned long
 	return arch___test_and_clear_bit(nr, addr);
 }
 
-static __always_inline bool __test_and_change_bit(long nr, volatile unsigned long *addr)
-{
-	__instrument_read_write_bitop(nr, addr);
-	return arch___test_and_change_bit(nr, addr);
-}
 
 static __always_inline bool test_bit(long nr, const volatile unsigned long *addr)
 {
@@ -418,12 +346,6 @@ static inline void clear_bit_unlock(long nr, volatile unsigned long *addr)
 {
 	instrument_atomic_write(addr + BIT_WORD(nr), sizeof(long));
 	arch_clear_bit_unlock(nr, addr);
-}
-
-static inline void __clear_bit_unlock(long nr, volatile unsigned long *addr)
-{
-	instrument_write(addr + BIT_WORD(nr), sizeof(long));
-	arch___clear_bit_unlock(nr, addr);
 }
 
 static inline bool test_and_set_bit_lock(long nr, volatile unsigned long *addr)

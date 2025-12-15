@@ -12,31 +12,12 @@ struct stable_node;
 struct mem_cgroup;
 
 
-static inline int ksm_fork(struct mm_struct *mm, struct mm_struct *oldmm)
-{
-	return 0;
-}
+/* ksm_fork removed - unused */
 
 static inline void ksm_exit(struct mm_struct *mm)
 {
 }
 
-static inline int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
-		unsigned long end, int advice, unsigned long *vm_flags)
-{
-	return 0;
-}
-
-static inline struct page *ksm_might_need_to_copy(struct page *page,
-			struct vm_area_struct *vma, unsigned long address)
-{
-	return page;
-}
-
-/* rmap_walk_ksm removed - unused */
-
-static inline void folio_migrate_ksm(struct folio *newfolio, struct folio *old)
-{
-}
+/* ksm_madvise, ksm_might_need_to_copy, rmap_walk_ksm, folio_migrate_ksm removed - unused */
 
 #endif  

@@ -44,11 +44,7 @@ static inline bool __nodes_empty(const nodemask_t *srcp, unsigned int nbits)
 	return bitmap_empty(srcp->bits, nbits);
 }
 
-#define nodes_weight(nodemask) __nodes_weight(&(nodemask), MAX_NUMNODES)
-static inline int __nodes_weight(const nodemask_t *srcp, unsigned int nbits)
-{
-	return bitmap_weight(srcp->bits, nbits);
-}
+/* nodes_weight removed - unused */
 
 
 

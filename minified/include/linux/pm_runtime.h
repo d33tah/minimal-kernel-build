@@ -58,13 +58,9 @@ static inline bool pm_runtime_suspended(struct device *dev) { return false; }
 static inline bool pm_runtime_active(struct device *dev) { return true; }
 static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
 static inline bool pm_runtime_enabled(struct device *dev) { return false; }
-static inline void pm_runtime_mark_last_busy(struct device *dev) {}
-static inline void __pm_runtime_use_autosuspend(struct device *dev,
-						bool use) {}
-static inline void pm_runtime_set_autosuspend_delay(struct device *dev,
-						int delay) {}
-static inline u64 pm_runtime_autosuspend_expiration(
-				struct device *dev) { return 0; }
+/* pm_runtime_mark_last_busy, __pm_runtime_use_autosuspend,
+   pm_runtime_set_autosuspend_delay, pm_runtime_autosuspend_expiration
+   removed - unused */
 static inline void pm_runtime_get_suppliers(struct device *dev) {}
 static inline void pm_runtime_put_suppliers(struct device *dev) {}
 static inline void pm_runtime_release_supplier(struct device_link *link) {}

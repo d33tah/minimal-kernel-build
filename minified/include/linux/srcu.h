@@ -137,14 +137,7 @@ static inline int srcu_read_lock(struct srcu_struct *ssp) __acquires(ssp)
 	return retval;
 }
 
-static inline notrace int
-srcu_read_lock_notrace(struct srcu_struct *ssp) __acquires(ssp)
-{
-	int retval;
-
-	retval = __srcu_read_lock(ssp);
-	return retval;
-}
+/* srcu_read_lock_notrace, srcu_read_unlock_notrace removed - unused */
 
 static inline void srcu_read_unlock(struct srcu_struct *ssp, int idx)
 	__releases(ssp)
@@ -154,14 +147,6 @@ static inline void srcu_read_unlock(struct srcu_struct *ssp, int idx)
 	__srcu_read_unlock(ssp, idx);
 }
 
-static inline notrace void
-srcu_read_unlock_notrace(struct srcu_struct *ssp, int idx) __releases(ssp)
-{
-	__srcu_read_unlock(ssp, idx);
-}
-
-static inline void smp_mb__after_srcu_read_unlock(void)
-{
-}
+/* smp_mb__after_srcu_read_unlock removed - unused */
 
 #endif

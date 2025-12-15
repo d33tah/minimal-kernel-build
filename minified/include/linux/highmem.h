@@ -30,10 +30,7 @@ static inline void kmap_assert_nomap(void)
 	DEBUG_LOCKS_WARN_ON(current->kmap_ctrl.idx);
 }
 
-static inline struct page *kmap_to_page(void *addr)
-{
-	return virt_to_page(addr);
-}
+/* kmap_to_page removed - unused */
 
 static inline void *kmap(struct page *page)
 {

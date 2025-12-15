@@ -73,10 +73,7 @@ static inline enum compact_result compaction_suitable(struct zone *zone, int ord
 	return COMPACT_SKIPPED;
 }
 
-static inline bool compaction_made_progress(enum compact_result result) { return false; }
-static inline bool compaction_failed(enum compact_result result) { return false; }
-static inline bool compaction_needs_reclaim(enum compact_result result) { return false; }
-static inline bool compaction_withdrawn(enum compact_result result) { return true; }
+/* compaction_made_progress, compaction_failed, compaction_needs_reclaim, compaction_withdrawn removed - unused */
 
 /* --- end compaction.h inlined --- */
 

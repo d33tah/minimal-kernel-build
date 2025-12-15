@@ -10,9 +10,6 @@
 
 #define __initdata_or_meminfo __initdata
 
-static inline int numa_map_to_online_node(int node)
-{
-	return NUMA_NO_NODE;
-}
+/* numa_map_to_online_node removed - unused */
 
-#endif  
+#endif

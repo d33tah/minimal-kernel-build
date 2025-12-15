@@ -66,22 +66,6 @@ static inline void anon_vma_unlock_write(struct anon_vma *anon_vma)
 	up_write(&anon_vma->root->rwsem);
 }
 
-static inline void anon_vma_lock_read(struct anon_vma *anon_vma)
-{
-	down_read(&anon_vma->root->rwsem);
-}
-
-static inline int anon_vma_trylock_read(struct anon_vma *anon_vma)
-{
-	return down_read_trylock(&anon_vma->root->rwsem);
-}
-
-static inline void anon_vma_unlock_read(struct anon_vma *anon_vma)
-{
-	up_read(&anon_vma->root->rwsem);
-}
-
-
 void anon_vma_init(void);	 
 int  __anon_vma_prepare(struct vm_area_struct *);
 void unlink_anon_vmas(struct vm_area_struct *);
@@ -94,13 +78,6 @@ static inline int anon_vma_prepare(struct vm_area_struct *vma)
 		return 0;
 
 	return __anon_vma_prepare(vma);
-}
-
-static inline void anon_vma_merge(struct vm_area_struct *vma,
-				  struct vm_area_struct *next)
-{
-	VM_BUG_ON_VMA(vma->anon_vma != next->anon_vma, vma);
-	unlink_anon_vmas(next);
 }
 
 typedef int __bitwise rmap_t;

@@ -55,14 +55,9 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/microcode_intel.h>
 #include <asm/intel-family.h>
 #include <asm/cpu_device_id.h>
-/* uv/uv.h inlined */
-enum uv_system_type {UV_NONE, UV_LEGACY_APIC, UV_X2APIC};
-static inline enum uv_system_type get_uv_system_type(void) { return UV_NONE; }
-static inline bool is_early_uv_system(void) { return 0; }
+/* uv/uv.h inlined - get_uv_system_type, is_early_uv_system, is_uv_hubbed, uv_system_init removed - unused */
 static inline int is_uv_system(void) { return 0; }
-static inline int is_uv_hubbed(int uv) { return 0; }
 static inline void uv_cpu_init(void) { }
-static inline void uv_system_init(void) { }
 #include <asm/sigframe.h>
 #include <asm/traps.h>
 #include <asm/sev.h>

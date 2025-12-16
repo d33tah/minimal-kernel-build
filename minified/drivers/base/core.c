@@ -686,13 +686,7 @@ void device_unregister(struct device *dev)
 /* next_device removed - unused */
 /* device_get_devnode removed - never called */
 
-/* Stub: device_for_each_child not called externally */
-int device_for_each_child(struct device *parent, void *data,
-			  int (*fn)(struct device *dev, void *data))
-{
-	return 0;
-}
-/* device_for_each_child_reverse, device_find_child, device_find_child_by_name removed - never called */
+/* device_for_each_child, device_for_each_child_reverse, device_find_child, device_find_child_by_name removed - never called */
 
 int __init devices_init(void)
 {

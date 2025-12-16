@@ -11,7 +11,7 @@
 #include <linux/irqdomain.h>
 
 /* --- 2025-12-08 02:10 --- Inlined from asm/msi.h */
-static inline void x86_create_pci_msi_domain(void) { }
+/* x86_create_pci_msi_domain removed - never called */
 #define native_create_pci_msi_domain	NULL
 #define x86_pci_msi_default_domain	NULL
 

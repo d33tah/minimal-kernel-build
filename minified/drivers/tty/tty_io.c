@@ -231,10 +231,7 @@ static int hung_up_tty_fasync(int fd, struct file *file, int on)
 	return -ENOTTY;
 }
 
-static void tty_show_fdinfo(struct seq_file *m, struct file *file)
-{
-	/* Stub: TTY fdinfo not needed for minimal kernel */
-}
+/* tty_show_fdinfo removed - show_fdinfo callback never called */
 
 static const struct file_operations tty_fops = {
 	.llseek		= no_llseek,
@@ -248,7 +245,6 @@ static const struct file_operations tty_fops = {
 	.open		= tty_open,
 	.release	= tty_release,
 	.fasync		= tty_fasync,
-	.show_fdinfo	= tty_show_fdinfo,
 };
 
 static const struct file_operations console_fops = {

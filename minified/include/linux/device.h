@@ -295,10 +295,7 @@ static inline const char *dev_name(const struct device *dev)
 	return kobject_name(&dev->kobj);
 }
 
-static inline const char *dev_bus_name(const struct device *dev)
-{
-	return dev->bus ? dev->bus->name : (dev->class ? dev->class->name : "");
-}
+/* dev_bus_name removed - unused */
 
 __printf(2, 3) int dev_set_name(struct device *dev, const char *name, ...);
 
@@ -391,15 +388,7 @@ int __must_check device_add_groups(struct device *dev,
 void device_remove_groups(struct device *dev,
 			  const struct attribute_group **groups);
 
-static inline void device_remove_group(struct device *dev,
-				       const struct attribute_group *grp)
-{
-	const struct attribute_group *groups[] = { grp, NULL };
-
-	return device_remove_groups(dev, groups);
-}
-
-
+/* device_remove_group removed - unused */
 
 struct device *get_device(struct device *dev);
 void put_device(struct device *dev);

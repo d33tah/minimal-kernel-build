@@ -55,10 +55,6 @@ static inline void nd_terminate_link(void *name, size_t len, size_t maxlen)
 	((char *) name)[min(len, maxlen)] = '\0';
 }
 
-static inline bool
-retry_estale(const long error, const unsigned int flags)
-{
-	return error == -ESTALE && !(flags & LOOKUP_REVAL);
-}
+/* retry_estale removed - unused */
 
-#endif  
+#endif

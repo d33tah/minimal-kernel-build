@@ -334,4 +334,4 @@ static inline struct dentry *d_real(struct dentry *dentry,
 		return dentry;
 }
 
-#endif	 
+#endif

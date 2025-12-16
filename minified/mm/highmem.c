@@ -28,11 +28,7 @@ static inline int kmap_local_idx(void)
 	return current->kmap_ctrl.idx - 1;
 }
 
-static inline void kmap_local_idx_pop(void)
-{
-	current->kmap_ctrl.idx -= KM_INCR;
-	BUG_ON(current->kmap_ctrl.idx < 0);
-}
+/* kmap_local_idx_pop removed - unused (~5 lines) */
 
 #ifndef arch_kmap_local_post_map
 # define arch_kmap_local_post_map(vaddr, pteval)	do { } while (0)
@@ -66,16 +62,7 @@ static inline void *arch_kmap_local_high_get(struct page *page)
 	set_pte_at(mm, vaddr, ptep, ptev)
 #endif
 
-static inline bool kmap_high_unmap_local(unsigned long vaddr)
-{
-#ifdef ARCH_NEEDS_KMAP_HIGH_GET
-	if (vaddr >= PKMAP_ADDR(0) && vaddr < PKMAP_ADDR(LAST_PKMAP)) {
-		kunmap_high(pte_page(pkmap_page_table[PKMAP_NR(vaddr)]));
-		return true;
-	}
-#endif
-	return false;
-}
+/* kmap_high_unmap_local removed - unused (~10 lines) */
 
 static inline int kmap_local_calc_idx(int idx)
 {

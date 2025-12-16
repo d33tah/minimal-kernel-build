@@ -63,7 +63,7 @@ struct kmem_cache *kmem_cache_create_usercopy(const char *name,
 			offsetof(struct __struct, __field),		\
 			sizeof_field(struct __struct, __field), NULL)
 
-void * __must_check krealloc(const void *objp, size_t new_size, gfp_t flags) __alloc_size(2);
+/* krealloc removed - never called */
 void kfree(const void *objp);
 size_t __ksize(const void *objp);
 size_t ksize(const void *objp);

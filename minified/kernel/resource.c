@@ -237,45 +237,7 @@ int walk_mem_res(u64 start, u64 end, void *arg,
 
 /* walk_system_ram_range, __is_ram, page_is_ram removed - never called */
 
-static int __region_intersects(resource_size_t start, size_t size,
-			unsigned long flags, unsigned long desc)
-{
-	struct resource res;
-	int type = 0; int other = 0;
-	struct resource *p;
-
-	res.start = start;
-	res.end = start + size - 1;
-
-	for (p = iomem_resource.child; p ; p = p->sibling) {
-		bool is_type = (((p->flags & flags) == flags) &&
-				((desc == IORES_DESC_NONE) ||
-				 (desc == p->desc)));
-
-		if (resource_overlaps(p, &res))
-			is_type ? type++ : other++;
-	}
-
-	if (type == 0)
-		return REGION_DISJOINT;
-
-	if (other == 0)
-		return REGION_INTERSECTS;
-
-	return REGION_MIXED;
-}
-
-int region_intersects(resource_size_t start, size_t size, unsigned long flags,
-		      unsigned long desc)
-{
-	int ret;
-
-	read_lock(&resource_lock);
-	ret = __region_intersects(start, size, flags, desc);
-	read_unlock(&resource_lock);
-
-	return ret;
-}
+/* __region_intersects, region_intersects removed - never called */
 
 /* arch_remove_reservations removed - never called */
 

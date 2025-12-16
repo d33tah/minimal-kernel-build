@@ -1159,11 +1159,4 @@ SYSCALL_DEFINE3(waitpid, pid_t, pid, int __user *, stat_addr, int, options)
 
 #endif
 
-/* thread_group_exited removed - unused */
-
-__weak void abort(void)
-{
-	BUG();
-
-	panic("Oops failed to kill thread");
-}
+/* thread_group_exited, abort removed - unused */

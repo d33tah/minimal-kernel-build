@@ -1661,7 +1661,7 @@ static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
 
 extern int randomize_va_space;
 
-const char * arch_vma_name(struct vm_area_struct *vma);
+/* arch_vma_name removed - unused */
 
 void *sparse_buffer_alloc(unsigned long size);
 struct page * __populate_section_memmap(unsigned long pfn,

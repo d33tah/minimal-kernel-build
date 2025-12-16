@@ -1191,10 +1191,7 @@ SYSCALL_DEFINE3(sigsuspend, int, unused1, int, unused2, old_sigset_t, mask)
 	return sigsuspend(&blocked);
 }
 
-__weak const char *arch_vma_name(struct vm_area_struct *vma)
-{
-	return NULL;
-}
+/* arch_vma_name removed - unused */
 
 static inline void siginfo_buildtime_checks(void)
 {

@@ -52,14 +52,7 @@ static inline unsigned long size_inside_page(unsigned long start,
 	return min(sz, size);
 }
 
-#ifndef unxlate_dev_mem_ptr
-#define unxlate_dev_mem_ptr unxlate_dev_mem_ptr
-void __weak unxlate_dev_mem_ptr(phys_addr_t phys, void *addr)
-{
-}
-#endif
-
-/* read_mem, write_mem removed - /dev/mem not used */
+/* unxlate_dev_mem_ptr, read_mem, write_mem removed - /dev/mem not used */
 
 /* phys_mem_access_prot_allowed, uncached_access, phys_mem_access_prot removed - /dev/mem not used */
 

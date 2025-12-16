@@ -308,11 +308,7 @@ void *xlate_dev_mem_ptr(phys_addr_t phys)
 	return vaddr;
 }
 
-void unxlate_dev_mem_ptr(phys_addr_t phys, void *addr)
-{
-	memunmap((void *)((unsigned long)addr & PAGE_MASK));
-}
-
+/* unxlate_dev_mem_ptr removed - unused */
 
 static pte_t bm_pte[PAGE_SIZE/sizeof(pte_t)] __page_aligned_bss;
 

@@ -241,15 +241,11 @@ struct bus_type platform_bus_type = {
 	.pm		= &platform_dev_pm_ops,
 };
 
-/* platform_find_device_by_driver removed - unused */
-
-void __weak __init early_platform_cleanup(void) { }
+/* platform_find_device_by_driver, early_platform_cleanup removed - unused */
 
 int __init platform_bus_init(void)
 {
 	int error;
-
-	early_platform_cleanup();
 
 	error = device_register(&platform_bus);
 	if (error) {

@@ -20,9 +20,7 @@ int ioremap_page_range(unsigned long addr, unsigned long end,
 
 #define IOMEM_ERR_PTR(err) (__force void __iomem *)ERR_PTR(err)
 
-void __iomem *devm_ioremap(struct device *dev, resource_size_t offset,
-			   resource_size_t size);
-void devm_ioremap_release(struct device *dev, void *res);
+/* devm_ioremap, devm_ioremap_release removed - unused */
 
 
 

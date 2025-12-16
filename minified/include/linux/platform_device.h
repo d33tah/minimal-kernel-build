@@ -46,26 +46,11 @@ extern struct device platform_bus;
 
 extern struct resource *platform_get_resource(struct platform_device *,
 					      unsigned int, unsigned int);
-extern struct resource *platform_get_mem_or_io(struct platform_device *,
-					       unsigned int);
-
-extern struct device *
-platform_find_device_by_driver(struct device *start,
-			       const struct device_driver *drv);
-extern void __iomem *
-devm_platform_get_and_ioremap_resource(struct platform_device *pdev,
-				unsigned int index, struct resource **res);
-extern void __iomem *
-devm_platform_ioremap_resource(struct platform_device *pdev,
-			       unsigned int index);
-extern void __iomem *
-devm_platform_ioremap_resource_byname(struct platform_device *pdev,
-				      const char *name);
+/* platform_get_mem_or_io, devm_platform_get_and_ioremap_resource,
+   devm_platform_ioremap_resource, devm_platform_ioremap_resource_byname,
+   platform_find_device_by_driver, platform_get_resource_byname removed - unused */
 extern int platform_get_irq(struct platform_device *, unsigned int);
 extern int platform_get_irq_optional(struct platform_device *, unsigned int);
-extern struct resource *platform_get_resource_byname(struct platform_device *,
-						     unsigned int,
-						     const char *);
 
 struct platform_device_info {
 		struct device *parent;

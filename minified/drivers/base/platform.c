@@ -55,35 +55,8 @@ struct resource *platform_get_resource(struct platform_device *dev,
 	return NULL;
 }
 
-/* platform_get_mem_or_io removed - unused */
-
-void __iomem *
-devm_platform_get_and_ioremap_resource(struct platform_device *pdev,
-				unsigned int index, struct resource **res)
-{
-	struct resource *r;
-
-	r = platform_get_resource(pdev, IORESOURCE_MEM, index);
-	if (res)
-		*res = r;
-	return devm_ioremap_resource(&pdev->dev, r);
-}
-
-void __iomem *devm_platform_ioremap_resource(struct platform_device *pdev,
-					     unsigned int index)
-{
-	return devm_platform_get_and_ioremap_resource(pdev, index, NULL);
-}
-
-void __iomem *
-devm_platform_ioremap_resource_byname(struct platform_device *pdev,
-				      const char *name)
-{
-	struct resource *res;
-
-	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, name);
-	return devm_ioremap_resource(&pdev->dev, res);
-}
+/* platform_get_mem_or_io, devm_platform_get_and_ioremap_resource,
+   devm_platform_ioremap_resource, devm_platform_ioremap_resource_byname removed - unused */
 
 /* Stub: platform_get_irq_optional not used externally */
 int platform_get_irq_optional(struct platform_device *dev, unsigned int num)
@@ -103,23 +76,7 @@ int platform_get_irq(struct platform_device *dev, unsigned int num)
 	return ret;
 }
 
-struct resource *platform_get_resource_byname(struct platform_device *dev,
-					      unsigned int type,
-					      const char *name)
-{
-	u32 i;
-
-	for (i = 0; i < dev->num_resources; i++) {
-		struct resource *r = &dev->resource[i];
-
-		if (unlikely(!r->name))
-			continue;
-
-		if (type == resource_type(r) && !strcmp(r->name, name))
-			return r;
-	}
-	return NULL;
-}
+/* platform_get_resource_byname removed - unused */
 
 struct platform_object {
 	struct platform_device pdev;

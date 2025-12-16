@@ -18,26 +18,8 @@ volatile unsigned long cmos_lock;
 
 DEFINE_SPINLOCK(rtc_lock);
 
-int mach_set_rtc_mmss(const struct timespec64 *now)
-{
-	unsigned long long nowtime = now->tv_sec;
-	struct rtc_time tm;
-	int retval = 0;
-
-	rtc_time64_to_tm(nowtime, &tm);
-	if (!rtc_valid_tm(&tm)) {
-		retval = mc146818_set_time(&tm);
-		if (retval)
-			printk(KERN_ERR "%s: RTC write failed with error %d\n",
-			       __func__, retval);
-	} else {
-		printk(KERN_ERR
-		       "%s: Invalid RTC value: write of %llx to RTC failed\n",
-			__func__, nowtime);
-		retval = -EINVAL;
-	}
-	return retval;
-}
+/* mach_set_rtc_mmss stubbed - x86_platform.set_wallclock is never called */
+int mach_set_rtc_mmss(const struct timespec64 *now) { return -EINVAL; }
 
 void mach_get_cmos_time(struct timespec64 *now)
 {
@@ -94,13 +76,8 @@ unsigned char rtc_cmos_read(unsigned char addr)
 	return val;
 }
 
-void rtc_cmos_write(unsigned char val, unsigned char addr)
-{
-	lock_cmos_prefix(addr);
-	outb(addr, RTC_PORT(0));
-	outb(val, RTC_PORT(1));
-	lock_cmos_suffix(addr);
-}
+/* rtc_cmos_write stubbed - mc146818_set_time (only caller) is now a stub */
+void rtc_cmos_write(unsigned char val, unsigned char addr) { }
 
 /* update_persistent_clock64 removed - unused */
 

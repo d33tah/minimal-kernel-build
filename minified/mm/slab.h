@@ -341,8 +341,7 @@ struct slabinfo {
 	unsigned int cache_order;
 };
 
-void get_slabinfo(struct kmem_cache *s, struct slabinfo *sinfo);
-/* slabinfo_show_stats, slabinfo_write removed - never called/defined */
+/* get_slabinfo, slabinfo_show_stats, slabinfo_write removed - never called/defined */
 
 /* __kmem_cache_free_bulk, __kmem_cache_alloc_bulk removed - never called */
 

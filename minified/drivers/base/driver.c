@@ -60,35 +60,27 @@ struct device *driver_find_device(struct device_driver *drv,
 	return dev;
 }
 
+/* Stub: sysfs functions are stubs - minimal driver file/group management */
 int driver_create_file(struct device_driver *drv,
 		       const struct driver_attribute *attr)
 {
-	int error;
-
-	if (drv)
-		error = sysfs_create_file(&drv->p->kobj, &attr->attr);
-	else
-		error = -EINVAL;
-	return error;
+	return drv ? 0 : -EINVAL;
 }
 
 void driver_remove_file(struct device_driver *drv,
 			const struct driver_attribute *attr)
 {
-	if (drv)
-		sysfs_remove_file(&drv->p->kobj, &attr->attr);
 }
 
 int driver_add_groups(struct device_driver *drv,
 		      const struct attribute_group **groups)
 {
-	return sysfs_create_groups(&drv->p->kobj, groups);
+	return 0;
 }
 
 void driver_remove_groups(struct device_driver *drv,
 			  const struct attribute_group **groups)
 {
-	sysfs_remove_groups(&drv->p->kobj, groups);
 }
 
 int driver_register(struct device_driver *drv)

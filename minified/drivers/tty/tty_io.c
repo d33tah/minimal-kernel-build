@@ -1602,27 +1602,9 @@ postcore_initcall(tty_class_init);
 
 static struct cdev tty_cdev, console_cdev;
 
-static ssize_t show_cons_active(struct device *dev,
-				struct device_attribute *attr, char *buf)
-{
-	/* Stub: console listing not needed for minimal kernel */
-	return 0;
-}
-static DEVICE_ATTR(active, S_IRUGO, show_cons_active, NULL);
-
-static struct attribute *cons_dev_attrs[] = {
-	&dev_attr_active.attr,
-	NULL
-};
-
-ATTRIBUTE_GROUPS(cons_dev);
-
-static struct device *consdev;
-
+/* Stub: sysfs notification not needed for minimal kernel */
 void console_sysfs_notify(void)
 {
-	if (consdev)
-		sysfs_notify(&consdev->kobj, NULL, "active");
 }
 
 int __init tty_init(void)
@@ -1638,11 +1620,7 @@ int __init tty_init(void)
 	if (cdev_add(&console_cdev, MKDEV(TTYAUX_MAJOR, 1), 1) ||
 	    register_chrdev_region(MKDEV(TTYAUX_MAJOR, 1), 1, "/dev/console") < 0)
 		panic("Couldn't register /dev/console driver\n");
-	consdev = device_create_with_groups(tty_class, NULL,
-					    MKDEV(TTYAUX_MAJOR, 1), NULL,
-					    cons_dev_groups, "console");
-	if (IS_ERR(consdev))
-		consdev = NULL;
+	device_create(tty_class, NULL, MKDEV(TTYAUX_MAJOR, 1), NULL, "console");
 
 	vty_init(&console_fops);
 	return 0;

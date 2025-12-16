@@ -351,26 +351,7 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
 	add_taint(taint, LOCKDEP_STILL_OK);
 }
 
-#ifndef __WARN_FLAGS
-void warn_slowpath_fmt(const char *file, int line, unsigned taint,
-		       const char *fmt, ...)
-{
-	struct warn_args args;
-
-	if (!fmt) {
-		__warn(file, line, __builtin_return_address(0), taint,
-		       NULL, NULL);
-		return;
-	}
-
-	args.fmt = fmt;
-	va_start(args.args, fmt);
-	__warn(file, line, __builtin_return_address(0), taint, NULL, &args);
-	va_end(args.args);
-}
-#else
-/* __warn_printk removed - not called */
-#endif
+/* warn_slowpath_fmt removed - __WARN_FLAGS is defined on x86 */
 
 
 

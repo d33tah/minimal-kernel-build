@@ -21,10 +21,7 @@ static int lru_shrinker_id(struct list_lru *lru)
 	return -1;
 }
 
-static inline bool list_lru_memcg_aware(struct list_lru *lru)
-{
-	return false;
-}
+/* list_lru_memcg_aware removed - unused (~4 lines) */
 
 static inline struct list_lru_one *
 list_lru_from_memcg_idx(struct list_lru *lru, int nid, int idx)

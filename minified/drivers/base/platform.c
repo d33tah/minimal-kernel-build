@@ -19,8 +19,7 @@
 /* --- 2025-12-06 20:27 --- pm_domain.h inlined (19 LOC) */
 static inline int dev_pm_domain_attach(struct device *dev, bool power_on) { return 0; }
 static inline void dev_pm_domain_detach(struct device *dev, bool power_off) {}
-static inline int dev_pm_domain_start(struct device *dev) { return 0; }
-static inline void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd) {}
+/* dev_pm_domain_start, dev_pm_domain_set removed - never called */
 /* --- end pm_domain.h inlined --- */
 #include <linux/idr.h>
 #include <linux/acpi.h>

@@ -158,13 +158,7 @@ static char _##name##_text[1U << ((avgtextbits) + (descbits))]			\
 			__aligned(__alignof__(unsigned long));			\
 _DEFINE_PRINTKRB(name, descbits, avgtextbits, &_##name##_text[0])
 
-static inline void prb_rec_init_wr(struct printk_record *r,
-				   unsigned int text_buf_size)
-{
-	r->info = NULL;
-	r->text_buf = NULL;
-	r->text_buf_size = text_buf_size;
-}
+/* prb_rec_init_wr removed - never called */
 
 bool prb_reserve(struct prb_reserved_entry *e, struct printk_ringbuffer *rb,
 		 struct printk_record *r);

@@ -486,9 +486,5 @@ size_t dma_direct_max_mapping_size(struct device *dev)
 	return SIZE_MAX;
 }
 
-bool dma_direct_need_sync(struct device *dev, dma_addr_t dma_addr)
-{
-	return !dev_is_dma_coherent(dev) ||
-	       is_swiotlb_buffer(dev, dma_to_phys(dev, dma_addr));
-}
+/* dma_direct_need_sync removed - unused */
 

@@ -12,7 +12,7 @@ bool dma_direct_can_mmap(struct device *dev);
 int dma_direct_mmap(struct device *dev, struct vm_area_struct *vma,
 		void *cpu_addr, dma_addr_t dma_addr, size_t size,
 		unsigned long attrs);
-bool dma_direct_need_sync(struct device *dev, dma_addr_t dma_addr);
+/* dma_direct_need_sync removed - unused */
 int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
 		enum dma_data_direction dir, unsigned long attrs);
 size_t dma_direct_max_mapping_size(struct device *dev);

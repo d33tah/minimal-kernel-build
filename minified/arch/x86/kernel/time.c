@@ -15,20 +15,8 @@
 static inline int hpet_enable(void) { return 0; }
 #include <asm/time.h>
 
-unsigned long profile_pc(struct pt_regs *regs)
-{
-	unsigned long pc = instruction_pointer(regs);
-
-	if (!user_mode(regs) && in_lock_functions(pc)) {
-		unsigned long *sp = (unsigned long *)regs->sp;
-		 
-		if (sp[0] >> 22)
-			return sp[0];
-		if (sp[1] >> 22)
-			return sp[1];
-	}
-	return pc;
-}
+/* profile_pc stubbed - never called */
+unsigned long profile_pc(struct pt_regs *regs) { return instruction_pointer(regs); }
 
 static irqreturn_t timer_interrupt(int irq, void *dev_id)
 {

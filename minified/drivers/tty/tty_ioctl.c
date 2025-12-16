@@ -56,41 +56,11 @@ void tty_wait_until_sent(struct tty_struct *tty, long timeout)
 	 
 }
 
-void tty_termios_copy_hw(struct ktermios *new, struct ktermios *old)
-{
-	new->c_cflag &= HUPCL | CREAD | CLOCAL;
-	new->c_cflag |= old->c_cflag & ~(HUPCL | CREAD | CLOCAL);
-	new->c_ispeed = old->c_ispeed;
-	new->c_ospeed = old->c_ospeed;
-}
-
-int tty_termios_hw_change(const struct ktermios *a, const struct ktermios *b)
-{
-	if (a->c_ispeed != b->c_ispeed || a->c_ospeed != b->c_ospeed)
-		return 1;
-	if ((a->c_cflag ^ b->c_cflag) & ~(HUPCL | CREAD | CLOCAL))
-		return 1;
-	return 0;
-}
-
-unsigned char tty_get_char_size(unsigned int cflag)
-{
-	switch (cflag & CSIZE) {
-	case CS5: return 5;
-	case CS6: return 6;
-	case CS7: return 7;
-	case CS8:
-	default:  return 8;
-	}
-}
-
-unsigned char tty_get_frame_size(unsigned int cflag)
-{
-	unsigned char bits = 2 + tty_get_char_size(cflag);
-	if (cflag & CSTOPB) bits++;
-	if (cflag & PARENB) bits++;
-	return bits;
-}
+/* tty_termios_copy_hw, tty_termios_hw_change, tty_get_char_size, tty_get_frame_size stubbed - no callers */
+void tty_termios_copy_hw(struct ktermios *new, struct ktermios *old) { }
+int tty_termios_hw_change(const struct ktermios *a, const struct ktermios *b) { return 0; }
+unsigned char tty_get_char_size(unsigned int cflag) { return 8; }
+unsigned char tty_get_frame_size(unsigned int cflag) { return 10; }
 
 /* tty_set_termios, tty_perform_flush removed - no callers */
 

@@ -45,10 +45,7 @@ static inline void plist_node_init(struct plist_node *node, int prio)
 	INIT_LIST_HEAD(&node->node_list);
 }
 
-extern void plist_add(struct plist_node *node, struct plist_head *head);
-extern void plist_del(struct plist_node *node, struct plist_head *head);
-
-extern void plist_requeue(struct plist_node *node, struct plist_head *head);
+/* plist_add, plist_del, plist_requeue removed - no callers or definitions */
 
 #define plist_for_each(pos, head)	\
 	 list_for_each_entry(pos, &(head)->node_list, node_list)

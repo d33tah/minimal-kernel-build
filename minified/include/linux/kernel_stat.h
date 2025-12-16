@@ -43,8 +43,7 @@ DECLARE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
 #define kcpustat_cpu(cpu) per_cpu(kernel_cpustat, cpu)
 
 
-extern unsigned int kstat_irqs_cpu(unsigned int irq, int cpu);
-extern void kstat_incr_irq_this_cpu(unsigned int irq);
+/* kstat_irqs_cpu, kstat_incr_irq_this_cpu removed - no callers or definitions */
 
 static inline void kstat_incr_softirqs_this_cpu(unsigned int irq)
 {
@@ -79,7 +78,7 @@ extern void account_system_time(struct task_struct *, int, u64);
 extern void account_system_index_time(struct task_struct *, u64,
 				      enum cpu_usage_stat);
 extern void account_idle_time(u64);
-extern u64 get_idle_time(struct kernel_cpustat *kcs, int cpu);
+/* get_idle_time removed - no callers or definitions */
 
 extern void account_process_tick(struct task_struct *, int user);
 

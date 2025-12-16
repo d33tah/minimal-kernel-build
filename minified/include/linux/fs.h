@@ -1489,7 +1489,7 @@ extern loff_t vfs_llseek(struct file *file, loff_t offset, int whence);
 
 extern int inode_init_always(struct super_block *, struct inode *);
 extern void inode_init_once(struct inode *);
-extern void address_space_init_once(struct address_space *mapping);
+/* address_space_init_once removed - no definition or callers */
 extern int generic_delete_inode(struct inode *inode);
 static inline int generic_drop_inode(struct inode *inode)
 {

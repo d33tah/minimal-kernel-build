@@ -179,14 +179,7 @@ int device_links_check_suppliers(struct device *dev)
 	return 0;
 }
 
-/* Stub: waiting_for_supplier sysfs attribute simplified for minimal kernel */
-static ssize_t waiting_for_supplier_show(struct device *dev,
-					 struct device_attribute *attr,
-					 char *buf)
-{
-	return sysfs_emit(buf, "0\n");
-}
-static DEVICE_ATTR_RO(waiting_for_supplier);
+/* waiting_for_supplier sysfs attribute removed - sysfs stubbed */
 
 /* device_links_force_bind, device_links_driver_bound removed - unused */
 
@@ -397,26 +390,7 @@ static ssize_t uevent_store(struct device *dev, struct device_attribute *attr,
 static DEVICE_ATTR_RW(uevent);
 
 /* Stub: online sysfs attributes simplified for minimal kernel */
-static ssize_t online_show(struct device *dev, struct device_attribute *attr,
-			   char *buf)
-{
-	return sysfs_emit(buf, "1\n");
-}
-
-static ssize_t online_store(struct device *dev, struct device_attribute *attr,
-			    const char *buf, size_t count)
-{
-	return count;
-}
-static DEVICE_ATTR_RW(online);
-
-/* Stub: removable sysfs attribute simplified for minimal kernel */
-static ssize_t removable_show(struct device *dev, struct device_attribute *attr,
-			      char *buf)
-{
-	return sysfs_emit(buf, "unknown\n");
-}
-static DEVICE_ATTR_RO(removable);
+/* online, removable sysfs attributes removed - sysfs stubbed */
 
 /* Stub: device sysfs groups not needed for minimal kernel */
 int device_add_groups(struct device *dev, const struct attribute_group **groups)

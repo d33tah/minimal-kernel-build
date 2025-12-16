@@ -97,10 +97,7 @@ subsys_initcall(default_bdi_init);
 
 static void wb_update_bandwidth_workfn(struct work_struct *work)
 {
-	struct bdi_writeback *wb = container_of(to_delayed_work(work),
-						struct bdi_writeback, bw_dwork);
-
-	wb_update_bandwidth(wb);
+	/* Stub: bw_dwork never scheduled in minimal kernel */
 }
 
 #define INIT_BW		(100 << (20 - PAGE_SHIFT))

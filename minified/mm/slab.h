@@ -342,9 +342,7 @@ struct slabinfo {
 };
 
 void get_slabinfo(struct kmem_cache *s, struct slabinfo *sinfo);
-void slabinfo_show_stats(struct seq_file *m, struct kmem_cache *s);
-ssize_t slabinfo_write(struct file *file, const char __user *buffer,
-		       size_t count, loff_t *ppos);
+/* slabinfo_show_stats, slabinfo_write removed - never called/defined */
 
 /* __kmem_cache_free_bulk, __kmem_cache_alloc_bulk removed - never called */
 

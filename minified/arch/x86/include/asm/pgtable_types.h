@@ -498,8 +498,7 @@ typedef struct page *pgtable_t;
 
 extern pteval_t __supported_pte_mask;
 extern pteval_t __default_kernel_pte_mask;
-extern void set_nx(void);
-extern int nx_enabled;
+/* set_nx, nx_enabled removed - unused */
 
 #define pgprot_writecombine	pgprot_writecombine
 extern pgprot_t pgprot_writecombine(pgprot_t prot);
@@ -507,7 +506,6 @@ extern pgprot_t pgprot_writecombine(pgprot_t prot);
 #define pgprot_writethrough	pgprot_writethrough
 extern pgprot_t pgprot_writethrough(pgprot_t prot);
 
- 
 #define __HAVE_PFNMAP_TRACKING
 
 #define __HAVE_PHYS_MEM_ACCESS_PROT
@@ -515,13 +513,11 @@ struct file;
 pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
                               unsigned long size, pgprot_t vma_prot);
 
- 
 void set_pte_vaddr(unsigned long vaddr, pte_t pte);
 
 extern void native_pagetable_init(void);
 
-struct seq_file;
-extern void arch_report_meminfo(struct seq_file *m);
+/* arch_report_meminfo removed - unused */
 
 enum pg_level {
 	PG_LEVEL_NONE,
@@ -534,18 +530,9 @@ enum pg_level {
 
 static inline void update_page_count(int level, unsigned long pages) { }
 
- 
-extern pte_t *lookup_address(unsigned long address, unsigned int *level);
-extern pte_t *lookup_address_in_pgd(pgd_t *pgd, unsigned long address,
-				    unsigned int *level);
-extern pmd_t *lookup_pmd_address(unsigned long address);
-extern phys_addr_t slow_virt_to_phys(void *__address);
-extern int __init kernel_map_pages_in_pgd(pgd_t *pgd, u64 pfn,
-					  unsigned long address,
-					  unsigned numpages,
-					  unsigned long page_flags);
-extern int __init kernel_unmap_pages_in_pgd(pgd_t *pgd, unsigned long address,
-					    unsigned long numpages);
-#endif	 
+/* lookup_address, lookup_address_in_pgd, lookup_pmd_address,
+   slow_virt_to_phys, kernel_map_pages_in_pgd, kernel_unmap_pages_in_pgd
+   removed - unused */
+#endif 
 
 #endif  

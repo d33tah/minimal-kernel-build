@@ -37,15 +37,7 @@ static bool fw_devlink_drv_reg_done;
 static DEFINE_MUTEX(device_links_lock);
 DEFINE_STATIC_SRCU(device_links_srcu);
 
-static inline void device_links_write_lock(void)
-{
-	mutex_lock(&device_links_lock);
-}
-
-static inline void device_links_write_unlock(void)
-{
-	mutex_unlock(&device_links_lock);
-}
+/* device_links_write_lock, device_links_write_unlock removed - never called */
 
 static int device_links_read_lock(void) __acquires(&device_links_srcu)
 {
@@ -238,12 +230,7 @@ struct kobject *sysfs_dev_block_kobj;
 
 static DEFINE_MUTEX(device_hotplug_lock);
 
-/* Removed: lock_device_hotplug, unlock_device_hotplug, lock_device_hotplug_sysfs - no callers */
-
-static inline int device_is_not_partition(struct device *dev)
-{
-	return 1;
-}
+/* Removed: lock_device_hotplug, unlock_device_hotplug, lock_device_hotplug_sysfs, device_is_not_partition - no callers */
 
 static void device_platform_notify_remove(struct device *dev)
 {

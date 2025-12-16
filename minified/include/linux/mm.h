@@ -452,14 +452,7 @@ static inline int folio_put_testzero(struct folio *folio)
 	return put_page_testzero(&folio->page);
 }
 
-enum {
-	REGION_INTERSECTS,
-	REGION_DISJOINT,
-	REGION_MIXED,
-};
-
-int region_intersects(resource_size_t offset, size_t size, unsigned long flags,
-		      unsigned long desc);
+/* REGION_INTERSECTS/DISJOINT/MIXED enum and region_intersects() removed - unused */
 
 struct page *vmalloc_to_page(const void *addr);
 

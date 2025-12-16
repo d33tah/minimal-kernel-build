@@ -102,17 +102,7 @@ extern int request_resource(struct resource *root, struct resource *new);
 extern int release_resource(struct resource *new);
 extern struct resource *insert_resource_conflict(struct resource *parent, struct resource *new);
 extern int insert_resource(struct resource *parent, struct resource *new);
-extern int allocate_resource(struct resource *root, struct resource *new,
-			     resource_size_t size, resource_size_t min,
-			     resource_size_t max, resource_size_t align,
-			     resource_size_t (*alignf)(void *,
-						       const struct resource *,
-						       resource_size_t,
-						       resource_size_t),
-			     void *alignf_data);
-struct resource *lookup_resource(struct resource *root, resource_size_t start);
-int adjust_resource(struct resource *res, resource_size_t start,
-		    resource_size_t size);
+/* allocate_resource, lookup_resource, adjust_resource removed - unused */
 static inline resource_size_t resource_size(const struct resource *res)
 {
 	return res->end - res->start + 1;

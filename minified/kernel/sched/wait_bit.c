@@ -65,13 +65,7 @@ void wake_up_bit(void *word, int bit)
 	__wake_up_bit(bit_waitqueue(word, bit), word, bit);
 }
 
-wait_queue_head_t *__var_waitqueue(void *p)
-{
-	return bit_wait_table + hash_ptr(p, WAIT_TABLE_BITS);
-}
-
-/* Used by softirq.c */
-void wake_up_var(void *var) { }
+/* __var_waitqueue and wake_up_var removed - unused */
 
 __sched int bit_wait(struct wait_bit_key *word, int mode)
 {

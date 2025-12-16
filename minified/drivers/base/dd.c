@@ -167,24 +167,14 @@ static void driver_bound(struct device *dev)
 }
 
 
-/* Stub: driver_sysfs_add/remove simplified for minimal kernel */
+/* Stub: driver_sysfs_add/remove not needed for minimal kernel (no sysfs browsing) */
 static int driver_sysfs_add(struct device *dev)
 {
-	if (dev->bus)
-		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-					     BUS_NOTIFY_BIND_DRIVER, dev);
-	sysfs_create_link(&dev->driver->p->kobj, &dev->kobj, kobject_name(&dev->kobj));
-	sysfs_create_link(&dev->kobj, &dev->driver->p->kobj, "driver");
 	return 0;
 }
 
 static void driver_sysfs_remove(struct device *dev)
 {
-	struct device_driver *drv = dev->driver;
-	if (drv) {
-		sysfs_remove_link(&drv->p->kobj, kobject_name(&dev->kobj));
-		sysfs_remove_link(&dev->kobj, "driver");
-	}
 }
 
 /* Stub: device_bind_driver not used externally */

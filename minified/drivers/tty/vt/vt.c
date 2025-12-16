@@ -1038,9 +1038,7 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int co
 
 static void console_callback(struct work_struct *ignored)
 {
-	/* Stub: minimal console callback for simple kernel */
-	console_lock();
-	console_unlock();
+	/* Stub: console_work never scheduled */
 }
 
 int set_console(int nr)

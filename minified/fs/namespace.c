@@ -998,9 +998,7 @@ bool may_mount(void)
 	return ns_capable(current->nsproxy->mnt_ns->user_ns, CAP_SYS_ADMIN);
 }
 
-static void warn_mandlock(void)
-{
-}
+/* warn_mandlock removed - empty function */
 
 static int can_umount(const struct path *path, int flags)
 {
@@ -1067,10 +1065,7 @@ struct mount *copy_tree(struct mount *mnt, struct dentry *dentry,
 	return clone_mnt(mnt, dentry, flag);
 }
 
-/* collect_mounts removed - unused */
-
-/* drop_collected_mounts - used internally in put_mnt_ns */
-static void drop_collected_mounts(struct vfsmount *mnt) { }
+/* collect_mounts, drop_collected_mounts removed - unused */
 
 static void free_mnt_ns(struct mnt_namespace *);
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *, bool);
@@ -1569,10 +1564,8 @@ int path_mount(const char *dev_name, struct path *path,
 		return ret;
 	if (!may_mount())
 		return -EPERM;
-	if (flags & SB_MANDLOCK)
-		warn_mandlock();
+	/* warn_mandlock call removed - was empty function */
 
-	
 	if (!(flags & MS_NOATIME))
 		mnt_flags |= MNT_RELATIME;
 
@@ -1852,7 +1845,7 @@ void put_mnt_ns(struct mnt_namespace *ns)
 {
 	if (!refcount_dec_and_test(&ns->ns.count))
 		return;
-	drop_collected_mounts(&ns->root->mnt);
+	/* drop_collected_mounts call removed - was empty function */
 	free_mnt_ns(ns);
 }
 

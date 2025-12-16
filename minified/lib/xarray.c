@@ -820,22 +820,7 @@ static void *xas_result(struct xa_state *xas, void *curr)
 	return curr;
 }
 
-void *__xa_erase(struct xarray *xa, unsigned long index)
-{
-	XA_STATE(xas, xa, index);
-	return xas_result(&xas, xas_store(&xas, NULL));
-}
-
-void *xa_erase(struct xarray *xa, unsigned long index)
-{
-	void *entry;
-
-	xa_lock(xa);
-	entry = __xa_erase(xa, index);
-	xa_unlock(xa);
-
-	return entry;
-}
+/* __xa_erase, xa_erase removed - never called */
 
 /* Removed: __xa_store, xa_store, __xa_cmpxchg, __xa_insert, __xa_alloc - no callers */
 

@@ -109,8 +109,7 @@ struct xarray {
 
 
 void *xa_load(struct xarray *, unsigned long index);
-void *xa_store(struct xarray *, unsigned long index, void *entry, gfp_t);
-void *xa_erase(struct xarray *, unsigned long index);
+/* xa_store, xa_erase removed - never called */
 
 static inline void xa_init_flags(struct xarray *xa, gfp_t flags)
 {
@@ -139,12 +138,7 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 #define xa_unlock_irqrestore(xa, flags) \
 				spin_unlock_irqrestore(&(xa)->xa_lock, flags)
 
-void *__xa_erase(struct xarray *, unsigned long index);
-void *__xa_store(struct xarray *, unsigned long index, void *entry, gfp_t);
-void *__xa_cmpxchg(struct xarray *, unsigned long index, void *old,
-		void *entry, gfp_t);
-int __must_check __xa_insert(struct xarray *, unsigned long index,
-		void *entry, gfp_t);
+/* __xa_erase, __xa_store, __xa_cmpxchg, __xa_insert removed - never called */
 int __must_check __xa_alloc(struct xarray *, u32 *id, void *entry,
 		struct xa_limit, gfp_t);
 

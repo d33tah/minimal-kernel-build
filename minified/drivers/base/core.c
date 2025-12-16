@@ -136,32 +136,7 @@ static int devlink_add_symlinks(struct device *dev,
 static void devlink_remove_symlinks(struct device *dev,
 				   struct class_interface *class_intf)
 {
-	struct device_link *link = to_devlink(dev);
-	size_t len;
-	struct device *sup = link->supplier;
-	struct device *con = link->consumer;
-	char *buf;
-
-	sysfs_remove_link(&link->link_dev.kobj, "consumer");
-	sysfs_remove_link(&link->link_dev.kobj, "supplier");
-
-	len = max(strlen(dev_bus_name(sup)) + strlen(dev_name(sup)),
-		  strlen(dev_bus_name(con)) + strlen(dev_name(con)));
-	len += strlen(":");
-	len += strlen("supplier:") + 1;
-	buf = kzalloc(len, GFP_KERNEL);
-	if (!buf) {
-		WARN(1, "Unable to properly free device link symlinks!\n");
-		return;
-	}
-
-	if (device_is_registered(con)) {
-		snprintf(buf, len, "supplier:%s:%s", dev_bus_name(sup), dev_name(sup));
-		sysfs_remove_link(&con->kobj, buf);
-	}
-	snprintf(buf, len, "consumer:%s:%s", dev_bus_name(con), dev_name(con));
-	sysfs_remove_link(&sup->kobj, buf);
-	kfree(buf);
+	/* Stubbed: device link symlinks removal not needed (add is stubbed) */
 }
 
 static struct class_interface devlink_class_intf = {

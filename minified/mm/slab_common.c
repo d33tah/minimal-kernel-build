@@ -293,28 +293,7 @@ kmem_cache_create(const char *name, unsigned int size, unsigned int align,
 
 static void slab_caches_to_rcu_destroy_workfn(struct work_struct *work)
 {
-	LIST_HEAD(to_destroy);
-	struct kmem_cache *s, *s2;
-
-	 
-	mutex_lock(&slab_mutex);
-	list_splice_init(&slab_caches_to_rcu_destroy, &to_destroy);
-	mutex_unlock(&slab_mutex);
-
-	if (list_empty(&to_destroy))
-		return;
-
-	rcu_barrier();
-
-	list_for_each_entry_safe(s, s2, &to_destroy, list) {
-		debugfs_slab_release(s);
-		kfence_shutdown_cache(s);
-#ifdef SLAB_SUPPORTS_SYSFS
-		sysfs_slab_release(s);
-#else
-		slab_kmem_cache_release(s);
-#endif
-	}
+	/* Stub: slab_caches_to_rcu_destroy_work never scheduled in minimal kernel */
 }
 
 void slab_kmem_cache_release(struct kmem_cache *s)

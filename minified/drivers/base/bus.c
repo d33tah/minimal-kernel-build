@@ -448,16 +448,16 @@ void bus_remove_driver(struct device_driver *drv)
 
 /* bus_rescan_devices, device_reprobe removed - unused */
 
+/* Stub: sysfs functions are stubs */
 static int bus_add_groups(struct bus_type *bus,
 			  const struct attribute_group **groups)
 {
-	return sysfs_create_groups(&bus->p->subsys.kobj, groups);
+	return 0;
 }
 
 static void bus_remove_groups(struct bus_type *bus,
 			      const struct attribute_group **groups)
 {
-	sysfs_remove_groups(&bus->p->subsys.kobj, groups);
 }
 
 static void klist_devices_get(struct klist_node *n)

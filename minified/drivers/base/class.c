@@ -105,16 +105,16 @@ static void klist_class_dev_put(struct klist_node *n)
 	put_device(dev);
 }
 
+/* Stub: sysfs functions are stubs */
 static int class_add_groups(struct class *cls,
 			    const struct attribute_group **groups)
 {
-	return sysfs_create_groups(&cls->p->subsys.kobj, groups);
+	return 0;
 }
 
 static void class_remove_groups(struct class *cls,
 				const struct attribute_group **groups)
 {
-	return sysfs_remove_groups(&cls->p->subsys.kobj, groups);
 }
 
 int __class_register(struct class *cls, struct lock_class_key *key)

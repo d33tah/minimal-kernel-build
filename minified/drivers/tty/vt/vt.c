@@ -443,9 +443,8 @@ static void flush_scrollback(struct vc_data *vc)
 	WARN_CONSOLE_UNLOCKED();
 
 	set_origin(vc);
-	if (vc->vc_sw->con_flush_scrollback) {
-		vc->vc_sw->con_flush_scrollback(vc);
-	} else if (con_is_visible(vc)) {
+	/* con_flush_scrollback never assigned in any driver */
+	if (con_is_visible(vc)) {
 		
 		hide_cursor(vc);
 		vc->vc_sw->con_switch(vc);

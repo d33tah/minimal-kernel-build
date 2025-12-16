@@ -455,17 +455,7 @@ static inline loff_t pos_from_hilo(unsigned long high, unsigned long low)
 	return (((loff_t)high << HALF_LONG_BITS) << HALF_LONG_BITS) | low;
 }
 
-static ssize_t do_preadv(unsigned long fd, const struct iovec __user *vec,
-			 unsigned long vlen, loff_t pos, rwf_t flags)
-{
-	return -ENOSYS;
-}
-
-static ssize_t do_pwritev(unsigned long fd, const struct iovec __user *vec,
-			  unsigned long vlen, loff_t pos, rwf_t flags)
-{
-	return -ENOSYS;
-}
+/* do_preadv, do_pwritev removed - unused after stubbing preadv/pwritev */
 
 SYSCALL_DEFINE3(readv, unsigned long, fd, const struct iovec __user *, vec,
 		unsigned long, vlen)
@@ -482,9 +472,7 @@ SYSCALL_DEFINE3(writev, unsigned long, fd, const struct iovec __user *, vec,
 SYSCALL_DEFINE5(preadv, unsigned long, fd, const struct iovec __user *, vec,
 		unsigned long, vlen, unsigned long, pos_l, unsigned long, pos_h)
 {
-	loff_t pos = pos_from_hilo(pos_h, pos_l);
-
-	return do_preadv(fd, vec, vlen, pos, 0);
+	return -ENOSYS; /* Stub: preadv not used by minimal kernel */
 }
 
 SYSCALL_DEFINE6(preadv2, unsigned long, fd, const struct iovec __user *, vec,
@@ -498,9 +486,7 @@ SYSCALL_DEFINE6(preadv2, unsigned long, fd, const struct iovec __user *, vec,
 SYSCALL_DEFINE5(pwritev, unsigned long, fd, const struct iovec __user *, vec,
 		unsigned long, vlen, unsigned long, pos_l, unsigned long, pos_h)
 {
-	loff_t pos = pos_from_hilo(pos_h, pos_l);
-
-	return do_pwritev(fd, vec, vlen, pos, 0);
+	return -ENOSYS; /* Stub: pwritev not used by minimal kernel */
 }
 
 SYSCALL_DEFINE6(pwritev2, unsigned long, fd, const struct iovec __user *, vec,

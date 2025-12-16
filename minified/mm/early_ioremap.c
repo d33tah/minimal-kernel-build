@@ -60,9 +60,7 @@ void __init early_ioremap_setup(void)
 		slot_virt[i] = __fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i);
 }
 
-/* Stub: early ioremap leak check not needed for minimal kernel */
-static int __init check_early_ioremap_leak(void) { return 0; }
-late_initcall(check_early_ioremap_leak);
+/* check_early_ioremap_leak removed - not needed for minimal kernel */
 
 static void __init __iomem *
 __early_ioremap(resource_size_t phys_addr, unsigned long size, pgprot_t prot)

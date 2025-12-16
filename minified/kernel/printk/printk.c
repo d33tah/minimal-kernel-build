@@ -798,8 +798,6 @@ void __init console_init(void)
 	}
 }
 
-/* Stub: printk late init simplified for minimal single-CPU kernel */
-static int __init printk_late_init(void) { return 0; }
-late_initcall(printk_late_init);
+/* printk_late_init removed - not needed for minimal kernel */
 
 

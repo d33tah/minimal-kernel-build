@@ -302,6 +302,4 @@ struct legacy_pic default_legacy_pic = {
 
 struct legacy_pic *legacy_pic = &default_legacy_pic;
 
-/* Stub: PIC syscore ops registration not needed for minimal kernel */
-static int __init i8259A_init_ops(void) { return 0; }
-device_initcall(i8259A_init_ops);
+/* i8259A_init_ops removed - not needed for minimal kernel */

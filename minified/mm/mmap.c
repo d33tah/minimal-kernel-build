@@ -1828,12 +1828,4 @@ void __init mmap_init(void)
 	VM_BUG_ON(ret);
 }
 
-/* Stub: reserve init functions not needed for minimal kernel - use defaults */
-static int init_user_reserve(void) { return 0; }
-subsys_initcall(init_user_reserve);
-
-static int init_admin_reserve(void) { return 0; }
-subsys_initcall(init_admin_reserve);
-
-static int __meminit init_reserve_notifier(void) { return 0; }
-subsys_initcall(init_reserve_notifier);
+/* Reserve init functions removed - not needed for minimal kernel */

@@ -261,34 +261,14 @@ int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 	return error;
 }
 
+/* Simplified: sysfs functions are stubs, so no error paths needed */
 int bus_add_device(struct device *dev)
 {
 	struct bus_type *bus = bus_get(dev->bus);
-	int error = 0;
 
-	if (bus) {
-		error = device_add_groups(dev, bus->dev_groups);
-		if (error)
-			goto out_put;
-		error = sysfs_create_link(&bus->p->devices_kset->kobj,
-						&dev->kobj, dev_name(dev));
-		if (error)
-			goto out_groups;
-		error = sysfs_create_link(&dev->kobj,
-				&dev->bus->p->subsys.kobj, "subsystem");
-		if (error)
-			goto out_subsys;
+	if (bus)
 		klist_add_tail(&dev->p->knode_bus, &bus->p->klist_devices);
-	}
 	return 0;
-
-out_subsys:
-	sysfs_remove_link(&bus->p->devices_kset->kobj, dev_name(dev));
-out_groups:
-	device_remove_groups(dev, bus->dev_groups);
-out_put:
-	bus_put(dev->bus);
-	return error;
 }
 
 void bus_probe_device(struct device *dev)
@@ -309,6 +289,7 @@ void bus_probe_device(struct device *dev)
 	mutex_unlock(&bus->p->mutex);
 }
 
+/* Simplified: sysfs functions are stubs */
 void bus_remove_device(struct device *dev)
 {
 	struct bus_type *bus = dev->bus;
@@ -323,10 +304,6 @@ void bus_remove_device(struct device *dev)
 			sif->remove_dev(dev, sif);
 	mutex_unlock(&bus->p->mutex);
 
-	sysfs_remove_link(&dev->kobj, "subsystem");
-	sysfs_remove_link(&dev->bus->p->devices_kset->kobj,
-			  dev_name(dev));
-	device_remove_groups(dev, dev->bus->dev_groups);
 	if (klist_node_attached(&dev->p->knode_bus))
 		klist_del(&dev->p->knode_bus);
 

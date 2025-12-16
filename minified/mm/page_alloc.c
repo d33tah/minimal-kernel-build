@@ -40,10 +40,7 @@ static inline bool has_isolate_pageblock(struct zone *zone)
 {
 	return false;
 }
-static inline bool is_migrate_isolate_page(struct page *page)
-{
-	return false;
-}
+/* is_migrate_isolate_page removed - unused */
 static inline bool is_migrate_isolate(int migratetype)
 {
 	return false;

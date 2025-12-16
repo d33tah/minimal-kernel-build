@@ -572,14 +572,7 @@ void *xas_store(struct xa_state *xas, void *entry)
 	return first;
 }
 
-bool xas_get_mark(const struct xa_state *xas, xa_mark_t mark)
-{
-	if (xas_invalid(xas))
-		return false;
-	if (!xas->xa_node)
-		return xa_marked(xas->xa, mark);
-	return node_get_mark(xas->xa_node, xas->xa_offset, mark);
-}
+/* xas_get_mark removed - never called */
 
 void xas_set_mark(const struct xa_state *xas, xa_mark_t mark)
 {
@@ -639,36 +632,7 @@ void xas_init_marks(const struct xa_state *xas)
 
 /* xas_pause removed - unused */
 
-void *__xas_prev(struct xa_state *xas)
-{
-	void *entry;
-
-	if (!xas_frozen(xas->xa_node))
-		xas->xa_index--;
-	if (!xas->xa_node)
-		return set_bounds(xas);
-	if (xas_not_node(xas->xa_node))
-		return xas_load(xas);
-
-	if (xas->xa_offset != get_offset(xas->xa_index, xas->xa_node))
-		xas->xa_offset--;
-
-	while (xas->xa_offset == 255) {
-		xas->xa_offset = xas->xa_node->offset - 1;
-		xas->xa_node = xa_parent(xas->xa, xas->xa_node);
-		if (!xas->xa_node)
-			return set_bounds(xas);
-	}
-
-	for (;;) {
-		entry = xa_entry(xas->xa, xas->xa_node, xas->xa_offset);
-		if (!xa_is_node(entry))
-			return entry;
-
-		xas->xa_node = xa_to_node(entry);
-		xas_set_offset(xas);
-	}
-}
+/* __xas_prev removed - never called */
 
 void *__xas_next(struct xa_state *xas)
 {

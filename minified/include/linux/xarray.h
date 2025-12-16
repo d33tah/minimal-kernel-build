@@ -372,7 +372,7 @@ void *xas_store(struct xa_state *, void *entry);
 void *xas_find(struct xa_state *, unsigned long max);
 void *xas_find_conflict(struct xa_state *);
 
-bool xas_get_mark(const struct xa_state *, xa_mark_t);
+/* xas_get_mark removed - never called */
 void xas_set_mark(const struct xa_state *, xa_mark_t);
 void xas_clear_mark(const struct xa_state *, xa_mark_t);
 void *xas_find_marked(struct xa_state *, unsigned long max, xa_mark_t);

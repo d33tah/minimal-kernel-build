@@ -191,21 +191,8 @@ static inline bool con_should_update(const struct vc_data *vc)
 	return con_is_visible(vc) && !console_blanked;
 }
 
-static inline unsigned short *screenpos(const struct vc_data *vc, int offset,
-		bool viewed)
-{
-	unsigned short *p;
-	
-	if (!viewed)
-		p = (unsigned short *)(vc->vc_origin + offset);
-	else if (!vc->vc_sw->con_screen_pos)
-		p = (unsigned short *)(vc->vc_visible_origin + offset);
-	else
-		p = vc->vc_sw->con_screen_pos(vc, offset);
-	return p;
-}
-
 /* schedule_console_callback removed - never called */
+/* screenpos removed - never called */
 
 #ifdef NO_VC_UNI_SCREEN
 

@@ -911,11 +911,6 @@ static inline int throttled_hierarchy(struct cfs_rq *cfs_rq)
 	return 0;
 }
 
-static inline struct cfs_bandwidth *tg_cfs_bandwidth(struct task_group *tg)
-{
-	return NULL;
-}
-
 static inline void
 hrtick_start_fair(struct rq *rq, struct task_struct *p)
 {

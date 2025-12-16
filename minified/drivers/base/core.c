@@ -555,27 +555,9 @@ int dev_set_name(struct device *dev, const char *fmt, ...)
 	return err;
 }
 
-static struct kobject *device_to_dev_kobj(struct device *dev)
-{
-	struct kobject *kobj;
-
-	if (dev->class)
-		kobj = dev->class->dev_kobj;
-	else
-		kobj = sysfs_dev_char_kobj;
-
-	return kobj;
-}
-
+/* Stub: device_to_dev_kobj and device_remove_sys_dev_entry not needed */
 static void device_remove_sys_dev_entry(struct device *dev)
 {
-	struct kobject *kobj = device_to_dev_kobj(dev);
-	char devt_str[15];
-
-	if (kobj) {
-		format_dev_t(devt_str, dev->devt);
-		sysfs_remove_link(kobj, devt_str);
-	}
 }
 
 static int device_private_init(struct device *dev)

@@ -409,9 +409,7 @@ static inline void mapping_allow_writable(struct address_space *mapping)
 #define i_size_ordered_init(inode) do { } while (0)
 
 struct posix_acl;
-#define ACL_NOT_CACHED ((void *)(-1))
-
-#define ACL_DONT_CACHE ((void *)(-3))
+/* ACL_NOT_CACHED, ACL_DONT_CACHE removed - never used */
 
 
 #define IOP_FASTPERM	0x0001

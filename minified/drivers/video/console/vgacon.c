@@ -624,16 +624,7 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
 #define cmapsz 8192
 
 
-static int vgacon_font_set(struct vc_data *c, struct console_font *font,
-			   unsigned int flags)
-{
-	return -EINVAL;
-}
-
-static int vgacon_font_get(struct vc_data *c, struct console_font *font)
-{
-	return -EINVAL;
-}
+/* vgacon_font_set, vgacon_font_get removed - con_font_op never calls them */
 
 static int vgacon_resize(struct vc_data *c, unsigned int width,
 			 unsigned int height, unsigned int user)
@@ -754,8 +745,7 @@ const struct consw vga_con = {
 	.con_scroll = vgacon_scroll,
 	.con_switch = vgacon_switch,
 	.con_blank = vgacon_blank,
-	.con_font_set = vgacon_font_set,
-	.con_font_get = vgacon_font_get,
+	/* .con_font_set, .con_font_get removed - never called */
 	.con_resize = vgacon_resize,
 	.con_set_palette = vgacon_set_palette,
 	.con_scrolldelta = vgacon_scrolldelta,

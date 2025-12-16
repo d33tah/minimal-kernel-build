@@ -53,14 +53,8 @@ extern struct irq_chip i8259A_chip;
 struct legacy_pic {
 	int nr_legacy_irqs;
 	struct irq_chip *chip;
-	void (*mask)(unsigned int irq);
-	void (*unmask)(unsigned int irq);
-	void (*mask_all)(void);
-	void (*restore_mask)(void);
 	void (*init)(int auto_eoi);
-	int (*probe)(void);
-	int (*irq_pending)(unsigned int irq);
-	void (*make_irq)(unsigned int irq);
+	/* mask, unmask, mask_all, restore_mask, probe, irq_pending, make_irq removed - unused */
 };
 
 extern struct legacy_pic *legacy_pic;

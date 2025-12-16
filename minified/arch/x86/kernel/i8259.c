@@ -32,8 +32,9 @@ unsigned int cached_irq_mask = 0xffff;
 
 unsigned long io_apic_irqs;
 
-static void mask_8259A_irq(unsigned int irq)
+static void disable_8259A_irq(struct irq_data *data)
 {
+	unsigned int irq = data->irq;
 	unsigned int mask = 1 << irq;
 	unsigned long flags;
 
@@ -46,13 +47,9 @@ static void mask_8259A_irq(unsigned int irq)
 	raw_spin_unlock_irqrestore(&i8259A_lock, flags);
 }
 
-static void disable_8259A_irq(struct irq_data *data)
+static void enable_8259A_irq(struct irq_data *data)
 {
-	mask_8259A_irq(data->irq);
-}
-
-static void unmask_8259A_irq(unsigned int irq)
-{
+	unsigned int irq = data->irq;
 	unsigned int mask = ~(1 << irq);
 	unsigned long flags;
 
@@ -65,35 +62,7 @@ static void unmask_8259A_irq(unsigned int irq)
 	raw_spin_unlock_irqrestore(&i8259A_lock, flags);
 }
 
-static void enable_8259A_irq(struct irq_data *data)
-{
-	unmask_8259A_irq(data->irq);
-}
-
-static int i8259A_irq_pending(unsigned int irq)
-{
-	unsigned int mask = 1<<irq;
-	unsigned long flags;
-	int ret;
-
-	raw_spin_lock_irqsave(&i8259A_lock, flags);
-	if (irq < 8)
-		ret = inb(PIC_MASTER_CMD) & mask;
-	else
-		ret = inb(PIC_SLAVE_CMD) & (mask >> 8);
-	raw_spin_unlock_irqrestore(&i8259A_lock, flags);
-
-	return ret;
-}
-
-static void make_8259A_irq(unsigned int irq)
-{
-	disable_irq_nosync(irq);
-	io_apic_irqs &= ~(1<<irq);
-	irq_set_chip_and_handler(irq, &i8259A_chip, handle_level_irq);
-	enable_irq(irq);
-	lapic_assign_legacy_vector(irq, true);
-}
+/* i8259A_irq_pending and make_8259A_irq removed - unused */
 
 static inline int i8259A_irq_real(unsigned int irq)
 {
@@ -168,51 +137,7 @@ struct irq_chip i8259A_chip = {
 	.irq_mask_ack	= mask_and_ack_8259A,
 };
 
-/* Stub: ELCR save/restore and syscore ops removed - not needed for minimal kernel */
-
-static void mask_8259A(void)
-{
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&i8259A_lock, flags);
-
-	outb(0xff, PIC_MASTER_IMR);	 
-	outb(0xff, PIC_SLAVE_IMR);	 
-
-	raw_spin_unlock_irqrestore(&i8259A_lock, flags);
-}
-
-static void unmask_8259A(void)
-{
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&i8259A_lock, flags);
-
-	outb(cached_master_mask, PIC_MASTER_IMR);  
-	outb(cached_slave_mask, PIC_SLAVE_IMR);	   
-
-	raw_spin_unlock_irqrestore(&i8259A_lock, flags);
-}
-
-static int probe_8259A(void)
-{
-	unsigned long flags;
-	unsigned char probe_val = ~(1 << PIC_CASCADE_IR);
-	unsigned char new_val;
-	 
-	raw_spin_lock_irqsave(&i8259A_lock, flags);
-
-	outb(0xff, PIC_SLAVE_IMR);	 
-	outb(probe_val, PIC_MASTER_IMR);
-	new_val = inb(PIC_MASTER_IMR);
-	if (new_val != probe_val) {
-		printk(KERN_INFO "Using NULL legacy PIC\n");
-		legacy_pic = &null_legacy_pic;
-	}
-
-	raw_spin_unlock_irqrestore(&i8259A_lock, flags);
-	return nr_legacy_irqs();
-}
+/* Stub: ELCR save/restore, syscore ops, mask_8259A, unmask_8259A, probe_8259A removed - not needed */
 
 static void init_8259A(int auto_eoi)
 {
@@ -262,42 +187,18 @@ static void init_8259A(int auto_eoi)
 }
 
 
-static void legacy_pic_noop(void) { };
-static void legacy_pic_uint_noop(unsigned int unused) { };
 static void legacy_pic_int_noop(int unused) { };
-static int legacy_pic_irq_pending_noop(unsigned int irq)
-{
-	return 0;
-}
-static int legacy_pic_probe(void)
-{
-	return 0;
-}
 
 struct legacy_pic null_legacy_pic = {
 	.nr_legacy_irqs = 0,
 	.chip = &dummy_irq_chip,
-	.mask = legacy_pic_uint_noop,
-	.unmask = legacy_pic_uint_noop,
-	.mask_all = legacy_pic_noop,
-	.restore_mask = legacy_pic_noop,
 	.init = legacy_pic_int_noop,
-	.probe = legacy_pic_probe,
-	.irq_pending = legacy_pic_irq_pending_noop,
-	.make_irq = legacy_pic_uint_noop,
 };
 
 struct legacy_pic default_legacy_pic = {
 	.nr_legacy_irqs = NR_IRQS_LEGACY,
 	.chip  = &i8259A_chip,
-	.mask = mask_8259A_irq,
-	.unmask = unmask_8259A_irq,
-	.mask_all = mask_8259A,
-	.restore_mask = unmask_8259A,
 	.init = init_8259A,
-	.probe = probe_8259A,
-	.irq_pending = i8259A_irq_pending,
-	.make_irq = make_8259A_irq,
 };
 
 struct legacy_pic *legacy_pic = &default_legacy_pic;

@@ -811,16 +811,7 @@ void *xa_load(struct xarray *xa, unsigned long index)
 	return entry;
 }
 
-static void *xas_result(struct xa_state *xas, void *curr)
-{
-	if (xa_is_zero(curr))
-		return NULL;
-	if (xas_error(xas))
-		curr = xas->xa_node;
-	return curr;
-}
-
-/* __xa_erase, xa_erase removed - never called */
+/* xas_result, __xa_erase, xa_erase removed - never called */
 
 /* Removed: __xa_store, xa_store, __xa_cmpxchg, __xa_insert, __xa_alloc - no callers */
 

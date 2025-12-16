@@ -346,9 +346,7 @@ void slabinfo_show_stats(struct seq_file *m, struct kmem_cache *s);
 ssize_t slabinfo_write(struct file *file, const char __user *buffer,
 		       size_t count, loff_t *ppos);
 
- 
-void __kmem_cache_free_bulk(struct kmem_cache *, size_t, void **);
-int __kmem_cache_alloc_bulk(struct kmem_cache *, gfp_t, size_t, void **);
+/* __kmem_cache_free_bulk, __kmem_cache_alloc_bulk removed - never called */
 
 static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s)
 {

@@ -67,32 +67,7 @@ static inline int kmem_cache_sanity_check(const char *name, unsigned int size)
 	return 0;
 }
 
-void __kmem_cache_free_bulk(struct kmem_cache *s, size_t nr, void **p)
-{
-	size_t i;
-
-	for (i = 0; i < nr; i++) {
-		if (s)
-			kmem_cache_free(s, p[i]);
-		else
-			kfree(p[i]);
-	}
-}
-
-int __kmem_cache_alloc_bulk(struct kmem_cache *s, gfp_t flags, size_t nr,
-								void **p)
-{
-	size_t i;
-
-	for (i = 0; i < nr; i++) {
-		void *x = p[i] = kmem_cache_alloc(s, flags);
-		if (!x) {
-			__kmem_cache_free_bulk(s, i, p);
-			return 0;
-		}
-	}
-	return i;
-}
+/* __kmem_cache_free_bulk, __kmem_cache_alloc_bulk removed - never called */
 
 static unsigned int calculate_alignment(slab_flags_t flags,
 		unsigned int align, unsigned int size)

@@ -431,26 +431,11 @@ void device_remove_groups(struct device *dev,
 
 /* devm_device_add_group, devm_device_remove_group, devm_device_add_groups, devm_device_remove_groups removed - unused */
 
+/* Stub: device_remove_attrs not needed (sysfs functions are stubbed) */
 static void device_remove_attrs(struct device *dev)
 {
-	struct class *class = dev->class;
-	const struct device_type *type = dev->type;
-
-	if (dev->physical_location) {
-		device_remove_group(dev, &dev_attr_physical_location_group);
+	if (dev->physical_location)
 		kfree(dev->physical_location);
-	}
-
-	device_remove_file(dev, &dev_attr_removable);
-	device_remove_file(dev, &dev_attr_waiting_for_supplier);
-	device_remove_file(dev, &dev_attr_online);
-	device_remove_groups(dev, dev->groups);
-
-	if (type)
-		device_remove_groups(dev, type->groups);
-
-	if (class)
-		device_remove_groups(dev, class->dev_groups);
 }
 
 static ssize_t dev_show(struct device *dev, struct device_attribute *attr,
@@ -464,11 +449,10 @@ struct kset *devices_kset;
 
 /* devices_kset_move_last, device_create_file removed - no callers */
 
+/* Stub: device_remove_file not needed for minimal kernel */
 void device_remove_file(struct device *dev,
 			const struct device_attribute *attr)
 {
-	if (dev)
-		sysfs_remove_file(&dev->kobj, &attr->attr);
 }
 
 /* Removed: device_remove_file_self, device_create_bin_file, device_remove_bin_file - no callers */

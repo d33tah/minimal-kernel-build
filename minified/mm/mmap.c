@@ -387,16 +387,6 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 	validate_mm(mm);
 }
 
-static __always_inline void __vma_unlink(struct mm_struct *mm,
-						struct vm_area_struct *vma,
-						struct vm_area_struct *ignore)
-{
-	vma_rb_erase_ignore(vma, &mm->mm_rb, ignore);
-	__vma_unlink_list(mm, vma);
-	
-	vmacache_invalidate(mm);
-}
-
 int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 	unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert,
 	struct vm_area_struct *expand)

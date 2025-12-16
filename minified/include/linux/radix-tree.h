@@ -122,7 +122,6 @@ __radix_tree_iter_add(struct radix_tree_iter *iter, unsigned long slots)
 	return iter->index + slots;
 }
 
-void __rcu **__must_check radix_tree_iter_resume(void __rcu **slot,
-					struct radix_tree_iter *iter);
+/* radix_tree_iter_resume removed - never called */
 
 #endif  

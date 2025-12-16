@@ -829,12 +829,7 @@ int dev_err_probe(const struct device *dev, int err, const char *fmt, ...)
 	return err;
 }
 
-static inline bool fwnode_is_primary(struct fwnode_handle *fwnode)
-{
-	return fwnode && !IS_ERR(fwnode->secondary);
-}
-
-/* set_primary_fwnode, set_secondary_fwnode, device_set_of_node_from_dev, device_set_node removed - unused */
+/* fwnode_is_primary, set_primary_fwnode, set_secondary_fwnode, device_set_of_node_from_dev, device_set_node removed - unused */
 
 /* device_match_* functions removed - unused, except device_match_devt */
 int device_match_devt(struct device *dev, const void *pdevt) { return 0; }

@@ -748,7 +748,7 @@ const struct consw vga_con = {
 	/* .con_font_set, .con_font_get removed - never called */
 	.con_resize = vgacon_resize,
 	.con_set_palette = vgacon_set_palette,
-	.con_scrolldelta = vgacon_scrolldelta,
+	/* .con_scrolldelta removed - never called through vc_sw */
 	.con_set_origin = vgacon_set_origin,
 	.con_save_screen = vgacon_save_screen,
 	.con_build_attr = vgacon_build_attr,

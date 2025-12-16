@@ -1144,11 +1144,7 @@ static int invent_group_ids(struct mount *mnt, bool recurse)
 	return 0;
 }
 
-/* count_mounts - used internally in attach_recursive_mnt */
-static int count_mounts(struct mnt_namespace *ns, struct mount *mnt)
-{
-	return 0;
-}
+/* count_mounts removed - always returned 0 */
 
 static int attach_recursive_mnt(struct mount *source_mnt,
 			struct mount *dest_mnt,
@@ -1168,12 +1164,7 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 	if (IS_ERR(smp))
 		return PTR_ERR(smp);
 
-	
-	if (!moving) {
-		err = count_mounts(ns, source_mnt);
-		if (err)
-			goto out;
-	}
+	/* count_mounts call removed - always returned 0 */
 
 	if (IS_MNT_SHARED(dest_mnt)) {
 		err = invent_group_ids(source_mnt, true);

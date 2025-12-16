@@ -418,15 +418,15 @@ static ssize_t removable_show(struct device *dev, struct device_attribute *attr,
 }
 static DEVICE_ATTR_RO(removable);
 
+/* Stub: device sysfs groups not needed for minimal kernel */
 int device_add_groups(struct device *dev, const struct attribute_group **groups)
 {
-	return sysfs_create_groups(&dev->kobj, groups);
+	return 0;
 }
 
 void device_remove_groups(struct device *dev,
 			  const struct attribute_group **groups)
 {
-	sysfs_remove_groups(&dev->kobj, groups);
 }
 
 /* devm_device_add_group, devm_device_remove_group, devm_device_add_groups, devm_device_remove_groups removed - unused */

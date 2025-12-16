@@ -222,24 +222,12 @@ int kobject_init_and_add(struct kobject *kobj, const struct kobj_type *ktype,
 	return retval;
 }
 
+/* Simplified: sysfs functions are already stubs */
 static void __kobject_del(struct kobject *kobj)
 {
-	struct kernfs_node *sd;
-	const struct kobj_type *ktype;
-
-	sd = kobj->sd;
-	ktype = get_ktype(kobj);
-
-	if (ktype)
-		sysfs_remove_groups(kobj, ktype->default_groups);
-
-	 
-	if (kobj->state_add_uevent_sent && !kobj->state_remove_uevent_sent) {
+	/* Send uevent for removal if needed */
+	if (kobj->state_add_uevent_sent && !kobj->state_remove_uevent_sent)
 		kobject_uevent(kobj, KOBJ_REMOVE);
-	}
-
-	sysfs_remove_dir(kobj);
-	sysfs_put(sd);
 
 	kobj->state_in_sysfs = 0;
 	kobj_kset_leave(kobj);

@@ -435,12 +435,7 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 		rq_clock_skip_update(rq);
 }
 
-static inline int __set_cpus_allowed_ptr(struct task_struct *p,
-					 const struct cpumask *new_mask,
-					 u32 flags)
-{
-	return set_cpus_allowed_ptr(p, new_mask);
-}
+/* __set_cpus_allowed_ptr removed - never called */
 
 static inline void migrate_disable_switch(struct rq *rq, struct task_struct *p) { }
 
@@ -1001,10 +996,7 @@ static inline void preempt_latency_start(int val) { }
 static inline void preempt_latency_stop(int val) { }
 #endif
 
-static inline unsigned long get_preempt_disable_ip(struct task_struct *p)
-{
-	return 0;
-}
+/* get_preempt_disable_ip removed - never called */
 
 static noinline void __schedule_bug(struct task_struct *prev)
 {

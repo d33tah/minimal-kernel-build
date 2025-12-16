@@ -38,51 +38,14 @@ struct platform_device {
 #define dev_is_platform(dev) ((dev)->bus == &platform_bus_type)
 #define to_platform_device(x) container_of((x), struct platform_device, dev)
 
-extern int platform_device_register(struct platform_device *);
-extern void platform_device_unregister(struct platform_device *);
-
 extern struct bus_type platform_bus_type;
 extern struct device platform_bus;
 
 extern struct resource *platform_get_resource(struct platform_device *,
 					      unsigned int, unsigned int);
-/* platform_get_mem_or_io, devm_platform_get_and_ioremap_resource,
-   devm_platform_ioremap_resource, devm_platform_ioremap_resource_byname,
-   platform_find_device_by_driver, platform_get_resource_byname removed - unused */
 extern int platform_get_irq(struct platform_device *, unsigned int);
 extern int platform_get_irq_optional(struct platform_device *, unsigned int);
-
-struct platform_device_info {
-		struct device *parent;
-		struct fwnode_handle *fwnode;
-		bool of_node_reused;
-
-		const char *name;
-		int id;
-
-		const struct resource *res;
-		unsigned int num_res;
-
-		const void *data;
-		size_t size_data;
-		u64 dma_mask;
-
-		const struct property_entry *properties;
-};
-extern struct platform_device *platform_device_register_full(
-		const struct platform_device_info *pdevinfo);
-
-/* platform_device_register_resndata, platform_device_register_simple,
-   platform_device_register_data removed - unused */
-
-extern struct platform_device *platform_device_alloc(const char *name, int id);
-extern int platform_device_add_resources(struct platform_device *pdev,
-					 const struct resource *res,
-					 unsigned int num);
-extern int platform_device_add_data(struct platform_device *pdev,
-				    const void *data, size_t size);
-extern int platform_device_add(struct platform_device *pdev);
-extern void platform_device_del(struct platform_device *pdev);
+/* platform_device_* functions removed - unused */
 
 struct platform_driver {
 	int (*probe)(struct platform_device *);

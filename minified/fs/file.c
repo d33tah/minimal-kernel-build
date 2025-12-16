@@ -18,7 +18,7 @@
 
 #include "internal.h"
 
-static inline void __receive_sock(struct file *file) { }
+/* __receive_sock removed - unused */
 
 unsigned int sysctl_nr_open __read_mostly = 1024*1024;
 /* sysctl_nr_open_min, sysctl_nr_open_max removed - unused (no sysctl table) */

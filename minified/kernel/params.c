@@ -9,9 +9,7 @@
 #include <linux/ctype.h>
 #include <linux/security.h>
 
-static inline void check_kparam_locked(struct module *mod)
-{
-}
+/* check_kparam_locked removed - unused */
 
 struct kmalloced_param {
 	struct list_head list;

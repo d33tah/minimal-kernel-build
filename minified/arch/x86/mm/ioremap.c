@@ -292,23 +292,7 @@ void iounmap(volatile void __iomem *addr)
 	kfree(p);
 }
 
-void *xlate_dev_mem_ptr(phys_addr_t phys)
-{
-	unsigned long start  = phys &  PAGE_MASK;
-	unsigned long offset = phys & ~PAGE_MASK;
-	void *vaddr;
-
-	 
-	vaddr = memremap(start, PAGE_SIZE, MEMREMAP_WB);
-
-	 
-	if (vaddr)
-		vaddr += offset;
-
-	return vaddr;
-}
-
-/* unxlate_dev_mem_ptr removed - unused */
+/* xlate_dev_mem_ptr, unxlate_dev_mem_ptr removed - unused */
 
 static pte_t bm_pte[PAGE_SIZE/sizeof(pte_t)] __page_aligned_bss;
 

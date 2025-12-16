@@ -200,11 +200,9 @@ static inline void msi_free_msi_descs(struct device *dev)
 	msi_free_msi_descs_range(dev, MSI_DESC_ALL, 0, MSI_MAX_INDEX);
 }
 
-void __pci_read_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
-void __pci_write_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
-void pci_msi_mask_irq(struct irq_data *data);
-void pci_msi_unmask_irq(struct irq_data *data);
-bool arch_restore_msi_irqs(struct pci_dev *dev);
+/* MSI-related declarations removed - never defined or called:
+ * __pci_read_msi_msg, __pci_write_msi_msg, pci_msi_mask_irq,
+ * pci_msi_unmask_irq, arch_restore_msi_irqs */
 
 static inline struct irq_domain *pci_msi_get_device_domain(struct pci_dev *pdev)
 {

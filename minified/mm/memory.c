@@ -59,13 +59,7 @@ void *high_memory;
 int randomize_va_space __read_mostly =
 					2;
 
-#ifndef arch_faults_on_old_pte
-static inline bool arch_faults_on_old_pte(void)
-{
-	
-	return true;
-}
-#endif
+/* arch_faults_on_old_pte removed - unused (~5 lines, defined in x86 pgtable.h but never called) */
 
 #ifndef arch_wants_old_prefaulted_pte
 static inline bool arch_wants_old_prefaulted_pte(void)
@@ -435,16 +429,7 @@ static inline bool zap_drop_file_uffd_wp(struct zap_details *details)
 	return details->zap_flags & ZAP_FLAG_DROP_MARKER;
 }
 
-static inline void
-zap_install_uffd_wp_if_needed(struct vm_area_struct *vma,
-			      unsigned long addr, pte_t *pte,
-			      struct zap_details *details, pte_t pteval)
-{
-	if (zap_drop_file_uffd_wp(details))
-		return;
-
-	pte_install_uffd_wp_if_needed(vma, addr, pte, pteval);
-}
+/* zap_install_uffd_wp_if_needed removed - unused (~10 lines) */
 
 static unsigned long zap_pte_range(struct mmu_gather *tlb,
 				struct vm_area_struct *vma, pmd_t *pmd,

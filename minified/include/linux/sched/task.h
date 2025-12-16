@@ -70,8 +70,7 @@ extern void exit_files(struct task_struct *);
 /* exit_itimers removed - never defined or called */
 
 extern pid_t kernel_clone(struct kernel_clone_args *kargs);
-/* create_io_thread removed - unused */
-struct task_struct *fork_idle(int);
+/* create_io_thread, fork_idle removed - unused */
 struct mm_struct *copy_init_mm(void);
 extern pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
 extern pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags);

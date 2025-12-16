@@ -106,8 +106,7 @@ struct poll_wqueues {
 	struct poll_table_entry inline_entries[N_INLINE_POLL_ENTRIES];
 };
 
-extern void poll_initwait(struct poll_wqueues *pwq);
-extern void poll_freewait(struct poll_wqueues *pwq);
+/* poll_initwait, poll_freewait declarations removed - functions removed */
 
 #define MAX_INT64_SECONDS (((s64)(~((u64)0)>>1)/HZ)-1)
 

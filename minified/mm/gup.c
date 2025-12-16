@@ -29,27 +29,7 @@ struct follow_page_context {
 	unsigned int page_mask;
 };
 
-static inline void sanity_check_pinned_pages(struct page **pages,
-					     unsigned long npages)
-{
-	if (!IS_ENABLED(CONFIG_DEBUG_VM))
-		return;
-
-	
-	for (; npages; npages--, pages++) {
-		struct page *page = *pages;
-		struct folio *folio = page_folio(page);
-
-		if (!folio_test_anon(folio))
-			continue;
-		if (!folio_test_large(folio) || folio_test_hugetlb(folio))
-			VM_BUG_ON_PAGE(!PageAnonExclusive(&folio->page), page);
-		else
-			
-			VM_BUG_ON_PAGE(!PageAnonExclusive(&folio->page) &&
-				       !PageAnonExclusive(page), page);
-	}
-}
+/* sanity_check_pinned_pages removed - unused (~21 lines) */
 
 static inline struct folio *try_get_folio(struct page *page, int refs)
 {
@@ -130,20 +110,7 @@ bool __must_check try_grab_page(struct page *page, unsigned int flags)
 	return true;
 }
 
-static inline struct folio *gup_folio_range_next(struct page *start,
-		unsigned long npages, unsigned long i, unsigned int *ntails)
-{
-	struct page *next = nth_page(start, i);
-	struct folio *folio = page_folio(next);
-	unsigned int nr = 1;
-
-	if (folio_test_large(folio))
-		nr = min_t(unsigned int, npages - i,
-			   folio_nr_pages(folio) - folio_page_idx(folio, next));
-
-	*ntails = nr;
-	return folio;
-}
+/* gup_folio_range_next removed - unused (~14 lines) */
 
 static inline void mm_set_has_pinned_flag(unsigned long *mm_flags)
 {

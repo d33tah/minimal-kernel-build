@@ -125,12 +125,7 @@ static void tk_set_wall_to_mono(struct timekeeper *tk, struct timespec64 wtm)
 	tk->offs_tai = ktime_add(tk->offs_real, ktime_set(tk->tai_offset, 0));
 }
 
-static inline void tk_update_sleep_time(struct timekeeper *tk, ktime_t delta)
-{
-	tk->offs_boot = ktime_add(tk->offs_boot, delta);
-	
-	tk->monotonic_to_boot = ktime_to_timespec64(tk->offs_boot);
-}
+/* tk_update_sleep_time removed - never called */
 
 static inline u64 tk_clock_read(const struct tk_read_base *tkr)
 {
@@ -226,13 +221,7 @@ static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)
 	return timekeeping_delta_to_ns(tkr, delta);
 }
 
-static inline u64 timekeeping_cycles_to_ns(const struct tk_read_base *tkr, u64 cycles)
-{
-	u64 delta;
-
-	delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
-	return timekeeping_delta_to_ns(tkr, delta);
-}
+/* timekeeping_cycles_to_ns removed - never called */
 
 /* Stub: update_fast_timekeeper - fast path functions are stubbed */
 static void update_fast_timekeeper(const struct tk_read_base *tkr,

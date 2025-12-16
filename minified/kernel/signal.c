@@ -481,24 +481,7 @@ int kill_pid_info(int sig, struct kernel_siginfo *info, struct pid *pid)
 	return error;
 }
 
-static int kill_proc_info(int sig, struct kernel_siginfo *info, pid_t pid)
-{
-	int error;
-	rcu_read_lock();
-	error = kill_pid_info(sig, info, find_vpid(pid));
-	rcu_read_unlock();
-	return error;
-}
-
-static int kill_something_info(int sig, struct kernel_siginfo *info, pid_t pid)
-{
-	/* Simplified: only handle simple pid > 0 case */
-	if (pid > 0)
-		return kill_proc_info(sig, info, pid);
-
-	/* For process groups and broadcast, just return error */
-	return -ESRCH;
-}
+/* kill_proc_info, kill_something_info removed - kill syscall stubbed */
 
 int send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p)
 {
@@ -882,23 +865,12 @@ SYSCALL_DEFINE4(rt_sigtimedwait, const sigset_t __user *, uthese,
 	return -ENOSYS;
 }
 
-static inline void prepare_kill_siginfo(int sig, struct kernel_siginfo *info)
-{
-	clear_siginfo(info);
-	info->si_signo = sig;
-	info->si_errno = 0;
-	info->si_code = SI_USER;
-	info->si_pid = task_tgid_vnr(current);
-	info->si_uid = from_kuid_munged(current_user_ns(), current_uid());
-}
+/* prepare_kill_siginfo removed - kill syscall stubbed */
 
 SYSCALL_DEFINE2(kill, pid_t, pid, int, sig)
 {
-	struct kernel_siginfo info;
-
-	prepare_kill_siginfo(sig, &info);
-
-	return kill_something_info(sig, &info, pid);
+	/* Stub: kill not needed for minimal kernel */
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE4(pidfd_send_signal, int, pidfd, int, sig,

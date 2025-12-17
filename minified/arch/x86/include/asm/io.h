@@ -206,12 +206,7 @@ extern void unxlate_dev_mem_ptr(phys_addr_t phys, void *addr);
 
 #define IO_SPACE_LIMIT 0xffff
 
-/* --- 2025-12-07 11:50 --- inlined asm-generic/io.h (522 LOC) */
-/* x86 already defines: readb/w/l, writeb/w/l, virt_to_phys, phys_to_virt,
-   ioremap variants, memcpy_fromio/toio, memset_io, inb/outb family, etc.
-   Only need: ioport_map/unmap declarations and ioremap_np stub */
-extern void __iomem *ioport_map(unsigned long port, unsigned int nr);
-extern void ioport_unmap(void __iomem *p);
+/* ioport_map/unmap removed - declared but never defined/used */
 
 #ifndef ioremap_np
 #define ioremap_np ioremap_np

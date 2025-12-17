@@ -207,7 +207,7 @@ struct dl_bw {
 	u64			total_bw;
 };
 
-extern void init_dl_bw(struct dl_bw *dl_b);
+/* init_dl_bw removed - never called */
 extern int  sched_dl_global_validate(void);
 extern void sched_dl_do_global(void);
 extern int  sched_dl_overflow(struct task_struct *p, int policy, const struct sched_attr *attr);

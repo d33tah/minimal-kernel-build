@@ -11,15 +11,7 @@ void init_dl_bandwidth(struct dl_bandwidth *dl_b, u64 period, u64 runtime)
 	dl_b->dl_runtime = runtime;
 }
 
-void init_dl_bw(struct dl_bw *dl_b)
-{
-	raw_spin_lock_init(&dl_b->lock);
-	if (global_rt_runtime() == RUNTIME_INF)
-		dl_b->bw = -1;
-	else
-		dl_b->bw = to_ratio(global_rt_period(), global_rt_runtime());
-	dl_b->total_bw = 0;
-}
+/* init_dl_bw removed - never called */
 
 void init_dl_rq(struct dl_rq *dl_rq)
 {

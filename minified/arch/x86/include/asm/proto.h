@@ -19,8 +19,6 @@ void __end_SYSENTER_singlestep_region(void);
 
 void x86_configure_nx(void);
 
-extern int reboot_force;
-
 long do_arch_prctl_common(int option, unsigned long arg2);
 
 #endif  

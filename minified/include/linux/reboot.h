@@ -51,8 +51,6 @@ extern enum reboot_type reboot_type;
 
 extern int reboot_default;
 extern int reboot_cpu;
-extern int reboot_force;
-
 
 /* register_reboot_notifier, unregister_reboot_notifier, devm_register_reboot_notifier,
  * register_restart_handler, unregister_restart_handler, do_kernel_restart removed - unused */

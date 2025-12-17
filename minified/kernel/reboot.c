@@ -23,7 +23,6 @@ enum reboot_mode panic_reboot_mode = REBOOT_UNDEFINED;
 int reboot_default = 1;
 int reboot_cpu;
 enum reboot_type reboot_type = BOOT_ACPI;
-int reboot_force;
 
 struct sys_off_handler {
 	struct notifier_block nb;

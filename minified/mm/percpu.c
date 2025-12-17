@@ -133,9 +133,7 @@ struct pcpu_chunk *pcpu_reserved_chunk __ro_after_init;
 DEFINE_SPINLOCK(pcpu_lock);	
 static DEFINE_MUTEX(pcpu_alloc_mutex);	
 
-struct list_head *pcpu_chunk_lists __ro_after_init; 
-
-static LIST_HEAD(pcpu_map_extend_chunks);
+struct list_head *pcpu_chunk_lists __ro_after_init;
 
 int pcpu_nr_empty_pop_pages;
 

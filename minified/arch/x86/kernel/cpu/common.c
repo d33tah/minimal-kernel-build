@@ -135,9 +135,7 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
 	[GDT_ENTRY_PERCPU]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
 } };
 
-/* Stub: noinvpcid cmdline option not needed for minimal kernel */
-static int __init x86_noinvpcid_setup(char *s) { return 0; }
-early_param("noinvpcid", x86_noinvpcid_setup);
+/* x86_noinvpcid_setup and early_param removed (~2 LOC) */
 
 /* cachesize_setup and __setup removed (~2 LOC) */
 

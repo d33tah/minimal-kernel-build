@@ -467,9 +467,7 @@ void __init arch_post_acpi_subsys_init(void)
 	pr_info("System has AMD C1E enabled\n");
 }
 
-/* Stub: idle= cmdline option not needed for minimal kernel */
-static int __init idle_setup(char *str) { return 0; }
-early_param("idle", idle_setup);
+/* idle_setup and early_param removed (~2 LOC) */
 
 unsigned long arch_align_stack(unsigned long sp)
 {

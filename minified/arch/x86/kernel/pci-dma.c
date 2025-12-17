@@ -42,9 +42,7 @@ void __init pci_iommu_alloc(void)
 	swiotlb_init(x86_swiotlb_enable, x86_swiotlb_flags);
 }
 
-/* Stub: iommu= cmdline option not needed for minimal kernel */
-static __init int iommu_setup(char *p) { return 0; }
-early_param("iommu", iommu_setup);
+/* iommu_setup and early_param removed (~2 LOC) */
 
 static int __init pci_iommu_init(void)
 {

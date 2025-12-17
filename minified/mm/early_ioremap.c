@@ -11,9 +11,7 @@
 
 static int early_ioremap_debug __initdata;
 
-/* Stub: early_ioremap_debug cmdline option not needed */
-static int __init early_ioremap_debug_setup(char *str) { return 0; }
-early_param("early_ioremap_debug", early_ioremap_debug_setup);
+/* early_ioremap_debug_setup and early_param removed (~2 LOC) */
 
 static int after_paging_init __initdata;
 

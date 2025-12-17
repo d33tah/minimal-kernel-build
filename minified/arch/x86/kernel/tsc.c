@@ -60,9 +60,7 @@ struct cyc2ns {
 
 static DEFINE_PER_CPU_ALIGNED(struct cyc2ns, cyc2ns);
 
-/* Stub: tsc_early_khz cmdline option not needed for minimal kernel */
-static int __init tsc_early_khz_setup(char *buf) { return 0; }
-early_param("tsc_early_khz", tsc_early_khz_setup);
+/* tsc_early_khz_setup and early_param removed (~2 LOC) */
 
 __always_inline void cyc2ns_read_begin(struct cyc2ns_data *data)
 {

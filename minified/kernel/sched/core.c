@@ -108,29 +108,7 @@ void raw_spin_rq_lock_nested(struct rq *rq, int subclass)
 	}
 }
 
-bool raw_spin_rq_trylock(struct rq *rq)
-{
-	raw_spinlock_t *lock;
-	bool ret;
-
-	
-	preempt_disable();
-	if (sched_core_disabled()) {
-		ret = raw_spin_trylock(&rq->__lock);
-		preempt_enable();
-		return ret;
-	}
-
-	for (;;) {
-		lock = __rq_lockp(rq);
-		ret = raw_spin_trylock(lock);
-		if (!ret || (likely(lock == __rq_lockp(rq)))) {
-			preempt_enable();
-			return ret;
-		}
-		raw_spin_unlock(lock);
-	}
-}
+/* raw_spin_rq_trylock removed - never called (~22 LOC) */
 
 void raw_spin_rq_unlock(struct rq *rq)
 {
@@ -665,17 +643,7 @@ void sched_post_fork(struct task_struct *p)
 	uclamp_post_fork(p);
 }
 
-unsigned long to_ratio(u64 period, u64 runtime)
-{
-	if (runtime == RUNTIME_INF)
-		return BW_UNIT;
-
-	
-	if (period == 0)
-		return 0;
-
-	return div64_u64(runtime << BW_SHIFT, period);
-}
+/* to_ratio removed - never called (~10 LOC) */
 
 void wake_up_new_task(struct task_struct *p)
 {
@@ -905,31 +873,7 @@ DEFINE_PER_CPU(struct kernel_stat, kstat);
 DEFINE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
 
 
-static inline void prefetch_curr_exec_start(struct task_struct *p)
-{
-	struct sched_entity *curr = (&task_rq(p)->cfs)->curr;
-	prefetch(curr);
-	prefetch(&curr->exec_start);
-}
-
-unsigned long long task_sched_runtime(struct task_struct *p)
-{
-	struct rq_flags rf;
-	struct rq *rq;
-	u64 ns;
-
-	rq = task_rq_lock(p, &rf);
-	
-	if (task_current(rq, p) && task_on_rq_queued(p)) {
-		prefetch_curr_exec_start(p);
-		update_rq_clock(rq);
-		p->sched_class->update_curr(rq);
-	}
-	ns = p->se.sum_exec_runtime;
-	task_rq_unlock(rq, p, &rf);
-
-	return ns;
-}
+/* prefetch_curr_exec_start, task_sched_runtime removed - never called (~23 LOC) */
 
 static inline u64 cpu_resched_latency(struct rq *rq) { return 0; }
 

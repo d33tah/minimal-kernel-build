@@ -69,7 +69,6 @@ static inline void prev_cputime_init(struct prev_cputime *prev)
 	raw_spin_lock_init(&prev->lock);
 }
 
-extern unsigned long long
-task_sched_runtime(struct task_struct *task);
+/* extern unsigned long long task_sched_runtime removed - never called */
 
 #endif  

@@ -248,11 +248,7 @@ kmem_cache_create(const char *name, unsigned int size, unsigned int align,
 					  ctor);
 }
 
-static void slab_caches_to_rcu_destroy_workfn(struct work_struct *work)
-{
-	/* Stub: slab_caches_to_rcu_destroy_work never scheduled in minimal kernel */
-}
-
+/* slab_caches_to_rcu_destroy_workfn removed - unused */
 /* slab_kmem_cache_release removed - unused */
 
 bool slab_is_available(void)

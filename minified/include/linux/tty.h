@@ -249,7 +249,7 @@ void tty_driver_flush_buffer(struct tty_struct *tty);
 void tty_unthrottle(struct tty_struct *tty);
 void tty_hangup(struct tty_struct *tty);
 int tty_hung_up_p(struct file *filp);
-void __do_SAK(struct tty_struct *tty);
+/* __do_SAK removed - never called */
 void no_tty(void);
 speed_t tty_termios_baud_rate(struct ktermios *termios);
 

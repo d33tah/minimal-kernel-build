@@ -1245,10 +1245,7 @@ long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	return -ENOTTY;
 }
 
-void __do_SAK(struct tty_struct *tty)
-{
-	
-}
+/* __do_SAK removed - never called */
 
 static void do_SAK_work(struct work_struct *work)
 {

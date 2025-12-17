@@ -523,13 +523,7 @@ static void __init early_panic(char *msg)
 
 static int userdef __initdata;
 
-/* Stub: mem= cmdline option not needed for minimal kernel */
-static int __init parse_memopt(char *p) { return 0; }
-early_param("mem", parse_memopt);
-
-/* Stub: memmap= cmdline option not needed for minimal kernel */
-static int __init parse_memmap_opt(char *str) { return 0; }
-early_param("memmap", parse_memmap_opt);
+/* parse_memopt, parse_memmap_opt and early_params removed (~6 LOC) */
 
 void __init e820__reserve_setup_data(void)
 {

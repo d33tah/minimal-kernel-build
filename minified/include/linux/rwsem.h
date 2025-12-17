@@ -73,12 +73,6 @@ extern void up_write(struct rw_semaphore *sem);
 
 extern void downgrade_write(struct rw_semaphore *sem);
 
-# define down_read_nested(sem, subclass)		down_read(sem)
-# define down_read_killable_nested(sem, subclass)	down_read_killable(sem)
-# define down_write_nest_lock(sem, nest_lock)	down_write(sem)
 # define down_write_nested(sem, subclass)	down_write(sem)
-# define down_write_killable_nested(sem, subclass)	down_write_killable(sem)
-# define down_read_non_owner(sem)		down_read(sem)
-# define up_read_non_owner(sem)			up_read(sem)
 
 #endif  

@@ -463,23 +463,7 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 	return follow_p4d_mask(vma, address, pgd, flags, ctx);
 }
 
-struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
-			 unsigned int foll_flags)
-{
-	struct follow_page_context ctx = { NULL };
-	struct page *page;
-
-	if (vma_is_secretmem(vma))
-		return NULL;
-
-	if (foll_flags & FOLL_PIN)
-		return NULL;
-
-	page = follow_page_mask(vma, address, foll_flags, &ctx);
-	if (ctx.pgmap)
-		put_dev_pagemap(ctx.pgmap);
-	return page;
-}
+/* follow_page removed - never called (~17 lines) */
 
 static int get_gate_page(struct mm_struct *mm, unsigned long address,
 		unsigned int gup_flags, struct vm_area_struct **vma,

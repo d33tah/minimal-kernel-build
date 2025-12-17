@@ -300,25 +300,7 @@ void flush_tlb_batched_pending(struct mm_struct *mm)
 	}
 }
 
-unsigned long page_address_in_vma(struct page *page, struct vm_area_struct *vma)
-{
-	struct folio *folio = page_folio(page);
-	if (folio_test_anon(folio)) {
-		struct anon_vma *page__anon_vma = folio_anon_vma(folio);
-		
-		if (!vma->anon_vma || !page__anon_vma ||
-		    vma->anon_vma->root != page__anon_vma->root)
-			return -EFAULT;
-	} else if (!vma->vm_file) {
-		return -EFAULT;
-	} else if (vma->vm_file->f_mapping != folio->mapping) {
-		return -EFAULT;
-	}
-
-	return vma_address(page, vma);
-}
-
-/* mm_find_pmd removed - never called */
+/* page_address_in_vma, mm_find_pmd removed - never called */
 
 struct folio_referenced_arg {
 	int mapcount;

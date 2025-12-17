@@ -163,7 +163,7 @@ static inline void page_vma_mapped_walk_done(struct page_vma_mapped_walk *pvmw)
 
 bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw);
 
-unsigned long page_address_in_vma(struct page *, struct vm_area_struct *);
+/* page_address_in_vma removed - never called */
 
 int folio_mkclean(struct folio *);
 

@@ -30,10 +30,6 @@ struct workqueue_struct *bdi_wq;
 static inline void bdi_debug_init(void)
 {
 }
-static inline void bdi_debug_register(struct backing_dev_info *bdi,
-				      const char *name)
-{
-}
 static inline void bdi_debug_unregister(struct backing_dev_info *bdi)
 {
 }

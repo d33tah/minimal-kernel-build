@@ -49,10 +49,8 @@ static DEFINE_STATIC_KEY_FALSE(__use_tsc);
 
 int tsc_clocksource_reliable;
 
-static u32 art_to_tsc_numerator;
-static u32 art_to_tsc_denominator;
-static u64 art_to_tsc_offset;
-struct clocksource *art_related_clocksource;
+/* art_to_tsc_numerator, art_to_tsc_denominator, art_to_tsc_offset,
+   art_related_clocksource removed - unused after convert_art_to_tsc removal */
 
 struct cyc2ns {
 	struct cyc2ns_data data[2];	 
@@ -607,35 +605,9 @@ void tsc_restore_sched_clock_state(void)
 }
 
 
-#define ART_CPUID_LEAF (0x15)
-#define ART_MIN_DENOMINATOR (1)
-
-
-static void __init detect_art(void)
-{
-	unsigned int unused[2];
-
-	if (boot_cpu_data.cpuid_level < ART_CPUID_LEAF)
-		return;
-
-	 
-	if (boot_cpu_has(X86_FEATURE_HYPERVISOR) ||
-	    !boot_cpu_has(X86_FEATURE_NONSTOP_TSC) ||
-	    !boot_cpu_has(X86_FEATURE_TSC_ADJUST) ||
-	    tsc_async_resets)
-		return;
-
-	cpuid(ART_CPUID_LEAF, &art_to_tsc_denominator,
-	      &art_to_tsc_numerator, unused, unused+1);
-
-	if (art_to_tsc_denominator < ART_MIN_DENOMINATOR)
-		return;
-
-	rdmsrl(MSR_IA32_TSC_ADJUST, art_to_tsc_offset);
-
-	 
-	setup_force_cpu_cap(X86_FEATURE_ART);
-}
+/* detect_art stubbed out - ART feature not needed for minimal kernel
+   (convert_art_to_tsc was removed) */
+static void __init detect_art(void) { }
 
 
 
@@ -758,8 +730,6 @@ static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);
 static void tsc_refine_calibration_work(struct work_struct *work)
 {
 	/* Stub: TSC refinement not needed for minimal kernel */
-	if (boot_cpu_has(X86_FEATURE_ART))
-		art_related_clocksource = &clocksource_tsc;
 	clocksource_register_khz(&clocksource_tsc, tsc_khz);
 	clocksource_unregister(&clocksource_tsc_early);
 }
@@ -776,10 +746,8 @@ static int __init init_tsc_clocksource(void)
 	if (boot_cpu_has(X86_FEATURE_NONSTOP_TSC_S3))
 		clocksource_tsc.flags |= CLOCK_SOURCE_SUSPEND_NONSTOP;
 
-	 
+
 	if (boot_cpu_has(X86_FEATURE_TSC_KNOWN_FREQ)) {
-		if (boot_cpu_has(X86_FEATURE_ART))
-			art_related_clocksource = &clocksource_tsc;
 		clocksource_register_khz(&clocksource_tsc, tsc_khz);
 unreg:
 		clocksource_unregister(&clocksource_tsc_early);

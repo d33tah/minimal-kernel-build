@@ -38,6 +38,5 @@ extern void __delay(unsigned long loops);
 
 void __init use_tsc_delay(void);
 void __init use_tpause_delay(void);
-void use_mwaitx_delay(void);
 
 #endif  

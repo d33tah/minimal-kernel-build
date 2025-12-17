@@ -39,9 +39,6 @@ ratelimit_set_flags(struct ratelimit_state *rs, unsigned long flags)
 	rs->flags = flags;
 }
 
-extern struct ratelimit_state printk_ratelimit_state;
-
-
 #define WARN_ON_RATELIMIT(condition, state)			\
 	WARN_ON(condition)
 

@@ -246,11 +246,6 @@ do {								\
 	raw_spin_lock_nested(spinlock_check(lock), subclass);	\
 } while (0)
 
-#define spin_lock_nest_lock(lock, nest_lock)				\
-do {									\
-	raw_spin_lock_nest_lock(spinlock_check(lock), nest_lock);	\
-} while (0)
-
 static __always_inline void spin_lock_irq(spinlock_t *lock)
 {
 	raw_spin_lock_irq(&lock->rlock);
@@ -259,11 +254,6 @@ static __always_inline void spin_lock_irq(spinlock_t *lock)
 #define spin_lock_irqsave(lock, flags)				\
 do {								\
 	raw_spin_lock_irqsave(spinlock_check(lock), flags);	\
-} while (0)
-
-#define spin_lock_irqsave_nested(lock, flags, subclass)			\
-do {									\
-	raw_spin_lock_irqsave_nested(spinlock_check(lock), flags, subclass); \
 } while (0)
 
 static __always_inline void spin_unlock(spinlock_t *lock)

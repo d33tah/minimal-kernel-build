@@ -207,16 +207,10 @@ struct dl_bw {
 	u64			total_bw;
 };
 
-/* init_dl_bw removed - never called */
-extern int  sched_dl_global_validate(void);
-extern void sched_dl_do_global(void);
-extern int  sched_dl_overflow(struct task_struct *p, int policy, const struct sched_attr *attr);
+/* init_dl_bw, sched_dl_global_validate, sched_dl_do_global, sched_dl_overflow,
+   __getparam_dl, __checkparam_dl, dl_param_changed, dl_cpuset_cpumask_can_shrink,
+   dl_cpu_busy removed - never defined/called */
 extern void __setparam_dl(struct task_struct *p, const struct sched_attr *attr);
-extern void __getparam_dl(struct task_struct *p, struct sched_attr *attr);
-extern bool __checkparam_dl(const struct sched_attr *attr);
-extern bool dl_param_changed(struct task_struct *p, const struct sched_attr *attr);
-extern int  dl_cpuset_cpumask_can_shrink(const struct cpumask *cur, const struct cpumask *trial);
-extern int  dl_cpu_busy(int cpu, struct task_struct *p);
 
 
 struct cfs_bandwidth { };

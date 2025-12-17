@@ -7,15 +7,6 @@
 #include <asm/fpu/api.h>
 #include <asm/msr.h>
 #include <asm/alternative.h>
-/* Removed: #include <asm/vmx.h> - only need vmx_l1d_flush_state enum */
-enum vmx_l1d_flush_state {
-	VMENTER_L1D_FLUSH_AUTO,
-	VMENTER_L1D_FLUSH_NEVER,
-	VMENTER_L1D_FLUSH_COND,
-	VMENTER_L1D_FLUSH_ALWAYS,
-	VMENTER_L1D_FLUSH_EPT_DISABLED,
-	VMENTER_L1D_FLUSH_NOT_REQUIRED,
-};
 #include <asm/nospec-branch.h>
 
 u64 x86_spec_ctrl_base;
@@ -32,8 +23,6 @@ DEFINE_STATIC_KEY_FALSE(switch_mm_always_ibpb);
 DEFINE_STATIC_KEY_FALSE(mds_user_clear);
 
 DEFINE_STATIC_KEY_FALSE(mds_idle_clear);
-
-DEFINE_STATIC_KEY_FALSE(mmio_stale_data_clear);
 
 void write_spec_ctrl_current(u64 val, bool force)
 {
@@ -58,11 +47,8 @@ void __init check_bugs(void)
 	fpu__init_check_bugs();
 }
 
-/* x86_virt_spec_ctrl, x86_spec_ctrl_setup_ap removed - unused in minimal kernel */
-
-bool itlb_multihit_kvm_mitigation;
-
-enum vmx_l1d_flush_state l1tf_vmx_mitigation = VMENTER_L1D_FLUSH_AUTO;
+/* x86_virt_spec_ctrl, x86_spec_ctrl_setup_ap, itlb_multihit_kvm_mitigation,
+ * l1tf_vmx_mitigation, vmx_l1d_flush_state removed - unused in minimal kernel */
 
 int arch_prctl_spec_ctrl_get(struct task_struct *task, unsigned long which)
 {

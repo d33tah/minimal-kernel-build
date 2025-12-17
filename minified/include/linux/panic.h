@@ -57,14 +57,6 @@ static inline void set_arch_panic_timeout(int timeout, int arch_default_timeout)
 #define TAINT_FLAGS_COUNT		18
 #define TAINT_FLAGS_MAX			((1UL << TAINT_FLAGS_COUNT) - 1)
 
-struct taint_flag {
-	char c_true;	 
-	char c_false;	 
-	bool module;	 
-};
-
-extern const struct taint_flag taint_flags[TAINT_FLAGS_COUNT];
-
 enum lockdep_ok {
 	LOCKDEP_STILL_OK,
 	LOCKDEP_NOW_UNRELIABLE,

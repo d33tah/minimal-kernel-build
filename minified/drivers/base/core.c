@@ -714,11 +714,7 @@ struct root_device {
 	struct module *owner;
 };
 
-static inline struct root_device *to_root_device(struct device *d)
-{
-	return container_of(d, struct root_device, dev);
-}
-
+/* to_root_device removed - never called */
 /* Removed: __root_device_register, root_device_unregister - no callers */
 
 static void device_create_release(struct device *dev)

@@ -74,10 +74,9 @@ extern bool out_of_memory(struct oom_control *oc);
 
 extern void exit_oom_victim(void);
 
-extern int register_oom_notifier(struct notifier_block *nb);
-extern int unregister_oom_notifier(struct notifier_block *nb);
+/* register_oom_notifier, unregister_oom_notifier removed - never called */
 
-extern void oom_killer_enable(void);
+/* extern void oom_killer_enable(void); removed - never called */
 
 /* find_lock_task_mm removed - unused */
 

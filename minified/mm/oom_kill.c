@@ -19,22 +19,11 @@ void exit_oom_victim(void)
 	 
 }
 
-void oom_killer_enable(void)
-{
-	 
-}
+/* oom_killer_enable removed - never called (~4 LOC) */
 
 /* oom_killer_disable removed - never called */
 
-int register_oom_notifier(struct notifier_block *nb)
-{
-	return 0;
-}
-
-int unregister_oom_notifier(struct notifier_block *nb)
-{
-	return 0;
-}
+/* register_oom_notifier, unregister_oom_notifier removed - never called (~10 LOC) */
 
 bool out_of_memory(struct oom_control *oc)
 {

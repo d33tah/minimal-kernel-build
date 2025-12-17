@@ -19,9 +19,7 @@
 
 DEFINE_STATIC_KEY_FALSE(force_irqthreads_key);
 
-/* Stub: threadirqs cmdline option not needed for minimal kernel */
-static int __init setup_forced_irqthreads(char *arg) { return 0; }
-early_param("threadirqs", setup_forced_irqthreads);
+/* setup_forced_irqthreads and early_param removed (~2 LOC) */
 
 static void __synchronize_hardirq(struct irq_desc *desc, bool sync_chip)
 {

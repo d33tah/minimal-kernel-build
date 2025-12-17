@@ -440,12 +440,7 @@ void __devm_release_region(struct device *dev, struct resource *parent,
 			   resource_size_t start, resource_size_t n) { }
 
 #define MAXRESERVE 4
-/* Stub: reserve= cmdline option not needed for minimal kernel */
-static int __init reserve_setup(char *str)
-{
-	return 1;
-}
-__setup("reserve=", reserve_setup);
+/* reserve_setup and __setup removed (~5 LOC) */
 
 int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
 {
@@ -453,8 +448,7 @@ int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
 	return 0;
 }
 
-/* Stub: iomem= cmdline option not needed for minimal kernel */
-static int __init strict_iomem(char *str) { return 1; }
+/* strict_iomem declaration removed - __setup at end of file also removed */
 
 static int iomem_fs_init_fs_context(struct fs_context *fc)
 {
@@ -496,5 +490,4 @@ static int __init iomem_init_inode(void)
 }
 
 fs_initcall(iomem_init_inode);
-
-__setup("iomem=", strict_iomem);
+/* __setup("iomem=", strict_iomem) removed (~1 LOC) */

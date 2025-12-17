@@ -431,8 +431,6 @@ void __init boot_cpu_hotplug_init(void)
 	this_cpu_write(cpuhp_state.state, CPUHP_ONLINE);
 }
 
-/* Stub: mitigations= cmdline option not needed for minimal kernel */
-static int __init mitigations_parse_cmdline(char *arg) { return 0; }
-early_param("mitigations", mitigations_parse_cmdline);
+/* mitigations_parse_cmdline and early_param removed (~2 LOC) */
 
 /* cpu_mitigations_off, cpu_mitigations_auto_nosmt removed - unused */

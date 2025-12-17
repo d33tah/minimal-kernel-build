@@ -553,9 +553,7 @@ static char *pointer_string(char *buf, char *end,
 
 static int debug_boot_weak_hash __ro_after_init;
 
-/* Stub: debug_boot_weak_hash cmdline option not needed */
-static int __init debug_boot_weak_hash_enable(char *str) { return 0; }
-early_param("debug_boot_weak_hash", debug_boot_weak_hash_enable);
+/* debug_boot_weak_hash_enable and early_param removed (~2 LOC) */
 
 static DEFINE_STATIC_KEY_FALSE(filled_random_ptr_key);
 
@@ -814,9 +812,7 @@ char *fwnode_string(char *buf, char *end, struct fwnode_handle *fwnode,
 	return error_string(buf, end, "(fwnode)", spec);
 }
 
-/* Stub: no_hash_pointers cmdline option not needed */
-int __init no_hash_pointers_enable(char *str) { return 0; }
-early_param("no_hash_pointers", no_hash_pointers_enable);
+/* no_hash_pointers_enable and early_param removed (~2 LOC) */
 
 static noinline_for_stack
 char *pointer(const char *fmt, char *buf, char *end, void *ptr,

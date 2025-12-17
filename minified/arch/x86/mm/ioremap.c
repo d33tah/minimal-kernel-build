@@ -230,31 +230,7 @@ void __iomem *ioremap(resource_size_t phys_addr, unsigned long size)
 				__builtin_return_address(0), false);
 }
 
-void __iomem *ioremap_uc(resource_size_t phys_addr, unsigned long size)
-{
-	enum page_cache_mode pcm = _PAGE_CACHE_MODE_UC;
-
-	return __ioremap_caller(phys_addr, size, pcm,
-				__builtin_return_address(0), false);
-}
-
-void __iomem *ioremap_wc(resource_size_t phys_addr, unsigned long size)
-{
-	return __ioremap_caller(phys_addr, size, _PAGE_CACHE_MODE_WC,
-					__builtin_return_address(0), false);
-}
-
-void __iomem *ioremap_wt(resource_size_t phys_addr, unsigned long size)
-{
-	return __ioremap_caller(phys_addr, size, _PAGE_CACHE_MODE_WT,
-					__builtin_return_address(0), false);
-}
-
-void __iomem *ioremap_cache(resource_size_t phys_addr, unsigned long size)
-{
-	return __ioremap_caller(phys_addr, size, _PAGE_CACHE_MODE_WB,
-				__builtin_return_address(0), false);
-}
+/* ioremap_uc, ioremap_wc, ioremap_wt, ioremap_cache removed - unused */
 
 void iounmap(volatile void __iomem *addr)
 {

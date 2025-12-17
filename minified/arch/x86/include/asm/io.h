@@ -88,13 +88,9 @@ static inline void *phys_to_virt(phys_addr_t address)
 
 #define page_to_phys(page)    ((dma_addr_t)page_to_pfn(page) << PAGE_SHIFT)
 
-extern void __iomem *ioremap_uc(resource_size_t offset, unsigned long size);
-#define ioremap_uc ioremap_uc
-extern void __iomem *ioremap_cache(resource_size_t offset, unsigned long size);
-#define ioremap_cache ioremap_cache
 extern void __iomem *ioremap_prot(resource_size_t offset, unsigned long size, unsigned long prot_val);
 #define ioremap_prot ioremap_prot
-/* ioremap_encrypted declaration removed - no implementation */
+/* ioremap_uc, ioremap_cache, ioremap_encrypted declarations removed - no callers */
 
 void __iomem *ioremap(resource_size_t offset, unsigned long size);
 #define ioremap ioremap
@@ -206,12 +202,7 @@ extern void unxlate_dev_mem_ptr(phys_addr_t phys, void *addr);
 
 #define xlate_dev_mem_ptr xlate_dev_mem_ptr
 #define unxlate_dev_mem_ptr unxlate_dev_mem_ptr
-/* ioremap_change_attr declaration removed - no implementation */
-extern void __iomem *ioremap_wc(resource_size_t offset, unsigned long size);
-#define ioremap_wc ioremap_wc
-extern void __iomem *ioremap_wt(resource_size_t offset, unsigned long size);
-#define ioremap_wt ioremap_wt
-/* is_early_ioremap_ptep declaration removed - function never called */
+/* ioremap_change_attr, ioremap_wc, ioremap_wt removed - no callers */
 
 #define IO_SPACE_LIMIT 0xffff
 

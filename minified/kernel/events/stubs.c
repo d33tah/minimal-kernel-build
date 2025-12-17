@@ -28,9 +28,8 @@ DEFINE_STATIC_KEY_TRUE(rdpmc_never_available_key);
 DEFINE_STATIC_KEY_FALSE(rdpmc_always_available_key);
 
 DEFINE_PER_CPU_PAGE_ALIGNED(struct debug_store, cpu_debug_store);
-DEFINE_PER_CPU(struct pt_regs, __perf_regs[4]);
 
-/* Perf regs disabled - just define minimum needed */
+/* Perf regs - just define minimum needed for pt_regs_offset array */
 #define PERF_REG_X86_MAX 32
 unsigned int pt_regs_offset[PERF_REG_X86_MAX];
 

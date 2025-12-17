@@ -124,7 +124,6 @@ extern int is_console_locked(void);
 extern void console_sysfs_notify(void);
 
 static inline void vcs_make_sysfs(int index) { }
-static inline void vcs_remove_sysfs(int index) { }
 
 #define WARN_CONSOLE_UNLOCKED()						\
 	WARN_ON(!atomic_read(&ignore_console_lock_warning) &&		\

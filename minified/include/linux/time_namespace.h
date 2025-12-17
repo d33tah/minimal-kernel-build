@@ -72,8 +72,6 @@ static inline u64 timens_add_boottime_ns(u64 nsec)
 	return nsec;
 }
 
-static inline void timens_sub_boottime(struct timespec64 *ts) { }
-
 static inline ktime_t timens_ktime_to_host(clockid_t clockid, ktime_t tim)
 {
 	return tim;

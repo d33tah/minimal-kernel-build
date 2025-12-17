@@ -23,7 +23,6 @@ void perf_event_comm(struct task_struct *task, bool exec) { }
 /* __perf_sw_event inlined as empty in perf_event.h */
 void perf_event_init(void) { }
 
-DEFINE_STATIC_KEY_FALSE(perf_sched_events);
 struct static_key perf_swevent_enabled[PERF_COUNT_SW_MAX];
 
 void perf_clear_dirty_counters(void) { }

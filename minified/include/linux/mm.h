@@ -26,9 +26,6 @@
 #include <linux/overflow.h>
 
 /* --- 2025-12-06 16:45 --- page_ref.h inlined */
-/* DECLARE_TRACEPOINT and __page_ref_* stubs removed - never used */
-#define page_ref_tracepoint_active(t) false
-
 static inline int page_ref_count(const struct page *page)
 {
 	return atomic_read(&page->_refcount);
@@ -1677,7 +1674,6 @@ void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
 
 
 static inline unsigned int debug_guardpage_minorder(void) { return 0; }
-static inline bool page_is_guard(struct page *page) { return false; }
 
 #if MAX_NUMNODES > 1
 void __init setup_nr_node_ids(void);

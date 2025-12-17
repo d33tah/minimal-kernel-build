@@ -786,7 +786,6 @@ extern struct sched_class __sched_class_lowest[];
 
 #define sched_class_above(_a, _b)	((_a) < (_b))
 
-extern const struct sched_class stop_sched_class;
 extern const struct sched_class dl_sched_class;
 extern const struct sched_class rt_sched_class;
 extern const struct sched_class fair_sched_class;
@@ -863,11 +862,6 @@ extern void activate_task(struct rq *rq, struct task_struct *p, int flags);
 extern void deactivate_task(struct rq *rq, struct task_struct *p, int flags);
 
 extern void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags);
-
-extern const_debug unsigned int sysctl_sched_nr_migrate;
-extern const_debug unsigned int sysctl_sched_migration_cost;
-
-
 
 static inline int hrtick_enabled_fair(struct rq *rq)
 {

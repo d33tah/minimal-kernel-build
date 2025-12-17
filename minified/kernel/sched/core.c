@@ -75,8 +75,6 @@ static inline void io_wq_worker_running(struct task_struct *tsk) { }
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
-const_debug unsigned int sysctl_sched_nr_migrate = 32;
-
 __read_mostly int scheduler_running;
 
 static inline void sched_core_enqueue(struct rq *rq, struct task_struct *p) { }

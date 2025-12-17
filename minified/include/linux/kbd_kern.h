@@ -85,11 +85,6 @@ struct kbd_struct {
 
 extern int kbd_init(void);
 
-extern void setledstate(struct kbd_struct *kbd, unsigned int led);
-
-
-extern void (*kbd_ledfunc)(unsigned int led);
-
 extern int set_console(int nr);
 
 #define U(x) ((x) ^ 0xf000)
@@ -100,8 +95,5 @@ extern int set_console(int nr);
 struct console;
 
 void vt_set_leds_compute_shiftstate(void);
-
-
-extern unsigned int keymap_count;
 
 #endif

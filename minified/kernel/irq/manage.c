@@ -849,23 +849,5 @@ int __irq_get_irqchip_state(struct irq_data *data, enum irqchip_irq_state which,
 	return err;
 }
 
-/* irq_get_irqchip_state, irq_set_irqchip_state removed - not called externally */
-
-/* Stub: not used in minimal kernel */
-bool irq_has_action(unsigned int irq)
-{
-	return false;
-}
-
-bool irq_check_status_bit(unsigned int irq, unsigned int bitmask)
-{
-	struct irq_desc *desc;
-	bool res = false;
-
-	rcu_read_lock();
-	desc = irq_to_desc(irq);
-	if (desc)
-		res = !!(desc->status_use_accessors & bitmask);
-	rcu_read_unlock();
-	return res;
-}
+/* irq_get_irqchip_state, irq_set_irqchip_state, irq_has_action,
+ * irq_check_status_bit removed - not called */

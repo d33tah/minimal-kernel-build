@@ -30,10 +30,8 @@ LIST_HEAD(slab_caches);
 DEFINE_MUTEX(slab_mutex);
 struct kmem_cache *kmem_cache;
 
-static LIST_HEAD(slab_caches_to_rcu_destroy);
+/* slab_caches_to_rcu_destroy list and work removed - never used */
 static void slab_caches_to_rcu_destroy_workfn(struct work_struct *work);
-static DECLARE_WORK(slab_caches_to_rcu_destroy_work,
-		    slab_caches_to_rcu_destroy_workfn);
 
 #define SLAB_NEVER_MERGE (SLAB_RED_ZONE | SLAB_POISON | SLAB_STORE_USER | \
 		SLAB_TRACE | SLAB_TYPESAFE_BY_RCU | SLAB_NOLEAKTRACE | \

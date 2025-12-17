@@ -218,8 +218,6 @@ int oops_in_progress;
 static DEFINE_SEMAPHORE(console_sem);
 struct console *console_drivers;
 
-int __read_mostly suppress_printk;
-
 static int __read_mostly suppress_panic_printk;
 
 /* control_devkmsg and __setup removed (~2 LOC) */

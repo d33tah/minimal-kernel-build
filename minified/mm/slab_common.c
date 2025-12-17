@@ -269,12 +269,7 @@ static void slab_caches_to_rcu_destroy_workfn(struct work_struct *work)
 	/* Stub: slab_caches_to_rcu_destroy_work never scheduled in minimal kernel */
 }
 
-void slab_kmem_cache_release(struct kmem_cache *s)
-{
-	__kmem_cache_release(s);
-	kfree_const(s->name);
-	kmem_cache_free(kmem_cache, s);
-}
+/* slab_kmem_cache_release removed - unused */
 
 bool slab_is_available(void)
 {

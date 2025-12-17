@@ -336,9 +336,7 @@ pteval_t __default_kernel_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 
 static unsigned int highmem_pages = -1;
 
-/* Stub: highmem= cmdline option not needed for minimal kernel */
-static int __init parse_highmem(char *arg) { return 0; }
-early_param("highmem", parse_highmem);
+/* parse_highmem and early_param removed (~2 LOC) */
 
 #define MSG_HIGHMEM_TOO_BIG \
 	"highmem size (%luMB) is bigger than pages available (%luMB)!\n"

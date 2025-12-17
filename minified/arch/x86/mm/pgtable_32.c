@@ -60,10 +60,4 @@ void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
 
 unsigned long __FIXADDR_TOP = 0xfffff000;
 
-/* Stub: vmalloc= cmdline option not needed for minimal kernel */
-static int __init parse_vmalloc(char *arg) { return 0; }
-early_param("vmalloc", parse_vmalloc);
-
-/* Stub: reservetop= cmdline option not needed for minimal kernel */
-static int __init parse_reservetop(char *arg) { return 0; }
-early_param("reservetop", parse_reservetop);
+/* parse_vmalloc, parse_reservetop and early_params removed (~6 LOC) */

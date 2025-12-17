@@ -598,10 +598,7 @@ struct tty_driver *console_device(int *index)
 /* console_stop, console_start removed - unused */
 
 static int __read_mostly keep_bootcon;
-
-/* Stub: keep_bootcon cmdline option not needed */
-static int __init keep_bootcon_setup(char *str) { return 0; }
-early_param("keep_bootcon", keep_bootcon_setup);
+/* keep_bootcon_setup and early_param removed (~2 LOC) */
 
 static int try_enable_preferred_console(struct console *newcon,
 					bool user_specified)

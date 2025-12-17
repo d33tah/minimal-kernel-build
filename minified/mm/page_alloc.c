@@ -134,11 +134,7 @@ DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
 
 DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_FREE_DEFAULT_ON, init_on_free);
 
-static int __init early_init_on_alloc(char *buf) { return 0; }
-early_param("init_on_alloc", early_init_on_alloc);
-
-static int __init early_init_on_free(char *buf) { return 0; }
-early_param("init_on_free", early_init_on_free);
+/* early_init_on_alloc, early_init_on_free and early_params removed (~4 LOC) */
 
 static inline int get_pcppage_migratetype(struct page *page)
 {
@@ -2326,20 +2322,7 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	memmap_init();
 }
 
-static int __init cmdline_parse_kernelcore(char *p)
-{
-	/* Stub: kernelcore parameter not needed for minimal system */
-	return 0;
-}
-
-static int __init cmdline_parse_movablecore(char *p)
-{
-	/* Stub: movablecore parameter not needed for minimal system */
-	return 0;
-}
-
-early_param("kernelcore", cmdline_parse_kernelcore);
-early_param("movablecore", cmdline_parse_movablecore);
+/* cmdline_parse_kernelcore, cmdline_parse_movablecore and early_params removed (~12 LOC) */
 
 void adjust_managed_page_count(struct page *page, long count)
 {

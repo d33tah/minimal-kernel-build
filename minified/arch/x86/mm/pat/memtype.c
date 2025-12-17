@@ -69,11 +69,7 @@ static inline int memtype_copy_nth_element(struct memtype *out, loff_t pos)
 
 void pat_disable(const char *msg_reason) { }
 
-static int __init nopat(char *str)
-{
-	return 0;
-}
-early_param("nopat", nopat);
+/* nopat and early_param removed (~4 LOC) */
 
 bool pat_enabled(void)
 {

@@ -22,9 +22,7 @@ pgtable_t pte_alloc_one(struct mm_struct *mm)
 	return __pte_alloc_one(mm, __userpte_alloc_gfp);
 }
 
-/* Stub: userpte= cmdline option not needed for minimal kernel */
-static int __init setup_userpte(char *arg) { return 0; }
-early_param("userpte", setup_userpte);
+/* setup_userpte and early_param removed (~2 LOC) */
 
 void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
 {

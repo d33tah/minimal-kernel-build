@@ -10,38 +10,16 @@
 
 struct linux_binprm;
 struct cred;
-struct rlimit;
-struct kernel_siginfo;
-struct sembuf;
-struct kern_ipc_perm;
-struct audit_context;
 struct super_block;
 struct inode;
 struct dentry;
 struct file;
-struct vfsmount;
 struct path;
-struct qstr;
-struct iattr;
-struct fown_struct;
-struct file_operations;
-struct msg_msg;
 struct xattr;
-struct kernfs_node;
-struct xfrm_sec_ctx;
 struct mm_struct;
+struct user_namespace;
 struct fs_context;
 struct fs_parameter;
-enum fs_value_type;
-struct watch;
-struct watch_notification;
-
-/* CAP_OPT_* now defined in capability.h */
-
-struct ctl_table;
-struct audit_krule;
-struct user_namespace;
-struct timezone;
 
 /* Reduced lockdown enum for minimal kernel - only keep used values */
 enum lockdown_reason {
@@ -57,22 +35,7 @@ extern int cap_capable(const struct cred *cred, struct user_namespace *ns,
    cap_mmap_addr, cap_vm_enough_memory removed - unused */
 extern int cap_bprm_creds_from_file(struct linux_binprm *bprm, struct file *file);
 
-struct msghdr;
-struct sk_buff;
-struct sock;
-struct sockaddr;
-struct socket;
-struct dst_entry;
-struct seq_file;
-/* Removed unused: flowi_common, xfrm_*, sctp_association forward decls */
-
 extern unsigned long mmap_min_addr;
-/* dac_mmap_min_addr removed - unused */
-
-/* LSM_SETID_* and LSM_PRLIMIT_* removed - unused in minimal kernel */
-
-struct sched_param;
-struct request_sock;
 
 #define LSM_UNSAFE_SHARE	1
 #define LSM_UNSAFE_PTRACE	2

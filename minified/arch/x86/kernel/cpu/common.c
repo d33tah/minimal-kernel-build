@@ -726,11 +726,6 @@ void __init early_cpu_init(void)
 	early_identify_cpu(&boot_cpu_data);
 }
 
-/* Stubbed - not used in minimal kernel */
-void check_null_seg_clears_base(struct cpuinfo_x86 *c)
-{
-}
-
 static void generic_identify(struct cpuinfo_x86 *c)
 {
 	c->extended_cpuid_level = 0;

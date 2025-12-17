@@ -472,52 +472,8 @@ void simple_release_fs(struct vfsmount **mount, int *count)
 	mntput(mnt);
 }
 
-/* simple_read_from_buffer removed - unused */
-
-int __generic_file_fsync(struct file *file, loff_t start, loff_t end,
-				 int datasync)
-{
-	struct inode *inode = file->f_mapping->host;
-	int err;
-	int ret;
-
-	err = file_write_and_wait_range(file, start, end);
-	if (err)
-		return err;
-
-	inode_lock(inode);
-	ret = sync_mapping_buffers(inode->i_mapping);
-	if (!(inode->i_state & I_DIRTY_ALL))
-		goto out;
-	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
-		goto out;
-
-	err = sync_inode_metadata(inode, 1);
-	if (ret == 0)
-		ret = err;
-
-out:
-	inode_unlock(inode);
-	 
-	err = file_check_and_advance_wb_err(file);
-	if (ret == 0)
-		ret = err;
-	return ret;
-}
-
-
-int generic_file_fsync(struct file *file, loff_t start, loff_t end,
-		       int datasync)
-{
-	struct inode *inode = file->f_mapping->host;
-	int err;
-
-	err = __generic_file_fsync(file, start, end, datasync);
-	if (err)
-		return err;
-	return blkdev_issue_flush(inode->i_sb->s_bdev);
-}
-/* generic_check_addressable removed - never called */
+/* simple_read_from_buffer, __generic_file_fsync, generic_file_fsync,
+ * generic_check_addressable removed - unused */
 
 int noop_fsync(struct file *file, loff_t start, loff_t end, int datasync)
 {

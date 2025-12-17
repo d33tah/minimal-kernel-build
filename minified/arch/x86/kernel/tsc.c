@@ -182,17 +182,10 @@ bool using_native_sched_clock(void) { return true; }
 
 /* check_tsc_unstable removed - never called */
 
-/* Stub: notsc option not needed for minimal kernel */
-int __init notsc_setup(char *str) { return 1; }
-__setup("notsc", notsc_setup);
+/* notsc_setup, tsc_setup and __setups removed (~8 LOC) */
 
 static int no_sched_irq_time;
 static int no_tsc_watchdog;
-
-/* Stub: tsc= options not needed for minimal kernel */
-static int __init tsc_setup(char *str) { return 1; }
-
-__setup("tsc=", tsc_setup);
 
 #define MAX_RETRIES		5
 #define TSC_DEFAULT_THRESHOLD	0x20000

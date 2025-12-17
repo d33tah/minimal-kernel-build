@@ -21,6 +21,4 @@ void note_interrupt(struct irq_desc *desc, irqreturn_t action_ret)
 	/* Stub: no spurious IRQ tracking for minimal kernel */
 }
 
-/* Stub: noirqdebug cmdline not needed for minimal kernel */
-int noirqdebug_setup(char *str) { return 1; }
-__setup("noirqdebug", noirqdebug_setup);
+/* noirqdebug_setup and __setup removed (~2 LOC) */

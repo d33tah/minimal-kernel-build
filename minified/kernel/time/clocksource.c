@@ -731,10 +731,4 @@ int clocksource_unregister(struct clocksource *cs)
 }
 
 
-/* Stub: clocksource= cmdline option not needed for minimal kernel */
-static int __init boot_override_clocksource(char* str) { return 1; }
-__setup("clocksource=", boot_override_clocksource);
-
-/* Stub: clock= cmdline option not needed for minimal kernel */
-static int __init boot_override_clock(char* str) { return 1; }
-__setup("clock=", boot_override_clock);
+/* boot_override_clocksource, boot_override_clock and __setups removed (~6 LOC) */

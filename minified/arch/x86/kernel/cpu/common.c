@@ -139,9 +139,7 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
 static int __init x86_noinvpcid_setup(char *s) { return 0; }
 early_param("noinvpcid", x86_noinvpcid_setup);
 
-/* Stub: cachesize= cmdline option not needed for minimal kernel */
-static int __init cachesize_setup(char *str) { return 1; }
-__setup("cachesize=", cachesize_setup);
+/* cachesize_setup and __setup removed (~2 LOC) */
 
 static inline int flag_is_changeable_p(u32 flag)
 {
@@ -293,12 +291,7 @@ static void __init setup_cr_pinning(void)
 	static_key_enable(&cr_pinning.key);
 }
 
-/* Stub: nofsgsbase cmdline option not needed for minimal kernel */
-static __init int x86_nofsgsbase_setup(char *arg)
-{
-	return 1;
-}
-__setup("nofsgsbase", x86_nofsgsbase_setup);
+/* x86_nofsgsbase_setup and __setup removed (~5 LOC) */
 
 static bool pku_disabled;
 
@@ -879,11 +872,7 @@ void __init identify_boot_cpu(void)
 }
 /* identify_secondary_cpu, print_cpu_info removed - never called */
 
-static __init int setup_clearcpuid(char *arg)
-{
-	return 1;
-}
-__setup("clearcpuid=", setup_clearcpuid);
+/* setup_clearcpuid and __setup removed (~4 LOC) */
 
 DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;
 DEFINE_PER_CPU(int, __preempt_count) = INIT_PREEMPT_COUNT;

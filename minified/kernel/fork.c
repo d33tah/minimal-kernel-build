@@ -645,13 +645,7 @@ __cacheline_aligned_in_smp DEFINE_SPINLOCK(mmlist_lock);
 
 static unsigned long default_dump_filter = MMF_DUMP_FILTER_DEFAULT;
 
-static int __init coredump_filter_setup(char *s)
-{
-	/* Stub: coredump filter config not needed for minimal kernel */
-	return 1;
-}
-
-__setup("coredump_filter=", coredump_filter_setup);
+/* coredump_filter_setup and __setup removed (~6 LOC) */
 
 #include <linux/init_task.h>
 

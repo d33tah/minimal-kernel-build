@@ -42,23 +42,7 @@ static void slab_caches_to_rcu_destroy_workfn(struct work_struct *work);
 
 static bool slab_nomerge = !IS_ENABLED(CONFIG_SLAB_MERGE_DEFAULT);
 
-static int __init setup_slab_nomerge(char *str)
-{
-	/* Stub: slab merge config not needed for minimal kernel */
-	return 1;
-}
-
-static int __init setup_slab_merge(char *str)
-{
-	/* Stub: slab merge config not needed for minimal kernel */
-	return 1;
-}
-
-__setup_param("slub_nomerge", slub_nomerge, setup_slab_nomerge, 0);
-__setup_param("slub_merge", slub_merge, setup_slab_merge, 0);
-
-__setup("slab_nomerge", setup_slab_nomerge);
-__setup("slab_merge", setup_slab_merge);
+/* setup_slab_nomerge, setup_slab_merge and __setups removed (~16 LOC) */
 
 static inline int kmem_cache_sanity_check(const char *name, unsigned int size)
 {

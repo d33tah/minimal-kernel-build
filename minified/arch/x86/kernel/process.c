@@ -389,8 +389,6 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 	}
 }
 
-unsigned long boot_option_idle_override = IDLE_NO_OVERRIDE;
-
 static void (*x86_idle)(void);
 
 static inline void play_dead(void)

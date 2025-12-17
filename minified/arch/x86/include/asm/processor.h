@@ -438,8 +438,6 @@ static inline unsigned int cpuid_edx(unsigned int op)
 extern void select_idle_routine(const struct cpuinfo_x86 *c);
 /* amd_e400_c1e_apic_setup declaration removed - implementation was removed */
 
-extern unsigned long		boot_option_idle_override;
-
 enum idle_boot_override {IDLE_NO_OVERRIDE=0, IDLE_HALT, IDLE_NOMWAIT,
 			 IDLE_POLL};
 
@@ -462,8 +460,6 @@ extern void cr4_init(void);
 
 extern int			bootloader_type;
 extern int			bootloader_version;
-
-extern char			ignore_fpu_irq;
 
 #define HAVE_ARCH_PICK_MMAP_LAYOUT 1
 #define ARCH_HAS_PREFETCHW
@@ -533,17 +529,6 @@ void default_idle(void);
 
 void __noreturn stop_this_cpu(void *dummy);
 void microcode_check(void);
-
-enum l1tf_mitigations {
-	L1TF_MITIGATION_OFF,
-	L1TF_MITIGATION_FLUSH_NOWARN,
-	L1TF_MITIGATION_FLUSH,
-	L1TF_MITIGATION_FLUSH_NOSMT,
-	L1TF_MITIGATION_FULL,
-	L1TF_MITIGATION_FULL_FORCE
-};
-
-extern enum l1tf_mitigations l1tf_mitigation;
 
 enum mds_mitigations {
 	MDS_MITIGATION_OFF,

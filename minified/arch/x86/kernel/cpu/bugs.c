@@ -62,8 +62,6 @@ void __init check_bugs(void)
 
 bool itlb_multihit_kvm_mitigation;
 
-enum l1tf_mitigations l1tf_mitigation = L1TF_MITIGATION_OFF;
-
 enum vmx_l1d_flush_state l1tf_vmx_mitigation = VMENTER_L1D_FLUSH_AUTO;
 
 int arch_prctl_spec_ctrl_get(struct task_struct *task, unsigned long which)

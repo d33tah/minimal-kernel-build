@@ -3,15 +3,8 @@
 static unsigned int sysctl_sched_dl_period_max = 1 << 22;
 static unsigned int sysctl_sched_dl_period_min = 100;
 
-/* __dl_update, __dl_sub, __dl_add, add_rq_bw, sub_rq_bw, add_running_bw, sub_running_bw removed - unused */
-
-void init_dl_bandwidth(struct dl_bandwidth *dl_b, u64 period, u64 runtime)
-{
-	raw_spin_lock_init(&dl_b->dl_runtime_lock);
-	dl_b->dl_runtime = runtime;
-}
-
-/* init_dl_bw removed - never called */
+/* __dl_update, __dl_sub, __dl_add, add_rq_bw, sub_rq_bw, add_running_bw, sub_running_bw,
+   init_dl_bandwidth, init_dl_bw removed - unused */
 
 void init_dl_rq(struct dl_rq *dl_rq)
 {

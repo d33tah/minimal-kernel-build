@@ -104,7 +104,7 @@ extern atomic_long_t calc_load_tasks;
 extern unsigned int sysctl_sched_child_runs_first;
 
 extern void calc_global_load_tick(struct rq *this_rq);
-extern long calc_load_fold_active(struct rq *this_rq, long adjust);
+/* calc_load_fold_active removed - never called */
 
 /* call_trace_sched_update_nr_running removed - unused */
 
@@ -822,7 +822,7 @@ extern void resched_cpu(int cpu);
 extern struct rt_bandwidth def_rt_bandwidth;
 extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime);
 
-extern void init_dl_bandwidth(struct dl_bandwidth *dl_b, u64 period, u64 runtime);
+/* init_dl_bandwidth removed - unused */
 extern void init_dl_task_timer(struct sched_dl_entity *dl_se);
 extern void init_dl_inactive_task_timer(struct sched_dl_entity *dl_se);
 

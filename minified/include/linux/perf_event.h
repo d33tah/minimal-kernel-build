@@ -19,7 +19,7 @@ typedef void (*perf_overflow_handler_t)(struct perf_event *,
 struct perf_event { int state; };
 struct perf_event_context { int dummy; };
 
-extern void perf_event_task_tick(void);
+/* perf_event_task_tick removed - unused */
 extern void perf_event_fork(struct task_struct *tsk);
 extern void perf_event_init(void);
 extern void perf_event_exit_task(struct task_struct *child);

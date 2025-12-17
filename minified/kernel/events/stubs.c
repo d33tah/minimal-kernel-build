@@ -8,8 +8,7 @@
    register_user_hw_breakpoint, modify_user_hw_breakpoint, unregister_hw_breakpoint
    removed - unused */
 
-/* __perf_event_task_sched_in/out removed - unused */
-void perf_event_task_tick(void) { }
+/* __perf_event_task_sched_in/out, perf_event_task_tick removed - unused */
 
 int perf_event_init_task(struct task_struct *child, u64 clone_flags) { return 0; }
 void perf_event_fork(struct task_struct *task) { }

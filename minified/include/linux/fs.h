@@ -113,14 +113,6 @@ struct files_stat_struct {
 	unsigned long max_files;
 };
 #define NR_FILE  8192
-struct fsxattr {
-	__u32		fsx_xflags;
-	__u32		fsx_extsize;
-	__u32		fsx_nextents;
-	__u32		fsx_projid;
-	__u32		fsx_cowextsize;
-	unsigned char	fsx_pad[8];
-};
 typedef int __bitwise __kernel_rwf_t;
 #define RWF_HIPRI	((__force __kernel_rwf_t)0x00000001)
 #define RWF_DSYNC	((__force __kernel_rwf_t)0x00000002)

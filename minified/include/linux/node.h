@@ -24,8 +24,7 @@ struct node {
 };
 
 struct memory_block;
-extern struct node *node_devices[];
-typedef  void (*node_registration_func_t)(struct node *);
+/* node_devices, node_registration_func_t removed - unused */
 
 static inline void register_memory_blocks_under_node(int nid, unsigned long start_pfn,
 						     unsigned long end_pfn,
@@ -60,10 +59,7 @@ static inline void unregister_memory_block_under_nodes(struct memory_block *mem_
 {
 }
 
-static inline void register_hugetlbfs_with_node(node_registration_func_t reg,
-						node_registration_func_t unreg)
-{
-}
+/* register_hugetlbfs_with_node removed - unused */
 
 #define to_node(device) container_of(device, struct node, dev)
 

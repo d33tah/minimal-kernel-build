@@ -638,11 +638,6 @@ static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
 
 /* Stub: CPU vulnerability tables removed - not needed for minimal kernel */
 
-u64 x86_read_arch_cap_msr(void)
-{
-	return 0; /* Stub: not needed for minimal kernel */
-}
-
 static void __init cpu_set_bug_bits(struct cpuinfo_x86 *c)
 {
 	/* Stub: CPU bug detection not needed for minimal kernel */

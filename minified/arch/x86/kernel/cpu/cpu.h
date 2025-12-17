@@ -63,12 +63,6 @@ extern void init_scattered_cpuid_features(struct cpuinfo_x86 *c);
 extern void detect_num_cpu_cores(struct cpuinfo_x86 *c);
 extern int detect_extended_topology_early(struct cpuinfo_x86 *c);
 extern int detect_extended_topology(struct cpuinfo_x86 *c);
-/* detect_ht_early, detect_ht, check_null_seg_clears_base removed - no callers */
-
-unsigned int aperfmperf_get_khz(int cpu);
-
-/* x86_spec_ctrl_setup_ap, update_srbds_msr removed - no callers */
-
-extern u64 x86_read_arch_cap_msr(void);
+/* detect_ht_early, detect_ht, check_null_seg_clears_base, x86_read_arch_cap_msr, aperfmperf_get_khz removed - no callers */
 
 #endif  

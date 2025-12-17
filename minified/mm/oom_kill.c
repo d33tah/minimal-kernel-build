@@ -4,7 +4,7 @@
 #include <linux/notifier.h>
 
 DEFINE_MUTEX(oom_lock);
-DEFINE_MUTEX(oom_adj_mutex);
+/* oom_adj_mutex removed - never used */
 
 bool __oom_reap_task_mm(struct mm_struct *mm)
 {

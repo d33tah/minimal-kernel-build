@@ -46,7 +46,7 @@ struct oom_control {
 };
 
 extern struct mutex oom_lock;
-extern struct mutex oom_adj_mutex;
+/* oom_adj_mutex removed - never used */
 
 
 static inline bool tsk_is_oom_victim(struct task_struct * tsk)

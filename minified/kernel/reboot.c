@@ -239,10 +239,5 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 
 /* ctrl_alt_del, orderly_poweroff, orderly_reboot, hw_protection_shutdown removed - unused */
 
-/* Stub: reboot= cmdline parsing not needed for minimal kernel */
-static int __init reboot_setup(char *str)
-{
-	return 1;
-}
-__setup("reboot=", reboot_setup);
+/* reboot_setup and __setup removed (~5 LOC) */
 

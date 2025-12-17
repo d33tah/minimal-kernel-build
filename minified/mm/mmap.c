@@ -1225,13 +1225,7 @@ int expand_downwards(struct vm_area_struct *vma,
 }
 
 unsigned long stack_guard_gap = 256UL<<PAGE_SHIFT;
-
-static int __init cmdline_parse_stack_guard_gap(char *p)
-{
-	/* Stub: stack guard gap config not needed for minimal kernel */
-	return 1;
-}
-__setup("stack_guard_gap=", cmdline_parse_stack_guard_gap);
+/* cmdline_parse_stack_guard_gap and __setup removed (~6 LOC) */
 
 int expand_stack(struct vm_area_struct *vma, unsigned long address)
 {

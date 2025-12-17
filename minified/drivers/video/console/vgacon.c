@@ -62,13 +62,7 @@ static unsigned int 	vga_rolled_over;
 static bool vga_hardscroll_enabled;
 static bool vga_hardscroll_user_enable = true;
 
-static int __init no_scroll(char *str)
-{
-	/* Stub: scroll config not needed for minimal kernel */
-	return 1;
-}
-
-__setup("no-scroll", no_scroll);
+/* no_scroll and __setup removed (~6 LOC) */
 
 static inline void write_vga(unsigned char reg, unsigned int val)
 {

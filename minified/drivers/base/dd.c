@@ -112,12 +112,7 @@ static void driver_deferred_probe_trigger(void)
 
 int driver_deferred_probe_timeout;
 
-/* Stub: deferred_probe_timeout not needed for minimal kernel */
-static int __init deferred_probe_timeout_setup(char *str)
-{
-	return 1;
-}
-__setup("deferred_probe_timeout=", deferred_probe_timeout_setup);
+/* deferred_probe_timeout_setup and __setup removed (~5 LOC) */
 
 /* driver_deferred_probe_check_state removed - unused */
 
@@ -405,12 +400,7 @@ static int driver_probe_device(struct device_driver *drv, struct device *dev)
 
 /* cmdline_requested_async_probing removed - unused */
 
-/* Stub: driver_async_probe option not needed for minimal kernel */
-static int __init save_async_options(char *buf)
-{
-	return 1;
-}
-__setup("driver_async_probe=", save_async_options);
+/* save_async_options and __setup removed (~5 LOC) */
 
 /* Stub: driver_allows_async_probing not used in minimal kernel */
 bool driver_allows_async_probing(struct device_driver *drv)

@@ -43,12 +43,7 @@ static unsigned int normalized_sysctl_sched_wakeup_granularity	= 1000000UL;
 const_debug unsigned int sysctl_sched_migration_cost	= 500000UL;
 
 int sched_thermal_decay_shift;
-static int __init setup_sched_thermal_decay_shift(char *str)
-{
-	/* Stub: thermal pressure scheduling not needed for minimal kernel */
-	return 1;
-}
-__setup("sched_thermal_decay_shift=", setup_sched_thermal_decay_shift);
+/* setup_sched_thermal_decay_shift and __setup removed - unused cmdline handler */
 
 static inline void update_load_add(struct load_weight *lw, unsigned long inc)
 {

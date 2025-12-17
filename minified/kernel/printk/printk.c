@@ -222,9 +222,7 @@ int __read_mostly suppress_printk;
 
 static int __read_mostly suppress_panic_printk;
 
-/* Stub: printk.devkmsg= option not needed for minimal kernel */
-static int __init control_devkmsg(char *str) { return 1; }
-__setup("printk.devkmsg=", control_devkmsg);
+/* control_devkmsg and __setup removed (~2 LOC) */
 
 static int nr_ext_console_drivers;
 
@@ -324,13 +322,7 @@ static bool suppress_message_printing(int level) { return false; }
 
 
 
-/* Stub: console_msg_format= option not needed for minimal kernel */
-static int __init console_msg_format_setup(char *str) { return 1; }
-__setup("console_msg_format=", console_msg_format_setup);
-
-/* Stub: console= cmdline option not needed for minimal kernel (uses vgacon) */
-static int __init console_setup(char *str) { return 1; }
-__setup("console=", console_setup);
+/* console_msg_format_setup, console_setup and __setup handlers removed (~6 LOC) */
 
 /* add_preferred_console removed - no callers */
 

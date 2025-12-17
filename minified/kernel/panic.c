@@ -352,6 +352,4 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
 
 /* core_param stubs removed for minimal kernel */
 
-/* Stub: panic_on_taint= cmdline option not needed for minimal kernel */
-static int __init panic_on_taint_setup(char *s) { return 0; }
-early_param("panic_on_taint", panic_on_taint_setup);
+/* panic_on_taint_setup and early_param removed (~2 LOC) */

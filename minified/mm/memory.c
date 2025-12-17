@@ -69,12 +69,7 @@ static inline bool arch_wants_old_prefaulted_pte(void)
 }
 #endif
 
-static int __init disable_randmaps(char *s)
-{
-	/* Stub: ASLR config not needed for minimal kernel */
-	return 1;
-}
-__setup("norandmaps", disable_randmaps);
+/* disable_randmaps and __setup removed (~5 LOC) */
 
 unsigned long zero_pfn __read_mostly;
 

@@ -5,16 +5,12 @@
 #include <linux/mm_types.h>
 #include <linux/mmdebug.h>
 #include <linux/rwsem.h>
-#include <linux/tracepoint-defs.h>
 #include <linux/types.h>
 
 #define MMAP_LOCK_INITIALIZER(name) \
 	.mmap_lock = __RWSEM_INITIALIZER((name).mmap_lock),
 
-DECLARE_TRACEPOINT(mmap_lock_start_locking);
-DECLARE_TRACEPOINT(mmap_lock_acquire_returned);
-DECLARE_TRACEPOINT(mmap_lock_released);
-
+/* Tracepoint declarations removed - unused */
 
 static inline void __mmap_lock_trace_start_locking(struct mm_struct *mm,
 						   bool write)

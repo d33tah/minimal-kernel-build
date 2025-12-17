@@ -32,20 +32,3 @@ void tty_unlock(struct tty_struct *tty)
 	mutex_unlock(&tty->legacy_mutex);
 	tty_kref_put(tty);
 }
-
-void tty_lock_slave(struct tty_struct *tty)
-{
-	if (tty && tty != tty->link)
-		tty_lock(tty);
-}
-
-void tty_unlock_slave(struct tty_struct *tty)
-{
-	if (tty && tty != tty->link)
-		tty_unlock(tty);
-}
-
-void tty_set_lock_subclass(struct tty_struct *tty)
-{
-	lockdep_set_subclass(&tty->legacy_mutex, TTY_LOCK_SLAVE);
-}

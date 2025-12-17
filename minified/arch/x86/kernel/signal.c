@@ -559,11 +559,6 @@ void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
 	force_sig(SIGSEGV);
 }
 
-/* Stub: strict_sas_size cmdline option not needed for minimal kernel */
-static int __init strict_sas_size(char *arg)
-{
-	return 1;
-}
-__setup("strict_sas_size", strict_sas_size);
+/* strict_sas_size and __setup removed (~5 LOC) */
 
 

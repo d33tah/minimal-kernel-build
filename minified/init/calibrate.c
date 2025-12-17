@@ -6,13 +6,7 @@
 /* lpj_fine removed - only set, never read */
 unsigned long preset_lpj;
 
-static int __init lpj_setup(char *str)
-{
-	/* Stub: lpj config not needed for minimal kernel */
-	return 1;
-}
-
-__setup("lpj=", lpj_setup);
+/* lpj_setup and __setup removed (~5 LOC) */
 
 static DEFINE_PER_CPU(unsigned long, cpu_loops_per_jiffy) = { 0 };
 

@@ -64,9 +64,7 @@ static int ignore_nmis __read_mostly;
 int unknown_nmi_panic;
 static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
 
-/* Stub: unknown_nmi_panic cmdline option not needed for minimal kernel */
-static int __init setup_unknown_nmi_panic(char *str) { return 1; }
-__setup("unknown_nmi_panic", setup_unknown_nmi_panic);
+/* setup_unknown_nmi_panic and __setup removed (~2 LOC) */
 
 #define nmi_to_desc(type) (&nmi_desc[type])
 

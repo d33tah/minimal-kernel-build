@@ -797,9 +797,7 @@ int file_update_time(struct file *file)
 /* __wait_on_freeing_inode removed - unused */
 
 static __initdata unsigned long ihash_entries;
-/* Stub: ihash_entries= option not needed for minimal kernel */
-static int __init set_ihash_entries(char *str) { return 1; }
-__setup("ihash_entries=", set_ihash_entries);
+/* set_ihash_entries and __setup removed (~2 LOC) */
 
 void __init inode_init_early(void)
 {

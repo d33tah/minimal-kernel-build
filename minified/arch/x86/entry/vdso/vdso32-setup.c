@@ -6,12 +6,7 @@
 
 unsigned int __read_mostly vdso32_enabled = VDSO_DEFAULT;
 
-/* Stub: vdso32= option not needed for minimal kernel */
-static int __init vdso32_setup(char *s) { return 1; }
-
-__setup("vdso32=", vdso32_setup);
-
-__setup_param("vdso=", vdso_setup, vdso32_setup, 0);
+/* vdso32_setup and __setups removed (~5 LOC) */
 
 int __init sysenter_setup(void)
 {

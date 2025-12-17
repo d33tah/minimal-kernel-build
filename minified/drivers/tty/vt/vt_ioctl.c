@@ -26,9 +26,6 @@
 
 #include <linux/kbd_kern.h>
 #include <linux/vt_kern.h>
-/* kbd_diacr.h inlined */
-extern struct kbdiacruc accent_table[];
-extern unsigned int accent_table_size;
 #include <linux/selection.h>
 
 /* vt_dont_switch, vt_event_post, vt_waitactive removed - unused */

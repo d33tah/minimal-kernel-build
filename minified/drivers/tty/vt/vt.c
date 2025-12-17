@@ -32,15 +32,10 @@
 #include <linux/uaccess.h>
 
 #include <linux/ctype.h>
-/* gcd.h inlined */
-unsigned long gcd(unsigned long a, unsigned long b);
 
 #define MAX_NR_CON_DRIVER 16
 
-#define CON_DRIVER_FLAG_MODULE 1
 #define CON_DRIVER_FLAG_INIT   2
-#define CON_DRIVER_FLAG_ATTR   4
-#define CON_DRIVER_FLAG_ZOMBIE 8
 
 struct con_driver {
 	const struct consw *con;

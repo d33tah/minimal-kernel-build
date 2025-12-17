@@ -4,10 +4,8 @@
 #ifndef __ASSEMBLY__
 #include <linux/cpumask.h>
 
-extern cpumask_var_t cpu_callin_mask;
-extern cpumask_var_t cpu_callout_mask;
+/* cpu_callin_mask, cpu_callout_mask, cpu_sibling_setup_mask removed - unused (SMP only) */
 extern cpumask_var_t cpu_initialized_mask;
-/* cpu_sibling_setup_mask removed - unused (SMP only) */
 
 extern void setup_cpu_local_masks(void);
 

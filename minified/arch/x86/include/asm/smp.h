@@ -64,7 +64,7 @@ static inline int wbinvd_on_all_cpus(void)
 	return 0;
 }
 
-extern unsigned disabled_cpus;
+/* disabled_cpus removed - never defined (SMP only) */
 
 #define hard_smp_processor_id()	0
 

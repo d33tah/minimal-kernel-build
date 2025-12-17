@@ -67,10 +67,7 @@ static inline void uv_cpu_init(void) { }
 u32 elf_hwcap2 __read_mostly;
 
 cpumask_var_t cpu_initialized_mask;
-cpumask_var_t cpu_callout_mask;
-cpumask_var_t cpu_callin_mask;
-
-/* cpu_sibling_setup_mask removed - unused (SMP only) */
+/* cpu_callout_mask, cpu_callin_mask, cpu_sibling_setup_mask removed - unused (SMP only) */
 
 int smp_num_siblings = 1;
 
@@ -86,9 +83,7 @@ static void ppin_init(struct cpuinfo_x86 *c)
 void __init setup_cpu_local_masks(void)
 {
 	alloc_bootmem_cpumask_var(&cpu_initialized_mask);
-	alloc_bootmem_cpumask_var(&cpu_callin_mask);
-	alloc_bootmem_cpumask_var(&cpu_callout_mask);
-	/* cpu_sibling_setup_mask allocation removed - unused */
+	/* cpu_callin_mask, cpu_callout_mask, cpu_sibling_setup_mask allocations removed - unused */
 }
 
 static void default_init(struct cpuinfo_x86 *c)

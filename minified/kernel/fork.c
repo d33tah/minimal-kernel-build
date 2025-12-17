@@ -74,9 +74,7 @@ static inline void proc_fork_connector(struct task_struct *task) {}
 static inline void delayacct_tsk_init(struct task_struct *tsk) {}
 static inline void delayacct_tsk_free(struct task_struct *tsk) {}
 /* taskstats_kern.h inlined */
-static inline void taskstats_exit(struct task_struct *tsk, int group_dead) {}
 static inline void taskstats_tgid_free(struct signal_struct *sig) {}
-static inline void taskstats_init_early(void) {}
 #include <linux/random.h>
 #include <linux/tty.h>
 #include <linux/fs_struct.h>

@@ -56,8 +56,6 @@ static inline void init_vmlinux_build_id(void) { }
 #include <linux/sched/isolation.h>
 #include <linux/interrupt.h>
 /* taskstats_kern.h inlined */
-static inline void taskstats_exit(struct task_struct *tsk, int group_dead) {}
-static inline void taskstats_tgid_free(struct signal_struct *sig) {}
 static inline void taskstats_init_early(void) {}
 /* delayacct.h inlined - stub */
 static inline void delayacct_init(void) {}

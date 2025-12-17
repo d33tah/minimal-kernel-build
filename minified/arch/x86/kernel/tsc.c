@@ -750,17 +750,7 @@ int unsynchronized_tsc(void)
 	return 0;
 }
 
-struct system_counterval_t convert_art_to_tsc(u64 art)
-{
-	/* Stub: ART conversion not needed for minimal kernel */
-	return (struct system_counterval_t) {.cs = NULL, .cycles = 0};
-}
-
-struct system_counterval_t convert_art_ns_to_tsc(u64 art_ns)
-{
-	/* Stub: ART conversion not needed for minimal kernel */
-	return (struct system_counterval_t) {.cs = NULL, .cycles = 0};
-}
+/* convert_art_to_tsc, convert_art_ns_to_tsc removed - unused */
 
 
 static void tsc_refine_calibration_work(struct work_struct *work);

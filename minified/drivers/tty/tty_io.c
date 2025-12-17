@@ -1303,12 +1303,7 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 	return tty;
 }
 
-int tty_put_char(struct tty_struct *tty, unsigned char ch)
-{
-	if (tty->ops->put_char)
-		return tty->ops->put_char(tty, ch);
-	return tty->ops->write(tty, &ch, 1);
-}
+/* tty_put_char removed - never called */
 
 struct class *tty_class;
 

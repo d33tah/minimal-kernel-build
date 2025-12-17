@@ -45,8 +45,7 @@ struct oom_control {
 	enum oom_constraint constraint;
 };
 
-extern struct mutex oom_lock;
-/* oom_adj_mutex removed - never used */
+/* oom_lock, oom_adj_mutex removed - never used */
 
 
 static inline bool tsk_is_oom_victim(struct task_struct * tsk)

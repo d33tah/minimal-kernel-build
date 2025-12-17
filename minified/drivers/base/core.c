@@ -28,13 +28,12 @@ static const struct attribute_group dev_attr_physical_location_group = {};
 #include "power/power.h"
 
 static LIST_HEAD(deferred_sync);
-static DEFINE_MUTEX(fwnode_link_lock);
-/* fw_devlink_is_permissive forward decl removed - unused */
+/* fwnode_link_lock, fw_devlink_is_permissive forward decl removed - unused */
 static bool fw_devlink_drv_reg_done;
 
 /* Removed: fwnode_link_add, fwnode_links_purge, fw_devlink_purge_absent_suppliers - no callers */
 
-static DEFINE_MUTEX(device_links_lock);
+/* device_links_lock removed - unused */
 DEFINE_STATIC_SRCU(device_links_srcu);
 
 /* device_links_write_lock, device_links_write_unlock removed - never called */
@@ -228,9 +227,7 @@ static struct kobject *dev_kobj;
 struct kobject *sysfs_dev_char_kobj;
 struct kobject *sysfs_dev_block_kobj;
 
-static DEFINE_MUTEX(device_hotplug_lock);
-
-/* Removed: lock_device_hotplug, unlock_device_hotplug, lock_device_hotplug_sysfs, device_is_not_partition - no callers */
+/* device_hotplug_lock removed - lock_device_hotplug, unlock_device_hotplug, lock_device_hotplug_sysfs, device_is_not_partition all removed - no callers */
 
 static void device_platform_notify_remove(struct device *dev)
 {

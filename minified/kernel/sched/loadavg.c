@@ -2,9 +2,7 @@
 
 atomic_long_t calc_load_tasks;
 unsigned long calc_load_update;
-unsigned long avenrun[3];
-
-/* get_avenrun removed - never called */
+/* avenrun, get_avenrun removed - never called */
 
 /* Stub: calc_load_fold_active - no load tracking for minimal kernel */
 long calc_load_fold_active(struct rq *this_rq, long adjust)

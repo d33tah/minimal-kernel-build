@@ -416,14 +416,7 @@ struct zap_details {
 	zap_flags_t zap_flags;		
 };
 
-static inline bool zap_drop_file_uffd_wp(struct zap_details *details)
-{
-	if (!details)
-		return false;
-
-	return details->zap_flags & ZAP_FLAG_DROP_MARKER;
-}
-
+/* zap_drop_file_uffd_wp removed - unused (~7 lines) */
 /* zap_install_uffd_wp_if_needed removed - unused (~10 lines) */
 
 static unsigned long zap_pte_range(struct mmu_gather *tlb,

@@ -8,25 +8,10 @@
 #include <linux/kernel.h>
 #include <asm/tlbflush.h>
 
- 
-extern unsigned long efi_fw_vendor, efi_config_table;
-extern unsigned long efi_mixed_mode_stack_pa;
-
 #define EFI32_LOADER_SIGNATURE	"EL32"
 #define EFI64_LOADER_SIGNATURE	"EL64"
 
 #define ARCH_EFI_IRQ_FLAGS_MASK	X86_EFLAGS_IF
-
- 
-struct efi_setup_data {
-	u64 fw_vendor;
-	u64 __unused;
-	u64 tables;
-	u64 smbios;
-	u64 reserved[8];
-};
-
-extern u64 efi_setup;
 
 static inline bool efi_reboot_required(void)
 {

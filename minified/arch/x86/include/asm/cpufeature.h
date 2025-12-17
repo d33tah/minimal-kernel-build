@@ -40,9 +40,6 @@ enum cpuid_leafs
 #define X86_CAP_FMT X86_CAP_FMT_NUM
 #define x86_cap_flag x86_cap_flag_num
 
- 
-extern const char * const x86_bug_flags[NBUGINTS*32];
-
 #define test_cpu_cap(c, bit)						\
 	 arch_test_bit(bit, (unsigned long *)((c)->x86_capability))
 

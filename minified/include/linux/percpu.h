@@ -27,7 +27,6 @@
 /* BITS_PER_LONG == 32 */
 #define PERCPU_DYNAMIC_RESERVE		(20 << 10)
 
-extern void *pcpu_base_addr;
 extern const unsigned long *pcpu_unit_offsets;
 
 struct pcpu_group_info {

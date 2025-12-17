@@ -11,10 +11,6 @@
 
 #include "physaddr.h"
 
-struct va_alignment __read_mostly va_align = {
-	.flags = -1,
-};
-
 unsigned long task_size_32bit(void)
 {
 	return IA32_PAGE_OFFSET;

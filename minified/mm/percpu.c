@@ -119,8 +119,6 @@ static size_t pcpu_chunk_struct_size __ro_after_init;
 static unsigned int pcpu_low_unit_cpu __ro_after_init;
 static unsigned int pcpu_high_unit_cpu __ro_after_init;
 
-void *pcpu_base_addr __ro_after_init;
-
 static const int *pcpu_unit_map __ro_after_init;		
 const unsigned long *pcpu_unit_offsets __ro_after_init;	
 
@@ -1782,9 +1780,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	pcpu_nr_populated += PFN_DOWN(size_sum);
 
 	pcpu_stats_chunk_alloc();
-
-	
-	pcpu_base_addr = base_addr;
 }
 
 void __init setup_per_cpu_areas(void)

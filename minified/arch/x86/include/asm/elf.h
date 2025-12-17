@@ -154,18 +154,4 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
 				       int uses_interp);
 extern bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs);
 
- 
-enum align_flags {
-	ALIGN_VA_32	= BIT(0),
-	ALIGN_VA_64	= BIT(1),
-};
-
-struct va_alignment {
-	int flags;
-	unsigned long mask;
-	unsigned long bits;
-} ____cacheline_aligned;
-
-extern struct va_alignment va_align;
-extern unsigned long align_vdso_addr(unsigned long);
-#endif  
+#endif

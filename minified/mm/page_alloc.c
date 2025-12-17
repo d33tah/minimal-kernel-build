@@ -107,7 +107,7 @@ typedef int __bitwise fpi_t;
 
 #define FPI_SKIP_KASAN_POISON	((__force fpi_t)BIT(2))
 
-static DEFINE_MUTEX(pcp_batch_high_lock);
+/* pcp_batch_high_lock removed - unused */
 #define MIN_PERCPU_PAGELIST_HIGH_FRACTION (8)
 
 struct pagesets {
@@ -117,9 +117,7 @@ static DEFINE_PER_CPU(struct pagesets, pagesets) = {
 	.lock = INIT_LOCAL_LOCK(lock),
 };
 
-/* vm_numa_stat_key removed - unused */
-
-static DEFINE_MUTEX(pcpu_drain_mutex);
+/* vm_numa_stat_key, pcpu_drain_mutex removed - unused */
 
 nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
 	[N_POSSIBLE] = NODE_MASK_ALL,

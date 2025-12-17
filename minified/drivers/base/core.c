@@ -28,8 +28,7 @@ static const struct attribute_group dev_attr_physical_location_group = {};
 #include "power/power.h"
 
 static LIST_HEAD(deferred_sync);
-/* fwnode_link_lock, fw_devlink_is_permissive forward decl removed - unused */
-static bool fw_devlink_drv_reg_done;
+/* fwnode_link_lock, fw_devlink_is_permissive, fw_devlink_drv_reg_done removed - unused */
 
 /* Removed: fwnode_link_add, fwnode_links_purge, fw_devlink_purge_absent_suppliers - no callers */
 
@@ -219,7 +218,7 @@ static void device_links_purge(struct device *dev)
 /* Stub: firmware device link functions not needed for minimal kernel */
 void fw_devlink_drivers_done(void)
 {
-	fw_devlink_drv_reg_done = true;
+	/* fw_devlink_drv_reg_done assignment removed - never read */
 }
 
 /* platform_notify, platform_notify_remove removed - never assigned */

@@ -2,52 +2,27 @@
 #ifndef _LINUX_SYSCALLS_H
 #define _LINUX_SYSCALLS_H
 
-/* Removed many unused forward declarations:
-   __aio_sigset, epoll_event, iocb, io_event, __kernel_old_itimerval,
-   kexec_segment, mmap_arg_struct, msgbuf, user_msghdr, mmsghdr, msqid_ds,
-   nfsctl_arg, __old_kernel_stat, oldold_utsname, old_utsname,
-   rlimit64, old_timeval32, getcpu_cache, bpf_attr, open_how */
+/* Minimal forward declarations for syscalls.h */
 struct iattr;
 struct inode;
 struct iovec;
 struct linux_dirent;
-struct linux_dirent64;
 struct list_head;
 struct new_utsname;
-struct pollfd;
 struct rlimit;
-struct rusage;
-struct sched_param;
-struct sched_attr;
-struct sel_arg_struct;
-struct semaphore;
-struct sembuf;
-struct shmid_ds;
-struct sockaddr;
 struct stat;
-struct stat64;
 struct statfs;
 struct statfs64;
-struct statx;
 struct sysinfo;
-struct timespec;
 struct __kernel_old_timeval;
 struct __kernel_timex;
-struct timezone;
-struct tms;
-struct utimbuf;
+struct timeval;
 struct mq_attr;
-struct compat_stat;
-struct old_timeval32;
-struct robust_list_head;
-struct futex_waitv;
-struct getcpu_cache;
-struct old_linux_dirent;
-struct sigaltstack;
-struct rseq;
 struct clone_args;
-struct open_how;
-struct mount_attr;
+struct utimbuf;
+struct getcpu_cache;
+struct linux_dirent64;
+struct old_linux_dirent;
 
 #include <linux/types.h>
 #include <linux/capability.h>

@@ -506,15 +506,10 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 
 static int __initdata do_retain_initrd;
 
-/* Stub: retain_initrd not needed for minimal kernel */
-static int __init retain_initrd_param(char *str) { return 1; }
-__setup("retain_initrd", retain_initrd_param);
-
+/* retain_initrd_param and __setup removed (~2 LOC) */
 
 static bool __initdata initramfs_async = true;
-/* Stub: initramfs_async not needed for minimal kernel */
-static int __init initramfs_async_setup(char *str) { return 1; }
-__setup("initramfs_async=", initramfs_async_setup);
+/* initramfs_async_setup and __setup removed (~2 LOC) */
 
 extern char __initramfs_start[];
 extern unsigned long __initramfs_size;

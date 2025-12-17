@@ -29,15 +29,7 @@ static int root_wait;
 
 dev_t ROOT_DEV;
 
-/* Stub: load_ramdisk deprecated, not needed for minimal kernel */
-static int __init load_ramdisk(char *str) { return 1; }
-__setup("load_ramdisk=", load_ramdisk);
-
-/* Stub: ro/rw cmdline not needed for minimal kernel */
-static int __init readonly(char *str) { return 1; }
-static int __init readwrite(char *str) { return 1; }
-__setup("ro", readonly);
-__setup("rw", readwrite);
+/* load_ramdisk, readonly, readwrite and __setups removed (~8 LOC) */
 
 
 static dev_t devt_from_devnum(const char *name)

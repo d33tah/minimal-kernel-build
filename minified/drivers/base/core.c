@@ -27,8 +27,7 @@ static const struct attribute_group dev_attr_physical_location_group = {};
 /* end physical_location.h */
 #include "power/power.h"
 
-static LIST_HEAD(deferred_sync);
-/* fwnode_link_lock, fw_devlink_is_permissive, fw_devlink_drv_reg_done removed - unused */
+/* deferred_sync, fwnode_link_lock, fw_devlink_is_permissive, fw_devlink_drv_reg_done removed - unused */
 
 /* Removed: fwnode_link_add, fwnode_links_purge, fw_devlink_purge_absent_suppliers - no callers */
 

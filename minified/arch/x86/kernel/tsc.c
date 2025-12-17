@@ -180,10 +180,7 @@ sched_clock(void) __attribute__((alias("native_sched_clock")));
 
 bool using_native_sched_clock(void) { return true; }
 
-int check_tsc_unstable(void)
-{
-	return tsc_unstable;
-}
+/* check_tsc_unstable removed - never called */
 
 /* Stub: notsc option not needed for minimal kernel */
 int __init notsc_setup(char *str) { return 1; }

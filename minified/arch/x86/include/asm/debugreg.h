@@ -113,6 +113,6 @@ static __always_inline void local_db_restore(unsigned long dr7)
 		set_debugreg(dr7, 7);
 }
 
-extern void set_dr_addr_mask(unsigned long mask, int dr);
+/* set_dr_addr_mask removed - never defined/used */
 
 #endif  

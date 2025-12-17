@@ -80,6 +80,6 @@ struct x86_cpu_desc {
 }
 
 extern const struct x86_cpu_id *x86_match_cpu(const struct x86_cpu_id *match);
-extern bool x86_cpu_has_min_microcode_rev(const struct x86_cpu_desc *table);
+/* x86_cpu_has_min_microcode_rev removed - never called */
 
 #endif  

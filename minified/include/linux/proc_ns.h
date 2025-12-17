@@ -20,16 +20,7 @@ struct proc_ns_operations {
 	struct ns_common *(*get_parent)(struct ns_common *ns);
 } __randomize_layout;
 
-extern const struct proc_ns_operations netns_operations;
-extern const struct proc_ns_operations utsns_operations;
-extern const struct proc_ns_operations ipcns_operations;
-extern const struct proc_ns_operations pidns_operations;
-extern const struct proc_ns_operations pidns_for_children_operations;
-extern const struct proc_ns_operations userns_operations;
 extern const struct proc_ns_operations mntns_operations;
-extern const struct proc_ns_operations cgroupns_operations;
-extern const struct proc_ns_operations timens_operations;
-extern const struct proc_ns_operations timens_for_children_operations;
 
 enum {
 	PROC_ROOT_INO		= 1,

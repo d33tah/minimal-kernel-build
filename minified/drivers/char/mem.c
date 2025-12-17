@@ -16,8 +16,7 @@ struct miscdevice  {
 	const char *nodename;
 	umode_t mode;
 };
-extern int misc_register(struct miscdevice *misc);
-extern void misc_deregister(struct miscdevice *misc);
+/* misc_register/misc_deregister removed - unused */
 /* --- end miscdevice.h inlined --- */
 #include <linux/vmalloc.h>
 #include <linux/mman.h>

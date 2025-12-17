@@ -38,16 +38,10 @@ struct watch_notification;
 
 /* CAP_OPT_* now defined in capability.h */
 
-#define SECURITY_LSM_NATIVE_LABELS	1
-
 struct ctl_table;
 struct audit_krule;
 struct user_namespace;
 struct timezone;
-
-enum lsm_event {
-	LSM_POLICY_CHANGE,
-};
 
 /* Reduced lockdown enum for minimal kernel - only keep used values */
 enum lockdown_reason {

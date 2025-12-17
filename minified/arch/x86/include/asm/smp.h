@@ -55,8 +55,7 @@ struct smp_ops {
 	void (*send_call_func_single_ipi)(int cpu);
 };
 
- 
-extern void set_cpu_sibling_map(int cpu);
+/* set_cpu_sibling_map removed - never defined (SMP only) */
 
 #define wbinvd_on_cpu(cpu)     wbinvd()
 static inline int wbinvd_on_all_cpus(void)

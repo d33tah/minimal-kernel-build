@@ -70,7 +70,7 @@ cpumask_var_t cpu_initialized_mask;
 cpumask_var_t cpu_callout_mask;
 cpumask_var_t cpu_callin_mask;
 
-cpumask_var_t cpu_sibling_setup_mask;
+/* cpu_sibling_setup_mask removed - unused (SMP only) */
 
 int smp_num_siblings = 1;
 
@@ -88,7 +88,7 @@ void __init setup_cpu_local_masks(void)
 	alloc_bootmem_cpumask_var(&cpu_initialized_mask);
 	alloc_bootmem_cpumask_var(&cpu_callin_mask);
 	alloc_bootmem_cpumask_var(&cpu_callout_mask);
-	alloc_bootmem_cpumask_var(&cpu_sibling_setup_mask);
+	/* cpu_sibling_setup_mask allocation removed - unused */
 }
 
 static void default_init(struct cpuinfo_x86 *c)

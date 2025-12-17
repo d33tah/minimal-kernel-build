@@ -12,8 +12,7 @@ extern unsigned long _find_next_bit(const unsigned long *addr1,
 		const unsigned long *addr2, unsigned long nbits,
 		unsigned long start, unsigned long invert, unsigned long le);
 extern unsigned long _find_first_bit(const unsigned long *addr, unsigned long size);
-extern unsigned long _find_first_and_bit(const unsigned long *addr1,
-					 const unsigned long *addr2, unsigned long size);
+/* _find_first_and_bit removed - never called */
 extern unsigned long _find_first_zero_bit(const unsigned long *addr, unsigned long size);
 extern unsigned long _find_last_bit(const unsigned long *addr, unsigned long size);
 
@@ -36,25 +35,7 @@ unsigned long find_next_bit(const unsigned long *addr, unsigned long size,
 }
 #endif
 
-#ifndef find_next_and_bit
-static inline
-unsigned long find_next_and_bit(const unsigned long *addr1,
-		const unsigned long *addr2, unsigned long size,
-		unsigned long offset)
-{
-	if (small_const_nbits(size)) {
-		unsigned long val;
-
-		if (unlikely(offset >= size))
-			return size;
-
-		val = *addr1 & *addr2 & GENMASK(size - 1, offset);
-		return val ? __ffs(val) : size;
-	}
-
-	return _find_next_bit(addr1, addr2, size, offset, 0UL, 0);
-}
-#endif
+/* find_next_and_bit removed - never called */
 
 #ifndef find_next_zero_bit
 static inline
@@ -89,21 +70,7 @@ unsigned long find_first_bit(const unsigned long *addr, unsigned long size)
 }
 #endif
 
-#ifndef find_first_and_bit
-static inline
-unsigned long find_first_and_bit(const unsigned long *addr1,
-				 const unsigned long *addr2,
-				 unsigned long size)
-{
-	if (small_const_nbits(size)) {
-		unsigned long val = *addr1 & *addr2 & GENMASK(size - 1, 0);
-
-		return val ? __ffs(val) : size;
-	}
-
-	return _find_first_and_bit(addr1, addr2, size);
-}
-#endif
+/* find_first_and_bit removed - never called */
 
 #ifndef find_first_zero_bit
 static inline
@@ -134,74 +101,8 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 #endif
 
 
-#if defined(__LITTLE_ENDIAN)
-
-static inline unsigned long find_next_zero_bit_le(const void *addr,
-		unsigned long size, unsigned long offset)
-{
-	return find_next_zero_bit(addr, size, offset);
-}
-
-static inline unsigned long find_next_bit_le(const void *addr,
-		unsigned long size, unsigned long offset)
-{
-	return find_next_bit(addr, size, offset);
-}
-
-static inline unsigned long find_first_zero_bit_le(const void *addr,
-		unsigned long size)
-{
-	return find_first_zero_bit(addr, size);
-}
-
-#elif defined(__BIG_ENDIAN)
-
-#ifndef find_next_zero_bit_le
-static inline
-unsigned long find_next_zero_bit_le(const void *addr, unsigned
-		long size, unsigned long offset)
-{
-	if (small_const_nbits(size)) {
-		unsigned long val = *(const unsigned long *)addr;
-
-		if (unlikely(offset >= size))
-			return size;
-
-		val = swab(val) | ~GENMASK(size - 1, offset);
-		return val == ~0UL ? size : ffz(val);
-	}
-
-	return _find_next_bit(addr, NULL, size, offset, ~0UL, 1);
-}
-#endif
-
-#ifndef find_next_bit_le
-static inline
-unsigned long find_next_bit_le(const void *addr, unsigned
-		long size, unsigned long offset)
-{
-	if (small_const_nbits(size)) {
-		unsigned long val = *(const unsigned long *)addr;
-
-		if (unlikely(offset >= size))
-			return size;
-
-		val = swab(val) & GENMASK(size - 1, offset);
-		return val ? __ffs(val) : size;
-	}
-
-	return _find_next_bit(addr, NULL, size, offset, 0UL, 1);
-}
-#endif
-
-#ifndef find_first_zero_bit_le
-#define find_first_zero_bit_le(addr, size) \
-	find_next_zero_bit_le((addr), (size), 0)
-#endif
-
-#else
-#error "Please fix <asm/byteorder.h>"
-#endif
+/* _le bitmap functions (find_next_zero_bit_le, find_next_bit_le, find_first_zero_bit_le)
+   removed - never called */
 
 #define for_each_set_bit(bit, addr, size) \
 	for ((bit) = find_next_bit((addr), (size), 0);		\

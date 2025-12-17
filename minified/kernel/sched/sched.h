@@ -492,9 +492,7 @@ struct rq_flags {
 	struct pin_cookie cookie;
 };
 
-extern struct callback_head balance_push_callback;
 
- 
 static inline void rq_pin_lock(struct rq *rq, struct rq_flags *rf)
 {
 	rf->cookie = lockdep_pin_lock(__rq_lockp(rq));
@@ -652,7 +650,6 @@ static const_debug __maybe_unused unsigned int sysctl_sched_features =
 
 
 extern struct static_key_false sched_numa_balancing;
-extern struct static_key_false sched_schedstats;
 
 static inline u64 global_rt_period(void)
 {
@@ -813,12 +810,8 @@ extern struct task_struct *pick_next_task_idle(struct rq *rq);
 
 extern void schedule_idle(void);
 
-extern void sysrq_sched_debug_show(void);
 extern void sched_init_granularity(void);
-extern void update_max_interval(void);
 
-extern void init_sched_dl_class(void);
-extern void init_sched_rt_class(void);
 extern void init_sched_fair_class(void);
 
 extern void reweight_task(struct task_struct *p, int prio);
@@ -828,7 +821,6 @@ extern void resched_cpu(int cpu);
 
 extern struct rt_bandwidth def_rt_bandwidth;
 extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime);
-extern bool sched_rt_bandwidth_account(struct rt_rq *rt_rq);
 
 extern void init_dl_bandwidth(struct dl_bandwidth *dl_b, u64 period, u64 runtime);
 extern void init_dl_task_timer(struct sched_dl_entity *dl_se);
@@ -900,16 +892,12 @@ unsigned long arch_scale_freq_capacity(int cpu)
 #endif
 
 extern struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq);
-extern struct sched_entity *__pick_last_entity(struct cfs_rq *cfs_rq);
 
 static inline void resched_latency_warn(int cpu, u64 latency) {}
 
 extern void init_cfs_rq(struct cfs_rq *cfs_rq);
 extern void init_rt_rq(struct rt_rq *rt_rq);
 extern void init_dl_rq(struct dl_rq *dl_rq);
-
-extern void cfs_bandwidth_usage_inc(void);
-extern void cfs_bandwidth_usage_dec(void);
 
 /* nohz_balance_exit_idle removed - unused */
 

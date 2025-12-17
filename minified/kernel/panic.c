@@ -248,12 +248,7 @@ const struct taint_flag taint_flags[TAINT_FLAGS_COUNT] = {
 
 /* print_tainted removed - unused */
 
-/* test_taint removed - no callers */
-
-unsigned long get_taint(void)
-{
-	return tainted_mask;
-}
+/* test_taint, get_taint removed - no callers */
 
 void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
 {

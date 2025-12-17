@@ -117,7 +117,7 @@ static DEFINE_PER_CPU(struct pagesets, pagesets) = {
 	.lock = INIT_LOCAL_LOCK(lock),
 };
 
-DEFINE_STATIC_KEY_TRUE(vm_numa_stat_key);
+/* vm_numa_stat_key removed - unused */
 
 static DEFINE_MUTEX(pcpu_drain_mutex);
 

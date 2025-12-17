@@ -72,7 +72,6 @@ enum lockdep_ok {
 
 /* print_tainted removed - unused */
 extern void add_taint(unsigned flag, enum lockdep_ok);
-/* test_taint removed - unused */
-extern unsigned long get_taint(void);
+/* test_taint, get_taint removed - unused */
 
-#endif	 
+#endif

@@ -104,12 +104,6 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 /* _le bitmap functions (find_next_zero_bit_le, find_next_bit_le, find_first_zero_bit_le)
    removed - never called */
 
-#define for_each_set_bit(bit, addr, size) \
-	for ((bit) = find_next_bit((addr), (size), 0);		\
-	     (bit) < (size);					\
-	     (bit) = find_next_bit((addr), (size), (bit) + 1))
-
-
 #define for_each_clear_bit_from(bit, addr, size) \
 	for ((bit) = find_next_zero_bit((addr), (size), (bit));	\
 	     (bit) < (size);					\
@@ -152,9 +146,6 @@ int __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
 		 const unsigned long *bitmap2, unsigned int nbits);
 void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
 		 const unsigned long *bitmap2, unsigned int nbits);
-bool __bitmap_intersects(const unsigned long *bitmap1,
-			 const unsigned long *bitmap2, unsigned int nbits);
-int __bitmap_weight(const unsigned long *bitmap, unsigned int nbits);
 void __bitmap_set(unsigned long *map, unsigned int start, int len);
 void __bitmap_clear(unsigned long *map, unsigned int start, int len);
 

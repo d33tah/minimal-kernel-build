@@ -38,19 +38,6 @@ void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
 {
 }
 
-/* Stub: __bitmap_intersects not used in minimal kernel */
-bool __bitmap_intersects(const unsigned long *bitmap1,
-			 const unsigned long *bitmap2, unsigned int bits)
-{
-	return false;
-}
-
-/* Stub: __bitmap_weight not used in minimal kernel */
-int __bitmap_weight(const unsigned long *bitmap, unsigned int bits)
-{
-	return 0;
-}
-
 void __bitmap_set(unsigned long *map, unsigned int start, int len)
 {
 	unsigned long *p = map + BIT_WORD(start);

@@ -90,11 +90,9 @@ struct trace_eval_map {
 			cpu_online(raw_smp_processor_id()) && (PARAMS(cond)), \
 			PARAMS(void *__data, proto))
 
-#define TRACE_EVENT_FLAGS(event, flag)
+/* TRACE_EVENT_FLAGS, TRACE_EVENT_PERF_PERM removed - never used */
 
-#define TRACE_EVENT_PERF_PERM(event, expr...)
-
-#endif  
+#endif
 
 #ifndef TRACE_EVENT
 
@@ -103,47 +101,21 @@ struct trace_eval_map {
 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
 #define DEFINE_EVENT_FN(template, name, proto, args, reg, unreg)\
 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
-#define DEFINE_EVENT_PRINT(template, name, proto, args, print)	\
-	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
-#define DEFINE_EVENT_CONDITION(template, name, proto,		\
-			       args, cond)			\
-	DECLARE_TRACE_CONDITION(name, PARAMS(proto),		\
-				PARAMS(args), PARAMS(cond))
+/* DEFINE_EVENT_PRINT, DEFINE_EVENT_CONDITION removed - never used */
 
 #define TRACE_EVENT(name, proto, args, struct, assign, print)	\
 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
 #define TRACE_EVENT_FN(name, proto, args, struct,		\
 		assign, print, reg, unreg)			\
 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
-#define TRACE_EVENT_FN_COND(name, proto, args, cond, struct,		\
-		assign, print, reg, unreg)			\
-	DECLARE_TRACE_CONDITION(name, PARAMS(proto),	\
-			PARAMS(args), PARAMS(cond))
-#define TRACE_EVENT_CONDITION(name, proto, args, cond,		\
-			      struct, assign, print)		\
-	DECLARE_TRACE_CONDITION(name, PARAMS(proto),		\
-				PARAMS(args), PARAMS(cond))
+/* TRACE_EVENT_FN_COND, TRACE_EVENT_CONDITION removed - never used */
 
-#define TRACE_EVENT_FLAGS(event, flag)
+/* TRACE_EVENT_FLAGS, TRACE_EVENT_PERF_PERM removed - never used */
 
-#define TRACE_EVENT_PERF_PERM(event, expr...)
+/* DECLARE_EVENT_NOP, TRACE_EVENT_NOP, DECLARE_EVENT_CLASS_NOP,
+   DEFINE_EVENT_NOP removed - never used */
 
-#define DECLARE_EVENT_NOP(name, proto, args)				\
-	static inline void trace_##name(proto)				\
-	{ }								\
-	static inline bool trace_##name##_enabled(void)			\
-	{								\
-		return false;						\
-	}
-
-#define TRACE_EVENT_NOP(name, proto, args, struct, assign, print)	\
-	DECLARE_EVENT_NOP(name, PARAMS(proto), PARAMS(args))
-
-#define DECLARE_EVENT_CLASS_NOP(name, proto, args, tstruct, assign, print)
-#define DEFINE_EVENT_NOP(template, name, proto, args)			\
-	DECLARE_EVENT_NOP(name, PARAMS(proto), PARAMS(args))
-
-#endif  
+#endif
 
 /* Minimal trace stubs - only those actually called from code */
 static inline void trace_sys_exit(struct pt_regs *regs, long ret) {}

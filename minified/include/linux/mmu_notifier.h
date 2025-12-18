@@ -69,11 +69,7 @@ static inline void _mmu_notifier_range_init(struct mmu_notifier_range *range,
 					end, owner) \
 	_mmu_notifier_range_init(range, start, end)
 
-static inline bool
-mmu_notifier_range_blockable(const struct mmu_notifier_range *range)
-{
-	return true;
-}
+/* mmu_notifier_range_blockable removed - never used */
 
 static inline int mm_has_notifiers(struct mm_struct *mm)
 {
@@ -91,27 +87,14 @@ static inline int mmu_notifier_clear_flush_young(struct mm_struct *mm,
 	return 0;
 }
 
-static inline int mmu_notifier_test_young(struct mm_struct *mm,
-					  unsigned long address)
-{
-	return 0;
-}
-
-static inline void mmu_notifier_change_pte(struct mm_struct *mm,
-					   unsigned long address, pte_t pte)
-{
-}
+/* mmu_notifier_test_young, mmu_notifier_change_pte removed - never used */
 
 static inline void
 mmu_notifier_invalidate_range_start(struct mmu_notifier_range *range)
 {
 }
 
-static inline int
-mmu_notifier_invalidate_range_start_nonblock(struct mmu_notifier_range *range)
-{
-	return 0;
-}
+/* mmu_notifier_invalidate_range_start_nonblock removed - never used */
 
 static inline
 void mmu_notifier_invalidate_range_end(struct mmu_notifier_range *range)

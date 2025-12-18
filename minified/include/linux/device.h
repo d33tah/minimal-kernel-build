@@ -98,8 +98,7 @@ struct device_attribute {
 	struct device_attribute dev_attr_##_name = __ATTR_RW(_name)
 #define DEVICE_ATTR_RO(_name) \
 	struct device_attribute dev_attr_##_name = __ATTR_RO(_name)
-#define DEVICE_ATTR_WO(_name) \
-	struct device_attribute dev_attr_##_name = __ATTR_WO(_name)
+/* DEVICE_ATTR_WO removed - unused */
 
 void device_remove_file(struct device *dev,
 			const struct device_attribute *attr);

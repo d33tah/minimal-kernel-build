@@ -96,21 +96,12 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #define __HAVE_BUILTIN_BSWAP16__
 #endif
 
-#if __has_feature(undefined_behavior_sanitizer)
-#define __no_sanitize_undefined \
-		__attribute__((no_sanitize("undefined")))
-#else
-#define __no_sanitize_undefined
-#endif
+/* __no_sanitize_undefined, __noscs removed - unused */
 
 #if __has_feature(coverage_sanitizer)
 #define __no_sanitize_coverage __attribute__((no_sanitize("coverage")))
 #else
 #define __no_sanitize_coverage
-#endif
-
-#if __has_feature(shadow_call_stack)
-# define __noscs	__attribute__((__no_sanitize__("shadow-call-stack")))
 #endif
 
 #define __nocfi		__attribute__((__no_sanitize__("cfi")))

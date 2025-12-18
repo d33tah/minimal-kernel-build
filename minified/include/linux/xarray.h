@@ -77,11 +77,11 @@ typedef unsigned __bitwise xa_mark_t;
 
 enum xa_lock_type {
 	XA_LOCK_IRQ = 1,
-	XA_LOCK_BH = 2,
+	/* XA_LOCK_BH removed - unused */
 };
 
 #define XA_FLAGS_LOCK_IRQ	((__force gfp_t)XA_LOCK_IRQ)
-#define XA_FLAGS_LOCK_BH	((__force gfp_t)XA_LOCK_BH)
+/* XA_FLAGS_LOCK_BH removed - unused */
 #define XA_FLAGS_TRACK_FREE	((__force gfp_t)4U)
 #define XA_FLAGS_ZERO_BUSY	((__force gfp_t)8U)
 #define XA_FLAGS_ACCOUNT	((__force gfp_t)32U)

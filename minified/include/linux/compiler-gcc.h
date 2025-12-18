@@ -54,11 +54,7 @@
 #define __no_sanitize_thread
 #endif
 
-#if __has_attribute(__no_sanitize_undefined__)
-#define __no_sanitize_undefined __attribute__((no_sanitize_undefined))
-#else
-#define __no_sanitize_undefined
-#endif
+/* __no_sanitize_undefined removed - unused */
 
 #define __no_sanitize_coverage
 

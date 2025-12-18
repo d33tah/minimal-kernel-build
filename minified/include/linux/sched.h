@@ -890,10 +890,7 @@ static inline int _cond_resched(void)
 # define PREEMPT_LOCK_RESCHED_OFFSETS	PREEMPT_LOCK_OFFSET
 
 
-static inline int spin_needbreak(spinlock_t *lock)
-{
-	return 0;
-}
+/* spin_needbreak removed - never used */
 
 static __always_inline bool need_resched(void)
 {

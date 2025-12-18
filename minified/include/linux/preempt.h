@@ -69,7 +69,7 @@
 #define __preempt_count_inc() __preempt_count_add(1)
 #define __preempt_count_dec() __preempt_count_sub(1)
 
-#define preempt_count_inc() preempt_count_add(1)
+/* preempt_count_inc removed - unused */
 #define preempt_count_dec() preempt_count_sub(1)
 
 

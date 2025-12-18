@@ -230,8 +230,6 @@ do {							\
 #define unsafe_put_user(x,p,e) unsafe_op_wrap(__put_user(x,p),e)
 #define unsafe_copy_to_user(d,s,l,e) unsafe_op_wrap(__copy_to_user(d,s,l),e)
 #define unsafe_copy_from_user(d,s,l,e) unsafe_op_wrap(__copy_from_user(d,s,l),e)
-static inline unsigned long user_access_save(void) { return 0UL; }
-static inline void user_access_restore(unsigned long flags) { }
 #endif
 #ifndef user_write_access_begin
 #define user_write_access_begin user_access_begin

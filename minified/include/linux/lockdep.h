@@ -64,7 +64,6 @@ extern int lockdep_is_held(const void *);
 #define lockdep_assert_held_write(l)		do { (void)(l); } while (0)
 #define lockdep_assert_held_read(l)		do { (void)(l); } while (0)
 #define lockdep_assert_held_once(l)		do { (void)(l); } while (0)
-#define lockdep_assert_none_held_once()	do { } while (0)
 
 #define lockdep_recursing(tsk)			(0)
 
@@ -81,7 +80,6 @@ enum xhlock_context_t {
 	XHLOCK_CTX_NR,
 };
 
-#define lockdep_init_map_crosslock(m, n, k, s) do {} while (0)
 #define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
 	{ .name = (_name), .key = (void *)(_key), }
 
@@ -98,8 +96,6 @@ static inline void lockdep_free_task(struct task_struct *task) {}
 	lock(_lock)
 
 
-
-#define force_read_lock_recursive 0
 
 #define read_lock_is_recursive() 0
 
@@ -140,7 +136,6 @@ do {									\
 
 #define lock_map_acquire(l)			lock_acquire_exclusive(l, 0, 0, NULL, _THIS_IP_)
 #define lock_map_acquire_read(l)		lock_acquire_shared_recursive(l, 0, 0, NULL, _THIS_IP_)
-#define lock_map_acquire_tryread(l)		lock_acquire_shared_recursive(l, 0, 1, NULL, _THIS_IP_)
 #define lock_map_release(l)			lock_release(l, _THIS_IP_)
 
 # define might_lock(lock) do { } while (0)
@@ -149,15 +144,8 @@ do {									\
 
 # define lockdep_assert_irqs_enabled() do { } while (0)
 # define lockdep_assert_irqs_disabled() do { } while (0)
-# define lockdep_assert_in_irq() do { } while (0)
 
 # define lockdep_assert_preemption_enabled() do { } while (0)
 # define lockdep_assert_preemption_disabled() do { } while (0)
-# define lockdep_assert_in_softirq() do { } while (0)
-
-
-# define lockdep_assert_RT_in_threaded_ctx() do { } while (0)
-
-
 
 #endif  

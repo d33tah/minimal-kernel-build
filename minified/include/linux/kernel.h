@@ -62,8 +62,7 @@ struct sysinfo {
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 
-#define PTR_IF(cond, ptr)	((cond) ? (ptr) : NULL)
-
+/* PTR_IF removed - unused */
 /* u64_to_user_ptr removed - unused */
 
 #define upper_32_bits(n) ((u32)(((n) >> 16) >> 16))
@@ -152,9 +151,6 @@ extern const char hex_asc_upper[];
 
 
 static inline void tracing_off(void) { }
-
-#define __COUNT_ARGS(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _n, X...) _n
-#define COUNT_ARGS(X...) __COUNT_ARGS(, ##X, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
 
 #define __CONCAT(a, b) a ## b
 #define CONCATENATE(a, b) __CONCAT(a, b)

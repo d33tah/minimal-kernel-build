@@ -121,23 +121,14 @@ const struct dev_pm_ops __maybe_unused name = { \
 	SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
 }
 
-#define pm_ptr(_ptr) PTR_IF(IS_ENABLED(CONFIG_PM), (_ptr))
-#define pm_sleep_ptr(_ptr) PTR_IF(IS_ENABLED(CONFIG_PM_SLEEP), (_ptr))
 
 
 #define PM_EVENT_INVALID	(-1)
 #define PM_EVENT_ON		0x0000
-#define PM_EVENT_FREEZE		0x0001
-#define PM_EVENT_SUSPEND	0x0002
-#define PM_EVENT_RESUME		0x0010
-/* Unused PM_EVENT_* removed: HIBERNATE, QUIESCE, THAW, RESTORE, RECOVER,
-   USER, REMOTE, AUTO, SLEEP, SUSPEND and RESUME compound variants */
+/* Unused PM_EVENT_* removed */
 
 #define PMSG_INVALID	((struct pm_message){ .event = PM_EVENT_INVALID, })
 #define PMSG_ON		((struct pm_message){ .event = PM_EVENT_ON, })
-#define PMSG_FREEZE	((struct pm_message){ .event = PM_EVENT_FREEZE, })
-#define PMSG_SUSPEND	((struct pm_message){ .event = PM_EVENT_SUSPEND, })
-#define PMSG_RESUME	((struct pm_message){ .event = PM_EVENT_RESUME, })
 /* Unused PMSG_* macros removed: QUIESCE, HIBERNATE, THAW, RESTORE, RECOVER,
    USER_SUSPEND, USER_RESUME, REMOTE_RESUME, AUTO_SUSPEND, AUTO_RESUME, IS_AUTO */
 

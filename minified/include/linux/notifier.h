@@ -37,17 +37,12 @@ struct srcu_notifier_head {
 	struct notifier_block __rcu *head;
 };
 
-#define ATOMIC_INIT_NOTIFIER_HEAD(name) do {	\
-		spin_lock_init(&(name)->lock);	\
-		(name)->head = NULL;		\
-	} while (0)
+/* ATOMIC_INIT_NOTIFIER_HEAD removed - unused */
 #define BLOCKING_INIT_NOTIFIER_HEAD(name) do {	\
 		init_rwsem(&(name)->rwsem);	\
 		(name)->head = NULL;		\
 	} while (0)
-#define RAW_INIT_NOTIFIER_HEAD(name) do {	\
-		(name)->head = NULL;		\
-	} while (0)
+/* RAW_INIT_NOTIFIER_HEAD removed - unused */
 
 
 #define ATOMIC_NOTIFIER_INIT(name) {				\

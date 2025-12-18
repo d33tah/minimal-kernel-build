@@ -20,13 +20,7 @@ struct swait_queue {
 	struct list_head	task_list;
 };
 
-#define __SWAITQUEUE_INITIALIZER(name) {				\
-	.task		= current,					\
-	.task_list	= LIST_HEAD_INIT((name).task_list),		\
-}
-
-#define DECLARE_SWAITQUEUE(name)					\
-	struct swait_queue name = __SWAITQUEUE_INITIALIZER(name)
+/* __SWAITQUEUE_INITIALIZER, DECLARE_SWAITQUEUE removed - unused */
 
 #define __SWAIT_QUEUE_HEAD_INITIALIZER(name) {				\
 	.lock		= __RAW_SPIN_LOCK_UNLOCKED(name.lock),		\

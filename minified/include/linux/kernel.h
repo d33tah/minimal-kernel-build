@@ -150,10 +150,6 @@ extern const char hex_asc_upper[];
 
 static inline void tracing_off(void) { }
 
-#define __CONCAT(a, b) a ## b
-#define CONCATENATE(a, b) __CONCAT(a, b)
-
-
 #define VERIFY_OCTAL_PERMISSIONS(perms)						\
 	(BUILD_BUG_ON_ZERO((perms) < 0) +					\
 	 BUILD_BUG_ON_ZERO((perms) > 0777) +					\

@@ -668,8 +668,7 @@ static inline int is_global_init(struct task_struct *tsk)
 #define PF_POSTCOREDUMP		0x00000008	 
 #define PF_IO_WORKER		0x00000010	 
 #define PF_WQ_WORKER		0x00000020	 
-#define PF_FORKNOEXEC		0x00000040	 
-#define PF_MCE_PROCESS		0x00000080       
+#define PF_FORKNOEXEC		0x00000040
 #define PF_SUPERPRIV		0x00000100	 
 #define PF_DUMPCORE		0x00000200	 
 #define PF_SIGNALED		0x00000400	 
@@ -680,15 +679,11 @@ static inline int is_global_init(struct task_struct *tsk)
 #define PF_FROZEN		0x00010000	 
 #define PF_KSWAPD		0x00020000	 
 #define PF_MEMALLOC_NOFS	0x00040000	 
-#define PF_MEMALLOC_NOIO	0x00080000	 
-#define PF_LOCAL_THROTTLE	0x00100000	 
+#define PF_MEMALLOC_NOIO	0x00080000
 #define PF_KTHREAD		0x00200000	 
 #define PF_RANDOMIZE		0x00400000	 
-#define PF_NO_SETAFFINITY	0x04000000	 
-#define PF_MCE_EARLY		0x08000000       
-#define PF_MEMALLOC_PIN		0x10000000	 
-#define PF_FREEZER_SKIP		0x40000000	 
-#define PF_SUSPEND_TASK		0x80000000       
+#define PF_NO_SETAFFINITY	0x04000000
+#define PF_MEMALLOC_PIN		0x10000000       
 
 #define clear_stopped_child_used_math(child)	do { (child)->flags &= ~PF_USED_MATH; } while (0)
 #define set_stopped_child_used_math(child)	do { (child)->flags |= PF_USED_MATH; } while (0)

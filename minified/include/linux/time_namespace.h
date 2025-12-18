@@ -27,17 +27,6 @@ struct time_namespace {
 
 extern struct time_namespace init_time_ns;
 
-static inline int vdso_join_timens(struct task_struct *task,
-				   struct time_namespace *ns)
-{
-	return 0;
-}
-
-static inline void timens_commit(struct task_struct *tsk,
-				 struct time_namespace *ns)
-{
-}
-
 static inline struct time_namespace *get_time_ns(struct time_namespace *ns)
 {
 	return NULL;
@@ -66,11 +55,6 @@ static inline void timens_on_fork(struct nsproxy *nsproxy,
 
 static inline void timens_add_monotonic(struct timespec64 *ts) { }
 static inline void timens_add_boottime(struct timespec64 *ts) { }
-
-static inline u64 timens_add_boottime_ns(u64 nsec)
-{
-	return nsec;
-}
 
 static inline ktime_t timens_ktime_to_host(clockid_t clockid, ktime_t tim)
 {

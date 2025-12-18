@@ -69,16 +69,6 @@ static inline unsigned long list_lru_shrink_count(struct list_lru *lru,
 	return list_lru_count_one(lru, sc->nid, sc->memcg);
 }
 
-static inline unsigned long list_lru_count(struct list_lru *lru)
-{
-	long count = 0;
-	int nid;
-
-	for_each_node_state(nid, N_NORMAL_MEMORY)
-		count += list_lru_count_node(lru, nid);
-
-	return count;
-}
 
 void list_lru_isolate(struct list_lru_one *list, struct list_head *item);
 void list_lru_isolate_move(struct list_lru_one *list, struct list_head *item,
@@ -108,19 +98,4 @@ list_lru_shrink_walk(struct list_lru *lru, struct shrink_control *sc,
 }
 
 
-static inline unsigned long
-list_lru_walk(struct list_lru *lru, list_lru_walk_cb isolate,
-	      void *cb_arg, unsigned long nr_to_walk)
-{
-	long isolated = 0;
-	int nid;
-
-	for_each_node_state(nid, N_NORMAL_MEMORY) {
-		isolated += list_lru_walk_node(lru, nid, isolate,
-					       cb_arg, &nr_to_walk);
-		if (nr_to_walk <= 0)
-			break;
-	}
-	return isolated;
-}
-#endif  
+#endif

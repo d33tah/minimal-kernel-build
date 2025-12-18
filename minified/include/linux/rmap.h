@@ -97,19 +97,9 @@ void page_add_file_rmap(struct page *, struct vm_area_struct *,
 void page_remove_rmap(struct page *, struct vm_area_struct *,
 		bool compound);
 
-void hugepage_add_anon_rmap(struct page *, struct vm_area_struct *,
-		unsigned long address, rmap_t flags);
-void hugepage_add_new_anon_rmap(struct page *, struct vm_area_struct *,
-		unsigned long address);
-
 static inline void __page_dup_rmap(struct page *page, bool compound)
 {
 	atomic_inc(compound ? compound_mapcount_ptr(page) : &page->_mapcount);
-}
-
-static inline void page_dup_file_rmap(struct page *page, bool compound)
-{
-	__page_dup_rmap(page, compound);
 }
 
 static inline int page_try_dup_anon_rmap(struct page *page, bool compound,
@@ -132,10 +122,6 @@ dup:
 	__page_dup_rmap(page, compound);
 	return 0;
 }
-
-int make_device_exclusive_range(struct mm_struct *mm, unsigned long start,
-				unsigned long end, struct page **pages,
-				void *arg);
 
 #define PVMW_SYNC		(1 << 0)
 #define PVMW_MIGRATION		(1 << 1)

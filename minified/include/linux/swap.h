@@ -87,20 +87,12 @@ long remove_mapping(struct address_space *mapping, struct folio *folio);
 #define node_reclaim_mode 0
 
 
-#define get_nr_swap_pages()			0L
 #define total_swap_pages			0L
-#define total_swapcache_pages()			0UL
-#define vm_swap_full()				0
-
-#define si_swapinfo(val) \
-	do { (val)->freeswap = (val)->totalswap = 0; } while (0)
 
 #define free_page_and_swap_cache(page) \
 	put_page(page)
 #define free_pages_and_swap_cache(pages, nr) \
 	release_pages((pages), (nr));
-
-#define free_swap_and_cache(e) is_pfn_swap_entry(e)
 
 static inline void cgroup_throttle_swaprate(struct page *page, gfp_t gfp_mask)
 {

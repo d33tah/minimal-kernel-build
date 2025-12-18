@@ -114,22 +114,7 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma,
 				 pte_t entry, int dirty);
 #endif
 
-#ifndef __HAVE_ARCH_PMDP_SET_ACCESS_FLAGS
-static inline int pmdp_set_access_flags(struct vm_area_struct *vma,
-					unsigned long address, pmd_t *pmdp,
-					pmd_t entry, int dirty)
-{
-	BUILD_BUG();
-	return 0;
-}
-static inline int pudp_set_access_flags(struct vm_area_struct *vma,
-					unsigned long address, pud_t *pudp,
-					pud_t entry, int dirty)
-{
-	BUILD_BUG();
-	return 0;
-}
-#endif
+/* pmdp_set_access_flags, pudp_set_access_flags removed - never called */
 
 #ifndef __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
 static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
@@ -146,29 +131,14 @@ static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
 }
 #endif
 
-#ifndef __HAVE_ARCH_PMDP_TEST_AND_CLEAR_YOUNG
-static inline int pmdp_test_and_clear_young(struct vm_area_struct *vma,
-					    unsigned long address,
-					    pmd_t *pmdp)
-{
-	BUILD_BUG();
-	return 0;
-}
-#endif
+/* pmdp_test_and_clear_young removed - never called */
 
 #ifndef __HAVE_ARCH_PTEP_CLEAR_YOUNG_FLUSH
 int ptep_clear_flush_young(struct vm_area_struct *vma,
 			   unsigned long address, pte_t *ptep);
 #endif
 
-#ifndef __HAVE_ARCH_PMDP_CLEAR_YOUNG_FLUSH
-static inline int pmdp_clear_flush_young(struct vm_area_struct *vma,
-					 unsigned long address, pmd_t *pmdp)
-{
-	BUILD_BUG();
-	return 0;
-}
-#endif
+/* pmdp_clear_flush_young removed - never called */
 
 #ifndef __HAVE_ARCH_PTEP_GET_AND_CLEAR
 static inline pte_t ptep_get_and_clear(struct mm_struct *mm,

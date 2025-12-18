@@ -291,13 +291,12 @@ PAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 	__CLEARPAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 	TESTSCFLAG(Mlocked, mlocked, PF_NO_TAIL)
 
-PAGEFLAG_FALSE(Uncached, uncached)
+/* PAGEFLAG_FALSE(Uncached, uncached) removed - never used */
 
 PAGEFLAG_FALSE(HWPoison, hwpoison)
 #define __PG_HWPOISON 0
 
-
-PAGEFLAG_FALSE(SkipKASanPoison, skip_kasan_poison)
+/* PAGEFLAG_FALSE(SkipKASanPoison, skip_kasan_poison) removed - never used */
 
 __PAGEFLAG(Reported, reported, PF_NO_COMPOUND)
 
@@ -410,17 +409,17 @@ static __always_inline void set_compound_head(struct page *page, struct page *he
 #define PG_head_mask ((1UL << PG_head))
 
 TESTPAGEFLAG_FALSE(Huge, hugetlb)
-TESTPAGEFLAG_FALSE(HeadHuge, headhuge)
+/* TESTPAGEFLAG_FALSE(HeadHuge, headhuge) removed - never used */
 
 TESTPAGEFLAG_FALSE(TransHuge, transhuge)
 TESTPAGEFLAG_FALSE(TransCompound, transcompound)
-TESTPAGEFLAG_FALSE(TransCompoundMap, transcompoundmap)
+/* TESTPAGEFLAG_FALSE(TransCompoundMap, transcompoundmap) removed - never used */
 TESTPAGEFLAG_FALSE(TransTail, transtail)
 PAGEFLAG_FALSE(DoubleMap, double_map)
 	TESTSCFLAG_FALSE(DoubleMap, double_map)
 
-PAGEFLAG_FALSE(HasHWPoisoned, has_hwpoisoned)
-	TESTSCFLAG_FALSE(HasHWPoisoned, has_hwpoisoned)
+/* PAGEFLAG_FALSE(HasHWPoisoned, has_hwpoisoned) removed - never used */
+/* TESTSCFLAG_FALSE(HasHWPoisoned, has_hwpoisoned) removed - never used */
 
 
 

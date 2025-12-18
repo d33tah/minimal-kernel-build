@@ -32,7 +32,6 @@ typedef struct spinlock {
 typedef struct {
 	arch_rwlock_t raw_lock;
 } rwlock_t;
-#define RWLOCK_MAGIC		0xdeaf1eed
 #define __RW_LOCK_UNLOCKED(lockname) \
 	(rwlock_t)	{	.raw_lock = __ARCH_RW_LOCK_UNLOCKED,	\
 				RW_DEP_MAP_INIT(lockname) }

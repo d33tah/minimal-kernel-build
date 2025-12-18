@@ -35,22 +35,7 @@ typedef struct __user_cap_data_struct {
 #define VFS_CAP_U32             VFS_CAP_U32_3
 #define VFS_CAP_REVISION	VFS_CAP_REVISION_3
 
-struct vfs_cap_data {
-	__le32 magic_etc;
-	struct {
-		__le32 permitted;
-		__le32 inheritable;
-	} data[VFS_CAP_U32];
-};
-
-struct vfs_ns_cap_data {
-	__le32 magic_etc;
-	struct {
-		__le32 permitted;
-		__le32 inheritable;
-	} data[VFS_CAP_U32];
-	__le32 rootid;
-};
+/* vfs_cap_data, vfs_ns_cap_data structs removed - unused */
 
 #define CAP_CHOWN            0
 #define CAP_DAC_OVERRIDE     1
@@ -110,12 +95,7 @@ typedef struct kernel_cap_struct {
 	__u32 cap[_KERNEL_CAPABILITY_U32S];
 } kernel_cap_t;
 
-struct cpu_vfs_cap_data {
-	__u32 magic_etc;
-	kernel_cap_t permitted;
-	kernel_cap_t inheritable;
-	kuid_t rootid;
-};
+/* cpu_vfs_cap_data removed - unused */
 
 #define _USER_CAP_HEADER_SIZE  (sizeof(struct __user_cap_header_struct))
 #define _KERNEL_CAP_T_SIZE     (sizeof(kernel_cap_t))

@@ -1470,11 +1470,8 @@ extern int expand_stack(struct vm_area_struct *vma, unsigned long address);
 
 extern int expand_downwards(struct vm_area_struct *vma,
 		unsigned long address);
-#if VM_GROWSUP
-extern int expand_upwards(struct vm_area_struct *vma, unsigned long address);
-#else
-  #define expand_upwards(vma, address) (0)
-#endif
+/* expand_upwards is always a stub since VM_GROWSUP=VM_NONE */
+#define expand_upwards(vma, address) (0)
 
 extern struct vm_area_struct * find_vma(struct mm_struct * mm, unsigned long addr);
 extern struct vm_area_struct * find_vma_prev(struct mm_struct * mm, unsigned long addr,

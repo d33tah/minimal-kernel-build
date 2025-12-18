@@ -10,17 +10,7 @@
 
 extern void arch_static_call_transform(void *site, void *tramp, void *func, bool tail);
 
-#define STATIC_CALL_TRAMP_ADDR(name) &STATIC_CALL_TRAMP(name)
-
-
-#define static_call_update(name, func)					\
-({									\
-	typeof(&STATIC_CALL_TRAMP(name)) __F = (func);			\
-	__static_call_update(&STATIC_CALL_KEY(name),			\
-			     STATIC_CALL_TRAMP_ADDR(name), __F);	\
-})
-
-#define static_call_query(name) (READ_ONCE(STATIC_CALL_KEY(name).func))
+/* STATIC_CALL_TRAMP_ADDR, static_call_update, static_call_query removed - never used */
 
 
 static inline int static_call_init(void) { return 0; }
@@ -32,49 +22,13 @@ static inline int static_call_init(void) { return 0; }
 	};								\
 	ARCH_DEFINE_STATIC_CALL_TRAMP(name, _func)
 
-#define DEFINE_STATIC_CALL_NULL(name, _func)				\
-	DECLARE_STATIC_CALL(name, _func);				\
-	struct static_call_key STATIC_CALL_KEY(name) = {		\
-		.func = NULL,						\
-	};								\
-	ARCH_DEFINE_STATIC_CALL_NULL_TRAMP(name)
-
-#define DEFINE_STATIC_CALL_RET0(name, _func)				\
-	DECLARE_STATIC_CALL(name, _func);				\
-	struct static_call_key STATIC_CALL_KEY(name) = {		\
-		.func = __static_call_return0,				\
-	};								\
-	ARCH_DEFINE_STATIC_CALL_RET0_TRAMP(name)
-
-#define static_call_cond(name)	(void)__static_call(name)
-
-static inline
-void __static_call_update(struct static_call_key *key, void *tramp, void *func)
-{
-	cpus_read_lock();
-	WRITE_ONCE(key->func, func);
-	arch_static_call_transform(NULL, tramp, func, false);
-	cpus_read_unlock();
-}
-
-static inline int static_call_text_reserved(void *start, void *end)
-{
-	return 0;
-}
+/* DEFINE_STATIC_CALL_NULL, DEFINE_STATIC_CALL_RET0, static_call_cond,
+   __static_call_update, static_call_text_reserved removed - never used */
 
 extern long __static_call_return0(void);
 
-#define EXPORT_STATIC_CALL(name)					\
-	EXPORT_SYMBOL(STATIC_CALL_KEY(name));				\
-	EXPORT_SYMBOL(STATIC_CALL_TRAMP(name))
-#define EXPORT_STATIC_CALL_GPL(name)					\
-	EXPORT_SYMBOL_GPL(STATIC_CALL_KEY(name));			\
-	EXPORT_SYMBOL_GPL(STATIC_CALL_TRAMP(name))
-
-#define EXPORT_STATIC_CALL_TRAMP(name)					\
-	EXPORT_SYMBOL(STATIC_CALL_TRAMP(name))
-#define EXPORT_STATIC_CALL_TRAMP_GPL(name)				\
-	EXPORT_SYMBOL_GPL(STATIC_CALL_TRAMP(name))
+/* EXPORT_STATIC_CALL, EXPORT_STATIC_CALL_GPL,
+   EXPORT_STATIC_CALL_TRAMP, EXPORT_STATIC_CALL_TRAMP_GPL removed - never used */
 
 
 #endif  

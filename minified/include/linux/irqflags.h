@@ -22,7 +22,7 @@ static inline bool is_ftrace_trampoline(unsigned long addr)
 }
 
   static inline void lockdep_softirqs_on(unsigned long ip) { }
-  static inline void lockdep_softirqs_off(unsigned long ip) { }
+  /* lockdep_softirqs_off removed - unused */
   static inline void lockdep_hardirqs_on_prepare(void) { }
   static inline void lockdep_hardirqs_on(unsigned long ip) { }
   static inline void lockdep_hardirqs_off(unsigned long ip) { }

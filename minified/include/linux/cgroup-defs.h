@@ -127,10 +127,6 @@ static inline void cgroup_threadgroup_change_begin(struct task_struct *tsk)
 
 static inline void cgroup_threadgroup_change_end(struct task_struct *tsk) {}
 
-
-
-struct sock_cgroup_data {
-};
-
+/* sock_cgroup_data removed - unused */
 
 #endif

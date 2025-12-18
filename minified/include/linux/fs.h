@@ -85,7 +85,7 @@ int errseq_check_and_advance(errseq_t *eseq, errseq_t *since);
 #undef NR_OPEN
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096
-/* BLOCK_SIZE_BITS, BLOCK_SIZE removed - unused */
+#define NR_FILE  8192
 #define SEEK_SET	0
 #define SEEK_CUR	1
 #define SEEK_END	2
@@ -100,14 +100,13 @@ struct files_stat_struct {
 	unsigned long nr_free_files;
 	unsigned long max_files;
 };
-#define NR_FILE  8192
-typedef int __bitwise __kernel_rwf_t;
-#define RWF_HIPRI	((__force __kernel_rwf_t)0x00000001)
-#define RWF_DSYNC	((__force __kernel_rwf_t)0x00000002)
-#define RWF_SYNC	((__force __kernel_rwf_t)0x00000004)
-#define RWF_NOWAIT	((__force __kernel_rwf_t)0x00000008)
-#define RWF_APPEND	((__force __kernel_rwf_t)0x00000010)
-#define RWF_SUPPORTED	(RWF_HIPRI | RWF_DSYNC | RWF_SYNC | RWF_NOWAIT | RWF_APPEND)
+/* RWF_* values needed for IOCB_* macros, rwf_t typedef */
+typedef int rwf_t;
+#define RWF_HIPRI	0x00000001
+#define RWF_DSYNC	0x00000002
+#define RWF_SYNC	0x00000004
+#define RWF_NOWAIT	0x00000008
+#define RWF_APPEND	0x00000010
 /* end uapi/linux/fs.h */
 
 struct backing_dev_info;
@@ -139,7 +138,7 @@ extern void __init files_init(void);
 extern void __init files_maxfiles_init(void);
 extern unsigned int sysctl_nr_open;
 
-typedef __kernel_rwf_t rwf_t;
+/* rwf_t defined earlier */
 
 struct buffer_head;
 typedef int (get_block_t)(struct inode *inode, sector_t iblock,

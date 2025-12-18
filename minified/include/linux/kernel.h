@@ -64,12 +64,7 @@ struct sysinfo {
 
 #define PTR_IF(cond, ptr)	((cond) ? (ptr) : NULL)
 
-#define u64_to_user_ptr(x) (		\
-{					\
-	typecheck(u64, (x));		\
-	(void __user *)(uintptr_t)(x);	\
-}					\
-)
+/* u64_to_user_ptr removed - unused */
 
 #define upper_32_bits(n) ((u32)(((n) >> 16) >> 16))
 

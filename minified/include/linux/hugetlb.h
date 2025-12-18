@@ -199,13 +199,7 @@ static inline unsigned long huge_page_size(struct hstate *h)
 	return PAGE_SIZE;
 }
 
-/* huge_page_mask removed - unused */
-
-
-static inline unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
-{
-	return PAGE_SIZE;
-}
+/* huge_page_mask, vma_mmu_pagesize removed - unused */
 
 static inline unsigned int huge_page_shift(struct hstate *h)
 {

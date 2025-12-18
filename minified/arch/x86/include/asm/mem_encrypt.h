@@ -14,30 +14,14 @@
 
 #define sme_me_mask	0ULL
 
-static inline void __init sme_early_encrypt(resource_size_t paddr,
-					    unsigned long size) { }
-static inline void __init sme_early_decrypt(resource_size_t paddr,
-					    unsigned long size) { }
-
-static inline void __init sme_map_bootdata(char *real_mode_data) { }
-static inline void __init sme_unmap_bootdata(char *real_mode_data) { }
-
-static inline void __init sme_early_init(void) { }
+/* Only keeping functions that are actually called */
 static inline void __init sev_setup_arch(void) { }
-
-static inline void __init sme_encrypt_kernel(struct boot_params *bp) { }
-static inline void __init sme_enable(struct boot_params *bp) { }
-
 static inline void sev_es_init_vc_handling(void) { }
-
-static inline int __init
-early_set_memory_decrypted(unsigned long vaddr, unsigned long size) { return 0; }
-static inline int __init
-early_set_memory_encrypted(unsigned long vaddr, unsigned long size) { return 0; }
-static inline void __init
-early_set_mem_enc_dec_hypercall(unsigned long vaddr, int npages, bool enc) {}
-
 static inline void mem_encrypt_free_decrypted_mem(void) { }
+/* Removed unused: sme_early_encrypt, sme_early_decrypt, sme_map_bootdata,
+   sme_unmap_bootdata, sme_early_init, sme_encrypt_kernel, sme_enable,
+   early_set_memory_decrypted, early_set_memory_encrypted,
+   early_set_mem_enc_dec_hypercall */
 
 #define __bss_decrypted
 

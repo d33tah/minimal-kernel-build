@@ -8,8 +8,6 @@ void __mark_inode_dirty(struct inode *inode, int flags) { }
 
 int write_inode_now(struct inode *inode, int sync) { return 0; }
 
-int sync_inode_metadata(struct inode *inode, int wait) { return 0; }
-
 void wb_workfn(struct work_struct *work) { }
 
 int dirty_writeback_centisecs = 500;

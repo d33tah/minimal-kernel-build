@@ -1234,8 +1234,7 @@ static inline void file_accessed(struct file *file)
 		touch_atime(&file->f_path);
 }
 
-
-int sync_inode_metadata(struct inode *inode, int wait);
+/* sync_inode_metadata removed - never called */
 
 struct file_system_type {
 	const char *name;

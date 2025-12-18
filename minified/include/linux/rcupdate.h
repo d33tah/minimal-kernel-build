@@ -9,15 +9,11 @@
 
 #define ULONG_CMP_GE(a, b)	(ULONG_MAX / 2 >= (a) - (b))
 #define ULONG_CMP_LT(a, b)	(ULONG_MAX / 2 < (a) - (b))
-#define ulong2long(a)		(*(long *)(&(a)))
 #define USHORT_CMP_GE(a, b)	(USHRT_MAX / 2 >= (unsigned short)((a) - (b)))
 #define USHORT_CMP_LT(a, b)	(USHRT_MAX / 2 < (unsigned short)((a) - (b)))
 
 void call_rcu(struct rcu_head *head, rcu_callback_t func);
 void synchronize_rcu(void);
-
-
-#define rcu_read_unlock_strict() do { } while (0)
 
 static inline void __rcu_read_lock(void)
 {
@@ -27,8 +23,6 @@ static inline void __rcu_read_lock(void)
 static inline void __rcu_read_unlock(void)
 {
 	preempt_enable();
-	if (IS_ENABLED(CONFIG_RCU_STRICT_GRACE_PERIOD))
-		rcu_read_unlock_strict();
 }
 
 

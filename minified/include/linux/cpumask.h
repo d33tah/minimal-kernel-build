@@ -71,10 +71,7 @@ static inline unsigned int cpumask_any_but(const struct cpumask *mask,
 	[0 ... BITS_TO_LONGS(NR_CPUS)-1] = 0UL			\
 }
 
-#define CPU_BITS_CPU0						\
-{								\
-	[0] =  1UL						\
-}
+/* CPU_BITS_CPU0 removed - unused */
 
 static __always_inline void cpumask_set_cpu(unsigned int cpu, struct cpumask *dstp)
 {

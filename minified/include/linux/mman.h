@@ -8,8 +8,7 @@
 #include <asm/mman.h>
 
 /* From uapi/linux/mman.h and asm-generic/hugetlb_encode.h - inlined */
-#define MREMAP_MAYMOVE		1
-#define MREMAP_FIXED		2
+/* MREMAP_MAYMOVE, MREMAP_FIXED removed - unused */
 #define OVERCOMMIT_GUESS		0
 #define OVERCOMMIT_ALWAYS		1
 #define OVERCOMMIT_NEVER		2

@@ -117,9 +117,7 @@ static inline int cpuidle_enter(struct cpuidle_driver *drv,
 				struct cpuidle_device *dev, int index)
 {return -ENODEV; }
 static inline void cpuidle_reflect(struct cpuidle_device *dev, int index) { }
-static inline u64 cpuidle_poll_time(struct cpuidle_driver *drv,
-			     struct cpuidle_device *dev)
-{return 0; }
+/* cpuidle_poll_time removed - never used */
 static inline struct cpuidle_driver *cpuidle_get_cpu_driver(
 	struct cpuidle_device *dev) {return NULL; }
 static inline struct cpuidle_device *cpuidle_get_device(void) {return NULL; }

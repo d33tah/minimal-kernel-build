@@ -2,32 +2,12 @@
 #define __LINUX_MEMORY_HOTPLUG_H
 
 #include <linux/mmzone.h>
-#include <linux/spinlock.h>
 #include <linux/notifier.h>
-#include <linux/bug.h>
 
-struct page;
-struct zone;
-struct pglist_data;
-struct mem_section;
-struct memory_block;
-struct memory_group;
-struct resource;
 struct vmem_altmap;
-struct dev_pagemap;
 
-
-#define arch_alloc_nodedata(nid)	generic_alloc_nodedata(nid)
-
-
-static inline pg_data_t *generic_alloc_nodedata(int nid)
-{
-	BUG();
-	return NULL;
-}
-static inline void arch_refresh_nodedata(int nid, pg_data_t *pgdat)
-{
-}
+/* Unused forward declarations and functions removed:
+   arch_alloc_nodedata, generic_alloc_nodedata, arch_refresh_nodedata */
 
 #define pfn_to_online_page(pfn)			\
 ({						\
@@ -38,13 +18,7 @@ static inline void arch_refresh_nodedata(int nid, pg_data_t *pgdat)
  })
 
 static inline void zone_seqlock_init(struct zone *zone) {}
-
-static inline bool movable_node_is_enabled(void)
-{
-	return false;
-}
-
-
+static inline bool movable_node_is_enabled(void) { return false; }
 static inline void pgdat_resize_init(struct pglist_data *pgdat) {}
 
 #endif

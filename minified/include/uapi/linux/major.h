@@ -7,7 +7,7 @@
 #define RAMDISK_MAJOR		1
 #define TTY_MAJOR		4
 #define TTYAUX_MAJOR		5
-#define MISC_MAJOR		10
+/* MISC_MAJOR removed - unused */
 
 /* Unused but needed by root_dev.h enum (values don't matter since unused) */
 #define FLOPPY_MAJOR		2

@@ -30,13 +30,9 @@ typedef _Bool			bool;
 
 typedef __kernel_uid32_t	uid_t;
 typedef __kernel_gid32_t	gid_t;
-typedef __kernel_uid16_t        uid16_t;
-typedef __kernel_gid16_t        gid16_t;
+/* uid16_t, gid16_t, old_uid_t, old_gid_t removed - unused */
 
 typedef unsigned long		uintptr_t;
-
-typedef __kernel_old_uid_t	old_uid_t;
-typedef __kernel_old_gid_t	old_gid_t;
 
 #if defined(__GNUC__)
 typedef __kernel_loff_t		loff_t;

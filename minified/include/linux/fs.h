@@ -69,19 +69,8 @@ int errseq_check_and_advance(errseq_t *eseq, errseq_t *since);
 #include <linux/build_bug.h>
 
 /* --- 2025-12-06 20:11 --- fs_types.h inlined (36 LOC) */
-#define S_DT_SHIFT	12
-#define S_DT(mode)	(((mode) & S_IFMT) >> S_DT_SHIFT)
-#define S_DT_MASK	(S_IFMT >> S_DT_SHIFT)
-#define DT_UNKNOWN	0
-#define DT_FIFO		1
-#define DT_CHR		2
 #define DT_DIR		4
-#define DT_BLK		6
-#define DT_REG		8
-#define DT_LNK		10
-#define DT_SOCK		12
-#define DT_MAX		(S_DT_MASK + 1)
-/* Removed unused FT_* defines and fs_ftype_to_dtype/fs_umode_to_ftype/fs_umode_to_dtype */
+/* S_DT*, DT_UNKNOWN, DT_FIFO, DT_CHR, DT_BLK, DT_REG, DT_LNK, DT_SOCK, DT_MAX removed - unused */
 /* --- end fs_types.h inlined --- */
 #include <linux/stddef.h>
 #include <linux/mount.h>
@@ -96,8 +85,7 @@ int errseq_check_and_advance(errseq_t *eseq, errseq_t *since);
 #undef NR_OPEN
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096
-#define BLOCK_SIZE_BITS 10
-#define BLOCK_SIZE (1<<BLOCK_SIZE_BITS)
+/* BLOCK_SIZE_BITS, BLOCK_SIZE removed - unused */
 #define SEEK_SET	0
 #define SEEK_CUR	1
 #define SEEK_END	2
@@ -106,7 +94,7 @@ int errseq_check_and_advance(errseq_t *eseq, errseq_t *since);
 #define SEEK_MAX	SEEK_HOLE
 #define RENAME_NOREPLACE	(1 << 0)
 #define RENAME_EXCHANGE		(1 << 1)
-#define RENAME_WHITEOUT		(1 << 2)
+/* RENAME_WHITEOUT removed - unused */
 struct files_stat_struct {
 	unsigned long nr_files;
 	unsigned long nr_free_files;

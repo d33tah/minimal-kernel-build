@@ -183,9 +183,7 @@ extern int mmap_rnd_bits __read_mostly;
 #define page_to_virt(x)	__va(PFN_PHYS(page_to_pfn(x)))
 #endif
 
-#ifndef lm_alias
-#define lm_alias(x)	__va(__pa_symbol(x))
-#endif
+/* lm_alias removed - unused */
 
 #ifndef mm_forbids_zeropage
 #define mm_forbids_zeropage(X)	(0)
@@ -204,13 +202,13 @@ extern int sysctl_overcommit_ratio;
 extern unsigned long sysctl_overcommit_kbytes;
 
 #define nth_page(page,n) ((page) + (n))
-#define folio_page_idx(folio, p)	((p) - &(folio)->page)
+/* folio_page_idx removed - unused */
 
 #define PAGE_ALIGN(addr) ALIGN(addr, PAGE_SIZE)
 
 #define PAGE_ALIGNED(addr)	IS_ALIGNED((unsigned long)(addr), PAGE_SIZE)
 
-#define lru_to_page(head) (list_entry((head)->prev, struct page, lru))
+/* lru_to_page removed - unused */
 void setup_initial_init_mm(void *start_code, void *end_code,
 			   void *end_data, void *brk);
 
@@ -248,16 +246,16 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_NORESERVE	0x00200000	
 #define VM_HUGETLB	0x00400000
 #define VM_SYNC		0x00800000
-#define VM_ARCH_1	0x01000000
-#define VM_DONTDUMP	0x04000000	
+/* VM_ARCH_1 removed - unused */
+#define VM_DONTDUMP	0x04000000
 
 # define VM_SOFTDIRTY	0
 
 #define VM_MIXEDMAP	0x10000000
 #define VM_NOHUGEPAGE	0x40000000
-/* VM_MERGEABLE (0x80000000) removed - unused */	
+/* VM_MERGEABLE (0x80000000) removed - unused */
 
-# define VM_PAT		VM_ARCH_1	
+/* VM_PAT removed - unused (was VM_ARCH_1) */
 
 #if defined(CONFIG_ARM64_MTE)
 # define VM_MTE		VM_HIGH_ARCH_0	

@@ -64,69 +64,11 @@ static inline pte_t swp_entry_to_pte(swp_entry_t entry)
 
 
 /* CONFIG_DEVICE_PRIVATE disabled - minimal stubs */
-static inline swp_entry_t make_readable_device_private_entry(pgoff_t offset)
-{
-	return swp_entry(0, 0);
-}
-
-static inline swp_entry_t make_writable_device_private_entry(pgoff_t offset)
-{
-	return swp_entry(0, 0);
-}
-
-static inline bool is_device_private_entry(swp_entry_t entry)
-{
-	return false;
-}
-
-static inline bool is_writable_device_private_entry(swp_entry_t entry)
-{
-	return false;
-}
-
-static inline swp_entry_t make_readable_device_exclusive_entry(pgoff_t offset)
-{
-	return swp_entry(0, 0);
-}
-
-static inline swp_entry_t make_writable_device_exclusive_entry(pgoff_t offset)
-{
-	return swp_entry(0, 0);
-}
-
-static inline bool is_device_exclusive_entry(swp_entry_t entry)
-{
-	return false;
-}
-
-static inline bool is_writable_device_exclusive_entry(swp_entry_t entry)
-{
-	return false;
-}
-
-static inline swp_entry_t make_readable_migration_entry(pgoff_t offset)
-{
-	return swp_entry(0, 0);
-}
-
-static inline swp_entry_t make_readable_exclusive_migration_entry(pgoff_t offset)
-{
-	return swp_entry(0, 0);
-}
-
-static inline swp_entry_t make_writable_migration_entry(pgoff_t offset)
-{
-	return swp_entry(0, 0);
-}
-
-static inline int is_migration_entry(swp_entry_t swp)
-{
-	return 0;
-}
-
+static inline bool is_device_private_entry(swp_entry_t entry) { return false; }
+static inline bool is_device_exclusive_entry(swp_entry_t entry) { return false; }
+static inline int is_migration_entry(swp_entry_t swp) { return 0; }
 static inline void migration_entry_wait(struct mm_struct *mm, pmd_t *pmd,
 					 unsigned long address) { }
-/* is_writable_migration_entry, is_readable_migration_entry removed - unused */
 
 
 typedef unsigned long pte_marker;
@@ -136,55 +78,12 @@ typedef unsigned long pte_marker;
 
 
 /* make_pte_marker_entry, is_pte_marker_entry, pte_marker_get removed - unused */
+/* pfn_swap_entry_to_page, is_pfn_swap_entry removed - unused */
 
-/* is_pte_marker, make_pte_marker, pte_none_mostly removed - unused */
-
-static inline struct page *pfn_swap_entry_to_page(swp_entry_t entry)
-{
-	struct page *p = pfn_to_page(swp_offset(entry));
-
-	 
-	BUG_ON(is_migration_entry(entry) && !PageLocked(p));
-
-	return p;
-}
-
-static inline bool is_pfn_swap_entry(swp_entry_t entry)
-{
-	return is_migration_entry(entry) || is_device_private_entry(entry) ||
-	       is_device_exclusive_entry(entry);
-}
-
-struct page_vma_mapped_walk;
-
-static inline int set_pmd_migration_entry(struct page_vma_mapped_walk *pvmw,
-		struct page *page)
-{
-	BUILD_BUG();
-}
-
-static inline void remove_migration_pmd(struct page_vma_mapped_walk *pvmw,
-		struct page *new)
-{
-	BUILD_BUG();
-}
-
+/* set_pmd_migration_entry, remove_migration_pmd, swp_entry_to_pmd removed - unused */
 static inline void pmd_migration_entry_wait(struct mm_struct *m, pmd_t *p) { }
-
-static inline swp_entry_t pmd_to_swp_entry(pmd_t pmd)
-{
-	return swp_entry(0, 0);
-}
-
-static inline pmd_t swp_entry_to_pmd(swp_entry_t entry)
-{
-	return __pmd(0);
-}
-
-static inline int is_pmd_migration_entry(pmd_t pmd)
-{
-	return 0;
-}
+static inline swp_entry_t pmd_to_swp_entry(pmd_t pmd) { return swp_entry(0, 0); }
+static inline int is_pmd_migration_entry(pmd_t pmd) { return 0; }
 
 
 static inline int non_swap_entry(swp_entry_t entry)

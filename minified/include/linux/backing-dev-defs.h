@@ -33,18 +33,7 @@ enum wb_reason {
 	WB_REASON_BACKGROUND,
 };
 
-struct wb_completion {
-	atomic_t		cnt;
-	wait_queue_head_t	*waitq;
-};
-
-#define __WB_COMPLETION_INIT(_waitq)	\
-	(struct wb_completion){ .cnt = ATOMIC_INIT(1), .waitq = (_waitq) }
-
-#define WB_COMPLETION_INIT(bdi)		__WB_COMPLETION_INIT(&(bdi)->wb_waitq)
-
-#define DEFINE_WB_COMPLETION(cmpl, bdi)	\
-	struct wb_completion cmpl = WB_COMPLETION_INIT(bdi)
+/* wb_completion and related macros removed - unused */
 
 struct bdi_writeback {
 	struct backing_dev_info *bdi;	 
@@ -115,11 +104,7 @@ struct backing_dev_info {
 
 };
 
-struct wb_lock_cookie {
-	bool locked;
-	unsigned long flags;
-};
-
+/* wb_lock_cookie removed - unused */
 /* wb_tryget, wb_get, wb_put removed - never called */
 
 #endif

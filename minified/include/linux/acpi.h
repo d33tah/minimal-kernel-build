@@ -17,17 +17,8 @@
 #endif
 
 typedef void *acpi_handle;
-typedef u32 acpi_status;
-typedef u32 acpi_object_type;
-union acpi_object;
 
 #define acpi_disabled 1
-
-#define ACPI_COMPANION(dev)		(NULL)
-#define ACPI_COMPANION_SET(dev, adev)	do { } while (0)
-#define ACPI_HANDLE(dev)		(NULL)
-#define ACPI_HANDLE_FWNODE(fwnode)	(NULL)
-#define ACPI_DEVICE_CLASS(_cls, _msk)	.cls = (0), .cls_msk = (0),
 
 
 
@@ -65,8 +56,6 @@ static inline bool acpi_driver_match_device(struct device *dev,
 	return false;
 }
 
-/* Unused ACPI functions removed - acpi_evaluate_dsm through acpi_device_notify */
-#define ACPI_PTR(_ptr)	(NULL)
 #define acpi_handle_printk(level, handle, fmt, ...) do { } while (0)
 #define acpi_handle_err(handle, fmt, ...) do { } while (0)
 #define acpi_handle_warn(handle, fmt, ...) do { } while (0)

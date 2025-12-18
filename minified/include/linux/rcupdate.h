@@ -37,10 +37,8 @@ static inline void rcu_init_tasks_generic(void) { }
 static inline void rcu_init_nohz(void) { }
 static inline void rcu_nocb_flush_deferred_wakeup(void) { }
 
-#define rcu_tasks_classic_qs(t, preempt) do { } while (0)
+/* rcu_tasks_classic_qs, call_rcu_tasks, synchronize_rcu_tasks removed - unused */
 #define rcu_tasks_qs(t, preempt) do { } while (0)
-#define call_rcu_tasks call_rcu
-#define synchronize_rcu_tasks synchronize_rcu
 static inline void exit_tasks_rcu_start(void) { }
 static inline void exit_tasks_rcu_finish(void) { }
 
@@ -208,8 +206,7 @@ do {									      \
 				(c) || rcu_read_lock_sched_held(), \
 				__rcu)
 
-#define rcu_dereference_raw_check(p) \
-	__rcu_dereference_check((p), __UNIQUE_ID(rcu), 1, __rcu)
+/* rcu_dereference_raw_check removed - unused */
 
 #define rcu_dereference_protected(p, c) \
 	__rcu_dereference_protected((p), __UNIQUE_ID(rcu), (c), __rcu)

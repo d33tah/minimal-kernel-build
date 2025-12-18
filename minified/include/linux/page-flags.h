@@ -329,15 +329,11 @@ static __always_inline bool PageAnon(struct page *page)
 	return folio_test_anon(page_folio(page));
 }
 
-static __always_inline int __PageMovable(struct page *page)
-{
-	return ((unsigned long)page->mapping & PAGE_MAPPING_FLAGS) ==
-				PAGE_MAPPING_MOVABLE;
-}
+/* __PageMovable removed - unused */
 
 TESTPAGEFLAG_FALSE(Ksm, ksm)
 
-u64 stable_page_flags(struct page *page);
+/* stable_page_flags declaration removed - unused */
 
 static inline bool folio_test_uptodate(struct folio *folio)
 {

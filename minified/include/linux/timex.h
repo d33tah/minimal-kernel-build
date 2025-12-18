@@ -38,11 +38,7 @@ struct __kernel_timex {
 	int  :32; int  :32; int  :32; int  :32;
 	int  :32; int  :32; int  :32;
 };
-#define TIME_ERROR	5
-
-#define ADJ_ADJTIME		0x8000 
-#define ADJ_OFFSET_SINGLESHOT	0x0001	 
-#define ADJ_OFFSET_READONLY	0x2000	 
+/* TIME_ERROR, ADJ_ADJTIME, ADJ_OFFSET_SINGLESHOT, ADJ_OFFSET_READONLY removed - unused */
 #include <linux/compiler.h>
 #include <linux/types.h>
 #include <linux/param.h>

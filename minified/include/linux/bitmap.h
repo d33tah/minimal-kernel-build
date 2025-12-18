@@ -173,11 +173,7 @@ int bitmap_parse(const char *buf, unsigned int buflen,
  * bitmap_bitremap, bitmap_onto, bitmap_fold, bitmap_find_free_region,
  * bitmap_release_region, bitmap_allocate_region removed - unused */
 
-#ifdef __BIG_ENDIAN
-void bitmap_copy_le(unsigned long *dst, const unsigned long *src, unsigned int nbits);
-#else
-#define bitmap_copy_le bitmap_copy
-#endif
+/* bitmap_copy_le removed - unused */
 unsigned int bitmap_ord_to_pos(const unsigned long *bitmap, unsigned int ord, unsigned int nbits);
 int bitmap_print_to_pagebuf(bool list, char *buf,
 				   const unsigned long *maskp, int nmaskbits);
@@ -292,11 +288,7 @@ static __always_inline void bitmap_clear(unsigned long *map, unsigned int start,
 	else
 		__bitmap_clear(map, start, nbits);
 }
-/* 32-bit only kernel - BITMAP_FROM_U64 expands to two words */
-#define BITMAP_FROM_U64(n) ((unsigned long) ((u64)(n) & ULONG_MAX)), \
-				((unsigned long) ((u64)(n) >> 32))
-
-/* bitmap_get_value8 removed - never called */
+/* BITMAP_FROM_U64, bitmap_get_value8 removed - never called */
 
 #endif
 

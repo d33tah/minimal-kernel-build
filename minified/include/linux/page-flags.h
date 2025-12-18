@@ -140,16 +140,14 @@ static unsigned long *folio_flags(struct folio *folio, unsigned n)
 #define PF_NO_COMPOUND(page, enforce) ({				\
 		VM_BUG_ON_PGFLAGS(enforce && PageCompound(page), page);	\
 		PF_POISONED_CHECK(page); })
-#define PF_SECOND(page, enforce) ({					\
-		VM_BUG_ON_PGFLAGS(!PageHead(page), page);		\
-		PF_POISONED_CHECK(&page[1]); })
+/* PF_SECOND removed - unused */
 
 #define FOLIO_PF_ANY		0
 #define FOLIO_PF_HEAD		0
 #define FOLIO_PF_ONLY_HEAD	0
 #define FOLIO_PF_NO_TAIL	0
 #define FOLIO_PF_NO_COMPOUND	0
-#define FOLIO_PF_SECOND		1
+/* FOLIO_PF_SECOND removed - unused */
 
 #define TESTPAGEFLAG(uname, lname, policy)				\
 static __always_inline bool folio_test_##lname(struct folio *folio)	\
@@ -533,7 +531,7 @@ static inline bool folio_has_private(struct folio *folio)
 #undef PF_ONLY_HEAD
 #undef PF_NO_TAIL
 #undef PF_NO_COMPOUND
-#undef PF_SECOND
+/* #undef PF_SECOND removed - macro was removed */
 #endif  
 
 #endif	 

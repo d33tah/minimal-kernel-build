@@ -125,15 +125,8 @@ enum cpuid_regs_idx {
 };
 
 #define X86_VENDOR_INTEL	0
-#define X86_VENDOR_CYRIX	1
+/* X86_VENDOR_CYRIX, UMC, CENTAUR, TRANSMETA, NSC, HYGON, ZHAOXIN, VORTEX removed - unused */
 #define X86_VENDOR_AMD		2
-#define X86_VENDOR_UMC		3
-#define X86_VENDOR_CENTAUR	5
-#define X86_VENDOR_TRANSMETA	7
-#define X86_VENDOR_NSC		8
-#define X86_VENDOR_HYGON	9
-#define X86_VENDOR_ZHAOXIN	10
-#define X86_VENDOR_VORTEX	11
 #define X86_VENDOR_NUM		12
 
 #define X86_VENDOR_UNKNOWN	0xff
@@ -462,11 +455,9 @@ extern int			bootloader_type;
 extern int			bootloader_version;
 
 #define HAVE_ARCH_PICK_MMAP_LAYOUT 1
-#define ARCH_HAS_PREFETCHW
-#define ARCH_HAS_SPINLOCK_PREFETCH
+/* ARCH_HAS_PREFETCHW, ARCH_HAS_SPINLOCK_PREFETCH, ARCH_HAS_PREFETCH removed - unused */
 
 # define BASE_PREFETCH		""
-# define ARCH_HAS_PREFETCH
 
  
 static inline void prefetch(const void *x)

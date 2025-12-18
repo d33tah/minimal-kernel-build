@@ -430,9 +430,9 @@ PAGEFLAG_FALSE(HasHWPoisoned, has_hwpoisoned)
 #define PAGE_TYPE_BASE	0xf0000000
 #define PAGE_MAPCOUNT_RESERVE	-128
 #define PG_buddy	0x00000080
-#define PG_offline	0x00000100
+/* PG_offline removed - unused */
 #define PG_table	0x00000200
-#define PG_guard	0x00000400
+/* PG_guard removed - unused */
 
 #define PageType(page, flag)						\
 	((page->page_type & (PAGE_TYPE_BASE | flag)) == PAGE_TYPE_BASE)
@@ -460,12 +460,11 @@ static __always_inline void __ClearPage##uname(struct page *page)	\
 
 PAGE_TYPE_OPS(Buddy, buddy)
 
-PAGE_TYPE_OPS(Offline, offline)
-
+/* PAGE_TYPE_OPS(Offline, offline) removed - never used */
 
 PAGE_TYPE_OPS(Table, table)
 
-PAGE_TYPE_OPS(Guard, guard)
+/* PAGE_TYPE_OPS(Guard, guard) removed - never used */
 
 
 PAGEFLAG(Isolated, isolated, PF_ANY);

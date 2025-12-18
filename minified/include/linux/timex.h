@@ -59,7 +59,7 @@ unsigned long random_get_entropy_fallback(void);
    SHIFT_PLL, SHIFT_FLL, MAXTC, SHIFT_USEC, PPM_SCALE, PPM_SCALE_INV_SHIFT,
    PPM_SCALE_INV, MAXPHASE, MAXFREQ, MAXFREQ_SCALED, MINSEC, MAXSEC, NTP_PHASE_LIMIT */
 
-extern unsigned long tick_usec;		 
+/* extern unsigned long tick_usec removed - unused */
 extern unsigned long tick_nsec;		 
 
 #define shift_right(x, s) ({	\

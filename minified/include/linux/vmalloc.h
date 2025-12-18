@@ -153,25 +153,13 @@ extern struct vm_struct *remove_vm_area(const void *addr);
 extern struct vm_struct *find_vm_area(const void *addr);
 /* find_vmap_area declaration removed - made static */
 
-static inline bool is_vm_area_hugepages(const void *addr)
-{
-	 
-	return false;
-}
-
-static inline void set_vm_flush_reset_perms(void *addr)
-{
-	struct vm_struct *vm = find_vm_area(addr);
-
-	if (vm)
-		vm->flags |= VM_FLUSH_RESET_PERMS;
-}
+/* is_vm_area_hugepages, set_vm_flush_reset_perms removed - never used */
 
 
 
 
 #define VMALLOC_TOTAL (VMALLOC_END - VMALLOC_START)
 
-static inline bool vmalloc_dump_obj(void *object) { return false; }
+/* vmalloc_dump_obj removed - never used */
 
 #endif  

@@ -232,15 +232,7 @@ static inline void do_raw_write_seqcount_end(seqcount_t *s)
 	s->sequence++;
 }
 
-#define write_seqcount_begin_nested(s, subclass)			\
-do {									\
-	seqprop_assert(s);						\
-									\
-	if (seqprop_preemptible(s))					\
-		preempt_disable();					\
-									\
-	do_write_seqcount_begin_nested(seqprop_ptr(s), subclass);	\
-} while (0)
+/* write_seqcount_begin_nested macro removed - never used */
 
 static inline void do_write_seqcount_begin_nested(seqcount_t *s, int subclass)
 {

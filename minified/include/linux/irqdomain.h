@@ -100,27 +100,5 @@ enum {
 	IRQ_DOMAIN_FLAG_NONCORE		= (1 << 16),
 };
 
-static inline struct device_node *irq_domain_get_of_node(struct irq_domain *d)
-{
-	return to_of_node(d->fwnode);
-}
-
-static inline void irq_domain_set_pm_device(struct irq_domain *d,
-					    struct device *dev)
-{
-	if (d)
-		d->dev = dev;
-}
-
-static inline void irq_dispose_mapping(unsigned int virq) { }
-static inline struct irq_domain *irq_find_matching_fwnode(
-	struct fwnode_handle *fwnode, enum irq_domain_bus_token bus_token)
-{
-	return NULL;
-}
-static inline bool irq_domain_check_msi_remap(void)
-{
-	return false;
-}
 
 #endif  

@@ -194,7 +194,7 @@ typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
 
 #define FMODE_NOACCOUNT		((__force fmode_t)0x20000000)
 
-#define FMODE_BUF_RASYNC	((__force fmode_t)0x40000000)
+/* FMODE_BUF_RASYNC removed - unused */
 
 #define ATTR_MODE	(1 << 0)
 #define ATTR_UID	(1 << 1)
@@ -692,8 +692,8 @@ extern void __f_setown(struct file *filp, struct pid *, enum pid_type, int force
 #define SB_NOATIME	1024	
 #define SB_NODIRATIME	2048	
 #define SB_SILENT	32768
-#define SB_POSIXACL	(1<<16)	
-#define SB_INLINECRYPT	(1<<17)	
+#define SB_POSIXACL	(1<<16)
+/* SB_INLINECRYPT removed - unused */
 #define SB_KERNMOUNT	(1<<22) 
 #define SB_I_VERSION	(1<<23) 
 #define SB_LAZYTIME	(1<<25) 

@@ -41,14 +41,4 @@ void fprop_fraction_percpu(struct fprop_global *p,
 	struct fprop_local_percpu *pl, unsigned long *numerator,
 	unsigned long *denominator);
 
-static inline
-void fprop_inc_percpu(struct fprop_global *p, struct fprop_local_percpu *pl)
-{
-	unsigned long flags;
-
-	local_irq_save(flags);
-	__fprop_add_percpu(p, pl, 1);
-	local_irq_restore(flags);
-}
-
 #endif

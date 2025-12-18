@@ -116,8 +116,6 @@ void memset_io(volatile void __iomem *, int, size_t);
 #endif  
 
 extern void native_io_delay(void);
-
-extern int io_delay_type;
 extern void io_delay_init(void);
 
 

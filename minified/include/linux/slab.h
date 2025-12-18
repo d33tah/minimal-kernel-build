@@ -102,7 +102,7 @@ static inline unsigned int arch_slab_minalign(void)
 
 #define KMALLOC_MAX_SIZE	(1UL << KMALLOC_SHIFT_MAX)
 #define KMALLOC_MAX_CACHE_SIZE	(1UL << KMALLOC_SHIFT_HIGH)
-#define KMALLOC_MAX_ORDER	(KMALLOC_SHIFT_MAX - PAGE_SHIFT)
+/* KMALLOC_MAX_ORDER removed - unused */
 
 #ifndef KMALLOC_MIN_SIZE
 #define KMALLOC_MIN_SIZE (1 << KMALLOC_SHIFT_LOW)

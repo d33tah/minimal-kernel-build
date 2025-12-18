@@ -24,18 +24,10 @@ static inline int cpuset_nodemask_valid_mems_allowed(nodemask_t *nodemask)
 	return 1;
 }
 
-static inline void rebuild_sched_domains(void)
-{
-	partition_sched_domains(1, NULL, NULL);
-}
+/* rebuild_sched_domains, read_mems_allowed_begin removed - unused */
 
 static inline void set_mems_allowed(nodemask_t nodemask)
 {
-}
-
-static inline unsigned int read_mems_allowed_begin(void)
-{
-	return 0;
 }
 
 static inline bool read_mems_allowed_retry(unsigned int seq)

@@ -42,8 +42,7 @@ int ldsem_down_write_trylock(struct ld_semaphore *sem);
 void ldsem_up_read(struct ld_semaphore *sem);
 void ldsem_up_write(struct ld_semaphore *sem);
 
-# define ldsem_down_read_nested(sem, subclass, timeout)		\
-		ldsem_down_read(sem, timeout)
+/* ldsem_down_read_nested removed - unused */
 # define ldsem_down_write_nested(sem, subclass, timeout)	\
 		ldsem_down_write(sem, timeout)
 
@@ -89,7 +88,7 @@ struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *);
 void tty_ldisc_flush(struct tty_struct *tty);
 
 int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
-int tty_set_ldisc(struct tty_struct *tty, int disc);
+/* tty_set_ldisc removed - unused */
 /* --- end tty_ldisc.h inlined --- */
 #include <linux/mutex.h>
 #include <linux/tty_flags.h>

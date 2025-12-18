@@ -5,7 +5,7 @@
 
 #define PER_CPU_SHARED_ALIGNED_SECTION ""
 #define PER_CPU_ALIGNED_SECTION "..shared_aligned"
-#define PER_CPU_FIRST_SECTION ""
+/* PER_CPU_FIRST_SECTION removed - unused */
 
 
 #define __PCPU_ATTRS(sec)						\
@@ -40,11 +40,7 @@
 #define DEFINE_PER_CPU(type, name)					\
 	DEFINE_PER_CPU_SECTION(type, name, "")
 
-#define DECLARE_PER_CPU_FIRST(type, name)				\
-	DECLARE_PER_CPU_SECTION(type, name, PER_CPU_FIRST_SECTION)
-
-#define DEFINE_PER_CPU_FIRST(type, name)				\
-	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_FIRST_SECTION)
+/* DECLARE_PER_CPU_FIRST, DEFINE_PER_CPU_FIRST removed - unused */
 
 #define DECLARE_PER_CPU_SHARED_ALIGNED(type, name)			\
 	DECLARE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) \

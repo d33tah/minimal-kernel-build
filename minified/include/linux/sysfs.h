@@ -117,10 +117,6 @@ struct sysfs_ops {
 };
 
 
-static inline void sysfs_remove_dir(struct kobject *kobj)
-{
-}
-
 static inline int sysfs_create_file_ns(struct kobject *kobj,
 				       const struct attribute *attr,
 				       const void *ns)
@@ -131,17 +127,6 @@ static inline int sysfs_create_file_ns(struct kobject *kobj,
 static inline void sysfs_remove_file_ns(struct kobject *kobj,
 					const struct attribute *attr,
 					const void *ns)
-{
-}
-
-
-static inline int sysfs_create_link(struct kobject *kobj,
-				    struct kobject *target, const char *name)
-{
-	return 0;
-}
-
-static inline void sysfs_remove_link(struct kobject *kobj, const char *name)
 {
 }
 

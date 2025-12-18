@@ -88,9 +88,6 @@ struct vm_area_struct;
 #define GFP_HIGHUSER	(GFP_USER | __GFP_HIGHMEM)
 #define GFP_HIGHUSER_MOVABLE	(GFP_HIGHUSER | __GFP_MOVABLE | \
 			 __GFP_SKIP_KASAN_POISON)
-#define GFP_TRANSHUGE_LIGHT	((GFP_HIGHUSER_MOVABLE | __GFP_COMP | \
-			 __GFP_NOMEMALLOC | __GFP_NOWARN) & ~__GFP_RECLAIM)
-#define GFP_TRANSHUGE	(GFP_TRANSHUGE_LIGHT | __GFP_DIRECT_RECLAIM)
 
 #define GFP_MOVABLE_MASK (__GFP_RECLAIMABLE|__GFP_MOVABLE)
 #define GFP_MOVABLE_SHIFT 3
@@ -262,9 +259,6 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask) __alloc_size(1);
 #define __get_free_page(gfp_mask) \
 		__get_free_pages((gfp_mask), 0)
 
-#define __get_dma_pages(gfp_mask, order) \
-		__get_free_pages((gfp_mask) | GFP_DMA, (order))
-
 extern void __free_pages(struct page *page, unsigned int order);
 extern void free_pages(unsigned long addr, unsigned int order);
 
@@ -277,9 +271,6 @@ void page_alloc_init_late(void);
 extern gfp_t gfp_allowed_mask;
 
 bool gfp_pfmemalloc_allowed(gfp_t gfp_mask);
-
-
-void free_contig_range(unsigned long pfn, unsigned long nr_pages);
 
 
 #endif  

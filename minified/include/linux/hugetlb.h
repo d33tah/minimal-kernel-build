@@ -176,33 +176,6 @@ generic_hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
 				  unsigned long len, unsigned long pgoff,
 				  unsigned long flags);
 
-enum hugetlb_page_flags {
-	__NR_HPAGEFLAGS,
-};
-
-#define TESTHPAGEFLAG(uname, flname)				\
-static inline int HPage##uname(struct page *page)		\
-	{ return 0; }
-
-#define SETHPAGEFLAG(uname, flname)				\
-static inline void SetHPage##uname(struct page *page)		\
-	{ }
-
-#define CLEARHPAGEFLAG(uname, flname)				\
-static inline void ClearHPage##uname(struct page *page)		\
-	{ }
-
-#define HPAGEFLAG(uname, flname)				\
-	TESTHPAGEFLAG(uname, flname)				\
-	SETHPAGEFLAG(uname, flname)				\
-	CLEARHPAGEFLAG(uname, flname)				\
-
-HPAGEFLAG(RestoreReserve, restore_reserve)
-HPAGEFLAG(Migratable, migratable)
-HPAGEFLAG(Temporary, temporary)
-HPAGEFLAG(Freed, freed)
-HPAGEFLAG(VmemmapOptimized, vmemmap_optimized)
-
 struct hstate {};
 
 static inline struct hstate *hstate_file(struct file *f)

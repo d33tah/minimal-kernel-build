@@ -238,15 +238,7 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
 	(pud_present(pud) && (!(write) || pud_write(pud)))
 #endif
 
-#ifndef p4d_access_permitted
-#define p4d_access_permitted(p4d, write) \
-	(p4d_present(p4d) && (!(write) || p4d_write(p4d)))
-#endif
-
-#ifndef pgd_access_permitted
-#define pgd_access_permitted(pgd, write) \
-	(pgd_present(pgd) && (!(write) || pgd_write(pgd)))
-#endif
+/* p4d_access_permitted, pgd_access_permitted removed - never used */
 
 #ifndef __HAVE_ARCH_PMD_SAME
 static inline int pmd_same(pmd_t pmd_a, pmd_t pmd_b)

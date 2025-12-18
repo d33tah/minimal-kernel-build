@@ -59,22 +59,9 @@ unsigned long random_get_entropy_fallback(void);
 #endif
 #endif
 
-#define SHIFT_PLL	2	 
-#define SHIFT_FLL	2	 
-#define MAXTC		10	 
-
-#define SHIFT_USEC 16		 
-#define PPM_SCALE ((s64)NSEC_PER_USEC << (NTP_SCALE_SHIFT - SHIFT_USEC))
-#define PPM_SCALE_INV_SHIFT 19
-#define PPM_SCALE_INV ((1LL << (PPM_SCALE_INV_SHIFT + NTP_SCALE_SHIFT)) / \
-		       PPM_SCALE + 1)
-
-#define MAXPHASE 500000000L	 
-#define MAXFREQ 500000		 
-#define MAXFREQ_SCALED ((s64)MAXFREQ << NTP_SCALE_SHIFT)
-#define MINSEC 256		 
-#define MAXSEC 2048		 
-#define NTP_PHASE_LIMIT ((MAXPHASE / NSEC_PER_USEC) << 5)  
+/* NTP tuning macros removed - unused:
+   SHIFT_PLL, SHIFT_FLL, MAXTC, SHIFT_USEC, PPM_SCALE, PPM_SCALE_INV_SHIFT,
+   PPM_SCALE_INV, MAXPHASE, MAXFREQ, MAXFREQ_SCALED, MINSEC, MAXSEC, NTP_PHASE_LIMIT */
 
 extern unsigned long tick_usec;		 
 extern unsigned long tick_nsec;		 

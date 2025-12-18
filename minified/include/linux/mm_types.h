@@ -213,9 +213,6 @@ static inline atomic_t *compound_pincount_ptr(struct page *page)
 
 #define STRUCT_PAGE_MAX_SHIFT	(order_base_2(sizeof(struct page)))
 
-#define PAGE_FRAG_CACHE_MAX_SIZE	__ALIGN_MASK(32768, ~PAGE_MASK)
-#define PAGE_FRAG_CACHE_MAX_ORDER	get_order(PAGE_FRAG_CACHE_MAX_SIZE)
-
 #define page_private(page)		((page)->private)
 
 static inline void set_page_private(struct page *page, unsigned long private)
@@ -223,33 +220,7 @@ static inline void set_page_private(struct page *page, unsigned long private)
 	page->private = private;
 }
 
-struct page_frag_cache {
-	void * va;
-#if (PAGE_SIZE < PAGE_FRAG_CACHE_MAX_SIZE)
-	__u16 offset;
-	__u16 size;
-#else
-	__u32 offset;
-#endif
-	 
-	unsigned int		pagecnt_bias;
-	bool pfmemalloc;
-};
-
 typedef unsigned long vm_flags_t;
-
-struct vm_region {
-	struct rb_node	vm_rb;		 
-	vm_flags_t	vm_flags;	 
-	unsigned long	vm_start;	 
-	unsigned long	vm_end;		 
-	unsigned long	vm_top;		 
-	unsigned long	vm_pgoff;	 
-	struct file	*vm_file;	 
-
-	int		vm_usage;	 
-	bool		vm_icache_flushed : 1;  
-};
 
 #define NULL_VM_UFFD_CTX ((struct vm_userfaultfd_ctx) {})
 struct vm_userfaultfd_ctx {};
@@ -308,7 +279,6 @@ struct vm_area_struct {
 	struct vm_userfaultfd_ctx vm_userfaultfd_ctx;
 } __randomize_layout;
 
-struct kioctx_table;
 struct mm_struct {
 	struct {
 		struct vm_area_struct *mmap;		 

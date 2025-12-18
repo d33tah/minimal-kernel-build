@@ -188,10 +188,7 @@ static inline void __dec_node_page_state(struct page *page,
 
 static inline void refresh_zone_stat_thresholds(void) { }
 static inline void cpu_vm_stats_fold(int cpu) { }
-
-static inline void drain_zonestat(struct zone *zone,
-			struct per_cpu_zonestat *pzstats) { }
-
+/* drain_zonestat removed - unused */
 
 static inline void node_stat_mod_folio(struct folio *folio,
 		enum node_stat_item item, long nr)

@@ -17,8 +17,7 @@ struct cpuidle_driver;
 
 
 
-#define CPUIDLE_STATE_DISABLED_BY_USER		BIT(0)
-#define CPUIDLE_STATE_DISABLED_BY_DRIVER	BIT(1)
+/* CPUIDLE_STATE_DISABLED_BY_* removed - never used */
 
 struct cpuidle_state_usage {
 	unsigned long long	disable;
@@ -52,14 +51,7 @@ struct cpuidle_state {
 			    int index);
 };
 
-#define CPUIDLE_FLAG_NONE       	(0x00)
-#define CPUIDLE_FLAG_POLLING		BIT(0)  
-#define CPUIDLE_FLAG_COUPLED		BIT(1)  
-#define CPUIDLE_FLAG_TIMER_STOP 	BIT(2)  
-#define CPUIDLE_FLAG_UNUSABLE		BIT(3)  
-#define CPUIDLE_FLAG_OFF		BIT(4)  
-#define CPUIDLE_FLAG_TLB_FLUSHED	BIT(5)  
-#define CPUIDLE_FLAG_RCU_IDLE		BIT(6)  
+/* CPUIDLE_FLAG_* removed - never used */
 
 struct cpuidle_device_kobj;
 struct cpuidle_state_kobj;

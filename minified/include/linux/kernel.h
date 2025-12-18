@@ -75,9 +75,7 @@ struct sysinfo {
 
 #define lower_32_bits(n) ((u32)((n) & 0xffffffff))
 
-#define upper_16_bits(n) ((u16)((n) >> 16))
-
-#define lower_16_bits(n) ((u16)((n) & 0xffff))
+/* upper_16_bits, lower_16_bits removed - unused */
 
 struct completion;
 struct user;

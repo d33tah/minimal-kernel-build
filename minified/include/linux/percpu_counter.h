@@ -65,14 +65,7 @@ static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
 	return percpu_counter_read(fbc);
 }
 
-static inline bool percpu_counter_initialized(struct percpu_counter *fbc)
-{
-	return true;
-}
-
-static inline void percpu_counter_sync(struct percpu_counter *fbc)
-{
-}
+/* percpu_counter_initialized, percpu_counter_sync removed - never used */
 
 static inline void percpu_counter_inc(struct percpu_counter *fbc)
 {

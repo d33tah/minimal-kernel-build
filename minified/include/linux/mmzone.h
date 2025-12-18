@@ -230,8 +230,7 @@ enum zone_watermarks {
 #define NR_PCP_THP 0
 #define NR_PCP_LISTS (MIGRATE_PCPTYPES * (PAGE_ALLOC_COSTLY_ORDER + 1 + NR_PCP_THP))
 
-#define NR_PCP_ORDER_WIDTH 8
-#define NR_PCP_ORDER_MASK ((1<<NR_PCP_ORDER_WIDTH) - 1)
+/* NR_PCP_ORDER_WIDTH, NR_PCP_ORDER_MASK removed - unused */
 
 #define min_wmark_pages(z) (z->_watermark[WMARK_MIN] + z->watermark_boost)
 #define low_wmark_pages(z) (z->_watermark[WMARK_LOW] + z->watermark_boost)

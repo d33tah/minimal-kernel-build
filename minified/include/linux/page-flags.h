@@ -50,8 +50,7 @@ enum pageflags {
 	 
 	PG_fscache = PG_private_2,	 
 
-	/* PG_pinned, PG_savepinned, PG_foreign, PG_xen_remapped removed - unused */
-	PG_slob_free = PG_private,
+	/* PG_pinned, PG_savepinned, PG_foreign, PG_xen_remapped, PG_slob_free removed - unused */
 
 	 
 	PG_double_map = PG_workingset,
@@ -258,7 +257,7 @@ PAGEFLAG(Active, active, PF_HEAD) __CLEARPAGEFLAG(Active, active, PF_HEAD)
 PAGEFLAG(Workingset, workingset, PF_HEAD)
 	TESTCLEARFLAG(Workingset, workingset, PF_HEAD)
 __PAGEFLAG(Slab, slab, PF_NO_TAIL)
-__PAGEFLAG(SlobFree, slob_free, PF_NO_TAIL)
+/* __PAGEFLAG(SlobFree, ...) removed - never used */
 
 PAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 	__CLEARPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)

@@ -44,8 +44,7 @@ static inline void __seqcount_init(seqcount_t *s, const char *name,
 
 #define seqcount_raw_spinlock_init(s, lock)	seqcount_LOCKNAME_init(s, lock, raw_spinlock)
 #define seqcount_spinlock_init(s, lock)		seqcount_LOCKNAME_init(s, lock, spinlock)
-#define seqcount_rwlock_init(s, lock)		seqcount_LOCKNAME_init(s, lock, rwlock)
-#define seqcount_mutex_init(s, lock)		seqcount_LOCKNAME_init(s, lock, mutex)
+/* seqcount_rwlock_init, seqcount_mutex_init removed - unused */
 
 #define SEQCOUNT_LOCKNAME(lockname, locktype, preemptible, lockmember, lockbase, lock_acquire) \
 typedef struct seqcount_##lockname {					\

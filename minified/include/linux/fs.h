@@ -168,8 +168,6 @@ typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
 #define FMODE_PWRITE		((__force fmode_t)0x10)
 
 #define FMODE_EXEC		((__force fmode_t)0x20)
-#define FMODE_WRITE_IOCTL	((__force fmode_t)0x100)
-#define FMODE_NOCMTIME		((__force fmode_t)0x800)
 #define FMODE_UNSIGNED_OFFSET	((__force fmode_t)0x2000)
 
 #define FMODE_PATH		((__force fmode_t)0x4000)

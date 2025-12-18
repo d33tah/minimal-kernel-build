@@ -53,13 +53,6 @@ static inline void on_each_cpu_mask(const struct cpumask *mask,
 	on_each_cpu_cond_mask(NULL, func, info, wait, mask);
 }
 
-static inline void on_each_cpu_cond(smp_cond_func_t cond_func,
-				    smp_call_func_t func, void *info, bool wait)
-{
-	on_each_cpu_cond_mask(cond_func, func, info, wait, cpu_online_mask);
-}
-
-
 static inline void smp_send_stop(void) { }
 
 #define raw_smp_processor_id()			0
@@ -81,17 +74,7 @@ smp_call_function_any(const struct cpumask *mask, smp_call_func_t func,
 	return smp_call_function_single(0, func, info, wait);
 }
 
-static inline void kick_all_cpus_sync(void) {  }
-static inline void wake_up_all_idle_cpus(void) {  }
-
 static inline void smp_init(void) { }
-
-static inline int get_boot_cpu_id(void)
-{
-	return 0;
-}
-
-
 
 
 #ifndef __smp_processor_id
@@ -105,12 +88,5 @@ static inline int get_boot_cpu_id(void)
 
 
 void smp_setup_processor_id(void);
-
-int smp_call_on_cpu(unsigned int cpu, int (*func)(void *), void *par,
-		    bool phys);
-
-int smpcfd_prepare_cpu(unsigned int cpu);
-int smpcfd_dead_cpu(unsigned int cpu);
-int smpcfd_dying_cpu(unsigned int cpu);
 
 #endif  

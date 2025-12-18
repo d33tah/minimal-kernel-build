@@ -69,11 +69,7 @@ static void __local_bh_enable(unsigned int cnt)
 	__preempt_count_sub(cnt);
 }
 
-void _local_bh_enable(void)
-{
-	WARN_ON_ONCE(in_hardirq());
-	__local_bh_enable(SOFTIRQ_DISABLE_OFFSET);
-}
+/* _local_bh_enable removed - never called */
 
 void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 {

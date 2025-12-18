@@ -100,8 +100,7 @@ static inline void deferred_split_huge_page(struct page *page) {}
 
 static inline void __split_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
 		unsigned long address, bool freeze, struct folio *folio) {}
-static inline void split_huge_pmd_address(struct vm_area_struct *vma,
-		unsigned long address, bool freeze, struct folio *folio) {}
+/* split_huge_pmd_address removed - unused */
 
 #define split_huge_pud(__vma, __pmd, __address)	\
 	do { } while (0)

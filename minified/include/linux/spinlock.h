@@ -57,9 +57,7 @@
 		_raw_spin_lock_irqsave(lock, flags);	\
 	} while (0)
 
-#define raw_spin_lock_irqsave_nested(lock, flags, subclass)	\
-	raw_spin_lock_irqsave(lock, flags)
-
+/* raw_spin_lock_irqsave_nested removed - unused */
 
 #define raw_spin_lock_irq(lock)		_raw_spin_lock_irq(lock)
 #define raw_spin_lock_bh(lock)		_raw_spin_lock_bh(lock)
@@ -73,12 +71,7 @@
 	} while (0)
 #define raw_spin_unlock_bh(lock)	_raw_spin_unlock_bh(lock)
 
-#define raw_spin_trylock_irq(lock) \
-({ \
-	local_irq_disable(); \
-	raw_spin_trylock(lock) ? \
-	1 : ({ local_irq_enable(); 0;  }); \
-})
+/* raw_spin_trylock_irq removed - unused */
 
 #define raw_spin_trylock_irqsave(lock, flags) \
 ({ \
@@ -91,12 +84,8 @@
 # define rwlock_init(lock)					\
 	do { *(lock) = __RW_LOCK_UNLOCKED(lock); } while (0)
 
-# define do_raw_read_lock(rwlock)	do {__acquire(lock); arch_read_lock(&(rwlock)->raw_lock); } while (0)
-# define do_raw_read_trylock(rwlock)	arch_read_trylock(&(rwlock)->raw_lock)
-# define do_raw_read_unlock(rwlock)	do {arch_read_unlock(&(rwlock)->raw_lock); __release(lock); } while (0)
-# define do_raw_write_lock(rwlock)	do {__acquire(lock); arch_write_lock(&(rwlock)->raw_lock); } while (0)
-# define do_raw_write_trylock(rwlock)	arch_write_trylock(&(rwlock)->raw_lock)
-# define do_raw_write_unlock(rwlock)	do {arch_write_unlock(&(rwlock)->raw_lock); __release(lock); } while (0)
+/* do_raw_read_lock, do_raw_read_trylock, do_raw_read_unlock,
+   do_raw_write_lock, do_raw_write_trylock, do_raw_write_unlock removed - unused */
 
 #define read_trylock(lock)	__cond_lock(lock, _raw_read_trylock(lock))
 #define write_trylock(lock)	__cond_lock(lock, _raw_write_trylock(lock))

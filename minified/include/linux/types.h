@@ -57,22 +57,14 @@ typedef __kernel_ptrdiff_t	ptrdiff_t;
 typedef __kernel_clock_t	clock_t;
 #endif
 
-typedef unsigned char		unchar;
 typedef unsigned short		ushort;
 typedef unsigned int		uint;
 typedef unsigned long		ulong;
 
 #ifndef __BIT_TYPES_DEFINED__
 #define __BIT_TYPES_DEFINED__
-
-typedef u8			u_int8_t;
-typedef s8			int8_t;
-typedef u16			u_int16_t;
-typedef s16			int16_t;
-typedef u32			u_int32_t;
 typedef s32			int32_t;
-
-#endif  
+#endif
 
 typedef u8			uint8_t;
 typedef u16			uint16_t;
@@ -80,7 +72,6 @@ typedef u32			uint32_t;
 
 #if defined(__GNUC__)
 typedef u64			uint64_t;
-typedef u64			u_int64_t;
 typedef s64			int64_t;
 #endif
 

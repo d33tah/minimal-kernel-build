@@ -48,17 +48,6 @@ struct dev_pagemap {
 	};
 };
 
-static inline struct vmem_altmap *pgmap_altmap(struct dev_pagemap *pgmap)
-{
-	if (pgmap->flags & PGMAP_ALTMAP_VALID)
-		return &pgmap->altmap;
-	return NULL;
-}
-
-static inline unsigned long pgmap_vmemmap_nr(struct dev_pagemap *pgmap)
-{
-	return 1 << pgmap->vmemmap_shift;
-}
 
 static inline bool is_device_private_page(const struct page *page)
 {
@@ -67,28 +56,7 @@ static inline bool is_device_private_page(const struct page *page)
 		page->pgmap->type == MEMORY_DEVICE_PRIVATE;
 }
 
-static inline bool folio_is_device_private(const struct folio *folio)
-{
-	return is_device_private_page(&folio->page);
-}
 
-static inline bool is_pci_p2pdma_page(const struct page *page)
-{
-	return false;
-}
-
-static inline void *devm_memremap_pages(struct device *dev,
-		struct dev_pagemap *pgmap)
-{
-	 
-	WARN_ON_ONCE(1);
-	return ERR_PTR(-ENXIO);
-}
-
-static inline void devm_memunmap_pages(struct device *dev,
-		struct dev_pagemap *pgmap)
-{
-}
 
 static inline struct dev_pagemap *get_dev_pagemap(unsigned long pfn,
 		struct dev_pagemap *pgmap)
@@ -96,25 +64,6 @@ static inline struct dev_pagemap *get_dev_pagemap(unsigned long pfn,
 	return NULL;
 }
 
-static inline bool pgmap_pfn_valid(struct dev_pagemap *pgmap, unsigned long pfn)
-{
-	return false;
-}
-
-static inline unsigned long vmem_altmap_offset(struct vmem_altmap *altmap)
-{
-	return 0;
-}
-
-static inline void vmem_altmap_free(struct vmem_altmap *altmap,
-		unsigned long nr_pfns)
-{
-}
-
-static inline unsigned long memremap_compat_align(void)
-{
-	return PAGE_SIZE;
-}
 
 static inline void put_dev_pagemap(struct dev_pagemap *pgmap)
 {

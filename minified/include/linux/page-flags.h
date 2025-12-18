@@ -276,9 +276,9 @@ TESTPAGEFLAG(Writeback, writeback, PF_NO_TAIL)
 PAGEFLAG(MappedToDisk, mappedtodisk, PF_NO_TAIL)
 
 PAGEFLAG(Reclaim, reclaim, PF_NO_TAIL)
-	TESTCLEARFLAG(Reclaim, reclaim, PF_NO_TAIL)
+	/* TESTCLEARFLAG(Reclaim, ...) removed - never used */
 PAGEFLAG(Readahead, readahead, PF_NO_COMPOUND)
-	TESTCLEARFLAG(Readahead, readahead, PF_NO_COMPOUND)
+	/* TESTCLEARFLAG(Readahead, ...) removed - never used */
 
 PAGEFLAG_FALSE(HighMem, highmem)
 

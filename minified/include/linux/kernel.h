@@ -73,7 +73,7 @@ struct sysinfo {
 /* upper_16_bits, lower_16_bits removed - unused */
 
 struct completion;
-struct user;
+/* struct user forward declaration removed - defined in asm/user.h */
 
 
 # define might_resched() do { } while (0)

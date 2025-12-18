@@ -18,21 +18,13 @@
 #define KERN_DEBUG	KERN_SOH "7"
 #define KERN_DEFAULT	""
 #define KERN_CONT	KERN_SOH "c"
-#define LOGLEVEL_DEFAULT	-1
-#define LOGLEVEL_EMERG		0
-#define LOGLEVEL_ERR		3
-#define LOGLEVEL_WARNING	4
-#define LOGLEVEL_INFO		6
-#define LOGLEVEL_DEBUG		7
 /* --- end kern_levels.h inlined --- */
 #include <linux/ratelimit_types.h>
 
 
 extern const char linux_banner[];
 
-extern int oops_in_progress;	 
-
-#define PRINTK_MAX_SINGLE_HEADER_LEN 2
+extern int oops_in_progress;
 
 #define CONSOLE_EXT_LOG_MAX	8192
 
@@ -61,14 +53,6 @@ struct va_format {
 	const char *fmt;
 	va_list *va;
 };
-
-#define FW_BUG		"[Firmware Bug]: "
-#define FW_WARN		"[Firmware Warn]: "
-#define FW_INFO		"[Firmware Info]: "
-
-#define HW_ERR		"[Hardware Error]: "
-
-#define DEPRECATED	"[Deprecated]: "
 
 #define no_printk(fmt, ...)				\
 ({							\

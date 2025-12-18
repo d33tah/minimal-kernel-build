@@ -12,16 +12,7 @@
 #include <linux/bottom_half.h>
 #include <linux/lockdep.h>
 #include <asm/barrier.h>
-/* Inlined from asm-generic/mmiowb.h */
-#ifndef mmiowb_set_pending
-#define mmiowb_set_pending()		do { } while (0)
-#endif
-#ifndef mmiowb_spin_lock
-#define mmiowb_spin_lock()		do { } while (0)
-#endif
-#ifndef mmiowb_spin_unlock
-#define mmiowb_spin_unlock()		do { } while (0)
-#endif
+/* mmiowb_* macros removed - unused */
 
 
 /* LOCK_SECTION_NAME, LOCK_SECTION_START, LOCK_SECTION_END removed - unused */

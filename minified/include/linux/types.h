@@ -24,7 +24,6 @@ typedef __kernel_key_t		key_t;
 typedef __kernel_suseconds_t	suseconds_t;
 typedef __kernel_timer_t	timer_t;
 typedef __kernel_clockid_t	clockid_t;
-typedef __kernel_mqd_t		mqd_t;
 
 typedef _Bool			bool;
 
@@ -57,16 +56,6 @@ typedef __kernel_ptrdiff_t	ptrdiff_t;
 #define _CLOCK_T
 typedef __kernel_clock_t	clock_t;
 #endif
-
-#ifndef _CADDR_T
-#define _CADDR_T
-typedef __kernel_caddr_t	caddr_t;
-#endif
-
-typedef unsigned char		u_char;
-typedef unsigned short		u_short;
-typedef unsigned int		u_int;
-typedef unsigned long		u_long;
 
 typedef unsigned char		unchar;
 typedef unsigned short		ushort;

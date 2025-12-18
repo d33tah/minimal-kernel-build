@@ -41,9 +41,7 @@ struct math_emu_info {
 #include <linux/irqflags.h>
 #include <linux/mem_encrypt.h>
 
- 
-#define NET_IP_ALIGN	0
-
+/* NET_IP_ALIGN removed - unused */
 #define HBP_NUM 4
 
  

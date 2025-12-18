@@ -80,6 +80,6 @@ static inline int pm_runtime_resume_and_get(struct device *dev) {
 static inline int pm_runtime_put(struct device *dev) { return __pm_runtime_idle(dev, RPM_GET_PUT | RPM_ASYNC); }
 static inline int pm_runtime_put_sync(struct device *dev) { return __pm_runtime_idle(dev, RPM_GET_PUT); }
 static inline void pm_runtime_disable(struct device *dev) { __pm_runtime_disable(dev, true); }
-static inline int pm_runtime_set_active(struct device *dev) { return __pm_runtime_set_status(dev, RPM_ACTIVE); }
+/* pm_runtime_set_active removed - unused */
 
 #endif

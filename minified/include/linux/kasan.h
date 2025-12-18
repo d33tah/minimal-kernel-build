@@ -74,15 +74,7 @@ static inline void *kasan_kmalloc_large(const void *ptr, size_t size, gfp_t flag
 {
 	return (void *)ptr;
 }
-static inline void *kasan_krealloc(const void *object, size_t new_size,
-				 gfp_t flags)
-{
-	return (void *)object;
-}
-static inline bool kasan_check_byte(const void *address)
-{
-	return true;
-}
+/* kasan_krealloc, kasan_check_byte removed - unused */
 
 
 static inline void kasan_unpoison_task_stack(struct task_struct *task) {}

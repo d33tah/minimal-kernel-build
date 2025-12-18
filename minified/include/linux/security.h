@@ -161,12 +161,7 @@ static inline void security_inode_free(struct inode *inode)
 { }
 
 
-static inline int security_inode_create(struct inode *dir,
-					 struct dentry *dentry,
-					 umode_t mode)
-{
-	return 0;
-}
+/* security_inode_create removed - unused */
 
 
 static inline int security_inode_mkdir(struct inode *dir,

@@ -32,8 +32,7 @@
 #define _THIS_IP_  ({ __label__ __here; __here: (unsigned long)&&__here; })
 #include <asm/byteorder.h>
 
-/* From uapi/linux/sysinfo.h - inlined */
-#define SI_LOAD_SHIFT	16
+/* From uapi/linux/sysinfo.h - inlined, SI_LOAD_SHIFT removed (unused) */
 struct sysinfo {
 	__kernel_long_t uptime;
 	__kernel_ulong_t loads[3];
@@ -52,8 +51,7 @@ struct sysinfo {
 };
 
 #include <linux/const.h>
-
-#define STACK_MAGIC	0xdeadbeef
+/* STACK_MAGIC removed - unused */
 
 #define REPEAT_BYTE(x)	((~0ul / 0xff) * (x))
 

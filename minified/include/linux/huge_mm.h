@@ -110,32 +110,13 @@ static inline int is_swap_pmd(pmd_t pmd)
 {
 	return 0;
 }
-static inline spinlock_t *pmd_trans_huge_lock(pmd_t *pmd,
-		struct vm_area_struct *vma)
-{
-	return NULL;
-}
-static inline spinlock_t *pud_trans_huge_lock(pud_t *pud,
-		struct vm_area_struct *vma)
-{
-	return NULL;
-}
-
+/* pmd_trans_huge_lock, pud_trans_huge_lock removed - unused */
 
 static inline bool is_huge_zero_page(struct page *page)
 {
 	return false;
 }
-
-static inline bool is_huge_zero_pmd(pmd_t pmd)
-{
-	return false;
-}
-
-static inline bool is_huge_zero_pud(pud_t pud)
-{
-	return false;
-}
+/* is_huge_zero_pmd, is_huge_zero_pud removed - unused */
 
 static inline void mm_put_huge_zero_page(struct mm_struct *mm)
 {

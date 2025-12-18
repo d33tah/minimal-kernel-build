@@ -25,8 +25,7 @@ typedef unsigned int __bitwise kasan_vmalloc_flags_t;
 
 
 
-static inline void kasan_enable_current(void) {}
-static inline void kasan_disable_current(void) {}
+/* kasan_enable_current, kasan_disable_current removed - unused */
 
 
 

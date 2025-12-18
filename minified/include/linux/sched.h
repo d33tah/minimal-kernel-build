@@ -105,7 +105,7 @@ struct perf_event_context;
 struct pid_namespace;
 struct pipe_inode_info;
 struct reclaim_state;
-struct robust_list_head;
+/* struct robust_list_head removed - unused after futex.h cleanup */
 struct rq;
 struct sched_attr;
 struct sched_param;

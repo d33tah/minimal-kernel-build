@@ -76,7 +76,7 @@
 #define DEFINE_PER_CPU_READ_MOSTLY(type, name)				\
 	DEFINE_PER_CPU_SECTION(type, name, "..read_mostly")
 
-#define DEFINE_PER_CPU_DECRYPTED(type, name)	DEFINE_PER_CPU(type, name)
+/* DEFINE_PER_CPU_DECRYPTED removed - unused */
 
 #ifndef __CHECKER__
 #define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(var)

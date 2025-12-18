@@ -215,9 +215,7 @@ struct lruvec {
 	unsigned long			flags;
 };
 
-#define ISOLATE_UNMAPPED	((__force isolate_mode_t)0x2)
-#define ISOLATE_ASYNC_MIGRATE	((__force isolate_mode_t)0x4)
-#define ISOLATE_UNEVICTABLE	((__force isolate_mode_t)0x8)
+/* ISOLATE_UNMAPPED, ISOLATE_ASYNC_MIGRATE, ISOLATE_UNEVICTABLE removed - unused */
 
 typedef unsigned __bitwise isolate_mode_t;
 
@@ -272,7 +270,7 @@ enum zone_type {
 
 #ifndef __GENERATING_BOUNDS_H
 
-#define ASYNC_AND_SYNC 2
+/* ASYNC_AND_SYNC removed - unused */
 
 struct zone {
 	 

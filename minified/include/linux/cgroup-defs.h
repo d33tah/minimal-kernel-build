@@ -21,11 +21,6 @@ typedef struct {
 
 #include <linux/workqueue.h>
 
-
-
-
-#define CGROUP_SUBSYS_COUNT 0
-
 static inline void cgroup_threadgroup_change_begin(struct task_struct *tsk)
 {
 	might_sleep();

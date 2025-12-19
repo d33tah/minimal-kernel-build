@@ -22,10 +22,6 @@ static inline void lockdep_on(void)
 
 # define lock_acquire(l, s, t, r, c, n, i)	do { } while (0)
 # define lock_release(l, i)			do { } while (0)
-# define lock_downgrade(l, i)			do { } while (0)
-# define lock_set_class(l, n, key, s, i)	do { (void)(key); } while (0)
-# define lock_set_novalidate_class(l, n, i)	do { } while (0)
-# define lock_set_subclass(l, s, i)		do { } while (0)
 # define lockdep_init()				do { } while (0)
 # define lockdep_init_map_type(lock, name, key, sub, inner, outer, type) \
 		do { (void)(name); (void)(key); } while (0)

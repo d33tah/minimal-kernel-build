@@ -13,13 +13,6 @@
 #define print_dev_t(buffer, dev)					\
 	sprintf((buffer), "%u:%u\n", MAJOR(dev), MINOR(dev))
 
-#define format_dev_t(buffer, dev)					\
-	({								\
-		sprintf(buffer, "%u:%u", MAJOR(dev), MINOR(dev));	\
-		buffer;							\
-	})
-
-
 static __always_inline dev_t old_decode_dev(u16 val)
 {
 	return MKDEV((val >> 8) & 255, val & 255);

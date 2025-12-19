@@ -23,10 +23,6 @@ struct cred;
 #include <asm/signal.h>
 #include <asm/syscall_wrapper.h>
 
-#ifndef COMPAT_USE_64BIT_TIME
-#define COMPAT_USE_64BIT_TIME 0
-#endif
-
 #ifndef __SC_DELOUSE
 #define __SC_DELOUSE(t,v) ((__force t)(unsigned long)(v))
 #endif
@@ -50,18 +46,7 @@ typedef struct {
 typedef __compat_uid32_t	compat_uid_t;
 typedef __compat_gid32_t	compat_gid_t;
 
-#define is_compat_task() (0)
 #define in_compat_syscall in_compat_syscall
 static inline bool in_compat_syscall(void) { return false; }
-
-#define BITS_PER_COMPAT_LONG    (8*sizeof(compat_long_t))
-#define BITS_TO_COMPAT_LONGS(bits) DIV_ROUND_UP(bits, BITS_PER_COMPAT_LONG)
-
-#ifndef compat_ptr
-static inline void __user *compat_ptr(compat_uptr_t uptr)
-{
-	return (void __user *)(unsigned long)uptr;
-}
-#endif
 
 #endif /* _LINUX_COMPAT_H */

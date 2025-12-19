@@ -7,7 +7,6 @@
 #include <linux/sched/task.h>
 
 /* Inlined from sched/jobctl.h - trimmed to used flags only */
-#define JOBCTL_STOP_SIGMASK	0xffff
 #define JOBCTL_STOP_PENDING_BIT	17
 #define JOBCTL_TRAP_STOP_BIT	19
 #define JOBCTL_LISTENING_BIT	22

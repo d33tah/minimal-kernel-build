@@ -144,14 +144,6 @@ static inline int rcu_read_lock_any_held(void)
 #define rcu_check_sparse(p, space)
 #endif  
 
-#define __unrcu_pointer(p, local)					\
-({									\
-	typeof(*p) *local = (typeof(*p) *__force)(p);			\
-	rcu_check_sparse(p, __rcu);					\
-	((typeof(*p) __force __kernel *)(local)); 			\
-})
-#define unrcu_pointer(p) __unrcu_pointer(p, __UNIQUE_ID(rcu))
-
 #define __rcu_access_pointer(p, local, space) \
 ({ \
 	typeof(*p) *local = (typeof(*p) *__force)READ_ONCE(p); \

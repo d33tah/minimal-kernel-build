@@ -419,10 +419,6 @@ static inline int pmd_none_or_clear_bad(pmd_t *pmd)
 #define pgprot_device pgprot_noncached
 #endif
 
-#ifndef pgprot_mhp
-#define pgprot_mhp(prot)	(prot)
-#endif
-
 #ifndef pgprot_modify
 #define pgprot_modify pgprot_modify
 static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
@@ -685,30 +681,12 @@ typedef unsigned int pgtbl_mod_mask;
 #define MAX_POSSIBLE_PHYSMEM_BITS 32
 #endif
 
-#ifndef has_transparent_hugepage
-#define has_transparent_hugepage() 0
-#endif
-
-#ifndef mm_p4d_folded
-#define mm_p4d_folded(mm)	__is_defined(__PAGETABLE_P4D_FOLDED)
-#endif
-
 #ifndef mm_pud_folded
 #define mm_pud_folded(mm)	__is_defined(__PAGETABLE_PUD_FOLDED)
 #endif
 
 #ifndef mm_pmd_folded
 #define mm_pmd_folded(mm)	__is_defined(__PAGETABLE_PMD_FOLDED)
-#endif
-
-#ifndef p4d_offset_lockless
-#define p4d_offset_lockless(pgdp, pgd, address) p4d_offset(&(pgd), address)
-#endif
-#ifndef pud_offset_lockless
-#define pud_offset_lockless(p4dp, p4d, address) pud_offset(&(p4d), address)
-#endif
-#ifndef pmd_offset_lockless
-#define pmd_offset_lockless(pudp, pud, address) pmd_offset(&(pud), address)
 #endif
 
 #ifndef pgd_leaf

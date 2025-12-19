@@ -146,7 +146,6 @@ static unsigned long *folio_flags(struct folio *folio, unsigned n)
 #define FOLIO_PF_ONLY_HEAD	0
 #define FOLIO_PF_NO_TAIL	0
 #define FOLIO_PF_NO_COMPOUND	0
-/* FOLIO_PF_SECOND removed - unused */
 
 #define TESTPAGEFLAG(uname, lname, policy)				\
 static __always_inline bool folio_test_##lname(struct folio *folio)	\

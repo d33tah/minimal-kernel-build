@@ -165,7 +165,6 @@ struct xa_node {
 	};
 };
 
-#define XA_BUG_ON(xa, x)	do { } while (0)
 #define XA_NODE_BUG_ON(node, x)	do { } while (0)
 
 static inline void *xa_head(const struct xarray *xa)

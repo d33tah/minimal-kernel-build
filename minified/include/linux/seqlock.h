@@ -10,8 +10,6 @@
 
 #include <asm/processor.h>
 
-#define KCSAN_SEQLOCK_REGION_MAX 1000
-
 typedef struct seqcount {
 	unsigned sequence;
 } seqcount_t;

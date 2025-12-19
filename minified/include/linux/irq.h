@@ -324,18 +324,6 @@ int __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 #define irq_alloc_descs(irq, from, cnt, node)	\
 	__irq_alloc_descs(irq, from, cnt, node, THIS_MODULE, NULL)
 
-#define irq_alloc_desc(node)			\
-	irq_alloc_descs(-1, 1, 1, node)
-
-#define irq_alloc_desc_at(at, node)		\
-	irq_alloc_descs(at, at, 1, node)
-
-#define irq_alloc_desc_from(from, node)		\
-	irq_alloc_descs(-1, from, 1, node)
-
-#define irq_alloc_descs_from(from, cnt, node)	\
-	irq_alloc_descs(-1, from, cnt, node)
-
 void irq_free_descs(unsigned int irq, unsigned int cnt);
 
 #ifndef set_handle_irq

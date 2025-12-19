@@ -111,10 +111,6 @@ extern int sched_rr_timeslice;
  
 #define NICE_0_LOAD		(1L << NICE_0_LOAD_SHIFT)
 
- 
-#define DL_SCALE		10
-
- 
 #define RUNTIME_INF		((u64)~0ULL)
 
 static inline int idle_policy(int policy)
@@ -428,7 +424,6 @@ extern void update_rq_clock(struct rq *rq);
  
 #define RQCF_REQ_SKIP		0x01
 #define RQCF_ACT_SKIP		0x02
-#define RQCF_UPDATED		0x04
 
 static inline void assert_clock_updated(struct rq *rq)
 {
@@ -665,17 +660,9 @@ static inline int task_on_rq_migrating(struct task_struct *p)
 	return READ_ONCE(p->on_rq) == TASK_ON_RQ_MIGRATING;
 }
 
- 
-#define WF_EXEC     0x02  
-#define WF_FORK     0x04  
-#define WF_TTWU     0x08  
+#define WF_FORK     0x04
+#define WF_SYNC     0x10
 
-#define WF_SYNC     0x10  
-#define WF_MIGRATED 0x20  
-#define WF_ON_CPU   0x40  
-
-
- 
 
 #define WEIGHT_IDLEPRIO		3
 #define WMULT_IDLEPRIO		1431655765

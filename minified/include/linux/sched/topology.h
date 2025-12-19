@@ -6,17 +6,7 @@
 #include <linux/sched/idle.h>
 
 
-struct sched_domain_attr;
-
-/* partition_sched_domains_locked removed - unused */
-
-static inline void
-partition_sched_domains(int ndoms_new, cpumask_var_t doms_new[],
-			struct sched_domain_attr *dattr_new)
-{
-}
-
-/* cpus_share_cache removed - unused */
+/* struct sched_domain_attr, partition_sched_domains removed - unused */
 
 /* rebuild_sched_domains_energy removed - unused */
 

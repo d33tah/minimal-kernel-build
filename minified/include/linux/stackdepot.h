@@ -10,10 +10,6 @@ depot_stack_handle_t __stack_depot_save(unsigned long *entries,
 					unsigned int nr_entries,
 					gfp_t gfp_flags, bool can_alloc);
 
-static inline int stack_depot_init(void) { return 0; }
-
-static inline void stack_depot_want_early_init(void) { }
-
 static inline int stack_depot_early_init(void)	{ return 0; }
 
 depot_stack_handle_t stack_depot_save(unsigned long *entries,

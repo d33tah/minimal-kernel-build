@@ -28,7 +28,6 @@
 #define arch_spin_lock(lock)		do { barrier(); (void)(lock); } while (0)
 #define arch_spin_unlock(lock)		do { barrier(); (void)(lock); } while (0)
 #define arch_spin_trylock(lock)		({ barrier(); (void)(lock); 1; })
-#define arch_spin_is_contended(lock)	(((void)(lock), 0))
 /* end spinlock_up.h */
 
 # define raw_spin_lock_init(lock)				\

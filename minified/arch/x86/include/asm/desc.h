@@ -64,19 +64,10 @@ static inline void pack_gate(gate_desc *gate, unsigned type, unsigned long func,
 #define load_TR_desc()				native_load_tr_desc()
 #define load_gdt(dtr)				native_load_gdt(dtr)
 #define load_idt(dtr)				native_load_idt(dtr)
-#define load_tr(tr)				asm volatile("ltr %0"::"m" (tr))
-#define load_ldt(ldt)				asm volatile("lldt %0"::"m" (ldt))
-
-#define store_gdt(dtr)				native_store_gdt(dtr)
-#define store_tr(tr)				(tr = native_store_tr())
-
 #define load_TLS(t, cpu)			native_load_tls(t, cpu)
 #define set_ldt					native_set_ldt
-
-/* write_ldt_entry, paravirt_alloc_ldt, paravirt_free_ldt, native_write_ldt_entry removed - never called */
 #define write_gdt_entry(dt, entry, desc, type)	native_write_gdt_entry(dt, entry, desc, type)
 #define write_idt_entry(dt, entry, g)		native_write_idt_entry(dt, entry, g)
-#define store_ldt(ldt) asm("sldt %0" : "=m"(ldt))
 
 static inline void native_write_idt_entry(gate_desc *idt, int entry, const gate_desc *gate)
 {
@@ -151,30 +142,11 @@ static __always_inline void native_load_idt(const struct desc_ptr *dtr)
 	asm volatile("lidt %0"::"m" (*dtr));
 }
 
-static inline void native_store_gdt(struct desc_ptr *dtr)
-{
-	asm volatile("sgdt %0":"=m" (*dtr));
-}
-
-static inline void store_idt(struct desc_ptr *dtr)
-{
-	asm volatile("sidt %0":"=m" (*dtr));
-}
-
-/* native_gdt_invalidate, native_idt_invalidate removed - unused */
+/* native_store_gdt, store_idt, native_store_tr removed - unused */
 
 static inline void native_load_tr_desc(void)
 {
 	asm volatile("ltr %w0"::"q" (GDT_ENTRY_TSS*8));
-}
-
-static inline unsigned long native_store_tr(void)
-{
-	unsigned long tr;
-
-	asm volatile("str %0":"=r" (tr));
-
-	return tr;
 }
 
 static inline void native_load_tls(struct thread_struct *t, unsigned int cpu)

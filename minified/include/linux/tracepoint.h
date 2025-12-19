@@ -15,27 +15,12 @@ struct module;
 struct tracepoint;
 struct notifier_block;
 
-struct trace_eval_map {
-	const char		*system;
-	const char		*eval_string;
-	unsigned long		eval_value;
-};
-
-#define TRACEPOINT_DEFAULT_PRIO	10
-
-
 #ifndef PARAMS
 #define PARAMS(args...) args
 #endif
 
 #define TRACE_DEFINE_ENUM(x)
 #define TRACE_DEFINE_SIZEOF(x)
-
-#define __TRACEPOINT_ENTRY(name)					\
-	asm("	.section \"__tracepoints_ptrs\", \"a\"		\n"	\
-	    "	.balign 4					\n"	\
-	    "	.long 	__tracepoint_" #name " - .		\n"	\
-	    "	.previous					\n")
 
 #endif  
 
@@ -85,13 +70,6 @@ struct trace_eval_map {
 			cpu_online(raw_smp_processor_id()),		\
 			PARAMS(void *__data, proto))
 
-#define DECLARE_TRACE_CONDITION(name, proto, args, cond)		\
-	__DECLARE_TRACE(name, PARAMS(proto), PARAMS(args),		\
-			cpu_online(raw_smp_processor_id()) && (PARAMS(cond)), \
-			PARAMS(void *__data, proto))
-
-/* TRACE_EVENT_FLAGS, TRACE_EVENT_PERF_PERM removed - never used */
-
 #endif
 
 #ifndef TRACE_EVENT
@@ -99,21 +77,9 @@ struct trace_eval_map {
 #define DECLARE_EVENT_CLASS(name, proto, args, tstruct, assign, print)
 #define DEFINE_EVENT(template, name, proto, args)		\
 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
-#define DEFINE_EVENT_FN(template, name, proto, args, reg, unreg)\
-	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
-/* DEFINE_EVENT_PRINT, DEFINE_EVENT_CONDITION removed - never used */
 
 #define TRACE_EVENT(name, proto, args, struct, assign, print)	\
 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
-#define TRACE_EVENT_FN(name, proto, args, struct,		\
-		assign, print, reg, unreg)			\
-	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
-/* TRACE_EVENT_FN_COND, TRACE_EVENT_CONDITION removed - never used */
-
-/* TRACE_EVENT_FLAGS, TRACE_EVENT_PERF_PERM removed - never used */
-
-/* DECLARE_EVENT_NOP, TRACE_EVENT_NOP, DECLARE_EVENT_CLASS_NOP,
-   DEFINE_EVENT_NOP removed - never used */
 
 #endif
 

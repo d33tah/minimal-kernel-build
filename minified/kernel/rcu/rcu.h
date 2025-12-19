@@ -4,13 +4,6 @@
 #ifndef __LINUX_RCU_H
 #define __LINUX_RCU_H
 
-
- 
-#define DYNTICK_IRQ_NONIDLE	((LONG_MAX / 2) + 1)
-
-
- 
-
 #define RCU_SEQ_CTR_SHIFT	2
 #define RCU_SEQ_STATE_MASK	((1 << RCU_SEQ_CTR_SHIFT) - 1)
 
@@ -171,8 +164,6 @@ extern void resched_cpu(int cpu);
 #define NUM_RCU_LVL_0	      1
 #define NUM_RCU_NODES	      NUM_RCU_LVL_0
 #define NUM_RCU_LVL_INIT    { NUM_RCU_LVL_0 }
-#define RCU_NODE_NAME_INIT  { "rcu_node_0" }
-#define RCU_FQS_NAME_INIT   { "rcu_node_fqs_0" }
 /* end rcu_node_tree.h */
 
 extern int rcu_num_lvls;

@@ -105,16 +105,4 @@ static inline pid_t pid_nr(struct pid *pid)
 pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns);
 pid_t pid_vnr(struct pid *pid);
 
-#define do_each_pid_task(pid, type, task)				\
-	do {								\
-		if ((pid) != NULL)					\
-			hlist_for_each_entry_rcu((task),		\
-				&(pid)->tasks[type], pid_links[type]) {
-
-			 
-#define while_each_pid_task(pid, type, task)				\
-				if (type == PIDTYPE_PID)		\
-					break;				\
-			}						\
-	} while (0)
 #endif  

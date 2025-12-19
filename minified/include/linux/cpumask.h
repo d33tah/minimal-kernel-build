@@ -216,7 +216,7 @@ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 #define num_online_cpus()	1U
 #define num_possible_cpus()	1U
 #define num_present_cpus()	1U
-#define num_active_cpus()	1U
+/* num_active_cpus removed - never used */
 
 static inline bool cpu_online(unsigned int cpu)
 {
@@ -250,14 +250,6 @@ cpumap_print_to_pagebuf(bool list, char *buf, const struct cpumask *mask)
 	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
 } }
 
-#define CPU_MASK_NONE							\
-(cpumask_t) { {								\
-	[0 ... BITS_TO_LONGS(NR_CPUS)-1] =  0UL				\
-} }
-
-#define CPU_MASK_CPU0							\
-(cpumask_t) { {								\
-	[0] =  1UL							\
-} }
+/* CPU_MASK_NONE, CPU_MASK_CPU0 removed - never used */
 
 #endif  

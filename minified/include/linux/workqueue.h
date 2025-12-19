@@ -87,11 +87,6 @@ struct delayed_work {
 
 struct workqueue_attrs;
 
-static inline struct delayed_work *to_delayed_work(struct work_struct *work)
-{
-	return container_of(work, struct delayed_work, work);
-}
-
 #define __WORK_INIT_LOCKDEP_MAP(n, k)
 
 #define __WORK_INITIALIZER(n, f) {					\

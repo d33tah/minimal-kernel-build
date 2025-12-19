@@ -136,8 +136,6 @@ static inline void cpumask_copy(struct cpumask *dstp,
 
 #define cpumask_any(srcp) cpumask_first(srcp)
 
-#define cpumask_any_and(mask1, mask2) cpumask_first_and((mask1), (mask2))
-
 #define cpumask_of(cpu) (get_cpu_mask(cpu))
 
 
@@ -148,7 +146,6 @@ static inline unsigned int cpumask_size(void)
 
 typedef struct cpumask cpumask_var_t[1];
 
-#define this_cpu_cpumask_var_ptr(x) this_cpu_ptr(x)
 #define __cpumask_var_read_mostly
 
 static inline void alloc_bootmem_cpumask_var(cpumask_var_t *mask)

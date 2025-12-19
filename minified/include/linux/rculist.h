@@ -15,8 +15,6 @@
 #define __list_check_rcu(dummy, cond, extra...)				\
 	({ check_arg_count_one(extra); })
 
-#define __list_check_srcu(cond) ({ })
-
 static inline void __list_add_rcu(struct list_head *new,
 		struct list_head *prev, struct list_head *next)
 {
@@ -121,12 +119,6 @@ static inline void hlist_add_head_rcu(struct hlist_node *n,
 	if (first)
 		WRITE_ONCE(first->pprev, &n->next);
 }
-
-
-#define __hlist_for_each_rcu(pos, head)				\
-	for (pos = rcu_dereference(hlist_first_rcu(head));	\
-	     pos;						\
-	     pos = rcu_dereference(hlist_next_rcu(pos)))
 
 #define hlist_for_each_entry_rcu(pos, head, member, cond...)		\
 	for (__list_check_rcu(dummy, ## cond, 0),			\

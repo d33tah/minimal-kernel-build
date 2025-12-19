@@ -64,15 +64,11 @@ struct xa_limit {
 	u32 min;
 };
 
-#define XA_LIMIT(_min, _max) (struct xa_limit) { .min = _min, .max = _max }
-
-
 typedef unsigned __bitwise xa_mark_t;
 #define XA_MARK_0		((__force xa_mark_t)0U)
 #define XA_MARK_1		((__force xa_mark_t)1U)
-#define XA_MARK_2		((__force xa_mark_t)2U)
 #define XA_PRESENT		((__force xa_mark_t)8U)
-#define XA_MARK_MAX		XA_MARK_2
+#define XA_MARK_MAX		((__force xa_mark_t)2U)
 #define XA_FREE_MARK		XA_MARK_0
 
 enum xa_lock_type {

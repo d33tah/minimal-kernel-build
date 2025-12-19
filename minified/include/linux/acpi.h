@@ -56,11 +56,6 @@ static inline bool acpi_driver_match_device(struct device *dev,
 	return false;
 }
 
-#define acpi_handle_printk(level, handle, fmt, ...) do { } while (0)
-#define acpi_handle_err(handle, fmt, ...) do { } while (0)
-#define acpi_handle_warn(handle, fmt, ...) do { } while (0)
-#define acpi_handle_info(handle, fmt, ...) do { } while (0)
-#define acpi_handle_debug(handle, fmt, ...) do { } while (0)
 static inline void acpi_table_upgrade(void) { }
 static inline void acpi_device_notify_remove(struct device *dev) { }
 

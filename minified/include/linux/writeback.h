@@ -12,8 +12,6 @@ struct bio;
 
 DECLARE_PER_CPU(int, dirty_throttle_leaks);
 
-#define DIRTY_SCOPE		8
-#define DIRTY_FULL_SCOPE	(DIRTY_SCOPE / 2)
 
 struct backing_dev_info;
 
@@ -64,8 +62,6 @@ static inline int wbc_to_write_flags(struct writeback_control *wbc)
 
 	return flags;
 }
-
-#define wbc_blkcg_css(wbc)		(blkcg_root_css)
 
 struct wb_domain {
 	spinlock_t lock;

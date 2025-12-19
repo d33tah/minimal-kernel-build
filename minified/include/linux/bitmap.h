@@ -142,8 +142,6 @@ struct device;
 
 bool __bitmap_equal(const unsigned long *bitmap1,
 		    const unsigned long *bitmap2, unsigned int nbits);
-int __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
-		 const unsigned long *bitmap2, unsigned int nbits);
 void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
 		 const unsigned long *bitmap2, unsigned int nbits);
 void __bitmap_set(unsigned long *map, unsigned int start, int len);
@@ -202,15 +200,7 @@ static inline void bitmap_copy(unsigned long *dst, const unsigned long *src,
 	memcpy(dst, src, len);
 }
 
-/* bitmap_copy_clear_tail, bitmap_from_arr32/64, bitmap_to_arr32/64 removed - unused */
-
-static inline int bitmap_and(unsigned long *dst, const unsigned long *src1,
-			const unsigned long *src2, unsigned int nbits)
-{
-	if (small_const_nbits(nbits))
-		return (*dst = *src1 & *src2 & BITMAP_LAST_WORD_MASK(nbits)) != 0;
-	return __bitmap_and(dst, src1, src2, nbits);
-}
+/* bitmap_copy_clear_tail, bitmap_from_arr32/64, bitmap_to_arr32/64, bitmap_and removed - unused */
 
 static inline void bitmap_or(unsigned long *dst, const unsigned long *src1,
 			const unsigned long *src2, unsigned int nbits)

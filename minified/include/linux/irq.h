@@ -321,17 +321,6 @@ int __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 		      struct module *owner,
 		      const struct irq_affinity_desc *affinity);
 
-#define irq_alloc_descs(irq, from, cnt, node)	\
-	__irq_alloc_descs(irq, from, cnt, node, THIS_MODULE, NULL)
-
 void irq_free_descs(unsigned int irq, unsigned int cnt);
-
-#ifndef set_handle_irq
-#define set_handle_irq(handle_irq)		\
-	do {					\
-		(void)handle_irq;		\
-		WARN_ON(1);			\
-	} while (0)
-#endif
 
 #endif  

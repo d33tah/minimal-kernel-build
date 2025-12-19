@@ -126,7 +126,7 @@ struct ist_info ist_info;
 
 __visible unsigned long mmu_cr4_features __ro_after_init;
 
-int bootloader_type, bootloader_version;
+/* bootloader_type, bootloader_version removed - never read */
 
 struct screen_info screen_info;
 struct edid_info edid_info;
@@ -491,14 +491,7 @@ void __init setup_arch(char **cmdline_p)
 	apm_info.bios = boot_params.apm_bios_info;
 	ist_info = boot_params.ist_info;
 	saved_video_mode = boot_params.hdr.vid_mode;
-	bootloader_type = boot_params.hdr.type_of_loader;
-	if ((bootloader_type >> 4) == 0xe) {
-		bootloader_type &= 0xf;
-		bootloader_type |= (boot_params.hdr.ext_loader_type+0x10) << 4;
-	}
-	bootloader_version  = bootloader_type & 0xf;
-	bootloader_version |= boot_params.hdr.ext_loader_ver << 4;
-
+	/* bootloader_type/version setup removed - never read */
 
 	x86_init.oem.arch_setup();
 

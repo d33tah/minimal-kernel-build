@@ -403,10 +403,6 @@ static __always_inline void set_compound_head(struct page *page, struct page *he
 	WRITE_ONCE(page->compound_head, (unsigned long)head + 1);
 }
 
-
-
-#define PG_head_mask ((1UL << PG_head))
-
 TESTPAGEFLAG_FALSE(Huge, hugetlb)
 /* TESTPAGEFLAG_FALSE(HeadHuge, headhuge) removed - never used */
 

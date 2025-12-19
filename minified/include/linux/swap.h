@@ -47,7 +47,6 @@ struct zone;
 struct swap_info_struct;
 
 #define SWAP_CLUSTER_MAX 32UL
-#define COMPACT_CLUSTER_MAX SWAP_CLUSTER_MAX
 
 void workingset_refault(struct folio *folio, void *shadow);
 void workingset_activation(struct folio *folio);

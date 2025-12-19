@@ -703,54 +703,27 @@ static inline int is_global_init(struct task_struct *tsk)
 
 
 #define PFA_NO_NEW_PRIVS		0
-#define PFA_SPREAD_PAGE			1	 
-#define PFA_SPREAD_SLAB			2	 
-#define PFA_SPEC_SSB_DISABLE		3	 
-#define PFA_SPEC_SSB_FORCE_DISABLE	4	 
-#define PFA_SPEC_IB_DISABLE		5	 
-#define PFA_SPEC_IB_FORCE_DISABLE	6	 
-#define PFA_SPEC_SSB_NOEXEC		7	 
+#define PFA_SPEC_SSB_DISABLE		3
+#define PFA_SPEC_IB_DISABLE		5
+#define PFA_SPEC_SSB_NOEXEC		7
 
 #define TASK_PFA_TEST(name, func)					\
 	static inline bool task_##func(struct task_struct *p)		\
 	{ return test_bit(PFA_##name, &p->atomic_flags); }
-
-#define TASK_PFA_SET(name, func)					\
-	static inline void task_set_##func(struct task_struct *p)	\
-	{ set_bit(PFA_##name, &p->atomic_flags); }
 
 #define TASK_PFA_CLEAR(name, func)					\
 	static inline void task_clear_##func(struct task_struct *p)	\
 	{ clear_bit(PFA_##name, &p->atomic_flags); }
 
 TASK_PFA_TEST(NO_NEW_PRIVS, no_new_privs)
-TASK_PFA_SET(NO_NEW_PRIVS, no_new_privs)
-
-TASK_PFA_TEST(SPREAD_PAGE, spread_page)
-TASK_PFA_SET(SPREAD_PAGE, spread_page)
-TASK_PFA_CLEAR(SPREAD_PAGE, spread_page)
-
-TASK_PFA_TEST(SPREAD_SLAB, spread_slab)
-TASK_PFA_SET(SPREAD_SLAB, spread_slab)
-TASK_PFA_CLEAR(SPREAD_SLAB, spread_slab)
 
 TASK_PFA_TEST(SPEC_SSB_DISABLE, spec_ssb_disable)
-TASK_PFA_SET(SPEC_SSB_DISABLE, spec_ssb_disable)
 TASK_PFA_CLEAR(SPEC_SSB_DISABLE, spec_ssb_disable)
 
 TASK_PFA_TEST(SPEC_SSB_NOEXEC, spec_ssb_noexec)
-TASK_PFA_SET(SPEC_SSB_NOEXEC, spec_ssb_noexec)
 TASK_PFA_CLEAR(SPEC_SSB_NOEXEC, spec_ssb_noexec)
 
-TASK_PFA_TEST(SPEC_SSB_FORCE_DISABLE, spec_ssb_force_disable)
-TASK_PFA_SET(SPEC_SSB_FORCE_DISABLE, spec_ssb_force_disable)
-
 TASK_PFA_TEST(SPEC_IB_DISABLE, spec_ib_disable)
-TASK_PFA_SET(SPEC_IB_DISABLE, spec_ib_disable)
-TASK_PFA_CLEAR(SPEC_IB_DISABLE, spec_ib_disable)
-
-TASK_PFA_TEST(SPEC_IB_FORCE_DISABLE, spec_ib_force_disable)
-TASK_PFA_SET(SPEC_IB_FORCE_DISABLE, spec_ib_force_disable)
 
 static inline void
 current_restore_flags(unsigned long orig_flags, unsigned long flags)
@@ -881,14 +854,6 @@ static inline int _cond_resched(void)
 	__might_resched(__FILE__, __LINE__, 0);	\
 	_cond_resched();			\
 })
-
-
-#define MIGHT_RESCHED_RCU_SHIFT		8
-#define MIGHT_RESCHED_PREEMPT_MASK	((1U << MIGHT_RESCHED_RCU_SHIFT) - 1)
-
-
-# define PREEMPT_LOCK_RESCHED_OFFSETS	PREEMPT_LOCK_OFFSET
-
 
 /* spin_needbreak removed - never used */
 

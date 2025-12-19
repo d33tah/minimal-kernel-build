@@ -40,7 +40,6 @@ struct delayed_call {
 	void (*fn)(void *);
 	void *arg;
 };
-#define DEFINE_DELAYED_CALL(name) struct delayed_call name = {NULL, NULL}
 static inline void set_delayed_call(struct delayed_call *call, void (*fn)(void *), void *arg)
 {
 	call->fn = fn;
@@ -227,8 +226,6 @@ struct iattr {
 };
 
 #include <linux/quota.h>
-
-#define FILESYSTEM_MAX_STACK_DEPTH 2
 
 /* Reduced positive_aop_returns - only AOP_TRUNCATED_PAGE used */
 enum positive_aop_returns { AOP_TRUNCATED_PAGE = 0x80001 };
@@ -661,8 +658,6 @@ struct fasync_struct {
 	struct rcu_head		fa_rcu;
 };
 
-#define FASYNC_MAGIC 0x4601
-
 extern int fasync_helper(int, struct file *, int, struct fasync_struct **);
 extern void kill_fasync(struct fasync_struct **, int, int);
 extern void __f_setown(struct file *filp, struct pid *, enum pid_type, int force);
@@ -936,9 +931,6 @@ int vfs_link(struct dentry *, struct user_namespace *, struct inode *,
 int vfs_fchown(struct file *file, uid_t user, gid_t group);
 int vfs_fchmod(struct file *file, umode_t mode);
 int vfs_utimes(const struct path *path, struct timespec64 *times);
-
-
-#define compat_ptr_ioctl NULL
 
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 		      const struct inode *dir, umode_t mode);
@@ -1235,8 +1227,6 @@ struct file_system_type {
 	struct lock_class_key invalidate_lock_key;
 	struct lock_class_key i_mutex_dir_key;
 };
-
-#define MODULE_ALIAS_FS(NAME) MODULE_ALIAS("fs-" NAME)
 
 /* Removed: mount_nodev, kill_block_super - never called */
 void generic_shutdown_super(struct super_block *sb);

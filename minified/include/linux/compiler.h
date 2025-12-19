@@ -104,11 +104,6 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 	__v;								\
 })
 
-#ifndef function_nocfi
-#define function_nocfi(x) (x)
-#endif
-
-#define ASSERT_EXCLUSIVE_ACCESS(var) do { } while (0)
 #define ASSERT_EXCLUSIVE_BITS(var, mask) do { } while (0)
 #define ASSERT_EXCLUSIVE_WRITER(var) do { } while (0)
 

@@ -105,11 +105,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #endif
 
 #define __nocfi		__attribute__((__no_sanitize__("cfi")))
-#define __cficanonical	__attribute__((__cfi_canonical_jump_table__))
-
-#if defined(CONFIG_CFI_CLANG)
-#define function_nocfi(x)	__builtin_function_start(x)
-#endif
 
 #define __diag_clang(version, severity, s) \
 	__diag_clang_ ## version(__diag_clang_ ## severity s)
@@ -221,21 +216,12 @@ struct ftrace_likely_data {
 # define randomized_struct_fields_end	} __randomize_layout;
 #else
 # define __randomize_layout __designated_init
-# define __no_randomize_layout
 # define randomized_struct_fields_start
 # define randomized_struct_fields_end
 #endif
 
-#ifndef __noscs
-# define __noscs
-#endif
-
 #ifndef __nocfi
 # define __nocfi
-#endif
-
-#ifndef __cficanonical
-# define __cficanonical
 #endif
 
 #ifdef __alloc_size__

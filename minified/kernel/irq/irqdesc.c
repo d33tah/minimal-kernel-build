@@ -84,15 +84,7 @@ static void delete_irq_desc(unsigned int irq)
 
 static inline void free_masks(struct irq_desc *desc) { }
 
-void irq_lock_sparse(void)
-{
-	mutex_lock(&sparse_irq_lock);
-}
-
-void irq_unlock_sparse(void)
-{
-	mutex_unlock(&sparse_irq_lock);
-}
+/* irq_lock_sparse, irq_unlock_sparse removed - never called */
 
 static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 				   const struct cpumask *affinity,

@@ -43,8 +43,7 @@ struct irq_desc {
 	const char		*name;
 } ____cacheline_internodealigned_in_smp;
 
-extern void irq_lock_sparse(void);
-extern void irq_unlock_sparse(void);
+/* irq_lock_sparse, irq_unlock_sparse removed - never called */
 
 static inline unsigned int irq_desc_kstat_cpu(struct irq_desc *desc,
 					      unsigned int cpu)

@@ -127,17 +127,7 @@ bool mmap_address_hint_valid(unsigned long addr, unsigned long len)
 	return (addr > DEFAULT_MAP_WINDOW) == (addr + len > DEFAULT_MAP_WINDOW);
 }
 
-int valid_phys_addr_range(phys_addr_t addr, size_t count)
-{
-	return addr + count - 1 <= __pa(high_memory - 1);
-}
-
-int valid_mmap_phys_addr_range(unsigned long pfn, size_t count)
-{
-	phys_addr_t addr = (phys_addr_t)pfn << PAGE_SHIFT;
-
-	return phys_addr_valid(addr + count - 1);
-}
+/* valid_phys_addr_range, valid_mmap_phys_addr_range removed - never called */
 
 bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
 {

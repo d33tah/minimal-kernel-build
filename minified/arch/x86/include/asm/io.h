@@ -2,14 +2,7 @@
 #ifndef _ASM_X86_IO_H
 #define _ASM_X86_IO_H
 
- 
-
- 
-
-  
-
-#define ARCH_HAS_IOREMAP_WC
-#define ARCH_HAS_IOREMAP_WT
+/* ARCH_HAS_IOREMAP_WC, ARCH_HAS_IOREMAP_WT removed - unused */
 
 #include <linux/string.h>
 #include <linux/compiler.h>
@@ -51,24 +44,14 @@ build_mmio_write(__writel, "l", unsigned int, "r", )
 #define readb_relaxed(a) __readb(a)
 #define readw_relaxed(a) __readw(a)
 #define readl_relaxed(a) __readl(a)
-#define __raw_readb __readb
-#define __raw_readw __readw
-#define __raw_readl __readl
-
 #define writeb writeb
 #define writew writew
 #define writel writel
 #define writeb_relaxed(v, a) __writeb(v, a)
 #define writew_relaxed(v, a) __writew(v, a)
 #define writel_relaxed(v, a) __writel(v, a)
-#define __raw_writeb __writeb
-#define __raw_writew __writew
-#define __raw_writel __writel
-
-
-#define ARCH_HAS_VALID_PHYS_ADDR_RANGE
-extern int valid_phys_addr_range(phys_addr_t addr, size_t size);
-extern int valid_mmap_phys_addr_range(unsigned long pfn, size_t size);
+/* __raw_read*, __raw_write* removed - unused */
+/* ARCH_HAS_VALID_PHYS_ADDR_RANGE, valid_*_range removed - unused */
 
  
 

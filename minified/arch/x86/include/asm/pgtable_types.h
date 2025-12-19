@@ -59,11 +59,6 @@
 #define _PAGE_PKEY_BIT2	(_AT(pteval_t, 0))
 #define _PAGE_PKEY_BIT3	(_AT(pteval_t, 0))
 
-#define _PAGE_PKEY_MASK (_PAGE_PKEY_BIT0 | \
-			 _PAGE_PKEY_BIT1 | \
-			 _PAGE_PKEY_BIT2 | \
-			 _PAGE_PKEY_BIT3)
-
 #define _PAGE_KNL_ERRATUM_MASK 0
 
 #define _PAGE_SOFT_DIRTY	(_AT(pteval_t, 0))

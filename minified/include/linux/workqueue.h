@@ -113,9 +113,6 @@ static inline struct delayed_work *to_delayed_work(struct work_struct *work)
 #define DECLARE_DELAYED_WORK(n, f)					\
 	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, 0)
 
-#define DECLARE_DEFERRABLE_WORK(n, f)					\
-	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, TIMER_DEFERRABLE)
-
 static inline void __init_work(struct work_struct *work, int onstack) { }
 
 #define __INIT_WORK(_work, _func, _onstack)				\

@@ -102,11 +102,7 @@ struct files_stat_struct {
 };
 /* RWF_* values needed for IOCB_* macros, rwf_t typedef */
 typedef int rwf_t;
-#define RWF_HIPRI	0x00000001
-#define RWF_DSYNC	0x00000002
-#define RWF_SYNC	0x00000004
 #define RWF_NOWAIT	0x00000008
-#define RWF_APPEND	0x00000010
 /* end uapi/linux/fs.h */
 
 struct backing_dev_info;
@@ -245,20 +241,10 @@ struct readahead_control;
 
 enum rw_hint { WRITE_LIFE_NOT_SET = 0 };
 
-#define IOCB_HIPRI		(__force int) RWF_HIPRI
-#define IOCB_DSYNC		(__force int) RWF_DSYNC
-#define IOCB_SYNC		(__force int) RWF_SYNC
 #define IOCB_NOWAIT		(__force int) RWF_NOWAIT
-#define IOCB_APPEND		(__force int) RWF_APPEND
-
-#define IOCB_EVENTFD		(1 << 16)
 #define IOCB_DIRECT		(1 << 17)
-#define IOCB_WRITE		(1 << 18)
-
 #define IOCB_WAITQ		(1 << 19)
 #define IOCB_NOIO		(1 << 20)
-
-#define IOCB_ALLOC_CACHE	(1 << 21)
 
 struct kiocb {
 	struct file		*ki_filp;
@@ -1386,14 +1372,6 @@ extern int sync_file_range(struct file *file, loff_t offset, loff_t nbytes,
 
 static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count)
 {
-	if (iocb->ki_flags & IOCB_DSYNC) {
-		int ret = vfs_fsync_range(iocb->ki_filp,
-				iocb->ki_pos - count, iocb->ki_pos - 1,
-				(iocb->ki_flags & IOCB_SYNC) ? 0 : 1);
-		if (ret)
-			return ret;
-	}
-
 	return count;
 }
 
@@ -1618,14 +1596,8 @@ static inline bool vma_is_fsdax(struct vm_area_struct *vma)
 static inline int iocb_flags(struct file *file)
 {
 	int res = 0;
-	if (file->f_flags & O_APPEND)
-		res |= IOCB_APPEND;
 	if (file->f_flags & O_DIRECT)
 		res |= IOCB_DIRECT;
-	if ((file->f_flags & O_DSYNC) || IS_SYNC(file->f_mapping->host))
-		res |= IOCB_DSYNC;
-	if (file->f_flags & __O_SYNC)
-		res |= IOCB_SYNC;
 	return res;
 }
 

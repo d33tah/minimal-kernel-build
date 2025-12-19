@@ -209,11 +209,6 @@ static inline bool tty_io_error(struct tty_struct *tty)
 	return test_bit(TTY_IO_ERROR, &tty->flags);
 }
 
-static inline bool tty_throttled(struct tty_struct *tty)
-{
-	return test_bit(TTY_THROTTLED, &tty->flags);
-}
-
 void tty_kref_put(struct tty_struct *tty);
 struct pid *tty_get_pgrp(struct tty_struct *tty);
 void disassociate_ctty(int priv);

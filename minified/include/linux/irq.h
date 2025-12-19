@@ -59,8 +59,6 @@ enum {
 	 IRQ_PER_CPU | IRQ_NESTED_THREAD | IRQ_NOTHREAD | IRQ_PER_CPU_DEVID | \
 	 IRQ_IS_POLLED | IRQ_DISABLE_UNLAZY | IRQ_HIDDEN)
 
-#define IRQ_NO_BALANCING_MASK	(IRQ_PER_CPU | IRQ_NO_BALANCING)
-
 enum {
 	IRQ_SET_MASK_OK = 0,
 	IRQ_SET_MASK_OK_NOCOPY,
@@ -339,8 +337,6 @@ int __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 	irq_alloc_descs(-1, from, cnt, node)
 
 void irq_free_descs(unsigned int irq, unsigned int cnt);
-
-#define INVALID_HWIRQ	(~0UL)
 
 #ifndef set_handle_irq
 #define set_handle_irq(handle_irq)		\

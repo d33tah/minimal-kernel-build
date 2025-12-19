@@ -9,17 +9,6 @@
 
 typedef struct { DECLARE_BITMAP(bits, MAX_NUMNODES); } nodemask_t;
 
-#define nodemask_pr_args(maskp)	__nodemask_pr_numnodes(maskp), \
-				__nodemask_pr_bits(maskp)
-static inline unsigned int __nodemask_pr_numnodes(const nodemask_t *m)
-{
-	return m ? MAX_NUMNODES : 0;
-}
-static inline const unsigned long *__nodemask_pr_bits(const nodemask_t *m)
-{
-	return m ? m->bits : NULL;
-}
-
 #define node_set(node, dst) __node_set((node), &(dst))
 static __always_inline void __node_set(int node, volatile nodemask_t *dstp)
 {

@@ -108,17 +108,6 @@ int memtype_reserve_io(resource_size_t start, resource_size_t end,
 
 void memtype_free_io(resource_size_t start, resource_size_t end) { }
 
-pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
-			       unsigned long size, pgprot_t vma_prot)
-{
-	return vma_prot;
-}
-
-int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
-				  unsigned long size, pgprot_t *vma_prot)
-{
-	return 1;
-}
 
 int memtype_kernel_map_sync(u64 base, unsigned long size,
 			     enum page_cache_mode pcm)

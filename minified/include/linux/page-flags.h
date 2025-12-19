@@ -302,7 +302,6 @@ __PAGEFLAG(Reported, reported, PF_NO_COMPOUND)
 
 #define PAGE_MAPPING_ANON	0x1
 #define PAGE_MAPPING_MOVABLE	0x2
-#define PAGE_MAPPING_KSM	(PAGE_MAPPING_ANON | PAGE_MAPPING_MOVABLE)
 #define PAGE_MAPPING_FLAGS	(PAGE_MAPPING_ANON | PAGE_MAPPING_MOVABLE)
 
 static __always_inline bool folio_mapping_flags(struct folio *folio)

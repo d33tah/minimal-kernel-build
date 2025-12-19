@@ -594,9 +594,6 @@ static inline pmd_t pmd_read_atomic(pmd_t *pmdp)
 }
 #endif
 
-#ifndef arch_needs_pgtable_deposit
-#define arch_needs_pgtable_deposit() (false)
-#endif
 static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
 {
 	pmd_t pmdval = pmd_read_atomic(pmd);
@@ -645,14 +642,7 @@ static inline int pmd_clear_huge(pmd_t *pmd)
 	return 0;
 }
 
-#ifndef __HAVE_ARCH_FLUSH_PMD_TLB_RANGE
-#define flush_pmd_tlb_range(vma, addr, end)	BUILD_BUG()
-#define flush_pud_tlb_range(vma, addr, end)	BUILD_BUG()
-#endif
 
-struct file;
-int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
-			unsigned long size, pgprot_t *vma_prot);
 
 static inline void init_espfix_bsp(void) { }
 

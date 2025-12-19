@@ -161,11 +161,6 @@ static inline int task_has_dl_policy(struct task_struct *p)
 #define shr_bound(val, shift)							\
 	(val >> min_t(typeof(shift), shift, BITS_PER_TYPE(typeof(val)) - 1))
 
- 
-#define SCHED_FLAG_SUGOV	0x10000000
-
-#define SCHED_DL_FLAGS (SCHED_FLAG_RECLAIM | SCHED_FLAG_DL_OVERRUN | SCHED_FLAG_SUGOV)
-
 struct rt_prio_array {
 	DECLARE_BITMAP(bitmap, MAX_RT_PRIO+1);  
 	struct list_head queue[MAX_RT_PRIO];
@@ -325,8 +320,6 @@ static inline int cpu_of(struct rq *rq)
 {
 	return 0;
 }
-
-#define MDF_PUSH	0x01
 
 struct sched_group;
 

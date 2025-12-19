@@ -718,10 +718,6 @@ struct sched_class {
 					struct task_struct *task);
 
 	void (*update_curr)(struct rq *rq);
-
-#define TASK_SET_GROUP		0
-#define TASK_MOVE_GROUP		1
-
 };
 
 static inline void put_prev_task(struct rq *rq, struct task_struct *prev)
@@ -767,14 +763,6 @@ static inline bool sched_fair_runnable(struct rq *rq)
 extern struct task_struct *pick_next_task_fair(struct rq *rq, struct task_struct *prev, struct rq_flags *rf);
 extern struct task_struct *pick_next_task_idle(struct rq *rq);
 
-#define SCA_CHECK		0x01
-#define SCA_MIGRATE_DISABLE	0x02
-#define SCA_MIGRATE_ENABLE	0x04
-#define SCA_USER		0x08
-
-
-/* idle_set_state removed - unused */
-
 extern void schedule_idle(void);
 
 extern void sched_init_granularity(void);
@@ -789,16 +777,8 @@ extern void resched_cpu(int cpu);
 extern struct rt_bandwidth def_rt_bandwidth;
 extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime);
 
-/* init_dl_bandwidth removed - unused */
 extern void init_dl_task_timer(struct sched_dl_entity *dl_se);
 extern void init_dl_inactive_task_timer(struct sched_dl_entity *dl_se);
-
-#define BW_SHIFT		20
-#define BW_UNIT			(1 << BW_SHIFT)
-#define RATIO_SHIFT		8
-#define MAX_BW_BITS		(64 - BW_SHIFT)
-#define MAX_BW			((1ULL << MAX_BW_BITS) - 1)
-/* unsigned long to_ratio(u64 period, u64 runtime); removed - never called */
 
 extern void init_entity_runnable_average(struct sched_entity *se);
 extern void post_init_entity_util_avg(struct task_struct *p);

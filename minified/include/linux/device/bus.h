@@ -84,13 +84,10 @@ int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 		     void *data, int (*fn)(struct device_driver *, void *));
 /* bus_sort_breadthfirst, bus_unregister_notifier, bus_register_notifier removed - unused */
 
-#define BUS_NOTIFY_ADD_DEVICE		0x00000001  
-#define BUS_NOTIFY_DEL_DEVICE		0x00000002  
-#define BUS_NOTIFY_REMOVED_DEVICE	0x00000003  
-#define BUS_NOTIFY_BIND_DRIVER		0x00000004  
-#define BUS_NOTIFY_BOUND_DRIVER		0x00000005  
-#define BUS_NOTIFY_UNBIND_DRIVER	0x00000006  
-#define BUS_NOTIFY_UNBOUND_DRIVER	0x00000007  
+#define BUS_NOTIFY_DEL_DEVICE		0x00000002
+#define BUS_NOTIFY_REMOVED_DEVICE	0x00000003
+#define BUS_NOTIFY_UNBIND_DRIVER	0x00000006
+#define BUS_NOTIFY_UNBOUND_DRIVER	0x00000007
 #define BUS_NOTIFY_DRIVER_NOT_BOUND	0x00000008  
 
 /* bus_get_kset, bus_get_device_klist removed - unused */

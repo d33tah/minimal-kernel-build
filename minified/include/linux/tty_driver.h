@@ -125,13 +125,8 @@ static inline void tty_set_operations(struct tty_driver *driver,
 #define TTY_DRIVER_TYPE_CONSOLE		0x0002
 #define TTY_DRIVER_TYPE_SERIAL		0x0003
 #define TTY_DRIVER_TYPE_PTY		0x0004
-#define TTY_DRIVER_TYPE_SCC		0x0005	 
-#define TTY_DRIVER_TYPE_SYSCONS		0x0006
 
 #define SYSTEM_TYPE_TTY			0x0001
-#define SYSTEM_TYPE_CONSOLE		0x0002
-#define SYSTEM_TYPE_SYSCONS		0x0003
-#define SYSTEM_TYPE_SYSPTMX		0x0004
 
 #define PTY_TYPE_MASTER			0x0001
 #define PTY_TYPE_SLAVE			0x0002

@@ -98,12 +98,6 @@ struct xarray {
 	.xa_head = NULL,					\
 }
 
-#define DEFINE_XARRAY_FLAGS(name, flags)				\
-	struct xarray name = XARRAY_INIT(name, flags)
-
-#define DEFINE_XARRAY(name) DEFINE_XARRAY_FLAGS(name, 0)
-
-
 void *xa_load(struct xarray *, unsigned long index);
 /* xa_store, xa_erase removed - never called */
 
@@ -284,14 +278,6 @@ struct xa_state {
 #define XA_STATE(name, array, index)				\
 	struct xa_state name = __XA_STATE(array, index, 0, 0)
 
-#define XA_STATE_ORDER(name, array, index, order)		\
-	struct xa_state name = __XA_STATE(array,		\
-			(index >> order) << order,		\
-			order - (order % XA_CHUNK_SHIFT),	\
-			(1U << (order % XA_CHUNK_SHIFT)) - 1)
-
-#define xas_marked(xas, mark)	xa_marked((xas)->xa, (mark))
-#define xas_trylock(xas)	xa_trylock((xas)->xa)
 #define xas_lock(xas)		xa_lock((xas)->xa)
 #define xas_unlock(xas)		xa_unlock((xas)->xa)
 #define xas_lock_irq(xas)	xa_lock_irq((xas)->xa)

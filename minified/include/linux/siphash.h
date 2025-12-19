@@ -5,7 +5,6 @@
 #include <linux/types.h>
 #include <linux/kernel.h>
 
-#define SIPHASH_ALIGNMENT __alignof__(u64)
 typedef struct {
 	u64 key[2];
 } siphash_key_t;
@@ -38,7 +37,6 @@ static inline u64 siphash(const void *data, size_t len,
 	return __siphash_unaligned(data, len, key);
 }
 
-#define HSIPHASH_ALIGNMENT __alignof__(unsigned long)
 typedef struct {
 	unsigned long key[2];
 } hsiphash_key_t;

@@ -57,13 +57,6 @@ extern int lockdep_is_held(const void *);
 #define lockdep_repin_lock(l, c)		do { (void)(l); (void)(c); } while (0)
 #define lockdep_unpin_lock(l, c)		do { (void)(l); (void)(c); } while (0)
 
-
-enum xhlock_context_t {
-	XHLOCK_HARD,
-	XHLOCK_SOFT,
-	XHLOCK_CTX_NR,
-};
-
 #define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
 	{ .name = (_name), .key = (void *)(_key), }
 

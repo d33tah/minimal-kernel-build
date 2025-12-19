@@ -11,11 +11,6 @@ typedef void free_page_t(struct page *page, unsigned long private);
 
 struct migration_target_control;
 
-#define MIGRATEPAGE_SUCCESS		0
-
-extern const char *migrate_reason_names[MR_TYPES];
-
-
 static inline int migrate_pages(struct list_head *l, new_page_t new,
 		free_page_t free, unsigned long private, enum migrate_mode mode,
 		int reason, unsigned int *ret_succeeded)

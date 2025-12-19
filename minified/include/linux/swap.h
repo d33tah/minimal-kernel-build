@@ -30,10 +30,6 @@ struct pagevec;
 	((1 << MAX_SWAPFILES_SHIFT) - SWP_DEVICE_NUM - \
 	SWP_MIGRATION_NUM - SWP_HWPOISON_NUM - \
 	SWP_PTE_MARKER_NUM - SWP_SWAPIN_ERROR_NUM)
-#define SWP_SWAPIN_ERROR     (MAX_SWAPFILES + SWP_HWPOISON_NUM + \
-			     SWP_MIGRATION_NUM + SWP_DEVICE_NUM + \
-			     SWP_PTE_MARKER_NUM)
-
 struct reclaim_state {
 	unsigned long reclaimed_slab;
 };

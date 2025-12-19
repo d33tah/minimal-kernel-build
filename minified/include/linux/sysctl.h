@@ -26,17 +26,7 @@ struct ctl_table_poll {
 	wait_queue_head_t wait;
 };
 
-static inline void *proc_sys_poll_event(struct ctl_table_poll *poll)
-{
-	return (void *)(unsigned long)atomic_read(&poll->event);
-}
-
-#define __CTL_TABLE_POLL_INITIALIZER(name) {				\
-	.event = ATOMIC_INIT(0),					\
-	.wait = __WAIT_QUEUE_HEAD_INITIALIZER(name.wait) }
-
-#define DEFINE_CTL_TABLE_POLL(name)					\
-	struct ctl_table_poll name = __CTL_TABLE_POLL_INITIALIZER(name)
+/* proc_sys_poll_event, __CTL_TABLE_POLL_INITIALIZER, DEFINE_CTL_TABLE_POLL removed - unused */
 
 struct ctl_table {
 	const char *procname;		 

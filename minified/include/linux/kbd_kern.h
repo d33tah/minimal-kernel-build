@@ -44,44 +44,7 @@ extern unsigned short plain_map[NR_KEYS];
 /* --- end keyboard.h inlined --- */
 
 
-struct kbd_struct {
-
-	unsigned char lockstate;
-#define VC_SHIFTLOCK	KG_SHIFT	 
-#define VC_ALTGRLOCK	KG_ALTGR	 
-#define VC_CTRLLOCK	KG_CTRL 	 
-#define VC_ALTLOCK	KG_ALT  	 
-#define VC_SHIFTLLOCK	KG_SHIFTL	 
-#define VC_SHIFTRLOCK	KG_SHIFTR	 
-#define VC_CTRLLLOCK	KG_CTRLL 	 
-#define VC_CTRLRLOCK	KG_CTRLR 	 
-	unsigned char slockstate; 	 
-
-	unsigned char ledmode:1;
-#define LED_SHOW_FLAGS 0         
-#define LED_SHOW_IOCTL 1         
-
-	unsigned char ledflagstate:4;	 
-	unsigned char default_ledflagstate:4;
-#define VC_SCROLLOCK	0	 
-#define VC_NUMLOCK	1	 
-#define VC_CAPSLOCK	2	 
-#define VC_KANALOCK	3	 
-
-	unsigned char kbdmode:3;	 
-#define VC_XLATE	0	 
-#define VC_MEDIUMRAW	1	 
-#define VC_RAW		2	 
-#define VC_UNICODE	3	 
-#define VC_OFF		4	 
-
-	unsigned char modeflags:5;
-#define VC_APPLIC	0	 
-#define VC_CKMODE	1	 
-#define VC_REPEAT	2	 
-#define VC_CRLF		3	 
-#define VC_META		4	 
-};
+/* kbd_struct removed - unused */
 
 extern int kbd_init(void);
 

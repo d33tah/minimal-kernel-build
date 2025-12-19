@@ -15,9 +15,6 @@ struct context_tracking {
 	} state;
 };
 
-static __always_inline bool context_tracking_in_user(void) { return false; }
 static __always_inline bool context_tracking_enabled(void) { return false; }
-static __always_inline bool context_tracking_enabled_cpu(int cpu) { return false; }
-static __always_inline bool context_tracking_enabled_this_cpu(void) { return false; }
 
 #endif

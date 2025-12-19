@@ -21,21 +21,7 @@ typedef struct __user_cap_data_struct {
         __u32 inheritable;
 } __user *cap_user_data_t;
 
-#define VFS_CAP_REVISION_MASK	0xFF000000
-#define VFS_CAP_REVISION_SHIFT	24
-#define VFS_CAP_FLAGS_MASK	~VFS_CAP_REVISION_MASK
-#define VFS_CAP_FLAGS_EFFECTIVE	0x000001
-
-
-#define VFS_CAP_REVISION_3	0x03000000
-#define VFS_CAP_U32_3           2
-#define XATTR_CAPS_SZ_3         (sizeof(__le32)*(2 + 2*VFS_CAP_U32_3))
-
-#define XATTR_CAPS_SZ           XATTR_CAPS_SZ_3
-#define VFS_CAP_U32             VFS_CAP_U32_3
-#define VFS_CAP_REVISION	VFS_CAP_REVISION_3
-
-/* vfs_cap_data, vfs_ns_cap_data structs removed - unused */
+/* VFS_CAP_* macros and structs removed - unused */
 
 #define CAP_CHOWN            0
 #define CAP_DAC_OVERRIDE     1

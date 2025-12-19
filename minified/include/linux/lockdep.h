@@ -34,15 +34,12 @@ static inline void lockdep_on(void)
 # define lockdep_set_class(lock, key)		do { (void)(key); } while (0)
 # define lockdep_set_class_and_name(lock, key, name) \
 		do { (void)(key); (void)(name); } while (0)
-#define lockdep_set_class_and_subclass(lock, key, sub) \
-		do { (void)(key); } while (0)
 #define lockdep_set_subclass(lock, sub)		do { } while (0)
 
 #define lockdep_set_novalidate_class(lock) do { } while (0)
 
 
 # define lockdep_reset()		do { debug_locks = 1; } while (0)
-# define lockdep_free_key_range(start, size)	do { } while (0)
 # define lockdep_sys_exit() 			do { } while (0)
 
 

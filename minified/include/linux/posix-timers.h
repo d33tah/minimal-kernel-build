@@ -18,8 +18,6 @@ static inline void posix_cputimers_group_init(struct posix_cputimers *pct,
 static inline void clear_posix_cputimers_work(struct task_struct *p) { }
 static inline void posix_cputimers_init_work(void) { }
 
-#define REQUEUE_PENDING 1
-
 struct k_itimer;
 
 void run_posix_cpu_timers(void);

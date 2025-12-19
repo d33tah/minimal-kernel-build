@@ -69,73 +69,51 @@
 #define X86_FEATURE_CMOV		( 0*32+15)  
 #define X86_FEATURE_PAT			( 0*32+16)  
 #define X86_FEATURE_PSE36		( 0*32+17)  
-#define X86_FEATURE_PN			( 0*32+18)  
-#define X86_FEATURE_CLFLUSH		( 0*32+19)  
-#define X86_FEATURE_DS			( 0*32+21)  
-#define X86_FEATURE_ACPI		( 0*32+22)  
+/* X86_FEATURE_PN removed - unused */
+#define X86_FEATURE_CLFLUSH		( 0*32+19)
+/* X86_FEATURE_DS removed - unused */
+/* X86_FEATURE_ACPI removed - unused */  
 #define X86_FEATURE_MMX			( 0*32+23)  
 #define X86_FEATURE_FXSR		( 0*32+24)  
 #define X86_FEATURE_XMM			( 0*32+25)  
 #define X86_FEATURE_XMM2		( 0*32+26)  
-#define X86_FEATURE_SELFSNOOP		( 0*32+27)  
-#define X86_FEATURE_HT			( 0*32+28)  
-#define X86_FEATURE_ACC			( 0*32+29)  
-#define X86_FEATURE_IA64		( 0*32+30)  
-#define X86_FEATURE_PBE			( 0*32+31)  
+/* X86_FEATURE_SELFSNOOP, HT, ACC, IA64, PBE removed - unused */  
 
  
  
 #define X86_FEATURE_SYSCALL		( 1*32+11)  
 #define X86_FEATURE_MP			( 1*32+19)  
 #define X86_FEATURE_NX			( 1*32+20)  
-#define X86_FEATURE_MMXEXT		( 1*32+22)  
-#define X86_FEATURE_FXSR_OPT		( 1*32+25)  
-#define X86_FEATURE_GBPAGES		( 1*32+26)  
-#define X86_FEATURE_RDTSCP		( 1*32+27)  
-#define X86_FEATURE_LM			( 1*32+29)  
-#define X86_FEATURE_3DNOWEXT		( 1*32+30)  
-#define X86_FEATURE_3DNOW		( 1*32+31)  
+/* X86_FEATURE_MMXEXT, FXSR_OPT removed - unused */
+#define X86_FEATURE_GBPAGES		( 1*32+26)
+#define X86_FEATURE_RDTSCP		( 1*32+27)
+#define X86_FEATURE_LM			( 1*32+29)
+/* X86_FEATURE_3DNOWEXT, 3DNOW removed - unused */  
 
  
-#define X86_FEATURE_RECOVERY		( 2*32+ 0)  
-#define X86_FEATURE_LONGRUN		( 2*32+ 1)  
-#define X86_FEATURE_LRTI		( 2*32+ 3)  
-
- 
- 
-#define X86_FEATURE_CXMMX		( 3*32+ 0)  
+/* X86_FEATURE_RECOVERY, LONGRUN, LRTI, CXMMX removed - unused */
 #define X86_FEATURE_K6_MTRR		( 3*32+ 1)  
 #define X86_FEATURE_CYRIX_ARR		( 3*32+ 2)  
 #define X86_FEATURE_CENTAUR_MCR		( 3*32+ 3)  
 
- 
-#define X86_FEATURE_K8			( 3*32+ 4)  
- 
-#define X86_FEATURE_P3			( 3*32+ 6)  
-#define X86_FEATURE_P4			( 3*32+ 7)  
-#define X86_FEATURE_CONSTANT_TSC	( 3*32+ 8)  
-#define X86_FEATURE_UP			( 3*32+ 9)  
-#define X86_FEATURE_ART			( 3*32+10)  
-#define X86_FEATURE_ARCH_PERFMON	( 3*32+11)  
-#define X86_FEATURE_PEBS		( 3*32+12)  
-#define X86_FEATURE_BTS			( 3*32+13)  
-#define X86_FEATURE_SYSCALL32		( 3*32+14)  
-#define X86_FEATURE_SYSENTER32		( 3*32+15)  
+/* X86_FEATURE_K8, P3, P4, ART, ARCH_PERFMON, PEBS, BTS removed - unused */
+#define X86_FEATURE_CONSTANT_TSC	( 3*32+ 8)
+#define X86_FEATURE_UP			( 3*32+ 9)
+#define X86_FEATURE_SYSCALL32		( 3*32+14)
+#define X86_FEATURE_SYSENTER32		( 3*32+15)
 #define X86_FEATURE_REP_GOOD		( 3*32+16)  
  
-#define X86_FEATURE_LFENCE_RDTSC	( 3*32+18)  
-#define X86_FEATURE_ACC_POWER		( 3*32+19)  
-#define X86_FEATURE_NOPL		( 3*32+20)  
-#define X86_FEATURE_ALWAYS		( 3*32+21)  
-#define X86_FEATURE_XTOPOLOGY		( 3*32+22)  
-#define X86_FEATURE_TSC_RELIABLE	( 3*32+23)  
-#define X86_FEATURE_NONSTOP_TSC		( 3*32+24)  
-#define X86_FEATURE_CPUID		( 3*32+25)  
-#define X86_FEATURE_EXTD_APICID		( 3*32+26)  
-#define X86_FEATURE_AMD_DCM		( 3*32+27)  
-#define X86_FEATURE_APERFMPERF		( 3*32+28)  
-#define X86_FEATURE_RAPL		( 3*32+29)  
-#define X86_FEATURE_NONSTOP_TSC_S3	( 3*32+30)  
+#define X86_FEATURE_LFENCE_RDTSC	( 3*32+18)
+/* X86_FEATURE_ACC_POWER removed - unused */
+#define X86_FEATURE_NOPL		( 3*32+20)
+#define X86_FEATURE_ALWAYS		( 3*32+21)
+/* X86_FEATURE_XTOPOLOGY removed - unused */
+#define X86_FEATURE_TSC_RELIABLE	( 3*32+23)
+#define X86_FEATURE_NONSTOP_TSC		( 3*32+24)
+#define X86_FEATURE_CPUID		( 3*32+25)
+#define X86_FEATURE_EXTD_APICID		( 3*32+26)
+/* X86_FEATURE_AMD_DCM, APERFMPERF, RAPL removed - unused */
+#define X86_FEATURE_NONSTOP_TSC_S3	( 3*32+30)
 #define X86_FEATURE_TSC_KNOWN_FREQ	( 3*32+31)  
 
  

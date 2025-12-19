@@ -194,24 +194,20 @@ enum vmscan_throttle_state {
 #define for_each_lru(lru) for (lru = 0; lru < NR_LRU_LISTS; lru++)
 
 
-#define ANON_AND_FILE 2
-
 enum lruvec_flags {
-	LRUVEC_CONGESTED,		 
+	LRUVEC_CONGESTED,
 };
 
 struct lruvec {
 	struct list_head		lists[NR_LRU_LISTS];
-	 
+
 	spinlock_t			lru_lock;
-	 
+
 	unsigned long			anon_cost;
 	unsigned long			file_cost;
-	 
+
 	atomic_long_t			nonresident_age;
-	 
-	unsigned long			refaults[ANON_AND_FILE];
-	 
+
 	unsigned long			flags;
 };
 
@@ -227,8 +223,7 @@ enum zone_watermarks {
 	NR_WMARK
 };
 
-#define NR_PCP_THP 0
-#define NR_PCP_LISTS (MIGRATE_PCPTYPES * (PAGE_ALLOC_COSTLY_ORDER + 1 + NR_PCP_THP))
+#define NR_PCP_LISTS (MIGRATE_PCPTYPES * (PAGE_ALLOC_COSTLY_ORDER + 1))
 
 /* NR_PCP_ORDER_WIDTH, NR_PCP_ORDER_MASK removed - unused */
 

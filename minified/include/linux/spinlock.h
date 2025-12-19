@@ -107,28 +107,16 @@
 	} while (0)
 
 
-#define read_lock_irq(lock)		_raw_read_lock_irq(lock)
-#define read_lock_bh(lock)		_raw_read_lock_bh(lock)
 #define write_lock_irq(lock)		_raw_write_lock_irq(lock)
-#define write_lock_bh(lock)		_raw_write_lock_bh(lock)
 #define read_unlock(lock)		_raw_read_unlock(lock)
 #define write_unlock(lock)		_raw_write_unlock(lock)
-#define read_unlock_irq(lock)		_raw_read_unlock_irq(lock)
 #define write_unlock_irq(lock)		_raw_write_unlock_irq(lock)
-
-#define read_unlock_irqrestore(lock, flags)			\
-	do {							\
-		typecheck(unsigned long, flags);		\
-		_raw_read_unlock_irqrestore(lock, flags);	\
-	} while (0)
-#define read_unlock_bh(lock)		_raw_read_unlock_bh(lock)
 
 #define write_unlock_irqrestore(lock, flags)		\
 	do {						\
 		typecheck(unsigned long, flags);	\
 		_raw_write_unlock_irqrestore(lock, flags);	\
 	} while (0)
-#define write_unlock_bh(lock)		_raw_write_unlock_bh(lock)
 
 #define write_trylock_irqsave(lock, flags) \
 ({ \

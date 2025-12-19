@@ -141,8 +141,6 @@ enum device_link_state {
 	DL_STATE_NONE = -1,
 };
 
-#define DL_FLAG_STATELESS		BIT(0)
-#define DL_FLAG_AUTOREMOVE_CONSUMER	BIT(1)
 #define DL_FLAG_PM_RUNTIME		BIT(2)
 #define DL_FLAG_RPM_ACTIVE		BIT(3)
 #define DL_FLAG_AUTOREMOVE_SUPPLIER	BIT(4)
@@ -377,12 +375,5 @@ void device_shutdown(void);
 
 extern __printf(3, 4)
 int dev_err_probe(const struct device *dev, int err, const char *fmt, ...);
-
-#define MODULE_ALIAS_CHARDEV(major,minor) \
-	MODULE_ALIAS("char-major-" __stringify(major) "-" __stringify(minor))
-#define MODULE_ALIAS_CHARDEV_MAJOR(major) \
-	MODULE_ALIAS("char-major-" __stringify(major) "-*")
-
-#define sysfs_deprecated 0
 
 #endif  

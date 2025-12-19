@@ -39,26 +39,19 @@ static inline void lockdep_on(void)
 #define lockdep_set_novalidate_class(lock) do { } while (0)
 
 
-# define lockdep_reset()		do { debug_locks = 1; } while (0)
 # define lockdep_sys_exit() 			do { } while (0)
-
-
-#define lockdep_depth(tsk)	(0)
 
 extern int lock_is_held(const void *);
 extern int lockdep_is_held(const void *);
 #define lockdep_is_held_type(l, r)		(1)
 
 #define lockdep_assert(c)			do { } while (0)
-#define lockdep_assert_once(c)			do { } while (0)
 
 #define lockdep_assert_held(l)			do { (void)(l); } while (0)
 #define lockdep_assert_not_held(l)		do { (void)(l); } while (0)
 #define lockdep_assert_held_write(l)		do { (void)(l); } while (0)
 #define lockdep_assert_held_read(l)		do { (void)(l); } while (0)
 #define lockdep_assert_held_once(l)		do { (void)(l); } while (0)
-
-#define lockdep_recursing(tsk)			(0)
 
 #define NIL_COOKIE (struct pin_cookie){ }
 

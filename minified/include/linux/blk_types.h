@@ -21,9 +21,6 @@ struct bio_crypt_ctx;
 #define SECTOR_SIZE (1 << SECTOR_SHIFT)
 #endif
 
-#define PAGE_SECTORS_SHIFT	(PAGE_SHIFT - SECTOR_SHIFT)
-#define PAGE_SECTORS		(1 << PAGE_SECTORS_SHIFT)
-#define SECTOR_MASK		(PAGE_SECTORS - 1)
 
 /* Minimal block_device struct - only pointers used, never instantiated */
 struct block_device {
@@ -50,7 +47,6 @@ typedef u16 blk_short_t;
 #define	BLK_STS_OK 0
 
 typedef unsigned int blk_qc_t;
-#define BLK_QC_T_NONE		-1U
 
 /* Minimal struct bio - only forward declaration needed */
 struct bio {

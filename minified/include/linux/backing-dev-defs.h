@@ -27,7 +27,6 @@ enum wb_stat_item {
 	NR_WB_STAT_ITEMS
 };
 
-#define WB_STAT_BATCH (8*(1+ilog2(nr_cpu_ids)))
 
 enum wb_reason {
 	WB_REASON_BACKGROUND,

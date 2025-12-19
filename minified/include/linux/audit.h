@@ -20,9 +20,6 @@ struct filename;
 #define AUDIT_INODE_PARENT	1
 #define AUDIT_INODE_NOEVAL	4
 
-#define audit_enabled AUDIT_OFF
-
-#define AUDIT_OFF	0
 
 static inline int audit_alloc(struct task_struct *task)
 {

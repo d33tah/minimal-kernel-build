@@ -38,8 +38,6 @@ static inline void printk_all_partitions(void)
 }
 
 #define BDEVNAME_SIZE	32
-#define BDEVT_SIZE	10
-#define BLKDEV_MAJOR_MAX	0
 
 struct io_comp_batch;
 

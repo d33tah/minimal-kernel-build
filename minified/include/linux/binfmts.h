@@ -9,13 +9,10 @@ struct pt_regs;
 #define MAX_ARG_STRLEN (PAGE_SIZE * 32)
 #define MAX_ARG_STRINGS 0x7FFFFFFF
 #define BINPRM_BUF_SIZE 256
-#define AT_FLAGS_PRESERVE_ARGV0_BIT 0
-#define AT_FLAGS_PRESERVE_ARGV0 (1 << AT_FLAGS_PRESERVE_ARGV0_BIT)
+#define AT_FLAGS_PRESERVE_ARGV0 (1 << 0)
 
 struct filename;
 struct coredump_params;
-
-#define CORENAME_MAX_SIZE 128
 
 struct linux_binprm {
 	struct vm_area_struct *vma;
@@ -55,14 +52,9 @@ struct linux_binprm {
 	char buf[BINPRM_BUF_SIZE];
 } __randomize_layout;
 
-#define BINPRM_FLAGS_ENFORCE_NONDUMP_BIT 0
-#define BINPRM_FLAGS_ENFORCE_NONDUMP (1 << BINPRM_FLAGS_ENFORCE_NONDUMP_BIT)
-
-#define BINPRM_FLAGS_PATH_INACCESSIBLE_BIT 2
-#define BINPRM_FLAGS_PATH_INACCESSIBLE (1 << BINPRM_FLAGS_PATH_INACCESSIBLE_BIT)
-
-#define BINPRM_FLAGS_PRESERVE_ARGV0_BIT 3
-#define BINPRM_FLAGS_PRESERVE_ARGV0 (1 << BINPRM_FLAGS_PRESERVE_ARGV0_BIT)
+#define BINPRM_FLAGS_ENFORCE_NONDUMP (1 << 0)
+#define BINPRM_FLAGS_PATH_INACCESSIBLE (1 << 2)
+#define BINPRM_FLAGS_PRESERVE_ARGV0 (1 << 3)
 
 struct linux_binfmt {
 	struct list_head lh;

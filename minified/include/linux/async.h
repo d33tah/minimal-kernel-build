@@ -13,10 +13,6 @@ struct async_domain {
 	unsigned registered:1;
 };
 
-#define ASYNC_DOMAIN(_name) \
-	struct async_domain _name = { .pending = LIST_HEAD_INIT(_name.pending),	\
-				      .registered = 1 }
-
 #define ASYNC_DOMAIN_EXCLUSIVE(_name) \
 	struct async_domain _name = { .pending = LIST_HEAD_INIT(_name.pending), \
 				      .registered = 0 }

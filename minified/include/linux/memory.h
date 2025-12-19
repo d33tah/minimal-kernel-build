@@ -11,8 +11,6 @@
 /* Unused notifier stubs removed: register_memory_notifier, memory_notify, etc. */
 
 static inline void memory_dev_init(void) { }
-#define register_hotmemory_notifier(nb)    ({ (void)(nb); 0; })
-#define unregister_hotmemory_notifier(nb)  ({ (void)(nb); })
 
 extern struct mutex text_mutex;
 

@@ -107,20 +107,6 @@ static inline bool iov_iter_is_xarray(const struct iov_iter *i)
 	return iov_iter_type(i) == ITER_XARRAY;
 }
 
-static inline unsigned char iov_iter_rw(const struct iov_iter *i)
-{
-	return i->data_source ? WRITE : READ;
-}
-
-static inline struct iovec iov_iter_iovec(const struct iov_iter *iter)
-{
-	return (struct iovec) {
-		.iov_base = iter->iov->iov_base + iter->iov_offset,
-		.iov_len = min(iter->count,
-			       iter->iov->iov_len - iter->iov_offset),
-	};
-}
-
 size_t copy_page_from_iter_atomic(struct page *page, unsigned offset,
 				  size_t bytes, struct iov_iter *i);
 void iov_iter_advance(struct iov_iter *i, size_t bytes);
@@ -188,14 +174,8 @@ static inline size_t iov_iter_count(const struct iov_iter *i)
 
 static inline void iov_iter_truncate(struct iov_iter *i, u64 count)
 {
-	 
 	if (i->count > count)
 		i->count = count;
-}
-
-static inline void iov_iter_reexpand(struct iov_iter *i, size_t count)
-{
-	i->count = count;
 }
 
 /* iov_iter_npages_cap, csum_and_copy_*, hash_and_copy_to_iter,

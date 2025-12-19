@@ -117,14 +117,4 @@ pid_t pid_vnr(struct pid *pid);
 					break;				\
 			}						\
 	} while (0)
-
-#define do_each_pid_thread(pid, type, task)				\
-	do_each_pid_task(pid, type, task) {				\
-		struct task_struct *tg___ = task;			\
-		for_each_thread(tg___, task) {
-
-#define while_each_pid_thread(pid, type, task)				\
-		}							\
-		task = tg___;						\
-	} while_each_pid_task(pid, type, task)
 #endif  

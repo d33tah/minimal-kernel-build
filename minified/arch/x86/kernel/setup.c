@@ -39,7 +39,7 @@ extern bool crash_kexec_post_notifiers;
 #define KASAN_SHADOW_END        (KASAN_SHADOW_START + \
 				(1ULL << (__VIRTUAL_MASK_SHIFT - \
 					  KASAN_SHADOW_SCALE_SHIFT)))
-static inline void kasan_early_init(void) { }
+/* kasan_early_init removed - unused stub */
 static inline void kasan_init(void) { }
 /* --- end inlined kasan.h --- */
 /* kaslr.h inlined */

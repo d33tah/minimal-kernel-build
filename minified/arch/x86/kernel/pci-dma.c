@@ -29,10 +29,7 @@ static inline void __init pci_swiotlb_detect(void)
 }
 #define x86_swiotlb_flags 0
 
-static inline void __init pci_xen_swiotlb_init(void)
-{
-}
-
+/* pci_xen_swiotlb_init removed - unused */
 void __init pci_iommu_alloc(void)
 {
 	pci_swiotlb_detect();

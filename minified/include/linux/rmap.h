@@ -97,32 +97,6 @@ void page_add_file_rmap(struct page *, struct vm_area_struct *,
 void page_remove_rmap(struct page *, struct vm_area_struct *,
 		bool compound);
 
-static inline void __page_dup_rmap(struct page *page, bool compound)
-{
-	atomic_inc(compound ? compound_mapcount_ptr(page) : &page->_mapcount);
-}
-
-static inline int page_try_dup_anon_rmap(struct page *page, bool compound,
-					 struct vm_area_struct *vma)
-{
-	VM_BUG_ON_PAGE(!PageAnon(page), page);
-
-	 
-	if (!PageAnonExclusive(page))
-		goto dup;
-
-	 
-	if (likely(!is_device_private_page(page) &&
-	    unlikely(page_needs_cow_for_dma(vma, page))))
-		return -EBUSY;
-
-	ClearPageAnonExclusive(page);
-	 
-dup:
-	__page_dup_rmap(page, compound);
-	return 0;
-}
-
 #define PVMW_SYNC		(1 << 0)
 #define PVMW_MIGRATION		(1 << 1)
 

@@ -80,15 +80,6 @@ static inline void mmu_notifier_release(struct mm_struct *mm)
 {
 }
 
-static inline int mmu_notifier_clear_flush_young(struct mm_struct *mm,
-					  unsigned long start,
-					  unsigned long end)
-{
-	return 0;
-}
-
-/* mmu_notifier_test_young, mmu_notifier_change_pte removed - never used */
-
 static inline void
 mmu_notifier_invalidate_range_start(struct mmu_notifier_range *range)
 {

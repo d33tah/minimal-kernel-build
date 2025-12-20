@@ -122,13 +122,6 @@ void platform_unregister_drivers(struct platform_driver * const *drivers,
 
 #define USE_PLATFORM_PM_SLEEP_OPS
 
-#ifndef CONFIG_SUPERH
-static inline int is_sh_early_platform_device(struct platform_device *pdev)
-{
-	return 0;
-}
-#endif  
-
 void early_platform_cleanup(void);
 
 #endif  

@@ -720,16 +720,7 @@ static inline bool page_maybe_dma_pinned(struct page *page)
 	return folio_maybe_dma_pinned(page_folio(page));
 }
 
-static inline bool page_needs_cow_for_dma(struct vm_area_struct *vma,
-					  struct page *page)
-{
-	VM_BUG_ON(!(raw_read_seqcount(&vma->vm_mm->write_protect_seq) & 1));
-
-	if (!test_bit(MMF_HAS_PINNED, &vma->vm_mm->flags))
-		return false;
-
-	return page_maybe_dma_pinned(page);
-}
+/* page_needs_cow_for_dma removed - unused */
 
 static inline bool is_pinnable_page(struct page *page)
 {

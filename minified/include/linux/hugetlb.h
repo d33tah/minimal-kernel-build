@@ -138,13 +138,7 @@ static inline vm_fault_t hugetlb_fault(struct mm_struct *mm,
 #define p4d_huge(x)	0
 #endif
 
-#ifndef pgd_write
-static inline int pgd_write(pgd_t pgd)
-{
-	BUG();
-	return 0;
-}
-#endif
+/* pgd_write removed - unused */
 
 #define HUGETLB_ANON_FILE "anon_hugepage"
 

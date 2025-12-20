@@ -193,12 +193,7 @@ static inline void bitmap_fill(unsigned long *dst, unsigned int nbits)
 	memset(dst, 0xff, len);
 }
 
-static inline void bitmap_copy(unsigned long *dst, const unsigned long *src,
-			unsigned int nbits)
-{
-	unsigned int len = BITS_TO_LONGS(nbits) * sizeof(unsigned long);
-	memcpy(dst, src, len);
-}
+/* bitmap_copy removed - unused (~6 LOC) */
 
 /* bitmap_copy_clear_tail, bitmap_from_arr32/64, bitmap_to_arr32/64, bitmap_and removed - unused */
 

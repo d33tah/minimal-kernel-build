@@ -288,11 +288,7 @@ __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 
 void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set);
 
-static inline void irq_set_status_flags(unsigned int irq, unsigned long set)
-{
-	irq_modify_status(irq, 0, set);
-}
-
+/* irq_set_status_flags removed - never called */
 
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
 extern int irq_set_chip_data(unsigned int irq, void *data);

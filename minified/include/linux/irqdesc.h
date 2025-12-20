@@ -45,11 +45,7 @@ struct irq_desc {
 
 /* irq_lock_sparse, irq_unlock_sparse removed - never called */
 
-static inline unsigned int irq_desc_kstat_cpu(struct irq_desc *desc,
-					      unsigned int cpu)
-{
-	return desc->kstat_irqs ? *per_cpu_ptr(desc->kstat_irqs, cpu) : 0;
-}
+/* irq_desc_kstat_cpu removed - never called */
 
 static inline struct irq_desc *irq_data_to_desc(struct irq_data *data)
 {
@@ -66,20 +62,9 @@ static inline struct irq_data *irq_desc_get_irq_data(struct irq_desc *desc)
 	return &desc->irq_data;
 }
 
-static inline struct irq_chip *irq_desc_get_chip(struct irq_desc *desc)
-{
-	return desc->irq_data.chip;
-}
-
-static inline void *irq_desc_get_chip_data(struct irq_desc *desc)
-{
-	return desc->irq_data.chip_data;
-}
-
-static inline void *irq_desc_get_handler_data(struct irq_desc *desc)
-{
-	return desc->irq_common_data.handler_data;
-}
+/* irq_desc_get_chip removed - never called */
+/* irq_desc_get_chip_data removed - never called */
+/* irq_desc_get_handler_data removed - never called */
 
 static inline void generic_handle_irq_desc(struct irq_desc *desc)
 {
@@ -91,10 +76,7 @@ int generic_handle_irq(unsigned int irq);
 int generic_handle_irq_safe(unsigned int irq);
 
 
-static inline int irq_desc_has_action(struct irq_desc *desc)
-{
-	return desc && desc->action != NULL;
-}
+/* irq_desc_has_action removed - never called */
 
 /* irq_set_handler_locked, irq_set_chip_handler_name_locked,
    irq_balancing_disabled, irq_is_percpu, irq_is_percpu_devid,

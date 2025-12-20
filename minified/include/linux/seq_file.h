@@ -37,42 +37,15 @@ struct seq_operations {
 
 #define SEQ_SKIP 1
 
-static inline bool seq_has_overflowed(struct seq_file *m)
-{
-	return m->count == m->size;
-}
-
-static inline size_t seq_get_buf(struct seq_file *m, char **bufp)
-{
-	BUG_ON(m->count > m->size);
-	if (m->count < m->size)
-		*bufp = m->buf + m->count;
-	else
-		*bufp = NULL;
-
-	return m->size - m->count;
-}
-
-static inline void seq_commit(struct seq_file *m, int num)
-{
-	if (num < 0) {
-		m->count = m->size;
-	} else {
-		BUG_ON(m->count + num > m->size);
-		m->count += num;
-	}
-}
-
+/* seq_has_overflowed removed - never called */
+/* seq_get_buf removed - never called */
+/* seq_commit removed - never called */
 /* seq_open, seq_read, seq_read_iter, seq_lseek, seq_release removed - not called */
 
 __printf(2, 3)
 void seq_printf(struct seq_file *m, const char *fmt, ...);
 
-static inline struct user_namespace *seq_user_ns(struct seq_file *seq)
-{
-	extern struct user_namespace init_user_ns;
-	return &init_user_ns;
-}
+/* seq_user_ns removed - never called */
 
 
 #define SEQ_START_TOKEN ((void *)1)

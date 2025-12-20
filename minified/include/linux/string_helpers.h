@@ -17,19 +17,8 @@ enum string_size_units {
 void string_get_size(u64 size, u64 blk_size, enum string_size_units units,
 		     char *buf, int len);
 
-static inline void string_upper(char *dst, const char *src)
-{
-	do {
-		*dst++ = toupper(*src);
-	} while (*src++);
-}
-
-static inline void string_lower(char *dst, const char *src)
-{
-	do {
-		*dst++ = tolower(*src);
-	} while (*src++);
-}
+/* string_upper removed - never called */
+/* string_lower removed - never called */
 
 char *kstrdup_quotable(const char *src, gfp_t gfp);
 char *kstrdup_quotable_cmdline(struct task_struct *task, gfp_t gfp);
@@ -40,24 +29,9 @@ void kfree_strarray(char **array, size_t n);
 
 char **devm_kasprintf_strarray(struct device *dev, const char *prefix, size_t n);
 
-static inline const char *str_yes_no(bool v)
-{
-	return v ? "yes" : "no";
-}
-
-static inline const char *str_on_off(bool v)
-{
-	return v ? "on" : "off";
-}
-
-static inline const char *str_enable_disable(bool v)
-{
-	return v ? "enable" : "disable";
-}
-
-static inline const char *str_enabled_disabled(bool v)
-{
-	return v ? "enabled" : "disabled";
-}
+/* str_yes_no removed - never called */
+/* str_on_off removed - never called */
+/* str_enable_disable removed - never called */
+/* str_enabled_disabled removed - never called */
 
 #endif

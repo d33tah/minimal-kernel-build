@@ -50,27 +50,10 @@ static inline void kstat_incr_softirqs_this_cpu(unsigned int irq)
 	__this_cpu_inc(kstat.softirqs[irq]);
 }
 
-static inline unsigned int kstat_softirqs_cpu(unsigned int irq, int cpu)
-{
-       return kstat_cpu(cpu).softirqs[irq];
-}
-
-static inline unsigned int kstat_cpu_irqs_sum(unsigned int cpu)
-{
-	return kstat_cpu(cpu).irqs_sum;
-}
-
-static inline u64 kcpustat_field(struct kernel_cpustat *kcpustat,
-				 enum cpu_usage_stat usage, int cpu)
-{
-	return kcpustat->cpustat[usage];
-}
-
-static inline void kcpustat_cpu_fetch(struct kernel_cpustat *dst, int cpu)
-{
-	*dst = kcpustat_cpu(cpu);
-}
-
+/* kstat_softirqs_cpu removed - never called */
+/* kstat_cpu_irqs_sum removed - never called */
+/* kcpustat_field removed - never called */
+/* kcpustat_cpu_fetch removed - never called */
 
 extern void account_user_time(struct task_struct *, u64);
 extern void account_guest_time(struct task_struct *, u64);

@@ -151,11 +151,7 @@ static inline void zero_user_segments(struct page *page,
 		flush_dcache_page(page + i);
 }
 
-static inline void zero_user_segment(struct page *page,
-	unsigned start, unsigned end)
-{
-	zero_user_segments(page, start, end, 0, 0);
-}
+/* zero_user_segment removed - never called */
 
 static inline void zero_user(struct page *page,
 	unsigned start, unsigned size)

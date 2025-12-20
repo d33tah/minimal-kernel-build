@@ -10,9 +10,7 @@ struct vm_area_struct;
 struct page;
 struct address_space;
 
-#ifndef flush_cache_all
-static inline void flush_cache_all(void) { }
-#endif
+/* flush_cache_all removed - unused */
 
 #ifndef flush_cache_mm
 static inline void flush_cache_mm(struct mm_struct *mm) { }
@@ -41,13 +39,8 @@ static inline void flush_dcache_mmap_lock(struct address_space *mapping) { }
 static inline void flush_dcache_mmap_unlock(struct address_space *mapping) { }
 #endif
 
-#ifndef flush_icache_range
-static inline void flush_icache_range(unsigned long start, unsigned long end) { }
-#endif
-
-#ifndef flush_icache_user_range
-#define flush_icache_user_range flush_icache_range
-#endif
+/* flush_icache_range removed - unused */
+/* flush_icache_user_range removed - unused (macro for flush_icache_range) */
 
 #ifndef flush_icache_page
 static inline void flush_icache_page(struct vm_area_struct *vma,

@@ -101,10 +101,7 @@
 
 /* F_EXLCK, F_SHLCK removed - unused */
 
-#define LOCK_SH		1
-#define LOCK_EX		2
-#define LOCK_NB		4
-#define LOCK_UN		8
+/* LOCK_SH, LOCK_EX, LOCK_NB, LOCK_UN removed - unused */
 /* LOCK_MAND, LOCK_READ, LOCK_WRITE, LOCK_RW removed - unused */
 
 #define F_LINUX_SPECIFIC_BASE	1024

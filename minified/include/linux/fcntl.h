@@ -19,9 +19,7 @@ struct open_how {
 /* --- end openat2.h inlined --- */
 
 /* Inlined from uapi/linux/fcntl.h */
-#define F_DUPFD_CLOEXEC	(F_LINUX_SPECIFIC_BASE + 6)
-#define F_SETPIPE_SZ	(F_LINUX_SPECIFIC_BASE + 7)
-#define F_GETPIPE_SZ	(F_LINUX_SPECIFIC_BASE + 8)
+/* F_DUPFD_CLOEXEC, F_SETPIPE_SZ, F_GETPIPE_SZ removed - unused */
 #define AT_FDCWD		-100
 #define AT_SYMLINK_NOFOLLOW	0x100
 #define AT_EACCESS		0x200

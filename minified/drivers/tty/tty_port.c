@@ -20,8 +20,7 @@ struct tty_driver;
 static inline struct device *serdev_tty_port_register(struct tty_port *port,
 				   struct device *parent, struct tty_driver *drv, int idx)
 { return ERR_PTR(-ENODEV); }
-static inline int serdev_tty_port_unregister(struct tty_port *port)
-{ return -ENODEV; }
+/* serdev_tty_port_unregister removed - unused */
 /* --- end serdev.h inlined --- */
 #include "tty.h"
 

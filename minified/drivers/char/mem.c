@@ -41,16 +41,7 @@ struct miscdevice  {
 #define DEVMEM_MINOR	1
 #define DEVPORT_MINOR	4
 
-static inline unsigned long size_inside_page(unsigned long start,
-					     unsigned long size)
-{
-	unsigned long sz;
-
-	sz = PAGE_SIZE - (start & (PAGE_SIZE - 1));
-
-	return min(sz, size);
-}
-
+/* size_inside_page removed - unused */
 /* unxlate_dev_mem_ptr, read_mem, write_mem removed - /dev/mem not used */
 
 /* phys_mem_access_prot_allowed, uncached_access, phys_mem_access_prot removed - /dev/mem not used */

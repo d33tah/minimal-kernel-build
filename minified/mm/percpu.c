@@ -84,11 +84,7 @@ static inline int pcpu_chunk_map_bits(struct pcpu_chunk *chunk)
 	return pcpu_nr_pages_to_map_bits(chunk->nr_pages);
 }
 
-static inline size_t pcpu_obj_full_size(size_t size)
-{
-	return size * num_possible_cpus();
-}
-
+/* pcpu_obj_full_size removed - unused */
 static inline void pcpu_stats_save_ai(const struct pcpu_alloc_info *ai) { }
 static inline void pcpu_stats_area_alloc(struct pcpu_chunk *chunk, size_t size) { }
 static inline void pcpu_stats_area_dealloc(struct pcpu_chunk *chunk) { }

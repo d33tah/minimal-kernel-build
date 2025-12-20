@@ -705,22 +705,7 @@ static inline atomic_t *folio_pincount_ptr(struct folio *folio)
 	return &folio_page(folio, 1)->compound_pincount;
 }
 
-static inline bool folio_maybe_dma_pinned(struct folio *folio)
-{
-	if (folio_test_large(folio))
-		return atomic_read(folio_pincount_ptr(folio)) > 0;
-
-
-	return ((unsigned int)folio_ref_count(folio)) >=
-		GUP_PIN_COUNTING_BIAS;
-}
-
-static inline bool page_maybe_dma_pinned(struct page *page)
-{
-	return folio_maybe_dma_pinned(page_folio(page));
-}
-
-/* page_needs_cow_for_dma removed - unused */
+/* folio_maybe_dma_pinned, page_maybe_dma_pinned removed - unused */
 
 static inline bool is_pinnable_page(struct page *page)
 {

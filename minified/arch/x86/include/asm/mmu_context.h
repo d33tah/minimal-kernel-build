@@ -83,17 +83,7 @@ do {						\
 	loadsegment(gs, 0);			\
 } while (0)
 
-static inline void arch_dup_pkeys(struct mm_struct *oldmm,
-				  struct mm_struct *mm)
-{
-}
-
-static inline int arch_dup_mmap(struct mm_struct *oldmm, struct mm_struct *mm)
-{
-	arch_dup_pkeys(oldmm, mm);
-	paravirt_arch_dup_mmap(oldmm, mm);
-	return ldt_dup_context(oldmm, mm);
-}
+/* arch_dup_pkeys, arch_dup_mmap removed - unused */
 
 static inline void arch_exit_mmap(struct mm_struct *mm)
 {
@@ -101,10 +91,7 @@ static inline void arch_exit_mmap(struct mm_struct *mm)
 	ldt_arch_exit_mmap(mm);
 }
 
-static inline bool is_64bit_mm(struct mm_struct *mm)
-{
-	return false;
-}
+/* is_64bit_mm removed - unused */
 
 static inline void arch_unmap(struct mm_struct *mm, unsigned long start,
 			      unsigned long end)

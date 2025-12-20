@@ -108,10 +108,7 @@ static inline __must_check bool __refcount_sub_and_test(int i, refcount_t *r, in
 	return false;
 }
 
-static inline __must_check bool refcount_sub_and_test(int i, refcount_t *r)
-{
-	return __refcount_sub_and_test(i, r, NULL);
-}
+/* refcount_sub_and_test removed - unused */
 
 static inline __must_check bool __refcount_dec_and_test(refcount_t *r, int *oldp)
 {

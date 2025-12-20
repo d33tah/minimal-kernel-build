@@ -39,17 +39,11 @@ SYS_NI(alarm);
 #endif
 
 
+/* clock_settime stubbed - not needed for minimal kernel */
 SYSCALL_DEFINE2(clock_settime, const clockid_t, which_clock,
 		const struct __kernel_timespec __user *, tp)
 {
-	struct timespec64 new_tp;
-
-	if (which_clock != CLOCK_REALTIME)
-		return -EINVAL;
-	if (get_timespec64(&new_tp, tp))
-		return -EFAULT;
-
-	return do_sys_settimeofday64(&new_tp, NULL);
+	return -ENOSYS;
 }
 
 int do_clock_gettime(clockid_t which_clock, struct timespec64 *tp)

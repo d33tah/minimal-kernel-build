@@ -69,7 +69,6 @@ static inline void _mmu_notifier_range_init(struct mmu_notifier_range *range,
 					end, owner) \
 	_mmu_notifier_range_init(range, start, end)
 
-/* mmu_notifier_range_blockable removed - never used */
 
 static inline int mm_has_notifiers(struct mm_struct *mm)
 {
@@ -85,7 +84,6 @@ mmu_notifier_invalidate_range_start(struct mmu_notifier_range *range)
 {
 }
 
-/* mmu_notifier_invalidate_range_start_nonblock removed - never used */
 
 static inline
 void mmu_notifier_invalidate_range_end(struct mmu_notifier_range *range)
@@ -109,6 +107,5 @@ static inline void mmu_notifier_subscriptions_destroy(struct mm_struct *mm)
 #define ptep_clear_young_notify ptep_test_and_clear_young
 #define	ptep_clear_flush_notify ptep_clear_flush
 #define set_pte_at_notify set_pte_at
-/* pmdp_clear_flush_young_notify, pmdp_clear_young_notify removed - never used */
 
 #endif  

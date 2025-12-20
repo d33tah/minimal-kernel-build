@@ -25,7 +25,6 @@ typedef _Bool			bool;
 
 typedef __kernel_uid32_t	uid_t;
 typedef __kernel_gid32_t	gid_t;
-/* uid16_t, gid16_t, old_uid_t, old_gid_t removed - unused */
 
 typedef unsigned long		uintptr_t;
 

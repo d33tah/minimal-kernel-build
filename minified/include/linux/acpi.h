@@ -8,7 +8,6 @@
 #include <linux/device.h>
 #include <linux/list.h>
 
-/* Forward decls for resource_win, resource_entry removed - unused */
 #include <linux/property.h>
 #include <linux/uuid.h>
 
@@ -23,7 +22,6 @@ typedef void *acpi_handle;
 
 
 struct fwnode_handle;
-/* struct acpi_device forward decl removed - unused */
 
 
 static inline void acpi_early_init(void) { }
@@ -47,7 +45,6 @@ static inline int acpi_mps_check(void)
 	return 0;
 }
 
-/* struct acpi_table_header, struct acpi_device_id forward decls removed - unused */
 
 
 static inline bool acpi_driver_match_device(struct device *dev,

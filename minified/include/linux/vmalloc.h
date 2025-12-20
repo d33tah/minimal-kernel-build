@@ -65,7 +65,6 @@ struct vmap_area {
 	};
 };
 
-/* arch_vmap_p4d_supported, arch_vmap_pud_supported removed - unused */
 
 #ifndef arch_vmap_pmd_supported
 static inline bool arch_vmap_pmd_supported(pgprot_t prot)
@@ -74,7 +73,6 @@ static inline bool arch_vmap_pmd_supported(pgprot_t prot)
 }
 #endif
 
-/* arch_vmap_pte_range_map_size removed - unused */
 
 #ifndef arch_vmap_pte_supported_shift
 static inline int arch_vmap_pte_supported_shift(unsigned long size)
@@ -93,7 +91,6 @@ static inline pgprot_t arch_vmap_pgprot_tagged(pgprot_t prot)
 extern void __init vmalloc_init(void);
 
 extern void *vmalloc(unsigned long size) __alloc_size(1);
-/* vzalloc declaration removed - never called */
 extern void *__vmalloc(unsigned long size, gfp_t gfp_mask) __alloc_size(1);
 extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
 			unsigned long start, unsigned long end, gfp_t gfp_mask,
@@ -103,7 +100,6 @@ void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 		int node, const void *caller) __alloc_size(1);
 
 extern void vfree(const void *addr);
-/* vfree_atomic removed - no definition or callers */
 
 extern void *vmap(struct page **pages, unsigned int count,
 			unsigned long flags, pgprot_t prot);
@@ -129,19 +125,15 @@ static inline size_t get_vm_area_size(const struct vm_struct *area)
 
 extern struct vm_struct *get_vm_area_caller(unsigned long size,
 					unsigned long flags, const void *caller);
-/* __get_vm_area_caller declaration removed - never called */
 void free_vm_area(struct vm_struct *area);
 extern struct vm_struct *remove_vm_area(const void *addr);
 extern struct vm_struct *find_vm_area(const void *addr);
-/* find_vmap_area declaration removed - made static */
 
-/* is_vm_area_hugepages, set_vm_flush_reset_perms removed - never used */
 
 
 
 
 #define VMALLOC_TOTAL (VMALLOC_END - VMALLOC_START)
 
-/* vmalloc_dump_obj removed - never used */
 
 #endif  

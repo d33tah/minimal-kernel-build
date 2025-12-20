@@ -141,7 +141,6 @@ int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int lines);
 void reset_palette(struct vc_data *vc);
 void do_unblank_screen(int leaving_gfx);
 void unblank_screen(void);
-/* poke_blanked_console, clear_buffer_attributes, update_region, redraw_screen - removed/static in vt.c */
 
 struct unipair;
 

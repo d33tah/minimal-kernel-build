@@ -112,7 +112,6 @@ enum irqchip_irq_state {
 	IRQCHIP_STATE_ACTIVE,
 };
 
-/* irq_get_irqchip_state, irq_set_irqchip_state removed - not called */
 
 DECLARE_STATIC_KEY_FALSE(force_irqthreads_key);
 #  define force_irqthreads()	(static_branch_unlikely(&force_irqthreads_key))
@@ -168,7 +167,6 @@ extern void raise_softirq(unsigned int nr);
 DECLARE_PER_CPU(struct task_struct *, ksoftirqd);
 
 
-/* tasklet_struct and related removed - unused in minimal kernel */
 
 static inline void init_irq_proc(void)
 {

@@ -32,7 +32,6 @@ enum wb_reason {
 	WB_REASON_BACKGROUND,
 };
 
-/* wb_completion and related macros removed - unused */
 
 struct bdi_writeback {
 	struct backing_dev_info *bdi;	 
@@ -103,7 +102,5 @@ struct backing_dev_info {
 
 };
 
-/* wb_lock_cookie removed - unused */
-/* wb_tryget, wb_get, wb_put removed - never called */
 
 #endif

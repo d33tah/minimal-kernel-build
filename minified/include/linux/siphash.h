@@ -11,7 +11,6 @@ typedef struct {
 
 #define siphash_aligned_key_t siphash_key_t __aligned(16)
 
-/* siphash_key_is_zero removed - never called */
 
 u64 __siphash_aligned(const void *data, size_t len, const siphash_key_t *key);
 u64 __siphash_unaligned(const void *data, size_t len, const siphash_key_t *key);
@@ -26,10 +25,8 @@ u64 siphash_1u32(const u32 a, const siphash_key_t *key);
 u64 siphash_3u32(const u32 a, const u32 b, const u32 c,
 		 const siphash_key_t *key);
 
-/* siphash_2u32, siphash_4u32 removed - never called */
 
 
-/* ___siphash_aligned removed - never called */
 
 static inline u64 siphash(const void *data, size_t len,
 			  const siphash_key_t *key)
@@ -53,7 +50,6 @@ u32 hsiphash_3u32(const u32 a, const u32 b, const u32 c,
 u32 hsiphash_4u32(const u32 a, const u32 b, const u32 c, const u32 d,
 		  const hsiphash_key_t *key);
 
-/* ___hsiphash_aligned, hsiphash removed - never called */
 
 
 /* SIPHASH_PERMUTATION, SIPHASH_CONST_*, HSIPHASH_PERMUTATION, HSIPHASH_CONST_*

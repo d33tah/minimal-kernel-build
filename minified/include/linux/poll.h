@@ -61,11 +61,6 @@ static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_addres
 		p->_qproc(filp, wait_address, p);
 }
 
-/* poll_does_not_wait removed - never called */
-/* poll_requested_events removed - never called */
-/* init_poll_funcptr removed - never called */
-/* file_can_poll removed - never called */
-/* vfs_poll removed - never called */
 
 struct poll_table_entry {
 	struct file *filp;
@@ -84,7 +79,6 @@ struct poll_wqueues {
 	struct poll_table_entry inline_entries[N_INLINE_POLL_ENTRIES];
 };
 
-/* poll_initwait, poll_freewait declarations removed - functions removed */
 
 #define MAX_INT64_SECONDS (((s64)(~((u64)0)>>1)/HZ)-1)
 
@@ -94,7 +88,5 @@ extern int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
 extern int poll_select_set_timeout(struct timespec64 *to, time64_t sec,
 				   long nsec);
 
-/* mangle_poll removed - never called */
-/* demangle_poll removed - never called */
 
 #endif  

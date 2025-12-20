@@ -11,7 +11,6 @@
 #include <linux/percpu-refcount.h>
 #include <linux/percpu-rwsem.h>
 
-/* u64_stats_sync types kept but functions removed - never used */
 struct u64_stats_sync {
 };
 
@@ -28,6 +27,5 @@ static inline void cgroup_threadgroup_change_begin(struct task_struct *tsk)
 
 static inline void cgroup_threadgroup_change_end(struct task_struct *tsk) {}
 
-/* sock_cgroup_data removed - unused */
 
 #endif

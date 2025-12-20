@@ -66,7 +66,6 @@ static inline void hlist_bl_add_head(struct hlist_bl_node *n,
 	hlist_bl_set_first(h, n);
 }
 
-/* hlist_bl_add_before and hlist_bl_add_behind removed - unused */
 
 static inline void __hlist_bl_del(struct hlist_bl_node *n)
 {

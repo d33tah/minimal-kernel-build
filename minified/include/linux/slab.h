@@ -63,7 +63,6 @@ struct kmem_cache *kmem_cache_create_usercopy(const char *name,
 			offsetof(struct __struct, __field),		\
 			sizeof_field(struct __struct, __field), NULL)
 
-/* krealloc removed - never called */
 void kfree(const void *objp);
 size_t __ksize(const void *objp);
 size_t ksize(const void *objp);
@@ -102,7 +101,6 @@ static inline unsigned int arch_slab_minalign(void)
 
 #define KMALLOC_MAX_SIZE	(1UL << KMALLOC_SHIFT_MAX)
 #define KMALLOC_MAX_CACHE_SIZE	(1UL << KMALLOC_SHIFT_HIGH)
-/* KMALLOC_MAX_ORDER removed - unused */
 
 #ifndef KMALLOC_MIN_SIZE
 #define KMALLOC_MIN_SIZE (1 << KMALLOC_SHIFT_LOW)

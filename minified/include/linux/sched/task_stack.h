@@ -32,12 +32,10 @@ void exit_task_stack_account(struct task_struct *tsk);
 #define task_stack_end_corrupted(task) \
 		(*(end_of_stack(task)) != STACK_END_MAGIC)
 
-/* object_is_on_stack removed - unused */
 
 extern void thread_stack_cache_init(void);
 
 extern void set_task_stack_end_magic(struct task_struct *tsk);
 
-/* kstack_end removed - unused */
 
 #endif  

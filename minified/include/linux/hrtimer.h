@@ -114,7 +114,6 @@ static inline void hrtimer_set_expires_tv64(struct hrtimer *timer, s64 tv64)
 	timer->_softexpires = tv64;
 }
 
-/* hrtimer_add_expires, hrtimer_add_expires_ns removed - unused */
 
 static inline ktime_t hrtimer_get_expires(const struct hrtimer *timer)
 {
@@ -141,7 +140,6 @@ static inline ktime_t hrtimer_expires_remaining(const struct hrtimer *timer)
 	return ktime_sub(timer->node.expires, timer->base->get_time());
 }
 
-/* hrtimer_cb_get_time removed - unused */
 
 #define hrtimer_resolution	(unsigned int)LOW_RES_NSEC
 
@@ -174,10 +172,8 @@ static inline void destroy_hrtimer_on_stack(struct hrtimer *timer) { }
 extern void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
 				   u64 range_ns, const enum hrtimer_mode mode);
 
-/* hrtimer_start removed - never called */
 
 extern int hrtimer_cancel(struct hrtimer *timer);
-/* hrtimer_try_to_cancel declaration removed - only used internally */
 
 static inline void hrtimer_start_expires(struct hrtimer *timer,
 					 enum hrtimer_mode mode)
@@ -190,7 +186,6 @@ static inline void hrtimer_start_expires(struct hrtimer *timer,
 	hrtimer_start_range_ns(timer, soft, delta, mode);
 }
 
-/* hrtimer_sleeper_start_expires declaration removed - only used internally */
 
 
 extern bool hrtimer_active(const struct hrtimer *timer);

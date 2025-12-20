@@ -24,7 +24,6 @@ static inline int cpuset_nodemask_valid_mems_allowed(nodemask_t *nodemask)
 	return 1;
 }
 
-/* rebuild_sched_domains, read_mems_allowed_begin removed - unused */
 
 static inline void set_mems_allowed(nodemask_t nodemask)
 {

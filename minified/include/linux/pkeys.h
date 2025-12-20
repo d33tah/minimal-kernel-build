@@ -7,8 +7,6 @@
 
 #define arch_max_pkey() (1)
 #define execute_only_pkey(mm) (0)
-/* arch_override_mprotect_pkey removed - never used */
-/* PKEY_DEDICATED_EXECUTE_ONLY removed - never used */
 #define ARCH_VM_PKEY_FLAGS 0
 
 static inline int vma_pkey(struct vm_area_struct *vma)

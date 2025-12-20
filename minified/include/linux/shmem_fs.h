@@ -72,8 +72,5 @@ extern void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end);
 int shmem_unuse(unsigned int type);
 
 
-/* shmem_read_mapping_page removed - never called */
-/* shmem_file removed - never called */
-/* shmem_fallocend removed - never called */
 
 #endif

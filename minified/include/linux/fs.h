@@ -69,7 +69,6 @@ int errseq_check_and_advance(errseq_t *eseq, errseq_t *since);
 
 /* --- 2025-12-06 20:11 --- fs_types.h inlined (36 LOC) */
 #define DT_DIR		4
-/* S_DT*, DT_UNKNOWN, DT_FIFO, DT_CHR, DT_BLK, DT_REG, DT_LNK, DT_SOCK, DT_MAX removed - unused */
 /* --- end fs_types.h inlined --- */
 #include <linux/stddef.h>
 #include <linux/mount.h>
@@ -93,7 +92,6 @@ int errseq_check_and_advance(errseq_t *eseq, errseq_t *since);
 #define SEEK_MAX	SEEK_HOLE
 #define RENAME_NOREPLACE	(1 << 0)
 #define RENAME_EXCHANGE		(1 << 1)
-/* RENAME_WHITEOUT removed - unused */
 struct files_stat_struct {
 	unsigned long nr_files;
 	unsigned long nr_free_files;
@@ -189,7 +187,6 @@ typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
 
 #define FMODE_NOACCOUNT		((__force fmode_t)0x20000000)
 
-/* FMODE_BUF_RASYNC removed - unused */
 
 #define ATTR_MODE	(1 << 0)
 #define ATTR_UID	(1 << 1)
@@ -324,7 +321,6 @@ static inline void i_mmap_unlock_write(struct address_space *mapping)
 	up_write(&mapping->i_mmap_rwsem);
 }
 
-/* i_mmap_trylock_read removed - unused (2025-12-15 07:26) */
 
 static inline void i_mmap_lock_read(struct address_space *mapping)
 {
@@ -354,7 +350,6 @@ static inline void mapping_allow_writable(struct address_space *mapping)
 #define i_size_ordered_init(inode) do { } while (0)
 
 struct posix_acl;
-/* ACL_NOT_CACHED, ACL_DONT_CACHE removed - never used */
 
 
 #define IOP_FASTPERM	0x0001
@@ -588,7 +583,6 @@ static inline struct file *get_file(struct file *f)
 /* 32-bit only kernel */
 #define MAX_LFS_FILESIZE	((loff_t)ULONG_MAX << PAGE_SHIFT)
 
-/* FL_* file lock defines removed - unused (FL_POSIX, FL_FLOCK, etc) */
 
 typedef void *fl_owner_t;
 
@@ -893,7 +887,6 @@ static inline void sb_start_pagefault(struct super_block *sb)
 bool inode_owner_or_capable(struct user_namespace *mnt_userns,
 			    const struct inode *inode);
 
-/* vfs_create removed - unused */
 int vfs_mkdir(struct user_namespace *, struct inode *,
 	      struct dentry *, umode_t);
 int vfs_mknod(struct user_namespace *, struct inode *, struct dentry *,
@@ -902,7 +895,6 @@ int vfs_symlink(struct user_namespace *, struct inode *,
 		struct dentry *, const char *);
 int vfs_link(struct dentry *, struct user_namespace *, struct inode *,
 	     struct dentry *, struct inode **);
-/* vfs_rmdir, vfs_unlink, struct renamedata, vfs_rename, vfs_tmpfile removed - unused */
 
 int vfs_fchown(struct file *file, uid_t user, gid_t group);
 int vfs_fchmod(struct file *file, umode_t mode);
@@ -920,8 +912,6 @@ struct dir_context {
 	loff_t pos;
 };
 
-/* NOMMU_MAP_*, NOMMU_VMFLAGS removed - unused in minimal kernel */
-/* REMAP_FILE_* defines removed - unused in minimal kernel */
 
 struct iov_iter;
 struct io_uring_cmd;
@@ -1155,7 +1145,6 @@ static inline void file_accessed(struct file *file)
 		touch_atime(&file->f_path);
 }
 
-/* sync_inode_metadata removed - never called */
 
 struct file_system_type {
 	const char *name;
@@ -1218,13 +1207,11 @@ struct super_block *sget(struct file_system_type *type,
 	} while(0)
 
 extern int register_filesystem(struct file_system_type *);
-/* vfs_statfs removed - function was already stubbed out */
 
 extern int current_umask(void);
 
 extern void ihold(struct inode * inode);
 extern void iput(struct inode *);
-/* generic_update_time removed - only used internally */
 
 #define MAX_RW_COUNT (INT_MAX & PAGE_MASK)
 
@@ -1263,7 +1250,6 @@ extern struct file *filp_open(const char *, int, umode_t);
 extern int filp_close(struct file *, fl_owner_t id);
 
 extern struct filename *getname_flags(const char __user *, int, int *);
-/* getname_uflags removed - internal only */
 extern struct filename *getname(const char __user *);
 extern struct filename *getname_kernel(const char *);
 extern void putname(struct filename *name);
@@ -1388,7 +1374,6 @@ extern loff_t vfs_llseek(struct file *file, loff_t offset, int whence);
 
 extern int inode_init_always(struct super_block *, struct inode *);
 extern void inode_init_once(struct inode *);
-/* address_space_init_once removed - no definition or callers */
 extern int generic_delete_inode(struct inode *inode);
 static inline int generic_drop_inode(struct inode *inode)
 {

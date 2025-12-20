@@ -30,7 +30,6 @@ static inline void kmap_assert_nomap(void)
 	DEBUG_LOCKS_WARN_ON(current->kmap_ctrl.idx);
 }
 
-/* kmap_to_page removed - unused */
 
 static inline void *kmap(struct page *page)
 {
@@ -38,7 +37,6 @@ static inline void *kmap(struct page *page)
 	return page_address(page);
 }
 
-/* kunmap_high removed - unused */
 
 static inline void kunmap(struct page *page)
 {
@@ -98,7 +96,6 @@ do {								\
 	__kunmap_local(__addr);					\
 } while (0)
 
-/* nr_free_highpages, totalhigh_pages removed - unused */
 
 #ifndef ARCH_HAS_FLUSH_ANON_PAGE
 static inline void flush_anon_page(struct vm_area_struct *vma, struct page *page, unsigned long vmaddr)
@@ -151,7 +148,6 @@ static inline void zero_user_segments(struct page *page,
 		flush_dcache_page(page + i);
 }
 
-/* zero_user_segment removed - never called */
 
 static inline void zero_user(struct page *page,
 	unsigned start, unsigned size)

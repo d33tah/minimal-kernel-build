@@ -52,7 +52,6 @@ static inline void sigdelset(sigset_t *set, int _sig)
 		set->sig[sig / _NSIG_BPW] &= ~(1UL << (sig % _NSIG_BPW));
 }
 
-/* sigismember removed - unused (~8 LOC) */
 
 #endif  
 
@@ -223,7 +222,6 @@ struct timespec;
 struct pt_regs;
 enum pid_type;
 
-/* next_signal removed - not called */
 extern int do_send_sig_info(int sig, struct kernel_siginfo *info,
 				struct task_struct *p, enum pid_type type);
 extern int group_send_sig_info(int sig, struct kernel_siginfo *info,
@@ -276,7 +274,6 @@ extern struct kmem_cache *sighand_cachep;
         rt_sigmask(SIGCONT)   |  rt_sigmask(SIGCHLD)   | \
 	rt_sigmask(SIGWINCH)  |  rt_sigmask(SIGURG)    )
 
-/* SIG_SPECIFIC_SICODES_MASK, sig_specific_sicodes removed - unused */
 
 #define sig_kernel_only(sig)		siginmask(sig, SIG_KERNEL_ONLY_MASK)
 #define sig_kernel_coredump(sig)	siginmask(sig, SIG_KERNEL_COREDUMP_MASK)

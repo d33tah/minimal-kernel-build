@@ -48,7 +48,6 @@ extern void init_idle(struct task_struct *idle, int cpu);
 extern int sched_fork(unsigned long clone_flags, struct task_struct *p);
 extern void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs);
 extern void sched_post_fork(struct task_struct *p);
-/* sched_dead removed - never defined or called */
 
 void __noreturn do_task_dead(void);
 void __noreturn make_task_dead(int signr);
@@ -67,15 +66,12 @@ extern void exit_thread(struct task_struct *tsk);
 /* do_group_exit now static in exit.c */
 
 extern void exit_files(struct task_struct *);
-/* exit_itimers removed - never defined or called */
 
 extern pid_t kernel_clone(struct kernel_clone_args *kargs);
-/* create_io_thread, fork_idle removed - unused */
 struct mm_struct *copy_init_mm(void);
 extern pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
 extern pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags);
 /* kernel_wait4 now static in exit.c */
-/* kernel_wait removed - unused */
 
 extern void free_task(struct task_struct *tsk);
 
@@ -95,7 +91,6 @@ static inline void put_task_struct(struct task_struct *t)
 		__put_task_struct(t);
 }
 
-/* put_task_struct_many removed - unused */
 
 void put_task_struct_rcu_user(struct task_struct *task);
 

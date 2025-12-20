@@ -139,7 +139,6 @@ static unsigned long *folio_flags(struct folio *folio, unsigned n)
 #define PF_NO_COMPOUND(page, enforce) ({				\
 		VM_BUG_ON_PGFLAGS(enforce && PageCompound(page), page);	\
 		PF_POISONED_CHECK(page); })
-/* PF_SECOND removed - unused */
 
 #define FOLIO_PF_ANY		0
 #define FOLIO_PF_HEAD		0
@@ -256,7 +255,6 @@ PAGEFLAG(Active, active, PF_HEAD) __CLEARPAGEFLAG(Active, active, PF_HEAD)
 PAGEFLAG(Workingset, workingset, PF_HEAD)
 	TESTCLEARFLAG(Workingset, workingset, PF_HEAD)
 __PAGEFLAG(Slab, slab, PF_NO_TAIL)
-/* __PAGEFLAG(SlobFree, ...) removed - never used */
 
 PAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 	__CLEARPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
@@ -267,7 +265,6 @@ PAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 
 PAGEFLAG(Private, private, PF_ANY)
 PAGEFLAG(Private2, private_2, PF_ANY) TESTSCFLAG(Private2, private_2, PF_ANY)
-/* PAGEFLAG(OwnerPriv1, ...) removed - never used */
 
 TESTPAGEFLAG(Writeback, writeback, PF_NO_TAIL)
 	TESTSCFLAG(Writeback, writeback, PF_NO_TAIL)
@@ -290,12 +287,10 @@ PAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 	__CLEARPAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 	TESTSCFLAG(Mlocked, mlocked, PF_NO_TAIL)
 
-/* PAGEFLAG_FALSE(Uncached, uncached) removed - never used */
 
 PAGEFLAG_FALSE(HWPoison, hwpoison)
 #define __PG_HWPOISON 0
 
-/* PAGEFLAG_FALSE(SkipKASanPoison, skip_kasan_poison) removed - never used */
 
 __PAGEFLAG(Reported, reported, PF_NO_COMPOUND)
 
@@ -323,11 +318,9 @@ static __always_inline bool PageAnon(struct page *page)
 	return folio_test_anon(page_folio(page));
 }
 
-/* __PageMovable removed - unused */
 
 TESTPAGEFLAG_FALSE(Ksm, ksm)
 
-/* stable_page_flags declaration removed - unused */
 
 static inline bool folio_test_uptodate(struct folio *folio)
 {
@@ -403,26 +396,20 @@ static __always_inline void set_compound_head(struct page *page, struct page *he
 }
 
 TESTPAGEFLAG_FALSE(Huge, hugetlb)
-/* TESTPAGEFLAG_FALSE(HeadHuge, headhuge) removed - never used */
 
 TESTPAGEFLAG_FALSE(TransHuge, transhuge)
 TESTPAGEFLAG_FALSE(TransCompound, transcompound)
-/* TESTPAGEFLAG_FALSE(TransCompoundMap, transcompoundmap) removed - never used */
 TESTPAGEFLAG_FALSE(TransTail, transtail)
 PAGEFLAG_FALSE(DoubleMap, double_map)
 	TESTSCFLAG_FALSE(DoubleMap, double_map)
 
-/* PAGEFLAG_FALSE(HasHWPoisoned, has_hwpoisoned) removed - never used */
-/* TESTSCFLAG_FALSE(HasHWPoisoned, has_hwpoisoned) removed - never used */
 
 
 
 #define PAGE_TYPE_BASE	0xf0000000
 #define PAGE_MAPCOUNT_RESERVE	-128
 #define PG_buddy	0x00000080
-/* PG_offline removed - unused */
 #define PG_table	0x00000200
-/* PG_guard removed - unused */
 
 #define PageType(page, flag)						\
 	((page->page_type & (PAGE_TYPE_BASE | flag)) == PAGE_TYPE_BASE)
@@ -450,11 +437,9 @@ static __always_inline void __ClearPage##uname(struct page *page)	\
 
 PAGE_TYPE_OPS(Buddy, buddy)
 
-/* PAGE_TYPE_OPS(Offline, offline) removed - never used */
 
 PAGE_TYPE_OPS(Table, table)
 
-/* PAGE_TYPE_OPS(Guard, guard) removed - never used */
 
 
 PAGEFLAG(Isolated, isolated, PF_ANY);
@@ -516,7 +501,6 @@ static inline bool folio_has_private(struct folio *folio)
 #undef PF_ONLY_HEAD
 #undef PF_NO_TAIL
 #undef PF_NO_COMPOUND
-/* #undef PF_SECOND removed - macro was removed */
 #endif  
 
 #endif	 

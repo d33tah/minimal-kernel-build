@@ -174,14 +174,12 @@ extern bool queue_work_on(int cpu, struct workqueue_struct *wq,
 extern bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 			struct delayed_work *work, unsigned long delay);
 
-/* mod_delayed_work_on, __flush_workqueue removed - not called */
 
 extern bool flush_work(struct work_struct *work);
 extern bool cancel_work_sync(struct work_struct *work);
 
 extern bool flush_delayed_work(struct delayed_work *dwork);
 extern bool cancel_delayed_work(struct delayed_work *dwork);
-/* cancel_delayed_work_sync removed - not called */
 
 static inline bool queue_work(struct workqueue_struct *wq,
 			      struct work_struct *work)
@@ -214,7 +212,6 @@ static inline bool schedule_work(struct work_struct *work)
 	return queue_work(system_wq, work);
 }
 
-/* flush_workqueue macro removed - not used */
 
 static inline bool schedule_delayed_work(struct delayed_work *dwork,
 					 unsigned long delay)

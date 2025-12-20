@@ -12,7 +12,6 @@ extern unsigned long _find_next_bit(const unsigned long *addr1,
 		const unsigned long *addr2, unsigned long nbits,
 		unsigned long start, unsigned long invert, unsigned long le);
 extern unsigned long _find_first_bit(const unsigned long *addr, unsigned long size);
-/* _find_first_and_bit removed - never called */
 extern unsigned long _find_first_zero_bit(const unsigned long *addr, unsigned long size);
 extern unsigned long _find_last_bit(const unsigned long *addr, unsigned long size);
 
@@ -35,7 +34,6 @@ unsigned long find_next_bit(const unsigned long *addr, unsigned long size,
 }
 #endif
 
-/* find_next_and_bit removed - never called */
 
 #ifndef find_next_zero_bit
 static inline
@@ -70,7 +68,6 @@ unsigned long find_first_bit(const unsigned long *addr, unsigned long size)
 }
 #endif
 
-/* find_first_and_bit removed - never called */
 
 #ifndef find_first_zero_bit
 static inline
@@ -171,12 +168,10 @@ int bitmap_parse(const char *buf, unsigned int buflen,
  * bitmap_bitremap, bitmap_onto, bitmap_fold, bitmap_find_free_region,
  * bitmap_release_region, bitmap_allocate_region removed - unused */
 
-/* bitmap_copy_le removed - unused */
 unsigned int bitmap_ord_to_pos(const unsigned long *bitmap, unsigned int ord, unsigned int nbits);
 int bitmap_print_to_pagebuf(bool list, char *buf,
 				   const unsigned long *maskp, int nmaskbits);
 
-/* bitmap_print_bitmask_to_buf, bitmap_print_list_to_buf removed - not called */
 
 #define BITMAP_FIRST_WORD_MASK(start) (~0UL << ((start) & (BITS_PER_LONG - 1)))
 #define BITMAP_LAST_WORD_MASK(nbits) (~0UL >> (-(nbits) & (BITS_PER_LONG - 1)))
@@ -193,9 +188,7 @@ static inline void bitmap_fill(unsigned long *dst, unsigned int nbits)
 	memset(dst, 0xff, len);
 }
 
-/* bitmap_copy removed - unused (~6 LOC) */
 
-/* bitmap_copy_clear_tail, bitmap_from_arr32/64, bitmap_to_arr32/64, bitmap_and removed - unused */
 
 static inline void bitmap_or(unsigned long *dst, const unsigned long *src1,
 			const unsigned long *src2, unsigned int nbits)
@@ -226,7 +219,6 @@ static inline bool bitmap_equal(const unsigned long *src1,
 	return __bitmap_equal(src1, src2, nbits);
 }
 
-/* bitmap_intersects removed - unused */
 
 static inline bool bitmap_empty(const unsigned long *src, unsigned nbits)
 {
@@ -244,7 +236,6 @@ static inline bool bitmap_full(const unsigned long *src, unsigned int nbits)
 	return find_first_zero_bit(src, nbits) == nbits;
 }
 
-/* bitmap_weight removed - unused */
 
 static __always_inline void bitmap_set(unsigned long *map, unsigned int start,
 		unsigned int nbits)
@@ -273,7 +264,6 @@ static __always_inline void bitmap_clear(unsigned long *map, unsigned int start,
 	else
 		__bitmap_clear(map, start, nbits);
 }
-/* BITMAP_FROM_U64, bitmap_get_value8 removed - never called */
 
 #endif
 

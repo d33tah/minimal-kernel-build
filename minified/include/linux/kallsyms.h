@@ -2,7 +2,6 @@
 #define _LINUX_KALLSYMS_H
 
 #include <linux/errno.h>
-/* buildid.h removed - only need BUILD_ID_SIZE_MAX */
 #define BUILD_ID_SIZE_MAX 20
 #include <linux/kernel.h>
 #include <linux/stddef.h>
@@ -34,7 +33,6 @@ static inline int is_kernel(unsigned long addr)
 	return in_gate_area_no_mm(addr);
 }
 
-/* is_ksym_addr removed - never called */
 
 static inline void *dereference_symbol_descriptor(void *ptr)
 {

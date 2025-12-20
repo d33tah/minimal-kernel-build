@@ -37,15 +37,10 @@ struct seq_operations {
 
 #define SEQ_SKIP 1
 
-/* seq_has_overflowed removed - never called */
-/* seq_get_buf removed - never called */
-/* seq_commit removed - never called */
-/* seq_open, seq_read, seq_read_iter, seq_lseek, seq_release removed - not called */
 
 __printf(2, 3)
 void seq_printf(struct seq_file *m, const char *fmt, ...);
 
-/* seq_user_ns removed - never called */
 
 
 #define SEQ_START_TOKEN ((void *)1)

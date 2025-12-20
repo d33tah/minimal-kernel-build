@@ -115,12 +115,10 @@ extern struct console *console_drivers;
 extern void console_lock(void);
 extern int console_trylock(void);
 extern void console_unlock(void);
-/* console_conditional_schedule removed - no callers */
 extern void console_unblank(void);
 extern void console_flush_on_panic(enum con_flush_mode mode);
 extern struct tty_driver *console_device(int *);
 extern int is_console_locked(void);
-/* braille_register_console, braille_unregister_console removed - no definition or callers */
 extern void console_sysfs_notify(void);
 
 static inline void vcs_make_sysfs(int index) { }
@@ -130,7 +128,6 @@ static inline void vcs_make_sysfs(int index) { }
 		!is_console_locked() && !oops_in_progress)
 extern atomic_t ignore_console_lock_warning;
 
-/* VESA_* defines removed - unused in minimal kernel */
 
 extern void console_init(void);
 

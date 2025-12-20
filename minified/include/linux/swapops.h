@@ -52,8 +52,6 @@ static inline swp_entry_t pte_to_swp_entry(pte_t pte)
 	return swp_entry(__swp_type(arch_entry), __swp_offset(arch_entry));
 }
 
-/* swp_entry_to_pte removed - never called */
-/* radix_to_swp_entry, swp_to_radix_entry removed - unused */
 
 
 /* CONFIG_DEVICE_PRIVATE disabled - minimal stubs */
@@ -70,15 +68,11 @@ typedef unsigned long pte_marker;
 #define  PTE_MARKER_MASK     (PTE_MARKER_UFFD_WP)
 
 
-/* make_pte_marker_entry, is_pte_marker_entry, pte_marker_get removed - unused */
-/* pfn_swap_entry_to_page, is_pfn_swap_entry removed - unused */
 
-/* set_pmd_migration_entry, remove_migration_pmd, swp_entry_to_pmd removed - unused */
 static inline void pmd_migration_entry_wait(struct mm_struct *m, pmd_t *p) { }
 static inline swp_entry_t pmd_to_swp_entry(pmd_t pmd) { return swp_entry(0, 0); }
 static inline int is_pmd_migration_entry(pmd_t pmd) { return 0; }
 
 
-/* non_swap_entry removed - never called */
 
 #endif  

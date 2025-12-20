@@ -211,7 +211,6 @@ struct lruvec {
 	unsigned long			flags;
 };
 
-/* ISOLATE_UNMAPPED, ISOLATE_ASYNC_MIGRATE, ISOLATE_UNEVICTABLE removed - unused */
 
 typedef unsigned __bitwise isolate_mode_t;
 
@@ -225,7 +224,6 @@ enum zone_watermarks {
 
 #define NR_PCP_LISTS (MIGRATE_PCPTYPES * (PAGE_ALLOC_COSTLY_ORDER + 1))
 
-/* NR_PCP_ORDER_WIDTH, NR_PCP_ORDER_MASK removed - unused */
 
 #define min_wmark_pages(z) (z->_watermark[WMARK_MIN] + z->watermark_boost)
 #define low_wmark_pages(z) (z->_watermark[WMARK_LOW] + z->watermark_boost)
@@ -264,7 +262,6 @@ enum zone_type {
 
 #ifndef __GENERATING_BOUNDS_H
 
-/* ASYNC_AND_SYNC removed - unused */
 
 struct zone {
 	 
@@ -445,7 +442,6 @@ void wakeup_kswapd(struct zone *zone, gfp_t gfp_mask, int order,
 bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 			 int highest_zoneidx, unsigned int alloc_flags,
 			 long free_pages);
-/* zone_watermark_ok removed - unused wrapper */
 enum meminit_context {
 	MEMINIT_EARLY,
 	MEMINIT_HOTPLUG,

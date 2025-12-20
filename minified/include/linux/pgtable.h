@@ -114,7 +114,6 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma,
 				 pte_t entry, int dirty);
 #endif
 
-/* pmdp_set_access_flags, pudp_set_access_flags removed - never called */
 
 #ifndef __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
 static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
@@ -131,14 +130,12 @@ static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
 }
 #endif
 
-/* pmdp_test_and_clear_young removed - never called */
 
 #ifndef __HAVE_ARCH_PTEP_CLEAR_YOUNG_FLUSH
 int ptep_clear_flush_young(struct vm_area_struct *vma,
 			   unsigned long address, pte_t *ptep);
 #endif
 
-/* pmdp_clear_flush_young removed - never called */
 
 #ifndef __HAVE_ARCH_PTEP_GET_AND_CLEAR
 static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
@@ -204,8 +201,6 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 #define pte_sw_mkyoung	pte_sw_mkyoung
 #endif
 
-/* pte_savedwrite, pte_mk_savedwrite, pte_clear_savedwrite removed - unused */
-/* pmd_savedwrite, pmd_mk_savedwrite, pmd_clear_savedwrite removed - unused */
 
 #ifndef __HAVE_ARCH_PMDP_SET_WRPROTECT
 #endif
@@ -238,7 +233,6 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
 	(pud_present(pud) && (!(write) || pud_write(pud)))
 #endif
 
-/* p4d_access_permitted, pgd_access_permitted removed - never used */
 
 #ifndef __HAVE_ARCH_PMD_SAME
 static inline int pmd_same(pmd_t pmd_a, pmd_t pmd_b)
@@ -267,7 +261,6 @@ static inline int pgd_same(pgd_t pgd_a, pgd_t pgd_b)
 #endif
 
 
-/* set_pte_safe removed - unused */
 
 #define set_pmd_safe(pmdp, pmd) \
 ({ \
@@ -515,7 +508,6 @@ extern void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot,
 extern int track_pfn_copy(struct vm_area_struct *vma);
 extern void untrack_pfn(struct vm_area_struct *vma, unsigned long pfn,
 			unsigned long size);
-/* untrack_pfn_moved removed - unused */
 #endif
 
 #ifdef __HAVE_COLOR_ZERO_PAGE

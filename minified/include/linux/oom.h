@@ -45,7 +45,6 @@ struct oom_control {
 	enum oom_constraint constraint;
 };
 
-/* oom_lock, oom_adj_mutex removed - never used */
 
 
 static inline bool tsk_is_oom_victim(struct task_struct * tsk)
@@ -67,16 +66,12 @@ static inline vm_fault_t check_stable_address_space(struct mm_struct *mm)
 
 bool __oom_reap_task_mm(struct mm_struct *mm);
 
-/* oom_badness removed - unused */
 
 extern bool out_of_memory(struct oom_control *oc);
 
 extern void exit_oom_victim(void);
 
-/* register_oom_notifier, unregister_oom_notifier removed - never called */
 
-/* extern void oom_killer_enable(void); removed - never called */
 
-/* find_lock_task_mm removed - unused */
 
 #endif  

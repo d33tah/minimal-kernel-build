@@ -63,7 +63,6 @@ static inline void ptrace_unlink(struct task_struct *child)
 		__ptrace_unlink(child);
 }
 
-/* generic_ptrace_peekdata/pokedata removed - never called */
 
 
 static inline bool ptrace_event_enabled(struct task_struct *task, int event)

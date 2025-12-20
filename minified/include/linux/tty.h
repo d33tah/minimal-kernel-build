@@ -42,7 +42,6 @@ int ldsem_down_write_trylock(struct ld_semaphore *sem);
 void ldsem_up_read(struct ld_semaphore *sem);
 void ldsem_up_write(struct ld_semaphore *sem);
 
-/* ldsem_down_read_nested removed - unused */
 # define ldsem_down_write_nested(sem, subclass, timeout)	\
 		ldsem_down_write(sem, timeout)
 
@@ -79,7 +78,6 @@ struct tty_ldisc {
 	struct tty_struct *tty;
 };
 
-/* MODULE_ALIAS_LDISC, tty_ldiscs_seq_ops removed - unused */
 
 struct tty_ldisc *tty_ldisc_ref(struct tty_struct *);
 void tty_ldisc_deref(struct tty_ldisc *);
@@ -88,7 +86,6 @@ struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *);
 void tty_ldisc_flush(struct tty_struct *tty);
 
 int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
-/* tty_set_ldisc removed - unused */
 /* --- end tty_ldisc.h inlined --- */
 #include <linux/mutex.h>
 #include <linux/tty_flags.h>
@@ -101,7 +98,6 @@ int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
 #include <linux/llist.h>
 
 
-/* NR_UNIX98_PTY_* defines removed - no PTY support in minimal kernel */
 
 #define __DISABLED_CHAR '\0'
 
@@ -233,14 +229,12 @@ static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 
 const char *tty_driver_name(const struct tty_struct *tty);
 void tty_wait_until_sent(struct tty_struct *tty, long timeout);
-/* tty_put_char removed - never called */
 unsigned int tty_chars_in_buffer(struct tty_struct *tty);
 unsigned int tty_write_room(struct tty_struct *tty);
 void tty_driver_flush_buffer(struct tty_struct *tty);
 void tty_unthrottle(struct tty_struct *tty);
 void tty_hangup(struct tty_struct *tty);
 int tty_hung_up_p(struct file *filp);
-/* __do_SAK removed - never called */
 void no_tty(void);
 speed_t tty_termios_baud_rate(struct ktermios *termios);
 

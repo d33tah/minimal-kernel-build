@@ -83,7 +83,6 @@ unsigned long global_node_page_state_pages(enum node_stat_item item)
 	return x;
 }
 
-/* global_node_page_state removed - unused */
 
 static inline unsigned long zone_page_state(struct zone *zone,
 					enum zone_stat_item item)
@@ -94,7 +93,6 @@ static inline unsigned long zone_page_state(struct zone *zone,
 
 
 #define sum_zone_node_page_state(node, item) global_zone_page_state(item)
-/* node_page_state macro removed - unused */
 #define node_page_state_pages(node, item) global_node_page_state_pages(item)
 
 
@@ -183,7 +181,6 @@ static inline void __dec_node_page_state(struct page *page,
 
 static inline void refresh_zone_stat_thresholds(void) { }
 static inline void cpu_vm_stats_fold(int cpu) { }
-/* drain_zonestat removed - unused */
 
 static inline void node_stat_mod_folio(struct folio *folio,
 		enum node_stat_item item, long nr)

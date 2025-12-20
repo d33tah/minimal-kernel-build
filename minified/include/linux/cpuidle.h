@@ -17,7 +17,6 @@ struct cpuidle_driver;
 
 
 
-/* CPUIDLE_STATE_DISABLED_BY_* removed - never used */
 
 struct cpuidle_state_usage {
 	unsigned long long	disable;
@@ -51,7 +50,6 @@ struct cpuidle_state {
 			    int index);
 };
 
-/* CPUIDLE_FLAG_* removed - never used */
 
 struct cpuidle_device_kobj;
 struct cpuidle_state_kobj;
@@ -98,7 +96,6 @@ struct cpuidle_driver {
 	const char		*governor;
 };
 
-/* disable_cpuidle removed - never called */
 static inline bool cpuidle_not_available(struct cpuidle_driver *drv,
 					 struct cpuidle_device *dev)
 {return true; }
@@ -109,7 +106,6 @@ static inline int cpuidle_enter(struct cpuidle_driver *drv,
 				struct cpuidle_device *dev, int index)
 {return -ENODEV; }
 static inline void cpuidle_reflect(struct cpuidle_device *dev, int index) { }
-/* cpuidle_poll_time removed - never used */
 static inline struct cpuidle_driver *cpuidle_get_cpu_driver(
 	struct cpuidle_device *dev) {return NULL; }
 static inline struct cpuidle_device *cpuidle_get_device(void) {return NULL; }

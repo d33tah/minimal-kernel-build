@@ -22,6 +22,5 @@ struct perf_event_attr {
 	__u32 type;
 };
 
-/* PERF_ATTR_SIZE_* removed - unused */
 
 #endif  

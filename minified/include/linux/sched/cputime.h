@@ -18,7 +18,6 @@ static inline u64 task_gtime(struct task_struct *t)
 	return t->gtime;
 }
 
-/* task_cputime_adjusted removed - unused */
 extern void thread_group_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st);
 
 void thread_group_sample_cputime(struct task_struct *tsk, u64 *samples);
@@ -69,6 +68,5 @@ static inline void prev_cputime_init(struct prev_cputime *prev)
 	raw_spin_lock_init(&prev->lock);
 }
 
-/* extern unsigned long long task_sched_runtime removed - never called */
 
 #endif  

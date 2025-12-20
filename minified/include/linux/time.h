@@ -41,7 +41,6 @@ struct tm {
 
 # include <linux/time32.h>
 
-/* time_after32, time_before32, time_between32 removed - never used */
 
 /* Inlined from vdso/time.h */
 struct timens_offset {

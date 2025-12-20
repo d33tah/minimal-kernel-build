@@ -10,7 +10,6 @@
 #include <linux/backing-dev-defs.h>
 #include <linux/slab.h>
 
-/* bdi_get removed - never called */
 
 void bdi_put(struct backing_dev_info *bdi);
 void bdi_unregister(struct backing_dev_info *bdi);
@@ -20,7 +19,6 @@ struct backing_dev_info *bdi_alloc(int node_id);
 void wb_start_background_writeback(struct bdi_writeback *wb);
 void wb_workfn(struct work_struct *work);
 
-/* wb_wait_for_completion removed - never called */
 /* wb_has_dirty_io, bdi_has_dirty_io, wb_stat_mod, inc_wb_stat, dec_wb_stat,
    wb_stat, wb_stat_sum, wb_stat_error removed - never called */
 
@@ -34,7 +32,6 @@ extern struct backing_dev_info noop_backing_dev_info;
 
 int bdi_init(struct backing_dev_info *bdi);
 
-/* writeback_in_progress removed - never called */
 
 struct backing_dev_info *inode_to_bdi(struct inode *inode);
 
@@ -55,6 +52,5 @@ static inline struct bdi_writeback *inode_to_wb(struct inode *inode)
    removed - never called */
 
 
-/* bdi_dev_name removed - unused */
 
 #endif

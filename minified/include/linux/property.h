@@ -1,4 +1,3 @@
-/* Minimal property.h - most functions stubbed/removed */
 #ifndef _LINUX_PROPERTY_H_
 #define _LINUX_PROPERTY_H_
 

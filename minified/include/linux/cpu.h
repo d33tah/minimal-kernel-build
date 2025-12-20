@@ -40,7 +40,6 @@ static inline int cpuhp_setup_state_nocalls(enum cpuhp_state state,
 				   false);
 }
 
-/* cpuhp_setup_state_*, cpuhp_state_add_instance* removed - never used */
 
 static inline void cpuhp_online_idle(enum cpuhp_state state) { }
 /* --- end cpuhotplug.h inlined --- */
@@ -82,7 +81,6 @@ void arch_cpu_idle_enter(void);
 void arch_cpu_idle_exit(void);
 void arch_cpu_idle_dead(void);
 
-/* cpu_report_state, cpu_check_up_prepare, cpu_set_state_online removed - unused */
 
 static inline void cpuhp_report_idle_dead(void) { }
 

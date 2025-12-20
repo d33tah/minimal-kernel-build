@@ -9,7 +9,6 @@
 #include <linux/uio.h>
 #include <linux/compiler.h>
 
-/* Socket-related structs and defines removed - unused in minimal kernel */
 
 struct file;
 struct pid;

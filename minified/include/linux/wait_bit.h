@@ -23,7 +23,6 @@ void __wake_up_bit(struct wait_queue_head *wq_head, void *word, int bit);
 int __wait_on_bit(struct wait_queue_head *wq_head, struct wait_bit_queue_entry *wbq_entry, wait_bit_action_f *action, unsigned int mode);
 void wake_up_bit(void *word, int bit);
 int out_of_line_wait_on_bit(void *word, int, wait_bit_action_f *action, unsigned int mode);
-/* __wait_on_bit_lock, out_of_line_wait_on_bit_lock removed - unused */
 struct wait_queue_head *bit_waitqueue(void *word, int bit);
 extern void __init wait_bit_init(void);
 
@@ -58,6 +57,5 @@ wait_on_bit(unsigned long *word, int bit, unsigned mode)
    __var_waitqueue, ___wait_var_event, wait_var_event, wait_var_event_killable,
    wait_var_event_timeout, wait_var_event_interruptible removed) */
 
-/* clear_and_wake_up_bit removed - unused */
 
 #endif  

@@ -8,7 +8,6 @@
 #include <asm/ptrace.h>
 
 
-/* user_enter, user_exit removed - unused */
 static inline void user_enter_irqoff(void) { }
 static inline void user_exit_irqoff(void) { }
 static inline enum ctx_state exception_enter(void) { return 0; }

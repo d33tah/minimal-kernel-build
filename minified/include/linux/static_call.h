@@ -10,7 +10,6 @@
 
 extern void arch_static_call_transform(void *site, void *tramp, void *func, bool tail);
 
-/* STATIC_CALL_TRAMP_ADDR, static_call_update, static_call_query removed - never used */
 
 
 static inline int static_call_init(void) { return 0; }

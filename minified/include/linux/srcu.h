@@ -91,7 +91,6 @@ static inline int __srcu_read_lock(struct srcu_struct *ssp)
 	return idx;
 }
 
-/* synchronize_srcu_expedited, srcu_barrier, srcu_torture_stats_print removed - unused */
 /* End of inlined srcutiny.h content */
 
 void call_srcu(struct srcu_struct *ssp, struct rcu_head *head,
@@ -130,7 +129,6 @@ static inline int srcu_read_lock(struct srcu_struct *ssp) __acquires(ssp)
 	return retval;
 }
 
-/* srcu_read_lock_notrace, srcu_read_unlock_notrace removed - unused */
 
 static inline void srcu_read_unlock(struct srcu_struct *ssp, int idx)
 	__releases(ssp)
@@ -140,6 +138,5 @@ static inline void srcu_read_unlock(struct srcu_struct *ssp, int idx)
 	__srcu_read_unlock(ssp, idx);
 }
 
-/* smp_mb__after_srcu_read_unlock removed - unused */
 
 #endif

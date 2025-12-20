@@ -16,5 +16,4 @@ static inline int dl_task(struct task_struct *p)
 	return dl_prio(p->prio);
 }
 
-/* dl_time_before removed - unused */
 

@@ -68,7 +68,6 @@ struct clone_args {
 #include <linux/rcupdate.h>
 #include <linux/refcount.h>
 #include <linux/resource.h>
-/* latencytop.h inlined - header removed */
 static inline void clear_tsk_latency_tracing(struct task_struct *p) {}
 /* sched/prio.h inlined */
 #define MAX_NICE	19
@@ -87,7 +86,6 @@ static inline void clear_tsk_latency_tracing(struct task_struct *p) {}
 /* task_io_accounting.h inlined - empty struct */
 struct task_io_accounting { };
 #include <linux/posix-timers.h>
-/* rseq.h removed - empty header */
 #include <linux/seqlock.h>
 #include <asm/kmap_size.h>
 
@@ -105,7 +103,6 @@ struct perf_event_context;
 struct pid_namespace;
 struct pipe_inode_info;
 struct reclaim_state;
-/* struct robust_list_head removed - unused after futex.h cleanup */
 struct rq;
 struct sched_attr;
 struct sched_param;
@@ -208,7 +205,6 @@ asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);
 asmlinkage void preempt_schedule_irq(void);
 
-/* io_schedule_prepare, io_schedule_finish removed - only used internally */
 extern void io_schedule(void);
 
 struct prev_cputime {
@@ -217,7 +213,6 @@ struct prev_cputime {
 	raw_spinlock_t			lock;
 };
 
-/* vtime structs removed - not used */
 
 enum uclamp_id { UCLAMP_CNT };
 
@@ -650,7 +645,6 @@ static inline int is_global_init(struct task_struct *tsk)
 	return task_tgid_nr(tsk) == 1;
 }
 
-/* cad_pid removed - only set, never read (ctrl-alt-delete not needed) */
 
 #define PF_VCPU			0x00000001
 #define PF_IDLE			0x00000002
@@ -842,7 +836,6 @@ static inline int _cond_resched(void)
 	_cond_resched();			\
 })
 
-/* spin_needbreak removed - never used */
 
 static __always_inline bool need_resched(void)
 {

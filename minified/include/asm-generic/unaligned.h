@@ -76,6 +76,5 @@ static inline void put_unaligned_be64(u64 val, void *p)
 	__put_unaligned_t(__be64, cpu_to_be64(val), p);
 }
 
-/* 24-bit and 48-bit unaligned access functions removed - unused */
 
 #endif  

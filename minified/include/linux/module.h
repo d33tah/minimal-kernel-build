@@ -24,7 +24,6 @@ enum {
 	EI_ETYPE_TRUE,
 };
 #define ALLOW_ERROR_INJECTION(fname, _etype)
-/* within_error_injection_list, get_injectable_error_type removed - unused */
 /* end error-injection.h */
 #include <linux/tracepoint-defs.h>
 #include <linux/srcu.h>

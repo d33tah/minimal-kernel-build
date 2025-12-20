@@ -52,12 +52,7 @@ static inline int __pm_runtime_set_status(struct device *dev,
 static inline int pm_runtime_barrier(struct device *dev) { return 0; }
 static inline void pm_runtime_enable(struct device *dev) {}
 static inline void __pm_runtime_disable(struct device *dev, bool c) {}
-/* pm_runtime_get_noresume removed - unused */
 static inline void pm_runtime_put_noidle(struct device *dev) {}
-/* pm_runtime_suspended removed - unused */
-/* pm_runtime_active removed - unused */
-/* pm_runtime_status_suspended removed - unused */
-/* pm_runtime_enabled removed - unused */
 /* pm_runtime_mark_last_busy, __pm_runtime_use_autosuspend,
    pm_runtime_set_autosuspend_delay, pm_runtime_autosuspend_expiration
    removed - unused */
@@ -67,9 +62,6 @@ static inline void pm_runtime_release_supplier(struct device_link *link) {}
 
 
 /* Compact pm_runtime_* wrapper functions */
-/* pm_runtime_idle removed - unused */
-/* pm_runtime_suspend removed - unused */
-/* pm_runtime_resume removed - unused */
 static inline int pm_request_idle(struct device *dev) { return __pm_runtime_idle(dev, RPM_ASYNC); }
 static inline int pm_runtime_get_sync(struct device *dev) { return __pm_runtime_resume(dev, RPM_GET_PUT); }
 static inline int pm_runtime_resume_and_get(struct device *dev) {
@@ -79,7 +71,5 @@ static inline int pm_runtime_resume_and_get(struct device *dev) {
 }
 static inline int pm_runtime_put(struct device *dev) { return __pm_runtime_idle(dev, RPM_GET_PUT | RPM_ASYNC); }
 static inline int pm_runtime_put_sync(struct device *dev) { return __pm_runtime_idle(dev, RPM_GET_PUT); }
-/* pm_runtime_disable removed - unused */
-/* pm_runtime_set_active removed - unused */
 
 #endif

@@ -10,7 +10,6 @@
 #define ALIGN_DOWN(x, a)	__ALIGN_KERNEL((x) - ((a) - 1), (a))
 #define __ALIGN_MASK(x, mask)	__ALIGN_KERNEL_MASK((x), (mask))
 #define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
-/* PTR_ALIGN_DOWN removed - unused */
 #define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
 #include <linux/linkage.h>
 #include <linux/stddef.h>
@@ -32,7 +31,6 @@
 #define _THIS_IP_  ({ __label__ __here; __here: (unsigned long)&&__here; })
 #include <asm/byteorder.h>
 
-/* From uapi/linux/sysinfo.h - inlined, SI_LOAD_SHIFT removed (unused) */
 struct sysinfo {
 	__kernel_long_t uptime;
 	__kernel_ulong_t loads[3];
@@ -51,7 +49,6 @@ struct sysinfo {
 };
 
 #include <linux/const.h>
-/* STACK_MAGIC removed - unused */
 
 #define REPEAT_BYTE(x)	((~0ul / 0xff) * (x))
 
@@ -60,17 +57,13 @@ struct sysinfo {
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 
-/* PTR_IF removed - unused */
-/* u64_to_user_ptr removed - unused */
 
 #define upper_32_bits(n) ((u32)(((n) >> 16) >> 16))
 
 #define lower_32_bits(n) ((u32)((n) & 0xffffffff))
 
-/* upper_16_bits, lower_16_bits removed - unused */
 
 struct completion;
-/* struct user forward declaration removed - defined in asm/user.h */
 
 
 # define might_resched() do { } while (0)
@@ -131,7 +124,6 @@ extern void bust_spinlocks(int yes);
 
 extern int root_mountflags;
 
-/* early_boot_irqs_disabled removed - only used in init/main.c */
 
 extern enum system_states {
 	SYSTEM_BOOTING,

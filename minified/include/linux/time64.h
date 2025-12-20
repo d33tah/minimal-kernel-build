@@ -56,7 +56,6 @@ static inline int timespec64_compare(const struct timespec64 *lhs, const struct 
 
 extern void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec);
 
-/* timespec64_add removed - never called */
 
 static inline struct timespec64 timespec64_sub(struct timespec64 lhs,
 						struct timespec64 rhs)
@@ -78,7 +77,6 @@ static inline bool timespec64_valid(const struct timespec64 *ts)
 	return true;
 }
 
-/* timespec64_valid_strict removed - unused */
 
 static inline bool timespec64_valid_settod(const struct timespec64 *ts)
 {

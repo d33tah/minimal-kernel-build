@@ -45,7 +45,6 @@ extern struct resource *platform_get_resource(struct platform_device *,
 					      unsigned int, unsigned int);
 extern int platform_get_irq(struct platform_device *, unsigned int);
 extern int platform_get_irq_optional(struct platform_device *, unsigned int);
-/* platform_device_* functions removed - unused */
 
 struct platform_driver {
 	int (*probe)(struct platform_device *);
@@ -87,7 +86,6 @@ static inline void platform_set_drvdata(struct platform_device *pdev,
 #define builtin_platform_driver(__platform_driver) \
 	builtin_driver(__platform_driver, platform_driver_register)
 
-/* module_platform_driver, module_platform_driver_probe removed - reference missing platform_driver_unregister */
 
 #define builtin_platform_driver_probe(__platform_driver, __platform_probe) \
 static int __init __platform_driver##_init(void) \

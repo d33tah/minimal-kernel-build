@@ -19,10 +19,8 @@ struct open_how {
 /* --- end openat2.h inlined --- */
 
 /* Inlined from uapi/linux/fcntl.h */
-/* F_DUPFD_CLOEXEC, F_SETPIPE_SZ, F_GETPIPE_SZ removed - unused */
 #define AT_FDCWD		-100
 #define AT_SYMLINK_NOFOLLOW	0x100
-/* AT_EACCESS, AT_SYMLINK_FOLLOW removed - unused */
 #define AT_REMOVEDIR		0x200
 #define AT_NO_AUTOMOUNT		0x800
 #define AT_EMPTY_PATH		0x1000
@@ -44,6 +42,5 @@ struct open_how {
 #define force_o_largefile() (!IS_ENABLED(CONFIG_ARCH_32BIT_OFF_T))
 #endif
 
-/* IS_GETLK*, IS_SETLK*, IS_SETLKW* removed - unused (file locking not needed) */
 
 #endif

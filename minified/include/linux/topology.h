@@ -8,7 +8,6 @@
 #include <linux/percpu.h>
 #include <asm/topology.h>
 
-/* Many topology macros removed - only keeping what's actually used */
 
 int arch_update_cpu_topology(void);
 

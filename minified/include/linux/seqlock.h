@@ -42,7 +42,6 @@ static inline void __seqcount_init(seqcount_t *s, const char *name,
 
 #define seqcount_raw_spinlock_init(s, lock)	seqcount_LOCKNAME_init(s, lock, raw_spinlock)
 #define seqcount_spinlock_init(s, lock)		seqcount_LOCKNAME_init(s, lock, spinlock)
-/* seqcount_rwlock_init, seqcount_mutex_init removed - unused */
 
 #define SEQCOUNT_LOCKNAME(lockname, locktype, preemptible, lockmember, lockbase, lock_acquire) \
 typedef struct seqcount_##lockname {					\
@@ -226,7 +225,6 @@ static inline void do_raw_write_seqcount_end(seqcount_t *s)
 	s->sequence++;
 }
 
-/* write_seqcount_begin_nested macro removed - never used */
 
 static inline void do_write_seqcount_begin_nested(seqcount_t *s, int subclass)
 {
@@ -292,8 +290,6 @@ typedef struct {
 
 #define seqcount_latch_init(s) seqcount_init(&(s)->seqcount)
 
-/* raw_read_seqcount_latch removed - never called */
-/* read_seqcount_latch_retry removed - never called */
 
 static inline void raw_write_seqcount_latch(seqcount_latch_t *s)
 {

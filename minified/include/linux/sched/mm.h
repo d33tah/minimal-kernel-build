@@ -35,7 +35,6 @@ static inline void mmget(struct mm_struct *mm)
 	atomic_inc(&mm->mm_users);
 }
 
-/* mmget_not_zero removed - unused */
 
 extern void mmput(struct mm_struct *);
 
@@ -73,7 +72,6 @@ generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
 				  unsigned long len, unsigned long pgoff,
 				  unsigned long flags);
 
-/* in_vfork removed - unused */
 
 static inline gfp_t current_gfp_context(gfp_t flags)
 {
@@ -92,11 +90,9 @@ static inline gfp_t current_gfp_context(gfp_t flags)
 	return flags;
 }
 
-/* __fs_reclaim_acquire, __fs_reclaim_release removed - unused */
 static inline void fs_reclaim_acquire(gfp_t gfp_mask) { }
 static inline void fs_reclaim_release(gfp_t gfp_mask) { }
 
-/* memalloc_retry_wait removed - unused */
 
 static inline void might_alloc(gfp_t gfp_mask)
 {
@@ -130,7 +126,6 @@ static inline void memalloc_nofs_restore(unsigned int flags)
 	current->flags = (current->flags & ~PF_MEMALLOC_NOFS) | flags;
 }
 
-/* memalloc_noreclaim_save, memalloc_noreclaim_restore removed - unused */
 
 static inline unsigned int memalloc_pin_save(void)
 {
@@ -145,7 +140,6 @@ static inline void memalloc_pin_restore(unsigned int flags)
 	current->flags = (current->flags & ~PF_MEMALLOC_PIN) | flags;
 }
 
-/* set_active_memcg removed - unused */
 
 static inline void membarrier_exec_mmap(struct mm_struct *mm)
 {
@@ -158,7 +152,6 @@ static inline void membarrier_update_current_mm(struct mm_struct *next_mm)
 }
 
 static inline void mm_pasid_init(struct mm_struct *mm) {}
-/* mm_pasid_set removed - unused */
 static inline void mm_pasid_drop(struct mm_struct *mm) {}
 
 #endif  

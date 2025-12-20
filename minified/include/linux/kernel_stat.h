@@ -43,17 +43,12 @@ DECLARE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
 #define kcpustat_cpu(cpu) per_cpu(kernel_cpustat, cpu)
 
 
-/* kstat_irqs_cpu, kstat_incr_irq_this_cpu removed - no callers or definitions */
 
 static inline void kstat_incr_softirqs_this_cpu(unsigned int irq)
 {
 	__this_cpu_inc(kstat.softirqs[irq]);
 }
 
-/* kstat_softirqs_cpu removed - never called */
-/* kstat_cpu_irqs_sum removed - never called */
-/* kcpustat_field removed - never called */
-/* kcpustat_cpu_fetch removed - never called */
 
 extern void account_user_time(struct task_struct *, u64);
 extern void account_guest_time(struct task_struct *, u64);
@@ -61,7 +56,6 @@ extern void account_system_time(struct task_struct *, int, u64);
 extern void account_system_index_time(struct task_struct *, u64,
 				      enum cpu_usage_stat);
 extern void account_idle_time(u64);
-/* get_idle_time removed - no callers or definitions */
 
 extern void account_process_tick(struct task_struct *, int user);
 

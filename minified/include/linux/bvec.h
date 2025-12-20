@@ -26,7 +26,6 @@ struct bvec_iter {
 	unsigned int            bi_bvec_done;	 
 } __packed;
 
-/* bvec_iter_all removed - unused */
 
 #define __bvec_iter_bvec(bvec, iter)	(&(bvec)[(iter).bi_idx])
 

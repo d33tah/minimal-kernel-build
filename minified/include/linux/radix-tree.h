@@ -56,7 +56,6 @@ static inline bool radix_tree_is_internal_node(void *ptr)
 
 #define INIT_RADIX_TREE(root, mask) xa_init_flags(root, mask)
 
-/* radix_tree_empty removed - unused */
 
 struct radix_tree_iter {
 	unsigned long	index;
@@ -65,7 +64,6 @@ struct radix_tree_iter {
 	struct radix_tree_node *node;
 };
 
-/* radix_tree_deref_slot removed - unused */
 
 int radix_tree_insert(struct radix_tree_root *, unsigned long index,
 			void *);
@@ -81,7 +79,6 @@ void radix_tree_iter_replace(struct radix_tree_root *,
 void *radix_tree_delete_item(struct radix_tree_root *, unsigned long, void *);
 void *radix_tree_delete(struct radix_tree_root *, unsigned long);
 void radix_tree_init(void);
-/* radix_tree_tag_set, radix_tree_tag_clear removed - unused (stubbed in .c) */
 int radix_tree_tag_get(const struct radix_tree_root *,
 			unsigned long index, unsigned int tag);
 void radix_tree_iter_tag_clear(struct radix_tree_root *,
@@ -115,6 +112,5 @@ __radix_tree_iter_add(struct radix_tree_iter *iter, unsigned long slots)
 	return iter->index + slots;
 }
 
-/* radix_tree_iter_resume removed - never called */
 
 #endif  

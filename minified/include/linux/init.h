@@ -64,19 +64,16 @@ struct file_system_type;
 
 extern int do_one_initcall(initcall_t fn);
 extern char __initdata boot_command_line[];
-/* saved_command_line removed - only used in init/main.c */
 
 void setup_arch(char **);
 void prepare_namespace(void);
 void __init init_rootfs(void);
 extern struct file_system_type rootfs_fs_type;
 
-/* rodata_enabled extern removed - only used in init/main.c */
 void mark_rodata_ro(void);
 
 extern void (*late_time_init)(void);
 
-/* initcall_debug extern removed - only used in init/main.c */
 
 #endif
   

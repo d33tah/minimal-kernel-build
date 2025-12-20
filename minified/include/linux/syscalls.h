@@ -165,7 +165,6 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 			      unsigned long fd, unsigned long pgoff);
 ssize_t ksys_readahead(int fd, loff_t offset, size_t count);
 
-/* do_fchownat declaration removed - made static */
 
 extern long do_sys_ftruncate(unsigned int fd, loff_t length, int small);
 

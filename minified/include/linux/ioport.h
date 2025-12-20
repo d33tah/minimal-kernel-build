@@ -21,10 +21,8 @@ struct resource {
 #define IORESOURCE_TYPE_BITS	0x00001f00
 #define IORESOURCE_IO		0x00000100
 #define IORESOURCE_MEM		0x00000200
-/* IORESOURCE_REG removed - unused */
 #define IORESOURCE_IRQ		0x00000400
 
-/* IORESOURCE_MEM_64 removed - unused */
 #define IORESOURCE_MUXED	0x00400000
 
 #define IORESOURCE_EXT_TYPE_BITS 0x01000000
@@ -32,7 +30,6 @@ struct resource {
 
 #define IORESOURCE_EXCLUSIVE	0x08000000
 
-/* IORESOURCE_DISABLED, IORESOURCE_UNSET, IORESOURCE_AUTO removed - unused */
 #define IORESOURCE_BUSY		0x80000000	 
 
 #define IORESOURCE_SYSTEM_RAM		(IORESOURCE_MEM|IORESOURCE_SYSRAM)
@@ -79,8 +76,6 @@ extern int request_resource(struct resource *root, struct resource *new);
 extern int release_resource(struct resource *new);
 extern struct resource *insert_resource_conflict(struct resource *parent, struct resource *new);
 extern int insert_resource(struct resource *parent, struct resource *new);
-/* allocate_resource, lookup_resource, adjust_resource removed - unused */
-/* resource_size removed - never called */
 static inline unsigned long resource_type(const struct resource *res)
 {
 	return res->flags & IORESOURCE_TYPE_BITS;
@@ -89,9 +84,7 @@ static inline unsigned long resource_ext_type(const struct resource *res)
 {
 	return res->flags & IORESOURCE_EXT_TYPE_BITS;
 }
-/* resource_contains removed - unused */
 
-/* resource_overlaps removed - never called */
 
 
 #define request_region(start,n,name)		__request_region(&ioport_resource, (start), (n), (name), 0)

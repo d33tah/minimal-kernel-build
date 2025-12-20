@@ -15,13 +15,10 @@
 
 #define BITS_PER_TYPE(type)	(sizeof(type) * BITS_PER_BYTE)
 #define BITS_TO_LONGS(nr)	__KERNEL_DIV_ROUND_UP(nr, BITS_PER_TYPE(long))
-/* __sw_hweight8/16/32/64 removed - unused software fallback declarations */
 
 #include <asm/bitops.h>
 
-/* get_bitmask_order, hweight_long removed - unused */
 
-/* rol64, ror64, ror32, rol16, ror16, rol8, ror8 removed - never called */
 
 static inline __u32 rol32(__u32 word, unsigned int shift)
 {

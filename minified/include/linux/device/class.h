@@ -94,7 +94,6 @@ struct class_attribute {
 #define CLASS_ATTR_WO(_name) \
 	struct class_attribute class_attr_##_name = __ATTR_WO(_name)
 
-/* class_create_file_ns, class_remove_file_ns, class_create_file, class_remove_file removed - unused */
 
 struct class_attribute_string {
 	struct class_attribute attr;
@@ -107,7 +106,6 @@ struct class_attribute_string {
 	struct class_attribute_string class_attr_##_name = \
 		_CLASS_ATTR_STRING(_name, _mode, _str)
 
-/* show_class_attr_string removed - unused */
 
 struct class_interface {
 	struct list_head	node;
@@ -118,12 +116,10 @@ struct class_interface {
 };
 
 extern int __must_check class_interface_register(struct class_interface *);
-/* class_interface_unregister removed - unused */
 
 extern struct class * __must_check __class_create(struct module *owner,
 						  const char *name,
 						  struct lock_class_key *key);
-/* class_destroy removed - unused */
 
 #define class_create(owner, name)		\
 ({						\

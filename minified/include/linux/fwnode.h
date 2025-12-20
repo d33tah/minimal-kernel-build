@@ -1,4 +1,3 @@
-/* Minimal fwnode.h - most functionality removed */
 #ifndef _LINUX_FWNODE_H_
 #define _LINUX_FWNODE_H_
 

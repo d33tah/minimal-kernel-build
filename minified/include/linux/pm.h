@@ -125,7 +125,6 @@ const struct dev_pm_ops __maybe_unused name = { \
 
 #define PM_EVENT_INVALID	(-1)
 #define PM_EVENT_ON		0x0000
-/* Unused PM_EVENT_* removed */
 
 #define PMSG_INVALID	((struct pm_message){ .event = PM_EVENT_INVALID, })
 #define PMSG_ON		((struct pm_message){ .event = PM_EVENT_ON, })

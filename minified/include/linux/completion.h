@@ -25,8 +25,6 @@ static inline void init_completion(struct completion *x)
 
 extern void wait_for_completion(struct completion *);
 extern int wait_for_completion_killable(struct completion *x);
-/* wait_for_completion_timeout removed - not called */
 extern void complete(struct completion *);
-/* complete_all removed - not called */
 
 #endif

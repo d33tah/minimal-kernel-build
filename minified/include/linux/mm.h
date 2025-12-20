@@ -46,7 +46,6 @@ static inline void set_page_count(struct page *page, int v)
 	atomic_set(&page->_refcount, v);
 }
 
-/* folio_set_count removed - never called */
 
 static inline void init_page_count(struct page *page)
 {
@@ -83,8 +82,6 @@ static inline void folio_ref_inc(struct folio *folio)
 	page_ref_inc(&folio->page);
 }
 
-/* page_ref_dec removed - never called */
-/* folio_ref_dec removed - never called */
 
 static inline int page_ref_sub_and_test(struct page *page, int nr)
 {
@@ -101,7 +98,6 @@ static inline int page_ref_dec_and_test(struct page *page)
 	return atomic_dec_and_test(&page->_refcount);
 }
 
-/* folio_ref_dec_and_test removed - never called */
 
 static inline bool page_ref_add_unless(struct page *page, int nr, int u)
 {
@@ -113,7 +109,6 @@ static inline bool folio_ref_add_unless(struct folio *folio, int nr, int u)
 	return page_ref_add_unless(&folio->page, nr, u);
 }
 
-/* folio_try_get removed - never called */
 
 static inline bool folio_ref_try_add_rcu(struct folio *folio, int count)
 {
@@ -136,7 +131,6 @@ struct anon_vma_chain;
 struct user_struct;
 struct pt_regs;
 
-/* sysctl_page_lock_unfairness extern removed - only used in filemap.c */
 
 void init_mm_internals(void);
 
@@ -179,7 +173,6 @@ extern int mmap_rnd_bits __read_mostly;
 #define page_to_virt(x)	__va(PFN_PHYS(page_to_pfn(x)))
 #endif
 
-/* lm_alias removed - unused */
 
 #ifndef mm_forbids_zeropage
 #define mm_forbids_zeropage(X)	(0)
@@ -198,13 +191,11 @@ extern int sysctl_overcommit_ratio;
 extern unsigned long sysctl_overcommit_kbytes;
 
 #define nth_page(page,n) ((page) + (n))
-/* folio_page_idx removed - unused */
 
 #define PAGE_ALIGN(addr) ALIGN(addr, PAGE_SIZE)
 
 #define PAGE_ALIGNED(addr)	IS_ALIGNED((unsigned long)(addr), PAGE_SIZE)
 
-/* lru_to_page removed - unused */
 void setup_initial_init_mm(void *start_code, void *end_code,
 			   void *end_data, void *brk);
 
@@ -242,16 +233,13 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_NORESERVE	0x00200000	
 #define VM_HUGETLB	0x00400000
 #define VM_SYNC		0x00800000
-/* VM_ARCH_1 removed - unused */
 #define VM_DONTDUMP	0x04000000
 
 # define VM_SOFTDIRTY	0
 
 #define VM_MIXEDMAP	0x10000000
 #define VM_NOHUGEPAGE	0x40000000
-/* VM_MERGEABLE (0x80000000) removed - unused */
 
-/* VM_PAT removed - unused (was VM_ARCH_1) */
 
 #if defined(CONFIG_ARM64_MTE)
 # define VM_MTE		VM_HIGH_ARCH_0	
@@ -436,7 +424,6 @@ static inline int folio_put_testzero(struct folio *folio)
 	return put_page_testzero(&folio->page);
 }
 
-/* REGION_INTERSECTS/DISJOINT/MIXED enum and region_intersects() removed - unused */
 
 struct page *vmalloc_to_page(const void *addr);
 
@@ -446,7 +433,6 @@ struct page *vmalloc_to_page(const void *addr);
 
 extern bool is_vmalloc_addr(const void *x);
 
-/* folio_entire_mapcount and compound_mapcount removed - unused */
 
 static inline void page_mapcount_reset(struct page *page)
 {
@@ -688,7 +674,6 @@ static inline atomic_t *folio_pincount_ptr(struct folio *folio)
 	return &folio_page(folio, 1)->compound_pincount;
 }
 
-/* folio_maybe_dma_pinned, page_maybe_dma_pinned removed - unused */
 
 static inline bool is_pinnable_page(struct page *page)
 {
@@ -895,7 +880,6 @@ static inline int mm_counter_file(struct page *page)
 	return MM_FILEPAGES;
 }
 
-/* mm_counter removed - never called */
 
 static inline unsigned long get_mm_rss(struct mm_struct *mm)
 {
@@ -1271,8 +1255,6 @@ static inline unsigned long free_initmem_default(int poison)
 
 
 void free_area_init(unsigned long *max_zone_pfn);
-/* memmap_init_range declaration removed - made static */
-/* setup_per_zone_wmarks, calculate_min_free_kbytes removed - only called internally */
 extern int __meminit init_per_zone_wmark_min(void);
 extern void mem_init(void);
 extern void __init mmap_init(void);
@@ -1360,7 +1342,6 @@ extern struct vm_area_struct *_install_special_mapping(struct mm_struct *mm,
 				   unsigned long flags,
 				   const struct vm_special_mapping *spec);
 
-/* install_special_mapping removed - unused */
 
 unsigned long randomize_stack_top(unsigned long stack_top);
 unsigned long randomize_page(unsigned long start, unsigned long range);
@@ -1489,7 +1470,6 @@ vm_fault_t vmf_insert_mixed_prot(struct vm_area_struct *vma, unsigned long addr,
 vm_fault_t vmf_insert_mixed_mkwrite(struct vm_area_struct *vma,
 		unsigned long addr, pfn_t pfn);
 
-/* follow_page removed - never called */
 
 #define FOLL_WRITE	0x01	
 #define FOLL_TOUCH	0x02	
@@ -1508,7 +1488,6 @@ vm_fault_t vmf_insert_mixed_mkwrite(struct vm_area_struct *vma,
 #define FOLL_LONGTERM	0x10000	
 #define FOLL_SPLIT_PMD	0x20000	
 #define FOLL_PIN	0x40000
-/* FOLL_FAST_ONLY removed - unused */
 
 static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)
 {
@@ -1589,7 +1568,6 @@ static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
 
 extern int randomize_va_space;
 
-/* arch_vma_name removed - unused */
 
 void *sparse_buffer_alloc(unsigned long size);
 struct page * __populate_section_memmap(unsigned long pfn,

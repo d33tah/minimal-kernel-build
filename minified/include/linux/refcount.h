@@ -108,7 +108,6 @@ static inline __must_check bool __refcount_sub_and_test(int i, refcount_t *r, in
 	return false;
 }
 
-/* refcount_sub_and_test removed - unused */
 
 static inline __must_check bool __refcount_dec_and_test(refcount_t *r, int *oldp)
 {
@@ -131,7 +130,6 @@ static inline void __refcount_dec(refcount_t *r, int *oldp)
 		refcount_warn_saturate(r, REFCOUNT_DEC_LEAK);
 }
 
-/* refcount_dec removed - never called */
 
 extern __must_check bool refcount_dec_not_one(refcount_t *r);
 extern __must_check bool refcount_dec_and_lock_irqsave(refcount_t *r,

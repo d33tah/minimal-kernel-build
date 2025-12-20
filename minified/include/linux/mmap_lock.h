@@ -10,7 +10,6 @@
 #define MMAP_LOCK_INITIALIZER(name) \
 	.mmap_lock = __RWSEM_INITIALIZER((name).mmap_lock),
 
-/* Tracepoint declarations removed - unused */
 
 static inline void __mmap_lock_trace_start_locking(struct mm_struct *mm,
 						   bool write)
@@ -56,7 +55,6 @@ static inline int mmap_write_lock_killable(struct mm_struct *mm)
 	return ret;
 }
 
-/* mmap_write_trylock removed - unused */
 
 static inline void mmap_write_unlock(struct mm_struct *mm)
 {

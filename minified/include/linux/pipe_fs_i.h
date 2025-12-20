@@ -118,6 +118,5 @@ static inline bool pipe_buf_try_steal(struct pipe_inode_info *pipe,
 
 
 void free_pipe_info(struct pipe_inode_info *);
-/* generic_pipe_buf_get, generic_pipe_buf_try_steal removed - unused */
 
 #endif

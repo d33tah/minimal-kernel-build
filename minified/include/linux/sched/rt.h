@@ -28,14 +28,12 @@ static inline bool task_is_realtime(struct task_struct *tsk)
 	return false;
 }
 
-/* rt_mutex_get_top_task removed - unused */
 # define rt_mutex_adjust_pi(p)		do { } while (0)
 static inline bool tsk_is_pi_blocked(struct task_struct *tsk)
 {
 	return false;
 }
 
-/* normalize_rt_tasks removed - unused */
 
 #define RR_TIMESLICE		(100 * HZ / 1000)
 

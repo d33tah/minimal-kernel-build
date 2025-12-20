@@ -45,7 +45,6 @@ static inline void init_llist_head(struct llist_head *list)
 	        (n = llist_entry(pos->member.next, typeof(*n), member), true); \
 	     pos = n)
 
-/* llist_empty removed - never called */
 
 extern bool llist_add_batch(struct llist_node *new_first,
 			    struct llist_node *new_last,
@@ -63,6 +62,5 @@ static inline struct llist_node *llist_del_all(struct llist_head *head)
 
 extern struct llist_node *llist_del_first(struct llist_head *head);
 
-/* llist_reverse_order removed - unused in minimal kernel */
 
 #endif  

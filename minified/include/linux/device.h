@@ -98,7 +98,6 @@ struct device_attribute {
 	struct device_attribute dev_attr_##_name = __ATTR_RW(_name)
 #define DEVICE_ATTR_RO(_name) \
 	struct device_attribute dev_attr_##_name = __ATTR_RO(_name)
-/* DEVICE_ATTR_WO removed - unused */
 
 void device_remove_file(struct device *dev,
 			const struct device_attribute *attr);
@@ -256,7 +255,6 @@ static inline struct device *kobj_to_dev(struct kobject *kobj)
 
 
 
-/* pm_wakeup.h content removed - wakeup functions not used in minimal kernel */
 
 static inline const char *dev_name(const struct device *dev)
 {
@@ -267,7 +265,6 @@ static inline const char *dev_name(const struct device *dev)
 	return kobject_name(&dev->kobj);
 }
 
-/* dev_bus_name removed - unused */
 
 __printf(2, 3) int dev_set_name(struct device *dev, const char *name, ...);
 
@@ -332,7 +329,6 @@ void device_unregister(struct device *dev);
 void device_initialize(struct device *dev);
 int __must_check device_add(struct device *dev);
 void device_del(struct device *dev);
-/* device_for_each_child, device_find_child, device_get_devnode removed - never called */
 
 
 /* lock_device_hotplug, unlock_device_hotplug, lock_device_hotplug_sysfs,
@@ -340,11 +336,9 @@ void device_del(struct device *dev);
    device_set_of_node_from_dev, device_set_node, __root_device_register,
    root_device_unregister removed - unused */
 
-/* device_driver_attach, device_bind_driver, device_reprobe removed - unused */
 void device_release_driver(struct device *dev);
 int __must_check driver_attach(struct device_driver *drv);
 void device_initial_probe(struct device *dev);
-/* device_is_bound removed - only used internally in dd.c */
 
 __printf(5, 6) struct device *
 device_create(struct class *cls, struct device *parent, dev_t devt,
@@ -360,11 +354,9 @@ int __must_check device_add_groups(struct device *dev,
 void device_remove_groups(struct device *dev,
 			  const struct attribute_group **groups);
 
-/* device_remove_group removed - unused */
 
 struct device *get_device(struct device *dev);
 void put_device(struct device *dev);
-/* kill_device removed - now static in core.c */
 
 static inline int devtmpfs_mount(void) { return 0; }
 

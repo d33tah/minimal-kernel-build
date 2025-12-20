@@ -5,7 +5,6 @@
 #include <linux/rcupdate.h>
 #include <linux/workqueue.h>
 
-/* Unused enum ICQ_* and struct io_cq removed */
 
 struct io_context {
 	atomic_long_t refcount;

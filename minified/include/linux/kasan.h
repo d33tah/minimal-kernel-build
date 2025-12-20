@@ -5,7 +5,6 @@
 #include <linux/types.h>
 
 /* --- 2025-12-06 20:30 --- kasan-enabled.h inlined (18 LOC) */
-/* kasan_enabled removed - never called */
 static inline bool kasan_hw_tags_enabled(void) { return false; }
 /* --- end kasan-enabled.h inlined --- */
 
@@ -25,7 +24,6 @@ typedef unsigned int __bitwise kasan_vmalloc_flags_t;
 
 
 
-/* kasan_enable_current, kasan_disable_current removed - unused */
 
 
 
@@ -40,7 +38,6 @@ static inline slab_flags_t kasan_never_merge(void)
 {
 	return 0;
 }
-/* kasan_unpoison_range removed - unused */
 static inline void kasan_cache_create(struct kmem_cache *cache,
 				      unsigned int *size,
 				      slab_flags_t *flags) {}
@@ -74,7 +71,6 @@ static inline void *kasan_kmalloc_large(const void *ptr, size_t size, gfp_t flag
 {
 	return (void *)ptr;
 }
-/* kasan_krealloc, kasan_check_byte removed - unused */
 
 
 static inline void kasan_unpoison_task_stack(struct task_struct *task) {}
@@ -93,7 +89,6 @@ static inline void *kasan_reset_tag(const void *addr)
 
 
 
-/* kasan_populate_early_vm_area_shadow removed - unused */
 static inline int kasan_populate_vmalloc(unsigned long start,
 					unsigned long size)
 {

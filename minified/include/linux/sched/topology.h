@@ -6,7 +6,6 @@
 #include <linux/sched/idle.h>
 
 
-/* Most topology functions removed - unused */
 
 #ifndef arch_scale_thermal_pressure
 static __always_inline

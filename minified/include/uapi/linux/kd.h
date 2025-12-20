@@ -1,4 +1,3 @@
-/* --- 2025-12-08 08:50 --- Minimized - removed unused defines */
 #ifndef _UAPI_LINUX_KD_H
 #define _UAPI_LINUX_KD_H
 #include <linux/types.h>
@@ -56,7 +55,6 @@ struct kbsentry {
 	unsigned char kb_string[512];
 };
 
-/* kbdiacr, kbdiacrs removed - unused */
 
 /* kbdiacruc used by vt_ioctl.c, vt_kern.h */
 struct kbdiacruc {

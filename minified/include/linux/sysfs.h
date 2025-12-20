@@ -130,8 +130,6 @@ static inline void sysfs_remove_file_ns(struct kobject *kobj,
 {
 }
 
-/* sysfs_create_groups removed - never called */
-/* sysfs_remove_groups removed - never called */
 
 static inline void sysfs_notify(struct kobject *kobj, const char *dir,
 				const char *attr)
@@ -151,7 +149,5 @@ static inline int sysfs_emit(char *buf, const char *fmt, ...)
 	return 0;
 }
 
-/* sysfs_create_file removed - never called */
-/* sysfs_remove_file removed - never called */
 
 #endif  

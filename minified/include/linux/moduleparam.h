@@ -63,7 +63,6 @@ struct kernel_param {
 
 extern const struct kernel_param __start___param[], __stop___param[];
 
-/* kparam_string and kparam_array removed - unused in minimal kernel */
 
 #define module_param(name, type, perm)				\
 	module_param_named(name, name, type, perm)
@@ -206,8 +205,6 @@ extern int param_set_bool(const char *val, const struct kernel_param *kp);
 extern int param_get_bool(char *buffer, const struct kernel_param *kp);
 #define param_check_bool(name, p) __param_check(name, p, bool)
 
-/* module_param_array removed - unused in minimal kernel */
-/* param_array_ops, param_ops_string declarations removed - unused */
 
 struct module;
 

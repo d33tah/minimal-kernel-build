@@ -20,7 +20,6 @@ struct semaphore {
 #define DEFINE_SEMAPHORE(name)	\
 	struct semaphore name = __SEMAPHORE_INITIALIZER(name, 1)
 
-/* sema_init removed - never called */
 
 extern void down(struct semaphore *sem);
 extern int __must_check down_trylock(struct semaphore *sem);

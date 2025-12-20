@@ -27,7 +27,6 @@ static inline void blk_flush_plug(struct blk_plug *plug, bool async)
 {
 }
 
-/* blkdev_issue_flush removed - never called */
 
 static inline void printk_all_partitions(void)
 {

@@ -14,7 +14,6 @@ extern unsigned long max_low_pfn;
 extern unsigned long min_low_pfn;
 
 extern unsigned long max_pfn;
-/* max_possible_pfn removed - only set, never read */
 
 enum memblock_flags {
 	MEMBLOCK_NONE		= 0x0,	 
@@ -64,7 +63,6 @@ bool memblock_overlaps_region(struct memblock_type *type,
 
 void memblock_free_all(void);
 void memblock_free(void *ptr, size_t size);
-/* reset_node_managed_pages, reset_all_zones_managed_pages removed - unused/internal */
 
 void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags,
 		      struct memblock_type *type_a,

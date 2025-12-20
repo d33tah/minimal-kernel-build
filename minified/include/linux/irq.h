@@ -264,7 +264,6 @@ extern int irq_chip_pm_put(struct irq_data *data);
 
 extern void note_interrupt(struct irq_desc *desc, irqreturn_t action_ret);
 
-/* noirqdebug_setup declaration removed - only used via __setup macro */
 
 extern struct irq_chip no_irq_chip;
 extern struct irq_chip dummy_irq_chip;
@@ -288,7 +287,6 @@ __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 
 void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set);
 
-/* irq_set_status_flags removed - never called */
 
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
 extern int irq_set_chip_data(unsigned int irq, void *data);
@@ -300,7 +298,6 @@ static inline struct irq_chip *irq_data_get_irq_chip(struct irq_data *d)
 	return d->chip;
 }
 
-/* irq_common_data_get_node removed - unused */
 
 static inline struct cpumask *irq_data_get_affinity_mask(struct irq_data *d)
 {

@@ -71,7 +71,6 @@ static inline unsigned int cpumask_any_but(const struct cpumask *mask,
 	[0 ... BITS_TO_LONGS(NR_CPUS)-1] = 0UL			\
 }
 
-/* CPU_BITS_CPU0 removed - unused */
 
 static __always_inline void cpumask_set_cpu(unsigned int cpu, struct cpumask *dstp)
 {
@@ -126,8 +125,6 @@ static inline bool cpumask_empty(const struct cpumask *srcp)
 	return bitmap_empty(cpumask_bits(srcp), nr_cpumask_bits);
 }
 
-/* cpumask_weight removed - unused */
-/* cpumask_copy removed - unused */
 
 #define cpumask_any(srcp) cpumask_first(srcp)
 
@@ -211,7 +208,6 @@ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 #define num_online_cpus()	1U
 #define num_possible_cpus()	1U
 #define num_present_cpus()	1U
-/* num_active_cpus removed - never used */
 
 static inline bool cpu_online(unsigned int cpu)
 {
@@ -245,6 +241,5 @@ cpumap_print_to_pagebuf(bool list, char *buf, const struct cpumask *mask)
 	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
 } }
 
-/* CPU_MASK_NONE, CPU_MASK_CPU0 removed - never used */
 
 #endif  

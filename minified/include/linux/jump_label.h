@@ -136,7 +136,6 @@ struct static_key_false {
 #define DECLARE_STATIC_KEY_FALSE(name)	\
 	extern struct static_key_false name
 
-/* DEFINE_STATIC_KEY_ARRAY_TRUE, DEFINE_STATIC_KEY_ARRAY_FALSE removed - unused */
 
 #define _DEFINE_STATIC_KEY_1(name)	DEFINE_STATIC_KEY_TRUE(name)
 #define _DEFINE_STATIC_KEY_0(name)	DEFINE_STATIC_KEY_FALSE(name)

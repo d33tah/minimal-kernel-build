@@ -6,6 +6,5 @@
 #include <linux/types.h>
 #include <linux/device.h>
 
-/* All functions removed - none used */
 
 #endif /* __LINUX_IOMMU_H */

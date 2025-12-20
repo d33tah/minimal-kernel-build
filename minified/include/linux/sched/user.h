@@ -25,7 +25,6 @@ struct user_struct {
 	struct ratelimit_state ratelimit;
 };
 
-/* uids_sysfs_init, find_user removed - unused */
 
 extern struct user_struct root_user;
 #define INIT_USER (&root_user)

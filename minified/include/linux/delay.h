@@ -28,9 +28,7 @@ static inline void ndelay(unsigned long x)
 #define ndelay(x) ndelay(x)
 #endif
 
-/* lpj_fine removed - only set, never read */
 void calibrate_delay(void);
-/* calibration_delay_done removed - only called from calibrate.c */
 void msleep(unsigned int msecs);
 unsigned long msleep_interruptible(unsigned int msecs);
 static inline void ssleep(unsigned int seconds)

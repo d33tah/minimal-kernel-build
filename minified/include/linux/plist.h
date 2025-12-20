@@ -38,7 +38,5 @@ plist_head_init(struct plist_head *head)
 	INIT_LIST_HEAD(&head->node_list);
 }
 
-/* plist_node_init removed - never called */
-/* plist_add, plist_del, plist_requeue, iteration macros removed - no callers */
 
 #endif

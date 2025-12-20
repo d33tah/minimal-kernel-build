@@ -10,6 +10,5 @@
 
 #define __initdata_or_meminfo __initdata
 
-/* numa_map_to_online_node removed - unused */
 
 #endif

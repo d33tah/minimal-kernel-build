@@ -12,8 +12,6 @@ static inline void freezer_count(void) {}
 
 #define freezable_schedule()  schedule()
 
-/* freezable_schedule_timeout removed - never used */
-/* freezable_schedule_timeout_interruptible removed - never used */
 
 
 #endif	 

@@ -12,10 +12,8 @@
 #include <linux/bottom_half.h>
 #include <linux/lockdep.h>
 #include <asm/barrier.h>
-/* mmiowb_* macros removed - unused */
 
 
-/* LOCK_SECTION_NAME, LOCK_SECTION_START, LOCK_SECTION_END removed - unused */
 
 #define __lockfunc __section(".spinlock.text")
 
@@ -35,7 +33,6 @@
 
 #define raw_spin_is_locked(lock)	arch_spin_is_locked(&(lock)->raw_lock)
 
-/* raw_spin_is_contended removed - unused */
 
 #ifndef smp_mb__after_spinlock
 #define smp_mb__after_spinlock()	do { } while (0)
@@ -56,7 +53,6 @@
 		_raw_spin_lock_irqsave(lock, flags);	\
 	} while (0)
 
-/* raw_spin_lock_irqsave_nested removed - unused */
 
 #define raw_spin_lock_irq(lock)		_raw_spin_lock_irq(lock)
 #define raw_spin_lock_bh(lock)		_raw_spin_lock_bh(lock)
@@ -70,7 +66,6 @@
 	} while (0)
 #define raw_spin_unlock_bh(lock)	_raw_spin_unlock_bh(lock)
 
-/* raw_spin_trylock_irq removed - unused */
 
 #define raw_spin_trylock_irqsave(lock, flags) \
 ({ \
@@ -92,7 +87,6 @@
 #define write_lock(lock)	_raw_write_lock(lock)
 #define read_lock(lock)		_raw_read_lock(lock)
 
-/* write_lock_nested, read_lock_irqsave removed - unused */
 #define write_lock_irqsave(lock, flags)			\
 	do {						\
 		typecheck(unsigned long, flags);	\
@@ -105,7 +99,6 @@
 #define write_unlock(lock)		_raw_write_unlock(lock)
 #define write_unlock_irq(lock)		_raw_write_unlock_irq(lock)
 
-/* write_unlock_irqrestore, write_trylock_irqsave, rwlock_is_contended removed - unused */
 /* End of inlined rwlock.h content */
 
 /* Inlined from spinlock_api_up.h */

@@ -132,19 +132,12 @@ static inline struct tty_port *tty_port_get(struct tty_port *port)
 	return NULL;
 }
 
-/* tty_port_cts_enabled removed - never called */
-/* tty_port_set_cts_flow removed - never called */
-/* tty_port_active removed - never called */
 
 static inline void tty_port_set_active(struct tty_port *port, bool val)
 {
 	assign_bit(TTY_PORT_ACTIVE, &port->iflags, val);
 }
 
-/* tty_port_check_carrier removed - never called */
-/* tty_port_set_check_carrier removed - never called */
-/* tty_port_suspended removed - never called */
-/* tty_port_set_suspended removed - never called */
 
 static inline bool tty_port_initialized(const struct tty_port *port)
 {
@@ -161,7 +154,6 @@ static inline bool tty_port_kopened(const struct tty_port *port)
 	return test_bit(TTY_PORT_KOPENED, &port->iflags);
 }
 
-/* tty_port_set_kopened removed - never called */
 
 struct tty_struct *tty_port_tty_get(struct tty_port *port);
 void tty_port_tty_set(struct tty_port *port, struct tty_struct *tty);
@@ -183,6 +175,5 @@ int tty_port_install(struct tty_port *port, struct tty_driver *driver,
 int tty_port_open(struct tty_port *port, struct tty_struct *tty,
 		struct file *filp);
 
-/* tty_port_users removed - never called */
 
 #endif

@@ -12,7 +12,6 @@
 struct device;
 struct resource;
 
-/* __iowrite32_copy, __ioread32_copy, __iowrite64_copy removed - unused */
 
 int ioremap_page_range(unsigned long addr, unsigned long end,
 		       phys_addr_t phys_addr, pgprot_t prot);
@@ -20,7 +19,6 @@ int ioremap_page_range(unsigned long addr, unsigned long end,
 
 #define IOMEM_ERR_PTR(err) (__force void __iomem *)ERR_PTR(err)
 
-/* devm_ioremap, devm_ioremap_release removed - unused */
 
 
 

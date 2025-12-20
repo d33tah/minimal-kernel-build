@@ -101,6 +101,5 @@ static inline int ida_alloc_min(struct ida *ida, unsigned int min, gfp_t gfp)
 	return ida_alloc_range(ida, min, ~0, gfp);
 }
 
-/* ida_init removed - never called */
 
 #endif  

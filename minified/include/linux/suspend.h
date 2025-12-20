@@ -29,8 +29,6 @@ struct pbe {
 	struct pbe *next;
 };
 
-/* register_nosave_region removed - never called */
-/* hibernation_available removed - never called */
 
 extern struct mutex system_transition_mutex;
 

@@ -53,7 +53,6 @@ static inline bool ktime_before(const ktime_t cmp1, const ktime_t cmp2)
 }
 
 /* BITS_PER_LONG == 32 */
-/* ktime_divns and __ktime_divns removed - unused */
 
 extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);
 

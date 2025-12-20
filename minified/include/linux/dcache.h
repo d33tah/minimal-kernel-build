@@ -13,7 +13,6 @@
 #include <linux/lockref.h>
 #include <linux/hash.h>
 
-/* init_name_hash, partial_name_hash, end_name_hash removed - never called */
 #define hashlen_hash(hashlen) ((u32)(hashlen))
 #define hashlen_len(hashlen)  ((u32)((hashlen) >> 32))
 #define hashlen_create(hash, len) ((u64)(len)<<32 | (u32)(hash))
@@ -46,7 +45,6 @@ struct qstr {
 
 #define QSTR_INIT(n,l) { { { .len = l } }, .name = n }
 
-/* empty_name, dotdot_name removed - unused externally */
 
 #  define DNAME_INLINE_LEN 40  
 
@@ -139,7 +137,6 @@ struct dentry_operations {
 
 #define DCACHE_ENTRY_TYPE		0x00700000
 #define DCACHE_MISS_TYPE		0x00000000
-/* DCACHE_WHITEOUT_TYPE removed - unused */
 #define DCACHE_DIRECTORY_TYPE		0x00200000  
 #define DCACHE_AUTODIR_TYPE		0x00300000  
 #define DCACHE_REGULAR_TYPE		0x00400000  
@@ -179,7 +176,6 @@ extern void d_tmpfile(struct dentry *, struct inode *);
 
 extern void d_rehash(struct dentry *);
 extern void d_add(struct dentry *, struct inode *);
-/* d_move and d_exchange removed - unused */
 extern struct dentry *d_ancestor(struct dentry *, struct dentry *);
 
 extern struct dentry *d_lookup(const struct dentry *, const struct qstr *);

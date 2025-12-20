@@ -9,7 +9,6 @@
 #define MS_NOEXEC	 8	 
 #define MS_SYNCHRONOUS	16	 
 #define MS_REMOUNT	32
-/* MS_MANDLOCK, MS_DIRSYNC removed - unused */
 #define MS_NOSYMFOLLOW	256
 #define MS_NOATIME	1024	 
 #define MS_NODIRATIME	2048	 
@@ -27,7 +26,6 @@
 #define MS_KERNMOUNT	(1<<22)  
 #define MS_I_VERSION	(1<<23)  
 #define MS_STRICTATIME	(1<<24)
-/* MS_LAZYTIME, MS_NOREMOTELOCK, MS_NOSEC, MS_BORN removed - unused */
 #define MS_SUBMOUNT     (1<<26)
 #define MS_ACTIVE	(1<<30)
 #define MS_NOUSER	(1<<31)

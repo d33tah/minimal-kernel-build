@@ -59,7 +59,6 @@ enum pcie_link_width {
 
 typedef unsigned int pci_power_t;
 
-/* All PCI stub functions removed - CONFIG_PCI not set */
 
 #include <linux/dma-mapping.h>
 

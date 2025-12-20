@@ -41,8 +41,6 @@ static inline void kmemleak_free_percpu(const void __percpu *ptr)
 static inline void kmemleak_update_trace(const void *ptr)
 {
 }
-/* kmemleak_not_leak removed - never used */
-/* kmemleak_ignore removed - never used */
 static inline void kmemleak_scan_area(const void *ptr, size_t size, gfp_t gfp)
 {
 }

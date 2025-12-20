@@ -42,19 +42,16 @@ extern int kern_path(const char *, unsigned, struct path *);
 
 extern struct dentry *kern_path_create(int, const char *, struct path *, unsigned int);
 extern void done_path_create(struct path *, struct dentry *);
-/* kern_path_locked removed - no definition or callers */
 
 /* try_lookup_one_len, lookup_one_len, lookup_one_len_unlocked, lookup_positive_unlocked,
    lookup_one, lookup_one_unlocked, lookup_one_positive_unlocked removed - no callers */
 
 
-/* lock_rename, unlock_rename removed - no definition or callers */
 
 static inline void nd_terminate_link(void *name, size_t len, size_t maxlen)
 {
 	((char *) name)[min(len, maxlen)] = '\0';
 }
 
-/* retry_estale removed - unused */
 
 #endif

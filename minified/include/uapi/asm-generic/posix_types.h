@@ -51,7 +51,6 @@ typedef __kernel_gid_t	__kernel_old_gid_t;
 typedef unsigned int	__kernel_old_dev_t;
 #endif
 
-/* 32-bit only kernel - removed 64-bit type definitions */
 #ifndef __kernel_size_t
 typedef unsigned int	__kernel_size_t;
 typedef int		__kernel_ssize_t;

@@ -21,7 +21,6 @@ static inline void mpol_put(struct mempolicy *p)
 {
 }
 
-/* mpol_cond_put, mpol_get, mpol_shared_policy_init, mpol_free_shared_policy removed - unused */
 
 struct shared_policy {};
 
@@ -47,14 +46,12 @@ static inline void numa_default_policy(void)
 {
 }
 
-/* mpol_rebind_task, mpol_rebind_mm, huge_node, init_nodemask_of_mempolicy, do_migrate_pages removed - unused */
 
 static inline void check_highest_zone(int k)
 {
 }
 
 
-/* mpol_misplaced, policy_nodemask_current, mpol_is_preferred_many removed - unused */
 
 static inline void mpol_put_task_policy(struct task_struct *task)
 {

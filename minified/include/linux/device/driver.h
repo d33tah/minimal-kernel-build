@@ -70,7 +70,6 @@ extern int __must_check driver_create_file(struct device_driver *driver,
 extern void driver_remove_file(struct device_driver *driver,
 			       const struct driver_attribute *attr);
 
-/* driver_set_override removed - unused */
 extern int __must_check driver_for_each_device(struct device_driver *drv,
 					       struct device *start,
 					       void *data,
@@ -80,12 +79,9 @@ struct device *driver_find_device(struct device_driver *drv,
 				  struct device *start, const void *data,
 				  int (*match)(struct device *dev, const void *data));
 
-/* driver_find_device_by_* helpers removed - unused */
-/* module_driver, builtin_driver macros removed - unused */
 
 extern int driver_deferred_probe_timeout;
 void driver_deferred_probe_add(struct device *dev);
-/* driver_deferred_probe_check_state removed - unused */
 void driver_init(void);
 
 #endif	 

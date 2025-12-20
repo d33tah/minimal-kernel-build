@@ -54,7 +54,6 @@
 #define __no_sanitize_thread
 #endif
 
-/* __no_sanitize_undefined removed - unused */
 
 #define __no_sanitize_coverage
 

@@ -105,7 +105,6 @@ static inline void __sg_chain(struct scatterlist *chain_sg,
 	chain_sg->page_link = ((unsigned long) sgl | SG_CHAIN) & ~SG_END;
 }
 
-/* sg_chain removed - never called */
 
 static inline void sg_mark_end(struct scatterlist *sg)
 {
@@ -114,9 +113,6 @@ static inline void sg_mark_end(struct scatterlist *sg)
 	sg->page_link &= ~SG_CHAIN;
 }
 
-/* sg_unmark_end removed - never called */
-/* sg_phys removed - never called */
-/* sg_virt removed - never called */
 
 static inline void sg_init_marker(struct scatterlist *sgl,
 				  unsigned int nents)
@@ -129,7 +125,6 @@ int sg_nents(struct scatterlist *sg);
 struct scatterlist *sg_next(struct scatterlist *);
 void sg_init_table(struct scatterlist *, unsigned int);
 void sg_init_one(struct scatterlist *, const void *, unsigned int);
-/* sg_free_table removed - unused */
 int sg_alloc_table(struct sg_table *, unsigned int, gfp_t);
 
 #define SG_MAX_SINGLE_ALLOC		(PAGE_SIZE / sizeof(struct scatterlist))

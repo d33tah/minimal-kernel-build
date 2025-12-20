@@ -26,7 +26,6 @@ struct ctl_table_poll {
 	wait_queue_head_t wait;
 };
 
-/* proc_sys_poll_event, __CTL_TABLE_POLL_INITIALIZER, DEFINE_CTL_TABLE_POLL removed - unused */
 
 struct ctl_table {
 	const char *procname;		 

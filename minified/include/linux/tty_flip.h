@@ -17,8 +17,6 @@ int tty_prepare_flip_string(struct tty_port *port, unsigned char **chars,
 void tty_flip_buffer_push(struct tty_port *port);
 int __tty_insert_flip_char(struct tty_port *port, unsigned char ch, char flag);
 
-/* tty_insert_flip_char removed - never called */
-/* tty_insert_flip_string removed - never called */
 
 int tty_ldisc_receive_buf(struct tty_ldisc *ld, const unsigned char *p,
 		const char *f, int count);

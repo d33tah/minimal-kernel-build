@@ -21,7 +21,6 @@ typedef struct __user_cap_data_struct {
         __u32 inheritable;
 } __user *cap_user_data_t;
 
-/* VFS_CAP_* macros and structs removed - unused */
 
 #define CAP_CHOWN            0
 #define CAP_DAC_OVERRIDE     1
@@ -81,7 +80,6 @@ typedef struct kernel_cap_struct {
 	__u32 cap[_KERNEL_CAPABILITY_U32S];
 } kernel_cap_t;
 
-/* cpu_vfs_cap_data removed - unused */
 
 #define _USER_CAP_HEADER_SIZE  (sizeof(struct __user_cap_header_struct))
 #define _KERNEL_CAP_T_SIZE     (sizeof(kernel_cap_t))

@@ -23,7 +23,6 @@ async_cookie_t async_schedule_node_domain(async_func_t func, void *data,
 					  int node,
 					  struct async_domain *domain);
 
-/* async_schedule removed - never called */
 
 static inline async_cookie_t
 async_schedule_domain(async_func_t func, void *data,
@@ -38,7 +37,6 @@ async_schedule_dev(async_func_t func, struct device *dev)
 	return async_schedule_node(func, dev, dev_to_node(dev));
 }
 
-/* async_schedule_dev_domain removed - never called */
 
 extern void async_synchronize_full(void);
 extern void async_synchronize_cookie_domain(async_cookie_t cookie,

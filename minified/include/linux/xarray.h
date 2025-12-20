@@ -77,7 +77,6 @@ enum xa_lock_type {
 };
 
 #define XA_FLAGS_LOCK_IRQ	((__force gfp_t)XA_LOCK_IRQ)
-/* XA_FLAGS_LOCK_BH removed - unused */
 #define XA_FLAGS_TRACK_FREE	((__force gfp_t)4U)
 #define XA_FLAGS_ZERO_BUSY	((__force gfp_t)8U)
 #define XA_FLAGS_ACCOUNT	((__force gfp_t)32U)
@@ -99,7 +98,6 @@ struct xarray {
 }
 
 void *xa_load(struct xarray *, unsigned long index);
-/* xa_store, xa_erase removed - never called */
 
 static inline void xa_init_flags(struct xarray *xa, gfp_t flags)
 {
@@ -128,7 +126,6 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 #define xa_unlock_irqrestore(xa, flags) \
 				spin_unlock_irqrestore(&(xa)->xa_lock, flags)
 
-/* __xa_erase, __xa_store, __xa_cmpxchg, __xa_insert removed - never called */
 int __must_check __xa_alloc(struct xarray *, u32 *id, void *entry,
 		struct xa_limit, gfp_t);
 
@@ -347,7 +344,6 @@ void *xas_store(struct xa_state *, void *entry);
 void *xas_find(struct xa_state *, unsigned long max);
 void *xas_find_conflict(struct xa_state *);
 
-/* xas_get_mark removed - never called */
 void xas_set_mark(const struct xa_state *, xa_mark_t);
 void xas_clear_mark(const struct xa_state *, xa_mark_t);
 void *xas_find_marked(struct xa_state *, unsigned long max, xa_mark_t);
@@ -356,7 +352,6 @@ void xas_init_marks(const struct xa_state *);
 bool xas_nomem(struct xa_state *, gfp_t);
 void xas_destroy(struct xa_state *);
 
-/* xas_create_range removed - unused */
 
 static inline int xa_get_order(struct xarray *xa, unsigned long index)
 {

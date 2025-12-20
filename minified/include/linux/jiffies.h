@@ -73,7 +73,6 @@ u64 get_jiffies_64(void);
 	 ((long)((a) - (b)) >= 0))
 #define time_before_eq(a,b)	time_after_eq(b,a)
 
-/* time_in_range, time_in_range_open removed - never used */
 
 #define time_after64(a,b)	\
 	(typecheck(__u64, a) &&	\
@@ -87,7 +86,6 @@ u64 get_jiffies_64(void);
 	 ((__s64)((a) - (b)) >= 0))
 #define time_before_eq64(a,b)	time_after_eq64(b,a)
 
-/* time_in_range64 removed - never used */
 
 
 #define time_is_before_jiffies(a) time_after(jiffies, a)

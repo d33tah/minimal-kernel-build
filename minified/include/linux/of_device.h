@@ -45,7 +45,6 @@ static inline int of_platform_default_populate(struct device_node *root,
 					       const struct of_dev_auxdata *lookup,
 					       struct device *parent)
 { return -ENODEV; }
-/* of_platform_depopulate and devm_of_platform_* removed - unused */
 static inline void of_platform_register_reconfig_notifier(void) { }
 /* End of inlined of_platform.h content */
 

@@ -62,6 +62,5 @@ static inline char _tolower(const char c)
 	return c | 0x20;
 }
 
-/* isodigit removed - never called */
 
 #endif

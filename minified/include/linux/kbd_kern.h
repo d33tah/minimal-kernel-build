@@ -44,7 +44,6 @@ extern unsigned short plain_map[NR_KEYS];
 /* --- end keyboard.h inlined --- */
 
 
-/* kbd_struct removed - unused */
 
 extern int kbd_init(void);
 

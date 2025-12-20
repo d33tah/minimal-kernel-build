@@ -23,7 +23,6 @@
 #define JOBCTL_TRACED		(1UL << JOBCTL_TRACED_BIT)
 #define JOBCTL_TRAP_MASK	(JOBCTL_TRAP_STOP)
 #define JOBCTL_PENDING_MASK	(JOBCTL_STOP_PENDING | JOBCTL_TRAP_MASK)
-/* JOBCTL_STOP_DEQUEUED, JOBCTL_STOP_CONSUME, JOBCTL_TRAP_NOTIFY, JOBCTL_TRAPPING removed - unused */
 extern bool task_set_jobctl_pending(struct task_struct *task, unsigned long mask);
 extern void task_clear_jobctl_pending(struct task_struct *task, unsigned long mask);
 #include <linux/cred.h>
@@ -164,11 +163,9 @@ struct signal_struct {
 #define SIGNAL_STOP_MASK (SIGNAL_CLD_MASK | SIGNAL_STOP_STOPPED | \
 			  SIGNAL_STOP_CONTINUED)
 
-/* signal_set_stop_flags removed - unused */
 
 extern void ignore_signals(struct task_struct *);
 extern void flush_signal_handlers(struct task_struct *, int force_default);
-/* dequeue_signal removed - unused */
 
 #ifdef __ia64__
 # define ___ARCH_SI_IA64(_a1, _a2, _a3) , _a1, _a2, _a3
@@ -187,7 +184,6 @@ int force_sig_pkuerr(void __user *addr, u32 pkey);
 extern int send_sig_info(int, struct kernel_siginfo *, struct task_struct *);
 /* force_sigsegv now static in signal.c */
 extern int force_sig_info(struct kernel_siginfo *);
-/* __kill_pgrp_info, kill_pid now static/removed in signal.c */
 extern int kill_pid_info(int sig, struct kernel_siginfo *info, struct pid *pid);
 extern int kill_pgrp(struct pid *pid, int sig, int priv);
 extern __must_check bool do_notify_parent(struct task_struct *, int);
@@ -267,7 +263,6 @@ static inline void signal_wake_up(struct task_struct *t, bool fatal)
 	}
 	signal_wake_up_state(t, state);
 }
-/* ptrace_signal_wake_up removed - unused */
 
 void task_join_group_stop(struct task_struct *task);
 
@@ -368,7 +363,6 @@ extern void __cleanup_sighand(struct sighand_struct *);
 #define for_each_process(p) \
 	for (p = &init_task ; (p = next_task(p)) != &init_task ; )
 
-/* current_is_single_threaded removed - unused */
 
 #define do_each_thread(g, t) \
 	for (g = t = &init_task ; (g = t = next_task(g)) != &init_task ; ) do
@@ -382,7 +376,6 @@ extern void __cleanup_sighand(struct sighand_struct *);
 #define for_each_thread(p, t)		\
 	__for_each_thread((p)->signal, t)
 
-/* walk_process_tree and proc_visitor removed - unused */
 
 static inline
 struct pid *task_pid_type(struct task_struct *task, enum pid_type type)
@@ -435,7 +428,6 @@ static inline int thread_group_empty(struct task_struct *p)
 #define delay_group_leader(p) \
 		(thread_group_leader(p) && !thread_group_empty(p))
 
-/* thread_group_exited removed - unused */
 
 extern struct sighand_struct *__lock_task_sighand(struct task_struct *task,
 							unsigned long *flags);
@@ -456,7 +448,6 @@ static inline void unlock_task_sighand(struct task_struct *task,
 	spin_unlock_irqrestore(&task->sighand->siglock, *flags);
 }
 
-/* lockdep_assert_task_sighand_held removed - unused */
 
 static inline unsigned long task_rlimit(const struct task_struct *task,
 		unsigned int limit)

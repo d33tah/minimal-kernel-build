@@ -96,7 +96,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #define __HAVE_BUILTIN_BSWAP16__
 #endif
 
-/* __no_sanitize_undefined, __noscs removed - unused */
 
 #if __has_feature(coverage_sanitizer)
 #define __no_sanitize_coverage __attribute__((no_sanitize("coverage")))

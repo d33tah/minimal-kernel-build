@@ -37,7 +37,6 @@ static inline void rcu_init_tasks_generic(void) { }
 static inline void rcu_init_nohz(void) { }
 static inline void rcu_nocb_flush_deferred_wakeup(void) { }
 
-/* rcu_tasks_classic_qs, call_rcu_tasks, synchronize_rcu_tasks removed - unused */
 #define rcu_tasks_qs(t, preempt) do { } while (0)
 static inline void exit_tasks_rcu_start(void) { }
 static inline void exit_tasks_rcu_finish(void) { }
@@ -61,7 +60,6 @@ static inline void synchronize_rcu_expedited(void)
 
 extern void kvfree(const void *addr);
 
-/* kvfree_call_rcu removed - unused */
 
 void rcu_qs(void);
 
@@ -84,7 +82,6 @@ static inline void rcu_irq_exit_check_preempt(void) { }
 static inline void exit_rcu(void) { }
 void rcu_scheduler_starting(void);
 static inline void rcu_end_inkernel_boot(void) { }
-/* rcu_inkernel_boot_has_ended removed - unused */
 static inline bool rcu_is_watching(void) { return true; }
 static inline void kfree_rcu_scheduler_running(void) { }
 
@@ -189,7 +186,6 @@ do {									      \
 				(c) || rcu_read_lock_sched_held(), \
 				__rcu)
 
-/* rcu_dereference_raw_check removed - unused */
 
 #define rcu_dereference_protected(p, c) \
 	__rcu_dereference_protected((p), __UNIQUE_ID(rcu), (c), __rcu)
@@ -248,7 +244,6 @@ static inline void rcu_read_unlock_sched(void)
 
 #define __is_kvfree_rcu_offset(offset) ((offset) < 4096)
 
-/* kfree_rcu, kvfree_rcu macros removed - unused (but keep __is_kvfree_rcu_offset) */
 
 #define smp_mb__after_unlock_lock()	do { } while (0)
 

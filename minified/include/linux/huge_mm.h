@@ -90,7 +90,6 @@ static inline void deferred_split_huge_page(struct page *page) {}
 
 static inline void __split_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
 		unsigned long address, bool freeze, struct folio *folio) {}
-/* split_huge_pmd_address removed - unused */
 
 #define split_huge_pud(__vma, __pmd, __address)	\
 	do { } while (0)
@@ -99,13 +98,11 @@ static inline int is_swap_pmd(pmd_t pmd)
 {
 	return 0;
 }
-/* pmd_trans_huge_lock, pud_trans_huge_lock removed - unused */
 
 static inline bool is_huge_zero_page(struct page *page)
 {
 	return false;
 }
-/* is_huge_zero_pmd, is_huge_zero_pud removed - unused */
 
 static inline void mm_put_huge_zero_page(struct mm_struct *mm)
 {

@@ -138,7 +138,6 @@ static inline vm_fault_t hugetlb_fault(struct mm_struct *mm,
 #define p4d_huge(x)	0
 #endif
 
-/* pgd_write removed - unused */
 
 #define HUGETLB_ANON_FILE "anon_hugepage"
 
@@ -193,7 +192,6 @@ static inline unsigned long huge_page_size(struct hstate *h)
 	return PAGE_SIZE;
 }
 
-/* huge_page_mask, vma_mmu_pagesize removed - unused */
 
 static inline unsigned int huge_page_shift(struct hstate *h)
 {
@@ -211,7 +209,6 @@ static inline void hugetlb_count_init(struct mm_struct *mm)
 }
 
 
-/* hugetlb_count_sub, set_huge_swap_pte_at, huge_ptep_clear_flush, set_huge_pte_at removed - unused */
 
 static inline __init void hugetlb_cma_reserve(int order)
 {

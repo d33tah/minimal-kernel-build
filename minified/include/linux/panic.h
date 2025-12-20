@@ -62,8 +62,6 @@ enum lockdep_ok {
 	LOCKDEP_NOW_UNRELIABLE,
 };
 
-/* print_tainted removed - unused */
 extern void add_taint(unsigned flag, enum lockdep_ok);
-/* test_taint, get_taint removed - unused */
 
 #endif

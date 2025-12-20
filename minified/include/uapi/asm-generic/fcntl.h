@@ -86,10 +86,7 @@
 #define F_SETOWN	8	 
 #define F_GETOWN	9	 
 #endif
-/* F_SETSIG, F_GETSIG removed - unused */
 
-/* F_GETLK64, F_SETLK64, F_SETLKW64 removed - unused */
-/* F_SETOWN_EX, F_GETOWN_EX, F_GETOWNER_UIDS, F_OFD_*, f_owner_ex removed - unused */
 
 #define FD_CLOEXEC	1	 
 
@@ -99,10 +96,7 @@
 #define F_UNLCK		2
 #endif
 
-/* F_EXLCK, F_SHLCK removed - unused */
 
-/* LOCK_SH, LOCK_EX, LOCK_NB, LOCK_UN removed - unused */
-/* LOCK_MAND, LOCK_READ, LOCK_WRITE, LOCK_RW removed - unused */
 
 #define F_LINUX_SPECIFIC_BASE	1024
 
@@ -120,6 +114,5 @@ struct flock {
 #endif
 };
 
-/* struct flock64 removed - unused */
 
 #endif  

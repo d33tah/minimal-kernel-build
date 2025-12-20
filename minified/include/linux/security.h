@@ -41,7 +41,6 @@ extern unsigned long mmap_min_addr;
 #define LSM_UNSAFE_PTRACE	2
 #define LSM_UNSAFE_NO_NEW_PRIVS	4
 
-/* mmap_min_addr_handler declaration removed - function removed */
 
 typedef int (*initxattrs) (struct inode *inode,
 			   const struct xattr *xattr_array, void *fs_data);
@@ -70,7 +69,6 @@ static inline int early_security_init(void)
 	return 0;
 }
 
-/* security_capable removed - never called */
 
 
 static inline int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
@@ -161,7 +159,6 @@ static inline void security_inode_free(struct inode *inode)
 { }
 
 
-/* security_inode_create removed - unused */
 
 
 static inline int security_inode_mkdir(struct inode *dir,

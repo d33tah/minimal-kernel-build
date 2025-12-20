@@ -674,8 +674,6 @@ void __init setup_arch(char **cmdline_p)
 	 
 	reserve_crashkernel();
 
-	memblock_find_dma_reserve();
-
 	x86_init.paging.pagetable_init();
 
 	kasan_init();

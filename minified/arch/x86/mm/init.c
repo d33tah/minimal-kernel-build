@@ -596,10 +596,6 @@ void __init free_initrd_mem(unsigned long start, unsigned long end)
 	free_init_pages("initrd", start, PAGE_ALIGN(end));
 }
 
-void __init memblock_find_dma_reserve(void)
-{
-}
-
 void __init zone_sizes_init(void)
 {
 	unsigned long max_zone_pfns[MAX_NR_ZONES];

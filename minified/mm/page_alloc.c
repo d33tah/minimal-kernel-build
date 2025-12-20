@@ -163,14 +163,10 @@ int min_free_kbytes = 1024;
 int user_min_free_kbytes = -1;
 /* watermark_scale_factor removed - never used */
 
-static unsigned long nr_kernel_pages __initdata;
-static unsigned long nr_all_pages __initdata;
-static unsigned long dma_reserve __initdata;
 
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
 static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;
 static unsigned long zone_movable_pfn[MAX_NUMNODES] __initdata;
-static bool mirrored_kernelcore __meminitdata;
 
 int movable_zone;
 
@@ -1859,8 +1855,7 @@ static void __init adjust_zone_range_for_zone_movable(int nid,
 				arch_zone_highest_possible_pfn[movable_zone]);
 
 		
-		} else if (!mirrored_kernelcore &&
-			*zone_start_pfn < zone_movable_pfn[nid] &&
+		} else if (*zone_start_pfn < zone_movable_pfn[nid] &&
 			*zone_end_pfn > zone_movable_pfn[nid]) {
 			*zone_end_pfn = zone_movable_pfn[nid];
 
@@ -1942,7 +1937,6 @@ static unsigned long __init zone_absent_pages_in_node(int nid,
 			&zone_start_pfn, &zone_end_pfn);
 	nr_absent = __absent_pages_in_range(nid, zone_start_pfn, zone_end_pfn);
 
-	/* Stub: mirrored_kernelcore logic not needed for minimal kernel */
 
 	return nr_absent;
 }
@@ -2090,19 +2084,8 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 			}
 		}
 
-		
-		if (j == 0 && freesize > dma_reserve) {
-			freesize -= dma_reserve;
-		}
+		/* dma_reserve, nr_kernel_pages, nr_all_pages removed - never read */
 
-		if (!is_highmem_idx(j))
-			nr_kernel_pages += freesize;
-		
-		else if (nr_kernel_pages > memmap_pages * 2)
-			nr_kernel_pages -= memmap_pages;
-		nr_all_pages += freesize;
-
-		
 		zone_init_internals(zone, j, nid, freesize);
 
 		if (!size)

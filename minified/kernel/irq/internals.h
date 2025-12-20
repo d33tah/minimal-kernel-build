@@ -157,15 +157,7 @@ static inline void irq_settings_set_nothread(struct irq_desc *desc)
 	desc->status_use_accessors |= _IRQ_NOTHREAD;
 }
 
-static inline bool irq_settings_can_probe(struct irq_desc *desc)
-{
-	return !(desc->status_use_accessors & _IRQ_NOPROBE);
-}
-
-static inline void irq_settings_clr_noprobe(struct irq_desc *desc)
-{
-	desc->status_use_accessors &= ~_IRQ_NOPROBE;
-}
+/* irq_settings_can_probe and irq_settings_clr_noprobe removed - unused */
 
 static inline void irq_settings_set_noprobe(struct irq_desc *desc)
 {
@@ -389,15 +381,7 @@ static inline void kstat_incr_irqs_this_cpu(struct irq_desc *desc)
 	desc->tot_count++;
 }
 
-static inline int irq_desc_get_node(struct irq_desc *desc)
-{
-	return irq_common_data_get_node(&desc->irq_common_data);
-}
-
-static inline int irq_desc_is_chained(struct irq_desc *desc)
-{
-	return (desc->action && desc->action == &chained_action);
-}
+/* irq_desc_get_node and irq_desc_is_chained removed - unused */
 
 static inline bool irq_pm_check_wakeup(struct irq_desc *desc) { return false; }
 static inline void
@@ -438,6 +422,4 @@ static inline void irq_add_debugfs_entry(unsigned int irq, struct irq_desc *d)
 static inline void irq_remove_debugfs_entry(struct irq_desc *d)
 {
 }
-static inline void irq_debugfs_copy_devname(int irq, struct device *dev)
-{
-}
+/* irq_debugfs_copy_devname removed - unused */

@@ -9,10 +9,7 @@
  
 #define __irq_entry __invalid_section
 
-static inline int irq_canonicalize(int irq)
-{
-	return ((irq == 2) ? 9 : irq);
-}
+/* irq_canonicalize removed - unused */
 
 extern int irq_init_percpu_irqstack(unsigned int cpu);
 

@@ -46,11 +46,11 @@ static inline void init_bsp_APIC(void) { }
 static inline void apic_intr_mode_select(void) { }
 static inline void apic_intr_mode_init(void) { }
 static inline void lapic_assign_system_vectors(void) { }
-static inline void lapic_assign_legacy_vector(unsigned int i, bool r) { }
+/* lapic_assign_legacy_vector removed - unused */
 static inline bool apic_needs_pit(void) { return true; }
 /* Removed: lapic_shutdown, lapic_update_tsc_freq, check_x2apic */
 static inline void x2apic_setup(void) { }
-static inline int x2apic_enabled(void) { return 0; }
+/* x2apic_enabled removed - unused */
 
 #define x2apic_mode		(0)
 #define	x2apic_supported()	(0)
@@ -136,7 +136,7 @@ extern struct apic *__apicdrivers[], *__apicdrivers_end[];
  
 
 
-static inline u32 apic_read(u32 reg) { return 0; }
+/* apic_read removed - unused */
 static inline void apic_eoi(void) { }
 
 static inline void ack_APIC_irq(void)

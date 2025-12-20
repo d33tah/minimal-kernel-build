@@ -78,36 +78,7 @@ static inline bool rcu_seq_done(unsigned long *sp, unsigned long s)
 	return ULONG_CMP_GE(READ_ONCE(*sp), s);
 }
 
- 
-static inline bool rcu_seq_completed_gp(unsigned long old, unsigned long new)
-{
-	return ULONG_CMP_LT(old, new & ~RCU_SEQ_STATE_MASK);
-}
-
- 
-static inline bool rcu_seq_new_gp(unsigned long old, unsigned long new)
-{
-	return ULONG_CMP_LT((old + RCU_SEQ_STATE_MASK) & ~RCU_SEQ_STATE_MASK,
-			    new);
-}
-
- 
-static inline unsigned long rcu_seq_diff(unsigned long new, unsigned long old)
-{
-	unsigned long rnd_diff;
-
-	if (old == new)
-		return 0;
-	 
-	rnd_diff = (new & ~RCU_SEQ_STATE_MASK) -
-		   ((old + RCU_SEQ_STATE_MASK) & ~RCU_SEQ_STATE_MASK) +
-		   ((new & RCU_SEQ_STATE_MASK) || (old & RCU_SEQ_STATE_MASK));
-	if (ULONG_CMP_GE(RCU_SEQ_STATE_MASK, rnd_diff))
-		return 1;  
-	return ((rnd_diff - RCU_SEQ_STATE_MASK - 1) >> RCU_SEQ_CTR_SHIFT) + 2;
-}
-
- 
+/* rcu_seq_completed_gp, rcu_seq_new_gp, rcu_seq_diff removed - unused */
 
 static inline int debug_rcu_head_queue(struct rcu_head *head)
 {
@@ -118,18 +89,7 @@ static inline void debug_rcu_head_unqueue(struct rcu_head *head)
 {
 }
 
-extern int rcu_cpu_stall_suppress_at_boot;
-
-static inline bool rcu_stall_is_suppressed_at_boot(void)
-{
-	return rcu_cpu_stall_suppress_at_boot && !rcu_inkernel_boot_has_ended();
-}
-
-
-static inline bool rcu_stall_is_suppressed(void)
-{
-	return rcu_stall_is_suppressed_at_boot();
-}
+/* rcu_stall_is_suppressed_at_boot and rcu_stall_is_suppressed removed - unused */
 #define rcu_ftrace_dump_stall_suppress()
 #define rcu_ftrace_dump_stall_unsuppress()
 
@@ -169,32 +129,8 @@ extern void resched_cpu(int cpu);
 extern int rcu_num_lvls;
 extern int num_rcu_lvl[];
 extern int rcu_num_nodes;
-static bool rcu_fanout_exact;
-static int rcu_fanout_leaf;
 
- 
-static inline void rcu_init_levelspread(int *levelspread, const int *levelcnt)
-{
-	int i;
-
-	for (i = 0; i < RCU_NUM_LVLS; i++)
-		levelspread[i] = INT_MIN;
-	if (rcu_fanout_exact) {
-		levelspread[rcu_num_lvls - 1] = rcu_fanout_leaf;
-		for (i = rcu_num_lvls - 2; i >= 0; i--)
-			levelspread[i] = RCU_FANOUT;
-	} else {
-		int ccur;
-		int cprv;
-
-		cprv = nr_cpu_ids;
-		for (i = rcu_num_lvls - 1; i >= 0; i--) {
-			ccur = levelcnt[i];
-			levelspread[i] = (cprv + ccur - 1) / ccur;
-			cprv = ccur;
-		}
-	}
-}
+/* rcu_init_levelspread removed - unused */
 
 extern void rcu_init_geometry(void);
 
@@ -284,13 +220,7 @@ do {									\
 #define raw_lockdep_assert_held_rcu_node(p)				\
 	lockdep_assert_held(&ACCESS_PRIVATE(p, lock))
 
-
- 
-static inline bool rcu_gp_is_normal(void) { return true; }
-static inline bool rcu_gp_is_expedited(void) { return false; }
-static inline void rcu_expedite_gp(void) { }
-static inline void rcu_unexpedite_gp(void) { }
-static inline void rcu_request_urgent_qs_task(struct task_struct *t) { }
+/* rcu_gp_is_normal, rcu_gp_is_expedited, rcu_expedite_gp, rcu_unexpedite_gp, rcu_request_urgent_qs_task removed - unused */
 
 #define RCU_SCHEDULER_INACTIVE	0
 #define RCU_SCHEDULER_INIT	1

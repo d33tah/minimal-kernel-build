@@ -52,14 +52,7 @@ static inline swp_entry_t pte_to_swp_entry(pte_t pte)
 	return swp_entry(__swp_type(arch_entry), __swp_offset(arch_entry));
 }
 
-static inline pte_t swp_entry_to_pte(swp_entry_t entry)
-{
-	swp_entry_t arch_entry;
-
-	arch_entry = __swp_entry(swp_type(entry), swp_offset(entry));
-	return __swp_entry_to_pte(arch_entry);
-}
-
+/* swp_entry_to_pte removed - never called */
 /* radix_to_swp_entry, swp_to_radix_entry removed - unused */
 
 
@@ -86,9 +79,6 @@ static inline swp_entry_t pmd_to_swp_entry(pmd_t pmd) { return swp_entry(0, 0); 
 static inline int is_pmd_migration_entry(pmd_t pmd) { return 0; }
 
 
-static inline int non_swap_entry(swp_entry_t entry)
-{
-	return swp_type(entry) >= MAX_SWAPFILES;
-}
+/* non_swap_entry removed - never called */
 
 #endif  

@@ -26,13 +26,8 @@ static inline bool is_swiotlb_force_bounce(struct device *dev)
 {
 	return false;
 }
-static inline void swiotlb_exit(void)
-{
-}
-static inline unsigned int swiotlb_max_segment(void)
-{
-	return 0;
-}
+/* swiotlb_exit removed - never called */
+/* swiotlb_max_segment removed - never called */
 static inline size_t swiotlb_max_mapping_size(struct device *dev)
 {
 	return SIZE_MAX;
@@ -41,9 +36,7 @@ static inline bool is_swiotlb_active(struct device *dev)
 {
 	return false;
 }
-static inline void swiotlb_adjust_size(unsigned long size)
-{
-}
+/* swiotlb_adjust_size removed - never called */
 static inline struct page *swiotlb_alloc(struct device *dev, size_t size)
 {
 	return NULL;

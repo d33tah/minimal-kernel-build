@@ -58,22 +58,14 @@ ssize_t vfs_getxattr_alloc(struct user_namespace *mnt_userns,
 
 int xattr_supported_namespace(struct inode *inode, const char *prefix);
 
-static inline const char *xattr_prefix(const struct xattr_handler *handler)
-{
-	return handler->prefix ?: handler->name;
-}
+/* xattr_prefix removed - never called */
 
 struct simple_xattrs {
 	struct list_head head;
 	spinlock_t lock;
 };
 
-static inline void simple_xattrs_init(struct simple_xattrs *xattrs)
-{
-	INIT_LIST_HEAD(&xattrs->head);
-	spin_lock_init(&xattrs->lock);
-}
-
+/* simple_xattrs_init removed - never called */
 /* simple_xattr_alloc, simple_xattr_get/set/list/list_add removed - unused */
 
 #endif	 

@@ -72,26 +72,8 @@ extern void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end);
 int shmem_unuse(unsigned int type);
 
 
-static inline struct page *shmem_read_mapping_page(
-				struct address_space *mapping, pgoff_t index)
-{
-	return shmem_read_mapping_page_gfp(mapping, index,
-					mapping_gfp_mask(mapping));
-}
-
-static inline bool shmem_file(struct file *file)
-{
-	if (!IS_ENABLED(CONFIG_SHMEM))
-		return false;
-	if (!file || !file->f_mapping)
-		return false;
-	return shmem_mapping(file->f_mapping);
-}
-
-static inline pgoff_t shmem_fallocend(struct inode *inode, pgoff_t eof)
-{
-	return max(eof, SHMEM_I(inode)->fallocend);
-}
-
+/* shmem_read_mapping_page removed - never called */
+/* shmem_file removed - never called */
+/* shmem_fallocend removed - never called */
 
 #endif

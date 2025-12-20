@@ -29,9 +29,8 @@ struct pbe {
 	struct pbe *next;
 };
 
-static inline void register_nosave_region(unsigned long b, unsigned long e) {}
-
-static inline bool hibernation_available(void) { return false; }
+/* register_nosave_region removed - never called */
+/* hibernation_available removed - never called */
 
 extern struct mutex system_transition_mutex;
 

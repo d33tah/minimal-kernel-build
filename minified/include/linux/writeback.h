@@ -48,11 +48,6 @@ struct writeback_control {
 
 };
 
-static inline int wbc_to_write_flags(struct writeback_control *wbc)
-{
-	return 0;
-}
-
 struct wb_domain {
 	spinlock_t lock;
 
@@ -66,15 +61,7 @@ struct wb_domain {
 	unsigned long dirty_limit;
 };
 
-static inline void wb_domain_size_changed(struct wb_domain *dom)
-{
-	spin_lock(&dom->lock);
-	dom->dirty_limit_tstamp = jiffies;
-	dom->dirty_limit = 0;
-	spin_unlock(&dom->lock);
-}
 
- 	
 struct bdi_writeback;
 void writeback_inodes_sb(struct super_block *, enum wb_reason reason);
 void writeback_inodes_sb_nr(struct super_block *, unsigned long nr,
@@ -94,19 +81,8 @@ static inline void wait_on_inode(struct inode *inode)
 }
 
 
-static inline void inode_attach_wb(struct inode *inode, struct page *page)
-{
-}
-
 static inline void inode_detach_wb(struct inode *inode)
 {
-}
-
-static inline void wbc_attach_and_unlock_inode(struct writeback_control *wbc,
-					       struct inode *inode)
-	__releases(&inode->i_lock)
-{
-	spin_unlock(&inode->i_lock);
 }
 
 static inline void wbc_attach_fdatawrite_inode(struct writeback_control *wbc,
@@ -115,15 +91,6 @@ static inline void wbc_attach_fdatawrite_inode(struct writeback_control *wbc,
 }
 
 static inline void wbc_detach_inode(struct writeback_control *wbc)
-{
-}
-
-static inline void wbc_init_bio(struct writeback_control *wbc, struct bio *bio)
-{
-}
-
-static inline void wbc_account_cgroup_owner(struct writeback_control *wbc,
-					    struct page *page, size_t bytes)
 {
 }
 

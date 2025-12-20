@@ -80,16 +80,6 @@ static inline void prep_transhuge_page(struct page *page) {}
 
 #define thp_get_unmapped_area	NULL
 
-static inline bool
-can_split_folio(struct folio *folio, int *pextra_pins)
-{
-	return false;
-}
-static inline int
-split_huge_page_to_list(struct page *page, struct list_head *list)
-{
-	return 0;
-}
 static inline int split_huge_page(struct page *page)
 {
 	return 0;
@@ -137,12 +127,6 @@ static inline struct page *follow_devmap_pud(struct vm_area_struct *vma,
 static inline bool thp_migration_supported(void)
 {
 	return false;
-}
-
-static inline int split_folio_to_list(struct folio *folio,
-		struct list_head *list)
-{
-	return split_huge_page_to_list(&folio->page, list);
 }
 
 #endif  

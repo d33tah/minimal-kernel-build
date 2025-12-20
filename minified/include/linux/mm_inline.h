@@ -119,11 +119,6 @@ static inline struct anon_vma_name *anon_vma_name(struct vm_area_struct *vma)
 	return NULL;
 }
 
-static inline struct anon_vma_name *anon_vma_name_alloc(const char *name)
-{
-	return NULL;
-}
-
 static inline void dup_anon_vma_name(struct vm_area_struct *orig_vma,
 				     struct vm_area_struct *new_vma) {}
 static inline void free_anon_vma_name(struct vm_area_struct *vma) {}
@@ -148,26 +143,14 @@ static inline void inc_tlb_flush_pending(struct mm_struct *mm)
 
 static inline void dec_tlb_flush_pending(struct mm_struct *mm)
 {
-	 
-	atomic_dec(&mm->tlb_flush_pending);
-}
 
-static inline bool mm_tlb_flush_pending(struct mm_struct *mm)
-{
-	 
-	return atomic_read(&mm->tlb_flush_pending);
+	atomic_dec(&mm->tlb_flush_pending);
 }
 
 static inline bool mm_tlb_flush_nested(struct mm_struct *mm)
 {
-	 
-	return atomic_read(&mm->tlb_flush_pending) > 1;
-}
 
-static inline void
-pte_install_uffd_wp_if_needed(struct vm_area_struct *vma, unsigned long addr,
-			      pte_t *pte, pte_t pteval)
-{
+	return atomic_read(&mm->tlb_flush_pending) > 1;
 }
 
 #endif

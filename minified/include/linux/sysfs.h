@@ -171,9 +171,4 @@ static inline void sysfs_remove_file(struct kobject *kobj,
 	sysfs_remove_file_ns(kobj, attr, NULL);
 }
 
-static inline void sysfs_put(struct kernfs_node *kn)
-{
-	kernfs_put(kn);
-}
-
 #endif  

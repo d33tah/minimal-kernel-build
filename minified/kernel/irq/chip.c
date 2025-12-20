@@ -69,7 +69,6 @@ typedef struct x86_msi_addr_hi {
 
 struct msi_msg;
 u32 x86_msi_msg_get_destid(struct msi_msg *msg, bool extid);
-/* --- End inlined asm/msi.h --- */
 
 #ifndef arch_msi_msg_addr_lo
 typedef struct arch_msi_msg_addr_lo {

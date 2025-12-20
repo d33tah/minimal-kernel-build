@@ -5,7 +5,6 @@
 #include <linux/cpumask.h>
 #include <linux/memblock.h>
 #include <linux/err.h>
-/* lcm.h inlined */
 unsigned long lcm(unsigned long a, unsigned long b) __attribute_const__;
 unsigned long lcm_not_zero(unsigned long a, unsigned long b) __attribute_const__;
 #include <linux/list.h>
@@ -29,7 +28,6 @@ unsigned long lcm_not_zero(unsigned long a, unsigned long b) __attribute_const__
 #include <asm/tlbflush.h>
 #include <asm/io.h>
 
-/* percpu-internal.h inlined */
 struct pcpu_block_md {
 	int			scan_hint;
 	int			scan_hint_start;

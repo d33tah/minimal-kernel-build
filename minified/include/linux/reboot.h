@@ -4,7 +4,6 @@
 
 #include <linux/notifier.h>
 
-/* From uapi/linux/reboot.h - inlined */
 #define	LINUX_REBOOT_MAGIC1	0xfee1dead
 #define	LINUX_REBOOT_MAGIC2	672274793
 #define	LINUX_REBOOT_MAGIC2A	85072278

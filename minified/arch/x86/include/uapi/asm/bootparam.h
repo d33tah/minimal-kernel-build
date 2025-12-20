@@ -39,7 +39,6 @@
 #include <linux/screen_info.h>
 #include <linux/edd.h>
 
-/* --- 2025-12-06 17:05 --- apm_bios.h inlined */
 struct apm_bios_info {
 	__u16	version;
 	__u16	cseg;
@@ -105,8 +104,6 @@ extern struct apm_info	apm_info;
 
 #define APM_DEVICE_BALL		((apm_info.connection_version > 0x0100) ? \
 				 APM_DEVICE_ALL : APM_DEVICE_OLD_ALL)
-/* --- end apm_bios.h inlined --- */
-/* asm/ist.h inlined */
 struct ist_info {
 	__u32 signature;
 	__u32 command;
@@ -114,7 +111,6 @@ struct ist_info {
 	__u32 perf_level;
 };
 extern struct ist_info ist_info;
-/* --- end ist.h inlined --- */
 
 /* Inlined from video/edid.h */
 struct edid_info {

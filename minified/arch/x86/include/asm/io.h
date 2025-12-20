@@ -196,7 +196,6 @@ static inline void __iomem *ioremap_np(phys_addr_t offset, size_t size)
 	return NULL;
 }
 #endif
-/* --- end inlined asm-generic/io.h --- */
 
 /* phys_mem_access_encrypted removed - unused */
 

@@ -4,7 +4,6 @@
 #include <linux/poll.h>
 #include <linux/ns_common.h>
 
-/* --- 2025-12-06 20:36 --- fs_pin.h inlined (23 LOC) */
 struct fs_pin {
 	wait_queue_head_t	wait;
 	int			done;
@@ -23,7 +22,6 @@ static inline void init_fs_pin(struct fs_pin *p, void (*kill)(struct fs_pin *))
 void pin_remove(struct fs_pin *);
 void pin_insert(struct fs_pin *, struct vfsmount *);
 void pin_kill(struct fs_pin *);
-/* --- end fs_pin.h inlined --- */
 
 struct mnt_namespace {
 	struct ns_common	ns;

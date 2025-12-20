@@ -2,7 +2,6 @@
 #include <linux/mm.h>
 #include <linux/slab.h>
 
-/* --- 2025-12-06 20:18 --- miscdevice.h inlined (30 LOC) */
 #include <linux/major.h>
 #define MISC_DYNAMIC_MINOR	255
 struct miscdevice  {
@@ -16,7 +15,6 @@ struct miscdevice  {
 	const char *nodename;
 	umode_t mode;
 };
-/* --- end miscdevice.h inlined --- */
 #include <linux/vmalloc.h>
 #include <linux/mman.h>
 #include <linux/random.h>

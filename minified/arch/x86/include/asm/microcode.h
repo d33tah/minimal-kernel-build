@@ -5,7 +5,6 @@
 #include <asm/cpu.h>
 #include <linux/initrd.h>
 
-/* --- 2025-12-06 20:32 --- earlycpio.h inlined (17 LOC) */
 #define MAX_CPIO_FILE_NAME 18
 struct cpio_data {
 	void *data;
@@ -13,7 +12,6 @@ struct cpio_data {
 	char name[MAX_CPIO_FILE_NAME];
 };
 struct cpio_data find_cpio_data(const char *path, void *data, size_t len, long *offset);
-/* --- end earlycpio.h inlined --- */
 
 struct ucode_patch {
 	struct list_head plist;

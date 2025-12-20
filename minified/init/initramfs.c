@@ -432,7 +432,6 @@ static long __init flush_buffer(void *bufv, unsigned long len)
 
 static unsigned long my_inptr;
 
-/* decompress/generic.h inlined */
 typedef int (*decompress_fn) (unsigned char *inbuf, long len,
 			      long (*fill)(void*, unsigned long),
 			      long (*flush)(void*, unsigned long),

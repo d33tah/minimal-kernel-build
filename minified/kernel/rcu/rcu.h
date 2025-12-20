@@ -117,7 +117,6 @@ void rcu_test_sync_prims(void);
 extern void resched_cpu(int cpu);
 
 
-/* rcu_node_tree.h inlined - simplified for NR_CPUS=1 */
 #define RCU_FANOUT 32
 #define RCU_FANOUT_LEAF 16
 #define RCU_NUM_LVLS	      1

@@ -35,7 +35,6 @@
 #include <asm/special_insns.h>
 #include <asm/preempt.h>
 #include <asm/asm.h>
-/* --- end inlined asm-prototypes.h --- */
 
 int __read_mostly alternatives_patched;
 

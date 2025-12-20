@@ -62,7 +62,6 @@ do {								\
 		local_lock_release(this_cpu_ptr(lock));		\
 		local_irq_restore(flags);			\
 } while (0)
-/* End of inlined local_lock_internal.h content */
 
 #define local_lock_init(lock)		__local_lock_init(lock)
 

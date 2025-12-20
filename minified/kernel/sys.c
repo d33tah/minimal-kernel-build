@@ -4,7 +4,6 @@
 #include <linux/resource.h>
 #include <linux/sched.h>
 
-/* From uapi/linux/times.h - inlined */
 struct tms {
 	__kernel_clock_t tms_utime;
 	__kernel_clock_t tms_stime;
@@ -16,7 +15,6 @@ struct tms {
 #include <linux/uaccess.h>
 #include <linux/fs_struct.h>
 
-/* uid16.h inlined */
 long __sys_setuid(uid_t uid);
 long __sys_setgid(gid_t gid);
 long __sys_setreuid(uid_t ruid, uid_t euid);

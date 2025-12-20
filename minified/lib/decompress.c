@@ -1,4 +1,3 @@
-/* decompress/generic.h inlined */
 typedef int (*decompress_fn) (unsigned char *inbuf, long len,
 			      long (*fill)(void*, unsigned long),
 			      long (*flush)(void*, unsigned long),

@@ -3,7 +3,6 @@
 
 #include <linux/types.h>
 
-/* From uapi/linux/seccomp.h - inlined */
 #define SECCOMP_MODE_DISABLED	0
 #define SECCOMP_FILTER_FLAG_TSYNC		(1UL << 0)
 #define SECCOMP_FILTER_FLAG_LOG			(1UL << 1)

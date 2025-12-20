@@ -15,7 +15,6 @@
 #include <linux/pm.h>
 #include <linux/tick.h>
 #include <linux/random.h>
-/* user-return-notifier.h inlined */
 #ifndef _URN_INLINE
 #define _URN_INLINE
 struct user_return_notifier {};
@@ -25,7 +24,6 @@ static inline void clear_user_return_notifier(struct task_struct *p) {}
 #endif
 #include <linux/dmi.h>
 #include <linux/utsname.h>
-/* stackprotector.h inlined - !CONFIG_STACKPROTECTOR */
 static inline void boot_init_stack_canary(void) {}
 /* end stackprotector.h */
 #include <linux/cpuidle.h>
@@ -59,7 +57,6 @@ static inline unsigned long encode_frame_pointer(struct pt_regs *regs)
 #define FRAME_BEGIN
 #define FRAME_END
 #define FRAME_OFFSET 0
-/* --- end inlined frame.h --- */
 #include <asm/unwind.h>
 #include <asm/tdx.h>
 

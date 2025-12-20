@@ -63,7 +63,6 @@ __tick_broadcast_oneshot_control(enum tick_broadcast_state state)
 {
 	return -EBUSY;
 }
-/* --- End inlined tick-sched.h --- */
 
 
 # define TICK_DO_TIMER_NONE	-1

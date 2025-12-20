@@ -10,7 +10,6 @@
 #include <linux/tty_driver.h>
 #include <linux/tty_port.h>
 
-/* --- 2025-12-06 17:12 --- tty_ldisc.h inlined */
 #include <linux/wait.h>
 #include <linux/atomic.h>
 #include <linux/list.h>
@@ -86,7 +85,6 @@ struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *);
 void tty_ldisc_flush(struct tty_struct *tty);
 
 int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
-/* --- end tty_ldisc.h inlined --- */
 #include <linux/mutex.h>
 #include <linux/tty_flags.h>
 #include <linux/rwsem.h>

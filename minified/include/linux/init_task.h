@@ -9,7 +9,6 @@
 #include <linux/user_namespace.h>
 #include <linux/seqlock.h>
 
-/* From uapi/linux/securebits.h - inlined */
 #define issecure_mask(X)	(1 << (X))
 #define SECUREBITS_DEFAULT 0x00000000
 #define SECURE_NOROOT			0

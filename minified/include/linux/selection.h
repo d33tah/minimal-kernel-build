@@ -56,7 +56,6 @@ static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count)
 #endif
 }
 #endif
-/* End of inlined vt_buffer.h content */
 
 struct tty_struct;
 struct vc_data;

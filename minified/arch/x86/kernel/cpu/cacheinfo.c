@@ -1,7 +1,6 @@
 #include <linux/slab.h>
 #include <linux/cpu.h>
 
-/* --- 2025-12-06 17:22 --- cacheinfo.h inlined */
 #include <linux/bitops.h>
 #include <linux/cpumask.h>
 #include <linux/smp.h>
@@ -67,7 +66,6 @@ static inline int get_cpu_cacheinfo_id(int cpu, int level)
 	}
 	return -1;
 }
-/* --- end cacheinfo.h inlined --- */
 
 int init_cache_level(unsigned int cpu)
 {

@@ -6,7 +6,6 @@
 #include <asm/signal.h>
 #include <asm/siginfo.h>
 
-/* From uapi/linux/signal.h - inlined */
 #define SS_ONSTACK	1
 #define SS_DISABLE	2
 #define SS_AUTODISARM	(1U << 31)

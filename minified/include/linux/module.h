@@ -15,7 +15,6 @@
 #include <linux/jump_label.h>
 #include <linux/export.h>
 
-/* error-injection.h inlined */
 enum {
 	EI_ETYPE_NONE,
 	EI_ETYPE_NULL,
@@ -44,7 +43,6 @@ enum {
 #include <asm/orc_types.h>
 struct mod_arch_specific {
 };
-/* --- end inlined asm/module.h --- */
 
 #define MODULE_NAME_LEN MAX_PARAM_PREFIX_LEN
 

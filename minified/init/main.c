@@ -8,7 +8,6 @@
 #include <linux/binfmts.h>
 #include <linux/kernel.h>
 #include <linux/syscalls.h>
-/* stackprotector.h inlined - !CONFIG_STACKPROTECTOR */
 static inline void boot_init_stack_canary(void) {}
 /* end stackprotector.h */
 #include <linux/string.h>
@@ -22,13 +21,11 @@ static inline void boot_init_stack_canary(void) {}
 
 #define BOOTCONFIG_MAGIC	"#BOOTCONFIG\n"
 #define BOOTCONFIG_MAGIC_LEN	12
-/* --- end bootconfig.h inlined --- */
 #include <linux/console.h>
 #include <linux/nmi.h>
 #include <linux/percpu.h>
 #include <linux/security.h>
 #include <linux/smp.h>
-/* profile.h inlined - stub */
 static inline int profile_init(void) { return 0; }
 #include <linux/kfence.h>
 #include <linux/rcupdate.h>
@@ -44,9 +41,7 @@ static inline void init_vmlinux_build_id(void) { }
 #include <linux/tick.h>
 #include <linux/sched/isolation.h>
 #include <linux/interrupt.h>
-/* taskstats_kern.h inlined */
 static inline void taskstats_init_early(void) {}
-/* delayacct.h inlined - stub */
 static inline void delayacct_init(void) {}
 #include <linux/unistd.h>
 #include <linux/utsname.h>
@@ -64,12 +59,10 @@ static inline void __init padata_init(void) {}
 #include <linux/device/driver.h>
 #include <linux/kthread.h>
 #include <linux/sched.h>
-/* sched/init.h inlined */
 extern void sched_init(void);
 extern void sched_init_smp(void);
 #include <linux/signal.h>
 #include <linux/idr.h>
-/* kgdb.h inlined - stubs (includes kprobe stub too) */
 #define dbg_late_init() do { } while (0)
 static inline void kgdb_free_init_mem(void) { }
 static inline void kprobe_free_init_mem(void) { }

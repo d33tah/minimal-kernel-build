@@ -39,7 +39,6 @@ static __always_inline void __arch_sync_vdso_data(struct vdso_data *vdata)
 {
 }
 #endif
-/* End of inlined asm-generic/vdso/vsyscall.h */
 
 #endif
 

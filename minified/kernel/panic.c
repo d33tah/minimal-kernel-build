@@ -4,7 +4,6 @@
 #include <linux/printk.h>
 #include <linux/kallsyms.h>
 #include <linux/kmsg_dump.h>
-/* kgdb.h inlined - stub */
 static inline void kgdb_panic(const char *msg) { }
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
@@ -13,7 +12,6 @@ static inline void kgdb_panic(const char *msg) { }
 #include <linux/reboot.h>
 #include <linux/delay.h>
 #include <linux/kexec.h>
-/* panic_notifier.h inlined */
 extern struct atomic_notifier_head panic_notifier_list;
 extern bool crash_kexec_post_notifiers;
 #include <linux/sched.h>

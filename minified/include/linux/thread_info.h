@@ -46,7 +46,6 @@ struct restart_block {
 	};
 };
 extern long do_no_restart_syscall(struct restart_block *parm);
-/* End of inlined restart_block.h content */
 
 #include <linux/errno.h>
 

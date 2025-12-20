@@ -42,7 +42,6 @@ struct dev_printk_info {
 #include <linux/device/bus.h>
 #include <linux/device/class.h>
 #include <linux/device/driver.h>
-/* asm/device.h inlined */
 struct dev_archdata { };
 struct pdev_archdata { };
 

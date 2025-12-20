@@ -30,7 +30,6 @@ struct saved_context {
 } __attribute__((packed));
 extern char core_restore_code[];
 extern char restore_registers[];
-/* --- end inlined suspend_32.h --- */
 #include <asm/tlbflush.h>
 /* TDX not used in minimal kernel */
 

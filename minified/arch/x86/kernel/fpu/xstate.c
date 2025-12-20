@@ -16,7 +16,6 @@
 #include <asm/fpu/api.h>
 #include <asm/fpu/regset.h>
 #include <asm/fpu/signal.h>
-/* xcr.h inlined into xstate.h */
 
 #include <asm/tlbflush.h>
 #include <asm/prctl.h>

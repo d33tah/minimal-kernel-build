@@ -19,7 +19,6 @@
 
 #else /* !__ASSEMBLY__ */
 
-/* C code is inlined into uaccess.h */
 
 #define ASM_CLAC \
 	ALTERNATIVE("", __ASM_CLAC, X86_FEATURE_SMAP)

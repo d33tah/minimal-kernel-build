@@ -7,7 +7,6 @@
 #include <linux/ns_common.h>
 #include <linux/err.h>
 
-/* From uapi/linux/utsname.h - inlined */
 #define __OLD_UTS_LEN 8
 
 struct oldold_utsname {

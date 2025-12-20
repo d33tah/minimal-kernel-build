@@ -12,7 +12,6 @@
 #include <linux/consolemap.h>
 #include <linux/notifier.h>
 
-/* --- 2025-12-06 16:55 --- console_struct.h inlined */
 struct uni_pagedir;
 struct uni_screen;
 
@@ -129,7 +128,6 @@ extern void vc_SAK(struct work_struct *work);
 #define CUR_SET(c)		(((c) & 0xff0000) >> 8)
 
 bool con_is_visible(const struct vc_data *vc);
-/* --- end console_struct.h inlined --- */
 
 
 extern int fg_console, last_console, want_console;

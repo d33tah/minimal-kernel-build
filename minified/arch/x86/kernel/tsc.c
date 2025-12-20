@@ -17,7 +17,6 @@ static inline u32 acpi_pm_read_early(void) { return 0; }
 #include <linux/jump_label.h>
 #include <linux/static_call.h>
 
-/* hpet.h stubs inlined */
 static inline int is_hpet_enabled(void) { return 0; }
 #define hpet_readl(a) 0
 #define HPET_COUNTER 0

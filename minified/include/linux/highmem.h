@@ -4,7 +4,6 @@
 #include <linux/fs.h>
 #include <linux/kernel.h>
 #include <linux/bug.h>
-/* cacheflush.h inlined */
 #include <asm/cacheflush.h>
 struct folio;
 #if ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE

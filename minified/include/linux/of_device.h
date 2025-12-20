@@ -46,7 +46,6 @@ static inline int of_platform_default_populate(struct device_node *root,
 					       struct device *parent)
 { return -ENODEV; }
 static inline void of_platform_register_reconfig_notifier(void) { }
-/* End of inlined of_platform.h content */
 
 #include <linux/of.h>
 

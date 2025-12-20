@@ -41,7 +41,6 @@ struct rcu_segcblist {
 	.tails[RCU_NEXT_READY_TAIL] = &n.head, \
 	.tails[RCU_NEXT_TAIL] = &n.head, \
 }
-/* --- End inlined rcu_segcblist.h --- */
 
 struct srcu_struct;
 
@@ -91,7 +90,6 @@ static inline int __srcu_read_lock(struct srcu_struct *ssp)
 	return idx;
 }
 
-/* End of inlined srcutiny.h content */
 
 void call_srcu(struct srcu_struct *ssp, struct rcu_head *head,
 		void (*func)(struct rcu_head *head));

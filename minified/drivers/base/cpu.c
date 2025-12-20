@@ -14,7 +14,6 @@
 #include <linux/of.h>
 #include <linux/tick.h>
 
-/* --- 2025-12-06 20:14 --- cpufeature.h inlined (32 LOC) */
 #include <linux/mod_devicetable.h>
 #include <asm/cpufeature.h>
 #ifndef CPU_FEATURE_TYPEFMT
@@ -34,7 +33,6 @@ static int __init cpu_feature_match_ ## x ## _init(void)	\
 	return __initfunc();					\
 }								\
 module_init(cpu_feature_match_ ## x ## _init)
-/* --- end cpufeature.h inlined --- */
 #include <linux/pm_qos.h>
 #include <linux/sched/isolation.h>
 

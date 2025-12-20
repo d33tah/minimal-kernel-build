@@ -41,7 +41,6 @@ static inline void kfifo_init(void *fifo, void *buffer, unsigned int size)
 	kf->esize = 1;
 	kf->data = buffer;
 }
-/* End of inlined kfifo.h content */
 
 #include <linux/kref.h>
 #include <linux/mutex.h>

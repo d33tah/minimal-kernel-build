@@ -13,7 +13,6 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/signal.h>
-/* sched/numa_balancing.h inlined */
 static inline void task_numa_free(struct task_struct *p, bool final) {}
 /* end numa_balancing.h */
 #include <linux/sched/task.h>
@@ -31,9 +30,7 @@ static inline void task_numa_free(struct task_struct *p, bool final) {}
 #include <linux/mount.h>
 #include <linux/security.h>
 #include <linux/syscalls.h>
-/* tsacct_kern.h inlined - stub */
 static inline void acct_update_integrals(struct task_struct *tsk) {}
-/* cn_proc.h inlined - stub */
 static inline void proc_exec_connector(struct task_struct *task) {}
 #include <linux/audit.h>
 #include <linux/kmod.h>

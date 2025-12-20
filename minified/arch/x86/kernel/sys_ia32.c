@@ -7,7 +7,6 @@
 #include <linux/syscalls.h>
 #include <linux/utsname.h>
 
-/* From uapi/linux/times.h - inlined */
 struct tms {
 	__kernel_clock_t tms_utime;
 	__kernel_clock_t tms_stime;

@@ -11,7 +11,6 @@
 #include <linux/seq_file.h>
 
 #include <linux/kobject.h>
-/* kobj_map.h inlined */
 typedef struct kobject *kobj_probe_t(dev_t, int *, void *);
 struct kobj_map;
 int kobj_map(struct kobj_map *, dev_t, unsigned long, struct module *,

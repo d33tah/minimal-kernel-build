@@ -88,7 +88,6 @@ static inline bool __pte_needs_invert(u64 val)
 {
 	return false;
 }
-/* --- end inlined pgtable-2level.h --- */
 
  
 #define kpte_clear_flush(ptep, vaddr)		\

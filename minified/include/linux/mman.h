@@ -7,7 +7,6 @@
 #include <linux/atomic.h>
 #include <asm/mman.h>
 
-/* From uapi/linux/mman.h and asm-generic/hugetlb_encode.h - inlined */
 #define OVERCOMMIT_GUESS		0
 #define OVERCOMMIT_ALWAYS		1
 #define OVERCOMMIT_NEVER		2

@@ -540,7 +540,6 @@ static void force_sigsegv(int sig)
 {
 }
 
-/* force_sig_fault_to_task inlined - only called with current */
 int force_sig_fault(int sig, int code, void __user *addr
 	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr))
 {

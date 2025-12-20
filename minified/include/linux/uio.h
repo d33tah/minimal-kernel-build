@@ -7,7 +7,6 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 
-/* From uapi/linux/uio.h - inlined */
 struct iovec
 {
 	void __user *iov_base;

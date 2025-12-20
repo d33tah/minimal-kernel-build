@@ -1,4 +1,3 @@
-/* --- 2025-12-06 13:20 --- uapi/linux/vt.h inlined */
 #ifndef _LINUX_VT_H
 #define _LINUX_VT_H
 

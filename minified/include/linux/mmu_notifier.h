@@ -23,7 +23,6 @@ extern struct interval_tree_node *interval_tree_iter_first(struct rb_root_cached
 			 unsigned long start, unsigned long last);
 extern struct interval_tree_node *interval_tree_iter_next(struct interval_tree_node *node,
 			unsigned long start, unsigned long last);
-/* End of inlined interval_tree.h content */
 
 struct mmu_notifier_subscriptions;
 struct mmu_notifier;

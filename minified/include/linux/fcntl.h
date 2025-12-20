@@ -4,7 +4,6 @@
 #include <linux/stat.h>
 #include <asm/fcntl.h>
 
-/* --- 2025-12-06 20:29 --- openat2.h inlined (19 LOC) */
 struct open_how {
 	__u64 flags;
 	__u64 mode;
@@ -16,7 +15,6 @@ struct open_how {
 #define RESOLVE_BENEATH		0x08
 #define RESOLVE_IN_ROOT		0x10
 #define RESOLVE_CACHED		0x20
-/* --- end openat2.h inlined --- */
 
 /* Inlined from uapi/linux/fcntl.h */
 #define AT_FDCWD		-100

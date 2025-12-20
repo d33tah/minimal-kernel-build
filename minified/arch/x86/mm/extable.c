@@ -44,7 +44,6 @@
 		__BF_FIELD_CHECK(_mask, _reg, 0U, "FIELD_GET: ");	\
 		(typeof(_mask))(((_reg) & (_mask)) >> __bf_shf(_mask));	\
 	})
-/* End of inlined bitfield.h content */
 
 #include <asm/fpu/api.h>
 #include <asm/sev.h>

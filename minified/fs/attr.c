@@ -8,7 +8,6 @@
 #include <linux/fsnotify.h>
 #include <linux/fcntl.h>
 #include <linux/security.h>
-/* ima.h inlined - stub */
 static inline void ima_inode_post_setattr(struct user_namespace *mnt_userns,
 					  struct dentry *dentry) {}
 

@@ -13,7 +13,6 @@
 #include <errno.h>
 #include <pthread.h>
 
-/* be_byteshift.h inlined */
 static inline uint16_t __get_unaligned_be16(const uint8_t *p) { return p[0] << 8 | p[1]; }
 static inline uint32_t __get_unaligned_be32(const uint8_t *p) { return p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3]; }
 static inline uint64_t __get_unaligned_be64(const uint8_t *p) { return (uint64_t)__get_unaligned_be32(p) << 32 | __get_unaligned_be32(p + 4); }

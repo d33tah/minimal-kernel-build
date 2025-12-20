@@ -19,7 +19,6 @@
 #include <linux/sched/cputime.h>
 #include <linux/sched/debug.h>
 
-/* sched/init.h inlined */
 extern void sched_init(void);
 extern void sched_init_smp(void);
 #include <linux/sched/isolation.h>
@@ -31,7 +30,6 @@ extern void sched_init_smp(void);
 #include <linux/blkdev.h>
 #include <linux/context_tracking.h>
 #include <linux/cpuset.h>
-/* delayacct.h inlined - stubs */
 static inline void delayacct_blkio_start(void) {}
 static inline void delayacct_blkio_end(struct task_struct *p) {}
 #include <linux/init_task.h>

@@ -2,7 +2,6 @@
 #include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/sched/mm.h>
-/* sched/stat.h inlined */
 extern int nr_threads;
 DECLARE_PER_CPU(unsigned long, process_counts);
 /* end sched/stat.h */
@@ -18,11 +17,9 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/iocontext.h>
 #include <linux/key.h>
 #include <linux/cpu.h>
-/* acct.h inlined */
 #define acct_collect(x,y)	do { } while (0)
 #define acct_process()		do { } while (0)
 #define acct_exit_ns(ns)	do { } while (0)
-/* tsacct_kern.h inlined - stub */
 static inline void acct_update_integrals(struct task_struct *tsk) {}
 #include <linux/file.h>
 #include <linux/fdtable.h>
@@ -35,13 +32,11 @@ static inline void acct_update_integrals(struct task_struct *tsk) {}
 #include <linux/proc_fs.h>
 #include <linux/kthread.h>
 #include <linux/mempolicy.h>
-/* taskstats_kern.h inlined */
 static inline void taskstats_exit(struct task_struct *tsk, int group_dead) {}
 #include <linux/cgroup.h>
 #include <linux/syscalls.h>
 #include <linux/signal.h>
 #include <linux/posix-timers.h>
-/* cn_proc.h inlined - stub */
 static inline void proc_exit_connector(struct task_struct *task) {}
 #include <linux/mutex.h>
 #include <linux/futex.h>

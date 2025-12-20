@@ -128,7 +128,6 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 	     (b) = find_next_zero_bit((addr), (size), (e) + 1),	\
 	     (e) = find_next_bit((addr), (size), (b) + 1))
 
-/* End of inlined find.h content */
 #include <linux/string.h>
 #include <linux/types.h>
 

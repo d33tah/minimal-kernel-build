@@ -131,7 +131,6 @@ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 	free_page((unsigned long)pgd);
 }
 #endif
-/* End of inlined asm-generic/pgalloc.h */
 
 static inline int  __paravirt_pgd_alloc(struct mm_struct *mm) { return 0; }
 

@@ -2,7 +2,6 @@
 #ifndef	_LINUX_RBTREE_H
 #define	_LINUX_RBTREE_H
 
-/* rbtree_types.h inlined */
 struct rb_node {
 	unsigned long  __rb_parent_color;
 	struct rb_node *rb_right;

@@ -5,7 +5,6 @@
 #include <linux/interrupt.h>
 #include <linux/wait.h>
 
-/* --- 2025-12-06 20:10 --- keyboard.h inlined (45 LOC) */
 #define KG_SHIFT	0
 #define KG_CTRL		2
 #define KG_ALT		3
@@ -41,7 +40,6 @@
 #define KVAL(x)		((x) & 0xff)
 extern unsigned short *key_maps[MAX_NR_KEYMAPS];
 extern unsigned short plain_map[NR_KEYS];
-/* --- end keyboard.h inlined --- */
 
 
 

@@ -111,7 +111,6 @@ static inline size_t slab_size(const struct slab *slab)
 
 
 
-/* --- 2025-12-06 17:00 --- slub_def.h inlined */
 #include <linux/kfence.h>
 #include <linux/kobject.h>
 #include <linux/reciprocal_div.h>
@@ -219,10 +218,8 @@ static inline int objs_per_slab(const struct kmem_cache *cache,
 {
 	return slab->objects;
 }
-/* --- end slub_def.h inlined --- */
 
 #include <linux/memcontrol.h>
-/* fault-inject.h inlined */
 int should_failslab(struct kmem_cache *s, gfp_t gfpflags);
 static inline bool __should_failslab(struct kmem_cache *s, gfp_t gfpflags)
 { return false; }

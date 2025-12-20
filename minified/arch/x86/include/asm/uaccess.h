@@ -34,7 +34,6 @@ static __always_inline void stac(void)
 #define ASM_STAC \
 	ALTERNATIVE("", __ASM_STAC, X86_FEATURE_SMAP)
 #endif
-/* --- end inlined smap.h --- */
 #include <asm/extable.h>
 
 # define WARN_ON_IN_IRQ()
@@ -324,7 +323,6 @@ __copy_from_user_inatomic_nocache(void *to, const void __user *from,
 {
        return __copy_from_user_ll_nocache_nozero(to, from, n);
 }
-/* --- end inlined uaccess_32.h --- */
 
  
 static __must_check __always_inline bool user_access_begin(const void __user *ptr, size_t len)

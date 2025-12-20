@@ -9,7 +9,6 @@ static inline void detect_intel_iommu(void) { }
 static inline int amd_iommu_detect(void) { return -ENODEV; }
 
 #include <asm/proto.h>
-/* dma.h inlined into memblock.h */
 #include <asm/iommu.h>
 #include <asm/gart.h>
 #include <asm/x86_init.h>

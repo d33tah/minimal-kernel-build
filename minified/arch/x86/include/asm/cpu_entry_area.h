@@ -27,7 +27,6 @@ struct debug_store_buffers {
 	char	bts_buffer[BTS_BUFFER_SIZE];
 	char	pebs_buffer[PEBS_BUFFER_SIZE];
 };
-/* --- end inlined intel_ds.h --- */
 #include <asm/pgtable_areas.h>
 
 

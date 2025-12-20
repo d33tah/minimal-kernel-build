@@ -28,14 +28,12 @@
 #include <asm/bios_ebda.h>
 #include <asm/processor.h>
 #include <linux/uaccess.h>
-/* dma.h inlined into memblock.h */
 #include <asm/fixmap.h>
 #include <asm/e820/api.h>
 #include <asm/apic.h>
 #include <asm/bugs.h>
 #include <asm/tlb.h>
 #include <asm/tlbflush.h>
-/* olpc_ofw.h inlined */
 static inline void olpc_dt_build_devicetree(void) { }
 #include <asm/pgalloc.h>
 #include <asm/sections.h>

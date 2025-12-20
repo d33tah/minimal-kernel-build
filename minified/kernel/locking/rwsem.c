@@ -12,7 +12,6 @@
 #include <linux/rwsem.h>
 #include <linux/atomic.h>
 
-/* lock_events.h and lock_events_list.h inlined */
 #define LOCK_EVENT(name)	LOCKEVENT_ ## name,
 enum lock_events {
 	LOCK_EVENT(rwsem_sleep_reader) LOCK_EVENT(rwsem_sleep_writer) LOCK_EVENT(rwsem_wake_reader)

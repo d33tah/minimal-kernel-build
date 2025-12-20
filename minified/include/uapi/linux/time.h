@@ -1,4 +1,3 @@
-/* --- 2025-12-06 13:15 --- time_types.h inlined */
 #ifndef _UAPI_LINUX_TIME_H
 #define _UAPI_LINUX_TIME_H
 

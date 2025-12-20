@@ -1,6 +1,5 @@
 
 #include "xz_private.h"
-/* xz_stream.h inlined */
 #if defined(__KERNEL__) && !XZ_INTERNAL_CRC32
 #	include <linux/crc32.h>
 #	undef crc32

@@ -22,7 +22,6 @@
 
 #include <asm/perf_event.h>
 #include <asm/mmu_context.h>
-/* archrandom.h inlined - only x86_init_rdrand used */
 static inline void x86_init_rdrand(struct cpuinfo_x86 *c) { }
 
 /* Inlined from asm/doublefault.h */

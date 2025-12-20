@@ -19,7 +19,6 @@
 
 #include <linux/spinlock_types.h>
 
-/* spinlock_up.h inlined */
 #include <asm/processor.h>
 #include <asm/barrier.h>
 #define arch_spin_is_locked(lock)	((void)(lock), 0)
@@ -99,7 +98,6 @@
 #define write_unlock(lock)		_raw_write_unlock(lock)
 #define write_unlock_irq(lock)		_raw_write_unlock_irq(lock)
 
-/* End of inlined rwlock.h content */
 
 /* Inlined from spinlock_api_up.h */
 #define in_lock_functions(ADDR)		0

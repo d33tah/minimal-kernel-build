@@ -9,7 +9,6 @@
 #include <stdbool.h>
 #include <errno.h>
 #include "modpost.h"
-/* license.h inlined */
 static inline int license_is_gpl_compatible(const char *license)
 {
 	return (strcmp(license, "GPL") == 0

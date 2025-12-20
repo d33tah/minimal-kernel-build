@@ -29,7 +29,6 @@
 #include <asm/switch_to.h>
 
 #include "sched.h"
-/* sched-pelt.h inlined */
 static const u32 runnable_avg_yN_inv[] __maybe_unused = {
 	0xffffffff, 0xfa83b2da, 0xf5257d14, 0xefe4b99a, 0xeac0c6e6, 0xe5b906e6,
 	0xe0ccdeeb, 0xdbfbb796, 0xd744fcc9, 0xd2a81d91, 0xce248c14, 0xc9b9bd85,

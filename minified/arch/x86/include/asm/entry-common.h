@@ -2,7 +2,6 @@
 #ifndef _ASM_X86_ENTRY_COMMON_H
 #define _ASM_X86_ENTRY_COMMON_H
 
-/* user-return-notifier.h inlined */
 #ifndef _URN_INLINE
 #define _URN_INLINE
 struct user_return_notifier {};

@@ -5,7 +5,6 @@
 #include <linux/string.h>
 #include <linux/device.h>
 #include <linux/err.h>
-/* dma-direction.h inlined */
 enum dma_data_direction {
 	DMA_BIDIRECTIONAL = 0,
 	DMA_TO_DEVICE = 1,

@@ -11,7 +11,6 @@
 #include <asm/x86_init.h>
 #include <asm/i8259.h>
 #include <asm/timer.h>
-/* hpet.h stubs inlined */
 static inline int hpet_enable(void) { return 0; }
 #include <asm/time.h>
 

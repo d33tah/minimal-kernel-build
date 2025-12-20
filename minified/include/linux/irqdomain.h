@@ -3,7 +3,6 @@
 #define _LINUX_IRQDOMAIN_H
 
 #include <linux/types.h>
-/* irqhandler.h inlined - irq_flow_handler_t */
 struct irq_desc;
 typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 #include <linux/of.h>

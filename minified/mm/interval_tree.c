@@ -129,7 +129,6 @@ ITPREFIX ## _iter_next(ITSTRUCT *node, ITTYPE start, ITTYPE last)	      \
 			return node;					      \
 	}								      \
 }
-/* End of inlined interval_tree_generic.h content */
 
 static inline unsigned long vma_start_pgoff(struct vm_area_struct *v)
 {

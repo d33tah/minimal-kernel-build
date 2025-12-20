@@ -1,4 +1,3 @@
-/* --- 2025-12-06 13:25 --- uapi/linux/sched.h inlined */
 #ifndef _LINUX_SCHED_H
 #define _LINUX_SCHED_H
 
@@ -69,7 +68,6 @@ struct clone_args {
 #include <linux/refcount.h>
 #include <linux/resource.h>
 static inline void clear_tsk_latency_tracing(struct task_struct *p) {}
-/* sched/prio.h inlined */
 #define MAX_NICE	19
 #define MIN_NICE	-20
 #define NICE_WIDTH	(MAX_NICE - MIN_NICE + 1)
@@ -83,7 +81,6 @@ static inline void clear_tsk_latency_tracing(struct task_struct *p) {}
 #include <linux/signal_types.h>
 #include <linux/syscall_user_dispatch.h>
 #include <linux/mm_types_task.h>
-/* task_io_accounting.h inlined - empty struct */
 struct task_io_accounting { };
 #include <linux/posix-timers.h>
 #include <linux/seqlock.h>

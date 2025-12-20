@@ -102,6 +102,5 @@ typedef struct {
 typedef int		__kernel_key_t;
 typedef int		__kernel_mqd_t;
 #endif
-/* End of inlined asm-generic/posix_types.h */
 
 #endif

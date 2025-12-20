@@ -27,7 +27,6 @@
 #include <linux/rculist_bl.h>
 #include <linux/atomic.h>
 #include <linux/shrinker.h>
-/* migrate_mode.h inlined */
 enum migrate_mode { MIGRATE_MODE_LAST };
 enum migrate_reason { MR_TYPES };
 #include <linux/uidgid.h>
@@ -54,7 +53,6 @@ static inline void clear_delayed_call(struct delayed_call *call)
 {
 	call->fn = NULL;
 }
-/* End of inlined delayed_call.h content */
 
 #include <linux/uuid.h>
 #include <linux/ioprio.h>
@@ -67,9 +65,7 @@ int errseq_check(errseq_t *eseq, errseq_t since);
 int errseq_check_and_advance(errseq_t *eseq, errseq_t *since);
 #include <linux/build_bug.h>
 
-/* --- 2025-12-06 20:11 --- fs_types.h inlined (36 LOC) */
 #define DT_DIR		4
-/* --- end fs_types.h inlined --- */
 #include <linux/stddef.h>
 #include <linux/mount.h>
 #include <linux/cred.h>
@@ -77,7 +73,6 @@ int errseq_check_and_advance(errseq_t *eseq, errseq_t *since);
 #include <linux/slab.h>
 
 #include <asm/byteorder.h>
-/* --- 2025-12-06 13:20 --- uapi/linux/fs.h inlined */
 #include <linux/limits.h>
 #include <linux/ioctl.h>
 #undef NR_OPEN

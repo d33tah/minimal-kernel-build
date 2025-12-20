@@ -10,7 +10,6 @@
 #include <linux/sched/mm.h>
 
 #include <linux/sched/signal.h>
-/* sched/stat.h inlined */
 extern unsigned long total_forks;
 extern int nr_threads;
 DECLARE_PER_CPU(unsigned long, process_counts);

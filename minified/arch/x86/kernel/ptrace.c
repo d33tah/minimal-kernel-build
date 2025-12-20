@@ -40,7 +40,6 @@
 extern user_regset_active_fn regset_tls_active;
 extern user_regset_get2_fn regset_tls_get;
 extern user_regset_set_fn regset_tls_set;
-/* --- End inlined tls.h --- */
 
 enum x86_regset {
 	REGSET_GENERAL,

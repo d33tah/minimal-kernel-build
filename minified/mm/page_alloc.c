@@ -51,7 +51,6 @@ static inline bool is_migrate_isolate(int migratetype)
 void set_pageblock_migratetype(struct page *page, int migratetype);
 /* end page-isolation.h */
 
-/* --- 2025-12-06 17:10 --- compaction.h inlined */
 enum compact_priority {
 	COMPACT_PRIO_SYNC_FULL,
 };
@@ -61,7 +60,6 @@ enum compact_result {
 };
 
 struct alloc_context;
-/* --- end compaction.h inlined --- */
 
 #include <linux/mm_inline.h>
 #include <linux/mmu_notifier.h>
@@ -70,11 +68,9 @@ struct alloc_context;
 #include <linux/sched/rt.h>
 #include <linux/sched/mm.h>
 
-/* --- 2025-12-06 20:21 --- page_owner.h inlined */
 static inline void reset_page_owner(struct page *page, unsigned short order) {}
 static inline void set_page_owner(struct page *page, unsigned int order, gfp_t gfp_mask) {}
 static inline void split_page_owner(struct page *page, unsigned short order) {}
-/* --- end page_owner.h inlined --- */
 #include <linux/page_table_check.h>
 #include <linux/kthread.h>
 #include <linux/memcontrol.h>
@@ -86,7 +82,6 @@ static inline void buffer_init(void) {}
 #include <asm/tlbflush.h>
 #include <asm/div64.h>
 #include "internal.h"
-/* page_reporting.h inlined */
 #define page_reported(_page)	false
 static inline void page_reporting_notify_free(unsigned int order) { }
 /* end page_reporting.h */

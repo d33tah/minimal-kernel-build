@@ -6,7 +6,6 @@
 #include <linux/cpumask.h>
 #include <linux/types.h>
 
-/* --- 2025-12-06 16:50 --- cpuhotplug.h inlined */
 enum cpuhp_state {
 	CPUHP_INVALID = -1,
 	CPUHP_OFFLINE = 0,
@@ -42,7 +41,6 @@ static inline int cpuhp_setup_state_nocalls(enum cpuhp_state state,
 
 
 static inline void cpuhp_online_idle(enum cpuhp_state state) { }
-/* --- end cpuhotplug.h inlined --- */
 
 struct device;
 struct device_node;

@@ -2,13 +2,11 @@
 #include <generated/compile.h>
 #include <linux/build-salt.h>
 #include <linux/elfnote.h>
-/* elfnote-lto.h inlined */
 #define LINUX_ELFNOTE_LTO_INFO	0x101
 #define BUILD_LTO_INFO	ELFNOTE32("Linux", LINUX_ELFNOTE_LTO_INFO, 0)
 /* end elfnote-lto.h */
 #include <linux/export.h>
 
-/* --- 2025-12-06 20:37 --- uts.h inlined (16 LOC) */
 #ifndef UTS_SYSNAME
 #define UTS_SYSNAME "Linux"
 #endif
@@ -18,7 +16,6 @@
 #ifndef UTS_DOMAINNAME
 #define UTS_DOMAINNAME "(none)"
 #endif
-/* --- end uts.h inlined --- */
 #include <linux/utsname.h>
 #include <generated/utsrelease.h>
 #include <linux/version.h>

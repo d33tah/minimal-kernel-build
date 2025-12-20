@@ -13,7 +13,6 @@
 #include <linux/stddef.h>
 #include <linux/personality.h>
 #include <linux/uaccess.h>
-/* user-return-notifier.h inlined */
 #ifndef _URN_INLINE
 #define _URN_INLINE
 struct user_return_notifier {};

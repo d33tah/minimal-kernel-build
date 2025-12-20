@@ -25,7 +25,6 @@
 #include <linux/tracepoint-defs.h>
 #include <linux/overflow.h>
 
-/* --- 2025-12-06 16:45 --- page_ref.h inlined */
 static inline int page_ref_count(const struct page *page)
 {
 	return atomic_read(&page->_refcount);
@@ -119,7 +118,6 @@ static inline bool folio_try_get_rcu(struct folio *folio)
 {
 	return folio_ref_try_add_rcu(folio, 1);
 }
-/* --- end page_ref.h inlined --- */
 #include <linux/sizes.h>
 #include <linux/sched.h>
 #include <linux/pgtable.h>

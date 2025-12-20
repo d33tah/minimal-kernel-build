@@ -4,7 +4,6 @@
 #include <linux/mm_types_task.h>
 
 #include <asm/auxvec.h>
-/* --- 2025-12-06 20:13 --- auxvec.h inlined (36 LOC) */
 #define AT_EXECFD 2
 #define AT_PHDR   3
 #define AT_PHENT  4
@@ -29,7 +28,6 @@
 #define AT_MINSIGSTKSZ	51
 #endif
 #define AT_VECTOR_SIZE_BASE 20
-/* --- end auxvec.h inlined --- */
 #include <linux/kref.h>
 #include <linux/list.h>
 #include <linux/spinlock.h>

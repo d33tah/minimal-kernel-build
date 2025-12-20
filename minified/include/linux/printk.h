@@ -5,7 +5,6 @@
 #include <linux/init.h>
 #include <linux/linkage.h>
 
-/* --- 2025-12-06 20:19 --- kern_levels.h inlined (27 LOC) */
 #define KERN_SOH	"\001"
 #define KERN_SOH_ASCII	'\001'
 #define KERN_EMERG	KERN_SOH "0"
@@ -18,7 +17,6 @@
 #define KERN_DEBUG	KERN_SOH "7"
 #define KERN_DEFAULT	""
 #define KERN_CONT	KERN_SOH "c"
-/* --- end kern_levels.h inlined --- */
 #include <linux/ratelimit_types.h>
 
 

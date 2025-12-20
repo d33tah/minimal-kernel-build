@@ -20,7 +20,6 @@
 #include <linux/irq_work.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/sysctl.h>
-/* sched/nohz.h inlined */
 static inline void wake_up_nohz_cpu(int cpu) { }
 #include <linux/sched/debug.h>
 #include <linux/slab.h>

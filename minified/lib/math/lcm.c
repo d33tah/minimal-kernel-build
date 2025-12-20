@@ -1,5 +1,4 @@
 #include <linux/compiler.h>
-/* gcd.h inlined */
 unsigned long gcd(unsigned long a, unsigned long b) __attribute_const__;
 #include <linux/export.h>
 /* lcm.h - functions defined below */

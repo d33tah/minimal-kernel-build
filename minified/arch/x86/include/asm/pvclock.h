@@ -22,7 +22,6 @@ struct pvclock_wall_clock {
 #define PVCLOCK_TSC_STABLE_BIT	(1 << 0)
 #define PVCLOCK_GUEST_STOPPED	(1 << 1)
 #define PVCLOCK_COUNTS_FROM_ZERO (1 << 2)
-/* --- end inlined pvclock-abi.h --- */
 
  
 u64 pvclock_clocksource_read(struct pvclock_vcpu_time_info *src);

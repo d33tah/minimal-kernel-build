@@ -202,7 +202,6 @@ static inline bool irq_settings_no_debug(struct irq_desc *desc)
 {
 	return desc->status_use_accessors & _IRQ_NO_DEBUG;
 }
-/* --- End inlined settings.h --- */
 
 extern int __irq_set_trigger(struct irq_desc *desc, unsigned long flags);
 extern void __disable_irq(struct irq_desc *desc);
@@ -238,7 +237,6 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc);
 irqreturn_t handle_irq_event_percpu(struct irq_desc *desc);
 irqreturn_t handle_irq_event(struct irq_desc *desc);
 
-/* check_irq_resend inlined - stub for minimal kernel */
 static inline int check_irq_resend(struct irq_desc *desc, bool inject)
 {
 	desc->istate &= ~IRQS_PENDING;

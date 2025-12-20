@@ -16,16 +16,13 @@
 #include <asm/tlbflush.h>
 #include <asm/tlb.h>
 #include <asm/proto.h>
-/* dma.h inlined into memblock.h */
 #include <asm/microcode.h>
-/* kaslr.h inlined */
 unsigned long kaslr_get_random_long(const char *purpose);
 static inline void kernel_randomize_memory(void) { }
 static inline void init_trampoline_kaslr(void) {}
 /* end kaslr.h */
 #include <asm/hypervisor.h>
 #include <asm/cpufeature.h>
-/* pti.h inlined */
 static inline void pti_check_boottime_disable(void) { }
 #include <asm/text-patching.h>
 #include <asm/memtype.h>

@@ -151,7 +151,6 @@ static inline unsigned long virt_to_fix(const unsigned long vaddr)
 
 #define set_fixmap_offset_io(idx, phys) \
 	__set_fixmap_offset(idx, phys, FIXMAP_PAGE_IO)
-/* End of inlined asm-generic/fixmap.h */
 
 #define __late_set_fixmap(idx, phys, flags) __set_fixmap(idx, phys, flags)
 #define __late_clear_fixmap(idx) __set_fixmap(idx, 0, __pgprot(0))

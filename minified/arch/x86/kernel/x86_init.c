@@ -14,7 +14,6 @@
 #include <asm/time.h>
 #include <asm/irq.h>
 #include <asm/io_apic.h>
-/* hpet.h stubs inlined */
 static inline int hpet_enable(void) { return 0; }
 #define hpet_readl(a) 0
 #define default_setup_hpet_msi	NULL
@@ -22,7 +21,6 @@ static inline int hpet_enable(void) { return 0; }
 #include <asm/tsc.h>
 #include <asm/iommu.h>
 #include <asm/mach_traps.h>
-/* asm/irqdomain.h inlined */
 #define native_create_pci_msi_domain	NULL
 
 void x86_init_noop(void) { }

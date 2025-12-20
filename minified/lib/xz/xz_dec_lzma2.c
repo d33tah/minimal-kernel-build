@@ -1,6 +1,5 @@
 
 #include "xz_private.h"
-/* xz_lzma2.h inlined */
 #define RC_SHIFT_BITS 8
 #define RC_TOP_BITS 24
 #define RC_TOP_VALUE (1 << RC_TOP_BITS)

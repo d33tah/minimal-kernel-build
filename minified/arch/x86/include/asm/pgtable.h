@@ -48,7 +48,6 @@ static inline u64 cc_mkdec(u64 val)
 {
 	return val;
 }
-/* --- end inlined coco.h --- */
 #include <linux/page_table_check.h>
 
 /* uffd stubs - only keep functions used in .c files and headers */

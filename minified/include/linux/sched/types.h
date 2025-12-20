@@ -9,7 +9,6 @@ struct task_cputime {
 	unsigned long long		sum_exec_runtime;
 };
 
-/* uapi/linux/sched/types.h inlined */
 struct sched_param {
 	int sched_priority;
 };

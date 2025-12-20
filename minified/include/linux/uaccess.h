@@ -157,7 +157,6 @@ __copy_from_user_inatomic_nocache(void *to, const void __user *from,
 
 #endif		 
 
-/* check_zeroed_user inlined - returns success (1) to indicate area is zeroed */
 static inline __must_check int check_zeroed_user(const void __user *from, size_t size) { return 1; }
 
 static __always_inline __must_check int

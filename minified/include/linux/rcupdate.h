@@ -45,7 +45,6 @@ static inline void exit_tasks_rcu_finish(void) { }
 #if defined(CONFIG_TREE_RCU)
 #include <linux/rcutree.h>
 #else
-/* --- 2025-12-06 17:10 --- rcutiny.h inlined */
 #include <asm/param.h>
 
 unsigned long get_state_synchronize_rcu(void);
@@ -86,7 +85,6 @@ static inline bool rcu_is_watching(void) { return true; }
 static inline void kfree_rcu_scheduler_running(void) { }
 
 static inline void rcu_all_qs(void) { barrier(); }
-/* --- end rcutiny.h inlined --- */
 #endif
 
 static inline void init_rcu_head(struct rcu_head *head) { }

@@ -5,7 +5,6 @@
 #include <linux/cache.h>
 #include <linux/spinlock.h>
 #include <linux/cpumask.h>
-/* irqhandler.h inlined */
 struct irq_desc;
 typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 #include <linux/interrupt.h>

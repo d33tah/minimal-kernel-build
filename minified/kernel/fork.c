@@ -4,14 +4,12 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/user.h>
-/* sched/numa_balancing.h inlined */
 static inline void task_numa_free(struct task_struct *p, bool final) {}
 /* end sched/numa_balancing.h */
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
 #include <linux/seq_file.h>
-/* rtmutex.h inlined - only need empty debug stub */
 static inline void rt_mutex_debug_task_free(struct task_struct *tsk) { }
 #include <linux/init.h>
 #include <linux/unistd.h>
@@ -57,20 +55,15 @@ static inline void task_io_accounting_init(struct task_io_accounting *ioac) {}
 #include <linux/proc_fs.h>
 #include <linux/rmap.h>
 #include <linux/ksm.h>
-/* acct.h inlined */
 #define acct_collect(x,y)	do { } while (0)
 #define acct_process()		do { } while (0)
 #define acct_exit_ns(ns)	do { } while (0)
 #include <linux/userfaultfd_k.h>
-/* tsacct_kern.h inlined - stub */
 static inline void acct_clear_integrals(struct task_struct *tsk) {}
-/* cn_proc.h inlined - stub */
 static inline void proc_fork_connector(struct task_struct *task) {}
 #include <linux/freezer.h>
-/* delayacct.h inlined - stubs */
 static inline void delayacct_tsk_init(struct task_struct *tsk) {}
 static inline void delayacct_tsk_free(struct task_struct *tsk) {}
-/* taskstats_kern.h inlined */
 static inline void taskstats_tgid_free(struct signal_struct *sig) {}
 #include <linux/random.h>
 #include <linux/tty.h>
@@ -78,7 +71,6 @@ static inline void taskstats_tgid_free(struct signal_struct *sig) {}
 #include <linux/magic.h>
 #include <linux/perf_event.h>
 #include <linux/posix-timers.h>
-/* user-return-notifier.h inlined */
 #ifndef _URN_INLINE
 #define _URN_INLINE
 struct user_return_notifier {};
@@ -95,7 +87,6 @@ static inline void clear_user_return_notifier(struct task_struct *p) {}
 #include <linux/thread_info.h>
 #include <linux/kasan.h>
 #include <linux/io_uring.h>
-/* scs.h inlined - stubs for !CONFIG_SHADOW_CALL_STACK */
 static inline void scs_init(void) {}
 static inline int scs_prepare(struct task_struct *tsk, int node) { return 0; }
 static inline void scs_release(struct task_struct *tsk) {}

@@ -7,13 +7,11 @@
 #include <linux/initrd.h>
 static inline void reserve_ibft_region(void) {}
 #include <linux/memblock.h>
-/* panic_notifier.h inlined */
 extern struct atomic_notifier_head panic_notifier_list;
 extern bool crash_kexec_post_notifiers;
 #include <linux/pci.h>
 #include <linux/root_dev.h>
 #include <linux/hugetlb.h>
-/* tboot.h inlined */
 #define tboot_probe() do { } while (0)
 #include <linux/static_call.h>
 #include <linux/swiotlb.h>
@@ -40,14 +38,11 @@ extern bool crash_kexec_post_notifiers;
 				(1ULL << (__VIRTUAL_MASK_SHIFT - \
 					  KASAN_SHADOW_SCALE_SHIFT)))
 static inline void kasan_init(void) { }
-/* --- end inlined kasan.h --- */
-/* kaslr.h inlined */
 static inline void kernel_randomize_memory(void) { }
 #include <asm/mce.h>
 #include <asm/memtype.h>
 #include <asm/mtrr.h>
 #include <asm/realmode.h>
-/* olpc_ofw.h inlined */
 static inline void olpc_ofw_detect(void) { }
 static inline void setup_olpc_ofw_pgd(void) { }
 /* --- 2025-12-07 20:54 --- Inlined pci-direct.h */
@@ -59,7 +54,6 @@ extern void write_pci_config(u8 bus, u8 slot, u8 func, u8 offset, u32 val);
 extern void write_pci_config_byte(u8 bus, u8 slot, u8 func, u8 offset, u8 val);
 extern void write_pci_config_16(u8 bus, u8 slot, u8 func, u8 offset, u16 val);
 extern int early_pci_allowed(void);
-/* --- end inlined pci-direct.h --- */
 #include <asm/prom.h>
 #include <asm/proto.h>
 #include <asm/unwind.h>

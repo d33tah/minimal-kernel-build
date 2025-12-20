@@ -18,7 +18,6 @@ void perf_event_exit_task(struct task_struct *task) { }
 void perf_event_mmap(struct vm_area_struct *vma) { }
 void perf_event_exec(void) { }
 void perf_event_comm(struct task_struct *task, bool exec) { }
-/* __perf_sw_event inlined as empty in perf_event.h */
 void perf_event_init(void) { }
 
 void perf_clear_dirty_counters(void) { }

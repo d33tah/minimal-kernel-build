@@ -6,7 +6,6 @@
 
 #include <asm/current.h>
 
-/* From uapi/linux/wait.h - inlined */
 #define WNOHANG		0x00000001
 #define WUNTRACED	0x00000002
 #define WSTOPPED	WUNTRACED

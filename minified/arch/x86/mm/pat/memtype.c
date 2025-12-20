@@ -60,7 +60,6 @@ static inline struct memtype *memtype_lookup(u64 addr)
 { return NULL; }
 static inline int memtype_copy_nth_element(struct memtype *out, loff_t pos)
 { return 0; }
-/* --- End inlined memtype.h --- */
 
 #include "../mm_internal.h"
 

@@ -1,4 +1,3 @@
-/* --- 2025-12-06 13:35 --- uapi/linux/capability.h inlined */
 #ifndef _LINUX_CAPABILITY_H
 #define _LINUX_CAPABILITY_H
 

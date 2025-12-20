@@ -9,7 +9,6 @@
 #include <net/net_namespace.h>
 #include <linux/time_namespace.h>
 
-/* --- 2025-12-06 20:10 --- ipc_namespace.h inlined (40 LOC) */
 struct ipc_namespace {
 	struct user_namespace *user_ns;
 	struct ns_common ns;
@@ -23,7 +22,6 @@ static inline struct ipc_namespace *copy_ipcs(unsigned long flags,
 	return ns;
 }
 static inline void put_ipc_ns(struct ipc_namespace *ns) {}
-/* --- end ipc_namespace.h inlined --- */
 #include <linux/fs_struct.h>
 #include <linux/proc_fs.h>
 #include <linux/proc_ns.h>

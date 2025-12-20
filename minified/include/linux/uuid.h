@@ -4,7 +4,6 @@
 #include <linux/types.h>
 #include <linux/string.h>
 
-/* From uapi/linux/uuid.h - inlined */
 typedef struct {
 	__u8 b[16];
 } guid_t;

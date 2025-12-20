@@ -45,16 +45,8 @@ struct tty_operations {
 	void (*set_ldisc)(struct tty_struct *tty);
 	void (*wait_until_sent)(struct tty_struct *tty, int timeout);
 	void (*send_xchar)(struct tty_struct *tty, char ch);
-	int (*tiocmget)(struct tty_struct *tty);
-	int (*tiocmset)(struct tty_struct *tty,
-			unsigned int set, unsigned int clear);
+	/* tiocmget, tiocmset, get_icount, get_serial, set_serial, show_fdinfo, proc_show removed - unused */
 	int (*resize)(struct tty_struct *tty, struct winsize *ws);
-	int (*get_icount)(struct tty_struct *tty,
-				struct serial_icounter_struct *icount);
-	int  (*get_serial)(struct tty_struct *tty, struct serial_struct *p);
-	int  (*set_serial)(struct tty_struct *tty, struct serial_struct *p);
-	void (*show_fdinfo)(struct tty_struct *tty, struct seq_file *m);
-	int (*proc_show)(struct seq_file *m, void *driver);
 } __randomize_layout;
 
 struct tty_driver {

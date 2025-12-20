@@ -22,9 +22,8 @@ struct open_how {
 /* F_DUPFD_CLOEXEC, F_SETPIPE_SZ, F_GETPIPE_SZ removed - unused */
 #define AT_FDCWD		-100
 #define AT_SYMLINK_NOFOLLOW	0x100
-#define AT_EACCESS		0x200
+/* AT_EACCESS, AT_SYMLINK_FOLLOW removed - unused */
 #define AT_REMOVEDIR		0x200
-#define AT_SYMLINK_FOLLOW	0x400
 #define AT_NO_AUTOMOUNT		0x800
 #define AT_EMPTY_PATH		0x1000
 

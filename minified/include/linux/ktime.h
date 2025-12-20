@@ -53,21 +53,7 @@ static inline bool ktime_before(const ktime_t cmp1, const ktime_t cmp2)
 }
 
 /* BITS_PER_LONG == 32 */
-extern s64 __ktime_divns(const ktime_t kt, s64 div);
-static inline s64 ktime_divns(const ktime_t kt, s64 div)
-{
-	BUG_ON(div < 0);
-	if (__builtin_constant_p(div) && !(div >> 32)) {
-		s64 ns = kt;
-		u64 tmp = ns < 0 ? -ns : ns;
-
-		do_div(tmp, div);
-		return ns < 0 ? -tmp : tmp;
-	} else {
-		return __ktime_divns(kt, div);
-	}
-}
-
+/* ktime_divns and __ktime_divns removed - unused */
 
 extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);
 

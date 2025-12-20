@@ -67,10 +67,7 @@ static inline void slab_set_pfmemalloc(struct slab *slab)
 	folio_set_active(slab_folio(slab));
 }
 
-static inline void slab_clear_pfmemalloc(struct slab *slab)
-{
-	folio_clear_active(slab_folio(slab));
-}
+/* slab_clear_pfmemalloc removed - unused */
 
 static inline void __slab_clear_pfmemalloc(struct slab *slab)
 {
@@ -187,8 +184,7 @@ struct kmem_cache {
 	struct kmem_cache_node *node[MAX_NUMNODES];
 };
 
-static inline void sysfs_slab_unlink(struct kmem_cache *s) { }
-static inline void sysfs_slab_release(struct kmem_cache *s) { }
+/* sysfs_slab_unlink/release removed - unused */
 
 void *fixup_red_left(struct kmem_cache *s, void *p);
 

@@ -92,14 +92,7 @@
 #define write_lock(lock)	_raw_write_lock(lock)
 #define read_lock(lock)		_raw_read_lock(lock)
 
-#define write_lock_nested(lock, subclass)	_raw_write_lock(lock)
-
-
-#define read_lock_irqsave(lock, flags)			\
-	do {						\
-		typecheck(unsigned long, flags);	\
-		_raw_read_lock_irqsave(lock, flags);	\
-	} while (0)
+/* write_lock_nested, read_lock_irqsave removed - unused */
 #define write_lock_irqsave(lock, flags)			\
 	do {						\
 		typecheck(unsigned long, flags);	\
@@ -112,25 +105,7 @@
 #define write_unlock(lock)		_raw_write_unlock(lock)
 #define write_unlock_irq(lock)		_raw_write_unlock_irq(lock)
 
-#define write_unlock_irqrestore(lock, flags)		\
-	do {						\
-		typecheck(unsigned long, flags);	\
-		_raw_write_unlock_irqrestore(lock, flags);	\
-	} while (0)
-
-#define write_trylock_irqsave(lock, flags) \
-({ \
-	local_irq_save(flags); \
-	write_trylock(lock) ? \
-	1 : ({ local_irq_restore(flags); 0; }); \
-})
-
-#ifdef arch_rwlock_is_contended
-#define rwlock_is_contended(lock) \
-	 arch_rwlock_is_contended(&(lock)->raw_lock)
-#else
-#define rwlock_is_contended(lock)	((void)(lock), 0)
-#endif
+/* write_unlock_irqrestore, write_trylock_irqsave, rwlock_is_contended removed - unused */
 /* End of inlined rwlock.h content */
 
 /* Inlined from spinlock_api_up.h */

@@ -51,10 +51,6 @@ struct uts_namespace {
 } __randomize_layout;
 extern struct uts_namespace init_uts_ns;
 
-static inline void get_uts_ns(struct uts_namespace *ns)
-{
-}
-
 static inline void put_uts_ns(struct uts_namespace *ns)
 {
 }
@@ -69,10 +65,6 @@ static inline struct uts_namespace *copy_utsname(unsigned long flags,
 }
 
 static inline void uts_ns_init(void)
-{
-}
-
-static inline void uts_proc_notify(enum uts_proc proc)
 {
 }
 

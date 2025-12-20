@@ -208,7 +208,6 @@ typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
 #define ATTR_OPEN	(1 << 15) 
 #define ATTR_TIMES_SET	(1 << 16)
 
-#define WHITEOUT_MODE 0
 #define WHITEOUT_DEV 0
 
 struct iattr {
@@ -309,7 +308,6 @@ struct address_space {
 
 #define PAGECACHE_TAG_DIRTY	XA_MARK_0
 #define PAGECACHE_TAG_WRITEBACK	XA_MARK_1
-#define PAGECACHE_TAG_TOWRITE	XA_MARK_2
 
 static inline bool mapping_tagged(struct address_space *mapping, xa_mark_t tag)
 {
@@ -363,7 +361,6 @@ struct posix_acl;
 #define IOP_LOOKUP	0x0002
 #define IOP_NOFOLLOW	0x0004
 #define IOP_XATTR	0x0008
-#define IOP_DEFAULT_READLINK	0x0010
 
 struct fsnotify_mark_connector;
 
@@ -605,7 +602,6 @@ struct file_lock_context;
 #ifndef OFFSET_MAX
 #define INT_LIMIT(x)	(~((x)1 << (sizeof(x)*8 - 1)))
 #define OFFSET_MAX	INT_LIMIT(loff_t)
-#define OFFT_OFFSET_MAX	INT_LIMIT(off_t)
 #endif
 
 
@@ -650,24 +646,18 @@ extern int fasync_helper(int, struct file *, int, struct fasync_struct **);
 extern void kill_fasync(struct fasync_struct **, int, int);
 extern void __f_setown(struct file *filp, struct pid *, enum pid_type, int force);
 
-#define SB_RDONLY	 1	
-#define SB_NOSUID	 2	
-#define SB_NODEV	 4	
-#define SB_NOEXEC	 8	
-#define SB_SYNCHRONOUS	16	
-#define SB_MANDLOCK	64	
-#define SB_DIRSYNC	128	
-#define SB_NOATIME	1024	
-#define SB_NODIRATIME	2048	
+#define SB_RDONLY	 1
+#define SB_SYNCHRONOUS	16
+#define SB_MANDLOCK	64
+#define SB_DIRSYNC	128
+#define SB_NOATIME	1024
+#define SB_NODIRATIME	2048
 #define SB_SILENT	32768
 #define SB_POSIXACL	(1<<16)
-/* SB_INLINECRYPT removed - unused */
-#define SB_KERNMOUNT	(1<<22) 
-#define SB_I_VERSION	(1<<23) 
-#define SB_LAZYTIME	(1<<25) 
-
+#define SB_KERNMOUNT	(1<<22)
+#define SB_I_VERSION	(1<<23)
+#define SB_LAZYTIME	(1<<25)
 #define SB_SUBMOUNT     (1<<26)
-#define SB_FORCE    	(1<<27)
 #define SB_NOSEC	(1<<28)
 #define SB_BORN		(1<<29)
 #define SB_ACTIVE	(1<<30)
@@ -678,11 +668,9 @@ extern void __f_setown(struct file *filp, struct pid *, enum pid_type, int force
 #define sb_has_strict_encoding(sb) \
 	(sb->s_encoding_flags & SB_ENC_STRICT_MODE_FL)
 
-#define MNT_FORCE	0x00000001	
-#define MNT_DETACH	0x00000002	
-#define MNT_EXPIRE	0x00000004	
+#define MNT_FORCE	0x00000001
+#define MNT_DETACH	0x00000002
 #define UMOUNT_NOFOLLOW	0x00000008	
-#define UMOUNT_UNUSED	0x80000000	
 
 #define SB_I_NOEXEC	0x00000002
 #define SB_I_NODEV	0x00000004

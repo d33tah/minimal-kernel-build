@@ -74,12 +74,7 @@ void wakeup_flusher_threads_bdi(struct backing_dev_info *bdi,
 void inode_wait_for_writeback(struct inode *inode);
 void inode_io_list_del(struct inode *inode);
 
-static inline void wait_on_inode(struct inode *inode)
-{
-	might_sleep();
-	wait_on_bit(&inode->i_state, __I_NEW, TASK_UNINTERRUPTIBLE);
-}
-
+/* wait_on_inode removed - never called */
 
 static inline void inode_detach_wb(struct inode *inode)
 {

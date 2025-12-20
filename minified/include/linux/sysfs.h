@@ -130,16 +130,8 @@ static inline void sysfs_remove_file_ns(struct kobject *kobj,
 {
 }
 
-static inline int sysfs_create_groups(struct kobject *kobj,
-				      const struct attribute_group **groups)
-{
-	return 0;
-}
-
-static inline void sysfs_remove_groups(struct kobject *kobj,
-				       const struct attribute_group **groups)
-{
-}
+/* sysfs_create_groups removed - never called */
+/* sysfs_remove_groups removed - never called */
 
 static inline void sysfs_notify(struct kobject *kobj, const char *dir,
 				const char *attr)
@@ -159,16 +151,7 @@ static inline int sysfs_emit(char *buf, const char *fmt, ...)
 	return 0;
 }
 
-static inline int __must_check sysfs_create_file(struct kobject *kobj,
-						 const struct attribute *attr)
-{
-	return sysfs_create_file_ns(kobj, attr, NULL);
-}
-
-static inline void sysfs_remove_file(struct kobject *kobj,
-				     const struct attribute *attr)
-{
-	sysfs_remove_file_ns(kobj, attr, NULL);
-}
+/* sysfs_create_file removed - never called */
+/* sysfs_remove_file removed - never called */
 
 #endif  

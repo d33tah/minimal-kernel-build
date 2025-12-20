@@ -35,15 +35,8 @@ static inline void timerqueue_init(struct timerqueue_node *node)
 	RB_CLEAR_NODE(&node->node);
 }
 
-static inline bool timerqueue_node_queued(struct timerqueue_node *node)
-{
-	return !RB_EMPTY_NODE(&node->node);
-}
-
-static inline bool timerqueue_node_expires(struct timerqueue_node *node)
-{
-	return node->expires;
-}
+/* timerqueue_node_queued removed - never called */
+/* timerqueue_node_expires removed - never called */
 
 static inline void timerqueue_init_head(struct timerqueue_head *head)
 {

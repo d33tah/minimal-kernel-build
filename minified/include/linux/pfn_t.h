@@ -28,10 +28,7 @@ static inline pfn_t pfn_to_pfn_t(unsigned long pfn)
 	return __pfn_to_pfn_t(pfn, 0);
 }
 
-static inline pfn_t phys_to_pfn_t(phys_addr_t addr, u64 flags)
-{
-	return __pfn_to_pfn_t(addr >> PAGE_SHIFT, flags);
-}
+/* phys_to_pfn_t removed - never called */
 
 static inline bool pfn_t_has_page(pfn_t pfn)
 {
@@ -43,27 +40,10 @@ static inline unsigned long pfn_t_to_pfn(pfn_t pfn)
 	return pfn.val & ~PFN_FLAGS_MASK;
 }
 
-static inline struct page *pfn_t_to_page(pfn_t pfn)
-{
-	if (pfn_t_has_page(pfn))
-		return pfn_to_page(pfn_t_to_pfn(pfn));
-	return NULL;
-}
-
-static inline phys_addr_t pfn_t_to_phys(pfn_t pfn)
-{
-	return PFN_PHYS(pfn_t_to_pfn(pfn));
-}
-
-static inline pfn_t page_to_pfn_t(struct page *page)
-{
-	return pfn_to_pfn_t(page_to_pfn(page));
-}
-
-static inline int pfn_t_valid(pfn_t pfn)
-{
-	return pfn_valid(pfn_t_to_pfn(pfn));
-}
+/* pfn_t_to_page removed - never called */
+/* pfn_t_to_phys removed - never called */
+/* page_to_pfn_t removed - never called */
+/* pfn_t_valid removed - never called */
 
 static inline pte_t pfn_t_pte(pfn_t pfn, pgprot_t pgprot)
 {
@@ -82,8 +62,5 @@ pmd_t pmd_mkdevmap(pmd_t pmd);
 pud_t pud_mkdevmap(pud_t pud);
 #endif
 
-static inline bool pfn_t_special(pfn_t pfn)
-{
-	return (pfn.val & PFN_SPECIAL) == PFN_SPECIAL;
-}
+/* pfn_t_special removed - never called */
 #endif  

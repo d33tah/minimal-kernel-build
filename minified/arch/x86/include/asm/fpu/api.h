@@ -67,34 +67,20 @@ static inline void fpstate_init_soft(struct swregs_state *soft) {}
 DECLARE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 
  
-static inline void fpstate_free(struct fpu *fpu) { }
+/* fpstate_free, fpu_update_guest_xfd, fpu_sync_guest_vmexit_xfd_state,
+   fpstate_set_confidential, fpstate_is_confidential removed - unused */
 
- 
 extern void fpstate_clear_xstate_component(struct fpstate *fps, unsigned int xfeature);
 
 extern u64 xstate_get_guest_group_perm(void);
 
- 
 extern bool fpu_alloc_guest_fpstate(struct fpu_guest *gfpu);
 extern void fpu_free_guest_fpstate(struct fpu_guest *gfpu);
 extern int fpu_swap_kvm_fpstate(struct fpu_guest *gfpu, bool enter_guest);
 extern int fpu_enable_guest_xfd_features(struct fpu_guest *guest_fpu, u64 xfeatures);
 
-static inline void fpu_update_guest_xfd(struct fpu_guest *guest_fpu, u64 xfd) { }
-static inline void fpu_sync_guest_vmexit_xfd_state(void) { }
-
 extern void fpu_copy_guest_fpstate_to_uabi(struct fpu_guest *gfpu, void *buf, unsigned int size, u32 pkru);
 extern int fpu_copy_uabi_to_guest_fpstate(struct fpu_guest *gfpu, const void *buf, u64 xcr0, u32 *vpkru);
-
-static inline void fpstate_set_confidential(struct fpu_guest *gfpu)
-{
-	gfpu->fpstate->is_confidential = true;
-}
-
-static inline bool fpstate_is_confidential(struct fpu_guest *gfpu)
-{
-	return gfpu->fpstate->is_confidential;
-}
 
  
 extern long fpu_xstate_prctl(int option, unsigned long arg2);

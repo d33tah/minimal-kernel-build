@@ -52,14 +52,7 @@ static inline void sigdelset(sigset_t *set, int _sig)
 		set->sig[sig / _NSIG_BPW] &= ~(1UL << (sig % _NSIG_BPW));
 }
 
-static inline int sigismember(sigset_t *set, int _sig)
-{
-	unsigned long sig = _sig - 1;
-	if (_NSIG_WORDS == 1)
-		return 1 & (set->sig[0] >> sig);
-	else
-		return 1 & (set->sig[sig / _NSIG_BPW] >> (sig % _NSIG_BPW));
-}
+/* sigismember removed - unused (~8 LOC) */
 
 #endif  
 

@@ -69,13 +69,7 @@ static inline enum iter_type iov_iter_type(const struct iov_iter *i)
 	return i->iter_type;
 }
 
-static inline void iov_iter_save_state(struct iov_iter *iter,
-				       struct iov_iter_state *state)
-{
-	state->iov_offset = iter->iov_offset;
-	state->count = iter->count;
-	state->nr_segs = iter->nr_segs;
-}
+/* iov_iter_save_state removed - never called */
 
 static inline bool iter_is_iovec(const struct iov_iter *i)
 {

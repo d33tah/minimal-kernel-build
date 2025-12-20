@@ -293,12 +293,7 @@ typedef struct {
 #define seqcount_latch_init(s) seqcount_init(&(s)->seqcount)
 
 /* raw_read_seqcount_latch removed - never called */
-
-static inline int
-read_seqcount_latch_retry(const seqcount_latch_t *s, unsigned start)
-{
-	return read_seqcount_retry(&s->seqcount, start);
-}
+/* read_seqcount_latch_retry removed - never called */
 
 static inline void raw_write_seqcount_latch(seqcount_latch_t *s)
 {

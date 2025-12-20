@@ -61,33 +61,11 @@ static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_addres
 		p->_qproc(filp, wait_address, p);
 }
 
-static inline bool poll_does_not_wait(const poll_table *p)
-{
-	return p == NULL || p->_qproc == NULL;
-}
-
-static inline __poll_t poll_requested_events(const poll_table *p)
-{
-	return p ? p->_key : ~(__poll_t)0;
-}
-
-static inline void init_poll_funcptr(poll_table *pt, poll_queue_proc qproc)
-{
-	pt->_qproc = qproc;
-	pt->_key   = ~(__poll_t)0;  
-}
-
-static inline bool file_can_poll(struct file *file)
-{
-	return file->f_op->poll;
-}
-
-static inline __poll_t vfs_poll(struct file *file, struct poll_table_struct *pt)
-{
-	if (unlikely(!file->f_op->poll))
-		return DEFAULT_POLLMASK;
-	return file->f_op->poll(file, pt);
-}
+/* poll_does_not_wait removed - never called */
+/* poll_requested_events removed - never called */
+/* init_poll_funcptr removed - never called */
+/* file_can_poll removed - never called */
+/* vfs_poll removed - never called */
 
 struct poll_table_entry {
 	struct file *filp;
@@ -116,31 +94,7 @@ extern int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
 extern int poll_select_set_timeout(struct timespec64 *to, time64_t sec,
 				   long nsec);
 
-#define __POLL_MAP(v, from, to) \
-	(from < to ? (v & from) * (to/from) : (v & from) / (from/to))
-
-static inline __u16 mangle_poll(__poll_t val)
-{
-	__u16 v = (__force __u16)val;
-#define M(X) __POLL_MAP(v, (__force __u16)EPOLL##X, POLL##X)
-	return M(IN) | M(OUT) | M(PRI) | M(ERR) | M(NVAL) |
-		M(RDNORM) | M(RDBAND) | M(WRNORM) | M(WRBAND) |
-		M(HUP) | M(RDHUP) | M(MSG);
-#undef M
-}
-
-#ifndef __POLL_MAP
-#define __POLL_MAP(v, from, to) ((v & to) ? from : 0)
-#endif
-
-static inline __poll_t demangle_poll(u16 val)
-{
-#define M(X) (__force __poll_t)__POLL_MAP(val, POLL##X, (__force __u16)EPOLL##X)
-	return M(IN) | M(OUT) | M(PRI) | M(ERR) | M(NVAL) |
-		M(RDNORM) | M(RDBAND) | M(WRNORM) | M(WRBAND) |
-		M(HUP) | M(RDHUP) | M(MSG);
-#undef M
-}
-
+/* mangle_poll removed - never called */
+/* demangle_poll removed - never called */
 
 #endif  

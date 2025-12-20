@@ -80,8 +80,7 @@ struct vm_area_struct;
 #define GFP_KERNEL	(__GFP_RECLAIM | __GFP_IO | __GFP_FS)
 #define GFP_KERNEL_ACCOUNT (GFP_KERNEL | __GFP_ACCOUNT)
 #define GFP_NOWAIT	(__GFP_KSWAPD_RECLAIM)
-#define GFP_NOIO	(__GFP_RECLAIM)
-#define GFP_NOFS	(__GFP_RECLAIM | __GFP_IO)
+/* GFP_NOIO, GFP_NOFS removed - unused */
 #define GFP_USER	(__GFP_RECLAIM | __GFP_IO | __GFP_FS | __GFP_HARDWALL)
 #define GFP_DMA		__GFP_DMA
 #define GFP_DMA32	__GFP_DMA32

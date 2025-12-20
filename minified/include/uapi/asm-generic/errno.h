@@ -28,17 +28,17 @@
 #define	EMFILE		24
 #define	ENOTTY		25
 #define	ETXTBSY		26
-#define	EFBIG		27
+/* EFBIG removed - unused */
 #define	ENOSPC		28
 #define	ESPIPE		29
 #define	EROFS		30
 #define	EMLINK		31
 #define	EPIPE		32
-#define	EDOM		33
+/* EDOM removed - unused */
 #define	ERANGE		34
 /* end errno-base.h */
 
-#define	EDEADLK		35
+/* EDEADLK removed - unused */
 #define	ENAMETOOLONG	36
 #define	ENOSYS		38
 #define	ENOTEMPTY	39
@@ -49,8 +49,7 @@
 #define	ELIBBAD		80
 #define	EOPNOTSUPP	95
 #define	ENOTCONN	107
-#define	ETIMEDOUT	110
-#define	EALREADY	114
+/* ETIMEDOUT, EALREADY removed - unused */
 #define	ESTALE		116
 #define	ENOTRECOVERABLE	131
 #define EHWPOISON	133	 

@@ -14,18 +14,7 @@
 #define TIOCINQ		FIONREAD
 #define TIOCOUTQ	0x5411
 
-/* Used by ptrace.c */
-#define TIOCSIG		_IOW('T', 0x36, int)
-#define TIOCVHANGUP	0x5437
-
-/* Filesystem ioctls */
-#define FIONCLEX	0x5450
-#define FIOCLEX		0x5451
-#define FIOASYNC	0x5452
-
-#ifndef FIOQSIZE
-# define FIOQSIZE	0x5460
-#endif
+/* TIOCSIG, TIOCVHANGUP, FIONCLEX, FIOCLEX, FIOASYNC, FIOQSIZE removed - unused */
 
 /* Unused ioctls removed:
  * TCGETS, TCSETS, TCSETSW, TCSETSF, TCGETA, TCSETA, TCSETAW, TCSETAF

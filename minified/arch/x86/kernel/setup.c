@@ -348,16 +348,6 @@ static void __init memblock_x86_reserve_range_setup_data(void)
 }
 
 
-#define CRASH_ALIGN		SZ_16M
-
-# define CRASH_ADDR_LOW_MAX	SZ_512M
-# define CRASH_ADDR_HIGH_MAX	SZ_512M
-
-/* Stub: crashkernel reservation not needed for minimal kernel */
-static void __init reserve_crashkernel(void)
-{
-}
-
 static struct resource standard_io_resources[] = {
 	{ .name = "dma1", .start = 0x00, .end = 0x1f,
 		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
@@ -671,8 +661,7 @@ void __init setup_arch(char **cmdline_p)
 	if (boot_cpu_has(X86_FEATURE_GBPAGES))
 		hugetlb_cma_reserve(PUD_SHIFT - PAGE_SHIFT);
 
-	 
-	reserve_crashkernel();
+	/* reserve_crashkernel removed - stub */
 
 	x86_init.paging.pagetable_init();
 

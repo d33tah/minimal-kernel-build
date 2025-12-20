@@ -22,6 +22,6 @@ struct smp_hotplug_thread {
 
 int smpboot_register_percpu_thread(struct smp_hotplug_thread *plug_thread);
 
-void smpboot_unregister_percpu_thread(struct smp_hotplug_thread *plug_thread);
+/* smpboot_unregister_percpu_thread removed - unused */
 
 #endif

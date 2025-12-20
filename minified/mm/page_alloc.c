@@ -1159,66 +1159,6 @@ void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...)
 	/* Stub: allocation warning not needed for minimal kernel */
 }
 
-static inline struct page *
-__alloc_pages_cpuset_fallback(gfp_t gfp_mask, unsigned int order,
-			      unsigned int alloc_flags,
-			      const struct alloc_context *ac)
-{
-	struct page *page;
-
-	page = get_page_from_freelist(gfp_mask, order,
-			alloc_flags|ALLOC_CPUSET, ac);
-	
-	if (!page)
-		page = get_page_from_freelist(gfp_mask, order,
-				alloc_flags, ac);
-
-	return page;
-}
-
-static inline struct page *
-__alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
-	const struct alloc_context *ac, unsigned long *did_some_progress)
-{
-	/* Stub: OOM handling not needed for minimal kernel */
-	*did_some_progress = 0;
-	return NULL;
-}
-
-#define MAX_COMPACT_RETRIES 16
-
-static inline struct page *
-__alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
-		unsigned int alloc_flags, const struct alloc_context *ac,
-		enum compact_priority prio, enum compact_result *compact_result)
-{
-	*compact_result = COMPACT_SKIPPED;
-	return NULL;
-}
-
-/* should_compact_retry removed - unused dead code */
-
-static unsigned long
-__perform_reclaim(gfp_t gfp_mask, unsigned int order,
-					const struct alloc_context *ac)
-{
-	/* Stub: minimal reclaim attempt */
-	return try_to_free_pages(ac->zonelist, order, gfp_mask, ac->nodemask);
-}
-
-static inline struct page *
-__alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
-		unsigned int alloc_flags, const struct alloc_context *ac,
-		unsigned long *did_some_progress)
-{
-	/* Simplified: single reclaim attempt without retry */
-	*did_some_progress = __perform_reclaim(gfp_mask, order, ac);
-	if (*did_some_progress)
-		return get_page_from_freelist(gfp_mask, order, alloc_flags, ac);
-	return NULL;
-}
-
-
 static inline unsigned int
 gfp_to_alloc_flags(gfp_t gfp_mask)
 {

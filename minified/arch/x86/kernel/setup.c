@@ -656,12 +656,8 @@ void __init setup_arch(char **cmdline_p)
 	early_acpi_boot_init();
 
 	initmem_init();
-	dma_contiguous_reserve(max_pfn_mapped << PAGE_SHIFT);
 
-	if (boot_cpu_has(X86_FEATURE_GBPAGES))
-		hugetlb_cma_reserve(PUD_SHIFT - PAGE_SHIFT);
-
-	/* reserve_crashkernel removed - stub */
+	/* dma_contiguous_reserve, hugetlb_cma_reserve, reserve_crashkernel - stubs */
 
 	x86_init.paging.pagetable_init();
 

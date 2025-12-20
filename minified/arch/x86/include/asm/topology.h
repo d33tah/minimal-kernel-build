@@ -81,7 +81,7 @@ static inline void sched_clear_itmt_support(void)
 static inline void arch_set_max_freq_ratio(bool turbo_disabled) { }
 static inline void freq_invariance_set_perf_ratio(u64 ratio, bool turbo_disabled) { }
 
-extern void arch_scale_freq_tick(void);
+static inline void arch_scale_freq_tick(void) { }
 #define arch_scale_freq_tick arch_scale_freq_tick
 
 

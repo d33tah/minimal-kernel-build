@@ -23,7 +23,7 @@ obj-y			:= cacheinfo.o scattered.o topology.o
 obj-y			+= common.o
 obj-y			+= match.o
 obj-y			+= bugs.o
-obj-y			+= aperfmperf.o
+# aperfmperf.o removed - inlined in topology.h
 obj-y			+= cpuid-deps.o
 
 obj-$(CONFIG_PROC_FS)	+= proc.o

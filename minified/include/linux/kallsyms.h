@@ -34,13 +34,7 @@ static inline int is_kernel(unsigned long addr)
 	return in_gate_area_no_mm(addr);
 }
 
-static inline int is_ksym_addr(unsigned long addr)
-{
-	if (IS_ENABLED(CONFIG_KALLSYMS_ALL))
-		return is_kernel(addr);
-
-	return is_kernel_text(addr) || is_kernel_inittext(addr);
-}
+/* is_ksym_addr removed - never called */
 
 static inline void *dereference_symbol_descriptor(void *ptr)
 {

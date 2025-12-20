@@ -33,25 +33,10 @@ static inline int __must_check kstrtol(const char *s, unsigned int base, long *r
 int __must_check kstrtouint(const char *s, unsigned int base, unsigned int *res);
 int __must_check kstrtoint(const char *s, unsigned int base, int *res);
 
-static inline int __must_check kstrtou64(const char *s, unsigned int base, u64 *res)
-{
-	return kstrtoull(s, base, res);
-}
-
-static inline int __must_check kstrtos64(const char *s, unsigned int base, s64 *res)
-{
-	return kstrtoll(s, base, res);
-}
-
-static inline int __must_check kstrtou32(const char *s, unsigned int base, u32 *res)
-{
-	return kstrtouint(s, base, res);
-}
-
-static inline int __must_check kstrtos32(const char *s, unsigned int base, s32 *res)
-{
-	return kstrtoint(s, base, res);
-}
+/* kstrtou64 removed - never called */
+/* kstrtos64 removed - never called */
+/* kstrtou32 removed - never called */
+/* kstrtos32 removed - never called */
 
 int __must_check kstrtou16(const char *s, unsigned int base, u16 *res);
 int __must_check kstrtos16(const char *s, unsigned int base, s16 *res);

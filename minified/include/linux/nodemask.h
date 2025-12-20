@@ -80,10 +80,7 @@ static inline int node_state(int node, enum node_states state)
 	return node == 0;
 }
 
-static inline void node_set_state(int node, enum node_states state)
-{
-}
-
+/* node_set_state removed - unused */
 
 static inline int num_node_state(enum node_states state)
 {
@@ -99,13 +96,13 @@ static inline int num_node_state(enum node_states state)
 #define nr_node_ids		1U
 #define nr_online_nodes		1U
 
-#define node_set_online(node)	   node_set_state((node), N_ONLINE)
+/* node_set_online removed - unused */
 
 #define node_online_map 	node_states[N_ONLINE]
 #define node_possible_map 	node_states[N_POSSIBLE]
 
 #define num_online_nodes()	num_node_state(N_ONLINE)
-#define num_possible_nodes()	num_node_state(N_POSSIBLE)
+/* num_possible_nodes removed - unused */
 #define node_online(node)	node_state((node), N_ONLINE)
 #define node_possible(node)	node_state((node), N_POSSIBLE)
 

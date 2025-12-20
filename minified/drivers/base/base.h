@@ -123,7 +123,7 @@ extern void fw_devlink_drivers_done(void);
  
 void device_pm_move_to_tail(struct device *dev);
 
-static inline int devtmpfs_create_node(struct device *dev) { return 0; }
+/* devtmpfs_create_node removed - unused */
 static inline int devtmpfs_delete_node(struct device *dev) { return 0; }
 
 /* software_node_notify removed - unused */

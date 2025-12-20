@@ -234,44 +234,4 @@ delete:
 	WARN(1, "ida_free called for id=%d which is not allocated.\n", id);
 }
 
-#ifndef __KERNEL__
-extern void xa_dump_index(unsigned long index, unsigned int shift);
-#define IDA_CHUNK_SHIFT		ilog2(IDA_BITMAP_BITS)
-
-static void ida_dump_entry(void *entry, unsigned long index)
-{
-	unsigned long i;
-
-	if (!entry)
-		return;
-
-	if (xa_is_node(entry)) {
-		struct xa_node *node = xa_to_node(entry);
-		unsigned int shift = node->shift + IDA_CHUNK_SHIFT +
-			XA_CHUNK_SHIFT;
-
-		xa_dump_index(index * IDA_BITMAP_BITS, shift);
-		xa_dump_node(node);
-		for (i = 0; i < XA_CHUNK_SIZE; i++)
-			ida_dump_entry(node->slots[i],
-					index | (i << node->shift));
-	} else if (xa_is_value(entry)) {
-		xa_dump_index(index * IDA_BITMAP_BITS, ilog2(BITS_PER_LONG));
-		pr_cont("value: data %lx [%px]\n", xa_to_value(entry), entry);
-	} else {
-		struct ida_bitmap *bitmap = entry;
-
-		xa_dump_index(index * IDA_BITMAP_BITS, IDA_CHUNK_SHIFT);
-		pr_cont("bitmap: %p data", bitmap);
-		for (i = 0; i < IDA_BITMAP_LONGS; i++)
-			pr_cont(" %lx", bitmap->bitmap[i]);
-		pr_cont("\n");
-	}
-}
-
-static void ida_dump(struct ida *ida)
-{
-	struct xarray *xa = &ida->xa;
-	ida_dump_entry(xa->xa_head, 0);
-}
-#endif
+/* ida_dump functions removed - !__KERNEL__ only, unused (~35 LOC) */

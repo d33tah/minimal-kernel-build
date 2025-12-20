@@ -56,14 +56,7 @@ static inline int timespec64_compare(const struct timespec64 *lhs, const struct 
 
 extern void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec);
 
-static inline struct timespec64 timespec64_add(struct timespec64 lhs,
-						struct timespec64 rhs)
-{
-	struct timespec64 ts_delta;
-	set_normalized_timespec64(&ts_delta, lhs.tv_sec + rhs.tv_sec,
-				lhs.tv_nsec + rhs.tv_nsec);
-	return ts_delta;
-}
+/* timespec64_add removed - never called */
 
 static inline struct timespec64 timespec64_sub(struct timespec64 lhs,
 						struct timespec64 rhs)

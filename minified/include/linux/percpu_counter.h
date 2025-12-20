@@ -25,11 +25,7 @@ static inline void percpu_counter_destroy(struct percpu_counter *fbc)
 {
 }
 
-static inline void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
-{
-	fbc->count = amount;
-}
-
+/* percpu_counter_set removed - never called */
 
 static inline void
 percpu_counter_add(struct percpu_counter *fbc, s64 amount)
@@ -60,11 +56,7 @@ static inline s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
 	return percpu_counter_read_positive(fbc);
 }
 
-static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
-{
-	return percpu_counter_read(fbc);
-}
-
+/* percpu_counter_sum removed - never called */
 /* percpu_counter_initialized, percpu_counter_sync removed - never used */
 
 static inline void percpu_counter_inc(struct percpu_counter *fbc)

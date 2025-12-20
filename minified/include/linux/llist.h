@@ -45,10 +45,7 @@ static inline void init_llist_head(struct llist_head *list)
 	        (n = llist_entry(pos->member.next, typeof(*n), member), true); \
 	     pos = n)
 
-static inline bool llist_empty(const struct llist_head *head)
-{
-	return READ_ONCE(head->first) == NULL;
-}
+/* llist_empty removed - never called */
 
 extern bool llist_add_batch(struct llist_node *new_first,
 			    struct llist_node *new_last,

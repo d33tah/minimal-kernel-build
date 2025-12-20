@@ -17,27 +17,8 @@ int tty_prepare_flip_string(struct tty_port *port, unsigned char **chars,
 void tty_flip_buffer_push(struct tty_port *port);
 int __tty_insert_flip_char(struct tty_port *port, unsigned char ch, char flag);
 
-static inline int tty_insert_flip_char(struct tty_port *port,
-					unsigned char ch, char flag)
-{
-	struct tty_buffer *tb = port->buf.tail;
-	int change;
-
-	change = (tb->flags & TTYB_NORMAL) && (flag != TTY_NORMAL);
-	if (!change && tb->used < tb->size) {
-		if (~tb->flags & TTYB_NORMAL)
-			*flag_buf_ptr(tb, tb->used) = flag;
-		*char_buf_ptr(tb, tb->used++) = ch;
-		return 1;
-	}
-	return __tty_insert_flip_char(port, ch, flag);
-}
-
-static inline int tty_insert_flip_string(struct tty_port *port,
-		const unsigned char *chars, size_t size)
-{
-	return tty_insert_flip_string_fixed_flag(port, chars, TTY_NORMAL, size);
-}
+/* tty_insert_flip_char removed - never called */
+/* tty_insert_flip_string removed - never called */
 
 int tty_ldisc_receive_buf(struct tty_ldisc *ld, const unsigned char *p,
 		const char *f, int count);

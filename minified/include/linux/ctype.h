@@ -62,9 +62,6 @@ static inline char _tolower(const char c)
 	return c | 0x20;
 }
 
-static inline int isodigit(const char c)
-{
-	return c >= '0' && c <= '7';
-}
+/* isodigit removed - never called */
 
 #endif

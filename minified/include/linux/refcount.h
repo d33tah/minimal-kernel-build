@@ -131,10 +131,7 @@ static inline void __refcount_dec(refcount_t *r, int *oldp)
 		refcount_warn_saturate(r, REFCOUNT_DEC_LEAK);
 }
 
-static inline void refcount_dec(refcount_t *r)
-{
-	__refcount_dec(r, NULL);
-}
+/* refcount_dec removed - never called */
 
 extern __must_check bool refcount_dec_not_one(refcount_t *r);
 extern __must_check bool refcount_dec_and_lock_irqsave(refcount_t *r,

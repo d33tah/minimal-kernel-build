@@ -80,10 +80,7 @@ extern int release_resource(struct resource *new);
 extern struct resource *insert_resource_conflict(struct resource *parent, struct resource *new);
 extern int insert_resource(struct resource *parent, struct resource *new);
 /* allocate_resource, lookup_resource, adjust_resource removed - unused */
-static inline resource_size_t resource_size(const struct resource *res)
-{
-	return res->end - res->start + 1;
-}
+/* resource_size removed - never called */
 static inline unsigned long resource_type(const struct resource *res)
 {
 	return res->flags & IORESOURCE_TYPE_BITS;
@@ -94,10 +91,7 @@ static inline unsigned long resource_ext_type(const struct resource *res)
 }
 /* resource_contains removed - unused */
 
-static inline bool resource_overlaps(struct resource *r1, struct resource *r2)
-{
-       return r1->start <= r2->end && r1->end >= r2->start;
-}
+/* resource_overlaps removed - never called */
 
 
 #define request_region(start,n,name)		__request_region(&ioport_resource, (start), (n), (name), 0)

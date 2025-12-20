@@ -105,11 +105,7 @@ static inline void __sg_chain(struct scatterlist *chain_sg,
 	chain_sg->page_link = ((unsigned long) sgl | SG_CHAIN) & ~SG_END;
 }
 
-static inline void sg_chain(struct scatterlist *prv, unsigned int prv_nents,
-			    struct scatterlist *sgl)
-{
-	__sg_chain(&prv[prv_nents - 1], sgl);
-}
+/* sg_chain removed - never called */
 
 static inline void sg_mark_end(struct scatterlist *sg)
 {
@@ -118,20 +114,9 @@ static inline void sg_mark_end(struct scatterlist *sg)
 	sg->page_link &= ~SG_CHAIN;
 }
 
-static inline void sg_unmark_end(struct scatterlist *sg)
-{
-	sg->page_link &= ~SG_END;
-}
-
-static inline dma_addr_t sg_phys(struct scatterlist *sg)
-{
-	return page_to_phys(sg_page(sg)) + sg->offset;
-}
-
-static inline void *sg_virt(struct scatterlist *sg)
-{
-	return page_address(sg_page(sg)) + sg->offset;
-}
+/* sg_unmark_end removed - never called */
+/* sg_phys removed - never called */
+/* sg_virt removed - never called */
 
 static inline void sg_init_marker(struct scatterlist *sgl,
 				  unsigned int nents)

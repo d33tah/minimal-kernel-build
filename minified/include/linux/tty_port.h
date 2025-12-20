@@ -132,45 +132,19 @@ static inline struct tty_port *tty_port_get(struct tty_port *port)
 	return NULL;
 }
 
-static inline bool tty_port_cts_enabled(const struct tty_port *port)
-{
-	return test_bit(TTY_PORT_CTS_FLOW, &port->iflags);
-}
-
-static inline void tty_port_set_cts_flow(struct tty_port *port, bool val)
-{
-	assign_bit(TTY_PORT_CTS_FLOW, &port->iflags, val);
-}
-
-static inline bool tty_port_active(const struct tty_port *port)
-{
-	return test_bit(TTY_PORT_ACTIVE, &port->iflags);
-}
+/* tty_port_cts_enabled removed - never called */
+/* tty_port_set_cts_flow removed - never called */
+/* tty_port_active removed - never called */
 
 static inline void tty_port_set_active(struct tty_port *port, bool val)
 {
 	assign_bit(TTY_PORT_ACTIVE, &port->iflags, val);
 }
 
-static inline bool tty_port_check_carrier(const struct tty_port *port)
-{
-	return test_bit(TTY_PORT_CHECK_CD, &port->iflags);
-}
-
-static inline void tty_port_set_check_carrier(struct tty_port *port, bool val)
-{
-	assign_bit(TTY_PORT_CHECK_CD, &port->iflags, val);
-}
-
-static inline bool tty_port_suspended(const struct tty_port *port)
-{
-	return test_bit(TTY_PORT_SUSPENDED, &port->iflags);
-}
-
-static inline void tty_port_set_suspended(struct tty_port *port, bool val)
-{
-	assign_bit(TTY_PORT_SUSPENDED, &port->iflags, val);
-}
+/* tty_port_check_carrier removed - never called */
+/* tty_port_set_check_carrier removed - never called */
+/* tty_port_suspended removed - never called */
+/* tty_port_set_suspended removed - never called */
 
 static inline bool tty_port_initialized(const struct tty_port *port)
 {
@@ -187,10 +161,7 @@ static inline bool tty_port_kopened(const struct tty_port *port)
 	return test_bit(TTY_PORT_KOPENED, &port->iflags);
 }
 
-static inline void tty_port_set_kopened(struct tty_port *port, bool val)
-{
-	assign_bit(TTY_PORT_KOPENED, &port->iflags, val);
-}
+/* tty_port_set_kopened removed - never called */
 
 struct tty_struct *tty_port_tty_get(struct tty_port *port);
 void tty_port_tty_set(struct tty_port *port, struct tty_struct *tty);
@@ -212,9 +183,6 @@ int tty_port_install(struct tty_port *port, struct tty_driver *driver,
 int tty_port_open(struct tty_port *port, struct tty_struct *tty,
 		struct file *filp);
 
-static inline int tty_port_users(struct tty_port *port)
-{
-	return port->count + port->blocked_open;
-}
+/* tty_port_users removed - never called */
 
 #endif

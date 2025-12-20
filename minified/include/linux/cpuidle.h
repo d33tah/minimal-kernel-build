@@ -98,7 +98,7 @@ struct cpuidle_driver {
 	const char		*governor;
 };
 
-static inline void disable_cpuidle(void) { }
+/* disable_cpuidle removed - never called */
 static inline bool cpuidle_not_available(struct cpuidle_driver *drv,
 					 struct cpuidle_device *dev)
 {return true; }

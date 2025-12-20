@@ -174,11 +174,7 @@ static inline void destroy_hrtimer_on_stack(struct hrtimer *timer) { }
 extern void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
 				   u64 range_ns, const enum hrtimer_mode mode);
 
-static inline void hrtimer_start(struct hrtimer *timer, ktime_t tim,
-				 const enum hrtimer_mode mode)
-{
-	hrtimer_start_range_ns(timer, tim, 0, mode);
-}
+/* hrtimer_start removed - never called */
 
 extern int hrtimer_cancel(struct hrtimer *timer);
 /* hrtimer_try_to_cancel declaration removed - only used internally */

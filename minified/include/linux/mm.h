@@ -83,11 +83,7 @@ static inline void folio_ref_inc(struct folio *folio)
 	page_ref_inc(&folio->page);
 }
 
-static inline void page_ref_dec(struct page *page)
-{
-	atomic_dec(&page->_refcount);
-}
-
+/* page_ref_dec removed - never called */
 /* folio_ref_dec removed - never called */
 
 static inline int page_ref_sub_and_test(struct page *page, int nr)
@@ -912,12 +908,7 @@ static inline int mm_counter_file(struct page *page)
 	return MM_FILEPAGES;
 }
 
-static inline int mm_counter(struct page *page)
-{
-	if (PageAnon(page))
-		return MM_ANONPAGES;
-	return mm_counter_file(page);
-}
+/* mm_counter removed - never called */
 
 static inline unsigned long get_mm_rss(struct mm_struct *mm)
 {

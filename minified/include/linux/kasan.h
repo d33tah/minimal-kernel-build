@@ -40,7 +40,7 @@ static inline slab_flags_t kasan_never_merge(void)
 {
 	return 0;
 }
-static inline void kasan_unpoison_range(const void *address, size_t size) {}
+/* kasan_unpoison_range removed - unused */
 static inline void kasan_cache_create(struct kmem_cache *cache,
 				      unsigned int *size,
 				      slab_flags_t *flags) {}

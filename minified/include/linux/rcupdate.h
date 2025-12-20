@@ -61,16 +61,7 @@ static inline void synchronize_rcu_expedited(void)
 
 extern void kvfree(const void *addr);
 
-static inline void kvfree_call_rcu(struct rcu_head *head, rcu_callback_t func)
-{
-	if (head) {
-		call_rcu(head, func);
-		return;
-	}
-	might_sleep();
-	synchronize_rcu();
-	kvfree((void *) func);
-}
+/* kvfree_call_rcu removed - unused */
 
 void rcu_qs(void);
 
@@ -93,7 +84,7 @@ static inline void rcu_irq_exit_check_preempt(void) { }
 static inline void exit_rcu(void) { }
 void rcu_scheduler_starting(void);
 static inline void rcu_end_inkernel_boot(void) { }
-static inline bool rcu_inkernel_boot_has_ended(void) { return true; }
+/* rcu_inkernel_boot_has_ended removed - unused */
 static inline bool rcu_is_watching(void) { return true; }
 static inline void kfree_rcu_scheduler_running(void) { }
 
@@ -257,30 +248,7 @@ static inline void rcu_read_unlock_sched(void)
 
 #define __is_kvfree_rcu_offset(offset) ((offset) < 4096)
 
-#define kfree_rcu(ptr, rhf...) kvfree_rcu(ptr, ## rhf)
-
-#define kvfree_rcu(...) KVFREE_GET_MACRO(__VA_ARGS__,		\
-	kvfree_rcu_arg_2, kvfree_rcu_arg_1)(__VA_ARGS__)
-
-#define KVFREE_GET_MACRO(_1, _2, NAME, ...) NAME
-#define kvfree_rcu_arg_2(ptr, rhf)					\
-do {									\
-	typeof (ptr) ___p = (ptr);					\
-									\
-	if (___p) {									\
-		BUILD_BUG_ON(!__is_kvfree_rcu_offset(offsetof(typeof(*(ptr)), rhf)));	\
-		kvfree_call_rcu(&((___p)->rhf), (rcu_callback_t)(unsigned long)		\
-			(offsetof(typeof(*(ptr)), rhf)));				\
-	}										\
-} while (0)
-
-#define kvfree_rcu_arg_1(ptr)					\
-do {								\
-	typeof(ptr) ___p = (ptr);				\
-								\
-	if (___p)						\
-		kvfree_call_rcu(NULL, (rcu_callback_t) (___p));	\
-} while (0)
+/* kfree_rcu, kvfree_rcu macros removed - unused (but keep __is_kvfree_rcu_offset) */
 
 #define smp_mb__after_unlock_lock()	do { } while (0)
 

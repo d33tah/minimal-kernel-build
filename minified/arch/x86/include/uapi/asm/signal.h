@@ -54,16 +54,12 @@ typedef unsigned long sigset_t;
  
 #define SIGPWR		30
 #define SIGSYS		31
-#define	SIGUNUSED	31
-
- 
+/* SIGUNUSED, SIGRTMAX, SIGSTKSZ removed - unused */
 #define SIGRTMIN	32
-#define SIGRTMAX	_NSIG
 
 #define SA_RESTORER	0x04000000
 
 #define MINSIGSTKSZ	2048
-#define SIGSTKSZ	8192
 
 /* Inlined from asm-generic/signal-defs.h */
 #ifndef SA_NOCLDSTOP
@@ -75,7 +71,7 @@ typedef unsigned long sigset_t;
 #ifndef SA_SIGINFO
 #define SA_SIGINFO	0x00000004
 #endif
-#define SA_UNSUPPORTED	0x00000400
+/* SA_UNSUPPORTED removed - unused */
 #define SA_EXPOSE_TAGBITS	0x00000800
 #ifndef SA_ONSTACK
 #define SA_ONSTACK	0x08000000

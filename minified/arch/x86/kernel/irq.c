@@ -17,7 +17,6 @@
 #include <asm/desc.h>
 #include <asm/traps.h>
 
-/* asm/trace/irq_vectors.h removed - unused */
 
 DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
 
@@ -32,7 +31,6 @@ void ack_bad_irq(unsigned int irq)
 	ack_APIC_irq();
 }
 
-/* irq_stats, arch_show_interrupts, arch_irq_stat_cpu, arch_irq_stat removed - never called */
 
 static __always_inline void handle_irq(struct irq_desc *desc,
 				       struct pt_regs *regs)

@@ -16,7 +16,6 @@ struct miscdevice  {
 	const char *nodename;
 	umode_t mode;
 };
-/* misc_register/misc_deregister removed - unused */
 /* --- end miscdevice.h inlined --- */
 #include <linux/vmalloc.h>
 #include <linux/mman.h>
@@ -41,10 +40,7 @@ struct miscdevice  {
 #define DEVMEM_MINOR	1
 #define DEVPORT_MINOR	4
 
-/* size_inside_page removed - unused */
-/* unxlate_dev_mem_ptr, read_mem, write_mem removed - /dev/mem not used */
 
-/* phys_mem_access_prot_allowed, uncached_access, phys_mem_access_prot removed - /dev/mem not used */
 
 static ssize_t read_null(struct file *file, char __user *buf,
 			 size_t count, loff_t *ppos)
@@ -165,14 +161,12 @@ static loff_t null_lseek(struct file *file, loff_t offset, int orig)
 	return file->f_pos = 0;
 }
 
-/* memory_lseek and open_port removed - /dev/mem and /dev/port not used */
 
 #define zero_lseek	null_lseek
 #define full_lseek      null_lseek
 #define write_zero	write_null
 #define write_iter_zero	write_iter_null
 
-/* mem_fops and port_fops removed - /dev/mem and /dev/port not needed */
 
 static const struct file_operations null_fops = {
 	.llseek		= null_lseek,

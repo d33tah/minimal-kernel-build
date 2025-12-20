@@ -181,7 +181,6 @@ void free_nsproxy(struct nsproxy *ns)
 	kmem_cache_free(nsproxy_cachep, ns);
 }
 
-/* unshare_nsproxy_namespaces removed - unused */
 
 static void switch_task_namespaces(struct task_struct *p, struct nsproxy *new)
 {

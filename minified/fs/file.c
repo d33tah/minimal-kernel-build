@@ -18,10 +18,8 @@
 
 #include "internal.h"
 
-/* __receive_sock removed - unused */
 
 unsigned int sysctl_nr_open __read_mostly = 1024*1024;
-/* sysctl_nr_open_min, sysctl_nr_open_max removed - unused (no sysctl table) */
 
 static void __free_fdtable(struct fdtable *fdt)
 {
@@ -635,7 +633,6 @@ static struct file *fget_raw(unsigned int fd)
 	return __fget(fd, 0);  /* No FMODE_PATH filter */
 }
 
-/* fget_task, task_lookup_fd_rcu, task_lookup_next_fd_rcu removed - unused */
 
 static unsigned long __fget_light(unsigned int fd, fmode_t mask)
 {
@@ -684,7 +681,6 @@ void __f_unlock_pos(struct file *f)
 	mutex_unlock(&f->f_pos_lock);
 }
 
-/* set_close_on_exec removed - unused */
 
 bool get_close_on_exec(unsigned int fd)
 {
@@ -729,7 +725,6 @@ Ebusy:
 	return -EBUSY;
 }
 
-/* replace_fd, __receive_fd, receive_fd_replace, receive_fd removed - no callers */
 
 static int ksys_dup3(unsigned int oldfd, unsigned int newfd, int flags)
 {
@@ -800,4 +795,3 @@ SYSCALL_DEFINE1(dup, unsigned int, fildes)
 	return ret;
 }
 
-/* f_dupfd, iterate_fd removed - no callers */

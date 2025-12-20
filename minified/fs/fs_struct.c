@@ -38,7 +38,6 @@ void set_fs_pwd(struct fs_struct *fs, const struct path *path)
 		path_put(&old_pwd);
 }
 
-/* chroot_fs_refs and replace_path removed - unused */
 
 void free_fs_struct(struct fs_struct *fs)
 {
@@ -85,7 +84,6 @@ struct fs_struct *copy_fs_struct(struct fs_struct *old)
 	return fs;
 }
 
-/* unshare_fs_struct removed - unused */
 
 int current_umask(void)
 {

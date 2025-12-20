@@ -1,7 +1,6 @@
 /* Stubs for kobject uevent */
 #include <linux/kobject.h>
 
-/* uevent_seqnum removed - never used */
 
 int kobject_synth_uevent(struct kobject *kobj, const char *buf, size_t count)
 {
@@ -24,4 +23,3 @@ int kobject_uevent(struct kobject *kobj, enum kobject_action action)
 	return kobject_uevent_env(kobj, action, NULL);
 }
 
-/* add_uevent_var removed - unused */

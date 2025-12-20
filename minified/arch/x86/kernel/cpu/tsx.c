@@ -7,4 +7,3 @@ void __init tsx_init(void)
 {
 }
 
-/* tsx_ap_init removed - no callers */

@@ -265,7 +265,6 @@ void detach_pid(struct task_struct *task, enum pid_type type)
 	__change_pid(task, type, NULL);
 }
 
-/* change_pid removed - never called externally */
 
 void exchange_tids(struct task_struct *left, struct task_struct *right)
 {
@@ -314,7 +313,6 @@ struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
 	return pid_task(find_pid_ns(nr, ns), PIDTYPE_PID);
 }
 
-/* find_task_by_vpid removed - unused */
 
 struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
 {
@@ -403,7 +401,6 @@ struct pid *pidfd_get_pid(unsigned int fd, unsigned int *flags)
 	return pid;
 }
 
-/* pidfd_create removed - unused */
 
 SYSCALL_DEFINE2(pidfd_open, pid_t, pid, unsigned int, flags)
 {

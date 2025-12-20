@@ -70,7 +70,6 @@ static struct kobj_type class_ktype = {
 static struct kset *class_kset;
 
 
-/* class_create_file_ns, class_remove_file_ns removed - unused */
 
 static struct class *class_get(struct class *cls)
 {
@@ -192,7 +191,6 @@ error:
 	return ERR_PTR(retval);
 }
 
-/* class_destroy removed - unused */
 
 void class_dev_iter_init(struct class_dev_iter *iter, struct class *class,
 			 struct device *start, const struct device_type *type)

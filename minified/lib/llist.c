@@ -33,4 +33,3 @@ struct llist_node *llist_del_first(struct llist_head *head)
 	return entry;
 }
 
-/* llist_reverse_order removed - unused in minimal kernel */

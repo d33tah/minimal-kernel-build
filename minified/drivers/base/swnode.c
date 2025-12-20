@@ -1,4 +1,3 @@
-/* Minimal swnode.c - most functions removed as unused */
 #include <linux/device.h>
 
 /* is_software_node, to_software_node, property_entries_free, software_node_find_by_name,

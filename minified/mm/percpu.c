@@ -84,7 +84,6 @@ static inline int pcpu_chunk_map_bits(struct pcpu_chunk *chunk)
 	return pcpu_nr_pages_to_map_bits(chunk->nr_pages);
 }
 
-/* pcpu_obj_full_size removed - unused */
 static inline void pcpu_stats_save_ai(const struct pcpu_alloc_info *ai) { }
 static inline void pcpu_stats_area_alloc(struct pcpu_chunk *chunk, size_t size) { }
 static inline void pcpu_stats_area_dealloc(struct pcpu_chunk *chunk) { }
@@ -1563,7 +1562,6 @@ void free_percpu(void __percpu *ptr)
 	if (need_balance)
 		pcpu_schedule_balance_work();
 }
-/* __is_kernel_percpu_address, is_kernel_percpu_address removed - never called */
 
 /* Stub: per_cpu_ptr_to_phys not used in minimal kernel */
 phys_addr_t per_cpu_ptr_to_phys(void *addr) { return __pa(addr); }

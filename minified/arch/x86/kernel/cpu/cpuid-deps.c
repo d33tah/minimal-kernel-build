@@ -8,7 +8,6 @@ struct cpuid_dep {
 	unsigned int	depends;
 };
 
-/* Minimal dependencies for basic boot - advanced features removed */
 static const struct cpuid_dep cpuid_deps[] = {
 	{ X86_FEATURE_FXSR,			X86_FEATURE_FPU	      },
 	{ X86_FEATURE_XSAVE,			X86_FEATURE_FXSR      },

@@ -9,7 +9,6 @@
 
 #include <linux/sched/cputime.h>
 #include <linux/sched/isolation.h>
-/* sched/nohz.h inlined - wake_up_nohz_cpu removed, unused duplicate */
 
 #include <linux/cpuidle.h>
 #include <linux/interrupt.h>
@@ -41,7 +40,6 @@ unsigned int sysctl_sched_wakeup_granularity			= 1000000UL;
 static unsigned int normalized_sysctl_sched_wakeup_granularity	= 1000000UL;
 
 int sched_thermal_decay_shift;
-/* setup_sched_thermal_decay_shift and __setup removed - unused cmdline handler */
 
 static inline void update_load_add(struct load_weight *lw, unsigned long inc)
 {
@@ -1439,7 +1437,6 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
 	cfs_rq->min_vruntime_copy = cfs_rq->min_vruntime;
 }
 
-/* alloc_fair_sched_group removed - not called */
 
 static unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task)
 {

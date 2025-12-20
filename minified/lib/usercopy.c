@@ -1,5 +1,4 @@
 #include <linux/bitops.h>
-/* fault-inject-usercopy.h removed - inlined in uaccess.h */
 #include <linux/instrumented.h>
 #include <linux/uaccess.h>
 

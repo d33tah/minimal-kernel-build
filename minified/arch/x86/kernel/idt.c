@@ -170,7 +170,6 @@ void __init idt_setup_early_handler(void)
 	load_idt(&idt_descr);
 }
 
-/* idt_invalidate removed - unused (~6 LOC) */
 
 void __init alloc_intr_gate(unsigned int n, const void *addr)
 {

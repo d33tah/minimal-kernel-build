@@ -9,7 +9,6 @@
 #include <linux/mm.h>
 #include <linux/audit.h>
 #include <linux/numa.h>
-/* scs.h stubs removed - unused, duplicates in fork.c */
 
 #include <linux/uaccess.h>
 

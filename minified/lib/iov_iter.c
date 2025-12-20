@@ -1,6 +1,5 @@
 #include <linux/export.h>
 #include <linux/bvec.h>
-/* fault-inject-usercopy.h removed - inlined in uaccess.h */
 #include <linux/uio.h>
 #include <linux/pagemap.h>
 #include <linux/highmem.h>
@@ -428,7 +427,6 @@ out:
 	return bytes;
 }
 
-/* fault_in_iov_iter_readable, fault_in_iov_iter_writeable removed - unused */
 
 void iov_iter_init(struct iov_iter *i, unsigned int direction,
 			const struct iovec *iov, unsigned long nr_segs,
@@ -575,7 +573,6 @@ size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i)
 	return bytes;
 }
 
-/* _copy_from_iter_nocache removed - unused */
 
 static inline bool page_copy_sane(struct page *page, size_t offset, size_t n)
 {
@@ -895,7 +892,6 @@ void iov_iter_revert(struct iov_iter *i, size_t unroll)
 	}
 }
 
-/* iov_iter_single_seg_count removed - unused */
 
 void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 			const struct kvec *kvec, unsigned long nr_segs,
@@ -912,7 +908,6 @@ void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 	};
 }
 
-/* iov_iter_bvec removed - unused */
 
 /* iov_iter_pipe, iov_iter_xarray, iov_iter_discard, iov_iter_alignment,
    iov_iter_gap_alignment, iov_iter_get_pages, iov_iter_get_pages_alloc,

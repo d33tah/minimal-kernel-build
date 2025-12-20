@@ -266,4 +266,3 @@ int kstrtobool(const char *s, bool *res)
 	return -EINVAL;
 }
 
-/* kstrtobool_from_user and all kstrto*_from_user functions removed - unused */

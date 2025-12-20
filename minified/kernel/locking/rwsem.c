@@ -626,7 +626,6 @@ static inline void __down_read(struct rw_semaphore *sem)
 	__down_read_common(sem, TASK_UNINTERRUPTIBLE);
 }
 
-/* __down_read_interruptible removed - unused */
 
 static inline int __down_read_killable(struct rw_semaphore *sem)
 {
@@ -730,7 +729,6 @@ void __sched down_read(struct rw_semaphore *sem)
 	LOCK_CONTENDED(sem, __down_read_trylock, __down_read);
 }
 
-/* down_read_interruptible removed - unused */
 
 int __sched down_read_killable(struct rw_semaphore *sem)
 {

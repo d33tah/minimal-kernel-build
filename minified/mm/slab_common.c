@@ -30,7 +30,6 @@ LIST_HEAD(slab_caches);
 DEFINE_MUTEX(slab_mutex);
 struct kmem_cache *kmem_cache;
 
-/* slab_caches_to_rcu_destroy list, work, and workfn declaration removed - never used */
 
 #define SLAB_NEVER_MERGE (SLAB_RED_ZONE | SLAB_POISON | SLAB_STORE_USER | \
 		SLAB_TRACE | SLAB_TYPESAFE_BY_RCU | SLAB_NOLEAKTRACE | \
@@ -41,14 +40,12 @@ struct kmem_cache *kmem_cache;
 
 static bool slab_nomerge = !IS_ENABLED(CONFIG_SLAB_MERGE_DEFAULT);
 
-/* setup_slab_nomerge, setup_slab_merge and __setups removed (~16 LOC) */
 
 static inline int kmem_cache_sanity_check(const char *name, unsigned int size)
 {
 	return 0;
 }
 
-/* __kmem_cache_free_bulk, __kmem_cache_alloc_bulk removed - never called */
 
 static unsigned int calculate_alignment(slab_flags_t flags,
 		unsigned int align, unsigned int size)
@@ -247,8 +244,6 @@ kmem_cache_create(const char *name, unsigned int size, unsigned int align,
 					  ctor);
 }
 
-/* slab_caches_to_rcu_destroy_workfn removed - unused */
-/* slab_kmem_cache_release removed - unused */
 
 bool slab_is_available(void)
 {
@@ -510,7 +505,6 @@ void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
 
 
 
-/* __do_krealloc, krealloc removed - never called */
 
 int should_failslab(struct kmem_cache *s, gfp_t gfpflags)
 {

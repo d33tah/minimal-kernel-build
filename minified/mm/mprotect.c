@@ -4,7 +4,6 @@
 #include <asm/tlb.h>
 
 #include "internal.h"
-/* change_protection removed - never called */
 
 // Stub: mprotect_fixup - called by setup_arg_pages during exec
 int mprotect_fixup(struct mmu_gather *tlb, struct vm_area_struct *vma,

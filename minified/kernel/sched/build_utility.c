@@ -3,7 +3,6 @@
 #include <linux/sched/debug.h>
 #include <linux/sched/isolation.h>
 #include <linux/sched/loadavg.h>
-/* sched/nohz.h inlined - wake_up_nohz_cpu removed, unused duplicate */
 #include <linux/sched/mm.h>
 
 #include <linux/sched/task_stack.h>

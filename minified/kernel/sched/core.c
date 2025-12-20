@@ -25,7 +25,6 @@ extern void sched_init_smp(void);
 #include <linux/sched/isolation.h>
 #include <linux/sched/loadavg.h>
 #include <linux/sched/mm.h>
-/* sched/nohz.h inlined - wake_up_nohz_cpu removed, unused duplicate */
 
 #include <linux/sched/rt.h>
 
@@ -39,7 +38,6 @@ static inline void delayacct_blkio_end(struct task_struct *p) {}
 #include <linux/interrupt.h>
 #include <linux/ioprio.h>
 #include <linux/kallsyms.h>
-/* kcov.h removed - stubs are no-ops */
 #include <linux/kprobes.h>
 
 #include <linux/mmu_context.h>
@@ -47,7 +45,6 @@ static inline void delayacct_blkio_end(struct task_struct *p) {}
 
 #include <linux/nmi.h>
 #include <linux/nospec.h>
-/* psi.h removed - psi_init is stub */
 static inline void psi_init(void) {}
 
 #include <linux/sched/wake_q.h>
@@ -106,7 +103,6 @@ void raw_spin_rq_lock_nested(struct rq *rq, int subclass)
 	}
 }
 
-/* raw_spin_rq_trylock removed - never called (~22 LOC) */
 
 void raw_spin_rq_unlock(struct rq *rq)
 {
@@ -411,7 +407,6 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 		rq_clock_skip_update(rq);
 }
 
-/* __set_cpus_allowed_ptr removed - never called */
 
 static inline void migrate_disable_switch(struct rq *rq, struct task_struct *p) { }
 
@@ -542,7 +537,6 @@ out:
 	return success;
 }
 
-/* task_call_func removed - unused */
 
 int wake_up_process(struct task_struct *p)
 {
@@ -641,7 +635,6 @@ void sched_post_fork(struct task_struct *p)
 	uclamp_post_fork(p);
 }
 
-/* to_ratio removed - never called (~10 LOC) */
 
 void wake_up_new_task(struct task_struct *p)
 {
@@ -850,7 +843,6 @@ unsigned int nr_running(void)
 	return sum;
 }
 
-/* single_task_running, nr_context_switches removed - unused */
 
 unsigned int nr_iowait_cpu(int cpu)
 {
@@ -871,7 +863,6 @@ DEFINE_PER_CPU(struct kernel_stat, kstat);
 DEFINE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
 
 
-/* prefetch_curr_exec_start, task_sched_runtime removed - never called (~23 LOC) */
 
 static inline u64 cpu_resched_latency(struct rq *rq) { return 0; }
 
@@ -938,7 +929,6 @@ static inline void preempt_latency_start(int val) { }
 static inline void preempt_latency_stop(int val) { }
 #endif
 
-/* get_preempt_disable_ip removed - never called */
 
 static noinline void __schedule_bug(struct task_struct *prev)
 {
@@ -1239,10 +1229,7 @@ SYSCALL_DEFINE1(nice, int, increment)
 
 #endif
 
-/* task_prio removed - unused */
 
-/* idle_cpu removed - unused */
-/* idle_task removed - unused */
 
 #define SETPARAM_POLICY	-1
 
@@ -1492,11 +1479,9 @@ int __sched __cond_resched(void)
 	return 0;
 }
 
-/* __cond_resched_lock removed - unused */
 
 static inline void preempt_dynamic_init(void) { }
 
-/* yield removed - unused */
 
 static int io_schedule_prepare(void)
 {
@@ -1590,7 +1575,6 @@ void __init sched_init_smp(void)
 	sched_init_granularity();
 }
 
-/* in_sched_functions removed - never called */
 
 DECLARE_PER_CPU(cpumask_var_t, load_balance_mask);
 DECLARE_PER_CPU(cpumask_var_t, select_idle_mask);
@@ -1679,4 +1663,3 @@ const u32 sched_prio_to_wmult[40] = {
   119304647, 148102320, 186737708, 238609294, 286331153,
 };
 
-/* call_trace_sched_update_nr_running removed - unused */

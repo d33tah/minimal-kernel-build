@@ -58,7 +58,6 @@ int add_range_with_merge(struct range *range, int az, int nr_range,
 	return add_range(range, az, nr_range, start, end);
 }
 
-/* subtract_range removed - unused */
 
 static int cmp_range(const void *x1, const void *x2)
 {
@@ -107,4 +106,3 @@ int clean_sort_range(struct range *range, int az)
 	return nr_range;
 }
 
-/* sort_range removed - unused */

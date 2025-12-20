@@ -279,9 +279,7 @@ void __init anon_vma_init(void)
 			SLAB_PANIC|SLAB_ACCOUNT);
 }
 
-/* page_get_anon_vma, folio_lock_anon_vma_read, page_unlock_anon_vma_read removed - unused */
 
-/* set_tlb_ubc_flush_pending, should_defer_flush removed - unused */
 #define TLB_FLUSH_BATCH_FLUSHED_SHIFT	16
 #define TLB_FLUSH_BATCH_PENDING_MASK			\
 	((1 << (TLB_FLUSH_BATCH_FLUSHED_SHIFT - 1)) - 1)
@@ -300,7 +298,6 @@ void flush_tlb_batched_pending(struct mm_struct *mm)
 	}
 }
 
-/* page_address_in_vma, mm_find_pmd removed - never called */
 
 struct folio_referenced_arg {
 	int mapcount;
@@ -550,7 +547,6 @@ out:
 	munlock_vma_page(page, vma, compound);
 }
 
-/* try_to_migrate removed - was empty stub, never called */
 
 void __put_anon_vma(struct anon_vma *anon_vma)
 {
@@ -561,4 +557,3 @@ void __put_anon_vma(struct anon_vma *anon_vma)
 		anon_vma_free(root);
 }
 
-/* rmap_walk_anon_lock, rmap_walk_anon, rmap_walk_file, rmap_walk - all removed as unreferenced */

@@ -84,7 +84,6 @@ static void delete_irq_desc(unsigned int irq)
 
 static inline void free_masks(struct irq_desc *desc) { }
 
-/* irq_lock_sparse, irq_unlock_sparse removed - never called */
 
 static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 				   const struct cpumask *affinity,
@@ -358,9 +357,5 @@ void __irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags, bool bus)
 		chip_bus_sync_unlock(desc);
 }
 
-/* irq_set_percpu_devid_partition removed - unused (~24 LOC) */
-/* irq_set_percpu_devid removed - unused (~4 LOC) */
-/* kstat_incr_irq_this_cpu removed - unused (~4 LOC) */
-/* kstat_irqs_cpu removed - unused (~7 LOC) */
 
 

@@ -26,7 +26,6 @@ __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
 
 static struct kmem_cache *dentry_cache __read_mostly;
 
-/* empty_name, dotdot_name removed - unused externally */
 static const struct qstr slash_name = QSTR_INIT("/", 1);
 
 static unsigned int d_hash_shift __read_mostly;
@@ -549,7 +548,6 @@ repeat:
 	return ret;
 }
 
-/* d_find_any_alias, d_find_alias, d_find_alias_rcu, d_prune_aliases removed - unused */
 
 void shrink_dentry_list(struct list_head *list)
 {
@@ -920,7 +918,6 @@ void d_instantiate(struct dentry *entry, struct inode * inode)
 	}
 }
 
-/* d_instantiate_new removed - unused */
 
 struct dentry *d_make_root(struct inode *root_inode)
 {
@@ -1261,7 +1258,6 @@ void d_add(struct dentry *entry, struct inode *inode)
 	__d_add(entry, inode);
 }
 
-/* d_exact_alias, swap_names, copy_name, __d_move, d_move and d_exchange removed - unused */
 
 /* Stubbed - not used in minimal kernel */
 struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)
@@ -1269,7 +1265,6 @@ struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)
 	return NULL;
 }
 
-/* d_splice_alias removed - unused */
 
 bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
 {
@@ -1310,7 +1305,6 @@ void d_tmpfile(struct dentry *dentry, struct inode *inode)
 }
 
 static __initdata unsigned long dhash_entries;
-/* set_dhash_entries and __setup removed (~2 LOC) */
 
 static void __init dcache_init_early(void)
 {

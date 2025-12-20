@@ -19,7 +19,6 @@ void swake_up_locked(struct swait_queue_head *q)
 	list_del_init(&curr->task_list);
 }
 
-/* swake_up_all_locked removed - unused */
 
 void swake_up_one(struct swait_queue_head *q)
 {
@@ -30,7 +29,6 @@ void swake_up_one(struct swait_queue_head *q)
 	raw_spin_unlock_irqrestore(&q->lock, flags);
 }
 
-/* swake_up_all removed - unused */
 
 void __prepare_to_swait(struct swait_queue_head *q, struct swait_queue *wait)
 {

@@ -506,10 +506,8 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 
 static int __initdata do_retain_initrd;
 
-/* retain_initrd_param and __setup removed (~2 LOC) */
 
 static bool __initdata initramfs_async = true;
-/* initramfs_async_setup and __setup removed (~2 LOC) */
 
 extern char __initramfs_start[];
 extern unsigned long __initramfs_size;

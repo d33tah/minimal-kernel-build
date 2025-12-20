@@ -108,7 +108,6 @@ static void free_user(struct user_struct *up, unsigned long flags)
 	kmem_cache_free(uid_cachep, up);
 }
 
-/* find_user removed - unused */
 
 void free_uid(struct user_struct *up)
 {

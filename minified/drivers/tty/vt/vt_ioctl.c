@@ -28,7 +28,6 @@
 #include <linux/vt_kern.h>
 #include <linux/selection.h>
 
-/* vt_dont_switch, vt_event_post, vt_waitactive removed - unused */
 
 int vt_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 {
@@ -75,4 +74,3 @@ void vc_SAK(struct work_struct *work)
 	/* Stub: SAK (Secure Attention Key) never called in minimal kernel */
 }
 
-/* change_console, vt_move_to_console, pm_set_vt_switch removed - never called */

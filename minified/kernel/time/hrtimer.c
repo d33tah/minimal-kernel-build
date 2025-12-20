@@ -12,7 +12,6 @@
 #include <linux/sched/sysctl.h>
 #include <linux/sched/rt.h>
 #include <linux/sched/deadline.h>
-/* sched/nohz.h inlined - wake_up_nohz_cpu removed, unused duplicate */
 #include <linux/sched/debug.h>
 #include <linux/timer.h>
 #include <linux/freezer.h>
@@ -85,7 +84,6 @@ static const int hrtimer_clock_to_base_table[MAX_CLOCKS] = {
 	[CLOCK_TAI]		= HRTIMER_BASE_TAI,
 };
 
-/* is_migration_base removed - unused */
 
 static inline struct hrtimer_clock_base *
 lock_hrtimer_base(const struct hrtimer *timer, unsigned long *flags)
@@ -262,7 +260,6 @@ static inline int __hrtimer_hres_active(struct hrtimer_cpu_base *cpu_base)
 		cpu_base->hres_active : 0;
 }
 
-/* hrtimer_hres_active removed - unused */
 
 static void __hrtimer_reprogram(struct hrtimer_cpu_base *cpu_base,
 				struct hrtimer *next_timer,
@@ -353,7 +350,6 @@ void clock_was_set_delayed(void)
 	schedule_work(&hrtimer_work);
 }
 
-/* hrtimers_resume_local removed - unused */
 
 static inline
 void unlock_hrtimer_base(const struct hrtimer *timer, unsigned long *flags)
@@ -869,4 +865,3 @@ void __init hrtimers_init(void)
 	open_softirq(HRTIMER_SOFTIRQ, hrtimer_run_softirq);
 }
 
-/* schedule_hrtimeout_range_clock, schedule_hrtimeout_range, schedule_hrtimeout removed - unused (~43 LOC) */

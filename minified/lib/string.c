@@ -107,7 +107,6 @@ ssize_t strscpy(char *dest, const char *src, size_t count)
 }
 #endif
 
-/* strcat, strncat removed - not used in kernel proper (only scripts/) */
 
 #ifndef __HAVE_ARCH_STRLCAT
 size_t strlcat(char *dest, const char *src, size_t count)
@@ -174,7 +173,6 @@ char *strchr(const char *s, int c)
 }
 #endif
 
-/* strchrnul removed - never called */
 
 #ifndef __HAVE_ARCH_STRRCHR
 char *strrchr(const char *s, int c)
@@ -223,8 +221,6 @@ size_t strnlen(const char *s, size_t count)
 }
 #endif
 
-/* strspn removed - not used in kernel proper (only scripts/) */
-/* strcspn removed - not used in kernel proper (only scripts/) */
 
 #ifndef __HAVE_ARCH_STRPBRK
 char *strpbrk(const char *cs, const char *ct)
@@ -269,7 +265,6 @@ void *memset(void *s, int c, size_t count)
 }
 #endif
 
-/* memset16, memset32, memset64 removed - unused */
 
 #ifndef __HAVE_ARCH_MEMCPY
 void *memcpy(void *dest, const void *src, size_t count)
@@ -333,7 +328,6 @@ __visible int memcmp(const void *cs, const void *ct, size_t count)
 }
 #endif
 
-/* bcmp removed - boot/kconfig use their own */
 
 #ifndef __HAVE_ARCH_STRSTR
 char *strstr(const char *s1, const char *s2)

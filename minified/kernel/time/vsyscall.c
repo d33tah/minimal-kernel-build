@@ -109,4 +109,3 @@ void update_vsyscall(struct timekeeper *tk)
 	__arch_sync_vdso_data(vdata);
 }
 
-/* update_vsyscall_tz, vdso_update_begin, vdso_update_end removed - never called */

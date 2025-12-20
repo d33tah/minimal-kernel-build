@@ -436,7 +436,6 @@ void drop_super(struct super_block *sb)
 /* Removed: drop_super_exclusive, iterate_supers, iterate_supers_type,
    get_super, get_active_super, user_get_super - never called */
 
-/* reconfigure_super, emergency_remount, emergency_thaw_all removed - unused */
 
 static DEFINE_IDA(unnamed_dev_ida);
 
@@ -544,7 +543,6 @@ int get_tree_nodev(struct fs_context *fc,
 	return vfs_get_super(fc, vfs_get_independent_super, fill_super);
 }
 
-/* get_tree_single removed - unused */
 
 /* Removed: mount_nodev - never called (~7 LOC) */
 

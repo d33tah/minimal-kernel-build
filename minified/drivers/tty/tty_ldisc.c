@@ -49,7 +49,6 @@ int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc)
 
 
 /* tty_unregister_ldisc stubbed - ldisc modules never unloaded in minimal kernel */
-/* tty_unregister_ldisc removed - unused */
 
 static struct tty_ldisc_ops *get_ldops(int disc)
 {
@@ -115,7 +114,6 @@ static void tty_ldisc_put(struct tty_ldisc *ld)
 	kfree(ld);
 }
 
-/* tty_ldiscs_seq_* functions and tty_ldiscs_seq_ops removed - procfs not enabled */
 
 struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *tty)
 {

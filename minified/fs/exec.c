@@ -44,7 +44,6 @@ static inline void proc_exec_connector(struct task_struct *task) {}
 #include <linux/vmalloc.h>
 #include <linux/io_uring.h>
 #include <linux/syscall_user_dispatch.h>
-/* coredump.h removed - no definitions used */
 
 #include <linux/uaccess.h>
 #include <asm/mmu_context.h>
@@ -67,7 +66,6 @@ void __register_binfmt(struct linux_binfmt * fmt, int insert)
 	write_unlock(&binfmt_lock);
 }
 
-/* unregister_binfmt removed - unused (modules never unloaded) */
 
 static inline void put_binfmt(struct linux_binfmt * fmt)
 {
@@ -772,7 +770,6 @@ static int unshare_sighand(struct task_struct *me)
 	return 0;
 }
 
-/* __get_task_comm removed - unused */
 
 void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 {
@@ -1054,7 +1051,6 @@ static int prepare_binprm(struct linux_binprm *bprm)
 	return kernel_read(bprm->file, bprm->buf, BINPRM_BUF_SIZE, &pos);
 }
 
-/* printable macro and module retry logic removed - CONFIG_MODULES not set */
 
 static int search_binary_handler(struct linux_binprm *bprm)
 {

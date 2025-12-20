@@ -221,11 +221,9 @@ out_bc:
 	tick_install_broadcast_device(newdev, cpu);
 }
 
-/* tick_broadcast_oneshot_control removed - unused */
 
 
 
-/* tick_suspend_local, tick_resume_local, tick_suspend, tick_resume removed - unused */
 
 
 void __init tick_init(void)

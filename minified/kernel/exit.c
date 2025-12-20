@@ -37,7 +37,6 @@ static inline void acct_update_integrals(struct task_struct *tsk) {}
 #include <linux/mempolicy.h>
 /* taskstats_kern.h inlined */
 static inline void taskstats_exit(struct task_struct *tsk, int group_dead) {}
-/* taskstats_tgid_free, taskstats_init_early removed - unused here */
 #include <linux/cgroup.h>
 #include <linux/syscalls.h>
 #include <linux/signal.h>
@@ -49,7 +48,6 @@ static inline void proc_exit_connector(struct task_struct *task) {}
 #include <linux/pipe_fs_i.h>
 #include <linux/audit.h> 
 #include <linux/resource.h>
-/* task_io_accounting_ops.h removed - stubs inlined */
 static inline unsigned long task_io_get_inblock(const struct task_struct *p) { return 0; }
 static inline unsigned long task_io_get_oublock(const struct task_struct *p) { return 0; }
 static inline void task_io_accounting_add(struct task_io_accounting *dst, struct task_io_accounting *src) {}
@@ -61,11 +59,8 @@ static inline void task_io_accounting_add(struct task_io_accounting *dst, struct
 #include <linux/hw_breakpoint.h>
 #include <linux/oom.h>
 #include <linux/writeback.h>
-/* shm.h removed - exit_shm is stub */
 static inline void exit_shm(struct task_struct *task) {}
-/* sem.h removed - exit_sem is stub */
 static inline void exit_sem(struct task_struct *tsk) { }
-/* kcov.h removed - stubs inlined: kcov_task_exit is no-op */
 #include <linux/random.h>
 #include <linux/rcuwait.h>
 #include <linux/compat.h>
@@ -224,7 +219,6 @@ int rcuwait_wake_up(struct rcuwait *w)
 	return ret;
 }
 
-/* is_current_pgrp_orphaned removed - unused */
 
 /* Stub: orphaned pgrp handling not needed for minimal kernel */
 static void
@@ -1134,7 +1128,6 @@ static long kernel_wait4(pid_t upid, int __user *stat_addr, int options,
 	return ret;
 }
 
-/* kernel_wait removed - unused */
 
 SYSCALL_DEFINE4(wait4, pid_t, upid, int __user *, stat_addr,
 		int, options, struct rusage __user *, ru)
@@ -1158,4 +1151,3 @@ SYSCALL_DEFINE3(waitpid, pid_t, pid, int __user *, stat_addr, int, options)
 
 #endif
 
-/* thread_group_exited, abort removed - unused */

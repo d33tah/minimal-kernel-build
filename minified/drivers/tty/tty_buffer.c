@@ -23,7 +23,6 @@
 
 #define TTY_BUFFER_PAGE	(((PAGE_SIZE - sizeof(struct tty_buffer)) / 2) & ~0xFF)
 
-/* tty_buffer_lock_exclusive, tty_buffer_unlock_exclusive removed - unused */
 
 unsigned int tty_buffer_space_avail(struct tty_port *port)
 {
@@ -317,7 +316,6 @@ void tty_flip_buffer_push(struct tty_port *port)
 	queue_work(system_unbound_wq, &buf->work);
 }
 
-/* tty_insert_flip_string_and_push_buffer removed - unused (~17 LOC) */
 
 void tty_buffer_init(struct tty_port *port)
 {
@@ -334,7 +332,6 @@ void tty_buffer_init(struct tty_port *port)
 	buf->mem_limit = TTYB_DEFAULT_MEM_LIMIT;
 }
 
-/* tty_buffer_set_limit, tty_buffer_set_lock_subclass removed - no callers */
 
 bool tty_buffer_restart_work(struct tty_port *port)
 {
@@ -346,4 +343,3 @@ bool tty_buffer_cancel_work(struct tty_port *port)
 	return cancel_work_sync(&port->buf.work);
 }
 
-/* tty_buffer_flush_work removed - unused */

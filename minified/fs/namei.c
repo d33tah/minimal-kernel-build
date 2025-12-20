@@ -18,7 +18,6 @@ static inline int ima_file_check(struct file *file, int mask) { return 0; }
 #include <linux/capability.h>
 #include <linux/file.h>
 #include <linux/fcntl.h>
-/* device_cgroup.h inlined - stub functions; devcgroup_check_permission removed - unused */
 static inline int devcgroup_inode_permission(struct inode *inode, int mask) { return 0; }
 static inline int devcgroup_inode_mknod(int mode, dev_t dev) { return 0; }
 #include <linux/fs_struct.h>
@@ -601,7 +600,6 @@ static int nd_jump_root(struct nameidata *nd)
 	return 0;
 }
 
-/* nd_jump_link removed - unused */
 
 static inline void put_link(struct nameidata *nd)
 {
@@ -630,7 +628,6 @@ static int may_create_in_sticky(struct user_namespace *mnt_userns,
 	return 0;
 }
 
-/* follow_up removed - unused */
 
 static bool choose_mountpoint_rcu(struct mount *m, const struct path *root,
 				  struct path *path, unsigned *seqp)
@@ -668,7 +665,6 @@ static inline int traverse_mounts(struct path *path, bool *jumped,
 	return __traverse_mounts(path, flags, jumped, count, lookup_flags);
 }
 
-/* follow_down_one, follow_down removed - unused */
 
 static bool __follow_mount_rcu(struct nameidata *nd, struct path *path,
 			       struct inode **inode, unsigned *seqp)
@@ -1196,8 +1192,6 @@ static inline unsigned int fold_hash(unsigned long x, unsigned long y)
 
 #endif
 
-/* full_name_hash removed - unused */
-/* hashlen_string removed - unused */
 
 static inline u64 hash_name(const void *salt, const char *name)
 {
@@ -1525,9 +1519,6 @@ int vfs_path_lookup(struct dentry *dentry, struct vfsmount *mnt,
 	return ret;
 }
 
-/* lookup_one_common, lookup_one_len, lookup_one, lookup_one_unlocked, lookup_one_positive_unlocked removed - no callers */
-/* user_path_at_empty removed - no callers */
-/* __check_sticky removed - never called */
 
 static inline int may_create(struct user_namespace *mnt_userns,
 			     struct inode *dir, struct dentry *child)
@@ -1543,7 +1534,6 @@ static inline int may_create(struct user_namespace *mnt_userns,
 	return inode_permission(mnt_userns, dir, MAY_WRITE | MAY_EXEC);
 }
 
-/* vfs_create removed - unused */
 
 static bool may_open_dev(const struct path *path)
 {
@@ -2139,7 +2129,6 @@ SYSCALL_DEFINE2(mkdir, const char __user *, pathname, umode_t, mode)
 	return do_mkdirat(AT_FDCWD, getname(pathname), mode);
 }
 
-/* vfs_rmdir removed - unused */
 
 int do_rmdir(int dfd, struct filename *name)
 {
@@ -2152,7 +2141,6 @@ SYSCALL_DEFINE1(rmdir, const char __user *, pathname)
 	return do_rmdir(AT_FDCWD, getname(pathname));
 }
 
-/* vfs_unlink removed - unused */
 
 int do_unlinkat(int dfd, struct filename *name)
 {
@@ -2228,7 +2216,6 @@ SYSCALL_DEFINE2(link, const char __user *, oldname, const char __user *, newname
 	return do_linkat(AT_FDCWD, getname(oldname), AT_FDCWD, getname(newname), 0);
 }
 
-/* vfs_rename removed - unused, do_renameat2 returns -ENOSYS */
 
 int do_renameat2(int olddfd, struct filename *from, int newdfd,
 		 struct filename *to, unsigned int flags)
@@ -2291,7 +2278,6 @@ void page_put_link(void *arg)
 	put_page(arg);
 }
 
-/* page_readlink removed - unused */
 
 int page_symlink(struct inode *inode, const char *symname, int len)
 {

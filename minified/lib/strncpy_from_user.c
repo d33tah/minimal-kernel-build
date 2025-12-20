@@ -1,6 +1,5 @@
 #include <linux/compiler.h>
 #include <linux/export.h>
-/* fault-inject-usercopy.h removed - inlined in uaccess.h */
 #include <linux/kasan-checks.h>
 #include <linux/thread_info.h>
 #include <linux/uaccess.h>

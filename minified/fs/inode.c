@@ -12,7 +12,6 @@
 #include <linux/mount.h>
 #include <linux/tracepoint.h>
 
-/* buffer_head.h removed - inode_has_buffers is stub */
 static inline int inode_has_buffers(struct inode *inode) { return 0; }
 #include <linux/ratelimit.h>
 #include <linux/list_lru.h>
@@ -63,9 +62,7 @@ static DEFINE_PER_CPU(unsigned long, nr_unused);
 
 static struct kmem_cache *inode_cachep __read_mostly;
 
-/* get_nr_inodes, get_nr_inodes_unused removed - unused */
 
-/* get_nr_dirty_inodes removed - no callers */
 
 static int no_open(struct inode *inode, struct file *file)
 {
@@ -245,7 +242,6 @@ static void __address_space_init_once(struct address_space *mapping)
 	mapping->i_mmap = RB_ROOT_CACHED;
 }
 
-/* address_space_init_once removed - no callers */
 
 void inode_init_once(struct inode *inode)
 {
@@ -320,8 +316,6 @@ static inline void inode_sb_list_del(struct inode *inode)
 	}
 }
 
-/* hash function removed - unused */
-/* __insert_inode_hash removed - unused */
 
 void __remove_inode_hash(struct inode *inode)
 {
@@ -332,7 +326,6 @@ void __remove_inode_hash(struct inode *inode)
 	spin_unlock(&inode_hash_lock);
 }
 
-/* dump_mapping removed - unused */
 
 void clear_inode(struct inode *inode)
 {
@@ -429,7 +422,6 @@ again:
 	dispose_list(&dispose);
 }
 
-/* invalidate_inodes removed - no callers */
 
 static enum lru_status inode_lru_isolate(struct list_head *item,
 		struct list_lru_one *lru, spinlock_t *lru_lock, void *arg)
@@ -466,8 +458,6 @@ long prune_icache_sb(struct super_block *sb, struct shrink_control *sc)
 	return freed;
 }
 
-/* __wait_on_freeing_inode declaration removed - unused */
-/* find_inode, find_inode_fast removed - no callers */
 
 #define LAST_INO_BATCH 1024
 static DEFINE_PER_CPU(unsigned int, last_ino);
@@ -522,9 +512,7 @@ void unlock_new_inode(struct inode *inode)
 	spin_unlock(&inode->i_lock);
 }
 
-/* inode_insert5, iget5_locked, iget_locked, ilookup5_nowait, ilookup5 removed - no callers */
 
-/* ilookup, find_inode_nowait, find_inode_rcu, find_inode_by_ino_rcu removed - no callers */
 
 /* Used by ramfs */
 int generic_delete_inode(struct inode *inode) { return 1; }
@@ -793,11 +781,8 @@ int file_update_time(struct file *file)
 	return ret;
 }
 
-/* file_modified removed - unused */
-/* __wait_on_freeing_inode removed - unused */
 
 static __initdata unsigned long ihash_entries;
-/* set_ihash_entries and __setup removed (~2 LOC) */
 
 void __init inode_init_early(void)
 {

@@ -15,7 +15,6 @@ static const speed_t baud_table[] = {
 #endif
 };
 
-/* baud_bits[] removed: unused */
 
 static int n_baud_table = ARRAY_SIZE(baud_table);
 
@@ -64,4 +63,3 @@ speed_t tty_termios_input_baud_rate(struct ktermios *termios)
 	return cbaud >= n_baud_table ? 0 : baud_table[cbaud];
 }
 
-/* tty_termios_encode_baud_rate, tty_encode_baud_rate removed - no callers */

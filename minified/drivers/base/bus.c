@@ -229,7 +229,6 @@ struct device *bus_find_device(struct bus_type *bus,
 	return dev;
 }
 
-/* subsys_find_device_by_id removed - unused */
 
 static struct device_driver *next_driver(struct klist_iter *i)
 {
@@ -446,7 +445,6 @@ void bus_remove_driver(struct device_driver *drv)
 	bus_put(drv->bus);
 }
 
-/* bus_rescan_devices, device_reprobe removed - unused */
 
 /* Stub: sysfs functions are stubs */
 static int bus_add_groups(struct bus_type *bus,
@@ -631,7 +629,6 @@ int subsys_system_register(struct bus_type *subsys,
 	return subsys_register(subsys, groups, &system_kset->kobj);
 }
 
-/* subsys_virtual_register removed - no external callers */
 
 int __init buses_init(void)
 {

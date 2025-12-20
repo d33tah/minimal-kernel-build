@@ -9,7 +9,6 @@
 
 #include <asm/set_memory.h>
 #include <asm/e820/api.h>
-/* asm/init.h removed - unused */
 #include <asm/page.h>
 #include <asm/page_types.h>
 #include <asm/sections.h>
@@ -613,5 +612,4 @@ __visible DEFINE_PER_CPU_ALIGNED(struct tlb_state, cpu_tlbstate) = {
 	.cr4 = ~0UL,	 
 };
 
-/* update_cache_mode_entry removed - unused */
 

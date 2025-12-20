@@ -1225,7 +1225,6 @@ int expand_downwards(struct vm_area_struct *vma,
 }
 
 unsigned long stack_guard_gap = 256UL<<PAGE_SHIFT;
-/* cmdline_parse_stack_guard_gap and __setup removed (~6 LOC) */
 
 int expand_stack(struct vm_area_struct *vma, unsigned long address)
 {
@@ -1385,7 +1384,6 @@ int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	return err;
 }
 
-/* split_vma removed - unused (only wrapper for __split_vma) */
 
 int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 		struct list_head *uf, bool downgrade)
@@ -1591,7 +1589,6 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	return ret;
 }
 
-/* vm_brk removed - never called */
 
 void exit_mmap(struct mm_struct *mm)
 {
@@ -1802,7 +1799,6 @@ struct vm_area_struct *_install_special_mapping(
 					&special_mapping_vmops);
 }
 
-/* install_special_mapping removed - unused */
 
 void __init mmap_init(void)
 {
@@ -1812,4 +1808,3 @@ void __init mmap_init(void)
 	VM_BUG_ON(ret);
 }
 
-/* Reserve init functions removed - not needed for minimal kernel */

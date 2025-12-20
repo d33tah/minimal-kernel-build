@@ -32,7 +32,6 @@ int devres_release_all(struct device *dev)
 	return 0;
 }
 
-/* devres_open_group, devres_close_group, devres_remove_group, devres_release_group removed - unused */
 
 char *devm_kstrdup(struct device *dev, const char *s, gfp_t gfp)
 {

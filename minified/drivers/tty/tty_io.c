@@ -10,7 +10,6 @@
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
 #include <linux/tty_flip.h>
-/* devpts_fs.h inlined - ptm_open_peer removed as unused */
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/console.h>
@@ -200,7 +199,6 @@ static struct tty_driver *get_tty_driver(dev_t device, int *index)
 	return NULL;
 }
 
-/* tty_dev_name_to_number removed - no callers */
 
 static ssize_t hung_up_tty_read(struct kiocb *iocb, struct iov_iter *to)
 {
@@ -231,7 +229,6 @@ static int hung_up_tty_fasync(int fd, struct file *file, int on)
 	return -ENOTTY;
 }
 
-/* tty_show_fdinfo removed - show_fdinfo callback never called */
 
 static const struct file_operations tty_fops = {
 	.llseek		= no_llseek,
@@ -317,14 +314,12 @@ void tty_hangup(struct tty_struct *tty)
 	schedule_work(&tty->hangup_work);
 }
 
-/* tty_vhangup, tty_vhangup_self, tty_vhangup_session removed - unused */
 
 int tty_hung_up_p(struct file *filp)
 {
 	return (filp && filp->f_op == &hung_up_tty_fops);
 }
 
-/* __stop_tty, stop_tty, __start_tty, start_tty removed - unused */
 
 static void tty_update_time(struct timespec64 *time)
 {
@@ -503,7 +498,6 @@ out:
 	return ret;
 }
 
-/* tty_write_message removed - unused */
 
 static ssize_t file_tty_write(struct file *file, struct kiocb *iocb, struct iov_iter *from)
 {
@@ -553,7 +547,6 @@ ssize_t redirected_tty_write(struct kiocb *iocb, struct iov_iter *iter)
 	}
 	return tty_write(iocb, iter);
 }
-/* tty_send_xchar removed - never called */
 
 static void pty_line_name(struct tty_driver *driver, int index, char *p)
 {
@@ -858,7 +851,6 @@ static int tty_release_checks(struct tty_struct *tty, int idx)
 	return 0;
 }
 
-/* tty_kclose removed - no callers */
 
 static void tty_release_struct(struct tty_struct *tty, int idx)
 {
@@ -969,7 +961,6 @@ static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,
 	return driver;
 }
 
-/* tty_kopen_exclusive, tty_kopen_shared removed - unused */
 
 static struct tty_struct *tty_open_by_driver(dev_t device,
 					     struct file *filp)
@@ -1202,7 +1193,6 @@ static int tiocswinsz(struct tty_struct *tty, struct winsize __user *arg)
 		return tty_do_resize(tty, &tmp_ws);
 }
 
-/* tty_get_icount removed - no callers */
 
 static struct tty_struct *tty_pair_get_tty(struct tty_struct *tty)
 {
@@ -1245,14 +1235,12 @@ long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	return -ENOTTY;
 }
 
-/* __do_SAK removed - never called */
 
 static void do_SAK_work(struct work_struct *work)
 {
 	/* Stub: SAK_work never scheduled in minimal kernel */
 }
 
-/* do_SAK removed - no callers */
 
 static dev_t tty_devnum(struct tty_struct *tty);
 
@@ -1303,7 +1291,6 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 	return tty;
 }
 
-/* tty_put_char removed - never called */
 
 struct class *tty_class;
 

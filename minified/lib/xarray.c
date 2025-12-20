@@ -488,7 +488,6 @@ static void *xas_create(struct xa_state *xas, bool allow_root)
 	return entry;
 }
 
-/* xas_create_range removed - unused */
 
 static void update_node(struct xa_state *xas, struct xa_node *node,
 		int count, int values)
@@ -572,7 +571,6 @@ void *xas_store(struct xa_state *xas, void *entry)
 	return first;
 }
 
-/* xas_get_mark removed - never called */
 
 void xas_set_mark(const struct xa_state *xas, xa_mark_t mark)
 {
@@ -630,9 +628,7 @@ void xas_init_marks(const struct xa_state *xas)
 	}
 }
 
-/* xas_pause removed - unused */
 
-/* __xas_prev removed - never called */
 
 void *__xas_next(struct xa_state *xas)
 {
@@ -811,8 +807,6 @@ void *xa_load(struct xarray *xa, unsigned long index)
 	return entry;
 }
 
-/* xas_result, __xa_erase, xa_erase removed - never called */
 
 /* Removed: __xa_store, xa_store, __xa_cmpxchg, __xa_insert, __xa_alloc - no callers */
 
-/* __xa_alloc_cyclic, xa_*_mark, xa_find, xa_find_after, xa_extract, xa_delete_node, xa_destroy removed - unused */

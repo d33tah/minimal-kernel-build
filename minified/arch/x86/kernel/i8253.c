@@ -25,4 +25,3 @@ bool __init pit_timer_init(void)
 	return true;
 }
 
-/* init_pit_clocksource removed - not needed for minimal kernel */

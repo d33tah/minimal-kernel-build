@@ -1168,7 +1168,6 @@ struct vmap_block {
 
 static DEFINE_PER_CPU(struct vmap_block_queue, vmap_block_queue);
 
-/* vmap_blocks, addr_to_vb_idx, vmap_block_vaddr, new_vmap_block, free_vmap_block removed - unused */
 
 static void purge_fragmented_blocks_allcpus(void)
 {
@@ -1227,7 +1226,6 @@ static inline void set_vm_area_page_order(struct vm_struct *vm, unsigned int ord
 	BUG_ON(order != 0);
 }
 
-/* vm_area_add_early, vm_area_register_early removed - never called */
 
 static void vmap_init_free_space(void)
 {
@@ -1369,7 +1367,6 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 	return area;
 }
 
-/* __get_vm_area_caller removed - never called (~6 LOC) */
 
 struct vm_struct *get_vm_area_caller(unsigned long size, unsigned long flags,
 				const void *caller)
@@ -1856,7 +1853,6 @@ void *vmalloc(unsigned long size)
 				__builtin_return_address(0));
 }
 
-/* vzalloc removed - never called (~5 LOC) */
 
 void free_vm_area(struct vm_struct *area)
 {

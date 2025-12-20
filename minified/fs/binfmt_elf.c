@@ -23,7 +23,6 @@
 #include <linux/random.h>
 #include <linux/elf.h>
 #include <linux/utsname.h>
-/* coredump.h removed - no definitions used */
 #include <linux/sched.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/task_stack.h>
@@ -990,7 +989,6 @@ static int __init init_elf_binfmt(void)
 	return 0;
 }
 
-/* exit_elf_binfmt removed - modules are built-in, never unloaded */
 
 core_initcall(init_elf_binfmt);
 MODULE_LICENSE("GPL");

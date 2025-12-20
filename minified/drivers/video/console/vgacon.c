@@ -37,7 +37,6 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch);
 static void vgacon_scrolldelta(struct vc_data *c, int lines);
 static int vgacon_set_origin(struct vc_data *c);
 static void vgacon_save_screen(struct vc_data *c);
-/* vgacon_invert_region forward decl removed */
 static struct uni_pagedir *vgacon_uni_pagedir;
 static int vgacon_refcount;
 
@@ -62,7 +61,6 @@ static unsigned int 	vga_rolled_over;
 static bool vga_hardscroll_enabled;
 static bool vga_hardscroll_user_enable = true;
 
-/* no_scroll and __setup removed (~6 LOC) */
 
 static inline void write_vga(unsigned char reg, unsigned int val)
 {
@@ -349,7 +347,6 @@ static u8 vgacon_build_attr(struct vc_data *c, u8 color,
 	return attr;
 }
 
-/* vgacon_invert_region removed - con_invert_region never called through struct */
 
 static void vgacon_set_cursor_size(int xpos, int from, int to)
 {
@@ -557,7 +554,6 @@ static void vgacon_set_palette(struct vc_data *vc, const unsigned char *table)
 	vga_set_palette(vc, table);
 }
 
-/* vga_state struct and vga_vesa_blank/unblank removed: VESA power saving not needed */
 
 static void vga_vesa_blank(struct vgastate *state, int mode)
 {
@@ -618,7 +614,6 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
 #define cmapsz 8192
 
 
-/* vgacon_font_set, vgacon_font_get removed - con_font_op never calls them */
 
 static int vgacon_resize(struct vc_data *c, unsigned int width,
 			 unsigned int height, unsigned int user)

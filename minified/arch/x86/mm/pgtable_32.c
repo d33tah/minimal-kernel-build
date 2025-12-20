@@ -60,4 +60,3 @@ void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
 
 unsigned long __FIXADDR_TOP = 0xfffff000;
 
-/* parse_vmalloc, parse_reservetop and early_params removed (~6 LOC) */

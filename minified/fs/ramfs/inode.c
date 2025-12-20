@@ -9,7 +9,6 @@
 #include <linux/backing-dev.h>
 #include <linux/ramfs.h>
 #include <linux/sched.h>
-/* parser.h removed - unused */
 #include <linux/magic.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>

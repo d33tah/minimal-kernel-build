@@ -55,7 +55,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/microcode_intel.h>
 #include <asm/intel-family.h>
 #include <asm/cpu_device_id.h>
-/* uv/uv.h inlined - get_uv_system_type, is_early_uv_system, is_uv_hubbed, uv_system_init removed - unused */
 static inline int is_uv_system(void) { return 0; }
 static inline void uv_cpu_init(void) { }
 #include <asm/sigframe.h>
@@ -67,7 +66,6 @@ static inline void uv_cpu_init(void) { }
 u32 elf_hwcap2 __read_mostly;
 
 cpumask_var_t cpu_initialized_mask;
-/* cpu_callout_mask, cpu_callin_mask, cpu_sibling_setup_mask removed - unused (SMP only) */
 
 int smp_num_siblings = 1;
 
@@ -135,9 +133,7 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
 	[GDT_ENTRY_PERCPU]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
 } };
 
-/* x86_noinvpcid_setup and early_param removed (~2 LOC) */
 
-/* cachesize_setup and __setup removed (~2 LOC) */
 
 static inline int flag_is_changeable_p(u32 flag)
 {
@@ -289,7 +285,6 @@ static void __init setup_cr_pinning(void)
 	static_key_enable(&cr_pinning.key);
 }
 
-/* x86_nofsgsbase_setup and __setup removed (~5 LOC) */
 
 static bool pku_disabled;
 
@@ -328,7 +323,6 @@ static __always_inline void setup_cet(struct cpuinfo_x86 *c)
 	}
 }
 
-/* cet_disable removed - no callers */
 
 struct cpuid_dependent_feature {
 	u32 feature;
@@ -465,7 +459,6 @@ void cpu_detect_cache_sizes(struct cpuinfo_x86 *c)
 {
 	c->x86_cache_size = 0;
 }
-/* TLB arrays and cpu_detect_tlb, detect_ht_early, detect_ht removed - never used in minimal kernel */
 
 static void get_cpu_vendor(struct cpuinfo_x86 *c)
 {
@@ -636,7 +629,6 @@ static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
 		}
 }
 
-/* Stub: CPU vulnerability tables removed - not needed for minimal kernel */
 
 static void __init cpu_set_bug_bits(struct cpuinfo_x86 *c)
 {
@@ -858,9 +850,7 @@ void __init identify_boot_cpu(void)
 
 	tsx_init();
 }
-/* identify_secondary_cpu, print_cpu_info removed - never called */
 
-/* setup_clearcpuid and __setup removed (~4 LOC) */
 
 DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;
 DEFINE_PER_CPU(int, __preempt_count) = INIT_PREEMPT_COUNT;

@@ -33,7 +33,6 @@ extern char restore_registers[];
 /* --- end inlined suspend_32.h --- */
 #include <asm/tlbflush.h>
 /* TDX not used in minimal kernel */
-/* KVM_INTEL include removed - not set */
 
 
 # include "asm-offsets_32.c"
@@ -91,5 +90,4 @@ static void __used common(void)
 	OFFSET(TSS_sp1, tss_struct, x86_tss.sp1);
 	OFFSET(TSS_sp2, tss_struct, x86_tss.sp2);
 
-/* KVM_INTEL offset removed - not set */
 }

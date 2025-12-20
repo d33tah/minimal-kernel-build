@@ -169,7 +169,6 @@ static inline unsigned int oo_objects(struct kmem_cache_order_objects x)
 	return x.x & OO_MASK;
 }
 
-/* slub_set_cpu_partial removed - unused (~4 lines) */
 
 static __always_inline void __slab_lock(struct slab *slab)
 {
@@ -300,7 +299,6 @@ slab_flags_t kmem_cache_flags(unsigned int object_size,
 
 static inline unsigned long slabs_node(struct kmem_cache *s, int node)
 							{ return 0; }
-/* node_nr_slabs removed - unused (~2 lines) */
 static inline void inc_slabs_node(struct kmem_cache *s, int node,
 							int objects) {}
 static inline void dec_slabs_node(struct kmem_cache *s, int node,

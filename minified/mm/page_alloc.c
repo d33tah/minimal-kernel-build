@@ -40,7 +40,6 @@ static inline bool has_isolate_pageblock(struct zone *zone)
 {
 	return false;
 }
-/* is_migrate_isolate_page removed - unused */
 static inline bool is_migrate_isolate(int migratetype)
 {
 	return false;
@@ -50,7 +49,6 @@ static inline bool is_migrate_isolate(int migratetype)
 #define REPORT_FAILURE	0x2
 
 void set_pageblock_migratetype(struct page *page, int migratetype);
-/* page-isolation function declarations removed - unused */
 /* end page-isolation.h */
 
 /* --- 2025-12-06 17:10 --- compaction.h inlined */
@@ -63,7 +61,6 @@ enum compact_result {
 };
 
 struct alloc_context;
-/* compaction_suitable, compaction_made_progress, etc. removed - unused */
 /* --- end compaction.h inlined --- */
 
 #include <linux/mm_inline.h>
@@ -77,7 +74,6 @@ struct alloc_context;
 static inline void reset_page_owner(struct page *page, unsigned short order) {}
 static inline void set_page_owner(struct page *page, unsigned int order, gfp_t gfp_mask) {}
 static inline void split_page_owner(struct page *page, unsigned short order) {}
-/* folio_copy_owner, set_page_owner_migrate_reason, dump_page_owner removed - unused */
 /* --- end page_owner.h inlined --- */
 #include <linux/page_table_check.h>
 #include <linux/kthread.h>
@@ -85,7 +81,6 @@ static inline void split_page_owner(struct page *page, unsigned short order) {}
 #include <linux/lockdep.h>
 #include <linux/nmi.h>
 #include <linux/khugepaged.h>
-/* buffer_head.h removed - buffer_init is stub */
 static inline void buffer_init(void) {}
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
@@ -107,7 +102,6 @@ typedef int __bitwise fpi_t;
 
 #define FPI_SKIP_KASAN_POISON	((__force fpi_t)BIT(2))
 
-/* pcp_batch_high_lock removed - unused */
 #define MIN_PERCPU_PAGELIST_HIGH_FRACTION (8)
 
 struct pagesets {
@@ -117,7 +111,6 @@ static DEFINE_PER_CPU(struct pagesets, pagesets) = {
 	.lock = INIT_LOCAL_LOCK(lock),
 };
 
-/* vm_numa_stat_key, pcpu_drain_mutex removed - unused */
 
 nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
 	[N_POSSIBLE] = NODE_MASK_ALL,
@@ -134,7 +127,6 @@ DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
 
 DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_FREE_DEFAULT_ON, init_on_free);
 
-/* early_init_on_alloc, early_init_on_free and early_params removed (~4 LOC) */
 
 static inline int get_pcppage_migratetype(struct page *page)
 {
@@ -161,7 +153,6 @@ compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS] = {
 
 int min_free_kbytes = 1024;
 int user_min_free_kbytes = -1;
-/* watermark_scale_factor removed - never used */
 
 
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
@@ -409,7 +400,6 @@ static inline void __free_one_page(struct page *page,
 		page_reporting_notify_free(order);
 }
 
-/* split_free_page removed - unused */
 
 static __always_inline bool free_pages_prepare(struct page *page,
 			unsigned int order, bool check_free, fpi_t fpi_flags)
@@ -556,7 +546,6 @@ void __init memblock_free_pages(struct page *page, unsigned long pfn,
 	__free_pages_core(page, order);
 }
 
-/* __pageblock_pfn_to_page removed - unused */
 
 static void set_zone_contiguous(struct zone *zone)
 {
@@ -610,7 +599,6 @@ static inline bool check_new_pcp(struct page *page, unsigned int order)
 	/* Stub: skip page checking for minimal kernel */
 	return false;
 }
-/* should_skip_kasan_unpoison, should_skip_init removed - unused */
 
 inline void post_alloc_hook(struct page *page, unsigned int order,
 				gfp_t gfp_flags)
@@ -670,7 +658,6 @@ static int fallbacks[MIGRATE_TYPES][3] = {
 static inline struct page *__rmqueue_cma_fallback(struct zone *zone,
 					unsigned int order) { return NULL; }
 
-/* move_freepages_block removed - unused */
 
 static bool can_steal_fallback(unsigned int order, int start_mt)
 {
@@ -811,7 +798,6 @@ static void drain_pages(unsigned int cpu)
 	/* Stub: skip per-CPU page draining for minimal kernel */
 }
 
-/* __drain_all_pages, drain_all_pages removed - unused */
 
 static bool free_unref_page_prepare(struct page *page, unsigned long pfn,
 							unsigned int order)
@@ -946,7 +932,6 @@ void split_page(struct page *page, unsigned int order)
 	split_page_memcg(page, 1 << order);
 }
 
-/* __isolate_free_page, __putback_isolated_page removed - unused */
 
 static inline void zone_statistics(struct zone *preferred_zone, struct zone *z,
 				   long nr_account)
@@ -1090,7 +1075,6 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 	return free_pages > min + z->lowmem_reserve[highest_zoneidx];
 }
 
-/* zone_watermark_ok removed - unused wrapper around __zone_watermark_ok */
 
 static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
 				unsigned long mark, int highest_zoneidx,
@@ -1101,7 +1085,6 @@ static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
 	return __zone_watermark_ok(z, order, mark, highest_zoneidx, alloc_flags, free_pages);
 }
 
-/* zone_watermark_ok_safe removed - unused */
 
 static inline unsigned int
 alloc_flags_nofragment(struct zone *zone, gfp_t gfp_mask)
@@ -1217,7 +1200,6 @@ bool gfp_pfmemalloc_allowed(gfp_t gfp_mask)
 	return !!__gfp_pfmemalloc_flags(gfp_mask);
 }
 
-/* should_reclaim_retry and check_retry_cpuset removed - unused dead code */
 
 static inline struct page *
 __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
@@ -1418,7 +1400,6 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
 	return make_alloc_exact(addr, order, size);
 }
 
-/* alloc_pages_exact_nid, free_pages_exact removed - unused */
 
 static unsigned long nr_free_zone_pages(int offset)
 {
@@ -1445,7 +1426,6 @@ unsigned long nr_free_buffer_pages(void)
 	return nr_free_zone_pages(gfp_zone(GFP_USER));
 }
 
-/* show_node, si_mem_available, si_meminfo removed - unused */
 
 static void zoneref_set_zone(struct zone *zone, struct zoneref *zoneref)
 {
@@ -1913,7 +1893,6 @@ static unsigned long __init __absent_pages_in_range(int nid,
 	return nr_absent;
 }
 
-/* absent_pages_in_range removed - unused */
 
 static unsigned long __init zone_absent_pages_in_node(int nid,
 					unsigned long zone_type,
@@ -2208,7 +2187,6 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	memmap_init();
 }
 
-/* cmdline_parse_kernelcore, cmdline_parse_movablecore and early_params removed (~12 LOC) */
 
 void adjust_managed_page_count(struct page *page, long count)
 {
@@ -2236,7 +2214,6 @@ void __init mem_init_print_info(void)
 
 }
 
-/* set_dma_reserve removed - never called */
 
 static int page_alloc_cpu_dead(unsigned int cpu)
 {

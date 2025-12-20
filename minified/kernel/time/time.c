@@ -132,7 +132,6 @@ time64_t mktime64(const unsigned int year0, const unsigned int mon0,
 	)*60 + sec;  
 }
 
-/* ns_to_kernel_old_timeval removed - unused */
 
 void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
 {
@@ -200,7 +199,6 @@ timespec64_to_jiffies(const struct timespec64 *value)
 
 }
 
-/* jiffies_to_timespec64, jiffies_to_clock_t, clock_t_to_jiffies, jiffies_64_to_clock_t, nsec_to_clock_t, jiffies64_to_nsecs, jiffies64_to_msecs removed - unused */
 
 u64 nsecs_to_jiffies64(u64 n)
 {
@@ -221,7 +219,6 @@ unsigned long nsecs_to_jiffies(u64 n)
 	return (unsigned long)nsecs_to_jiffies64(n);
 }
 
-/* timespec64_add_safe removed - unused */
 
 int get_timespec64(struct timespec64 *ts,
 		   const struct __kernel_timespec __user *uts)
@@ -256,5 +253,4 @@ int put_timespec64(const struct timespec64 *ts,
 	return copy_to_user(uts, &kts, sizeof(kts)) ? -EFAULT : 0;
 }
 
-/* get_old_timespec32, put_old_timespec32 removed - unused */
 

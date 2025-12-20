@@ -234,4 +234,3 @@ delete:
 	WARN(1, "ida_free called for id=%d which is not allocated.\n", id);
 }
 
-/* ida_dump functions removed - !__KERNEL__ only, unused (~35 LOC) */

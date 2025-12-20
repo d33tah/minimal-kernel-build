@@ -35,13 +35,11 @@ void add_device_randomness(const void *buf, size_t len)
 {
 }
 
-/* add_hwgenerator_randomness, add_bootloader_randomness removed - never called */
 
 void add_interrupt_randomness(int irq)
 {
 }
 
-/* add_input_randomness removed - never called */
 
 bool rng_is_initialized(void)
 {

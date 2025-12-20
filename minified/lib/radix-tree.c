@@ -261,7 +261,6 @@ out:
 	return ret;
 }
 
-/* radix_tree_preload, radix_tree_maybe_preload removed - unused */
 
 static unsigned radix_tree_load_root(const struct radix_tree_root *root,
 		struct radix_tree_node **nodep, unsigned long *maxindex)
@@ -624,7 +623,6 @@ static void node_tag_set(struct radix_tree_root *root,
 		root_tag_set(root, tag);
 }
 
-/* radix_tree_tag_set removed - unused */
 
 static void node_tag_clear(struct radix_tree_root *root,
 				struct radix_tree_node *node,
@@ -645,7 +643,6 @@ static void node_tag_clear(struct radix_tree_root *root,
 		root_tag_clear(root, tag);
 }
 
-/* radix_tree_tag_clear removed - unused */
 
 void radix_tree_iter_tag_clear(struct radix_tree_root *root,
 			const struct radix_tree_iter *iter, unsigned int tag)
@@ -705,7 +702,6 @@ static void set_iter_tags(struct radix_tree_iter *iter,
 	}
 }
 
-/* radix_tree_iter_resume removed - never called */
 
 void __rcu **radix_tree_next_chunk(const struct radix_tree_root *root,
 			     struct radix_tree_iter *iter, unsigned flags)
@@ -783,7 +779,6 @@ void __rcu **radix_tree_next_chunk(const struct radix_tree_root *root,
 	return node->slots + offset;
 }
 
-/* radix_tree_gang_lookup, radix_tree_gang_lookup_tag, radix_tree_gang_lookup_tag_slot removed - unused */
 
 static bool __radix_tree_delete(struct radix_tree_root *root,
 				struct radix_tree_node *node, void __rcu **slot)
@@ -803,7 +798,6 @@ static bool __radix_tree_delete(struct radix_tree_root *root,
 	return node && delete_node(root, node);
 }
 
-/* radix_tree_iter_delete removed - unused */
 
 void *radix_tree_delete_item(struct radix_tree_root *root,
 			     unsigned long index, void *item)

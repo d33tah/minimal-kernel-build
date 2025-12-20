@@ -4,21 +4,17 @@
 #include <linux/acpi.h>
 #include <linux/sort.h>
 
-/* firmware-map.h functions removed - unused */
 #include <linux/memory_hotplug.h>
 
 #include <asm/e820/api.h>
 #include <asm/setup.h>
 
 static struct e820_table e820_table_init		__initdata;
-/* e820_table_kexec_init/firmware_init removed - unused in minimal kernel */
 
 struct e820_table *e820_table __refdata			= &e820_table_init;
-/* e820_table_kexec/firmware removed - unused in minimal kernel */
 
 unsigned long pci_mem_start = 0xaeedbabe;
 
-/* e820__mapped_raw_any removed - no callers */
 
 bool e820__mapped_any(u64 start, u64 end, enum e820_type type)
 {
@@ -57,7 +53,6 @@ bool __init e820__mapped_all(u64 start, u64 end, enum e820_type type)
 	return __e820__mapped_all(start, end, type);
 }
 
-/* e820__get_entry_type removed - no callers */
 
 static void __init __e820__range_add(struct e820_table *table, u64 start, u64 size, enum e820_type type)
 {
@@ -318,7 +313,6 @@ u64 __init e820__range_update(u64 start, u64 size, enum e820_type old_type, enum
 	return __e820__range_update(e820_table, start, size, old_type, new_type);
 }
 
-/* e820__range_update_kexec removed - kexec not used in minimal kernel */
 
 u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type, bool check_type)
 {
@@ -384,7 +378,6 @@ void __init e820__update_table_print(void)
 	e820__update_table(e820_table);
 }
 
-/* e820__update_table_kexec removed - kexec not used in minimal kernel */
 
 #define MAX_GAP_END 0x100000000ull
 
@@ -523,7 +516,6 @@ static void __init early_panic(char *msg)
 
 static int userdef __initdata;
 
-/* parse_memopt, parse_memmap_opt and early_params removed (~6 LOC) */
 
 void __init e820__reserve_setup_data(void)
 {

@@ -64,7 +64,6 @@ static int ignore_nmis __read_mostly;
 int unknown_nmi_panic;
 static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
 
-/* setup_unknown_nmi_panic and __setup removed (~2 LOC) */
 
 #define nmi_to_desc(type) (&nmi_desc[type])
 

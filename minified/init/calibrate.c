@@ -3,10 +3,8 @@
 #include <linux/init.h>
 #include <linux/percpu.h>
 
-/* lpj_fine removed - only set, never read */
 unsigned long preset_lpj;
 
-/* lpj_setup and __setup removed (~5 LOC) */
 
 static DEFINE_PER_CPU(unsigned long, cpu_loops_per_jiffy) = { 0 };
 

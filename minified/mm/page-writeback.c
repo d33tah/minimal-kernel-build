@@ -10,7 +10,6 @@ unsigned int dirty_writeback_interval = 5 * 100;
 bool __folio_end_writeback(struct folio *folio) { return true; }
 bool __folio_start_writeback(struct folio *folio, bool keep_write) { return true; }
 
-/* wb_writeout_inc removed - unused */
 int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio) { return 0; }
 int bdi_set_max_ratio(struct backing_dev_info *bdi, unsigned max_ratio) { return 0; }
 void wb_update_bandwidth(struct bdi_writeback *wb) {}
@@ -20,12 +19,9 @@ void laptop_mode_timer_fn(struct timer_list *t) {}
 int do_writepages(struct address_space *mapping, struct writeback_control *wbc) { return 0; }
 bool noop_dirty_folio(struct address_space *mapping, struct folio *folio) { return true; }
 void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb) {}
-/* __folio_mark_dirty removed - never called */
 bool filemap_dirty_folio(struct address_space *mapping, struct folio *folio) { return true; }
-/* folio_account_redirty removed - unused */
 bool folio_redirty_for_writepage(struct writeback_control *wbc, struct folio *folio) { return true; }
 bool folio_mark_dirty(struct folio *folio) { return true; }
-/* set_page_dirty_lock removed - unused */
 void __folio_cancel_dirty(struct folio *folio) {}
 bool folio_clear_dirty_for_io(struct folio *folio) { return true; }
 void folio_wait_writeback(struct folio *folio) {}

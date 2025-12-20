@@ -12,12 +12,10 @@
 static inline void ima_inode_post_setattr(struct user_namespace *mnt_userns,
 					  struct dentry *dentry) {}
 
-/* --- 2025-12-06 17:18 --- evm.h inlined - most functions removed as unused */
 #include <linux/xattr.h>
 
 /* Only evm_inode_post_setattr is used (from notify_change) */
 static inline void evm_inode_post_setattr(struct dentry *dentry, int ia_valid) { }
-/* All other evm_* functions removed - unused */
 
 static bool chown_ok(struct user_namespace *mnt_userns,
 		     const struct inode *inode,

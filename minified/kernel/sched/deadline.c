@@ -11,10 +11,8 @@ void init_dl_rq(struct dl_rq *dl_rq)
 	dl_rq->root = RB_ROOT_CACHED;
 }
 
-/* enqueue_pushable_dl_task, dequeue_pushable_dl_task, inc_dl_migration, dec_dl_migration removed - unused */
 void init_dl_task_timer(struct sched_dl_entity *dl_se) { }
 void init_dl_inactive_task_timer(struct sched_dl_entity *dl_se) { }
-/* dl_runtime_exceeded, inc_dl_tasks, dec_dl_tasks removed - unused */
 
 static void enqueue_task_dl(struct rq *rq, struct task_struct *p, int flags) { }
 static void dequeue_task_dl(struct rq *rq, struct task_struct *p, int flags) { }

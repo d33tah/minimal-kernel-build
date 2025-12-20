@@ -125,7 +125,6 @@ static void tk_set_wall_to_mono(struct timekeeper *tk, struct timespec64 wtm)
 	tk->offs_tai = ktime_add(tk->offs_real, ktime_set(tk->tai_offset, 0));
 }
 
-/* tk_update_sleep_time removed - never called */
 
 static inline u64 tk_clock_read(const struct tk_read_base *tkr)
 {
@@ -221,7 +220,6 @@ static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)
 	return timekeeping_delta_to_ns(tkr, delta);
 }
 
-/* timekeeping_cycles_to_ns removed - never called */
 
 /* Stub: update_fast_timekeeper - fast path functions are stubbed */
 static void update_fast_timekeeper(const struct tk_read_base *tkr,
@@ -229,7 +227,6 @@ static void update_fast_timekeeper(const struct tk_read_base *tkr,
 {
 }
 
-/* ktime_get_mono_fast_ns, ktime_get_raw_fast_ns removed - unused */
 
 /* Removed: ktime_get_boot_fast_ns, ktime_get_tai_fast_ns, ktime_get_real_fast_ns,
    ktime_get_fast_timestamps - no callers */
@@ -241,7 +238,6 @@ static void update_pvclock_gtod(struct timekeeper *tk, bool was_set)
 	raw_notifier_call_chain(&pvclock_gtod_chain, was_set, tk);
 }
 
-/* pvclock_gtod_register/unregister_notifier removed - no callers */
 
 static inline void tk_update_leap_state(struct timekeeper *tk)
 {
@@ -439,10 +435,6 @@ time64_t ktime_get_real_seconds(void)
 	return seconds;
 }
 
-/* __ktime_get_real_seconds, ktime_get_snapshot removed - no callers */
-/* get_device_system_crosststamp removed - unused */
-/* do_settimeofday64, persistent_clock_is_local removed - unused */
-/* timekeeping_warp_clock removed - no callers */
 
 static void __timekeeping_set_tai_offset(struct timekeeper *tk, s32 tai_offset)
 {
@@ -575,8 +567,6 @@ void __init timekeeping_init(void)
 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
 }
 
-/* timekeeping_resume, timekeeping_suspend removed - unused */
-/* timekeeping_init_ops removed - unused */
 
 static __always_inline void timekeeping_apply_adjustment(struct timekeeper *tk,
 							 s64 offset,
@@ -760,7 +750,6 @@ void update_wall_time(void)
 		clock_was_set_delayed();
 }
 
-/* getboottime64 removed - unused */
 
 void ktime_get_coarse_real_ts64(struct timespec64 *ts)
 {
@@ -774,7 +763,6 @@ void ktime_get_coarse_real_ts64(struct timespec64 *ts)
 	} while (read_seqcount_retry(&tk_core.seq, seq));
 }
 
-/* ktime_get_coarse_ts64 removed - unused */
 
 void do_timer(unsigned long ticks)
 {
@@ -822,4 +810,3 @@ unsigned long random_get_entropy_fallback(void)
 	return clock->read(clock);
 }
 
-/* do_adjtimex removed - unused stub */

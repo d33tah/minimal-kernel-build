@@ -559,6 +559,5 @@ void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
 	force_sig(SIGSEGV);
 }
 
-/* strict_sas_size and __setup removed (~5 LOC) */
 
 

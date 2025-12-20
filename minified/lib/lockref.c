@@ -64,7 +64,6 @@ int lockref_get_not_zero(struct lockref *lockref)
 	return retval;
 }
 
-/* lockref_put_not_zero removed - no callers */
 
 int lockref_put_return(struct lockref *lockref)
 {

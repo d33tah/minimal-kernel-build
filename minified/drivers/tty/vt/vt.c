@@ -72,18 +72,15 @@ static void hide_cursor(struct vc_data *vc);
 static void console_callback(struct work_struct *ignored);
 static void blank_screen_t(struct timer_list *unused);
 static void set_palette(struct vc_data *vc);
-/* vt_get_kmsg_redirect, con_driver_unregister_callback removed - never used */
 
 static int printable;
 int default_utf8 = true;
 int global_cursor_default = -1;
 static int cur_default = CUR_UNDERLINE;
-/* do_poke_blanked_console removed - never used */
 int console_blanked;
 static int blankinterval;
 
 static DECLARE_WORK(console_work, console_callback);
-/* con_driver_unregister_work removed - never scheduled */
 
 int fg_console;
 int last_console;
@@ -105,7 +102,6 @@ static struct device *tty0dev;
 
 static ATOMIC_NOTIFIER_HEAD(vt_notifier_list);
 
-/* register_vt_notifier, unregister_vt_notifier removed - unused */
 
 static void notify_write(struct vc_data *vc, unsigned int unicode)
 {
@@ -127,8 +123,6 @@ static inline bool con_should_update(const struct vc_data *vc)
 	return con_is_visible(vc) && !console_blanked;
 }
 
-/* schedule_console_callback removed - never called */
-/* screenpos removed - never called */
 
 #ifdef NO_VC_UNI_SCREEN
 
@@ -145,7 +139,6 @@ struct uni_screen {
 	char32_t *lines[0];
 };
 
-/* vc_uniscr_free, vc_uniscr_set removed - never called */
 
 static void vc_uniscr_clear_line(struct vc_data *vc, unsigned int x,
 				 unsigned int nr)
@@ -165,7 +158,6 @@ static void vc_uniscr_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 	/* Stub: skip unicode screen buffer scroll for minimal kernel */
 }
 
-/* vc_uniscr_check, vc_uniscr_copy_line removed - never called */
 
 static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 		enum con_scroll dir, unsigned int nr)
@@ -279,7 +271,6 @@ static void update_attr(struct vc_data *vc)
 				vc->vc_decscnm, false) << 8);
 }
 
-/* invert_screen, complement_pos removed - never called */
 
 static int softcursor_original = -1;
 
@@ -570,7 +561,6 @@ static int vt_resize(struct tty_struct *tty, struct winsize *ws)
 	return ret;
 }
 
-/* vc_deallocate removed - never called */
 
 enum { EPecma = 0, EPdec, EPeq, EPgt, EPlt};
 
@@ -620,7 +610,6 @@ static void gotoxy(struct vc_data *vc, int new_x, int new_y)
 		(vc->state.x << 1);
 	vc->vc_need_wrap = 0;
 }
-/* scrollback, scrollfront removed - never called */
 
 static void lf(struct vc_data *vc)
 {
@@ -688,7 +677,6 @@ static void default_attr(struct vc_data *vc)
 	vc->state.blink = false;
 	vc->state.color = vc->vc_def_color;
 }
-/* mouse_report, mouse_reporting removed - never called */
 
 static void save_cur(struct vc_data *vc)
 {
@@ -970,7 +958,6 @@ int set_console(int nr)
 }
 
 struct tty_driver *console_driver;
-/* vt_kmsg_redirect removed - never called */
 
 static void vt_console_print(struct console *co, const char *b, unsigned count)
 {
@@ -1020,7 +1007,6 @@ static struct console vt_console_driver = {
 	.flags		= CON_PRINTBUFFER,
 	.index		= -1,
 };
-/* tioclinux removed - never called */
 
 static int con_write(struct tty_struct *tty, const unsigned char *buf, int count)
 {
@@ -1336,9 +1322,7 @@ bool con_is_visible(const struct vc_data *vc)
 	return *vc->vc_display_fg == vc;
 }
 
-/* con_debug_enter, con_debug_leave, do_register_con_driver removed - never called */
 
-/* do_take_over_console removed - never called */
 
 /* vtconsole_class_init simplified - sysfs entries not needed for minimal kernel */
 static int __init vtconsole_class_init(void)
@@ -1350,7 +1334,6 @@ postcore_initcall(vtconsole_class_init);
 #endif
 
 
-/* do_blank_screen removed - never called */
 
 void do_unblank_screen(int leaving_gfx)
 {
@@ -1367,14 +1350,12 @@ static void blank_screen_t(struct timer_list *unused)
 	/* Stub: no screen blanking in minimal kernel */
 }
 
-/* poke_blanked_console removed - never called */
 
 static void set_palette(struct vc_data *vc)
 {
 	/* Stub: no palette setting in minimal kernel */
 }
 
-/* con_set_cmap, con_get_cmap removed - never called */
 
 void reset_palette(struct vc_data *vc)
 {
@@ -1387,13 +1368,9 @@ void reset_palette(struct vc_data *vc)
 	set_palette(vc);
 }
 
-/* con_font_op, screen_glyph, screen_glyph_unicode removed - never called */
 
-/* screen_pos removed - never called */
 
-/* getconsxy, putconsxy removed - never called */
 
-/* vcs_scr_readw, vcs_scr_writew, vcs_scr_updated removed - never called */
 
 void vc_scrolldelta_helper(struct vc_data *c, int lines,
 		unsigned int rolled_over, void *base, unsigned int size)

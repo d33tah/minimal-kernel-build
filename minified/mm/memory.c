@@ -59,7 +59,6 @@ void *high_memory;
 int randomize_va_space __read_mostly =
 					2;
 
-/* arch_faults_on_old_pte removed - unused (~5 lines, defined in x86 pgtable.h but never called) */
 
 #ifndef arch_wants_old_prefaulted_pte
 static inline bool arch_wants_old_prefaulted_pte(void)
@@ -69,7 +68,6 @@ static inline bool arch_wants_old_prefaulted_pte(void)
 }
 #endif
 
-/* disable_randmaps and __setup removed (~5 LOC) */
 
 unsigned long zero_pfn __read_mostly;
 
@@ -344,7 +342,6 @@ int __pte_alloc_kernel(pmd_t *pmd)
 	return 0;
 }
 
-/* init_rss_vec, add_mm_rss_vec removed - unused */
 
 static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
 			  pte_t pte, struct page *page)
@@ -408,7 +405,6 @@ out:
  * since simplified dup_mmap doesn't use them (~230 LOC removed)
  */
 
-/* copy_page_range removed - not called anywhere */
 
 struct zap_details {
 	struct folio *single_folio;	
@@ -416,8 +412,6 @@ struct zap_details {
 	zap_flags_t zap_flags;		
 };
 
-/* zap_drop_file_uffd_wp removed - unused (~7 lines) */
-/* zap_install_uffd_wp_if_needed removed - unused (~10 lines) */
 
 static unsigned long zap_pte_range(struct mmu_gather *tlb,
 				struct vm_area_struct *vma, pmd_t *pmd,
@@ -861,7 +855,6 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
 	return err;
 }
 
-/* vm_iomap_memory removed - unused */
 
 static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)
 {
@@ -964,7 +957,6 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 	return VM_FAULT_OOM;
 }
 
-/* finish_mkwrite_fault removed - unused */
 
 
 static vm_fault_t do_wp_page(struct vm_fault *vmf)
@@ -1598,7 +1590,6 @@ int __pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
 }
 #endif 
 
-/* follow_pte, follow_pfn, follow_phys, generic_access_phys removed - unused */
 
 #if USE_SPLIT_PTE_PTLOCKS && ALLOC_SPLIT_PTLOCKS
 

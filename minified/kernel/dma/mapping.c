@@ -292,4 +292,3 @@ int dma_set_coherent_mask(struct device *dev, u64 mask)
 	return 0;
 }
 
-/* dma_max_mapping_size, dma_need_sync, dma_get_merge_boundary removed - unused */

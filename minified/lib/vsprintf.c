@@ -553,7 +553,6 @@ static char *pointer_string(char *buf, char *end,
 
 static int debug_boot_weak_hash __ro_after_init;
 
-/* debug_boot_weak_hash_enable and early_param removed (~2 LOC) */
 
 static DEFINE_STATIC_KEY_FALSE(filled_random_ptr_key);
 
@@ -627,7 +626,6 @@ static char *default_pointer(char *buf, char *end, const void *ptr,
 	return ptr_to_id(buf, end, ptr, spec);
 }
 
-/* kptr_restrict removed - never used */
 
 static noinline_for_stack
 char *restricted_pointer(char *buf, char *end, const void *ptr,
@@ -666,7 +664,6 @@ char *symbol_string(char *buf, char *end, void *ptr,
 	return special_hex_number(buf, end, value, sizeof(void *));
 }
 
-/* default_*_spec variables removed: unused in minimal kernel */
 
 static noinline_for_stack
 char *resource_string(char *buf, char *end, struct resource *res,
@@ -812,7 +809,6 @@ char *fwnode_string(char *buf, char *end, struct fwnode_handle *fwnode,
 	return error_string(buf, end, "(fwnode)", spec);
 }
 
-/* no_hash_pointers_enable and early_param removed (~2 LOC) */
 
 static noinline_for_stack
 char *pointer(const char *fmt, char *buf, char *end, void *ptr,

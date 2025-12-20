@@ -30,7 +30,6 @@ static int notifier_chain_register(struct notifier_block **nl,
 	return 0;
 }
 
-/* notifier_chain_unregister removed - unused */
 
 static int notifier_call_chain(struct notifier_block **nl,
 			       unsigned long val, void *v,
@@ -70,7 +69,6 @@ int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
 	return ret;
 }
 
-/* atomic_notifier_chain_unregister removed - unused */
 
 int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 			       unsigned long val, void *v)
@@ -113,7 +111,6 @@ int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
 	return __blocking_notifier_chain_register(nh, n, false);
 }
 
-/* blocking_notifier_chain_unregister removed - unused */
 
 int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 		unsigned long val, void *v)
@@ -130,7 +127,6 @@ int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 }
 
 
-/* raw_notifier_chain_register removed - unused */
 
 int raw_notifier_call_chain(struct raw_notifier_head *nh,
 		unsigned long val, void *v)

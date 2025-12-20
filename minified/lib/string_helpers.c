@@ -8,7 +8,6 @@
 #include <linux/string.h>
 #include <linux/string_helpers.h>
 
-/* Unused stub functions removed - string_get_size, string_unescape, string_escape_mem, kfree_strarray */
 
 ssize_t strscpy_pad(char *dest, const char *src, size_t count)
 {
@@ -22,7 +21,6 @@ ssize_t strscpy_pad(char *dest, const char *src, size_t count)
 	return len;
 }
 
-/* match_string, __sysfs_match_string, memcpy_and_pad, sysfs_streq removed - unused */
 
 char *skip_spaces(const char *str)
 {

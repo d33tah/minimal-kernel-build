@@ -236,7 +236,5 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 	return ret;
 }
 
-/* ctrl_alt_del, orderly_poweroff, orderly_reboot, hw_protection_shutdown removed - unused */
 
-/* reboot_setup and __setup removed (~5 LOC) */
 

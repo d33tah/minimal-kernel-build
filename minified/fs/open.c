@@ -50,7 +50,6 @@ struct space_resv {
 
 /* Inlined from dnotify.h - only dnotify_flush kept (used by __fput) */
 static inline void dnotify_flush(struct file *filp, fl_owner_t id) {}
-/* dnotify_struct, fcntl_dirnotify removed - unused */
 
 #include <linux/compat.h>
 #include <linux/mnt_idmapping.h>
@@ -211,7 +210,6 @@ SYSCALL_DEFINE2(ftruncate64, unsigned int, fd, loff_t, length)
 }
 #endif
 
-/* vfs_fallocate removed - unused */
 
 int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len)
 {
@@ -460,7 +458,6 @@ int finish_open(struct file *file, struct dentry *dentry,
 }
 
 
-/* finish_no_open, file_path removed - unused */
 
 int vfs_open(const struct path *path, struct file *file)
 {
@@ -490,7 +487,6 @@ struct file *dentry_open(const struct path *path, int flags,
 	return f;
 }
 
-/* dentry_create, open_with_fake_path removed - unused */
 
 #define WILL_CREATE(flags)	(flags & (O_CREAT | __O_TMPFILE))
 #define O_PATH_FLAGS		(O_DIRECTORY | O_NOFOLLOW | O_PATH | O_CLOEXEC)
@@ -633,7 +629,6 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 	return file;
 }
 
-/* file_open_root removed - unused */
 
 static long do_sys_openat2(int dfd, const char __user *filename,
 			   struct open_how *how)

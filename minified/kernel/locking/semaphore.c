@@ -25,7 +25,6 @@ void down(struct semaphore *sem)
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 }
 
-/* down_interruptible removed - unused */
 
 int down_trylock(struct semaphore *sem)
 {

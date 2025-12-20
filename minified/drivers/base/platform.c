@@ -3,7 +3,6 @@
 #include <linux/platform_device.h>
 #include <linux/of_device.h>
 
-/* of_irq.h stubs removed - unused in minimal kernel */
 #include <linux/irqdomain.h>
 
 #include <linux/module.h>
@@ -19,7 +18,6 @@
 /* --- 2025-12-06 20:27 --- pm_domain.h inlined (19 LOC) */
 static inline int dev_pm_domain_attach(struct device *dev, bool power_on) { return 0; }
 static inline void dev_pm_domain_detach(struct device *dev, bool power_off) {}
-/* dev_pm_domain_start, dev_pm_domain_set removed - never called */
 /* --- end pm_domain.h inlined --- */
 #include <linux/idr.h>
 #include <linux/acpi.h>
@@ -34,7 +32,6 @@ static inline int of_clk_set_defaults(struct device_node *node, bool clk_supplie
 #include "base.h"
 #include "power/power.h"
 
-/* platform_devid_ida removed - unused */
 
 struct device platform_bus = {
 	.init_name	= "platform",
@@ -75,14 +72,12 @@ int platform_get_irq(struct platform_device *dev, unsigned int num)
 	return ret;
 }
 
-/* platform_get_resource_byname removed - unused */
 
 struct platform_object {
 	struct platform_device pdev;
 	char name[];
 };
 
-/* setup_pdev_dma_masks, platform_device_release, platform_device_alloc removed - unused */
 
 /* Removed: platform_device_add_resources, platform_device_add_data, platform_device_add,
    platform_device_del, platform_device_register, platform_device_unregister,
@@ -97,7 +92,6 @@ int __platform_driver_register(struct platform_driver *drv,
 	return driver_register(&drv->driver);
 }
 
-/* platform_driver_unregister removed - unused */
 
 /* Removed: __platform_driver_probe, __platform_create_bundle,
    __platform_register_drivers, platform_unregister_drivers - no external callers */
@@ -240,7 +234,6 @@ struct bus_type platform_bus_type = {
 	.pm		= &platform_dev_pm_ops,
 };
 
-/* platform_find_device_by_driver, early_platform_cleanup removed - unused */
 
 int __init platform_bus_init(void)
 {

@@ -19,7 +19,6 @@
 
 DEFINE_STATIC_KEY_FALSE(force_irqthreads_key);
 
-/* setup_forced_irqthreads and early_param removed (~2 LOC) */
 
 static void __synchronize_hardirq(struct irq_desc *desc, bool sync_chip)
 {
@@ -45,8 +44,6 @@ static void __synchronize_hardirq(struct irq_desc *desc, bool sync_chip)
 	} while (inprogress);
 }
 
-/* synchronize_hardirq removed - no callers */
-/* synchronize_irq removed - no callers (~12 LOC) */
 
 void __disable_irq(struct irq_desc *desc)
 {
@@ -71,7 +68,6 @@ void disable_irq_nosync(unsigned int irq)
 	__disable_irq_nosync(irq);
 }
 
-/* disable_irq, disable_hardirq, disable_nmi_nosync removed - no callers */
 
 void __enable_irq(struct irq_desc *desc)
 {
@@ -111,7 +107,6 @@ out:
 	irq_put_desc_busunlock(desc, flags);
 }
 
-/* enable_nmi, can_request_irq removed - no callers */
 
 int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 {

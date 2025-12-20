@@ -94,7 +94,6 @@ loff_t no_llseek(struct file *file, loff_t offset, int whence)
 	return -ESPIPE;
 }
 
-/* default_llseek removed - never called */
 
 loff_t vfs_llseek(struct file *file, loff_t offset, int whence)
 {
@@ -449,7 +448,6 @@ static ssize_t do_writev(unsigned long fd, const struct iovec __user *vec,
 	return -ENOSYS;
 }
 
-/* pos_from_hilo, do_preadv, do_pwritev removed - unused after stubbing preadv/pwritev */
 
 SYSCALL_DEFINE3(readv, unsigned long, fd, const struct iovec __user *, vec,
 		unsigned long, vlen)

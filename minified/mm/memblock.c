@@ -27,7 +27,6 @@ struct pglist_data __refdata contig_page_data;
 unsigned long max_low_pfn;
 unsigned long min_low_pfn;
 unsigned long max_pfn;
-/* max_possible_pfn removed - only set, never read */
 
 static struct memblock_region memblock_memory_init_regions[INIT_MEMBLOCK_REGIONS] __initdata_memblock;
 static struct memblock_region memblock_reserved_init_regions[INIT_MEMBLOCK_RESERVED_REGIONS] __initdata_memblock;
@@ -894,7 +893,6 @@ void __init memblock_free_late(phys_addr_t base, phys_addr_t size)
 	}
 }
 
-/* memblock_phys_mem_size, memblock_reserved_size removed - unused */
 
 phys_addr_t __init_memblock memblock_start_of_DRAM(void)
 {
@@ -908,9 +906,7 @@ phys_addr_t __init_memblock memblock_end_of_DRAM(void)
 	return (memblock.memory.regions[idx].base + memblock.memory.regions[idx].size);
 }
 
-/* __find_max_addr removed - unused */
 
-/* memblock_enforce_memory_limit, memblock_cap_memory_range, memblock_mem_limit_remove_map removed - unused */
 
 static int __init_memblock memblock_search(struct memblock_type *type, phys_addr_t addr)
 {
@@ -930,7 +926,6 @@ static int __init_memblock memblock_search(struct memblock_type *type, phys_addr
 	return -1;
 }
 
-/* memblock_is_reserved, memblock_is_memory, memblock_is_map_memory removed - unused */
 
 bool __init_memblock memblock_is_region_memory(phys_addr_t base, phys_addr_t size)
 {
@@ -993,7 +988,6 @@ void __init memblock_allow_resize(void)
 	memblock_can_resize = 1;
 }
 
-/* early_memblock and early_param removed (~2 LOC) */
 
 static void __init free_memmap(unsigned long start_pfn, unsigned long end_pfn)
 {
@@ -1095,7 +1089,6 @@ static unsigned long __init free_low_memory_core_early(void)
 	return count;
 }
 
-/* reset_managed_pages_done removed - unused */
 
 /* Used internally by memblock_free_all */
 static void __init reset_all_zones_managed_pages(void)

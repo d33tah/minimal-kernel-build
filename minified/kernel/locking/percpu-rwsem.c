@@ -182,4 +182,3 @@ void __sched percpu_down_write(struct percpu_rw_semaphore *sem)
 	 
 }
 
-/* percpu_up_write removed - unused */

@@ -108,7 +108,6 @@ over:
 	return ERR_PTR(-ENFILE);
 }
 
-/* alloc_empty_file_noaccount removed - unused */
 
 static struct file *alloc_file(const struct path *path, int flags,
 		const struct file_operations *fop)
@@ -163,7 +162,6 @@ struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
 	return file;
 }
 
-/* alloc_file_clone removed - unused */
 
 static void __fput(struct file *file)
 {
@@ -248,7 +246,6 @@ void fput(struct file *file)
 	}
 }
 
-/* __fput_sync removed - unused */
 
 
 void __init files_init(void)

@@ -21,7 +21,6 @@ static struct device *next_device(struct klist_iter *i)
 	return dev;
 }
 
-/* driver_set_override removed - unused */
 
 int driver_for_each_device(struct device_driver *drv, struct device *start,
 			   void *data, int (*fn)(struct device *, void *))
@@ -115,7 +114,6 @@ int driver_register(struct device_driver *drv)
 	return ret;
 }
 
-/* driver_unregister removed - never called */
 
 struct device_driver *driver_find(const char *name, struct bus_type *bus)
 {

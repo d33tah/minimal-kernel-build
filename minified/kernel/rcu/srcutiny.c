@@ -7,7 +7,6 @@
 #include <linux/delay.h>
 #include <linux/srcu.h>
 
-/* rcu_segcblist.h removed - not actually used */
 #include "rcu.h"
 
 int rcu_scheduler_active __read_mostly;

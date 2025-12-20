@@ -9,7 +9,6 @@
 #include <linux/rmap.h>
 #include <linux/swap.h>
 #include <linux/swapops.h>
-/* secretmem.h inlined - header removed */
 static inline bool vma_is_secretmem(struct vm_area_struct *vma) { return false; }
 
 #include <linux/sched/signal.h>
@@ -29,7 +28,6 @@ struct follow_page_context {
 	unsigned int page_mask;
 };
 
-/* sanity_check_pinned_pages removed - unused (~21 lines) */
 
 static inline struct folio *try_get_folio(struct page *page, int refs)
 {
@@ -83,7 +81,6 @@ struct folio *try_grab_folio(struct page *page, int refs, unsigned int flags)
 	return NULL;
 }
 
-/* gup_put_folio removed - unused */
 
 bool __must_check try_grab_page(struct page *page, unsigned int flags)
 {
@@ -110,7 +107,6 @@ bool __must_check try_grab_page(struct page *page, unsigned int flags)
 	return true;
 }
 
-/* gup_folio_range_next removed - unused (~14 lines) */
 
 static inline void mm_set_has_pinned_flag(unsigned long *mm_flags)
 {
@@ -463,7 +459,6 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 	return follow_p4d_mask(vma, address, pgd, flags, ctx);
 }
 
-/* follow_page removed - never called (~17 lines) */
 
 static int get_gate_page(struct mm_struct *mm, unsigned long address,
 		unsigned int gup_flags, struct vm_area_struct **vma,
@@ -723,7 +718,6 @@ out:
 	return i ? i : ret;
 }
 
-/* fixup_user_fault removed - unused */
 
 static __always_inline long __get_user_pages_locked(struct mm_struct *mm,
 						unsigned long start,
@@ -864,7 +858,6 @@ long populate_vma_page_range(struct vm_area_struct *vma,
 	return ret;
 }
 
-/* faultin_vma_page_range removed - unused */
 
 int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 {

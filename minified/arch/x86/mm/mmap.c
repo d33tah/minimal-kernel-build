@@ -117,7 +117,6 @@ unsigned long get_mmap_base(int is_legacy)
 	return is_legacy ? mm->mmap_legacy_base : mm->mmap_base;
 }
 
-/* arch_vma_name removed - unused */
 
 bool mmap_address_hint_valid(unsigned long addr, unsigned long len)
 {
@@ -127,7 +126,6 @@ bool mmap_address_hint_valid(unsigned long addr, unsigned long len)
 	return (addr > DEFAULT_MAP_WINDOW) == (addr + len > DEFAULT_MAP_WINDOW);
 }
 
-/* valid_phys_addr_range, valid_mmap_phys_addr_range removed - never called */
 
 bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
 {

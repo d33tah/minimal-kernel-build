@@ -49,7 +49,6 @@ void tty_unthrottle(struct tty_struct *tty)
 	up_write(&tty->termios_rwsem);
 }
 
-/* tty_throttle_safe and tty_unthrottle_safe removed - no callers */
 
 void tty_wait_until_sent(struct tty_struct *tty, long timeout)
 {
@@ -62,7 +61,6 @@ int tty_termios_hw_change(const struct ktermios *a, const struct ktermios *b) { 
 unsigned char tty_get_char_size(unsigned int cflag) { return 8; }
 unsigned char tty_get_frame_size(unsigned int cflag) { return 10; }
 
-/* tty_set_termios, tty_perform_flush removed - no callers */
 
 int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 {

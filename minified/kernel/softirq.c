@@ -69,7 +69,6 @@ static void __local_bh_enable(unsigned int cnt)
 	__preempt_count_sub(cnt);
 }
 
-/* _local_bh_enable removed - never called */
 
 void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 {
@@ -307,7 +306,6 @@ void open_softirq(int nr, void (*action)(struct softirq_action *))
 	softirq_vec[nr].action = action;
 }
 
-/* tasklet code removed - unused in minimal kernel */
 
 void __init softirq_init(void)
 {

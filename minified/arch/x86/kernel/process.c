@@ -193,7 +193,6 @@ void flush_thread(void)
 	pkru_flush_thread();
 }
 
-/* disable_TSC removed - unused */
 
 DEFINE_PER_CPU(u64, msr_misc_features_shadow);
 
@@ -337,7 +336,6 @@ void speculation_ctrl_update(unsigned long tif)
 	local_irq_restore(flags);
 }
 
-/* speculation_ctrl_update_current removed - no callers */
 
 static inline void cr4_toggle_bits_irqsoff(unsigned long mask)
 {
@@ -444,7 +442,6 @@ void select_idle_routine(const struct cpuinfo_x86 *c)
 		x86_idle = default_idle;
 }
 
-/* amd_e400_c1e_apic_setup removed - no callers */
 
 void __init arch_post_acpi_subsys_init(void)
 {
@@ -465,7 +462,6 @@ void __init arch_post_acpi_subsys_init(void)
 	pr_info("System has AMD C1E enabled\n");
 }
 
-/* idle_setup and early_param removed (~2 LOC) */
 
 unsigned long arch_align_stack(unsigned long sp)
 {

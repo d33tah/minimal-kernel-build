@@ -30,7 +30,6 @@ void register_shrinker_prepared(struct shrinker *shrinker)
 	 
 }
 
-/* zone_reclaimable_pages removed - never called */
 
 unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 				 gfp_t gfp_mask, nodemask_t *nodemask)
@@ -55,4 +54,3 @@ long remove_mapping(struct address_space *mapping, struct folio *folio)
 	return 0;
 }
 
-/* folio_putback_lru, folio_isolate_lru removed - never called */

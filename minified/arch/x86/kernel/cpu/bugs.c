@@ -61,6 +61,5 @@ int arch_prctl_spec_ctrl_set(struct task_struct *task, unsigned long which,
 	return -ENODEV;
 }
 
-/* update_srbds_msr, cpu_bugs_smt_update removed - never called */
 
 DEFINE_STATIC_KEY_FALSE(switch_mm_cond_l1d_flush);

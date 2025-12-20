@@ -96,7 +96,6 @@ static __always_inline u64 steal_account_process_time(u64 maxtime)
 	return 0;
 }
 
-/* thread_group_cputime removed - unused */
 
 static inline void irqtime_account_idle_ticks(int ticks) { }
 static inline void irqtime_account_process_tick(struct task_struct *p, int user_tick,
@@ -131,7 +130,6 @@ void account_process_tick(struct task_struct *p, int user_tick)
 		account_idle_time(cputime);
 }
 
-/* cputime_adjust, task_cputime_adjusted removed - unused */
 
 /* thread_group_cputime_adjusted - used by exit.c */
 void thread_group_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st)

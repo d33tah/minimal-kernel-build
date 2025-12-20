@@ -29,11 +29,9 @@ static inline int is_hpet_enabled(void) { return 0; }
 #include <asm/hypervisor.h>
 #include <asm/nmi.h>
 #include <asm/x86_init.h>
-/* asm/geode.h removed - unused */
 #include <asm/apic.h>
 #include <asm/intel-family.h>
 #include <asm/i8259.h>
-/* uv/uv.h inlined - is_uv_system removed, unused */
 static inline bool is_early_uv_system(void) { return 0; }
 
 unsigned int __read_mostly cpu_khz;	 
@@ -60,7 +58,6 @@ struct cyc2ns {
 
 static DEFINE_PER_CPU_ALIGNED(struct cyc2ns, cyc2ns);
 
-/* tsc_early_khz_setup and early_param removed (~2 LOC) */
 
 __always_inline void cyc2ns_read_begin(struct cyc2ns_data *data)
 {
@@ -178,9 +175,7 @@ sched_clock(void) __attribute__((alias("native_sched_clock")));
 
 bool using_native_sched_clock(void) { return true; }
 
-/* check_tsc_unstable removed - never called */
 
-/* notsc_setup, tsc_setup and __setups removed (~8 LOC) */
 
 static int no_sched_irq_time;
 static int no_tsc_watchdog;
@@ -577,10 +572,8 @@ static unsigned long native_calibrate_cpu(void)
 	return tsc_freq;
 }
 
-/* recalibrate_cpu_khz removed - no callers */
 
 
-/* cyc2ns_suspend removed - unused */
 
 void tsc_save_sched_clock_state(void)
 {
@@ -710,7 +703,6 @@ int unsynchronized_tsc(void)
 	return 0;
 }
 
-/* convert_art_to_tsc, convert_art_ns_to_tsc removed - unused */
 
 
 static void tsc_refine_calibration_work(struct work_struct *work);

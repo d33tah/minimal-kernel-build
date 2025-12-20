@@ -97,7 +97,6 @@ void *memdup_user(const void __user *src, size_t len)
 	return p;
 }
 
-/* vmemdup_user removed - unused */
 
 char *strndup_user(const char __user *s, long n)
 {
@@ -122,7 +121,6 @@ char *strndup_user(const char __user *s, long n)
 	return p;
 }
 
-/* memdup_user_nul removed - unused */
 
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct vm_area_struct *prev)
@@ -156,7 +154,6 @@ void __vma_unlink_list(struct mm_struct *mm, struct vm_area_struct *vma)
 		next->vm_prev = prev;
 }
 
-/* vma_set_file removed - unused */
 
 #ifndef STACK_RND_MASK
 #define STACK_RND_MASK (0x7ff >> (PAGE_SHIFT - 12))      
@@ -200,7 +197,6 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 }
 #endif
 
-/* __account_locked_vm, account_locked_vm removed - unused */
 
 unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 	unsigned long len, unsigned long prot,
@@ -279,9 +275,7 @@ void kvfree(const void *addr)
 		kfree(addr);
 }
 
-/* kvfree_sensitive, kvrealloc removed - unused */
 
-/* __vmalloc_array, vmalloc_array, __vcalloc, vcalloc removed - unused */
 
 void *page_rmapping(struct page *page)
 {
@@ -405,7 +399,6 @@ error:
 	return -ENOMEM;
 }
 
-/* memcmp_pages removed - unused */
 
 #ifndef ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO
 void flush_dcache_folio(struct folio *folio)

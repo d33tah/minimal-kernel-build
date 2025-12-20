@@ -44,7 +44,6 @@ static LIST_HEAD(clocksource_list);
 static DEFINE_MUTEX(clocksource_mutex);
 static char override_name[CS_NAME_LEN];
 static int finished_booting;
-/* suspend_start removed - unused */
 
 #define WATCHDOG_THRESHOLD (NSEC_PER_SEC >> 5)
 
@@ -315,7 +314,6 @@ static inline void clocksource_reset_watchdog(void)
 		cs->flags &= ~CLOCK_SOURCE_WATCHDOG;
 }
 
-/* clocksource_resume_watchdog removed - never called */
 
 static void clocksource_enqueue_watchdog(struct clocksource *cs)
 {
@@ -466,7 +464,6 @@ static void clocksource_suspend_select(bool fallback)
 	}
 }
 
-/* clocksource_start_suspend_timing, clocksource_stop_suspend_timing, clocksource_suspend, clocksource_resume, clocksource_touch_watchdog removed - unused */
 
 static u32 clocksource_max_adjustment(struct clocksource *cs)
 {
@@ -731,4 +728,3 @@ int clocksource_unregister(struct clocksource *cs)
 }
 
 
-/* boot_override_clocksource, boot_override_clock and __setups removed (~6 LOC) */

@@ -214,7 +214,6 @@ static int cpuhp_store_callbacks(enum cpuhp_state state, const char *name,
 	return ret;
 }
 
-/* cpuhp_get_teardown_cb removed - unused */
 
 static int cpuhp_issue_call(int cpu, enum cpuhp_state state, bool bringup,
 			    struct hlist_node *node)
@@ -370,7 +369,6 @@ int __cpuhp_setup_state(enum cpuhp_state state,
 	return ret;
 }
 
-/* __cpuhp_state_remove_instance, __cpuhp_remove_state, __cpuhp_remove_state_cpuslocked removed - never used */
 
 
 #define MASK_DECLARE_1(x)	[x+1][0] = (1UL << (x))
@@ -398,7 +396,6 @@ struct cpumask __cpu_present_mask __read_mostly;
 
 struct cpumask __cpu_active_mask __read_mostly;
 
-/* __cpu_dying_mask removed - unused */
 
 atomic_t __num_online_cpus __read_mostly;
 
@@ -431,6 +428,4 @@ void __init boot_cpu_hotplug_init(void)
 	this_cpu_write(cpuhp_state.state, CPUHP_ONLINE);
 }
 
-/* mitigations_parse_cmdline and early_param removed (~2 LOC) */
 
-/* cpu_mitigations_off, cpu_mitigations_auto_nosmt removed - unused */

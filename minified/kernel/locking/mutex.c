@@ -1,4 +1,3 @@
-/* Simplified mutex implementation - ww_mutex removed (unused) */
 #include <linux/mutex.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/rt.h>

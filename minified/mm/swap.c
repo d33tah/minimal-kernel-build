@@ -21,14 +21,12 @@
 #include <linux/gfp.h>
 #include <linux/uio.h>
 #include <linux/hugetlb.h>
-/* page_idle.h removed - stubs inlined */
 static inline bool folio_test_idle(struct folio *folio) { return false; }
 static inline void folio_clear_idle(struct folio *folio) { }
 #include <linux/local_lock.h>
 
 #include "internal.h"
 
-/* page_cluster removed - unused */
 
 struct lru_rotate {
 	local_lock_t lock;
@@ -161,7 +159,6 @@ void folio_rotate_reclaimable(struct folio *folio)
 	}
 }
 
-/* lru_note_cost, lru_note_cost_folio removed - unused */
 
 static void __folio_activate(struct folio *folio, struct lruvec *lruvec)
 {
@@ -526,7 +523,6 @@ void folio_batch_remove_exceptionals(struct folio_batch *fbatch)
 	fbatch->nr = j;
 }
 
-/* pagevec_lookup_range removed - no callers */
 
 unsigned pagevec_lookup_range_tag(struct pagevec *pvec,
 		struct address_space *mapping, pgoff_t *index, pgoff_t end,

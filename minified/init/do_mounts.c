@@ -29,7 +29,6 @@ static int root_wait;
 
 dev_t ROOT_DEV;
 
-/* load_ramdisk, readonly, readwrite and __setups removed (~8 LOC) */
 
 
 static dev_t devt_from_devnum(const char *name)

@@ -83,9 +83,6 @@ struct file *anon_inode_getfile(const char *name,
 	return __anon_inode_getfile(name, fops, priv, flags);
 }
 
-/* anon_inode_getfile_secure removed - unused */
-/* anon_inode_getfd removed - unused (~20 LOC) */
-/* anon_inode_getfd_secure removed - unused */
 
 static int __init anon_inode_init(void)
 {

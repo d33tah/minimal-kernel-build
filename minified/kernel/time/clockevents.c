@@ -307,6 +307,5 @@ void clockevents_exchange_device(struct clock_event_device *old,
 }
 
 
-/* clockevents_suspend, clockevents_resume removed - unused */
 
 

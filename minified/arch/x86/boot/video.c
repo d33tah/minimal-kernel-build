@@ -1,4 +1,3 @@
-/* Minimal video setup for boot - menu and restore removed */
 #include <uapi/asm/boot.h>
 #include "boot.h"
 #include "video.h"

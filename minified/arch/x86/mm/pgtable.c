@@ -22,7 +22,6 @@ pgtable_t pte_alloc_one(struct mm_struct *mm)
 	return __pte_alloc_one(mm, __userpte_alloc_gfp);
 }
 
-/* setup_userpte and early_param removed (~2 LOC) */
 
 void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
 {
@@ -314,7 +313,6 @@ int ptep_clear_flush_young(struct vm_area_struct *vma,
 }
 
 
-/* reserve_top_address removed - unused */
 
 int fixmaps_set;
 

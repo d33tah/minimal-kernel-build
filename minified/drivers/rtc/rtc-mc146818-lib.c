@@ -51,7 +51,6 @@ bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
 	return false;
 }
 
-/* mc146818_does_rtc_work removed - unused */
 
 struct mc146818_get_time_callback_param {
 	struct rtc_time *time;

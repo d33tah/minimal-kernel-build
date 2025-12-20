@@ -62,7 +62,6 @@ static void enable_8259A_irq(struct irq_data *data)
 	raw_spin_unlock_irqrestore(&i8259A_lock, flags);
 }
 
-/* i8259A_irq_pending and make_8259A_irq removed - unused */
 
 static inline int i8259A_irq_real(unsigned int irq)
 {
@@ -137,7 +136,6 @@ struct irq_chip i8259A_chip = {
 	.irq_mask_ack	= mask_and_ack_8259A,
 };
 
-/* Stub: ELCR save/restore, syscore ops, mask_8259A, unmask_8259A, probe_8259A removed - not needed */
 
 static void init_8259A(int auto_eoi)
 {
@@ -203,4 +201,3 @@ struct legacy_pic default_legacy_pic = {
 
 struct legacy_pic *legacy_pic = &default_legacy_pic;
 
-/* i8259A_init_ops removed - not needed for minimal kernel */

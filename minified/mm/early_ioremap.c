@@ -11,7 +11,6 @@
 
 static int early_ioremap_debug __initdata;
 
-/* early_ioremap_debug_setup and early_param removed (~2 LOC) */
 
 static int after_paging_init __initdata;
 
@@ -58,7 +57,6 @@ void __init early_ioremap_setup(void)
 		slot_virt[i] = __fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i);
 }
 
-/* check_early_ioremap_leak removed - not needed for minimal kernel */
 
 static void __init __iomem *
 __early_ioremap(resource_size_t phys_addr, unsigned long size, pgprot_t prot)
@@ -178,7 +176,6 @@ early_memremap(resource_size_t phys_addr, unsigned long size)
 
 	return (__force void *)__early_ioremap(phys_addr, size, prot);
 }
-/* early_memremap_ro removed - unused */
 
 
 #define MAX_MAP_CHUNK	(NR_FIX_BTMAPS << PAGE_SHIFT)

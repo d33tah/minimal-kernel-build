@@ -9,7 +9,6 @@
 #include <asm/vsyscall.h>
 #include <asm/x86_init.h>
 #include <asm/time.h>
-/* asm/intel-mid.h removed - unused */
 #include <asm/setup.h>
 
 volatile unsigned long cmos_lock;
@@ -79,7 +78,6 @@ unsigned char rtc_cmos_read(unsigned char addr)
 /* rtc_cmos_write stubbed - mc146818_set_time (only caller) is now a stub */
 void rtc_cmos_write(unsigned char val, unsigned char addr) { }
 
-/* update_persistent_clock64 removed - unused */
 
 void read_persistent_clock64(struct timespec64 *ts)
 {

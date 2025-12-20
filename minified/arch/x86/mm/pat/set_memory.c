@@ -30,26 +30,19 @@
 #include <asm/memtype.h>
 
 // Stub: cache flushing
-/* clflush_cache_range removed - unused */
 
 // Stub: memory protection functions - all return success
-/* __set_memory_prot removed - never called */
-/* _set_memory_uc, set_memory_uc, _set_memory_wc, set_memory_wc, _set_memory_wt, _set_memory_wb, set_memory_wb, set_memory_np_noalias removed - never called */
 int set_memory_x(unsigned long addr, int numpages) { return 0; }
 int set_memory_nx(unsigned long addr, int numpages) { return 0; }
 int set_memory_ro(unsigned long addr, int numpages) { return 0; }
 int set_memory_rw(unsigned long addr, int numpages) { return 0; }
 int set_memory_np(unsigned long addr, int numpages) { return 0; }
-/* set_memory_4k, set_memory_nonglobal, set_memory_global removed - never called */
 int set_memory_encrypted(unsigned long addr, int numpages) { return 0; }
 int set_memory_decrypted(unsigned long addr, int numpages) { return 0; }
 
-/* set_pages_uc, set_pages_array_uc, set_pages_array_wc, set_pages_wb, set_pages_array_wb removed - never called */
 int set_pages_ro(struct page *page, int numpages) { return 0; }
-/* set_pages_rw removed - never called */
 
 // Stub: direct map manipulation
 int set_direct_map_invalid_noflush(struct page *page) { return 0; }
 int set_direct_map_default_noflush(struct page *page) { return 0; }
 
-/* kernel_page_present, kernel_map_pages_in_pgd, kernel_unmap_pages_in_pgd removed - never called */

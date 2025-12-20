@@ -24,7 +24,6 @@ static LIST_HEAD(deferred_probe_active_list);
 static atomic_t deferred_trigger_count = ATOMIC_INIT(0);
 static bool initcalls_done;
 
-/* async_probe_drv_names, async_probe_default removed - unused */
 
 static bool defer_all_probes;
 
@@ -107,14 +106,10 @@ static void driver_deferred_probe_trigger(void)
 	queue_work(system_unbound_wq, &deferred_probe_work);
 }
 
-/* device_block_probing, device_unblock_probing, device_set_deferred_probe_reason removed - unused */
-/* deferred_devs_show and DEFINE_SHOW_ATTRIBUTE removed - unused */
 
 int driver_deferred_probe_timeout;
 
-/* deferred_probe_timeout_setup and __setup removed (~5 LOC) */
 
-/* driver_deferred_probe_check_state removed - unused */
 
 static void deferred_probe_timeout_work_func(struct work_struct *work)
 {
@@ -398,9 +393,7 @@ static int driver_probe_device(struct device_driver *drv, struct device *dev)
 	return ret;
 }
 
-/* cmdline_requested_async_probing removed - unused */
 
-/* save_async_options and __setup removed (~5 LOC) */
 
 /* Stub: driver_allows_async_probing not used in minimal kernel */
 bool driver_allows_async_probing(struct device_driver *drv)
@@ -562,7 +555,6 @@ static void __device_driver_unlock(struct device *dev, struct device *parent)
 		device_unlock(parent);
 }
 
-/* device_driver_attach removed - unused */
 
 static void __driver_attach_async_helper(void *_dev, async_cookie_t cookie)
 {
@@ -693,7 +685,6 @@ void device_release_driver(struct device *dev)
 	device_release_driver_internal(dev, NULL, NULL);
 }
 
-/* device_driver_detach removed - unused */
 
 void driver_detach(struct device_driver *drv)
 {

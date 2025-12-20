@@ -127,7 +127,6 @@ static int __release_resource(struct resource *old, bool release_child)
 	return -EINVAL;
 }
 
-/* __release_child_resources removed - only called from stubbed release_child_resources */
 
 struct resource *request_resource_conflict(struct resource *root, struct resource *new)
 {
@@ -235,11 +234,8 @@ int walk_mem_res(u64 start, u64 end, void *arg,
 	return __walk_iomem_res_desc(start, end, flags, IORES_DESC_NONE, arg, func);
 }
 
-/* walk_system_ram_range, __is_ram, page_is_ram removed - never called */
 
-/* __region_intersects, region_intersects removed - never called */
 
-/* arch_remove_reservations removed - never called */
 
 /* STUB: unused resource allocation/lookup functions */
 static struct resource * __insert_resource(struct resource *parent, struct resource *new)
@@ -309,7 +305,6 @@ int insert_resource(struct resource *parent, struct resource *new)
 	return conflict ? -EBUSY : 0;
 }
 
-/* remove_resource, adjust_resource, reserve_region_with_split, __reserve_region_with_split removed - unused */
 
 static DECLARE_WAIT_QUEUE_HEAD(muxed_resource_wait);
 
@@ -317,7 +312,6 @@ static struct inode *iomem_inode;
 
 static void revoke_iomem(struct resource *res) {}
 
-/* iomem_get_mapping removed - never called */
 
 static int __request_region_locked(struct resource *res, struct resource *parent,
 				   resource_size_t start, resource_size_t n,
@@ -440,7 +434,6 @@ void __devm_release_region(struct device *dev, struct resource *parent,
 			   resource_size_t start, resource_size_t n) { }
 
 #define MAXRESERVE 4
-/* reserve_setup and __setup removed (~5 LOC) */
 
 int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
 {
@@ -448,7 +441,6 @@ int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
 	return 0;
 }
 
-/* strict_iomem declaration removed - __setup at end of file also removed */
 
 static int iomem_fs_init_fs_context(struct fs_context *fc)
 {
@@ -490,4 +482,3 @@ static int __init iomem_init_inode(void)
 }
 
 fs_initcall(iomem_init_inode);
-/* __setup("iomem=", strict_iomem) removed (~1 LOC) */

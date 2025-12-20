@@ -40,7 +40,6 @@ static DEFINE_SPINLOCK(pause_on_oops_lock);
 bool crash_kexec_post_notifiers;
 int panic_on_warn __read_mostly;
 unsigned long panic_on_taint;
-/* panic_on_taint_nousertaint removed - unused */
 
 int panic_timeout = CONFIG_PANIC_TIMEOUT;
 
@@ -223,9 +222,7 @@ void panic(const char *fmt, ...)
 }
 
 
-/* taint_flags array removed - never read, only defined (~20 LOC) */
 
-/* test_taint, get_taint removed - no callers */
 
 void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
 {
@@ -323,10 +320,7 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
 	add_taint(taint, LOCKDEP_STILL_OK);
 }
 
-/* warn_slowpath_fmt removed - __WARN_FLAGS is defined on x86 */
 
 
 
-/* core_param stubs removed for minimal kernel */
 
-/* panic_on_taint_setup and early_param removed (~2 LOC) */

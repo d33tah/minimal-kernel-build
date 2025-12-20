@@ -44,7 +44,6 @@ static inline void olpc_dt_build_devicetree(void) { }
 #include <asm/set_memory.h>
 #include <asm/page_types.h>
 #include <asm/cpu_entry_area.h>
-/* asm/init.h removed - unused */
 #include <asm/pgtable_areas.h>
 #include <asm/numa.h>
 
@@ -336,7 +335,6 @@ pteval_t __default_kernel_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 
 static unsigned int highmem_pages = -1;
 
-/* parse_highmem and early_param removed (~2 LOC) */
 
 #define MSG_HIGHMEM_TOO_BIG \
 	"highmem size (%luMB) is bigger than pages available (%luMB)!\n"

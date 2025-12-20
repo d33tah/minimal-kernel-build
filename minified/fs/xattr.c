@@ -3,7 +3,6 @@
 #include <linux/export.h>
 #include <linux/syscalls.h>
 
-/* All non-syscall xattr functions removed - unused in minimal kernel */
 
 SYSCALL_DEFINE5(setxattr, const char __user *, pathname, const char __user *, name,
 		const void __user *, value, size_t, size, int, flags) { return -EOPNOTSUPP; }

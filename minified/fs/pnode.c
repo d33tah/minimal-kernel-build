@@ -3,7 +3,6 @@
 #include "pnode.h"
 
 
-/* get_dominating_id removed - unused */
 
 void change_mnt_propagation(struct mount *mnt, int type)
 {

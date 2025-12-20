@@ -17,7 +17,6 @@
 struct backing_dev_info noop_backing_dev_info;
 
 static struct class *bdi_class;
-/* bdi_unknown_name removed - unused */
 
 DEFINE_SPINLOCK(bdi_lock);
 static struct rb_root bdi_tree = RB_ROOT;
@@ -89,7 +88,6 @@ static int __init default_bdi_init(void)
 }
 subsys_initcall(default_bdi_init);
 
-/* wb_wakeup_delayed removed - unused */
 
 static void wb_update_bandwidth_workfn(struct work_struct *work)
 {
@@ -229,7 +227,6 @@ struct backing_dev_info *bdi_alloc(int node_id)
 	return bdi;
 }
 
-/* bdi_get_by_id, bdi_register, bdi_register_va, bdi_set_owner, bdi_lookup_rb_node removed - unused */
 
 static void bdi_remove_from_list(struct backing_dev_info *bdi)
 {
@@ -293,4 +290,3 @@ struct backing_dev_info *inode_to_bdi(struct inode *inode)
 	return sb->s_bdi;
 }
 
-/* bdi_dev_name removed - unused */

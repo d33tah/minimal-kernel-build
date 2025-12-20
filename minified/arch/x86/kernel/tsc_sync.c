@@ -5,7 +5,6 @@
 
 bool tsc_async_resets;
 
-/* mark_tsc_async_resets removed - unused */
 
 void tsc_verify_tsc_adjust(bool resume)
 {

@@ -39,7 +39,6 @@ extern bool crash_kexec_post_notifiers;
 #define KASAN_SHADOW_END        (KASAN_SHADOW_START + \
 				(1ULL << (__VIRTUAL_MASK_SHIFT - \
 					  KASAN_SHADOW_SCALE_SHIFT)))
-/* kasan_early_init removed - unused stub */
 static inline void kasan_init(void) { }
 /* --- end inlined kasan.h --- */
 /* kaslr.h inlined */
@@ -126,7 +125,6 @@ struct ist_info ist_info;
 
 __visible unsigned long mmu_cr4_features __ro_after_init;
 
-/* bootloader_type, bootloader_version removed - never read */
 
 struct screen_info screen_info;
 struct edid_info edid_info;
@@ -381,7 +379,6 @@ void __init reserve_standard_io_resources(void)
 
 }
 
-/* snb_gfx_workaround_needed and trim_snb_memory removed: Sandy Bridge workaround not needed */
 static void __init trim_snb_memory(void)
 {
 	/* Stub: Sandy Bridge graphics workaround not needed for minimal kernel */

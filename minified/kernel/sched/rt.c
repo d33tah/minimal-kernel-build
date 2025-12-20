@@ -29,7 +29,6 @@ void init_rt_rq(struct rt_rq *rt_rq)
 	raw_spin_lock_init(&rt_rq->rt_runtime_lock);
 }
 
-/* unregister_rt_sched_group, free_rt_sched_group, alloc_rt_sched_group removed - unused */
 
 static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int flags) { }
 static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int flags) { }

@@ -30,7 +30,6 @@ void vt_clr_kbd_mode_bit(int console, int bit)
 	 
 }
 
-/* vt_set_led_state, vt_get_shift_state removed - unused */
 
 void vt_reset_keyboard(int console)
 {

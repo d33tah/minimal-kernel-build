@@ -2,7 +2,6 @@
 #include <linux/percpu.h>
 #include <linux/preempt.h>
 #include <asm/msr.h>
-/* asm/msr-trace.h removed - unused */
 
 struct msr *msrs_alloc(void)
 {

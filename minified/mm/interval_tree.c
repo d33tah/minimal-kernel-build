@@ -145,7 +145,6 @@ INTERVAL_TREE_DEFINE(struct vm_area_struct, shared.rb,
 		     unsigned long, shared.rb_subtree_last,
 		     vma_start_pgoff, vma_last_pgoff,  , vma_interval_tree)
 
-/* vma_interval_tree_insert_after removed - unused (~32 LOC) */
 
 static inline unsigned long avc_start_pgoff(struct anon_vma_chain *avc)
 {

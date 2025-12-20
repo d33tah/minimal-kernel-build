@@ -11,8 +11,6 @@
 #include <linux/namei.h>
 #include <linux/writeback.h>
 
-/* exportfs.h removed - s_export_op never used in minimal kernel */
-/* buffer_head.h removed - sync_mapping_buffers is stub */
 static inline int sync_mapping_buffers(struct address_space *mapping) { return 0; }
 #include <linux/fs_context.h>
 #include <linux/fsnotify.h>
@@ -264,7 +262,6 @@ struct pseudo_fs_context *init_pseudo(struct fs_context *fc,
 	return ctx;
 }
 
-/* simple_open removed - no callers */
 
 int simple_link(struct dentry *old_dentry, struct inode *dir, struct dentry *dentry)
 {
@@ -480,9 +477,7 @@ int noop_fsync(struct file *file, loff_t start, loff_t end, int datasync)
 	return 0;
 }
 
-/* noop_direct_IO removed - unused */
 
-/* kfree_link removed - unused */
 
 struct inode *alloc_anon_inode(struct super_block *s)
 {
@@ -628,4 +623,3 @@ static const struct dentry_operations generic_ci_dentry_ops = {
 #endif
 
 
-/* generic_set_encrypted_ci_d_ops removed - never called */

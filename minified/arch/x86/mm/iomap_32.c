@@ -7,7 +7,6 @@
 #include <asm/tlbflush.h>
 void __iomem *__iomap_local_pfn_prot(unsigned long pfn, pgprot_t prot);
 int iomap_create_wc(resource_size_t base, unsigned long size, pgprot_t *prot);
-/* iomap_free declaration removed - unused */
 /* --- end inlined iomap.h --- */
 #include <asm/memtype.h>
 #include <linux/export.h>
@@ -36,7 +35,6 @@ int iomap_create_wc(resource_size_t base, unsigned long size, pgprot_t *prot)
 	return 0;
 }
 
-/* iomap_free removed - unused */
 
 void __iomem *__iomap_local_pfn_prot(unsigned long pfn, pgprot_t prot)
 {

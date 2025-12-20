@@ -29,7 +29,6 @@ bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
     return queue_work_on(cpu, wq, &dwork->work);
 }
 
-/* mod_delayed_work_on, __flush_workqueue removed - not called */
 
 bool flush_work(struct work_struct *work)
 {
@@ -53,7 +52,6 @@ bool cancel_delayed_work(struct delayed_work *dwork)
     return cancel_work_sync(&dwork->work);
 }
 
-/* cancel_delayed_work_sync removed - not called */
 
 __printf(1, 4) struct workqueue_struct *
 alloc_workqueue(const char *fmt, unsigned int flags, int max_active, ...)

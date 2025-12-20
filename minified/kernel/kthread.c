@@ -63,7 +63,6 @@ static inline struct kthread *to_kthread(struct task_struct *k)
 	return k->worker_private;
 }
 
-/* __to_kthread removed - unused */
 
 bool set_kthread_struct(struct task_struct *p)
 {
@@ -113,15 +112,12 @@ bool kthread_should_park(void)
 	return __kthread_should_park(current);
 }
 
-/* kthread_freezable_should_stop removed - unused */
-/* kthread_func removed - unused */
 
 void *kthread_data(struct task_struct *task)
 {
 	return to_kthread(task)->data;
 }
 
-/* kthread_probe_data removed - unused */
 
 static void __kthread_parkme(struct kthread *self)
 {
@@ -140,7 +136,6 @@ static void __kthread_parkme(struct kthread *self)
 	__set_current_state(TASK_RUNNING);
 }
 
-/* kthread_parkme, kthread_complete_and_exit removed - unused */
 
 void __noreturn kthread_exit(long result)
 {
@@ -307,7 +302,6 @@ static void __kthread_bind(struct task_struct *p, unsigned int cpu, unsigned int
 	__kthread_bind_mask(p, cpumask_of(cpu), state);
 }
 
-/* kthread_bind_mask, kthread_bind, kthread_create_on_cpu removed - unused */
 
 void kthread_set_per_cpu(struct task_struct *k, int cpu)
 {
@@ -326,7 +320,6 @@ void kthread_set_per_cpu(struct task_struct *k, int cpu)
 	set_bit(KTHREAD_IS_PER_CPU, &kthread->flags);
 }
 
-/* kthread_is_per_cpu removed - unused */
 
 void kthread_unpark(struct task_struct *k)
 {
@@ -341,7 +334,6 @@ void kthread_unpark(struct task_struct *k)
 	wake_up_state(k, TASK_PARKED);
 }
 
-/* kthread_park removed - no callers */
 
 int kthread_stop(struct task_struct *k)
 {

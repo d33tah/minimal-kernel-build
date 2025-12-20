@@ -4,7 +4,6 @@
 #include <linux/fs.h>
 #include <linux/statfs.h>
 
-/* vfs_get_fsid, vfs_statfs removed - unused */
 
 SYSCALL_DEFINE2(statfs, const char __user *, pathname, struct statfs __user *, buf)
 {

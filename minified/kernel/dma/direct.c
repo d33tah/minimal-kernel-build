@@ -486,5 +486,4 @@ size_t dma_direct_max_mapping_size(struct device *dev)
 	return SIZE_MAX;
 }
 
-/* dma_direct_need_sync removed - unused */
 

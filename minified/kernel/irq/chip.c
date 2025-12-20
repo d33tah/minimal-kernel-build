@@ -11,7 +11,6 @@
 #include <linux/irqdomain.h>
 
 /* --- 2025-12-08 02:10 --- Inlined from asm/msi.h */
-/* x86_create_pci_msi_domain removed - never called */
 #define native_create_pci_msi_domain	NULL
 #define x86_pci_msi_default_domain	NULL
 
@@ -436,7 +435,6 @@ void irq_disable(struct irq_desc *desc)
 	__irq_disable(desc, irq_settings_disable_unlazy(desc));
 }
 
-/* irq_percpu_disable removed - only used by handle_percpu_devid_irq (~8 LOC) */
 
 static inline void mask_ack_irq(struct irq_desc *desc)
 {
@@ -505,9 +503,7 @@ static bool irq_may_run(struct irq_desc *desc)
 	return irq_check_poll(desc);
 }
 
-/* handle_simple_irq removed - unused (~20 LOC) */
 
-/* handle_untracked_irq removed - unused (~26 LOC) */
 
 static void cond_unmask_irq(struct irq_desc *desc)
 {
@@ -542,19 +538,12 @@ out_unlock:
 	raw_spin_unlock(&desc->lock);
 }
 
-/* cond_unmask_eoi_irq removed - only used by handle_fasteoi_irq (~16 LOC) */
 
-/* handle_fasteoi_irq removed - unused (~33 LOC) */
 
-/* handle_fasteoi_nmi removed - unused */
 
-/* handle_edge_irq removed - unused (~45 LOC) */
 
-/* handle_percpu_irq removed - unused (~15 LOC) */
 
-/* handle_percpu_devid_irq removed - unused (~31 LOC) */
 
-/* handle_percpu_devid_fasteoi_nmi removed - unused */
 
 static void
 __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,
@@ -614,7 +603,6 @@ __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 	irq_put_desc_busunlock(desc, flags);
 }
 
-/* irq_set_chained_handler_and_data removed - unused (~15 LOC) */
 
 void
 irq_set_chip_and_handler_name(unsigned int irq, const struct irq_chip *chip,
@@ -661,7 +649,6 @@ void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set)
 
 
 
-/* irq_chip_compose_msi_msg removed - unused (~15 LOC) */
 
 static struct device *irq_get_parent_device(struct irq_data *data)
 {

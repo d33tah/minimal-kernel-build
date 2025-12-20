@@ -4,7 +4,6 @@
 
 void __f_setown(struct file *filp, struct pid *pid, enum pid_type type, int force) { }
 
-/* f_setown removed - unused */
 
 int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fapp) { return 0; }
 

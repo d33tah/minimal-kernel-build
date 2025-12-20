@@ -20,10 +20,8 @@ static inline void rt_mutex_debug_task_free(struct task_struct *tsk) { }
 #include <linux/completion.h>
 #include <linux/personality.h>
 #include <linux/mempolicy.h>
-/* sem.h removed - stubs inlined */
 static inline int copy_semundo(unsigned long clone_flags, struct task_struct *tsk) { return 0; }
 static inline void exit_sem(struct task_struct *tsk) { }
-/* shm.h removed - shm_init_task is stub */
 static inline void shm_init_task(struct task_struct *task) { }
 #include <linux/file.h>
 #include <linux/fdtable.h>
@@ -50,7 +48,6 @@ static inline void shm_init_task(struct task_struct *task) { }
 #include <linux/futex.h>
 #include <linux/compat.h>
 #include <linux/kthread.h>
-/* task_io_accounting_ops.h removed - stubs inlined */
 static inline void task_io_accounting_init(struct task_io_accounting *ioac) {}
 #include <linux/rcupdate.h>
 #include <linux/ptrace.h>
@@ -94,7 +91,6 @@ static inline void clear_user_return_notifier(struct task_struct *p) {}
 #include <linux/uprobes.h>
 #include <linux/compiler.h>
 #include <linux/sysctl.h>
-/* kcov.h removed - kcov_task_init is no-op */
 #include <linux/init_task.h>
 #include <linux/thread_info.h>
 #include <linux/kasan.h>
@@ -643,7 +639,6 @@ __cacheline_aligned_in_smp DEFINE_SPINLOCK(mmlist_lock);
 
 static unsigned long default_dump_filter = MMF_DUMP_FILTER_DEFAULT;
 
-/* coredump_filter_setup and __setup removed (~6 LOC) */
 
 #include <linux/init_task.h>
 
@@ -780,7 +775,6 @@ int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 /* get_mm_exe_file stubbed - used by dup_mm */
 struct file *get_mm_exe_file(struct mm_struct *mm) { return NULL; }
 
-/* get_task_mm removed - never called */
 
 static void complete_vfork_done(struct task_struct *tsk)
 {
@@ -1777,4 +1771,3 @@ int unshare_files(void)
 	return 0;
 }
 
-/* sysctl_max_threads removed - unused */

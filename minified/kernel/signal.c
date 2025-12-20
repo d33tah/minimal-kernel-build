@@ -10,7 +10,6 @@
 #include <linux/cgroup.h>
 #include <linux/audit.h>
 #include <linux/task_work.h>
-/* coredump.h removed - no definitions used */
 #include <linux/tty.h>
 #include <linux/proc_fs.h>
 
@@ -139,7 +138,6 @@ void calculate_sigpending(void)
 	(sigmask(SIGSEGV) | sigmask(SIGBUS) | sigmask(SIGILL) | \
 	 sigmask(SIGTRAP) | sigmask(SIGFPE) | sigmask(SIGSYS))
 
-/* next_signal removed - not called */
 
 static inline void print_dropped_signal(int sig)
 {
@@ -242,7 +240,6 @@ flush_signal_handlers(struct task_struct *t, int force_default)
 	}
 }
 
-/* unhandled_signal, collect_signal, dequeue_signal removed - unused */
 
 void signal_wake_up_state(struct task_struct *t, unsigned int state)
 {
@@ -255,7 +252,6 @@ void signal_wake_up_state(struct task_struct *t, unsigned int state)
 		kick_process(t);
 }
 
-/* flush_sigqueue_mask removed - only caller was kernel_sigaction */
 
 static inline int is_si_special(const struct kernel_siginfo *info)
 {
@@ -481,7 +477,6 @@ int kill_pid_info(int sig, struct kernel_siginfo *info, struct pid *pid)
 	return error;
 }
 
-/* kill_proc_info, kill_something_info removed - kill syscall stubbed */
 
 int send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p)
 {
@@ -564,7 +559,6 @@ int force_sig_fault(int sig, int code, void __user *addr
 	return force_sig_info_to_task(&info, current, HANDLER_CURRENT);
 }
 
-/* send_sig_fault removed - unused */
 
 /* Stub: PKU signal - used by fault.c */
 #ifdef SEGV_PKUERR
@@ -582,7 +576,6 @@ int kill_pgrp(struct pid *pid, int sig, int priv)
 	return ret;
 }
 
-/* kill_pid, sigqueue_alloc, sigqueue_free, send_sigqueue removed - no external callers */
 
 bool do_notify_parent(struct task_struct *tsk, int sig)
 {
@@ -865,7 +858,6 @@ SYSCALL_DEFINE4(rt_sigtimedwait, const sigset_t __user *, uthese,
 	return -ENOSYS;
 }
 
-/* prepare_kill_siginfo removed - kill syscall stubbed */
 
 SYSCALL_DEFINE2(kill, pid_t, pid, int, sig)
 {
@@ -901,7 +893,6 @@ SYSCALL_DEFINE4(rt_tgsigqueueinfo, pid_t, tgid, pid_t, pid, int, sig,
 	return -ENOSYS;
 }
 
-/* kernel_sigaction, sigaction_compat_abi removed - unused */
 
 int do_sigaction(int sig, struct k_sigaction *act, struct k_sigaction *oact)
 {
@@ -1163,7 +1154,6 @@ SYSCALL_DEFINE3(sigsuspend, int, unused1, int, unused2, old_sigset_t, mask)
 	return sigsuspend(&blocked);
 }
 
-/* arch_vma_name removed - unused */
 
 static inline void siginfo_buildtime_checks(void)
 {

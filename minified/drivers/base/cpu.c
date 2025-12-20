@@ -57,7 +57,6 @@ struct bus_type cpu_subsys = {
 };
 
 
-/* common_cpu_attr_groups, hotplugable_cpu_attr_groups removed - unused */
 
 struct cpu_attr {
 	struct device_attribute attr;
@@ -82,7 +81,6 @@ static struct cpu_attr cpu_attrs[] = {
 	_CPU_ATTR(present, &__cpu_present_mask),
 };
 
-/* total_cpus, cpu_device_release, cpu_uevent, register_cpu, get_cpu_device removed - not called */
 
 static void device_create_release(struct device *dev)
 {

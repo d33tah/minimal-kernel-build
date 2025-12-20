@@ -20,7 +20,6 @@ static inline void boot_init_stack_canary(void) {}
 #include <linux/memblock.h>
 #include <linux/acpi.h>
 
-/* bootconfig.h inlined - xbc_* functions removed (unused) */
 #define BOOTCONFIG_MAGIC	"#BOOTCONFIG\n"
 #define BOOTCONFIG_MAGIC_LEN	12
 /* --- end bootconfig.h inlined --- */
@@ -36,7 +35,6 @@ static inline int profile_init(void) { return 0; }
 #include <linux/srcu.h>
 #include <linux/moduleparam.h>
 #include <linux/kallsyms.h>
-/* buildid.h removed - init_vmlinux_build_id is stub */
 static inline void init_vmlinux_build_id(void) { }
 #include <linux/writeback.h>
 #include <linux/cpu.h>
@@ -136,7 +134,6 @@ static char *ramdisk_execute_command = "/init";
 
 bool static_key_initialized __read_mostly;
 
-/* reset_devices removed - unused */
 
 static const char *argv_init[MAX_INIT_ARGS+2] = { "init", NULL, };
 const char *envp_init[MAX_INIT_ENVS+2] = { "HOME=/", "TERM=linux", NULL, };
@@ -643,7 +640,6 @@ static void __init do_ctors(void)
 {
 }
 
-/* initcall_blacklist, initcall_blacklisted, __setup removed (~3 LOC) */
 static bool __init_or_module initcall_blacklisted(initcall_t fn) { return false; }
 
 /* trace_initcall_start_cb and trace_initcall_finish_cb - stub only */
@@ -828,7 +824,6 @@ static int try_to_run_init_process(const char *init_filename)
 static noinline void __init kernel_init_freeable(void);
 
 bool rodata_enabled __ro_after_init = true;
-/* set_debug_rodata and __setup removed (~5 LOC) - rodata always enabled */
 
 static void mark_readonly(void)
 {

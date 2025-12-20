@@ -6,7 +6,6 @@ void file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping)
 {
 }
 
-/* page_cache_ra_unbounded removed - never called */
 
 void page_cache_sync_ra(struct readahead_control *ractl,
 		unsigned long req_count)

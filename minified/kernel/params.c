@@ -9,7 +9,6 @@
 #include <linux/ctype.h>
 #include <linux/security.h>
 
-/* check_kparam_locked removed - unused */
 
 struct kmalloced_param {
 	struct list_head list;
@@ -203,7 +202,6 @@ STANDARD_PARAM_DEF(ulong,	unsigned long,		"%lu",		kstrtoul);
 STANDARD_PARAM_DEF(ullong,	unsigned long long,	"%llu",		kstrtoull);
 STANDARD_PARAM_DEF(hexint,	unsigned int,		"%#08x", 	kstrtouint);
 
-/* param_set_uint_minmax removed - no callers */
 
 int param_set_charp(const char *val, const struct kernel_param *kp)
 {
@@ -263,7 +261,6 @@ const struct kernel_param_ops param_ops_bool = {
 	.get = param_get_bool,
 };
 
-/* param_array, param_array_ops, param_ops_string removed - unused in minimal kernel */
 
 #define to_module_attr(n) container_of(n, struct module_attribute, attr)
 #define to_module_kobject(n) container_of(n, struct module_kobject, kobj)

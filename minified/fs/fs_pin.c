@@ -81,4 +81,3 @@ void mnt_pin_kill(struct mount *m)
 	}
 }
 
-/* group_pin_kill removed - unused */

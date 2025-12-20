@@ -158,7 +158,6 @@ static char _##name##_text[1U << ((avgtextbits) + (descbits))]			\
 			__aligned(__alignof__(unsigned long));			\
 _DEFINE_PRINTKRB(name, descbits, avgtextbits, &_##name##_text[0])
 
-/* prb_rec_init_wr removed - never called */
 
 bool prb_reserve(struct prb_reserved_entry *e, struct printk_ringbuffer *rb,
 		 struct printk_record *r);
@@ -220,7 +219,6 @@ struct console *console_drivers;
 
 static int __read_mostly suppress_panic_printk;
 
-/* control_devkmsg and __setup removed (~2 LOC) */
 
 static int nr_ext_console_drivers;
 
@@ -271,7 +269,6 @@ static int console_locked, console_suspended;
 static struct console_cmdline console_cmdline[MAX_CMDLINECONSOLES];
 
 static int preferred_console = -1;
-/* console_set_on_cmdline removed - never used */
 
 static int console_may_schedule;
 
@@ -320,11 +317,8 @@ static bool suppress_message_printing(int level) { return false; }
 
 
 
-/* console_msg_format_setup, console_setup and __setup handlers removed (~6 LOC) */
 
-/* add_preferred_console removed - no callers */
 
-/* console_suspend_enabled removed - unused */
 static bool printk_console_no_auto_verbose;
 
 void console_verbose(void)
@@ -535,7 +529,6 @@ void console_unlock(void)
 	} while (prb_read_valid(prb, next_seq, NULL) && console_trylock());
 }
 
-/* console_conditional_schedule removed - no callers */
 
 void console_unblank(void)
 {
@@ -593,10 +586,8 @@ struct tty_driver *console_device(int *index)
 	return driver;
 }
 
-/* console_stop, console_start removed - unused */
 
 static int __read_mostly keep_bootcon;
-/* keep_bootcon_setup and early_param removed (~2 LOC) */
 
 static int try_enable_preferred_console(struct console *newcon,
 					bool user_specified)
@@ -779,6 +770,5 @@ void __init console_init(void)
 	}
 }
 
-/* printk_late_init removed - not needed for minimal kernel */
 
 

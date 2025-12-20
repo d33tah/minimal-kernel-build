@@ -27,7 +27,6 @@
 #include <linux/shmem_fs.h>
 #include <linux/rmap.h>
 #include <linux/ramfs.h>
-/* page_idle.h removed - stubs inlined */
 static inline bool folio_test_idle(struct folio *folio) { return false; }
 static inline void folio_clear_idle(struct folio *folio) { }
 #include <linux/migrate.h>
@@ -35,7 +34,6 @@ static inline void folio_clear_idle(struct folio *folio) { }
 #include <asm/tlbflush.h>
 #include "internal.h"
 
-/* buffer_head.h removed - try_to_free_buffers is stub */
 static inline bool try_to_free_buffers(struct folio *folio) { return true; }
 
 #include <asm/mman.h>
@@ -251,9 +249,7 @@ static int __filemap_fdatawrite_range(struct address_space *mapping, loff_t star
 	return filemap_fdatawrite_wbc(mapping, &wbc);
 }
 
-/* __filemap_fdatawrite removed - unused */
 
-/* filemap_fdatawrite, filemap_fdatawrite_range, filemap_flush removed - unused */
 
 /* filemap_range_has_page used internally */
 static bool filemap_range_has_page(struct address_space *mapping,
@@ -305,7 +301,6 @@ static bool mapping_needs_writeback(struct address_space *mapping)
 	return mapping->nrpages;
 }
 
-/* filemap_range_has_writeback removed - unused */
 
 int filemap_write_and_wait_range(struct address_space *mapping,
 				 loff_t lstart, loff_t lend)
@@ -331,7 +326,6 @@ int filemap_write_and_wait_range(struct address_space *mapping,
 	return err;
 }
 
-/* __filemap_set_wb_err removed - unused */
 
 int file_check_and_advance_wb_err(struct file *file)
 {
@@ -489,7 +483,6 @@ int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 	return ret;
 }
 
-/* filemap_invalidate_lock_two, filemap_invalidate_unlock_two removed - unused */
 
 #define PAGE_WAIT_TABLE_BITS 8
 #define PAGE_WAIT_TABLE_SIZE (1 << PAGE_WAIT_TABLE_BITS)
@@ -688,7 +681,6 @@ int folio_put_wait_locked(struct folio *folio, int state)
 	return 0;
 }
 
-/* folio_add_wait_queue removed - unused */
 
 #ifndef clear_bit_unlock_is_negative_byte
 
@@ -730,7 +722,6 @@ void folio_end_writeback(struct folio *folio)
 	folio_put(folio);
 }
 
-/* page_endio removed - unused */
 
 void __folio_lock(struct folio *folio)
 {
@@ -795,7 +786,6 @@ bool __folio_lock_or_retry(struct folio *folio, struct mm_struct *mm,
 	return true;
 }
 
-/* page_cache_next_miss, page_cache_prev_miss removed - unused */
 
 static void *mapping_get_entry(struct address_space *mapping, pgoff_t index)
 {
@@ -997,7 +987,6 @@ bool folio_more_pages(struct folio *folio, pgoff_t index, pgoff_t max)
 	return index < folio->index + folio_nr_pages(folio) - 1;
 }
 
-/* find_get_pages_range, find_get_pages_contig removed - unused */
 
 unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
 			pgoff_t end, xa_mark_t tag, unsigned int nr_pages,
@@ -1413,7 +1402,6 @@ generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 	return filemap_read(iocb, iter, retval);
 }
 
-/* mapping_seek_hole_data removed - unused */
 
 #define MMAP_LOTSAMISS  (100)
 

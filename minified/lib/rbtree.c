@@ -272,7 +272,6 @@ void __rb_insert_augmented(struct rb_node *node, struct rb_root *root,
 	__rb_insert(node, root, augment_rotate);
 }
 
-/* rb_first, rb_last removed - unused */
 
 struct rb_node *rb_next(const struct rb_node *node)
 {

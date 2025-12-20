@@ -69,7 +69,6 @@ static inline int memtype_copy_nth_element(struct memtype *out, loff_t pos)
 
 void pat_disable(const char *msg_reason) { }
 
-/* nopat and early_param removed (~4 LOC) */
 
 bool pat_enabled(void)
 {
@@ -131,7 +130,6 @@ void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot, pfn_t pfn) { }
 void untrack_pfn(struct vm_area_struct *vma, unsigned long pfn,
 		 unsigned long size) { }
 
-/* untrack_pfn_moved removed - unused */
 
 pgprot_t pgprot_writecombine(pgprot_t prot)
 {

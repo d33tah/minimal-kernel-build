@@ -230,7 +230,6 @@ void __iomem *ioremap(resource_size_t phys_addr, unsigned long size)
 				__builtin_return_address(0), false);
 }
 
-/* ioremap_uc, ioremap_wc, ioremap_wt, ioremap_cache removed - unused */
 
 void iounmap(volatile void __iomem *addr)
 {
@@ -268,7 +267,6 @@ void iounmap(volatile void __iomem *addr)
 	kfree(p);
 }
 
-/* xlate_dev_mem_ptr, unxlate_dev_mem_ptr removed - unused */
 
 static pte_t bm_pte[PAGE_SIZE/sizeof(pte_t)] __page_aligned_bss;
 
@@ -288,7 +286,6 @@ static inline pte_t * __init early_ioremap_pte(unsigned long addr)
 {
 	return &bm_pte[pte_index(addr)];
 }
-/* is_early_ioremap_ptep removed - never called */
 
 void __init early_ioremap_init(void)
 {

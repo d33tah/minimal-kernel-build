@@ -31,7 +31,6 @@
 #include <linux/pgtable.h>
 #include <asm/string_32.h>
 #include <asm/page.h>
-/* checksum_32.h removed - not needed */
 #include <asm/mce.h>
 #include <asm/special_insns.h>
 #include <asm/preempt.h>
@@ -50,7 +49,6 @@ void __init_or_module noinline apply_alternatives(struct alt_instr *start,
 {
 }
 
-/* apply_retpolines, apply_returns, apply_ibt_endbr removed - never called */
 
 void __init alternative_instructions(void)
 {

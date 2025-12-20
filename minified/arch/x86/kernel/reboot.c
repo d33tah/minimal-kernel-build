@@ -50,7 +50,6 @@ void machine_power_off(void)
 	machine_halt();
 }
 
-/* nmi_shootdown_cpus removed - stub never called */
 
 void run_crash_ipi_callback(struct pt_regs *regs)
 {

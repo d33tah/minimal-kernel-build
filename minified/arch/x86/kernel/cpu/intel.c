@@ -5,7 +5,6 @@
 #include <asm/bugs.h>
 #include <asm/microcode_intel.h>
 
-/* intel_cpu_collect_info removed - no callers */
 
 int ppro_with_ram_bug(void)
 {

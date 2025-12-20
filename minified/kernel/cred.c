@@ -121,9 +121,7 @@ void exit_creds(struct task_struct *tsk)
 
 }
 
-/* get_task_cred removed - never called */
 
-/* cred_alloc_blank removed - never called */
 
 struct cred *prepare_creds(void)
 {
@@ -316,9 +314,7 @@ void abort_creds(struct cred *new)
 	put_cred(new);
 }
 
-/* override_creds and revert_creds removed - unused */
 
-/* cred_fscmp removed - unused */
 
 int set_cred_ucounts(struct cred *new)
 {
@@ -344,5 +340,4 @@ void __init cred_init(void)
 			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
 }
 
-/* prepare_kernel_cred, set_security_override, set_security_override_from_ctx, set_create_files_as removed - unused */
 

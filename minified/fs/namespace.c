@@ -27,7 +27,6 @@
 #include "pnode.h"
 #include "internal.h"
 
-/* sysctl_mount_max removed - unused */
 
 static unsigned int m_hash_mask __read_mostly;
 static unsigned int m_hash_shift __read_mostly;
@@ -35,10 +34,8 @@ static unsigned int mp_hash_mask __read_mostly;
 static unsigned int mp_hash_shift __read_mostly;
 
 static __initdata unsigned long mhash_entries;
-/* set_mhash_entries and __setup removed (~2 LOC) */
 
 static __initdata unsigned long mphash_entries;
-/* set_mphash_entries and __setup removed (~2 LOC) */
 
 static u64 event;
 static DEFINE_IDA(mnt_id_ida);
@@ -658,7 +655,6 @@ struct vfsmount *vfs_kern_mount(struct file_system_type *type,
 	return mnt;
 }
 
-/* vfs_submount removed - unused */
 
 static struct mount *clone_mnt(struct mount *old, struct dentry *root,
 					int flag)
@@ -838,11 +834,8 @@ struct vfsmount *mntget(struct vfsmount *mnt)
 	return mnt;
 }
 
-/* path_is_mountpoint removed - no callers */
 
-/* mnt_clone_internal removed - no callers */
 
-/* may_umount_tree, may_umount removed - unused */
 
 
 static void namespace_unlock(void)
@@ -994,7 +987,6 @@ bool may_mount(void)
 	return ns_capable(current->nsproxy->mnt_ns->user_ns, CAP_SYS_ADMIN);
 }
 
-/* warn_mandlock removed - empty function */
 
 static int can_umount(const struct path *path, int flags)
 {
@@ -1052,7 +1044,6 @@ static struct mnt_namespace *to_mnt_ns(struct ns_common *ns)
 	return container_of(ns, struct mnt_namespace, ns);
 }
 
-/* from_mnt_ns removed - never called */
 
 struct mount *copy_tree(struct mount *mnt, struct dentry *dentry,
 					int flag)
@@ -1061,7 +1052,6 @@ struct mount *copy_tree(struct mount *mnt, struct dentry *dentry,
 	return clone_mnt(mnt, dentry, flag);
 }
 
-/* collect_mounts, drop_collected_mounts removed - unused */
 
 static void free_mnt_ns(struct mnt_namespace *);
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *, bool);
@@ -1084,7 +1074,6 @@ void dissolve_on_fput(struct vfsmount *mnt)
 		free_mnt_ns(ns);
 }
 
-/* clone_private_mount, iterate_mounts removed - unused */
 
 static void lock_mnt_tree(struct mount *mnt)
 {
@@ -1140,7 +1129,6 @@ static int invent_group_ids(struct mount *mnt, bool recurse)
 	return 0;
 }
 
-/* count_mounts removed - always returned 0 */
 
 static int attach_recursive_mnt(struct mount *source_mnt,
 			struct mount *dest_mnt,
@@ -1747,7 +1735,6 @@ bool is_path_reachable(struct mount *mnt, struct dentry *dentry,
 	return true;
 }
 
-/* path_is_under removed - no callers */
 
 SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
 		const char __user *, put_old)

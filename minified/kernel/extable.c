@@ -105,4 +105,3 @@ out:
 	return ret;
 }
 
-/* func_ptr_is_kernel_text removed - unused */

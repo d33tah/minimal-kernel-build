@@ -59,7 +59,6 @@ bool noinstr in_entry_stack(unsigned long *stack, struct stack_info *info)
 	return true;
 }
 
-/* show_opcodes, show_ip, show_iret_regs removed - unused */
 
 static void show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,
 			unsigned long *stack, const char *log_lvl)
@@ -68,7 +67,6 @@ static void show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,
 	printk("%sCall Trace: <stubbed>\n", log_lvl);
 }
 
-/* show_stack removed - never called */
 
 void show_stack_regs(struct pt_regs *regs)
 {

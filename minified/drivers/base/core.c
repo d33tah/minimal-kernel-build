@@ -22,19 +22,15 @@
 #include <linux/dma-map-ops.h> 
 
 #include "base.h"
-/* physical_location.h inlined; dev_add_physical_location removed - unused */
 static const struct attribute_group dev_attr_physical_location_group = {};
 /* end physical_location.h */
 #include "power/power.h"
 
-/* deferred_sync, fwnode_link_lock, fw_devlink_is_permissive, fw_devlink_drv_reg_done removed - unused */
 
 /* Removed: fwnode_link_add, fwnode_links_purge, fw_devlink_purge_absent_suppliers - no callers */
 
-/* device_links_lock removed - unused */
 DEFINE_STATIC_SRCU(device_links_srcu);
 
-/* device_links_write_lock, device_links_write_unlock removed - never called */
 
 static int device_links_read_lock(void) __acquires(&device_links_srcu)
 {
@@ -46,14 +42,12 @@ static void device_links_read_unlock(int idx) __releases(&device_links_srcu)
 	srcu_read_unlock(&device_links_srcu, idx);
 }
 
-/* device_links_read_lock_held removed - unused */
 
 static void device_link_synchronize_removal(void)
 {
 	synchronize_srcu(&device_links_srcu);
 }
 
-/* device_is_dependent removed - unused */
 
 static int device_reorder_to_tail(struct device *dev, void *not_used)
 {
@@ -159,7 +153,6 @@ postcore_initcall(devlink_class_init);
 #define DL_ADD_VALID_FLAGS (DL_MANAGED_LINK_FLAGS | DL_FLAG_STATELESS | \
 			    DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE)
 
-/* device_link_add removed - only returns NULL stub, never called */
 
 /* Stub: no device links since device_link_add returns NULL */
 int device_links_check_suppliers(struct device *dev)
@@ -168,9 +161,7 @@ int device_links_check_suppliers(struct device *dev)
 	return 0;
 }
 
-/* waiting_for_supplier sysfs attribute removed - sysfs stubbed */
 
-/* device_links_force_bind, device_links_driver_bound removed - unused */
 
 void device_links_no_driver(struct device *dev)
 {
@@ -209,10 +200,7 @@ static void device_links_purge(struct device *dev)
 #define FW_DEVLINK_FLAGS_RPM		(FW_DEVLINK_FLAGS_ON | \
 					 DL_FLAG_PM_RUNTIME)
 
-/* fw_devlink_flags, fw_devlink_setup, fw_devlink_strict_setup, fw_devlink_get_flags removed - unused */
-/* fw_devlink_is_strict removed - no callers */
 
-/* fw_devlink_parse_fwnode, fw_devlink_parse_fwtree removed - unused */
 
 /* Stub: firmware device link functions not needed for minimal kernel */
 void fw_devlink_drivers_done(void)
@@ -220,12 +208,10 @@ void fw_devlink_drivers_done(void)
 	/* fw_devlink_drv_reg_done assignment removed - never read */
 }
 
-/* platform_notify, platform_notify_remove removed - never assigned */
 static struct kobject *dev_kobj;
 struct kobject *sysfs_dev_char_kobj;
 struct kobject *sysfs_dev_block_kobj;
 
-/* device_hotplug_lock removed - lock_device_hotplug, unlock_device_hotplug, lock_device_hotplug_sysfs, device_is_not_partition all removed - no callers */
 
 static void device_platform_notify_remove(struct device *dev)
 {
@@ -234,7 +220,6 @@ static void device_platform_notify_remove(struct device *dev)
 	/* platform_notify_remove call removed - never assigned */
 }
 
-/* dev_driver_string removed - no callers */
 
 #define to_dev_attr(_attr) container_of(_attr, struct device_attribute, attr)
 
@@ -372,7 +357,6 @@ static ssize_t uevent_store(struct device *dev, struct device_attribute *attr,
 static DEVICE_ATTR_RW(uevent);
 
 /* Stub: online sysfs attributes simplified for minimal kernel */
-/* online, removable sysfs attributes removed - sysfs stubbed */
 
 /* Stub: device sysfs groups not needed for minimal kernel */
 int device_add_groups(struct device *dev, const struct attribute_group **groups)
@@ -385,7 +369,6 @@ void device_remove_groups(struct device *dev,
 {
 }
 
-/* devm_device_add_group, devm_device_remove_group, devm_device_add_groups, devm_device_remove_groups removed - unused */
 
 /* Stub: device_remove_attrs not needed (sysfs functions are stubbed) */
 static void device_remove_attrs(struct device *dev)
@@ -403,7 +386,6 @@ static DEVICE_ATTR_RO(dev);
 
 struct kset *devices_kset;
 
-/* devices_kset_move_last, device_create_file removed - no callers */
 
 /* Stub: device_remove_file not needed for minimal kernel */
 void device_remove_file(struct device *dev,
@@ -451,9 +433,7 @@ void device_initialize(struct device *dev)
 #endif
 }
 
-/* virtual_device_parent removed - unused */
 
-/* class_dir struct and related functions removed - unused */
 
 static DEFINE_MUTEX(gdp_mutex);
 
@@ -677,11 +657,7 @@ void device_unregister(struct device *dev)
 	put_device(dev);
 }
 
-/* prev_device removed - unused */
-/* next_device removed - unused */
-/* device_get_devnode removed - never called */
 
-/* device_for_each_child, device_for_each_child_reverse, device_find_child, device_find_child_by_name removed - never called */
 
 int __init devices_init(void)
 {
@@ -714,7 +690,6 @@ struct root_device {
 	struct module *owner;
 };
 
-/* to_root_device removed - never called */
 /* Removed: __root_device_register, root_device_unregister - no callers */
 
 static void device_create_release(struct device *dev)
@@ -814,7 +789,5 @@ int dev_err_probe(const struct device *dev, int err, const char *fmt, ...)
 	return err;
 }
 
-/* fwnode_is_primary, set_primary_fwnode, set_secondary_fwnode, device_set_of_node_from_dev, device_set_node removed - unused */
 
-/* device_match_* functions removed - unused, except device_match_devt */
 int device_match_devt(struct device *dev, const void *pdevt) { return 0; }

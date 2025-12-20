@@ -138,6 +138,5 @@ int rcu_cpu_stall_suppress_at_boot __read_mostly;
 
 void rcu_early_boot_tests(void) {}
 
-/* tasks.h inlined */
-static inline void rcu_tasks_bootup_oddness(void) {}
+/* tasks.h inlined - rcu_tasks_bootup_oddness removed (unused) */
 

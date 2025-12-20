@@ -20,18 +20,9 @@ static inline void boot_init_stack_canary(void) {}
 #include <linux/memblock.h>
 #include <linux/acpi.h>
 
-/* --- 2025-12-06 20:15 --- bootconfig.h inlined (32 LOC) */
+/* bootconfig.h inlined - xbc_* functions removed (unused) */
 #define BOOTCONFIG_MAGIC	"#BOOTCONFIG\n"
 #define BOOTCONFIG_MAGIC_LEN	12
-static inline __init uint32_t xbc_calc_checksum(void *data, uint32_t size)
-{
-	unsigned char *p = data;
-	uint32_t ret = 0;
-	while (size--)
-		ret += *p++;
-	return ret;
-}
-static inline const char *xbc_get_embedded_bootconfig(size_t *size) { return NULL; }
 /* --- end bootconfig.h inlined --- */
 #include <linux/console.h>
 #include <linux/nmi.h>

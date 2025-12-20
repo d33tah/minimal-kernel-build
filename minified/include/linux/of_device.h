@@ -45,20 +45,13 @@ static inline int of_platform_default_populate(struct device_node *root,
 					       const struct of_dev_auxdata *lookup,
 					       struct device *parent)
 { return -ENODEV; }
-static inline void of_platform_depopulate(struct device *parent) { }
-
-static inline int devm_of_platform_populate(struct device *dev)
-{ return -ENODEV; }
-
-static inline void devm_of_platform_depopulate(struct device *dev) { }
-
+/* of_platform_depopulate and devm_of_platform_* removed - unused */
 static inline void of_platform_register_reconfig_notifier(void) { }
 /* End of inlined of_platform.h content */
 
 #include <linux/of.h>
 
 struct device;
-
 
 static inline int of_driver_match_device(struct device *dev, const struct device_driver *drv) { return 0; }
 /* of_device_uevent, of_device_get_match_data, of_device_modalias, of_device_request_module,

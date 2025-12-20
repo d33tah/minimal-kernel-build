@@ -304,10 +304,7 @@ static inline struct irq_chip *irq_data_get_irq_chip(struct irq_data *d)
 	return d->chip;
 }
 
-static inline int irq_common_data_get_node(struct irq_common_data *d)
-{
-	return 0;
-}
+/* irq_common_data_get_node removed - unused */
 
 static inline struct cpumask *irq_data_get_affinity_mask(struct irq_data *d)
 {

@@ -83,12 +83,7 @@ unsigned long global_node_page_state_pages(enum node_stat_item item)
 	return x;
 }
 
-static inline unsigned long global_node_page_state(enum node_stat_item item)
-{
-	VM_WARN_ON_ONCE(vmstat_item_in_bytes(item));
-
-	return global_node_page_state_pages(item);
-}
+/* global_node_page_state removed - unused */
 
 static inline unsigned long zone_page_state(struct zone *zone,
 					enum zone_stat_item item)
@@ -99,7 +94,7 @@ static inline unsigned long zone_page_state(struct zone *zone,
 
 
 #define sum_zone_node_page_state(node, item) global_zone_page_state(item)
-#define node_page_state(node, item) global_node_page_state(item)
+/* node_page_state macro removed - unused */
 #define node_page_state_pages(node, item) global_node_page_state_pages(item)
 
 

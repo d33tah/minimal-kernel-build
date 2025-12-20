@@ -1196,15 +1196,7 @@ __alloc_pages_direct_compact(gfp_t gfp_mask, unsigned int order,
 	return NULL;
 }
 
-static inline bool
-should_compact_retry(struct alloc_context *ac, unsigned int order, int alloc_flags,
-		     enum compact_result compact_result,
-		     enum compact_priority *compact_priority,
-		     int *compaction_retries)
-{
-	/* Stub: no compaction retry */
-	return false;
-}
+/* should_compact_retry removed - unused dead code */
 
 static unsigned long
 __perform_reclaim(gfp_t gfp_mask, unsigned int order,
@@ -1289,36 +1281,7 @@ bool gfp_pfmemalloc_allowed(gfp_t gfp_mask)
 	return !!__gfp_pfmemalloc_flags(gfp_mask);
 }
 
-static inline bool
-should_reclaim_retry(gfp_t gfp_mask, unsigned order,
-		     struct alloc_context *ac, int alloc_flags,
-		     bool did_some_progress, int *no_progress_loops)
-{
-	/* Stub: minimal retry logic */
-	if (did_some_progress && order <= PAGE_ALLOC_COSTLY_ORDER)
-		*no_progress_loops = 0;
-	else
-		(*no_progress_loops)++;
-
-	return *no_progress_loops <= MAX_RECLAIM_RETRIES;
-}
-
-static inline bool
-check_retry_cpuset(int cpuset_mems_cookie, struct alloc_context *ac)
-{
-	
-	if (cpusets_enabled() && ac->nodemask &&
-			!cpuset_nodemask_valid_mems_allowed(ac->nodemask)) {
-		ac->nodemask = NULL;
-		return true;
-	}
-
-	
-	if (read_mems_allowed_retry(cpuset_mems_cookie))
-		return true;
-
-	return false;
-}
+/* should_reclaim_retry and check_retry_cpuset removed - unused dead code */
 
 static inline struct page *
 __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,

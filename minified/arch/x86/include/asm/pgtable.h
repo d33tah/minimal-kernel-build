@@ -771,18 +771,7 @@ static inline pmd_t pmdp_establish(struct vm_area_struct *vma,
 }
 #endif
 
-/* pmdp_invalidate_ad removed - unused */
-
- 
-static inline bool pgdp_maps_userspace(void *__ptr)
-{
-	unsigned long ptr = (unsigned long)__ptr;
-
-	return (((ptr & ~PAGE_MASK) / sizeof(pgd_t)) < PGD_KERNEL_START);
-}
-
-#define pgd_leaf	pgd_large
-static inline int pgd_large(pgd_t pgd) { return 0; }
+/* pmdp_invalidate_ad, pgdp_maps_userspace, pgd_large removed - unused */
 
 
 static inline void clone_pgd_range(pgd_t *dst, pgd_t *src, int count)
@@ -797,28 +786,8 @@ static inline void update_mmu_cache(struct vm_area_struct *vma,
 		unsigned long addr, pte_t *ptep)
 {
 }
-static inline void update_mmu_cache_pmd(struct vm_area_struct *vma,
-		unsigned long addr, pmd_t *pmd)
-{
-}
-static inline void update_mmu_cache_pud(struct vm_area_struct *vma,
-		unsigned long addr, pud_t *pud)
-{
-}
-#ifdef _PAGE_SWP_EXCLUSIVE
-#define __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-/* pte_swp_mkexclusive removed - unused */
-
-static inline int pte_swp_exclusive(pte_t pte)
-{
-	return pte_flags(pte) & _PAGE_SWP_EXCLUSIVE;
-}
-
-static inline pte_t pte_swp_clear_exclusive(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_SWP_EXCLUSIVE);
-}
-#endif  
+/* update_mmu_cache_pmd, update_mmu_cache_pud removed - unused */
+/* pte_swp_exclusive, pte_swp_clear_exclusive removed - unused (entire _PAGE_SWP_EXCLUSIVE block) */
 
 
 
@@ -859,30 +828,13 @@ static inline bool pte_access_permitted(pte_t pte, bool write)
 	return __pte_access_permitted(pte_val(pte), write);
 }
 
-#define pmd_access_permitted pmd_access_permitted
-static inline bool pmd_access_permitted(pmd_t pmd, bool write)
-{
-	return __pte_access_permitted(pmd_val(pmd), write);
-}
-
-#define pud_access_permitted pud_access_permitted
-static inline bool pud_access_permitted(pud_t pud, bool write)
-{
-	return __pte_access_permitted(pud_val(pud), write);
-}
+/* pmd_access_permitted, pud_access_permitted removed - unused */
 
 #define __HAVE_ARCH_PFN_MODIFY_ALLOWED 1
 extern bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot);
 
-/* arch_has_pfn_modify_check removed - unused */
+/* arch_has_pfn_modify_check, arch_faults_on_old_pte removed - unused */
 
-#define arch_faults_on_old_pte arch_faults_on_old_pte
-static inline bool arch_faults_on_old_pte(void)
-{
-	return false;
-}
-
-
-#endif	 
+#endif
 
 #endif  

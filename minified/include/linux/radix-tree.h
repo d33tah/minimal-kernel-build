@@ -56,10 +56,7 @@ static inline bool radix_tree_is_internal_node(void *ptr)
 
 #define INIT_RADIX_TREE(root, mask) xa_init_flags(root, mask)
 
-static inline bool radix_tree_empty(const struct radix_tree_root *root)
-{
-	return root->xa_head == NULL;
-}
+/* radix_tree_empty removed - unused */
 
 struct radix_tree_iter {
 	unsigned long	index;
@@ -68,11 +65,7 @@ struct radix_tree_iter {
 	struct radix_tree_node *node;
 };
 
-
-static inline void *radix_tree_deref_slot(void __rcu **slot)
-{
-	return rcu_dereference(*slot);
-}
+/* radix_tree_deref_slot removed - unused */
 
 int radix_tree_insert(struct radix_tree_root *, unsigned long index,
 			void *);

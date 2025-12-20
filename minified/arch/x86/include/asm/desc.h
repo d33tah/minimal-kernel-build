@@ -46,18 +46,7 @@ static inline phys_addr_t get_cpu_gdt_paddr(unsigned int cpu)
 	return per_cpu_ptr_to_phys(get_cpu_gdt_rw(cpu));
 }
 
-static inline void pack_gate(gate_desc *gate, unsigned type, unsigned long func,
-			     unsigned dpl, unsigned ist, unsigned seg)
-{
-	gate->offset_low	= (u16) func;
-	gate->bits.p		= 1;
-	gate->bits.dpl		= dpl;
-	gate->bits.zero		= 0;
-	gate->bits.type		= type;
-	gate->offset_middle	= (u16) (func >> 16);
-	gate->segment		= seg;
-	gate->bits.ist		= 0;
-}
+/* pack_gate removed - unused */
 
 /* desc_empty removed - unused */
 

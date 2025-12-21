@@ -209,11 +209,6 @@ static __always_inline void spin_unlock_irqrestore(spinlock_t *lock, unsigned lo
 	raw_spin_unlock_irqrestore(&lock->rlock, flags);
 }
 
-static __always_inline int spin_is_locked(spinlock_t *lock)
-{
-	return raw_spin_is_locked(&lock->rlock);
-}
-
 #define spin_trylock_irqsave(lock, flags)			\
 ({								\
 	raw_spin_trylock_irqsave(spinlock_check(lock), flags); \

@@ -298,11 +298,6 @@ __PAGEFLAG(Reported, reported, PF_NO_COMPOUND)
 #define PAGE_MAPPING_MOVABLE	0x2
 #define PAGE_MAPPING_FLAGS	(PAGE_MAPPING_ANON | PAGE_MAPPING_MOVABLE)
 
-static __always_inline bool folio_mapping_flags(struct folio *folio)
-{
-	return ((unsigned long)folio->mapping & PAGE_MAPPING_FLAGS) != 0;
-}
-
 static __always_inline int PageMappingFlags(struct page *page)
 {
 	return ((unsigned long)page->mapping & PAGE_MAPPING_FLAGS) != 0;
@@ -451,20 +446,6 @@ static __always_inline void SetPageAnonExclusive(struct page *page)
 	VM_BUG_ON_PGFLAGS(!PageAnon(page) || PageKsm(page), page);
 	VM_BUG_ON_PGFLAGS(PageHuge(page) && !PageHead(page), page);
 	set_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
-}
-
-static __always_inline void ClearPageAnonExclusive(struct page *page)
-{
-	VM_BUG_ON_PGFLAGS(!PageAnon(page) || PageKsm(page), page);
-	VM_BUG_ON_PGFLAGS(PageHuge(page) && !PageHead(page), page);
-	clear_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
-}
-
-static __always_inline void __ClearPageAnonExclusive(struct page *page)
-{
-	VM_BUG_ON_PGFLAGS(!PageAnon(page), page);
-	VM_BUG_ON_PGFLAGS(PageHuge(page) && !PageHead(page), page);
-	__clear_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
 }
 
 #define __PG_MLOCKED		(1UL << PG_mlocked)

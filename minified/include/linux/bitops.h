@@ -54,16 +54,6 @@ static __always_inline void assign_bit(long nr, volatile unsigned long *addr,
 		clear_bit(nr, addr);
 }
 
-static __always_inline void __assign_bit(long nr, volatile unsigned long *addr,
-					 bool value)
-{
-	if (value)
-		__set_bit(nr, addr);
-	else
-		__clear_bit(nr, addr);
-}
-
-
 #ifdef __KERNEL__
 
 #ifndef set_mask_bits

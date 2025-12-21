@@ -169,12 +169,6 @@ static inline bool in_x32_syscall(void)
 	return false;
 }
 
-static inline bool in_32bit_syscall(void)
-{
-	return in_ia32_syscall() || in_x32_syscall();
-}
-
-
 struct compat_siginfo;
 
 

@@ -38,18 +38,8 @@ struct x86_perf_regs {
  
 extern void perf_clear_dirty_counters(void);
 
- 
-static inline void perf_get_x86_pmu_capability(struct x86_pmu_capability *cap) { }
-static inline void perf_check_microcode(void) { }
-static inline int x86_perf_rdpmc_index(struct perf_event *event) { return -ENOSYS; }
 static inline struct perf_guest_switch_msr *perf_guest_get_msrs(int *nr) { *nr = 0; return NULL; }
-static inline int x86_perf_get_lbr(struct x86_pmu_lbr *lbr) { return -EOPNOTSUPP; }
-static inline void intel_pt_handle_vmx(int on) { }
-static inline void amd_pmu_enable_virt(void) { }
-static inline void amd_pmu_disable_virt(void) { }
-static inline unsigned long perf_instruction_pointer(struct pt_regs *regs) { return 0; }
 static inline unsigned long perf_misc_flags(struct pt_regs *regs) { return 0; }
-
 #define perf_misc_flags(regs) perf_misc_flags(regs)
 
  

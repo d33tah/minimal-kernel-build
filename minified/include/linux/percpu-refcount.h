@@ -78,20 +78,6 @@ static inline bool __ref_is_percpu(struct percpu_ref *ref,
 	return true;
 }
 
-static inline void percpu_ref_get_many(struct percpu_ref *ref, unsigned long nr)
-{
-	unsigned long __percpu *percpu_count;
-
-	rcu_read_lock();
-
-	if (__ref_is_percpu(ref, &percpu_count))
-		this_cpu_add(*percpu_count, nr);
-	else
-		atomic_long_add(nr, &ref->data->count);
-
-	rcu_read_unlock();
-}
-
 static inline void percpu_ref_put_many(struct percpu_ref *ref, unsigned long nr)
 {
 	unsigned long __percpu *percpu_count;

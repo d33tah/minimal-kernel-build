@@ -117,20 +117,6 @@ struct sysfs_ops {
 };
 
 
-static inline int sysfs_create_file_ns(struct kobject *kobj,
-				       const struct attribute *attr,
-				       const void *ns)
-{
-	return 0;
-}
-
-static inline void sysfs_remove_file_ns(struct kobject *kobj,
-					const struct attribute *attr,
-					const void *ns)
-{
-}
-
-
 static inline void sysfs_notify(struct kobject *kobj, const char *dir,
 				const char *attr)
 {

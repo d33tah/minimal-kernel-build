@@ -44,10 +44,4 @@ static inline void page_table_check_pud_set(struct mm_struct *mm,
 {
 }
 
-static inline void page_table_check_pte_clear_range(struct mm_struct *mm,
-						    unsigned long addr,
-						    pmd_t pmd)
-{
-}
-
 #endif  

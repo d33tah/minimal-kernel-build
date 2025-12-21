@@ -57,19 +57,9 @@ struct elf_prpsinfo
 	pid_t	pr_pid, pr_ppid, pr_pgrp, pr_sid;
 	 
 	 
-	char	pr_fname[16];	 
-	char	pr_psargs[ELF_PRARGSZ];	 
+	char	pr_fname[16];
+	char	pr_psargs[ELF_PRARGSZ];
 };
-
-static inline void elf_core_copy_regs(elf_gregset_t *elfregs, struct pt_regs *regs)
-{
-#ifdef ELF_CORE_COPY_REGS
-	ELF_CORE_COPY_REGS((*elfregs), regs)
-#else
-	BUG_ON(sizeof(*elfregs) != sizeof(*regs));
-	*(struct pt_regs *)elfregs = *regs;
-#endif
-}
 
 extern int dump_fpu (struct pt_regs *, elf_fpregset_t *);
 

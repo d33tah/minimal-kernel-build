@@ -94,17 +94,6 @@ static inline void sg_set_buf(struct scatterlist *sg, const void *buf,
 #define for_each_sgtable_dma_sg(sgt, sg, i)	\
 	for_each_sg((sgt)->sgl, sg, (sgt)->nents, i)
 
-static inline void __sg_chain(struct scatterlist *chain_sg,
-			      struct scatterlist *sgl)
-{
-	 
-	chain_sg->offset = 0;
-	chain_sg->length = 0;
-
-	 
-	chain_sg->page_link = ((unsigned long) sgl | SG_CHAIN) & ~SG_END;
-}
-
 
 static inline void sg_mark_end(struct scatterlist *sg)
 {

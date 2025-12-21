@@ -14,18 +14,6 @@ struct membuf {
 	size_t left;
 };
 
-static inline int membuf_zero(struct membuf *s, size_t size)
-{
-	if (s->left) {
-		if (size > s->left)
-			size = s->left;
-		memset(s->p, 0, size);
-		s->p += size;
-		s->left -= size;
-	}
-	return s->left;
-}
-
 static inline int membuf_write(struct membuf *s, const void *v, size_t size)
 {
 	if (s->left) {

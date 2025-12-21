@@ -19,14 +19,9 @@ struct block_device {
 	int dummy;
 };
 
-/* Reduced blk_status_t - only BLK_STS_OK needed in minimal kernel */
-#if defined(CONFIG_ALPHA) && !defined(__alpha_bwx__)
-typedef u32 __bitwise blk_status_t;
-typedef u32 blk_short_t;
-#else
+/* x86 only - alpha version removed */
 typedef u8 __bitwise blk_status_t;
 typedef u16 blk_short_t;
-#endif
 #define	BLK_STS_OK 0
 
 typedef unsigned int blk_qc_t;

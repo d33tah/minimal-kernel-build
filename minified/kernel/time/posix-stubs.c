@@ -133,7 +133,8 @@ SYSCALL_DEFINE4(clock_nanosleep, const clockid_t, which_clock, int, flags,
 }
 
 
-#if defined(CONFIG_COMPAT) || defined(CONFIG_ALPHA)
+/* x86 only - CONFIG_COMPAT and CONFIG_ALPHA not defined */
+#ifdef CONFIG_COMPAT
 COMPAT_SYS_NI(getitimer);
 COMPAT_SYS_NI(setitimer);
 #endif

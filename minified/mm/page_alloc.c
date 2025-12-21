@@ -1160,16 +1160,10 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
 	return alloc_flags;
 }
 
+/* CONFIG_MMU is always enabled on x86, simplified OOM check */
 static bool oom_reserves_allowed(struct task_struct *tsk)
 {
-	if (!tsk_is_oom_victim(tsk))
-		return false;
-
-	
-	if (!IS_ENABLED(CONFIG_MMU) && !test_thread_flag(TIF_MEMDIE))
-		return false;
-
-	return true;
+	return tsk_is_oom_victim(tsk);
 }
 
 static inline int __gfp_pfmemalloc_flags(gfp_t gfp_mask)

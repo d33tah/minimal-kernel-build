@@ -540,8 +540,7 @@ static void force_sigsegv(int sig)
 {
 }
 
-int force_sig_fault(int sig, int code, void __user *addr
-	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr))
+int force_sig_fault(int sig, int code, void __user *addr)
 {
 	struct kernel_siginfo info;
 
@@ -550,11 +549,7 @@ int force_sig_fault(int sig, int code, void __user *addr
 	info.si_errno = 0;
 	info.si_code  = code;
 	info.si_addr  = addr;
-#ifdef __ia64__
-	info.si_imm = imm;
-	info.si_flags = flags;
-	info.si_isr = isr;
-#endif
+	/* ia64-specific fields removed - x86 only */
 	return force_sig_info_to_task(&info, current, HANDLER_CURRENT);
 }
 

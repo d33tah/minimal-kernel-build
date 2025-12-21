@@ -4,13 +4,9 @@
 #include <linux/module.h>
 
 
-#if defined(__arm__)
-#define DUMMY_COLUMNS	screen_info.orig_video_cols
-#define DUMMY_ROWS	screen_info.orig_video_lines
-#else
+/* x86 only - arm version removed */
 #define DUMMY_COLUMNS	CONFIG_DUMMY_CONSOLE_COLUMNS
 #define DUMMY_ROWS	CONFIG_DUMMY_CONSOLE_ROWS
-#endif
 
 static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos) { }
 static void dummycon_putcs(struct vc_data *vc, const unsigned short *s,

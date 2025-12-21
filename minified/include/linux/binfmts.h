@@ -28,11 +28,8 @@ struct linux_binprm {
 		execfd_creds:1,
 		 
 		secureexec:1,
-		 
+		/* x86 only - alpha taso field removed */
 		point_of_no_return:1;
-#ifdef __alpha__
-	unsigned int taso:1;
-#endif
 	struct file *executable;  
 	struct file *interpreter;
 	struct file *file;

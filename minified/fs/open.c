@@ -705,8 +705,7 @@ SYSCALL_DEFINE4(openat2, int, dfd, const char __user *, filename,
 }
 
 
-#ifndef __alpha__
-
+/* x86 only - alpha exclusion removed, creat syscall always defined */
 SYSCALL_DEFINE2(creat, const char __user *, pathname, umode_t, mode)
 {
 	int flags = O_CREAT | O_WRONLY | O_TRUNC;
@@ -715,7 +714,6 @@ SYSCALL_DEFINE2(creat, const char __user *, pathname, umode_t, mode)
 		flags |= O_LARGEFILE;
 	return do_sys_open(AT_FDCWD, pathname, flags, mode);
 }
-#endif
 
 int filp_close(struct file *filp, fl_owner_t id)
 {

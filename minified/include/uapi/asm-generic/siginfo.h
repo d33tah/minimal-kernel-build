@@ -54,14 +54,10 @@ union __sifields {
 		__ARCH_SI_CLOCK_T _stime;
 	} _sigchld;
 
-	 
+	/* SIGFAULT */
 	struct {
-		void __user *_addr;  
-#ifdef __ia64__
-		int _imm;		 
-		unsigned int _flags;	 
-		unsigned long _isr;	 
-#endif
+		void __user *_addr;
+		/* ia64-specific fields removed - x86 only */
 
 #define __ADDR_BND_PKEY_PAD  (__alignof__(void *) < sizeof(short) ? \
 			      sizeof(short) : __alignof__(void *))

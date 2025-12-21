@@ -167,14 +167,10 @@ struct signal_struct {
 extern void ignore_signals(struct task_struct *);
 extern void flush_signal_handlers(struct task_struct *, int force_default);
 
-#ifdef __ia64__
-# define ___ARCH_SI_IA64(_a1, _a2, _a3) , _a1, _a2, _a3
-#else
-# define ___ARCH_SI_IA64(_a1, _a2, _a3)
-#endif
+/* x86 only - no ia64 support */
+#define ___ARCH_SI_IA64(_a1, _a2, _a3)
 
-int force_sig_fault(int sig, int code, void __user *addr
-	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr));
+int force_sig_fault(int sig, int code, void __user *addr);
 /* send_sig_fault, force_sig_mceerr, send_sig_mceerr, force_sig_bnderr, send_sig_perf,
    force_sig_ptrace_errno_trap, force_sig_fault_trapno, send_sig_fault_trapno,
    force_sig_seccomp removed - unused */

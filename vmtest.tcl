@@ -1,7 +1,7 @@
 #!/usr/bin/expect -f
 
 set timeout 10
-spawn qemu-system-x86_64 -kernel minified/arch/x86/boot/bzImage -display curses -m 19M
+spawn qemu-system-x86_64 -kernel minified/arch/x86/boot/bzImage -display curses -m 18M
 
 # When we see "Hello, World", test succeeded.
 # The simple init doesn't support interactivity.

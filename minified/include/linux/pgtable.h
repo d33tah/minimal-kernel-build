@@ -149,16 +149,6 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
 #endif
 
 
-#ifndef __HAVE_ARCH_PTEP_GET_AND_CLEAR_FULL
-static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
-					    unsigned long address, pte_t *ptep,
-					    int full)
-{
-	pte_t pte;
-	pte = ptep_get_and_clear(mm, address, ptep);
-	return pte;
-}
-#endif
 
 
 #ifndef __HAVE_ARCH_UPDATE_MMU_TLB
@@ -176,14 +166,6 @@ extern pte_t ptep_clear_flush(struct vm_area_struct *vma,
 #endif
 
 
-#ifndef __HAVE_ARCH_PTEP_SET_WRPROTECT
-struct mm_struct;
-static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long address, pte_t *ptep)
-{
-	pte_t old_pte = *ptep;
-	set_pte_at(mm, address, ptep, pte_wrprotect(old_pte));
-}
-#endif
 
 #ifndef pte_sw_mkyoung
 static inline pte_t pte_sw_mkyoung(pte_t pte)

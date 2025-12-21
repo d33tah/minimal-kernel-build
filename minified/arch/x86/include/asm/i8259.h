@@ -31,15 +31,6 @@ extern unsigned int cached_irq_mask;
 extern raw_spinlock_t i8259A_lock;
 
  
-static inline unsigned char inb_pic(unsigned int port)
-{
-	unsigned char value = inb(port);
-
-	 
-	udelay(2);
-
-	return value;
-}
 
 static inline void outb_pic(unsigned char value, unsigned int port)
 {

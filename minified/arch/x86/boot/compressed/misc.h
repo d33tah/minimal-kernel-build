@@ -52,8 +52,6 @@ void __puthex(unsigned long value);
 
 static inline void debug_putstr(const char *s)
 { }
-static inline void debug_puthex(unsigned long value)
-{ }
 #define debug_putaddr(x)  
 
 
@@ -82,21 +80,11 @@ static const int early_serial_base;
 static inline void console_init(void)
 { }
 
-static inline void sev_enable(struct boot_params *bp) { }
-static inline void sev_es_shutdown_ghcb(void) { }
-static inline bool sev_es_check_ghcb_fault(unsigned long address)
-{
-	return false;
-}
-static inline void snp_set_page_private(unsigned long paddr) { }
-static inline void snp_set_page_shared(unsigned long paddr) { }
-static inline void sev_prep_identity_maps(unsigned long top_level_pgt) { }
 
  
 typedef u64 acpi_physical_address;
 static inline acpi_physical_address get_rsdp_addr(void) { return 0; }
 
-static inline int count_immovable_mem_regions(void) { return 0; }
 
  
 extern void kernel_add_identity_map(unsigned long start, unsigned long end);
@@ -123,29 +111,5 @@ enum efi_type {
 	EFI_TYPE_NONE,
 };
 
-static inline enum efi_type efi_get_type(struct boot_params *bp)
-{
-	return EFI_TYPE_NONE;
-}
-
-static inline unsigned long efi_get_system_table(struct boot_params *bp)
-{
-	return 0;
-}
-
-static inline int efi_get_conf_table(struct boot_params *bp,
-				     unsigned long *cfg_tbl_pa,
-				     unsigned int *cfg_tbl_len)
-{
-	return -ENOENT;
-}
-
-static inline unsigned long efi_find_vendor_table(struct boot_params *bp,
-						  unsigned long cfg_tbl_pa,
-						  unsigned int cfg_tbl_len,
-						  efi_guid_t guid)
-{
-	return 0;
-}
 
 #endif  

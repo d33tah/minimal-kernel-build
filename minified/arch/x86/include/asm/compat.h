@@ -164,10 +164,6 @@ struct compat_statfs {
 };
 
 
-static inline bool in_x32_syscall(void)
-{
-	return false;
-}
 
 struct compat_siginfo;
 

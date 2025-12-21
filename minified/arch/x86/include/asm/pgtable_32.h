@@ -60,11 +60,6 @@ static inline void native_pte_clear(struct mm_struct *mm,
 #define native_ptep_get_and_clear(xp) native_local_ptep_get_and_clear(xp)
 #define native_pmdp_get_and_clear(xp) native_local_pmdp_get_and_clear(xp)
 #define native_pudp_get_and_clear(xp) native_local_pudp_get_and_clear(xp)
-static inline unsigned long pte_bitop(unsigned long value, unsigned int rightshift,
-				      unsigned long mask, unsigned int leftshift)
-{
-	return ((value >> rightshift) & mask) << leftshift;
-}
 #define SWP_TYPE_BITS 5
 #define SWP_OFFSET_SHIFT (_PAGE_BIT_PROTNONE + 1)
 #define MAX_SWAPFILES_CHECK() BUILD_BUG_ON(MAX_SWAPFILES_SHIFT > SWP_TYPE_BITS)

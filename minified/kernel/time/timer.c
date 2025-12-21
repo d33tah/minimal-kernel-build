@@ -188,27 +188,14 @@ static void internal_add_timer(struct timer_base *base, struct timer_list *timer
 	enqueue_timer(base, timer, idx, bucket_expiry);
 }
 
-static inline void debug_timer_init(struct timer_list *timer) { }
-static inline void debug_timer_activate(struct timer_list *timer) { }
-static inline void debug_timer_deactivate(struct timer_list *timer) { }
-static inline void debug_timer_assert_init(struct timer_list *timer) { }
-
-static inline void debug_init(struct timer_list *timer)
-{
-	debug_timer_init(timer);
-	 
-}
-
-static inline void debug_deactivate(struct timer_list *timer)
-{
-	debug_timer_deactivate(timer);
-	 
-}
-
-static inline void debug_assert_init(struct timer_list *timer)
-{
-	debug_timer_assert_init(timer);
-}
+/* Debug stubs - no debug_timer support */
+static inline void debug_timer_init(struct timer_list *t) { }
+static inline void debug_timer_activate(struct timer_list *t) { }
+static inline void debug_timer_deactivate(struct timer_list *t) { }
+#define debug_timer_assert_init(t) do { } while (0)
+#define debug_init(t) do { } while (0)
+#define debug_deactivate(t) do { } while (0)
+#define debug_assert_init(t) do { } while (0)
 
 static void do_init_timer(struct timer_list *timer,
 			  void (*func)(struct timer_list *),

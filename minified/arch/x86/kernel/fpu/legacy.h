@@ -87,10 +87,6 @@ static inline void frstor(struct fregs_state *fx)
 	kernel_insn(frstor %[fx], "=m" (*fx), [fx] "m" (*fx));
 }
 
-static inline int frstor_safe(struct fregs_state *fx)
-{
-	return kernel_insn_err(frstor %[fx], "=m" (*fx), [fx] "m" (*fx));
-}
 
 static inline int frstor_from_user_sigframe(struct fregs_state __user *fx)
 {

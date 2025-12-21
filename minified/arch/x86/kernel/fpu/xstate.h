@@ -46,10 +46,6 @@ static inline u64 xstate_get_group_perm(bool guest)
 	return READ_ONCE(perm->__state_perm);
 }
 
-static inline u64 xstate_get_host_group_perm(void)
-{
-	return xstate_get_group_perm(false);
-}
 
 enum xstate_copy_mode {
 	XSTATE_COPY_FP,
@@ -76,13 +72,6 @@ static inline u64 xfeatures_mask_supervisor(void)
 	return fpu_kernel_cfg.max_features & XFEATURE_MASK_SUPERVISOR_SUPPORTED;
 }
 
-static inline u64 xfeatures_mask_independent(void)
-{
-	if (!cpu_feature_enabled(X86_FEATURE_ARCH_LBR))
-		return XFEATURE_MASK_INDEPENDENT & ~XFEATURE_MASK_LBR;
-
-	return XFEATURE_MASK_INDEPENDENT;
-}
 
  
 
@@ -135,9 +124,6 @@ static inline void xfd_validate_state(struct fpstate *fpstate, u64 mask, bool rs
 
 static inline void xfd_update_state(struct fpstate *fpstate) { }
 
-static inline int __xfd_enable_feature(u64 which, struct fpu_guest *guest_fpu) {
-	return -EPERM;
-}
 
  
 static inline void os_xsave(struct fpstate *fpstate)

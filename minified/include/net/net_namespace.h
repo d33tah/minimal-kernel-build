@@ -31,15 +31,6 @@ static inline struct net *read_pnet(possible_net_t *pnet)
 	return *pnet;
 }
 
-static inline void write_pnet(possible_net_t *pnet, struct net *net)
-{
-	*pnet = net;
-}
-
-static inline bool net_eq(const struct net *net1, const struct net *net2)
-{
-	return net1 == net2;
-}
 
 static inline struct net *copy_net_ns(unsigned long flags,
 	struct user_namespace *user_ns, struct net *old_ns)

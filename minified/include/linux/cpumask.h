@@ -106,12 +106,6 @@ static inline void cpumask_clear(struct cpumask *dstp)
 
 
 
-static inline void cpumask_or(struct cpumask *dstp, const struct cpumask *src1p,
-			      const struct cpumask *src2p)
-{
-	bitmap_or(cpumask_bits(dstp), cpumask_bits(src1p),
-				      cpumask_bits(src2p), nr_cpumask_bits);
-}
 
 static inline bool cpumask_equal(const struct cpumask *src1p,
 				const struct cpumask *src2p)

@@ -12,21 +12,14 @@ ssize_t iter_file_splice_write(struct pipe_inode_info *pipe, struct file *out,
 			       loff_t *ppos, size_t len, unsigned int flags) { return 0; }
 
 
-static void page_cache_pipe_buf_release(struct pipe_inode_info *pipe, struct pipe_buffer *buf) { }
-static bool page_cache_pipe_buf_get(struct pipe_inode_info *pipe, struct pipe_buffer *buf) { return false; }
-static bool page_cache_pipe_buf_try_steal(struct pipe_inode_info *pipe, struct pipe_buffer *buf) { return false; }
-
-const struct pipe_buf_operations page_cache_pipe_buf_ops = {
-	.release = page_cache_pipe_buf_release,
-	.try_steal = page_cache_pipe_buf_try_steal,
-	.get = page_cache_pipe_buf_get,
+static void pipe_buf_stub_release(struct pipe_inode_info *p, struct pipe_buffer *b) { }
+static bool pipe_buf_stub_get(struct pipe_inode_info *p, struct pipe_buffer *b) { return false; }
+static bool pipe_buf_stub_steal(struct pipe_inode_info *p, struct pipe_buffer *b) { return false; }
+static const struct pipe_buf_operations stub_pipe_buf_ops = {
+	.release = pipe_buf_stub_release, .try_steal = pipe_buf_stub_steal, .get = pipe_buf_stub_get,
 };
-
-const struct pipe_buf_operations default_pipe_buf_ops = {
-	.release = page_cache_pipe_buf_release,
-	.try_steal = page_cache_pipe_buf_try_steal,
-	.get = page_cache_pipe_buf_get,
-};
+const struct pipe_buf_operations page_cache_pipe_buf_ops = stub_pipe_buf_ops;
+const struct pipe_buf_operations default_pipe_buf_ops = stub_pipe_buf_ops;
 
 ssize_t splice_from_pipe(struct pipe_inode_info *pipe, struct file *out,
 			 loff_t *ppos, size_t len, unsigned int flags,

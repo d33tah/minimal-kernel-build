@@ -25,11 +25,7 @@ DECLARE_STATIC_KEY_FALSE(rdpmc_always_available_key);
 void cr4_update_pce(void *ignored);
 
 static inline void init_new_context_ldt(struct mm_struct *mm) { }
-static inline int ldt_dup_context(struct mm_struct *oldmm,
-				  struct mm_struct *mm)
-{
-	return 0;
-}
+/* ldt_dup_context removed - unused */
 static inline void destroy_context_ldt(struct mm_struct *mm) { }
 static inline void ldt_arch_exit_mmap(struct mm_struct *mm) { }
 

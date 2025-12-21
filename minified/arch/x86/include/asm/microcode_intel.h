@@ -53,25 +53,8 @@ struct extended_sigtable {
 
 #define exttable_size(et) ((et)->count * EXT_SIGNATURE_SIZE + EXT_HEADER_SIZE)
 
-static inline u32 intel_get_microcode_revision(void)
-{
-	u32 rev, dummy;
-
-	native_wrmsrl(MSR_IA32_UCODE_REV, 0);
-
-	 
-	native_cpuid_eax(1);
-
-	 
-	native_rdmsr(MSR_IA32_UCODE_REV, dummy, rev);
-
-	return rev;
-}
-
-static inline __init void load_ucode_intel_bsp(void) {}
-static inline void load_ucode_intel_ap(void) {}
+/* intel_get_microcode_revision, load_ucode_intel_bsp, load_ucode_intel_ap,
+   save_microcode_in_initrd_intel, reload_ucode_intel removed - unused */
 static inline void show_ucode_info_early(void) {}
-static inline int __init save_microcode_in_initrd_intel(void) { return -EINVAL; }
-static inline void reload_ucode_intel(void) {}
 
-#endif  
+#endif

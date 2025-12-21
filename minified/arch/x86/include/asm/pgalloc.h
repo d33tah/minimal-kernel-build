@@ -172,12 +172,7 @@ static inline void pmd_populate_kernel(struct mm_struct *mm,
 	set_pmd(pmd, __pmd(__pa(pte) | _PAGE_TABLE));
 }
 
-static inline void pmd_populate_kernel_safe(struct mm_struct *mm,
-				       pmd_t *pmd, pte_t *pte)
-{
-	paravirt_alloc_pte(mm, __pa(pte) >> PAGE_SHIFT);
-	set_pmd_safe(pmd, __pmd(__pa(pte) | _PAGE_TABLE));
-}
+/* pmd_populate_kernel_safe removed - unused */
 
 static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
 				struct page *pte)
@@ -203,11 +198,7 @@ static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
 	set_pud(pud, __pud(_PAGE_TABLE | __pa(pmd)));
 }
 
-static inline void pud_populate_safe(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
-{
-	paravirt_alloc_pmd(mm, __pa(pmd) >> PAGE_SHIFT);
-	set_pud_safe(pud, __pud(_PAGE_TABLE | __pa(pmd)));
-}
+/* pud_populate_safe removed - unused */
 
 #if CONFIG_PGTABLE_LEVELS > 3
 static inline void p4d_populate(struct mm_struct *mm, p4d_t *p4d, pud_t *pud)

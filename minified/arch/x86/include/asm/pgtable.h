@@ -232,10 +232,7 @@ static inline pte_t pte_clear_flags(pte_t pte, pteval_t clear)
 }
 
 
-static inline pte_t pte_mkclean(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_DIRTY);
-}
+/* pte_mkclean removed - unused */
 
 static inline pte_t pte_mkold(pte_t pte)
 {
@@ -291,25 +288,11 @@ static inline pmd_t pmd_clear_flags(pmd_t pmd, pmdval_t clear)
 }
 
 
-/* pmd_mkold, pmd_mkclean removed - unused */
-
-static inline pmd_t pmd_wrprotect(pmd_t pmd)
-{
-	return pmd_clear_flags(pmd, _PAGE_RW);
-}
-
-/* pmd_mkdirty removed - unused */
+/* pmd_mkold, pmd_mkclean, pmd_wrprotect, pmd_mkdirty, pmd_mkhuge, pmd_mkyoung, pmd_mkwrite removed - unused */
 
 static inline pmd_t pmd_mkdevmap(pmd_t pmd)
 {
 	return pmd_set_flags(pmd, _PAGE_DEVMAP);
-}
-
-/* pmd_mkhuge, pmd_mkyoung removed - unused */
-
-static inline pmd_t pmd_mkwrite(pmd_t pmd)
-{
-	return pmd_set_flags(pmd, _PAGE_RW);
 }
 
 /* pud_set_flags, pud_clear_flags removed - unused */
@@ -642,21 +625,9 @@ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 	set_pte(ptep, pte);
 }
 
-static inline void set_pmd_at(struct mm_struct *mm, unsigned long addr,
-			      pmd_t *pmdp, pmd_t pmd)
-{
-	page_table_check_pmd_set(mm, addr, pmdp, pmd);
-	set_pmd(pmdp, pmd);
-}
+/* set_pmd_at, set_pud_at removed - unused */
 
-static inline void set_pud_at(struct mm_struct *mm, unsigned long addr,
-			      pud_t *pudp, pud_t pud)
-{
-	page_table_check_pud_set(mm, addr, pudp, pud);
-	native_set_pud(pudp, pud);
-}
 
- 
 struct vm_area_struct;
 
 #define  __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
@@ -712,40 +683,7 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm,
    pudp_test_and_clear_young, pmdp_clear_flush_young removed - unused */
 
 
-#define pmd_write pmd_write
-static inline int pmd_write(pmd_t pmd)
-{
-	return pmd_flags(pmd) & _PAGE_RW;
-}
-
-#define __HAVE_ARCH_PMDP_HUGE_GET_AND_CLEAR
-static inline pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm, unsigned long addr,
-				       pmd_t *pmdp)
-{
-	pmd_t pmd = native_pmdp_get_and_clear(pmdp);
-
-	page_table_check_pmd_clear(mm, addr, pmd);
-
-	return pmd;
-}
-
-#define __HAVE_ARCH_PUDP_HUGE_GET_AND_CLEAR
-static inline pud_t pudp_huge_get_and_clear(struct mm_struct *mm,
-					unsigned long addr, pud_t *pudp)
-{
-	pud_t pud = native_pudp_get_and_clear(pudp);
-
-	page_table_check_pud_clear(mm, addr, pud);
-
-	return pud;
-}
-
-#define __HAVE_ARCH_PMDP_SET_WRPROTECT
-static inline void pmdp_set_wrprotect(struct mm_struct *mm,
-				      unsigned long addr, pmd_t *pmdp)
-{
-	clear_bit(_PAGE_BIT_RW, (unsigned long *)pmdp);
-}
+/* pmd_write, pmdp_huge_get_and_clear, pudp_huge_get_and_clear, pmdp_set_wrprotect removed - unused */
 
 #define pud_write pud_write
 static inline int pud_write(pud_t pud)

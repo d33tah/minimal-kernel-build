@@ -61,7 +61,7 @@ static inline void exit_sem(struct task_struct *tsk) { }
 #include <linux/compat.h>
 #include <linux/io_uring.h>
 #include <linux/kprobes.h>
-#include <linux/rethook.h>
+#define rethook_flush_task(tsk)	do { } while (0)
 
 #include <linux/uaccess.h>
 #include <asm/unistd.h>

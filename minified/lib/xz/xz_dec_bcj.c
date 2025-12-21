@@ -4,14 +4,9 @@
 #ifdef XZ_DEC_BCJ
 
 struct xz_dec_bcj {
-	 
+
 	enum {
-		BCJ_X86 = 4,         
-		BCJ_POWERPC = 5,     
-		BCJ_IA64 = 6,        
-		BCJ_ARM = 7,         
-		BCJ_ARMTHUMB = 8,    
-		BCJ_SPARC = 9        
+		BCJ_X86 = 4
 	} type;
 
 	 
@@ -120,180 +115,6 @@ static size_t bcj_x86(struct xz_dec_bcj *s, uint8_t *buf, size_t size)
 }
 #endif
 
-#ifdef XZ_DEC_POWERPC
-static size_t bcj_powerpc(struct xz_dec_bcj *s, uint8_t *buf, size_t size)
-{
-	size_t i;
-	uint32_t instr;
-
-	for (i = 0; i + 4 <= size; i += 4) {
-		instr = get_unaligned_be32(buf + i);
-		if ((instr & 0xFC000003) == 0x48000001) {
-			instr &= 0x03FFFFFC;
-			instr -= s->pos + (uint32_t)i;
-			instr &= 0x03FFFFFC;
-			instr |= 0x48000001;
-			put_unaligned_be32(instr, buf + i);
-		}
-	}
-
-	return i;
-}
-#endif
-
-#ifdef XZ_DEC_IA64
-static size_t bcj_ia64(struct xz_dec_bcj *s, uint8_t *buf, size_t size)
-{
-	static const uint8_t branch_table[32] = {
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		4, 4, 6, 6, 0, 0, 7, 7,
-		4, 4, 0, 0, 4, 4, 0, 0
-	};
-
-	 
-
-	 
-	size_t i;
-	size_t j;
-
-	 
-	uint32_t slot;
-
-	 
-	uint32_t bit_pos;
-
-	 
-	uint32_t byte_pos;
-	uint32_t bit_res;
-
-	 
-	uint32_t addr;
-
-	 
-	uint32_t mask;
-
-	 
-	uint64_t instr;
-
-	 
-	uint64_t norm;
-
-	for (i = 0; i + 16 <= size; i += 16) {
-		mask = branch_table[buf[i] & 0x1F];
-		for (slot = 0, bit_pos = 5; slot < 3; ++slot, bit_pos += 41) {
-			if (((mask >> slot) & 1) == 0)
-				continue;
-
-			byte_pos = bit_pos >> 3;
-			bit_res = bit_pos & 7;
-			instr = 0;
-			for (j = 0; j < 6; ++j)
-				instr |= (uint64_t)(buf[i + j + byte_pos])
-						<< (8 * j);
-
-			norm = instr >> bit_res;
-
-			if (((norm >> 37) & 0x0F) == 0x05
-					&& ((norm >> 9) & 0x07) == 0) {
-				addr = (norm >> 13) & 0x0FFFFF;
-				addr |= ((uint32_t)(norm >> 36) & 1) << 20;
-				addr <<= 4;
-				addr -= s->pos + (uint32_t)i;
-				addr >>= 4;
-
-				norm &= ~((uint64_t)0x8FFFFF << 13);
-				norm |= (uint64_t)(addr & 0x0FFFFF) << 13;
-				norm |= (uint64_t)(addr & 0x100000)
-						<< (36 - 20);
-
-				instr &= (1 << bit_res) - 1;
-				instr |= norm << bit_res;
-
-				for (j = 0; j < 6; j++)
-					buf[i + j + byte_pos]
-						= (uint8_t)(instr >> (8 * j));
-			}
-		}
-	}
-
-	return i;
-}
-#endif
-
-#ifdef XZ_DEC_ARM
-static size_t bcj_arm(struct xz_dec_bcj *s, uint8_t *buf, size_t size)
-{
-	size_t i;
-	uint32_t addr;
-
-	for (i = 0; i + 4 <= size; i += 4) {
-		if (buf[i + 3] == 0xEB) {
-			addr = (uint32_t)buf[i] | ((uint32_t)buf[i + 1] << 8)
-					| ((uint32_t)buf[i + 2] << 16);
-			addr <<= 2;
-			addr -= s->pos + (uint32_t)i + 8;
-			addr >>= 2;
-			buf[i] = (uint8_t)addr;
-			buf[i + 1] = (uint8_t)(addr >> 8);
-			buf[i + 2] = (uint8_t)(addr >> 16);
-		}
-	}
-
-	return i;
-}
-#endif
-
-#ifdef XZ_DEC_ARMTHUMB
-static size_t bcj_armthumb(struct xz_dec_bcj *s, uint8_t *buf, size_t size)
-{
-	size_t i;
-	uint32_t addr;
-
-	for (i = 0; i + 4 <= size; i += 2) {
-		if ((buf[i + 1] & 0xF8) == 0xF0
-				&& (buf[i + 3] & 0xF8) == 0xF8) {
-			addr = (((uint32_t)buf[i + 1] & 0x07) << 19)
-					| ((uint32_t)buf[i] << 11)
-					| (((uint32_t)buf[i + 3] & 0x07) << 8)
-					| (uint32_t)buf[i + 2];
-			addr <<= 1;
-			addr -= s->pos + (uint32_t)i + 4;
-			addr >>= 1;
-			buf[i + 1] = (uint8_t)(0xF0 | ((addr >> 19) & 0x07));
-			buf[i] = (uint8_t)(addr >> 11);
-			buf[i + 3] = (uint8_t)(0xF8 | ((addr >> 8) & 0x07));
-			buf[i + 2] = (uint8_t)addr;
-			i += 2;
-		}
-	}
-
-	return i;
-}
-#endif
-
-#ifdef XZ_DEC_SPARC
-static size_t bcj_sparc(struct xz_dec_bcj *s, uint8_t *buf, size_t size)
-{
-	size_t i;
-	uint32_t instr;
-
-	for (i = 0; i + 4 <= size; i += 4) {
-		instr = get_unaligned_be32(buf + i);
-		if ((instr >> 22) == 0x100 || (instr >> 22) == 0x1FF) {
-			instr <<= 2;
-			instr -= s->pos + (uint32_t)i;
-			instr >>= 2;
-			instr = ((uint32_t)0x40000000 - (instr & 0x400000))
-					| 0x40000000 | (instr & 0x3FFFFF);
-			put_unaligned_be32(instr, buf + i);
-		}
-	}
-
-	return i;
-}
-#endif
-
 static void bcj_apply(struct xz_dec_bcj *s,
 		      uint8_t *buf, size_t *pos, size_t size)
 {
@@ -306,31 +127,6 @@ static void bcj_apply(struct xz_dec_bcj *s,
 #ifdef XZ_DEC_X86
 	case BCJ_X86:
 		filtered = bcj_x86(s, buf, size);
-		break;
-#endif
-#ifdef XZ_DEC_POWERPC
-	case BCJ_POWERPC:
-		filtered = bcj_powerpc(s, buf, size);
-		break;
-#endif
-#ifdef XZ_DEC_IA64
-	case BCJ_IA64:
-		filtered = bcj_ia64(s, buf, size);
-		break;
-#endif
-#ifdef XZ_DEC_ARM
-	case BCJ_ARM:
-		filtered = bcj_arm(s, buf, size);
-		break;
-#endif
-#ifdef XZ_DEC_ARMTHUMB
-	case BCJ_ARMTHUMB:
-		filtered = bcj_armthumb(s, buf, size);
-		break;
-#endif
-#ifdef XZ_DEC_SPARC
-	case BCJ_SPARC:
-		filtered = bcj_sparc(s, buf, size);
 		break;
 #endif
 	default:
@@ -446,21 +242,6 @@ XZ_EXTERN enum xz_ret xz_dec_bcj_reset(struct xz_dec_bcj *s, uint8_t id)
 	switch (id) {
 #ifdef XZ_DEC_X86
 	case BCJ_X86:
-#endif
-#ifdef XZ_DEC_POWERPC
-	case BCJ_POWERPC:
-#endif
-#ifdef XZ_DEC_IA64
-	case BCJ_IA64:
-#endif
-#ifdef XZ_DEC_ARM
-	case BCJ_ARM:
-#endif
-#ifdef XZ_DEC_ARMTHUMB
-	case BCJ_ARMTHUMB:
-#endif
-#ifdef XZ_DEC_SPARC
-	case BCJ_SPARC:
 #endif
 		break;
 

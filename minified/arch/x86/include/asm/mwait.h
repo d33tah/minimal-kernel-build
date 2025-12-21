@@ -25,21 +25,6 @@
 #define TPAUSE_C01_STATE		1
 #define TPAUSE_C02_STATE		0
 
-static inline void __monitor(const void *eax, unsigned long ecx,
-			     unsigned long edx)
-{
-	asm volatile(".byte 0x0f, 0x01, 0xc8;"
-		     :: "a" (eax), "c" (ecx), "d"(edx));
-}
-
-/* __monitorx removed - unused */
-
-static inline void __mwait(unsigned long eax, unsigned long ecx)
-{
-	mds_idle_clear_cpu_buffers();
-	asm volatile(".byte 0x0f, 0x01, 0xc9;"
-		     :: "a" (eax), "c" (ecx));
-}
 
 /* __mwaitx, __sti_mwait, mwait_idle_with_hints removed - unused */
 

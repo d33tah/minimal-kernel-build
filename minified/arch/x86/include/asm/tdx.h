@@ -38,17 +38,5 @@ struct ve_info {
 };
 
 
-static inline void tdx_early_init(void) { };
-static inline void tdx_safe_halt(void) { };
-
-static inline bool tdx_early_handle_ve(struct pt_regs *regs) { return false; }
-
-
-static inline long tdx_kvm_hypercall(unsigned int nr, unsigned long p1,
-				     unsigned long p2, unsigned long p3,
-				     unsigned long p4)
-{
-	return -ENODEV;
-}
 #endif  
 #endif  

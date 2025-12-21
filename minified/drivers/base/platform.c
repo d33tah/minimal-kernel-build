@@ -21,10 +21,8 @@ static inline void dev_pm_domain_detach(struct device *dev, bool power_off) {}
 #include <linux/acpi.h>
 static inline int of_clk_set_defaults(struct device_node *node, bool clk_supplier) { return 0; }
 #include <linux/limits.h>
-#include <linux/property.h>
 #include <linux/kmemleak.h>
 #include <linux/types.h>
-#include <linux/iommu.h>
 #include <linux/dma-map-ops.h>
 
 #include "base.h"

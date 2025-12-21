@@ -35,10 +35,6 @@ struct arch_hw_breakpoint {
  
 #define HBP_NUM 4
 
-static inline int hw_breakpoint_slots(int type)
-{
-	return HBP_NUM;
-}
 
 struct perf_event_attr;
 struct perf_event;

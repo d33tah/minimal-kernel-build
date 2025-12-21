@@ -13,19 +13,6 @@
 
 #define ARCH_EFI_IRQ_FLAGS_MASK	X86_EFLAGS_IF
 
-static inline bool efi_reboot_required(void)
-{
-	return false;
-}
-
-static inline bool efi_is_table_address(unsigned long phys_addr)
-{
-	return false;
-}
-
-static inline void efi_fake_memmap_early(void)
-{
-}
 
 #define arch_ima_efi_boot_mode	\
 	({ extern struct boot_params boot_params; boot_params.secure_boot; })

@@ -35,10 +35,6 @@ void __init mem_encrypt_init(void);
 
 extern char __start_bss_decrypted[], __end_bss_decrypted[], __start_bss_decrypted_unused[];
 
-static inline u64 sme_get_me_mask(void)
-{
-	return sme_me_mask;
-}
 
 #endif	 
 

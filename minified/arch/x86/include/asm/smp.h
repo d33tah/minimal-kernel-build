@@ -58,11 +58,6 @@ struct smp_ops {
 /* set_cpu_sibling_map removed - never defined (SMP only) */
 
 #define wbinvd_on_cpu(cpu)     wbinvd()
-static inline int wbinvd_on_all_cpus(void)
-{
-	wbinvd();
-	return 0;
-}
 
 /* disabled_cpus removed - never defined (SMP only) */
 

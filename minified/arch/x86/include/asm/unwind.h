@@ -30,10 +30,6 @@ static inline bool unwind_done(struct unwind_state *state)
 	return state->stack_info.type == STACK_TYPE_UNKNOWN;
 }
 
-static inline bool unwind_error(struct unwind_state *state)
-{
-	return state->error;
-}
 
 static inline
 void unwind_start(struct unwind_state *state, struct task_struct *task,
@@ -85,9 +81,5 @@ unsigned long unwind_recover_ret_addr(struct unwind_state *state,
 	val;						\
 })
 
-static inline bool task_on_another_cpu(struct task_struct *task)
-{
-	return false;
-}
 
 #endif  

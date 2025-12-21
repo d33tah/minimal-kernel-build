@@ -261,24 +261,7 @@ static inline void signal_wake_up(struct task_struct *t, bool fatal)
 
 void task_join_group_stop(struct task_struct *task);
 
-#ifdef TIF_RESTORE_SIGMASK
-
-static inline void set_restore_sigmask(void)
-{
-	set_thread_flag(TIF_RESTORE_SIGMASK);
-}
-
-static inline void clear_restore_sigmask(void)
-{
-	clear_thread_flag(TIF_RESTORE_SIGMASK);
-}
-static inline bool test_and_clear_restore_sigmask(void)
-{
-	return test_and_clear_thread_flag(TIF_RESTORE_SIGMASK);
-}
-
-#else	 
-
+/* x86 doesn't define TIF_RESTORE_SIGMASK, use current->restore_sigmask */
 static inline void set_restore_sigmask(void)
 {
 	current->restore_sigmask = true;
@@ -298,7 +281,6 @@ static inline bool test_and_clear_restore_sigmask(void)
 	current->restore_sigmask = false;
 	return true;
 }
-#endif
 
 static inline void restore_saved_sigmask(void)
 {

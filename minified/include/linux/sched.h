@@ -395,12 +395,10 @@ struct task_struct {
 	 
 	unsigned			sched_remote_wakeup:1;
 
-	 
+	/* x86 doesn't define TIF_RESTORE_SIGMASK */
 	unsigned			in_execve:1;
 	unsigned			in_iowait:1;
-#ifndef TIF_RESTORE_SIGMASK
 	unsigned			restore_sigmask:1;
-#endif
 	unsigned			reported_split_lock:1;
 
 	unsigned long			atomic_flags;  

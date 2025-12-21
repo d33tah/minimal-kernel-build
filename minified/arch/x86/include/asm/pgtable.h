@@ -280,14 +280,6 @@ static inline pmd_t pmd_set_flags(pmd_t pmd, pmdval_t set)
 	return native_make_pmd(v | set);
 }
 
-static inline pmd_t pmd_clear_flags(pmd_t pmd, pmdval_t clear)
-{
-	pmdval_t v = native_pmd_val(pmd);
-
-	return native_make_pmd(v & ~clear);
-}
-
-
 /* pmd_mkold, pmd_mkclean, pmd_wrprotect, pmd_mkdirty, pmd_mkhuge, pmd_mkyoung, pmd_mkwrite removed - unused */
 
 static inline pmd_t pmd_mkdevmap(pmd_t pmd)
@@ -335,11 +327,7 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 	return __pmd(pfn | check_pgprot(pgprot));
 }
 
-/* pfn_pud, pmd_mkinvalid removed - unused */
-
-static inline u64 flip_protnone_guard(u64 oldval, u64 val, u64 mask);
-
-/* pte_modify, pmd_modify removed - unused */
+/* pfn_pud, pmd_mkinvalid, flip_protnone_guard, pte_modify, pmd_modify removed - unused */
 
  
 #define pgprot_modify pgprot_modify

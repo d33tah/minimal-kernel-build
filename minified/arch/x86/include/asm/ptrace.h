@@ -48,11 +48,6 @@ static inline unsigned long regs_return_value(struct pt_regs *regs)
 	return regs->ax;
 }
 
-static inline void regs_set_return_value(struct pt_regs *regs, unsigned long rc)
-{
-	regs->ax = rc;
-}
-
 static __always_inline int user_mode(struct pt_regs *regs)
 {
 	return ((regs->cs & SEGMENT_RPL_MASK) | (regs->flags & X86_VM_MASK)) >= USER_RPL;
@@ -63,44 +58,14 @@ static __always_inline int v8086_mode(struct pt_regs *regs)
 	return (regs->flags & X86_VM_MASK);
 }
 
-static inline bool user_64bit_mode(struct pt_regs *regs)
-{
-	return false;
-}
-
-static inline bool any_64bit_mode(struct pt_regs *regs)
-{
-	return false;
-}
-
-static inline unsigned long kernel_stack_pointer(struct pt_regs *regs)
-{
-	return regs->sp;
-}
-
 static inline unsigned long instruction_pointer(struct pt_regs *regs)
 {
 	return regs->ip;
 }
 
-static inline void instruction_pointer_set(struct pt_regs *regs, unsigned long val)
-{
-	regs->ip = val;
-}
-
-static inline unsigned long frame_pointer(struct pt_regs *regs)
-{
-	return regs->bp;
-}
-
 static inline unsigned long user_stack_pointer(struct pt_regs *regs)
 {
 	return regs->sp;
-}
-
-static inline void user_stack_pointer_set(struct pt_regs *regs, unsigned long val)
-{
-	regs->sp = val;
 }
 
 static __always_inline bool regs_irqs_disabled(struct pt_regs *regs)

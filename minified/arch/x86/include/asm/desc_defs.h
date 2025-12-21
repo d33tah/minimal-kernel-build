@@ -83,16 +83,6 @@ struct gate_struct {
 
 typedef struct gate_struct gate_desc;
 
-static inline unsigned long gate_offset(const gate_desc *g)
-{
-	return g->offset_low | ((unsigned long)g->offset_middle << 16);
-}
-
-static inline unsigned long gate_segment(const gate_desc *g)
-{
-	return g->segment;
-}
-
 struct desc_ptr {
 	unsigned short size;
 	unsigned long address;

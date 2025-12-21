@@ -38,47 +38,6 @@ typedef struct {
 	unsigned long addr;
 } func_desc_t;
 
-static inline bool have_function_descriptors(void)
-{
-	return IS_ENABLED(CONFIG_HAVE_FUNCTION_DESCRIPTORS);
-}
-
-static inline bool memory_contains(void *begin, void *end, void *virt,
-				   size_t size)
-{
-	return virt >= begin && virt + size <= end;
-}
-
-static inline bool memory_intersects(void *begin, void *end, void *virt,
-				     size_t size)
-{
-	void *vend = virt + size;
-
-	return (virt >= begin && virt < end) || (vend >= begin && vend < end);
-}
-
-static inline bool init_section_contains(void *virt, size_t size)
-{
-	return memory_contains(__init_begin, __init_end, virt, size);
-}
-
-static inline bool init_section_intersects(void *virt, size_t size)
-{
-	return memory_intersects(__init_begin, __init_end, virt, size);
-}
-
-static inline bool is_kernel_core_data(unsigned long addr)
-{
-	if (addr >= (unsigned long)_sdata && addr < (unsigned long)_edata)
-		return true;
-
-	if (addr >= (unsigned long)__bss_start &&
-	    addr < (unsigned long)__bss_stop)
-		return true;
-
-	return false;
-}
-
 static inline bool is_kernel_rodata(unsigned long addr)
 {
 	return addr >= (unsigned long)__start_rodata &&
@@ -97,19 +56,10 @@ static inline bool __is_kernel_text(unsigned long addr)
 	       addr < (unsigned long)_etext;
 }
 
-static inline bool __is_kernel(unsigned long addr)
-{
-	return ((addr >= (unsigned long)_stext &&
-	         addr < (unsigned long)_end) ||
-		(addr >= (unsigned long)__init_begin &&
-		 addr < (unsigned long)__init_end));
-}
-
 #include <asm/extable.h>
 
 extern char __brk_base[], __brk_limit[];
 extern char __end_rodata_aligned[];
-
 
 extern char __end_of_kernel_reserve[];
 
@@ -117,12 +67,12 @@ extern unsigned long _brk_start, _brk_end;
 
 static inline bool arch_is_kernel_initmem_freed(unsigned long addr)
 {
-	 
+
 	if (_brk_start)
 		return 0;
 
-	 
+
 	return addr >= _brk_end && addr < (unsigned long)&_end;
 }
 
-#endif	 
+#endif

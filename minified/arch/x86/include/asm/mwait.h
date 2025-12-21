@@ -28,65 +28,21 @@
 static inline void __monitor(const void *eax, unsigned long ecx,
 			     unsigned long edx)
 {
-	 
 	asm volatile(".byte 0x0f, 0x01, 0xc8;"
 		     :: "a" (eax), "c" (ecx), "d"(edx));
 }
 
-static inline void __monitorx(const void *eax, unsigned long ecx,
-			      unsigned long edx)
-{
-	 
-	asm volatile(".byte 0x0f, 0x01, 0xfa;"
-		     :: "a" (eax), "c" (ecx), "d"(edx));
-}
+/* __monitorx removed - unused */
 
 static inline void __mwait(unsigned long eax, unsigned long ecx)
 {
 	mds_idle_clear_cpu_buffers();
-
-	 
 	asm volatile(".byte 0x0f, 0x01, 0xc9;"
 		     :: "a" (eax), "c" (ecx));
 }
 
- 
-static inline void __mwaitx(unsigned long eax, unsigned long ebx,
-			    unsigned long ecx)
-{
-	 
+/* __mwaitx, __sti_mwait, mwait_idle_with_hints removed - unused */
 
-	 
-	asm volatile(".byte 0x0f, 0x01, 0xfb;"
-		     :: "a" (eax), "b" (ebx), "c" (ecx));
-}
-
-static inline void __sti_mwait(unsigned long eax, unsigned long ecx)
-{
-	mds_idle_clear_cpu_buffers();
-	 
-	asm volatile("sti; .byte 0x0f, 0x01, 0xc9;"
-		     :: "a" (eax), "c" (ecx));
-}
-
- 
-static inline void mwait_idle_with_hints(unsigned long eax, unsigned long ecx)
-{
-	if (static_cpu_has_bug(X86_BUG_MONITOR) || !current_set_polling_and_test()) {
-		if (static_cpu_has_bug(X86_BUG_CLFLUSH_MONITOR)) {
-			mb();
-			clflush((void *)&current_thread_info()->flags);
-			mb();
-		}
-
-		__monitor((void *)&current_thread_info()->flags, 0, 0);
-		if (!need_resched())
-			__mwait(eax, ecx);
-	}
-	current_clr_polling();
-}
-
- 
 static inline void __tpause(u32 ecx, u32 edx, u32 eax)
 {
 	 

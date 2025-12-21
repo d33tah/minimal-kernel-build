@@ -33,27 +33,19 @@ static inline void bdi_debug_unregister(struct backing_dev_info *bdi)
 {
 }
 
-/* Stub: BDI sysfs attributes simplified for minimal kernel */
-static ssize_t read_ahead_kb_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count) { return count; }
-static ssize_t read_ahead_kb_show(struct device *dev,
-		struct device_attribute *attr, char *buf) { return sysfs_emit(buf, "0\n"); }
+/* Stub: BDI sysfs attributes - all return 0 */
+static ssize_t bdi_stub_store(struct device *d, struct device_attribute *a, const char *b, size_t c) { return c; }
+static ssize_t bdi_stub_show(struct device *d, struct device_attribute *a, char *b) { return sysfs_emit(b, "0\n"); }
+#define read_ahead_kb_store bdi_stub_store
+#define read_ahead_kb_show bdi_stub_show
 static DEVICE_ATTR_RW(read_ahead_kb);
-
-static ssize_t min_ratio_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count) { return count; }
-static ssize_t min_ratio_show(struct device *dev,
-		struct device_attribute *attr, char *buf) { return sysfs_emit(buf, "0\n"); }
+#define min_ratio_store bdi_stub_store
+#define min_ratio_show bdi_stub_show
 static DEVICE_ATTR_RW(min_ratio);
-
-static ssize_t max_ratio_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count) { return count; }
-static ssize_t max_ratio_show(struct device *dev,
-		struct device_attribute *attr, char *buf) { return sysfs_emit(buf, "0\n"); }
+#define max_ratio_store bdi_stub_store
+#define max_ratio_show bdi_stub_show
 static DEVICE_ATTR_RW(max_ratio);
-
-static ssize_t stable_pages_required_show(struct device *dev,
-		struct device_attribute *attr, char *buf) { return sysfs_emit(buf, "0\n"); }
+#define stable_pages_required_show bdi_stub_show
 static DEVICE_ATTR_RO(stable_pages_required);
 
 static struct attribute *bdi_dev_attrs[] = {

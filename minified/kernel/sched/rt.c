@@ -30,16 +30,17 @@ void init_rt_rq(struct rt_rq *rt_rq)
 }
 
 
-static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int flags) { }
-static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int flags) { }
+/* Stub functions - RT scheduler not used */
+static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int f) { }
+static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int f) { }
 static void yield_task_rt(struct rq *rq) { }
-static void check_preempt_curr_rt(struct rq *rq, struct task_struct *p, int flags) { }
+static void check_preempt_curr_rt(struct rq *rq, struct task_struct *p, int f) { }
 static struct task_struct *pick_next_task_rt(struct rq *rq) { return NULL; }
 static void put_prev_task_rt(struct rq *rq, struct task_struct *p) { }
-static void set_next_task_rt(struct rq *rq, struct task_struct *p, bool first) { }
-static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued) { }
-static unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *task) { return 0; }
-static void prio_changed_rt(struct rq *rq, struct task_struct *p, int oldprio) { }
+static void set_next_task_rt(struct rq *rq, struct task_struct *p, bool f) { }
+static void task_tick_rt(struct rq *rq, struct task_struct *p, int q) { }
+static unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *t) { return 0; }
+static void prio_changed_rt(struct rq *rq, struct task_struct *p, int o) { }
 static void switched_to_rt(struct rq *rq, struct task_struct *p) { }
 static void update_curr_rt(struct rq *rq) { }
 

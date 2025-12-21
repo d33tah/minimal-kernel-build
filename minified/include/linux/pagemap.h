@@ -435,5 +435,8 @@ void page_cache_sync_readahead(struct address_space *mapping,
 	page_cache_sync_ra(&ractl, req_count);
 }
 
+/* Folio idle tracking stubs - page_idle feature disabled */
+static inline bool folio_test_idle(struct folio *folio) { return false; }
+static inline void folio_clear_idle(struct folio *folio) { }
 
 #endif

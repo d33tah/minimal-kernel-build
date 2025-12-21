@@ -27,8 +27,6 @@
 #include <linux/shmem_fs.h>
 #include <linux/rmap.h>
 #include <linux/ramfs.h>
-static inline bool folio_test_idle(struct folio *folio) { return false; }
-static inline void folio_clear_idle(struct folio *folio) { }
 #include <linux/migrate.h>
 #include <asm/pgalloc.h>
 #include <asm/tlbflush.h>

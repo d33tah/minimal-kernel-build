@@ -40,13 +40,4 @@ bool pm_qos_update_flags(struct pm_qos_flags *pqf,
 			 struct pm_qos_flags_request *req,
 			 enum pm_qos_req_action action, s32 val);
 
-static inline void dev_pm_qos_constraints_init(struct device *dev)
-{
-	dev->power.power_state = PMSG_ON;
-}
-static inline void dev_pm_qos_constraints_destroy(struct device *dev)
-{
-	dev->power.power_state = PMSG_INVALID;
-}
-
 #endif

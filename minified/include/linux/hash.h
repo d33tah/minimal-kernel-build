@@ -35,9 +35,4 @@ static inline u32 hash_ptr(const void *ptr, unsigned int bits)
 	return hash_long((unsigned long)ptr, bits);
 }
 
-static inline u32 hash32_ptr(const void *ptr)
-{
-	return (u32)(unsigned long)ptr;
-}
-
 #endif

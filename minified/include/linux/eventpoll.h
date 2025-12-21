@@ -32,11 +32,6 @@ struct epoll_event {
 	__u64 data;
 };
 
-static inline void ep_take_care_of_epollwakeup(struct epoll_event *epev)
-{
-	epev->events &= ~EPOLLWAKEUP;
-}
-
 struct file;
 
 

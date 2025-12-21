@@ -77,12 +77,6 @@ static inline void *platform_get_drvdata(const struct platform_device *pdev)
 	return dev_get_drvdata(&pdev->dev);
 }
 
-static inline void platform_set_drvdata(struct platform_device *pdev,
-					void *data)
-{
-	dev_set_drvdata(&pdev->dev, data);
-}
-
 #define builtin_platform_driver(__platform_driver) \
 	builtin_driver(__platform_driver, platform_driver_register)
 

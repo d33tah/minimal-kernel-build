@@ -28,11 +28,6 @@ static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset)
 	return ret;
 }
 
-static inline unsigned swp_type(swp_entry_t entry)
-{
-	return (entry.val >> SWP_TYPE_SHIFT);
-}
-
 static inline pgoff_t swp_offset(swp_entry_t entry)
 {
 	return entry.val & SWP_OFFSET_MASK;

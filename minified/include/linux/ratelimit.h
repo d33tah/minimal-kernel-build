@@ -15,24 +15,6 @@ static inline void ratelimit_state_init(struct ratelimit_state *rs,
 	rs->burst	= burst;
 }
 
-static inline void ratelimit_default_init(struct ratelimit_state *rs)
-{
-	return ratelimit_state_init(rs, DEFAULT_RATELIMIT_INTERVAL,
-					DEFAULT_RATELIMIT_BURST);
-}
-
-static inline void ratelimit_state_exit(struct ratelimit_state *rs)
-{
-	if (!(rs->flags & RATELIMIT_MSG_ON_RELEASE))
-		return;
-
-	if (rs->missed) {
-		pr_warn("%s: %d output lines suppressed due to ratelimiting\n",
-			current->comm, rs->missed);
-		rs->missed = 0;
-	}
-}
-
 static inline void
 ratelimit_set_flags(struct ratelimit_state *rs, unsigned long flags)
 {

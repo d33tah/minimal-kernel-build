@@ -10,10 +10,6 @@
 
 struct vc_data;
 
-static inline u16 inverse_translate(const struct vc_data *conp, int glyph, int use_unicode)
-{
-	return glyph;
-}
 static inline unsigned short *set_translate(int m, struct vc_data *vc)
 {
 	return NULL;

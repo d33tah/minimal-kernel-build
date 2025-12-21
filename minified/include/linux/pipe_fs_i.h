@@ -69,26 +69,6 @@ static inline bool pipe_full(unsigned int head, unsigned int tail,
 	return pipe_occupancy(head, tail) >= limit;
 }
 
-static inline unsigned int pipe_space_for_user(unsigned int head, unsigned int tail,
-					       struct pipe_inode_info *pipe)
-{
-	unsigned int p_occupancy, p_space;
-
-	p_occupancy = pipe_occupancy(head, tail);
-	if (p_occupancy >= pipe->max_usage)
-		return 0;
-	p_space = pipe->ring_size - p_occupancy;
-	if (p_space > pipe->max_usage)
-		p_space = pipe->max_usage;
-	return p_space;
-}
-
-static inline __must_check bool pipe_buf_get(struct pipe_inode_info *pipe,
-				struct pipe_buffer *buf)
-{
-	return buf->ops->get(pipe, buf);
-}
-
 static inline void pipe_buf_release(struct pipe_inode_info *pipe,
 				    struct pipe_buffer *buf)
 {
@@ -96,22 +76,6 @@ static inline void pipe_buf_release(struct pipe_inode_info *pipe,
 
 	buf->ops = NULL;
 	ops->release(pipe, buf);
-}
-
-static inline int pipe_buf_confirm(struct pipe_inode_info *pipe,
-				   struct pipe_buffer *buf)
-{
-	if (!buf->ops->confirm)
-		return 0;
-	return buf->ops->confirm(pipe, buf);
-}
-
-static inline bool pipe_buf_try_steal(struct pipe_inode_info *pipe,
-		struct pipe_buffer *buf)
-{
-	if (!buf->ops->try_steal)
-		return false;
-	return buf->ops->try_steal(pipe, buf);
 }
 
 #define PIPE_SIZE		PAGE_SIZE

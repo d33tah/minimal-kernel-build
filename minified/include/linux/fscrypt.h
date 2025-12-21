@@ -20,9 +20,7 @@ struct fscrypt_dummy_policy { };
 #define fname_name(p)		((p)->disk_name.name)
 #define fname_len(p)		((p)->disk_name.len)
 
-static inline void fscrypt_handle_d_move(struct dentry *dentry) { }
 static inline void fscrypt_sb_free(struct super_block *sb) { }
-static inline bool fscrypt_needs_contents_encryption(const struct inode *inode) { return false; }
 static inline int fscrypt_setup_filename(struct inode *dir, const struct qstr *iname, int lookup, struct fscrypt_name *fname)
 {
 	memset(fname, 0, sizeof(*fname));

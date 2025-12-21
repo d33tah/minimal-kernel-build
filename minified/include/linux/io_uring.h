@@ -7,14 +7,6 @@ struct file;
 struct sock;
 struct io_uring_cmd;
 
-static inline void io_uring_cmd_done(struct io_uring_cmd *cmd, ssize_t ret,
-		ssize_t ret2)
-{
-}
-static inline void io_uring_cmd_complete_in_task(struct io_uring_cmd *ioucmd,
-			void (*task_work_cb)(struct io_uring_cmd *))
-{
-}
 static inline struct sock *io_uring_get_socket(struct file *file)
 {
 	return NULL;

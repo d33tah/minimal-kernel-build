@@ -35,43 +35,11 @@ struct seccomp { };
 struct seccomp_filter { };
 struct seccomp_data;
 
-static inline int secure_computing(void) { return 0; }
 static inline int __secure_computing(const struct seccomp_data *sd) { return 0; }
-
-static inline long prctl_get_seccomp(void)
-{
-	return -EINVAL;
-}
-
-static inline long prctl_set_seccomp(unsigned long arg2, char __user *arg3)
-{
-	return -EINVAL;
-}
-
-static inline int seccomp_mode(struct seccomp *s)
-{
-	return SECCOMP_MODE_DISABLED;
-}
 
 static inline void seccomp_filter_release(struct task_struct *tsk)
 {
 	return;
-}
-static inline void get_seccomp_filter(struct task_struct *tsk)
-{
-	return;
-}
-
-static inline long seccomp_get_filter(struct task_struct *task,
-				      unsigned long n, void __user *data)
-{
-	return -EINVAL;
-}
-static inline long seccomp_get_metadata(struct task_struct *task,
-					unsigned long filter_off,
-					void __user *data)
-{
-	return -EINVAL;
 }
 
 #endif  

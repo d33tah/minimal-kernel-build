@@ -17,16 +17,6 @@ struct cpu_stop_work {
 	void			*arg;
 };
 
-static inline int stop_one_cpu(unsigned int cpu, cpu_stop_fn_t fn, void *arg)
-{
-	int ret = -ENOENT;
-	preempt_disable();
-	if (cpu == smp_processor_id())
-		ret = fn(arg);
-	preempt_enable();
-	return ret;
-}
-
 static __always_inline int stop_machine_cpuslocked(cpu_stop_fn_t fn, void *data,
 					  const struct cpumask *cpus)
 {

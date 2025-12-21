@@ -16,11 +16,6 @@ static inline void rcuwait_init(struct rcuwait *w)
 	w->task = NULL;
 }
 
-static inline int rcuwait_active(struct rcuwait *w)
-{
-	return !!rcu_access_pointer(w->task);
-}
-
 extern int rcuwait_wake_up(struct rcuwait *w);
 
 

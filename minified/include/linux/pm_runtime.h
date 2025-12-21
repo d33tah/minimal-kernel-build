@@ -39,19 +39,11 @@ static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
 {
 	return -ENOSYS;
 }
-static inline int __pm_runtime_suspend(struct device *dev, int rpmflags)
-{
-	return -ENOSYS;
-}
 static inline int __pm_runtime_resume(struct device *dev, int rpmflags)
 {
 	return 1;
 }
-static inline int __pm_runtime_set_status(struct device *dev,
-					    unsigned int status) { return 0; }
 static inline int pm_runtime_barrier(struct device *dev) { return 0; }
-static inline void pm_runtime_enable(struct device *dev) {}
-static inline void __pm_runtime_disable(struct device *dev, bool c) {}
 static inline void pm_runtime_put_noidle(struct device *dev) {}
 /* pm_runtime_mark_last_busy, __pm_runtime_use_autosuspend,
    pm_runtime_set_autosuspend_delay, pm_runtime_autosuspend_expiration

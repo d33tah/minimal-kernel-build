@@ -29,22 +29,6 @@ static inline void kmsg_dump(enum kmsg_dump_reason reason)
 {
 }
 
-static inline bool kmsg_dump_get_line(struct kmsg_dump_iter *iter, bool syslog,
-				const char *line, size_t size, size_t *len)
-{
-	return false;
-}
-
-static inline bool kmsg_dump_get_buffer(struct kmsg_dump_iter *iter, bool syslog,
-					char *buf, size_t size, size_t *len)
-{
-	return false;
-}
-
-static inline void kmsg_dump_rewind(struct kmsg_dump_iter *iter)
-{
-}
-
 static inline const char *kmsg_dump_reason_str(enum kmsg_dump_reason reason)
 {
 	return "Disabled";

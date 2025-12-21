@@ -69,11 +69,6 @@ static inline void _mmu_notifier_range_init(struct mmu_notifier_range *range,
 	_mmu_notifier_range_init(range, start, end)
 
 
-static inline int mm_has_notifiers(struct mm_struct *mm)
-{
-	return 0;
-}
-
 static inline void mmu_notifier_release(struct mm_struct *mm)
 {
 }

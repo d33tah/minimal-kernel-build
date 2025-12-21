@@ -62,11 +62,6 @@ void percpu_ref_resurrect(struct percpu_ref *ref);
 void percpu_ref_reinit(struct percpu_ref *ref);
 bool percpu_ref_is_zero(struct percpu_ref *ref);
 
-static inline void percpu_ref_kill(struct percpu_ref *ref)
-{
-	percpu_ref_kill_and_confirm(ref, NULL);
-}
-
 static inline bool __ref_is_percpu(struct percpu_ref *ref,
 					  unsigned long __percpu **percpu_countp)
 {
@@ -95,11 +90,6 @@ static inline void percpu_ref_get_many(struct percpu_ref *ref, unsigned long nr)
 		atomic_long_add(nr, &ref->data->count);
 
 	rcu_read_unlock();
-}
-
-static inline void percpu_ref_get(struct percpu_ref *ref)
-{
-	percpu_ref_get_many(ref, 1);
 }
 
 static inline void percpu_ref_put_many(struct percpu_ref *ref, unsigned long nr)

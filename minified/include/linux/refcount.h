@@ -119,17 +119,6 @@ static inline __must_check bool refcount_dec_and_test(refcount_t *r)
 	return __refcount_dec_and_test(r, NULL);
 }
 
-static inline void __refcount_dec(refcount_t *r, int *oldp)
-{
-	int old = atomic_fetch_sub_release(1, &r->refs);
-
-	if (oldp)
-		*oldp = old;
-
-	if (unlikely(old <= 1))
-		refcount_warn_saturate(r, REFCOUNT_DEC_LEAK);
-}
-
 
 extern __must_check bool refcount_dec_not_one(refcount_t *r);
 extern __must_check bool refcount_dec_and_lock_irqsave(refcount_t *r,

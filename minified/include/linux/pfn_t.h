@@ -23,17 +23,6 @@ static inline pfn_t __pfn_to_pfn_t(unsigned long pfn, u64 flags)
 	return pfn_t;
 }
 
-static inline pfn_t pfn_to_pfn_t(unsigned long pfn)
-{
-	return __pfn_to_pfn_t(pfn, 0);
-}
-
-
-static inline bool pfn_t_has_page(pfn_t pfn)
-{
-	return (pfn.val & PFN_MAP) == PFN_MAP || (pfn.val & PFN_DEV) == 0;
-}
-
 static inline unsigned long pfn_t_to_pfn(pfn_t pfn)
 {
 	return pfn.val & ~PFN_FLAGS_MASK;

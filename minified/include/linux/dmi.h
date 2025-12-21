@@ -30,8 +30,6 @@ struct dmi_device {
 
 static inline void dmi_setup(void) { }
 #define dmi_available 0
-static inline bool dmi_match(enum dmi_field f, const char *str)
-	{ return false; }
 
 
 #endif	 

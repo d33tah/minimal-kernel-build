@@ -22,11 +22,6 @@ extern int rtc_month_days(unsigned int month, unsigned int year);
 extern int rtc_valid_tm(struct rtc_time *tm);
 extern void rtc_time64_to_tm(time64_t time, struct rtc_time *tm);
 
-static inline bool is_leap_year(unsigned int year)
-{
-	return (!(year % 4) && (year % 100)) || !(year % 400);
-}
-
 #define rtc_hctosys_ret -ENODEV
 
 #endif

@@ -19,19 +19,8 @@ static inline void cpuset_init_smp(void) {}
 #define cpuset_current_mems_allowed (node_states[N_MEMORY])
 static inline void cpuset_init_current_mems_allowed(void) {}
 
-static inline int cpuset_nodemask_valid_mems_allowed(nodemask_t *nodemask)
-{
-	return 1;
-}
-
-
 static inline void set_mems_allowed(nodemask_t nodemask)
 {
-}
-
-static inline bool read_mems_allowed_retry(unsigned int seq)
-{
-	return false;
 }
 
 

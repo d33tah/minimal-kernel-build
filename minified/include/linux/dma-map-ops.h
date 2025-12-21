@@ -58,10 +58,6 @@ static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
 {
 	return NULL;
 }
-static inline void set_dma_ops(struct device *dev,
-			       const struct dma_map_ops *dma_ops)
-{
-}
 
 static inline struct cma *dev_get_cma_area(struct device *dev)
 {

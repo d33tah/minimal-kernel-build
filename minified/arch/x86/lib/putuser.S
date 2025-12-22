@@ -33,14 +33,9 @@
  * as they get called from within inline assembly.
  */
 
-#ifdef CONFIG_X86_5LEVEL
-#define LOAD_TASK_SIZE_MINUS_N(n) \
-	ALTERNATIVE __stringify(mov $((1 << 47) - 4096 - (n)),%rbx), \
-		    __stringify(mov $((1 << 56) - 4096 - (n)),%rbx), X86_FEATURE_LA57
-#else
+/* X86_32 - no 5-level paging */
 #define LOAD_TASK_SIZE_MINUS_N(n) \
 	mov $(TASK_SIZE_MAX - (n)),%_ASM_BX
-#endif
 
 .text
 SYM_FUNC_START(__put_user_1)
@@ -96,9 +91,8 @@ SYM_INNER_LABEL(__put_user_nocheck_8, SYM_L_GLOBAL)
 	ENDBR
 	ASM_STAC
 4:	mov %_ASM_AX,(%_ASM_CX)
-#ifdef CONFIG_X86_32
+/* X86_32 only */
 5:	movl %edx,4(%_ASM_CX)
-#endif
 	xor %ecx,%ecx
 	ASM_CLAC
 	RET
@@ -117,6 +111,5 @@ SYM_CODE_END(.Lbad_put_user_clac)
 	_ASM_EXTABLE_UA(2b, .Lbad_put_user_clac)
 	_ASM_EXTABLE_UA(3b, .Lbad_put_user_clac)
 	_ASM_EXTABLE_UA(4b, .Lbad_put_user_clac)
-#ifdef CONFIG_X86_32
+/* X86_32 only */
 	_ASM_EXTABLE_UA(5b, .Lbad_put_user_clac)
-#endif

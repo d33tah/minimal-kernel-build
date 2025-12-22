@@ -227,8 +227,7 @@ static inline unsigned long xa_to_sibling(const void *entry)
 
 static inline bool xa_is_sibling(const void *entry)
 {
-	return IS_ENABLED(CONFIG_XARRAY_MULTI) && xa_is_internal(entry) &&
-		(entry < xa_mk_sibling(XA_CHUNK_SIZE - 1));
+	return false;
 }
 
 #define XA_RETRY_ENTRY		xa_mk_internal(256)
@@ -377,15 +376,7 @@ static inline void *xas_reload(struct xa_state *xas)
 
 	if (!node)
 		return xa_head(xas->xa);
-	if (IS_ENABLED(CONFIG_XARRAY_MULTI)) {
-		offset = (xas->xa_index >> node->shift) & XA_CHUNK_MASK;
-		entry = xa_entry(xas->xa, node, offset);
-		if (!xa_is_sibling(entry))
-			return entry;
-		offset = xa_to_sibling(entry);
-	} else {
-		offset = xas->xa_offset;
-	}
+	offset = xas->xa_offset;
 	return xa_entry(xas->xa, node, offset);
 }
 

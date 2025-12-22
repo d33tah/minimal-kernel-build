@@ -550,10 +550,7 @@ static inline pmd_t pmd_read_atomic(pmd_t *pmdp)
 static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
 {
 	pmd_t pmdval = pmd_read_atomic(pmd);
-	 
-	 
-	if (pmd_none(pmdval) || pmd_trans_huge(pmdval) ||
-		(IS_ENABLED(CONFIG_ARCH_ENABLE_THP_MIGRATION) && !pmd_present(pmdval)))
+	if (pmd_none(pmdval) || pmd_trans_huge(pmdval))
 		return 1;
 	if (unlikely(pmd_bad(pmdval))) {
 		pmd_clear_bad(pmd);

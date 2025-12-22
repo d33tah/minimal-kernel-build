@@ -230,8 +230,6 @@ static int call_driver_probe(struct device *dev, struct device_driver *drv)
 
 static int really_probe(struct device *dev, struct device_driver *drv)
 {
-	bool test_remove = IS_ENABLED(CONFIG_DEBUG_TEST_DRIVER_REMOVE) &&
-			   !drv->suppress_bind_attrs;
 	int ret;
 
 	if (defer_all_probes) {
@@ -291,16 +289,6 @@ re_probe:
 	}
 
 	/* Stub: state_synced sysfs attribute not created for minimal kernel */
-
-	if (test_remove) {
-		test_remove = false;
-
-		device_remove(dev);
-		driver_sysfs_remove(dev);
-		device_unbind_cleanup(dev);
-
-		goto re_probe;
-	}
 
 	pinctrl_init_done(dev);
 

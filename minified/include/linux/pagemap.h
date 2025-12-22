@@ -47,16 +47,10 @@ static inline bool mapping_shrinkable(struct address_space *mapping)
 {
 	void *head;
 
-	 
-	if (IS_ENABLED(CONFIG_HIGHMEM))
-		return true;
-
-	 
 	head = rcu_access_pointer(mapping->i_pages.xa_head);
 	if (!head)
 		return true;
 
-	 
 	if (!xa_is_node(head) && xa_is_value(head))
 		return true;
 
@@ -113,8 +107,7 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
 
 static inline bool mapping_large_folio_support(struct address_space *mapping)
 {
-	return IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE) &&
-		test_bit(AS_LARGE_FOLIO_SUPPORT, &mapping->flags);
+	return false;
 }
 
 static inline int filemap_nr_thps(struct address_space *mapping)

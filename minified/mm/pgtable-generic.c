@@ -18,31 +18,8 @@ void pmd_clear_bad(pmd_t *pmd)
 	pmd_clear(pmd);
 }
 
-#ifndef __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
-int ptep_set_access_flags(struct vm_area_struct *vma,
-			  unsigned long address, pte_t *ptep,
-			  pte_t entry, int dirty)
-{
-	int changed = !pte_same(*ptep, entry);
-	if (changed) {
-		set_pte_at(vma->vm_mm, address, ptep, entry);
-		flush_tlb_fix_spurious_fault(vma, address);
-	}
-	return changed;
-}
-#endif
-
-#ifndef __HAVE_ARCH_PTEP_CLEAR_YOUNG_FLUSH
-int ptep_clear_flush_young(struct vm_area_struct *vma,
-			   unsigned long address, pte_t *ptep)
-{
-	int young;
-	young = ptep_test_and_clear_young(vma, address, ptep);
-	if (young)
-		flush_tlb_page(vma, address);
-	return young;
-}
-#endif
+/* __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS is defined in x86 pgtable.h */
+/* __HAVE_ARCH_PTEP_CLEAR_YOUNG_FLUSH is defined in x86 pgtable.h */
 
 #ifndef __HAVE_ARCH_PTEP_CLEAR_FLUSH
 pte_t ptep_clear_flush(struct vm_area_struct *vma, unsigned long address,

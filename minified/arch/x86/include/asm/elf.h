@@ -118,12 +118,10 @@ do {									\
 	NEW_AUX_ENT(AT_MINSIGSTKSZ, get_sigframe_size());		\
 } while (0)
 
- 
+/* CONFIG_X86_32 is enabled, always ia32 */
 static inline int mmap_is_ia32(void)
 {
-	return IS_ENABLED(CONFIG_X86_32) ||
-	       (IS_ENABLED(CONFIG_COMPAT) &&
-		test_thread_flag(TIF_ADDR32));
+	return 1;
 }
 
 extern unsigned long task_size_32bit(void);

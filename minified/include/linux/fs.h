@@ -1507,18 +1507,10 @@ static inline bool vma_is_dax(const struct vm_area_struct *vma)
 	return vma->vm_file && IS_DAX(vma->vm_file->f_mapping->host);
 }
 
+/* CONFIG_FS_DAX not enabled */
 static inline bool vma_is_fsdax(struct vm_area_struct *vma)
 {
-	struct inode *inode;
-
-	if (!IS_ENABLED(CONFIG_FS_DAX) || !vma->vm_file)
-		return false;
-	if (!vma_is_dax(vma))
-		return false;
-	inode = file_inode(vma->vm_file);
-	if (S_ISCHR(inode->i_mode))
-		return false; 
-	return true;
+	return false;
 }
 
 static inline int iocb_flags(struct file *file)

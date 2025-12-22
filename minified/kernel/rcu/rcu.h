@@ -256,9 +256,7 @@ static inline void rcutorture_get_gp_data(enum rcutorture_type test_type,
 static inline void rcu_gp_set_torture_wait(int duration) { }
 #endif
 
-#if IS_ENABLED(CONFIG_RCU_TORTURE_TEST) || IS_MODULE(CONFIG_RCU_TORTURE_TEST)
-long rcutorture_sched_setaffinity(pid_t pid, const struct cpumask *in_mask);
-#endif
+/* CONFIG_RCU_TORTURE_TEST not enabled */
 
 
 static inline void srcutorture_get_gp_data(enum rcutorture_type test_type,

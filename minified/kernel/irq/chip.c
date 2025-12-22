@@ -456,22 +456,12 @@ static struct device *irq_get_parent_device(struct irq_data *data)
 
 int irq_chip_pm_get(struct irq_data *data)
 {
-	struct device *dev = irq_get_parent_device(data);
-	int retval = 0;
-
-	if (IS_ENABLED(CONFIG_PM) && dev)
-		retval = pm_runtime_resume_and_get(dev);
-
-	return retval;
+	/* CONFIG_PM not enabled */
+	return 0;
 }
 
 int irq_chip_pm_put(struct irq_data *data)
 {
-	struct device *dev = irq_get_parent_device(data);
-	int retval = 0;
-
-	if (IS_ENABLED(CONFIG_PM) && dev)
-		retval = pm_runtime_put(dev);
-
-	return (retval < 0) ? retval : 0;
+	/* CONFIG_PM not enabled */
+	return 0;
 }

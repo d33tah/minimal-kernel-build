@@ -64,16 +64,7 @@ static unsigned int __ioremap_check_encrypted(struct resource *res)
 
 static void __ioremap_check_other(resource_size_t addr, struct ioremap_desc *desc)
 {
-	if (!cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
-		return;
-
-	if (!IS_ENABLED(CONFIG_EFI))
-		return;
-
-	if (efi_mem_type(addr) == EFI_RUNTIME_SERVICES_DATA ||
-	    (efi_mem_type(addr) == EFI_BOOT_SERVICES_DATA &&
-	     efi_mem_attributes(addr) & EFI_MEMORY_RUNTIME))
-		desc->flags |= IORES_MAP_ENCRYPTED;
+	/* CONFIG_EFI not enabled */
 }
 
 static int __ioremap_collect_map_flags(struct resource *res, void *arg)

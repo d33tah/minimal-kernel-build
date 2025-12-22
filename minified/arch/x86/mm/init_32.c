@@ -396,7 +396,7 @@ void __init initmem_init(void)
 
 	memblock_set_node(0, PHYS_ADDR_MAX, &memblock.memory, 0);
 
-	max_mapnr = IS_ENABLED(CONFIG_HIGHMEM) ? highend_pfn : max_low_pfn;
+	max_mapnr = max_low_pfn;  /* !HIGHMEM */
 	__vmalloc_start_set = true;
 
 	setup_bootmem_allocator();

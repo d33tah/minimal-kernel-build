@@ -201,23 +201,7 @@ static void __init probe_page_size_mask(void)
 
 static void setup_pcid(void)
 {
-	if (!IS_ENABLED(CONFIG_X86_64))
-		return;
-
-	if (!boot_cpu_has(X86_FEATURE_PCID))
-		return;
-
-	if (boot_cpu_has(X86_FEATURE_PGE)) {
-		 
-		cr4_set_bits(X86_CR4_PCIDE);
-
-		 
-		if (boot_cpu_has(X86_FEATURE_INVPCID))
-			setup_force_cpu_cap(X86_FEATURE_INVPCID_SINGLE);
-	} else {
-		 
-		setup_clear_cpu_cap(X86_FEATURE_PCID);
-	}
+	/* !X86_64: PCID not supported on 32-bit */
 }
 
 #define NR_RANGE_MR 3
@@ -525,11 +509,8 @@ void __init poking_init(void)
 	poking_mm = copy_init_mm();
 	BUG_ON(!poking_mm);
 
-	 
+	/* RANDOMIZE_BASE not enabled */
 	poking_addr = TASK_UNMAPPED_BASE;
-	if (IS_ENABLED(CONFIG_RANDOMIZE_BASE))
-		poking_addr += (kaslr_get_random_long("Poking") & PAGE_MASK) %
-			(TASK_SIZE - TASK_UNMAPPED_BASE - 3 * PAGE_SIZE);
 
 	if (((poking_addr + PAGE_SIZE) & ~PMD_MASK) == 0)
 		poking_addr += PAGE_SIZE;

@@ -483,11 +483,6 @@ static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
 static __always_inline
 bool ttwu_state_match(struct task_struct *p, unsigned int state, int *success)
 {
-	if (IS_ENABLED(CONFIG_DEBUG_PREEMPT)) {
-		WARN_ON_ONCE((state & TASK_RTLOCK_WAIT) &&
-			     state != TASK_RTLOCK_WAIT);
-	}
-
 	if (READ_ONCE(p->__state) & state) {
 		*success = 1;
 		return true;
@@ -1174,7 +1169,6 @@ asmlinkage __visible void __sched preempt_schedule_irq(void)
 int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flags,
 			  void *key)
 {
-	WARN_ON_ONCE(IS_ENABLED(CONFIG_SCHED_DEBUG) && wake_flags & ~WF_SYNC);
 	return try_to_wake_up(curr->private, mode, wake_flags);
 }
 

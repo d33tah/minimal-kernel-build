@@ -30,8 +30,7 @@ extern bool crash_kexec_post_notifiers;
 #define sysctl_oops_all_cpu_backtrace 0
 
 int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
-static unsigned long tainted_mask =
-	IS_ENABLED(CONFIG_RANDSTRUCT) ? (1 << TAINT_RANDSTRUCT) : 0;
+static unsigned long tainted_mask = 0;
 static int pause_on_oops;
 static int pause_on_oops_flag;
 static DEFINE_SPINLOCK(pause_on_oops_lock);

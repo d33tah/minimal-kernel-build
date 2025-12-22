@@ -2,32 +2,8 @@
 #include <linux/lockref.h>
 #include <linux/bug.h>
 
-#if USE_CMPXCHG_LOCKREF
-
-#define CMPXCHG_LOOP(CODE, SUCCESS) do {					\
-	int retry = 100;							\
-	struct lockref old;							\
-	BUILD_BUG_ON(sizeof(old) != 8);						\
-	old.lock_count = READ_ONCE(lockref->lock_count);			\
-	while (likely(arch_spin_value_unlocked(old.lock.rlock.raw_lock))) {  	\
-		struct lockref new = old;					\
-		CODE								\
-		if (likely(try_cmpxchg64_relaxed(&lockref->lock_count,		\
-						 &old.lock_count,		\
-						 new.lock_count))) {		\
-			SUCCESS;						\
-		}								\
-		if (!--retry)							\
-			break;							\
-		cpu_relax();							\
-	}									\
-} while (0)
-
-#else
-
+/* --- 2025-12-22 04:40 --- Removed USE_CMPXCHG_LOCKREF branch - not enabled for 32-bit */
 #define CMPXCHG_LOOP(CODE, SUCCESS) do { } while (0)
-
-#endif
 
 void lockref_get(struct lockref *lockref)
 {

@@ -945,7 +945,7 @@ static inline int __p4d_alloc(struct mm_struct *mm, pgd_t *pgd,
 int __p4d_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long address);
 #endif
 
-#if defined(__PAGETABLE_PUD_FOLDED) || !defined(CONFIG_MMU)
+/* __PAGETABLE_PUD_FOLDED=1 - 2-level paging, PUD folded */
 static inline int __pud_alloc(struct mm_struct *mm, p4d_t *p4d,
 						unsigned long address)
 {
@@ -954,25 +954,7 @@ static inline int __pud_alloc(struct mm_struct *mm, p4d_t *p4d,
 static inline void mm_inc_nr_puds(struct mm_struct *mm) {}
 static inline void mm_dec_nr_puds(struct mm_struct *mm) {}
 
-#else
-int __pud_alloc(struct mm_struct *mm, p4d_t *p4d, unsigned long address);
-
-static inline void mm_inc_nr_puds(struct mm_struct *mm)
-{
-	if (mm_pud_folded(mm))
-		return;
-	atomic_long_add(PTRS_PER_PUD * sizeof(pud_t), &mm->pgtables_bytes);
-}
-
-static inline void mm_dec_nr_puds(struct mm_struct *mm)
-{
-	if (mm_pud_folded(mm))
-		return;
-	atomic_long_sub(PTRS_PER_PUD * sizeof(pud_t), &mm->pgtables_bytes);
-}
-#endif
-
-#if defined(__PAGETABLE_PMD_FOLDED) || !defined(CONFIG_MMU)
+/* __PAGETABLE_PMD_FOLDED=1 - 2-level paging, PMD folded */
 static inline int __pmd_alloc(struct mm_struct *mm, pud_t *pud,
 						unsigned long address)
 {
@@ -981,24 +963,6 @@ static inline int __pmd_alloc(struct mm_struct *mm, pud_t *pud,
 
 static inline void mm_inc_nr_pmds(struct mm_struct *mm) {}
 static inline void mm_dec_nr_pmds(struct mm_struct *mm) {}
-
-#else
-int __pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address);
-
-static inline void mm_inc_nr_pmds(struct mm_struct *mm)
-{
-	if (mm_pmd_folded(mm))
-		return;
-	atomic_long_add(PTRS_PER_PMD * sizeof(pmd_t), &mm->pgtables_bytes);
-}
-
-static inline void mm_dec_nr_pmds(struct mm_struct *mm)
-{
-	if (mm_pmd_folded(mm))
-		return;
-	atomic_long_sub(PTRS_PER_PMD * sizeof(pmd_t), &mm->pgtables_bytes);
-}
-#endif
 
 static inline void mm_pgtables_bytes_init(struct mm_struct *mm)
 {

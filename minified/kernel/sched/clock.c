@@ -1,9 +1,4 @@
-
-notrace unsigned long long __weak sched_clock(void)
-{
-	return (unsigned long long)(jiffies - INITIAL_JIFFIES)
-					* (NSEC_PER_SEC / HZ);
-}
+/* sched_clock provided by arch/x86/kernel/tsc.c as alias to native_sched_clock */
 
 static DEFINE_STATIC_KEY_FALSE(sched_clock_running);
 

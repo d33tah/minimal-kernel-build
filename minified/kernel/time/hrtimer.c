@@ -470,10 +470,8 @@ void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
 	struct hrtimer_clock_base *base;
 	unsigned long flags;
 
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
-		WARN_ON_ONCE(!(mode & HRTIMER_MODE_SOFT) ^ !timer->is_soft);
-	else
-		WARN_ON_ONCE(!(mode & HRTIMER_MODE_HARD) ^ !timer->is_hard);
+	/* CONFIG_PREEMPT_RT not enabled */
+	WARN_ON_ONCE(!(mode & HRTIMER_MODE_SOFT) ^ !timer->is_soft);
 
 	base = lock_hrtimer_base(timer, &flags);
 
@@ -544,9 +542,7 @@ static void __hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
 	struct hrtimer_cpu_base *cpu_base;
 	int base;
 
-	if (IS_ENABLED(CONFIG_PREEMPT_RT) && !(mode & HRTIMER_MODE_HARD))
-		softtimer = true;
-
+	/* CONFIG_PREEMPT_RT not enabled */
 	memset(timer, 0, sizeof(struct hrtimer));
 
 	cpu_base = raw_cpu_ptr(&hrtimer_bases);
@@ -719,22 +715,14 @@ static enum hrtimer_restart hrtimer_wakeup(struct hrtimer *timer)
 void hrtimer_sleeper_start_expires(struct hrtimer_sleeper *sl,
 				   enum hrtimer_mode mode)
 {
-	
-	if (IS_ENABLED(CONFIG_PREEMPT_RT) && sl->timer.is_hard)
-		mode |= HRTIMER_MODE_HARD;
-
+	/* CONFIG_PREEMPT_RT not enabled */
 	hrtimer_start_expires(&sl->timer, mode);
 }
 
 static void __hrtimer_init_sleeper(struct hrtimer_sleeper *sl,
 				   clockid_t clock_id, enum hrtimer_mode mode)
 {
-	
-	if (IS_ENABLED(CONFIG_PREEMPT_RT)) {
-		if (task_is_realtime(current) && !(mode & HRTIMER_MODE_SOFT))
-			mode |= HRTIMER_MODE_HARD;
-	}
-
+	/* CONFIG_PREEMPT_RT not enabled */
 	__hrtimer_init(&sl->timer, clock_id, mode);
 	sl->timer.function = hrtimer_wakeup;
 	sl->task = current;

@@ -188,16 +188,14 @@ static __always_inline void __slab_unlock(struct slab *slab)
 
 static __always_inline void slab_lock(struct slab *slab, unsigned long *flags)
 {
-	if (IS_ENABLED(CONFIG_PREEMPT_RT))
-		local_irq_save(*flags);
+	/* CONFIG_PREEMPT_RT not enabled - no irq save */
 	__slab_lock(slab);
 }
 
 static __always_inline void slab_unlock(struct slab *slab, unsigned long *flags)
 {
 	__slab_unlock(slab);
-	if (IS_ENABLED(CONFIG_PREEMPT_RT))
-		local_irq_restore(*flags);
+	/* CONFIG_PREEMPT_RT not enabled - no irq restore */
 }
 
 static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab,
@@ -205,8 +203,8 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab
 		void *freelist_new, unsigned long counters_new,
 		const char *n)
 {
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
-		lockdep_assert_irqs_disabled();
+	/* CONFIG_PREEMPT_RT not enabled */
+	lockdep_assert_irqs_disabled();
 #if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
     defined(CONFIG_HAVE_ALIGNED_STRUCT_PAGE)
 	if (s->flags & __CMPXCHG_DOUBLE) {
@@ -1032,9 +1030,8 @@ redo:
 
 	object = c->freelist;
 	slab = c->slab;
-	
-	if (IS_ENABLED(CONFIG_PREEMPT_RT) ||
-	    unlikely(!object || !slab || !node_match(slab, node))) {
+	/* CONFIG_PREEMPT_RT not enabled */
+	if (unlikely(!object || !slab || !node_match(slab, node))) {
 		object = __slab_alloc(s, gfpflags, node, addr, c);
 	} else {
 		void *next_object = get_freepointer_safe(s, object);

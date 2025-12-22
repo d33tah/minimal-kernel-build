@@ -52,42 +52,11 @@ __copy_to_user(void __user *to, const void *from, unsigned long n)
 	return raw_copy_to_user(to, from, n);
 }
 
-#ifdef INLINE_COPY_FROM_USER
-static inline __must_check unsigned long
-_copy_from_user(void *to, const void __user *from, unsigned long n)
-{
-	unsigned long res = n;
-	might_fault();
-	if (!should_fail_usercopy() && likely(access_ok(from, n))) {
-		instrument_copy_from_user(to, from, n);
-		res = raw_copy_from_user(to, from, n);
-	}
-	if (unlikely(res))
-		memset(to + (n - res), 0, res);
-	return res;
-}
-#else
+/* INLINE_COPY_* not defined - use extern declarations */
 extern __must_check unsigned long
 _copy_from_user(void *, const void __user *, unsigned long);
-#endif
-
-#ifdef INLINE_COPY_TO_USER
-static inline __must_check unsigned long
-_copy_to_user(void __user *to, const void *from, unsigned long n)
-{
-	might_fault();
-	if (should_fail_usercopy())
-		return n;
-	if (access_ok(to, n)) {
-		instrument_copy_to_user(to, from, n);
-		n = raw_copy_to_user(to, from, n);
-	}
-	return n;
-}
-#else
 extern __must_check unsigned long
 _copy_to_user(void __user *, const void *, unsigned long);
-#endif
 
 static __always_inline unsigned long __must_check
 copy_from_user(void *to, const void __user *from, unsigned long n)

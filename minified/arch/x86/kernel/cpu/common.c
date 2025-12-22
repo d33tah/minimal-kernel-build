@@ -916,23 +916,13 @@ void cpu_init(void)
 
 	ucode_cpu_init(cpu);
 
-	if (IS_ENABLED(CONFIG_X86_64) || cpu_feature_enabled(X86_FEATURE_VME) ||
+	/* X86_32: check VME/TSC/DE features */
+	if (cpu_feature_enabled(X86_FEATURE_VME) ||
 	    boot_cpu_has(X86_FEATURE_TSC) || boot_cpu_has(X86_FEATURE_DE))
 		cr4_clear_bits(X86_CR4_VME|X86_CR4_PVI|X86_CR4_TSD|X86_CR4_DE);
 
 	switch_to_new_gdt(cpu);
-
-	if (IS_ENABLED(CONFIG_X86_64)) {
-		loadsegment(fs, 0);
-		memset(cur->thread.tls_array, 0, GDT_ENTRY_TLS_ENTRIES * 8);
-		syscall_init();
-
-		wrmsrl(MSR_FS_BASE, 0);
-		wrmsrl(MSR_KERNEL_GS_BASE, 0);
-		barrier();
-
-		x2apic_setup();
-	}
+	/* X86_64 block removed */
 
 	mmgrab(&init_mm);
 	cur->active_mm = &init_mm;

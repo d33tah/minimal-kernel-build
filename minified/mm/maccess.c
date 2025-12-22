@@ -2,11 +2,7 @@
 #include <linux/mm.h>
 #include <linux/uaccess.h>
 
-bool __weak copy_from_kernel_nofault_allowed(const void *unsafe_src,
-		size_t size)
-{
-	return true;
-}
+/* copy_from_kernel_nofault_allowed provided by arch/x86/mm/maccess.c */
 
 #define copy_from_kernel_nofault_loop(dst, src, len, type, err_label)	\
 	while (len >= sizeof(type)) {					\

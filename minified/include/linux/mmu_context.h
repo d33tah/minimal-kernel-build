@@ -12,11 +12,8 @@
 static inline void leave_mm(int cpu) { }
 #endif
 
-#ifndef task_cpu_possible_mask
-# define task_cpu_possible_mask(p)	cpu_possible_mask
-# define task_cpu_possible(cpu, p)	true
-#else
-# define task_cpu_possible(cpu, p)	cpumask_test_cpu((cpu), task_cpu_possible_mask(p))
-#endif
+/* task_cpu_possible_mask not defined */
+#define task_cpu_possible_mask(p)	cpu_possible_mask
+#define task_cpu_possible(cpu, p)	true
 
 #endif

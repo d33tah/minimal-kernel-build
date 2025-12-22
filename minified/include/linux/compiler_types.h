@@ -132,31 +132,11 @@ struct ftrace_likely_data {
 
 #define __inline__ inline
 
-#ifdef KBUILD_EXTRA_WARN1
-#define __inline_maybe_unused
-#else
 #define __inline_maybe_unused __maybe_unused
-#endif
-
 #define noinline_for_stack noinline
-
-#ifdef __SANITIZE_ADDRESS__
-# define __no_kasan_or_inline __no_sanitize_address notrace __maybe_unused
-# define __no_sanitize_or_inline __no_kasan_or_inline
-#else
-# define __no_kasan_or_inline __always_inline
-#endif
-
-#ifdef __SANITIZE_THREAD__
-# define __no_kcsan __no_sanitize_thread __disable_sanitizer_instrumentation
-# define __no_sanitize_or_inline __no_kcsan notrace __maybe_unused
-#else
-# define __no_kcsan
-#endif
-
-#ifndef __no_sanitize_or_inline
+#define __no_kasan_or_inline __always_inline
+#define __no_kcsan
 #define __no_sanitize_or_inline __always_inline
-#endif
 
 #define noinstr								\
 	noinline notrace __attribute((__section__(".noinstr.text")))	\
@@ -207,18 +187,13 @@ struct ftrace_likely_data {
 	(sizeof(t) == sizeof(char) || sizeof(t) == sizeof(short) || \
 	 sizeof(t) == sizeof(int) || sizeof(t) == sizeof(long))
 
-#ifdef __OPTIMIZE__
-# define __compiletime_assert(condition, msg, prefix, suffix)		\
+#define __compiletime_assert(condition, msg, prefix, suffix)		\
 	do {								\
-		 							\
 		__noreturn extern void prefix ## suffix(void)		\
 			__compiletime_error(msg);			\
 		if (!(condition))					\
 			prefix ## suffix();				\
 	} while (0)
-#else
-# define __compiletime_assert(condition, msg, prefix, suffix) do { } while (0)
-#endif
 
 #define _compiletime_assert(condition, msg, prefix, suffix) \
 	__compiletime_assert(condition, msg, prefix, suffix)

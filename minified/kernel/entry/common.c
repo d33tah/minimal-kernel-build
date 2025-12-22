@@ -222,11 +222,6 @@ static void syscall_exit_to_user_mode_prepare(struct pt_regs *regs)
 
 	CT_WARN_ON(ct_state() != CONTEXT_KERNEL);
 
-	if (IS_ENABLED(CONFIG_PROVE_LOCKING)) {
-		if (WARN(irqs_disabled(), "syscall %lu left IRQs disabled", nr))
-			local_irq_enable();
-	}
-
 	rseq_syscall(regs);
 
 	 
@@ -274,21 +269,9 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 		return ret;
 	}
 
-	 
-	if (!IS_ENABLED(CONFIG_TINY_RCU) && is_idle_task(current)) {
-		 
-		lockdep_hardirqs_off(CALLER_ADDR0);
-		rcu_irq_enter();
-		 
-
-		ret.exit_rcu = true;
-		return ret;
-	}
-
-	 
+	/* TINY_RCU is enabled, simplified path */
 	lockdep_hardirqs_off(CALLER_ADDR0);
 	rcu_irq_enter_check_tick();
-	 
 
 	return ret;
 }
@@ -296,10 +279,7 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 void raw_irqentry_exit_cond_resched(void)
 {
 	if (!preempt_count()) {
-		 
 		rcu_irq_exit_check_preempt();
-		if (IS_ENABLED(CONFIG_DEBUG_ENTRY))
-			WARN_ON_ONCE(!on_thread_stack());
 		if (need_resched())
 			preempt_schedule_irq();
 	}
@@ -323,11 +303,6 @@ noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 			return;
 		}
 
-		if (IS_ENABLED(CONFIG_PREEMPTION))
-			irqentry_exit_cond_resched();
-
-		 
-		 
 	} else {
 		 
 		if (state.exit_rcu)

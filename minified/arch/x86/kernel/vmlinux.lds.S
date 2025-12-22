@@ -87,12 +87,6 @@ SECTIONS
 		SOFTIRQENTRY_TEXT
 		STATIC_CALL_TEXT
 		*(.gnu.warning)
-
-#ifdef CONFIG_RETPOLINE
-		__indirect_thunk_start = .;
-		*(.text.__x86.*)
-		__indirect_thunk_end = .;
-#endif
 	} :text =0xcccc
 
 	/* End of text section, which should occupy whole number of pages */
@@ -208,36 +202,6 @@ SECTIONS
 		*(.parainstructions)
 		__parainstructions_end = .;
 	}
-
-#ifdef CONFIG_RETPOLINE
-	/*
-	 * List of instructions that call/jmp/jcc to retpoline thunks
-	 * __x86_indirect_thunk_*(). These instructions can be patched along
-	 * with alternatives, after which the section can be freed.
-	 */
-	. = ALIGN(8);
-	.retpoline_sites : AT(ADDR(.retpoline_sites) - LOAD_OFFSET) {
-		__retpoline_sites = .;
-		*(.retpoline_sites)
-		__retpoline_sites_end = .;
-	}
-
-	. = ALIGN(8);
-	.return_sites : AT(ADDR(.return_sites) - LOAD_OFFSET) {
-		__return_sites = .;
-		*(.return_sites)
-		__return_sites_end = .;
-	}
-#endif
-
-#ifdef CONFIG_X86_KERNEL_IBT
-	. = ALIGN(8);
-	.ibt_endbr_seal : AT(ADDR(.ibt_endbr_seal) - LOAD_OFFSET) {
-		__ibt_endbr_seal = .;
-		*(.ibt_endbr_seal)
-		__ibt_endbr_seal_end = .;
-	}
-#endif
 
 	/*
 	 * struct alt_inst entries. From the header (alternative.h):

@@ -307,14 +307,9 @@ static bool move_pgt_entry(enum pgt_entry entry, struct vm_area_struct *vma,
 					new_entry);
 		break;
 	case HPAGE_PMD:
-		moved = IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE) &&
-			move_huge_pmd(vma, old_addr, new_addr, old_entry,
-				      new_entry);
-		break;
 	case HPAGE_PUD:
-		moved = IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE) &&
-			move_huge_pud(vma, old_addr, new_addr, old_entry,
-				      new_entry);
+		/* CONFIG_TRANSPARENT_HUGEPAGE not enabled */
+		moved = false;
 		break;
 
 	default:

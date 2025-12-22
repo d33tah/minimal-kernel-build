@@ -488,34 +488,13 @@ out:
 
 static void page_remove_anon_compound_rmap(struct page *page)
 {
-	int i, nr;
-
 	if (!atomic_add_negative(-1, compound_mapcount_ptr(page)))
 		return;
 
 	if (unlikely(PageHuge(page)))
 		return;
 
-	if (!IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE))
-		return;
-
-	__mod_lruvec_page_state(page, NR_ANON_THPS, -thp_nr_pages(page));
-
-	if (TestClearPageDoubleMap(page)) {
-		
-		for (i = 0, nr = 0; i < thp_nr_pages(page); i++) {
-			if (atomic_add_negative(-1, &page[i]._mapcount))
-				nr++;
-		}
-
-		if (nr && nr < thp_nr_pages(page))
-			deferred_split_huge_page(page);
-	} else {
-		nr = thp_nr_pages(page);
-	}
-
-	if (nr)
-		__mod_lruvec_page_state(page, NR_ANON_MAPPED, -nr);
+	/* CONFIG_TRANSPARENT_HUGEPAGE not enabled - early return */
 }
 
 void page_remove_rmap(struct page *page,

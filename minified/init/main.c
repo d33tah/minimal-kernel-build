@@ -401,7 +401,7 @@ void __init parse_early_param(void)
 	done = 1;
 }
 
-void __init __weak arch_post_acpi_subsys_init(void) { }
+void __init arch_post_acpi_subsys_init(void); /* in arch/x86/kernel/process.c */
 
 void __init __weak smp_setup_processor_id(void)
 {
@@ -415,11 +415,11 @@ void __init __weak thread_stack_cache_init(void)
 
 void __init __weak mem_encrypt_init(void) { }
 
-void __init __weak poking_init(void) { }
+void __init poking_init(void); /* in arch/x86/mm/init.c */
 
 void __init __weak pgtable_cache_init(void) { }
 
-void __init __weak trap_init(void) { }
+void __init trap_init(void); /* in arch/x86/kernel/traps.c */
 
 bool initcall_debug;
 
@@ -828,10 +828,7 @@ static void mark_readonly(void)
 		pr_info("Kernel memory protection disabled.\n");
 }
 
-void __weak free_initmem(void)
-{
-	free_initmem_default(POISON_FREE_INITMEM);
-}
+/* free_initmem provided by arch/x86/mm/init.c */
 
 static int __ref kernel_init(void *unused)
 {

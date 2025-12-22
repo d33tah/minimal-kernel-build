@@ -553,12 +553,7 @@ disable:
 	initrd_end = 0;
 }
 
-void __weak __init free_initrd_mem(unsigned long start, unsigned long end)
-{
-
-	free_reserved_area((void *)start, (void *)end, POISON_FREE_INITMEM,
-			"initrd");
-}
+/* free_initrd_mem provided by arch/x86/mm/init.c */
 
 static inline bool kexec_free_initrd(void)
 {

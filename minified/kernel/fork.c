@@ -268,34 +268,16 @@ void vm_area_free(struct vm_area_struct *vma)
 
 static void account_kernel_stack(struct task_struct *tsk, int account)
 {
-	if (IS_ENABLED(CONFIG_VMAP_STACK)) {
-		struct vm_struct *vm = task_stack_vm_area(tsk);
-		int i;
+	void *stack = task_stack_page(tsk);
 
-		for (i = 0; i < THREAD_SIZE / PAGE_SIZE; i++)
-			mod_lruvec_page_state(vm->pages[i], NR_KERNEL_STACK_KB,
-					      account * (PAGE_SIZE / 1024));
-	} else {
-		void *stack = task_stack_page(tsk);
-
-		
-		mod_lruvec_kmem_state(stack, NR_KERNEL_STACK_KB,
-				      account * (THREAD_SIZE / 1024));
-	}
+	/* !VMAP_STACK - simplified path */
+	mod_lruvec_kmem_state(stack, NR_KERNEL_STACK_KB,
+			      account * (THREAD_SIZE / 1024));
 }
 
 void exit_task_stack_account(struct task_struct *tsk)
 {
 	account_kernel_stack(tsk, -1);
-
-	if (IS_ENABLED(CONFIG_VMAP_STACK)) {
-		struct vm_struct *vm;
-		int i;
-
-		vm = task_stack_vm_area(tsk);
-		for (i = 0; i < THREAD_SIZE / PAGE_SIZE; i++)
-			memcg_kmem_uncharge_page(vm->pages[i], 0);
-	}
 }
 
 static void release_task_stack(struct task_struct *tsk)

@@ -6,12 +6,8 @@
 
 
 #ifndef __ASSEMBLY__
-#ifdef MODULE
-extern struct module __this_module;
-#define THIS_MODULE (&__this_module)
-#else
+/* Built-in kernel: MODULE not defined */
 #define THIS_MODULE ((struct module *)0)
-#endif
 
 #include <linux/compiler.h>
 #define __KSYMTAB_ENTRY(sym, sec)					\
@@ -54,11 +50,8 @@ struct kernel_symbol {
 #define __EXPORT_SYMBOL(sym, sec, ns)
 
 
-#ifdef DEFAULT_SYMBOL_NAMESPACE
-#define _EXPORT_SYMBOL(sym, sec)	__EXPORT_SYMBOL(sym, sec, __stringify(DEFAULT_SYMBOL_NAMESPACE))
-#else
+/* DEFAULT_SYMBOL_NAMESPACE not defined */
 #define _EXPORT_SYMBOL(sym, sec)	__EXPORT_SYMBOL(sym, sec, "")
-#endif
 
 #define EXPORT_SYMBOL(sym)		_EXPORT_SYMBOL(sym, "")
 #define EXPORT_SYMBOL_GPL(sym)		_EXPORT_SYMBOL(sym, "_gpl")

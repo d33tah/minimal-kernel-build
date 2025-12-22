@@ -911,17 +911,12 @@ static inline pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
 	return ptep;
 }
 
-#ifdef __PAGETABLE_P4D_FOLDED
+/* __PAGETABLE_P4D_FOLDED=1, __PAGETABLE_PUD_FOLDED=1 - 2-level paging */
 static inline int __p4d_alloc(struct mm_struct *mm, pgd_t *pgd,
 						unsigned long address)
 {
 	return 0;
 }
-#else
-int __p4d_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long address);
-#endif
-
-/* __PAGETABLE_PUD_FOLDED=1 - 2-level paging, PUD folded */
 static inline int __pud_alloc(struct mm_struct *mm, p4d_t *p4d,
 						unsigned long address)
 {

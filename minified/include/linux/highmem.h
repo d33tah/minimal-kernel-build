@@ -34,9 +34,6 @@ static inline void *kmap(struct page *page)
 
 static inline void kunmap(struct page *page)
 {
-#ifdef ARCH_HAS_FLUSH_ON_KUNMAP
-	kunmap_flush_on_unmap(page_address(page));
-#endif
 }
 
 static inline void *kmap_local_page(struct page *page)
@@ -51,9 +48,6 @@ static inline void *kmap_local_folio(struct folio *folio, size_t offset)
 
 static inline void __kunmap_local(void *addr)
 {
-#ifdef ARCH_HAS_FLUSH_ON_KUNMAP
-	kunmap_flush_on_unmap(addr);
-#endif
 }
 
 static inline void *kmap_atomic(struct page *page)
@@ -65,9 +59,6 @@ static inline void *kmap_atomic(struct page *page)
 
 static inline void __kunmap_atomic(void *addr)
 {
-#ifdef ARCH_HAS_FLUSH_ON_KUNMAP
-	kunmap_flush_on_unmap(addr);
-#endif
 	pagefault_enable();
 	preempt_enable();
 }

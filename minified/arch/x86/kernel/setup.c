@@ -108,12 +108,7 @@ unsigned int def_to_bigsmp;
 
 struct apm_info apm_info;
 
-#if defined(CONFIG_X86_SPEEDSTEP_SMI) || \
-	defined(CONFIG_X86_SPEEDSTEP_SMI_MODULE)
 struct ist_info ist_info;
-#else
-struct ist_info ist_info;
-#endif
 
 
 

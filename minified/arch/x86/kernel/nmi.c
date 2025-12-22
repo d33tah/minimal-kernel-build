@@ -305,9 +305,6 @@ nmi_restart:
 		mds_user_clear_cpu_buffers();
 }
 
-#if IS_MODULE(CONFIG_KVM_INTEL)
-#endif
-
 void local_touch_nmi(void)
 {
 	__this_cpu_write(last_nmi_rip, 0);

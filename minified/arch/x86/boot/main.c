@@ -129,14 +129,7 @@ void main(void)
 	 
 	query_ist();
 
-	 
-#if defined(CONFIG_APM) || defined(CONFIG_APM_MODULE)
-	query_apm_bios();
-#endif
 
-	 
-
-	 
 	set_video();
 
 	 

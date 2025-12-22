@@ -411,9 +411,6 @@ void __cpuidle default_idle(void)
 {
 	raw_safe_halt();
 }
-#if defined(CONFIG_APM_MODULE) || defined(CONFIG_HALTPOLL_CPUIDLE_MODULE)
-#endif
-
 
 void __noreturn stop_this_cpu(void *dummy)
 {

@@ -14,10 +14,10 @@ struct arch_tlbflush_unmap_batch {
 	struct cpumask cpumask;
 };
 
-#define USE_SPLIT_PTE_PTLOCKS	(NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS)
-#define USE_SPLIT_PMD_PTLOCKS	(USE_SPLIT_PTE_PTLOCKS && \
-		IS_ENABLED(CONFIG_ARCH_ENABLE_SPLIT_PMD_PTLOCK))
-#define ALLOC_SPLIT_PTLOCKS	(SPINLOCK_SIZE > BITS_PER_LONG/8)
+/* NR_CPUS=1 < CONFIG_SPLIT_PTLOCK_CPUS=4, so USE_SPLIT_*=0 */
+#define USE_SPLIT_PTE_PTLOCKS	0
+#define USE_SPLIT_PMD_PTLOCKS	0
+#define ALLOC_SPLIT_PTLOCKS	0
 
 #define VMACACHE_BITS 2
 #define VMACACHE_SIZE (1U << VMACACHE_BITS)
@@ -29,34 +29,24 @@ struct vmacache {
 };
 
 enum {
-	MM_FILEPAGES,	 
-	MM_ANONPAGES,	 
-	MM_SWAPENTS,	 
-	MM_SHMEMPAGES,	 
+	MM_FILEPAGES,
+	MM_ANONPAGES,
+	MM_SWAPENTS,
+	MM_SHMEMPAGES,
 	NR_MM_COUNTERS
 };
 
-#if USE_SPLIT_PTE_PTLOCKS && defined(CONFIG_MMU)
-#define SPLIT_RSS_COUNTING
-struct task_rss_stat {
-	int events;	 
-	int count[NR_MM_COUNTERS];
-};
-#endif  
+/* USE_SPLIT_PTE_PTLOCKS=0, no SPLIT_RSS_COUNTING */
 
 struct mm_rss_stat {
 	atomic_long_t count[NR_MM_COUNTERS];
 };
 
+/* 32-bit x86: BITS_PER_LONG=32, PAGE_SIZE=4096 */
 struct page_frag {
 	struct page *page;
-#if (BITS_PER_LONG > 32) || (PAGE_SIZE >= 65536)
-	__u32 offset;
-	__u32 size;
-#else
 	__u16 offset;
 	__u16 size;
-#endif
 };
 
 struct tlbflush_unmap_batch {

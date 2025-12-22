@@ -33,22 +33,8 @@ int devres_release_all(struct device *dev)
 }
 
 
-char *devm_kstrdup(struct device *dev, const char *s, gfp_t gfp)
-{
-	return kstrdup(s, gfp);
-}
-
-char *devm_kasprintf(struct device *dev, gfp_t gfp, const char *fmt, ...)
-{
-	va_list ap;
-	char *p;
-
-	va_start(ap, fmt);
-	p = kvasprintf(gfp, fmt, ap);
-	va_end(ap);
-
-	return p;
-}
-
-/* devm_kmalloc, devm_kfree, devm_kvasprintf, devm_kstrdup_const, devm_kmemdup,
-   devm_get_free_pages, devm_free_pages, devm_krealloc removed - not called */
+/* devm_kstrdup, devm_kasprintf, devm_kmalloc, devm_kfree, devm_kvasprintf,
+   devm_kstrdup_const, devm_kmemdup, devm_get_free_pages, devm_free_pages,
+   devm_krealloc removed - never called in minimal kernel */
+char *devm_kstrdup(struct device *dev, const char *s, gfp_t gfp) { return NULL; }
+char *devm_kasprintf(struct device *dev, gfp_t gfp, const char *fmt, ...) { return NULL; }

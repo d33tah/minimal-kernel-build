@@ -1527,20 +1527,14 @@ static inline bool want_init_on_free(void)
 }
 
 extern bool _debug_pagealloc_enabled_early;
-DECLARE_STATIC_KEY_FALSE(_debug_pagealloc_enabled);
-
 static inline bool debug_pagealloc_enabled(void)
 {
-	return IS_ENABLED(CONFIG_DEBUG_PAGEALLOC) &&
-		_debug_pagealloc_enabled_early;
+	return false;
 }
 
 static inline bool debug_pagealloc_enabled_static(void)
 {
-	if (!IS_ENABLED(CONFIG_DEBUG_PAGEALLOC))
-		return false;
-
-	return static_branch_unlikely(&_debug_pagealloc_enabled);
+	return false;
 }
 
 #ifdef __HAVE_ARCH_GATE_AREA

@@ -120,24 +120,15 @@ enum kmalloc_cache_type {
 extern struct kmem_cache *
 kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1];
 
-#define KMALLOC_NOT_NORMAL_BITS					\
-	(__GFP_RECLAIMABLE |					\
-	(IS_ENABLED(CONFIG_ZONE_DMA)   ? __GFP_DMA : 0) |	\
-	(IS_ENABLED(CONFIG_MEMCG_KMEM) ? __GFP_ACCOUNT : 0))
+/* !ZONE_DMA and !MEMCG_KMEM - simplified */
+#define KMALLOC_NOT_NORMAL_BITS	(__GFP_RECLAIMABLE)
 
 static __always_inline enum kmalloc_cache_type kmalloc_type(gfp_t flags)
 {
-	 
 	if (likely((flags & KMALLOC_NOT_NORMAL_BITS) == 0))
 		return KMALLOC_NORMAL;
 
-	 
-	if (IS_ENABLED(CONFIG_ZONE_DMA) && (flags & __GFP_DMA))
-		return KMALLOC_DMA;
-	if (!IS_ENABLED(CONFIG_MEMCG_KMEM) || (flags & __GFP_RECLAIMABLE))
-		return KMALLOC_RECLAIM;
-	else
-		return KMALLOC_CGROUP;
+	return KMALLOC_RECLAIM;
 }
 
 static __always_inline unsigned int __kmalloc_index(size_t size,
@@ -177,12 +168,12 @@ static __always_inline unsigned int __kmalloc_index(size_t size,
 	if (size <=  16 * 1024 * 1024) return 24;
 	if (size <=  32 * 1024 * 1024) return 25;
 
-	if (!IS_ENABLED(CONFIG_PROFILE_ALL_BRANCHES) && size_is_constant)
+	/* PROFILE_ALL_BRANCHES not enabled */
+	if (size_is_constant)
 		BUILD_BUG_ON_MSG(1, "unexpected size in kmalloc_index()");
 	else
 		BUG();
 
-	 
 	return -1;
 }
 #define kmalloc_index(s) __kmalloc_index(s, true)

@@ -3,13 +3,7 @@
 
 #ifndef __ASSEMBLY__
 
-#if defined(CONFIG_DEBUG_INFO_BTF) && defined(CONFIG_PAHOLE_HAS_BTF_TAG) && \
-	__has_attribute(btf_type_tag)
-# define BTF_TYPE_TAG(value) __attribute__((btf_type_tag(#value)))
-#else
-# define BTF_TYPE_TAG(value)  
-#endif
-
+# define BTF_TYPE_TAG(value)
 # define __kernel
 # define __user	BTF_TYPE_TAG(user)
 # define __iomem
@@ -64,11 +58,9 @@
 #define __no_sanitize_thread
 #endif
 
-#if defined(CONFIG_ARCH_USE_BUILTIN_BSWAP)
 #define __HAVE_BUILTIN_BSWAP32__
 #define __HAVE_BUILTIN_BSWAP64__
 #define __HAVE_BUILTIN_BSWAP16__
-#endif
 
 
 #if __has_feature(coverage_sanitizer)
@@ -90,11 +82,7 @@
 #define __diag_str(s)		__diag_str1(s)
 #define __diag(s)		_Pragma(__diag_str(clang diagnostic s))
 
-#if CONFIG_CLANG_VERSION >= 110000
 #define __diag_clang_11(s)	__diag(s)
-#else
-#define __diag_clang_11(s)
-#endif
 
 #define __diag_ignore_all(option, comment) \
 	__diag_clang(11, ignore, option)

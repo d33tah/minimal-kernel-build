@@ -1173,10 +1173,6 @@ static const char *walk_component(struct nameidata *nd, int flags)
 
 #include <asm/word-at-a-time.h>
 
-#ifdef HASH_MIX
-
-#else	
-
 #define HASH_MIX(x, y, a)	\
 	(	x ^= (a),	\
 	y ^= x,	x = rol32(x, 7),\
@@ -1185,12 +1181,8 @@ static const char *walk_component(struct nameidata *nd, int flags)
 
 static inline unsigned int fold_hash(unsigned long x, unsigned long y)
 {
-	
 	return __hash_32(y ^ __hash_32(x));
 }
-
-#endif
-
 
 static inline u64 hash_name(const void *salt, const char *name)
 {

@@ -110,30 +110,6 @@ void finish_rcuwait(struct rcuwait *w)
 }
 
 
-#if defined(CONFIG_TREE_RCU) || defined(CONFIG_RCU_TRACE)
-void do_trace_rcu_torture_read(const char *rcutorturename, struct rcu_head *rhp,
-			       unsigned long secs,
-			       unsigned long c_old, unsigned long c)
-{
-	 
-}
-#else
-#define do_trace_rcu_torture_read(rcutorturename, rhp, secs, c_old, c) \
-	do { } while (0)
-#endif
-
-#if IS_ENABLED(CONFIG_RCU_TORTURE_TEST) || IS_MODULE(CONFIG_RCU_TORTURE_TEST)
-long rcutorture_sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
-{
-	int ret;
-
-	ret = sched_setaffinity(pid, in_mask);
-	WARN_ONCE(ret, "%s: sched_setaffinity() returned %d\n", __func__, ret);
-	return ret;
-}
-#endif
-
-
 int rcu_cpu_stall_suppress_at_boot __read_mostly;
 
 void rcu_early_boot_tests(void) {}

@@ -55,11 +55,8 @@ static int load_elf_binary(struct linux_binprm *bprm);
 
 #define elf_core_dump	NULL
 
-#if ELF_EXEC_PAGESIZE > PAGE_SIZE
-#define ELF_MIN_ALIGN	ELF_EXEC_PAGESIZE
-#else
+/* ELF_EXEC_PAGESIZE = PAGE_SIZE = 4096 on x86 */
 #define ELF_MIN_ALIGN	PAGE_SIZE
-#endif
 
 #ifndef ELF_CORE_EFLAGS
 #define ELF_CORE_EFLAGS	0

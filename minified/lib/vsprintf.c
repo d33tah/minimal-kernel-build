@@ -142,46 +142,7 @@ out_r:
 	return buf;
 }
 
-#if BITS_PER_LONG == 64 && BITS_PER_LONG_LONG == 64
-static noinline_for_stack
-char *put_dec_full8(char *buf, unsigned r)
-{
-	unsigned q;
-
-	
-	q = (r * (u64)0x28f5c29) >> 32;
-	*((u16 *)buf) = decpair[r - 100*q];
-	buf += 2;
-
-	
-	r = (q * (u64)0x28f5c29) >> 32;
-	*((u16 *)buf) = decpair[q - 100*r];
-	buf += 2;
-
-	
-	q = (r * 0x147b) >> 19;
-	*((u16 *)buf) = decpair[r - 100*q];
-	buf += 2;
-
-	
-	*((u16 *)buf) = decpair[q];
-	buf += 2;
-	return buf;
-}
-
-static noinline_for_stack
-char *put_dec(char *buf, unsigned long long n)
-{
-	if (n >= 100*1000*1000)
-		buf = put_dec_full8(buf, do_div(n, 100*1000*1000));
-	
-	if (n >= 100*1000*1000)
-		buf = put_dec_full8(buf, do_div(n, 100*1000*1000));
-	
-	return put_dec_trunc8(buf, n);
-}
-
-#elif BITS_PER_LONG == 32 && BITS_PER_LONG_LONG == 64
+/* BITS_PER_LONG == 32 on x86-32, use 32-bit optimized put_dec */
 
 static void
 put_dec_full4(char *buf, unsigned r)
@@ -237,8 +198,6 @@ char *put_dec(char *buf, unsigned long long n)
 
 	return buf;
 }
-
-#endif
 
 #define SIGN	1		
 #define LEFT	2		

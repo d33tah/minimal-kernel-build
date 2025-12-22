@@ -133,48 +133,12 @@ static inline void ptrace_release_task(struct task_struct *task)
 #endif
 
 
-#ifndef arch_has_single_step
-#define arch_has_single_step()		(0)
-
-static inline void user_enable_single_step(struct task_struct *task)
-{
-	BUG();			 
-}
-
-static inline void user_disable_single_step(struct task_struct *task)
-{
-}
-#else
+/* x86 defines arch_has_single_step, arch_has_block_step,
+ * and ARCH_HAS_USER_SINGLE_STEP_REPORT */
 extern void user_enable_single_step(struct task_struct *);
 extern void user_disable_single_step(struct task_struct *);
-#endif	 
-
-#ifndef arch_has_block_step
-#define arch_has_block_step()		(0)
-
-static inline void user_enable_block_step(struct task_struct *task)
-{
-	BUG();			 
-}
-#else
 extern void user_enable_block_step(struct task_struct *);
-#endif	 
-
-#ifdef ARCH_HAS_USER_SINGLE_STEP_REPORT
 extern void user_single_step_report(struct pt_regs *regs);
-#else
-static inline void user_single_step_report(struct pt_regs *regs)
-{
-	kernel_siginfo_t info;
-	clear_siginfo(&info);
-	info.si_signo = SIGTRAP;
-	info.si_errno = 0;
-	info.si_code = SI_USER;
-	info.si_pid = 0;
-	info.si_uid = 0;
-	force_sig_info(&info);
-}
-#endif
 
 #ifndef arch_ptrace_stop_needed
 #define arch_ptrace_stop_needed()	(0)

@@ -128,27 +128,11 @@ extern unsigned int jiffies_to_usecs(const unsigned long j);
 
 
 extern unsigned long __msecs_to_jiffies(const unsigned int m);
-#if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
+/* HZ=250, MSEC_PER_SEC=1000: HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ) */
 static inline unsigned long _msecs_to_jiffies(const unsigned int m)
 {
 	return (m + (MSEC_PER_SEC / HZ) - 1) / (MSEC_PER_SEC / HZ);
 }
-#elif HZ > MSEC_PER_SEC && !(HZ % MSEC_PER_SEC)
-static inline unsigned long _msecs_to_jiffies(const unsigned int m)
-{
-	if (m > jiffies_to_msecs(MAX_JIFFY_OFFSET))
-		return MAX_JIFFY_OFFSET;
-	return m * (HZ / MSEC_PER_SEC);
-}
-#else
-static inline unsigned long _msecs_to_jiffies(const unsigned int m)
-{
-	if (HZ > MSEC_PER_SEC && m > jiffies_to_msecs(MAX_JIFFY_OFFSET))
-		return MAX_JIFFY_OFFSET;
-
-	return (MSEC_TO_HZ_MUL32 * m + MSEC_TO_HZ_ADJ32) >> MSEC_TO_HZ_SHR32;
-}
-#endif
 static __always_inline unsigned long msecs_to_jiffies(const unsigned int m)
 {
 	if (__builtin_constant_p(m)) {
@@ -161,18 +145,11 @@ static __always_inline unsigned long msecs_to_jiffies(const unsigned int m)
 }
 
 extern unsigned long __usecs_to_jiffies(const unsigned int u);
-#if !(USEC_PER_SEC % HZ)
+/* HZ=250: !(USEC_PER_SEC % HZ) is true */
 static inline unsigned long _usecs_to_jiffies(const unsigned int u)
 {
 	return (u + (USEC_PER_SEC / HZ) - 1) / (USEC_PER_SEC / HZ);
 }
-#else
-static inline unsigned long _usecs_to_jiffies(const unsigned int u)
-{
-	return (USEC_TO_HZ_MUL32 * u + USEC_TO_HZ_ADJ32)
-		>> USEC_TO_HZ_SHR32;
-}
-#endif
 
 static __always_inline unsigned long usecs_to_jiffies(const unsigned int u)
 {

@@ -283,12 +283,9 @@ out:
 	init_chroot(".");
 }
 
-static bool is_tmpfs;
+/* TMPFS not defined - use ramfs */
 static int rootfs_init_fs_context(struct fs_context *fc)
 {
-	if (IS_ENABLED(CONFIG_TMPFS) && is_tmpfs)
-		return shmem_init_fs_context(fc);
-
 	return ramfs_init_fs_context(fc);
 }
 
@@ -298,9 +295,4 @@ struct file_system_type rootfs_fs_type = {
 	.kill_sb	= kill_litter_super,
 };
 
-void __init init_rootfs(void)
-{
-	if (IS_ENABLED(CONFIG_TMPFS) && !saved_root_name[0] &&
-		(!root_fs_names || strstr(root_fs_names, "tmpfs")))
-		is_tmpfs = true;
-}
+void __init init_rootfs(void) { }

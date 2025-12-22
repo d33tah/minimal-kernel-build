@@ -4,7 +4,8 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 
-#if defined(__noretpoline) && !defined(MODULE)
+/* MODULE is never defined (CONFIG_MODULES=n) */
+#ifdef __noretpoline
 #define __noinitretpoline __noretpoline
 #else
 #define __noinitretpoline
@@ -19,11 +20,7 @@
 
 #define __ref            __section(".ref.text") noinline
 #define __refdata        __section(".ref.data")
-#ifdef MODULE
-#define __exitused
-#else
 #define __exitused  __used
-#endif
 
 #define __exit          __section(".exit.text") __exitused __cold notrace
 
@@ -76,8 +73,6 @@ extern void (*late_time_init)(void);
 
 
 #endif
-  
-#ifndef MODULE
 
 #ifndef __ASSEMBLY__
 
@@ -190,20 +185,10 @@ struct obs_kernel_param {
 
 void __init parse_early_param(void);
 void __init parse_early_options(char *cmdline);
-#endif  
-
-#else  
-
-#define __setup_param(str, unique_id, fn)	 
-#define __setup(str, func) 			 
-#endif
+#endif  /* __ASSEMBLY__ */
 
 #define __nosavedata __section(".data..nosave")
 
-#ifdef MODULE
-#define __exit_p(x) x
-#else
 #define __exit_p(x) NULL
-#endif
 
-#endif  
+#endif  /* _LINUX_INIT_H */

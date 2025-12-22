@@ -4,13 +4,8 @@
 #include <linux/stringify.h>
 #include <linux/kernel.h>
 
-#ifdef MODULE
-#define MODULE_PARAM_PREFIX  
-#define __MODULE_INFO_PREFIX  
-#else
 #define MODULE_PARAM_PREFIX KBUILD_MODNAME "."
 #define __MODULE_INFO_PREFIX KBUILD_MODNAME "."
-#endif
 
 #define MAX_PARAM_PREFIX_LEN (64 - sizeof(unsigned long))
 
@@ -135,7 +130,6 @@ static inline void kernel_param_unlock(struct module *mod)
 {
 }
 
-#ifndef MODULE
 #define core_param(name, var, type, perm)				\
 	param_check_##type(name, &(var));				\
 	__module_param_call("", name, &param_ops_##type, &var, perm, -1, 0)
@@ -143,9 +137,7 @@ static inline void kernel_param_unlock(struct module *mod)
 #define core_param_unsafe(name, var, type, perm)		\
 	param_check_##type(name, &(var));				\
 	__module_param_call("", name, &param_ops_##type, &var, perm,	\
-			    -1, KERNEL_PARAM_FL_UNSAFE)
-
-#endif  
+			    -1, KERNEL_PARAM_FL_UNSAFE)  
 
 #define module_param_string(name, string, len, perm)			\
 	static const struct kparam_string __param_string_##name		\

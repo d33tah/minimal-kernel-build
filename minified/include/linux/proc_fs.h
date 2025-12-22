@@ -10,12 +10,7 @@ struct seq_file;
 struct seq_operations;
 
 enum {
-	 
-#ifdef MODULE
-	PROC_ENTRY_PERMANENT = 0U,
-#else
 	PROC_ENTRY_PERMANENT = 1U << 0,
-#endif
 };
 
 struct proc_ops {

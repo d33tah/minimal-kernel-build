@@ -84,12 +84,6 @@
 #define preemptible()				0
 
 
-#ifdef MODULE
-#undef sched_preempt_enable_no_resched
-#undef preempt_enable_no_resched
-#undef preempt_enable_no_resched_notrace
-#undef preempt_check_resched
-#endif
 
 #define preempt_set_need_resched() \
 do { \

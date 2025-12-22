@@ -118,10 +118,7 @@ struct kmem_cache *find_mergeable(unsigned int size, unsigned int align,
 		if (s->size - size >= sizeof(void *))
 			continue;
 
-		if (IS_ENABLED(CONFIG_SLAB) && align &&
-			(align > s->align || s->align % align))
-			continue;
-
+		/* CONFIG_SLAB not enabled - using SLUB */
 		return s;
 	}
 	return NULL;
@@ -422,26 +419,14 @@ void __init setup_kmalloc_cache_index_table(void)
 static void __init
 new_kmalloc_cache(int idx, enum kmalloc_cache_type type, slab_flags_t flags)
 {
-	if (type == KMALLOC_RECLAIM) {
+	/* CONFIG_MEMCG_KMEM and CONFIG_ZONE_DMA not enabled */
+	if (type == KMALLOC_RECLAIM)
 		flags |= SLAB_RECLAIM_ACCOUNT;
-	} else if (IS_ENABLED(CONFIG_MEMCG_KMEM) && (type == KMALLOC_CGROUP)) {
-		if (mem_cgroup_kmem_disabled()) {
-			kmalloc_caches[type][idx] = kmalloc_caches[KMALLOC_NORMAL][idx];
-			return;
-		}
-		flags |= SLAB_ACCOUNT;
-	} else if (IS_ENABLED(CONFIG_ZONE_DMA) && (type == KMALLOC_DMA)) {
-		flags |= SLAB_CACHE_DMA;
-	}
 
 	kmalloc_caches[type][idx] = create_kmalloc_cache(
 					kmalloc_info[idx].name[type],
 					kmalloc_info[idx].size, flags, 0,
 					kmalloc_info[idx].size);
-
-	 
-	if (IS_ENABLED(CONFIG_MEMCG_KMEM) && (type == KMALLOC_NORMAL))
-		kmalloc_caches[type][idx]->refcount = -1;
 }
 
 void __init create_kmalloc_caches(slab_flags_t flags)

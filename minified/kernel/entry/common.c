@@ -218,7 +218,6 @@ static void syscall_exit_work(struct pt_regs *regs, unsigned long work)
 static void syscall_exit_to_user_mode_prepare(struct pt_regs *regs)
 {
 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
-	unsigned long nr = syscall_get_nr(current, regs);
 
 	CT_WARN_ON(ct_state() != CONTEXT_KERNEL);
 

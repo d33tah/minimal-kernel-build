@@ -249,6 +249,7 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 		unknown_nmi_error(reason, regs);
 
 out:
+	;
 }
 
 enum nmi_states {

@@ -989,21 +989,6 @@ void __init memblock_allow_resize(void)
 }
 
 
-static void __init free_memmap(unsigned long start_pfn, unsigned long end_pfn)
-{
-	struct page *start_pg, *end_pg;
-	phys_addr_t pg, pgend;
-
-	start_pg = pfn_to_page(start_pfn - 1) + 1;
-	end_pg = pfn_to_page(end_pfn - 1) + 1;
-
-	pg = PAGE_ALIGN(__pa(start_pg));
-	pgend = __pa(end_pg) & PAGE_MASK;
-
-	if (pg < pgend)
-		memblock_phys_free(pg, pgend - pg);
-}
-
 static void __init free_unused_memmap(void)
 {
 	/* CONFIG_HAVE_ARCH_PFN_VALID not enabled - early return */

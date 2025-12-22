@@ -248,7 +248,6 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 		goto done;
 	}
 
-re_probe:
 	dev->driver = drv;
 
 	 

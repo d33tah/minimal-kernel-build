@@ -446,14 +446,6 @@ void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set)
 
 
 
-static struct device *irq_get_parent_device(struct irq_data *data)
-{
-	if (data->domain)
-		return data->domain->dev;
-
-	return NULL;
-}
-
 int irq_chip_pm_get(struct irq_data *data)
 {
 	/* CONFIG_PM not enabled */

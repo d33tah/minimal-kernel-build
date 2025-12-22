@@ -452,6 +452,7 @@ static void flush_tlb_func(void *info)
 
 	 
 done:
+	;
 }
 
 static bool tlb_is_not_lazy(int cpu, void *data)

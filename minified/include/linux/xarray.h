@@ -371,13 +371,10 @@ static inline void xas_split_alloc(struct xa_state *xas, void *entry,
 static inline void *xas_reload(struct xa_state *xas)
 {
 	struct xa_node *node = xas->xa_node;
-	void *entry;
-	char offset;
 
 	if (!node)
 		return xa_head(xas->xa);
-	offset = xas->xa_offset;
-	return xa_entry(xas->xa, node, offset);
+	return xa_entry(xas->xa, node, xas->xa_offset);
 }
 
 static inline void xas_set(struct xa_state *xas, unsigned long index)

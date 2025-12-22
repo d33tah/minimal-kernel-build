@@ -1077,13 +1077,6 @@ const struct file_operations pidfd_fops = {
 	.poll = pidfd_poll,
 };
 
-static void __delayed_free_task(struct rcu_head *rhp)
-{
-	struct task_struct *tsk = container_of(rhp, struct task_struct, rcu);
-
-	free_task(tsk);
-}
-
 static __always_inline void delayed_free_task(struct task_struct *tsk)
 {
 	free_task(tsk);

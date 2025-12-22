@@ -249,11 +249,6 @@ show_signal_msg(struct pt_regs *regs, unsigned long error_code,
 	/* Stub: verbose segfault messages not needed for minimal kernel */
 }
 
-static bool is_vsyscall_vaddr(unsigned long vaddr)
-{
-	return unlikely((vaddr & PAGE_MASK) == VSYSCALL_ADDR);
-}
-
 static void
 __bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code,
 		       unsigned long address, u32 pkey, int si_code)

@@ -239,14 +239,6 @@ static bool move_normal_pud(struct vm_area_struct *vma, unsigned long old_addr,
 	return true;
 }
 
-static bool move_huge_pud(struct vm_area_struct *vma, unsigned long old_addr,
-			  unsigned long new_addr, pud_t *old_pud, pud_t *new_pud)
-{
-	WARN_ON_ONCE(1);
-	return false;
-
-}
-
 enum pgt_entry {
 	NORMAL_PMD,
 	HPAGE_PMD,

@@ -22,9 +22,9 @@ static noinline int __cpuidle cpu_idle_poll(void)
 }
 
 void __weak arch_cpu_idle_prepare(void) { }
-void __weak arch_cpu_idle_enter(void) { }
+/* arch_cpu_idle_enter provided by arch/x86/kernel/process.c */
 void __weak arch_cpu_idle_exit(void) { }
-void __weak arch_cpu_idle_dead(void) { }
+/* arch_cpu_idle_dead provided by arch/x86/kernel/process.c */
 void __weak arch_cpu_idle(void)
 {
 	cpu_idle_force_poll = 1;

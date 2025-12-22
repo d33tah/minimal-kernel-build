@@ -43,11 +43,8 @@ void set_pfnblock_flags_mask(struct page *page,
 #include <linux/local_lock.h>
 #include <asm/page.h>
 
-#ifndef CONFIG_FORCE_MAX_ZONEORDER
+/* CONFIG_FORCE_MAX_ZONEORDER not defined */
 #define MAX_ORDER 11
-#else
-#define MAX_ORDER CONFIG_FORCE_MAX_ZONEORDER
-#endif
 #define MAX_ORDER_NR_PAGES (1 << (MAX_ORDER - 1))
 
 #define PAGE_ALLOC_COSTLY_ORDER 3

@@ -118,12 +118,7 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 
 #define OPT_ZONE_DMA32 ZONE_NORMAL
 
-
-#if defined(CONFIG_ZONE_DEVICE) && (MAX_NR_ZONES-1) <= 4
-#define GFP_ZONES_SHIFT 2
-#else
 #define GFP_ZONES_SHIFT ZONES_SHIFT
-#endif
 
 #if 16 * GFP_ZONES_SHIFT > BITS_PER_LONG
 #error GFP_ZONES_SHIFT too large to create GFP_ZONE_TABLE integer

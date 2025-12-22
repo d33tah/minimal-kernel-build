@@ -3,18 +3,10 @@
 
 #include <linux/sched.h>
 #include <asm/irq.h>
-#if defined(CONFIG_HAVE_NMI_WATCHDOG)
-#include <asm/nmi.h>
-#endif
 
 static inline void lockup_detector_init(void) { }
 static inline void touch_softlockup_watchdog(void) { }
-
-
-# if !defined(CONFIG_HAVE_NMI_WATCHDOG)
 static inline void arch_touch_nmi_watchdog(void) {}
-# endif
-
 
 static inline void touch_nmi_watchdog(void)
 {
@@ -26,6 +18,5 @@ static inline bool trigger_all_cpu_backtrace(void)
 {
 	return false;
 }
-
 
 #endif

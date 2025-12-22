@@ -75,24 +75,6 @@ static inline u64 mul_u32_u32(u32 a, u32 b)
 }
 #endif
 
-#if defined(CONFIG_ARCH_SUPPORTS_INT128) && defined(__SIZEOF_INT128__)
-
-#ifndef mul_u64_u32_shr
-static inline u64 mul_u64_u32_shr(u64 a, u32 mul, unsigned int shift)
-{
-	return (u64)(((unsigned __int128)a * mul) >> shift);
-}
-#endif  
-
-#ifndef mul_u64_u64_shr
-static inline u64 mul_u64_u64_shr(u64 a, u64 mul, unsigned int shift)
-{
-	return (u64)(((unsigned __int128)a * mul) >> shift);
-}
-#endif  
-
-#else
-
 #ifndef mul_u64_u32_shr
 static inline u64 mul_u64_u32_shr(u64 a, u32 mul, unsigned int shift)
 {
@@ -141,8 +123,6 @@ static inline u64 mul_u64_u64_shr(u64 a, u64 b, unsigned int shift)
 		return (rl.ll >> shift) | (rh.ll << (64 - shift));
 	return rh.ll >> (shift & 63);
 }
-#endif  
-
 #endif
 
 #ifndef mul_s64_u64_shr

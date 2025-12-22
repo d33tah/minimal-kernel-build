@@ -204,21 +204,13 @@ int __mnt_want_write(struct vfsmount *m)
 
 	preempt_disable();
 	mnt_inc_writers(mnt);
-	
+
 	smp_mb();
 	might_lock(&mount_lock.lock);
-	while (READ_ONCE(mnt->mnt.mnt_flags) & MNT_WRITE_HOLD) {
-		if (!IS_ENABLED(CONFIG_PREEMPT_RT)) {
-			cpu_relax();
-		} else {
-			
-			preempt_enable();
-			lock_mount_hash();
-			unlock_mount_hash();
-			preempt_disable();
-		}
-	}
-	
+	/* CONFIG_PREEMPT_RT not enabled */
+	while (READ_ONCE(mnt->mnt.mnt_flags) & MNT_WRITE_HOLD)
+		cpu_relax();
+
 	smp_rmb();
 	if (mnt_is_readonly(m)) {
 		mnt_dec_writers(mnt);

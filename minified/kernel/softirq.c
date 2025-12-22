@@ -203,8 +203,8 @@ restart:
 		pending >>= softirq_bit;
 	}
 
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT) &&
-	    __this_cpu_read(ksoftirqd) == current)
+	/* CONFIG_PREEMPT_RT not enabled */
+	if (__this_cpu_read(ksoftirqd) == current)
 		rcu_softirq_qs();
 
 	local_irq_disable();

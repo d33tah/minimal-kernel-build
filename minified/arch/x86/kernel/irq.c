@@ -35,10 +35,8 @@ void ack_bad_irq(unsigned int irq)
 static __always_inline void handle_irq(struct irq_desc *desc,
 				       struct pt_regs *regs)
 {
-	if (IS_ENABLED(CONFIG_X86_64))
-		generic_handle_irq_desc(desc);
-	else
-		__handle_irq(desc, regs);
+	/* X86_32 */
+	__handle_irq(desc, regs);
 }
 
 DEFINE_IDTENTRY_IRQ(common_interrupt)

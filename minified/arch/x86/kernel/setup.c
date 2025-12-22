@@ -545,11 +545,8 @@ void __init setup_arch(char **cmdline_p)
 	 
 	max_pfn = e820__end_of_ram_pfn();
 
-	 
-	if (IS_ENABLED(CONFIG_MTRR))
-		mtrr_bp_init();
-	else
-		pat_disable("PAT support disabled because CONFIG_MTRR is disabled in the kernel.");
+	/* MTRR disabled */
+	pat_disable("PAT support disabled because CONFIG_MTRR is disabled in the kernel.");
 
 	if (mtrr_trim_uncached_memory(max_pfn))
 		max_pfn = e820__end_of_ram_pfn();

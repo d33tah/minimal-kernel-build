@@ -137,8 +137,7 @@ bool copy_fpstate_to_sigframe(void __user *buf, void __user *buf_fx, int size)
 	bool ia32_fxstate = (buf != buf_fx);
 	int ret;
 
-	ia32_fxstate &= (IS_ENABLED(CONFIG_X86_32) ||
-			 IS_ENABLED(CONFIG_IA32_EMULATION));
+	/* X86_32 always enabled */
 
 	if (!static_cpu_has(X86_FEATURE_FPU)) {
 		struct user_i387_ia32_struct fp;
@@ -302,14 +301,8 @@ static bool __fpu_restore_sig(void __user *buf, void __user *buf_fx,
 				     sizeof(fpregs->fxsave)))
 			return false;
 
-		if (IS_ENABLED(CONFIG_X86_64)) {
-			 
-			if (fpregs->fxsave.mxcsr & ~mxcsr_feature_mask)
-				return false;
-		} else {
-			 
-			fpregs->fxsave.mxcsr &= mxcsr_feature_mask;
-		}
+		/* X86_32: just mask mxcsr */
+		fpregs->fxsave.mxcsr &= mxcsr_feature_mask;
 
 		 
 		if (use_xsave())
@@ -360,8 +353,7 @@ bool fpu__restore_sig(void __user *buf, int ia32_frame)
 
 	size = xstate_sigframe_size(fpu->fpstate);
 
-	ia32_frame &= (IS_ENABLED(CONFIG_X86_32) ||
-		       IS_ENABLED(CONFIG_IA32_EMULATION));
+	/* X86_32 always enabled */
 
 	 
 	if (ia32_frame && use_fxsr()) {
@@ -373,7 +365,8 @@ bool fpu__restore_sig(void __user *buf, int ia32_frame)
 	if (!access_ok(buf, size))
 		goto out;
 
-	if (!IS_ENABLED(CONFIG_X86_64) && !cpu_feature_enabled(X86_FEATURE_FPU)) {
+	/* X86_32: check FPU feature */
+	if (!cpu_feature_enabled(X86_FEATURE_FPU)) {
 		success = !fpregs_soft_set(current, NULL, 0,
 					   sizeof(struct user_i387_ia32_struct),
 					   NULL, buf);
@@ -411,9 +404,8 @@ unsigned long __init fpu__get_fpstate_size(void)
 	if (use_xsave())
 		ret += FP_XSTATE_MAGIC2_SIZE;
 
-	 
-	if ((IS_ENABLED(CONFIG_IA32_EMULATION) ||
-	     IS_ENABLED(CONFIG_X86_32)) && use_fxsr())
+	/* X86_32 always enabled */
+	if (use_fxsr())
 		ret += sizeof(struct fregs_state);
 
 	return ret;

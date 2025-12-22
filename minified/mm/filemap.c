@@ -66,7 +66,8 @@ static void filemap_unaccount_folio(struct address_space *mapping,
 	long nr;
 
 	VM_BUG_ON_FOLIO(folio_mapped(folio), folio);
-	if (!IS_ENABLED(CONFIG_DEBUG_VM) && unlikely(folio_mapped(folio))) {
+	/* DEBUG_VM disabled - always check */
+	if (unlikely(folio_mapped(folio))) {
 		pr_alert("BUG: Bad page cache in process %s  pfn:%05lx\n",
 			 current->comm, folio_pfn(folio));
 		dump_page(&folio->page, "still mapped when deleted");

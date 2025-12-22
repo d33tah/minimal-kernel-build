@@ -98,10 +98,7 @@ void arch_static_call_transform(void *site, void *tramp, void *func, bool tail)
 		__static_call_transform(tramp, __sc_insn(!func, true), func, false);
 	}
 
-	if (IS_ENABLED(CONFIG_HAVE_STATIC_CALL_INLINE) && site) {
-		__static_call_validate(site, tail, false);
-		__static_call_transform(site, __sc_insn(!func, tail), func, false);
-	}
+	/* HAVE_STATIC_CALL_INLINE disabled */
 
 	mutex_unlock(&text_mutex);
 }

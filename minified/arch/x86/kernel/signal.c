@@ -84,8 +84,7 @@ static bool restore_sigcontext(struct pt_regs *regs,
 	regs->orig_ax = -1;
 
 
-	return fpu__restore_sig((void __user *)sc.fpstate,
-			       IS_ENABLED(CONFIG_X86_32));
+	return fpu__restore_sig((void __user *)sc.fpstate, true);
 }
 
 static __always_inline int
@@ -161,19 +160,14 @@ get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size,
 	unsigned long sp = regs->sp;
 	unsigned long buf_fx = 0;
 
-	 
-	if (IS_ENABLED(CONFIG_X86_64))
-		sp -= 128;
 
-	 
 	if (ka->sa.sa_flags & SA_ONSTACK) {
-		 
+
 		if (sas_ss_flags(sp) == 0) {
 			sp = current->sas_ss_sp + current->sas_ss_size;
 			entering_altstack = true;
 		}
-	} else if (IS_ENABLED(CONFIG_X86_32) &&
-		   !nested_altstack &&
+	} else if (!nested_altstack &&
 		   regs->ss != __USER_DS &&
 		   !(ka->sa.sa_flags & SA_RESTORER) &&
 		   ka->sa.sa_restorer) {
@@ -182,7 +176,7 @@ get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size,
 		entering_altstack = true;
 	}
 
-	sp = fpu__alloc_mathframe(sp, IS_ENABLED(CONFIG_X86_32),
+	sp = fpu__alloc_mathframe(sp, true,
 				  &buf_fx, &math_size);
 	*fpstate = (void __user *)sp;
 
@@ -337,13 +331,6 @@ Efault:
 }
 
 
-static int x32_setup_rt_frame(struct ksignal *ksig,
-			      compat_sigset_t *set,
-			      struct pt_regs *regs)
-{
-
-	return 0;
-}
 
 SYSCALL_DEFINE0(sigreturn)
 {
@@ -429,22 +416,7 @@ unsigned long get_sigframe_size(void)
 	return max_frame_size;
 }
 
-static inline int is_ia32_compat_frame(struct ksignal *ksig)
-{
-	return IS_ENABLED(CONFIG_IA32_EMULATION) &&
-		ksig->ka.sa.sa_flags & SA_IA32_ABI;
-}
-
-static inline int is_ia32_frame(struct ksignal *ksig)
-{
-	return IS_ENABLED(CONFIG_X86_32) || is_ia32_compat_frame(ksig);
-}
-
-static inline int is_x32_frame(struct ksignal *ksig)
-{
-	return IS_ENABLED(CONFIG_X86_X32_ABI) &&
-		ksig->ka.sa.sa_flags & SA_X32_ABI;
-}
+/* X86_32: is_ia32_frame always true, is_ia32_compat_frame and is_x32_frame always false */
 
 static int
 setup_rt_frame(struct ksignal *ksig, struct pt_regs *regs)
@@ -453,20 +425,13 @@ setup_rt_frame(struct ksignal *ksig, struct pt_regs *regs)
 	sigset_t *set = sigmask_to_save();
 	compat_sigset_t *cset = (compat_sigset_t *) set;
 
-	 
 	rseq_signal_deliver(ksig, regs);
 
-	 
-	if (is_ia32_frame(ksig)) {
-		if (ksig->ka.sa.sa_flags & SA_SIGINFO)
-			return ia32_setup_rt_frame(usig, ksig, cset, regs);
-		else
-			return ia32_setup_frame(usig, ksig, cset, regs);
-	} else if (is_x32_frame(ksig)) {
-		return x32_setup_rt_frame(ksig, cset, regs);
-	} else {
-		return __setup_rt_frame(ksig->sig, ksig, set, regs);
-	}
+	/* X86_32: always ia32 frame */
+	if (ksig->ka.sa.sa_flags & SA_SIGINFO)
+		return ia32_setup_rt_frame(usig, ksig, cset, regs);
+	else
+		return ia32_setup_frame(usig, ksig, cset, regs);
 }
 
 static void

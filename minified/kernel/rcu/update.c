@@ -36,13 +36,8 @@
 
 
 
-void rcu_test_sync_prims(void)
-{
-	if (!IS_ENABLED(CONFIG_PROVE_RCU))
-		return;
-	synchronize_rcu();
-	synchronize_rcu_expedited();
-}
+/* PROVE_RCU disabled */
+void rcu_test_sync_prims(void) { }
 
 
 static int __init rcu_set_runtime_mode(void)

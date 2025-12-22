@@ -26,9 +26,7 @@
 
 static __always_inline int syscall_32_enter(struct pt_regs *regs)
 {
-	if (IS_ENABLED(CONFIG_IA32_EMULATION))
-		current_thread_info()->status |= TS_COMPAT;
-
+	/* IA32_EMULATION disabled - skip TS_COMPAT */
 	return (int)regs->orig_ax;
 }
 
@@ -65,15 +63,9 @@ static noinstr bool __do_fast_syscall_32(struct pt_regs *regs)
 	 
 	syscall_enter_from_user_mode_prepare(regs);
 
-	 
-	if (IS_ENABLED(CONFIG_X86_64)) {
-		 
-		res = __get_user(*(u32 *)&regs->bp,
-			 (u32 __user __force *)(unsigned long)(u32)regs->sp);
-	} else {
-		res = get_user(*(u32 *)&regs->bp,
-		       (u32 __user __force *)(unsigned long)(u32)regs->sp);
-	}
+	/* X86_32: use get_user */
+	res = get_user(*(u32 *)&regs->bp,
+	       (u32 __user __force *)(unsigned long)(u32)regs->sp);
 
 	if (res) {
 		 

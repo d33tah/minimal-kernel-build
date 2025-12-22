@@ -489,10 +489,7 @@ access_error(unsigned long error_code, struct vm_area_struct *vma)
 
 bool fault_in_kernel_space(unsigned long address)
 {
-	 
-	if (IS_ENABLED(CONFIG_X86_64) && is_vsyscall_vaddr(address))
-		return false;
-
+	/* X86_32: no vsyscall check needed */
 	return address >= TASK_SIZE_MAX;
 }
 

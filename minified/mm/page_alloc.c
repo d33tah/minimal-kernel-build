@@ -1967,14 +1967,8 @@ void __init set_pageblock_order(void)
 static unsigned long __init calc_memmap_size(unsigned long spanned_pages,
 						unsigned long present_pages)
 {
-	unsigned long pages = spanned_pages;
-
-	
-	if (spanned_pages > present_pages + (present_pages >> 4) &&
-	    IS_ENABLED(CONFIG_SPARSEMEM))
-		pages = present_pages;
-
-	return PAGE_ALIGN(pages * sizeof(struct page)) >> PAGE_SHIFT;
+	/* SPARSEMEM disabled */
+	return PAGE_ALIGN(spanned_pages * sizeof(struct page)) >> PAGE_SHIFT;
 }
 
 static void pgdat_init_split_queue(struct pglist_data *pgdat) {}

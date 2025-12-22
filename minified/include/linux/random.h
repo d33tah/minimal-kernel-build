@@ -14,14 +14,7 @@ struct notifier_block;
 void add_device_randomness(const void *buf, size_t len);
 void add_interrupt_randomness(int irq) __latent_entropy;
 
-#if defined(LATENT_ENTROPY_PLUGIN) && !defined(__CHECKER__)
-static inline void add_latent_entropy(void)
-{
-	add_device_randomness((const void *)&latent_entropy, sizeof(latent_entropy));
-}
-#else
 static inline void add_latent_entropy(void) { }
-#endif
 
 
 void get_random_bytes(void *buf, size_t len);

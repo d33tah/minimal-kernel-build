@@ -124,18 +124,6 @@ again:
 	if (page && !dma_coherent_ok(dev, page_to_phys(page), size)) {
 		dma_free_contiguous(dev, page, size);
 		page = NULL;
-
-		if (IS_ENABLED(CONFIG_ZONE_DMA32) &&
-		    phys_limit < DMA_BIT_MASK(64) &&
-		    !(gfp & (GFP_DMA32 | GFP_DMA))) {
-			gfp |= GFP_DMA32;
-			goto again;
-		}
-
-		if (IS_ENABLED(CONFIG_ZONE_DMA) && !(gfp & GFP_DMA)) {
-			gfp = (gfp & ~GFP_DMA32) | GFP_DMA;
-			goto again;
-		}
 	}
 
 	return page;
@@ -149,20 +137,8 @@ static bool dma_direct_use_pool(struct device *dev, gfp_t gfp)
 static void *dma_direct_alloc_from_pool(struct device *dev, size_t size,
 		dma_addr_t *dma_handle, gfp_t gfp)
 {
-	struct page *page;
-	u64 phys_mask;
-	void *ret;
-
-	if (WARN_ON_ONCE(!IS_ENABLED(CONFIG_DMA_COHERENT_POOL)))
-		return NULL;
-
-	gfp |= dma_direct_optimal_gfp_mask(dev, dev->coherent_dma_mask,
-					   &phys_mask);
-	page = dma_alloc_from_pool(dev, size, &ret, gfp, dma_coherent_ok);
-	if (!page)
-		return NULL;
-	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
-	return ret;
+	/* CONFIG_DMA_COHERENT_POOL not enabled */
+	return NULL;
 }
 
 static void *dma_direct_alloc_no_mapping(struct device *dev, size_t size,
@@ -199,30 +175,10 @@ void *dma_direct_alloc(struct device *dev, size_t size,
 		return dma_direct_alloc_no_mapping(dev, size, dma_handle, gfp);
 
 	if (!dev_is_dma_coherent(dev)) {
-		 
-		if (!IS_ENABLED(CONFIG_ARCH_HAS_DMA_SET_UNCACHED) &&
-		    !IS_ENABLED(CONFIG_DMA_DIRECT_REMAP) &&
-		    !IS_ENABLED(CONFIG_DMA_GLOBAL_POOL) &&
-		    !is_swiotlb_for_alloc(dev))
+		/* None of the DMA advanced options enabled, call arch_dma_alloc */
+		if (!is_swiotlb_for_alloc(dev))
 			return arch_dma_alloc(dev, size, dma_handle, gfp,
 					      attrs);
-
-		 
-		if (IS_ENABLED(CONFIG_DMA_GLOBAL_POOL))
-			return dma_alloc_from_global_coherent(dev, size,
-					dma_handle);
-
-		 
-		remap = IS_ENABLED(CONFIG_DMA_DIRECT_REMAP);
-		if (remap) {
-			if (dma_direct_use_pool(dev, gfp))
-				return dma_direct_alloc_from_pool(dev, size,
-						dma_handle, gfp);
-		} else {
-			if (!IS_ENABLED(CONFIG_ARCH_HAS_DMA_SET_UNCACHED))
-				return NULL;
-			set_uncached = true;
-		}
 	}
 
 	 
@@ -292,32 +248,14 @@ void dma_direct_free(struct device *dev, size_t size,
 		return;
 	}
 
-	if (!IS_ENABLED(CONFIG_ARCH_HAS_DMA_SET_UNCACHED) &&
-	    !IS_ENABLED(CONFIG_DMA_DIRECT_REMAP) &&
-	    !IS_ENABLED(CONFIG_DMA_GLOBAL_POOL) &&
-	    !dev_is_dma_coherent(dev) &&
-	    !is_swiotlb_for_alloc(dev)) {
+	if (!dev_is_dma_coherent(dev) && !is_swiotlb_for_alloc(dev)) {
 		arch_dma_free(dev, size, cpu_addr, dma_addr, attrs);
 		return;
 	}
 
-	if (IS_ENABLED(CONFIG_DMA_GLOBAL_POOL) &&
-	    !dev_is_dma_coherent(dev)) {
-		if (!dma_release_from_global_coherent(page_order, cpu_addr))
-			WARN_ON_ONCE(1);
-		return;
-	}
-
-	 
-	if (IS_ENABLED(CONFIG_DMA_COHERENT_POOL) &&
-	    dma_free_from_pool(dev, cpu_addr, PAGE_ALIGN(size)))
-		return;
-
 	if (is_vmalloc_addr(cpu_addr)) {
 		vunmap(cpu_addr);
 	} else {
-		if (IS_ENABLED(CONFIG_ARCH_HAS_DMA_CLEAR_UNCACHED))
-			arch_dma_clear_uncached(cpu_addr, size);
 		if (dma_set_encrypted(dev, cpu_addr, size))
 			return;
 	}
@@ -467,13 +405,9 @@ int dma_direct_supported(struct device *dev, u64 mask)
 {
 	u64 min_mask = (max_pfn - 1) << PAGE_SHIFT;
 
-	 
 	if (mask >= DMA_BIT_MASK(32))
 		return 1;
 
-	 
-	if (IS_ENABLED(CONFIG_ZONE_DMA))
-		min_mask = min_t(u64, min_mask, DMA_BIT_MASK(zone_dma_bits));
 	return mask >= phys_to_dma_unencrypted(dev, min_mask);
 }
 

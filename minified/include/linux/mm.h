@@ -532,15 +532,9 @@ vm_fault_t finish_fault(struct vm_fault *vmf);
 #define NODES_PGSHIFT		(NODES_PGOFF * (NODES_WIDTH != 0))
 #define ZONES_PGSHIFT		(ZONES_PGOFF * (ZONES_WIDTH != 0))
 
-#ifdef NODE_NOT_IN_PAGE_FLAGS
 #define ZONEID_SHIFT		(SECTIONS_SHIFT + ZONES_SHIFT)
 #define ZONEID_PGOFF		((SECTIONS_PGOFF < ZONES_PGOFF)? \
 						SECTIONS_PGOFF : ZONES_PGOFF)
-#else
-#define ZONEID_SHIFT		(NODES_SHIFT + ZONES_SHIFT)
-#define ZONEID_PGOFF		((NODES_PGOFF < ZONES_PGOFF)? \
-						NODES_PGOFF : ZONES_PGOFF)
-#endif
 
 #define ZONES_MASK		((1UL << ZONES_WIDTH) - 1)
 #define NODES_MASK		((1UL << NODES_WIDTH) - 1)
@@ -615,16 +609,11 @@ static inline bool is_cow_mapping(vm_flags_t flags)
 	return (flags & (VM_SHARED | VM_MAYWRITE)) == VM_MAYWRITE;
 }
 
-#ifdef NODE_NOT_IN_PAGE_FLAGS
-extern int page_to_nid(const struct page *page);
-#else
 static inline int page_to_nid(const struct page *page)
 {
 	struct page *p = (struct page *)page;
-
 	return (PF_POISONED_CHECK(p)->flags >> NODES_PGSHIFT) & NODES_MASK;
 }
-#endif
 
 static inline int folio_nid(const struct folio *folio)
 {
@@ -691,9 +680,6 @@ static inline void set_page_links(struct page *page, enum zone_type zone,
 {
 	set_page_zone(page, zone);
 	set_page_node(page, node);
-#ifdef SECTION_IN_PAGE_FLAGS
-	set_page_section(page, pfn_to_section_nr(pfn));
-#endif
 }
 
 static inline long folio_nr_pages(struct folio *folio)
@@ -835,12 +821,6 @@ extern int mprotect_fixup(struct mmu_gather *tlb, struct vm_area_struct *vma,
 static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
 {
 	long val = atomic_long_read(&mm->rss_stat.count[member]);
-
-#ifdef SPLIT_RSS_COUNTING
-	
-	if (val < 0)
-		val = 0;
-#endif
 	return (unsigned long)val;
 }
 
@@ -910,13 +890,9 @@ static inline void setmax_mm_hiwater_rss(unsigned long *maxrss,
 		*maxrss = hiwater_rss;
 }
 
-#if defined(SPLIT_RSS_COUNTING)
-void sync_mm_rss(struct mm_struct *mm);
-#else
 static inline void sync_mm_rss(struct mm_struct *mm)
 {
 }
-#endif
 
 static inline int pte_devmap(pte_t pte)
 {
@@ -1427,11 +1403,6 @@ static inline bool debug_pagealloc_enabled_static(void)
 	return false;
 }
 
-#ifdef __HAVE_ARCH_GATE_AREA
-extern struct vm_area_struct *get_gate_vma(struct mm_struct *mm);
-extern int in_gate_area_no_mm(unsigned long addr);
-extern int in_gate_area(struct mm_struct *mm, unsigned long addr);
-#else
 static inline struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
 {
 	return NULL;
@@ -1441,7 +1412,6 @@ static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
 {
 	return 0;
 }
-#endif
 
 
 extern int randomize_va_space;

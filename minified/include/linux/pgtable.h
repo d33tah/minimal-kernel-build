@@ -306,17 +306,8 @@ static inline int pgd_same(pgd_t pgd_a, pgd_t pgd_b)
 
 void pgd_clear_bad(pgd_t *);
 
-#ifndef __PAGETABLE_P4D_FOLDED
-void p4d_clear_bad(p4d_t *);
-#else
 #define p4d_clear_bad(p4d)        do { } while (0)
-#endif
-
-#ifndef __PAGETABLE_PUD_FOLDED
-void pud_clear_bad(pud_t *);
-#else
 #define pud_clear_bad(p4d)        do { } while (0)
-#endif
 
 void pmd_clear_bad(pmd_t *);
 

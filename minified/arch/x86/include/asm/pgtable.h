@@ -92,25 +92,12 @@ extern pmdval_t early_pmd_flags;
 
 #define set_pmd(pmdp, pmd)		native_set_pmd(pmdp, pmd)
 
-#ifndef __PAGETABLE_P4D_FOLDED
-#define set_pgd(pgdp, pgd)		native_set_pgd(pgdp, pgd)
-#define pgd_clear(pgd)			(pgtable_l5_enabled() ? native_pgd_clear(pgd) : 0)
-#endif
-
 #ifndef set_p4d
 # define set_p4d(p4dp, p4d)		native_set_p4d(p4dp, p4d)
 #endif
 
-#ifndef __PAGETABLE_PUD_FOLDED
-#define p4d_clear(p4d)			native_p4d_clear(p4d)
-#endif
-
 #ifndef set_pud
 # define set_pud(pudp, pud)		native_set_pud(pudp, pud)
-#endif
-
-#ifndef __PAGETABLE_PUD_FOLDED
-#define pud_clear(pud)			native_pud_clear(pud)
 #endif
 
 #define pte_clear(mm, addr, ptep)	native_pte_clear(mm, addr, ptep)
@@ -118,21 +105,6 @@ extern pmdval_t early_pmd_flags;
 
 #define pgd_val(x)	native_pgd_val(x)
 #define __pgd(x)	native_make_pgd(x)
-
-#ifndef __PAGETABLE_P4D_FOLDED
-#define p4d_val(x)	native_p4d_val(x)
-#define __p4d(x)	native_make_p4d(x)
-#endif
-
-#ifndef __PAGETABLE_PUD_FOLDED
-#define pud_val(x)	native_pud_val(x)
-#define __pud(x)	native_make_pud(x)
-#endif
-
-#ifndef __PAGETABLE_PMD_FOLDED
-#define pmd_val(x)	native_pmd_val(x)
-#define __pmd(x)	native_make_pmd(x)
-#endif
 
 #define pte_val(x)	native_pte_val(x)
 #define __pte(x)	native_make_pte(x)

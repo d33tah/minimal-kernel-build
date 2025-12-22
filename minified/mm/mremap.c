@@ -204,7 +204,7 @@ static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
 	return true;
 }
 
-#if CONFIG_PGTABLE_LEVELS > 2 && defined(CONFIG_HAVE_MOVE_PUD)
+/* --- 2025-12-22 04:35 --- Removed #else branch - CONFIG_HAVE_MOVE_PUD is set */
 static bool move_normal_pud(struct vm_area_struct *vma, unsigned long old_addr,
 		  unsigned long new_addr, pud_t *old_pud, pud_t *new_pud)
 {
@@ -214,17 +214,17 @@ static bool move_normal_pud(struct vm_area_struct *vma, unsigned long old_addr,
 
 	if (!arch_supports_page_table_move())
 		return false;
-	 
+
 	if (WARN_ON_ONCE(!pud_none(*new_pud)))
 		return false;
 
-	 
+
 	old_ptl = pud_lock(vma->vm_mm, old_pud);
 	new_ptl = pud_lockptr(mm, new_pud);
 	if (new_ptl != old_ptl)
 		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
 
-	 
+
 	pud = *old_pud;
 	pud_clear(old_pud);
 
@@ -238,14 +238,6 @@ static bool move_normal_pud(struct vm_area_struct *vma, unsigned long old_addr,
 
 	return true;
 }
-#else
-static inline bool move_normal_pud(struct vm_area_struct *vma,
-		unsigned long old_addr, unsigned long new_addr, pud_t *old_pud,
-		pud_t *new_pud)
-{
-	return false;
-}
-#endif
 
 static bool move_huge_pud(struct vm_area_struct *vma, unsigned long old_addr,
 			  unsigned long new_addr, pud_t *old_pud, pud_t *new_pud)

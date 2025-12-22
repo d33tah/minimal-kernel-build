@@ -568,7 +568,8 @@ static void __init do_populate_rootfs(void *unused, async_cookie_t cookie)
 	if (err)
 		panic_show_mem("%s", err);  
 
-	if (!initrd_start || IS_ENABLED(CONFIG_INITRAMFS_FORCE))
+	/* INITRAMFS_FORCE not defined */
+	if (!initrd_start)
 		goto done;
 
 	/* BLK_DEV_RAM not defined */

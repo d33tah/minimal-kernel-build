@@ -1589,11 +1589,8 @@ void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
 
 static inline unsigned int debug_guardpage_minorder(void) { return 0; }
 
-#if MAX_NUMNODES > 1
-void __init setup_nr_node_ids(void);
-#else
+/* MAX_NUMNODES == 1, always inline */
 static inline void setup_nr_node_ids(void) {}
-#endif
 
 
 #define  ZAP_FLAG_DROP_MARKER        ((__force zap_flags_t) BIT(0))

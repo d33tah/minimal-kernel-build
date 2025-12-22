@@ -156,10 +156,7 @@ static unsigned long zone_movable_pfn[MAX_NUMNODES] __initdata;
 
 int movable_zone;
 
-#if MAX_NUMNODES > 1
-unsigned int nr_node_ids __read_mostly = MAX_NUMNODES;
-unsigned int nr_online_nodes __read_mostly = 1;
-#endif
+/* MAX_NUMNODES == 1, removed unused nr_node_ids/nr_online_nodes */
 
 int page_group_by_mobility_disabled __read_mostly;
 
@@ -2126,16 +2123,7 @@ static void __init free_area_init_node(int nid)
 }
 
 
-#if MAX_NUMNODES > 1
-
-void __init setup_nr_node_ids(void)
-{
-	unsigned int highest;
-
-	highest = find_last_bit(node_possible_map.bits, MAX_NUMNODES);
-	nr_node_ids = highest + 1;
-}
-#endif
+/* MAX_NUMNODES == 1, setup_nr_node_ids removed - inline stub in mm.h */
 
 static unsigned long __init find_min_pfn_with_active_regions(void)
 {
@@ -2304,11 +2292,7 @@ int __meminit init_per_zone_wmark_min(void)
 }
 postcore_initcall(init_per_zone_wmark_min)
 
-#if __BITS_PER_LONG > 32
-#define ADAPT_SCALE_BASE	(64ul << 30)
-#define ADAPT_SCALE_SHIFT	2
-#define ADAPT_SCALE_NPAGES	(ADAPT_SCALE_BASE >> PAGE_SHIFT)
-#endif
+/* ADAPT_SCALE_* removed - unused 64-bit only code */
 
 void *__init alloc_large_system_hash(const char *tablename,
 				     unsigned long bucketsize,

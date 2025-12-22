@@ -896,36 +896,9 @@ void scheduler_tick(void)
 
 }
 
-#if defined(CONFIG_PREEMPTION) && (defined(CONFIG_DEBUG_PREEMPT) || \
-				defined(CONFIG_TRACE_PREEMPT_TOGGLE))
-
-static inline void preempt_latency_start(int val)
-{
-}
-
-void preempt_count_add(int val)
-{
-	__preempt_count_add(val);
-	preempt_latency_start(val);
-}
-NOKPROBE_SYMBOL(preempt_count_add);
-
-static inline void preempt_latency_stop(int val)
-{
-}
-
-void preempt_count_sub(int val)
-{
-
-	preempt_latency_stop(val);
-	__preempt_count_sub(val);
-}
-NOKPROBE_SYMBOL(preempt_count_sub);
-
-#else
+/* CONFIG_PREEMPTION not set - no preempt tracing */
 static inline void preempt_latency_start(int val) { }
 static inline void preempt_latency_stop(int val) { }
-#endif
 
 
 static noinline void __schedule_bug(struct task_struct *prev)

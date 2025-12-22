@@ -147,40 +147,13 @@ const char *tty_driver_name(const struct tty_struct *tty)
 static int tty_paranoia_check(struct tty_struct *tty, struct inode *inode,
 			      const char *routine)
 {
-#ifdef TTY_PARANOIA_CHECK
-	if (!tty) {
-		return 1;
-	}
-	if (tty->magic != TTY_MAGIC) {
-		return 1;
-	}
-#endif
+	/* TTY_PARANOIA_CHECK not defined */
 	return 0;
 }
 
+/* CHECK_TTY_COUNT not defined */
 static int check_tty_count(struct tty_struct *tty, const char *routine)
 {
-#ifdef CHECK_TTY_COUNT
-	struct list_head *p;
-	int count = 0, kopen_count = 0;
-
-	spin_lock(&tty->files_lock);
-	list_for_each(p, &tty->tty_files) {
-		count++;
-	}
-	spin_unlock(&tty->files_lock);
-	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
-	    tty->driver->subtype == PTY_TYPE_SLAVE &&
-	    tty->link && tty->link->count)
-		count++;
-	if (tty_port_kopened(tty->port))
-		kopen_count++;
-	if (tty->count != (count + kopen_count)) {
-		tty_warn(tty, "%s: tty->count(%d) != (#fd's(%d) + #kopen's(%d))\n",
-			 routine, tty->count, count, kopen_count);
-		return (count + kopen_count);
-	}
-#endif
 	return 0;
 }
 
@@ -817,37 +790,9 @@ static void release_tty(struct tty_struct *tty, int idx)
 	tty_kref_put(tty);
 }
 
+/* TTY_PARANOIA_CHECK not defined */
 static int tty_release_checks(struct tty_struct *tty, int idx)
 {
-#ifdef TTY_PARANOIA_CHECK
-	if (idx < 0 || idx >= tty->driver->num) {
-		tty_debug(tty, "bad idx %d\n", idx);
-		return -1;
-	}
-
-	
-	if (tty->driver->flags & TTY_DRIVER_DEVPTS_MEM)
-		return 0;
-
-	if (tty != tty->driver->ttys[idx]) {
-		tty_debug(tty, "bad driver table[%d] = %p\n",
-			  idx, tty->driver->ttys[idx]);
-		return -1;
-	}
-	if (tty->driver->other) {
-		struct tty_struct *o_tty = tty->link;
-
-		if (o_tty != tty->driver->other->ttys[idx]) {
-			tty_debug(tty, "bad other table[%d] = %p\n",
-				  idx, tty->driver->other->ttys[idx]);
-			return -1;
-		}
-		if (o_tty->link != tty) {
-			tty_debug(tty, "bad link = %p\n", o_tty->link);
-			return -1;
-		}
-	}
-#endif
 	return 0;
 }
 

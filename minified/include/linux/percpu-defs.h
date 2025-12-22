@@ -14,24 +14,12 @@
 #define __PCPU_DUMMY_ATTRS						\
 	__section(".discard") __attribute__((unused))
 
-#if defined(ARCH_NEEDS_WEAK_PER_CPU) || defined(CONFIG_DEBUG_FORCE_WEAK_PER_CPU)
-#define DECLARE_PER_CPU_SECTION(type, name, sec)			\
-	extern __PCPU_DUMMY_ATTRS char __pcpu_scope_##name;		\
-	extern __PCPU_ATTRS(sec) __typeof__(type) name
-
-#define DEFINE_PER_CPU_SECTION(type, name, sec)				\
-	__PCPU_DUMMY_ATTRS char __pcpu_scope_##name;			\
-	extern __PCPU_DUMMY_ATTRS char __pcpu_unique_##name;		\
-	__PCPU_DUMMY_ATTRS char __pcpu_unique_##name;			\
-	extern __PCPU_ATTRS(sec) __typeof__(type) name;			\
-	__PCPU_ATTRS(sec) __weak __typeof__(type) name
-#else
+/* WEAK_PER_CPU not needed */
 #define DECLARE_PER_CPU_SECTION(type, name, sec)			\
 	extern __PCPU_ATTRS(sec) __typeof__(type) name
 
 #define DEFINE_PER_CPU_SECTION(type, name, sec)				\
 	__PCPU_ATTRS(sec) __typeof__(type) name
-#endif
 
 #define DECLARE_PER_CPU(type, name)					\
 	DECLARE_PER_CPU_SECTION(type, name, "")

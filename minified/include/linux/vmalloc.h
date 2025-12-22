@@ -28,12 +28,8 @@ struct notifier_block;
 #define VM_MAP_PUT_PAGES	0x00000200	 
 #define VM_ALLOW_HUGE_VMAP	0x00000400       
 
-#if (defined(CONFIG_KASAN_GENERIC) || defined(CONFIG_KASAN_SW_TAGS)) && \
-	!defined(CONFIG_KASAN_VMALLOC)
-#define VM_DEFER_KMEMLEAK	0x00000800	 
-#else
+/* KASAN not enabled */
 #define VM_DEFER_KMEMLEAK	0
-#endif
 
 
 #ifndef IOREMAP_MAX_ORDER

@@ -33,12 +33,7 @@ struct open_how {
 	(RESOLVE_NO_XDEV | RESOLVE_NO_MAGICLINKS | RESOLVE_NO_SYMLINKS | \
 	 RESOLVE_BENEATH | RESOLVE_IN_ROOT | RESOLVE_CACHED)
 
-#define OPEN_HOW_SIZE_VER0	24  
+#define OPEN_HOW_SIZE_VER0	24
 #define OPEN_HOW_SIZE_LATEST	OPEN_HOW_SIZE_VER0
-
-#ifndef force_o_largefile
-#define force_o_largefile() (!IS_ENABLED(CONFIG_ARCH_32BIT_OFF_T))
-#endif
-
 
 #endif

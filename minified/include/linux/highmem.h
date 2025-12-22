@@ -63,10 +63,7 @@ static inline void __kunmap_local(void *addr)
 
 static inline void *kmap_atomic(struct page *page)
 {
-	if (IS_ENABLED(CONFIG_PREEMPT_RT))
-		migrate_disable();
-	else
-		preempt_disable();
+	preempt_disable();
 	pagefault_disable();
 	return page_address(page);
 }
@@ -77,10 +74,7 @@ static inline void __kunmap_atomic(void *addr)
 	kunmap_flush_on_unmap(addr);
 #endif
 	pagefault_enable();
-	if (IS_ENABLED(CONFIG_PREEMPT_RT))
-		migrate_enable();
-	else
-		preempt_enable();
+	preempt_enable();
 }
 
 #define kunmap_atomic(__addr)					\

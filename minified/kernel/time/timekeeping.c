@@ -423,13 +423,10 @@ time64_t ktime_get_real_seconds(void)
 	time64_t seconds;
 	unsigned int seq;
 
-	if (IS_ENABLED(CONFIG_64BIT))
-		return tk->xtime_sec;
-
+	/* 32-bit: need seqlock to read xtime_sec atomically */
 	do {
 		seq = read_seqcount_begin(&tk_core.seq);
 		seconds = tk->xtime_sec;
-
 	} while (read_seqcount_retry(&tk_core.seq, seq));
 
 	return seconds;

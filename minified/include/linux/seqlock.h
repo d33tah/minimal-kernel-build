@@ -58,30 +58,13 @@ __seqprop_##lockname##_ptr(seqcount_##lockname##_t *s)			\
 static __always_inline unsigned						\
 __seqprop_##lockname##_sequence(const seqcount_##lockname##_t *s)	\
 {									\
-	unsigned seq = READ_ONCE(s->seqcount.sequence);			\
-									\
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT))				\
-		return seq;						\
-									\
-	if (preemptible && unlikely(seq & 1)) {				\
-		__SEQ_LOCK(lock_acquire);				\
-		__SEQ_LOCK(lockbase##_unlock(s->lock));			\
-									\
-		 							\
-		seq = READ_ONCE(s->seqcount.sequence);			\
-	}								\
-									\
-	return seq;							\
+	return READ_ONCE(s->seqcount.sequence);				\
 }									\
 									\
 static __always_inline bool						\
 __seqprop_##lockname##_preemptible(const seqcount_##lockname##_t *s)	\
 {									\
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT))				\
-		return preemptible;					\
-									\
-	 		\
-	return false;							\
+	return preemptible;						\
 }									\
 									\
 static __always_inline void						\
@@ -111,7 +94,7 @@ static inline void __seqprop_assert(const seqcount_t *s)
 	lockdep_assert_preemption_disabled();
 }
 
-#define __SEQ_RT	IS_ENABLED(CONFIG_PREEMPT_RT)
+#define __SEQ_RT	false
 
 SEQCOUNT_LOCKNAME(raw_spinlock, raw_spinlock_t,  false,    s->lock,        raw_spin, raw_spin_lock(s->lock))
 SEQCOUNT_LOCKNAME(spinlock,     spinlock_t,      __SEQ_RT, s->lock,        spin,     spin_lock(s->lock))

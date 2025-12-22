@@ -256,8 +256,7 @@ static inline ktime_t hrtimer_update_base(struct hrtimer_cpu_base *base)
 
 static inline int __hrtimer_hres_active(struct hrtimer_cpu_base *cpu_base)
 {
-	return IS_ENABLED(CONFIG_HIGH_RES_TIMERS) ?
-		cpu_base->hres_active : 0;
+	return 0;
 }
 
 
@@ -602,9 +601,6 @@ static void __run_hrtimer(struct hrtimer_cpu_base *cpu_base,
 
 	__remove_hrtimer(timer, base, HRTIMER_STATE_INACTIVE, 0);
 	fn = timer->function;
-
-	if (IS_ENABLED(CONFIG_TIME_LOW_RES))
-		timer->is_rel = false;
 
 	raw_spin_unlock_irqrestore(&cpu_base->lock, flags);
 	

@@ -1556,29 +1556,5 @@ int __pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
 #endif 
 
 
-#if USE_SPLIT_PTE_PTLOCKS && ALLOC_SPLIT_PTLOCKS
-
-static struct kmem_cache *page_ptl_cachep;
-
-void __init ptlock_cache_init(void)
-{
-	page_ptl_cachep = kmem_cache_create("page->ptl", sizeof(spinlock_t), 0,
-			SLAB_PANIC, NULL);
-}
-
-bool ptlock_alloc(struct page *page)
-{
-	spinlock_t *ptl;
-
-	ptl = kmem_cache_alloc(page_ptl_cachep, GFP_KERNEL);
-	if (!ptl)
-		return false;
-	page->ptl = ptl;
-	return true;
-}
-
-void ptlock_free(struct page *page)
-{
-	kmem_cache_free(page_ptl_cachep, page->ptl);
-}
-#endif
+/* USE_SPLIT_PTE_PTLOCKS is 0 (NR_CPUS=1 < SPLIT_PTLOCK_CPUS=4)
+ * ptlock_cache_init, ptlock_alloc, ptlock_free removed as dead code */

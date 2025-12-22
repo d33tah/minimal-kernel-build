@@ -119,11 +119,7 @@ static inline void syscall_tracepoint_update(struct task_struct *p) {}
 	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
 #endif  
 
-#ifdef __LITTLE_ENDIAN
 #define SC_ARG64(name) u32, name##_lo, u32, name##_hi
-#else
-#define SC_ARG64(name) u32, name##_hi, u32, name##_lo
-#endif
 #define SC_VAL64(type, name) ((type) name##_hi << 32 | name##_lo)
 
 #define SYSCALL32_DEFINE1 SYSCALL_DEFINE1

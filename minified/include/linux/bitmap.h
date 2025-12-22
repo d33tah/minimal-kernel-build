@@ -200,11 +200,7 @@ static inline void bitmap_or(unsigned long *dst, const unsigned long *src1,
 
 
 
-#ifdef __LITTLE_ENDIAN
 #define BITMAP_MEM_ALIGNMENT 8
-#else
-#define BITMAP_MEM_ALIGNMENT (8 * sizeof(unsigned long))
-#endif
 #define BITMAP_MEM_MASK (BITMAP_MEM_ALIGNMENT - 1)
 
 static inline bool bitmap_equal(const unsigned long *src1,

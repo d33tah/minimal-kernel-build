@@ -116,11 +116,7 @@ static inline u64 mul_u64_u64_shr(u64 a, u64 b, unsigned int shift)
 	union {
 		u64 ll;
 		struct {
-#ifdef __BIG_ENDIAN
-			u32 high, low;
-#else
 			u32 low, high;
-#endif
 		} l;
 	} rl, rm, rn, rh, a0, b0;
 	u64 c;
@@ -170,11 +166,7 @@ static inline u64 mul_u64_u32_div(u64 a, u32 mul, u32 divisor)
 	union {
 		u64 ll;
 		struct {
-#ifdef __BIG_ENDIAN
-			u32 high, low;
-#else
 			u32 low, high;
-#endif
 		} l;
 	} u, rl, rh;
 

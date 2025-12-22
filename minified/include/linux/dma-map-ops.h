@@ -104,20 +104,11 @@ struct page *dma_alloc_from_pool(struct device *dev, size_t size,
 		bool (*phys_addr_ok)(struct device *, phys_addr_t, size_t));
 bool dma_free_from_pool(struct device *dev, void *start, size_t size);
 
-#if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
-	defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
-	defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
-extern bool dma_default_coherent;
-static inline bool dev_is_dma_coherent(struct device *dev)
-{
-	return dev->dma_coherent;
-}
-#else
+/* SYNC_DMA_FOR_* not defined */
 static inline bool dev_is_dma_coherent(struct device *dev)
 {
 	return true;
 }
-#endif  
 
 void *arch_dma_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 		gfp_t gfp, unsigned long attrs);

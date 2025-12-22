@@ -50,14 +50,9 @@ static inline bool is_ftrace_trampoline(unsigned long addr)
 # define lockdep_softirq_enter()		do { } while (0)
 # define lockdep_softirq_exit()			do { } while (0)
 
-#if defined(CONFIG_IRQSOFF_TRACER) || \
-	defined(CONFIG_PREEMPT_TRACER)
- extern void stop_critical_timings(void);
- extern void start_critical_timings(void);
-#else
+/* IRQSOFF_TRACER/PREEMPT_TRACER not defined */
 # define stop_critical_timings() do { } while (0)
 # define start_critical_timings() do { } while (0)
-#endif
 
 #define raw_check_bogus_irq_restore() do { } while (0)
 

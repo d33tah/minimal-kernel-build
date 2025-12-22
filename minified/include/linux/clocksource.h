@@ -16,10 +16,7 @@
 struct clocksource;
 struct module;
 
-#if defined(CONFIG_ARCH_CLOCKSOURCE_DATA) || \
-    defined(CONFIG_GENERIC_GETTIMEOFDAY)
-#include <asm/clocksource.h>
-#endif
+/* CONFIG_ARCH_CLOCKSOURCE_DATA/GENERIC_GETTIMEOFDAY not defined */
 
 #include <linux/limits.h>
 #include <asm/vdso/clocksource.h>

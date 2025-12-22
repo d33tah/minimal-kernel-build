@@ -510,11 +510,7 @@ int timekeeping_valid_for_hres(void)
 	return ret;
 }
 
-void __weak read_persistent_clock64(struct timespec64 *ts)
-{
-	ts->tv_sec = 0;
-	ts->tv_nsec = 0;
-}
+/* read_persistent_clock64 provided by arch/x86/kernel/rtc.c */
 
 void __weak __init
 read_persistent_wall_and_boot_offset(struct timespec64 *wall_time,

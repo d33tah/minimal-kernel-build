@@ -449,123 +449,14 @@ static inline unsigned long pages_to_mb(unsigned long npg)
 	return npg >> (20 - PAGE_SHIFT);
 }
 
-#if CONFIG_PGTABLE_LEVELS > 2
-static inline int pud_none(pud_t pud)
-{
-	return (native_pud_val(pud) & ~(_PAGE_KNL_ERRATUM_MASK)) == 0;
-}
-
-static inline int pud_present(pud_t pud)
-{
-	return pud_flags(pud) & _PAGE_PRESENT;
-}
-
-static inline pmd_t *pud_pgtable(pud_t pud)
-{
-	return (pmd_t *)__va(pud_val(pud) & pud_pfn_mask(pud));
-}
-
- 
-#define pud_page(pud)	pfn_to_page(pud_pfn(pud))
-
-#define pud_leaf	pud_large
-static inline int pud_large(pud_t pud)
-{
-	return (pud_val(pud) & (_PAGE_PSE | _PAGE_PRESENT)) ==
-		(_PAGE_PSE | _PAGE_PRESENT);
-}
-
-static inline int pud_bad(pud_t pud)
-{
-	return (pud_flags(pud) & ~(_KERNPG_TABLE | _PAGE_USER)) != 0;
-}
-#else
+/* CONFIG_PGTABLE_LEVELS == 2, so only 2-level paging supported */
 #define pud_leaf	pud_large
 static inline int pud_large(pud_t pud)
 {
 	return 0;
 }
-#endif	 
 
-#if CONFIG_PGTABLE_LEVELS > 3
-static inline int p4d_none(p4d_t p4d)
-{
-	return (native_p4d_val(p4d) & ~(_PAGE_KNL_ERRATUM_MASK)) == 0;
-}
-
-static inline int p4d_present(p4d_t p4d)
-{
-	return p4d_flags(p4d) & _PAGE_PRESENT;
-}
-
-static inline pud_t *p4d_pgtable(p4d_t p4d)
-{
-	return (pud_t *)__va(p4d_val(p4d) & p4d_pfn_mask(p4d));
-}
-
- 
-#define p4d_page(p4d)	pfn_to_page(p4d_pfn(p4d))
-
-static inline int p4d_bad(p4d_t p4d)
-{
-	unsigned long ignore_flags = _KERNPG_TABLE | _PAGE_USER;
-
-	if (IS_ENABLED(CONFIG_PAGE_TABLE_ISOLATION))
-		ignore_flags |= _PAGE_NX;
-
-	return (p4d_flags(p4d) & ~ignore_flags) != 0;
-}
-#endif   
-
-/* p4d_index removed - unused */
-
-#if CONFIG_PGTABLE_LEVELS > 4
-static inline int pgd_present(pgd_t pgd)
-{
-	if (!pgtable_l5_enabled())
-		return 1;
-	return pgd_flags(pgd) & _PAGE_PRESENT;
-}
-
-static inline unsigned long pgd_page_vaddr(pgd_t pgd)
-{
-	return (unsigned long)__va((unsigned long)pgd_val(pgd) & PTE_PFN_MASK);
-}
-
- 
-#define pgd_page(pgd)	pfn_to_page(pgd_pfn(pgd))
-
- 
-static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
-{
-	if (!pgtable_l5_enabled())
-		return (p4d_t *)pgd;
-	return (p4d_t *)pgd_page_vaddr(*pgd) + p4d_index(address);
-}
-
-static inline int pgd_bad(pgd_t pgd)
-{
-	unsigned long ignore_flags = _PAGE_USER;
-
-	if (!pgtable_l5_enabled())
-		return 0;
-
-	if (IS_ENABLED(CONFIG_PAGE_TABLE_ISOLATION))
-		ignore_flags |= _PAGE_NX;
-
-	return (pgd_flags(pgd) & ~ignore_flags) != _KERNPG_TABLE;
-}
-
-static inline int pgd_none(pgd_t pgd)
-{
-	if (!pgtable_l5_enabled())
-		return 0;
-	 
-	return !native_pgd_val(pgd);
-}
-#endif	 
-
-#endif	 
+#endif 
 
 #define KERNEL_PGD_BOUNDARY	pgd_index(PAGE_OFFSET)
 #define KERNEL_PGD_PTRS		(PTRS_PER_PGD - KERNEL_PGD_BOUNDARY)

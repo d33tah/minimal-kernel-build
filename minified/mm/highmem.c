@@ -71,9 +71,6 @@ static pte_t *__kmap_pte;
 
 static pte_t *kmap_get_pte(unsigned long vaddr, int idx)
 {
-	if (IS_ENABLED(CONFIG_KMAP_LOCAL_NON_LINEAR_PTE_ARRAY))
-		 
-		return virt_to_kpte(vaddr);
 	if (!__kmap_pte)
 		__kmap_pte = virt_to_kpte(__fix_to_virt(FIX_KMAP_BEGIN));
 	return &__kmap_pte[-idx];
@@ -105,11 +102,9 @@ void *__kmap_local_page_prot(struct page *page, pgprot_t prot)
 {
 	void *kmap;
 
-	 
-	if (!IS_ENABLED(CONFIG_DEBUG_KMAP_LOCAL_FORCE_MAP) && !PageHighMem(page))
+	if (!PageHighMem(page))
 		return page_address(page);
 
-	 
 	kmap = arch_kmap_local_high_get(page);
 	if (kmap)
 		return kmap;
@@ -130,17 +125,10 @@ void __kmap_local_sched_out(void)
 		unsigned long addr;
 		int idx;
 
-		 
-		if (IS_ENABLED(CONFIG_DEBUG_KMAP_LOCAL) && !(i & 0x01)) {
-			WARN_ON_ONCE(pte_val(pteval) != 0);
-			continue;
-		}
 		if (WARN_ON_ONCE(pte_none(pteval)))
 			continue;
 
-		 
 		idx = arch_kmap_local_map_idx(i, pte_pfn(pteval));
-
 		addr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
 		kmap_pte = kmap_get_pte(addr, idx);
 		arch_kmap_local_pre_unmap(addr);
@@ -155,21 +143,14 @@ void __kmap_local_sched_in(void)
 	pte_t *kmap_pte;
 	int i;
 
-	 
 	for (i = 0; i < tsk->kmap_ctrl.idx; i++) {
 		pte_t pteval = tsk->kmap_ctrl.pteval[i];
 		unsigned long addr;
 		int idx;
 
-		 
-		if (IS_ENABLED(CONFIG_DEBUG_KMAP_LOCAL) && !(i & 0x01)) {
-			WARN_ON_ONCE(pte_val(pteval) != 0);
-			continue;
-		}
 		if (WARN_ON_ONCE(pte_none(pteval)))
 			continue;
 
-		 
 		idx = arch_kmap_local_map_idx(i, pte_pfn(pteval));
 		addr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
 		kmap_pte = kmap_get_pte(addr, idx);

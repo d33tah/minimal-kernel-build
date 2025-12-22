@@ -355,10 +355,6 @@ static inline bool __slub_debug_enabled(void)
  
 static inline bool kmem_cache_debug_flags(struct kmem_cache *s, slab_flags_t flags)
 {
-	if (IS_ENABLED(CONFIG_SLUB_DEBUG))
-		VM_WARN_ON_ONCE(!(flags & SLAB_DEBUG_FLAGS));
-	if (__slub_debug_enabled())
-		return s->flags & flags;
 	return false;
 }
 
@@ -428,18 +424,8 @@ static __always_inline void unaccount_slab(struct slab *slab, int order,
 
 static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 {
-	struct kmem_cache *cachep;
-
-	if (!IS_ENABLED(CONFIG_SLAB_FREELIST_HARDENED) &&
-	    !kmem_cache_debug_flags(s, SLAB_CONSISTENCY_CHECKS))
-		return s;
-
-	cachep = virt_to_cache(x);
-	if (WARN(cachep && cachep != s,
-		  "%s: Wrong slab cache. %s but object is from %s\n",
-		  __func__, s->name, cachep->name))
-		print_tracking(cachep, x);
-	return cachep;
+	/* SLAB_FREELIST_HARDENED not enabled, debug always false */
+	return s;
 }
 
 static inline size_t slab_ksize(const struct kmem_cache *s)

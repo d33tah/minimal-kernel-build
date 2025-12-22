@@ -8,11 +8,8 @@
 #include <linux/sched/task.h>
 
 
-#if BITS_PER_LONG == 64
-# define LDSEM_ACTIVE_MASK	0xffffffffL
-#else
-# define LDSEM_ACTIVE_MASK	0x0000ffffL
-#endif
+/* BITS_PER_LONG == 32 (i386) */
+#define LDSEM_ACTIVE_MASK	0x0000ffffL
 
 #define LDSEM_UNLOCKED		0L
 #define LDSEM_ACTIVE_BIAS	1L

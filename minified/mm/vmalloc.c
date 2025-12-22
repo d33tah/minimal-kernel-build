@@ -1132,11 +1132,8 @@ static struct vmap_area *find_vmap_area(unsigned long addr)
 	return va;
 }
 
-#if BITS_PER_LONG == 32
+/* BITS_PER_LONG == 32 (i386) */
 #define VMALLOC_SPACE		(128UL*1024*1024)
-#else
-#define VMALLOC_SPACE		(128UL*1024*1024*1024)
-#endif
 
 #define VMALLOC_PAGES		(VMALLOC_SPACE / PAGE_SIZE)
 #define VMAP_MAX_ALLOC		BITS_PER_LONG	

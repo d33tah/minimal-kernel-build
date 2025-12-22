@@ -552,12 +552,7 @@ void __init fork_init(void)
 	uprobes_init();
 }
 
-int __weak arch_dup_task_struct(struct task_struct *dst,
-					       struct task_struct *src)
-{
-	*dst = *src;
-	return 0;
-}
+/* arch_dup_task_struct provided by arch/x86/kernel/process.c */
 
 void set_task_stack_end_magic(struct task_struct *tsk)
 {

@@ -423,13 +423,10 @@ void __init trap_init(void); /* in arch/x86/kernel/traps.c */
 
 bool initcall_debug;
 
-#ifdef TRACEPOINTS_ENABLED
-static void __init initcall_debug_enable(void);
-#else
+/* TRACEPOINTS_ENABLED not defined - stub */
 static inline void initcall_debug_enable(void)
 {
 }
-#endif
 
 static void __init report_meminit(void)
 {
@@ -643,20 +640,7 @@ trace_initcall_finish_cb(void *data, initcall_t fn, int ret) { }
 
 static ktime_t initcall_calltime;
 
-#ifdef TRACEPOINTS_ENABLED
-static void __init initcall_debug_enable(void)
-{
-	int ret;
-
-	ret = register_trace_initcall_start(trace_initcall_start_cb,
-					    &initcall_calltime);
-	ret |= register_trace_initcall_finish(trace_initcall_finish_cb,
-					      &initcall_calltime);
-	WARN(ret, "Failed to register initcall tracepoints\n");
-}
-# define do_trace_initcall_start	trace_initcall_start
-# define do_trace_initcall_finish	trace_initcall_finish
-#else
+/* TRACEPOINTS_ENABLED not defined */
 static inline void do_trace_initcall_start(initcall_t fn)
 {
 	if (!initcall_debug)
@@ -668,8 +652,7 @@ static inline void do_trace_initcall_finish(initcall_t fn, int ret)
 	if (!initcall_debug)
 		return;
 	trace_initcall_finish_cb(&initcall_calltime, fn, ret);
-}
-#endif  
+}  
 
 int __init_or_module do_one_initcall(initcall_t fn)
 {

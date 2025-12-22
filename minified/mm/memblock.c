@@ -1006,23 +1006,7 @@ static void __init free_memmap(unsigned long start_pfn, unsigned long end_pfn)
 
 static void __init free_unused_memmap(void)
 {
-	unsigned long start, end, prev_end = 0;
-	int i;
-
-	if (!IS_ENABLED(CONFIG_HAVE_ARCH_PFN_VALID) ||
-	    IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP))
-		return;
-
-	for_each_mem_pfn_range(i, MAX_NUMNODES, &start, &end, NULL) {
-		
-		start = round_down(start, pageblock_nr_pages);
-
-		if (prev_end && prev_end < start)
-			free_memmap(prev_end, start);
-
-		prev_end = ALIGN(end, pageblock_nr_pages);
-	}
-
+	/* CONFIG_HAVE_ARCH_PFN_VALID not enabled - early return */
 }
 
 static void __init __free_pages_memory(unsigned long start, unsigned long end)

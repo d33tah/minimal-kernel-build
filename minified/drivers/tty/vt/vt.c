@@ -753,13 +753,6 @@ static void con_flush(struct vc_data *vc, struct vc_draw_region *draw)
 
 static inline int vc_translate_ascii(const struct vc_data *vc, int c)
 {
-	if (IS_ENABLED(CONFIG_CONSOLE_TRANSLATIONS)) {
-		if (vc->vc_toggle_meta)
-			c |= 0x80;
-
-		return vc->vc_translate[c];
-	}
-
 	return c;
 }
 

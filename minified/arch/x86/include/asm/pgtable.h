@@ -661,14 +661,11 @@ static inline int pud_write(pud_t pud)
 static inline pmd_t pmdp_establish(struct vm_area_struct *vma,
 		unsigned long address, pmd_t *pmdp, pmd_t pmd)
 {
+	pmd_t old;
 	page_table_check_pmd_set(vma->vm_mm, address, pmdp, pmd);
-	if (IS_ENABLED(CONFIG_SMP)) {
-		return xchg(pmdp, pmd);
-	} else {
-		pmd_t old = *pmdp;
-		WRITE_ONCE(*pmdp, pmd);
-		return old;
-	}
+	old = *pmdp;
+	WRITE_ONCE(*pmdp, pmd);
+	return old;
 }
 #endif
 

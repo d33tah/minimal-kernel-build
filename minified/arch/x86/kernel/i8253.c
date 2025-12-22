@@ -8,10 +8,10 @@ struct clock_event_device *global_clock_event;
 
 static bool __init use_pit(void)
 {
-	if (!IS_ENABLED(CONFIG_X86_TSC) || !boot_cpu_has(X86_FEATURE_TSC))
+	/* CONFIG_X86_TSC=y, check only for TSC feature */
+	if (!boot_cpu_has(X86_FEATURE_TSC))
 		return true;
 
-	 
 	return apic_needs_pit();
 }
 

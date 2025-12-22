@@ -13,11 +13,8 @@
 
 # define NEED_3DNOW	0
 
-#if defined(CONFIG_X86_P6_NOP) || defined(CONFIG_X86_64)
-# define NEED_NOPL	(1<<(X86_FEATURE_NOPL & 31))
-#else
+/* X86_32 without P6_NOP - NOPL not required */
 # define NEED_NOPL	0
-#endif
 
 # define NEED_MOVBE	0
 

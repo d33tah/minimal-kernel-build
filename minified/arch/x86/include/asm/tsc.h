@@ -16,9 +16,7 @@ extern unsigned int tsc_khz;
 
 static inline cycles_t get_cycles(void)
 {
-	if (!IS_ENABLED(CONFIG_X86_TSC) &&
-	    !cpu_feature_enabled(X86_FEATURE_TSC))
-		return 0;
+	/* CONFIG_X86_TSC=y, so TSC is always available */
 	return rdtsc();
 }
 #define get_cycles get_cycles

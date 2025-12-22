@@ -414,41 +414,10 @@ SYM_CODE_START_LOCAL(early_idt_handler_common)
 SYM_CODE_END(early_idt_handler_common)
 
 /* This is the default interrupt "handler" :-) */
+/* CONFIG_PRINTK is not set - simplified handler */
 SYM_FUNC_START(early_ignore_irq)
 	cld
-#ifdef CONFIG_PRINTK
-	pushl %eax
-	pushl %ecx
-	pushl %edx
-	pushl %es
-	pushl %ds
-	movl $(__KERNEL_DS),%eax
-	movl %eax,%ds
-	movl %eax,%es
-	cmpl $2,early_recursion_flag
-	je hlt_loop
-	incl early_recursion_flag
-	pushl 16(%esp)
-	pushl 24(%esp)
-	pushl 32(%esp)
-	pushl 40(%esp)
-	pushl $int_msg
-	call _printk
-
-	call dump_stack
-
-	addl $(5*4),%esp
-	popl %ds
-	popl %es
-	popl %edx
-	popl %ecx
-	popl %eax
-#endif
 	iret
-
-hlt_loop:
-	hlt
-	jmp hlt_loop
 SYM_FUNC_END(early_ignore_irq)
 
 __INITDATA
@@ -542,9 +511,7 @@ SYM_DATA(initial_stack,
 		.long init_thread_union + THREAD_SIZE -
 		SIZEOF_PTREGS - TOP_OF_KERNEL_STACK_PADDING)
 
-__INITRODATA
-int_msg:
-	.asciz "Unknown interrupt or fault at: %p %p %p\n"
+/* CONFIG_PRINTK is not set - int_msg removed */
 
 /*
  * The IDT and GDT 'descriptors' are a strange 48-bit object

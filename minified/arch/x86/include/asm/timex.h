@@ -7,9 +7,7 @@
 
 static inline unsigned long random_get_entropy(void)
 {
-	if (!IS_ENABLED(CONFIG_X86_TSC) &&
-	    !cpu_feature_enabled(X86_FEATURE_TSC))
-		return random_get_entropy_fallback();
+	/* CONFIG_X86_TSC=y, so TSC is always available */
 	return rdtsc();
 }
 #define random_get_entropy random_get_entropy

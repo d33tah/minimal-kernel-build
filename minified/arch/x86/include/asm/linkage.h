@@ -12,10 +12,7 @@
 
 #ifdef __ASSEMBLY__
 
-#if defined(CONFIG_X86_64) || defined(CONFIG_X86_ALIGNMENT_16)
-#define __ALIGN		.p2align 4, 0x90
-#define __ALIGN_STR	__stringify(__ALIGN)
-#endif
+/* X86_32 without X86_ALIGNMENT_16 - use default alignment */
 
 #define RET	ret
 

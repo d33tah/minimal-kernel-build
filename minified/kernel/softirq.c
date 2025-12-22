@@ -247,11 +247,8 @@ static inline void tick_irq_exit(void)
 
 static inline void __irq_exit_rcu(void)
 {
-#ifndef __ARCH_IRQ_EXIT_IRQS_DISABLED
+	/* __ARCH_IRQ_EXIT_IRQS_DISABLED not defined for x86 */
 	local_irq_disable();
-#else
-	lockdep_assert_irqs_disabled();
-#endif
 	account_hardirq_exit(current);
 	preempt_count_sub(HARDIRQ_OFFSET);
 	if (!in_interrupt() && local_softirq_pending())

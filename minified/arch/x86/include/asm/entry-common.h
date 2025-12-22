@@ -15,28 +15,9 @@ static inline void clear_user_return_notifier(struct task_struct *p) {}
 #include <asm/io_bitmap.h>
 #include <asm/fpu/api.h>
 
- 
+/* CONFIG_DEBUG_ENTRY not enabled, no debug checks needed */
 static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs)
 {
-	if (IS_ENABLED(CONFIG_DEBUG_ENTRY)) {
-		 
-		unsigned long flags = native_save_fl();
-		unsigned long mask = X86_EFLAGS_DF | X86_EFLAGS_NT;
-
-		 
-		if (boot_cpu_has(X86_FEATURE_SMAP) ||
-		    (IS_ENABLED(CONFIG_64BIT) && boot_cpu_has(X86_FEATURE_XENPV)))
-			mask |= X86_EFLAGS_AC;
-
-		WARN_ON_ONCE(flags & mask);
-
-		 
-		WARN_ON_ONCE(!user_mode(regs));
-
-		 
-		WARN_ON_ONCE(!on_thread_stack());
-		WARN_ON_ONCE(regs != task_pt_regs(current));
-	}
 }
 #define arch_enter_from_user_mode arch_enter_from_user_mode
 

@@ -25,21 +25,15 @@ static inline void kernel_fpu_begin(void)
 	kernel_fpu_begin_mask(KFPU_387 | KFPU_MXCSR);
 }
 
- 
+/* CONFIG_PREEMPT_RT not enabled */
 static inline void fpregs_lock(void)
 {
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
-		local_bh_disable();
-	else
-		preempt_disable();
+	local_bh_disable();
 }
 
 static inline void fpregs_unlock(void)
 {
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
-		local_bh_enable();
-	else
-		preempt_enable();
+	local_bh_enable();
 }
 
 static inline void fpregs_assert_state_consistent(void) { }

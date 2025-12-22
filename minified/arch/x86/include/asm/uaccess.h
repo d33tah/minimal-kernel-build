@@ -45,15 +45,11 @@ static __always_inline void stac(void)
 #endif
 
 #ifndef __access_ok
+/* CONFIG_MMU=y, CONFIG_ALTERNATE_USER_ADDRESS_SPACE not set */
 static inline int __access_ok(const void __user *ptr, unsigned long size)
 {
 	unsigned long limit = TASK_SIZE_MAX;
 	unsigned long addr = (unsigned long)ptr;
-
-	if (IS_ENABLED(CONFIG_ALTERNATE_USER_ADDRESS_SPACE) ||
-	    !IS_ENABLED(CONFIG_MMU))
-		return true;
-
 	return (size <= limit) && (addr <= (limit - size));
 }
 #endif

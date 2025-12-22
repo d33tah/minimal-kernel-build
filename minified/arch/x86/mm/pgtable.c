@@ -44,12 +44,6 @@ static inline void pgd_list_del(pgd_t *pgd)
 	list_del(&page->lru);
 }
 
-#define UNSHARED_PTRS_PER_PGD				\
-	(SHARED_KERNEL_PMD ? KERNEL_PGD_BOUNDARY : PTRS_PER_PGD)
-#define MAX_UNSHARED_PTRS_PER_PGD			\
-	max_t(size_t, KERNEL_PGD_BOUNDARY, PTRS_PER_PGD)
-
-
 static void pgd_set_mm(pgd_t *pgd, struct mm_struct *mm)
 {
 	virt_to_page(pgd)->pt_mm = mm;
@@ -62,27 +56,19 @@ struct mm_struct *pgd_page_get_mm(struct page *page)
 
 static void pgd_ctor(struct mm_struct *mm, pgd_t *pgd)
 {
-	 
-	if (CONFIG_PGTABLE_LEVELS == 2 ||
-	    (CONFIG_PGTABLE_LEVELS == 3 && SHARED_KERNEL_PMD) ||
-	    CONFIG_PGTABLE_LEVELS >= 4) {
-		clone_pgd_range(pgd + KERNEL_PGD_BOUNDARY,
-				swapper_pg_dir + KERNEL_PGD_BOUNDARY,
-				KERNEL_PGD_PTRS);
-	}
+	/* CONFIG_PGTABLE_LEVELS == 2, always clone kernel pgd */
+	clone_pgd_range(pgd + KERNEL_PGD_BOUNDARY,
+			swapper_pg_dir + KERNEL_PGD_BOUNDARY,
+			KERNEL_PGD_PTRS);
 
-	 
-	if (!SHARED_KERNEL_PMD) {
-		pgd_set_mm(pgd, mm);
-		pgd_list_add(pgd);
-	}
+	/* SHARED_KERNEL_PMD == 0 */
+	pgd_set_mm(pgd, mm);
+	pgd_list_add(pgd);
 }
 
 static void pgd_dtor(pgd_t *pgd)
 {
-	if (SHARED_KERNEL_PMD)
-		return;
-
+	/* SHARED_KERNEL_PMD == 0 */
 	spin_lock(&pgd_lock);
 	pgd_list_del(pgd);
 	spin_unlock(&pgd_lock);
@@ -90,105 +76,18 @@ static void pgd_dtor(pgd_t *pgd)
 
 
 
+/* PREALLOCATED_PMDS and related are all 0 for 2-level paging */
 #define PREALLOCATED_PMDS	0
 #define MAX_PREALLOCATED_PMDS	0
-#define PREALLOCATED_USER_PMDS	 0
+#define PREALLOCATED_USER_PMDS	0
 #define MAX_PREALLOCATED_USER_PMDS 0
 
-static void free_pmds(struct mm_struct *mm, pmd_t *pmds[], int count)
-{
-	int i;
-
-	for (i = 0; i < count; i++)
-		if (pmds[i]) {
-			pgtable_pmd_page_dtor(virt_to_page(pmds[i]));
-			free_page((unsigned long)pmds[i]);
-			mm_dec_nr_pmds(mm);
-		}
-}
-
-static int preallocate_pmds(struct mm_struct *mm, pmd_t *pmds[], int count)
-{
-	int i;
-	bool failed = false;
-	gfp_t gfp = GFP_PGTABLE_USER;
-
-	if (mm == &init_mm)
-		gfp &= ~__GFP_ACCOUNT;
-
-	for (i = 0; i < count; i++) {
-		pmd_t *pmd = (pmd_t *)__get_free_page(gfp);
-		if (!pmd)
-			failed = true;
-		if (pmd && !pgtable_pmd_page_ctor(virt_to_page(pmd))) {
-			free_page((unsigned long)pmd);
-			pmd = NULL;
-			failed = true;
-		}
-		if (pmd)
-			mm_inc_nr_pmds(mm);
-		pmds[i] = pmd;
-	}
-
-	if (failed) {
-		free_pmds(mm, pmds, count);
-		return -ENOMEM;
-	}
-
-	return 0;
-}
-
-static void mop_up_one_pmd(struct mm_struct *mm, pgd_t *pgdp)
-{
-	pgd_t pgd = *pgdp;
-
-	if (pgd_val(pgd) != 0) {
-		pmd_t *pmd = (pmd_t *)pgd_page_vaddr(pgd);
-
-		pgd_clear(pgdp);
-
-		paravirt_release_pmd(pgd_val(pgd) >> PAGE_SHIFT);
-		pmd_free(mm, pmd);
-		mm_dec_nr_pmds(mm);
-	}
-}
-
-static void pgd_mop_up_pmds(struct mm_struct *mm, pgd_t *pgdp)
-{
-	int i;
-
-	for (i = 0; i < PREALLOCATED_PMDS; i++)
-		mop_up_one_pmd(mm, &pgdp[i]);
-
-}
-
-static void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmds[])
-{
-	p4d_t *p4d;
-	pud_t *pud;
-	int i;
-
-	if (PREALLOCATED_PMDS == 0)  
-		return;
-
-	p4d = p4d_offset(pgd, 0);
-	pud = pud_offset(p4d, 0);
-
-	for (i = 0; i < PREALLOCATED_PMDS; i++, pud++) {
-		pmd_t *pmd = pmds[i];
-
-		if (i >= KERNEL_PGD_BOUNDARY)
-			memcpy(pmd, (pmd_t *)pgd_page_vaddr(swapper_pg_dir[i]),
-			       sizeof(pmd_t) * PTRS_PER_PMD);
-
-		pud_populate(mm, pud, pmd);
-	}
-}
-
-static void pgd_prepopulate_user_pmd(struct mm_struct *mm,
-				     pgd_t *k_pgd, pmd_t *pmds[])
-{
-}
+/* Simplified functions for this case */
+static inline void free_pmds(struct mm_struct *mm, pmd_t *pmds[], int count) { }
+static inline int preallocate_pmds(struct mm_struct *mm, pmd_t *pmds[], int count) { return 0; }
+static inline void pgd_mop_up_pmds(struct mm_struct *mm, pgd_t *pgdp) { }
+static inline void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmds[]) { }
+static inline void pgd_prepopulate_user_pmd(struct mm_struct *mm, pgd_t *k_pgd, pmd_t *pmds[]) { }
 
 static inline pgd_t *_pgd_alloc(void)
 {

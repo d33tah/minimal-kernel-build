@@ -78,46 +78,9 @@ struct module_version_attribute;
 extern int init_module(void);
 extern void cleanup_module(void);
 
-#ifndef MODULE
+/* Built-in kernel, not building as module */
 #define module_init(x)	__initcall(x);
-
 #define module_exit(x)	__exitcall(x);
-
-#else  
-
-#define early_initcall(fn)		module_init(fn)
-#define core_initcall(fn)		module_init(fn)
-#define core_initcall_sync(fn)		module_init(fn)
-#define postcore_initcall(fn)		module_init(fn)
-#define postcore_initcall_sync(fn)	module_init(fn)
-#define arch_initcall(fn)		module_init(fn)
-#define subsys_initcall(fn)		module_init(fn)
-#define subsys_initcall_sync(fn)	module_init(fn)
-#define fs_initcall(fn)			module_init(fn)
-#define fs_initcall_sync(fn)		module_init(fn)
-#define rootfs_initcall(fn)		module_init(fn)
-#define device_initcall(fn)		module_init(fn)
-#define device_initcall_sync(fn)	module_init(fn)
-#define late_initcall(fn)		module_init(fn)
-#define late_initcall_sync(fn)		module_init(fn)
-
-#define console_initcall(fn)		module_init(fn)
-
-#define module_init(initfn)					\
-	static inline initcall_t __maybe_unused __inittest(void)		\
-	{ return initfn; }					\
-	int init_module(void) __copy(initfn)			\
-		__attribute__((alias(#initfn)));		\
-	__CFI_ADDRESSABLE(init_module, __initdata);
-
-#define module_exit(exitfn)					\
-	static inline exitcall_t __maybe_unused __exittest(void)		\
-	{ return exitfn; }					\
-	void cleanup_module(void) __copy(exitfn)		\
-		__attribute__((alias(#exitfn)));		\
-	__CFI_ADDRESSABLE(cleanup_module, __exitdata);
-
-#endif
 
 #define __init_or_module __init
 #define __initdata_or_module __initdata
@@ -132,25 +95,13 @@ extern void cleanup_module(void);
 
 #define MODULE_SOFTDEP(_softdep) MODULE_INFO(softdep, _softdep)
 
-#ifdef MODULE
-#define MODULE_FILE
-#else
+/* Built-in kernel, not MODULE */
 #define MODULE_FILE	MODULE_INFO(file, KBUILD_MODFILE);
-#endif
 
 #define MODULE_LICENSE(_license) MODULE_FILE MODULE_INFO(license, _license)
-
 #define MODULE_AUTHOR(_author) MODULE_INFO(author, _author)
-
 #define MODULE_DESCRIPTION(_description) MODULE_INFO(description, _description)
-
-#ifdef MODULE
-#define MODULE_DEVICE_TABLE(type, name)					\
-extern typeof(name) __mod_##type##__##name##_device_table		\
-  __attribute__ ((unused, alias(__stringify(name))))
-#else   
 #define MODULE_DEVICE_TABLE(type, name)
-#endif
 
 
 #define MODULE_VERSION(_version) MODULE_INFO(version, _version)

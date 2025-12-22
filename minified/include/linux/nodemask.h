@@ -105,14 +105,9 @@ static inline int num_node_state(enum node_states state)
 #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
 #define for_each_online_node(node) for_each_node_state(node, N_ONLINE)
 
-#if NODES_SHIFT > 8  
-#define NODEMASK_ALLOC(type, name, gfp_flags)	\
-			type *name = kmalloc(sizeof(*name), gfp_flags)
-#define NODEMASK_FREE(m)			kfree(m)
-#else
+/* NODES_SHIFT=0, so use stack allocation */
 #define NODEMASK_ALLOC(type, name, gfp_flags)	type _##name, *name = &_##name
 #define NODEMASK_FREE(m)			do {} while (0)
-#endif
 
 
 #endif

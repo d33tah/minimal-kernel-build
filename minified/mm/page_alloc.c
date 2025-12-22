@@ -453,11 +453,7 @@ static void __meminit __init_single_page(struct page *page, unsigned long pfn,
 	page_kasan_tag_reset(page);
 
 	INIT_LIST_HEAD(&page->lru);
-#ifdef WANT_PAGE_VIRTUAL
-	
-	if (!is_highmem_idx(zone))
-		set_page_address(page, __va(pfn << PAGE_SHIFT));
-#endif
+	/* WANT_PAGE_VIRTUAL not defined */
 }
 
 static inline void init_reserved_page(unsigned long pfn)

@@ -943,9 +943,7 @@ out_free_interp:
 		}
 
 		mm->brk = mm->start_brk = arch_randomize_brk(mm);
-#ifdef compat_brk_randomized
-		current->brk_randomized = 1;
-#endif
+		/* compat_brk_randomized not defined */
 	}
 
 	if (current->personality & MMAP_PAGE_ZERO) {

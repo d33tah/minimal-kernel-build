@@ -9,10 +9,7 @@
  * %rdi: w
  */
 SYM_FUNC_START(__sw_hweight32)
-
-#ifdef CONFIG_X86_64
-	movl %edi, %eax				# w
-#endif
+/* X86_32 only - no %edi copy needed */
 	__ASM_SIZE(push,) %__ASM_REG(dx)
 	movl %eax, %edx				# w -> t
 	shrl %edx				# t >>= 1
@@ -37,36 +34,7 @@ SYM_FUNC_END(__sw_hweight32)
 EXPORT_SYMBOL(__sw_hweight32)
 
 SYM_FUNC_START(__sw_hweight64)
-#ifdef CONFIG_X86_64
-	pushq   %rdi
-	pushq   %rdx
-
-	movq    %rdi, %rdx                      # w -> t
-	movabsq $0x5555555555555555, %rax
-	shrq    %rdx                            # t >>= 1
-	andq    %rdx, %rax                      # t &= 0x5555555555555555
-	movabsq $0x3333333333333333, %rdx
-	subq    %rax, %rdi                      # w -= t
-
-	movq    %rdi, %rax                      # w -> t
-	shrq    $2, %rdi                        # w_tmp >>= 2
-	andq    %rdx, %rax                      # t     &= 0x3333333333333333
-	andq    %rdi, %rdx                      # w_tmp &= 0x3333333333333333
-	addq    %rdx, %rax                      # w = w_tmp + t
-
-	movq    %rax, %rdx                      # w -> t
-	shrq    $4, %rdx                        # t >>= 4
-	addq    %rdx, %rax                      # w_tmp += t
-	movabsq $0x0f0f0f0f0f0f0f0f, %rdx
-	andq    %rdx, %rax                      # w_tmp &= 0x0f0f0f0f0f0f0f0f
-	movabsq $0x0101010101010101, %rdx
-	imulq   %rdx, %rax                      # w_tmp *= 0x0101010101010101
-	shrq    $56, %rax                       # w = w_tmp >> 56
-
-	popq    %rdx
-	popq    %rdi
-	RET
-#else /* CONFIG_X86_32 */
+/* X86_32 only - call __sw_hweight32 twice */
 	/* We're getting an u64 arg in (%eax,%edx): unsigned long hweight64(__u64 w) */
 	pushl   %ecx
 
@@ -78,6 +46,5 @@ SYM_FUNC_START(__sw_hweight64)
 
 	popl    %ecx
 	RET
-#endif
 SYM_FUNC_END(__sw_hweight64)
 EXPORT_SYMBOL(__sw_hweight64)

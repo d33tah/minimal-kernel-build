@@ -123,7 +123,7 @@ void noinstr exit_to_user_mode(void)
 	__exit_to_user_mode();
 }
 
-void __weak arch_do_signal_or_restart(struct pt_regs *regs) { }
+/* arch_do_signal_or_restart - x86 provides its own in arch/x86/kernel/signal.c */
 
 static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 					    unsigned long ti_work)

@@ -25,11 +25,7 @@ void __weak arch_cpu_idle_prepare(void) { }
 /* arch_cpu_idle_enter provided by arch/x86/kernel/process.c */
 void __weak arch_cpu_idle_exit(void) { }
 /* arch_cpu_idle_dead provided by arch/x86/kernel/process.c */
-void __weak arch_cpu_idle(void)
-{
-	cpu_idle_force_poll = 1;
-	raw_local_irq_enable();
-}
+/* arch_cpu_idle provided by arch/x86/kernel/process.c */
 
 void __cpuidle default_idle_call(void)
 {

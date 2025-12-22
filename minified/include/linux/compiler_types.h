@@ -118,13 +118,7 @@ struct ftrace_likely_data {
 	unsigned long			constant;
 };
 
-#if defined(CC_USING_HOTPATCH)
-#define notrace			__attribute__((hotpatch(0, 0)))
-#elif defined(CC_USING_PATCHABLE_FUNCTION_ENTRY)
-#define notrace			__attribute__((patchable_function_entry(0, 0)))
-#else
 #define notrace			__attribute__((__no_instrument_function__))
-#endif
 
 #define __naked			__attribute__((__naked__)) notrace
 

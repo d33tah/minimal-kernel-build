@@ -173,7 +173,8 @@ static inline void tlb_end_vma(struct mmu_gather *tlb, struct vm_area_struct *vm
 	if (tlb->fullmm)
 		return;
 
-	if (tlb->vma_pfn || !IS_ENABLED(CONFIG_MMU_GATHER_MERGE_VMAS)) {
+	/* CONFIG_MMU_GATHER_MERGE_VMAS=y, so only flush if vma_pfn */
+	if (tlb->vma_pfn) {
 		tlb_flush_mmu_tlbonly(tlb);
 	}
 }

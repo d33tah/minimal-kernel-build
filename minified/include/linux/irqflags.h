@@ -47,9 +47,6 @@ static inline bool is_ftrace_trampoline(unsigned long addr)
 # define lockdep_irq_work_enter(__work)		do { } while (0)
 # define lockdep_irq_work_exit(__work)		do { } while (0)
 
-# define lockdep_softirq_enter()		do { } while (0)
-# define lockdep_softirq_exit()			do { } while (0)
-
 /* IRQSOFF_TRACER/PREEMPT_TRACER not defined */
 # define stop_critical_timings() do { } while (0)
 # define start_critical_timings() do { } while (0)

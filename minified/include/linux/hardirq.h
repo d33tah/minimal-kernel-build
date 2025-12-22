@@ -9,13 +9,9 @@
 #include <asm/hardirq.h>
 
 
+/* context_tracking_enabled() returns 0, so __rcu_irq_enter_check_tick never runs */
 static inline void __rcu_irq_enter_check_tick(void) { }
-
-static __always_inline void rcu_irq_enter_check_tick(void)
-{
-	if (context_tracking_enabled())
-		__rcu_irq_enter_check_tick();
-}
+static __always_inline void rcu_irq_enter_check_tick(void) { }
 
 #define __irq_enter()					\
 	do {						\

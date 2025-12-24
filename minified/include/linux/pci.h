@@ -1,6 +1,5 @@
 #ifndef LINUX_PCI_H
 #define LINUX_PCI_H
-
 #include <linux/mod_devicetable.h>
 #include <linux/types.h>
 #include <linux/init.h>
@@ -16,7 +15,6 @@
 #include <linux/acpi.h>
 #define PCI_CFG_SPACE_SIZE	256
 #define PCI_CFG_SPACE_EXP_SIZE	4096
-
 #define PCI_DEVFN(slot, func)	((((slot) & 0x1f) << 3) | ((func) & 0x07))
 #define PCI_SLOT(devfn)		(((devfn) >> 3) & 0x1f)
 #define PCI_FUNC(devfn)		((devfn) & 0x07)
@@ -25,14 +23,11 @@
 #define PCIIOC_MMAP_IS_IO	(PCIIOC_BASE | 0x01)
 #define PCIIOC_MMAP_IS_MEM	(PCIIOC_BASE | 0x02)
 #define PCIIOC_WRITE_COMBINE	(PCIIOC_BASE | 0x03)
-
 #ifdef CONFIG_X86
 #include <asm/pci.h>
 #endif
-
 #define PCI_DEVID(bus, devfn)	((((u16)(bus)) << 8) | (devfn))
 #define PCI_BUS_NUM(x) (((x) >> 8) & 0xff)
-
 struct pci_slot;
 struct pci_bus;
 struct pci_dev;
@@ -41,28 +36,12 @@ struct pci_driver;
 struct pci_ops;
 struct pci_host_bridge;
 struct pci_device_id;
-
-enum pci_mmap_state {
-	pci_mmap_io,
-	pci_mmap_mem
-};
-
-enum pci_bus_speed {
-	PCI_SPEED_UNKNOWN = 0,
-};
-
-enum pcie_link_width {
-	PCIE_LNK_WIDTH_UNKNOWN = 0,
-};
-
+enum pci_mmap_state { pci_mmap_io, pci_mmap_mem };
+enum pci_bus_speed { PCI_SPEED_UNKNOWN = 0, };
+enum pcie_link_width { PCIE_LNK_WIDTH_UNKNOWN = 0, };
 typedef unsigned int pci_power_t;
-
-
 #include <linux/dma-mapping.h>
-
-#define pci_printk(level, pdev, fmt, arg...) \
-	dev_printk(level, &(pdev)->dev, fmt, ##arg)
-
+#define pci_printk(level, pdev, fmt, arg...) dev_printk(level, &(pdev)->dev, fmt, ##arg)
 #define pci_emerg(pdev, fmt, arg...)	dev_emerg(&(pdev)->dev, fmt, ##arg)
 #define pci_alert(pdev, fmt, arg...)	dev_alert(&(pdev)->dev, fmt, ##arg)
 #define pci_crit(pdev, fmt, arg...)	dev_crit(&(pdev)->dev, fmt, ##arg)
@@ -71,5 +50,4 @@ typedef unsigned int pci_power_t;
 #define pci_notice(pdev, fmt, arg...)	dev_notice(&(pdev)->dev, fmt, ##arg)
 #define pci_info(pdev, fmt, arg...)	dev_info(&(pdev)->dev, fmt, ##arg)
 #define pci_dbg(pdev, fmt, arg...)	dev_dbg(&(pdev)->dev, fmt, ##arg)
-
-#endif  
+#endif

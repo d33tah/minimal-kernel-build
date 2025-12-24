@@ -1,10 +1,7 @@
 #ifndef _LINUX_STAT_H
 #define _LINUX_STAT_H
-
 #include <asm/stat.h>
-
 #include <linux/types.h>
-
 #if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
 #define S_IFMT  00170000
 #define S_IFSOCK 0140000
@@ -17,7 +14,6 @@
 #define S_ISUID  0004000
 #define S_ISGID  0002000
 #define S_ISVTX  0001000
-
 #define S_ISLNK(m)	(((m) & S_IFMT) == S_IFLNK)
 #define S_ISREG(m)	(((m) & S_IFMT) == S_IFREG)
 #define S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)
@@ -25,7 +21,6 @@
 #define S_ISBLK(m)	(((m) & S_IFMT) == S_IFBLK)
 #define S_ISFIFO(m)	(((m) & S_IFMT) == S_IFIFO)
 #define S_ISSOCK(m)	(((m) & S_IFMT) == S_IFSOCK)
-
 #define S_IRWXU 00700
 #define S_IRUSR 00400
 #define S_IWUSR 00200
@@ -39,40 +34,20 @@
 #define S_IWOTH 00002
 #define S_IXOTH 00001
 #endif
-
-/* struct statx forward decl for syscall signature */
 struct statx;
-
 #define STATX_BASIC_STATS	0x000007ffU
-
 #define S_IRWXUGO	(S_IRWXU|S_IRWXG|S_IRWXO)
 #define S_IALLUGO	(S_ISUID|S_ISGID|S_ISVTX|S_IRWXUGO)
 #define S_IRUGO		(S_IRUSR|S_IRGRP|S_IROTH)
 #define S_IWUGO		(S_IWUSR|S_IWGRP|S_IWOTH)
 #define S_IXUGO		(S_IXUSR|S_IXGRP|S_IXOTH)
-
 #include <linux/time.h>
 #include <linux/uidgid.h>
-
 struct kstat {
-	u32		result_mask;
-	umode_t		mode;
-	unsigned int	nlink;
-	uint32_t	blksize;
-	u64		attributes;
-	u64		attributes_mask;
-	u64		ino;
-	dev_t		dev;
-	dev_t		rdev;
-	kuid_t		uid;
-	kgid_t		gid;
-	loff_t		size;
-	struct timespec64 atime;
-	struct timespec64 mtime;
-	struct timespec64 ctime;
-	struct timespec64 btime;
-	u64		blocks;
-	u64		mnt_id;
+	u32 result_mask; umode_t mode; unsigned int nlink; uint32_t blksize;
+	u64 attributes; u64 attributes_mask; u64 ino; dev_t dev; dev_t rdev;
+	kuid_t uid; kgid_t gid; loff_t size; struct timespec64 atime;
+	struct timespec64 mtime; struct timespec64 ctime; struct timespec64 btime;
+	u64 blocks; u64 mnt_id;
 };
-
 #endif

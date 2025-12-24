@@ -70,11 +70,6 @@ void pat_disable(const char *msg_reason)
 {
 }
 
-bool pat_enabled(void)
-{
-	return false;
-}
-
 void init_cache_modes(void)
 {
 }

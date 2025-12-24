@@ -82,11 +82,6 @@ struct timer_base {
 
 static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);
 
-static inline bool is_timers_nohz_active(void)
-{
-	return false;
-}
-
 static inline unsigned int timer_get_idx(struct timer_list *timer)
 {
 	return (timer->flags & TIMER_ARRAYMASK) >> TIMER_ARRAYSHIFT;
@@ -143,17 +138,6 @@ static int calc_wheel_index(unsigned long expires, unsigned long clk,
 static void trigger_dyntick_cpu(struct timer_base *base,
 				struct timer_list *timer)
 {
-	if (!is_timers_nohz_active())
-		return;
-
-	if (timer->flags & TIMER_DEFERRABLE) {
-		if (tick_nohz_full_cpu(base->cpu))
-			wake_up_nohz_cpu(base->cpu);
-		return;
-	}
-
-	if (base->is_idle)
-		wake_up_nohz_cpu(base->cpu);
 }
 
 static void enqueue_timer(struct timer_base *base, struct timer_list *timer,

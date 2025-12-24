@@ -2,11 +2,6 @@
 #include <linux/syscalls.h>
 #include <linux/mm.h>
 
-bool can_do_mlock(void)
-{
-	return false;
-}
-
 SYSCALL_DEFINE2(mlock, unsigned long, start, size_t, len)
 {
 	return -ENOSYS;

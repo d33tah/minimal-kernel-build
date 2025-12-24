@@ -9,11 +9,6 @@
 #include <linux/rmap.h>
 #include <linux/swap.h>
 #include <linux/swapops.h>
-static inline bool vma_is_secretmem(struct vm_area_struct *vma)
-{
-	return false;
-}
-
 #include <linux/sched/signal.h>
 #include <linux/rwsem.h>
 #include <linux/hugetlb.h>
@@ -555,9 +550,6 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 
 	if ((gup_flags & FOLL_LONGTERM) && vma_is_fsdax(vma))
 		return -EOPNOTSUPP;
-
-	if (vma_is_secretmem(vma))
-		return -EFAULT;
 
 	if (write) {
 		if (!(vm_flags & VM_WRITE)) {

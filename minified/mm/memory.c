@@ -58,13 +58,6 @@ void *high_memory;
 
 int randomize_va_space __read_mostly = 2;
 
-#ifndef arch_wants_old_prefaulted_pte
-static inline bool arch_wants_old_prefaulted_pte(void)
-{
-	return false;
-}
-#endif
-
 unsigned long zero_pfn __read_mostly;
 
 unsigned long highest_memmap_pfn __read_mostly;
@@ -1111,10 +1104,7 @@ void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
 	flush_icache_page(vma, page);
 	entry = mk_pte(page, vma->vm_page_prot);
 
-	if (prefault && arch_wants_old_prefaulted_pte())
-		entry = pte_mkold(entry);
-	else
-		entry = pte_sw_mkyoung(entry);
+	entry = pte_sw_mkyoung(entry);
 
 	if (write)
 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);

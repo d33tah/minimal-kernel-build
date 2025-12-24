@@ -655,11 +655,6 @@ static void __init do_ctors(void)
 {
 }
 
-static bool __init_or_module initcall_blacklisted(initcall_t fn)
-{
-	return false;
-}
-
 /* trace_initcall_start_cb and trace_initcall_finish_cb - stub only */
 static __init_or_module void trace_initcall_start_cb(void *data, initcall_t fn)
 {
@@ -690,9 +685,6 @@ int __init_or_module do_one_initcall(initcall_t fn)
 	int count = preempt_count();
 	char msgbuf[64];
 	int ret;
-
-	if (initcall_blacklisted(fn))
-		return -EPERM;
 
 	do_trace_initcall_start(fn);
 	ret = fn();

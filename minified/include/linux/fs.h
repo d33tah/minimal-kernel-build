@@ -1036,9 +1036,7 @@ struct super_operations {
 #define S_PRIVATE	(1 << 9)
 #define S_AUTOMOUNT	(1 << 11)
 #define S_NOSEC		(1 << 12)
-#define S_DAX		0
-#define S_CASEFOLD	(1 << 15)
-/* S_VERITY, S_KERNEL_FILE removed - unused */ 
+#define S_DAX		0 
 
 #define __IS_FLG(inode, flg)	((inode)->i_sb->s_flags & (flg))
 
@@ -1056,11 +1054,9 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
 #define IS_DEADDIR(inode)	((inode)->i_flags & S_DEAD)
 #define IS_NOCMTIME(inode)	((inode)->i_flags & S_NOCMTIME)
 #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
-#define IS_PRIVATE(inode)	((inode)->i_flags & S_PRIVATE)
 #define IS_AUTOMOUNT(inode)	((inode)->i_flags & S_AUTOMOUNT)
 #define IS_NOSEC(inode)		((inode)->i_flags & S_NOSEC)
 #define IS_DAX(inode)		((inode)->i_flags & S_DAX)
-#define IS_CASEFOLDED(inode)	((inode)->i_flags & S_CASEFOLD)
 
 static inline bool HAS_UNMAPPED_ID(struct user_namespace *mnt_userns,
 				   struct inode *inode)
@@ -1091,8 +1087,6 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 #define __I_SYNC		7
 #define I_SYNC			(1 << __I_SYNC)
 #define I_REFERENCED		(1 << 8)
-#define __I_DIO_WAKEUP		9
-#define I_DIO_WAKEUP		(1 << __I_DIO_WAKEUP)
 #define I_LINKABLE		(1 << 10)
 #define I_DIRTY_TIME		(1 << 11)
 #define I_CREATING		(1 << 15)
@@ -1144,13 +1138,10 @@ static inline void file_accessed(struct file *file)
 struct file_system_type {
 	const char *name;
 	int fs_flags;
-#define FS_REQUIRES_DEV		1 
+#define FS_REQUIRES_DEV		1
 #define FS_BINARY_MOUNTDATA	2
 #define FS_HAS_SUBTYPE		4
-#define FS_USERNS_MOUNT		8	
-#define FS_DISALLOW_NOTIFY_PERM	16	
-#define FS_ALLOW_IDMAP         32      
-#define FS_RENAME_DOES_D_MOVE	32768	
+#define FS_USERNS_MOUNT		8
 	int (*init_fs_context)(struct fs_context *);
 	const struct fs_parameter_spec *parameters;
 	struct dentry *(*mount) (struct file_system_type *, int,
@@ -1438,12 +1429,7 @@ extern void page_put_link(void *);
 extern int page_symlink(struct inode *inode, const char *symname, int len);
 extern const struct inode_operations page_symlink_inode_operations;
 void generic_fillattr(struct user_namespace *, struct inode *, struct kstat *);
-void generic_fill_statx_attr(struct inode *inode, struct kstat *stat);
 extern int vfs_getattr(const struct path *, struct kstat *, u32, unsigned int);
-void inode_add_bytes(struct inode *inode, loff_t bytes);
-void inode_sub_bytes(struct inode *inode, loff_t bytes);
-loff_t inode_get_bytes(struct inode *inode);
-void inode_set_bytes(struct inode *inode, loff_t bytes);
 
 int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,
 		int flags);

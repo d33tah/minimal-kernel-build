@@ -15,10 +15,6 @@ void __noreturn machine_real_restart(unsigned int type)
 		halt();
 }
 
-void __attribute__((weak)) mach_reboot_fixups(void)
-{
-}
-
 void native_machine_shutdown(void)
 {
 }

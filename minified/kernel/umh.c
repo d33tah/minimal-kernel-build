@@ -39,7 +39,3 @@ struct subprocess_info *call_usermodehelper_setup(
 {
 	return NULL;
 }
-
-void __init usermodehelper_init(void)
-{
-}

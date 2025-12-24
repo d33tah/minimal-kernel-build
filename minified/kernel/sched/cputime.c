@@ -87,9 +87,6 @@ static __always_inline u64 steal_account_process_time(u64 maxtime)
 	return 0;
 }
 
-static inline void irqtime_account_idle_ticks(int ticks)
-{
-}
 static inline void irqtime_account_process_tick(struct task_struct *p,
 						int user_tick, int nr_ticks)
 {

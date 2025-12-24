@@ -182,13 +182,7 @@ static void internal_add_timer(struct timer_base *base,
 }
 
 /* Debug stubs - no debug_timer support */
-static inline void debug_timer_init(struct timer_list *t)
-{
-}
 static inline void debug_timer_activate(struct timer_list *t)
-{
-}
-static inline void debug_timer_deactivate(struct timer_list *t)
 {
 }
 #define debug_timer_assert_init(t) \

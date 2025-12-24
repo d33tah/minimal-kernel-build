@@ -57,9 +57,6 @@ static inline void clocksource_watchdog_unlock(unsigned long *flags)
 void clocksource_mark_unstable(struct clocksource *cs)
 {
 }
-void clocksource_verify_percpu(struct clocksource *cs)
-{
-}
 
 static u32 clocksource_max_adjustment(struct clocksource *cs)
 {

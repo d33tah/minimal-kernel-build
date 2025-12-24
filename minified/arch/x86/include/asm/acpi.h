@@ -28,11 +28,4 @@ static inline u64 x86_default_get_root_pointer(void)
 	return 0;
 }
 
-
-#define ARCH_HAS_POWER_INIT	1
-
-/* arch_apei_report_x86_error removed - unused */
-
-#define ACPI_TABLE_UPGRADE_MAX_PHYS (max_low_pfn_mapped << PAGE_SHIFT)
-
 #endif  

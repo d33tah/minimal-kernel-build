@@ -1,30 +1,13 @@
 #ifndef TRACEPOINT_DEFS_H
 #define TRACEPOINT_DEFS_H 1
-
-
 #include <linux/atomic.h>
 #include <linux/jump_label.h>
-
 struct static_call_key;
-
-struct trace_print_flags {
-	unsigned long		mask;
-	const char		*name;
-};
-
-struct trace_print_flags_u64 {
-	unsigned long long	mask;
-	const char		*name;
-};
-
-struct tracepoint_func {
-	void *func;
-	void *data;
-	int prio;
-};
-
+struct trace_print_flags { unsigned long mask; const char *name; };
+struct trace_print_flags_u64 { unsigned long long mask; const char *name; };
+struct tracepoint_func { void *func; void *data; int prio; };
 struct tracepoint {
-	const char *name;		 
+	const char *name;
 	struct static_key key;
 	struct static_call_key *static_call_key;
 	void *static_call_tramp;
@@ -33,19 +16,8 @@ struct tracepoint {
 	void (*unregfunc)(void);
 	struct tracepoint_func __rcu *funcs;
 };
-
 typedef const int tracepoint_ptr_t;
-
-struct bpf_raw_event_map {
-	struct tracepoint	*tp;
-	void			*bpf_func;
-	u32			num_args;
-	u32			writable_size;
-} __aligned(32);
-
-#define DECLARE_TRACEPOINT(tp) \
-	extern struct tracepoint __tracepoint_##tp
-
-# define tracepoint_enabled(tracepoint) false
-
+struct bpf_raw_event_map { struct tracepoint *tp; void *bpf_func; u32 num_args; u32 writable_size; } __aligned(32);
+#define DECLARE_TRACEPOINT(tp) extern struct tracepoint __tracepoint_##tp
+#define tracepoint_enabled(tracepoint) false
 #endif

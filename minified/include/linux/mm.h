@@ -238,11 +238,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_MIXEDMAP	0x10000000
 #define VM_NOHUGEPAGE	0x40000000
 
-
-/* x86 only - ARM64 MTE (memory tagging) not applicable */
-#define VM_MTE		VM_NONE
-#define VM_MTE_ALLOWED	VM_NONE
-
 #ifndef VM_GROWSUP
 # define VM_GROWSUP	VM_NONE
 #endif

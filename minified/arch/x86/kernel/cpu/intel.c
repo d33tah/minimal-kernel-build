@@ -5,11 +5,6 @@
 #include <asm/bugs.h>
 #include <asm/microcode_intel.h>
 
-int ppro_with_ram_bug(void)
-{
-	return 0;
-}
-
 void handle_bus_lock(struct pt_regs *regs)
 {
 }

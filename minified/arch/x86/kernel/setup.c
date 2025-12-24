@@ -529,13 +529,6 @@ void __init setup_arch(char **cmdline_p)
 
 	e820_add_kernel_range();
 	trim_bios_range();
-	if (ppro_with_ram_bug()) {
-		e820__range_update(0x70000000ULL, 0x40000ULL, E820_TYPE_RAM,
-				   E820_TYPE_RESERVED);
-		e820__update_table(e820_table);
-		printk(KERN_INFO "fixed physical RAM map:\n");
-		e820__print_table("bad_ppro");
-	}
 
 	max_pfn = e820__end_of_ram_pfn();
 

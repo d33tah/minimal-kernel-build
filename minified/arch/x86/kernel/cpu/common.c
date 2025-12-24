@@ -56,13 +56,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/microcode_intel.h>
 #include <asm/intel-family.h>
 #include <asm/cpu_device_id.h>
-static inline int is_uv_system(void)
-{
-	return 0;
-}
-static inline void uv_cpu_init(void)
-{
-}
 #include <asm/sigframe.h>
 #include <asm/traps.h>
 #include <asm/sev.h>
@@ -952,9 +945,6 @@ void cpu_init(void)
 	doublefault_init_cpu_tss();
 
 	fpu__init_cpu();
-
-	if (is_uv_system())
-		uv_cpu_init();
 
 	load_fixmap_gdt(cpu);
 }

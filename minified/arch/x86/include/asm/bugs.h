@@ -6,8 +6,6 @@
 
 extern void check_bugs(void);
 
-int ppro_with_ram_bug(void);
-
-/* cpu_bugs_smt_update removed - never called */
+/* ppro_with_ram_bug, cpu_bugs_smt_update removed - never called */
 
 #endif

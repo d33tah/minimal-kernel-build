@@ -18,13 +18,3 @@
 #define LEVEL_MAX_SIBLINGS(ebx) ((ebx) & 0xffff)
 
 unsigned int __max_die_per_package __read_mostly = 1;
-
-int detect_extended_topology_early(struct cpuinfo_x86 *c)
-{
-	return 0;
-}
-
-int detect_extended_topology(struct cpuinfo_x86 *c)
-{
-	return 0;
-}

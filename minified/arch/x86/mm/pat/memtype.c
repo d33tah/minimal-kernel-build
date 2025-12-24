@@ -61,7 +61,6 @@ static inline char *cattr_name(enum page_cache_mode pcm)
 	}
 }
 
-
 #include "../mm_internal.h"
 
 #undef pr_fmt

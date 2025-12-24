@@ -35,16 +35,6 @@
 #include <linux/backing-dev.h>
 #include <linux/kmemleak.h>
 
-/* --- 2025-12-08 00:14 --- Inlined from page-isolation.h */
-static inline bool has_isolate_pageblock(struct zone *zone)
-{
-	return false;
-}
-static inline bool is_migrate_isolate(int migratetype)
-{
-	return false;
-}
-
 #define MEMORY_OFFLINE 0x1
 #define REPORT_FAILURE 0x2
 
@@ -383,8 +373,7 @@ static inline void __free_one_page(struct page *page, unsigned long pfn,
 				   int migratetype, fpi_t fpi_flags)
 {
 	/* Simplified buddy allocator: just add to free list without merging */
-	if (likely(!is_migrate_isolate(migratetype)))
-		__mod_zone_freepage_state(zone, 1 << order, migratetype);
+	__mod_zone_freepage_state(zone, 1 << order, migratetype);
 
 	set_buddy_order(page, order);
 
@@ -436,10 +425,6 @@ static void free_one_page(struct zone *zone, struct page *page,
 	unsigned long flags;
 
 	spin_lock_irqsave(&zone->lock, flags);
-	if (unlikely(has_isolate_pageblock(zone) ||
-		     is_migrate_isolate(migratetype))) {
-		migratetype = get_pfnblock_migratetype(page, pfn);
-	}
 	__free_one_page(page, pfn, zone, order, migratetype, fpi_flags);
 	spin_unlock_irqrestore(&zone->lock, flags);
 }
@@ -494,10 +479,6 @@ static void __free_pages_ok(struct page *page, unsigned int order,
 	migratetype = get_pfnblock_migratetype(page, pfn);
 
 	spin_lock_irqsave(&zone->lock, flags);
-	if (unlikely(has_isolate_pageblock(zone) ||
-		     is_migrate_isolate(migratetype))) {
-		migratetype = get_pfnblock_migratetype(page, pfn);
-	}
 	__free_one_page(page, pfn, zone, order, migratetype, fpi_flags);
 	spin_unlock_irqrestore(&zone->lock, flags);
 
@@ -838,14 +819,8 @@ void free_unref_page(struct page *page, unsigned int order)
 		return;
 
 	migratetype = get_pcppage_migratetype(page);
-	if (unlikely(migratetype >= MIGRATE_PCPTYPES)) {
-		if (unlikely(is_migrate_isolate(migratetype))) {
-			free_one_page(page_zone(page), page, pfn, order,
-				      migratetype, FPI_NONE);
-			return;
-		}
+	if (unlikely(migratetype >= MIGRATE_PCPTYPES))
 		migratetype = MIGRATE_MOVABLE;
-	}
 
 	local_lock_irqsave(&pagesets.lock, flags);
 	free_unref_page_commit(page, migratetype, order);
@@ -863,14 +838,6 @@ void free_unref_page_list(struct list_head *list)
 		unsigned long pfn = page_to_pfn(page);
 		if (!free_unref_page_prepare(page, pfn, 0)) {
 			list_del(&page->lru);
-			continue;
-		}
-
-		migratetype = get_pcppage_migratetype(page);
-		if (unlikely(is_migrate_isolate(migratetype))) {
-			list_del(&page->lru);
-			free_one_page(page_zone(page), page, pfn, 0,
-				      migratetype, FPI_NONE);
 			continue;
 		}
 	}

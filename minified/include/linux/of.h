@@ -2,8 +2,6 @@
 #define _LINUX_OF_H
 
 #include <linux/types.h>
-#include <linux/errno.h>
-#include <linux/mod_devicetable.h>
 #include <linux/property.h>
 
 typedef u32 phandle;
@@ -37,6 +35,7 @@ struct of_phandle_args {
 	uint32_t args[MAX_PHANDLE_ARGS];
 };
 
+struct of_device_id;
 static inline void of_core_init(void) { }
 static inline struct device_node *of_find_matching_node(struct device_node *from, const struct of_device_id *matches) { return NULL; }
 static inline const char *of_node_full_name(const struct device_node *np) { return "<no-node>"; }

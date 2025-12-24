@@ -156,11 +156,6 @@ int movable_zone;
 
 int page_group_by_mobility_disabled __read_mostly;
 
-static inline bool early_page_uninitialised(unsigned long pfn)
-{
-	return false;
-}
-
 static inline bool defer_init(int nid, unsigned long pfn, unsigned long end_pfn)
 {
 	return false;
@@ -508,8 +503,6 @@ void __free_pages_core(struct page *page, unsigned int order)
 void __init memblock_free_pages(struct page *page, unsigned long pfn,
 				unsigned int order)
 {
-	if (early_page_uninitialised(pfn))
-		return;
 	__free_pages_core(page, order);
 }
 

@@ -46,11 +46,6 @@ void *fixup_red_left(struct kmem_cache *s, void *p)
 	return p;
 }
 
-static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
-{
-	return false;
-}
-
 #define MIN_PARTIAL 5
 
 #define MAX_PARTIAL 10
@@ -325,12 +320,6 @@ static inline void inc_slabs_node(struct kmem_cache *s, int node, int objects)
 }
 static inline void dec_slabs_node(struct kmem_cache *s, int node, int objects)
 {
-}
-
-static bool freelist_corrupted(struct kmem_cache *s, struct slab *slab,
-			       void **freelist, void *nextfree)
-{
-	return false;
 }
 
 static __always_inline void kfree_hook(void *x)
@@ -738,13 +727,8 @@ static void deactivate_slab(struct kmem_cache *s, struct slab *slab,
 	freelist_iter = freelist;
 	while (freelist_iter) {
 		nextfree = get_freepointer(s, freelist_iter);
-
-		if (freelist_corrupted(s, slab, &freelist_iter, nextfree))
-			break;
-
 		freelist_tail = freelist_iter;
 		free_delta++;
-
 		freelist_iter = nextfree;
 	}
 
@@ -1127,14 +1111,8 @@ static void __slab_free(struct kmem_cache *s, struct slab *slab, void *head,
 		was_frozen = new.frozen;
 		new.inuse -= cnt;
 		if ((!new.inuse || !prior) && !was_frozen) {
-			if (kmem_cache_has_cpu_partial(s) && !prior) {
-				new.frozen = 1;
-
-			} else {
-				n = get_node(s, slab_nid(slab));
-
-				spin_lock_irqsave(&n->list_lock, flags);
-			}
+			n = get_node(s, slab_nid(slab));
+			spin_lock_irqsave(&n->list_lock, flags);
 		}
 
 	} while (!cmpxchg_double_slab(s, slab, prior, counters, head,
@@ -1154,7 +1132,7 @@ static void __slab_free(struct kmem_cache *s, struct slab *slab, void *head,
 	if (unlikely(!new.inuse && n->nr_partial >= s->min_partial))
 		goto slab_empty;
 
-	if (!kmem_cache_has_cpu_partial(s) && unlikely(!prior)) {
+	if (unlikely(!prior)) {
 		remove_full(s, n, slab);
 		add_partial(n, slab, DEACTIVATE_TO_TAIL);
 		stat(s, FREE_ADD_PARTIAL);

@@ -29,22 +29,6 @@ void probe_cards(int unsafe)
 	}
 }
 
-int mode_defined(u16 mode)
-{
-	struct card_info *card;
-	struct mode_info *mi;
-	int i;
-
-	for (card = video_cards; card < video_cards_end; card++) {
-		mi = card->modes;
-		for (i = 0; i < card->nmodes; i++, mi++) {
-			if (mi->mode == mode)
-				return 1;
-		}
-	}
-	return 0;
-}
-
 static int raw_set_mode(u16 mode, u16 *real_mode)
 {
 	int nmode, i;

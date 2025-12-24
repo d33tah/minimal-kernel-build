@@ -2,13 +2,9 @@
 
 #include <linux/types.h>
 #include <linux/compiler.h>
-#include <linux/errno.h>
-#include <linux/limits.h>
 #include <asm/asm.h>
 #include "ctype.h"
 #include "string.h"
-
-#define KSTRTOX_OVERFLOW (1U << 31)
 
 #undef memcpy
 #undef memset
@@ -20,11 +16,6 @@ int memcmp(const void *s1, const void *s2, size_t len)
 	asm("repe; cmpsb" CC_SET(nz)
 	    : CC_OUT(nz)(diff), "+D"(s1), "+S"(s2), "+c"(len));
 	return diff;
-}
-
-int bcmp(const void *s1, const void *s2, size_t len)
-{
-	return memcmp(s1, s2, len);
 }
 
 int strcmp(const char *str1, const char *str2)
@@ -78,54 +69,6 @@ unsigned int atou(const char *s)
 	return i;
 }
 
-#define TOLOWER(x) ((x) | 0x20)
-
-static unsigned int simple_guess_base(const char *cp)
-{
-	if (cp[0] == '0') {
-		if (TOLOWER(cp[1]) == 'x' && isxdigit(cp[2]))
-			return 16;
-		else
-			return 8;
-	} else {
-		return 10;
-	}
-}
-
-unsigned long long simple_strtoull(const char *cp, char **endp,
-				   unsigned int base)
-{
-	unsigned long long result = 0;
-
-	if (!base)
-		base = simple_guess_base(cp);
-
-	if (base == 16 && cp[0] == '0' && TOLOWER(cp[1]) == 'x')
-		cp += 2;
-
-	while (isxdigit(*cp)) {
-		unsigned int value;
-
-		value = isdigit(*cp) ? *cp - '0' : TOLOWER(*cp) - 'a' + 10;
-		if (value >= base)
-			break;
-		result = result * base + value;
-		cp++;
-	}
-	if (endp)
-		*endp = (char *)cp;
-
-	return result;
-}
-
-long simple_strtol(const char *cp, char **endp, unsigned int base)
-{
-	if (*cp == '-')
-		return -simple_strtoull(cp + 1, endp, base);
-
-	return simple_strtoull(cp, endp, base);
-}
-
 size_t strlen(const char *s)
 {
 	const char *sc;
@@ -158,137 +101,4 @@ char *strchr(const char *s, int c)
 		if (*s++ == '\0')
 			return NULL;
 	return (char *)s;
-}
-
-static inline u64 __div_u64_rem(u64 dividend, u32 divisor, u32 *remainder)
-{
-	union {
-		u64 v64;
-		u32 v32[2];
-	} d = { dividend };
-	u32 upper;
-
-	upper = d.v32[1];
-	d.v32[1] = 0;
-	if (upper >= divisor) {
-		d.v32[1] = upper / divisor;
-		upper %= divisor;
-	}
-	asm("divl %2"
-	    : "=a"(d.v32[0]), "=d"(*remainder)
-	    : "rm"(divisor), "0"(d.v32[0]), "1"(upper));
-	return d.v64;
-}
-
-static inline u64 __div_u64(u64 dividend, u32 divisor)
-{
-	u32 remainder;
-
-	return __div_u64_rem(dividend, divisor, &remainder);
-}
-
-static inline char _tolower(const char c)
-{
-	return c | 0x20;
-}
-
-static const char *_parse_integer_fixup_radix(const char *s, unsigned int *base)
-{
-	if (*base == 0) {
-		if (s[0] == '0') {
-			if (_tolower(s[1]) == 'x' && isxdigit(s[2]))
-				*base = 16;
-			else
-				*base = 8;
-		} else
-			*base = 10;
-	}
-	if (*base == 16 && s[0] == '0' && _tolower(s[1]) == 'x')
-		s += 2;
-	return s;
-}
-
-static unsigned int _parse_integer(const char *s, unsigned int base,
-				   unsigned long long *p)
-{
-	unsigned long long res;
-	unsigned int rv;
-
-	res = 0;
-	rv = 0;
-	while (1) {
-		unsigned int c = *s;
-		unsigned int lc = c | 0x20;
-		unsigned int val;
-
-		if ('0' <= c && c <= '9')
-			val = c - '0';
-		else if ('a' <= lc && lc <= 'f')
-			val = lc - 'a' + 10;
-		else
-			break;
-
-		if (val >= base)
-			break;
-
-		if (unlikely(res & (~0ull << 60))) {
-			if (res > __div_u64(ULLONG_MAX - val, base))
-				rv |= KSTRTOX_OVERFLOW;
-		}
-		res = res * base + val;
-		rv++;
-		s++;
-	}
-	*p = res;
-	return rv;
-}
-
-static int _kstrtoull(const char *s, unsigned int base, unsigned long long *res)
-{
-	unsigned long long _res;
-	unsigned int rv;
-
-	s = _parse_integer_fixup_radix(s, &base);
-	rv = _parse_integer(s, base, &_res);
-	if (rv & KSTRTOX_OVERFLOW)
-		return -ERANGE;
-	if (rv == 0)
-		return -EINVAL;
-	s += rv;
-	if (*s == '\n')
-		s++;
-	if (*s)
-		return -EINVAL;
-	*res = _res;
-	return 0;
-}
-
-int kstrtoull(const char *s, unsigned int base, unsigned long long *res)
-{
-	if (s[0] == '+')
-		s++;
-	return _kstrtoull(s, base, res);
-}
-
-static int _kstrtoul(const char *s, unsigned int base, unsigned long *res)
-{
-	unsigned long long tmp;
-	int rv;
-
-	rv = kstrtoull(s, base, &tmp);
-	if (rv < 0)
-		return rv;
-	if (tmp != (unsigned long)tmp)
-		return -ERANGE;
-	*res = tmp;
-	return 0;
-}
-
-int boot_kstrtoul(const char *s, unsigned int base, unsigned long *res)
-{
-	if (sizeof(unsigned long) == sizeof(unsigned long long) &&
-	    __alignof__(unsigned long) == __alignof__(unsigned long long))
-		return kstrtoull(s, base, (unsigned long long *)res);
-	else
-		return _kstrtoul(s, base, res);
 }

@@ -72,10 +72,6 @@ static inline void choose_random_location(unsigned long input,
 {
 }
 
- 
-bool has_cpuflag(int flag);
-
-
 static const int early_serial_base;
 static inline void console_init(void)
 { }

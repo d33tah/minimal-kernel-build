@@ -518,8 +518,7 @@ static inline bool slab_want_init_on_free(struct kmem_cache *c)
 	return false;
 }
 
-static inline void debugfs_slab_release(struct kmem_cache *s) { }
-
+/* debugfs_slab_release removed - unused */
 
 void __check_heap_object(const void *ptr, unsigned long n,
 			 const struct slab *slab, bool to_user);

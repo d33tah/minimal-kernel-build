@@ -287,7 +287,6 @@ void __init prepare_namespace(void)
 
 	mount_root();
 out:
-	devtmpfs_mount();
 	init_mount(".", "/", NULL, MS_MOVE, NULL);
 	init_chroot(".");
 }

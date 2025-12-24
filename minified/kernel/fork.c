@@ -1254,10 +1254,6 @@ copy_process(struct pid *pid, int trace, int node,
 	retval = perf_event_init_task(p, clone_flags);
 	if (retval)
 		goto bad_fork_cleanup_policy;
-	retval = audit_alloc(p);
-	if (retval)
-		goto bad_fork_cleanup_perf;
-
 	shm_init_task(p);
 	retval = security_task_alloc(p, clone_flags);
 	if (retval)
